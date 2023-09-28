@@ -136,14 +136,12 @@ static int _group_events_mouse_moved(struct dt_iop_module_t *module,
                                      const float pzy,
                                      const double pressure,
                                      const int which,
+                                     const float zoom_scale,
                                      dt_masks_form_t *form,
                                      const int unused1,
                                      dt_masks_form_gui_t *gui,
                                      const int unused2)
 {
-  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  const int closeup = dt_control_get_dev_closeup();
-  const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 1);
   const float as = dt_masks_sensitive_dist(zoom_scale);
 
   // we first don't do anything if we are inside a scrolling session
@@ -168,7 +166,7 @@ static int _group_events_mouse_moved(struct dt_iop_module_t *module,
     if(!sel) return 0;
     int rep = 0;
     if(sel->functions)
-      rep = sel->functions->mouse_moved(module, pzx, pzy, pressure, which, sel, fpt->parentid,
+      rep = sel->functions->mouse_moved(module, pzx, pzy, pressure, which, zoom_scale, sel, fpt->parentid,
                                         gui, gui->group_edited);
     if(rep) return 1;
     // if a point is in state editing, then we don't want that another
@@ -222,7 +220,7 @@ static int _group_events_mouse_moved(struct dt_iop_module_t *module,
   if(sel && sel->functions)
   {
     gui->group_edited = gui->group_selected = sel_pos;
-    return sel->functions->mouse_moved(module, pzx, pzy, pressure, which,
+    return sel->functions->mouse_moved(module, pzx, pzy, pressure, which, zoom_scale,
                                        sel, sel_fpt->parentid, gui, gui->group_edited);
   }
 

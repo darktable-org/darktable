@@ -180,7 +180,6 @@ void dt_masks_init_form_gui(dt_masks_form_gui_t *gui)
   memset(gui, 0, sizeof(dt_masks_form_gui_t));
 
   gui->posx = gui->posy = -1.0f;
-  gui->mouse_leaved_center = TRUE;
   gui->posx_source = gui->posy_source = -1.0f;
   gui->source_pos_type = DT_MASKS_SOURCE_POS_RELATIVE_TEMP;
 }
@@ -1078,7 +1077,12 @@ int dt_masks_events_mouse_leave(struct dt_iop_module_t *module)
   if(darktable.develop->form_gui)
   {
     dt_masks_form_gui_t *gui = darktable.develop->form_gui;
-    gui->mouse_leaved_center = TRUE;
+    const float zoom_x = dt_control_get_dev_zoom_x();
+    const float zoom_y = dt_control_get_dev_zoom_y();
+
+    gui->posx = (.5f + zoom_x) * darktable.develop->preview_pipe->backbuf_width;
+    gui->posy = (.5f + zoom_y) * darktable.develop->preview_pipe->backbuf_height;
+
     dt_control_hinter_message(darktable.control, "");
   }
   return 0;
@@ -1086,41 +1090,31 @@ int dt_masks_events_mouse_leave(struct dt_iop_module_t *module)
 
 int dt_masks_events_mouse_enter(struct dt_iop_module_t *module)
 {
-  if(darktable.develop->form_gui)
-  {
-    dt_masks_form_gui_t *gui = darktable.develop->form_gui;
-    gui->mouse_leaved_center = FALSE;
-  }
   return 0;
 }
 
 int dt_masks_events_mouse_moved(struct dt_iop_module_t *module,
-                                const double x,
-                                const double y,
+                                const float pzx,
+                                const float pzy,
                                 const double pressure,
-                                const int which)
+                                const int which,
+                                const float zoom_scale)
 {
   // record mouse position even if there are no masks visible
   dt_masks_form_gui_t *gui = darktable.develop->form_gui;
   dt_masks_form_t *form = darktable.develop->form_visible;
-  float pzx = 0.0f, pzy = 0.0f;
-
-  dt_dev_get_pointer_zoom_pos(darktable.develop, x, y, &pzx, &pzy);
-  pzx += 0.5f;
-  pzy += 0.5f;
 
   if(gui)
   {
     // This assume that if this event is generated the mouse is over
     // the center window
-    gui->mouse_leaved_center = FALSE;
     gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
     gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
   }
 
   int rep = 0;
   if(form->functions)
-    rep = form->functions->mouse_moved(module, pzx, pzy, pressure, which, form, 0, gui, 0);
+    rep = form->functions->mouse_moved(module, pzx, pzy, pressure, which, zoom_scale, form, 0, gui, 0);
 
   if(gui) _set_hinter_message(gui, form);
 
@@ -1128,18 +1122,15 @@ int dt_masks_events_mouse_moved(struct dt_iop_module_t *module,
 }
 
 int dt_masks_events_button_released(struct dt_iop_module_t *module,
-                                    const double x,
-                                    const double y,
+                                    const float pzx,
+                                    const float pzy,
                                     const int which,
-                                    const uint32_t state)
+                                    const uint32_t state,
+                                    const float zoom_scale)
 {
   dt_develop_t *dev = darktable.develop;
   dt_masks_form_t *form = dev->form_visible;
   dt_masks_form_gui_t *gui = dev->form_gui;
-  float pzx = 0.0f, pzy = 0.0f;
-  dt_dev_get_pointer_zoom_pos(dev, x, y, &pzx, &pzy);
-  pzx += 0.5f;
-  pzy += 0.5f;
 
   ++darktable.gui->reset;
   if(dev->mask_form_selected_id)
@@ -1150,7 +1141,7 @@ int dt_masks_events_button_released(struct dt_iop_module_t *module,
   {
     const int ret =
       form->functions->button_released(module, pzx, pzy, which, state, form, 0, gui, 0);
-    form->functions->mouse_moved(module, pzx, pzy, 0, which, form, 0, gui, 0);
+    form->functions->mouse_moved(module, pzx, pzy, 0, which, zoom_scale, form, 0, gui, 0);
     return ret;
   }
 
@@ -1158,8 +1149,8 @@ int dt_masks_events_button_released(struct dt_iop_module_t *module,
 }
 
 int dt_masks_events_button_pressed(struct dt_iop_module_t *module,
-                                   const double x,
-                                   const double y,
+                                   const float pzx,
+                                   const float pzy,
                                    const double pressure,
                                    const int which,
                                    const int type,
@@ -1167,10 +1158,6 @@ int dt_masks_events_button_pressed(struct dt_iop_module_t *module,
 {
   dt_masks_form_t *form = darktable.develop->form_visible;
   dt_masks_form_gui_t *gui = darktable.develop->form_gui;
-  float pzx = 0.0f, pzy = 0.0f;
-  dt_dev_get_pointer_zoom_pos(darktable.develop, x, y, &pzx, &pzy);
-  pzx += 0.5f;
-  pzy += 0.5f;
 
   // allow to select a shape inside an iop
   if(gui && which == 1)
@@ -1206,17 +1193,13 @@ int dt_masks_events_button_pressed(struct dt_iop_module_t *module,
 }
 
 int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module,
-                                   const double x,
-                                   const double y,
+                                   const float pzx,
+                                   const float pzy,
                                    const gboolean up,
                                    const uint32_t state)
 {
   dt_masks_form_t *form = darktable.develop->form_visible;
   dt_masks_form_gui_t *gui = darktable.develop->form_gui;
-  float pzx = 0.0f, pzy = 0.0f;
-  dt_dev_get_pointer_zoom_pos(darktable.develop, x, y, &pzx, &pzy);
-  pzx += 0.5f;
-  pzy += 0.5f;
 
   int ret = 0;
   const gboolean incr = dt_mask_scroll_increases(up);
@@ -1254,8 +1237,9 @@ void dt_masks_events_post_expose(struct dt_iop_module_t *module,
                                  cairo_t *cr,
                                  const int32_t width,
                                  const int32_t height,
-                                 const int32_t pointerx,
-                                 const int32_t pointery)
+                                 const float pzx,
+                                 const float pzy,
+                                 const float zoom_scale)
 {
   dt_develop_t *dev = darktable.develop;
   dt_masks_form_t *form = dev->form_visible;
@@ -1263,25 +1247,8 @@ void dt_masks_events_post_expose(struct dt_iop_module_t *module,
   if(!gui) return;
   if(!form) return;
 
-  const float wd = dev->preview_pipe->backbuf_width;
-  const float ht = dev->preview_pipe->backbuf_height;
-  if(wd < 1.0 || ht < 1.0) return;
-  float pzx = 0.0f, pzy = 0.0f;
-  dt_dev_get_pointer_zoom_pos(dev, pointerx, pointery, &pzx, &pzy);
-  pzx += 0.5f;
-  pzy += 0.5f;
-  const float zoom_y = dt_control_get_dev_zoom_y();
-  const float zoom_x = dt_control_get_dev_zoom_x();
-  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  const int closeup = dt_control_get_dev_closeup();
-  const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
-
   cairo_save(cr);
   cairo_set_source_rgb(cr, .3, .3, .3);
-
-  cairo_translate(cr, width / 2.0, height / 2.0f);
-  cairo_scale(cr, zoom_scale, zoom_scale);
-  cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
 
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
 

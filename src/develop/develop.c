@@ -761,6 +761,25 @@ float dt_dev_get_zoom_scale(dt_develop_t *dev,
   return zoom_scale;
 }
 
+float dt_dev_get_zoom_scale_full(void)
+{
+  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+  const int closeup = dt_control_get_dev_closeup();
+  const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1 << closeup, 1);
+
+  return zoom_scale;
+}
+
+float dt_dev_get_zoomed_in(void)
+{
+  dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+  const int closeup = dt_control_get_dev_closeup();
+  const float min_scale = dt_dev_get_zoom_scale(darktable.develop, DT_ZOOM_FIT, 1<<closeup, 0);
+  const float cur_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 0);
+
+  return cur_scale / min_scale;
+}
+
 void dt_dev_load_image_ext(dt_develop_t *dev,
                            const dt_imgid_t imgid,
                            const int32_t snapshot_id)
@@ -2673,7 +2692,8 @@ void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev,
                                  const float px,
                                  const float py,
                                  float *zoom_x,
-                                 float *zoom_y)
+                                 float *zoom_y,
+                                 float *zoom_scale)
 {
   dt_dev_zoom_t zoom;
   int closeup = 0, procw = 0, proch = 0;
@@ -2684,12 +2704,15 @@ void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev,
   zoom2_y = dt_control_get_dev_zoom_y();
   dt_dev_get_processed_size(dev, &procw, &proch);
   const float scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
+  const double tb = dev->border_size;
   // offset from center now (current zoom_{x,y} points there)
-  const float mouse_off_x = px - .5 * dev->width, mouse_off_y = py - .5 * dev->height;
+  const float mouse_off_x = px - tb - .5 * dev->width;
+  const float mouse_off_y = py - tb - .5 * dev->height;
   zoom2_x += mouse_off_x / (procw * scale);
   zoom2_y += mouse_off_y / (proch * scale);
-  *zoom_x = zoom2_x;
-  *zoom_y = zoom2_y;
+  *zoom_x = zoom2_x + 0.5f;
+  *zoom_y = zoom2_y + 0.5f;
+  *zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
 }
 
 gboolean dt_dev_is_current_image(dt_develop_t *dev,

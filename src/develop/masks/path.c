@@ -1909,14 +1909,12 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module,
                                     float pzy,
                                     const double pressure,
                                     const int which,
+                                    const float zoom_scale,
                                     dt_masks_form_t *form,
                                     const dt_mask_id_t parentid,
                                     dt_masks_form_gui_t *gui,
                                     const int index)
 {
-  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  const int closeup = dt_control_get_dev_closeup();
-  const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 1);
   // centre view will have zoom_scale * backbuf_width pixels, we want
   // the handle offset to scale with DPI:
   const float as = dt_masks_sensitive_dist(zoom_scale);
@@ -2345,22 +2343,10 @@ static void _path_events_post_expose(cairo_t *cr,
     }
     else
     {
-      float xpos, ypos;
-      if((gui->posx == -1.f && gui->posy == -1.f) || gui->mouse_leaved_center)
-      {
-        xpos = (.5f + dt_control_get_dev_zoom_x())
-          * darktable.develop->preview_pipe->backbuf_width;
-        ypos = (.5f + dt_control_get_dev_zoom_y())
-          * darktable.develop->preview_pipe->backbuf_height;
-      }
-      else
-      {
-        xpos = gui->posx;
-        ypos = gui->posy;
-      }
-
       float x = 0.0f, y = 0.0f;
-      dt_masks_calculate_source_pos_value(gui, DT_MASKS_PATH, xpos, ypos, xpos, ypos,
+      dt_masks_calculate_source_pos_value(gui, DT_MASKS_PATH,
+                                          gui->posx, gui->posy,
+                                          gui->posx, gui->posy,
                                           &x, &y, FALSE);
       dt_masks_draw_clone_source_pos(cr, zoom_scale, x, y);
     }

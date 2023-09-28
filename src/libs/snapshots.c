@@ -219,8 +219,9 @@ void gui_post_expose(dt_lib_module_t *self,
       d->expose_again_timeout_id = g_timeout_add(150, _snap_expose_again, d);
     }
 
-    float pzx, pzy;
-    dt_dev_get_pointer_zoom_pos(dev, 0, 0, &pzx, &pzy);
+    float pzx, pzy, zoom_scale;
+    dt_dev_get_pointer_zoom_pos(dev, 0, 0, &pzx, &pzy, &zoom_scale);
+
     pzx = fmin(pzx + 0.5f, 0.0f);
     pzy = fmin(pzy + 0.5f, 0.0f);
 
@@ -265,10 +266,6 @@ void gui_post_expose(dt_lib_module_t *self,
     dt_draw_set_color_overlay(cri, TRUE, 0.7);
 
     cairo_set_line_width(cri, 1.);
-
-    const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-    const int closeup = dt_control_get_dev_closeup();
-    const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
 
     if(d->vertical)
     {

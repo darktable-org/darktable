@@ -491,14 +491,13 @@ static int _gradient_events_button_released(struct dt_iop_module_t *module,
     const float ht = darktable.develop->preview_pipe->backbuf_height;
 
     // get the rotation angle only if we are not too close from starting point
-    const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-    const int closeup = dt_control_get_dev_closeup();
-    const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1 << closeup, 1);
+    const float zoom_scale = dt_dev_get_zoom_scale_full();
 
     // we create the gradient
     dt_masks_point_gradient_t *gradient =
       (dt_masks_point_gradient_t *)(malloc(sizeof(dt_masks_point_gradient_t)));
 
+    // get the rotation angle only if we are not too close from starting point
     _gradient_init_values(zoom_scale, gui, gui->posx, gui->posy, pzx * wd, pzy * ht,
                           &gradient->anchor[0],
                           &gradient->anchor[1], &gradient->rotation,
@@ -562,6 +561,7 @@ static int _gradient_events_mouse_moved(struct dt_iop_module_t *module,
                                         const float pzy,
                                         const double pressure,
                                         const int which,
+                                        const float zoom_scale,
                                         dt_masks_form_t *form,
                                         const dt_mask_id_t parentid,
                                         dt_masks_form_gui_t *gui,
@@ -639,9 +639,6 @@ static int _gradient_events_mouse_moved(struct dt_iop_module_t *module,
   }
   else if(!gui->creation)
   {
-    const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-    const int closeup = dt_control_get_dev_closeup();
-    const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 1);
     const float as = dt_masks_sensitive_dist(zoom_scale);
     const float as2 = sqf(as);
     const float x = pzx * darktable.develop->preview_pipe->backbuf_width;
@@ -1014,23 +1011,8 @@ static void _gradient_events_post_expose(cairo_t *cr,
   // preview gradient creation
   if(gui->creation)
   {
-    const float zoom_x = dt_control_get_dev_zoom_x();
-    const float zoom_y = dt_control_get_dev_zoom_y();
-
-    float xpos = 0.0f, ypos = 0.0f;
-    if((gui->posx == -1.0f && gui->posy == -1.0f) || gui->mouse_leaved_center)
-    {
-      xpos = (.5f + zoom_x) * darktable.develop->preview_pipe->backbuf_width;
-      ypos = (.5f + zoom_y) * darktable.develop->preview_pipe->backbuf_height;
-    }
-    else
-    {
-      xpos = gui->posx;
-      ypos = gui->posy;
-    }
-
     float xx = 0.0f, yy = 0.0f, rotation = 0.0f, compression = 0.0f, curvature = 0.0f;
-    _gradient_init_values(zoom_scale, gui, xpos, ypos, xpos, ypos, &xx, &yy,
+    _gradient_init_values(zoom_scale, gui, gui->posx, gui->posy, gui->posx, gui->posy, &xx, &yy,
                           &rotation, &compression, &curvature);
 
     float *points = NULL;
