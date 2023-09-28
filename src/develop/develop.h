@@ -422,11 +422,14 @@ float dt_dev_get_zoom_scale(dt_develop_t *dev,
                             dt_dev_zoom_t zoom,
                             const int closeup_factor,
                             const int mode);
+float dt_dev_get_zoom_scale_full(void);
+float dt_dev_get_zoomed_in(void);
 void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev,
                                  const float px,
                                  const float py,
                                  float *zoom_x,
-                                 float *zoom_y);
+                                 float *zoom_y,
+                                 float *zoom_scale);
 
 void dt_dev_configure(dt_develop_t *dev,
                       int wd,

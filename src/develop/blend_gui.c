@@ -1373,7 +1373,7 @@ static gboolean _blendop_masks_modes_none_clicked(GtkWidget *button,
     data->selected_mask_mode = button;
 
     // remove the mask indicator
-    add_remove_mask_indicator(module, FALSE);
+    dt_iop_add_remove_mask_indicator(module, FALSE);
 
     /* and finally remove hinter messages */
     dt_control_hinter_message(darktable.control, "");
@@ -1432,9 +1432,9 @@ static gboolean _blendop_masks_modes_toggle(GtkToggleButton *button,
   // (un)set the mask indicator, but not for uniform blend
   const gboolean supported = mask_mode & ~DEVELOP_MASK_ENABLED;
   if(supported)
-    add_remove_mask_indicator(module, was_toggled);
+    dt_iop_add_remove_mask_indicator(module, was_toggled);
   else
-    add_remove_mask_indicator(module, FALSE);
+    dt_iop_add_remove_mask_indicator(module, FALSE);
   // also hide the eye and showmask buttons for uniform blend
   gtk_widget_set_visible(data->showmask, supported);
   gtk_widget_set_visible(data->suppress, supported);
@@ -3094,7 +3094,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
   const gboolean valid_masking = module->blend_params->mask_mode & ~DEVELOP_MASK_ENABLED;
 
   // (un)set the mask indicator
-  add_remove_mask_indicator(module, valid_masking);
+  dt_iop_add_remove_mask_indicator(module, valid_masking);
   // also hide the eye and showmask buttons for uniform blend
   gtk_widget_set_visible(bd->showmask, valid_masking);
   gtk_widget_set_visible(bd->suppress, valid_masking);

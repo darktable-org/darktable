@@ -510,9 +510,6 @@ void dt_iop_connect_accels_multi(dt_iop_module_so_t *module);
 /** adds keyboard accels for all modules in the pipe */
 void dt_iop_connect_accels_all();
 
-/** get the module that accelerators are attached to for the current so */
-dt_iop_module_t *dt_iop_get_module_accel_curr(dt_iop_module_so_t *module);
-
 /** queue a refresh of the center (FULL), preview, or second-preview
  * windows, rerunning the pixelpipe from */
 /** the given module */
@@ -528,7 +525,7 @@ gboolean dt_iop_show_hide_header_buttons(dt_iop_module_t *module,
                                          const gboolean always_hide);
 
 /** add/remove mask indicator to iop module header */
-void add_remove_mask_indicator(dt_iop_module_t *module, gboolean add);
+void dt_iop_add_remove_mask_indicator(dt_iop_module_t *module, gboolean add);
 
 /** Set the trouble message for the module.  If non-empty, also flag
  ** the module as being in trouble; if empty or NULL, clear the
@@ -574,6 +571,8 @@ gboolean dt_iop_have_required_input_format(const int required_ch,
                                            void *const __restrict__ ovoid,
                                            const dt_iop_roi_t *const roi_in,
                                            const dt_iop_roi_t *const roi_out);
+
+
 
 /* bring up module rename dialog */
 void dt_iop_gui_rename_module(dt_iop_module_t *module);

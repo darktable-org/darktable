@@ -1802,12 +1802,13 @@ static void rt_mask_opacity_callback(GtkWidget *slider,
   }
 }
 
-void gui_post_expose(struct dt_iop_module_t *self,
+void gui_post_expose(dt_iop_module_t *self,
                      cairo_t *cr,
                      const int32_t width,
                      const int32_t height,
-                     const int32_t pointerx,
-                     const int32_t pointery)
+                     const float pointerx,
+                     const float pointery,
+                     const float zoom_scale)
 {
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
 

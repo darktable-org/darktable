@@ -524,6 +524,7 @@ static int _circle_events_mouse_moved(struct dt_iop_module_t *module,
                                       const float pzy,
                                       const double pressure,
                                       const int which,
+                                      const float zoom_scale,
                                       dt_masks_form_t *form,
                                       const dt_mask_id_t parentid,
                                       dt_masks_form_gui_t *gui,
@@ -587,9 +588,6 @@ static int _circle_events_mouse_moved(struct dt_iop_module_t *module,
   }
   else if(!gui->creation)
   {
-    const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-    const int closeup = dt_control_get_dev_closeup();
-    const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 1);
     const float as = dt_masks_sensitive_dist(zoom_scale);
     const float x = pzx * darktable.develop->preview_pipe->backbuf_width;
     const float y = pzy * darktable.develop->preview_pipe->backbuf_height;
@@ -837,17 +835,7 @@ static void _circle_events_post_expose(cairo_t *cr,
       float radius_b = dt_conf_get_float(DT_MASKS_CONF(form->type, circle, border));
       radius_b += radius_a;
 
-      // we get the circle center
-      float pzx = gui->posx;
-      float pzy = gui->posy;
-      if((pzx == -1.f && pzy == -1.f) || gui->mouse_leaved_center)
-      {
-        const float zoom_x = dt_control_get_dev_zoom_x();
-        const float zoom_y = dt_control_get_dev_zoom_y();
-        pzx = (.5f + zoom_x) * darktable.develop->preview_pipe->backbuf_width;
-        pzy = (.5f + zoom_y) * darktable.develop->preview_pipe->backbuf_height;
-      }
-      float pts[2] = { pzx, pzy };
+      float pts[2] = { gui->posx, gui->posy };
       dt_dev_distort_backtransform(darktable.develop, pts, 1);
       float x = pts[0] / darktable.develop->preview_pipe->iwidth;
       float y = pts[1] / darktable.develop->preview_pipe->iheight;
@@ -881,7 +869,9 @@ static void _circle_events_post_expose(cairo_t *cr,
         x = 0.0f;
         y = 0.0f;
         dt_masks_calculate_source_pos_value(gui, DT_MASKS_CIRCLE,
-                                            pzx, pzy, pzx, pzy, &x, &y, FALSE);
+                                            gui->posx, gui->posy,
+                                            gui->posx, gui->posy,
+                                            &x, &y, FALSE);
         dt_masks_draw_clone_source_pos(cr, zoom_scale, x, y);
       }
 
