@@ -17,7 +17,7 @@ buildDir="${scriptDir}/../../build"
 installDir="${buildDir}/macosx"
 
 # Options
-options="
+options=" \
     -DUSE_GRAPHICSMAGICK=OFF \
     -DUSE_IMAGEMAGICK=ON \
 "
@@ -29,5 +29,4 @@ if [[ -d "$buildDir" ]]; then
 fi
 
 # Clean build here
-#../../build.sh --install --build-type Release --prefix "$installDir"
 ../../build.sh --install --build-type Release --prefix "$installDir" -- $options
