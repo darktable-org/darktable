@@ -230,7 +230,7 @@ float dt_dev_get_preview_downsampling()
 void dt_dev_process_image(dt_develop_t *dev)
 {
   if(!dev->gui_attached || dev->pipe->processing) return;
-  const int err
+  const gboolean err
       = dt_control_add_job_res(darktable.control,
                                dt_dev_process_image_job_create(dev), DT_CTL_WORKER_ZOOM_1);
   if(err) dt_print(DT_DEBUG_ALWAYS, "[dev_process_image] job queue exceeded!\n");
@@ -239,7 +239,7 @@ void dt_dev_process_image(dt_develop_t *dev)
 void dt_dev_process_preview(dt_develop_t *dev)
 {
   if(!dev->gui_attached) return;
-  const int err = dt_control_add_job_res(darktable.control,
+  const gboolean err = dt_control_add_job_res(darktable.control,
                                          dt_dev_process_preview_job_create(dev),
                                          DT_CTL_WORKER_ZOOM_FILL);
   if(err) dt_print(DT_DEBUG_ALWAYS, "[dev_process_preview] job queue exceeded!\n");
@@ -247,7 +247,7 @@ void dt_dev_process_preview(dt_develop_t *dev)
 
 void dt_dev_process_preview2(dt_develop_t *dev)
 {
-  const int err = dt_control_add_job_res(darktable.control,
+  const gboolean err = dt_control_add_job_res(darktable.control,
                                          dt_dev_process_preview2_job_create(dev),
                                          DT_CTL_WORKER_ZOOM_2);
   if(err) dt_print(DT_DEBUG_ALWAYS, "[dev_process_preview2] job queue exceeded!\n");
