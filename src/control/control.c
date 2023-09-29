@@ -43,7 +43,10 @@
 #include <string.h>
 #include <strings.h>
 
-static float _action_process_accels_show(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
+static float _action_process_accels_show(const gpointer target,
+                                        const dt_action_element_t element,
+                                        const dt_action_effect_t effect,
+                                        const float move_size)
 {
   if(DT_PERFORM_ACTION(move_size))
   {
@@ -71,7 +74,10 @@ const dt_action_def_t dt_action_def_accels_show
 
 GdkModifierType dt_modifier_shortcuts;
 
-static float _action_process_modifiers(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
+static float _action_process_modifiers(const gpointer target,
+                                        const dt_action_element_t element,
+                                        const dt_action_effect_t effect,
+                                        const float move_size)
 {
   GdkModifierType mask = 1;
   if(element) mask <<= element + 1; // ctrl = 4, alt = 8
@@ -263,12 +269,12 @@ void dt_control_change_cursor(dt_cursor_t curs)
   }
 }
 
-int dt_control_running()
+gboolean dt_control_running()
 {
   // FIXME: when shutdown, run_mutex is not inited anymore!
   dt_control_t *s = darktable.control;
   dt_pthread_mutex_lock(&s->run_mutex);
-  int running = s->running;
+  const gboolean running = s->running;
   dt_pthread_mutex_unlock(&s->run_mutex);
   return running;
 }
@@ -279,7 +285,7 @@ void dt_control_quit()
   // thread safe quit, 1st pass:
   dt_pthread_mutex_lock(&darktable.control->cond_mutex);
   dt_pthread_mutex_lock(&darktable.control->run_mutex);
-  darktable.control->running = 0;
+  darktable.control->running = FALSE;
   dt_pthread_mutex_unlock(&darktable.control->run_mutex);
   dt_pthread_mutex_unlock(&darktable.control->cond_mutex);
 
@@ -290,7 +296,7 @@ void dt_control_shutdown(dt_control_t *s)
 {
   dt_pthread_mutex_lock(&s->cond_mutex);
   dt_pthread_mutex_lock(&s->run_mutex);
-  s->running = 0;
+  s->running = FALSE;
   dt_pthread_mutex_unlock(&s->run_mutex);
   dt_pthread_mutex_unlock(&s->cond_mutex);
   pthread_cond_broadcast(&s->cond);
@@ -335,14 +341,16 @@ void dt_control_cleanup(dt_control_t *s)
 //  gui functions:
 // ================================================================================
 
-gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer user_data)
+gboolean dt_control_configure(GtkWidget *da,
+                              GdkEventConfigure *event,
+                              gpointer user_data)
 {
   // re-configure all components:
   dt_view_manager_configure(darktable.view_manager, event->width, event->height);
   return TRUE;
 }
 
-static GdkRGBA lookup_color(GtkStyleContext *context, const char *name)
+static GdkRGBA _lookup_color(GtkStyleContext *context, const char *name)
 {
   GdkRGBA color, fallback = {1.0, 0.0, 0.0, 1.0};
   if(!gtk_style_context_lookup_color (context, name, &color))
@@ -367,7 +375,9 @@ void dt_control_draw_busy_msg(cairo_t *cr, int width, int height)
     pango_layout_set_text(layout, "...", -1);
     pango_layout_get_pixel_extents(layout, &ink, NULL);
   }
-  const float xc = width / 2.0, yc = height * 0.85 - DT_PIXEL_APPLY_DPI(30), wd = ink.width * .5f;
+  const double xc = width / 2.0;
+  const double yc = height * 0.85 - DT_PIXEL_APPLY_DPI(30);
+  const double wd = ink.width * .5;
   cairo_move_to(cr, xc - wd, yc + 1. / 3. * fontsize - fontsize);
   pango_cairo_layout_path(cr, layout);
   cairo_set_line_width(cr, 2.0);
@@ -402,7 +412,7 @@ void *dt_control_expose(void *voidptr)
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
 
   // look up some colors once
-  GdkRGBA bg_color = lookup_color(context, "bg_color");
+  const GdkRGBA bg_color = _lookup_color(context, "bg_color");
 
   gdk_cairo_set_source_rgba(cr, &bg_color);
   cairo_save(cr);
@@ -432,7 +442,9 @@ void *dt_control_expose(void *voidptr)
   return NULL;
 }
 
-gboolean dt_control_draw_endmarker(GtkWidget *widget, cairo_t *crf, gpointer user_data)
+gboolean dt_control_draw_endmarker(GtkWidget *widget,
+                                    cairo_t *crf,
+                                    gpointer user_data)
 {
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -458,12 +470,18 @@ void dt_control_mouse_enter()
   dt_view_manager_mouse_enter(darktable.view_manager);
 }
 
-void dt_control_mouse_moved(double x, double y, double pressure, int which)
+void dt_control_mouse_moved(double x,
+                            double y,
+                            double pressure,
+                            int which)
 {
   dt_view_manager_mouse_moved(darktable.view_manager, x, y, pressure, which);
 }
 
-void dt_control_button_released(double x, double y, int which, uint32_t state)
+void dt_control_button_released(double x,
+                                double y,
+                                int which,
+                                uint32_t state)
 {
   darktable.control->button_down = 0;
   darktable.control->button_down_which = 0;
@@ -503,7 +521,8 @@ void dt_ctl_switch_mode_to(const char *mode)
   if(current_view && !g_ascii_strcasecmp(mode, current_view->module_name))
   {
     // if we are not in lighttable, we switch back to that view
-    if(g_ascii_strcasecmp(current_view->module_name, "lighttable")) dt_ctl_switch_mode_to("lighttable");
+    if(g_ascii_strcasecmp(current_view->module_name, "lighttable"))
+      dt_ctl_switch_mode_to("lighttable");
     return;
   }
 
@@ -512,14 +531,17 @@ void dt_ctl_switch_mode_to(const char *mode)
 
 void dt_ctl_switch_mode_to_by_view(const dt_view_t *view)
 {
-  if(view == dt_view_manager_get_current_view(darktable.view_manager)) return;
+  if(view == dt_view_manager_get_current_view(darktable.view_manager))
+    return;
   g_main_context_invoke(NULL, _dt_ctl_switch_mode_to_by_view, (gpointer)view);
 }
 
 void dt_ctl_switch_mode()
 {
   const dt_view_t *view = dt_view_manager_get_current_view(darktable.view_manager);
-  const char *mode = (view && !strcmp(view->module_name, "lighttable")) ? "darkroom" : "lighttable";
+  const char *mode = (view && !strcmp(view->module_name, "lighttable"))
+                      ? "darkroom"
+                      : "lighttable";
   dt_ctl_switch_mode_to(mode);
 }
 
@@ -545,7 +567,12 @@ static gboolean _dt_ctl_toast_message_timeout_callback(gpointer data)
   return FALSE;
 }
 
-void dt_control_button_pressed(double x, double y, double pressure, int which, int type, uint32_t state)
+void dt_control_button_pressed(double x,
+                              double y,
+                              double pressure,
+                              int which,
+                              int type,
+                              uint32_t state)
 {
   darktable.control->button_down = 1;
   darktable.control->button_down_which = which;
@@ -555,13 +582,13 @@ void dt_control_button_pressed(double x, double y, double pressure, int which, i
   // adding pressure to this data structure is not needed right now. should the need ever arise: here is the
   // place to do it :)
   //const float wd = darktable.control->width;
-  const float ht = darktable.control->height;
+  const double ht = darktable.control->height;
 
   // ack log message:
   dt_pthread_mutex_lock(&darktable.control->log_mutex);
-  const float /*xc = wd/4.0-20,*/ yc = ht * 0.85 + 10;
+  const double /*xc = wd/4.0-20,*/ yc = ht * 0.85 + 10.0;
   if(darktable.control->log_ack != darktable.control->log_pos)
-    if(which == 1 /*&& x > xc - 10 && x < xc + 10*/ && y > yc - 10 && y < yc + 10)
+    if(which == 1 /*&& x > xc - 10 && x < xc + 10*/ && y > yc - 10.0 && y < yc + 10.0)
     {
       if(darktable.control->log_message_timeout_id)
       {
@@ -577,7 +604,7 @@ void dt_control_button_pressed(double x, double y, double pressure, int which, i
   // ack toast message:
   dt_pthread_mutex_lock(&darktable.control->toast_mutex);
   if(darktable.control->toast_ack != darktable.control->toast_pos)
-    if(which == 1 /*&& x > xc - 10 && x < xc + 10*/ && y > yc - 10 && y < yc + 10)
+    if(which == 1 /*&& x > xc - 10 && x < xc + 10*/ && y > yc - 10.0 && y < yc + 10.0)
     {
       if(darktable.control->toast_message_timeout_id)
       {
@@ -733,7 +760,7 @@ static int _widget_queue_draw(void *widget)
 {
   gtk_widget_queue_draw((GtkWidget*)widget);
   g_object_unref(widget);
-  return FALSE;
+  return 0;
 }
 
 void dt_control_queue_redraw_widget(GtkWidget *widget)
@@ -887,17 +914,17 @@ void dt_control_hinter_message(const struct dt_control_t *s, const char *message
 dt_imgid_t dt_control_get_mouse_over_id()
 {
   dt_pthread_mutex_lock(&(darktable.control->global_mutex));
-  const int32_t result = darktable.control->mouse_over_id;
+  const dt_imgid_t result = darktable.control->mouse_over_id;
   dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
   return result;
 }
 
-void dt_control_set_mouse_over_id(dt_imgid_t value)
+void dt_control_set_mouse_over_id(const dt_imgid_t imgid)
 {
   dt_pthread_mutex_lock(&(darktable.control->global_mutex));
-  if(darktable.control->mouse_over_id != value)
+  if(darktable.control->mouse_over_id != imgid)
   {
-    darktable.control->mouse_over_id = value;
+    darktable.control->mouse_over_id = imgid;
     dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
   }
@@ -912,7 +939,7 @@ float dt_control_get_dev_zoom_x()
   dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
   return result;
 }
-void dt_control_set_dev_zoom_x(float value)
+void dt_control_set_dev_zoom_x(const float value)
 {
   dt_pthread_mutex_lock(&(darktable.control->global_mutex));
   darktable.control->dev_zoom_x = value;
@@ -926,7 +953,7 @@ float dt_control_get_dev_zoom_y()
   dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
   return result;
 }
-void dt_control_set_dev_zoom_y(float value)
+void dt_control_set_dev_zoom_y(const float value)
 {
   dt_pthread_mutex_lock(&(darktable.control->global_mutex));
   darktable.control->dev_zoom_y = value;
@@ -940,7 +967,7 @@ float dt_control_get_dev_zoom_scale()
   dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
   return result;
 }
-void dt_control_set_dev_zoom_scale(float value)
+void dt_control_set_dev_zoom_scale(const float value)
 {
   dt_pthread_mutex_lock(&(darktable.control->global_mutex));
   darktable.control->dev_zoom_scale = value;
@@ -954,7 +981,7 @@ int dt_control_get_dev_closeup()
   dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
   return result;
 }
-void dt_control_set_dev_closeup(int value)
+void dt_control_set_dev_closeup(const int value)
 {
   dt_pthread_mutex_lock(&(darktable.control->global_mutex));
   darktable.control->dev_closeup = value;
@@ -968,7 +995,7 @@ dt_dev_zoom_t dt_control_get_dev_zoom()
   dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
   return result;
 }
-void dt_control_set_dev_zoom(dt_dev_zoom_t value)
+void dt_control_set_dev_zoom(const dt_dev_zoom_t value)
 {
   dt_pthread_mutex_lock(&(darktable.control->global_mutex));
   darktable.control->dev_zoom = value;
