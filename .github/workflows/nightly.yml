@@ -104,7 +104,6 @@ jobs:
             libheif-dev \
             libimath-dev \
             libjxl-dev \
-            libopenexr-dev \
             x11proto-dev \
             libxfixes-dev;
       - uses: actions/checkout@v4
