@@ -44,9 +44,9 @@
 #include <strings.h>
 
 static float _action_process_accels_show(const gpointer target,
-                                        const dt_action_element_t element,
-                                        const dt_action_effect_t effect,
-                                        const float move_size)
+                                         const dt_action_element_t element,
+                                         const dt_action_effect_t effect,
+                                         const float move_size)
 {
   if(DT_PERFORM_ACTION(move_size))
   {
@@ -75,9 +75,9 @@ const dt_action_def_t dt_action_def_accels_show
 GdkModifierType dt_modifier_shortcuts;
 
 static float _action_process_modifiers(const gpointer target,
-                                        const dt_action_element_t element,
-                                        const dt_action_effect_t effect,
-                                        const float move_size)
+                                       const dt_action_element_t element,
+                                       const dt_action_effect_t effect,
+                                       const float move_size)
 {
   GdkModifierType mask = 1;
   if(element) mask <<= element + 1; // ctrl = 4, alt = 8
@@ -205,10 +205,13 @@ void dt_control_init(dt_control_t *s)
   dt_action_define_fallback(DT_ACTION_TYPE_LIB, &dt_action_def_lib);
   dt_action_define_fallback(DT_ACTION_TYPE_VALUE_FALLBACK, &dt_action_def_value);
 
-  dt_action_t *ac = dt_action_define(&s->actions_global, NULL, N_("show accels window"), NULL, &dt_action_def_accels_show);
+  dt_action_t *ac = dt_action_define(&s->actions_global, NULL,
+                                     N_("show accels window"), NULL,
+                                     &dt_action_def_accels_show);
   dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_HOLD, GDK_KEY_h, 0);
 
-  s->actions_modifiers = dt_action_define(&s->actions_global, NULL, N_("modifiers"), NULL, &dt_action_def_modifiers);
+  s->actions_modifiers = dt_action_define(&s->actions_global, NULL,
+                                          N_("modifiers"), NULL, &dt_action_def_modifiers);
 
   memset(s->vimkey, 0, sizeof(s->vimkey));
   s->vimkey_cnt = 0;
@@ -362,7 +365,8 @@ void dt_control_draw_busy_msg(cairo_t *cr, int width, int height)
 {
   PangoRectangle ink;
   PangoLayout *layout;
-  PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+  PangoFontDescription *desc =
+    pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
   const float fontsize = DT_PIXEL_APPLY_DPI(14);
   pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
   pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
@@ -404,7 +408,8 @@ void *dt_control_expose(void *voidptr)
   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
 
-  // TODO: control_expose: only redraw the part not overlapped by temporary control panel show!
+  // TODO: control_expose: only redraw the part not overlapped by
+  // temporary control panel show!
   //
   darktable.control->width = width;
   darktable.control->height = height;
@@ -443,8 +448,8 @@ void *dt_control_expose(void *voidptr)
 }
 
 gboolean dt_control_draw_endmarker(GtkWidget *widget,
-                                    cairo_t *crf,
-                                    gpointer user_data)
+                                   cairo_t *crf,
+                                   gpointer user_data)
 {
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -568,20 +573,20 @@ static gboolean _dt_ctl_toast_message_timeout_callback(gpointer data)
 }
 
 void dt_control_button_pressed(double x,
-                              double y,
-                              double pressure,
-                              int which,
-                              int type,
-                              uint32_t state)
+                               double y,
+                               double pressure,
+                               int which,
+                               int type,
+                               uint32_t state)
 {
   darktable.control->button_down = 1;
   darktable.control->button_down_which = which;
   darktable.control->button_type = type;
   darktable.control->button_x = x;
   darktable.control->button_y = y;
-  // adding pressure to this data structure is not needed right now. should the need ever arise: here is the
-  // place to do it :)
-  //const float wd = darktable.control->width;
+  // adding pressure to this data structure is not needed right
+  // now. should the need ever arise: here is the place to do it :)
+  // const float wd = darktable.control->width;
   const double ht = darktable.control->height;
 
   // ack log message:
@@ -617,7 +622,8 @@ void dt_control_button_pressed(double x,
     }
   dt_pthread_mutex_unlock(&darktable.control->toast_mutex);
 
-  if(!dt_view_manager_button_pressed(darktable.view_manager, x, y, pressure, which, type, state))
+  if(!dt_view_manager_button_pressed(darktable.view_manager, x, y,
+                                     pressure, which, type, state))
     if(type == GDK_2BUTTON_PRESS && which == 1) dt_ctl_switch_mode();
 }
 
@@ -635,7 +641,8 @@ void dt_control_log(const char *msg, ...)
   va_start(ap, msg);
   char *escaped_msg = g_markup_vprintf_escaped(msg, ap);
   const int msglen = strlen(escaped_msg);
-  g_strlcpy(darktable.control->log_message[darktable.control->log_pos], escaped_msg, DT_CTL_LOG_MSG_SIZE);
+  g_strlcpy(darktable.control->log_message[darktable.control->log_pos],
+            escaped_msg, DT_CTL_LOG_MSG_SIZE);
   g_free(escaped_msg);
   va_end(ap);
   if(darktable.control->log_message_timeout_id)
@@ -657,15 +664,18 @@ static void _toast_log(const gboolean markup, const char *msg, va_list ap)
 
   // if we don't want markup, we escape <>&... so they are not interpreted later
   if(markup)
-    vsnprintf(darktable.control->toast_message[darktable.control->toast_pos], DT_CTL_TOAST_MSG_SIZE, msg, ap);
+    vsnprintf(darktable.control->toast_message[darktable.control->toast_pos],
+              DT_CTL_TOAST_MSG_SIZE, msg, ap);
   else
   {
     char *escaped_msg = g_markup_vprintf_escaped(msg, ap);
-    g_strlcpy(darktable.control->toast_message[darktable.control->toast_pos], escaped_msg, DT_CTL_TOAST_MSG_SIZE);
+    g_strlcpy(darktable.control->toast_message[darktable.control->toast_pos],
+              escaped_msg, DT_CTL_TOAST_MSG_SIZE);
     g_free(escaped_msg);
   }
 
-  if(darktable.control->toast_message_timeout_id) g_source_remove(darktable.control->toast_message_timeout_id);
+  if(darktable.control->toast_message_timeout_id)
+    g_source_remove(darktable.control->toast_message_timeout_id);
   darktable.control->toast_ack = darktable.control->toast_pos;
   darktable.control->toast_pos = (darktable.control->toast_pos + 1) % DT_CTL_TOAST_SIZE;
   darktable.control->toast_message_timeout_id
@@ -869,7 +879,8 @@ int dt_control_key_pressed_override(guint key, guint state)
         // the paths themselves are owned by bauhaus,
         // no free required.
         darktable.control->vimkey[darktable.control->vimkey_cnt] = 0;
-        g_strlcat(darktable.control->vimkey, (char *)autocomplete->data, sizeof(darktable.control->vimkey));
+        g_strlcat(darktable.control->vimkey, (char *)autocomplete->data,
+                  sizeof(darktable.control->vimkey));
         autocomplete = g_list_remove(autocomplete, autocomplete->data);
       }
       dt_control_log("%s", darktable.control->vimkey);
@@ -908,7 +919,8 @@ int dt_control_key_pressed_override(guint key, guint state)
 
 void dt_control_hinter_message(const struct dt_control_t *s, const char *message)
 {
-  if(s->proxy.hinter.module) return s->proxy.hinter.set_message(s->proxy.hinter.module, message);
+  if(s->proxy.hinter.module)
+    return s->proxy.hinter.set_message(s->proxy.hinter.module, message);
 }
 
 dt_imgid_t dt_control_get_mouse_over_id()
@@ -1001,7 +1013,6 @@ void dt_control_set_dev_zoom(const dt_dev_zoom_t value)
   darktable.control->dev_zoom = value;
   dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
 }
-
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
