@@ -85,22 +85,22 @@ static inline float clamp_range_f(const float x, const float low, const float hi
 #pragma GCC optimize ("-fno-finite-math-only")
 #endif
 
-static inline gboolean dt_isnan(float val)
+static inline gboolean dt_isnan(const float val)
 {
   return isnan(val);
 }
 
-static inline gboolean dt_isinf(float val)
+static inline gboolean dt_isinf(const float val)
 {
   return isinf(val);
 }
 
-static inline gboolean dt_isfinite(float val)
+static inline gboolean dt_isfinite(const float val)
 {
   return isfinite(val);
 }
 
-static inline gboolean dt_isnormal(float val)
+static inline gboolean dt_isnormal(const float val)
 {
   return isnormal(val);
 }
