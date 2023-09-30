@@ -82,6 +82,7 @@ void dt_conf_set_int64(const char *name, int64_t val);
 void dt_conf_set_float(const char *name, float val);
 void dt_conf_set_bool(const char *name, int val);
 void dt_conf_set_string(const char *name, const char *val);
+void dt_conf_set_path(const char *name, const char *val);
 void dt_conf_set_folder_from_file_chooser(const char *name, GtkFileChooser *chooser);
 int dt_conf_get_int(const char *name);
 int64_t dt_conf_get_int64(const char *name);
@@ -97,6 +98,7 @@ const char *dt_conf_get_string_const(const char *name);
 // get a freshly-allocated duplicate of the configuration string; safe
 // to use even if calling dt_conf_set_string
 gchar *dt_conf_get_string(const char *name);
+gchar *dt_conf_get_path(const char *name);
 gboolean dt_conf_get_folder_to_file_chooser(const char *name, GtkFileChooser *chooser);
 gboolean dt_conf_is_equal(const char *name, const char *value);
 void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries);

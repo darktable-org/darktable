@@ -310,6 +310,28 @@ int dt_conf_get_bool(const char *name)
   return val;
 }
 
+void dt_conf_set_path(const char *name, const char *val)
+{
+  dt_conf_set_string(name, val);
+}
+
+gchar *dt_conf_get_path(const char *name)
+{
+  const char *path = _conf_get_var(name);
+
+  if(!g_file_test(path, G_FILE_TEST_IS_DIR))
+  {
+    const dt_confgen_value_t *item = g_hash_table_lookup(darktable.conf->x_confgen, name);
+    if(item->type == DT_PATH)
+    {
+      path = dt_confgen_get(name, DT_DEFAULT);
+      dt_conf_set_path(name, path);
+    }
+  }
+
+  return g_strdup(path);
+}
+
 gchar *dt_conf_get_string(const char *name)
 {
   const char *str = _conf_get_var(name);
