@@ -579,7 +579,7 @@ dt_confgen_type_t dt_confgen_type(const char *name)
     return DT_STRING;
 }
 
-gboolean dt_confgen_value_exists(const char *name, dt_confgen_value_kind_t kind)
+gboolean dt_confgen_value_exists(const char *name, const dt_confgen_value_kind_t kind)
 {
   const dt_confgen_value_t *item = g_hash_table_lookup(darktable.conf->x_confgen, name);
   if(item == NULL)
@@ -599,7 +599,7 @@ gboolean dt_confgen_value_exists(const char *name, dt_confgen_value_kind_t kind)
   return FALSE;
 }
 
-const char *dt_confgen_get(const char *name, dt_confgen_value_kind_t kind)
+const char *dt_confgen_get(const char *name, const dt_confgen_value_kind_t kind)
 {
   const dt_confgen_value_t *item = g_hash_table_lookup(darktable.conf->x_confgen, name);
 
