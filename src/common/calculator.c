@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2020 darktable developers.
+    Copyright (C) 2013-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 
 typedef enum token_types_t
 {
-  T_NUMBER, // everything will be treated as floats
+  T_NUMBER, // everything will be treated as doubles
   T_OPERATOR
 } token_types_t;
 
@@ -44,7 +44,7 @@ typedef enum operators_t
 
 typedef union token_data_t
 {
-  float number;
+  double number;
   operators_t operator;
 } token_data_t;
 
@@ -57,18 +57,18 @@ typedef struct token_t
 typedef struct parser_state_t
 {
   char *p;
-  float x;
+  double x;
   token_t *token;
 } parser_state_t;
 
 /** the scanner **/
 
-static float read_number(parser_state_t *self)
+static double _read_number(parser_state_t *self)
 {
   return g_ascii_strtod(self->p, &self->p);
 }
 
-static token_t *get_token(parser_state_t *self)
+static token_t *_get_token(parser_state_t *self)
 {
   if(!self->p) return NULL;
 
@@ -161,7 +161,7 @@ static token_t *get_token(parser_state_t *self)
       case '.':
       case ',':
       {
-        token->data.number = read_number(self);
+        token->data.number = _read_number(self);
         token->type = T_NUMBER;
         return token;
       }
@@ -178,23 +178,23 @@ static token_t *get_token(parser_state_t *self)
 
 /** the parser **/
 
-static float parse_expression(parser_state_t *self);
-static float parse_additive_expression(parser_state_t *self);
-static float parse_multiplicative_expression(parser_state_t *self);
-static float parse_power_expression(parser_state_t *self);
-static float parse_unary_expression(parser_state_t *self);
-static float parse_primary_expression(parser_state_t *self);
+static double _parse_expression(parser_state_t *self);
+static double _parse_additive_expression(parser_state_t *self);
+static double _parse_multiplicative_expression(parser_state_t *self);
+static double _parse_power_expression(parser_state_t *self);
+static double _parse_unary_expression(parser_state_t *self);
+static double _parse_primary_expression(parser_state_t *self);
 
-static float parse_expression(parser_state_t *self)
+static double _parse_expression(parser_state_t *self)
 {
-  return parse_additive_expression(self);
+  return _parse_additive_expression(self);
 }
 
-static float parse_additive_expression(parser_state_t *self)
+static double _parse_additive_expression(parser_state_t *self)
 {
   if(!self->token) return NAN;
 
-  float left = parse_multiplicative_expression(self);
+  double left = _parse_multiplicative_expression(self);
 
   while(self->token && self->token->type == T_OPERATOR)
   {
@@ -203,24 +203,24 @@ static float parse_additive_expression(parser_state_t *self)
     if(operator!= O_PLUS &&operator!= O_MINUS) return left;
 
     free(self->token);
-    self->token = get_token(self);
+    self->token = _get_token(self);
 
-    const float right = parse_multiplicative_expression(self);
+    const double right = _parse_multiplicative_expression(self);
 
-    if(operator== O_PLUS)
+    if(operator == O_PLUS)
       left += right;
-    else if(operator== O_MINUS)
+    else if(operator == O_MINUS)
       left -= right;
   }
 
   return left;
 }
 
-static float parse_multiplicative_expression(parser_state_t *self)
+static double _parse_multiplicative_expression(parser_state_t *self)
 {
   if(!self->token) return NAN;
 
-  float left = parse_power_expression(self);
+  double left = _parse_power_expression(self);
 
   while(self->token && self->token->type == T_OPERATOR)
   {
@@ -231,16 +231,16 @@ static float parse_multiplicative_expression(parser_state_t *self)
       return left;
 
     free(self->token);
-    self->token = get_token(self);
+    self->token = _get_token(self);
 
-    float right = parse_power_expression(self);
+    double right = _parse_power_expression(self);
 
     if(operator== O_MULTIPLY)
       left *= right;
     else if(operator== O_DIVISION)
       left /= right;
     else if(operator== O_MODULO)
-      left = fmodf(left, right);
+      left = fmod(left, right);
     else if(operator == O_RATIO)
       left = MAX(left,right) / MIN(left,right);
   }
@@ -248,28 +248,28 @@ static float parse_multiplicative_expression(parser_state_t *self)
   return left;
 }
 
-static float parse_power_expression(parser_state_t *self)
+static double _parse_power_expression(parser_state_t *self)
 {
   if(!self->token) return NAN;
 
-  float left = parse_unary_expression(self);
+  double left = _parse_unary_expression(self);
 
   while(self->token && self->token->type == T_OPERATOR)
   {
     if(self->token->data.operator!= O_POWER) return left;
 
     free(self->token);
-    self->token = get_token(self);
+    self->token = _get_token(self);
 
-    const float right = parse_unary_expression(self);
+    const double right = _parse_unary_expression(self);
 
-    left = powf(left, right);
+    left = pow(left, right);
   }
 
   return left;
 }
 
-static float parse_unary_expression(parser_state_t *self)
+static double _parse_unary_expression(parser_state_t *self)
 {
   if(!self->token) return NAN;
 
@@ -278,42 +278,42 @@ static float parse_unary_expression(parser_state_t *self)
     if(self->token->data.operator== O_MINUS)
     {
       free(self->token);
-      self->token = get_token(self);
+      self->token = _get_token(self);
 
-      return -1.0 * parse_unary_expression(self);
+      return -1.0 * _parse_unary_expression(self);
     }
     if(self->token->data.operator== O_PLUS)
     {
       free(self->token);
-      self->token = get_token(self);
+      self->token = _get_token(self);
 
-      return parse_unary_expression(self);
+      return _parse_unary_expression(self);
     }
   }
 
-  return parse_primary_expression(self);
+  return _parse_primary_expression(self);
 }
 
-static float parse_primary_expression(parser_state_t *self)
+static double _parse_primary_expression(parser_state_t *self)
 {
   if(!self->token) return NAN;
 
   if(self->token->type == T_NUMBER)
   {
-    const float result = self->token->data.number;
+    const double result = self->token->data.number;
     free(self->token);
-    self->token = get_token(self);
+    self->token = _get_token(self);
     return result;
   }
   if(self->token->type == T_OPERATOR && self->token->data.operator== O_LEFTROUND)
   {
     free(self->token);
-    self->token = get_token(self);
-    const float result = parse_expression(self);
+    self->token = _get_token(self);
+    const double result = _parse_expression(self);
     if(!self->token || self->token->type != T_OPERATOR || self->token->data.operator!= O_RIGHTROUND)
       return NAN;
     free(self->token);
-    self->token = get_token(self);
+    self->token = _get_token(self);
     return result;
   }
 
@@ -322,7 +322,7 @@ static float parse_primary_expression(parser_state_t *self)
 
 /** the public interface **/
 
-float dt_calculator_solve(const float x, const char *formula)
+double dt_calculator_solve(const double x, const char *formula)
 {
   if(formula == NULL || *formula == '\0') return NAN;
 
@@ -332,9 +332,9 @@ float dt_calculator_solve(const float x, const char *formula)
   self->p = g_strdelimit(dotformula, ",", '.');
   self->x = x;
 
-  self->token = get_token(self);
+  self->token = _get_token(self);
 
-  float result = .0f;
+  double result = 0.0;
 
   //   operators_t operator = -1;
   if(self->token && self->token->type == T_OPERATOR)
@@ -356,14 +356,14 @@ float dt_calculator_solve(const float x, const char *formula)
       //       case O_RATIO:
       //         operator = self->token->data.operator;
       //         free(self->token);
-      //         self->token = get_token(self);
+      //         self->token = _get_token(self);
       //         break;
       default:
         break;
     }
   }
 
-  result = parse_expression(self);
+  result = _parse_expression(self);
 
   //   switch(operator)
   //   {
