@@ -1103,7 +1103,7 @@ static void _spot_settings_changed_callback(GtkWidget *slider,
   // Re-run auto compute if color picker active and mode is correct
   const dt_spot_mode_t mode = dt_bauhaus_combobox_get(g->spot_mode);
   if(mode == DT_SPOT_MODE_CORRECT)
-    _auto_set_exposure(self, darktable.develop->pipe);
+    _auto_set_exposure(self, darktable.develop->full.pipe);
   // else : just record new values and do nothing
 }
 

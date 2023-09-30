@@ -117,6 +117,39 @@ typedef struct dt_dev_proxy_exposure_t
 } dt_dev_proxy_exposure_t;
 
 struct dt_dev_pixelpipe_t;
+typedef struct dt_dev_viewport_t
+{
+  GtkWidget *widget;
+  int32_t orig_width, orig_height;
+
+  // dimensions of window
+  int width, height;
+  int32_t border_size;
+  double dpi, dpi_factor, ppd, ppd_thb;
+
+  GtkWidget *button;
+
+  dt_dev_zoom_t zoom;
+  int closeup;
+  float zoom_x, zoom_y;
+  float zoom_scale;
+
+  double button_x;
+  double button_y;
+
+  // image processing pipeline with caching
+  struct dt_dev_pixelpipe_t *pipe;
+  dt_dev_pixelpipe_status_t status;
+
+  // these are locked while the pipes are still in use:
+  dt_pthread_mutex_t pipe_mutex;
+
+  uint32_t average_delay;
+  gboolean loading;
+  gboolean input_changed;
+} dt_dev_viewport_t;
+
+
 typedef struct dt_develop_t
 {
   gboolean gui_attached; // != 0 if the gui should be notified of changes in hist stack and modules should be
@@ -129,28 +162,19 @@ typedef struct dt_develop_t
   double   gui_previous_pipe_time; // time pipe finished after last widget was changed.
 
   gboolean focus_hash;   // determines whether to start a new history item or to merge down.
-  gboolean preview_loading, preview2_loading, image_loading, history_updating, image_force_reload, first_load;
-  gboolean preview_input_changed, preview2_input_changed;
+  gboolean preview_loading, history_updating, image_force_reload, first_load;
+  gboolean preview_input_changed;
   gboolean autosaving;
-  dt_dev_pixelpipe_status_t image_status, preview_status, preview2_status;
+  dt_dev_pixelpipe_status_t preview_status;
   int32_t image_invalid_cnt;
   uint32_t timestamp;
-  uint32_t average_delay;
   uint32_t preview_average_delay;
-  uint32_t preview2_average_delay;
   struct dt_iop_module_t *gui_module; // this module claims gui expose/event callbacks.
   float preview_downsampling;         // < 1.0: optionally downsample preview
 
-  // width, height: dimensions of window
-  int32_t width, height;
-
   // image processing pipeline with caching
-  struct dt_dev_pixelpipe_t *pipe, *preview_pipe, *preview2_pipe;
-
-  // these are locked while the pipes are still in use:
-  dt_pthread_mutex_t pipe_mutex;
+  struct dt_dev_pixelpipe_t *preview_pipe;
   dt_pthread_mutex_t preview_pipe_mutex;
-  dt_pthread_mutex_t preview2_pipe_mutex;
 
   // image under consideration, which
   // is copied each time an image is changed. this means we have some information
@@ -197,10 +221,6 @@ typedef struct dt_develop_t
   float full_preview_last_zoom_x, full_preview_last_zoom_y;
   struct dt_iop_module_t *full_preview_last_module;
   int full_preview_masks_state;
-
-  // darkroom border size
-  int32_t border_size;
-  int32_t orig_width, orig_height;
 
   /* proxy for communication between plugins and develop/darkroom */
   struct
@@ -270,7 +290,6 @@ typedef struct dt_develop_t
     dt_aligned_pixel_t wb_coeffs;
   } proxy;
 
-
   // for exposing the crop
   struct
   {
@@ -317,26 +336,9 @@ typedef struct dt_develop_t
     GtkWidget *floating_window, *softproof_button, *gamut_button;
   } profile;
 
-  // second darkroom window related things
-  struct
-  {
-    GtkWidget *second_wnd;
-    GtkWidget *widget;
-    int32_t orig_width, orig_height;
-    int width, height;
-    int32_t border_size;
-    double dpi, dpi_factor, ppd, ppd_thb;
-
-    GtkWidget *button;
-
-    dt_dev_zoom_t zoom;
-    int closeup;
-    float zoom_x, zoom_y;
-    float zoom_scale;
-
-    double button_x;
-    double button_y;
-  } second_window;
+  GtkWidget *second_wnd;
+  // several views of the same image
+  dt_dev_viewport_t full, preview2;
 
   int mask_form_selected_id; // select a mask inside an iop
   gboolean darkroom_skip_mouse_events; // skip mouse events for masks

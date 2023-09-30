@@ -2209,7 +2209,7 @@ void gui_focus(struct dt_iop_module_t *self,
                const gboolean in)
 {
   if(self->enabled
-     && !darktable.develop->image_loading)
+     && !darktable.develop->full.loading)
   {
     dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
 
@@ -2260,7 +2260,7 @@ void gui_focus(struct dt_iop_module_t *self,
        || g->suppress_mask)
       dt_iop_refresh_center(self);
   }
-  self->dev->cropping.requester = (in && !darktable.develop->image_loading) ? self : NULL;
+  self->dev->cropping.requester = (in && !darktable.develop->full.loading) ? self : NULL;
 }
 
 void tiling_callback(struct dt_iop_module_t *self,
@@ -3949,7 +3949,7 @@ void process(struct dt_iop_module_t *self,
                             && g->suppress_mask
                             && self->dev->gui_attached
                             && (self == self->dev->gui_module)
-                            && (piece->pipe == self->dev->pipe));
+                            && (piece->pipe == self->dev->full.pipe));
   usr_data.display_scale = p->curr_scale;
 
   // init the decompose routine
@@ -3965,7 +3965,7 @@ void process(struct dt_iop_module_t *self,
   // check if this module should expose mask.
   if((piece->pipe->type & DT_DEV_PIXELPIPE_FULL) && g
      && (g->mask_display || display_wavelet_scale) && self->dev->gui_attached
-     && (self == self->dev->gui_module) && (piece->pipe == self->dev->pipe))
+     && (self == self->dev->gui_module) && (piece->pipe == self->dev->full.pipe))
   {
     for(size_t j = 0; j < (size_t)roi_rt->width * roi_rt->height * 4; j += 4)
       in_retouch[j + 3] = 0.f;
@@ -4909,7 +4909,7 @@ int process_cl(struct dt_iop_module_t *self,
                             && g->suppress_mask
                             && self->dev->gui_attached
                             && (self == self->dev->gui_module)
-                            && (piece->pipe == self->dev->pipe));
+                            && (piece->pipe == self->dev->full.pipe));
   usr_data.display_scale = p->curr_scale;
 
   // init the decompose routine
@@ -4931,7 +4931,7 @@ int process_cl(struct dt_iop_module_t *self,
      && g && g->mask_display
      && self->dev->gui_attached
      && (self == self->dev->gui_module)
-     && (piece->pipe == self->dev->pipe))
+     && (piece->pipe == self->dev->full.pipe))
   {
     const int kernel = gd->kernel_retouch_clear_alpha;
     err = dt_opencl_enqueue_kernel_2d_args(devid, kernel,

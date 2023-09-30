@@ -1085,7 +1085,7 @@ static void _update_gradient_slider_pickers(GtkWidget *callback_dummy,
       const dt_iop_colorspace_type_t cst = _blendif_colorpicker_cst(data);
       const dt_iop_order_iccprofile_info_t *work_profile =
         (blend_csp == DEVELOP_BLEND_CS_RGB_SCENE)
-          ? dt_ioppr_get_pipe_current_profile_info(module, module->dev->pipe)
+          ? dt_ioppr_get_pipe_current_profile_info(module, module->dev->full.pipe)
           : dt_ioppr_get_iop_work_profile_info(module, module->dev->iop);
 
       _blendif_scale(data, cst, raw_mean, picker_mean, work_profile, in_out);
