@@ -799,7 +799,7 @@ static gboolean _update_files_list(gpointer user_data)
   else
 #endif
   {
-    char *folder = dt_conf_get_string("ui_last/import_last_directory");
+    char *folder = dt_conf_get_sanitized_path("ui_last/import_last_directory", "");
     d->from.nb = !folder[0] ? 0 : _import_set_file_list(folder, strlen(folder), 0, self);
     g_free(folder);
     gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(model),
@@ -1370,7 +1370,7 @@ static void _update_folders_list(dt_lib_module_t* self)
   gtk_tree_view_set_model(d->from.folderview, NULL);
   gtk_tree_store_clear(GTK_TREE_STORE(model));
   const char *last_place = dt_conf_get_string_const("ui_last/import_last_place");
-  const char *folder = dt_conf_get_string_const("ui_last/import_last_directory");
+  char *folder = dt_conf_get_sanitized_path("ui_last/import_last_directory", "");
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(model),
                                        GTK_TREE_SORTABLE_UNSORTED_SORT_COLUMN_ID,
                                        GTK_SORT_ASCENDING);
@@ -1385,6 +1385,7 @@ static void _update_folders_list(dt_lib_module_t* self)
     _expand_folder(folder, TRUE, self);
   else
     _expand_folder(last_place, FALSE, self);
+  g_free(folder);
 }
 
 static void _escape_place_name_comma(char *name)
@@ -1887,8 +1888,9 @@ static void _import_from_dialog_run(dt_lib_module_t* self)
     GtkTreeModel *model = GTK_TREE_MODEL(d->from.store);
     GtkTreeSelection *selection = gtk_tree_view_get_selection(d->from.treeview);
     GList *paths = gtk_tree_selection_get_selected_rows(selection, &model);
+
     char *folder = (d->import_case == DT_IMPORT_CAMERA) ? g_strdup("") :
-                   dt_conf_get_string("ui_last/import_last_directory");
+                   dt_conf_get_sanitized_path("ui_last/import_last_directory", "");
     for(GList *path = paths; path; path = g_list_next(path))
     {
       GtkTreeIter iter;

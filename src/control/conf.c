@@ -321,6 +321,17 @@ const char *dt_conf_get_string_const(const char *name)
   return _conf_get_var(name);
 }
 
+char *dt_conf_get_sanitized_path(const char *name,
+                                 const char *sanitized)
+{
+  const char *path = _conf_get_var(name);
+  if(g_file_test(path, G_FILE_TEST_IS_DIR))
+    return g_strdup(path);
+
+  dt_conf_set_string(name, sanitized);
+  return g_strdup(sanitized);
+}
+
 gboolean dt_conf_key_not_empty(const char *name)
 {
   const char *val = dt_conf_get_string_const(name);
