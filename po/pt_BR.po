@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-24 16:50-0300\n"
-"PO-Revision-Date: 2023-09-24 16:55-0300\n"
+"POT-Creation-Date: 2023-09-30 10:56-0300\n"
+"PO-Revision-Date: 2023-09-30 10:59-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -2140,8 +2140,11 @@ msgid ""
 "(in order) to decide which module instance shortcuts will be applied to.\n"
 "note: blending shortcuts always apply to the focused instance"
 msgstr ""
-"onde múltiplas instâncias de um módulo estiverem presentes, aplicar atalhos para a instancia que tiver o foco\n"
-"se nenhuma tiver foco, as preferência abaixo controlam as regras que são aplicadas (em ordem) para decidir a que instância do módulo os atalhos serão aplicados.\n"
+"onde múltiplas instâncias de um módulo estiverem presentes, aplicar atalhos "
+"para a instancia que tiver o foco\n"
+"se nenhuma tiver foco, as preferência abaixo controlam as regras que são "
+"aplicadas (em ordem) para decidir a que instância do módulo os atalhos serão "
+"aplicados.\n"
 "nota: misturar atalhos sempre aplica à instância em foco"
 
 #: ../build/bin/preferences_gen.h:7661
@@ -6148,10 +6151,8 @@ msgstr ""
 #: ../src/common/darktable.c:2042
 msgid ""
 "OpenCL 'per device' config data have been automatically extended by 'unified-"
-"rate'."
-msgstr ""
-"dados de configuração OpenCL 'por dispositivo' foram estendidos "
-"automaticamente por 'unified-rate'."
+"fraction'."
+msgstr "dados de configuração OpenCL 'por dispositivo' foram estendidos automaticamente por 'unified-fraction'."
 
 #: ../src/common/database.c:3276
 #, c-format
@@ -7126,75 +7127,75 @@ msgstr "balanço de branco  da câmera"
 msgid "auto WB"
 msgstr "balanço de branco automático"
 
-#: ../src/control/control.c:66 ../src/gui/accelerators.c:156
+#: ../src/control/control.c:69 ../src/gui/accelerators.c:156
 #: ../src/views/darkroom.c:2112
 msgid "hold"
 msgstr "segurar"
 
-#: ../src/control/control.c:102 ../src/control/control.c:205
+#: ../src/control/control.c:108 ../src/control/control.c:214
 msgid "modifiers"
 msgstr "modificador"
 
-#: ../src/control/control.c:111
+#: ../src/control/control.c:117
 msgctxt "accel"
 msgid "global"
 msgstr "global"
 
-#: ../src/control/control.c:118
+#: ../src/control/control.c:124
 msgctxt "accel"
 msgid "views"
 msgstr "vistas"
 
-#: ../src/control/control.c:125
+#: ../src/control/control.c:131
 msgctxt "accel"
 msgid "thumbtable"
 msgstr "tabela de miniaturas"
 
-#: ../src/control/control.c:132
+#: ../src/control/control.c:138
 msgctxt "accel"
 msgid "utility modules"
 msgstr "módulos utilitários"
 
-#: ../src/control/control.c:139
+#: ../src/control/control.c:145
 msgctxt "accel"
 msgid "format"
 msgstr "formato"
 
-#: ../src/control/control.c:146
+#: ../src/control/control.c:152
 msgctxt "accel"
 msgid "storage"
 msgstr "armazenamento"
 
-#: ../src/control/control.c:153
+#: ../src/control/control.c:159
 msgctxt "accel"
 msgid "processing modules"
 msgstr "módulos de processamento"
 
-#: ../src/control/control.c:160
+#: ../src/control/control.c:166
 msgctxt "accel"
 msgid "<blending>"
 msgstr "<mesclagem>"
 
-#: ../src/control/control.c:167
+#: ../src/control/control.c:173
 msgctxt "accel"
 msgid "Lua scripts"
 msgstr "scripts Lua"
 
-#: ../src/control/control.c:174
+#: ../src/control/control.c:180
 msgctxt "accel"
 msgid "fallbacks"
 msgstr "alternativos"
 
-#: ../src/control/control.c:183
+#: ../src/control/control.c:189
 msgctxt "accel"
 msgid "<focused>"
 msgstr "<em foco>"
 
-#: ../src/control/control.c:202
+#: ../src/control/control.c:209
 msgid "show accels window"
 msgstr "mostra janela de atalhos"
 
-#: ../src/control/control.c:363
+#: ../src/control/control.c:375
 msgid "working..."
 msgstr "processando..."
 
@@ -8072,17 +8073,17 @@ msgid "uniformly"
 msgstr "uniforme"
 
 #: ../src/develop/blend_gui.c:157 ../src/develop/blend_gui.c:2748
-#: ../src/develop/blend_gui.c:3440 ../src/develop/imageop.c:2678
+#: ../src/develop/blend_gui.c:3440 ../src/develop/imageop.c:2655
 msgid "drawn mask"
 msgstr " máscara desenhada"
 
 #: ../src/develop/blend_gui.c:159 ../src/develop/blend_gui.c:2520
-#: ../src/develop/blend_gui.c:3451 ../src/develop/imageop.c:2680
+#: ../src/develop/blend_gui.c:3451 ../src/develop/imageop.c:2657
 msgid "parametric mask"
 msgstr "máscara paramétrica"
 
 #: ../src/develop/blend_gui.c:161 ../src/develop/blend_gui.c:2958
-#: ../src/develop/blend_gui.c:3478 ../src/develop/imageop.c:2682
+#: ../src/develop/blend_gui.c:3478 ../src/develop/imageop.c:2659
 msgid "raster mask"
 msgstr "máscara rasterizada"
 
@@ -8129,12 +8130,12 @@ msgid "on"
 msgstr "ligado"
 
 #: ../src/develop/blend_gui.c:984 ../src/develop/blend_gui.c:2598
-#: ../src/develop/imageop.c:2806
+#: ../src/develop/imageop.c:2783
 msgid "input"
 msgstr "entrada"
 
 #: ../src/develop/blend_gui.c:984 ../src/develop/blend_gui.c:2598
-#: ../src/develop/imageop.c:2806
+#: ../src/develop/imageop.c:2783
 msgid "output"
 msgstr "saída"
 
@@ -8712,69 +8713,69 @@ msgstr "nova instância"
 msgid "duplicate instance"
 msgstr "duplicar instância"
 
-#: ../src/develop/imageop.c:1044 ../src/develop/imageop.c:3748
+#: ../src/develop/imageop.c:1044 ../src/develop/imageop.c:3725
 #: ../src/libs/masks.c:1146
 msgid "move up"
 msgstr "mover para cima"
 
-#: ../src/develop/imageop.c:1050 ../src/develop/imageop.c:3749
+#: ../src/develop/imageop.c:1050 ../src/develop/imageop.c:3726
 #: ../src/libs/masks.c:1151
 msgid "move down"
 msgstr "mover para baixo"
 
 #. delete button label and tooltip will be updated based on trash pref
-#: ../src/develop/imageop.c:1056 ../src/develop/imageop.c:3751
+#: ../src/develop/imageop.c:1056 ../src/develop/imageop.c:3728
 #: ../src/gui/accelerators.c:173 ../src/libs/image.c:302
 #: ../src/libs/image.c:512
 msgid "delete"
 msgstr "excluir"
 
-#: ../src/develop/imageop.c:1063 ../src/develop/imageop.c:3752
+#: ../src/develop/imageop.c:1063 ../src/develop/imageop.c:3729
 #: ../src/libs/modulegroups.c:3817
 msgid "rename"
 msgstr "renomear"
 
-#: ../src/develop/imageop.c:1130 ../src/develop/imageop.c:2970
+#: ../src/develop/imageop.c:1130 ../src/develop/imageop.c:2947
 #, c-format
 msgid "'%s' is switched on"
 msgstr "'%s' está ativado"
 
-#: ../src/develop/imageop.c:1130 ../src/develop/imageop.c:2970
+#: ../src/develop/imageop.c:1130 ../src/develop/imageop.c:2947
 #, c-format
 msgid "'%s' is switched off"
 msgstr "'%s' está desativado"
 
-#: ../src/develop/imageop.c:2672
+#: ../src/develop/imageop.c:2649
 msgid "unknown mask"
 msgstr "máscara desconhecida"
 
-#: ../src/develop/imageop.c:2676
+#: ../src/develop/imageop.c:2653
 msgid "drawn + parametric mask"
 msgstr "máscara desenhada + paramétrica"
 
-#: ../src/develop/imageop.c:2685
+#: ../src/develop/imageop.c:2662
 #, c-format
 msgid "this module has a `%s'"
 msgstr "este módulo tem uma `%s'"
 
-#: ../src/develop/imageop.c:2690
+#: ../src/develop/imageop.c:2667
 #, c-format
 msgid "taken from module %s"
 msgstr "tomada do módulo %s"
 
-#: ../src/develop/imageop.c:2695
+#: ../src/develop/imageop.c:2672
 msgid "click to display (module must be activated first)"
 msgstr "clique para mostrar (o módulo deve ser ativado antes)"
 
-#: ../src/develop/imageop.c:2806
+#: ../src/develop/imageop.c:2783
 msgid "purpose"
 msgstr "propósito"
 
-#: ../src/develop/imageop.c:2806
+#: ../src/develop/imageop.c:2783
 msgid "process"
 msgstr "processamento"
 
-#: ../src/develop/imageop.c:2926
+#: ../src/develop/imageop.c:2903
 msgid ""
 "multiple instance actions\n"
 "right-click creates new instance"
@@ -8782,7 +8783,7 @@ msgstr ""
 "ações em múltiplas instâncias\n"
 "clique-direito cria nova instância"
 
-#: ../src/develop/imageop.c:2941
+#: ../src/develop/imageop.c:2918
 msgid ""
 "reset parameters\n"
 "ctrl+click to reapply any automatic presets"
@@ -8790,7 +8791,7 @@ msgstr ""
 "redefinir parâmetros\n"
 "ctrl+clique para reaplicar quaisquer predefinições automáticas"
 
-#: ../src/develop/imageop.c:2953
+#: ../src/develop/imageop.c:2930
 msgid ""
 "presets\n"
 "right-click to apply on new instance"
@@ -8798,15 +8799,15 @@ msgstr ""
 "predefinições\n"
 "clique-direito para aplicar em nova instância"
 
-#: ../src/develop/imageop.c:3203 ../src/develop/imageop.c:3225
+#: ../src/develop/imageop.c:3180 ../src/develop/imageop.c:3202
 msgid "ERROR"
 msgstr "ERRO"
 
-#: ../src/develop/imageop.c:3629
+#: ../src/develop/imageop.c:3606
 msgid "unsupported input"
 msgstr "entrada não suportada"
 
-#: ../src/develop/imageop.c:3630
+#: ../src/develop/imageop.c:3607
 msgid ""
 "you have placed this module at\n"
 "a position in the pipeline where\n"
@@ -8818,35 +8819,35 @@ msgstr ""
 "formato de dados não combina\n"
 "com os requisitos."
 
-#: ../src/develop/imageop.c:3747 ../src/develop/imageop.c:3757
+#: ../src/develop/imageop.c:3724 ../src/develop/imageop.c:3734
 #: ../src/gui/accelerators.c:169 ../src/libs/lib.c:1415
 msgid "show"
 msgstr "mostrar"
 
-#: ../src/develop/imageop.c:3750 ../src/libs/modulegroups.c:3315
+#: ../src/develop/imageop.c:3727 ../src/libs/modulegroups.c:3315
 #: ../src/libs/modulegroups.c:3438 ../src/libs/modulegroups.c:3819
 #: ../src/libs/tagging.c:3275
 msgid "new"
 msgstr "novo"
 
-#: ../src/develop/imageop.c:3753 ../src/libs/duplicate.c:405
+#: ../src/develop/imageop.c:3730 ../src/libs/duplicate.c:405
 #: ../src/libs/image.c:533 ../src/libs/modulegroups.c:3815
 msgid "duplicate"
 msgstr "duplicar"
 
-#: ../src/develop/imageop.c:3758
+#: ../src/develop/imageop.c:3735
 msgid "enable"
 msgstr "ativar"
 
-#: ../src/develop/imageop.c:3759 ../src/gui/accelerators.c:185
+#: ../src/develop/imageop.c:3736 ../src/gui/accelerators.c:185
 msgid "focus"
 msgstr "foco"
 
-#: ../src/develop/imageop.c:3760 ../src/gui/accelerators.c:2787
+#: ../src/develop/imageop.c:3737 ../src/gui/accelerators.c:2787
 msgid "instance"
 msgstr "instância"
 
-#: ../src/develop/imageop.c:3761 ../src/gui/accelerators.c:130
+#: ../src/develop/imageop.c:3738 ../src/gui/accelerators.c:130
 #: ../src/gui/accelerators.c:140 ../src/gui/gtk.c:3102 ../src/gui/gtk.c:3149
 #: ../src/gui/hist_dialog.c:270 ../src/gui/styles_dialog.c:615
 #: ../src/gui/styles_dialog.c:637 ../src/iop/atrous.c:1626
@@ -8855,12 +8856,12 @@ msgid "reset"
 msgstr "redefinir"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:3762 ../src/gui/preferences.c:796
+#: ../src/develop/imageop.c:3739 ../src/gui/preferences.c:796
 #: ../src/libs/lib.c:1417
 msgid "presets"
 msgstr "predefinições"
 
-#: ../src/develop/imageop.c:3782
+#: ../src/develop/imageop.c:3759
 msgid "processing module"
 msgstr "módulo de processamento"
 
@@ -9091,25 +9092,25 @@ msgstr "grupo `%s`"
 msgid "copy of `%s'"
 msgstr "cópia de `%s`"
 
-#: ../src/develop/masks/masks.c:984
+#: ../src/develop/masks/masks.c:986
 #, c-format
 msgid "%s: mask version mismatch: %d != %d"
 msgstr "%s: versão de máscara incompatível: %d != %d"
 
-#: ../src/develop/masks/masks.c:1239 ../src/develop/masks/masks.c:1906
+#: ../src/develop/masks/masks.c:1241 ../src/develop/masks/masks.c:1908
 #, c-format
 msgid "opacity: %.0f%%"
 msgstr "opacidade: %.0f%%"
 
-#: ../src/develop/masks/masks.c:1650 ../src/libs/masks.c:1084
+#: ../src/develop/masks/masks.c:1652 ../src/libs/masks.c:1084
 msgid "add existing shape"
 msgstr "adicionar forma existente"
 
-#: ../src/develop/masks/masks.c:1677
+#: ../src/develop/masks/masks.c:1679
 msgid "use same shapes as"
 msgstr "usar as mesmas formas que"
 
-#: ../src/develop/masks/masks.c:1990
+#: ../src/develop/masks/masks.c:1992
 msgid "masks can not contain themselves"
 msgstr "máscaras não podem conter a si mesmas"
 
@@ -9228,26 +9229,20 @@ msgstr ""
 
 #: ../src/develop/pixelpipe_hb.c:2712
 msgid ""
-"OpenCL errors encountered; disabling OpenCL for this session! likely "
-"problems:\n"
+"OpenCL errors encountered; disabling OpenCL for this session! some possible "
+"causes:\n"
 "  - OpenCL out of resources due to preference settings. please try with "
 "defaults,\n"
-"  - buggy driver for some devive. please run darktable with `-d opencl' to "
+"  - buggy driver for some device. please run darktable with `-d opencl' to "
 "identify,\n"
-"  - some drivers (for small or old devices) don't support proper number of "
-"events,\n"
+"  - some drivers don't support needed number of events,\n"
 "  - too small headroom settings while using 'use all device memory'."
 msgstr ""
-"Erros de OpenCL encontrados; desabilitando o OpenCL para esta seção! "
-"prováveis problemas:\n"
-"  - o OpenCL não conseguiu recursos devido a configuração de preferências. "
-"por favor tente com os valores padrão,\n"
-"  - driver com bugs para algum dispositivo. por favor execute o darktable "
-"com `-d opencl' para identificar,\n"
-"  - alguns drivers (para dispositivos pequenos ou antivos) não suportam o "
-"número apropriado de eventos,\n"
-"  - configuração de espaço muito pequeno com 'use toda a memória do "
-"dispositivo'."
+"Erros de OpenCL encontrados; desabilitando o OpenCL para esta seção! algumas prováveis causas:\n"
+"  - o OpenCL não conseguiu recursos devido a configuração de preferências. por favor tente com os valores padrão,\n"
+"  - driver com bugs para algum dispositivo. por favor execute o darktable com `-d opencl' para identificar,\n"
+"  - alguns drivers não suportam o número necessário de eventos,\n"
+"  - configuração de espaço muito pequeno com 'use toda a memória do dispositivo'."
 
 #: ../src/develop/pixelpipe_hb.c:2864
 #, c-format
@@ -10395,17 +10390,20 @@ msgid ""
 msgstr ""
 "a maneira recomendada para atribuir atalhos a elementos visuais é o modo\n"
 "<b> mapeamento de atalhos visuais</b>.\n"
-"ele é ligado ao pressioar o botão de <i>\"teclado\"</i> próximo às preferências\n"
+"ele é ligado ao pressioar o botão de <i>\"teclado\"</i> próximo às "
+"preferências\n"
 "no painel superior. neste modo, clicar em uma ferramenta ou área abrirá\n"
 "este diálogo com a seleção apropriada para configuração avançada.\n"
 "\n"
 "múltiplos atalhos podem ser atribuídas à mesma ação. isto é especialmente\n"
 "útil se há múltiplos <i>elementos</i>, como os botões de módulos ou os\n"
 "selecionadores de cor associados aos deslizadores. no entanto, com\n"
-"<i>alternativas</i> habilitadas pode-se usar os mesmos atalhos simples e mudar\n"
+"<i>alternativas</i> habilitadas pode-se usar os mesmos atalhos simples e "
+"mudar\n"
 "seus <i>elementos</i> ou <i>efeitos</i> adicionando cliques de mouse.\n"
 "\n"
-"<i>clique <b> três vezes </b> para desabilitar esta mensagem permanentemente</i>"
+"<i>clique <b> três vezes </b> para desabilitar esta mensagem "
+"permanentemente</i>"
 
 #: ../src/gui/accelerators.c:3330
 msgid "reinitialising input devices"
@@ -11765,9 +11763,7 @@ msgstr "qualidade"
 msgid ""
 "the quality of an image, less quality means fewer details.\n"
 "\n"
-"the following applies only to lossy setting.\n"
-"\n"
-"pixel format based on quality:\n"
+"pixel format is based on quality:\n"
 "\n"
 "    91 - 100 -> YUV444\n"
 "    81 -  90 -> YUV422\n"
@@ -11777,7 +11773,7 @@ msgstr ""
 "\n"
 "a tabela a seguir se aplica somente à configuração com perda\n"
 "\n"
-"pixelformat baseado em qualidade:\n"
+"pixel format é baseado em qualidade:\n"
 "\n"
 "    91 - 100 -> YUV444\n"
 "    81 -  90 -> YUV422\n"
@@ -18005,11 +18001,11 @@ msgstr "mudar automaticamente a escala para o tamanho de imagem disponível"
 msgid ""
 "select a correction mode either based on\n"
 " a) data and algorithms provided by the lensfun project\n"
-" b) embedded metadata provided by the camera or software vendor\n"
+" b) embedded metadata provided by the camera or software vendor"
 msgstr ""
 "selecione um modo de correção baseado em\n"
 " a) dados e algoritmos providos pelo projeto lensfun\n"
-" b) metadados embarcados providos pela câmera ou por fornecedor de software\n"
+" b) metadados embarcados providos pela câmera ou por fornecedor de software"
 
 #: ../src/iop/lens.cc:4503
 msgid "which corrections to apply"
