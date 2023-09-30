@@ -1074,8 +1074,8 @@
   </dtconfig>
   <dtconfig>
     <name>ui_last/import_last_directory</name>
-    <type>string</type>
-    <default/>
+    <type>dir</type>
+    <default>$(home)</default>
     <shortdescription>last opened directory.</shortdescription>
     <longdescription/>
   </dtconfig>
