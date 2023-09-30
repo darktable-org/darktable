@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2020 darktable developers.
+    Copyright (C) 2013-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 #pragma once
 
 /** solve the mathematical expression in formula, the only allowed variable is 'x' */
-float dt_calculator_solve(const float x, const char *formula);
+double dt_calculator_solve(const double x, const char *formula);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
