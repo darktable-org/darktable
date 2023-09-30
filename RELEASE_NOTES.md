@@ -169,6 +169,8 @@ changes (where available).
   conforms to (and offers the same behavior) as widgets in the rest of
   the program.
 
+- Improved numbers precision in configuration system.
+
 ## Bug Fixes
 
 - Fixes OpenCL platform checking which could lead to a freeze of
