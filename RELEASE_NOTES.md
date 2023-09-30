@@ -200,6 +200,9 @@ changes (where available).
   don't flash when switching between low and high quality preview,
   both in the center view and secondary preview window.
 
+- Fix issue downloading to Piwigo when on conflict option is set to
+  "don't check".
+
 ## Lua
 
 ### API Version
