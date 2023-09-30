@@ -1251,7 +1251,7 @@ int store(dt_imageio_module_storage_t *self,
 
     if(status)
     {
-      int pwg_image_id = NO_IMGID;
+      int pwg_image_id = -1;
 
       if(conflict_action != DT_PIWIGO_CONFLICT_NOTHING)
       {
