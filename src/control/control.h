@@ -158,12 +158,6 @@ typedef struct dt_control_t
   dt_imgid_t mouse_over_id;
   gboolean lock_cursor_shape;
 
-  // TODO: move these to some darkroom struct
-  // synchronized navigation
-  float dev_zoom_x, dev_zoom_y, dev_zoom_scale;
-  dt_dev_zoom_t dev_zoom;
-  int dev_closeup;
-
   // message log
   int log_pos, log_ack;
   char log_message[DT_CTL_LOG_SIZE][DT_CTL_LOG_MSG_SIZE];

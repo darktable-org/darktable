@@ -2632,7 +2632,7 @@ void gui_post_expose(dt_iop_module_t *self,
                      const float zoom_scale)
 {
   const dt_iop_order_iccprofile_info_t *const work_profile =
-    dt_ioppr_get_pipe_output_profile_info(self->dev->pipe);
+    dt_ioppr_get_pipe_output_profile_info(self->dev->full.pipe);
   if(work_profile == NULL) return;
 
   dt_iop_channelmixer_rgb_gui_data_t *g =
@@ -3442,7 +3442,7 @@ static void _update_RGB_colors(dt_iop_module_t *self,
   // update the fill background color of x, y sliders
   dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
   const struct dt_iop_order_iccprofile_info_t *const work_profile =
-    dt_ioppr_get_pipe_current_profile_info(self, self->dev->pipe);
+    dt_ioppr_get_pipe_current_profile_info(self, self->dev->full.pipe);
 
   // scale params if needed
   dt_aligned_pixel_t RGB = { a[0], a[1], a[2] };
@@ -3949,7 +3949,7 @@ static void _spot_settings_changed_callback(GtkWidget *slider, dt_iop_module_t *
   // Re-run auto illuminant if color picker is active and mode is correct
   const dt_spot_mode_t mode = dt_bauhaus_combobox_get(g->spot_mode);
   if(mode == DT_SPOT_MODE_CORRECT)
-    _auto_set_illuminant(self, darktable.develop->pipe);
+    _auto_set_illuminant(self, darktable.develop->full.pipe);
   // else : just record new values and do nothing
 }
 

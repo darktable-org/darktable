@@ -481,7 +481,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
   const gboolean valid_request =
       self->dev->gui_attached
       && (self == self->dev->gui_module)
-      && (piece->pipe == self->dev->pipe);
+      && (piece->pipe == self->dev->full.pipe);
 
   // does user want us to display a specific channel?
   const dt_dev_pixelpipe_display_mask_t request_mask_display =
@@ -932,7 +932,7 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
   const gboolean valid_request =
       self->dev->gui_attached
       && (self == self->dev->gui_module)
-      && (piece->pipe == self->dev->pipe);
+      && (piece->pipe == self->dev->full.pipe);
 
   // does user want us to display a specific channel?
   const dt_dev_pixelpipe_display_mask_t request_mask_display =

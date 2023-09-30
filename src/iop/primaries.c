@@ -284,14 +284,14 @@ static void _paint_purity_slider(const dt_iop_order_iccprofile_info_t *work_prof
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  if(!self->dev || !self->dev->pipe) return;
+  if(!self->dev || !self->dev->full.pipe) return;
 
   dt_iop_primaries_gui_data_t *g = (dt_iop_primaries_gui_data_t *)self->gui_data;
 
   const dt_iop_order_iccprofile_info_t *work_profile =
-    dt_ioppr_get_pipe_current_profile_info(self, self->dev->pipe);
+    dt_ioppr_get_pipe_current_profile_info(self, self->dev->full.pipe);
   const dt_iop_order_iccprofile_info_t *display_profile =
-    dt_ioppr_get_pipe_output_profile_info(self->dev->pipe);
+    dt_ioppr_get_pipe_output_profile_info(self->dev->full.pipe);
   if(!work_profile || !display_profile) return; // couldn't fetch
                                                 // profiles, can't
                                                 // paint the sliders

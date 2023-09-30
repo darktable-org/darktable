@@ -2073,9 +2073,9 @@ void dt_masks_update_image(dt_develop_t *dev)
   // dt_similarity_image_dirty(dev->image_storage.id);
 
   // invalidate buffers and force redraw of darkroom
-  dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
+  dev->full.pipe->changed |= DT_DEV_PIPE_SYNCH;
   dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
-  dev->preview2_pipe->changed |= DT_DEV_PIPE_SYNCH;
+  dev->preview2.pipe->changed |= DT_DEV_PIPE_SYNCH;
   dt_dev_invalidate_all(dev);
 }
 

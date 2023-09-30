@@ -388,13 +388,13 @@ void dt_dev_pixelpipe_cleanup_nodes(dt_dev_pixelpipe_t *pipe)
 
 void dt_dev_pixelpipe_rebuild(dt_develop_t *dev)
 {
-  dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
+  dev->full.pipe->changed |= DT_DEV_PIPE_REMOVE;
   dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
-  dev->preview2_pipe->changed |= DT_DEV_PIPE_REMOVE;
+  dev->preview2.pipe->changed |= DT_DEV_PIPE_REMOVE;
 
-  dev->pipe->cache_obsolete = TRUE;
+  dev->full.pipe->cache_obsolete = TRUE;
   dev->preview_pipe->cache_obsolete = TRUE;
-  dev->preview2_pipe->cache_obsolete = TRUE;
+  dev->preview2.pipe->cache_obsolete = TRUE;
 
   // invalidate buffers and force redraw of darkroom
   dt_dev_invalidate_all(dev);
@@ -1439,9 +1439,9 @@ static gboolean _dev_pixelpipe_process_rec(
   // preview pipe: abort on all but zoom events (same buffer anyways)
   if(dt_iop_breakpoint(dev, pipe)) return TRUE;
   // if image has changed, stop now.
-  if(pipe == dev->pipe && dev->image_force_reload) return TRUE;
+  if(pipe == dev->full.pipe && dev->image_force_reload) return TRUE;
   if(pipe == dev->preview_pipe && dev->preview_loading) return TRUE;
-  if(pipe == dev->preview2_pipe && dev->preview2_loading) return TRUE;
+  if(pipe == dev->preview2.pipe && dev->preview2.loading) return TRUE;
   if(dev->gui_leaving) return TRUE;
 
   // 3) input -> output

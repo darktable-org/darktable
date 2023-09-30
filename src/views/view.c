@@ -1689,10 +1689,10 @@ void dt_view_paint_surface(cairo_t *cr,
   const int closeup         = second ? dt_second_window_get_dev_closeup(dev) : dt_control_get_dev_closeup();
   const float zoom_scale    = second ? dt_second_window_get_zoom_scale(dev, zoom, 1<<closeup, 1)
                                      : dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
-  const float backbuf_scale = second ? dt_second_window_get_zoom_scale(dev, zoom, 1.0f, 0) * dev->second_window.ppd
+  const float backbuf_scale = second ? dt_second_window_get_zoom_scale(dev, zoom, 1.0f, 0) * dev->preview2.ppd
                                      : dt_dev_get_zoom_scale(dev, zoom, 1.0f, 0) * darktable.gui->ppd;
-  const float ppd           = second ? dev->second_window.ppd : darktable.gui->ppd;
-  const double tb           = second ? dev->second_window.border_size : dev->border_size;
+  const float ppd           = second ? dev->preview2.ppd : darktable.gui->ppd;
+  const double tb           = second ? dev->preview2.border_size : dev->full.border_size;
 
   cairo_save(cr);
 
@@ -1760,8 +1760,8 @@ void dt_view_paint_surface(cairo_t *cr,
   dt_pthread_mutex_unlock(mutex);
 
   cairo_scale(cr, back_scale / zoom_scale, back_scale / zoom_scale);
-  cairo_translate(cr, (offset_x - zoom_x) * dev->pipe->processed_width * buf_scale - 0.5 * processed_width,
-                      (offset_y - zoom_y) * dev->pipe->processed_height * buf_scale - 0.5 * processed_height);
+  cairo_translate(cr, (offset_x - zoom_x) * dev->full.pipe->processed_width * buf_scale - 0.5 * processed_width,
+                      (offset_y - zoom_y) * dev->full.pipe->processed_height * buf_scale - 0.5 * processed_height);
   cairo_set_source_surface(cr, surface, 0, 0);
   cairo_pattern_set_filter(cairo_get_source(cr),
                            zoom_scale >= 0.9999f ? CAIRO_FILTER_FAST : darktable.gui->dr_filter_image);

@@ -2788,7 +2788,7 @@ void gui_focus(struct dt_iop_module_t *self,
     dt_collection_hint_message(darktable.collection);
     btn_make_radio_callback(NULL, NULL, self);
   }
-  self->dev->cropping.requester = (in && !darktable.develop->image_loading) ? self : NULL;
+  self->dev->cropping.requester = (in && !darktable.develop->full.loading) ? self : NULL;
 }
 
 static void sync_pipe(struct dt_iop_module_t *module,
@@ -2843,8 +2843,8 @@ static void get_point_scale(struct dt_iop_module_t *module,
   const float ny = pts[1] / darktable.develop->preview_pipe->iheight;
 
   *scale = darktable.develop->preview_pipe->iscale * (pr_d * dt_dev_get_zoom_scale_full());
-  *pt = (nx * darktable.develop->pipe->iwidth)
-    +  (ny * darktable.develop->pipe->iheight) * I;
+  *pt = (nx * darktable.develop->full.pipe->iwidth)
+    +  (ny * darktable.develop->full.pipe->iheight) * I;
 }
 
 int mouse_moved(dt_iop_module_t *module,
@@ -3235,7 +3235,7 @@ static void _start_new_shape(dt_iop_module_t *module)
   //  create initial shape at the center
   float complex pt = 0.0f;
   float scale = 1.0f;
-  get_point_scale(module, 0.5f * darktable.develop->width, 0.5f * darktable.develop->height, &pt, &scale);
+  get_point_scale(module, 0.5f * darktable.develop->full.width, 0.5f * darktable.develop->full.height, &pt, &scale);
   float radius = 0.0f, r = 1.0f, phi = 0.0f;
   get_stamp_params(module, &radius, &r, &phi);
   //  start a new path

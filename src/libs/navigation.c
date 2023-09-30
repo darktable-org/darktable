@@ -474,8 +474,8 @@ static void _zoom_changed(GtkWidget *widget, gpointer user_data)
     zoom = DT_ZOOM_FREE;
   }
 
-  // zoom_x = (1.0/(scale*(1<<closeup)))*(zoom_x - .5f*dev->width )/procw;
-  // zoom_y = (1.0/(scale*(1<<closeup)))*(zoom_y - .5f*dev->height)/proch;
+  // zoom_x = (1.0/(scale*(1<<closeup)))*(zoom_x - .5f*dev->full.width )/procw;
+  // zoom_y = (1.0/(scale*(1<<closeup)))*(zoom_y - .5f*dev->full.height)/proch;
 
   dt_control_set_dev_zoom_scale(scale);
   dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
