@@ -43,7 +43,7 @@ dt_job_t *dt_dev_process_preview_job_create(dt_develop_t *dev)
 
 dt_job_t *dt_dev_process_preview2_job_create(dt_develop_t *dev)
 {
-  dt_job_t *job = dt_control_job_create(&dt_dev_process_preview2_job_run, "develop process preview");
+  dt_job_t *job = dt_control_job_create(&dt_dev_process_preview2_job_run, "develop process preview 2");
   if(!job) return NULL;
   dt_control_job_set_params(job, dev, NULL);
   return job;

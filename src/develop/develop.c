@@ -534,18 +534,20 @@ restart:
 
 void dt_dev_process_image_job(dt_develop_t *dev)
 {
-  dt_pthread_mutex_lock(&dev->full.pipe_mutex);
+  dt_dev_viewport_t *port = &dev->full;
+
+  dt_pthread_mutex_lock(&port->pipe_mutex);
 
   if(dev->gui_leaving)
   {
-    dt_pthread_mutex_unlock(&dev->full.pipe_mutex);
+    dt_pthread_mutex_unlock(&port->pipe_mutex);
     return;
   }
 
   dt_control_log_busy_enter();
   dt_control_toast_busy_enter();
   // let gui know to draw preview instead of us, if it's there:
-  dev->full.status = DT_DEV_PIXELPIPE_RUNNING;
+  port->status = DT_DEV_PIXELPIPE_RUNNING;
 
   dt_mipmap_buffer_t buf;
   dt_times_t start;
@@ -560,20 +562,20 @@ void dt_dev_process_image_job(dt_develop_t *dev)
   {
     dt_control_log_busy_leave();
     dt_control_toast_busy_leave();
-    dev->full.status = DT_DEV_PIXELPIPE_DIRTY;
-    dt_pthread_mutex_unlock(&dev->full.pipe_mutex);
+    port->status = DT_DEV_PIXELPIPE_DIRTY;
+    dt_pthread_mutex_unlock(&port->pipe_mutex);
     dev->image_invalid_cnt++;
     return;
   }
 
-  dt_dev_pixelpipe_set_input(dev->full.pipe, dev, (float *)buf.buf, buf.width, buf.height, 1.0);
+  dt_dev_pixelpipe_set_input(port->pipe, dev, (float *)buf.buf, buf.width, buf.height, 1.0);
 
-  if(dev->full.loading)
+  if(port->loading)
   {
     // init pixel pipeline
-    dt_dev_pixelpipe_cleanup_nodes(dev->full.pipe);
-    dt_dev_pixelpipe_create_nodes(dev->full.pipe, dev);
-    if(dev->image_force_reload) dt_dev_pixelpipe_cache_flush(dev->full.pipe);
+    dt_dev_pixelpipe_cleanup_nodes(port->pipe);
+    dt_dev_pixelpipe_create_nodes(port->pipe, dev);
+    if(dev->image_force_reload) dt_dev_pixelpipe_cache_flush(port->pipe);
     dev->image_force_reload = FALSE;
     if(dev->gui_attached)
     {
@@ -587,7 +589,7 @@ void dt_dev_process_image_job(dt_develop_t *dev)
       dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
       dev->preview2.pipe->changed |= DT_DEV_PIPE_SYNCH;
     }
-    dev->full.pipe->changed |= DT_DEV_PIPE_SYNCH;
+    port->pipe->changed |= DT_DEV_PIPE_SYNCH;
   }
 
 // adjust pipeline according to changed flag set by {add,pop}_history_item.
@@ -597,45 +599,44 @@ restart:
     dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
     dt_control_log_busy_leave();
     dt_control_toast_busy_leave();
-    dev->full.status = DT_DEV_PIXELPIPE_INVALID;
-    dt_pthread_mutex_unlock(&dev->full.pipe_mutex);
+    port->status = DT_DEV_PIXELPIPE_INVALID;
+    dt_pthread_mutex_unlock(&port->pipe_mutex);
     return;
   }
-  dev->full.pipe->input_timestamp = dev->timestamp;
+  port->pipe->input_timestamp = dev->timestamp;
   // dt_dev_pixelpipe_change() will clear the changed value
-  const dt_dev_pixelpipe_change_t pipe_changed = dev->full.pipe->changed;
+  const dt_dev_pixelpipe_change_t pipe_changed = port->pipe->changed;
   // this locks dev->history_mutex.
-  dt_dev_pixelpipe_change(dev->full.pipe, dev);
-  // determine scale according to new dimensions
-  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  const int closeup = dt_control_get_dev_closeup();
-  float zoom_x = dt_control_get_dev_zoom_x();
-  float zoom_y = dt_control_get_dev_zoom_y();
+  dt_dev_pixelpipe_change(port->pipe, dev);
+
   // if just changed to an image with a different aspect ratio or
   // altered image orientation, the prior zoom xy could now be beyond
   // the image boundary
-  if(dev->full.loading || (pipe_changed != DT_DEV_PIPE_UNCHANGED))
-  {
-    dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
-    dt_control_set_dev_zoom_x(zoom_x);
-    dt_control_set_dev_zoom_y(zoom_y);
-  }
+  if(port->loading || (pipe_changed != DT_DEV_PIPE_UNCHANGED))
+    dt_dev_zoom_move(&darktable.develop->full, DT_ZOOM_MOVE, 0.0f, 0, 0.0f, 0.0f, TRUE);
 
+  // determine scale according to new dimensions
+  dt_dev_zoom_t zoom;
+  int closeup;
+  float zoom_x, zoom_y;
+  dt_dev_get_port_params(port, &zoom, &closeup, &zoom_x, &zoom_y);
   const float scale = dt_dev_get_zoom_scale(dev, zoom, 1.0f, 0) * darktable.gui->ppd;
-  int window_width = dev->full.width * darktable.gui->ppd;
-  int window_height = dev->full.height * darktable.gui->ppd;
+  int window_width = port->width * darktable.gui->ppd;
+  int window_height = port->height * darktable.gui->ppd;
   if(closeup)
   {
     window_width /= 1<<closeup;
     window_height /= 1<<closeup;
   }
-  const int wd = MIN(window_width, dev->full.pipe->processed_width * scale);
-  const int ht = MIN(window_height, dev->full.pipe->processed_height * scale);
-  const int x = MAX(0, scale * dev->full.pipe->processed_width  * (.5 + zoom_x) - wd / 2);
-  const int y = MAX(0, scale * dev->full.pipe->processed_height * (.5 + zoom_y) - ht / 2);
+  const int wd = MIN(window_width, port->pipe->processed_width * scale);
+  const int ht = MIN(window_height, port->pipe->processed_height * scale);
+  const int x = MAX(0, scale * port->pipe->processed_width  * (.5 + zoom_x) - wd / 2);
+  const int y = MAX(0, scale * port->pipe->processed_height * (.5 + zoom_y) - ht / 2);
 
   dt_get_times(&start);
-  if(dt_dev_pixelpipe_process(dev->full.pipe, dev, x, y, wd, ht, scale))
+  if(dt_dev_pixelpipe_process(port->pipe, dev, x, y, wd, ht, scale))
+
+// FIXME maybe always send signal even if restarting later?
   {
     // interrupted because image changed?
     if(dev->image_force_reload)
@@ -643,8 +644,8 @@ restart:
       dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
       dt_control_log_busy_leave();
       dt_control_toast_busy_leave();
-      dev->full.status = DT_DEV_PIXELPIPE_INVALID;
-      dt_pthread_mutex_unlock(&dev->full.pipe_mutex);
+      port->status = DT_DEV_PIXELPIPE_INVALID;
+      dt_pthread_mutex_unlock(&port->pipe_mutex);
       return;
     }
     // or because the pipeline changed?
@@ -654,24 +655,24 @@ restart:
   dt_show_times_f(&start,
                   "[dev_process_image] pixel pipeline", "processing `%s'",
                   dev->image_storage.filename);
-  dt_dev_average_delay_update(&start, &dev->full.average_delay);
+  dt_dev_average_delay_update(&start, &port->average_delay);
 
   // maybe we got zoomed/panned in the meantime?
-  if(dev->full.pipe->changed != DT_DEV_PIPE_UNCHANGED) goto restart;
+  if(port->pipe->changed != DT_DEV_PIPE_UNCHANGED) goto restart;
 
   // cool, we got a new image!
-  dev->full.pipe->backbuf_scale = scale;
-  dev->full.pipe->backbuf_zoom_x = zoom_x;
-  dev->full.pipe->backbuf_zoom_y = zoom_y;
+  port->pipe->backbuf_scale = scale;
+  port->pipe->backbuf_zoom_x = zoom_x;
+  port->pipe->backbuf_zoom_y = zoom_y;
 
-  dev->full.status = DT_DEV_PIXELPIPE_VALID;
-  dev->full.loading = FALSE;
+  port->status = DT_DEV_PIXELPIPE_VALID;
+  port->loading = FALSE;
   dev->image_invalid_cnt = 0;
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
   // if a widget needs to be redraw there's the DT_SIGNAL_*_PIPE_FINISHED signals
   dt_control_log_busy_leave();
   dt_control_toast_busy_leave();
-  dt_pthread_mutex_unlock(&dev->full.pipe_mutex);
+  dt_pthread_mutex_unlock(&port->pipe_mutex);
 
   if(dev->gui_attached && !dev->gui_leaving)
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED);
@@ -752,7 +753,15 @@ float dt_dev_get_zoom_scale(dt_develop_t *dev,
       if(preview) zoom_scale *= ps;
       break;
     default: // DT_ZOOM_FREE
-      zoom_scale = dt_control_get_dev_zoom_scale();
+
+
+
+
+
+
+
+      // zoom_scale = dt_control_get_dev_zoom_scale();
+      zoom_scale = dev->full.zoom_scale;
       if(preview) zoom_scale *= ps;
       break;
   }
@@ -763,8 +772,9 @@ float dt_dev_get_zoom_scale(dt_develop_t *dev,
 
 float dt_dev_get_zoom_scale_full(void)
 {
-  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  const int closeup = dt_control_get_dev_closeup();
+  dt_dev_zoom_t zoom;
+  int closeup;
+  dt_dev_get_port_params(&darktable.develop->full, &zoom, &closeup, NULL, NULL);
   const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1 << closeup, 1);
 
   return zoom_scale;
@@ -772,8 +782,9 @@ float dt_dev_get_zoom_scale_full(void)
 
 float dt_dev_get_zoomed_in(void)
 {
-  dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  const int closeup = dt_control_get_dev_closeup();
+  dt_dev_zoom_t zoom;
+  int closeup;
+  dt_dev_get_port_params(&darktable.develop->full, &zoom, &closeup, NULL, NULL);
   const float min_scale = dt_dev_get_zoom_scale(darktable.develop, DT_ZOOM_FIT, 1<<closeup, 0);
   const float cur_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 0);
 
@@ -2688,6 +2699,220 @@ void dt_dev_get_processed_size(const dt_develop_t *dev,
   return;
 }
 
+static float _calculate_new_scroll_zoom_tscale(const int up,
+                                               const gboolean constrained,
+                                               const float tscaleold,
+                                               const float tscalefit)
+{
+  enum {
+    SIZE_SMALL,
+    SIZE_MEDIUM,
+    SIZE_LARGE
+  } image_size;
+
+  if (tscalefit <= 1.0f)
+    image_size = SIZE_LARGE;
+  else if (tscalefit <= 2.0f)
+    image_size = SIZE_MEDIUM;
+  else
+    image_size = SIZE_SMALL;
+
+  // at 200% zoom level or more, we use a step of 2x, while at lower level we use 1.1x
+  const float step =
+    up
+    ? (tscaleold >= 2.0f ? 2.0f : 1.1f)
+    : (tscaleold > 2.0f ? 2.0f : 1.1f);
+
+  // we calculate the new scale
+  float tscalenew = up ? tscaleold * step : tscaleold / step;
+
+  // when zooming, secure we include 2:1, 1:1 and FIT levels anyway in the zoom stops
+  if ((tscalenew - tscalefit) * (tscaleold - tscalefit) < 0 && image_size != SIZE_SMALL)
+    tscalenew = tscalefit;
+  else if ((tscalenew - 1.0f) * (tscaleold - 1.0f) < 0)
+    tscalenew = 1.0f;
+  else if ((tscalenew - 2.0f) * (tscaleold - 2.0f) < 0)
+    tscalenew = 2.0f;
+
+  float tscalemax, tscalemin;            // the zoom soft limits
+  const float tscaletop = 16.0f; // the zoom hard limits
+  const float tscalefloor = MIN(0.5f * tscalefit, 1.0f);
+
+  switch (image_size) // here we set the logic of zoom limits
+    {
+    case SIZE_LARGE:
+      tscalemax = constrained
+        ? (tscaleold > 2.0f
+           ? tscaletop
+           : (tscaleold > 1.0f ? 2.0f : 1.0f))
+        : tscaletop;
+      tscalemin = constrained
+        ? (tscaleold < tscalefit
+           ? tscalefloor
+           : tscalefit)
+        : tscalefloor;
+      break;
+    case SIZE_MEDIUM:
+      tscalemax = constrained
+        ? (tscaleold > 2.0f
+           ? tscaletop
+           : 2.0f)
+        : tscaletop;
+      tscalemin = constrained
+        ? (tscaleold < tscalefit
+           ? tscalefloor
+           : tscalefit)
+        : tscalefloor;
+      break;
+    case SIZE_SMALL:
+      tscalemax = constrained
+        ? (tscaleold > 2.0f
+           ? tscaletop
+           : tscalefit)
+        : tscaletop;
+      tscalemin = tscalefloor;
+      break;
+    }
+
+  // we enforce the zoom limits
+  tscalenew = up
+    ? MIN(tscalenew, tscalemax)
+    : MAX(tscalenew, tscalemin);
+
+  return tscalenew;
+}
+
+void dt_dev_zoom_move(dt_dev_viewport_t *port,
+                      dt_dev_zoom_t zoom,
+                      float scale,
+                      int closeup,
+                      float x,
+                      float y,
+                      gboolean constrain)
+{
+
+
+
+
+
+  dt_develop_t *dev = darktable.develop;
+
+  dt_pthread_mutex_lock(&(darktable.control->global_mutex));
+
+
+  float cur_scale = dt_dev_get_zoom_scale(dev, port->zoom, 1<<port->closeup, 0);
+  int procw, proch;
+  dt_dev_get_processed_size(dev, &procw, &proch);
+
+  if(zoom == DT_ZOOM_POSITION)
+  {
+    port->zoom_x = x;
+    port->zoom_y = y;
+  }
+  else if(zoom == DT_ZOOM_MOVE)
+  {
+    port->zoom_x += scale * x / (procw * cur_scale);
+    port->zoom_y += scale * y / (proch * cur_scale);
+  }
+  else
+  {
+    if(zoom == DT_ZOOM_1 && closeup == -1)
+      closeup = port->zoom != DT_ZOOM_1 || port->closeup ? 0 : 1;
+    else if(zoom == DT_ZOOM_1 && closeup == -2)
+    {
+      // zoom to 1:1 2:1 and back
+      const gboolean low_ppd = (darktable.gui->ppd == 1);
+      const float tscale = cur_scale * darktable.gui->ppd;
+      closeup = 0;
+
+      const float scalefit = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1, 0) * darktable.gui->ppd;
+
+      // Get config so we can check if the user want to cycle through 100%->200%->FIT or
+      // only switch between FIT<->100% unless ctrl key is pressed.
+      const gboolean cycle_zoom_200 =
+            dt_conf_get_bool("darkroom/mouse/middle_button_cycle_zoom_to_200_percent");
+
+      // We are at 200% or above.
+      if(tscale > 1.9999f)
+      {
+        zoom = (cycle_zoom_200 || !constrain) ? DT_ZOOM_FIT : DT_ZOOM_1;
+      }
+      else if(tscale > 0.9999f) // >= 100%
+      {
+        zoom = (cycle_zoom_200 || !constrain) ? DT_ZOOM_1 : DT_ZOOM_FIT;
+        closeup = (low_ppd && (cycle_zoom_200 || !constrain)) ? 1 : 0;
+      }
+      else if(((tscale > scalefit) || (tscale < scalefit)) && !cycle_zoom_200)
+      {
+        zoom = !constrain ? DT_ZOOM_1 : DT_ZOOM_FIT;
+      }
+      else
+      {
+        zoom = low_ppd ? DT_ZOOM_1 : DT_ZOOM_FREE;
+        if(!cycle_zoom_200)
+          closeup = low_ppd && !constrain ? 1 : 0;
+      }
+
+      scale = low_ppd ? dt_dev_get_zoom_scale(dev, zoom, 1, 0) : (1.0f / darktable.gui->ppd);
+    }
+    else if(zoom == DT_ZOOM_SCROLL)
+    {
+      zoom = DT_ZOOM_FREE;
+      const float ppd = darktable.gui->ppd;
+      const float fitscale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0);
+
+      const gboolean low_ppd = (darktable.gui->ppd == 1);
+
+      const float tscaleold = cur_scale * ppd;
+      const float tscale = _calculate_new_scroll_zoom_tscale (closeup, constrain, tscaleold, fitscale * ppd);
+      scale = tscale / ppd;
+
+      closeup = 0;
+      if(tscale < 1.9999)
+        scale = tscale / ppd;
+      else
+      {
+        // pixel doubling instead of interpolation at >= 200% lodpi, >= 400% hidpi
+        zoom = DT_ZOOM_1;
+        scale = 1.0f;
+        if(low_ppd) closeup++;
+        if(tscale > 3.9999f) closeup++;
+        if(tscale > 7.9999f) closeup++;
+        if(tscale > 15.9999) closeup++;
+      }
+
+      if(fabsf(scale - 1.0f) < 0.001f) zoom = DT_ZOOM_1;
+      if(fabsf(scale - fitscale) < 0.001f) zoom = DT_ZOOM_FIT;
+    }
+
+    port->closeup = closeup;
+    port->zoom_scale = scale;
+    port->zoom = zoom;
+
+    if(x >= 0.0f && y >= 0.0f)
+    {
+      // adjust offset from center so same point under cursor
+      float new_scale = dt_dev_get_zoom_scale(dev, port->zoom, 1<<port->closeup, 0);
+      float mouse_off_x = (x - port->border_size - 0.5f * port->width) / procw;
+      float mouse_off_y = (y - port->border_size - 0.5f * port->height) / proch;
+      port->zoom_x += mouse_off_x / cur_scale - mouse_off_x / new_scale;
+      port->zoom_y += mouse_off_y / cur_scale - mouse_off_y / new_scale;
+    }
+  }
+
+  if(constrain)
+    dt_dev_check_zoom_bounds(dev, &port->zoom_x, &port->zoom_y, port->zoom, port->closeup, NULL, NULL);
+
+  dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
+
+    /* redraw myself */ // _lib_navigation_set_position
+    // _lib_navigation_control_redraw_callback(NULL, self);
+
+  dt_dev_invalidate(dev);
+  dt_control_queue_redraw_center();
+  dt_control_navigation_redraw();
+}
+
 void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev,
                                  const float px,
                                  const float py,
@@ -2698,10 +2923,7 @@ void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev,
   dt_dev_zoom_t zoom;
   int closeup = 0, procw = 0, proch = 0;
   float zoom2_x = 0.0f, zoom2_y = 0.0f;
-  zoom = dt_control_get_dev_zoom();
-  closeup = dt_control_get_dev_closeup();
-  zoom2_x = dt_control_get_dev_zoom_x();
-  zoom2_y = dt_control_get_dev_zoom_y();
+  dt_dev_get_port_params(&dev->full, &zoom, &closeup, &zoom2_x, &zoom2_y);
   dt_dev_get_processed_size(dev, &procw, &proch);
   const float scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
   const double tb = dev->full.border_size;
@@ -2713,6 +2935,34 @@ void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev,
   *zoom_x = zoom2_x + 0.5f;
   *zoom_y = zoom2_y + 0.5f;
   *zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
+}
+
+void dt_dev_get_port_params(dt_dev_viewport_t *port,
+                            dt_dev_zoom_t *zoom,
+                            int *closeup,
+                            float *x,
+                            float *y)
+{
+  dt_pthread_mutex_lock(&(darktable.control->global_mutex));
+  if(zoom) *zoom = port->zoom;
+  if(closeup) *closeup = port->closeup;
+  if(x) *x = port->zoom_x;
+  if(y) *y = port->zoom_y;
+  dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
+}
+
+void dt_dev_set_port_params(dt_dev_viewport_t *port,
+                            dt_dev_zoom_t zoom,
+                            int closeup,
+                            float x,
+                            float y)
+{
+  dt_pthread_mutex_lock(&(darktable.control->global_mutex));
+  port->zoom = zoom;
+  port->closeup = closeup;
+  port->zoom_x = x;
+  port->zoom_y = y;
+  dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
 }
 
 gboolean dt_dev_is_current_image(dt_develop_t *dev,

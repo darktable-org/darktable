@@ -251,21 +251,6 @@ gboolean dt_control_running();
 dt_imgid_t dt_control_get_mouse_over_id();
 void dt_control_set_mouse_over_id(const dt_imgid_t value);
 
-float dt_control_get_dev_zoom_x();
-void dt_control_set_dev_zoom_x(const float value);
-
-float dt_control_get_dev_zoom_y();
-void dt_control_set_dev_zoom_y(const float value);
-
-float dt_control_get_dev_zoom_scale();
-void dt_control_set_dev_zoom_scale(const float value);
-
-int dt_control_get_dev_closeup();
-void dt_control_set_dev_closeup(const int value);
-
-dt_dev_zoom_t dt_control_get_dev_zoom();
-void dt_control_set_dev_zoom(const dt_dev_zoom_t value);
-
 #ifdef __cplusplus
 } // extern "C"
 #endif /* __cplusplus */
