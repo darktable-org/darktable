@@ -101,17 +101,17 @@ static void _lib_navigation_control_redraw_callback(gpointer instance,
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_navigation_t *d = (dt_lib_navigation_t *)self->data;
 
-  dt_develop_t *dev = darktable.develop;
+  dt_dev_viewport_t *port = &darktable.develop->full;
 
   dt_dev_zoom_t zoom;
   int closeup;
-  dt_dev_get_port_params(&dev->full, &zoom, &closeup, NULL, NULL);
-  const float cur_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
+  dt_dev_get_port_params(port, &zoom, &closeup, NULL, NULL);
+  const float cur_scale = dt_dev_get_zoom_scale(port, zoom, 1<<closeup, 0);
 
   gchar *zoomline = zoom == DT_ZOOM_FIT ? g_strdup(_("fit"))
                   : zoom == DT_ZOOM_FILL ? g_strdup(C_("navigationbox", "fill"))
-                  : 0.5 * dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0)
-                    == dt_dev_get_zoom_scale(dev, DT_ZOOM_FREE, 1.0, 0)
+                  : 0.5 * dt_dev_get_zoom_scale(port, DT_ZOOM_FIT, 1.0, 0)
+                    == dt_dev_get_zoom_scale(port, DT_ZOOM_FREE, 1.0, 0)
                          ? g_strdup(_("small"))
                          : g_strdup_printf("%.0f%%", cur_scale * 100 * darktable.gui->ppd);
   ++darktable.gui->reset;
@@ -231,8 +231,6 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-
-
 static gboolean _lib_navigation_draw_callback(GtkWidget *widget,
                                               cairo_t *crf,
                                               gpointer user_data)
@@ -288,7 +286,7 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget,
       cairo_fill(cr);
 
       float boxw = 1, boxh = 1;
-      dt_dev_check_zoom_bounds(darktable.develop, &zoom_x, &zoom_y, zoom,
+      dt_dev_check_zoom_bounds(&dev->full, &zoom_x, &zoom_y, zoom,
                                closeup, &boxw, &boxh);
 
       // Repaint the original image in the area of interest
@@ -337,9 +335,9 @@ void _lib_navigation_set_position(dt_lib_module_t *self,
     const int inset = DT_NAVIGATION_INSET;
     const float width = wd - 2 * inset;
     const float height = ht - 2 * inset;
-    dt_develop_t *dev = darktable.develop;
+    dt_dev_viewport_t *port = &darktable.develop->full;
     int iwd, iht;
-    dt_dev_get_processed_size(dev, &iwd, &iht);
+    dt_dev_get_processed_size(port, &iwd, &iht);
 
     float zoom_x = fmaxf(
       -.5,
@@ -351,7 +349,7 @@ void _lib_navigation_set_position(dt_lib_module_t *self,
       fminf(((y - inset) / height - .5f) / (iht * fminf(wd / (float)iwd,
                                                         ht / (float)iht) / (float)ht),
             .5));
-    dt_dev_zoom_move(&dev->full, DT_ZOOM_POSITION, 0.0f, 0, zoom_x, zoom_y, TRUE);
+    dt_dev_zoom_move(port, DT_ZOOM_POSITION, 0.0f, 0, zoom_x, zoom_y, TRUE);
   }
 }
 
@@ -379,22 +377,17 @@ static void _zoom_changed(GtkWidget *widget, gpointer user_data)
 
   const float ppd = darktable.gui->ppd;
 
+  dt_dev_viewport_t *port = &dev->full;
   float scale = 1.0f;
   int closeup = 0;
   dt_dev_zoom_t zoom = DT_ZOOM_FREE;
 
   if(val == 0u) // small
-    scale = 0.5 * dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0);
+    scale = 0.5 * dt_dev_get_zoom_scale(port, DT_ZOOM_FIT, 1.0, 0);
   else if(val == 1u || val == -1u) // fit to screen
-  {
     zoom = DT_ZOOM_FIT;
-    scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0);
-  }
   else if(val == 2u) // fill screen
-  {
     zoom = DT_ZOOM_FILL;
-    closeup = 0;
-  }
   else if(val == 3u) // 50%
     scale = 0.5f / ppd;
   else if(val == 4u && ppd != 1.0f) // 100%
@@ -407,7 +400,7 @@ static void _zoom_changed(GtkWidget *widget, gpointer user_data)
   else
     scale = val / 100.0f * ppd;
 
-  dt_dev_zoom_move(&dev->full, zoom, scale, closeup, -1.0f, -1.0f, TRUE);
+  dt_dev_zoom_move(port, zoom, scale, closeup, -1.0f, -1.0f, TRUE);
 }
 
 static gboolean _lib_navigation_button_press_callback(GtkWidget *widget,

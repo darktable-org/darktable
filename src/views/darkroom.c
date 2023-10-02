@@ -429,8 +429,9 @@ void expose(
   cairo_set_source_rgb(cri, .2, .2, .2);
 
   dt_develop_t *dev = (dt_develop_t *)self->data;
+  dt_dev_viewport_t *port = &dev->full;
 
-  if(dev->gui_synch && !dev->full.loading)
+  if(dev->gui_synch && !port->loading)
   {
     // synch module guis from gtk thread:
     ++darktable.gui->reset;
@@ -466,12 +467,12 @@ void expose(
   float zoom_x, zoom_y;
   dt_dev_get_port_params(&dev->full, &zoom, &closeup, &zoom_x, &zoom_y);
   float pzx = 0.0f, pzy = 0.0f, zoom_scale = 0.0f;
-  dt_dev_get_pointer_zoom_pos(dev, pointerx, pointery, &pzx, &pzy, &zoom_scale);
+  dt_dev_get_pointer_zoom_pos(port, pointerx, pointery, &pzx, &pzy, &zoom_scale);
 
   // adjust scroll bars
   {
     float zx = zoom_x, zy = zoom_y, boxw = 1., boxh = 1.;
-    dt_dev_check_zoom_bounds(dev, &zx, &zy, zoom, closeup, &boxw, &boxh);
+    dt_dev_check_zoom_bounds(port, &zx, &zy, zoom, closeup, &boxw, &boxh);
 
     /* If boxw and boxh very closely match the zoomed size in the darktable window we might have resizing with
        every expose because adding a slider will change the image area and might force a resizing in next expose.
@@ -492,23 +493,23 @@ void expose(
   }
 
   const gboolean expose_full =
-        dev->full.pipe->output_backbuf                         // do we have an image?
-     && dev->full.pipe->output_imgid == dev->image_storage.id; // same image?
+        port->pipe->output_backbuf                         // do we have an image?
+     && port->pipe->output_imgid == dev->image_storage.id; // same image?
   if(expose_full)
   {
     dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] draw image\n");
     // draw image
-    mutex = &dev->full.pipe->backbuf_mutex;
+    mutex = &port->pipe->backbuf_mutex;
     dt_pthread_mutex_lock(mutex);
-    const size_t wd = dev->full.pipe->output_backbuf_width;
-    const size_t ht = dev->full.pipe->output_backbuf_height;
+    const size_t wd = port->pipe->output_backbuf_width;
+    const size_t ht = port->pipe->output_backbuf_height;
 
-    cairo_surface_t *surface = dt_view_create_surface(dev->full.pipe->output_backbuf, wd, ht);
+    cairo_surface_t *surface = dt_view_create_surface(port->pipe->output_backbuf, wd, ht);
 
     dt_view_paint_surface(cri, width, height, surface, wd, ht, DT_WINDOW_MAIN,
-                          dev->full.pipe->backbuf_scale,
-                          dev->full.pipe->backbuf_zoom_x,
-                          dev->full.pipe->backbuf_zoom_y);
+                          port->pipe->backbuf_scale,
+                          port->pipe->backbuf_zoom_x,
+                          port->pipe->backbuf_zoom_y);
 
     cairo_surface_destroy(surface);
 
@@ -597,7 +598,7 @@ void expose(
   const float ht = dev->preview_pipe->backbuf_height;
   if(wd < 1.0 || ht < 1.0) return;
 
-  const double tb = dev->full.border_size;
+  const double tb = port->border_size;
   // account for border, make it transparent for other modules called below:
 
   cairo_save(cri);
@@ -3306,7 +3307,7 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
   int handled = 0;
 
   float zoom_x, zoom_y, zoom_scale;
-  dt_dev_get_pointer_zoom_pos(dev, x, y, &zoom_x, &zoom_y, &zoom_scale);
+  dt_dev_get_pointer_zoom_pos(&dev->full, x, y, &zoom_x, &zoom_y, &zoom_scale);
 
   if(!darktable.develop->darkroom_skip_mouse_events
      && dt_iop_color_picker_is_visible(dev)
@@ -3373,7 +3374,7 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
   dt_develop_t *dev = darktable.develop;
 
   float zoom_x, zoom_y, zoom_scale;
-  dt_dev_get_pointer_zoom_pos(dev, x, y, &zoom_x, &zoom_y, &zoom_scale);
+  dt_dev_get_pointer_zoom_pos(&dev->full, x, y, &zoom_x, &zoom_y, &zoom_scale);
 
   if(darktable.develop->darkroom_skip_mouse_events && which == 1)
   {
@@ -3425,7 +3426,7 @@ int button_pressed(dt_view_t *self,
   dt_colorpicker_sample_t *const sample = darktable.lib->proxy.colorpicker.primary_sample;
 
   float zoom_x, zoom_y, zoom_scale;
-  dt_dev_get_pointer_zoom_pos(dev, x, y, &zoom_x, &zoom_y, &zoom_scale);
+  dt_dev_get_pointer_zoom_pos(&dev->full, x, y, &zoom_x, &zoom_y, &zoom_scale);
 
   if(darktable.develop->darkroom_skip_mouse_events)
   {
@@ -3572,7 +3573,7 @@ int button_pressed(dt_view_t *self,
   }
 
   if(which == 2  && type == GDK_BUTTON_PRESS) // Middle mouse button
-    dt_dev_zoom_move(&darktable.develop->full, DT_ZOOM_1, 0.0f, -2, x, y, !dt_modifier_is(state, GDK_CONTROL_MASK));
+    dt_dev_zoom_move(&dev->full, DT_ZOOM_1, 0.0f, -2, x, y, !dt_modifier_is(state, GDK_CONTROL_MASK));
   if(which == 3 && dev->proxy.rotate)
     return dev->proxy.rotate->button_pressed(dev->proxy.rotate, zoom_x, zoom_y, pressure, which, type, state, zoom_scale);
 
@@ -3672,7 +3673,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   dt_develop_t *dev = (dt_develop_t *)self->data;
 
   float zoom_x, zoom_y, zoom_scale;
-  dt_dev_get_pointer_zoom_pos(dev, x, y, &zoom_x, &zoom_y, &zoom_scale);
+  dt_dev_get_pointer_zoom_pos(&dev->full, x, y, &zoom_x, &zoom_y, &zoom_scale);
 
   int handled = 0;
 
@@ -3939,20 +3940,20 @@ static int second_window_button_pressed(GtkWidget *widget,
     if((tscale > 0.95f) && (tscale < 1.05f)) // we are at 100% and switch to 200%
     {
       zoom = DT_ZOOM_1;
-      scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
+      scale = dt_second_window_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
       if(low_ppd) closeup = 1;
     }
     else if((tscale > 1.95f) && (tscale < 2.05f)) // at 200% so switch to zoomfit
     {
       zoom = DT_ZOOM_FIT;
-      scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0);
+      scale = dt_second_window_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0);
     }
     else // other than 100 or 200% so zoom to 100 %
     {
       if(low_ppd)
       {
         zoom = DT_ZOOM_1;
-        scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
+        scale = dt_second_window_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
       }
       else
       {

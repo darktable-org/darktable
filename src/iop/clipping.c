@@ -1435,7 +1435,7 @@ static float _ratio_get_aspect(dt_iop_module_t *self, GtkWidget *combo)
   if(text && !g_strcmp0(text,_("original image")))
   {
     int proc_iwd = 0, proc_iht = 0;
-    dt_dev_get_processed_size(darktable.develop, &proc_iwd, &proc_iht);
+    dt_dev_get_processed_size(&darktable.develop->full, &proc_iwd, &proc_iht);
 
     if(!(proc_iwd > 0 && proc_iht > 0)) return 0.0f;
 
@@ -1563,7 +1563,7 @@ static void apply_box_aspect(dt_iop_module_t *self, _grab_region_t grab)
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
 
   int iwd, iht;
-  dt_dev_get_processed_size(darktable.develop, &iwd, &iht);
+  dt_dev_get_processed_size(&darktable.develop->full, &iwd, &iht);
 
   // enforce aspect ratio.
   float aspect = _ratio_get_aspect(self, g->aspect_presets);
@@ -2421,7 +2421,7 @@ void gui_post_expose(dt_iop_module_t *self,
     pango_layout_set_font_description(layout, desc);
 
     int procw, proch;
-    dt_dev_get_processed_size(dev, &procw, &proch);
+    dt_dev_get_processed_size(&dev->full, &procw, &proch);
     snprintf(dimensions, sizeof(dimensions), "%i x %i", (int)(procw * g->clip_w), (int)(proch * g->clip_h));
 
     pango_layout_set_text(layout, dimensions, -1);

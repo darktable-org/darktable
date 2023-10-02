@@ -411,10 +411,10 @@ void dt_dev_reprocess_all(dt_develop_t *dev);
 void dt_dev_reprocess_center(dt_develop_t *dev);
 void dt_dev_reprocess_preview(dt_develop_t *dev);
 
-void dt_dev_get_processed_size(const dt_develop_t *dev,
+void dt_dev_get_processed_size(dt_dev_viewport_t *port,
                                int *procw,
                                int *proch);
-void dt_dev_check_zoom_bounds(dt_develop_t *dev,
+void dt_dev_check_zoom_bounds(dt_dev_viewport_t *port,
                               float *zoom_x,
                               float *zoom_y,
                               dt_dev_zoom_t zoom,
@@ -428,13 +428,13 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
                       float x,
                       float y,
                       gboolean constrain);
-float dt_dev_get_zoom_scale(dt_develop_t *dev,
+float dt_dev_get_zoom_scale(dt_dev_viewport_t *port,
                             dt_dev_zoom_t zoom,
                             const int closeup_factor,
                             const int mode);
 float dt_dev_get_zoom_scale_full(void);
 float dt_dev_get_zoomed_in(void);
-void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev,
+void dt_dev_get_pointer_zoom_pos(dt_dev_viewport_t *port,
                                  const float px,
                                  const float py,
                                  float *zoom_x,

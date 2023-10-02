@@ -220,7 +220,7 @@ void gui_post_expose(dt_lib_module_t *self,
     }
 
     float pzx, pzy, zoom_scale;
-    dt_dev_get_pointer_zoom_pos(dev, 0, 0, &pzx, &pzy, &zoom_scale);
+    dt_dev_get_pointer_zoom_pos(&dev->full, 0, 0, &pzx, &pzy, &zoom_scale);
 
     pzx = fmin(pzx + 0.5f, 0.0f);
     pzy = fmin(pzy + 0.5f, 0.0f);

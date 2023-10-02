@@ -620,7 +620,7 @@ restart:
   int closeup;
   float zoom_x, zoom_y;
   dt_dev_get_port_params(port, &zoom, &closeup, &zoom_x, &zoom_y);
-  const float scale = dt_dev_get_zoom_scale(dev, zoom, 1.0f, 0) * darktable.gui->ppd;
+  const float scale = dt_dev_get_zoom_scale(port, zoom, 1.0f, 0) * darktable.gui->ppd;
   int window_width = port->width * darktable.gui->ppd;
   int window_height = port->height * darktable.gui->ppd;
   if(closeup)
@@ -715,53 +715,47 @@ void dt_dev_reload_image(dt_develop_t *dev,
 {
   _dt_dev_load_raw(dev, imgid);
   dev->image_force_reload = dev->full.loading =
-    dev->preview_loading = dev->preview2.loading = TRUE;
+  dev->preview_loading = dev->preview2.loading = TRUE;
 
   dev->full.pipe->changed |= DT_DEV_PIPE_SYNCH;
   dt_dev_invalidate(dev); // only invalidate image, preview will follow once it's loaded.
 }
 
-float dt_dev_get_zoom_scale(dt_develop_t *dev,
+float dt_dev_get_zoom_scale(dt_dev_viewport_t *port,
                             dt_dev_zoom_t zoom,
                             const int closeup_factor,
                             const int preview)
 {
   float zoom_scale;
+  dt_develop_t *dev = darktable.develop;
 
   const float w = preview
     ? dev->preview_pipe->processed_width
-    : dev->full.pipe->processed_width;
+    : port->pipe->processed_width;
 
   const float h = preview
     ? dev->preview_pipe->processed_height
-    : dev->full.pipe->processed_height;
+    : port->pipe->processed_height;
 
-  const float ps = dev->full.pipe->backbuf_width
-    ? dev->full.pipe->processed_width / (float)dev->preview_pipe->processed_width
+  const float ps = port->pipe->backbuf_width
+    ? port->pipe->processed_width / (float)dev->preview_pipe->processed_width
     : dev->preview_pipe->iscale;
 
   switch(zoom)
   {
     case DT_ZOOM_FIT:
-      zoom_scale = fminf(dev->full.width / w, dev->full.height / h);
+      zoom_scale = fminf(port->width / w, port->height / h);
       break;
     case DT_ZOOM_FILL:
-      zoom_scale = fmaxf(dev->full.width / w, dev->full.height / h);
+      zoom_scale = fmaxf(port->width / w, port->height / h);
       break;
     case DT_ZOOM_1:
       zoom_scale = closeup_factor;
       if(preview) zoom_scale *= ps;
       break;
     default: // DT_ZOOM_FREE
-
-
-
-
-
-
-
       // zoom_scale = dt_control_get_dev_zoom_scale();
-      zoom_scale = dev->full.zoom_scale;
+      zoom_scale = port->zoom_scale;
       if(preview) zoom_scale *= ps;
       break;
   }
@@ -775,7 +769,7 @@ float dt_dev_get_zoom_scale_full(void)
   dt_dev_zoom_t zoom;
   int closeup;
   dt_dev_get_port_params(&darktable.develop->full, &zoom, &closeup, NULL, NULL);
-  const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1 << closeup, 1);
+  const float zoom_scale = dt_dev_get_zoom_scale(&darktable.develop->full, zoom, 1 << closeup, 1);
 
   return zoom_scale;
 }
@@ -785,8 +779,8 @@ float dt_dev_get_zoomed_in(void)
   dt_dev_zoom_t zoom;
   int closeup;
   dt_dev_get_port_params(&darktable.develop->full, &zoom, &closeup, NULL, NULL);
-  const float min_scale = dt_dev_get_zoom_scale(darktable.develop, DT_ZOOM_FIT, 1<<closeup, 0);
-  const float cur_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 0);
+  const float min_scale = dt_dev_get_zoom_scale(&darktable.develop->full, DT_ZOOM_FIT, 1<<closeup, 0);
+  const float cur_scale = dt_dev_get_zoom_scale(&darktable.develop->full, zoom, 1<<closeup, 0);
 
   return cur_scale / min_scale;
 }
@@ -2624,7 +2618,7 @@ void dt_dev_reprocess_preview(dt_develop_t *dev)
   dt_control_queue_redraw_center();
 }
 
-void dt_dev_check_zoom_bounds(dt_develop_t *dev,
+void dt_dev_check_zoom_bounds(dt_dev_viewport_t *port,
                               float *zoom_x,
                               float *zoom_y,
                               const dt_dev_zoom_t zoom,
@@ -2633,14 +2627,14 @@ void dt_dev_check_zoom_bounds(dt_develop_t *dev,
                               float *boxhh)
 {
   int procw = 0, proch = 0;
-  dt_dev_get_processed_size(dev, &procw, &proch);
+  dt_dev_get_processed_size(port, &procw, &proch);
   float boxw = 1.0f, boxh = 1.0f; // viewport in normalised space
                             //   if(zoom == DT_ZOOM_1)
                             //   {
                             //     const float imgw = (closeup ? 2 : 1)*procw;
                             //     const float imgh = (closeup ? 2 : 1)*proch;
-                            //     const float devw = MIN(imgw, dev->full.width);
-                            //     const float devh = MIN(imgh, dev->full.height);
+                            //     const float devw = MIN(imgw, port->width);
+                            //     const float devh = MIN(imgh, port->height);
                             //     boxw = fminf(1.0, devw/imgw);
                             //     boxh = fminf(1.0, devh/imgh);
                             //   }
@@ -2651,11 +2645,11 @@ void dt_dev_check_zoom_bounds(dt_develop_t *dev,
   }
   else
   {
-    const float scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
+    const float scale = dt_dev_get_zoom_scale(port, zoom, 1<<closeup, 0);
     const float imgw = procw;
     const float imgh = proch;
-    const float devw = dev->full.width;
-    const float devh = dev->full.height;
+    const float devw = port->width;
+    const float devh = port->height;
     boxw = devw / (imgw * scale);
     boxh = devh / (imgh * scale);
   }
@@ -2671,19 +2665,21 @@ void dt_dev_check_zoom_bounds(dt_develop_t *dev,
   if(boxhh) *boxhh = boxh;
 }
 
-void dt_dev_get_processed_size(const dt_develop_t *dev,
+void dt_dev_get_processed_size(dt_dev_viewport_t *port,
                                int *procw,
                                int *proch)
 {
-  if(!dev) return;
+  if(!port) return;
 
   // if pipe is processed, lets return its size
-  if(dev->full.pipe && dev->full.pipe->processed_width)
+  if(port->pipe && port->pipe->processed_width)
   {
-    *procw = dev->full.pipe->processed_width;
-    *proch = dev->full.pipe->processed_height;
+    *procw = port->pipe->processed_width;
+    *proch = port->pipe->processed_height;
     return;
   }
+
+  dt_develop_t *dev = darktable.develop;
 
   // fallback on preview pipe
   if(dev->preview_pipe && dev->preview_pipe->processed_width)
@@ -2790,19 +2786,13 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
                       float y,
                       gboolean constrain)
 {
-
-
-
-
-
   dt_develop_t *dev = darktable.develop;
 
   dt_pthread_mutex_lock(&(darktable.control->global_mutex));
 
-
-  float cur_scale = dt_dev_get_zoom_scale(dev, port->zoom, 1<<port->closeup, 0);
+  float cur_scale = dt_dev_get_zoom_scale(port, port->zoom, 1<<port->closeup, 0);
   int procw, proch;
-  dt_dev_get_processed_size(dev, &procw, &proch);
+  dt_dev_get_processed_size(port, &procw, &proch);
 
   if(zoom == DT_ZOOM_POSITION)
   {
@@ -2825,7 +2815,7 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
       const float tscale = cur_scale * darktable.gui->ppd;
       closeup = 0;
 
-      const float scalefit = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1, 0) * darktable.gui->ppd;
+      const float scalefit = dt_dev_get_zoom_scale(port, DT_ZOOM_FIT, 1, 0) * darktable.gui->ppd;
 
       // Get config so we can check if the user want to cycle through 100%->200%->FIT or
       // only switch between FIT<->100% unless ctrl key is pressed.
@@ -2853,13 +2843,13 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
           closeup = low_ppd && !constrain ? 1 : 0;
       }
 
-      scale = low_ppd ? dt_dev_get_zoom_scale(dev, zoom, 1, 0) : (1.0f / darktable.gui->ppd);
+      scale = low_ppd ? dt_dev_get_zoom_scale(port, zoom, 1, 0) : (1.0f / darktable.gui->ppd);
     }
     else if(zoom == DT_ZOOM_SCROLL)
     {
       zoom = DT_ZOOM_FREE;
       const float ppd = darktable.gui->ppd;
-      const float fitscale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0);
+      const float fitscale = dt_dev_get_zoom_scale(port, DT_ZOOM_FIT, 1.0, 0);
 
       const gboolean low_ppd = (darktable.gui->ppd == 1);
 
@@ -2892,7 +2882,7 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
     if(x >= 0.0f && y >= 0.0f)
     {
       // adjust offset from center so same point under cursor
-      float new_scale = dt_dev_get_zoom_scale(dev, port->zoom, 1<<port->closeup, 0);
+      float new_scale = dt_dev_get_zoom_scale(port, port->zoom, 1<<port->closeup, 0);
       float mouse_off_x = (x - port->border_size - 0.5f * port->width) / procw;
       float mouse_off_y = (y - port->border_size - 0.5f * port->height) / proch;
       port->zoom_x += mouse_off_x / cur_scale - mouse_off_x / new_scale;
@@ -2901,7 +2891,7 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
   }
 
   if(constrain)
-    dt_dev_check_zoom_bounds(dev, &port->zoom_x, &port->zoom_y, port->zoom, port->closeup, NULL, NULL);
+    dt_dev_check_zoom_bounds(port, &port->zoom_x, &port->zoom_y, port->zoom, port->closeup, NULL, NULL);
 
   dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
 
@@ -2913,7 +2903,7 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
   dt_control_navigation_redraw();
 }
 
-void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev,
+void dt_dev_get_pointer_zoom_pos(dt_dev_viewport_t *port,
                                  const float px,
                                  const float py,
                                  float *zoom_x,
@@ -2923,18 +2913,18 @@ void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev,
   dt_dev_zoom_t zoom;
   int closeup = 0, procw = 0, proch = 0;
   float zoom2_x = 0.0f, zoom2_y = 0.0f;
-  dt_dev_get_port_params(&dev->full, &zoom, &closeup, &zoom2_x, &zoom2_y);
-  dt_dev_get_processed_size(dev, &procw, &proch);
-  const float scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
-  const double tb = dev->full.border_size;
+  dt_dev_get_port_params(port, &zoom, &closeup, &zoom2_x, &zoom2_y);
+  dt_dev_get_processed_size(port, &procw, &proch);
+  const float scale = dt_dev_get_zoom_scale(port, zoom, 1<<closeup, 0);
+  const double tb = port->border_size;
   // offset from center now (current zoom_{x,y} points there)
-  const float mouse_off_x = px - tb - .5 * dev->full.width;
-  const float mouse_off_y = py - tb - .5 * dev->full.height;
+  const float mouse_off_x = px - tb - .5 * port->width;
+  const float mouse_off_y = py - tb - .5 * port->height;
   zoom2_x += mouse_off_x / (procw * scale);
   zoom2_y += mouse_off_y / (proch * scale);
   *zoom_x = zoom2_x + 0.5f;
   *zoom_y = zoom2_y + 0.5f;
-  *zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
+  *zoom_scale = dt_dev_get_zoom_scale(port, zoom, 1<<closeup, 1);
 }
 
 void dt_dev_get_port_params(dt_dev_viewport_t *port,
@@ -3859,8 +3849,8 @@ void dt_second_window_check_zoom_bounds(dt_develop_t *dev,
                             //   {
                             //     const float imgw = (closeup ? 2 : 1)*procw;
                             //     const float imgh = (closeup ? 2 : 1)*proch;
-                            //     const float devw = MIN(imgw, dev->full.width);
-                            //     const float devh = MIN(imgh, dev->full.height);
+                            //     const float devw = MIN(imgw, port->width);
+                            //     const float devh = MIN(imgh, port->height);
                             //     boxw = fminf(1.0, devw/imgw);
                             //     boxh = fminf(1.0, devh/imgh);
                             //   }
