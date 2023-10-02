@@ -217,7 +217,8 @@ typedef struct dt_develop_t
 
   //full preview stuff
   gboolean full_preview;
-  int full_preview_last_zoom, full_preview_last_closeup;
+  dt_dev_zoom_t full_preview_last_zoom;
+  int full_preview_last_closeup;
   float full_preview_last_zoom_x, full_preview_last_zoom_y;
   struct dt_iop_module_t *full_preview_last_module;
   int full_preview_masks_state;
@@ -420,6 +421,13 @@ void dt_dev_check_zoom_bounds(dt_develop_t *dev,
                               const int closeup,
                               float *boxw,
                               float *boxh);
+void dt_dev_zoom_move(dt_dev_viewport_t *port,
+                      dt_dev_zoom_t zoom,
+                      float scale,
+                      int closeup,
+                      float x,
+                      float y,
+                      gboolean constrain);
 float dt_dev_get_zoom_scale(dt_develop_t *dev,
                             dt_dev_zoom_t zoom,
                             const int closeup_factor,
@@ -432,6 +440,16 @@ void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev,
                                  float *zoom_x,
                                  float *zoom_y,
                                  float *zoom_scale);
+void dt_dev_get_port_params(dt_dev_viewport_t *port,
+                            dt_dev_zoom_t *zoom,
+                            int *closeup,
+                            float *x,
+                            float *y);
+void dt_dev_set_port_params(dt_dev_viewport_t *port,
+                            dt_dev_zoom_t zoom,
+                            int closeup,
+                            float x,
+                            float y);
 
 void dt_dev_configure(dt_develop_t *dev,
                       int wd,

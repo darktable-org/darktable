@@ -1074,14 +1074,15 @@ void dt_masks_free_form(dt_masks_form_t *form)
 
 int dt_masks_events_mouse_leave(struct dt_iop_module_t *module)
 {
-  if(darktable.develop->form_gui)
+  dt_develop_t *dev = darktable.develop;
+  if(dev->form_gui)
   {
-    dt_masks_form_gui_t *gui = darktable.develop->form_gui;
-    const float zoom_x = dt_control_get_dev_zoom_x();
-    const float zoom_y = dt_control_get_dev_zoom_y();
+    dt_masks_form_gui_t *gui = dev->form_gui;
+    float zoom_x, zoom_y;
+    dt_dev_get_port_params(&dev->full, NULL, NULL, &zoom_x, &zoom_y);
 
-    gui->posx = (.5f + zoom_x) * darktable.develop->preview_pipe->backbuf_width;
-    gui->posy = (.5f + zoom_y) * darktable.develop->preview_pipe->backbuf_height;
+    gui->posx = (.5f + zoom_x) * dev->preview_pipe->backbuf_width;
+    gui->posy = (.5f + zoom_y) * dev->preview_pipe->backbuf_height;
 
     dt_control_hinter_message(darktable.control, "");
   }

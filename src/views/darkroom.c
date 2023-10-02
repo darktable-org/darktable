@@ -461,17 +461,16 @@ void expose(
       _any_request(dev)      ? "" : "none");
 
   dt_pthread_mutex_t *mutex = NULL;
-  // FIXME: these four dt_control_get_dev_*() calls each lock/unlock global_mutex -- consolidate this work
-  const float zoom_y = dt_control_get_dev_zoom_y();
-  const float zoom_x = dt_control_get_dev_zoom_x();
+  dt_dev_zoom_t zoom;
+  int closeup;
+  float zoom_x, zoom_y;
+  dt_dev_get_port_params(&dev->full, &zoom, &closeup, &zoom_x, &zoom_y);
   float pzx = 0.0f, pzy = 0.0f, zoom_scale = 0.0f;
   dt_dev_get_pointer_zoom_pos(dev, pointerx, pointery, &pzx, &pzy, &zoom_scale);
 
   // adjust scroll bars
   {
     float zx = zoom_x, zy = zoom_y, boxw = 1., boxh = 1.;
-    const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-    const int closeup = dt_control_get_dev_closeup();
     dt_dev_check_zoom_bounds(dev, &zx, &zy, zoom, closeup, &boxw, &boxh);
 
     /* If boxw and boxh very closely match the zoomed size in the darktable window we might have resizing with
@@ -712,10 +711,7 @@ void expose(
 
 void reset(dt_view_t *self)
 {
-  dt_control_set_dev_zoom(DT_ZOOM_FIT);
-  dt_control_set_dev_zoom_x(0);
-  dt_control_set_dev_zoom_y(0);
-  dt_control_set_dev_closeup(0);
+  dt_dev_set_port_params(&darktable.develop->full, DT_ZOOM_FIT, 0, 0.0f, 0.0f);
 }
 
 gboolean try_enter(dt_view_t *self)
@@ -1191,23 +1187,8 @@ static void dt_dev_jump_image(dt_develop_t *dev, int diff, gboolean by_key)
 
 static void zoom_key_accel(dt_action_t *action)
 {
-  dt_develop_t *dev = darktable.develop;
-  int zoom, closeup;
-  float zoom_x, zoom_y;
-  zoom = dt_control_get_dev_zoom();
-  zoom_x = dt_control_get_dev_zoom_x();
-  zoom_y = dt_control_get_dev_zoom_y();
-  closeup = dt_control_get_dev_closeup();
-  if(zoom == DT_ZOOM_1) closeup = (closeup > 0) ^ 1; // flip closeup/no closeup, no difference whether it was 1 or larger
-  dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, DT_ZOOM_1, closeup, NULL, NULL);
-  dt_control_set_dev_zoom(DT_ZOOM_1);
-  dt_control_set_dev_zoom_x(zoom_x);
-  dt_control_set_dev_zoom_y(zoom_y);
-  dt_control_set_dev_closeup(closeup);
-
-  dt_dev_invalidate(dev);
-  dt_control_queue_redraw_center();
-  dt_control_navigation_redraw();
+  // flip closeup/no closeup, no difference whether it was 1 or larger
+  dt_dev_zoom_move(&darktable.develop->full, DT_ZOOM_1, 0.0f, -1, -1.0f, -1.0f, TRUE);
 }
 
 static void zoom_in_callback(dt_action_t *action)
@@ -2111,10 +2092,10 @@ static float _action_process_preview(gpointer target,
       if(effect != DT_ACTION_EFFECT_ON)
       {
         dt_ui_restore_panels(darktable.gui->ui);
-        dt_control_set_dev_zoom(lib->full_preview_last_zoom);
-        dt_control_set_dev_zoom_x(lib->full_preview_last_zoom_x);
-        dt_control_set_dev_zoom_y(lib->full_preview_last_zoom_y);
-        dt_control_set_dev_closeup(lib->full_preview_last_closeup);
+        dt_dev_set_port_params(&darktable.develop->full, lib->full_preview_last_zoom,
+                                                         lib->full_preview_last_closeup,
+                                                         lib->full_preview_last_zoom_x,
+                                                         lib->full_preview_last_zoom_y);
         lib->full_preview = FALSE;
         dt_iop_request_focus(lib->full_preview_last_module);
         dt_masks_set_edit_mode(darktable.develop->gui_module, lib->full_preview_masks_state);
@@ -2140,14 +2121,11 @@ static float _action_process_preview(gpointer target,
           if(bd) lib->full_preview_masks_state = bd->masks_shown;
         }
         // we set the zoom values to "fit"
-        lib->full_preview_last_zoom = dt_control_get_dev_zoom();
-        lib->full_preview_last_zoom_x = dt_control_get_dev_zoom_x();
-        lib->full_preview_last_zoom_y = dt_control_get_dev_zoom_y();
-        lib->full_preview_last_closeup = dt_control_get_dev_closeup();
-        dt_control_set_dev_zoom(DT_ZOOM_FIT);
-        dt_control_set_dev_zoom_x(0);
-        dt_control_set_dev_zoom_y(0);
-        dt_control_set_dev_closeup(0);
+        dt_dev_get_port_params(&darktable.develop->full, &lib->full_preview_last_zoom,
+                                                         &lib->full_preview_last_closeup,
+                                                         &lib->full_preview_last_zoom_x,
+                                                         &lib->full_preview_last_zoom_y);
+        dt_dev_set_port_params(&darktable.develop->full, DT_ZOOM_FIT, 0, 0.0f, 0.0f);
         // we quit the active iop if any
         lib->full_preview_last_module = darktable.develop->gui_module;
         dt_iop_request_focus(NULL);
@@ -2176,33 +2154,13 @@ static float _action_process_move(gpointer target,
 
   if(DT_PERFORM_ACTION(move_size))
   {
-    dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-    const int closeup = dt_control_get_dev_closeup();
-    float scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
-    int procw, proch;
-    dt_dev_get_processed_size(dev, &procw, &proch);
-
-    // For each cursor press, move one screen by default
-    float step_changex = dev->full.width / (procw * scale);
-    float step_changey = dev->full.height / (proch * scale);
+    // For each cursor press, move fifth of screen by default
     float factor = 0.2f * move_size;
     if(effect == DT_ACTION_EFFECT_DOWN) factor *= -1;
 
-    float zx = dt_control_get_dev_zoom_x();
-    float zy = dt_control_get_dev_zoom_y();
-
-    if(target)
-      zx += step_changex * factor;
-    else
-      zy -= step_changey * factor;
-
-    dt_dev_check_zoom_bounds(dev, &zx, &zy, zoom, closeup, NULL, NULL);
-    dt_control_set_dev_zoom_x(zx);
-    dt_control_set_dev_zoom_y(zy);
-
-    dt_dev_invalidate(dev);
-    dt_control_queue_redraw_center();
-    dt_control_navigation_redraw();
+    dt_dev_zoom_move(&dev->full, DT_ZOOM_MOVE, factor, 0,
+                     target ? dev->full.width : 0,
+                     target ? 0 : - dev->full.height, TRUE);
   }
 
   return 0; // FIXME return position (%)
@@ -3018,10 +2976,7 @@ void enter(dt_view_t *self)
   dt_view_active_images_add(dev->image_storage.id, TRUE);
   dt_ui_thumbtable(darktable.gui->ui)->mouse_inside = FALSE; // consider mouse outside filmstrip by default
 
-  dt_control_set_dev_zoom(DT_ZOOM_FIT);
-  dt_control_set_dev_zoom_x(0);
-  dt_control_set_dev_zoom_y(0);
-  dt_control_set_dev_closeup(0);
+  dt_dev_set_port_params(&dev->full, DT_ZOOM_FIT, 0, 0.0f, 0.0f);
 
   // take a copy of the image struct for convenience.
 
@@ -3082,10 +3037,7 @@ void enter(dt_view_t *self)
   }
 
   // image should be there now.
-  float zoom_x, zoom_y;
-  dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, DT_ZOOM_FIT, 0, NULL, NULL);
-  dt_control_set_dev_zoom_x(zoom_x);
-  dt_control_set_dev_zoom_y(zoom_y);
+  dt_dev_zoom_move(&dev->full, DT_ZOOM_MOVE, -1.f, 0, 0.0f, 0.0f, TRUE);
 
   /* connect signal for filmstrip image activate */
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
@@ -3320,7 +3272,8 @@ static int mouse_in_imagearea(dt_view_t *self, double *x, double *y)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
 
-  const int closeup = dt_control_get_dev_closeup();
+  int closeup;
+  dt_dev_get_port_params(&dev->full, NULL, &closeup, NULL, NULL);
   const int pwidth = (dev->full.pipe->output_backbuf_width<<closeup) / darktable.gui->ppd;
   const int pheight = (dev->full.pipe->output_backbuf_height<<closeup) / darktable.gui->ppd;
 
@@ -3402,25 +3355,9 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
 
   if(ctl->button_down && ctl->button_down_which == 1)
   {
-    // depending on dev_zoom, adjust dev_zoom_x/y.
-    int procw, proch;
-    dt_dev_get_processed_size(dev, &procw, &proch);
-    dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-    const int closeup = dt_control_get_dev_closeup();
-    const float scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
-    float old_zoom_x, old_zoom_y;
-    old_zoom_x = dt_control_get_dev_zoom_x();
-    old_zoom_y = dt_control_get_dev_zoom_y();
-    float zx = old_zoom_x - (1.0 / scale) * (x - ctl->button_x) / procw;
-    float zy = old_zoom_y - (1.0 / scale) * (y - ctl->button_y) / proch;
-    dt_dev_check_zoom_bounds(dev, &zx, &zy, zoom, closeup, NULL, NULL);
-    dt_control_set_dev_zoom_x(zx);
-    dt_control_set_dev_zoom_y(zy);
+    dt_dev_zoom_move(&dev->full, DT_ZOOM_MOVE, -1.f, 0, x - ctl->button_x, y - ctl->button_y, TRUE);
     ctl->button_x = x;
     ctl->button_y = y;
-    dt_dev_invalidate(dev);
-    dt_control_queue_redraw_center();
-    dt_control_navigation_redraw();
   }
   else if(darktable.control->button_down
           && darktable.control->button_down_which == 3
@@ -3635,64 +3572,7 @@ int button_pressed(dt_view_t *self,
   }
 
   if(which == 2  && type == GDK_BUTTON_PRESS) // Middle mouse button
-  {
-    // zoom to 1:1 2:1 and back
-    int procw, proch;
-    dt_dev_get_processed_size(dev, &procw, &proch);
-    dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-    int closeup = dt_control_get_dev_closeup();
-    float scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
-    const gboolean low_ppd = (darktable.gui->ppd == 1);
-    const float mouse_off_x = x - 0.5f * dev->full.width;
-    const float mouse_off_y = y - 0.5f * dev->full.height;
-    const float tscale = scale * darktable.gui->ppd;
-    closeup = 0;
-
-    const float scalefit = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1, 0) * darktable.gui->ppd;
-    const gboolean ctrl_pressed = dt_modifier_is(state, GDK_CONTROL_MASK);
-
-    // Get config so we can check if the user want to cycle through 100%->200%->FIT or
-    // only switch between FIT<->100% unless ctrl key is pressed.
-    const gboolean cycle_zoom_200 =
-          dt_conf_get_bool("darkroom/mouse/middle_button_cycle_zoom_to_200_percent");
-
-    // We are at 200% or above.
-    if(tscale > 1.9999f)
-    {
-      zoom = (cycle_zoom_200 || ctrl_pressed) ? DT_ZOOM_FIT : DT_ZOOM_1;
-    }
-    else if(tscale > 0.9999f) // >= 100%
-    {
-      zoom = (cycle_zoom_200 || ctrl_pressed) ? DT_ZOOM_1 : DT_ZOOM_FIT;
-      closeup = (low_ppd && (cycle_zoom_200 || ctrl_pressed)) ? 1 : 0;
-    }
-    else if(((tscale > scalefit) || (tscale < scalefit)) && !cycle_zoom_200)
-    {
-      zoom = ctrl_pressed ? DT_ZOOM_1 : DT_ZOOM_FIT;
-    }
-    else
-    {
-      zoom = low_ppd ? DT_ZOOM_1 : DT_ZOOM_FREE;
-      if(!cycle_zoom_200)
-        closeup = low_ppd && ctrl_pressed ? 1 : 0;
-    }
-
-    scale = low_ppd ? dt_dev_get_zoom_scale(dev, zoom, 1, 0) : (1.0f / darktable.gui->ppd);
-
-    dt_control_set_dev_zoom_scale(scale);
-    dt_control_set_dev_closeup(closeup);
-    scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
-    zoom_x -= 0.5f + mouse_off_x / (procw * scale);
-    zoom_y -= 0.5f + mouse_off_y / (proch * scale);
-    dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
-    dt_control_set_dev_zoom(zoom);
-    dt_control_set_dev_zoom_x(zoom_x);
-    dt_control_set_dev_zoom_y(zoom_y);
-    dt_dev_invalidate(dev);
-    dt_control_queue_redraw_center();
-    dt_control_navigation_redraw();
-    return 1;
-  }
+    dt_dev_zoom_move(&darktable.develop->full, DT_ZOOM_1, 0.0f, -2, x, y, !dt_modifier_is(state, GDK_CONTROL_MASK));
   if(which == 3 && dev->proxy.rotate)
     return dev->proxy.rotate->button_pressed(dev->proxy.rotate, zoom_x, zoom_y, pressure, which, type, state, zoom_scale);
 
@@ -3701,13 +3581,7 @@ int button_pressed(dt_view_t *self,
 
 void scrollbar_changed(dt_view_t *self, double x, double y)
 {
-  dt_control_set_dev_zoom_x(x);
-  dt_control_set_dev_zoom_y(y);
-
-  /* redraw pipe */
-  dt_dev_invalidate(darktable.develop);
-  dt_control_queue_redraw_center();
-  dt_control_navigation_redraw();
+  dt_dev_zoom_move(&darktable.develop->full, DT_ZOOM_POSITION, 0.0f, 0, x, y, TRUE);
 }
 
 static float _calculate_new_scroll_zoom_tscale(const int up,
@@ -3817,74 +3691,8 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   if(handled) return;
 
   // free zoom
-  int procw, proch;
-  dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  int closeup = dt_control_get_dev_closeup();
-  zoom_x = dt_control_get_dev_zoom_x();
-  zoom_y = dt_control_get_dev_zoom_y();
-  dt_dev_get_processed_size(dev, &procw, &proch);
-  float scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
-  const int32_t tb = dev->full.border_size;
-  // offset from center now (current zoom_{x,y} points there)
-  const float mouse_off_x = x - tb - 0.5f * dev->full.width;
-  const float mouse_off_y = y - tb - 0.5f * dev->full.height;
-  zoom_x += mouse_off_x / (procw * scale);
-  zoom_y += mouse_off_y / (proch * scale);
-
-  zoom = DT_ZOOM_FREE;
-  closeup = 0;
-  const float ppd = darktable.gui->ppd;
-  const float fitscale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0);
-
   const gboolean constrained = !dt_modifier_is(state, GDK_CONTROL_MASK);
-  const gboolean low_ppd = (darktable.gui->ppd == 1);
-
-  const float tscaleold = scale * ppd;
-  const float tscale = _calculate_new_scroll_zoom_tscale (up, constrained, tscaleold, fitscale * ppd);
-  if(tscale == tscaleold) return;  // no op
-  scale = tscale / ppd;
-
-  // pixel doubling instead of interpolation at >= 200% lodpi, >= 400% hidpi
-  if(tscale > 15.9999)
-  {
-    scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
-    zoom = DT_ZOOM_1;
-    closeup = low_ppd ? 4 : 3;
-  }
-  else if(tscale > 7.9999f)
-  {
-    scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
-    zoom = DT_ZOOM_1;
-    closeup = low_ppd ? 3 : 2;
-  }
-  else if(tscale > 3.9999f)
-  {
-    scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
-    zoom = DT_ZOOM_1;
-    closeup = low_ppd ? 2 : 1;
-  }
-  else if(tscale > 1.9999)
-  {
-    scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
-    zoom = DT_ZOOM_1;
-    if(low_ppd) closeup = 1;
-  }
-
-  if(fabsf(scale - 1.0f) < 0.001f) zoom = DT_ZOOM_1;
-  if(fabsf(scale - fitscale) < 0.001f) zoom = DT_ZOOM_FIT;
-  dt_control_set_dev_zoom_scale(scale);
-  dt_control_set_dev_closeup(closeup);
-  scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
-
-  zoom_x -= mouse_off_x / (procw * scale);
-  zoom_y -= mouse_off_y / (proch * scale);
-  dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
-  dt_control_set_dev_zoom(zoom);
-  dt_control_set_dev_zoom_x(zoom_x);
-  dt_control_set_dev_zoom_y(zoom_y);
-  dt_dev_invalidate(dev);
-  dt_control_queue_redraw_center();
-  dt_control_navigation_redraw();
+  dt_dev_zoom_move(&dev->full, DT_ZOOM_SCROLL, 0.0f, up, x, y, constrained);
 }
 
 static void change_slider_accel_precision(dt_action_t *action)
