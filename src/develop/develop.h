@@ -125,17 +125,12 @@ typedef struct dt_dev_viewport_t
   // dimensions of window
   int width, height;
   int32_t border_size;
-  double dpi, dpi_factor, ppd, ppd_thb;
-
-  GtkWidget *button;
+  double dpi, dpi_factor, ppd;
 
   dt_dev_zoom_t zoom;
   int closeup;
   float zoom_x, zoom_y;
   float zoom_scale;
-
-  double button_x;
-  double button_y;
 
   // image processing pipeline with caching
   struct dt_dev_pixelpipe_t *pipe;
@@ -337,7 +332,8 @@ typedef struct dt_develop_t
     GtkWidget *floating_window, *softproof_button, *gamut_button;
   } profile;
 
-  GtkWidget *second_wnd;
+  GtkWidget *second_wnd, *second_wnd_button;
+
   // several views of the same image
   dt_dev_viewport_t full, preview2;
 
@@ -629,39 +625,6 @@ int dt_dev_sync_pixelpipe_hash_distort (dt_develop_t *dev,
                                         const int transf_direction,
                                         dt_pthread_mutex_t *lock,
                                         const volatile uint64_t *const hash);
-
-/*
- * second darkroom window zoom heplers
-*/
-dt_dev_zoom_t dt_second_window_get_dev_zoom(dt_develop_t *dev);
-void dt_second_window_set_dev_zoom(dt_develop_t *dev,
-                                   const dt_dev_zoom_t value);
-int dt_second_window_get_dev_closeup(dt_develop_t *dev);
-void dt_second_window_set_dev_closeup(dt_develop_t *dev,
-                                      const int value);
-float dt_second_window_get_dev_zoom_x(dt_develop_t *dev);
-void dt_second_window_set_dev_zoom_x(dt_develop_t *dev,
-                                     const float value);
-float dt_second_window_get_dev_zoom_y(dt_develop_t *dev);
-void dt_second_window_set_dev_zoom_y(dt_develop_t *dev,
-                                     const float value);
-float dt_second_window_get_free_zoom_scale(dt_develop_t *dev);
-float dt_second_window_get_zoom_scale(dt_develop_t *dev,
-                                      const dt_dev_zoom_t zoom,
-                                      const int closeup_factor,
-                                      const int preview);
-void dt_second_window_set_zoom_scale(dt_develop_t *dev,
-                                     const float value);
-void dt_second_window_get_processed_size(const dt_develop_t *dev,
-                                         int *procw,
-                                         int *proch);
-void dt_second_window_check_zoom_bounds(dt_develop_t *dev,
-                                        float *zoom_x,
-                                        float *zoom_y,
-                                        const dt_dev_zoom_t zoom,
-                                        const int closeup,
-                                        float *boxww,
-                                        float *boxhh);
 
 /*
  *   history undo support helpers for darkroom

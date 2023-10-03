@@ -119,8 +119,8 @@ static int display_image_cb(lua_State *L)
 
 void init(dt_view_t *self)
 {
-  self->data = malloc(sizeof(dt_develop_t));
-  dt_develop_t *dev = (dt_develop_t *)self->data;
+  dt_develop_t *dev = malloc(sizeof(dt_develop_t));
+  self->data = darktable.develop = dev;
 
   dt_dev_init(dev, TRUE);
 
@@ -2236,12 +2236,12 @@ void gui_init(dt_view_t *self)
   dt_view_manager_view_toolbox_add(darktable.view_manager, styles, DT_VIEW_DARKROOM);
 
   /* create second window display button */
-  dev->preview2.button = dtgtk_togglebutton_new(dtgtk_cairo_paint_display2, 0, NULL);
-  dt_action_define(sa, NULL, N_("second window"), dev->preview2.button, &dt_action_def_toggle);
-  g_signal_connect(G_OBJECT(dev->preview2.button), "clicked", G_CALLBACK(_second_window_quickbutton_clicked),
+  dev->second_wnd_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_display2, 0, NULL);
+  dt_action_define(sa, NULL, N_("second window"), dev->second_wnd_button, &dt_action_def_toggle);
+  g_signal_connect(G_OBJECT(dev->second_wnd_button), "clicked", G_CALLBACK(_second_window_quickbutton_clicked),
                    dev);
-  gtk_widget_set_tooltip_text(dev->preview2.button, _("display a second darkroom image window"));
-  dt_view_manager_view_toolbox_add(darktable.view_manager, dev->preview2.button, DT_VIEW_DARKROOM);
+  gtk_widget_set_tooltip_text(dev->second_wnd_button, _("display a second darkroom image window"));
+  dt_view_manager_view_toolbox_add(darktable.view_manager, dev->second_wnd_button, DT_VIEW_DARKROOM);
 
   /* Enable ISO 12646-compliant colour assessment conditions */
   dev->iso_12646.button = dtgtk_togglebutton_new(dtgtk_cairo_paint_bulb, 0, NULL);
@@ -2396,7 +2396,7 @@ void gui_init(dt_view_t *self)
 
     // and the popup window, which is shared between the two profile buttons
     dev->profile.floating_window = gtk_popover_new(NULL);
-    connect_button_press_release(dev->preview2.button, dev->profile.floating_window);
+    connect_button_press_release(dev->second_wnd_button, dev->profile.floating_window);
     connect_button_press_release(dev->profile.softproof_button, dev->profile.floating_window);
     connect_button_press_release(dev->profile.gamut_button, dev->profile.floating_window);
 
@@ -3053,7 +3053,7 @@ void enter(dt_view_t *self)
   if(dt_conf_get_bool("second_window/last_visible"))
   {
     _darkroom_display_second_window(dev);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dev->preview2.button), TRUE);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dev->second_wnd_button), TRUE);
   }
 
   // just make sure at this stage we have only history info into the undo, all automatic
@@ -3585,89 +3585,6 @@ void scrollbar_changed(dt_view_t *self, double x, double y)
   dt_dev_zoom_move(&darktable.develop->full, DT_ZOOM_POSITION, 0.0f, 0, x, y, TRUE);
 }
 
-static float _calculate_new_scroll_zoom_tscale(const int up,
-                                               const gboolean constrained,
-                                               const float tscaleold,
-                                               const float tscalefit)
-{
-  enum {
-    SIZE_SMALL,
-    SIZE_MEDIUM,
-    SIZE_LARGE
-  } image_size;
-
-  if (tscalefit <= 1.0f)
-    image_size = SIZE_LARGE;
-  else if (tscalefit <= 2.0f)
-    image_size = SIZE_MEDIUM;
-  else
-    image_size = SIZE_SMALL;
-
-  // at 200% zoom level or more, we use a step of 2x, while at lower level we use 1.1x
-  const float step =
-    up
-    ? (tscaleold >= 2.0f ? 2.0f : 1.1f)
-    : (tscaleold > 2.0f ? 2.0f : 1.1f);
-
-  // we calculate the new scale
-  float tscalenew = up ? tscaleold * step : tscaleold / step;
-
-  // when zooming, secure we include 2:1, 1:1 and FIT levels anyway in the zoom stops
-  if ((tscalenew - tscalefit) * (tscaleold - tscalefit) < 0 && image_size != SIZE_SMALL)
-    tscalenew = tscalefit;
-  else if ((tscalenew - 1.0f) * (tscaleold - 1.0f) < 0)
-    tscalenew = 1.0f;
-  else if ((tscalenew - 2.0f) * (tscaleold - 2.0f) < 0)
-    tscalenew = 2.0f;
-
-  float tscalemax, tscalemin;            // the zoom soft limits
-  const float tscaletop = 16.0f; // the zoom hard limits
-  const float tscalefloor = MIN(0.5f * tscalefit, 1.0f);
-
-  switch (image_size) // here we set the logic of zoom limits
-    {
-    case SIZE_LARGE:
-      tscalemax = constrained
-        ? (tscaleold > 2.0f
-           ? tscaletop
-           : (tscaleold > 1.0f ? 2.0f : 1.0f))
-        : tscaletop;
-      tscalemin = constrained
-        ? (tscaleold < tscalefit
-           ? tscalefloor
-           : tscalefit)
-        : tscalefloor;
-      break;
-    case SIZE_MEDIUM:
-      tscalemax = constrained
-        ? (tscaleold > 2.0f
-           ? tscaletop
-           : 2.0f)
-        : tscaletop;
-      tscalemin = constrained
-        ? (tscaleold < tscalefit
-           ? tscalefloor
-           : tscalefit)
-        : tscalefloor;
-      break;
-    case SIZE_SMALL:
-      tscalemax = constrained
-        ? (tscaleold > 2.0f
-           ? tscaletop
-           : tscalefit)
-        : tscaletop;
-      tscalemin = tscalefloor;
-      break;
-    }
-
-  // we enforce the zoom limits
-  tscalenew = up
-    ? MIN(tscalenew, tscalemax)
-    : MAX(tscalenew, tscalemin);
-
-  return tscalenew;
-}
-
 void scrolled(dt_view_t *self, double x, double y, int up, int state)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
@@ -3777,10 +3694,6 @@ static void second_window_expose(GtkWidget *widget,
 {
   cairo_set_source_rgb(cri, 0.2, 0.2, 0.2);
 
-  // account for border, make it transparent for other modules called below:
-  pointerx -= dev->preview2.border_size;
-  pointery -= dev->preview2.border_size;
-
   if(_preview2_request(dev)) dt_dev_process_preview2(dev);
 
   if(dev->preview2.pipe->output_backbuf)  // do we have an image?
@@ -3806,231 +3719,17 @@ static void second_window_expose(GtkWidget *widget,
   }
 }
 
-static void second_window_scrolled(GtkWidget *widget,
-                                   dt_develop_t *dev,
-                                   double x,
-                                   double y,
-                                   const int up,
-                                   const int state)
-{
-  const int32_t tb = dev->preview2.border_size;
-  const int32_t capwd = dev->preview2.width - 2 * tb;
-  const int32_t capht = dev->preview2.height - 2 * tb;
-  const int32_t width_i = dev->preview2.width;
-  const int32_t height_i = dev->preview2.height;
-  if(width_i > capwd) x += (capwd - width_i) * .5f;
-  if(height_i > capht) y += (capht - height_i) * .5f;
-
-  // free zoom
-  dt_dev_zoom_t zoom = dt_second_window_get_dev_zoom(dev);
-  int procw, proch;
-  int closeup = dt_second_window_get_dev_closeup(dev);
-  float zoom_x = dt_second_window_get_dev_zoom_x(dev);
-  float zoom_y = dt_second_window_get_dev_zoom_y(dev);
-  dt_second_window_get_processed_size(dev, &procw, &proch);
-  float scale = dt_second_window_get_zoom_scale(dev, zoom, 1 << closeup, 0);
-  const float ppd = dev->preview2.ppd;
-  const float fitscale = dt_second_window_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0);
-
-  // offset from center now (current zoom_{x,y} points there)
-  const float mouse_off_x = x - 0.5f * dev->preview2.width;
-  const float mouse_off_y = y - 0.5f * dev->preview2.height;
-  zoom_x += mouse_off_x / (procw * scale);
-  zoom_y += mouse_off_y / (proch * scale);
-  zoom = DT_ZOOM_FREE;
-  closeup = 0;
-
-  const gboolean constrained = !dt_modifier_is(state, GDK_CONTROL_MASK);
-  const gboolean low_ppd = (dev->preview2.ppd == 1);
-
-  const float tscaleold = scale * ppd;
-  const float tscale = _calculate_new_scroll_zoom_tscale (up, constrained, tscaleold, fitscale * ppd);
-  if(tscale == tscaleold) return;  // no op
-  scale = tscale / ppd;
-
-  // pixel doubling instead of interpolation at >= 200% lodpi, >= 400% hidpi
-  if(tscale > 15.9999f)
-  {
-    scale = dt_second_window_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
-    zoom = DT_ZOOM_1;
-    closeup = low_ppd ? 4 : 3;
-  }
-  else if(tscale > 7.9999f)
-  {
-    scale = dt_second_window_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
-    zoom = DT_ZOOM_1;
-    closeup = low_ppd ? 3 : 2;
-  }
-  else if(tscale > 3.9999f)
-  {
-    scale = dt_second_window_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
-    zoom = DT_ZOOM_1;
-    closeup = low_ppd ? 2 : 1;
-  }
-  else if(tscale > 1.9999f)
-  {
-   scale = dt_second_window_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
-   zoom = DT_ZOOM_1;
-   if(low_ppd) closeup = 1;
-  }
-
-  if(fabsf(scale - 1.0f) < 0.001f) zoom = DT_ZOOM_1;
-  if(fabsf(scale - fitscale) < 0.001f) zoom = DT_ZOOM_FIT;
-  dt_second_window_set_zoom_scale(dev, scale);
-  dt_second_window_set_dev_closeup(dev, closeup);
-  scale = dt_second_window_get_zoom_scale(dev, zoom, 1 << closeup, 0);
-
-  zoom_x -= mouse_off_x / (procw * scale);
-  zoom_y -= mouse_off_y / (proch * scale);
-  dt_second_window_check_zoom_bounds(dev, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
-  dt_second_window_set_dev_zoom(dev, zoom);
-  dt_second_window_set_dev_zoom_x(dev, zoom_x);
-  dt_second_window_set_dev_zoom_y(dev, zoom_y);
-
-  // pipe needs to be reconstructed
-  dev->preview2.status = DT_DEV_PIXELPIPE_DIRTY;
-
-  gtk_widget_queue_draw(widget);
-}
-
 static void second_window_leave(dt_develop_t *dev)
 {
   // reset any changes the selected plugin might have made.
   dt_second_window_change_cursor(dev, GDK_LEFT_PTR);
 }
 
-static int second_window_button_pressed(GtkWidget *widget,
-                                        dt_develop_t *dev,
-                                        double x,
-                                        double y,
-                                        const double pressure,
-                                        const int which,
-                                        const int type,
-                                        const uint32_t state)
-{
-  if(which == 1 && type == GDK_2BUTTON_PRESS) return 0;
-  if(which == 1)
-  {
-    dev->preview2.button_x = x;
-    dev->preview2.button_y = y;
-    dt_second_window_change_cursor(dev, GDK_HAND1);
-    return 1;
-  }
-  if(which == 2)
-  {
-    // zoom to 1:1 2:1 and back
-    int procw, proch;
-    dt_dev_zoom_t zoom = dt_second_window_get_dev_zoom(dev);
-    int closeup = dt_second_window_get_dev_closeup(dev);
-    float zoom_x = dt_second_window_get_dev_zoom_x(dev);
-    float zoom_y = dt_second_window_get_dev_zoom_y(dev);
-    dt_second_window_get_processed_size(dev, &procw, &proch);
-    float scale = dt_second_window_get_zoom_scale(dev, zoom, 1 << closeup, 0);
-    const float ppd = dev->preview2.ppd;
-    const gboolean low_ppd = dev->preview2.ppd == 1;
-
-    const int32_t tb = dev->preview2.border_size;
-    const float mouse_off_x = x - tb - 0.5f * dev->preview2.width;
-    const float mouse_off_y = y - tb - 0.5f * dev->preview2.height;
-    zoom_x += mouse_off_x / (procw * scale);
-    zoom_y += mouse_off_y / (proch * scale);
-    const float tscale = scale * ppd;
-    closeup = 0;
-
-    if((tscale > 0.95f) && (tscale < 1.05f)) // we are at 100% and switch to 200%
-    {
-      zoom = DT_ZOOM_1;
-      scale = dt_second_window_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
-      if(low_ppd) closeup = 1;
-    }
-    else if((tscale > 1.95f) && (tscale < 2.05f)) // at 200% so switch to zoomfit
-    {
-      zoom = DT_ZOOM_FIT;
-      scale = dt_second_window_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0);
-    }
-    else // other than 100 or 200% so zoom to 100 %
-    {
-      if(low_ppd)
-      {
-        zoom = DT_ZOOM_1;
-        scale = dt_second_window_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
-      }
-      else
-      {
-        zoom = DT_ZOOM_FREE;
-        scale = 1.0f / ppd;
-      }
-    }
-    dt_second_window_set_zoom_scale(dev, scale);
-    dt_second_window_set_dev_closeup(dev, closeup);
-    scale = dt_second_window_get_zoom_scale(dev, zoom, 1 << closeup, 0);
-    zoom_x -= mouse_off_x / (procw * scale);
-    zoom_y -= mouse_off_y / (proch * scale);
-    dt_second_window_check_zoom_bounds(dev, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
-    dt_second_window_set_dev_zoom(dev, zoom);
-    dt_second_window_set_dev_zoom_x(dev, zoom_x);
-    dt_second_window_set_dev_zoom_y(dev, zoom_y);
-
-    // pipe needs to be reconstructed
-    dev->preview2.status = DT_DEV_PIXELPIPE_DIRTY;
-
-    gtk_widget_queue_draw(widget);
-
-    return 1;
-  }
-  return 0;
-}
-
-static int second_window_button_released(dt_develop_t *dev,
-                                         const double x,
-                                         const double y,
-                                         const int which,
-                                         const uint32_t state)
-{
-  if(which == 1) dt_second_window_change_cursor(dev, GDK_LEFT_PTR);
-  return 1;
-}
-
-static void second_window_mouse_moved(GtkWidget *widget,
-                                      dt_develop_t *dev,
-                                      double x,
-                                      double y,
-                                      const double pressure,
-                                      const int which)
-{
-  if(which & GDK_BUTTON1_MASK)
-  {
-    // depending on dev_zoom, adjust dev_zoom_x/y.
-    const dt_dev_zoom_t zoom = dt_second_window_get_dev_zoom(dev);
-    const int closeup = dt_second_window_get_dev_closeup(dev);
-    int procw, proch;
-    dt_second_window_get_processed_size(dev, &procw, &proch);
-    const float scale = dt_second_window_get_zoom_scale(dev, zoom, 1 << closeup, 0);
-    float old_zoom_x, old_zoom_y;
-    old_zoom_x = dt_second_window_get_dev_zoom_x(dev);
-    old_zoom_y = dt_second_window_get_dev_zoom_y(dev);
-    float zx = old_zoom_x - (1.0 / scale) * (x - dev->preview2.button_x) / procw;
-    float zy = old_zoom_y - (1.0 / scale) * (y - dev->preview2.button_y) / proch;
-    dt_second_window_check_zoom_bounds(dev, &zx, &zy, zoom, closeup, NULL, NULL);
-    dt_second_window_set_dev_zoom_x(dev, zx);
-    dt_second_window_set_dev_zoom_y(dev, zy);
-    dev->preview2.button_x = x;
-    dev->preview2.button_y = y;
-
-    // pipe needs to be reconstructed
-    dev->preview2.status = DT_DEV_PIXELPIPE_DIRTY;
-
-    gtk_widget_queue_draw(widget);
-  }
-}
-
 static void _second_window_configure_ppd_dpi(dt_develop_t *dev)
 {
   GtkWidget *widget = dev->second_wnd;
 
-  dev->preview2.ppd = dev->preview2.ppd_thb = dt_get_system_gui_ppd(widget);
-  if(dt_conf_get_bool("ui/performance"))
-    dev->preview2.ppd_thb *= DT_GUI_THUMBSIZE_REDUCE;
+  dev->preview2.ppd = dt_get_system_gui_ppd(widget);
 
   // get the screen resolution
   float screen_dpi_overwrite = dt_conf_get_float("screen_dpi_overwrite");
@@ -4093,8 +3792,8 @@ static gboolean _second_window_scrolled_callback(GtkWidget *widget,
   int delta_y;
   if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
   {
-    second_window_scrolled(widget, dev, event->x, event->y, delta_y < 0, event->state & 0xf);
-    gtk_widget_queue_draw(widget);
+    const gboolean constrained = !dt_modifier_is(event->state, GDK_CONTROL_MASK);
+    dt_dev_zoom_move(&dev->preview2, DT_ZOOM_SCROLL, 0.0f, delta_y < 0, event->x, event->y, constrained);
   }
 
   return TRUE;
@@ -4104,16 +3803,19 @@ static gboolean _second_window_button_pressed_callback(GtkWidget *w,
                                                        GdkEventButton *event,
                                                        dt_develop_t *dev)
 {
-  double pressure = 1.0;
-  GdkDevice *device = gdk_event_get_source_device((GdkEvent *)event);
-
-  if(device && gdk_device_get_source(device) == GDK_SOURCE_PEN)
+  if(event->type == GDK_2BUTTON_PRESS) return 0;
+  if(event->button == 1)
   {
-    gdk_event_get_axis((GdkEvent *)event, GDK_AXIS_PRESSURE, &pressure);
+    darktable.control->button_x = event->x;
+    darktable.control->button_y = event->y;
+    dt_second_window_change_cursor(dev, GDK_HAND1);
+    return TRUE;
   }
-  second_window_button_pressed(w, dev, event->x, event->y, pressure, event->button, event->type, event->state & 0xf);
-  gtk_widget_grab_focus(w);
-  gtk_widget_queue_draw(w);
+  if(event->button == 2)
+  {
+    dt_dev_zoom_move(&dev->preview2, DT_ZOOM_1, 0.0f, -2, event->x, event->y, !dt_modifier_is(event->state, GDK_CONTROL_MASK));
+    return TRUE;
+  }
   return FALSE;
 }
 
@@ -4121,7 +3823,8 @@ static gboolean _second_window_button_released_callback(GtkWidget *w,
                                                         GdkEventButton *event,
                                                         dt_develop_t *dev)
 {
-  second_window_button_released(dev, event->x, event->y, event->button, event->state & 0xf);
+  if(event->button == 1) dt_second_window_change_cursor(dev, GDK_LEFT_PTR);
+
   gtk_widget_queue_draw(w);
   return TRUE;
 }
@@ -4130,14 +3833,14 @@ static gboolean _second_window_mouse_moved_callback(GtkWidget *w,
                                                     GdkEventMotion *event,
                                                     dt_develop_t *dev)
 {
-  double pressure = 1.0;
-  GdkDevice *device = gdk_event_get_source_device((GdkEvent *)event);
-
-  if(device && gdk_device_get_source(device) == GDK_SOURCE_PEN)
+  if(event->state & GDK_BUTTON1_MASK)
   {
-    gdk_event_get_axis((GdkEvent *)event, GDK_AXIS_PRESSURE, &pressure);
+    dt_control_t *ctl = darktable.control;
+    dt_dev_zoom_move(&dev->preview2, DT_ZOOM_MOVE, -1.f, 0, event->x - ctl->button_x, event->y - ctl->button_y, TRUE);
+    ctl->button_x = event->x;
+    ctl->button_y = event->y;
+    return TRUE;
   }
-  second_window_mouse_moved(w, dev, event->x, event->y, pressure, event->state);
   return FALSE;
 }
 
@@ -4236,7 +3939,7 @@ static gboolean _second_window_delete_callback(GtkWidget *widget,
   dev->second_wnd = NULL;
   dev->preview2.widget = NULL;
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dev->preview2.button), FALSE);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dev->second_wnd_button), FALSE);
 
   return FALSE;
 }

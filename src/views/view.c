@@ -86,17 +86,6 @@ void dt_view_manager_init(dt_view_manager_t *vm)
 
   dt_view_manager_load_modules(vm);
 
-  // Modules loaded, let's handle specific cases
-  for(GList *iter = vm->views; iter; iter = g_list_next(iter))
-  {
-    dt_view_t *view = (dt_view_t *)iter->data;
-    if(!strcmp(view->module_name, "darkroom"))
-    {
-      darktable.develop = (dt_develop_t *)view->data;
-      break;
-    }
-  }
-
   vm->current_view = NULL;
   vm->audio.audio_player_id = -1;
 }
@@ -184,9 +173,6 @@ static int dt_view_load_module(void *v,
   module->height = module->width = 100; // set to non-insane defaults
                                         // before first
                                         // expose/configure.
-
-  if(!strcmp(module->module_name, "darkroom"))
-    darktable.develop = (dt_develop_t *)module->data;
 
 #ifdef USE_LUA
   dt_lua_register_view(darktable.lua_state.state, module);
@@ -1692,7 +1678,7 @@ void dt_view_paint_surface(cairo_t *cr,
 
   const float zoom_scale    = dt_dev_get_zoom_scale(port, zoom, 1<<closeup, 1);
   const float backbuf_scale = dt_dev_get_zoom_scale(port, zoom, 1.0f, 0) * darktable.gui->ppd;
-  const float ppd           = second ? dev->preview2.ppd : darktable.gui->ppd;
+  const float ppd           = port->ppd;
   const double tb           = port->border_size;
 
   cairo_save(cr);
