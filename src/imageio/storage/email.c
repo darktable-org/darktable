@@ -31,6 +31,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifdef _WIN32
+#include <mapi.h>
+#include <stringapiset.h>  // for MultiByteToWideChar
+#endif
+
 DT_MODULE(2)
 
 typedef struct _email_attachment_t
@@ -229,6 +234,111 @@ void free_params(dt_imageio_module_storage_t *self,
   free(params);
 }
 
+#ifdef _WIN32
+static LPWSTR _convert_to_widechar(UINT codepage, LPSTR str)
+{
+  if (!str) return NULL;
+
+  DWORD length = MultiByteToWideChar(codepage, 0, str, -1, NULL, 0);
+  LPWSTR wc_str = g_malloc(length * sizeof(WCHAR));
+  MultiByteToWideChar(codepage, 0, str, -1, wc_str, length);
+
+  return wc_str;
+}
+
+void finalize_store(dt_imageio_module_storage_t *self,
+                    dt_imageio_module_data_t *params)
+{
+  dt_imageio_email_t *d = (dt_imageio_email_t *)params;
+
+  const gchar *imageBodyFormat = " - %s (%s)\n";      // filename, exif one-liner
+  const gint num_images = g_list_length(d->images);
+  gchar *body = NULL;
+
+  // We need an array of MapiFileDesc structures to attach images to an email
+  lpMapiFileDesc m_fd = g_malloc0(sizeof(MapiFileDesc) * num_images);
+
+  HINSTANCE hInst = LoadLibraryA("mapi32.dll");
+  if(!hInst)
+  {
+    // Unlikely in normal Windows installations, but let's notify the user if it happens
+    dt_control_log(_("could not open mapi32.dll"));
+    dt_print(DT_DEBUG_ALWAYS, "[imageio_storage_email] could not open mapi32.dll");
+    return;
+  }
+
+  LPMAPISENDMAIL SendMail;
+  SendMail = (LPMAPISENDMAIL)GetProcAddress(hInst, "MAPISendMailW");
+  if(!SendMail)
+  {
+    // Even more unlikely
+    dt_control_log(_("could not get SendMail function"));
+    dt_print(DT_DEBUG_ALWAYS, "[imageio_storage_email] could not get SendMail function");
+    return;
+  }
+
+  // Iterate through the list of exported images and create the body of the email
+  // from the basic information for those images
+  int index = 0;  // index in the array of attached file
+  for(GList *iter = d->images; iter; iter = g_list_next(iter))
+  {
+    gchar exif[256] = { 0 };
+    _email_attachment_t *attachment = (_email_attachment_t *)iter->data;
+    gchar *filename = g_path_get_basename(attachment->file);
+
+    m_fd[index].lpszPathName = (LPSTR) _convert_to_widechar(CP_ACP, attachment->file);
+    m_fd[index].lpszFileName = NULL;  // use the same name as in lpszPathName
+    m_fd[index].lpFileType = NULL;
+    m_fd[index].nPosition = (ULONG) -1;
+
+    const dt_image_t *img =
+      dt_image_cache_get(darktable.image_cache, attachment->imgid, 'r');
+    dt_image_print_exif(img, exif, sizeof(exif));
+    dt_image_cache_read_release(darktable.image_cache, img);
+
+    gchar *imgbody = g_strdup_printf(imageBodyFormat, filename, exif);
+    if(body != NULL)
+    {
+      gchar *body_bak = body;
+      body = g_strconcat(body_bak, imgbody, NULL);
+      g_free(body_bak);
+    }
+    else
+    {
+      body = g_strdup(imgbody);
+    }
+
+    g_free(imgbody);
+    g_free(filename);
+    index++;
+  }
+
+  MapiMessage m_msg;
+  ZeroMemory(&m_msg, sizeof (m_msg));
+  m_msg.lpszSubject = (LPSTR) _convert_to_widechar(CP_UTF8, 
+                                                   _("images exported from darktable"));
+  m_msg.lpszNoteText = (LPSTR) _convert_to_widechar(CP_ACP, body);
+
+  m_msg.nFileCount = num_images;
+
+  // Pointer to an array of MapiFileDesc structures.
+  // Each structure contains information about one file attachment.
+  m_msg.lpFiles = m_fd;
+
+  SendMail(0L,      // use implicit session
+           0L,      // ulUIParam; 0 is always valid
+           &m_msg,  // the message being sent
+           MAPI_LOGON_UI|MAPI_DIALOG,
+           0);      // reserved, must be 0
+
+  g_free(m_msg.lpszSubject);
+  g_free(m_msg.lpszNoteText);
+  for(index = 0; index < num_images; index++)
+    g_free(m_fd[index].lpszPathName);
+  g_free(m_fd);
+}
+
+#else // this is for !_WIN32
 void finalize_store(dt_imageio_module_storage_t *self,
                     dt_imageio_module_data_t *params)
 {
@@ -305,6 +415,7 @@ void finalize_store(dt_imageio_module_storage_t *self,
     dt_control_log(_("could not launch email client!"));
   }
 }
+#endif // !_WIN32
 
 gboolean supported(struct dt_imageio_module_storage_t *storage,
                    struct dt_imageio_module_format_t *format)
