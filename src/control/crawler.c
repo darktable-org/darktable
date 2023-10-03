@@ -52,7 +52,7 @@ typedef enum dt_control_crawler_cols_t
 
 typedef struct dt_control_crawler_result_t
 {
-  int id;
+  dt_imgid_t id;
   time_t timestamp_xmp;
   time_t timestamp_db;
   char *image_path, *xmp_path;
@@ -127,8 +127,8 @@ GList *dt_control_crawler_run(void)
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    const int id = sqlite3_column_int(stmt, 0);
-    const time_t timestamp = sqlite3_column_int(stmt, 1);
+    const dt_imgid_t id = sqlite3_column_int(stmt, 0);
+    const time_t timestamp = sqlite3_column_int64(stmt, 1);
     const int version = sqlite3_column_int(stmt, 2);
     const gchar *image_path = (char *)sqlite3_column_text(stmt, 3);
     int flags = sqlite3_column_int(stmt, 4);
@@ -355,7 +355,7 @@ static void _db_update_timestamp(const int id, const time_t timestamp)
      " SET write_timestamp = ?2"
      " WHERE id = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, timestamp);
+  DT_DEBUG_SQLITE3_BIND_INT64(stmt, 2, timestamp);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 }
