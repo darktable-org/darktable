@@ -21,16 +21,6 @@
 #include "gui/gtk.h"
 #include <string.h>
 
-static void _button_class_init(GtkDarktableButtonClass *klass);
-static void _button_init(GtkDarktableButton *button);
-static gboolean _button_draw(GtkWidget *widget, cairo_t *cr);
-
-static void _button_class_init(GtkDarktableButtonClass *klass)
-{
-  GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
-
-  widget_class->draw = _button_draw;
-}
 
 static void _button_init(GtkDarktableButton *button)
 {
@@ -110,6 +100,13 @@ static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
   }
 
   return FALSE;
+}
+
+static void _button_class_init(GtkDarktableButtonClass *klass)
+{
+  GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
+
+  widget_class->draw = _button_draw;
 }
 
 // Public functions
