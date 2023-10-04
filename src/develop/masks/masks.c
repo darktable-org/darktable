@@ -1081,8 +1081,10 @@ int dt_masks_events_mouse_leave(struct dt_iop_module_t *module)
     float zoom_x, zoom_y;
     dt_dev_get_port_params(&dev->full, NULL, NULL, &zoom_x, &zoom_y);
 
-    gui->posx = (.5f + zoom_x) * dev->preview_pipe->backbuf_width;
-    gui->posy = (.5f + zoom_y) * dev->preview_pipe->backbuf_height;
+    float wd, ht;
+    dt_masks_get_image_size(&wd, &ht, NULL, NULL);
+    gui->posx = (.5f + zoom_x) * wd;
+    gui->posy = (.5f + zoom_y) * ht;
 
     dt_control_hinter_message(darktable.control, "");
   }
@@ -1105,12 +1107,15 @@ int dt_masks_events_mouse_moved(struct dt_iop_module_t *module,
   dt_masks_form_gui_t *gui = darktable.develop->form_gui;
   dt_masks_form_t *form = darktable.develop->form_visible;
 
+
   if(gui)
   {
     // This assume that if this event is generated the mouse is over
     // the center window
-    gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
-    gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
+    float wd, ht;
+    dt_masks_get_image_size(&wd, &ht, NULL, NULL);
+    gui->posx = pzx * wd;
+    gui->posy = pzy * ht;
   }
 
   int rep = 0;
@@ -2481,8 +2486,10 @@ void dt_masks_set_source_pos_initial_state(dt_masks_form_gui_t *gui,
   // both source types record an absolute position, for the relative
   // type, the first time is used the position is recorded, the second
   // time a relative position is calculated based on that one
-  gui->posx_source = pzx * darktable.develop->preview_pipe->backbuf_width;
-  gui->posy_source = pzy * darktable.develop->preview_pipe->backbuf_height;
+  float wd, ht;
+  dt_masks_get_image_size(&wd, &ht, NULL, NULL);
+  gui->posx_source = pzx * wd;
+  gui->posy_source = pzy * ht;
 }
 
 // set the initial source position value for a clone mask
@@ -2492,10 +2499,8 @@ void dt_masks_set_source_pos_initial_value(dt_masks_form_gui_t *gui,
                                            const float pzx,
                                            const float pzy)
 {
-  const float wd = darktable.develop->preview_pipe->backbuf_width;
-  const float ht = darktable.develop->preview_pipe->backbuf_height;
-  const float iwd = darktable.develop->preview_pipe->iwidth;
-  const float iht = darktable.develop->preview_pipe->iheight;
+  float wd, ht, iwidth, iheight;
+  dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
 
   // if this is the first time the relative pos is used
   if(gui->source_pos_type == DT_MASKS_SOURCE_POS_RELATIVE_TEMP)
@@ -2505,7 +2510,7 @@ void dt_masks_set_source_pos_initial_value(dt_masks_form_gui_t *gui,
     {
       if(form->functions && form->functions->initial_source_pos)
       {
-        form->functions->initial_source_pos(iwd, iht, &gui->posx_source, &gui->posy_source);
+        form->functions->initial_source_pos(iwidth, iheight, &gui->posx_source, &gui->posy_source);
       }
       else
         dt_print(DT_DEBUG_ALWAYS, "[dt_masks_set_source_pos_initial_value]"
@@ -2514,8 +2519,8 @@ void dt_masks_set_source_pos_initial_value(dt_masks_form_gui_t *gui,
       float pts[2] = { pzx * wd + gui->posx_source, pzy * ht + gui->posy_source };
       dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
-      form->source[0] = pts[0] / iwd;
-      form->source[1] = pts[1] / iht;
+      form->source[0] = pts[0] / iwidth;
+      form->source[1] = pts[1] / iheight;
     }
     else
     {
@@ -2524,8 +2529,8 @@ void dt_masks_set_source_pos_initial_value(dt_masks_form_gui_t *gui,
       float pts[2] = { gui->posx_source, gui->posy_source };
       dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
-      form->source[0] = pts[0] / iwd;
-      form->source[1] = pts[1] / iht;
+      form->source[0] = pts[0] / iwidth;
+      form->source[1] = pts[1] / iheight;
 
       gui->posx_source = gui->posx_source - pzx * wd;
       gui->posy_source = gui->posy_source - pzy * ht;
@@ -2541,8 +2546,8 @@ void dt_masks_set_source_pos_initial_value(dt_masks_form_gui_t *gui,
                      pzy * ht + gui->posy_source };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
-    form->source[0] = pts[0] / iwd;
-    form->source[1] = pts[1] / iht;
+    form->source[0] = pts[0] / iwidth;
+    form->source[1] = pts[1] / iheight;
   }
   else if(gui->source_pos_type == DT_MASKS_SOURCE_POS_ABSOLUTE)
   {
@@ -2550,8 +2555,8 @@ void dt_masks_set_source_pos_initial_value(dt_masks_form_gui_t *gui,
     float pts_src[2] = { gui->posx_source, gui->posy_source };
     dt_dev_distort_backtransform(darktable.develop, pts_src, 1);
 
-    form->source[0] = pts_src[0] / iwd;
-    form->source[1] = pts_src[1] / iht;
+    form->source[0] = pts_src[0] / iwidth;
+    form->source[1] = pts_src[1] / iheight;
   }
   else
     dt_print(DT_DEBUG_ALWAYS, "[dt_masks_set_source_pos_initial_value]"
@@ -2569,10 +2574,13 @@ void dt_masks_calculate_source_pos_value(dt_masks_form_gui_t *gui,
                                          float *py,
                                          const int adding)
 {
+  float wd, ht, iwidth, iheight;
+  dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
+
   float x = 0.0f, y = 0.0f;
   const float pr_d = darktable.develop->preview_downsampling;
-  const float iwd = pr_d * darktable.develop->preview_pipe->iwidth;
-  const float iht = pr_d * darktable.develop->preview_pipe->iheight;
+  const float iwd = pr_d * iwidth;
+  const float iht = pr_d * iheight;
 
   if(gui->source_pos_type == DT_MASKS_SOURCE_POS_RELATIVE)
   {

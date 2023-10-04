@@ -198,8 +198,11 @@ static int _group_events_mouse_moved(struct dt_iop_module_t *module,
     float dist = FLT_MAX;
     inside = inside_border = inside_source = 0;
     near = -1;
-    const float xx = pzx * darktable.develop->preview_pipe->backbuf_width,
-                yy = pzy * darktable.develop->preview_pipe->backbuf_height;
+
+    float wd, ht;
+    dt_masks_get_image_size(&wd, &ht, NULL, NULL);
+    const float xx = pzx * wd,
+                yy = pzy * ht;
     if(frm && frm->functions && frm->functions->get_distance)
       frm->functions->get_distance(xx, yy, as, gui, pos, g_list_length(frm->points),
                                    &inside, &inside_border, &near, &inside_source, &dist);
