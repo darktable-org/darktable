@@ -109,6 +109,13 @@ void dt_dev_init(dt_develop_t *dev,
     dev->histogram_pre_levels_max = -1;
     dev->darkroom_mouse_in_center_area = FALSE;
     dev->darkroom_skip_mouse_events = FALSE;
+
+    if(darktable.gui)
+    {
+      dev->full.ppd = darktable.gui->ppd;
+      dev->full.dpi = darktable.gui->dpi;
+      dev->full.dpi_factor = darktable.gui->dpi_factor;
+    }
   }
 
   dev->iop_instance = 0;
@@ -486,7 +493,7 @@ restart:
   dt_dev_zoom_t zoom;
   int closeup;
   float zoom_x, zoom_y;
-  dt_dev_get_port_params(port, &zoom, &closeup, &zoom_x, &zoom_y);
+  dt_dev_get_viewport_params(port, &zoom, &closeup, &zoom_x, &zoom_y);
   const float scale = dt_dev_get_zoom_scale(port, zoom, 1.0f, 0) * port->ppd;
   int window_width = port->width * port->ppd;
   int window_height = port->height * port->ppd;
@@ -621,7 +628,7 @@ restart:
   dt_dev_zoom_t zoom;
   int closeup;
   float zoom_x, zoom_y;
-  dt_dev_get_port_params(port, &zoom, &closeup, &zoom_x, &zoom_y);
+  dt_dev_get_viewport_params(port, &zoom, &closeup, &zoom_x, &zoom_y);
   const float scale = dt_dev_get_zoom_scale(port, zoom, 1.0f, 0) * port->ppd;
   int window_width = port->width * port->ppd;
   int window_height = port->height * port->ppd;
@@ -770,7 +777,7 @@ float dt_dev_get_zoom_scale_full(void)
 {
   dt_dev_zoom_t zoom;
   int closeup;
-  dt_dev_get_port_params(&darktable.develop->full, &zoom, &closeup, NULL, NULL);
+  dt_dev_get_viewport_params(&darktable.develop->full, &zoom, &closeup, NULL, NULL);
   const float zoom_scale = dt_dev_get_zoom_scale(&darktable.develop->full, zoom, 1 << closeup, 1);
 
   return zoom_scale;
@@ -780,7 +787,7 @@ float dt_dev_get_zoomed_in(void)
 {
   dt_dev_zoom_t zoom;
   int closeup;
-  dt_dev_get_port_params(&darktable.develop->full, &zoom, &closeup, NULL, NULL);
+  dt_dev_get_viewport_params(&darktable.develop->full, &zoom, &closeup, NULL, NULL);
   const float min_scale = dt_dev_get_zoom_scale(&darktable.develop->full, DT_ZOOM_FIT, 1<<closeup, 0);
   const float cur_scale = dt_dev_get_zoom_scale(&darktable.develop->full, zoom, 1<<closeup, 0);
 
@@ -2920,7 +2927,7 @@ void dt_dev_get_pointer_zoom_pos(dt_dev_viewport_t *port,
   dt_dev_zoom_t zoom;
   int closeup = 0, procw = 0, proch = 0;
   float zoom2_x = 0.0f, zoom2_y = 0.0f;
-  dt_dev_get_port_params(port, &zoom, &closeup, &zoom2_x, &zoom2_y);
+  dt_dev_get_viewport_params(port, &zoom, &closeup, &zoom2_x, &zoom2_y);
   dt_dev_get_processed_size(port, &procw, &proch);
   const float scale = dt_dev_get_zoom_scale(port, zoom, 1<<closeup, 0);
   const double tb = port->border_size;
@@ -2934,11 +2941,11 @@ void dt_dev_get_pointer_zoom_pos(dt_dev_viewport_t *port,
   *zoom_scale = dt_dev_get_zoom_scale(port, zoom, 1<<closeup, 1);
 }
 
-void dt_dev_get_port_params(dt_dev_viewport_t *port,
-                            dt_dev_zoom_t *zoom,
-                            int *closeup,
-                            float *x,
-                            float *y)
+void dt_dev_get_viewport_params(dt_dev_viewport_t *port,
+                                dt_dev_zoom_t *zoom,
+                                int *closeup,
+                                float *x,
+                                float *y)
 {
   dt_pthread_mutex_lock(&(darktable.control->global_mutex));
   if(zoom) *zoom = port->zoom;
@@ -2948,11 +2955,11 @@ void dt_dev_get_port_params(dt_dev_viewport_t *port,
   dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
 }
 
-void dt_dev_set_port_params(dt_dev_viewport_t *port,
-                            dt_dev_zoom_t zoom,
-                            int closeup,
-                            float x,
-                            float y)
+void dt_dev_set_viewport_params(dt_dev_viewport_t *port,
+                                dt_dev_zoom_t zoom,
+                                int closeup,
+                                float x,
+                                float y)
 {
   dt_pthread_mutex_lock(&(darktable.control->global_mutex));
   port->zoom = zoom;

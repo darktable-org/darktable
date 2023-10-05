@@ -436,16 +436,16 @@ void dt_dev_get_pointer_zoom_pos(dt_dev_viewport_t *port,
                                  float *zoom_x,
                                  float *zoom_y,
                                  float *zoom_scale);
-void dt_dev_get_port_params(dt_dev_viewport_t *port,
-                            dt_dev_zoom_t *zoom,
-                            int *closeup,
-                            float *x,
-                            float *y);
-void dt_dev_set_port_params(dt_dev_viewport_t *port,
-                            dt_dev_zoom_t zoom,
-                            int closeup,
-                            float x,
-                            float y);
+void dt_dev_get_viewport_params(dt_dev_viewport_t *port,
+                                dt_dev_zoom_t *zoom,
+                                int *closeup,
+                                float *x,
+                                float *y);
+void dt_dev_set_viewport_params(dt_dev_viewport_t *port,
+                                dt_dev_zoom_t zoom,
+                                int closeup,
+                                float x,
+                                float y);
 
 void dt_dev_configure(dt_develop_t *dev,
                       int wd,
