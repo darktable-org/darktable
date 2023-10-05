@@ -105,7 +105,7 @@ static void _lib_navigation_control_redraw_callback(gpointer instance,
 
   dt_dev_zoom_t zoom;
   int closeup;
-  dt_dev_get_port_params(port, &zoom, &closeup, NULL, NULL);
+  dt_dev_get_viewport_params(port, &zoom, &closeup, NULL, NULL);
   const float cur_scale = dt_dev_get_zoom_scale(port, zoom, 1<<closeup, 0);
 
   gchar *zoomline = zoom == DT_ZOOM_FIT ? g_strdup(_("fit"))
@@ -277,7 +277,7 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget,
     dt_dev_zoom_t zoom;
     int closeup;
     float zoom_x, zoom_y;
-    dt_dev_get_port_params(&dev->full, &zoom, &closeup, &zoom_x, &zoom_y);
+    dt_dev_get_viewport_params(&dev->full, &zoom, &closeup, &zoom_x, &zoom_y);
     if(dt_dev_get_zoomed_in() > 1.0f)
     {
       // Add a dark overlay on the picture to make it fade

@@ -1079,7 +1079,7 @@ int dt_masks_events_mouse_leave(struct dt_iop_module_t *module)
   {
     dt_masks_form_gui_t *gui = dev->form_gui;
     float zoom_x, zoom_y;
-    dt_dev_get_port_params(&dev->full, NULL, NULL, &zoom_x, &zoom_y);
+    dt_dev_get_viewport_params(&dev->full, NULL, NULL, &zoom_x, &zoom_y);
 
     float wd, ht;
     dt_masks_get_image_size(&wd, &ht, NULL, NULL);

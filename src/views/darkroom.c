@@ -465,7 +465,7 @@ void expose(
   dt_dev_zoom_t zoom;
   int closeup;
   float zoom_x, zoom_y;
-  dt_dev_get_port_params(&dev->full, &zoom, &closeup, &zoom_x, &zoom_y);
+  dt_dev_get_viewport_params(&dev->full, &zoom, &closeup, &zoom_x, &zoom_y);
   float pzx = 0.0f, pzy = 0.0f, zoom_scale = 0.0f;
   dt_dev_get_pointer_zoom_pos(port, pointerx, pointery, &pzx, &pzy, &zoom_scale);
 
@@ -712,7 +712,7 @@ void expose(
 
 void reset(dt_view_t *self)
 {
-  dt_dev_set_port_params(&darktable.develop->full, DT_ZOOM_FIT, 0, 0.0f, 0.0f);
+  dt_dev_set_viewport_params(&darktable.develop->full, DT_ZOOM_FIT, 0, 0.0f, 0.0f);
 }
 
 gboolean try_enter(dt_view_t *self)
@@ -2093,10 +2093,10 @@ static float _action_process_preview(gpointer target,
       if(effect != DT_ACTION_EFFECT_ON)
       {
         dt_ui_restore_panels(darktable.gui->ui);
-        dt_dev_set_port_params(&darktable.develop->full, lib->full_preview_last_zoom,
-                                                         lib->full_preview_last_closeup,
-                                                         lib->full_preview_last_zoom_x,
-                                                         lib->full_preview_last_zoom_y);
+        dt_dev_set_viewport_params(&darktable.develop->full, lib->full_preview_last_zoom,
+                                                             lib->full_preview_last_closeup,
+                                                             lib->full_preview_last_zoom_x,
+                                                             lib->full_preview_last_zoom_y);
         lib->full_preview = FALSE;
         dt_iop_request_focus(lib->full_preview_last_module);
         dt_masks_set_edit_mode(darktable.develop->gui_module, lib->full_preview_masks_state);
@@ -2122,11 +2122,11 @@ static float _action_process_preview(gpointer target,
           if(bd) lib->full_preview_masks_state = bd->masks_shown;
         }
         // we set the zoom values to "fit"
-        dt_dev_get_port_params(&darktable.develop->full, &lib->full_preview_last_zoom,
-                                                         &lib->full_preview_last_closeup,
-                                                         &lib->full_preview_last_zoom_x,
-                                                         &lib->full_preview_last_zoom_y);
-        dt_dev_set_port_params(&darktable.develop->full, DT_ZOOM_FIT, 0, 0.0f, 0.0f);
+        dt_dev_get_viewport_params(&darktable.develop->full, &lib->full_preview_last_zoom,
+                                                             &lib->full_preview_last_closeup,
+                                                             &lib->full_preview_last_zoom_x,
+                                                             &lib->full_preview_last_zoom_y);
+        dt_dev_set_viewport_params(&darktable.develop->full, DT_ZOOM_FIT, 0, 0.0f, 0.0f);
         // we quit the active iop if any
         lib->full_preview_last_module = darktable.develop->gui_module;
         dt_iop_request_focus(NULL);
@@ -2977,7 +2977,7 @@ void enter(dt_view_t *self)
   dt_view_active_images_add(dev->image_storage.id, TRUE);
   dt_ui_thumbtable(darktable.gui->ui)->mouse_inside = FALSE; // consider mouse outside filmstrip by default
 
-  dt_dev_set_port_params(&dev->full, DT_ZOOM_FIT, 0, 0.0f, 0.0f);
+  dt_dev_set_viewport_params(&dev->full, DT_ZOOM_FIT, 0, 0.0f, 0.0f);
 
   // take a copy of the image struct for convenience.
 
@@ -3274,7 +3274,7 @@ static int mouse_in_imagearea(dt_view_t *self, double *x, double *y)
   dt_develop_t *dev = (dt_develop_t *)self->data;
 
   int closeup;
-  dt_dev_get_port_params(&dev->full, NULL, &closeup, NULL, NULL);
+  dt_dev_get_viewport_params(&dev->full, NULL, &closeup, NULL, NULL);
   const int pwidth = (dev->full.pipe->output_backbuf_width<<closeup) / darktable.gui->ppd;
   const int pheight = (dev->full.pipe->output_backbuf_height<<closeup) / darktable.gui->ppd;
 

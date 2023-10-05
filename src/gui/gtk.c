@@ -1467,13 +1467,6 @@ void dt_configure_ppd_dpi(dt_gui_gtk_t *gui)
   }
   gui->dpi_factor
       = gui->dpi / 96; // according to man xrandr and the docs of gdk_screen_set_resolution 96 is the default
-
-  if(darktable.develop)
-  {
-    darktable.develop->full.ppd = gui->ppd;
-    darktable.develop->full.dpi = gui->dpi;
-    darktable.develop->full.dpi_factor = gui->dpi_factor;
-  }
 }
 
 static gboolean _focus_in_out_event(GtkWidget *widget, GdkEvent *event, gpointer user_data)
