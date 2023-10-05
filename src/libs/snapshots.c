@@ -187,6 +187,7 @@ void gui_post_expose(dt_lib_module_t *self,
       // export image with proper size
       dt_dev_image_ext(snap->imgid, width, height, snap->history_end,
                        &d->params.buf, &d->params.width, &d->params.height,
+                       &snap->zoom_x, &snap->zoom_y,
                        dev->full.border_size, dev->iso_12646.enabled, snap->id);
 
       if(snap->surface) cairo_surface_destroy(snap->surface);
@@ -195,8 +196,6 @@ void gui_post_expose(dt_lib_module_t *self,
 
       snap->width  = d->params.width;
       snap->height = d->params.height;
-      snap->zoom_x = dev->full.pipe->backbuf_zoom_x;
-      snap->zoom_y = dev->full.pipe->backbuf_zoom_y;
       d->snap_requested = FALSE;
       d->expose_again_timeout_id = -1;
     }
