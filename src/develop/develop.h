@@ -655,6 +655,8 @@ void dt_dev_image_ext(const dt_imgid_t imgid,
                       uint8_t **buf,
                       size_t *processed_width,
                       size_t *processed_height,
+                      float *zoom_x,
+                      float *zoom_y,
                       const int border_size,
                       const gboolean iso_12646,
                       const int32_t snapshot_id);

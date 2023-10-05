@@ -618,17 +618,20 @@ restart:
   // this locks dev->history_mutex.
   dt_dev_pixelpipe_change(port->pipe, dev);
 
+  dt_dev_viewport_t *darkport = &darktable.develop->full;
   // if just changed to an image with a different aspect ratio or
   // altered image orientation, the prior zoom xy could now be beyond
   // the image boundary
-  if(port->loading || (pipe_changed != DT_DEV_PIPE_UNCHANGED))
-    dt_dev_zoom_move(&darktable.develop->full, DT_ZOOM_MOVE, 0.0f, 0, 0.0f, 0.0f, TRUE);
+  if(darkport->loading || (pipe_changed != DT_DEV_PIPE_UNCHANGED))
+    dt_dev_zoom_move(darkport, DT_ZOOM_MOVE, 0.0f, 0, 0.0f, 0.0f, TRUE);
 
   // determine scale according to new dimensions
   dt_dev_zoom_t zoom;
   int closeup;
   float zoom_x, zoom_y;
-  dt_dev_get_viewport_params(port, &zoom, &closeup, &zoom_x, &zoom_y);
+  dt_dev_get_viewport_params(darkport, &zoom, &closeup, &zoom_x, &zoom_y);
+  dt_dev_set_viewport_params(    port,  zoom,  closeup,  zoom_x,  zoom_y);
+  port->zoom_scale = darkport->zoom_scale;
   const float scale = dt_dev_get_zoom_scale(port, zoom, 1.0f, 0) * port->ppd;
   int window_width = port->width * port->ppd;
   int window_height = port->height * port->ppd;
@@ -3745,6 +3748,8 @@ void dt_dev_image_ext(const dt_imgid_t imgid,
                       uint8_t **buf,
                       size_t *processed_width,
                       size_t *processed_height,
+                      float *zoom_x,
+                      float *zoom_y,
                       const int border_size,
                       const gboolean iso_12646,
                       const int32_t snapshot_id)
@@ -3782,6 +3787,8 @@ void dt_dev_image_ext(const dt_imgid_t imgid,
   memcpy(*buf, dev.full.pipe->backbuf, bufsize);
   *processed_width  = dev.full.pipe->backbuf_width;
   *processed_height = dev.full.pipe->backbuf_height;
+  if(zoom_x) *zoom_x = dev.full.pipe->backbuf_zoom_x;
+  if(zoom_y) *zoom_y = dev.full.pipe->backbuf_zoom_y;
 
   // we take the backbuf, avoid it to be released
 
@@ -3801,6 +3808,7 @@ void dt_dev_image(const dt_imgid_t imgid,
   dt_dev_image_ext(imgid, width, height,
                    history_end,
                    buf, processed_width, processed_height,
+                   NULL, NULL,
                    darktable.develop->full.border_size,
                    darktable.develop->iso_12646.enabled, -1);
 }
