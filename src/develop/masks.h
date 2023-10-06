@@ -267,6 +267,7 @@ typedef struct dt_masks_functions_t
                      float pzy,
                      const double pressure,
                      const int which,
+                     const float zoom_scale,
                      struct dt_masks_form_t *form,
                      const dt_imgid_t parentid,
                      struct dt_masks_form_gui_t *gui,
@@ -358,7 +359,6 @@ typedef struct dt_masks_form_gui_t
   // values for mouse positions, etc...
   float posx, posy, dx, dy, scrollx, scrolly, posx_source, posy_source;
   // TRUE if mouse has leaved the center window
-  gboolean mouse_leaved_center;
   gboolean form_selected;
   gboolean border_selected;
   gboolean source_selected;
@@ -524,33 +524,36 @@ void dt_masks_reset_form_gui(void);
 void dt_masks_reset_show_masks_icons(void);
 
 int dt_masks_events_mouse_moved(struct dt_iop_module_t *module,
-                                const double x,
-                                const double y,
+                                const float x,
+                                const float y,
                                 const double pressure,
-                                const int which);
+                                const int which,
+                                const float zoom_scale);
 int dt_masks_events_button_released(struct dt_iop_module_t *module,
-                                    const double x,
-                                    const double y,
+                                    const float x,
+                                    const float y,
                                     const int which,
-                                    const uint32_t state);
+                                    const uint32_t state,
+                                    const float zoom_scale);
 int dt_masks_events_button_pressed(struct dt_iop_module_t *module,
-                                   const double x,
-                                   const double y,
+                                   const float x,
+                                   const float y,
                                    const double pressure,
                                    const int which,
                                    const int type,
                                    const uint32_t state);
 int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module,
-                                   const double x,
-                                   const double y,
+                                   const float x,
+                                   const float y,
                                    const gboolean up,
                                    const uint32_t state);
 void dt_masks_events_post_expose(struct dt_iop_module_t *module,
                                  cairo_t *cr,
                                  const int32_t width,
                                  const int32_t height,
-                                 const int32_t pointerx,
-                                 const int32_t pointery);
+                                 const float pointerx,
+                                 const float pointery,
+                                 const float zoom_scale);
 int dt_masks_events_mouse_leave(struct dt_iop_module_t *module);
 int dt_masks_events_mouse_enter(struct dt_iop_module_t *module);
 
@@ -945,6 +948,18 @@ void dt_masks_line_stroke(cairo_t *cr,
 static inline float dt_masks_sensitive_dist(const float zoom_scale)
 {
   return DT_PIXEL_APPLY_DPI(7) / zoom_scale;
+}
+
+static inline void dt_masks_get_image_size(float *width,
+                                          float *height,
+                                          float *iwidth,
+                                          float *iheight)
+{
+  dt_dev_pixelpipe_t *preview = darktable.develop->preview_pipe;
+  if(width  ) *width   = preview->backbuf_width;
+  if(height ) *height  = preview->backbuf_height;
+  if(iwidth ) *iwidth  = preview->iwidth;
+  if(iheight) *iheight = preview->iheight;
 }
 
 #ifdef __cplusplus

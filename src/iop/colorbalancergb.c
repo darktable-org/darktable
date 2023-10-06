@@ -1824,8 +1824,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   // or it is not a matrix profile, fall back to sRGB.
   const dt_iop_order_iccprofile_info_t *output_profile = NULL;
 
-  if(self->dev && self->dev->pipe)
-    output_profile = dt_ioppr_get_pipe_output_profile_info(self->dev->pipe);
+  if(self->dev && self->dev->full.pipe)
+    output_profile = dt_ioppr_get_pipe_output_profile_info(self->dev->full.pipe);
 
   if(!output_profile || !dt_is_valid_colormatrix(output_profile->matrix_out[0][0]))
   {

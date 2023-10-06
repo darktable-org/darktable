@@ -187,7 +187,8 @@ void gui_post_expose(dt_lib_module_t *self,
       // export image with proper size
       dt_dev_image_ext(snap->imgid, width, height, snap->history_end,
                        &d->params.buf, &d->params.width, &d->params.height,
-                       dev->border_size, dev->iso_12646.enabled, snap->id);
+                       &snap->zoom_x, &snap->zoom_y,
+                       dev->full.border_size, dev->iso_12646.enabled, snap->id);
 
       if(snap->surface) cairo_surface_destroy(snap->surface);
       snap->surface = dt_view_create_surface(d->params.buf,
@@ -195,8 +196,6 @@ void gui_post_expose(dt_lib_module_t *self,
 
       snap->width  = d->params.width;
       snap->height = d->params.height;
-      snap->zoom_x = dev->pipe->backbuf_zoom_x;
-      snap->zoom_y = dev->pipe->backbuf_zoom_y;
       d->snap_requested = FALSE;
       d->expose_again_timeout_id = -1;
     }
@@ -219,8 +218,9 @@ void gui_post_expose(dt_lib_module_t *self,
       d->expose_again_timeout_id = g_timeout_add(150, _snap_expose_again, d);
     }
 
-    float pzx, pzy;
-    dt_dev_get_pointer_zoom_pos(dev, 0, 0, &pzx, &pzy);
+    float pzx, pzy, zoom_scale;
+    dt_dev_get_pointer_zoom_pos(&dev->full, 0, 0, &pzx, &pzy, &zoom_scale);
+
     pzx = fmin(pzx + 0.5f, 0.0f);
     pzy = fmin(pzy + 0.5f, 0.0f);
 
@@ -256,7 +256,7 @@ void gui_post_expose(dt_lib_module_t *self,
       // display snapshot image surface
       dt_view_paint_surface(cri, width, height,
                             snap->surface, snap->width, snap->height, DT_WINDOW_MAIN,
-                            dev->pipe->backbuf_scale, snap->zoom_x, snap->zoom_y);
+                            dev->full.pipe->backbuf_scale, snap->zoom_x, snap->zoom_y);
     }
 
     cairo_reset_clip(cri);
@@ -265,10 +265,6 @@ void gui_post_expose(dt_lib_module_t *self,
     dt_draw_set_color_overlay(cri, TRUE, 0.7);
 
     cairo_set_line_width(cri, 1.);
-
-    const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-    const int closeup = dt_control_get_dev_closeup();
-    const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
 
     if(d->vertical)
     {

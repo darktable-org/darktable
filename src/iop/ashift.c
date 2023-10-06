@@ -4161,12 +4161,55 @@ static int call_distort_transform(dt_develop_t *dev,
   //  eliminates the glitch.
 }
 
-void gui_post_expose(struct dt_iop_module_t *self,
+static float _calculate_straightening(dt_iop_module_t *self,
+                                      float pzx, float pzy,
+                                      float bzx, float bzy,
+                                      float wd, float ht,
+                                      float zoom_scale)
+{
+  float dx = (pzx - bzx) * wd, dy = (pzy - bzy) * ht;
+  if(sqrt(dx * dx + dy * dy) * zoom_scale < DT_PIXEL_APPLY_DPI(25))
+    return 0.0f;
+
+  // adjust the line with possible current angle and flip on this module
+  float pts[4] = { 0, 0, dx, dy };
+  dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe,
+                                    self->iop_order,
+                                    DT_DEV_TRANSFORM_DIR_FORW_EXCL, pts, 2);
+  dx = pts[0] - pts[2];
+  dy = pts[1] - pts[3];
+
+  if(dx < 0)
+  {
+    dx = -dx;
+    dy = -dy;
+  }
+
+  float angle = atan2f(dy, dx);
+  if(!(angle >= -M_PI / 2.0 && angle <= M_PI / 2.0))
+    return 0.0f;
+  float close = angle;
+  if(close > M_PI / 4.0)
+    close = M_PI / 2.0 - close;
+  else if(close < -M_PI / 4.0)
+    close = -M_PI / 2.0 - close;
+  else
+    close = -close;
+
+  float a = 180.0 / M_PI * close;
+  if(a < -180.0) a += 360.0;
+  if(a > 180.0) a -= 360.0;
+
+  return a;
+}
+
+void gui_post_expose(dt_iop_module_t *self,
                      cairo_t *cr,
                      const int32_t width,
                      const int32_t height,
-                     const int32_t pointerx,
-                     const int32_t pointery)
+                     const float pzx,
+                     const float pzy,
+                     const float zoom_scale)
 {
   dt_develop_t *dev = self->dev;
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
@@ -4177,11 +4220,6 @@ void gui_post_expose(struct dt_iop_module_t *self,
   const float ht = dev->preview_pipe->backbuf_height;
   if(wd < 1.0 || ht < 1.0) return;
   const float pr_d = dev->preview_downsampling;
-  const float zoom_y = dt_control_get_dev_zoom_y();
-  const float zoom_x = dt_control_get_dev_zoom_x();
-  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  const int closeup = dt_control_get_dev_closeup();
-  const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
 
   const gboolean dimmed = dt_iop_color_picker_is_visible(dev);
   const double lwidth = (dimmed ? 0.5 : 1.0) / zoom_scale;
@@ -4236,35 +4274,11 @@ void gui_post_expose(struct dt_iop_module_t *self,
     double dashes = DT_PIXEL_APPLY_DPI(5.0) / zoom_scale;
     cairo_set_dash(cr, &dashes, 0, 0);
 
-    float cl_x = 0.0f, cl_y = 0.0f, cl_width = 0.0f, cl_height = 0.0f;
-
-    if(wd / (float)width > ht / (float)height)
-    {
-      // more spaces top/bottom
-      cl_x      = self->dev->border_size;
-      cl_y      = ((float)height - (ht * zoom_scale)) / 2.0f;
-      cl_width  = width - 2.0f * self->dev->border_size;
-      cl_height = ht * zoom_scale;
-    }
-    else
-    {
-      // more spaces left/right
-      cl_y      = self->dev->border_size;
-      cl_x      = ((float)width - (wd * zoom_scale)) / 2.0f;
-      cl_height = height - (2.0f * self->dev->border_size);
-      cl_width  = wd * zoom_scale;
-    }
-
-    cairo_rectangle(cr, cl_x, cl_y, cl_width, cl_height);
-    cairo_clip(cr);
-
     // mask parts of image outside of clipping area in dark grey
     cairo_set_source_rgba(cr, fillc, fillc, fillc, 1.0 - fillc);
     cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
-    cairo_rectangle(cr, 0, 0, width, height);
-    cairo_translate(cr, width / 2.0, height / 2.0);
-    cairo_scale(cr, zoom_scale, zoom_scale);
-    cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
+
+    cairo_rectangle(cr, 0, 0, wd, ht);
 
     cairo_move_to(cr, C[0][0], C[0][1]);
     cairo_line_to(cr, C[1][0], C[1][1]);
@@ -4354,18 +4368,10 @@ void gui_post_expose(struct dt_iop_module_t *self,
   if(g->straightening)
   {
     cairo_save(cr);
-    cairo_translate(cr, width / 2.0, height / 2.0);
-    cairo_scale(cr, zoom_scale, zoom_scale);
-    cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
     cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0) * lwidth);
     dt_draw_set_color_overlay(cr, FALSE, 1.0);
 
-    float pzx, pzy;
-    dt_dev_get_pointer_zoom_pos(dev, pointerx, pointery, &pzx, &pzy);
-    pzx += 0.5f;
-    pzy += 0.5f;
-
-    const float bzx = g->straighten_x + .5f, bzy = g->straighten_y + .5f;
+    const float bzx = g->straighten_x, bzy = g->straighten_y;
     cairo_arc(cr, bzx * wd, bzy * ht,
               DT_PIXEL_APPLY_DPI(3) * pr_d / zoom_scale, 0, 2.0 * M_PI);
     cairo_stroke(cr);
@@ -4376,20 +4382,9 @@ void gui_post_expose(struct dt_iop_module_t *self,
     cairo_line_to(cr, pzx * wd, pzy * ht);
     cairo_stroke(cr);
 
-    float dx = pzx * wd - bzx * wd, dy = pzy * ht - bzy * ht;
-    if(sqrt(dx * dx + dy * dy) * zoom_scale >= DT_PIXEL_APPLY_DPI(25))
+    float angle = _calculate_straightening(self, pzx, pzy, bzx, bzy, wd, ht, zoom_scale);
+    if(angle != 0.0f)
     {
-      // show rotation angle
-      if(dx < 0)
-      {
-        dx = -dx;
-        dy = -dy;
-      }
-      float angle = atan2f(dy, dx);
-      angle = angle * 180 / M_PI;
-      if(angle > 45.0) angle -= 90;
-      if(angle < -45.0) angle += 90;
-
       PangoRectangle ink;
       PangoLayout *layout;
       PangoFontDescription *desc =
@@ -4476,11 +4471,6 @@ void gui_post_expose(struct dt_iop_module_t *self,
   if(g->points == NULL || g->points_idx == NULL) return;
 
   cairo_save(cr);
-  cairo_rectangle(cr, 0, 0, width, height);
-  cairo_clip(cr);
-  cairo_translate(cr, width / 2.0, height / 2.0);
-  cairo_scale(cr, zoom_scale, zoom_scale);
-  cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
 
   // this must match the sequence of enum dt_iop_ashift_linecolor_t!
   const float line_colors[5][4] =
@@ -4563,11 +4553,6 @@ void gui_post_expose(struct dt_iop_module_t *self,
   // and we draw the selection box if any
   if(g->isbounding != ASHIFT_BOUNDING_OFF)
   {
-    float pzx = 0.0f, pzy = 0.0f;
-    dt_dev_get_pointer_zoom_pos(dev, pointerx, pointery, &pzx, &pzy);
-    pzx += 0.5f;
-    pzy += 0.5f;
-
     double dashed[] = { 4.0, 4.0 };
     dashed[0] /= zoom_scale;
     dashed[1] /= zoom_scale;
@@ -4587,11 +4572,6 @@ void gui_post_expose(struct dt_iop_module_t *self,
   // indicate which area is used for "near"-ness detection when selecting/deselecting lines
   if(g->near_delta > 0)
   {
-    float pzx = 0.0f, pzy = 0.0f;
-    dt_dev_get_pointer_zoom_pos(dev, pointerx, pointery, &pzx, &pzy);
-    pzx += 0.5f;
-    pzy += 0.5f;
-
     double dashed[] = { 4.0, 4.0 };
     dashed[0] /= zoom_scale;
     dashed[1] /= zoom_scale;
@@ -4635,12 +4615,10 @@ static void _update_lines_count(const dt_iop_ashift_line_t *lines,
 // determine if we are near a drawn line extrema
 static int _draw_near_point(const float x,
                             const float y,
+                            const float zoom_scale,
                             const float *points,
                             const int limit)
 {
-  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  const int closeup = dt_control_get_dev_closeup();
-  const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1 << closeup, 1);
   const float delta = DT_PIXEL_APPLY_DPI(6) / zoom_scale;
 
   for(int i = 0; i < limit; i++)
@@ -4660,11 +4638,12 @@ static void _draw_recompute_line_length(dt_iop_ashift_line_t *line)
                       + (line->p2[1] - line->p1[1]) * (line->p2[1] - line->p1[1]));
 }
 
-int mouse_moved(struct dt_iop_module_t *self,
-                double x,
-                double y,
-                double pressure,
-                int which)
+int mouse_moved(dt_iop_module_t *self,
+                const float pzx,
+                const float pzy,
+                const double pressure,
+                const int which,
+                const float zoom_scale)
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
@@ -4679,12 +4658,6 @@ int mouse_moved(struct dt_iop_module_t *self,
   const float wd = self->dev->preview_pipe->backbuf_width;
   const float ht = self->dev->preview_pipe->backbuf_height;
   const float pr_d = self->dev->preview_downsampling;
-  if(wd < 1.0 || ht < 1.0) return 1;
-
-  float pzx = 0.0f, pzy = 0.0f;
-  dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
-  pzx += 0.5f;
-  pzy += 0.5f;
 
   if(g->adjust_crop)
   {
@@ -4858,7 +4831,7 @@ int mouse_moved(struct dt_iop_module_t *self,
       ? g->lines_count * 2
       : 4;
 
-    g->draw_near_point = _draw_near_point(pzx * wd, pzy * ht, g->draw_points, limit);
+    g->draw_near_point = _draw_near_point(pzx * wd, pzy * ht, zoom_scale, g->draw_points, limit);
   }
 
   // if in rectangle selecting mode adjust "near"-ness of lines according to
@@ -4923,13 +4896,14 @@ int mouse_moved(struct dt_iop_module_t *self,
   return (g->isdeselecting || g->isselecting);
 }
 
-int button_pressed(struct dt_iop_module_t *self,
-                   const double x,
-                   const double y,
+int button_pressed(dt_iop_module_t *self,
+                   const float pzx,
+                   const float pzy,
                    const double pressure,
                    const int which,
                    const int type,
-                   const uint32_t state)
+                   const uint32_t state,
+                   const float zoom_scale)
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   gboolean handled = FALSE;
@@ -4937,11 +4911,6 @@ int button_pressed(struct dt_iop_module_t *self,
   // avoid unexpected back to lt mode:
   if(type == GDK_2BUTTON_PRESS && which == 1)
     return TRUE;
-
-  float pzx = 0.0f, pzy = 0.0f;
-  dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
-  pzx += 0.5f;
-  pzy += 0.5f;
 
   const float wd = self->dev->preview_pipe->backbuf_width;
   const float ht = self->dev->preview_pipe->backbuf_height;
@@ -4952,10 +4921,8 @@ int button_pressed(struct dt_iop_module_t *self,
   {
     dt_control_change_cursor(GDK_CROSSHAIR);
     g->straightening = TRUE;
-    g->lastx = x;
-    g->lasty = y;
-    g->straighten_x = pzx - 0.5f;
-    g->straighten_y = pzy - 0.5f;
+    g->straighten_x = pzx;
+    g->straighten_y = pzy;
     return TRUE;
   }
 
@@ -4994,8 +4961,8 @@ int button_pressed(struct dt_iop_module_t *self,
      && g->draw_near_point >= 0)
   {
     g->draw_point_move = TRUE;
-    g->lastx = x;
-    g->lasty = y;
+    g->lastx = pzx;
+    g->lasty = pzy;
     return TRUE;
   }
 
@@ -5016,13 +4983,8 @@ int button_pressed(struct dt_iop_module_t *self,
     return TRUE;
   }
 
-  dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  const int closeup = dt_control_get_dev_closeup();
-  const float min_scale = dt_dev_get_zoom_scale(self->dev, DT_ZOOM_FIT, 1<<closeup, 0);
-  const float cur_scale = dt_dev_get_zoom_scale(self->dev, zoom, 1<<closeup, 0);
-
   // if we are zoomed out (no panning possible) and we have lines to display we take control
-  const int take_control = (cur_scale == min_scale) && (g->points_lines_count > 0);
+  const int take_control = (dt_dev_get_zoomed_in() == 1.0f) && (g->points_lines_count > 0);
 
   if(g->current_structure_method == ASHIFT_METHOD_QUAD
      || g->current_structure_method == ASHIFT_METHOD_LINES)
@@ -5116,8 +5078,8 @@ int button_pressed(struct dt_iop_module_t *self,
   {
     // start to draw a manual line
     g->draw_point_move = TRUE;
-    g->lastx = x;
-    g->lasty = y;
+    g->lastx = pzx;
+    g->lasty = pzy;
 
     // we instantiate a new line with both extrema at the current position
     // and enable the "move point" mode with the second extrema
@@ -5181,11 +5143,12 @@ int button_pressed(struct dt_iop_module_t *self,
   return (take_control || handled);
 }
 
-int button_released(struct dt_iop_module_t *self,
-                    const double x,
-                    const double y,
+int button_released(dt_iop_module_t *self,
+                    const float pzx,
+                    const float pzy,
                     const int which,
-                    const uint32_t state)
+                    const uint32_t state,
+                    const float zoom_scale)
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   const float wd = self->dev->preview_pipe->backbuf_width;
@@ -5205,40 +5168,14 @@ int button_released(struct dt_iop_module_t *self,
   if(g->straightening)
   {
     g->straightening = FALSE;
-    // adjust the line with possible current angle and flip on this module
-    float pts[4] = { x, y, g->lastx, g->lasty };
-    dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe,
-                                      self->iop_order,
-                                      DT_DEV_TRANSFORM_DIR_FORW_EXCL, pts, 2);
 
-    float dx = pts[0] - pts[2];
-    float dy = pts[1] - pts[3];
-    if(sqrt(dx * dx + dy * dy) /* zoom_scale */ < DT_PIXEL_APPLY_DPI(25))
-      return TRUE;
+    float bzx = g->straighten_x, bzy = g->straighten_y;
+    float angle = _calculate_straightening(self, pzx, pzy, bzx, bzy, wd, ht, zoom_scale);
+    if(angle == 0.0f) return TRUE;
 
-    if(dx < 0)
-    {
-      dx = -dx;
-      dy = -dy;
-    }
-
-    float angle = atan2f(dy, dx);
-    if(!(angle >= -M_PI / 2.0 && angle <= M_PI / 2.0)) angle = 0.0f;
-    float close = angle;
-    if(close > M_PI / 4.0)
-      close = M_PI / 2.0 - close;
-    else if(close < -M_PI / 4.0)
-      close = -M_PI / 2.0 - close;
-    else
-      close = -close;
-
-    float a = 180.0 / M_PI * close;
-    if(a < -180.0) a += 360.0;
-    if(a > 180.0) a -= 360.0;
-
-    float n = dt_bauhaus_slider_get(g->rotation) - a;
+    float n = dt_bauhaus_slider_get(g->rotation) - angle;
     dt_bauhaus_slider_set(g->rotation, n);
-    dt_toast_log(_("rotation adjusted by %3.1f° to %3.1f°"), -a, n);
+    dt_toast_log(_("rotation adjusted by %3.2f° to %3.2f°"), - angle, n);
     return TRUE;
   }
 
@@ -5298,12 +5235,6 @@ int button_released(struct dt_iop_module_t *self,
     gboolean handled = FALSE;
 
     // we compute the rectangle selection
-    float pzx = 0.0f, pzy = 0.0f;
-    dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
-
-    pzx += 0.5f;
-    pzy += 0.5f;
-
     if(wd >= 1.0 && ht >= 1.0)
     {
       // mark lines inside the rectangle
@@ -5362,8 +5293,8 @@ int button_released(struct dt_iop_module_t *self,
 }
 
 int scrolled(struct dt_iop_module_t *self,
-             const double x,
-             const double y,
+             const float pzx,
+             const float pzy,
              const int up,
              const uint32_t state)
 {
@@ -5375,11 +5306,6 @@ int scrolled(struct dt_iop_module_t *self,
   if(g->near_delta > 0 && (g->isdeselecting || g->isselecting))
   {
     gboolean handled = FALSE;
-
-    float pzx = 0.0f, pzy = 0.0f;
-    dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
-    pzx += 0.5f;
-    pzy += 0.5f;
 
     const float wd = self->dev->preview_pipe->backbuf_width;
     const float ht = self->dev->preview_pipe->backbuf_height;

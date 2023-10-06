@@ -363,8 +363,13 @@ static void draw_overlay(cairo_t *cr, float x, float y, float fx, float fy, int 
 
 // FIXME: For portrait images the overlay is a bit off. The coordinates in mouse_moved seem to be ok though.
 // WTF?
-void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height,
-                     int32_t pointerx, int32_t pointery)
+void gui_post_expose(dt_iop_module_t *self,
+                     cairo_t *cr,
+                     const int32_t width,
+                     const int32_t height,
+                     const float pzx,
+                     const float pzy,
+                     const float zoom_scale)
 {
   dt_develop_t *dev = self->dev;
   //   dt_iop_vignette_gui_data_t *g = (dt_iop_vignette_gui_data_t *)self->gui_data;
@@ -383,19 +388,6 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     bigger_side = ht;
     smaller_side = wd;
   }
-  const float zoom_y = dt_control_get_dev_zoom_y();
-  const float zoom_x = dt_control_get_dev_zoom_x();
-  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  const int closeup = dt_control_get_dev_closeup();
-  const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
-  float pzx, pzy;
-  dt_dev_get_pointer_zoom_pos(dev, pointerx, pointery, &pzx, &pzy);
-  pzx += 0.5f;
-  pzy += 0.5f;
-
-  cairo_translate(cr, width / 2.0, height / 2.0);
-  cairo_scale(cr, zoom_scale, zoom_scale);
-  cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
 
   float vignette_x = (p->center.x + 1.0) * 0.5 * wd;
   float vignette_y = (p->center.y + 1.0) * 0.5 * ht;
@@ -459,7 +451,12 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 }
 
 // FIXME: Pumping of the opposite direction when changing width/height. See two FIXMEs further down.
-int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressure, int which)
+int mouse_moved(dt_iop_module_t *self,
+                const float pzx,
+                const float pzy,
+                const double pressure,
+                const int which,
+                const float zoom_scale)
 {
   dt_iop_vignette_gui_data_t *g = (dt_iop_vignette_gui_data_t *)self->gui_data;
   dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
@@ -476,13 +473,6 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     bigger_side = ht;
     smaller_side = wd;
   }
-  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  const int closeup = dt_control_get_dev_closeup();
-  const float zoom_scale = dt_dev_get_zoom_scale(self->dev, zoom, 1<<closeup, 1);
-  float pzx, pzy;
-  dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
-  pzx += 0.5f;
-  pzy += 0.5f;
   static int old_grab = -1;
   int grab = old_grab;
 
@@ -655,14 +645,25 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   return 0;
 }
 
-int button_pressed(struct dt_iop_module_t *self, double x, double y, double pressure, int which, int type,
-                   uint32_t state)
+int button_pressed(dt_iop_module_t *self,
+                   const float x,
+                   const float y,
+                   const double pressure,
+                   const int which,
+                   const int type,
+                   const uint32_t state,
+                   const float zoom_scale)
 {
   if(which == 1) return 1;
   return 0;
 }
 
-int button_released(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state)
+int button_released(dt_iop_module_t *self,
+                    const float x,
+                    const float y,
+                    const int which,
+                    const uint32_t state,
+                    const float zoom_scale)
 {
   if(which == 1) return 1;
   return 0;

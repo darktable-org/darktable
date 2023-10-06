@@ -180,7 +180,6 @@ void dt_masks_init_form_gui(dt_masks_form_gui_t *gui)
   memset(gui, 0, sizeof(dt_masks_form_gui_t));
 
   gui->posx = gui->posy = -1.0f;
-  gui->mouse_leaved_center = TRUE;
   gui->posx_source = gui->posy_source = -1.0f;
   gui->source_pos_type = DT_MASKS_SOURCE_POS_RELATIVE_TEMP;
 }
@@ -1075,10 +1074,18 @@ void dt_masks_free_form(dt_masks_form_t *form)
 
 int dt_masks_events_mouse_leave(struct dt_iop_module_t *module)
 {
-  if(darktable.develop->form_gui)
+  dt_develop_t *dev = darktable.develop;
+  if(dev->form_gui)
   {
-    dt_masks_form_gui_t *gui = darktable.develop->form_gui;
-    gui->mouse_leaved_center = TRUE;
+    dt_masks_form_gui_t *gui = dev->form_gui;
+    float zoom_x, zoom_y;
+    dt_dev_get_viewport_params(&dev->full, NULL, NULL, &zoom_x, &zoom_y);
+
+    float wd, ht;
+    dt_masks_get_image_size(&wd, &ht, NULL, NULL);
+    gui->posx = (.5f + zoom_x) * wd;
+    gui->posy = (.5f + zoom_y) * ht;
+
     dt_control_hinter_message(darktable.control, "");
   }
   return 0;
@@ -1086,41 +1093,34 @@ int dt_masks_events_mouse_leave(struct dt_iop_module_t *module)
 
 int dt_masks_events_mouse_enter(struct dt_iop_module_t *module)
 {
-  if(darktable.develop->form_gui)
-  {
-    dt_masks_form_gui_t *gui = darktable.develop->form_gui;
-    gui->mouse_leaved_center = FALSE;
-  }
   return 0;
 }
 
 int dt_masks_events_mouse_moved(struct dt_iop_module_t *module,
-                                const double x,
-                                const double y,
+                                const float pzx,
+                                const float pzy,
                                 const double pressure,
-                                const int which)
+                                const int which,
+                                const float zoom_scale)
 {
   // record mouse position even if there are no masks visible
   dt_masks_form_gui_t *gui = darktable.develop->form_gui;
   dt_masks_form_t *form = darktable.develop->form_visible;
-  float pzx = 0.0f, pzy = 0.0f;
 
-  dt_dev_get_pointer_zoom_pos(darktable.develop, x, y, &pzx, &pzy);
-  pzx += 0.5f;
-  pzy += 0.5f;
 
   if(gui)
   {
     // This assume that if this event is generated the mouse is over
     // the center window
-    gui->mouse_leaved_center = FALSE;
-    gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
-    gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
+    float wd, ht;
+    dt_masks_get_image_size(&wd, &ht, NULL, NULL);
+    gui->posx = pzx * wd;
+    gui->posy = pzy * ht;
   }
 
   int rep = 0;
   if(form->functions)
-    rep = form->functions->mouse_moved(module, pzx, pzy, pressure, which, form, 0, gui, 0);
+    rep = form->functions->mouse_moved(module, pzx, pzy, pressure, which, zoom_scale, form, 0, gui, 0);
 
   if(gui) _set_hinter_message(gui, form);
 
@@ -1128,18 +1128,15 @@ int dt_masks_events_mouse_moved(struct dt_iop_module_t *module,
 }
 
 int dt_masks_events_button_released(struct dt_iop_module_t *module,
-                                    const double x,
-                                    const double y,
+                                    const float pzx,
+                                    const float pzy,
                                     const int which,
-                                    const uint32_t state)
+                                    const uint32_t state,
+                                    const float zoom_scale)
 {
   dt_develop_t *dev = darktable.develop;
   dt_masks_form_t *form = dev->form_visible;
   dt_masks_form_gui_t *gui = dev->form_gui;
-  float pzx = 0.0f, pzy = 0.0f;
-  dt_dev_get_pointer_zoom_pos(dev, x, y, &pzx, &pzy);
-  pzx += 0.5f;
-  pzy += 0.5f;
 
   ++darktable.gui->reset;
   if(dev->mask_form_selected_id)
@@ -1150,7 +1147,7 @@ int dt_masks_events_button_released(struct dt_iop_module_t *module,
   {
     const int ret =
       form->functions->button_released(module, pzx, pzy, which, state, form, 0, gui, 0);
-    form->functions->mouse_moved(module, pzx, pzy, 0, which, form, 0, gui, 0);
+    form->functions->mouse_moved(module, pzx, pzy, 0, which, zoom_scale, form, 0, gui, 0);
     return ret;
   }
 
@@ -1158,8 +1155,8 @@ int dt_masks_events_button_released(struct dt_iop_module_t *module,
 }
 
 int dt_masks_events_button_pressed(struct dt_iop_module_t *module,
-                                   const double x,
-                                   const double y,
+                                   const float pzx,
+                                   const float pzy,
                                    const double pressure,
                                    const int which,
                                    const int type,
@@ -1167,10 +1164,6 @@ int dt_masks_events_button_pressed(struct dt_iop_module_t *module,
 {
   dt_masks_form_t *form = darktable.develop->form_visible;
   dt_masks_form_gui_t *gui = darktable.develop->form_gui;
-  float pzx = 0.0f, pzy = 0.0f;
-  dt_dev_get_pointer_zoom_pos(darktable.develop, x, y, &pzx, &pzy);
-  pzx += 0.5f;
-  pzy += 0.5f;
 
   // allow to select a shape inside an iop
   if(gui && which == 1)
@@ -1206,17 +1199,13 @@ int dt_masks_events_button_pressed(struct dt_iop_module_t *module,
 }
 
 int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module,
-                                   const double x,
-                                   const double y,
+                                   const float pzx,
+                                   const float pzy,
                                    const gboolean up,
                                    const uint32_t state)
 {
   dt_masks_form_t *form = darktable.develop->form_visible;
   dt_masks_form_gui_t *gui = darktable.develop->form_gui;
-  float pzx = 0.0f, pzy = 0.0f;
-  dt_dev_get_pointer_zoom_pos(darktable.develop, x, y, &pzx, &pzy);
-  pzx += 0.5f;
-  pzy += 0.5f;
 
   int ret = 0;
   const gboolean incr = dt_mask_scroll_increases(up);
@@ -1254,8 +1243,9 @@ void dt_masks_events_post_expose(struct dt_iop_module_t *module,
                                  cairo_t *cr,
                                  const int32_t width,
                                  const int32_t height,
-                                 const int32_t pointerx,
-                                 const int32_t pointery)
+                                 const float pzx,
+                                 const float pzy,
+                                 const float zoom_scale)
 {
   dt_develop_t *dev = darktable.develop;
   dt_masks_form_t *form = dev->form_visible;
@@ -1263,25 +1253,8 @@ void dt_masks_events_post_expose(struct dt_iop_module_t *module,
   if(!gui) return;
   if(!form) return;
 
-  const float wd = dev->preview_pipe->backbuf_width;
-  const float ht = dev->preview_pipe->backbuf_height;
-  if(wd < 1.0 || ht < 1.0) return;
-  float pzx = 0.0f, pzy = 0.0f;
-  dt_dev_get_pointer_zoom_pos(dev, pointerx, pointery, &pzx, &pzy);
-  pzx += 0.5f;
-  pzy += 0.5f;
-  const float zoom_y = dt_control_get_dev_zoom_y();
-  const float zoom_x = dt_control_get_dev_zoom_x();
-  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  const int closeup = dt_control_get_dev_closeup();
-  const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
-
   cairo_save(cr);
   cairo_set_source_rgb(cr, .3, .3, .3);
-
-  cairo_translate(cr, width / 2.0, height / 2.0f);
-  cairo_scale(cr, zoom_scale, zoom_scale);
-  cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
 
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
 
@@ -2106,9 +2079,9 @@ void dt_masks_update_image(dt_develop_t *dev)
   // dt_similarity_image_dirty(dev->image_storage.id);
 
   // invalidate buffers and force redraw of darkroom
-  dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
+  dev->full.pipe->changed |= DT_DEV_PIPE_SYNCH;
   dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
-  dev->preview2_pipe->changed |= DT_DEV_PIPE_SYNCH;
+  dev->preview2.pipe->changed |= DT_DEV_PIPE_SYNCH;
   dt_dev_invalidate_all(dev);
 }
 
@@ -2513,8 +2486,10 @@ void dt_masks_set_source_pos_initial_state(dt_masks_form_gui_t *gui,
   // both source types record an absolute position, for the relative
   // type, the first time is used the position is recorded, the second
   // time a relative position is calculated based on that one
-  gui->posx_source = pzx * darktable.develop->preview_pipe->backbuf_width;
-  gui->posy_source = pzy * darktable.develop->preview_pipe->backbuf_height;
+  float wd, ht;
+  dt_masks_get_image_size(&wd, &ht, NULL, NULL);
+  gui->posx_source = pzx * wd;
+  gui->posy_source = pzy * ht;
 }
 
 // set the initial source position value for a clone mask
@@ -2524,10 +2499,8 @@ void dt_masks_set_source_pos_initial_value(dt_masks_form_gui_t *gui,
                                            const float pzx,
                                            const float pzy)
 {
-  const float wd = darktable.develop->preview_pipe->backbuf_width;
-  const float ht = darktable.develop->preview_pipe->backbuf_height;
-  const float iwd = darktable.develop->preview_pipe->iwidth;
-  const float iht = darktable.develop->preview_pipe->iheight;
+  float wd, ht, iwidth, iheight;
+  dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
 
   // if this is the first time the relative pos is used
   if(gui->source_pos_type == DT_MASKS_SOURCE_POS_RELATIVE_TEMP)
@@ -2537,7 +2510,7 @@ void dt_masks_set_source_pos_initial_value(dt_masks_form_gui_t *gui,
     {
       if(form->functions && form->functions->initial_source_pos)
       {
-        form->functions->initial_source_pos(iwd, iht, &gui->posx_source, &gui->posy_source);
+        form->functions->initial_source_pos(iwidth, iheight, &gui->posx_source, &gui->posy_source);
       }
       else
         dt_print(DT_DEBUG_ALWAYS, "[dt_masks_set_source_pos_initial_value]"
@@ -2546,8 +2519,8 @@ void dt_masks_set_source_pos_initial_value(dt_masks_form_gui_t *gui,
       float pts[2] = { pzx * wd + gui->posx_source, pzy * ht + gui->posy_source };
       dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
-      form->source[0] = pts[0] / iwd;
-      form->source[1] = pts[1] / iht;
+      form->source[0] = pts[0] / iwidth;
+      form->source[1] = pts[1] / iheight;
     }
     else
     {
@@ -2556,8 +2529,8 @@ void dt_masks_set_source_pos_initial_value(dt_masks_form_gui_t *gui,
       float pts[2] = { gui->posx_source, gui->posy_source };
       dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
-      form->source[0] = pts[0] / iwd;
-      form->source[1] = pts[1] / iht;
+      form->source[0] = pts[0] / iwidth;
+      form->source[1] = pts[1] / iheight;
 
       gui->posx_source = gui->posx_source - pzx * wd;
       gui->posy_source = gui->posy_source - pzy * ht;
@@ -2573,8 +2546,8 @@ void dt_masks_set_source_pos_initial_value(dt_masks_form_gui_t *gui,
                      pzy * ht + gui->posy_source };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
-    form->source[0] = pts[0] / iwd;
-    form->source[1] = pts[1] / iht;
+    form->source[0] = pts[0] / iwidth;
+    form->source[1] = pts[1] / iheight;
   }
   else if(gui->source_pos_type == DT_MASKS_SOURCE_POS_ABSOLUTE)
   {
@@ -2582,8 +2555,8 @@ void dt_masks_set_source_pos_initial_value(dt_masks_form_gui_t *gui,
     float pts_src[2] = { gui->posx_source, gui->posy_source };
     dt_dev_distort_backtransform(darktable.develop, pts_src, 1);
 
-    form->source[0] = pts_src[0] / iwd;
-    form->source[1] = pts_src[1] / iht;
+    form->source[0] = pts_src[0] / iwidth;
+    form->source[1] = pts_src[1] / iheight;
   }
   else
     dt_print(DT_DEBUG_ALWAYS, "[dt_masks_set_source_pos_initial_value]"
@@ -2601,10 +2574,13 @@ void dt_masks_calculate_source_pos_value(dt_masks_form_gui_t *gui,
                                          float *py,
                                          const int adding)
 {
+  float wd, ht, iwidth, iheight;
+  dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
+
   float x = 0.0f, y = 0.0f;
   const float pr_d = darktable.develop->preview_downsampling;
-  const float iwd = pr_d * darktable.develop->preview_pipe->iwidth;
-  const float iht = pr_d * darktable.develop->preview_pipe->iheight;
+  const float iwd = pr_d * iwidth;
+  const float iht = pr_d * iheight;
 
   if(gui->source_pos_type == DT_MASKS_SOURCE_POS_RELATIVE)
   {

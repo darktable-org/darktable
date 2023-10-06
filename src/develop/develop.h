@@ -117,6 +117,34 @@ typedef struct dt_dev_proxy_exposure_t
 } dt_dev_proxy_exposure_t;
 
 struct dt_dev_pixelpipe_t;
+typedef struct dt_dev_viewport_t
+{
+  GtkWidget *widget;
+  int32_t orig_width, orig_height;
+
+  // dimensions of window
+  int width, height;
+  int32_t border_size;
+  double dpi, dpi_factor, ppd;
+
+  dt_dev_zoom_t zoom;
+  int closeup;
+  float zoom_x, zoom_y;
+  float zoom_scale;
+
+  // image processing pipeline with caching
+  struct dt_dev_pixelpipe_t *pipe;
+  dt_dev_pixelpipe_status_t status;
+
+  // these are locked while the pipes are still in use:
+  dt_pthread_mutex_t pipe_mutex;
+
+  uint32_t average_delay;
+  gboolean loading;
+  gboolean input_changed;
+} dt_dev_viewport_t;
+
+
 typedef struct dt_develop_t
 {
   gboolean gui_attached; // != 0 if the gui should be notified of changes in hist stack and modules should be
@@ -129,28 +157,19 @@ typedef struct dt_develop_t
   double   gui_previous_pipe_time; // time pipe finished after last widget was changed.
 
   gboolean focus_hash;   // determines whether to start a new history item or to merge down.
-  gboolean preview_loading, preview2_loading, image_loading, history_updating, image_force_reload, first_load;
-  gboolean preview_input_changed, preview2_input_changed;
+  gboolean preview_loading, history_updating, image_force_reload, first_load;
+  gboolean preview_input_changed;
   gboolean autosaving;
-  dt_dev_pixelpipe_status_t image_status, preview_status, preview2_status;
+  dt_dev_pixelpipe_status_t preview_status;
   int32_t image_invalid_cnt;
   uint32_t timestamp;
-  uint32_t average_delay;
   uint32_t preview_average_delay;
-  uint32_t preview2_average_delay;
   struct dt_iop_module_t *gui_module; // this module claims gui expose/event callbacks.
   float preview_downsampling;         // < 1.0: optionally downsample preview
 
-  // width, height: dimensions of window
-  int32_t width, height;
-
   // image processing pipeline with caching
-  struct dt_dev_pixelpipe_t *pipe, *preview_pipe, *preview2_pipe;
-
-  // these are locked while the pipes are still in use:
-  dt_pthread_mutex_t pipe_mutex;
+  struct dt_dev_pixelpipe_t *preview_pipe;
   dt_pthread_mutex_t preview_pipe_mutex;
-  dt_pthread_mutex_t preview2_pipe_mutex;
 
   // image under consideration, which
   // is copied each time an image is changed. this means we have some information
@@ -193,14 +212,11 @@ typedef struct dt_develop_t
 
   //full preview stuff
   gboolean full_preview;
-  int full_preview_last_zoom, full_preview_last_closeup;
+  dt_dev_zoom_t full_preview_last_zoom;
+  int full_preview_last_closeup;
   float full_preview_last_zoom_x, full_preview_last_zoom_y;
   struct dt_iop_module_t *full_preview_last_module;
   int full_preview_masks_state;
-
-  // darkroom border size
-  int32_t border_size;
-  int32_t orig_width, orig_height;
 
   /* proxy for communication between plugins and develop/darkroom */
   struct
@@ -270,7 +286,6 @@ typedef struct dt_develop_t
     dt_aligned_pixel_t wb_coeffs;
   } proxy;
 
-
   // for exposing the crop
   struct
   {
@@ -317,26 +332,10 @@ typedef struct dt_develop_t
     GtkWidget *floating_window, *softproof_button, *gamut_button;
   } profile;
 
-  // second darkroom window related things
-  struct
-  {
-    GtkWidget *second_wnd;
-    GtkWidget *widget;
-    int32_t orig_width, orig_height;
-    int width, height;
-    int32_t border_size;
-    double dpi, dpi_factor, ppd, ppd_thb;
+  GtkWidget *second_wnd, *second_wnd_button;
 
-    GtkWidget *button;
-
-    dt_dev_zoom_t zoom;
-    int closeup;
-    float zoom_x, zoom_y;
-    float zoom_scale;
-
-    double button_x;
-    double button_y;
-  } second_window;
+  // several views of the same image
+  dt_dev_viewport_t full, preview2;
 
   int mask_form_selected_id; // select a mask inside an iop
   gboolean darkroom_skip_mouse_events; // skip mouse events for masks
@@ -408,25 +407,45 @@ void dt_dev_reprocess_all(dt_develop_t *dev);
 void dt_dev_reprocess_center(dt_develop_t *dev);
 void dt_dev_reprocess_preview(dt_develop_t *dev);
 
-void dt_dev_get_processed_size(const dt_develop_t *dev,
+void dt_dev_get_processed_size(dt_dev_viewport_t *port,
                                int *procw,
                                int *proch);
-void dt_dev_check_zoom_bounds(dt_develop_t *dev,
+void dt_dev_check_zoom_bounds(dt_dev_viewport_t *port,
                               float *zoom_x,
                               float *zoom_y,
                               dt_dev_zoom_t zoom,
                               const int closeup,
                               float *boxw,
                               float *boxh);
-float dt_dev_get_zoom_scale(dt_develop_t *dev,
+void dt_dev_zoom_move(dt_dev_viewport_t *port,
+                      dt_dev_zoom_t zoom,
+                      float scale,
+                      int closeup,
+                      float x,
+                      float y,
+                      gboolean constrain);
+float dt_dev_get_zoom_scale(dt_dev_viewport_t *port,
                             dt_dev_zoom_t zoom,
                             const int closeup_factor,
                             const int mode);
-void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev,
+float dt_dev_get_zoom_scale_full(void);
+float dt_dev_get_zoomed_in(void);
+void dt_dev_get_pointer_zoom_pos(dt_dev_viewport_t *port,
                                  const float px,
                                  const float py,
                                  float *zoom_x,
-                                 float *zoom_y);
+                                 float *zoom_y,
+                                 float *zoom_scale);
+void dt_dev_get_viewport_params(dt_dev_viewport_t *port,
+                                dt_dev_zoom_t *zoom,
+                                int *closeup,
+                                float *x,
+                                float *y);
+void dt_dev_set_viewport_params(dt_dev_viewport_t *port,
+                                dt_dev_zoom_t zoom,
+                                int closeup,
+                                float x,
+                                float y);
 
 void dt_dev_configure(dt_develop_t *dev,
                       int wd,
@@ -608,39 +627,6 @@ int dt_dev_sync_pixelpipe_hash_distort (dt_develop_t *dev,
                                         const volatile uint64_t *const hash);
 
 /*
- * second darkroom window zoom heplers
-*/
-dt_dev_zoom_t dt_second_window_get_dev_zoom(dt_develop_t *dev);
-void dt_second_window_set_dev_zoom(dt_develop_t *dev,
-                                   const dt_dev_zoom_t value);
-int dt_second_window_get_dev_closeup(dt_develop_t *dev);
-void dt_second_window_set_dev_closeup(dt_develop_t *dev,
-                                      const int value);
-float dt_second_window_get_dev_zoom_x(dt_develop_t *dev);
-void dt_second_window_set_dev_zoom_x(dt_develop_t *dev,
-                                     const float value);
-float dt_second_window_get_dev_zoom_y(dt_develop_t *dev);
-void dt_second_window_set_dev_zoom_y(dt_develop_t *dev,
-                                     const float value);
-float dt_second_window_get_free_zoom_scale(dt_develop_t *dev);
-float dt_second_window_get_zoom_scale(dt_develop_t *dev,
-                                      const dt_dev_zoom_t zoom,
-                                      const int closeup_factor,
-                                      const int preview);
-void dt_second_window_set_zoom_scale(dt_develop_t *dev,
-                                     const float value);
-void dt_second_window_get_processed_size(const dt_develop_t *dev,
-                                         int *procw,
-                                         int *proch);
-void dt_second_window_check_zoom_bounds(dt_develop_t *dev,
-                                        float *zoom_x,
-                                        float *zoom_y,
-                                        const dt_dev_zoom_t zoom,
-                                        const int closeup,
-                                        float *boxww,
-                                        float *boxhh);
-
-/*
  *   history undo support helpers for darkroom
  */
 
@@ -669,6 +655,8 @@ void dt_dev_image_ext(const dt_imgid_t imgid,
                       uint8_t **buf,
                       size_t *processed_width,
                       size_t *processed_height,
+                      float *zoom_x,
+                      float *zoom_y,
                       const int border_size,
                       const gboolean iso_12646,
                       const int32_t snapshot_id);

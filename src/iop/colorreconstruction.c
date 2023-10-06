@@ -640,14 +640,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
      && g
      && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
   {
-    // check how far we are zoomed-in
-    dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-    int closeup = dt_control_get_dev_closeup();
-    const float min_scale = dt_dev_get_zoom_scale(self->dev, DT_ZOOM_FIT, 1<<closeup, 0);
-    const float cur_scale = dt_dev_get_zoom_scale(self->dev, zoom, 1<<closeup, 0);
-
     // if we are zoomed in more than just a little bit, we try to use the canned grid of the preview pipeline
-    if(cur_scale > 1.05f * min_scale)
+    if(dt_dev_get_zoomed_in() > 1.05f)
     {
       if(!dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, &self->gui_lock, &g->hash))
         dt_control_log(_("inconsistent output"));
@@ -1052,14 +1046,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
      && g
      && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
   {
-    // check how far we are zoomed-in
-    dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-    int closeup = dt_control_get_dev_closeup();
-    const float min_scale = dt_dev_get_zoom_scale(self->dev, DT_ZOOM_FIT, 1<<closeup, 0);
-    const float cur_scale = dt_dev_get_zoom_scale(self->dev, zoom, 1<<closeup, 0);
-
     // if we are zoomed in more than just a little bit, we try to use the canned grid of the preview pipeline
-    if(cur_scale > 1.05f * min_scale)
+    if(dt_dev_get_zoomed_in() > 1.05f)
     {
       if(!dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, &self->gui_lock, &g->hash))
         dt_control_log(_("inconsistent output"));

@@ -483,13 +483,13 @@ void gui_reset(struct dt_iop_module_t *self)
   dt_iop_color_picker_reset(self, TRUE);
 }
 
-void gui_post_expose(
-	struct dt_iop_module_t *self,
-        cairo_t *cr,
-        int32_t width,
-        int32_t height,
-        int32_t pointerx,
-        int32_t pointery)
+void gui_post_expose(dt_iop_module_t *self,
+                     cairo_t *cr,
+                     const int32_t width,
+                     const int32_t height,
+                     const float pointerx,
+                     const float pointery,
+                     const float zoom_scale)
 {
   dt_develop_t *dev = self->dev;
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
@@ -497,15 +497,6 @@ void gui_post_expose(
 
   const float wd = dev->preview_pipe->backbuf_width;
   const float ht = dev->preview_pipe->backbuf_height;
-  const float zoom_y = dt_control_get_dev_zoom_y();
-  const float zoom_x = dt_control_get_dev_zoom_x();
-  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  const int closeup = dt_control_get_dev_closeup();
-  const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
-
-  cairo_translate(cr, width / 2.0, height / 2.0f);
-  cairo_scale(cr, zoom_scale, zoom_scale);
-  cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
 
   // we get the extremities of the line
   if(g->define == 0)
@@ -589,21 +580,14 @@ void gui_post_expose(
   cairo_stroke(cr);
 }
 
-int mouse_moved(
-	struct dt_iop_module_t *self,
-        double x,
-        double y,
-        double pressure,
-        int which)
+int mouse_moved(dt_iop_module_t *self,
+                const float pzx,
+                const float pzy,
+                const double pressure,
+                const int which,
+                const float zoom_scale)
 {
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
-  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  const int closeup = dt_control_get_dev_closeup();
-  const float zoom_scale = dt_dev_get_zoom_scale(self->dev, zoom, 1<<closeup, 1);
-  float pzx, pzy;
-  dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
-  pzx += 0.5f;
-  pzy += 0.5f;
 
   // are we dragging something ?
   if(g->dragging > 0)
@@ -653,20 +637,16 @@ int mouse_moved(
   return 1;
 }
 
-int button_pressed(
-	struct dt_iop_module_t *self,
-        double x,
-        double y,
-        double pressure,
-        int which,
-        int type,
-        uint32_t state)
+int button_pressed(dt_iop_module_t *self,
+                   const float pzx,
+                   const float pzy,
+                   const double pressure,
+                   const int which,
+                   const int type,
+                   const uint32_t state,
+                   const float zoom_scale)
 {
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
-  float pzx, pzy;
-  dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
-  pzx += 0.5f;
-  pzy += 0.5f;
 
   if(which == 3)
   {
@@ -691,22 +671,17 @@ int button_pressed(
   return 0;
 }
 
-int button_released(
-	struct dt_iop_module_t *self,
-        double x,
-        double y,
-        int which,
-        uint32_t state)
+int button_released(dt_iop_module_t *self,
+                    const float pzx,
+                    const float pzy,
+                    const int which,
+                    const uint32_t state,
+                    const float zoom_scale)
 {
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
   if(g->dragging > 0)
   {
-    float pzx, pzy;
-    dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
-    pzx += 0.5f;
-    pzy += 0.5f;
-
     float r = 0.0, o = 0.0;
     _set_grad_from_points(self, g->xa, g->ya, g->xb, g->yb, &r, &o);
 
@@ -736,8 +711,8 @@ int button_released(
 
 int scrolled(
 	dt_iop_module_t *self,
-        double x,
-        double y,
+        float x,
+        float y,
         int up,
         uint32_t state)
 {

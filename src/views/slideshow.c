@@ -212,6 +212,8 @@ static int _process_image(dt_slideshow_t *d,
      &buf,
      &width,
      &height,
+     NULL,
+     NULL,
      0,
      FALSE,
      -1);

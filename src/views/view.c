@@ -86,17 +86,6 @@ void dt_view_manager_init(dt_view_manager_t *vm)
 
   dt_view_manager_load_modules(vm);
 
-  // Modules loaded, let's handle specific cases
-  for(GList *iter = vm->views; iter; iter = g_list_next(iter))
-  {
-    dt_view_t *view = (dt_view_t *)iter->data;
-    if(!strcmp(view->module_name, "darkroom"))
-    {
-      darktable.develop = (dt_develop_t *)view->data;
-      break;
-    }
-  }
-
   vm->current_view = NULL;
   vm->audio.audio_player_id = -1;
 }
@@ -184,9 +173,6 @@ static int dt_view_load_module(void *v,
   module->height = module->width = 100; // set to non-insane defaults
                                         // before first
                                         // expose/configure.
-
-  if(!strcmp(module->module_name, "darkroom"))
-    darktable.develop = (dt_develop_t *)module->data;
 
 #ifdef USE_LUA
   dt_lua_register_view(darktable.lua_state.state, module);
@@ -1683,16 +1669,17 @@ void dt_view_paint_surface(cairo_t *cr,
   dt_develop_t *dev = darktable.develop;
 
   gboolean second = window == DT_WINDOW_SECOND;
-  const float zoom_x        = second ? dt_second_window_get_dev_zoom_x(dev) : dt_control_get_dev_zoom_x();
-  const float zoom_y        = second ? dt_second_window_get_dev_zoom_y(dev) : dt_control_get_dev_zoom_y();
-  const dt_dev_zoom_t zoom  = second ? dt_second_window_get_dev_zoom(dev) : dt_control_get_dev_zoom();
-  const int closeup         = second ? dt_second_window_get_dev_closeup(dev) : dt_control_get_dev_closeup();
-  const float zoom_scale    = second ? dt_second_window_get_zoom_scale(dev, zoom, 1<<closeup, 1)
-                                     : dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
-  const float backbuf_scale = second ? dt_second_window_get_zoom_scale(dev, zoom, 1.0f, 0) * dev->second_window.ppd
-                                     : dt_dev_get_zoom_scale(dev, zoom, 1.0f, 0) * darktable.gui->ppd;
-  const float ppd           = second ? dev->second_window.ppd : darktable.gui->ppd;
-  const double tb           = second ? dev->second_window.border_size : dev->border_size;
+  dt_dev_viewport_t *port = second ? &dev->preview2 : &dev->full;
+
+  dt_dev_zoom_t zoom;
+  int closeup;
+  float zoom_x, zoom_y;
+  dt_dev_get_viewport_params(port, &zoom, &closeup, &zoom_x, &zoom_y);
+
+  const float zoom_scale    = dt_dev_get_zoom_scale(port, zoom, 1<<closeup, 1);
+  const float backbuf_scale = dt_dev_get_zoom_scale(port, zoom, 1.0f, 0) * darktable.gui->ppd;
+  const float ppd           = port->ppd;
+  const double tb           = port->border_size;
 
   cairo_save(cr);
 
@@ -1760,8 +1747,8 @@ void dt_view_paint_surface(cairo_t *cr,
   dt_pthread_mutex_unlock(mutex);
 
   cairo_scale(cr, back_scale / zoom_scale, back_scale / zoom_scale);
-  cairo_translate(cr, (offset_x - zoom_x) * dev->pipe->processed_width * buf_scale - 0.5 * processed_width,
-                      (offset_y - zoom_y) * dev->pipe->processed_height * buf_scale - 0.5 * processed_height);
+  cairo_translate(cr, (offset_x - zoom_x) * dev->full.pipe->processed_width * buf_scale - 0.5 * processed_width,
+                      (offset_y - zoom_y) * dev->full.pipe->processed_height * buf_scale - 0.5 * processed_height);
   cairo_set_source_surface(cr, surface, 0, 0);
   cairo_pattern_set_filter(cairo_get_source(cr),
                            zoom_scale >= 0.9999f ? CAIRO_FILTER_FAST : darktable.gui->dr_filter_image);
@@ -1812,18 +1799,10 @@ void dt_view_paint_pixbuf(cairo_t *cr,
 {
   dt_develop_t *dev = darktable.develop;
 
-  const dt_dev_zoom_t zoom =
-    (window == DT_WINDOW_MAIN || window == DT_WINDOW_SLIDESHOW)
-    ? dt_control_get_dev_zoom()
-    : dt_second_window_get_dev_zoom(dev);
-  const int closeup =
-    (window == DT_WINDOW_MAIN || window == DT_WINDOW_SLIDESHOW)
-    ? dt_control_get_dev_closeup()
-    : dt_second_window_get_dev_closeup(dev);
-  const float zoom_scale =
-    (window == DT_WINDOW_MAIN || window == DT_WINDOW_SLIDESHOW)
-    ? dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1)
-    : dt_second_window_get_zoom_scale(dev, zoom, 1<<closeup, 1);
+  dt_dev_zoom_t zoom;
+  int closeup;
+  dt_dev_get_viewport_params(&dev->full, &zoom, &closeup, NULL, NULL);
+  const float zoom_scale = dt_dev_get_zoom_scale(&dev->full, zoom, 1<<closeup, 1);
 
   GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data
     (buffer, GDK_COLORSPACE_RGB, TRUE, 8, processed_width, processed_height,
@@ -1879,11 +1858,11 @@ void dt_view_paint_pixbuf(cairo_t *cr,
 dt_view_context_t dt_view_get_view_context(void)
 {
   dt_develop_t *dev = darktable.develop;
-  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  const int closeup = dt_control_get_dev_closeup();
-  const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
-  const float zoom_y = dt_control_get_dev_zoom_y();
-  const float zoom_x = dt_control_get_dev_zoom_x();
+  dt_dev_zoom_t zoom;
+  int closeup;
+  float zoom_x, zoom_y;
+  dt_dev_get_viewport_params(&dev->full, &zoom, &closeup, &zoom_x, &zoom_y);
+  const float zoom_scale = dt_dev_get_zoom_scale(&dev->full, zoom, 1<<closeup, 1);
   const gboolean iso_12646 = dev->iso_12646.enabled;
   const gboolean focus_peaking = darktable.gui->show_focus_peaking;
   const float flt_prec = 1.e6;
