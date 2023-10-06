@@ -8,6 +8,7 @@
 
 #define PACKAGE_NAME "@CMAKE_PROJECT_NAME@"
 #define PACKAGE_BUGREPORT "https://github.com/darktable-org/darktable/issues/new/choose"
+#define PACKAGE_DOCS "https://www.darktable.org/resources/"
 
 // these will be defined in build/bin/version_gen.c
 extern const char darktable_package_version[];
@@ -88,4 +89,3 @@ static const char *dt_supported_extensions[] __attribute__((unused)) = {"@DT_SUP
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

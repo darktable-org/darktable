@@ -121,52 +121,173 @@ static int usage(const char *argv0)
   char *logfile = g_build_filename(g_get_user_cache_dir(), "darktable", "darktable-log.txt", NULL);
 #endif
   // clang-format off
-  printf("usage: %s [options] [IMG_1234.{RAW,..}|image_folder/]\n", argv0);
-  printf("\n");
-  printf("options:\n");
-  printf("\n");
-  printf("  --cachedir <user cache directory>\n");
-  printf("  --conf <key>=<value>\n");
-  printf("  --configdir <user config directory>\n");
-  printf("  -d {act_on,cache,camctl,camsupport,control,dev,imageio,\n");
-  printf("      input,ioporder,lighttable,lua,masks,memory,nan,opencl,params,\n");
-  printf("      perf,print,pwstorage,signal,sql,tiling,undo,verbose,pipe,expose\n");
-  printf("      all,common (-d dev,imageio,masks,opencl,params,pipe)}\n");
-  printf("  --d-signal <signal> \n");
-  printf("  --d-signal-act <all,raise,connect,disconnect");
-  // clang-format on
-#ifdef DT_HAVE_SIGNAL_TRACE
-  printf(",print-trace");
-#endif
-  printf(">\n");
-  printf("  --datadir <data directory>\n");
-#ifdef HAVE_OPENCL
-  printf("  --disable-opencl\n");
-#endif
-  printf("  --disable-pipecache\n");
-  printf("  --dump-pfm <modulea,moduleb>\n");
-  printf("  --dump-pipe <modulea,moduleb>\n");
-  printf("  --bench-module <modulea,moduleb>\n");
-  printf("  --dumpdir <directory to hold dumped files>\n");
-  printf("  --library <library file>\n");
-  printf("  --localedir <locale directory>\n");
+
+// Rewriting this following GNU Standards for Command Line Interfaces and other best practices
+// ref. https://www.gnu.org/prep/standards/standards.html#Command_002dLine-Interfaces
+// ref. https://clig.dev/#introduction
+//
+// Trying to keep the length of the text within 80 columns
+// Using 2-4 spaces for the indentation of the inline help
+
+  printf("darktable %s\n"
+         "Copyright (C) 2012-%s Johannes Hanika and other contributors.\n\n"
+         "<https://www.darktable.org>\n"
+         "darktable is an open source photography workflow application and\n"
+         "non-destructive raw developer for photographers.\n"
+         "GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>\n"
+         "This is free software: you are free to change and redistribute it.\n"
+         "There is NO WARRANTY, to the extent permitted by law.\n\n",
+         darktable_package_version, 
+         darktable_last_commit_year);
+
+  printf("Usage:\n"
+         "  darktable [OPTIONS] [IMAGE_FILE | IMAGE_FOLDER]\n"
+         "\n"  
+         "Options:\n"
+         "\n"
+         "--cachedir DIR\n"
+         "    darktable keeps a cache of image thumbnails for fast image preview\n"
+         "    and precompiled OpenCL binaries for fast startup. By default the\n"
+         "    cache is located in $HOME/.cache/darktable/. Multiple thumbnail\n"
+         "    caches may exist in parallel, one for each library file.\n"
+         "\n"
+         "--conf KEY=VALUE\n"
+         "    Temporarily overwrite individual settings on the command line with\n"
+         "    this option - these settings will not be stored in darktablerc\n"
+         "    on exit.\n"
+         "\n"
+         "--configdir DIR\n"
+         "    Where darktable stores user-specific configuration.\n"
+         "    The default location is $HOME/.config/darktable/\n"
+         "\n"
+         "--datadir DIR\n"
+         "    Define the directory where darktable finds its runtime data.\n"
+         "    The default location depends on your installation.\n"
+         "    Typical locations are /opt/darktable/share/darktable/ \n"
+         "    and /usr/share/darktable/\n"
+         "\n"
+         "--library FILE\n"
+         "    Specifies an alternate location for darktable's image information database,\n"
+         "    which is stored in an SQLite file by default (library.db) in the directory\n"
+         "    specified by --configdir or $HOME/.config/darktable/. You can use this\n"
+         "    option for experimentation without affecting your original library.db.\n"
+         "    If the specified database file doesn't exist, darktable will create it.\n"
+         "\n"
+         "    When darktable starts, it locks the library to the current user by writing\n"
+         "    the process identifier (PID) to a lock file named FILE.lock next to the\n"
+         "    specified library. If a lock file already exists, darktable will exit.\n"
+         "\n"
+         "    :memory: -> Use this option as FILE to keep the database in system memory,\n"
+         "    discarding changes on darktable termination.\n"
+         "\n"
+         "--localedir DIR\n"
+         "    Define where darktable can find its language-specific text\n"
+         "    strings. The default location depends on your installation.\n"
+         "    Typical locations are /opt/darktable/share/locale/\n"
+         "    and /usr/share/locale/\n"
+         "\n"
 #ifdef USE_LUA
-  printf("  --luacmd <lua command>\n");
+         "--luacmd COMMAND\n"
+         "    A string containing lua commands to execute after lua\n"
+         "    initialization. These commands will be run after your “luarc”\n"
+         "    file. If lua is not compiled-in, this option will be accepted\n"
+         "    but won't do anything.\n"
+         "\n"
 #endif
-  printf("  --moduledir <module directory>\n");
-  printf("  --noiseprofiles <noiseprofiles json file>\n");
-  printf("  --threads <num> | -t <num> openmp threads>\n");
-  printf("  --tmpdir <tmp directory>\n");
-  printf("  --version\n");
-  printf("  --help -h");
+         "--moduledir DIR\n"
+         "    darktable has a modular structure and organizes its modules as\n"
+         "    shared libraries for loading at runtime.\n"
+         "    This option tells darktable where to look for its shared libraries.\n"
+         "    The default location depends on your installation.\n"
+         "    Typical locations are /opt/darktable/lib64/darktable/\n"
+         "    and /usr/lib64/darktable/\n"
+         "\n"
+         "--noiseprofiles FILE\n"
+         "    Provide a json file that contains camera-specific noise profiles.\n"
+         "    The default location depends on your installation.\n"
+         "    Typical locations are /opt/darktable/share/darktable/noiseprofile.json\n"
+         "    and /usr/share/darktable/noiseprofile.json\n"
+         "\n"
+         "-t, --threads NUM\n"
+         "    Limit number of openmp threads to use in openmp parallel sections\n"
+         "\n"
+         "--tmpdir DIR\n"
+         "    Define where darktable should store its temporary files.\n"
+         "    If this option is not supplied darktable uses the system default.\n"
+         "\n"
+         "-v, --version\n"
+         "    Print darktable version number\n"
+         "\n"
+         "-h, --help\n"
+         "    Show this help (-h works with no other options)\n"
+         "\n"
+         "Debugging:\n\n"
+         "--bench-module MODULE_A,MODULE_B\n"
+         "\n"
+#ifdef HAVE_OPENCL
+         "--disable-opencl\n"
+         "    Prevent darktable from initializing the OpenCL subsystem.\n"
+         "\n"
+#endif
+         "--disable-pipecache\n"
+         "    Disable the pixelpipe cache. This option allows only\n"
+         "    two cachelines per pipe, and should be used for debugging\n"
+         "    purposes only.\n"
+         "\n"
+         "--dump-pfm MODULE_A,MODULE_B\n"
+         "\n"         
+         "--dump-pipe MODULE_A,MODULE_B\n"
+         "\n"         
+         "--dumpdir DIR\n"
+         "\n"
+         "-d SIGNAL\n"
+         "    Enable debug output to the terminal. Valid signals are:\n\n"
+         "    act_on, cache, camctl, camsupport, control, demosaic, dev,\n"
+         "    fswatch, imageio, input, ioporder, lighttable, lua, masks, memory,\n"
+         "    nan, opencl, params, perf, print, pwstorage, signal, sql, tiling,\n"
+         "    undo, verbose\n"
+         "\n"
+         "    all     -> to debug all signals\n"
+         "    common  -> to debug dev, imageio, masks, opencl, params, pipe\n"
+         "    verbose -> when combined with debug options like '-d opencl'\n"
+         "               provides more detailed output. To activate verbosity,\n"
+         "               use the additional option '-d verbose'\n"
+         "               even when using '-d all'.\n"
+         "\n"
+         "    There are several subsystems of darktable and each of them can be\n"
+         "    debugged separately. You can use this option multiple times if you\n"
+         "    want to debug more than one subsystem.\n"
+         "\n"
+         "    E.g. darktable -d opencl -d camctl -d perf\n"
+         "\n"
+         "--d-signal SIGNAL\n"
+         "    if -d signal or -d all is specified, specify the signal to debug\n"
+         "    using this option. Specify ALL to debug all signals or specify\n"
+         "    signal using it's full name. Can be used multiple times.\n"
+         "\n"
+         "--d-signal-act SIGNAL_ACT\n"
+         "\n"
+         "    Valid SIGNAL_ACT are:\n"
+         "    all, raise, connect, disconnect"
+#ifdef DT_HAVE_SIGNAL_TRACE
+         ", print-trace\n"
+#endif
+         "\n"
+         "    If -d signal or -d all is specified, specify the signal action\n"
+         "    to debug using this option.\n");
 #ifdef _WIN32
   printf(", /?\n");
   printf("\n");
-  printf("  note: debug log and output will be written to this file:\n");
-  printf("        %s\n", logfile);
+  printf("Debug log and output will be written to this file:\n");
+  printf("    %s\n", logfile);
 #else
   printf("\n");
 #endif
+
+  printf("See %s for more detailed documentation.\n"
+         "See %s to report bugs.\n", 
+         PACKAGE_DOCS, 
+         PACKAGE_BUGREPORT);
 
 #ifdef _WIN32
   g_free(logfile);
@@ -175,6 +296,7 @@ static int usage(const char *argv0)
   return 1;
 }
 
+// clang-format on
 gboolean dt_is_dev_version()
 {
   // a dev version as an odd number after the first dot
@@ -516,112 +638,114 @@ static char *_get_version_string(void)
                                       STR(LUA_API_VERSION_MINOR) "."
                                       STR(LUA_API_VERSION_PATCH) "\n";
 #endif
-  char *version = g_strdup_printf("this is %s\ncopyright (c) 2009-%s johannes hanika\n"
-               "%s\n\ncompile options:\n"
-               "  bit depth is %zu bit\n"
-               "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
-               darktable_package_string,
+char *version = g_strdup_printf("darktable %s\nCopyright (C) 2012-%s Johannes Hanika and other contributors.\n\n"
+               "Compile options:\n"
+               "  Bit depth              -> %zu bit\n"
+               "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n"
+               "See %s for detailed documentation.\n"
+               "See %s to report bugs.\n",
+               darktable_package_version,
                darktable_last_commit_year,
-               PACKAGE_BUGREPORT,
                CHAR_BIT * sizeof(void *),
+
 #ifdef _DEBUG
-               "  debug build\n",
+               "  Debug                  -> ENABLED\n",
 #else
-               "  normal build\n",
+               "  Debug                  -> DISABLED\n",
 #endif
 
 #if defined(__SSE2__) && defined(__SSE__)
-               "  SSE2 optimizations enabled\n",
+               "  SSE2 optimizations     -> ENABLED\n",
 #else
-               "  SSE2 optimizations unavailable\n",
+               "  SSE2 optimizations     -> DISABLED\n",
 #endif
 
 #ifdef _OPENMP
-               "  OpenMP support enabled\n",
+               "  OpenMP                 -> ENABLED\n",
 #else
-               "  OpenMP support disabled\n",
+               "  OpenMP                 -> DISABLED\n",
 #endif
 
 #ifdef HAVE_OPENCL
-               "  OpenCL support enabled\n",
+               "  OpenCL                 -> ENABLED\n",
 #else
-               "  OpenCL support disabled\n",
+               "  OpenCL                 -> DISABLED\n",
 #endif
 
 #ifdef USE_LUA
-               "  Lua support enabled, API version ",
-               lua_api_version,
+               "  Lua                    -> ENABLED  - API version ", lua_api_version,
 #else
-               "  Lua support disabled\n", "",
+               "  Lua                    -> DISABLED - API version", "NOT AVAILABLE",
 #endif
 
 #ifdef USE_COLORDGTK
-               "  Colord support enabled\n",
+               "  Colord                 -> ENABLED\n",
 #else
-               "  Colord support disabled\n",
+               "  Colord                 -> DISABLED\n",
 #endif
 
 #ifdef HAVE_GPHOTO2
-               "  gPhoto2 support enabled\n",
+               "  gPhoto2                -> ENABLED\n",
 #else
-               "  gPhoto2 support disabled\n",
+               "  gPhoto2                -> DISABLED\n",
 #endif
 
 #ifdef HAVE_GMIC
-               "  G'MIC support enabled (compressed LUTs will be supported)\n",
+               "  GMIC                   -> ENABLED  - Compressed LUTs supported\n",
 #else
-               "  G'MIC support disabled (compressed LUTs will not be supported)\n",
+               "  GMIC                   -> DISABLED - Compressed LUTs NOT supported\n",
 #endif
 
 #ifdef HAVE_GRAPHICSMAGICK
-               "  GraphicsMagick support enabled\n",
+               "  GraphicsMagick         -> ENABLED\n",
 #else
-               "  GraphicsMagick support disabled\n",
+               "  GraphicsMagick         -> DISABLED\n",
 #endif
 
 #ifdef HAVE_IMAGEMAGICK
-               "  ImageMagick support enabled\n",
-#else
-               "  ImageMagick support disabled\n",
+               "  ImageMagick            -> ENABLED\n",
+#else 
+               "  ImageMagick            -> DISABLED\n",
 #endif
 
 #ifdef HAVE_LIBAVIF
-               "  libavif support enabled\n",
+               "  libavif                -> ENABLED\n",
 #else
-               "  libavif support disabled\n",
+               "  libavif                -> DISABLED\n",
 #endif
 
 #ifdef HAVE_LIBHEIF
-               "  libheif support enabled\n",
+               "  libheif                -> ENABLED\n",
 #else
-               "  libheif support disabled\n",
+               "  libheif                -> DISABLED\n",
 #endif
 
 #ifdef HAVE_LIBJXL
-               "  libjxl support enabled\n",
+               "  libjxl                 -> ENABLED\n",
 #else
-               "  libjxl support disabled\n",
+               "  libjxl                 -> DISABLED\n",
 #endif
 
 #ifdef HAVE_OPENJPEG
-               "  OpenJPEG support enabled\n",
+               "  OpenJPEG               -> ENABLED\n",
 #else
-               "  OpenJPEG support disabled\n",
+               "  OpenJPEG               -> DISABLED\n",
 #endif
 
 #ifdef HAVE_OPENEXR
-               "  OpenEXR support enabled\n",
+               "  OpenEXR                -> ENABLED\n",
 #else
-               "  OpenEXR support disabled\n",
+               "  OpenEXR                -> DISABLED\n",
 #endif
 
 #ifdef HAVE_WEBP
-               "  WebP support enabled\n",
+               "  WebP                   -> ENABLED\n",
 #else
-               "  WebP support disabled\n",
+               "  WebP                   -> DISABLED\n",
 #endif
-
-      "");
+             
+               PACKAGE_DOCS,
+               PACKAGE_BUGREPORT);
 
   return version;
 }
@@ -714,7 +838,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       {
         return usage(argv[0]);
       }
-      else if(!strcmp(argv[k], "--version"))
+
+      else if(!strcmp(argv[k], "--version") || !strcmp(argv[k], "-v"))
       {
         char *theversion = _get_version_string();
         printf("%s", theversion);
