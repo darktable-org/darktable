@@ -2278,8 +2278,17 @@ void dt_iop_request_focus(dt_iop_module_t *module)
   if(tags_filter)
   {
     dt_dev_pixelpipe_rebuild(dev);
-    // We don't want to use previous image as overlay to avoid some flicker if we have
-    // any active module in the pipe having an operation_tag excluded by combined tags_filter.
+    /*  We don't want to use previous image as overlay to avoid some flicker if we have
+        any active module in the pipe having an operation_tag excluded by combined tags_filter.
+        FIXME later as a reminder. We can either
+        a) leave out the following section; this leads to a flicker related to the pipes
+            writing onto the main canvas one ofter the other.
+        b) use the "set backbuf_zoom_x = 1000" trick in all cases. This currently
+            leads to a displacement flicker, easy to observe when getting retouch in-focus
+            without any active crop module.
+        c) only use the b) variant if there _is_ a module possibly processing what the
+            tags_filter switches on/off in the pixelpipe.
+    */
     for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
       const dt_iop_module_t *tmodule = (dt_iop_module_t *)modules->data;
