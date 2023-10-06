@@ -250,7 +250,10 @@ dt_view_type_flags_t views(dt_lib_module_t *self)
 
 uint32_t container(dt_lib_module_t *self)
 {
-  return g_strcmp0(dt_conf_get_string("plugins/darkroom/histogram/panel_position"), "right") ? DT_UI_CONTAINER_PANEL_LEFT_TOP : DT_UI_CONTAINER_PANEL_RIGHT_TOP;
+  return g_strcmp0
+    (dt_conf_get_string_const("plugins/darkroom/histogram/panel_position"), "right")
+    ? DT_UI_CONTAINER_PANEL_LEFT_TOP
+    : DT_UI_CONTAINER_PANEL_RIGHT_TOP;
 }
 
 int expandable(dt_lib_module_t *self)
@@ -772,9 +775,15 @@ static void _lib_histogram_process_vectorscope
   if(!vs_prof || !dt_is_valid_colormatrix(vs_prof->matrix_in[0][0]))
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[histogram] unsupported vectorscope profile %i %s, it will be replaced with linear Rec2020\n",
-             vs_prof->type, vs_prof->filename);
-    vs_prof = dt_ioppr_add_profile_info_to_list(darktable.develop, DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_RELATIVE_COLORIMETRIC);
+             "[histogram] unsupported vectorscope profile %i %s,"
+             " it will be replaced with linear Rec2020\n",
+             vs_prof ? vs_prof->type     : 0,
+             vs_prof ? vs_prof->filename : "unsupported");
+    dt_control_log(_("unsupported vectorscope profile selected,"
+                     " it will be replaced with linear Rec2020"));
+    vs_prof = dt_ioppr_add_profile_info_to_list
+      (darktable.develop,
+       DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_RELATIVE_COLORIMETRIC);
   }
 
   _lib_histogram_vectorscope_bkgd(d, vs_prof);
