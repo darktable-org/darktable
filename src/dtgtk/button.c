@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,21 +15,12 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "button.h"
 #include "bauhaus/bauhaus.h"
 #include "gui/gtk.h"
 #include <string.h>
 
-static void _button_class_init(GtkDarktableButtonClass *klass);
-static void _button_init(GtkDarktableButton *button);
-static gboolean _button_draw(GtkWidget *widget, cairo_t *cr);
-
-static void _button_class_init(GtkDarktableButtonClass *klass)
-{
-  GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
-
-  widget_class->draw = _button_draw;
-}
 
 static void _button_init(GtkDarktableButton *button)
 {
@@ -88,12 +79,12 @@ static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
     cwidth -= border.left + border.right + padding.left + padding.right;
     cheight -= border.top + border.bottom + padding.top + padding.bottom;
 
-    /* we have to leave some breathing room to the cairo icon paint function to possibly    */
-    /* draw slightly outside the bounding box, for optical alignment and balancing of icons */
-    /* we do this by putting a drawing area widget inside the button and using the CSS      */
-    /* margin property in px of the drawing area as extra room in percent (DPI safe)        */
-    /* we do this because Gtk+ does not support CSS size in percent                         */
-    /* this extra margin can be also (slightly) negative                                    */
+    /* We have to leave some breathing room to the cairo icon paint function to possibly
+       draw slightly outside the bounding box, for alignment and balancing of icons.
+       We do this by putting a drawing area widget inside the button and using the CSS
+       margin property in px of the drawing area as extra room in percent (DPI safe).
+       We do this because GTK does not support CSS size in percent.
+       This extra margin can be also (slightly) negative. */
     GtkStyleContext *ccontext = gtk_widget_get_style_context(DTGTK_BUTTON(widget)->canvas);
     GtkBorder cmargin;
     gtk_style_context_get_margin(ccontext, state, &cmargin);
@@ -111,8 +102,17 @@ static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
   return FALSE;
 }
 
+static void _button_class_init(GtkDarktableButtonClass *klass)
+{
+  GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
+
+  widget_class->draw = _button_draw;
+}
+
 // Public functions
-GtkWidget *dtgtk_button_new(DTGTKCairoPaintIconFunc paint, gint paintflags, void *paintdata)
+GtkWidget *dtgtk_button_new(DTGTKCairoPaintIconFunc paint,
+                            gint paintflags,
+                            void *paintdata)
 {
   GtkDarktableButton *button;
   button = g_object_new(dtgtk_button_get_type(), NULL);
@@ -132,18 +132,26 @@ GType dtgtk_button_get_type()
   if(!dtgtk_button_type)
   {
     static const GTypeInfo dtgtk_button_info = {
-      sizeof(GtkDarktableButtonClass), (GBaseInitFunc)NULL, (GBaseFinalizeFunc)NULL,
+      sizeof(GtkDarktableButtonClass),
+      (GBaseInitFunc)NULL,
+      (GBaseFinalizeFunc)NULL,
       (GClassInitFunc)_button_class_init, NULL, /* class_finalize */
       NULL,                                     /* class_data */
       sizeof(GtkDarktableButton), 0,            /* n_preallocs */
       (GInstanceInitFunc)_button_init,
     };
-    dtgtk_button_type = g_type_register_static(GTK_TYPE_BUTTON, "GtkDarktableButton", &dtgtk_button_info, 0);
+    dtgtk_button_type = g_type_register_static(GTK_TYPE_BUTTON,
+                                               "GtkDarktableButton",
+                                               &dtgtk_button_info,
+                                               0);
   }
   return dtgtk_button_type;
 }
 
-void dtgtk_button_set_paint(GtkDarktableButton *button, DTGTKCairoPaintIconFunc paint, gint paintflags, void *paintdata)
+void dtgtk_button_set_paint(GtkDarktableButton *button,
+                            DTGTKCairoPaintIconFunc paint,
+                            gint paintflags,
+                            void *paintdata)
 {
   g_return_if_fail(button != NULL);
   button->icon = paint;
@@ -165,4 +173,3 @@ void dtgtk_button_set_active(GtkDarktableButton *button, gboolean active)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
