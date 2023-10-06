@@ -250,7 +250,10 @@ dt_view_type_flags_t views(dt_lib_module_t *self)
 
 uint32_t container(dt_lib_module_t *self)
 {
-  return g_strcmp0(dt_conf_get_string("plugins/darkroom/histogram/panel_position"), "right") ? DT_UI_CONTAINER_PANEL_LEFT_TOP : DT_UI_CONTAINER_PANEL_RIGHT_TOP;
+  return g_strcmp0
+    (dt_conf_get_string_const("plugins/darkroom/histogram/panel_position"), "right")
+    ? DT_UI_CONTAINER_PANEL_LEFT_TOP
+    : DT_UI_CONTAINER_PANEL_RIGHT_TOP;
 }
 
 int expandable(dt_lib_module_t *self)
