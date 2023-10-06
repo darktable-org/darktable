@@ -29,7 +29,10 @@ typedef enum dt_dev_zoom_t
   DT_ZOOM_FIT = 0,
   DT_ZOOM_FILL = 1,
   DT_ZOOM_1 = 2,
-  DT_ZOOM_FREE = 3
+  DT_ZOOM_FREE = 3,
+  DT_ZOOM_POSITION = 4,
+  DT_ZOOM_MOVE = 5,
+  DT_ZOOM_SCROLL = 6,
 } dt_dev_zoom_t;
 
 typedef char dt_dev_operation_t[20];

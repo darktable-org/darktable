@@ -1085,7 +1085,7 @@ static void _update_gradient_slider_pickers(GtkWidget *callback_dummy,
       const dt_iop_colorspace_type_t cst = _blendif_colorpicker_cst(data);
       const dt_iop_order_iccprofile_info_t *work_profile =
         (blend_csp == DEVELOP_BLEND_CS_RGB_SCENE)
-          ? dt_ioppr_get_pipe_current_profile_info(module, module->dev->pipe)
+          ? dt_ioppr_get_pipe_current_profile_info(module, module->dev->full.pipe)
           : dt_ioppr_get_iop_work_profile_info(module, module->dev->iop);
 
       _blendif_scale(data, cst, raw_mean, picker_mean, work_profile, in_out);
@@ -1373,7 +1373,7 @@ static gboolean _blendop_masks_modes_none_clicked(GtkWidget *button,
     data->selected_mask_mode = button;
 
     // remove the mask indicator
-    add_remove_mask_indicator(module, FALSE);
+    dt_iop_add_remove_mask_indicator(module, FALSE);
 
     /* and finally remove hinter messages */
     dt_control_hinter_message(darktable.control, "");
@@ -1432,9 +1432,9 @@ static gboolean _blendop_masks_modes_toggle(GtkToggleButton *button,
   // (un)set the mask indicator, but not for uniform blend
   const gboolean supported = mask_mode & ~DEVELOP_MASK_ENABLED;
   if(supported)
-    add_remove_mask_indicator(module, was_toggled);
+    dt_iop_add_remove_mask_indicator(module, was_toggled);
   else
-    add_remove_mask_indicator(module, FALSE);
+    dt_iop_add_remove_mask_indicator(module, FALSE);
   // also hide the eye and showmask buttons for uniform blend
   gtk_widget_set_visible(data->showmask, supported);
   gtk_widget_set_visible(data->suppress, supported);
@@ -3094,7 +3094,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
   const gboolean valid_masking = module->blend_params->mask_mode & ~DEVELOP_MASK_ENABLED;
 
   // (un)set the mask indicator
-  add_remove_mask_indicator(module, valid_masking);
+  dt_iop_add_remove_mask_indicator(module, valid_masking);
   // also hide the eye and showmask buttons for uniform blend
   gtk_widget_set_visible(bd->showmask, valid_masking);
   gtk_widget_set_visible(bd->suppress, valid_masking);

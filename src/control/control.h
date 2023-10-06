@@ -158,12 +158,6 @@ typedef struct dt_control_t
   dt_imgid_t mouse_over_id;
   gboolean lock_cursor_shape;
 
-  // TODO: move these to some darkroom struct
-  // synchronized navigation
-  float dev_zoom_x, dev_zoom_y, dev_zoom_scale;
-  dt_dev_zoom_t dev_zoom;
-  int dev_closeup;
-
   // message log
   int log_pos, log_ack;
   char log_message[DT_CTL_LOG_SIZE][DT_CTL_LOG_MSG_SIZE];
@@ -256,21 +250,6 @@ gboolean dt_control_running();
 // is the locking really needed?
 dt_imgid_t dt_control_get_mouse_over_id();
 void dt_control_set_mouse_over_id(const dt_imgid_t value);
-
-float dt_control_get_dev_zoom_x();
-void dt_control_set_dev_zoom_x(const float value);
-
-float dt_control_get_dev_zoom_y();
-void dt_control_set_dev_zoom_y(const float value);
-
-float dt_control_get_dev_zoom_scale();
-void dt_control_set_dev_zoom_scale(const float value);
-
-int dt_control_get_dev_closeup();
-void dt_control_set_dev_closeup(const int value);
-
-dt_dev_zoom_t dt_control_get_dev_zoom();
-void dt_control_set_dev_zoom(const dt_dev_zoom_t value);
 
 #ifdef __cplusplus
 } // extern "C"

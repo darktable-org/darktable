@@ -2279,8 +2279,8 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     dt_dev_invalidate_all(dev);
     dt_dev_pixelpipe_rebuild(dev);
     // don't use previous image as overlay
-    if(dev->pipe) dev->pipe->backbuf_zoom_x = 1000;
-    if(dev->preview2_pipe) dev->preview2_pipe->backbuf_zoom_x = 1000;
+    if(dev->full.pipe) dev->full.pipe->backbuf_zoom_x = 1000;
+    if(dev->preview2.pipe) dev->preview2.pipe->backbuf_zoom_x = 1000;
   }
 
   // update guides button state
@@ -2685,7 +2685,7 @@ static gboolean _mask_indicator_tooltip(GtkWidget *treeview,
   return res;
 }
 
-void add_remove_mask_indicator(dt_iop_module_t *module, gboolean add)
+void dt_iop_add_remove_mask_indicator(dt_iop_module_t *module, gboolean add)
 {
   const gboolean show = add && dt_conf_get_bool("darkroom/ui/show_mask_indicator");
 
@@ -3023,11 +3023,11 @@ GtkWidget *dt_iop_gui_get_pluginui(dt_iop_module_t *module)
 gboolean dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe)
 {
   if(pipe != dev->preview_pipe
-     && pipe != dev->preview2_pipe)
+     && pipe != dev->preview2.pipe)
     sched_yield();
 
   if(pipe != dev->preview_pipe
-     && pipe != dev->preview2_pipe
+     && pipe != dev->preview2.pipe
      && pipe->changed == DT_DEV_PIPE_ZOOMED)
     return TRUE;
 
@@ -3499,9 +3499,9 @@ void dt_iop_refresh_center(dt_iop_module_t *module)
   dt_develop_t *dev = module->dev;
   if(dev && dev->gui_attached)
   {
-    dt_dev_pixelpipe_cache_invalidate_later(dev->pipe, module->iop_order);
+    dt_dev_pixelpipe_cache_invalidate_later(dev->full.pipe, module->iop_order);
     //ensure that commit_params gets called to pick up any GUI changes
-    dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
+    dev->full.pipe->changed |= DT_DEV_PIPE_SYNCH;
     dt_dev_invalidate(dev);
     dt_control_queue_redraw_center();
   }
@@ -3515,7 +3515,7 @@ void dt_iop_refresh_preview(dt_iop_module_t *module)
   {
     dt_dev_pixelpipe_cache_invalidate_later(dev->preview_pipe, module->iop_order);
     //ensure that commit_params gets called to pick up any GUI changes
-    dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
+    dev->full.pipe->changed |= DT_DEV_PIPE_SYNCH;
     dt_dev_invalidate_all(dev);
     dt_control_queue_redraw();
   }
@@ -3527,9 +3527,9 @@ void dt_iop_refresh_preview2(dt_iop_module_t *module)
   dt_develop_t *dev = module->dev;
   if(dev && dev->gui_attached)
   {
-    dt_dev_pixelpipe_cache_invalidate_later(dev->preview2_pipe, module->iop_order);
+    dt_dev_pixelpipe_cache_invalidate_later(dev->preview2.pipe, module->iop_order);
     //ensure that commit_params gets called to pick up any GUI changes
-    dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
+    dev->full.pipe->changed |= DT_DEV_PIPE_SYNCH;
     dt_dev_invalidate_all(dev);
     dt_control_queue_redraw();
   }

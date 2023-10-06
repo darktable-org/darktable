@@ -1848,7 +1848,7 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, gpointer user_data)
     return;
   }
 
-  if(!g->luminance_valid || self->dev->pipe->processing || !g->histogram_valid)
+  if(!g->luminance_valid || self->dev->full.pipe->processing || !g->histogram_valid)
   {
     dt_control_log(_("wait for the preview to finish recomputing"));
     return;
@@ -1915,7 +1915,7 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, gpointer user_data)
     return;
   }
 
-  if(!g->luminance_valid || self->dev->pipe->processing || !g->histogram_valid)
+  if(!g->luminance_valid || self->dev->full.pipe->processing || !g->histogram_valid)
   {
     dt_control_log(_("wait for the preview to finish recomputing"));
     return;
@@ -2039,8 +2039,8 @@ static void switch_cursors(struct dt_iop_module_t *self)
     // do nothing and let the app decide
     return;
   }
-  else if( ((self->dev->pipe->processing) ||
-          (self->dev->image_status == DT_DEV_PIXELPIPE_DIRTY) ||
+  else if( ((self->dev->full.pipe->processing) ||
+          (self->dev->full.status == DT_DEV_PIXELPIPE_DIRTY) ||
           (self->dev->preview_status == DT_DEV_PIXELPIPE_DIRTY)) && g->cursor_valid)
   {
     // if pipe is busy or dirty but cursor is on preview,
@@ -2051,7 +2051,7 @@ static void switch_cursors(struct dt_iop_module_t *self)
 
     dt_control_queue_redraw_center();
   }
-  else if(g->cursor_valid && !self->dev->pipe->processing)
+  else if(g->cursor_valid && !self->dev->full.pipe->processing)
   {
     // if pipe is clean and idle and cursor is on preview,
     // hide GTK cursor because we display our custom one
@@ -2085,11 +2085,12 @@ static void switch_cursors(struct dt_iop_module_t *self)
 }
 
 
-int mouse_moved(struct dt_iop_module_t *self,
-                const double x,
-                const double y,
+int mouse_moved(dt_iop_module_t *self,
+                const float pzx,
+                const float pzy,
                 const double pressure,
-                const int which)
+                const int which,
+                const float zoom_scale)
 {
   // Whenever the mouse moves over the picture preview, store its
   // coordinates in the GUI struct for later use. This works only if
@@ -2111,11 +2112,6 @@ int mouse_moved(struct dt_iop_module_t *self,
   if(g == NULL) return 0;
   if(wd < 1 || ht < 1) return 0;
 
-  float pzx, pzy;
-  dt_dev_get_pointer_zoom_pos(dev, x, y, &pzx, &pzy);
-  pzx += 0.5f;
-  pzy += 0.5f;
-
   const int x_pointer = pzx * wd;
   const int y_pointer = pzy * ht;
 
@@ -2136,7 +2132,7 @@ int mouse_moved(struct dt_iop_module_t *self,
   dt_iop_gui_leave_critical_section(self);
 
   // store the actual exposure too, to spare I/O op
-  if(g->cursor_valid && !dev->pipe->processing && g->luminance_valid)
+  if(g->cursor_valid && !dev->full.pipe->processing && g->luminance_valid)
     g->cursor_exposure =
       log2f(get_luminance_from_buffer(g->thumb_preview_buf,
                                       g->thumb_preview_buf_width,
@@ -2233,8 +2229,8 @@ static inline int set_new_params_interactive(const float control_exposure,
 
 
 int scrolled(struct dt_iop_module_t *self,
-             const double x,
-             const double y,
+             const float x,
+             const float y,
              const int up,
              const uint32_t state)
 {
@@ -2260,7 +2256,7 @@ int scrolled(struct dt_iop_module_t *self,
                     || !g->luminance_valid
                     || !g->interpolation_valid
                     || !g->user_param_valid
-                    || dev->pipe->processing
+                    || dev->full.pipe->processing
                     || !g->has_focus);
 
   dt_iop_gui_leave_critical_section(self);
@@ -2406,12 +2402,13 @@ static void match_color_to_background(cairo_t *cr,
 }
 
 
-void gui_post_expose(struct dt_iop_module_t *self,
+void gui_post_expose(dt_iop_module_t *self,
                      cairo_t *cr,
                      const int32_t width,
                      const int32_t height,
-                     const int32_t pointerx,
-                     const int32_t pointery)
+                     const float pointerx,
+                     const float pointery,
+                     const float zoom_scale)
 {
   // Draw the custom exposure cursor over the image preview
 
@@ -2425,7 +2422,7 @@ void gui_post_expose(struct dt_iop_module_t *self,
 
   const int fail = (!g->cursor_valid
                     || !g->interpolation_valid
-                    || dev->pipe->processing
+                    || dev->full.pipe->processing
                     || !sanity_check(self)
                     || !g->has_focus);
 
@@ -2470,19 +2467,6 @@ void gui_post_expose(struct dt_iop_module_t *self,
   dt_iop_gui_leave_critical_section(self);
 
   if(dt_isnan(exposure_in)) return; // something went wrong
-
-  // Rescale and shift Cairo drawing coordinates
-  const float wd = dev->preview_pipe->backbuf_width;
-  const float ht = dev->preview_pipe->backbuf_height;
-  const float zoom_y = dt_control_get_dev_zoom_y();
-  const float zoom_x = dt_control_get_dev_zoom_x();
-  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  const int closeup = dt_control_get_dev_closeup();
-  const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
-  cairo_translate(cr, width / 2.0, height / 2.0);
-  cairo_scale(cr, zoom_scale, zoom_scale);
-  cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
-
 
   // set custom cursor dimensions
   const double outer_radius = 16.;
