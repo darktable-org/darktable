@@ -231,7 +231,7 @@ void free_params(dt_imageio_module_storage_t *self,
                  dt_imageio_module_data_t *params)
 {
   if(!params) return;
-  free(params);
+  g_free(params);
 }
 
 #ifdef _WIN32
