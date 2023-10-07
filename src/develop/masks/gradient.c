@@ -281,8 +281,7 @@ static void _gradient_init_values(const float zoom_scale,
   float wd, ht, iwidth, iheight;
   dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
 
-  const float pr_d = darktable.develop->preview_downsampling;
-  const float diff = 3.0f * zoom_scale * (pr_d / 2.0);
+  const float diff = 3.0f * zoom_scale / 2.0;
   float x0 = 0.0f, y0 = 0.0f;
   float dx = 0.0f, dy = 0.0f;
 

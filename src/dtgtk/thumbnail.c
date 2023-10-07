@@ -603,7 +603,7 @@ static gboolean _event_image_draw(GtkWidget *widget,
   dt_develop_t *dev = darktable.develop;
   if(thumb->img_surf_preview
      && (dt_view_get_current() != DT_VIEW_DARKROOM
-         || !dev->preview_pipe->output_backbuf
+         || !dev->preview_pipe->backbuf
          || dev->preview_pipe->output_imgid != thumb->imgid))
   {
     dt_thumbnail_surface_destroy(thumb);
@@ -626,20 +626,20 @@ static gboolean _event_image_draw(GtkWidget *widget,
 
     if(dt_view_get_current() == DT_VIEW_DARKROOM
        && dev->preview_pipe->output_imgid == thumb->imgid
-       && dev->preview_pipe->output_backbuf)
+       && dev->preview_pipe->backbuf)
     {
       // the current thumb is the one currently developed in darkroom
       // better use the preview buffer for surface, in order to stay in sync
       dt_thumbnail_surface_destroy(thumb);
 
       // get new surface with preview image
-      const int buf_width = dev->preview_pipe->output_backbuf_width;
-      const int buf_height = dev->preview_pipe->output_backbuf_height;
+      const int buf_width = dev->preview_pipe->backbuf_width;
+      const int buf_height = dev->preview_pipe->backbuf_height;
       uint8_t *rgbbuf = g_malloc0(sizeof(unsigned char) * 4 * buf_width * buf_height);
 
       dt_pthread_mutex_t *mutex = &dev->preview_pipe->backbuf_mutex;
       dt_pthread_mutex_lock(mutex);
-      memcpy(rgbbuf, dev->preview_pipe->output_backbuf,
+      memcpy(rgbbuf, dev->preview_pipe->backbuf,
              sizeof(unsigned char) * 4 * buf_width * buf_height);
       dt_pthread_mutex_unlock(mutex);
 
@@ -1174,7 +1174,7 @@ static void _dt_preview_updated_callback(gpointer instance, gpointer user_data)
   if(dt_view_get_current() == DT_VIEW_DARKROOM
      && (thumb->img_surf_preview
          || darktable.develop->preview_pipe->output_imgid == thumb->imgid)
-     && darktable.develop->preview_pipe->output_backbuf)
+     && darktable.develop->preview_pipe->backbuf)
   {
     // reset surface
     thumb->img_surf_dirty = TRUE;

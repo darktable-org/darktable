@@ -200,23 +200,23 @@ static int _process_image(dt_slideshow_t *d,
   const dt_imgid_t imgid = d->buf[slot].imgid;
   size_t width = d->buf[slot].width;
   size_t height = d->buf[slot].height;
-  uint8_t *buf;
+  uint8_t *buf = NULL;
 
   dt_pthread_mutex_unlock(&d->lock);
 
-  dt_dev_image_ext
-    (imgid,
-     d->width / darktable.gui->ppd,
-     d->height / darktable.gui->ppd,
-     -1,
-     &buf,
-     &width,
-     &height,
-     NULL,
-     NULL,
-     0,
-     FALSE,
-     -1);
+  // dt_dev_image_ext
+  //   (imgid,
+  //    d->width / darktable.gui->ppd,
+  //    d->height / darktable.gui->ppd,
+  //    -1,
+  //    &buf,
+  //    &width,
+  //    &height,
+  //    NULL,
+  //    NULL,
+  //    0,
+  //    FALSE,
+  //    -1);
 
   dt_pthread_mutex_lock(&d->lock);
 

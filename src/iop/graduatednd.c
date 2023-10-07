@@ -216,9 +216,11 @@ static int _set_grad_from_points(
         float *offset)
 {
   // we want absolute positions
+  float wd, ht;
+  dt_dev_get_preview_size(self->dev, &wd, &ht);
   float pts[4]
-      = { xa * self->dev->preview_pipe->backbuf_width, ya * self->dev->preview_pipe->backbuf_height,
-          xb * self->dev->preview_pipe->backbuf_width, yb * self->dev->preview_pipe->backbuf_height };
+      = { xa * wd, ya * ht,
+          xb * wd, yb * ht };
   dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_FORW_EXCL, pts, 2);
   dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
   pts[0] /= (float)piece->buf_out.width;
@@ -436,10 +438,12 @@ static int _set_points_from_grad(
 
   if(!dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_FORW_EXCL, pts, 2))
     return 0;
-  *xa = pts[0] / self->dev->preview_pipe->backbuf_width;
-  *ya = pts[1] / self->dev->preview_pipe->backbuf_height;
-  *xb = pts[2] / self->dev->preview_pipe->backbuf_width;
-  *yb = pts[3] / self->dev->preview_pipe->backbuf_height;
+  float wd, ht;
+  dt_dev_get_preview_size(self->dev, &wd, &ht);
+  *xa = pts[0] / wd;
+  *ya = pts[1] / ht;
+  *xb = pts[2] / wd;
+  *yb = pts[3] / ht;
   return 1;
 }
 
@@ -485,18 +489,14 @@ void gui_reset(struct dt_iop_module_t *self)
 
 void gui_post_expose(dt_iop_module_t *self,
                      cairo_t *cr,
-                     const int32_t width,
-                     const int32_t height,
+                     const float wd,
+                     const float ht,
                      const float pointerx,
                      const float pointery,
                      const float zoom_scale)
 {
-  dt_develop_t *dev = self->dev;
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
-
-  const float wd = dev->preview_pipe->backbuf_width;
-  const float ht = dev->preview_pipe->backbuf_height;
 
   // we get the extremities of the line
   if(g->define == 0)
@@ -531,10 +531,9 @@ void gui_post_expose(dt_iop_module_t *self,
   if(dt_iop_color_picker_is_visible(darktable.develop))
     return;
   // the extremities
-  const float pr_d = darktable.develop->preview_downsampling;
   float x1, y1, x2, y2;
   const float l = sqrtf((xb - xa) * (xb - xa) + (yb - ya) * (yb - ya));
-  const float ext = wd * 0.01f / pr_d / zoom_scale;
+  const float ext = wd * 0.01f / zoom_scale;
   x1 = xa + (xb - xa) * ext / l;
   y1 = ya + (yb - ya) * ext / l;
   x2 = (xa + x1) / 2.0;
@@ -617,9 +616,8 @@ int mouse_moved(dt_iop_module_t *self,
   }
   else
   {
-    const float pr_d = darktable.develop->preview_downsampling;
     g->selected = 0;
-    const float ext = DT_PIXEL_APPLY_DPI(0.02f) / pr_d / zoom_scale;
+    const float ext = DT_PIXEL_APPLY_DPI(0.02f) / zoom_scale;
     // are we near extermity ?
     if(pzy > g->ya - ext && pzy < g->ya + ext && pzx > g->xa - ext && pzx < g->xa + ext)
     {

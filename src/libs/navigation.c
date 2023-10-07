@@ -249,20 +249,20 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget,
   gtk_render_background(context, cr, 0, 0, allocation.width, allocation.height);
 
   /* draw navigation image if available */
-  if(dev->preview_pipe->output_backbuf
+  if(dev->preview_pipe->backbuf
      && dev->image_storage.id == dev->preview_pipe->output_imgid)
   {
     dt_pthread_mutex_t *mutex = &dev->preview_pipe->backbuf_mutex;
     dt_pthread_mutex_lock(mutex);
 
     cairo_save(cr);
-    const int wd = dev->preview_pipe->output_backbuf_width;
-    const int ht = dev->preview_pipe->output_backbuf_height;
+    const int wd = dev->preview_pipe->backbuf_width;
+    const int ht = dev->preview_pipe->backbuf_height;
     const float scale = fminf(width / (float)wd, height / (float)ht);
 
     const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wd);
     cairo_surface_t *surface
-        = cairo_image_surface_create_for_data(dev->preview_pipe->output_backbuf,
+        = cairo_image_surface_create_for_data(dev->preview_pipe->backbuf,
                                               CAIRO_FORMAT_RGB24, wd, ht, stride);
     cairo_translate(cr, width / 2.0, height / 2.0f);
     cairo_scale(cr, scale, scale);
@@ -274,20 +274,13 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget,
     cairo_fill(cr);
 
     // draw box where we are
-    dt_dev_zoom_t zoom;
-    int closeup;
-    float zoom_x, zoom_y;
-    dt_dev_get_viewport_params(&dev->full, &zoom, &closeup, &zoom_x, &zoom_y);
-    if(dt_dev_get_zoomed_in() > 1.0f)
+    float zoom_x, zoom_y, boxw, boxh;
+    if(dt_dev_get_zoom_bounds(&dev->full, &zoom_x, &zoom_y, &boxw, &boxh))
     {
       // Add a dark overlay on the picture to make it fade
       cairo_rectangle(cr, 0, 0, wd, ht);
       cairo_set_source_rgba(cr, 0, 0, 0, 0.5);
       cairo_fill(cr);
-
-      float boxw = 1, boxh = 1;
-      dt_dev_check_zoom_bounds(&dev->full, &zoom_x, &zoom_y, zoom,
-                               closeup, &boxw, &boxh);
 
       // Repaint the original image in the area of interest
       cairo_set_source_surface(cr, surface, 0, 0);

@@ -471,7 +471,7 @@ static gboolean _live_sample_button(GtkWidget *widget,
 
     if(picker->module)
     {
-      picker->module->dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+      picker->module->dev->preview_pipe->status = DT_DEV_PIXELPIPE_DIRTY;
     }
     else
     {

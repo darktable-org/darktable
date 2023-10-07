@@ -42,9 +42,15 @@ typedef struct dt_lib_duplicate_t
   GtkWidget *duplicate_box;
   dt_imgid_t imgid;
 
-  cairo_surface_t *preview_surf;
   size_t processed_width;
   size_t processed_height;
+  uint8_t *buf;
+  float scale;
+  size_t buf_width;
+  size_t buf_height;
+  float zoom_x;
+  float zoom_y;
+
   dt_view_context_t view_ctx;
   int preview_id;
 
@@ -191,10 +197,10 @@ void view_leave(struct dt_lib_module_t *self,
 {
   // we leave the view. Let's destroy preview surf if any
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
-  if(d->preview_surf)
+  if(d->buf)
   {
-    cairo_surface_destroy(d->preview_surf);
-    d->preview_surf = NULL;
+    dt_free_align(d->buf);
+    d->buf = NULL;
   }
 }
 void gui_post_expose(dt_lib_module_t *self,
@@ -213,24 +219,24 @@ void gui_post_expose(dt_lib_module_t *self,
 
   if(!view_ok || d->preview_id != d->imgid)
   {
-    uint8_t *buf = NULL;
-    size_t processed_width;
-    size_t processed_height;
+    if(d->buf)
+      dt_free_align(d->buf);
 
-    dt_dev_image(d->imgid, width, height, -1, &buf, &processed_width, &processed_height);
+    dt_dev_image(d->imgid, width, height, -1,
+                 &d->processed_width, &d->processed_height,
+                 &d->buf, &d->scale,
+                 &d->buf_width, &d->buf_height,
+                 &d->zoom_x, &d->zoom_y, -1);
 
     d->preview_id = d->imgid;
-    d->processed_width = processed_width;
-    d->processed_height = processed_height;
-
-    if(d->preview_surf)
-      cairo_surface_destroy(d->preview_surf);
-    d->preview_surf = dt_view_create_surface(buf, processed_width, processed_height);
   }
 
-  if(d->preview_surf)
-    dt_view_paint_surface(cri, width, height, d->preview_surf,
-                          d->processed_width, d->processed_height, DT_WINDOW_MAIN, 0, 0, 0);
+  if(d->buf)
+    dt_view_paint_surface(cri, width, height, &darktable.develop->full, DT_WINDOW_MAIN,
+                          d->processed_width, d->processed_height,
+                          d->buf, d->scale,
+                          d->buf_width, d->buf_height,
+                          d->zoom_x, d->zoom_y);
 }
 
 static void _thumb_remove(gpointer user_data)
@@ -250,10 +256,10 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
 
   d->imgid = NO_IMGID;
   // we drop the preview if any
-  if(d->preview_surf)
+  if(d->buf)
   {
-    cairo_surface_destroy(d->preview_surf);
-    d->preview_surf = NULL;
+    dt_free_align(d->buf);
+    d->buf = NULL;
   }
   // we drop all the thumbs
   g_list_free_full(d->thumbs, _thumb_remove);
@@ -390,7 +396,7 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
 
   d->imgid = NO_IMGID;
-  d->preview_surf = NULL;
+  d->buf = NULL;
   d->processed_width = 0;
   d->processed_height = 0;
   d->view_ctx = 0;

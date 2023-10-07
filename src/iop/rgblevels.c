@@ -246,8 +246,10 @@ int mouse_moved(dt_iop_module_t *self,
   dt_iop_rgblevels_gui_data_t *g = (dt_iop_rgblevels_gui_data_t *)self->gui_data;
   if(g && g->draw_selected_region && g->button_down && self->enabled)
   {
-    g->posx_to = pzx * darktable.develop->preview_pipe->backbuf_width;
-    g->posy_to = pzy * darktable.develop->preview_pipe->backbuf_height;
+    float wd, ht;
+    dt_dev_get_preview_size(self->dev, &wd, &ht);
+    g->posx_to = pzx * wd;
+    g->posy_to = pzy * ht;
 
     dt_control_queue_redraw_center();
 
@@ -315,8 +317,10 @@ int button_pressed(dt_iop_module_t *self,
     }
     else if(which == 1)
     {
-      g->posx_from = g->posx_to = pzx * darktable.develop->preview_pipe->backbuf_width;
-      g->posy_from = g->posy_to = pzy * darktable.develop->preview_pipe->backbuf_height;
+      float wd, ht;
+      dt_dev_get_preview_size(self->dev, &wd, &ht);
+      g->posx_from = g->posx_to = pzx * wd;
+      g->posy_from = g->posy_to = pzy * ht;
 
       g->button_down = 1;
 
@@ -329,8 +333,8 @@ int button_pressed(dt_iop_module_t *self,
 
 void gui_post_expose(dt_iop_module_t *self,
                      cairo_t *cr,
-                     const int32_t width,
-                     const int32_t height,
+                     const float width,
+                     const float height,
                      const float pointerx,
                      const float pointery,
                      const float zoom_scale)

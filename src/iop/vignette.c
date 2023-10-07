@@ -365,18 +365,15 @@ static void draw_overlay(cairo_t *cr, float x, float y, float fx, float fy, int 
 // WTF?
 void gui_post_expose(dt_iop_module_t *self,
                      cairo_t *cr,
-                     const int32_t width,
-                     const int32_t height,
+                     const float wd,
+                     const float ht,
                      const float pzx,
                      const float pzy,
                      const float zoom_scale)
 {
-  dt_develop_t *dev = self->dev;
   //   dt_iop_vignette_gui_data_t *g = (dt_iop_vignette_gui_data_t *)self->gui_data;
   dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
 
-  const float wd = dev->preview_pipe->backbuf_width;
-  const float ht = dev->preview_pipe->backbuf_height;
   float bigger_side, smaller_side;
   if(wd >= ht)
   {
@@ -460,8 +457,8 @@ int mouse_moved(dt_iop_module_t *self,
 {
   dt_iop_vignette_gui_data_t *g = (dt_iop_vignette_gui_data_t *)self->gui_data;
   dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
-  const float wd = self->dev->preview_pipe->backbuf_width;
-  const float ht = self->dev->preview_pipe->backbuf_height;
+  float wd, ht;
+  dt_dev_get_preview_size(self->dev, &wd, &ht);
   float bigger_side, smaller_side;
   if(wd >= ht)
   {
