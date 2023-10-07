@@ -153,6 +153,10 @@ gboolean dt_tag_detach_by_string(const char *name,
                                  const gboolean undo_on,
                                  const gboolean group_on);
 
+/** retrieves the count of tags of specified imgid */
+uint32_t dt_tag_count_attached(const dt_imgid_t imgid,
+                               const gboolean ignore_dt_tags);
+
 /** retrieves a list of tags of specified imgid \param[out] result a
  * list of dt_tag_t, sorted by tag. */
 uint32_t dt_tag_get_attached(const dt_imgid_t imgid,
