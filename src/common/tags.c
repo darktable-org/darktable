@@ -655,6 +655,31 @@ void dt_set_darktable_tags()
   sqlite3_finalize(stmt);
 }
 
+uint32_t dt_tag_count_attached(const dt_imgid_t imgid,
+                               const gboolean ignore_dt_tags)
+{
+  sqlite3_stmt *stmt;
+
+  gchar *query = g_strdup_printf
+    ("SELECT COUNT(tagid)"
+     " FROM main.tagged_images"
+     " WHERE imgid = %d"
+     "       %s",
+     imgid,
+     ignore_dt_tags ? " AND tagid NOT IN memory.darktable_tags" : "");
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  g_free(query);
+
+  int32_t count = 0;
+
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    count = sqlite3_column_int(stmt, 0);
+
+  sqlite3_finalize(stmt);
+  return count;
+}
+
 uint32_t dt_tag_get_attached(const dt_imgid_t imgid,
                              GList **result,
                              const gboolean ignore_dt_tags)
