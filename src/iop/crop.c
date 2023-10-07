@@ -178,7 +178,7 @@ static void _commit_box(dt_iop_module_t *self,
                         dt_iop_crop_params_t *p)
 {
   if(darktable.gui->reset) return;
-  if(self->dev->preview_status != DT_DEV_PIXELPIPE_VALID) return;
+  if(self->dev->preview_pipe->status != DT_DEV_PIXELPIPE_VALID) return;
 
   g->cropping = 0;
   const dt_boundingbox_t old = { p->cx, p->cy, p->cw, p->ch };
@@ -190,8 +190,8 @@ static void _commit_box(dt_iop_module_t *self,
     p->cw = p->ch = 1.0f;
   }
   // we want value in iop space
-  const float wd = self->dev->preview_pipe->backbuf_width;
-  const float ht = self->dev->preview_pipe->backbuf_height;
+  float wd, ht;
+  dt_dev_get_preview_size(self->dev, &wd, &ht);
   dt_boundingbox_t points = { g->clip_x * wd,
                               g->clip_y * ht,
                               (g->clip_x + g->clip_w) * wd,
@@ -233,7 +233,7 @@ static int _set_max_clip(struct dt_iop_module_t *self)
   dt_iop_crop_params_t *p = (dt_iop_crop_params_t *)self->params;
 
   if(g->clip_max_pipe_hash == self->dev->preview_pipe->backbuf_hash) return 1;
-  if(self->dev->preview_status != DT_DEV_PIXELPIPE_VALID) return 1;
+  if(self->dev->preview_pipe->status != DT_DEV_PIXELPIPE_VALID) return 1;
 
   // we want to know the size of the actual buffer
   dt_dev_pixelpipe_iop_t *piece =
@@ -246,24 +246,26 @@ static int _set_max_clip(struct dt_iop_module_t *self)
                                     DT_DEV_TRANSFORM_DIR_FORW_EXCL, points, 4))
     return 0;
 
+  float wd, ht;
+  dt_dev_get_preview_size(self->dev, &wd, &ht);
   g->clip_max_x =
-    fmaxf(points[0] / self->dev->preview_pipe->backbuf_width, 0.0f);
+    fmaxf(points[0] / wd, 0.0f);
   g->clip_max_y =
-    fmaxf(points[1] / self->dev->preview_pipe->backbuf_height, 0.0f);
+    fmaxf(points[1] / ht, 0.0f);
   g->clip_max_w =
-    fminf((points[2] - points[0]) / self->dev->preview_pipe->backbuf_width, 1.0f);
+    fminf((points[2] - points[0]) / wd, 1.0f);
   g->clip_max_h =
-    fminf((points[3] - points[1]) / self->dev->preview_pipe->backbuf_height, 1.0f);
+    fminf((points[3] - points[1]) / ht, 1.0f);
 
   // if clipping values are not null, this is undistorted values...
   g->clip_x =
-    fmaxf(points[4] / self->dev->preview_pipe->backbuf_width, g->clip_max_x);
+    fmaxf(points[4] / wd, g->clip_max_x);
   g->clip_y =
-    fmaxf(points[5] / self->dev->preview_pipe->backbuf_height, g->clip_max_y);
+    fmaxf(points[5] / ht, g->clip_max_y);
   g->clip_w =
-    fminf((points[6] - points[4]) / self->dev->preview_pipe->backbuf_width, g->clip_max_w);
+    fminf((points[6] - points[4]) / wd, g->clip_max_w);
   g->clip_h =
-    fminf((points[7] - points[5]) / self->dev->preview_pipe->backbuf_height, g->clip_max_h);
+    fminf((points[7] - points[5]) / ht, g->clip_max_h);
 
   g->clip_max_pipe_hash = self->dev->preview_pipe->backbuf_hash;
   return 1;
@@ -1325,8 +1327,8 @@ static _grab_region_t _gui_get_grab(float pzx,
 // draw guides and handles over the image
 void gui_post_expose(dt_iop_module_t *self,
                      cairo_t *cr,
-                     const int32_t width,
-                     const int32_t height,
+                     const float wd,
+                     const float ht,
                      const float pzx,
                      const float pzy,
                      const float zoom_scale)
@@ -1345,9 +1347,6 @@ void gui_post_expose(dt_iop_module_t *self,
   if(!(g->preview_ready || external)) return;
 
   _aspect_apply(self, GRAB_HORIZONTAL);
-
-  const float wd = dev->preview_pipe->backbuf_width;
-  const float ht = dev->preview_pipe->backbuf_height;
 
   // draw cropping window
   const double fillc = dimmed ? 0.9 : 0.2;
@@ -1485,10 +1484,10 @@ int mouse_moved(dt_iop_module_t *self,
   dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
 
   // we don't do anything if the image is not ready
-  if(!g->preview_ready || self->dev->preview_loading) return 0;
+  if(!g->preview_ready || self->dev->preview_pipe->loading) return 0;
 
-  const float wd = self->dev->preview_pipe->backbuf_width;
-  const float ht = self->dev->preview_pipe->backbuf_height;
+  float wd, ht;
+  dt_dev_get_preview_size(self->dev, &wd, &ht);
 
   const _grab_region_t grab =
     _gui_get_grab(pzx, pzy, g, DT_PIXEL_APPLY_DPI(30.0) / zoom_scale, wd, ht);
@@ -1708,8 +1707,8 @@ int button_pressed(dt_iop_module_t *self,
 
   if(which == 1)
   {
-    const float wd = self->dev->preview_pipe->backbuf_width;
-    const float ht = self->dev->preview_pipe->backbuf_height;
+    float wd, ht;
+    dt_dev_get_preview_size(self->dev, &wd, &ht);
 
     // switch module on already, other code depends in this:
     if(!self->enabled)

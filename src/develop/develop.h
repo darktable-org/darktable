@@ -91,14 +91,6 @@ typedef enum dt_dev_transform_direction_t
   DT_DEV_TRANSFORM_DIR_BACK_EXCL = 4
 } dt_dev_transform_direction_t;
 
-typedef enum dt_dev_pixelpipe_status_t
-{
-  DT_DEV_PIXELPIPE_DIRTY = 0,   // history stack changed or image new
-  DT_DEV_PIXELPIPE_RUNNING = 1, // pixelpipe is running
-  DT_DEV_PIXELPIPE_VALID = 2,   // pixelpipe has finished; valid result
-  DT_DEV_PIXELPIPE_INVALID = 3  // pixelpipe has finished; invalid result
-} dt_dev_pixelpipe_status_t;
-
 typedef enum dt_clipping_preview_mode_t
 {
   DT_CLIPPING_PREVIEW_GAMUT = 0,
@@ -127,6 +119,8 @@ typedef struct dt_dev_viewport_t
   int32_t border_size;
   double dpi, dpi_factor, ppd;
 
+  gboolean iso_12646;
+
   dt_dev_zoom_t zoom;
   int closeup;
   float zoom_x, zoom_y;
@@ -134,14 +128,6 @@ typedef struct dt_dev_viewport_t
 
   // image processing pipeline with caching
   struct dt_dev_pixelpipe_t *pipe;
-  dt_dev_pixelpipe_status_t status;
-
-  // these are locked while the pipes are still in use:
-  dt_pthread_mutex_t pipe_mutex;
-
-  uint32_t average_delay;
-  gboolean loading;
-  gboolean input_changed;
 } dt_dev_viewport_t;
 
 /* keep track on what and where we do chromatic adaptation, used
@@ -183,19 +169,15 @@ typedef struct dt_develop_t
   double   gui_previous_pipe_time; // time pipe finished after last widget was changed.
 
   gboolean focus_hash;   // determines whether to start a new history item or to merge down.
-  gboolean preview_loading, history_updating, image_force_reload, first_load;
-  gboolean preview_input_changed;
+  gboolean history_updating, image_force_reload, first_load;
   gboolean autosaving;
-  dt_dev_pixelpipe_status_t preview_status;
   int32_t image_invalid_cnt;
   uint32_t timestamp;
   uint32_t preview_average_delay;
   struct dt_iop_module_t *gui_module; // this module claims gui expose/event callbacks.
-  float preview_downsampling;         // < 1.0: optionally downsample preview
 
   // image processing pipeline with caching
   struct dt_dev_pixelpipe_t *preview_pipe;
-  dt_pthread_mutex_t preview_pipe_mutex;
 
   // image under consideration, which
   // is copied each time an image is changed. this means we have some information
@@ -340,7 +322,6 @@ typedef struct dt_develop_t
   struct
   {
     GtkWidget *button; // yes, ugliness is the norm. what did you expect ?
-    gboolean enabled;
   } iso_12646;
 
   // the display profile related things (softproof, gamut check, profiles ...)
@@ -363,9 +344,10 @@ void dt_dev_init(dt_develop_t *dev, gboolean gui_attached);
 void dt_dev_cleanup(dt_develop_t *dev);
 
 float dt_dev_get_preview_downsampling();
-void dt_dev_process_image_job(dt_develop_t *dev);
-void dt_dev_process_preview_job(dt_develop_t *dev);
-void dt_dev_process_preview2_job(dt_develop_t *dev);
+void dt_dev_process_image_job(dt_develop_t *dev,
+                              dt_dev_viewport_t *port,
+                              struct dt_dev_pixelpipe_t *pipe,
+                              dt_signal_t signal);
 // launch jobs above
 void dt_dev_process_image(dt_develop_t *dev);
 void dt_dev_process_preview(dt_develop_t *dev);
@@ -424,16 +406,17 @@ void dt_dev_reprocess_all(dt_develop_t *dev);
 void dt_dev_reprocess_center(dt_develop_t *dev);
 void dt_dev_reprocess_preview(dt_develop_t *dev);
 
+gboolean dt_dev_get_preview_size(dt_develop_t *dev,
+                                 float *wd,
+                                 float *ht);
 void dt_dev_get_processed_size(dt_dev_viewport_t *port,
                                int *procw,
                                int *proch);
-void dt_dev_check_zoom_bounds(dt_dev_viewport_t *port,
-                              float *zoom_x,
-                              float *zoom_y,
-                              dt_dev_zoom_t zoom,
-                              const int closeup,
-                              float *boxw,
-                              float *boxh);
+gboolean dt_dev_get_zoom_bounds(dt_dev_viewport_t *port,
+                                float *zoom_x,
+                                float *zoom_y,
+                                float *boxww,
+                                float *boxhh);
 void dt_dev_zoom_move(dt_dev_viewport_t *port,
                       dt_dev_zoom_t zoom,
                       float scale,
@@ -458,18 +441,8 @@ void dt_dev_get_viewport_params(dt_dev_viewport_t *port,
                                 int *closeup,
                                 float *x,
                                 float *y);
-void dt_dev_set_viewport_params(dt_dev_viewport_t *port,
-                                dt_dev_zoom_t zoom,
-                                int closeup,
-                                float x,
-                                float y);
 
-void dt_dev_configure(dt_develop_t *dev,
-                      int wd,
-                      int ht);
-void dt_dev_second_window_configure(dt_develop_t *dev,
-                                    int wd,
-                                    int ht);
+void dt_dev_configure(dt_dev_viewport_t *port);
 
 /*
  * exposure plugin hook, set the exposure and the black level
@@ -655,28 +628,20 @@ void dt_dev_undo_end_record(dt_develop_t *dev);
  * develop an image and returns the buf and processed width / height.
  * this is done as in the context of the darkroom, meaning that the
  * final processed sizes will align perfectly on the darkroom view.
- *
  */
 void dt_dev_image(const dt_imgid_t imgid,
                   const size_t width,
                   const size_t height,
                   const int history_end,
-                  uint8_t **buf,
                   size_t *processed_width,
-                  size_t *processed_height);
-
-void dt_dev_image_ext(const dt_imgid_t imgid,
-                      const size_t width,
-                      const size_t height,
-                      const int history_end,
-                      uint8_t **buf,
-                      size_t *processed_width,
-                      size_t *processed_height,
-                      float *zoom_x,
-                      float *zoom_y,
-                      const int border_size,
-                      const gboolean iso_12646,
-                      const int32_t snapshot_id);
+                  size_t *processed_height,
+                  uint8_t **buf,
+                  float *scale,
+                  size_t *buf_width,
+                  size_t *buf_height,
+                  float *zoom_x,
+                  float *zoom_y,
+                  const int32_t snapshot_id);
 
 
 gboolean dt_dev_equal_chroma(const float *f, const double *d);

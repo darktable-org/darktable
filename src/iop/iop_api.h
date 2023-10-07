@@ -139,8 +139,8 @@ DEFAULT(void, gui_cleanup, struct dt_iop_module_t *self);
 /** optional method called after darkroom expose. */
 OPTIONAL(void, gui_post_expose, struct dt_iop_module_t *self,
                                 cairo_t *cr,
-                                int32_t width,
-                                int32_t height,
+                                float width,
+                                float height,
                                 float pointerx,
                                 float pointery,
                                 float zoom_scale);

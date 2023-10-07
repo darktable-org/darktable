@@ -46,24 +46,19 @@ typedef struct dt_lib_snapshot_t
   dt_imgid_t imgid;
   uint32_t history_end;
   uint32_t id;
-  /* snapshot cairo surface */
-  cairo_surface_t *surface;
-  uint32_t width, height;
+  size_t processed_width;
+  size_t processed_height;
+  uint8_t *buf;
+  float scale;
+  size_t width, height;
   float zoom_x, zoom_y;
 } dt_lib_snapshot_t;
-
-typedef struct dt_lib_snapshot_params_t
-{
-  uint8_t *buf;
-  size_t width, height;
-} dt_lib_snapshot_params_t;
 
 typedef struct dt_lib_snapshots_t
 {
   GtkWidget *snapshots_box;
 
   int selected;
-  dt_lib_snapshot_params_t params;
   gboolean snap_requested;
   guint expose_again_timeout_id;
 
@@ -185,18 +180,17 @@ void gui_post_expose(dt_lib_module_t *self,
     // if a new snapshot is needed, do this now
     if(d->snap_requested && snap->ctx == ctx)
     {
+      if(snap->buf) dt_free_align(snap->buf);
+      snap->buf = NULL;
+
       // export image with proper size
-      dt_dev_image_ext(snap->imgid, width, height, snap->history_end,
-                       &d->params.buf, &d->params.width, &d->params.height,
-                       &snap->zoom_x, &snap->zoom_y,
-                       dev->full.border_size, dev->iso_12646.enabled, snap->id);
-
-      if(snap->surface) cairo_surface_destroy(snap->surface);
-      snap->surface = dt_view_create_surface(d->params.buf,
-                                             d->params.width, d->params.height);
-
-      snap->width  = d->params.width;
-      snap->height = d->params.height;
+      dt_dev_image(snap->imgid, width, height,
+                   snap->history_end,
+                   &snap->processed_width, &snap->processed_height,
+                   &snap->buf, &snap->scale,
+                   &snap->width, &snap->height,
+                   &snap->zoom_x, &snap->zoom_y,
+                   snap->id);
       d->snap_requested = FALSE;
       d->expose_again_timeout_id = 0;
     }
@@ -206,7 +200,7 @@ void gui_post_expose(dt_lib_module_t *self,
     // create many snapshot while zooming (this is slow), so we wait
     // to the zoom level to be stabilized to create the new snapshot.
     if(snap->ctx != ctx
-       || !snap->surface)
+       || !snap->buf)
     {
       // request a new snapshot in the following conditions:
       //    1. we are not panning
@@ -255,12 +249,12 @@ void gui_post_expose(dt_lib_module_t *self,
     cairo_clip(cri);
     cairo_fill(cri);
 
-    if(snap->surface)
+    if(snap->buf)
     {
-      // display snapshot image surface
-      dt_view_paint_surface(cri, width, height,
-                            snap->surface, snap->width, snap->height, DT_WINDOW_MAIN,
-                            dev->full.pipe->backbuf_scale, snap->zoom_x, snap->zoom_y);
+      dt_view_paint_surface(cri, width, height, &dev->full, DT_WINDOW_MAIN,
+                            snap->processed_width, snap->processed_height,
+                            snap->buf, snap->scale, snap->width, snap->height,
+                            snap->zoom_x, snap->zoom_y);
     }
 
     cairo_reset_clip(cri);
@@ -472,7 +466,6 @@ static void _lib_snapshots_toggle_last(dt_action_t *action)
 
 static void _clear_snapshot_entry(dt_lib_snapshot_t *s)
 {
-  s->surface = NULL;
   s->ctx = 0;
   s->imgid = NO_IMGID;
   s->history_end = -1;
@@ -500,7 +493,7 @@ static void _clear_snapshots(dt_lib_module_t *self, const dt_imgid_t imgid)
   {
     dt_lib_snapshot_t *s = &d->snapshot[k];
 
-    if(s->surface) cairo_surface_destroy(s->surface);
+    if(s->buf) dt_free_align(s->buf);
     _clear_snapshot_entry(s);
     gtk_widget_hide(s->button);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(s->button), FALSE);
