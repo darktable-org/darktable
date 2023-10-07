@@ -103,6 +103,7 @@ jobs:
             libgphoto2-dev \
             libheif-dev \
             libimath-dev \
+            libopenexr-dev \
             libjxl-dev \
             x11proto-dev \
             libxfixes-dev;
