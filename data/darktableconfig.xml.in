@@ -755,11 +755,11 @@
     <name>plugins/collect/filmroll_sort</name>
     <type>
       <enum>
-        <option>id</option>
-        <option>folder</option>
+        <option>chronological</option>
+        <option>folder name</option>
       </enum>
     </type>
-    <default>id</default>
+    <default>chronological</default>
     <shortdescription>sort film rolls by</shortdescription>
     <longdescription>sets the collections-list order for film rolls</longdescription>
   </dtconfig>
