@@ -1830,8 +1830,8 @@ static void _list_view(dt_lib_collect_rule_t *dr)
            "  FROM main.images AS mi, main.cameras AS cm"
            "  WHERE mi.camera_id = cm.id"
            "    AND %s "
-           "  GROUP BY camera"
-           "  ORDER BY camera", where_ext);
+           "  GROUP BY lower(camera)"
+           "  ORDER BY lower(camera)", where_ext);
         // clang-format on
 
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
