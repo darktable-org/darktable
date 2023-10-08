@@ -2126,13 +2126,19 @@ static void _list_view(dt_lib_collect_rule_t *dr)
           gchar *order_by = NULL;
           const char *filmroll_sort =
             dt_conf_get_string_const("plugins/collect/filmroll_sort");
-          if(strcmp(filmroll_sort, "id") == 0)
-            order_by = g_strdup("film_rolls_id DESC");
-          else
-            if(dt_conf_get_bool("plugins/collect/descending"))
-              order_by = g_strdup("folder DESC");
+          const gboolean sort_descending = dt_conf_get_bool("plugins/collect/descending");
+
+          if(strcmp(filmroll_sort, "chronological") == 0)
+          {
+            if(sort_descending)
+              order_by = g_strdup("film_rolls_id DESC");
             else
-              order_by = g_strdup("folder");
+              order_by = g_strdup("film_rolls_id");
+          }
+          else
+          {
+            order_by = g_strdup("lower(folder) ASC");
+          }
 
           // clang-format off
           g_snprintf(query, sizeof(query),
