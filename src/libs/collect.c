@@ -1869,13 +1869,19 @@ static void _list_view(dt_lib_collect_rule_t *dr)
                    "       WHEN auto_hash == current_hash THEN '%s'"
                    "       WHEN current_hash IS NOT NULL THEN '%s'"
                    "       ELSE '%s'"
-                   "     END as altered, 1, COUNT(*) AS count"
+                   "     END as altered, 1, COUNT(*) AS count,"
+                   "     CASE"
+                   "       WHEN basic_hash == current_hash THEN 0"
+                   "       WHEN auto_hash == current_hash THEN 1"
+                   "       WHEN current_hash IS NOT NULL THEN 3"
+                   "       ELSE 2"
+                   "     END AS force_order"
                    " FROM main.images AS mi"
                    " LEFT JOIN (SELECT DISTINCT imgid, basic_hash, auto_hash, current_hash"
                    "            FROM main.history_hash) ON id = imgid"
                    " WHERE %s"
-                   " GROUP BY altered"
-                   " ORDER BY altered ASC",
+                   " GROUP BY force_order"
+                   " ORDER BY force_order",
                    _("basic"), _("auto applied"), _("altered"), _("basic"), where_ext);
         // clang-format on
         break;
