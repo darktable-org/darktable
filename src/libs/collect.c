@@ -1934,7 +1934,7 @@ static void _list_view(dt_lib_collect_rule_t *dr)
                    " ON id = color_labels_id "
                    " WHERE %s"
                    " GROUP BY color"
-                   " ORDER BY color DESC",
+                   " ORDER BY color ASC",
                    _("red"), _("yellow"), _("green"), _("blue"), _("purple"), where_ext);
         // clang-format on
         break;
