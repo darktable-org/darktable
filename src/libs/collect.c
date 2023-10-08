@@ -2041,8 +2041,8 @@ static void _list_view(dt_lib_collect_rule_t *dr)
                  " JOIN memory.darktable_iop_names AS m"
                  "  ON m.operation = h.operation"
                  " WHERE %s"
-                 " GROUP BY module_name"
-                 " ORDER BY module_name",
+                 " GROUP BY lower(module_name)"
+                 " ORDER BY lower(module_name) ASC",
                  where_ext);
         // clang-format on
         break;
