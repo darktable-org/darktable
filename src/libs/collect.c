@@ -1971,7 +1971,7 @@ static void _list_view(dt_lib_collect_rule_t *dr)
                    " FROM main.images AS mi"
                    " WHERE %s"
                    " GROUP BY iso"
-                   " ORDER BY iso",
+                   " ORDER BY iso ASC",
                    where_ext);
         // clang-format on
         break;
@@ -1983,7 +1983,7 @@ static void _list_view(dt_lib_collect_rule_t *dr)
                    " FROM main.images AS mi"
                    " WHERE %s"
                    " GROUP BY aperture"
-                   " ORDER BY aperture",
+                   " ORDER BY aperture ASC",
                    where_ext);
         // clang-format on
         break;
@@ -2064,7 +2064,7 @@ static void _list_view(dt_lib_collect_rule_t *dr)
                    "  ON mo.imgid = mi.id"
                    " WHERE %s"
                    " GROUP BY ver"
-                   " ORDER BY ver",
+                   " ORDER BY ver ASC",
                    orders, where_ext);
           // clang-format on
           g_free(orders);
@@ -2081,7 +2081,7 @@ static void _list_view(dt_lib_collect_rule_t *dr)
                      " FROM main.images AS mi"
                      " WHERE %s"
                      " GROUP BY rating"
-                     " ORDER BY rating", where_ext);
+                     " ORDER BY rating ASC", where_ext);
           // clang-format on
         }
         break;
