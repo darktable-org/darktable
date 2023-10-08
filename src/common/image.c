@@ -2711,6 +2711,15 @@ int dt_image_local_copy_reset(const dt_imgid_t imgid)
 // *******************************************************
 // xmp stuff
 // *******************************************************
+static gboolean _any_altered_data(const dt_imgid_t imgid)
+{
+  if(dt_image_altered(imgid))
+    return TRUE;
+
+  const uint32_t tags = dt_tag_count_attached(imgid, TRUE);
+
+  return (tags > 0);
+}
 
 gboolean dt_image_write_sidecar_file(const dt_imgid_t imgid)
 {
@@ -2740,7 +2749,7 @@ gboolean dt_image_write_sidecar_file(const dt_imgid_t imgid)
 
   // the sidecar is written only if required
   if((xmp_mode == DT_WRITE_XMP_ALWAYS)
-     || ((xmp_mode == DT_WRITE_XMP_LAZY) && dt_image_altered(imgid)))
+     || ((xmp_mode == DT_WRITE_XMP_LAZY) && _any_altered_data(imgid)))
   {
     dt_image_path_append_version(imgid, filename, sizeof(filename));
     g_strlcat(filename, ".xmp", sizeof(filename));
