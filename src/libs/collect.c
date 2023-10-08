@@ -1892,13 +1892,18 @@ static void _list_view(dt_lib_collect_rule_t *dr)
                    "SELECT CASE "
                    "         WHEN (flags & %d) THEN '%s'"
                    "         ELSE '%s'"
-                   "       END as lcp, 1, COUNT(*) AS count"
+                   "       END as lcp, 1, COUNT(*) AS count,"
+                   "       CASE "
+                   "         WHEN (flags & %d) THEN 0"
+                   "         ELSE 1"
+                   "       END as force_order"
                    " FROM main.images AS mi "
                    " WHERE %s"
-                   " GROUP BY lcp ORDER BY lcp ASC",
+                   " GROUP BY force_order ORDER BY force_order",
                    DT_IMAGE_LOCAL_COPY,
                    _("copied locally"),
-                   _("not copied locally"), where_ext);
+                   _("not copied locally"),
+                   DT_IMAGE_LOCAL_COPY, where_ext);
         // clang-format on
         break;
 
