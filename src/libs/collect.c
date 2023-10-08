@@ -1946,8 +1946,8 @@ static void _list_view(dt_lib_collect_rule_t *dr)
                    "  FROM main.images AS mi, main.lens AS ln"
                    "  WHERE mi.lens_id = ln.id"
                    "    AND %s"
-                   "  GROUP BY lens"
-                   "  ORDER BY lens", where_ext);
+                   "  GROUP BY lower(lens)"
+                   "  ORDER BY lower(lens)", where_ext);
         // clang-format on
         break;
 
