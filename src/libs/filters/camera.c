@@ -103,8 +103,11 @@ void _camera_tree_update(_widgets_camera_t *camera)
     else
     {
       gtk_list_store_append(GTK_LIST_STORE(name_model), &iter);
-      gtk_list_store_set(GTK_LIST_STORE(name_model), &iter, TREE_COL_TEXT, value, TREE_COL_TOOLTIP, value,
-                         TREE_COL_PATH, value_path, TREE_COL_COUNT, count, -1);
+      gtk_list_store_set(GTK_LIST_STORE(name_model), &iter,
+                         TREE_COL_TEXT, value,
+                         TREE_COL_TOOLTIP, value,
+                         TREE_COL_PATH, value_path,
+                         TREE_COL_COUNT, count, -1);
     }
     g_free(value_path);
   }
