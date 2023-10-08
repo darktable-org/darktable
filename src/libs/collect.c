@@ -2009,8 +2009,8 @@ static void _list_view(dt_lib_collect_rule_t *dr)
                    "SELECT filename, 1, COUNT(*) AS count"
                    " FROM main.images AS mi"
                    " WHERE %s"
-                   " GROUP BY filename"
-                   " ORDER BY filename", where_ext);
+                   " GROUP BY lower(filename)"
+                   " ORDER BY lower(filename) ASC", where_ext);
         // clang-format on
         break;
 
