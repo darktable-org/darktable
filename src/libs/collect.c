@@ -1314,6 +1314,7 @@ static void _tree_view(dt_lib_collect_rule_t *dr)
   dt_lib_collect_t *d = get_collect(dr);
   const int property = _combo_get_active_collection(dr->combo);
   char *format_separator = "";
+  gboolean sorting_always_asc = TRUE;
 
   switch(property)
   {
@@ -1331,6 +1332,7 @@ static void _tree_view(dt_lib_collect_rule_t *dr)
     case DT_COLLECTION_PROP_EXPORT_TIMESTAMP:
     case DT_COLLECTION_PROP_PRINT_TIMESTAMP:
       format_separator = "%s:";
+      sorting_always_asc = FALSE;
       break;
   }
 
@@ -1559,7 +1561,7 @@ static void _tree_view(dt_lib_collect_rule_t *dr)
     // this order should not be altered. the right feeding of the tree relies on it.
     sorted_names = g_list_sort(sorted_names, sort_folder_tag);
     const gboolean sort_descend = dt_conf_get_bool("plugins/collect/descending");
-    if(!sort_descend)
+    if(sorting_always_asc || !sort_descend)
       sorted_names = g_list_reverse(sorted_names);
 
     const gboolean no_uncategorized =
