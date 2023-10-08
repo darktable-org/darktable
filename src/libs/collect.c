@@ -2020,11 +2020,15 @@ static void _list_view(dt_lib_collect_rule_t *dr)
                    "SELECT CASE"
                    "         WHEN id = group_id THEN '%s'"
                    "         ELSE '%s'"
-                   "       END as group_leader, 1, COUNT(*) AS count"
+                   "       END as group_leader, 1, COUNT(*) AS count,"
+                   "       CASE"
+                   "         WHEN id = group_id THEN '0'"
+                   "         ELSE '1'"
+                   "       END AS force_order"
                    " FROM main.images AS mi"
                    " WHERE %s"
-                   " GROUP BY group_leader"
-                   " ORDER BY group_leader ASC",
+                   " GROUP BY force_order"
+                   " ORDER BY force_order ASC",
                    _("group leaders"),  _("group followers"), where_ext);
         // clang-format on
         break;
