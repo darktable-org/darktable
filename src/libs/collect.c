@@ -2114,8 +2114,8 @@ static void _list_view(dt_lib_collect_rule_t *dr)
                      "            WHERE key = %d)"
                      "  ON id = meta_data_id"
                      " WHERE %s"
-                     " GROUP BY value"
-                     " ORDER BY force_order, value",
+                     " GROUP BY lower(value)"
+                     " ORDER BY force_order ASC, lower(value) ASC",
                      _("not defined"), keyid, where_ext);
             // clang-format on
           }
