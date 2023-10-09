@@ -117,8 +117,11 @@ void _camera_tree_update(_widgets_camera_t *camera)
   if(unset > 0)
   {
     gtk_list_store_append(GTK_LIST_STORE(name_model), &iter);
-    gtk_list_store_set(GTK_LIST_STORE(name_model), &iter, TREE_COL_TEXT, "UNSET", TREE_COL_TOOLTIP,
-                       _("no camera defined."), TREE_COL_PATH, "UNSET", TREE_COL_COUNT, unset, -1);
+    gtk_list_store_set(GTK_LIST_STORE(name_model), &iter,
+                       TREE_COL_TEXT, _("unnamed"),
+                       TREE_COL_TOOLTIP, _("no camera defined."),
+                       TREE_COL_PATH, _("unnamed"),
+                       TREE_COL_COUNT, unset, -1);
   }
   camera->tree_ok = TRUE;
 }

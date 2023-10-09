@@ -120,8 +120,11 @@ void _lens_tree_update(_widgets_lens_t *lens)
   if(unset > 0)
   {
     gtk_list_store_append(GTK_LIST_STORE(name_model), &iter);
-    gtk_list_store_set(GTK_LIST_STORE(name_model), &iter, TREE_COL_TEXT, "UNSET", TREE_COL_TOOLTIP,
-                       _("no lens defined."), TREE_COL_PATH, "UNSET", TREE_COL_COUNT, unset, -1);
+    gtk_list_store_set(GTK_LIST_STORE(name_model), &iter,
+                       TREE_COL_TEXT, _("unnamed"),
+                       TREE_COL_TOOLTIP, _("no lens defined."),
+                       TREE_COL_PATH, _("unnamed"),
+                       TREE_COL_COUNT, unset, -1);
   }
   lens->tree_ok = TRUE;
 }
