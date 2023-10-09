@@ -1166,7 +1166,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   {
     char *theversion = _get_version_string();
     dt_print_nts(DT_DEBUG_ALWAYS, "%s\n", theversion);
-    dt_free_align(theversion);
+    g_free(theversion);
   }
 
   if(darktable.dump_pfm_module || darktable.dump_pfm_pipe)
