@@ -80,7 +80,7 @@ void _camera_tree_update(_widgets_camera_t *camera)
 
   // clang-format off
   g_snprintf(query, sizeof(query),
-             "SELECT cm.maker || ' ' || cm.model AS camera, COUNT(*) AS count"
+             "SELECT TRIM(cm.maker || ' ' || cm.model) AS camera, COUNT(*) AS count"
              " FROM main.images AS mi, main.cameras AS cm"
              " WHERE mi.camera_id = cm.id AND %s"
              " GROUP BY camera"
