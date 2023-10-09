@@ -939,6 +939,7 @@ static gboolean list_match_string(GtkTreeModel *model,
   {
     if(needle[0] == '%')
       needle++;
+
     if(!needle[0])
     {
       // empty search string matches all
@@ -1825,41 +1826,16 @@ static void _list_view(dt_lib_collect_rule_t *dr)
     switch(property)
     {
       case DT_COLLECTION_PROP_CAMERA:; // camera
-        int index = 0;
         // clang-format off
-        gchar *makermodel_query = g_strdup_printf
-          ("SELECT cm.maker || ' ' || cm.model AS camera, COUNT(*) AS count"
-           "  FROM main.images AS mi, main.cameras AS cm"
-           "  WHERE mi.camera_id = cm.id"
-           "    AND %s "
-           "  GROUP BY lower(camera)"
-           "  ORDER BY lower(camera)", where_ext);
+        g_snprintf(query, sizeof(query),
+                   "SELECT TRIM(cm.maker || ' ' || cm.model) AS camera,"
+                   "       1, COUNT(*) AS count"
+                   "  FROM main.images AS mi, main.cameras AS cm"
+                   "  WHERE mi.camera_id = cm.id"
+                   "    AND %s "
+                   "  GROUP BY LOWER(camera)"
+                   "  ORDER BY LOWER(camera)", where_ext);
         // clang-format on
-
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                makermodel_query,
-                                -1, &stmt, NULL);
-
-        while(sqlite3_step(stmt) == SQLITE_ROW)
-        {
-          gchar *value = (char *)sqlite3_column_text(stmt, 0);
-          const int count = sqlite3_column_int(stmt, 1);
-          gchar *value_path = g_strdup_printf("\"%s\"", value);
-
-          gtk_list_store_append(GTK_LIST_STORE(model), &iter);
-          gtk_list_store_set(GTK_LIST_STORE(model), &iter,
-                             DT_LIB_COLLECT_COL_TEXT, value,
-                             DT_LIB_COLLECT_COL_ID, index,
-                             DT_LIB_COLLECT_COL_TOOLTIP, value,
-                             DT_LIB_COLLECT_COL_PATH, value_path,
-                             DT_LIB_COLLECT_COL_VISIBLE, TRUE,
-                             DT_LIB_COLLECT_COL_COUNT, count,
-                             -1);
-
-          g_free(value_path);
-          index++;
-        }
-        g_free(makermodel_query);
         break;
 
       case DT_COLLECTION_PROP_HISTORY: // History
@@ -1944,12 +1920,15 @@ static void _list_view(dt_lib_collect_rule_t *dr)
       case DT_COLLECTION_PROP_LENS: // lens
         // clang-format off
         g_snprintf(query, sizeof(query),
-                   "SELECT ln.name AS lens, 1, COUNT(*) AS count"
+                   "SELECT CASE LOWER(TRIM(ln.name))"
+                   "         WHEN 'n/a' THEN ''"
+                   "         ELSE ln.name"
+                   "       END AS lens, 1, COUNT(*) AS count"
                    "  FROM main.images AS mi, main.lens AS ln"
                    "  WHERE mi.lens_id = ln.id"
                    "    AND %s"
-                   "  GROUP BY lower(lens)"
-                   "  ORDER BY lower(lens)", where_ext);
+                   "  GROUP BY LOWER(lens)"
+                   "  ORDER BY LOWER(lens)", where_ext);
         // clang-format on
         break;
 
@@ -2211,6 +2190,24 @@ static void _list_view(dt_lib_collect_rule_t *dr)
                folder = "★★★★★";
                break;
           }
+        }
+
+        // check if name is empty string
+
+        gboolean only_spaces = TRUE;
+        for(int k=0; k < strlen(folder); k++)
+        {
+          if(folder[k] != ' ' && folder[k] != '\t')
+          {
+            only_spaces = FALSE;
+            break;
+          }
+        }
+
+        if(only_spaces)
+        {
+          folder = _("unnamed");
+          value = _("unnamed");
         }
 
         // replace invalid utf8 characters if any
