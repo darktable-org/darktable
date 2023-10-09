@@ -2170,18 +2170,48 @@ static void _list_view(dt_lib_collect_rule_t *dr)
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
       while(sqlite3_step(stmt) == SQLITE_ROW)
       {
+        const gchar *value = (gchar *)sqlite3_column_text(stmt, 0);
         const char *folder = (const char *)sqlite3_column_text(stmt, 0);
+        const int count = sqlite3_column_int(stmt, 2);
+
         if(folder == NULL) continue; // safeguard against degenerated db entries
 
         gtk_list_store_append(GTK_LIST_STORE(model), &iter);
         int status = 0;
+
         if(property == DT_COLLECTION_PROP_FILMROLL)
         {
           folder = dt_image_film_roll_name(folder);
           status = !sqlite3_column_int(stmt, 3);
         }
-        const gchar *value = (gchar *)sqlite3_column_text(stmt, 0);
-        const int count = sqlite3_column_int(stmt, 2);
+        else if (property == DT_COLLECTION_PROP_RATING)
+        {
+          const int rating = sqlite3_column_int(stmt, 0);
+          switch(rating)
+          {
+             case -1:
+               folder = _("rejected");
+               break;
+             case 0:
+               folder = _("not rated");
+               break;
+             case 1:
+               folder = "★";
+               break;
+             case 2:
+               folder = "★★";
+               break;
+             case 3:
+               folder = "★★★";
+               break;
+             case 4:
+               folder = "★★★★";
+               break;
+             case 5:
+               folder = "★★★★★";
+               break;
+          }
+        }
 
         // replace invalid utf8 characters if any
         gchar *text = g_strdup(value);
