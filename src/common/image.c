@@ -2711,14 +2711,13 @@ int dt_image_local_copy_reset(const dt_imgid_t imgid)
 // *******************************************************
 // xmp stuff
 // *******************************************************
+
 static gboolean _any_altered_data(const dt_imgid_t imgid)
 {
-  if(dt_image_altered(imgid))
-    return TRUE;
-
-  const uint32_t tags = dt_tag_count_attached(imgid, TRUE);
-
-  return (tags > 0);
+  // either the image has been altered or some user's tag have
+  // been added.
+  return dt_image_altered(imgid)
+    || (dt_tag_count_attached(imgid, TRUE) > 0);
 }
 
 gboolean dt_image_write_sidecar_file(const dt_imgid_t imgid)
