@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-09 13:19+0200\n"
+"POT-Creation-Date: 2023-10-09 20:33+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -121,12 +121,12 @@ msgstr ""
 
 #: ../build/bin/conf_gen.h:761 ../build/bin/preferences_gen.h:8144
 msgctxt "preferences"
-msgid "id"
+msgid "chronological"
 msgstr ""
 
 #: ../build/bin/conf_gen.h:762
 msgctxt "preferences"
-msgid "folder"
+msgid "folder name"
 msgstr ""
 
 #: ../build/bin/conf_gen.h:776
@@ -2194,7 +2194,7 @@ msgstr ""
 #: ../src/gui/guides.c:712 ../src/iop/basecurve.c:2214
 #: ../src/iop/channelmixerrgb.c:4695 ../src/iop/clipping.c:1941
 #: ../src/iop/clipping.c:2134 ../src/iop/clipping.c:2149
-#: ../src/iop/retouch.c:507 ../src/libs/collect.c:1914
+#: ../src/iop/retouch.c:507 ../src/libs/collect.c:2043
 #: ../src/libs/colorpicker.c:51 ../src/libs/export.c:1101
 #: ../src/libs/filters/module_order.c:158 ../src/libs/histogram.c:132
 #: ../src/libs/live_view.c:311 ../src/libs/print_settings.c:2835
@@ -2506,7 +2506,7 @@ msgstr ""
 #: ../src/iop/channelmixer.c:637 ../src/iop/channelmixer.c:647
 #: ../src/iop/channelmixerrgb.c:4637 ../src/iop/colorzones.c:2499
 #: ../src/iop/temperature.c:1946 ../src/iop/temperature.c:2141
-#: ../src/libs/collect.c:1797 ../src/libs/filters/colors.c:260
+#: ../src/libs/collect.c:1916 ../src/libs/filters/colors.c:260
 #: ../src/libs/histogram.c:2689
 msgid "red"
 msgstr ""
@@ -2519,7 +2519,7 @@ msgstr ""
 #: ../src/iop/channelmixer.c:638 ../src/iop/channelmixer.c:653
 #: ../src/iop/channelmixerrgb.c:4638 ../src/iop/colorzones.c:2502
 #: ../src/iop/temperature.c:1930 ../src/iop/temperature.c:1948
-#: ../src/iop/temperature.c:2142 ../src/libs/collect.c:1797
+#: ../src/iop/temperature.c:2142 ../src/libs/collect.c:1916
 #: ../src/libs/filters/colors.c:262 ../src/libs/histogram.c:2680
 msgid "green"
 msgstr ""
@@ -2532,7 +2532,7 @@ msgstr ""
 #: ../src/iop/channelmixer.c:639 ../src/iop/channelmixer.c:659
 #: ../src/iop/channelmixerrgb.c:4639 ../src/iop/colorzones.c:2504
 #: ../src/iop/temperature.c:1950 ../src/iop/temperature.c:2143
-#: ../src/libs/collect.c:1797 ../src/libs/filters/colors.c:263
+#: ../src/libs/collect.c:1916 ../src/libs/filters/colors.c:263
 #: ../src/libs/histogram.c:2671
 msgid "blue"
 msgstr ""
@@ -3247,7 +3247,7 @@ msgstr ""
 
 #. history
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:232
-#: ../src/common/collection.c:1394 ../src/libs/collect.c:1751
+#: ../src/common/collection.c:1394 ../src/libs/collect.c:1863
 #: ../src/libs/filters/history.c:38
 msgid "basic"
 msgstr ""
@@ -4035,7 +4035,7 @@ msgstr ""
 #: ../src/dtgtk/range.c:1763 ../src/gui/accelerators.c:2526
 #: ../src/gui/accelerators.c:2606 ../src/gui/gtk.c:1315 ../src/gui/gtk.c:3229
 #: ../src/imageio/format/pdf.c:645 ../src/iop/denoiseprofile.c:3713
-#: ../src/iop/rawdenoise.c:909 ../src/libs/collect.c:3075
+#: ../src/iop/rawdenoise.c:909 ../src/libs/collect.c:3413
 #: ../src/libs/filtering.c:1521 ../src/libs/filters/colors.c:157
 #: ../src/libs/filters/colors.c:265 ../src/libs/filters/rating.c:211
 msgid "all"
@@ -4883,7 +4883,7 @@ msgstr ""
 #: ../src/gui/presets.c:565 ../src/gui/styles_dialog.c:526
 #: ../src/imageio/storage/disk.c:198 ../src/imageio/storage/gallery.c:150
 #: ../src/imageio/storage/latex.c:146 ../src/iop/lut3d.c:1560
-#: ../src/libs/collect.c:408 ../src/libs/collect.c:2923
+#: ../src/libs/collect.c:425 ../src/libs/collect.c:3242
 #: ../src/libs/copy_history.c:115 ../src/libs/export_metadata.c:276
 #: ../src/libs/geotagging.c:929 ../src/libs/import.c:1510
 #: ../src/libs/import.c:1614 ../src/libs/import.c:1706
@@ -4899,7 +4899,7 @@ msgid "_cancel"
 msgstr ""
 
 #: ../src/chart/main.c:504 ../src/gui/preferences.c:1081
-#: ../src/gui/styles_dialog.c:527 ../src/libs/collect.c:2924
+#: ../src/gui/styles_dialog.c:527 ../src/libs/collect.c:3243
 #: ../src/libs/export_metadata.c:277 ../src/libs/metadata.c:468
 #: ../src/libs/metadata_view.c:1207 ../src/libs/recentcollect.c:229
 #: ../src/libs/styles.c:392 ../src/libs/tagging.c:1667
@@ -5117,7 +5117,7 @@ msgstr ""
 msgid "print time"
 msgstr ""
 
-#: ../src/common/collection.c:621 ../src/libs/collect.c:3231
+#: ../src/common/collection.c:621 ../src/libs/collect.c:3586
 #: ../src/libs/filtering.c:2237 ../src/libs/filtering.c:2257
 #: ../src/libs/filters/history.c:153 ../src/libs/history.c:92
 msgid "history"
@@ -5192,34 +5192,34 @@ msgstr ""
 #: ../src/common/collection.c:1376 ../src/common/colorlabels.c:334
 #: ../src/develop/lightroom.c:836 ../src/gui/guides.c:732
 #: ../src/iop/colorzones.c:2501 ../src/iop/temperature.c:1936
-#: ../src/libs/collect.c:1797 ../src/libs/filters/colors.c:261
+#: ../src/libs/collect.c:1916 ../src/libs/filters/colors.c:261
 msgid "yellow"
 msgstr ""
 
 #: ../src/common/collection.c:1382 ../src/common/color_vocabulary.c:339
 #: ../src/common/colorlabels.c:337 ../src/iop/colorzones.c:2505
-#: ../src/libs/collect.c:1797 ../src/libs/filters/colors.c:264
+#: ../src/libs/collect.c:1916 ../src/libs/filters/colors.c:264
 msgid "purple"
 msgstr ""
 
-#: ../src/common/collection.c:1400 ../src/libs/collect.c:1751
+#: ../src/common/collection.c:1400 ../src/libs/collect.c:1863
 #: ../src/libs/filters/history.c:38
 msgid "auto applied"
 msgstr ""
 
-#: ../src/common/collection.c:1406 ../src/libs/collect.c:1751
+#: ../src/common/collection.c:1406 ../src/libs/collect.c:1863
 #: ../src/libs/filters/history.c:38
 msgid "altered"
 msgstr ""
 
 #: ../src/common/collection.c:1424 ../src/common/collection.c:1535
-#: ../src/libs/collect.c:1169 ../src/libs/collect.c:1333
-#: ../src/libs/collect.c:1357 ../src/libs/collect.c:1476
-#: ../src/libs/collect.c:2440
+#: ../src/libs/collect.c:1242 ../src/libs/collect.c:1426
+#: ../src/libs/collect.c:1452 ../src/libs/collect.c:1592
+#: ../src/libs/collect.c:2662
 msgid "not tagged"
 msgstr ""
 
-#: ../src/common/collection.c:1425 ../src/libs/collect.c:1357
+#: ../src/common/collection.c:1425 ../src/libs/collect.c:1452
 #: ../src/libs/map_locations.c:742
 msgid "tagged"
 msgstr ""
@@ -5229,27 +5229,33 @@ msgid "tagged*"
 msgstr ""
 
 #. local copy
-#: ../src/common/collection.c:1460 ../src/libs/collect.c:1765
+#: ../src/common/collection.c:1460 ../src/libs/collect.c:1883
 #: ../src/libs/filters/local_copy.c:38
 msgid "not copied locally"
 msgstr ""
 
-#: ../src/common/collection.c:1465 ../src/libs/collect.c:1765
+#: ../src/common/collection.c:1465 ../src/libs/collect.c:1882
 #: ../src/libs/filters/local_copy.c:38
 msgid "copied locally"
 msgstr ""
 
-#: ../src/common/collection.c:1905 ../src/libs/collect.c:1886
+#. if its undefined
+#: ../src/common/collection.c:1507 ../src/common/collection.c:1619
+#: ../src/libs/collect.c:2209 ../src/libs/collect.c:2210
+msgid "unnamed"
+msgstr ""
+
+#: ../src/common/collection.c:1905 ../src/libs/collect.c:2013
 #: ../src/libs/filters/grouping.c:147 ../src/libs/filters/grouping.c:170
 msgid "group leaders"
 msgstr ""
 
-#: ../src/common/collection.c:1909 ../src/libs/collect.c:1886
+#: ../src/common/collection.c:1909 ../src/libs/collect.c:2013
 #: ../src/libs/filters/grouping.c:150 ../src/libs/filters/grouping.c:170
 msgid "group followers"
 msgstr ""
 
-#: ../src/common/collection.c:2066 ../src/libs/collect.c:1967
+#: ../src/common/collection.c:2066 ../src/libs/collect.c:2100
 msgid "not defined"
 msgstr ""
 
@@ -10603,7 +10609,7 @@ msgstr ""
 msgid "select preset(s) to import"
 msgstr ""
 
-#: ../src/gui/preferences.c:1042 ../src/libs/collect.c:408
+#: ../src/gui/preferences.c:1042 ../src/libs/collect.c:425
 #: ../src/libs/copy_history.c:115 ../src/libs/geotagging.c:930
 #: ../src/libs/import.c:1510 ../src/libs/import.c:1614 ../src/libs/styles.c:529
 msgid "_open"
@@ -18979,54 +18985,67 @@ msgstr ""
 msgid "WB"
 msgstr ""
 
-#: ../src/libs/collect.c:151
+#: ../src/libs/collect.c:164
 msgid "collections"
 msgstr ""
 
-#: ../src/libs/collect.c:407
+#: ../src/libs/collect.c:424
 msgid "search filmroll"
 msgstr ""
 
-#: ../src/libs/collect.c:490
+#: ../src/libs/collect.c:507
 #, c-format
 msgid "problem selecting new path for the filmroll in %s"
 msgstr ""
 
-#: ../src/libs/collect.c:555
+#: ../src/libs/collect.c:579
 msgid "search filmroll..."
 msgstr ""
 
-#: ../src/libs/collect.c:559
+#: ../src/libs/collect.c:584
 msgid "remove..."
 msgstr ""
 
-#: ../src/libs/collect.c:1228
+#: ../src/libs/collect.c:1310
 msgid "uncategorized"
 msgstr ""
 
-#: ../src/libs/collect.c:2146
+#: ../src/libs/collect.c:2172 ../src/libs/filters/rating_range.c:99
+#: ../src/libs/filters/rating_range.c:126
+#: ../src/libs/filters/rating_range.c:131
+#: ../src/libs/filters/rating_range.c:275
+msgid "rejected"
+msgstr ""
+
+#: ../src/libs/collect.c:2175 ../src/libs/filters/rating_range.c:101
+#: ../src/libs/filters/rating_range.c:126
+#: ../src/libs/filters/rating_range.c:276
+msgid "not rated"
+msgstr ""
+
+#: ../src/libs/collect.c:2359
 msgid "use <, <=, >, >=, <>, =, [;] as operators"
 msgstr ""
 
-#: ../src/libs/collect.c:2150
+#: ../src/libs/collect.c:2363
 msgid ""
 "use <, <=, >, >=, <>, =, [;] as operators\n"
 "star rating: 0-5\n"
 "rejected images: -1"
 msgstr ""
 
-#: ../src/libs/collect.c:2157
+#: ../src/libs/collect.c:2371
 msgid ""
 "use <, <=, >, >=, <>, =, [;] as operators\n"
 "type dates in the form: YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)"
 msgstr ""
 
-#: ../src/libs/collect.c:2164
+#: ../src/libs/collect.c:2378
 #, no-c-format
 msgid "use `%' as wildcard and `,' to separate values"
 msgstr ""
 
-#: ../src/libs/collect.c:2170
+#: ../src/libs/collect.c:2385
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -19035,7 +19054,7 @@ msgid ""
 "ctrl+click to include only sub-hierarchies (suffix `|%')"
 msgstr ""
 
-#: ../src/libs/collect.c:2182
+#: ../src/libs/collect.c:2398
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -19044,7 +19063,7 @@ msgid ""
 "ctrl+click to include only sub-locations (suffix `|%')"
 msgstr ""
 
-#: ../src/libs/collect.c:2194
+#: ../src/libs/collect.c:2411
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -19053,52 +19072,52 @@ msgid ""
 "ctrl+click to include only sub-folders (suffix `|%')"
 msgstr ""
 
-#: ../src/libs/collect.c:2205
+#: ../src/libs/collect.c:2422
 #, no-c-format
 msgid "use `%' as wildcard"
 msgstr ""
 
-#: ../src/libs/collect.c:2271 ../src/libs/collect.c:2285
-#: ../src/libs/collect.c:2808
+#: ../src/libs/collect.c:2488 ../src/libs/collect.c:2502
+#: ../src/libs/collect.c:3111
 msgid "clear this rule"
 msgstr ""
 
-#: ../src/libs/collect.c:2275
+#: ../src/libs/collect.c:2492
 msgid "clear this rule or add new rules"
 msgstr ""
 
-#: ../src/libs/collect.c:2814
+#: ../src/libs/collect.c:3117
 msgid "narrow down search"
 msgstr ""
 
-#: ../src/libs/collect.c:2819
+#: ../src/libs/collect.c:3124
 msgid "add more images"
 msgstr ""
 
-#: ../src/libs/collect.c:2824
+#: ../src/libs/collect.c:3131
 msgid "exclude images"
 msgstr ""
 
-#: ../src/libs/collect.c:2831
+#: ../src/libs/collect.c:3140
 msgid "change to: and"
 msgstr ""
 
-#: ../src/libs/collect.c:2836
+#: ../src/libs/collect.c:3147
 msgid "change to: or"
 msgstr ""
 
-#: ../src/libs/collect.c:2841
+#: ../src/libs/collect.c:3154
 msgid "change to: except"
 msgstr ""
 
 #. the different categories
-#: ../src/libs/collect.c:2867 ../src/libs/filtering.c:883
+#: ../src/libs/collect.c:3184 ../src/libs/filtering.c:883
 #: ../src/libs/filtering.c:950 ../src/libs/filtering.c:1620
 #: ../src/libs/filtering.c:1964
 msgid "files"
 msgstr ""
 
-#: ../src/libs/collect.c:2872 ../src/libs/export_metadata.c:301
+#: ../src/libs/collect.c:3189 ../src/libs/export_metadata.c:301
 #: ../src/libs/filtering.c:888 ../src/libs/filtering.c:955
 #: ../src/libs/filtering.c:1628 ../src/libs/filtering.c:1968
 #: ../src/libs/image.c:494 ../src/libs/image.c:632 ../src/libs/image.c:644
@@ -19106,50 +19125,50 @@ msgstr ""
 msgid "metadata"
 msgstr ""
 
-#: ../src/libs/collect.c:2891 ../src/libs/filtering.c:909
+#: ../src/libs/collect.c:3208 ../src/libs/filtering.c:909
 #: ../src/libs/filtering.c:976 ../src/libs/filtering.c:1966
 msgid "times"
 msgstr ""
 
-#: ../src/libs/collect.c:2899 ../src/libs/filtering.c:917
+#: ../src/libs/collect.c:3216 ../src/libs/filtering.c:917
 #: ../src/libs/filtering.c:984 ../src/libs/filtering.c:1652
 msgid "capture details"
 msgstr ""
 
-#: ../src/libs/collect.c:2908 ../src/libs/filtering.c:926
+#: ../src/libs/collect.c:3225 ../src/libs/filtering.c:926
 #: ../src/libs/filtering.c:993 ../src/libs/filtering.c:1664
 #: ../src/libs/filtering.c:1970 ../src/libs/tools/darktable.c:61
 msgid "darktable"
 msgstr ""
 
-#: ../src/libs/collect.c:2921
+#: ../src/libs/collect.c:3240
 msgid "collections settings"
 msgstr ""
 
-#: ../src/libs/collect.c:2945 ../src/libs/export.c:1126
+#: ../src/libs/collect.c:3267 ../src/libs/export.c:1126
 #: ../src/libs/metadata.c:620 ../src/libs/metadata_view.c:1323
 #: ../src/libs/recentcollect.c:295 ../src/libs/tagging.c:3522
 msgid "preferences..."
 msgstr ""
 
-#: ../src/libs/collect.c:3050 ../src/libs/filtering.c:1494
+#: ../src/libs/collect.c:3388 ../src/libs/filtering.c:1494
 msgid "AND"
 msgstr ""
 
-#: ../src/libs/collect.c:3055 ../src/libs/filtering.c:1499
+#: ../src/libs/collect.c:3393 ../src/libs/filtering.c:1499
 msgid "OR"
 msgstr ""
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
-#: ../src/libs/collect.c:3060 ../src/libs/filtering.c:1504
+#: ../src/libs/collect.c:3398 ../src/libs/filtering.c:1504
 msgid "BUT NOT"
 msgstr ""
 
-#: ../src/libs/collect.c:3232 ../src/libs/filtering.c:2238
+#: ../src/libs/collect.c:3588 ../src/libs/filtering.c:2238
 msgid "revert to a previous set of rules"
 msgstr ""
 
-#: ../src/libs/collect.c:3289
+#: ../src/libs/collect.c:3671
 msgid "jump back to previous collection"
 msgstr ""
 
@@ -20001,18 +20020,6 @@ msgstr ""
 
 #: ../src/libs/filters/rating_range.c:61 ../src/libs/filters/rating_range.c:76
 msgid "not rated only"
-msgstr ""
-
-#: ../src/libs/filters/rating_range.c:99 ../src/libs/filters/rating_range.c:126
-#: ../src/libs/filters/rating_range.c:131
-#: ../src/libs/filters/rating_range.c:275
-msgid "rejected"
-msgstr ""
-
-#: ../src/libs/filters/rating_range.c:101
-#: ../src/libs/filters/rating_range.c:126
-#: ../src/libs/filters/rating_range.c:276
-msgid "not rated"
 msgstr ""
 
 #: ../src/libs/filters/rating_range.c:117
