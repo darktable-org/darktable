@@ -80,7 +80,10 @@ void _lens_tree_update(_widgets_lens_t *lens)
 
   // clang-format off
   g_snprintf(query, sizeof(query),
-             "SELECT ln.name AS lens, COUNT(*) AS count"
+             "SELECT CASE LOWER(TRIM(ln.name))"
+             "         WHEN 'n/a' THEN ''"
+             "         ELSE ln.name"
+             "       END AS lens, COUNT(*) AS count"
              " FROM main.images AS mi, main.lens AS ln"
              " WHERE mi.lens_id = ln.id AND %s"
              " GROUP BY lens"
@@ -92,10 +95,10 @@ void _lens_tree_update(_widgets_lens_t *lens)
   int unset = 0;
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    char *name = (char *)sqlite3_column_text(stmt, 0);
+    const char *name = (char *)sqlite3_column_text(stmt, 0);
     const int count = sqlite3_column_int(stmt, 1);
 
-    if(!name || !g_strcmp0(g_strstrip(name), "") || !g_strcmp0(g_utf8_strup(g_strstrip(name), -1), "N/A"))
+    if(!name || !g_strcmp0(name, ""))
     {
       unset += count;
     }
