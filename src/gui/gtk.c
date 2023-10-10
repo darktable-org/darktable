@@ -481,6 +481,7 @@ gboolean dt_gui_get_scroll_deltas(const GdkEventScroll *event, gdouble *delta_x,
 #endif
         handled = TRUE;
       }
+      break;
     default:
       break;
     }
