@@ -3351,7 +3351,7 @@ static gboolean _resize_wrap_scroll(GtkScrolledWindow *sw, GdkEventScroll *event
 
   int delta_y = 0;
 
-  dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y);
+  dt_gui_get_scroll_unit_delta(event, &delta_y);
 
   if(dt_modifier_is(event->state, GDK_SHIFT_MASK | GDK_MOD1_MASK))
   {
@@ -3383,7 +3383,7 @@ static gboolean _scroll_wrap_aspect(GtkWidget *w, GdkEventScroll *event, const c
   if(dt_modifier_is(event->state, GDK_SHIFT_MASK | GDK_MOD1_MASK))
   {
     int delta_y;
-    if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
+    if(dt_gui_get_scroll_unit_delta(event, &delta_y))
     {
       //adjust aspect
       const int aspect = dt_conf_get_int(config_str);
