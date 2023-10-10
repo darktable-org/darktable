@@ -1422,7 +1422,7 @@ static gboolean _datetime_scroll_over(GtkWidget *w, GdkEventScroll *event, dt_li
 
     int delta_y;
     int increment = 0;
-    if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
+    if(dt_gui_get_scroll_unit_delta(event, &delta_y))
     {
       if(delta_y < 0) increment = 1;
       else if(delta_y > 0) increment = -1;

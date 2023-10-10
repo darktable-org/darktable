@@ -1844,10 +1844,10 @@ static gboolean _eventbox_scroll_callback(GtkWidget *widget,
     // bubble to adjusting the overall widget size
     gtk_widget_event(d->scope_draw, (GdkEvent*)event);
   }
-  // note are using unit rather than smooth scroll events, as
+  // note we are using unit rather than smooth scroll events, as
   // exposure changes can get laggy if handling a multitude of smooth
   // scroll events
-  else if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y) && delta_y != 0)
+  else if(dt_gui_get_scroll_unit_delta(event, &delta_y) && delta_y != 0)
   {
     if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
     {
