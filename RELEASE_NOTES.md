@@ -203,6 +203,8 @@ changes (where available).
 - Fix issue downloading to Piwigo when on conflict option is set to
   "don't check".
 
+- Fixed several mouse scroll wheel issues on macOS in combination with the shift modifier key, i.e.: Color harmonies width, module height, geotagging date/time.
+
 ## Lua
 
 ### API Version
