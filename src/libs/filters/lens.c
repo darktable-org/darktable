@@ -80,7 +80,10 @@ void _lens_tree_update(_widgets_lens_t *lens)
 
   // clang-format off
   g_snprintf(query, sizeof(query),
-             "SELECT ln.name AS lens, COUNT(*) AS count"
+             "SELECT CASE LOWER(TRIM(ln.name))"
+             "         WHEN 'n/a' THEN ''"
+             "         ELSE ln.name"
+             "       END AS lens, COUNT(*) AS count"
              " FROM main.images AS mi, main.lens AS ln"
              " WHERE mi.lens_id = ln.id AND %s"
              " GROUP BY lens"
@@ -92,10 +95,10 @@ void _lens_tree_update(_widgets_lens_t *lens)
   int unset = 0;
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    char *name = (char *)sqlite3_column_text(stmt, 0);
+    const char *name = (char *)sqlite3_column_text(stmt, 0);
     const int count = sqlite3_column_int(stmt, 1);
 
-    if(!name || !g_strcmp0(g_strstrip(name), "") || !g_strcmp0(g_utf8_strup(g_strstrip(name), -1), "N/A"))
+    if(!name || !g_strcmp0(name, ""))
     {
       unset += count;
     }
@@ -103,8 +106,11 @@ void _lens_tree_update(_widgets_lens_t *lens)
     {
       gchar *value_path = g_strdup_printf("\"%s\"", name);
       gtk_list_store_append(GTK_LIST_STORE(name_model), &iter);
-      gtk_list_store_set(GTK_LIST_STORE(name_model), &iter, TREE_COL_TEXT, name, TREE_COL_TOOLTIP, name,
-                         TREE_COL_PATH, value_path, TREE_COL_COUNT, count, -1);
+      gtk_list_store_set(GTK_LIST_STORE(name_model), &iter,
+                         TREE_COL_TEXT, name,
+                         TREE_COL_TOOLTIP, name,
+                         TREE_COL_PATH, value_path,
+                         TREE_COL_COUNT, count, -1);
       g_free(value_path);
     }
   }
@@ -114,8 +120,11 @@ void _lens_tree_update(_widgets_lens_t *lens)
   if(unset > 0)
   {
     gtk_list_store_append(GTK_LIST_STORE(name_model), &iter);
-    gtk_list_store_set(GTK_LIST_STORE(name_model), &iter, TREE_COL_TEXT, "UNSET", TREE_COL_TOOLTIP,
-                       _("no lens defined."), TREE_COL_PATH, "UNSET", TREE_COL_COUNT, unset, -1);
+    gtk_list_store_set(GTK_LIST_STORE(name_model), &iter,
+                       TREE_COL_TEXT, _("unnamed"),
+                       TREE_COL_TOOLTIP, _("no lens defined."),
+                       TREE_COL_PATH, _("unnamed"),
+                       TREE_COL_COUNT, unset, -1);
   }
   lens->tree_ok = TRUE;
 }
