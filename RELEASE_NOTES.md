@@ -171,6 +171,18 @@ changes (where available).
 
 - Improved numbers precision in configuration system.
 
+- Rework the collection module to be consistent about sorting. All
+  date/time can be reversed (older or newer first). Also the folder
+  can be reversed when sorted according to their id
+  (chronological). The preference has been renamed from id to
+  chronological for clarity.
+
+  The collection based on rating now use proper text like rejected
+  instead of -1 and the numbers are replaced by stars.
+
+  The color label collection now displays the color in the same order
+  as in all other part of the GUI.
+
 ## Bug Fixes
 
 - Fixes OpenCL platform checking which could lead to a freeze of
@@ -203,7 +215,9 @@ changes (where available).
 - Fix issue downloading to Piwigo when on conflict option is set to
   "don't check".
 
-- Fixed several mouse scroll wheel issues on macOS in combination with the shift modifier key, i.e.: Color harmonies width, module height, geotagging date/time.
+- Fixed several mouse scroll wheel issues on macOS in combination with
+  the shift modifier key, i.e.: Color harmonies width, module height,
+  geotagging date/time.
 
 ## Lua
 
