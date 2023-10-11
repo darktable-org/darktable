@@ -136,9 +136,7 @@ static gchar *_rating_get_bounds_pretty(GtkDarktableRangeSelect *range)
   if(range->select_min_r == range->select_max_r)
   {
     gchar *printed_min = range->print(range->select_min_r, TRUE);
-    gchar *min_only = g_strdup_printf("%s %s", printed_min, _("only"));
-    g_free(printed_min);
-    return min_only;
+    return printed_min;
   }
 
   const int rating_min = (int)floor(range->select_min_r);
