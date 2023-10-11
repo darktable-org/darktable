@@ -108,9 +108,9 @@ static gboolean _rating_range_update(dt_lib_filtering_rule_t *rule)
   return TRUE;
 }
 
-static gchar *_rating_print_func(const double value, const gboolean detailled)
+static gchar *_rating_print_func(const double value, const gboolean detailed)
 {
-  if(detailled)
+  if(detailed)
   {
     darktable.control->element = value + 1;
 
