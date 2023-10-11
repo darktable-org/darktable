@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-09 20:33+0200\n"
-"PO-Revision-Date: 2023-10-09 20:33+0200\n"
+"POT-Creation-Date: 2023-10-11 19:52+0200\n"
+"PO-Revision-Date: 2023-10-11 19:54+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -848,7 +848,7 @@ msgstr "Ce paramètre a été modifié"
 #: ../build/bin/preferences_gen.h:4849 ../build/bin/preferences_gen.h:5555
 #: ../build/bin/preferences_gen.h:6459 ../build/bin/preferences_gen.h:6948
 #: ../build/bin/preferences_gen.h:7214 ../src/gui/accelerators.c:2893
-#: ../src/gui/gtk.c:2688 ../src/gui/preferences.c:424
+#: ../src/gui/gtk.c:2689 ../src/gui/preferences.c:424
 #: ../src/gui/preferences.c:874 ../src/libs/modulegroups.c:3888
 msgid "?"
 msgstr "?"
@@ -966,7 +966,7 @@ msgstr "Nommage des fichiers"
 msgid "file naming pattern used for a import session"
 msgstr "Nommage des fichiers pour la session d’importation"
 
-#: ../build/bin/preferences_gen.h:4391 ../src/gui/gtk.c:1299
+#: ../build/bin/preferences_gen.h:4391 ../src/gui/gtk.c:1300
 #: ../src/gui/preferences.c:544 ../src/libs/tools/lighttable.c:66
 #: ../src/views/lighttable.c:91
 msgid "lighttable"
@@ -1141,7 +1141,7 @@ msgstr "Voir le manuel pour connaître toutes les étiquettes utilisables."
 msgid "pattern for the thumbnail tooltip (empty to disable)"
 msgstr "Patron pour les info-bulles des miniatures (vide pour désactiver)"
 
-#: ../build/bin/preferences_gen.h:4859 ../src/gui/gtk.c:1300
+#: ../build/bin/preferences_gen.h:4859 ../src/gui/gtk.c:1301
 #: ../src/gui/preferences.c:544 ../src/views/darkroom.c:94
 msgid "darkroom"
 msgstr "Chambre noire"
@@ -2439,7 +2439,7 @@ msgstr "Spécifique"
 #: ../src/develop/blend_gui.c:153 ../src/develop/blend_gui.c:182
 #: ../src/develop/blend_gui.c:3421 ../src/gui/accelerators.c:148
 #: ../src/gui/accelerators.c:158 ../src/gui/accelerators.c:245
-#: ../src/imageio/format/avif.c:823 ../src/imageio/format/j2k.c:680
+#: ../src/imageio/format/avif.c:823 ../src/imageio/format/j2k.c:686
 #: ../src/libs/live_view.c:361
 msgid "off"
 msgstr "Désactivé(e)"
@@ -2799,7 +2799,7 @@ msgstr "Aberrations chromatiques importantes"
 #: ../src/common/collection.c:1374 ../src/common/color_vocabulary.c:232
 #: ../src/common/colorlabels.c:333 ../src/develop/blend_gui.c:2338
 #: ../src/develop/blend_gui.c:2386 ../src/develop/lightroom.c:834
-#: ../src/gui/gtk.c:3230 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:356
+#: ../src/gui/gtk.c:3231 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:356
 #: ../src/iop/channelmixer.c:637 ../src/iop/channelmixer.c:647
 #: ../src/iop/channelmixerrgb.c:4637 ../src/iop/colorzones.c:2499
 #: ../src/iop/temperature.c:1946 ../src/iop/temperature.c:2141
@@ -2812,7 +2812,7 @@ msgstr "Rouge"
 #: ../src/common/collection.c:1378 ../src/common/color_vocabulary.c:277
 #: ../src/common/colorlabels.c:335 ../src/develop/blend_gui.c:2344
 #: ../src/develop/blend_gui.c:2392 ../src/develop/lightroom.c:838
-#: ../src/gui/gtk.c:3231 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:361
+#: ../src/gui/gtk.c:3232 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:361
 #: ../src/iop/channelmixer.c:638 ../src/iop/channelmixer.c:653
 #: ../src/iop/channelmixerrgb.c:4638 ../src/iop/colorzones.c:2502
 #: ../src/iop/temperature.c:1930 ../src/iop/temperature.c:1948
@@ -2825,7 +2825,7 @@ msgstr "Vert"
 #: ../src/common/collection.c:1380 ../src/common/color_vocabulary.c:324
 #: ../src/common/colorlabels.c:336 ../src/develop/blend_gui.c:2350
 #: ../src/develop/blend_gui.c:2398 ../src/develop/lightroom.c:840
-#: ../src/gui/gtk.c:3232 ../src/iop/bilateral.cc:366
+#: ../src/gui/gtk.c:3233 ../src/iop/bilateral.cc:366
 #: ../src/iop/channelmixer.c:639 ../src/iop/channelmixer.c:659
 #: ../src/iop/channelmixerrgb.c:4639 ../src/iop/colorzones.c:2504
 #: ../src/iop/temperature.c:1950 ../src/iop/temperature.c:2143
@@ -3073,7 +3073,7 @@ msgstr "Version 3 (Avril 2021)"
 #: ../build/lib/darktable/plugins/introspection_clipping.c:303
 #: ../build/lib/darktable/plugins/introspection_crop.c:61
 #: ../build/lib/darktable/plugins/introspection_crop.c:134
-#: ../src/gui/gtk.c:1255 ../src/iop/atrous.c:1632
+#: ../src/gui/gtk.c:1256 ../src/iop/atrous.c:1632
 msgid "left"
 msgstr "Gauche"
 
@@ -3081,7 +3081,7 @@ msgstr "Gauche"
 #: ../build/lib/darktable/plugins/introspection_clipping.c:307
 #: ../build/lib/darktable/plugins/introspection_crop.c:67
 #: ../build/lib/darktable/plugins/introspection_crop.c:138
-#: ../src/gui/accelerators.c:131 ../src/gui/gtk.c:1269
+#: ../src/gui/accelerators.c:131 ../src/gui/gtk.c:1270
 msgid "top"
 msgstr "Haut"
 
@@ -3089,7 +3089,7 @@ msgstr "Haut"
 #: ../build/lib/darktable/plugins/introspection_clipping.c:311
 #: ../build/lib/darktable/plugins/introspection_crop.c:73
 #: ../build/lib/darktable/plugins/introspection_crop.c:142
-#: ../src/gui/gtk.c:1262 ../src/iop/atrous.c:1631
+#: ../src/gui/gtk.c:1263 ../src/iop/atrous.c:1631
 msgid "right"
 msgstr "Droite"
 
@@ -3097,7 +3097,7 @@ msgstr "Droite"
 #: ../build/lib/darktable/plugins/introspection_clipping.c:315
 #: ../build/lib/darktable/plugins/introspection_crop.c:79
 #: ../build/lib/darktable/plugins/introspection_crop.c:146
-#: ../src/gui/accelerators.c:132 ../src/gui/gtk.c:1276
+#: ../src/gui/accelerators.c:132 ../src/gui/gtk.c:1277
 msgid "bottom"
 msgstr "Bas"
 
@@ -3965,7 +3965,7 @@ msgstr "Reconstruction des hautes lumières"
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
 #: ../src/common/variables.c:705 ../src/develop/imageop_gui.c:209
 #: ../src/imageio/format/avif.c:808 ../src/imageio/format/pdf.c:636
-#: ../src/imageio/format/pdf.c:655 ../src/imageio/format/tiff.c:928
+#: ../src/imageio/format/pdf.c:655 ../src/imageio/format/tiff.c:946
 #: ../src/libs/export.c:1296 ../src/libs/export.c:1305
 #: ../src/libs/export.c:1314 ../src/libs/metadata_view.c:673
 msgid "no"
@@ -4332,7 +4332,7 @@ msgstr "Vignettage manuel seulement"
 #. Side-border hide/show
 #: ../build/lib/darktable/plugins/introspection_lens.cc:534
 #: ../src/dtgtk/range.c:1763 ../src/gui/accelerators.c:2526
-#: ../src/gui/accelerators.c:2606 ../src/gui/gtk.c:1315 ../src/gui/gtk.c:3229
+#: ../src/gui/accelerators.c:2606 ../src/gui/gtk.c:1316 ../src/gui/gtk.c:3230
 #: ../src/imageio/format/pdf.c:645 ../src/iop/denoiseprofile.c:3713
 #: ../src/iop/rawdenoise.c:909 ../src/libs/collect.c:3413
 #: ../src/libs/filtering.c:1521 ../src/libs/filters/colors.c:157
@@ -6287,11 +6287,11 @@ msgstr ""
 "\n"
 "Réellement supprimer les fichiers verrous ?\n"
 
-#: ../src/common/database.c:3305 ../src/gui/gtk.c:2644
+#: ../src/common/database.c:3305 ../src/gui/gtk.c:2645
 msgid "_no"
 msgstr "_Non"
 
-#: ../src/common/database.c:3305 ../src/gui/gtk.c:2643
+#: ../src/common/database.c:3305 ../src/gui/gtk.c:2644
 msgid "_yes"
 msgstr "_Oui"
 
@@ -6630,7 +6630,7 @@ msgid "unknown"
 msgstr "Inconnu"
 
 #. EMPTY_FIELD
-#: ../src/common/image.h:210 ../src/imageio/format/tiff.c:813
+#: ../src/common/image.h:210 ../src/imageio/format/tiff.c:831
 msgid "TIFF"
 msgstr "TIFF"
 
@@ -7054,7 +7054,7 @@ msgstr "M"
 
 #: ../src/common/variables.c:703 ../src/develop/imageop_gui.c:210
 #: ../src/imageio/format/avif.c:808 ../src/imageio/format/pdf.c:636
-#: ../src/imageio/format/pdf.c:655 ../src/imageio/format/tiff.c:928
+#: ../src/imageio/format/pdf.c:655 ../src/imageio/format/tiff.c:946
 #: ../src/libs/export.c:1296 ../src/libs/export.c:1305
 #: ../src/libs/export.c:1314 ../src/libs/metadata_view.c:673
 msgid "yes"
@@ -8930,7 +8930,7 @@ msgid "instance"
 msgstr "Instance"
 
 #: ../src/develop/imageop.c:3756 ../src/gui/accelerators.c:130
-#: ../src/gui/accelerators.c:140 ../src/gui/gtk.c:3102 ../src/gui/gtk.c:3149
+#: ../src/gui/accelerators.c:140 ../src/gui/gtk.c:3103 ../src/gui/gtk.c:3150
 #: ../src/gui/hist_dialog.c:270 ../src/gui/styles_dialog.c:615
 #: ../src/gui/styles_dialog.c:637 ../src/iop/atrous.c:1626
 #: ../src/libs/lib.c:1416 ../src/libs/modulegroups.c:3884
@@ -9874,12 +9874,12 @@ msgid "popup"
 msgstr "Popup"
 
 #: ../src/gui/accelerators.c:138 ../src/gui/accelerators.c:171
-#: ../src/gui/gtk.c:3147 ../src/views/lighttable.c:760
+#: ../src/gui/gtk.c:3148 ../src/views/lighttable.c:760
 msgid "next"
 msgstr "Suivant"
 
 #: ../src/gui/accelerators.c:139 ../src/gui/accelerators.c:170
-#: ../src/gui/gtk.c:3148 ../src/views/lighttable.c:761
+#: ../src/gui/gtk.c:3149 ../src/views/lighttable.c:761
 msgid "previous"
 msgstr "Précédent"
 
@@ -9914,7 +9914,7 @@ msgstr "Inverser-droit"
 msgid "right-on"
 msgstr "Sur-droit"
 
-#: ../src/gui/accelerators.c:163 ../src/gui/gtk.c:3146
+#: ../src/gui/accelerators.c:163 ../src/gui/gtk.c:3147
 msgid "activate"
 msgstr "Activer"
 
@@ -10571,192 +10571,192 @@ msgstr ""
 "La visibilité des info-bulles peut être changée seulement si le gestionnaire "
 "de fenêtres supporte la composition"
 
-#: ../src/gui/gtk.c:818
+#: ../src/gui/gtk.c:819
 msgid "closing darktable..."
 msgstr "Quitter darktable…"
 
-#: ../src/gui/gtk.c:1045
+#: ../src/gui/gtk.c:1046
 msgid "URL opened in web browser"
 msgstr "Page ouverte dans le navigateur"
 
-#: ../src/gui/gtk.c:1049
+#: ../src/gui/gtk.c:1050
 msgid "error while opening URL in web browser"
 msgstr "Erreur lors de l’ouverture d'une page dans le navigateur"
 
 #. View menu
-#: ../src/gui/gtk.c:1117
+#: ../src/gui/gtk.c:1118
 msgctxt "menu"
 msgid "Views"
 msgstr "Vues"
 
-#: ../src/gui/gtk.c:1121
+#: ../src/gui/gtk.c:1122
 msgctxt "menu"
 msgid "lighttable"
 msgstr "Table lumineuse"
 
-#: ../src/gui/gtk.c:1122
+#: ../src/gui/gtk.c:1123
 msgctxt "menu"
 msgid "darkroom"
 msgstr "Chambre noire"
 
-#: ../src/gui/gtk.c:1128
+#: ../src/gui/gtk.c:1129
 msgctxt "menu"
 msgid "slideshow"
 msgstr "Diaporama"
 
-#: ../src/gui/gtk.c:1130
+#: ../src/gui/gtk.c:1131
 msgctxt "menu"
 msgid "map"
 msgstr "Carte"
 
-#: ../src/gui/gtk.c:1132
+#: ../src/gui/gtk.c:1133
 msgctxt "menu"
 msgid "print"
 msgstr "Impression"
 
-#: ../src/gui/gtk.c:1134
+#: ../src/gui/gtk.c:1135
 msgctxt "menu"
 msgid "tethering"
 msgstr "Capture"
 
 #. Help menu
-#: ../src/gui/gtk.c:1140
+#: ../src/gui/gtk.c:1141
 msgctxt "menu"
 msgid "Help"
 msgstr "Aide"
 
-#: ../src/gui/gtk.c:1144
+#: ../src/gui/gtk.c:1145
 msgctxt "menu"
 msgid "darktable Manual"
 msgstr "Manuel darktable"
 
-#: ../src/gui/gtk.c:1151
+#: ../src/gui/gtk.c:1152
 msgctxt "menu"
 msgid "darktable Homepage"
 msgstr "Page d'accueil de darktable"
 
-#: ../src/gui/gtk.c:1175
+#: ../src/gui/gtk.c:1176
 msgctxt "menu"
 msgid "Preferences"
 msgstr "Préférences"
 
-#: ../src/gui/gtk.c:1249
+#: ../src/gui/gtk.c:1250
 msgid "panels"
 msgstr "Panneaux"
 
-#: ../src/gui/gtk.c:1297
+#: ../src/gui/gtk.c:1298
 msgid "switch views"
 msgstr "Changer de vue/carte"
 
-#: ../src/gui/gtk.c:1298 ../src/views/tethering.c:102
+#: ../src/gui/gtk.c:1299 ../src/views/tethering.c:102
 msgid "tethering"
 msgstr "Capture"
 
-#: ../src/gui/gtk.c:1301 ../src/views/map.c:197
+#: ../src/gui/gtk.c:1302 ../src/views/map.c:197
 msgid "map"
 msgstr "Carte"
 
-#: ../src/gui/gtk.c:1302 ../src/views/slideshow.c:394
+#: ../src/gui/gtk.c:1303 ../src/views/slideshow.c:394
 msgid "slideshow"
 msgstr "Diaporama"
 
 #. Print button
-#: ../src/gui/gtk.c:1303 ../src/libs/print_settings.c:2885
+#: ../src/gui/gtk.c:1304 ../src/libs/print_settings.c:2885
 msgid "print"
 msgstr "Impression"
 
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:1309
+#: ../src/gui/gtk.c:1310
 msgid "quit"
 msgstr "Quitter"
 
 #. Full-screen accelerator (no ESC handler here to enable quit-slideshow using ESC)
-#: ../src/gui/gtk.c:1312
+#: ../src/gui/gtk.c:1313
 msgid "fullscreen"
 msgstr "Plein écran"
 
-#: ../src/gui/gtk.c:1316
+#: ../src/gui/gtk.c:1317
 msgid "collapsing controls"
 msgstr "Contrôles de repli"
 
 #. specific top/bottom toggles
-#: ../src/gui/gtk.c:1318
+#: ../src/gui/gtk.c:1319
 msgid "header"
 msgstr "Tête de groupe"
 
-#: ../src/gui/gtk.c:1319
+#: ../src/gui/gtk.c:1320
 msgid "filmstrip and timeline"
 msgstr "Bandeau et chronologie"
 
-#: ../src/gui/gtk.c:1320
+#: ../src/gui/gtk.c:1321
 msgid "top toolbar"
 msgstr "Barre d’outil haute"
 
-#: ../src/gui/gtk.c:1321
+#: ../src/gui/gtk.c:1322
 msgid "bottom toolbar"
 msgstr "Barre d’outil basse"
 
-#: ../src/gui/gtk.c:1322
+#: ../src/gui/gtk.c:1323
 msgid "all top"
 msgstr "Haut tous"
 
-#: ../src/gui/gtk.c:1323
+#: ../src/gui/gtk.c:1324
 msgid "all bottom"
 msgstr "Bas tous"
 
-#: ../src/gui/gtk.c:1325
+#: ../src/gui/gtk.c:1326
 msgid "toggle tooltip visibility"
 msgstr "Basculer les info-bulles"
 
-#: ../src/gui/gtk.c:1326
+#: ../src/gui/gtk.c:1327
 msgid "reinitialise input devices"
 msgstr "Réinitialise les périphériques d’entrée"
 
-#: ../src/gui/gtk.c:1364
+#: ../src/gui/gtk.c:1365
 msgid "toggle focus-peaking mode"
 msgstr "Basculer le mode zones nettes"
 
 #. toggle focus peaking everywhere
-#: ../src/gui/gtk.c:1369
+#: ../src/gui/gtk.c:1370
 msgid "toggle focus peaking"
 msgstr "Basculer les zones nettes"
 
-#: ../src/gui/gtk.c:1705 ../src/gui/gtk.c:3236 ../src/gui/gtk.c:3241
-#: ../src/gui/gtk.c:3246 ../src/gui/gtk.c:3251
+#: ../src/gui/gtk.c:1706 ../src/gui/gtk.c:3237 ../src/gui/gtk.c:3242
+#: ../src/gui/gtk.c:3247 ../src/gui/gtk.c:3252
 msgid "tabs"
 msgstr "Tabs"
 
 #. ask the user if darktable.org may be accessed
-#: ../src/gui/gtk.c:2754
+#: ../src/gui/gtk.c:2755
 msgid "access the online user manual?"
 msgstr "Accéder au manuel utilisateur en ligne ?"
 
-#: ../src/gui/gtk.c:2755
+#: ../src/gui/gtk.c:2756
 #, c-format
 msgid "do you want to access `%s'?"
 msgstr "Accéder à « %s » ?"
 
-#: ../src/gui/gtk.c:2825
+#: ../src/gui/gtk.c:2826
 msgid "there is no help available for this element"
 msgstr "Aucune aide disponible pour cet élément"
 
 #. font name can only use period as decimal separator
 #. but printf format strings use comma for some locales, so replace comma with period
-#: ../src/gui/gtk.c:2845 ../src/libs/metadata_view.c:751
+#: ../src/gui/gtk.c:2846 ../src/libs/metadata_view.c:751
 #, c-format
 msgid "%.1f"
 msgstr "%.1f"
 
-#: ../src/gui/gtk.c:2847
+#: ../src/gui/gtk.c:2848
 #, c-format
 msgid "Sans %s"
 msgstr "Sans %s"
 
-#: ../src/gui/gtk.c:3141
+#: ../src/gui/gtk.c:3142
 msgid "does not contain pages"
 msgstr "Ne contient pas de pages"
 
-#: ../src/gui/gtk.c:3360
+#: ../src/gui/gtk.c:3361
 #, c-format
 msgid "never show more than %d lines"
 msgstr "Ne pas montrer plus de %d lignes"
@@ -11788,7 +11788,7 @@ msgstr ""
 
 #: ../src/imageio/format/avif.c:89 ../src/imageio/format/jxl.c:560
 #: ../src/imageio/format/pdf.c:80 ../src/imageio/format/png.c:641
-#: ../src/imageio/format/tiff.c:886 ../src/imageio/format/xcf.c:357
+#: ../src/imageio/format/tiff.c:904 ../src/imageio/format/xcf.c:357
 msgid "8 bit"
 msgstr "8 bits"
 
@@ -11807,7 +11807,7 @@ msgstr "Nombre de bits AVIF invalide"
 #. Bit depth combo box
 #: ../src/imageio/format/avif.c:786 ../src/imageio/format/exr.cc:601
 #: ../src/imageio/format/jxl.c:559 ../src/imageio/format/pdf.c:661
-#: ../src/imageio/format/png.c:639 ../src/imageio/format/tiff.c:882
+#: ../src/imageio/format/png.c:639 ../src/imageio/format/tiff.c:900
 #: ../src/imageio/format/xcf.c:354
 msgid "bit depth"
 msgstr "Bits"
@@ -11823,11 +11823,11 @@ msgstr ""
 #. * Color mode combo box
 #.
 #. shortfile option combo box
-#: ../src/imageio/format/avif.c:806 ../src/imageio/format/tiff.c:926
+#: ../src/imageio/format/avif.c:806 ../src/imageio/format/tiff.c:944
 msgid "b&w as grayscale"
 msgstr "N&B en échelle de gris"
 
-#: ../src/imageio/format/avif.c:807 ../src/imageio/format/tiff.c:927
+#: ../src/imageio/format/avif.c:807 ../src/imageio/format/tiff.c:945
 msgid "saving as grayscale will reduce the size for black & white images"
 msgstr ""
 "Enregistrer en échelle de gris réduira la taille des images noir & blanc"
@@ -11855,7 +11855,7 @@ msgstr ""
 #. Compression method combo box
 #: ../src/imageio/format/avif.c:836 ../src/imageio/format/exr.cc:611
 #: ../src/imageio/format/pdf.c:676 ../src/imageio/format/png.c:653
-#: ../src/imageio/format/tiff.c:905 ../src/imageio/format/webp.c:414
+#: ../src/imageio/format/tiff.c:923 ../src/imageio/format/webp.c:414
 #: ../src/libs/masks.c:111
 msgid "compression"
 msgstr "Dégradé"
@@ -11869,7 +11869,7 @@ msgstr "Compression de l’images"
 #. step
 #. default
 #. digits
-#: ../src/imageio/format/avif.c:864 ../src/imageio/format/j2k.c:673
+#: ../src/imageio/format/avif.c:864 ../src/imageio/format/j2k.c:679
 #: ../src/imageio/format/jpeg.c:476 ../src/imageio/format/jxl.c:583
 #: ../src/imageio/format/webp.c:425 ../src/libs/camera.c:564
 msgid "quality"
@@ -11919,12 +11919,12 @@ msgid "16 bit (float)"
 msgstr "16 bits (flottant)"
 
 #: ../src/imageio/format/exr.cc:603 ../src/imageio/format/jxl.c:560
-#: ../src/imageio/format/tiff.c:886 ../src/imageio/format/xcf.c:357
+#: ../src/imageio/format/tiff.c:904 ../src/imageio/format/xcf.c:357
 msgid "32 bit (float)"
 msgstr "32 bits (flottant)"
 
 #: ../src/imageio/format/exr.cc:613 ../src/imageio/format/pdf.c:682
-#: ../src/imageio/format/tiff.c:906
+#: ../src/imageio/format/tiff.c:924
 msgid "uncompressed"
 msgstr "Non compressé"
 
@@ -11964,23 +11964,23 @@ msgstr "DWAA"
 msgid "DWAB"
 msgstr "DWAB"
 
-#: ../src/imageio/format/j2k.c:642
+#: ../src/imageio/format/j2k.c:648
 msgid "JPEG 2000 (12-bit)"
 msgstr "JPEG 2000 (12 bits)"
 
-#: ../src/imageio/format/j2k.c:678
+#: ../src/imageio/format/j2k.c:684
 msgid "DCP mode"
 msgstr "Mode DCP"
 
-#: ../src/imageio/format/j2k.c:681
+#: ../src/imageio/format/j2k.c:687
 msgid "Cinema2K, 24FPS"
 msgstr "Cinema2K, 24 ips"
 
-#: ../src/imageio/format/j2k.c:682
+#: ../src/imageio/format/j2k.c:688
 msgid "Cinema2K, 48FPS"
 msgstr "Cinema2K, 48 ips"
 
-#: ../src/imageio/format/j2k.c:683
+#: ../src/imageio/format/j2k.c:689
 msgid "Cinema4K, 24FPS"
 msgstr "Cinema4K, 24 ips"
 
@@ -11989,21 +11989,21 @@ msgid "JPEG (8-bit)"
 msgstr "JPEG (8 bits)"
 
 #: ../src/imageio/format/jxl.c:560 ../src/imageio/format/pdf.c:81
-#: ../src/imageio/format/png.c:641 ../src/imageio/format/tiff.c:886
+#: ../src/imageio/format/png.c:641 ../src/imageio/format/tiff.c:904
 #: ../src/imageio/format/xcf.c:357
 msgid "16 bit"
 msgstr "16 bits"
 
 #. Pixel format combo box
-#: ../src/imageio/format/jxl.c:566 ../src/imageio/format/tiff.c:891
+#: ../src/imageio/format/jxl.c:566 ../src/imageio/format/tiff.c:909
 msgid "pixel type"
 msgstr "Type de pixel"
 
-#: ../src/imageio/format/jxl.c:567 ../src/imageio/format/tiff.c:892
+#: ../src/imageio/format/jxl.c:567 ../src/imageio/format/tiff.c:910
 msgid "unsigned integer"
 msgstr "Entier non signé"
 
-#: ../src/imageio/format/jxl.c:567 ../src/imageio/format/tiff.c:892
+#: ../src/imageio/format/jxl.c:567 ../src/imageio/format/tiff.c:910
 msgid "floating point"
 msgstr "Flottant"
 
@@ -12196,7 +12196,7 @@ msgstr ""
 " • Compressée – taille réduite mais plus lent"
 
 # deflate traduit par compression, bof ?
-#: ../src/imageio/format/pdf.c:682 ../src/imageio/format/tiff.c:906
+#: ../src/imageio/format/pdf.c:682 ../src/imageio/format/tiff.c:924
 msgid "deflate"
 msgstr "Compression"
 
@@ -12231,15 +12231,15 @@ msgstr "Débogage"
 msgid "PPM (16-bit)"
 msgstr "PPM (16 bits)"
 
-#: ../src/imageio/format/tiff.c:228
-msgid "will export as a grayscale image"
-msgstr "Exportera l’image en échelle de gris"
+#: ../src/imageio/format/tiff.c:246
+msgid "not a b&w image, will not export as grayscale"
+msgstr "L'image n'est pas N&B, ne sera pas exportée en échelle de gris"
 
-#: ../src/imageio/format/tiff.c:907
+#: ../src/imageio/format/tiff.c:925
 msgid "deflate with predictor"
 msgstr "Compression avec prédiction"
 
-#: ../src/imageio/format/tiff.c:917
+#: ../src/imageio/format/tiff.c:935
 msgid "compression level"
 msgstr "Niveau de compression"
 
