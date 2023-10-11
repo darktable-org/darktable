@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2022 darktable developers.
+    Copyright (C) 2022-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,7 +26,9 @@ static gboolean _rating_range_update(dt_lib_filtering_rule_t *rule)
   _widgets_range_t *special = (_widgets_range_t *)rule->w_specific;
   _widgets_range_t *specialtop = (_widgets_range_t *)rule->w_specific_top;
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
-  GtkDarktableRangeSelect *rangetop = (specialtop) ? DTGTK_RANGE_SELECT(specialtop->range_select) : NULL;
+  GtkDarktableRangeSelect *rangetop = (specialtop)
+                                      ? DTGTK_RANGE_SELECT(specialtop->range_select)
+                                      : NULL;
 
   rule->manual_widget_set++;
   char query[1024] = { 0 };
@@ -53,43 +55,62 @@ static gboolean _rating_range_update(dt_lib_filtering_rule_t *rule)
   sqlite3_finalize(stmt);
 
   dtgtk_range_select_reset_blocks(range);
-  dtgtk_range_select_add_range_block(range, 1.0, 1.0, DT_RANGE_BOUND_MIN | DT_RANGE_BOUND_MAX, _("all images"),
+  dtgtk_range_select_add_range_block(range, 1.0, 1.0, DT_RANGE_BOUND_MIN | DT_RANGE_BOUND_MAX,
+                                     _("all images"),
                                      nb[0] + nb[1] + nb[2] + nb[3] + nb[4] + nb[5] + nb[6]);
-  dtgtk_range_select_add_range_block(range, 0.0, 1.0, DT_RANGE_BOUND_MAX, _("all except rejected"),
+  dtgtk_range_select_add_range_block(range, 0.0, 1.0, DT_RANGE_BOUND_MAX,
+                                     _("all except rejected"),
                                      nb[1] + nb[2] + nb[3] + nb[4] + nb[5] + nb[6]);
-  dtgtk_range_select_add_range_block(range, -1.0, -1.0, DT_RANGE_BOUND_FIXED, _("rejected only"), nb[0]);
-  dtgtk_range_select_add_range_block(range, 0.0, 0.0, DT_RANGE_BOUND_FIXED, _("not rated only"), nb[1]);
-  dtgtk_range_select_add_range_block(range, 1.0, 5.0, DT_RANGE_BOUND_MAX, "★", nb[2]);
-  dtgtk_range_select_add_range_block(range, 2.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★", nb[3]);
-  dtgtk_range_select_add_range_block(range, 3.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★ ★", nb[4]);
-  dtgtk_range_select_add_range_block(range, 4.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★ ★ ★", nb[5]);
-  dtgtk_range_select_add_range_block(range, 5.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★ ★ ★ ★", nb[6]);
+  dtgtk_range_select_add_range_block(range, -1.0, -1.0, DT_RANGE_BOUND_FIXED,
+                                     _("rejected only"), nb[0]);
+  dtgtk_range_select_add_range_block(range, 0.0, 0.0, DT_RANGE_BOUND_FIXED,
+                                     _("not rated only"), nb[1]);
+  dtgtk_range_select_add_range_block(range, 1.0, 5.0, DT_RANGE_BOUND_MAX,
+                                     "★", nb[2]);
+  dtgtk_range_select_add_range_block(range, 2.0, 5.0, DT_RANGE_BOUND_MAX,
+                                     "★ ★", nb[3]);
+  dtgtk_range_select_add_range_block(range, 3.0, 5.0, DT_RANGE_BOUND_MAX,
+                                     "★ ★ ★", nb[4]);
+  dtgtk_range_select_add_range_block(range, 4.0, 5.0, DT_RANGE_BOUND_MAX,
+                                     "★ ★ ★ ★", nb[5]);
+  dtgtk_range_select_add_range_block(range, 5.0, 5.0, DT_RANGE_BOUND_MAX,
+                                     "★ ★ ★ ★ ★", nb[6]);
 
   if(rangetop)
   {
     dtgtk_range_select_reset_blocks(rangetop);
     dtgtk_range_select_add_range_block(rangetop, 1.0, 1.0, DT_RANGE_BOUND_MIN | DT_RANGE_BOUND_MAX,
-                                       _("all images"), nb[0] + nb[1] + nb[2] + nb[3] + nb[4] + nb[5] + nb[6]);
-    dtgtk_range_select_add_range_block(rangetop, 0.0, 1.0, DT_RANGE_BOUND_MAX, _("all except rejected"),
+                                       _("all images"),
+                                       nb[0] + nb[1] + nb[2] + nb[3] + nb[4] + nb[5] + nb[6]);
+    dtgtk_range_select_add_range_block(rangetop, 0.0, 1.0, DT_RANGE_BOUND_MAX,
+                                       _("all except rejected"),
                                        nb[1] + nb[2] + nb[3] + nb[4] + nb[5] + nb[6]);
-    dtgtk_range_select_add_range_block(rangetop, -1.0, -1.0, DT_RANGE_BOUND_FIXED, _("rejected only"), nb[0]);
-    dtgtk_range_select_add_range_block(rangetop, 0.0, 0.0, DT_RANGE_BOUND_FIXED, _("not rated only"), nb[1]);
-    dtgtk_range_select_add_range_block(rangetop, 1.0, 5.0, DT_RANGE_BOUND_MAX, "★", nb[2]);
-    dtgtk_range_select_add_range_block(rangetop, 2.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★", nb[3]);
-    dtgtk_range_select_add_range_block(rangetop, 3.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★ ★", nb[4]);
-    dtgtk_range_select_add_range_block(rangetop, 4.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★ ★ ★", nb[5]);
-    dtgtk_range_select_add_range_block(rangetop, 5.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★ ★ ★ ★", nb[6]);
+    dtgtk_range_select_add_range_block(rangetop, -1.0, -1.0, DT_RANGE_BOUND_FIXED,
+                                       _("rejected only"), nb[0]);
+    dtgtk_range_select_add_range_block(rangetop, 0.0, 0.0, DT_RANGE_BOUND_FIXED,
+                                       _("not rated only"), nb[1]);
+    dtgtk_range_select_add_range_block(rangetop, 1.0, 5.0, DT_RANGE_BOUND_MAX,
+                                       "★", nb[2]);
+    dtgtk_range_select_add_range_block(rangetop, 2.0, 5.0, DT_RANGE_BOUND_MAX,
+                                       "★ ★", nb[3]);
+    dtgtk_range_select_add_range_block(rangetop, 3.0, 5.0, DT_RANGE_BOUND_MAX,
+                                       "★ ★ ★", nb[4]);
+    dtgtk_range_select_add_range_block(rangetop, 4.0, 5.0, DT_RANGE_BOUND_MAX,
+                                       "★ ★ ★ ★", nb[5]);
+    dtgtk_range_select_add_range_block(rangetop, 5.0, 5.0, DT_RANGE_BOUND_MAX,
+                                       "★ ★ ★ ★ ★", nb[6]);
   }
 
   dtgtk_range_select_set_selection_from_raw_text(range, rule->raw_text, FALSE);
-  if(rangetop) dtgtk_range_select_set_selection_from_raw_text(rangetop, rule->raw_text, FALSE);
+  if(rangetop)
+    dtgtk_range_select_set_selection_from_raw_text(rangetop, rule->raw_text, FALSE);
   rule->manual_widget_set--;
   return TRUE;
 }
 
-static gchar *_rating_print_func(const double value, const gboolean detailled)
+static gchar *_rating_print_func(const double value, const gboolean detailed)
 {
-  if(detailled)
+  if(detailed)
   {
     darktable.control->element = value + 1;
 
@@ -106,7 +127,8 @@ static gchar *_rating_print_func(const double value, const gboolean detailled)
 
 static gchar *_rating_get_bounds_pretty(GtkDarktableRangeSelect *range)
 {
-  if((range->bounds & DT_RANGE_BOUND_MIN) && (range->bounds & DT_RANGE_BOUND_MAX)) return g_strdup(_("all images"));
+  if((range->bounds & DT_RANGE_BOUND_MIN) && (range->bounds & DT_RANGE_BOUND_MAX))
+    return g_strdup(_("all images"));
 
   if((range->bounds & DT_RANGE_BOUND_MIN)) range->select_min_r = range->min_r;
   if((range->bounds & DT_RANGE_BOUND_MAX)) range->select_max_r = range->max_r;
@@ -114,9 +136,7 @@ static gchar *_rating_get_bounds_pretty(GtkDarktableRangeSelect *range)
   if(range->select_min_r == range->select_max_r)
   {
     gchar *printed_min = range->print(range->select_min_r, TRUE);
-    gchar *min_only = g_strdup_printf("%s %s", printed_min, _("only"));
-    g_free(printed_min);
-    return min_only;
+    return printed_min;
   }
 
   const int rating_min = (int)floor(range->select_min_r);
@@ -165,7 +185,10 @@ static void _rating_paint_icon(cairo_t *cr, gint x, gint y, gint w, gint h, gint
   {
     // we want a filled icon
     cairo_get_source(cr);
-    cairo_pattern_get_rgba(cairo_get_source(cr), &shade_color.red, &shade_color.green, &shade_color.blue,
+    cairo_pattern_get_rgba(cairo_get_source(cr),
+                           &shade_color.red,
+                           &shade_color.green,
+                           &shade_color.blue,
                            &shade_color.alpha);
     shade_color.alpha *= 0.6;
     my_data = &shade_color;
@@ -188,7 +211,10 @@ enum
   _ACTION_ELEMENT_MAX = 5 + 1 + 1,
 };
 
-static float _action_process_ratings(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
+static float _action_process_ratings(gpointer target,
+                                     dt_action_element_t element,
+                                     dt_action_effect_t effect,
+                                     float move_size)
 {
   if(!target) return DT_ACTION_NOT_VALID;
 
@@ -260,8 +286,9 @@ static float _action_process_ratings(gpointer target, dt_action_element_t elemen
     g_free(txt);
   }
 
-  const gboolean is_active = (new_value >= min || bounds & DT_RANGE_BOUND_MIN) && (new_value <= max || bounds & DT_RANGE_BOUND_MAX);
-  return - min - 2 + (is_active ? DT_VALUE_PATTERN_ACTIVE : 0);
+  const gboolean is_active = (new_value >= min || bounds & DT_RANGE_BOUND_MIN)
+                             && (new_value <= max || bounds & DT_RANGE_BOUND_MAX);
+  return -min - 2 + (is_active ? DT_VALUE_PATTERN_ACTIVE : 0);
 }
 
 const gchar *dt_action_effect_rating[]
@@ -287,13 +314,17 @@ const dt_action_def_t dt_action_def_ratings_rule
       _action_process_ratings,
       _action_elements_ratings };
 
-static void _rating_range_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
-                                const gchar *text, dt_lib_module_t *self, const gboolean top)
+static void _rating_range_widget_init(dt_lib_filtering_rule_t *rule,
+                                      const dt_collection_properties_t prop,
+                                      const gchar *text,
+                                      dt_lib_module_t *self,
+                                      const gboolean top)
 {
   _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
 
-  special->range_select
-      = dtgtk_range_select_new(dt_collection_name_untranslated(prop), FALSE, DT_RANGE_TYPE_NUMERIC);
+  special->range_select = dtgtk_range_select_new(dt_collection_name_untranslated(prop),
+                                                 FALSE,
+                                                 DT_RANGE_TYPE_NUMERIC);
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
   gtk_widget_set_name(special->range_select, "dt-range-rating");
   // to keep a nice ratio, we don't want the widget to exceed a certain value
