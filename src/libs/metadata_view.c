@@ -739,11 +739,20 @@ void gui_update(dt_lib_module_t *self)
         break;
 
       case md_exif_focal_length_ff:
-        if(img->exif_crop && (img->exif_crop != 1.0f))
+        if(!(img->exif_crop))
+        {
+          _metadata_update_value(md_exif_focal_length_ff, NODATA_STRING, self);
+          break;
+        }
+        if(img->exif_crop != 1.0f)
+        {
           (void)g_snprintf(text, sizeof(text), _("%.1f mm"),
                            (double)img->exif_crop * img->exif_focal_length);
+        }
         else
+        {
           (void)g_snprintf(text, sizeof(text), _("%.1f mm"), (double)img->exif_focal_length);
+        }
         _metadata_update_value(md_exif_focal_length_ff, text, self);
         break;
 
