@@ -757,8 +757,15 @@ void gui_update(dt_lib_module_t *self)
         break;
 
       case md_exif_crop_factor:
-        (void)g_snprintf(text, sizeof(text), _("%.1f"), (double)img->exif_crop);
-        _metadata_update_value(md_exif_crop_factor, text, self);
+        if(img->exif_crop)
+        {
+          (void)g_snprintf(text, sizeof(text), _("%.1f"), (double)img->exif_crop);
+          _metadata_update_value(md_exif_crop_factor, text, self);
+        }
+        else
+        {
+          _metadata_update_value(md_exif_crop_factor, NODATA_STRING, self);
+        }
         break;
 
       case md_exif_focus_distance:
