@@ -333,9 +333,12 @@ int dt_iop_load_module_so(void *m, const char *libname, const char *module_name)
 #define INCLUDE_API_FROM_MODULE_LOAD "iop_load_module"
 #include "iop/iop_api.h"
 
-  if(!module->init) module->init = dt_iop_default_init;
-  if(!module->modify_roi_in) module->modify_roi_in = _iop_modify_roi_in;
-  if(!module->modify_roi_out) module->modify_roi_out = _iop_modify_roi_out;
+  if(!module->init)
+    module->init = dt_iop_default_init;
+  if(!module->modify_roi_in)
+    module->modify_roi_in = _iop_modify_roi_in;
+  if(!module->modify_roi_out)
+    module->modify_roi_out = _iop_modify_roi_out;
 
   module->process_plain = module->process;
   module->process = default_process;
@@ -351,10 +354,10 @@ int dt_iop_load_module_so(void *m, const char *libname, const char *module_name)
       // set the introspection related fields in module
       module->have_introspection = TRUE;
 
-      if(module->get_p == default_get_p ||
-         module->get_f == default_get_f ||
-         module->get_introspection_linear == default_get_introspection_linear ||
-         module->get_introspection == default_get_introspection)
+      if(module->get_p == default_get_p
+         || module->get_f == default_get_f
+         || module->get_introspection_linear == default_get_introspection_linear
+         || module->get_introspection == default_get_introspection)
         goto api_h_error;
     }
     else
@@ -363,13 +366,14 @@ int dt_iop_load_module_so(void *m, const char *libname, const char *module_name)
                module_name);
   }
 
-  if(module->init_global) module->init_global(module);
+  if(module->init_global)
+    module->init_global(module);
   return 0;
 }
 
 gboolean dt_iop_load_module_by_so(dt_iop_module_t *module,
-                             dt_iop_module_so_t *so,
-                             dt_develop_t *dev)
+                                  dt_iop_module_so_t *so,
+                                  dt_develop_t *dev)
 {
   module->actions = DT_ACTION_TYPE_IOP_INSTANCE;
   module->dev = dev;
