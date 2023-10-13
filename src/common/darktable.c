@@ -137,12 +137,12 @@ static int usage(const char *argv0)
          "GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>\n"
          "This is free software: you are free to change and redistribute it.\n"
          "There is NO WARRANTY, to the extent permitted by law.\n\n",
-         darktable_package_version, 
+         darktable_package_version,
          darktable_last_commit_year);
 
   printf("Usage:\n"
          "  darktable [OPTIONS] [IMAGE_FILE | IMAGE_FOLDER]\n"
-         "\n"  
+         "\n"
          "Options:\n"
          "\n"
          "--cachedir DIR\n"
@@ -235,9 +235,9 @@ static int usage(const char *argv0)
          "    purposes only.\n"
          "\n"
          "--dump-pfm MODULE_A,MODULE_B\n"
-         "\n"         
+         "\n"
          "--dump-pipe MODULE_A,MODULE_B\n"
-         "\n"         
+         "\n"
          "--dumpdir DIR\n"
          "\n"
          "-d SIGNAL\n"
@@ -285,8 +285,8 @@ static int usage(const char *argv0)
 #endif
 
   printf("See %s for more detailed documentation.\n"
-         "See %s to report bugs.\n", 
-         PACKAGE_DOCS, 
+         "See %s to report bugs.\n",
+         PACKAGE_DOCS,
          PACKAGE_BUGREPORT);
 
 #ifdef _WIN32
@@ -626,6 +626,20 @@ static dt_job_t *_detect_opencl_job_create(gboolean exclude_opencl)
   return job;
 }
 
+static int32_t _backthumbs_job_run(dt_job_t *job)
+{
+  dt_update_thumbs_thread(dt_control_job_get_params(job));
+  return 0;
+}
+
+static dt_job_t *_backthumbs_job_create(void)
+{
+  dt_job_t *job = dt_control_job_create(&_backthumbs_job_run, "generate mipmaps");
+  if(!job) return NULL;
+  dt_control_job_set_params(job, NULL, NULL);
+  return job;
+}
+
 static char *_get_version_string(void)
 {
 #ifdef USE_LUA
@@ -704,7 +718,7 @@ char *version = g_strdup_printf("darktable %s\nCopyright (C) 2012-%s Johannes Ha
 
 #ifdef HAVE_IMAGEMAGICK
                "  ImageMagick            -> ENABLED\n"
-#else 
+#else
                "  ImageMagick            -> DISABLED\n"
 #endif
 
@@ -743,7 +757,7 @@ char *version = g_strdup_printf("darktable %s\nCopyright (C) 2012-%s Johannes Ha
 #else
                "  WebP                   -> DISABLED\n",
 #endif
-             
+
                PACKAGE_DOCS,
                PACKAGE_BUGREPORT);
 
@@ -1381,7 +1395,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   {
     if(dbfilename_from_command && !strcmp(dbfilename_from_command, ":memory:"))
       dt_gui_presets_init(); // init preset db schema.
-    darktable.control->running = 0;
+    darktable.control->running = FALSE;
     dt_pthread_mutex_init(&darktable.control->run_mutex, NULL);
     dt_pthread_mutex_init(&darktable.control->log_mutex, NULL);
   }
@@ -1655,11 +1669,19 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   }
   free(config_info);
 
-  // last but not least construct the popup that asks the user about
-  // images whose xmp files are newer than the db entry
-  if(init_gui && changed_xmp_files)
+  if(init_gui)
   {
-    dt_control_crawler_show_image_list(changed_xmp_files);
+    // don't write thumbs if using memory database or on a non-sufficient system
+    if(!(dbfilename_from_command && !strcmp(dbfilename_from_command, ":memory:"))
+        && (dt_get_num_procs() >= 4)
+        && (darktable.dtresources.total_memory / 1024lu / 1024lu >= 8000))
+      dt_control_add_job(darktable.control, DT_JOB_QUEUE_SYSTEM_BG,
+                       _backthumbs_job_create());
+
+    // last but not least construct the popup that asks the user about
+    // images whose xmp files are newer than the db entry
+    if(changed_xmp_files)
+      dt_control_crawler_show_image_list(changed_xmp_files);
   }
 
 #if defined(WIN32)
@@ -1738,7 +1760,7 @@ void dt_get_sysresource_level()
 void dt_cleanup()
 {
   const int init_gui = (darktable.gui != NULL);
-
+  darktable.backthumbs.running = FALSE;
   // last chance to ask user for any input...
 
   const gboolean perform_maintenance = dt_database_maybe_maintenance(darktable.db);
