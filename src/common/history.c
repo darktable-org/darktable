@@ -498,7 +498,7 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
       // we will copy only used forms
       // record the masks used by this module
       if(mod_src->flags() & IOP_FLAGS_SUPPORTS_BLENDING
-         && mod_src->blend_params->mask_id > 0)
+         && dt_is_valid_maskid(mod_src->blend_params->mask_id))
       {
         nbf = g_list_length(dev_src->forms);
         forms_used_replace = calloc(nbf, sizeof(int));
