@@ -338,7 +338,59 @@ void finalize_store(dt_imageio_module_storage_t *self,
   g_free(m_fd);
 }
 
-#else // this is for !_WIN32
+#elif defined __APPLE__
+void finalize_store(dt_imageio_module_storage_t *self,
+                    dt_imageio_module_data_t *params)
+{
+  dt_imageio_email_t *d = (dt_imageio_email_t *)params;
+
+  const gint nb_images = g_list_length(d->images);
+  const gint argc = 3 + nb_images;
+
+  char **argv = g_malloc0(sizeof(char *) * (argc + 1));
+
+  argv[0] = "open";
+  argv[1] = "-a";
+  argv[2] = "Mail";
+  int n = 3;
+
+  for(GList *iter = d->images; iter; iter = g_list_next(iter))
+  {
+    _email_attachment_t *attachment = (_email_attachment_t *)iter->data;
+
+    // use attachment->file directly as we need to free it, and this way it will be
+    // freed as part of the argument release after the spawn below.
+    argv[n] = attachment->file;
+    n += 1;
+  }
+  g_list_free_full(d->images, g_free);
+  d->images = NULL;
+
+  argv[argc] = NULL;
+
+  gchar *cmdline = g_strjoinv(" ", argv);
+  dt_print(DT_DEBUG_IMAGEIO, "[email] launching '%s'\n", cmdline);
+  g_free(cmdline);
+
+  gint exit_status = 0;
+
+  g_spawn_sync
+    (NULL, argv, NULL,
+     G_SPAWN_SEARCH_PATH | G_SPAWN_STDOUT_TO_DEV_NULL | G_SPAWN_STDERR_TO_DEV_NULL,
+     NULL, NULL, NULL, NULL, &exit_status, NULL);
+
+  for(int k=3; k<argc; k++)
+    g_free(argv[k]);
+  g_free(argv);
+
+  if(exit_status)
+  {
+    dt_control_log(_("could not launch email client!"));
+  }
+}
+
+
+#else // this is for !_WIN32 and !__APPLE__
 void finalize_store(dt_imageio_module_storage_t *self,
                     dt_imageio_module_data_t *params)
 {
@@ -415,7 +467,7 @@ void finalize_store(dt_imageio_module_storage_t *self,
     dt_control_log(_("could not launch email client!"));
   }
 }
-#endif // !_WIN32
+#endif // !_WIN32 and !__APPLE__
 
 gboolean supported(struct dt_imageio_module_storage_t *storage,
                    struct dt_imageio_module_format_t *format)
