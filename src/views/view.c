@@ -259,6 +259,8 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
   // reset the cursor to the default one
   dt_control_change_cursor(GDK_LEFT_PTR);
 
+  dt_set_backthumb_time(0.0);
+
   // destroy old module list
 
   /* clear the undo list, for now we do this unconditionally. At some

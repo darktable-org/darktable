@@ -1679,6 +1679,7 @@ static uint32_t _image_import_internal(const int32_t film_id,
     return id;
   }
 
+  dt_set_backthumb_time(0.0);
   // also need to set the no-legacy bit, to make sure we get the right presets (new ones)
   uint32_t flags = dt_conf_get_int("ui_last/import_initial_rating");
   flags |= DT_IMAGE_NO_LEGACY_PRESETS;
