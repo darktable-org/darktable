@@ -48,7 +48,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 44
+#define CURRENT_DATABASE_VERSION_LIBRARY 45
 #define CURRENT_DATABASE_VERSION_DATA    10
 
 // #define USE_NESTED_TRANSACTIONS
@@ -2551,6 +2551,53 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     new_version = 44;
   }
+  else if(version == 44)
+  {
+    sqlite3_exec(db->handle, "PRAGMA foreign_keys = OFF", NULL, NULL, NULL);
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    // As we cannot rename a table if we have FOREIGN KEY or CASCADE
+    // we do a workaround by creating a tmp table and populate data twice.
+
+    TRY_EXEC("CREATE TABLE tmp_history_hash"
+                " (imgid INTEGER PRIMARY KEY,"
+                "  basic_hash BLOB, auto_hash BLOB, current_hash BLOB, mipmap_hash BLOB,"
+                "  FOREIGN KEY(imgid) REFERENCES images(id) ON UPDATE CASCADE ON DELETE CASCADE)",
+              "[init] can't create table tmp_history_hash\n");
+
+    TRY_EXEC("INSERT INTO tmp_history_hash"
+                " SELECT imgid, basic_hash, auto_hash, current_hash, mipmap_hash"
+                " FROM history_hash",
+              "[init] can't populate table tmp_history_hash\n");
+
+    TRY_EXEC("DROP TABLE history_hash",
+              "[init] can't drop table history_hash\n");
+
+    TRY_EXEC("CREATE TABLE history_hash"
+                " (imgid INTEGER PRIMARY KEY,"
+                "  basic_hash BLOB, auto_hash BLOB, current_hash BLOB, mipmap_hash BLOB,"
+                "  FOREIGN KEY(imgid) REFERENCES images(id) ON UPDATE CASCADE ON DELETE CASCADE)",
+              "[init] can't create new table history_hash\n");
+
+    TRY_EXEC("INSERT INTO history_hash"
+                " SELECT imgid, basic_hash, auto_hash, current_hash, mipmap_hash"
+                " FROM tmp_history_hash",
+              "[init] can't populate table history_hash\n");
+
+    TRY_EXEC("DROP TABLE tmp_history_hash",
+              "[init] can't drop table tmp_history_hash\n");
+
+    TRY_EXEC("ALTER TABLE images ADD COLUMN thumb_timestamp INTEGER default -1",
+             "[init] can't add fullthumb_hash column\n");
+
+    TRY_EXEC("ALTER TABLE images ADD COLUMN thumb_maxmip INTEGER default 0",
+             "[init] can't add fullthumb_maxmip column\n");
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    sqlite3_exec(db->handle, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
+
+    new_version = 45;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -2917,6 +2964,7 @@ static void _create_library_schema(dt_database_t *db)
       "  history_end INTEGER, position INTEGER, aspect_ratio REAL, exposure_bias REAL,"
       "  import_timestamp INTEGER DEFAULT -1, change_timestamp INTEGER DEFAULT -1, "
       "  export_timestamp INTEGER DEFAULT -1, print_timestamp INTEGER DEFAULT -1, "
+      "  thumb_timestamp INTEGER DEFAULT -1, thumb_maxmip INTEGER DEFAULT 0, "
       "FOREIGN KEY(maker_id) REFERENCES makers(id) ON DELETE CASCADE ON UPDATE CASCADE, "
       "FOREIGN KEY(model_id) REFERENCES models(id) ON DELETE CASCADE ON UPDATE CASCADE, "
       "FOREIGN KEY(lens_id) REFERENCES lens(id) ON DELETE CASCADE ON UPDATE CASCADE, "
@@ -2989,7 +3037,7 @@ static void _create_library_schema(dt_database_t *db)
     (db->handle, "CREATE TABLE main.history_hash"
      " (imgid INTEGER PRIMARY KEY,"
      "  basic_hash BLOB, auto_hash BLOB, current_hash BLOB,"
-     "  mipmap_hash BLOB, fullthumb_hash BLOB, fullthumb_maxmip INTEGER,"
+     "  mipmap_hash BLOB,"
      "  FOREIGN KEY(imgid) REFERENCES images(id) ON UPDATE CASCADE ON DELETE CASCADE)",
      NULL, NULL, NULL);
 

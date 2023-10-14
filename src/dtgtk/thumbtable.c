@@ -1129,6 +1129,8 @@ static gboolean _event_enter_notify(GtkWidget *widget,
                                     GdkEventCrossing *event,
                                     gpointer user_data)
 {
+  dt_set_backthumb_time(0.0);
+
   // we only handle the case where we enter thumbtable from an inferior (a thumbnail)
   // this is when the mouse enter an "empty" area of thumbtable
   if(event->detail != GDK_NOTIFY_INFERIOR) return FALSE;
@@ -1141,6 +1143,8 @@ static gboolean _event_button_press(GtkWidget *widget,
                                     GdkEventButton *event,
                                     gpointer user_data)
 {
+  dt_set_backthumb_time(0.0);
+
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
   const dt_view_manager_t *vm = darktable.view_manager;
   dt_view_t *view = vm->current_view;
@@ -1201,6 +1205,8 @@ static gboolean _event_motion_notify(GtkWidget *widget,
                                      GdkEventMotion *event,
                                      gpointer user_data)
 {
+  dt_set_backthumb_time(0.0);
+
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
   table->mouse_inside = TRUE;
 
@@ -1231,6 +1237,8 @@ static gboolean _event_button_release(GtkWidget *widget,
                                       GdkEventButton *event,
                                       gpointer user_data)
 {
+  dt_set_backthumb_time(0.0);
+
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
 
   if(table->dragging == FALSE)
@@ -1320,6 +1328,8 @@ static void _thumbs_ask_for_discard(dt_thumbtable_t *table)
     max_level = MAX(max_level, MAX(table->pref_embedded, embeddedl));
   }
 
+  sqlite3_stmt *stmt = NULL;
+
   if(min_level < max_level)
   {
     gchar *txt =
@@ -1348,7 +1358,6 @@ static void _thumbs_ask_for_discard(dt_thumbtable_t *table)
     if(dt_gui_show_yes_no_dialog(_("cached thumbnails invalidation"),
                                  "%s", txt))
     {
-      sqlite3_stmt *stmt = NULL;
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                   "SELECT id FROM main.images", -1, &stmt, NULL);
       while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -1363,7 +1372,19 @@ static void _thumbs_ask_for_discard(dt_thumbtable_t *table)
     }
     g_free(txt);
   }
-  // in any case, we update thumbtable prefs values to new ones
+  dt_set_backthumb_time(100.0);
+  dt_print(DT_DEBUG_CACHE, "[thumb crawler] mipmap generating parameters changed, maxmip=%d\n", min_level);
+  // in any case, we update thumbtable prefs values to new ones and update backthumbs database
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "UPDATE main.images"
+                              " SET thumb_maxmip = ?1"
+                              " WHERE thumb_maxmip > ?1 ",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, min_level);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+  dt_set_backthumb_time(2.0);
+
   table->pref_hq = hql;
   table->pref_embedded = embeddedl;
 }
@@ -1376,6 +1397,12 @@ static void _dt_pref_change_callback(gpointer instance, gpointer user_data)
   dt_opencl_update_settings();
   dt_configure_ppd_dpi(darktable.gui);
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
+
+  darktable.backthumbs.writing = dt_conf_get_bool("cache_disk_backend");
+  darktable.backthumbs.service = dt_conf_get_bool("backthumbs_initialize");
+
+  const char *mipsize = dt_conf_get_string_const("backthumbs_mipsize");
+  darktable.backthumbs.mipsize = dt_mipmap_cache_get_min_mip_from_pref(mipsize);
 
   _thumbs_ask_for_discard(table);
 

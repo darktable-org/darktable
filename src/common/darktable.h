@@ -317,6 +317,16 @@ typedef struct dt_sys_resources_t
   gboolean tunehead;
 } dt_sys_resources_t;
 
+typedef struct dt_backthumb_t
+{
+  double time;
+  double idle;
+  gboolean writing;
+  gboolean service;
+  gboolean running;
+  int32_t mipsize;
+} dt_backthumb_t;
+
 typedef struct darktable_t
 {
   dt_codepath_t codepath;
@@ -378,6 +388,7 @@ typedef struct darktable_t
   GTimeZone *utc_tz;
   GDateTime *origin_gdt;
   struct dt_sys_resources_t dtresources;
+  struct dt_backthumb_t backthumbs;
 } darktable_t;
 
 typedef struct

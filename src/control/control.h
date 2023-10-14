@@ -30,6 +30,7 @@
 #endif
 
 #include "control/jobs.h"
+#include "control/crawler.h"
 #include "control/progress.h"
 #include "libs/lib.h"
 #include <gtk/gtk.h>

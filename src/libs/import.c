@@ -1935,7 +1935,7 @@ static void _import_from_dialog_run(dt_lib_module_t* self)
           folder = dt_util_dstrcat(folder, "%%");
         _import_set_collection(folder);
         const dt_imgid_t imgid = dt_conf_get_int("ui_last/import_last_image");
-        if(unique && imgid > 0)
+        if(unique && dt_is_valid_imgid(imgid))
         {
           dt_control_set_mouse_over_id(imgid);
           dt_ctl_switch_mode_to("darkroom");
