@@ -183,6 +183,9 @@ changes (where available).
   The color label collection now displays the color in the same order
   as in all other part of the GUI.
 
+- Preference setting "after edit" for writing sidecar files now
+  accepts also adding a tag as a valid user edit.
+
 ## Bug Fixes
 
 - Fixes OpenCL platform checking which could lead to a freeze of
