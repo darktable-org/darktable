@@ -3714,11 +3714,11 @@ start:
   {
     dbname = dt_conf_get_string("database");
     if(!dbname)
-      snprintf(dbfilename_library, sizeof(dbfilename_library), "%s/library.db", datadir);
+      snprintf(dbfilename_library, sizeof(dbfilename_library), "%s%slibrary.db", datadir, G_DIR_SEPARATOR_S);
     else if(!strcmp(dbname, ":memory:"))
       g_strlcpy(dbfilename_library, dbname, sizeof(dbfilename_library));
     else if(dbname[0] != '/')
-      snprintf(dbfilename_library, sizeof(dbfilename_library), "%s/%s", datadir, dbname);
+      snprintf(dbfilename_library, sizeof(dbfilename_library), "%s%s%s", datadir, G_DIR_SEPARATOR_S, dbname);
     else
       g_strlcpy(dbfilename_library, dbname, sizeof(dbfilename_library));
   }
@@ -3734,7 +3734,7 @@ start:
   /* we also need a 2nd db with permanent data like presets, styles and tags */
   char dbfilename_data[PATH_MAX] = { 0 };
   if(load_data)
-    snprintf(dbfilename_data, sizeof(dbfilename_data), "%s/data.db", datadir);
+    snprintf(dbfilename_data, sizeof(dbfilename_data), "%s%sdata.db", datadir, G_DIR_SEPARATOR_S);
   else
     snprintf(dbfilename_data, sizeof(dbfilename_data), ":memory:");
 
