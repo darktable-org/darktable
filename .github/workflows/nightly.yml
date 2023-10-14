@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  actions: write  # We need this to be able to cancel workflow if job fails
 
 jobs:
   AppImage:
@@ -107,6 +108,9 @@ jobs:
             libjxl-dev \
             x11proto-dev \
             libxfixes-dev;
+      - name: Cancel workflow if job fails
+        if: ${{ failure() }}
+        uses: andymckay/cancel-action@0.3
       - uses: actions/checkout@v4
         with:
           ref: ${{ env.BRANCH }}
@@ -217,6 +221,9 @@ jobs:
             sqlite3:p
             zlib:p
           update: false
+      - name: Cancel workflow if job fails
+        if: ${{ failure() }}
+        uses: andymckay/cancel-action@0.3
       - run: git config --global core.autocrlf input
         shell: bash
       - uses: actions/checkout@v4
@@ -315,6 +322,9 @@ jobs:
       - name: use ImageMagick 6
         run: |
           brew link --overwrite --force imagemagick@6
+      - name: Cancel workflow if job fails
+        if: ${{ failure() }}
+        uses: andymckay/cancel-action@0.3
       - name: Build and Install
           # todo: use linker which supports --wrap, ld.bfd and ld.gold support it
         run: |
