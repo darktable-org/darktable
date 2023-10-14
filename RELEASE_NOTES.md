@@ -69,6 +69,8 @@ changes (where available).
 
 - Improve by 25% the display of the pictures on the map.
 
+- Faster export of JPEG 2000 and B&W TIFF images.
+
 ## Other Changes
 
 - Hotpixels module now also supports monochrome images.
