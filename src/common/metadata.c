@@ -32,7 +32,7 @@
 // Dependencies
 //    Must match with dt_metadata_t in metadata.h.
 //    Exif.cc: add the new metadata into dt_xmp_keys[]
-//    libs/metadata.c increment version and change legacy_param() accordingly
+//    libs/metadata.c increment version.
 // CAUTION : key, subkey (last term of key) & name must be unique
 
 static const struct
