@@ -475,10 +475,11 @@ GList *dt_metadata_get(const int id, const char *key, uint32_t *count)
   if(id == -1)
   {
     // clang-format off
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "SELECT value FROM main.meta_data WHERE id IN "
-                                "(SELECT imgid FROM main.selected_images) AND key = ?1 ORDER BY value",
-                                -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2
+      (dt_database_get(darktable.db),
+       "SELECT value FROM main.meta_data WHERE id IN "
+       "(SELECT imgid FROM main.selected_images) AND key = ?1 ORDER BY value",
+       -1, &stmt, NULL);
     // clang-format on
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, keyid);
   }
