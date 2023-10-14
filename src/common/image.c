@@ -1679,6 +1679,7 @@ static uint32_t _image_import_internal(const int32_t film_id,
     return id;
   }
 
+  dt_set_backthumb_time(0.0);
   // also need to set the no-legacy bit, to make sure we get the right presets (new ones)
   uint32_t flags = dt_conf_get_int("ui_last/import_initial_rating");
   flags |= DT_IMAGE_NO_LEGACY_PRESETS;
@@ -2158,7 +2159,7 @@ int32_t dt_image_rename(const dt_imgid_t imgid, const int32_t filmid, const gcha
       // would return wrong version!
       while(dup_list)
       {
-        const int id = GPOINTER_TO_INT(dup_list->data);
+        const dt_imgid_t id = GPOINTER_TO_INT(dup_list->data);
         dt_image_t *img = dt_image_cache_get(darktable.image_cache, id, 'w');
         img->film_id = filmid;
         if(newname) g_strlcpy(img->filename, newname, DT_MAX_FILENAME_LEN);
@@ -2784,9 +2785,9 @@ void dt_image_synch_xmps(const GList *img)
   }
 }
 
-void dt_image_synch_xmp(const int32_t selected)
+void dt_image_synch_xmp(const dt_imgid_t selected)
 {
-  if(selected > 0)
+  if(dt_is_valid_imgid(selected))
     dt_image_write_sidecar_file(selected);
   else
   {

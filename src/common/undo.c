@@ -20,6 +20,7 @@
 #include "common/collection.h"
 #include "common/darktable.h"
 #include "common/image.h"
+#include "common/image_cache.h"
 #include "control/control.h"
 #include <glib.h>   // for GList, gpointer, g_list_prepend
 #include <stdlib.h> // for NULL, malloc, free
@@ -280,11 +281,12 @@ static void _undo_do_undo_redo(dt_undo_t *self,
     imgs = g_list_sort(imgs, _images_list_cmp);
     // remove duplicates
     for(const GList *img = imgs; img; img = g_list_next(img))
+    {
+      // udpate xmp is done via set_change_timestamp
+      dt_image_cache_set_change_timestamp(darktable.image_cache, GPOINTER_TO_INT(img->data));
       while(img->next && img->data == img->next->data)
         imgs = g_list_delete_link(imgs, img->next);
-    // udpate xmp for updated images
-
-    dt_image_synch_xmps(imgs);
+    }
   }
 
   dt_collection_update_query(darktable.collection,

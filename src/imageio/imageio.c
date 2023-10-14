@@ -769,6 +769,9 @@ int dt_imageio_export_with_flags(const dt_imgid_t imgid,
   const gboolean buf_is_downscaled =
     (thumbnail_export && dt_conf_get_bool("ui/performance"));
 
+  if(!thumbnail_export)
+    dt_set_backthumb_time(600.0); // make sure we don't interfere
+
   dt_mipmap_buffer_t buf;
   if(buf_is_downscaled)
     dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid,
@@ -1241,6 +1244,8 @@ int dt_imageio_export_with_flags(const dt_imgid_t imgid,
                                   format_params, storage, storage_params);
   }
 
+  if(!thumbnail_export)
+    dt_set_backthumb_time(5.0);
   return 0; // success
 
 error:
@@ -1248,6 +1253,9 @@ error:
 error_early:
   dt_dev_cleanup(&dev);
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+
+  if(!thumbnail_export)
+    dt_set_backthumb_time(5.0);
   return 1;
 }
 
