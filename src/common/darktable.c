@@ -2040,9 +2040,9 @@ void dt_show_times_f(const dt_times_t *start,
 
 int dt_worker_threads()
 {
-  const size_t threads = dt_get_num_threads();
-  const size_t mem = _get_total_memory();
-  const int wthreads = (mem >= (8lu << 20) && threads >= 4) ? 4 : MIN(2, threads);
+  const int threads = dt_get_num_threads();
+  const int gbytes = (int)(_get_total_memory() / (1lu << 20));
+  const int wthreads = (gbytes >= 8 && threads >= 4) ? 6 : 3;
   dt_print(DT_DEBUG_DEV, "[dt_worker_threads] using %i worker threads\n", wthreads);
   return wthreads;
 }
