@@ -485,9 +485,10 @@ GList *dt_metadata_get(const int id, const char *key, uint32_t *count)
   }
   else // single image under mouse cursor
   {
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "SELECT value FROM main.meta_data WHERE id = ?1 AND key = ?2 ORDER BY value", -1,
-                                &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2
+      (dt_database_get(darktable.db),
+       "SELECT value FROM main.meta_data WHERE id = ?1 AND key = ?2", -1,
+       &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, keyid);
   }
