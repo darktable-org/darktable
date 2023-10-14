@@ -1364,7 +1364,7 @@
     </type>
     <default>never</default>
     <shortdescription>generate thumbs in background</shortdescription>
-    <longdescription>if 'cache_disk_backend' is enabled thumbnails/mipmaps up to the selected size are generated while user is inactive in lighttable.</longdescription>
+    <longdescription>if 'enable disk backend for thumbnail cache' is enabled thumbnails/mipmaps up to the selected size are generated while user is inactive in lighttable.</longdescription>
   </dtconfig>
   <dtconfig prefs="lighttable" section="thumbs">
     <name>backthumbs_initialize</name>
