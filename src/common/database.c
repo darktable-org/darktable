@@ -48,7 +48,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 45
+#define CURRENT_DATABASE_VERSION_LIBRARY 46
 #define CURRENT_DATABASE_VERSION_DATA    10
 
 // #define USE_NESTED_TRANSACTIONS
@@ -2597,6 +2597,13 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     sqlite3_exec(db->handle, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
 
     new_version = 45;
+  }
+  else if(version == 45)
+  {
+    TRY_EXEC("DROP TABLE legacy_presets",
+              "[init] can't drop legacy_presets\n");
+
+    new_version = 46;
   }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
