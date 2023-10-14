@@ -72,6 +72,7 @@ static void _ratings_apply_to_image(const dt_imgid_t imgid, const int rating)
       image->flags = (image->flags & ~(DT_IMAGE_REJECTED | DT_VIEW_RATINGS_MASK))
         | (DT_VIEW_RATINGS_MASK & new_rating);
     }
+    image->flags |= DT_IMAGE_USER_ACTION;
     // synch through:
     dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
   }

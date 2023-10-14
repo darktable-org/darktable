@@ -100,6 +100,8 @@ typedef enum
   DT_IMAGE_MONOCHROME_BAYER = 1 << 19,
   // image has a flag set to use the monochrome workflow in the modules supporting it
   DT_IMAGE_MONOCHROME_WORKFLOW = 1 << 20,
+  // image got any change for metadata, geoloc or alike after import
+  DT_IMAGE_USER_ACTION = 1 << 21,
 } dt_image_flags_t;
 
 typedef enum dt_image_colorspace_t
@@ -356,6 +358,10 @@ int dt_image_monochrome_flags(const dt_image_t *img);
 /** returns true if the image has been tested to be monochrome and the
  * image wants monochrome workflow */
 gboolean dt_image_use_monochrome_workflow(const dt_image_t *img);
+
+/* helper supporting after-import-edits */
+void dt_image_user_action(const dt_imgid_t imgid);
+
 /** returns the image filename */
 char *dt_image_get_filename(const dt_imgid_t imgid);
 /** returns the full path name where the image was imported

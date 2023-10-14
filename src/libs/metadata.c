@@ -289,7 +289,13 @@ static void _write_metadata(dt_lib_module_t *self)
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
                                   DT_SIGNAL_METADATA_CHANGED, DT_METADATA_SIGNAL_NEW_VALUE);
 
-    dt_image_synch_xmps(d->last_act_on);
+
+    for(const GList *imgs = d->last_act_on; imgs; imgs = g_list_next(imgs))
+    {
+      const dt_imgid_t imgid = GPOINTER_TO_INT(imgs->data);
+      dt_image_user_action(imgid);
+      dt_image_write_sidecar_file(imgid);
+    }
   }
 
   g_list_free(d->last_act_on);

@@ -235,6 +235,40 @@ static void _pop_undo_execute(const dt_imgid_t imgid,
   _image_set_monochrome_flag(imgid, after, FALSE);
 }
 
+static gboolean _image_has_user_action(const dt_imgid_t imgid)
+{
+  int flags = 0;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                          "SELECT flags FROM main.images WHERE id = ?1",
+                          -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    flags = sqlite3_column_int(stmt, 0);
+  }
+  sqlite3_finalize(stmt);
+
+  return (flags & DT_IMAGE_USER_ACTION) != 0;
+}
+
+void dt_image_user_action(const dt_imgid_t imgid)
+{
+  if(!dt_is_valid_imgid(imgid))
+    return;
+
+  dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+  const gboolean new = (img->flags & DT_IMAGE_USER_ACTION) == 0;
+  dt_image_cache_read_release(darktable.image_cache, img);
+
+  if(new)
+  {
+    img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+    img->flags |= DT_IMAGE_USER_ACTION;
+    dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
+  }
+}
+
 gboolean dt_image_is_matrix_correction_supported(const dt_image_t *img)
 {
   return ((img->flags & (DT_IMAGE_RAW | DT_IMAGE_S_RAW ))
@@ -772,7 +806,7 @@ static void _image_set_images_locations(const GList *img,
 
       *undo = g_list_prepend(*undo, undogeotag);
     }
-
+    dt_image_user_action(imgid);
     _set_location(imgid, geoloc);
     i++;
   }
@@ -2763,6 +2797,7 @@ static gboolean _any_altered_data(const dt_imgid_t imgid)
   // either the image has been altered or some user's tag have
   // been added.
   return dt_image_altered(imgid)
+    || _image_has_user_action(imgid)
     || (dt_tag_count_attached(imgid, TRUE) > 0);
 }
 
