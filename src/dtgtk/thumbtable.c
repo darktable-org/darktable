@@ -475,44 +475,97 @@ static gboolean _thumbtable_update_scrollbars(dt_thumbtable_t *table)
 
 // remove all unneeded thumbnails from the list and the widget
 // unneeded == completely hidden
-static int _thumbs_remove_unneeded(dt_thumbtable_t *table)
+static int _thumbs_remove_unneeded(dt_thumbtable_t *table,
+                                   GList **th_invalid)
 {
+  if(!th_invalid) return 0;
   int changed = 0;
-  GList *l = table->list;
+  GList *l = (*th_invalid);
   while(l)
   {
     dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
-    if(th->y + table->thumb_size <= 0 || th->y > table->view_height
-       || (table->mode == DT_THUMBTABLE_MODE_FILMSTRIP
-           && (th->x + table->thumb_size <= 0 || th->x > table->view_width)))
-    {
-      table->list = g_list_remove_link(table->list, l);
-      gtk_container_remove(GTK_CONTAINER(gtk_widget_get_parent(th->w_main)), th->w_main);
-      dt_thumbnail_destroy(th);
-      g_list_free(l);
-      l = table->list;
-      changed++;
-    }
-    else
-    {
-      l = g_list_next(l);
-    }
+    *th_invalid = g_list_remove(*th_invalid, th);
+    table->list = g_list_remove(table->list, th);
+    gtk_container_remove(GTK_CONTAINER(gtk_widget_get_parent(th->w_main)), th->w_main);
+    dt_thumbnail_destroy(th);
+    changed++;
+    l = (*th_invalid);
   }
   return changed;
 }
 
+static void _thumb_move_or_create(dt_thumbtable_t *table,
+                                  GList **th_invalid,
+                                  const int imgid,
+                                  const int rowid,
+                                  const int posx,
+                                  const int posy,
+                                  const gboolean top)
+{
+  if(!th_invalid || g_list_length(*th_invalid)==0)
+  {
+    // no widgets available. We need to create one
+    dt_thumbnail_t *thumb = dt_thumbnail_new(table->thumb_size,
+                                             table->thumb_size,
+                                             IMG_TO_FIT,
+                                             imgid,
+                                             rowid,
+                                             table->overlays,
+                                             DT_THUMBNAIL_CONTAINER_LIGHTTABLE,
+                                             table->show_tooltips);
+    if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
+    {
+      thumb->single_click = TRUE;
+      thumb->sel_mode = DT_THUMBNAIL_SEL_MODE_MOD_ONLY;
+    }
+    thumb->x = posx;
+    thumb->y = posy;
+    if(top)
+      table->list = g_list_prepend(table->list, thumb);
+    else
+      table->list = g_list_append(table->list, thumb);
+
+    // we remember image margins for new thumbs (this limit flickering)
+    dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
+    gtk_widget_set_margin_start(thumb->w_image_box, gtk_widget_get_margin_start(first->w_image_box));
+    gtk_widget_set_margin_top(thumb->w_image_box, gtk_widget_get_margin_top(first->w_image_box));
+    gtk_layout_put(GTK_LAYOUT(table->widget), thumb->w_main, posx, posy);
+  }
+  else
+  {
+    // let's reuse a now unaffected widget
+    dt_thumbnail_t *thumb = (dt_thumbnail_t *)(*th_invalid)->data;
+    thumb->imgid = imgid;
+    thumb->rowid = rowid;
+    thumb->x = posx;
+    thumb->y = posy;
+    dt_thumbnail_reload_infos(thumb);
+    if(thumb->img_surf && cairo_surface_get_reference_count(thumb->img_surf) > 0)
+      cairo_surface_destroy(thumb->img_surf);
+    thumb->img_surf = NULL;
+    thumb->img_surf_dirty = TRUE;
+    thumb->img_surf_preview = FALSE;
+    gtk_layout_move(GTK_LAYOUT(table->widget), thumb->w_main, thumb->x, thumb->y);
+    *th_invalid = g_list_remove(*th_invalid, thumb);
+    // move the thumb at the right place in the table->list
+    table->list = g_list_remove(table->list, thumb);
+    if(top)
+      table->list = g_list_prepend(table->list, thumb);
+    else
+      table->list = g_list_append(table->list, thumb);
+  }
+}
+
 // load all needed thumbnails in the list and the widget
 // needed == that should appear in the current view (possibly not entirely)
-static int _thumbs_load_needed(dt_thumbtable_t *table)
+static int _thumbs_load_needed(dt_thumbtable_t *table,
+                               GList **th_invalid)
 {
   if(!table->list) return 0;
   sqlite3_stmt *stmt;
   int changed = 0;
 
-  // we remember image margins for new thumbs (this limit flickering)
   dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
-  const int old_margin_start = gtk_widget_get_margin_start(first->w_image_box);
-  const int old_margin_top = gtk_widget_get_margin_top(first->w_image_box);
 
   // we load image at the beginning
   if(first->rowid > 1
@@ -542,25 +595,12 @@ static int _thumbs_load_needed(dt_thumbtable_t *table)
     {
       if(posy < table->view_height) // we don't load invisible thumbs
       {
-        dt_thumbnail_t *thumb = dt_thumbnail_new
-          (table->thumb_size,
-           table->thumb_size,
-           IMG_TO_FIT,
-           sqlite3_column_int(stmt, 1),
-           sqlite3_column_int(stmt, 0), table->overlays,
-           DT_THUMBNAIL_CONTAINER_LIGHTTABLE, table->show_tooltips);
-
-        if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
-        {
-          thumb->single_click = TRUE;
-          thumb->sel_mode = DT_THUMBNAIL_SEL_MODE_MOD_ONLY;
-        }
-        thumb->x = posx;
-        thumb->y = posy;
-        table->list = g_list_prepend(table->list, thumb);
-        gtk_widget_set_margin_start(thumb->w_image_box, old_margin_start);
-        gtk_widget_set_margin_top(thumb->w_image_box, old_margin_top);
-        gtk_layout_put(GTK_LAYOUT(table->widget), thumb->w_main, posx, posy);
+        _thumb_move_or_create(table,
+                              th_invalid,
+                              sqlite3_column_int(stmt, 1),
+                              sqlite3_column_int(stmt, 0),
+                              posx, posy,
+                              TRUE);
         changed++;
       }
       _pos_get_previous(table, &posx, &posy);
@@ -603,21 +643,12 @@ static int _thumbs_load_needed(dt_thumbtable_t *table)
     {
       if(posy + table->thumb_size >= 0) // we don't load invisible thumbs
       {
-        dt_thumbnail_t *thumb = dt_thumbnail_new
-          (table->thumb_size, table->thumb_size, IMG_TO_FIT, sqlite3_column_int(stmt, 1),
-           sqlite3_column_int(stmt, 0), table->overlays,
-           DT_THUMBNAIL_CONTAINER_LIGHTTABLE, table->show_tooltips);
-        if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
-        {
-          thumb->single_click = TRUE;
-          thumb->sel_mode = DT_THUMBNAIL_SEL_MODE_MOD_ONLY;
-        }
-        thumb->x = posx;
-        thumb->y = posy;
-        table->list = g_list_append(table->list, thumb);
-        gtk_widget_set_margin_start(thumb->w_image_box, old_margin_start);
-        gtk_widget_set_margin_top(thumb->w_image_box, old_margin_top);
-        gtk_layout_put(GTK_LAYOUT(table->widget), thumb->w_main, posx, posy);
+        _thumb_move_or_create(table,
+                              th_invalid,
+                              sqlite3_column_int(stmt, 1),
+                              sqlite3_column_int(stmt, 0),
+                              posx, posy,
+                              FALSE);
         changed++;
       }
       _pos_get_next(table, &posx, &posy);
@@ -713,13 +744,21 @@ static gboolean _move(dt_thumbtable_t *table,
 
   if(posy == 0 && posx == 0) return FALSE;
 
+  GList *th_invalid = NULL;
   // we move all current thumbs
   for(const GList *l = table->list; l; l = g_list_next(l))
   {
     dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
     th->y += posy;
     th->x += posx;
-    gtk_layout_move(GTK_LAYOUT(table->widget), th->w_main, th->x, th->y);
+    if(th->y + table->thumb_size <= 0 || th->y > table->view_height
+       || (table->mode == DT_THUMBTABLE_MODE_FILMSTRIP
+           && (th->x + table->thumb_size <= 0 || th->x > table->view_width)))
+    {
+      th_invalid = g_list_append(th_invalid, th);
+    }
+    else
+      gtk_layout_move(GTK_LAYOUT(table->widget), th->w_main, th->x, th->y);
   }
 
   // we update the thumbs_area
@@ -728,10 +767,11 @@ static gboolean _move(dt_thumbtable_t *table,
   table->thumbs_area.y += posy;
 
   // we load all needed thumbs
-  int changed = _thumbs_load_needed(table);
+  int changed = _thumbs_load_needed(table, &th_invalid);
 
   // we remove the images not visible on screen
-  changed += _thumbs_remove_unneeded(table);
+  changed += _thumbs_remove_unneeded(table, &th_invalid);
+  g_list_free(th_invalid);
 
   // if there has been changed, we recompute thumbs area
   if(changed > 0)
@@ -826,6 +866,7 @@ static void _zoomable_zoom(dt_thumbtable_t *table,
     y - (y - anchor_y * table->thumb_size - table->thumbs_area.y) * ratio;
 
   // we move and resize each thumbs
+  GList *th_invalid = NULL;
   for(const GList *l = table->list; l; l = g_list_next(l))
   {
     dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
@@ -835,7 +876,12 @@ static void _zoomable_zoom(dt_thumbtable_t *table,
     // we compute new position taking anchor image as reference
     th->x = anchor_posx - (anchor_x - posx) * new_size;
     th->y = anchor_posy - (anchor_y - posy) * new_size;
-    gtk_layout_move(GTK_LAYOUT(table->widget), th->w_main, th->x, th->y);
+    if(th->y + table->thumb_size <= 0 || th->y > table->view_height)
+    {
+      th_invalid = g_list_append(th_invalid, th);
+    }
+    else
+      gtk_layout_move(GTK_LAYOUT(table->widget), th->w_main, th->x, th->y);
     dt_thumbnail_resize(th, new_size, new_size, FALSE, IMG_TO_FIT);
   }
 
@@ -852,8 +898,9 @@ static void _zoomable_zoom(dt_thumbtable_t *table,
   if(posx != 0 || posy != 0) _move(table, posx, posy, FALSE);
 
   // and we load/unload thumbs if needed
-  int changed = _thumbs_load_needed(table);
-  changed += _thumbs_remove_unneeded(table);
+  int changed = _thumbs_load_needed(table, &th_invalid);
+  changed += _thumbs_remove_unneeded(table, &th_invalid);
+  g_list_free(th_invalid);
   if(changed > 0)
     _pos_compute_area(table);
 
@@ -2255,7 +2302,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, const gboolean force)
     _pos_compute_area(table);
 
     // we need to ensure there's no need to load other image on top/bottom
-    if(table->mode == DT_THUMBTABLE_MODE_ZOOM) nbnew += _thumbs_load_needed(table);
+    if(table->mode == DT_THUMBTABLE_MODE_ZOOM) nbnew += _thumbs_load_needed(table, NULL);
 
     if(darktable.view_manager->active_images
        && (table->mode == DT_THUMBTABLE_MODE_ZOOM
