@@ -243,7 +243,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
   }
 
   if(d->shortfile && layers == 3)
-    dt_control_log(_("not a b&w image, will not export as grayscale"));
+    dt_control_log(_("not a B&W image, will not export as grayscale"));
 
   TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, layers);
   TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, (uint16_t)d->bpp);
@@ -941,7 +941,7 @@ void gui_init(dt_imageio_module_format_t *self)
   gtk_widget_set_no_show_all(gui->compresslevel, TRUE);
 
   // shortfile option combo box
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->shortfiles, self, NULL, N_("b&w as grayscale"),
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->shortfiles, self, NULL, N_("B&W as grayscale"),
                                _("saving as grayscale will reduce the size for black & white images"), shortmode,
                                shortfile_combobox_changed, self, N_("no"), N_("yes"));
   dt_bauhaus_combobox_set_default(gui->shortfiles,
