@@ -540,10 +540,7 @@ static void _thumb_move_or_create(dt_thumbtable_t *table,
     thumb->x = posx;
     thumb->y = posy;
     dt_thumbnail_reload_infos(thumb);
-    if(thumb->img_surf && cairo_surface_get_reference_count(thumb->img_surf) > 0)
-      cairo_surface_destroy(thumb->img_surf);
-    thumb->img_surf = NULL;
-    thumb->img_surf_dirty = TRUE;
+    dt_thumbnail_surface_destroy(thumb);
     thumb->img_surf_preview = FALSE;
     gtk_layout_move(GTK_LAYOUT(table->widget), thumb->w_main, thumb->x, thumb->y);
     *th_invalid = g_list_remove(*th_invalid, thumb);
