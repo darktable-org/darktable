@@ -180,6 +180,8 @@ float dt_thumbnail_get_zoom100(dt_thumbnail_t *thumb);
 // get the zoom ratio from 0 ("image to fit") to 1 ("max zoom value")
 float dt_thumbnail_get_zoom_ratio(dt_thumbnail_t *thumb);
 
+// reset the image surface
+void dt_thumbnail_surface_destroy(dt_thumbnail_t *thumb);
 #endif
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
