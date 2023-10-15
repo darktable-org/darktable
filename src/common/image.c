@@ -1148,6 +1148,39 @@ int32_t dt_image_duplicate(const dt_imgid_t imgid)
   return dt_image_duplicate_with_version(imgid, -1);
 }
 
+static int32_t _image_get_possible_version(const dt_imgid_t imgid,
+                                            const int32_t max_version)
+{
+  int32_t safe_max_version = 0;
+  char imgpath[PATH_MAX] = { 0 };
+  char versionpath[PATH_MAX] = { 0 };
+
+  gboolean from_cache = FALSE;
+  dt_image_full_path(imgid, imgpath, sizeof(imgpath), &from_cache);
+
+  for(int32_t version = MAX(1, max_version); version < 1000; version++)
+  {
+    g_strlcpy(versionpath, imgpath, sizeof(versionpath));
+    dt_image_path_append_version_no_db(version, versionpath, sizeof(versionpath));
+    const size_t len = strlen(versionpath);
+    g_snprintf(versionpath + len, sizeof(versionpath) - len, "%s", ".xmp");
+    if(!(g_file_test(versionpath, G_FILE_TEST_EXISTS) && g_file_test(versionpath, G_FILE_TEST_IS_REGULAR)))
+    {
+      safe_max_version = version;
+      // fprintf(stderr, "%s\n", versionpath);
+      break;
+    }
+  }
+  if(safe_max_version == 0)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "image_get_possible_version couldn't find a safe new version above %d\n",
+      max_version);
+    safe_max_version = max_version;
+  }
+
+  return safe_max_version;
+}
+
 static dt_imgid_t _image_duplicate_with_version_ext(const dt_imgid_t imgid,
                                                     const int32_t newversion)
 {
@@ -1315,12 +1348,24 @@ static dt_imgid_t _image_duplicate_with_version_ext(const dt_imgid_t imgid,
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
+    int32_t safe_new_version = max_version + 1;
+    if(newversion == -1)
+    {
+      // we can't take for granted that we have an unused version by taking `max_version+1` as
+      // a) other database might also use this image file or
+      // b) duplicates had been removed from and later added to database.
+      safe_new_version = _image_get_possible_version(imgid, safe_new_version);
+      if(safe_new_version != max_version + 1)
+        dt_print(DT_DEBUG_ALWAYS, "dt_image_duplicate version forced %d -> %d\n",
+          max_version + 1, safe_new_version);
+    }
+
     // set version of new entry and max_version of all involved
     // duplicates (with same film_id and filename) this needs to
     // happen before we do anything with the image cache, as version
     // isn't updated through the cache
-    const int32_t version = (newversion != -1) ? newversion : max_version + 1;
-    max_version = (newversion != -1) ? MAX(max_version, newversion) : max_version + 1;
+    const int32_t version = (newversion != -1) ? newversion : safe_new_version;
+    max_version = (newversion != -1) ? MAX(max_version, newversion) : safe_new_version;
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "UPDATE main.images SET version=?1 WHERE id = ?2",
