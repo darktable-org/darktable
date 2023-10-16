@@ -965,7 +965,7 @@ dt_mipmap_size_t dt_mipmap_cache_get_min_mip_from_pref(const char *value)
   if(strcmp(value, "720p") == 0)   return DT_MIPMAP_3;
   if(strcmp(value, "1080p") == 0)  return DT_MIPMAP_4;
   if(strcmp(value, "WQXGA") == 0)  return DT_MIPMAP_5;
-  if(strcmp(value, "4k") == 0)     return DT_MIPMAP_6;
+  if(strcmp(value, "4K") == 0)     return DT_MIPMAP_6;
   if(strcmp(value, "5K") == 0)     return DT_MIPMAP_7;
   return DT_MIPMAP_NONE;
 }
