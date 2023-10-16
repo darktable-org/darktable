@@ -32,6 +32,7 @@
 #include "common/nvidia_gpus.h"
 #include "common/opencl_drivers_blacklist.h"
 #include "common/tea.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/blend.h"

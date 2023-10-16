@@ -26,6 +26,7 @@
 #include "common/undo.h"
 #include "common/metadata.h"
 #include "common/tags.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "control/jobs.h"
 #include "control/jobs/control_jobs.h"
@@ -362,7 +363,7 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
     {
       dt_image_geoloc_t *geoloc = (dt_image_geoloc_t *)malloc(sizeof(dt_image_geoloc_t));
       if(action == DT_MA_CLEAR)
-        geoloc->longitude = geoloc->latitude = geoloc->elevation = NAN;
+        geoloc->longitude = geoloc->latitude = geoloc->elevation = DT_INVALID_GPS_COORDINATE;
       else
         dt_image_get_location(imageid, geoloc);
       dt_image_set_locations(imgs, geoloc, TRUE);

@@ -17,6 +17,7 @@
 */
 
 #include "common/color_vocabulary.h"
+#include "common/utility.h"
 
 // get a range of 2 × factor × std centered in avg
 static range_t

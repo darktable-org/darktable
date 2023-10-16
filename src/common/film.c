@@ -22,6 +22,7 @@
 #include "common/dtpthread.h"
 #include "common/image_cache.h"
 #include "common/tags.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"

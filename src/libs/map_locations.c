@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2022 darktable developers.
+    Copyright (C) 2012-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 #include "common/collection.h"
 #include "common/debug.h"
 #include "common/map_locations.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "gui/accelerators.h"
@@ -521,7 +522,7 @@ static void _name_editing_done(GtkCellEditable *editable, dt_lib_module_t *self)
             // add the location on the map
             dt_map_location_data_t g;
             g.shape = dt_conf_get_int("plugins/map/locationshape");
-            g.lon = g.lat = NAN;
+            g.lon = g.lat = DT_INVALID_GPS_COORDINATE;
             g.delta1 = g.delta2 = 0.0;
             g.polygons = d->polygons;
             dt_view_map_add_location(darktable.view_manager, &g, locid);

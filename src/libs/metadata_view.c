@@ -23,6 +23,7 @@
 #include "common/metadata.h"
 #include "common/tags.h"
 #include "common/datetime.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -846,7 +847,7 @@ void gui_update(dt_lib_module_t *self)
 //          break;
 
       case md_geotagging_lat:
-        if(isnan(img->geoloc.latitude))
+        if(!dt_valid_gps_coordinate(img->geoloc.latitude))
         {
           _metadata_update_value(md_geotagging_lat, NODATA_STRING, self);
         }
@@ -868,7 +869,7 @@ void gui_update(dt_lib_module_t *self)
         break;
 
       case md_geotagging_lon:
-        if(isnan(img->geoloc.longitude))
+        if(!dt_valid_gps_coordinate(img->geoloc.longitude))
         {
           _metadata_update_value(md_geotagging_lon, NODATA_STRING, self);
         }
@@ -890,7 +891,7 @@ void gui_update(dt_lib_module_t *self)
         break;
 
       case md_geotagging_ele:
-        if(isnan(img->geoloc.elevation))
+        if(!dt_valid_gps_coordinate(img->geoloc.elevation))
         {
           _metadata_update_value(md_geotagging_ele, NODATA_STRING, self);
         }

@@ -19,6 +19,7 @@
 #include "common/geo.h"
 #include "common/darktable.h"
 #include "common/math.h"
+#include "common/utility.h"
 #include <glib.h>
 #include <inttypes.h>
 
@@ -163,9 +164,9 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GDateTime *timestamp, dt_imag
     const gint cmp = g_date_time_compare(timestamp, tp->time);
     if((!item->next && cmp >= 0) || (cmp <= 0))
     {
-      geoloc->longitude = tp->longitude;
-      geoloc->latitude = tp->latitude;
-      geoloc->elevation = tp->elevation;
+      geoloc->longitude = dt_gps_convert_sql_to_img(tp->longitude);
+      geoloc->latitude = dt_gps_convert_sql_to_img(tp->latitude);
+      geoloc->elevation = dt_gps_convert_sql_to_img(tp->elevation);
       return FALSE;
     }
 
@@ -178,9 +179,9 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GDateTime *timestamp, dt_imag
       GTimeSpan diff = g_date_time_difference(timestamp, tp->time);
       if(seg_diff == 0 || diff == 0)
       {
-        geoloc->longitude = tp->longitude;
-        geoloc->latitude = tp->latitude;
-        geoloc->elevation = tp->elevation;
+        geoloc->longitude = dt_gps_convert_sql_to_img(tp->longitude);
+        geoloc->latitude = dt_gps_convert_sql_to_img(tp->latitude);
+        geoloc->elevation = dt_gps_convert_sql_to_img(tp->elevation);
       }
       else
       {
@@ -235,10 +236,10 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GDateTime *timestamp, dt_imag
         geoloc->longitude = lon;
 
         /* make a simple linear interpolation on elevation */
-        if(tp_next->elevation == NAN || tp->elevation == NAN)
-          geoloc->elevation = NAN;
-        else
+        if(dt_valid_gps_coordinate(tp_next->elevation) && dt_valid_gps_coordinate(tp->elevation))
           geoloc->elevation = tp->elevation + (tp_next->elevation - tp->elevation) * f;
+        else
+          geoloc->elevation = DT_INVALID_GPS_COORDINATE;
       }
       return TRUE;
     }
@@ -287,10 +288,10 @@ void _gpx_parser_start_element(GMarkupParseContext *ctx, const gchar *element_na
       gpx->current_track_point = g_malloc0(sizeof(dt_gpx_track_point_t));
       gpx->current_track_point->segid = gpx->segid;
 
-      /* initialize with NAN for validation check */
-      gpx->current_track_point->longitude = NAN;
-      gpx->current_track_point->latitude = NAN;
-      gpx->current_track_point->elevation = NAN;
+      /* initialize with flag value for validation check */
+      gpx->current_track_point->longitude = DT_INVALID_GPS_COORDINATE;
+      gpx->current_track_point->latitude = DT_INVALID_GPS_COORDINATE;
+      gpx->current_track_point->elevation = DT_INVALID_GPS_COORDINATE;
 
       /* go thru the attributes to find and get values of lon / lat*/
       while(*attribute_name)
@@ -305,7 +306,8 @@ void _gpx_parser_start_element(GMarkupParseContext *ctx, const gchar *element_na
       }
 
       /* validate that we actually got lon / lat attribute values */
-      if(isnan(gpx->current_track_point->longitude) || isnan(gpx->current_track_point->latitude))
+      if(!dt_valid_gps_coordinate(gpx->current_track_point->longitude)
+         || !dt_valid_gps_coordinate(gpx->current_track_point->latitude))
       {
         dt_print(DT_DEBUG_ALWAYS,
                  "broken GPX file, failed to get lon/lat attribute values for trkpt\n");

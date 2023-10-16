@@ -26,6 +26,7 @@
 #include "common/history_snapshot.h"
 #include "common/image_cache.h"
 #include "common/tags.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "gui/accelerators.h"

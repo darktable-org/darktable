@@ -30,6 +30,7 @@
 #include "common/opencl.h"
 #include "common/presets.h"
 #include "common/usermanual_url.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/blend.h"
 #include "develop/develop.h"

@@ -21,6 +21,7 @@
 #include "common/film.h"
 #include "common/image.h"
 #include "common/import_session.h"
+#include "common/utility.h"
 #include "common/variables.h"
 #include "control/conf.h"
 #include "control/control.h"

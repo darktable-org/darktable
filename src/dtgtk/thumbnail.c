@@ -30,6 +30,7 @@
 #include "common/image_cache.h"
 #include "common/ratings.h"
 #include "common/selection.h"
+#include "common/utility.h"
 #include "common/variables.h"
 #include "control/control.h"
 #include "dtgtk/button.h"

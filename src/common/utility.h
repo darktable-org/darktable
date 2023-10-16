@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include "common/darktable.h"
+#include "common/math.h"
 #include <gtk/gtk.h>
 #include <string.h>
 #include <librsvg/rsvg.h>
@@ -70,6 +72,28 @@ dt_logo_season_t dt_util_get_logo_season(void);
 
 cairo_surface_t *dt_util_get_logo(const float size);
 cairo_surface_t *dt_util_get_logo_text(const float size);
+
+/** special value to indicate an invalid or unitialized coordinate (plan to
+ ** replace use of NAN and isnan() by the most negative float) to enable
+ ** -ffinite-math-only.  MUST use test function below rather than simply
+ ** comparing against the flag value, since NAN *always* compares false **/
+#define DT_INVALID_GPS_COORDINATE NAN
+//#define DT_INVALID_GPS_COORDINATE (-FLT_MAX)
+static inline gboolean dt_valid_gps_coordinate(float value)
+{
+  return !dt_isnan(value) && value > DT_INVALID_GPS_COORDINATE;
+//  return value > DT_INVALID_GPS_COORDINATE;
+}
+/** we keep the value NAN in the database and .XMP for backward compatibility,
+ ** so provide functions to convert back and forth as needed **/
+static inline float dt_gps_convert_sql_to_img(float value)
+{
+  return dt_valid_gps_coordinate(value) ? value : DT_INVALID_GPS_COORDINATE;
+}
+static inline float dt_gps_convert_img_to_sql(float value)
+{
+  return dt_valid_gps_coordinate(value) ? value : NAN;
+}
 
 gchar *dt_util_latitude_str(float latitude);
 gchar *dt_util_longitude_str(float longitude);

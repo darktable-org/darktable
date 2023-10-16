@@ -24,6 +24,7 @@
 #include "common/metadata.h"
 #include "common/pwstorage/pwstorage.h"
 #include "common/tags.h"
+#include "common/utility.h"
 #include "common/curl_tools.h"
 #include "control/conf.h"
 #include "control/control.h"

@@ -22,6 +22,7 @@
 #include "common/opencl.h"
 #include "common/iop_order.h"
 #include "common/imagebuf.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "control/signal.h"
 #include "develop/blend.h"

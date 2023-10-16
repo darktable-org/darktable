@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #include "common/darktable.h"
 #include "common/collection.h"
 #include "common/film.h"
+#include "common/utility.h"
 #include <stdlib.h>
 
 typedef struct dt_film_import1_t

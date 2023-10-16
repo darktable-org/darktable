@@ -23,6 +23,7 @@
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/selection.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "dtgtk/thumbtable.h"
 #include <glib.h>

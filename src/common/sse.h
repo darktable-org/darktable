@@ -14,8 +14,6 @@
 */
 #pragma once
 
-#include "common/darktable.h"
-
 #ifdef __SSE__
 
 #include <xmmintrin.h>

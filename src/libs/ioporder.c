@@ -18,6 +18,7 @@
 
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/utility.h"
 #include "control/signal.h"
 #include "bauhaus/bauhaus.h"
 #include "gui/gtk.h"

@@ -29,6 +29,7 @@
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
 #include "common/pdf.h"
+#include "common/utility.h"
 #include "control/jobs/control_jobs.h"
 #include "cups_print.h"
 

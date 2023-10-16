@@ -24,6 +24,7 @@
 #include "common/debug.h"
 #include "common/file_location.h"
 #include "common/presets.h"
+#include "common/utility.h"
 #include "develop/blend.h"
 #include "develop/develop.h"
 #include "gui/accelerators.h"

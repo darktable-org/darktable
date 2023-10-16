@@ -27,6 +27,7 @@
 #include "common/math.h"
 #include "common/opencl.h"
 #include "common/rgb_norms.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"

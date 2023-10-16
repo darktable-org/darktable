@@ -25,6 +25,7 @@
 #include "common/file_location.h"
 #include "common/l10n.h"
 #include "common/presets.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "gui/accelerators.h"
