@@ -5469,7 +5469,7 @@ msgstr "caucásica"
 
 #: ../src/common/color_vocabulary.c:96
 msgid "African-American"
-msgstr "Afroamericana"
+msgstr "afroamericana"
 
 #: ../src/common/color_vocabulary.c:97
 msgid "Mexican"
@@ -5495,7 +5495,7 @@ msgstr "mejilla"
 #: ../src/common/color_vocabulary.c:202
 #, c-format
 msgid "average %s skin tone\n"
-msgstr "Tono de piel promedio %s\n"
+msgstr "Tono de piel %s promedio\n"
 
 #. 0° - pinkish red
 #: ../src/common/color_vocabulary.c:222
