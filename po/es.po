@@ -20756,8 +20756,8 @@ msgid ""
 "turn on color picker\n"
 "ctrl+click or right-click to select an area"
 msgstr ""
-"Activar el selector de color.\n"
-"Pulse Ctrl+Clic o el botón secundario para seleccionar un área."
+"Pulse para activar el selector de color puntual.\n"
+"Para seleccionar un área, pulse con el botón secundario o con Ctrl+Clic."
 
 #: ../src/libs/colorpicker.c:636
 msgid "add sample"
