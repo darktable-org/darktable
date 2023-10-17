@@ -66,8 +66,9 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
     {
       /* we want to feedback this to the user, so output to stderr */
       dt_print(DT_DEBUG_ALWAYS,
-              "[imageio_heif] Unsupported codec for `%s'. Check if your libheif is built with HEVC and/or AV1 decoding support.\n",
-              filename);
+               "[imageio_heif] Unsupported codec for `%s'. "
+               "Check if your libheif is built with HEVC and/or AV1 decoding support.\n",
+               filename);
     }
     else if(err.code != heif_error_Unsupported_filetype && err.subcode != heif_suberror_No_ftyp_box)
     {
@@ -114,9 +115,14 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
         err = heif_image_handle_get_metadata(handle, exif_id, exif_data);
         if(err.code == heif_error_Ok)
         {
-          const uint32_t exif_offset = exif_data[0] << 24 | exif_data[1] << 16 | exif_data[2] << 8 | exif_data[3];
+          const uint32_t exif_offset = exif_data[0] << 24
+                                     | exif_data[1] << 16
+                                     | exif_data[2] << 8
+                                     | exif_data[3];
           if(exif_size > 4 + exif_offset)
-            dt_exif_read_from_blob(img, exif_data + 4 + exif_offset, exif_size - 4 - exif_offset);
+            dt_exif_read_from_blob(img,
+                                   exif_data + 4 + exif_offset,
+                                   exif_size - 4 - exif_offset);
         }
         g_free(exif_data);
       }
@@ -152,7 +158,11 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
   struct heif_decoding_options *decode_options = heif_decoding_options_alloc();
   decode_options->ignore_transformations = TRUE;
   // Darktable only supports LITTLE_ENDIAN systems, so RRGGBB_LE should be fine
-  err = heif_decode_image(handle, &heif_img, heif_colorspace_RGB, heif_chroma_interleaved_RRGGBB_LE, decode_options);
+  err = heif_decode_image(handle,
+                          &heif_img,
+                          heif_colorspace_RGB,
+                          heif_chroma_interleaved_RRGGBB_LE,
+                          decode_options);
   heif_decoding_options_free(decode_options);
   if(err.code != heif_error_Ok)
   {
@@ -164,11 +174,15 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
   }
 
   int rowbytes = 0;
-  const uint8_t* data = heif_image_get_plane_readonly(heif_img, heif_channel_interleaved, &rowbytes);
-  // Get the image dimensions from the 'ispe' box. This is the original image dimensions without
-  // any transformations applied to it.
-  // Note that we use these functions due to use of ignore_transformations option. If we didn't use
-  // ignore_transformations, we would have to use non-ispe versions of the "get dimensions" functions.
+  const uint8_t* data = heif_image_get_plane_readonly(heif_img,
+                                                      heif_channel_interleaved,
+                                                      &rowbytes);
+  /*
+  Get the image dimensions from the 'ispe' box. This is the original image dimensions
+  without any transformations applied to it.
+  Note that we use these functions due to use of ignore_transformations option. If we didn't use
+  ignore_transformations, we'd have to use non-ispe versions of the "get dimensions" functions.
+  */
   const size_t width = heif_image_handle_get_ispe_width(handle);
   const size_t height = heif_image_handle_get_ispe_height(handle);
 
@@ -195,8 +209,10 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
   img->flags &= ~DT_IMAGE_S_RAW;
 
   // Get decoded pixel values bit depth (this is used to scale values to [0..1] range)
-  const int decoded_values_bit_depth = heif_image_get_bits_per_pixel_range(heif_img, heif_channel_interleaved);
-  // Get original pixel values bit depth by querying the luma channel depth (this may differ from decoded values bit depth)
+  const int decoded_values_bit_depth = heif_image_get_bits_per_pixel_range(heif_img,
+                                                                           heif_channel_interleaved);
+  // Get original pixel values bit depth by querying the luma channel depth
+  // (this may differ from decoded values bit depth)
   const int original_values_bit_depth = heif_image_handle_get_luma_bits_per_pixel(handle);
 
   dt_print(DT_DEBUG_IMAGEIO,
