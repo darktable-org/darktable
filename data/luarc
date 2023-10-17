@@ -8,9 +8,9 @@ local function ipairs_iterator(st, var)
   var = var + 1
   local val = st[var]
   if val ~= nil then
-  return var, st[var]
+    return var, st[var]
   end
-  end
+end
 
 ipairs = function(t)
   if getmetatable(t) ~= nil then -- t has metatable
