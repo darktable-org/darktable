@@ -52,6 +52,8 @@ if _scripts_install.dt.configuration.has_gui  then
     false
   )
 
+  local PS = _scripts_install.dt.configuration.running_os == "windows" and "\\" or "/"
+
   local debug_messages = _scripts_install.dt.preferences.read("_scripts_install", "debug", "bool")
 
   local function debug_message(msg)
@@ -59,6 +61,60 @@ if _scripts_install.dt.configuration.has_gui  then
       _scripts_install.dt.print_log("[script installer] " .. msg)
     end
   end
+
+  local function _is_not_sanitized_posix(str)
+     -- A sanitized string must be quoted.
+     if not string.match(str, "^'.*'$") then
+         return true
+     -- A quoted string containing no quote characters within is sanitized.
+     elseif string.match(str, "^'[^']*'$") then
+         return false
+     end
+     
+     -- Any quote characters within a sanitized string must be properly
+     -- escaped.
+     local quotesStripped = string.sub(str, 2, -2)
+     local escapedQuotesRemoved = string.gsub(quotesStripped, "'\\''", "")
+     if string.find(escapedQuotesRemoved, "'") then
+         return true
+     else
+         return false
+     end
+  end
+
+  local function _is_not_sanitized_windows(str)
+     if not string.match(str, "^\".*\"$") then
+        return true
+     else
+        return false
+     end
+  end
+
+  local function _sanitize_posix(str)
+    if _is_not_sanitized_posix(str) then
+        return "'" .. string.gsub(str, "'", "'\\''") .. "'"
+    else
+         return str
+    end
+  end
+
+  local function _sanitize_windows(str)
+    if _is_not_sanitized_windows(str) then
+        return "\"" .. string.gsub(str, "\"", "\"^\"\"") .. "\""
+    else
+        return str
+    end
+  end
+
+  local function sanitize(str)
+    if _scripts_install.dt.configuration.running_os == "windows" then
+        return _sanitize_windows(str)
+    else
+        return _sanitize_posix(str)
+    end
+  end
+
+  local CONFIG_DIR = _scripts_install.dt.configuration.config_dir
 
   if not _scripts_install.dt.preferences.read("_scripts_install", "dont_show", "bool") then
     debug_message("dont show not set")
@@ -91,7 +147,11 @@ if _scripts_install.dt.configuration.has_gui  then
     -- check for the scripts directory
     debug_message("checking for scripts")
 
-    _scripts_install.p = io.popen(_scripts_install.dir_cmd .. _scripts_install.dt.configuration.config_dir)
+    local find_scripts_cmd = _scripts_install.dir_cmd .. CONFIG_DIR
+    if _scripts_install.dt.configuration.running_os == "windows" then
+      find_scripts_cmd = "\"" .. _scripts_install.dir_cmd .. "\"" .. CONFIG_DIR .. "\"\""
+    end
+    _scripts_install.p = io.popen(find_scripts_cmd)
     for line in _scripts_install.p:lines() do 
       debug_message("line is " .. line)
       if string.match(line, "^lua$") then
@@ -111,17 +171,31 @@ if _scripts_install.dt.configuration.has_gui  then
       debug_message("took the scripts not installed branch")
       _scripts_install.widgets = {}
 
+      local function os_execute(cmd)
+        debug_message("cmd input to os_execute is " .. cmd)
+        if _scripts_install.dt.configuration.running_os == "windows" then
+          cmd = "\"" .. cmd .. "\""
+        end
+        debug_message("command to os.execute is " .. cmd)
+        success, msg, rc = os.execute(cmd)
+        debug_message("command success: " .. tostring(success) .. " message: " .. msg .. " return code: " .. rc)
+        return success
+      end
         -- check for a luarc file and move it
-      function _scripts_install.backup_luarc()
+      local function backup_luarc()
         debug_message("backuping up luarc file (if it exists)")
-        local p = io.popen(_scripts_install.dir_cmd .. _scripts_install.dt.configuration.config_dir)
+        local p = io.popen(_scripts_install.dir_cmd .. CONFIG_DIR)
         for line in p:lines() do 
           if string.match(line, "^luarc$") then
             debug_message("found the luarc file, renaming it to luarc.old")
+            local success = false
             if _scripts_install.dt.configuration.running_os == "windows" then
-              os.execute("rename " .. _scripts_install.dt.configuration.config_dir .. "/luarc " .. _scripts_install.dt.configuration.config_dir .. "/luarc.old")
+              success = os_execute("rename " .. "\"" .. CONFIG_DIR .. PS .. "luarc\" \"" .. CONFIG_DIR .. PS .. "luarc.old\"")
             else
-              os.execute("mv " .. _scripts_install.dt.configuration.config_dir .. "/luarc " .. _scripts_install.dt.configuration.config_dir .. "/luarc.old")
+              success = os_execute("mv " .. CONFIG_DIR .. "/luarc " .. CONFIG_DIR .. "/luarc.old")
+            end
+            if not success then
+              _scripts_install.dt.print(_("Unable to back up luarc file.  It will be overwritten"))
             end
           end
         end
@@ -189,12 +263,21 @@ if _scripts_install.dt.configuration.has_gui  then
           end
           debug_message("require string is " .. _scripts_install.require_string)
           
-          _scripts_install.backup_luarc()
+          backup_luarc()
 
           _scripts_install.dt.print(_("lua scripts installing"))
           debug_message("lua scripts installing...")
+    
+          if _scripts_install.dt.configuration.running_os == "windows" then
+            _scripts_install.git_bin = "\"" .. _scripts_install.git_bin .. "\""
+            _scripts_install.install_dir = "\"" .. CONFIG_DIR .. PS .. "lua\""
+            _scripts_install.luarc_file = "\"" .. CONFIG_DIR .. PS .. "luarc\""
+          else
+            _scripts_install.install_dir = CONFIG_DIR .. PS .. "lua"
+            _scripts_install.luarc_file = CONFIG_DIR .. PS .. "luarc"
+          end
 
-          local success = os.execute("\"" .. _scripts_install.git_bin .. "\" " .. "clone https://github.com/darktable-org/lua-scripts.git " .. _scripts_install.dt.configuration.config_dir .. "/lua")
+          local success = os_execute(_scripts_install.git_bin  .. " clone https://github.com/darktable-org/lua-scripts.git " .. _scripts_install.install_dir)
           if not success then
             debug_message("unable to clone lua-scripts.  See above messages for possible error")
             _scripts_install.dt.print("lua scripts installation failed.  Enable scripts installer debug messages under lua options and try again")
@@ -202,7 +285,7 @@ if _scripts_install.dt.configuration.has_gui  then
           else
             debug_message("lua-scripts successfully cloned")
           end
-          local success = os.execute("echo " .. _scripts_install.require_string .. " > " .. _scripts_install.dt.configuration.config_dir .. "/luarc")
+          local success = os_execute("echo " .. _scripts_install.require_string .. " > " .. _scripts_install.luarc_file)
           if not success then
             debug_message("unable to create luarc file")
             _scripts_install.dt.print(_("lua scripts installation failed.  Enable scripts installer debug messages under lua options and try again"))
@@ -218,6 +301,7 @@ if _scripts_install.dt.configuration.has_gui  then
         end
         _scripts_install.minimize_lib()
       end
+
 
       function _scripts_install.install_module()
         if not _scripts_install.module_installed then
