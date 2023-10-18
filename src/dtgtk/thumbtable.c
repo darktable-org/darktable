@@ -434,6 +434,13 @@ static gboolean _thumbtable_update_scrollbars(dt_thumbtable_t *table)
   // get the total number of images
   const uint32_t nbid = MAX(1, dt_collection_get_collected_count());
 
+  // so the total number of lines is :
+  const uint32_t nblines = ceilf(nbid / (float)table->thumbs_per_row);
+
+  // now we have a space under last images (when the first shown line is fully shown)
+  const float pagesize = table->view_height / (float)table->thumb_size;
+  const float maxvalue = nblines + (pagesize - floorf(pagesize));
+
   // the number of line before
   float lbefore = (table->offset - 1) / table->thumbs_per_row;
   if((table->offset - 1) % table->thumbs_per_row)
@@ -445,32 +452,26 @@ static gboolean _thumbtable_update_scrollbars(dt_thumbtable_t *table)
     lbefore += -table->thumbs_area.y / (float)table->thumb_size;
   }
 
-  // the number of line after (including the current one)
-  int lafter = (nbid - table->offset) / table->thumbs_per_row;
-  if((nbid - table->offset) % table->thumbs_per_row) lafter++;
-
   // if the scrollbar is currently visible and we want to hide it we
   // first ensure that with the width without the scrollbar, we won't
   // need a scrollbar
   if(gtk_widget_get_visible(darktable.gui->scrollbars.vscrollbar)
-     && lbefore + lafter <= table->rows - 1)
+     && nblines <= table->rows - 1)
   {
     const int nw = table->view_width +
       gtk_widget_get_allocated_width(darktable.gui->scrollbars.vscrollbar);
-    if((lbefore + lafter) * nw / table->thumbs_per_row >= table->view_height)
+    if(nblines * nw / table->thumbs_per_row >= table->view_height)
     {
       dt_view_set_scrollbar(darktable.view_manager->current_view,
-                            0, 0, 0, 0, lbefore, 0, lbefore + lafter + 1,
-                            table->rows - 1);
+                            0, 0, 0, 0, lbefore, 0, maxvalue + 1, pagesize);
       return TRUE;
     }
   }
   // in filemanager, no horizontal bar, and vertical bar reference is 1 thumb.
   dt_view_set_scrollbar(darktable.view_manager->current_view,
-                        0, 0, 0, 0, lbefore, 0, lbefore + lafter,
-                        table->rows - 1);
+                        0, 0, 0, 0, lbefore, 0, maxvalue, pagesize);
   table->code_scrolling = FALSE;
-  return (lbefore + lafter > table->rows - 1);
+  return (lbefore >= maxvalue);
 }
 
 // remove all unneeded thumbnails from the list and the widget
@@ -638,7 +639,7 @@ static int _thumbs_load_needed(dt_thumbtable_t *table,
 
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      if(posy + table->thumb_size >= 0) // we don't load invisible thumbs
+      if(posy + table->thumb_size > 0) // we don't load invisible thumbs
       {
         _thumb_move_or_create(table,
                               th_invalid,
@@ -780,7 +781,7 @@ static gboolean _move(dt_thumbtable_t *table,
     // we need to take account of the previous area move if needed
     table->offset =
       MAX(1,
-          table->offset - ((posy + old_areay) / table->thumb_size) * table->thumbs_per_row);
+          table->offset - (ceilf((posy + old_areay) / (float)table->thumb_size) * table->thumbs_per_row));
     table->offset_imgid = _thumb_get_imgid(table->offset);
   }
   else if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
@@ -2113,31 +2114,10 @@ void dt_thumbtable_scrollbar_changed(dt_thumbtable_t *table,
 
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
   {
-    const int first_offset = (table->offset - 1) % table->thumbs_per_row;
-    int new_offset = table->offset;
-    const int line = floorf(y);
-    if(first_offset == 0)
-    {
-      // first line is full, so it's counted
-      new_offset = 1 + line * table->thumbs_per_row;
-    }
-    else if(line == 0)
-    {
-      new_offset = 1;
-    }
-    else
-    {
-      new_offset = first_offset + (line - 1) * table->thumbs_per_row;
-    }
+    // get first visible line position
+    const float first_line = ((table->offset - 1) / table->thumbs_per_row)*table->thumb_size - table->thumbs_area.y;
 
-    table->offset = new_offset;
-    dt_thumbtable_full_redraw(table, TRUE);
-
-    // To enable smooth scrolling move the thumbnails
-    // by the floating point amount of the scrollbar
-    // so if the scrollbar is in 13.28 position move the thumbs by 0.28 * thumb_size
-    const float thumbs_area_offset_y = ((y - line) * (float)table->thumb_size);
-    _move(table, 0, -thumbs_area_offset_y, FALSE);
+    _move(table, 0, first_line - y * table->thumb_size, TRUE);
   }
 }
 
