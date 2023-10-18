@@ -230,6 +230,10 @@ changes (where available).
 
 - API version is now 9.2.0
 
+### Bug Fixes
+
+- Fixed scripts_installer to handle user names with spaces on Windows.
+
 ### Add action support for Lua
 
 

@@ -8,9 +8,9 @@ local function ipairs_iterator(st, var)
   var = var + 1
   local val = st[var]
   if val ~= nil then
-  return var, st[var]
+    return var, st[var]
   end
-  end
+end
 
 ipairs = function(t)
   if getmetatable(t) ~= nil then -- t has metatable
@@ -43,24 +43,99 @@ if _scripts_install.dt.configuration.has_gui  then
     false
   )
 
+  _scripts_install.dt.preferences.register(
+    "_scripts_install",
+    "debug",
+    "bool",
+    _scripts_install.dt.gettext.gettext("lua scripts installer log debug messages"),
+    _scripts_install.dt.gettext.gettext("write debugging messages to the log if the -d lua flag is specified"),
+    false
+  )
+
+  local PS = _scripts_install.dt.configuration.running_os == "windows" and "\\" or "/"
+
+  local debug_messages = _scripts_install.dt.preferences.read("_scripts_install", "debug", "bool")
+
+  local function debug_message(msg)
+    if debug_messages then
+      _scripts_install.dt.print_log("[script installer] " .. msg)
+    end
+  end
+
+  local function _is_not_sanitized_posix(str)
+     -- A sanitized string must be quoted.
+     if not string.match(str, "^'.*'$") then
+         return true
+     -- A quoted string containing no quote characters within is sanitized.
+     elseif string.match(str, "^'[^']*'$") then
+         return false
+     end
+     
+     -- Any quote characters within a sanitized string must be properly
+     -- escaped.
+     local quotesStripped = string.sub(str, 2, -2)
+     local escapedQuotesRemoved = string.gsub(quotesStripped, "'\\''", "")
+     if string.find(escapedQuotesRemoved, "'") then
+         return true
+     else
+         return false
+     end
+  end
+
+  local function _is_not_sanitized_windows(str)
+     if not string.match(str, "^\".*\"$") then
+        return true
+     else
+        return false
+     end
+  end
+
+  local function _sanitize_posix(str)
+    if _is_not_sanitized_posix(str) then
+        return "'" .. string.gsub(str, "'", "'\\''") .. "'"
+    else
+         return str
+    end
+  end
+
+  local function _sanitize_windows(str)
+    if _is_not_sanitized_windows(str) then
+        return "\"" .. string.gsub(str, "\"", "\"^\"\"") .. "\""
+    else
+        return str
+    end
+  end
+
+  local function sanitize(str)
+    if _scripts_install.dt.configuration.running_os == "windows" then
+        return _sanitize_windows(str)
+    else
+        return _sanitize_posix(str)
+    end
+  end
+
+  local CONFIG_DIR = _scripts_install.dt.configuration.config_dir
+
   if not _scripts_install.dt.preferences.read("_scripts_install", "dont_show", "bool") then
-    -- _scripts_install.dt.print_log("dont show not set")
+    debug_message("dont show not set")
 
     if _scripts_install.dt.preferences.read("_scripts_install", "remind", "bool") then
-      -- _scripts_install.dt.print_log("remind set")
+      debug_message("remind set")
       if _scripts_install.dt.preferences.read("_scripts_install", "restarts", "integer") < 4 then
-        _scripts_install.dt.preferences.write("_scripts_install", "restarts", "integer", _scripts_install.dt.preferences.read("_scripts_install", "restarts", "integer") + 1)
-        -- _scripts_install.dt.print_log("retries set to " .. _scripts_install.dt.preferences.read("_scripts_install", "restarts", "integer"))
+        local restart_count = _scripts_install.dt.preferences.read("_scripts_install", "restarts", "integer") + 1
+        _scripts_install.dt.preferences.write("_scripts_install", "restarts", "integer", restart_count)
+        debug_message("retries set to " .. restart_count)
         return
       else
         _scripts_install.dt.preferences.write("_scripts_install", "restarts", "integer", 0)
+        debug_message("number of restarts without installing reached, installing...")
       end
     end
 
     _scripts_install.not_installed = true
-    --_scripts_install.dt.print_log("checking for lua directory")
+    debug_message("checking for lua directory")
 
-    -- check for lua scripts directory 
+    -- set the necessary commands based on operating system
     if _scripts_install.dt.configuration.running_os == "windows" then
       _scripts_install.dir_cmd = "dir /b "
       _scripts_install.which_cmd = "where "
@@ -70,14 +145,18 @@ if _scripts_install.dt.configuration.has_gui  then
     end
 
     -- check for the scripts directory
-    -- _scripts_install.dt.print_log("checking for scripts")
+    debug_message("checking for scripts")
 
-    _scripts_install.p = io.popen(_scripts_install.dir_cmd .. _scripts_install.dt.configuration.config_dir)
+    local find_scripts_cmd = _scripts_install.dir_cmd .. CONFIG_DIR
+    if _scripts_install.dt.configuration.running_os == "windows" then
+      find_scripts_cmd = "\"" .. _scripts_install.dir_cmd .. "\"" .. CONFIG_DIR .. "\"\""
+    end
+    _scripts_install.p = io.popen(find_scripts_cmd)
     for line in _scripts_install.p:lines() do 
-      -- _scripts_install.dt.print_log("line is " .. line)
+      debug_message("line is " .. line)
       if string.match(line, "^lua$") then
         _scripts_install.not_installed = false
-       -- _scripts_install. dt.print_log("scripts found")
+        debug_message("scripts found")
       end
     end
     _scripts_install.p:close()
@@ -89,18 +168,34 @@ if _scripts_install.dt.configuration.has_gui  then
     end
 
     if _scripts_install.not_installed then
-      -- _scripts_install.dt.print_log("scripts not installed")
+      debug_message("took the scripts not installed branch")
       _scripts_install.widgets = {}
 
+      local function os_execute(cmd)
+        debug_message("cmd input to os_execute is " .. cmd)
+        if _scripts_install.dt.configuration.running_os == "windows" then
+          cmd = "\"" .. cmd .. "\""
+        end
+        debug_message("command to os.execute is " .. cmd)
+        success, msg, rc = os.execute(cmd)
+        debug_message("command success: " .. tostring(success) .. " message: " .. msg .. " return code: " .. rc)
+        return success
+      end
         -- check for a luarc file and move it
-      function _scripts_install.backup_luarc()
-        local p = io.popen(_scripts_install.dir_cmd .. _scripts_install.dt.configuration.config_dir)
+      local function backup_luarc()
+        debug_message("backuping up luarc file (if it exists)")
+        local p = io.popen(_scripts_install.dir_cmd .. CONFIG_DIR)
         for line in p:lines() do 
           if string.match(line, "^luarc$") then
+            debug_message("found the luarc file, renaming it to luarc.old")
+            local success = false
             if _scripts_install.dt.configuration.running_os == "windows" then
-              os.execute("rename " .. _scripts_install.dt.configuration.config_dir .. "/luarc " .. _scripts_install.dt.configuration.config_dir .. "/luarc.old")
+              success = os_execute("rename " .. "\"" .. CONFIG_DIR .. PS .. "luarc\" \"" .. CONFIG_DIR .. PS .. "luarc.old\"")
             else
-              os.execute("mv " .. _scripts_install.dt.configuration.config_dir .. "/luarc " .. _scripts_install.dt.configuration.config_dir .. "/luarc.old")
+              success = os_execute("mv " .. CONFIG_DIR .. "/luarc " .. CONFIG_DIR .. "/luarc.old")
+            end
+            if not success then
+              _scripts_install.dt.print(_("Unable to back up luarc file.  It will be overwritten"))
             end
           end
         end
@@ -113,20 +208,23 @@ if _scripts_install.dt.configuration.has_gui  then
       end
 
       function _scripts_install.installer()
-       -- _scripts_install.dt.print_log("running installer")
+        debug_message("running installer")
 
         if _scripts_install.widgets.choice.value == _("don't show again") then
+          debug_message("setting script installer don't show")
           _scripts_install.dt.preferences.write("_scripts_install", "dont_show", "bool", true)
           _scripts_install.dt.preferences.write("_scripts_install", "remind", "bool", false)
           _scripts_install.dt.print(_("Installer won't be shown when darktable starts"))
           _scripts_install.minimize_lib()
         elseif _scripts_install.widgets.choice.value == _("remind me later") then
+          debug_message("setting script installer remind me later ")
           _scripts_install.dt.preferences.write("_scripts_install", "dont_show", "bool", false)
           _scripts_install.dt.preferences.write("_scripts_install", "remind", "bool", true)
           _scripts_install.dt.preferences.write("_scripts_install", "retries", "integer", 0)
           _scripts_install.dt.print(_("Installer will be shown every 5th time darktable starts"))
           _scripts_install.minimize_lib()
         else
+          debug_message("setting script installer remind and dont_show to false ")
           _scripts_install.dt.preferences.write("_scripts_install", "remind", "bool", false)
           _scripts_install.dt.preferences.write("_scripts_install", "dont_show", "bool", false)
 
@@ -140,20 +238,21 @@ if _scripts_install.dt.configuration.has_gui  then
           end
 
           _scripts_install.git_bin = nil
-          -- _scripts_install.dt.print_log("checking for git")
-          -- _scripts_install.dt.print_log("with command " .. _scripts_install.which_cmd .. _scripts_install.git_cmd)
+          debug_message("checking for git")
+          debug_message("with command " .. _scripts_install.which_cmd .. _scripts_install.git_cmd)
 
           _scripts_install.p = io.popen(_scripts_install.which_cmd .. _scripts_install.git_cmd)
           for line in _scripts_install.p:lines() do 
             if string.match(line, _scripts_install.git_cmd) then
-              -- _scripts_install.dt.print_log("got a match")
+              debug_message("got a match")
               _scripts_install.git_bin = line
-              -- _scripts_install.dt.print_log("git bin is " .. _scripts_install.git_bin)
+              debug_message("git bin is " .. _scripts_install.git_bin)
             end
           end
           _scripts_install.p:close()
 
           if not _scripts_install.git_bin then
+            debug_message("git not found, printing error and exiting")
             _scripts_install.dt.print(_("Please install git and make sure it is in your path"))
             return
           end
@@ -162,17 +261,47 @@ if _scripts_install.dt.configuration.has_gui  then
           if _scripts_install.dt.configuration.running_os ~= "windows" then
             _scripts_install.require_string = "'" .. _scripts_install.require_string .. "'"
           end
+          debug_message("require string is " .. _scripts_install.require_string)
           
-          _scripts_install.backup_luarc()
+          backup_luarc()
+
           _scripts_install.dt.print(_("lua scripts installing"))
-          os.execute("\"" .. _scripts_install.git_bin .. "\" " .. "clone https://github.com/darktable-org/lua-scripts.git " .. _scripts_install.dt.configuration.config_dir .. "/lua")
-          os.execute("echo " .. _scripts_install.require_string .. " > " .. _scripts_install.dt.configuration.config_dir .. "/luarc")
+          debug_message("lua scripts installing...")
+    
+          if _scripts_install.dt.configuration.running_os == "windows" then
+            _scripts_install.git_bin = "\"" .. _scripts_install.git_bin .. "\""
+            _scripts_install.install_dir = "\"" .. CONFIG_DIR .. PS .. "lua\""
+            _scripts_install.luarc_file = "\"" .. CONFIG_DIR .. PS .. "luarc\""
+          else
+            _scripts_install.install_dir = CONFIG_DIR .. PS .. "lua"
+            _scripts_install.luarc_file = CONFIG_DIR .. PS .. "luarc"
+          end
+
+          local success = os_execute(_scripts_install.git_bin  .. " clone https://github.com/darktable-org/lua-scripts.git " .. _scripts_install.install_dir)
+          if not success then
+            debug_message("unable to clone lua-scripts.  See above messages for possible error")
+            _scripts_install.dt.print("lua scripts installation failed.  Enable scripts installer debug messages under lua options and try again")
+            return
+          else
+            debug_message("lua-scripts successfully cloned")
+          end
+          local success = os_execute("echo " .. _scripts_install.require_string .. " > " .. _scripts_install.luarc_file)
+          if not success then
+            debug_message("unable to create luarc file")
+            _scripts_install.dt.print(_("lua scripts installation failed.  Enable scripts installer debug messages under lua options and try again"))
+            return
+          else
+            debug_message("luarc file created")
+          end      
           _scripts_install.dt.print(_("lua scripts are installed"))
+          debug_message("starting script_manager")
           require "tools/script_manager"
           _scripts_install.dt.gui.libs["script_manager"].visible = true
+          debug_message("script_manager started and visible")
         end
         _scripts_install.minimize_lib()
       end
+
 
       function _scripts_install.install_module()
         if not _scripts_install.module_installed then
@@ -190,10 +319,7 @@ if _scripts_install.dt.configuration.has_gui  then
             nil
           )
           _scripts_install.module_installed = true
-          if not _scripts_install.dt.preferences.read("_scripts_install", "initialized", "bool") then
-           _scripts_install.dt.gui.libs["lua_scripts_installer"].visible = true
-           _scripts_install.dt.preferences.write("_scripts_install", "initialized", "bool", true)
-         end
+          _scripts_install.dt.gui.libs["lua_scripts_installer"].visible = true
         end
       end
 
