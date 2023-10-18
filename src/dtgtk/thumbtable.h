@@ -103,6 +103,10 @@ typedef struct dt_thumbtable_t
   // let's remember previous thumbnail generation settings to detect if they change
   int pref_embedded;
   int pref_hq;
+
+  // scroll timeout values
+  int scroll_timeout_id;
+  float scroll_value;
 } dt_thumbtable_t;
 
 dt_thumbtable_t *dt_thumbtable_new();

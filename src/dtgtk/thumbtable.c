@@ -697,24 +697,17 @@ static gboolean _move(dt_thumbtable_t *table,
       }
       table->realign_top_try = 0;
 
-      const dt_thumbnail_t *last = (dt_thumbnail_t *)g_list_last(table->list)->data;
-      if(table->thumbs_per_row == 1 && posy < 0 && g_list_is_singleton(table->list))
-      {
-        // special case for zoom == 1 as we don't want any space under
-        // last image (the image would have disappear)
-        const uint32_t nbid = MAX(1, dt_collection_get_collected_count());
-        if(nbid <= last->rowid)
-          return FALSE;
-      }
-      else
-      {
-        // we stop when last image is fully shown (that means empty
-        // space at the bottom) we just need to then ensure that the
-        // top row is fully shown
-        if(last->y + table->thumb_size < table->view_height
-           && posy < 0 && table->thumbs_area.y == 0)
-          return FALSE;
-      }
+      // clamp the movement to ensure we don't go before the first image or after last one
+      const int max_up = ((first->rowid-1) / table->thumbs_per_row) * table->thumb_size - table->thumbs_area.y;
+      posy = MIN(posy, max_up);
+
+      // nb of line of the full collection
+      const uint32_t nblines = ceilf(MAX(1, dt_collection_get_collected_count()) / (float)table->thumbs_per_row);
+      // max first line on screen to ensure we don't go to far
+      const int max_line = nblines - table->view_height / table->thumb_size;
+      // limit of the movement
+      const int max_down = MAX(0, max_line * table->thumb_size - max_up);
+      posy = MAX(posy, -max_down);
     }
     else if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
     {
@@ -993,6 +986,31 @@ void dt_thumbtable_zoom_changed(dt_thumbtable_t *table,
   }
 }
 
+static gboolean _event_scroll_compressed(gpointer user_data)
+{
+  dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
+  float delta = table->scroll_value;
+
+  table->scroll_value = 0;
+  table->scroll_timeout_id = 0;
+
+  // for filemanger and filmstrip, scrolled = move for
+  // filemangager we ensure to fallback to show full row (can be
+  // half shown if scrollbar used)
+  int move = table->thumb_size * delta;
+  // if we scroll up and the thumb is half visible, then realign first
+  if(delta < 0 && table->thumbs_area.y != 0)
+    move += table->thumb_size -table->thumbs_area.y;
+
+  _move(table, 0, -move, TRUE);
+
+  // ensure the hovered image is the right one
+  dt_thumbnail_t *th = _thumb_get_under_mouse(table);
+  if(th) dt_control_set_mouse_over_id(th->imgid);
+
+  return FALSE;
+}
+
 static gboolean _event_scroll(GtkWidget *widget,
                               GdkEvent *event,
                               gpointer user_data)
@@ -1021,26 +1039,24 @@ static gboolean _event_scroll(GtkWidget *widget,
         dt_thumbtable_zoom_changed(table, old, new);
       }
     }
-    else if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER
-            || table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
+    else if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
     {
-      // for filemanger and filmstrip, scrolled = move for
-      // filemangager we ensure to fallback to show full row (can be
-      // half shown if scrollbar used)
-      if(delta < 0 && table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
-        _move(table, 0, (table->thumbs_area.y == 0)
-              ? table->thumb_size
-              : -table->thumbs_area.y, TRUE);
-      if(delta >= 0 && table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
-        _move(table, 0, -table->thumb_size - table->thumbs_area.y, TRUE);
-      else if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
-        _move(table, -delta * (dt_modifier_is(e->state, GDK_SHIFT_MASK)
-                     ? table->view_width - table->thumb_size
-                     : table->thumb_size), 0, TRUE);
+      _move(table, -delta * (dt_modifier_is(e->state, GDK_SHIFT_MASK)
+                  ? table->view_width - table->thumb_size
+                  : table->thumb_size), 0, TRUE);
 
       // ensure the hovered image is the right one
       dt_thumbnail_t *th = _thumb_get_under_mouse(table);
       if(th) dt_control_set_mouse_over_id(th->imgid);
+    }
+    else if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
+    {
+      // in order to process "big" scroll in one time, we use a timeout to postpone a little scrolling
+      if(table->scroll_timeout_id == 0)
+      {
+        table->scroll_timeout_id = g_timeout_add(10, _event_scroll_compressed, table);
+      }
+      table->scroll_value += delta;
     }
   }
   // we stop here to avoid scrolledwindow to move
