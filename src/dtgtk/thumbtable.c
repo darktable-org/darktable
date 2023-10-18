@@ -676,27 +676,7 @@ static gboolean _move(dt_thumbtable_t *table,
       posx = 0; // to be sure, we don't want horizontal move
       if(posy == 0) return FALSE;
 
-      // we stop when first rowid image is fully shown
       dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
-      if(first->rowid == 1 && posy > 0 && first->y >= 0)
-      {
-        // for some reasons, in filemanager, first image can not be at
-        // x=0 in that case, we count the number of "scroll-top" try
-        // and reallign after 2 try
-        if(first->x != 0)
-        {
-          table->realign_top_try++;
-          if(table->realign_top_try > 2)
-          {
-            table->realign_top_try = 0;
-            dt_thumbtable_full_redraw(table, TRUE);
-            return TRUE;
-          }
-        }
-        return FALSE;
-      }
-      table->realign_top_try = 0;
-
       // clamp the movement to ensure we don't go before the first image or after last one
       const int max_up = ((first->rowid-1) / table->thumbs_per_row) * table->thumb_size - table->thumbs_area.y;
       posy = MIN(posy, max_up);
