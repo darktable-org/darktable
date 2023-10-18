@@ -2388,7 +2388,8 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
 
     hist->multi_name_hand_edited = multi_name_hand_edited;
     g_strlcpy(hist->op_name, hist->module->op, sizeof(hist->op_name));
-    g_strlcpy(hist->multi_name, multi_name, sizeof(hist->multi_name));
+    if(multi_name) // multi_name can be NULL on DB
+      g_strlcpy(hist->multi_name, multi_name, sizeof(hist->multi_name));
     hist->params = malloc(hist->module->params_size);
     hist->blend_params = malloc(sizeof(dt_develop_blend_params_t));
 
