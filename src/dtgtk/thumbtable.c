@@ -593,10 +593,12 @@ static int _thumbs_load_needed(dt_thumbtable_t *table,
     {
       if(posy < table->view_height) // we don't load invisible thumbs
       {
+        const dt_imgid_t imgid = sqlite3_column_int(stmt, 1);
+        const int rowid =  sqlite3_column_int(stmt, 0);
         _thumb_move_or_create(table,
                               th_invalid,
-                              sqlite3_column_int(stmt, 1),
-                              sqlite3_column_int(stmt, 0),
+                              imgid,
+                              rowid,
                               posx, posy,
                               TRUE);
         changed++;
@@ -641,10 +643,12 @@ static int _thumbs_load_needed(dt_thumbtable_t *table,
     {
       if(posy + table->thumb_size > 0) // we don't load invisible thumbs
       {
+        const dt_imgid_t imgid = sqlite3_column_int(stmt, 1);
+        const int rowid =  sqlite3_column_int(stmt, 0);
         _thumb_move_or_create(table,
                               th_invalid,
-                              sqlite3_column_int(stmt, 1),
-                              sqlite3_column_int(stmt, 0),
+                              imgid,
+                              rowid,
                               posx, posy,
                               FALSE);
         changed++;
