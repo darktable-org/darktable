@@ -972,11 +972,13 @@ void dt_thumbtable_zoom_changed(dt_thumbtable_t *table,
 
 static gboolean _event_scroll_compressed(gpointer user_data)
 {
+  if (!user_data) return FALSE;
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
+  if (table->scroll_value == 0) return FALSE;
   float delta = table->scroll_value;
 
+  // starting from here, all further scroll event will count for the next round
   table->scroll_value = 0;
-  table->scroll_timeout_id = 0;
 
   // for filemanger and filmstrip, scrolled = move for
   // filemangager we ensure to fallback to show full row (can be
@@ -992,6 +994,8 @@ static gboolean _event_scroll_compressed(gpointer user_data)
   dt_thumbnail_t *th = _thumb_get_under_mouse(table);
   if(th) dt_control_set_mouse_over_id(th->imgid);
 
+  // we reset the id value at the end, to ensure we don't get more than 1 pending scroll
+  table->scroll_timeout_id = 0;
   return FALSE;
 }
 
