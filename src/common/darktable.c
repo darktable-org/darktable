@@ -223,7 +223,7 @@ static int usage(const char *argv0)
 #else
          "-h, --help\n"
 #endif
-         "    Show this help (-h works with no other options)\n"
+         "    Show this help text\n"
          "\n"
          "Debugging:\n\n"
          "--bench-module MODULE_A,MODULE_B\n"
