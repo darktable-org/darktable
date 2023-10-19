@@ -2127,7 +2127,8 @@ void dt_thumbtable_scrollbar_changed(dt_thumbtable_t *table,
 
 // reload all thumbs from scratch.  force define if this should occurs
 // in any case or just if thumbtable sizing properties have changed
-void dt_thumbtable_full_redraw(dt_thumbtable_t *table, const gboolean force)
+void dt_thumbtable_full_redraw(dt_thumbtable_t *table,
+                               const gboolean force)
 {
   if(!table) return;
   if(_compute_sizes(table, force))
@@ -2213,6 +2214,14 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, const gboolean force)
       }
     }
 
+    // let's create a hashtable of table->list in order to speddup search in next loop
+    GHashTable *htable = g_hash_table_new(g_int_hash, g_int_equal);
+    for(const GList *l = table->list; l; l = g_list_next(l))
+    {
+      dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+      g_hash_table_insert(htable, &th->imgid, (gpointer)th);
+    }
+
     // we add the thumbs
     GList *newlist = NULL;
     int nbnew = 0;
@@ -2230,11 +2239,11 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, const gboolean force)
       const int nid = sqlite3_column_int(stmt, 1);
 
       // first, we search if the thumb is already here
-      GList *tl = g_list_find_custom(table->list,
-                                     GINT_TO_POINTER(nid), _list_compare_by_imgid);
-      if(tl)
+      dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_hash_table_lookup(htable, &nid);
+
+      if(thumb)
       {
-        dt_thumbnail_t *thumb = (dt_thumbnail_t *)tl->data;
+        g_hash_table_remove(htable, &nid);
         dt_gui_remove_class(thumb->w_main, "dt_last_active");
         thumb->rowid = nrow; // this may have changed
         // we set new position/size if needed
@@ -2253,10 +2262,9 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, const gboolean force)
       else
       {
         // we create a completely new thumb
-        dt_thumbnail_t *thumb
-            = dt_thumbnail_new(table->thumb_size,
-                               table->thumb_size, IMG_TO_FIT, nid, nrow, table->overlays,
-                               DT_THUMBNAIL_CONTAINER_LIGHTTABLE, table->show_tooltips);
+        thumb = dt_thumbnail_new(table->thumb_size,
+                                 table->thumb_size, IMG_TO_FIT, nid, nrow, table->overlays,
+                                 DT_THUMBNAIL_CONTAINER_LIGHTTABLE, table->show_tooltips);
         if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
         {
           thumb->single_click = TRUE;
@@ -2275,6 +2283,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, const gboolean force)
       if(nrow == table->offset) table->offset_imgid = nid;
     }
 
+    g_hash_table_destroy(htable);
     // now we cleanup all remaining thumbs from old table->list and set it again
     g_list_free_full(table->list, _list_remove_thumb);
     table->list = g_list_reverse(newlist);
