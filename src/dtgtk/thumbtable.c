@@ -1372,7 +1372,6 @@ static void _thumbs_ask_for_discard(dt_thumbtable_t *table)
     }
     g_free(txt);
   }
-  dt_set_backthumb_time(100.0);
   dt_print(DT_DEBUG_CACHE, "[thumb crawler] mipmap generating parameters changed, maxmip=%d\n", min_level);
   // in any case, we update thumbtable prefs values to new ones and update backthumbs database
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -1383,7 +1382,6 @@ static void _thumbs_ask_for_discard(dt_thumbtable_t *table)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, min_level);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-  dt_set_backthumb_time(2.0);
 
   table->pref_hq = hql;
   table->pref_embedded = embeddedl;
@@ -1398,11 +1396,10 @@ static void _dt_pref_change_callback(gpointer instance, gpointer user_data)
   dt_configure_ppd_dpi(darktable.gui);
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
 
-  darktable.backthumbs.writing = dt_conf_get_bool("cache_disk_backend");
-  darktable.backthumbs.service = dt_conf_get_bool("backthumbs_initialize");
-
-  const char *mipsize = dt_conf_get_string_const("backthumbs_mipsize");
-  darktable.backthumbs.mipsize = dt_mipmap_cache_get_min_mip_from_pref(mipsize);
+  /* let's idle the backthumb crawler now to avoid fighting
+      updating vs removal of thumbs
+  */
+  dt_set_backthumb_time(1000.0);
 
   _thumbs_ask_for_discard(table);
 
@@ -1414,6 +1411,12 @@ static void _dt_pref_change_callback(gpointer instance, gpointer user_data)
     dt_thumbnail_reload_infos(th);
     dt_thumbnail_resize(th, th->width, th->height, TRUE, IMG_TO_FIT);
   }
+
+  const char *mipsize = dt_conf_get_string_const("backthumbs_mipsize");
+  darktable.backthumbs.mipsize = dt_mipmap_cache_get_min_mip_from_pref(mipsize);
+  darktable.backthumbs.writing = dt_conf_get_bool("cache_disk_backend");
+  darktable.backthumbs.service = dt_conf_get_bool("backthumbs_initialize");
+  dt_set_backthumb_time(10.0);
 }
 
 static void _dt_profile_change_callback(gpointer instance,
