@@ -569,7 +569,7 @@ double dt_util_gps_string_to_number(const gchar *input)
   if(list)
   {
     if(list[1] == NULL) // Already in decimal format
-     res = g_ascii_strtod(list[0], NULL) ;
+      res = g_ascii_strtod(list[0], NULL);
     else if(list[2] == NULL) // format DDD,MM.mm{N|S}
       res = g_ascii_strtoll(list[0], NULL, 10) + (g_ascii_strtod(list[1], NULL) / 60.0);
     else if(list[3] == NULL) // format DDD,MM,SS{N|S}
