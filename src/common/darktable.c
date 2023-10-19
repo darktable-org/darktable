@@ -218,7 +218,11 @@ static int usage(const char *argv0)
          "-v, --version\n"
          "    Print darktable version number\n"
          "\n"
+#ifdef _WIN32
+         "-h, --help, /?\n"
+#else
          "-h, --help\n"
+#endif
          "    Show this help (-h works with no other options)\n"
          "\n"
          "Debugging:\n\n"
@@ -276,8 +280,7 @@ static int usage(const char *argv0)
          "    If -d signal or -d all is specified, specify the signal action\n"
          "    to debug using this option.\n");
 #ifdef _WIN32
-  printf(", /?\n");
-  printf("\n");
+  printf("\n\n");
   printf("Debug log and output will be written to this file:\n");
   printf("    %s\n", logfile);
 #else
