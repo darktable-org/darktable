@@ -1569,7 +1569,7 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
     int pos = 0;
     const int table_len = g_list_length(table->list);
 
-    for(const GList *l = table->list; l; l = g_list_next(l))
+    for(GList *l = table->list; l; l = g_list_next(l))
     {
       dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
       dt_thumbnail_border_t old_borders = th->group_borders;
@@ -1581,8 +1581,7 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
           // left border
           if(pos != 0 && th->x != table->thumbs_area.x)
           {
-            dt_thumbnail_t *th1 =
-              (dt_thumbnail_t *)g_list_nth_data(table->list, pos - 1);
+            dt_thumbnail_t *th1 = (dt_thumbnail_t *)g_list_previous(l)->data;
             if(th1->groupid == groupid)
               b = FALSE;
           }
@@ -1592,11 +1591,10 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
           }
           // right border
           b = TRUE;
-          if(table->mode != DT_THUMBTABLE_MODE_FILMSTRIP
-             && pos < table_len - 1
+          if(pos < table_len - 1
              && (th->x + th->width * 1.5) < table->thumbs_area.width)
           {
-            dt_thumbnail_t *th1 = (dt_thumbnail_t *)g_list_nth_data(table->list, pos + 1);
+            dt_thumbnail_t *th1 = (dt_thumbnail_t *)g_list_next(l)->data;
             if(th1->groupid == groupid)
               b = FALSE;
           }
@@ -1618,7 +1616,7 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
         if(pos - table->thumbs_per_row >= 0)
         {
           dt_thumbnail_t *th1 =
-            (dt_thumbnail_t *)g_list_nth_data(table->list, pos - table->thumbs_per_row);
+            (dt_thumbnail_t *)g_list_nth_prev(l, table->thumbs_per_row)->data;
           if(th1->groupid == groupid)
             b = FALSE;
         }
@@ -1634,7 +1632,7 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
         if(pos + table->thumbs_per_row < table_len)
         {
           dt_thumbnail_t *th1 =
-            (dt_thumbnail_t *)g_list_nth_data(table->list, pos + table->thumbs_per_row);
+            (dt_thumbnail_t *)g_list_nth_data(l, table->thumbs_per_row);
           if(th1->groupid == groupid)
             b = FALSE;
         }
@@ -2308,15 +2306,16 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table,
     }
 
     // let's create a hashtable of table->list in order to speddup search in next loop
-    GHashTable *htable = g_hash_table_new(g_int_hash, g_int_equal);
+    GHashTable *htable = g_hash_table_new_full(g_int_hash, g_int_equal, NULL, _list_remove_thumb);
     for(const GList *l = table->list; l; l = g_list_next(l))
     {
       dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
       g_hash_table_insert(htable, &th->imgid, (gpointer)th);
     }
+    g_list_free(table->list);
+    table->list = NULL;
 
     // we add the thumbs
-    GList *newlist = NULL;
     int nbnew = 0;
     gchar *query
         = g_strdup_printf
@@ -2336,7 +2335,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table,
 
       if(thumb)
       {
-        g_hash_table_remove(htable, &nid);
+        g_hash_table_steal(htable, &nid);
         dt_gui_remove_class(thumb->w_main, "dt_last_active");
         thumb->rowid = nrow; // this may have changed
         // we set new position/size if needed
@@ -2348,9 +2347,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table,
         }
         dt_thumbnail_resize(thumb, table->thumb_size,
                             table->thumb_size, FALSE, IMG_TO_FIT);
-        newlist = g_list_prepend(newlist, thumb);
-        // and we remove the thumb from the old list
-        table->list = g_list_remove(table->list, thumb);
+        table->list = g_list_prepend(table->list, thumb);
       }
       else
       {
@@ -2365,7 +2362,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table,
         }
         thumb->x = posx;
         thumb->y = posy;
-        newlist = g_list_prepend(newlist, thumb);
+        table->list = g_list_prepend(table->list, thumb);
         gtk_widget_set_margin_start(thumb->w_image_box, old_margin_start);
         gtk_widget_set_margin_top(thumb->w_image_box, old_margin_top);
         gtk_layout_put(GTK_LAYOUT(table->widget), thumb->w_main, posx, posy);
@@ -2377,17 +2374,12 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table,
         table->offset_imgid = nid;
     }
 
+    // clean up all remaining thumbnails
     g_hash_table_destroy(htable);
-    // now we cleanup all remaining thumbs from old table->list and set it again
-    g_list_free_full(table->list, _list_remove_thumb);
-    table->list = g_list_reverse(newlist);
     // list was built in reverse order, so un-reverse it
+    table->list = g_list_reverse(table->list);
 
     _pos_compute_area(table);
-
-    // we need to ensure there's no need to load other image on top/bottom
-    if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
-      nbnew += _thumbs_load_needed(table, NULL);
 
     if(darktable.view_manager->active_images
        && (table->mode == DT_THUMBTABLE_MODE_ZOOM
