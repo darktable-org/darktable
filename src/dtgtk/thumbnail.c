@@ -606,10 +606,7 @@ static gboolean _event_image_draw(GtkWidget *widget,
          || !dev->preview_pipe->output_backbuf
          || dev->preview_pipe->output_imgid != thumb->imgid))
   {
-    if(thumb->img_surf && cairo_surface_get_reference_count(thumb->img_surf) > 0)
-      cairo_surface_destroy(thumb->img_surf);
-    thumb->img_surf = NULL;
-    thumb->img_surf_dirty = TRUE;
+    dt_thumbnail_surface_destroy(thumb);
     thumb->img_surf_preview = FALSE;
   }
 
@@ -633,9 +630,7 @@ static gboolean _event_image_draw(GtkWidget *widget,
     {
       // the current thumb is the one currently developed in darkroom
       // better use the preview buffer for surface, in order to stay in sync
-      if(thumb->img_surf && cairo_surface_get_reference_count(thumb->img_surf) > 0)
-        cairo_surface_destroy(thumb->img_surf);
-      thumb->img_surf = NULL;
+      dt_thumbnail_surface_destroy(thumb);
 
       // get new surface with preview image
       const int buf_width = dev->preview_pipe->output_backbuf_width;
@@ -1742,9 +1737,7 @@ void dt_thumbnail_destroy(dt_thumbnail_t *thumb)
                                      G_CALLBACK(_dt_image_info_changed_callback), thumb);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
                                      G_CALLBACK(_dt_collection_changed_callback), thumb);
-  if(thumb->img_surf && cairo_surface_get_reference_count(thumb->img_surf) > 0)
-    cairo_surface_destroy(thumb->img_surf);
-  thumb->img_surf = NULL;
+  dt_thumbnail_surface_destroy(thumb);
   if(thumb->w_main) gtk_widget_destroy(thumb->w_main);
   if(thumb->filename) g_free(thumb->filename);
   if(thumb->info_line) g_free(thumb->info_line);
@@ -2327,6 +2320,14 @@ void dt_thumbnail_reload_infos(dt_thumbnail_t *thumb)
   g_free(lb);
 }
 
+void dt_thumbnail_surface_destroy(dt_thumbnail_t *thumb)
+{
+  // we need to check also the reference count to be sure the surface is not in an intermediate state
+  if(thumb->img_surf && cairo_surface_get_reference_count(thumb->img_surf) > 0)
+      cairo_surface_destroy(thumb->img_surf);
+  thumb->img_surf = NULL;
+  thumb->img_surf_dirty = TRUE;
+}
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
