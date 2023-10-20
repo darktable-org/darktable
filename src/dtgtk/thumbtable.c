@@ -1567,6 +1567,8 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
   if(dt_is_valid_imgid(groupid))
   {
     int pos = 0;
+    const int table_len = g_list_length(table->list);
+
     for(const GList *l = table->list; l; l = g_list_next(l))
     {
       dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
@@ -1591,7 +1593,7 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
           // right border
           b = TRUE;
           if(table->mode != DT_THUMBTABLE_MODE_FILMSTRIP
-             && pos < g_list_length(table->list) - 1
+             && pos < table_len - 1
              && (th->x + th->width * 1.5) < table->thumbs_area.width)
           {
             dt_thumbnail_t *th1 = (dt_thumbnail_t *)g_list_nth_data(table->list, pos + 1);
@@ -1629,7 +1631,7 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
         }
         // bottom border
         b = TRUE;
-        if(pos + table->thumbs_per_row < g_list_length(table->list))
+        if(pos + table->thumbs_per_row < table_len)
         {
           dt_thumbnail_t *th1 =
             (dt_thumbnail_t *)g_list_nth_data(table->list, pos + table->thumbs_per_row);
