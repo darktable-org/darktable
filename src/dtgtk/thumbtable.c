@@ -42,7 +42,8 @@ static gint _list_compare_by_imgid(gconstpointer a, gconstpointer b)
 {
   dt_thumbnail_t *th = (dt_thumbnail_t *)a;
   const dt_imgid_t imgid = GPOINTER_TO_INT(b);
-  if(!dt_is_valid_imgid(th->imgid) || !dt_is_valid_imgid(imgid)) return 1;
+  if(!dt_is_valid_imgid(th->imgid) || !dt_is_valid_imgid(imgid))
+    return 1;
   return (th->imgid != imgid);
 }
 static void _list_remove_thumb(gpointer user_data)
@@ -86,7 +87,8 @@ static int _thumbs_get_prefs_size(dt_thumbtable_t *table)
   while(ts[i])
   {
     const int s = g_ascii_strtoll(ts[i], NULL, 10);
-    if(table->thumb_size < s) break;
+    if(table->thumb_size < s)
+      break;
     i++;
   }
   g_strfreev(ts);
@@ -122,7 +124,8 @@ static void _thumbs_update_overlays_mode(dt_thumbtable_t *table)
 void dt_thumbtable_set_overlays_mode(dt_thumbtable_t *table,
                                      const dt_thumbnail_overlay_t over)
 {
-  if(!table) return;
+  if(!table)
+    return;
   // we ensure the tooltips change in any cases
   gchar *txt = g_strdup_printf("plugins/lighttable/tooltips/%d/%d",
                                table->mode, table->prefs_size);
@@ -135,7 +138,8 @@ void dt_thumbtable_set_overlays_mode(dt_thumbtable_t *table,
     dt_thumbnail_update_infos(th);
   }
 
-  if(over == table->overlays) return;
+  if(over == table->overlays)
+    return;
   txt = g_strdup_printf("plugins/lighttable/overlays/%d/%d",
                         table->mode, table->prefs_size);
   dt_conf_set_int(txt, over);
@@ -176,7 +180,8 @@ void dt_thumbtable_set_overlays_mode(dt_thumbtable_t *table,
 void dt_thumbtable_set_overlays_block_timeout(dt_thumbtable_t *table,
                                               const int timeout)
 {
-  if(!table) return;
+  if(!table)
+    return;
   gchar *txt = g_strdup_printf("plugins/lighttable/overlays_block_timeout/%d/%d",
                                table->mode, table->prefs_size);
   dt_conf_set_int(txt, timeout);
@@ -211,7 +216,8 @@ static dt_thumbnail_t *_thumb_get_at_pos(dt_thumbtable_t *table, int x, int y)
 // get the thumb which is currently under mouse cursor
 static dt_thumbnail_t *_thumb_get_under_mouse(dt_thumbtable_t *table)
 {
-  if(!table->mouse_inside) return NULL;
+  if(!table->mouse_inside)
+    return NULL;
 
   int x = -1;
   int y = -1;
@@ -426,8 +432,10 @@ static gboolean _compute_sizes(dt_thumbtable_t *table, gboolean force)
 // return their visibility state
 static gboolean _thumbtable_update_scrollbars(dt_thumbtable_t *table)
 {
-  if(table->mode != DT_THUMBTABLE_MODE_FILEMANAGER) return FALSE;
-  if(!table->scrollbars) return FALSE;
+  if(table->mode != DT_THUMBTABLE_MODE_FILEMANAGER)
+    return FALSE;
+  if(!table->scrollbars)
+    return FALSE;
 
   table->code_scrolling = TRUE;
 
@@ -479,7 +487,9 @@ static gboolean _thumbtable_update_scrollbars(dt_thumbtable_t *table)
 static int _thumbs_remove_unneeded(dt_thumbtable_t *table,
                                    GList **th_invalid)
 {
-  if(!th_invalid) return 0;
+  if(!th_invalid)
+    return 0;
+
   int changed = 0;
   GList *l = (*th_invalid);
   while(l)
@@ -559,7 +569,9 @@ static void _thumb_move_or_create(dt_thumbtable_t *table,
 static int _thumbs_load_needed(dt_thumbtable_t *table,
                                GList **th_invalid)
 {
-  if(!table->list) return 0;
+  if(!table->list)
+    return 0;
+
   sqlite3_stmt *stmt;
   int changed = 0;
 
@@ -574,7 +586,9 @@ static int _thumbs_load_needed(dt_thumbtable_t *table,
              && first->x > 0)))
   {
     int space = first->y;
-    if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP) space = first->x;
+    if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
+      space = first->x;
+
     const int nb_to_load = space / table->thumb_size + (space % table->thumb_size != 0);
     // clang-format off
     gchar *query = g_strdup_printf(
@@ -669,7 +683,9 @@ static gboolean _move(dt_thumbtable_t *table,
                       const int y,
                       const gboolean clamp)
 {
-  if(!table->list) return FALSE;
+  if(!table->list)
+    return FALSE;
+
   int posx = x;
   int posy = y;
   if(clamp)
@@ -686,7 +702,9 @@ static gboolean _move(dt_thumbtable_t *table,
       posy = MIN(posy, max_up);
 
       // nb of line of the full collection
-      const uint32_t nblines = ceilf(MAX(1, dt_collection_get_collected_count()) / (float)table->thumbs_per_row);
+      const uint32_t nblines =
+        ceilf(MAX(1,
+                  dt_collection_get_collected_count()) / (float)table->thumbs_per_row);
       // max first line on screen to ensure we don't go to far
       const int max_line = nblines - table->view_height / table->thumb_size;
       // limit of the movement
@@ -717,7 +735,8 @@ static gboolean _move(dt_thumbtable_t *table,
     }
   }
 
-  if(posy == 0 && posx == 0) return FALSE;
+  if(posy == 0 && posx == 0)
+    return FALSE;
 
   GList *th_invalid = NULL;
   // we move all current thumbs
@@ -870,7 +889,8 @@ static void _zoomable_zoom(dt_thumbtable_t *table,
   posy = MAX(space - table->thumbs_area.y - table->thumbs_area.height, posy);
   int posx = MIN(table->view_width - space - table->thumbs_area.x, 0);
   posx = MAX(space - table->thumbs_area.x - table->thumbs_area.width, posx);
-  if(posx != 0 || posy != 0) _move(table, posx, posy, FALSE);
+  if(posx != 0 || posy != 0)
+    _move(table, posx, posy, FALSE);
 
   // and we load/unload thumbs if needed
   int changed = _thumbs_load_needed(table, &th_invalid);
@@ -957,8 +977,11 @@ void dt_thumbtable_zoom_changed(dt_thumbtable_t *table,
                                 const int oldzoom,
                                 const int newzoom)
 {
-  if(oldzoom == newzoom) return;
-  if(!table->list) return;
+  if(oldzoom == newzoom)
+    return;
+
+  if(!table->list)
+    return;
 
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
   {
@@ -992,9 +1015,11 @@ static gboolean _event_scroll_compressed(gpointer user_data)
 
   // ensure the hovered image is the right one
   dt_thumbnail_t *th = _thumb_get_under_mouse(table);
-  if(th) dt_control_set_mouse_over_id(th->imgid);
+  if(th)
+    dt_control_set_mouse_over_id(th->imgid);
 
-  // we reset the id value at the end, to ensure we don't get more than 1 pending scroll
+  // we reset the id value at the end, to ensure we don't get more
+  // than 1 pending scroll
   table->scroll_timeout_id = 0;
   return FALSE;
 }
@@ -1035,11 +1060,13 @@ static gboolean _event_scroll(GtkWidget *widget,
 
       // ensure the hovered image is the right one
       dt_thumbnail_t *th = _thumb_get_under_mouse(table);
-      if(th) dt_control_set_mouse_over_id(th->imgid);
+      if(th)
+        dt_control_set_mouse_over_id(th->imgid);
     }
     else if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
     {
-      // in order to process "big" scroll in one time, we use a timeout to postpone a little scrolling
+      // in order to process "big" scroll in one time, we use a
+      // timeout to postpone a little scrolling
       if(table->scroll_timeout_id == 0)
       {
         table->scroll_timeout_id = g_timeout_add(10, _event_scroll_compressed, table);
@@ -1126,7 +1153,8 @@ static gboolean _event_draw(GtkWidget *widget,
                             cairo_t *cr,
                             gpointer user_data)
 {
-  if(!GTK_IS_CONTAINER(gtk_widget_get_parent(widget))) return TRUE;
+  if(!GTK_IS_CONTAINER(gtk_widget_get_parent(widget)))
+    return TRUE;
 
   // we render the background (can be visible if before first image / after last image)
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
@@ -1136,7 +1164,8 @@ static gboolean _event_draw(GtkWidget *widget,
   // but we don't really want to draw something, this is just to know
   // when the widget is really ready
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
-  if(!darktable.collection || (dt_collection_get_count(darktable.collection) == 0))
+  if(!darktable.collection
+     || (dt_collection_get_count(darktable.collection) == 0))
   {
     GtkAllocation allocation;
     gtk_widget_get_allocation(table->widget, &allocation);
@@ -1182,7 +1211,8 @@ static gboolean _event_enter_notify(GtkWidget *widget,
 
   // we only handle the case where we enter thumbtable from an inferior (a thumbnail)
   // this is when the mouse enter an "empty" area of thumbtable
-  if(event->detail != GDK_NOTIFY_INFERIOR) return FALSE;
+  if(event->detail != GDK_NOTIFY_INFERIOR)
+    return FALSE;
 
   dt_control_set_mouse_over_id(NO_IMGID);
   return TRUE;
@@ -1234,7 +1264,8 @@ static gboolean _event_button_press(GtkWidget *widget,
     return TRUE;
   }
 
-  if(table->mode != DT_THUMBTABLE_MODE_ZOOM) return FALSE;
+  if(table->mode != DT_THUMBTABLE_MODE_ZOOM)
+    return FALSE;
 
   if(event->button == 1 && event->type == GDK_BUTTON_PRESS)
   {
@@ -1309,7 +1340,8 @@ static gboolean _event_button_release(GtkWidget *widget,
     }
   }
 
-  if(table->mode != DT_THUMBTABLE_MODE_ZOOM) return FALSE;
+  if(table->mode != DT_THUMBTABLE_MODE_ZOOM)
+    return FALSE;
 
   table->dragging = FALSE;
 
@@ -1439,7 +1471,9 @@ static void _thumbs_ask_for_discard(dt_thumbtable_t *table)
 // called each time the preference change, to update specific parts
 static void _dt_pref_change_callback(gpointer instance, gpointer user_data)
 {
-  if(!user_data) return;
+  if(!user_data)
+    return;
+
   dt_get_sysresource_level();
   dt_opencl_update_settings();
   dt_configure_ppd_dpi(darktable.gui);
@@ -1472,7 +1506,9 @@ static void _dt_profile_change_callback(gpointer instance,
                                         const int type,
                                         gpointer user_data)
 {
-  if(!user_data) return;
+  if(!user_data)
+    return;
+
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
 
   for(const GList *l = table->list; l; l = g_list_next(l))
@@ -1487,7 +1523,9 @@ static void _dt_active_images_callback(gpointer instance, gpointer user_data)
 {
   // we only ensure here that the active image is the offset one
   // everything else (css, etc...) is handled in dt_thumbnail_t
-  if(!user_data) return;
+  if(!user_data)
+    return;
+
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
 
   if(!darktable.view_manager->active_images) return;
@@ -1498,7 +1536,9 @@ static void _dt_active_images_callback(gpointer instance, gpointer user_data)
 // this is called each time mouse_over id change
 static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
 {
-  if(!user_data) return;
+  if(!user_data)
+    return;
+
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
 
   const dt_imgid_t imgid = dt_control_get_mouse_over_id();
@@ -1555,7 +1595,8 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
              && (th->x + th->width * 1.5) < table->thumbs_area.width)
           {
             dt_thumbnail_t *th1 = (dt_thumbnail_t *)g_list_nth_data(table->list, pos + 1);
-            if(th1->groupid == groupid) b = FALSE;
+            if(th1->groupid == groupid)
+              b = FALSE;
           }
           if(b)
           {
@@ -1576,7 +1617,8 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
         {
           dt_thumbnail_t *th1 =
             (dt_thumbnail_t *)g_list_nth_data(table->list, pos - table->thumbs_per_row);
-          if(th1->groupid == groupid) b = FALSE;
+          if(th1->groupid == groupid)
+            b = FALSE;
         }
         if(b)
         {
@@ -1591,7 +1633,8 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
         {
           dt_thumbnail_t *th1 =
             (dt_thumbnail_t *)g_list_nth_data(table->list, pos + table->thumbs_per_row);
-          if(th1->groupid == groupid) b = FALSE;
+          if(th1->groupid == groupid)
+            b = FALSE;
         }
         if(b)
         {
@@ -1601,7 +1644,8 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
             dt_thumbnail_set_group_border(th, DT_THUMBNAIL_BORDER_BOTTOM);
         }
       }
-      if(th->group_borders != old_borders) gtk_widget_queue_draw(th->w_back);
+      if(th->group_borders != old_borders)
+        gtk_widget_queue_draw(th->w_back);
       pos++;
     }
   }
@@ -1615,7 +1659,9 @@ static void _dt_collection_changed_callback(gpointer instance,
                                             const dt_imgid_t next,
                                             gpointer user_data)
 {
-  if(!user_data) return;
+  if(!user_data)
+    return;
+
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
 
   dt_collection_history_save();
@@ -1809,10 +1855,13 @@ static void _dt_collection_changed_callback(gpointer instance,
         for(const GList *l = table->list; l; l = g_list_next(l))
         {
           dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
-          if(thumb->imgid == old_hover) in_list = TRUE;
-          if(thumb->imgid == next) in_list_next = TRUE;
+          if(thumb->imgid == old_hover)
+            in_list = TRUE;
+          if(thumb->imgid == next)
+            in_list_next = TRUE;
         }
-        if(!in_list && in_list_next) dt_control_set_mouse_over_id(next);
+        if(!in_list && in_list_next)
+          dt_control_set_mouse_over_id(next);
       }
     }
     dt_control_queue_redraw_center();
@@ -1960,8 +2009,10 @@ static void _event_dnd_begin(GtkWidget *widget,
         GdkPixbuf *scaled = gdk_pixbuf_scale_simple(source, w, h, GDK_INTERP_HYPER);
         gtk_drag_set_icon_pixbuf(context, scaled, 0, h);
 
-        if(source) g_object_unref(source);
-        if(scaled) g_object_unref(scaled);
+        if(source)
+          g_object_unref(source);
+        if(scaled)
+          g_object_unref(scaled);
       }
 
       dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
@@ -1969,7 +2020,8 @@ static void _event_dnd_begin(GtkWidget *widget,
   }
   // if we can reorder, let's update the thumbtable class accordingly
   // this will show up vertical bar for the image destination point
-  if(darktable.collection->params.sorts[DT_COLLECTION_SORT_CUSTOM_ORDER] && table->mode != DT_THUMBTABLE_MODE_ZOOM)
+  if(darktable.collection->params.sorts[DT_COLLECTION_SORT_CUSTOM_ORDER]
+     && table->mode != DT_THUMBTABLE_MODE_ZOOM)
   {
     // we set the class correctly
     dt_gui_add_class(table->widget, "dt_thumbtable_reorder");
@@ -1987,7 +2039,8 @@ void dt_thumbtable_event_dnd_received(GtkWidget *widget,
 {
   gboolean success = FALSE;
 
-  if((target_type == DND_TARGET_URI) && (selection_data != NULL)
+  if((target_type == DND_TARGET_URI)
+     && (selection_data != NULL)
      && (gtk_selection_data_get_length(selection_data) >= 0))
   {
     gchar **uri_list =
@@ -2009,7 +2062,8 @@ void dt_thumbtable_event_dnd_received(GtkWidget *widget,
     g_strfreev(uri_list);
     success = TRUE;
   }
-  else if((target_type == DND_TARGET_IMGID) && (selection_data != NULL)
+  else if((target_type == DND_TARGET_IMGID)
+          && (selection_data != NULL)
           && (gtk_selection_data_get_length(selection_data) >= 0))
   {
     dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
@@ -2160,7 +2214,9 @@ void dt_thumbtable_scrollbar_changed(dt_thumbtable_t *table,
 void dt_thumbtable_full_redraw(dt_thumbtable_t *table,
                                const gboolean force)
 {
-  if(!table) return;
+  if(!table)
+    return;
+
   if(_compute_sizes(table, force))
   {
     // we update the scrollbars
@@ -2204,14 +2260,19 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table,
       offset = (table->offset - 1) / table->thumbs_per_row * table->thumbs_per_row + 1;
 
       // ensure that we don't go up too far (we only want a space <thumb_size at the bottom)
-      if(table->offset != offset && offset > 1 && table->thumbs_per_row > 1)
+      if(table->offset != offset
+         && offset > 1
+         && table->thumbs_per_row > 1)
       {
         const uint32_t nb = dt_collection_get_collected_count();
         // get how many full blank line we have at the bottom
 
-        const int move
-            = (table->rows - 1) - ((nb - (offset - 1) + table->thumbs_per_row - 1) / table->thumbs_per_row);
-        if(move > 0) offset = MAX(1, offset - move * table->thumbs_per_row);
+        const int move =
+          (table->rows - 1)
+          - ((nb - (offset - 1)
+              + table->thumbs_per_row - 1) / table->thumbs_per_row);
+        if(move > 0)
+          offset = MAX(1, offset - move * table->thumbs_per_row);
       }
       table->offset = offset;
     }
@@ -2310,7 +2371,8 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table,
       }
       _pos_get_next(table, &posx, &posy);
       // if it's the offset, we record the imgid
-      if(nrow == table->offset) table->offset_imgid = nid;
+      if(nrow == table->offset)
+        table->offset_imgid = nid;
     }
 
     g_hash_table_destroy(htable);
@@ -2322,7 +2384,8 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table,
     _pos_compute_area(table);
 
     // we need to ensure there's no need to load other image on top/bottom
-    if(table->mode == DT_THUMBTABLE_MODE_ZOOM) nbnew += _thumbs_load_needed(table, NULL);
+    if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
+      nbnew += _thumbs_load_needed(table, NULL);
 
     if(darktable.view_manager->active_images
        && (table->mode == DT_THUMBTABLE_MODE_ZOOM
@@ -2368,7 +2431,8 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table,
     g_free(query);
     sqlite3_finalize(stmt);
 
-    if(darktable.unmuted & DT_DEBUG_CACHE) dt_mipmap_cache_print(darktable.mipmap_cache);
+    if(darktable.unmuted & DT_DEBUG_CACHE)
+      dt_mipmap_cache_print(darktable.mipmap_cache);
   }
 }
 
@@ -2487,7 +2551,8 @@ gboolean dt_thumbtable_set_offset(dt_thumbtable_t *table,
     return FALSE;
   table->offset = offset;
   dt_conf_set_int("plugins/lighttable/collect/history_pos0", table->offset);
-  if(redraw) dt_thumbtable_full_redraw(table, TRUE);
+  if(redraw)
+    dt_thumbtable_full_redraw(table, TRUE);
   return TRUE;
 }
 
@@ -2562,7 +2627,8 @@ static void _accel_duplicate(dt_action_t *action)
 
   const dt_imgid_t sourceid = dt_act_on_get_main_image();
   const dt_imgid_t newimgid = dt_image_duplicate(sourceid);
-  if(!dt_is_valid_imgid(newimgid)) return;
+  if(!dt_is_valid_imgid(newimgid))
+    return;
 
   if(strcmp(action->id, "duplicate image"))
     dt_history_delete_on_image(newimgid);
@@ -2769,7 +2835,8 @@ static gboolean _filemanager_check_rowid_visibility(dt_thumbtable_t *table,
                       table->thumbs_per_row * (table->rows - 1) - 1);
   dt_thumbnail_t *last = (dt_thumbnail_t *)g_list_nth_data(table->list, pos);
 
-  if(first->rowid <= rowid && last->rowid >= rowid) return TRUE;
+  if(first->rowid <= rowid && last->rowid >= rowid)
+    return TRUE;
   return FALSE;
 }
 
@@ -2809,7 +2876,9 @@ static gboolean _zoomable_check_rowid_visibility(dt_thumbtable_t *table,
 gboolean dt_thumbtable_check_imgid_visibility(dt_thumbtable_t *table,
                                               const dt_imgid_t imgid)
 {
-  if(!dt_is_valid_imgid(imgid)) return FALSE;
+  if(!dt_is_valid_imgid(imgid))
+    return FALSE;
+
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
     return _filemanager_check_rowid_visibility(table, _thumb_get_rowid(imgid));
   else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
@@ -2856,7 +2925,8 @@ static gboolean _filemanager_key_move(dt_thumbtable_t *table,
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "SELECT MAX(rowid) FROM memory.collected_images", -1,
                                 &stmt, NULL);
-    if(sqlite3_step(stmt) == SQLITE_ROW) maxrowid = sqlite3_column_int(stmt, 0);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+      maxrowid = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
 
     switch(move)
@@ -2879,12 +2949,14 @@ static gboolean _filemanager_key_move(dt_thumbtable_t *table,
       case DT_THUMBTABLE_MOVE_PAGEUP:
         newrowid = baserowid - table->thumbs_per_row * (table->rows - 1);
         while(newrowid < 1) newrowid += table->thumbs_per_row;
-        if(newrowid == baserowid) newrowid=1;
+        if(newrowid == baserowid)
+          newrowid = 1;
         break;
       case DT_THUMBTABLE_MOVE_PAGEDOWN:
         newrowid = baserowid + table->thumbs_per_row * (table->rows - 1);
         while(newrowid > maxrowid) newrowid -= table->thumbs_per_row;
-        if(newrowid == baserowid) newrowid = maxrowid;
+        if(newrowid == baserowid)
+          newrowid = maxrowid;
         break;
 
       // direct start/end
@@ -2905,7 +2977,8 @@ static gboolean _filemanager_key_move(dt_thumbtable_t *table,
   dt_control_set_mouse_over_id(imgid);
 
   // ensure the image is visible by moving the view if needed
-  if(newrowid != -1) _filemanager_ensure_rowid_visibility(table, newrowid);
+  if(newrowid != -1)
+    _filemanager_ensure_rowid_visibility(table, newrowid);
 
   // if needed, we set the selection
   if(select && dt_is_valid_imgid(imgid))
@@ -2951,7 +3024,8 @@ static gboolean _zoomable_key_move(dt_thumbtable_t *table,
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "SELECT MAX(rowid) FROM memory.collected_images",
                                 -1, &stmt, NULL);
-    if(sqlite3_step(stmt) == SQLITE_ROW) maxrowid = sqlite3_column_int(stmt, 0);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+      maxrowid = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
     moved = _zoomable_ensure_rowid_visibility(table, maxrowid);
   }
@@ -2968,9 +3042,11 @@ static gboolean _zoomable_key_move(dt_thumbtable_t *table,
 
   // and we set mouseover if we can
   dt_thumbnail_t *thumb = _thumb_get_under_mouse(table);
-  if(thumb) dt_control_set_mouse_over_id(thumb->imgid);
+  if(thumb)
+    dt_control_set_mouse_over_id(thumb->imgid);
   // if needed, we set the selection
-  if(thumb && select) dt_selection_select_range(darktable.selection, thumb->imgid);
+  if(thumb && select)
+    dt_selection_select_range(darktable.selection, thumb->imgid);
 
   // and we record new positions values
   dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
