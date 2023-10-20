@@ -105,6 +105,7 @@ const dt_iop_order_entry_t legacy_order[] = {
   { {21.5f }, "toneequal", 0},
   { {21.7f }, "crop", 0},
   { {21.8f }, "enlargecanvas", 0},
+  { {21.9f }, "overlay", 0},
   { {22.0f }, "graduatednd", 0},
   { {23.0f }, "basecurve", 0},
   { {24.0f }, "bilateral", 0},
@@ -206,7 +207,7 @@ const dt_iop_order_entry_t v30_order[] = {
   { {24.5f }, "crop", 0},            // should go after all modules
                                      // that may need a wider roi_in
   { {24.7f }, "enlargecanvas", 0},   // should go after all modules
-                                     // that may need a wider roi_in
+  { {24.7f }, "overlay", 0},         // that may need a wider roi_in
   { {25.0f }, "graduatednd", 0},
   { {26.0f }, "profile_gamma", 0},
   { {27.0f }, "equalizer", 0},
@@ -322,7 +323,7 @@ const dt_iop_order_entry_t v30_jpg_order[] = {
   { { 28.0f }, "crop", 0},            // should go after all modules
                                       // that may need a wider roi_in
   { { 28.0f }, "enlargecanvas", 0},   // should go after all modules
-                                      // that may need a wider roi_in
+  { { 28.0f }, "overlay", 0},         // that may need a wider roi_in
   { { 28.0f }, "graduatednd", 0},
   { { 28.0f }, "profile_gamma", 0},
   { { 28.0f }, "equalizer", 0},
@@ -921,6 +922,7 @@ GList *dt_ioppr_get_iop_order_list(const dt_imgid_t imgid,
           _insert_before(iop_order_list, "ashift", "cacorrectrgb");
           _insert_before(iop_order_list, "graduatednd", "crop");
           _insert_before(iop_order_list, "crop", "enlargecanvas");
+          _insert_before(iop_order_list, "crop", "overlay");
           _insert_before(iop_order_list, "colorbalance", "diffuse");
           _insert_before(iop_order_list, "nlmeans", "blurs");
           _insert_before(iop_order_list, "filmicrgb", "sigmoid");
