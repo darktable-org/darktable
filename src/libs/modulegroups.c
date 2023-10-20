@@ -1608,6 +1608,7 @@ void init_presets(dt_lib_module_t *self)
   AM("highpass");
   AM("lowlight");
   AM("lowpass");
+  AM("overlay");
   AM("soften");
   AM("splittoning");
   AM("vignette");
@@ -1698,6 +1699,7 @@ void init_presets(dt_lib_module_t *self)
   AM("colorize");
   AM("graduatednd");
   AM("grain");
+  AM("overlay");
   AM("splittoning");
   AM("vignette");
   AM("watermark");
@@ -1747,6 +1749,7 @@ void init_presets(dt_lib_module_t *self)
   AM("enlargecanvas");
   AM("graduatednd");
   AM("grain");
+  AM("overlay");
   AM("vignette");
   AM("watermark");
   AM("censorize");
