@@ -2327,12 +2327,6 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table,
     g_list_free(table->list);
     table->list = NULL;
 
-  /*      ("SELECT mi.rowid, mi.imgid, si.imgid"
-       " FROM memory.collected_images AS mi"
-       " LEFT JOIN main.selected_images AS si"
-       "   ON mi.imgid = si.imgid"
-       " WHERE mi.rowid>=%d LIMIT %d",*/
-
     // we add the thumbs
     int nbnew = 0;
     gchar *query
