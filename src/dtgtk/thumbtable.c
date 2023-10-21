@@ -1453,7 +1453,6 @@ static void _thumbs_ask_for_discard(dt_thumbtable_t *table)
     }
     g_free(txt);
   }
-  dt_print(DT_DEBUG_CACHE, "[thumb crawler] mipmap generating parameters changed, maxmip=%d\n", min_level);
   // in any case, we update thumbtable prefs values to new ones and update backthumbs database
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "UPDATE main.images"
@@ -1497,9 +1496,12 @@ static void _dt_pref_change_callback(gpointer instance, gpointer user_data)
 
   const char *mipsize = dt_conf_get_string_const("backthumbs_mipsize");
   darktable.backthumbs.mipsize = dt_mipmap_cache_get_min_mip_from_pref(mipsize);
-  darktable.backthumbs.writing = dt_conf_get_bool("cache_disk_backend");
   darktable.backthumbs.service = dt_conf_get_bool("backthumbs_initialize");
-  dt_set_backthumb_time(10.0);
+  if(darktable.backthumbs.mipsize != DT_MIPMAP_NONE
+        && !darktable.backthumbs.running)
+    dt_start_backtumbs_crawler();
+  else
+    dt_set_backthumb_time(10.0);
 }
 
 static void _dt_profile_change_callback(gpointer instance,

@@ -643,6 +643,14 @@ static dt_job_t *_backthumbs_job_create(void)
   return job;
 }
 
+void dt_start_backtumbs_crawler(void)
+{
+  // don't write thumbs if using memory database or on a non-sufficient system
+  if(!darktable.backthumbs.running && darktable.backthumbs.capable)
+    dt_control_add_job(darktable.control, DT_JOB_QUEUE_SYSTEM_BG,
+                   _backthumbs_job_create());
+}
+
 static char *_get_version_string(void)
 {
 #ifdef USE_LUA
@@ -1672,15 +1680,14 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   }
   free(config_info);
 
+  darktable.backthumbs.running = FALSE;
+  darktable.backthumbs.capable =
+      dt_get_num_procs() >= 4
+      && darktable.dtresources.total_memory / 1024lu / 1024lu >= 8000
+      && !(dbfilename_from_command && !strcmp(dbfilename_from_command, ":memory:"));
   if(init_gui)
   {
-    // don't write thumbs if using memory database or on a non-sufficient system
-    if(!(dbfilename_from_command && !strcmp(dbfilename_from_command, ":memory:"))
-        && (dt_get_num_procs() >= 4)
-        && (darktable.dtresources.total_memory / 1024lu / 1024lu >= 8000))
-      dt_control_add_job(darktable.control, DT_JOB_QUEUE_SYSTEM_BG,
-                       _backthumbs_job_create());
-
+    dt_start_backtumbs_crawler();
     // last but not least construct the popup that asks the user about
     // images whose xmp files are newer than the db entry
     if(changed_xmp_files)
