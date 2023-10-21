@@ -511,7 +511,8 @@ static void _thumb_move_or_create(dt_thumbtable_t *table,
                                   const int rowid,
                                   const int posx,
                                   const int posy,
-                                  const gboolean top)
+                                  const gboolean top,
+                                  const dt_thumbnail_selection_t sel)
 {
   if(!th_invalid || g_list_length(*th_invalid)==0)
   {
@@ -524,7 +525,7 @@ static void _thumb_move_or_create(dt_thumbtable_t *table,
                                              table->overlays,
                                              DT_THUMBNAIL_CONTAINER_LIGHTTABLE,
                                              table->show_tooltips,
-                                             DT_THUMBNAIL_SELECTION_UNKNOWN);
+                                             sel);
     if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
     {
       thumb->single_click = TRUE;
@@ -562,6 +563,8 @@ static void _thumb_move_or_create(dt_thumbtable_t *table,
       table->list = g_list_prepend(table->list, thumb);
     else
       table->list = g_list_append(table->list, thumb);
+    // eventually update the selected state
+    dt_thumbnail_set_selection(thumb, sel);
   }
 }
 
@@ -593,10 +596,12 @@ static int _thumbs_load_needed(dt_thumbtable_t *table,
     const int nb_to_load = space / table->thumb_size + (space % table->thumb_size != 0);
     // clang-format off
     gchar *query = g_strdup_printf(
-       "SELECT rowid, imgid"
-       " FROM memory.collected_images"
-       " WHERE rowid<%d"
-       " ORDER BY rowid DESC LIMIT %d",
+       "SELECT mi.rowid, mi.imgid, si.imgid"
+       " FROM memory.collected_images AS mi"
+       " LEFT JOIN main.selected_images AS si"
+       "   ON mi.imgid = si.imgid"
+       " WHERE mi.rowid<%d"
+       " ORDER BY mi.rowid DESC LIMIT %d",
         first->rowid, nb_to_load * table->thumbs_per_row);
     // clang-format on
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
@@ -609,13 +614,15 @@ static int _thumbs_load_needed(dt_thumbtable_t *table,
       if(posy < table->view_height) // we don't load invisible thumbs
       {
         const dt_imgid_t imgid = sqlite3_column_int(stmt, 1);
-        const int rowid =  sqlite3_column_int(stmt, 0);
+        const int rowid = sqlite3_column_int(stmt, 0);
+        const gboolean selected = (imgid == sqlite3_column_int(stmt, 2));
         _thumb_move_or_create(table,
                               th_invalid,
                               imgid,
                               rowid,
                               posx, posy,
-                              TRUE);
+                              TRUE,
+                              selected);
         changed++;
       }
       _pos_get_previous(table, &posx, &posy);
@@ -642,8 +649,10 @@ static int _thumbs_load_needed(dt_thumbtable_t *table,
     const int nb_to_load = space / table->thumb_size + (space % table->thumb_size != 0);
     // clang-format off
     gchar *query = g_strdup_printf(
-       "SELECT rowid, imgid"
-       " FROM memory.collected_images"
+       "SELECT mi.rowid, mi.imgid, si.imgid"
+       " FROM memory.collected_images AS mi"
+       " LEFT JOIN main.selected_images AS si"
+       "   ON mi.imgid = si.imgid"
        " WHERE rowid>%d"
        " ORDER BY rowid LIMIT %d",
         last->rowid, nb_to_load * table->thumbs_per_row);
@@ -660,12 +669,14 @@ static int _thumbs_load_needed(dt_thumbtable_t *table,
       {
         const dt_imgid_t imgid = sqlite3_column_int(stmt, 1);
         const int rowid =  sqlite3_column_int(stmt, 0);
+        const gboolean selected = (imgid == sqlite3_column_int(stmt, 2));
         _thumb_move_or_create(table,
                               th_invalid,
                               imgid,
                               rowid,
                               posx, posy,
-                              FALSE);
+                              FALSE,
+                              selected);
         changed++;
       }
       _pos_get_next(table, &posx, &posy);
