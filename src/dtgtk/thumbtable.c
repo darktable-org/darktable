@@ -523,7 +523,8 @@ static void _thumb_move_or_create(dt_thumbtable_t *table,
                                              rowid,
                                              table->overlays,
                                              DT_THUMBNAIL_CONTAINER_LIGHTTABLE,
-                                             table->show_tooltips);
+                                             table->show_tooltips,
+                                             DT_THUMBNAIL_SELECTION_UNKNOWN);
     if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
     {
       thumb->single_click = TRUE;
@@ -2315,13 +2316,21 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table,
     g_list_free(table->list);
     table->list = NULL;
 
+  /*      ("SELECT mi.rowid, mi.imgid, si.imgid"
+       " FROM memory.collected_images AS mi"
+       " LEFT JOIN main.selected_images AS si"
+       "   ON mi.imgid = si.imgid"
+       " WHERE mi.rowid>=%d LIMIT %d",*/
+
     // we add the thumbs
     int nbnew = 0;
     gchar *query
         = g_strdup_printf
-      ("SELECT rowid, imgid"
-       " FROM memory.collected_images"
-       " WHERE rowid>=%d LIMIT %d",
+      ("SELECT mi.rowid, mi.imgid, si.imgid"
+       " FROM memory.collected_images AS mi"
+       " LEFT JOIN main.selected_images AS si"
+       "   ON mi.imgid = si.imgid"
+       " WHERE mi.rowid>=%d LIMIT %d",
        offset, table->rows * table->thumbs_per_row - empty_start);
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
@@ -2329,6 +2338,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table,
     {
       const int nrow = sqlite3_column_int(stmt, 0);
       const int nid = sqlite3_column_int(stmt, 1);
+      const gboolean selected = (nid == sqlite3_column_int(stmt, 2));
 
       // first, we search if the thumb is already here
       dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_hash_table_lookup(htable, &nid);
@@ -2348,13 +2358,22 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table,
         dt_thumbnail_resize(thumb, table->thumb_size,
                             table->thumb_size, FALSE, IMG_TO_FIT);
         table->list = g_list_prepend(table->list, thumb);
+
+        // if there's a change in selection, update the thumb
+        dt_thumbnail_set_selection(thumb, selected);
       }
       else
       {
         // we create a completely new thumb
         thumb = dt_thumbnail_new(table->thumb_size,
-                                 table->thumb_size, IMG_TO_FIT, nid, nrow, table->overlays,
-                                 DT_THUMBNAIL_CONTAINER_LIGHTTABLE, table->show_tooltips);
+                                 table->thumb_size,
+                                 IMG_TO_FIT,
+                                 nid,
+                                 nrow,
+                                 table->overlays,
+                                 DT_THUMBNAIL_CONTAINER_LIGHTTABLE,
+                                 table->show_tooltips,
+                                 selected);
         if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
         {
           thumb->single_click = TRUE;
@@ -2407,16 +2426,6 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table,
       g_slist_free(darktable.view_manager->active_images);
       darktable.view_manager->active_images = NULL;
       DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
-    }
-
-    // if we force the redraw, we ensure selection is updated
-    if(force)
-    {
-      for(const GList *l = table->list; l; l = g_list_next(l))
-      {
-        dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
-        dt_thumbnail_update_selection(th);
-      }
     }
 
     dt_print(DT_DEBUG_LIGHTTABLE,
