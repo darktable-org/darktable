@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2022 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1986,8 +1986,6 @@ static void _lib_import_from_callback(GtkWidget *widget, dt_lib_module_t* self)
             _("_show this information again"), _("_understood & done"));
       if(understood)
         dt_conf_set_bool("setup_import_directory", TRUE);
-      else
-        return;
     }
   }
 
