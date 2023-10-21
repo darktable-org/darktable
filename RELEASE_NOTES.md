@@ -188,6 +188,13 @@ changes (where available).
 - Preference setting "after edit" for writing sidecar files now
   accepts also adding a tag as a valid user edit.
 
+- Added a thumbnail generating background job.
+
+  While the user is inactive in lighttable mode a background crawler
+  job generates thumbnails - as done via darktable-generate-cache. The
+  requested thumbnail size is defined via a preferences setting
+  defaulting to "never".
+
 ## Bug Fixes
 
 - Fixes OpenCL platform checking which could lead to a freeze of
@@ -223,6 +230,15 @@ changes (where available).
 - Fixed several mouse scroll wheel issues on macOS in combination with
   the shift modifier key, i.e.: Color harmonies width, module height,
   geotagging date/time.
+
+- Fixing a bug for duplicate xmp sidecars making sure it has not been
+  used before across different databases.
+
+- For large collections on the lighttable and when using small
+  thumbnails (more than 15 per line) using the scrollbar or scrolling
+  the mouse to move donw or up may be slow. This has been improved
+  drastically. The lighttable has been tested with more than 50k and
+  20 thumbnails per line to be fast and responsive.
 
 ## Lua
 
