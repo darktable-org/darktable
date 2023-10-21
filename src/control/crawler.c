@@ -975,11 +975,17 @@ void dt_update_thumbs_thread(void *p)
   dt_backthumb_t *bt = &darktable.backthumbs;
 
   bt->idle = (double)dt_conf_get_float("backthumbs_inactivity");
-  bt->writing = dt_conf_get_bool("cache_disk_backend");
-  bt->service = FALSE;
-  bt->running = TRUE;
+  const gboolean dwriting = dt_conf_get_bool("cache_disk_backend");
   const char *mipsize = dt_conf_get_string_const("backthumbs_mipsize");
   bt->mipsize = dt_mipmap_cache_get_min_mip_from_pref(mipsize);
+  bt->service = FALSE;
+  if(!dwriting || bt->mipsize == DT_MIPMAP_NONE)
+  {
+    bt->running = FALSE;
+    dt_print(DT_DEBUG_CACHE, "[thumb crawler] closing due to preferences setting\n");
+    return;
+  }
+  bt->running = TRUE;
 
   dt_set_backthumb_time(5.0);
   int updated = 0;
@@ -1007,10 +1013,11 @@ void dt_update_thumbs_thread(void *p)
     if(bt->service)
       _reinitialize_thumbs_database();
 
-    if(_lighttable_silent()
-        && bt->writing
-        && bt->mipsize != DT_MIPMAP_NONE)
+    if(_lighttable_silent() && bt->mipsize != DT_MIPMAP_NONE)
       updated += _update_all_thumbs(bt->mipsize);
+
+    if(bt->mipsize == DT_MIPMAP_NONE)
+      bt->running = FALSE;
   }
   dt_print(DT_DEBUG_CACHE, "[thumb crawler] closing, %d mipmaps updated\n", updated);
 }
