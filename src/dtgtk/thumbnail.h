@@ -62,6 +62,13 @@ typedef enum dt_thumbnail_selection_mode_t
   DT_THUMBNAIL_SEL_MODE_MOD_ONLY    // user can only change selection with mouse AND CTRL or SHIFT
 } dt_thumbnail_selection_mode_t;
 
+typedef enum dt_thumbnail_selection_t
+{
+  DT_THUMBNAIL_SELECTION_UNSELECTED= 0, // value should stay 0 to be equivalent to FALSE
+  DT_THUMBNAIL_SELECTION_SELECTED= 1,   // user should stay 1 to be equivalent to TRUE
+  DT_THUMBNAIL_SELECTION_UNKNOWN
+} dt_thumbnail_selection_t;
+
 typedef struct
 {
   dt_imgid_t imgid, rowid;
@@ -146,8 +153,15 @@ typedef struct
   gboolean busy; // should we show the busy message ?
 } dt_thumbnail_t;
 
-dt_thumbnail_t *dt_thumbnail_new(int width, int height, float zoom_ratio, dt_imgid_t imgid, int rowid, dt_thumbnail_overlay_t over,
-                                 dt_thumbnail_container_t container, gboolean tooltip);
+dt_thumbnail_t *dt_thumbnail_new(int width,
+                                 int height,
+                                 float zoom_ratio,
+                                 dt_imgid_t imgid,
+                                 int rowid,
+                                 dt_thumbnail_overlay_t over,
+                                 dt_thumbnail_container_t container,
+                                 gboolean tooltip,
+                                 const dt_thumbnail_selection_t sel);
 void dt_thumbnail_destroy(dt_thumbnail_t *thumb);
 GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio);
 void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean force, float zoom_ratio);
@@ -163,6 +177,9 @@ void dt_thumbnail_update_infos(dt_thumbnail_t *thumb);
 
 // check if the image is selected and set its state and background
 void dt_thumbnail_update_selection(dt_thumbnail_t *thumb);
+// force the selected state of a thumb
+void dt_thumbnail_set_selection(dt_thumbnail_t *thumb,
+                                const gboolean selected);
 
 // force image recomputing
 void dt_thumbnail_image_refresh(dt_thumbnail_t *thumb);

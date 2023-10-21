@@ -287,9 +287,15 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     GtkWidget *hb = gtk_grid_new();
     const dt_imgid_t imgid = sqlite3_column_int(stmt, 1);
     dt_gui_add_class(hb, "dt_overlays_always");
-    dt_thumbnail_t *thumb = dt_thumbnail_new(100, 100, IMG_TO_FIT, imgid, -1,
+    dt_thumbnail_t *thumb = dt_thumbnail_new(100,
+                                             100,
+                                             IMG_TO_FIT,
+                                             imgid,
+                                             -1,
                                              DT_THUMBNAIL_OVERLAYS_ALWAYS_NORMAL,
-                                             DT_THUMBNAIL_CONTAINER_LIGHTTABLE, TRUE);
+                                             DT_THUMBNAIL_CONTAINER_LIGHTTABLE,
+                                             TRUE,
+                                             DT_THUMBNAIL_SELECTION_UNSELECTED);
     thumb->sel_mode = DT_THUMBNAIL_SEL_MODE_DISABLED;
     thumb->disable_mouseover = TRUE;
     thumb->disable_actions = TRUE;

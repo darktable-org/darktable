@@ -1128,12 +1128,7 @@ void dt_thumbnail_update_selection(dt_thumbnail_t *thumb)
     selected = TRUE;
 
   // if there's a change, update the thumb
-  if(selected != thumb->selected)
-  {
-    thumb->selected = selected;
-    _thumb_update_icons(thumb);
-    gtk_widget_queue_draw(thumb->w_main);
-  }
+  dt_thumbnail_set_selection(thumb, selected);
 }
 
 static void _dt_selection_changed_callback(gpointer instance, gpointer user_data)
@@ -1647,7 +1642,8 @@ dt_thumbnail_t *dt_thumbnail_new(const int width,
                                  const int rowid,
                                  const dt_thumbnail_overlay_t over,
                                  const dt_thumbnail_container_t container,
-                                 const gboolean tooltip)
+                                 const gboolean tooltip,
+                                 const dt_thumbnail_selection_t sel)
 {
   dt_thumbnail_t *thumb = calloc(1, sizeof(dt_thumbnail_t));
   thumb->width = width;
@@ -1689,7 +1685,10 @@ dt_thumbnail_t *dt_thumbnail_new(const int width,
 
   // let's see if the images are selected or active or mouse_overed
   _dt_active_images_callback(NULL, thumb);
-  _dt_selection_changed_callback(NULL, thumb);
+  if (sel == DT_THUMBNAIL_SELECTION_UNKNOWN)
+    _dt_selection_changed_callback(NULL, thumb);
+  else
+    thumb->selected = sel;
   if(dt_control_get_mouse_over_id() == thumb->imgid)
     dt_thumbnail_set_mouseover(thumb, TRUE);
 
@@ -2327,6 +2326,15 @@ void dt_thumbnail_surface_destroy(dt_thumbnail_t *thumb)
       cairo_surface_destroy(thumb->img_surf);
   thumb->img_surf = NULL;
   thumb->img_surf_dirty = TRUE;
+}
+
+void dt_thumbnail_set_selection(dt_thumbnail_t *thumb,
+                                const gboolean selected)
+{
+  if(thumb->selected == selected) return;
+  thumb->selected = selected;
+  _thumb_update_icons(thumb);
+  gtk_widget_queue_draw(thumb->w_main);
 }
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
