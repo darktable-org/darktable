@@ -64,6 +64,7 @@ void dt_dev_init(dt_develop_t *dev,
   dev->history_end = 0;
   dev->history = NULL; // empty list
   dev->history_postpone_invalidate = FALSE;
+  dev->module_filter_out = NULL;
 
   dev->gui_attached = gui_attached;
   dev->full.width = -1;
@@ -207,6 +208,8 @@ void dt_dev_cleanup(dt_develop_t *dev)
   dt_conf_set_int("darkroom/ui/overexposed/colorscheme", dev->overexposed.colorscheme);
   dt_conf_set_float("darkroom/ui/overexposed/lower", dev->overexposed.lower);
   dt_conf_set_float("darkroom/ui/overexposed/upper", dev->overexposed.upper);
+
+  g_list_free(dev->module_filter_out);
 }
 
 void dt_dev_process_image(dt_develop_t *dev)
@@ -416,6 +419,16 @@ restart:
   const int y = port ? MAX(0, scale * pipe->processed_height * (.5 + zoom_y) - ht / 2) : 0;
 
   dt_get_times(&start);
+
+  // disable some modules if needed
+  for(GList *m = dev->module_filter_out;
+      m;
+      m = g_list_next(m))
+  {
+    char *mod = (char *)(m->data);
+    dt_dev_pixelpipe_module_enabled(port->pipe, mod, FALSE);
+  }
+
   if(dt_dev_pixelpipe_process(pipe, dev, x, y, wd, ht, scale))
   {
     // interrupted because image changed?
@@ -3455,7 +3468,8 @@ void dt_dev_image(const dt_imgid_t imgid,
                   size_t *buf_height,
                   float *zoom_x,
                   float *zoom_y,
-                  const int32_t snapshot_id)
+                  const int32_t snapshot_id,
+                  GList *module_filter_out)
 {
   dt_develop_t dev;
   dt_dev_init(&dev, TRUE);
@@ -3483,6 +3497,8 @@ void dt_dev_image(const dt_imgid_t imgid,
   }
 
   // process the pipe
+
+  dev.module_filter_out = module_filter_out;
 
   dt_dev_process_image_job(&dev, &dev.full, pipe, -1);
 
