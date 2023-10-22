@@ -379,11 +379,11 @@ void gui_init(dt_iop_module_t *self)
 {
   dt_iop_primaries_gui_data_t *g = IOP_GUI_ALLOC(primaries);
 
-  g->red_hue = _setup_hue_slider(self, "red_hue", _("red primary hue"));
+  g->red_hue = _setup_hue_slider(self, "red_hue", _("shift red towards yellow or magenta"));
   g->red_purity = _setup_purity_slider(self, "red_purity", _("red primary purity"));
-  g->green_hue = _setup_hue_slider(self, "green_hue", _("green primary hue"));
+  g->green_hue = _setup_hue_slider(self, "green_hue", _("shift green towards cyan or yellow"));
   g->green_purity = _setup_purity_slider(self, "green_purity", _("green primary purity"));
-  g->blue_hue = _setup_hue_slider(self, "blue_hue", _("blue primary hue"));
+  g->blue_hue = _setup_hue_slider(self, "blue_hue", _("shift blue towards magenta or cyan"));
   g->blue_purity = _setup_purity_slider(self, "blue_purity", _("blue primary purity"));
 
   g->achromatic_tint_hue = dt_bauhaus_slider_from_params(self, "achromatic_tint_hue");
