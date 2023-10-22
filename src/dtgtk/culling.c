@@ -49,28 +49,6 @@ static void _list_remove_thumb(gpointer user_data)
   dt_thumbnail_destroy(thumb);
 }
 
-static int _get_selection_count()
-{
-  int nb = 0;
-  gchar *query = g_strdup(  //TODO: since this is a fixed string, do we need to copy?
-      "SELECT count(*)"
-      " FROM main.selected_images AS s, memory.collected_images as m"
-      " WHERE s.imgid = m.imgid");
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  if(stmt != NULL)
-  {
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      nb = sqlite3_column_int(stmt, 0);
-    }
-    sqlite3_finalize(stmt);
-  }
-  g_free(query);
-
-  return nb;
-}
-
 // get imgid from rowid
 static dt_imgid_t _thumb_get_imgid(int rowid)
 {
@@ -1176,12 +1154,10 @@ static void _thumbs_prefetch(dt_culling_t *table)
       ("SELECT m.imgid"
        " FROM memory.collected_images AS m, main.selected_images AS s"
        " WHERE m.imgid = s.imgid"
-       "   AND m.rowid > (SELECT mm.rowid"
-       "                  FROM memory.collected_images AS mm"
-       "                  WHERE mm.imgid=%d)"
+       "   AND m.rowid > %d"
        " ORDER BY m.rowid "
        " LIMIT 1",
-       last->imgid);
+       last->rowid);
     // clang-format on
   }
   else
@@ -1190,12 +1166,10 @@ static void _thumbs_prefetch(dt_culling_t *table)
     query = g_strdup_printf
       ("SELECT m.imgid"
        " FROM memory.collected_images AS m "
-       " WHERE m.rowid > (SELECT mm.rowid"
-       "                  FROM memory.collected_images AS mm"
-       "                  WHERE mm.imgid=%d) "
+       " WHERE m.rowid > %d"
        " ORDER BY m.rowid "
        " LIMIT 1",
-       last->imgid);
+       last->rowid);
     // clang-format on
   }
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
@@ -1217,12 +1191,10 @@ static void _thumbs_prefetch(dt_culling_t *table)
       ("SELECT m.imgid"
        " FROM memory.collected_images AS m, main.selected_images AS s"
        " WHERE m.imgid = s.imgid"
-       "   AND m.rowid < (SELECT mm.rowid"
-       "                  FROM memory.collected_images AS mm"
-       "                  WHERE mm.imgid=%d)"
+       "   AND m.rowid < %d"
        " ORDER BY m.rowid DESC "
        " LIMIT 1",
-       prev->imgid);
+       prev->rowid);
     // clang-format on
   }
   else
@@ -1231,12 +1203,10 @@ static void _thumbs_prefetch(dt_culling_t *table)
     query = g_strdup_printf
       ("SELECT m.imgid"
        " FROM memory.collected_images AS m"
-       " WHERE m.rowid < (SELECT mm.rowid"
-       "                  FROM memory.collected_images AS mm"
-       "                  WHERE mm.imgid=%d) "
+       " WHERE m.rowid < %d"
        " ORDER BY m.rowid DESC "
        " LIMIT 1",
-       prev->imgid);
+       prev->rowid);
     // clang-format on
   }
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
@@ -1307,7 +1277,6 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table,
     // clang-format on
   }
 
-  int pos = 0;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -1377,7 +1346,6 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table,
     }
     // if it's the offset, we record the imgid
     if(nrow == table->offset) table->offset_imgid = nid;
-    pos++;
   }
   // list was built in reverse order, so un-reverse it
   table->list = g_list_reverse(table->list);
