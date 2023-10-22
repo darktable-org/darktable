@@ -277,6 +277,13 @@ int legacy_params(dt_iop_module_t *self,
     memcpy(n, o, sizeof(struct dt_iop_borders_params_v3_t));
     n->basis = DT_IOP_BORDERS_BASIS_AUTO;
 
+    if (n->aspect == DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE && !n->max_border_size)
+    {
+      // the legacy behaviour is, when a constant border is used and the
+      // max_border_size flag is set, the width is always used as basis.
+      n->basis = DT_IOP_BORDERS_BASIS_WIDTH;
+    }
+
     *new_params = n;
     *new_params_size = sizeof(dt_iop_borders_params_v4_t);
     *new_version = 4;
@@ -432,13 +439,7 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
   const gboolean is_constant_border = d->aspect == DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE;
 
   dt_iop_basis_t basis = d->basis;
-  if (is_constant_border && !d->max_border_size)
-  {
-    // the legacy behaviour is, when a constant border is used and the
-    // max_border_size flag is set, the width is always used as basis.
-    basis = DT_IOP_BORDERS_BASIS_WIDTH;
-  }
-  else if (basis == DT_IOP_BORDERS_BASIS_AUTO)
+  if (basis == DT_IOP_BORDERS_BASIS_AUTO)
   {
     // automatic/legacy/default behaviour:
     // for a constant border be sure to base the computation on the
