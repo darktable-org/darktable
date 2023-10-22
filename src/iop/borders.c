@@ -135,7 +135,7 @@ int legacy_params(dt_iop_module_t *self,
                   int32_t *new_params_size,
                   int *new_version)
 {
-  typedef struct dt_iop_borders_params_v4_t
+  typedef struct dt_iop_borders_params_v3_t
   {
     float color[3];           // border color $DEFAULT: 1.0
     float aspect;             /* aspect ratio of the outer frame w/h
@@ -161,11 +161,9 @@ int legacy_params(dt_iop_module_t *self,
     float frame_color[3];     // frame line color $DEFAULT: 0.0
     gboolean max_border_size; /* the way border size is computed
                                  $DEFAULT: TRUE */
-    dt_iop_basis_t basis;     /* side of the photo to use as basis for the size calculation
-                                 $DEFAULT: 0 $DESCRIPTION: "basis" */
-  } dt_iop_borders_params_v4_t;
+  } dt_iop_borders_params_v3_t;
 
-  dt_iop_borders_params_v4_t default_v4 =
+  dt_iop_borders_params_v3_t default_v3 =
     { { 1.0f, 1.0f, 1.0f },
       DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE,
       "                   ",
@@ -178,8 +176,7 @@ int legacy_params(dt_iop_module_t *self,
       0.0f,
       0.5f,
       { 0.0f, 0.0f, 0.0f },
-      TRUE,
-      0
+      TRUE
     };
 
   if(old_version == 1)
@@ -192,10 +189,10 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_borders_params_v1_t;
 
     const dt_iop_borders_params_v1_t *o = (dt_iop_borders_params_v1_t *)old_params;
-    dt_iop_borders_params_v4_t *n =
-      (dt_iop_borders_params_v4_t *)malloc(sizeof(dt_iop_borders_params_v4_t));
+    dt_iop_borders_params_v3_t *n =
+      (dt_iop_borders_params_v3_t *)malloc(sizeof(dt_iop_borders_params_v3_t));
 
-    *n = default_v4; // start with a fresh copy of default parameters
+    *n = default_v3; // start with a fresh copy of default parameters
     memcpy(n->color, o->color, sizeof(o->color));
     n->aspect = (o->aspect < 1) ? 1 / o->aspect : o->aspect;
     // no auto orientation in legacy param due to already convert aspect ratio
@@ -205,8 +202,8 @@ int legacy_params(dt_iop_module_t *self,
     n->max_border_size = FALSE;
 
     *new_params = n;
-    *new_params_size = sizeof(dt_iop_borders_params_v4_t);
-    *new_version = 4;
+    *new_params_size = sizeof(dt_iop_borders_params_v3_t);
+    *new_version = 3;
     return 0;
   }
 
@@ -229,21 +226,21 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_borders_params_v2_t;
 
     const dt_iop_borders_params_v2_t *o = (dt_iop_borders_params_v2_t *)old_params;
-    dt_iop_borders_params_v4_t *n =
-      (dt_iop_borders_params_v4_t *)malloc(sizeof(dt_iop_borders_params_v4_t));
+    dt_iop_borders_params_v3_t *n =
+      (dt_iop_borders_params_v3_t *)malloc(sizeof(dt_iop_borders_params_v3_t));
 
     memcpy(n, o, sizeof(struct dt_iop_borders_params_v2_t));
     n->max_border_size = FALSE;
 
     *new_params = n;
-    *new_params_size = sizeof(dt_iop_borders_params_v4_t);
-    *new_version = 4;
+    *new_params_size = sizeof(dt_iop_borders_params_v3_t);
+    *new_version = 3;
     return 0;
   }
 
   if(old_version == 3)
   {
-    typedef struct dt_iop_borders_params_v3_t
+    typedef struct dt_iop_borders_params_v4_t
     {
       float color[3];           // border color $DEFAULT: 1.0
       float aspect;             /* aspect ratio of the outer frame w/h
@@ -269,7 +266,9 @@ int legacy_params(dt_iop_module_t *self,
       float frame_color[3];     // frame line color $DEFAULT: 0.0
       gboolean max_border_size; /* the way border size is computed
                                   $DEFAULT: TRUE */
-    } dt_iop_borders_params_v3_t;
+      dt_iop_basis_t basis;     /* side of the photo to use as basis for the size calculation
+                                  $DEFAULT: 0 $DESCRIPTION: "basis" */
+    } dt_iop_borders_params_v4_t;
 
     const dt_iop_borders_params_v3_t *o = (dt_iop_borders_params_v3_t *)old_params;
     dt_iop_borders_params_v4_t *n =
