@@ -2531,6 +2531,21 @@ void dt_dev_pixelpipe_disable_before(dt_dev_pixelpipe_t *pipe, const char *op)
   }
 }
 
+void dt_dev_pixelpipe_module_enabled(dt_dev_pixelpipe_t *pipe, const char *op, const gboolean enable)
+{
+  for(GList *nodes = pipe->nodes;
+      nodes;
+      nodes = g_list_next(nodes))
+  {
+    dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
+    if(dt_iop_module_is(piece->module->so, op))
+    {
+      piece->enabled = enable;
+      break;
+    }
+  }
+}
+
 // returns TRUE in case of error or early exit
 static gboolean _dev_pixelpipe_process_rec_and_backcopy(
                   dt_dev_pixelpipe_t *pipe,
