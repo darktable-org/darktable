@@ -673,6 +673,12 @@ int main(int argc, char *arg[])
     output_ext = g_strdup("tiff");
   }
 
+  if(!strcmp(output_ext, "jxl"))
+  {
+    g_free(output_ext);
+    output_ext = g_strdup("jpegxl");
+  }
+
   // init the export data structures
   dt_imageio_module_format_t *format;
   dt_imageio_module_storage_t *storage;
