@@ -1162,6 +1162,36 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       else
         img->exif_crop = 1.0f;
     }
+    else
+    // Tag for focal length in 35mm is not available, but we have data to calculate crop factor:
+    if(FIND_EXIF_TAG("Exif.Photo.FocalPlaneXResolution"))
+    {
+      float x_resolution = pos->toFloat();
+      FIND_EXIF_TAG("Exif.Photo.FocalPlaneYResolution");
+      float y_resolution = pos->toFloat();
+      FIND_EXIF_TAG("Exif.Photo.FocalPlaneResolutionUnit");
+      const guint res_unit = pos->toLong();
+      if(res_unit == 2) // inch
+      {
+        x_resolution /= 25.4f;
+        y_resolution /= 25.4f;
+      }
+      else
+      if(res_unit == 3) // centimeter
+      {
+        x_resolution /= 10.0f;
+        y_resolution /= 10.0f;
+      }
+      FIND_EXIF_TAG("Exif.Image.ImageWidth");
+      const guint image_width = pos->toLong();
+      FIND_EXIF_TAG("Exif.Image.ImageLength");
+      const guint image_height = pos->toLong();
+      const float x_size_mm = (float)image_width / x_resolution;
+      const float y_size_mm = (float)image_height / y_resolution;
+      const float sensor_diagonal = dt_fast_hypotf(x_size_mm, y_size_mm);
+      const float fullframe_diagonal = dt_fast_hypotf(36.0f, 24.0f);
+      img->exif_crop = fullframe_diagonal / sensor_diagonal;
+    }
 
     if(_check_usercrop(exifData, img))
     {
