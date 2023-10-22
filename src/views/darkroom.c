@@ -1439,10 +1439,8 @@ static void _iso_12646_quickbutton_clicked(GtkWidget *w, gpointer user_data)
   dt_develop_t *dev = (dt_develop_t *)user_data;
   if(!dev->gui_attached) return;
 
-  // FIXME create separate toggle for preview2
-  dev->full.iso_12646 = dev->preview2.iso_12646 = !dev->full.iso_12646;
+  dev->full.iso_12646 = !dev->full.iso_12646;
   dt_dev_configure(&dev->full);
-  dt_dev_configure(&dev->preview2);
 }
 
 /* overlay color */
@@ -1776,6 +1774,13 @@ end:
   }
 }
 
+static void display2_iso12646_callback(GtkToggleButton *checkbutton, dt_develop_t *dev)
+{
+  dev->preview2.iso_12646 = gtk_toggle_button_get_active(checkbutton);
+  dt_conf_set_bool("second_window/iso_12646", dev->preview2.iso_12646);
+  dt_dev_configure(&dev->preview2);
+}
+
 static void histogram_profile_callback(GtkWidget *combo, gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
@@ -1815,22 +1820,15 @@ end:
   }
 }
 
-// FIXME: turning off lcms2 in prefs hides the widget but leaves the window sized like before -> ugly-ish
 static void _preference_changed(gpointer instance, gpointer user_data)
 {
   GtkWidget *display_intent = GTK_WIDGET(user_data);
 
   const int force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
-  if(force_lcms2)
-  {
-    gtk_widget_set_no_show_all(display_intent, FALSE);
-    gtk_widget_set_visible(display_intent, TRUE);
-  }
-  else
-  {
-    gtk_widget_set_no_show_all(display_intent, TRUE);
-    gtk_widget_set_visible(display_intent, FALSE);
-  }
+
+  gtk_widget_set_no_show_all(display_intent, !force_lcms2);
+  gtk_widget_set_visible(display_intent, force_lcms2);
+
   dt_get_sysresource_level();
   dt_opencl_update_settings();
   dt_configure_ppd_dpi(darktable.gui);
@@ -2358,6 +2356,8 @@ void gui_init(dt_view_t *self)
     connect_button_press_release(dev->second_wnd_button, dev->profile.floating_window);
     connect_button_press_release(dev->profile.softproof_button, dev->profile.floating_window);
     connect_button_press_release(dev->profile.gamut_button, dev->profile.floating_window);
+    // randomly connect to one of the buttons, so widgets can be realized
+    gtk_popover_set_relative_to(GTK_POPOVER(dev->profile.floating_window), dev->second_wnd_button);
 
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_container_add(GTK_CONTAINER(dev->profile.floating_window), vbox);
@@ -2398,12 +2398,18 @@ void gui_init(dt_view_t *self)
     dt_bauhaus_combobox_set_entries_ellipsis(softproof_profile, PANGO_ELLIPSIZE_MIDDLE);
     dt_bauhaus_combobox_set_entries_ellipsis(histogram_profile, PANGO_ELLIPSIZE_MIDDLE);
 
+    GtkWidget *display2_iso12646 = gtk_check_button_new_with_label(_("second preview window ISO 12646 color assessment"));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(display2_iso12646), dev->preview2.iso_12646);
+    ac = dt_action_define(DT_ACTION(self), NULL, N_("color assessment second preview"), display2_iso12646, &dt_action_def_toggle);
+    dt_shortcut_register(ac, 0, 0, GDK_KEY_b, GDK_MOD1_MASK);
+
     gtk_box_pack_start(GTK_BOX(vbox), display_profile, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), display_intent, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 0);
 
     gtk_box_pack_start(GTK_BOX(vbox), display2_profile, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), display2_intent, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), display2_iso12646, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 0);
 
     gtk_box_pack_start(GTK_BOX(vbox), softproof_profile, TRUE, TRUE, 0);
@@ -2471,6 +2477,7 @@ void gui_init(dt_view_t *self)
 
     g_signal_connect(G_OBJECT(display_profile), "value-changed", G_CALLBACK(display_profile_callback), dev);
     g_signal_connect(G_OBJECT(display2_profile), "value-changed", G_CALLBACK(display2_profile_callback), dev);
+    g_signal_connect(G_OBJECT(display2_iso12646), "toggled", G_CALLBACK(display2_iso12646_callback), dev);
     g_signal_connect(G_OBJECT(softproof_profile), "value-changed", G_CALLBACK(softproof_profile_callback), dev);
     g_signal_connect(G_OBJECT(histogram_profile), "value-changed", G_CALLBACK(histogram_profile_callback), dev);
 
@@ -3083,7 +3090,7 @@ void leave(dt_view_t *self)
   if(dev->full.iso_12646)
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dev->iso_12646.button), FALSE);
-    dev->full.iso_12646 = dev->preview2.iso_12646 = FALSE;
+    dev->full.iso_12646 = FALSE;
     dev->full.width = dev->full.orig_width;
     dev->full.height = dev->full.orig_height;
     dev->preview2.width = dev->preview2.orig_width;

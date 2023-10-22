@@ -134,7 +134,8 @@ void dt_dev_init(dt_develop_t *dev,
   dev->overexposed.lower = dt_conf_get_float("darkroom/ui/overexposed/lower");
   dev->overexposed.upper = dt_conf_get_float("darkroom/ui/overexposed/upper");
 
-  dev->full.iso_12646 = dev->preview2.iso_12646 = FALSE;
+  dev->full.iso_12646 = FALSE;
+  dev->preview2.iso_12646 = dt_conf_get_bool("second_window/iso_12646");
 
   dev->full.zoom = dev->preview2.zoom = DT_ZOOM_FIT;
   dev->full.closeup = dev->preview2.closeup = 0;
