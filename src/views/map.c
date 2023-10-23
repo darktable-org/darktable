@@ -81,7 +81,7 @@ typedef struct dt_map_t
   int max_images_drawn;
   dt_map_box_t bbox;
   int time_out;
-  int timeout_event_source;
+  guint timeout_event_source;
   int thumbnail;
   dt_map_image_t *last_hovered_entry;
   struct

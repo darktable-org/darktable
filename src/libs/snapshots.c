@@ -65,7 +65,7 @@ typedef struct dt_lib_snapshots_t
   int selected;
   dt_lib_snapshot_params_t params;
   gboolean snap_requested;
-  int expose_again_timeout_id;
+  guint expose_again_timeout_id;
 
   /* current active snapshots */
   uint32_t num_snapshots;
@@ -159,6 +159,7 @@ static gboolean _snap_expose_again(gpointer user_data)
 {
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)user_data;
 
+  d->expose_again_timeout_id = 0;
   d->snap_requested = TRUE;
   dt_control_queue_redraw_center();
   return FALSE;
@@ -197,7 +198,7 @@ void gui_post_expose(dt_lib_module_t *self,
       snap->width  = d->params.width;
       snap->height = d->params.height;
       d->snap_requested = FALSE;
-      d->expose_again_timeout_id = -1;
+      d->expose_again_timeout_id = 0;
     }
 
     // if ctx has changed, get a new snapshot at the right zoom
@@ -214,7 +215,7 @@ void gui_post_expose(dt_lib_module_t *self,
 
       snap->ctx = ctx;
       if(!d->panning && dev->darkroom_mouse_in_center_area) d->snap_requested = TRUE;
-      if(d->expose_again_timeout_id != -1) g_source_remove(d->expose_again_timeout_id);
+      if(d->expose_again_timeout_id != 0) g_source_remove(d->expose_again_timeout_id);
       d->expose_again_timeout_id = g_timeout_add(150, _snap_expose_again, d);
     }
 
@@ -646,7 +647,7 @@ void gui_init(dt_lib_module_t *self)
   d->panning = FALSE;
   d->selected = -1;
   d->snap_requested = FALSE;
-  d->expose_again_timeout_id = -1;
+  d->expose_again_timeout_id = 0;
   d->num_snapshots = 0;
 
   /* initialize ui containers */
