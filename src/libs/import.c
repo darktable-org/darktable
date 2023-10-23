@@ -145,7 +145,7 @@ typedef struct dt_lib_import_t
     GtkTreeView *folderview;
     GtkTreeViewColumn *foldercol;
     GtkTreeIter iter;
-    int event;
+    guint event;
     guint nb;
     GdkPixbuf *eye;
     GtkTreeViewColumn *pixcol;
