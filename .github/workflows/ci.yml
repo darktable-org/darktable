@@ -43,7 +43,7 @@ permissions:
 jobs:
 
   Linux:
-    name: Linux.${{ matrix.os.code }}.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
+    name: Linux.${{ matrix.compiler.compiler }}
     runs-on: ${{ matrix.os.label }}
     strategy:
       fail-fast: true
@@ -168,7 +168,7 @@ jobs:
           ./run.sh --no-opencl --no-deltae --fast-fail
 
   Windows:
-    name: Windows.${{ matrix.msystem }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
+    name: Windows.${{ matrix.compiler.compiler }}
     runs-on: windows-latest
     strategy:
       fail-fast: true
@@ -282,7 +282,7 @@ jobs:
                  --conf plugins/lighttable/export/iccintent=0
 
   macOS:
-    name: macOS.${{ matrix.compiler.compiler }}.${{ matrix.build.xcode }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
+    name: macOS.${{ matrix.compiler.compiler }}.${{ matrix.build.xcode }}
     runs-on: ${{ matrix.build.os }}
     strategy:
       fail-fast: true
