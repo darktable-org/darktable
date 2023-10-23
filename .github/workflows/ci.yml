@@ -177,6 +177,9 @@ jobs:
       matrix:
         btype:
           - Debug
+        compiler:
+          - { compiler: GNU,  CC: gcc,   CXX: g++ }
+          - { compiler: LLVM, CC: clang, CXX: clang++ }
         msystem:
           #- CLANG64
           - UCRT64
@@ -190,6 +193,8 @@ jobs:
       run:
         shell: msys2 {0}
     env:
+      CC: ${{ matrix.compiler.CC }}
+      CXX: ${{ matrix.compiler.CXX }}
       SRC_DIR: ${{ github.workspace }}/src
       BUILD_DIR: ${{ github.workspace }}/build
       INSTALL_PREFIX: ${{ github.workspace }}/install
@@ -208,6 +213,7 @@ jobs:
             po4a
           pacboy: >-
             cc:p
+            clang:p
             cmake:p
             cmocka:p
             libxslt:p
@@ -243,6 +249,7 @@ jobs:
             omp:p
             openexr:p
             openjpeg2:p
+            openmp:p
             osm-gps-map:p
             portmidi:p
             pugixml:p
