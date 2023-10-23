@@ -58,7 +58,6 @@ jobs:
         target:
           - build
         generator:
-          #- Unix Makefiles
           - Ninja
     env:
       CC: ${{ matrix.compiler.CC }}
@@ -181,12 +180,10 @@ jobs:
           - { compiler: GNU,  CC: gcc,   CXX: g++ }
           - { compiler: LLVM, CC: clang, CXX: clang++ }
         msystem:
-          #- CLANG64
           - UCRT64
         target:
           - skiptest
         generator:
-          #- MSYS Makefiles
           - Ninja
         eco: [-DDONT_USE_INTERNAL_LIBRAW=ON]
     defaults:
