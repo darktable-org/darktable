@@ -101,7 +101,7 @@ typedef struct dt_thumbtable_t
   int pref_hq;
 
   // scroll timeout values
-  int scroll_timeout_id;
+  guint scroll_timeout_id;
   float scroll_value;
 } dt_thumbtable_t;
 

@@ -334,7 +334,7 @@ typedef struct dt_iop_gui_blend_data_t
   int tab;
   int altmode[8][2];
   dt_dev_pixelpipe_display_mask_t save_for_leave;
-  int timeout_handle;
+  guint timeout_handle;
   GtkNotebook *channel_tabs;
   gboolean output_channels_shown;
 

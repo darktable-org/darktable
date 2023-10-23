@@ -63,9 +63,13 @@ typedef struct dt_lib_tagging_t
   struct
   {
     gchar *tagname;
-    GtkTreePath *path, *lastpath;
-    int expand_timeout, scroll_timeout, last_y;
-    gboolean root, tag_source;
+    GtkTreePath *path;
+    GtkTreePath *lastpath;
+    guint expand_timeout;
+    guint scroll_timeout;
+    int last_y;
+    gboolean root;
+    gboolean tag_source;
   } drag;
   gboolean update_selected_tags;
 } dt_lib_tagging_t;
