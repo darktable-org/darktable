@@ -875,7 +875,7 @@ void init_presets(dt_iop_module_so_t *self)
                                                          0.5f,
                                                          { 0.0f, 0.0f, 0.0f },
                                                          TRUE,
-                                                         0 };
+                                                         DT_IOP_BORDERS_BASIS_AUTO };
   dt_gui_presets_add_generic(_("15:10 postcard white"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_NONE);
 
@@ -1071,7 +1071,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_borders_gui_data_t *g = IOP_GUI_ALLOC(borders);
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->default_params;
 
-  g->basis = dt_bauhaus_combobox_from_params(self, "basis");
+  g->basis = dt_bauhaus_combobox_from_params(self, N_("basis"));
   gtk_widget_set_tooltip_text(g->basis, _("which length to use for the size calculation"));
 
   g->size = dt_bauhaus_slider_from_params(self, "size");
