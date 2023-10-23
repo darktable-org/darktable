@@ -55,6 +55,7 @@ typedef enum dt_iop_orientation_t
   DT_IOP_BORDERS_ASPECT_ORIENTATION_PORTRAIT = 1,  // $DESCRIPTION: "portrait"
   DT_IOP_BORDERS_ASPECT_ORIENTATION_LANDSCAPE = 2, // $DESCRIPTION: "landscape"
 } dt_iop_orientation_t;
+
 typedef enum dt_iop_basis_t
 {
   DT_IOP_BORDERS_BASIS_AUTO = 0,     // $DESCRIPTION: "auto"
@@ -275,13 +276,16 @@ int legacy_params(dt_iop_module_t *self,
       (dt_iop_borders_params_v4_t *)malloc(sizeof(dt_iop_borders_params_v4_t));
 
     memcpy(n, o, sizeof(struct dt_iop_borders_params_v3_t));
-    n->basis = DT_IOP_BORDERS_BASIS_AUTO;
-
+    
     if (n->aspect == DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE && !n->max_border_size)
     {
       // the legacy behaviour is, when a constant border is used and the
       // max_border_size flag is set, the width is always used as basis.
       n->basis = DT_IOP_BORDERS_BASIS_WIDTH;
+    }
+    else
+    {
+      n->basis = DT_IOP_BORDERS_BASIS_AUTO;
     }
 
     *new_params = n;
