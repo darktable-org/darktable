@@ -42,42 +42,11 @@ static inline int _get_max_in_memory_images()
   return MIN(max_in_memory_images, FULL_PREVIEW_IN_MEMORY_LIMIT);
 }
 
-// specials functions for GList globals actions
-static gint _list_compare_by_imgid(gconstpointer a, gconstpointer b)
-{
-  dt_thumbnail_t *th = (dt_thumbnail_t *)a;
-  const dt_imgid_t imgid = GPOINTER_TO_INT(b);
-  if(!dt_is_valid_imgid(th->imgid) || !dt_is_valid_imgid(imgid)) return 1;
-  return (th->imgid != imgid);
-}
-
 static void _list_remove_thumb(gpointer user_data)
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
   gtk_container_remove(GTK_CONTAINER(gtk_widget_get_parent(thumb->w_main)), thumb->w_main);
   dt_thumbnail_destroy(thumb);
-}
-
-static int _get_selection_count()
-{
-  int nb = 0;
-  gchar *query = g_strdup(  //TODO: since this is a fixed string, do we need to copy?
-      "SELECT count(*)"
-      " FROM main.selected_images AS s, memory.collected_images as m"
-      " WHERE s.imgid = m.imgid");
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  if(stmt != NULL)
-  {
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      nb = sqlite3_column_int(stmt, 0);
-    }
-    sqlite3_finalize(stmt);
-  }
-  g_free(query);
-
-  return nb;
 }
 
 // get imgid from rowid
@@ -1185,12 +1154,10 @@ static void _thumbs_prefetch(dt_culling_t *table)
       ("SELECT m.imgid"
        " FROM memory.collected_images AS m, main.selected_images AS s"
        " WHERE m.imgid = s.imgid"
-       "   AND m.rowid > (SELECT mm.rowid"
-       "                  FROM memory.collected_images AS mm"
-       "                  WHERE mm.imgid=%d)"
+       "   AND m.rowid > %d"
        " ORDER BY m.rowid "
        " LIMIT 1",
-       last->imgid);
+       last->rowid);
     // clang-format on
   }
   else
@@ -1199,12 +1166,10 @@ static void _thumbs_prefetch(dt_culling_t *table)
     query = g_strdup_printf
       ("SELECT m.imgid"
        " FROM memory.collected_images AS m "
-       " WHERE m.rowid > (SELECT mm.rowid"
-       "                  FROM memory.collected_images AS mm"
-       "                  WHERE mm.imgid=%d) "
+       " WHERE m.rowid > %d"
        " ORDER BY m.rowid "
        " LIMIT 1",
-       last->imgid);
+       last->rowid);
     // clang-format on
   }
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
@@ -1226,12 +1191,10 @@ static void _thumbs_prefetch(dt_culling_t *table)
       ("SELECT m.imgid"
        " FROM memory.collected_images AS m, main.selected_images AS s"
        " WHERE m.imgid = s.imgid"
-       "   AND m.rowid < (SELECT mm.rowid"
-       "                  FROM memory.collected_images AS mm"
-       "                  WHERE mm.imgid=%d)"
+       "   AND m.rowid < %d"
        " ORDER BY m.rowid DESC "
        " LIMIT 1",
-       prev->imgid);
+       prev->rowid);
     // clang-format on
   }
   else
@@ -1240,12 +1203,10 @@ static void _thumbs_prefetch(dt_culling_t *table)
     query = g_strdup_printf
       ("SELECT m.imgid"
        " FROM memory.collected_images AS m"
-       " WHERE m.rowid < (SELECT mm.rowid"
-       "                  FROM memory.collected_images AS mm"
-       "                  WHERE mm.imgid=%d) "
+       " WHERE m.rowid < %d"
        " ORDER BY m.rowid DESC "
        " LIMIT 1",
-       prev->imgid);
+       prev->rowid);
     // clang-format on
   }
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
@@ -1264,55 +1225,73 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table,
   gchar *query = NULL;
   sqlite3_stmt *stmt;
 
+  // let's create a hashtable of table->list in order to speddup search in next loop
+  GHashTable *htable = g_hash_table_new_full(g_int_hash, g_int_equal, NULL, _list_remove_thumb);
+  for(const GList *l = table->list; l; l = g_list_next(l))
+  {
+    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    g_hash_table_insert(htable, &th->imgid, (gpointer)th);
+  }
+  g_list_free(table->list);
+  table->list = NULL;
+
   if(table->navigate_inside_selection)
   {
+    // in this mode, we have "gaps" between rowid because of unselected images
+    // if some case, there isn't enough select images *after* the offset
+    // in this case, we need to try to take some image before the offset
+    // the "dynamic" field "newrow" below is taking care of that
+
     // clang-format off
     query = g_strdup_printf
-      ("SELECT m.rowid, m.imgid, b.aspect_ratio"
-       " FROM memory.collected_images AS m, main.selected_images AS s, images AS b"
-       " WHERE m.imgid = b.id AND m.imgid = s.imgid AND m.rowid >= %d"
-       " ORDER BY m.rowid "
-       " LIMIT %d",
-       offset, table->thumbs_count);
+      ("SELECT i1, i2, i3, i2, newrow"
+       " FROM (SELECT m.rowid AS i1, m.imgid AS i2, b.aspect_ratio AS i3,"
+       "              (CASE WHEN m.rowid >= %d"
+       "                 THEN m.rowid"
+       "                 ELSE (SELECT MAX(rowid) FROM memory.collected_images) + %d - m.rowid"
+       "               END) AS newrow"
+       "       FROM memory.collected_images AS m, main.selected_images AS s, images AS b"
+       "       WHERE m.imgid = b.id AND m.imgid = s.imgid"
+       "       ORDER BY newrow"
+       "       LIMIT %d)"
+       " ORDER BY i1",
+       offset, offset, table->thumbs_count);
     // clang-format on
   }
   else
   {
     // clang-format off
     query = g_strdup_printf
-      ("SELECT m.rowid, m.imgid, b.aspect_ratio "
+      ("SELECT m.rowid, m.imgid, b.aspect_ratio, s.imgid"
        " FROM (SELECT rowid, imgid "
        "       FROM memory.collected_images "
        "       WHERE rowid < %d + %d "
        "       ORDER BY rowid DESC "
-       "       LIMIT %d) AS m, "
-       " images AS b "
+       "       LIMIT %d) AS m "
+       " LEFT JOIN main.selected_images AS s"
+       "   ON m.imgid=s.imgid,"
+       " images AS b"
        " WHERE m.imgid = b.id "
        " ORDER BY m.rowid",
        offset, table->thumbs_count, table->thumbs_count);
     // clang-format on
   }
 
-  GList *newlist = NULL;
-  int pos = 0;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  while(sqlite3_step(stmt) == SQLITE_ROW
-        && g_list_shorter_than(newlist, table->thumbs_count+1))
+  while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const int nrow = sqlite3_column_int(stmt, 0);
     const dt_imgid_t nid = sqlite3_column_int(stmt, 1);
+    const gboolean selected = (nid == sqlite3_column_int(stmt, 3));
+
     // first, we search if the thumb is already here
-    GList *tl = g_list_find_custom(table->list,
-                                   GINT_TO_POINTER(nid),
-                                   _list_compare_by_imgid);
-    if(tl)
+    dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_hash_table_lookup(htable, &nid);
+    if(thumb)
     {
-      dt_thumbnail_t *thumb = (dt_thumbnail_t *)tl->data;
+      g_hash_table_steal(htable, &nid);
       thumb->rowid = nrow; // this may have changed
       thumb->display_focus = table->focus;
-      newlist = g_list_prepend(newlist, thumb);
-      // and we remove the thumb from the old list
-      table->list = g_list_remove(table->list, thumb);
+      table->list = g_list_prepend(table->list, thumb);
     }
     else
     {
@@ -1328,26 +1307,30 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table,
       }
       else if(table->list)
       {
-        dt_thumbnail_t *th_model
-            = (dt_thumbnail_t *)g_list_nth_data(table->list,
-                                                MIN(pos, g_list_length(table->list) - 1));
+        dt_thumbnail_t *th_model = (dt_thumbnail_t *)(table->list)->data;
         nw = th_model->width;
         nh = th_model->height;
       }
-      else if(newlist)
-      {
-        dt_thumbnail_t *th_model = (dt_thumbnail_t *)newlist->data;
-        // get most recently added
-        nw = th_model->width;
-        nh = th_model->height;
-      }
-      dt_thumbnail_t *thumb;
       if(table->mode == DT_CULLING_MODE_PREVIEW)
-        thumb = dt_thumbnail_new(nw, nh, table->zoom_ratio, nid, nrow, table->overlays,
-                                 DT_THUMBNAIL_CONTAINER_PREVIEW, table->show_tooltips);
+        thumb = dt_thumbnail_new(nw,
+                                 nh,
+                                 table->zoom_ratio,
+                                 nid,
+                                 nrow,
+                                 table->overlays,
+                                 DT_THUMBNAIL_CONTAINER_PREVIEW,
+                                 table->show_tooltips,
+                                 selected);
       else
-        thumb = dt_thumbnail_new(nw, nh, table->zoom_ratio, nid, nrow, table->overlays,
-                                 DT_THUMBNAIL_CONTAINER_CULLING, table->show_tooltips);
+        thumb = dt_thumbnail_new(nw,
+                                 nh,
+                                 table->zoom_ratio,
+                                 nid,
+                                 nrow,
+                                 table->overlays,
+                                 DT_THUMBNAIL_CONTAINER_CULLING,
+                                 table->show_tooltips,
+                                 selected);
 
       thumb->display_focus = table->focus;
       thumb->sel_mode = DT_THUMBNAIL_SEL_MODE_DISABLED;
@@ -1359,100 +1342,15 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table,
         if(aspect_ratio < 0.0001f) aspect_ratio = 1.0f;
       }
       thumb->aspect_ratio = aspect_ratio;
-      newlist = g_list_prepend(newlist, thumb);
+      table->list = g_list_prepend(table->list, thumb);
     }
     // if it's the offset, we record the imgid
     if(nrow == table->offset) table->offset_imgid = nid;
-    pos++;
   }
-  newlist = g_list_reverse(newlist); // list was built in reverse order, so un-reverse it
-
-  // in rare cases, we can have less images than wanted
-  // although there's images before (this shouldn't happen in preview)
-  if(table->navigate_inside_selection && g_list_shorter_than(newlist, table->thumbs_count)
-     && g_list_shorter_than(newlist, _get_selection_count()))
-  {
-    const int nb = table->thumbs_count - g_list_length(newlist);
-    // clang-format off
-    query = g_strdup_printf
-      ("SELECT m.rowid, m.imgid, b.aspect_ratio"
-       " FROM memory.collected_images AS m, main.selected_images AS s, images AS b"
-       " WHERE m.imgid = b.id AND m.imgid = s.imgid AND m.rowid < %d"
-       " ORDER BY m.rowid DESC"
-       " LIMIT %d",
-       offset, nb);
-    // clang-format on
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-    if(stmt != NULL)
-    {
-      pos = 0;
-      while(sqlite3_step(stmt) == SQLITE_ROW
-            && g_list_shorter_than(newlist, table->thumbs_count+1))
-      {
-        const int nrow = sqlite3_column_int(stmt, 0);
-        const int nid = sqlite3_column_int(stmt, 1);
-        // first, we search if the thumb is already here
-        GList *tl = g_list_find_custom(table->list,
-                                       GINT_TO_POINTER(nid), _list_compare_by_imgid);
-        if(tl)
-        {
-          dt_thumbnail_t *thumb = (dt_thumbnail_t *)tl->data;
-          thumb->rowid = nrow; // this may have changed
-          newlist = g_list_prepend(newlist, thumb);
-          // and we remove the thumb from the old list
-          table->list = g_list_remove(table->list, thumb);
-        }
-        else
-        {
-          // we create a completely new thumb we set its size to the
-          // thumb it replace in the list if any otherwise we set it
-          // to something > 0 to trigger draw events
-          int nw = 40;
-          int nh = 40;
-          if(table->list)
-          {
-            dt_thumbnail_t *th_model = (dt_thumbnail_t *)(table->list)->data;
-            nw = th_model->width;
-            nh = th_model->height;
-          }
-          else if(newlist)
-          {
-            dt_thumbnail_t *th_model = (dt_thumbnail_t *)newlist->data;
-            nw = th_model->width;
-            nh = th_model->height;
-          }
-          dt_thumbnail_t *thumb;
-          if(table->mode == DT_CULLING_MODE_PREVIEW)
-            thumb = dt_thumbnail_new(nw, nh, table->zoom_ratio, nid, nrow, table->overlays,
-                                     DT_THUMBNAIL_CONTAINER_PREVIEW, table->show_tooltips);
-          else
-            thumb = dt_thumbnail_new(nw, nh, table->zoom_ratio, nid, nrow, table->overlays,
-                                     DT_THUMBNAIL_CONTAINER_CULLING, table->show_tooltips);
-
-          thumb->display_focus = table->focus;
-          thumb->sel_mode = DT_THUMBNAIL_SEL_MODE_DISABLED;
-          float aspect_ratio = sqlite3_column_double(stmt, 2);
-          if(!aspect_ratio || aspect_ratio < 0.0001f)
-          {
-            aspect_ratio = dt_image_set_aspect_ratio(nid, FALSE);
-            // if an error occurs, let's use 1:1 value
-            if(aspect_ratio < 0.0001f) aspect_ratio = 1.0f;
-          }
-          thumb->aspect_ratio = aspect_ratio;
-          newlist = g_list_prepend(newlist, thumb);
-        }
-        // if it's the offset, we record the imgid
-        if(nrow == table->offset) table->offset_imgid = nid;
-        pos++;
-      }
-      sqlite3_finalize(stmt);
-    }
-    g_free(query);
-  }
-
-  // now we cleanup all remaining thumbs from old table->list and set it again
-  g_list_free_full(table->list, _list_remove_thumb);
-  table->list = newlist;
+  // list was built in reverse order, so un-reverse it
+  table->list = g_list_reverse(table->list);
+  // clean up all remaining thumbnails
+  g_hash_table_destroy(htable);
 
   // and we ensure that we have the right offset
   if(table->list)
