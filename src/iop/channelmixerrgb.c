@@ -166,6 +166,7 @@ typedef struct dt_iop_channelmixer_rgb_gui_data_t
   gboolean run_validation;      // order a profile validation at next pipeline recompute
   gboolean profile_ready;       // notify that a profile is ready to be applied
   gboolean checker_ready;       // notify that a checker bounding box is ready to be used
+  gboolean is_blending;         // it this instance blending?
   dt_colormatrix_t mix;
 
   gboolean is_profiling_started;
@@ -1196,10 +1197,14 @@ static void _declare_cat_on_pipe(struct dt_iop_module_t *self, const gboolean pr
 {
   // Avertise in dev->chroma that we are doing chromatic adaptation here
   // preset = TRUE allows to capture the CAT a priori at init time
-  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
+  const dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
+  const dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
+  if(!g) return;
+
   dt_dev_chroma_t *chr = &self->dev->chroma;
 
   if((self->enabled
+      && !g->is_blending
       && !(p->adaptation == DT_ADAPTATION_RGB
            || p->illuminant == DT_ILLUMINANT_PIPE)) || preset)
   {
@@ -1232,20 +1237,10 @@ static void _declare_cat_on_pipe(struct dt_iop_module_t *self, const gboolean pr
   }
 }
 
-static inline gboolean _is_another_module_cat_on_pipe(struct dt_iop_module_t *self)
-{
-  dt_iop_channelmixer_rgb_gui_data_t *g =
-    (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
-  if(!g) return FALSE;
-  return self->dev->chroma.adaptation && self->dev->chroma.adaptation != self;
-}
-
-
 static void _update_illuminants(struct dt_iop_module_t *self);
 static void _update_approx_cct(struct dt_iop_module_t *self);
 static void _update_illuminant_color(struct dt_iop_module_t *self);
 static void _paint_temperature_background(struct dt_iop_module_t *self);
-
 
 static void _check_if_close_to_daylight(const float x,
                                         const float y,
@@ -2017,50 +2012,101 @@ void validate_color_checker(const float *const restrict in,
   dt_free_align(patches);
 }
 
-static void _check_for_wb_issue_and_set_trouble_message(struct dt_iop_module_t *self,
-                                                        dt_dev_pixelpipe_iop_t *piece)
+static void _set_trouble_messages(struct dt_iop_module_t *self)
 {
-  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
-  if(self->enabled
-     && !(p->illuminant == DT_ILLUMINANT_PIPE || p->adaptation == DT_ADAPTATION_RGB)
-     && !dt_image_is_monochrome(&self->dev->image_storage))
+  const dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
+  const dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
+  const dt_develop_t *dev = self->dev;
+  const dt_dev_chroma_t *chr = &dev->chroma;
+
+  if(!chr->temperature || !g) return;
+  if(!chr->adaptation)
   {
-    // this module instance is doing chromatic adaptation
-    const dt_develop_blend_params_t *d =
-       piece ? (const dt_develop_blend_params_t *)piece->blendop_data : NULL;
-    const dt_develop_mask_mode_t mask_mode = d ? d->mask_mode : DEVELOP_MASK_DISABLED;
-    const gboolean is_blending = (mask_mode & DEVELOP_MASK_ENABLED)
-                              && (mask_mode >= DEVELOP_MASK_MASK);
-    // Don't show the trouble message if some mask blending is used, that is very likely intended.
-    if(_is_another_module_cat_on_pipe(self) && !is_blending)
-    {
-      // our second biggest problem : another channelmixerrgb instance is doing CAT
-      // earlier in the pipe and we don't use masking here.
-      dt_iop_set_module_trouble_message
-        (self, _("double CAT applied"),
-         _("you have 2 instances or more of color calibration,\n"
-           "all performing chromatic adaptation.\n"
-           "this can lead to inconsistencies, unless you\n"
-           "use them with masks or know what you are doing."),
-         "double CAT applied");
-      return;
-    }
-    else if(!dt_dev_D65_chroma(self->dev))
-    {
-      // our first and biggest problem : white balance module is being
-      // clever with WB coeffs
-      dt_iop_set_module_trouble_message
-        (self, _("white balance module error"),
-         _("the white balance module is not using the camera\n"
-           "reference illuminant, which will cause issues here\n"
-           "with chromatic adaptation. either set it to reference\n"
-           "or disable chromatic adaptation here."),
-         "white balance error");
-      return;
-    }
+    dt_iop_set_module_trouble_message(chr->temperature, NULL, NULL, NULL);
+    dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
+    return;
   }
 
-  dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
+  const gboolean temp_enabled = chr->wb_coeffs[0] > 1.0 || chr->wb_coeffs[1] > 1.0 || chr->wb_coeffs[2] > 1.0;
+  const gboolean valid = self->enabled
+                      && !(p->illuminant == DT_ILLUMINANT_PIPE || p->adaptation == DT_ADAPTATION_RGB)
+                      && !dt_image_is_monochrome(&dev->image_storage);
+
+  dt_print(DT_DEBUG_PARAMS, "[chroma trouble data %d] D65=%s.  NOW %.3f %.3f %.3f, D65 %.3f %.3f %.3f, AS-SHOT %.3f %.3f %.3f\n",
+    self->multi_priority,
+    dt_dev_D65_chroma(dev) ? "YES" : "NO",
+    chr->wb_coeffs[0], chr->wb_coeffs[1], chr->wb_coeffs[2],
+    chr->D65coeffs[0], chr->D65coeffs[1], chr->D65coeffs[2],
+    chr->as_shot[0], chr->as_shot[1], chr->as_shot[2]);
+
+  if(valid && chr->adaptation != self && temp_enabled && !g->is_blending)
+  {
+    // our second biggest problem : another channelmixerrgb instance is doing CAT
+    // earlier in the pipe and we don't use masking here.
+    dt_iop_set_module_trouble_message
+      (self,
+        _("double CAT applied"),
+        _("you have 2 instances or more of color calibration,\n"
+          "all providing chromatic adaptation.\n"
+          "this can lead to inconsistencies unless you\n"
+          "use them with masks or know what you are doing."),
+        "double CAT applied");
+    return;
+  }
+
+  if(valid && chr->adaptation == self && temp_enabled && !dt_dev_D65_chroma(dev))
+  {
+    // our first and biggest problem : white balance module is being
+    // clever with WB coeffs
+    dt_iop_set_module_trouble_message
+      (chr->temperature,
+        _("white balance applied twice"),
+        _("the color calibration module is enabled and already provides\n"
+          "chromatic adaptation.\n"
+          "set the white balance here to camera reference (D65)\n"
+          "or disable chromatic adaptation in color calibration."),
+        "double application of white balance");
+
+    dt_iop_set_module_trouble_message
+      (self,
+        _("white balance module error"),
+        _("the white balance module is not using the camera\n"
+          "reference illuminant, which will cause issues here\n"
+          "with chromatic adaptation. either set it to reference\n"
+          "or disable chromatic adaptation here."),
+        "white balance is not using reference illuminant");
+    return;
+  }
+
+  if(valid && chr->adaptation && !temp_enabled && chr->temperature->default_enabled)
+  {
+    // our third and minor prooblem: white balance module is not active but default_enabled
+    // and we do chromatic adaptation in color calibration
+    dt_iop_set_module_trouble_message
+      (chr->temperature,
+        _("white balance missing"),
+        _("this module is not providing a valid reference illuminent\n"
+          "causing chromatic adaptation issues in color calibration.\n"
+          "enable this module and either set it to reference\n"
+          "or disable chromatic adaptation in color calibration."),
+        "white balance disabled but required");
+
+    dt_iop_set_module_trouble_message
+      (self,
+        _("white balance missing"),
+        _("the white balance module is not providing a valid reference\n"
+          "illuminant causing issues with chromatic adaptation here.\n"
+          "enable white balance and either set it to reference\n"
+          "or disable chromatic adaptation here."),
+        "white balance missing for color calibration");
+    return;
+  }
+
+  if(chr->adaptation && chr->adaptation == self)
+  {
+    dt_iop_set_module_trouble_message(chr->temperature, NULL, NULL, NULL);
+    dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
+  }
 }
 
 void process(struct dt_iop_module_t *self,
@@ -2084,11 +2130,8 @@ void process(struct dt_iop_module_t *self,
     return; // image has been copied through to output and module's
             // trouble flag has been updated
 
-  _declare_cat_on_pipe(self, FALSE);
-
-  // dt_iop_have_required_input_format() has reset the trouble message.
-  // we must set it again in case of any trouble.
-  _check_for_wb_issue_and_set_trouble_message(self, piece);
+  if(piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
+    _declare_cat_on_pipe(self, FALSE);
 
   dt_colormatrix_t RGB_to_XYZ;
   dt_colormatrix_t XYZ_to_RGB;
@@ -2259,11 +2302,8 @@ int process_cl(struct dt_iop_module_t *self,
   const struct dt_iop_order_iccprofile_info_t *const work_profile =
     dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
 
-  _declare_cat_on_pipe(self, FALSE);
-
-  // dt_iop_have_required_input_format() has reset the trouble message.
-  // we must set it again in case of any trouble.
-  _check_for_wb_issue_and_set_trouble_message(self, piece);
+  if(piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
+    _declare_cat_on_pipe(self, FALSE);
 
   if(d->illuminant_type == DT_ILLUMINANT_CAMERA)
   {
@@ -3011,6 +3051,7 @@ static void _preview_pipe_finished_callback(gpointer instance, gpointer user_dat
   dt_iop_gui_enter_critical_section(self);
   gtk_label_set_markup(GTK_LABEL(g->label_delta_E), g->delta_E_label_text);
   dt_iop_gui_leave_critical_section(self);
+  if(g) _set_trouble_messages(self);
 }
 
 void commit_params(struct dt_iop_module_t *self,
@@ -3127,8 +3168,13 @@ void commit_params(struct dt_iop_module_t *self,
       piece->process_cl_ready = FALSE;
     }
   }
-}
 
+  // if this module has some mask applied we assume it's safe so give no warning
+  const dt_develop_blend_params_t *b = (const dt_develop_blend_params_t *)piece->blendop_data;
+  const dt_develop_mask_mode_t mask_mode = b ? b->mask_mode : DEVELOP_MASK_DISABLED;
+  const gboolean is_blending = (mask_mode & DEVELOP_MASK_ENABLED) && (mask_mode >= DEVELOP_MASK_MASK);
+  if(g) g->is_blending = is_blending;
+}
 
 static void _update_illuminants(dt_iop_module_t *self)
 {
@@ -4110,9 +4156,6 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   gtk_widget_set_sensitive(g->adaptation, p->illuminant != DT_ILLUMINANT_CAMERA);
 
   _declare_cat_on_pipe(self, FALSE);
-
-  if(!dt_dev_D65_chroma(self->dev) || !self->enabled)
-    _check_for_wb_issue_and_set_trouble_message(self, NULL);
 
   --darktable.gui->reset;
 }
