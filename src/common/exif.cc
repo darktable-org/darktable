@@ -1357,6 +1357,12 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     {
       img->orientation = dt_image_orientation_to_flip_bits(pos->toLong());
     }
+    /* for e.g. Sinar backs the raw orientation is in a different subdirectory */
+    if(FIND_EXIF_TAG("Exif.Thumbnail.PhotometricInterpretation") && (32803 == pos->toLong())
+       && FIND_EXIF_TAG("Exif.Thumbnail.Orientation"))
+    {
+      img->orientation = dt_image_orientation_to_flip_bits(pos->toLong());
+    }
 
     /* read gps location */
     if(FIND_EXIF_TAG("Exif.GPSInfo.GPSLatitude"))
