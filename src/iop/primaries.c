@@ -267,18 +267,31 @@ static void _paint_purity_slider(const dt_iop_order_iccprofile_info_t *work_prof
                                  const dt_iop_order_iccprofile_info_t *display_profile,
                                  const dt_iop_order_iccprofile_info_t *sRGB_profile,
                                  const size_t primary_index,
+                                 const float saturation,
                                  GtkWidget *hue_slider,
                                  GtkWidget *purity_slider)
 {
   const float angle = dt_bauhaus_slider_get(hue_slider);
   dt_aligned_pixel_t linear_RGB, RGB;
+  // Map the chosen primary from the full purity to fit the display gamut.
   _rotated_primary_to_display_RGB(work_profile, display_profile, sRGB_profile,
-                                  primary_index, angle, 0.4f,
+                                  primary_index, angle, 0.0f,
                                   linear_RGB);
-  const float luminance = scalar_product(linear_RGB, display_profile->matrix_in[1]);
-  _apply_trc_if_nonlinear(display_profile, linear_RGB, RGB);
-  dt_bauhaus_slider_set_stop(purity_slider, 0.0, luminance, luminance, luminance);
-  dt_bauhaus_slider_set_stop(purity_slider, 1.f, RGB[0], RGB[1], RGB[2]);
+  const float hard_min = dt_bauhaus_slider_get_hard_min(purity_slider);
+  const float hard_max = dt_bauhaus_slider_get_hard_max(purity_slider);
+  const float range = hard_max - hard_min;
+  for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
+  {
+    const float stop = (float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1);
+    const float t = MIN(hard_min + stop * saturation * range, 1.f);
+    dt_aligned_pixel_t stop_RGB = { 0.f };
+    // Interpolate between white (1, 1, 1) and the chosen
+    // primary. Not super accurate (since the display can't represent the Rec.2020 primaries)
+    // but gives an idea of the effect of the purity adjustment.
+    for_each_channel(c) stop_RGB[c] = 1.f - t + t * linear_RGB[c];
+    _apply_trc_if_nonlinear(display_profile, stop_RGB, RGB);
+    dt_bauhaus_slider_set_stop(purity_slider, stop, RGB[0], RGB[1], RGB[2]);
+  }
   gtk_widget_queue_draw(GTK_WIDGET(purity_slider));
 }
 
@@ -320,16 +333,16 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
   if(repaint_all_sliders || w == g->red_hue)
     _paint_purity_slider(work_profile, display_profile, sRGB_profile,
-                         0, g->red_hue, g->red_purity);
+                         0, 1.f, g->red_hue, g->red_purity);
   if(repaint_all_sliders || w == g->green_hue)
     _paint_purity_slider(work_profile, display_profile, sRGB_profile,
-                         1, g->green_hue, g->green_purity);
+                         1, 1.f, g->green_hue, g->green_purity);
   if(repaint_all_sliders || w == g->blue_hue)
     _paint_purity_slider(work_profile, display_profile, sRGB_profile,
-                         2, g->blue_hue, g->blue_purity);
+                         2, 1.f, g->blue_hue, g->blue_purity);
   if(repaint_all_sliders || w == g->achromatic_tint_hue)
     _paint_purity_slider(work_profile, display_profile, sRGB_profile,
-                         0, g->achromatic_tint_hue,
+                         0, 5.f, g->achromatic_tint_hue,
                          g->achromatic_tint_purity);
 }
 
@@ -379,11 +392,11 @@ void gui_init(dt_iop_module_t *self)
 {
   dt_iop_primaries_gui_data_t *g = IOP_GUI_ALLOC(primaries);
 
-  g->red_hue = _setup_hue_slider(self, "red_hue", _("red primary hue"));
+  g->red_hue = _setup_hue_slider(self, "red_hue", _("shift red towards yellow or magenta"));
   g->red_purity = _setup_purity_slider(self, "red_purity", _("red primary purity"));
-  g->green_hue = _setup_hue_slider(self, "green_hue", _("green primary hue"));
+  g->green_hue = _setup_hue_slider(self, "green_hue", _("shift green towards cyan or yellow"));
   g->green_purity = _setup_purity_slider(self, "green_purity", _("green primary purity"));
-  g->blue_hue = _setup_hue_slider(self, "blue_hue", _("blue primary hue"));
+  g->blue_hue = _setup_hue_slider(self, "blue_hue", _("shift blue towards magenta or cyan"));
   g->blue_purity = _setup_purity_slider(self, "blue_purity", _("blue primary purity"));
 
   g->achromatic_tint_hue = dt_bauhaus_slider_from_params(self, "achromatic_tint_hue");
