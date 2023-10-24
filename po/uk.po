@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-16 22:34+0200\n"
-"PO-Revision-Date: 2023-10-17 08:03+0300\n"
+"POT-Creation-Date: 2023-10-24 18:12+0200\n"
+"PO-Revision-Date: 2023-10-24 21:14+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -2147,7 +2147,7 @@ msgstr ""
 "\"BeatStep:63:16\"."
 
 #. tags
-#: ../build/bin/preferences_gen.h:7715 ../src/develop/lightroom.c:1518
+#: ../build/bin/preferences_gen.h:7715 ../src/develop/lightroom.c:1573
 #: ../src/gui/import_metadata.c:476 ../src/libs/export_metadata.c:322
 #: ../src/libs/image.c:613 ../src/libs/metadata_view.c:166
 msgid "tags"
@@ -2815,7 +2815,7 @@ msgstr "Дуже велика хроматична аберація"
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:158
 #: ../src/common/collection.c:1374 ../src/common/color_vocabulary.c:232
 #: ../src/common/colorlabels.c:333 ../src/develop/blend_gui.c:2338
-#: ../src/develop/blend_gui.c:2386 ../src/develop/lightroom.c:834
+#: ../src/develop/blend_gui.c:2386 ../src/develop/lightroom.c:887
 #: ../src/gui/gtk.c:3231 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:356
 #: ../src/iop/channelmixer.c:637 ../src/iop/channelmixer.c:647
 #: ../src/iop/channelmixerrgb.c:4637 ../src/iop/colorzones.c:2499
@@ -2828,7 +2828,7 @@ msgstr "червоний"
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:159
 #: ../src/common/collection.c:1378 ../src/common/color_vocabulary.c:277
 #: ../src/common/colorlabels.c:335 ../src/develop/blend_gui.c:2344
-#: ../src/develop/blend_gui.c:2392 ../src/develop/lightroom.c:838
+#: ../src/develop/blend_gui.c:2392 ../src/develop/lightroom.c:891
 #: ../src/gui/gtk.c:3232 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:361
 #: ../src/iop/channelmixer.c:638 ../src/iop/channelmixer.c:653
 #: ../src/iop/channelmixerrgb.c:4638 ../src/iop/colorzones.c:2502
@@ -2841,7 +2841,7 @@ msgstr "зелений"
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:160
 #: ../src/common/collection.c:1380 ../src/common/color_vocabulary.c:324
 #: ../src/common/colorlabels.c:336 ../src/develop/blend_gui.c:2350
-#: ../src/develop/blend_gui.c:2398 ../src/develop/lightroom.c:840
+#: ../src/develop/blend_gui.c:2398 ../src/develop/lightroom.c:893
 #: ../src/gui/gtk.c:3233 ../src/iop/bilateral.cc:366
 #: ../src/iop/channelmixer.c:639 ../src/iop/channelmixer.c:659
 #: ../src/iop/channelmixerrgb.c:4639 ../src/iop/colorzones.c:2504
@@ -4550,13 +4550,13 @@ msgstr "Кольорова плівка"
 
 #: ../build/lib/darktable/plugins/introspection_primaries.c:75
 #: ../build/lib/darktable/plugins/introspection_primaries.c:160
-#: ../src/iop/primaries.c:393
+#: ../src/iop/primaries.c:406
 msgid "tint hue"
 msgstr "Напрямок зміщення точки білого"
 
 #: ../build/lib/darktable/plugins/introspection_primaries.c:81
 #: ../build/lib/darktable/plugins/introspection_primaries.c:164
-#: ../src/iop/primaries.c:400
+#: ../src/iop/primaries.c:413
 msgid "tint purity"
 msgstr "Величина зміщення точки білого"
 
@@ -5247,11 +5247,11 @@ msgstr "Спадне меню"
 #: ../src/libs/metadata.c:462 ../src/libs/metadata_view.c:1222
 #: ../src/libs/recentcollect.c:228 ../src/libs/modulegroups.c:3466
 #: ../src/libs/styles.c:392 ../src/libs/styles.c:439 ../src/libs/styles.c:529
-#: ../src/libs/styles.c:624 ../src/libs/tagging.c:1484
-#: ../src/libs/tagging.c:1575 ../src/libs/tagging.c:1666
-#: ../src/libs/tagging.c:1802 ../src/libs/tagging.c:2081
-#: ../src/libs/tagging.c:2516 ../src/libs/tagging.c:2552
-#: ../src/libs/tagging.c:3498
+#: ../src/libs/styles.c:624 ../src/libs/tagging.c:1488
+#: ../src/libs/tagging.c:1579 ../src/libs/tagging.c:1670
+#: ../src/libs/tagging.c:1806 ../src/libs/tagging.c:2085
+#: ../src/libs/tagging.c:2520 ../src/libs/tagging.c:2556
+#: ../src/libs/tagging.c:3502
 msgid "_cancel"
 msgstr "_Скасувати"
 
@@ -5259,9 +5259,9 @@ msgstr "_Скасувати"
 #: ../src/gui/styles_dialog.c:527 ../src/libs/collect.c:3243
 #: ../src/libs/export_metadata.c:277 ../src/libs/metadata.c:463
 #: ../src/libs/metadata_view.c:1223 ../src/libs/recentcollect.c:229
-#: ../src/libs/styles.c:392 ../src/libs/tagging.c:1667
-#: ../src/libs/tagging.c:1803 ../src/libs/tagging.c:2082
-#: ../src/libs/tagging.c:3499
+#: ../src/libs/styles.c:392 ../src/libs/tagging.c:1671
+#: ../src/libs/tagging.c:1807 ../src/libs/tagging.c:2086
+#: ../src/libs/tagging.c:3503
 msgid "_save"
 msgstr "_Зберегти"
 
@@ -5381,7 +5381,7 @@ msgstr "Занадто довге розширення вихідного фай
 msgid "no output file extension given\n"
 msgstr "Не вказано розширення вихідного файлу\n"
 
-#: ../src/cli/main.c:686
+#: ../src/cli/main.c:692
 msgid ""
 "cannot find disk storage module. please check your installation, something "
 "seems to be broken."
@@ -5389,17 +5389,17 @@ msgstr ""
 "Не вдається знайти модуль збереження на диску. Будь ласка, перевірте свою "
 "інсталяцію, здається, щось не працює."
 
-#: ../src/cli/main.c:696
+#: ../src/cli/main.c:702
 msgid "failed to get parameters from storage module, aborting export ..."
 msgstr ""
 "Не вдалося отримати параметри з модуля зберігання, скасування експорту..."
 
-#: ../src/cli/main.c:712
+#: ../src/cli/main.c:718
 #, c-format
 msgid "unknown extension '.%s'"
 msgstr "Невідоме розширення '.%s'"
 
-#: ../src/cli/main.c:722
+#: ../src/cli/main.c:728
 msgid "failed to get parameters from format module, aborting export ..."
 msgstr "Не вдалося отримати параметри з модуля формату, скасування експорту..."
 
@@ -5463,7 +5463,7 @@ msgid "camera"
 msgstr "Камера"
 
 #: ../src/common/collection.c:607 ../src/libs/export_metadata.c:176
-#: ../src/libs/tagging.c:3308
+#: ../src/libs/tagging.c:3312
 msgid "tag"
 msgstr "Тег"
 
@@ -5498,7 +5498,7 @@ msgid "history"
 msgstr "Історія"
 
 #: ../src/common/collection.c:623 ../src/common/colorlabels.c:341
-#: ../src/develop/lightroom.c:1552 ../src/dtgtk/thumbnail.c:1558
+#: ../src/develop/lightroom.c:1607 ../src/dtgtk/thumbnail.c:1548
 #: ../src/libs/filtering.c:68 ../src/libs/filters/colors.c:301
 #: ../src/libs/filters/colors.c:312 ../src/libs/tools/colorlabels.c:93
 msgid "color label"
@@ -5523,7 +5523,7 @@ msgstr "Діафрагма"
 msgid "filename"
 msgstr "Файл"
 
-#: ../src/common/collection.c:639 ../src/develop/lightroom.c:1543
+#: ../src/common/collection.c:639 ../src/develop/lightroom.c:1598
 #: ../src/libs/geotagging.c:141
 msgid "geotagging"
 msgstr "Геотегування"
@@ -5533,7 +5533,7 @@ msgstr "Геотегування"
 msgid "grouping"
 msgstr "Групування"
 
-#: ../src/common/collection.c:643 ../src/dtgtk/thumbnail.c:1573
+#: ../src/common/collection.c:643 ../src/dtgtk/thumbnail.c:1563
 #: ../src/libs/filters/local_copy.c:142 ../src/libs/metadata_view.c:131
 #: ../src/libs/metadata_view.c:340
 msgid "local copy"
@@ -5554,7 +5554,7 @@ msgid "range rating"
 msgstr "Діапазон рейтингів"
 
 #: ../src/common/collection.c:651 ../src/common/ratings.c:321
-#: ../src/develop/lightroom.c:1527 ../src/libs/filtering.c:67
+#: ../src/develop/lightroom.c:1582 ../src/libs/filtering.c:67
 #: ../src/libs/tools/ratings.c:110
 msgid "rating"
 msgstr "Рейтинг"
@@ -5564,7 +5564,7 @@ msgid "search"
 msgstr "Пошук"
 
 #: ../src/common/collection.c:1376 ../src/common/colorlabels.c:334
-#: ../src/develop/lightroom.c:836 ../src/gui/guides.c:732
+#: ../src/develop/lightroom.c:889 ../src/gui/guides.c:732
 #: ../src/iop/colorzones.c:2501 ../src/iop/temperature.c:1936
 #: ../src/libs/collect.c:1916 ../src/libs/filters/colors.c:261
 msgid "yellow"
@@ -6103,40 +6103,40 @@ msgstr "Помилка під час друку `%s' на `%s'"
 msgid "printing `%s' on `%s'"
 msgstr "Друк `%s' на `%s'"
 
-#: ../src/common/darktable.c:372
+#: ../src/common/darktable.c:375
 #, c-format
 msgid "found strange path `%s'"
 msgstr "Знайдено дивний шлях `%s'"
 
-#: ../src/common/darktable.c:387
+#: ../src/common/darktable.c:390
 #, c-format
 msgid "error loading directory `%s'"
 msgstr "Помилка завантаження каталогу `%s'"
 
-#: ../src/common/darktable.c:411
+#: ../src/common/darktable.c:414
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr "Файл `%s' має невідомий формат!"
 
-#: ../src/common/darktable.c:424 ../src/control/jobs/control_jobs.c:2121
+#: ../src/common/darktable.c:427 ../src/control/jobs/control_jobs.c:2121
 #: ../src/control/jobs/control_jobs.c:2180
 #, c-format
 msgid "error loading file `%s'"
 msgstr "Помилка завантаження файлу `%s'"
 
-#: ../src/common/darktable.c:1662
+#: ../src/common/darktable.c:1673
 msgid "configuration information"
 msgstr "Інформація щодо налаштування"
 
-#: ../src/common/darktable.c:1664 ../src/libs/import.c:1986
+#: ../src/common/darktable.c:1675 ../src/libs/import.c:1986
 msgid "_show this information again"
 msgstr "Показати це наступного разу"
 
-#: ../src/common/darktable.c:1664
+#: ../src/common/darktable.c:1675
 msgid "_understood"
 msgstr "Зрозуміло"
 
-#: ../src/common/darktable.c:2134
+#: ../src/common/darktable.c:2144
 msgid ""
 "the RCD demosaicer has been defined as default instead of PPG because of "
 "better quality and performance."
@@ -6144,13 +6144,13 @@ msgstr ""
 "Метод демозаїкізації RCD було встановлено за замовчуванням замість PPG через "
 "кращу якість та продуктивність."
 
-#: ../src/common/darktable.c:2136
+#: ../src/common/darktable.c:2146
 msgid "see preferences/darkroom/demosaicing for zoomed out darkroom mode"
 msgstr ""
 "Щодо демозаїкізації масштабованих зображень в режимі темної кімнати "
 "перегляньте відповідний параметр в \"Налаштування > Темна кімната\""
 
-#: ../src/common/darktable.c:2142
+#: ../src/common/darktable.c:2152
 msgid ""
 "the user interface and the underlying internals for tuning darktable "
 "performance have changed."
@@ -6158,7 +6158,7 @@ msgstr ""
 "Інтерфейс користувача та базові внутрішні елементи для налаштування "
 "продуктивності darktable змінилися."
 
-#: ../src/common/darktable.c:2144
+#: ../src/common/darktable.c:2154
 msgid ""
 "you won't find headroom and friends any longer, instead in preferences/"
 "processing use:"
@@ -6166,15 +6166,15 @@ msgstr ""
 "Ви більше не знайдете старих параметрів, замість цього \"в Налаштування > "
 "Обробка\" використовуйте:"
 
-#: ../src/common/darktable.c:2146
+#: ../src/common/darktable.c:2156
 msgid "1) darktable resources"
 msgstr "1) рівень ресурсів для darktable"
 
-#: ../src/common/darktable.c:2148
+#: ../src/common/darktable.c:2158
 msgid "2) tune OpenCL performance"
 msgstr "2) налаштування продуктивності OpenCL"
 
-#: ../src/common/darktable.c:2155
+#: ../src/common/darktable.c:2165
 msgid ""
 "some global config parameters relevant for OpenCL performance are not used "
 "any longer."
@@ -6182,7 +6182,7 @@ msgstr ""
 "Деякі глобальні параметри конфігурації, що мають відношення до "
 "продуктивності OpenCL, більше не використовуються."
 
-#: ../src/common/darktable.c:2157
+#: ../src/common/darktable.c:2167
 msgid ""
 "instead you will find 'per device' data in 'cldevice_v5_canonical-name'. "
 "content is:"
@@ -6190,8 +6190,8 @@ msgstr ""
 "Замість цього ви знайдете окремі дані для пристроїв у 'cldevice_v5_canonical-"
 "name'. Зміст:"
 
-#: ../src/common/darktable.c:2159 ../src/common/darktable.c:2178
-#: ../src/common/darktable.c:2193
+#: ../src/common/darktable.c:2169 ../src/common/darktable.c:2188
+#: ../src/common/darktable.c:2203
 msgid ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic' 'advantage' 'unified'"
@@ -6199,18 +6199,18 @@ msgstr ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic' 'advantage' 'unified'"
 
-#: ../src/common/darktable.c:2161 ../src/common/darktable.c:2180
+#: ../src/common/darktable.c:2171 ../src/common/darktable.c:2190
 msgid "you may tune as before except 'magic'"
 msgstr "Ви можете регулювати ці параметри, як і раніше, за винятком 'magic'"
 
-#: ../src/common/darktable.c:2167
+#: ../src/common/darktable.c:2177
 msgid ""
 "your OpenCL compiler settings for all devices have been reset to default."
 msgstr ""
 "Налаштування компілятора OpenCL для всіх пристроїв були скинуті до значень "
 "за замовчуванням."
 
-#: ../src/common/darktable.c:2174
+#: ../src/common/darktable.c:2184
 msgid ""
 "OpenCL global config parameters 'per device' data has been recreated with an "
 "updated name."
@@ -6218,13 +6218,13 @@ msgstr ""
 "Дані параметрів глобальної конфігурації OpenCL 'для окремих пристроїв' було "
 "відтворено з оновленою назвою."
 
-#: ../src/common/darktable.c:2176 ../src/common/darktable.c:2191
+#: ../src/common/darktable.c:2186 ../src/common/darktable.c:2201
 msgid ""
 "you will find 'per device' data in 'cldevice_v5_canonical-name'. content is:"
 msgstr ""
 "Ви знайдете окремі дані для пристроїв у 'cldevice_v5_canonical-name'. Зміст:"
 
-#: ../src/common/darktable.c:2182
+#: ../src/common/darktable.c:2192
 msgid ""
 "If you're using device names in 'opencl_device_priority' you should update "
 "them to the new names."
@@ -6232,7 +6232,7 @@ msgstr ""
 "Якщо ви використовуєте імена пристроїв у 'opencl_device_priority', вам слід "
 "оновити їх до нових імен."
 
-#: ../src/common/darktable.c:2189
+#: ../src/common/darktable.c:2199
 msgid ""
 "OpenCL 'per device' config data have been automatically extended by 'unified-"
 "fraction'."
@@ -6489,12 +6489,12 @@ msgstr ""
 "Швидкий незалежний від експозиції керований фільтр не зміг виділити пам'ять, "
 "перевірте налаштування оперативної пам'яті"
 
-#: ../src/common/exif.cc:5278
+#: ../src/common/exif.cc:5308
 #, c-format
 msgid "cannot read XMP file '%s': '%s'"
 msgstr "Не вдається прочитати файл XMP '%s': '%s'"
 
-#: ../src/common/exif.cc:5336
+#: ../src/common/exif.cc:5366
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
 msgstr "Не вдається записати в файл XMP '%s': '%s'"
@@ -6572,49 +6572,49 @@ msgstr[0] "Дату/час повторно застосовано для %d з�
 msgstr[1] "Дату/час повторно застосовано для %d зображень"
 msgstr[2] "Дату/час повторно застосовано для %d зображень"
 
-#: ../src/common/image.c:2194
+#: ../src/common/image.c:2239
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "Не вдається отримати доступ до локальної копії `%s'"
 
-#: ../src/common/image.c:2201
+#: ../src/common/image.c:2246
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "Не вдається записати локальну копію `%s'"
 
-#: ../src/common/image.c:2208
+#: ../src/common/image.c:2253
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "Помилка переміщення локальної копії `%s' -> `%s'"
 
-#: ../src/common/image.c:2225
+#: ../src/common/image.c:2270
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "Помилка переміщення `%s': файл не знайдено"
 
-#: ../src/common/image.c:2235
+#: ../src/common/image.c:2280
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "Помилка переміщення `%s' -> `%s': файл існує"
 
-#: ../src/common/image.c:2239
+#: ../src/common/image.c:2284
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "Помилка переміщення `%s' -> `%s'"
 
-#: ../src/common/image.c:2568
+#: ../src/common/image.c:2613
 msgid "cannot create local copy when the original file is not accessible."
 msgstr "Неможливо створити локальну копію, коли оригінал недоступний."
 
-#: ../src/common/image.c:2582
+#: ../src/common/image.c:2627
 msgid "cannot create local copy."
 msgstr "Неможливо створити локальну копію."
 
-#: ../src/common/image.c:2662 ../src/control/jobs/control_jobs.c:777
+#: ../src/common/image.c:2707 ../src/control/jobs/control_jobs.c:777
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr "Неможливо видалити локальну копію, коли оригінал недоступний."
 
-#: ../src/common/image.c:2835
+#: ../src/common/image.c:2880
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -6622,11 +6622,11 @@ msgstr[0] "%d локальну копію синхронізовано"
 msgstr[1] "%d локальні копії синхронізовано"
 msgstr[2] "%d локальних копій синхронізовано"
 
-#: ../src/common/image.c:3036
+#: ../src/common/image.c:3081
 msgid "<b>WARNING</b>: camera is missing samples!"
 msgstr "<b>ПОПЕРЕДЖЕННЯ</b>: відсутні зразки зображень із цієї моделі камери!"
 
-#: ../src/common/image.c:3037
+#: ../src/common/image.c:3082
 msgid ""
 "You must provide samples in <a href='https://raw.pixls.us/'>https://raw."
 "pixls.us/</a>"
@@ -6634,7 +6634,7 @@ msgstr ""
 "Вам слід надати такі зразки, завантаживши їх на сайт <a href='https://raw."
 "pixls.us/'>https://raw.pixls.us/</a>"
 
-#: ../src/common/image.c:3038
+#: ../src/common/image.c:3083
 #, c-format
 msgid ""
 "for `%s' `%s'\n"
@@ -6643,14 +6643,14 @@ msgstr ""
 "для `%s' `%s'\n"
 "у якомога більшій кількості форматів/варіантів стиснення/глибин кольору"
 
-#: ../src/common/image.c:3041
+#: ../src/common/image.c:3086
 msgid "or the <b>RAW won't be readable</b> in next version."
 msgstr ""
 "інакше <b>RAW з цієї камери не буде читатися</b> у наступній версії "
 "darktable."
 
 #: ../src/common/image.h:209 ../src/common/ratings.c:283
-#: ../src/libs/history.c:843 ../src/libs/snapshots.c:775
+#: ../src/libs/history.c:843 ../src/libs/snapshots.c:779
 msgid "unknown"
 msgstr "невідомо"
 
@@ -7013,7 +7013,7 @@ msgid "style named '%s' successfully created"
 msgstr "Стиль '%s' успішно створено"
 
 #: ../src/common/styles.c:688 ../src/common/styles.c:718
-#: ../src/common/styles.c:758 ../src/dtgtk/culling.c:1097
+#: ../src/common/styles.c:758 ../src/dtgtk/culling.c:1066
 msgid "no image selected!"
 msgstr "Жодне зображення не вибрано!"
 
@@ -7414,17 +7414,17 @@ msgstr "_Закрити"
 
 #. setup selection accelerators
 #. action-box
-#: ../src/control/crawler.c:786 ../src/dtgtk/thumbtable.c:2592
+#: ../src/control/crawler.c:786 ../src/dtgtk/thumbtable.c:2719
 #: ../src/libs/import.c:1727 ../src/libs/select.c:135
 msgid "select all"
 msgstr "Вибрати всі"
 
-#: ../src/control/crawler.c:787 ../src/dtgtk/thumbtable.c:2594
+#: ../src/control/crawler.c:787 ../src/dtgtk/thumbtable.c:2721
 #: ../src/libs/import.c:1731 ../src/libs/select.c:139
 msgid "select none"
 msgstr "Скасувати вибір"
 
-#: ../src/control/crawler.c:788 ../src/dtgtk/thumbtable.c:2596
+#: ../src/control/crawler.c:788 ../src/dtgtk/thumbtable.c:2723
 #: ../src/libs/select.c:143
 msgid "invert selection"
 msgstr "Інвертувати вибір"
@@ -8818,12 +8818,12 @@ msgid ""
 "drive used"
 msgstr "Автозбереження історії вимкнено для цього сеансу через повільний диск"
 
-#: ../src/develop/develop.c:2447
+#: ../src/develop/develop.c:2448
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: невідповідність версій модуля `%s': %d != %d"
 
-#: ../src/develop/develop.c:3231
+#: ../src/develop/develop.c:3232
 msgid "duplicate module, can't move new instance after the base one\n"
 msgstr "Не вдається перемістити новий екземпляр модуля після базового\n"
 
@@ -8948,11 +8948,11 @@ msgstr "Показати"
 
 #: ../src/develop/imageop.c:3749 ../src/libs/modulegroups.c:3315
 #: ../src/libs/modulegroups.c:3438 ../src/libs/modulegroups.c:3819
-#: ../src/libs/tagging.c:3275
+#: ../src/libs/tagging.c:3279
 msgid "new"
 msgstr "Новий"
 
-#: ../src/develop/imageop.c:3752 ../src/libs/duplicate.c:405
+#: ../src/develop/imageop.c:3752 ../src/libs/duplicate.c:411
 #: ../src/libs/image.c:533 ../src/libs/modulegroups.c:3815
 msgid "duplicate"
 msgstr "Зняти копію"
@@ -8996,17 +8996,17 @@ msgstr ""
 "%s\n"
 "Ctrl+клік – %s"
 
-#: ../src/develop/lightroom.c:1084
+#: ../src/develop/lightroom.c:1137
 msgid "cannot find Lightroom XMP!"
 msgstr "Не вдається знайти XMP від Lightroom!"
 
-#: ../src/develop/lightroom.c:1116 ../src/develop/lightroom.c:1138
-#: ../src/develop/lightroom.c:1158
+#: ../src/develop/lightroom.c:1169 ../src/develop/lightroom.c:1191
+#: ../src/develop/lightroom.c:1211
 #, c-format
 msgid "`%s' is not a Lightroom XMP!"
 msgstr "`%s' не є файлом XMP від Lightroom!"
 
-#: ../src/develop/lightroom.c:1558
+#: ../src/develop/lightroom.c:1613
 #, c-format
 msgid "%s has been imported"
 msgid_plural "%s have been imported"
@@ -9386,23 +9386,23 @@ msgstr ""
 msgid "tiling failed for module '%s'. output might be garbled."
 msgstr "Невдалий тайлінг для модуля '%s'. вихід може бути спотворений."
 
-#: ../src/dtgtk/culling.c:254
+#: ../src/dtgtk/culling.c:223
 msgid "you have reached the start of your selection"
 msgstr "Ви досягли початку своєї вибірки"
 
-#: ../src/dtgtk/culling.c:263
+#: ../src/dtgtk/culling.c:232
 msgid "you have reached the start of your collection"
 msgstr "Ви досягли початку своєї колекції"
 
-#: ../src/dtgtk/culling.c:310
+#: ../src/dtgtk/culling.c:279
 msgid "you have reached the end of your selection"
 msgstr "Ви досягли кінця своєї вибірки"
 
-#: ../src/dtgtk/culling.c:337
+#: ../src/dtgtk/culling.c:306
 msgid "you have reached the end of your collection"
 msgstr "Ви досягли кінця своєї колекції"
 
-#: ../src/dtgtk/culling.c:446
+#: ../src/dtgtk/culling.c:415
 #, c-format
 msgid "zooming is limited to %d images"
 msgstr "Максимальна кількість зображень: %d"
@@ -9597,39 +9597,39 @@ msgstr ""
 msgid "grouped images"
 msgstr "Згруповані зображення"
 
-#: ../src/dtgtk/thumbnail.c:819 ../src/dtgtk/thumbnail.c:1633
+#: ../src/dtgtk/thumbnail.c:814 ../src/dtgtk/thumbnail.c:1623
 #: ../src/iop/ashift.c:6159 ../src/iop/ashift.c:6248 ../src/iop/ashift.c:6250
 #: ../src/iop/ashift.c:6252 ../src/libs/navigation.c:111
 #: ../src/libs/navigation.c:193
 msgid "fit"
 msgstr "Підгонка"
 
-#: ../src/dtgtk/thumbtable.c:1029 ../src/views/slideshow.c:426
+#: ../src/dtgtk/thumbtable.c:1131 ../src/views/slideshow.c:426
 msgid "there are no images in this collection"
 msgstr "В цій колекції немає зображень"
 
-#: ../src/dtgtk/thumbtable.c:1036
+#: ../src/dtgtk/thumbtable.c:1138
 msgid "if you have not imported any images yet"
 msgstr "Якщо ви ще не імпортували жодного зображення"
 
-#: ../src/dtgtk/thumbtable.c:1040
+#: ../src/dtgtk/thumbtable.c:1142
 msgid "you can do so in the import module"
 msgstr "ви можете зробити це в модулі імпорту"
 
-#: ../src/dtgtk/thumbtable.c:1049
+#: ../src/dtgtk/thumbtable.c:1151
 msgid "try to relax the filter settings in the top panel"
 msgstr "Спробуйте послабити налаштування фільтра на верхній панелі"
 
-#: ../src/dtgtk/thumbtable.c:1060
+#: ../src/dtgtk/thumbtable.c:1162
 msgid "or add images in the collections module in the left panel"
 msgstr "або додати зображення в модулі колекції на лівій панелі"
 
-#: ../src/dtgtk/thumbtable.c:1336
+#: ../src/dtgtk/thumbtable.c:1438
 msgid ""
 "you have changed the settings related to how thumbnails are generated.\n"
 msgstr "Ви змінили налаштування, пов’язані з тим, як генеруються мініатюри.\n"
 
-#: ../src/dtgtk/thumbtable.c:1339
+#: ../src/dtgtk/thumbtable.c:1441
 msgid ""
 "all cached thumbnails need to be invalidated.\n"
 "\n"
@@ -9637,7 +9637,7 @@ msgstr ""
 "Усі кешовані мініатюри потрібно визнати недійсними.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1343
+#: ../src/dtgtk/thumbtable.c:1445
 #, c-format
 msgid ""
 "cached thumbnails starting from level %d need to be invalidated.\n"
@@ -9646,7 +9646,7 @@ msgstr ""
 "Кешовані мініатюри, починаючи з рівня %d, потрібно визнати недійсними.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1348
+#: ../src/dtgtk/thumbtable.c:1450
 #, c-format
 msgid ""
 "cached thumbnails below level %d need to be invalidated.\n"
@@ -9655,7 +9655,7 @@ msgstr ""
 "Кешовані мініатюри нижче рівня %d потрібно визнати недійсними.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1353
+#: ../src/dtgtk/thumbtable.c:1455
 #, c-format
 msgid ""
 "cached thumbnails between level %d and %d need to be invalidated.\n"
@@ -9664,48 +9664,48 @@ msgstr ""
 "Кешовані мініатюри між рівнями %d і %d потрібно визнати недійсними.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1356
+#: ../src/dtgtk/thumbtable.c:1458
 msgid "do you want to do that now?"
 msgstr "Хочете зробити це зараз?"
 
-#: ../src/dtgtk/thumbtable.c:1358
+#: ../src/dtgtk/thumbtable.c:1460
 msgid "cached thumbnails invalidation"
 msgstr "Анулювання кешованих мініатюр"
 
 #. setup history key accelerators
-#: ../src/dtgtk/thumbtable.c:2575
+#: ../src/dtgtk/thumbtable.c:2702
 msgid "copy history"
 msgstr "Копіювати історію"
 
-#: ../src/dtgtk/thumbtable.c:2577
+#: ../src/dtgtk/thumbtable.c:2704
 msgid "copy history parts"
 msgstr "Копіювати частини історії"
 
-#: ../src/dtgtk/thumbtable.c:2579
+#: ../src/dtgtk/thumbtable.c:2706
 msgid "paste history"
 msgstr "Вставити історію"
 
-#: ../src/dtgtk/thumbtable.c:2581
+#: ../src/dtgtk/thumbtable.c:2708
 msgid "paste history parts"
 msgstr "Вставити частини історії"
 
-#: ../src/dtgtk/thumbtable.c:2583 ../src/libs/copy_history.c:394
+#: ../src/dtgtk/thumbtable.c:2710 ../src/libs/copy_history.c:394
 msgid "discard history"
 msgstr "Видалити історію"
 
-#: ../src/dtgtk/thumbtable.c:2586
+#: ../src/dtgtk/thumbtable.c:2713
 msgid "duplicate image"
 msgstr "Створити дублікат зображення"
 
-#: ../src/dtgtk/thumbtable.c:2588
+#: ../src/dtgtk/thumbtable.c:2715
 msgid "duplicate image virgin"
 msgstr "Створити дублікат нередагованого зображення"
 
-#: ../src/dtgtk/thumbtable.c:2598 ../src/libs/select.c:147
+#: ../src/dtgtk/thumbtable.c:2725 ../src/libs/select.c:147
 msgid "select film roll"
 msgstr "Вибрати плівку"
 
-#: ../src/dtgtk/thumbtable.c:2600 ../src/libs/select.c:151
+#: ../src/dtgtk/thumbtable.c:2727 ../src/libs/select.c:151
 msgid "select untouched"
 msgstr "Вибрати необроблені"
 
@@ -9879,7 +9879,7 @@ msgid "altgr"
 msgstr "Права Alt"
 
 #: ../src/gui/accelerators.c:127 ../src/gui/accelerators.c:174
-#: ../src/libs/tagging.c:1800
+#: ../src/libs/tagging.c:1804
 msgid "edit"
 msgstr "Редагувати"
 
@@ -9921,7 +9921,7 @@ msgstr "Перший"
 
 #: ../src/gui/accelerators.c:146 ../src/gui/accelerators.c:159
 #: ../src/gui/accelerators.c:356 ../src/libs/filters/rating_range.c:295
-#: ../src/libs/tagging.c:3146 ../src/views/darkroom.c:2265
+#: ../src/libs/tagging.c:3150 ../src/views/darkroom.c:2265
 #: ../src/views/darkroom.c:2315 ../src/views/darkroom.c:2544
 msgid "toggle"
 msgstr "Перемикач"
@@ -10372,7 +10372,7 @@ msgstr "Id пристрою"
 msgid "select file to export"
 msgstr "Виберіть файл для експорту"
 
-#: ../src/gui/accelerators.c:2566 ../src/libs/tagging.c:2552
+#: ../src/gui/accelerators.c:2566 ../src/libs/tagging.c:2556
 msgid "_export"
 msgstr "_Експортувати"
 
@@ -10404,7 +10404,7 @@ msgstr "Спочатку очистити пристрій"
 msgid "select file to import"
 msgstr "Виберіть файл для імпорту"
 
-#: ../src/gui/accelerators.c:2654 ../src/libs/tagging.c:2516
+#: ../src/gui/accelerators.c:2654 ../src/libs/tagging.c:2520
 msgid "_import"
 msgstr "_Імпорт"
 
@@ -10481,7 +10481,7 @@ msgid "restore default shortcuts or previous state"
 msgstr "Відновити прискорювачі за замовчуванням або попередній стан"
 
 #: ../src/gui/accelerators.c:2904 ../src/libs/styles.c:887
-#: ../src/libs/tagging.c:3278
+#: ../src/libs/tagging.c:3282
 msgid "import..."
 msgstr "Імпортувати..."
 
@@ -10490,7 +10490,7 @@ msgid "fully or partially import shortcuts from file"
 msgstr "Повністю або частково імпортувати клавіатурні прискорювачі з файлу"
 
 #: ../src/gui/accelerators.c:2909 ../src/libs/styles.c:894
-#: ../src/libs/tagging.c:3281
+#: ../src/libs/tagging.c:3285
 msgid "export..."
 msgstr "Експортувати..."
 
@@ -11516,8 +11516,8 @@ msgstr "Редагувати `%s' для модуля `%s'"
 msgid "_export..."
 msgstr "_Експортувати..."
 
-#: ../src/gui/presets.c:564 ../src/libs/tagging.c:1485
-#: ../src/libs/tagging.c:1576
+#: ../src/gui/presets.c:564 ../src/libs/tagging.c:1489
+#: ../src/libs/tagging.c:1580
 msgid "_delete"
 msgstr "Видалити"
 
@@ -12048,8 +12048,8 @@ msgstr ""
 msgid "internal"
 msgstr "Внутрішній"
 
-#: ../src/imageio/format/jxl.c:597 ../src/libs/duplicate.c:399
-#: ../src/libs/history.c:1132 ../src/libs/snapshots.c:778
+#: ../src/imageio/format/jxl.c:597 ../src/libs/duplicate.c:405
+#: ../src/libs/history.c:1132 ../src/libs/snapshots.c:782
 msgid "original"
 msgstr "Оригінал"
 
@@ -19022,27 +19022,27 @@ msgstr "Основні кольори RGB"
 msgid "adjustment of the RGB color primaries for color grading"
 msgstr "Коригування основних кольорів RGB для грейдингу"
 
-#: ../src/iop/primaries.c:382
-msgid "red primary hue"
-msgstr "Відтінок основного червоного"
+#: ../src/iop/primaries.c:395
+msgid "shift red towards yellow or magenta"
+msgstr "Зміщення червоного в бік жовтого або мадженти"
 
-#: ../src/iop/primaries.c:383
+#: ../src/iop/primaries.c:396
 msgid "red primary purity"
 msgstr "Чистота основного червоного"
 
-#: ../src/iop/primaries.c:384
-msgid "green primary hue"
-msgstr "Відтінок основного зеленого"
+#: ../src/iop/primaries.c:397
+msgid "shift green towards cyan or yellow"
+msgstr "Зміщення зеленого в бік ціану або жовтого"
 
-#: ../src/iop/primaries.c:385
+#: ../src/iop/primaries.c:398
 msgid "green primary purity"
 msgstr "Чистота основного зеленого"
 
-#: ../src/iop/primaries.c:386
-msgid "blue primary hue"
-msgstr "Відтінок основного синього"
+#: ../src/iop/primaries.c:399
+msgid "shift blue towards magenta or cyan"
+msgstr "Зміщення синього в бік мадженти або ціану"
 
-#: ../src/iop/primaries.c:387
+#: ../src/iop/primaries.c:400
 msgid "blue primary purity"
 msgstr "Чистота основного синього"
 
@@ -21083,7 +21083,7 @@ msgstr "Налаштування колекцій зображень"
 
 #: ../src/libs/collect.c:3267 ../src/libs/export.c:1126
 #: ../src/libs/metadata.c:615 ../src/libs/metadata_view.c:1339
-#: ../src/libs/recentcollect.c:295 ../src/libs/tagging.c:3522
+#: ../src/libs/recentcollect.c:295 ../src/libs/tagging.c:3526
 msgid "preferences..."
 msgstr "Уподобання..."
 
@@ -21301,11 +21301,11 @@ msgstr "Записати історію змін і теги в XMP файли"
 msgid "duplicate manager"
 msgstr "Менеджер дублікатів"
 
-#: ../src/libs/duplicate.c:401
+#: ../src/libs/duplicate.c:407
 msgid "create a 'virgin' duplicate of the image without any development"
 msgstr "Створити дублікат зображення без жодної обробки"
 
-#: ../src/libs/duplicate.c:406
+#: ../src/libs/duplicate.c:412
 msgid "create a duplicate of the image with same history stack"
 msgstr "Створити дублікат зображення з тією ж історією змін"
 
@@ -23246,8 +23246,8 @@ msgstr ""
 "Вони будуть видимі з редактора метаданих, колекцій і модуля імпорту.\n"
 "Вони також будуть експортуватися."
 
-#: ../src/libs/metadata.c:529 ../src/libs/tagging.c:1701
-#: ../src/libs/tagging.c:1850
+#: ../src/libs/metadata.c:529 ../src/libs/tagging.c:1705
+#: ../src/libs/tagging.c:1854
 msgid "private"
 msgstr "Приватно"
 
@@ -24227,20 +24227,20 @@ msgctxt "snapshot sign"
 msgid "S"
 msgstr "S"
 
-#: ../src/libs/snapshots.c:570
+#: ../src/libs/snapshots.c:574
 #, c-format
 msgid "↗ %s '%s'"
 msgstr "↗ %s '%s'"
 
-#: ../src/libs/snapshots.c:570
+#: ../src/libs/snapshots.c:574
 msgid "this snapshot was taken from"
 msgstr "Цей миттєвий знімок зроблено з"
 
-#: ../src/libs/snapshots.c:659
+#: ../src/libs/snapshots.c:663
 msgid "take snapshot"
 msgstr "Зробити миттєвий знімок"
 
-#: ../src/libs/snapshots.c:661
+#: ../src/libs/snapshots.c:665
 msgid ""
 "take snapshot to compare with another image or the same image at another "
 "stage of development"
@@ -24248,7 +24248,7 @@ msgstr ""
 "Зробити миттєвий знімок, щоб порівняти з іншим зображенням або тим самим "
 "зображенням на іншій стадії обробки"
 
-#: ../src/libs/snapshots.c:730
+#: ../src/libs/snapshots.c:734
 msgid "toggle last snapshot"
 msgstr "Перемкнути останній моментальний знімок"
 
@@ -24325,7 +24325,7 @@ msgstr "Створити..."
 msgid "create styles from history stack of selected images"
 msgstr "Створити стилі з історії змін вибраних зображень"
 
-#: ../src/libs/styles.c:873 ../src/libs/tagging.c:2279
+#: ../src/libs/styles.c:873 ../src/libs/tagging.c:2283
 msgid "edit..."
 msgstr "Редагувати..."
 
@@ -24349,29 +24349,29 @@ msgstr "Експортувати вибрані стилі у файли сти�
 msgid "apply the selected styles in list above to selected images"
 msgstr "Застосувати вибрані стилі у списку вище до вибраних зображень"
 
-#: ../src/libs/tagging.c:105
+#: ../src/libs/tagging.c:109
 msgid "tagging"
 msgstr "Теги"
 
-#: ../src/libs/tagging.c:1254
+#: ../src/libs/tagging.c:1258
 msgid "attach tag to all"
 msgstr "Прикріпити тег до всіх"
 
-#: ../src/libs/tagging.c:1262 ../src/libs/tagging.c:2252
+#: ../src/libs/tagging.c:1266 ../src/libs/tagging.c:2256
 msgid "detach tag"
 msgstr "Від'єднати тег"
 
-#: ../src/libs/tagging.c:1482
+#: ../src/libs/tagging.c:1486
 msgid "delete tag?"
 msgstr "Видалити тег?"
 
-#: ../src/libs/tagging.c:1492 ../src/libs/tagging.c:1583
-#: ../src/libs/tagging.c:1810 ../src/libs/tagging.c:2089
+#: ../src/libs/tagging.c:1496 ../src/libs/tagging.c:1587
+#: ../src/libs/tagging.c:1814 ../src/libs/tagging.c:2093
 #, c-format
 msgid "selected: %s"
 msgstr "Вибрано: %s "
 
-#: ../src/libs/tagging.c:1499
+#: ../src/libs/tagging.c:1503
 #, c-format
 msgid ""
 "do you really want to delete the tag `%s'?\n"
@@ -24389,16 +24389,16 @@ msgstr[2] ""
 "Ви дійсно хочете видалити тег `%s'?\n"
 "Цей тег присвоєно %d зображенням!"
 
-#: ../src/libs/tagging.c:1533
+#: ../src/libs/tagging.c:1537
 #, c-format
 msgid "tag %s removed"
 msgstr "Тег %s видалено"
 
-#: ../src/libs/tagging.c:1573
+#: ../src/libs/tagging.c:1577
 msgid "delete node?"
 msgstr "Видалити вузол?"
 
-#: ../src/libs/tagging.c:1590
+#: ../src/libs/tagging.c:1594
 #, c-format
 msgid "<u>%d</u> tag will be deleted"
 msgid_plural "<u>%d</u> tags will be deleted"
@@ -24406,8 +24406,8 @@ msgstr[0] "<u>%d</u> тег буде видалено"
 msgstr[1] "<u>%d</u> теги буде видалено"
 msgstr[2] "<u>%d</u> тегів буде видалено"
 
-#: ../src/libs/tagging.c:1595 ../src/libs/tagging.c:1822
-#: ../src/libs/tagging.c:2101
+#: ../src/libs/tagging.c:1599 ../src/libs/tagging.c:1826
+#: ../src/libs/tagging.c:2105
 #, c-format
 msgid "<u>%d</u> image will be updated"
 msgid_plural "<u>%d</u> images will be updated"
@@ -24415,42 +24415,42 @@ msgstr[0] "<u>%d</u> зображення буде оновлено"
 msgstr[1] "<u>%d</u> зображення буде оновлено"
 msgstr[2] "<u>%d</u> зображень буде оновлено"
 
-#: ../src/libs/tagging.c:1621
+#: ../src/libs/tagging.c:1625
 #, c-format
 msgid "%d tags removed"
 msgstr "Видалено тегів: %d"
 
-#: ../src/libs/tagging.c:1664
+#: ../src/libs/tagging.c:1668
 msgid "create tag"
 msgstr "Створити тег"
 
-#: ../src/libs/tagging.c:1677 ../src/libs/tagging.c:1830
+#: ../src/libs/tagging.c:1681 ../src/libs/tagging.c:1834
 msgid "name: "
 msgstr "Ім'я: "
 
-#: ../src/libs/tagging.c:1692
+#: ../src/libs/tagging.c:1696
 #, c-format
 msgid "add to: \"%s\" "
 msgstr "Додати до: \"%s\" "
 
-#: ../src/libs/tagging.c:1698 ../src/libs/tagging.c:1847
+#: ../src/libs/tagging.c:1702 ../src/libs/tagging.c:1851
 msgid "category"
 msgstr "Категорія"
 
-#: ../src/libs/tagging.c:1707 ../src/libs/tagging.c:1856
+#: ../src/libs/tagging.c:1711 ../src/libs/tagging.c:1860
 msgid "synonyms: "
 msgstr "Синоніми: "
 
-#: ../src/libs/tagging.c:1724 ../src/libs/tagging.c:1878
-#: ../src/libs/tagging.c:2124
+#: ../src/libs/tagging.c:1728 ../src/libs/tagging.c:1882
+#: ../src/libs/tagging.c:2128
 msgid "empty tag is not allowed, aborting"
 msgstr "Порожній тег заборонено, переривання"
 
-#: ../src/libs/tagging.c:1735
+#: ../src/libs/tagging.c:1739
 msgid "tag name already exists. aborting."
 msgstr "Ім'я тегу вже існує. Переривання."
 
-#: ../src/libs/tagging.c:1817 ../src/libs/tagging.c:2096
+#: ../src/libs/tagging.c:1821 ../src/libs/tagging.c:2100
 #, c-format
 msgid "<u>%d</u> tag will be updated"
 msgid_plural "<u>%d</u> tags will be updated"
@@ -24458,7 +24458,7 @@ msgstr[0] "<u>%d</u> тег буде оновлено"
 msgstr[1] "<u>%d</u> теги буде оновлено"
 msgstr[2] "<u>%d</u> тегів буде оновлено"
 
-#: ../src/libs/tagging.c:1880
+#: ../src/libs/tagging.c:1884
 msgid ""
 "'|' character is not allowed for renaming tag.\n"
 "to modify the hierarchy use rename path instead. Aborting."
@@ -24467,101 +24467,101 @@ msgstr ""
 "Щоб змінити ієрархію, використовуйте замість цього перейменування шляху. "
 "Переривання."
 
-#: ../src/libs/tagging.c:1919 ../src/libs/tagging.c:2027
+#: ../src/libs/tagging.c:1923 ../src/libs/tagging.c:2031
 #, c-format
 msgid "at least one new tag name (%s) already exists, aborting"
 msgstr "Принаймні одне нове ім'я тегу (%s) уже існує, переривання"
 
-#: ../src/libs/tagging.c:2079
+#: ../src/libs/tagging.c:2083
 msgid "change path"
 msgstr "Змінити шлях"
 
-#: ../src/libs/tagging.c:2126
+#: ../src/libs/tagging.c:2130
 msgid "'|' misplaced, empty tag is not allowed, aborting"
 msgstr ""
 "Символ '|' неправильно розміщений, порожній тег заборонено, переривання"
 
-#: ../src/libs/tagging.c:2222
+#: ../src/libs/tagging.c:2226
 #, c-format
 msgid "tag %s created"
 msgstr "Тег %s створено"
 
-#: ../src/libs/tagging.c:2248
+#: ../src/libs/tagging.c:2252
 msgid "attach tag"
 msgstr "Прикріпити тег"
 
-#: ../src/libs/tagging.c:2261
+#: ../src/libs/tagging.c:2265
 msgid "create tag..."
 msgstr "Створити тег..."
 
-#: ../src/libs/tagging.c:2267
+#: ../src/libs/tagging.c:2271
 msgid "delete tag"
 msgstr "Видалити тег"
 
-#: ../src/libs/tagging.c:2274
+#: ../src/libs/tagging.c:2278
 msgid "delete node"
 msgstr "Видалити вузол"
 
-#: ../src/libs/tagging.c:2287
+#: ../src/libs/tagging.c:2291
 msgid "change path..."
 msgstr "Змінити шлях..."
 
-#: ../src/libs/tagging.c:2297
+#: ../src/libs/tagging.c:2301
 msgid "set as a tag"
 msgstr "Встановити як тег"
 
-#: ../src/libs/tagging.c:2308
+#: ../src/libs/tagging.c:2312
 msgid "copy to entry"
 msgstr "Копіювати в поле вводу"
 
-#: ../src/libs/tagging.c:2325
+#: ../src/libs/tagging.c:2329
 msgid "go to tag collection"
 msgstr "Перейти до колекції тегів"
 
-#: ../src/libs/tagging.c:2331
+#: ../src/libs/tagging.c:2335
 msgid "go back to work"
 msgstr "Повернутись до роботи"
 
-#: ../src/libs/tagging.c:2488
+#: ../src/libs/tagging.c:2492
 #, c-format
 msgid "%s"
 msgstr "%s"
 
-#: ../src/libs/tagging.c:2489
+#: ../src/libs/tagging.c:2493
 msgid "(private)"
 msgstr "(приватно)"
 
-#: ../src/libs/tagging.c:2515
+#: ../src/libs/tagging.c:2519
 msgid "select a keyword file"
 msgstr "Вибір файлу ключових слів"
 
-#: ../src/libs/tagging.c:2528
+#: ../src/libs/tagging.c:2532
 msgid "error importing tags"
 msgstr "Помилка при імпорті тегів"
 
-#: ../src/libs/tagging.c:2530
+#: ../src/libs/tagging.c:2534
 #, c-format
 msgid "%zd tags imported"
 msgstr "Імпортовано тегів: %zd"
 
-#: ../src/libs/tagging.c:2551
+#: ../src/libs/tagging.c:2555
 msgid "select file to export to"
 msgstr "Виберіть файл для експорту"
 
-#: ../src/libs/tagging.c:2565
+#: ../src/libs/tagging.c:2569
 msgid "error exporting tags"
 msgstr "Помилка при експорті тегів"
 
-#: ../src/libs/tagging.c:2567
+#: ../src/libs/tagging.c:2571
 #, c-format
 msgid "%zd tags exported"
 msgstr "Експортовано тегів: %zd"
 
-#: ../src/libs/tagging.c:2991
+#: ../src/libs/tagging.c:2995
 msgid "drop to root"
 msgstr "drop to root"
 
-#: ../src/libs/tagging.c:3127
+#: ../src/libs/tagging.c:3131
 msgid ""
 "attached tags\n"
 "press Delete or double-click to detach\n"
@@ -24573,47 +24573,47 @@ msgstr ""
 "Права кнопка миші - інші дії з прикріпленим тегом\n"
 "Натисніть Tab, щоб встановити фокус на введення"
 
-#: ../src/libs/tagging.c:3138
+#: ../src/libs/tagging.c:3142
 msgid "attach"
 msgstr "Прикріпити"
 
-#: ../src/libs/tagging.c:3139
+#: ../src/libs/tagging.c:3143
 msgid "attach tag to all selected images"
 msgstr "Прикріпити тег до всіх вибраних зображень"
 
-#: ../src/libs/tagging.c:3142
+#: ../src/libs/tagging.c:3146
 msgid "detach"
 msgstr "Від'єднати"
 
-#: ../src/libs/tagging.c:3143
+#: ../src/libs/tagging.c:3147
 msgid "detach tag from all selected images"
 msgstr "Від'єднати тег від усіх вибраних зображень"
 
-#: ../src/libs/tagging.c:3156
+#: ../src/libs/tagging.c:3160
 msgid "toggle list with / without hierarchy"
 msgstr "Перемкнути відображення ієрархії тегів"
 
-#: ../src/libs/tagging.c:3156
+#: ../src/libs/tagging.c:3160
 msgid "hide"
 msgstr "Приховати"
 
-#: ../src/libs/tagging.c:3158
+#: ../src/libs/tagging.c:3162
 msgid "toggle sort by name or by count"
 msgstr "Перемкнути між сортуванням за іменем та по кількості"
 
-#: ../src/libs/tagging.c:3158
+#: ../src/libs/tagging.c:3162
 msgid "sort"
 msgstr "Сортування"
 
-#: ../src/libs/tagging.c:3160
+#: ../src/libs/tagging.c:3164
 msgid "toggle show or not darktable tags"
 msgstr "Перемкнути відображення тегів darktable"
 
-#: ../src/libs/tagging.c:3160
+#: ../src/libs/tagging.c:3164
 msgid "dttags"
 msgstr "Показ тегів darktable"
 
-#: ../src/libs/tagging.c:3176
+#: ../src/libs/tagging.c:3180
 msgid ""
 "enter tag name\n"
 "press Enter to create a new tag and attach it on selected images\n"
@@ -24626,11 +24626,11 @@ msgstr ""
 "Натисніть клавішу Tab або Down, щоб перейти до першого відповідного тегу\n"
 "Натисніть shift+Tab, щоб вибрати перший прикріплений тег користувача"
 
-#: ../src/libs/tagging.c:3187 ../src/libs/tagging.c:3193
+#: ../src/libs/tagging.c:3191 ../src/libs/tagging.c:3197
 msgid "clear entry"
 msgstr "Очистити поле"
 
-#: ../src/libs/tagging.c:3240
+#: ../src/libs/tagging.c:3244
 msgid ""
 "tag dictionary,\n"
 "Enter or double-click to attach selected tag on selected images\n"
@@ -24646,7 +24646,7 @@ msgstr ""
 "Клікніть правою кнопкою миші для інших дій з вибраним тегом.\n"
 "Натисніть shift+Tab, щоб встановити фокус на введення."
 
-#: ../src/libs/tagging.c:3275
+#: ../src/libs/tagging.c:3279
 msgid ""
 "create a new tag with the\n"
 "name you entered"
@@ -24654,44 +24654,44 @@ msgstr ""
 "Створити новий тег\n"
 "із введеним ім'ям"
 
-#: ../src/libs/tagging.c:3278
+#: ../src/libs/tagging.c:3282
 msgid "import tags from a Lightroom keyword file"
 msgstr "Імпортувати теги з файлу ключових слів Lightroom"
 
-#: ../src/libs/tagging.c:3281
+#: ../src/libs/tagging.c:3285
 msgid "export all tags to a Lightroom keyword file"
 msgstr "Експортувати всі теги у файл ключових слів Lightroom"
 
-#: ../src/libs/tagging.c:3285
+#: ../src/libs/tagging.c:3289
 msgid "toggle list / tree view"
 msgstr ""
 "Перемкнути режим показу тегів між\n"
 "звичайним списком та ієрархічним деревом"
 
-#: ../src/libs/tagging.c:3285
+#: ../src/libs/tagging.c:3289
 msgid "tree"
 msgstr "Дерево"
 
-#: ../src/libs/tagging.c:3287
+#: ../src/libs/tagging.c:3291
 msgid "toggle list with / without suggestion"
 msgstr "Перемкнути пропозиції до тегів"
 
-#: ../src/libs/tagging.c:3287
+#: ../src/libs/tagging.c:3291
 msgid "suggestion"
 msgstr "Пропозиції до тегів"
 
-#: ../src/libs/tagging.c:3309
+#: ../src/libs/tagging.c:3313
 msgid "redo last tag"
 msgstr "Повторити останній тег"
 
-#: ../src/libs/tagging.c:3392
+#: ../src/libs/tagging.c:3396
 msgid ""
 "tag shortcut is not active with tag tree view. please switch to list view"
 msgstr ""
 "Прискорювач неактивний при перегляді тегів у вигляді дерева. Будь ласка, "
 "перейдіть до перегляду у вигляді списку."
 
-#: ../src/libs/tagging.c:3496
+#: ../src/libs/tagging.c:3500
 msgid "tagging settings"
 msgstr "Налаштування тегів"
 
@@ -25823,6 +25823,15 @@ msgstr ""
 #: ../src/views/view.c:1537
 msgid "mouse actions"
 msgstr "Дії за допомогою миші"
+
+#~ msgid "red primary hue"
+#~ msgstr "Відтінок основного червоного"
+
+#~ msgid "green primary hue"
+#~ msgstr "Відтінок основного зеленого"
+
+#~ msgid "blue primary hue"
+#~ msgstr "Відтінок основного синього"
 
 #~ msgctxt "preferences"
 #~ msgid "4k"
