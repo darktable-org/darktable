@@ -214,8 +214,11 @@ void gui_post_expose(dt_lib_module_t *self,
       //    with the navigation module
 
       snap->ctx = ctx;
-      if(!d->panning && dev->darkroom_mouse_in_center_area) d->snap_requested = TRUE;
-      if(d->expose_again_timeout_id != 0) g_source_remove(d->expose_again_timeout_id);
+      if(!d->panning && dev->darkroom_mouse_in_center_area)
+        d->snap_requested = TRUE;
+      if(d->expose_again_timeout_id != 0)
+        g_source_remove(d->expose_again_timeout_id);
+
       d->expose_again_timeout_id = g_timeout_add(150, _snap_expose_again, d);
     }
 
