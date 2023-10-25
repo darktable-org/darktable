@@ -276,7 +276,7 @@ int legacy_params(dt_iop_module_t *self,
       (dt_iop_borders_params_v4_t *)malloc(sizeof(dt_iop_borders_params_v4_t));
 
     memcpy(n, o, sizeof(struct dt_iop_borders_params_v3_t));
-    
+
     if (n->aspect == DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE && !n->max_border_size)
     {
       // the legacy behaviour is, when a constant border is used and the
@@ -465,7 +465,7 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
 
   const int *basis_in = NULL, *other_in = NULL;
   int *basis_out = NULL, *other_out = NULL;
-  
+
   #define DT_IOP_BORDERS_ASSIGN(b, b_uc, o) \
     basis_in = &roi_in->b, basis_out = &roi_out->b, \
     other_in = &roi_in->o, other_out = &roi_out->o, \
@@ -1071,7 +1071,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_borders_gui_data_t *g = IOP_GUI_ALLOC(borders);
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->default_params;
 
-  g->basis = dt_bauhaus_combobox_from_params(self, N_("basis"));
+  g->basis = dt_bauhaus_combobox_from_params(self, "basis");
   gtk_widget_set_tooltip_text(g->basis, _("which length to use for the size calculation"));
 
   g->size = dt_bauhaus_slider_from_params(self, "size");
