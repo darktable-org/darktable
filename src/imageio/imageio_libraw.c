@@ -215,7 +215,37 @@ const model_map_t modelMap[] = {
     .clean_make = "Canon",
     .clean_model = "PowerShot G5 X Mark II",
     .clean_alias = "PowerShot G5 X Mark II"
-  }
+  },
+#if LIBRAW_COMPILE_CHECK_VERSION_NOTLESS(0, 22)
+  {
+    .exif_make = "Canon",
+    .exif_model = "Canon EOS R6m2",
+    .clean_make = "Canon",
+    .clean_model = "EOS R6 Mark II",
+    .clean_alias = "EOS R6 Mark II"
+  },
+  {
+    .exif_make = "Canon",
+    .exif_model = "Canon EOS R8",
+    .clean_make = "Canon",
+    .clean_model = "EOS R8",
+    .clean_alias = "EOS R8"
+  },
+  {
+    .exif_make = "Canon",
+    .exif_model = "Canon EOS R50",
+    .clean_make = "Canon",
+    .clean_model = "EOS R50",
+    .clean_alias = "EOS R50"
+  },
+  {
+    .exif_make = "Canon",
+    .exif_model = "Canon EOS R100",
+    .clean_make = "Canon",
+    .clean_model = "EOS R100",
+    .clean_alias = "EOS R100"
+  },
+#endif
 };
 
 
