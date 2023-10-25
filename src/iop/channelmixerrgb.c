@@ -589,11 +589,11 @@ void init_presets(dt_iop_module_so_t *self)
 }
 
 
-static int _get_white_balance_coeff(struct dt_iop_module_t *self,
+static gboolean _get_white_balance_coeff(struct dt_iop_module_t *self,
                                     dt_aligned_pixel_t custom_wb)
 {
   // Init output with a no-op
-  for(size_t k = 0; k < 4; k++) custom_wb[k] = 1.f;
+  for_four_channels(k) custom_wb[k] = 1.f;
 
   if(!dt_image_is_matrix_correction_supported(&self->dev->image_storage)) return 1;
 
@@ -614,20 +614,18 @@ static int _get_white_balance_coeff(struct dt_iop_module_t *self,
     bwb[1] = 1.0;
   }
   else
-  {
-    return 1;
-  }
+     return TRUE;
 
   // Second, if the temperature module is not using these, for example
   // because they are wrong and user made a correct preset, find the
   // WB adaptation ratio
-  if(self->dev->proxy.wb_coeffs[0] != 0.f)
+  const dt_dev_chroma_t *chr = &self->dev->chroma;
+  if(chr->wb_coeffs[0] > 1.0 || chr->wb_coeffs[1] > 1.0 || chr->wb_coeffs[2] > 1.0)
   {
-    for(size_t k = 0; k < 4; k++)
-      custom_wb[k] = bwb[k] / self->dev->proxy.wb_coeffs[k];
+    for_four_channels(k)
+      custom_wb[k] = bwb[k] / chr->wb_coeffs[k];
   }
-
-  return 0;
+  return FALSE;
 }
 
 
@@ -1196,21 +1194,22 @@ static inline void _auto_detect_WB(const float *const restrict in,
 
 static void _declare_cat_on_pipe(struct dt_iop_module_t *self, const gboolean preset)
 {
-  // Advertise to the pipeline that we are doing chromatic adaptation here
+  // Avertise in dev->chroma that we are doing chromatic adaptation here
   // preset = TRUE allows to capture the CAT a priori at init time
   dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
+  dt_dev_chroma_t *chr = &self->dev->chroma;
 
   if((self->enabled
       && !(p->adaptation == DT_ADAPTATION_RGB
            || p->illuminant == DT_ILLUMINANT_PIPE)) || preset)
   {
     // We do CAT here so we need to register this instance as CAT-handler.
-    if(self->dev->proxy.chroma_adaptation == NULL)
+    if(chr->adaptation == NULL)
     {
       // We are the first to try to register, let's go !
-      self->dev->proxy.chroma_adaptation = self;
+      chr->adaptation = self;
     }
-    else if(self->dev->proxy.chroma_adaptation == self)
+    else if(chr->adaptation == self)
     {
     }
     else
@@ -1218,17 +1217,17 @@ static void _declare_cat_on_pipe(struct dt_iop_module_t *self, const gboolean pr
       // Another instance already registered.
       // If we are lower in the pipe than it, register in its place.
       if(dt_iop_is_first_instance(self->dev->iop, self))
-        self->dev->proxy.chroma_adaptation = self;
+        chr->adaptation = self;
     }
   }
   else
   {
-    if(self->dev->proxy.chroma_adaptation != NULL)
+    if(chr->adaptation != NULL)
     {
       // We do NOT do CAT here.
       // Deregister this instance as CAT-handler if it previously registered
-      if(self->dev->proxy.chroma_adaptation == self)
-        self->dev->proxy.chroma_adaptation = NULL;
+      if(chr->adaptation == self)
+        chr->adaptation = NULL;
     }
   }
 }
@@ -1238,7 +1237,7 @@ static inline gboolean _is_another_module_cat_on_pipe(struct dt_iop_module_t *se
   dt_iop_channelmixer_rgb_gui_data_t *g =
     (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
   if(!g) return FALSE;
-  return self->dev->proxy.chroma_adaptation && self->dev->proxy.chroma_adaptation != self;
+  return self->dev->chroma.adaptation && self->dev->chroma.adaptation != self;
 }
 
 
@@ -2046,7 +2045,7 @@ static void _check_for_wb_issue_and_set_trouble_message(struct dt_iop_module_t *
          "double CAT applied");
       return;
     }
-    else if(!self->dev->proxy.wb_is_D65)
+    else if(!dt_dev_D65_chroma(self->dev))
     {
       // our first and biggest problem : white balance module is being
       // clever with WB coeffs
@@ -3732,7 +3731,7 @@ void cleanup_pipe(struct dt_iop_module_t *self,
                   dt_dev_pixelpipe_t *pipe,
                   dt_dev_pixelpipe_iop_t *piece)
 {
-  self->dev->proxy.chroma_adaptation = NULL;
+  dt_dev_reset_chroma(self->dev);
   dt_free_align(piece->data);
   piece->data = NULL;
 }
@@ -3858,8 +3857,8 @@ void reload_defaults(dt_iop_module_t *module)
 
   // check if we could register
   const gboolean CAT_already_applied =
-    (module->dev->proxy.chroma_adaptation != NULL)      // CAT exists
-    && (module->dev->proxy.chroma_adaptation != module) // and it is not us
+    (module->dev->chroma.adaptation != NULL)      // CAT exists
+    && (module->dev->chroma.adaptation != module) // and it is not us
     && (!dt_image_is_monochrome(img));
 
   module->default_enabled = FALSE;
@@ -4112,7 +4111,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
   _declare_cat_on_pipe(self, FALSE);
 
-  if(!self->dev->proxy.wb_is_D65 || !self->enabled)
+  if(!dt_dev_D65_chroma(self->dev) || !self->enabled)
     _check_for_wb_issue_and_set_trouble_message(self, NULL);
 
   --darktable.gui->reset;

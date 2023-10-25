@@ -746,7 +746,8 @@ gboolean try_enter(dt_view_t *self)
   // and drop the lock again.
   dt_image_cache_read_release(darktable.image_cache, img);
   darktable.develop->image_storage.id = imgid;
-  darktable.develop->proxy.wb_coeffs[0] = 0.f;
+
+  dt_dev_reset_chroma(darktable.develop);
   return FALSE;
 }
 
@@ -770,9 +771,7 @@ static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid)
 {
   // Pipe reset needed when changing image
   // FIXME: synch with dev_init() and dev_cleanup() instead of redoing it
-  dev->proxy.chroma_adaptation = NULL;
-  dev->proxy.wb_is_D65 = TRUE;
-  dev->proxy.wb_coeffs[0] = 0.f;
+  dt_dev_reset_chroma(dev);
 
   // change active image
   g_slist_free(darktable.view_manager->active_images);

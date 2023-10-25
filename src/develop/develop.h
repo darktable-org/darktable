@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2021 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -144,6 +144,32 @@ typedef struct dt_dev_viewport_t
   gboolean input_changed;
 } dt_dev_viewport_t;
 
+/* keep track on what and where we do chromatic adaptation, used
+  a)  to display warnings in GUI of modules that should probably not be doing
+      white balance
+  b)  missing required white balance
+  c)  allow late correction of as-shot or modified coeffs to D65 in color-input
+      but keep processing until then with more reliable (at least for highlights,
+      raw chromatic aberrations and more.
+  d)  avoids keeping of fixed data in temperature gui data
+  e)  we have 3 coefficients kept here
+      - the currently used wb_coeffs in temperature module
+      - D65coeffs and as_shot are read from exif data
+  f)  - late_correction set by temperature if we want to process data as following
+      If we use the new DT_IOP_TEMP_D65_LATE mode in temperature.c and don#t have
+      any temp parameters changes later we can calc correction coeffs to modify
+      as_shot rgb data to D65
+*/
+typedef struct dt_dev_chroma_t
+{
+  struct dt_iop_module_t *temperature;  // always available for GUI reports
+  struct dt_iop_module_t *adaptation;   // set if one module is processing this without blending
+
+  double wb_coeffs[4];                  // data actually used by the pipe
+  double D65coeffs[4];                  // both read from exif data or "best guess"
+  double as_shot[4];
+  gboolean late_correction;
+} dt_dev_chroma_t;
 
 typedef struct dt_develop_t
 {
@@ -273,18 +299,9 @@ typedef struct dt_develop_t
                                struct dt_iop_module_t *module,
                                const dt_mask_id_t selectid);
     } masks;
-
-    // what is the ID of the module currently doing pipeline chromatic
-    // adaptation ?  this is to prevent multiple modules/instances
-    // from doing white balance globally.  only used to display
-    // warnings in GUI of modules that should probably not be doing
-    // white balance
-    struct dt_iop_module_t *chroma_adaptation;
-
-    // is the WB module using D65 illuminant and not doing full chromatic adaptation ?
-    gboolean wb_is_D65;
-    dt_aligned_pixel_t wb_coeffs;
   } proxy;
+
+  dt_dev_chroma_t chroma;
 
   // for exposing the crop
   struct
@@ -660,6 +677,11 @@ void dt_dev_image_ext(const dt_imgid_t imgid,
                       const int border_size,
                       const gboolean iso_12646,
                       const int32_t snapshot_id);
+
+
+gboolean dt_dev_D65_chroma(const dt_develop_t *dev);
+void dt_dev_reset_chroma(dt_develop_t *dev);
+void dt_dev_init_chroma(dt_develop_t *dev);
 
 #ifdef __cplusplus
 } // extern "C"
