@@ -44,7 +44,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-DT_MODULE_INTROSPECTION(3, dt_iop_borders_params_t)
+DT_MODULE_INTROSPECTION(4, dt_iop_borders_params_t)
 
 // Module constants
 #define DT_IOP_BORDERS_ASPECT_IMAGE_VALUE 0.0f
@@ -55,6 +55,15 @@ typedef enum dt_iop_orientation_t
   DT_IOP_BORDERS_ASPECT_ORIENTATION_PORTRAIT = 1,  // $DESCRIPTION: "portrait"
   DT_IOP_BORDERS_ASPECT_ORIENTATION_LANDSCAPE = 2, // $DESCRIPTION: "landscape"
 } dt_iop_orientation_t;
+
+typedef enum dt_iop_basis_t
+{
+  DT_IOP_BORDERS_BASIS_AUTO = 0,     // $DESCRIPTION: "auto"
+  DT_IOP_BORDERS_BASIS_WIDTH = 1,    // $DESCRIPTION: "width"
+  DT_IOP_BORDERS_BASIS_HEIGHT = 2,   // $DESCRIPTION: "height"
+  DT_IOP_BORDERS_BASIS_SHORTEST = 3, // $DESCRIPTION: "shortest"
+  DT_IOP_BORDERS_BASIS_LONGEST = 4,  // $DESCRIPTION: "longest"
+} dt_iop_basis_t;
 
 static const float _aspect_ratios[]
   = { DT_IOP_BORDERS_ASPECT_IMAGE_VALUE,
@@ -79,7 +88,7 @@ typedef struct dt_iop_borders_params_t
                                DEFAULT: "constant border" */
   dt_iop_orientation_t aspect_orient;        /* aspect ratio orientation
                                $DEFAULT: 0 $DESCRIPTION: "orientation" */
-  float size;               /* border width relative to overall frame width
+  float size;               /* border width relative to the length of the chosen basis
                                $MIN: 0.0 $MAX: 0.5 $DEFAULT: 0.1 $DESCRIPTION: "border size" */
   float pos_h;              /* picture horizontal position ratio into the final image
                                $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.5 $DESCRIPTION: "horizontal offset" */
@@ -96,10 +105,13 @@ typedef struct dt_iop_borders_params_t
   float frame_color[3];     // frame line color $DEFAULT: 0.0
   gboolean max_border_size; /* the way border size is computed
                                $DEFAULT: TRUE */
+  dt_iop_basis_t basis;     /* side of the photo to use as basis for the size calculation
+                               $DEFAULT: 0 $DESCRIPTION: "basis" */
 } dt_iop_borders_params_t;
 
 typedef struct dt_iop_borders_gui_data_t
 {
+  GtkWidget *basis;
   GtkWidget *size;
   GtkWidget *aspect;
   GtkWidget *aspect_slider;
@@ -224,6 +236,61 @@ int legacy_params(dt_iop_module_t *self,
     *new_params = n;
     *new_params_size = sizeof(dt_iop_borders_params_v3_t);
     *new_version = 3;
+    return 0;
+  }
+
+  if(old_version == 3)
+  {
+    typedef struct dt_iop_borders_params_v4_t
+    {
+      float color[3];           // border color $DEFAULT: 1.0
+      float aspect;             /* aspect ratio of the outer frame w/h
+                                $MIN: 1.0 $MAX: 3.0 $DEFAULT: DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE $DESCRIPTION: "aspect ratio" */
+      char aspect_text[20];     /* UNUSED aspect ratio of the outer frame w/h (user string version)
+                                  DEFAULT: "constant border" */
+      dt_iop_orientation_t aspect_orient;        /* aspect ratio orientation
+                                                    $DEFAULT: 0 $DESCRIPTION: "orientation" */
+      float size;               /* border width relative to overall frame width
+                                  $MIN: 0.0 $MAX: 0.5 $DEFAULT: 0.1 $DESCRIPTION: "border size" */
+      float pos_h;              /* picture horizontal position ratio into the final image
+                                  $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.5 $DESCRIPTION: "horizontal offset" */
+      char pos_h_text[20];      /* UNUSED picture horizontal position ratio into the final image (user string version)
+                                  DEFAULT: "1/2" */
+      float pos_v;              /* picture vertical position ratio into the final image
+                                  $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.5 $DESCRIPTION: "vertical offset"*/
+      char pos_v_text[20];      /* UNUSED picture vertical position ratio into the final image (user string version)
+                                  DEFAULT: "1/2" */
+      float frame_size;         /* frame line width relative to border width
+                                  $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "frame line size" */
+      float frame_offset;       /* frame offset from picture size relative to [border width - frame width]
+                                  $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.5 $DESCRIPTION: "frame line offset" */
+      float frame_color[3];     // frame line color $DEFAULT: 0.0
+      gboolean max_border_size; /* the way border size is computed
+                                  $DEFAULT: TRUE */
+      dt_iop_basis_t basis;     /* side of the photo to use as basis for the size calculation
+                                  $DEFAULT: 0 $DESCRIPTION: "basis" */
+    } dt_iop_borders_params_v4_t;
+
+    const dt_iop_borders_params_v3_t *o = (dt_iop_borders_params_v3_t *)old_params;
+    dt_iop_borders_params_v4_t *n =
+      (dt_iop_borders_params_v4_t *)malloc(sizeof(dt_iop_borders_params_v4_t));
+
+    memcpy(n, o, sizeof(struct dt_iop_borders_params_v3_t));
+    
+    if (n->aspect == DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE && !n->max_border_size)
+    {
+      // the legacy behaviour is, when a constant border is used and the
+      // max_border_size flag is set, the width is always used as basis.
+      n->basis = DT_IOP_BORDERS_BASIS_WIDTH;
+    }
+    else
+    {
+      n->basis = DT_IOP_BORDERS_BASIS_AUTO;
+    }
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_borders_params_v4_t);
+    *new_version = 4;
     return 0;
   }
 
@@ -373,24 +440,49 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
   const float size = fabsf(d->size);
   if(size == 0) return;
 
-  if(d->aspect == DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE)
-  {
-    // for a constant border be sure to base the computation on the
-    // larger border, failing that the border will have a difference
-    // size depending on the orientation.
+  const gboolean is_constant_border = d->aspect == DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE;
 
-    if(roi_in->width > roi_in->height || !d->max_border_size)
-    {
-      // this means: relative to width and constant for height as well:
-      roi_out->width = roundf((float)roi_in->width / (1.0f - size));
-      roi_out->height = roi_in->height + roi_out->width - roi_in->width;
-    }
-    else
-    {
-      // this means: relative to height and constant for width as well:
-      roi_out->height = roundf((float)roi_in->height / (1.0f - size));
-      roi_out->width = roi_in->width + roi_out->height - roi_in->height;
-    }
+  dt_iop_basis_t basis = d->basis;
+  if (basis == DT_IOP_BORDERS_BASIS_AUTO)
+  {
+    // automatic/legacy/default behaviour:
+    // for a constant border be sure to base the computation on the
+    // larger border, failing that the border will have a different
+    // size depending on the orientation.
+    // for all other borders use the width.
+    basis = is_constant_border ? DT_IOP_BORDERS_BASIS_LONGEST : DT_IOP_BORDERS_BASIS_WIDTH;
+  }
+  if(basis == DT_IOP_BORDERS_BASIS_LONGEST)
+  {
+    basis = roi_in->width > roi_in->height ? DT_IOP_BORDERS_BASIS_WIDTH : DT_IOP_BORDERS_BASIS_HEIGHT;
+  }
+  else if(basis == DT_IOP_BORDERS_BASIS_SHORTEST)
+  {
+    basis = roi_in->width < roi_in->height ? DT_IOP_BORDERS_BASIS_WIDTH : DT_IOP_BORDERS_BASIS_HEIGHT;
+  }
+
+  assert(basis == DT_IOP_BORDERS_BASIS_WIDTH || basis == DT_IOP_BORDERS_BASIS_HEIGHT);
+
+  const int *basis_in = NULL, *other_in = NULL;
+  int *basis_out = NULL, *other_out = NULL;
+  
+  #define DT_IOP_BORDERS_ASSIGN(b, b_uc, o) \
+    basis_in = &roi_in->b, basis_out = &roi_out->b, \
+    other_in = &roi_in->o, other_out = &roi_out->o, \
+    basis = DT_IOP_BORDERS_BASIS_ ## b_uc
+  #define DT_IOP_BORDERS_ASSIGN_width DT_IOP_BORDERS_ASSIGN(width, WIDTH, height)
+  #define DT_IOP_BORDERS_ASSIGN_height DT_IOP_BORDERS_ASSIGN(height, HEIGHT, width)
+  #define DT_IOP_BORDERS_ASSIGN_BASIS(basis) DT_IOP_BORDERS_ASSIGN_ ## basis
+
+  if(basis == DT_IOP_BORDERS_BASIS_WIDTH)
+    DT_IOP_BORDERS_ASSIGN_BASIS(width);
+  else if(basis == DT_IOP_BORDERS_BASIS_HEIGHT)
+    DT_IOP_BORDERS_ASSIGN_BASIS(height);
+
+  if(is_constant_border)
+  {
+    *basis_out = roundf((float)*basis_in / (1.0f - size));
+    *other_out = *other_in + *basis_out - *basis_in;
   }
   else
   {
@@ -410,16 +502,20 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
     else if(d->aspect_orient == DT_IOP_BORDERS_ASPECT_ORIENTATION_PORTRAIT)
       aspect = (aspect > 1.0f) ? 1.0f / aspect : aspect;
 
-    // min width: constant ratio based on size:
-    roi_out->width = roundf((float)roi_in->width / (1.0f - size));
-    // corresponding height: determined by aspect ratio:
-    roi_out->height = roundf((float)roi_out->width / aspect);
-    // insane settings used?
-    if(roi_out->height < (float)roi_in->height / (1.0f - size))
-    {
-      roi_out->height = roundf((float)roi_in->height / (1.0f - size));
-      roi_out->width = roundf((float)roi_out->height * aspect);
-    }
+    // first determine how large the border should be,
+    float border_width = (float)*basis_in * (1.0f / (1.0f - size) - 1.0f);
+
+    // then make sure we add that amount to the shortest side.
+    if (basis == DT_IOP_BORDERS_BASIS_WIDTH && image_aspect < 1.0f)
+      DT_IOP_BORDERS_ASSIGN_BASIS(height);
+    if (basis == DT_IOP_BORDERS_BASIS_HEIGHT && image_aspect > 1.0f)
+      DT_IOP_BORDERS_ASSIGN_BASIS(width);
+
+    if (basis == DT_IOP_BORDERS_BASIS_HEIGHT)
+      aspect = 1.0f / aspect;
+
+    *basis_out = roundf((float)*basis_in + border_width);
+    *other_out = roundf((float)*basis_out / aspect);
   }
 
   // sanity check.
@@ -778,7 +874,8 @@ void init_presets(dt_iop_module_so_t *self)
                                                          0.0f,
                                                          0.5f,
                                                          { 0.0f, 0.0f, 0.0f },
-                                                         TRUE };
+                                                         TRUE,
+                                                         DT_IOP_BORDERS_BASIS_AUTO };
   dt_gui_presets_add_generic(_("15:10 postcard white"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_NONE);
 
@@ -974,10 +1071,13 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_borders_gui_data_t *g = IOP_GUI_ALLOC(borders);
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->default_params;
 
+  g->basis = dt_bauhaus_combobox_from_params(self, N_("basis"));
+  gtk_widget_set_tooltip_text(g->basis, _("which length to use for the size calculation"));
+
   g->size = dt_bauhaus_slider_from_params(self, "size");
   dt_bauhaus_slider_set_digits(g->size, 4);
   dt_bauhaus_slider_set_format(g->size, "%");
-  gtk_widget_set_tooltip_text(g->size, _("size of the border in percent of the full image"));
+  gtk_widget_set_tooltip_text(g->size, _("size of the border in percent of the chosen basis"));
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(g->aspect, self, NULL, N_("aspect"),
                                _("select the aspect ratio\n"
