@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-24 18:12+0200\n"
+"POT-Creation-Date: 2023-10-25 17:50+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2394,61 +2394,88 @@ msgstr ""
 msgid "gaussian"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_borders.c:112
-#: ../build/lib/darktable/plugins/introspection_borders.c:253
+#: ../build/lib/darktable/plugins/introspection_borders.c:122
+#: ../build/lib/darktable/plugins/introspection_borders.c:269
 #: ../src/common/collection.c:635 ../src/libs/filtering.c:59
 msgid "aspect ratio"
 msgstr ""
 
 #. // portrait / landscape
-#: ../build/lib/darktable/plugins/introspection_borders.c:130
-#: ../build/lib/darktable/plugins/introspection_borders.c:265
+#: ../build/lib/darktable/plugins/introspection_borders.c:140
+#: ../build/lib/darktable/plugins/introspection_borders.c:281
 #: ../src/iop/flip.c:75 ../src/libs/print_settings.c:2517
 msgid "orientation"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_borders.c:136
-#: ../build/lib/darktable/plugins/introspection_borders.c:269
+#: ../build/lib/darktable/plugins/introspection_borders.c:146
+#: ../build/lib/darktable/plugins/introspection_borders.c:285
 msgid "border size"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_borders.c:142
-#: ../build/lib/darktable/plugins/introspection_borders.c:273
+#: ../build/lib/darktable/plugins/introspection_borders.c:152
+#: ../build/lib/darktable/plugins/introspection_borders.c:289
 msgid "horizontal offset"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_borders.c:160
-#: ../build/lib/darktable/plugins/introspection_borders.c:285
+#: ../build/lib/darktable/plugins/introspection_borders.c:170
+#: ../build/lib/darktable/plugins/introspection_borders.c:301
 msgid "vertical offset"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_borders.c:178
-#: ../build/lib/darktable/plugins/introspection_borders.c:297
+#: ../build/lib/darktable/plugins/introspection_borders.c:188
+#: ../build/lib/darktable/plugins/introspection_borders.c:313
 msgid "frame line size"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_borders.c:184
-#: ../build/lib/darktable/plugins/introspection_borders.c:301
+#: ../build/lib/darktable/plugins/introspection_borders.c:194
+#: ../build/lib/darktable/plugins/introspection_borders.c:317
 msgid "frame line offset"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_borders.c:327
+#: ../build/lib/darktable/plugins/introspection_borders.c:218
+#: ../build/lib/darktable/plugins/introspection_borders.c:333
+msgid "basis"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_borders.c:347
+#: ../build/lib/darktable/plugins/introspection_borders.c:353
 #: ../src/gui/preferences.c:847 ../src/iop/ashift.c:6259
 #: ../src/iop/basicadj.c:656 ../src/iop/flip.c:472 ../src/iop/flip.c:474
 #: ../src/iop/levels.c:657 ../src/iop/rgblevels.c:1101
 msgid "auto"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_borders.c:328
+#: ../build/lib/darktable/plugins/introspection_borders.c:348
 #: ../src/imageio/format/pdf.c:604 ../src/libs/filtering.c:315
 #: ../src/libs/filters/ratio.c:122 ../src/libs/print_settings.c:2519
 msgid "portrait"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_borders.c:329
+#: ../build/lib/darktable/plugins/introspection_borders.c:349
 #: ../src/imageio/format/pdf.c:604 ../src/libs/filtering.c:311
 #: ../src/libs/filters/ratio.c:124 ../src/libs/print_settings.c:2519
 msgid "landscape"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_borders.c:354
+#: ../src/iop/relight.c:275 ../src/libs/export.c:1223
+#: ../src/libs/metadata_view.c:151 ../src/libs/print_settings.c:2537
+msgid "width"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_borders.c:355
+#: ../build/lib/darktable/plugins/introspection_watermark.c:326
+#: ../src/libs/export.c:1229 ../src/libs/metadata_view.c:152
+#: ../src/libs/print_settings.c:2541
+msgid "height"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_borders.c:356
+msgid "shortest"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_borders.c:357
+msgid "longest"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_cacorrect.c:42
@@ -4750,7 +4777,7 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_watermark.c:323
 #: ../src/imageio/format/tiff.c:125 ../src/imageio/format/xcf.c:159
-#: ../src/iop/borders.c:986
+#: ../src/iop/borders.c:1086
 msgid "image"
 msgstr ""
 
@@ -4760,12 +4787,6 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_watermark.c:325
 msgid "smaller border"
-msgstr ""
-
-#: ../build/lib/darktable/plugins/introspection_watermark.c:326
-#: ../src/libs/export.c:1229 ../src/libs/metadata_view.c:152
-#: ../src/libs/print_settings.c:2541
-msgid "height"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_watermark.c:327
@@ -6468,7 +6489,7 @@ msgstr ""
 msgid "\""
 msgstr ""
 
-#: ../src/common/pdf.h:104 ../src/iop/borders.c:997
+#: ../src/common/pdf.h:104 ../src/iop/borders.c:1097
 msgid "A4"
 msgstr ""
 
@@ -11792,7 +11813,7 @@ msgstr ""
 msgid "linear, RGB, scene-referred"
 msgstr ""
 
-#: ../src/iop/ashift.c:133 ../src/iop/borders.c:257 ../src/iop/clipping.c:365
+#: ../src/iop/ashift.c:133 ../src/iop/borders.c:324 ../src/iop/clipping.c:365
 #: ../src/iop/crop.c:136 ../src/iop/flip.c:111 ../src/iop/liquify.c:299
 msgid "geometric, RGB"
 msgstr ""
@@ -12341,7 +12362,7 @@ msgid "apply usual image adjustments"
 msgstr ""
 
 #: ../src/iop/basicadj.c:173 ../src/iop/bilat.c:83 ../src/iop/bloom.c:81
-#: ../src/iop/blurs.c:93 ../src/iop/borders.c:255 ../src/iop/censorize.c:83
+#: ../src/iop/blurs.c:93 ../src/iop/borders.c:322 ../src/iop/censorize.c:83
 #: ../src/iop/colisa.c:90 ../src/iop/colorcontrast.c:89
 #: ../src/iop/colorize.c:98 ../src/iop/colormapping.c:153
 #: ../src/iop/colorzones.c:146 ../src/iop/grain.c:450 ../src/iop/highpass.c:78
@@ -12563,202 +12584,206 @@ msgstr ""
 msgid "simulate physically-accurate lens and motion blurs"
 msgstr ""
 
-#: ../src/iop/borders.c:244
+#: ../src/iop/borders.c:311
 msgid "framing"
 msgstr ""
 
-#: ../src/iop/borders.c:249
+#: ../src/iop/borders.c:316
 msgid "borders|enlarge canvas|expand canvas"
 msgstr ""
 
-#: ../src/iop/borders.c:254
+#: ../src/iop/borders.c:321
 msgid "add solid borders or margins around the picture"
 msgstr ""
 
-#: ../src/iop/borders.c:256 ../src/iop/borders.c:258 ../src/iop/lut3d.c:145
+#: ../src/iop/borders.c:323 ../src/iop/borders.c:325 ../src/iop/lut3d.c:145
 msgid "linear or non-linear, RGB, display-referred"
 msgstr ""
 
-#: ../src/iop/borders.c:782
+#: ../src/iop/borders.c:879
 msgid "15:10 postcard white"
 msgstr ""
 
-#: ../src/iop/borders.c:787
+#: ../src/iop/borders.c:884
 msgid "15:10 postcard black"
 msgstr ""
 
-#: ../src/iop/borders.c:980
-msgid "size of the border in percent of the full image"
+#: ../src/iop/borders.c:1075
+msgid "which length to use for the size calculation"
 msgstr ""
 
-#: ../src/iop/borders.c:982 ../src/iop/clipping.c:2259 ../src/iop/crop.c:1207
+#: ../src/iop/borders.c:1080
+msgid "size of the border in percent of the chosen basis"
+msgstr ""
+
+#: ../src/iop/borders.c:1082 ../src/iop/clipping.c:2259 ../src/iop/crop.c:1207
 msgid "aspect"
 msgstr ""
 
-#: ../src/iop/borders.c:983
+#: ../src/iop/borders.c:1083
 msgid ""
 "select the aspect ratio\n"
 "(right click on slider below to type your own w:h)"
 msgstr ""
 
-#: ../src/iop/borders.c:987
+#: ../src/iop/borders.c:1087
 msgid "3:1"
 msgstr ""
 
-#: ../src/iop/borders.c:988
+#: ../src/iop/borders.c:1088
 msgid "95:33"
 msgstr ""
 
-#: ../src/iop/borders.c:989
+#: ../src/iop/borders.c:1089
 msgid "CinemaScope 2.39:1"
 msgstr ""
 
-#: ../src/iop/borders.c:990
+#: ../src/iop/borders.c:1090
 msgid "2:1"
 msgstr ""
 
-#: ../src/iop/borders.c:991
+#: ../src/iop/borders.c:1091
 msgid "16:9"
 msgstr ""
 
-#: ../src/iop/borders.c:992
+#: ../src/iop/borders.c:1092
 msgid "5:3"
 msgstr ""
 
-#: ../src/iop/borders.c:993
+#: ../src/iop/borders.c:1093
 msgid "US Legal 8.5x14"
 msgstr ""
 
-#: ../src/iop/borders.c:994 ../src/iop/clipping.c:2172 ../src/iop/crop.c:1111
+#: ../src/iop/borders.c:1094 ../src/iop/clipping.c:2172 ../src/iop/crop.c:1111
 msgid "golden cut"
 msgstr ""
 
-#: ../src/iop/borders.c:995
+#: ../src/iop/borders.c:1095
 msgid "16:10"
 msgstr ""
 
-#: ../src/iop/borders.c:996
+#: ../src/iop/borders.c:1096
 msgid "3:2 (4x6, 10x15cm)"
 msgstr ""
 
-#: ../src/iop/borders.c:998
+#: ../src/iop/borders.c:1098
 msgid "DIN"
 msgstr ""
 
-#: ../src/iop/borders.c:999
+#: ../src/iop/borders.c:1099
 msgid "7:5"
 msgstr ""
 
-#: ../src/iop/borders.c:1000
+#: ../src/iop/borders.c:1100
 msgid "4:3"
 msgstr ""
 
-#: ../src/iop/borders.c:1001
+#: ../src/iop/borders.c:1101
 msgid "US Letter 8.5x11"
 msgstr ""
 
-#: ../src/iop/borders.c:1002
+#: ../src/iop/borders.c:1102
 msgid "14:11"
 msgstr ""
 
-#: ../src/iop/borders.c:1003
+#: ../src/iop/borders.c:1103
 msgid "5:4 (8x10)"
 msgstr ""
 
-#: ../src/iop/borders.c:1004 ../src/iop/clipping.c:2162 ../src/iop/crop.c:1101
+#: ../src/iop/borders.c:1104 ../src/iop/clipping.c:2162 ../src/iop/crop.c:1101
 #: ../src/libs/filtering.c:307 ../src/libs/filters/ratio.c:126
 #: ../src/libs/histogram.c:141
 msgid "square"
 msgstr ""
 
-#: ../src/iop/borders.c:1005
+#: ../src/iop/borders.c:1105
 msgid "constant border"
 msgstr ""
 
-#: ../src/iop/borders.c:1006 ../src/iop/borders.c:1020
-#: ../src/iop/borders.c:1030
+#: ../src/iop/borders.c:1106 ../src/iop/borders.c:1120
+#: ../src/iop/borders.c:1130
 msgid "custom..."
 msgstr ""
 
-#: ../src/iop/borders.c:1010
+#: ../src/iop/borders.c:1110
 msgid ""
 "set the custom aspect ratio\n"
 "(right click to enter number or w:h)"
 msgstr ""
 
-#: ../src/iop/borders.c:1014
+#: ../src/iop/borders.c:1114
 msgid "aspect ratio orientation of the image with border"
 msgstr ""
 
-#: ../src/iop/borders.c:1016
+#: ../src/iop/borders.c:1116
 msgid "horizontal position"
 msgstr ""
 
-#: ../src/iop/borders.c:1017
+#: ../src/iop/borders.c:1117
 msgid ""
 "select the horizontal position ratio relative to top\n"
 "(right click on slider below to type your own x:w)"
 msgstr ""
 
-#: ../src/iop/borders.c:1020 ../src/iop/borders.c:1030
+#: ../src/iop/borders.c:1120 ../src/iop/borders.c:1130
 msgid "center"
 msgstr ""
 
-#: ../src/iop/borders.c:1020 ../src/iop/borders.c:1030
+#: ../src/iop/borders.c:1120 ../src/iop/borders.c:1130
 msgid "1/3"
 msgstr ""
 
-#: ../src/iop/borders.c:1020 ../src/iop/borders.c:1030
+#: ../src/iop/borders.c:1120 ../src/iop/borders.c:1130
 msgid "3/8"
 msgstr ""
 
-#: ../src/iop/borders.c:1020 ../src/iop/borders.c:1030
+#: ../src/iop/borders.c:1120 ../src/iop/borders.c:1130
 msgid "5/8"
 msgstr ""
 
-#: ../src/iop/borders.c:1020 ../src/iop/borders.c:1030
+#: ../src/iop/borders.c:1120 ../src/iop/borders.c:1130
 msgid "2/3"
 msgstr ""
 
-#: ../src/iop/borders.c:1024
+#: ../src/iop/borders.c:1124
 msgid "custom horizontal position"
 msgstr ""
 
-#: ../src/iop/borders.c:1026
+#: ../src/iop/borders.c:1126
 msgid "vertical position"
 msgstr ""
 
-#: ../src/iop/borders.c:1027
+#: ../src/iop/borders.c:1127
 msgid ""
 "select the vertical position ratio relative to left\n"
 "(right click on slider below to type your own y:h)"
 msgstr ""
 
-#: ../src/iop/borders.c:1034
+#: ../src/iop/borders.c:1134
 msgid "custom vertical position"
 msgstr ""
 
-#: ../src/iop/borders.c:1039
+#: ../src/iop/borders.c:1139
 msgid "size of the frame line in percent of min border width"
 msgstr ""
 
-#: ../src/iop/borders.c:1044
+#: ../src/iop/borders.c:1144
 msgid "offset of the frame line beginning on picture side"
 msgstr ""
 
-#: ../src/iop/borders.c:1051 ../src/iop/borders.c:1060
+#: ../src/iop/borders.c:1151 ../src/iop/borders.c:1160
 msgid "border color"
 msgstr ""
 
-#: ../src/iop/borders.c:1055
+#: ../src/iop/borders.c:1155
 msgid "select border color"
 msgstr ""
 
-#: ../src/iop/borders.c:1059
+#: ../src/iop/borders.c:1159
 msgid "pick border color from image"
 msgstr ""
 
-#: ../src/iop/borders.c:1060 ../src/iop/borders.c:1073
+#: ../src/iop/borders.c:1160 ../src/iop/borders.c:1173
 #: ../src/iop/colorzones.c:2662 ../src/iop/colorzones.c:2677
 #: ../src/iop/negadoctor.c:867 ../src/iop/negadoctor.c:934
 #: ../src/iop/negadoctor.c:972 ../src/iop/rgbcurve.c:1372
@@ -12767,15 +12792,15 @@ msgstr ""
 msgid "pickers"
 msgstr ""
 
-#: ../src/iop/borders.c:1064 ../src/iop/borders.c:1073
+#: ../src/iop/borders.c:1164 ../src/iop/borders.c:1173
 msgid "frame line color"
 msgstr ""
 
-#: ../src/iop/borders.c:1068
+#: ../src/iop/borders.c:1168
 msgid "select frame line color"
 msgstr ""
 
-#: ../src/iop/borders.c:1072
+#: ../src/iop/borders.c:1172
 msgid "pick frame line color from image"
 msgstr ""
 
@@ -17622,11 +17647,6 @@ msgstr ""
 
 #: ../src/iop/relight.c:272
 msgid "toggle tool for picking median lightness in image"
-msgstr ""
-
-#: ../src/iop/relight.c:275 ../src/libs/export.c:1223
-#: ../src/libs/metadata_view.c:151 ../src/libs/print_settings.c:2537
-msgid "width"
 msgstr ""
 
 #: ../src/iop/relight.c:276
