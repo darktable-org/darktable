@@ -1733,7 +1733,8 @@ void dt_view_paint_surface(cairo_t *cr,
 
   const double back_scale = (buf_scale == 0 ? 1.0 : backbuf_scale / buf_scale) * (1<<closeup) / ppd;
 
-  if(dev->preview_pipe->output_imgid == dev->image_storage.id)
+  if(dev->preview_pipe->output_imgid == dev->image_storage.id
+     && (port == &dev->full || port == &dev->preview2))
   {
     dt_print(DT_DEBUG_EXPOSE, "[dt_view_paint_surface] draw preview\n");
     // draw preview
@@ -1782,82 +1783,6 @@ cairo_surface_t *dt_view_create_surface(uint8_t *buffer,
     cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, processed_width);
   return cairo_image_surface_create_for_data
     (buffer, CAIRO_FORMAT_RGB24, processed_width, processed_height, stride);
-}
-
-void dt_view_paint_buffer(cairo_t *cr,
-                          const size_t width,
-                          const size_t height,
-                          uint8_t *buffer,
-                          const size_t processed_width,
-                          const size_t processed_height,
-                          const dt_window_t window)
-{
-  cairo_surface_t *surface = dt_view_create_surface(buffer,
-                                                    processed_width, processed_height);
-// FIXME transition to new format
-
-  // dt_view_paint_surface(cr, width, height, surface,
-  //                       processed_width, processed_height, window, 0, 0, 0);
-  cairo_surface_destroy(surface);
-}
-
-void dt_view_paint_pixbuf(cairo_t *cr,
-                          const size_t width,
-                          const size_t height,
-                          uint8_t *buffer,
-                          const size_t processed_width,
-                          const size_t processed_height,
-                          const dt_window_t window)
-{
-  const float zoom_scale = dt_dev_get_zoom_scale_full();
-
-  GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data
-    (buffer, GDK_COLORSPACE_RGB, TRUE, 8, processed_width, processed_height,
-     processed_width * 4, NULL, NULL);
-
-  int32_t w = 0, h = 0;
-  if(processed_width < processed_height)
-  {
-    // portrait
-    h = height;
-    w = processed_width * ((float)h / (float)processed_height);
-  }
-  else
-  {
-    // landscape
-    w = width;
-    h = processed_height * ((float)w / (float)processed_width);
-  }
-
-  // adjust dimension if needed
-  if(w > width)
-  {
-    const int32_t ow = w;
-    w = width;
-    h = h * ((float)w / (float)ow);
-  }
-  if(h > height)
-  {
-    const int32_t oh = h;
-    h = height;
-    w = w * ((float)h / (float)oh);
-  }
-
-  GdkPixbuf *scaled = gdk_pixbuf_scale_simple(pixbuf, w, h, GDK_INTERP_HYPER);
-
-  cairo_save(cr);
-
-  cairo_translate(cr, ceilf(.5f * (width - w)), ceilf(.5f * (height - h)));
-
-  cairo_pattern_set_filter
-    (cairo_get_source(cr),
-     zoom_scale >= 0.9999f ? CAIRO_FILTER_FAST : darktable.gui->dr_filter_image);
-  gdk_cairo_set_source_pixbuf(cr, scaled, 0, 0);
-
-  cairo_paint(cr);
-
-  if(pixbuf) g_object_unref(pixbuf);
-  if(scaled) g_object_unref(scaled);
 }
 
 #define ADD_TO_CONTEXT(v) ctx = ((ctx << 5) + ctx) ^ (dt_view_context_t)(v);

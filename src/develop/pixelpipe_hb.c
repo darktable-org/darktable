@@ -339,7 +339,7 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
   g_free(pipe->icc_filename);
   pipe->icc_filename = NULL;
 
-  g_free(pipe->backbuf);
+  if(pipe->type & DT_DEV_PIXELPIPE_SCREEN) g_free(pipe->backbuf);
   pipe->backbuf = NULL;
   pipe->backbuf_width = 0;
   pipe->backbuf_height = 0;
@@ -2749,9 +2749,9 @@ restart:
   // terminate
   dt_pthread_mutex_lock(&pipe->backbuf_mutex);
   pipe->backbuf_hash = dt_dev_pixelpipe_cache_hash(pipe->image.id, &roi, pipe, 0);
-  if(pipe->type & (DT_DEV_PIXELPIPE_PREVIEW
-                   | DT_DEV_PIXELPIPE_FULL
-                   | DT_DEV_PIXELPIPE_PREVIEW2))
+
+  //FIXME lock/release cache line instead of copying
+  if(pipe->type & DT_DEV_PIXELPIPE_SCREEN)
   {
     if(pipe->backbuf == NULL
        || pipe->backbuf_width * pipe->backbuf_height != width * height)
@@ -2763,14 +2763,16 @@ restart:
     if(pipe->backbuf)
     {
       memcpy(pipe->backbuf, buf, sizeof(uint8_t) * 4 * width * height);
-      pipe->backbuf_width = width;
-      pipe->backbuf_height = height;
       pipe->backbuf_scale = scale;
       pipe->backbuf_zoom_x = pts[0] * pipe->iscale;
       pipe->backbuf_zoom_y = pts[1] * pipe->iscale;
       pipe->output_imgid = pipe->image.id;
     }
   }
+  else
+    pipe->backbuf = buf;
+  pipe->backbuf_width = width;
+  pipe->backbuf_height = height;
   dt_pthread_mutex_unlock(&pipe->backbuf_mutex);
 
   dt_dev_pixelpipe_cache_report(pipe);

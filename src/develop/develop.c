@@ -268,7 +268,7 @@ void dt_dev_process_image_job(dt_develop_t *dev,
     return;
   }
 
-  if(port && !(port->widget && GTK_IS_WIDGET(port->widget)))
+  if(port == &dev->preview2 && !(port->widget && GTK_IS_WIDGET(port->widget)))
   {
     return;
   }
@@ -2674,7 +2674,7 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
     dt_control_queue_redraw_center();
     dt_control_navigation_redraw();
   }
-  else
+  else if(port == &dev->preview2)
   {
     dev->preview2.pipe->status = DT_DEV_PIXELPIPE_DIRTY;
     dt_control_queue_redraw_widget(dev->second_wnd);
@@ -3107,6 +3107,7 @@ int dt_dev_distort_transform_locked(dt_develop_t *dev,
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)(pieces->data);
     if(piece->enabled
+       && piece->data
        && ((transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
            || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL
                && module->iop_order >= iop_order)
@@ -3162,6 +3163,7 @@ int dt_dev_distort_backtransform_locked(dt_develop_t *dev,
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)(pieces->data);
     if(piece->enabled
+       && piece->data
        && ((transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
            || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL
                && module->iop_order >= iop_order)
@@ -3494,11 +3496,7 @@ void dt_dev_image(const dt_imgid_t imgid,
   dt_develop_t dev;
   dt_dev_init(&dev, TRUE);
   dev.gui_attached = FALSE;
-
-  // create the full pipe
-
   dt_dev_pixelpipe_t *pipe = dev.full.pipe;
-  dt_dev_pixelpipe_init(pipe);
 
   // load image and set history_end
 
@@ -3507,23 +3505,30 @@ void dt_dev_image(const dt_imgid_t imgid,
   if(history_end != -1 && snapshot_id == -1)
     dt_dev_pop_history_items_ext(&dev, history_end);
 
+  dt_dev_viewport_t *port = &darktable.develop->full;
+  if(!zoom_x && !zoom_y) port = &(dt_dev_viewport_t) { .zoom = DT_ZOOM_FIT,
+                                                       .width = width,
+                                                       .height = height,
+                                                       .ppd = 1.0,
+                                                       .pipe = pipe };
+
   // process the pipe
 
-  dt_dev_process_image_job(&dev, &darktable.develop->full, pipe, -1);
+  dt_dev_process_image_job(&dev, port, pipe, -1);
 
   // record resulting image and dimensions
 
-  *processed_width = pipe->processed_width;
-  *processed_height = pipe->processed_height;
+  if(processed_width) *processed_width = pipe->processed_width;
+  if(processed_height) *processed_height = pipe->processed_height;
   const uint32_t bufsize =
     sizeof(uint32_t) * pipe->backbuf_width * pipe->backbuf_height;
   *buf = dt_alloc_align(64, bufsize);
   memcpy(*buf, pipe->backbuf, bufsize);
-  *scale = pipe->backbuf_scale;
+  if(scale) *scale = pipe->backbuf_scale;
   *buf_width  = pipe->backbuf_width;
   *buf_height = pipe->backbuf_height;
-  *zoom_x = pipe->backbuf_zoom_x;
-  *zoom_y = pipe->backbuf_zoom_y;
+  if(zoom_x) *zoom_x = pipe->backbuf_zoom_x;
+  if(zoom_y) *zoom_y = pipe->backbuf_zoom_y;
 
   dt_dev_cleanup(&dev);
 }
