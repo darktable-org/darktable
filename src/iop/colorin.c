@@ -1192,6 +1192,45 @@ void process(struct dt_iop_module_t *self,
                                         ivoid, ovoid, roi_in, roi_out))
     return;
 
+  /* a) not tested for best compiler performance
+     b) algo might want some love for lower mem footprint
+        like integration in called functions for performance
+  */
+  float *input = (float *)ivoid;
+  const dt_dev_chroma_t *chr = &self->dev->chroma;
+
+  if(dt_dev_D65_chroma(self->dev) && chr->late_correction)
+  {
+    const dt_aligned_pixel_t coeffs = { chr->D65coeffs[0] / chr->as_shot[0],
+                                        chr->D65coeffs[1] / chr->as_shot[1],
+                                        chr->D65coeffs[2] / chr->as_shot[2],
+                                        chr->D65coeffs[3] / chr->as_shot[3] };
+
+    dt_print_pipe(DT_DEBUG_PARAMS,
+      "late coeff correction on CPU", piece->pipe, self, roi_in, roi_out,
+      "%.3f %.3f %.3f\n", coeffs[0], coeffs[1], coeffs[2]);
+
+    input = dt_alloc_align_float(4 * roi_in->width * roi_in->height);
+    const float *in = (float *)ivoid;
+    const size_t pix = roi_in->height * roi_in->width * 4;
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(in, input, coeffs, pix) \
+  schedule(static)
+#endif
+    for(size_t idx = 0; idx < pix; idx += 4)
+    {
+      for_each_channel(c)
+        input[idx+c] = in[idx+c] * coeffs[c];
+    }
+
+    for_four_channels(k)
+    {
+      piece->pipe->dsc.temperature.coeffs[k] *= coeffs[k];
+      piece->pipe->dsc.processed_maximum[k] *= coeffs[k];
+    }
+  }
+
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   const gboolean blue_mapping =
     d->blue_mapping && dt_image_is_matrix_correction_supported(&piece->pipe->image);
@@ -1202,24 +1241,27 @@ void process(struct dt_iop_module_t *self,
 
   if(d->type == DT_COLORSPACE_LAB)
   {
-    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, piece->colors);
+    dt_iop_image_copy_by_size(ovoid, input, roi_out->width, roi_out->height, piece->colors);
   }
   else if(dt_is_valid_colormatrix(d->cmatrix[0][0]))
   {
-    process_cmatrix(self, piece, ivoid, ovoid, roi_in, roi_out);
+    process_cmatrix(self, piece, input, ovoid, roi_in, roi_out);
   }
   else
   {
     // use general lcms2 fallback
     if(blue_mapping)
     {
-      process_lcms2_bm(self, piece, ivoid, ovoid, roi_in, roi_out);
+      process_lcms2_bm(self, piece, input, ovoid, roi_in, roi_out);
     }
     else
     {
-      process_lcms2_proper(self, piece, ivoid, ovoid, roi_in, roi_out);
+      process_lcms2_proper(self, piece, input, ovoid, roi_in, roi_out);
     }
   }
+
+  if(ivoid != (void *)input)
+    dt_free_align(input);
 }
 
 void commit_params(struct dt_iop_module_t *self,
@@ -1295,6 +1337,9 @@ void commit_params(struct dt_iop_module_t *self,
   d->lut[2][0] = -1.0f;
   d->nonlinearlut = FALSE;
   piece->process_cl_ready = TRUE;
+
+  // FIXME: preliminary until we have OpenCL supporting this
+  piece->process_cl_ready = FALSE;
 
   dt_colorspaces_color_profile_type_t type = p->type;
   if(type == DT_COLORSPACE_LAB)
