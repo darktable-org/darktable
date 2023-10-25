@@ -1167,10 +1167,12 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     if(FIND_EXIF_TAG("Exif.Photo.FocalPlaneXResolution"))
     {
       float x_resolution = pos->toFloat();
-      FIND_EXIF_TAG("Exif.Photo.FocalPlaneYResolution");
-      float y_resolution = pos->toFloat();
-      FIND_EXIF_TAG("Exif.Photo.FocalPlaneResolutionUnit");
-      const guint res_unit = pos->toLong();
+      float y_resolution = 0.0f;
+      if(FIND_EXIF_TAG("Exif.Photo.FocalPlaneYResolution"))
+        y_resolution = pos->toFloat();
+      guint res_unit = 1;
+      if(FIND_EXIF_TAG("Exif.Photo.FocalPlaneResolutionUnit"))
+        res_unit = pos->toLong();
       if(res_unit == 2) // inch
       {
         x_resolution /= 25.4f;
@@ -1182,15 +1184,29 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         x_resolution /= 10.0f;
         y_resolution /= 10.0f;
       }
-      FIND_EXIF_TAG("Exif.Image.ImageWidth");
-      const guint image_width = pos->toLong();
-      FIND_EXIF_TAG("Exif.Image.ImageLength");
-      const guint image_height = pos->toLong();
+      guint image_width = 0;
+      guint image_height = 0;
+      if(FIND_EXIF_TAG("Exif.Image.ImageWidth"))
+        image_width = pos->toLong();
+      if(FIND_EXIF_TAG("Exif.Image.ImageLength"))
+        image_height = pos->toLong();
+      if(image_width == 0)
+      {
+        if(FIND_EXIF_TAG("Exif.Fujifilm.RawImageFullWidth"))
+          image_width = pos->toLong();
+        if(FIND_EXIF_TAG("Exif.Fujifilm.RawImageFullHeight"))
+          image_height = pos->toLong();
+      }
       const float x_size_mm = (float)image_width / x_resolution;
       const float y_size_mm = (float)image_height / y_resolution;
-      const float sensor_diagonal = dt_fast_hypotf(x_size_mm, y_size_mm);
-      const float fullframe_diagonal = dt_fast_hypotf(36.0f, 24.0f);
-      img->exif_crop = fullframe_diagonal / sensor_diagonal;
+      if(image_width && image_height) // We've got the data and can calculate the crop factor
+      {
+        const float sensor_diagonal = dt_fast_hypotf(x_size_mm, y_size_mm);
+        const float fullframe_diagonal = dt_fast_hypotf(36.0f, 24.0f);
+        img->exif_crop = fullframe_diagonal / sensor_diagonal;
+      }
+      else
+        img->exif_crop = 0.0f; // Will be shown as "no data" in the image information module
     }
 
     if(_check_usercrop(exifData, img))
