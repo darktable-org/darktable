@@ -2600,7 +2600,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
   }
   else if(version == 45)
   {
-    TRY_EXEC("DROP TABLE legacy_presets",
+    TRY_EXEC("DROP TABLE IF EXISTS legacy_presets",
               "[init] can't drop legacy_presets\n");
 
     new_version = 46;
