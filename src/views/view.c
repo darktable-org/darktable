@@ -1754,23 +1754,27 @@ void dt_view_paint_surface(cairo_t *cr,
 
   dt_pthread_mutex_unlock(&dev->preview_pipe->backbuf_mutex);
 
-  cairo_scale(cr, back_scale / zoom_scale, back_scale / zoom_scale);
-  cairo_translate(cr, (offset_x - zoom_x) * processed_width * buf_scale - 0.5 * buf_width,
-                      (offset_y - zoom_y) * processed_height * buf_scale - 0.5 * buf_height);
-
-  cairo_surface_t *surface = dt_view_create_surface(buf, buf_width, buf_height);
-  cairo_set_source_surface(cr, surface, 0, 0);
-  cairo_pattern_set_filter(cairo_get_source(cr),
-                           zoom_scale >= 0.9999f ? CAIRO_FILTER_FAST : darktable.gui->dr_filter_image);
-  cairo_paint(cr);
-
-  if(darktable.gui->show_focus_peaking
-    && window != DT_WINDOW_SLIDESHOW)
+  if(port->pipe->output_imgid == dev->image_storage.id
+     || dev->preview_pipe->output_imgid != dev->image_storage.id)
   {
-    dt_focuspeaking(cr, buf_width, buf_height,
-                    cairo_image_surface_get_data(surface));
+    cairo_scale(cr, back_scale / zoom_scale, back_scale / zoom_scale);
+    cairo_translate(cr, (offset_x - zoom_x) * processed_width * buf_scale - 0.5 * buf_width,
+                        (offset_y - zoom_y) * processed_height * buf_scale - 0.5 * buf_height);
+
+    cairo_surface_t *surface = dt_view_create_surface(buf, buf_width, buf_height);
+    cairo_set_source_surface(cr, surface, 0, 0);
+    cairo_pattern_set_filter(cairo_get_source(cr),
+                            zoom_scale >= 0.9999f ? CAIRO_FILTER_FAST : darktable.gui->dr_filter_image);
+    cairo_paint(cr);
+
+    if(darktable.gui->show_focus_peaking
+      && window != DT_WINDOW_SLIDESHOW)
+    {
+      dt_focuspeaking(cr, buf_width, buf_height,
+                      cairo_image_surface_get_data(surface));
+    }
+    cairo_surface_destroy(surface);
   }
-  cairo_surface_destroy(surface);
 
   cairo_restore(cr);
 }
