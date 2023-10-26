@@ -139,7 +139,7 @@ void dt_dev_init(dt_develop_t *dev,
 
   dev->full.zoom = dev->preview2.zoom = DT_ZOOM_FIT;
   dev->full.closeup = dev->preview2.closeup = 0;
-  dev->full.zoom_x = dev->full.zoom_y = dev->preview2.zoom_x = dev->preview2.zoom_y = 0;
+  dev->full.zoom_x = dev->full.zoom_y = dev->preview2.zoom_x = dev->preview2.zoom_y = 0.0f;
   dev->full.zoom_scale = dev->preview2.zoom_scale = 1.0f;
 }
 
@@ -510,8 +510,11 @@ float dt_dev_get_zoom_scale(dt_dev_viewport_t *port,
 {
   float zoom_scale;
 
-  const float w = (float)port->width / port->pipe->processed_width;
-  const float h = (float)port->height / port->pipe->processed_height;
+  int procw, proch;
+  dt_dev_get_processed_size(port, &procw, &proch);
+
+  const float w = (float)port->width / procw;
+  const float h = (float)port->height / proch;
 
   switch(zoom)
   {
@@ -2527,14 +2530,15 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
   dt_pthread_mutex_lock(&(darktable.control->global_mutex));
   dt_pthread_mutex_lock(&dev->history_mutex);
 
-  float pts[2] = { port->zoom_x, port->zoom_y };
-  dt_dev_distort_transform_locked(darktable.develop, port->pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 1);
-  float zoom_x = pts[0] / port->pipe->processed_width - 0.5f;
-  float zoom_y = pts[1] / port->pipe->processed_height - 0.5f;
-
-  float cur_scale = dt_dev_get_zoom_scale(port, port->zoom, 1<<port->closeup, 0);
   int procw, proch;
   dt_dev_get_processed_size(port, &procw, &proch);
+
+  float pts[2] = { port->zoom_x, port->zoom_y };
+  dt_dev_distort_transform_locked(darktable.develop, port->pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 1);
+  float zoom_x = pts[0] / procw - 0.5f;
+  float zoom_y = pts[1] / proch - 0.5f;
+
+  float cur_scale = dt_dev_get_zoom_scale(port, port->zoom, 1<<port->closeup, 0);
 
   if(zoom == DT_ZOOM_POSITION)
   {
@@ -2674,7 +2678,7 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
     dt_control_queue_redraw_center();
     dt_control_navigation_redraw();
   }
-  else if(port == &dev->preview2)
+  else if(port == &dev->preview2 && dev->second_wnd)
   {
     dev->preview2.pipe->status = DT_DEV_PIXELPIPE_DIRTY;
     dt_control_queue_redraw_widget(dev->second_wnd);
