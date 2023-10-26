@@ -128,10 +128,8 @@ void dt_dev_init(dt_develop_t *dev,
   dev->iop_order_list = NULL;
 
   dev->proxy.exposure.module = NULL;
-  dev->proxy.chroma_adaptation = NULL;
-  dev->proxy.wb_is_D65 = TRUE; // don't display error messages until
-                               // we know for sure it's FALSE
-  dev->proxy.wb_coeffs[0] = 0.f;
+
+  dt_dev_init_chroma(dev);
 
   dev->rawoverexposed.enabled = FALSE;
   dev->rawoverexposed.mode =
@@ -162,8 +160,8 @@ void dt_dev_cleanup(dt_develop_t *dev)
   dt_pthread_mutex_destroy(&dev->full.pipe_mutex);
   dt_pthread_mutex_destroy(&dev->preview_pipe_mutex);
   dt_pthread_mutex_destroy(&dev->preview2.pipe_mutex);
-  dev->proxy.chroma_adaptation = NULL;
-  dev->proxy.wb_coeffs[0] = 0.f;
+  dt_dev_init_chroma(dev);
+
   if(dev->full.pipe)
   {
     dt_dev_pixelpipe_cleanup(dev->full.pipe);
@@ -3805,13 +3803,50 @@ void dt_dev_image(const dt_imgid_t imgid,
                   size_t *processed_height)
 {
   // create a dev
-
   dt_dev_image_ext(imgid, width, height,
                    history_end,
                    buf, processed_width, processed_height,
                    NULL, NULL,
                    darktable.develop->full.border_size,
                    darktable.develop->iso_12646.enabled, -1);
+}
+
+gboolean dt_dev_equal_chroma(const float *f, const double *d)
+{
+  return feqf(f[0], (float)d[0], 0.00001)
+      && feqf(f[1], (float)d[1], 0.00001)
+      && feqf(f[2], (float)d[2], 0.00001);
+}
+
+gboolean dt_dev_D65_chroma(const dt_develop_t *dev)
+{
+  const dt_dev_chroma_t *chr = &dev->chroma;
+  const float wb_coeffs[4] = {chr->wb_coeffs[0], chr->wb_coeffs[1], chr->wb_coeffs[2], chr->wb_coeffs[3] };
+  return chr->late_correction ? dt_dev_equal_chroma(wb_coeffs, chr->as_shot)
+                              : dt_dev_equal_chroma(wb_coeffs, chr->D65coeffs);
+}
+
+void dt_dev_reset_chroma(dt_develop_t *dev)
+{
+  dt_dev_chroma_t *chr = &dev->chroma;
+  chr->adaptation = NULL;
+  chr->late_correction = FALSE;
+  for_four_channels(c)
+    chr->wb_coeffs[c] = 1.0;
+}
+
+void dt_dev_init_chroma(dt_develop_t *dev)
+{
+  dt_dev_chroma_t *chr = &dev->chroma;
+  chr->adaptation = NULL;
+  chr->temperature = NULL;
+  chr->late_correction = FALSE;
+  for_four_channels(c)
+  {
+    chr->wb_coeffs[c] = 1.0;
+    chr->D65coeffs[c] = 1.0;
+    chr->as_shot[c] = 1.0;
+  }
 }
 
 // clang-format off

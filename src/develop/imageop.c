@@ -1114,8 +1114,8 @@ static void _gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
       module->enabled = FALSE;
 
       //  if current module is set as the CAT instance, remove that setting
-      if(module->dev->proxy.chroma_adaptation == module)
-        module->dev->proxy.chroma_adaptation = NULL;
+      if(module->dev->chroma.adaptation == module)
+        module->dev->chroma.adaptation = NULL;
 
       dt_dev_add_history_item(module->dev, module, FALSE);
 
