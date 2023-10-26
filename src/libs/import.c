@@ -1983,7 +1983,7 @@ static void _lib_import_from_callback(GtkWidget *widget, dt_lib_module_t* self)
                "\nfurther information can be found in the darktable manual."
                "\n\ninspect darktable preferences -> import."
                "\ncheck and possibly correct the 'base directory naming pattern'"),
-            _("_show this information again"), _("_understood & done"));
+            _("_come back & check"), _("_understood & done"));
       if(understood)
         dt_conf_set_bool("setup_import_directory", TRUE);
       else
