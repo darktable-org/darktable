@@ -679,6 +679,7 @@ void dt_dev_image_ext(const dt_imgid_t imgid,
                       const int32_t snapshot_id);
 
 
+gboolean dt_dev_equal_chroma(const float *f, const double *d);
 gboolean dt_dev_D65_chroma(const dt_develop_t *dev);
 void dt_dev_reset_chroma(dt_develop_t *dev);
 void dt_dev_init_chroma(dt_develop_t *dev);
