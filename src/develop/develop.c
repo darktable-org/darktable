@@ -365,7 +365,7 @@ restart:
     pipe->input_timestamp = dev->timestamp;
 
   // dt_dev_pixelpipe_change() will clear the changed value
-  const dt_dev_pixelpipe_change_t pipe_changed = dev->full.pipe->changed;
+  const dt_dev_pixelpipe_change_t pipe_changed = pipe->changed;
   // this locks dev->history_mutex.
   dt_dev_pixelpipe_change(pipe, dev);
 
