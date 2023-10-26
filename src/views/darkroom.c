@@ -3785,10 +3785,8 @@ static gboolean _second_window_configure_callback(GtkWidget *da,
                                                   GdkEventConfigure *event,
                                                   dt_develop_t *dev)
 {
-  static int oldw = 0;
-  static int oldh = 0;
-
-  if(oldw != event->width || oldh != event->height)
+  if(dev->preview2.orig_width != event->width 
+     || dev->preview2.orig_height != event->height)
   {
     dev->preview2.width = event->width;
     dev->preview2.height = event->height;
@@ -3800,8 +3798,6 @@ static gboolean _second_window_configure_callback(GtkWidget *da,
     dev->preview2.pipe->changed |= DT_DEV_PIPE_REMOVE;
     dev->preview2.pipe->cache_obsolete = TRUE;
   }
-  oldw = event->width;
-  oldh = event->height;
 
   dt_colorspaces_set_display_profile(DT_COLORSPACE_DISPLAY2);
 
@@ -3819,10 +3815,6 @@ static void _darkroom_ui_second_window_init(GtkWidget *widget, dt_develop_t *dev
   const int width = MAX(10, dt_conf_get_int("second_window/window_w"));
   const int height = MAX(10, dt_conf_get_int("second_window/window_h"));
 
-  dev->preview2.width = width;
-  dev->preview2.height = height;
-  dev->preview2.orig_width = width;
-  dev->preview2.orig_height = height;
   dev->preview2.border_size = 0;
 
   const gint x = MAX(0, dt_conf_get_int("second_window/window_x"));
@@ -3890,19 +3882,12 @@ static void _darkroom_display_second_window(dt_develop_t *dev)
     gtk_window_set_icon_name(GTK_WINDOW(dev->second_wnd), "darktable");
     gtk_window_set_title(GTK_WINDOW(dev->second_wnd), _("darktable - darkroom preview"));
 
-    GtkWidget *container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    gtk_container_add(GTK_CONTAINER(dev->second_wnd), container);
-
-    GtkWidget *widget = gtk_grid_new();
-    gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
-
     dev->preview2.widget = gtk_drawing_area_new();
+    gtk_container_add(GTK_CONTAINER(dev->second_wnd), dev->preview2.widget);
     gtk_widget_set_size_request(dev->preview2.widget, DT_PIXEL_APPLY_DPI_2ND_WND(dev, 50), DT_PIXEL_APPLY_DPI_2ND_WND(dev, 200));
     gtk_widget_set_hexpand(dev->preview2.widget, TRUE);
     gtk_widget_set_vexpand(dev->preview2.widget, TRUE);
     gtk_widget_set_app_paintable(dev->preview2.widget, TRUE);
-
-    gtk_grid_attach(GTK_GRID(widget), dev->preview2.widget, 0, 0, 1, 1);
 
     gtk_widget_set_events(dev->preview2.widget, GDK_POINTER_MOTION_MASK
                                                          | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
