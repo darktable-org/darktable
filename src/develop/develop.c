@@ -3818,12 +3818,16 @@ gboolean dt_dev_equal_chroma(const float *f, const double *d)
       && feqf(f[2], (float)d[2], 0.00001);
 }
 
-gboolean dt_dev_D65_chroma(const dt_develop_t *dev)
+gboolean dt_dev_is_D65_chroma(const dt_develop_t *dev)
 {
   const dt_dev_chroma_t *chr = &dev->chroma;
-  const float wb_coeffs[4] = {chr->wb_coeffs[0], chr->wb_coeffs[1], chr->wb_coeffs[2], chr->wb_coeffs[3] };
-  return chr->late_correction ? dt_dev_equal_chroma(wb_coeffs, chr->as_shot)
-                              : dt_dev_equal_chroma(wb_coeffs, chr->D65coeffs);
+  const float wb_coeffs[4] = { chr->wb_coeffs[0],
+                               chr->wb_coeffs[1],
+                               chr->wb_coeffs[2],
+                               chr->wb_coeffs[3] };
+  return chr->late_correction
+    ? dt_dev_equal_chroma(wb_coeffs, chr->as_shot)
+    : dt_dev_equal_chroma(wb_coeffs, chr->D65coeffs);
 }
 
 void dt_dev_reset_chroma(dt_develop_t *dev)
