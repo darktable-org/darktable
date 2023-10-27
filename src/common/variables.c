@@ -87,6 +87,7 @@ typedef struct dt_variables_data_t
   float exif_exposure_bias;
   float exif_aperture;
   float exif_focal_length;
+  float exif_crop;
   float exif_focus_distance;
   double longitude;
   double latitude;
@@ -133,6 +134,7 @@ static void _init_expansion(dt_variables_params_t *params, gboolean iterate)
   params->data->exif_exposure_bias = DT_EXIF_TAG_UNINITIALIZED;
   params->data->exif_aperture = 0.0f;
   params->data->exif_focal_length = 0.0f;
+  params->data->exif_crop = 0.0f;
   params->data->exif_focus_distance = 0.0f;
   params->data->longitude = NAN;
   params->data->latitude = NAN;
@@ -162,6 +164,7 @@ static void _init_expansion(dt_variables_params_t *params, gboolean iterate)
     params->data->exif_exposure_bias = img->exif_exposure_bias;
     params->data->exif_aperture = img->exif_aperture;
     params->data->exif_focal_length = img->exif_focal_length;
+    params->data->exif_crop = img->exif_crop;
     if(!dt_isnan(img->exif_focus_distance) && fpclassify(img->exif_focus_distance) != FP_ZERO)
       params->data->exif_focus_distance = img->exif_focus_distance;
     params->data->longitude = img->geoloc.longitude;
@@ -406,6 +409,12 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
   else if(_has_prefix(variable, "EXIF.FOCAL.LENGTH")
           || _has_prefix(variable, "EXIF_FOCAL_LENGTH"))
     result = g_strdup_printf("%.1f", params->data->exif_focal_length);
+
+  else if(_has_prefix(variable, "EXIF.FOCAL.LENGTH.EQUIV"))
+    result = g_strdup_printf("%.1f", params->data->exif_focal_length * params->data->exif_crop);
+
+  else if(_has_prefix(variable, "EXIF.CROP_FACTOR"))
+    result = g_strdup_printf("%.1f", params->data->exif_crop);
 
   else if(_has_prefix(variable, "EXIF.FOCUS.DISTANCE")
           || _has_prefix(variable, "EXIF_FOCUS_DISTANCE"))

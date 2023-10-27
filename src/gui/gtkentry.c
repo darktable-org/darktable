@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2022 darktable developers.
+    Copyright (C) 2012-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "gtkentry.h"
 #include "common/darktable.h"
 
@@ -215,6 +216,8 @@ const dt_gtkentry_completion_spec *dt_gtkentry_get_default_path_compl_list()
           { "EXIF.EXPOSURE.BIAS", N_("$(EXIF.EXPOSURE.BIAS) - EXIF exposure bias") },
           { "EXIF.APERTURE", N_("$(EXIF.APERTURE) - EXIF aperture") },
           { "EXIF.FOCAL.LENGTH", N_("$(EXIF.FOCAL.LENGTH) - EXIF focal length") },
+          { "EXIF.CROP_FACTOR", N_("$(EXIF.CROP_FACTOR) - EXIF crop factor") },
+          { "EXIF.FOCAL.LENGTH.EQUIV", N_("$(EXIF.FOCAL.LENGTH.EQUIV) - EXIF 35 mm equivalent focal length") },
           { "EXIF.FOCUS.DISTANCE", N_("$(EXIF.FOCUS.DISTANCE) - EXIF focal distance") },
           { "EXIF.MAKER", N_("$(EXIF.MAKER) - camera maker") },
           { "EXIF.MODEL", N_("$(EXIF.MODEL) - camera model") },
@@ -279,4 +282,3 @@ gchar *dt_gtkentry_build_completion_tooltip_text(const gchar *header,
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
