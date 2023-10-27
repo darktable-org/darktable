@@ -43,6 +43,9 @@
 #include <strings.h>
 #include <unistd.h>
 
+#define DT_DEV_AVERAGE_DELAY_START 250
+#define DT_DEV_PREVIEW_AVERAGE_DELAY_START 50
+
 typedef enum dt_pixelpipe_flow_t
 {
   PIXELPIPE_FLOW_NONE = 0,
@@ -193,6 +196,7 @@ gboolean dt_dev_pixelpipe_init_dummy(dt_dev_pixelpipe_t *pipe,
   const gboolean res =
     dt_dev_pixelpipe_init_cached(pipe, sizeof(float) * 4 * width * height, 0, 0);
   pipe->type = DT_DEV_PIXELPIPE_THUMBNAIL;
+  pipe->average_delay = DT_DEV_AVERAGE_DELAY_START;
   return res;
 }
 
@@ -201,6 +205,7 @@ gboolean dt_dev_pixelpipe_init_preview(dt_dev_pixelpipe_t *pipe)
   const gboolean res =
     dt_dev_pixelpipe_init_cached(pipe, 0, darktable.pipe_cache ? 12 : DT_PIPECACHE_MIN, 0);
   pipe->type = DT_DEV_PIXELPIPE_PREVIEW;
+  pipe->average_delay = DT_DEV_PREVIEW_AVERAGE_DELAY_START;
   return res;
 }
 
@@ -209,6 +214,7 @@ gboolean dt_dev_pixelpipe_init_preview2(dt_dev_pixelpipe_t *pipe)
   const gboolean res =
     dt_dev_pixelpipe_init_cached(pipe, 0, darktable.pipe_cache ? 5 : DT_PIPECACHE_MIN, 0);
   pipe->type = DT_DEV_PIXELPIPE_PREVIEW2;
+  pipe->average_delay = DT_DEV_PREVIEW_AVERAGE_DELAY_START;
   return res;
 }
 
@@ -227,7 +233,10 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
                                       const size_t memlimit)
 {
   pipe->devid = -1;
+  pipe->loading = FALSE;
+  pipe->input_changed = FALSE;
   pipe->changed = DT_DEV_PIPE_UNCHANGED;
+  pipe->status = DT_DEV_PIXELPIPE_DIRTY;
   pipe->processed_width = pipe->backbuf_width = pipe->iwidth = pipe->final_width = 0;
   pipe->processed_height = pipe->backbuf_height = pipe->iheight = pipe->final_height = 0;
   pipe->nodes = NULL;
@@ -237,10 +246,6 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->backbuf_scale = 0.0f;
   pipe->backbuf_zoom_x = 0.0f;
   pipe->backbuf_zoom_y = 0.0f;
-
-  pipe->output_backbuf = NULL;
-  pipe->output_backbuf_width = 0;
-  pipe->output_backbuf_height = 0;
   pipe->output_imgid = NO_IMGID;
 
   memset(&pipe->scharr, 0, sizeof(dt_dev_detail_mask_t));
@@ -254,6 +259,7 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->bypass_blendif = FALSE;
   pipe->input_timestamp = 0;
   pipe->levels = IMAGEIO_RGB | IMAGEIO_INT8;
+  dt_pthread_mutex_init(&(pipe->mutex), NULL);
   dt_pthread_mutex_init(&(pipe->backbuf_mutex), NULL);
   dt_pthread_mutex_init(&(pipe->busy_mutex), NULL);
   pipe->icc_type = DT_COLORSPACE_NONE;
@@ -328,14 +334,15 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
 
   dt_pthread_mutex_destroy(&(pipe->backbuf_mutex));
   dt_pthread_mutex_destroy(&(pipe->busy_mutex));
+  dt_pthread_mutex_destroy(&(pipe->mutex));
   pipe->icc_type = DT_COLORSPACE_NONE;
   g_free(pipe->icc_filename);
   pipe->icc_filename = NULL;
 
-  g_free(pipe->output_backbuf);
-  pipe->output_backbuf = NULL;
-  pipe->output_backbuf_width = 0;
-  pipe->output_backbuf_height = 0;
+  if(pipe->type & DT_DEV_PIXELPIPE_SCREEN) g_free(pipe->backbuf);
+  pipe->backbuf = NULL;
+  pipe->backbuf_width = 0;
+  pipe->backbuf_height = 0;
   pipe->output_imgid = NO_IMGID;
 
   if(pipe->forms)
@@ -803,15 +810,10 @@ static int _pixelpipe_picker_box(dt_iop_module_t *module,
      && !sample->pick_output)
     return 1;
 
-  const float wd = darktable.develop->preview_pipe->backbuf_width;
-  const float ht = darktable.develop->preview_pipe->backbuf_height;
+  float wd, ht;
+  dt_dev_get_preview_size(darktable.develop, &wd, &ht);
   const int width = roi->width;
   const int height = roi->height;
-  const dt_image_t image = darktable.develop->image_storage;
-  const int op_after_demosaic =
-    dt_ioppr_is_iop_before(darktable.develop->preview_pipe->iop_order_list,
-                           module->op, "demosaic", 0);
-
   dt_boundingbox_t fbox = { 0.0f };
 
   // get absolute pixel coordinates in final preview image
@@ -835,10 +837,6 @@ static int _pixelpipe_picker_box(dt_iop_module_t *module,
       ? DT_DEV_TRANSFORM_DIR_FORW_INCL
       : DT_DEV_TRANSFORM_DIR_FORW_EXCL),
      fbox, 2);
-
-  if(op_after_demosaic || !dt_image_is_rawprepare_supported(&image))
-    for(int idx = 0; idx < 4; idx++)
-      fbox[idx] *= darktable.develop->preview_downsampling;
 
   fbox[0] -= roi->x;
   fbox[1] -= roi->y;
@@ -1440,8 +1438,8 @@ static gboolean _dev_pixelpipe_process_rec(
   if(dt_iop_breakpoint(dev, pipe)) return TRUE;
   // if image has changed, stop now.
   if(pipe == dev->full.pipe && dev->image_force_reload) return TRUE;
-  if(pipe == dev->preview_pipe && dev->preview_loading) return TRUE;
-  if(pipe == dev->preview2.pipe && dev->preview2.loading) return TRUE;
+  if(pipe == dev->preview_pipe && dev->preview_pipe->loading) return TRUE;
+  if(pipe == dev->preview2.pipe && dev->preview2.pipe->loading) return TRUE;
   if(dev->gui_leaving) return TRUE;
 
   // 3) input -> output
@@ -2635,6 +2633,8 @@ gboolean dt_dev_pixelpipe_process(
   dt_iop_roi_t roi = (dt_iop_roi_t){ x, y, width, height, scale };
   pipe->final_width = width;
   pipe->final_height = height;
+  float pts[2] = { (x + 0.5f * width) / scale, (y + 0.5f * height) / scale };
+  dt_dev_distort_backtransform_plus(dev, pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 1);
 
   // get a snapshot of mask list
   if(pipe->forms) g_list_free_full(pipe->forms, (void (*)(void *))dt_masks_free_form);
@@ -2749,30 +2749,30 @@ restart:
   // terminate
   dt_pthread_mutex_lock(&pipe->backbuf_mutex);
   pipe->backbuf_hash = dt_dev_pixelpipe_cache_hash(pipe->image.id, &roi, pipe, 0);
-  pipe->backbuf = buf;
-  pipe->backbuf_width = width;
-  pipe->backbuf_height = height;
 
-  if(pipe->type & (DT_DEV_PIXELPIPE_PREVIEW
-                   | DT_DEV_PIXELPIPE_FULL
-                   | DT_DEV_PIXELPIPE_PREVIEW2))
+  //FIXME lock/release cache line instead of copying
+  if(pipe->type & DT_DEV_PIXELPIPE_SCREEN)
   {
-    if(pipe->output_backbuf == NULL
-       || pipe->output_backbuf_width != pipe->backbuf_width
-       || pipe->output_backbuf_height != pipe->backbuf_height)
+    if(pipe->backbuf == NULL
+       || pipe->backbuf_width * pipe->backbuf_height != width * height)
     {
-      g_free(pipe->output_backbuf);
-      pipe->output_backbuf_width = pipe->backbuf_width;
-      pipe->output_backbuf_height = pipe->backbuf_height;
-      pipe->output_backbuf =
-        g_malloc0(sizeof(uint8_t) * 4 * pipe->output_backbuf_width * pipe->output_backbuf_height);
+      g_free(pipe->backbuf);
+      pipe->backbuf = g_malloc0(sizeof(uint8_t) * 4 * width * height);
     }
 
-    if(pipe->output_backbuf)
-      memcpy(pipe->output_backbuf, pipe->backbuf,
-             sizeof(uint8_t) * 4 * pipe->output_backbuf_width * pipe->output_backbuf_height);
-    pipe->output_imgid = pipe->image.id;
+    if(pipe->backbuf)
+    {
+      memcpy(pipe->backbuf, buf, sizeof(uint8_t) * 4 * width * height);
+      pipe->backbuf_scale = scale;
+      pipe->backbuf_zoom_x = pts[0] * pipe->iscale;
+      pipe->backbuf_zoom_y = pts[1] * pipe->iscale;
+      pipe->output_imgid = pipe->image.id;
+    }
   }
+  else
+    pipe->backbuf = buf;
+  pipe->backbuf_width = width;
+  pipe->backbuf_height = height;
   dt_pthread_mutex_unlock(&pipe->backbuf_mutex);
 
   dt_dev_pixelpipe_cache_report(pipe);

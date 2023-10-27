@@ -2040,8 +2040,8 @@ static void switch_cursors(struct dt_iop_module_t *self)
     return;
   }
   else if( ((self->dev->full.pipe->processing) ||
-          (self->dev->full.status == DT_DEV_PIXELPIPE_DIRTY) ||
-          (self->dev->preview_status == DT_DEV_PIXELPIPE_DIRTY)) && g->cursor_valid)
+          (self->dev->full.pipe->status == DT_DEV_PIXELPIPE_DIRTY) ||
+          (self->dev->preview_pipe->status == DT_DEV_PIXELPIPE_DIRTY)) && g->cursor_valid)
   {
     // if pipe is busy or dirty but cursor is on preview,
     // display waiting cursor while pipe reprocesses
@@ -2106,11 +2106,10 @@ int mouse_moved(dt_iop_module_t *self,
   dt_iop_gui_leave_critical_section(self);
   if(fail) return 0;
 
-  const int wd = dev->preview_pipe->backbuf_width;
-  const int ht = dev->preview_pipe->backbuf_height;
+  float wd, ht;
+  if(!dt_dev_get_preview_size(self->dev, &wd, &ht)) return 0;
 
   if(g == NULL) return 0;
-  if(wd < 1 || ht < 1) return 0;
 
   const int x_pointer = pzx * wd;
   const int y_pointer = pzy * ht;
@@ -2404,8 +2403,8 @@ static void match_color_to_background(cairo_t *cr,
 
 void gui_post_expose(dt_iop_module_t *self,
                      cairo_t *cr,
-                     const int32_t width,
-                     const int32_t height,
+                     const float width,
+                     const float height,
                      const float pointerx,
                      const float pointery,
                      const float zoom_scale)

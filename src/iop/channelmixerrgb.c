@@ -2524,10 +2524,8 @@ int mouse_moved(dt_iop_module_t *self,
   if(g == NULL || !g->is_profiling_started) return 0;
   if(g->box[0].x == -1.0f || g->box[1].y == -1.0f) return 0;
 
-  dt_develop_t *dev = self->dev;
-  const float wd = dev->preview_pipe->backbuf_width;
-  const float ht = dev->preview_pipe->backbuf_height;
-  if(wd == 0.f || ht == 0.f) return 0;
+  float wd, ht;
+  if(!dt_dev_get_preview_size(self->dev, &wd, &ht)) return 0;
 
   // if dragging and dropping, don't update active nodes,
   // just update cursor coordinates then redraw
@@ -2602,10 +2600,8 @@ int button_pressed(dt_iop_module_t *self,
 
   if(g == NULL || !g->is_profiling_started) return 0;
 
-  dt_develop_t *dev = self->dev;
-  const float wd = dev->preview_pipe->backbuf_width;
-  const float ht = dev->preview_pipe->backbuf_height;
-  if(wd == 0.f || ht == 0.f) return 0;
+  float wd, ht;
+  if(!dt_dev_get_preview_size(self->dev, &wd, &ht)) return 0;
 
   // double click : reset the perspective correction
   if(type == GDK_DOUBLE_BUTTON_PRESS)
@@ -2653,10 +2649,8 @@ int button_released(dt_iop_module_t *self,
   if(g->box[0].x == -1.0f || g->box[1].y == -1.0f) return 0;
   if(!g->is_cursor_close || !g->drag_drop) return 0;
 
-  dt_develop_t *dev = self->dev;
-  const float wd = dev->preview_pipe->backbuf_width;
-  const float ht = dev->preview_pipe->backbuf_height;
-  if(wd == 0.f || ht == 0.f) return 0;
+  float wd, ht;
+  if(!dt_dev_get_preview_size(self->dev, &wd, &ht)) return 0;
 
   dt_iop_gui_enter_critical_section(self);
   g->drag_drop = FALSE;
@@ -2673,8 +2667,8 @@ int button_released(dt_iop_module_t *self,
 
 void gui_post_expose(dt_iop_module_t *self,
                      cairo_t *cr,
-                     const int32_t width,
-                     const int32_t height,
+                     const float width,
+                     const float height,
                      const float pointerx,
                      const float pointery,
                      const float zoom_scale)
@@ -2856,10 +2850,8 @@ static void checker_changed_callback(GtkWidget *widget, gpointer user_data)
   dt_conf_set_int("darkroom/modules/channelmixerrgb/colorchecker", i);
   g->checker = dt_get_color_checker(i);
 
-  dt_develop_t *dev = self->dev;
-  const float wd = dev->preview_pipe->backbuf_width;
-  const float ht = dev->preview_pipe->backbuf_height;
-  if(wd == 0.f || ht == 0.f) return;
+  float wd, ht;
+  if(!dt_dev_get_preview_size(self->dev, &wd, &ht)) return;
 
   dt_iop_gui_enter_critical_section(self);
   g->profile_ready = FALSE;
@@ -2891,10 +2883,8 @@ static void start_profiling_callback(GtkWidget *togglebutton, dt_iop_module_t *s
   dt_iop_request_focus(self);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), TRUE);
 
-  dt_develop_t *dev = self->dev;
-  const float wd = dev->preview_pipe->backbuf_width;
-  const float ht = dev->preview_pipe->backbuf_height;
-  if(wd == 0.f || ht == 0.f) return;
+  float wd, ht;
+  if(!dt_dev_get_preview_size(self->dev, &wd, &ht)) return;
 
   dt_iop_channelmixer_rgb_gui_data_t *g =
     (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;

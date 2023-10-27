@@ -2578,9 +2578,6 @@ void dt_masks_calculate_source_pos_value(dt_masks_form_gui_t *gui,
   dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
 
   float x = 0.0f, y = 0.0f;
-  const float pr_d = darktable.develop->preview_downsampling;
-  const float iwd = pr_d * iwidth;
-  const float iht = pr_d * iheight;
 
   if(gui->source_pos_type == DT_MASKS_SOURCE_POS_RELATIVE)
   {
@@ -2595,32 +2592,32 @@ void dt_masks_calculate_source_pos_value(dt_masks_form_gui_t *gui,
       //require passing 'form' through multiple layers...)
       if(form->functions && form->functions->initial_source_pos)
       {
-        form->functions->initial_source_pos(iwd, iht, &x, &y);
+        form->functions->initial_source_pos(iwidth, iheight, &x, &y);
         x += xpos;
         y += ypos;
       }
 #else
       if(mask_type & DT_MASKS_CIRCLE)
       {
-        dt_masks_functions_circle.initial_source_pos(iwd, iht, &x, &y);
+        dt_masks_functions_circle.initial_source_pos(iwidth, iheight, &x, &y);
         x += xpos;
         y += ypos;
       }
       else if(mask_type & DT_MASKS_ELLIPSE)
       {
-        dt_masks_functions_ellipse.initial_source_pos(iwd, iht, &x, &y);
+        dt_masks_functions_ellipse.initial_source_pos(iwidth, iheight, &x, &y);
         x += xpos;
         y += ypos;
       }
       else if(mask_type & DT_MASKS_PATH)
       {
-        dt_masks_functions_path.initial_source_pos(iwd, iht, &x, &y);
+        dt_masks_functions_path.initial_source_pos(iwidth, iheight, &x, &y);
         x += xpos;
         y += ypos;
       }
       else if(mask_type & DT_MASKS_BRUSH)
       {
-        dt_masks_functions_brush.initial_source_pos(iwd, iht, &x, &y);
+        dt_masks_functions_brush.initial_source_pos(iwidth, iheight, &x, &y);
         x += xpos;
         y += ypos;
       }
@@ -2708,10 +2705,9 @@ void dt_masks_draw_arrow(cairo_t *cr,
                          const float zoom_scale,
                          const gboolean touch_dest)
 {
-  const float pr_d = darktable.develop->preview_downsampling;
   const float dx = from_x - to_x;
   const float dy = from_y - to_y;
-  const float arrow_size = DT_PIXEL_APPLY_DPI(24.0f) * pr_d;
+  const float arrow_size = DT_PIXEL_APPLY_DPI(24.0f);
 
   const float arrow_scale = arrow_size / sqrtf(3.f * zoom_scale);
 

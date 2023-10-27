@@ -49,8 +49,6 @@
 #include "lua/call.h"
 #endif
 
-#define DT_DEV_AVERAGE_DELAY_START 250
-#define DT_DEV_PREVIEW_AVERAGE_DELAY_START 50
 #define DT_DEV_AVERAGE_DELAY_COUNT 5
 
 void dt_dev_init(dt_develop_t *dev,
@@ -60,9 +58,6 @@ void dt_dev_init(dt_develop_t *dev,
   dev->full_preview = FALSE;
   dev->gui_module = NULL;
   dev->timestamp = 0;
-  dev->full.average_delay = DT_DEV_AVERAGE_DELAY_START;
-  dev->preview_average_delay = DT_DEV_PREVIEW_AVERAGE_DELAY_START;
-  dev->preview2.average_delay = DT_DEV_PREVIEW_AVERAGE_DELAY_START;
   dev->gui_leaving = FALSE;
   dev->gui_synch = FALSE;
   dt_pthread_mutex_init(&dev->history_mutex, NULL);
@@ -75,19 +70,12 @@ void dt_dev_init(dt_develop_t *dev,
   dev->full.height = -1;
 
   dt_image_init(&dev->image_storage);
-  dev->full.status = dev->preview_status = dev->preview2.status = DT_DEV_PIXELPIPE_DIRTY;
   dev->history_updating = dev->image_force_reload = FALSE;
-  dev->full.loading = dev->preview_loading = dev->preview2.loading = FALSE;
-  dev->preview_input_changed = dev->preview2.input_changed = FALSE;
   dev->autosaving = FALSE;
   dev->image_invalid_cnt = 0;
   dev->full.pipe = dev->preview_pipe = dev->preview2.pipe = NULL;
-  dt_pthread_mutex_init(&dev->full.pipe_mutex, NULL);
-  dt_pthread_mutex_init(&dev->preview_pipe_mutex, NULL);
-  dt_pthread_mutex_init(&dev->preview2.pipe_mutex, NULL);
   dev->histogram_pre_tonecurve = NULL;
   dev->histogram_pre_levels = NULL;
-  dev->preview_downsampling = dt_dev_get_preview_downsampling();
   dev->forms = NULL;
   dev->form_visible = NULL;
   dev->form_gui = NULL;
@@ -115,6 +103,7 @@ void dt_dev_init(dt_develop_t *dev,
       dev->full.ppd = darktable.gui->ppd;
       dev->full.dpi = darktable.gui->dpi;
       dev->full.dpi_factor = darktable.gui->dpi_factor;
+      dev->full.widget = dt_ui_center(darktable.gui->ui);
     }
   }
 
@@ -145,11 +134,12 @@ void dt_dev_init(dt_develop_t *dev,
   dev->overexposed.lower = dt_conf_get_float("darkroom/ui/overexposed/lower");
   dev->overexposed.upper = dt_conf_get_float("darkroom/ui/overexposed/upper");
 
-  dev->iso_12646.enabled = FALSE;
+  dev->full.iso_12646 = FALSE;
+  dev->preview2.iso_12646 = dt_conf_get_bool("second_window/iso_12646");
 
   dev->full.zoom = dev->preview2.zoom = DT_ZOOM_FIT;
   dev->full.closeup = dev->preview2.closeup = 0;
-  dev->full.zoom_x = dev->full.zoom_y = dev->preview2.zoom_x = dev->preview2.zoom_y = 0;
+  dev->full.zoom_x = dev->full.zoom_y = dev->preview2.zoom_x = dev->preview2.zoom_y = 0.0f;
   dev->full.zoom_scale = dev->preview2.zoom_scale = 1.0f;
 }
 
@@ -157,9 +147,6 @@ void dt_dev_cleanup(dt_develop_t *dev)
 {
   if(!dev) return;
   // image_cache does not have to be unref'd, this is done outside develop module.
-  dt_pthread_mutex_destroy(&dev->full.pipe_mutex);
-  dt_pthread_mutex_destroy(&dev->preview_pipe_mutex);
-  dt_pthread_mutex_destroy(&dev->preview2.pipe_mutex);
   dt_dev_init_chroma(dev);
 
   if(dev->full.pipe)
@@ -222,16 +209,6 @@ void dt_dev_cleanup(dt_develop_t *dev)
   dt_conf_set_float("darkroom/ui/overexposed/upper", dev->overexposed.upper);
 }
 
-float dt_dev_get_preview_downsampling()
-{
-  const char *preview_downsample = dt_conf_get_string_const("preview_downsampling");
-  const float downsample = (g_strcmp0(preview_downsample, "original") == 0) ? 1.0f
-        : (g_strcmp0(preview_downsample, "to 1/2")==0) ? 0.5f
-        : (g_strcmp0(preview_downsample, "to 1/3")==0) ? 1/3.0f
-        : 0.25f;
-  return downsample;
-}
-
 void dt_dev_process_image(dt_develop_t *dev)
 {
   if(!dev->gui_attached || dev->full.pipe->processing) return;
@@ -260,7 +237,7 @@ void dt_dev_process_preview2(dt_develop_t *dev)
 
 void dt_dev_invalidate(dt_develop_t *dev)
 {
-  dev->full.status = DT_DEV_PIXELPIPE_DIRTY;
+  dev->full.pipe->status = DT_DEV_PIXELPIPE_DIRTY;
   dev->timestamp++;
   if(dev->preview_pipe) dev->preview_pipe->input_timestamp = dev->timestamp;
   if(dev->preview2.pipe) dev->preview2.pipe->input_timestamp = dev->timestamp;
@@ -268,300 +245,58 @@ void dt_dev_invalidate(dt_develop_t *dev)
 
 void dt_dev_invalidate_all(dt_develop_t *dev)
 {
-  dev->full.status = dev->preview_status = dev->preview2.status = DT_DEV_PIXELPIPE_DIRTY;
+  dev->full.pipe->status = dev->preview_pipe->status = dev->preview2.pipe->status = DT_DEV_PIXELPIPE_DIRTY;
   dev->timestamp++;
 }
 
 void dt_dev_invalidate_preview(dt_develop_t *dev)
 {
-  dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+  dev->preview_pipe->status = DT_DEV_PIXELPIPE_DIRTY;
   dev->timestamp++;
   if(dev->full.pipe) dev->full.pipe->input_timestamp = dev->timestamp;
   if(dev->preview2.pipe) dev->preview2.pipe->input_timestamp = dev->timestamp;
 }
 
-void dt_dev_process_preview_job(dt_develop_t *dev)
+void dt_dev_process_image_job(dt_develop_t *dev,
+                              dt_dev_viewport_t *port,
+                              dt_dev_pixelpipe_t *pipe,
+                              dt_signal_t signal)
 {
-  if(dev->full.loading)
+  if(dev->full.pipe->loading && pipe != dev->full.pipe)
   {
     // raw is already loading, no use starting another file access, we wait.
     return;
   }
 
-  dt_pthread_mutex_lock(&dev->preview_pipe_mutex);
+  if(port == &dev->preview2 && !(port->widget && GTK_IS_WIDGET(port->widget)))
+  {
+    return;
+  }
+
+  dt_pthread_mutex_lock(&pipe->mutex);
 
   if(dev->gui_leaving)
   {
-    dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
+    dt_pthread_mutex_unlock(&pipe->mutex);
     return;
   }
 
   dt_control_log_busy_enter();
   dt_control_toast_busy_enter();
-  dev->preview_pipe->input_timestamp = dev->timestamp;
-  dev->preview_status = DT_DEV_PIXELPIPE_RUNNING;
-
-  // lock if there, issue a background load, if not (best-effort for mip f).
-  dt_mipmap_buffer_t buf;
-  dt_mipmap_cache_get(darktable.mipmap_cache, &buf,
-                      dev->image_storage.id, DT_MIPMAP_F, DT_MIPMAP_BEST_EFFORT,
-                      'r');
-  if(!buf.buf)
-  {
-    dt_control_log_busy_leave();
-    dt_control_toast_busy_leave();
-    dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
-    dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
-    return; // not loaded yet. load will issue a gtk redraw on
-            // completion, which in turn will trigger us again later.
-  }
-  // init pixel pipeline for preview.
-  dt_dev_pixelpipe_set_input(dev->preview_pipe, dev,
-                             (float *)buf.buf, buf.width, buf.height, buf.iscale);
-
-  if(dev->preview_loading)
-  {
-    dt_dev_pixelpipe_cleanup_nodes(dev->preview_pipe);
-    dt_dev_pixelpipe_create_nodes(dev->preview_pipe, dev);
-    dt_dev_pixelpipe_cache_flush(dev->preview_pipe);
-    dev->preview_loading = FALSE;
-  }
-
-  // if raw loaded, get new mipf
-  if(dev->preview_input_changed)
-  {
-    dt_dev_pixelpipe_cache_flush(dev->preview_pipe);
-    dev->preview_input_changed = FALSE;
-  }
-
-// always process the whole downsampled mipf buffer, to allow for fast
-// scrolling and mip4 write-through.
-restart:
-  if(dev->gui_leaving)
-  {
-    dt_control_log_busy_leave();
-    dt_control_toast_busy_leave();
-    dev->preview_status = DT_DEV_PIXELPIPE_INVALID;
-    dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
-    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-    return;
-  }
-  // adjust pipeline according to changed flag set by {add,pop}_history_item.
-  // this locks dev->history_mutex.
-  dt_times_t start;
-  dt_get_times(&start);
-  dt_dev_pixelpipe_change(dev->preview_pipe, dev);
-  if(dt_dev_pixelpipe_process(
-         dev->preview_pipe, dev, 0, 0,
-         dev->preview_pipe->processed_width * dev->preview_downsampling,
-         dev->preview_pipe->processed_height * dev->preview_downsampling,
-         dev->preview_downsampling))
-  {
-    if(dev->preview_loading || dev->preview_input_changed)
-    {
-      dt_control_log_busy_leave();
-      dt_control_toast_busy_leave();
-      dev->preview_status = DT_DEV_PIXELPIPE_INVALID;
-      dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
-      dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-      return;
-    }
-    else
-      goto restart;
-  }
-
-  dev->preview_status = DT_DEV_PIXELPIPE_VALID;
-
-  if(!dev->history_postpone_invalidate)
-    dt_image_update_final_size(dev->preview_pipe->output_imgid);
-
-  dt_show_times(&start, "[dev_process_preview] pixel pipeline processing");
-  dt_dev_average_delay_update(&start, &dev->preview_average_delay);
-  dev->gui_previous_pipe_time = dt_get_wtime();
-
-  // if a widget needs to be redraw there's the DT_SIGNAL_*_PIPE_FINISHED signals
-  dt_control_log_busy_leave();
-  dt_control_toast_busy_leave();
-  dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
-  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED);
-
-#ifdef USE_LUA
-  dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
-      0, NULL, NULL,
-      LUA_ASYNC_TYPENAME, "const char*", "pixelpipe-processing-complete",
-      LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(dev->image_storage.id),
-      LUA_ASYNC_DONE);
-#endif
-}
-
-void dt_dev_process_preview2_job(dt_develop_t *dev)
-{
-  // FIXME remerge with dt_dev_process_image_job
-
-
-  dt_dev_viewport_t *port = &dev->preview2;
-
-  if(dev->full.loading)
-  {
-    // raw is already loading, no use starting another file access, we wait.
-    return;
-  }
-
-  if(!(port->widget && GTK_IS_WIDGET(port->widget)))
-  {
-    return;
-  }
-
-  dt_pthread_mutex_lock(&port->pipe_mutex);
-
-  if(dev->gui_leaving)
-  {
-    dt_pthread_mutex_unlock(&port->pipe_mutex);
-    return;
-  }
-
-  dt_control_log_busy_enter();
-  dt_control_toast_busy_enter();
-  port->pipe->input_timestamp = dev->timestamp;
-  port->status = DT_DEV_PIXELPIPE_RUNNING;
-
-  // lock if there, issue a background load, if not (best-effort for mip f).
-  dt_mipmap_buffer_t buf;
-  dt_mipmap_cache_get(darktable.mipmap_cache, &buf,
-                      dev->image_storage.id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
-
-  if(!buf.buf)
-  {
-    dt_control_log_busy_leave();
-    dt_control_toast_busy_leave();
-    port->status = DT_DEV_PIXELPIPE_DIRTY;
-    dt_pthread_mutex_unlock(&port->pipe_mutex);
-    return; // not loaded yet. load will issue a gtk redraw on
-            // completion, which in turn will trigger us again later.
-  }
-  // init pixel pipeline for preview2.
-  dt_dev_pixelpipe_set_input(port->pipe, dev,
-                             (float *)buf.buf, buf.width, buf.height, 1.0 /*buf.iscale*/);
-
-  if(port->loading)
-  {
-    dt_dev_pixelpipe_cleanup_nodes(port->pipe);
-    dt_dev_pixelpipe_create_nodes(port->pipe, dev);
-    dt_dev_pixelpipe_cache_flush(port->pipe);
-    port->loading = FALSE;
-  }
-
-  // if raw loaded, get new mipf
-  if(port->input_changed)
-  {
-    dt_dev_pixelpipe_cache_flush(port->pipe);
-    port->input_changed = 0;
-  }
-
-// always process the whole downsampled mipf buffer, to allow for fast
-// scrolling and mip4 write-through.
-restart:
-  if(dev->gui_leaving)
-  {
-    dt_control_log_busy_leave();
-    dt_control_toast_busy_leave();
-    port->status = DT_DEV_PIXELPIPE_INVALID;
-    dt_pthread_mutex_unlock(&port->pipe_mutex);
-    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-    return;
-  }
-
-  const dt_dev_pixelpipe_change_t pipe_changed = dev->full.pipe->changed;
-
-  // adjust pipeline according to changed flag set by {add,pop}_history_item.
-  // this locks dev->history_mutex.
-  dt_times_t start;
-  dt_get_times(&start);
-  dt_dev_pixelpipe_change(port->pipe, dev);
-
-  // if just changed to an image with a different aspect ratio or
-  // altered image orientation, the prior zoom xy could now be beyond
-  // the image boundary
-  if(port->loading || (pipe_changed != DT_DEV_PIPE_UNCHANGED))
-    dt_dev_zoom_move(&darktable.develop->full, DT_ZOOM_MOVE, 0.0f, 0, 0.0f, 0.0f, TRUE);
-
-  // determine scale according to new dimensions
-  dt_dev_zoom_t zoom;
-  int closeup;
-  float zoom_x, zoom_y;
-  dt_dev_get_viewport_params(port, &zoom, &closeup, &zoom_x, &zoom_y);
-  const float scale = dt_dev_get_zoom_scale(port, zoom, 1.0f, 0) * port->ppd;
-  int window_width = port->width * port->ppd;
-  int window_height = port->height * port->ppd;
-  if(closeup)
-  {
-    window_width /= 1 << closeup;
-    window_height /= 1 << closeup;
-  }
-
-  const int wd = MIN(window_width, port->pipe->processed_width * scale);
-  const int ht = MIN(window_height, port->pipe->processed_height * scale);
-  int x = MAX(0, scale * port->pipe->processed_width * (.5 + zoom_x) - wd / 2);
-  int y = MAX(0, scale * port->pipe->processed_height * (.5 + zoom_y) - ht / 2);
-
-  if(dt_dev_pixelpipe_process(port->pipe, dev, x, y, wd, ht, scale))
-  {
-    if(port->loading || port->input_changed)
-    {
-      dt_control_log_busy_leave();
-      dt_control_toast_busy_leave();
-      port->status = DT_DEV_PIXELPIPE_INVALID;
-      dt_pthread_mutex_unlock(&port->pipe_mutex);
-      dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-      return;
-    }
-    else
-      goto restart;
-  }
-
-  port->pipe->backbuf_scale = scale;
-  port->pipe->backbuf_zoom_x = zoom_x;
-  port->pipe->backbuf_zoom_y = zoom_y;
-
-  port->status = DT_DEV_PIXELPIPE_VALID;
-
-  dt_show_times(&start, "[dev_process_preview2] pixel pipeline processing");
-  dt_dev_average_delay_update(&start, &port->average_delay);
-
-  dt_control_log_busy_leave();
-  dt_control_toast_busy_leave();
-  dt_pthread_mutex_unlock(&port->pipe_mutex);
-  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
-                                DT_SIGNAL_DEVELOP_PREVIEW2_PIPE_FINISHED);
-}
-
-void dt_dev_process_image_job(dt_develop_t *dev)
-{
-  dt_dev_viewport_t *port = &dev->full;
-
-  dt_pthread_mutex_lock(&port->pipe_mutex);
-
-  if(dev->gui_leaving)
-  {
-    dt_pthread_mutex_unlock(&port->pipe_mutex);
-    return;
-  }
-
-  dt_control_log_busy_enter();
-  dt_control_toast_busy_enter();
+  pipe->input_timestamp = dev->timestamp;
   // let gui know to draw preview instead of us, if it's there:
-  port->status = DT_DEV_PIXELPIPE_RUNNING;
+  pipe->status = DT_DEV_PIXELPIPE_RUNNING;
 
-  dt_mipmap_buffer_t buf;
   dt_times_t start;
   dt_get_times(&start);
+
+  dt_mipmap_buffer_t buf;
   dt_mipmap_cache_get(darktable.mipmap_cache,
-                      &buf, dev->image_storage.id, DT_MIPMAP_FULL,
-                      DT_MIPMAP_BLOCKING, 'r');
+                      &buf, dev->image_storage.id,
+                      port ? DT_MIPMAP_FULL     : DT_MIPMAP_F,
+                      port ? DT_MIPMAP_BLOCKING : DT_MIPMAP_BEST_EFFORT,
+                      'r');
+
   dt_show_times(&start, "[dt_dev_process_image_job] loading image.");
 
   // failed to load raw?
@@ -569,34 +304,49 @@ void dt_dev_process_image_job(dt_develop_t *dev)
   {
     dt_control_log_busy_leave();
     dt_control_toast_busy_leave();
-    port->status = DT_DEV_PIXELPIPE_DIRTY;
-    dt_pthread_mutex_unlock(&port->pipe_mutex);
+    pipe->status = DT_DEV_PIXELPIPE_DIRTY;
+    dt_pthread_mutex_unlock(&pipe->mutex);
     dev->image_invalid_cnt++;
-    return;
+    return; // not loaded yet. load will issue a gtk redraw on
+            // completion, which in turn will trigger us again later.
   }
 
-  dt_dev_pixelpipe_set_input(port->pipe, dev, (float *)buf.buf, buf.width, buf.height, 1.0);
+  dt_dev_pixelpipe_set_input(pipe, dev, (float *)buf.buf, buf.width, buf.height,
+                             port ? 1.0 : buf.iscale);
 
-  if(port->loading)
+  if(pipe->loading)
   {
     // init pixel pipeline
-    dt_dev_pixelpipe_cleanup_nodes(port->pipe);
-    dt_dev_pixelpipe_create_nodes(port->pipe, dev);
-    if(dev->image_force_reload) dt_dev_pixelpipe_cache_flush(port->pipe);
-    dev->image_force_reload = FALSE;
-    if(dev->gui_attached)
+    dt_dev_pixelpipe_cleanup_nodes(pipe);
+    dt_dev_pixelpipe_create_nodes(pipe, dev);
+    if(pipe == dev->full.pipe)
     {
-      // during load, a mipf update could have been issued.
-      dev->preview_input_changed = TRUE;
-      dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
-      dev->preview2.input_changed = TRUE;
-      dev->preview2.status = DT_DEV_PIXELPIPE_DIRTY;
-      dev->gui_synch = TRUE; // notify gui thread we want to synch
-                             // (call gui_update in the modules)
-      dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
-      dev->preview2.pipe->changed |= DT_DEV_PIPE_SYNCH;
+      if(dev->image_force_reload) dt_dev_pixelpipe_cache_flush(pipe);
+      dev->image_force_reload = FALSE;
+      if(dev->gui_attached)
+      {
+        // during load, a mipf update could have been issued.
+        dev->preview_pipe->input_changed = TRUE;
+        dev->preview_pipe->status = DT_DEV_PIXELPIPE_DIRTY;
+        dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
+        dev->preview2.pipe->input_changed = TRUE;
+        dev->preview2.pipe->status = DT_DEV_PIXELPIPE_DIRTY;
+        dev->preview2.pipe->changed |= DT_DEV_PIPE_SYNCH;
+        dev->gui_synch = TRUE; // notify gui thread we want to synch
+                               // (call gui_update on the modules)
+      }
+      pipe->changed |= DT_DEV_PIPE_SYNCH;
     }
-    port->pipe->changed |= DT_DEV_PIPE_SYNCH;
+    else
+    {
+      dt_dev_pixelpipe_cache_flush(pipe);
+      pipe->loading = FALSE;
+    }
+  }
+  if(port != &dev->full && pipe->input_changed)
+  {
+    dt_dev_pixelpipe_cache_flush(pipe);
+    pipe->input_changed = FALSE;
   }
 
 // adjust pipeline according to changed flag set by {add,pop}_history_item.
@@ -606,86 +356,109 @@ restart:
     dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
     dt_control_log_busy_leave();
     dt_control_toast_busy_leave();
-    port->status = DT_DEV_PIXELPIPE_INVALID;
-    dt_pthread_mutex_unlock(&port->pipe_mutex);
+    pipe->status = DT_DEV_PIXELPIPE_INVALID;
+    dt_pthread_mutex_unlock(&pipe->mutex);
     return;
   }
-  port->pipe->input_timestamp = dev->timestamp;
+
+  if(port == &dev->full)
+    pipe->input_timestamp = dev->timestamp;
+
   // dt_dev_pixelpipe_change() will clear the changed value
-  const dt_dev_pixelpipe_change_t pipe_changed = port->pipe->changed;
+  const dt_dev_pixelpipe_change_t pipe_changed = pipe->changed;
   // this locks dev->history_mutex.
-  dt_dev_pixelpipe_change(port->pipe, dev);
+  dt_dev_pixelpipe_change(pipe, dev);
 
-  dt_dev_viewport_t *darkport = &darktable.develop->full;
-  // if just changed to an image with a different aspect ratio or
-  // altered image orientation, the prior zoom xy could now be beyond
-  // the image boundary
-  if(darkport->loading || (pipe_changed != DT_DEV_PIPE_UNCHANGED))
-    dt_dev_zoom_move(darkport, DT_ZOOM_MOVE, 0.0f, 0, 0.0f, 0.0f, TRUE);
+  float scale = 1.0f;
+  int window_width = G_MAXINT;
+  int window_height = G_MAXINT;
+  float zoom_x  = 0, zoom_y = 0;
 
-  // determine scale according to new dimensions
-  dt_dev_zoom_t zoom;
-  int closeup;
-  float zoom_x, zoom_y;
-  dt_dev_get_viewport_params(darkport, &zoom, &closeup, &zoom_x, &zoom_y);
-  dt_dev_set_viewport_params(    port,  zoom,  closeup,  zoom_x,  zoom_y);
-  port->zoom_scale = darkport->zoom_scale;
-  const float scale = dt_dev_get_zoom_scale(port, zoom, 1.0f, 0) * port->ppd;
-  int window_width = port->width * port->ppd;
-  int window_height = port->height * port->ppd;
-  if(closeup)
+  if(port)
   {
-    window_width /= 1<<closeup;
-    window_height /= 1<<closeup;
+    // if just changed to an image with a different aspect ratio or
+    // altered image orientation, the prior zoom xy could now be beyond
+    // the image boundary
+    if(port->pipe->loading || pipe_changed != DT_DEV_PIPE_UNCHANGED)
+      dt_dev_zoom_move(port, DT_ZOOM_MOVE, 0.0f, 0, 0.0f, 0.0f, TRUE);
+
+    // determine scale according to new dimensions
+    dt_dev_zoom_t zoom;
+    int closeup;
+    dt_dev_get_viewport_params(port, &zoom, &closeup, &zoom_x, &zoom_y);
+    scale = dt_dev_get_zoom_scale(port, zoom, 1.0f, 0) * port->ppd;
+    window_width = port->width * port->ppd / (1<<closeup);
+    window_height = port->height * port->ppd / (1<<closeup);
   }
-  const int wd = MIN(window_width, port->pipe->processed_width * scale);
-  const int ht = MIN(window_height, port->pipe->processed_height * scale);
-  const int x = MAX(0, scale * port->pipe->processed_width  * (.5 + zoom_x) - wd / 2);
-  const int y = MAX(0, scale * port->pipe->processed_height * (.5 + zoom_y) - ht / 2);
+  // else
+  // {
+  //   // FIXME full pipe may be busy, so update processed sizes here
+  //   // make sure preview pipe is newer than full/preview2 pipes
+  //   dev->full.pipe->processed_width = pipe->processed_width * pipe->iscale;
+  //   dev->full.pipe->processed_height = pipe->processed_height * pipe->iscale;
+  // }
+
+  const int wd = MIN(window_width, scale * pipe->processed_width);
+  const int ht = MIN(window_height, scale * pipe->processed_height);
+  const int x = port ? MAX(0, scale * pipe->processed_width  * (.5 + zoom_x) - wd / 2) : 0;
+  const int y = port ? MAX(0, scale * pipe->processed_height * (.5 + zoom_y) - ht / 2) : 0;
 
   dt_get_times(&start);
-  if(dt_dev_pixelpipe_process(port->pipe, dev, x, y, wd, ht, scale))
-
-// FIXME maybe always send signal even if restarting later?
+  if(dt_dev_pixelpipe_process(pipe, dev, x, y, wd, ht, scale))
   {
     // interrupted because image changed?
-    if(dev->image_force_reload)
+    if(dev->image_force_reload || pipe->loading || pipe->input_changed)
     {
       dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
       dt_control_log_busy_leave();
       dt_control_toast_busy_leave();
-      port->status = DT_DEV_PIXELPIPE_INVALID;
-      dt_pthread_mutex_unlock(&port->pipe_mutex);
+      pipe->status = DT_DEV_PIXELPIPE_INVALID;
+      dt_pthread_mutex_unlock(&pipe->mutex);
       return;
     }
     // or because the pipeline changed?
     else
+    {
+      if(port && port->widget) dt_control_queue_redraw_widget(port->widget);
       goto restart;
+    }
   }
   dt_show_times_f(&start,
                   "[dev_process_image] pixel pipeline", "processing `%s'",
                   dev->image_storage.filename);
-  dt_dev_average_delay_update(&start, &port->average_delay);
+  dt_dev_average_delay_update(&start, &pipe->average_delay);
 
   // maybe we got zoomed/panned in the meantime?
-  if(port->pipe->changed != DT_DEV_PIPE_UNCHANGED) goto restart;
+  if(pipe->changed != DT_DEV_PIPE_UNCHANGED) goto restart;
 
-  // cool, we got a new image!
-  port->pipe->backbuf_scale = scale;
-  port->pipe->backbuf_zoom_x = zoom_x;
-  port->pipe->backbuf_zoom_y = zoom_y;
-
-  port->status = DT_DEV_PIXELPIPE_VALID;
-  port->loading = FALSE;
+  pipe->status = DT_DEV_PIXELPIPE_VALID;
+  pipe->loading = FALSE;
   dev->image_invalid_cnt = 0;
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
   // if a widget needs to be redraw there's the DT_SIGNAL_*_PIPE_FINISHED signals
   dt_control_log_busy_leave();
   dt_control_toast_busy_leave();
-  dt_pthread_mutex_unlock(&port->pipe_mutex);
+  dt_pthread_mutex_unlock(&pipe->mutex);
 
-  if(dev->gui_attached && !dev->gui_leaving)
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED);
+  if(dev->gui_attached && !dev->gui_leaving && signal != -1)
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, signal);
+
+  if(port) return;
+
+  // preview pipe only
+
+  if(!dev->history_postpone_invalidate)
+    dt_image_update_final_size(dev->preview_pipe->output_imgid);
+
+  dev->gui_previous_pipe_time = dt_get_wtime();
+
+#ifdef USE_LUA
+  dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+      0, NULL, NULL,
+      LUA_ASYNC_TYPENAME, "const char*", "pixelpipe-processing-complete",
+      LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(dev->image_storage.id),
+      LUA_ASYNC_DONE);
+#endif
 }
 
 
@@ -724,9 +497,8 @@ void dt_dev_reload_image(dt_develop_t *dev,
                          const dt_imgid_t imgid)
 {
   _dt_dev_load_raw(dev, imgid);
-  dev->image_force_reload = dev->full.loading =
-  dev->preview_loading = dev->preview2.loading = TRUE;
-
+  dev->image_force_reload = TRUE;
+  dev->full.pipe->loading = dev->preview_pipe->loading = dev->preview2.pipe->loading = TRUE;
   dev->full.pipe->changed |= DT_DEV_PIPE_SYNCH;
   dt_dev_invalidate(dev); // only invalidate image, preview will follow once it's loaded.
 }
@@ -737,39 +509,30 @@ float dt_dev_get_zoom_scale(dt_dev_viewport_t *port,
                             const int preview)
 {
   float zoom_scale;
-  dt_develop_t *dev = darktable.develop;
 
-  const float w = preview
-    ? dev->preview_pipe->processed_width
-    : port->pipe->processed_width;
+  int procw, proch;
+  dt_dev_get_processed_size(port, &procw, &proch);
 
-  const float h = preview
-    ? dev->preview_pipe->processed_height
-    : port->pipe->processed_height;
-
-  const float ps = port->pipe->backbuf_width
-    ? port->pipe->processed_width / (float)dev->preview_pipe->processed_width
-    : dev->preview_pipe->iscale;
+  const float w = (float)port->width / procw;
+  const float h = (float)port->height / proch;
 
   switch(zoom)
   {
     case DT_ZOOM_FIT:
-      zoom_scale = fminf(port->width / w, port->height / h);
+      zoom_scale = fminf(w, h);
       break;
     case DT_ZOOM_FILL:
-      zoom_scale = fmaxf(port->width / w, port->height / h);
+      zoom_scale = fmaxf(w, h);
       break;
     case DT_ZOOM_1:
       zoom_scale = closeup_factor;
-      if(preview) zoom_scale *= ps;
       break;
     default: // DT_ZOOM_FREE
-      // zoom_scale = dt_control_get_dev_zoom_scale();
       zoom_scale = port->zoom_scale;
-      if(preview) zoom_scale *= ps;
       break;
   }
-  if(preview) zoom_scale /= dev->preview_downsampling;
+
+  if(preview) zoom_scale *= darktable.develop->preview_pipe->iscale;
 
   return zoom_scale;
 }
@@ -807,11 +570,10 @@ void dt_dev_load_image_ext(dt_develop_t *dev,
   {
     dev->full.pipe->processed_width = 0;
     dev->full.pipe->processed_height = 0;
+    dev->full.pipe->loading = dev->preview_pipe->loading = dev->preview2.pipe->loading = TRUE;
+    dev->full.pipe->status = dev->preview_pipe->status = dev->preview2.pipe->status = DT_DEV_PIXELPIPE_DIRTY;
   }
-  dev->full.loading = dev->first_load = dev->preview_loading =
-    dev->preview2.loading = TRUE;
-
-  dev->full.status = dev->preview_status = dev->preview2.status = DT_DEV_PIXELPIPE_DIRTY;
+  dev->first_load = TRUE;
 
   // we need a global lock as the dev->iop set must not be changed
   // until read history is terminated
@@ -832,50 +594,33 @@ void dt_dev_load_image(dt_develop_t *dev,
   dt_dev_load_image_ext(dev, imgid, -1);
 }
 
-void dt_dev_configure(dt_develop_t *dev,
-                      int wd,
-                      int ht)
+void dt_dev_configure(dt_dev_viewport_t *port)
 {
-  // fixed border on every side
-  const int32_t tb = dev->full.border_size;
-  wd -= 2*tb;
-  ht -= 2*tb;
-  if(dev->full.width != wd || dev->full.height != ht)
-  {
-    dev->full.width = wd;
-    dev->full.height = ht;
-    dev->preview_pipe->changed |= DT_DEV_PIPE_ZOOMED;
-    dev->preview2.pipe->changed |= DT_DEV_PIPE_ZOOMED;
-    dev->full.pipe->changed |= DT_DEV_PIPE_ZOOMED;
-    dt_dev_invalidate(dev);
-  }
-}
-
-void dt_dev_second_window_configure(dt_develop_t *dev,
-                                    int wd,
-                                    int ht)
-{
-  // fixed border on every side
   int32_t tb = 0;
-  if(dev->iso_12646.enabled)
+  if(port->iso_12646)
   {
-    const int bsize =
-      dev->preview2.dpi * dt_conf_get_float("darkroom/ui/iso12464_border") / 2.54f;
-    // we want to make some some stupid settings are avoided.
-    tb = MIN(MAX(2, bsize), 0.3f * MIN(wd, ht));
+    // the border size is taken from conf as an absolute in cm
+    // and uses dpi and ppd for an absolute size
+    const int bsize = port->dpi * port->ppd * dt_conf_get_float("darkroom/ui/iso12464_border") / 2.54f;
+    // for safety, at least 2 pixels and at least 40% for content
+    tb = MIN(MAX(2, bsize), 0.3f * MIN(port->orig_width, port->orig_height));
+  }
+  else if(port == &darktable.develop->full)
+  {
+    // Reset border size from config
+    tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
   }
 
-  wd -= 2*tb;
-  ht -= 2*tb;
-
-  if(dev->preview2.width != wd || dev->preview2.height != ht)
+  port->border_size = tb;
+  // fixed border on every side
+  int32_t wd = port->orig_width - 2*tb;
+  int32_t ht = port->orig_height - 2*tb;
+  if(port->width != wd || port->height != ht)
   {
-    dev->preview2.width = wd;
-    dev->preview2.height = ht;
-    dev->preview2.border_size = tb;
-    dev->preview2.pipe->changed |= DT_DEV_PIPE_ZOOMED;
-    dt_dev_invalidate(dev);
-    dt_dev_reprocess_center(dev);
+    port->width = wd;
+    port->height = ht;
+    port->pipe->changed |= DT_DEV_PIPE_ZOOMED;
+    dt_dev_zoom_move(port, DT_ZOOM_MOVE, 0.0f, 0, 0.0f, 0.0f, TRUE);
   }
 }
 
@@ -952,7 +697,7 @@ static void _dev_auto_save(dt_develop_t *dev)
   */
   const gboolean saving = (user_delay >= 1.0)
                         && ((now - last) > user_delay)
-                        && !dev->full.loading
+                        && !dev->full.pipe->loading
                         && dev->requested_id == imgid
                         && dt_is_valid_imgid(imgid);
 
@@ -2168,7 +1913,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
              "[dt_dev_read_history_ext] temporary history merged with image history\n");
 
     //  first time we are loading the image, try to import lightroom .xmp if any
-    if(dev->full.loading && first_run)
+    if(dev->full.pipe && dev->full.pipe->loading && first_run)
       dt_lightroom_import(dev->image_storage.id, dev, TRUE);
 
     // if a snapshot move all auto-presets into the history_snapshot table
@@ -2629,51 +2374,34 @@ void dt_dev_reprocess_preview(dt_develop_t *dev)
   dt_control_queue_redraw_center();
 }
 
-void dt_dev_check_zoom_bounds(dt_dev_viewport_t *port,
-                              float *zoom_x,
-                              float *zoom_y,
-                              const dt_dev_zoom_t zoom,
-                              const int closeup,
-                              float *boxww,
-                              float *boxhh)
+gboolean dt_dev_get_zoom_bounds(dt_dev_viewport_t *port,
+                                float *zoom_x,
+                                float *zoom_y,
+                                float *boxw,
+                                float *boxh)
 {
+  if(port->zoom == DT_ZOOM_FIT)
+    return FALSE;
+
   int procw = 0, proch = 0;
   dt_dev_get_processed_size(port, &procw, &proch);
-  float boxw = 1.0f, boxh = 1.0f; // viewport in normalised space
-                            //   if(zoom == DT_ZOOM_1)
-                            //   {
-                            //     const float imgw = (closeup ? 2 : 1)*procw;
-                            //     const float imgh = (closeup ? 2 : 1)*proch;
-                            //     const float devw = MIN(imgw, port->width);
-                            //     const float devh = MIN(imgh, port->height);
-                            //     boxw = fminf(1.0, devw/imgw);
-                            //     boxh = fminf(1.0, devh/imgh);
-                            //   }
-  if(zoom == DT_ZOOM_FIT)
-  {
-    *zoom_x = *zoom_y = 0.0f;
-    boxw = boxh = 1.0f;
-  }
-  else
-  {
-    const float scale = dt_dev_get_zoom_scale(port, zoom, 1<<closeup, 0);
-    const float imgw = procw;
-    const float imgh = proch;
-    const float devw = port->width;
-    const float devh = port->height;
-    boxw = devw / (imgw * scale);
-    boxh = devh / (imgh * scale);
-  }
+  const float scale = dt_dev_get_zoom_scale(port, port->zoom, 1<<port->closeup, 0);
 
-  if(*zoom_x < boxw / 2 - .5) *zoom_x = boxw / 2 - .5;
-  if(*zoom_x > .5 - boxw / 2) *zoom_x = .5 - boxw / 2;
-  if(*zoom_y < boxh / 2 - .5) *zoom_y = boxh / 2 - .5;
-  if(*zoom_y > .5 - boxh / 2) *zoom_y = .5 - boxh / 2;
-  if(boxw > 1.0) *zoom_x = 0.0f;
-  if(boxh > 1.0) *zoom_y = 0.0f;
+  dt_dev_get_viewport_params(port, NULL, NULL, zoom_x, zoom_y);
 
-  if(boxww) *boxww = boxw;
-  if(boxhh) *boxhh = boxh;
+  *boxw = procw ? port->width / (procw * scale) : 1.0f;
+  *boxh = proch ? port->height / (proch * scale) : 1.0f;
+
+  return *boxw < 1.0f || *boxh < 1.0f;
+}
+
+gboolean dt_dev_get_preview_size(dt_develop_t *dev,
+                                 float *wd,
+                                 float *ht)
+{
+  *wd = dev->full.pipe->processed_width / dev->preview_pipe->iscale;
+  *ht = dev->full.pipe->processed_height / dev->preview_pipe->iscale;
+  return *wd >= 1.f && *ht >= 1.f;
 }
 
 void dt_dev_get_processed_size(dt_dev_viewport_t *port,
@@ -2695,7 +2423,7 @@ void dt_dev_get_processed_size(dt_dev_viewport_t *port,
   // fallback on preview pipe
   if(dev->preview_pipe && dev->preview_pipe->processed_width)
   {
-    const float scale = (dev->preview_pipe->iscale / dev->preview_downsampling);
+    const float scale = dev->preview_pipe->iscale;
     *procw = scale * dev->preview_pipe->processed_width;
     *proch = scale * dev->preview_pipe->processed_height;
     return;
@@ -2800,20 +2528,27 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
   dt_develop_t *dev = darktable.develop;
 
   dt_pthread_mutex_lock(&(darktable.control->global_mutex));
+  dt_pthread_mutex_lock(&dev->history_mutex);
 
-  float cur_scale = dt_dev_get_zoom_scale(port, port->zoom, 1<<port->closeup, 0);
   int procw, proch;
   dt_dev_get_processed_size(port, &procw, &proch);
 
+  float pts[2] = { port->zoom_x, port->zoom_y };
+  dt_dev_distort_transform_locked(darktable.develop, port->pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 1);
+  float zoom_x = pts[0] / procw - 0.5f;
+  float zoom_y = pts[1] / proch - 0.5f;
+
+  float cur_scale = dt_dev_get_zoom_scale(port, port->zoom, 1<<port->closeup, 0);
+
   if(zoom == DT_ZOOM_POSITION)
   {
-    port->zoom_x = x;
-    port->zoom_y = y;
+    zoom_x = x;
+    zoom_y = y;
   }
   else if(zoom == DT_ZOOM_MOVE)
   {
-    port->zoom_x += scale * x / (procw * cur_scale);
-    port->zoom_y += scale * y / (proch * cur_scale);
+    zoom_x += scale * x / (procw * cur_scale);
+    zoom_y += scale * y / (proch * cur_scale);
   }
   else
   {
@@ -2883,38 +2618,69 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
       if(fabsf(scale - 1.0f) < 0.001f) zoom = DT_ZOOM_1;
       if(fabsf(scale - fitscale) < 0.001f) zoom = DT_ZOOM_FIT;
     }
+    else if(zoom == DT_ZOOM_FULL_PREVIEW)
+    {
+      dev->full_preview_last_zoom = port->zoom;
+      dev->full_preview_last_closeup = port->closeup;
+      dev->full_preview_last_zoom_x = zoom_x;
+      dev->full_preview_last_zoom_y = zoom_y;
+      zoom = DT_ZOOM_FIT;
+      scale = port->zoom_scale;
+    }
+    else if(zoom == DT_ZOOM_RESTORE)
+    {
+      zoom = dev->full_preview_last_zoom;
+      closeup = dev->full_preview_last_closeup;
+      zoom_x = dev->full_preview_last_zoom_x;
+      zoom_y = dev->full_preview_last_zoom_y;
+      scale = port->zoom_scale;
+    }
 
     port->closeup = closeup;
     port->zoom_scale = scale;
     port->zoom = zoom;
+  }
+
+  if(zoom == DT_ZOOM_FIT || !procw || !proch)
+    zoom_x = zoom_y = 0.0f;
+  else
+  {
+    float new_scale = dt_dev_get_zoom_scale(port, port->zoom, 1<<port->closeup, 0);
+
+    float boxw = port->width / (procw * new_scale);
+    float boxh = port->height / (proch * new_scale);
 
     if(x >= 0.0f && y >= 0.0f)
     {
       // adjust offset from center so same point under cursor
-      float new_scale = dt_dev_get_zoom_scale(port, port->zoom, 1<<port->closeup, 0);
       float mouse_off_x = (x - port->border_size - 0.5f * port->width) / procw;
       float mouse_off_y = (y - port->border_size - 0.5f * port->height) / proch;
-      port->zoom_x += mouse_off_x / cur_scale - mouse_off_x / new_scale;
-      port->zoom_y += mouse_off_y / cur_scale - mouse_off_y / new_scale;
+      zoom_x += mouse_off_x / cur_scale - mouse_off_x / new_scale;
+      zoom_y += mouse_off_y / cur_scale - mouse_off_y / new_scale;
     }
+
+    zoom_x = boxw > 1.0f ? 0.0f : CLAMP(zoom_x, boxw / 2 - .5, .5 - boxw / 2);
+    zoom_y = boxh > 1.0f ? 0.0f : CLAMP(zoom_y, boxh / 2 - .5, .5 - boxh / 2);
   }
 
-  if(constrain)
-    dt_dev_check_zoom_bounds(port, &port->zoom_x, &port->zoom_y, port->zoom, port->closeup, NULL, NULL);
+  pts[0] = (zoom_x + 0.5f) * procw;
+  pts[1] = (zoom_y + 0.5f) * proch;
+  dt_dev_distort_backtransform_locked(dev, port->pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 1);
+  port->zoom_x = pts[0];
+  port->zoom_y = pts[1];
 
+  dt_pthread_mutex_unlock(&dev->history_mutex);
   dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
 
   if(port == &dev->full)
   {
-    /* redraw myself */ // _lib_navigation_set_position
-    // _lib_navigation_control_redraw_callback(NULL, self);
-    dt_dev_invalidate(dev);
+    dt_dev_invalidate(dev); // FIXME not needed? redraw should determines if needs new calculation
     dt_control_queue_redraw_center();
     dt_control_navigation_redraw();
   }
-  else
+  else if(port == &dev->preview2 && dev->second_wnd)
   {
-    dev->preview2.status = DT_DEV_PIXELPIPE_DIRTY;
+    dev->preview2.pipe->status = DT_DEV_PIXELPIPE_DIRTY;
     dt_control_queue_redraw_widget(dev->second_wnd);
   }
 }
@@ -2952,22 +2718,15 @@ void dt_dev_get_viewport_params(dt_dev_viewport_t *port,
   dt_pthread_mutex_lock(&(darktable.control->global_mutex));
   if(zoom) *zoom = port->zoom;
   if(closeup) *closeup = port->closeup;
-  if(x) *x = port->zoom_x;
-  if(y) *y = port->zoom_y;
-  dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
-}
-
-void dt_dev_set_viewport_params(dt_dev_viewport_t *port,
-                                dt_dev_zoom_t zoom,
-                                int closeup,
-                                float x,
-                                float y)
-{
-  dt_pthread_mutex_lock(&(darktable.control->global_mutex));
-  port->zoom = zoom;
-  port->closeup = closeup;
-  port->zoom_x = x;
-  port->zoom_y = y;
+  if(x && y)
+  {
+    dt_pthread_mutex_lock(&darktable.develop->history_mutex);
+    float pts[2] = { port->zoom_x, port->zoom_y };
+    dt_dev_distort_transform_locked(darktable.develop, port->pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 1);
+    *x = pts[0] / port->pipe->processed_width - 0.5f;
+    *y = pts[1] / port->pipe->processed_height - 0.5f;
+    dt_pthread_mutex_unlock(&darktable.develop->history_mutex);
+  }
   dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
 }
 
@@ -3352,6 +3111,7 @@ int dt_dev_distort_transform_locked(dt_develop_t *dev,
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)(pieces->data);
     if(piece->enabled
+       && piece->data
        && ((transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
            || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL
                && module->iop_order >= iop_order)
@@ -3380,18 +3140,8 @@ int dt_dev_distort_transform_plus(dt_develop_t *dev,
                                   const size_t points_count)
 {
   dt_pthread_mutex_lock(&dev->history_mutex);
-  const int success =
-    dt_dev_distort_transform_locked(dev, pipe, iop_order, transf_direction,
-                                    points, points_count);
-
-  if(success
-      && (dev->preview_downsampling != 1.0f)
-      && (transf_direction == DT_DEV_TRANSFORM_DIR_ALL
-          || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL
-          || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL))
-    for(size_t idx=0; idx < 2 * points_count; idx++)
-      points[idx] *= dev->preview_downsampling;
-
+  dt_dev_distort_transform_locked(dev, pipe, iop_order, transf_direction,
+                                  points, points_count);
   dt_pthread_mutex_unlock(&dev->history_mutex);
   return 1;
 }
@@ -3417,6 +3167,7 @@ int dt_dev_distort_backtransform_locked(dt_develop_t *dev,
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)(pieces->data);
     if(piece->enabled
+       && piece->data
        && ((transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
            || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL
                && module->iop_order >= iop_order)
@@ -3445,14 +3196,6 @@ int dt_dev_distort_backtransform_plus(dt_develop_t *dev,
                                       const size_t points_count)
 {
   dt_pthread_mutex_lock(&dev->history_mutex);
-  if((dev->preview_downsampling != 1.0f) && (transf_direction == DT_DEV_TRANSFORM_DIR_ALL
-    || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL
-    || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL))
-  {
-    for(size_t idx=0; idx < 2 * points_count; idx++)
-      points[idx] /= dev->preview_downsampling;
-  }
-
   const int success = dt_dev_distort_backtransform_locked
     (dev, pipe, iop_order,
      transf_direction, points, points_count);
@@ -3740,28 +3483,24 @@ void dt_dev_undo_end_record(dt_develop_t *dev)
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
 }
 
-void dt_dev_image_ext(const dt_imgid_t imgid,
-                      const size_t width,
-                      const size_t height,
-                      const int history_end,
-                      uint8_t **buf,
-                      size_t *processed_width,
-                      size_t *processed_height,
-                      float *zoom_x,
-                      float *zoom_y,
-                      const int border_size,
-                      const gboolean iso_12646,
-                      const int32_t snapshot_id)
+void dt_dev_image(const dt_imgid_t imgid,
+                  const size_t width,
+                  const size_t height,
+                  const int history_end,
+                  size_t *processed_width,
+                  size_t *processed_height,
+                  uint8_t **buf,
+                  float *scale,
+                  size_t *buf_width,
+                  size_t *buf_height,
+                  float *zoom_x,
+                  float *zoom_y,
+                  const int32_t snapshot_id)
 {
   dt_develop_t dev;
   dt_dev_init(&dev, TRUE);
-  dev.full.border_size = border_size;
-  dev.iso_12646.enabled = iso_12646;
-
-  // create the full pipe
-
   dev.gui_attached = FALSE;
-  dt_dev_pixelpipe_init(dev.full.pipe);
+  dt_dev_pixelpipe_t *pipe = dev.full.pipe;
 
   // load image and set history_end
 
@@ -3770,45 +3509,32 @@ void dt_dev_image_ext(const dt_imgid_t imgid,
   if(history_end != -1 && snapshot_id == -1)
     dt_dev_pop_history_items_ext(&dev, history_end);
 
-  // configure the actual dev width & height
-
-  dt_dev_configure(&dev, width, height);
+  dt_dev_viewport_t *port = &darktable.develop->full;
+  if(!zoom_x && !zoom_y) port = &(dt_dev_viewport_t) { .zoom = DT_ZOOM_FIT,
+                                                       .width = width,
+                                                       .height = height,
+                                                       .ppd = 1.0,
+                                                       .pipe = pipe };
 
   // process the pipe
 
-  dt_dev_process_image_job(&dev);
+  dt_dev_process_image_job(&dev, port, pipe, -1);
 
   // record resulting image and dimensions
 
+  if(processed_width) *processed_width = pipe->processed_width;
+  if(processed_height) *processed_height = pipe->processed_height;
   const uint32_t bufsize =
-    sizeof(uint32_t) * dev.full.pipe->backbuf_width * dev.full.pipe->backbuf_height;
+    sizeof(uint32_t) * pipe->backbuf_width * pipe->backbuf_height;
   *buf = dt_alloc_align(64, bufsize);
-  memcpy(*buf, dev.full.pipe->backbuf, bufsize);
-  *processed_width  = dev.full.pipe->backbuf_width;
-  *processed_height = dev.full.pipe->backbuf_height;
-  if(zoom_x) *zoom_x = dev.full.pipe->backbuf_zoom_x;
-  if(zoom_y) *zoom_y = dev.full.pipe->backbuf_zoom_y;
-
-  // we take the backbuf, avoid it to be released
+  memcpy(*buf, pipe->backbuf, bufsize);
+  if(scale) *scale = pipe->backbuf_scale;
+  *buf_width  = pipe->backbuf_width;
+  *buf_height = pipe->backbuf_height;
+  if(zoom_x) *zoom_x = pipe->backbuf_zoom_x;
+  if(zoom_y) *zoom_y = pipe->backbuf_zoom_y;
 
   dt_dev_cleanup(&dev);
-}
-
-void dt_dev_image(const dt_imgid_t imgid,
-                  const size_t width,
-                  const size_t height,
-                  const int history_end,
-                  uint8_t **buf,
-                  size_t *processed_width,
-                  size_t *processed_height)
-{
-  // create a dev
-  dt_dev_image_ext(imgid, width, height,
-                   history_end,
-                   buf, processed_width, processed_height,
-                   NULL, NULL,
-                   darktable.develop->full.border_size,
-                   darktable.develop->iso_12646.enabled, -1);
 }
 
 gboolean dt_dev_equal_chroma(const float *f, const double *d)
