@@ -2408,6 +2408,9 @@ void dt_dev_get_processed_size(dt_dev_viewport_t *port,
                                int *procw,
                                int *proch)
 {
+  // no processed pipes, lets return 0 size
+  *procw = *proch = 0;
+
   if(!port) return;
 
   // if pipe is processed, lets return its size
@@ -2426,12 +2429,7 @@ void dt_dev_get_processed_size(dt_dev_viewport_t *port,
     const float scale = dev->preview_pipe->iscale;
     *procw = scale * dev->preview_pipe->processed_width;
     *proch = scale * dev->preview_pipe->processed_height;
-    return;
   }
-
-  // no processed pipes, lets return 0 size
-  *procw = *proch = 0;
-  return;
 }
 
 static float _calculate_new_scroll_zoom_tscale(const int up,
