@@ -1163,7 +1163,8 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         img->exif_crop = 1.0f;
     }
     else
-    // Tag for focal length in 35mm is not available, but we have data to calculate crop factor:
+    // Tag for focal length in 35mm is not available,
+    // but we have data to calculate crop factor:
     if(FIND_EXIF_TAG("Exif.Photo.FocalPlaneXResolution"))
     {
       float x_resolution = pos->toFloat();
@@ -1186,10 +1187,23 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       }
       guint image_width = 0;
       guint image_height = 0;
-      if(FIND_EXIF_TAG("Exif.Image.ImageWidth"))
-        image_width = pos->toLong();
-      if(FIND_EXIF_TAG("Exif.Image.ImageLength"))
-        image_height = pos->toLong();
+      // We are entering the zoo of image dimensions metadata.
+      // Let's first try the DNG way of telling dimensions.
+      // Exif.Image.ImageWidth/Length tags are also present in DNG files,
+      // but contain the dimensions of the preview image.
+      if(FIND_EXIF_TAG("Exif.SubImage1.NewSubfileType"))
+      {
+        if(pos->toLong() == 0)  // Primary image
+        {
+          if(FIND_EXIF_TAG("Exif.SubImage1.ImageWidth"))
+            image_width = pos->toLong();
+          if(FIND_EXIF_TAG("Exif.SubImage1.ImageLength"))
+            image_height = pos->toLong();
+        }
+      }
+      // If there are no such tags, then, try Fuji way.
+      // For Fuji raws, the following tags are the only ones that
+      // contain dimensions of the full image from the sensor.
       if(image_width == 0)
       {
         if(FIND_EXIF_TAG("Exif.Fujifilm.RawImageFullWidth"))
@@ -1197,6 +1211,16 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         if(FIND_EXIF_TAG("Exif.Fujifilm.RawImageFullHeight"))
           image_height = pos->toLong();
       }
+      // The following tags in certain formats may contain dimensions of
+      // the preview instead of the full image, so we check them last.
+      if(image_width == 0)
+      {
+        if(FIND_EXIF_TAG("Exif.Image.ImageWidth"))
+          image_width = pos->toLong();
+        if(FIND_EXIF_TAG("Exif.Image.ImageLength"))
+          image_height = pos->toLong();
+      }
+
       const float x_size_mm = (float)image_width / x_resolution;
       const float y_size_mm = (float)image_height / y_resolution;
       if(image_width && image_height) // We've got the data and can calculate the crop factor
