@@ -2442,7 +2442,7 @@
     <shortdescription>whether to show the compute variance mode in denoiseprofile</shortdescription>
     <longdescription>adds a mode in denoiseprofile that allows to compute the variance after the generalized anscombe transform is performed</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom" section="general">
+  <dtconfig prefs="darkroom" section="general" restart="true">
     <name>preview_downsampling</name>
     <type>
       <enum>

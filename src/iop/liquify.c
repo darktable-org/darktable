@@ -1738,11 +1738,9 @@ static gboolean detect_drag(const dt_iop_liquify_gui_data_t *g,
                             const double scale,
                             const float complex pt)
 {
-  const float pr_d = darktable.develop->preview_downsampling;
-
   // g->last_button1_pressed_pos is valid only while BUTTON1 is down
   return g->last_button1_pressed_pos != -1.0 &&
-    cabsf(pt - g->last_button1_pressed_pos) >= (GET_UI_WIDTH(MIN_DRAG) * pr_d / scale);
+    cabsf(pt - g->last_button1_pressed_pos) >= (GET_UI_WIDTH(MIN_DRAG) / scale);
 }
 
 static void update_warp_count(struct dt_iop_module_t *module)
@@ -2734,8 +2732,8 @@ static void unselect_all(dt_iop_liquify_params_t *p)
 
 void gui_post_expose(dt_iop_module_t *module,
                      cairo_t *cr,
-                     const int32_t width,
-                     const int32_t height,
+                     const float bb_width,
+                     const float bb_height,
                      const float pointerx,
                      const float pointery,
                      const float zoom_scale)
@@ -2746,11 +2744,8 @@ void gui_post_expose(dt_iop_module_t *module,
   if(!g)
     return;
 
-  const float bb_width = develop->preview_pipe->backbuf_width;
-  const float bb_height = develop->preview_pipe->backbuf_height;
   const float iscale = develop->preview_pipe->iscale;
-  const float pr_d = develop->preview_downsampling;
-  const float scale = pr_d * MAX(bb_width, bb_height);
+  const float scale = MAX(bb_width, bb_height);
   if(bb_width < 1.0 || bb_height < 1.0)
     return;
 
@@ -2763,13 +2758,13 @@ void gui_post_expose(dt_iop_module_t *module,
   dt_iop_gui_leave_critical_section(module);
 
   // distort all points
-  dt_pthread_mutex_lock(&develop->preview_pipe_mutex);
+  dt_pthread_mutex_lock(&develop->preview_pipe->mutex);
   const distort_params_t d_params = { develop, develop->preview_pipe,
                                       iscale, 1.0 / scale,
                                       DT_DEV_TRANSFORM_DIR_ALL,
                                       FALSE };
   _distort_paths(module, &d_params, &copy_params);
-  dt_pthread_mutex_unlock(&develop->preview_pipe_mutex);
+  dt_pthread_mutex_unlock(&develop->preview_pipe->mutex);
 
   cairo_scale(cr, scale, scale);
 
@@ -2788,7 +2783,7 @@ void gui_focus(struct dt_iop_module_t *self,
     dt_collection_hint_message(darktable.collection);
     btn_make_radio_callback(NULL, NULL, self);
   }
-  self->dev->cropping.requester = (in && !darktable.develop->full.loading) ? self : NULL;
+  self->dev->cropping.requester = (in && !darktable.develop->full.pipe->loading) ? self : NULL;
 }
 
 static void sync_pipe(struct dt_iop_module_t *module,
@@ -2828,10 +2823,8 @@ static void get_point_scale(struct dt_iop_module_t *module,
                             float complex *pt,
                             float *scale)
 {
-  const float pr_d = darktable.develop->preview_downsampling;
-
-  const float wd = darktable.develop->preview_pipe->backbuf_width;
-  const float ht = darktable.develop->preview_pipe->backbuf_height;
+  float wd, ht;
+  dt_dev_get_preview_size(module->dev, &wd, &ht);
   float pts[2] = { pzx * wd, pzy * ht };
   dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe,
                                     module->iop_order,
@@ -2842,7 +2835,7 @@ static void get_point_scale(struct dt_iop_module_t *module,
   const float nx = pts[0] / darktable.develop->preview_pipe->iwidth;
   const float ny = pts[1] / darktable.develop->preview_pipe->iheight;
 
-  *scale = darktable.develop->preview_pipe->iscale * (pr_d * dt_dev_get_zoom_scale_full());
+  *scale = darktable.develop->preview_pipe->iscale * (dt_dev_get_zoom_scale_full());
   *pt = (nx * darktable.develop->full.pipe->iwidth)
     +  (ny * darktable.develop->full.pipe->iheight) * I;
 }
@@ -3066,8 +3059,7 @@ static void get_stamp_params(dt_iop_module_t *module,
   const dt_dev_pixelpipe_t *devpipe = darktable.develop->preview_pipe;
   const float iwd_min = MIN(devpipe->iwidth, devpipe->iheight);
   const float proc_wdht_min = MIN(devpipe->processed_width, devpipe->processed_height);
-  const float pr_d = darktable.develop->preview_downsampling;
-  const float scale = devpipe->iscale / (pr_d * dt_dev_get_zoom_scale_full());
+  const float scale = devpipe->iscale / dt_dev_get_zoom_scale_full();
   const float im_scale = 0.09f * iwd_min * last_win_min * scale / proc_wdht_min;
 
   *radius = dt_conf_get_sanitize_float(CONF_RADIUS, 0.1f*im_scale,

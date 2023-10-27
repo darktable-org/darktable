@@ -1804,8 +1804,8 @@ static void rt_mask_opacity_callback(GtkWidget *slider,
 
 void gui_post_expose(dt_iop_module_t *self,
                      cairo_t *cr,
-                     const int32_t width,
-                     const int32_t height,
+                     const float width,
+                     const float height,
                      const float pointerx,
                      const float pointery,
                      const float zoom_scale)
@@ -2209,7 +2209,7 @@ void gui_focus(struct dt_iop_module_t *self,
                const gboolean in)
 {
   if(self->enabled
-     && !darktable.develop->full.loading)
+     && !darktable.develop->full.pipe->loading)
   {
     dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
 
@@ -2260,7 +2260,7 @@ void gui_focus(struct dt_iop_module_t *self,
        || g->suppress_mask)
       dt_iop_refresh_center(self);
   }
-  self->dev->cropping.requester = (in && !darktable.develop->full.loading) ? self : NULL;
+  self->dev->cropping.requester = (in && !darktable.develop->full.pipe->loading) ? self : NULL;
 }
 
 void tiling_callback(struct dt_iop_module_t *self,

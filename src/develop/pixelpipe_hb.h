@@ -82,6 +82,14 @@ typedef enum dt_dev_pixelpipe_change_t
   DT_DEV_PIPE_ZOOMED = 1 << 3 // zoom event, preview pipe does not need changes
 } dt_dev_pixelpipe_change_t;
 
+typedef enum dt_dev_pixelpipe_status_t
+{
+  DT_DEV_PIXELPIPE_DIRTY = 0,   // history stack changed or image new
+  DT_DEV_PIXELPIPE_RUNNING = 1, // pixelpipe is running
+  DT_DEV_PIXELPIPE_VALID = 2,   // pixelpipe has finished; valid result
+  DT_DEV_PIXELPIPE_INVALID = 3  // pixelpipe has finished; invalid result
+} dt_dev_pixelpipe_status_t;
+
 typedef struct dt_dev_detail_mask_t
 {
   dt_iop_roi_t roi;
@@ -126,6 +134,10 @@ typedef struct dt_dev_pixelpipe_t
   GList *nodes;
   // event flag
   dt_dev_pixelpipe_change_t changed;
+  // pipe status
+  dt_dev_pixelpipe_status_t status;
+  gboolean loading;
+  gboolean input_changed;
   // backbuffer (output)
   uint8_t *backbuf;
   size_t backbuf_size;
@@ -133,10 +145,7 @@ typedef struct dt_dev_pixelpipe_t
   float backbuf_scale;
   float backbuf_zoom_x, backbuf_zoom_y;
   uint64_t backbuf_hash;
-  dt_pthread_mutex_t backbuf_mutex, busy_mutex;
-  // output buffer (for display)
-  uint8_t *output_backbuf;
-  int output_backbuf_width, output_backbuf_height;
+  dt_pthread_mutex_t mutex, backbuf_mutex, busy_mutex;
   int final_width, final_height;
 
   // the data for the luminance mask are kept in a buffer written by demosaic or rawprepare
@@ -164,6 +173,7 @@ typedef struct dt_dev_pixelpipe_t
   gboolean bypass_blendif;
   // input data based on this timestamp:
   int input_timestamp;
+  uint32_t average_delay;
   dt_dev_pixelpipe_type_t type;
   // the final output pixel format this pixelpipe will be converted to
   dt_imageio_levels_t levels;

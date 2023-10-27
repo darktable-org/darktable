@@ -4181,9 +4181,10 @@ static void _delay_for_double_triple(guint time, guint is_key)
     _sc.views = darktable.view_manager->current_view->view(darktable.view_manager->current_view);
     GSequenceIter *multi = g_sequence_search(darktable.control->shortcuts, &_sc, _shortcut_compare_func,
                                              GINT_TO_POINTER(_sc.views));
-
-    for(int checks = 2; multi; multi = --checks ? g_sequence_iter_prev(multi) : NULL)
+    for(int checks = 2; checks--; multi = g_sequence_iter_prev(multi))
     {
+      if(g_sequence_iter_is_end(multi)) continue;
+
       dt_shortcut_t *m = g_sequence_get(multi);
       if(m && m->key_device == _sc.key_device && m->key == _sc.key &&
          (is_key ? m->press >= _sc.press :
@@ -4196,8 +4197,9 @@ static void _delay_for_double_triple(guint time, guint is_key)
         if(def && def->fallbacks)
           break;
       }
+
+      if(!checks) passed_time += delay;
     }
-    if(!multi) passed_time += delay;
 
     _sc.press -= DT_SHORTCUT_DOUBLE & is_key;
     _sc.click -= DT_SHORTCUT_DOUBLE & ~is_key;

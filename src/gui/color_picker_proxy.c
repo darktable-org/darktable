@@ -222,7 +222,7 @@ static gboolean _color_picker_callback_button_press(GtkWidget *button,
 
     if(module)
     {
-      module->dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+      module->dev->preview_pipe->status = DT_DEV_PIXELPIPE_DIRTY;
       dt_iop_request_focus(module);
     }
     else

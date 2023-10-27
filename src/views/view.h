@@ -638,13 +638,16 @@ cairo_surface_t *dt_view_create_surface(uint8_t *buffer,
 void dt_view_paint_surface(cairo_t *cr,
                            const size_t width,
                            const size_t height,
-                           cairo_surface_t *surface,
-                           const size_t processed_width,
-                           const size_t processed_height,
+                           dt_dev_viewport_t *port,
                            const dt_window_t window,
-                           const float buf_scale,
-                           const double offset_x,
-                           const double offset_y);
+                           int processed_width,
+                           int processed_height,
+                           uint8_t *buf,
+                           float buf_scale,
+                           int buf_width,
+                           int buf_height,
+                           float buf_zoom_x,
+                           float buf_zoom_y);
 
 typedef uint64_t dt_view_context_t;
 
