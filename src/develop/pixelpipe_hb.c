@@ -1345,6 +1345,17 @@ static inline gboolean _opencl_pipe_isok(dt_dev_pixelpipe_t *pipe)
 }
 #endif
 
+static inline gboolean _skip_piece_on_tags(const dt_dev_pixelpipe_iop_t *piece)
+{
+  if(!piece->enabled)
+    return TRUE;
+
+  return piece->module->dev->gui_module
+      && piece->module->dev->gui_module != piece->module
+      && (piece->module->dev->gui_module->operation_tags_filter() & piece->module->operation_tags())
+      && (piece->pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW));
+}
+
 // recursive helper for process, returns TRUE in case of unfinished work or error
 static gboolean _dev_pixelpipe_process_rec(
                  dt_dev_pixelpipe_t *pipe,
@@ -1381,9 +1392,7 @@ static gboolean _dev_pixelpipe_process_rec(
     module = (dt_iop_module_t *)modules->data;
     piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
     // skip this module?
-    if(!piece->enabled
-       || (dev->gui_module && dev->gui_module != module
-           && dev->gui_module->operation_tags_filter() & module->operation_tags()))
+    if(_skip_piece_on_tags(piece))
       return _dev_pixelpipe_process_rec(pipe, dev, output, cl_mem_output, out_format,
                                         &roi_in,
                                         g_list_previous(modules),
@@ -2803,9 +2812,7 @@ void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe,
     piece->buf_in = roi_in;
 
     // skip this module?
-    if(piece->enabled
-       && !(dev->gui_module && dev->gui_module != module
-            && dev->gui_module->operation_tags_filter() & module->operation_tags()))
+    if(!_skip_piece_on_tags(piece))
     {
       module->modify_roi_out(module, piece, &roi_out, &roi_in);
     }
@@ -2915,11 +2922,7 @@ float *dt_dev_get_raster_mask(const struct dt_dev_pixelpipe_iop_t *piece,
         {
           dt_dev_pixelpipe_iop_t *it_piece = (dt_dev_pixelpipe_iop_t *)iter->data;
 
-          if(it_piece->enabled
-             && !(it_piece->module->dev->gui_module
-                  && it_piece->module->dev->gui_module != it_piece->module
-                  && (it_piece->module->dev->gui_module->operation_tags_filter()
-                      & it_piece->module->operation_tags())))
+          if(!_skip_piece_on_tags(it_piece))
           {
             if(it_piece->module->distort_mask
               // hack against pipes not using finalscale
@@ -3149,11 +3152,7 @@ float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_t *pipe,
     for(GList *iter = source_iter; iter; iter = g_list_next(iter))
     {
       dt_dev_pixelpipe_iop_t *it_piece = (dt_dev_pixelpipe_iop_t *)iter->data;
-      if(it_piece->enabled
-         && !(it_piece->module->dev->gui_module
-              && it_piece->module->dev->gui_module != it_piece->module
-              && it_piece->module->dev->gui_module->operation_tags_filter()
-                 & it_piece->module->operation_tags()))
+      if(!_skip_piece_on_tags(it_piece))
       {
         // hack against pipes not using finalscale
         if(it_piece->module->distort_mask
