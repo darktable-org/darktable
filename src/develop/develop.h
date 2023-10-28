@@ -192,7 +192,10 @@ typedef struct dt_develop_t
   dt_pthread_mutex_t history_mutex;
   int32_t history_end;
   GList *history;
+  // some modules don't want to add new history items while active
   gboolean history_postpone_invalidate;
+  // avoid checking for latest added module into history via list traversal
+  struct dt_iop_module_t *history_last_module;
 
   // operations pipeline
   int32_t iop_instance;

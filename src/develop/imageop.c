@@ -409,7 +409,6 @@ gboolean dt_iop_load_module_by_so(dt_iop_module_t *module,
     g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_free);
   module->raster_mask.sink.source = NULL;
   module->raster_mask.sink.id = INVALID_MASKID;
-  module->write_input_hint = FALSE;
 
   // only reference cached results of dlopen:
   module->module = so->module;
