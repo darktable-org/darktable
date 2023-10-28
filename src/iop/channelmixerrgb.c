@@ -2094,7 +2094,7 @@ static void _set_trouble_messages(struct dt_iop_module_t *self)
     dt_iop_set_module_trouble_message
       (chr->temperature,
         _("white balance missing"),
-        _("this module is not providing a valid reference illuminent\n"
+        _("this module is not providing a valid reference illuminant\n"
           "causing chromatic adaptation issues in color calibration.\n"
           "enable this module and either set it to reference\n"
           "or disable chromatic adaptation in color calibration."),
