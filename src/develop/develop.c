@@ -3119,8 +3119,10 @@ int dt_dev_distort_transform_locked(dt_develop_t *dev,
                && module->iop_order <= iop_order)
            || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_EXCL
                && module->iop_order < iop_order))
-       && !(dev->gui_module && dev->gui_module != module
-            && (dev->gui_module->operation_tags_filter() & module->operation_tags())))
+       && !(dev->gui_module
+            && dev->gui_module != module
+            && (dev->gui_module->operation_tags_filter() & module->operation_tags())
+            && (pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW))))
     {
       module->distort_transform(module, piece, points, points_count);
     }
@@ -3175,8 +3177,10 @@ int dt_dev_distort_backtransform_locked(dt_develop_t *dev,
                && module->iop_order <= iop_order)
            || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_EXCL
                && module->iop_order < iop_order))
-       && !(dev->gui_module && dev->gui_module != module
-            && (dev->gui_module->operation_tags_filter() & module->operation_tags())))
+       && !(dev->gui_module
+            && dev->gui_module != module
+            && (dev->gui_module->operation_tags_filter() & module->operation_tags())
+            && (pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW))))
     {
       module->distort_backtransform(module, piece, points, points_count);
     }
