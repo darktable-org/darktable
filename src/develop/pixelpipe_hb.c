@@ -2149,9 +2149,9 @@ static gboolean _dev_pixelpipe_process_rec(
            (pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE)
            && ((pipe->type == DT_DEV_PIXELPIPE_FULL) // ignored in fast mode
               || (pipe->type == DT_DEV_PIXELPIPE_PREVIEW))
-           && darktable.develop->gui_attached
+           && dev->gui_attached
            && ((module == darktable.develop->gui_module)
-                || module->write_input_hint
+                || darktable.develop->history_last_module == module
                 || dt_iop_module_is(module->so, "colorout"));
 
         if(important_cl)
@@ -2349,16 +2349,17 @@ static gboolean _dev_pixelpipe_process_rec(
     const gboolean has_focus = (module == darktable.develop->gui_module);
     if((pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW))
         && (pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE)
-        && (has_focus || module->write_input_hint || important_cl))
+        && (has_focus || darktable.develop->history_last_module == module || important_cl))
     {
       dt_print_pipe(DT_DEBUG_PIPE, "importance hints", pipe, module, &roi_in, roi_out, "%s%s%s\n",
-        module->write_input_hint ? "input_hint " : "",
+        darktable.develop->history_last_module == module ? "input_hint " : "",
         has_focus ? "focus " : "",
         important_cl ? "cldata" : "");
       dt_dev_pixelpipe_important_cacheline(pipe, input, roi_in.width * roi_in.height * in_bpp);
     }
 
-    module->write_input_hint = FALSE;
+    if(pipe->type & DT_DEV_PIXELPIPE_FULL)
+      darktable.develop->history_last_module = NULL;
 
     if(module->expanded
        && (pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW))
