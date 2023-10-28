@@ -902,7 +902,7 @@ static void _dev_add_history_item_ext(dt_develop_t *dev,
     }
   }
   if((module->enabled) && (!no_image))
-    module->write_input_hint = TRUE;
+    dev->history_last_module = module;
 
   // possibly save database and sidecar file
   if(dev->autosaving)
