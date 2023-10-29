@@ -239,8 +239,10 @@ void dt_dev_invalidate(dt_develop_t *dev)
 {
   dev->full.pipe->status = DT_DEV_PIXELPIPE_DIRTY;
   dev->timestamp++;
-  if(dev->preview_pipe) dev->preview_pipe->input_timestamp = dev->timestamp;
-  if(dev->preview2.pipe) dev->preview2.pipe->input_timestamp = dev->timestamp;
+  if(dev->preview_pipe)
+    dev->preview_pipe->input_timestamp = dev->timestamp;
+  if(dev->preview2.pipe)
+    dev->preview2.pipe->input_timestamp = dev->timestamp;
 }
 
 void dt_dev_invalidate_all(dt_develop_t *dev)
@@ -253,8 +255,10 @@ void dt_dev_invalidate_preview(dt_develop_t *dev)
 {
   dev->preview_pipe->status = DT_DEV_PIXELPIPE_DIRTY;
   dev->timestamp++;
-  if(dev->full.pipe) dev->full.pipe->input_timestamp = dev->timestamp;
-  if(dev->preview2.pipe) dev->preview2.pipe->input_timestamp = dev->timestamp;
+  if(dev->full.pipe)
+    dev->full.pipe->input_timestamp = dev->timestamp;
+  if(dev->preview2.pipe)
+    dev->preview2.pipe->input_timestamp = dev->timestamp;
 }
 
 void dt_dev_process_image_job(dt_develop_t *dev,
