@@ -97,6 +97,7 @@ typedef struct dt_iop_colorin_global_data_t
 {
   int kernel_colorin_unbound;
   int kernel_colorin_clipping;
+  int kernel_colorin_correction;
 } dt_iop_colorin_global_data_t;
 
 typedef struct dt_iop_colorin_data_t
@@ -491,6 +492,7 @@ void init_global(dt_iop_module_so_t *module)
   module->data = gd;
   gd->kernel_colorin_unbound = dt_opencl_create_kernel(program, "colorin_unbound");
   gd->kernel_colorin_clipping = dt_opencl_create_kernel(program, "colorin_clipping");
+  gd->kernel_colorin_correction =  dt_opencl_create_kernel(program, "colorin_correct");
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
@@ -498,6 +500,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_iop_colorin_global_data_t *gd = (dt_iop_colorin_global_data_t *)module->data;
   dt_opencl_free_kernel(gd->kernel_colorin_unbound);
   dt_opencl_free_kernel(gd->kernel_colorin_clipping);
+  dt_opencl_free_kernel(gd->kernel_colorin_correction);
   free(module->data);
   module->data = NULL;
 }
@@ -655,12 +658,32 @@ int process_cl(struct dt_iop_module_t *self,
 {
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
   dt_iop_colorin_global_data_t *gd = (dt_iop_colorin_global_data_t *)self->global_data;
+
+  const dt_dev_chroma_t *chr = &self->dev->chroma;
+  const gboolean corrected = dt_dev_is_D65_chroma(self->dev) && chr->late_correction;
+  dt_aligned_pixel_t coeffs = { corrected ? chr->D65coeffs[0] / chr->as_shot[0] : 1.0f,
+                                corrected ? chr->D65coeffs[1] / chr->as_shot[1] : 1.0f,
+                                corrected ? chr->D65coeffs[2] / chr->as_shot[2] : 1.0f,
+                                corrected ? chr->D65coeffs[3] / chr->as_shot[3] : 1.0f };
+  if(corrected)
+  {
+    for_four_channels(k)
+    {
+      piece->pipe->dsc.temperature.coeffs[k] *= coeffs[k];
+      piece->pipe->dsc.processed_maximum[k] *= coeffs[k];
+    }
+  }
+
   cl_mem dev_m = NULL, dev_l = NULL, dev_r = NULL;
   cl_mem dev_g = NULL, dev_b = NULL, dev_coeffs = NULL;
+  cl_mem dev_corr = NULL;
 
   dt_print_pipe(DT_DEBUG_PARAMS,
-    "matrix conversion on GPU", piece->pipe, self,
-                    roi_in, roi_out, "`%s'\n", dt_colorspaces_get_name(d->type, NULL));
+    "matrix conversion OpenCL",
+    piece->pipe, self, roi_in, roi_out, "`%s', %s: %.3f %.3f %.3f\n",
+    dt_colorspaces_get_name(d->type, NULL),
+    corrected ? "corrected by" : "",
+    coeffs[0], coeffs[1], coeffs[2]);
   int kernel;
   float cmat[9], lmat[9];
 
@@ -684,11 +707,23 @@ int process_cl(struct dt_iop_module_t *self,
   const int width = roi_in->width;
   const int height = roi_in->height;
 
+  dev_corr = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 4, coeffs);
+  if(dev_corr == NULL) goto error;
+
   if(d->type == DT_COLORSPACE_LAB)
   {
-    size_t origin[] = { 0, 0, 0 };
-    size_t region[] = { roi_in->width, roi_in->height, 1 };
-    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
+    if(corrected)
+    {
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_colorin_correction, width, height,
+                                         CLARG(dev_in), CLARG(dev_out),
+                                         CLARG(width), CLARG(height), CLARG(dev_corr));
+    }
+    else
+    {
+      size_t origin[] = { 0, 0, 0 };
+      size_t region[] = { roi_in->width, roi_in->height, 1 };
+      err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
+    }
     if(err != CL_SUCCESS) goto error;
     return CL_SUCCESS;
   }
@@ -712,7 +747,7 @@ int process_cl(struct dt_iop_module_t *self,
                                          CLARG(width), CLARG(height),
                                          CLARG(dev_m), CLARG(dev_l), CLARG(dev_r),
                                          CLARG(dev_g), CLARG(dev_b),
-                                         CLARG(blue_mapping), CLARG(dev_coeffs));
+                                         CLARG(blue_mapping), CLARG(dev_coeffs), CLARG(dev_corr));
 error:
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_l);
@@ -720,6 +755,7 @@ error:
   dt_opencl_release_mem_object(dev_g);
   dt_opencl_release_mem_object(dev_b);
   dt_opencl_release_mem_object(dev_coeffs);
+  dt_opencl_release_mem_object(dev_corr);
   return err;
 }
 #endif
@@ -1217,10 +1253,6 @@ void process(struct dt_iop_module_t *self,
                                         ivoid, ovoid, roi_in, roi_out))
     return;
 
-  /* a) not tested for best compiler performance
-     b) algo might want some love for lower mem footprint
-        like integration in called functions for performance
-  */
   const dt_dev_chroma_t *chr = &self->dev->chroma;
   const gboolean corrected = dt_dev_is_D65_chroma(self->dev) && chr->late_correction;
   const dt_aligned_pixel_t coeffs = { corrected ? chr->D65coeffs[0] / chr->as_shot[0] : 1.0f,
@@ -1229,10 +1261,6 @@ void process(struct dt_iop_module_t *self,
                                       corrected ? chr->D65coeffs[3] / chr->as_shot[3] : 1.0f };
   if(corrected)
   {
-    dt_print_pipe(DT_DEBUG_PARAMS,
-      "correct D65 on CPU", piece->pipe, self, roi_in, roi_out,
-      "%.3f %.3f %.3f\n", coeffs[0], coeffs[1], coeffs[2]);
-
     for_four_channels(k)
     {
       piece->pipe->dsc.temperature.coeffs[k] *= coeffs[k];
@@ -1245,8 +1273,11 @@ void process(struct dt_iop_module_t *self,
     d->blue_mapping && dt_image_is_matrix_correction_supported(&piece->pipe->image);
 
   dt_print_pipe(DT_DEBUG_PARAMS,
-    "matrix conversion on CPU", piece->pipe, self,
-                    roi_in, roi_out, "`%s'\n", dt_colorspaces_get_name(d->type, NULL));
+    "matrix conversion on CPU",
+    piece->pipe, self, roi_in, roi_out, "`%s', %s: %.3f %.3f %.3f\n",
+      dt_colorspaces_get_name(d->type, NULL),
+      corrected ? "corrected by" : "",
+      coeffs[0], coeffs[1], coeffs[2]);
 
   if(d->type == DT_COLORSPACE_LAB)
   {
@@ -1361,9 +1392,6 @@ void commit_params(struct dt_iop_module_t *self,
   d->lut[2][0] = -1.0f;
   d->nonlinearlut = FALSE;
   piece->process_cl_ready = TRUE;
-
-  // FIXME: preliminary until we have OpenCL supporting this
-  piece->process_cl_ready = FALSE;
 
   dt_colorspaces_color_profile_type_t type = p->type;
   if(type == DT_COLORSPACE_LAB)

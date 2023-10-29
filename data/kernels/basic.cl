@@ -1364,20 +1364,35 @@ lerp_lookup_unbounded0(read_only image2d_t lut, const float x, global const floa
   else return x;
 }
 
-
-/* kernel for the plugin colorin: unbound processing */
+/* kernel for the plugin colorin: plain correction */
 kernel void
-colorin_unbound (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                 global float *cmat, global float *lmat,
-                 read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb,
-                 const int blue_mapping, global const float (*const a)[3])
+colorin_correct (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+                 global const float *corr)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
 
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  const float4 corval = (const float4)(corr[0], corr[1], corr[2], corr[3]);
+  float4 pixel = corval * read_imagef(in, sampleri, (int2)(x, y));
+  write_imagef (out, (int2)(x, y), pixel);
+}
+
+/* kernel for the plugin colorin: unbound processing */
+kernel void
+colorin_unbound (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+                 global float *cmat, global float *lmat,
+                 read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb,
+                 const int blue_mapping, global const float (*const a)[3], global const float *corr)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  const float4 corval = (const float4)(corr[0], corr[1], corr[2], corr[3]);
+  float4 pixel = corval * read_imagef(in, sampleri, (int2)(x, y));
 
   float cam[3], XYZ[3];
   cam[0] = lerp_lookup_unbounded0(lutr, pixel.x, a[0]);
@@ -1420,14 +1435,15 @@ kernel void
 colorin_clipping (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
                   global float *cmat, global float *lmat,
                   read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb,
-                  const int blue_mapping, global const float (*const a)[3])
+                  const int blue_mapping, global const float (*const a)[3], global const float *corr)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
 
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  const float4 corval = (const float4)(corr[0], corr[1], corr[2], corr[3]);
+  float4 pixel = corval * read_imagef(in, sampleri, (int2)(x, y));
 
   float cam[3], RGB[3], XYZ[3];
   cam[0] = lerp_lookup_unbounded0(lutr, pixel.x, a[0]);
