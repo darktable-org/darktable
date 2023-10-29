@@ -1153,14 +1153,16 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         img->exif_focal_length = pos->toFloat();
     }
 
-    /* Read focal length in 35mm if available and try to calculate crop factor */
+    // Read focal length in 35mm if available and try to calculate crop factor.
     if(FIND_EXIF_TAG("Exif.Photo.FocalLengthIn35mmFilm"))
     {
       const float focal_length_35mm = pos->toFloat();
       if(focal_length_35mm > 0.0f && img->exif_focal_length > 0.0f)
         img->exif_crop = focal_length_35mm / img->exif_focal_length;
       else
-        img->exif_crop = 1.0f;
+        // It's unlikely that these tags will have zeros as values,
+        // but if they do, ensure that the info module shows no value
+        img->exif_crop = 0.0f;
     }
     else
     // Tag for focal length in 35mm is not available,
