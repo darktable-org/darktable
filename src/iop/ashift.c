@@ -4141,7 +4141,7 @@ static int call_distort_transform(dt_develop_t *dev,
   if(piece->module == self && /*piece->enabled && */  //see note below
      !(dev->gui_module
         && (dev->gui_module->operation_tags_filter() & piece->module->operation_tags())
-        && (pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW))))
+        && (pipe->type & DT_DEV_PIXELPIPE_BASIC)))
   {
     ret = piece->module->distort_transform(piece->module, piece, points, points_count);
   }
