@@ -31,6 +31,7 @@
 #define DT_OPENCL_MAX_INCLUDES 7
 #define DT_OPENCL_VENDOR_AMD 4098
 #define DT_OPENCL_VENDOR_NVIDIA 4318
+#define DT_OPENCL_VENDOR_APPLE 16940800
 #define DT_OPENCL_VENDOR_INTEL 0x8086u
 #define DT_OPENCL_CBUFFSIZE 1024
 #define DT_OPENCL_DEFAULT_HEADROOM 600
@@ -64,16 +65,14 @@ extern "C" {
 #define ROUNDUPDWD(a, b) dt_opencl_dev_roundup_width(a, b)
 #define ROUNDUPDHT(a, b) dt_opencl_dev_roundup_height(a, b)
 
-#define DT_OPENCL_DEFAULT_COMPILE_INTEL ("")
-#define DT_OPENCL_DEFAULT_COMPILE_AMD ("-cl-fast-relaxed-math")
-#define DT_OPENCL_DEFAULT_COMPILE_NVIDIA ("-cl-fast-relaxed-math")
-#define DT_OPENCL_DEFAULT_COMPILE ("")
+#define DT_OPENCL_DEFAULT_COMPILE_DEFAULT ("")
+#define DT_OPENCL_DEFAULT_COMPILE_OPTI ("-cl-fast-relaxed-math")
 #define DT_CLDEVICE_HEAD ("cldevice_v5_")
 
 // version for current darktable cl kernels
 // this is reflected in the kernel directory and allows to
 // enforce a new kernel compilation cycle
-#define DT_OPENCL_KERNELS 2
+#define DT_OPENCL_KERNELS 3
 
 typedef enum dt_opencl_memory_t
 {
@@ -129,7 +128,6 @@ typedef struct dt_opencl_device_t
   int totallost;
   int maxeventslot;
   gboolean nvidia_sm_20;
-  const char *vendor;
   const char *fullname;
   const char *cname;
   const char *options;

@@ -2203,6 +2203,12 @@ void dt_configure_runtime_performance(const int old, char *info)
     g_strlcat(info, _(" 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' 'eventhandles' 'async' 'disable' 'magic' 'advantage' 'unified'"), DT_PERF_INFOSIZE);
     g_strlcat(info, "\n\n", DT_PERF_INFOSIZE);
   }
+
+  else if(old < 16)
+  {
+    g_strlcat(info, INFO_HEADER, DT_PERF_INFOSIZE);
+    g_strlcat(info, _("OpenCL 'per device' compiler settings might have been updated.\n\n"), DT_PERF_INFOSIZE);
+  }
   #undef INFO_HEADER
 }
 
