@@ -429,7 +429,7 @@ restart:
   dt_dev_average_delay_update(&start, &pipe->average_delay);
 
   // maybe we got zoomed/panned in the meantime?
-  if(pipe->changed != DT_DEV_PIPE_UNCHANGED) goto restart;
+  if(port && pipe->changed != DT_DEV_PIPE_UNCHANGED) goto restart;
 
   pipe->status = DT_DEV_PIXELPIPE_VALID;
   pipe->loading = FALSE;
