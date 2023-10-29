@@ -483,7 +483,6 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   cl->dev[dev].summary = CL_COMPLETE;
   cl->dev[dev].used_global_mem = 0;
   cl->dev[dev].nvidia_sm_20 = FALSE;
-  cl->dev[dev].vendor = NULL;
   cl->dev[dev].fullname = NULL;
   cl->dev[dev].cname = NULL;
   cl->dev[dev].options = NULL;
@@ -517,6 +516,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   char *fullname = NULL;
 
   char *cname = NULL;
+  char *pname = NULL;
 
   char *vendor = NULL;
   size_t vendor_size;
@@ -636,7 +636,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
 
   // get the canonical fullname
   cname = _ascii_str_canonical(fullname, NULL , 0);
-
+  pname = _ascii_str_canonical(platform_name, NULL , 0);
   // take every detected platform and device into account of checksum
   cl->crc = crc32(cl->crc, (const unsigned char *)platform_name, strlen(platform_name));
   cl->crc = crc32(cl->crc, (const unsigned char *)device_name, strlen(device_name));
@@ -649,8 +649,8 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
                "   DEVICE:                   %d: '%s'%s\n",
                k, device_name, (newdevice) ? ", NEW" : "" );
   dt_print_nts(DT_DEBUG_OPENCL,
-               "   PLATFORM NAME & VENDOR:   %s, %s\n",
-               platform_display_name, platform_vendor);
+               "   PLATFORM, VENDOR & ID:    %s, %s, ID=%d\n",
+               platform_display_name, platform_vendor, vendor_id);
   dt_print_nts(DT_DEBUG_OPENCL,
                "   CANONICAL NAME:           %s\n", cl->dev[dev].cname);
 
@@ -786,8 +786,6 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
     cl->dev[dev].disabled |= TRUE;
     goto end;
   }
-
-  cl->dev[dev].vendor = strdup(_opencl_get_vendor_by_id(vendor_id));
 
   const gboolean is_blacklisted = dt_opencl_check_driver_blacklist(deviceversion);
 
@@ -943,34 +941,30 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   const char* compile_opt = NULL;
 
   if(dt_conf_key_exists(compile_option_name_cname)
-     && (dt_conf_get_int("performance_configuration_version_completed") > 12))
+     && (dt_conf_get_int("performance_configuration_version_completed") > 15))
     compile_opt = dt_conf_get_string_const(compile_option_name_cname);
   else
   {
-    switch(vendor_id)
-    {
-      case DT_OPENCL_VENDOR_AMD:
-        compile_opt = DT_OPENCL_DEFAULT_COMPILE_AMD;
-        break;
-      case DT_OPENCL_VENDOR_NVIDIA:
-        compile_opt = DT_OPENCL_DEFAULT_COMPILE_NVIDIA;
-        break;
-      case DT_OPENCL_VENDOR_INTEL:
-        compile_opt = DT_OPENCL_DEFAULT_COMPILE_INTEL;
-        break;
-      default:
-        compile_opt = DT_OPENCL_DEFAULT_COMPILE;
-    }
+    if(!strcmp("nvidiacuda", pname))
+      compile_opt = DT_OPENCL_DEFAULT_COMPILE_OPTI;
+    else if(!strcmp("apple", pname))
+      compile_opt = DT_OPENCL_DEFAULT_COMPILE_OPTI;
+    else if(!strcmp("amdacceleratedparallelprocessing", pname))
+      compile_opt = DT_OPENCL_DEFAULT_COMPILE_OPTI;
+    else
+      compile_opt = DT_OPENCL_DEFAULT_COMPILE_DEFAULT;
   }
+
   gchar *my_option = g_strdup(compile_opt);
   dt_conf_set_string(compile_option_name_cname, my_option);
 
   cl->dev[dev].options = g_strdup_printf("-w %s %s -D%s=1 -I%s",
                             my_option,
-                            (cl->dev[dev].nvidia_sm_20 ? " -DNVIDIA_SM_20=1" : ""),
+                            cl->dev[dev].nvidia_sm_20 ? " -DNVIDIA_SM_20=1" : "",
                             _opencl_get_vendor_by_id(vendor_id), escapedkerneldir);
 
   dt_print_nts(DT_DEBUG_OPENCL, "   CL COMPILER OPTION:       %s\n", my_option);
+  dt_print_nts(DT_DEBUG_OPENCL, "   CL COMPILER COMMAND:      %s\n", cl->dev[dev].options);
 
   g_free(compile_option_name_cname);
   g_free(my_option);
@@ -1095,6 +1089,7 @@ end:
   free(device_name_cleaned);
   free(fullname);
   free(cname);
+  free(pname);
   free(vendor);
   free(driverversion);
   free(deviceversion);
@@ -1503,7 +1498,6 @@ finally:
         free(cl->dev[i].eventlist);
         free(cl->dev[i].eventtags);
       }
-      free((void *)(cl->dev[i].vendor));
       free((void *)(cl->dev[i].fullname));
       free((void *)(cl->dev[i].cname));
       free((void *)(cl->dev[i].options));
@@ -1596,7 +1590,6 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
         free(cl->dev[i].eventtags);
       }
 
-      free((void *)(cl->dev[i].vendor));
       free((void *)(cl->dev[i].fullname));
       free((void *)(cl->dev[i].cname));
       free((void *)(cl->dev[i].options));
@@ -1633,6 +1626,9 @@ static const char *_opencl_get_vendor_by_id(unsigned int id)
       break;
     case DT_OPENCL_VENDOR_INTEL:
       vendor = "INTEL";
+      break;
+    case DT_OPENCL_VENDOR_APPLE:
+      vendor = "APPLE";
       break;
     default:
       vendor = "UNKNOWN";
