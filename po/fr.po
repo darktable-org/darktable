@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-27 19:01+0200\n"
-"PO-Revision-Date: 2023-10-27 19:23+0200\n"
+"POT-Creation-Date: 2023-10-29 19:55+0100\n"
+"PO-Revision-Date: 2023-10-29 19:55+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -2656,7 +2656,7 @@ msgstr "Linéarité"
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:144
 #: ../build/lib/darktable/plugins/introspection_watermark.c:136
 #: ../build/lib/darktable/plugins/introspection_watermark.c:265
-#: ../src/iop/ashift.c:6048 ../src/libs/masks.c:109
+#: ../src/iop/ashift.c:6050 ../src/libs/masks.c:109
 msgid "rotation"
 msgstr "Rotation"
 
@@ -2742,7 +2742,7 @@ msgstr "Base"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:347
 #: ../build/lib/darktable/plugins/introspection_borders.c:353
-#: ../src/gui/preferences.c:847 ../src/iop/ashift.c:6227
+#: ../src/gui/preferences.c:847 ../src/iop/ashift.c:6229
 #: ../src/iop/basicadj.c:662 ../src/iop/flip.c:472 ../src/iop/flip.c:474
 #: ../src/iop/levels.c:657 ../src/iop/rgblevels.c:1105
 msgid "auto"
@@ -8228,17 +8228,17 @@ msgid "uniformly"
 msgstr "Uniforme"
 
 #: ../src/develop/blend_gui.c:157 ../src/develop/blend_gui.c:2748
-#: ../src/develop/blend_gui.c:3440 ../src/develop/imageop.c:2656
+#: ../src/develop/blend_gui.c:3440 ../src/develop/imageop.c:2655
 msgid "drawn mask"
 msgstr "Masque dessiné"
 
 #: ../src/develop/blend_gui.c:159 ../src/develop/blend_gui.c:2520
-#: ../src/develop/blend_gui.c:3451 ../src/develop/imageop.c:2658
+#: ../src/develop/blend_gui.c:3451 ../src/develop/imageop.c:2657
 msgid "parametric mask"
 msgstr "Masque paramétrique"
 
 #: ../src/develop/blend_gui.c:161 ../src/develop/blend_gui.c:2958
-#: ../src/develop/blend_gui.c:3478 ../src/develop/imageop.c:2660
+#: ../src/develop/blend_gui.c:3478 ../src/develop/imageop.c:2659
 msgid "raster mask"
 msgstr "Masque raster"
 
@@ -8285,12 +8285,12 @@ msgid "on"
 msgstr "Activé(e)"
 
 #: ../src/develop/blend_gui.c:984 ../src/develop/blend_gui.c:2598
-#: ../src/develop/imageop.c:2784
+#: ../src/develop/imageop.c:2783
 msgid "input"
 msgstr "Entrée"
 
 #: ../src/develop/blend_gui.c:984 ../src/develop/blend_gui.c:2598
-#: ../src/develop/imageop.c:2784
+#: ../src/develop/imageop.c:2783
 msgid "output"
 msgstr "Sortie"
 
@@ -8609,44 +8609,44 @@ msgstr "Ajouter un dégradé"
 msgid "add multiple gradients"
 msgstr "ajouter plusieurs dégradés"
 
-#: ../src/develop/blend_gui.c:2784 ../src/iop/retouch.c:2467
+#: ../src/develop/blend_gui.c:2784 ../src/iop/retouch.c:2468
 #: ../src/libs/masks.c:994 ../src/libs/masks.c:1848 ../src/libs/masks.c:1852
 msgid "add brush"
 msgstr "Ajouter une forme au pinceau"
 
-#: ../src/develop/blend_gui.c:2785 ../src/iop/retouch.c:2467
+#: ../src/develop/blend_gui.c:2785 ../src/iop/retouch.c:2468
 msgid "add multiple brush strokes"
 msgstr "ajouter plusieurs coups de pinceau"
 
-#: ../src/develop/blend_gui.c:2792 ../src/iop/retouch.c:2472
+#: ../src/develop/blend_gui.c:2792 ../src/iop/retouch.c:2473
 #: ../src/iop/spots.c:886 ../src/libs/masks.c:1009 ../src/libs/masks.c:1821
 #: ../src/libs/masks.c:1825
 msgid "add path"
 msgstr "Ajouter un chemin"
 
-#: ../src/develop/blend_gui.c:2793 ../src/iop/retouch.c:2472
+#: ../src/develop/blend_gui.c:2793 ../src/iop/retouch.c:2473
 #: ../src/iop/spots.c:886
 msgid "add multiple paths"
 msgstr "ajouter plusieurs chemins"
 
-#: ../src/develop/blend_gui.c:2800 ../src/iop/retouch.c:2477
+#: ../src/develop/blend_gui.c:2800 ../src/iop/retouch.c:2478
 #: ../src/iop/spots.c:891 ../src/libs/masks.c:1004 ../src/libs/masks.c:1830
 #: ../src/libs/masks.c:1834
 msgid "add ellipse"
 msgstr "Ajouter une ellipse"
 
-#: ../src/develop/blend_gui.c:2801 ../src/iop/retouch.c:2477
+#: ../src/develop/blend_gui.c:2801 ../src/iop/retouch.c:2478
 #: ../src/iop/spots.c:891
 msgid "add multiple ellipses"
 msgstr "ajouter plusieurs ellipses"
 
-#: ../src/develop/blend_gui.c:2808 ../src/iop/retouch.c:2482
+#: ../src/develop/blend_gui.c:2808 ../src/iop/retouch.c:2483
 #: ../src/iop/spots.c:896 ../src/libs/masks.c:999 ../src/libs/masks.c:1839
 #: ../src/libs/masks.c:1843
 msgid "add circle"
 msgstr "Ajouter un cercle"
 
-#: ../src/develop/blend_gui.c:2809 ../src/iop/retouch.c:2482
+#: ../src/develop/blend_gui.c:2809 ../src/iop/retouch.c:2483
 #: ../src/iop/spots.c:896
 msgid "add multiple circles"
 msgstr "ajouter plusieurs cercles"
@@ -8823,7 +8823,7 @@ msgstr "Rayon du flou"
 msgid "radius for gaussian blur of blend mask"
 msgstr "Rayon du flou gaussien du masque de fusion"
 
-#: ../src/develop/blend_gui.c:3640 ../src/iop/retouch.c:2739
+#: ../src/develop/blend_gui.c:3640 ../src/iop/retouch.c:2740
 #: ../src/libs/history.c:954
 msgid "mask opacity"
 msgstr "Opacité du masque"
@@ -8865,85 +8865,85 @@ msgstr ""
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s : Module « %s » version non cohérente : %d != %d"
 
-#: ../src/develop/develop.c:2989
+#: ../src/develop/develop.c:2987
 msgid "duplicate module, can't move new instance after the base one\n"
 msgstr ""
 "Duplication de module, impossible de déplacer la nouvelle instance après "
 "celle de base.\n"
 
-#: ../src/develop/imageop.c:1036
+#: ../src/develop/imageop.c:1035
 msgid "new instance"
 msgstr "Nouvelle instance"
 
 # "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l’image n'est pas physiquement dupliquée
-#: ../src/develop/imageop.c:1042
+#: ../src/develop/imageop.c:1041
 msgid "duplicate instance"
 msgstr "Cloner l’instance"
 
 # lorsque l’action n’engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/develop/imageop.c:1048 ../src/develop/imageop.c:3726
+#: ../src/develop/imageop.c:1047 ../src/develop/imageop.c:3725
 #: ../src/libs/masks.c:1146
 msgid "move up"
 msgstr "Monter"
 
-#: ../src/develop/imageop.c:1054 ../src/develop/imageop.c:3727
+#: ../src/develop/imageop.c:1053 ../src/develop/imageop.c:3726
 #: ../src/libs/masks.c:1151
 msgid "move down"
 msgstr "Descendre"
 
 #. delete button label and tooltip will be updated based on trash pref
-#: ../src/develop/imageop.c:1060 ../src/develop/imageop.c:3729
+#: ../src/develop/imageop.c:1059 ../src/develop/imageop.c:3728
 #: ../src/gui/accelerators.c:173 ../src/libs/image.c:302
 #: ../src/libs/image.c:512
 msgid "delete"
 msgstr "Supprimer"
 
-#: ../src/develop/imageop.c:1067 ../src/develop/imageop.c:3730
+#: ../src/develop/imageop.c:1066 ../src/develop/imageop.c:3729
 #: ../src/libs/modulegroups.c:3817
 msgid "rename"
 msgstr "Renommer"
 
-#: ../src/develop/imageop.c:1134 ../src/develop/imageop.c:2948
+#: ../src/develop/imageop.c:1133 ../src/develop/imageop.c:2947
 #, c-format
 msgid "'%s' is switched on"
 msgstr "« %s » est activé"
 
-#: ../src/develop/imageop.c:1134 ../src/develop/imageop.c:2948
+#: ../src/develop/imageop.c:1133 ../src/develop/imageop.c:2947
 #, c-format
 msgid "'%s' is switched off"
 msgstr "« %s » est désactivé"
 
-#: ../src/develop/imageop.c:2650
+#: ../src/develop/imageop.c:2649
 msgid "unknown mask"
 msgstr "Masque inconnu"
 
-#: ../src/develop/imageop.c:2654
+#: ../src/develop/imageop.c:2653
 msgid "drawn + parametric mask"
 msgstr "Masques dessiné et paramétrique"
 
-#: ../src/develop/imageop.c:2663
+#: ../src/develop/imageop.c:2662
 #, c-format
 msgid "this module has a `%s'"
 msgstr "Ce module a un « %s »"
 
-#: ../src/develop/imageop.c:2668
+#: ../src/develop/imageop.c:2667
 #, c-format
 msgid "taken from module %s"
 msgstr "Récupéré depuis le module « %s »"
 
-#: ../src/develop/imageop.c:2673
+#: ../src/develop/imageop.c:2672
 msgid "click to display (module must be activated first)"
 msgstr "Cliquer pour afficher (le module doit être activé)"
 
-#: ../src/develop/imageop.c:2784
+#: ../src/develop/imageop.c:2783
 msgid "purpose"
 msgstr "Objectif"
 
-#: ../src/develop/imageop.c:2784
+#: ../src/develop/imageop.c:2783
 msgid "process"
 msgstr "Traitement"
 
-#: ../src/develop/imageop.c:2904
+#: ../src/develop/imageop.c:2903
 msgid ""
 "multiple instance actions\n"
 "right-click creates new instance"
@@ -8951,7 +8951,7 @@ msgstr ""
 "Instances multiples,\n"
 "clic droit pour créer une nouvelle instance."
 
-#: ../src/develop/imageop.c:2919
+#: ../src/develop/imageop.c:2918
 msgid ""
 "reset parameters\n"
 "ctrl+click to reapply any automatic presets"
@@ -8959,7 +8959,7 @@ msgstr ""
 "Réinitialiser les paramètres,\n"
 "Ctrl+clic pour réappliquer les préréglages automatiques."
 
-#: ../src/develop/imageop.c:2931
+#: ../src/develop/imageop.c:2930
 msgid ""
 "presets\n"
 "right-click to apply on new instance"
@@ -8967,15 +8967,15 @@ msgstr ""
 "Préréglages,\n"
 "clic droit pour appliquer sur une nouvelle instance."
 
-#: ../src/develop/imageop.c:3181 ../src/develop/imageop.c:3203
+#: ../src/develop/imageop.c:3180 ../src/develop/imageop.c:3202
 msgid "ERROR"
 msgstr "ERREUR"
 
-#: ../src/develop/imageop.c:3607
+#: ../src/develop/imageop.c:3606
 msgid "unsupported input"
 msgstr "Entrée non supportée"
 
-#: ../src/develop/imageop.c:3608
+#: ../src/develop/imageop.c:3607
 msgid ""
 "you have placed this module at\n"
 "a position in the pipeline where\n"
@@ -8986,36 +8986,36 @@ msgstr ""
 "dans le pipeline où le format de données\n"
 "ne satisfait pas les prérequis."
 
-#: ../src/develop/imageop.c:3725 ../src/develop/imageop.c:3735
+#: ../src/develop/imageop.c:3724 ../src/develop/imageop.c:3734
 #: ../src/gui/accelerators.c:169 ../src/libs/lib.c:1415
 msgid "show"
 msgstr "Afficher"
 
-#: ../src/develop/imageop.c:3728 ../src/libs/modulegroups.c:3315
+#: ../src/develop/imageop.c:3727 ../src/libs/modulegroups.c:3315
 #: ../src/libs/modulegroups.c:3438 ../src/libs/modulegroups.c:3819
 #: ../src/libs/tagging.c:3279
 msgid "new"
 msgstr "Nouveau"
 
 # "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l’image n'est pas physiquement dupliquée
-#: ../src/develop/imageop.c:3731 ../src/libs/duplicate.c:417
+#: ../src/develop/imageop.c:3730 ../src/libs/duplicate.c:417
 #: ../src/libs/image.c:533 ../src/libs/modulegroups.c:3815
 msgid "duplicate"
 msgstr "Cloner"
 
-#: ../src/develop/imageop.c:3736
+#: ../src/develop/imageop.c:3735
 msgid "enable"
 msgstr "Activer"
 
-#: ../src/develop/imageop.c:3737 ../src/gui/accelerators.c:185
+#: ../src/develop/imageop.c:3736 ../src/gui/accelerators.c:185
 msgid "focus"
 msgstr "Focus"
 
-#: ../src/develop/imageop.c:3738 ../src/gui/accelerators.c:2787
+#: ../src/develop/imageop.c:3737 ../src/gui/accelerators.c:2787
 msgid "instance"
 msgstr "Instance"
 
-#: ../src/develop/imageop.c:3739 ../src/gui/accelerators.c:130
+#: ../src/develop/imageop.c:3738 ../src/gui/accelerators.c:130
 #: ../src/gui/accelerators.c:140 ../src/gui/gtk.c:3103 ../src/gui/gtk.c:3150
 #: ../src/gui/hist_dialog.c:270 ../src/gui/styles_dialog.c:615
 #: ../src/gui/styles_dialog.c:637 ../src/iop/atrous.c:1626
@@ -9024,12 +9024,12 @@ msgid "reset"
 msgstr "Réinitialiser"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:3740 ../src/gui/preferences.c:796
+#: ../src/develop/imageop.c:3739 ../src/gui/preferences.c:796
 #: ../src/libs/lib.c:1417
 msgid "presets"
 msgstr "Préréglages"
 
-#: ../src/develop/imageop.c:3760
+#: ../src/develop/imageop.c:3759
 msgid "processing module"
 msgstr "Module de traitement"
 
@@ -9393,7 +9393,7 @@ msgstr ""
 "Probablement introduit en appliquant un préréglage, un style ou un copier/"
 "coller d’historique."
 
-#: ../src/develop/pixelpipe_hb.c:2712
+#: ../src/develop/pixelpipe_hb.c:2733
 msgid ""
 "OpenCL errors encountered; disabling OpenCL for this session! some possible "
 "causes:\n"
@@ -9414,7 +9414,7 @@ msgstr ""
 " • Le « headroom » est trop petit lorsque l'option « Utiliser toute la "
 "mémoire du périphérique » est positionnée."
 
-#: ../src/develop/pixelpipe_hb.c:2864
+#: ../src/develop/pixelpipe_hb.c:2883
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -9644,8 +9644,8 @@ msgid "grouped images"
 msgstr "Images groupées"
 
 #: ../src/dtgtk/thumbnail.c:814 ../src/dtgtk/thumbnail.c:1623
-#: ../src/iop/ashift.c:6127 ../src/iop/ashift.c:6216 ../src/iop/ashift.c:6218
-#: ../src/iop/ashift.c:6220 ../src/libs/navigation.c:111
+#: ../src/iop/ashift.c:6129 ../src/iop/ashift.c:6218 ../src/iop/ashift.c:6220
+#: ../src/iop/ashift.c:6222 ../src/libs/navigation.c:111
 #: ../src/libs/navigation.c:193
 msgid "fit"
 msgstr "Ajusté"
@@ -9884,17 +9884,17 @@ msgstr "Molette"
 msgid "pan"
 msgstr "Déplacer"
 
-#: ../src/gui/accelerators.c:98 ../src/iop/ashift.c:5786
-#: ../src/iop/ashift.c:5788 ../src/iop/ashift.c:5893 ../src/iop/ashift.c:5895
-#: ../src/iop/ashift.c:6219 ../src/iop/clipping.c:1946
+#: ../src/gui/accelerators.c:98 ../src/iop/ashift.c:5788
+#: ../src/iop/ashift.c:5790 ../src/iop/ashift.c:5895 ../src/iop/ashift.c:5897
+#: ../src/iop/ashift.c:6221 ../src/iop/clipping.c:1946
 #: ../src/iop/clipping.c:2138 ../src/iop/clipping.c:2154
 #: ../src/views/darkroom.c:2532 ../src/views/lighttable.c:1250
 msgid "horizontal"
 msgstr "Horizontale"
 
-#: ../src/gui/accelerators.c:99 ../src/iop/ashift.c:5786
-#: ../src/iop/ashift.c:5788 ../src/iop/ashift.c:5893 ../src/iop/ashift.c:5895
-#: ../src/iop/ashift.c:6217 ../src/iop/clipping.c:1945
+#: ../src/gui/accelerators.c:99 ../src/iop/ashift.c:5788
+#: ../src/iop/ashift.c:5790 ../src/iop/ashift.c:5895 ../src/iop/ashift.c:5897
+#: ../src/iop/ashift.c:6219 ../src/iop/clipping.c:1945
 #: ../src/iop/clipping.c:2139 ../src/iop/clipping.c:2153
 #: ../src/views/darkroom.c:2535 ../src/views/lighttable.c:1254
 msgid "vertical"
@@ -11241,7 +11241,7 @@ msgstr "Horizontale"
 msgid "vertically"
 msgstr "Verticale"
 
-#: ../src/gui/guides.c:715 ../src/iop/ashift.c:6221 ../src/iop/clipping.c:2140
+#: ../src/gui/guides.c:715 ../src/iop/ashift.c:6223 ../src/iop/clipping.c:2140
 #: ../src/iop/colorbalance.c:1891
 msgid "both"
 msgstr "Les deux"
@@ -12729,37 +12729,37 @@ msgstr ""
 msgid "automatic correction failed, please correct manually"
 msgstr "Correction automatique impossible, merci de corriger manuellement"
 
-#: ../src/iop/ashift.c:5066
+#: ../src/iop/ashift.c:5068
 #, c-format
 msgid "only %d lines can be saved in parameters"
 msgstr "Uniquement %d lignes peuvent être sauvegardées dans les paramètres"
 
-#: ../src/iop/ashift.c:5146
+#: ../src/iop/ashift.c:5148
 #, c-format
 msgid "rotation adjusted by %3.2f° to %3.2f°"
 msgstr "Rotation ajustée de %3.2f° à %3.2f°"
 
-#: ../src/iop/ashift.c:5786 ../src/iop/ashift.c:5788 ../src/iop/ashift.c:5893
-#: ../src/iop/ashift.c:5895
+#: ../src/iop/ashift.c:5788 ../src/iop/ashift.c:5790 ../src/iop/ashift.c:5895
+#: ../src/iop/ashift.c:5897
 #, c-format
 msgid "lens shift (%s)"
 msgstr "Correction d’objectif (%s)"
 
-#: ../src/iop/ashift.c:6061
+#: ../src/iop/ashift.c:6063
 msgid "manual perspective"
 msgstr "Perspective manuelle"
 
-#: ../src/iop/ashift.c:6106
+#: ../src/iop/ashift.c:6108
 msgctxt "section"
 msgid "perspective"
 msgstr "Perspective"
 
-#: ../src/iop/ashift.c:6113 ../src/iop/ashift.c:6222 ../src/iop/ashift.c:6224
-#: ../src/iop/ashift.c:6226
+#: ../src/iop/ashift.c:6115 ../src/iop/ashift.c:6224 ../src/iop/ashift.c:6226
+#: ../src/iop/ashift.c:6228
 msgid "structure"
 msgstr "Structure"
 
-#: ../src/iop/ashift.c:6148
+#: ../src/iop/ashift.c:6150
 msgid ""
 "rotate image\n"
 "right-click and drag to define a horizontal or vertical line by drawing on "
@@ -12768,19 +12768,19 @@ msgstr ""
 "Degrés de rotation.\n"
 "Si sur l’image : clic droit et déplacer pour définir un angle de rotation."
 
-#: ../src/iop/ashift.c:6151 ../src/iop/ashift.c:6153
+#: ../src/iop/ashift.c:6153 ../src/iop/ashift.c:6155
 msgid "apply lens shift correction in one direction"
 msgstr "Applique la correction d’objectif dans une direction"
 
-#: ../src/iop/ashift.c:6155
+#: ../src/iop/ashift.c:6157
 msgid "shear the image along one diagonal"
 msgstr "Cisaillement de l’image selon une diagonale"
 
-#: ../src/iop/ashift.c:6156 ../src/iop/clipping.c:2161
+#: ../src/iop/ashift.c:6158 ../src/iop/clipping.c:2161
 msgid "automatically crop to avoid black edges"
 msgstr "Recadrage automatique pour éviter les bords noirs"
 
-#: ../src/iop/ashift.c:6157
+#: ../src/iop/ashift.c:6159
 msgid ""
 "lens model of the perspective correction: generic or according to the focal "
 "length"
@@ -12788,13 +12788,13 @@ msgstr ""
 "Modèle d’objectif pour la correction de perspective : générique ou fonction "
 "de la longueur focale"
 
-#: ../src/iop/ashift.c:6160
+#: ../src/iop/ashift.c:6162
 msgid "focal length of the lens, default value set from EXIF data if available"
 msgstr ""
 "Longueur focale de l’objectif, valeur par défaut depuis les EXIF si "
 "disponible"
 
-#: ../src/iop/ashift.c:6163
+#: ../src/iop/ashift.c:6165
 msgid ""
 "crop factor of the camera sensor, default value set from EXIF data if "
 "available, manual setting is often required"
@@ -12803,7 +12803,7 @@ msgstr ""
 "EXIF\n"
 "si disponible, un positionnement manuel est souvent nécessaire."
 
-#: ../src/iop/ashift.c:6167
+#: ../src/iop/ashift.c:6169
 msgid ""
 "the level of lens dependent correction, set to maximum for full lens "
 "dependency, set to zero for the generic case"
@@ -12811,13 +12811,13 @@ msgstr ""
 "Le niveau de correction dépendant de l’objectif, positionner au maximum pour "
 "une dépendance totale, à zéro pour un modèle générique"
 
-#: ../src/iop/ashift.c:6171
+#: ../src/iop/ashift.c:6173
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
 msgstr ""
 "Ajuste les dimensions de l’image en redimensionnant horizontalement et "
 "verticalement"
 
-#: ../src/iop/ashift.c:6173
+#: ../src/iop/ashift.c:6175
 msgid ""
 "automatically correct for vertical perspective distortion\n"
 "ctrl+click to only fit rotation\n"
@@ -12827,7 +12827,7 @@ msgstr ""
 " • Ctrl+clic – correction de rotation seulement\n"
 " • Maj+clic – correction de distorsion uniquement"
 
-#: ../src/iop/ashift.c:6177
+#: ../src/iop/ashift.c:6179
 msgid ""
 "automatically correct for horizontal perspective distortion\n"
 "ctrl+click to only fit rotation\n"
@@ -12837,7 +12837,7 @@ msgstr ""
 " • Ctrl+clic – correction de rotation seulement\n"
 " • Maj+clic – correction de distorsion uniquement"
 
-#: ../src/iop/ashift.c:6181
+#: ../src/iop/ashift.c:6183
 msgid ""
 "automatically correct for vertical and horizontal perspective distortions, "
 "fitting rotation, lens shift in both directions, and shear\n"
@@ -12853,7 +12853,7 @@ msgstr ""
 " • Maj+clic – correction de l’alignement uniquement\n"
 " • Ctrl+Maj+clic –correction de rotation et d’alignement d’objectif"
 
-#: ../src/iop/ashift.c:6188
+#: ../src/iop/ashift.c:6190
 msgid ""
 "automatically analyse line structure in image\n"
 "ctrl+click for an additional edge enhancement\n"
@@ -12865,43 +12865,43 @@ msgstr ""
 " • Maj+clic – amélioration des détails accrue\n"
 " • Ctrl+Maj+clic – combinaison des deux méthodes"
 
-#: ../src/iop/ashift.c:6193
+#: ../src/iop/ashift.c:6195
 msgid "manually define perspective rectangle"
 msgstr "Définir manuellement un rectangle de perspective"
 
-#: ../src/iop/ashift.c:6194
+#: ../src/iop/ashift.c:6196
 msgid "manually draw structure lines"
 msgstr "Dessiner manuellement les lignes de structure"
 
-#: ../src/iop/ashift.c:6223
+#: ../src/iop/ashift.c:6225
 msgid "rectangle"
 msgstr "Rectangle"
 
-#: ../src/iop/ashift.c:6225
+#: ../src/iop/ashift.c:6227
 msgid "lines"
 msgstr "Lignes"
 
-#: ../src/iop/ashift.c:6259 ../src/iop/clipping.c:3374
+#: ../src/iop/ashift.c:6261 ../src/iop/clipping.c:3374
 #, c-format
 msgid "[%s] define/rotate horizon"
 msgstr "[%s] définir/orienter l’horizon"
 
-#: ../src/iop/ashift.c:6262
+#: ../src/iop/ashift.c:6264
 #, c-format
 msgid "[%s on segment] select segment"
 msgstr "[%s sur segment] Sélectionner un segment"
 
-#: ../src/iop/ashift.c:6266
+#: ../src/iop/ashift.c:6268
 #, c-format
 msgid "[%s on segment] unselect segment"
 msgstr "[%s sur segment] Désélectionner le segment"
 
-#: ../src/iop/ashift.c:6270
+#: ../src/iop/ashift.c:6272
 #, c-format
 msgid "[%s] select all segments from zone"
 msgstr "[%s] Sélectionner tous les segments de la zone"
 
-#: ../src/iop/ashift.c:6274
+#: ../src/iop/ashift.c:6276
 #, c-format
 msgid "[%s] unselect all segments from zone"
 msgstr "[%s] Désélectionner tous les segments de la zone"
@@ -14220,7 +14220,7 @@ msgstr "Balance des blancs manquante"
 
 #: ../src/iop/channelmixerrgb.c:2097
 msgid ""
-"this module is not providing a valid reference illuminent\n"
+"this module is not providing a valid reference illuminant\n"
 "causing chromatic adaptation issues in color calibration.\n"
 "enable this module and either set it to reference\n"
 "or disable chromatic adaptation in color calibration."
@@ -18497,9 +18497,9 @@ msgstr ""
 "Éditer et supprimer des points"
 
 #: ../src/iop/liquify.c:3685 ../src/iop/liquify.c:3691
-#: ../src/iop/liquify.c:3697 ../src/iop/retouch.c:2466
-#: ../src/iop/retouch.c:2472 ../src/iop/retouch.c:2477
-#: ../src/iop/retouch.c:2482 ../src/iop/spots.c:885 ../src/iop/spots.c:890
+#: ../src/iop/liquify.c:3697 ../src/iop/retouch.c:2467
+#: ../src/iop/retouch.c:2473 ../src/iop/retouch.c:2478
+#: ../src/iop/retouch.c:2483 ../src/iop/spots.c:885 ../src/iop/spots.c:890
 #: ../src/iop/spots.c:895 ../src/libs/masks.c:1812 ../src/libs/masks.c:1821
 #: ../src/libs/masks.c:1830 ../src/libs/masks.c:1839 ../src/libs/masks.c:1848
 msgid "shapes"
@@ -19460,11 +19460,11 @@ msgstr "Cloner"
 msgid "healing"
 msgstr "Corriger"
 
-#: ../src/iop/retouch.c:2449
+#: ../src/iop/retouch.c:2450
 msgid "shapes:"
 msgstr "Formes :"
 
-#: ../src/iop/retouch.c:2455
+#: ../src/iop/retouch.c:2456
 msgid ""
 "to add a shape select an algorithm and a shape type and click on the image.\n"
 "shapes are added to the current scale"
@@ -19473,74 +19473,74 @@ msgstr ""
 "sur l’image.\n"
 "Les formes sont ajoutées sur l’échelle de décomposition actuelle."
 
-#: ../src/iop/retouch.c:2459 ../src/iop/retouch.c:2592
-#: ../src/iop/retouch.c:2598 ../src/iop/retouch.c:2607
-#: ../src/iop/retouch.c:2612 ../src/iop/retouch.c:2620
-#: ../src/iop/retouch.c:2665
+#: ../src/iop/retouch.c:2460 ../src/iop/retouch.c:2593
+#: ../src/iop/retouch.c:2599 ../src/iop/retouch.c:2608
+#: ../src/iop/retouch.c:2613 ../src/iop/retouch.c:2621
+#: ../src/iop/retouch.c:2666
 msgid "editing"
 msgstr "Édition"
 
-#: ../src/iop/retouch.c:2460
+#: ../src/iop/retouch.c:2461
 msgid "show and edit shapes on the current scale"
 msgstr "Montre et édite les formes de l’échelle actuelle"
 
 # infinitifs requis, et minucule initiale
-#: ../src/iop/retouch.c:2461
+#: ../src/iop/retouch.c:2462
 msgid "show and edit shapes in restricted mode"
 msgstr "montrer et éditer les formes en mode restreint"
 
-#: ../src/iop/retouch.c:2490
+#: ../src/iop/retouch.c:2491
 msgid "algorithms:"
 msgstr "Algorithmes :"
 
-#: ../src/iop/retouch.c:2493 ../src/iop/retouch.c:2499
-#: ../src/iop/retouch.c:2505 ../src/iop/retouch.c:2511
+#: ../src/iop/retouch.c:2494 ../src/iop/retouch.c:2500
+#: ../src/iop/retouch.c:2506 ../src/iop/retouch.c:2512
 msgid "tools"
 msgstr "Outils"
 
-#: ../src/iop/retouch.c:2493 ../src/iop/retouch.c:2519
+#: ../src/iop/retouch.c:2494 ../src/iop/retouch.c:2520
 msgid "activate blur tool"
 msgstr "Outil de flou"
 
-#: ../src/iop/retouch.c:2494 ../src/iop/retouch.c:2500
-#: ../src/iop/retouch.c:2506 ../src/iop/retouch.c:2512
+#: ../src/iop/retouch.c:2495 ../src/iop/retouch.c:2501
+#: ../src/iop/retouch.c:2507 ../src/iop/retouch.c:2513
 msgid "change algorithm for current form"
 msgstr "Changer l’algorithme pour la forme courante"
 
-#: ../src/iop/retouch.c:2499 ../src/iop/retouch.c:2522
+#: ../src/iop/retouch.c:2500 ../src/iop/retouch.c:2523
 msgid "activate fill tool"
 msgstr "Outil de remplissage"
 
-#: ../src/iop/retouch.c:2505 ../src/iop/retouch.c:2525
+#: ../src/iop/retouch.c:2506 ../src/iop/retouch.c:2526
 msgid "activate cloning tool"
 msgstr "Outil de copie"
 
-#: ../src/iop/retouch.c:2511 ../src/iop/retouch.c:2528
+#: ../src/iop/retouch.c:2512 ../src/iop/retouch.c:2529
 msgid "activate healing tool"
 msgstr "Outil de correction"
 
 #. overwrite tooltip ourself to handle shift+click
-#: ../src/iop/retouch.c:2517
+#: ../src/iop/retouch.c:2518
 msgid "ctrl+click to change tool for current form"
 msgstr "Ctrl+clic pour changer l’outil de la forme courante"
 
-#: ../src/iop/retouch.c:2518
+#: ../src/iop/retouch.c:2519
 msgid "shift+click to set the tool as default"
 msgstr "Maj+clic pour changer l’outil par défaut"
 
-#: ../src/iop/retouch.c:2538
+#: ../src/iop/retouch.c:2539
 msgid "scales:"
 msgstr "Échelles :"
 
-#: ../src/iop/retouch.c:2545
+#: ../src/iop/retouch.c:2546
 msgid "current:"
 msgstr "Actuelle :"
 
-#: ../src/iop/retouch.c:2552
+#: ../src/iop/retouch.c:2553
 msgid "merge from:"
 msgstr "Fusion depuis :"
 
-#: ../src/iop/retouch.c:2563
+#: ../src/iop/retouch.c:2564
 msgid ""
 "top slider adjusts where the merge scales start\n"
 "bottom slider adjusts the number of scales\n"
@@ -19555,44 +19555,44 @@ msgstr ""
 "actuel.\n"
 "Les échelles comportant des formes sont soulignées."
 
-#: ../src/iop/retouch.c:2592
+#: ../src/iop/retouch.c:2593
 msgid "display masks"
 msgstr "Affiche les masques"
 
-#: ../src/iop/retouch.c:2598
+#: ../src/iop/retouch.c:2599
 msgid "temporarily switch off shapes"
 msgstr "Désactive les formes temporairement"
 
-#: ../src/iop/retouch.c:2607
+#: ../src/iop/retouch.c:2608
 msgid "paste cut shapes to current scale"
 msgstr "Coller les formes sur l’échelle de décomposition actuelle"
 
-#: ../src/iop/retouch.c:2612
+#: ../src/iop/retouch.c:2613
 msgid "cut shapes from current scale"
 msgstr "Couper les formes de l’échelle de décomposition actuelle"
 
-#: ../src/iop/retouch.c:2620
+#: ../src/iop/retouch.c:2621
 msgid "display wavelet scale"
 msgstr "Affiche une seule échelle de la décomposition"
 
-#: ../src/iop/retouch.c:2628
+#: ../src/iop/retouch.c:2629
 msgctxt "section"
 msgid "preview single scale"
 msgstr "Prévisualisation d’une seule échelle"
 
-#: ../src/iop/retouch.c:2642
+#: ../src/iop/retouch.c:2643
 msgid "adjust preview levels"
 msgstr "Ajuste les niveaux de prévisualisation"
 
-#: ../src/iop/retouch.c:2665 ../src/iop/rgblevels.c:1106
+#: ../src/iop/retouch.c:2666 ../src/iop/rgblevels.c:1106
 msgid "auto levels"
 msgstr "Niveaux automatiques"
 
-#: ../src/iop/retouch.c:2673
+#: ../src/iop/retouch.c:2674
 msgid "shape selected:"
 msgstr "Forme sélectionnée :"
 
-#: ../src/iop/retouch.c:2679
+#: ../src/iop/retouch.c:2680
 msgid ""
 "click on a shape to select it,\n"
 "to unselect click on an empty space"
@@ -19600,61 +19600,61 @@ msgstr ""
 "Cliquer sur la forme pour la sélectionner,\n"
 "pour désélectionner cliquer en dehors d’elle."
 
-#: ../src/iop/retouch.c:2688
+#: ../src/iop/retouch.c:2689
 msgid "erase the detail or fills with chosen color"
 msgstr "Efface les détails ou remplit avec la couleur choisie"
 
-#: ../src/iop/retouch.c:2698
+#: ../src/iop/retouch.c:2699
 msgid "fill color: "
 msgstr "Couleur : "
 
-#: ../src/iop/retouch.c:2703 ../src/iop/retouch.c:2704
+#: ../src/iop/retouch.c:2704 ../src/iop/retouch.c:2705
 msgid "select fill color"
 msgstr "Sélectionner la couleur de remplissage"
 
-#: ../src/iop/retouch.c:2714
+#: ../src/iop/retouch.c:2715
 msgid "pick fill color from image"
 msgstr "Choisir une couleur dans l’image"
 
-#: ../src/iop/retouch.c:2715
+#: ../src/iop/retouch.c:2716
 msgid "pick fill color"
 msgstr "Sélectionner une couleur de remplissage"
 
-#: ../src/iop/retouch.c:2725
+#: ../src/iop/retouch.c:2726
 msgid "adjusts color brightness to fine-tune it. works with erase as well"
 msgstr ""
 "Ajuste la luminosité de la couleur. Marche aussi avec le mode d’effacement."
 
-#: ../src/iop/retouch.c:2731
+#: ../src/iop/retouch.c:2732
 msgid "type for the blur algorithm"
 msgstr "Type d’algorithme de flou"
 
-#: ../src/iop/retouch.c:2735
+#: ../src/iop/retouch.c:2736
 msgid "radius of the selected blur type"
 msgstr "Rayon du flou sélectionné"
 
-#: ../src/iop/retouch.c:2742
+#: ../src/iop/retouch.c:2743
 msgid "set the opacity on the selected shape"
 msgstr "Fixer l’opacité de la forme sélectionnée"
 
-#: ../src/iop/retouch.c:2749
+#: ../src/iop/retouch.c:2750
 msgctxt "section"
 msgid "retouch tools"
 msgstr "Outils de retouche"
 
 #. wavelet decompose
-#: ../src/iop/retouch.c:2758
+#: ../src/iop/retouch.c:2759
 msgctxt "section"
 msgid "wavelet decompose"
 msgstr "Décomposition en ondelettes"
 
 #. shapes
-#: ../src/iop/retouch.c:2772
+#: ../src/iop/retouch.c:2773
 msgctxt "section"
 msgid "shapes"
 msgstr "Formes"
 
-#: ../src/iop/retouch.c:3987 ../src/iop/retouch.c:4957
+#: ../src/iop/retouch.c:3988 ../src/iop/retouch.c:4958
 #, c-format
 msgid "max scale is %i for this image size"
 msgstr "L’échelle maximum est de %i pour la taille de cette image"
