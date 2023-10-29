@@ -893,6 +893,9 @@ void commit_params(struct dt_iop_module_t *self,
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   if(g && (g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED) && linear && fullpipe)
     piece->process_cl_ready = FALSE;
+
+  if(!piece->module->default_enabled)
+    piece->enabled = FALSE;
 }
 
 void init_global(dt_iop_module_so_t *module)
