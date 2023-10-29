@@ -19892,7 +19892,7 @@ msgid ""
 "the per-channel processing method."
 msgstr ""
 "optionale Korrektur der Farbverschiebung, die durch die\n"
-"die Methode der kanalweisen Verarbeitung."
+"Methode der kanalweisen Verarbeitung verursacht wird."
 
 #: ../src/iop/sigmoid.c:810 ../src/iop/sigmoid.c:814
 msgid "primaries"
