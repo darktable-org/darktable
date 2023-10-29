@@ -1353,7 +1353,7 @@ static inline gboolean _skip_piece_on_tags(const dt_dev_pixelpipe_iop_t *piece)
   return piece->module->dev->gui_module
       && piece->module->dev->gui_module != piece->module
       && (piece->module->dev->gui_module->operation_tags_filter() & piece->module->operation_tags())
-      && (piece->pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW));
+      && (piece->pipe->type & DT_DEV_PIXELPIPE_BASIC);
 }
 
 // recursive helper for process, returns TRUE in case of unfinished work or error
@@ -2356,7 +2356,7 @@ static gboolean _dev_pixelpipe_process_rec(
     // as the user is likely to change that one soon (again), so keep it in cache.
     // Also do this if the clbuffer has been actively written
     const gboolean has_focus = (module == darktable.develop->gui_module);
-    if((pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW))
+    if((pipe->type & DT_DEV_PIXELPIPE_BASIC)
         && (pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE)
         && (has_focus || module->write_input_hint || important_cl))
     {
@@ -2370,7 +2370,7 @@ static gboolean _dev_pixelpipe_process_rec(
     module->write_input_hint = FALSE;
 
     if(module->expanded
-       && (pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW))
+       && (pipe->type & DT_DEV_PIXELPIPE_BASIC)
        && (module->request_histogram & DT_REQUEST_EXPANDED))
     {
       dt_print_pipe(DT_DEBUG_PIPE, "internal histogram", pipe, module, &roi_in, roi_out, "\n");
