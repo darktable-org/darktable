@@ -2208,6 +2208,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 void gui_focus(struct dt_iop_module_t *self,
                const gboolean in)
 {
+  self->dev->cropping.requester = NULL;
   if(self->enabled
      && !darktable.develop->full.pipe->loading)
   {
@@ -2215,6 +2216,7 @@ void gui_focus(struct dt_iop_module_t *self,
 
     if(in)
     {
+      self->dev->cropping.requester = self;
       dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)self->blend_data;
       //only show shapes if shapes exist
       dt_masks_form_t *grp =
@@ -2260,7 +2262,6 @@ void gui_focus(struct dt_iop_module_t *self,
        || g->suppress_mask)
       dt_iop_refresh_center(self);
   }
-  self->dev->cropping.requester = (in && !darktable.develop->full.pipe->loading) ? self : NULL;
 }
 
 void tiling_callback(struct dt_iop_module_t *self,
