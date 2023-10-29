@@ -247,7 +247,12 @@ void dt_dev_invalidate(dt_develop_t *dev)
 
 void dt_dev_invalidate_all(dt_develop_t *dev)
 {
-  dev->full.pipe->status = dev->preview_pipe->status = dev->preview2.pipe->status = DT_DEV_PIXELPIPE_DIRTY;
+  if(dev->full.pipe)
+    dev->full.pipe->status = DT_DEV_PIXELPIPE_DIRTY;
+  if(dev->preview_pipe)
+    dev->preview_pipe->status = DT_DEV_PIXELPIPE_DIRTY;
+  if(dev->preview2.pipe)
+    dev->preview2.pipe->status = DT_DEV_PIXELPIPE_DIRTY;
   dev->timestamp++;
 }
 
