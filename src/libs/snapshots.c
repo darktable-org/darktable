@@ -214,6 +214,7 @@ void gui_post_expose(dt_lib_module_t *self,
         g_source_remove(d->expose_again_timeout_id);
 
       d->expose_again_timeout_id = g_timeout_add(150, _snap_expose_again, d);
+      return;
     }
 
     float pzx, pzy, zoom_scale;
