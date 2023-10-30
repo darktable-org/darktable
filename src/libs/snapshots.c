@@ -479,8 +479,10 @@ static void _clear_snapshot_entry(dt_lib_snapshot_t *s)
 
   g_free(s->module);
   g_free(s->label);
+  dt_free_align(s->buf);
   s->module = NULL;
   s->label = NULL;
+  s->buf = NULL;
 }
 
 static void _clear_snapshots(dt_lib_module_t *self, const dt_imgid_t imgid)
@@ -493,7 +495,6 @@ static void _clear_snapshots(dt_lib_module_t *self, const dt_imgid_t imgid)
   {
     dt_lib_snapshot_t *s = &d->snapshot[k];
 
-    if(s->buf) dt_free_align(s->buf);
     _clear_snapshot_entry(s);
     gtk_widget_hide(s->button);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(s->button), FALSE);
