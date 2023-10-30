@@ -821,15 +821,11 @@ void dt_gui_gtk_quit()
   // Write out windows dimension
   dt_gui_gtk_write_config();
 
-  GtkWidget *widget;
-  widget = darktable.gui->widgets.left_border;
-  g_signal_handlers_block_by_func(widget, _draw_borders, GINT_TO_POINTER(DT_UI_BORDER_LEFT));
-  widget = darktable.gui->widgets.right_border;
-  g_signal_handlers_block_by_func(widget, _draw_borders, GINT_TO_POINTER(DT_UI_BORDER_RIGHT));
-  widget = darktable.gui->widgets.top_border;
-  g_signal_handlers_block_by_func(widget, _draw_borders, GINT_TO_POINTER(DT_UI_BORDER_TOP));
-  widget = darktable.gui->widgets.bottom_border;
-  g_signal_handlers_block_by_func(widget, _draw_borders, GINT_TO_POINTER(DT_UI_BORDER_BOTTOM));
+  dt_gui_widgets_t *widgets = &darktable.gui->widgets;
+  g_signal_handlers_block_by_func(widgets->left_border, _draw_borders, GINT_TO_POINTER(DT_UI_BORDER_LEFT));
+  g_signal_handlers_block_by_func(widgets->right_border, _draw_borders, GINT_TO_POINTER(DT_UI_BORDER_RIGHT));
+  g_signal_handlers_block_by_func(widgets->top_border, _draw_borders, GINT_TO_POINTER(DT_UI_BORDER_TOP));
+  g_signal_handlers_block_by_func(widgets->bottom_border, _draw_borders, GINT_TO_POINTER(DT_UI_BORDER_BOTTOM));
 
   // hide main window
   gtk_widget_hide(dt_ui_main_window(darktable.gui->ui));
@@ -1249,32 +1245,16 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
   dt_action_t *pnl = dt_action_section(&darktable.control->actions_global, N_("panels"));
   dt_action_t *ac;
-  widget = darktable.gui->widgets.left_border;
-  g_signal_connect(G_OBJECT(widget), "draw", G_CALLBACK(_draw_borders), GINT_TO_POINTER(DT_UI_BORDER_LEFT));
-  g_signal_connect(G_OBJECT(widget), "button-press-event", G_CALLBACK(_borders_button_pressed),
-                   GINT_TO_POINTER(DT_UI_BORDER_LEFT));
-  ac = dt_action_define(pnl, NULL, N_("left"), widget, NULL);
+  ac = dt_action_define(pnl, NULL, N_("left"), darktable.gui->widgets.left_border, NULL);
   dt_action_register(ac, NULL, _toggle_panel_accel_callback, GDK_KEY_L, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
 
-  widget = darktable.gui->widgets.right_border;
-  g_signal_connect(G_OBJECT(widget), "draw", G_CALLBACK(_draw_borders), GINT_TO_POINTER(DT_UI_BORDER_RIGHT));
-  g_signal_connect(G_OBJECT(widget), "button-press-event", G_CALLBACK(_borders_button_pressed),
-                   GINT_TO_POINTER(DT_UI_BORDER_RIGHT));
-  ac = dt_action_define(pnl, NULL, N_("right"), widget, NULL);
+  ac = dt_action_define(pnl, NULL, N_("right"), darktable.gui->widgets.right_border, NULL);
   dt_action_register(ac, NULL, _toggle_panel_accel_callback, GDK_KEY_R, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
 
-  widget = darktable.gui->widgets.top_border;
-  g_signal_connect(G_OBJECT(widget), "draw", G_CALLBACK(_draw_borders), GINT_TO_POINTER(DT_UI_BORDER_TOP));
-  g_signal_connect(G_OBJECT(widget), "button-press-event", G_CALLBACK(_borders_button_pressed),
-                   GINT_TO_POINTER(DT_UI_BORDER_TOP));
-  ac = dt_action_define(pnl, NULL, N_("top"), widget, NULL);
+  ac = dt_action_define(pnl, NULL, N_("top"), darktable.gui->widgets.top_border, NULL);
   dt_action_register(ac, NULL, _toggle_panel_accel_callback, GDK_KEY_T, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
 
-  widget = darktable.gui->widgets.bottom_border;
-  g_signal_connect(G_OBJECT(widget), "draw", G_CALLBACK(_draw_borders), GINT_TO_POINTER(DT_UI_BORDER_BOTTOM));
-  g_signal_connect(G_OBJECT(widget), "button-press-event", G_CALLBACK(_borders_button_pressed),
-                   GINT_TO_POINTER(DT_UI_BORDER_BOTTOM));
-  ac = dt_action_define(pnl, NULL, N_("bottom"), widget, NULL);
+  ac = dt_action_define(pnl, NULL, N_("bottom"), darktable.gui->widgets.bottom_border, NULL);
   dt_action_register(ac, NULL, _toggle_panel_accel_callback, GDK_KEY_B, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
 
   dt_gui_presets_init();
@@ -1489,6 +1469,22 @@ static gboolean _ui_toast_button_press_event(GtkWidget *widget, GdkEvent *event,
   return TRUE;
 }
 
+static GtkWidget *_init_outer_border(gint width, gint height, gint which)
+{
+  GtkWidget *widget = gtk_drawing_area_new();
+  gtk_widget_set_size_request(widget, width, height);
+  gtk_widget_set_app_paintable(widget, TRUE);
+  gtk_widget_set_events(widget, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
+                              | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK
+                              | darktable.gui->scroll_mask);
+  g_signal_connect(widget, "draw", G_CALLBACK(_draw_borders), GINT_TO_POINTER(which));
+  g_signal_connect(widget, "button-press-event", G_CALLBACK(_borders_button_pressed), GINT_TO_POINTER(which));
+  gtk_widget_set_name(GTK_WIDGET(widget), "outer-border");
+  gtk_widget_show(widget);
+
+  return widget;
+}
+
 static void _init_widgets(dt_gui_gtk_t *gui)
 {
 
@@ -1525,31 +1521,15 @@ static void _init_widgets(dt_gui_gtk_t *gui)
   container = widget;
 
   // Initializing the top border
-  widget = gtk_drawing_area_new();
-  gui->widgets.top_border = widget;
-  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
-  gtk_widget_set_size_request(widget, -1, DT_PIXEL_APPLY_DPI(10));
-  gtk_widget_set_app_paintable(widget, TRUE);
-  gtk_widget_set_events(widget, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK
-                                | darktable.gui->scroll_mask);
-  gtk_widget_set_name(GTK_WIDGET(widget), "outer-border");
-  gtk_widget_show(widget);
+  gui->widgets.top_border = _init_outer_border(-1, DT_PIXEL_APPLY_DPI(10), DT_UI_BORDER_TOP);
+  gtk_box_pack_start(GTK_BOX(container), gui->widgets.top_border, FALSE, TRUE, 0);
 
   // Initializing the main table
   _init_main_table(container);
 
   // Initializing the bottom border
-  widget = gtk_drawing_area_new();
-  gui->widgets.bottom_border = widget;
-  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
-  gtk_widget_set_size_request(widget, -1, DT_PIXEL_APPLY_DPI(10));
-  gtk_widget_set_app_paintable(widget, TRUE);
-  gtk_widget_set_events(widget, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK
-                                | darktable.gui->scroll_mask);
-  gtk_widget_set_name(GTK_WIDGET(widget), "outer-border");
-  gtk_widget_show(widget);
+  gui->widgets.bottom_border = _init_outer_border(-1, DT_PIXEL_APPLY_DPI(10), DT_UI_BORDER_BOTTOM);
+  gtk_box_pack_start(GTK_BOX(container), gui->widgets.bottom_border, FALSE, TRUE, 0);
 
   // Showing everything
   gtk_widget_show_all(dt_ui_main_window(gui->ui));
@@ -1575,28 +1555,12 @@ static void _init_main_table(GtkWidget *container)
   container = widget;
 
   // Adding the left border
-  widget = gtk_drawing_area_new();
-  darktable.gui->widgets.left_border = widget;
-  gtk_widget_set_size_request(widget, DT_PIXEL_APPLY_DPI(10), -1);
-  gtk_widget_set_app_paintable(widget, TRUE);
-  gtk_widget_set_events(widget, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK
-                                | darktable.gui->scroll_mask);
-  gtk_grid_attach(GTK_GRID(container), widget, 0, 0, 1, 2);
-  gtk_widget_set_name(GTK_WIDGET(widget), "outer-border");
-  gtk_widget_show(widget);
+  darktable.gui->widgets.left_border = _init_outer_border(DT_PIXEL_APPLY_DPI(10), -1, DT_UI_BORDER_LEFT);
+  gtk_grid_attach(GTK_GRID(container), darktable.gui->widgets.left_border, 0, 0, 1, 2);
 
   // Adding the right border
-  widget = gtk_drawing_area_new();
-  darktable.gui->widgets.right_border = widget;
-  gtk_widget_set_size_request(widget, DT_PIXEL_APPLY_DPI(10), -1);
-  gtk_widget_set_app_paintable(widget, TRUE);
-  gtk_widget_set_events(widget, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK
-                                | darktable.gui->scroll_mask);
-  gtk_grid_attach(GTK_GRID(container), widget, 4, 0, 1, 2);
-  gtk_widget_set_name(GTK_WIDGET(widget), "outer-border");
-  gtk_widget_show(widget);
+  darktable.gui->widgets.right_border = _init_outer_border(DT_PIXEL_APPLY_DPI(10), -1, DT_UI_BORDER_RIGHT);;
+  gtk_grid_attach(GTK_GRID(container), darktable.gui->widgets.right_border, 4, 0, 1, 2);
 
   /* initialize the top container */
   _ui_init_panel_top(darktable.gui->ui, container);
