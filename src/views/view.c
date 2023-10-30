@@ -676,14 +676,14 @@ void dt_view_set_scrollbar(dt_view_t *view,
                            const float vsize,
                            const float vwinsize)
 {
-  if(view->vscroll_pos == vpos
-      && view->vscroll_lower == vlower
-      && view->vscroll_size == vsize
-      && view->vscroll_viewport_size == vwinsize
-      && view->hscroll_pos == hpos
-      && view->hscroll_lower == hlower
-      && view->hscroll_size == hsize
-      && view->hscroll_viewport_size == hwinsize)
+  if(1e-5 > fabsf(view->hscroll_pos - hpos)
+          + fabsf(view->hscroll_lower - hlower)
+          + fabsf(view->hscroll_size - hsize)
+          + fabsf(view->hscroll_viewport_size - hwinsize)
+          + fabsf(view->vscroll_pos - vpos)
+          + fabsf(view->vscroll_lower - vlower)
+          + fabsf(view->vscroll_size - vsize)
+          + fabsf(view->vscroll_viewport_size - vwinsize))
     return;
 
   view->vscroll_pos = vpos;
@@ -695,15 +695,11 @@ void dt_view_set_scrollbar(dt_view_t *view,
   view->hscroll_size = hsize;
   view->hscroll_viewport_size = hwinsize;
 
-  GtkWidget *widget;
-  widget = darktable.gui->widgets.left_border;
-  gtk_widget_queue_draw(widget);
-  widget = darktable.gui->widgets.right_border;
-  gtk_widget_queue_draw(widget);
-  widget = darktable.gui->widgets.bottom_border;
-  gtk_widget_queue_draw(widget);
-  widget = darktable.gui->widgets.top_border;
-  gtk_widget_queue_draw(widget);
+  dt_gui_widgets_t *widgets = &darktable.gui->widgets;
+  gtk_widget_queue_draw(widgets->left_border);
+  gtk_widget_queue_draw(widgets->right_border);
+  gtk_widget_queue_draw(widgets->bottom_border);
+  gtk_widget_queue_draw(widgets->top_border);
 
   if(!darktable.gui->scrollbars.dragging)
     dt_ui_update_scrollbars(darktable.gui->ui);
