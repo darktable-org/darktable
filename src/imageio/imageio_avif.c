@@ -269,21 +269,13 @@ int dt_imageio_avif_read_profile(const char *filename, uint8_t **out, dt_colorsp
     if(avif_image.colorPrimaries == AVIF_COLOR_PRIMARIES_BT709)
     {
       gboolean over = FALSE;
-      /* mistagged sRGB AVIFs exported before dt 3.8 */
-      if(avif_image.transferCharacteristics == AVIF_TRANSFER_CHARACTERISTICS_SRGB
-         && avif_image.matrixCoefficients == AVIF_MATRIX_COEFFICIENTS_BT709)
-      {
-        /* must be code value 5 (IEC 61966-2-1 sYCC) */
-        cicp->matrix_coefficients = AVIF_MATRIX_COEFFICIENTS_BT470BG;
-        over =  TRUE;
-      }
       /* mistagged Rec. 709 AVIFs exported before dt 3.6 */
-      else if(avif_image.transferCharacteristics == AVIF_TRANSFER_CHARACTERISTICS_BT470M
+      if(avif_image.transferCharacteristics == AVIF_TRANSFER_CHARACTERISTICS_BT470M
          && avif_image.matrixCoefficients == AVIF_MATRIX_COEFFICIENTS_BT709)
       {
         /* must be actual Rec. 709 instead of 2.2 gamma*/
         cicp->transfer_characteristics = AVIF_TRANSFER_CHARACTERISTICS_BT709;
-        over =  TRUE;
+        over = TRUE;
       }
 
       if(over)
