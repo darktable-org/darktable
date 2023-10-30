@@ -2207,7 +2207,7 @@ void gui_init(dt_lib_module_t *self)
   const int nb = sizeof(filters) / sizeof(_filter_t);
   for(int i = 0; i < nb; i++)
   {
-    dt_lib_filtering_rule_t temp_rule;
+    dt_lib_filtering_rule_t temp_rule = {0};
     temp_rule.w_special_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
     filters[i].widget_init(&temp_rule, filters[i].prop, "", self, FALSE);
