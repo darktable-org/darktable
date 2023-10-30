@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-27 19:01+0200\n"
-"PO-Revision-Date: 2023-10-27 21:39+0300\n"
+"POT-Creation-Date: 2023-10-29 19:55+0100\n"
+"PO-Revision-Date: 2023-10-29 21:40+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -2638,7 +2638,7 @@ msgstr "Лінійність"
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:144
 #: ../build/lib/darktable/plugins/introspection_watermark.c:136
 #: ../build/lib/darktable/plugins/introspection_watermark.c:265
-#: ../src/iop/ashift.c:6048 ../src/libs/masks.c:109
+#: ../src/iop/ashift.c:6050 ../src/libs/masks.c:109
 msgid "rotation"
 msgstr "Обертання"
 
@@ -2724,7 +2724,7 @@ msgstr "Базис"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:347
 #: ../build/lib/darktable/plugins/introspection_borders.c:353
-#: ../src/gui/preferences.c:847 ../src/iop/ashift.c:6227
+#: ../src/gui/preferences.c:847 ../src/iop/ashift.c:6229
 #: ../src/iop/basicadj.c:662 ../src/iop/flip.c:472 ../src/iop/flip.c:474
 #: ../src/iop/levels.c:657 ../src/iop/rgblevels.c:1105
 msgid "auto"
@@ -8215,17 +8215,17 @@ msgid "uniformly"
 msgstr "Рівномірно"
 
 #: ../src/develop/blend_gui.c:157 ../src/develop/blend_gui.c:2748
-#: ../src/develop/blend_gui.c:3440 ../src/develop/imageop.c:2656
+#: ../src/develop/blend_gui.c:3440 ../src/develop/imageop.c:2655
 msgid "drawn mask"
 msgstr "Намальована маска"
 
 #: ../src/develop/blend_gui.c:159 ../src/develop/blend_gui.c:2520
-#: ../src/develop/blend_gui.c:3451 ../src/develop/imageop.c:2658
+#: ../src/develop/blend_gui.c:3451 ../src/develop/imageop.c:2657
 msgid "parametric mask"
 msgstr "Параметрична маска"
 
 #: ../src/develop/blend_gui.c:161 ../src/develop/blend_gui.c:2958
-#: ../src/develop/blend_gui.c:3478 ../src/develop/imageop.c:2660
+#: ../src/develop/blend_gui.c:3478 ../src/develop/imageop.c:2659
 msgid "raster mask"
 msgstr "Растрова маска"
 
@@ -8272,12 +8272,12 @@ msgid "on"
 msgstr "Увімкнено"
 
 #: ../src/develop/blend_gui.c:984 ../src/develop/blend_gui.c:2598
-#: ../src/develop/imageop.c:2784
+#: ../src/develop/imageop.c:2783
 msgid "input"
 msgstr "На вході"
 
 #: ../src/develop/blend_gui.c:984 ../src/develop/blend_gui.c:2598
-#: ../src/develop/imageop.c:2784
+#: ../src/develop/imageop.c:2783
 msgid "output"
 msgstr "На виході"
 
@@ -8588,44 +8588,44 @@ msgstr "Додати градієнт"
 msgid "add multiple gradients"
 msgstr "Додати кілька градієнтів"
 
-#: ../src/develop/blend_gui.c:2784 ../src/iop/retouch.c:2467
+#: ../src/develop/blend_gui.c:2784 ../src/iop/retouch.c:2468
 #: ../src/libs/masks.c:994 ../src/libs/masks.c:1848 ../src/libs/masks.c:1852
 msgid "add brush"
 msgstr "Додати пензля"
 
-#: ../src/develop/blend_gui.c:2785 ../src/iop/retouch.c:2467
+#: ../src/develop/blend_gui.c:2785 ../src/iop/retouch.c:2468
 msgid "add multiple brush strokes"
 msgstr "Додати кілька мазків пензлем"
 
-#: ../src/develop/blend_gui.c:2792 ../src/iop/retouch.c:2472
+#: ../src/develop/blend_gui.c:2792 ../src/iop/retouch.c:2473
 #: ../src/iop/spots.c:886 ../src/libs/masks.c:1009 ../src/libs/masks.c:1821
 #: ../src/libs/masks.c:1825
 msgid "add path"
 msgstr "Додати контур"
 
-#: ../src/develop/blend_gui.c:2793 ../src/iop/retouch.c:2472
+#: ../src/develop/blend_gui.c:2793 ../src/iop/retouch.c:2473
 #: ../src/iop/spots.c:886
 msgid "add multiple paths"
 msgstr "Додати кілька контурів"
 
-#: ../src/develop/blend_gui.c:2800 ../src/iop/retouch.c:2477
+#: ../src/develop/blend_gui.c:2800 ../src/iop/retouch.c:2478
 #: ../src/iop/spots.c:891 ../src/libs/masks.c:1004 ../src/libs/masks.c:1830
 #: ../src/libs/masks.c:1834
 msgid "add ellipse"
 msgstr "Додати еліпс"
 
-#: ../src/develop/blend_gui.c:2801 ../src/iop/retouch.c:2477
+#: ../src/develop/blend_gui.c:2801 ../src/iop/retouch.c:2478
 #: ../src/iop/spots.c:891
 msgid "add multiple ellipses"
 msgstr "Додати кілька еліпсів"
 
-#: ../src/develop/blend_gui.c:2808 ../src/iop/retouch.c:2482
+#: ../src/develop/blend_gui.c:2808 ../src/iop/retouch.c:2483
 #: ../src/iop/spots.c:896 ../src/libs/masks.c:999 ../src/libs/masks.c:1839
 #: ../src/libs/masks.c:1843
 msgid "add circle"
 msgstr "Додати коло"
 
-#: ../src/develop/blend_gui.c:2809 ../src/iop/retouch.c:2482
+#: ../src/develop/blend_gui.c:2809 ../src/iop/retouch.c:2483
 #: ../src/iop/spots.c:896
 msgid "add multiple circles"
 msgstr "Додати кілька кіл"
@@ -8799,7 +8799,7 @@ msgstr "Радіус розмиття"
 msgid "radius for gaussian blur of blend mask"
 msgstr "Радіус гауссівського розмиття маски змішування"
 
-#: ../src/develop/blend_gui.c:3640 ../src/iop/retouch.c:2739
+#: ../src/develop/blend_gui.c:3640 ../src/iop/retouch.c:2740
 #: ../src/libs/history.c:954
 msgid "mask opacity"
 msgstr "Непрозорість маски"
@@ -8838,81 +8838,81 @@ msgstr "Автозбереження історії вимкнено для ць
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: невідповідність версій модуля `%s': %d != %d"
 
-#: ../src/develop/develop.c:2989
+#: ../src/develop/develop.c:2987
 msgid "duplicate module, can't move new instance after the base one\n"
 msgstr "Не вдається перемістити новий екземпляр модуля після базового\n"
 
-#: ../src/develop/imageop.c:1036
+#: ../src/develop/imageop.c:1035
 msgid "new instance"
 msgstr "Новий екземпляр"
 
-#: ../src/develop/imageop.c:1042
+#: ../src/develop/imageop.c:1041
 msgid "duplicate instance"
 msgstr "Зробити дублікат екземпляра"
 
-#: ../src/develop/imageop.c:1048 ../src/develop/imageop.c:3726
+#: ../src/develop/imageop.c:1047 ../src/develop/imageop.c:3725
 #: ../src/libs/masks.c:1146
 msgid "move up"
 msgstr "Підняти"
 
-#: ../src/develop/imageop.c:1054 ../src/develop/imageop.c:3727
+#: ../src/develop/imageop.c:1053 ../src/develop/imageop.c:3726
 #: ../src/libs/masks.c:1151
 msgid "move down"
 msgstr "Опустити"
 
 #. delete button label and tooltip will be updated based on trash pref
-#: ../src/develop/imageop.c:1060 ../src/develop/imageop.c:3729
+#: ../src/develop/imageop.c:1059 ../src/develop/imageop.c:3728
 #: ../src/gui/accelerators.c:173 ../src/libs/image.c:302
 #: ../src/libs/image.c:512
 msgid "delete"
 msgstr "Видалити"
 
-#: ../src/develop/imageop.c:1067 ../src/develop/imageop.c:3730
+#: ../src/develop/imageop.c:1066 ../src/develop/imageop.c:3729
 #: ../src/libs/modulegroups.c:3817
 msgid "rename"
 msgstr "Перейменувати"
 
-#: ../src/develop/imageop.c:1134 ../src/develop/imageop.c:2948
+#: ../src/develop/imageop.c:1133 ../src/develop/imageop.c:2947
 #, c-format
 msgid "'%s' is switched on"
 msgstr "'%s' включено"
 
-#: ../src/develop/imageop.c:1134 ../src/develop/imageop.c:2948
+#: ../src/develop/imageop.c:1133 ../src/develop/imageop.c:2947
 #, c-format
 msgid "'%s' is switched off"
 msgstr "'%s' виключено"
 
-#: ../src/develop/imageop.c:2650
+#: ../src/develop/imageop.c:2649
 msgid "unknown mask"
 msgstr "Невідома маска"
 
-#: ../src/develop/imageop.c:2654
+#: ../src/develop/imageop.c:2653
 msgid "drawn + parametric mask"
 msgstr "Намальована і параметрична маски"
 
-#: ../src/develop/imageop.c:2663
+#: ../src/develop/imageop.c:2662
 #, c-format
 msgid "this module has a `%s'"
 msgstr "У цього модуля є `%s'"
 
-#: ../src/develop/imageop.c:2668
+#: ../src/develop/imageop.c:2667
 #, c-format
 msgid "taken from module %s"
 msgstr "взята з модуля %s"
 
-#: ../src/develop/imageop.c:2673
+#: ../src/develop/imageop.c:2672
 msgid "click to display (module must be activated first)"
 msgstr "Натисніть для показу (спочатку модуль має бути активовано)"
 
-#: ../src/develop/imageop.c:2784
+#: ../src/develop/imageop.c:2783
 msgid "purpose"
 msgstr "Призначення"
 
-#: ../src/develop/imageop.c:2784
+#: ../src/develop/imageop.c:2783
 msgid "process"
 msgstr "Обробка"
 
-#: ../src/develop/imageop.c:2904
+#: ../src/develop/imageop.c:2903
 msgid ""
 "multiple instance actions\n"
 "right-click creates new instance"
@@ -8920,7 +8920,7 @@ msgstr ""
 "Дії з екземплярами модуля\n"
 "Права кнопка миші створює новий екземпляр"
 
-#: ../src/develop/imageop.c:2919
+#: ../src/develop/imageop.c:2918
 msgid ""
 "reset parameters\n"
 "ctrl+click to reapply any automatic presets"
@@ -8928,7 +8928,7 @@ msgstr ""
 "Скинути параметри\n"
 "Ctrl+клік - повторно застосувати будь-які автоматичні пресети"
 
-#: ../src/develop/imageop.c:2931
+#: ../src/develop/imageop.c:2930
 msgid ""
 "presets\n"
 "right-click to apply on new instance"
@@ -8936,15 +8936,15 @@ msgstr ""
 "Пресети\n"
 "Права кнопка миші - застосувати в новому екземплярі"
 
-#: ../src/develop/imageop.c:3181 ../src/develop/imageop.c:3203
+#: ../src/develop/imageop.c:3180 ../src/develop/imageop.c:3202
 msgid "ERROR"
 msgstr "ПОМИЛКА"
 
-#: ../src/develop/imageop.c:3607
+#: ../src/develop/imageop.c:3606
 msgid "unsupported input"
 msgstr "Непідтримуваний вхід"
 
-#: ../src/develop/imageop.c:3608
+#: ../src/develop/imageop.c:3607
 msgid ""
 "you have placed this module at\n"
 "a position in the pipeline where\n"
@@ -8956,35 +8956,35 @@ msgstr ""
 "формат даних не відповідає\n"
 "вимогам модуля."
 
-#: ../src/develop/imageop.c:3725 ../src/develop/imageop.c:3735
+#: ../src/develop/imageop.c:3724 ../src/develop/imageop.c:3734
 #: ../src/gui/accelerators.c:169 ../src/libs/lib.c:1415
 msgid "show"
 msgstr "Показати"
 
-#: ../src/develop/imageop.c:3728 ../src/libs/modulegroups.c:3315
+#: ../src/develop/imageop.c:3727 ../src/libs/modulegroups.c:3315
 #: ../src/libs/modulegroups.c:3438 ../src/libs/modulegroups.c:3819
 #: ../src/libs/tagging.c:3279
 msgid "new"
 msgstr "Новий"
 
-#: ../src/develop/imageop.c:3731 ../src/libs/duplicate.c:417
+#: ../src/develop/imageop.c:3730 ../src/libs/duplicate.c:417
 #: ../src/libs/image.c:533 ../src/libs/modulegroups.c:3815
 msgid "duplicate"
 msgstr "Зняти копію"
 
-#: ../src/develop/imageop.c:3736
+#: ../src/develop/imageop.c:3735
 msgid "enable"
 msgstr "Вмикаючий елемент"
 
-#: ../src/develop/imageop.c:3737 ../src/gui/accelerators.c:185
+#: ../src/develop/imageop.c:3736 ../src/gui/accelerators.c:185
 msgid "focus"
 msgstr "Фокус"
 
-#: ../src/develop/imageop.c:3738 ../src/gui/accelerators.c:2787
+#: ../src/develop/imageop.c:3737 ../src/gui/accelerators.c:2787
 msgid "instance"
 msgstr "Екземпляр"
 
-#: ../src/develop/imageop.c:3739 ../src/gui/accelerators.c:130
+#: ../src/develop/imageop.c:3738 ../src/gui/accelerators.c:130
 #: ../src/gui/accelerators.c:140 ../src/gui/gtk.c:3103 ../src/gui/gtk.c:3150
 #: ../src/gui/hist_dialog.c:270 ../src/gui/styles_dialog.c:615
 #: ../src/gui/styles_dialog.c:637 ../src/iop/atrous.c:1626
@@ -8993,12 +8993,12 @@ msgid "reset"
 msgstr "Скинути"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:3740 ../src/gui/preferences.c:796
+#: ../src/develop/imageop.c:3739 ../src/gui/preferences.c:796
 #: ../src/libs/lib.c:1417
 msgid "presets"
 msgstr "Пресети"
 
-#: ../src/develop/imageop.c:3760
+#: ../src/develop/imageop.c:3759
 msgid "processing module"
 msgstr "Модуль обробки"
 
@@ -9364,7 +9364,7 @@ msgstr ""
 "зображень.\n"
 "Імовірно, причиною є застосування пресету, стилю, або копіювання історії"
 
-#: ../src/develop/pixelpipe_hb.c:2712
+#: ../src/develop/pixelpipe_hb.c:2733
 msgid ""
 "OpenCL errors encountered; disabling OpenCL for this session! some possible "
 "causes:\n"
@@ -9385,7 +9385,7 @@ msgstr ""
 "  - Занадто малі параметри запасу при використанні опції 'використовувати "
 "всю пам'ять пристрою'."
 
-#: ../src/develop/pixelpipe_hb.c:2864
+#: ../src/develop/pixelpipe_hb.c:2883
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -9613,8 +9613,8 @@ msgid "grouped images"
 msgstr "Згруповані зображення"
 
 #: ../src/dtgtk/thumbnail.c:814 ../src/dtgtk/thumbnail.c:1623
-#: ../src/iop/ashift.c:6127 ../src/iop/ashift.c:6216 ../src/iop/ashift.c:6218
-#: ../src/iop/ashift.c:6220 ../src/libs/navigation.c:111
+#: ../src/iop/ashift.c:6129 ../src/iop/ashift.c:6218 ../src/iop/ashift.c:6220
+#: ../src/iop/ashift.c:6222 ../src/libs/navigation.c:111
 #: ../src/libs/navigation.c:193
 msgid "fit"
 msgstr "Підгонка"
@@ -9841,17 +9841,17 @@ msgstr "Прокрутка"
 msgid "pan"
 msgstr "Панорамування"
 
-#: ../src/gui/accelerators.c:98 ../src/iop/ashift.c:5786
-#: ../src/iop/ashift.c:5788 ../src/iop/ashift.c:5893 ../src/iop/ashift.c:5895
-#: ../src/iop/ashift.c:6219 ../src/iop/clipping.c:1946
+#: ../src/gui/accelerators.c:98 ../src/iop/ashift.c:5788
+#: ../src/iop/ashift.c:5790 ../src/iop/ashift.c:5895 ../src/iop/ashift.c:5897
+#: ../src/iop/ashift.c:6221 ../src/iop/clipping.c:1946
 #: ../src/iop/clipping.c:2138 ../src/iop/clipping.c:2154
 #: ../src/views/darkroom.c:2532 ../src/views/lighttable.c:1250
 msgid "horizontal"
 msgstr "Горизонтально"
 
-#: ../src/gui/accelerators.c:99 ../src/iop/ashift.c:5786
-#: ../src/iop/ashift.c:5788 ../src/iop/ashift.c:5893 ../src/iop/ashift.c:5895
-#: ../src/iop/ashift.c:6217 ../src/iop/clipping.c:1945
+#: ../src/gui/accelerators.c:99 ../src/iop/ashift.c:5788
+#: ../src/iop/ashift.c:5790 ../src/iop/ashift.c:5895 ../src/iop/ashift.c:5897
+#: ../src/iop/ashift.c:6219 ../src/iop/clipping.c:1945
 #: ../src/iop/clipping.c:2139 ../src/iop/clipping.c:2153
 #: ../src/views/darkroom.c:2535 ../src/views/lighttable.c:1254
 msgid "vertical"
@@ -11182,7 +11182,7 @@ msgstr "Горизонтально"
 msgid "vertically"
 msgstr "Вертикально"
 
-#: ../src/gui/guides.c:715 ../src/iop/ashift.c:6221 ../src/iop/clipping.c:2140
+#: ../src/gui/guides.c:715 ../src/iop/ashift.c:6223 ../src/iop/clipping.c:2140
 #: ../src/iop/colorbalance.c:1891
 msgid "both"
 msgstr "Обидва"
@@ -12669,37 +12669,37 @@ msgstr ""
 msgid "automatic correction failed, please correct manually"
 msgstr "Не вдалося виконати автоматичне виправлення. виправте вручну"
 
-#: ../src/iop/ashift.c:5066
+#: ../src/iop/ashift.c:5068
 #, c-format
 msgid "only %d lines can be saved in parameters"
 msgstr "Максимальна кількість ліній, яку можна зберегти в параметрах: %d"
 
-#: ../src/iop/ashift.c:5146
+#: ../src/iop/ashift.c:5148
 #, c-format
 msgid "rotation adjusted by %3.2f° to %3.2f°"
 msgstr "Обертання скориговано на %3.2f° до %3.2f°"
 
-#: ../src/iop/ashift.c:5786 ../src/iop/ashift.c:5788 ../src/iop/ashift.c:5893
-#: ../src/iop/ashift.c:5895
+#: ../src/iop/ashift.c:5788 ../src/iop/ashift.c:5790 ../src/iop/ashift.c:5895
+#: ../src/iop/ashift.c:5897
 #, c-format
 msgid "lens shift (%s)"
 msgstr "Зміщення об'єктива (%s)"
 
-#: ../src/iop/ashift.c:6061
+#: ../src/iop/ashift.c:6063
 msgid "manual perspective"
 msgstr "Ручна підгонка"
 
-#: ../src/iop/ashift.c:6106
+#: ../src/iop/ashift.c:6108
 msgctxt "section"
 msgid "perspective"
 msgstr "Перспектива"
 
-#: ../src/iop/ashift.c:6113 ../src/iop/ashift.c:6222 ../src/iop/ashift.c:6224
-#: ../src/iop/ashift.c:6226
+#: ../src/iop/ashift.c:6115 ../src/iop/ashift.c:6224 ../src/iop/ashift.c:6226
+#: ../src/iop/ashift.c:6228
 msgid "structure"
 msgstr "Структура"
 
-#: ../src/iop/ashift.c:6148
+#: ../src/iop/ashift.c:6150
 msgid ""
 "rotate image\n"
 "right-click and drag to define a horizontal or vertical line by drawing on "
@@ -12709,19 +12709,19 @@ msgstr ""
 "Клікніть правою кнопкою миші та перетягніть, щоб визначити горизонтальну або "
 "вертикальну лінію шляхом малювання на зображенні"
 
-#: ../src/iop/ashift.c:6151 ../src/iop/ashift.c:6153
+#: ../src/iop/ashift.c:6153 ../src/iop/ashift.c:6155
 msgid "apply lens shift correction in one direction"
 msgstr "Застосувати корекцію зміщення об'єктива в одному напрямку"
 
-#: ../src/iop/ashift.c:6155
+#: ../src/iop/ashift.c:6157
 msgid "shear the image along one diagonal"
 msgstr "Корекція зображення вздовж однієї з діагоналей"
 
-#: ../src/iop/ashift.c:6156 ../src/iop/clipping.c:2161
+#: ../src/iop/ashift.c:6158 ../src/iop/clipping.c:2161
 msgid "automatically crop to avoid black edges"
 msgstr "Автоматично обрізати, щоб уникнути чорних країв"
 
-#: ../src/iop/ashift.c:6157
+#: ../src/iop/ashift.c:6159
 msgid ""
 "lens model of the perspective correction: generic or according to the focal "
 "length"
@@ -12729,13 +12729,13 @@ msgstr ""
 "Модель об'єктива для корекції перспективи: загальна або залежна від фокусної "
 "відстані"
 
-#: ../src/iop/ashift.c:6160
+#: ../src/iop/ashift.c:6162
 msgid "focal length of the lens, default value set from EXIF data if available"
 msgstr ""
 "Фокусна відстань об'єктива, значення за замовчуванням установлюється з даних "
 "EXIF, якщо є"
 
-#: ../src/iop/ashift.c:6163
+#: ../src/iop/ashift.c:6165
 msgid ""
 "crop factor of the camera sensor, default value set from EXIF data if "
 "available, manual setting is often required"
@@ -12743,7 +12743,7 @@ msgstr ""
 "Кроп-фактор сенсора камери, значення за замовчуванням установлюється з даних "
 "EXIF, якщо є. Часто потрібне ручне встановлення"
 
-#: ../src/iop/ashift.c:6167
+#: ../src/iop/ashift.c:6169
 msgid ""
 "the level of lens dependent correction, set to maximum for full lens "
 "dependency, set to zero for the generic case"
@@ -12751,13 +12751,13 @@ msgstr ""
 "Рівень залежності корекції від об'єктива, встановлюйте на максимум для "
 "повної залежності від об'єктива, встановлюйте на нуль для загального випадку"
 
-#: ../src/iop/ashift.c:6171
+#: ../src/iop/ashift.c:6173
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
 msgstr ""
 "Регулювати співвідношення сторін зображення за допомогою горизонтального та "
 "вертикального масштабування"
 
-#: ../src/iop/ashift.c:6173
+#: ../src/iop/ashift.c:6175
 msgid ""
 "automatically correct for vertical perspective distortion\n"
 "ctrl+click to only fit rotation\n"
@@ -12767,7 +12767,7 @@ msgstr ""
 "Ctrl+клік - лише обертання\n"
 "Shift+клік - лише зміщення об'єктива"
 
-#: ../src/iop/ashift.c:6177
+#: ../src/iop/ashift.c:6179
 msgid ""
 "automatically correct for horizontal perspective distortion\n"
 "ctrl+click to only fit rotation\n"
@@ -12777,7 +12777,7 @@ msgstr ""
 "Ctrl+клік - лише обертання\n"
 "Shift+клік - лише зміщення об'єктива"
 
-#: ../src/iop/ashift.c:6181
+#: ../src/iop/ashift.c:6183
 msgid ""
 "automatically correct for vertical and horizontal perspective distortions, "
 "fitting rotation, lens shift in both directions, and shear\n"
@@ -12791,7 +12791,7 @@ msgstr ""
 "Shift+клік - лише зміщення об'єктива\n"
 "Ctrl+Shift+клік - лише обертання та зміщення об'єктива"
 
-#: ../src/iop/ashift.c:6188
+#: ../src/iop/ashift.c:6190
 msgid ""
 "automatically analyse line structure in image\n"
 "ctrl+click for an additional edge enhancement\n"
@@ -12803,43 +12803,43 @@ msgstr ""
 "Shift+клік для додаткового покращення деталей\n"
 "Ctrl+Shift+клік для поєднання обох методів"
 
-#: ../src/iop/ashift.c:6193
+#: ../src/iop/ashift.c:6195
 msgid "manually define perspective rectangle"
 msgstr "Вручну визначити прямокутник перспективи"
 
-#: ../src/iop/ashift.c:6194
+#: ../src/iop/ashift.c:6196
 msgid "manually draw structure lines"
 msgstr "Вручну намалювати лінії структури"
 
-#: ../src/iop/ashift.c:6223
+#: ../src/iop/ashift.c:6225
 msgid "rectangle"
 msgstr "Прямокутник"
 
-#: ../src/iop/ashift.c:6225
+#: ../src/iop/ashift.c:6227
 msgid "lines"
 msgstr "Лінії"
 
-#: ../src/iop/ashift.c:6259 ../src/iop/clipping.c:3374
+#: ../src/iop/ashift.c:6261 ../src/iop/clipping.c:3374
 #, c-format
 msgid "[%s] define/rotate horizon"
 msgstr "[%s] визначити/повернути горизонт"
 
-#: ../src/iop/ashift.c:6262
+#: ../src/iop/ashift.c:6264
 #, c-format
 msgid "[%s on segment] select segment"
 msgstr "[%s на сегменті] вибрати сегмент"
 
-#: ../src/iop/ashift.c:6266
+#: ../src/iop/ashift.c:6268
 #, c-format
 msgid "[%s on segment] unselect segment"
 msgstr "[%s на сегменті] скасувати вибір сегмента"
 
-#: ../src/iop/ashift.c:6270
+#: ../src/iop/ashift.c:6272
 #, c-format
 msgid "[%s] select all segments from zone"
 msgstr "[%s] вибрати усі сегменти із зони"
 
-#: ../src/iop/ashift.c:6274
+#: ../src/iop/ashift.c:6276
 #, c-format
 msgid "[%s] unselect all segments from zone"
 msgstr "[%s] скасувати вибір усіх сегментів із зони"
@@ -14167,7 +14167,7 @@ msgstr "Відсутній баланс білого"
 
 #: ../src/iop/channelmixerrgb.c:2097
 msgid ""
-"this module is not providing a valid reference illuminent\n"
+"this module is not providing a valid reference illuminant\n"
 "causing chromatic adaptation issues in color calibration.\n"
 "enable this module and either set it to reference\n"
 "or disable chromatic adaptation in color calibration."
@@ -18424,9 +18424,9 @@ msgid "edit, add and delete nodes"
 msgstr "Редагувати, додавати і видаляти вузли"
 
 #: ../src/iop/liquify.c:3685 ../src/iop/liquify.c:3691
-#: ../src/iop/liquify.c:3697 ../src/iop/retouch.c:2466
-#: ../src/iop/retouch.c:2472 ../src/iop/retouch.c:2477
-#: ../src/iop/retouch.c:2482 ../src/iop/spots.c:885 ../src/iop/spots.c:890
+#: ../src/iop/liquify.c:3697 ../src/iop/retouch.c:2467
+#: ../src/iop/retouch.c:2473 ../src/iop/retouch.c:2478
+#: ../src/iop/retouch.c:2483 ../src/iop/spots.c:885 ../src/iop/spots.c:890
 #: ../src/iop/spots.c:895 ../src/libs/masks.c:1812 ../src/libs/masks.c:1821
 #: ../src/libs/masks.c:1830 ../src/libs/masks.c:1839 ../src/libs/masks.c:1848
 msgid "shapes"
@@ -19372,11 +19372,11 @@ msgstr "Клонування"
 msgid "healing"
 msgstr "Лікування"
 
-#: ../src/iop/retouch.c:2449
+#: ../src/iop/retouch.c:2450
 msgid "shapes:"
 msgstr "Фігури:"
 
-#: ../src/iop/retouch.c:2455
+#: ../src/iop/retouch.c:2456
 msgid ""
 "to add a shape select an algorithm and a shape type and click on the image.\n"
 "shapes are added to the current scale"
@@ -19385,73 +19385,73 @@ msgstr ""
 "зображення.\n"
 "Фігури додаються до поточного масштабу"
 
-#: ../src/iop/retouch.c:2459 ../src/iop/retouch.c:2592
-#: ../src/iop/retouch.c:2598 ../src/iop/retouch.c:2607
-#: ../src/iop/retouch.c:2612 ../src/iop/retouch.c:2620
-#: ../src/iop/retouch.c:2665
+#: ../src/iop/retouch.c:2460 ../src/iop/retouch.c:2593
+#: ../src/iop/retouch.c:2599 ../src/iop/retouch.c:2608
+#: ../src/iop/retouch.c:2613 ../src/iop/retouch.c:2621
+#: ../src/iop/retouch.c:2666
 msgid "editing"
 msgstr "Редагування"
 
-#: ../src/iop/retouch.c:2460
+#: ../src/iop/retouch.c:2461
 msgid "show and edit shapes on the current scale"
 msgstr "Показувати та редагувати фігури в поточному масштабі"
 
-#: ../src/iop/retouch.c:2461
+#: ../src/iop/retouch.c:2462
 msgid "show and edit shapes in restricted mode"
 msgstr "Показувати та редагувати фігури в обмеженому режимі"
 
-#: ../src/iop/retouch.c:2490
+#: ../src/iop/retouch.c:2491
 msgid "algorithms:"
 msgstr "Алгоритми:"
 
-#: ../src/iop/retouch.c:2493 ../src/iop/retouch.c:2499
-#: ../src/iop/retouch.c:2505 ../src/iop/retouch.c:2511
+#: ../src/iop/retouch.c:2494 ../src/iop/retouch.c:2500
+#: ../src/iop/retouch.c:2506 ../src/iop/retouch.c:2512
 msgid "tools"
 msgstr "Інструменти"
 
-#: ../src/iop/retouch.c:2493 ../src/iop/retouch.c:2519
+#: ../src/iop/retouch.c:2494 ../src/iop/retouch.c:2520
 msgid "activate blur tool"
 msgstr "Розмиття"
 
-#: ../src/iop/retouch.c:2494 ../src/iop/retouch.c:2500
-#: ../src/iop/retouch.c:2506 ../src/iop/retouch.c:2512
+#: ../src/iop/retouch.c:2495 ../src/iop/retouch.c:2501
+#: ../src/iop/retouch.c:2507 ../src/iop/retouch.c:2513
 msgid "change algorithm for current form"
 msgstr "Змінити алгоритм для поточної фігури"
 
-#: ../src/iop/retouch.c:2499 ../src/iop/retouch.c:2522
+#: ../src/iop/retouch.c:2500 ../src/iop/retouch.c:2523
 msgid "activate fill tool"
 msgstr "Заливка"
 
-#: ../src/iop/retouch.c:2505 ../src/iop/retouch.c:2525
+#: ../src/iop/retouch.c:2506 ../src/iop/retouch.c:2526
 msgid "activate cloning tool"
 msgstr "Клонування"
 
-#: ../src/iop/retouch.c:2511 ../src/iop/retouch.c:2528
+#: ../src/iop/retouch.c:2512 ../src/iop/retouch.c:2529
 msgid "activate healing tool"
 msgstr "Лікувальний пензель"
 
 #. overwrite tooltip ourself to handle shift+click
-#: ../src/iop/retouch.c:2517
+#: ../src/iop/retouch.c:2518
 msgid "ctrl+click to change tool for current form"
 msgstr "Ctrl+клік - змінити інструмент для поточної фігури"
 
-#: ../src/iop/retouch.c:2518
+#: ../src/iop/retouch.c:2519
 msgid "shift+click to set the tool as default"
 msgstr "shift+клік - встановити інструмент за замовчуванням"
 
-#: ../src/iop/retouch.c:2538
+#: ../src/iop/retouch.c:2539
 msgid "scales:"
 msgstr "Масштаби:"
 
-#: ../src/iop/retouch.c:2545
+#: ../src/iop/retouch.c:2546
 msgid "current:"
 msgstr "Поточний:"
 
-#: ../src/iop/retouch.c:2552
+#: ../src/iop/retouch.c:2553
 msgid "merge from:"
 msgstr "Об'єднати від:"
 
-#: ../src/iop/retouch.c:2563
+#: ../src/iop/retouch.c:2564
 msgid ""
 "top slider adjusts where the merge scales start\n"
 "bottom slider adjusts the number of scales\n"
@@ -19466,44 +19466,44 @@ msgstr ""
 "масштабування\n"
 "Нижня лінія означає, що масштаб містить фігури"
 
-#: ../src/iop/retouch.c:2592
+#: ../src/iop/retouch.c:2593
 msgid "display masks"
 msgstr "Показати маски"
 
-#: ../src/iop/retouch.c:2598
+#: ../src/iop/retouch.c:2599
 msgid "temporarily switch off shapes"
 msgstr "Тимчасово вимкнути фігури"
 
-#: ../src/iop/retouch.c:2607
+#: ../src/iop/retouch.c:2608
 msgid "paste cut shapes to current scale"
 msgstr "Вставити вирізані фігури в поточний масштаб"
 
-#: ../src/iop/retouch.c:2612
+#: ../src/iop/retouch.c:2613
 msgid "cut shapes from current scale"
 msgstr "Вирізати фігури з поточного масштабу"
 
-#: ../src/iop/retouch.c:2620
+#: ../src/iop/retouch.c:2621
 msgid "display wavelet scale"
 msgstr "Відображати масштаби"
 
-#: ../src/iop/retouch.c:2628
+#: ../src/iop/retouch.c:2629
 msgctxt "section"
 msgid "preview single scale"
 msgstr "Попередній перегляд окремого масштабу"
 
-#: ../src/iop/retouch.c:2642
+#: ../src/iop/retouch.c:2643
 msgid "adjust preview levels"
 msgstr "Відрегулювати рівні попереднього перегляду"
 
-#: ../src/iop/retouch.c:2665 ../src/iop/rgblevels.c:1106
+#: ../src/iop/retouch.c:2666 ../src/iop/rgblevels.c:1106
 msgid "auto levels"
 msgstr "Авторівні"
 
-#: ../src/iop/retouch.c:2673
+#: ../src/iop/retouch.c:2674
 msgid "shape selected:"
 msgstr "Вибрана фігура: "
 
-#: ../src/iop/retouch.c:2679
+#: ../src/iop/retouch.c:2680
 msgid ""
 "click on a shape to select it,\n"
 "to unselect click on an empty space"
@@ -19511,60 +19511,60 @@ msgstr ""
 "Натисніть на фігуру, щоб вибрати її,\n"
 "щоб скасувати вибір, натисніть на порожній простір"
 
-#: ../src/iop/retouch.c:2688
+#: ../src/iop/retouch.c:2689
 msgid "erase the detail or fills with chosen color"
 msgstr "Стирати або заливати вибраним кольором"
 
-#: ../src/iop/retouch.c:2698
+#: ../src/iop/retouch.c:2699
 msgid "fill color: "
 msgstr "Колір заливки: "
 
-#: ../src/iop/retouch.c:2703 ../src/iop/retouch.c:2704
+#: ../src/iop/retouch.c:2704 ../src/iop/retouch.c:2705
 msgid "select fill color"
 msgstr "Вибрати колір заливки"
 
-#: ../src/iop/retouch.c:2714
+#: ../src/iop/retouch.c:2715
 msgid "pick fill color from image"
 msgstr "Вибрати колір заливки із зображення"
 
-#: ../src/iop/retouch.c:2715
+#: ../src/iop/retouch.c:2716
 msgid "pick fill color"
 msgstr "Вибрати колір заливки"
 
-#: ../src/iop/retouch.c:2725
+#: ../src/iop/retouch.c:2726
 msgid "adjusts color brightness to fine-tune it. works with erase as well"
 msgstr "Регулювати яскравість кольору"
 
-#: ../src/iop/retouch.c:2731
+#: ../src/iop/retouch.c:2732
 msgid "type for the blur algorithm"
 msgstr "Тип алгоритму розмиття"
 
-#: ../src/iop/retouch.c:2735
+#: ../src/iop/retouch.c:2736
 msgid "radius of the selected blur type"
 msgstr "Радіус вибраного типу розмиття"
 
-#: ../src/iop/retouch.c:2742
+#: ../src/iop/retouch.c:2743
 msgid "set the opacity on the selected shape"
 msgstr "Установити непрозорість вибраної фігури"
 
-#: ../src/iop/retouch.c:2749
+#: ../src/iop/retouch.c:2750
 msgctxt "section"
 msgid "retouch tools"
 msgstr "Інструменти ретушування"
 
 #. wavelet decompose
-#: ../src/iop/retouch.c:2758
+#: ../src/iop/retouch.c:2759
 msgctxt "section"
 msgid "wavelet decompose"
 msgstr "Вейвлет-декомпозиція"
 
 #. shapes
-#: ../src/iop/retouch.c:2772
+#: ../src/iop/retouch.c:2773
 msgctxt "section"
 msgid "shapes"
 msgstr "Фігури"
 
-#: ../src/iop/retouch.c:3987 ../src/iop/retouch.c:4957
+#: ../src/iop/retouch.c:3988 ../src/iop/retouch.c:4958
 #, c-format
 msgid "max scale is %i for this image size"
 msgstr "Для цього розміру зображення максимальний масштаб %i"
