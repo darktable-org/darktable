@@ -722,23 +722,19 @@ static bool _exif_decode_iptc_data(dt_image_t *img, Exiv2::IptcData &iptcData)
     }
     if(FIND_IPTC_TAG("Iptc.Application2.DateCreated"))
     {
+      // exiv2 already converts IPTC date and time into ISO 8601 format
       GString *datetime = g_string_new(pos->toString().c_str());
 
-      // FIXME: Workaround for exiv2 reading partial IPTC DateCreated in YYYYMMDD format
-      if(g_regex_match_simple("^\\d{8}$", datetime->str,
-                              (GRegexCompileFlags)0, (GRegexMatchFlags)0))
-      {
-        datetime = g_string_insert_c(datetime, 6, ':');
-        datetime = g_string_insert_c(datetime, 4, ':');
-      }
-
+      datetime = g_string_append(datetime, "T");
       if(FIND_IPTC_TAG("Iptc.Application2.TimeCreated"))
       {
-        char *time = g_strndup(pos->toString().c_str(), 8); // remove timezone at the end
-        datetime = g_string_append(datetime, " ");
+        gchar *time = g_strdup(pos->toString().c_str());
         datetime = g_string_append(datetime, time);
-        free(time);
+        g_free(time);
       }
+      else
+        datetime = g_string_append(datetime, "00:00:00");
+
       dt_datetime_exif_to_img(img, datetime->str);
       g_string_free(datetime, TRUE);
     }

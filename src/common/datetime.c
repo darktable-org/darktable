@@ -76,9 +76,9 @@ gboolean dt_datetime_exif_to_numbers(dt_datetime_t *dt, const char *exif)
     // https://developer.adobe.com/xmp/docs/XMPNamespaces/XMPDataTypes/#date
     if(exif[len-1] == 'Z')
       len--;
-    else if(exif[len-3] == '+' || exif[len-3] == '-')
+    else if(len > 10 && (exif[len - 3] == '+' || exif[len - 3] == '-'))
       len -= 3;
-    else if(exif[len-6] == '+' || exif[len-6] == '-')
+    else if(len > 10 && (exif[len - 6] == '+' || exif[len - 6] == '-'))
       len -= 6;
     len = len > sizeof(sdt) - 1 ? sizeof(sdt) - 1 : len;
     memcpy(sdt, exif, len);
