@@ -766,6 +766,7 @@ static gboolean _move(dt_thumbtable_t *table,
       GList *ll = l;
       l = g_list_next(l);
       table->list = g_list_delete_link(table->list, ll);
+      if(table->drag_thumb == th) table->drag_thumb = NULL;
     }
     else
     {
@@ -898,6 +899,7 @@ static void _zoomable_zoom(dt_thumbtable_t *table,
       GList *ll = l;
       l = g_list_next(l);
       table->list = g_list_delete_link(table->list, ll);
+      if(table->drag_thumb == th) table->drag_thumb = NULL;
     }
     else
     {
@@ -1297,7 +1299,9 @@ static gboolean _event_button_press(GtkWidget *widget,
   {
     table->dragging = TRUE;
     table->drag_dx = table->drag_dy = 0;
+    table->drag_initial_imgid = id;
     table->drag_thumb = _thumbtable_get_thumb(table, id);
+    table->drag_thumb->moved = FALSE;
   }
   return TRUE;
 }
@@ -1319,7 +1323,7 @@ static gboolean _event_motion_notify(GtkWidget *widget,
     _move(table, dx, dy, TRUE);
     table->drag_dx += dx;
     table->drag_dy += dy;
-    if(table->drag_thumb)
+    if(table->drag_thumb && !table->drag_thumb->moved)
     {
       // we only considers that this is a real move if the total
       // distance is not too low
@@ -1364,7 +1368,13 @@ static gboolean _event_button_release(GtkWidget *widget,
   if(table->mode != DT_THUMBTABLE_MODE_ZOOM)
     return FALSE;
 
+  // in some case, image_over_id can get out of sync at the end of dragging
+  // this happen esp. if the pointer as been out of the center area during drag
+  if (dt_control_get_mouse_over_id() != table->drag_initial_imgid && table->drag_thumb)
+    dt_control_set_mouse_over_id(table->drag_initial_imgid);
   table->dragging = FALSE;
+  table->drag_initial_imgid = NO_IMGID;
+  table->drag_thumb = NULL;
 
   if((abs(table->drag_dx) + abs(table->drag_dy)) <= DT_PIXEL_APPLY_DPI(8)
      && !dt_is_valid_imgid(dt_control_get_mouse_over_id()))
@@ -1571,16 +1581,35 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
   for(const GList *l = table->list; l; l = g_list_next(l))
   {
     dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    // during dragging, we don't change over_id thumbnail
+    // this avoid some "jump" visual effect during widget move
+    // anyway the image_over_id is restored on button_release
+    const gboolean drag_ko = (table->mode == DT_THUMBTABLE_MODE_ZOOM
+                              && table->dragging
+                              && table->drag_initial_imgid != imgid);
     // if needed, the change mouseover value of the thumb
-    if(th->mouse_over != (th->imgid == imgid))
+    if(th->mouse_over != (th->imgid == imgid) && !drag_ko)
       dt_thumbnail_set_mouseover(th, (th->imgid == imgid));
     // now the grouping stuff
-    if(th->imgid == imgid && th->is_grouped)
+    if(th->imgid == imgid && th->is_grouped && !drag_ko)
       groupid = th->groupid;
-    if(th->group_borders)
+    if(th->group_borders && !drag_ko)
     {
       // to be sure we don't have any borders remaining
       dt_thumbnail_set_group_border(th, DT_THUMBNAIL_BORDER_NONE);
+    }
+
+    // during dragging, we can "lost" the drag_thumb if the pointer goes out of the central view
+    // when the pointer is back, let's restore it
+    if(th->imgid == imgid
+       && table->mode == DT_THUMBTABLE_MODE_ZOOM
+       && table->dragging
+       && table->drag_initial_imgid == imgid
+       && table->drag_thumb != th)
+    {
+      table->drag_thumb = th;
+      table->drag_thumb->moved =
+        ((abs(table->drag_dx) + abs(table->drag_dy)) > DT_PIXEL_APPLY_DPI(8));
     }
   }
 
