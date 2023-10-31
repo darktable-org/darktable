@@ -276,7 +276,8 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_filmic_params_v2_t;
 
     const dt_iop_filmic_params_v2_t *o = (dt_iop_filmic_params_v2_t *)old_params;
-    dt_iop_filmic_params_t *n = (dt_iop_filmic_params_t *)new_params;
+    dt_iop_filmic_params_v3_t *n =
+      (dt_iop_filmic_params_v3_t *)malloc(sizeof(dt_iop_filmic_params_v3_t));
 
     n->grey_point_source = o->grey_point_source;
     n->white_point_source = o->white_point_source;
