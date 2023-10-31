@@ -754,10 +754,13 @@ static gboolean _move(dt_thumbtable_t *table,
   while(l)
   {
     dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
-    if(!first) first = th;
+    if(!first)
+      first = th;
+
     last = th;
     th->y += posy;
     th->x += posx;
+
     if(th->y + table->thumb_size <= 0 || th->y > table->view_height
        || (table->mode == DT_THUMBTABLE_MODE_FILMSTRIP
            && (th->x + table->thumb_size <= 0 || th->x > table->view_width)))
@@ -766,7 +769,9 @@ static gboolean _move(dt_thumbtable_t *table,
       GList *ll = l;
       l = g_list_next(l);
       table->list = g_list_delete_link(table->list, ll);
-      if(table->drag_thumb == th) table->drag_thumb = NULL;
+
+      if(table->drag_thumb == th)
+        table->drag_thumb = NULL;
     }
     else
     {
@@ -899,7 +904,8 @@ static void _zoomable_zoom(dt_thumbtable_t *table,
       GList *ll = l;
       l = g_list_next(l);
       table->list = g_list_delete_link(table->list, ll);
-      if(table->drag_thumb == th) table->drag_thumb = NULL;
+      if(table->drag_thumb == th)
+        table->drag_thumb = NULL;
     }
     else
     {
