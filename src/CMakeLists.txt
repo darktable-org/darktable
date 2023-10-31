@@ -104,6 +104,7 @@ FILE(GLOB SOURCE_FILES
   "control/signal.c"
   "develop/develop.c"
   "develop/imageop.c"
+  "develop/borders_helper.c"
   "develop/imageop_math.c"
   "develop/imageop_gui.c"
   "develop/lightroom.c"
