@@ -70,41 +70,24 @@ typedef enum dt_pixelpipe_picker_source_t
 const char *dt_dev_pixelpipe_type_to_str(const int pipe_type)
 {
   const gboolean fast = pipe_type & DT_DEV_PIXELPIPE_FAST;
-  const char *r = NULL;
+  const gboolean dev = pipe_type & DT_DEV_PIXELPIPE_IMAGE;
+
+#define PT_STR(name) fast ? dev ? #name "/fast/dev" \
+                                : #name "/fast"     \
+                          : dev ? #name "/dev"      \
+                                : #name
 
   switch(pipe_type & DT_DEV_PIXELPIPE_ANY)
   {
-    case DT_DEV_PIXELPIPE_PREVIEW:
-      if(fast)
-        r = "preview/fast";
-      else
-        r = "preview";
-      break;
-    case DT_DEV_PIXELPIPE_PREVIEW2:
-      if(fast)
-        r = "preview2/fast";
-      else
-        r = "preview2";
-      break;
-    case DT_DEV_PIXELPIPE_FULL:
-      r = "full";
-      break;
-    case DT_DEV_PIXELPIPE_THUMBNAIL:
-      if(fast)
-        r = "thumbnail/fast";
-      else
-        r = "thumbnail";
-      break;
-    case DT_DEV_PIXELPIPE_EXPORT:
-      if(fast)
-        r = "export/fast";
-      else
-        r = "export";
-      break;
-    default:
-      r = "unknown";
+    case DT_DEV_PIXELPIPE_PREVIEW:   return PT_STR(preview);
+    case DT_DEV_PIXELPIPE_PREVIEW2:  return PT_STR(preview2);
+    case DT_DEV_PIXELPIPE_FULL:      return PT_STR(full);
+    case DT_DEV_PIXELPIPE_THUMBNAIL: return PT_STR(thumbnail);
+    case DT_DEV_PIXELPIPE_EXPORT:    return PT_STR(export);
+    default:                         return PT_STR(unknown);
   }
-  return r;
+
+#undef PT_STR
 }
 
 void dt_print_pipe(dt_debug_thread_t thread,
@@ -160,7 +143,7 @@ void dt_print_pipe(dt_debug_thread_t thread,
   vsnprintf(vbuf, sizeof(vbuf), msg, ap);
   va_end(ap);
 
-  printf("%11s %-26s %-14s %-22s %s%s%s%s",
+  printf("%11s %-26s %-16s %-22s %s%s%s%s",
          buf[0], buf[1], pname, buf[2], roi, roo, masking, vbuf);
   fflush(stdout);
 }
@@ -553,9 +536,8 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
     start = dt_get_wtime();
 
   dev->cropping.exposer = NULL;
-  dt_print(DT_DEBUG_PARAMS,
-           "[pixelpipe] [%s] synch all modules with defaults_params\n",
-           dt_dev_pixelpipe_type_to_str(pipe->type));
+  dt_print_pipe(DT_DEBUG_PARAMS, "synch all modules with defaults",
+    pipe, NULL, NULL, NULL, "\n");
 
   // call reset_params on all pieces first. This is mandatory to init
   // utility modules that don't have an history stack
@@ -572,9 +554,8 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
   if(darktable.unmuted & DT_DEBUG_PIPE)
     defaults = dt_get_wtime();
 
-  dt_print(DT_DEBUG_PARAMS,
-           "[pixelpipe] [%s] synch all modules with history\n",
-           dt_dev_pixelpipe_type_to_str(pipe->type));
+  dt_print_pipe(DT_DEBUG_PARAMS, "synch all modules with history",
+    pipe, NULL, NULL, NULL, "\n");
 
   // go through all history items and adjust params
   GList *history = dev->history;
@@ -598,16 +579,14 @@ void dt_dev_pixelpipe_synch_top(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
   if(history)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)history->data;
-    dt_print(DT_DEBUG_PARAMS,
-             "[pixelpipe] [%s] synch top history module `%s'\n",
-             dt_dev_pixelpipe_type_to_str(pipe->type), hist->module->op);
+    dt_print_pipe(DT_DEBUG_PARAMS, "synch top history module",
+      pipe, hist->module, NULL, NULL, "\n");
     dt_dev_pixelpipe_synch(pipe, dev, history);
   }
   else
   {
-    dt_print(DT_DEBUG_PARAMS,
-             "[pixelpipe] [%s] synch top history module missing error\n",
-             dt_dev_pixelpipe_type_to_str(pipe->type));
+    dt_print_pipe(DT_DEBUG_PARAMS, "synch top history module missing!",
+      pipe, NULL, NULL, NULL, "\n");
   }
   dt_pthread_mutex_unlock(&pipe->busy_mutex);
 }
@@ -616,9 +595,8 @@ void dt_dev_pixelpipe_change(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev)
 {
   dt_pthread_mutex_lock(&dev->history_mutex);
 
-  dt_print(DT_DEBUG_PARAMS,
-           "[pixelpipe] [%s] pipeline state changing, flag %i\n",
-           dt_dev_pixelpipe_type_to_str(pipe->type), pipe->changed);
+  dt_print_pipe(DT_DEBUG_PARAMS, "pipeline state changing",
+      pipe, NULL, NULL, NULL, "flag = %d\n", pipe->changed);
   // case DT_DEV_PIPE_UNCHANGED: case DT_DEV_PIPE_ZOOMED:
   if(pipe->changed & DT_DEV_PIPE_TOP_CHANGED)
   {
@@ -1391,9 +1369,10 @@ static gboolean _dev_pixelpipe_process_rec(
   dt_iop_module_t *module = NULL;
   dt_dev_pixelpipe_iop_t *piece = NULL;
 
+  const dt_iop_module_t *gui_module = dt_dev_gui_module();
   // if a module is active, check if this module allow a fast pipe run
-  if(darktable.develop && dev->gui_module
-     && dev->gui_module->flags() & IOP_FLAGS_ALLOW_FAST_PIPE)
+  if(gui_module
+     && gui_module->flags() & IOP_FLAGS_ALLOW_FAST_PIPE)
     pipe->type |= DT_DEV_PIXELPIPE_FAST;
   else
     pipe->type &= ~DT_DEV_PIXELPIPE_FAST;
@@ -2170,7 +2149,7 @@ static gboolean _dev_pixelpipe_process_rec(
            && ((pipe->type == DT_DEV_PIXELPIPE_FULL) // ignored in fast mode
               || (pipe->type == DT_DEV_PIXELPIPE_PREVIEW))
            && dev->gui_attached
-           && ((module == darktable.develop->gui_module)
+           && ((module == dt_dev_gui_module())
                 || darktable.develop->history_last_module == module
                 || dt_iop_module_is(module->so, "colorout"));
 
@@ -2366,7 +2345,7 @@ static gboolean _dev_pixelpipe_process_rec(
     // Possibly give the input buffer of the current module more weight
     // as the user is likely to change that one soon (again), so keep it in cache.
     // Also do this if the clbuffer has been actively written
-    const gboolean has_focus = (module == darktable.develop->gui_module);
+    const gboolean has_focus = module == dt_dev_gui_module();
     if((pipe->type & DT_DEV_PIXELPIPE_BASIC)
         && (pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE)
         && (has_focus || darktable.develop->history_last_module == module || important_cl))

@@ -3513,6 +3513,7 @@ void dt_dev_image(const dt_imgid_t imgid,
   dev.gui_attached = FALSE;
   dt_dev_pixelpipe_t *pipe = dev.full.pipe;
 
+  pipe->type |= DT_DEV_PIXELPIPE_IMAGE;
   // load image and set history_end
 
   dt_dev_load_image_ext(&dev, imgid, snapshot_id);

@@ -58,8 +58,8 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
     flags &= ~CPF_ACTIVE;
 
   /* update focus state paint flag */
-  const gboolean hasfocus = ((DTGTK_TOGGLEBUTTON(widget)->icon_data == darktable.develop->gui_module)
-                         && darktable.develop->gui_module);
+  const gboolean hasfocus = ((DTGTK_TOGGLEBUTTON(widget)->icon_data == dt_dev_gui_module())
+                         && dt_dev_gui_module());
   if(hasfocus)
     flags |= CPF_FOCUS;
   else
