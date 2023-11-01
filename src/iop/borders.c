@@ -26,6 +26,7 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "develop/borders_helper.h"
 #include "develop/imageop_gui.h"
 #include "dtgtk/button.h"
 #include "dtgtk/resetlabel.h"
@@ -348,7 +349,10 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_RGB;
 }
 
-int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *const restrict points, size_t points_count)
+int distort_transform(dt_iop_module_t *self,
+                      dt_dev_pixelpipe_iop_t *piece,
+                      float *const restrict points,
+                      size_t points_count)
 {
   dt_iop_borders_data_t *d = (dt_iop_borders_data_t *)piece->data;
 
@@ -411,14 +415,13 @@ void distort_mask(struct dt_iop_module_t *self,
 {
   dt_iop_borders_data_t *d = (dt_iop_borders_data_t *)piece->data;
 
-  const int border_tot_width =
-    (piece->buf_out.width - piece->buf_in.width) * roi_in->scale;
-  const int border_tot_height =
-    (piece->buf_out.height - piece->buf_in.height) * roi_in->scale;
-  const int border_size_t = border_tot_height * d->pos_v;
-  const int border_size_l = border_tot_width * d->pos_h;
-  const int border_in_x = MAX(border_size_l - roi_out->x, 0);
-  const int border_in_y = MAX(border_size_t - roi_out->y, 0);
+  dt_iop_border_positions_t binfo;
+
+  dt_iop_setup_binfo(piece, roi_in, roi_out, d->pos_v, d->pos_h,
+                     d->color, d->frame_color, d->frame_size, d->frame_offset, &binfo);
+
+  const int border_in_x = binfo.border_in_x;
+  const int border_in_y = binfo.border_in_y;
 
   // fill the image with 0 so that the added border isn't part of the mask
   dt_iop_image_fill(out, 0.0f, roi_out->width, roi_out->height, 1);
@@ -582,125 +585,6 @@ void modify_roi_in(struct dt_iop_module_t *self,
   // a division by zero.
 }
 
-struct border_positions_t
-{
-  dt_aligned_pixel_t bcolor;
-  dt_aligned_pixel_t flcolor;
-  int border_top;		// 0..bt is rows of top border outside the frameline
-  int fl_top;			//bt..ft is the top frameline
-  int image_top;		//ft..it is the top border inside the frameline
-  int border_left;		// 0..bl is columns of left border outside the frameline
-  int fl_left;			//bl..fl is the left frameline
-  int image_left;		//fl..il is the left border inside the frameline
-  int image_right;		//il..ir is the actual image area
-  int fl_right;			//ir..fr is the right border inside the frameline
-  int border_right;		//fr..br is the right frameeline
-  int width;			//br..width is the right border outside the frameline
-  int image_bot;		//it..ib is the actual image area
-  int fl_bot;			//ib..fb is the bottom border inside the frameline
-  int border_bot;		//fb..bt is the frameline
-  int height;			//bt..height is the bottom border outside the frameline
-  int stride;			// width of input roi
-};
-
-// this will be called from inside an OpenMP parallel section, so no
-// need to parallelize further
-static inline void set_pixels(float *buf,
-                              const dt_aligned_pixel_t color,
-                              const int npixels)
-{
-  for(int i = 0; i < npixels; i++)
-  {
-    copy_pixel_nontemporal(buf + 4*i,  color);
-  }
-}
-
-// this will be called from inside an OpenMP parallel section, so no need to parallelize further
-static inline void copy_pixels(float *out,
-                               const float *const in,
-                               const int npixels)
-{
-  for(int i = 0; i < npixels; i++)
-  {
-    copy_pixel_nontemporal(out + 4*i, in + 4*i);
-  }
-}
-
-void copy_image_with_border(float *out,
-                            const float *const in,
-                            const struct border_positions_t *binfo)
-{
-  const int image_width = binfo->image_right - binfo->image_left;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, out, binfo, image_width) \
-  schedule(static)
-#endif
-  for(size_t row = 0; row < binfo->height; row++)
-  {
-    float *outrow = out + 4 * row * binfo->width;
-    if(row < binfo->border_top || row >= binfo->border_bot)
-    {
-      // top/bottom border outside the frameline: entirely the border color
-      set_pixels(outrow, binfo->bcolor, binfo->width);
-    }
-    else if(row < binfo->fl_top || row >= binfo->fl_bot)
-    {
-      // top/bottom frameline
-      set_pixels(outrow, binfo->bcolor, binfo->border_left);
-      set_pixels(outrow + 4*binfo->border_left,
-                 binfo->flcolor, binfo->border_right - binfo->border_left);
-      set_pixels(outrow + 4*binfo->border_right,
-                 binfo->bcolor, binfo->width - binfo->border_right);
-    }
-    else if(row < binfo->image_top || row >= binfo->image_bot)
-    {
-      // top/bottom border inside the frameline
-      set_pixels(outrow, binfo->bcolor, binfo->border_left);
-      set_pixels(outrow + 4*binfo->border_left,
-                 binfo->flcolor, binfo->fl_left - binfo->border_left);
-      set_pixels(outrow + 4*binfo->fl_left,
-                 binfo->bcolor, binfo->fl_right - binfo->fl_left);
-      set_pixels(outrow + 4*binfo->fl_right,
-                 binfo->flcolor, binfo->border_right - binfo->fl_right);
-      set_pixels(outrow + 4*binfo->border_right,
-                 binfo->bcolor, binfo->width - binfo->border_right);
-    }
-    else
-    {
-      // image area: set left border (w/optional frame line), copy
-      // image row, set right border (w/optional frame line) set outer
-      // border
-      set_pixels(outrow, binfo->bcolor, binfo->border_left);
-      if(binfo->image_left > binfo->border_left)
-      {
-        // we have a frameline, so set it and the inner border
-        set_pixels(outrow + 4*binfo->border_left,
-                   binfo->flcolor, binfo->fl_left - binfo->border_left);
-        set_pixels(outrow + 4*binfo->fl_left,
-                   binfo->bcolor, binfo->image_left - binfo->fl_left);
-      }
-      // copy image row
-      copy_pixels(outrow + 4*binfo->image_left,
-                  in + 4 * (row - binfo->image_top) * binfo->stride, image_width);
-      // set right border
-      set_pixels(outrow + 4*binfo->image_right,
-                 binfo->bcolor, binfo->fl_right - binfo->image_right);
-      if(binfo->width > binfo->fl_right)
-      {
-        // we have a frameline, so set it and the outer border
-        set_pixels(outrow + 4*binfo->fl_right,
-                   binfo->flcolor, binfo->border_right - binfo->fl_right);
-        set_pixels(outrow + 4*binfo->border_right,
-                   binfo->bcolor, binfo->width - binfo->border_right);
-      }
-    }
-  }
-  // ensure that all streaming writes complete before we attempt to
-  // read from the output buffer
-  dt_omploop_sfence();
-}
-
 void process(struct dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
@@ -710,85 +594,12 @@ void process(struct dt_iop_module_t *self,
 {
   const dt_iop_borders_data_t *const d = (dt_iop_borders_data_t *)piece->data;
 
-  const int border_tot_width =
-    (piece->buf_out.width - piece->buf_in.width) * roi_in->scale;
-  const int border_tot_height =
-    (piece->buf_out.height - piece->buf_in.height) * roi_in->scale;
-  const int border_size_t = border_tot_height * d->pos_v;
-  const int border_size_b = border_tot_height - border_size_t;
-  const int border_size_l = border_tot_width * d->pos_h;
-  const int border_size_r = border_tot_width - border_size_l;
-  const int border_in_x = MAX(border_size_l - roi_out->x, 0);
-  const int border_in_y = MAX(border_size_t - roi_out->y, 0);
+  dt_iop_border_positions_t binfo;
 
-  // compute frame line parameters
-  const int border_min_size =
-    MIN(MIN(border_size_t, border_size_b), MIN(border_size_l, border_size_r));
-  const int frame_size = border_min_size * d->frame_size;
+  dt_iop_setup_binfo(piece, roi_in, roi_out, d->pos_v, d->pos_h,
+                     d->color, d->frame_color, d->frame_size, d->frame_offset, &binfo);
 
-  const int b_in_x = CLAMP(border_in_x, 0, roi_out->width - 1);
-  struct border_positions_t binfo =
-    { .bcolor = { d->color[0], d->color[1], d->color[2], 1.0f },
-      .flcolor = { d->frame_color[0], d->frame_color[1], d->frame_color[2], 1.0f },
-      .border_top = border_in_y,
-      .fl_top = border_in_y,
-      .image_top = border_in_y,
-      .border_left = b_in_x,
-      .fl_left = b_in_x,
-      .image_left = b_in_x,
-      .image_right = b_in_x + roi_in->width,
-      .fl_right = roi_out->width,
-      .border_right = roi_out->width,
-      .width = roi_out->width,
-      .image_bot = border_in_y + roi_in->height,
-      .fl_bot = roi_out->height,
-      .border_bot = roi_out->height,
-      .height = roi_out->height,
-      .stride = roi_in->width
-  };
-  if(frame_size > 0)
-  {
-    const int image_lx = border_size_l - roi_out->x;
-    const int image_ty = border_size_t - roi_out->y;
-    const int frame_space = border_min_size - frame_size;
-    const int frame_offset = frame_space * d->frame_offset;
-    const int frame_tl_in_x = MAX(border_in_x - frame_offset, 0);
-    const int frame_tl_out_x = MAX(frame_tl_in_x - frame_size, 0);
-    const int frame_tl_in_y = MAX(border_in_y - frame_offset, 0);
-    const int frame_tl_out_y = MAX(frame_tl_in_y - frame_size, 0);
-    binfo.border_top = frame_tl_out_y;
-    binfo.fl_top = frame_tl_in_y;
-    binfo.border_left = CLAMP(frame_tl_out_x, 0, roi_out->width);
-    binfo.fl_left = CLAMP(frame_tl_in_x, 0, roi_out->width);
-    const int frame_in_width =
-      floor((piece->buf_in.width * roi_in->scale) + frame_offset * 2);
-    const int frame_in_height =
-      floor((piece->buf_in.height * roi_in->scale) + frame_offset * 2);
-    const int frame_out_width = frame_in_width + frame_size * 2;
-    const int frame_out_height = frame_in_height + frame_size * 2;
-    const int frame_br_in_x =
-      CLAMP(image_lx - frame_offset + frame_in_width - 1, 0, roi_out->width - 1);
-    const int frame_br_in_y =
-      CLAMP(image_ty - frame_offset + frame_in_height - 1, 0, roi_out->height - 1);
-    // ... if 100% frame_offset we ensure frame_line "stick" the out border
-    const int frame_br_out_x
-        = (d->frame_offset == 1.0f
-           && (border_min_size == MIN(border_size_l, border_size_r)))
-              ? (roi_out->width)
-              : CLAMP(image_lx - frame_offset - frame_size + frame_out_width - 1,
-                      0, roi_out->width - 1);
-    const int frame_br_out_y
-        = (d->frame_offset == 1.0f
-           && (border_min_size == MIN(border_size_t, border_size_b)))
-              ? (roi_out->height)
-              : CLAMP(image_ty - frame_offset - frame_size + frame_out_height - 1,
-                      0, roi_out->height - 1);
-    binfo.fl_right = frame_br_in_x + 1;		// need end+1 for these coordinates
-    binfo.border_right = frame_br_out_x + 1;
-    binfo.fl_bot = frame_br_in_y + 1;
-    binfo.border_bot = frame_br_out_y + 1;
-  }
-  copy_image_with_border((float*)ovoid, (const float*)ivoid, &binfo);
+  dt_iop_copy_image_with_border((float*)ovoid, (const float*)ivoid, &binfo);
 }
 
 #ifdef HAVE_OPENCL
@@ -804,79 +615,38 @@ int process_cl(struct dt_iop_module_t *self,
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
 
+  dt_iop_border_positions_t binfo;
+
+  dt_iop_setup_binfo(piece, roi_in, roi_out, d->pos_v, d->pos_h,
+                     d->color, d->frame_color, d->frame_size, d->frame_offset, &binfo);
+
   const int width = roi_out->width;
   const int height = roi_out->height;
   size_t sizes[2] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
-
-  const int border_tot_width =
-    (piece->buf_out.width - piece->buf_in.width) * roi_in->scale;
-  const int border_tot_height =
-    (piece->buf_out.height - piece->buf_in.height) * roi_in->scale;
-  const int border_size_t = border_tot_height * d->pos_v;
-  const int border_size_b = border_tot_height - border_size_t;
-  const int border_size_l = border_tot_width * d->pos_h;
-  const int border_size_r = border_tot_width - border_size_l;
-  const int border_in_x = MAX(border_size_l - roi_out->x, 0);
-  const int border_in_y = MAX(border_size_t - roi_out->y, 0);
 
   // ----- Filling border
   const float col[4] = { d->color[0], d->color[1], d->color[2], 1.0f };
   const int zero = 0;
   dt_opencl_set_kernel_args(devid, gd->kernel_borders_fill,
                             0, CLARG(dev_out), CLARG(zero), CLARG(zero),
-    CLARG(width), CLARG(height), CLARG(col));
+                            CLARG(width), CLARG(height), CLARG(col));
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_borders_fill, sizes);
   if(err != CL_SUCCESS) goto error;
 
-  // ----- Frame line
-  const int border_min_size = MIN(MIN(border_size_t, border_size_b),
-                                  MIN(border_size_l, border_size_r));
-  const int frame_size = border_min_size * d->frame_size;
-  if(frame_size != 0)
+  if(binfo.frame_size != 0)
   {
     const float col_frame[4] = { d->frame_color[0],
                                  d->frame_color[1],
                                  d->frame_color[2], 1.0f };
-    const int image_lx = border_size_l - roi_out->x;
-    const int image_ty = border_size_t - roi_out->y;
-    const int frame_space = border_min_size - frame_size;
-    const int frame_offset = frame_space * d->frame_offset;
-    const int frame_tl_in_x = MAX(border_in_x - frame_offset, 0);
-    const int frame_tl_out_x = MAX(frame_tl_in_x - frame_size, 0);
-    const int frame_tl_in_y = MAX(border_in_y - frame_offset, 0);
-    const int frame_tl_out_y = MAX(frame_tl_in_y - frame_size, 0);
-    const int frame_in_width =
-      floor((piece->buf_in.width * roi_in->scale) + frame_offset * 2);
-    const int frame_in_height =
-      floor((piece->buf_in.height * roi_in->scale) + frame_offset * 2);
-    const int frame_out_width = frame_in_width + frame_size * 2;
-    const int frame_out_height = frame_in_height + frame_size * 2;
-    const int frame_br_in_x = CLAMP(image_lx - frame_offset + frame_in_width - 1,
-                                    0, roi_out->width - 1);
-    const int frame_br_in_y = CLAMP(image_ty - frame_offset + frame_in_height - 1,
-                                    0, roi_out->height - 1);
-    // ... if 100% frame_offset we ensure frame_line "stick" the out border
-    const int frame_br_out_x
-        = (d->frame_offset == 1.0f
-           && (border_min_size == MIN(border_size_l, border_size_r)))
-              ? (roi_out->width)
-              : CLAMP(image_lx - frame_offset - frame_size + frame_out_width - 1,
-                      0, roi_out->width);
-    const int frame_br_out_y
-        = (d->frame_offset == 1.0f
-           && (border_min_size == MIN(border_size_t, border_size_b)))
-              ? (roi_out->height)
-              : CLAMP(image_ty - frame_offset - frame_size + frame_out_height - 1,
-                      0, roi_out->height);
 
-    const int roi_frame_in_width = frame_br_in_x - frame_tl_in_x;
-    const int roi_frame_in_height = frame_br_in_y - frame_tl_in_y;
-    const int roi_frame_out_width = frame_br_out_x - frame_tl_out_x;
-    const int roi_frame_out_height = frame_br_out_y - frame_tl_out_y;
+    const int roi_frame_in_width   = binfo.frame_br_in_x - binfo.frame_tl_in_x;
+    const int roi_frame_in_height  = binfo.frame_br_in_y - binfo.frame_tl_in_y;
+    const int roi_frame_out_width  = binfo.frame_br_out_x - binfo.frame_tl_out_x;
+    const int roi_frame_out_height = binfo.frame_br_out_y - binfo.frame_tl_out_y;
 
     dt_opencl_set_kernel_args(devid, gd->kernel_borders_fill, 0,
                               CLARG(dev_out),
-                              CLARG(frame_tl_out_x), CLARG(frame_tl_out_y),
+                              CLARG(binfo.frame_tl_out_x), CLARG(binfo.frame_tl_out_y),
                               CLARG(roi_frame_out_width), CLARG(roi_frame_out_height),
                               CLARG(col_frame));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_borders_fill, sizes);
@@ -884,7 +654,7 @@ int process_cl(struct dt_iop_module_t *self,
 
     dt_opencl_set_kernel_args(devid, gd->kernel_borders_fill, 0,
                               CLARG(dev_out),
-                              CLARG(frame_tl_in_x), CLARG(frame_tl_in_y),
+                              CLARG(binfo.frame_tl_in_x), CLARG(binfo.frame_tl_in_y),
                               CLARG(roi_frame_in_width), CLARG(roi_frame_in_height),
                               CLARG(col));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_borders_fill, sizes);
@@ -892,8 +662,8 @@ int process_cl(struct dt_iop_module_t *self,
   }
 
   size_t iorigin[] = { 0, 0, 0 };
-  size_t oorigin[] = { border_in_x, border_in_y, 0 };
-  size_t region[] = { roi_in->width, roi_in->height, 1 };
+  size_t oorigin[] = { binfo.border_in_x, binfo.border_in_y, 0 };
+  size_t region[]  = { roi_in->width, roi_in->height, 1 };
 
   // copy original input from dev_in -> dev_out as starting point
   err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, iorigin, oorigin, region);
