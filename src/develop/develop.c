@@ -542,7 +542,8 @@ float dt_dev_get_zoom_scale(dt_dev_viewport_t *port,
       break;
   }
 
-  if(preview) zoom_scale *= darktable.develop->preview_pipe->iscale;
+  if(preview) zoom_scale *= (float)darktable.develop->full.pipe->processed_width
+                              / darktable.develop->preview_pipe->processed_width;
 
   return zoom_scale;
 }
@@ -2535,11 +2536,12 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
   dt_pthread_mutex_lock(&(darktable.control->global_mutex));
   dt_pthread_mutex_lock(&dev->history_mutex);
 
+  float pts[2] = { port->zoom_x, port->zoom_y };
+  dt_dev_distort_transform_locked(darktable.develop, port->pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 1);
+
   int procw, proch;
   dt_dev_get_processed_size(port, &procw, &proch);
 
-  float pts[2] = { port->zoom_x, port->zoom_y };
-  dt_dev_distort_transform_locked(darktable.develop, port->pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 1);
   float zoom_x = pts[0] / procw - 0.5f;
   float zoom_y = pts[1] / proch - 0.5f;
 
@@ -2725,15 +2727,13 @@ void dt_dev_get_viewport_params(dt_dev_viewport_t *port,
   if(zoom)    *zoom = port->zoom;
   if(closeup) *closeup = port->closeup;
 
-  if(x && y)
+  if(x && y && port->pipe)
   {
-    dt_pthread_mutex_lock(&darktable.develop->history_mutex);
     float pts[2] = { port->zoom_x, port->zoom_y };
-    dt_dev_distort_transform_locked(darktable.develop, port->pipe,
-                                    0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 1);
+    dt_dev_distort_transform_plus(darktable.develop, port->pipe, 
+                                  0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 1);
     *x = pts[0] / port->pipe->processed_width - 0.5f;
     *y = pts[1] / port->pipe->processed_height - 0.5f;
-    dt_pthread_mutex_unlock(&darktable.develop->history_mutex);
   }
   dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
 }
@@ -3497,8 +3497,6 @@ void dt_dev_image(const dt_imgid_t imgid,
                   const size_t width,
                   const size_t height,
                   const int history_end,
-                  size_t *processed_width,
-                  size_t *processed_height,
                   uint8_t **buf,
                   float *scale,
                   size_t *buf_width,
@@ -3544,8 +3542,6 @@ void dt_dev_image(const dt_imgid_t imgid,
 
   if(buf_width)        *buf_width  = pipe->backbuf_width;
   if(buf_height)       *buf_height = pipe->backbuf_height;
-  if(processed_width)  *processed_width = pipe->processed_width;
-  if(processed_height) *processed_height = pipe->processed_height;
   if(scale)            *scale = pipe->backbuf_scale;
   if(zoom_x)           *zoom_x = pipe->backbuf_zoom_x;
   if(zoom_y)           *zoom_y = pipe->backbuf_zoom_y;

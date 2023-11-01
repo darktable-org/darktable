@@ -48,8 +48,6 @@ typedef struct dt_lib_snapshot_t
   dt_imgid_t imgid;
   uint32_t history_end;
   uint32_t id;
-  size_t processed_width;
-  size_t processed_height;
   uint8_t *buf;
   float scale;
   size_t width, height;
@@ -188,7 +186,6 @@ void gui_post_expose(dt_lib_module_t *self,
       // export image with proper size
       dt_dev_image(snap->imgid, width, height,
                    snap->history_end,
-                   &snap->processed_width, &snap->processed_height,
                    &snap->buf, &snap->scale,
                    &snap->width, &snap->height,
                    &snap->zoom_x, &snap->zoom_y,
@@ -254,7 +251,6 @@ void gui_post_expose(dt_lib_module_t *self,
     if(snap->buf)
     {
       dt_view_paint_surface(cri, width, height, &dev->full, DT_WINDOW_MAIN,
-                            snap->processed_width, snap->processed_height,
                             snap->buf, snap->scale, snap->width, snap->height,
                             snap->zoom_x, snap->zoom_y);
     }
