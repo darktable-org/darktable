@@ -1333,7 +1333,7 @@ void dt_masks_change_form_gui(dt_masks_form_t *newform)
 void dt_masks_reset_form_gui(void)
 {
   dt_masks_change_form_gui(NULL);
-  const dt_iop_module_t *m = darktable.develop->gui_module;
+  const dt_iop_module_t *m = dt_dev_gui_module();
   if(m
      && (m->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
      && !(m->flags() & IOP_FLAGS_NO_MASKS)
@@ -2430,7 +2430,7 @@ void dt_masks_select_form(struct dt_iop_module_t *module,
   if(selection_changed)
   {
     if(!module && darktable.develop->mask_form_selected_id == 0)
-      module = darktable.develop->gui_module;
+      module = dt_dev_gui_module();
     if(module)
     {
       if(module->masks_selection_changed)

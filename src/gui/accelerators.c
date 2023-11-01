@@ -3579,7 +3579,7 @@ static float _process_action(dt_action_t *action,
 
     if(owner == &darktable.control->actions_focus)
     {
-      action_target = darktable.develop->gui_module;
+      action_target = dt_dev_gui_module();
       if(!action_target)
         return return_value;
     }
@@ -4924,8 +4924,8 @@ float dt_accel_get_speed_multiplier(GtkWidget *widget, guint state)
 // FIXME possibly just find correct widget for each shortcut execution, rather than updating for each focus change etc
 void dt_accel_connect_instance_iop(dt_iop_module_t *module)
 {
-  const gboolean focused = darktable.develop->gui_module
-                           && darktable.develop->gui_module->so == module->so;
+  const dt_iop_module_t *gui_module = dt_dev_gui_module();
+  const gboolean focused = gui_module && gui_module->so == module->so;
   const dt_action_t *const blend = &darktable.control->actions_blend;
   for(GSList *w = module->widget_list; w; w = w->next)
   {

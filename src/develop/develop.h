@@ -652,6 +652,11 @@ gboolean dt_dev_is_D65_chroma(const dt_develop_t *dev);
 void dt_dev_reset_chroma(dt_develop_t *dev);
 void dt_dev_init_chroma(dt_develop_t *dev);
 
+static inline struct dt_iop_module_t *dt_dev_gui_module(void)
+{
+  return darktable.develop ? darktable.develop->gui_module : NULL;
+}
+
 #ifdef __cplusplus
 } // extern "C"
 #endif /* __cplusplus */

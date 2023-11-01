@@ -2037,10 +2037,9 @@ static void _set_trouble_messages(struct dt_iop_module_t *self)
     && !(p->illuminant == DT_ILLUMINANT_PIPE || p->adaptation == DT_ADAPTATION_RGB)
     && !dt_image_is_monochrome(&dev->image_storage);
 
-  dt_print(DT_DEBUG_PARAMS,
-           "[chroma trouble data %d] D65=%s.  "
-           "NOW %.3f %.3f %.3f, D65 %.3f %.3f %.3f, AS-SHOT %.3f %.3f %.3f\n",
-    self->multi_priority,
+  dt_print_pipe(DT_DEBUG_PARAMS, "chroma trouble data",
+      NULL, self, NULL, NULL,
+      "D65=%s.  NOW %.3f %.3f %.3f, D65 %.3f %.3f %.3f, AS-SHOT %.3f %.3f %.3f\n",
     dt_dev_is_D65_chroma(dev) ? "YES" : "NO",
     chr->wb_coeffs[0], chr->wb_coeffs[1], chr->wb_coeffs[2],
     chr->D65coeffs[0], chr->D65coeffs[1], chr->D65coeffs[2],
