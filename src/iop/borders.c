@@ -519,10 +519,17 @@ void modify_roi_out(struct dt_iop_module_t *self,
     // first determine how large the border should be,
     float border_width = (float)*basis_in * (1.0f / (1.0f - size) - 1.0f);
 
-    // then make sure we add that amount to the shortest side.
+    // then make sure we add that amount to the shortest side,
     if (basis == DT_IOP_BORDERS_BASIS_WIDTH && image_aspect < 1.0f)
       DT_IOP_BORDERS_ASSIGN_BASIS(height);
-    if (basis == DT_IOP_BORDERS_BASIS_HEIGHT && image_aspect > 1.0f)
+    else if (basis == DT_IOP_BORDERS_BASIS_HEIGHT && image_aspect > 1.0f)
+      DT_IOP_BORDERS_ASSIGN_BASIS(width);
+
+    // but add it to the longer side instead,
+    // if the selected aspect ratio would cut off the image.
+    if (basis == DT_IOP_BORDERS_BASIS_WIDTH && image_aspect < aspect)
+      DT_IOP_BORDERS_ASSIGN_BASIS(height);
+    else if (basis == DT_IOP_BORDERS_BASIS_HEIGHT && image_aspect > aspect)
       DT_IOP_BORDERS_ASSIGN_BASIS(width);
 
     if (basis == DT_IOP_BORDERS_BASIS_HEIGHT)
