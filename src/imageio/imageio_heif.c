@@ -353,6 +353,27 @@ int dt_imageio_heif_read_profile(const char *filename,
       cicp->color_primaries = (uint16_t)profile_info_nclx->color_primaries;
       cicp->transfer_characteristics = (uint16_t)profile_info_nclx->transfer_characteristics;
       cicp->matrix_coefficients = (uint16_t)profile_info_nclx->matrix_coefficients;
+
+      /* fix up mistagged legacy AVIFs */
+      if(profile_info_nclx->color_primaries == heif_color_primaries_ITU_R_BT_709_5)
+      {
+        gboolean over = FALSE;
+        /* mistagged Rec. 709 AVIFs exported before dt 3.6 */
+        if(profile_info_nclx->transfer_characteristics == heif_transfer_characteristic_ITU_R_BT_470_6_System_M
+           && profile_info_nclx->matrix_coefficients == heif_matrix_coefficients_ITU_R_BT_709_5)
+        {
+          /* must be actual Rec. 709 instead of 2.2 gamma*/
+          cicp->transfer_characteristics = (uint16_t)heif_transfer_characteristic_ITU_R_BT_709_5;
+          over = TRUE;
+        }
+
+        if(over)
+        {
+          dt_print(DT_DEBUG_IMAGEIO, "Overriding nclx color profile for HEIF file `%s': 1/%d/%d to 1/%d/%d\n",
+                   filename, profile_info_nclx->transfer_characteristics, profile_info_nclx->matrix_coefficients,
+                   cicp->transfer_characteristics, cicp->matrix_coefficients);
+        }
+      }
       break; /* heif_color_profile_type_nclx */
 
     case heif_color_profile_type_rICC:

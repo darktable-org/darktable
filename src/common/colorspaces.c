@@ -2090,6 +2090,7 @@ dt_colorspaces_color_profile_type_t dt_colorspaces_cicp_to_type
           switch(cicp->matrix_coefficients)
           {
             case DT_CICP_MATRIX_COEFFICIENTS_IDENTITY: /* support RGB (4:4:4 or lossless) */
+            case DT_CICP_MATRIX_COEFFICIENTS_REC709: /* support incorrectly tagged files */
             case DT_CICP_MATRIX_COEFFICIENTS_SYCC:
             case DT_CICP_MATRIX_COEFFICIENTS_REC601: /* support equivalents just in case of mistagging */
             case DT_CICP_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL: /* support incorrectly tagged files */
@@ -2212,6 +2213,9 @@ dt_colorspaces_color_profile_type_t dt_colorspaces_cicp_to_type
           switch(cicp->matrix_coefficients)
           {
             case DT_CICP_MATRIX_COEFFICIENTS_IDENTITY: /* support RGB (4:4:4 or lossless) */
+            case DT_CICP_MATRIX_COEFFICIENTS_REC709:
+            case DT_CICP_MATRIX_COEFFICIENTS_SYCC:
+            case DT_CICP_MATRIX_COEFFICIENTS_REC601:
             case DT_CICP_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL:
             case DT_CICP_MATRIX_COEFFICIENTS_UNSPECIFIED:
               return DT_COLORSPACE_PQ_P3;
@@ -2227,6 +2231,9 @@ dt_colorspaces_color_profile_type_t dt_colorspaces_cicp_to_type
           switch(cicp->matrix_coefficients)
           {
             case DT_CICP_MATRIX_COEFFICIENTS_IDENTITY: /* support RGB (4:4:4 or lossless) */
+            case DT_CICP_MATRIX_COEFFICIENTS_REC709:
+            case DT_CICP_MATRIX_COEFFICIENTS_SYCC:
+            case DT_CICP_MATRIX_COEFFICIENTS_REC601:
             case DT_CICP_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL:
             case DT_CICP_MATRIX_COEFFICIENTS_UNSPECIFIED:
               return DT_COLORSPACE_HLG_P3;
@@ -2242,6 +2249,9 @@ dt_colorspaces_color_profile_type_t dt_colorspaces_cicp_to_type
           switch(cicp->matrix_coefficients)
           {
             case DT_CICP_MATRIX_COEFFICIENTS_IDENTITY: /* support RGB (4:4:4 or lossless) */
+            case DT_CICP_MATRIX_COEFFICIENTS_REC709:
+            case DT_CICP_MATRIX_COEFFICIENTS_SYCC:
+            case DT_CICP_MATRIX_COEFFICIENTS_REC601:
             case DT_CICP_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL:
             case DT_CICP_MATRIX_COEFFICIENTS_UNSPECIFIED:
               return DT_COLORSPACE_DISPLAY_P3;
