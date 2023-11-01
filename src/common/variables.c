@@ -406,15 +406,15 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
           || _has_prefix(variable, "EXIF_APERTURE"))
     result = g_strdup_printf("%.1f", params->data->exif_aperture);
 
-  else if(_has_prefix(variable, "EXIF.FOCAL.LENGTH")
-          || _has_prefix(variable, "EXIF_FOCAL_LENGTH"))
-    result = g_strdup_printf("%.1f", params->data->exif_focal_length);
+  else if(_has_prefix(variable, "EXIF.CROP_FACTOR"))
+    result = g_strdup_printf("%.1f", params->data->exif_crop);
 
   else if(_has_prefix(variable, "EXIF.FOCAL.LENGTH.EQUIV"))
     result = g_strdup_printf("%.1f", params->data->exif_focal_length * params->data->exif_crop);
 
-  else if(_has_prefix(variable, "EXIF.CROP_FACTOR"))
-    result = g_strdup_printf("%.1f", params->data->exif_crop);
+  else if(_has_prefix(variable, "EXIF.FOCAL.LENGTH")
+          || _has_prefix(variable, "EXIF_FOCAL_LENGTH"))
+    result = g_strdup_printf("%.1f", params->data->exif_focal_length);
 
   else if(_has_prefix(variable, "EXIF.FOCUS.DISTANCE")
           || _has_prefix(variable, "EXIF_FOCUS_DISTANCE"))
