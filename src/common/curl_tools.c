@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2020 darktable developers.
+    Copyright (C) 2019-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -35,7 +35,8 @@ void dt_curl_init(CURL *curl, gboolean verbose)
   char datadir[PATH_MAX] = { 0 };
   dt_loc_get_datadir(datadir, sizeof(datadir));
   gchar *crtfilename = g_build_filename(datadir, "..", "curl", "curl-ca-bundle.crt", NULL);
-  if(g_file_test(crtfilename, G_FILE_TEST_EXISTS)) curl_easy_setopt(curl, CURLOPT_CAINFO, crtfilename);
+  if(g_file_test(crtfilename, G_FILE_TEST_EXISTS))
+    curl_easy_setopt(curl, CURLOPT_CAINFO, crtfilename);
   g_free(crtfilename);
 
   curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
