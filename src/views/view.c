@@ -1732,7 +1732,6 @@ void dt_view_paint_surface(cairo_t *cr,
   if(dev->preview_pipe->output_imgid == dev->image_storage.id
      && (port == &dev->full || port == &dev->preview2))
   {
-    dt_print(DT_DEBUG_EXPOSE, "[dt_view_paint_surface] draw preview\n");
     // draw preview
     float wd, ht;
     dt_dev_get_preview_size(dev, &wd, &ht);
@@ -1745,6 +1744,15 @@ void dt_view_paint_surface(cairo_t *cr,
     cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
     cairo_paint(cr);
 
+    dt_print_pipe(DT_DEBUG_EXPOSE,
+        "dt_view_paint_surface",
+         dev->preview_pipe, NULL, NULL, NULL,
+         "size %dx%d. processed %dx%d. buf %dx%d scale=%.3f. surface %dx%d. zoom x=%.3f y=%.3f scale=%.3f\n",
+         width, height,
+         processed_width, processed_height,
+         buf_width, buf_height, buf_scale,
+         dev->preview_pipe->backbuf_height, dev->preview_pipe->backbuf_width,
+         buf_zoom_x, buf_zoom_y, zoom_scale);
     cairo_surface_destroy(preview);
   }
 
@@ -1753,6 +1761,15 @@ void dt_view_paint_surface(cairo_t *cr,
   if(port->pipe->output_imgid == dev->image_storage.id
      || dev->preview_pipe->output_imgid != dev->image_storage.id)
   {
+    dt_print_pipe(DT_DEBUG_EXPOSE,
+        "dt_view_paint_surface",
+         port->pipe, NULL, NULL, NULL,
+         "size %dx%d. processed %dx%d. buf %dx%d scale=%.3f. surface %dx%d. zoom x=%.3f y=%.3f scale=%.3f\n",
+         width, height,
+         processed_width, processed_height,
+         buf_width, buf_height, buf_scale,
+         buf_width, buf_height,
+         buf_zoom_x, buf_zoom_y, zoom_scale);
     cairo_scale(cr, back_scale / zoom_scale, back_scale / zoom_scale);
     cairo_translate(cr, (offset_x - zoom_x) * processed_width * buf_scale - 0.5 * buf_width,
                         (offset_y - zoom_y) * processed_height * buf_scale - 0.5 * buf_height);

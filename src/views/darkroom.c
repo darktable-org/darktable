@@ -397,11 +397,6 @@ static inline gboolean _preview2_request(dt_develop_t *dev)
      && GTK_IS_WIDGET(dev->preview2.widget);
 }
 
-static inline gboolean _any_request(dt_develop_t *dev)
-{
-  return _full_request(dev) || _preview_request(dev) || _preview2_request(dev);
-}
-
 static void _module_gui_post_expose(dt_iop_module_t *module, cairo_t *cri,
                                     float width, float height,
                                     float x, float y, float zoom_scale)
@@ -458,23 +453,10 @@ void expose(
     --darktable.gui->reset;
     dev->gui_synch = FALSE;
   }
-  if(darktable.unmuted & DT_DEBUG_EXPOSE)
-    dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] initial requests: %s%s%s%s\n",
-      _full_request(dev)     ? " full" : "",
-      _preview_request(dev)  ? " preview" : "",
-      _preview2_request(dev) ? " preview_2" : "",
-      _any_request(dev)      ? "" : "none");
 
   if(_full_request(dev)) dt_dev_process_image(dev);
   if(_preview_request(dev)) dt_dev_process_preview(dev);
   if(_preview2_request(dev)) dt_dev_process_preview2(dev);
-
-  if(darktable.unmuted & DT_DEBUG_EXPOSE)
-    dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] requests after pipe jobs: %s%s%s%s\n",
-      _full_request(dev)     ? " full" : "",
-      _preview_request(dev)  ? " preview" : "",
-      _preview2_request(dev) ? " preview_2" : "",
-      _any_request(dev)      ? "" : "none");
 
   float pzx = 0.0f, pzy = 0.0f, zoom_scale = 0.0f;
   dt_dev_get_pointer_zoom_pos(port, pointerx, pointery, &pzx, &pzy, &zoom_scale);
@@ -504,15 +486,14 @@ void expose(
   const gboolean expose_full =
         port->pipe->backbuf                                // do we have an image?
      && port->pipe->output_imgid == dev->image_storage.id; // same image?
+
   if(expose_full)
   {
-    dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] draw image\n");
     // draw image
     _view_paint_surface(cri, width, height, port, DT_WINDOW_MAIN);
   }
   else if(dev->preview_pipe->output_imgid != dev->image_storage.id)
   {
-    dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] can't draw image\n");
     gchar *load_txt;
     float fontsize;
 
@@ -545,7 +526,6 @@ void expose(
 
     if(dt_conf_get_bool("darkroom/ui/loading_screen"))
     {
-      dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] loading screen\n");
       dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_DARKROOM_BG);
       cairo_paint(cri);
 
@@ -579,15 +559,7 @@ void expose(
 
   /* if we are in full preview mode, we don"t want anything else than the image */
   if(dev->full_preview)
-  {
-    if(darktable.unmuted & DT_DEBUG_EXPOSE)
-      dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] full preview finished, remaining requests: %s%s%s%s\n\n",
-        _full_request(dev)     ? " full" : "",
-        _preview_request(dev)  ? " preview" : "",
-        _preview2_request(dev) ? " preview_2" : "",
-        _any_request(dev)      ? "" : "none");
     return;
-  }
 
   float wd, ht;
   if(!dt_dev_get_preview_size(dev, &wd, &ht)) return;
@@ -611,7 +583,10 @@ void expose(
          || (darktable.lib->proxy.colorpicker.selected_sample &&
              darktable.lib->proxy.colorpicker.selected_sample != darktable.lib->proxy.colorpicker.primary_sample)))
   {
-    dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] pickers draw: livesamples FALSE\n");
+    dt_print_pipe(DT_DEBUG_EXPOSE,
+        "expose livesamples FALSE",
+         port->pipe, NULL, NULL, NULL, "%dx%d, px=%d py=%d\n",
+         width, height, pointerx, pointery);
     _darkroom_pickers_draw(self, cri, wd, ht, zoom_scale,
                            darktable.lib->proxy.colorpicker.live_samples, FALSE);
   }
@@ -627,7 +602,10 @@ void expose(
   // by picker
   if(dt_iop_color_picker_is_visible(dev))
   {
-    dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] pickers draw: livesamples TRUE\n");
+    dt_print_pipe(DT_DEBUG_EXPOSE,
+        "expose livesample TRUE",
+         port->pipe, NULL, NULL, NULL, "%dx%d, px=%d py=%d\n",
+         width, height, pointerx, pointery);
     GSList samples = { .data = darktable.lib->proxy.colorpicker.primary_sample,
                        .next = NULL };
     _darkroom_pickers_draw(self, cri, wd, ht, zoom_scale, &samples, TRUE);
@@ -645,7 +623,10 @@ void expose(
 
   if(dev->form_visible && display_masks)
   {
-    dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] masks post expose\n");
+    dt_print_pipe(DT_DEBUG_EXPOSE,
+        "expose masks",
+         port->pipe, dev->gui_module, NULL, NULL, "%dx%d, px=%d py=%d\n",
+         width, height, pointerx, pointery);
     dt_masks_events_post_expose(dev->gui_module, cri, width, height, pzx, pzy, zoom_scale);
   }
 
@@ -655,21 +636,27 @@ void expose(
     // the cropping.exposer->gui_post_expose needs special care
     if(expose_full && dev->cropping.requester)
     {
-      dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] cropper post_expose [%s]\n", dev->cropping.exposer->op);
+      dt_print_pipe(DT_DEBUG_EXPOSE,
+        "expose cropper",
+         port->pipe, dev->cropping.exposer, NULL, NULL, "%dx%d, px=%d py=%d\n",
+         width, height, pointerx, pointery);
       _module_gui_post_expose(dev->cropping.exposer, cri, wd, ht, pzx, pzy, zoom_scale);
     }
 
     // gui active module
     if(dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS)
     {
-      dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] gui_post_expose [%s]\n", dev->gui_module->op);
+      dt_print_pipe(DT_DEBUG_EXPOSE,
+        "expose module",
+         port->pipe, dev->gui_module, NULL, NULL, "%dx%d, px=%d py=%d\n",
+         width, height, pointerx, pointery);
       _module_gui_post_expose(dev->gui_module, cri, wd, ht, pzx, pzy, zoom_scale);
     }
   }
 
   if(dev->proxy.rotate)
   {
-    dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] proxy rotate gui_post_expose [%s]\n", dev->proxy.rotate->op);
+    // reminder, we want this to be exposed always for guidings
     _module_gui_post_expose(dev->proxy.rotate, cri, wd, ht, pzx, pzy, zoom_scale);
   }
 
@@ -679,7 +666,11 @@ void expose(
   if(darktable.color_profiles->mode != DT_PROFILE_NORMAL)
   {
     gchar *label = darktable.color_profiles->mode == DT_PROFILE_GAMUTCHECK ? _("gamut check") : _("soft proof");
-    dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] proof: %s\n", label);
+    dt_print_pipe(DT_DEBUG_EXPOSE,
+        "expose profile",
+         port->pipe, NULL, NULL, NULL, "%dx%d, px=%d py=%d. proof: %s\n",
+         width, height, pointerx, pointery, label);
+
     cairo_set_source_rgba(cri, 0.5, 0.5, 0.5, 0.5);
     PangoLayout *layout;
     PangoRectangle ink;
@@ -700,12 +691,6 @@ void expose(
     pango_font_description_free(desc);
     g_object_unref(layout);
   }
-  if(darktable.unmuted & DT_DEBUG_EXPOSE)
-    dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] finished, remaining requests: %s%s%s%s\n\n",
-      _full_request(dev)     ? " full" : "",
-      _preview_request(dev)  ? " preview" : "",
-      _preview2_request(dev) ? " preview_2" : "",
-      _any_request(dev)      ? "" : "none");
 }
 
 void reset(dt_view_t *self)
@@ -822,10 +807,11 @@ static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid)
   darktable.view_manager->accels_window.prevent_refresh = TRUE;
 
   // get current plugin in focus before defocus
-  if(darktable.develop->gui_module)
+  const dt_iop_module_t *gui_module = dt_dev_gui_module();
+  if(gui_module)
   {
     dt_conf_set_string("plugins/darkroom/active",
-                       darktable.develop->gui_module->op);
+                       gui_module->op);
   }
 
   // store last active group
@@ -2060,7 +2046,7 @@ static float _action_process_preview(gpointer target,
         dt_dev_zoom_move(&darktable.develop->full, DT_ZOOM_RESTORE, 0.0f, 0, -1.0f, -1.0f, TRUE);
         lib->full_preview = FALSE;
         dt_iop_request_focus(lib->full_preview_last_module);
-        dt_masks_set_edit_mode(darktable.develop->gui_module, lib->full_preview_masks_state);
+        dt_masks_set_edit_mode(dt_dev_gui_module(), lib->full_preview_masks_state);
         dt_dev_invalidate(darktable.develop);
         dt_control_queue_redraw_center();
         dt_control_navigation_redraw();
@@ -2077,15 +2063,16 @@ static float _action_process_preview(gpointer target,
         for(int k = 0; k < DT_UI_PANEL_SIZE; k++)
           dt_ui_panel_show(darktable.gui->ui, k, FALSE, FALSE);
         // we remember the masks edit state
-        if(darktable.develop->gui_module)
+        dt_iop_module_t *gui_module = dt_dev_gui_module();
+        if(gui_module)
         {
-          dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)darktable.develop->gui_module->blend_data;
+          dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)gui_module->blend_data;
           if(bd) lib->full_preview_masks_state = bd->masks_shown;
         }
         // we set the zoom values to "fit" after storing previous settings
         dt_dev_zoom_move(&darktable.develop->full, DT_ZOOM_FULL_PREVIEW, 0.0f, 0, -1.0f, -1.0f, TRUE);
         // we quit the active iop if any
-        lib->full_preview_last_module = darktable.develop->gui_module;
+        lib->full_preview_last_module = gui_module;
         dt_iop_request_focus(NULL);
         gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
         dt_dev_invalidate(darktable.develop);
@@ -3785,7 +3772,7 @@ static gboolean _second_window_configure_callback(GtkWidget *da,
                                                   GdkEventConfigure *event,
                                                   dt_develop_t *dev)
 {
-  if(dev->preview2.orig_width != event->width 
+  if(dev->preview2.orig_width != event->width
      || dev->preview2.orig_height != event->height)
   {
     dev->preview2.width = event->width;

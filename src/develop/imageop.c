@@ -1083,7 +1083,7 @@ static gboolean _gui_off_button_press(GtkWidget *w, GdkEventButton *e, gpointer 
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
   if(!darktable.gui->reset && dt_modifier_is(e->state, GDK_CONTROL_MASK))
   {
-    dt_iop_request_focus(darktable.develop->gui_module == module ? NULL : module);
+    dt_iop_request_focus(dt_dev_gui_module() == module ? NULL : module);
     return TRUE;
   }
   return FALSE;
@@ -3121,7 +3121,7 @@ static void _show_module_callback(dt_iop_module_t *module)
 
 static void _request_module_focus_callback(dt_iop_module_t * module)
 {
-  dt_iop_request_focus(darktable.develop->gui_module == module ? NULL : module);
+  dt_iop_request_focus(dt_dev_gui_module() == module ? NULL : module);
 }
 
 static void _enable_module_callback(dt_iop_module_t *module)
@@ -3361,10 +3361,12 @@ dt_iop_module_t *dt_iop_get_module_preferred_instance(dt_iop_module_so_t *module
   dt_iop_module_t *accel_mod = NULL;  // The module to which accelerators are to be attached
 
   // if any instance has focus, use that one
-  if(prefer_focused && darktable.develop->gui_module
-     && (darktable.develop->gui_module->so == module
+  dt_iop_module_t *gui_module = dt_dev_gui_module();
+  if(prefer_focused
+      && gui_module
+      && (gui_module->so == module
          || DT_ACTION(module) == &darktable.control->actions_focus))
-    accel_mod = darktable.develop->gui_module;
+    accel_mod = gui_module;
   else
   {
     int best_score = -1;
@@ -3712,7 +3714,7 @@ static float _action_process(gpointer target,
   }
 
   return element == DT_ACTION_ELEMENT_FOCUS
-    ? darktable.develop->gui_module == module
+    ? dt_dev_gui_module() == module
     : (element == DT_ACTION_ELEMENT_ENABLE
        ? module->off && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(module->off))
        : (element == DT_ACTION_ELEMENT_SHOW
