@@ -29,6 +29,15 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
 
+// Silence the compiler during dev of new module as we often
+// need to have temporary unfinished code that will hurt the
+// compiler.
+// THIS MUST be REMOVED before submiting a PR.
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#pragma GCC diagnostic ignored "-Wunused-function"
+
+
 // This is an example implementation of an image operation module that
 // does nothing useful.  It demonstrates how the different functions
 // work together. To build your own module, take all of the functions
