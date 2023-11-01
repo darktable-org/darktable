@@ -1344,7 +1344,9 @@ void gui_post_expose(dt_iop_module_t *self,
 
   // we don't do anything if the image is not ready within crop module
   // and we don't have visualizing enforced by other modules
-  if(!(g->preview_ready || external)) return;
+  if((dev->full.pipe->changed & DT_DEV_PIPE_REMOVE 
+      || self->dev->preview_pipe->loading) 
+     && !external) return;
 
   _aspect_apply(self, GRAB_HORIZONTAL);
 

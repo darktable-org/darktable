@@ -420,7 +420,6 @@ static void _view_paint_surface(cairo_t *cr,
 
   dt_view_paint_surface(cr, width, height,
                         port, window,
-                        p->processed_width, p->processed_height,
                         p->backbuf, p->backbuf_scale,
                         p->backbuf_width, p->backbuf_height,
                         p->backbuf_zoom_x, p->backbuf_zoom_y);
