@@ -67,7 +67,7 @@ typedef struct dt_iop_cacorrect_gui_data_t
 
 typedef struct dt_iop_cacorrect_data_t
 {
-  uint32_t avoidshift;
+  gboolean avoidshift;
   uint32_t iterations;
 } dt_iop_cacorrect_data_t;
 
@@ -285,7 +285,13 @@ void process(
     dt_print(DT_DEBUG_ALWAYS,"[cacorrect] out of memory, skipping\n");
     return;
   }
-  dt_iop_image_copy(out, input, roi_in->width * roi_in->height);
+
+  const float scaler = fmaxf(1.0f,
+                       fmaxf(piece->pipe->dsc.processed_maximum[0],
+                       fmaxf(piece->pipe->dsc.processed_maximum[1],
+                             piece->pipe->dsc.processed_maximum[2])));
+
+  dt_iop_image_scaled_copy(out, input, 1.0f / scaler, roi_in->width, roi_in->height, 1);
 
   if(run_fast) goto writeout;
 
@@ -465,7 +471,7 @@ void process(
               const size_t col = cc + left;
               const size_t indx = row * width + col;
               const size_t indx1 = rr * ts + cc;
-              rgb[c][indx1] = (in[indx]);
+              rgb[c][indx1] = in[indx];
               c ^= c_diff;
             }
           }
@@ -488,7 +494,7 @@ void process(
               for(int cc = ccmin; cc < ccmax; cc++)
               {
                 const int c = FC(rr, cc, filters);
-                rgb[c][(rrmax + rr) * ts + cc] = (in[(height - rr - 2) * width + left + cc]);
+                rgb[c][(rrmax + rr) * ts + cc] = in[(height - rr - 2) * width + left + cc];
               }
           }
 
@@ -508,7 +514,7 @@ void process(
               for(int cc = 0; cc < MIN(border, cc1 - ccmax); cc++)
               {
                 const int c = FC(rr, cc, filters);
-                rgb[c][rr * ts + ccmax + cc] = (in[(top + rr) * width + (width - cc - 2)]);
+                rgb[c][rr * ts + ccmax + cc] = in[(top + rr) * width + (width - cc - 2)];
               }
           }
 
@@ -519,7 +525,7 @@ void process(
               for(int cc = 0; cc < border; cc++)
               {
                 const int c = FC(rr, cc, filters);
-                rgb[c][(rr)*ts + cc] = (in[(border2 - rr) * width + border2 - cc]);
+                rgb[c][(rr)*ts + cc] = in[(border2 - rr) * width + border2 - cc];
               }
           }
 
@@ -529,7 +535,7 @@ void process(
               for(int cc = 0; cc < MIN(border, cc1 - ccmax); cc++)
               {
                 const int c = FC(rr, cc, filters);
-                rgb[c][(rrmax + rr) * ts + ccmax + cc] = (in[(height - rr - 2) * width + (width - cc - 2)]);
+                rgb[c][(rrmax + rr) * ts + ccmax + cc] = in[(height - rr - 2) * width + (width - cc - 2)];
               }
           }
 
@@ -539,7 +545,7 @@ void process(
               for(int cc = 0; cc < MIN(border, cc1 - ccmax); cc++)
               {
                 const int c = FC(rr, cc, filters);
-                rgb[c][(rr)*ts + ccmax + cc] = (in[(border2 - rr) * width + (width - cc - 2)]);
+                rgb[c][(rr)*ts + ccmax + cc] = in[(border2 - rr) * width + (width - cc - 2)];
               }
           }
 
@@ -549,7 +555,7 @@ void process(
               for(int cc = 0; cc < border; cc++)
               {
                 const int c = FC(rr, cc, filters);
-                rgb[c][(rrmax + rr) * ts + cc] = (in[(height - rr - 2) * width + (border2 - cc)]);
+                rgb[c][(rrmax + rr) * ts + cc] = in[(height - rr - 2) * width + (border2 - cc)];
               }
           }
 
@@ -807,17 +813,16 @@ void process(
                 float bstemp[2];
                 for(int dir = 0; dir < 2; dir++)
                 {
-                  // temporary storage for median filter
-                  float p[9];
-                  p[0] = blockshifts[(vblock - 1) * hblsz + hblock - 1][c][dir];
-                  p[1] = blockshifts[(vblock - 1) * hblsz + hblock][c][dir];
-                  p[2] = blockshifts[(vblock - 1) * hblsz + hblock + 1][c][dir];
-                  p[3] = blockshifts[(vblock)*hblsz + hblock - 1][c][dir];
-                  p[4] = blockshifts[(vblock)*hblsz + hblock][c][dir];
-                  p[5] = blockshifts[(vblock)*hblsz + hblock + 1][c][dir];
-                  p[6] = blockshifts[(vblock + 1) * hblsz + hblock - 1][c][dir];
-                  p[7] = blockshifts[(vblock + 1) * hblsz + hblock][c][dir];
-                  p[8] = blockshifts[(vblock + 1) * hblsz + hblock + 1][c][dir];
+                  const float p[9] =
+                  { blockshifts[(vblock - 1) * hblsz + hblock - 1][c][dir],
+                    blockshifts[(vblock - 1) * hblsz + hblock][c][dir],
+                    blockshifts[(vblock - 1) * hblsz + hblock + 1][c][dir],
+                    blockshifts[(vblock)     * hblsz + hblock - 1][c][dir],
+                    blockshifts[(vblock)     * hblsz + hblock][c][dir],
+                    blockshifts[(vblock)     * hblsz + hblock + 1][c][dir],
+                    blockshifts[(vblock + 1) * hblsz + hblock - 1][c][dir],
+                    blockshifts[(vblock + 1) * hblsz + hblock][c][dir],
+                    blockshifts[(vblock + 1) * hblsz + hblock + 1][c][dir] };
                   bstemp[dir] = median9f(p);
                 }
 
@@ -940,7 +945,7 @@ void process(
               const size_t col = cc + left;
               const size_t indx = row * width + col;
               const size_t indx1 = rr * ts + cc;
-              rgb[c][indx1] = (in[indx]);
+              rgb[c][indx1] = in[indx];
 
               if((c & 1) == 0)
               {
@@ -969,7 +974,7 @@ void process(
               for(int cc = ccmin; cc < ccmax; cc++)
               {
                 const int c = FC(rr, cc, filters);
-                rgb[c][(rrmax + rr) * ts + cc] = (in[(height - rr - 2) * width + left + cc]);
+                rgb[c][(rrmax + rr) * ts + cc] = in[(height - rr - 2) * width + left + cc];
                 rgb[1][(rrmax + rr) * ts + cc] = Gtmp[(height - rr - 2) * width + left + cc];
               }
           }
@@ -991,7 +996,7 @@ void process(
               for(int cc = 0; cc < MIN(border, cc1 - ccmax); cc++)
               {
                 const int c = FC(rr, cc, filters);
-                rgb[c][rr * ts + ccmax + cc] = (in[(top + rr) * width + (width - cc - 2)]);
+                rgb[c][rr * ts + ccmax + cc] = in[(top + rr) * width + (width - cc - 2)];
                 rgb[1][rr * ts + ccmax + cc] = Gtmp[(top + rr) * width + (width - cc - 2)];
               }
           }
@@ -1003,7 +1008,7 @@ void process(
               for(int cc = 0; cc < border; cc++)
               {
                 const int c = FC(rr, cc, filters);
-                rgb[c][(rr)*ts + cc] = (in[(border2 - rr) * width + border2 - cc]);
+                rgb[c][(rr)*ts + cc] = in[(border2 - rr) * width + border2 - cc];
                 rgb[1][(rr)*ts + cc] = Gtmp[(border2 - rr) * width + border2 - cc];
               }
           }
@@ -1014,7 +1019,7 @@ void process(
               for(int cc = 0; cc < MIN(border, cc1 - ccmax); cc++)
               {
                 const int c = FC(rr, cc, filters);
-                rgb[c][(rrmax + rr) * ts + ccmax + cc] = (in[(height - rr - 2) * width + (width - cc - 2)]);
+                rgb[c][(rrmax + rr) * ts + ccmax + cc] = in[(height - rr - 2) * width + (width - cc - 2)];
                 rgb[1][(rrmax + rr) * ts + ccmax + cc] = Gtmp[(height - rr - 2) * width + (width - cc - 2)];
               }
           }
@@ -1025,7 +1030,7 @@ void process(
               for(int cc = 0; cc < MIN(border, cc1 - ccmax); cc++)
               {
                 const int c = FC(rr, cc, filters);
-                rgb[c][(rr)*ts + ccmax + cc] = (in[(border2 - rr) * width + (width - cc - 2)]);
+                rgb[c][(rr)*ts + ccmax + cc] = in[(border2 - rr) * width + (width - cc - 2)];
                 rgb[1][(rr)*ts + ccmax + cc] = Gtmp[(border2 - rr) * width + (width - cc - 2)];
               }
           }
@@ -1036,7 +1041,7 @@ void process(
               for(int cc = 0; cc < border; cc++)
               {
                 const int c = FC(rr, cc, filters);
-                rgb[c][(rrmax + rr) * ts + cc] = (in[(height - rr - 2) * width + (border2 - cc)]);
+                rgb[c][(rrmax + rr) * ts + cc] = in[(height - rr - 2) * width + (border2 - cc)];
                 rgb[1][(rrmax + rr) * ts + cc] = Gtmp[(height - rr - 2) * width + (border2 - cc)];
               }
           }
@@ -1113,8 +1118,8 @@ void process(
               // determine R/B at grid points using colour differences at shift point plus interpolated G
               // value at grid point
               // but first we need to interpolate G-R/G-B to grid points...
-              grbdiff[((rr)*ts + cc) >> 1] = Gint - rgb[c][(rr)*ts + cc];
-              gshift[((rr)*ts + cc) >> 1] = Gint;
+              grbdiff[(rr*ts + cc) >> 1] = Gint - rgb[c][rr*ts + cc];
+              gshift[(rr*ts + cc) >> 1] = Gint;
             }
           }
 
@@ -1211,8 +1216,6 @@ void process(
           out[row * width + col] = RawDataTmp[indx];
         }
     }
-
-    // clean up
     free(buffer);
    }
   }
@@ -1236,8 +1239,7 @@ void process(
       {
         const size_t index = row * width + col;
         const size_t oindex = row * h_width + col / 2;
-        nongreen[(row / 2) * h_width + col / 2] = (in[index] <= 1.0f || oldraw[oindex] <= 1.0f)
-          ? 1.0f : CLAMPF(oldraw[oindex] / in[index], 0.5f, 2.0f);
+        nongreen[(row / 2) * h_width + col / 2] = CLAMPF(oldraw[oindex] / in[index], 0.5f, 2.0f);
       }
     }
 
@@ -1298,7 +1300,7 @@ void process(
   writeout:
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(output, out, roi_in, roi_out) \
+  dt_omp_firstprivate(output, out, roi_in, roi_out, scaler) \
   schedule(static) collapse(2)
 #endif
   for(size_t row = 0; row < roi_out->height; row++)
@@ -1311,7 +1313,7 @@ void process(
       const size_t ix = irow * roi_in->width + icol;
       if((irow < roi_in->height) && (icol < roi_in->width))
       {
-        output[ox] = out[ix];
+        output[ox] = out[ix] * scaler;
       }
     }
   }
