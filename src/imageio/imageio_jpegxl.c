@@ -294,7 +294,8 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
 
   } // end of processing loop
 
-  if(!img->exif_inited)
+  // Fallback reading if the Exif box is present but exiv2 didn't do the job
+  if(!img->exif_inited && exif_data)
   {
     JxlDecoderReleaseBoxBuffer(decoder);
     // First 4 bytes of Exif blob is an offset of the actual Exif data
