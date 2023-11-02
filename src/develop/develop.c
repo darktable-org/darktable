@@ -381,7 +381,8 @@ restart:
   float scale = 1.0f;
   int window_width = G_MAXINT;
   int window_height = G_MAXINT;
-  float zoom_x  = 0, zoom_y = 0;
+  float zoom_x  = 0;
+  float zoom_y = 0;
 
   if(port)
   {
@@ -2723,13 +2724,16 @@ void dt_dev_get_viewport_params(dt_dev_viewport_t *port,
                                 float *y)
 {
   dt_pthread_mutex_lock(&(darktable.control->global_mutex));
-  if(zoom) *zoom = port->zoom;
+
+  if(zoom)    *zoom = port->zoom;
   if(closeup) *closeup = port->closeup;
+
   if(x && y)
   {
     dt_pthread_mutex_lock(&darktable.develop->history_mutex);
     float pts[2] = { port->zoom_x, port->zoom_y };
-    dt_dev_distort_transform_locked(darktable.develop, port->pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 1);
+    dt_dev_distort_transform_locked(darktable.develop, port->pipe,
+                                    0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 1);
     *x = pts[0] / port->pipe->processed_width - 0.5f;
     *y = pts[1] / port->pipe->processed_height - 0.5f;
     dt_pthread_mutex_unlock(&darktable.develop->history_mutex);
@@ -3522,29 +3526,31 @@ void dt_dev_image(const dt_imgid_t imgid,
     dt_dev_pop_history_items_ext(&dev, history_end);
 
   dt_dev_viewport_t *port = &darktable.develop->full;
-  if(!zoom_x && !zoom_y) port = &(dt_dev_viewport_t) { .zoom = DT_ZOOM_FIT,
-                                                       .width = width,
-                                                       .height = height,
-                                                       .ppd = 1.0,
-                                                       .pipe = pipe };
 
+  if(!zoom_x && !zoom_y)
+    port = &(dt_dev_viewport_t) { .zoom   = DT_ZOOM_FIT,
+                                  .width  = width,
+                                  .height = height,
+                                  .ppd    = 1.0,
+                                  .pipe   = pipe };
   // process the pipe
 
   dt_dev_process_image_job(&dev, port, pipe, -1);
 
   // record resulting image and dimensions
 
-  if(processed_width) *processed_width = pipe->processed_width;
-  if(processed_height) *processed_height = pipe->processed_height;
   const uint32_t bufsize =
     sizeof(uint32_t) * pipe->backbuf_width * pipe->backbuf_height;
   *buf = dt_alloc_align(64, bufsize);
   memcpy(*buf, pipe->backbuf, bufsize);
-  if(scale) *scale = pipe->backbuf_scale;
-  *buf_width  = pipe->backbuf_width;
-  *buf_height = pipe->backbuf_height;
-  if(zoom_x) *zoom_x = pipe->backbuf_zoom_x;
-  if(zoom_y) *zoom_y = pipe->backbuf_zoom_y;
+
+  if(buf_width)        *buf_width  = pipe->backbuf_width;
+  if(buf_height)       *buf_height = pipe->backbuf_height;
+  if(processed_width)  *processed_width = pipe->processed_width;
+  if(processed_height) *processed_height = pipe->processed_height;
+  if(scale)            *scale = pipe->backbuf_scale;
+  if(zoom_x)           *zoom_x = pipe->backbuf_zoom_x;
+  if(zoom_y)           *zoom_y = pipe->backbuf_zoom_y;
 
   dt_dev_cleanup(&dev);
 }
