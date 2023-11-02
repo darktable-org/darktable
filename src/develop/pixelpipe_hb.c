@@ -90,20 +90,13 @@ const char *dt_dev_pixelpipe_type_to_str(const int pipe_type)
 #undef PT_STR
 }
 
-void dt_print_pipe(dt_debug_thread_t thread,
-                   const char *title,
-                   const dt_dev_pixelpipe_t *pipe,
-                   const struct dt_iop_module_t *module,
-                   const dt_iop_roi_t *roi_in,
-                   const dt_iop_roi_t *roi_out,
-                   const char *msg, ...)
+void dt_print_pipe_ext(const char *title,
+                       const dt_dev_pixelpipe_t *pipe,
+                       const struct dt_iop_module_t *module,
+                       const dt_iop_roi_t *roi_in,
+                       const dt_iop_roi_t *roi_out,
+                       const char *msg, ...)
 {
-  if(thread != DT_DEBUG_ALWAYS)
-  {
-    if(((darktable.unmuted & thread) & ~DT_DEBUG_VERBOSE) == 0) return;
-    if((thread & DT_DEBUG_VERBOSE) && !(darktable.unmuted & DT_DEBUG_VERBOSE)) return;
-  }
-
   char buf[3][128];
   char vbuf[1024] = { 0 };
   char roi[128] = { 0 };
@@ -1474,7 +1467,7 @@ static gboolean _dev_pixelpipe_process_rec(
         const int cp_height = MIN(roi_out->height, pipe->iheight - in_y);
         dt_print_pipe(DT_DEBUG_PIPE,
           (cp_width > 0) ? "pixelpipe data: 1:1 copied" : "pixelpipe data: 1:1 none",
-          pipe, module, &roi_in, roi_out, "bpp=%d\n", bpp);
+          pipe, module, &roi_in, roi_out, "bpp=%lu\n", bpp);
         if(cp_width > 0)
         {
 #ifdef _OPENMP

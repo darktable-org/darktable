@@ -385,7 +385,7 @@ void process(
 #pragma omp parallel default(none) \
   dt_omp_firstprivate(in, out, height, width, filters, processpasstwo, hblsz, vblsz, \
                       blockwt, blockshifts, blockvar, Gtmp, RawDataTmp, caautostrength, \
-                      border, border2, eps, eps2, v1, v2, v3, v4, ts, tsh) \
+                      border, border2, eps, eps2, v1, v2, v3, v4, ts, tsh, darktable) \
   shared(numpar, polyord, fitparams, blockdenom, blockave, blocksqave)
   // if any of the above shared are made firstprivate, we get the wrong answer
 #endif
