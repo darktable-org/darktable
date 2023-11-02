@@ -1921,13 +1921,8 @@ void dt_cleanup()
       been started with -d verbose
    b) 'thread' may be identical to DT_DEBUG_ALWAYS to write output
 */
-void dt_print(dt_debug_thread_t thread, const char *msg, ...)
+void dt_print_ext(const char *msg, ...)
 {
-  if(thread != DT_DEBUG_ALWAYS)
-  {
-    if(((darktable.unmuted & thread) & ~DT_DEBUG_VERBOSE) == 0) return;
-    if((thread & DT_DEBUG_VERBOSE) && !(darktable.unmuted & DT_DEBUG_VERBOSE)) return;
-  }
   char buf[128];
   char vbuf[2048];
   snprintf(buf, sizeof(buf), "%.4f", dt_get_wtime() - darktable.start_wtime);
@@ -1941,13 +1936,8 @@ void dt_print(dt_debug_thread_t thread, const char *msg, ...)
   fflush(stdout);
 }
 
-void dt_print_nts(dt_debug_thread_t thread, const char *msg, ...)
+void dt_print_nts_ext(const char *msg, ...)
 {
-  if(thread != DT_DEBUG_ALWAYS)
-  {
-    if(((darktable.unmuted & thread) & ~DT_DEBUG_VERBOSE) == 0) return;
-    if((thread & DT_DEBUG_VERBOSE) && !(darktable.unmuted & DT_DEBUG_VERBOSE)) return;
-  }
   char vbuf[2048];
   va_list ap;
   va_start(ap, msg);
