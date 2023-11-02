@@ -1270,9 +1270,11 @@ void dt_opencl_init(
                  platform_name, platform_key);
       }
       else if((errn == CL_SUCCESS) && (errv == CL_SUCCESS))
+      {
         dt_print(DT_DEBUG_OPENCL,
                  "[opencl_init] no devices found for %s (vendor) - %s (name)\n",
                  platform_vendor, platform_name);
+      }
       else
       {
         dt_print(DT_DEBUG_OPENCL,
@@ -2330,11 +2332,15 @@ static gboolean _opencl_build_program(const int dev,
     (program, 1, &(cl->dev[dev].devid), cl->dev[dev].options, 0, 0);
 
   if(err != CL_SUCCESS)
+  {
     dt_print(DT_DEBUG_OPENCL,
              "[opencl_build_program] could not build program: %s\n", cl_errstr(err));
+  }
   else
+  {
     dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
              "[opencl_build_program] successfully built program\n");
+  }
 
   cl_build_status build_status;
   (cl->dlocl->symbols->dt_clGetProgramBuildInfo)(program, cl->dev[dev].devid,

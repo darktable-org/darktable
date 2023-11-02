@@ -90,7 +90,7 @@ const char *dt_dev_pixelpipe_type_to_str(const int pipe_type)
 #undef PT_STR
 }
 
-void dt_print_pipe(dt_debug_thread_t thread,
+void dt_print_pipe_ext(dt_debug_thread_t thread,
                    const char *title,
                    const dt_dev_pixelpipe_t *pipe,
                    const struct dt_iop_module_t *module,
@@ -2666,8 +2666,10 @@ restart:
 
 #ifdef HAVE_OPENCL
   if(pipe->devid >= 0)
+  {
     dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe starting CL", pipe, NULL, &roi, &roi, "device=%i (%s)\n",
       pipe->devid, darktable.opencl->dev[pipe->devid].cname);
+  }
   else
 #endif
     dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe starting on CPU", pipe, NULL, &roi, &roi, "\n");

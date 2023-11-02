@@ -63,9 +63,13 @@ dt_dlopencl_t *dt_dlopencl_init(const char *name)
     library = name;
     module = dt_gmodule_open(library);
     if(module == NULL)
+    {
       dt_print(DT_DEBUG_OPENCL, "[dt_dlopencl_init] could not find specified opencl runtime library '%s'\n", library);
+    }
     else
+    {
       dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE, "[dt_dlopencl_init] found specified opencl runtime library '%s'\n", library);
+    }
   }
   else
   {
@@ -75,9 +79,13 @@ dt_dlopencl_t *dt_dlopencl_init(const char *name)
       library = *iter;
       module = dt_gmodule_open(library);
       if(module == NULL)
+      {
         dt_print(DT_DEBUG_OPENCL, "[dt_dlopencl_init] could not find default opencl runtime library '%s'\n", library);
+      }
       else
+      {
         dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE, "[dt_dlopencl_init] found default opencl runtime library '%s'\n", library);
+      }
       iter++;
     }
   }

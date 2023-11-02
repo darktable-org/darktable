@@ -164,6 +164,14 @@ typedef int32_t dt_imgid_t;
   INVALID_MASKID is used while testing in mask manager
 */
 
+/*
+  for performance reasons the debug log functions should only be called if there is ANY
+  flag in unmuted at all.
+*/
+#define dt_print_pipe if(darktable.unmuted) dt_print_pipe_ext
+#define dt_print if(darktable.unmuted) dt_print_ext
+#define dt_print_nts if(darktable.unmuted) dt_print_nts_ext
+
 typedef int32_t dt_mask_id_t;
 #define INVALID_MASKID (-1)
 #define NO_MASKID (0)
@@ -406,12 +414,12 @@ int dt_init(int argc, char *argv[],
 
 void dt_get_sysresource_level();
 void dt_cleanup();
-void dt_print(dt_debug_thread_t thread,
+void dt_print_ext(dt_debug_thread_t thread,
               const char *msg, ...)
   __attribute__((format(printf, 2, 3)));
 
 /* same as above but without time stamp : nts = no time stamp */
-void dt_print_nts(dt_debug_thread_t thread,
+void dt_print_nts_ext(dt_debug_thread_t thread,
                   const char *msg, ...)
   __attribute__((format(printf, 2, 3)));
 

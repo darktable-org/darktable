@@ -1488,11 +1488,15 @@ void commit_params(struct dt_iop_module_t *self,
   if(!d->xform_cam_Lab && !dt_is_valid_colormatrix(d->cmatrix[0][0]))
   {
     if(p->type == DT_COLORSPACE_FILE)
+    {
       dt_print(DT_DEBUG_ALWAYS, "[colorin] unsupported input profile `%s' has"
                " been replaced by linear Rec709 RGB!\n", p->filename);
+    }
     else
+    {
       dt_print(DT_DEBUG_ALWAYS, "[colorin] unsupported input profile has been"
                " replaced by linear Rec709 RGB!\n");
+    }
     dt_control_log(_("unsupported input profile has been replaced by linear Rec709 RGB!"));
     if(d->input && d->clear_input) dt_colorspaces_cleanup_profile(d->input);
     d->nrgb = NULL;

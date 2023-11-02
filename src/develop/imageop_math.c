@@ -220,8 +220,10 @@ int dt_iop_clip_and_zoom_roi_cl(int devid,
 
     }
     if(err == CL_SUCCESS)
+    {
       dt_print_pipe(DT_DEBUG_OPENCL, "clip_and_zoom_roi_cl", NULL, NULL, roi_in, roi_out,
           "did fast cpu fallback\n");
+    }
     else
       dt_print_pipe(DT_DEBUG_OPENCL, "clip_and_zoom_roi_cl", NULL, NULL, roi_in, roi_out,
           "fast cpu fallback failing: %s\n", cl_errstr(err));

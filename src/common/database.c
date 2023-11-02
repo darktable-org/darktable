@@ -3790,9 +3790,13 @@ start:
   {
     dt_print(DT_DEBUG_ALWAYS, "[init] could not find database ");
     if(dbname)
+    {
       dt_print(DT_DEBUG_ALWAYS, "`%s'!\n", dbname);
+    }
     else
+    {
       dt_print(DT_DEBUG_ALWAYS, "\n");
+    }
     dt_print(DT_DEBUG_ALWAYS, "[init] maybe your %s/darktablerc is corrupt?\n", datadir);
     dt_loc_get_datadir(dbfilename_library, sizeof(dbfilename_library));
     dt_print(DT_DEBUG_ALWAYS, "[init] try `cp %s/darktablerc %s/darktablerc'\n",
@@ -3986,9 +3990,13 @@ start:
       dt_print(DT_DEBUG_ALWAYS, "[init] deleting `%s' on user request", dbfilename_data);
 
       if(g_unlink(dbfilename_data) == 0)
+      {
         dt_print(DT_DEBUG_ALWAYS, " ... ok\n");
+      }
       else
+      {
         dt_print(DT_DEBUG_ALWAYS, " ... failed\n");
+      }
 
       if(resp == GTK_RESPONSE_ACCEPT && data_snap)
       {
@@ -4012,9 +4020,13 @@ start:
             if(fd < 0 || !g_close(fd, &gerror)) copy_status = FALSE;
           }
           if(copy_status)
+          {
             dt_print(DT_DEBUG_ALWAYS, " success!\n");
+          }
           else
+          {
             dt_print(DT_DEBUG_ALWAYS, " failed!\n");
+          }
 
           g_object_unref(src);
           g_object_unref(dest);
@@ -4166,9 +4178,13 @@ start:
     dt_print(DT_DEBUG_ALWAYS, "[init] deleting `%s' on user request", dbfilename_library);
 
     if(g_unlink(dbfilename_library) == 0)
+    {
       dt_print(DT_DEBUG_ALWAYS, " ... ok\n");
+    }
     else
+    {
       dt_print(DT_DEBUG_ALWAYS, " ... failed\n");
+    }
 
     if(resp == GTK_RESPONSE_ACCEPT && data_snap)
     {
@@ -4192,9 +4208,13 @@ start:
           if(fd < 0 || !g_close(fd, &gerror)) copy_status = FALSE;
         }
         if(copy_status)
+        {
           dt_print(DT_DEBUG_ALWAYS, " success!\n");
+        }
         else
+        {
           dt_print(DT_DEBUG_ALWAYS, " failed!\n");
+        }
         g_object_unref(src);
         g_object_unref(dest);
       }

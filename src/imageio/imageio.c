@@ -885,14 +885,20 @@ int dt_imageio_export_with_flags(const dt_imgid_t imgid,
     if(use_style)
     {
       if(appending)
+      {
         dt_print(DT_DEBUG_ALWAYS,
                  "appending style `%s'\n", format_params->style);
+      }
       else
+      {
         dt_print(DT_DEBUG_ALWAYS,
                  "overwrite style `%s'\n", format_params->style);
+      }
     }
     else
+    {
       dt_print(DT_DEBUG_ALWAYS,"\n");
+    }
 
     int cnt = 0;
     for(GList *nodes = pipe.nodes; nodes; nodes = g_list_next(nodes))

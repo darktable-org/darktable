@@ -313,7 +313,7 @@ gboolean dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
 #endif
 
 /* specialized version of dt_print for pixelpipe debugging */
-void dt_print_pipe(dt_debug_thread_t thread,
+void dt_print_pipe_ext(dt_debug_thread_t thread,
                    const char *title,
                    const dt_dev_pixelpipe_t *pipe,
                    const struct dt_iop_module_t *mod,

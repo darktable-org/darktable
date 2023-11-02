@@ -1921,7 +1921,7 @@ void dt_cleanup()
       been started with -d verbose
    b) 'thread' may be identical to DT_DEBUG_ALWAYS to write output
 */
-void dt_print(dt_debug_thread_t thread, const char *msg, ...)
+void dt_print_ext(dt_debug_thread_t thread, const char *msg, ...)
 {
   if(thread != DT_DEBUG_ALWAYS)
   {
@@ -1941,7 +1941,7 @@ void dt_print(dt_debug_thread_t thread, const char *msg, ...)
   fflush(stdout);
 }
 
-void dt_print_nts(dt_debug_thread_t thread, const char *msg, ...)
+void dt_print_nts_ext(dt_debug_thread_t thread, const char *msg, ...)
 {
   if(thread != DT_DEBUG_ALWAYS)
   {

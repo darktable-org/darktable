@@ -1736,14 +1736,6 @@ void dt_view_paint_surface(cairo_t *cr,
     float wd, ht;
     dt_dev_get_preview_size(dev, &wd, &ht);
 
-    cairo_surface_t *preview = dt_view_create_surface(dev->preview_pipe->backbuf,
-                                                      dev->preview_pipe->backbuf_width,
-                                                      dev->preview_pipe->backbuf_height);
-    cairo_set_source_surface(cr, preview, (preview_x - zoom_x) * wd - 0.5 * dev->preview_pipe->backbuf_width,
-                                          (preview_y - zoom_y) * ht - 0.5 * dev->preview_pipe->backbuf_height);
-    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
-    cairo_paint(cr);
-
     dt_print_pipe(DT_DEBUG_EXPOSE,
         "dt_view_paint_surface",
          dev->preview_pipe, NULL, NULL, NULL,
@@ -1753,6 +1745,14 @@ void dt_view_paint_surface(cairo_t *cr,
          buf_width, buf_height, buf_scale,
          dev->preview_pipe->backbuf_height, dev->preview_pipe->backbuf_width,
          buf_zoom_x, buf_zoom_y, zoom_scale);
+    cairo_surface_t *preview = dt_view_create_surface(dev->preview_pipe->backbuf,
+                                                      dev->preview_pipe->backbuf_width,
+                                                      dev->preview_pipe->backbuf_height);
+    cairo_set_source_surface(cr, preview, (preview_x - zoom_x) * wd - 0.5 * dev->preview_pipe->backbuf_width,
+                                          (preview_y - zoom_y) * ht - 0.5 * dev->preview_pipe->backbuf_height);
+    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
+    cairo_paint(cr);
+
     cairo_surface_destroy(preview);
   }
 

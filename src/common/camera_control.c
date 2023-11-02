@@ -633,9 +633,13 @@ static void _camctl_unlock(const dt_camctl_t *c)
   camctl->active_camera = NULL;
   dt_pthread_mutex_BAD_unlock(&camctl->lock);
   if(cam)
+  {
     dt_print(DT_DEBUG_CAMCTL, "[camera_control] camera control un-locked for %s\n", cam->model);
+  }
   else
+  {
     dt_print(DT_DEBUG_CAMCTL, "[camera_control] camera control un-locked for unknown camera\n");
+  }
   _dispatch_control_status(c, CAMERA_CONTROL_AVAILABLE);
 }
 
@@ -1225,7 +1229,9 @@ void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *image
     }
 
     if(!g_file_set_contents(output, data, size, NULL))
+    {
        dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to write file %s\n", output);
+    }
     else
       _dispatch_camera_image_downloaded(c, cam, folder, filename, output);
 
