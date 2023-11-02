@@ -3528,11 +3528,14 @@ void dt_dev_image(const dt_imgid_t imgid,
   dt_dev_viewport_t *port = &darktable.develop->full;
 
   if(!zoom_x && !zoom_y)
-    port = &(dt_dev_viewport_t) { .zoom   = DT_ZOOM_FIT,
-                                  .width  = width,
-                                  .height = height,
-                                  .ppd    = 1.0,
-                                  .pipe   = pipe };
+  {
+    port         = &dev.full;
+    port->zoom   = DT_ZOOM_FIT;
+    port->width  = width;
+    port->height = height;
+    port->ppd    = 1.0;
+  }
+
   // process the pipe
 
   dt_dev_process_image_job(&dev, port, pipe, -1);
