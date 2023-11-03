@@ -1,5 +1,6 @@
 build/bin/conf_gen.h
 build/bin/preferences_gen.h
+build/bin/tools/darktable_authors.h
 build/lib/darktable/plugins/introspection_ashift.c
 build/lib/darktable/plugins/introspection_atrous.c
 build/lib/darktable/plugins/introspection_basecurve.c
@@ -87,7 +88,6 @@ build/lib/darktable/plugins/introspection_vibrance.c
 build/lib/darktable/plugins/introspection_vignette.c
 build/lib/darktable/plugins/introspection_watermark.c
 build/lib/darktable/plugins/introspection_zonesystem.c
-build/bin/tools/darktable_authors.h
 build/share/darktable/org.darktable.darktable.desktop.in
 data/org.darktable.darktable.appdata.xml.in
 data/org.darktable.darktable.desktop.in
@@ -171,9 +171,6 @@ src/gui/import_metadata.c
 src/gui/preferences.c
 src/gui/presets.c
 src/gui/styles_dialog.c
-src/imageio/imageio.c
-src/imageio/imageio_qoi.c
-src/imageio/imageio_libraw.c
 src/imageio/format/avif.c
 src/imageio/format/copy.c
 src/imageio/format/exr.cc
@@ -187,6 +184,9 @@ src/imageio/format/ppm.c
 src/imageio/format/tiff.c
 src/imageio/format/webp.c
 src/imageio/format/xcf.c
+src/imageio/imageio.c
+src/imageio/imageio_libraw.c
+src/imageio/imageio_qoi.c
 src/imageio/storage/disk.c
 src/imageio/storage/email.c
 src/imageio/storage/gallery.c
@@ -325,10 +325,10 @@ src/libs/map_settings.c
 src/libs/masks.c
 src/libs/metadata.c
 src/libs/metadata_view.c
-src/libs/recentcollect.c
 src/libs/modulegroups.c
 src/libs/navigation.c
 src/libs/print_settings.c
+src/libs/recentcollect.c
 src/libs/recentcollect.c
 src/libs/select.c
 src/libs/session.c
