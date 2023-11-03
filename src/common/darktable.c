@@ -1923,27 +1923,22 @@ void dt_cleanup()
 */
 void dt_print_ext(const char *msg, ...)
 {
-  char buf[128];
   char vbuf[2048];
-  snprintf(buf, sizeof(buf), "%.4f", dt_get_wtime() - darktable.start_wtime);
-
   va_list ap;
   va_start(ap, msg);
   vsnprintf(vbuf, sizeof(vbuf), msg, ap);
   va_end(ap);
 
-  printf("%11s %s", buf, vbuf);
+  printf("%11.4f %s", dt_get_wtime() - darktable.start_wtime, vbuf);
   fflush(stdout);
 }
 
 void dt_print_nts_ext(const char *msg, ...)
 {
-  char vbuf[2048];
   va_list ap;
   va_start(ap, msg);
-  vsnprintf(vbuf, sizeof(vbuf), msg, ap);
+  vprintf(msg, ap);
   va_end(ap);
-  printf("%s", vbuf);
   fflush(stdout);
 }
 
