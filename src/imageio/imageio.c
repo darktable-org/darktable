@@ -104,7 +104,7 @@ static const gchar *_supported_ldr[]
         "png", "pnm", "ppm", "pxn",  "qoi", "qtk",  "rdc", "tif", "tiff", "webp",
         NULL };
 static const gchar *_supported_hdr[]
-    = { "avif", "exr", "hdr", "heic", "heif", "hif", "pfm", NULL };
+    = { "avif", "exr", "hdr", "heic", "heif", "hif", "jxl", "pfm", NULL };
 
 // get the type of image from its extension
 dt_image_flags_t dt_imageio_get_type_from_extension(const char *extension)
