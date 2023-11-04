@@ -180,7 +180,7 @@ void gui_post_expose(dt_lib_module_t *self,
     // if a new snapshot is needed, do this now
     if(d->snap_requested && snap->ctx == ctx)
     {
-      if(snap->buf) dt_free_align(snap->buf);
+      dt_free_align(snap->buf);
       snap->buf = NULL;
 
       // export image with proper size
@@ -819,7 +819,6 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget,
   gtk_label_set_markup(lname, txt);
 
   gtk_entry_set_text(lentry, s->label ? s->label : "");
-
 
   gtk_widget_grab_focus(s->button);
 

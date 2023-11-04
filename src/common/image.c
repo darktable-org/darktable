@@ -362,7 +362,8 @@ gboolean dt_image_safe_remove(const dt_imgid_t imgid)
   // always safe to remove if we do not have .xmp
   // FIXME ?? we might have remaining sidecar files from a situation with enabled writing.
   // Do we want to test and possibly remove them?
-  if(dt_image_get_xmp_mode() == DT_WRITE_XMP_NEVER) return TRUE;
+  if(dt_image_get_xmp_mode() == DT_WRITE_XMP_NEVER)
+    return TRUE;
 
   // check whether the original file is accessible
   char pathname[PATH_MAX] = { 0 };
