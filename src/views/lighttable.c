@@ -429,9 +429,9 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   // we have started the first expose
   lib->already_started = TRUE;
 
-  const double end = dt_get_wtime();
-  if(darktable.unmuted & DT_DEBUG_PERF)
-    dt_print(DT_DEBUG_LIGHTTABLE, "[lighttable] expose took %0.04f sec\n", end - start);
+  dt_print(DT_DEBUG_LIGHTTABLE | DT_DEBUG_PERF, 
+           "[lighttable] expose took %0.04f sec\n", 
+           dt_get_wtime() - start);
 }
 
 void enter(dt_view_t *self)

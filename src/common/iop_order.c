@@ -2180,9 +2180,9 @@ void dt_ioppr_insert_module_instance(struct dt_develop_t *dev,
   dev->iop_order_list = g_list_insert_before(dev->iop_order_list, place, entry);
 }
 
-gboolean dt_ioppr_check_iop_order(dt_develop_t *dev,
-                                  const dt_imgid_t imgid,
-                                  const char *msg)
+gboolean dt_ioppr_check_iop_order_ext(dt_develop_t *dev,
+                                      const dt_imgid_t imgid,
+                                      const char *msg)
 {
   gboolean iop_order_ok = TRUE;
 

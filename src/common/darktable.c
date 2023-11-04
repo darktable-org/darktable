@@ -939,62 +939,39 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       }
       else if(argv[k][1] == 'd' && argc > k + 1)
       {
-        if(!strcmp(argv[k + 1], "common"))
-          darktable.unmuted |= DT_DEBUG_COMMON; // enable common processing options
-        else if(!strcmp(argv[k + 1], "all"))
-          darktable.unmuted |= DT_DEBUG_ALL; // enable all debug information except verbose
-        else if(!strcmp(argv[k + 1], "cache"))
-          darktable.unmuted |= DT_DEBUG_CACHE; // enable debugging for lib/film/cache module
-        else if(!strcmp(argv[k + 1], "control"))
-          darktable.unmuted |= DT_DEBUG_CONTROL; // enable debugging for scheduler module
-        else if(!strcmp(argv[k + 1], "dev"))
-          darktable.unmuted |= DT_DEBUG_DEV; // develop module
-        else if(!strcmp(argv[k + 1], "input"))
-          darktable.unmuted |= DT_DEBUG_INPUT; // input devices
-        else if(!strcmp(argv[k + 1], "camctl"))
-          darktable.unmuted |= DT_DEBUG_CAMCTL; // camera control module
-        else if(!strcmp(argv[k + 1], "perf"))
-          darktable.unmuted |= DT_DEBUG_PERF; // performance measurements
-        else if(!strcmp(argv[k + 1], "pwstorage"))
-          darktable.unmuted |= DT_DEBUG_PWSTORAGE; // pwstorage module
-        else if(!strcmp(argv[k + 1], "opencl"))
-          darktable.unmuted |= DT_DEBUG_OPENCL; // gpu accel via opencl
-        else if(!strcmp(argv[k + 1], "sql"))
-          darktable.unmuted |= DT_DEBUG_SQL; // SQLite3 queries
-        else if(!strcmp(argv[k + 1], "memory"))
-          darktable.unmuted |= DT_DEBUG_MEMORY; // some stats on mem usage now and then.
-        else if(!strcmp(argv[k + 1], "lighttable"))
-          darktable.unmuted |= DT_DEBUG_LIGHTTABLE; // lighttable related stuff.
-        else if(!strcmp(argv[k + 1], "nan"))
-          darktable.unmuted |= DT_DEBUG_NAN; // check for NANs when processing the pipe.
-        else if(!strcmp(argv[k + 1], "masks"))
-          darktable.unmuted |= DT_DEBUG_MASKS; // masks related stuff.
-        else if(!strcmp(argv[k + 1], "lua"))
-          darktable.unmuted |= DT_DEBUG_LUA; // lua errors are reported on console
-        else if(!strcmp(argv[k + 1], "print"))
-          darktable.unmuted |= DT_DEBUG_PRINT; // print errors are reported on console
-        else if(!strcmp(argv[k + 1], "camsupport"))
-          darktable.unmuted |= DT_DEBUG_CAMERA_SUPPORT; // camera support warnings are reported on console
-        else if(!strcmp(argv[k + 1], "ioporder"))
-          darktable.unmuted |= DT_DEBUG_IOPORDER; // iop order information are reported on console
-        else if(!strcmp(argv[k + 1], "imageio"))
-          darktable.unmuted |= DT_DEBUG_IMAGEIO; // image importing or exporting messages on console
-        else if(!strcmp(argv[k + 1], "undo"))
-          darktable.unmuted |= DT_DEBUG_UNDO; // undo/redo
-        else if(!strcmp(argv[k + 1], "signal"))
-          darktable.unmuted |= DT_DEBUG_SIGNAL; // signal information on console
-        else if(!strcmp(argv[k + 1], "params"))
-          darktable.unmuted |= DT_DEBUG_PARAMS; // iop module params checks on console
-        else if(!strcmp(argv[k + 1], "act_on"))
-          darktable.unmuted |= DT_DEBUG_ACT_ON;
-        else if(!strcmp(argv[k + 1], "tiling"))
-          darktable.unmuted |= DT_DEBUG_TILING;
-        else if(!strcmp(argv[k + 1], "verbose"))
-          darktable.unmuted |= DT_DEBUG_VERBOSE;
-        else if(!strcmp(argv[k + 1], "pipe"))
-          darktable.unmuted |= DT_DEBUG_PIPE;
-        else if(!strcmp(argv[k + 1], "expose"))
-          darktable.unmuted |= DT_DEBUG_EXPOSE;
+        char *darg = argv[k + 1];
+        dt_debug_thread_t dadd =
+          !strcmp(darg, "common") ? DT_DEBUG_COMMON : // enable common processing options
+          !strcmp(darg, "all") ? DT_DEBUG_ALL : // enable all debug information except verbose
+          !strcmp(darg, "cache") ? DT_DEBUG_CACHE : // enable debugging for lib/film/cache module
+          !strcmp(darg, "control") ? DT_DEBUG_CONTROL : // enable debugging for scheduler module
+          !strcmp(darg, "dev") ? DT_DEBUG_DEV : // develop module
+          !strcmp(darg, "input") ? DT_DEBUG_INPUT : // input devices
+          !strcmp(darg, "camctl") ? DT_DEBUG_CAMCTL : // camera control module
+          !strcmp(darg, "perf") ? DT_DEBUG_PERF : // performance measurements
+          !strcmp(darg, "pwstorage") ? DT_DEBUG_PWSTORAGE : // pwstorage module
+          !strcmp(darg, "opencl") ? DT_DEBUG_OPENCL : // gpu accel via opencl
+          !strcmp(darg, "sql") ? DT_DEBUG_SQL : // SQLite3 queries
+          !strcmp(darg, "memory") ? DT_DEBUG_MEMORY : // some stats on mem usage now and then.
+          !strcmp(darg, "lighttable") ? DT_DEBUG_LIGHTTABLE : // lighttable related stuff.
+          !strcmp(darg, "nan") ? DT_DEBUG_NAN : // check for NANs when processing the pipe.
+          !strcmp(darg, "masks") ? DT_DEBUG_MASKS : // masks related stuff.
+          !strcmp(darg, "lua") ? DT_DEBUG_LUA : // lua errors are reported on console
+          !strcmp(darg, "print") ? DT_DEBUG_PRINT : // print errors are reported on console
+          !strcmp(darg, "camsupport") ? DT_DEBUG_CAMERA_SUPPORT : // camera support warnings are reported on console
+          !strcmp(darg, "ioporder") ? DT_DEBUG_IOPORDER : // iop order information are reported on console
+          !strcmp(darg, "imageio") ? DT_DEBUG_IMAGEIO : // image importing or exporting messages on console
+          !strcmp(darg, "undo") ? DT_DEBUG_UNDO : // undo/redo
+          !strcmp(darg, "signal") ? DT_DEBUG_SIGNAL : // signal information on console
+          !strcmp(darg, "params") ? DT_DEBUG_PARAMS : // iop module params checks on console
+          !strcmp(darg, "act_on") ? DT_DEBUG_ACT_ON :
+          !strcmp(darg, "tiling") ? DT_DEBUG_TILING :
+          !strcmp(darg, "verbose") ? DT_DEBUG_VERBOSE :
+          !strcmp(darg, "pipe") ? DT_DEBUG_PIPE :
+          !strcmp(darg, "expose") ? DT_DEBUG_EXPOSE :
+          0;
+        if(dadd)
+          darktable.unmuted |= dadd;
         else
           return usage(argv[0]);
         k++;

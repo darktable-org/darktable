@@ -297,7 +297,7 @@ void dt_dev_process_image_job(dt_develop_t *dev,
   pipe->status = DT_DEV_PIXELPIPE_RUNNING;
 
   dt_times_t start;
-  dt_get_times(&start);
+  dt_get_perf_times(&start);
 
   dt_mipmap_buffer_t buf;
   dt_mipmap_cache_get(darktable.mipmap_cache,
@@ -490,7 +490,7 @@ static inline void _dt_dev_load_raw(dt_develop_t *dev,
   // first load the raw, to make sure dt_image_t will contain all and correct data.
   dt_mipmap_buffer_t buf;
   dt_times_t start;
-  dt_get_times(&start);
+  dt_get_perf_times(&start);
   dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_FULL,
                       DT_MIPMAP_BLOCKING, 'r');
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
@@ -1192,8 +1192,7 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
 
 void dt_dev_pop_history_items_ext(dt_develop_t *dev, const int32_t cnt)
 {
-  if(darktable.unmuted & DT_DEBUG_IOPORDER)
-    dt_ioppr_check_iop_order(dev, 0, "dt_dev_pop_history_items_ext begin");
+  dt_ioppr_check_iop_order(dev, 0, "dt_dev_pop_history_items_ext begin");
 
   const int end_prev = dev->history_end;
   dev->history_end = cnt;
@@ -1240,8 +1239,7 @@ void dt_dev_pop_history_items_ext(dt_develop_t *dev, const int32_t cnt)
 
   dt_ioppr_check_duplicate_iop_order(&dev->iop, dev->history);
 
-  if(darktable.unmuted & DT_DEBUG_IOPORDER)
-    dt_ioppr_check_iop_order(dev, 0, "dt_dev_pop_history_items_ext end");
+  dt_ioppr_check_iop_order(dev, 0, "dt_dev_pop_history_items_ext end");
 
   // check if masks have changed
   gboolean masks_changed = FALSE;
@@ -2265,8 +2263,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     sqlite3_finalize(stmt);
   }
 
-  if(darktable.unmuted & DT_DEBUG_IOPORDER)
-    dt_ioppr_check_iop_order(dev, imgid, "dt_dev_read_history_no_image end");
+  dt_ioppr_check_iop_order(dev, imgid, "dt_dev_read_history_no_image end");
 
   dt_masks_read_masks_history(dev, imgid);
 

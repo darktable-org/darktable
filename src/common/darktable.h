@@ -299,6 +299,7 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_EXPOSE         = 1 << 26,
   DT_DEBUG_ALL            = 0xffffffff & ~DT_DEBUG_VERBOSE,
   DT_DEBUG_COMMON         = DT_DEBUG_OPENCL | DT_DEBUG_DEV | DT_DEBUG_MASKS | DT_DEBUG_PARAMS | DT_DEBUG_IMAGEIO | DT_DEBUG_PIPE,
+  DT_DEBUG_RESTRICT       = DT_DEBUG_VERBOSE | DT_DEBUG_PERF,
 } dt_debug_thread_t;
 
 typedef struct dt_codepath_t
@@ -413,8 +414,8 @@ void dt_cleanup();
 */
 #define dt_debug_if(thread, func, ...)                           \
   do{ if((thread) == DT_DEBUG_ALWAYS                             \
-        || ((thread) & ~DT_DEBUG_VERBOSE &  darktable.unmuted && \
-          !((thread) &  DT_DEBUG_VERBOSE & ~darktable.unmuted))) \
+         || (darktable.unmuted & (thread) &&                     \
+          !(~darktable.unmuted & (thread) & DT_DEBUG_RESTRICT))) \
         func(__VA_ARGS__); } while(0)
 
 #define dt_print_pipe(thread, ...) dt_debug_if(thread, dt_print_pipe_ext, __VA_ARGS__)
@@ -573,24 +574,38 @@ static inline double dt_get_wtime(void)
   return time.tv_sec - 1290608000 + (1.0 / 1000000.0) * time.tv_usec;
 }
 
-static inline void dt_get_times(dt_times_t *t)
+static inline double dt_get_lap_time(double *time)
+{
+  double prev = *time;
+  *time = dt_get_wtime();
+  return *time - prev;
+}
+
+static inline double dt_get_utime(void)
 {
   struct rusage ru;
-
   getrusage(RUSAGE_SELF, &ru);
+  return ru.ru_utime.tv_sec + ru.ru_utime.tv_usec * (1.0 / 1000000.0);
+}
+
+static inline double dt_get_lap_utime(double *time)
+{
+  double prev = *time;
+  *time = dt_get_utime();
+  return *time - prev;
+}
+
+static inline void dt_get_times(dt_times_t *t)
+{
   t->clock = dt_get_wtime();
-  t->user = ru.ru_utime.tv_sec + ru.ru_utime.tv_usec * (1.0 / 1000000.0);
+  t->user = dt_get_utime();
 }
 
 static inline void dt_get_perf_times(dt_times_t *t)
 {
   if(darktable.unmuted & DT_DEBUG_PERF)
   {
-    struct rusage ru;
-
-    getrusage(RUSAGE_SELF, &ru);
-    t->clock = dt_get_wtime();
-    t->user = ru.ru_utime.tv_sec + ru.ru_utime.tv_usec * (1.0 / 1000000.0);
+    dt_get_times(t);
   }
 }
 

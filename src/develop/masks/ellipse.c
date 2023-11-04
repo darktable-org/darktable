@@ -1691,13 +1691,9 @@ static int _ellipse_get_mask(const dt_iop_module_t *const module,
   // we get the area
   if(!_ellipse_get_area(module, piece, form, width, height, posx, posy)) return 0;
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] ellipse area took %0.04f sec\n",
-             form->name, dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] ellipse area took %0.04f sec\n",
+           form->name, dt_get_lap_time(&start2));
 
   // we get the ellipse values
   dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)((form->points)->data);
@@ -1715,13 +1711,9 @@ static int _ellipse_get_mask(const dt_iop_module_t *const module,
       points[(i * w + j) * 2 + 1] = (i + (*posy));
     }
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] ellipse draw took %0.04f sec\n",
-             form->name, dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] ellipse draw took %0.04f sec\n",
+           form->name, dt_get_lap_time(&start2));
 
   // we back transform all this points
   if(!dt_dev_distort_backtransform_plus(module->dev, piece->pipe, module->iop_order,
@@ -1732,13 +1724,9 @@ static int _ellipse_get_mask(const dt_iop_module_t *const module,
     return 0;
   }
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] ellipse transform took %0.04f sec\n", form->name,
-             dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] ellipse transform took %0.04f sec\n", form->name,
+           dt_get_lap_time(&start2));
 
   // we allocate the buffer
   *buffer = dt_alloc_align_float((size_t)w * h);
@@ -1786,8 +1774,9 @@ static int _ellipse_get_mask(const dt_iop_module_t *const module,
 
   dt_free_align(points);
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-    dt_print(DT_DEBUG_MASKS, "[masks %s] ellipse fill took %0.04f sec\n", form->name, dt_get_wtime() - start2);
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+           "[masks %s] ellipse fill took %0.04f sec\n", 
+           form->name, dt_get_lap_time(&start2));
 
   return 1;
 }
@@ -1836,13 +1825,9 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module,
   const int gw = (w + grid - 1) / grid + 1;  // grid dimension of total roi
   const int gh = (h + grid - 1) / grid + 1;  // grid dimension of total roi
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] ellipse init took %0.04f sec\n",
-             form->name, dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+           "[masks %s] ellipse init took %0.04f sec\n",
+           form->name, dt_get_lap_time(&start2));
 
   // we look at the outer line of the shape - no effects outside of
   // this ellipse; we need many points as we do not know how the
@@ -1873,13 +1858,9 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module,
     ell[2 * n + 1] = center[1] + ta * sina * cosp + tb * cosa * sinp;
   }
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] ellipse outline took %0.04f sec\n",
-             form->name, dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+           "[masks %s] ellipse outline took %0.04f sec\n",
+           form->name, dt_get_lap_time(&start2));
 
   // we transform the outline from input image coordinates to current position in pixelpipe
   if(!dt_dev_distort_transform_plus(module->dev, piece->pipe, module->iop_order,
@@ -1890,13 +1871,9 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module,
     return 0;
   }
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] ellipse outline transform took %0.04f sec\n",
-             form->name, dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+           "[masks %s] ellipse outline transform took %0.04f sec\n",
+           form->name, dt_get_lap_time(&start2));
 
   // we get the min/max values ...
   float xmin = FLT_MAX, ymin = FLT_MAX, xmax = FLT_MIN, ymax = FLT_MIN;
@@ -1932,13 +1909,9 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module,
 
   dt_free_align(ell);
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] ellipse bounding box took %0.04f sec\n",
-             form->name, dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+           "[masks %s] ellipse bounding box took %0.04f sec\n",
+           form->name, dt_get_lap_time(&start2));
 
   // check if there is anything to do at all; only if width and height
   // of bounding box is 2 or greater the shape lies inside of roi and
@@ -1967,13 +1940,9 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module,
       points[index * 2 + 1] = (grid * j + py) * iscale;
     }
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] ellipse grid took %0.04f sec\n",
-             form->name, dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+           "[masks %s] ellipse grid took %0.04f sec\n",
+           form->name, dt_get_lap_time(&start2));
 
   // we back transform all these points to the input image coordinates
   if(!dt_dev_distort_backtransform_plus(module->dev, piece->pipe, module->iop_order,
@@ -1984,25 +1953,18 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module,
     return 0;
   }
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] ellipse transform took %0.04f sec\n", form->name,
-             dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+           "[masks %s] ellipse transform took %0.04f sec\n", form->name,
+           dt_get_lap_time(&start2));
 
   // we calculate the mask values at the transformed points; re-use
   // the points array for results; this requires out_scale==1 to
   // double the offsets at which they are stored
   _fill_mask((size_t)(bbh)*bbw, points, points, center, a, b, ta, tb, alpha, 1);
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS, "[masks %s] ellipse draw took %0.04f sec\n", form->name,
-             dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+           "[masks %s] ellipse draw took %0.04f sec\n", form->name,
+           dt_get_wtime() - start2);
 
   // we fill the pre-initialized output buffer by interpolation;
   // we only need to take the contents of our bounding box into account
@@ -2037,15 +1999,13 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module,
 
   dt_free_align(points);
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] ellipse fill took %0.04f sec\n",
-             form->name, dt_get_wtime() - start2);
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] ellipse total render took %0.04f sec\n", form->name,
-             dt_get_wtime() - start1);
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+           "[masks %s] ellipse fill took %0.04f sec\n",
+           form->name, dt_get_wtime() - start2);
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+           "[masks %s] ellipse total render took %0.04f sec\n", form->name,
+           dt_get_wtime() - start1);
+
   return 1;
 }
 

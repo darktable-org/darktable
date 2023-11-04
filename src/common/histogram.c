@@ -215,7 +215,7 @@ void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
                          const gboolean compensate_middle_grey,
                          const dt_iop_order_iccprofile_info_t *const profile_info)
 {
-  dt_times_t start_time = { 0 }, end_time = { 0 };
+  dt_times_t start_time = { 0 };
   dt_get_perf_times(&start_time);
 
   // all use 256 bins excepting:
@@ -291,17 +291,13 @@ void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
     for_each_channel(ch,aligned(m:16))
       histogram_max[ch] = m[ch];
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_get_times(&end_time);
-    dt_print(DT_DEBUG_ALWAYS,
-             "histogram calculation %u bins %d -> %d"
-             " compensate %d %u channels %u pixels took %.3f secs (%.3f CPU)\n",
-             histogram_params->bins_count, cst, cst_to,
-             compensate_middle_grey && profile_info, histogram_stats->ch,
-             histogram_stats->pixels,
-             end_time.clock - start_time.clock, end_time.user - start_time.user);
-  }
+  dt_print(DT_DEBUG_PERF,
+            "histogram calculation %u bins %d -> %d"
+            " compensate %d %u channels %u pixels took %.3f secs (%.3f CPU)\n",
+            histogram_params->bins_count, cst, cst_to,
+            compensate_middle_grey && profile_info, histogram_stats->ch,
+            histogram_stats->pixels,
+            dt_get_lap_time(&start_time.clock), dt_get_lap_utime(&start_time.user));
 }
 
 // clang-format off

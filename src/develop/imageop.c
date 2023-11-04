@@ -664,8 +664,7 @@ dt_iop_module_t *dt_iop_gui_get_next_visible_module(dt_iop_module_t *module)
 
 static void _gui_movedown_callback(GtkButton *button, dt_iop_module_t *module)
 {
-  if(darktable.unmuted & DT_DEBUG_IOPORDER)
-    dt_ioppr_check_iop_order(module->dev, 0, "dt_iop_gui_movedown_callback begin");
+  dt_ioppr_check_iop_order(module->dev, 0, "dt_iop_gui_movedown_callback begin");
 
   // we need to place this module right before the previous
   dt_iop_module_t *prev = dt_iop_gui_get_previous_visible_module(module);
@@ -688,8 +687,7 @@ static void _gui_movedown_callback(GtkButton *button, dt_iop_module_t *module)
 
   dt_dev_add_history_item(prev->dev, module, TRUE);
 
-  if(darktable.unmuted & DT_DEBUG_IOPORDER)
-    dt_ioppr_check_iop_order(module->dev, 0, "dt_iop_gui_movedown_callback end");
+  dt_ioppr_check_iop_order(module->dev, 0, "dt_iop_gui_movedown_callback end");
 
   // rebuild the accelerators
   dt_iop_connect_accels_multi(module->so);
@@ -701,8 +699,7 @@ static void _gui_movedown_callback(GtkButton *button, dt_iop_module_t *module)
 
 static void _gui_moveup_callback(GtkButton *button, dt_iop_module_t *module)
 {
-  if(darktable.unmuted & DT_DEBUG_IOPORDER)
-    dt_ioppr_check_iop_order(module->dev, 0, "dt_iop_gui_moveup_callback begin");
+  dt_ioppr_check_iop_order(module->dev, 0, "dt_iop_gui_moveup_callback begin");
 
   // we need to place this module right after the next one
   dt_iop_module_t *next = dt_iop_gui_get_next_visible_module(module);
@@ -726,8 +723,7 @@ static void _gui_moveup_callback(GtkButton *button, dt_iop_module_t *module)
 
   dt_dev_add_history_item(next->dev, module, TRUE);
 
-  if(darktable.unmuted & DT_DEBUG_IOPORDER)
-    dt_ioppr_check_iop_order(module->dev, 0, "dt_iop_gui_moveup_callback end");
+  dt_ioppr_check_iop_order(module->dev, 0, "dt_iop_gui_moveup_callback end");
 
   // rebuild the accelerators
   dt_iop_connect_accels_multi(module->so);

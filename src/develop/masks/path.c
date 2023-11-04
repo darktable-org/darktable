@@ -720,12 +720,9 @@ static int _path_get_pts_border(dt_develop_t *dev,
   int cw = _path_is_clockwise(form);
   if(cw == 0) cw = -1;
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS, "[masks %s] path_points init took %0.04f sec\n", form->name,
-             dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+           "[masks %s] path_points init took %0.04f sec\n", form->name,
+           dt_get_lap_time(&start2));
 
   // we render all segments
   const GList *form_points = form->points;
@@ -847,13 +844,9 @@ static int _path_get_pts_border(dt_develop_t *dev,
     dt_masks_dynbuf_free(dborder);
   }
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS, "[masks %s] path_points point recurs %0.04f sec\n",
-             form->name,
-             dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+           "[masks %s] path_points point recurs %0.04f sec\n",
+           form->name, dt_get_lap_time(&start2));
 
   // we don't want the border to self-intersect
   int inter_count = 0;
@@ -861,13 +854,9 @@ static int _path_get_pts_border(dt_develop_t *dev,
   {
     inter_count = _path_find_self_intersection(intersections, nb, *border, *border_count);
 
-    if(darktable.unmuted & DT_DEBUG_PERF)
-    {
-      dt_print(DT_DEBUG_MASKS,
-               "[masks %s] path_points self-intersect took %0.04f sec\n", form->name,
-               dt_get_wtime() - start2);
-      start2 = dt_get_wtime();
-    }
+    dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+             "[masks %s] path_points self-intersect took %0.04f sec\n", form->name,
+             dt_get_lap_time(&start2));
   }
 
   // and we transform them with all distorted modules
@@ -908,9 +897,9 @@ static int _path_get_pts_border(dt_develop_t *dev,
         goto fail;
     }
 
-    if(darktable.unmuted & DT_DEBUG_PERF)
-      dt_print(DT_DEBUG_MASKS, "[masks %s] path_points end took %0.04f sec\n",
-               form->name, dt_get_wtime() - start2);
+    dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+             "[masks %s] path_points end took %0.04f sec\n",
+             form->name, dt_get_lap_time(&start2));
 
     dt_masks_dynbuf_free(intersections);
     dt_free_align(border_init);
@@ -923,13 +912,9 @@ static int _path_get_pts_border(dt_develop_t *dev,
        || dt_dev_distort_transform_plus(dev, pipe, iop_order,
                                         transf_direction, *border, *border_count))
     {
-      if(darktable.unmuted & DT_DEBUG_PERF)
-      {
-        dt_print(DT_DEBUG_MASKS,
-                 "[masks %s] path_points transform took %0.04f sec\n", form->name,
-                 dt_get_wtime() - start2);
-        start2 = dt_get_wtime();
-      }
+      dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+               "[masks %s] path_points transform took %0.04f sec\n", form->name,
+               dt_get_lap_time(&start2));
 
       if(border)
       {
@@ -965,10 +950,9 @@ static int _path_get_pts_border(dt_develop_t *dev,
         }
       }
 
-      if(darktable.unmuted & DT_DEBUG_PERF)
-        dt_print(DT_DEBUG_MASKS,
-                 "[masks %s] path_points end took %0.04f sec\n", form->name,
-                 dt_get_wtime() - start2);
+      dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+               "[masks %s] path_points end took %0.04f sec\n", form->name,
+               dt_get_lap_time(&start2));
 
       dt_masks_dynbuf_free(intersections);
       dt_free_align(border_init);
@@ -2591,13 +2575,10 @@ static int _path_get_mask(const dt_iop_module_t *const module,
     return 0;
   }
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] path points took %0.04f sec\n",
-             form->name, dt_get_wtime() - start);
-    start = start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+           "[masks %s] path points took %0.04f sec\n",
+           form->name, dt_get_lap_time(&start));
+  start2 = start;
 
   // now we want to find the area, so we search min/max points
   const guint nb_corner = g_list_length(form->points);
@@ -2607,13 +2588,9 @@ static int _path_get_mask(const dt_iop_module_t *const module,
   const int hb = *height;
   const int wb = *width;
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] path_fill min max took %0.04f sec\n", form->name,
-             dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+           "[masks %s] path_fill min max took %0.04f sec\n", form->name,
+           dt_get_lap_time(&start2));
 
   // we allocate the buffer
   const size_t bufsize = (size_t)(*width) * (*height);
@@ -2733,13 +2710,9 @@ static int _path_get_mask(const dt_iop_module_t *const module,
       if(ii != i) break;
     }
   }
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] path_fill draw path took %0.04f sec\n", form->name,
-             dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+           "[masks %s] path_fill draw path took %0.04f sec\n", form->name,
+           dt_get_lap_time(&start2));
 
 #ifdef _OPENMP
 #pragma omp parallel for \
@@ -2757,13 +2730,9 @@ static int _path_get_mask(const dt_iop_module_t *const module,
     }
   }
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] path_fill fill plain took %0.04f sec\n", form->name,
-             dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+           "[masks %s] path_fill fill plain took %0.04f sec\n", form->name,
+           dt_get_lap_time(&start2));
 
   // now we fill the falloff
   int p0[2] = { 0 }, p1[2] = { 0 };
@@ -2805,18 +2774,16 @@ static int _path_get_mask(const dt_iop_module_t *const module,
     }
   }
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] path_fill fill falloff took %0.04f sec\n", form->name,
-             dt_get_wtime() - start2);
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+           "[masks %s] path_fill fill falloff took %0.04f sec\n", form->name,
+           dt_get_lap_time(&start2));
 
   dt_free_align(points);
   dt_free_align(border);
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] path fill buffer took %0.04f sec\n", form->name,
-             dt_get_wtime() - start);
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+           "[masks %s] path fill buffer took %0.04f sec\n", form->name,
+           dt_get_lap_time(&start));
 
   return 1;
 }
@@ -3057,13 +3024,10 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module,
     return 0;
   }
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] path points took %0.04f sec\n",
-             form->name, dt_get_wtime() - start);
-    start = start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+           "[masks %s] path points took %0.04f sec\n",
+           form->name, dt_get_lap_time(&start));
+  start2 = start;
 
   const guint nb_corner = g_list_length(form->points);
 
@@ -3161,21 +3125,13 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module,
   _path_bounding_box_raw(points, border, nb_corner, points_count, border_count,
                          &xmin, &xmax, &ymin, &ymax);
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] path_fill min max took %0.04f sec\n", form->name,
-             dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+           "[masks %s] path_fill min max took %0.04f sec\n", form->name,
+           dt_get_lap_time(&start2));
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] path_fill clear mask took %0.04f sec\n", form->name,
-             dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+           "[masks %s] path_fill clear mask took %0.04f sec\n", form->name,
+           dt_get_lap_time(&start2));
 
   // deal with path if it does not lie outside of roi
   if(path_in_roi)
@@ -3203,13 +3159,9 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module,
                                                height);
     path_encircles_roi = path_encircles_roi || !crop_success;
 
-    if(darktable.unmuted & DT_DEBUG_PERF)
-    {
-      dt_print(DT_DEBUG_MASKS,
-               "[masks %s] path_fill crop to roi took %0.04f sec\n", form->name,
-               dt_get_wtime() - start2);
-      start2 = dt_get_wtime();
-    }
+    dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+             "[masks %s] path_fill crop to roi took %0.04f sec\n", form->name,
+             dt_get_lap_time(&start2));
 
     if(path_encircles_roi)
     {
@@ -3264,13 +3216,9 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module,
         }
       }
 
-      if(darktable.unmuted & DT_DEBUG_PERF)
-      {
-        dt_print(DT_DEBUG_MASKS,
-                 "[masks %s] path_fill draw path took %0.04f sec\n", form->name,
-                 dt_get_wtime() - start2);
-        start2 = dt_get_wtime();
-      }
+      dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+               "[masks %s] path_fill draw path took %0.04f sec\n", form->name,
+               dt_get_lap_time(&start2));
 
       // we fill the inside plain
       // we don't need to deal with parts of shape outside of roi
@@ -3300,13 +3248,9 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module,
         }
       }
 
-      if(darktable.unmuted & DT_DEBUG_PERF)
-      {
-        dt_print(DT_DEBUG_MASKS,
-                 "[masks %s] path_fill fill plain took %0.04f sec\n", form->name,
-                 dt_get_wtime() - start2);
-        start2 = dt_get_wtime();
-      }
+      dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+               "[masks %s] path_fill fill plain took %0.04f sec\n", form->name,
+               dt_get_lap_time(&start2));
     }
     dt_free_align(cpoints);
   }
@@ -3388,21 +3332,17 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module,
 
     dt_free_align(dpoints);
 
-    if(darktable.unmuted & DT_DEBUG_PERF)
-    {
-      dt_print(DT_DEBUG_MASKS,
-               "[masks %s] path_fill fill falloff took %0.04f sec\n", form->name,
-               dt_get_wtime() - start2);
-    }
+    dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+             "[masks %s] path_fill fill falloff took %0.04f sec\n", form->name,
+             dt_get_lap_time(&start2));
   }
 
   dt_free_align(points);
   dt_free_align(border);
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] path fill buffer took %0.04f sec\n", form->name,
-             dt_get_wtime() - start);
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+           "[masks %s] path fill buffer took %0.04f sec\n", form->name,
+           dt_get_lap_time(&start));
 
   return 1;
 }
