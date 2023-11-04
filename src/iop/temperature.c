@@ -2121,7 +2121,7 @@ void gui_init(struct dt_iop_module_t *self)
                                             N_("settings"),
                                             N_("as shot to reference"), NULL,
                                             G_CALLBACK(btn_toggled), FALSE, 0, 0,
-                                            dtgtk_cairo_paint_bulb, NULL);
+                                            dtgtk_cairo_paint_bulb_mod, NULL);
   gtk_widget_set_tooltip_text
     (g->btn_d65_late,
      _("set white balance to as shot and later correct to camera reference point,\nin most cases it should be D65"));
