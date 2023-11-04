@@ -1151,13 +1151,9 @@ static int _gradient_get_mask(const dt_iop_module_t *const module,
   // we get the area
   if(!_gradient_get_area(module, piece, form, width, height, posx, posy)) return 0;
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] gradient area took %0.04f sec\n", form->name,
-             dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+           "[masks %s] gradient area took %0.04f sec\n", form->name,
+           dt_get_lap_time(&start2));
 
   // we get the gradient values
   dt_masks_point_gradient_t *gradient =
@@ -1192,13 +1188,9 @@ static int _gradient_get_mask(const dt_iop_module_t *const module,
       points[(j * gw + i) * 2 + 1] = (grid * j + py);
     }
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] gradient draw took %0.04f sec\n", form->name,
-             dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+           "[masks %s] gradient draw took %0.04f sec\n", form->name,
+           dt_get_lap_time(&start2));
 
   // we backtransform all these points
   if(!dt_dev_distort_backtransform_plus(module->dev, piece->pipe,
@@ -1210,13 +1202,9 @@ static int _gradient_get_mask(const dt_iop_module_t *const module,
     return 0;
   }
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] gradient transform took %0.04f sec\n", form->name,
-             dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+           "[masks %s] gradient transform took %0.04f sec\n", form->name,
+           dt_get_lap_time(&start2));
 
   // we calculate the mask at grid points and recycle point buffer to store results
   const float wd = piece->pipe->iwidth;
@@ -1333,9 +1321,9 @@ static int _gradient_get_mask(const dt_iop_module_t *const module,
 
   dt_free_align(points);
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-    dt_print(DT_DEBUG_MASKS, "[masks %s] gradient fill took %0.04f sec\n", form->name,
-             dt_get_wtime() - start2);
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+           "[masks %s] gradient fill took %0.04f sec\n", form->name,
+           dt_get_lap_time(&start2));
 
   return 1;
 }
@@ -1385,13 +1373,9 @@ static int _gradient_get_mask_roi(const dt_iop_module_t *const module,
       points[index * 2 + 1] = (grid * j + py) * iscale;
     }
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] gradient draw took %0.04f sec\n", form->name,
-             dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+           "[masks %s] gradient draw took %0.04f sec\n", form->name,
+           dt_get_lap_time(&start2));
 
   // we backtransform all these points
   if(!dt_dev_distort_backtransform_plus(module->dev, piece->pipe,
@@ -1403,13 +1387,9 @@ static int _gradient_get_mask_roi(const dt_iop_module_t *const module,
     return 0;
   }
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] gradient transform took %0.04f sec\n", form->name,
-             dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+           "[masks %s] gradient transform took %0.04f sec\n", form->name,
+           dt_get_lap_time(&start2));
 
   // we calculate the mask at grid points and recycle point buffer to store results
   const float wd = piece->pipe->iwidth;
@@ -1521,9 +1501,9 @@ static int _gradient_get_mask_roi(const dt_iop_module_t *const module,
 
   dt_free_align(points);
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-    dt_print(DT_DEBUG_MASKS, "[masks %s] gradient fill took %0.04f sec\n", form->name,
-             dt_get_wtime() - start2);
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+           "[masks %s] gradient fill took %0.04f sec\n", form->name,
+           dt_get_lap_time(&start2));
 
   return 1;
 }

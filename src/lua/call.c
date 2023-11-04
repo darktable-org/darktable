@@ -30,10 +30,7 @@
 int dt_lua_check_print_error(lua_State* L, int result)
 {
   if(result == LUA_OK) return result;
-  if(darktable.unmuted & DT_DEBUG_LUA)
-  {
-    dt_print(DT_DEBUG_LUA, "LUA ERROR : %s\n", lua_tostring(L, -1));
-  }
+  dt_print(DT_DEBUG_LUA, "LUA ERROR : %s\n", lua_tostring(L, -1));
   lua_pop(L,1); // remove the error message, it has been handled
   return result;
 }
