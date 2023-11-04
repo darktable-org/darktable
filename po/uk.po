@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-03 08:11+0100\n"
-"PO-Revision-Date: 2023-11-03 12:05+0200\n"
+"POT-Creation-Date: 2023-11-04 08:53+0100\n"
+"PO-Revision-Date: 2023-11-04 22:50+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -6838,7 +6838,7 @@ msgstr "Ім'я версії"
 msgid "image id"
 msgstr "Id зображення"
 
-#: ../src/common/mipmap_cache.c:1070 ../src/imageio/imageio.c:790
+#: ../src/common/mipmap_cache.c:1070 ../src/imageio/imageio.c:789
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "Зображення `%s' недоступне!"
@@ -11806,7 +11806,7 @@ msgstr "Зберегти"
 msgid "can't create style out of unaltered image"
 msgstr "Неможливо створити стиль із незміненого зображення"
 
-#: ../src/imageio/imageio.c:807
+#: ../src/imageio/imageio.c:806
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
@@ -11815,17 +11815,17 @@ msgstr ""
 "Не вдалося виділити пам'ять для %s, будь ласка, зменште кількість потоків, "
 "що використовуються для експорту, або придбайте більше пам'яті."
 
-#: ../src/imageio/imageio.c:809
+#: ../src/imageio/imageio.c:808
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "Експорт мініатюр"
 
-#: ../src/imageio/imageio.c:809
+#: ../src/imageio/imageio.c:808
 msgctxt "noun"
 msgid "export"
 msgstr "Експорт"
 
-#: ../src/imageio/imageio.c:822
+#: ../src/imageio/imageio.c:821
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr "Не вдається знайти стиль '%s', який застосовується при експорті."
@@ -16746,8 +16746,8 @@ msgid "dither or posterize"
 msgstr "Дизеринг або постерізація"
 
 #: ../src/iop/dither.c:112
-msgid "dithering|posterization|reduce bit-depth"
-msgstr "dithering|posterization|reduce bit-depth"
+msgid "dithering|posterization|reduce bit depth"
+msgstr "dithering|posterization|reduce bit depth"
 
 #: ../src/iop/dither.c:117
 msgid ""
@@ -18622,21 +18622,21 @@ msgstr "Помилка виділення буфера для gmz LUT"
 #: ../src/iop/lut3d.c:512
 #, c-format
 msgid "invalid png file %s"
-msgstr "Некоректний файл png %s"
+msgstr "Некоректний файл PNG %s"
 
 #: ../src/iop/lut3d.c:520
 #, c-format
-msgid "png bit-depth %d not supported"
-msgstr "Бітова глибина %d файлу png не підтримується"
+msgid "png bit depth %d is not supported"
+msgstr "Бітова глибина %d для PNG не підтримується"
 
 #: ../src/iop/lut3d.c:534 ../src/iop/lut3d.c:544
 #, c-format
 msgid "invalid level in png file %d %d"
-msgstr "Недійсний рівень в png файлі %d %d"
+msgstr "Недійсний рівень в PNG файлі %d %d"
 
 #: ../src/iop/lut3d.c:539
 msgid "this darktable build is not compatible with compressed CLUT"
-msgstr "Ця збірка darktable несумісна зі стиснутим форматом CLUT"
+msgstr "Ця збірка Darktable несумісна зі стиснутим форматом CLUT"
 
 #: ../src/iop/lut3d.c:556 ../src/iop/lut3d.c:808
 #, c-format
@@ -18645,16 +18645,16 @@ msgstr "Помилка - розмір LUT 3D %d перевищує максим�
 
 #: ../src/iop/lut3d.c:568
 msgid "error allocating buffer for png LUT"
-msgstr "Помилка виділення буфера для png LUT"
+msgstr "Помилка виділення буфера для PNG LUT"
 
 #: ../src/iop/lut3d.c:576
 #, c-format
 msgid "error - could not read png image %s"
-msgstr "Помилка - не вдається прочитати png зображення %s"
+msgstr "Помилка - не вдається прочитати PNG зображення %s"
 
 #: ../src/iop/lut3d.c:586
 msgid "error - allocating buffer for png LUT"
-msgstr "Помилка - виділення буфера для png LUT"
+msgstr "Помилка - виділення буфера для PNG LUT"
 
 #: ../src/iop/lut3d.c:761
 #, c-format
