@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-03 08:11+0100\n"
+"POT-Creation-Date: 2023-11-04 08:53+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -6411,7 +6411,7 @@ msgstr ""
 msgid "image id"
 msgstr ""
 
-#: ../src/common/mipmap_cache.c:1070 ../src/imageio/imageio.c:790
+#: ../src/common/mipmap_cache.c:1070 ../src/imageio/imageio.c:789
 #, c-format
 msgid "image `%s' is not available!"
 msgstr ""
@@ -11046,24 +11046,24 @@ msgstr ""
 msgid "can't create style out of unaltered image"
 msgstr ""
 
-#: ../src/imageio/imageio.c:807
+#: ../src/imageio/imageio.c:806
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
 "or buy more memory."
 msgstr ""
 
-#: ../src/imageio/imageio.c:809
+#: ../src/imageio/imageio.c:808
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr ""
 
-#: ../src/imageio/imageio.c:809
+#: ../src/imageio/imageio.c:808
 msgctxt "noun"
 msgid "export"
 msgstr ""
 
-#: ../src/imageio/imageio.c:822
+#: ../src/imageio/imageio.c:821
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr ""
@@ -15441,7 +15441,7 @@ msgid "dither or posterize"
 msgstr ""
 
 #: ../src/iop/dither.c:112
-msgid "dithering|posterization|reduce bit-depth"
+msgid "dithering|posterization|reduce bit depth"
 msgstr ""
 
 #: ../src/iop/dither.c:117
@@ -17039,7 +17039,7 @@ msgstr ""
 
 #: ../src/iop/lut3d.c:520
 #, c-format
-msgid "png bit-depth %d not supported"
+msgid "png bit depth %d is not supported"
 msgstr ""
 
 #: ../src/iop/lut3d.c:534 ../src/iop/lut3d.c:544
