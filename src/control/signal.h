@@ -191,6 +191,9 @@ typedef enum dt_signal_t
   /** \brief This signal is raised when image is changed in darkroom */
   DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
 
+  /** \brief This signal is raised when image is removed from database */
+  DT_SIGNAL_IMAGE_REMOVED,
+
   /** \brief This signal is raised when the screen profile has changed
   no param, no returned value
     */
