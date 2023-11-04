@@ -286,7 +286,6 @@ jobs:
       matrix:
         build:
           - { os: macos-12,    xcode: 14.2,   deployment: 12.5 } # LLVM14
-          - { os: macos-12,    xcode: 13.4,   deployment: 12.0 } # LLVM13
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
         btype: [ Debug ]
