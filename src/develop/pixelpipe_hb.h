@@ -313,13 +313,13 @@ gboolean dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
 #endif
 
 /* specialized version of dt_print for pixelpipe debugging */
-void dt_print_pipe(dt_debug_thread_t thread,
-                   const char *title,
-                   const dt_dev_pixelpipe_t *pipe,
-                   const struct dt_iop_module_t *mod,
-                   const dt_iop_roi_t *roi_in,
-                   const dt_iop_roi_t *roi_out,
-                   const char *msg, ...);
+void dt_print_pipe_ext(const char *title,
+                       const dt_dev_pixelpipe_t *pipe,
+                       const struct dt_iop_module_t *mod,
+                       const dt_iop_roi_t *roi_in,
+                       const dt_iop_roi_t *roi_out,
+                       const char *msg, ...)
+  __attribute__((format(printf, 6, 7)));
 
 // helper function writing the pipe-processed ctmask data to dest
 float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_t *pipe,

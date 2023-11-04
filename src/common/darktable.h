@@ -406,14 +406,27 @@ int dt_init(int argc, char *argv[],
 
 void dt_get_sysresource_level();
 void dt_cleanup();
-void dt_print(dt_debug_thread_t thread,
-              const char *msg, ...)
-  __attribute__((format(printf, 2, 3)));
+
+/*
+  for performance reasons the debug log functions should only be called,
+  and their arguments evaluated, if flags in thread match what is requested.
+*/
+#define dt_debug_if(thread, func, ...)                           \
+  do{ if((thread) == DT_DEBUG_ALWAYS                             \
+        || ((thread) & ~DT_DEBUG_VERBOSE &  darktable.unmuted && \
+          !((thread) &  DT_DEBUG_VERBOSE & ~darktable.unmuted))) \
+        func(__VA_ARGS__); } while(0)
+
+#define dt_print_pipe(thread, ...) dt_debug_if(thread, dt_print_pipe_ext, __VA_ARGS__)
+#define dt_print(thread, ...) dt_debug_if(thread, dt_print_ext, __VA_ARGS__)
+#define dt_print_nts(thread, ...) dt_debug_if(thread, dt_print_nts_ext, __VA_ARGS__)
+
+void dt_print_ext(const char *msg, ...)
+  __attribute__((format(printf, 1, 2)));
 
 /* same as above but without time stamp : nts = no time stamp */
-void dt_print_nts(dt_debug_thread_t thread,
-                  const char *msg, ...)
-  __attribute__((format(printf, 2, 3)));
+void dt_print_nts_ext(const char *msg, ...)
+  __attribute__((format(printf, 1, 2)));
 
 int dt_worker_threads();
 size_t dt_get_available_mem();
