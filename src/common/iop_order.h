@@ -288,9 +288,12 @@ gboolean dt_ioppr_move_iop_after(struct dt_develop_t *dev,
                                  struct dt_iop_module_t *module_prev);
 
 // for debug only
-gboolean dt_ioppr_check_iop_order(struct dt_develop_t *dev,
-                                  const dt_imgid_t imgid,
-                                  const char *msg);
+#define dt_ioppr_check_iop_order(...) \
+  dt_debug_if(DT_DEBUG_IOPORDER, dt_ioppr_check_iop_order_ext, __VA_ARGS__)
+
+gboolean dt_ioppr_check_iop_order_ext(struct dt_develop_t *dev,
+                                      const dt_imgid_t imgid,
+                                      const char *msg);
 void dt_ioppr_print_module_iop_order(GList *iop_list,
                                      const char *msg);
 void dt_ioppr_print_history_iop_order(GList *history_list,

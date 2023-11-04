@@ -330,10 +330,9 @@ static int _group_get_mask(const dt_iop_module_t *const module,
       {
         const double start = dt_get_wtime();
         _inverse_mask(module, piece, sel, &bufs[pos], &w[pos], &h[pos], &px[pos], &py[pos]);
-        if(darktable.unmuted & DT_DEBUG_PERF)
-          dt_print(DT_DEBUG_MASKS,
-                   "[masks %s] inverse took %0.04f sec\n",
-                   sel->name, dt_get_wtime() - start);
+        dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+                 "[masks %s] inverse took %0.04f sec\n",
+                 sel->name, dt_get_wtime() - start);
       }
       op[pos] = fpt->opacity;
       states[pos] = fpt->state;
@@ -444,10 +443,9 @@ static int _group_get_mask(const dt_iop_module_t *const module,
       }
     }
 
-    if(darktable.unmuted & DT_DEBUG_PERF)
-      dt_print(DT_DEBUG_MASKS,
-               "[masks %d] combine took %0.04f sec\n",
-               i, dt_get_wtime() - start);
+    dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+             "[masks %d] combine took %0.04f sec\n",
+             i, dt_get_wtime() - start);
   }
 
   free(op);
@@ -799,11 +797,9 @@ static int _group_get_mask_roi(const dt_iop_module_t *const restrict module,
           }
         }
 
-        if(darktable.unmuted & DT_DEBUG_PERF)
-          dt_print(DT_DEBUG_MASKS,
-                   "[masks %d] combine took %0.04f sec\n",
-                   nb_ok, dt_get_wtime() - start);
-        start = dt_get_wtime();
+        dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+                 "[masks %d] combine took %0.04f sec\n",
+                 nb_ok, dt_get_lap_time(&start));
 
         nb_ok++;
       }
@@ -838,10 +834,9 @@ int dt_masks_group_render_roi(dt_iop_module_t *module,
 
   const int ok = dt_masks_get_mask_roi(module, piece, form, roi, buffer);
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-    dt_print(DT_DEBUG_MASKS,
-             "[masks] render all masks took %0.04f sec\n",
-             dt_get_wtime() - start);
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+           "[masks] render all masks took %0.04f sec\n",
+           dt_get_wtime() - start);
   return ok;
 }
 

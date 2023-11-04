@@ -789,12 +789,9 @@ static int _brush_get_pts_border(dt_develop_t *dev,
   int cw = 1;
   int start_stamp = 0;
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS, "[masks %s] brush_points init took %0.04f sec\n", form->name,
-             dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+           "[masks %s] brush_points init took %0.04f sec\n", form->name,
+           dt_get_lap_time(&start2));
 
   // we render all segments first upwards, then downwards
   for(int n = 0; n < 2 * nb; n++)
@@ -1044,13 +1041,9 @@ static int _brush_get_pts_border(dt_develop_t *dev,
   // printf("points %d, border %d, playload %d\n", *points_count, border ? *border_count : -1, payload ?
   // *payload_count : -1);
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] brush_points point recurs %0.04f sec\n", form->name,
-             dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] brush_points point recurs %0.04f sec\n", form->name,
+           dt_get_lap_time(&start2));
 
   // and we transform them with all distorted modules
   if(source && transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
@@ -1093,10 +1086,9 @@ static int _brush_get_pts_border(dt_develop_t *dev,
         goto fail;
     }
 
-    if(darktable.unmuted & DT_DEBUG_PERF)
-      dt_print(DT_DEBUG_MASKS,
-               "[masks %s] path_points end took %0.04f sec\n",
-               form->name, dt_get_wtime() - start2);
+    dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+             "[masks %s] path_points end took %0.04f sec\n",
+             form->name, dt_get_lap_time(&start2));
 
     return 1;
   }
@@ -1106,10 +1098,9 @@ static int _brush_get_pts_border(dt_develop_t *dev,
     if(!border || dt_dev_distort_transform_plus(dev, pipe, iop_order,
                                                 transf_direction, *border, *border_count))
     {
-      if(darktable.unmuted & DT_DEBUG_PERF)
-        dt_print(DT_DEBUG_MASKS,
-                 "[masks %s] brush_points transform took %0.04f sec\n", form->name,
-                 dt_get_wtime() - start2);
+      dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+               "[masks %s] brush_points transform took %0.04f sec\n", form->name,
+               dt_get_lap_time(&start2));
       return 1;
     }
   }
@@ -2985,21 +2976,16 @@ static int _brush_get_mask(const dt_iop_module_t *const module,
     return 0;
   }
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] brush points took %0.04f sec\n",
-             form->name, dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] brush points took %0.04f sec\n",
+           form->name, dt_get_lap_time(&start2));
 
   const guint nb_corner = g_list_length(form->points);
   _brush_bounding_box(points, border, nb_corner, points_count, width, height, posx, posy);
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] brush_fill min max took %0.04f sec\n", form->name,
-             dt_get_wtime() - start2);
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] brush_fill min max took %0.04f sec\n", form->name,
+           dt_get_lap_time(&start2));
 
   // we allocate the buffer
   const size_t bufsize = (size_t)(*width) * (*height);
@@ -3032,9 +3018,9 @@ static int _brush_get_mask(const dt_iop_module_t *const module,
   dt_free_align(border);
   dt_free_align(payload);
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-    dt_print(DT_DEBUG_MASKS, "[masks %s] brush fill buffer took %0.04f sec\n", form->name,
-             dt_get_wtime() - start);
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] brush fill buffer took %0.04f sec\n", form->name,
+           dt_get_lap_time(&start));
 
   return 1;
 }
@@ -3124,13 +3110,9 @@ static int _brush_get_mask_roi(const dt_iop_module_t *const module,
     return 0;
   }
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] brush points took %0.04f sec\n",
-             form->name, dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] brush points took %0.04f sec\n",
+           form->name, dt_get_lap_time(&start2));
 
   const guint nb_corner = g_list_length(form->points);
 
@@ -3156,13 +3138,9 @@ static int _brush_get_mask_roi(const dt_iop_module_t *const module,
   _brush_bounding_box_raw(points, border, nb_corner,
                           points_count, &xmin, &xmax, &ymin, &ymax);
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] brush_fill min max took %0.04f sec\n", form->name,
-             dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] brush_fill min max took %0.04f sec\n", form->name,
+           dt_get_lap_time(&start2));
 
   // check if the path completely lies outside of roi -> we're done/mask remains empty
   if(xmax < 0 || ymax < 0 || xmin >= width || ymin >= height)
@@ -3199,13 +3177,12 @@ static int _brush_get_mask_roi(const dt_iop_module_t *const module,
   dt_free_align(border);
   dt_free_align(payload);
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS, "[masks %s] brush set falloff took %0.04f sec\n", form->name,
-             dt_get_wtime() - start2);
-    dt_print(DT_DEBUG_MASKS, "[masks %s] brush fill buffer took %0.04f sec\n", form->name,
-             dt_get_wtime() - start);
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] brush set falloff took %0.04f sec\n", form->name,
+           dt_get_lap_time(&start2));
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] brush fill buffer took %0.04f sec\n", form->name,
+           dt_get_lap_time(&start));
 
   return 1;
 }
