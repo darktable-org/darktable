@@ -280,7 +280,7 @@ jobs:
       fail-fast: true
       matrix:
         build:
-          - { os: macos-12, xcode: 14.2, deployment: 12.5 }
+          - { os: macos-12, xcode: 14.2, deployment: 12.5 } # LLVM14, native
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
         btype: [ Release ]
