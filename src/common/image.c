@@ -1470,6 +1470,8 @@ void dt_image_remove(const dt_imgid_t imgid)
 
   // also clear all thumbnails in mipmap_cache.
   dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
+
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGE_REMOVED, imgid, 0);
 }
 
 gboolean dt_image_altered(const dt_imgid_t imgid)
