@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-03 08:11+0100\n"
-"PO-Revision-Date: 2023-11-03 11:56+0200\n"
+"POT-Creation-Date: 2023-11-04 08:53+0100\n"
+"PO-Revision-Date: 2023-11-04 22:45+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: en\n"
@@ -6765,7 +6765,7 @@ msgstr "Version name"
 msgid "image id"
 msgstr "Image id"
 
-#: ../src/common/mipmap_cache.c:1070 ../src/imageio/imageio.c:790
+#: ../src/common/mipmap_cache.c:1070 ../src/imageio/imageio.c:789
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "Image `%s' is not available!"
@@ -11667,7 +11667,7 @@ msgstr "Keep"
 msgid "can't create style out of unaltered image"
 msgstr "Can't create style out of unaltered image"
 
-#: ../src/imageio/imageio.c:807
+#: ../src/imageio/imageio.c:806
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
@@ -11676,17 +11676,17 @@ msgstr ""
 "Failed to allocate memory for %s, please lower the threads used for export "
 "or buy more memory."
 
-#: ../src/imageio/imageio.c:809
+#: ../src/imageio/imageio.c:808
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "Thumbnail export"
 
-#: ../src/imageio/imageio.c:809
+#: ../src/imageio/imageio.c:808
 msgctxt "noun"
 msgid "export"
 msgstr "Export"
 
-#: ../src/imageio/imageio.c:822
+#: ../src/imageio/imageio.c:821
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr "Cannot find the style '%s' to apply during export."
@@ -16544,8 +16544,8 @@ msgid "dither or posterize"
 msgstr "Dither or posterize"
 
 #: ../src/iop/dither.c:112
-msgid "dithering|posterization|reduce bit-depth"
-msgstr "dithering|posterization|reduce bit-depth"
+msgid "dithering|posterization|reduce bit depth"
+msgstr "dithering|posterization|reduce bit depth"
 
 #: ../src/iop/dither.c:117
 msgid ""
@@ -18385,8 +18385,8 @@ msgstr "Invalid PNG file %s"
 
 #: ../src/iop/lut3d.c:520
 #, c-format
-msgid "png bit-depth %d not supported"
-msgstr "PNG bit-depth %d not supported"
+msgid "png bit depth %d is not supported"
+msgstr "PNG bit depth %d is not supported"
 
 #: ../src/iop/lut3d.c:534 ../src/iop/lut3d.c:544
 #, c-format
