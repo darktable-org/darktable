@@ -452,7 +452,6 @@ void modify_roi_out(struct dt_iop_module_t *self,
   dt_iop_borders_data_t *d = (dt_iop_borders_data_t *)piece->data;
 
   const float size = fabsf(d->size);
-  if(size == 0) return;
 
   const gboolean is_constant_border = d->aspect == DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE;
 
