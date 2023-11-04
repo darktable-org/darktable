@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-03 08:11+0100\n"
-"PO-Revision-Date: 2023-11-03 08:14+0100\n"
+"POT-Creation-Date: 2023-11-04 08:53+0100\n"
+"PO-Revision-Date: 2023-11-04 08:53+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -11,7 +11,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.4\n"
+"X-Generator: Poedit 3.4.1\n"
 
 #: ../build/bin/conf_gen.h:174
 msgctxt "preferences"
@@ -6885,7 +6885,7 @@ msgstr "Nom de version"
 msgid "image id"
 msgstr "Numéro"
 
-#: ../src/common/mipmap_cache.c:1070 ../src/imageio/imageio.c:790
+#: ../src/common/mipmap_cache.c:1070 ../src/imageio/imageio.c:789
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "Image « %s » non disponible"
@@ -11864,7 +11864,7 @@ msgid "can't create style out of unaltered image"
 msgstr "Impossible de créer un style depuis une image non développée"
 
 # Il n'y a plus de préférence du nombre de theads
-#: ../src/imageio/imageio.c:807
+#: ../src/imageio/imageio.c:806
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
@@ -11873,17 +11873,17 @@ msgstr ""
 "Échec de l’allocation de mémoire pour « %s », merci de diminuer le nombre de "
 "fils utilisés pour l’exportation ou d’acheter de la mémoire."
 
-#: ../src/imageio/imageio.c:809
+#: ../src/imageio/imageio.c:808
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "L’aperçu"
 
-#: ../src/imageio/imageio.c:809
+#: ../src/imageio/imageio.c:808
 msgctxt "noun"
 msgid "export"
 msgstr "L’image"
 
-#: ../src/imageio/imageio.c:822
+#: ../src/imageio/imageio.c:821
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr ""
@@ -16819,7 +16819,7 @@ msgid "dither or posterize"
 msgstr "Homogénéiser ou postériser"
 
 #: ../src/iop/dither.c:112
-msgid "dithering|posterization|reduce bit-depth"
+msgid "dithering|posterization|reduce bit depth"
 msgstr "homogénéiser|postériser|réduire profondeur de bit"
 
 #: ../src/iop/dither.c:117
@@ -18701,7 +18701,7 @@ msgstr "Fichier PNG non valide « %s »"
 
 #: ../src/iop/lut3d.c:520
 #, c-format
-msgid "png bit-depth %d not supported"
+msgid "png bit depth %d is not supported"
 msgstr "PNG %d bits non supportés"
 
 #: ../src/iop/lut3d.c:534 ../src/iop/lut3d.c:544
