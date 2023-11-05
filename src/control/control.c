@@ -389,16 +389,26 @@ void dt_control_draw_busy_msg(cairo_t *cr, int width, int height)
   g_object_unref(layout);
 }
 
-void *dt_control_expose(void *voidptr)
+void dt_control_expose(void *voidptr)
 {
   int pointerx, pointery;
-  if(!darktable.gui->surface) return NULL;
+  if(!darktable.gui->surface)
+    return;
+
   const int width = dt_cairo_image_surface_get_width(darktable.gui->surface);
   const int height = dt_cairo_image_surface_get_height(darktable.gui->surface);
+
   GtkWidget *widget = dt_ui_center(darktable.gui->ui);
-  gdk_window_get_device_position(gtk_widget_get_window(widget),
-      gdk_seat_get_pointer(gdk_display_get_default_seat(gtk_widget_get_display(widget))),
-      &pointerx, &pointery, NULL);
+  GdkWindow *window = gtk_widget_get_window(widget);
+  GdkDisplay *display = gtk_widget_get_display(widget);
+  GdkSeat*seat = gdk_display_get_default_seat(display);
+
+  if(seat == NULL || window == NULL)
+    return;
+
+  gdk_window_get_device_position(window,
+                                 gdk_seat_get_pointer(seat),
+                                 &pointerx, &pointery, NULL);
 
   // create a gtk-independent surface to draw on
   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
@@ -440,7 +450,8 @@ void *dt_control_expose(void *voidptr)
   cairo_destroy(cr_pixmap);
 
   cairo_surface_destroy(cst);
-  return NULL;
+
+  return;
 }
 
 gboolean dt_control_draw_endmarker(GtkWidget *widget,
