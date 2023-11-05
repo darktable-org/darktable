@@ -123,6 +123,9 @@ jobs:
           sudo lensfun-update-data
       - name: Build and Install
         run: |
+          # Only Clang 12 is available on Ubuntu 20.04. We can lower the Clang version requirement to use Clang 12,
+          # since at the moment it is only a policy enforcement, and not a real requirement of the current source code.
+          sed -i 's/COMPILER_VERSION VERSION_LESS 14/COMPILER_VERSION VERSION_LESS 12/' cmake/compiler-versions.cmake src/external/rawspeed/cmake/compiler-versions.cmake
           bash tools/appimage-build-script.sh
       - name: Check if it runs
         run: |
