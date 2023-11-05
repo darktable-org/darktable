@@ -1516,6 +1516,8 @@ int mouse_moved(dt_iop_module_t *self,
           = fminf(g->clip_max_h + g->clip_max_y - g->clip_h,
                   fmaxf(g->clip_max_y, g->handle_y + pzy - bzy));
     }
+    else if(g->cropping == GRAB_NONE)
+      return 0;
     else
     {
       /* changing the crop window */
