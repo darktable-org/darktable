@@ -28,7 +28,7 @@
 // select speed vs accuracy tradeoff
 // supported values for EXP_POLY_DEGREE are 4 and 5
 #define EXP_POLY_DEGREE 4
-// supported vlaues for LOG_POLY_DEGREE are 5 and 6
+// supported values for LOG_POLY_DEGREE are 5 and 6
 #define LOG_POLY_DEGREE 5
 
 // work around missing standard math.h symbols
@@ -554,7 +554,7 @@ static inline void dt_vector_exp(const dt_aligned_pixel_t x, dt_aligned_pixel_t 
 // See http://www.devmaster.net/forums/showthread.php?p=43580 for the original
 static inline void dt_vector_exp2(const dt_aligned_pixel_t input, dt_aligned_pixel_t res)
 {
-  // clamp the exponent to the suported range
+  // clamp the exponent to the supported range
   static const dt_aligned_pixel_t lower_bound = { -126.99999f, -126.99999f, -126.99999f, -126.99999f };
   static const dt_aligned_pixel_t upper_bound = {  129.00000f,  129.00000f,  129.00000f,  129.00000f };
   static const dt_aligned_pixel_t v_half = { 0.5f, 0.5f, 0.5f, 0.5f };
