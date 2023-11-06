@@ -580,6 +580,7 @@ static void _clear_snapshots(dt_lib_module_t *self)
 {
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
   d->selected = -1;
+  darktable.lib->proxy.snapshots.enabled = FALSE;
   d->snap_requested = FALSE;
 
   for(uint32_t k = 0; k < d->num_snapshots; k++)
@@ -725,6 +726,7 @@ void gui_init(dt_lib_module_t *self)
   d->snap_requested = FALSE;
   d->expose_again_timeout_id = 0;
   d->num_snapshots = 0;
+  darktable.lib->proxy.snapshots.enabled = FALSE;
 
   /* initialize ui containers */
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -914,6 +916,7 @@ static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, gpointer us
       else
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->snapshot[k].button), FALSE);
   }
+  darktable.lib->proxy.snapshots.enabled = d->selected >= 0;
 
   --darktable.gui->reset;
 

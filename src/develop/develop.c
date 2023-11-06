@@ -3518,20 +3518,21 @@ void dt_dev_image(const dt_imgid_t imgid,
   if(history_end != -1 && snapshot_id == -1)
     dt_dev_pop_history_items_ext(&dev, history_end);
 
-  dt_dev_viewport_t *port = &darktable.develop->full;
+  dev.full = darktable.develop->full;
+  dev.full.pipe = pipe;
 
   if(!zoom_x && !zoom_y)
   {
-    port         = &dev.full;
-    port->zoom   = DT_ZOOM_FIT;
-    port->width  = width;
-    port->height = height;
-    port->ppd    = 1.0;
+    dev.full.zoom      = DT_ZOOM_FIT;
+    dev.full.width     = width;
+    dev.full.height    = height;
+    dev.full.ppd       = 1.0;
+    dev.full.iso_12646 = FALSE;
   }
 
   // process the pipe
 
-  dt_dev_process_image_job(&dev, port, pipe, -1);
+  dt_dev_process_image_job(&dev, &dev.full, pipe, -1);
 
   // record resulting image and dimensions
 
@@ -3540,11 +3541,11 @@ void dt_dev_image(const dt_imgid_t imgid,
   *buf = dt_alloc_align(64, bufsize);
   memcpy(*buf, pipe->backbuf, bufsize);
 
-  if(buf_width)        *buf_width  = pipe->backbuf_width;
-  if(buf_height)       *buf_height = pipe->backbuf_height;
-  if(scale)            *scale = pipe->backbuf_scale;
-  if(zoom_x)           *zoom_x = pipe->backbuf_zoom_x;
-  if(zoom_y)           *zoom_y = pipe->backbuf_zoom_y;
+  if(buf_width) *buf_width = pipe->backbuf_width;
+  if(buf_height) *buf_height = pipe->backbuf_height;
+  if(scale) *scale = pipe->backbuf_scale;
+  if(zoom_x) *zoom_x = pipe->backbuf_zoom_x;
+  if(zoom_y) *zoom_y = pipe->backbuf_zoom_y;
 
   dt_dev_cleanup(&dev);
 }

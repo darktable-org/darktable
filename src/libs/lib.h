@@ -87,6 +87,11 @@ typedef struct dt_lib_t
     {
       struct dt_lib_module_t *module;
     } navigation;
+
+    struct
+    {
+      gboolean enabled;
+    } snapshots;
   } proxy;
 } dt_lib_t;
 
