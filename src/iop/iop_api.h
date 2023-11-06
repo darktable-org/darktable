@@ -60,7 +60,8 @@ typedef void dt_iop_params_t;
 
 #endif // FULL_API_H
 
-/** this initializes static, hardcoded presets for this module and is called only once per run of dt. */
+/** this initializes static, hardcoded presets for this module and is
+ * called only once per run of dt. */
 OPTIONAL(void, init_presets, struct dt_iop_module_so_t *self);
 /** called once per module, at startup. */
 OPTIONAL(void, init_global, struct dt_iop_module_so_t *self);
@@ -69,7 +70,8 @@ OPTIONAL(void, cleanup_global, struct dt_iop_module_so_t *self);
 
 /** get name of the module, to be translated. */
 REQUIRED(const char *, name, void);
-/** get the alternative names or keywords of the module, to be translated. Separate variants by a pipe | */
+/** get the alternative names or keywords of the module, to be
+ * translated. Separate variants by a pipe | */
 DEFAULT(const char *, aliases, void);
 /** get the default group this module belongs to. */
 DEFAULT(int, default_group, void);
@@ -96,23 +98,28 @@ DEFAULT(void, output_format, struct dt_iop_module_t *self,
                              struct dt_iop_buffer_dsc_t *dsc);
 
 /** what default colorspace this iop use? */
-REQUIRED(dt_iop_colorspace_type_t, default_colorspace, struct dt_iop_module_t *self,
-                                                       struct dt_dev_pixelpipe_t *pipe,
-                                                       struct dt_dev_pixelpipe_iop_t *piece);
+REQUIRED(dt_iop_colorspace_type_t, default_colorspace,
+         struct dt_iop_module_t *self,
+         struct dt_dev_pixelpipe_t *pipe,
+         struct dt_dev_pixelpipe_iop_t *piece);
 /** what input colorspace it expects? */
-DEFAULT(dt_iop_colorspace_type_t, input_colorspace, struct dt_iop_module_t *self,
-                                                    struct dt_dev_pixelpipe_t *pipe,
-                                                    struct dt_dev_pixelpipe_iop_t *piece);
+DEFAULT(dt_iop_colorspace_type_t, input_colorspace,
+        struct dt_iop_module_t *self,
+        struct dt_dev_pixelpipe_t *pipe,
+        struct dt_dev_pixelpipe_iop_t *piece);
 /** what will it output? */
-DEFAULT(dt_iop_colorspace_type_t, output_colorspace, struct dt_iop_module_t *self,
-                                                     struct dt_dev_pixelpipe_t *pipe,
-                                                     struct dt_dev_pixelpipe_iop_t *piece);
+DEFAULT(dt_iop_colorspace_type_t, output_colorspace,
+        struct dt_iop_module_t *self,
+        struct dt_dev_pixelpipe_t *pipe,
+        struct dt_dev_pixelpipe_iop_t *piece);
 /** what colorspace the blend module operates with? */
-DEFAULT(dt_iop_colorspace_type_t, blend_colorspace, struct dt_iop_module_t *self,
-                                                    struct dt_dev_pixelpipe_t *pipe,
-                                                    struct dt_dev_pixelpipe_iop_t *piece);
+DEFAULT(dt_iop_colorspace_type_t, blend_colorspace,
+        struct dt_iop_module_t *self,
+        struct dt_dev_pixelpipe_t *pipe,
+        struct dt_dev_pixelpipe_iop_t *piece);
 
-/** report back info for tiling: memory usage and overlap. Memory usage: factor * input_size + overhead */
+/** report back info for tiling: memory usage and overlap. Memory
+ * usage: factor * input_size + overhead */
 DEFAULT(void, tiling_callback, struct dt_iop_module_t *self,
                                struct dt_dev_pixelpipe_iop_t *piece,
                                const struct dt_iop_roi_t *roi_in,
@@ -188,8 +195,10 @@ DEFAULT(void, cleanup, struct dt_iop_module_t *self);
 DEFAULT(void, init_pipe, struct dt_iop_module_t *self,
                          struct dt_dev_pixelpipe_t *pipe,
                          struct dt_dev_pixelpipe_iop_t *piece);
-/** this resets the params to factory defaults. used at the beginning of each history synch. */
-/** this commits (a mutex will be locked to synch pipe/gui) the given history params to the pixelpipe piece.
+/** this resets the params to factory defaults. used at the beginning
+ * of each history synch. */
+/** this commits (a mutex will be locked to synch pipe/gui) the given
+ * history params to the pixelpipe piece.
  */
 DEFAULT(void, commit_params, struct dt_iop_module_t *self,
                              dt_iop_params_t *params,
@@ -246,7 +255,8 @@ DEFAULT(void, process_tiling, struct dt_iop_module_t *self,
 #ifdef HAVE_OPENCL
 /** the opencl equivalent of process().
  *   Both process_xx_cl() functions return a CL error code with CL_SUCCESS signalling ok.
- *   Please note: until 4.4 this int was in fact used as a gboolean with TRUE set if the function worked fine.
+ *   Please note: until 4.4 this int was in fact used as a gboolean
+ *   with TRUE set if the function worked fine.
 */
 OPTIONAL(int, process_cl, struct dt_iop_module_t *self,
                           struct dt_dev_pixelpipe_iop_t *piece,
@@ -269,14 +279,14 @@ DEFAULT(int, process_tiling_cl, struct dt_iop_module_t *self,
  * size is 2*points_count */
 /** points before the iop is applied => point after processed */
 DEFAULT(gboolean, distort_transform, struct dt_iop_module_t *self,
-                                struct dt_dev_pixelpipe_iop_t *piece,
-                                float *points,
-                                size_t points_count);
+                                     struct dt_dev_pixelpipe_iop_t *piece,
+                                     float *points,
+                                     size_t points_count);
 /** reverse points after the iop is applied => point before process */
 DEFAULT(gboolean, distort_backtransform, struct dt_iop_module_t *self,
-                                    struct dt_dev_pixelpipe_iop_t *piece,
-                                    float *points,
-                                    size_t points_count);
+                                         struct dt_dev_pixelpipe_iop_t *piece,
+                                         float *points,
+                                         size_t points_count);
 OPTIONAL(void, distort_mask, struct dt_iop_module_t *self,
                              struct dt_dev_pixelpipe_iop_t *piece,
                              const float *const in,
@@ -284,7 +294,8 @@ OPTIONAL(void, distort_mask, struct dt_iop_module_t *self,
                              const struct dt_iop_roi_t *const roi_in,
                              const struct dt_iop_roi_t *const roi_out);
 
-// introspection related callbacks, will be auto-implemented if DT_MODULE_INTROSPECTION() is used,
+// introspection related callbacks, will be auto-implemented if
+// DT_MODULE_INTROSPECTION() is used,
 OPTIONAL(int, introspection_init, struct dt_iop_module_so_t *self, int api_version);
 DEFAULT(dt_introspection_t *, get_introspection, void);
 DEFAULT(dt_introspection_field_t *, get_introspection_linear, void);
