@@ -3627,6 +3627,14 @@ void dt_iop_gui_changed(dt_action_t *action, GtkWidget *widget, gpointer data)
   dt_dev_add_history_item_target(darktable.develop, module, TRUE, widget);
 }
 
+gboolean dt_iop_module_is_skipped(const struct dt_develop_t *dev,
+                                  const struct dt_iop_module_t *module)
+{
+  return dev->gui_module
+      && dev->gui_module != module
+      && (dev->gui_module->operation_tags_filter() & module->operation_tags());
+}
+
 enum
 {
   // Multi-instance
