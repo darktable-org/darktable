@@ -186,19 +186,19 @@ static void default_cleanup(dt_iop_module_t *module)
 }
 
 
-static int default_distort_transform(dt_iop_module_t *self,
-                                     dt_dev_pixelpipe_iop_t *piece,
-                                     float *points,
-                                     size_t points_count)
+static gboolean default_distort_transform(dt_iop_module_t *self,
+                                          dt_dev_pixelpipe_iop_t *piece,
+                                          float *points,
+                                          size_t points_count)
 {
-  return 1;
+  return TRUE;
 }
-static int default_distort_backtransform(dt_iop_module_t *self,
-                                         dt_dev_pixelpipe_iop_t *piece,
-                                         float *points,
-                                         size_t points_count)
+static gboolean default_distort_backtransform(dt_iop_module_t *self,
+                                              dt_dev_pixelpipe_iop_t *piece,
+                                              float *points,
+                                              size_t points_count)
 {
-  return 1;
+  return TRUE;
 }
 
 static void default_process(struct dt_iop_module_t *self,
