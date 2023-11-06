@@ -302,13 +302,14 @@ void process(
 
   const float *const in = out;
 
-  const float caautostrength = 4.0f;
-
+  #define caautostrength 4.0f
+  #define ts 128
+  #define tsh 64
+  #define v1 128
+  #define v2 256
+  #define v3 384
+  #define v4 512
   // multithreaded and partly vectorized by Ingo Weyrich
-  const int ts = 128;
-  const int tsh = ts / 2;
-  // shifts to location of vertical and diagonal neighbors
-  const int v1 = ts, v2 = 2 * ts, v3 = 3 * ts, v4 = 4 * ts;
 
   // Test for RGB cfa
   for(int i = 0; i < 2; i++)
@@ -384,8 +385,8 @@ void process(
 #if defined(_OPENMP) && !defined(__APPLE__)
 #pragma omp parallel default(none) \
   dt_omp_firstprivate(in, out, height, width, filters, processpasstwo, hblsz, vblsz, \
-                      blockwt, blockshifts, blockvar, Gtmp, RawDataTmp, caautostrength, \
-                      border, border2, eps, eps2, v1, v2, v3, v4, ts, tsh, darktable) \
+                      blockwt, blockshifts, blockvar, Gtmp, RawDataTmp, \
+                      border, border2, eps, eps2, darktable) \
   shared(numpar, polyord, fitparams, blockdenom, blockave, blocksqave)
   // if any of the above shared are made firstprivate, we get the wrong answer
 #endif
