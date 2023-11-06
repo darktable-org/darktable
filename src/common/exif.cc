@@ -1188,7 +1188,8 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       // We are entering the zoo of image dimensions metadata.
       // Let's first try the DNG way of telling dimensions.
       // Exif.Image.ImageWidth/Length tags are also present in DNG files,
-      // but contain the dimensions of the preview image.
+      // but contain the pixel dimensions of the preview image, which in
+      // this case will cause the diagonal calculation to be incorrect.
       if(FIND_EXIF_TAG("Exif.SubImage1.NewSubfileType"))
       {
         if(pos->toLong() == 0)  // Primary image
@@ -1199,18 +1200,19 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
             image_height = pos->toLong();
         }
       }
-      // If there are no such tags, then, try Fuji way.
-      // For Fuji raws, the following tags are the only ones that
-      // contain dimensions of the full image from the sensor.
-      if(image_width == 0)
+      // For Fuji cameras, we intentionally get the pixel dimensions
+      // of the preview, not the sensor, because that's what the data
+      // in the resolution tags on most Fuji cameras is calculated for.
+      if(image_width == 0 && !strcmp(img->exif_maker, "FUJIFILM"))
       {
-        if(FIND_EXIF_TAG("Exif.Fujifilm.RawImageFullWidth"))
+        if(FIND_EXIF_TAG("Exif.Photo.PixelXDimension"))
           image_width = pos->toLong();
-        if(FIND_EXIF_TAG("Exif.Fujifilm.RawImageFullHeight"))
+        if(FIND_EXIF_TAG("Exif.Photo.PixelYDimension"))
           image_height = pos->toLong();
       }
-      // The following tags in certain formats may contain dimensions of
-      // the preview instead of the full image, so we check them last.
+      // The following tags in certain formats may contain pixel dimensions of
+      // the preview instead of the full image, while resolution is calculated
+      // relative to the full image dimensions. So we check them last.
       if(image_width == 0)
       {
         if(FIND_EXIF_TAG("Exif.Image.ImageWidth"))
