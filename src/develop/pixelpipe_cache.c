@@ -136,11 +136,8 @@ static uint64_t _dev_pixelpipe_cache_basichash(
     dt_develop_t *dev = piece->module->dev;
 
     // don't take skipped modules into account
-    const gboolean skipped =
-      dev->gui_module
-      && dev->gui_module != piece->module
-      && (dev->gui_module->operation_tags_filter() & piece->module->operation_tags())
-      && (pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW));
+    const gboolean skipped = dt_iop_module_is_skipped(dev, piece->module)
+      && (pipe->type & DT_DEV_PIXELPIPE_BASIC);
 
     if(!skipped)
     {

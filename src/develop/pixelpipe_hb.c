@@ -1331,10 +1331,8 @@ static inline gboolean _skip_piece_on_tags(const dt_dev_pixelpipe_iop_t *piece)
   if(!piece->enabled)
     return TRUE;
 
-  return piece->module->dev->gui_module
-      && piece->module->dev->gui_module != piece->module
-      && (piece->module->dev->gui_module->operation_tags_filter() & piece->module->operation_tags())
-      && (piece->pipe->type & DT_DEV_PIXELPIPE_BASIC);
+  return dt_iop_module_is_skipped(piece->module->dev, piece->module)
+          && (piece->pipe->type & DT_DEV_PIXELPIPE_BASIC);
 }
 
 // recursive helper for process, returns TRUE in case of unfinished work or error
