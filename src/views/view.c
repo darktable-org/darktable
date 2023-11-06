@@ -1813,12 +1813,13 @@ dt_view_context_t dt_view_get_view_context(void)
 
   dt_view_context_t ctx = 0;
   ADD_TO_CONTEXT(closeup);
-  ADD_TO_CONTEXT(zoom_scale * flt_prec);
-  ADD_TO_CONTEXT(zoom_x * flt_prec);
-  ADD_TO_CONTEXT(zoom_y * flt_prec);
+  ADD_TO_CONTEXT((int)(zoom_scale * flt_prec));
+  ADD_TO_CONTEXT((int)(zoom_x * flt_prec));
+  ADD_TO_CONTEXT((int)(zoom_y * flt_prec));
   ADD_TO_CONTEXT(iso_12646);
   ADD_TO_CONTEXT(focus_peaking);
 
+  // dt_print(DT_DEBUG_EXPOSE, "dt_view_get_view_context ctx==%" PRIx64 " scale=%f\n", ctx, zoom_scale);
   return ctx;
 }
 
