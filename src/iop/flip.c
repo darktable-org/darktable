@@ -214,16 +214,15 @@ static void backtransform(const int32_t *x,
   }
 }
 
-int distort_transform(dt_iop_module_t *self,
-                      dt_dev_pixelpipe_iop_t *piece,
-                      float *const restrict points,
-                      const size_t points_count)
+gboolean distort_transform(dt_iop_module_t *self,
+                           dt_dev_pixelpipe_iop_t *piece,
+                           float *const restrict points,
+                           const size_t points_count)
 {
-  // if(!self->enabled) return 2;
   const dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
 
   // nothing to be done if parameters are set to neutral values (no flip or swap)
-  if(d->orientation == 0) return 1;
+  if(d->orientation == 0) return TRUE;
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -251,19 +250,18 @@ int distort_transform(dt_iop_module_t *self,
     points[i + 1] = y;
   }
 
-  return 1;
+  return TRUE;
 }
 
-int distort_backtransform(dt_iop_module_t *self,
-                          dt_dev_pixelpipe_iop_t *piece,
-                          float *const restrict points,
-                          const size_t points_count)
+gboolean distort_backtransform(dt_iop_module_t *self,
+                               dt_dev_pixelpipe_iop_t *piece,
+                               float *const restrict points,
+                               const size_t points_count)
 {
-  // if(!self->enabled) return 2;
   const dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
 
   // nothing to be done if parameters are set to neutral values (no flip or swap)
-  if(d->orientation == 0) return 1;
+  if(d->orientation == 0) return TRUE;
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -290,7 +288,7 @@ int distort_backtransform(dt_iop_module_t *self,
     points[i + 1] = y;
   }
 
-  return 1;
+  return TRUE;
 }
 
 void distort_mask(struct dt_iop_module_t *self,
