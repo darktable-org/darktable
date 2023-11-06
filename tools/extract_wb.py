@@ -209,7 +209,7 @@ for filename in sys.argv[1:]:
             eprint("Warning: Fuji does not seem to produce any sensible data for finetuning! If all finetuned values are identical, use one with no finetuning (0)")
             finetune = int(values[3]) / 20 # Fuji has -180..180 but steps are every 20
             gm_skew = gm_skew or (int(values[1].replace(',','')) != 0)
-        elif tag == "White Balance Fine Tune" and maker == "SONY" and preset == "Cool White Fluorescent":
+        elif tag == "White Balance Fine Tune" and maker == "SONY" and preset == "Cool White Fluorescent" and int(values[0]) != 0:
             # Sony's Fluorescent Fun
             if values[0] == "-1":
                 preset = "Warm White Fluorescent"
