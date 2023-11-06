@@ -685,7 +685,7 @@ static gboolean _check_gain_maps(dt_iop_module_t *self, dt_dng_gain_map_t **gain
   if(g_list_length(image->dng_gain_maps) != 4)
     return FALSE;
 
-  // FIXME checks for witdh / height might be wrong
+  // FIXME checks for width / height might be wrong
   for(int i = 0; i < 4; i++)
   {
     // check that each GainMap applies to one filter of a Bayer image,

@@ -32,7 +32,7 @@
 // Silence the compiler during dev of new module as we often
 // need to have temporary unfinished code that will hurt the
 // compiler.
-// THIS MUST be REMOVED before submiting a PR.
+// THIS MUST be REMOVED before submitting a PR.
 #pragma GCC diagnostic ignored "-Wunused-variable"
 #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
 #pragma GCC diagnostic ignored "-Wunused-function"
@@ -204,7 +204,7 @@ int legacy_params(dt_iop_module_t *self,
 
   // do migration from 2 to 3 (one step at a time, this legacy_params
   // update is incremental and will be done as many time as needed to
-  // bring the parameters to the lastes version of the module.
+  // bring the parameters to the latest version of the module.
 
   if(old_version == 2)
   {

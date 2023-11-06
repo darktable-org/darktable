@@ -1149,7 +1149,7 @@ int dt_imageio_export_with_flags(const dt_imgid_t imgid,
 
   // Check if all the metadata export flags are set for AVIF/EXR/JPEG XL/XCF (opt-in)
   //
-  // TODO: this is a workround as these formats do not support fine
+  // TODO: this is a workaround as these formats do not support fine
   // grained metadata control through dt_exif_xmp_attach_export()
   // below due to lack of exiv2 write support
   //

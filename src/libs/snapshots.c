@@ -635,7 +635,7 @@ static void _remove_snapshot_entry(dt_lib_module_t *self, const uint32_t index)
     memcpy(&d->snapshot[k], &d->snapshot[k+1], sizeof(dt_lib_snapshot_t));
   }
 
-  //  And finaly clear last entry
+  //  And finally clear last entry
   _clear_snapshot_entry(&d->snapshot[MAX_SNAPSHOT-1]);
   //  And dedup widgets by initializing the last entry
   _init_snapshot_entry(self, &d->snapshot[MAX_SNAPSHOT-1]);

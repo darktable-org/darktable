@@ -1292,7 +1292,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
               iop_order_list = g_list_delete_link(iop_order_list, s);
             }
 
-            // skip all multipe instances
+            // skip all multiple instances
             n = e;
             do
             {
@@ -3095,7 +3095,7 @@ static void _create_library_schema(dt_database_t *db)
      " END",
      NULL, NULL, NULL);
 
-  // Finaly some views to ease walking the data
+  // Finally some views to ease walking the data
 
   // NOTE: datetime_taken is in nano-second since "0001-01-01 00:00:00"
   sqlite3_exec
@@ -3873,7 +3873,7 @@ start:
           goto error;
         }
 
-        // upgrade was successfull, time for some housekeeping
+        // upgrade was successful, time for some housekeeping
         sqlite3_exec(db->handle, "VACUUM data", NULL, NULL, NULL);
         sqlite3_exec(db->handle, "ANALYZE data", NULL, NULL, NULL);
 
@@ -4056,7 +4056,7 @@ start:
         goto error;
       }
 
-      // upgrade was successfull, time for some housekeeping
+      // upgrade was successful, time for some housekeeping
       sqlite3_exec(db->handle, "VACUUM main", NULL, NULL, NULL);
       sqlite3_exec(db->handle, "ANALYZE main", NULL, NULL, NULL);
     }
@@ -4431,7 +4431,7 @@ void dt_database_perform_maintenance(const struct dt_database_t *db)
   if(calc_pre_size == 0)
   {
     dt_print(DT_DEBUG_SQL,
-             "[db maintenance] maintenance deemed unnecesary, performing only analyze.\n");
+             "[db maintenance] maintenance deemed unnecessary, performing only analyze.\n");
     DT_DEBUG_SQLITE3_EXEC(db->handle, "ANALYZE data", NULL, NULL, &err);
     ERRCHECK
     DT_DEBUG_SQLITE3_EXEC(db->handle, "ANALYZE main", NULL, NULL, &err);
