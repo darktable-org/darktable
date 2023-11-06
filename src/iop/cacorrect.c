@@ -813,7 +813,7 @@ void process(
                 float bstemp[2];
                 for(int dir = 0; dir < 2; dir++)
                 {
-                  const float p[9] =
+                  const float p[9]  __attribute__((aligned(16))) =
                   { blockshifts[(vblock - 1) * hblsz + hblock - 1][c][dir],
                     blockshifts[(vblock - 1) * hblsz + hblock][c][dir],
                     blockshifts[(vblock - 1) * hblsz + hblock + 1][c][dir],
