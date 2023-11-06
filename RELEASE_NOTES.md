@@ -195,6 +195,10 @@ changes (where available).
   requested thumbnail size is defined via a preferences setting
   defaulting to "never".
 
+- Two new variables have been introduced to get the camera crop factor
+  "EXIF.CROP_FACTOR" and the corresponding 35mm equivalent focal
+  length "EXIF.FOCAL.LENGTH.EQUIV".
+
 ## Bug Fixes
 
 - Fixes OpenCL platform checking which could lead to a freeze of
@@ -239,6 +243,18 @@ changes (where available).
   the mouse to move donw or up may be slow. This has been improved
   drastically. The lighttable has been tested with more than 50k and
   20 thumbnails per line to be fast and responsive.
+
+- Fixed possible (rare) pixel errors in cacorrect and LMMSE demosaic.
+
+- Fixed 'Avoid colorshift' in RAW chromatic aberration module which
+  now gives better result.
+
+- Make sure that snapshot for removed images are not accessible
+  anymore. It was not the case and trying to display a snapshot based
+  on a removed image crashed darktable.
+
+- Fix a potential crash when using a non supported ICC profile for
+  soft-proof.
 
 ## Lua
 
