@@ -1408,7 +1408,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
   // if all images have similar heigths, they will not be stacked and placed in separate slots.
 
   // Note: Stacking only make sense for images in the same row as the portrait image.
-  //       The algorithm does not check for this so unneccessary stacking can occur.
+  //       The algorithm does not check for this so unnecessary stacking can occur.
 
   GList *slots = NULL;
   int max_slot_heigth = 0;
@@ -1587,7 +1587,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
       // don't include bottom spacing in height calculation
       slot_total_heigth -= spacing;
 
-      // if slot is about to be placed outside of allocated horizonal space, place the slot in a new row
+      // if slot is about to be placed outside of allocated horizontal space, place the slot in a new row
       //  we allow for 20% thumbnail width tolerance to account for the influence of images with mixed aspect ratios in the math
       gboolean create_new_row = FALSE;
 
