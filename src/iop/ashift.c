@@ -1015,15 +1015,15 @@ static inline int isneutral(const dt_iop_ashift_data_t *data)
 }
 
 
-int distort_transform(dt_iop_module_t *self,
-                      dt_dev_pixelpipe_iop_t *piece,
-                      float *const restrict points,
-                      const size_t points_count)
+gboolean distort_transform(dt_iop_module_t *self,
+                           dt_dev_pixelpipe_iop_t *piece,
+                           float *const restrict points,
+                           const size_t points_count)
 {
   const dt_iop_ashift_data_t *const data = (dt_iop_ashift_data_t *)piece->data;
 
   // nothing to be done if parameters are set to neutral values
-  if(isneutral(data)) return 1;
+  if(isneutral(data)) return TRUE;
 
   float DT_ALIGNED_ARRAY homograph[3][3];
   _homography((float *)homograph, data->rotation, data->lensshift_v, data->lensshift_h,
@@ -1051,19 +1051,19 @@ int distort_transform(dt_iop_module_t *self,
     points[i + 1] = po[1] / po[2] - cy;
   }
 
-  return 1;
+  return TRUE;
 }
 
 
-int distort_backtransform(dt_iop_module_t *self,
-                          dt_dev_pixelpipe_iop_t *piece,
-                          float *points,
-                          const size_t points_count)
+gboolean distort_backtransform(dt_iop_module_t *self,
+                               dt_dev_pixelpipe_iop_t *piece,
+                               float *points,
+                               const size_t points_count)
 {
   const dt_iop_ashift_data_t *const data = (dt_iop_ashift_data_t *)piece->data;
 
   // nothing to be done if parameters are set to neutral values
-  if(isneutral(data)) return 1;
+  if(isneutral(data)) return TRUE;
 
   float DT_ALIGNED_ARRAY ihomograph[3][3];
   _homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h,
@@ -1091,7 +1091,7 @@ int distort_backtransform(dt_iop_module_t *self,
     points[i + 1] = po[1] / po[2];
   }
 
-  return 1;
+  return TRUE;
 }
 
 void distort_mask(struct dt_iop_module_t *self,

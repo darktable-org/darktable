@@ -271,10 +271,10 @@ static int _set_max_clip(struct dt_iop_module_t *self)
   return 1;
 }
 
-int distort_transform(dt_iop_module_t *self,
-                      dt_dev_pixelpipe_iop_t *piece,
-                      float *const restrict points,
-                      size_t points_count)
+gboolean distort_transform(dt_iop_module_t *self,
+                           dt_dev_pixelpipe_iop_t *piece,
+                           float *const restrict points,
+                           size_t points_count)
 {
   dt_iop_crop_data_t *d = (dt_iop_crop_data_t *)piece->data;
 
@@ -282,7 +282,7 @@ int distort_transform(dt_iop_module_t *self,
   const float crop_left = piece->buf_in.width * d->cx;
 
   // nothing to be done if parameters are set to neutral values (no top/left border)
-  if(crop_top == 0 && crop_left == 0) return 1;
+  if(crop_top == 0 && crop_left == 0) return TRUE;
 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) dt_omp_firstprivate(points, points_count, crop_left, crop_top)        \
@@ -294,13 +294,13 @@ int distort_transform(dt_iop_module_t *self,
     points[i + 1] -= crop_top;
   }
 
-  return 1;
+  return TRUE;
 }
 
-int distort_backtransform(dt_iop_module_t *self,
-                          dt_dev_pixelpipe_iop_t *piece,
-                          float *const restrict points,
-                          size_t points_count)
+gboolean distort_backtransform(dt_iop_module_t *self,
+                               dt_dev_pixelpipe_iop_t *piece,
+                               float *const restrict points,
+                               size_t points_count)
 {
   dt_iop_crop_data_t *d = (dt_iop_crop_data_t *)piece->data;
 
@@ -308,7 +308,7 @@ int distort_backtransform(dt_iop_module_t *self,
   const float crop_left = piece->buf_in.width * d->cx;
 
   // nothing to be done if parameters are set to neutral values (no top/left border)
-  if(crop_top == 0 && crop_left == 0) return 1;
+  if(crop_top == 0 && crop_left == 0) return TRUE;
 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) dt_omp_firstprivate(points, points_count, crop_left, crop_top)        \
@@ -320,7 +320,7 @@ int distort_backtransform(dt_iop_module_t *self,
     points[i + 1] += crop_top;
   }
 
-  return 1;
+  return TRUE;
 }
 
 void distort_mask(struct dt_iop_module_t *self,

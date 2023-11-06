@@ -1550,14 +1550,13 @@ static void _tiling_callback_lf(struct dt_iop_module_t *self,
   if(d->v_strength != 0.0f) tiling->factor += 1.0f;
 }
 
-static int _distort_transform_lf(
-        dt_iop_module_t *self,
-        dt_dev_pixelpipe_iop_t *piece,
-        float *const __restrict points,
-        size_t points_count)
+static gboolean _distort_transform_lf(dt_iop_module_t *self,
+                                      dt_dev_pixelpipe_iop_t *piece,
+                                      float *const __restrict points,
+                                      size_t points_count)
 {
   dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
-  if(!d->lens || !d->lens->Maker || d->crop <= 0.0f) return 0;
+  if(!d->lens || !d->lens->Maker || d->crop <= 0.0f) return FALSE;
 
   const float orig_w = piece->buf_in.width;
   const float orig_h = piece->buf_in.height;
@@ -1591,18 +1590,17 @@ static int _distort_transform_lf(
   }
 
   delete modifier;
-  return 1;
+  return TRUE;
 }
 
-static int _distort_backtransform_lf(
-        dt_iop_module_t *self,
-        dt_dev_pixelpipe_iop_t *piece,
-        float *const __restrict points,
-        size_t points_count)
+static gboolean _distort_backtransform_lf(dt_iop_module_t *self,
+                                          dt_dev_pixelpipe_iop_t *piece,
+                                          float *const __restrict points,
+                                          size_t points_count)
 {
   dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
 
-  if(!d->lens || !d->lens->Maker || d->crop <= 0.0f) return 0;
+  if(!d->lens || !d->lens->Maker || d->crop <= 0.0f) return FALSE;
 
   const int used_lf_mask = (dt_image_is_monochrome(&self->dev->image_storage))
     ? LF_MODIFY_ALL & ~LF_MODIFY_TCA
@@ -1635,7 +1633,7 @@ static int _distort_backtransform_lf(
   }
 
   delete modifier;
-  return 1;
+  return TRUE;
 }
 
 // TODO: Shall we keep LF_MODIFY_TCA in the modifiers?
@@ -2591,15 +2589,15 @@ static void _tiling_callback_vg(struct dt_iop_module_t *self,
   tiling->yalign = 1;
 }
 
-static int _distort_transform_md(dt_iop_module_t *self,
-                                 dt_dev_pixelpipe_iop_t *piece,
-                                 float *points,
-                                 const size_t points_count)
+static gboolean _distort_transform_md(dt_iop_module_t *self,
+                                      dt_dev_pixelpipe_iop_t *piece,
+                                      float *points,
+                                      const size_t points_count)
 {
   dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
 
   if(!d->nc || d->modify_flags == DT_IOP_LENS_MODFLAG_NONE)
-    return 0;
+    return FALSE;
 
   const float inv_scale_md = 1.0f / d->scale_md;
   const float w2 = 0.5f * piece->buf_in.width;
@@ -2632,18 +2630,18 @@ static int _distort_transform_md(dt_iop_module_t *self,
     points[i + 1] = p2;
   }
 
-  return 1;
+  return TRUE;
 }
 
-static int _distort_backtransform_md(dt_iop_module_t *self,
-                                     dt_dev_pixelpipe_iop_t *piece,
-                                     float *points,
-                                     const size_t points_count)
+static gboolean _distort_backtransform_md(dt_iop_module_t *self,
+                                          dt_dev_pixelpipe_iop_t *piece,
+                                          float *points,
+                                          const size_t points_count)
 {
   dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
 
   if(!d->nc || d->modify_flags == DT_IOP_LENS_MODFLAG_NONE)
-    return 0;
+    return FALSE;
 
   const float inv_scale_md = 1.0f / d->scale_md;
   const float w2 = 0.5f * piece->buf_in.width;
@@ -2661,7 +2659,7 @@ static int _distort_backtransform_md(dt_iop_module_t *self,
     points[i + 1] = dr*cy + h2;
   }
 
-  return 1;
+  return TRUE;
 }
 
 static void _distort_mask_md(struct dt_iop_module_t *self,
@@ -3117,10 +3115,10 @@ void tiling_callback(struct dt_iop_module_t *self,
     _tiling_callback_vg(self, piece, roi_in, roi_out, tiling);
 }
 
-int distort_transform(dt_iop_module_t *self,
-                      dt_dev_pixelpipe_iop_t *piece,
-                      float *const __restrict points,
-                      const size_t points_count)
+gboolean distort_transform(dt_iop_module_t *self,
+                           dt_dev_pixelpipe_iop_t *piece,
+                           float *const __restrict points,
+                           const size_t points_count)
 {
   dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
 
@@ -3132,13 +3130,13 @@ int distort_transform(dt_iop_module_t *self,
   {
     return _distort_transform_md(self, piece, points, points_count);
   }
-  return 0;
+  return FALSE;
 }
 
-int distort_backtransform(dt_iop_module_t *self,
-                          dt_dev_pixelpipe_iop_t *piece,
-                          float *const __restrict points,
-                          const size_t points_count)
+gboolean distort_backtransform(dt_iop_module_t *self,
+                               dt_dev_pixelpipe_iop_t *piece,
+                               float *const __restrict points,
+                               const size_t points_count)
 {
   dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
 
@@ -3150,7 +3148,7 @@ int distort_backtransform(dt_iop_module_t *self,
   {
     return _distort_backtransform_md(self, piece, points, points_count);
   }
-  return 0;
+  return FALSE;
 }
 
 void distort_mask(struct dt_iop_module_t *self,

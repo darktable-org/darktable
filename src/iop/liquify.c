@@ -1292,11 +1292,11 @@ void modify_roi_in(struct dt_iop_module_t *module,
   cairo_region_destroy(roi_in_region);
 }
 
-static int _distort_xtransform(dt_iop_module_t *self,
-                               dt_dev_pixelpipe_iop_t *piece,
-                               float *const restrict points,
-                               const size_t points_count,
-                               const gboolean inverted)
+static gboolean _distort_xtransform(dt_iop_module_t *self,
+                                    dt_dev_pixelpipe_iop_t *piece,
+                                    float *const restrict points,
+                                    const size_t points_count,
+                                    const gboolean inverted)
 {
   const float scale = piece->iscale;
 
@@ -1339,7 +1339,7 @@ static int _distort_xtransform(dt_iop_module_t *self,
     _build_global_distortion_map(self, piece, scale, TRUE, &roi_in,
                                  &extent, inverted, &map);
 
-    if(map == NULL) return 0;
+    if(map == NULL) return FALSE;
 
     const int map_size =  extent.width * extent.height;
     const int x_last = extent.x + extent.width;
@@ -1376,7 +1376,7 @@ static int _distort_xtransform(dt_iop_module_t *self,
     dt_free_align((void *) map);
   }
 
-  return 1;
+  return TRUE;
 }
 
 static void start_drag(dt_iop_liquify_gui_data_t *g,
@@ -1397,18 +1397,18 @@ static gboolean is_dragging(const dt_iop_liquify_gui_data_t *g)
   return g->dragging.elem != NULL;
 }
 
-int distort_transform(dt_iop_module_t *self,
-                      dt_dev_pixelpipe_iop_t *piece,
-                      float *const restrict points,
-                      const size_t points_count)
+gboolean distort_transform(dt_iop_module_t *self,
+                           dt_dev_pixelpipe_iop_t *piece,
+                           float *const restrict points,
+                           const size_t points_count)
 {
   return _distort_xtransform(self, piece, points, points_count, TRUE);
 }
 
-int distort_backtransform(dt_iop_module_t *self,
-                          dt_dev_pixelpipe_iop_t *piece,
-                          float *const restrict points,
-                          const size_t points_count)
+gboolean distort_backtransform(dt_iop_module_t *self,
+                               dt_dev_pixelpipe_iop_t *piece,
+                               float *const restrict points,
+                               const size_t points_count)
 {
   return _distort_xtransform(self, piece, points, points_count, FALSE);
 }

@@ -528,15 +528,15 @@ gchar *dt_history_item_get_name(const struct dt_iop_module_t *module);
  * distort functions
  */
 /** apply all transforms to the specified points (in preview pipe space) */
-int dt_dev_distort_transform(dt_develop_t *dev,
+gboolean dt_dev_distort_transform(dt_develop_t *dev,
                              float *points,
                              const size_t points_count);
 /** reverse apply all transforms to the specified points (in preview pipe space) */
-int dt_dev_distort_backtransform(dt_develop_t *dev,
+gboolean dt_dev_distort_backtransform(dt_develop_t *dev,
                                  float *points,
                                  const size_t points_count);
 /** same fct, but we can specify iop with priority between pmin and pmax */
-int dt_dev_distort_transform_plus(dt_develop_t *dev,
+gboolean dt_dev_distort_transform_plus(dt_develop_t *dev,
                                   struct dt_dev_pixelpipe_t *pipe,
                                   const double iop_order,
                                   const int transf_direction,
@@ -544,7 +544,7 @@ int dt_dev_distort_transform_plus(dt_develop_t *dev,
                                   const size_t points_count);
 /** same fct, but can only be called from a distort_transform function
  * called by dt_dev_distort_transform_plus */
-int dt_dev_distort_transform_locked(dt_develop_t *dev,
+gboolean dt_dev_distort_transform_locked(dt_develop_t *dev,
                                     struct dt_dev_pixelpipe_t *pipe,
                                     const double iop_order,
                                     const int transf_direction,
@@ -552,7 +552,7 @@ int dt_dev_distort_transform_locked(dt_develop_t *dev,
                                     const size_t points_count);
 /** same fct as dt_dev_distort_backtransform, but we can specify iop
  * with priority between pmin and pmax */
-int dt_dev_distort_backtransform_plus(dt_develop_t *dev,
+gboolean dt_dev_distort_backtransform_plus(dt_develop_t *dev,
                                       struct dt_dev_pixelpipe_t *pipe,
                                       const double iop_order,
                                       const int transf_direction,
@@ -560,7 +560,7 @@ int dt_dev_distort_backtransform_plus(dt_develop_t *dev,
                                       const size_t points_count);
 /** same fct, but can only be called from a distort_backtransform
  * function called by dt_dev_distort_backtransform_plus */
-int dt_dev_distort_backtransform_locked(dt_develop_t *dev,
+gboolean dt_dev_distort_backtransform_locked(dt_develop_t *dev,
                                         struct dt_dev_pixelpipe_t *pipe,
                                         const double iop_order,
                                         const int transf_direction,
@@ -583,7 +583,7 @@ uint64_t dt_dev_hash_plus(dt_develop_t *dev,
                           const int transf_direction);
 /** wait until hash value found in hash matches hash value defined by
  * dev/pipe/pmin/pmax with timeout */
-int dt_dev_wait_hash(dt_develop_t *dev,
+gboolean dt_dev_wait_hash(dt_develop_t *dev,
                      struct dt_dev_pixelpipe_t *pipe,
                      const double iop_order,
                      const int transf_direction,
@@ -591,7 +591,7 @@ int dt_dev_wait_hash(dt_develop_t *dev,
                      const volatile uint64_t *const hash);
 /** synchronize pixelpipe by means hash values by waiting with timeout
  * and potential reprocessing */
-int dt_dev_sync_pixelpipe_hash(dt_develop_t *dev,
+gboolean dt_dev_sync_pixelpipe_hash(dt_develop_t *dev,
                                struct dt_dev_pixelpipe_t *pipe,
                                const double iop_order,
                                const int transf_direction,
@@ -604,21 +604,22 @@ uint64_t dt_dev_hash_distort_plus(dt_develop_t *dev,
                                   struct dt_dev_pixelpipe_t *pipe,
                                   const double iop_order,
                                   const int transf_direction);
-/** same as dt_dev_wait_hash but only for distorting modules */
-int dt_dev_wait_hash_distort(dt_develop_t *dev,
+/** same as dt_dev_wait_hash but only for distorting modules
+gboolean dt_dev_wait_hash_distort(dt_develop_t *dev,
                              struct dt_dev_pixelpipe_t *pipe,
                              const double iop_order,
                              const int transf_direction,
                              dt_pthread_mutex_t *lock,
                              const volatile uint64_t *const hash);
-/** same as dt_dev_sync_pixelpipe_hash but only for distorting modules */
-int dt_dev_sync_pixelpipe_hash_distort (dt_develop_t *dev,
+*/
+/** same as dt_dev_sync_pixelpipe_hash but only for distorting modules
+gboolean dt_dev_sync_pixelpipe_hash_distort (dt_develop_t *dev,
                                         struct dt_dev_pixelpipe_t *pipe,
                                         const double iop_order,
                                         const int transf_direction,
                                         dt_pthread_mutex_t *lock,
                                         const volatile uint64_t *const hash);
-
+*/
 /*
  *   history undo support helpers for darkroom
  */

@@ -349,10 +349,10 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_RGB;
 }
 
-int distort_transform(dt_iop_module_t *self,
-                      dt_dev_pixelpipe_iop_t *piece,
-                      float *const restrict points,
-                      size_t points_count)
+gboolean distort_transform(dt_iop_module_t *self,
+                           dt_dev_pixelpipe_iop_t *piece,
+                           float *const restrict points,
+                           size_t points_count)
 {
   dt_iop_borders_data_t *d = (dt_iop_borders_data_t *)piece->data;
 
@@ -362,7 +362,7 @@ int distort_transform(dt_iop_module_t *self,
   const int border_size_l = border_tot_width * d->pos_h;
 
   // nothing to be done if parameters are set to neutral values (no top/left border)
-  if(border_size_l == 0 && border_size_t == 0) return 1;
+  if(border_size_l == 0 && border_size_t == 0) return TRUE;
 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
@@ -375,12 +375,13 @@ int distort_transform(dt_iop_module_t *self,
     points[i + 1] += border_size_t;
   }
 
-  return 1;
+  return TRUE;
 }
-int distort_backtransform(dt_iop_module_t *self,
-                          dt_dev_pixelpipe_iop_t *piece,
-                          float *const restrict points,
-                          size_t points_count)
+
+gboolean distort_backtransform(dt_iop_module_t *self,
+                               dt_dev_pixelpipe_iop_t *piece,
+                               float *const restrict points,
+                               size_t points_count)
 {
   dt_iop_borders_data_t *d = (dt_iop_borders_data_t *)piece->data;
 
@@ -390,7 +391,7 @@ int distort_backtransform(dt_iop_module_t *self,
   const int border_size_l = border_tot_width * d->pos_h;
 
   // nothing to be done if parameters are set to neutral values (no top/left border)
-  if(border_size_l == 0 && border_size_t == 0) return 1;
+  if(border_size_l == 0 && border_size_t == 0) return TRUE;
 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
@@ -403,7 +404,7 @@ int distort_backtransform(dt_iop_module_t *self,
     points[i + 1] -= border_size_t;
   }
 
-  return 1;
+  return TRUE;
 }
 
 void distort_mask(struct dt_iop_module_t *self,
