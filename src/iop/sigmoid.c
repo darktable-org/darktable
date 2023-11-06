@@ -55,11 +55,11 @@ typedef struct dt_iop_sigmoid_params_t
   float display_black_target; // $MIN: 0.0  $MAX: 15.0 $DEFAULT: 0.0152 $DESCRIPTION: "target black"
   dt_iop_sigmoid_methods_type_t color_processing; // $DEFAULT: DT_SIGMOID_METHOD_PER_CHANNEL $DESCRIPTION: "color processing"
   float hue_preservation; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "preserve hue"
-  float red_inset;        // $MIN:  0.0  $MAX: 0.99 $DEFAULT: 0.0 $DESCRIPTION: "red inset"
+  float red_inset;        // $MIN:  0.0  $MAX: 0.99 $DEFAULT: 0.0 $DESCRIPTION: "red attenuation"
   float red_rotation;     // $MIN: -0.4  $MAX: 0.4  $DEFAULT: 0.0 $DESCRIPTION: "red rotation"
-  float green_inset;      // $MIN:  0.0  $MAX: 0.99 $DEFAULT: 0.0 $DESCRIPTION: "green inset"
+  float green_inset;      // $MIN:  0.0  $MAX: 0.99 $DEFAULT: 0.0 $DESCRIPTION: "green attenuation"
   float green_rotation;   // $MIN: -0.4  $MAX: 0.4  $DEFAULT: 0.0 $DESCRIPTION: "green rotation"
-  float blue_inset;       // $MIN:  0.0  $MAX: 0.99 $DEFAULT: 0.0 $DESCRIPTION: "blue inset"
+  float blue_inset;       // $MIN:  0.0  $MAX: 0.99 $DEFAULT: 0.0 $DESCRIPTION: "blue attenuation"
   float blue_rotation;    // $MIN: -0.4  $MAX: 0.4  $DEFAULT: 0.0 $DESCRIPTION: "blue rotation"
   float purity;           // $MIN:  0.0  $MAX: 1.0  $DEFAULT: 0.0 $DESCRIPTION: "recover purity"
 } dt_iop_sigmoid_params_t;
@@ -830,12 +830,12 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(slider, rotation_tooltip);
 
   const float desaturation = 0.2f;
-  SETUP_COLOR_COMBO(red, 1.f - desaturation, desaturation, desaturation, _("red primary inset"),
-                    _("red primary rotation"));
-  SETUP_COLOR_COMBO(green, desaturation, 1.f - desaturation, desaturation, _("green primary inset"),
-                    _("green primary rotation"));
-  SETUP_COLOR_COMBO(blue, desaturation, desaturation, 1.f - desaturation, _("blue primary inset"),
-                    _("blue primary rotation"));
+  SETUP_COLOR_COMBO(red, 1.f - desaturation, desaturation, desaturation, _("attenuate the purity of the red primary"),
+                    _("rotate the red primary"));
+  SETUP_COLOR_COMBO(green, desaturation, 1.f - desaturation, desaturation, _("attenuate the purity of the green primary"),
+                    _("rotate the green primary"));
+  SETUP_COLOR_COMBO(blue, desaturation, desaturation, 1.f - desaturation, _("attenuate the purity of the blue primary"),
+                    _("rotate the blue primary"));
 #undef SETUP_COLOR_COMBO
 
   slider = dt_bauhaus_slider_from_params(sect, "purity");
