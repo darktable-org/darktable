@@ -3215,23 +3215,6 @@ void mouse_leave(dt_view_t *self)
   dt_control_change_cursor(GDK_LEFT_PTR);
 }
 
-/* This helper function tests for a position to be within the displayed area
-   of an image. To avoid "border cases" we accept values to be slightly out of area too.
-*/
-static int mouse_in_imagearea(dt_view_t *self, double *x, double *y)
-{
-  dt_develop_t *dev = (dt_develop_t *)self->data;
-
-  int closeup;
-  dt_dev_get_viewport_params(&dev->full, NULL, &closeup, NULL, NULL);
-  const int pwidth = (dev->full.pipe->backbuf_width<<closeup) / darktable.gui->ppd;
-  const int pheight = (dev->full.pipe->backbuf_height<<closeup) / darktable.gui->ppd;
-
-  *x = CLAMP(*x, (self->width - pwidth) / 2, (self->width + pwidth) / 2);
-  *y = CLAMP(*y, (self->height - pheight) / 2, (self->height + pheight) / 2);
-  return TRUE;
-}
-
 void mouse_enter(dt_view_t *self)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
@@ -3263,53 +3246,60 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
      && ctl->button_down && ctl->button_down_which == 1)
   {
     // module requested a color box
-    if(mouse_in_imagearea(self, &x, &y))
-    {
-      dt_colorpicker_sample_t *const sample = darktable.lib->proxy.colorpicker.primary_sample;
-      // Make sure a minimal width/height
-      float delta_x = 1 / (float) dev->full.pipe->processed_width;
-      float delta_y = 1 / (float) dev->full.pipe->processed_height;
+    dt_colorpicker_sample_t *const sample = darktable.lib->proxy.colorpicker.primary_sample;
+    // Make sure a minimal width/height
+    float delta_x = 1 / (float) dev->full.pipe->processed_width;
+    float delta_y = 1 / (float) dev->full.pipe->processed_height;
 
-      if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
-      {
-        sample->box[0] = fmaxf(0.0, MIN(sample->point[0], zoom_x) - delta_x);
-        sample->box[1] = fmaxf(0.0, MIN(sample->point[1], zoom_y) - delta_y);
-        sample->box[2] = fminf(1.0, MAX(sample->point[0], zoom_x) + delta_x);
-        sample->box[3] = fminf(1.0, MAX(sample->point[1], zoom_y) + delta_y);
-      }
-      else if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
-      {
-        sample->point[0] = zoom_x;
-        sample->point[1] = zoom_y;
-        dev->preview_pipe->status = DT_DEV_PIXELPIPE_DIRTY;
-      }
+    if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
+    {
+      sample->box[0] = fmaxf(0.0, MIN(sample->point[0], zoom_x) - delta_x);
+      sample->box[1] = fmaxf(0.0, MIN(sample->point[1], zoom_y) - delta_y);
+      sample->box[2] = fminf(1.0, MAX(sample->point[0], zoom_x) + delta_x);
+      sample->box[3] = fminf(1.0, MAX(sample->point[1], zoom_y) + delta_y);
+    }
+    else if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
+    {
+      sample->point[0] = zoom_x;
+      sample->point[1] = zoom_y;
+      dev->preview_pipe->status = DT_DEV_PIXELPIPE_DIRTY;
     }
     dt_control_queue_redraw_center();
-    return;
+    handled = TRUE;
   }
 
   // masks
   if(dev->form_visible
+     && !handled
      && !darktable.develop->darkroom_skip_mouse_events
      && !dt_iop_color_picker_is_visible(dev))
     handled = dt_masks_events_mouse_moved(dev->gui_module, zoom_x, zoom_y, pressure, which, zoom_scale);
-  if(handled) return;
 
   // module
   if(dev->gui_module && dev->gui_module->mouse_moved
+     && !handled
      && !darktable.develop->darkroom_skip_mouse_events
      && !dt_iop_color_picker_is_visible(dev)
      && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS)
     handled = dev->gui_module->mouse_moved(dev->gui_module, zoom_x, zoom_y, pressure, which, zoom_scale);
-  if(handled) return;
 
   if(ctl->button_down && ctl->button_down_which == 1)
   {
-    dt_dev_zoom_move(&dev->full, DT_ZOOM_MOVE, -1.f, 0, x - ctl->button_x, y - ctl->button_y, TRUE);
+    if(!handled)
+      dt_dev_zoom_move(&dev->full, DT_ZOOM_MOVE, -1.f, 0, x - ctl->button_x, y - ctl->button_y, TRUE);
+    else
+    {
+      const int32_t bs = dev->full.border_size;
+      dt_dev_zoom_move(&dev->full, DT_ZOOM_MOVE, 1.f, 0,
+                       MIN(0, x - bs) + MAX(0, x - dev->full.width  - bs),
+                       MIN(0, y - bs) + MAX(0, y - dev->full.height - bs),
+                       TRUE);
+    }
     ctl->button_x = x;
     ctl->button_y = y;
   }
   else if(darktable.control->button_down
+          && !handled
           && darktable.control->button_down_which == 3
           && dev->proxy.rotate)
   {
@@ -3397,60 +3387,58 @@ int button_pressed(dt_view_t *self,
 
     if(which == 1)
     {
-      if(mouse_in_imagearea(self, &x, &y))
+      // The default box will be a square with 1% of the image width
+      const float delta_x = 0.01f;
+      const float delta_y = delta_x * (float)dev->full.pipe->processed_width / (float)dev->full.pipe->processed_height;
+
+      // FIXME: here and in mouse move use to dt_lib_colorpicker_set_{box_area,point} interface? -- would require a different hack for figuring out base of the drag
+      // hack: for box pickers, these represent the "base" point being dragged
+      sample->point[0] = zoom_x;
+      sample->point[1] = zoom_y;
+
+      if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
       {
-        // The default box will be a square with 1% of the image width
-        const float delta_x = 0.01f;
-        const float delta_y = delta_x * (float)dev->full.pipe->processed_width / (float)dev->full.pipe->processed_height;
+        // this is slightly more than as drawn, to give room for slop
+        const float handle_px = 6.0f;
+        float hx = handle_px / (procw * zoom_scale);
+        float hy = handle_px / (proch * zoom_scale);
+        gboolean on_corner_prev_box = TRUE;
+        // initialized to calm gcc-11
+        float opposite_x = 0.f, opposite_y = 0.f;
 
-        // FIXME: here and in mouse move use to dt_lib_colorpicker_set_{box_area,point} interface? -- would require a different hack for figuring out base of the drag
-        // hack: for box pickers, these represent the "base" point being dragged
-        sample->point[0] = zoom_x;
-        sample->point[1] = zoom_y;
+        if(fabsf(zoom_x - sample->box[0]) <= hx)
+          opposite_x = sample->box[2];
+        else if(fabsf(zoom_x - sample->box[2]) <= hx)
+          opposite_x = sample->box[0];
+        else
+          on_corner_prev_box = FALSE;
 
-        if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
+        if(fabsf(zoom_y - sample->box[1]) <= hy)
+          opposite_y = sample->box[3];
+        else if(fabsf(zoom_y - sample->box[3]) <= hy)
+          opposite_y = sample->box[1];
+        else
+          on_corner_prev_box = FALSE;
+
+        if(on_corner_prev_box)
         {
-          // this is slightly more than as drawn, to give room for slop
-          const float handle_px = 6.0f;
-          float hx = handle_px / (procw * zoom_scale);
-          float hy = handle_px / (proch * zoom_scale);
-          gboolean on_corner_prev_box = TRUE;
-          // initialized to calm gcc-11
-          float opposite_x = 0.f, opposite_y = 0.f;
-
-          if(fabsf(zoom_x - sample->box[0]) <= hx)
-            opposite_x = sample->box[2];
-          else if(fabsf(zoom_x - sample->box[2]) <= hx)
-            opposite_x = sample->box[0];
-          else
-            on_corner_prev_box = FALSE;
-
-          if(fabsf(zoom_y - sample->box[1]) <= hy)
-            opposite_y = sample->box[3];
-          else if(fabsf(zoom_y - sample->box[3]) <= hy)
-            opposite_y = sample->box[1];
-          else
-            on_corner_prev_box = FALSE;
-
-          if(on_corner_prev_box)
-          {
-            sample->point[0] = opposite_x;
-            sample->point[1] = opposite_y;
-          }
-          else
-          {
-            sample->box[0] = fmaxf(0.0, zoom_x - delta_x);
-            sample->box[1] = fmaxf(0.0, zoom_y - delta_y);
-            sample->box[2] = fminf(1.0, zoom_x + delta_x);
-            sample->box[3] = fminf(1.0, zoom_y + delta_y);
-          }
-          dt_control_change_cursor(GDK_FLEUR);
+          sample->point[0] = opposite_x;
+          sample->point[1] = opposite_y;
         }
-        else if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
+        else
         {
-          dev->preview_pipe->status = DT_DEV_PIXELPIPE_DIRTY;
+          sample->box[0] = fmaxf(0.0, zoom_x - delta_x);
+          sample->box[1] = fmaxf(0.0, zoom_y - delta_y);
+          sample->box[2] = fminf(1.0, zoom_x + delta_x);
+          sample->box[3] = fminf(1.0, zoom_y + delta_y);
         }
+        dt_control_change_cursor(GDK_FLEUR);
       }
+      else if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
+      {
+        dev->preview_pipe->status = DT_DEV_PIXELPIPE_DIRTY;
+      }
+
       dt_control_queue_redraw_center();
       return 1;
     }
@@ -3460,7 +3448,7 @@ int button_pressed(dt_view_t *self,
       // apply a live sample's area to the active picker?
       // FIXME: this is a naive implementation, nicer would be to cycle through overlapping samples then reset
       dt_iop_color_picker_t *picker = darktable.lib->proxy.colorpicker.picker_proxy;
-      if(darktable.lib->proxy.colorpicker.display_samples && mouse_in_imagearea(self, &x, &y))
+      if(darktable.lib->proxy.colorpicker.display_samples)
         for(GSList *samples = darktable.lib->proxy.colorpicker.live_samples; samples; samples = g_slist_next(samples))
         {
           dt_colorpicker_sample_t *live_sample = samples->data;
