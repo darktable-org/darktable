@@ -1344,7 +1344,9 @@ void gui_post_expose(dt_iop_module_t *self,
 
   // we don't do anything if the image is not ready within crop module
   // and we don't have visualizing enforced by other modules
-  if(!(g->preview_ready || external)) return;
+  if((dev->full.pipe->changed & DT_DEV_PIPE_REMOVE 
+      || self->dev->preview_pipe->loading) 
+     && !external) return;
 
   _aspect_apply(self, GRAB_HORIZONTAL);
 
@@ -1514,6 +1516,8 @@ int mouse_moved(dt_iop_module_t *self,
           = fminf(g->clip_max_h + g->clip_max_y - g->clip_h,
                   fmaxf(g->clip_max_y, g->handle_y + pzy - bzy));
     }
+    else if(g->cropping == GRAB_NONE)
+      return 0;
     else
     {
       /* changing the crop window */

@@ -48,8 +48,6 @@ typedef struct dt_lib_snapshot_t
   dt_imgid_t imgid;
   uint32_t history_end;
   uint32_t id;
-  size_t processed_width;
-  size_t processed_height;
   uint8_t *buf;
   float scale;
   size_t width, height;
@@ -188,7 +186,6 @@ void gui_post_expose(dt_lib_module_t *self,
       // export image with proper size
       dt_dev_image(snap->imgid, width, height,
                    snap->history_end,
-                   &snap->processed_width, &snap->processed_height,
                    &snap->buf, &snap->scale,
                    &snap->width, &snap->height,
                    &snap->zoom_x, &snap->zoom_y,
@@ -254,7 +251,6 @@ void gui_post_expose(dt_lib_module_t *self,
     if(snap->buf)
     {
       dt_view_paint_surface(cri, width, height, &dev->full, DT_WINDOW_MAIN,
-                            snap->processed_width, snap->processed_height,
                             snap->buf, snap->scale, snap->width, snap->height,
                             snap->zoom_x, snap->zoom_y);
     }
@@ -584,6 +580,7 @@ static void _clear_snapshots(dt_lib_module_t *self)
 {
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
   d->selected = -1;
+  darktable.lib->proxy.snapshots.enabled = FALSE;
   d->snap_requested = FALSE;
 
   for(uint32_t k = 0; k < d->num_snapshots; k++)
@@ -729,6 +726,7 @@ void gui_init(dt_lib_module_t *self)
   d->snap_requested = FALSE;
   d->expose_again_timeout_id = 0;
   d->num_snapshots = 0;
+  darktable.lib->proxy.snapshots.enabled = FALSE;
 
   /* initialize ui containers */
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -918,6 +916,7 @@ static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, gpointer us
       else
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->snapshot[k].button), FALSE);
   }
+  darktable.lib->proxy.snapshots.enabled = d->selected >= 0;
 
   --darktable.gui->reset;
 
