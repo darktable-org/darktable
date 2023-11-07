@@ -42,8 +42,6 @@ typedef struct dt_lib_duplicate_t
   GtkWidget *duplicate_box;
   dt_imgid_t imgid;
 
-  size_t processed_width;
-  size_t processed_height;
   uint8_t *buf;
   float scale;
   size_t buf_width;
@@ -223,7 +221,6 @@ void gui_post_expose(dt_lib_module_t *self,
       dt_free_align(d->buf);
 
     dt_dev_image(d->imgid, width, height, -1,
-                 &d->processed_width, &d->processed_height,
                  &d->buf, &d->scale,
                  &d->buf_width, &d->buf_height,
                  &d->zoom_x, &d->zoom_y, -1);
@@ -233,7 +230,6 @@ void gui_post_expose(dt_lib_module_t *self,
 
   if(d->buf)
     dt_view_paint_surface(cri, width, height, &darktable.develop->full, DT_WINDOW_MAIN,
-                          d->processed_width, d->processed_height,
                           d->buf, d->scale,
                           d->buf_width, d->buf_height,
                           d->zoom_x, d->zoom_y);
@@ -397,8 +393,6 @@ void gui_init(dt_lib_module_t *self)
 
   d->imgid = NO_IMGID;
   d->buf = NULL;
-  d->processed_width = 0;
-  d->processed_height = 0;
   d->view_ctx = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);

@@ -1411,12 +1411,10 @@ void dt_configure_ppd_dpi(dt_gui_gtk_t *gui)
 
   gui->ppd = gui->ppd_thb = dt_get_system_gui_ppd(widget);
   gui->filter_image = CAIRO_FILTER_GOOD;
-  gui->dr_filter_image = CAIRO_FILTER_BEST;
   if(dt_conf_get_bool("ui/performance"))
   {
       gui->ppd_thb *= DT_GUI_THUMBSIZE_REDUCE;
       gui->filter_image = CAIRO_FILTER_FAST;
-      gui->dr_filter_image = CAIRO_FILTER_GOOD;
   }
   // get the screen resolution
   const float screen_dpi_overwrite = dt_conf_get_float("screen_dpi_overwrite");

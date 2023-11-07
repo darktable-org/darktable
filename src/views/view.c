@@ -1653,8 +1653,6 @@ void dt_view_paint_surface(cairo_t *cr,
                            const size_t height,
                            dt_dev_viewport_t *port,
                            const dt_window_t window,
-                           int processed_width,
-                           int processed_height,
                            uint8_t *buf,
                            float buf_scale,
                            int buf_width,
@@ -1663,6 +1661,18 @@ void dt_view_paint_surface(cairo_t *cr,
                            float buf_zoom_y)
 {
   dt_develop_t *dev = darktable.develop;
+
+  float pts[] = { buf_zoom_x, buf_zoom_y,
+                  dev->preview_pipe->backbuf_zoom_x, dev->preview_pipe->backbuf_zoom_y };
+  dt_dev_distort_transform_plus(dev, port->pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 2);
+
+  int processed_width, processed_height;
+  dt_dev_get_processed_size(port, &processed_width, &processed_height);
+
+  float offset_x = pts[0] / processed_width - 0.5f;
+  float offset_y = pts[1] / processed_height - 0.5f;
+  float preview_x = pts[2] / processed_width - 0.5f;
+  float preview_y = pts[3] / processed_height - 0.5f;
 
   dt_dev_zoom_t zoom;
   int closeup;
@@ -1673,6 +1683,14 @@ void dt_view_paint_surface(cairo_t *cr,
   const double tb           = port->border_size;
   const float zoom_scale    = dt_dev_get_zoom_scale(port, zoom, 1<<closeup, 1);
   const float backbuf_scale = dt_dev_get_zoom_scale(port, zoom, 1.0f, 0) * ppd;
+
+  dt_print_pipe(DT_DEBUG_EXPOSE,
+      "dt_view_paint_surface",
+        port->pipe, NULL, NULL, NULL,
+        "viewport zoom_scale %6.3f backbuf_scale %6.3f "
+        "(x=%6.2f y=%6.2f) -> (x=%+.3f y=%+.3f)\n",
+        zoom_scale, backbuf_scale,
+        port->zoom_x, port->zoom_y, zoom_x, zoom_y);
 
   cairo_save(cr);
 
@@ -1698,14 +1716,6 @@ void dt_view_paint_surface(cairo_t *cr,
   const int maxw = MIN(port->width * port->ppd, backbuf_scale * processed_width * (1<<closeup) / ppd);
   const int maxh = MIN(port->height * port->ppd, backbuf_scale * processed_height * (1<<closeup) / ppd);
 
-  float pts[] = { buf_zoom_x, buf_zoom_y,
-                  dev->preview_pipe->backbuf_zoom_x, dev->preview_pipe->backbuf_zoom_y };
-  dt_dev_distort_transform_plus(dev, port->pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 2);
-  float offset_x = pts[0] / processed_width - 0.5f;
-  float offset_y = pts[1] / processed_height - 0.5f;
-  float preview_x = pts[2] / processed_width - 0.5f;
-  float preview_y = pts[3] / processed_height - 0.5f;
-
   if(port->iso_12646
      && window != DT_WINDOW_SLIDESHOW)
   {
@@ -1728,8 +1738,8 @@ void dt_view_paint_surface(cairo_t *cr,
      && (port == &dev->full || port == &dev->preview2))
   {
     // draw preview
-    float wd, ht;
-    dt_dev_get_preview_size(dev, &wd, &ht);
+    float wd = processed_width * dev->preview_pipe->processed_width / MAX(1, dev->full.pipe->processed_width);
+    float ht = processed_height * dev->preview_pipe->processed_width / MAX(1, dev->full.pipe->processed_width);
 
     cairo_surface_t *preview = dt_view_create_surface(dev->preview_pipe->backbuf,
                                                       dev->preview_pipe->backbuf_width,
@@ -1742,12 +1752,13 @@ void dt_view_paint_surface(cairo_t *cr,
     dt_print_pipe(DT_DEBUG_EXPOSE,
         "dt_view_paint_surface",
          dev->preview_pipe, NULL, NULL, NULL,
-         "size %lux%lu. processed %dx%d. buf %dx%d scale=%.3f. surface %dx%d. zoom x=%.3f y=%.3f scale=%.3f\n",
-         width, height,
-         processed_width, processed_height,
-         buf_width, buf_height, buf_scale,
-         dev->preview_pipe->backbuf_height, dev->preview_pipe->backbuf_width,
-         buf_zoom_x, buf_zoom_y, zoom_scale);
+         "size %4lux%-4lu processed %4.0fx%-4.0f "
+         "buf %4dx%-4d scale=%.3f "
+         "zoom (x=%6.2f y=%6.2f) -> offset (x=%+.3f y=%+.3f)\n",
+         width, height, wd, ht,
+         dev->preview_pipe->backbuf_width, dev->preview_pipe->backbuf_height, zoom_scale,
+         dev->preview_pipe->backbuf_zoom_x, dev->preview_pipe->backbuf_zoom_y,
+         preview_x, preview_y);
     cairo_surface_destroy(preview);
   }
 
@@ -1759,20 +1770,20 @@ void dt_view_paint_surface(cairo_t *cr,
     dt_print_pipe(DT_DEBUG_EXPOSE,
         "dt_view_paint_surface",
          port->pipe, NULL, NULL, NULL,
-         "size %lux%lu. processed %dx%d. buf %dx%d scale=%.3f. surface %dx%d. zoom x=%.3f y=%.3f scale=%.3f\n",
-         width, height,
-         processed_width, processed_height,
+         "size %4lux%-4lu processed %4dx%-4d "
+         "buf %4dx%-4d scale=%.3f "
+         "zoom (x=%6.2f y=%6.2f) -> offset (x=%+.3f y=%+.3f)\n",
+         width, height, processed_width, processed_height,
          buf_width, buf_height, buf_scale,
-         buf_width, buf_height,
-         buf_zoom_x, buf_zoom_y, zoom_scale);
+         buf_zoom_x, buf_zoom_y,
+         offset_x, offset_y);
     cairo_scale(cr, back_scale / zoom_scale, back_scale / zoom_scale);
     cairo_translate(cr, (offset_x - zoom_x) * processed_width * buf_scale - 0.5 * buf_width,
                         (offset_y - zoom_y) * processed_height * buf_scale - 0.5 * buf_height);
 
     cairo_surface_t *surface = dt_view_create_surface(buf, buf_width, buf_height);
     cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr),
-                            zoom_scale >= 0.9999f ? CAIRO_FILTER_FAST : darktable.gui->dr_filter_image);
+    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
     cairo_paint(cr);
 
     if(darktable.gui->show_focus_peaking
