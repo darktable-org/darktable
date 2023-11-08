@@ -525,6 +525,7 @@ static void _transform_lcms(const dt_iop_colorout_data_t *const d,
   for(size_t chunk = 0; chunk < nthreads; chunk++)
   {
     size_t start = chunksize * dt_get_thread_num();
+    if (start >= npixels) continue;  // handle case when chunksize is < 4*nthreads and last thread has no work
     size_t count = MIN(start + chunksize, npixels) - start;
     float *const outp = out + 4 * start;
 

@@ -754,6 +754,7 @@ void process(struct dt_iop_module_t *self,
   for(size_t chunk = 0; chunk < nthreads; chunk++)
   {
     size_t start = chunksize * dt_get_thread_num();
+    if (start >= npixels) continue;  // handle case when chunksize is < 4*nthreads and last thread has no work
     size_t end = MIN(start + chunksize, npixels);
     switch(mode)
     {
