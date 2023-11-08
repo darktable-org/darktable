@@ -912,13 +912,14 @@ static void process_cmatrix_fastpath(struct dt_iop_module_t *self,
   // figure out the number of pixels each thread needs to process
   // round up to a multiple of 4 pixels so that each chunk starts aligned(64)
   const size_t nthreads = dt_get_num_threads();
-  const size_t chunksize = 4 * (((npixels / nthreads) + 4) / 4);
+  const size_t chunksize = 4 * ((((npixels + nthreads - 1) / nthreads) + 3) / 4);
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(in, out, npixels, chunksize, nthreads, d, clipping)  \
   schedule(static)
   for(size_t chunk = 0; chunk < nthreads; chunk++)
   {
     size_t start = chunksize * dt_get_thread_num();
+    if (start >= npixels) continue;  // handle case when chunksize is < 4*nthreads and last thread has no work
     size_t end = MIN(start + chunksize, npixels);
     if(clipping)
       _cmatrix_fastpath_clipping(out + 4*start, in + 4*start,
@@ -1045,6 +1046,7 @@ static void process_cmatrix_proper(struct dt_iop_module_t *self,
   for(size_t chunk = 0; chunk < nthreads; chunk++)
   {
     size_t start = chunksize * dt_get_thread_num();
+    if (start >= npixels) continue;  // handle case when chunksize is < 4*nthreads and last thread has no work
     size_t end = MIN(start + chunksize, npixels);
     if(clipping)
       _cmatrix_proper_clipping(out + 4*start, in + 4*start,
