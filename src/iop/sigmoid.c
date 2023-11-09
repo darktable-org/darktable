@@ -272,17 +272,23 @@ void init_presets(dt_iop_module_so_t *self)
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   const float DEG_TO_RAD = DT_M_PI_F / 180.f;
-  p.middle_grey_contrast = 1.4f;
-  p.contrast_skewness = 0.0f;
+
+  // smooth - a preset that utilizes the primaries feature
+  p.middle_grey_contrast = 1.5f;
+  // Allow a little bit more room for the highlights
+  p.contrast_skewness = -0.2f;
   p.color_processing = DT_SIGMOID_METHOD_PER_CHANNEL;
+  // Allow shifts of the chromaticity. This will work well for sunsets etc.
   p.hue_preservation = 0.0f;
-  p.red_inset = 0.15f;
-  p.green_inset = 0.15f;
+  p.red_inset = 0.1f;
+  p.green_inset = 0.1f;
   p.blue_inset = 0.15f;
-  p.red_rotation = 4.f * DEG_TO_RAD;
-  p.green_rotation = 1.5f * DEG_TO_RAD;
-  p.blue_rotation = -5.f * DEG_TO_RAD;
-  p.purity = 0.5f;
+  p.red_rotation = 2.f * DEG_TO_RAD;
+  p.green_rotation = -1.f * DEG_TO_RAD;
+  p.blue_rotation = -3.f * DEG_TO_RAD;
+  // Don't restore purity - try to avoid posterization.
+  p.purity = 0.f;
+  // Constant base primaries (not dependent on work profile) to maintain a consistent behavior
   p.base_primaries = DT_SIGMOID_REC2020;
   dt_gui_presets_add_generic(_("smooth"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 }
