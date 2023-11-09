@@ -1395,7 +1395,7 @@ void gui_init(dt_lib_module_t *self)
 
   // Export button
   d->export_button = GTK_BUTTON(dt_action_button_new
-                                (self, N_("export"),
+                                (self, NC_("actionbutton", "export"),
                                  _export_button_clicked, d,
                                  _("export with current settings"),
                                  GDK_KEY_e, GDK_CONTROL_MASK));
