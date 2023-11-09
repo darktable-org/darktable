@@ -51,6 +51,14 @@ changes (where available).
   primary colors around based on "hue" and "purity" parameters set by the
   user. The underlying pixel operation is the same as channel mixing.
 
+- _sigmoid_ now features a _primaries_ section which can be used to
+  handle difficult lighting (such as LEDs) gracefully and tune the overall
+  look of the resulting image, allowing for pleasing sunsets, skin tones etc.
+  The feature applies only to the per-channel mode. It is loosely based on
+  ideas from Troy Sobotka's [AgX](https://github.com/sobotka/AgX-S2O3)
+  and related work and discussions in the [Blender community](https://blenderartists.org/t/feedback-development-filmic-baby-step-to-a-v2/1361663). Preset "smooth",
+  utilizing the new feature, is added to provide a good starting point.
+
 ## Performance Improvements
 
 - Initialize OpenCL in the background. Especially under Windows this
