@@ -886,7 +886,11 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   dt_iop_sigmoid_params_t *p = (dt_iop_sigmoid_params_t *)self->params;
 
   if(!w || w == g->color_processing_list)
-    gtk_widget_set_visible(g->hue_preservation_slider, p->color_processing == DT_SIGMOID_METHOD_PER_CHANNEL);
+  {
+    int is_per_channel = p->color_processing == DT_SIGMOID_METHOD_PER_CHANNEL;
+    gtk_widget_set_visible(g->hue_preservation_slider, is_per_channel);
+    gtk_widget_set_visible(g->primaries_section.expander, is_per_channel);
+  }
 }
 
 void gui_update(dt_iop_module_t *self)
