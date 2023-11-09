@@ -540,12 +540,11 @@ typedef struct
   float from_scale;
   float to_scale;
   int transf_direction;
-  gboolean from_distort_transform;
 } distort_params_t;
 
-static void _distort_paths(const struct dt_iop_module_t *module,
-                           const distort_params_t *params,
-                           const dt_iop_liquify_params_t *p)
+static void _distort_paths_locked(const struct dt_iop_module_t *module,
+                                  const distort_params_t *params,
+                                  const dt_iop_liquify_params_t *p)
 {
   int len = 0;
 
@@ -603,35 +602,17 @@ static void _distort_paths(const struct dt_iop_module_t *module,
       break;
     }
   }
-  if(params->from_distort_transform)
+
+  if(params->transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
   {
-    if(params->transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
-    {
-      dt_dev_distort_transform_locked(params->develop, params->pipe, module->iop_order,
-                                      DT_DEV_TRANSFORM_DIR_BACK_EXCL, buffer, len);
-      dt_dev_distort_transform_locked(params->develop, params->pipe, module->iop_order,
-                                      DT_DEV_TRANSFORM_DIR_FORW_EXCL, buffer, len);
-    }
-    else
-      dt_dev_distort_transform_locked(params->develop, params->pipe, module->iop_order,
-                                      params->transf_direction, buffer, len);
+    dt_dev_distort_transform_locked(params->develop, params->pipe, module->iop_order,
+                                    DT_DEV_TRANSFORM_DIR_BACK_EXCL, buffer, len);
+    dt_dev_distort_transform_locked(params->develop, params->pipe, module->iop_order,
+                                    DT_DEV_TRANSFORM_DIR_FORW_EXCL, buffer, len);
   }
   else
-  {
-    if(params->transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
-    {
-      dt_dev_distort_transform_plus(params->develop, params->pipe,
-                                    module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_EXCL,
-                                    buffer, len);
-      dt_dev_distort_transform_plus(params->develop, params->pipe,
-                                    module->iop_order, DT_DEV_TRANSFORM_DIR_FORW_EXCL,
-                                    buffer, len);
-    }
-    else
-      dt_dev_distort_transform_plus(params->develop, params->pipe,
-                                    module->iop_order, params->transf_direction,
-                                    buffer, len);
-  }
+    dt_dev_distort_transform_locked(params->develop, params->pipe, module->iop_order,
+                                    params->transf_direction, buffer, len);
 
   // record back the transformed points
 
@@ -668,6 +649,15 @@ static void _distort_paths(const struct dt_iop_module_t *module,
   free(buffer);
 }
 
+static void _distort_paths_plus(const struct dt_iop_module_t *module,
+                                const distort_params_t *params,
+                                const dt_iop_liquify_params_t *p)
+{
+  dt_pthread_mutex_lock(&params->develop->history_mutex);
+  _distort_paths_locked(module, params, p);
+  dt_pthread_mutex_unlock(&params->develop->history_mutex);
+}
+
 static void distort_paths_raw_to_piece(const struct dt_iop_module_t *module,
                                        dt_dev_pixelpipe_t *pipe,
                                        const float roi_in_scale,
@@ -678,9 +668,11 @@ static void distort_paths_raw_to_piece(const struct dt_iop_module_t *module,
                                     pipe,
                                     pipe->iscale,
                                     roi_in_scale,
-                                    DT_DEV_TRANSFORM_DIR_BACK_EXCL,
-                                    from_distort_transform };
-  _distort_paths(module, &params, p);
+                                    DT_DEV_TRANSFORM_DIR_BACK_EXCL };
+  if(from_distort_transform)
+    _distort_paths_locked(module, &params, p);
+  else
+    _distort_paths_plus(module, &params, p);
 }
 
 // op-engine code
@@ -2758,13 +2750,10 @@ void gui_post_expose(dt_iop_module_t *module,
   dt_iop_gui_leave_critical_section(module);
 
   // distort all points
-  dt_pthread_mutex_lock(&develop->preview_pipe->mutex);
   const distort_params_t d_params = { develop, develop->preview_pipe,
                                       iscale, 1.0 / scale,
-                                      DT_DEV_TRANSFORM_DIR_ALL,
-                                      FALSE };
-  _distort_paths(module, &d_params, &copy_params);
-  dt_pthread_mutex_unlock(&develop->preview_pipe->mutex);
+                                      DT_DEV_TRANSFORM_DIR_ALL };
+  _distort_paths_plus(module, &d_params, &copy_params);
 
   cairo_scale(cr, scale, scale);
 
