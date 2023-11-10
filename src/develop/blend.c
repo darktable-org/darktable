@@ -428,6 +428,18 @@ static void _develop_blend_process_mask_tone_curve(float *const restrict mask,
   }
 }
 
+static const char *_develop_blend_colorspace_to_str(const dt_develop_blend_colorspace_t type)
+{
+  switch(type)
+  {
+    case DEVELOP_BLEND_CS_NONE:         return "BLEND_CS_NONE";
+    case DEVELOP_BLEND_CS_RAW:          return "BLEND_CS_RAW";
+    case DEVELOP_BLEND_CS_LAB:          return "BLEND_CS_LAB";
+    case DEVELOP_BLEND_CS_RGB_DISPLAY:  return "BLEND_CS_RGB_DISPLAY";
+    case DEVELOP_BLEND_CS_RGB_SCENE:    return "BLEND_CS_RGB_SCENE";
+    default:                            return "invalid BLEND_CS";
+  }
+}
 
 void dt_develop_blend_process(struct dt_iop_module_t *self,
                               struct dt_dev_pixelpipe_iop_t *piece,
@@ -612,10 +624,12 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
 
     dt_print_pipe(DT_DEBUG_PIPE,
        "blend with form on CPU",
-       piece->pipe, self, roi_in, roi_out, "%s%s%s\n",
+       piece->pipe, self, roi_in, roi_out, "%s, %s%s%s%s\n",
        dt_iop_colorspace_to_name(cst),
+       _develop_blend_colorspace_to_str(blend_csp),
        inverted ? ", inverted" : "",
-       form ? ( form_ok ? ", form available and rendered" : ", render problem on form") : ",no form");
+       rois_equal ? "" : ", roi differ",
+       form && form_ok ? ", form available and rendered" : ", no form");
 
     _refine_with_detail_mask(self, piece, mask, roi_in, roi_out, d->details);
 
@@ -1166,10 +1180,12 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
 
     dt_print_pipe(DT_DEBUG_PIPE,
        "blend with form CL",
-       piece->pipe, self, roi_in, roi_out, "%s%s%s\n",
+       piece->pipe, self, roi_in, roi_out, "%s, %s%s%s%s\n",
        dt_iop_colorspace_to_name(cst),
+       _develop_blend_colorspace_to_str(blend_csp),
        inverted ? ", inverted" : "",
-       form ? ( form_ok ? ", form available and rendered" : ", render problem on form") : ",no form");
+       rois_equal ? "" : ", roi differ",
+       form && form_ok ? ", form available and rendered" : ", no form");
 
     _refine_with_detail_mask_cl(self, piece, mask, roi_in, roi_out, d->details, devid);
 
