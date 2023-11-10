@@ -1713,8 +1713,8 @@ void dt_view_paint_surface(cairo_t *cr,
 
   dt_pthread_mutex_lock(&dev->preview_pipe->backbuf_mutex);
 
-  const int maxw = MIN(port->width * port->ppd, backbuf_scale * processed_width * (1<<closeup) / ppd);
-  const int maxh = MIN(port->height * port->ppd, backbuf_scale * processed_height * (1<<closeup) / ppd);
+  const int maxw = MIN(port->width, backbuf_scale * processed_width * (1<<closeup) / ppd);
+  const int maxh = MIN(port->height, backbuf_scale * processed_height * (1<<closeup) / ppd);
 
   if(port->iso_12646
      && window != DT_WINDOW_SLIDESHOW)
