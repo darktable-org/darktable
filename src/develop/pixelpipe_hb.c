@@ -2361,10 +2361,8 @@ static gboolean _dev_pixelpipe_process_rec(
   }
 
   // warn on NaN or infinity
-#ifndef _DEBUG
   if((darktable.unmuted & DT_DEBUG_NAN)
      && !dt_iop_module_is(module->so, "gamma"))
-#endif
   {
     if(dt_atomic_get_int(&pipe->shutdown))
       return TRUE;
