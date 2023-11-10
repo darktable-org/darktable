@@ -924,10 +924,12 @@ static gboolean _dev_load_requested_image(gpointer user_data)
   // make sure no signals propagate here:
   ++darktable.gui->reset;
 
-  const guint nb_iop = g_list_length(dev->iop);
+  dt_pthread_mutex_lock(&dev->history_mutex);
   dt_dev_pixelpipe_cleanup_nodes(dev->full.pipe);
   dt_dev_pixelpipe_cleanup_nodes(dev->preview_pipe);
   dt_dev_pixelpipe_cleanup_nodes(dev->preview2.pipe);
+
+  const guint nb_iop = g_list_length(dev->iop);
   for(int i = nb_iop - 1; i >= 0; i--)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(g_list_nth_data(dev->iop, i));
@@ -984,6 +986,7 @@ static gboolean _dev_load_requested_image(gpointer user_data)
   dt_dev_pixelpipe_create_nodes(dev->preview_pipe, dev);
   if(dev->preview2.widget && GTK_IS_WIDGET(dev->preview2.widget))
     dt_dev_pixelpipe_create_nodes(dev->preview2.pipe, dev);
+  dt_pthread_mutex_unlock(&dev->history_mutex);
   dt_dev_read_history(dev);
 
   // we have to init all module instances other than "base" instance
@@ -3123,11 +3126,12 @@ void leave(dt_view_t *self)
 
   dev->gui_leaving = TRUE;
 
+  dt_pthread_mutex_lock(&dev->history_mutex);
+
   dt_dev_pixelpipe_cleanup_nodes(dev->full.pipe);
   dt_dev_pixelpipe_cleanup_nodes(dev->preview2.pipe);
   dt_dev_pixelpipe_cleanup_nodes(dev->preview_pipe);
 
-  dt_pthread_mutex_lock(&dev->history_mutex);
   while(dev->history)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(dev->history->data);
