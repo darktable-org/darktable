@@ -326,8 +326,10 @@ void dt_dev_process_image_job(dt_develop_t *dev,
   if(pipe->loading)
   {
     // init pixel pipeline
+    dt_pthread_mutex_lock(&dev->history_mutex);
     dt_dev_pixelpipe_cleanup_nodes(pipe);
     dt_dev_pixelpipe_create_nodes(pipe, dev);
+    dt_pthread_mutex_unlock(&dev->history_mutex);
     if(pipe == dev->full.pipe)
     {
       if(dev->image_force_reload) dt_dev_pixelpipe_cache_flush(pipe);
