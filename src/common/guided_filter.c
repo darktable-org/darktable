@@ -82,6 +82,7 @@ static inline float *_get_color_pixel(color_image img, size_t i)
 //    6 variance (R-R, R-G, R-B, G-G, G-B, B-B)
 // for computational efficiency, we'll pack them into a four-channel image and a 9-channel image
 // image instead of running 13 separate box filters: guide+input, R/G/B/R-R/R-G/R-B/G-G/G-B/B-B.
+// make sure the tiles are always aligned for 16 floats
 static void _guided_filter_tiling(color_image imgg,
                                   gray_image img,
                                   gray_image img_out,
@@ -92,8 +93,9 @@ static void _guided_filter_tiling(color_image imgg,
                                   const float min,
                                   const float max)
 {
-  const tile source = { max_i(target.left - 2 * w, 0), min_i(target.right + 2 * w, imgg.width),
-                        max_i(target.lower - 2 * w, 0), min_i(target.upper + 2 * w, imgg.height) };
+  const int overlap = dt_round_size(2 * w, 16);
+  const tile source = { max_i(target.left - overlap, 0),  min_i(target.right + overlap, imgg.width),
+                        max_i(target.lower - overlap, 0), min_i(target.upper + overlap, imgg.height) };
   const int width = source.right - source.left;
   const int height = source.upper - source.lower;
   size_t size = (size_t)width * (size_t)height;
@@ -114,7 +116,7 @@ static void _guided_filter_tiling(color_image imgg,
 #define VAR_GB 7
   color_image mean = _new_color_image(width, height, 4);
   color_image variance = _new_color_image(width, height, 9);
-  const size_t img_dimen = mean.width;
+  const size_t img_dimen = dt_round_size(mean.width, 16);
   size_t img_bak_sz;
   float *img_bak = dt_alloc_perthread_float(9*img_dimen, &img_bak_sz);
 #ifdef _OPENMP
@@ -246,56 +248,6 @@ static void _guided_filter_tiling(color_image imgg,
   _free_color_image(&mean);
 }
 
-static int _compute_tile_height(const int height, const int w)
-{
-  int tile_h = max_i(3 * w, GF_TILE_SIZE);
-#if 0 // enabling the below doesn't make any measureable speed difference, but does cause a handful of pixels
-      // to round off differently (as does changing GF_TILE_SIZE)
-  if((height % tile_h) > 0 && (height % tile_h) < GF_TILE_SIZE/3)
-  {
-    // if there's just a sliver left over for the last row of tiles, see whether slicing off a few pixels
-    // gives us a mostly-full tile
-    if(height % (tile_h - 8) >= GF_TILE_SIZE/3)
-      tile_h -= 8;
-    else  if(height % (tile_h - w/4) >= GF_TILE_SIZE/3)
-      tile_h -= (w/4);
-    else  if(height % (tile_h - w/2) >= GF_TILE_SIZE/3)
-      tile_h -= (w/2);
-    // try adding a few pixels
-    else if(height % (tile_h + 8) >= GF_TILE_SIZE/3)
-      tile_h += 8;
-    else if(height % (tile_h + 16) >= GF_TILE_SIZE/3)
-      tile_h += 16;
-  }
-#endif
-  return tile_h;
-}
-
-static int _compute_tile_width(const int width, const int w)
-{
-  int tile_w = max_i(3 * w, GF_TILE_SIZE);
-#if 0 // enabling the below doesn't make any measureable speed difference, but does cause a handful of pixels
-      // to round off differently (as does changing GF_TILE_SIZE)
-  if((width % tile_w) > 0 && (width % tile_w) < GF_TILE_SIZE/2)
-  {
-    // if there's just a sliver left over for the last column of tiles, see whether slicing off a few pixels
-    // gives us a mostly-full tile
-    if(width % (tile_w - 8) >= GF_TILE_SIZE/3)
-      tile_w -= 8;
-    else  if(width % (tile_w - w/4) >= GF_TILE_SIZE/3)
-      tile_w -= (w/4);
-    else  if(width % (tile_w - w/2) >= GF_TILE_SIZE/3)
-      tile_w -= (w/2);
-    // try adding a few pixels
-    else if(width % (tile_w + 8) >= GF_TILE_SIZE/3)
-      tile_w += 8;
-    else if(width % (tile_w + 16) >= GF_TILE_SIZE/3)
-      tile_w += 16;
-  }
-#endif
-  return tile_w;
-}
-
 void guided_filter(const float *const guide,
                     const float *const in,
                     float *const out,
@@ -314,15 +266,15 @@ void guided_filter(const float *const guide,
   color_image img_guide = (color_image){ (float *)guide, width, height, ch };
   gray_image img_in = (gray_image){ (float *)in, width, height };
   gray_image img_out = (gray_image){ out, width, height };
-  const int tile_width = _compute_tile_width(width,w);
-  const int tile_height = _compute_tile_height(height,w);
+  const int tile_dim = max_i(dt_round_size(2 * w, 16), GF_TILE_SIZE);
   const float eps = sqrt_eps * sqrt_eps; // this is the regularization parameter of the original papers
 
-  for(int j = 0; j < height; j += tile_height)
+  for(int j = 0; j < height; j += tile_dim)
   {
-    for(int i = 0; i < width; i += tile_width)
+    for(int i = 0; i < width; i += tile_dim)
     {
-      tile target = { i, min_i(i + tile_width, width), j, min_i(j + tile_height, height) };
+      tile target = { i, min_i(i + tile_dim, width),
+                      j, min_i(j + tile_dim, height) };
       _guided_filter_tiling(img_guide, img_in, img_out, target, w, eps, guide_weight, min, max);
     }
   }
@@ -660,9 +612,9 @@ static int _guided_filter_cl_fallback(int devid,
   // fall-back implementation: copy data from device memory to host memory and perform filter
   // by CPU until there is a proper OpenCL implementation
   cl_int err = DT_OPENCL_SYSMEM_ALLOCATION;
-  float *guide_host = dt_alloc_align(64, sizeof(*guide_host) * width * height * ch);
-  float *in_host = dt_alloc_align(64, sizeof(*in_host) * width * height);
-  float *out_host = dt_alloc_align(64, sizeof(*out_host) * width * height);
+  float *guide_host = dt_alloc_align_float(width * height * ch);
+  float *in_host = dt_alloc_align_float(width * height);
+  float *out_host = dt_alloc_align_float(width * height);
 
   if(!guide_host || !in_host || !out_host)
     goto error;
