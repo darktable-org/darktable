@@ -327,11 +327,13 @@ _develop_mask_get_post_operations(const dt_develop_blend_params_t *const params,
     fabsf(params->contrast) >= 0.01f || fabsf(params->brightness) >= 0.01f;
 
   const gboolean mask_feather_before =
-    params->feathering_guide == DEVELOP_MASK_GUIDE_IN_BEFORE_BLUR
+       params->feathering_guide == DEVELOP_MASK_GUIDE_IN_BEFORE_BLUR
     || params->feathering_guide == DEVELOP_MASK_GUIDE_OUT_BEFORE_BLUR;
+
   const gboolean mask_feather_out =
-    params->feathering_guide == DEVELOP_MASK_GUIDE_OUT_BEFORE_BLUR
+       params->feathering_guide == DEVELOP_MASK_GUIDE_OUT_BEFORE_BLUR
     || params->feathering_guide == DEVELOP_MASK_GUIDE_OUT_AFTER_BLUR;
+
   const float opacity = fminf(fmaxf(params->opacity / 100.0f, 0.0f), 1.0f);
 
   memset(operations, 0, sizeof(_develop_mask_post_processing) * 3);
@@ -339,12 +341,13 @@ _develop_mask_get_post_operations(const dt_develop_blend_params_t *const params,
 
   if(mask_feather)
   {
-    if(mask_blur && mask_feather_before)
+    if(mask_feather_before)
     {
       operations[index++] = mask_feather_out
         ? DEVELOP_MASK_POST_FEATHER_OUT
         : DEVELOP_MASK_POST_FEATHER_IN;
-      operations[index++] = DEVELOP_MASK_POST_BLUR;
+      if(mask_blur)
+        operations[index++] = DEVELOP_MASK_POST_BLUR;
     }
     else
     {
@@ -368,6 +371,11 @@ _develop_mask_get_post_operations(const dt_develop_blend_params_t *const params,
   return index;
 }
 
+static inline int _get_required_w(const float radius, const float scale)
+{
+  return MAX(1, (int)(2.0f * radius * scale + 0.5f));
+}
+
 static void _develop_blend_process_feather(const float *const guide,
                                            float *const mask,
                                            const size_t width,
@@ -378,8 +386,7 @@ static void _develop_blend_process_feather(const float *const guide,
                                            const float scale)
 {
   const float sqrt_eps = 1.f;
-  const int w = MAX(1, (int)(2 * feathering_radius * scale + 0.5f));
-
+  const int w = _get_required_w(feathering_radius, scale);
 
   float *const restrict mask_bak = dt_alloc_align_float(width * height);
   if(mask_bak)
@@ -1239,9 +1246,7 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
       _develop_mask_post_processing operation = post_operations[index];
       if(operation == DEVELOP_MASK_POST_FEATHER_IN)
       {
-        int w = (int)(2 * d->feathering_radius * roi_out->scale / piece->iscale + 0.5f);
-        if(w < 1) w = 1;
-
+        const int w = _get_required_w(d->feathering_radius, roi_out->scale / piece->iscale);
         const float sqrt_eps = 1.0f;
         const float guide_weight = cst == IOP_CS_RGB ? 100.0f : 1.0f;
 
@@ -1269,8 +1274,7 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
       }
       else if(operation == DEVELOP_MASK_POST_FEATHER_OUT)
       {
-        const int w = MAX(1, (int)(2 * d->feathering_radius
-                                   * roi_out->scale / piece->iscale + 0.5f));
+        const int w = _get_required_w(d->feathering_radius, roi_out->scale / piece->iscale);
         const float sqrt_eps = 1.0f;
         const float guide_weight = cst == IOP_CS_RGB ? 100.0f : 1.0f;
 
