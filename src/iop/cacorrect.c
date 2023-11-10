@@ -297,8 +297,8 @@ void process(
 
   const size_t width = roi_in->width;
   const size_t height = roi_in->height;
-  const size_t h_width = (width + 1) / 2;
-  const size_t h_height = (height + 1) / 2;
+  const size_t h_width = dt_round_size(width / 2, 16);
+  const size_t h_height = dt_round_size(height / 2, 16);
 
   const float *const in = out;
 
@@ -404,8 +404,9 @@ void process(
     // residual CA shift amount within a plaquette
     float shifthfrac[3], shiftvfrac[3];
     // per thread data for evaluation of block CA shift variance
-    float blockavethr[2][2] = { { 0, 0 }, { 0, 0 } }, blocksqavethr[2][2] = { { 0, 0 }, { 0, 0 } },
-          blockdenomthr[2][2] = { { 0, 0 }, { 0, 0 } };
+    float blockavethr[2][2] = { { 0, 0 }, { 0, 0 } };
+    float blocksqavethr[2][2] = { { 0, 0 }, { 0, 0 } };
+    float blockdenomthr[2][2] = { { 0, 0 }, { 0, 0 } };
 
     // assign working space
     const size_t buffersize = sizeof(float) * 3 * ts * ts + 6 * sizeof(float) * ts * tsh + 8 * 64 + 63;
@@ -615,11 +616,11 @@ void process(
 
               // low and high pass 1D filters of G in vertical/horizontal directions
               const float glpfv = 0.25f * (2.f * rgb[1][indx] + rgb[1][indx + v2] + rgb[1][indx - v2]);
-              const float glpfh = 0.25f * (2.f * rgb[1][indx] + rgb[1][indx + 2] + rgb[1][indx - 2]);
+              const float glpfh = 0.25f * (2.f * rgb[1][indx] + rgb[1][indx + 2]  + rgb[1][indx - 2]);
               rblpfv[indx >> 1] = eps + fabsf(glpfv - 0.25f * (2.f * rgb[c][indx] + rgb[c][indx + v2] + rgb[c][indx - v2]));
-              rblpfh[indx >> 1] = eps + fabsf(glpfh - 0.25f * (2.f * rgb[c][indx] + rgb[c][indx + 2] + rgb[c][indx - 2]));
+              rblpfh[indx >> 1] = eps + fabsf(glpfh - 0.25f * (2.f * rgb[c][indx] + rgb[c][indx + 2]  + rgb[c][indx - 2]));
               grblpfv[indx >> 1]= glpfv + 0.25f * (2.f * rgb[c][indx] + rgb[c][indx + v2] + rgb[c][indx - v2]);
-              grblpfh[indx >> 1] = glpfh + 0.25f * (2.f * rgb[c][indx] + rgb[c][indx + 2] + rgb[c][indx - 2]);
+              grblpfh[indx >> 1]= glpfh + 0.25f * (2.f * rgb[c][indx] + rgb[c][indx + 2]  + rgb[c][indx - 2]);
             }
           }
 
@@ -743,6 +744,7 @@ void process(
 #endif
       {
         for(int dir = 0; dir < 2; dir++)
+        {
           for(int c = 0; c < 2; c++)
           {
             if(blockdenom[dir][c])
@@ -753,10 +755,11 @@ void process(
             else
             {
               processpasstwo = FALSE;
-              dt_print(DT_DEBUG_PIPE, "[cacorrect] blockdenom vanishes\n");
+              dt_print(DT_DEBUG_PIPE, "[cacorrect] blockdenom vanishes on dir=%d, c=%d\n", dir, c);
               break;
             }
           }
+        }
         // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
         // now prepare for CA correction pass
@@ -791,21 +794,23 @@ void process(
           // end of filling border pixels of blockshift array
 
           // initialize fit arrays
-          double polymat[2][2][256], shiftmat[2][2][16];
+          double polymat[2][2][256];
+          double shiftmat[2][2][16];
 
           for(int i = 0; i < 256; i++)
           {
-            polymat[0][0][i] = polymat[0][1][i] = polymat[1][0][i] = polymat[1][1][i] = 0;
+            polymat[0][0][i] = polymat[0][1][i] = polymat[1][0][i] = polymat[1][1][i] = 0.0;
           }
 
           for(int i = 0; i < 16; i++)
           {
-            shiftmat[0][0][i] = shiftmat[0][1][i] = shiftmat[1][0][i] = shiftmat[1][1][i] = 0;
+            shiftmat[0][0][i] = shiftmat[0][1][i] = shiftmat[1][0][i] = shiftmat[1][1][i] = 0.0;
           }
 
           int numblox[2] = { 0, 0 };
 
           for(int vblock = 1; vblock < vblsz - 1; vblock++)
+          {
             for(int hblock = 1; hblock < hblsz - 1; hblock++)
             {
               // block 3x3 median of blockshifts for robustness
@@ -866,7 +871,7 @@ void process(
                 }   // monomials
               }     // c
             }       // blocks
-
+          }
           numblox[1] = MIN(numblox[0], numblox[1]);
 
           // if too few data points, restrict the order of the fit to linear
@@ -885,20 +890,18 @@ void process(
           if(processpasstwo)
           {
             // fit parameters to blockshifts
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static)
-            // collapse(2) doesn't help here, likely due to cacheline bouncing
-#endif
             for(int c = 0; c < 2; c++)
+            {
               for(int dir = 0; dir < 2; dir++)
               {
                 if(!_LinEqSolve(numpar, polymat[c][dir], shiftmat[c][dir], fitparams[c][dir]))
                 {
                   dt_print(DT_DEBUG_PIPE,
-                           "[cacorrect] can't solve linear equations for colour %d direction %d", c, dir);
+                           "[cacorrect] can't solve linear equations for c=%d dir=%d", c, dir);
                   processpasstwo = FALSE;
                 }
               }
+            }
           }
         }
 
@@ -1211,11 +1214,13 @@ void process(
 #pragma omp for schedule(static)
 #endif
       for(int row = 0; row < height; row++)
+      {
         for(int col = 0 + (FC(row, 0, filters) & 1), indx = (row * width + col) >> 1; col < width;
             col += 2, indx++)
         {
           out[row * width + col] = RawDataTmp[indx];
         }
+      }
     }
     free(buffer);
    }
