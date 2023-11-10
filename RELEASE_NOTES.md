@@ -244,10 +244,10 @@ changes (where available).
   drastically. The lighttable has been tested with more than 50k and
   20 thumbnails per line to be fast and responsive.
 
-- Fixed possible (rare) pixel errors in cacorrect and LMMSE demosaic.
+- Fixed pixel errors in RAW Chromatic Aberration and LMMSE demosaic
+  resulting in less noise.
 
-- Fixed 'Avoid colorshift' in RAW chromatic aberration module which
-  now gives better result.
+- Fixed 'Avoid colorshift' mode in RAW Chromatic Aberration.
 
 - Make sure that snapshot for removed images are not accessible
   anymore. It was not the case and trying to display a snapshot based
