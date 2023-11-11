@@ -31,8 +31,6 @@
 #include <unistd.h>
 #include <zlib.h>
 
-#include "control/control.h"
-
 #include <array>
 #include <cassert>
 #include <cmath>
@@ -44,6 +42,8 @@
 
 #include <exiv2/exiv2.hpp>
 
+#include "control/control.h"
+
 #if defined(_WIN32) && defined(EXV_UNICODE_PATH)
   #define WIDEN(s) pugi::as_wide(s)
 #else
@@ -54,6 +54,7 @@
 
 using namespace std;
 
+#include "common/color_harmony.h"
 #include "common/colorlabels.h"
 #include "common/darktable.h"
 #include "common/debug.h"
@@ -351,6 +352,9 @@ static void _exif_import_tags(dt_image_t *img, Exiv2::XmpData::iterator &pos);
 static void read_xmp_timestamps(Exiv2::XmpData &xmpData,
                                 dt_image_t *img,
                                 const int xmp_version);
+static void read_xmp_harmony_guide(Exiv2::XmpData &xmpData,
+                                   dt_image_t *img,
+                                   const int xmp_version);
 
 // this array should contain all XmpBag and XmpSeq keys used by dt
 const char *dt_xmp_keys[]
@@ -372,8 +376,10 @@ const char *dt_xmp_keys[]
         "Xmp.darktable.history_basic_hash",   "Xmp.darktable.history_auto_hash",
         "Xmp.darktable.history_current_hash", "Xmp.darktable.import_timestamp",
         "Xmp.darktable.change_timestamp",     "Xmp.darktable.export_timestamp",
-        "Xmp.darktable.print_timestamp",      "Xmp.acdsee.notes",
-        "Xmp.darktable.version_name",         "Xmp.dc.creator",
+        "Xmp.darktable.print_timestamp",      "Xmp.darktable.version_name",
+        "Xmp.darktable.harmony_guide_type",   "Xmp.darktable.harmony_guide_rotation",
+        "Xmp.darktable.harmony_guide_width",
+        "Xmp.acdsee.notes",                   "Xmp.dc.creator",
         "Xmp.dc.publisher",                   "Xmp.dc.title",
         "Xmp.dc.description",                 "Xmp.dc.rights",
         "Xmp.dc.format",                      "Xmp.xmpMM.DerivedFrom" };
@@ -3987,6 +3993,8 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
 
     read_xmp_timestamps(xmpData, img, xmp_version);
 
+    read_xmp_harmony_guide(xmpData, img, xmp_version);
+
     sqlite3_finalize(stmt);
 
     // set or clear bit in image struct. ONLY set if the
@@ -4277,6 +4285,27 @@ static void set_xmp_timestamps(Exiv2::XmpData &xmpData, const dt_imgid_t imgid)
   sqlite3_finalize(stmt);
 }
 
+static void set_xmp_harmony_guide(Exiv2::XmpData &xmpData, const dt_imgid_t imgid)
+{
+  static const char *keys[] =
+  {
+    "Xmp.darktable.harmony_guide_type",
+    "Xmp.darktable.harmony_guide_rotation",
+    "Xmp.darktable.harmony_guide_width",
+  };
+  static const guint n_keys = G_N_ELEMENTS(keys);
+  dt_remove_xmp_keys(xmpData, keys, n_keys);
+
+  dt_color_harmony_guide_t guide;
+
+  if(dt_color_harmony_get(imgid, &guide))
+  {
+    xmpData["Xmp.darktable.harmony_guide_type"] = guide.type;
+    xmpData["Xmp.darktable.harmony_guide_rotation"] = guide.rotation;
+    xmpData["Xmp.darktable.harmony_guide_width"] = guide.width;
+  }
+}
+
 GTimeSpan _convert_unix_to_gtimespan(const time_t unix)
 {
   GDateTime *gdt = g_date_time_new_from_unix_utc(unix);
@@ -4318,6 +4347,30 @@ void read_xmp_timestamps(Exiv2::XmpData &xmpData, dt_image_t *img, const int xmp
       img->print_timestamp = pos->toLong();
     else if(pos->toLong() >= 1)
       img->print_timestamp = _convert_unix_to_gtimespan(pos->toLong());
+  }
+}
+
+// read color harmony guides from XmpData
+void read_xmp_harmony_guide(Exiv2::XmpData &xmpData,
+                            dt_image_t *img,
+                            const int xmp_version)
+{
+  Exiv2::XmpData::iterator pos;
+
+  if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.harmony_guide_type")))
+     != xmpData.end())
+  {
+    img->color_harmony_guide.type = (dt_color_harmony_type_t)pos->toLong();
+  }
+  if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.harmony_guide_rotation")))
+     != xmpData.end())
+  {
+    img->color_harmony_guide.rotation = (int) pos->toLong();
+  }
+  if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.harmony_guide_width")))
+     != xmpData.end())
+  {
+      img->color_harmony_guide.width = (dt_color_harmony_width_t)pos->toLong();
   }
 }
 
@@ -4499,6 +4552,8 @@ static void _exif_xmp_read_data(Exiv2::XmpData &xmpData,
 
   // timestamps
   set_xmp_timestamps(xmpData, imgid);
+
+  set_xmp_harmony_guide(xmpData, imgid);
 
   // GPS data
   dt_set_xmp_exif_geotag(xmpData, longitude, latitude, altitude);

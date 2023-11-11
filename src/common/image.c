@@ -2023,6 +2023,8 @@ void dt_image_init(dt_image_t *img)
   img->export_timestamp = 0;
   img->print_timestamp = 0;
 
+  dt_color_harmony_init(&img->color_harmony_guide);
+
   img->legacy_flip.legacy = 0;
   img->legacy_flip.user_flip = 0;
 
