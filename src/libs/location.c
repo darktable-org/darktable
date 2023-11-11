@@ -351,7 +351,13 @@ static gboolean _lib_location_search(gpointer user_data)
   clear_search(lib);
 
   /* build the query url */
-  const char *search_url = dt_conf_get_string_const("plugins/map/geotagging_search_url");
+  const char *conf_name = "plugins/map/geotagging_search_url";
+  const char *search_url = dt_conf_get_string_const(conf_name);
+  if(!g_strcmp0(search_url, "https://nominatim.openstreetmap.org/search/%s?format=xml&limit=%d&polygon_text=1"))
+  {
+    dt_conf_set_string(conf_name, NULL); // reset to new default
+    search_url = dt_conf_get_string_const(conf_name);
+  }
   query = g_strdup_printf(search_url, text, LIMIT_RESULT);
   /* load url */
   curl = curl_easy_init();
