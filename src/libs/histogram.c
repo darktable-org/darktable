@@ -2212,15 +2212,13 @@ static gboolean _color_harmony_clicked(GtkWidget *button,
   else
   {
     // find positions of clicked button
-    int pos = -1;
-    for(int i = 0; i < DT_COLOR_HARMONY_N - 1; i++)
+    for(dt_color_harmony_type_t i = DT_COLOR_HARMONY_NONE; i < DT_COLOR_HARMONY_N - 1; i++)
       if(d->color_harmony_button[i] == button)
       {
-        pos = i;
+        d->harmony_guide.type = d->color_harmony_old = i + 1;
         break;
       }
     _color_harmony_button_on_off(pos + 1, d->color_harmony_old, d);
-    d->harmony_guide.type = d->color_harmony_old = pos + 1;
   }
   _color_harmony_changed_record(d);
   return TRUE;
@@ -2232,15 +2230,16 @@ static gboolean _color_harmony_enter_notify_callback(GtkWidget *widget,
 {
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
   // find positions of entered button
-  int pos = -1;
-  for(int i = 0; i < DT_COLOR_HARMONY_N - 1; i++)
+
+  d->color_harmony_old = d->harmony_guide.type;
+
+  for(dt_color_harmony_type_t i = DT_COLOR_HARMONY_NONE; i < DT_COLOR_HARMONY_N - 1; i++)
     if(d->color_harmony_button[i] == widget)
     {
-      pos = i;
+      d->harmony_guide.type = i + 1;
       break;
     }
-  d->color_harmony_old = d->harmony_guide.type;
-  d->harmony_guide.type = pos + 1;
+
   gtk_widget_queue_draw(d->scope_draw);
   return FALSE;
 }
@@ -2588,7 +2587,7 @@ void gui_init(dt_lib_module_t *self)
   // set the default harmony (last used), the actual harmony for the image
   // will be restored later.
   str = dt_conf_get_string_const("plugins/darkroom/histogram/vectorscope/harmony_type");
-  for(int i = 0; i < DT_COLOR_HARMONY_N; i++)
+  for(dt_color_harmony_type_t i = DT_COLOR_HARMONY_NONE; i < DT_COLOR_HARMONY_N; i++)
     if(g_strcmp0(str, dt_color_harmonies[i].name) == 0)
       d->color_harmony_old = d->harmony_guide.type = i;
   d->harmony_guide.rotation =
@@ -2725,7 +2724,9 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_end(GTK_BOX(box_right), d->colorspace_button, FALSE, FALSE, 0);
 
   // a series of buttons for color harmony guide lines
-  for(int i = 1; i < DT_COLOR_HARMONY_N; i++)
+  for(dt_color_harmony_type_t i = DT_COLOR_HARMONY_MONOCHROMATIC;
+      i < DT_COLOR_HARMONY_N;
+      i++)
   {
     GtkWidget *rb = dtgtk_togglebutton_new(dtgtk_cairo_paint_color_harmony, CPF_NONE,
                                            &(dt_color_harmonies[i]));
