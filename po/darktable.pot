@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-11 12:48+0100\n"
+"POT-Creation-Date: 2023-11-11 22:08+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -3020,8 +3020,8 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:412
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:585
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:106
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:221
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:116
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:237
 #: ../src/gui/guides.c:740 ../src/iop/basicadj.c:637 ../src/iop/bilat.c:468
 #: ../src/iop/colisa.c:298 ../src/iop/colorbalance.c:1922
 #: ../src/iop/colorbalance.c:1928 ../src/iop/filmic.c:1573
@@ -3059,12 +3059,14 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:304
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:202
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:312
 #: ../src/common/colorspaces.c:1410 ../src/common/colorspaces.c:1700
 #: ../src/libs/print_settings.c:1356
 msgid "sRGB"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:305
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:311
 #: ../src/common/colorspaces.c:1421 ../src/common/colorspaces.c:1702
 #: ../src/libs/print_settings.c:1363
 msgid "Adobe RGB (compatible)"
@@ -3150,7 +3152,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:267
 #: ../src/iop/atrous.c:1410 ../src/iop/atrous.c:1414
 #: ../src/iop/denoiseprofile.c:3531 ../src/iop/rawdenoise.c:771
-#: ../src/iop/sigmoid.c:240
+#: ../src/iop/sigmoid.c:292
 msgid "smooth"
 msgstr ""
 
@@ -4501,73 +4503,92 @@ msgstr ""
 msgid "highlights color adjustment"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:112
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:225
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:122
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:241
 #: ../src/gui/accelerators.c:101
 msgid "skew"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:118
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:229
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:128
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:245
 msgid "target white"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:124
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:233
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:134
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:249
 msgid "target black"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:130
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:237
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:140
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:253
 msgid "color processing"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:136
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:241
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:146
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:257
 msgid "preserve hue"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:142
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:245
-msgid "red inset"
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:152
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:261
+msgid "red attenuation"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:148
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:249
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:158
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:265
 msgid "red rotation"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:154
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:253
-msgid "green inset"
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:164
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:269
+msgid "green attenuation"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:160
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:257
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:170
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:273
 msgid "green rotation"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:166
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:261
-msgid "blue inset"
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:176
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:277
+msgid "blue attenuation"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:172
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:265
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:182
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:281
 msgid "blue rotation"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:178
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:269
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:188
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:285
 msgid "recover purity"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:283
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:194
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:289
+msgid "base primaries"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:303
 msgid "per channel"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:284
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:304
 msgid "RGB ratio"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:308
+#: ../src/common/colorspaces.c:1377 ../src/common/colorspaces.c:1734
+msgid "work profile"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:309
+msgid "Rec2020"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:310
+#: ../src/common/colorspaces.c:1750
+msgid "Display P3"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:135
@@ -5660,10 +5681,6 @@ msgstr ""
 msgid "clear"
 msgstr ""
 
-#: ../src/common/colorspaces.c:1377 ../src/common/colorspaces.c:1734
-msgid "work profile"
-msgstr ""
-
 #: ../src/common/colorspaces.c:1382 ../src/common/colorspaces.c:1730
 #: ../src/iop/colorout.c:901
 msgid "export profile"
@@ -5776,10 +5793,6 @@ msgstr ""
 
 #: ../src/common/colorspaces.c:1748
 msgid "HLG P3"
-msgstr ""
-
-#: ../src/common/colorspaces.c:1750
-msgid "Display P3"
 msgstr ""
 
 #: ../src/common/cups_print.c:420
@@ -6425,11 +6438,11 @@ msgstr ""
 msgid "noiseprofile file `%s' is not valid"
 msgstr ""
 
-#: ../src/common/opencl.c:1168
+#: ../src/common/opencl.c:1165
 msgid "no working OpenCL library found"
 msgstr ""
 
-#: ../src/common/opencl.c:1188
+#: ../src/common/opencl.c:1185
 msgid ""
 "platform detection failed. some possible reasons:\n"
 "  - OpenCL ICD (ocl-icd) missing,\n"
@@ -6439,34 +6452,34 @@ msgid ""
 "  - no OpenCL driver installed."
 msgstr ""
 
-#: ../src/common/opencl.c:1280
+#: ../src/common/opencl.c:1277
 msgid "no devices found for unknown platform"
 msgstr ""
 
-#: ../src/common/opencl.c:1326
+#: ../src/common/opencl.c:1323
 msgid "not enough memory for OpenCL devices"
 msgstr ""
 
-#: ../src/common/opencl.c:1361
+#: ../src/common/opencl.c:1358
 msgid "no OpenCL devices found"
 msgstr ""
 
-#: ../src/common/opencl.c:1404
+#: ../src/common/opencl.c:1401
 msgid "no suitable OpenCL devices found"
 msgstr ""
 
-#: ../src/common/opencl.c:1425
+#: ../src/common/opencl.c:1422
 #, c-format
 msgid ""
 "OpenCL initializing problem:\n"
 "%s"
 msgstr ""
 
-#: ../src/common/opencl.c:1457
+#: ../src/common/opencl.c:1454
 msgid "OpenCL scheduling profile set to default, setup has changed"
 msgstr ""
 
-#: ../src/common/opencl.c:2286
+#: ../src/common/opencl.c:2283
 #, c-format
 msgid "building OpenCL program %s for %s"
 msgstr ""
@@ -8484,72 +8497,72 @@ msgid_plural "%s have been imported"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/develop/masks/brush.c:1347 ../src/develop/masks/brush.c:1401
+#: ../src/develop/masks/brush.c:1346 ../src/develop/masks/brush.c:1400
 #, c-format
 msgid "hardness: %3.2f%%"
 msgstr ""
 
-#: ../src/develop/masks/brush.c:1363 ../src/develop/masks/brush.c:1461
+#: ../src/develop/masks/brush.c:1362 ../src/develop/masks/brush.c:1460
 #: ../src/develop/masks/circle.c:148 ../src/develop/masks/circle.c:193
 #: ../src/develop/masks/ellipse.c:484 ../src/develop/masks/ellipse.c:546
-#: ../src/develop/masks/path.c:1257
+#: ../src/develop/masks/path.c:1255
 #, c-format
 msgid "size: %3.2f%%"
 msgstr ""
 
-#: ../src/develop/masks/brush.c:3194
+#: ../src/develop/masks/brush.c:3191
 msgid "[BRUSH] change size"
 msgstr ""
 
-#: ../src/develop/masks/brush.c:3196
+#: ../src/develop/masks/brush.c:3193
 msgid "[BRUSH] change hardness"
 msgstr ""
 
-#: ../src/develop/masks/brush.c:3198
+#: ../src/develop/masks/brush.c:3195
 msgid "[BRUSH] change opacity"
 msgstr ""
 
-#: ../src/develop/masks/brush.c:3210
+#: ../src/develop/masks/brush.c:3207
 #, c-format
 msgid "brush #%d"
 msgstr ""
 
-#: ../src/develop/masks/brush.c:3223
+#: ../src/develop/masks/brush.c:3220
 #, c-format
 msgid ""
 "<b>size</b>: scroll, <b>hardness</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
 
-#: ../src/develop/masks/brush.c:3226
+#: ../src/develop/masks/brush.c:3223
 msgid "<b>size</b>: scroll"
 msgstr ""
 
 #: ../src/develop/masks/circle.c:137 ../src/develop/masks/circle.c:181
 #: ../src/develop/masks/ellipse.c:470 ../src/develop/masks/ellipse.c:531
-#: ../src/develop/masks/path.c:1189
+#: ../src/develop/masks/path.c:1187
 #, c-format
 msgid "feather size: %3.2f%%"
 msgstr ""
 
-#: ../src/develop/masks/circle.c:1465
+#: ../src/develop/masks/circle.c:1462
 msgid "[CIRCLE] change size"
 msgstr ""
 
-#: ../src/develop/masks/circle.c:1467
+#: ../src/develop/masks/circle.c:1464
 msgid "[CIRCLE] change feather size"
 msgstr ""
 
-#: ../src/develop/masks/circle.c:1469
+#: ../src/develop/masks/circle.c:1466
 msgid "[CIRCLE] change opacity"
 msgstr ""
 
-#: ../src/develop/masks/circle.c:1482
+#: ../src/develop/masks/circle.c:1479
 #, c-format
 msgid "circle #%d"
 msgstr ""
 
-#: ../src/develop/masks/circle.c:1493 ../src/develop/masks/path.c:3411
+#: ../src/develop/masks/circle.c:1490 ../src/develop/masks/path.c:3406
 #, c-format
 msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
@@ -8561,43 +8574,43 @@ msgstr ""
 msgid "rotation: %3.f°"
 msgstr ""
 
-#: ../src/develop/masks/ellipse.c:2017
+#: ../src/develop/masks/ellipse.c:2015
 msgid "[ELLIPSE] change size"
 msgstr ""
 
-#: ../src/develop/masks/ellipse.c:2020
+#: ../src/develop/masks/ellipse.c:2018
 msgid "[ELLIPSE] change feather size"
 msgstr ""
 
-#: ../src/develop/masks/ellipse.c:2023 ../src/develop/masks/ellipse.c:2032
+#: ../src/develop/masks/ellipse.c:2021 ../src/develop/masks/ellipse.c:2030
 msgid "[ELLIPSE] rotate shape"
 msgstr ""
 
-#: ../src/develop/masks/ellipse.c:2026
+#: ../src/develop/masks/ellipse.c:2024
 msgid "[ELLIPSE] change opacity"
 msgstr ""
 
-#: ../src/develop/masks/ellipse.c:2029
+#: ../src/develop/masks/ellipse.c:2027
 msgid "[ELLIPSE] switch feathering mode"
 msgstr ""
 
-#: ../src/develop/masks/ellipse.c:2039
+#: ../src/develop/masks/ellipse.c:2037
 #, c-format
 msgid "ellipse #%d"
 msgstr ""
 
-#: ../src/develop/masks/ellipse.c:2077
+#: ../src/develop/masks/ellipse.c:2075
 #, c-format
 msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
 "<b>rotation</b>: ctrl+shift+scroll, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
 
-#: ../src/develop/masks/ellipse.c:2081
+#: ../src/develop/masks/ellipse.c:2079
 msgid "<b>rotate</b>: ctrl+drag"
 msgstr ""
 
-#: ../src/develop/masks/ellipse.c:2084
+#: ../src/develop/masks/ellipse.c:2082
 #, c-format
 msgid ""
 "<b>feather mode</b>: shift+click, <b>rotate</b>: ctrl+drag\n"
@@ -8615,46 +8628,46 @@ msgstr ""
 msgid "curvature: %3.2f%%"
 msgstr ""
 
-#: ../src/develop/masks/gradient.c:1515
+#: ../src/develop/masks/gradient.c:1514
 msgid "[GRADIENT on pivot] rotate shape"
 msgstr ""
 
-#: ../src/develop/masks/gradient.c:1517
+#: ../src/develop/masks/gradient.c:1516
 msgid "[GRADIENT creation] set rotation"
 msgstr ""
 
-#: ../src/develop/masks/gradient.c:1519
+#: ../src/develop/masks/gradient.c:1518
 msgid "[GRADIENT] change curvature"
 msgstr ""
 
-#: ../src/develop/masks/gradient.c:1521
+#: ../src/develop/masks/gradient.c:1520
 msgid "[GRADIENT] change compression"
 msgstr ""
 
-#: ../src/develop/masks/gradient.c:1523
+#: ../src/develop/masks/gradient.c:1522
 msgid "[GRADIENT] change opacity"
 msgstr ""
 
-#: ../src/develop/masks/gradient.c:1536
+#: ../src/develop/masks/gradient.c:1535
 #, c-format
 msgid "gradient #%d"
 msgstr ""
 
-#: ../src/develop/masks/gradient.c:1547
+#: ../src/develop/masks/gradient.c:1546
 #, c-format
 msgid ""
 "<b>curvature</b>: scroll, <b>compression</b>: shift+scroll\n"
 "<b>rotation</b>: click+drag, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
 
-#: ../src/develop/masks/gradient.c:1552
+#: ../src/develop/masks/gradient.c:1551
 #, c-format
 msgid ""
 "<b>curvature</b>: scroll, <b>compression</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
 
-#: ../src/develop/masks/gradient.c:1555
+#: ../src/develop/masks/gradient.c:1554
 msgid "<b>rotate</b>: drag"
 msgstr ""
 
@@ -8694,76 +8707,76 @@ msgstr ""
 msgid "masks can not contain themselves"
 msgstr ""
 
-#: ../src/develop/masks/path.c:3354
+#: ../src/develop/masks/path.c:3349
 msgid "[PATH creation] add a smooth node"
 msgstr ""
 
-#: ../src/develop/masks/path.c:3356
+#: ../src/develop/masks/path.c:3351
 msgid "[PATH creation] add a sharp node"
 msgstr ""
 
-#: ../src/develop/masks/path.c:3358
+#: ../src/develop/masks/path.c:3353
 msgid "[PATH creation] terminate path creation"
 msgstr ""
 
-#: ../src/develop/masks/path.c:3360
+#: ../src/develop/masks/path.c:3355
 msgid "[PATH on node] switch between smooth/sharp node"
 msgstr ""
 
-#: ../src/develop/masks/path.c:3362
+#: ../src/develop/masks/path.c:3357
 msgid "[PATH on node] remove the node"
 msgstr ""
 
-#: ../src/develop/masks/path.c:3364
+#: ../src/develop/masks/path.c:3359
 msgid "[PATH on feather] reset curvature"
 msgstr ""
 
-#: ../src/develop/masks/path.c:3366
+#: ../src/develop/masks/path.c:3361
 msgid "[PATH on segment] add node"
 msgstr ""
 
-#: ../src/develop/masks/path.c:3368
+#: ../src/develop/masks/path.c:3363
 msgid "[PATH] change size"
 msgstr ""
 
-#: ../src/develop/masks/path.c:3370
+#: ../src/develop/masks/path.c:3365
 msgid "[PATH] change feather size"
 msgstr ""
 
-#: ../src/develop/masks/path.c:3372
+#: ../src/develop/masks/path.c:3367
 msgid "[PATH] change opacity"
 msgstr ""
 
-#: ../src/develop/masks/path.c:3384
+#: ../src/develop/masks/path.c:3379
 #, c-format
 msgid "path #%d"
 msgstr ""
 
-#: ../src/develop/masks/path.c:3394
+#: ../src/develop/masks/path.c:3389
 msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>: ctrl+click\n"
 "<b>cancel</b>: right-click"
 msgstr ""
 
-#: ../src/develop/masks/path.c:3397
+#: ../src/develop/masks/path.c:3392
 msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>: ctrl+click\n"
 "<b>finish path</b>: right-click"
 msgstr ""
 
-#: ../src/develop/masks/path.c:3400
+#: ../src/develop/masks/path.c:3395
 msgid ""
 "<b>move node</b>: drag, <b>remove node</b>: right-click\n"
 "<b>switch smooth/sharp mode</b>: ctrl+click"
 msgstr ""
 
-#: ../src/develop/masks/path.c:3404
+#: ../src/develop/masks/path.c:3399
 msgid ""
 "<b>node curvature</b>: drag\n"
 "<b>reset curvature</b>: right-click"
 msgstr ""
 
-#: ../src/develop/masks/path.c:3408
+#: ../src/develop/masks/path.c:3403
 msgid ""
 "<b>move segment</b>: drag\n"
 "<b>add node</b>: ctrl+click"
@@ -8789,7 +8802,7 @@ msgid ""
 "likely introduced by applying a preset, style or history copy&paste"
 msgstr ""
 
-#: ../src/develop/pixelpipe_hb.c:2700
+#: ../src/develop/pixelpipe_hb.c:2696
 msgid ""
 "OpenCL errors encountered; disabling OpenCL for this session! some possible "
 "causes:\n"
@@ -8801,7 +8814,7 @@ msgid ""
 "  - too small headroom settings while using 'use all device memory'."
 msgstr ""
 
-#: ../src/develop/pixelpipe_hb.c:2850
+#: ../src/develop/pixelpipe_hb.c:2846
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -9198,7 +9211,7 @@ msgstr ""
 msgid "disabled defaults"
 msgstr ""
 
-#: ../src/gui/accelerators.c:96 ../src/views/view.c:1375
+#: ../src/gui/accelerators.c:96 ../src/views/view.c:1372
 msgid "scroll"
 msgstr ""
 
@@ -9238,15 +9251,15 @@ msgstr ""
 msgid "pgupdown"
 msgstr ""
 
-#: ../src/gui/accelerators.c:112 ../src/views/view.c:1357
+#: ../src/gui/accelerators.c:112 ../src/views/view.c:1354
 msgid "shift"
 msgstr ""
 
-#: ../src/gui/accelerators.c:113 ../src/views/view.c:1359
+#: ../src/gui/accelerators.c:113 ../src/views/view.c:1356
 msgid "ctrl"
 msgstr ""
 
-#: ../src/gui/accelerators.c:114 ../src/views/view.c:1361
+#: ../src/gui/accelerators.c:114 ../src/views/view.c:1358
 msgid "alt"
 msgstr ""
 
@@ -9755,12 +9768,12 @@ msgid ""
 msgstr ""
 
 #. Setting up the cell renderers
-#: ../src/gui/accelerators.c:2753 ../src/views/view.c:1568
+#: ../src/gui/accelerators.c:2753 ../src/views/view.c:1565
 msgid "shortcut"
 msgstr ""
 
 #: ../src/gui/accelerators.c:2755 ../src/gui/accelerators.c:2846
-#: ../src/views/view.c:1570
+#: ../src/views/view.c:1567
 msgid "action"
 msgstr ""
 
@@ -10948,7 +10961,7 @@ msgstr ""
 #: ../src/iop/exposure.c:319 ../src/iop/exposure.c:323
 #: ../src/iop/exposure.c:326 ../src/iop/filmicrgb.c:3311
 #: ../src/iop/filmicrgb.c:3315 ../src/iop/filmicrgb.c:3318
-#: ../src/iop/sigmoid.c:195 ../src/iop/sigmoid.c:198 ../src/iop/sigmoid.c:200
+#: ../src/iop/sigmoid.c:240 ../src/iop/sigmoid.c:243 ../src/iop/sigmoid.c:245
 msgid "scene-referred default"
 msgstr ""
 
@@ -11815,7 +11828,7 @@ msgstr ""
 #: ../src/iop/hazeremoval.c:115 ../src/iop/lens.cc:263 ../src/iop/lens.cc:265
 #: ../src/iop/liquify.c:298 ../src/iop/liquify.c:300 ../src/iop/primaries.c:81
 #: ../src/iop/primaries.c:83 ../src/iop/retouch.c:210 ../src/iop/retouch.c:212
-#: ../src/iop/sigmoid.c:164 ../src/iop/splittoning.c:106
+#: ../src/iop/sigmoid.c:209 ../src/iop/splittoning.c:106
 #: ../src/iop/splittoning.c:108 ../src/iop/spots.c:70 ../src/iop/spots.c:72
 #: ../src/iop/toneequal.c:325 ../src/iop/velvia.c:99 ../src/iop/velvia.c:101
 msgid "linear, RGB, scene-referred"
@@ -12016,7 +12029,7 @@ msgstr ""
 #: ../src/iop/exposure.c:131 ../src/iop/filmicrgb.c:352
 #: ../src/iop/graduatednd.c:146 ../src/iop/negadoctor.c:146
 #: ../src/iop/rgbcurve.c:145 ../src/iop/rgblevels.c:125 ../src/iop/shadhi.c:144
-#: ../src/iop/sigmoid.c:164 ../src/iop/tonecurve.c:184
+#: ../src/iop/sigmoid.c:209 ../src/iop/tonecurve.c:184
 #: ../src/iop/toneequal.c:324
 msgid "corrective and creative"
 msgstr ""
@@ -12295,7 +12308,7 @@ msgstr ""
 #: ../src/iop/channelmixer.c:142 ../src/iop/lut3d.c:143
 #: ../src/iop/negadoctor.c:147 ../src/iop/profile_gamma.c:103
 #: ../src/iop/rgbcurve.c:146 ../src/iop/rgbcurve.c:148
-#: ../src/iop/rgblevels.c:126 ../src/iop/sigmoid.c:165 ../src/iop/soften.c:104
+#: ../src/iop/rgblevels.c:126 ../src/iop/sigmoid.c:210 ../src/iop/soften.c:104
 #: ../src/iop/soften.c:106
 msgid "linear, RGB, display-referred"
 msgstr ""
@@ -12305,7 +12318,7 @@ msgstr ""
 #: ../src/iop/dither.c:121 ../src/iop/filmicrgb.c:354
 #: ../src/iop/graduatednd.c:148 ../src/iop/negadoctor.c:148
 #: ../src/iop/profile_gamma.c:104 ../src/iop/rgbcurve.c:147
-#: ../src/iop/rgblevels.c:127 ../src/iop/sigmoid.c:165
+#: ../src/iop/rgblevels.c:127 ../src/iop/sigmoid.c:210
 #: ../src/iop/vignette.c:122 ../src/iop/watermark.c:424
 msgid "non-linear, RGB"
 msgstr ""
@@ -18107,40 +18120,40 @@ msgstr ""
 msgid "threshold to activate sharpen"
 msgstr ""
 
-#: ../src/iop/sigmoid.c:150
+#: ../src/iop/sigmoid.c:195
 msgid "sigmoid"
 msgstr ""
 
-#: ../src/iop/sigmoid.c:155
+#: ../src/iop/sigmoid.c:200
 msgid "tone mapping|view transform|display transform"
 msgstr ""
 
-#: ../src/iop/sigmoid.c:161
+#: ../src/iop/sigmoid.c:206
 msgid ""
 "apply a view transform to make a image displayable\n"
 "on a screen or print. uses a robust and smooth\n"
 "tone curve with optional color preservation methods."
 msgstr ""
 
-#: ../src/iop/sigmoid.c:213
+#: ../src/iop/sigmoid.c:258
 msgid "neutral gray"
 msgstr ""
 
-#: ../src/iop/sigmoid.c:219
+#: ../src/iop/sigmoid.c:264
 msgid "ACES 100-nit like"
 msgstr ""
 
-#: ../src/iop/sigmoid.c:225
+#: ../src/iop/sigmoid.c:270
 msgid "Reinhard"
 msgstr ""
 
-#: ../src/iop/sigmoid.c:791
+#: ../src/iop/sigmoid.c:917
 msgid ""
 "compression of the applied curve\n"
 "implicitly defines the supported input dynamic range"
 msgstr ""
 
-#: ../src/iop/sigmoid.c:794
+#: ../src/iop/sigmoid.c:920
 msgid ""
 "shift the compression towards shadows or highlights.\n"
 "negative values increase contrast in shadows.\n"
@@ -18148,63 +18161,67 @@ msgid ""
 "the opposite end will see a reduction in contrast."
 msgstr ""
 
-#: ../src/iop/sigmoid.c:803
+#: ../src/iop/sigmoid.c:929
 msgid ""
 "optional correction of the hue twist introduced by\n"
 "the per-channel processing method."
 msgstr ""
 
-#: ../src/iop/sigmoid.c:810 ../src/iop/sigmoid.c:814
+#: ../src/iop/sigmoid.c:936 ../src/iop/sigmoid.c:940
 msgid "primaries"
 msgstr ""
 
-#: ../src/iop/sigmoid.c:811
+#: ../src/iop/sigmoid.c:937
 msgid "set custom primaries"
 msgstr ""
 
-#: ../src/iop/sigmoid.c:833
-msgid "red primary inset"
+#: ../src/iop/sigmoid.c:943
+msgid "primaries to use as the base for below adjustments"
 msgstr ""
 
-#: ../src/iop/sigmoid.c:834
-msgid "red primary rotation"
+#: ../src/iop/sigmoid.c:962
+msgid "attenuate the purity of the red primary"
 msgstr ""
 
-#: ../src/iop/sigmoid.c:835
-msgid "green primary inset"
+#: ../src/iop/sigmoid.c:963
+msgid "rotate the red primary"
 msgstr ""
 
-#: ../src/iop/sigmoid.c:836
-msgid "green primary rotation"
+#: ../src/iop/sigmoid.c:964
+msgid "attenuate the purity of the green primary"
 msgstr ""
 
-#: ../src/iop/sigmoid.c:837
-msgid "blue primary inset"
+#: ../src/iop/sigmoid.c:965
+msgid "rotate the green primary"
 msgstr ""
 
-#: ../src/iop/sigmoid.c:838
-msgid "blue primary rotation"
+#: ../src/iop/sigmoid.c:966
+msgid "attenuate the purity of the blue primary"
 msgstr ""
 
-#: ../src/iop/sigmoid.c:845
+#: ../src/iop/sigmoid.c:967
+msgid "rotate the blue primary"
+msgstr ""
+
+#: ../src/iop/sigmoid.c:974
 msgid "recover some of the original purity after the inset"
 msgstr ""
 
-#: ../src/iop/sigmoid.c:849
+#: ../src/iop/sigmoid.c:978
 msgid "display luminance"
 msgstr ""
 
-#: ../src/iop/sigmoid.c:850
+#: ../src/iop/sigmoid.c:979
 msgid "set display black/white targets"
 msgstr ""
 
-#: ../src/iop/sigmoid.c:858
+#: ../src/iop/sigmoid.c:987
 msgid ""
 "the black luminance of the target display or print.\n"
 "can be used creatively for a faded look."
 msgstr ""
 
-#: ../src/iop/sigmoid.c:863
+#: ../src/iop/sigmoid.c:992
 msgid ""
 "the white luminance of the target display or print.\n"
 "can be used creatively for a faded look or blowing out whites earlier."
@@ -23723,47 +23740,47 @@ msgstr ""
 msgid "no camera with tethering support available for use..."
 msgstr ""
 
-#: ../src/views/view.c:1366
+#: ../src/views/view.c:1363
 msgid "left click"
 msgstr ""
 
-#: ../src/views/view.c:1369
+#: ../src/views/view.c:1366
 msgid "right click"
 msgstr ""
 
-#: ../src/views/view.c:1372
+#: ../src/views/view.c:1369
 msgid "middle click"
 msgstr ""
 
-#: ../src/views/view.c:1378
+#: ../src/views/view.c:1375
 msgid "left double-click"
 msgstr ""
 
-#: ../src/views/view.c:1381
+#: ../src/views/view.c:1378
 msgid "right double-click"
 msgstr ""
 
-#: ../src/views/view.c:1384
+#: ../src/views/view.c:1381
 msgid "drag and drop"
 msgstr ""
 
-#: ../src/views/view.c:1387
+#: ../src/views/view.c:1384
 msgid "left click+drag"
 msgstr ""
 
-#: ../src/views/view.c:1390
+#: ../src/views/view.c:1387
 msgid "right click+drag"
 msgstr ""
 
-#: ../src/views/view.c:1412
+#: ../src/views/view.c:1409
 msgid "darktable - accels window"
 msgstr ""
 
-#: ../src/views/view.c:1461
+#: ../src/views/view.c:1458
 msgid "switch to a classic window which will stay open after key release"
 msgstr ""
 
 #. we add the mouse actions too
-#: ../src/views/view.c:1528
+#: ../src/views/view.c:1525
 msgid "mouse actions"
 msgstr ""
