@@ -1794,16 +1794,17 @@ static gboolean _drawable_button_press_callback(GtkWidget *widget,
   return TRUE;
 }
 
-static void _color_harmony_button_on_off(const dt_color_harmony_type_t on,
-                                         const dt_color_harmony_type_t off,
-                                         dt_lib_histogram_t *d)
+static void _color_harmony_button_on(dt_lib_histogram_t *d)
 {
-  if(off != DT_COLOR_HARMONY_NONE)
+  const dt_color_harmony_type_t on = d->harmony_guide.type;
+
+  for(dt_color_harmony_type_t c = DT_COLOR_HARMONY_MONOCHROMATIC;
+      c < DT_COLOR_HARMONY_N;
+      c++)
+  {
     gtk_toggle_button_set_active
-      (GTK_TOGGLE_BUTTON(d->color_harmony_button[off - 1]), FALSE);
-  if(on != DT_COLOR_HARMONY_NONE)
-    gtk_toggle_button_set_active
-      (GTK_TOGGLE_BUTTON(d->color_harmony_button[on - 1]), TRUE);
+      (GTK_TOGGLE_BUTTON(d->color_harmony_button[c-1]), c == on);
+  }
 }
 
 static void _color_harmony_changed(dt_lib_histogram_t *d);
@@ -1861,7 +1862,7 @@ static gboolean _eventbox_scroll_callback(GtkWidget *widget,
           d->harmony_guide.type = DT_COLOR_HARMONY_N - 1;
         else
           d->harmony_guide.type = (d->color_harmony_old + delta_y) % DT_COLOR_HARMONY_N;
-        _color_harmony_button_on_off(d->harmony_guide.type, d->color_harmony_old, d);
+        _color_harmony_button_on(d);
         d->color_harmony_old = d->harmony_guide.type;
       }
       else
@@ -2141,6 +2142,7 @@ static void _update_color_harmony_gui(dt_lib_module_t *self)
     dt_image_cache_read_release(darktable.image_cache, img);
   }
 
+  _color_harmony_button_on(d);
   _color_harmony_changed(d);
 }
 
@@ -2218,7 +2220,7 @@ static gboolean _color_harmony_clicked(GtkWidget *button,
         d->harmony_guide.type = d->color_harmony_old = i + 1;
         break;
       }
-    _color_harmony_button_on_off(pos + 1, d->color_harmony_old, d);
+    _color_harmony_button_on(d);
   }
   _color_harmony_changed_record(d);
   return TRUE;
@@ -2416,7 +2418,7 @@ static void _lib_histogram_cycle_harmony_callback(dt_action_t *action)
   dt_lib_module_t *self = darktable.lib->proxy.histogram.module;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
   d->harmony_guide.type = (d->color_harmony_old + 1) % DT_COLOR_HARMONY_N;
-  _color_harmony_button_on_off(d->harmony_guide.type, d->color_harmony_old, d);
+  _color_harmony_button_on(d);
   d->color_harmony_old = d->harmony_guide.type;
   _color_harmony_changed_record(d);
 }
@@ -2742,8 +2744,7 @@ void gui_init(dt_lib_module_t *self)
     gtk_box_pack_start(GTK_BOX(d->color_harmony_box), rb, FALSE, FALSE, 0);
     d->color_harmony_button[i-1] = rb;
   }
-  _color_harmony_button_on_off(d->harmony_guide.type,
-                               DT_COLOR_HARMONY_NONE, d);
+  _color_harmony_button_on(d);
 
   dt_action_register(dark, N_("cycle color harmonies"),
                      _lib_histogram_cycle_harmony_callback, 0, 0);
