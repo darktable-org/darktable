@@ -1773,9 +1773,9 @@ void dt_culling_update_active_images_list(dt_culling_t *table)
 void dt_culling_full_redraw(dt_culling_t *table, const gboolean force)
 {
   if(!gtk_widget_get_visible(table->widget)) return;
-  const double start = dt_get_wtime();
   // first, we see if we need to do something
   if(!_compute_sizes(table, force)) return;
+  const double start = dt_get_debug_wtime();
 
   // we store first image zoom and pos for new ones
   float old_zx = 0.0;
