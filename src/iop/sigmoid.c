@@ -47,8 +47,6 @@ typedef enum dt_iop_sigmoid_methods_type_t
 } dt_iop_sigmoid_methods_type_t;
 
 
-// NOTE: code relies on the order of the enum values and also on the fact that
-// they don't have gaps.
 typedef enum dt_iop_sigmoid_base_primaries_t
 {
   DT_SIGMOID_WORK_PROFILE = 0, // $DESCRIPTION: "work profile"
@@ -467,7 +465,7 @@ static void _calculate_adjusted_primaries(const dt_iop_sigmoid_data_t *const mod
   dt_colormatrix_mul(rendering_to_pipe, rendering_to_base, base_to_pipe);
 }
 
-static dt_colorspaces_color_profile_type_t _get_base_profile_type(dt_iop_sigmoid_base_primaries_t base_primaries)
+static dt_colorspaces_color_profile_type_t _get_base_profile_type(const dt_iop_sigmoid_base_primaries_t base_primaries)
 {
   if(base_primaries == DT_SIGMOID_SRGB)
     return DT_COLORSPACE_SRGB;
@@ -887,7 +885,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
   if(!w || w == g->color_processing_list)
   {
-    int is_per_channel = p->color_processing == DT_SIGMOID_METHOD_PER_CHANNEL;
+    const gboolean is_per_channel = p->color_processing == DT_SIGMOID_METHOD_PER_CHANNEL;
     gtk_widget_set_visible(g->hue_preservation_slider, is_per_channel);
     gtk_widget_set_visible(g->primaries_section.expander, is_per_channel);
   }
