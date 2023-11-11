@@ -52,7 +52,8 @@ typedef enum dt_iop_sigmoid_base_primaries_t
   DT_SIGMOID_WORK_PROFILE = 0, // $DESCRIPTION: "work profile"
   DT_SIGMOID_REC2020 = 1, // $DESCRIPTION: "Rec2020"
   DT_SIGMOID_DISPLAY_P3 = 2, // $DESCRIPTION: "Display P3"
-  DT_SIGMOID_SRGB = 3, // $DESCRIPTION: "sRGB"
+  DT_SIGMOID_ADOBE_RGB = 3, // $DESCRIPTION: "Adobe RGB (compatible)"
+  DT_SIGMOID_SRGB = 4, // $DESCRIPTION: "sRGB"
 } dt_iop_sigmoid_base_primaries_t;
 
 
@@ -472,6 +473,9 @@ static dt_colorspaces_color_profile_type_t _get_base_profile_type(const dt_iop_s
 
   if(base_primaries == DT_SIGMOID_DISPLAY_P3)
     return DT_COLORSPACE_DISPLAY_P3;
+
+  if(base_primaries == DT_SIGMOID_ADOBE_RGB)
+    return DT_COLORSPACE_ADOBERGB;
 
   return DT_COLORSPACE_LIN_REC2020;
 }
