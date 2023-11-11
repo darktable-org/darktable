@@ -184,7 +184,8 @@ sigmoid_loglogistic_per_channel (read_only image2d_t in,
                                  const float contrast_power,
                                  const float skew_power,
                                  const float hue_preservation,
-                                 constant const float *const pipe_to_rendering,
+                                 constant const float *const pipe_to_base,
+                                 constant const float *const base_to_rendering,
                                  constant const float *const rendering_to_pipe)
 {
   const unsigned int x = get_global_id(0);
@@ -195,11 +196,13 @@ sigmoid_loglogistic_per_channel (read_only image2d_t in,
   float4 i = read_imagef(in, sampleri, (int2)(x, y));
   float alpha = i.w;
 
+  i = matrix_product_float4(i, pipe_to_base);
+
   // Force negative values to zero
   i = _desaturate_negative_values(i);
 
   // Convert to rendering primaries
-  i = matrix_product_float4(i, pipe_to_rendering);
+  i = matrix_product_float4(i, base_to_rendering);
   float pix_array[3] = {i.x, i.y, i.z};
 
   i = _generalized_loglogistic_sigmoid_vector(i, white_target, paper_exp, film_fog, contrast_power, skew_power);
