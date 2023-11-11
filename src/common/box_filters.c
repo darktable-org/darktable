@@ -1129,7 +1129,7 @@ void dt_box_mean_horizontal(float *const restrict buf,
 {
   if(ch == (4|BOXFILTER_KAHAN_SUM))
   {
-    float *const restrict scratch = user_scratch ? user_scratch : dt_alloc_align_float(4*width);
+    float *const restrict scratch = user_scratch ? user_scratch : dt_alloc_align_float(4 * dt_round_size(width, 16));
     if(scratch)
     {
       _blur_horizontal_4ch_Kahan(buf, width, radius, scratch);
@@ -1141,7 +1141,7 @@ void dt_box_mean_horizontal(float *const restrict buf,
   }
   else if(ch == (9|BOXFILTER_KAHAN_SUM))
   {
-    float *const restrict scratch = user_scratch ? user_scratch : dt_alloc_align_float(9*width);
+    float *const restrict scratch = user_scratch ? user_scratch : dt_alloc_align_float(9 * dt_round_size(width, 16));
     if(scratch)
     {
       _blur_horizontal_Nch_Kahan(9, buf, width, radius, scratch);
