@@ -468,25 +468,25 @@ static int _guided_filter_cl_impl(int devid,
 {
   const float eps = sqrt_eps * sqrt_eps; // this is the regularization parameter of the original papers
 
-  void *temp1 = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
-  void *temp2 = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
-  void *imgg_mean_r = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
-  void *imgg_mean_g = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
-  void *imgg_mean_b = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
-  void *img_mean = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
-  void *cov_imgg_img_r = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
-  void *cov_imgg_img_g = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
-  void *cov_imgg_img_b = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
-  void *var_imgg_rr = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
-  void *var_imgg_gg = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
-  void *var_imgg_bb = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
-  void *var_imgg_rg = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
-  void *var_imgg_rb = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
-  void *var_imgg_gb = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
-  void *a_r = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
-  void *a_g = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
-  void *a_b = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
-  void *b = temp2;
+  cl_mem temp1 = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem temp2 = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem imgg_mean_r = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem imgg_mean_g = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem imgg_mean_b = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem img_mean = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem cov_imgg_img_r = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem cov_imgg_img_g = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem cov_imgg_img_b = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem var_imgg_rr = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem var_imgg_gg = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem var_imgg_bb = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem var_imgg_rg = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem var_imgg_rb = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem var_imgg_gb = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem a_r = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem a_g = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem a_b = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem b = temp2;
 
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   if(temp1 == NULL || temp2 == NULL ||                                                        //
@@ -500,77 +500,52 @@ static int _guided_filter_cl_impl(int devid,
   }
 
   err = _cl_split_rgb(devid, width, height, guide, imgg_mean_r, imgg_mean_g, imgg_mean_b, guide_weight);
-  if(err != CL_SUCCESS) goto error;
+  if(err == CL_SUCCESS) err = _cl_box_mean(devid, width, height, w, in,          img_mean,    temp1);
+  if(err == CL_SUCCESS) err = _cl_box_mean(devid, width, height, w, imgg_mean_r, imgg_mean_r, temp1);
+  if(err == CL_SUCCESS) err = _cl_box_mean(devid, width, height, w, imgg_mean_g, imgg_mean_g, temp1);
+  if(err == CL_SUCCESS) err = _cl_box_mean(devid, width, height, w, imgg_mean_b, imgg_mean_b, temp1);
 
-  err = _cl_box_mean(devid, width, height, w, in, img_mean, temp1);
-  if(err != CL_SUCCESS) goto error;
-  err = _cl_box_mean(devid, width, height, w, imgg_mean_r, imgg_mean_r, temp1);
-  if(err != CL_SUCCESS) goto error;
-  err = _cl_box_mean(devid, width, height, w, imgg_mean_g, imgg_mean_g, temp1);
-  if(err != CL_SUCCESS) goto error;
-  err = _cl_box_mean(devid, width, height, w, imgg_mean_b, imgg_mean_b, temp1);
-  if(err != CL_SUCCESS) goto error;
-
-  err = _cl_covariances(devid, width, height, guide, in, cov_imgg_img_r, cov_imgg_img_g, cov_imgg_img_b,
+  if(err == CL_SUCCESS) err = _cl_covariances(devid, width, height, guide, in, cov_imgg_img_r, cov_imgg_img_g, cov_imgg_img_b,
                        guide_weight);
-  if(err != CL_SUCCESS) goto error;
-
-  err = _cl_variances(devid, width, height, guide, var_imgg_rr, var_imgg_rg, var_imgg_rb, var_imgg_gg, var_imgg_gb,
+  if(err == CL_SUCCESS) err = _cl_variances(devid, width, height, guide, var_imgg_rr, var_imgg_rg, var_imgg_rb, var_imgg_gg, var_imgg_gb,
                      var_imgg_bb, guide_weight);
-  if(err != CL_SUCCESS) goto error;
 
-  err = _cl_box_mean(devid, width, height, w, cov_imgg_img_r, temp2, temp1);
-  if(err != CL_SUCCESS) goto error;
-  err = _cl_update_covariance(devid, width, height, temp2, cov_imgg_img_r, imgg_mean_r, img_mean, 0.f);
-  if(err != CL_SUCCESS) goto error;
-  err = _cl_box_mean(devid, width, height, w, cov_imgg_img_g, temp2, temp1);
-  if(err != CL_SUCCESS) goto error;
-  err = _cl_update_covariance(devid, width, height, temp2, cov_imgg_img_g, imgg_mean_g, img_mean, 0.f);
-  if(err != CL_SUCCESS) goto error;
-  err = _cl_box_mean(devid, width, height, w, cov_imgg_img_b, temp2, temp1);
-  if(err != CL_SUCCESS) goto error;
-  err = _cl_update_covariance(devid, width, height, temp2, cov_imgg_img_b, imgg_mean_b, img_mean, 0.f);
-  if(err != CL_SUCCESS) goto error;
-  err = _cl_box_mean(devid, width, height, w, var_imgg_rr, temp2, temp1);
-  if(err != CL_SUCCESS) goto error;
-  err = _cl_update_covariance(devid, width, height, temp2, var_imgg_rr, imgg_mean_r, imgg_mean_r, eps);
-  if(err != CL_SUCCESS) goto error;
-  err = _cl_box_mean(devid, width, height, w, var_imgg_rg, temp2, temp1);
-  if(err != CL_SUCCESS) goto error;
-  err = _cl_update_covariance(devid, width, height, temp2, var_imgg_rg, imgg_mean_r, imgg_mean_g, 0.f);
-  if(err != CL_SUCCESS) goto error;
-  err = _cl_box_mean(devid, width, height, w, var_imgg_rb, temp2, temp1);
-  if(err != CL_SUCCESS) goto error;
-  err = _cl_update_covariance(devid, width, height, temp2, var_imgg_rb, imgg_mean_r, imgg_mean_b, 0.f);
-  if(err != CL_SUCCESS) goto error;
-  err = _cl_box_mean(devid, width, height, w, var_imgg_gg, temp2, temp1);
-  if(err != CL_SUCCESS) goto error;
-  err = _cl_update_covariance(devid, width, height, temp2, var_imgg_gg, imgg_mean_g, imgg_mean_g, eps);
-  if(err != CL_SUCCESS) goto error;
-  err = _cl_box_mean(devid, width, height, w, var_imgg_gb, temp2, temp1);
-  if(err != CL_SUCCESS) goto error;
-  err = _cl_update_covariance(devid, width, height, temp2, var_imgg_gb, imgg_mean_g, imgg_mean_b, 0.f);
-  if(err != CL_SUCCESS) goto error;
-  err = _cl_box_mean(devid, width, height, w, var_imgg_bb, temp2, temp1);
-  if(err != CL_SUCCESS) goto error;
-  err = _cl_update_covariance(devid, width, height, temp2, var_imgg_bb, imgg_mean_b, imgg_mean_b, eps);
-  if(err != CL_SUCCESS) goto error;
+  if(err == CL_SUCCESS) err = _cl_box_mean(devid, width, height, w, cov_imgg_img_r, temp2, temp1);
+  if(err == CL_SUCCESS) err = _cl_update_covariance(devid, width, height, temp2, cov_imgg_img_r, imgg_mean_r, img_mean, 0.f);
 
-  err = _cl_solve(devid, width, height, img_mean, imgg_mean_r, imgg_mean_g, imgg_mean_b, cov_imgg_img_r,
+  if(err == CL_SUCCESS) err = _cl_box_mean(devid, width, height, w, cov_imgg_img_g, temp2, temp1);
+  if(err == CL_SUCCESS) err = _cl_update_covariance(devid, width, height, temp2, cov_imgg_img_g, imgg_mean_g, img_mean, 0.f);
+
+  if(err == CL_SUCCESS) err = _cl_box_mean(devid, width, height, w, cov_imgg_img_b, temp2, temp1);
+  if(err == CL_SUCCESS) err = _cl_update_covariance(devid, width, height, temp2, cov_imgg_img_b, imgg_mean_b, img_mean, 0.f);
+
+  if(err == CL_SUCCESS) err = _cl_box_mean(devid, width, height, w, var_imgg_rr, temp2, temp1);
+  if(err == CL_SUCCESS) err = _cl_update_covariance(devid, width, height, temp2, var_imgg_rr, imgg_mean_r, imgg_mean_r, eps);
+
+  if(err == CL_SUCCESS) err = _cl_box_mean(devid, width, height, w, var_imgg_rg, temp2, temp1);
+  if(err == CL_SUCCESS) err = _cl_update_covariance(devid, width, height, temp2, var_imgg_rg, imgg_mean_r, imgg_mean_g, 0.f);
+
+  if(err == CL_SUCCESS) err = _cl_box_mean(devid, width, height, w, var_imgg_rb, temp2, temp1);
+  if(err == CL_SUCCESS) err = _cl_update_covariance(devid, width, height, temp2, var_imgg_rb, imgg_mean_r, imgg_mean_b, 0.f);
+
+  if(err == CL_SUCCESS) err = _cl_box_mean(devid, width, height, w, var_imgg_gg, temp2, temp1);
+  if(err == CL_SUCCESS) err = _cl_update_covariance(devid, width, height, temp2, var_imgg_gg, imgg_mean_g, imgg_mean_g, eps);
+
+  if(err == CL_SUCCESS) err = _cl_box_mean(devid, width, height, w, var_imgg_gb, temp2, temp1);
+  if(err == CL_SUCCESS) err = _cl_update_covariance(devid, width, height, temp2, var_imgg_gb, imgg_mean_g, imgg_mean_b, 0.f);
+
+  if(err == CL_SUCCESS) err = _cl_box_mean(devid, width, height, w, var_imgg_bb, temp2, temp1);
+  if(err == CL_SUCCESS) err = _cl_update_covariance(devid, width, height, temp2, var_imgg_bb, imgg_mean_b, imgg_mean_b, eps);
+
+  if(err == CL_SUCCESS) err = _cl_solve(devid, width, height, img_mean, imgg_mean_r, imgg_mean_g, imgg_mean_b, cov_imgg_img_r,
                  cov_imgg_img_g, cov_imgg_img_b, var_imgg_rr, var_imgg_rg, var_imgg_rb, var_imgg_gg, var_imgg_gb,
                  var_imgg_bb, a_r, a_g, a_b, b);
-  if(err != CL_SUCCESS) goto error;
 
-  err = _cl_box_mean(devid, width, height, w, a_r, a_r, temp1);
-  if(err != CL_SUCCESS) goto error;
-  err = _cl_box_mean(devid, width, height, w, a_g, a_g, temp1);
-  if(err != CL_SUCCESS) goto error;
-  err = _cl_box_mean(devid, width, height, w, a_b, a_b, temp1);
-  if(err != CL_SUCCESS) goto error;
-  err = _cl_box_mean(devid, width, height, w, b, b, temp1);
-  if(err != CL_SUCCESS) goto error;
-
-  err = _cl_generate_result(devid, width, height, guide, a_r, a_g, a_b, b, out, guide_weight, min, max);
+  if(err == CL_SUCCESS) err = _cl_box_mean(devid, width, height, w, a_r, a_r, temp1);
+  if(err == CL_SUCCESS) err = _cl_box_mean(devid, width, height, w, a_g, a_g, temp1);
+  if(err == CL_SUCCESS) err = _cl_box_mean(devid, width, height, w, a_b, a_b, temp1);
+  if(err == CL_SUCCESS) err = _cl_box_mean(devid, width, height, w, b, b, temp1);
+  if(err == CL_SUCCESS) err = _cl_generate_result(devid, width, height, guide, a_r, a_g, a_b, b, out, guide_weight, min, max);
 
 error:
   dt_opencl_release_mem_object(a_r);
