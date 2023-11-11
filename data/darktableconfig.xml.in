@@ -3600,7 +3600,7 @@
   <dtconfig>
     <name>plugins/map/geotagging_search_url</name>
     <type>string</type>
-    <default>https://nominatim.openstreetmap.org/search/%s?format=xml&amp;limit=%d&amp;polygon_text=1</default>
+    <default>https://nominatim.openstreetmap.org/search?q=%s&amp;format=xml&amp;limit=%d&amp;polygon_text=1</default>
     <shortdescription>Geotagging search URL</shortdescription>
     <longdescription>this can be changed when the default OpenStreetMap search URL is broken</longdescription>
   </dtconfig>
