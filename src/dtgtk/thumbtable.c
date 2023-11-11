@@ -2282,7 +2282,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table,
     // we update the scrollbars
     _thumbtable_update_scrollbars(table);
 
-    const double start = dt_get_wtime();
+    const double start = dt_get_debug_wtime();
     table->dragging = FALSE;
     sqlite3_stmt *stmt;
     dt_print(DT_DEBUG_LIGHTTABLE,

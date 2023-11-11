@@ -574,6 +574,11 @@ static inline double dt_get_wtime(void)
   return time.tv_sec - 1290608000 + (1.0 / 1000000.0) * time.tv_usec;
 }
 
+static inline double dt_get_debug_wtime(void)
+{
+  return darktable.unmuted ? dt_get_wtime() : 0.0;
+}
+
 static inline double dt_get_lap_time(double *time)
 {
   double prev = *time;

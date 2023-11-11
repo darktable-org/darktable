@@ -1146,12 +1146,11 @@ static int _gradient_get_mask(const dt_iop_module_t *const module,
                               int *posx,
                               int *posy)
 {
-  double start2 = 0.0;
-  if(darktable.unmuted & DT_DEBUG_PERF) start2 = dt_get_wtime();
+  double start2 = dt_get_debug_wtime();
   // we get the area
   if(!_gradient_get_area(module, piece, form, width, height, posx, posy)) return 0;
 
-  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
            "[masks %s] gradient area took %0.04f sec\n", form->name,
            dt_get_lap_time(&start2));
 
@@ -1188,7 +1187,7 @@ static int _gradient_get_mask(const dt_iop_module_t *const module,
       points[(j * gw + i) * 2 + 1] = (grid * j + py);
     }
 
-  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
            "[masks %s] gradient draw took %0.04f sec\n", form->name,
            dt_get_lap_time(&start2));
 
@@ -1202,7 +1201,7 @@ static int _gradient_get_mask(const dt_iop_module_t *const module,
     return 0;
   }
 
-  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
            "[masks %s] gradient transform took %0.04f sec\n", form->name,
            dt_get_lap_time(&start2));
 
@@ -1321,7 +1320,7 @@ static int _gradient_get_mask(const dt_iop_module_t *const module,
 
   dt_free_align(points);
 
-  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
            "[masks %s] gradient fill took %0.04f sec\n", form->name,
            dt_get_lap_time(&start2));
 
@@ -1335,8 +1334,8 @@ static int _gradient_get_mask_roi(const dt_iop_module_t *const module,
                                   const dt_iop_roi_t *roi,
                                   float *buffer)
 {
-  double start2 = 0.0;
-  if(darktable.unmuted & DT_DEBUG_PERF) start2 = dt_get_wtime();
+  double start2 = dt_get_debug_wtime();
+
   // we get the gradient values
   const dt_masks_point_gradient_t *gradient =
     (dt_masks_point_gradient_t *)(form->points->data);
@@ -1373,7 +1372,7 @@ static int _gradient_get_mask_roi(const dt_iop_module_t *const module,
       points[index * 2 + 1] = (grid * j + py) * iscale;
     }
 
-  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
            "[masks %s] gradient draw took %0.04f sec\n", form->name,
            dt_get_lap_time(&start2));
 
@@ -1387,7 +1386,7 @@ static int _gradient_get_mask_roi(const dt_iop_module_t *const module,
     return 0;
   }
 
-  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
            "[masks %s] gradient transform took %0.04f sec\n", form->name,
            dt_get_lap_time(&start2));
 
@@ -1501,7 +1500,7 @@ static int _gradient_get_mask_roi(const dt_iop_module_t *const module,
 
   dt_free_align(points);
 
-  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
            "[masks %s] gradient fill took %0.04f sec\n", form->name,
            dt_get_lap_time(&start2));
 

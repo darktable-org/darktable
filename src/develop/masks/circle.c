@@ -1099,8 +1099,7 @@ static int _circle_get_mask(const dt_iop_module_t *const restrict module,
                             int *posx,
                             int *posy)
 {
-  double start2 = 0.0;
-  if(darktable.unmuted & DT_DEBUG_PERF) start2 = dt_get_wtime();
+  double start2 = dt_get_debug_wtime();
 
   // we get the area
   if(!_circle_get_area(module, piece, form, width, height, posx, posy)) return 0;
@@ -1209,10 +1208,8 @@ static int _circle_get_mask_roi(const dt_iop_module_t *const restrict module,
                                 const dt_iop_roi_t *const roi,
                                 float *const restrict buffer)
 {
-  double start1 = 0.0;
+  double start1 = dt_get_debug_wtime();
   double start2 = start1;
-
-  if(darktable.unmuted & DT_DEBUG_PERF) start2 = start1 = dt_get_wtime();
 
   // we get the circle parameters
   dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)((form->points)->data);

@@ -711,10 +711,7 @@ dt_view_surface_value_t dt_view_image_get_surface(const dt_imgid_t imgid,
                                                   cairo_surface_t **surface,
                                                   const gboolean quality)
 {
-  double tt = 0;
-  if((darktable.unmuted & (DT_DEBUG_LIGHTTABLE | DT_DEBUG_PERF)) ==
-     (DT_DEBUG_LIGHTTABLE | DT_DEBUG_PERF))
-    tt = dt_get_wtime();
+  const double tt = dt_get_debug_wtime();
 
   dt_view_surface_value_t ret = DT_VIEW_SURFACE_KO;
   // if surface not null, clean it up

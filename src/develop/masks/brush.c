@@ -706,8 +706,7 @@ static int _brush_get_pts_border(dt_develop_t *dev,
                                  int *payload_count,
                                  const int source)
 {
-  double start2 = 0.0;
-  if(darktable.unmuted & DT_DEBUG_PERF) start2 = dt_get_wtime();
+  double start2 = dt_get_debug_wtime();
 
   const float wd = pipe->iwidth;
   const float ht = pipe->iheight;
@@ -789,7 +788,7 @@ static int _brush_get_pts_border(dt_develop_t *dev,
   int cw = 1;
   int start_stamp = 0;
 
-  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
            "[masks %s] brush_points init took %0.04f sec\n", form->name,
            dt_get_lap_time(&start2));
 
@@ -1086,7 +1085,7 @@ static int _brush_get_pts_border(dt_develop_t *dev,
         goto fail;
     }
 
-    dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF, 
+    dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
              "[masks %s] path_points end took %0.04f sec\n",
              form->name, dt_get_lap_time(&start2));
 
@@ -2958,9 +2957,8 @@ static int _brush_get_mask(const dt_iop_module_t *const module,
                            int *posy)
 {
   if(!module) return 0;
-  double start = 0.0;
-  double start2 = 0.0;
-  if(darktable.unmuted & DT_DEBUG_PERF) start = start2 = dt_get_wtime();
+  double start = dt_get_debug_wtime();
+  double start2 = start;
 
   // we get buffers for all points
   float *points = NULL, *border = NULL, *payload = NULL;
@@ -3084,9 +3082,8 @@ static int _brush_get_mask_roi(const dt_iop_module_t *const module,
                                float *buffer)
 {
   if(!module) return 0;
-  double start = 0.0;
-  double start2 = 0.0;
-  if(darktable.unmuted & DT_DEBUG_PERF) start = start2 = dt_get_wtime();
+  double start = dt_get_debug_wtime();
+  double start2 = start;
 
   const int px = roi->x;
   const int py = roi->y;
