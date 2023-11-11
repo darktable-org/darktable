@@ -522,10 +522,7 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
 void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
 {
   dt_pthread_mutex_lock(&pipe->busy_mutex);
-  double start = 0.0;
-  double defaults = 0.0;
-  if(darktable.unmuted & DT_DEBUG_PIPE)
-    start = dt_get_wtime();
+  double start = dt_get_debug_wtime();
 
   dev->cropping.exposer = NULL;
   dt_print_pipe(DT_DEBUG_PARAMS, "synch all modules with defaults",
@@ -543,8 +540,7 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
                          piece->module->default_blendop_params,
                          pipe, piece);
   }
-  if(darktable.unmuted & DT_DEBUG_PIPE)
-    defaults = dt_get_wtime();
+  double defaults = dt_get_debug_wtime();
 
   dt_print_pipe(DT_DEBUG_PARAMS, "synch all modules with history",
     pipe, NULL, NULL, NULL, "\n");

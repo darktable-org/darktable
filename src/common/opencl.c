@@ -895,7 +895,6 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
     goto end;
   }
 
-  double tstart, tend, tdiff;
   dt_loc_get_user_cache_dir(dtcache, PATH_MAX * sizeof(char));
 
   int len = MIN(strlen(fullname),1024 * sizeof(char));;
@@ -991,7 +990,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
 
   // now load all darktable cl kernels.
   // TODO: compile as a job?
-  tstart = dt_get_wtime();
+  double tstart = dt_get_debug_wtime();
   FILE *f = g_fopen(filename, "rb");
   if(f)
   {
@@ -1066,10 +1065,8 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
     }
 
     fclose(f);
-    tend = dt_get_wtime();
-    tdiff = tend - tstart;
     dt_print_nts(DT_DEBUG_OPENCL,
-                 "   KERNEL LOADING TIME:       %2.4lf sec\n", tdiff);
+                 "   KERNEL LOADING TIME:       %2.4lf sec\n", dt_get_lap_time(&tstart));
   }
   else
   {
