@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-11 15:15-0300\n"
-"PO-Revision-Date: 2023-11-11 15:16-0300\n"
+"POT-Creation-Date: 2023-11-12 05:04-0300\n"
+"PO-Revision-Date: 2023-11-12 05:04-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -3298,8 +3298,8 @@ msgstr "pivô (fulcrum) de contraste de cinza"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:412
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:585
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:106
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:221
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:116
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:237
 #: ../src/gui/guides.c:740 ../src/iop/basicadj.c:637 ../src/iop/bilat.c:468
 #: ../src/iop/colisa.c:298 ../src/iop/colorbalance.c:1922
 #: ../src/iop/colorbalance.c:1928 ../src/iop/filmic.c:1573
@@ -3337,12 +3337,14 @@ msgstr "recorte de gama"
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:304
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:202
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:312
 #: ../src/common/colorspaces.c:1410 ../src/common/colorspaces.c:1700
 #: ../src/libs/print_settings.c:1356
 msgid "sRGB"
 msgstr "sRGB"
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:305
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:311
 #: ../src/common/colorspaces.c:1421 ../src/common/colorspaces.c:1702
 #: ../src/libs/print_settings.c:1363
 msgid "Adobe RGB (compatible)"
@@ -3428,7 +3430,7 @@ msgstr "luminosidade"
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:267
 #: ../src/iop/atrous.c:1410 ../src/iop/atrous.c:1414
 #: ../src/iop/denoiseprofile.c:3531 ../src/iop/rawdenoise.c:771
-#: ../src/iop/sigmoid.c:240
+#: ../src/iop/sigmoid.c:292
 msgid "smooth"
 msgstr "suave"
 
@@ -4779,74 +4781,93 @@ msgstr "ajuste de cor nas sombras"
 msgid "highlights color adjustment"
 msgstr "ajuste de cor nos realces"
 
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:112
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:225
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:122
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:241
 #: ../src/gui/accelerators.c:101
 msgid "skew"
 msgstr "inclinar"
 
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:118
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:229
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:128
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:245
 msgid "target white"
 msgstr "branco alvo"
 
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:124
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:233
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:134
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:249
 msgid "target black"
 msgstr "preto alvo"
 
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:130
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:237
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:140
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:253
 msgid "color processing"
 msgstr "processamento de cor"
 
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:136
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:241
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:146
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:257
 msgid "preserve hue"
 msgstr "preservar matiz"
 
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:142
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:245
-msgid "red inset"
-msgstr "sobreposição de vermelho"
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:152
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:261
+msgid "red attenuation"
+msgstr "atenuação do vermelho"
 
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:148
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:249
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:158
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:265
 msgid "red rotation"
 msgstr "rotação do vermelho"
 
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:154
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:253
-msgid "green inset"
-msgstr "sobreposição de verde"
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:164
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:269
+msgid "green attenuation"
+msgstr "atenuação do verde"
 
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:160
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:257
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:170
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:273
 msgid "green rotation"
 msgstr "rotação do verde"
 
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:166
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:261
-msgid "blue inset"
-msgstr "sobreposição de azul"
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:176
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:277
+msgid "blue attenuation"
+msgstr "atenuação do azul"
 
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:172
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:265
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:182
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:281
 msgid "blue rotation"
 msgstr "rotação do azul"
 
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:178
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:269
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:188
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:285
 msgid "recover purity"
 msgstr "recuperar a pureza"
 
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:283
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:194
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:289
+msgid "base primaries"
+msgstr "primárias base"
+
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:303
 msgid "per channel"
 msgstr "por canal"
 
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:284
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:304
 msgid "RGB ratio"
 msgstr "porporção RGB"
+
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:308
+#: ../src/common/colorspaces.c:1377 ../src/common/colorspaces.c:1734
+msgid "work profile"
+msgstr "perfil de trabalho"
+
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:309
+msgid "Rec2020"
+msgstr "Rec2020"
+
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:310
+#: ../src/common/colorspaces.c:1750
+msgid "Display P3"
+msgstr "Display P3"
 
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:135
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:232
@@ -5965,10 +5986,6 @@ msgstr "todas as etiquetas coloridas foram removidas"
 msgid "clear"
 msgstr "limpar"
 
-#: ../src/common/colorspaces.c:1377 ../src/common/colorspaces.c:1734
-msgid "work profile"
-msgstr "perfil de trabalho"
-
 #: ../src/common/colorspaces.c:1382 ../src/common/colorspaces.c:1730
 #: ../src/iop/colorout.c:901
 msgid "export profile"
@@ -6083,10 +6100,6 @@ msgstr "PQ P3"
 #: ../src/common/colorspaces.c:1748
 msgid "HLG P3"
 msgstr "HLG P3"
-
-#: ../src/common/colorspaces.c:1750
-msgid "Display P3"
-msgstr "Display P3"
 
 #: ../src/common/cups_print.c:420
 #, c-format
@@ -11662,7 +11675,7 @@ msgstr "padrão relativo à exibição"
 #: ../src/iop/exposure.c:319 ../src/iop/exposure.c:323
 #: ../src/iop/exposure.c:326 ../src/iop/filmicrgb.c:3311
 #: ../src/iop/filmicrgb.c:3315 ../src/iop/filmicrgb.c:3318
-#: ../src/iop/sigmoid.c:195 ../src/iop/sigmoid.c:198 ../src/iop/sigmoid.c:200
+#: ../src/iop/sigmoid.c:240 ../src/iop/sigmoid.c:243 ../src/iop/sigmoid.c:245
 msgid "scene-referred default"
 msgstr "padrão relativo à cena"
 
@@ -12593,7 +12606,7 @@ msgstr "corretivo ou criativo"
 #: ../src/iop/hazeremoval.c:115 ../src/iop/lens.cc:263 ../src/iop/lens.cc:265
 #: ../src/iop/liquify.c:298 ../src/iop/liquify.c:300 ../src/iop/primaries.c:81
 #: ../src/iop/primaries.c:83 ../src/iop/retouch.c:210 ../src/iop/retouch.c:212
-#: ../src/iop/sigmoid.c:164 ../src/iop/splittoning.c:106
+#: ../src/iop/sigmoid.c:209 ../src/iop/splittoning.c:106
 #: ../src/iop/splittoning.c:108 ../src/iop/spots.c:70 ../src/iop/spots.c:72
 #: ../src/iop/toneequal.c:325 ../src/iop/velvia.c:99 ../src/iop/velvia.c:101
 msgid "linear, RGB, scene-referred"
@@ -12823,7 +12836,7 @@ msgstr "adiciona ou remove contraste local, nitidez, agudez"
 #: ../src/iop/exposure.c:131 ../src/iop/filmicrgb.c:352
 #: ../src/iop/graduatednd.c:146 ../src/iop/negadoctor.c:146
 #: ../src/iop/rgbcurve.c:145 ../src/iop/rgblevels.c:125 ../src/iop/shadhi.c:144
-#: ../src/iop/sigmoid.c:164 ../src/iop/tonecurve.c:184
+#: ../src/iop/sigmoid.c:209 ../src/iop/tonecurve.c:184
 #: ../src/iop/toneequal.c:324
 msgid "corrective and creative"
 msgstr "corretivo e criativo"
@@ -13108,7 +13121,7 @@ msgstr "corretivo"
 #: ../src/iop/channelmixer.c:142 ../src/iop/lut3d.c:143
 #: ../src/iop/negadoctor.c:147 ../src/iop/profile_gamma.c:103
 #: ../src/iop/rgbcurve.c:146 ../src/iop/rgbcurve.c:148
-#: ../src/iop/rgblevels.c:126 ../src/iop/sigmoid.c:165 ../src/iop/soften.c:104
+#: ../src/iop/rgblevels.c:126 ../src/iop/sigmoid.c:210 ../src/iop/soften.c:104
 #: ../src/iop/soften.c:106
 msgid "linear, RGB, display-referred"
 msgstr "linear, RGB, relativo à exibição"
@@ -13118,7 +13131,7 @@ msgstr "linear, RGB, relativo à exibição"
 #: ../src/iop/dither.c:121 ../src/iop/filmicrgb.c:354
 #: ../src/iop/graduatednd.c:148 ../src/iop/negadoctor.c:148
 #: ../src/iop/profile_gamma.c:104 ../src/iop/rgbcurve.c:147
-#: ../src/iop/rgblevels.c:127 ../src/iop/sigmoid.c:165
+#: ../src/iop/rgblevels.c:127 ../src/iop/sigmoid.c:210
 #: ../src/iop/vignette.c:122 ../src/iop/watermark.c:424
 msgid "non-linear, RGB"
 msgstr "não-linear, RGB"
@@ -19692,15 +19705,15 @@ msgstr "intensidade da melhoria de nitidez"
 msgid "threshold to activate sharpen"
 msgstr "limite para ativar melhoria de nitidez"
 
-#: ../src/iop/sigmoid.c:150
+#: ../src/iop/sigmoid.c:195
 msgid "sigmoid"
 msgstr "sigmóide"
 
-#: ../src/iop/sigmoid.c:155
+#: ../src/iop/sigmoid.c:200
 msgid "tone mapping|view transform|display transform"
 msgstr "mapeamento de tons|transformação de visão|transformação de exibição"
 
-#: ../src/iop/sigmoid.c:161
+#: ../src/iop/sigmoid.c:206
 msgid ""
 "apply a view transform to make a image displayable\n"
 "on a screen or print. uses a robust and smooth\n"
@@ -19710,19 +19723,19 @@ msgstr ""
 "em uma tela ou impressão. Usa uma curva de tons robusta e suave\n"
 "com métodos opcionais de preservação de cor."
 
-#: ../src/iop/sigmoid.c:213
+#: ../src/iop/sigmoid.c:258
 msgid "neutral gray"
 msgstr "cinza neutro"
 
-#: ../src/iop/sigmoid.c:219
+#: ../src/iop/sigmoid.c:264
 msgid "ACES 100-nit like"
 msgstr "similar a ACES 100-nit"
 
-#: ../src/iop/sigmoid.c:225
+#: ../src/iop/sigmoid.c:270
 msgid "Reinhard"
 msgstr "Reinhard"
 
-#: ../src/iop/sigmoid.c:791
+#: ../src/iop/sigmoid.c:917
 msgid ""
 "compression of the applied curve\n"
 "implicitly defines the supported input dynamic range"
@@ -19730,7 +19743,7 @@ msgstr ""
 "compressão da curva aplicada\n"
 "implicitamente define a faixa dinâmica suportada na entrada"
 
-#: ../src/iop/sigmoid.c:794
+#: ../src/iop/sigmoid.c:920
 msgid ""
 "shift the compression towards shadows or highlights.\n"
 "negative values increase contrast in shadows.\n"
@@ -19742,7 +19755,7 @@ msgstr ""
 "valores positivos aumentam contraste nos realces.\n"
 "o lado oposto verá uma redução no contraste."
 
-#: ../src/iop/sigmoid.c:803
+#: ../src/iop/sigmoid.c:929
 msgid ""
 "optional correction of the hue twist introduced by\n"
 "the per-channel processing method."
@@ -19750,51 +19763,55 @@ msgstr ""
 "correção opcional do desvio de matiz introduzido pelo\n"
 "método de processamento por canal."
 
-#: ../src/iop/sigmoid.c:810 ../src/iop/sigmoid.c:814
+#: ../src/iop/sigmoid.c:936 ../src/iop/sigmoid.c:940
 msgid "primaries"
 msgstr "primárias"
 
-#: ../src/iop/sigmoid.c:811
+#: ../src/iop/sigmoid.c:937
 msgid "set custom primaries"
 msgstr "define primárias customizadas"
 
-#: ../src/iop/sigmoid.c:833
-msgid "red primary inset"
-msgstr "sobreposição de vermelho primário"
+#: ../src/iop/sigmoid.c:943
+msgid "primaries to use as the base for below adjustments"
+msgstr "primárias para usar como base para os ajustes abaixo"
 
-#: ../src/iop/sigmoid.c:834
-msgid "red primary rotation"
-msgstr "rotação de vermelho primário"
+#: ../src/iop/sigmoid.c:962
+msgid "attenuate the purity of the red primary"
+msgstr "atenuar a pureza do vermelho primário"
 
-#: ../src/iop/sigmoid.c:835
-msgid "green primary inset"
-msgstr "sobreposição de verde primário"
+#: ../src/iop/sigmoid.c:963
+msgid "rotate the red primary"
+msgstr "rotacionar o vermelho primário"
 
-#: ../src/iop/sigmoid.c:836
-msgid "green primary rotation"
-msgstr "rotação de verde primário"
+#: ../src/iop/sigmoid.c:964
+msgid "attenuate the purity of the green primary"
+msgstr "atenuar a pureza do verde primário"
 
-#: ../src/iop/sigmoid.c:837
-msgid "blue primary inset"
-msgstr "sobreposição de azul primário"
+#: ../src/iop/sigmoid.c:965
+msgid "rotate the green primary"
+msgstr "rotacionar o verde primário"
 
-#: ../src/iop/sigmoid.c:838
-msgid "blue primary rotation"
-msgstr "rotação de azul primário"
+#: ../src/iop/sigmoid.c:966
+msgid "attenuate the purity of the blue primary"
+msgstr "atenuar a pureza do azul primário"
 
-#: ../src/iop/sigmoid.c:845
+#: ../src/iop/sigmoid.c:967
+msgid "rotate the blue primary"
+msgstr "rotacionar o azul primário"
+
+#: ../src/iop/sigmoid.c:974
 msgid "recover some of the original purity after the inset"
 msgstr "recuperar um pouco da pureza original depois da sobreposição"
 
-#: ../src/iop/sigmoid.c:849
+#: ../src/iop/sigmoid.c:978
 msgid "display luminance"
 msgstr "isolar luminância de exibição"
 
-#: ../src/iop/sigmoid.c:850
+#: ../src/iop/sigmoid.c:979
 msgid "set display black/white targets"
 msgstr "determina alvos de preto/branco para o display"
 
-#: ../src/iop/sigmoid.c:858
+#: ../src/iop/sigmoid.c:987
 msgid ""
 "the black luminance of the target display or print.\n"
 "can be used creatively for a faded look."
@@ -19802,7 +19819,7 @@ msgstr ""
 "a luminância de preto na exibição ou impressão alvo.\n"
 "pode ser usado criativamente para um visual apagado."
 
-#: ../src/iop/sigmoid.c:863
+#: ../src/iop/sigmoid.c:992
 msgid ""
 "the white luminance of the target display or print.\n"
 "can be used creatively for a faded look or blowing out whites earlier."
@@ -25787,14 +25804,35 @@ msgstr "mudar para uma janela clássica que ficará aberta após soltar a tecla.
 msgid "mouse actions"
 msgstr "ações com mouse"
 
+#~ msgid "red inset"
+#~ msgstr "sobreposição de vermelho"
+
+#~ msgid "green inset"
+#~ msgstr "sobreposição de verde"
+
+#~ msgid "blue inset"
+#~ msgstr "sobreposição de azul"
+
+#~ msgid "red primary inset"
+#~ msgstr "sobreposição de vermelho primário"
+
+#~ msgid "red primary rotation"
+#~ msgstr "rotação de vermelho primário"
+
+#~ msgid "green primary inset"
+#~ msgstr "sobreposição de verde primário"
+
+#~ msgid "green primary rotation"
+#~ msgstr "rotação de verde primário"
+
+#~ msgid "blue primary inset"
+#~ msgstr "sobreposição de azul primário"
+
+#~ msgid "blue primary rotation"
+#~ msgstr "rotação de azul primário"
+
 #~ msgid "red primary hue"
 #~ msgstr "matiz primária do vermelho"
-
-#~ msgid "green primary hue"
-#~ msgstr "matiz primária do verde"
-
-#~ msgid "blue primary hue"
-#~ msgstr "matiz primária do azul"
 
 #~ msgctxt "preferences"
 #~ msgid "4k"
