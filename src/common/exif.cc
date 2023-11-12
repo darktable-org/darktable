@@ -1162,14 +1162,12 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       if(focal_length_35mm > 0.0f && img->exif_focal_length > 0.0f)
         img->exif_crop = focal_length_35mm / img->exif_focal_length;
       else
-        // It's unlikely that these tags will have zeros as values,
-        // but if they do, ensure that the info module shows no value
         img->exif_crop = 0.0f;
     }
-    else
-    // Tag for focal length in 35mm is not available,
-    // but we have data to calculate crop factor:
-    if(FIND_EXIF_TAG("Exif.Photo.FocalPlaneXResolution"))
+
+    // If the tag for the equivalent focal length is missing or contains zero,
+    // let's try to get the crop factor by calculating the diagonal of the sensor:
+    if(img->exif_crop == 0.0f && FIND_EXIF_TAG("Exif.Photo.FocalPlaneXResolution"))
     {
       float x_resolution = pos->toFloat();
       float y_resolution = 0.0f;
