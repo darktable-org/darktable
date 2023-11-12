@@ -966,9 +966,10 @@ static void _tooltip_reposition(GtkWidget *widget,
                                                              window),
                            &workarea);
 
-  wx = CLAMP(wx, workarea.x, workarea.x + workarea.width - width);
+  gint nx = CLAMP(wx, workarea.x, workarea.x + workarea.width - width);
 
-  gdk_window_move(window, wx, wy);
+  if(nx != wx)
+    gdk_window_move(window, nx, wy);
 }
 
 gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,

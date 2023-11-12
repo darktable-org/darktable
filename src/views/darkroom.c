@@ -3616,10 +3616,10 @@ GSList *mouse_actions(const dt_view_t *self)
  * DPI */
 #define DT_PIXEL_APPLY_DPI_2ND_WND(dev, value) ((value) * dev->preview2.dpi_factor)
 
-static void dt_second_window_change_cursor(dt_develop_t *dev, dt_cursor_t curs)
+static void dt_second_window_change_cursor(dt_develop_t *dev, const gchar *curs)
 {
   GtkWidget *widget = dev->second_wnd;
-  GdkCursor *cursor = gdk_cursor_new_for_display(gdk_display_get_default(), curs);
+  GdkCursor *cursor = gdk_cursor_new_from_name(gdk_display_get_default(), curs);
   gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
   g_object_unref(cursor);
 }
@@ -3627,7 +3627,7 @@ static void dt_second_window_change_cursor(dt_develop_t *dev, dt_cursor_t curs)
 static void second_window_leave(dt_develop_t *dev)
 {
   // reset any changes the selected plugin might have made.
-  dt_second_window_change_cursor(dev, GDK_LEFT_PTR);
+  dt_second_window_change_cursor(dev, "default");
 }
 
 static void _second_window_configure_ppd_dpi(dt_develop_t *dev)
@@ -3714,7 +3714,7 @@ static gboolean _second_window_button_pressed_callback(GtkWidget *w,
   {
     darktable.control->button_x = event->x;
     darktable.control->button_y = event->y;
-    dt_second_window_change_cursor(dev, GDK_HAND1);
+    dt_second_window_change_cursor(dev, "grabbing");
     return TRUE;
   }
   if(event->button == 2)
@@ -3729,7 +3729,7 @@ static gboolean _second_window_button_released_callback(GtkWidget *w,
                                                         GdkEventButton *event,
                                                         dt_develop_t *dev)
 {
-  if(event->button == 1) dt_second_window_change_cursor(dev, GDK_LEFT_PTR);
+  if(event->button == 1) dt_second_window_change_cursor(dev, "default");
 
   gtk_widget_queue_draw(w);
   return TRUE;
