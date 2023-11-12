@@ -633,7 +633,8 @@ void expose(
   if(dev->gui_module && dev->gui_module != dev->proxy.rotate)
   {
     // the cropping.exposer->gui_post_expose needs special care
-    if(expose_full && dev->cropping.requester)
+    if(expose_full
+       && dev->gui_module->operation_tags_filter() & IOP_TAG_CROPPING)
     {
       dt_print_pipe(DT_DEBUG_EXPOSE,
         "expose cropper",
