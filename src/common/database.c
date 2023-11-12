@@ -48,7 +48,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 46
+#define CURRENT_DATABASE_VERSION_LIBRARY 47
 #define CURRENT_DATABASE_VERSION_DATA    10
 
 // #define USE_NESTED_TRANSACTIONS
@@ -2605,6 +2605,17 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     new_version = 46;
   }
+  else if(version == 46)
+  {
+    TRY_EXEC("CREATE TABLE harmony_guide"
+             " (imgid INTEGER PRIMARY KEY,"
+             "  type INTEGER, rotation INTEGER, width INTEGER,"
+             "  FOREIGN KEY(imgid) REFERENCES images(id)"
+             "    ON UPDATE CASCADE ON DELETE CASCADE)",
+             "[init] can't create table harmony_guide\n");
+
+    new_version = 47;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -3054,6 +3065,15 @@ static void _create_library_schema(dt_database_t *db)
   sqlite3_exec(db->handle, "CREATE INDEX main.metadata_index_key ON meta_data (key)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE INDEX main.metadata_index_value ON meta_data (value)", NULL, NULL, NULL);
 
+  sqlite3_exec
+    (db->handle,
+     "CREATE TABLE harmony_guide"
+     " (imgid INTEGER PRIMARY KEY,"
+     "  type INTEGER, rotation INTEGER, width INTEGER,"
+     "  FOREIGN KEY(imgid) REFERENCES images(id)"
+     "    ON UPDATE CASCADE ON DELETE CASCADE)",
+     NULL, NULL, NULL);
+
   // Some triggers to remove possible dangling refs in makers/models/lens/cameras
   sqlite3_exec
     (db->handle,
@@ -3116,7 +3136,6 @@ static void _create_library_schema(dt_database_t *db)
      "   AND mi.film_id = fr.id"
      " ORDER BY normalized_camera, folders",
      NULL, NULL, NULL);
-
   // clang-format on
 }
 
