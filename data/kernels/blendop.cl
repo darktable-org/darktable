@@ -942,7 +942,7 @@ blendop_RAW(__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only 
 
   }
 
-  write_imagef(out, (int2)(x, y), (float4)(o, 0.0f, 0.0f, 0.0f));
+  write_imagef(out, (int2)(x, y), o);
 }
 
 
