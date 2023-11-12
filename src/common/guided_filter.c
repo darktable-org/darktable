@@ -289,8 +289,7 @@ dt_guided_filter_cl_global_t *dt_guided_filter_init_cl_global()
   g->kernel_guided_filter_split_rgb = dt_opencl_create_kernel(program, "guided_filter_split_rgb_image");
   g->kernel_guided_filter_box_mean_x = dt_opencl_create_kernel(program, "guided_filter_box_mean_x");
   g->kernel_guided_filter_box_mean_y = dt_opencl_create_kernel(program, "guided_filter_box_mean_y");
-  g->kernel_guided_filter_guided_filter_covariances
-      = dt_opencl_create_kernel(program, "guided_filter_covariances");
+  g->kernel_guided_filter_guided_filter_covariances = dt_opencl_create_kernel(program, "guided_filter_covariances");
   g->kernel_guided_filter_guided_filter_variances = dt_opencl_create_kernel(program, "guided_filter_variances");
   g->kernel_guided_filter_update_covariance = dt_opencl_create_kernel(program, "guided_filter_update_covariance");
   g->kernel_guided_filter_solve = dt_opencl_create_kernel(program, "guided_filter_solve");
@@ -614,7 +613,7 @@ void guided_filter_cl(int devid,
                       cl_mem guide,
                       cl_mem in,
                       cl_mem out,
-                      const int width,
+                      const int width,          // width & height are roi_out
                       const int height,
                       const int ch,
                       const int w,              // window size
