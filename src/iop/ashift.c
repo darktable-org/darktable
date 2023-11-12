@@ -4209,7 +4209,7 @@ void gui_post_expose(dt_iop_module_t *self,
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
 
-  const gboolean dimmed = dt_iop_color_picker_is_visible(dev);
+  const gboolean dimmed = dt_iop_canvas_not_sensitive(dev);
   const double lwidth = (dimmed ? 0.5 : 1.0) / zoom_scale;
   const double fillc = dimmed ? 0.9 : 0.2;
 

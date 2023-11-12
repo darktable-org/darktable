@@ -2680,7 +2680,7 @@ void gui_post_expose(dt_iop_module_t *self,
     (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
   if(!g->is_profiling_started) return;
 
-  const gboolean showhandle = dt_iop_color_picker_is_visible(darktable.develop) == FALSE;
+  const gboolean showhandle = dt_iop_canvas_not_sensitive(darktable.develop) == FALSE;
   const double lwidth = (showhandle ? 1.0 : 0.5) / zoom_scale;
 
   cairo_set_line_width(cr, 2.0 * lwidth);

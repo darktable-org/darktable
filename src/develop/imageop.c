@@ -3615,6 +3615,12 @@ gboolean dt_iop_have_required_input_format(const int req_ch,
   }
 }
 
+gboolean dt_iop_canvas_not_sensitive(const struct dt_develop_t *dev)
+{
+  return dt_iop_color_picker_is_visible(dev)
+         || darktable.lib->proxy.snapshots.enabled;
+}
+
 void dt_iop_gui_changed(dt_action_t *action, GtkWidget *widget, gpointer data)
 {
   if(!action || action->type != DT_ACTION_TYPE_IOP_INSTANCE) return;

@@ -70,7 +70,7 @@ gboolean dt_iop_color_picker_is_visible(const dt_develop_t *dev)
 
   const gboolean primary_picker = proxy && !proxy->module;
 
-  return module_picker || primary_picker || darktable.lib->proxy.snapshots.enabled;
+  return module_picker || primary_picker;
 }
 
 static gboolean _record_point_area(dt_iop_color_picker_t *self)

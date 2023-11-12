@@ -2453,7 +2453,7 @@ void dt_masks_draw_clone_source_pos(cairo_t *cr,
   dashed[1] /= zoom_scale;
 
   cairo_set_dash(cr, dashed, 0, 0);
-  const double lwidth = (dt_iop_color_picker_is_visible(darktable.develop) ? 0.5 : 1.0) / zoom_scale;
+  const double lwidth = (dt_iop_canvas_not_sensitive(darktable.develop) ? 0.5 : 1.0) / zoom_scale;
   cairo_set_line_width(cr, 3.0 * lwidth);
   cairo_set_source_rgba(cr, .3, .3, .3, .8);
 
@@ -2672,7 +2672,7 @@ void dt_masks_draw_anchor(cairo_t *cr,
                   anchor_size,
                   anchor_size);
   cairo_fill_preserve(cr);
-  const double lwidth = (dt_iop_color_picker_is_visible(darktable.develop) ? 0.5 : 1.0) / zoom_scale;
+  const double lwidth = (dt_iop_canvas_not_sensitive(darktable.develop) ? 0.5 : 1.0) / zoom_scale;
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(selected ? 2.0 : 1.0) * lwidth);
   dt_draw_set_color_overlay(cr, FALSE, 0.8);
   cairo_stroke(cr);
@@ -2691,7 +2691,7 @@ void dt_masks_draw_ctrl(cairo_t *cr,
   dt_draw_set_color_overlay(cr, TRUE, 0.8);
   cairo_fill_preserve(cr);
 
-  const double lwidth = (dt_iop_color_picker_is_visible(darktable.develop) ? 0.5 : 1.0) / zoom_scale;
+  const double lwidth = (dt_iop_canvas_not_sensitive(darktable.develop) ? 0.5 : 1.0) / zoom_scale;
   cairo_set_line_width(cr, lwidth);
   dt_draw_set_color_overlay(cr, FALSE, 0.8);
   cairo_stroke(cr);
@@ -2757,7 +2757,7 @@ void dt_masks_stroke_arrow(cairo_t *cr,
   double dashed[] = { 0, 0 };
   cairo_set_dash(cr, dashed, 0, 0);
 
-  const double lwidth = (dt_iop_color_picker_is_visible(darktable.develop) ? 0.5 : 1.0) / zoom_scale;
+  const double lwidth = (dt_iop_canvas_not_sensitive(darktable.develop) ? 0.5 : 1.0) / zoom_scale;
   if((gui->group_selected == group) && (gui->form_selected || gui->form_dragging))
     cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.5) * lwidth);
   else
@@ -2822,7 +2822,7 @@ void dt_masks_line_stroke(cairo_t *cr,
   dt_draw_set_color_overlay(cr, FALSE, selected ? 0.8 : 0.5);
   cairo_set_dash(cr, dashed, border ? len : 0, 0);
 
-  const double lwidth = (dt_iop_color_picker_is_visible(darktable.develop) ? 0.5 : 1.0) / zoom_scale;
+  const double lwidth = (dt_iop_canvas_not_sensitive(darktable.develop) ? 0.5 : 1.0) / zoom_scale;
   const double line_width =
     ((border ? size_border : (source ? size_source : size_mask))
      * (selected ? factor_selected : 1.0)) * lwidth;

@@ -569,7 +569,9 @@ gboolean dt_iop_have_required_input_format(const int required_ch,
                                            const dt_iop_roi_t *const roi_in,
                                            const dt_iop_roi_t *const roi_out);
 
-
+// should module ignore mouse actions on gui elements, like handles or shapes?
+// returns true while color picker or snapshots active; show other elements dimmed
+gboolean dt_iop_canvas_not_sensitive(const struct dt_develop_t *dev);
 
 /* bring up module rename dialog */
 void dt_iop_gui_rename_module(dt_iop_module_t *module);

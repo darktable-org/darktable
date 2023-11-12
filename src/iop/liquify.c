@@ -1723,7 +1723,7 @@ static void set_line_width(cairo_t *cr,
                            dt_liquify_ui_width_enum_t w)
 {
   const double width = get_ui_width(scale, w);
-  cairo_set_line_width(cr, width * (dt_iop_color_picker_is_visible(darktable.develop) ? 0.5 : 1.0));
+  cairo_set_line_width(cr, width * (dt_iop_canvas_not_sensitive(darktable.develop) ? 0.5 : 1.0));
 }
 
 static gboolean detect_drag(const dt_iop_liquify_gui_data_t *g,
@@ -1845,7 +1845,7 @@ static void _draw_paths(dt_iop_module_t *module,
 
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
 
-  const gboolean showhandle = dt_iop_color_picker_is_visible(darktable.develop) == FALSE;
+  const gboolean showhandle = dt_iop_canvas_not_sensitive(darktable.develop) == FALSE;
   // do not display any iterpolated items as slow when:
   //   - we are dragging (pan)
   //   - the button one is pressed
@@ -2772,7 +2772,6 @@ void gui_focus(struct dt_iop_module_t *self,
     dt_collection_hint_message(darktable.collection);
     btn_make_radio_callback(NULL, NULL, self);
   }
-  self->dev->cropping.requester = (in && !darktable.develop->full.pipe->loading) ? self : NULL;
 }
 
 static void sync_pipe(struct dt_iop_module_t *module,

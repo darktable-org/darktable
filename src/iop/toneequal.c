@@ -2017,7 +2017,7 @@ static void switch_cursors(struct dt_iop_module_t *self)
   // if we are editing masks or using colour-pickers, do not display controls
   if(!sanity_check(self)
      || in_mask_editing(self)
-     || dt_iop_color_picker_is_visible(self->dev))
+     || dt_iop_canvas_not_sensitive(self->dev))
   {
     // display default cursor
     GdkCursor *const cursor =

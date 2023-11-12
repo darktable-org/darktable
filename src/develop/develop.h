@@ -293,7 +293,6 @@ typedef struct dt_develop_t
   {
     // set by dt_dev_pixelpipe_synch() if an enabled crop module is included in history
     struct dt_iop_module_t *exposer;
-    struct dt_iop_module_t *requester;
   } cropping;
 
   // for the overexposure indicator
