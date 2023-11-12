@@ -1580,6 +1580,12 @@ void tiling_callback_blendop(struct dt_iop_module_t *self,
   {
     if(bldata->details != 0.0f)
       tiling->factor += 0.75f; // details mask requires 3 additional quarter buffers
+
+    if(bldata->feathering_radius > 0.1f)
+    {
+      tiling->overhead += 3.5f; // we need all intermediate mask buffers
+      tiling->overlap += 2 * (int)(1.0f + bldata->feathering_radius);
+    }
   }
 }
 
