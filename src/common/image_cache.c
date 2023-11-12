@@ -140,6 +140,8 @@ void dt_image_cache_allocate(void *data,
     str = (char *)sqlite3_column_text(stmt, 37);
     if(str) g_strlcpy(img->camera_alias, str, sizeof(img->camera_alias));
 
+    dt_color_harmony_get(entry->key, &img->color_harmony_guide);
+
     // buffer size? colorspace?
     if(img->flags & DT_IMAGE_LDR)
     {
@@ -308,6 +310,8 @@ void dt_image_cache_write_release(dt_image_cache_t *cache,
 
   const int32_t camera_id = dt_image_get_camera_id(img->exif_maker, img->exif_model);
 
+  dt_color_harmony_set(img->id, img->color_harmony_guide);
+
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->width);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, img->height);
@@ -351,10 +355,14 @@ void dt_image_cache_write_release(dt_image_cache_t *cache,
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 32, img->final_width);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 33, img->final_height);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 34, img->id);
+
   const int rc = sqlite3_step(stmt);
   if(rc != SQLITE_DONE)
     dt_print(DT_DEBUG_ALWAYS,
-             "[image_cache_write_release] sqlite3 error %d\n", rc);
+             "[image_cache_write_release] sqlite3 error %d (%s) for imgid %d\n",
+             rc,
+             sqlite3_errmsg(dt_database_get(darktable.db)),
+             img->id);
   sqlite3_finalize(stmt);
 
   // TODO: make this work in relaxed mode, too.

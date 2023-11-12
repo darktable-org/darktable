@@ -22,6 +22,7 @@
 #include "config.h"
 #endif
 
+#include "common/color_harmony.h"
 #include "common/colorspaces.h"
 #include "common/dtpthread.h"
 #include "develop/format.h"
@@ -295,6 +296,9 @@ typedef struct dt_image_t
 
   /* gps coords */
   dt_image_geoloc_t geoloc;
+
+  /* color harmony guide */
+  dt_color_harmony_guide_t color_harmony_guide;
 
   /* needed in exposure iop for Deflicker */
   uint16_t raw_black_level;
