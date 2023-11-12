@@ -1337,15 +1337,13 @@ void gui_post_expose(dt_iop_module_t *self,
   dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
 
   // is this expose enforced by another module in focus?
-  const gboolean external = dev->cropping.exposer
-                        &&  dev->cropping.requester
-                        && (dev->cropping.exposer != dev->cropping.requester);
+  const gboolean external = dev->gui_module != self;
   const gboolean dimmed = dt_iop_color_picker_is_visible(dev) || external;
 
   // we don't do anything if the image is not ready within crop module
   // and we don't have visualizing enforced by other modules
-  if((dev->full.pipe->changed & DT_DEV_PIPE_REMOVE 
-      || self->dev->preview_pipe->loading) 
+  if((dev->full.pipe->changed & DT_DEV_PIPE_REMOVE
+      || self->dev->preview_pipe->loading)
      && !external) return;
 
   _aspect_apply(self, GRAB_HORIZONTAL);

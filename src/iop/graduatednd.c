@@ -507,7 +507,7 @@ void gui_post_expose(dt_iop_module_t *self,
 
   const float xa = g->xa * wd, xb = g->xb * wd, ya = g->ya * ht, yb = g->yb * ht;
   // the lines
-  const double lwidth = (dt_iop_color_picker_is_visible(darktable.develop) ? 0.5 : 1.0) / zoom_scale;
+  const double lwidth = (dt_iop_canvas_not_sensitive(darktable.develop) ? 0.5 : 1.0) / zoom_scale;
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
   if(g->selected == 3 || g->dragging == 3)
     cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(5.0) * lwidth);
@@ -528,7 +528,7 @@ void gui_post_expose(dt_iop_module_t *self,
   cairo_line_to(cr, xb, yb);
   cairo_stroke(cr);
 
-  if(dt_iop_color_picker_is_visible(darktable.develop))
+  if(dt_iop_canvas_not_sensitive(darktable.develop))
     return;
   // the extremities
   float x1, y1, x2, y2;
