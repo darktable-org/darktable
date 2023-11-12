@@ -3027,15 +3027,17 @@ gboolean dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
 
   const int width = roi_in->width;
   const int height = roi_in->height;
+  const int devid = p->devid;
+  const int clwidth = ROUNDUPDWD(width, devid);
+  const int clheight = ROUNDUPDHT(height, devid);
 
   cl_mem out = NULL;
   cl_mem tmp = NULL;
   float *mask = NULL;
-  const int devid = p->devid;
 
   cl_int err = CL_SUCCESS;
   mask = dt_alloc_align_float((size_t)width * height);
-  out = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  out = dt_opencl_alloc_device_buffer(devid, sizeof(float) * width * height);
   tmp = dt_opencl_alloc_device_buffer(devid, sizeof(float) * width * height);
   if((mask == NULL) || (tmp == NULL) || (out == NULL)) goto error;
 
@@ -3047,17 +3049,17 @@ gboolean dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
         wboff ? 1.0f : p->dsc.temperature.coeffs[2]};
 
   err = dt_opencl_enqueue_kernel_2d_args
-      (devid, darktable.opencl->blendop->kernel_calc_Y0_mask, width, height,
+      (devid, darktable.opencl->blendop->kernel_calc_Y0_mask, clwidth, clheight,
        CLARG(tmp), CLARG(in), CLARG(width), CLARG(height),
        CLARG(wb[0]), CLARG(wb[1]), CLARG(wb[2]));
   if(err != CL_SUCCESS) goto error;
 
   err = dt_opencl_enqueue_kernel_2d_args
-      (devid, darktable.opencl->blendop->kernel_write_scharr_mask, width, height,
+      (devid, darktable.opencl->blendop->kernel_write_scharr_mask, clwidth, clheight,
        CLARG(tmp), CLARG(out), CLARG(width), CLARG(height));
   if(err != CL_SUCCESS) goto error;
 
-  err = dt_opencl_read_host_from_device(devid, mask, out, width, height, sizeof(float));
+  err = dt_opencl_read_buffer_from_device(devid, mask, out, 0, sizeof(float) * width * height, TRUE);
   if(err != CL_SUCCESS) goto error;
 
   p->scharr.data = mask;
