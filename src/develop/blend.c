@@ -812,28 +812,23 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
   }
   const int iwidth  = p->scharr.roi.width;
   const int iheight = p->scharr.roi.height;
+  const int clwidth = ROUNDUPDWD(iwidth, devid);
+  const int clheight = ROUNDUPDHT(iheight, devid);
   dt_print_pipe(DT_DEBUG_PIPE,
        "refine_detail_mask on GPU",
        piece->pipe, self, roi_in, roi_out, "\n");
 
   lum = dt_alloc_align_float((size_t)iwidth * iheight);
-  tmp = dt_opencl_alloc_device(devid, iwidth, iheight, sizeof(float));
   out = dt_opencl_alloc_device_buffer(devid, sizeof(float) * iwidth * iheight);
   blur = dt_opencl_alloc_device_buffer(devid, sizeof(float) * iwidth * iheight);
-  if((lum == NULL) || (tmp == NULL) || (out == NULL) || (blur == NULL))
+  if((lum == NULL) || (out == NULL) || (blur == NULL))
     goto error;
 
-  err = dt_opencl_write_host_to_device(devid, p->scharr.data, tmp,
-                                       iwidth, iheight, sizeof(float));
+  err = dt_opencl_write_buffer_to_device(devid, p->scharr.data, out, 0, sizeof(float) * iwidth * iheight, TRUE);
   if(err != CL_SUCCESS) goto error;
 
   err = dt_opencl_enqueue_kernel_2d_args
-        (devid, darktable.opencl->blendop->kernel_read_mask, iwidth, iheight,
-         CLARG(out), CLARG(tmp), CLARG(iwidth), CLARG(iheight));
-  if(err != CL_SUCCESS) goto error;
-
-  err = dt_opencl_enqueue_kernel_2d_args
-        (devid, darktable.opencl->blendop->kernel_calc_blend, iwidth, iheight,
+        (devid, darktable.opencl->blendop->kernel_calc_blend, clwidth, clheight,
           CLARG(out), CLARG(blur), CLARG(iwidth), CLARG(iheight), CLARG(threshold), CLARG(detail));
   if(err != CL_SUCCESS) goto error;
 
@@ -843,17 +838,12 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
   if(dev_blurmat != NULL)
   {
     err = dt_opencl_enqueue_kernel_2d_args
-          (devid, darktable.opencl->blendop->kernel_mask_blur, iwidth, iheight,
+          (devid, darktable.opencl->blendop->kernel_mask_blur, clwidth, clheight,
            CLARG(blur), CLARG(out), CLARG(iwidth), CLARG(iheight), CLARG(dev_blurmat));
     dt_opencl_release_mem_object(dev_blurmat);
     if(err != CL_SUCCESS) goto error;
 
-    err = dt_opencl_enqueue_kernel_2d_args
-          (devid, darktable.opencl->blendop->kernel_write_mask, iwidth, iheight,
-           CLARG(out), CLARG(tmp), CLARG(iwidth), CLARG(iheight));
-    if(err != CL_SUCCESS) goto error;
-
-    err = dt_opencl_read_host_from_device(devid, lum, tmp, iwidth, iheight, sizeof(float));
+    err = dt_opencl_read_buffer_from_device(devid, lum, out, 0, sizeof(float) * iwidth * iheight, TRUE);
     if(err != CL_SUCCESS) goto error;
   }
   else
@@ -862,7 +852,6 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
     goto error;
   }
 
-  dt_opencl_release_mem_object(tmp);
   dt_opencl_release_mem_object(blur);
   dt_opencl_release_mem_object(out);
 
@@ -1510,10 +1499,6 @@ dt_blendop_cl_global_t *dt_develop_blend_init_cl_global(void)
     dt_opencl_create_kernel(program_rcd, "calc_scharr_mask");
   b->kernel_write_scharr_mask =
     dt_opencl_create_kernel(program_rcd, "write_scharr_mask");
-  b->kernel_write_mask =
-    dt_opencl_create_kernel(program_rcd, "writeout_mask");
-  b->kernel_read_mask  =
-    dt_opencl_create_kernel(program_rcd, "readin_mask");
   b->kernel_calc_blend =
     dt_opencl_create_kernel(program_rcd, "calc_detail_blend");
   b->kernel_mask_blur  =
@@ -1545,8 +1530,6 @@ void dt_develop_blend_free_cl_global(dt_blendop_cl_global_t *b)
   dt_opencl_free_kernel(b->kernel_calc_Y0_mask);
   dt_opencl_free_kernel(b->kernel_calc_scharr_mask);
   dt_opencl_free_kernel(b->kernel_write_scharr_mask);
-  dt_opencl_free_kernel(b->kernel_write_mask);
-  dt_opencl_free_kernel(b->kernel_read_mask);
   dt_opencl_free_kernel(b->kernel_calc_blend);
   dt_opencl_free_kernel(b->kernel_mask_blur);
   free(b);

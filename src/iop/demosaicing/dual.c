@@ -103,6 +103,8 @@ gboolean dual_demosaic_cl(
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
+  const int clwidth = ROUNDUPDWD(width, devid);
+  const int clheight = ROUNDUPDHT(height, devid);
 
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->global_data;
@@ -111,23 +113,14 @@ gboolean dual_demosaic_cl(
 
   cl_int err = CL_SUCCESS;
   cl_mem dev_blurmat = NULL;
-  cl_mem mask = NULL;
-  cl_mem scharr = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem mask = dt_opencl_alloc_device_buffer(devid, width * height * sizeof(float));
   cl_mem tmp = dt_opencl_alloc_device_buffer(devid, width * height * sizeof(float));
 
-  err = dt_opencl_write_host_to_device(devid, piece->pipe->scharr.data, scharr, width, height, sizeof(float));
+  err = dt_opencl_write_buffer_to_device(devid, piece->pipe->scharr.data, tmp, 0, sizeof(float) * width * height, TRUE);
   if(err != CL_SUCCESS) goto finish;
 
-  err = dt_opencl_enqueue_kernel_2d_args(devid, darktable.opencl->blendop->kernel_read_mask, width, height,
-      CLARG(tmp), CLARG(scharr), CLARG(width), CLARG(height));
-  if(err != CL_SUCCESS) goto finish;
-
-  dt_opencl_release_mem_object(scharr);
-  scharr = NULL;
-
-  mask = dt_opencl_alloc_device_buffer(devid, width * height * sizeof(float));
   const int flag = 1;
-  err = dt_opencl_enqueue_kernel_2d_args(devid, darktable.opencl->blendop->kernel_calc_blend, width, height,
+  err = dt_opencl_enqueue_kernel_2d_args(devid, darktable.opencl->blendop->kernel_calc_blend, clwidth, clheight,
       CLARG(tmp), CLARG(mask), CLARG(width), CLARG(height), CLARG(contrastf), CLARG(flag));
   if(err != CL_SUCCESS) goto finish;
 
@@ -135,15 +128,14 @@ gboolean dual_demosaic_cl(
   dt_masks_blur_coeff(blurmat, 2.0f);
   dev_blurmat = dt_opencl_copy_host_to_device_constant(devid, sizeof(blurmat), blurmat);
 
-  err = dt_opencl_enqueue_kernel_2d_args(devid, darktable.opencl->blendop->kernel_mask_blur, width, height,
+  err = dt_opencl_enqueue_kernel_2d_args(devid, darktable.opencl->blendop->kernel_mask_blur, clwidth, clheight,
       CLARG(mask), CLARG(tmp), CLARG(width), CLARG(height), CLARG(dev_blurmat));
   if(err != CL_SUCCESS) goto finish;
 
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_write_blended_dual, width, height,
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_write_blended_dual, clwidth, clheight,
       CLARG(high_image), CLARG(low_image), CLARG(out), CLARG(width), CLARG(height), CLARG(tmp), CLARG(dual_mask));
 
   finish:
-  dt_opencl_release_mem_object(scharr);
   dt_opencl_release_mem_object(mask);
   dt_opencl_release_mem_object(tmp);
   dt_opencl_release_mem_object(dev_blurmat);
