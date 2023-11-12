@@ -625,7 +625,7 @@ static void _set_mapping_mode_cursor(GtkWidget *widget)
   if(GTK_IS_EVENT_BOX(widget)) widget = gtk_bin_get_child(GTK_BIN(widget));
 
   if(widget && !strcmp(gtk_widget_get_name(widget), "module-header"))
-    cursor = gdk_cursor_new_for_display(display, GDK_BASED_ARROW_DOWN);
+    cursor = gdk_cursor_new_from_name(display, "context-menu");
   else if(dt_action_widget(darktable.control->mapping_widget)
           && darktable.develop)
   {
@@ -641,7 +641,7 @@ static void _set_mapping_mode_cursor(GtkWidget *widget)
     gdk_window_set_cursor(window, NULL); // work around bug where gtk seems to buffer surface cursors
   }
   else
-    cursor = gdk_cursor_new_for_display(display, GDK_DIAMOND_CROSS);
+    cursor = gdk_cursor_new_from_name(display, "not-allowed");
 
   gdk_window_set_cursor(window, cursor);
   g_object_unref(cursor);
