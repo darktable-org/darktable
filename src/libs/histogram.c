@@ -2142,6 +2142,15 @@ static void _update_color_harmony_gui(dt_lib_module_t *self)
     dt_image_cache_read_release(darktable.image_cache, img);
   }
 
+  // restore rotation/width default
+  if(d->harmony_guide.type == DT_COLOR_HARMONY_NONE)
+  {
+    d->harmony_guide.rotation =
+      dt_conf_get_int("plugins/darkroom/histogram/vectorscope/harmony_rotation");
+    d->harmony_guide.width =
+      dt_conf_get_int("plugins/darkroom/histogram/vectorscope/harmony_width");
+  }
+
   _color_harmony_button_on(d);
   _color_harmony_changed(d);
 }
@@ -2177,17 +2186,22 @@ static void _blue_channel_toggle(GtkWidget *button, dt_lib_histogram_t *d)
 
 static void _color_harmony_changed(dt_lib_histogram_t *d)
 {
-  dt_conf_set_string("plugins/darkroom/histogram/vectorscope/harmony_type",
-                     dt_color_harmonies[d->harmony_guide.type].name);
-  dt_conf_set_int("plugins/darkroom/histogram/vectorscope/harmony_width",
-                  d->harmony_guide.width);
-  dt_conf_set_int("plugins/darkroom/histogram/vectorscope/harmony_rotation",
-                  d->harmony_guide.rotation);
   gtk_widget_queue_draw(d->scope_draw);
 }
 
 static void _color_harmony_changed_record(dt_lib_histogram_t *d)
 {
+  dt_conf_set_string("plugins/darkroom/histogram/vectorscope/harmony_type",
+                     dt_color_harmonies[d->harmony_guide.type].name);
+  // if color harmony unset, still keep the rotation/width as default
+  if(d->harmony_guide.type != DT_COLOR_HARMONY_NONE)
+  {
+    dt_conf_set_int("plugins/darkroom/histogram/vectorscope/harmony_width",
+                    d->harmony_guide.width);
+    dt_conf_set_int("plugins/darkroom/histogram/vectorscope/harmony_rotation",
+                    d->harmony_guide.rotation);
+  }
+
   _color_harmony_changed(d);
 
   const dt_imgid_t imgid = darktable.develop->image_storage.id;
