@@ -812,8 +812,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
   }
   const int iwidth  = p->scharr.roi.width;
   const int iheight = p->scharr.roi.height;
-  const int clwidth = ROUNDUPDWD(iwidth, devid);
-  const int clheight = ROUNDUPDHT(iheight, devid);
+
   dt_print_pipe(DT_DEBUG_PIPE,
        "refine_detail_mask on GPU",
        piece->pipe, self, roi_in, roi_out, "\n");
@@ -828,7 +827,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
   if(err != CL_SUCCESS) goto error;
 
   err = dt_opencl_enqueue_kernel_2d_args
-        (devid, darktable.opencl->blendop->kernel_calc_blend, clwidth, clheight,
+        (devid, darktable.opencl->blendop->kernel_calc_blend, iwidth, iheight,
           CLARG(out), CLARG(blur), CLARG(iwidth), CLARG(iheight), CLARG(threshold), CLARG(detail));
   if(err != CL_SUCCESS) goto error;
 
@@ -838,7 +837,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
   if(dev_blurmat != NULL)
   {
     err = dt_opencl_enqueue_kernel_2d_args
-          (devid, darktable.opencl->blendop->kernel_mask_blur, clwidth, clheight,
+          (devid, darktable.opencl->blendop->kernel_mask_blur, iwidth, iheight,
            CLARG(blur), CLARG(out), CLARG(iwidth), CLARG(iheight), CLARG(dev_blurmat));
     dt_opencl_release_mem_object(dev_blurmat);
     if(err != CL_SUCCESS) goto error;
@@ -1020,9 +1019,6 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
   const int devid = piece->pipe->devid;
   const int offs[2] = { dx, dy };
 
-  const size_t clwidth = ROUNDUPDWD(owidth, devid);
-  const size_t clheight = ROUNDUPDHT(oheight, devid);
-
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   cl_mem dev_blendif_params = NULL;
   cl_mem dev_boost_factors = NULL;
@@ -1077,7 +1073,7 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
     // blend uniformly (no drawn or parametric mask)
 
     // set dev_mask with global opacity value
-    err = dt_opencl_enqueue_kernel_2d_args(devid, kernel_set_mask, clwidth, clheight,
+    err = dt_opencl_enqueue_kernel_2d_args(devid, kernel_set_mask, owidth, oheight,
                               CLARG(dev_mask_1),
                               CLARG(owidth),
                               CLARG(oheight),
@@ -1211,7 +1207,7 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
     const uint32_t blendif = d->blendif;
     const uint32_t mask_combine = d->mask_combine;
 
-    err = dt_opencl_enqueue_kernel_2d_args(devid, kernel_mask, clwidth, clheight,
+    err = dt_opencl_enqueue_kernel_2d_args(devid, kernel_mask, owidth, oheight,
               CLARG(dev_in), CLARG(dev_out),
               CLARG(dev_mask_1), CLARG(dev_mask_2),
               CLARG(owidth), CLARG(oheight),
@@ -1267,15 +1263,8 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
       }
       else if(operation == DEVELOP_MASK_POST_FEATHER_OUT)
       {
-        dev_tmp = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float) * ch);
-        if(dev_tmp == NULL) goto error;
-
-        err = dt_opencl_enqueue_copy_image(devid, dev_out, dev_tmp, origin, origin, region);
-        if(err != CL_SUCCESS) goto error;
-
-        guided_filter_cl(devid, dev_tmp, dev_mask_1, dev_mask_2, owidth, oheight, ch,
+        guided_filter_cl(devid, dev_out, dev_mask_1, dev_mask_2, owidth, oheight, ch,
                           featherw, sqrt_eps, guide_weight, 0.0f, 1.0f);
-        // we need dev_tmp later again so don't release
         _blend_process_cl_exchange(&dev_mask_1, &dev_mask_2);
       }
       else if(operation == DEVELOP_MASK_POST_BLUR)
@@ -1303,7 +1292,7 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
         const float e = expf(3.f * d->contrast);
         const float brightness = d->brightness;
 
-        err = dt_opencl_enqueue_kernel_2d_args(devid, kernel_mask_tone_curve, clwidth, clheight,
+        err = dt_opencl_enqueue_kernel_2d_args(devid, kernel_mask_tone_curve, owidth, oheight,
                                   CLARG(dev_mask_1), CLARG(dev_mask_2),
                                   CLARG(owidth), CLARG(oheight),
                                   CLARG(e), CLARG(brightness), CLARG(opacity));
@@ -1323,8 +1312,7 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
   }
 
   // get temporary buffer for output image to overcome readonly/writeonly limitation
-  if(dev_tmp == NULL) // we might have it already
-    dev_tmp = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float) * ch);
+  dev_tmp = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float) * ch);
   if(dev_tmp == NULL) goto error;
 
   err = dt_opencl_enqueue_copy_image(devid, dev_out, dev_tmp, origin, origin, region);
@@ -1356,7 +1344,7 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
       goto error;
     }
     // let us display a specific channel
-    err = dt_opencl_enqueue_kernel_2d_args(devid, kernel_display_channel, clwidth, clheight,
+    err = dt_opencl_enqueue_kernel_2d_args(devid, kernel_display_channel, owidth, oheight,
                               CLARG(dev_in), CLARG(dev_tmp), CLARG(dev_mask_1),
                               CLARG(dev_out), CLARG(owidth), CLARG(oheight),
                               CLARRAY(2, offs), CLARG(request_mask_display),
@@ -1376,7 +1364,7 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
     // apply blending with per-pixel opacity value as defined in dev_mask_1
     const unsigned int blend_mode = d->blend_mode;
     const float blend_parameter = exp2f(d->blend_parameter);
-    err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, clwidth, clheight,
+    err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, owidth, oheight,
                               CLARG(dev_in), CLARG(dev_tmp), CLARG(dev_mask_1), CLARG(dev_out),
                               CLARG(owidth), CLARG(oheight), CLARG(blend_mode),
                               CLARG(blend_parameter),
