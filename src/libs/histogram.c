@@ -2469,6 +2469,7 @@ void view_enter(struct dt_lib_module_t *self,
   gtk_widget_hide(d->button_box_main);
   gtk_widget_hide(d->button_box_opt);
 
+  _update_color_harmony_gui(self);
   // FIXME: set histogram data to blank if enter tether with no active image
 }
 
@@ -2479,11 +2480,6 @@ void view_leave(struct dt_lib_module_t *self,
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
                                G_CALLBACK(_lib_histogram_preview_updated_callback),
                                self);
-}
-
-void gui_update(dt_lib_module_t *self)
-{
-  _update_color_harmony_gui(self);
 }
 
 void gui_init(dt_lib_module_t *self)
