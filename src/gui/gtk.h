@@ -62,7 +62,6 @@ typedef struct dt_gui_scrollbars_t
     GtkWidget *hscrollbar;
 
     gboolean visible;
-    gboolean dragging;
 } dt_gui_scrollbars_t;
 
 typedef enum dt_gui_color_t
