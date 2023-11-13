@@ -406,13 +406,13 @@ dt_imgid_t dt_image_get_id(const uint32_t film_id,
 /** imports a new image from raw/etc file and adds it to the data base and image cache. Use from threads other than lua.*/
 dt_imgid_t dt_image_import(int32_t film_id,
                            const char *filename,
-                           const gboolean override_ignore_jpegs,
+                           const gboolean override_ignore_nonraws,
                            const gboolean raise_signals);
 /** imports a new image from raw/etc file and adds it to the data base
  * and image cache. Use from lua thread.*/
 dt_imgid_t dt_image_import_lua(const int32_t film_id,
                                const char *filename,
-                               const gboolean override_ignore_jpegs);
+                               const gboolean override_ignore_nonraws);
 /** removes the given image from the database. */
 void dt_image_remove(const dt_imgid_t imgid);
 /** duplicates the given image in the database with the duplicate
