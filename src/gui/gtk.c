@@ -717,6 +717,8 @@ static gboolean _borders_scrolled(GtkWidget *widget, GdkEventScroll *event, gpoi
 
 static gboolean _scrollbar_changed(GtkWidget *widget, gpointer user_data)
 {
+  if(darktable.gui->reset) return FALSE;
+
   GtkAdjustment *adjustment_x = gtk_range_get_adjustment(GTK_RANGE(darktable.gui->scrollbars.hscrollbar));
   GtkAdjustment *adjustment_y = gtk_range_get_adjustment(GTK_RANGE(darktable.gui->scrollbars.vscrollbar));
 
@@ -726,18 +728,6 @@ static gboolean _scrollbar_changed(GtkWidget *widget, gpointer user_data)
   dt_view_manager_scrollbar_changed(darktable.view_manager, value_x, value_y);
 
   return TRUE;
-}
-
-static gboolean _scrollbar_press_event(GtkWidget *widget, gpointer user_data)
-{
-  darktable.gui->scrollbars.dragging = TRUE;
-  return FALSE;
-}
-
-static gboolean _scrollbar_release_event(GtkWidget *widget, gpointer user_data)
-{
-  darktable.gui->scrollbars.dragging = FALSE;
-  return FALSE;
 }
 
 int dt_gui_gtk_load_config()
@@ -1235,13 +1225,9 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
   widget = darktable.gui->scrollbars.vscrollbar;
   g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(_scrollbar_changed), NULL);
-  g_signal_connect(G_OBJECT(widget), "button-press-event", G_CALLBACK(_scrollbar_press_event), NULL);
-  g_signal_connect(G_OBJECT(widget), "button-release-event", G_CALLBACK(_scrollbar_release_event), NULL);
 
   widget = darktable.gui->scrollbars.hscrollbar;
   g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(_scrollbar_changed), NULL);
-  g_signal_connect(G_OBJECT(widget), "button-press-event", G_CALLBACK(_scrollbar_press_event), NULL);
-  g_signal_connect(G_OBJECT(widget), "button-release-event", G_CALLBACK(_scrollbar_release_event), NULL);
 
   dt_action_t *pnl = dt_action_section(&darktable.control->actions_global, N_("panels"));
   dt_action_t *ac;
@@ -1816,17 +1802,21 @@ void dt_ui_update_scrollbars(dt_ui_t *ui)
   /* update scrollbars for current view */
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
 
-  if(cv->vscroll_size > cv->vscroll_viewport_size){
+  ++darktable.gui->reset;
+  if(cv->vscroll_size > cv->vscroll_viewport_size)
+  {
     gtk_adjustment_configure(gtk_range_get_adjustment(GTK_RANGE(darktable.gui->scrollbars.vscrollbar)),
                              cv->vscroll_pos, cv->vscroll_lower, cv->vscroll_size, 0, cv->vscroll_viewport_size,
                              cv->vscroll_viewport_size);
   }
 
-  if(cv->hscroll_size > cv->hscroll_viewport_size){
+  if(cv->hscroll_size > cv->hscroll_viewport_size)
+  {
     gtk_adjustment_configure(gtk_range_get_adjustment(GTK_RANGE(darktable.gui->scrollbars.hscrollbar)),
                              cv->hscroll_pos, cv->hscroll_lower, cv->hscroll_size, 0, cv->hscroll_viewport_size,
                              cv->hscroll_viewport_size);
   }
+  --darktable.gui->reset;
 
   gtk_widget_set_visible(darktable.gui->scrollbars.vscrollbar, cv->vscroll_size > cv->vscroll_viewport_size);
   gtk_widget_set_visible(darktable.gui->scrollbars.hscrollbar, cv->hscroll_size > cv->hscroll_viewport_size);

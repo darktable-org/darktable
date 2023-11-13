@@ -676,16 +676,6 @@ void dt_view_set_scrollbar(dt_view_t *view,
                            const float vsize,
                            const float vwinsize)
 {
-  if(1e-5 > fabsf(view->hscroll_pos - hpos)
-          + fabsf(view->hscroll_lower - hlower)
-          + fabsf(view->hscroll_size - hsize)
-          + fabsf(view->hscroll_viewport_size - hwinsize)
-          + fabsf(view->vscroll_pos - vpos)
-          + fabsf(view->vscroll_lower - vlower)
-          + fabsf(view->vscroll_size - vsize)
-          + fabsf(view->vscroll_viewport_size - vwinsize))
-    return;
-
   view->vscroll_pos = vpos;
   view->vscroll_lower = vlower;
   view->vscroll_size = vsize;
@@ -701,8 +691,7 @@ void dt_view_set_scrollbar(dt_view_t *view,
   gtk_widget_queue_draw(widgets->bottom_border);
   gtk_widget_queue_draw(widgets->top_border);
 
-  if(!darktable.gui->scrollbars.dragging)
-    dt_ui_update_scrollbars(darktable.gui->ui);
+  dt_ui_update_scrollbars(darktable.gui->ui);
 }
 
 dt_view_surface_value_t dt_view_image_get_surface(const dt_imgid_t imgid,
