@@ -175,6 +175,14 @@ gboolean dt_image_is_monochrome(const dt_image_t *img)
   return (img->flags & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER)) ? TRUE : FALSE;
 }
 
+gboolean dt_image_is_bayerRGB(const dt_image_t *img)
+{
+  return dt_image_is_raw(img)
+      && img->buf_dsc.filters != 9u
+      && !dt_image_is_monochrome(img)
+      && !(img->flags & DT_IMAGE_4BAYER);
+}
+
 static void _image_set_monochrome_flag(const dt_imgid_t imgid,
                                        const gboolean monochrome,
                                        const gboolean undo_on)
