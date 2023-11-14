@@ -2405,7 +2405,7 @@ gboolean dt_dev_get_zoom_bounds(dt_dev_viewport_t *port,
   return *boxw < 1.0f || *boxh < 1.0f;
 }
 
-gboolean dt_dev_get_preview_size(dt_develop_t *dev,
+gboolean dt_dev_get_preview_size(const dt_develop_t *dev,
                                  float *wd,
                                  float *ht)
 {
@@ -2732,7 +2732,7 @@ void dt_dev_get_viewport_params(dt_dev_viewport_t *port,
   if(x && y && port->pipe)
   {
     float pts[2] = { port->zoom_x, port->zoom_y };
-    dt_dev_distort_transform_plus(darktable.develop, port->pipe, 
+    dt_dev_distort_transform_plus(darktable.develop, port->pipe,
                                   0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 1);
     *x = pts[0] / port->pipe->processed_width - 0.5f;
     *y = pts[1] / port->pipe->processed_height - 0.5f;
