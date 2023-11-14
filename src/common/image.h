@@ -153,7 +153,8 @@ typedef enum dt_image_correction_type_t
   CORRECTION_TYPE_NONE,
   CORRECTION_TYPE_SONY,
   CORRECTION_TYPE_FUJI,
-  CORRECTION_TYPE_DNG
+  CORRECTION_TYPE_DNG,
+  CORRECTION_TYPE_OLYMPUS
 } dt_image_correction_type_t;
 
 typedef union dt_image_correction_data_t
@@ -176,6 +177,12 @@ typedef union dt_image_correction_data_t
     gboolean has_warp;
     gboolean has_vignette;
   } dng;
+  struct {
+    gboolean has_dist;
+    float dist[4];
+    gboolean has_ca;
+    float ca[6];
+  } olympus;
 } dt_image_correction_data_t;
 
 typedef enum dt_image_loader_t

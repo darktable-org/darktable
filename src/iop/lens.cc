@@ -2158,7 +2158,6 @@ static int _init_coeffs_md_v1(const dt_image_t *img,
 
     return nc;
   }
-
   else if(img->exif_correction_type == CORRECTION_TYPE_DNG)
   {
     const int nc = MAXKNOTS;
@@ -2399,6 +2398,74 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
       }
     }
   }
+  else if(img->exif_correction_type == CORRECTION_TYPE_OLYMPUS)
+  {
+    // Get the coefficients for the distortion polynomial
+    float drs = 1, dk2 = 0, dk4 = 0, dk6 = 0;
+    if(cd->olympus.has_dist)
+    {
+      drs = cd->olympus.dist[3]; // Defines radius of corner of output image
+      dk2 = cd->olympus.dist[0];
+      dk4 = cd->olympus.dist[1];
+      dk6 = cd->olympus.dist[2];
+    }
+    // Get the coefficients for the CA polynomial
+    float car0 = 0, car2 = 0, car4 = 0, cab0 = 0, cab2 = 0, cab4 = 0;
+    if (cd->olympus.has_ca)
+    {
+      car0 = cd->olympus.ca[0];
+      car2 = cd->olympus.ca[1];
+      car4 = cd->olympus.ca[2];
+      cab0 = cd->olympus.ca[3];
+      cab2 = cd->olympus.ca[4];
+      cab4 = cd->olympus.ca[5];
+    }
+
+    nc = MAXKNOTS;
+
+    for(int i = 0; i < nc; i++)
+    {
+      const float r = (float) i / (float) (nc - 1);
+      knots_dist[i] = knots_vig[i] = r;
+
+      if(cor_rgb && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_DISTORTION)
+      {
+        // Convert the polynomial to a spline by evaluating it at each knot
+        //
+        // The distortion polynomial maps a radius Rout in the output
+        // (undistorted) image, where the corner is defined as Rout=1, to a
+        // radius in the input (distorted) image, where the corner is defined
+        // as Rin=1.
+        // Rin = Rout*dk0 * (1 + dk2 * (Rout*dk0)^2 + dk4 * (Rout*dk0)^4 + dk6 * (Rout*dk0)^6)
+        //
+        // r_cor is Rin / Rout.
+        const float rs2 = powf(r * drs, 2);
+        const float r_cor = drs * (1 + rs2 * (dk2 + rs2 * (dk4 + rs2 * dk6)));
+
+        cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = (p->cor_dist_ft * (r_cor - 1) + 1);
+      }
+      else if(cor_rgb)
+        cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = 1;
+
+      if(cor_rgb && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_TCA)
+      {
+        // Radius in the input (distorted) image of the current knot
+        const float rd = cor_rgb[1][i] * r;
+        const float rd2 = powf(rd, 2);
+        // CA correction is applied as:
+        // Rin_with_CA = Rin * ((1 + car0) + car2 * Rin^2 + car4 * Rin^4)
+        if(r > 0) // Avoid divide by zero
+        {
+          cor_rgb[0][i] += p->cor_ca_r_ft * rd * (car0 + rd2 * (car2 + rd2 * car4)) / r;
+          cor_rgb[2][i] += p->cor_ca_b_ft * rd * (cab0 + rd2 * (cab2 + rd2 * cab4)) / r;
+        }
+      }
+
+      if(vig)
+        vig[i] = 1;
+    }
+  }
+
 
   // calculate the optimal scaling value to show the maximum
   // visible image box after distortion correction
