@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2022 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -36,6 +36,7 @@
 #include "gui/draw.h"
 #include "gui/import_metadata.h"
 #include "gui/preferences.h"
+#include "imageio/imageio_common.h"  // for dt_imageio_is_raw_by_extension()
 #include "libs/lib.h"
 #include "libs/lib_api.h"
 #ifdef GDK_WINDOWING_QUARTZ
@@ -350,13 +351,15 @@ static guint _import_from_camera_set_file_list(dt_lib_module_t *self)
 
   GList *imgs = dt_camctl_get_images_list(darktable.camctl, d->camera);
   int nb = 0;
-  const gboolean include_jpegs = !dt_conf_get_bool("ui_last/import_ignore_jpegs");
+  const gboolean include_nonraws = !dt_conf_get_bool("ui_last/import_ignore_nonraws");
   for(GList *img = imgs; img; img = g_list_next(img))
   {
     dt_camera_files_t *file = (dt_camera_files_t *)img->data;
     const char *ext = g_strrstr(file->filename, ".");
-    if(include_jpegs || (ext && g_ascii_strncasecmp(ext, ".jpg", sizeof(".jpg"))
-                             && g_ascii_strncasecmp(ext, ".jpeg", sizeof(".jpeg"))))
+    // Either we are not rejecting non-raw, or the file extension belongs to the raw format
+    if(include_nonraws ||
+       (ext && ((dt_imageio_is_raw_by_extension(ext)) ||
+                !g_ascii_strncasecmp(ext, ".dng", sizeof(".dng")))))
     {
       const time_t datetime = file->timestamp;
       GDateTime *dt_datetime = g_date_time_new_from_unix_local(datetime);
@@ -666,7 +669,7 @@ static guint _import_set_file_list(const gchar *folder, const int folder_lgth,
     the image has already been imported can be skipped */
   int32_t filmroll_id = dt_film_get_id(folder);
   const gboolean recursive = dt_conf_get_bool("ui_last/import_recursive");
-  const gboolean include_jpegs = !dt_conf_get_bool("ui_last/import_ignore_jpegs");
+  const gboolean include_nonraws = !dt_conf_get_bool("ui_last/import_ignore_nonraws");
 
   if(dir_files)
   {
@@ -695,12 +698,14 @@ static guint _import_set_file_list(const gchar *folder, const int folder_lgth,
       {
         nb = _import_set_file_list(fullname, folder_lgth, nb, self);
       }
-      // supported image format to import
+      // Before adding to the import list, check that the format is supported by this build of dt
       else if(filetype != G_FILE_TYPE_DIRECTORY && dt_supported_image(filename))
       {
         const char *ext = g_strrstr(filename, ".");
-        if(include_jpegs || (ext && g_ascii_strncasecmp(ext, ".jpg", sizeof(".jpg"))
-                                 && g_ascii_strncasecmp(ext, ".jpeg", sizeof(".jpeg"))))
+        // Either we are not rejecting non-raw, or the file extension belongs to the raw format
+        if(include_nonraws ||
+           (ext && ((dt_imageio_is_raw_by_extension(ext)) ||
+                    !g_ascii_strncasecmp(ext, ".dng", sizeof(".dng")))))
         {
           gboolean already_imported = FALSE;
           if(d->import_case == DT_IMPORT_INPLACE)
@@ -821,7 +826,7 @@ static void _import_new_toggled(GtkWidget *widget, dt_lib_module_t* self)
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) _do_select_new(self);
 }
 
-static void _ignore_jpegs_toggled(GtkWidget *widget, dt_lib_module_t* self)
+static void _ignore_nonraws_toggled(GtkWidget *widget, dt_lib_module_t* self)
 {
   _update_files_list(self);
   _show_all_thumbs(self);
@@ -1763,9 +1768,9 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
     gtk_widget_set_hexpand(gtk_grid_get_child_at(grid, col++, line), TRUE);
     g_signal_connect(G_OBJECT(d->recursive), "toggled", G_CALLBACK(_recursive_toggled), self);
   }
-  GtkWidget *ignore_jpegs = dt_gui_preferences_bool(grid, "ui_last/import_ignore_jpegs", col++, line, TRUE);
+  GtkWidget *ignore_nonraws = dt_gui_preferences_bool(grid, "ui_last/import_ignore_nonraws", col++, line, TRUE);
   gtk_widget_set_hexpand(gtk_grid_get_child_at(grid, col++, line++), TRUE);
-  g_signal_connect(G_OBJECT(ignore_jpegs), "toggled", G_CALLBACK(_ignore_jpegs_toggled), self);
+  g_signal_connect(G_OBJECT(ignore_nonraws), "toggled", G_CALLBACK(_ignore_nonraws_toggled), self);
   gtk_box_pack_start(GTK_BOX(rbox), GTK_WIDGET(grid), FALSE, FALSE, 8);
 
   // files list
@@ -2128,7 +2133,7 @@ const struct
   char *name;
   int type;
 } _pref[] = {
-  {"ui_last/import_ignore_jpegs",       "ignore_jpegs",       DT_BOOL},
+  {"ui_last/import_ignore_nonraws",     "ignore_nonraws",     DT_BOOL},
   {"ui_last/import_apply_metadata",     "apply_metadata",     DT_BOOL},
   {"ui_last/import_recursive",          "recursive",          DT_BOOL},
   {"ui_last/ignore_exif_rating",        "ignore_exif_rating", DT_BOOL},
