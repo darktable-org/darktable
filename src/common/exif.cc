@@ -1234,11 +1234,22 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       guint image_width = 0;
       guint image_height = 0;
       // We are entering the zoo of image dimensions metadata.
-      // Let's first try the DNG way of telling dimensions.
+      // Let's first try the Exif way of telling dimensions.
+      // For Canon and Sigma cameras, these are the valid raw image
+      // dimensions matching the the resolution tags.
+      // For Fujifilm cameras, this will get the pixel dimensions
+      // of the preview, not the sensor, because that's what the data
+      // in the resolution tags on most Fujifilm cameras seems to be
+      // calculated for.
+      if(FIND_EXIF_TAG("Exif.Photo.PixelXDimension"))
+        image_width = pos->toLong();
+      if(FIND_EXIF_TAG("Exif.Photo.PixelYDimension"))
+        image_height = pos->toLong();
+      // Then try the Adobe DNG way of telling dimensions.
       // Exif.Image.ImageWidth/Length tags are also present in DNG files,
-      // but contain the pixel dimensions of the preview image, which in
+      // but may contain the pixel dimensions of the preview image, which in
       // this case will cause the diagonal calculation to be incorrect.
-      if(FIND_EXIF_TAG("Exif.SubImage1.NewSubfileType"))
+      if(image_width == 0 && FIND_EXIF_TAG("Exif.SubImage1.NewSubfileType"))
       {
         if(pos->toLong() == 0)  // Primary image
         {
@@ -1247,16 +1258,6 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
           if(FIND_EXIF_TAG("Exif.SubImage1.ImageLength"))
             image_height = pos->toLong();
         }
-      }
-      // For Fuji cameras, we intentionally get the pixel dimensions
-      // of the preview, not the sensor, because that's what the data
-      // in the resolution tags on most Fuji cameras is calculated for.
-      if(image_width == 0 && !strcmp(img->exif_maker, "FUJIFILM"))
-      {
-        if(FIND_EXIF_TAG("Exif.Photo.PixelXDimension"))
-          image_width = pos->toLong();
-        if(FIND_EXIF_TAG("Exif.Photo.PixelYDimension"))
-          image_height = pos->toLong();
       }
       // The following tags in certain formats may contain pixel dimensions of
       // the preview instead of the full image, while resolution is calculated
