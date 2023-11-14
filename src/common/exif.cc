@@ -1492,7 +1492,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     }
 
     /* Capitalize Nikon Z-mount lenses properly for UI presentation */
-    if(g_str_has_prefix(img->exif_lens, "NIKKOR"))
+    if(g_str_has_prefix(img->exif_lens, "NIKKOR") || g_str_has_prefix(img->exif_lens, "TAMRON"))
     {
       for(size_t i = 1; i <= 5; ++i)
         img->exif_lens[i] = g_ascii_tolower(img->exif_lens[i]);
