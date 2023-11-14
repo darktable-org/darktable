@@ -323,10 +323,8 @@ static int _cl_split_rgb(const int devid,
                           cl_mem imgg_b,
                           const float guide_weight)
 {
-  const int clwidth = ROUNDUPDWD(width, devid);
-  const int clheight = ROUNDUPDHT(height, devid);
   const int kernel = darktable.opencl->guided_filter->kernel_guided_filter_split_rgb;
-  return dt_opencl_enqueue_kernel_2d_args(devid, kernel, clwidth, clheight,
+  return dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
     CLARG(width), CLARG(height), CLARG(guide), CLARG(imgg_r), CLARG(imgg_g), CLARG(imgg_b), CLARG(guide_weight));
 }
 
@@ -339,19 +337,23 @@ static int _cl_box_mean(const int devid,
                         cl_mem out,
                         cl_mem temp)
 {
-  const int clwidth = ROUNDUPDWD(width, devid);
-  const int clheight = ROUNDUPDHT(height, devid);
-
   const int kernel_x = darktable.opencl->guided_filter->kernel_guided_filter_box_mean_x;
-  dt_opencl_set_kernel_args(devid, kernel_x, 0, CLARG(width), CLARG(height), CLARG(in), CLARG(temp), CLARG(w));
-  const size_t sizes_x[] = { 1, clheight };
-  const int err = dt_opencl_enqueue_kernel_2d(devid, kernel_x, sizes_x);
+  const int kernel_y = darktable.opencl->guided_filter->kernel_guided_filter_box_mean_y;
+
+  const size_t sizes_x[] = { ROUNDUPDHT(height, devid), 1, 1 };
+  const size_t sizes_y[] = { ROUNDUPDWD(width, devid), 1, 1 };
+
+  dt_opencl_set_kernel_args(devid, kernel_x, 0,
+                              CLARG(width), CLARG(height),
+                              CLARG(in), CLARG(temp), CLARG(w));
+
+  const cl_int err = dt_opencl_enqueue_kernel_ndim_with_local(devid, kernel_x, sizes_x, NULL, 1);
   if(err != CL_SUCCESS) return err;
 
-  const int kernel_y = darktable.opencl->guided_filter->kernel_guided_filter_box_mean_y;
-  dt_opencl_set_kernel_args(devid, kernel_y, 0, CLARG(width), CLARG(height), CLARG(temp), CLARG(out), CLARG(w));
-  const size_t sizes_y[] = { clwidth, 1 };
-  return dt_opencl_enqueue_kernel_2d(devid, kernel_y, sizes_y);
+  dt_opencl_set_kernel_args(devid, kernel_y, 0,
+                              CLARG(width), CLARG(height),
+                              CLARG(temp), CLARG(out), CLARG(w));
+  return dt_opencl_enqueue_kernel_ndim_with_local(devid, kernel_y, sizes_y, NULL, 1);
 }
 
 
@@ -365,11 +367,8 @@ static int _cl_covariances(const int devid,
                           cl_mem cov_imgg_img_b,
                           const float guide_weight)
 {
-  const int clwidth = ROUNDUPDWD(width, devid);
-  const int clheight = ROUNDUPDHT(height, devid);
-
   const int kernel = darktable.opencl->guided_filter->kernel_guided_filter_guided_filter_covariances;
-  return dt_opencl_enqueue_kernel_2d_args(devid, kernel, clwidth, clheight,
+  return dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
                                           CLARG(width), CLARG(height),
                                           CLARG(guide), CLARG(in),
                                           CLARG(cov_imgg_img_r), CLARG(cov_imgg_img_g), CLARG(cov_imgg_img_b),
@@ -389,10 +388,8 @@ static int _cl_variances(const int devid,
                           cl_mem var_imgg_bb,
                           const float guide_weight)
 {
-  const int clwidth = ROUNDUPDWD(width, devid);
-  const int clheight = ROUNDUPDHT(height, devid);
   const int kernel = darktable.opencl->guided_filter->kernel_guided_filter_guided_filter_variances;
-  return dt_opencl_enqueue_kernel_2d_args(devid, kernel, clwidth, clheight,
+  return dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
                                           CLARG(width), CLARG(height),
                                           CLARG(guide),
                                           CLARG(var_imgg_rr), CLARG(var_imgg_rg), CLARG(var_imgg_rb),
@@ -410,10 +407,8 @@ static int _cl_update_covariance(const int devid,
                                   cl_mem b,
                                   float eps)
 {
-  const int clwidth = ROUNDUPDWD(width, devid);
-  const int clheight = ROUNDUPDHT(height, devid);
   const int kernel = darktable.opencl->guided_filter->kernel_guided_filter_update_covariance;
-  return dt_opencl_enqueue_kernel_2d_args(devid, kernel, clwidth, clheight,
+  return dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
                                           CLARG(width), CLARG(height),
                                           CLARG(in), CLARG(out),
                                           CLARG(a), CLARG(b),
@@ -442,10 +437,8 @@ static int _cl_solve(const int devid,
                       cl_mem a_b,
                       cl_mem b)
 {
-  const int clwidth = ROUNDUPDWD(width, devid);
-  const int clheight = ROUNDUPDHT(height, devid);
   const int kernel = darktable.opencl->guided_filter->kernel_guided_filter_solve;
-  return dt_opencl_enqueue_kernel_2d_args(devid, kernel, clwidth, clheight,
+  return dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
                                           CLARG(width), CLARG(height),
                                           CLARG(img_mean), CLARG(imgg_mean_r), CLARG(imgg_mean_g), CLARG(imgg_mean_b),
                                           CLARG(cov_imgg_img_r), CLARG(cov_imgg_img_g), CLARG(cov_imgg_img_b),
@@ -470,10 +463,8 @@ static int _cl_generate_result(const int devid,
                                 const float min,
                                 const float max)
 {
-  const int clwidth = ROUNDUPDWD(width, devid);
-  const int clheight = ROUNDUPDHT(height, devid);
   const int kernel = darktable.opencl->guided_filter->kernel_guided_filter_generate_result;
-  return dt_opencl_enqueue_kernel_2d_args(devid, kernel, clwidth, clheight,
+  return dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
                                           CLARG(width), CLARG(height),
                                           CLARG(guide),
                                           CLARG(a_r), CLARG(a_g), CLARG(a_b),
@@ -498,28 +489,25 @@ static int _guided_filter_cl_impl(int devid,
 {
   const float eps = sqrt_eps * sqrt_eps; // this is the regularization parameter of the original papers
 
-  const int clwidth = ROUNDUPDWD(width, devid);
-  const int clheight = ROUNDUPDHT(height, devid);
-
-  cl_mem temp1 = dt_opencl_alloc_device(devid, clwidth, clheight, sizeof(float));
-  cl_mem temp2 = dt_opencl_alloc_device(devid, clwidth, clheight, sizeof(float));
-  cl_mem imgg_mean_r = dt_opencl_alloc_device(devid, clwidth, clheight, sizeof(float));
-  cl_mem imgg_mean_g = dt_opencl_alloc_device(devid, clwidth, clheight, sizeof(float));
-  cl_mem imgg_mean_b = dt_opencl_alloc_device(devid, clwidth, clheight, sizeof(float));
-  cl_mem img_mean = dt_opencl_alloc_device(devid, clwidth, clheight, sizeof(float));
-  cl_mem cov_imgg_img_r = dt_opencl_alloc_device(devid, clwidth, clheight, sizeof(float));
-  cl_mem cov_imgg_img_g = dt_opencl_alloc_device(devid, clwidth, clheight, sizeof(float));
-  cl_mem cov_imgg_img_b = dt_opencl_alloc_device(devid, clwidth, clheight, sizeof(float));
-  cl_mem var_imgg_rr = dt_opencl_alloc_device(devid, clwidth, clheight, sizeof(float));
-  cl_mem var_imgg_gg = dt_opencl_alloc_device(devid, clwidth, clheight, sizeof(float));
-  cl_mem var_imgg_bb = dt_opencl_alloc_device(devid, clwidth, clheight, sizeof(float));
-  cl_mem var_imgg_rg = dt_opencl_alloc_device(devid, clwidth, clheight, sizeof(float));
-  cl_mem var_imgg_rb = dt_opencl_alloc_device(devid, clwidth, clheight, sizeof(float));
-  cl_mem var_imgg_gb = dt_opencl_alloc_device(devid, clwidth, clheight, sizeof(float));
-  cl_mem a_r = dt_opencl_alloc_device(devid, clwidth, clheight, sizeof(float));
-  cl_mem a_g = dt_opencl_alloc_device(devid, clwidth, clheight, sizeof(float));
-  cl_mem a_b = dt_opencl_alloc_device(devid, clwidth, clheight, sizeof(float));
-  cl_mem b = temp2;
+  cl_mem temp1 = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem temp2 = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem imgg_mean_r = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem imgg_mean_g = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem imgg_mean_b = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem img_mean = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem cov_imgg_img_r = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem cov_imgg_img_g = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem cov_imgg_img_b = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem var_imgg_rr = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem var_imgg_gg = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem var_imgg_bb = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem var_imgg_rg = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem var_imgg_rb = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem var_imgg_gb = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem a_r = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem a_g = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem a_b = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  cl_mem b = dt_opencl_alloc_device(devid, width, height, sizeof(float));
 
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   if(temp1 == NULL || temp2 == NULL ||                                                        //
@@ -527,7 +515,7 @@ static int _guided_filter_cl_impl(int devid,
      cov_imgg_img_r == NULL || cov_imgg_img_g == NULL || cov_imgg_img_b == NULL ||            //
      var_imgg_rr == NULL || var_imgg_gg == NULL || var_imgg_bb == NULL ||                     //
      var_imgg_rg == NULL || var_imgg_rb == NULL || var_imgg_gb == NULL ||                     //
-     a_r == NULL || a_g == NULL || a_b == NULL)
+     a_r == NULL || a_g == NULL || a_b == NULL || b == NULL)
   {
     goto error;
   }
@@ -599,9 +587,9 @@ error:
   dt_opencl_release_mem_object(imgg_mean_b);
   dt_opencl_release_mem_object(temp1);
   dt_opencl_release_mem_object(temp2);
+  dt_opencl_release_mem_object(b);
   return err;
 }
-
 
 static int _guided_filter_cl_fallback(int devid,
                                       cl_mem guide,
@@ -664,7 +652,7 @@ void guided_filter_cl(int devid,
   const gboolean fits = dt_opencl_image_fits_device(devid, width, height, sizeof(float), 18.0f * 1.25f, 0);
 
   cl_int err =  DT_OPENCL_DEFAULT_ERROR;
-  if(fits)
+  if(0 && fits)
   {
     err = _guided_filter_cl_impl(devid, guide, in, out, width, height, ch, w, sqrt_eps, guide_weight, min, max);
     if(err != CL_SUCCESS)
