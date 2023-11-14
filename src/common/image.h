@@ -348,23 +348,25 @@ typedef struct dt_image_basic_exif_t
 void dt_image_init(dt_image_t *img);
 /** Refresh makermodel from the raw and exif values **/
 void dt_image_refresh_makermodel(dt_image_t *img);
-/** returns non-zero if the image contains low-dynamic range data. */
+/** returns TRUE if the image contains low-dynamic range data. */
 gboolean dt_image_is_ldr(const dt_image_t *img);
-/** returns non-zero if the image contains mosaic data. */
+/** returns TRUE if the image contains mosaic data. */
 gboolean dt_image_is_raw(const dt_image_t *img);
-/** returns non-zero if the image contains float data. */
+/** returns TRUE if the image contains float data. */
 gboolean dt_image_is_hdr(const dt_image_t *img);
 /** set the monochrome flags if monochrome is TRUE and clear it otherwise */
 void dt_image_set_monochrome_flag(const dt_imgid_t imgid, const gboolean monochrome);
-/** returns non-zero if this image was taken using a monochrome camera */
+/** returns TRUE if this image was taken using a monochrome camera */
 gboolean dt_image_is_monochrome(const dt_image_t *img);
-/** returns non-zero if the image supports a color correction matrix */
+/** returns TRUE is image has a raw bayer sensor with RGB data */
+gboolean dt_image_is_bayerRGB(const dt_image_t *img);
+/** returns TRUE if the image supports a color correction matrix */
 gboolean dt_image_is_matrix_correction_supported(const dt_image_t *img);
-/** returns non-zero if the image supports the rawprepare module */
+/** returns TRUE if the image supports the rawprepare module */
 gboolean dt_image_is_rawprepare_supported(const dt_image_t *img);
 /** returns the bitmask containing info about monochrome images */
 int dt_image_monochrome_flags(const dt_image_t *img);
-/** returns true if the image has been tested to be monochrome and the
+/** returns TRUE if the image has been tested to be monochrome and the
  * image wants monochrome workflow */
 gboolean dt_image_use_monochrome_workflow(const dt_image_t *img);
 /** returns the image filename */
