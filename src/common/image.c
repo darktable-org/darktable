@@ -1664,7 +1664,7 @@ static int _image_read_duplicates(const uint32_t id,
 
 static uint32_t _image_import_internal(const int32_t film_id,
                                        const char *filename,
-                                       const gboolean override_ignore_jpegs,
+                                       const gboolean override_ignore_nonraws,
                                        const gboolean lua_locking,
                                        const gboolean raise_signals)
 {
@@ -1684,8 +1684,15 @@ static uint32_t _image_import_internal(const int32_t film_id,
     return 0;
   }
   char *ext = g_ascii_strdown(cc + 1, -1);
-  if(override_ignore_jpegs == FALSE && (!strcmp(ext, "jpg") || !strcmp(ext, "jpeg"))
-     && dt_conf_get_bool("ui_last/import_ignore_jpegs"))
+  // If this function is called with argument to obey "ignore non-raws" flag
+  // and this flag is set
+  // and the file has non-raw extension and is not a DNG file
+  // then quit without importing
+  if(override_ignore_nonraws == FALSE
+     && ext
+     && !dt_imageio_is_raw_by_extension(ext)
+     && g_ascii_strncasecmp(ext, ".dng", sizeof(".dng"))
+     && dt_conf_get_bool("ui_last/import_ignore_nonraws"))
   {
     g_free(normalized_filename);
     g_free(ext);
@@ -1996,18 +2003,18 @@ dt_imgid_t dt_image_get_id(const uint32_t film_id, const gchar *filename)
 
 dt_imgid_t dt_image_import(const int32_t film_id,
                            const char *filename,
-                           const gboolean override_ignore_jpegs,
+                           const gboolean override_ignore_nonraws,
                            const gboolean raise_signals)
 {
-  return _image_import_internal(film_id, filename, override_ignore_jpegs,
+  return _image_import_internal(film_id, filename, override_ignore_nonraws,
                                 TRUE, raise_signals);
 }
 
 dt_imgid_t dt_image_import_lua(const int32_t film_id,
                                const char *filename,
-                               const gboolean override_ignore_jpegs)
+                               const gboolean override_ignore_nonraws)
 {
-  return _image_import_internal(film_id, filename, override_ignore_jpegs, FALSE, TRUE);
+  return _image_import_internal(film_id, filename, override_ignore_nonraws, FALSE, TRUE);
 }
 
 void dt_image_init(dt_image_t *img)
