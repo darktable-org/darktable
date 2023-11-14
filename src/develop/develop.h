@@ -408,7 +408,7 @@ void dt_dev_reprocess_all(dt_develop_t *dev);
 void dt_dev_reprocess_center(dt_develop_t *dev);
 void dt_dev_reprocess_preview(dt_develop_t *dev);
 
-gboolean dt_dev_get_preview_size(dt_develop_t *dev,
+gboolean dt_dev_get_preview_size(const dt_develop_t *dev,
                                  float *wd,
                                  float *ht);
 void dt_dev_get_processed_size(dt_dev_viewport_t *port,

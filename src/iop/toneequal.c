@@ -287,21 +287,24 @@ typedef struct dt_iop_toneequalizer_gui_data_t
   int area_active_node;
 
   // Flags for UI events
-  int valid_nodes_x;        // TRUE if x coordinates of graph nodes have been inited
-  int valid_nodes_y;        // TRUE if y coordinates of graph nodes have been inited
-  int area_cursor_valid;    // TRUE if mouse cursor is over the graph area
-  int area_dragging;        // TRUE if left-button has been pushed but not released and cursor motion is recorded
-  int cursor_valid;         // TRUE if mouse cursor is over the preview image
-  int has_focus;            // TRUE if the widget has the focus from GTK
+  gboolean valid_nodes_x;      // TRUE if x coordinates of graph nodes have been inited
+  gboolean valid_nodes_y;      // TRUE if y coordinates of graph nodes have been inited
+  gboolean area_cursor_valid;  // TRUE if mouse cursor is over the graph area
+  gboolean area_dragging;      // TRUE if left-button has been pushed
+                               // but not released and cursor motion
+                               // is recorded
+  gboolean cursor_valid;       // TRUE if mouse cursor is over the preview image
+  gboolean has_focus;          // TRUE if the widget has the focus from GTK
 
   // Flags for buffer caches invalidation
-  int interpolation_valid;  // TRUE if the interpolation_matrix is ready
-  int luminance_valid;      // TRUE if the luminance cache is ready
-  int histogram_valid;      // TRUE if the histogram cache and stats are ready
-  int lut_valid;            // TRUE if the gui_lut is ready
-  int graph_valid;          // TRUE if the UI graph view is ready
-  int user_param_valid;     // TRUE if users params set in interactive view are in bounds
-  int factors_valid;        // TRUE if radial-basis coeffs are ready
+  gboolean interpolation_valid; // TRUE if the interpolation_matrix is ready
+  gboolean luminance_valid;     // TRUE if the luminance cache is ready
+  gboolean histogram_valid;     // TRUE if the histogram cache and stats are ready
+  gboolean lut_valid;           // TRUE if the gui_lut is ready
+  gboolean graph_valid;         // TRUE if the UI graph view is ready
+  gboolean user_param_valid;    // TRUE if users params set in
+                                // interactive view are in bounds
+  gboolean factors_valid;       // TRUE if radial-basis coeffs are ready
 
 } dt_iop_toneequalizer_gui_data_t;
 
@@ -605,7 +608,7 @@ static gboolean in_mask_editing(dt_iop_module_t *self)
   return dev->form_gui && dev->form_visible;
 }
 
-static void hash_set_get(uint64_t *hash_in,
+static void hash_set_get(const uint64_t *hash_in,
                          uint64_t *hash_out,
                          dt_pthread_mutex_t *lock)
 {
@@ -625,8 +628,8 @@ static void invalidate_luminance_cache(dt_iop_module_t *const self)
 
   dt_iop_gui_enter_critical_section(self);
   g->max_histogram = 1;
-  //g->luminance_valid = 0;
-  g->histogram_valid = 0;
+  g->luminance_valid = FALSE;
+  g->histogram_valid = FALSE;
   g->thumb_preview_hash = 0;
   g->ui_preview_hash = 0;
   dt_iop_gui_leave_critical_section(self);
@@ -941,7 +944,6 @@ static inline void compute_luminance_mask(const float *const restrict in,
   }
 }
 
-
 /***
  * Actual transfer functions
  **/
@@ -1021,8 +1023,8 @@ void toneeq_process(struct dt_iop_module_t *self,
 
   // Get the hash of the upstream pipe to track changes
   const int position = self->iop_order;
-  uint64_t hash = dt_dev_pixelpipe_cache_hash(piece->pipe->image.id,
-                                              roi_out, piece->pipe, position);
+  const uint64_t hash = dt_dev_pixelpipe_cache_hash(piece->pipe->image.id,
+                                                    roi_out, piece->pipe, position);
 
   // Sanity checks
   if(width < 1 || height < 1) return;
@@ -1064,7 +1066,7 @@ void toneeq_process(struct dt_iop_module_t *self,
       // Re-allocate a new buffer if the full preview size has changed
       if(g->full_preview_buf_width != width || g->full_preview_buf_height != height)
       {
-        if(g->full_preview_buf) dt_free_align(g->full_preview_buf);
+        dt_free_align(g->full_preview_buf);
         g->full_preview_buf = dt_alloc_align_float(num_elem);
         g->full_preview_buf_width = width;
         g->full_preview_buf_height = height;
@@ -1073,10 +1075,9 @@ void toneeq_process(struct dt_iop_module_t *self,
       luminance = g->full_preview_buf;
       cached = TRUE;
     }
-
     else if(piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
     {
-      // For DT_DEV_PIXELPIPE_PREVIEW, we need to cache is too to
+      // For DT_DEV_PIXELPIPE_PREVIEW, we need to cache it too to
       // compute the full image stats upon user request in GUI threads
       // locks are required since GUI reads and writes on that buffer.
 
@@ -1084,7 +1085,7 @@ void toneeq_process(struct dt_iop_module_t *self,
       dt_iop_gui_enter_critical_section(self);
       if(g->thumb_preview_buf_width != width || g->thumb_preview_buf_height != height)
       {
-        if(g->thumb_preview_buf) dt_free_align(g->thumb_preview_buf);
+        dt_free_align(g->thumb_preview_buf);
         g->thumb_preview_buf = dt_alloc_align_float(num_elem);
         g->thumb_preview_buf_width = width;
         g->thumb_preview_buf_height = height;
@@ -1652,7 +1653,8 @@ void commit_params(struct dt_iop_module_t *self,
   if(self->dev->gui_attached && g)
   {
     dt_iop_gui_enter_critical_section(self);
-    if(g->sigma != p->smoothing) g->interpolation_valid = FALSE;
+    if(g->sigma != p->smoothing)
+      g->interpolation_valid = FALSE;
     g->sigma = p->smoothing;
     g->user_param_valid = FALSE; // force updating channels factors
     dt_iop_gui_leave_critical_section(self);
@@ -1860,7 +1862,7 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, gpointer user_data)
   // so we aim at centering the exposure distribution on -4 EV
 
   dt_iop_gui_enter_critical_section(self);
-  g->histogram_valid = 0;
+  g->histogram_valid = FALSE;
   dt_iop_gui_leave_critical_section(self);
 
   update_histogram(self);
@@ -1923,7 +1925,7 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, gpointer user_data)
 
   // The goal is to spread 90 % of the exposure histogram in the [-7, -1] EV
   dt_iop_gui_enter_critical_section(self);
-  g->histogram_valid = 0;
+  g->histogram_valid = FALSE;
   dt_iop_gui_leave_critical_section(self);
 
   update_histogram(self);
@@ -2010,7 +2012,9 @@ static void show_luminance_mask_callback(GtkWidget *togglebutton,
 static void switch_cursors(struct dt_iop_module_t *self)
 {
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
-  if(!g || !self->dev->gui_attached) return;
+
+  if(!g || !self->dev->gui_attached)
+    return;
 
   GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
 
@@ -2039,9 +2043,10 @@ static void switch_cursors(struct dt_iop_module_t *self)
     // do nothing and let the app decide
     return;
   }
-  else if( ((self->dev->full.pipe->processing) ||
-          (self->dev->full.pipe->status == DT_DEV_PIXELPIPE_DIRTY) ||
-          (self->dev->preview_pipe->status == DT_DEV_PIXELPIPE_DIRTY)) && g->cursor_valid)
+  else if((self->dev->full.pipe->processing
+           || self->dev->full.pipe->status == DT_DEV_PIXELPIPE_DIRTY
+           || self->dev->preview_pipe->status == DT_DEV_PIXELPIPE_DIRTY)
+          && g->cursor_valid)
   {
     // if pipe is busy or dirty but cursor is on preview,
     // display waiting cursor while pipe reprocesses
@@ -2067,7 +2072,8 @@ static void switch_cursors(struct dt_iop_module_t *self)
   {
     // if module is active and opened but cursor is out of the preview,
     // display default cursor
-    GdkCursor *const cursor = gdk_cursor_new_from_name(gdk_display_get_default(), "default");
+    GdkCursor *const cursor =
+      gdk_cursor_new_from_name(gdk_display_get_default(), "default");
     gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
     g_object_unref(cursor);
 
@@ -2084,7 +2090,6 @@ static void switch_cursors(struct dt_iop_module_t *self)
   }
 }
 
-
 int mouse_moved(dt_iop_module_t *self,
                 const float pzx,
                 const float pzy,
@@ -2098,7 +2103,7 @@ int mouse_moved(dt_iop_module_t *self,
   // all distortions, cropping, rotations etc. are applied before this
   // module in the pipe.
 
-  dt_develop_t *dev = self->dev;
+  const dt_develop_t *dev = self->dev;
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
 
   dt_iop_gui_enter_critical_section(self);
@@ -2107,7 +2112,7 @@ int mouse_moved(dt_iop_module_t *self,
   if(fail) return 0;
 
   float wd, ht;
-  if(!dt_dev_get_preview_size(self->dev, &wd, &ht)) return 0;
+  if(!dt_dev_get_preview_size(dev, &wd, &ht)) return 0;
 
   if(g == NULL) return 0;
 
@@ -2208,7 +2213,7 @@ static inline int set_new_params_interactive(const float control_exposure,
   {
     // Accept the solution
     dt_simd_memcpy(factors, g->factors, PIXEL_CHAN);
-    g->lut_valid = 0;
+    g->lut_valid = FALSE;
 
     // Convert the linear temp parameters to log gains and commit
     float gains[CHANNELS] DT_ALIGNED_ARRAY;
@@ -2220,7 +2225,7 @@ static inline int set_new_params_interactive(const float control_exposure,
     // Reset the GUI copy of user params
     get_channels_factors(factors, p);
     dt_simd_memcpy(factors, g->temp_user_params, CHANNELS);
-    g->user_param_valid = 1;
+    g->user_param_valid = TRUE;
   }
 
   return commit;
@@ -2584,7 +2589,8 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
     const gboolean was_mask = g->mask_display;
     g->mask_display = FALSE;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_luminance_mask), FALSE);
-    if(was_mask) dt_dev_reprocess_center(self->dev);
+    if(was_mask)
+      dt_dev_reprocess_center(self->dev);
     dt_collection_hint_message(darktable.collection);
   }
   else
@@ -2604,17 +2610,21 @@ static inline gboolean _init_drawing(dt_iop_module_t *const restrict self,
   // Cache the equalizer graph objects to avoid recomputing all the view at each redraw
   gtk_widget_get_allocation(widget, &g->allocation);
 
-  if(g->cst) cairo_surface_destroy(g->cst);
+  if(g->cst)
+    cairo_surface_destroy(g->cst);
   g->cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
                                          g->allocation.width, g->allocation.height);
 
-  if(g->cr) cairo_destroy(g->cr);
+  if(g->cr)
+    cairo_destroy(g->cr);
   g->cr = cairo_create(g->cst);
 
-  if(g->layout) g_object_unref(g->layout);
+  if(g->layout)
+    g_object_unref(g->layout);
   g->layout = pango_cairo_create_layout(g->cr);
 
-  if(g->desc) pango_font_description_free(g->desc);
+  if(g->desc)
+    pango_font_description_free(g->desc);
   g->desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
 
   pango_layout_set_font_description(g->layout, g->desc);
@@ -2728,7 +2738,7 @@ static inline gboolean _init_drawing(dt_iop_module_t *const restrict self,
   // end of caching section, this will not be drawn again
 
   dt_iop_gui_enter_critical_section(self);
-  g->graph_valid = 1;
+  g->graph_valid = TRUE;
   dt_iop_gui_leave_critical_section(self);
 
   return TRUE;
@@ -3165,7 +3175,7 @@ static gboolean area_motion_notify(GtkWidget *widget,
       if(delta_x < radius_threshold)
       {
         g->area_active_node = i;
-        g->area_cursor_valid = 1;
+        g->area_cursor_valid = TRUE;
       }
     }
   }
@@ -3298,7 +3308,6 @@ static void _develop_ui_pipe_finished_callback(gpointer instance,
   if(g == NULL) return;
   switch_cursors(self);
 }
-
 
 void gui_reset(struct dt_iop_module_t *self)
 {
@@ -3551,7 +3560,6 @@ void gui_init(struct dt_iop_module_t *self)
      G_CALLBACK(_develop_ui_pipe_started_callback), self);
 }
 
-
 void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
@@ -3570,12 +3578,13 @@ void gui_cleanup(struct dt_iop_module_t *self)
                                      G_CALLBACK(_develop_preview_pipe_finished_callback),
                                      self);
 
-  if(g->thumb_preview_buf) dt_free_align(g->thumb_preview_buf);
-  if(g->full_preview_buf) dt_free_align(g->full_preview_buf);
-  if(g->desc) pango_font_description_free(g->desc);
+  dt_free_align(g->thumb_preview_buf);
+  dt_free_align(g->full_preview_buf);
+
+  if(g->desc)   pango_font_description_free(g->desc);
   if(g->layout) g_object_unref(g->layout);
-  if(g->cr) cairo_destroy(g->cr);
-  if(g->cst) cairo_surface_destroy(g->cst);
+  if(g->cr)     cairo_destroy(g->cr);
+  if(g->cst)    cairo_surface_destroy(g->cst);
 
   IOP_GUI_FREE;
 }

@@ -268,11 +268,14 @@ static void pixel_rgb_geomean(const float *const restrict image,
 
 
 __DT_CLONE_TARGETS__
-static inline void luminance_mask(const float *const restrict in, float *const restrict out,
-                           const size_t width, const size_t height,
-                           const dt_iop_luminance_mask_method_t method,
-                           const float exposure_boost,
-                           const float fulcrum, const float contrast_boost)
+static inline void luminance_mask(const float *const restrict in,
+                                  float *const restrict out,
+                                  const size_t width,
+                                  const size_t height,
+                                  const dt_iop_luminance_mask_method_t method,
+                                  const float exposure_boost,
+                                  const float fulcrum,
+                                  const float contrast_boost)
 {
   const size_t num_elem = width * height * 4;
   switch(method)
@@ -309,4 +312,3 @@ static inline void luminance_mask(const float *const restrict in, float *const r
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

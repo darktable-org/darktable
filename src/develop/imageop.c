@@ -2205,7 +2205,9 @@ void dt_iop_request_focus(dt_iop_module_t *module)
   if(!darktable.lib->proxy.colorpicker.restrict_histogram)
     dt_iop_color_picker_reset(NULL, TRUE);
 
-  if(darktable.gui->reset || (out_focus_module == module)) return;
+  if(darktable.gui->reset
+     || (out_focus_module == module))
+    return;
 
   dev->gui_module = module;
   dev->focus_hash = TRUE;

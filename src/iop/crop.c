@@ -423,7 +423,6 @@ void commit_params(struct dt_iop_module_t *self,
   }
 }
 
-
 static void _event_preview_updated_callback(gpointer instance, dt_iop_module_t *self)
 {
   dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
