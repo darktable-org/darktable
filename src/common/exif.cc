@@ -963,7 +963,7 @@ static gboolean _check_lens_correction_data(Exiv2::ExifData &exifData, dt_image_
     {
       for(int i = 0; i < 4; i++)
       {
-        float kd = pos->toFloat(i);
+        const float kd = pos->toFloat(i);
         img->exif_correction_data.olympus.dist[i] = kd;
         if (kd != 0 && i < 3)
         {
@@ -986,7 +986,7 @@ static gboolean _check_lens_correction_data(Exiv2::ExifData &exifData, dt_image_
     {
       for(int i = 0; i < 6; i++)
       {
-        float kc = pos->toFloat(i);
+        const float kc = pos->toFloat(i);
         img->exif_correction_data.olympus.ca[i] = kc;
         if (kc != 0)
         {
