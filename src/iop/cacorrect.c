@@ -311,12 +311,6 @@ void process(
   #define v4 512
   // multithreaded and partly vectorized by Ingo Weyrich
 
-  // Test for RGB cfa
-  for(int i = 0; i < 2; i++)
-    for(int j = 0; j < 2; j++)
-      if(FC(i, j, filters) == 3)
-        return;
-
   if(avoidshift)
   {
     const size_t buffsize = h_width * h_height;
@@ -1362,10 +1356,12 @@ void distort_mask(
 
 void reload_defaults(dt_iop_module_t *module)
 {
-  dt_image_t *img = &module->dev->image_storage;
-  // can't be switched on for non-raw or x-trans images:
-  const gboolean active = (dt_image_is_raw(img) && (img->buf_dsc.filters != 9u) && !(dt_image_is_monochrome(img)));
-  module->hide_enable_button = !active;
+  // can't be switched on for non bayer RGB images:
+  if(!dt_image_is_bayerRGB(&module->dev->image_storage))
+  {
+    module->hide_enable_button = TRUE;
+    module->default_enabled = FALSE;
+  }
 }
 
 /** commit is the synch point between core and gui, so it copies params to pipe data. */
@@ -1375,10 +1371,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   dt_iop_cacorrect_params_t *p = (dt_iop_cacorrect_params_t *)params;
   dt_iop_cacorrect_data_t *d = (dt_iop_cacorrect_data_t *) piece->data;
 
-  dt_image_t *img = &pipe->image;
-  const gboolean active = (dt_image_is_raw(img) && (img->buf_dsc.filters != 9u) && !(dt_image_is_monochrome(img)));
-
-  if(!active) piece->enabled = FALSE;
+  if(!dt_image_is_bayerRGB(&self->dev->image_storage)) piece->enabled = FALSE;
 
   d->iterations = p->iterations;
   d->avoidshift = p->avoidshift;
@@ -1400,33 +1393,16 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_cacorrect_gui_data_t *g = (dt_iop_cacorrect_gui_data_t *)self->gui_data;
   dt_iop_cacorrect_params_t *p = (dt_iop_cacorrect_params_t *)self->params;
 
-  dt_image_t *img = &self->dev->image_storage;
+  const gboolean supported = dt_image_is_bayerRGB(&self->dev->image_storage);
+  self->hide_enable_button = !supported;
+  if(!supported) self->default_enabled = FALSE;
 
-  const gboolean active = (dt_image_is_raw(img) && (img->buf_dsc.filters != 9u) && !(dt_image_is_monochrome(img)));
-  self->hide_enable_button = !active;
-
-  gtk_stack_set_visible_child_name(GTK_STACK(self->widget), active ? "raw" : "non_raw");
-
-  gtk_widget_set_visible(g->avoidshift, active);
-  gtk_widget_set_visible(g->iterations, active);
-  dt_bauhaus_combobox_set_from_value(g->iterations, p->iterations);
+  gtk_stack_set_visible_child_name(GTK_STACK(self->widget), supported ? "bayer" : "other");
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->avoidshift), p->avoidshift);
-}
 
-void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
-{
-  dt_iop_cacorrect_gui_data_t *g = (dt_iop_cacorrect_gui_data_t *)self->gui_data;
-  dt_iop_cacorrect_params_t *p = (dt_iop_cacorrect_params_t *)self->params;
-
-  dt_image_t *img = &self->dev->image_storage;
-
-  const gboolean active = (dt_image_is_raw(img) && (img->buf_dsc.filters != 9u) && !(dt_image_is_monochrome(img)));
-
-  gtk_stack_set_visible_child_name(GTK_STACK(self->widget), active ? "raw" : "non_raw");
-
-  gtk_widget_set_visible(g->avoidshift, active);
+  gtk_widget_set_visible(g->avoidshift, supported);
+  gtk_widget_set_visible(g->iterations, supported);
   dt_bauhaus_combobox_set_from_value(g->iterations, p->iterations);
-  gtk_widget_set_visible(g->iterations, active);
 }
 
 void gui_init(dt_iop_module_t *self)
@@ -1444,10 +1420,10 @@ void gui_init(dt_iop_module_t *self)
   // start building top level widget
   self->widget = gtk_stack_new();
   gtk_stack_set_homogeneous(GTK_STACK(self->widget), FALSE);
-  gtk_stack_add_named(GTK_STACK(self->widget), box_raw, "raw");
+  gtk_stack_add_named(GTK_STACK(self->widget), box_raw, "bayer");
 
-  GtkWidget *label_non_raw = dt_ui_label_new(_("automatic chromatic aberration correction\nonly for Bayer raw files"));
-  gtk_stack_add_named(GTK_STACK(self->widget), label_non_raw, "non_raw");
+  GtkWidget *label_other = dt_ui_label_new(_("automatic chromatic aberration correction\nonly for Bayer raw files with 3 color channels"));
+  gtk_stack_add_named(GTK_STACK(self->widget), label_other, "other");
 }
 
 // clang-format off
