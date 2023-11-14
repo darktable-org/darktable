@@ -1077,11 +1077,18 @@ static gboolean _gui_multiinstance_callback(GtkButton *button,
 static gboolean _gui_off_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
+
+  if(module->operation_tags() & IOP_TAG_DISTORT)
+  {
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_DISTORT);
+  }
+
   if(!darktable.gui->reset && dt_modifier_is(e->state, GDK_CONTROL_MASK))
   {
     dt_iop_request_focus(dt_dev_gui_module() == module ? NULL : module);
     return TRUE;
   }
+
   return FALSE;
 }
 
@@ -2122,6 +2129,11 @@ void dt_iop_gui_update(dt_iop_module_t *module)
     dt_guides_update_module_widget(module);
   }
   --darktable.gui->reset;
+
+  if(module->operation_tags() & IOP_TAG_DISTORT)
+  {
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_DISTORT);
+  }
 }
 
 void dt_iop_gui_reset(dt_iop_module_t *module)
