@@ -20,6 +20,8 @@ installDir="${buildDir}/macosx"
 options=" \
     -DUSE_GRAPHICSMAGICK=OFF \
     -DUSE_IMAGEMAGICK=ON \
+    -DBUILD_CURVE_TOOLS=ON \
+    -DBUILD_NOISE_TOOLS=ON \
 "
 
 # Check for previous attempt and clean
