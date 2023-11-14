@@ -953,6 +953,50 @@ static gboolean _check_lens_correction_data(Exiv2::ExifData &exifData, dt_image_
     }
   }
 
+  /*
+   * Olympus distortion correction
+   */
+  if(Exiv2::versionNumber() >= EXIV2_MAKE_VERSION(0, 27, 4)
+     && _exif_read_exif_tag(exifData, &pos, "Exif.OlympusIp.0x150a"))
+  {
+    if(pos->count() == 4)
+    {
+      for(int i = 0; i < 4; i++)
+      {
+        const float kd = pos->toFloat(i);
+        img->exif_correction_data.olympus.dist[i] = kd;
+        if (kd != 0 && i < 3)
+        {
+          // Assume it's valid if any of the first three elements are nonzero. Ignore the
+          // fourth element since the null value for no correction is '0 0 0 1'
+          img->exif_correction_type = CORRECTION_TYPE_OLYMPUS;
+          img->exif_correction_data.olympus.has_dist = TRUE;
+        }
+      }
+    }
+  }
+
+  /*
+   * Olympus CA correction
+   */
+  if(Exiv2::versionNumber() >= EXIV2_MAKE_VERSION(0, 27, 4)
+    && _exif_read_exif_tag(exifData, &pos, "Exif.OlympusIp.0x150c"))
+  {
+    if(pos->count() == 6)
+    {
+      for(int i = 0; i < 6; i++)
+      {
+        const float kc = pos->toFloat(i);
+        img->exif_correction_data.olympus.ca[i] = kc;
+        if (kc != 0)
+        {
+          img->exif_correction_type = CORRECTION_TYPE_OLYMPUS;
+          img->exif_correction_data.olympus.has_ca = TRUE;
+        }
+      }
+    }
+  }
+
   return img->exif_correction_type != CORRECTION_TYPE_NONE;
 }
 
