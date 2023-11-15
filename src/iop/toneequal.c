@@ -2564,6 +2564,7 @@ static void _develop_distort_callback(gpointer instance,
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
   if(g == NULL) return;
+  if(!g->distort_signal_actif) return;
 
   /* disable the distort signal now to avoid recursive call on this signal as we are
      about to reprocess the preview pipe which has some module doing distortion. */
@@ -3614,7 +3615,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
                                      G_CALLBACK(_develop_preview_pipe_finished_callback),
                                      self);
-
+  _unset_distort_signal(self);
 
   dt_free_align(g->thumb_preview_buf);
   dt_free_align(g->full_preview_buf);
