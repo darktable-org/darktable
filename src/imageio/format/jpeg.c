@@ -40,16 +40,25 @@
 
 DT_MODULE(3)
 
+typedef enum dt_imageio_jpeg_subsample_t
+{
+  DT_SUBSAMPLE_AUTO,
+  DT_SUBSAMPLE_444,
+  DT_SUBSAMPLE_440,
+  DT_SUBSAMPLE_422,
+  DT_SUBSAMPLE_420
+} dt_imageio_jpeg_subsample_t;
+
 typedef struct dt_imageio_jpeg_t
 {
   dt_imageio_module_data_t global;
   int quality;
+  dt_imageio_jpeg_subsample_t subsample;
   struct jpeg_source_mgr src;
   struct jpeg_destination_mgr dest;
   struct jpeg_decompress_struct dinfo;
   struct jpeg_compress_struct cinfo;
   FILE *f;
-  int subsample;
 } dt_imageio_jpeg_t;
 
 typedef struct dt_imageio_jpeg_gui_data_t
@@ -399,12 +408,12 @@ void *legacy_params(dt_imageio_module_format_t *self,
   {
     dt_imageio_module_data_t global;
     int quality;
+    dt_imageio_jpeg_subsample_t subsample;
     struct jpeg_source_mgr src;
     struct jpeg_destination_mgr dest;
     struct jpeg_decompress_struct dinfo;
     struct jpeg_compress_struct cinfo;
     FILE *f;
-    int subsample;
   } dt_imageio_jpeg_v3_t;
 
   if(old_version == 2)
@@ -414,7 +423,7 @@ void *legacy_params(dt_imageio_module_format_t *self,
     const dt_imageio_jpeg_v2_t *o = (dt_imageio_jpeg_v2_t *)old_params;
     dt_imageio_jpeg_v3_t *n = (dt_imageio_jpeg_v3_t *)malloc(sizeof(dt_imageio_jpeg_v3_t));
     memcpy(n, o, sizeof(struct dt_imageio_jpeg_v2_t));
-    n->subsample = 0; // auto
+    n->subsample = DT_SUBSAMPLE_AUTO;
 
     *new_version = 3;
     *new_size = sizeof(dt_imageio_module_data_t) + sizeof(int);
@@ -509,7 +518,7 @@ static void quality_changed(GtkWidget *slider, gpointer user_data)
 
 static void subsample_combobox_changed(GtkWidget *widget, gpointer user_data)
 {
-  const int subsample = dt_bauhaus_combobox_get(widget);
+  const dt_imageio_jpeg_subsample_t subsample = dt_bauhaus_combobox_get(widget);
   dt_conf_set_int("plugins/imageio/format/jpeg/subsample", subsample);
 }
 
@@ -518,7 +527,7 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_imageio_jpeg_gui_data_t *g = (dt_imageio_jpeg_gui_data_t *)malloc(sizeof(dt_imageio_jpeg_gui_data_t));
   self->gui_data = g;
 
-  const int subsample = dt_conf_get_int("plugins/imageio/format/jpeg/subsample");
+  const dt_imageio_jpeg_subsample_t subsample = dt_conf_get_int("plugins/imageio/format/jpeg/subsample");
 
   // construct gui with jpeg specific options:
   GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -563,7 +572,7 @@ void gui_reset(dt_imageio_module_format_t *self)
 {
   dt_imageio_jpeg_gui_data_t *g = (dt_imageio_jpeg_gui_data_t *)self->gui_data;
   dt_bauhaus_slider_set(g->quality, dt_confgen_get_int("plugins/imageio/format/jpeg/quality", DT_DEFAULT));
-  dt_bauhaus_combobox_set(g->subsample, 0);    // auto
+  dt_bauhaus_combobox_set(g->subsample, DT_SUBSAMPLE_AUTO);
 }
 
 // clang-format off
