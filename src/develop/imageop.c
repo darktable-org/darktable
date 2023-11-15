@@ -2128,7 +2128,10 @@ void dt_iop_gui_update(dt_iop_module_t *module)
     dt_iop_show_hide_header_buttons(module, NULL, FALSE, FALSE);
     dt_guides_update_module_widget(module);
 
+    // this signal must be raised only safely when the darkroom and history
+    // if available.
     if(!darktable.develop->history_updating
+       && !darktable.develop->gui_synch
        && module->operation_tags() & IOP_TAG_DISTORT)
     {
       DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_DISTORT);
