@@ -2579,7 +2579,7 @@ static void _develop_distort_callback(gpointer instance,
 static void _set_distort_signal(dt_iop_module_t *self)
 {
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
-  if(!g->distort_signal_actif)
+  if(self->enabled && !g->distort_signal_actif)
   {
     DT_DEBUG_CONTROL_SIGNAL_CONNECT
       (darktable.signals,
