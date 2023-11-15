@@ -418,15 +418,25 @@ void *legacy_params(dt_imageio_module_format_t *self,
 
   if(old_version == 2)
   {
-    // Version 3 only adds subsample field at the end of the struct
-    // so we use memcpy for simplicity
     const dt_imageio_jpeg_v2_t *o = (dt_imageio_jpeg_v2_t *)old_params;
     dt_imageio_jpeg_v3_t *n = (dt_imageio_jpeg_v3_t *)malloc(sizeof(dt_imageio_jpeg_v3_t));
-    memcpy(n, o, sizeof(struct dt_imageio_jpeg_v2_t));
+
+    n->global.max_width = o->global.max_width;
+    n->global.max_height = o->global.max_height;
+    n->global.width = o->global.width;
+    n->global.height = o->global.height;
+    g_strlcpy(n->global.style, o->global.style, sizeof(o->global.style));
+    n->global.style_append = o->global.style_append;
+    n->quality = o->quality;
     n->subsample = DT_SUBSAMPLE_AUTO;
+    n->src = o->src;
+    n->dest = o->dest;
+    n->dinfo = o->dinfo;
+    n->cinfo = o->cinfo;
+    n->f = o->f;
 
     *new_version = 3;
-    *new_size = sizeof(dt_imageio_module_data_t) + sizeof(int);
+    *new_size = sizeof(dt_imageio_module_data_t) + sizeof(int) + sizeof(dt_imageio_jpeg_subsample_t);
     return n;
   }
 
