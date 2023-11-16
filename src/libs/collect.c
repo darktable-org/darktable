@@ -2120,7 +2120,10 @@ static void _list_view(dt_lib_collect_rule_t *dr)
           }
           else
           {
-            order_by = g_strdup("lower(folder) ASC");
+            if(sort_descending)
+              order_by = g_strdup("lower(folder) DESC");
+            else
+              order_by = g_strdup("lower(folder)");
           }
 
           // clang-format off
