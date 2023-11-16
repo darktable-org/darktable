@@ -3596,6 +3596,24 @@ static gboolean _upgrade_camera_table(const dt_database_t *db)
   return res;
 }
 
+static void _too_new_db_version(const gchar *dbname, const gboolean has_gui)
+{
+  if(!has_gui)
+    exit(1);
+
+  char *label_text = g_markup_printf_escaped
+    (_("the database schema version of\n"
+       "\n"
+       "<span style='italic'>%s</span>\n"
+       "\n"
+       "is too new for this build of darktable "
+       "(this means the database was created or upgraded by a newer darktable version)\n"),
+       dbname);
+  dt_gui_show_standalone_yes_no_dialog(_("darktable - too new db version"), label_text,
+                                         _("_quit darktable"), NULL);
+  g_free(label_text);
+}
+
 void ask_for_upgrade(const gchar *dbname, const gboolean has_gui)
 {
   // if there's no gui just leave
@@ -3900,6 +3918,7 @@ start:
       else if(db_version > CURRENT_DATABASE_VERSION_DATA)
       {
         // newer: bail out
+        _too_new_db_version(dbfilename_data, has_gui);
         dt_print(DT_DEBUG_ALWAYS,
                  "[init] database version of `%s' is too new for this build of darktable. aborting\n",
                  dbfilename_data);
