@@ -107,12 +107,12 @@ static const char *avif_get_compression_string(enum avif_compression_type_e comp
   switch(comp)
   {
     case AVIF_COMP_LOSSLESS:
-      return "lossless";
+      return N_("lossless");
     case AVIF_COMP_LOSSY:
-      return "lossy";
+      return N_("lossy");
+    default:
+      return N_("unknown");
   }
-
-  return "unknown";
 }
 
 /* Lookup table for tiling choices */
@@ -156,6 +156,8 @@ void init(dt_imageio_module_format_t *self)
                                 dt_imageio_avif_t,
                                 bit_depth,
                                 int);
+
+  /* color mode */
   luaA_enum(darktable.lua_state.state,
             enum avif_color_mode_e);
   luaA_enum_value(darktable.lua_state.state,
@@ -165,6 +167,13 @@ void init(dt_imageio_module_format_t *self)
                   enum avif_color_mode_e,
                   AVIF_COLOR_MODE_GRAYSCALE);
 
+  dt_lua_register_module_member(darktable.lua_state.state,
+                                self,
+                                dt_imageio_avif_t,
+                                color_mode,
+                                enum avif_color_mode_e);
+
+  /* tiling */
   luaA_enum(darktable.lua_state.state,
             enum avif_tiling_e);
   luaA_enum_value(darktable.lua_state.state,
@@ -173,6 +182,12 @@ void init(dt_imageio_module_format_t *self)
   luaA_enum_value(darktable.lua_state.state,
                   enum avif_tiling_e,
                   AVIF_TILING_OFF);
+
+  dt_lua_register_module_member(darktable.lua_state.state,
+                                self,
+                                dt_imageio_avif_t,
+                                tiling,
+                                enum avif_tiling_e);
 
   /* compression type */
   luaA_enum(darktable.lua_state.state,
@@ -229,9 +244,8 @@ int write_image(struct dt_imageio_module_data_t *data,
   const size_t width = d->global.width;
   const size_t height = d->global.height;
   const size_t bit_depth = d->bit_depth > 0 ? d->bit_depth : 0;
-  enum avif_color_mode_e color_mode = d->color_mode;
 
-  switch(color_mode)
+  switch(d->color_mode)
   {
     case AVIF_COLOR_MODE_RGB:
       switch(d->compression_type)
@@ -803,7 +817,7 @@ void gui_init(dt_imageio_module_format_t *self)
   /*
    * Color mode combo box
    */
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->color_mode, self, NULL, N_("b&w as grayscale"),
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->color_mode, self, NULL, N_("B&W as grayscale"),
                                _("saving as grayscale will reduce the size for black & white images"), color_mode,
                                color_mode_changed, self, N_("no"), N_("yes"));
 
