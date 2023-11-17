@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-15 10:19-0300\n"
-"PO-Revision-Date: 2023-11-15 10:20-0300\n"
+"POT-Creation-Date: 2023-11-17 08:02-0300\n"
+"PO-Revision-Date: 2023-11-17 08:02-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -193,7 +193,9 @@ msgstr "ignorar imagens não-raw"
 msgid ""
 "if enabled, only raw files will be allowed to import. non-raw files will not "
 "be visible in the dialog and will not be imported."
-msgstr "se habilitado, somente arquivos raw poderão ser importados. arquivos não-raw não serão visíveis no diálogo de importação."
+msgstr ""
+"se habilitado, somente arquivos raw poderão ser importados. arquivos não-raw "
+"não serão visíveis no diálogo de importação."
 
 #: ../build/bin/conf_gen.h:985
 msgid "apply metadata"
@@ -2447,7 +2449,7 @@ msgstr "específico"
 #: ../src/develop/blend_gui.c:153 ../src/develop/blend_gui.c:182
 #: ../src/develop/blend_gui.c:3421 ../src/gui/accelerators.c:148
 #: ../src/gui/accelerators.c:158 ../src/gui/accelerators.c:245
-#: ../src/imageio/format/avif.c:823 ../src/imageio/format/j2k.c:686
+#: ../src/imageio/format/avif.c:837 ../src/imageio/format/j2k.c:686
 #: ../src/libs/live_view.c:361
 msgid "off"
 msgstr "desligado"
@@ -2715,9 +2717,9 @@ msgstr "base"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:347
 #: ../build/lib/darktable/plugins/introspection_borders.c:353
-#: ../src/gui/preferences.c:847 ../src/iop/ashift.c:6229
-#: ../src/iop/basicadj.c:662 ../src/iop/flip.c:470 ../src/iop/flip.c:472
-#: ../src/iop/levels.c:657 ../src/iop/rgblevels.c:1105
+#: ../src/gui/preferences.c:847 ../src/imageio/format/jpeg.c:604
+#: ../src/iop/ashift.c:6229 ../src/iop/basicadj.c:662 ../src/iop/flip.c:470
+#: ../src/iop/flip.c:472 ../src/iop/levels.c:657 ../src/iop/rgblevels.c:1105
 msgid "auto"
 msgstr "auto"
 
@@ -4000,7 +4002,7 @@ msgstr "habilitar reconstrução de realces"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:549
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
 #: ../src/common/variables.c:714 ../src/develop/imageop_gui.c:209
-#: ../src/imageio/format/avif.c:808 ../src/imageio/format/pdf.c:636
+#: ../src/imageio/format/avif.c:822 ../src/imageio/format/pdf.c:636
 #: ../src/imageio/format/pdf.c:655 ../src/imageio/format/tiff.c:946
 #: ../src/libs/export.c:1296 ../src/libs/export.c:1305
 #: ../src/libs/export.c:1314 ../src/libs/metadata_view.c:673
@@ -6562,95 +6564,95 @@ msgstr ""
 msgid "you need to copy history from an image before you paste it onto another"
 msgstr "você precisa copiar o histórico de uma imagem antes de colar em outra"
 
-#: ../src/common/image.c:325
+#: ../src/common/image.c:333
 msgid "orphaned image"
 msgstr "imagem órfã"
 
-#: ../src/common/image.c:621
+#: ../src/common/image.c:629
 #, c-format
 msgid "geo-location undone for %d image"
 msgid_plural "geo-location undone for %d images"
 msgstr[0] "geolocalização desfeita para %d imagem"
 msgstr[1] "geolocalização desfeita para %d imagens"
 
-#: ../src/common/image.c:623
+#: ../src/common/image.c:631
 #, c-format
 msgid "geo-location re-applied to %d image"
 msgid_plural "geo-location re-applied to %d images"
 msgstr[0] "geolocalização re-aplicada a %d imagem"
 msgstr[1] "geolocalização re-aplicada a %d imagens"
 
-#: ../src/common/image.c:646
+#: ../src/common/image.c:654
 #, c-format
 msgid "date/time undone for %d image"
 msgid_plural "date/time undone for %d images"
 msgstr[0] "definição de data/hora desfeita em %d imagem"
 msgstr[1] "definição de data/hora desfeita em %d imagens"
 
-#: ../src/common/image.c:648
+#: ../src/common/image.c:656
 #, c-format
 msgid "date/time re-applied to %d image"
 msgid_plural "date/time re-applied to %d images"
 msgstr[0] "data/hora re-aplicada em %d imagem"
 msgstr[1] "data/hora re-aplicada em %d imagens"
 
-#: ../src/common/image.c:2252
+#: ../src/common/image.c:2260
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "não pude acessar cópia local `%s'"
 
-#: ../src/common/image.c:2259
+#: ../src/common/image.c:2267
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "não pude escrever cópia local `%s'"
 
-#: ../src/common/image.c:2266
+#: ../src/common/image.c:2274
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "erro movendo cópia local `%s' -> `%s'"
 
-#: ../src/common/image.c:2283
+#: ../src/common/image.c:2291
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "erro movendo `%s': arquivo não encontrado"
 
-#: ../src/common/image.c:2293
+#: ../src/common/image.c:2301
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "erro movendo `%s' -> `%s': arquivo já existe"
 
-#: ../src/common/image.c:2297
+#: ../src/common/image.c:2305
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "erro movendo `%s' -> `%s'"
 
-#: ../src/common/image.c:2626
+#: ../src/common/image.c:2634
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "não é possível criar cópia local quando o arquivo original está inacessível."
 
-#: ../src/common/image.c:2640
+#: ../src/common/image.c:2648
 msgid "cannot create local copy."
 msgstr "não pude criar cópia local."
 
-#: ../src/common/image.c:2720 ../src/control/jobs/control_jobs.c:777
+#: ../src/common/image.c:2728 ../src/control/jobs/control_jobs.c:777
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "não é possível remover cópias local quando o arquivo original está "
 "inacessível."
 
-#: ../src/common/image.c:2893
+#: ../src/common/image.c:2901
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
 msgstr[0] "cópia local %d foi sincronizada"
 msgstr[1] "cópias locais %d foram sincronizadas"
 
-#: ../src/common/image.c:3094
+#: ../src/common/image.c:3102
 msgid "<b>WARNING</b>: camera is missing samples!"
 msgstr "<b>ALERTA</b> : amostras faltando para câmera!"
 
-#: ../src/common/image.c:3095
+#: ../src/common/image.c:3103
 msgid ""
 "You must provide samples in <a href='https://raw.pixls.us/'>https://raw."
 "pixls.us/</a>"
@@ -6658,7 +6660,7 @@ msgstr ""
 "Você precisa prover amostras em  <a href='https://raw.pixls.us/'>https://raw."
 "pixls.us/</a>"
 
-#: ../src/common/image.c:3096
+#: ../src/common/image.c:3104
 #, c-format
 msgid ""
 "for `%s' `%s'\n"
@@ -6667,12 +6669,13 @@ msgstr ""
 "para `%s' `%s'\n"
 "em tantos formatos/compressão/profundidade de bits quanto possível"
 
-#: ../src/common/image.c:3099
+#: ../src/common/image.c:3107
 msgid "or the <b>RAW won't be readable</b> in next version."
 msgstr "ou o <b>RAW não será legível</b> na próxima versão."
 
 #: ../src/common/image.h:217 ../src/common/ratings.c:283
-#: ../src/libs/history.c:843 ../src/libs/snapshots.c:833
+#: ../src/imageio/format/avif.c:114 ../src/libs/history.c:843
+#: ../src/libs/snapshots.c:833
 msgid "unknown"
 msgstr "desconhecido"
 
@@ -6717,7 +6720,7 @@ msgstr "RawSpeed"
 msgid "Netpbm"
 msgstr "Netpbm"
 
-#: ../src/common/image.h:228 ../src/imageio/format/avif.c:714
+#: ../src/common/image.h:228 ../src/imageio/format/avif.c:728
 msgid "AVIF"
 msgstr "AVIF"
 
@@ -7102,7 +7105,7 @@ msgid "m"
 msgstr "m"
 
 #: ../src/common/variables.c:712 ../src/develop/imageop_gui.c:210
-#: ../src/imageio/format/avif.c:808 ../src/imageio/format/pdf.c:636
+#: ../src/imageio/format/avif.c:822 ../src/imageio/format/pdf.c:636
 #: ../src/imageio/format/pdf.c:655 ../src/imageio/format/tiff.c:946
 #: ../src/libs/export.c:1296 ../src/libs/export.c:1305
 #: ../src/libs/export.c:1314 ../src/libs/metadata_view.c:673
@@ -8187,17 +8190,17 @@ msgid "uniformly"
 msgstr "uniforme"
 
 #: ../src/develop/blend_gui.c:157 ../src/develop/blend_gui.c:2748
-#: ../src/develop/blend_gui.c:3440 ../src/develop/imageop.c:2666
+#: ../src/develop/blend_gui.c:3440 ../src/develop/imageop.c:2669
 msgid "drawn mask"
 msgstr " máscara desenhada"
 
 #: ../src/develop/blend_gui.c:159 ../src/develop/blend_gui.c:2520
-#: ../src/develop/blend_gui.c:3451 ../src/develop/imageop.c:2668
+#: ../src/develop/blend_gui.c:3451 ../src/develop/imageop.c:2671
 msgid "parametric mask"
 msgstr "máscara paramétrica"
 
 #: ../src/develop/blend_gui.c:161 ../src/develop/blend_gui.c:2958
-#: ../src/develop/blend_gui.c:3478 ../src/develop/imageop.c:2670
+#: ../src/develop/blend_gui.c:3478 ../src/develop/imageop.c:2673
 msgid "raster mask"
 msgstr "máscara rasterizada"
 
@@ -8239,17 +8242,17 @@ msgstr "entrada depois do desfoque"
 
 #: ../src/develop/blend_gui.c:183 ../src/gui/accelerators.c:147
 #: ../src/gui/accelerators.c:157 ../src/gui/accelerators.c:245
-#: ../src/imageio/format/avif.c:823 ../src/libs/live_view.c:362
+#: ../src/imageio/format/avif.c:837 ../src/libs/live_view.c:362
 msgid "on"
 msgstr "ligado"
 
 #: ../src/develop/blend_gui.c:984 ../src/develop/blend_gui.c:2598
-#: ../src/develop/imageop.c:2794
+#: ../src/develop/imageop.c:2797
 msgid "input"
 msgstr "entrada"
 
 #: ../src/develop/blend_gui.c:984 ../src/develop/blend_gui.c:2598
-#: ../src/develop/imageop.c:2794
+#: ../src/develop/imageop.c:2797
 msgid "output"
 msgstr "saída"
 
@@ -8500,13 +8503,13 @@ msgstr ""
 #: ../src/iop/filmicrgb.c:4549 ../src/iop/filmicrgb.c:4559
 #: ../src/iop/graduatednd.c:1082 ../src/iop/negadoctor.c:1030
 #: ../src/iop/profile_gamma.c:657 ../src/iop/profile_gamma.c:663
-#: ../src/iop/relight.c:258 ../src/iop/soften.c:373 ../src/iop/toneequal.c:3378
-#: ../src/iop/toneequal.c:3381 ../src/iop/toneequal.c:3384
-#: ../src/iop/toneequal.c:3387 ../src/iop/toneequal.c:3390
-#: ../src/iop/toneequal.c:3393 ../src/iop/toneequal.c:3396
-#: ../src/iop/toneequal.c:3399 ../src/iop/toneequal.c:3402
-#: ../src/iop/toneequal.c:3524 ../src/iop/toneequal.c:3533
-#: ../src/iop/toneequal.c:3546 ../src/views/darkroom.c:2292
+#: ../src/iop/relight.c:258 ../src/iop/soften.c:373 ../src/iop/toneequal.c:3379
+#: ../src/iop/toneequal.c:3382 ../src/iop/toneequal.c:3385
+#: ../src/iop/toneequal.c:3388 ../src/iop/toneequal.c:3391
+#: ../src/iop/toneequal.c:3394 ../src/iop/toneequal.c:3397
+#: ../src/iop/toneequal.c:3400 ../src/iop/toneequal.c:3403
+#: ../src/iop/toneequal.c:3525 ../src/iop/toneequal.c:3534
+#: ../src/iop/toneequal.c:3547 ../src/views/darkroom.c:2292
 msgid " EV"
 msgstr " EV"
 
@@ -8827,69 +8830,69 @@ msgstr "nova instância"
 msgid "duplicate instance"
 msgstr "duplicar instância"
 
-#: ../src/develop/imageop.c:1043 ../src/develop/imageop.c:3752
+#: ../src/develop/imageop.c:1043 ../src/develop/imageop.c:3755
 #: ../src/libs/masks.c:1146
 msgid "move up"
 msgstr "mover para cima"
 
-#: ../src/develop/imageop.c:1049 ../src/develop/imageop.c:3753
+#: ../src/develop/imageop.c:1049 ../src/develop/imageop.c:3756
 #: ../src/libs/masks.c:1151
 msgid "move down"
 msgstr "mover para baixo"
 
 #. delete button label and tooltip will be updated based on trash pref
-#: ../src/develop/imageop.c:1055 ../src/develop/imageop.c:3755
+#: ../src/develop/imageop.c:1055 ../src/develop/imageop.c:3758
 #: ../src/gui/accelerators.c:173 ../src/libs/image.c:302
 #: ../src/libs/image.c:512
 msgid "delete"
 msgstr "excluir"
 
-#: ../src/develop/imageop.c:1062 ../src/develop/imageop.c:3756
+#: ../src/develop/imageop.c:1062 ../src/develop/imageop.c:3759
 #: ../src/libs/modulegroups.c:3817
 msgid "rename"
 msgstr "renomear"
 
-#: ../src/develop/imageop.c:1136 ../src/develop/imageop.c:2958
+#: ../src/develop/imageop.c:1136 ../src/develop/imageop.c:2961
 #, c-format
 msgid "'%s' is switched on"
 msgstr "'%s' está ativado"
 
-#: ../src/develop/imageop.c:1136 ../src/develop/imageop.c:2958
+#: ../src/develop/imageop.c:1136 ../src/develop/imageop.c:2961
 #, c-format
 msgid "'%s' is switched off"
 msgstr "'%s' está desativado"
 
-#: ../src/develop/imageop.c:2660
+#: ../src/develop/imageop.c:2663
 msgid "unknown mask"
 msgstr "máscara desconhecida"
 
-#: ../src/develop/imageop.c:2664
+#: ../src/develop/imageop.c:2667
 msgid "drawn + parametric mask"
 msgstr "máscara desenhada + paramétrica"
 
-#: ../src/develop/imageop.c:2673
+#: ../src/develop/imageop.c:2676
 #, c-format
 msgid "this module has a `%s'"
 msgstr "este módulo tem uma `%s'"
 
-#: ../src/develop/imageop.c:2678
+#: ../src/develop/imageop.c:2681
 #, c-format
 msgid "taken from module %s"
 msgstr "tomada do módulo %s"
 
-#: ../src/develop/imageop.c:2683
+#: ../src/develop/imageop.c:2686
 msgid "click to display (module must be activated first)"
 msgstr "clique para mostrar (o módulo deve ser ativado antes)"
 
-#: ../src/develop/imageop.c:2794
+#: ../src/develop/imageop.c:2797
 msgid "purpose"
 msgstr "propósito"
 
-#: ../src/develop/imageop.c:2794
+#: ../src/develop/imageop.c:2797
 msgid "process"
 msgstr "processamento"
 
-#: ../src/develop/imageop.c:2914
+#: ../src/develop/imageop.c:2917
 msgid ""
 "multiple instance actions\n"
 "right-click creates new instance"
@@ -8897,7 +8900,7 @@ msgstr ""
 "ações em múltiplas instâncias\n"
 "clique-direito cria nova instância"
 
-#: ../src/develop/imageop.c:2929
+#: ../src/develop/imageop.c:2932
 msgid ""
 "reset parameters\n"
 "ctrl+click to reapply any automatic presets"
@@ -8905,7 +8908,7 @@ msgstr ""
 "redefinir parâmetros\n"
 "ctrl+clique para reaplicar quaisquer predefinições automáticas"
 
-#: ../src/develop/imageop.c:2941
+#: ../src/develop/imageop.c:2944
 msgid ""
 "presets\n"
 "right-click to apply on new instance"
@@ -8913,15 +8916,15 @@ msgstr ""
 "predefinições\n"
 "clique-direito para aplicar em nova instância"
 
-#: ../src/develop/imageop.c:3191 ../src/develop/imageop.c:3213
+#: ../src/develop/imageop.c:3194 ../src/develop/imageop.c:3216
 msgid "ERROR"
 msgstr "ERRO"
 
-#: ../src/develop/imageop.c:3619
+#: ../src/develop/imageop.c:3622
 msgid "unsupported input"
 msgstr "entrada não suportada"
 
-#: ../src/develop/imageop.c:3620
+#: ../src/develop/imageop.c:3623
 msgid ""
 "you have placed this module at\n"
 "a position in the pipeline where\n"
@@ -8933,35 +8936,35 @@ msgstr ""
 "formato de dados não combina\n"
 "com os requisitos."
 
-#: ../src/develop/imageop.c:3751 ../src/develop/imageop.c:3761
+#: ../src/develop/imageop.c:3754 ../src/develop/imageop.c:3764
 #: ../src/gui/accelerators.c:169 ../src/libs/lib.c:1415
 msgid "show"
 msgstr "mostrar"
 
-#: ../src/develop/imageop.c:3754 ../src/libs/modulegroups.c:3315
+#: ../src/develop/imageop.c:3757 ../src/libs/modulegroups.c:3315
 #: ../src/libs/modulegroups.c:3438 ../src/libs/modulegroups.c:3819
 #: ../src/libs/tagging.c:3279
 msgid "new"
 msgstr "novo"
 
-#: ../src/develop/imageop.c:3757 ../src/libs/duplicate.c:411
+#: ../src/develop/imageop.c:3760 ../src/libs/duplicate.c:411
 #: ../src/libs/image.c:533 ../src/libs/modulegroups.c:3815
 msgid "duplicate"
 msgstr "duplicar"
 
-#: ../src/develop/imageop.c:3762
+#: ../src/develop/imageop.c:3765
 msgid "enable"
 msgstr "ativar"
 
-#: ../src/develop/imageop.c:3763 ../src/gui/accelerators.c:185
+#: ../src/develop/imageop.c:3766 ../src/gui/accelerators.c:185
 msgid "focus"
 msgstr "foco"
 
-#: ../src/develop/imageop.c:3764 ../src/gui/accelerators.c:2874
+#: ../src/develop/imageop.c:3767 ../src/gui/accelerators.c:2874
 msgid "instance"
 msgstr "instância"
 
-#: ../src/develop/imageop.c:3765 ../src/gui/accelerators.c:130
+#: ../src/develop/imageop.c:3768 ../src/gui/accelerators.c:130
 #: ../src/gui/accelerators.c:140 ../src/gui/gtk.c:3055 ../src/gui/gtk.c:3102
 #: ../src/gui/hist_dialog.c:270 ../src/gui/styles_dialog.c:615
 #: ../src/gui/styles_dialog.c:637 ../src/iop/atrous.c:1626
@@ -8970,12 +8973,12 @@ msgid "reset"
 msgstr "redefinir"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:3766 ../src/gui/preferences.c:796
+#: ../src/develop/imageop.c:3769 ../src/gui/preferences.c:796
 #: ../src/libs/lib.c:1417
 msgid "presets"
 msgstr "predefinições"
 
-#: ../src/develop/imageop.c:3786
+#: ../src/develop/imageop.c:3789
 msgid "processing module"
 msgstr "módulo de processamento"
 
@@ -11811,30 +11814,39 @@ msgstr "10 bit"
 msgid "12 bit"
 msgstr "12 bit"
 
-#: ../src/imageio/format/avif.c:449
+#: ../src/imageio/format/avif.c:110 ../src/imageio/format/webp.c:416
+msgid "lossless"
+msgstr "sem perdas"
+
+#: ../src/imageio/format/avif.c:112 ../src/imageio/format/webp.c:416
+msgid "lossy"
+msgstr "com perdas"
+
+#: ../src/imageio/format/avif.c:463
 msgid "invalid AVIF bit depth!"
 msgstr "profundidade de bits AVIF inválida!"
 
 #. Bit depth combo box
-#: ../src/imageio/format/avif.c:786 ../src/imageio/format/exr.cc:601
+#: ../src/imageio/format/avif.c:800 ../src/imageio/format/exr.cc:601
 #: ../src/imageio/format/jxl.c:559 ../src/imageio/format/pdf.c:661
 #: ../src/imageio/format/png.c:639 ../src/imageio/format/tiff.c:900
 #: ../src/imageio/format/xcf.c:354
 msgid "bit depth"
 msgstr "profundidade de bits"
 
-#: ../src/imageio/format/avif.c:799
+#: ../src/imageio/format/avif.c:813
 msgid "color information stored in an image, higher is better"
 msgstr "informação de cores guardada na imagem, mais alto é melhor"
 
 #.
 #. * Color mode combo box
 #.
-#: ../src/imageio/format/avif.c:806
-msgid "b&w as grayscale"
-msgstr "p&b como escala de cinza"
+#. shortfile option combo box
+#: ../src/imageio/format/avif.c:820 ../src/imageio/format/tiff.c:944
+msgid "B&W as grayscale"
+msgstr "P&B como escala de cinza"
 
-#: ../src/imageio/format/avif.c:807 ../src/imageio/format/tiff.c:945
+#: ../src/imageio/format/avif.c:821 ../src/imageio/format/tiff.c:945
 msgid "saving as grayscale will reduce the size for black & white images"
 msgstr ""
 "gravar como tons de cinza reduzirá o tamanho para imagens em preto e branco"
@@ -11842,11 +11854,11 @@ msgstr ""
 #.
 #. * Tiling combo box
 #.
-#: ../src/imageio/format/avif.c:818
+#: ../src/imageio/format/avif.c:832
 msgid "tiling"
 msgstr "ladrilhamento"
 
-#: ../src/imageio/format/avif.c:819
+#: ../src/imageio/format/avif.c:833
 msgid ""
 "tile an image into segments.\n"
 "\n"
@@ -11860,14 +11872,14 @@ msgstr ""
 
 #. compression
 #. Compression method combo box
-#: ../src/imageio/format/avif.c:836 ../src/imageio/format/exr.cc:611
+#: ../src/imageio/format/avif.c:850 ../src/imageio/format/exr.cc:611
 #: ../src/imageio/format/pdf.c:676 ../src/imageio/format/png.c:653
 #: ../src/imageio/format/tiff.c:923 ../src/imageio/format/webp.c:414
 #: ../src/libs/masks.c:111
 msgid "compression"
 msgstr "compressão"
 
-#: ../src/imageio/format/avif.c:844
+#: ../src/imageio/format/avif.c:858
 msgid "the compression for the image"
 msgstr "a compressão para a imagem"
 
@@ -11876,13 +11888,13 @@ msgstr "a compressão para a imagem"
 #. step
 #. default
 #. digits
-#: ../src/imageio/format/avif.c:864 ../src/imageio/format/j2k.c:679
-#: ../src/imageio/format/jpeg.c:476 ../src/imageio/format/jxl.c:583
+#: ../src/imageio/format/avif.c:878 ../src/imageio/format/j2k.c:679
+#: ../src/imageio/format/jpeg.c:584 ../src/imageio/format/jxl.c:583
 #: ../src/imageio/format/webp.c:425 ../src/libs/camera.c:564
 msgid "quality"
 msgstr "qualidade"
 
-#: ../src/imageio/format/avif.c:867
+#: ../src/imageio/format/avif.c:881
 msgid ""
 "the quality of an image, less quality means fewer details.\n"
 "\n"
@@ -11993,9 +12005,46 @@ msgstr "Cinema2K, 48FPS"
 msgid "Cinema4K, 24FPS"
 msgstr "Cinema4K, 24FPS"
 
-#: ../src/imageio/format/jpeg.c:453
+#: ../src/imageio/format/jpeg.c:546
 msgid "JPEG (8-bit)"
 msgstr "JPEG (8-bit)"
+
+#: ../src/imageio/format/jpeg.c:594
+msgid "chroma subsampling"
+msgstr "subamostragem de croma"
+
+#: ../src/imageio/format/jpeg.c:595
+msgid ""
+"chroma subsampling setting for JPEG encoder.\n"
+"auto - use subsampling determined by the quality value\n"
+"4:4:4 - no chroma subsampling\n"
+"4:4:0 - color sampling rate halved vertically\n"
+"4:2:2 - color sampling rate halved horizontally\n"
+"4:2:0 - color sampling rate halved horizontally and vertically"
+msgstr ""
+"subamostragem de croma para codificação JPEG.\n"
+"auto - use subamostragem determinado pelo valor de qualidade\n"
+"4:4:4 - nenhuma subamostragem de croma\n"
+"4:4:0 - taxa de amostragem de cor dividida pela metade verticalmente\n"
+"4:2:2 - taxa de amostragem de cor dividida pela metade horizontalmente\n"
+"4:2:0 - taxa de amostragem de cor dividida pela metade horizontalmente e "
+"verticalmente"
+
+#: ../src/imageio/format/jpeg.c:604
+msgid "4:4:4"
+msgstr "4:4:4"
+
+#: ../src/imageio/format/jpeg.c:604
+msgid "4:4:0"
+msgstr "4:4:0"
+
+#: ../src/imageio/format/jpeg.c:604
+msgid "4:2:2"
+msgstr "4:2:2"
+
+#: ../src/imageio/format/jpeg.c:604
+msgid "4:2:0"
+msgstr "4:2:0"
 
 #: ../src/imageio/format/jxl.c:560 ../src/imageio/format/pdf.c:81
 #: ../src/imageio/format/png.c:641 ../src/imageio/format/tiff.c:904
@@ -12249,19 +12298,6 @@ msgstr "deflate com preditor"
 #: ../src/imageio/format/tiff.c:935
 msgid "compression level"
 msgstr "nível de compressão"
-
-#. shortfile option combo box
-#: ../src/imageio/format/tiff.c:944
-msgid "B&W as grayscale"
-msgstr "P&B como escala de cinza"
-
-#: ../src/imageio/format/webp.c:416
-msgid "lossy"
-msgstr "com perdas"
-
-#: ../src/imageio/format/webp.c:416
-msgid "lossless"
-msgstr "sem perdas"
 
 #: ../src/imageio/format/webp.c:426
 msgid ""
@@ -13005,7 +13041,7 @@ msgstr ""
 #: ../src/iop/atrous.c:1818 ../src/iop/colorbalancergb.c:2145
 #: ../src/iop/colorzones.c:2732 ../src/iop/denoiseprofile.c:3747
 #: ../src/iop/filmicrgb.c:4471 ../src/iop/lowlight.c:821
-#: ../src/iop/rawdenoise.c:935 ../src/iop/toneequal.c:3423
+#: ../src/iop/rawdenoise.c:935 ../src/iop/toneequal.c:3424
 msgid "graph"
 msgstr "gráfico"
 
@@ -13691,21 +13727,21 @@ msgstr "linear, raw, relativo à cena"
 msgid "linear, raw"
 msgstr "linear, raw"
 
-#: ../src/iop/cacorrect.c:1439
+#: ../src/iop/cacorrect.c:1415
 msgid "iteration runs, default is twice"
 msgstr "quantidade de iterações, o padrão são duas"
 
-#: ../src/iop/cacorrect.c:1442
+#: ../src/iop/cacorrect.c:1418
 msgid "activate colorshift correction for blue & red channels"
 msgstr "ativa correção de desvio de cor para canais azul e vermelho"
 
-#: ../src/iop/cacorrect.c:1449
+#: ../src/iop/cacorrect.c:1425
 msgid ""
 "automatic chromatic aberration correction\n"
-"only for Bayer raw files"
+"only for Bayer raw files with 3 color channels"
 msgstr ""
 "correção automática de aberração cromática\n"
-"somente para imagens raw Bayer"
+"somente para imagens raw Bayer com 3 canais de cor"
 
 #: ../src/iop/cacorrectrgb.c:164 ../src/iop/defringe.c:76
 msgid "chromatic aberrations"
@@ -14251,7 +14287,7 @@ msgstr ""
 
 #: ../src/iop/channelmixerrgb.c:4462 ../src/iop/clipping.c:2140
 #: ../src/iop/colorbalancergb.c:1960 ../src/iop/filmicrgb.c:4483
-#: ../src/iop/negadoctor.c:848 ../src/iop/toneequal.c:3371
+#: ../src/iop/negadoctor.c:848 ../src/iop/toneequal.c:3372
 #: ../src/libs/image.c:489 ../src/views/lighttable.c:1258
 msgid "page"
 msgstr "página"
@@ -20236,7 +20272,7 @@ msgstr "a interpolação está instável, diminua a suavização da curva"
 msgid "wait for the preview to finish recomputing"
 msgstr "aguardar a pré-visualização para terminar de recomputar"
 
-#: ../src/iop/toneequal.c:2069 ../src/iop/toneequal.c:2627
+#: ../src/iop/toneequal.c:2069 ../src/iop/toneequal.c:2628
 msgid ""
 "scroll over image to change tone exposure\n"
 "shift+scroll for large steps; ctrl+scroll for small steps"
@@ -20254,80 +20290,80 @@ msgstr "alguns parâmetros estão fora dos limites"
 msgid "%+.1f EV"
 msgstr "%+.1f EV"
 
-#: ../src/iop/toneequal.c:3282
+#: ../src/iop/toneequal.c:3283
 #, c-format
 msgid "[%s over image] change tone exposure"
 msgstr "[%s sobre a imagem] mudar exposição do tom"
 
-#: ../src/iop/toneequal.c:3285
+#: ../src/iop/toneequal.c:3286
 #, c-format
 msgid "[%s over image] change tone exposure in large steps"
 msgstr "[%s sobre a imagem] mudar exposição do tom em passos largos"
 
-#: ../src/iop/toneequal.c:3288
+#: ../src/iop/toneequal.c:3289
 #, c-format
 msgid "[%s over image] change tone exposure in small steps"
 msgstr "[%s sobre a imagem] mudar exposição do tom em passos curtos"
 
 #. Simple view
-#: ../src/iop/toneequal.c:3375 ../src/iop/toneequal.c:3404
-#: ../src/iop/toneequal.c:3405 ../src/iop/toneequal.c:3406
-#: ../src/iop/toneequal.c:3407 ../src/iop/toneequal.c:3408
-#: ../src/iop/toneequal.c:3409 ../src/iop/toneequal.c:3410
-#: ../src/iop/toneequal.c:3411 ../src/iop/toneequal.c:3412
+#: ../src/iop/toneequal.c:3376 ../src/iop/toneequal.c:3405
+#: ../src/iop/toneequal.c:3406 ../src/iop/toneequal.c:3407
+#: ../src/iop/toneequal.c:3408 ../src/iop/toneequal.c:3409
+#: ../src/iop/toneequal.c:3410 ../src/iop/toneequal.c:3411
+#: ../src/iop/toneequal.c:3412 ../src/iop/toneequal.c:3413
 msgid "simple"
 msgstr "simples"
 
-#: ../src/iop/toneequal.c:3404
+#: ../src/iop/toneequal.c:3405
 msgid "-8 EV"
 msgstr "-8 EV"
 
-#: ../src/iop/toneequal.c:3405
+#: ../src/iop/toneequal.c:3406
 msgid "-7 EV"
 msgstr "-7 EV"
 
-#: ../src/iop/toneequal.c:3406
+#: ../src/iop/toneequal.c:3407
 msgid "-6 EV"
 msgstr "-6 EV"
 
-#: ../src/iop/toneequal.c:3407
+#: ../src/iop/toneequal.c:3408
 msgid "-5 EV"
 msgstr "-5 EV"
 
-#: ../src/iop/toneequal.c:3408
+#: ../src/iop/toneequal.c:3409
 msgid "-4 EV"
 msgstr "-4 EV"
 
-#: ../src/iop/toneequal.c:3409
+#: ../src/iop/toneequal.c:3410
 msgid "-3 EV"
 msgstr "-3 EV"
 
-#: ../src/iop/toneequal.c:3410
+#: ../src/iop/toneequal.c:3411
 msgid "-2 EV"
 msgstr "-2 EV"
 
-#: ../src/iop/toneequal.c:3411
+#: ../src/iop/toneequal.c:3412
 msgid "-1 EV"
 msgstr "-1 EV"
 
-#: ../src/iop/toneequal.c:3412
+#: ../src/iop/toneequal.c:3413
 msgid "+0 EV"
 msgstr "+0 EV"
 
 #. Advanced view
-#: ../src/iop/toneequal.c:3416
+#: ../src/iop/toneequal.c:3417
 msgid "advanced"
 msgstr "avançado"
 
-#: ../src/iop/toneequal.c:3443
+#: ../src/iop/toneequal.c:3444
 msgid "double-click to reset the curve"
 msgstr "clique-duplo para redefinir curva"
 
-#: ../src/iop/toneequal.c:3447
+#: ../src/iop/toneequal.c:3448
 msgid "curve smoothing"
 msgstr "suavização de curva"
 
-#: ../src/iop/toneequal.c:3450
+#: ../src/iop/toneequal.c:3451
 msgid ""
 "positive values will produce more progressive tone transitions\n"
 "but the curve might become oscillatory in some settings.\n"
@@ -20340,11 +20376,11 @@ msgstr ""
 "mas podem produzir transições de tons brutais e danificar o contraste local."
 
 #. Masking options
-#: ../src/iop/toneequal.c:3460
+#: ../src/iop/toneequal.c:3461
 msgid "masking"
 msgstr "máscara"
 
-#: ../src/iop/toneequal.c:3465
+#: ../src/iop/toneequal.c:3466
 msgid ""
 "preview the mask and chose the estimator that gives you the\n"
 "higher contrast between areas to dodge and areas to burn"
@@ -20352,15 +20388,15 @@ msgstr ""
 "pré-visualiza a máscara e escolhe o estimador que te dá o\n"
 "maior contraste entre áreas a aclarar e áreas a escurecer"
 
-#: ../src/iop/toneequal.c:3468
+#: ../src/iop/toneequal.c:3469
 msgid "details"
 msgstr "detalhes"
 
-#: ../src/iop/toneequal.c:3469
+#: ../src/iop/toneequal.c:3470
 msgid "preserve details"
 msgstr "preservar detalhes"
 
-#: ../src/iop/toneequal.c:3472
+#: ../src/iop/toneequal.c:3473
 msgid ""
 "'no' affects global and local contrast (safe if you only add contrast)\n"
 "'guided filter' only affects global contrast and tries to preserve local "
@@ -20384,7 +20420,7 @@ msgstr ""
 "contrário do filtro guiado que suaviza menos os realces)\n"
 "'EIGF por média' é uma média geométrica dos métodos 'não' e 'EIGF'"
 
-#: ../src/iop/toneequal.c:3485
+#: ../src/iop/toneequal.c:3486
 msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
@@ -20392,7 +20428,7 @@ msgstr ""
 "número de passos do filtro guiado a aplicar\n"
 "ajuda a dispersão das bordas do filtro, mas é lento"
 
-#: ../src/iop/toneequal.c:3493
+#: ../src/iop/toneequal.c:3494
 msgid ""
 "diameter of the blur in percent of the largest image size\n"
 "warning: big values of this parameter can make the darkroom\n"
@@ -20402,7 +20438,7 @@ msgstr ""
 "atenção: valores altos deste parâmetro podem fazer a pré-visualização\n"
 "da sala escura muito mais lenta se o módulo de redução de ruído for usado."
 
-#: ../src/iop/toneequal.c:3501
+#: ../src/iop/toneequal.c:3502
 msgid ""
 "precision of the feathering:\n"
 "higher values force the mask to follow edges more closely\n"
@@ -20416,12 +20452,12 @@ msgstr ""
 "valores baixos dão gradientes mais suaves e melhor suavização\n"
 "mas podem levar a arestas imprecisas e halos"
 
-#: ../src/iop/toneequal.c:3508
+#: ../src/iop/toneequal.c:3509
 msgctxt "section"
 msgid "mask post-processing"
 msgstr "pós-processamento da máscara"
 
-#: ../src/iop/toneequal.c:3519
+#: ../src/iop/toneequal.c:3520
 msgid ""
 "mask histogram span between the first and last deciles.\n"
 "the central line shows the average. orange bars appear at extrema if "
@@ -20431,7 +20467,7 @@ msgstr ""
 "a linha central mostra a média. as barras laranja aparecem nos extremos se "
 "houver corte."
 
-#: ../src/iop/toneequal.c:3527
+#: ../src/iop/toneequal.c:3528
 msgid ""
 "0 disables the quantization.\n"
 "higher values posterize the luminance mask to help the guiding\n"
@@ -20442,7 +20478,7 @@ msgstr ""
 "para produzir áreas mais suaves quando valores altos de enevoamento são "
 "usados"
 
-#: ../src/iop/toneequal.c:3536
+#: ../src/iop/toneequal.c:3537
 msgid ""
 "use this to slide the mask average exposure along channels\n"
 "for a better control of the exposure correction with the available nodes.\n"
@@ -20452,7 +20488,7 @@ msgstr ""
 "para melhor controle da correção de exposição com os nós disponíveis.\n"
 "o seletor ajustará automaticamente a exposição média"
 
-#: ../src/iop/toneequal.c:3549
+#: ../src/iop/toneequal.c:3550
 msgid ""
 "use this to counter the averaging effect of the guided filter\n"
 "and dilate the mask contrast around -4EV\n"
@@ -20466,7 +20502,7 @@ msgstr ""
 "para um controle melhor da correção de exposição.\n"
 "a varinha mágica auto-ajustará o contraste"
 
-#: ../src/iop/toneequal.c:3572 ../src/iop/toneequal.c:3575
+#: ../src/iop/toneequal.c:3573 ../src/iop/toneequal.c:3576
 msgid "display exposure mask"
 msgstr "mostrar máscara de exposição"
 
@@ -25793,6 +25829,9 @@ msgstr "mudar para uma janela clássica que ficará aberta após soltar a tecla.
 msgid "mouse actions"
 msgstr "ações com mouse"
 
+#~ msgid "b&w as grayscale"
+#~ msgstr "p&b como escala de cinza"
+
 #~ msgid ""
 #~ "when having raw+JPEG images together in one directory it makes no sense "
 #~ "to import both. with this flag one can ignore all JPEGs found."
@@ -26811,9 +26850,6 @@ msgstr "ações com mouse"
 
 #~ msgid "chroma highlights"
 #~ msgstr "croma nos realces"
-
-#~ msgid "chroma global"
-#~ msgstr "croma global"
 
 #~ msgid "chroma mid-tones"
 #~ msgstr "croma nos meios-tons"
