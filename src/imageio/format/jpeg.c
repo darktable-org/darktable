@@ -38,12 +38,22 @@
 #undef HAVE_STDLIB_H
 #undef HAVE_STDDEF_H
 
-DT_MODULE(2)
+DT_MODULE(3)
+
+typedef enum dt_imageio_jpeg_subsample_t
+{
+  DT_SUBSAMPLE_AUTO,
+  DT_SUBSAMPLE_444,
+  DT_SUBSAMPLE_440,
+  DT_SUBSAMPLE_422,
+  DT_SUBSAMPLE_420
+} dt_imageio_jpeg_subsample_t;
 
 typedef struct dt_imageio_jpeg_t
 {
   dt_imageio_module_data_t global;
   int quality;
+  dt_imageio_jpeg_subsample_t subsample;
   struct jpeg_source_mgr src;
   struct jpeg_destination_mgr dest;
   struct jpeg_decompress_struct dinfo;
@@ -54,6 +64,7 @@ typedef struct dt_imageio_jpeg_t
 typedef struct dt_imageio_jpeg_gui_data_t
 {
   GtkWidget *quality;
+  GtkWidget *subsample;
 } dt_imageio_jpeg_gui_data_t;
 
 // error functions
@@ -192,6 +203,41 @@ int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const v
   if(jpg->quality < 60) jpg->cinfo.smoothing_factor = 40;
   if(jpg->quality < 40) jpg->cinfo.smoothing_factor = 60;
   jpg->cinfo.optimize_coding = 1;
+
+  // Common part for all subsampling formulas:
+  jpg->cinfo.comp_info[1].h_samp_factor = 1;
+  jpg->cinfo.comp_info[1].v_samp_factor = 1;
+  jpg->cinfo.comp_info[2].h_samp_factor = 1;
+  jpg->cinfo.comp_info[2].v_samp_factor = 1;
+
+  const int subsample = dt_conf_get_int("plugins/imageio/format/jpeg/subsample");
+  switch(subsample)
+  {
+    case 1: // 1x1 1x1 1x1 (4:4:4) : No chroma subsampling
+    {
+      jpg->cinfo.comp_info[0].h_samp_factor = 1;
+      jpg->cinfo.comp_info[0].v_samp_factor = 1;
+      break;
+    }
+    case 2: // 1x2 1x1 1x1 (4:4:0) : Color sampling rate halved vertically
+    {
+      jpg->cinfo.comp_info[0].h_samp_factor = 1;
+      jpg->cinfo.comp_info[0].v_samp_factor = 2;
+      break;
+    }
+    case 3: // 2x1 1x1 1x1 (4:2:2) : Color sampling rate halved horizontally
+    {
+      jpg->cinfo.comp_info[0].h_samp_factor = 2;
+      jpg->cinfo.comp_info[0].v_samp_factor = 1;
+      break;
+    }
+    case 4: // 2x2 1x1 1x1 (4:2:0) : Color sampling rate halved horizontally and vertically
+    {
+      jpg->cinfo.comp_info[0].h_samp_factor = 2;
+      jpg->cinfo.comp_info[0].v_samp_factor = 2;
+      break;
+    }
+  }
 
   const int resolution = dt_conf_get_int("metadata/resolution");
   jpg->cinfo.density_unit = 1;
@@ -358,23 +404,42 @@ void *legacy_params(dt_imageio_module_format_t *self,
     return n;
   }
 
-  // incremental update supported:
-  /*
   typedef struct dt_imageio_jpeg_v3_t
   {
-    ...
+    dt_imageio_module_data_t global;
+    int quality;
+    dt_imageio_jpeg_subsample_t subsample;
+    struct jpeg_source_mgr src;
+    struct jpeg_destination_mgr dest;
+    struct jpeg_decompress_struct dinfo;
+    struct jpeg_compress_struct cinfo;
+    FILE *f;
   } dt_imageio_jpeg_v3_t;
 
   if(old_version == 2)
   {
-    // let's update from 2 to 3
+    const dt_imageio_jpeg_v2_t *o = (dt_imageio_jpeg_v2_t *)old_params;
+    dt_imageio_jpeg_v3_t *n = (dt_imageio_jpeg_v3_t *)malloc(sizeof(dt_imageio_jpeg_v3_t));
 
-    ...
-    *new_size = sizeof(dt_imageio_module_data_t) + sizeof(int);
+    n->global.max_width = o->global.max_width;
+    n->global.max_height = o->global.max_height;
+    n->global.width = o->global.width;
+    n->global.height = o->global.height;
+    g_strlcpy(n->global.style, o->global.style, sizeof(o->global.style));
+    n->global.style_append = o->global.style_append;
+    n->quality = o->quality;
+    n->subsample = DT_SUBSAMPLE_AUTO;
+    n->src = o->src;
+    n->dest = o->dest;
+    n->dinfo = o->dinfo;
+    n->cinfo = o->cinfo;
+    n->f = o->f;
+
     *new_version = 3;
+    *new_size = sizeof(dt_imageio_module_data_t) + sizeof(int) + sizeof(dt_imageio_jpeg_subsample_t);
     return n;
   }
-  */
+
   return NULL;
 }
 
@@ -383,6 +448,7 @@ void *get_params(dt_imageio_module_format_t *self)
   // adjust this if more params are stored (subsampling etc)
   dt_imageio_jpeg_t *d = (dt_imageio_jpeg_t *)calloc(1, sizeof(dt_imageio_jpeg_t));
   d->quality = dt_conf_get_int("plugins/imageio/format/jpeg/quality");
+  d->subsample = dt_conf_get_int("plugins/imageio/format/jpeg/subsample");
   return d;
 }
 
@@ -397,6 +463,7 @@ int set_params(dt_imageio_module_format_t *self, const void *params, const int s
   const dt_imageio_jpeg_t *d = (dt_imageio_jpeg_t *)params;
   dt_imageio_jpeg_gui_data_t *g = (dt_imageio_jpeg_gui_data_t *)self->gui_data;
   dt_bauhaus_slider_set(g->quality, d->quality);
+  dt_bauhaus_combobox_set(g->subsample, d->subsample);
   return 0;
 }
 
@@ -459,12 +526,21 @@ static void quality_changed(GtkWidget *slider, gpointer user_data)
   dt_conf_set_int("plugins/imageio/format/jpeg/quality", quality);
 }
 
+static void subsample_combobox_changed(GtkWidget *widget, gpointer user_data)
+{
+  const dt_imageio_jpeg_subsample_t subsample = dt_bauhaus_combobox_get(widget);
+  dt_conf_set_int("plugins/imageio/format/jpeg/subsample", subsample);
+}
+
 void gui_init(dt_imageio_module_format_t *self)
 {
   dt_imageio_jpeg_gui_data_t *g = (dt_imageio_jpeg_gui_data_t *)malloc(sizeof(dt_imageio_jpeg_gui_data_t));
   self->gui_data = g;
+
+  const dt_imageio_jpeg_subsample_t subsample = dt_conf_get_int("plugins/imageio/format/jpeg/subsample");
+
   // construct gui with jpeg specific options:
-  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   self->widget = box;
   // quality slider
   g->quality = dt_bauhaus_slider_new_with_range((dt_iop_module_t*)self,
@@ -477,7 +553,24 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_bauhaus_slider_set(g->quality, dt_conf_get_int("plugins/imageio/format/jpeg/quality"));
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->quality), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->quality), "value-changed", G_CALLBACK(quality_changed), NULL);
-  // TODO: add more options: subsample dreggn
+
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(g->subsample,
+                               self,
+                               NULL,
+                               N_("chroma subsampling"),
+                               _("chroma subsampling setting for JPEG encoder.\n"
+                                 "auto - use subsampling determined by the quality value\n"
+                                 "4:4:4 - no chroma subsampling\n"
+                                 "4:4:0 - color sampling rate halved vertically\n"
+                                 "4:2:2 - color sampling rate halved horizontally\n"
+                                 "4:2:0 - color sampling rate halved horizontally and vertically"),
+                               subsample,
+                               subsample_combobox_changed,
+                               self,
+                               N_("auto"), N_("4:4:4"), N_("4:4:0"), N_("4:2:2"), N_("4:2:0"));
+
+  gtk_box_pack_start(GTK_BOX(box), g->subsample, TRUE, TRUE, 0);
+
 }
 
 void gui_cleanup(dt_imageio_module_format_t *self)
@@ -489,6 +582,7 @@ void gui_reset(dt_imageio_module_format_t *self)
 {
   dt_imageio_jpeg_gui_data_t *g = (dt_imageio_jpeg_gui_data_t *)self->gui_data;
   dt_bauhaus_slider_set(g->quality, dt_confgen_get_int("plugins/imageio/format/jpeg/quality", DT_DEFAULT));
+  dt_bauhaus_combobox_set(g->subsample, DT_SUBSAMPLE_AUTO);
 }
 
 // clang-format off
