@@ -347,7 +347,9 @@ int read_image(dt_imageio_module_data_t *jpg_tmp, uint8_t *out)
 
 size_t params_size(dt_imageio_module_format_t *self)
 {
-  return sizeof(dt_imageio_module_data_t) + sizeof(int);
+  return sizeof(dt_imageio_module_data_t)
+    + sizeof(int)
+    + sizeof(dt_imageio_jpeg_subsample_t);
 }
 
 void *legacy_params(dt_imageio_module_format_t *self,
