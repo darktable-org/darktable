@@ -3614,7 +3614,7 @@ static void _too_new_db_version(const gchar *dbname, const gboolean has_gui)
   g_free(label_text);
 }
 
-void ask_for_upgrade(const gchar *dbname, const gboolean has_gui)
+static void _ask_for_upgrade(const gchar *dbname, const gboolean has_gui)
 {
   // if there's no gui just leave
   if(!has_gui)
@@ -3896,7 +3896,7 @@ start:
       sqlite3_finalize(stmt);
       if(db_version < CURRENT_DATABASE_VERSION_DATA)
       {
-        ask_for_upgrade(dbfilename_data, has_gui);
+        _ask_for_upgrade(dbfilename_data, has_gui);
 
         // older: upgrade
         if(!_upgrade_data_schema(db, db_version))
@@ -4080,7 +4080,7 @@ start:
     sqlite3_finalize(stmt);
     if(db_version < CURRENT_DATABASE_VERSION_LIBRARY)
     {
-      ask_for_upgrade(dbfilename_library, has_gui);
+      _ask_for_upgrade(dbfilename_library, has_gui);
 
       // older: upgrade
       if(!_upgrade_library_schema(db, db_version))
