@@ -207,6 +207,12 @@ changes (where available).
   "EXIF.CROP_FACTOR" and the corresponding 35mm equivalent focal
   length "EXIF.FOCAL.LENGTH.EQUIV".
 
+- The harmony guides are now saved and restored for every image as for
+  all other image's properties. Going back to a previous edit it is
+  not necessary anymore to set the harmony guides again. And since
+  the information is saved in the XMP it can be passed over when
+  sharing pictures or restored when re-importing a collection.
+
 ## Bug Fixes
 
 - Fixes OpenCL platform checking which could lead to a freeze of
@@ -263,6 +269,20 @@ changes (where available).
 
 - Fix a potential crash when using a non supported ICC profile for
   soft-proof.
+
+- Fix multiple small precision issues when computing the borders in the
+  Framing module. For a 0% border on the right or the bottom sides
+  there was some time a one pixel border. This was dependent on the
+  actual export size or zoom level in darkroom.
+
+  Also a 0% border doesn't mean no border at all if the border's
+  aspect ratio chosen doesn't correspond to the image aspect.
+
+- The tone equalizer internal luminance mask has been made more
+  resilient to distortion changes make with modules like lens
+  correction, crop, etc. After activating a crop, the tone equalizer
+  picker will display the proper luminance values when flying over the
+  picture in darkroom center area.
 
 ## Lua
 
