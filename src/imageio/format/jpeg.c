@@ -110,13 +110,16 @@ static void dt_imageio_jpeg_error_exit(j_common_ptr cinfo)
  * SOI and JFIF or Adobe markers, but before all else.)
  */
 
-static void write_icc_profile(j_compress_ptr cinfo, const JOCTET *icc_data_ptr, unsigned int icc_data_len)
+static void write_icc_profile(j_compress_ptr cinfo,
+                              const JOCTET *icc_data_ptr,
+                              unsigned int icc_data_len)
 {
   int cur_marker = 1;       /* per spec, counting starts at 1 */
 
   /* Calculate the number of markers we'll need, rounding up of course */
   unsigned int num_markers = icc_data_len / MAX_DATA_BYTES_IN_MARKER;
-  if(num_markers * MAX_DATA_BYTES_IN_MARKER != icc_data_len) num_markers++;
+  if(num_markers * MAX_DATA_BYTES_IN_MARKER != icc_data_len)
+    num_markers++;
 
   while(icc_data_len > 0)
   {
@@ -168,9 +171,16 @@ static void write_icc_profile(j_compress_ptr cinfo, const JOCTET *icc_data_ptr, 
 #undef MAX_SEQ_NO
 
 
-int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const void *in_tmp,
-                dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                void *exif, int exif_len, dt_imgid_t imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe,
+int write_image(dt_imageio_module_data_t *jpg_tmp,
+                const char *filename,
+                const void *in_tmp,
+                dt_colorspaces_color_profile_type_t over_type,
+                const char *over_filename,
+                void *exif, int exif_len,
+                dt_imgid_t imgid,
+                int num,
+                int total,
+                struct dt_dev_pixelpipe_t *pipe,
                 const gboolean export_masks)
 {
   dt_imageio_jpeg_t *jpg = (dt_imageio_jpeg_t *)jpg_tmp;
@@ -195,6 +205,7 @@ int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const v
   jpg->cinfo.in_color_space = JCS_RGB;
   jpeg_set_defaults(&(jpg->cinfo));
   jpeg_set_quality(&(jpg->cinfo), jpg->quality, TRUE);
+
   if(jpg->quality > 90) jpg->cinfo.comp_info[0].v_samp_factor = 1;
   if(jpg->quality > 92) jpg->cinfo.comp_info[0].h_samp_factor = 1;
   if(jpg->quality > 95) jpg->cinfo.dct_method = JDCT_FLOAT;
@@ -246,7 +257,8 @@ int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const v
 
   jpeg_start_compress(&(jpg->cinfo), TRUE);
 
-  cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid, over_type, over_filename)->profile;
+  cmsHPROFILE out_profile =
+    dt_colorspaces_get_output_profile(imgid, over_type, over_filename)->profile;
   uint32_t len = 0;
   cmsSaveProfileToMem(out_profile, NULL, &len);
   if(len > 0)
@@ -281,7 +293,8 @@ int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const v
   return 0;
 }
 
-static int __attribute__((__unused__)) read_header(const char *filename, dt_imageio_jpeg_t *jpg)
+static int __attribute__((__unused__)) read_header(const char *filename,
+                                                   dt_imageio_jpeg_t *jpg)
 {
   jpg->f = g_fopen(filename, "rb");
   if(!jpg->f) return 1;
@@ -304,7 +317,8 @@ static int __attribute__((__unused__)) read_header(const char *filename, dt_imag
   return 0;
 }
 
-int read_image(dt_imageio_module_data_t *jpg_tmp, uint8_t *out)
+int read_image(dt_imageio_module_data_t *jpg_tmp,
+               uint8_t *out)
 {
   dt_imageio_jpeg_t *jpg = (dt_imageio_jpeg_t *)jpg_tmp;
   struct dt_imageio_jpeg_error_mgr jerr;
@@ -322,10 +336,13 @@ int read_image(dt_imageio_module_data_t *jpg_tmp, uint8_t *out)
   uint8_t *tmp = out;
   while(jpg->dinfo.output_scanline < jpg->dinfo.image_height)
   {
-    if(jpeg_read_scanlines(&(jpg->dinfo), row_pointer, 1) != 1) return 1;
+    if(jpeg_read_scanlines(&(jpg->dinfo), row_pointer, 1) != 1)
+      return 1;
+
     if(jpg->dinfo.num_components < 3)
       for(JDIMENSION i = 0; i < jpg->dinfo.image_width; i++)
-        for(int k = 0; k < 3; k++) tmp[4 * i + k] = row_pointer[0][jpg->dinfo.num_components * i + 0];
+        for(int k = 0; k < 3; k++)
+          tmp[4 * i + k] = row_pointer[0][jpg->dinfo.num_components * i + 0];
     else
       for(JDIMENSION i = 0; i < jpg->dinfo.image_width; i++)
         for(int k = 0; k < 3; k++) tmp[4 * i + k] = row_pointer[0][3 * i + k];
@@ -438,7 +455,8 @@ void *legacy_params(dt_imageio_module_format_t *self,
     n->f = o->f;
 
     *new_version = 3;
-    *new_size = sizeof(dt_imageio_module_data_t) + sizeof(int) + sizeof(dt_imageio_jpeg_subsample_t);
+    *new_size = sizeof(dt_imageio_module_data_t)
+      + sizeof(int) + sizeof(dt_imageio_jpeg_subsample_t);
     return n;
   }
 
@@ -454,12 +472,15 @@ void *get_params(dt_imageio_module_format_t *self)
   return d;
 }
 
-void free_params(dt_imageio_module_format_t *self, dt_imageio_module_data_t *params)
+void free_params(dt_imageio_module_format_t *self,
+                 dt_imageio_module_data_t *params)
 {
   free(params);
 }
 
-int set_params(dt_imageio_module_format_t *self, const void *params, const int size)
+int set_params(dt_imageio_module_format_t *self,
+               const void *params,
+               const int size)
 {
   if(size != self->params_size(self)) return 1;
   const dt_imageio_jpeg_t *d = (dt_imageio_jpeg_t *)params;
@@ -469,7 +490,9 @@ int set_params(dt_imageio_module_format_t *self, const void *params, const int s
   return 0;
 }
 
-int dimension(struct dt_imageio_module_format_t *self, struct dt_imageio_module_data_t *data, uint32_t *width,
+int dimension(struct dt_imageio_module_format_t *self,
+              struct dt_imageio_module_data_t *data,
+              uint32_t *width,
               uint32_t *height)
 {
   /* maximum dimensions supported by JPEG images */
@@ -506,7 +529,8 @@ int flags(dt_imageio_module_data_t *data)
 void init(dt_imageio_module_format_t *self)
 {
 #ifdef USE_LUA
-  dt_lua_register_module_member(darktable.lua_state.state, self, dt_imageio_jpeg_t, quality, int);
+  dt_lua_register_module_member(darktable.lua_state.state, self,
+                                dt_imageio_jpeg_t, quality, int);
 #endif
 }
 void cleanup(dt_imageio_module_format_t *self)
@@ -522,13 +546,15 @@ const char *name()
   return _("JPEG (8-bit)");
 }
 
-static void quality_changed(GtkWidget *slider, gpointer user_data)
+static void quality_changed(GtkWidget *slider,
+                            gpointer user_data)
 {
   const int quality = (int)dt_bauhaus_slider_get(slider);
   dt_conf_set_int("plugins/imageio/format/jpeg/quality", quality);
 }
 
-static void subsample_combobox_changed(GtkWidget *widget, gpointer user_data)
+static void subsample_combobox_changed(GtkWidget *widget,
+                                       gpointer user_data)
 {
   const dt_imageio_jpeg_subsample_t subsample = dt_bauhaus_combobox_get(widget);
   dt_conf_set_int("plugins/imageio/format/jpeg/subsample", subsample);
@@ -536,40 +562,46 @@ static void subsample_combobox_changed(GtkWidget *widget, gpointer user_data)
 
 void gui_init(dt_imageio_module_format_t *self)
 {
-  dt_imageio_jpeg_gui_data_t *g = (dt_imageio_jpeg_gui_data_t *)malloc(sizeof(dt_imageio_jpeg_gui_data_t));
+  dt_imageio_jpeg_gui_data_t *g =
+    (dt_imageio_jpeg_gui_data_t *)malloc(sizeof(dt_imageio_jpeg_gui_data_t));
   self->gui_data = g;
 
-  const dt_imageio_jpeg_subsample_t subsample = dt_conf_get_int("plugins/imageio/format/jpeg/subsample");
+  const dt_imageio_jpeg_subsample_t subsample =
+    dt_conf_get_int("plugins/imageio/format/jpeg/subsample");
 
   // construct gui with jpeg specific options:
   GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   self->widget = box;
   // quality slider
-  g->quality = dt_bauhaus_slider_new_with_range((dt_iop_module_t*)self,
-                                                dt_confgen_get_int("plugins/imageio/format/jpeg/quality", DT_MIN),
-                                                dt_confgen_get_int("plugins/imageio/format/jpeg/quality", DT_MAX),
-                                                1,
-                                                dt_confgen_get_int("plugins/imageio/format/jpeg/quality", DT_DEFAULT),
-                                                0);
+  g->quality = dt_bauhaus_slider_new_with_range
+    ((dt_iop_module_t*)self,
+     dt_confgen_get_int("plugins/imageio/format/jpeg/quality", DT_MIN),
+     dt_confgen_get_int("plugins/imageio/format/jpeg/quality", DT_MAX),
+     1,
+     dt_confgen_get_int("plugins/imageio/format/jpeg/quality", DT_DEFAULT),
+     0);
+
   dt_bauhaus_widget_set_label(g->quality, NULL, N_("quality"));
   dt_bauhaus_slider_set(g->quality, dt_conf_get_int("plugins/imageio/format/jpeg/quality"));
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->quality), TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(g->quality), "value-changed", G_CALLBACK(quality_changed), NULL);
+  g_signal_connect(G_OBJECT(g->quality), "value-changed",
+                   G_CALLBACK(quality_changed), NULL);
 
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(g->subsample,
-                               self,
-                               NULL,
-                               N_("chroma subsampling"),
-                               _("chroma subsampling setting for JPEG encoder.\n"
-                                 "auto - use subsampling determined by the quality value\n"
-                                 "4:4:4 - no chroma subsampling\n"
-                                 "4:4:0 - color sampling rate halved vertically\n"
-                                 "4:2:2 - color sampling rate halved horizontally\n"
-                                 "4:2:0 - color sampling rate halved horizontally and vertically"),
-                               subsample,
-                               subsample_combobox_changed,
-                               self,
-                               N_("auto"), N_("4:4:4"), N_("4:4:0"), N_("4:2:2"), N_("4:2:0"));
+  DT_BAUHAUS_COMBOBOX_NEW_FULL
+    (g->subsample,
+     self,
+     NULL,
+     N_("chroma subsampling"),
+     _("chroma subsampling setting for JPEG encoder.\n"
+       "auto - use subsampling determined by the quality value\n"
+       "4:4:4 - no chroma subsampling\n"
+       "4:4:0 - color sampling rate halved vertically\n"
+       "4:2:2 - color sampling rate halved horizontally\n"
+       "4:2:0 - color sampling rate halved horizontally and vertically"),
+     subsample,
+     subsample_combobox_changed,
+     self,
+     N_("auto"), N_("4:4:4"), N_("4:4:0"), N_("4:2:2"), N_("4:2:0"));
 
   gtk_box_pack_start(GTK_BOX(box), g->subsample, TRUE, TRUE, 0);
 
@@ -583,7 +615,9 @@ void gui_cleanup(dt_imageio_module_format_t *self)
 void gui_reset(dt_imageio_module_format_t *self)
 {
   dt_imageio_jpeg_gui_data_t *g = (dt_imageio_jpeg_gui_data_t *)self->gui_data;
-  dt_bauhaus_slider_set(g->quality, dt_confgen_get_int("plugins/imageio/format/jpeg/quality", DT_DEFAULT));
+  dt_bauhaus_slider_set(g->quality,
+                        dt_confgen_get_int("plugins/imageio/format/jpeg/quality",
+                                           DT_DEFAULT));
   dt_bauhaus_combobox_set(g->subsample, DT_SUBSAMPLE_AUTO);
 }
 
