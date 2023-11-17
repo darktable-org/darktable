@@ -134,7 +134,8 @@ int legacy_params(dt_iop_module_t *self,
 }
 
 /*==================================================================================
- * begin raw therapee code, hg checkout of march 09, 2016 branch master.
+ * begin raw therapee code, hg initial checkout of march 09, 2016 branch master.
+ * avoid colorshift code has been added later
  *==================================================================================*/
 
 ////////////////////////////////////////////////////////////////
@@ -274,7 +275,7 @@ void process(
   float *redfactor = NULL;
   float *bluefactor = NULL;
   float *oldraw = NULL;
-  char *buffer1 = NULL;
+  float *blockwt = NULL;
   float *RawDataTmp = NULL;
   float *Gtmp = NULL;
 
@@ -303,17 +304,20 @@ void process(
   const float *const in = out;
 
   #define caautostrength 4.0f
-  #define ts 128
-  #define tsh 64
-  #define v1 128
-  #define v2 256
-  #define v3 384
-  #define v4 512
+  #define ts 128    // multiple of 16 for aligned buffers
+  #define tsh (ts / 2)
+  #define v1 (ts)
+  #define v2 (2 * ts)
+  #define v3 (3 * ts)
+  #define v4 (4 * ts)
+  #define border 8
+  #define border2 (2 * border)
+
   // multithreaded and partly vectorized by Ingo Weyrich
 
   if(avoidshift)
   {
-    const size_t buffsize = h_width * h_height;
+    const size_t buffsize = h_width * h_height + 4;
     redfactor = dt_calloc_align_float(buffsize);
     bluefactor = dt_calloc_align_float(buffsize);
     oldraw = dt_calloc_align_float(buffsize * 2);
@@ -340,55 +344,53 @@ void process(
   double fitparams[2][2][16];
 
   // temporary array to store simple interpolation of G
-  Gtmp = dt_calloc_align_float((size_t)height * width);
+  Gtmp = dt_calloc_align_float((size_t)height * dt_round_size(width, 16) + 4);
 
   // temporary array to avoid race conflicts, only every second pixel needs to be saved here
-  RawDataTmp = dt_alloc_align_float(height * width / 2 + 4);
+  RawDataTmp = dt_alloc_align_float((size_t)height * dt_round_size(width / 2, 16) + 4);
 
   if(!Gtmp || !RawDataTmp)
   {
     dt_print(DT_DEBUG_ALWAYS,"[cacorrect] out of memory, skipping\n");
     goto writeout;
   }
-  const int border = 8;
-  const int border2 = 16;
 
   const int vz1 = (height + border2) % (ts - border2) == 0 ? 1 : 0;
   const int hz1 = (width + border2) % (ts - border2) == 0 ? 1 : 0;
-  const int vblsz = ceil((float)(height + border2) / (ts - border2) + 2 + vz1);
-  const int hblsz = ceil((float)(width + border2) / (ts - border2) + 2 + hz1);
-
-  buffer1 = (char *)calloc((size_t)vblsz * hblsz * (2 * 2 + 1), sizeof(float));
+  const int vert_tiles = ceilf((float)(height + border2) / (ts - border2) + 2 + vz1);
+  const int horiz_tiles = ceilf((float)(width + border2) / (ts - border2) + 2 + hz1);
 
   // block CA shift values and weight assigned to block
-  float *blockwt = (float *)buffer1;
-  float(*blockshifts)[2][2] = (float(*)[2][2])(buffer1 + (sizeof(float) * vblsz * hblsz));
+  blockwt = dt_calloc_align_float(5 * vert_tiles * horiz_tiles);
+  float (*blockshifts)[2][2] = (float(*)[2][2])(blockwt + vert_tiles * horiz_tiles);
 
   float blockave[2][2] = { { 0, 0 }, { 0, 0 } };
   float blocksqave[2][2] = { { 0, 0 }, { 0, 0 } };
   float blockdenom[2][2] = { { 0, 0 }, { 0, 0 } };
   float blockvar[2][2];
   // order of 2d polynomial fit (polyord), and numpar=polyord^2
-  int polyord = 4, numpar = 16;
+  int polyord = 4;
+  int numpar = 16;
 
-  const float eps = 1e-5f, eps2 = 1e-10f; // tolerance to avoid dividing by zero
+  const float eps = 1e-5f;
+  const float eps2 = 1e-10f; // tolerance to avoid dividing by zero
 
   for(size_t it = 0; it < iterations && processpasstwo; it++)
   {
-
-#if defined(_OPENMP) && !defined(__APPLE__)
-#pragma omp parallel default(none) \
-  dt_omp_firstprivate(in, out, height, width, filters, processpasstwo, hblsz, vblsz, \
-                      blockwt, blockshifts, blockvar, Gtmp, RawDataTmp, \
-                      border, border2, eps, eps2, darktable) \
-  shared(numpar, polyord, fitparams, blockdenom, blockave, blocksqave)
-  // if any of the above shared are made firstprivate, we get the wrong answer
+    // A reminder, be very careful if you try to optimize the parallel processing loop
+    // for not breaking multipass mode and clang/gcc differences.
+    // See darktable file history and related problems before doing so.
+#if defined(_OPENMP)
+#pragma omp parallel
 #endif
    {
     // direction of the CA shift in a tile
     int GRBdir[2][3];
 
-    int shifthfloor[3], shiftvfloor[3], shifthceil[3], shiftvceil[3];
+    int shifthfloor[3];
+    int shiftvfloor[3];
+    int shifthceil[3];
+    int shiftvceil[3];
 
     // local quadratic fit to shift data within a tile
     float coeff[2][3][2];
@@ -396,37 +398,39 @@ void process(
     float CAshift[2][2];
     // polynomial fit coefficients
     // residual CA shift amount within a plaquette
-    float shifthfrac[3], shiftvfrac[3];
+    float shifthfrac[3];
+    float shiftvfrac[3];
     // per thread data for evaluation of block CA shift variance
-    float blockavethr[2][2] = { { 0, 0 }, { 0, 0 } }, blocksqavethr[2][2] = { { 0, 0 }, { 0, 0 } },
-          blockdenomthr[2][2] = { { 0, 0 }, { 0, 0 } };
+    float blockavethr[2][2] = { { 0, 0 }, { 0, 0 } };
+    float blocksqavethr[2][2] = { { 0, 0 }, { 0, 0 } };
+    float blockdenomthr[2][2] = { { 0, 0 }, { 0, 0 } };
 
     // assign working space
-    const size_t buffersize = sizeof(float) * 3 * ts * ts + 6 * sizeof(float) * ts * tsh + 8 * 64 + 63;
-    char *buffer = (char *)malloc(buffersize);
-    char *data = (char *)(((uintptr_t)buffer + (uintptr_t)63) / 64 * 64);
+    // allocate all buffers in one bunch but make sure they are all aligned-64 by proper tilesize ts
+    const size_t tilebuf_size = ts * ts;
+    const size_t tilebuf_half_size = ts * tsh;
 
-    // shift the beginning of all arrays but the first by 64 bytes to avoid cache miss conflicts on CPUs which
-    // have <=4-way associative L1-Cache
+    const size_t buffersize = 3 * tilebuf_size + 6 * tilebuf_half_size;
+    float *data = dt_alloc_align_float(buffersize);
 
     // rgb data in a tile
     float *rgb[3];
     rgb[0] = (float(*))data;
-    rgb[1] = (float(*))(data + 1 * sizeof(float) * ts * ts + 1 * 64);
-    rgb[2] = (float(*))(data + 2 * sizeof(float) * ts * ts + 2 * 64);
+    rgb[1] = (float(*))(data + tilebuf_size);
+    rgb[2] = (float(*))(data + 2 * tilebuf_size);
 
     // high pass filter for R/B in vertical direction
-    float *rbhpfh = (float(*))(data + 3 * sizeof(float) * ts * ts + 3 * 64);
+    float *rbhpfh = data + 3 * tilebuf_size;
     // high pass filter for R/B in horizontal direction
-    float *rbhpfv = (float(*))(data + 3 * sizeof(float) * ts * ts + sizeof(float) * ts * tsh + 4 * 64);
+    float *rbhpfv = data + 3 * tilebuf_size + 1 * tilebuf_half_size;
     // low pass filter for R/B in horizontal direction
-    float *rblpfh = (float(*))(data + 4 * sizeof(float) * ts * ts + 5 * 64);
+    float *rblpfh = data + 3 * tilebuf_size + 2 * tilebuf_half_size;
     // low pass filter for R/B in vertical direction
-    float *rblpfv = (float(*))(data + 4 * sizeof(float) * ts * ts + sizeof(float) * ts * tsh + 6 * 64);
+    float *rblpfv = data + 3 * tilebuf_size + 3 * tilebuf_half_size;
     // low pass filter for colour differences in horizontal direction
-    float *grblpfh = (float(*))(data + 5 * sizeof(float) * ts * ts + 7 * 64);
+    float *grblpfh = data + 3 * tilebuf_size + 4 * tilebuf_half_size;
     // low pass filter for colour differences in vertical direction
-    float *grblpfv = (float(*))(data + 5 * sizeof(float) * ts * ts + sizeof(float) * ts * tsh + 8 * 64);
+    float *grblpfv = data + 3 * tilebuf_size + 5 * tilebuf_half_size;
     // colour differences
     float *grbdiff = rbhpfh; // there is no overlap in buffer usage => share
     // green interpolated to optical sample points for R/B
@@ -438,9 +442,10 @@ void process(
 #pragma omp for collapse(2) schedule(static) nowait
 #endif
       for(int top = -border; top < height; top += ts - border2)
+      {
         for(int left = -border; left < width; left += ts - border2)
         {
-          memset(buffer, 0, buffersize);
+          memset(data, 0, buffersize * sizeof(float));
           const int vblock = ((top + border) / (ts - border2)) + 1;
           const int hblock = ((left + border) / (ts - border2)) + 1;
           const int bottom = MIN(top + ts, height + border);
@@ -641,15 +646,17 @@ void process(
 
               // vertical
               float gdiff = 0.3125f * (rgb[1][indx + ts] - rgb[1][indx - ts])
-                            + 0.09375f * (rgb[1][indx + ts + 1] - rgb[1][indx - ts + 1]
-                                          + rgb[1][indx + ts - 1] - rgb[1][indx - ts - 1]);
+                         + 0.09375f * (rgb[1][indx + ts + 1] - rgb[1][indx - ts + 1]
+                                     + rgb[1][indx + ts - 1] - rgb[1][indx - ts - 1]);
               float deltgrb = (rgb[c][indx] - rgb[1][indx]);
 
-              float gradwt = fabsf(0.25f * rbhpfv[indx >> 1]
-                                   + 0.125f * (rbhpfv[(indx >> 1) + 1] + rbhpfv[(indx >> 1) - 1]))
+              float gradwt = fabsf(0.25f *  rbhpfv[indx >> 1]
+                                + 0.125f * (rbhpfv[(indx >> 1) + 1]
+                                +           rbhpfv[(indx >> 1) - 1]))
                              * (grblpfv[(indx >> 1) - v1] + grblpfv[(indx >> 1) + v1])
-                             / (eps + 0.1f * (grblpfv[(indx >> 1) - v1] + grblpfv[(indx >> 1) + v1])
-                                + rblpfv[(indx >> 1) - v1] + rblpfv[(indx >> 1) + v1]);
+                             / (eps + 0.1f * (grblpfv[(indx >> 1) - v1]
+                                            + grblpfv[(indx >> 1) + v1])
+                                            + rblpfv[(indx >> 1) - v1] + rblpfv[(indx >> 1) + v1]);
 
               coeff[0][0][c >> 1] += gradwt * deltgrb * deltgrb;
               coeff[0][1][c >> 1] += gradwt * gdiff * deltgrb;
@@ -657,11 +664,12 @@ void process(
 
               // horizontal
               gdiff = 0.3125f * (rgb[1][indx + 1] - rgb[1][indx - 1])
-                      + 0.09375f * (rgb[1][indx + 1 + ts] - rgb[1][indx - 1 + ts] + rgb[1][indx + 1 - ts]
-                                    - rgb[1][indx - 1 - ts]);
+                   + 0.09375f * (rgb[1][indx + 1 + ts] - rgb[1][indx - 1 + ts] + rgb[1][indx + 1 - ts]
+                               - rgb[1][indx - 1 - ts]);
 
               gradwt = fabsf(0.25f * rbhpfh[indx >> 1]
-                             + 0.125f * (rbhpfh[(indx >> 1) + v1] + rbhpfh[(indx >> 1) - v1]))
+                          + 0.125f * (rbhpfh[(indx >> 1) + v1]
+                                    + rbhpfh[(indx >> 1) - v1]))
                        * (grblpfh[(indx >> 1) - 1] + grblpfh[(indx >> 1) + 1])
                        / (eps + 0.1f * (grblpfh[(indx >> 1) - 1] + grblpfh[(indx >> 1) + 1])
                           + rblpfh[(indx >> 1) - 1] + rblpfh[(indx >> 1) + 1]);
@@ -689,12 +697,12 @@ void process(
               if(coeff[dir][2][c] > eps2)
               {
                 CAshift[dir][c] = coeff[dir][1][c] / coeff[dir][2][c];
-                blockwt[vblock * hblsz + hblock] = coeff[dir][2][c] / (eps + coeff[dir][0][c]);
+                blockwt[vblock * horiz_tiles + hblock] = coeff[dir][2][c] / (eps + coeff[dir][0][c]);
               }
               else
               {
-                CAshift[dir][c] = 17.0;
-                blockwt[vblock * hblsz + hblock] = 0;
+                CAshift[dir][c] = 17.0f;
+                blockwt[vblock * horiz_tiles + hblock] = 0;
               }
 
               // data structure = CAshift[vert/hor][colour]
@@ -708,13 +716,12 @@ void process(
                 blockdenomthr[dir][c] += 1;
               }
               // evaluate the shifts to the location that minimizes CA within the tile
-              blockshifts[vblock * hblsz + hblock][c][dir] = CAshift[dir][c]; // vert/hor CA shift for R/B
+              blockshifts[vblock * horiz_tiles + hblock][c][dir] = CAshift[dir][c]; // vert/hor CA shift for R/B
 
             } // vert/hor
           }   // colour
-
         }
-
+      }
 // end of diagnostic pass
 #ifdef _OPENMP
 #pragma omp critical(cadetectpass2)
@@ -737,6 +744,7 @@ void process(
 #endif
       {
         for(int dir = 0; dir < 2; dir++)
+        {
           for(int c = 0; c < 2; c++)
           {
             if(blockdenom[dir][c])
@@ -751,33 +759,33 @@ void process(
               break;
             }
           }
-        // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        }
 
         // now prepare for CA correction pass
         // first, fill border blocks of blockshift array
         if(processpasstwo)
         {
-          for(int vblock = 1; vblock < vblsz - 1; vblock++)
+          for(int vblock = 1; vblock < vert_tiles - 1; vblock++)
           { // left and right sides
             for(int c = 0; c < 2; c++)
             {
               for(int i = 0; i < 2; i++)
               {
-                blockshifts[vblock * hblsz][c][i] = blockshifts[(vblock)*hblsz + 2][c][i];
-                blockshifts[vblock * hblsz + hblsz - 1][c][i] = blockshifts[(vblock)*hblsz + hblsz - 3][c][i];
+                blockshifts[vblock * horiz_tiles][c][i] = blockshifts[(vblock)*horiz_tiles + 2][c][i];
+                blockshifts[vblock * horiz_tiles + horiz_tiles - 1][c][i] = blockshifts[(vblock)*horiz_tiles + horiz_tiles - 3][c][i];
               }
             }
           }
 
-          for(int hblock = 0; hblock < hblsz; hblock++)
+          for(int hblock = 0; hblock < horiz_tiles; hblock++)
           { // top and bottom sides
             for(int c = 0; c < 2; c++)
             {
               for(int i = 0; i < 2; i++)
               {
-                blockshifts[hblock][c][i] = blockshifts[2 * hblsz + hblock][c][i];
-                blockshifts[(vblsz - 1) * hblsz + hblock][c][i]
-                    = blockshifts[(vblsz - 3) * hblsz + hblock][c][i];
+                blockshifts[hblock][c][i] = blockshifts[2 * horiz_tiles + hblock][c][i];
+                blockshifts[(vert_tiles - 1) * horiz_tiles + hblock][c][i]
+                    = blockshifts[(vert_tiles - 3) * horiz_tiles + hblock][c][i];
               }
             }
           }
@@ -799,8 +807,9 @@ void process(
 
           int numblox[2] = { 0, 0 };
 
-          for(int vblock = 1; vblock < vblsz - 1; vblock++)
-            for(int hblock = 1; hblock < hblsz - 1; hblock++)
+          for(int vblock = 1; vblock < vert_tiles - 1; vblock++)
+          {
+            for(int hblock = 1; hblock < horiz_tiles - 1; hblock++)
             {
               // block 3x3 median of blockshifts for robustness
               for(int c = 0; c < 2; c++)
@@ -809,15 +818,15 @@ void process(
                 for(int dir = 0; dir < 2; dir++)
                 {
                   const float p[9]  __attribute__((aligned(16))) =
-                  { blockshifts[(vblock - 1) * hblsz + hblock - 1][c][dir],
-                    blockshifts[(vblock - 1) * hblsz + hblock][c][dir],
-                    blockshifts[(vblock - 1) * hblsz + hblock + 1][c][dir],
-                    blockshifts[(vblock)     * hblsz + hblock - 1][c][dir],
-                    blockshifts[(vblock)     * hblsz + hblock][c][dir],
-                    blockshifts[(vblock)     * hblsz + hblock + 1][c][dir],
-                    blockshifts[(vblock + 1) * hblsz + hblock - 1][c][dir],
-                    blockshifts[(vblock + 1) * hblsz + hblock][c][dir],
-                    blockshifts[(vblock + 1) * hblsz + hblock + 1][c][dir] };
+                  { blockshifts[(vblock - 1) * horiz_tiles + hblock - 1][c][dir],
+                    blockshifts[(vblock - 1) * horiz_tiles + hblock][c][dir],
+                    blockshifts[(vblock - 1) * horiz_tiles + hblock + 1][c][dir],
+                    blockshifts[(vblock)     * horiz_tiles + hblock - 1][c][dir],
+                    blockshifts[(vblock)     * horiz_tiles + hblock][c][dir],
+                    blockshifts[(vblock)     * horiz_tiles + hblock + 1][c][dir],
+                    blockshifts[(vblock + 1) * horiz_tiles + hblock - 1][c][dir],
+                    blockshifts[(vblock + 1) * horiz_tiles + hblock][c][dir],
+                    blockshifts[(vblock + 1) * horiz_tiles + hblock + 1][c][dir] };
                   bstemp[dir] = median9f(p);
                 }
 
@@ -843,7 +852,7 @@ void process(
                       double powHblock = powHblockInit;
                       for(int n = 0; n < polyord; n++)
                       {
-                        double inc = powVblock * powHblock * blockwt[vblock * hblsz + hblock];
+                        double inc = powVblock * powHblock * blockwt[vblock * horiz_tiles + hblock];
                         size_t idx = numpar * (polyord * i + j) + (polyord * m + n);
                         polymat[c][0][idx] += inc;
                         polymat[c][1][idx] += inc;
@@ -851,7 +860,7 @@ void process(
                       }
                       powVblock *= vblock;
                     }
-                    double blkinc = powVblockInit * powHblockInit * blockwt[vblock * hblsz + hblock];
+                    double blkinc = powVblockInit * powHblockInit * blockwt[vblock * horiz_tiles + hblock];
                     shiftmat[c][0][(polyord * i + j)] += blkinc * bstemp[0];
                     shiftmat[c][1][(polyord * i + j)] += blkinc * bstemp[1];
                     powHblockInit *= hblock;
@@ -860,6 +869,7 @@ void process(
                 }   // monomials
               }     // c
             }       // blocks
+          }
 
           numblox[1] = MIN(numblox[0], numblox[1]);
 
@@ -879,10 +889,6 @@ void process(
           if(processpasstwo)
           {
             // fit parameters to blockshifts
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static)
-            // collapse(2) doesn't help here, likely due to cacheline bouncing
-#endif
             for(int c = 0; c < 2; c++)
               for(int dir = 0; dir < 2; dir++)
               {
@@ -910,9 +916,10 @@ void process(
 #endif
 
       for(int top = -border; top < height; top += ts - border2)
+      {
         for(int left = -border; left < width; left += ts - border2)
         {
-          memset(buffer, 0, buffersize);
+          memset(data, 0, buffersize * sizeof(float));
           float lblockshifts[2][2];
           const int vblock = ((top + border) / (ts - border2)) + 1;
           const int hblock = ((left + border) / (ts - border2)) + 1;
@@ -1126,6 +1133,7 @@ void process(
           // this loop does not deserve vectorization in mainly because the most expensive part with the
           // divisions does not happen often (less than 1/10 in my tests)
           for(int rr = 8; rr < rr1 - 8; rr++)
+          {
             for(int cc = 8 + (FC(rr, 2, filters) & 1), c = FC(rr, cc, filters), indx = rr * ts + cc;
                 cc < cc1 - 8; cc += 2, indx += 2)
             {
@@ -1181,7 +1189,7 @@ void process(
                 rgb[c][indx] = rgb[1][indx] - 0.5f * (grbdiffold + grbdiffint);
               }
             }
-
+          }
           // copy CA corrected results to temporary image matrix
           for(int rr = border; rr < rr1 - border; rr++)
           {
@@ -1196,13 +1204,13 @@ void process(
             }
           }
         }
-
+      }
 #ifdef _OPENMP
 #pragma omp barrier
 #endif
 // copy temporary image matrix back to image matrix
 #ifdef _OPENMP
-#pragma omp for schedule(static)
+#pragma omp for
 #endif
       for(int row = 0; row < height; row++)
         for(int col = 0 + (FC(row, 0, filters) & 1), indx = (row * width + col) >> 1; col < width;
@@ -1211,7 +1219,7 @@ void process(
           out[row * width + col] = RawDataTmp[indx];
         }
     }
-    free(buffer);
+    dt_free_align(data);
    }
   }
 
@@ -1221,9 +1229,7 @@ void process(
     // of red and blue channel and apply a gaussian blur to them.
     // Then we apply the resulting factors per pixel on the result of raw ca correction
 #ifdef _OPENMP
-#pragma omp parallel for \
-  dt_omp_firstprivate(in, oldraw, height, width, filters, redfactor, bluefactor)   \
-  schedule(static)
+#pragma omp parallel for
 #endif
     for(size_t row = 0; row < height; row++)
     {
@@ -1313,7 +1319,7 @@ void process(
     }
   }
 
-  if(buffer1) free(buffer1);
+  dt_free_align(blockwt);
   dt_free_align(out);
   dt_free_align(RawDataTmp);
   dt_free_align(Gtmp);
