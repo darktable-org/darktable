@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-17 08:04+0100\n"
-"PO-Revision-Date: 2023-11-17 08:14+0100\n"
+"POT-Creation-Date: 2023-11-18 18:34+0100\n"
+"PO-Revision-Date: 2023-11-18 18:38+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -6461,8 +6461,34 @@ msgstr ""
 "Erreur lors de la lecture du fichier de verrouillage de la base de données : "
 "« %s »"
 
+#: ../src/common/database.c:3605
+#, c-format
+msgid ""
+"the database schema version of\n"
+"\n"
+"<span style='italic'>%s</span>\n"
+"\n"
+"is too new for this build of darktable (this means the database was created "
+"or upgraded by a newer darktable version)\n"
+msgstr ""
+"La version du schéma de la base de données\n"
+"\n"
+"<span style='italic'>%s</span>\n"
+"\n"
+"est trop récente pour cette version de darktable\n"
+"(cela signifie que la base de données a été créée ou mise à jour pas une "
+"version plus récente de darktable.\n"
+
+#: ../src/common/database.c:3612
+msgid "darktable - too new db version"
+msgstr "darktable - Base de données trop récente"
+
+#: ../src/common/database.c:3613
+msgid "_quit darktable"
+msgstr "_Quitter darktable"
+
 #. the database has to be upgraded, let's ask user
-#: ../src/common/database.c:3610
+#: ../src/common/database.c:3628
 #, c-format
 msgid ""
 "the database schema has to be upgraded for\n"
@@ -6481,21 +6507,21 @@ msgstr ""
 "\n"
 "Continuer ou quitter pour effectuer une sauvegarde.\n"
 
-#: ../src/common/database.c:3618
+#: ../src/common/database.c:3636
 msgid "darktable - schema migration"
 msgstr "darktable - Migration de la base de données"
 
-#: ../src/common/database.c:3619 ../src/common/database.c:3940
-#: ../src/common/database.c:3955 ../src/common/database.c:4122
-#: ../src/common/database.c:4137
+#: ../src/common/database.c:3637 ../src/common/database.c:3959
+#: ../src/common/database.c:3974 ../src/common/database.c:4142
+#: ../src/common/database.c:4157
 msgid "_close darktable"
 msgstr "_Quitter darktable"
 
-#: ../src/common/database.c:3619
+#: ../src/common/database.c:3637
 msgid "_upgrade database"
 msgstr "_Mise à jour de la base de données"
 
-#: ../src/common/database.c:3920 ../src/common/database.c:4102
+#: ../src/common/database.c:3939 ../src/common/database.c:4122
 #, c-format
 msgid ""
 "quick_check said:\n"
@@ -6505,21 +6531,21 @@ msgstr ""
 "« %s »\n"
 "\n"
 
-#: ../src/common/database.c:3937 ../src/common/database.c:3952
-#: ../src/common/database.c:4119 ../src/common/database.c:4134
+#: ../src/common/database.c:3956 ../src/common/database.c:3971
+#: ../src/common/database.c:4139 ../src/common/database.c:4154
 msgid "darktable - error opening database"
 msgstr "darktable - Erreur lors de l’ouverture de la base de données"
 
-#: ../src/common/database.c:3941 ../src/common/database.c:4123
+#: ../src/common/database.c:3960 ../src/common/database.c:4143
 msgid "_attempt restore"
 msgstr "_Essayer de restaurer"
 
-#: ../src/common/database.c:3942 ../src/common/database.c:3956
-#: ../src/common/database.c:4124 ../src/common/database.c:4138
+#: ../src/common/database.c:3961 ../src/common/database.c:3975
+#: ../src/common/database.c:4144 ../src/common/database.c:4158
 msgid "_delete database"
 msgstr "_Effacer la base de données"
 
-#: ../src/common/database.c:3945 ../src/common/database.c:4127
+#: ../src/common/database.c:3964 ../src/common/database.c:4147
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup, attempt an automatic restore\n"
@@ -6532,7 +6558,7 @@ msgstr ""
 "récente\n"
 " • Ou supprimer la base corrompue et redémarrer avec une nouvelle base ?"
 
-#: ../src/common/database.c:3959 ../src/common/database.c:4141
+#: ../src/common/database.c:3978 ../src/common/database.c:4161
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup or delete the corrupted database\n"
@@ -6542,7 +6568,7 @@ msgstr ""
 "la base de données depuis une sauvegarde, ou supprimer la base corrompue\n"
 "et redémarrer avec une nouvelle base ?"
 
-#: ../src/common/database.c:3966 ../src/common/database.c:4146
+#: ../src/common/database.c:3985 ../src/common/database.c:4166
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -13844,16 +13870,16 @@ msgstr "Relatif à la scène, linéaire, RAW"
 msgid "linear, raw"
 msgstr "Linéaire, RAW"
 
-#: ../src/iop/cacorrect.c:1415
+#: ../src/iop/cacorrect.c:1424
 msgid "iteration runs, default is twice"
 msgstr "Nombre d’itérations, deux par défaut"
 
-#: ../src/iop/cacorrect.c:1418
+#: ../src/iop/cacorrect.c:1427
 msgid "activate colorshift correction for blue & red channels"
 msgstr ""
 "Activer la correction des dérives colorées pour les canaux bleu et rouge"
 
-#: ../src/iop/cacorrect.c:1425
+#: ../src/iop/cacorrect.c:1434
 msgid ""
 "automatic chromatic aberration correction\n"
 "only for Bayer raw files with 3 color channels"
@@ -16020,7 +16046,7 @@ msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "Teinte à laquelle on donne priorité sur les autres"
 
 #: ../src/iop/colorreconstruction.c:1270 ../src/iop/demosaic.c:1318
-#: ../src/iop/highlights.c:1226
+#: ../src/iop/highlights.c:1261
 msgid "not applicable"
 msgstr "Non applicable"
 
@@ -17971,7 +17997,7 @@ msgstr ""
 msgid "reconstruction, raw"
 msgstr "Reconstruire, RAW"
 
-#: ../src/iop/highlights.c:988
+#: ../src/iop/highlights.c:1007
 msgid ""
 "highlights: mode not available for this type of image. falling back to "
 "inpaint opposed."
@@ -17979,11 +18005,11 @@ msgstr ""
 "Reconstruction des hautes lumières : mode non disponible pour ce type "
 "d’image. Repli sur « Peinture opposée »."
 
-#: ../src/iop/highlights.c:1152
+#: ../src/iop/highlights.c:1187
 msgid "highlight reconstruction method"
 msgstr "Méthode de reconstruction des hautes lumières"
 
-#: ../src/iop/highlights.c:1157
+#: ../src/iop/highlights.c:1192
 msgid ""
 "manually adjust the clipping threshold mostly used against magenta "
 "highlights.\n"
@@ -17997,7 +18023,7 @@ msgstr ""
 "« Peinture opposée » et « Par segmentation » surtout si le point blanc du "
 "boîtier est incorrect."
 
-#: ../src/iop/highlights.c:1161
+#: ../src/iop/highlights.c:1196
 msgid ""
 "visualize clipped highlights in a false color representation.\n"
 "the effective clipping level also depends on the reconstruction method."
@@ -18007,7 +18033,7 @@ msgstr ""
 "Le niveau de troncature effectif dépend aussi de la méthode de "
 "reconstruction."
 
-#: ../src/iop/highlights.c:1171
+#: ../src/iop/highlights.c:1206
 msgid ""
 "combine closely related clipped segments by morphological operations.\n"
 "this often leads to improved color reconstruction for tiny segments before "
@@ -18017,12 +18043,12 @@ msgstr ""
 "Cela améliore souvent la reconstruction des couleurs pour les petits "
 "segments avant un arrière plan sombre."
 
-#: ../src/iop/highlights.c:1174
+#: ../src/iop/highlights.c:1209
 msgid "visualize the combined segments in a false color representation."
 msgstr ""
 "Visualise les segments combinés avec une représentation en fausse couleur."
 
-#: ../src/iop/highlights.c:1181
+#: ../src/iop/highlights.c:1216
 msgid ""
 "select inpainting after segmentation analysis.\n"
 "increase to favor candidates found in segmentation analysis, decrease for "
@@ -18033,7 +18059,7 @@ msgstr ""
 "segmentation,\n"
 "diminuer pour une effet opposé."
 
-#: ../src/iop/highlights.c:1184
+#: ../src/iop/highlights.c:1219
 msgid ""
 "visualize segments that are considered to have a good candidate in a false "
 "color representation."
@@ -18041,7 +18067,7 @@ msgstr ""
 "Visualise les segments considérés comme bons candidats avec une "
 "représentation en fausse couleur."
 
-#: ../src/iop/highlights.c:1193
+#: ../src/iop/highlights.c:1228
 msgid ""
 "approximate lost data in regions with all photosites clipped, the effect "
 "depends on segment size and border gradients.\n"
@@ -18065,17 +18091,17 @@ msgstr ""
 "reconstruites\n"
 "et éviter les dégradés."
 
-#: ../src/iop/highlights.c:1199
+#: ../src/iop/highlights.c:1234
 msgid "set strength of rebuilding in regions with all photosites clipped."
 msgstr ""
 "Défini la force de reconstruction pour les régions avec tous les photosites "
 "tronqués."
 
-#: ../src/iop/highlights.c:1201
+#: ../src/iop/highlights.c:1236
 msgid "show the effect that is added to already reconstructed data."
 msgstr "Montre l'effet qui est ajouté aux données déjà reconstruites."
 
-#: ../src/iop/highlights.c:1210
+#: ../src/iop/highlights.c:1245
 msgid ""
 "add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. useful at high ISO."
@@ -18083,7 +18109,7 @@ msgstr ""
 "Ajoute du bruit pour fusionner visuellement les zones reconstruites\n"
 "dans le reste de l’image bruitées. Utile pour les hauts ISO."
 
-#: ../src/iop/highlights.c:1214
+#: ../src/iop/highlights.c:1249
 msgid ""
 "increase if magenta highlights don't get fully corrected\n"
 "each new iteration brings a performance penalty."
@@ -18091,7 +18117,7 @@ msgstr ""
 "Augmenter si le magenta des hautes lumières n’est pas complètement corrigé.\n"
 "Chaque nouvelle itération ajoute une pénalité de temps."
 
-#: ../src/iop/highlights.c:1219
+#: ../src/iop/highlights.c:1254
 msgid ""
 "increase if magenta highlights don't get fully corrected.\n"
 "this may produce non-smooth boundaries between valid and clipped regions."
@@ -18100,7 +18126,7 @@ msgstr ""
 "Cela peut produire des délimitations tranchées entre les régions valides et "
 "tronquées."
 
-#: ../src/iop/highlights.c:1223
+#: ../src/iop/highlights.c:1258
 msgid ""
 "increase to correct larger clipped areas.\n"
 "large values bring huge performance penalties"
@@ -18108,9 +18134,9 @@ msgstr ""
 "Augmenter pour corriger les larges zones tronquées.\n"
 "Les grandes valeurs pénalisent fortement les performances."
 
-#: ../src/iop/highlights.c:1227
-msgid "this module only works with non-monochrome RAW and sRAW"
-msgstr "Ce module ne fonctionne que pour les RAW et sRAW non monochrome"
+#: ../src/iop/highlights.c:1262
+msgid "this module does not work with monochrome RAW files"
+msgstr "Ce module ne fonctionne pas avec les fichiers RAW monochromes"
 
 #: ../src/iop/highpass.c:72
 msgid "highpass"
