@@ -312,6 +312,7 @@ void process(
   #define v4 (4 * ts)
   #define border 8
   #define border2 (2 * border)
+  #define borderh (border / 2)
 
   // multithreaded and partly vectorized by Ingo Weyrich
 
@@ -599,12 +600,12 @@ void process(
             }
           }
 
-          for(int rr = 4; rr < rr1 - 4; rr++)
+          for(int rr = borderh; rr < rr1 - borderh; rr++)
           {
-            for(int cc = 4 + (FC(rr, 2, filters) & 1), indx = rr * ts + cc, c = FC(rr, cc, filters); cc < cc1 - 4; cc += 2, indx += 2)
+            for(int cc = borderh + (FC(rr, 2, filters) & 1), indx = rr * ts + cc, c = FC(rr, cc, filters); cc < cc1 - borderh; cc += 2, indx += 2)
             {
               rbhpfv[indx >> 1] = fabsf(
-                  fabsf((rgb[1][indx] - rgb[c][indx]) - (rgb[1][indx + v4] - rgb[c][indx + v4]))
+                    fabsf((rgb[1][indx] - rgb[c][indx]) - (rgb[1][indx + v4] - rgb[c][indx + v4]))
                   + fabsf((rgb[1][indx - v4] - rgb[c][indx - v4]) - (rgb[1][indx] - rgb[c][indx]))
                   - fabsf((rgb[1][indx - v4] - rgb[c][indx - v4]) - (rgb[1][indx + v4] - rgb[c][indx + v4])));
               rbhpfh[indx >> 1] = fabsf(
@@ -635,9 +636,9 @@ void process(
 
           // along line segments, find the point along each segment that minimizes the colour variance
           // averaged over the tile; evaluate for up/down and left/right away from R/B grid point
-          for(int rr = 8; rr < rr1 - 8; rr++)
+          for(int rr = border; rr < rr1 - border; rr++)
           {
-            for(int cc = 8 + (FC(rr, 2, filters) & 1), indx = rr * ts + cc, c = FC(rr, cc, filters); cc < cc1 - 8; cc += 2, indx += 2)
+            for(int cc = border + (FC(rr, 2, filters) & 1), indx = rr * ts + cc, c = FC(rr, cc, filters); cc < cc1 - border; cc += 2, indx += 2)
             {
 
               // in linear interpolation, colour differences are a quadratic function of interpolation
@@ -749,8 +750,7 @@ void process(
           {
             if(blockdenom[dir][c])
             {
-              blockvar[dir][c]
-                  = blocksqave[dir][c] / blockdenom[dir][c] - sqrf(blockave[dir][c] / blockdenom[dir][c]);
+              blockvar[dir][c] = blocksqave[dir][c] / blockdenom[dir][c] - sqrf(blockave[dir][c] / blockdenom[dir][c]);
             }
             else
             {
@@ -784,8 +784,7 @@ void process(
               for(int i = 0; i < 2; i++)
               {
                 blockshifts[hblock][c][i] = blockshifts[2 * horiz_tiles + hblock][c][i];
-                blockshifts[(vert_tiles - 1) * horiz_tiles + hblock][c][i]
-                    = blockshifts[(vert_tiles - 3) * horiz_tiles + hblock][c][i];
+                blockshifts[(vert_tiles - 1) * horiz_tiles + hblock][c][i] = blockshifts[(vert_tiles - 3) * horiz_tiles + hblock][c][i];
               }
             }
           }
@@ -793,7 +792,8 @@ void process(
           // end of filling border pixels of blockshift array
 
           // initialize fit arrays
-          double polymat[2][2][256], shiftmat[2][2][16];
+          double polymat[2][2][256];
+          double shiftmat[2][2][16];
 
           for(int i = 0; i < 256; i++)
           {
@@ -819,13 +819,13 @@ void process(
                 {
                   const float p[9]  __attribute__((aligned(16))) =
                   { blockshifts[(vblock - 1) * horiz_tiles + hblock - 1][c][dir],
-                    blockshifts[(vblock - 1) * horiz_tiles + hblock][c][dir],
+                    blockshifts[(vblock - 1) * horiz_tiles + hblock    ][c][dir],
                     blockshifts[(vblock - 1) * horiz_tiles + hblock + 1][c][dir],
                     blockshifts[(vblock)     * horiz_tiles + hblock - 1][c][dir],
-                    blockshifts[(vblock)     * horiz_tiles + hblock][c][dir],
+                    blockshifts[(vblock)     * horiz_tiles + hblock    ][c][dir],
                     blockshifts[(vblock)     * horiz_tiles + hblock + 1][c][dir],
                     blockshifts[(vblock + 1) * horiz_tiles + hblock - 1][c][dir],
-                    blockshifts[(vblock + 1) * horiz_tiles + hblock][c][dir],
+                    blockshifts[(vblock + 1) * horiz_tiles + hblock    ][c][dir],
                     blockshifts[(vblock + 1) * horiz_tiles + hblock + 1][c][dir] };
                   bstemp[dir] = median9f(p);
                 }
@@ -1053,7 +1053,7 @@ void process(
             // CA auto correction; use CA diagnostic pass to set shift parameters
             lblockshifts[0][0] = lblockshifts[0][1] = 0;
             lblockshifts[1][0] = lblockshifts[1][1] = 0;
-            float powVblock = 1.0;
+            float powVblock = 1.0f;
             for(int i = 0; i < polyord; i++)
             {
               float powHblock = powVblock;
@@ -1068,7 +1068,7 @@ void process(
               }
               powVblock *= vblock;
             }
-            const float bslim = 3.99; // max allowed CA shift
+            const float bslim = 3.99f; // max allowed CA shift
             lblockshifts[0][0] = CLAMPF(lblockshifts[0][0], -bslim, bslim);
             lblockshifts[0][1] = CLAMPF(lblockshifts[0][1], -bslim, bslim);
             lblockshifts[1][0] = CLAMPF(lblockshifts[1][0], -bslim, bslim);
@@ -1105,15 +1105,17 @@ void process(
           }
 
 
-          for(int rr = 4; rr < rr1 - 4; rr++)
+          for(int rr = borderh; rr < rr1 - borderh; rr++)
           {
-            for(int cc = 4 + (FC(rr, 2, filters) & 1), c = FC(rr, cc, filters); cc < cc1 - 4; cc += 2)
+            for(int cc = borderh + (FC(rr, 2, filters) & 1), c = FC(rr, cc, filters); cc < cc1 - borderh; cc += 2)
             {
               // perform CA correction using colour ratios or colour differences
-              const float Ginthfloor = interpolatef(shifthfrac[c], rgb[1][(rr + shiftvfloor[c]) * ts + cc + shifthceil[c]],
-                                      rgb[1][(rr + shiftvfloor[c]) * ts + cc + shifthfloor[c]]);
-              const float Ginthceil = interpolatef(shifthfrac[c], rgb[1][(rr + shiftvceil[c]) * ts + cc + shifthceil[c]],
-                                     rgb[1][(rr + shiftvceil[c]) * ts + cc + shifthfloor[c]]);
+              const float Ginthfloor = interpolatef(shifthfrac[c],
+                                                    rgb[1][(rr + shiftvfloor[c]) * ts + cc + shifthceil[c]],
+                                                    rgb[1][(rr + shiftvfloor[c]) * ts + cc + shifthfloor[c]]);
+              const float Ginthceil = interpolatef(shifthfrac[c],
+                                                    rgb[1][(rr + shiftvceil[c]) * ts + cc + shifthceil[c]],
+                                                    rgb[1][(rr + shiftvceil[c]) * ts + cc + shifthfloor[c]]);
               // Gint is bilinear interpolation of G at CA shift point
               const float Gint = interpolatef(shiftvfrac[c], Ginthceil, Ginthfloor);
 
@@ -1132,21 +1134,21 @@ void process(
 
           // this loop does not deserve vectorization in mainly because the most expensive part with the
           // divisions does not happen often (less than 1/10 in my tests)
-          for(int rr = 8; rr < rr1 - 8; rr++)
+          for(int rr = border; rr < rr1 - border; rr++)
           {
-            for(int cc = 8 + (FC(rr, 2, filters) & 1), c = FC(rr, cc, filters), indx = rr * ts + cc;
-                cc < cc1 - 8; cc += 2, indx += 2)
+            for(int cc = border + (FC(rr, 2, filters) & 1), c = FC(rr, cc, filters), indx = rr * ts + cc;
+                cc < cc1 - border; cc += 2, indx += 2)
             {
 
               const float grbdiffold = rgb[1][indx] - rgb[c][indx];
 
               // interpolate colour difference from optical R/B locations to grid locations
               const float grbdiffinthfloor = interpolatef(shifthfrac[c],
-                           grbdiff[(indx - GRBdir[1][c]) >> 1],
-                           grbdiff[indx >> 1]);
+                                                          grbdiff[(indx - GRBdir[1][c]) >> 1],
+                                                          grbdiff[indx >> 1]);
               const float grbdiffinthceil  = interpolatef(shifthfrac[c],
-                           grbdiff[((rr - GRBdir[0][c]) * ts + cc - GRBdir[1][c]) >> 1],
-                           grbdiff[((rr - GRBdir[0][c]) * ts + cc) >> 1]);
+                                                          grbdiff[((rr - GRBdir[0][c]) * ts + cc - GRBdir[1][c]) >> 1],
+                                                          grbdiff[((rr - GRBdir[0][c]) * ts + cc) >> 1]);
               // grbdiffint is bilinear interpolation of G-R/G-B at grid point
               float grbdiffint = interpolatef(shiftvfrac[c], grbdiffinthceil, grbdiffinthfloor);
 
@@ -1170,7 +1172,8 @@ void process(
                 const float p2 = 1.0f / (eps + fabsf(rgb[1][indx] - gshift[((rr - GRBdir[0][c]) * ts + cc) >> 1]));
                 const float p3 = 1.0f / (eps + fabsf(rgb[1][indx] - gshift[((rr - GRBdir[0][c]) * ts + cc - GRBdir[1][c]) >> 1]));
 
-                grbdiffint = (p0 * grbdiff[indx >> 1] + p1 * grbdiff[(indx - GRBdir[1][c]) >> 1]
+                grbdiffint = (  p0 * grbdiff[indx >> 1]
+                              + p1 * grbdiff[(indx - GRBdir[1][c]) >> 1]
                               + p2 * grbdiff[((rr - GRBdir[0][c]) * ts + cc) >> 1]
                               + p3 * grbdiff[((rr - GRBdir[0][c]) * ts + cc - GRBdir[1][c]) >> 1])
                              / (p0 + p1 + p2 + p3);
