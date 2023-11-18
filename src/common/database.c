@@ -4101,6 +4101,7 @@ start:
     else if(db_version > CURRENT_DATABASE_VERSION_LIBRARY)
     {
       // newer: bail out. it's better than what we did before: delete everything
+      _too_new_db_version(dbfilename_library, has_gui);
       dt_print(DT_DEBUG_ALWAYS,
                "[init] database version of `%s' is too new for this build of darktable. aborting\n",
                dbname);
