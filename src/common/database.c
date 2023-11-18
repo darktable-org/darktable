@@ -3596,7 +3596,25 @@ static gboolean _upgrade_camera_table(const dt_database_t *db)
   return res;
 }
 
-void ask_for_upgrade(const gchar *dbname, const gboolean has_gui)
+static void _too_new_db_version(const gchar *dbname, const gboolean has_gui)
+{
+  if(!has_gui)
+    exit(1);
+
+  char *label_text = g_markup_printf_escaped
+    (_("the database schema version of\n"
+       "\n"
+       "<span style='italic'>%s</span>\n"
+       "\n"
+       "is too new for this build of darktable "
+       "(this means the database was created or upgraded by a newer darktable version)\n"),
+       dbname);
+  dt_gui_show_standalone_yes_no_dialog(_("darktable - too new db version"), label_text,
+                                         _("_quit darktable"), NULL);
+  g_free(label_text);
+}
+
+static void _ask_for_upgrade(const gchar *dbname, const gboolean has_gui)
 {
   // if there's no gui just leave
   if(!has_gui)
@@ -3878,7 +3896,7 @@ start:
       sqlite3_finalize(stmt);
       if(db_version < CURRENT_DATABASE_VERSION_DATA)
       {
-        ask_for_upgrade(dbfilename_data, has_gui);
+        _ask_for_upgrade(dbfilename_data, has_gui);
 
         // older: upgrade
         if(!_upgrade_data_schema(db, db_version))
@@ -3900,6 +3918,7 @@ start:
       else if(db_version > CURRENT_DATABASE_VERSION_DATA)
       {
         // newer: bail out
+        _too_new_db_version(dbfilename_data, has_gui);
         dt_print(DT_DEBUG_ALWAYS,
                  "[init] database version of `%s' is too new for this build of darktable. aborting\n",
                  dbfilename_data);
@@ -4061,7 +4080,7 @@ start:
     sqlite3_finalize(stmt);
     if(db_version < CURRENT_DATABASE_VERSION_LIBRARY)
     {
-      ask_for_upgrade(dbfilename_library, has_gui);
+      _ask_for_upgrade(dbfilename_library, has_gui);
 
       // older: upgrade
       if(!_upgrade_library_schema(db, db_version))
@@ -4082,6 +4101,7 @@ start:
     else if(db_version > CURRENT_DATABASE_VERSION_LIBRARY)
     {
       // newer: bail out. it's better than what we did before: delete everything
+      _too_new_db_version(dbfilename_library, has_gui);
       dt_print(DT_DEBUG_ALWAYS,
                "[init] database version of `%s' is too new for this build of darktable. aborting\n",
                dbname);
