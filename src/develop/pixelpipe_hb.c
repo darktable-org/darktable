@@ -1610,7 +1610,8 @@ static gboolean _dev_pixelpipe_process_rec(
     tiling.factor_cl = fmax(tiling.factor_cl, tiling_blendop.factor);
     tiling.maxbuf = fmax(tiling.maxbuf, tiling_blendop.maxbuf);
     tiling.maxbuf_cl = fmax(tiling.maxbuf_cl, tiling_blendop.maxbuf);
-    tiling.overhead = fmax(tiling.overhead, tiling_blendop.overhead);
+    tiling.overhead = MAX(tiling.overhead, tiling_blendop.overhead);
+    tiling.overlap = MAX(tiling.overlap, tiling_blendop.overlap);
   }
 
   /* remark: we do not do tiling for blendop step, neither in opencl
