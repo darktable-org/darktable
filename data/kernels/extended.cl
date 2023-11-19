@@ -750,7 +750,7 @@ static inline float4 opacity_masks(const float x,
 
 #define LUT_ELEM 360 // gamut LUT number of elements: resolution of 1°
 
-static inline float lookup_gamut(read_only image2d_t gamut_lut, const float x)
+static inline float lookup_gamut(global const float *gamut_lut, const float x)
 {
   // WARNING : x should be between [-pi ; pi ], which is the default output of atan2 anyway
 
@@ -772,18 +772,10 @@ static inline float lookup_gamut(read_only image2d_t gamut_lut, const float x)
   else if(xii > LUT_ELEM - 1) xii = 0;
 
   // fetch the corresponding y values
-  const float y_prev = read_imagef(gamut_lut, sampleri, (int2)(xi, 0)).x;
-  const float y_next = read_imagef(gamut_lut, sampleri, (int2)(xii, 0)).x;
+  const float y_prev = gamut_lut[xi];
 
-  // assume that we are exactly on an integer LUT element
-  float out = y_prev;
-
-  if(x_next != x_prev)
-    // we are between 2 LUT elements : do linear interpolation
-    // actually, we only add the slope term on the previous one
-    out += (x_test - x_prev) * (y_next - y_prev) / (x_next - x_prev);
-
-  return out;
+  // return y_prev if we are on the same integer LUT element or do linear interpolation
+  return y_prev + ((xi != xii) ? (x_test - x_prev) * (gamut_lut[xii] - y_prev) : 0.0f);
 }
 
 
@@ -808,7 +800,7 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
                  const int width, const int height,
                  constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
                  constant const float *const matrix_in, constant const float *const matrix_out,
-                 read_only image2d_t gamut_lut,
+                 global const float *gamut_lut,
                  const float shadows_weight, const float highlights_weight, const float midtones_weight, const float mask_grey_fulcrum,
                  const float hue_angle, const float chroma_global, const float4 chroma, const float vibrance,
                  const float4 global_offset, const float4 shadows, const float4 highlights, const float4 midtones,
@@ -824,7 +816,8 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
   const int x = get_global_id(0);
   const int y = get_global_id(1);
   if(x >= width || y >= height) return;
-  const float4 pix_in = read_imagef(in, sampleri, (int2)(x, y));
+  // we clip pipeline RGB while reading; this also ensures a proper alpha
+  const float4 pix_in = fmax(0.0f, read_imagef(in, sampleri, (int2)(x, y)));
 
   float4 XYZ_D65 = 0.f;
   float4 LMS = 0.f;
@@ -832,8 +825,7 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
   float4 Yrg = 0.f;
   float4 Ych = 0.f;
 
-  // clip pipeline RGB
-  RGB = fmax(pix_in, 0.f);
+  RGB = pix_in;
 
   // go to CIE 2006 LMS D65
   LMS = matrix_product_float4(RGB, matrix_in);
