@@ -341,7 +341,7 @@ if(TESTBUILD_OPENCL_PROGRAMS)
 
       find_path(CLANG_OPENCL_INCLUDE_DIR opencl-c.h
         HINTS ${LLVM_INSTALL_PREFIX}/lib/clang ${LLVM_INSTALL_PREFIX}/lib64/clang
-        PATH_SUFFIXES include ${LLVM_PACKAGE_VERSION}/include
+        PATH_SUFFIXES include ${LLVM_PACKAGE_VERSION}/include ${LLVM_VERSION_MAJOR}/include
         NO_DEFAULT_PATH
       )
 
