@@ -83,6 +83,26 @@ using namespace std;
 #define toLong toInt64
 #endif
 
+// For these models we can't calculate the correct crop factor or, for some we could, but we
+// prefer to take it from here, rather than complicate the calculation code with exceptions
+static const struct dt_model_cropfactor dt_cropfactors[] = {
+  {.model = "FinePix SL1000", // exiv2 doesn't yet read the tags we need to calculate correctly
+   .cropfactor = 5.6f
+  },
+  {.model = "FinePix E550", // tags contain incorrect data, so formula gives us incorrect result
+   .cropfactor = 4.65f
+  },
+  {.model = "XF10", // resolution was calculated relative to dimensions not typical of Fuji
+   .cropfactor = 1.5f
+  },
+  {.model = "FinePix S1", // resolution was calculated relative to dimensions not typical of Fuji
+   .cropfactor = 5.6f
+  },
+  {.model = "FinePix HS10 HS11", // calculation gives a slightly inaccurate result
+   .cropfactor = 5.64f
+  },
+};
+
 // persistent list of exiv2 tags. set up in dt_init()
 static GList *exiv2_taglist = NULL;
 
@@ -1280,6 +1300,16 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       }
       else
         img->exif_crop = 0.0f; // Will be shown as "no data" in the image information module
+    }
+
+    // Override crop factors for models for which we can't calculate the correct value
+    for (size_t i = 0; i < sizeof(dt_cropfactors)/sizeof(dt_cropfactors[0]); i++)
+    {
+      if(!strcmp(img->exif_model, dt_cropfactors[i].model))
+      {
+        img->exif_crop = dt_cropfactors[i].cropfactor;
+        break;
+      }
     }
 
     if(_check_usercrop(exifData, img))
