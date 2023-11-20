@@ -1530,15 +1530,18 @@ int dt_develop_blend_version(void)
   return DEVELOP_BLEND_VERSION;
 }
 
-/** report back specific memory requirements for blend step (only
- * relevant for OpenCL path) */
+/** report back specific memory requirements for blend step (only relevant for OpenCL path).
+    We need this to calculate maximum CL mem requirements to be sure we can process the whole
+    module incl blend processing on GPU as would do an early CPU fallback if requirements
+    are not met.
+*/
 void tiling_callback_blendop(struct dt_iop_module_t *self,
                              struct dt_dev_pixelpipe_iop_t *piece,
                              const dt_iop_roi_t *roi_in,
                              const dt_iop_roi_t *roi_out,
                              struct dt_develop_tiling_t *tiling)
 {
-  tiling->factor = 3.5f; // in + out + (guide, tmp) + two quarter buffers for the mask
+  tiling->factor = 0.0f;
   tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = 0;
@@ -1550,14 +1553,12 @@ void tiling_callback_blendop(struct dt_iop_module_t *self,
   if(bldata)
   {
     if(bldata->details != 0.0f)
-      tiling->factor += 0.75f; // details mask requires 3 additional quarter buffers
+      tiling->factor = 0.75f; // details mask requires 3 additional quarter buffers
 
     if(bldata->feathering_radius > 0.1f)
-    {
-      tiling->overhead += 3.5f; // we need all intermediate mask buffers
-      tiling->overlap += 2 * (int)(1.0f + bldata->feathering_radius);
-    }
+      tiling->factor = 3.75f; // we need all intermediate guided filter mask buffers
   }
+  tiling->factor += 3.5f; // in + out + (guide, tmp) + two quarter buffers for the mask
 }
 
 /** check if content of params is all zero, indicating a
