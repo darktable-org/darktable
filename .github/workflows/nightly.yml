@@ -13,12 +13,12 @@ jobs:
   AppImage:
     if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
     name: Nightly darktable AppImage
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
         compiler:
-          - { compiler: LLVM12, CC: clang-12, CXX: clang++-12, packages: clang-12 libomp-12-dev libclang-common-12-dev llvm-12-dev clang++-12 libc++-12-dev libc++1-12 libc++abi1-12 lld-12}
+          - { compiler: GNU13,  CC: gcc-13,   CXX: g++-13,     packages: gcc-13 g++-13 }
         branch:
           - { code: master, label: gitmaster }
     env:
@@ -59,6 +59,7 @@ jobs:
             libcups2-dev \
             libcurl4-gnutls-dev \
             libimage-exiftool-perl \
+            libfuse2 \
             libgdk-pixbuf2.0-dev \
             libglib2.0-dev \
             libgraphicsmagick1-dev \
@@ -123,9 +124,6 @@ jobs:
           sudo lensfun-update-data
       - name: Build and Install
         run: |
-          # Only Clang 12 is available on Ubuntu 20.04. We can lower the Clang version requirement to use Clang 12,
-          # since at the moment it is only a policy enforcement, and not a real requirement of the current source code.
-          sed -i 's/COMPILER_VERSION VERSION_LESS 14/COMPILER_VERSION VERSION_LESS 12/' cmake/compiler-versions.cmake src/external/rawspeed/cmake/compiler-versions.cmake
           bash tools/appimage-build-script.sh
       - name: Check if it runs
         run: |
