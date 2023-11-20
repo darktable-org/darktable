@@ -2681,6 +2681,8 @@ static gint _sort_tree_tag_func(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter
 
   g_free(tag_a);
   g_free(tag_b);
+  g_free(tag_a_nc);
+  g_free(tag_b_nc);
   return sort;
 }
 
@@ -2715,6 +2717,8 @@ static gint _sort_tree_path_func(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIte
 
   g_free(tag_a);
   g_free(tag_b);
+  g_free(tag_a_nc);
+  g_free(tag_b_nc);
   return sort;
 }
 
