@@ -1606,11 +1606,12 @@ static gboolean _dev_pixelpipe_process_rec(
     tiling_callback_blendop(module, piece, &roi_in, roi_out, &tiling_blendop);
 
     /* aggregate in structure tiling */
-    tiling.factor = fmax(tiling.factor, tiling_blendop.factor);
-    tiling.factor_cl = fmax(tiling.factor_cl, tiling_blendop.factor);
-    tiling.maxbuf = fmax(tiling.maxbuf, tiling_blendop.maxbuf);
-    tiling.maxbuf_cl = fmax(tiling.maxbuf_cl, tiling_blendop.maxbuf);
-    tiling.overhead = fmax(tiling.overhead, tiling_blendop.overhead);
+    tiling.factor = MAX(tiling.factor, tiling_blendop.factor);
+    tiling.factor_cl = MAX(tiling.factor_cl, tiling_blendop.factor);
+    tiling.maxbuf = MAX(tiling.maxbuf, tiling_blendop.maxbuf);
+    tiling.maxbuf_cl = MAX(tiling.maxbuf_cl, tiling_blendop.maxbuf);
+    tiling.overhead = MAX(tiling.overhead, tiling_blendop.overhead);
+    tiling.overlap = MAX(tiling.overlap, tiling_blendop.overlap);
   }
 
   /* remark: we do not do tiling for blendop step, neither in opencl
