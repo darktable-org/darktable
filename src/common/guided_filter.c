@@ -93,9 +93,9 @@ static void _guided_filter_tiling(color_image imgg,
                                   const float min,
                                   const float max)
 {
-  const int overlap = dt_round_size(2 * w, 16);
-  const tile source = { max_i(target.left - overlap, 0),  min_i(target.right + overlap, imgg.width),
-                        max_i(target.lower - overlap, 0), min_i(target.upper + overlap, imgg.height) };
+  const int overlap = dt_round_size(3 * w, 16);
+  const tile source = { MAX(target.left - overlap, 0),  MIN(target.right + overlap, imgg.width),
+                        MAX(target.lower - overlap, 0), MIN(target.upper + overlap, imgg.height) };
   const int width = source.right - source.left;
   const int height = source.upper - source.lower;
   size_t size = (size_t)width * (size_t)height;
@@ -266,15 +266,15 @@ void guided_filter(const float *const guide,
   color_image img_guide = (color_image){ (float *)guide, width, height, ch };
   gray_image img_in = (gray_image){ (float *)in, width, height };
   gray_image img_out = (gray_image){ out, width, height };
-  const int tile_dim = max_i(dt_round_size(2 * w, 16), GF_TILE_SIZE);
+  const int tile_dim = MAX(dt_round_size(3 * w, 16), GF_TILE_SIZE);
   const float eps = sqrt_eps * sqrt_eps; // this is the regularization parameter of the original papers
 
   for(int j = 0; j < height; j += tile_dim)
   {
     for(int i = 0; i < width; i += tile_dim)
     {
-      tile target = { i, min_i(i + tile_dim, width),
-                      j, min_i(j + tile_dim, height) };
+      tile target = { i, MIN(i + tile_dim, width),
+                      j, MIN(j + tile_dim, height) };
       _guided_filter_tiling(img_guide, img_in, img_out, target, w, eps, guide_weight, min, max);
     }
   }
@@ -652,7 +652,7 @@ void guided_filter_cl(int devid,
   const gboolean fits = dt_opencl_image_fits_device(devid, width, height, sizeof(float), 18.0f * 1.25f, 0);
 
   cl_int err =  DT_OPENCL_DEFAULT_ERROR;
-  if(0 && fits)
+  if(fits)
   {
     err = _guided_filter_cl_impl(devid, guide, in, out, width, height, ch, w, sqrt_eps, guide_weight, min, max);
     if(err != CL_SUCCESS)
