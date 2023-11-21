@@ -213,6 +213,21 @@ changes (where available).
   the information is saved in the XMP it can be passed over when
   sharing pictures or restored when re-importing a collection.
 
+- Added control over chroma subsampling in JPEG export.
+
+  This allows the user to reduce the color resolution and export in
+  most cases much smaller files that will be indistinguishable to the
+  human eye from images with more color information.
+
+  On the other hand, there are certain images that will look better
+  when the chroma resolution is maximized. These are images that
+  include small colored details surrounded by a solid background (such
+  as screenshots with colored text or photos of the like).
+
+- The option to ignore only JPEG files when importing (which is
+  outdated in the days when some cameras can also shoot in HEIF) has
+  been changed to the option to ignore all non-raw files.
+
 ## Bug Fixes
 
 - Fixes OpenCL platform checking which could lead to a freeze of
@@ -283,6 +298,12 @@ changes (where available).
   correction, crop, etc. After activating a crop, the tone equalizer
   picker will display the proper luminance values when flying over the
   picture in darkroom center area.
+
+- Fixed calculation of required graphics memory for modules doing
+  blending possibly avoiding crashes related to OpenCL.
+
+- Added the ability to calculate the crop factor for those cameras
+  that do not contain this information in the metadata.
 
 ## Lua
 
