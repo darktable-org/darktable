@@ -700,7 +700,7 @@ char *version = g_strdup_printf("darktable %s\nCopyright (C) 2012-%s Johannes Ha
 #ifdef USE_LUA
                "  Lua                    -> ENABLED  - API version ", lua_api_version,
 #else
-               "  Lua                    -> DISABLED - API version ", "NOT AVAILABLE\n",
+               "  Lua                    -> DISABLED", "\n",
 #endif
 
 #ifdef USE_COLORDGTK
