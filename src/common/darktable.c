@@ -716,9 +716,9 @@ char *version = g_strdup_printf("darktable %s\nCopyright (C) 2012-%s Johannes Ha
 #endif
 
 #ifdef HAVE_GMIC
-               "  GMIC                   -> ENABLED  - Compressed LUTs supported\n"
+               "  GMIC                   -> ENABLED  - Compressed LUTs are supported\n"
 #else
-               "  GMIC                   -> DISABLED - Compressed LUTs NOT supported\n"
+               "  GMIC                   -> DISABLED - Compressed LUTs are NOT supported\n"
 #endif
 
 #ifdef HAVE_GRAPHICSMAGICK
