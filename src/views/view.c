@@ -18,9 +18,9 @@
 
 #include "common/extra_optimizations.h"
 
-#include "views/view.h"
 #include "bauhaus/bauhaus.h"
 #include "common/collection.h"
+#include "common/color_finder.h"
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/focus_peaking.h"
@@ -40,6 +40,7 @@
 #include "gui/draw.h"
 #include "gui/gtk.h"
 #include "libs/lib.h"
+#include "views/view.h"
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
@@ -1727,9 +1728,24 @@ void dt_view_paint_surface(cairo_t *cr,
     float wd = processed_width * dev->preview_pipe->processed_width / MAX(1, dev->full.pipe->processed_width);
     float ht = processed_height * dev->preview_pipe->processed_width / MAX(1, dev->full.pipe->processed_width);
 
-    cairo_surface_t *preview = dt_view_create_surface(dev->preview_pipe->backbuf,
-                                                      dev->preview_pipe->backbuf_width,
-                                                      dev->preview_pipe->backbuf_height);
+    uint8_t *const preview_buffer = dev->preview_pipe->backbuf;
+    uint8_t *draw_buffer;
+    if(dev->color_finder.enabled)
+    {
+      // if the color finder is enabled make a copy of the buffer and apply the transformation
+      draw_buffer = dt_alloc_align(64, sizeof(uint8_t) * dev->preview_pipe->backbuf_width
+                                           * dev->preview_pipe->backbuf_height * 4);
+      dt_color_finder(preview_buffer, draw_buffer, dev->preview_pipe->backbuf_width,
+                      dev->preview_pipe->backbuf_height, dev->color_finder.value, dev->color_finder.saturation);
+    }
+    else
+    {
+      // draw the buffer without changes
+      draw_buffer = preview_buffer;
+    }
+
+    cairo_surface_t *preview
+        = dt_view_create_surface(draw_buffer, dev->preview_pipe->backbuf_width, dev->preview_pipe->backbuf_height);
     cairo_set_source_surface(cr, preview, (preview_x - zoom_x) * wd - 0.5 * dev->preview_pipe->backbuf_width,
                                           (preview_y - zoom_y) * ht - 0.5 * dev->preview_pipe->backbuf_height);
     cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
@@ -1746,6 +1762,13 @@ void dt_view_paint_surface(cairo_t *cr,
          dev->preview_pipe->backbuf_zoom_x, dev->preview_pipe->backbuf_zoom_y,
          preview_x, preview_y);
     cairo_surface_destroy(preview);
+
+    // if additional memory for the draw buffer has been allocated (color finder)
+    // free it
+    if(draw_buffer != preview_buffer)
+    {
+      dt_free_align(draw_buffer);
+    }
   }
 
   dt_pthread_mutex_unlock(&dev->preview_pipe->backbuf_mutex);
@@ -1767,7 +1790,21 @@ void dt_view_paint_surface(cairo_t *cr,
     cairo_translate(cr, (offset_x - zoom_x) * processed_width * buf_scale - 0.5 * buf_width,
                         (offset_y - zoom_y) * processed_height * buf_scale - 0.5 * buf_height);
 
-    cairo_surface_t *surface = dt_view_create_surface(buf, buf_width, buf_height);
+    uint8_t *draw_buffer;
+    if(dev->color_finder.enabled == true)
+    {
+      // if the color finder is enabled make a copy of the buffer and apply the transformation
+      draw_buffer = dt_alloc_align(64, sizeof(uint8_t) * buf_width * buf_height * 4);
+      dt_color_finder(buf, draw_buffer, buf_width, buf_height, dev->color_finder.value,
+                      dev->color_finder.saturation);
+    }
+    else
+    {
+      // draw the buffer without changes
+      draw_buffer = buf;
+    }
+
+    cairo_surface_t *surface = dt_view_create_surface(draw_buffer, buf_width, buf_height);
     cairo_set_source_surface(cr, surface, 0, 0);
     cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
     cairo_paint(cr);
@@ -1779,6 +1816,13 @@ void dt_view_paint_surface(cairo_t *cr,
                       cairo_image_surface_get_data(surface));
     }
     cairo_surface_destroy(surface);
+
+    // if additional memory for the draw buffer has been allocated (color finder)
+    // free it
+    if(draw_buffer != buf)
+    {
+      dt_free_align(draw_buffer);
+    }
   }
 
   cairo_restore(cr);

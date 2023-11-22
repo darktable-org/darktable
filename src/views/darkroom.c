@@ -21,6 +21,7 @@
 
 #include "bauhaus/bauhaus.h"
 #include "common/collection.h"
+#include "common/color_finder.h"
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/debug.h"
@@ -1533,6 +1534,34 @@ static void rawoverexposed_threshold_callback(GtkWidget *slider, gpointer user_d
     dt_dev_reprocess_center(d);
 }
 
+/* color finder */
+static void _color_finder_quickbutton_clicked(GtkWidget *w, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t *)user_data;
+  d->color_finder.enabled = !d->color_finder.enabled;
+  dt_dev_reprocess_center(d);
+}
+
+static void _color_finder_value_callback(GtkWidget *slider, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t *)user_data;
+  d->color_finder.value = dt_bauhaus_slider_get(slider);
+  if(d->color_finder.enabled == FALSE)
+    gtk_button_clicked(GTK_BUTTON(d->color_finder.button));
+  else
+    dt_dev_reprocess_center(d);
+}
+
+static void _color_finder_saturation_callback(GtkWidget *slider, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t *)user_data;
+  d->color_finder.saturation = dt_bauhaus_slider_get(slider);
+  if(d->color_finder.enabled == FALSE)
+    gtk_button_clicked(GTK_BUTTON(d->color_finder.button));
+  else
+    dt_dev_reprocess_center(d);
+}
+
 /* softproof */
 static void _softproof_quickbutton_clicked(GtkWidget *w, gpointer user_data)
 {
@@ -2247,6 +2276,46 @@ void gui_init(dt_view_t *self)
         threshold, _("threshold of what shall be considered overexposed\n1.0 - white level\n0.0 - black level"));
     g_signal_connect(G_OBJECT(threshold), "value-changed", G_CALLBACK(rawoverexposed_threshold_callback), dev);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(threshold), TRUE, TRUE, 0);
+
+    gtk_widget_show_all(vbox);
+  }
+
+  /* create color finder popup tool */
+  {
+    // the button
+    dev->color_finder.button = dtgtk_togglebutton_new(dtgtk_cairo_paint_zoom, 0, NULL);
+    ac = dt_action_define(sa, N_("raw overexposed"), N_("toggle"), dev->color_finder.button, &dt_action_def_toggle);
+    // dt_shortcut_register(ac, 0, 0, GDK_KEY_o, GDK_SHIFT_MASK);
+    gtk_widget_set_tooltip_text(dev->color_finder.button, _("preview hue and saturation only"));
+    g_signal_connect(G_OBJECT(dev->color_finder.button), "clicked", G_CALLBACK(_color_finder_quickbutton_clicked),
+                     dev);
+    dt_view_manager_module_toolbox_add(darktable.view_manager, dev->color_finder.button, DT_VIEW_DARKROOM);
+    // dt_gui_add_help_link(dev->color_finder.button, "rawoverexposed");
+
+    // and the popup window
+    dev->color_finder.floating_window = gtk_popover_new(dev->color_finder.button);
+    connect_button_press_release(dev->color_finder.button, dev->color_finder.floating_window);
+
+    GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    gtk_container_add(GTK_CONTAINER(dev->color_finder.floating_window), vbox);
+
+    /** let's fill the encapsulating widgets */
+
+    /* value */
+    GtkWidget *value = dt_bauhaus_slider_new_action(DT_ACTION(self), 0.0, 255.0, 2.0, 128.0, 0);
+    dt_bauhaus_slider_set(value, dev->color_finder.value);
+    dt_bauhaus_widget_set_label(value, N_("settings"), N_("value"));
+    gtk_widget_set_tooltip_text(value, _("targat value in HSV color space"));
+    g_signal_connect(G_OBJECT(value), "value-changed", G_CALLBACK(_color_finder_value_callback), dev);
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(value), TRUE, TRUE, 0);
+
+    /* saturation */
+    GtkWidget *saturation = dt_bauhaus_slider_new_action(DT_ACTION(self), 0.5, 2.0, 0.1, 1.0, 1);
+    dt_bauhaus_slider_set(saturation, dev->color_finder.saturation);
+    dt_bauhaus_widget_set_label(saturation, N_("settings"), N_("saturation"));
+    gtk_widget_set_tooltip_text(saturation, _("saturation adjustment factor"));
+    g_signal_connect(G_OBJECT(saturation), "value-changed", G_CALLBACK(_color_finder_saturation_callback), dev);
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(saturation), TRUE, TRUE, 0);
 
     gtk_widget_show_all(vbox);
   }

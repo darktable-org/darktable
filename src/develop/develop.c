@@ -128,6 +128,10 @@ void dt_dev_init(dt_develop_t *dev,
   dev->rawoverexposed.threshold =
     dt_conf_get_float("darkroom/ui/rawoverexposed/threshold");
 
+  dev->color_finder.enabled = FALSE;
+  dev->color_finder.value = dt_conf_get_int("darkroom/ui/color_finder/value");
+  dev->color_finder.saturation = dt_conf_get_float("darkroom/ui/color_finder/saturation");
+
   dev->overexposed.enabled = FALSE;
   dev->overexposed.mode = dt_conf_get_int("darkroom/ui/overexposed/mode");
   dev->overexposed.colorscheme = dt_conf_get_int("darkroom/ui/overexposed/colorscheme");
@@ -202,6 +206,9 @@ void dt_dev_cleanup(dt_develop_t *dev)
                   dev->rawoverexposed.colorscheme);
   dt_conf_set_float("darkroom/ui/rawoverexposed/threshold",
                     dev->rawoverexposed.threshold);
+
+  dt_conf_set_int("darkroom/ui/color_finder/value", dev->color_finder.value);
+  dt_conf_set_float("darkroom/ui/color_finder/saturation", dev->color_finder.saturation);
 
   dt_conf_set_int("darkroom/ui/overexposed/mode", dev->overexposed.mode);
   dt_conf_set_int("darkroom/ui/overexposed/colorscheme", dev->overexposed.colorscheme);

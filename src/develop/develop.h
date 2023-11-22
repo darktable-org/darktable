@@ -312,6 +312,16 @@ typedef struct dt_develop_t
   struct
   {
     GtkWidget *floating_window, *button;
+
+    gboolean enabled;
+    int value;
+    float saturation;
+  } color_finder;
+
+  // for the raw overexposure indicator
+  struct
+  {
+    GtkWidget *floating_window, *button;
     // yes, having gtk stuff in here is ugly. live with it.
 
     gboolean enabled;
