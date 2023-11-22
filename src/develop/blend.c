@@ -376,6 +376,20 @@ static inline int _get_required_w(const float radius, const float scale)
   return MAX(1, (int)(2.0f * radius * scale + 0.5f));
 }
 
+/* Reminder: stability of the feathering guide filter depends on input data range
+   and signal but also on the chose weight and eps.
+*/
+
+static float _get_guide_weight(struct dt_dev_pixelpipe_iop_t *piece)
+{
+  const dt_iop_colorspace_type_t cst = dt_develop_blend_colorspace(piece, IOP_CS_NONE);
+  return (cst == IOP_CS_RGB) ? 100.0f : 1.0f;
+}
+static float _get_feathering_eps(struct dt_dev_pixelpipe_iop_t *piece)
+{
+  return 1.0f;
+}
+
 static void _develop_blend_process_feather(const float *const guide,
                                            float *const mask,
                                            const size_t width,
@@ -383,9 +397,9 @@ static void _develop_blend_process_feather(const float *const guide,
                                            const int ch,
                                            const float guide_weight,
                                            const float feathering_radius,
-                                           const float scale)
+                                           const float scale,
+                                           const float sqrt_eps)
 {
-  const float sqrt_eps = 1.f;
   const int w = _get_required_w(feathering_radius, scale);
 
   float *const restrict mask_bak = dt_alloc_align_float(width * height);
@@ -668,18 +682,20 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
         break;
     }
 
+    const float guide_weight = _get_guide_weight(piece);
+    const float sqrt_eps = _get_feathering_eps(piece);
     // post processing the mask
     for(size_t index = 0; index < post_operations_size; ++index)
     {
       _develop_mask_post_processing operation = post_operations[index];
       if(operation == DEVELOP_MASK_POST_FEATHER_IN)
       {
-        const float guide_weight = cst == IOP_CS_RGB ? 100.0f : 1.0f;
         if(rois_equal)
           _develop_blend_process_feather((float *restrict)ivoid, mask,
                                          owidth, oheight, ch, guide_weight,
                                          d->feathering_radius,
-                                         roi_out->scale / piece->iscale);
+                                         roi_out->scale / piece->iscale,
+                                         sqrt_eps);
         else
         {
           float *const restrict guide = dt_alloc_align_float(obuffsize * ch);
@@ -688,19 +704,20 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
             dt_iop_copy_image_roi(guide, (float *restrict)ivoid, ch, roi_in, roi_out);
             _develop_blend_process_feather(guide, mask, owidth, oheight, ch, guide_weight,
                                            d->feathering_radius,
-                                           roi_out->scale / piece->iscale);
+                                           roi_out->scale / piece->iscale,
+                                           sqrt_eps);
             dt_free_align(guide);
           }
         }
       }
       else if(operation == DEVELOP_MASK_POST_FEATHER_OUT)
       {
-        const float guide_weight = cst == IOP_CS_RGB ? 100.0f : 1.0f;
         _develop_blend_process_feather((const float *const restrict)ovoid, mask,
                                        owidth, oheight, ch,
                                        guide_weight,
                                        d->feathering_radius,
-                                       roi_out->scale / piece->iscale);
+                                       roi_out->scale / piece->iscale,
+                                       sqrt_eps);
       }
       else if(operation == DEVELOP_MASK_POST_BLUR)
       {
@@ -1230,8 +1247,8 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
     // post processing the mask (it will always be stored in dev_mask_1)
 
     const int featherw = _get_required_w(d->feathering_radius, roi_out->scale / piece->iscale);
-    const float sqrt_eps = 1.0f;
-    const float guide_weight = cst == IOP_CS_RGB ? 100.0f : 1.0f;
+    const float sqrt_eps = _get_feathering_eps(piece);
+    const float guide_weight = _get_guide_weight(piece);
 
     for(int index = 0; index < (int)post_operations_size; index++)
     {

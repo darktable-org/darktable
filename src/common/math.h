@@ -132,7 +132,7 @@ static inline float interpolatef(const float a, const float b, const float c)
 
 // Kahan summation algorithm
 #ifdef _OPENMP
-#pragma omp declare simd aligned(c)
+#pragma omp declare simd
 #endif
 static inline float Kahan_sum(const float m, float *const __restrict__ c, const float add)
 {
