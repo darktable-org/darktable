@@ -1010,9 +1010,11 @@ void gui_init(dt_imageio_module_storage_t *self)
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   ui->user_entry = GTK_ENTRY
     (dt_action_entry_new
-     (DT_ACTION(self), N_("user"),
-      G_CALLBACK(_piwigo_entry_changed), ui,
-      _("the server name\ndefault protocol is https\nspecify http:// if non secure server"),
+     (DT_ACTION(self),
+      N_("user"),
+      G_CALLBACK(_piwigo_entry_changed),
+      ui,
+      NULL,
       last_account ? last_account->username : ""));
 
   gtk_widget_set_hexpand(GTK_WIDGET(ui->user_entry), TRUE);
