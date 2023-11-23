@@ -228,6 +228,19 @@ changes (where available).
   outdated in the days when some cameras can also shoot in HEIF) has
   been changed to the option to ignore all non-raw files.
 
+- The lens correction module now supports embedded metadata in Olympus
+  .ORF files for correction of distortion and chromatic aberration.
+
+  The correction is equivalent to that applied by the camera body to
+  in-camera JPEGs. For older bodies which do not apply chromatic
+  aberration correction to the JPEGs, it is also not included in the
+  embedded metadata.
+
+  Vignetting correction based on embedded metadata is not supported.
+  If the camera's Shading Compensation option is enabled then the
+  vignetting correction will already be applied to the data in the raw
+  file.
+  
 ## Bug Fixes
 
 - Fixes OpenCL platform checking which could lead to a freeze of
