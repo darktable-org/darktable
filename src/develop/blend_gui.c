@@ -1272,14 +1272,10 @@ static void _blendop_blendif_boost_factor_callback(GtkWidget *slider,
     const float old_value = bp->blendif_boost_factors[ch];
     const float factor = exp2f(old_value) / exp2f(new_value);
     float *parameters = &(bp->blendif_parameters[4 * ch]);
-    if(parameters[0] > 0.0f)
-      parameters[0] = clamp_range_f((parameters[0] - off) * factor + off, 0.0f, 1.0f);
-    if(parameters[1] > 0.0f)
-      parameters[1] = clamp_range_f((parameters[1] - off) * factor + off, 0.0f, 1.0f);
-    if(parameters[2] < 1.0f)
-      parameters[2] = clamp_range_f((parameters[2] - off) * factor + off, 0.0f, 1.0f);
-    if(parameters[3] < 1.0f)
-      parameters[3] = clamp_range_f((parameters[3] - off) * factor + off, 0.0f, 1.0f);
+    if(parameters[0] > 0.0f) parameters[0] = CLIP((parameters[0] - off) * factor + off);
+    if(parameters[1] > 0.0f) parameters[1] = CLIP((parameters[1] - off) * factor + off);
+    if(parameters[2] < 1.0f) parameters[2] = CLIP((parameters[2] - off) * factor + off);
+    if(parameters[3] < 1.0f) parameters[3] = CLIP((parameters[3] - off) * factor + off);
     if(parameters[1] == 0.0f && parameters[2] == 1.0f)
       bp->blendif &= ~(1 << ch);
     bp->blendif_boost_factors[ch] = new_value;
@@ -1302,6 +1298,18 @@ static void _blendop_blendif_details_callback(GtkWidget *slider,
   {
     dt_dev_reprocess_all(data->module->dev);
     dt_control_queue_redraw();
+  }
+}
+
+static void _blendop_blendif_feathering_callback(GtkWidget *slider,
+                                              dt_iop_gui_blend_data_t *data)
+{
+  if(darktable.gui->reset || !data || !data->blendif_inited) return;
+  dt_develop_blend_params_t *bp = data->module->blend_params;
+  if(bp->feather_version == 0)
+  {
+    bp->feather_version = 1;
+    dt_dev_add_history_item(darktable.develop, data->module, TRUE);
   }
 }
 
@@ -3622,6 +3630,8 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     dt_bauhaus_slider_set_format(bd->feathering_radius_slider, " px");
     gtk_widget_set_tooltip_text(bd->feathering_radius_slider,
                                 _("spatial radius of feathering"));
+    g_signal_connect(G_OBJECT(bd->feathering_radius_slider), "value-changed",
+                     G_CALLBACK(_blendop_blendif_feathering_callback), bd);
 
     bd->blur_radius_slider =
       dt_bauhaus_slider_new_with_range(module, 0.0, 100.0, 0, 0.0, 1);
@@ -3632,6 +3642,8 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     dt_bauhaus_slider_set_format(bd->blur_radius_slider, " px");
     gtk_widget_set_tooltip_text(bd->blur_radius_slider,
                                 _("radius for gaussian blur of blend mask"));
+    g_signal_connect(G_OBJECT(bd->blur_radius_slider), "value-changed",
+                     G_CALLBACK(_blendop_blendif_feathering_callback), bd);
 
     bd->brightness_slider = dt_bauhaus_slider_new_with_range(module, -1.0, 1.0, 0, 0.0, 2);
     dt_bauhaus_widget_set_field(bd->brightness_slider,
