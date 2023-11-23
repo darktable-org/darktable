@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-18 18:34+0100\n"
-"PO-Revision-Date: 2023-11-18 20:43+0200\n"
+"POT-Creation-Date: 2023-11-23 18:47+0100\n"
+"PO-Revision-Date: 2023-11-23 20:45+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: en\n"
@@ -2602,7 +2602,7 @@ msgstr "Curvature"
 #: ../build/lib/darktable/plugins/introspection_blurs.c:206
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:81
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:148
-#: ../src/iop/colorbalancergb.c:2055
+#: ../src/iop/colorbalancergb.c:2039
 msgid "offset"
 msgstr "Offset"
 
@@ -3128,7 +3128,7 @@ msgstr "Lift, gamma, gain (sRGB)"
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:256
 #: ../src/develop/blend_gui.c:2364 ../src/develop/blend_gui.c:2412
 #: ../src/iop/atrous.c:1801 ../src/iop/channelmixerrgb.c:4525
-#: ../src/iop/channelmixerrgb.c:4641 ../src/iop/colorbalancergb.c:1982
+#: ../src/iop/channelmixerrgb.c:4641 ../src/iop/colorbalancergb.c:1966
 #: ../src/iop/colorzones.c:2645 ../src/iop/nlmeans.c:471
 msgid "chroma"
 msgstr "Chroma"
@@ -4067,7 +4067,7 @@ msgstr "Density"
 #: ../build/lib/darktable/plugins/introspection_splittoning.c:146
 #: ../src/develop/blend_gui.c:2318 ../src/iop/basicadj.c:654
 #: ../src/iop/channelmixer.c:635 ../src/iop/colisa.c:300
-#: ../src/iop/colorbalance.c:2034 ../src/iop/colorbalancergb.c:2006
+#: ../src/iop/colorbalance.c:2034 ../src/iop/colorbalancergb.c:1990
 #: ../src/iop/colorchecker.c:1488 ../src/iop/colorcontrast.c:82
 #: ../src/iop/colorcorrection.c:268 ../src/iop/colorize.c:356
 #: ../src/iop/lowpass.c:601 ../src/iop/soften.c:368 ../src/iop/velvia.c:75
@@ -6488,12 +6488,12 @@ msgstr ""
 "Fast exposure independent guided filter failed to allocate memory, check "
 "your RAM settings"
 
-#: ../src/common/exif.cc:5452
+#: ../src/common/exif.cc:5482
 #, c-format
 msgid "cannot read XMP file '%s': '%s'"
 msgstr "Cannot read XMP file '%s': '%s'"
 
-#: ../src/common/exif.cc:5510
+#: ../src/common/exif.cc:5540
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
 msgstr "Cannot write XMP file '%s': '%s'"
@@ -6778,7 +6778,7 @@ msgstr "Publisher"
 #: ../src/common/metadata.c:48 ../src/imageio/format/pdf.c:574
 #: ../src/imageio/format/pdf.c:576 ../src/imageio/storage/gallery.c:219
 #: ../src/imageio/storage/gallery.c:222 ../src/imageio/storage/latex.c:206
-#: ../src/imageio/storage/piwigo.c:1085 ../src/libs/filtering.c:69
+#: ../src/imageio/storage/piwigo.c:1091 ../src/libs/filtering.c:69
 msgid "title"
 msgstr "Title"
 
@@ -7398,17 +7398,17 @@ msgstr "_Close"
 
 #. setup selection accelerators
 #. action-box
-#: ../src/control/crawler.c:786 ../src/dtgtk/thumbtable.c:2754
+#: ../src/control/crawler.c:786 ../src/dtgtk/thumbtable.c:2755
 #: ../src/libs/import.c:1732 ../src/libs/select.c:135
 msgid "select all"
 msgstr "Select all"
 
-#: ../src/control/crawler.c:787 ../src/dtgtk/thumbtable.c:2756
+#: ../src/control/crawler.c:787 ../src/dtgtk/thumbtable.c:2757
 #: ../src/libs/import.c:1736 ../src/libs/select.c:139
 msgid "select none"
 msgstr "Select none"
 
-#: ../src/control/crawler.c:788 ../src/dtgtk/thumbtable.c:2758
+#: ../src/control/crawler.c:788 ../src/dtgtk/thumbtable.c:2759
 #: ../src/libs/select.c:143
 msgid "invert selection"
 msgstr "Invert selection"
@@ -7925,7 +7925,7 @@ msgstr "Import image"
 msgid "detail mask blending error"
 msgstr "Detail mask blending error"
 
-#: ../src/develop/blend.c:879
+#: ../src/develop/blend.c:896
 msgid "detail mask CL blending problem"
 msgstr "Detail mask CL blending problem"
 
@@ -8452,7 +8452,7 @@ msgstr ""
 "Press 'm' to toggle mask view."
 
 #: ../src/develop/blend_gui.c:2648 ../src/develop/blend_gui.c:3569
-#: ../src/iop/basicadj.c:630 ../src/iop/colorbalancergb.c:2177
+#: ../src/iop/basicadj.c:630 ../src/iop/colorbalancergb.c:2161
 #: ../src/iop/exposure.c:1138 ../src/iop/exposure.c:1153
 #: ../src/iop/filmic.c:1528 ../src/iop/filmic.c:1541 ../src/iop/filmic.c:1583
 #: ../src/iop/filmicrgb.c:4504 ../src/iop/filmicrgb.c:4515
@@ -9292,7 +9292,7 @@ msgstr ""
 "History had module enabled but it is not allowed for this type of image.\n"
 "Likely introduced by applying a preset, style or history copy&paste"
 
-#: ../src/develop/pixelpipe_hb.c:2696
+#: ../src/develop/pixelpipe_hb.c:2697
 msgid ""
 "OpenCL errors encountered; disabling OpenCL for this session! some possible "
 "causes:\n"
@@ -9312,7 +9312,7 @@ msgstr ""
 "  - Some drivers don't support needed number of events.\n"
 "  - Too small headroom settings while using 'Use all device memory'."
 
-#: ../src/develop/pixelpipe_hb.c:2846
+#: ../src/develop/pixelpipe_hb.c:2847
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -9566,13 +9566,13 @@ msgstr "Try to relax the filter settings in the top panel"
 msgid "or add images in the collections module in the left panel"
 msgstr "or add images in the collections module in the left panel"
 
-#: ../src/dtgtk/thumbtable.c:1454
+#: ../src/dtgtk/thumbtable.c:1455
 msgid ""
 "you have changed the settings related to how thumbnails are generated.\n"
 msgstr ""
 "You have changed the settings related to how thumbnails are generated.\n"
 
-#: ../src/dtgtk/thumbtable.c:1457
+#: ../src/dtgtk/thumbtable.c:1458
 msgid ""
 "all cached thumbnails need to be invalidated.\n"
 "\n"
@@ -9580,7 +9580,7 @@ msgstr ""
 "All cached thumbnails need to be invalidated.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1461
+#: ../src/dtgtk/thumbtable.c:1462
 #, c-format
 msgid ""
 "cached thumbnails starting from level %d need to be invalidated.\n"
@@ -9589,7 +9589,7 @@ msgstr ""
 "Cached thumbnails starting from level %d need to be invalidated.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1466
+#: ../src/dtgtk/thumbtable.c:1467
 #, c-format
 msgid ""
 "cached thumbnails below level %d need to be invalidated.\n"
@@ -9598,7 +9598,7 @@ msgstr ""
 "Cached thumbnails below level %d need to be invalidated.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1471
+#: ../src/dtgtk/thumbtable.c:1472
 #, c-format
 msgid ""
 "cached thumbnails between level %d and %d need to be invalidated.\n"
@@ -9607,48 +9607,48 @@ msgstr ""
 "Cached thumbnails between level %d and %d need to be invalidated.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1474
+#: ../src/dtgtk/thumbtable.c:1475
 msgid "do you want to do that now?"
 msgstr "Do you want to do that now?"
 
-#: ../src/dtgtk/thumbtable.c:1476
+#: ../src/dtgtk/thumbtable.c:1477
 msgid "cached thumbnails invalidation"
 msgstr "Cached thumbnails invalidation"
 
 #. setup history key accelerators
-#: ../src/dtgtk/thumbtable.c:2737
+#: ../src/dtgtk/thumbtable.c:2738
 msgid "copy history"
 msgstr "Copy history"
 
-#: ../src/dtgtk/thumbtable.c:2739
+#: ../src/dtgtk/thumbtable.c:2740
 msgid "copy history parts"
 msgstr "Copy history parts"
 
-#: ../src/dtgtk/thumbtable.c:2741
+#: ../src/dtgtk/thumbtable.c:2742
 msgid "paste history"
 msgstr "Paste history"
 
-#: ../src/dtgtk/thumbtable.c:2743
+#: ../src/dtgtk/thumbtable.c:2744
 msgid "paste history parts"
 msgstr "Paste history parts"
 
-#: ../src/dtgtk/thumbtable.c:2745 ../src/libs/copy_history.c:394
+#: ../src/dtgtk/thumbtable.c:2746 ../src/libs/copy_history.c:394
 msgid "discard history"
 msgstr "Discard history"
 
-#: ../src/dtgtk/thumbtable.c:2748
+#: ../src/dtgtk/thumbtable.c:2749
 msgid "duplicate image"
 msgstr "Duplicate image"
 
-#: ../src/dtgtk/thumbtable.c:2750
+#: ../src/dtgtk/thumbtable.c:2751
 msgid "duplicate image virgin"
 msgstr "Duplicate image virgin"
 
-#: ../src/dtgtk/thumbtable.c:2760 ../src/libs/select.c:147
+#: ../src/dtgtk/thumbtable.c:2761 ../src/libs/select.c:147
 msgid "select film roll"
 msgstr "Select film roll"
 
-#: ../src/dtgtk/thumbtable.c:2762 ../src/libs/select.c:151
+#: ../src/dtgtk/thumbtable.c:2763 ../src/libs/select.c:151
 msgid "select untouched"
 msgstr "Select untouched"
 
@@ -12059,7 +12059,7 @@ msgstr "Invalid border size, using 0"
 
 #: ../src/imageio/format/pdf.c:257 ../src/imageio/storage/disk.c:460
 #: ../src/imageio/storage/email.c:187 ../src/imageio/storage/gallery.c:409
-#: ../src/imageio/storage/gallery.c:450 ../src/imageio/storage/piwigo.c:1230
+#: ../src/imageio/storage/gallery.c:450 ../src/imageio/storage/piwigo.c:1236
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr "Could not export to file `%s'!"
@@ -12280,7 +12280,7 @@ msgstr ""
 "Variables support bash like string manipulation\n"
 "Type '$(' to activate the completion and see the list of variables"
 
-#: ../src/imageio/storage/disk.c:265 ../src/imageio/storage/piwigo.c:1107
+#: ../src/imageio/storage/disk.c:265 ../src/imageio/storage/piwigo.c:1113
 msgid "on conflict"
 msgstr "On conflict"
 
@@ -12289,7 +12289,7 @@ msgid "create unique filename"
 msgstr "Create unique filename"
 
 #. DT_COPY_HISTORY_APPEND
-#: ../src/imageio/storage/disk.c:269 ../src/imageio/storage/piwigo.c:1111
+#: ../src/imageio/storage/disk.c:269 ../src/imageio/storage/piwigo.c:1117
 #: ../src/libs/copy_history.c:404 ../src/libs/image.c:669
 #: ../src/libs/styles.c:854
 msgid "overwrite"
@@ -12299,7 +12299,7 @@ msgstr "Overwrite"
 msgid "overwrite if changed"
 msgstr "Overwrite if changed"
 
-#: ../src/imageio/storage/disk.c:271 ../src/imageio/storage/piwigo.c:1109
+#: ../src/imageio/storage/disk.c:271 ../src/imageio/storage/piwigo.c:1115
 msgid "skip"
 msgstr "Skip"
 
@@ -12419,111 +12419,111 @@ msgstr "Piwigo"
 msgid "accounts"
 msgstr "Accounts"
 
-#: ../src/imageio/storage/piwigo.c:994 ../src/imageio/storage/piwigo.c:1000
+#: ../src/imageio/storage/piwigo.c:995 ../src/imageio/storage/piwigo.c:1004
 msgid "server"
 msgstr "Server"
 
-#: ../src/imageio/storage/piwigo.c:996 ../src/imageio/storage/piwigo.c:1011
+#: ../src/imageio/storage/piwigo.c:998
 msgid ""
 "the server name\n"
 "default protocol is https\n"
-"specify http:// if non secure server"
+"specify insecure protocol http:// explicitly if that protocol is required"
 msgstr ""
 "The server name\n"
 "Default protocol is https\n"
-"Specify http:// if not secure server"
+"Specify insecure protocol http:// explicitly if that protocol is required"
 
-#: ../src/imageio/storage/piwigo.c:1009 ../src/imageio/storage/piwigo.c:1015
+#: ../src/imageio/storage/piwigo.c:1014 ../src/imageio/storage/piwigo.c:1021
 msgid "user"
 msgstr "User"
 
-#: ../src/imageio/storage/piwigo.c:1023 ../src/imageio/storage/piwigo.c:1028
+#: ../src/imageio/storage/piwigo.c:1029 ../src/imageio/storage/piwigo.c:1034
 msgid "password"
 msgstr "Password"
 
 #. login button
-#: ../src/imageio/storage/piwigo.c:1033
+#: ../src/imageio/storage/piwigo.c:1039
 msgid "login"
 msgstr "Login"
 
-#: ../src/imageio/storage/piwigo.c:1034
+#: ../src/imageio/storage/piwigo.c:1040
 msgid "Piwigo login"
 msgstr "Piwigo login"
 
 #. permissions list
-#: ../src/imageio/storage/piwigo.c:1050
+#: ../src/imageio/storage/piwigo.c:1056
 msgid "visible to"
 msgstr "Visible to"
 
-#: ../src/imageio/storage/piwigo.c:1052
+#: ../src/imageio/storage/piwigo.c:1058
 msgid "everyone"
 msgstr "Everyone"
 
-#: ../src/imageio/storage/piwigo.c:1053
+#: ../src/imageio/storage/piwigo.c:1059
 msgid "contacts"
 msgstr "Contacts"
 
-#: ../src/imageio/storage/piwigo.c:1054
+#: ../src/imageio/storage/piwigo.c:1060
 msgid "friends"
 msgstr "Friends"
 
-#: ../src/imageio/storage/piwigo.c:1055
+#: ../src/imageio/storage/piwigo.c:1061
 msgid "family"
 msgstr "Family"
 
-#: ../src/imageio/storage/piwigo.c:1056
+#: ../src/imageio/storage/piwigo.c:1062
 msgid "you"
 msgstr "You"
 
 #. Available albums
-#: ../src/imageio/storage/piwigo.c:1063
+#: ../src/imageio/storage/piwigo.c:1069
 msgid "album"
 msgstr "Album"
 
-#: ../src/imageio/storage/piwigo.c:1070
+#: ../src/imageio/storage/piwigo.c:1076
 msgid "refresh album list"
 msgstr "Refresh album list"
 
 #. Album title
-#: ../src/imageio/storage/piwigo.c:1090
+#: ../src/imageio/storage/piwigo.c:1096
 msgid "new album"
 msgstr "New album"
 
 #. Available albums
-#: ../src/imageio/storage/piwigo.c:1099
+#: ../src/imageio/storage/piwigo.c:1105
 msgid "parent album"
 msgstr "Parent album"
 
-#: ../src/imageio/storage/piwigo.c:1103
+#: ../src/imageio/storage/piwigo.c:1109
 msgid "click login button to start"
 msgstr "Click login button to start"
 
-#: ../src/imageio/storage/piwigo.c:1108
+#: ../src/imageio/storage/piwigo.c:1114
 msgid "don't check"
 msgstr "Don't check"
 
-#: ../src/imageio/storage/piwigo.c:1110
+#: ../src/imageio/storage/piwigo.c:1116
 msgid "update metadata"
 msgstr "Update metadata"
 
-#: ../src/imageio/storage/piwigo.c:1249
+#: ../src/imageio/storage/piwigo.c:1255
 msgid "cannot create a new Piwigo album!"
 msgstr "Cannot create a new Piwigo album!"
 
-#: ../src/imageio/storage/piwigo.c:1268
+#: ../src/imageio/storage/piwigo.c:1274
 msgid "could not update to Piwigo!"
 msgstr "Could not update to Piwigo!"
 
-#: ../src/imageio/storage/piwigo.c:1284
+#: ../src/imageio/storage/piwigo.c:1290
 msgid "could not upload to Piwigo!"
 msgstr "Could not upload to Piwigo!"
 
-#: ../src/imageio/storage/piwigo.c:1313
+#: ../src/imageio/storage/piwigo.c:1319
 #, c-format
 msgid "%d/%d skipped (already exists)"
 msgstr "%d/%d skipped (already exists)"
 
-#: ../src/imageio/storage/piwigo.c:1319
+#: ../src/imageio/storage/piwigo.c:1325
 #, c-format
 msgid "%d/%d exported to Piwigo webalbum"
 msgid_plural "%d/%d exported to Piwigo webalbum"
@@ -12960,7 +12960,7 @@ msgstr ""
 "Change edge halos at each feature size\n"
 "Only changes results of luma and chroma tabs"
 
-#: ../src/iop/atrous.c:1818 ../src/iop/colorbalancergb.c:2145
+#: ../src/iop/atrous.c:1818 ../src/iop/colorbalancergb.c:2129
 #: ../src/iop/colorzones.c:2732 ../src/iop/denoiseprofile.c:3747
 #: ../src/iop/filmicrgb.c:4471 ../src/iop/lowlight.c:821
 #: ../src/iop/rawdenoise.c:935 ../src/iop/toneequal.c:3424
@@ -14203,7 +14203,7 @@ msgstr ""
 "c: \t%.1f"
 
 #: ../src/iop/channelmixerrgb.c:4462 ../src/iop/clipping.c:2140
-#: ../src/iop/colorbalancergb.c:1960 ../src/iop/filmicrgb.c:4483
+#: ../src/iop/colorbalancergb.c:1944 ../src/iop/filmicrgb.c:4483
 #: ../src/iop/negadoctor.c:848 ../src/iop/toneequal.c:3372
 #: ../src/libs/image.c:489 ../src/views/lighttable.c:1258
 msgid "page"
@@ -15050,68 +15050,68 @@ msgstr "Basic colorfulness: vibrant colors"
 msgid "basic colorfulness: standard"
 msgstr "Basic colorfulness: standard"
 
-#: ../src/iop/colorbalancergb.c:1030
+#: ../src/iop/colorbalancergb.c:1022
 msgid "colorbalance works only on RGB input"
 msgstr "Colorbalance works only on RGB input"
 
-#: ../src/iop/colorbalancergb.c:1593 ../src/iop/colorzones.c:2394
+#: ../src/iop/colorbalancergb.c:1577 ../src/iop/colorzones.c:2394
 #: ../src/iop/retouch.c:2069 ../src/iop/toneequal.c:1996
 msgid "cannot display masks when the blending mask is displayed"
 msgstr "Cannot display masks when the blending mask is displayed"
 
 #. Page master
-#: ../src/iop/colorbalancergb.c:1963
+#: ../src/iop/colorbalancergb.c:1947
 msgid "master"
 msgstr "Master"
 
-#: ../src/iop/colorbalancergb.c:1963
+#: ../src/iop/colorbalancergb.c:1947
 msgid "global grading"
 msgstr "Global grading"
 
-#: ../src/iop/colorbalancergb.c:1967
+#: ../src/iop/colorbalancergb.c:1951
 msgid "rotate all hues by an angle, at the same luminance"
 msgstr "Rotate all hues by an angle, at the same luminance"
 
-#: ../src/iop/colorbalancergb.c:1973
+#: ../src/iop/colorbalancergb.c:1957
 msgid "increase colorfulness mostly on low-chroma colors"
 msgstr "Increase colorfulness mostly on low-chroma colors"
 
-#: ../src/iop/colorbalancergb.c:1979
+#: ../src/iop/colorbalancergb.c:1963
 msgid "increase the contrast at constant chromaticity"
 msgstr "Increase the contrast at constant chromaticity"
 
-#: ../src/iop/colorbalancergb.c:1981
+#: ../src/iop/colorbalancergb.c:1965
 msgctxt "section"
 msgid "linear chroma grading"
 msgstr "Linear chroma grading"
 
-#: ../src/iop/colorbalancergb.c:1988
+#: ../src/iop/colorbalancergb.c:1972
 msgid "increase colorfulness at same luminance globally"
 msgstr "Increase colorfulness at same luminance globally"
 
-#: ../src/iop/colorbalancergb.c:1993
+#: ../src/iop/colorbalancergb.c:1977
 msgid "increase colorfulness at same luminance mostly in shadows"
 msgstr "Increase colorfulness at same luminance mostly in shadows"
 
-#: ../src/iop/colorbalancergb.c:1998
+#: ../src/iop/colorbalancergb.c:1982
 msgid "increase colorfulness at same luminance mostly in mid-tones"
 msgstr "Increase colorfulness at same luminance mostly in mid-tones"
 
-#: ../src/iop/colorbalancergb.c:2003
+#: ../src/iop/colorbalancergb.c:1987
 msgid "increase colorfulness at same luminance mostly in highlights"
 msgstr "Increase colorfulness at same luminance mostly in highlights"
 
-#: ../src/iop/colorbalancergb.c:2005
+#: ../src/iop/colorbalancergb.c:1989
 msgctxt "section"
 msgid "perceptual saturation grading"
 msgstr "Perceptual saturation grading"
 
-#: ../src/iop/colorbalancergb.c:2011
+#: ../src/iop/colorbalancergb.c:1995
 msgid "add or remove saturation by an absolute amount"
 msgstr "Add or remove saturation by an absolute amount"
 
-#: ../src/iop/colorbalancergb.c:2016 ../src/iop/colorbalancergb.c:2021
-#: ../src/iop/colorbalancergb.c:2026
+#: ../src/iop/colorbalancergb.c:2000 ../src/iop/colorbalancergb.c:2005
+#: ../src/iop/colorbalancergb.c:2010
 msgid ""
 "increase or decrease saturation proportionally to the original pixel "
 "saturation"
@@ -15119,21 +15119,21 @@ msgstr ""
 "Increase or decrease saturation proportionally to the original pixel "
 "saturation"
 
-#: ../src/iop/colorbalancergb.c:2028
+#: ../src/iop/colorbalancergb.c:2012
 msgctxt "section"
 msgid "perceptual brilliance grading"
 msgstr "Perceptual brilliance grading"
 
-#: ../src/iop/colorbalancergb.c:2029
+#: ../src/iop/colorbalancergb.c:2013
 msgid "brilliance"
 msgstr "Brilliance"
 
-#: ../src/iop/colorbalancergb.c:2034
+#: ../src/iop/colorbalancergb.c:2018
 msgid "add or remove brilliance by an absolute amount"
 msgstr "Add or remove brilliance by an absolute amount"
 
-#: ../src/iop/colorbalancergb.c:2039 ../src/iop/colorbalancergb.c:2044
-#: ../src/iop/colorbalancergb.c:2049
+#: ../src/iop/colorbalancergb.c:2023 ../src/iop/colorbalancergb.c:2028
+#: ../src/iop/colorbalancergb.c:2033
 msgid ""
 "increase or decrease brilliance proportionally to the original pixel "
 "brilliance"
@@ -15142,155 +15142,155 @@ msgstr ""
 "brilliance"
 
 #. Page 4-ways
-#: ../src/iop/colorbalancergb.c:2052
+#: ../src/iop/colorbalancergb.c:2036
 msgid "4 ways"
 msgstr "4 ways"
 
-#: ../src/iop/colorbalancergb.c:2052
+#: ../src/iop/colorbalancergb.c:2036
 msgid "selective color grading"
 msgstr "Selective color grading"
 
-#: ../src/iop/colorbalancergb.c:2054
+#: ../src/iop/colorbalancergb.c:2038
 msgctxt "section"
 msgid "global offset"
 msgstr "Global offset"
 
-#: ../src/iop/colorbalancergb.c:2061
+#: ../src/iop/colorbalancergb.c:2045
 msgid "global luminance offset"
 msgstr "Global luminance offset"
 
-#: ../src/iop/colorbalancergb.c:2066
+#: ../src/iop/colorbalancergb.c:2050
 msgid "hue of the global color offset"
 msgstr "Hue of the global color offset"
 
-#: ../src/iop/colorbalancergb.c:2072
+#: ../src/iop/colorbalancergb.c:2056
 msgid "chroma of the global color offset"
 msgstr "Chroma of the global color offset"
 
-#: ../src/iop/colorbalancergb.c:2074
+#: ../src/iop/colorbalancergb.c:2058
 msgctxt "section"
 msgid "shadows lift"
 msgstr "Shadows lift"
 
-#: ../src/iop/colorbalancergb.c:2075
+#: ../src/iop/colorbalancergb.c:2059
 msgid "lift"
 msgstr "Lift"
 
-#: ../src/iop/colorbalancergb.c:2081
+#: ../src/iop/colorbalancergb.c:2065
 msgid "luminance gain in shadows"
 msgstr "Luminance gain in shadows"
 
-#: ../src/iop/colorbalancergb.c:2086
+#: ../src/iop/colorbalancergb.c:2070
 msgid "hue of the color gain in shadows"
 msgstr "Hue of the color gain in shadows"
 
-#: ../src/iop/colorbalancergb.c:2092
+#: ../src/iop/colorbalancergb.c:2076
 msgid "chroma of the color gain in shadows"
 msgstr "Chroma of the color gain in shadows"
 
-#: ../src/iop/colorbalancergb.c:2094
+#: ../src/iop/colorbalancergb.c:2078
 msgctxt "section"
 msgid "highlights gain"
 msgstr "Highlights gain"
 
-#: ../src/iop/colorbalancergb.c:2095
+#: ../src/iop/colorbalancergb.c:2079
 msgid "gain"
 msgstr "Gain"
 
-#: ../src/iop/colorbalancergb.c:2101
+#: ../src/iop/colorbalancergb.c:2085
 msgid "luminance gain in highlights"
 msgstr "Luminance gain in highlights"
 
-#: ../src/iop/colorbalancergb.c:2106
+#: ../src/iop/colorbalancergb.c:2090
 msgid "hue of the color gain in highlights"
 msgstr "Hue of the color gain in highlights"
 
-#: ../src/iop/colorbalancergb.c:2112
+#: ../src/iop/colorbalancergb.c:2096
 msgid "chroma of the color gain in highlights"
 msgstr "Chroma of the color gain in highlights"
 
-#: ../src/iop/colorbalancergb.c:2114
+#: ../src/iop/colorbalancergb.c:2098
 msgctxt "section"
 msgid "power"
 msgstr "Power"
 
-#: ../src/iop/colorbalancergb.c:2115
+#: ../src/iop/colorbalancergb.c:2099
 msgid "power"
 msgstr "Power"
 
-#: ../src/iop/colorbalancergb.c:2121
+#: ../src/iop/colorbalancergb.c:2105
 msgid "luminance exponent in mid-tones"
 msgstr "Luminance exponent in mid-tones"
 
-#: ../src/iop/colorbalancergb.c:2126
+#: ../src/iop/colorbalancergb.c:2110
 msgid "hue of the color exponent in mid-tones"
 msgstr "Hue of the color exponent in mid-tones"
 
-#: ../src/iop/colorbalancergb.c:2132
+#: ../src/iop/colorbalancergb.c:2116
 msgid "chroma of the color exponent in mid-tones"
 msgstr "Chroma of the color exponent in mid-tones"
 
 #. Page masks
-#: ../src/iop/colorbalancergb.c:2135
+#: ../src/iop/colorbalancergb.c:2119
 msgid "masks"
 msgstr "Masks"
 
-#: ../src/iop/colorbalancergb.c:2135
+#: ../src/iop/colorbalancergb.c:2119
 msgid "isolate luminances"
 msgstr "Isolate luminances"
 
-#: ../src/iop/colorbalancergb.c:2139
+#: ../src/iop/colorbalancergb.c:2123
 msgid "choose in which uniform color space the saturation is computed"
 msgstr "Choose in which uniform color space the saturation is computed"
 
-#: ../src/iop/colorbalancergb.c:2141
+#: ../src/iop/colorbalancergb.c:2125
 msgctxt "section"
 msgid "luminance ranges"
 msgstr "Luminance ranges"
 
-#: ../src/iop/colorbalancergb.c:2152
+#: ../src/iop/colorbalancergb.c:2136
 msgid "weight of the shadows over the whole tonal range"
 msgstr "Weight of the shadows over the whole tonal range"
 
-#: ../src/iop/colorbalancergb.c:2160
+#: ../src/iop/colorbalancergb.c:2144
 msgid "position of the middle-gray reference for masking"
 msgstr "Position of the middle-gray reference for masking"
 
-#: ../src/iop/colorbalancergb.c:2168
+#: ../src/iop/colorbalancergb.c:2152
 msgid "weights of highlights over the whole tonal range"
 msgstr "Weights of highlights over the whole tonal range"
 
-#: ../src/iop/colorbalancergb.c:2173
+#: ../src/iop/colorbalancergb.c:2157
 msgctxt "section"
 msgid "threshold"
 msgstr "Threshold"
 
-#: ../src/iop/colorbalancergb.c:2178
+#: ../src/iop/colorbalancergb.c:2162
 msgid "peak white luminance value used to normalize the power function"
 msgstr "Peak white luminance value used to normalize the power function"
 
-#: ../src/iop/colorbalancergb.c:2184
+#: ../src/iop/colorbalancergb.c:2168
 msgid "peak gray luminance value used to normalize the power function"
 msgstr "Peak gray luminance value used to normalize the power function"
 
-#: ../src/iop/colorbalancergb.c:2186
+#: ../src/iop/colorbalancergb.c:2170
 msgctxt "section"
 msgid "mask preview settings"
 msgstr "Mask preview settings"
 
-#: ../src/iop/colorbalancergb.c:2189
+#: ../src/iop/colorbalancergb.c:2173
 msgid "checkerboard color 1"
 msgstr "Checkerboard color 1"
 
-#: ../src/iop/colorbalancergb.c:2192 ../src/iop/colorbalancergb.c:2201
+#: ../src/iop/colorbalancergb.c:2176 ../src/iop/colorbalancergb.c:2185
 msgid "select color of the checkerboard from a swatch"
 msgstr "Select color of the checkerboard from a swatch"
 
-#: ../src/iop/colorbalancergb.c:2198
+#: ../src/iop/colorbalancergb.c:2182
 msgid "checkerboard color 2"
 msgstr "Checkerboard color 2"
 
-#: ../src/iop/colorbalancergb.c:2208
+#: ../src/iop/colorbalancergb.c:2192
 msgid "checkerboard size"
 msgstr "Checkerboard size"
 
