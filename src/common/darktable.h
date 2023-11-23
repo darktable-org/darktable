@@ -412,10 +412,10 @@ void dt_cleanup();
   for performance reasons the debug log functions should only be called,
   and their arguments evaluated, if flags in thread match what is requested.
 */
-#define dt_debug_if(thread, func, ...)                           \
-  do{ if((thread) == DT_DEBUG_ALWAYS                             \
-         || (darktable.unmuted & (thread) &&                     \
-          !(~darktable.unmuted & (thread) & DT_DEBUG_RESTRICT))) \
+#define dt_debug_if(thread, func, ...)                            \
+  do{ if( ( (~DT_DEBUG_RESTRICT & (thread)) == DT_DEBUG_ALWAYS    \
+          || ~DT_DEBUG_RESTRICT & (thread) &  darktable.unmuted ) \
+         && !(DT_DEBUG_RESTRICT & (thread) & ~darktable.unmuted)) \
         func(__VA_ARGS__); } while(0)
 
 #define dt_print_pipe(thread, ...) dt_debug_if(thread, dt_print_pipe_ext, __VA_ARGS__)
