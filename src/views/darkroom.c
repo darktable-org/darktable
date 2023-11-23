@@ -2991,7 +2991,7 @@ void enter(dt_view_t *self)
   }
 
   // image should be there now.
-  dt_dev_zoom_move(&dev->full, DT_ZOOM_MOVE, -1.f, 0, 0.0f, 0.0f, TRUE);
+  dt_dev_zoom_move(&dev->full, DT_ZOOM_MOVE, -1.f, TRUE, 0.0f, 0.0f, TRUE);
 
   /* connect signal for filmstrip image activate */
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
@@ -3295,10 +3295,10 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
     else
     {
       const int32_t bs = dev->full.border_size;
-      dt_dev_zoom_move(&dev->full, DT_ZOOM_MOVE, 1.f, 0,
-                       MIN(0, x - bs) + MAX(0, x - dev->full.width  - bs),
-                       MIN(0, y - bs) + MAX(0, y - dev->full.height - bs),
-                       TRUE);
+      float dx = MIN(0, x - bs) + MAX(0, x - dev->full.width  - bs);
+      float dy = MIN(0, y - bs) + MAX(0, y - dev->full.height - bs);
+      if(fabsf(dx) + fabsf(dy) > 0.5f)
+        dt_dev_zoom_move(&dev->full, DT_ZOOM_MOVE, 1.f, 0, dx, dy, TRUE);
     }
     ctl->button_x = x;
     ctl->button_y = y;
