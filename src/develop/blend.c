@@ -53,7 +53,8 @@ static dt_develop_blend_params_t _default_blendop_params
         0.0f,
         0.0f,
         0.0f, // detail mask threshold
-        { 0, 0, 0 },
+        1, // feather_version
+        { 0, 0 },
         { 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
           0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
           0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
@@ -334,7 +335,7 @@ _develop_mask_get_post_operations(const dt_develop_blend_params_t *const params,
        params->feathering_guide == DEVELOP_MASK_GUIDE_OUT_BEFORE_BLUR
     || params->feathering_guide == DEVELOP_MASK_GUIDE_OUT_AFTER_BLUR;
 
-  const float opacity = fminf(fmaxf(params->opacity / 100.0f, 0.0f), 1.0f);
+  const float opacity = CLIP(params->opacity / 100.0f);
 
   memset(operations, 0, sizeof(_develop_mask_post_processing) * 3);
   size_t index = 0;
@@ -382,12 +383,20 @@ static inline int _get_required_w(const float radius, const float scale)
 
 static float _get_guide_weight(struct dt_dev_pixelpipe_iop_t *piece)
 {
+  const uint32_t fmode = piece->module->blend_params->feather_version;
   const dt_iop_colorspace_type_t cst = dt_develop_blend_colorspace(piece, IOP_CS_NONE);
-  return (cst == IOP_CS_RGB) ? 100.0f : 1.0f;
+  if(cst == IOP_CS_RGB)
+    return (fmode == 0) ? 100.0f : 10.0f;
+  else
+    return 1.0f;
 }
+
 static float _get_feathering_eps(struct dt_dev_pixelpipe_iop_t *piece)
 {
-  return 1.0f;
+  const uint32_t fmode = piece->module->blend_params->feather_version;
+  const dt_iop_colorspace_type_t cst = dt_develop_blend_colorspace(piece, IOP_CS_NONE);
+
+  return (cst == IOP_CS_RGB && fmode) ? 0.5f : 1.0f;
 }
 
 static void _develop_blend_process_feather(const float *const guide,
@@ -444,8 +453,7 @@ static void _develop_blend_process_mask_tone_curve(float *const restrict mask,
       x = (x + brightness) / (1.f + brightness);
       x = fmaxf(x, -1.f);
     }
-    mask[k] = clamp_range_f(
-        ((x * e / (1.f + (e - 1.f) * fabsf(x))) / 2.f + 0.5f) * opacity, 0.f, 1.f);
+    mask[k] = CLIP(((x * e / (1.f + (e - 1.f) * fabsf(x))) / 2.f + 0.5f) * opacity);
   }
 }
 

@@ -63,11 +63,6 @@
 // Nan-safe: NaN compares false and will result in mn
 #define CLAMPF(a, mn, mx) ((a) >= (mn) ? ((a) <= (mx) ? (a) : (mx)) : (mn))
 
-static inline float clamp_range_f(const float x, const float low, const float high)
-{
-  return x > high ? high : (x < low ? low : x);
-}
-
 //*****************
 // functions to check for non-finite values
 // with -ffinite-math-only, the compiler is free to elide checks based
