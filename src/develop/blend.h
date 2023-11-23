@@ -209,8 +209,10 @@ typedef struct dt_develop_blend_params_t
   float brightness;
   /** details threshold */
   float details;
+  /** feathering parameters version */
+  uint32_t feather_version;
   /** some reserved fields for future use */
-  uint32_t reserved[3];
+  uint32_t reserved[2];
   /** blendif parameters */
   float blendif_parameters[4 * DEVELOP_BLENDIF_SIZE];
   float blendif_boost_factors[DEVELOP_BLENDIF_SIZE];
