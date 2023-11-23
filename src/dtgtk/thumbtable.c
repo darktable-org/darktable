@@ -1307,7 +1307,8 @@ static gboolean _event_button_press(GtkWidget *widget,
     table->drag_dx = table->drag_dy = 0;
     table->drag_initial_imgid = id;
     table->drag_thumb = _thumbtable_get_thumb(table, id);
-    table->drag_thumb->moved = FALSE;
+    if(table->drag_thumb)
+      table->drag_thumb->moved = FALSE;
   }
   return TRUE;
 }
