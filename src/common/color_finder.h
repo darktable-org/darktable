@@ -17,8 +17,6 @@
 
 #pragma once
 
-#include "develop/develop.h"
-#include <cairo.h>
 #include <stdint.h>
 
 void dt_color_finder(const uint8_t *const restrict in, uint8_t *const out, const int width, const int height,

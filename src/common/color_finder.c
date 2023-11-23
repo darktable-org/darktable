@@ -17,18 +17,6 @@
 
 #include "common/color_finder.h"
 #include "common/colorspaces_inline_conversions.h"
-#include "common/darktable.h"
-#include "common/dttypes.h"
-#include "develop/develop.h"
-#include "develop/imageop_math.h"
-#include "gui/gtk.h"
-#include <bits/stdint-uintn.h>
-#include <omp.h>
-
-
-#include <cairo.h>
-#include <stddef.h>
-#include <sys/param.h>
 
 void dt_color_finder(const uint8_t *const restrict in, uint8_t *const out, const int width, const int height,
                      const int target_value, const float saturation_adjustment)
