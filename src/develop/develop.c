@@ -633,7 +633,7 @@ void dt_dev_configure(dt_dev_viewport_t *port)
     port->width = wd;
     port->height = ht;
     port->pipe->changed |= DT_DEV_PIPE_ZOOMED;
-    dt_dev_zoom_move(port, DT_ZOOM_MOVE, 0.0f, 0, 0.0f, 0.0f, TRUE);
+    dt_dev_zoom_move(port, DT_ZOOM_MOVE, 0.0f, TRUE, 0.0f, 0.0f, TRUE);
   }
 }
 
@@ -2541,6 +2541,12 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
   float pts[2] = { port->zoom_x, port->zoom_y };
   dt_dev_distort_transform_locked(darktable.develop, port->pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 1);
 
+  const float old_pts0 = pts[0];
+  const float old_pts1 = pts[1];
+  const float old_zoom_scale = port->zoom_scale;
+  const dt_dev_zoom_t old_zoom = port->zoom;
+  int old_closeup = port->closeup;
+
   int procw, proch;
   dt_dev_get_processed_size(port, &procw, &proch);
 
@@ -2558,6 +2564,7 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
   {
     zoom_x += scale * x / (procw * cur_scale);
     zoom_y += scale * y / (proch * cur_scale);
+    if(closeup) ++old_closeup; // force refresh
   }
   else
   {
@@ -2674,12 +2681,22 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
 
   pts[0] = (zoom_x + 0.5f) * procw;
   pts[1] = (zoom_y + 0.5f) * proch;
-  dt_dev_distort_backtransform_locked(dev, port->pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 1);
-  port->zoom_x = pts[0];
-  port->zoom_y = pts[1];
+  gboolean has_moved = fabsf(pts[0] - old_pts0) + fabsf(pts[1] - old_pts1) > 0.5f;
+  if(has_moved)
+  {
+    dt_dev_distort_backtransform_locked(dev, port->pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 1);
+    port->zoom_x = pts[0];
+    port->zoom_y = pts[1];
+  }
 
   dt_pthread_mutex_unlock(&dev->history_mutex);
   dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
+
+  if(!has_moved
+     && fabsf(old_zoom_scale - port->zoom_scale) < 0.01f
+     && old_zoom == port->zoom
+     && old_closeup == port->closeup)
+    return;
 
   if(port == &dev->full)
   {
