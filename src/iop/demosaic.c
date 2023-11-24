@@ -619,6 +619,9 @@ void process(
   const int qual_flags = demosaic_qual_flags(piece, img, roi_out);
   int demosaicing_method = data->demosaicing_method;
 
+  if(roi_out->width < 16 || roi_out->height < 16)
+    demosaicing_method = (piece->pipe->dsc.filters == 9u) ? DT_IOP_DEMOSAIC_MARKEST3_VNG : DT_IOP_DEMOSAIC_VNG4;
+
   gboolean showmask = FALSE;
   if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
   {
@@ -779,6 +782,9 @@ int process_cl(
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
 
   int demosaicing_method = data->demosaicing_method;
+
+  if(roi_out->width < 16 || roi_out->height < 16)
+    demosaicing_method = (piece->pipe->dsc.filters == 9u) ? DT_IOP_DEMOSAIC_MARKEST3_VNG : DT_IOP_DEMOSAIC_VNG4;
 
   gboolean showmask = FALSE;
   if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
