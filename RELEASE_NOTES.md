@@ -161,7 +161,7 @@ changes (where available).
   which can be easier to read than the icon in front of the shape.
 
 - Added mnemonics to dialog box buttons and marked default buttons so
-  pressing Enter will trigger them and close the dialog.
+  pressing <kbd>Enter</kbd> will trigger them and close the dialog.
 
 - Extract more OpenEXR 3.2.0 attributes for image information if
   present.
@@ -240,6 +240,37 @@ changes (where available).
   If the camera's Shading Compensation option is enabled then the
   vignetting correction will already be applied to the data in the raw
   file.
+
+- The shortcuts system received several refinements:
+
+  - Deleting or overwriting a default shortcut moves it to the
+    "disabled defaults" category from where it can restored by
+    pressing <kbd>Delete</kbd>. It is no longer necessary to uncheck
+    "load default shortcuts at startup" (in prefs/misc/interface) to
+    keep it disabled.
+
+  - Visual mapping mode has better mouse cursors to indicate whether
+    the widget under the cursor can have a shortcut or be added to (or
+    removed from) the quick access panel.
+
+  - The shortcuts preference tab now explains that it may be more
+    convenient to use visual mapping mode.
+
+  - When combining a shortcut with a move (for example <kbd>b+scroll</kbd>)
+    separate actions can be triggered by up and down moves. b+scroll
+    up could cycle through the top panel options and b+scroll down
+    through the bottom panel combinations.
+
+  - A problem with dropdown and slider popups opened via a shortcut
+    was fixed. They would immediately fill with the shortcut key
+    character. Now those popups are integrated into the shortcut
+    system, so most non-alphanumeric shortcuts continue to work. If a
+    dropdown value is changed while the popup is open (for example via
+    a calculation AI detection in color calibration), Lua script or
+    midi shortcut, the popup is correctly updated/repositioned. After
+    a popup is closed it can quickly be reopened to enter another
+    value by pressing <kbd>Enter</kbd> (as long as the corresponding
+    widget still has focus).
 
 ## Bug Fixes
 
