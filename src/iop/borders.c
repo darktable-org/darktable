@@ -945,7 +945,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->basis = dt_bauhaus_combobox_from_params(self, "basis");
   gtk_widget_set_tooltip_text(g->basis,
-                              _("which length to use for the size calculation"));
+                              _("which dimension to use for the size calculation"));
 
   g->size = dt_bauhaus_slider_from_params(self, "size");
   dt_bauhaus_slider_set_digits(g->size, 4);
