@@ -240,7 +240,7 @@ changes (where available).
   If the camera's Shading Compensation option is enabled then the
   vignetting correction will already be applied to the data in the raw
   file.
-  
+
 ## Bug Fixes
 
 - Fixes OpenCL platform checking which could lead to a freeze of
@@ -317,6 +317,8 @@ changes (where available).
 
 - Added the ability to calculate the crop factor for those cameras
   that do not contain this information in the metadata.
+
+- Fixed various bugs related to feathering masks when using OpenCL.
 
 ## Lua
 
