@@ -618,7 +618,7 @@ static void process_clip(dt_dev_pixelpipe_iop_t *piece,
   const float *const in = (const float *const)ivoid;
   float *const out = (float *const)ovoid;
 
-  const int ch = (piece->pipe->dsc.filters) ? piece->colors : 1;
+  const int ch = piece->pipe->dsc.filters ? 1 : 4;
   const size_t msize = (size_t)roi_out->width * roi_out->height * ch;
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) \
@@ -639,7 +639,6 @@ static void process_visualize(dt_dev_pixelpipe_iop_t *piece,
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
   const uint32_t filters = piece->pipe->dsc.filters;
   const gboolean is_xtrans = (filters == 9u);
-  const gboolean is_linear = (filters == 0);
   const float *const in = (const float *const)ivoid;
   float *const out = (float *const)ovoid;
 
@@ -650,7 +649,7 @@ static void process_visualize(dt_dev_pixelpipe_iop_t *piece,
                            mclip * (cf[BLUE]  <= 0.0f ? 1.0f : cf[BLUE]),
                            mclip * (cf[GREEN] <= 0.0f ? 1.0f : cf[GREEN]) };
 
-  if(is_linear)
+  if(filters == 0)
   {
     const size_t npixels = roi_out->width * (size_t)roi_out->height;
 #ifdef _OPENMP
@@ -677,9 +676,10 @@ static void process_visualize(dt_dev_pixelpipe_iop_t *piece,
       for(int col = 0; col < roi_out->width; col++)
       {
         const size_t ox = (size_t)row * roi_out->width + col;
-        const int irow = row + roi_out->y;
-        const int icol = col + roi_out->x;
+        const int irow = row + roi_out->y - roi_in->y;
+        const int icol = col + roi_out->x - roi_in->x;
         const size_t ix = (size_t)irow * roi_in->width + icol;
+
         if((icol >= 0) && (irow >= 0) && (irow < roi_in->height) && (icol < roi_in->width))
         {
           const int c = is_xtrans ? FCxtrans(irow, icol, roi_in, xtrans) : FC(irow, icol, filters);
@@ -900,9 +900,6 @@ void commit_params(struct dt_iop_module_t *self,
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   if(g && (g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED) && linear && fullpipe)
     piece->process_cl_ready = FALSE;
-
-  if(!piece->module->default_enabled)
-    piece->enabled = FALSE;
 }
 
 void init_global(dt_iop_module_so_t *module)
