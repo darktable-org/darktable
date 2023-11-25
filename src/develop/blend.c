@@ -1655,11 +1655,11 @@ static void _fix_masks_combine(dt_develop_blend_params_t *bp)
 
 /** update blendop params from older versions */
 gboolean dt_develop_blend_legacy_params(dt_iop_module_t *module,
-                                   const void *const old_params,
-                                   const int old_version,
-                                   void *new_params,
-                                   const int new_version,
-                                   const int length)
+                                        const void *const old_params,
+                                        const int old_version,
+                                        void *new_params,
+                                        const int new_version,
+                                        const int length)
 {
   // edits before version 10 default to a display referred workflow
   dt_develop_blend_colorspace_t cst = _blend_default_module_blend_colorspace(module, 0);
