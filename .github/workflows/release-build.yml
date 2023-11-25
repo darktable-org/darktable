@@ -16,7 +16,7 @@ jobs:
       fail-fast: true
       matrix:
         build:
-          - { os: macos-11,    xcode: 13.2.1, deployment: 11.3 } # LLVM12
+          - { os: macos-12, xcode: 14.2, deployment: 12.5 } # LLVM14, native
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
         btype: [ Release ]
@@ -38,7 +38,7 @@ jobs:
       GENERATOR: ${{ matrix.generator }}
       TARGET: ${{ matrix.target }}
     steps:          
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ vars.RELEASE_TAG }}
           submodules: true
@@ -50,7 +50,6 @@ jobs:
           brew tap Homebrew/bundle
           cd src/.ci
           export HOMEBREW_NO_INSTALL_UPGRADE=1
-          export HOMEBREW_NO_INSTALL_CLEANUP=1
           brew bundle --verbose || true
           # handle keg-only libs
           brew link --force libomp
