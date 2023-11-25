@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-25 13:42+0100\n"
-"PO-Revision-Date: 2023-11-25 13:44+0100\n"
+"POT-Creation-Date: 2023-11-25 15:37+0100\n"
+"PO-Revision-Date: 2023-11-25 15:40+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1169,7 +1169,7 @@ msgstr ""
 "fluide lors du zoom plein écran de prévisualisation d’une image."
 
 #: ../build/bin/preferences_gen.h:4875
-msgid "generate thumbs in background"
+msgid "generate thumbnails in background"
 msgstr "Générer les miniatures en tâche de fond"
 
 #: ../build/bin/preferences_gen.h:4889
@@ -4145,7 +4145,7 @@ msgstr "Densité"
 #: ../src/iop/colorchecker.c:1488 ../src/iop/colorcontrast.c:82
 #: ../src/iop/colorcorrection.c:268 ../src/iop/colorize.c:356
 #: ../src/iop/lowpass.c:601 ../src/iop/soften.c:368 ../src/iop/velvia.c:75
-#: ../src/iop/vibrance.c:72 ../src/iop/vignette.c:1003
+#: ../src/iop/vibrance.c:72 ../src/iop/vignette.c:1058
 msgid "saturation"
 msgstr "Saturation"
 
@@ -4729,7 +4729,7 @@ msgstr "Mode de remplissage"
 #: ../build/lib/darktable/plugins/introspection_retouch.c:426
 #: ../src/iop/basicadj.c:650 ../src/iop/channelmixerrgb.c:4685
 #: ../src/iop/colisa.c:299 ../src/iop/lowpass.c:600 ../src/iop/soften.c:372
-#: ../src/iop/vignette.c:1002 ../src/libs/history.c:963
+#: ../src/iop/vignette.c:1057 ../src/libs/history.c:963
 msgid "brightness"
 msgstr "Luminosité"
 
@@ -5058,7 +5058,7 @@ msgstr "Largeur/hauteur"
 
 #: ../build/lib/darktable/plugins/introspection_vignette.c:146
 #: ../build/lib/darktable/plugins/introspection_vignette.c:237
-#: ../src/iop/vignette.c:1010
+#: ../src/iop/vignette.c:1066
 msgid "shape"
 msgstr "Forme"
 
@@ -17148,10 +17148,10 @@ msgstr ""
 
 #: ../src/iop/filmic.c:1554
 msgid ""
-"enlarge or shrink the computed dynamic range.\n"
+"increase or decrease the computed dynamic range.\n"
 "useful in conjunction with \"auto tune levels\"."
 msgstr ""
-"Élargir ou rétrécir la plage dynamique calculée.\n"
+"Augmente ou diminue la plage dynamique calculée.\n"
 "Ceci est utile avec l’utilisation des « Niveaux automatiques »."
 
 #: ../src/iop/filmic.c:1560 ../src/iop/filmicrgb.c:4531
@@ -17457,10 +17457,10 @@ msgstr ""
 
 #: ../src/iop/filmicrgb.c:4525
 msgid ""
-"symmetrically enlarge or shrink the computed dynamic range.\n"
+"symmetrically increase or decrease the computed dynamic range.\n"
 "useful to give a safety margin to extreme luminances."
 msgstr ""
-"Élargir ou rétrécir la plage dynamique calculée.\n"
+"Augmente ou diminue la plage dynamique calculée.\n"
 "Ceci est utile pour donner une marge de sécurité aux luminances extrêmes."
 
 #: ../src/iop/filmicrgb.c:4532
@@ -18333,7 +18333,7 @@ msgid "find lens"
 msgstr "Objectif"
 
 #. scale
-#: ../src/iop/lens.cc:4477 ../src/iop/vignette.c:1000
+#: ../src/iop/lens.cc:4477 ../src/iop/vignette.c:1055
 #: ../src/iop/watermark.c:1372 ../src/libs/export.c:1264
 msgid "scale"
 msgstr "Échelle"
@@ -20792,44 +20792,44 @@ msgstr "Quantité de vibrance"
 msgid "simulate a lens fall-off close to edges"
 msgstr "Simule la perte de lumière proche des bords d’un objectif"
 
-#: ../src/iop/vignette.c:972
+#: ../src/iop/vignette.c:1022
 msgid "lomo"
 msgstr "Lomo"
 
-#: ../src/iop/vignette.c:1006
+#: ../src/iop/vignette.c:1061
 msgctxt "section"
 msgid "position / form"
 msgstr "Position / Forme"
 
-#: ../src/iop/vignette.c:1013
+#: ../src/iop/vignette.c:1069
 msgid "dithering"
 msgstr "Homogénéisation"
 
-#: ../src/iop/vignette.c:1024
+#: ../src/iop/vignette.c:1081
 msgid "the radii scale of vignette for start of fall-off"
 msgstr "Rayon de début du dégradé"
 
-#: ../src/iop/vignette.c:1025
+#: ../src/iop/vignette.c:1083
 msgid "the radii scale of vignette for end of fall-off"
 msgstr "Progressivité du dégradé"
 
-#: ../src/iop/vignette.c:1026
+#: ../src/iop/vignette.c:1084
 msgid "strength of effect on brightness"
 msgstr "Force de l’effet sur la luminosité"
 
-#: ../src/iop/vignette.c:1027
+#: ../src/iop/vignette.c:1085
 msgid "strength of effect on saturation"
 msgstr "Force de l’effet sur la saturation"
 
-#: ../src/iop/vignette.c:1028
+#: ../src/iop/vignette.c:1086
 msgid "horizontal offset of center of the effect"
 msgstr "Décalage horizontal du centre"
 
-#: ../src/iop/vignette.c:1029
+#: ../src/iop/vignette.c:1087
 msgid "vertical offset of center of the effect"
 msgstr "Décalage vertical du centre"
 
-#: ../src/iop/vignette.c:1030
+#: ../src/iop/vignette.c:1090
 msgid ""
 "shape factor\n"
 "0 produces a rectangle\n"
@@ -20841,31 +20841,31 @@ msgstr ""
 " • 1 – cercle ou ellipse\n"
 " • 2 – losange"
 
-#: ../src/iop/vignette.c:1032
+#: ../src/iop/vignette.c:1094
 msgid "enable to have the ratio automatically follow the image size"
 msgstr ""
 "Règle le ratio hauteur/largeur pour qu’il soit identique à la taille de "
 "l’image"
 
-#: ../src/iop/vignette.c:1033
+#: ../src/iop/vignette.c:1095
 msgid "width-to-height ratio"
 msgstr "Ratio entre la largeur et la hauteur"
 
-#: ../src/iop/vignette.c:1034
+#: ../src/iop/vignette.c:1097
 msgid "add some level of random noise to prevent banding"
 msgstr "Ajoute du bruit aléatoire pour éviter l’apparition de bandes"
 
-#: ../src/iop/vignette.c:1041
+#: ../src/iop/vignette.c:1105
 #, c-format
 msgid "[%s on node] change vignette/feather size"
 msgstr "[%s sur nœud ] Changer la miniature/l’adoucissement"
 
-#: ../src/iop/vignette.c:1043
+#: ../src/iop/vignette.c:1108
 #, c-format
 msgid "[%s on node] change vignette/feather size keeping ratio"
 msgstr "[%s sur nœud] Changer la miniature/taille dégradé et garde le ratio"
 
-#: ../src/iop/vignette.c:1045
+#: ../src/iop/vignette.c:1111
 #, c-format
 msgid "[%s on center] move vignette"
 msgstr "[%s au centre] Déplacer la vignette"
