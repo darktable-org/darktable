@@ -59,6 +59,15 @@ changes (where available).
   and related work and discussions in the [Blender community](https://blenderartists.org/t/feedback-development-filmic-baby-step-to-a-v2/1361663). Preset "smooth",
   utilizing the new feature, is added to provide a good starting point.
 
+- When panning or zooming, a low resolution placeholder used to be
+  shown until the image was fully recalculated. Now the part of the
+  previous high quality preview that is still visible is moved or
+  resized and only the edges are temporarily shown in low quality.
+
+  The full rework on the way the image is displayed has also removed
+  some annoying jump of the image when replacing the low resolution
+  image by the final one.
+
 ## Performance Improvements
 
 - Initialize OpenCL in the background. Especially under Windows this
@@ -69,11 +78,6 @@ changes (where available).
   messages. Until OpenCL is fully available processing will be slower.
 
 - Implemented OpenCL code for embedded lens corrections.
-
-- When panning or zooming, a low resolution placeholder used to be
-  shown until the image was fully recalculated. Now the part of the
-  previous high quality preview that is still visible is moved or
-  resized and only the edges are temporarily shown in low quality.
 
 - Improve by 25% the display of the pictures on the map.
 
@@ -349,7 +353,7 @@ changes (where available).
 - Added the ability to calculate the crop factor for those cameras
   that do not contain this information in the metadata.
 
-- Fixed various bugs related to feathering masks when using OpenCL.
+- Fixed various bugs related to feathering masks.
 
 ## Lua
 
