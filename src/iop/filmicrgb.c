@@ -4522,7 +4522,7 @@ void gui_init(dt_iop_module_t *self)
   g->security_factor = dt_bauhaus_slider_from_params(self, "security_factor");
   dt_bauhaus_slider_set_soft_max(g->security_factor, 50);
   dt_bauhaus_slider_set_format(g->security_factor, "%");
-  gtk_widget_set_tooltip_text(g->security_factor, _("symmetrically enlarge or shrink the computed dynamic range.\n"
+  gtk_widget_set_tooltip_text(g->security_factor, _("symmetrically increase or decrease the computed dynamic range.\n"
                                                     "useful to give a safety margin to extreme luminances."));
 
   // Auto tune slider
