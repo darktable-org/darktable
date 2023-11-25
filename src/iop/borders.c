@@ -62,8 +62,8 @@ typedef enum dt_iop_basis_t
   DT_IOP_BORDERS_BASIS_AUTO = 0,     // $DESCRIPTION: "auto"
   DT_IOP_BORDERS_BASIS_WIDTH = 1,    // $DESCRIPTION: "width"
   DT_IOP_BORDERS_BASIS_HEIGHT = 2,   // $DESCRIPTION: "height"
-  DT_IOP_BORDERS_BASIS_SHORTEST = 3, // $DESCRIPTION: "shortest"
-  DT_IOP_BORDERS_BASIS_LONGEST = 4,  // $DESCRIPTION: "longest"
+  DT_IOP_BORDERS_BASIS_SHORTER = 3,  // $DESCRIPTION: "shorter"
+  DT_IOP_BORDERS_BASIS_LONGER = 4,   // $DESCRIPTION: "longer"
 } dt_iop_basis_t;
 
 static const float _aspect_ratios[]
@@ -464,14 +464,14 @@ void modify_roi_out(struct dt_iop_module_t *self,
     // size depending on the orientation.
     // for all other borders use the width.
     basis = is_constant_border
-      ? DT_IOP_BORDERS_BASIS_LONGEST : DT_IOP_BORDERS_BASIS_WIDTH;
+      ? DT_IOP_BORDERS_BASIS_LONGER : DT_IOP_BORDERS_BASIS_WIDTH;
   }
-  if(basis == DT_IOP_BORDERS_BASIS_LONGEST)
+  if(basis == DT_IOP_BORDERS_BASIS_LONGER)
   {
     basis = roi_in->width > roi_in->height
       ? DT_IOP_BORDERS_BASIS_WIDTH : DT_IOP_BORDERS_BASIS_HEIGHT;
   }
-  else if(basis == DT_IOP_BORDERS_BASIS_SHORTEST)
+  else if(basis == DT_IOP_BORDERS_BASIS_SHORTER)
   {
     basis = roi_in->width < roi_in->height
       ? DT_IOP_BORDERS_BASIS_WIDTH : DT_IOP_BORDERS_BASIS_HEIGHT;
@@ -522,7 +522,7 @@ void modify_roi_out(struct dt_iop_module_t *self,
     // first determine how large the border should be,
     float border_width = (float)*basis_in * (1.0f / (1.0f - size) - 1.0f);
 
-    // then make sure we add that amount to the shortest side,
+    // then make sure we add that amount to the shorter side,
     if (basis == DT_IOP_BORDERS_BASIS_WIDTH && image_aspect < 1.0f)
       DT_IOP_BORDERS_ASSIGN_BASIS(height);
     else if (basis == DT_IOP_BORDERS_BASIS_HEIGHT && image_aspect > 1.0f)
@@ -945,7 +945,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->basis = dt_bauhaus_combobox_from_params(self, "basis");
   gtk_widget_set_tooltip_text(g->basis,
-                              _("which length to use for the size calculation"));
+                              _("which dimension to use for the size calculation"));
 
   g->size = dt_bauhaus_slider_from_params(self, "size");
   dt_bauhaus_slider_set_digits(g->size, 4);
