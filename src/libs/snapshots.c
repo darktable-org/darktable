@@ -639,6 +639,10 @@ static void _remove_snapshot_entry(dt_lib_module_t *self, const uint32_t index)
 
   //  We have one less snapshot
   d->num_snapshots--;
+
+  //  If the remove image snapshot was selected, unselect it
+  if(d->selected == index)
+    d->selected = -1;
 }
 
 static void _signal_image_removed(gpointer instance, dt_imgid_t imgid, gpointer user_data)
