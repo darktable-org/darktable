@@ -216,9 +216,16 @@ for dtExecutable in $dtExecutables; do
 done
 
 # Add homebrew shared objects
-dtSharedObjDirs="ImageMagick gtk-3.0 libgphoto2 libgphoto2_port gdk-pixbuf-2.0 gio"
+dtSharedObjDirs="ImageMagick gtk-3.0 gdk-pixbuf-2.0 gio"
 for dtSharedObj in $dtSharedObjDirs; do
     cp -LR "$homebrewHome"/lib/"$dtSharedObj" "$dtResourcesDir"/lib/
+done
+
+dtSharedObjDirs="libgphoto2 libgphoto2_port"
+for dtSharedObj in $dtSharedObjDirs; do
+    mkdir "$dtResourcesDir"/lib/"$dtSharedObj"
+    dtSharedObjVersion=$(pkg-config --modversion "$dtSharedObj")
+    cp -LR "$homebrewHome"/lib/"$dtSharedObj"/"$dtSharedObjVersion"/* "$dtResourcesDir"/lib/"$dtSharedObj"
 done
 
 # Add homebrew translations
