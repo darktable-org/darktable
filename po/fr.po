@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-25 15:37+0100\n"
-"PO-Revision-Date: 2023-11-25 15:40+0100\n"
+"POT-Creation-Date: 2023-11-25 20:04+0100\n"
+"PO-Revision-Date: 2023-11-25 20:07+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1965,17 +1965,17 @@ msgstr ""
 "Remarque : les sauvegardes prennent de la place sur le disque\n"
 "et seule la dernière est nécessaire comme point de restauration."
 
-#: ../build/bin/preferences_gen.h:7195 ../src/control/crawler.c:716
-msgid "XMP"
-msgstr "XMP"
+#: ../build/bin/preferences_gen.h:7195 ../src/libs/copy_history.c:149
+msgid "XMP sidecar files"
+msgstr "Fichiers XMP"
 
 #: ../build/bin/preferences_gen.h:7214
-msgid "create sidecar files"
+msgid "create XMP files"
 msgstr "Créer les fichiers XMP"
 
 #: ../build/bin/preferences_gen.h:7228
 msgid ""
-"the sidecar files hold information about all your development steps to allow "
+"XMP sidecar files hold information about all your development steps to allow "
 "flawless re-importing of image files.\n"
 "\n"
 "depending on the selected mode sidecar files will be created:\n"
@@ -2006,17 +2006,18 @@ msgstr ""
 "Cette option permet de compresser les mots-clés XMP pour gagner de la place."
 
 #: ../build/bin/preferences_gen.h:7284
-msgid "save history while developing"
-msgstr "Sauvegarder l'historique lors du développement"
+msgid "auto-save interval"
+msgstr "Intervalle pour la sauvegarde automatique"
 
 #: ../build/bin/preferences_gen.h:7307
 msgid ""
-"save history periodically (interval in seconds), if set to zero auto-saving "
-"is disabled. auto-saving might be disabled on slow drives."
+"automatically save history while developing using the given interval (in "
+"seconds); set to zero to disable auto-saving. auto-saving might be disabled "
+"on slow drives."
 msgstr ""
-"Sauvegarder l'historique périodiquement (intervalle en seconde), si "
-"positionné à zéro la sauvegarde automatique est désactivée. La sauvegarde "
-"automatique peut être désactivé pour les disques lents."
+"Sauvegarder périodiquement l'historique pendant le développement (intervalle "
+"en seconde), si positionné à zéro la sauvegarde automatique est désactivée. "
+"La sauvegarde automatique peut être désactivé pour les disques lents."
 
 #: ../build/bin/preferences_gen.h:7328
 msgid "look for updated XMP files on startup"
@@ -2163,8 +2164,8 @@ msgstr "Ignorer la hiérarchie des mots-clés"
 
 #: ../build/bin/preferences_gen.h:7748
 msgid ""
-"when creating XMP file the hierarchical tags are also added as a simple "
-"list\n"
+"when creating an XMP sidecar file the hierarchical tags are also added as a "
+"simple list\n"
 "of non-hierarchical ones to make them visible to some other programs.\n"
 "when this option is checked darktable will only include their last part\n"
 "and ignore the rest. so 'foo|bar|baz' will only add 'baz'."
@@ -7489,6 +7490,10 @@ msgstr "<b>Succès</b> : « %s » synchronisé ancien (DB) → nouveau (XMP)"
 #, c-format
 msgid "%id %02dh %02dm %02ds"
 msgstr "%ij %02dh %02dm %02ds"
+
+#: ../src/control/crawler.c:716
+msgid "XMP"
+msgstr "XMP"
 
 #: ../src/control/crawler.c:733 ../src/imageio/storage/disk.c:250
 #: ../src/imageio/storage/gallery.c:202 ../src/imageio/storage/latex.c:190
@@ -21436,10 +21441,6 @@ msgstr "Développement"
 msgid "open sidecar file"
 msgstr "Ouvrir un fichier XMP"
 
-#: ../src/libs/copy_history.c:149
-msgid "XMP sidecar files"
-msgstr "Fichiers XMP"
-
 #: ../src/libs/copy_history.c:166
 #, c-format
 msgid "error loading file '%s'"
@@ -26109,6 +26110,9 @@ msgstr "Créer une fenêtre flottante persistante"
 #: ../src/views/view.c:1514
 msgid "mouse actions"
 msgstr "Actions de la souris"
+
+#~ msgid "save history while developing"
+#~ msgstr "Sauvegarder l'historique lors du développement"
 
 #~ msgid "longest"
 #~ msgstr "Plus grand"
