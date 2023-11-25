@@ -67,7 +67,7 @@ static gboolean _date_update(dt_lib_filtering_rule_t *rule)
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const int count = sqlite3_column_int(stmt, 1);
-    const long dt = sqlite3_column_int64(stmt, 0);
+    const int64_t dt = sqlite3_column_int64(stmt, 0);
     dtgtk_range_select_add_block(range, dt, count);
     if(rangetop) dtgtk_range_select_add_block(rangetop, dt, count);
   }
