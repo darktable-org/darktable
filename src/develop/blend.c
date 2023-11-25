@@ -1703,6 +1703,7 @@ gboolean dt_develop_blend_legacy_params(dt_iop_module_t *module,
     n->blend_mode = _blend_legacy_blend_mode(o->mode);
     n->opacity = o->opacity;
     n->mask_id = o->mask_id;
+    n->feather_version = 0;
     return FALSE;
   }
 
@@ -1744,6 +1745,7 @@ gboolean dt_develop_blend_legacy_params(dt_iop_module_t *module,
                                     // 2; also switch off old "active" bit
     for(int i = 0; i < (4 * 8); i++) n->blendif_parameters[i] = o->blendif_parameters[i];
 
+    n->feather_version = 0;
     return FALSE;
   }
 
@@ -1785,6 +1787,7 @@ gboolean dt_develop_blend_legacy_params(dt_iop_module_t *module,
     memcpy(n->blendif_parameters, o->blendif_parameters,
            sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
 
+    n->feather_version = 0;
     return FALSE;
   }
 
@@ -1828,6 +1831,7 @@ gboolean dt_develop_blend_legacy_params(dt_iop_module_t *module,
     n->blendif = o->blendif & ~(1u << DEVELOP_BLENDIF_active);
     memcpy(n->blendif_parameters, o->blendif_parameters,
            sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
+    n->feather_version = 0;
     return FALSE;
   }
 
@@ -1879,6 +1883,7 @@ gboolean dt_develop_blend_legacy_params(dt_iop_module_t *module,
       & ~(1u << DEVELOP_BLENDIF_active);
     memcpy(n->blendif_parameters, o->blendif_parameters,
            sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
+    n->feather_version = 0;
     _fix_masks_combine(n);
     return FALSE;
   }
@@ -1924,6 +1929,7 @@ gboolean dt_develop_blend_legacy_params(dt_iop_module_t *module,
     n->blendif = o->blendif;
     memcpy(n->blendif_parameters, o->blendif_parameters,
            sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
+    n->feather_version = 0;
     _fix_masks_combine(n);
     return FALSE;
   }
@@ -1969,6 +1975,7 @@ gboolean dt_develop_blend_legacy_params(dt_iop_module_t *module,
     n->blendif = o->blendif;
     memcpy(n->blendif_parameters, o->blendif_parameters,
            sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
+    n->feather_version = 0;
     _fix_masks_combine(n);
     return FALSE;
   }
@@ -2026,6 +2033,7 @@ gboolean dt_develop_blend_legacy_params(dt_iop_module_t *module,
     n->brightness = o->brightness;
     memcpy(n->blendif_parameters, o->blendif_parameters,
            sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
+    n->feather_version = 0;
     _fix_masks_combine(n);
     return FALSE;
   }
@@ -2092,6 +2100,7 @@ gboolean dt_develop_blend_legacy_params(dt_iop_module_t *module,
     n->raster_mask_instance = o->raster_mask_instance;
     n->raster_mask_id = o->raster_mask_source[0] ? o->raster_mask_id : INVALID_MASKID;
     n->raster_mask_invert = o->raster_mask_invert;
+    n->feather_version = 0;
     _fix_masks_combine(n);
     return FALSE;
   }
@@ -2173,6 +2182,7 @@ gboolean dt_develop_blend_legacy_params(dt_iop_module_t *module,
     n->raster_mask_instance = o->raster_mask_instance;
     n->raster_mask_id = o->raster_mask_source[0] ? o->raster_mask_id : INVALID_MASKID;
     n->raster_mask_invert = o->raster_mask_invert;
+    n->feather_version = 0;
 
     _fix_masks_combine(n);
 
@@ -2188,6 +2198,7 @@ gboolean dt_develop_blend_legacy_params(dt_iop_module_t *module,
     *n = *o;
     _fix_masks_combine(n);
     n->raster_mask_id = o->raster_mask_source[0] ? o->raster_mask_id : INVALID_MASKID;
+    n->feather_version = 0;
     return FALSE;
   }
   if(old_version == 12 && new_version == 13)
@@ -2199,6 +2210,7 @@ gboolean dt_develop_blend_legacy_params(dt_iop_module_t *module,
 
     *n = *o;
     n->raster_mask_id = o->raster_mask_source[0] ? o->raster_mask_id : INVALID_MASKID;
+    n->feather_version = 0;
     return FALSE;
   }
   return TRUE;
