@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-25 09:18-0300\n"
-"PO-Revision-Date: 2023-11-25 09:18-0300\n"
+"POT-Creation-Date: 2023-11-26 19:47-0300\n"
+"PO-Revision-Date: 2023-11-26 19:46-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -1163,7 +1163,7 @@ msgstr ""
 "o desempenho da mesa de luz aumentará muito durante a navegação pelas fotos."
 
 #: ../build/bin/preferences_gen.h:4875
-msgid "generate thumbs in background"
+msgid "generate thumbnails in background"
 msgstr "gerar miniaturas em background"
 
 #: ../build/bin/preferences_gen.h:4889
@@ -1950,17 +1950,17 @@ msgstr ""
 "recente\n"
 "para uma recuperação."
 
-#: ../build/bin/preferences_gen.h:7195 ../src/control/crawler.c:716
-msgid "XMP"
-msgstr "XMP"
+#: ../build/bin/preferences_gen.h:7195 ../src/libs/copy_history.c:149
+msgid "XMP sidecar files"
+msgstr "arquivos auxiliares XMP"
 
 #: ../build/bin/preferences_gen.h:7214
-msgid "create sidecar files"
-msgstr "criar arquivos associados"
+msgid "create XMP files"
+msgstr "criar arquivos XMP"
 
 #: ../build/bin/preferences_gen.h:7228
 msgid ""
-"the sidecar files hold information about all your development steps to allow "
+"XMP sidecar files hold information about all your development steps to allow "
 "flawless re-importing of image files.\n"
 "\n"
 "depending on the selected mode sidecar files will be created:\n"
@@ -1968,15 +1968,15 @@ msgid ""
 " - 'on import': immediately after importing the image\n"
 " - 'after edit': after any user change on the image or adding tags."
 msgstr ""
-"os arquivos associados mantém informações sobre todos os seus passos de "
+"os arquivos XMP associados mantém informações sobre todos os seus passos de "
 "desenvolvimento para permitir a re-importação de arquivos de imagem sem "
-"problemas\n"
+"problemas.\n"
 "\n"
 "dependendo do modo selecionado, os arquivos associados serão escritos:\n"
 " - 'nunca'\n"
 " - 'ao importar': imediatamente após importar a imagem\n"
 " - 'após edição': depois de qualquer mudança feita na imagem ou após "
-"adicionar etiquetas"
+"adicionar etiquetas."
 
 #: ../build/bin/preferences_gen.h:7249
 msgid "store XMP tags in compressed format"
@@ -1993,16 +1993,17 @@ msgstr ""
 "esta opção permite que etiquetas XMP sejam comprimidos e economizem espaço."
 
 #: ../build/bin/preferences_gen.h:7284
-msgid "save history while developing"
-msgstr "salvar histórico enquanto desenvolve"
+msgid "auto-save interval"
+msgstr "intervalo para auto-salvar"
 
 #: ../build/bin/preferences_gen.h:7307
 msgid ""
-"save history periodically (interval in seconds), if set to zero auto-saving "
-"is disabled. auto-saving might be disabled on slow drives."
+"automatically save history while developing using the given interval (in "
+"seconds); set to zero to disable auto-saving. auto-saving might be disabled "
+"on slow drives."
 msgstr ""
-"salvar o histórico periodicamente (intervalo em segundaos), se definido em "
-"zero a gravação automática é desabilitada. a gravação automática pode ser "
+"salvar o histórico periodicamente no intervalo dado (em segundaos); defina "
+"em zero para desabilitar a auto-gravação. a gravação automática pode ser "
 "desabilitada em drives lentos."
 
 #: ../build/bin/preferences_gen.h:7328
@@ -2148,17 +2149,17 @@ msgstr "omitir hierarquia em listas simples de etiquetas"
 
 #: ../build/bin/preferences_gen.h:7748
 msgid ""
-"when creating XMP file the hierarchical tags are also added as a simple "
-"list\n"
+"when creating an XMP sidecar file the hierarchical tags are also added as a "
+"simple list\n"
 "of non-hierarchical ones to make them visible to some other programs.\n"
 "when this option is checked darktable will only include their last part\n"
 "and ignore the rest. so 'foo|bar|baz' will only add 'baz'."
 msgstr ""
-"ao criar um arquivo XMP, as etiquetas hierárquicas também são adicionados "
-"como simples lista não-hierárquica para fazê-los visíveis por outros "
-"programas. quando esta opção é habilitada, o darktable somente incluirá a "
-"última parte das etiquetas e ignorará o resto. assim, 'foo|bar|baz' somente "
-"adicionará 'baz'."
+"ao criar um arquivo associado XMP, as etiquetas hierárquicas também são "
+"adicionados como simples lista não-hierárquica para fazê-los visíveis por "
+"outros programas. quando esta opção é habilitada, o darktable somente "
+"incluirá a última parte das etiquetas e ignorará o resto. assim, 'foo|bar|"
+"baz' somente adicionará 'baz'."
 
 #: ../build/bin/preferences_gen.h:7757
 msgid "shortcuts with multiple instances"
@@ -4119,7 +4120,7 @@ msgstr "densidade"
 #: ../src/iop/colorchecker.c:1488 ../src/iop/colorcontrast.c:82
 #: ../src/iop/colorcorrection.c:268 ../src/iop/colorize.c:356
 #: ../src/iop/lowpass.c:601 ../src/iop/soften.c:368 ../src/iop/velvia.c:75
-#: ../src/iop/vibrance.c:72 ../src/iop/vignette.c:1003
+#: ../src/iop/vibrance.c:72 ../src/iop/vignette.c:1058
 msgid "saturation"
 msgstr "saturação"
 
@@ -4702,7 +4703,7 @@ msgstr "modo de preenchimento"
 #: ../build/lib/darktable/plugins/introspection_retouch.c:426
 #: ../src/iop/basicadj.c:650 ../src/iop/channelmixerrgb.c:4685
 #: ../src/iop/colisa.c:299 ../src/iop/lowpass.c:600 ../src/iop/soften.c:372
-#: ../src/iop/vignette.c:1002 ../src/libs/history.c:963
+#: ../src/iop/vignette.c:1057 ../src/libs/history.c:963
 msgid "brightness"
 msgstr "brilho"
 
@@ -5031,7 +5032,7 @@ msgstr "relação largura/altura"
 
 #: ../build/lib/darktable/plugins/introspection_vignette.c:146
 #: ../build/lib/darktable/plugins/introspection_vignette.c:237
-#: ../src/iop/vignette.c:1010
+#: ../src/iop/vignette.c:1066
 msgid "shape"
 msgstr "forma"
 
@@ -6701,7 +6702,7 @@ msgstr "ou o <b>RAW não será legível</b> na próxima versão."
 
 #: ../src/common/image.h:217 ../src/common/ratings.c:283
 #: ../src/imageio/format/avif.c:114 ../src/libs/history.c:843
-#: ../src/libs/snapshots.c:833
+#: ../src/libs/snapshots.c:837
 msgid "unknown"
 msgstr "desconhecido"
 
@@ -7430,6 +7431,10 @@ msgstr "SUCESSO: %s sincronizado antigo (DB) → novo (XMP)"
 #, c-format
 msgid "%id %02dh %02dm %02ds"
 msgstr "%id %02dh %02dm %02ds"
+
+#: ../src/control/crawler.c:716
+msgid "XMP"
+msgstr "XMP"
 
 #: ../src/control/crawler.c:733 ../src/imageio/storage/disk.c:250
 #: ../src/imageio/storage/gallery.c:202 ../src/imageio/storage/latex.c:190
@@ -8842,7 +8847,7 @@ msgstr ""
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: módulo `%s' versão incompatível: %d != %d"
 
-#: ../src/develop/develop.c:2999
+#: ../src/develop/develop.c:3016
 msgid "duplicate module, can't move new instance after the base one\n"
 msgstr ""
 "duplicação de módulos, não é possível mover a nova instância para depois da "
@@ -9402,11 +9407,14 @@ msgstr ""
 "porque ela é processada mais tarde na pixel pipe.\n"
 "a máscara de matriz de pixels será ignorada"
 
-#: ../src/develop/tiling.c:820 ../src/develop/tiling.c:1173
+#: ../src/develop/tiling.c:819 ../src/develop/tiling.c:1172
 #, c-format
-msgid "tiling failed for module '%s'. output might be garbled."
+msgid ""
+"tiling failed for module '%s'. the output most likely will be OK, but you "
+"might want to check."
 msgstr ""
-"processamento de ladrilhos falhou no módulo '%s'. saída pode estar ilegível."
+"processamento de ladrilhos falhou no módulo '%s'. a saída provavelmente está "
+"OK, mas você pode querer verificar."
 
 #: ../src/dtgtk/culling.c:223
 msgid "you have reached the start of your selection"
@@ -12126,7 +12134,7 @@ msgid "internal"
 msgstr "interno"
 
 #: ../src/imageio/format/jxl.c:597 ../src/libs/duplicate.c:405
-#: ../src/libs/history.c:1132 ../src/libs/snapshots.c:836
+#: ../src/libs/history.c:1132 ../src/libs/snapshots.c:840
 msgid "original"
 msgstr "original"
 
@@ -17003,7 +17011,7 @@ msgstr ""
 
 #: ../src/iop/filmic.c:1554
 msgid ""
-"enlarge or shrink the computed dynamic range.\n"
+"increase or decrease the computed dynamic range.\n"
 "useful in conjunction with \"auto tune levels\"."
 msgstr ""
 "aumenta ou diminui o alcance dinâmico calculado.\n"
@@ -17309,11 +17317,11 @@ msgstr ""
 
 #: ../src/iop/filmicrgb.c:4525
 msgid ""
-"symmetrically enlarge or shrink the computed dynamic range.\n"
+"symmetrically increase or decrease the computed dynamic range.\n"
 "useful to give a safety margin to extreme luminances."
 msgstr ""
 "simetricamente aumenta ou diminui o alcance dinâmico calculado.\n"
-"útil junto para dar margem de segurança em luminâncias extremas."
+"útil para dar margem de segurança em luminâncias extremas."
 
 #: ../src/iop/filmicrgb.c:4532
 msgid ""
@@ -18171,7 +18179,7 @@ msgid "find lens"
 msgstr "encontrar lentes"
 
 #. scale
-#: ../src/iop/lens.cc:4477 ../src/iop/vignette.c:1000
+#: ../src/iop/lens.cc:4477 ../src/iop/vignette.c:1055
 #: ../src/iop/watermark.c:1372 ../src/libs/export.c:1264
 msgid "scale"
 msgstr "escala"
@@ -19168,11 +19176,11 @@ msgstr "otimizar automaticamente"
 
 #: ../src/iop/profile_gamma.c:670
 msgid ""
-"enlarge or shrink the computed dynamic range\n"
-"this is useful when noise perturbs the measurements"
+"increase or decrease the computed dynamic range\n"
+"this is useful when noise distorts the measurement"
 msgstr ""
 "aumenta ou diminui o alcance dinâmico calculado\n"
-"é útil quando o ruído perturba as medidas"
+"é útil quando o ruído distorce as medidas"
 
 #: ../src/iop/profile_gamma.c:674
 msgid "make an optimization with some guessing"
@@ -20587,44 +20595,44 @@ msgstr "quantidade de vivacidade"
 msgid "simulate a lens fall-off close to edges"
 msgstr "simula um suave escurecimento perto das bordas da lente"
 
-#: ../src/iop/vignette.c:972
+#: ../src/iop/vignette.c:1022
 msgid "lomo"
 msgstr "lomo"
 
-#: ../src/iop/vignette.c:1006
+#: ../src/iop/vignette.c:1061
 msgctxt "section"
 msgid "position / form"
 msgstr "posição / forma"
 
-#: ../src/iop/vignette.c:1013
+#: ../src/iop/vignette.c:1069
 msgid "dithering"
 msgstr "matização"
 
-#: ../src/iop/vignette.c:1024
+#: ../src/iop/vignette.c:1081
 msgid "the radii scale of vignette for start of fall-off"
 msgstr "a escala dos raios de vinheta para começar a decair"
 
-#: ../src/iop/vignette.c:1025
+#: ../src/iop/vignette.c:1083
 msgid "the radii scale of vignette for end of fall-off"
 msgstr "a escala dos raios de vinheta para terminar de decair"
 
-#: ../src/iop/vignette.c:1026
+#: ../src/iop/vignette.c:1084
 msgid "strength of effect on brightness"
 msgstr "força do efeito no brilho"
 
-#: ../src/iop/vignette.c:1027
+#: ../src/iop/vignette.c:1085
 msgid "strength of effect on saturation"
 msgstr "força do efeito na saturação"
 
-#: ../src/iop/vignette.c:1028
+#: ../src/iop/vignette.c:1086
 msgid "horizontal offset of center of the effect"
 msgstr "deslocamento horizontal do centro do efeito"
 
-#: ../src/iop/vignette.c:1029
+#: ../src/iop/vignette.c:1087
 msgid "vertical offset of center of the effect"
 msgstr "deslocamento vertical do centro do efeito"
 
-#: ../src/iop/vignette.c:1030
+#: ../src/iop/vignette.c:1090
 msgid ""
 "shape factor\n"
 "0 produces a rectangle\n"
@@ -20636,29 +20644,29 @@ msgstr ""
 "1 produz um círculo ou elipse\n"
 "2 produz um losango"
 
-#: ../src/iop/vignette.c:1032
+#: ../src/iop/vignette.c:1094
 msgid "enable to have the ratio automatically follow the image size"
 msgstr "habilite para proporção seguir automaticamente o tamanho da imagem"
 
-#: ../src/iop/vignette.c:1033
+#: ../src/iop/vignette.c:1095
 msgid "width-to-height ratio"
 msgstr "relação de largura-altura"
 
-#: ../src/iop/vignette.c:1034
+#: ../src/iop/vignette.c:1097
 msgid "add some level of random noise to prevent banding"
 msgstr "adiciona um certo nível de ruído aleatório para prevenir bandas de cor"
 
-#: ../src/iop/vignette.c:1041
+#: ../src/iop/vignette.c:1105
 #, c-format
 msgid "[%s on node] change vignette/feather size"
 msgstr "[%s no nó] muda vinheta/enevoamento"
 
-#: ../src/iop/vignette.c:1043
+#: ../src/iop/vignette.c:1108
 #, c-format
 msgid "[%s on node] change vignette/feather size keeping ratio"
 msgstr "[%s no nó] muda vinheta/enevoamento, mantendo aspecto"
 
-#: ../src/iop/vignette.c:1045
+#: ../src/iop/vignette.c:1111
 #, c-format
 msgid "[%s on center] move vignette"
 msgstr "[%s no centro] mover vinheta"
@@ -21217,10 +21225,6 @@ msgstr "pilha de histórico"
 #: ../src/libs/copy_history.c:114
 msgid "open sidecar file"
 msgstr "abrir arquivo auxiliar"
-
-#: ../src/libs/copy_history.c:149
-msgid "XMP sidecar files"
-msgstr "arquivos auxiliares XMP"
 
 #: ../src/libs/copy_history.c:166
 #, c-format
@@ -24260,24 +24264,24 @@ msgctxt "snapshot sign"
 msgid "S"
 msgstr "S"
 
-#: ../src/libs/snapshots.c:658
+#: ../src/libs/snapshots.c:662
 msgid "snapshots for removed image have been deleted"
 msgstr "instantâneas da imagem removida foram removidos"
 
-#: ../src/libs/snapshots.c:699
+#: ../src/libs/snapshots.c:703
 #, c-format
 msgid "↗ %s '%s'"
 msgstr "↗ %s '%s'"
 
-#: ../src/libs/snapshots.c:699
+#: ../src/libs/snapshots.c:703
 msgid "this snapshot was taken from"
 msgstr "esta captura instantânea foi tirada de"
 
-#: ../src/libs/snapshots.c:738
+#: ../src/libs/snapshots.c:742
 msgid "take snapshot"
 msgstr "captura instantânea"
 
-#: ../src/libs/snapshots.c:740
+#: ../src/libs/snapshots.c:744
 msgid ""
 "take snapshot to compare with another image or the same image at another "
 "stage of development"
@@ -24285,7 +24289,7 @@ msgstr ""
 "tira uma instantânea para comparar com outra imagem ou a mesma imagem em "
 "outro estágio de revelação"
 
-#: ../src/libs/snapshots.c:786
+#: ../src/libs/snapshots.c:790
 msgid "toggle last snapshot"
 msgstr "alterna última instantânea"
 
@@ -25855,6 +25859,9 @@ msgstr "mudar para uma janela clássica que ficará aberta após soltar a tecla.
 #: ../src/views/view.c:1514
 msgid "mouse actions"
 msgstr "ações com mouse"
+
+#~ msgid "save history while developing"
+#~ msgstr "salvar histórico enquanto desenvolve"
 
 #~ msgid "longest"
 #~ msgstr "mais longo"
