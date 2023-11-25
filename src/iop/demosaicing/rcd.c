@@ -420,10 +420,10 @@ static void rcd_demosaic(
             const float cfai = cfa[indx];
 
             // Cardinal gradients
-            const float N_Grad = eps + fabs(cfa[indx - w1] - cfa[indx + w1]) + fabs(cfai - cfa[indx - w2]) + fabs(cfa[indx - w1] - cfa[indx - w3]) + fabs(cfa[indx - w2] - cfa[indx - w4]);
-            const float S_Grad = eps + fabs(cfa[indx - w1] - cfa[indx + w1]) + fabs(cfai - cfa[indx + w2]) + fabs(cfa[indx + w1] - cfa[indx + w3]) + fabs(cfa[indx + w2] - cfa[indx + w4]);
-            const float W_Grad = eps + fabs(cfa[indx -  1] - cfa[indx +  1]) + fabs(cfai - cfa[indx -  2]) + fabs(cfa[indx -  1] - cfa[indx -  3]) + fabs(cfa[indx -  2] - cfa[indx -  4]);
-            const float E_Grad = eps + fabs(cfa[indx -  1] - cfa[indx +  1]) + fabs(cfai - cfa[indx +  2]) + fabs(cfa[indx +  1] - cfa[indx +  3]) + fabs(cfa[indx +  2] - cfa[indx +  4]);
+            const float N_Grad = eps + fabsf(cfa[indx - w1] - cfa[indx + w1]) + fabsf(cfai - cfa[indx - w2]) + fabsf(cfa[indx - w1] - cfa[indx - w3]) + fabsf(cfa[indx - w2] - cfa[indx - w4]);
+            const float S_Grad = eps + fabsf(cfa[indx - w1] - cfa[indx + w1]) + fabsf(cfai - cfa[indx + w2]) + fabsf(cfa[indx + w1] - cfa[indx + w3]) + fabsf(cfa[indx + w2] - cfa[indx + w4]);
+            const float W_Grad = eps + fabsf(cfa[indx -  1] - cfa[indx +  1]) + fabsf(cfai - cfa[indx -  2]) + fabsf(cfa[indx -  1] - cfa[indx -  3]) + fabsf(cfa[indx -  2] - cfa[indx -  4]);
+            const float E_Grad = eps + fabsf(cfa[indx -  1] - cfa[indx +  1]) + fabsf(cfai - cfa[indx +  2]) + fabsf(cfa[indx +  1] - cfa[indx +  3]) + fabsf(cfa[indx +  2] - cfa[indx +  4]);
 
             // Cardinal pixel estimations
             const float lpfi = lpf[lpindx];
@@ -440,7 +440,7 @@ static void rcd_demosaic(
             // Refined vertical and horizontal local discrimination
             const float VH_Central_Value = VH_Dir[indx];
             const float VH_Neighbourhood_Value = 0.25f * (VH_Dir[indx - w1 - 1] + VH_Dir[indx - w1 + 1] + VH_Dir[indx + w1 - 1] + VH_Dir[indx + w1 + 1]);
-            const float VH_Disc = (fabs(0.5f - VH_Central_Value) < fabs(0.5f - VH_Neighbourhood_Value)) ? VH_Neighbourhood_Value : VH_Central_Value;
+            const float VH_Disc = (fabsf(0.5f - VH_Central_Value) < fabsf(0.5f - VH_Neighbourhood_Value)) ? VH_Neighbourhood_Value : VH_Central_Value;
 
             rgb[1][indx] = interpolatef(VH_Disc, H_Est, V_Est);
           }
@@ -477,13 +477,13 @@ static void rcd_demosaic(
             const float PQ_Central_Value   = PQ_Dir[pqindx];
             const float PQ_Neighbourhood_Value = 0.25f * (PQ_Dir[pqindx2] + PQ_Dir[pqindx2 + 1] + PQ_Dir[pqindx3] + PQ_Dir[pqindx3 + 1]);
 
-            const float PQ_Disc = (fabs(0.5f - PQ_Central_Value) < fabs(0.5f - PQ_Neighbourhood_Value)) ? PQ_Neighbourhood_Value : PQ_Central_Value;
+            const float PQ_Disc = (fabsf(0.5f - PQ_Central_Value) < fabsf(0.5f - PQ_Neighbourhood_Value)) ? PQ_Neighbourhood_Value : PQ_Central_Value;
 
             // Diagonal gradients
-            const float NW_Grad = eps + fabs(rgb[c][indx - w1 - 1] - rgb[c][indx + w1 + 1]) + fabs(rgb[c][indx - w1 - 1] - rgb[c][indx - w3 - 3]) + fabs(rgb[1][indx] - rgb[1][indx - w2 - 2]);
-            const float NE_Grad = eps + fabs(rgb[c][indx - w1 + 1] - rgb[c][indx + w1 - 1]) + fabs(rgb[c][indx - w1 + 1] - rgb[c][indx - w3 + 3]) + fabs(rgb[1][indx] - rgb[1][indx - w2 + 2]);
-            const float SW_Grad = eps + fabs(rgb[c][indx - w1 + 1] - rgb[c][indx + w1 - 1]) + fabs(rgb[c][indx + w1 - 1] - rgb[c][indx + w3 - 3]) + fabs(rgb[1][indx] - rgb[1][indx + w2 - 2]);
-            const float SE_Grad = eps + fabs(rgb[c][indx - w1 - 1] - rgb[c][indx + w1 + 1]) + fabs(rgb[c][indx + w1 + 1] - rgb[c][indx + w3 + 3]) + fabs(rgb[1][indx] - rgb[1][indx + w2 + 2]);
+            const float NW_Grad = eps + fabsf(rgb[c][indx - w1 - 1] - rgb[c][indx + w1 + 1]) + fabsf(rgb[c][indx - w1 - 1] - rgb[c][indx - w3 - 3]) + fabsf(rgb[1][indx] - rgb[1][indx - w2 - 2]);
+            const float NE_Grad = eps + fabsf(rgb[c][indx - w1 + 1] - rgb[c][indx + w1 - 1]) + fabsf(rgb[c][indx - w1 + 1] - rgb[c][indx - w3 + 3]) + fabsf(rgb[1][indx] - rgb[1][indx - w2 + 2]);
+            const float SW_Grad = eps + fabsf(rgb[c][indx - w1 + 1] - rgb[c][indx + w1 - 1]) + fabsf(rgb[c][indx + w1 - 1] - rgb[c][indx + w3 - 3]) + fabsf(rgb[1][indx] - rgb[1][indx + w2 - 2]);
+            const float SE_Grad = eps + fabsf(rgb[c][indx - w1 - 1] - rgb[c][indx + w1 + 1]) + fabsf(rgb[c][indx + w1 + 1] - rgb[c][indx + w3 + 3]) + fabsf(rgb[1][indx] - rgb[1][indx + w2 + 2]);
 
             // Diagonal colour differences
             const float NW_Est = rgb[c][indx - w1 - 1] - rgb[1][indx - w1 - 1];
@@ -508,12 +508,12 @@ static void rcd_demosaic(
             // Refined vertical and horizontal local discrimination
             const float VH_Central_Value = VH_Dir[indx];
             const float VH_Neighbourhood_Value = 0.25f * (VH_Dir[indx - w1 - 1] + VH_Dir[indx - w1 + 1] + VH_Dir[indx + w1 - 1] + VH_Dir[indx + w1 + 1]);
-            const float VH_Disc = (fabs(0.5f - VH_Central_Value) < fabs(0.5f - VH_Neighbourhood_Value) ) ? VH_Neighbourhood_Value : VH_Central_Value;
+            const float VH_Disc = (fabsf(0.5f - VH_Central_Value) < fabsf(0.5f - VH_Neighbourhood_Value) ) ? VH_Neighbourhood_Value : VH_Central_Value;
             const float rgb1 = rgb[1][indx];
-            const float N1 = eps + fabs(rgb1 - rgb[1][indx - w2]);
-            const float S1 = eps + fabs(rgb1 - rgb[1][indx + w2]);
-            const float W1 = eps + fabs(rgb1 - rgb[1][indx -  2]);
-            const float E1 = eps + fabs(rgb1 - rgb[1][indx +  2]);
+            const float N1 = eps + fabsf(rgb1 - rgb[1][indx - w2]);
+            const float S1 = eps + fabsf(rgb1 - rgb[1][indx + w2]);
+            const float W1 = eps + fabsf(rgb1 - rgb[1][indx -  2]);
+            const float E1 = eps + fabsf(rgb1 - rgb[1][indx +  2]);
 
             const float rgb1mw1 = rgb[1][indx - w1];
             const float rgb1pw1 = rgb[1][indx + w1];
@@ -526,10 +526,10 @@ static void rcd_demosaic(
               const float EWabs = fabs(rgb[c][indx -  1] - rgb[c][indx +  1]);
 
               // Cardinal gradients
-              const float N_Grad = N1 + SNabs + fabs(rgb[c][indx - w1] - rgb[c][indx - w3]);
-              const float S_Grad = S1 + SNabs + fabs(rgb[c][indx + w1] - rgb[c][indx + w3]);
-              const float W_Grad = W1 + EWabs + fabs(rgb[c][indx -  1] - rgb[c][indx -  3]);
-              const float E_Grad = E1 + EWabs + fabs(rgb[c][indx +  1] - rgb[c][indx +  3]);
+              const float N_Grad = N1 + SNabs + fabsf(rgb[c][indx - w1] - rgb[c][indx - w3]);
+              const float S_Grad = S1 + SNabs + fabsf(rgb[c][indx + w1] - rgb[c][indx + w3]);
+              const float W_Grad = W1 + EWabs + fabsf(rgb[c][indx -  1] - rgb[c][indx -  3]);
+              const float E_Grad = E1 + EWabs + fabsf(rgb[c][indx +  1] - rgb[c][indx +  3]);
 
               // Cardinal colour differences
               const float N_Est = rgb[c][indx - w1] - rgb1mw1;
