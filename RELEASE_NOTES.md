@@ -155,10 +155,10 @@ changes (where available).
   setting a separate tooltip for the button linked to a slider or
   dropdown (commonly color pickers).
 
-- Holding the ctrl key while double clicking a slider or combo, which
-  normally resets it to its default value, instead restores the
-  auto-applied preset for processing modules (if a preset is marked as
-  such).
+- Holding the <kbd>ctrl</kbd> key while double clicking a slider or
+  combo, which normally resets it to its default value, instead
+  restores the auto-applied preset for processing modules (if a preset
+  is marked as such).
 
 - When multiple mask shapes are combined, in the popup menu for a
   shape a tick mark is shown in front of the active combine mode,
@@ -260,10 +260,11 @@ changes (where available).
   - The shortcuts preference tab now explains that it may be more
     convenient to use visual mapping mode.
 
-  - When combining a shortcut with a move (for example <kbd>b+scroll</kbd>)
-    separate actions can be triggered by up and down moves. b+scroll
-    up could cycle through the top panel options and b+scroll down
-    through the bottom panel combinations.
+  - When combining a shortcut with a move (for example
+    <kbd>b+scroll</kbd>) separate actions can be triggered by up and
+    down moves. <kbd>b+scroll</kbd> up could cycle through the top
+    panel options and b+scroll down through the bottom panel
+    combinations.
 
   - A problem with dropdown and slider popups opened via a shortcut
     was fixed. They would immediately fill with the shortcut key
@@ -301,16 +302,17 @@ changes (where available).
 - Fixed crash when applying CMYK soft-proof ICC profile.
 
 - The white borders for ISO 12464 color assessment (toggled with
-  CTRL+B) are now correctly sized and placed at all zoom levels and
-  don't flash when switching between low and high quality preview,
-  both in the center view and secondary preview window.
+  <kbd>Ctrl</kbd>+B</kbd>) are now correctly sized and placed at all
+  zoom levels and don't flash when switching between low and high
+  quality preview, both in the center view and secondary preview
+  window.
 
 - Fix issue downloading to Piwigo when on conflict option is set to
   "don't check".
 
 - Fixed several mouse scroll wheel issues on macOS in combination with
-  the shift modifier key, i.e.: Color harmonies width, module height,
-  geotagging date/time.
+  the <kbd>shift</kbd> modifier key, i.e.: Color harmonies width,
+  module height, geotagging date/time.
 
 - Fixing a bug for duplicate xmp sidecars making sure it has not been
   used before across different databases.
