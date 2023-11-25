@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-25 15:37+0100\n"
+"POT-Creation-Date: 2023-11-25 20:04+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1752,17 +1752,17 @@ msgid ""
 "recent one for successful restore"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:7195 ../src/control/crawler.c:716
-msgid "XMP"
+#: ../build/bin/preferences_gen.h:7195 ../src/libs/copy_history.c:149
+msgid "XMP sidecar files"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:7214
-msgid "create sidecar files"
+msgid "create XMP files"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:7228
 msgid ""
-"the sidecar files hold information about all your development steps to allow "
+"XMP sidecar files hold information about all your development steps to allow "
 "flawless re-importing of image files.\n"
 "\n"
 "depending on the selected mode sidecar files will be created:\n"
@@ -1783,13 +1783,14 @@ msgid ""
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:7284
-msgid "save history while developing"
+msgid "auto-save interval"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:7307
 msgid ""
-"save history periodically (interval in seconds), if set to zero auto-saving "
-"is disabled. auto-saving might be disabled on slow drives."
+"automatically save history while developing using the given interval (in "
+"seconds); set to zero to disable auto-saving. auto-saving might be disabled "
+"on slow drives."
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:7328
@@ -1911,8 +1912,8 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:7748
 msgid ""
-"when creating XMP file the hierarchical tags are also added as a simple "
-"list\n"
+"when creating an XMP sidecar file the hierarchical tags are also added as a "
+"simple list\n"
 "of non-hierarchical ones to make them visible to some other programs.\n"
 "when this option is checked darktable will only include their last part\n"
 "and ignore the rest. so 'foo|bar|baz' will only add 'baz'."
@@ -6991,6 +6992,10 @@ msgstr ""
 #: ../src/control/crawler.c:663
 #, c-format
 msgid "%id %02dh %02dm %02ds"
+msgstr ""
+
+#: ../src/control/crawler.c:716
+msgid "XMP"
 msgstr ""
 
 #: ../src/control/crawler.c:733 ../src/imageio/storage/disk.c:250
@@ -19471,10 +19476,6 @@ msgstr ""
 
 #: ../src/libs/copy_history.c:114
 msgid "open sidecar file"
-msgstr ""
-
-#: ../src/libs/copy_history.c:149
-msgid "XMP sidecar files"
 msgstr ""
 
 #: ../src/libs/copy_history.c:166
