@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-25 13:42+0100\n"
+"POT-Creation-Date: 2023-11-25 15:37+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1109,7 +1109,7 @@ msgid ""
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:4875
-msgid "generate thumbs in background"
+msgid "generate thumbnails in background"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:4889
@@ -3841,7 +3841,7 @@ msgstr ""
 #: ../src/iop/colorchecker.c:1488 ../src/iop/colorcontrast.c:82
 #: ../src/iop/colorcorrection.c:268 ../src/iop/colorize.c:356
 #: ../src/iop/lowpass.c:601 ../src/iop/soften.c:368 ../src/iop/velvia.c:75
-#: ../src/iop/vibrance.c:72 ../src/iop/vignette.c:1003
+#: ../src/iop/vibrance.c:72 ../src/iop/vignette.c:1058
 msgid "saturation"
 msgstr ""
 
@@ -4424,7 +4424,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_retouch.c:426
 #: ../src/iop/basicadj.c:650 ../src/iop/channelmixerrgb.c:4685
 #: ../src/iop/colisa.c:299 ../src/iop/lowpass.c:600 ../src/iop/soften.c:372
-#: ../src/iop/vignette.c:1002 ../src/libs/history.c:963
+#: ../src/iop/vignette.c:1057 ../src/libs/history.c:963
 msgid "brightness"
 msgstr ""
 
@@ -4753,7 +4753,7 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_vignette.c:146
 #: ../build/lib/darktable/plugins/introspection_vignette.c:237
-#: ../src/iop/vignette.c:1010
+#: ../src/iop/vignette.c:1066
 msgid "shape"
 msgstr ""
 
@@ -15715,7 +15715,7 @@ msgstr ""
 
 #: ../src/iop/filmic.c:1554
 msgid ""
-"enlarge or shrink the computed dynamic range.\n"
+"increase or decrease the computed dynamic range.\n"
 "useful in conjunction with \"auto tune levels\"."
 msgstr ""
 
@@ -15972,7 +15972,7 @@ msgstr ""
 
 #: ../src/iop/filmicrgb.c:4525
 msgid ""
-"symmetrically enlarge or shrink the computed dynamic range.\n"
+"symmetrically increase or decrease the computed dynamic range.\n"
 "useful to give a safety margin to extreme luminances."
 msgstr ""
 
@@ -16691,7 +16691,7 @@ msgid "find lens"
 msgstr ""
 
 #. scale
-#: ../src/iop/lens.cc:4477 ../src/iop/vignette.c:1000
+#: ../src/iop/lens.cc:4477 ../src/iop/vignette.c:1055
 #: ../src/iop/watermark.c:1372 ../src/libs/export.c:1264
 msgid "scale"
 msgstr ""
@@ -18898,44 +18898,44 @@ msgstr ""
 msgid "simulate a lens fall-off close to edges"
 msgstr ""
 
-#: ../src/iop/vignette.c:972
+#: ../src/iop/vignette.c:1022
 msgid "lomo"
 msgstr ""
 
-#: ../src/iop/vignette.c:1006
+#: ../src/iop/vignette.c:1061
 msgctxt "section"
 msgid "position / form"
 msgstr ""
 
-#: ../src/iop/vignette.c:1013
+#: ../src/iop/vignette.c:1069
 msgid "dithering"
 msgstr ""
 
-#: ../src/iop/vignette.c:1024
+#: ../src/iop/vignette.c:1081
 msgid "the radii scale of vignette for start of fall-off"
 msgstr ""
 
-#: ../src/iop/vignette.c:1025
+#: ../src/iop/vignette.c:1083
 msgid "the radii scale of vignette for end of fall-off"
 msgstr ""
 
-#: ../src/iop/vignette.c:1026
+#: ../src/iop/vignette.c:1084
 msgid "strength of effect on brightness"
 msgstr ""
 
-#: ../src/iop/vignette.c:1027
+#: ../src/iop/vignette.c:1085
 msgid "strength of effect on saturation"
 msgstr ""
 
-#: ../src/iop/vignette.c:1028
+#: ../src/iop/vignette.c:1086
 msgid "horizontal offset of center of the effect"
 msgstr ""
 
-#: ../src/iop/vignette.c:1029
+#: ../src/iop/vignette.c:1087
 msgid "vertical offset of center of the effect"
 msgstr ""
 
-#: ../src/iop/vignette.c:1030
+#: ../src/iop/vignette.c:1090
 msgid ""
 "shape factor\n"
 "0 produces a rectangle\n"
@@ -18943,29 +18943,29 @@ msgid ""
 "2 produces a diamond"
 msgstr ""
 
-#: ../src/iop/vignette.c:1032
+#: ../src/iop/vignette.c:1094
 msgid "enable to have the ratio automatically follow the image size"
 msgstr ""
 
-#: ../src/iop/vignette.c:1033
+#: ../src/iop/vignette.c:1095
 msgid "width-to-height ratio"
 msgstr ""
 
-#: ../src/iop/vignette.c:1034
+#: ../src/iop/vignette.c:1097
 msgid "add some level of random noise to prevent banding"
 msgstr ""
 
-#: ../src/iop/vignette.c:1041
+#: ../src/iop/vignette.c:1105
 #, c-format
 msgid "[%s on node] change vignette/feather size"
 msgstr ""
 
-#: ../src/iop/vignette.c:1043
+#: ../src/iop/vignette.c:1108
 #, c-format
 msgid "[%s on node] change vignette/feather size keeping ratio"
 msgstr ""
 
-#: ../src/iop/vignette.c:1045
+#: ../src/iop/vignette.c:1111
 #, c-format
 msgid "[%s on center] move vignette"
 msgstr ""
