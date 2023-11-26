@@ -1660,13 +1660,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dev_b = dt_opencl_copy_host_to_device(devid, d->table[DT_IOP_RGBCURVE_B], 256, 256, sizeof(float));
   if(dev_b == NULL) goto cleanup;
 
-  dev_coeffs_r = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3, d->unbounded_coeffs[0]);
+  dev_coeffs_r = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * DT_IOP_RGBCURVE_MAX_CHANNELS, d->unbounded_coeffs[0]);
   if(dev_coeffs_r == NULL) goto cleanup;
 
-  dev_coeffs_g = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3, d->unbounded_coeffs[1]);
+  dev_coeffs_g = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * DT_IOP_RGBCURVE_MAX_CHANNELS, d->unbounded_coeffs[1]);
   if(dev_coeffs_g == NULL) goto cleanup;
 
-  dev_coeffs_b = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 12, d->unbounded_coeffs[2]);
+  dev_coeffs_b = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * DT_IOP_RGBCURVE_MAX_CHANNELS, d->unbounded_coeffs[2]);
   if(dev_coeffs_b == NULL) goto cleanup;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rgbcurve, width, height,
