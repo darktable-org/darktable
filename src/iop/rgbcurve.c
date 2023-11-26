@@ -100,9 +100,9 @@ typedef struct dt_iop_rgbcurve_gui_data_t
 
 typedef struct dt_iop_rgbcurve_data_t
 {
+  float table[DT_IOP_RGBCURVE_MAX_CHANNELS][0x10000];      // precomputed look-up tables for tone curve
   dt_iop_rgbcurve_params_t params;
   dt_draw_curve_t *curve[DT_IOP_RGBCURVE_MAX_CHANNELS];    // curves for pipe piece and pixel processing
-  float table[DT_IOP_RGBCURVE_MAX_CHANNELS][0x10000];      // precomputed look-up tables for tone curve
   float unbounded_coeffs[DT_IOP_RGBCURVE_MAX_CHANNELS][3]; // approximation for extrapolation
   int curve_changed[DT_IOP_RGBCURVE_MAX_CHANNELS];         // curve type or number of nodes changed?
   dt_colorspaces_color_profile_type_t type_work; // working color profile
@@ -1454,7 +1454,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   // create part of the pixelpipe
-  dt_iop_rgbcurve_data_t *d = (dt_iop_rgbcurve_data_t *)malloc(sizeof(dt_iop_rgbcurve_data_t));
+  dt_iop_rgbcurve_data_t *d = (dt_iop_rgbcurve_data_t *)dt_alloc_align(64, sizeof(dt_iop_rgbcurve_data_t));
   const dt_iop_rgbcurve_params_t *const default_params = (dt_iop_rgbcurve_params_t *)self->default_params;
   piece->data = (void *)d;
   memcpy(&d->params, default_params, sizeof(dt_iop_rgbcurve_params_t));
@@ -1479,7 +1479,7 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   // clean up everything again.
   dt_iop_rgbcurve_data_t *d = (dt_iop_rgbcurve_data_t *)(piece->data);
   for(int ch = 0; ch < DT_IOP_RGBCURVE_MAX_CHANNELS; ch++) dt_draw_curve_destroy(d->curve[ch]);
-  free(piece->data);
+  dt_free_align(piece->data);
   piece->data = NULL;
 }
 
@@ -1502,7 +1502,7 @@ void init_global(dt_iop_module_so_t *module)
 {
   const int program = 25; // rgbcurve.cl, from programs.conf
   dt_iop_rgbcurve_global_data_t *gd
-      = (dt_iop_rgbcurve_global_data_t *)malloc(sizeof(dt_iop_rgbcurve_global_data_t));
+      = (dt_iop_rgbcurve_global_data_t *)dt_alloc_align(64, sizeof(dt_iop_rgbcurve_global_data_t));
   module->data = gd;
 
   gd->kernel_rgbcurve = dt_opencl_create_kernel(program, "rgbcurve");
@@ -1512,7 +1512,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_rgbcurve_global_data_t *gd = (dt_iop_rgbcurve_global_data_t *)module->data;
   dt_opencl_free_kernel(gd->kernel_rgbcurve);
-  free(module->data);
+  dt_free_align(module->data);
   module->data = NULL;
 }
 
