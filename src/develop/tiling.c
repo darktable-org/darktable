@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2022 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,7 +15,6 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 
 #include "develop/tiling.h"
 #include "common/opencl.h"
@@ -817,7 +816,7 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
   return;
 
 error:
-  dt_control_log(_("tiling failed for module '%s'. output might be garbled."), self->op);
+  dt_control_log(_("tiling failed for module '%s'. the output most likely will be OK, but you might want to check."), self->op);
 // fall through
 
 fallback:
@@ -1170,7 +1169,7 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
   return;
 
 error:
-  dt_control_log(_("tiling failed for module '%s'. output might be garbled."), self->op);
+  dt_control_log(_("tiling failed for module '%s'. the output most likely will be OK, but you might want to check."), self->op);
 // fall through
 
 fallback:
@@ -2245,4 +2244,3 @@ gboolean dt_tiling_piece_fits_host_memory(const size_t width, const size_t heigh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
