@@ -75,7 +75,7 @@ body:
   - type: dropdown
     id: source
     attributes:
-      label: Where did you iobtain darktable from?
+      label: Where did you obtain darktable from?
       options:
         - 'downloaded from www.darktable.org'
         - 'distro packaging'
