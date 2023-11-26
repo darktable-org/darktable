@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-25 15:37+0100\n"
-"PO-Revision-Date: 2023-11-25 20:21+0200\n"
+"POT-Creation-Date: 2023-11-25 20:04+0100\n"
+"PO-Revision-Date: 2023-11-25 22:32+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: en\n"
@@ -1917,17 +1917,17 @@ msgstr ""
 "Keep in mind that snapshots do take some space and you only need the most "
 "recent one for successful restore"
 
-#: ../build/bin/preferences_gen.h:7195 ../src/control/crawler.c:716
-msgid "XMP"
-msgstr "XMP"
+#: ../build/bin/preferences_gen.h:7195 ../src/libs/copy_history.c:149
+msgid "XMP sidecar files"
+msgstr "XMP sidecar files"
 
 #: ../build/bin/preferences_gen.h:7214
-msgid "create sidecar files"
-msgstr "Create sidecar files"
+msgid "create XMP files"
+msgstr "Create XMP files"
 
 #: ../build/bin/preferences_gen.h:7228
 msgid ""
-"the sidecar files hold information about all your development steps to allow "
+"XMP sidecar files hold information about all your development steps to allow "
 "flawless re-importing of image files.\n"
 "\n"
 "depending on the selected mode sidecar files will be created:\n"
@@ -1935,7 +1935,7 @@ msgid ""
 " - 'on import': immediately after importing the image\n"
 " - 'after edit': after any user change on the image or adding tags."
 msgstr ""
-"The sidecar files hold information about all your development steps to allow "
+"XMP sidecar files hold information about all your development steps to allow "
 "flawless re-importing of image files.\n"
 "\n"
 "Depending on the selected mode sidecar files will be created:\n"
@@ -1958,16 +1958,18 @@ msgstr ""
 "This option allows XMP tags to be compressed and save space."
 
 #: ../build/bin/preferences_gen.h:7284
-msgid "save history while developing"
-msgstr "Save history while developing"
+msgid "auto-save interval"
+msgstr "Auto-save interval"
 
 #: ../build/bin/preferences_gen.h:7307
 msgid ""
-"save history periodically (interval in seconds), if set to zero auto-saving "
-"is disabled. auto-saving might be disabled on slow drives."
+"automatically save history while developing using the given interval (in "
+"seconds); set to zero to disable auto-saving. auto-saving might be disabled "
+"on slow drives."
 msgstr ""
-"Save history periodically (interval in seconds), if set to zero auto-saving "
-"is disabled. Auto-saving might be disabled on slow drives."
+"Automatically save history while developing using the given interval (in "
+"seconds); set to zero to disable auto-saving. Auto-saving might be disabled "
+"on slow drives."
 
 #: ../build/bin/preferences_gen.h:7328
 msgid "look for updated XMP files on startup"
@@ -2106,14 +2108,14 @@ msgstr "Omit hierarchy in simple tag lists"
 
 #: ../build/bin/preferences_gen.h:7748
 msgid ""
-"when creating XMP file the hierarchical tags are also added as a simple "
-"list\n"
+"when creating an XMP sidecar file the hierarchical tags are also added as a "
+"simple list\n"
 "of non-hierarchical ones to make them visible to some other programs.\n"
 "when this option is checked darktable will only include their last part\n"
 "and ignore the rest. so 'foo|bar|baz' will only add 'baz'."
 msgstr ""
-"When creating XMP file the hierarchical tags are also added as a simple "
-"list\n"
+"When creating an XMP sidecar file the hierarchical tags are also added as a "
+"simple list\n"
 "of non-hierarchical ones to make them visible to some other programs.\n"
 "When this option is checked darktable will only include their last part\n"
 "and ignore the rest. So 'foo|bar|baz' will only add 'baz'."
@@ -7365,6 +7367,10 @@ msgstr "SUCCESS: %s synced old (DB) → new (XMP)"
 #, c-format
 msgid "%id %02dh %02dm %02ds"
 msgstr "%id %02dh %02dm %02ds"
+
+#: ../src/control/crawler.c:716
+msgid "XMP"
+msgstr "XMP"
 
 #: ../src/control/crawler.c:733 ../src/imageio/storage/disk.c:250
 #: ../src/imageio/storage/gallery.c:202 ../src/imageio/storage/latex.c:190
@@ -21037,10 +21043,6 @@ msgstr "History stack"
 msgid "open sidecar file"
 msgstr "Open sidecar file"
 
-#: ../src/libs/copy_history.c:149
-msgid "XMP sidecar files"
-msgstr "XMP sidecar files"
-
 #: ../src/libs/copy_history.c:166
 #, c-format
 msgid "error loading file '%s'"
@@ -25642,6 +25644,9 @@ msgstr "Switch to a classic window which will stay open after key release"
 #: ../src/views/view.c:1514
 msgid "mouse actions"
 msgstr "Mouse actions"
+
+#~ msgid "save history while developing"
+#~ msgstr "Save history while developing"
 
 #~ msgid "longest"
 #~ msgstr "Longest"
