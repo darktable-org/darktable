@@ -65,8 +65,9 @@ changes (where available).
   resized and only the edges are temporarily shown in low quality.
 
   The full rework on the way the image is displayed has also removed
-  some annoying jump of the image when replacing the low resolution
-  image by the final one.
+  some annoying jumps of the image when replacing the low resolution
+  image by the final one or when switching between full and cropped
+  view (when the crop, retouch or liquify modules are un/focused).
 
 ## Performance Improvements
 
@@ -276,6 +277,12 @@ changes (where available).
     a popup is closed it can quickly be reopened to enter another
     value by pressing <kbd>Enter</kbd> (as long as the corresponding
     widget still has focus).
+
+- The color assessment mode ("white borders") for the secondary
+  preview window is now activated independently from the main window
+  (and saved between sessions) with a toggle in the
+  <kbd>right-click</kbd> popover of the "display second window" button
+  (or using the default <kbd>alt+b</kbd> shortcut).
 
 ## Bug Fixes
 
