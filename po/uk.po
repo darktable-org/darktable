@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-25 15:37+0100\n"
-"PO-Revision-Date: 2023-11-25 20:23+0200\n"
+"POT-Creation-Date: 2023-11-25 20:04+0100\n"
+"PO-Revision-Date: 2023-11-25 22:37+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -1963,17 +1963,17 @@ msgstr ""
 "Майте на увазі, що знімки займають трохи місця, а для успішного відновлення "
 "вам потрібен лише найновіший."
 
-#: ../build/bin/preferences_gen.h:7195 ../src/control/crawler.c:716
-msgid "XMP"
-msgstr "XMP"
+#: ../build/bin/preferences_gen.h:7195 ../src/libs/copy_history.c:149
+msgid "XMP sidecar files"
+msgstr "Файли XMP"
 
 #: ../build/bin/preferences_gen.h:7214
-msgid "create sidecar files"
+msgid "create XMP files"
 msgstr "Створювати XMP файли"
 
 #: ../build/bin/preferences_gen.h:7228
 msgid ""
-"the sidecar files hold information about all your development steps to allow "
+"XMP sidecar files hold information about all your development steps to allow "
 "flawless re-importing of image files.\n"
 "\n"
 "depending on the selected mode sidecar files will be created:\n"
@@ -1983,7 +1983,8 @@ msgid ""
 msgstr ""
 "Файли XMP містять інформацію про всі ваші кроки обробки, що дає змогу\n"
 "повторно імпортувати файли зображень зі збереженням усіх редагувань.\n"
-"Залежно від обраного режиму файли XMP будуть створюватись:\n"
+"\n"
+"Залежно від вибраного режиму файли XMP будуть створюватись:\n"
 " - 'Ніколи'\n"
 " - 'При імпорті': одразу після імпорту зображення\n"
 " - 'Після редагування': після будь-якої зробленої користувачем зміни "
@@ -2004,17 +2005,18 @@ msgstr ""
 "Цей параметр дозволяє стиснути теги XMP та заощадити місце."
 
 #: ../build/bin/preferences_gen.h:7284
-msgid "save history while developing"
-msgstr "Зберігати історію під час обробки"
+msgid "auto-save interval"
+msgstr "Інтервал автоматичного збереження"
 
 #: ../build/bin/preferences_gen.h:7307
 msgid ""
-"save history periodically (interval in seconds), if set to zero auto-saving "
-"is disabled. auto-saving might be disabled on slow drives."
+"automatically save history while developing using the given interval (in "
+"seconds); set to zero to disable auto-saving. auto-saving might be disabled "
+"on slow drives."
 msgstr ""
-"Періодично зберігати історію (інтервал у секундах), якщо встановлено нульове "
-"значення, автозбереження вимкнено. Автозбереження може бути вимкнено на "
-"повільних дисках."
+"Автоматично зберігати історію під час обробки з заданим інтервалом (у "
+"секундах); встановіть нуль, щоб вимкнути автоматичне збереження. "
+"Автозбереження може бути вимкнено на повільних дисках."
 
 #: ../build/bin/preferences_gen.h:7328
 msgid "look for updated XMP files on startup"
@@ -2159,8 +2161,8 @@ msgstr "Опустити ієрархію у простих списках те�
 
 #: ../build/bin/preferences_gen.h:7748
 msgid ""
-"when creating XMP file the hierarchical tags are also added as a simple "
-"list\n"
+"when creating an XMP sidecar file the hierarchical tags are also added as a "
+"simple list\n"
 "of non-hierarchical ones to make them visible to some other programs.\n"
 "when this option is checked darktable will only include their last part\n"
 "and ignore the rest. so 'foo|bar|baz' will only add 'baz'."
@@ -2168,7 +2170,7 @@ msgstr ""
 "При створенні файлу XMP ієрархічні теги також додаються у вигляді простого "
 "списку\n"
 "неієрархічних тегів, щоб зробити їх видимими для деяких інших програм.\n"
-"Коли цю опцію ввімкнено, darktable включатиме лише останню частину,\n"
+"Коли цю опцію ввімкнено, Darktable включатиме лише останню частину,\n"
 "а решту ігноруватиме. У такому випадку 'foo | bar | baz' додасть лише 'baz'."
 
 #: ../build/bin/preferences_gen.h:7757
@@ -7444,6 +7446,10 @@ msgstr "УСПІШНО: %s синхронізовано в напрямку ст
 #, c-format
 msgid "%id %02dh %02dm %02ds"
 msgstr "%iд %02dгод %02dхв %02dс"
+
+#: ../src/control/crawler.c:716
+msgid "XMP"
+msgstr "XMP"
 
 #: ../src/control/crawler.c:733 ../src/imageio/storage/disk.c:250
 #: ../src/imageio/storage/gallery.c:202 ../src/imageio/storage/latex.c:190
@@ -21324,10 +21330,6 @@ msgstr "Історія змін"
 msgid "open sidecar file"
 msgstr "Відкрити XMP файл"
 
-#: ../src/libs/copy_history.c:149
-msgid "XMP sidecar files"
-msgstr "Файли XMP"
-
 #: ../src/libs/copy_history.c:166
 #, c-format
 msgid "error loading file '%s'"
@@ -25980,6 +25982,9 @@ msgstr ""
 #: ../src/views/view.c:1514
 msgid "mouse actions"
 msgstr "Дії за допомогою миші"
+
+#~ msgid "save history while developing"
+#~ msgstr "Зберігати історію під час обробки"
 
 #~ msgid "longest"
 #~ msgstr "Довший"
