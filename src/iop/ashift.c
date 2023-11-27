@@ -1409,7 +1409,7 @@ static void edge_enhance_1d(const double *in, double *out,
 }
 
 // edge enhancement in both directions
-static int edge_enhance(const double *in,
+static gboolean edge_enhance(const double *in,
                         double *out,
                         const int width,
                         const int height)
@@ -1451,7 +1451,7 @@ error:
 
 // detail enhancement via bilateral grid (function arguments in and
 // out may represent identical buffers)
-static int detail_enhance(const float *const in,
+static gboolean detail_enhance(const float *const in,
                           float *const out,
                           const int width,
                           const int height)
@@ -1460,7 +1460,7 @@ static int detail_enhance(const float *const in,
   const float sigma_s = fminf(width, height) * 0.02f;
   const float detail = 10.0f;
   const size_t npixels = (size_t)width * height;
-  int success = TRUE;
+  gboolean success = TRUE;
 
   // we need to convert from RGB to Lab first;
   // as colors don't matter we are safe to assume data to be sRGB
@@ -1532,7 +1532,7 @@ static void gamma_correct(const float *const in,
 
 // do actual line_detection based on LSD algorithm and return results according
 // to this module's conventions
-static int line_detect(float *in,
+static gboolean line_detect(float *in,
                        const int width,
                        const int height,
                        const int x_off,
@@ -1753,7 +1753,7 @@ static int _get_structure(dt_iop_module_t *module,
     scale = g->buf_scale;
 
     // create a temporary buffer to hold image data
-    buffer = malloc(sizeof(float) * 4 * (size_t)width * height);
+    buffer = dt_alloc_align_float((size_t)4 * width * height);
     if(buffer != NULL)
       dt_iop_image_copy_by_size(buffer, g->buf, width, height, 4);
   }
@@ -1794,11 +1794,11 @@ static int _get_structure(dt_iop_module_t *module,
   g->lines_version++;
   g->lines = lines;
 
-  free(buffer);
+  dt_free_align(buffer);
   return TRUE;
 
 error:
-  free(buffer);
+  dt_free_align(buffer);
   return FALSE;
 }
 
@@ -1812,7 +1812,7 @@ static inline void swap(int *a, int *b)
 }
 
 // do complete permutations
-static int quickperm(int *a, int *p, const int N, int *i)
+static gboolean quickperm(int *a, int *p, const int N, int *i)
 {
   if(*i >= N) return FALSE;
 
@@ -2052,7 +2052,7 @@ static void ransac(const dt_iop_ashift_line_t *lines,
 
 // try to clean up structural data by eliminating outliers and thereby increasing
 // the chance of a convergent fitting
-static int _remove_outliers(dt_iop_module_t *module)
+static gboolean _remove_outliers(dt_iop_module_t *module)
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)module->gui_data;
 
@@ -2063,11 +2063,15 @@ static int _remove_outliers(dt_iop_module_t *module)
   const int xmax = xmin + width;
   const int ymax = ymin + height;
 
+  if(g->lines_count < 1)
+    return TRUE;
   // holds the index set of lines we want to work on
   int *lines_set = malloc(sizeof(int) * g->lines_count);
   // holds the result of ransac
   int *inout_set = malloc(sizeof(int) * g->lines_count);
 
+  if(!lines_set || !inout_set)
+    goto error;
   // some accounting variables
   int vnb = 0, vcount = 0;
   int hnb = 0, hcount = 0;
@@ -3146,7 +3150,7 @@ static gboolean _draw_retrieve_lines_from_params(dt_iop_module_t *self,
                                      DT_DEV_TRANSFORM_DIR_BACK_EXCL, pts, 4))
     {
       if(g->lines) free(g->lines);
-      g->lines = (dt_iop_ashift_line_t *)g_malloc0(sizeof(dt_iop_ashift_line_t) * 4);
+      g->lines = (dt_iop_ashift_line_t *)calloc(4, sizeof(dt_iop_ashift_line_t));
       // vertical lines
       _draw_basic_line
         (&g->lines[0],
@@ -3193,7 +3197,7 @@ static gboolean _draw_retrieve_lines_from_params(dt_iop_module_t *self,
                                      p->last_drawn_lines_count * 2))
     {
       if(g->lines) free(g->lines);
-      g->lines = (dt_iop_ashift_line_t *)g_malloc0(sizeof(dt_iop_ashift_line_t) * p->last_drawn_lines_count);
+      g->lines = (dt_iop_ashift_line_t *)calloc(p->last_drawn_lines_count, sizeof(dt_iop_ashift_line_t));
 
       int vnb = 0; // number of vertical lines
       int hnb = 0; // number of horizontal lines
@@ -3406,7 +3410,7 @@ static void _do_get_structure_quad(dt_iop_module_t *self)
                                          DT_DEV_TRANSFORM_DIR_FORW_INCL, pts, 4))
     {
       g->current_structure_method = ASHIFT_METHOD_QUAD;
-      g->lines = (dt_iop_ashift_line_t *)malloc(sizeof(dt_iop_ashift_line_t) * 4);
+      g->lines = (dt_iop_ashift_line_t *)calloc(4, sizeof(dt_iop_ashift_line_t));
       g->lines_count = 4;
 
       _draw_basic_line(&g->lines[0],
@@ -3553,10 +3557,10 @@ void process(struct dt_iop_module_t *self,
        || (size_t)g->buf_width * g->buf_height < (size_t)width * height)
     {
       // if needed allocate buffer
-      free(g->buf); // a no-op if g->buf is NULL
+      dt_free_align(g->buf);
       // only get new buffer if no old buffer available or old buffer
       // does not fit in terms of size
-      g->buf = malloc(sizeof(float) * 4 * width * height);
+      g->buf = dt_alloc_align_float(4 * width * height);
     }
 
     if(g->buf /* && hash != g->buf_hash */)
@@ -3703,9 +3707,9 @@ int process_cl(struct dt_iop_module_t *self,
     if(g->buf == NULL || (size_t)g->buf_width * g->buf_height < (size_t)iwidth * iheight)
     {
       // if needed allocate buffer
-      free(g->buf); // a no-op if g->buf is NULL
+      dt_free_align(g->buf);
       // only get new buffer if no old buffer or old buffer does not fit in terms of size
-      g->buf = malloc(sizeof(float) * 4 * iwidth * iheight);
+      g->buf = dt_alloc_align_float(4 * iwidth * iheight);
     }
 
     if(g->buf /* && hash != g->buf_hash */)
@@ -3804,10 +3808,13 @@ static void _get_near(const float *points,
 {
   const float delta2 = delta * delta;
 
+  if(lines_count < 1 || points_idx == NULL)
+    return;
+
+  for(int n = 0; n < lines_count; n++)
+    points_idx[n].near = 0;
   for(int n = 0; n < lines_count; n++)
   {
-    points_idx[n].near = 0;
-
     // skip irrelevant lines
     if(points_idx[n].type == ASHIFT_LINE_IRRELEVANT)
       continue;
@@ -3975,6 +3982,8 @@ static gboolean _get_points(struct dt_iop_module_t *self,
   dt_develop_t *dev = self->dev;
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
+  if(lines_count < 1)
+    return FALSE;
   dt_iop_ashift_points_idx_t *my_points_idx = NULL;
   float *my_points = NULL;
   float *my_extremas = NULL;
@@ -4021,7 +4030,7 @@ static gboolean _get_points(struct dt_iop_module_t *self,
   // now allocate new points buffer
   my_points = (float *)malloc(sizeof(float) * 2 * total_points);
   my_extremas = (float *)malloc(sizeof(float) * 2 * 2 * lines_count);
-  if(my_points == NULL) goto error;
+  if(my_points == NULL || my_extremas == NULL) goto error;
 
   // second step: generate points for each line
   for(int n = 0, offset = 0; n < lines_count; n++)
@@ -4588,7 +4597,7 @@ static void _update_lines_count(const dt_iop_ashift_line_t *lines,
   int vlines = 0;
   int hlines = 0;
 
-  for(int n = 0; n < lines_count; n++)
+  for(int n = 0; n < lines_count && lines; n++)
   {
     if((lines[n].type & ASHIFT_LINE_MASK) == ASHIFT_LINE_VERTICAL_SELECTED)
       vlines++;
@@ -5022,9 +5031,9 @@ int button_pressed(dt_iop_module_t *self,
 
           const int count = g->lines_count - 1;
           dt_iop_ashift_line_t *lines =
-            (dt_iop_ashift_line_t *)malloc(sizeof(dt_iop_ashift_line_t) * count);
+            (dt_iop_ashift_line_t *)calloc(count, sizeof(dt_iop_ashift_line_t));
           int pos = 0;
-          for(int i = 0; i < g->lines_count; i++)
+          for(int i = 0; i < count; i++)
           {
             if(i != n)
             {
@@ -5796,7 +5805,7 @@ void reload_defaults(dt_iop_module_t *module)
     dt_bauhaus_slider_set_default(g->crop_factor, crop_factor);
 
     dt_iop_gui_enter_critical_section(module);
-    free(g->buf);
+    dt_free_align(g->buf);
     g->buf = NULL;
     g->buf_width = 0;
     g->buf_height = 0;
@@ -6247,7 +6256,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   if(g->lines) free(g->lines);
-  if(g->buf) free(g->buf);
+  dt_free_align(g->buf);
   if(g->points) free(g->points);
   if(g->points_idx) free(g->points_idx);
 
