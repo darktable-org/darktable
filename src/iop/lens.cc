@@ -16,7 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// LensFun can return NAN on coordinate transforms, so we need to tell the compiler
+// Lensfun can return NAN on coordinate transforms, so we need to tell the compiler
 // that non-finite numbers are in use in this source file even if we have globally
 // enabled the finite-math-only optimization.  Otherwise, it may optimize away
 // conditionals based on isnan() or isfinite().
@@ -64,7 +64,7 @@ extern "C" {
 
 #if LF_VERSION == ((0 << 24) | (3 << 16) | (95 << 8) | 0)
 #define LF_0395
-#error lensfun 0.3.95 is not supported since its API is not backward compatible with lensfun stable release.
+#error Lensfun 0.3.95 is not supported since its API is not backward compatible with Lensfun stable release.
 #endif
 
 DT_MODULE_INTROSPECTION(10, dt_iop_lens_params_t)
@@ -125,12 +125,12 @@ typedef struct dt_iop_lens_params_t
   dt_iop_lens_method_t method; // $DEFAULT: DT_IOP_LENS_METHOD_LENSFUN $DESCRIPTION: "correction method"
   dt_iop_lens_modflag_t modify_flags; // $DEFAULT: DT_IOP_LENS_MODFLAG_ALL $DESCRIPTION: "corrections"
 
-  // NOTE: the options for lensfun and metadata correction methods should be
+  // NOTE: the options for Lensfun and metadata correction methods should be
   // kept separate since also if similar their value have different effects.
   // additionally this could permit to switch between the methods.
   // the unique parameter in common is modify_flags
 
-  // lensfun method parameters
+  // Lensfun method parameters
   dt_iop_lens_mode_t inverse; // $DEFAULT: DT_IOP_LENS_MODE_CORRECT $DESCRIPTION: "mode"
   float scale; // $MIN: 0.1 $MAX: 2.0 $DEFAULT: 1.0
   float crop;
@@ -149,7 +149,7 @@ typedef struct dt_iop_lens_params_t
   float cor_vig_ft;   // $DEFAULT: 1 $MIN: 0 $MAX: 2 $DESCRIPTION: "vignetting"
   float cor_ca_r_ft;   // $DEFAULT: 1 $MIN: 0 $MAX: 2 $DESCRIPTION: "TCA red"
   float cor_ca_b_ft;   // $DEFAULT: 1 $MIN: 0 $MAX: 2 $DESCRIPTION: "TCA blue"
-  // TODO should be possible to also add tca fine tune modifications
+  // TODO should be possible to also add TCA fine tune modifications
 
   // scale_md_v1 is used by embedded metadata algorithm v1. Kept for backward compatibility
   float scale_md_v1;  // $DEFAULT: 1 $MIN: 0.9 $MAX: 1.1 $DESCRIPTION: "scale fine-tune"
@@ -214,7 +214,7 @@ typedef struct dt_iop_lens_data_t
   int method;
   int modify_flags;
 
-  /* lensfun data */
+  /* Lensfun data */
   lfLens *lens;
   int inverse;
   float scale;
@@ -378,12 +378,12 @@ int legacy_params(dt_iop_module_t *self,
     dt_iop_lens_method_t method;
     dt_iop_lens_modflag_t modify_flags;
 
-    // NOTE: the options for lensfun and metadata correction methods should be
+    // NOTE: the options for Lensfun and metadata correction methods should be
     // kept separate since also if similar their value have different effects.
     // additionally this could permit to switch between the methods.
     // the unique parameter in common is modify_flags
 
-    // lensfun method parameters
+    // Lensfun method parameters
     dt_iop_lens_mode_t inverse;
     float scale;
     float crop;
@@ -641,7 +641,7 @@ int legacy_params(dt_iop_module_t *self,
     dt_iop_lens_params_v10_t *n =
       (dt_iop_lens_params_v10_t *)malloc(sizeof(dt_iop_lens_params_v10_t));
 
-    // The unique method in previous versions was lensfun
+    // The unique method in previous versions was Lensfun
     n->modify_flags = _modflags_from_lensfun_mods(o->modify_flags);
     n->inverse = (dt_iop_lens_mode_t)o->inverse;
     n->scale = o->scale;
@@ -947,7 +947,7 @@ int legacy_params(dt_iop_module_t *self,
   return 1;
 }
 
-/* lensfun processing start */
+/* Lensfun processing start */
 static lfModifier * _get_modifier(int *mods_done,
                                   const int w,
                                   const int h,
@@ -1813,7 +1813,7 @@ static void _modify_roi_in_lf(struct dt_iop_module_t *self,
 
     dt_free_align(buf);
 
-    // LensFun can return NAN coords, so we need to handle them carefully.
+    // Lensfun can return NAN coords, so we need to handle them carefully.
     if(!isfinite(xm) || !(0 <= xm && xm < orig_w)) xm = 0;
     if(!isfinite(xM) || !(1 <= xM && xM < orig_w)) xM = orig_w;
     if(!isfinite(ym) || !(0 <= ym && ym < orig_h)) ym = 0;
@@ -1917,7 +1917,7 @@ static void _commit_params_lf(struct dt_iop_module_t *self,
   d->tca_override = p->tca_override;
 
   /*
-   * there are certain situations when LensFun can return NAN coordinated.
+   * there are certain situations when Lensfun can return NAN coordinated.
    * most common case would be when the FOV is increased.
    */
   if(d->target_geom == LF_RECTILINEAR)
@@ -1929,7 +1929,7 @@ static void _commit_params_lf(struct dt_iop_module_t *self,
     d->do_nan_checks = FALSE;
   }
 
-  /* calculate which corrections will be applied by lensfun */
+  /* calculate which corrections will be applied by Lensfun */
   if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
   {
     const gboolean raw_monochrome = dt_image_is_monochrome(&self->dev->image_storage);
@@ -1953,7 +1953,7 @@ static void _commit_params_lf(struct dt_iop_module_t *self,
     dt_iop_gui_leave_critical_section(self);
   }
 }
-/* lensfun processing end*/
+/* Lensfun processing end*/
 
 #ifdef __GNUC__
   #pragma GCC push_options
@@ -3118,7 +3118,7 @@ int process_cl(struct dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  // process_cl is called only for lensfun method
+  // process_cl is called only for Lensfun method
   cl_mem data = dev_in;
 
   dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
@@ -3270,7 +3270,7 @@ const dt_iop_lens_method_t _get_method(struct dt_iop_module_t *self,
   if(method == DT_IOP_LENS_METHOD_EMBEDDED_METADATA
      && !_have_embedded_metadata(self))
   {
-    // fallback to lensfun method
+    // fallback to Lensfun method
     method = DT_IOP_LENS_METHOD_LENSFUN;
   }
 
@@ -3402,7 +3402,7 @@ void init_global(dt_iop_module_so_t *module)
     else
       dt_iop_lensfun_db->Load(dt_iop_lensfun_db->UserLocation);
 #else
-    // code for older lensfun preserved as-is
+    // code for older Lensfun preserved as-is
 #ifdef LF_MAX_DATABASE_VERSION
     g_free(dt_iop_lensfun_db->HomeDataDir);
     dt_iop_lensfun_db->HomeDataDir = g_strdup(sysdbpath);
@@ -3486,7 +3486,7 @@ void reload_defaults(dt_iop_module_t *module)
   if(dt_image_is_monochrome(img))
     d->modify_flags = DT_IOP_LENS_MODFLAG_DIST_VIGN;
 
-  // init crop from lensfun db:
+  // init crop from Lensfun DB:
   char model[100]; // truncate often complex descriptions.
   g_strlcpy(model, img->exif_model, sizeof(model));
   for(char cnt = 0, *c = model; c < model + 100 && *c != '\0'; c++)
@@ -3529,7 +3529,7 @@ void reload_defaults(dt_iop_module_t *module)
         int lens_i = 0;
 
         /*
-         * Current SVN lensfun lets you test for a fixed-lens camera by looking
+         * Current SVN Lensfun lets you test for a fixed-lens camera by looking
          * at the zeroth character in the mount's name:
          * If it is a lower case letter, it is a fixed-lens camera.
          */
@@ -3611,10 +3611,10 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
-/* lensfun gui start */
+/* Lensfun GUI start */
 
 /// ############################################################
-/// gui stuff: inspired by ufraws lensfun tab:
+/// GUI stuff: inspired by UFRaw's Lensfun tab:
 
 /* simple function to compute the floating-point precision
    which is enough for "normal use". The criteria is to have
@@ -3642,7 +3642,7 @@ static int _precision(double x, double adj)
     return 0;
 }
 
-/* -- ufraw ptr array functions -- */
+/* -- UFRaw ptr array functions -- */
 
 static int _ptr_array_insert_sorted(GPtrArray *array,
                                     const void *item,
@@ -3728,7 +3728,7 @@ static void _ptr_array_insert_index(GPtrArray *array,
   root[index] = item;
 }
 
-/* -- end ufraw ptr array functions -- */
+/* -- end of UFRaw ptr array functions -- */
 
 /* -- camera -- */
 
@@ -4262,7 +4262,7 @@ static void _autoscale_pressed_lf(GtkWidget *button, gpointer user_data)
   dt_bauhaus_slider_set(g->scale, scale);
 }
 
-/* -- lensfun gui end -- */
+/* -- Lensfun GUI end -- */
 
 static void _display_errors(struct dt_iop_module_t *self)
 {
@@ -4328,7 +4328,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
       ? cd->dng.has_vignette
       : TRUE;
 
-    // DNG cannot provide ca fine tuning since the ca correction is embedded in
+    // DNG cannot provide CA fine tuning since the CA correction is embedded in
     // the warp correction.
     const gboolean has_ca = img->exif_correction_type != CORRECTION_TYPE_DNG
                             && p->md_version >= DT_IOP_LENS_EMBEDDED_METADATA_VERSION_2;
@@ -4412,7 +4412,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->corrections_done = -1;
   dt_iop_gui_leave_critical_section(self);
 
-  /* lensfun widget */
+  /* Lensfun widget */
   // _from_params methods assign widgets to self->widget, so
   // temporarily set self->widget to our widget
   GtkWidget *box_lf = self->widget =
@@ -4481,7 +4481,7 @@ void gui_init(struct dt_iop_module_t *self)
                    G_CALLBACK(_autoscale_pressed_lf), self);
   gtk_widget_set_tooltip_text(g->scale, _("auto scale"));
   dt_bauhaus_widget_set_quad_tooltip(g->scale,
-    _("automatic scale to available image size due to lensfun data"));
+    _("automatic scale to available image size due to Lensfun data"));
 
   // reverse direction
   g->reverse = dt_bauhaus_combobox_from_params(self, "inverse");
@@ -4559,7 +4559,7 @@ void gui_init(struct dt_iop_module_t *self)
   // selector for correction method
   g->methods_selector = dt_bauhaus_combobox_from_params(self, "method");
   gtk_widget_set_tooltip_text(g->methods_selector, _("select a correction mode either based on\n"
-                                                     " a) data and algorithms provided by the lensfun project\n"
+                                                     " a) data and algorithms provided by the Lensfun project\n"
                                                      " b) embedded metadata provided by the camera or software vendor"));
 
   // selector for correction type (modflags): one or more out of
@@ -4568,7 +4568,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->modflags, _("which corrections to apply"));
 
   // message box to inform user what corrections have been done. this
-  // is useful as depending on lensfuns profile only some of the lens
+  // is useful as depending on Lensfun's profile only some of the lens
   // flaws can be corrected
   g->hbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   GtkWidget *label = gtk_label_new(_("corrections done: "));
@@ -4650,14 +4650,14 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  // let gui elements reflect params
+  // let GUI elements reflect params
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
   dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
 
   if(p->has_been_set == FALSE)
   {
     /*
-     * user did not modify anything in gui after autodetection - let's
+     * user did not modify anything in GUI after autodetection - let's
      * use current default_params as params with the exception of the
      * method that must be kept for presets and mass-export
      */
