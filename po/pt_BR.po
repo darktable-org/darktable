@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-26 19:47-0300\n"
-"PO-Revision-Date: 2023-11-26 19:46-0300\n"
+"POT-Creation-Date: 2023-11-27 14:10-0300\n"
+"PO-Revision-Date: 2023-11-27 14:14-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -2632,7 +2632,7 @@ msgstr "linearidade"
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:144
 #: ../build/lib/darktable/plugins/introspection_watermark.c:136
 #: ../build/lib/darktable/plugins/introspection_watermark.c:265
-#: ../src/iop/ashift.c:6050 ../src/libs/masks.c:109
+#: ../src/iop/ashift.c:6059 ../src/libs/masks.c:109
 msgid "rotation"
 msgstr "rotação"
 
@@ -2719,7 +2719,7 @@ msgstr "base"
 #: ../build/lib/darktable/plugins/introspection_borders.c:347
 #: ../build/lib/darktable/plugins/introspection_borders.c:353
 #: ../src/gui/preferences.c:847 ../src/imageio/format/jpeg.c:604
-#: ../src/iop/ashift.c:6229 ../src/iop/basicadj.c:662 ../src/iop/flip.c:470
+#: ../src/iop/ashift.c:6238 ../src/iop/basicadj.c:662 ../src/iop/flip.c:470
 #: ../src/iop/flip.c:472 ../src/iop/levels.c:657 ../src/iop/rgblevels.c:1105
 msgid "auto"
 msgstr "auto"
@@ -6889,7 +6889,7 @@ msgstr "nenhuma biblioteca OpenCL funcional encontrada"
 
 #: ../src/common/opencl.c:1185
 msgid ""
-"platform detection failed. some possible reasons:\n"
+"platform detection failed. some possible causes:\n"
 "  - OpenCL ICD (ocl-icd) missing,\n"
 "  - previous OpenCL errors leading to blocked devices,\n"
 "  - power management problems,\n"
@@ -6898,7 +6898,7 @@ msgid ""
 msgstr ""
 "a detecção de plataforma falhou. algumas razões possíveis:\n"
 "  - OpenCL ICD (ocl-icd) faltando,\n"
-"  - erros OpenCL anteriores levando a dispositivos bloqueados\n"
+"  - erros OpenCL anteriores levando a dispositivos bloqueados,\n"
 "  - problemas de gerenciamento de energia,\n"
 "  - drivers com bugs,\n"
 "  - nenhum driver OpenCL instalado."
@@ -9625,8 +9625,8 @@ msgid "grouped images"
 msgstr "imagens agrupadas"
 
 #: ../src/dtgtk/thumbnail.c:814 ../src/dtgtk/thumbnail.c:1623
-#: ../src/iop/ashift.c:6129 ../src/iop/ashift.c:6218 ../src/iop/ashift.c:6220
-#: ../src/iop/ashift.c:6222 ../src/libs/navigation.c:111
+#: ../src/iop/ashift.c:6138 ../src/iop/ashift.c:6227 ../src/iop/ashift.c:6229
+#: ../src/iop/ashift.c:6231 ../src/libs/navigation.c:111
 #: ../src/libs/navigation.c:193
 msgid "fit"
 msgstr "ajustar"
@@ -9853,17 +9853,17 @@ msgstr "rolar"
 msgid "pan"
 msgstr "arrastar"
 
-#: ../src/gui/accelerators.c:98 ../src/iop/ashift.c:5788
-#: ../src/iop/ashift.c:5790 ../src/iop/ashift.c:5895 ../src/iop/ashift.c:5897
-#: ../src/iop/ashift.c:6221 ../src/iop/clipping.c:1955
+#: ../src/gui/accelerators.c:98 ../src/iop/ashift.c:5797
+#: ../src/iop/ashift.c:5799 ../src/iop/ashift.c:5904 ../src/iop/ashift.c:5906
+#: ../src/iop/ashift.c:6230 ../src/iop/clipping.c:1955
 #: ../src/iop/clipping.c:2147 ../src/iop/clipping.c:2163
 #: ../src/views/darkroom.c:2522 ../src/views/lighttable.c:1250
 msgid "horizontal"
 msgstr "horizontal"
 
-#: ../src/gui/accelerators.c:99 ../src/iop/ashift.c:5788
-#: ../src/iop/ashift.c:5790 ../src/iop/ashift.c:5895 ../src/iop/ashift.c:5897
-#: ../src/iop/ashift.c:6219 ../src/iop/clipping.c:1954
+#: ../src/gui/accelerators.c:99 ../src/iop/ashift.c:5797
+#: ../src/iop/ashift.c:5799 ../src/iop/ashift.c:5904 ../src/iop/ashift.c:5906
+#: ../src/iop/ashift.c:6228 ../src/iop/clipping.c:1954
 #: ../src/iop/clipping.c:2148 ../src/iop/clipping.c:2162
 #: ../src/views/darkroom.c:2525 ../src/views/lighttable.c:1254
 msgid "vertical"
@@ -11197,7 +11197,7 @@ msgstr "horizontalmente"
 msgid "vertically"
 msgstr "verticalmente"
 
-#: ../src/gui/guides.c:715 ../src/iop/ashift.c:6223 ../src/iop/clipping.c:2149
+#: ../src/gui/guides.c:715 ../src/iop/ashift.c:6232 ../src/iop/clipping.c:2149
 #: ../src/iop/colorbalance.c:1892
 msgid "both"
 msgstr "ambos"
@@ -12685,23 +12685,23 @@ msgstr "linear, RGB, relativo à cena"
 msgid "geometric, RGB"
 msgstr "geométrico, RGB"
 
-#: ../src/iop/ashift.c:2862
+#: ../src/iop/ashift.c:2866
 msgid "automatic cropping failed"
 msgstr "corte automático falhou"
 
-#: ../src/iop/ashift.c:3272 ../src/iop/ashift.c:3324 ../src/iop/ashift.c:3371
+#: ../src/iop/ashift.c:3276 ../src/iop/ashift.c:3328 ../src/iop/ashift.c:3375
 msgid "data pending - please repeat"
 msgstr "dados pendentes - por favor repita"
 
-#: ../src/iop/ashift.c:3281
+#: ../src/iop/ashift.c:3285
 msgid "could not detect structural data in image"
 msgstr "não foi possível detectar dados estruturais na imagem"
 
-#: ../src/iop/ashift.c:3293
+#: ../src/iop/ashift.c:3297
 msgid "could not run outlier removal"
 msgstr "não foi possível executar a remoção"
 
-#: ../src/iop/ashift.c:3470
+#: ../src/iop/ashift.c:3474
 #, c-format
 msgid ""
 "not enough structure for automatic correction\n"
@@ -12710,41 +12710,41 @@ msgstr ""
 "não há estrutura suficiente para correção automática\n"
 "no mínimo %d linhas em cada direção relevante"
 
-#: ../src/iop/ashift.c:3476
+#: ../src/iop/ashift.c:3480
 msgid "automatic correction failed, please correct manually"
 msgstr "a correção automática falhou, faça manualmente"
 
-#: ../src/iop/ashift.c:5068
+#: ../src/iop/ashift.c:5077
 #, c-format
 msgid "only %d lines can be saved in parameters"
 msgstr "somente %d linhas podem ser guardadas em parâmetros"
 
-#: ../src/iop/ashift.c:5148
+#: ../src/iop/ashift.c:5157
 #, c-format
 msgid "rotation adjusted by %3.2f° to %3.2f°"
 msgstr "rotação ajustada em %3.2f° para %3.2f°"
 
-#: ../src/iop/ashift.c:5788 ../src/iop/ashift.c:5790 ../src/iop/ashift.c:5895
-#: ../src/iop/ashift.c:5897
+#: ../src/iop/ashift.c:5797 ../src/iop/ashift.c:5799 ../src/iop/ashift.c:5904
+#: ../src/iop/ashift.c:5906
 #, c-format
 msgid "lens shift (%s)"
 msgstr "deslocamento da lente (%s)"
 
-#: ../src/iop/ashift.c:6063
+#: ../src/iop/ashift.c:6072
 msgid "manual perspective"
 msgstr "perspectiva manual"
 
-#: ../src/iop/ashift.c:6108
+#: ../src/iop/ashift.c:6117
 msgctxt "section"
 msgid "perspective"
 msgstr "perspectiva"
 
-#: ../src/iop/ashift.c:6115 ../src/iop/ashift.c:6224 ../src/iop/ashift.c:6226
-#: ../src/iop/ashift.c:6228
+#: ../src/iop/ashift.c:6124 ../src/iop/ashift.c:6233 ../src/iop/ashift.c:6235
+#: ../src/iop/ashift.c:6237
 msgid "structure"
 msgstr "estrutura"
 
-#: ../src/iop/ashift.c:6150
+#: ../src/iop/ashift.c:6159
 msgid ""
 "rotate image\n"
 "right-click and drag to define a horizontal or vertical line by drawing on "
@@ -12754,19 +12754,19 @@ msgstr ""
 "clique com o botão direito e arraste para definir uma linha horizontal ou "
 "vertical ao desenhar na imagem"
 
-#: ../src/iop/ashift.c:6153 ../src/iop/ashift.c:6155
+#: ../src/iop/ashift.c:6162 ../src/iop/ashift.c:6164
 msgid "apply lens shift correction in one direction"
 msgstr "aplica a correção de deslocamento de lente em somente uma direção"
 
-#: ../src/iop/ashift.c:6157
+#: ../src/iop/ashift.c:6166
 msgid "shear the image along one diagonal"
 msgstr "inclina a imagem ao longo de uma diagonal"
 
-#: ../src/iop/ashift.c:6158 ../src/iop/clipping.c:2170
+#: ../src/iop/ashift.c:6167 ../src/iop/clipping.c:2170
 msgid "automatically crop to avoid black edges"
 msgstr "corta automaticamente para evitar bordas pretas"
 
-#: ../src/iop/ashift.c:6159
+#: ../src/iop/ashift.c:6168
 msgid ""
 "lens model of the perspective correction: generic or according to the focal "
 "length"
@@ -12774,13 +12774,13 @@ msgstr ""
 "modelo de lente da correção de perspectiva: genérico ou de acordo com a "
 "distância focal"
 
-#: ../src/iop/ashift.c:6162
+#: ../src/iop/ashift.c:6171
 msgid "focal length of the lens, default value set from EXIF data if available"
 msgstr ""
 "distância focal da lente, valor padrão ajustado a partir dos dados EXIF, se "
 "disponíveis"
 
-#: ../src/iop/ashift.c:6165
+#: ../src/iop/ashift.c:6174
 msgid ""
 "crop factor of the camera sensor, default value set from EXIF data if "
 "available, manual setting is often required"
@@ -12788,7 +12788,7 @@ msgstr ""
 "fator de crop do sensor da câmera, o valor padrão é definido a partir dos "
 "dados EXIF se disponíveis, ajuste manual é usualmente necessário"
 
-#: ../src/iop/ashift.c:6169
+#: ../src/iop/ashift.c:6178
 msgid ""
 "the level of lens dependent correction, set to maximum for full lens "
 "dependency, set to zero for the generic case"
@@ -12796,12 +12796,12 @@ msgstr ""
 "o nível de correção dependente de lente, ajuste para o máximo para completa "
 "dependência da lente, e zero para o caso genérico"
 
-#: ../src/iop/ashift.c:6173
+#: ../src/iop/ashift.c:6182
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
 msgstr ""
 "ajusta a proporção da imagem mudando escala horizontalmente e verticalmente"
 
-#: ../src/iop/ashift.c:6175
+#: ../src/iop/ashift.c:6184
 msgid ""
 "automatically correct for vertical perspective distortion\n"
 "ctrl+click to only fit rotation\n"
@@ -12811,7 +12811,7 @@ msgstr ""
 "ctrl-clique para ajustar apenas rotação\n"
 "shift-clique para ajustar somente correção de lente"
 
-#: ../src/iop/ashift.c:6179
+#: ../src/iop/ashift.c:6188
 msgid ""
 "automatically correct for horizontal perspective distortion\n"
 "ctrl+click to only fit rotation\n"
@@ -12821,7 +12821,7 @@ msgstr ""
 "ctrl-clique para ajustar apenas rotação\n"
 "shift-clique para ajustar somente correção de lente"
 
-#: ../src/iop/ashift.c:6183
+#: ../src/iop/ashift.c:6192
 msgid ""
 "automatically correct for vertical and horizontal perspective distortions, "
 "fitting rotation, lens shift in both directions, and shear\n"
@@ -12835,7 +12835,7 @@ msgstr ""
 "shift-clique para ajustar somente correção de lente\n"
 "ctrl-shift-clique para ajustar somente rotação e correção de lente"
 
-#: ../src/iop/ashift.c:6190
+#: ../src/iop/ashift.c:6199
 msgid ""
 "automatically analyse line structure in image\n"
 "ctrl+click for an additional edge enhancement\n"
@@ -12847,43 +12847,43 @@ msgstr ""
 "shift-clique para melhoria adicional de detalhes\n"
 "ctrl-shift-clique para uma combinação dos dois métodos"
 
-#: ../src/iop/ashift.c:6195
+#: ../src/iop/ashift.c:6204
 msgid "manually define perspective rectangle"
 msgstr "definir manualmente o retângulo de prespectiva"
 
-#: ../src/iop/ashift.c:6196
+#: ../src/iop/ashift.c:6205
 msgid "manually draw structure lines"
 msgstr "desenhar manualmente as linhas estruturais"
 
-#: ../src/iop/ashift.c:6225
+#: ../src/iop/ashift.c:6234
 msgid "rectangle"
 msgstr "retângulo"
 
-#: ../src/iop/ashift.c:6227
+#: ../src/iop/ashift.c:6236
 msgid "lines"
 msgstr "linhas"
 
-#: ../src/iop/ashift.c:6261 ../src/iop/clipping.c:3383
+#: ../src/iop/ashift.c:6270 ../src/iop/clipping.c:3383
 #, c-format
 msgid "[%s] define/rotate horizon"
 msgstr "[%s] definir/rotacionar horizonte"
 
-#: ../src/iop/ashift.c:6264
+#: ../src/iop/ashift.c:6273
 #, c-format
 msgid "[%s on segment] select segment"
 msgstr "[%s no segmento] selecionar segmento"
 
-#: ../src/iop/ashift.c:6268
+#: ../src/iop/ashift.c:6277
 #, c-format
 msgid "[%s on segment] unselect segment"
 msgstr "[%s no segmento] deselecionar segmento"
 
-#: ../src/iop/ashift.c:6272
+#: ../src/iop/ashift.c:6281
 #, c-format
 msgid "[%s] select all segments from zone"
 msgstr "[%s] selecionar todos os segmentos de uma zona"
 
-#: ../src/iop/ashift.c:6276
+#: ../src/iop/ashift.c:6285
 #, c-format
 msgid "[%s] unselect all segments from zone"
 msgstr "[%s] de-selecionar todos os segmentos de uma zona"
@@ -18189,10 +18189,8 @@ msgid "auto scale"
 msgstr "escalonamento automático"
 
 #: ../src/iop/lens.cc:4484
-msgid "automatic scale to available image size due to lensfun data"
-msgstr ""
-"mudar automaticamente a escala para o tamanho de imagem disponível de acordo "
-"com dados lensfun"
+msgid "automatic scale to available image size due to Lensfun data"
+msgstr "mudar automaticamente a escala para o tamanho de imagem de acordo com dados lensfun"
 
 #: ../src/iop/lens.cc:4488
 msgid "correct distortions or apply them"
@@ -18256,7 +18254,7 @@ msgstr "mudar automaticamente a escala para o tamanho de imagem disponível"
 #: ../src/iop/lens.cc:4561
 msgid ""
 "select a correction mode either based on\n"
-" a) data and algorithms provided by the lensfun project\n"
+" a) data and algorithms provided by the Lensfun project\n"
 " b) embedded metadata provided by the camera or software vendor"
 msgstr ""
 "selecione um modo de correção baseado em\n"
