@@ -11,7 +11,7 @@ body:
       value: |
         We appreciate you taking your time to report an issue with darktable. The more details you can provide, the most likely we will be able to assist you.
 
-        Before raising a bug/issue please check that it has not already been reported by searching [GitHub Issues](https://github.com/darktable-org/darktable/issues?q=is%3Aissue).
+        Before raising a bug/issue please check that it has not already been reported by searching [GitHub Open or Closed Issues](https://github.com/darktable-org/darktable/issues?q=is%3Aissue).
         Some common issues are addressed in the [FAQ](https://www.darktable.org/about/faq/). 
         
   - type: textarea
@@ -20,6 +20,7 @@ body:
       label: Describe the bug
       description: A clear and concise description of what the bug is. Try to be very factual in the description.
       placeholder: |
+        
         What is the issue? What causes the bug?
     validations:
       required: true
@@ -30,6 +31,7 @@ body:
       label: Steps to reproduce
       description: A clear sequence of steps to recreate the issue.
       placeholder: |
+        
         1. Go to '...'
         2. Click on '...'
         3. Scroll down to '...'
@@ -54,6 +56,7 @@ body:
         In case the program crashes, the backtrace file helps a lot to understand the reason. If available please attach below.
         You can also attach a screenshot or screencast or any other useful information.
       placeholder: |
+        
         Drag and drop log file or backtrace file here, if available.
         Copying the contents is okay for short logs (like < 50 lines or so), but please put them in code blocks:
         ```
@@ -72,15 +75,16 @@ body:
   - type: dropdown
     id: source
     attributes:
-      label: Where did you install darktable from?
+      label: Where did you obtain darktable from?
       options:
-        - 'darktable.org'
+        - 'downloaded from www.darktable.org'
         - 'distro packaging'
         - 'flatpak'
         - 'GitHub nightly'
         - 'OBS'
         - 'self compiled'
         - 'an online forum'
+        - 'I dont know'
     validations:
      required: true
 
@@ -89,9 +93,9 @@ body:
     attributes:
       label: darktable version
       description: |
-        Please fill out the version of darktable (e.g., 4.2.0+250~gee17c5dcc) that had the issue.
+        Please fill out the version of darktable (e.g., 4.5.0+1317~gbf3c759f02) that had the issue.
         You can get it by clicking on the darktable logo or by running 'darktable --version' on the command line.
-      placeholder: '4.2.0+250~gee17c5dcc'
+      placeholder: '4.5.0+1317~gbf3c759f02'
     validations:
       required: true
       
@@ -111,7 +115,7 @@ body:
     attributes:
       label: What is the version of your OS?
       description: Please fill out the distro or OS version from the previous dropdown
-      placeholder: Fedora 37, Windows 11 Pro, MacOS Ventura
+      placeholder: Fedora 39, Ubuntu 23.10, Windows 11 Pro, MacOS 14 Sonoma
     validations:
       required: true
       
