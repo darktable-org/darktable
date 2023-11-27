@@ -1699,7 +1699,7 @@ static uint32_t _image_import_internal(const int32_t film_id,
   if(override_ignore_nonraws == FALSE
      && ext
      && !dt_imageio_is_raw_by_extension(ext)
-     && g_ascii_strncasecmp(ext, ".dng", sizeof(".dng"))
+     && g_ascii_strncasecmp(ext, "dng", sizeof("dng"))
      && dt_conf_get_bool("ui_last/import_ignore_nonraws"))
   {
     g_free(normalized_filename);
