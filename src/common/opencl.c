@@ -1182,7 +1182,7 @@ void dt_opencl_init(
   all_num_devices = malloc(sizeof(cl_uint) * DT_OPENCL_MAX_PLATFORMS);
 
   cl_uint num_platforms = 0;
-  logerror= _("platform detection failed. some possible reasons:\n"
+  logerror= _("platform detection failed. some possible causes:\n"
               "  - OpenCL ICD (ocl-icd) missing,\n"
               "  - previous OpenCL errors leading to blocked devices,\n"
               "  - power management problems,\n"
