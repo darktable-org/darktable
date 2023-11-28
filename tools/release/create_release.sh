@@ -53,7 +53,7 @@ dt_decoration=$(git describe --tags --match release-* |
 # Hot-fix for the compiler version if necessary
 if [[ -n $CLANG_VERSION ]]; then
     CV=$CLANG_VERSION
-    sed -i "s/\(Clang.*\)COMPILER_VERSION VERSION_LESS [0-9][0-9]/\1COMPILER_VERSION VERSION_LESS $CV/" \
+    sed -i "s/\(.*\"Clang\".*\)COMPILER_VERSION VERSION_LESS [0-9][0-9]/\1COMPILER_VERSION VERSION_LESS $CV/" \
         cmake/compiler-versions.cmake \
         src/external/rawspeed/cmake/compiler-versions.cmake
 fi
