@@ -973,18 +973,26 @@ gboolean dt_has_same_path_basename(const char *filename1, const char *filename2)
 char *dt_copy_filename_extension(const char *filename1, const char *filename2)
 {
   // assume both filenames have an extension
-  if(!filename1 || !filename2) return NULL;
-  const char *dot1 = strrchr(filename1, '.');
-  if(!dot1) return NULL;
+  if(!filename2) return NULL;
   const char *dot2 = strrchr(filename2, '.');
   if(!dot2) return NULL;
-  const int name_lgth = dot1 - filename1;
-  const int ext_lgth = strlen(dot2);
+
+  return dt_filename_change_extension(filename1, dot2+1);
+}
+
+char *dt_filename_change_extension(const char *filename, const char *ext)
+{
+  // assume both filenames have an extension
+  if(!filename || !ext) return NULL;
+  const char *dot = strrchr(filename, '.');
+  if(!dot) return NULL;
+  const int name_lgth = dot - filename + 1;
+  const int ext_lgth = strlen(ext);
   char *output = g_malloc(name_lgth + ext_lgth + 1);
   if(output)
   {
-    memcpy(output, filename1, name_lgth);
-    memcpy(&output[name_lgth], &filename2[strlen(filename2) - ext_lgth], ext_lgth + 1);
+    memcpy(output, filename, name_lgth);
+    memcpy(&output[name_lgth], ext, ext_lgth + 1);
   }
   return output;
 }
