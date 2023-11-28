@@ -926,31 +926,42 @@ void dt_gui_presets_show_edit_dialog(const char *name_in,
                                      const gboolean allow_remove,
                                      GtkWindow *parent)
 {
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT operation, op_version"
-                              " FROM data.presets"
-                              " WHERE rowid = ?1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, rowid);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
+  // check if module_name is an IOP module
+  dt_iop_module_t *module = dt_iop_get_module(module_name);
+  if(module)
   {
-    dt_gui_presets_edit_dialog_t *g
-        = (dt_gui_presets_edit_dialog_t *)g_malloc0(sizeof(dt_gui_presets_edit_dialog_t));
-    g->old_id = rowid;
-    g->original_name = g_strdup(name_in);
-    g->operation = g_strdup((char *)sqlite3_column_text(stmt, 0));
-    g->op_version = sqlite3_column_int(stmt, 1);
-    g->module_name = g_strdup(module_name);
-    g->callback = final_callback;
-    g->data = data;
-    g->parent = parent;
-
-    sqlite3_finalize(stmt);
-
-    _presets_show_edit_dialog(g, allow_name_change, allow_desc_change, allow_remove);
+    dt_gui_presets_show_iop_edit_dialog(name_in, module, final_callback, data,
+                                        allow_name_change, allow_desc_change, allow_remove,
+                                        parent);
   }
   else
-    sqlite3_finalize(stmt);
+  {
+    sqlite3_stmt *stmt;
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT operation, op_version"
+                                " FROM data.presets"
+                                " WHERE rowid = ?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, rowid);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        dt_gui_presets_edit_dialog_t *g
+          = (dt_gui_presets_edit_dialog_t *)g_malloc0(sizeof(dt_gui_presets_edit_dialog_t));
+        g->old_id = rowid;
+        g->original_name = g_strdup(name_in);
+        g->operation = g_strdup((char *)sqlite3_column_text(stmt, 0));
+        g->op_version = sqlite3_column_int(stmt, 1);
+        g->module_name = g_strdup(module_name);
+        g->callback = final_callback;
+        g->data = data;
+        g->parent = parent;
+
+        sqlite3_finalize(stmt);
+
+        _presets_show_edit_dialog(g, allow_name_change, allow_desc_change, allow_remove);
+      }
+    else
+      sqlite3_finalize(stmt);
+  }
 }
 
 static void _edit_preset(const char *name_in, dt_iop_module_t *module)
