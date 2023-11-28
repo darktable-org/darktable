@@ -831,8 +831,8 @@ void gui_init(dt_imageio_module_format_t *self)
    */
   DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->tiling, self, NULL, N_("tiling"),
                                _("tile an image into segments.\n\n"
-                                 "makes encoding faster. the impact on quality reduction "
-                                 "is negligible, but increases the file size."),
+                                 "makes encoding faster, but increases the file size. "
+                                 "the loss of image quality is negligible."),
                                tiling, tiling_changed, self,
                                N_("on"), N_("off"));
   gtk_box_pack_start(GTK_BOX(self->widget),
