@@ -58,7 +58,7 @@ Requirements
 * Linux (64-bit)
 * FreeBSD (64-bit)
 * Windows (64-bit), 8.1 w/ [UCRT](https://support.microsoft.com/en-us/topic/update-for-universal-c-runtime-in-windows-c0514201-7fe6-95a3-b0a5-287930f3560c) and later
-* macOS 11.3 and later
+* macOS 12.5 and later
 
 *Big-endian platforms are not supported.*
 
@@ -152,15 +152,15 @@ Building
 ### Dependencies
 
 Compatible compilers/toolchains:
-* Clang: 12 and later
+* Clang: 13 and later
 * GCC: 12 and later
 * MinGW-w64: 10 and later
-* XCode: 13.2 and later
+* XCode: 14.2 and later
 
 Required dependencies (minimum version):
 * CMake 3.18
 * GTK 3.24.15
-* GLib 2.40
+* GLib 2.56
 * SQLite 3.15 *(but 3.24 or newer strongly recommended)*
 * Exiv2 0.25 *(but at least 0.27.4 built with ISO BMFF support needed for Canon CR3 raw import)*
 
@@ -170,7 +170,7 @@ Required dependencies (no version requirement):
 
 Optional dependencies (minimum version):
 * OpenMP 4.5 *(for CPU multi-threading and SIMD vectorization)*
-* LLVM 3.9 *(for OpenCL checks at compilation time)*
+* LLVM 7 *(for OpenCL checks at compilation time)*
 * OpenCL 1.2 *(for GPU-accelerated computing)*
 * Lua 5.4 *(for plugins and extension scripting)*
 * libgphoto2 2.5 *(for camera tethering)*
