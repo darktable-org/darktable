@@ -2128,6 +2128,12 @@ Details :
   color: @thumbnail_font_color;
 }
 
+.dt_overlays_always_extended.dt_fullview #thumb-main:hover #thumb-bottom-label,
+.dt_overlays_always_extended.dt_fullview #thumb-main:selected #thumb-bottom-label
+{
+  color: shade(@thumbnail_font_color,.75);
+}
+
 /* Set red reject icon when visible */
 .dt_overlays_hover #thumb-main:hover #thumb-reject:active,
 .dt_overlays_hover #thumb-main:hover #thumb-reject:hover,
@@ -2176,6 +2182,12 @@ Details :
 {
   color: @thumbnail_star_hover_color;
   background-color: @thumbnail_star_bg_color;
+}
+
+/* Set stars icon hover effect on fullview */
+.dt_fullview #thumb-main:hover #thumb-star:hover
+{
+  color: @lighttable_bg_color;
 }
 
 /* Set hover group and audio effect */
@@ -2273,8 +2285,8 @@ Details :
 .dt_fullview #thumb-main:hover #thumb-back,
 .dt_fullview #thumb-main:active #thumb-back
 {
-  background-color: transparent;
-  border: 0;
+  background-color: shade(@lighttable_bg_color,1.05);
+  border: 1px solid shade(@lighttable_bg_color,.95);
 }
 
 /* Set image borders */
@@ -2292,7 +2304,7 @@ Details :
 .dt_overlays_always.dt_fullview #thumb-bottom,
 .dt_overlays_always_extended.dt_fullview #thumb-bottom
 {
-  background-color: shade(@lighttable_bg_color, 1.1);
+  background-color: transparent;
 }
 
 /* Set zoom info */
