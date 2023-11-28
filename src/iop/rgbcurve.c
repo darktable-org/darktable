@@ -319,7 +319,7 @@ static void picker_scale(const float *const in, float *out, dt_iop_rgbcurve_para
     break;
   }
 
-  for(int c = 0; c < 3; c++) out[c] = CLAMP(out[c], 0.0f, 1.0f);
+  for(int c = 0; c < 3; c++) out[c] = CLIP(out[c]);
 }
 
 static void _rgbcurve_show_hide_controls(dt_iop_rgbcurve_params_t *p, dt_iop_rgbcurve_gui_data_t *g)
@@ -478,11 +478,8 @@ static inline int _add_node_from_picker(dt_iop_rgbcurve_params_t *p, const float
   else
     y = x = val;
 
-  x -= increment;
-  y += increment;
-
-  CLAMP(x, 0.f, 1.f);
-  CLAMP(y, 0.f, 1.f);
+  x = CLIP(x - increment);
+  y = CLIP(y + increment);
 
   return _add_node(p->curve_nodes[ch], &p->curve_num_nodes[ch], x, y);
 }
@@ -568,8 +565,8 @@ static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, f
   dx *= multiplier;
   dy *= multiplier;
 
-  const float new_x = CLAMP(curve[g->selected].x + dx, 0.0f, 1.0f);
-  const float new_y = CLAMP(curve[g->selected].y + dy, 0.0f, 1.0f);
+  const float new_x = CLIP(curve[g->selected].x + dx);
+  const float new_y = CLIP(curve[g->selected].y + dy);
 
   gtk_widget_queue_draw(widget);
 
