@@ -831,8 +831,8 @@ void gui_init(dt_imageio_module_format_t *self)
    */
   DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->tiling, self, NULL, N_("tiling"),
                                _("tile an image into segments.\n\n"
-                                 "makes encoding faster. the impact on quality reduction "
-                                 "is negligible, but increases the file size."),
+                                 "makes encoding faster, but increases the file size. "
+                                 "the loss of image quality is negligible."),
                                tiling, tiling_changed, self,
                                N_("on"), N_("off"));
   gtk_box_pack_start(GTK_BOX(self->widget),
@@ -880,11 +880,9 @@ void gui_init(dt_imageio_module_format_t *self)
   gtk_widget_set_tooltip_text(gui->quality,
           _("the quality of an image, less quality means fewer details.\n"
             "\n"
-            "pixel format is based on quality:\n"
+            "pixel format is controlled by quality:\n"
             "\n"
-            "    91 - 100 -> YUV444\n"
-            "    81 -  90 -> YUV422\n"
-            "     5 -  80 -> YUV420\n"));
+            "5-80: YUV420, 81-90: YUV422, 91-100: YUV444"));
 
   dt_bauhaus_slider_set(gui->quality, quality);
 
