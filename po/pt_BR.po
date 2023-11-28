@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-27 14:10-0300\n"
-"PO-Revision-Date: 2023-11-27 14:14-0300\n"
+"POT-Creation-Date: 2023-11-29 07:06-0300\n"
+"PO-Revision-Date: 2023-11-29 07:06-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -4463,7 +4463,7 @@ msgid "line"
 msgstr "linha"
 
 #: ../build/lib/darktable/plugins/introspection_liquify.c:431
-#: ../src/iop/basecurve.c:2207 ../src/iop/rgbcurve.c:1390
+#: ../src/iop/basecurve.c:2207 ../src/iop/rgbcurve.c:1387
 #: ../src/iop/tonecurve.c:1171
 msgid "curve"
 msgstr "curva"
@@ -4752,7 +4752,7 @@ msgstr "cor"
 
 #: ../build/lib/darktable/plugins/introspection_rgbcurve.c:134
 #: ../build/lib/darktable/plugins/introspection_rgbcurve.c:223
-#: ../src/iop/rgbcurve.c:1426
+#: ../src/iop/rgbcurve.c:1423
 msgid "compensate middle gray"
 msgstr "compensar cinza médio"
 
@@ -8366,7 +8366,7 @@ msgstr "deslizante para valor cinza"
 
 #: ../src/develop/blend_gui.c:2341 ../src/develop/blend_gui.c:2389
 #: ../src/iop/channelmixerrgb.c:4677 ../src/iop/denoiseprofile.c:3714
-#: ../src/iop/rawdenoise.c:910 ../src/iop/rgbcurve.c:1361
+#: ../src/iop/rawdenoise.c:910 ../src/iop/rgbcurve.c:1358
 #: ../src/iop/rgblevels.c:1043 ../src/libs/filters/colors.c:137
 msgid "R"
 msgstr "R"
@@ -8377,7 +8377,7 @@ msgstr "deslizante para canal vermelho"
 
 #: ../src/develop/blend_gui.c:2347 ../src/develop/blend_gui.c:2395
 #: ../src/iop/channelmixerrgb.c:4678 ../src/iop/denoiseprofile.c:3715
-#: ../src/iop/rawdenoise.c:911 ../src/iop/rgbcurve.c:1362
+#: ../src/iop/rawdenoise.c:911 ../src/iop/rgbcurve.c:1359
 #: ../src/iop/rgblevels.c:1044 ../src/libs/filters/colors.c:143
 msgid "G"
 msgstr "G"
@@ -8388,7 +8388,7 @@ msgstr "deslizante para canal verde"
 
 #: ../src/develop/blend_gui.c:2353 ../src/develop/blend_gui.c:2401
 #: ../src/iop/channelmixerrgb.c:4679 ../src/iop/denoiseprofile.c:3716
-#: ../src/iop/rawdenoise.c:912 ../src/iop/rgbcurve.c:1363
+#: ../src/iop/rawdenoise.c:912 ../src/iop/rgbcurve.c:1360
 #: ../src/iop/rgblevels.c:1045 ../src/libs/filters/colors.c:146
 msgid "B"
 msgstr "B"
@@ -8473,13 +8473,13 @@ msgstr "redefine configurações da mascara de mesclagem"
 
 #: ../src/develop/blend_gui.c:2543 ../src/iop/atrous.c:1797
 #: ../src/iop/colorzones.c:2641 ../src/iop/denoiseprofile.c:3711
-#: ../src/iop/rawdenoise.c:907 ../src/iop/rgbcurve.c:1360
+#: ../src/iop/rawdenoise.c:907 ../src/iop/rgbcurve.c:1357
 #: ../src/iop/rgblevels.c:1041 ../src/iop/tonecurve.c:1155
 msgid "channel"
 msgstr "canal"
 
 #: ../src/develop/blend_gui.c:2558 ../src/iop/colorzones.c:2660
-#: ../src/iop/rgbcurve.c:1370 ../src/iop/tonecurve.c:1164
+#: ../src/iop/rgbcurve.c:1367 ../src/iop/tonecurve.c:1164
 msgid ""
 "pick GUI color from image\n"
 "ctrl+click or right-click to select an area"
@@ -8488,7 +8488,7 @@ msgstr ""
 "ctrl+clique para selecionar uma área"
 
 #: ../src/develop/blend_gui.c:2561 ../src/iop/colorzones.c:2662
-#: ../src/iop/rgbcurve.c:1372
+#: ../src/iop/rgbcurve.c:1369
 msgid "show color"
 msgstr "mostrar cor"
 
@@ -11834,6 +11834,22 @@ msgid "cannot find the style '%s' to apply during export."
 msgstr ""
 "não foi possível encontrar o estilo '%s' para aplicar durante exportação."
 
+#: ../src/imageio/imageio_libraw.c:295
+msgid ""
+"<span foreground='red'><b>WARNING</b></span>: camera is not fully supported!"
+msgstr ""
+"<span foreground='red'><b>ATENÇÃO</b></span>: a camera não é completamente "
+"suportada!"
+
+#: ../src/imageio/imageio_libraw.c:297
+#, c-format
+msgid ""
+"colors for `%s' could be misrepresented,\n"
+"and edits might not be compatible with future versions."
+msgstr ""
+"as cores para `%s' poderiam ser representadas erroneamente,\n"
+"e as edições podem não ser compatíveis com versões futuras."
+
 #: ../src/imageio/format/avif.c:89 ../src/imageio/format/jxl.c:560
 #: ../src/imageio/format/pdf.c:80 ../src/imageio/format/png.c:641
 #: ../src/imageio/format/tiff.c:904 ../src/imageio/format/xcf.c:357
@@ -11896,13 +11912,13 @@ msgstr "ladrilhamento"
 msgid ""
 "tile an image into segments.\n"
 "\n"
-"makes encoding faster. the impact on quality reduction is negligible, but "
-"increases the file size."
+"makes encoding faster, but increases the file size. the loss of image "
+"quality is negligible."
 msgstr ""
 "quebra a imagem em segmentos.\n"
 "\n"
-"torna a codificação mais rápida. o impacto na redução da qualidade é "
-"desprezível, mas aumenta o tamanho do arquivo."
+"torna a codificação mais rápida, mas aumenta o tamanho do arquivo. a perda "
+"de qualidade na imagem é desprezível."
 
 #. compression
 #. Compression method combo box
@@ -11932,21 +11948,15 @@ msgstr "qualidade"
 msgid ""
 "the quality of an image, less quality means fewer details.\n"
 "\n"
-"pixel format is based on quality:\n"
+"pixel format is controlled by quality:\n"
 "\n"
-"    91 - 100 -> YUV444\n"
-"    81 -  90 -> YUV422\n"
-"     5 -  80 -> YUV420\n"
+"5-80: YUV420, 81-90: YUV422, 91-100: YUV444"
 msgstr ""
 "a qualidade da imagem, menos qualidade significa menos detalhes.\n"
 "\n"
-"a tabela a seguir se aplica somente à configuração com perda\n"
+"pixel format é controlado por qualidade:\n"
 "\n"
-"pixel format é baseado em qualidade:\n"
-"\n"
-"    91 - 100 -> YUV444\n"
-"    81 -  90 -> YUV422\n"
-"     5 -  80 -> YUV420\n"
+"5-80: YUV420, 81-90: YUV422, 91-100: YUV444"
 
 #: ../src/imageio/format/copy.c:109 ../src/libs/copy_history.c:370
 #: ../src/libs/image.c:646
@@ -13155,7 +13165,7 @@ msgstr "similar à Nokia"
 #. clang-format off
 #. smoother cubic spline curve
 #: ../src/iop/basecurve.c:331 ../src/iop/colorzones.c:2763
-#: ../src/iop/rgbcurve.c:1414 ../src/iop/tonecurve.c:1195
+#: ../src/iop/rgbcurve.c:1411 ../src/iop/tonecurve.c:1195
 msgid "cubic spline"
 msgstr "curva-S cúbica"
 
@@ -13218,7 +13228,7 @@ msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "abscissa: entrada, ordenada: saída. trabalha nos canais RGB"
 
 #: ../src/iop/basecurve.c:2211 ../src/iop/basicadj.c:642
-#: ../src/iop/rgbcurve.c:1429 ../src/iop/rgblevels.c:1133
+#: ../src/iop/rgbcurve.c:1426 ../src/iop/rgblevels.c:1133
 #: ../src/iop/tonecurve.c:1206
 msgid "method to preserve colors when applying contrast"
 msgstr "método para preservar cores ao aplicar contraste"
@@ -13717,8 +13727,8 @@ msgstr "seleciona cor da borda a partir da imagem"
 #: ../src/iop/borders.c:1044 ../src/iop/borders.c:1061
 #: ../src/iop/colorzones.c:2662 ../src/iop/colorzones.c:2677
 #: ../src/iop/negadoctor.c:867 ../src/iop/negadoctor.c:934
-#: ../src/iop/negadoctor.c:972 ../src/iop/rgbcurve.c:1372
-#: ../src/iop/rgbcurve.c:1382 ../src/iop/rgblevels.c:1075
+#: ../src/iop/negadoctor.c:972 ../src/iop/rgbcurve.c:1369
+#: ../src/iop/rgbcurve.c:1379 ../src/iop/rgblevels.c:1075
 #: ../src/iop/rgblevels.c:1083 ../src/iop/rgblevels.c:1091
 msgid "pickers"
 msgstr "seletores"
@@ -15978,7 +15988,7 @@ msgstr "configuração de base HSL"
 msgid "orange"
 msgstr "laranja"
 
-#: ../src/iop/colorzones.c:2673 ../src/iop/rgbcurve.c:1378
+#: ../src/iop/colorzones.c:2673 ../src/iop/rgbcurve.c:1375
 msgid ""
 "create a curve based on an area from the image\n"
 "drag to create a flat curve\n"
@@ -15990,7 +16000,7 @@ msgstr ""
 "ctrl+arraste para criar uma curva positiva\n"
 "shift+arraste para criar uma curva negativa"
 
-#: ../src/iop/colorzones.c:2677 ../src/iop/rgbcurve.c:1382
+#: ../src/iop/colorzones.c:2677 ../src/iop/rgbcurve.c:1379
 msgid "create curve"
 msgstr "criar curva"
 
@@ -16015,22 +16025,22 @@ msgstr "seleciona o critério de seleção, será a abscissa no gráfico"
 msgid "choose between a smoother or stronger effect"
 msgstr "seleciona entre um efeito mais suave ou mais forte"
 
-#: ../src/iop/colorzones.c:2762 ../src/iop/rgbcurve.c:1413
+#: ../src/iop/colorzones.c:2762 ../src/iop/rgbcurve.c:1410
 #: ../src/iop/tonecurve.c:1194
 msgid "interpolation method"
 msgstr "método de interpolação"
 
-#: ../src/iop/colorzones.c:2764 ../src/iop/rgbcurve.c:1415
+#: ../src/iop/colorzones.c:2764 ../src/iop/rgbcurve.c:1412
 #: ../src/iop/tonecurve.c:1196
 msgid "centripetal spline"
 msgstr "curva-S centrípeta"
 
-#: ../src/iop/colorzones.c:2765 ../src/iop/rgbcurve.c:1416
+#: ../src/iop/colorzones.c:2765 ../src/iop/rgbcurve.c:1413
 #: ../src/iop/tonecurve.c:1197
 msgid "monotonic spline"
 msgstr "curva-S monotônica"
 
-#: ../src/iop/colorzones.c:2768 ../src/iop/rgbcurve.c:1419
+#: ../src/iop/colorzones.c:2768 ../src/iop/rgbcurve.c:1416
 #: ../src/iop/tonecurve.c:1199
 msgid ""
 "change this method if you see oscillations or cusps in the curve\n"
@@ -18190,7 +18200,9 @@ msgstr "escalonamento automático"
 
 #: ../src/iop/lens.cc:4484
 msgid "automatic scale to available image size due to Lensfun data"
-msgstr "mudar automaticamente a escala para o tamanho de imagem de acordo com dados lensfun"
+msgstr ""
+"mudar automaticamente a escala para o tamanho de imagem de acordo com dados "
+"lensfun"
 
 #: ../src/iop/lens.cc:4488
 msgid "correct distortions or apply them"
@@ -19604,19 +19616,19 @@ msgstr "logaritmo (base 2)"
 msgid "exponential (base 2)"
 msgstr "exponencial (base 2)"
 
-#: ../src/iop/rgbcurve.c:1355 ../src/iop/rgblevels.c:1038
+#: ../src/iop/rgbcurve.c:1352 ../src/iop/rgblevels.c:1038
 msgid "choose between linked and independent channels."
 msgstr "seleciona entre canais ligados ou independentes."
 
-#: ../src/iop/rgbcurve.c:1361 ../src/iop/rgblevels.c:1043
+#: ../src/iop/rgbcurve.c:1358 ../src/iop/rgblevels.c:1043
 msgid "curve nodes for r channel"
 msgstr "nós da curva para canal R"
 
-#: ../src/iop/rgbcurve.c:1362 ../src/iop/rgblevels.c:1044
+#: ../src/iop/rgbcurve.c:1359 ../src/iop/rgblevels.c:1044
 msgid "curve nodes for g channel"
 msgstr "nós da curva para canal G"
 
-#: ../src/iop/rgbcurve.c:1363 ../src/iop/rgblevels.c:1045
+#: ../src/iop/rgbcurve.c:1360 ../src/iop/rgblevels.c:1045
 msgid "curve nodes for b channel"
 msgstr "nós da curva para canal B"
 
