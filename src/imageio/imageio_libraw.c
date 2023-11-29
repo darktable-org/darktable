@@ -289,7 +289,7 @@ void _check_libraw_missing_support(const struct dt_image_t *img)
                                   lr_al, sizeof(lr_al)))
   {
     const char *T1 = _("<span foreground='red'><b>WARNING</b></span>: camera is not fully supported!");
-    char *T2 = g_strdup_printf(_("Colors for `%s' could be misrepresented,\n"
+    char *T2 = g_strdup_printf(_("colors for `%s' could be misrepresented,\n"
                                  "and edits might not be compatible with future versions."),
                                img->exif_model);
 
