@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-28 21:05+0100\n"
-"PO-Revision-Date: 2023-11-28 21:09+0100\n"
+"POT-Creation-Date: 2023-11-29 08:40+0100\n"
+"PO-Revision-Date: 2023-11-29 08:43+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -11933,6 +11933,22 @@ msgstr "L’image"
 msgid "cannot find the style '%s' to apply during export."
 msgstr ""
 "Impossible de trouver le style « %s » à appliquer pendant l’exportation"
+
+#: ../src/imageio/imageio_libraw.c:295
+msgid ""
+"<span foreground='red'><b>WARNING</b></span>: camera is not fully supported!"
+msgstr ""
+"<span foreground='red'><b>ATTENTION</b></span> : boîtier non complètement "
+"supporté"
+
+#: ../src/imageio/imageio_libraw.c:297
+#, c-format
+msgid ""
+"colors for `%s' could be misrepresented,\n"
+"and edits might not be compatible with future versions."
+msgstr ""
+"Les couleurs pour « %s » pourraient ne pas être correctement représentées,\n"
+"et le développement pas compatible avec les versions ultérieures."
 
 #: ../src/imageio/format/avif.c:89 ../src/imageio/format/jxl.c:560
 #: ../src/imageio/format/pdf.c:80 ../src/imageio/format/png.c:641
