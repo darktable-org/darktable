@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-29 08:40+0100\n"
+"POT-Creation-Date: 2023-11-29 19:26+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -6355,7 +6355,7 @@ msgstr ""
 msgid "WebP"
 msgstr ""
 
-#: ../src/common/image.h:233 ../src/imageio/format/jxl.c:475
+#: ../src/common/image.h:233 ../src/imageio/format/jxl.c:482
 msgid "JPEG XL"
 msgstr ""
 
@@ -11119,17 +11119,17 @@ msgid ""
 "and edits might not be compatible with future versions."
 msgstr ""
 
-#: ../src/imageio/format/avif.c:89 ../src/imageio/format/jxl.c:560
+#: ../src/imageio/format/avif.c:89 ../src/imageio/format/jxl.c:567
 #: ../src/imageio/format/pdf.c:80 ../src/imageio/format/png.c:641
 #: ../src/imageio/format/tiff.c:904 ../src/imageio/format/xcf.c:357
 msgid "8 bit"
 msgstr ""
 
-#: ../src/imageio/format/avif.c:93 ../src/imageio/format/jxl.c:560
+#: ../src/imageio/format/avif.c:93 ../src/imageio/format/jxl.c:567
 msgid "10 bit"
 msgstr ""
 
-#: ../src/imageio/format/avif.c:97 ../src/imageio/format/jxl.c:560
+#: ../src/imageio/format/avif.c:97 ../src/imageio/format/jxl.c:567
 msgid "12 bit"
 msgstr ""
 
@@ -11147,7 +11147,7 @@ msgstr ""
 
 #. Bit depth combo box
 #: ../src/imageio/format/avif.c:800 ../src/imageio/format/exr.cc:601
-#: ../src/imageio/format/jxl.c:559 ../src/imageio/format/pdf.c:661
+#: ../src/imageio/format/jxl.c:566 ../src/imageio/format/pdf.c:661
 #: ../src/imageio/format/png.c:639 ../src/imageio/format/tiff.c:900
 #: ../src/imageio/format/xcf.c:354
 msgid "bit depth"
@@ -11203,7 +11203,7 @@ msgstr ""
 #. default
 #. digits
 #: ../src/imageio/format/avif.c:878 ../src/imageio/format/j2k.c:679
-#: ../src/imageio/format/jpeg.c:584 ../src/imageio/format/jxl.c:583
+#: ../src/imageio/format/jpeg.c:584 ../src/imageio/format/jxl.c:590
 #: ../src/imageio/format/webp.c:425 ../src/libs/camera.c:564
 msgid "quality"
 msgstr ""
@@ -11240,7 +11240,7 @@ msgstr ""
 msgid "16 bit (float)"
 msgstr ""
 
-#: ../src/imageio/format/exr.cc:603 ../src/imageio/format/jxl.c:560
+#: ../src/imageio/format/exr.cc:603 ../src/imageio/format/jxl.c:567
 #: ../src/imageio/format/tiff.c:904 ../src/imageio/format/xcf.c:357
 msgid "32 bit (float)"
 msgstr ""
@@ -11340,26 +11340,26 @@ msgstr ""
 msgid "4:2:0"
 msgstr ""
 
-#: ../src/imageio/format/jxl.c:560 ../src/imageio/format/pdf.c:81
+#: ../src/imageio/format/jxl.c:567 ../src/imageio/format/pdf.c:81
 #: ../src/imageio/format/png.c:641 ../src/imageio/format/tiff.c:904
 #: ../src/imageio/format/xcf.c:357
 msgid "16 bit"
 msgstr ""
 
 #. Pixel format combo box
-#: ../src/imageio/format/jxl.c:566 ../src/imageio/format/tiff.c:909
+#: ../src/imageio/format/jxl.c:573 ../src/imageio/format/tiff.c:909
 msgid "pixel type"
 msgstr ""
 
-#: ../src/imageio/format/jxl.c:567 ../src/imageio/format/tiff.c:910
+#: ../src/imageio/format/jxl.c:574 ../src/imageio/format/tiff.c:910
 msgid "unsigned integer"
 msgstr ""
 
-#: ../src/imageio/format/jxl.c:567 ../src/imageio/format/tiff.c:910
+#: ../src/imageio/format/jxl.c:574 ../src/imageio/format/tiff.c:910
 msgid "floating point"
 msgstr ""
 
-#: ../src/imageio/format/jxl.c:584
+#: ../src/imageio/format/jxl.c:591
 msgid ""
 "the quality of the output image\n"
 "0-29 = very lossy\n"
@@ -11367,11 +11367,11 @@ msgid ""
 "100 = lossless (integer bit depth only)"
 msgstr ""
 
-#: ../src/imageio/format/jxl.c:593
+#: ../src/imageio/format/jxl.c:600
 msgid "encoding color profile"
 msgstr ""
 
-#: ../src/imageio/format/jxl.c:594
+#: ../src/imageio/format/jxl.c:601
 msgid ""
 "the color profile used by the encoder\n"
 "permit internal XYB color space conversion for more efficient lossy "
@@ -11380,30 +11380,30 @@ msgid ""
 "lossless)"
 msgstr ""
 
-#: ../src/imageio/format/jxl.c:597
+#: ../src/imageio/format/jxl.c:604
 msgid "internal"
 msgstr ""
 
-#: ../src/imageio/format/jxl.c:597 ../src/libs/duplicate.c:405
+#: ../src/imageio/format/jxl.c:604 ../src/libs/duplicate.c:405
 #: ../src/libs/history.c:1132 ../src/libs/snapshots.c:840
 msgid "original"
 msgstr ""
 
-#: ../src/imageio/format/jxl.c:611
+#: ../src/imageio/format/jxl.c:618
 msgid "encoding effort"
 msgstr ""
 
-#: ../src/imageio/format/jxl.c:612
+#: ../src/imageio/format/jxl.c:619
 msgid ""
 "the effort used to encode the image, higher efforts will have better results "
 "at the expense of longer encoding times"
 msgstr ""
 
-#: ../src/imageio/format/jxl.c:623
+#: ../src/imageio/format/jxl.c:630
 msgid "decoding speed"
 msgstr ""
 
-#: ../src/imageio/format/jxl.c:624
+#: ../src/imageio/format/jxl.c:631
 msgid "the preferred decoding speed with some sacrifice of quality"
 msgstr ""
 
@@ -13435,7 +13435,7 @@ msgid "temperature"
 msgstr ""
 
 #: ../src/iop/channelmixerrgb.c:4542
-msgid "spot color mapping"
+msgid "area color mapping"
 msgstr ""
 
 #: ../src/iop/channelmixerrgb.c:4548
@@ -13454,7 +13454,7 @@ msgid "mapping"
 msgstr ""
 
 #: ../src/iop/channelmixerrgb.c:4555 ../src/iop/exposure.c:1206
-msgid "spot mode"
+msgid "area mode"
 msgstr ""
 
 #: ../src/iop/channelmixerrgb.c:4556
@@ -15631,7 +15631,7 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/exposure.c:1192
-msgid "spot exposure mapping"
+msgid "area exposure mapping"
 msgstr ""
 
 #: ../src/iop/exposure.c:1198
