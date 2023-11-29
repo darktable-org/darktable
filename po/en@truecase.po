@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-25 20:04+0100\n"
-"PO-Revision-Date: 2023-11-25 22:32+0200\n"
+"POT-Creation-Date: 2023-11-28 21:05+0100\n"
+"PO-Revision-Date: 2023-11-28 22:44+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: en\n"
@@ -2585,7 +2585,7 @@ msgstr "Linearity"
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:144
 #: ../build/lib/darktable/plugins/introspection_watermark.c:136
 #: ../build/lib/darktable/plugins/introspection_watermark.c:265
-#: ../src/iop/ashift.c:6050 ../src/libs/masks.c:109
+#: ../src/iop/ashift.c:6059 ../src/libs/masks.c:109
 msgid "rotation"
 msgstr "Rotation"
 
@@ -2672,7 +2672,7 @@ msgstr "Basis"
 #: ../build/lib/darktable/plugins/introspection_borders.c:347
 #: ../build/lib/darktable/plugins/introspection_borders.c:353
 #: ../src/gui/preferences.c:847 ../src/imageio/format/jpeg.c:604
-#: ../src/iop/ashift.c:6229 ../src/iop/basicadj.c:662 ../src/iop/flip.c:470
+#: ../src/iop/ashift.c:6238 ../src/iop/basicadj.c:662 ../src/iop/flip.c:470
 #: ../src/iop/flip.c:472 ../src/iop/levels.c:657 ../src/iop/rgblevels.c:1105
 msgid "auto"
 msgstr "Auto"
@@ -4416,7 +4416,7 @@ msgid "line"
 msgstr "Line"
 
 #: ../build/lib/darktable/plugins/introspection_liquify.c:431
-#: ../src/iop/basecurve.c:2207 ../src/iop/rgbcurve.c:1390
+#: ../src/iop/basecurve.c:2207 ../src/iop/rgbcurve.c:1387
 #: ../src/iop/tonecurve.c:1171
 msgid "curve"
 msgstr "Curve"
@@ -4705,7 +4705,7 @@ msgstr "Color"
 
 #: ../build/lib/darktable/plugins/introspection_rgbcurve.c:134
 #: ../build/lib/darktable/plugins/introspection_rgbcurve.c:223
-#: ../src/iop/rgbcurve.c:1426
+#: ../src/iop/rgbcurve.c:1423
 msgid "compensate middle gray"
 msgstr "Compensate middle gray"
 
@@ -6641,7 +6641,7 @@ msgstr "or the <b>RAW won't be readable</b> in next version."
 
 #: ../src/common/image.h:217 ../src/common/ratings.c:283
 #: ../src/imageio/format/avif.c:114 ../src/libs/history.c:843
-#: ../src/libs/snapshots.c:833
+#: ../src/libs/snapshots.c:837
 msgid "unknown"
 msgstr "Unknown"
 
@@ -6826,14 +6826,14 @@ msgstr "No working OpenCL library found"
 
 #: ../src/common/opencl.c:1185
 msgid ""
-"platform detection failed. some possible reasons:\n"
+"platform detection failed. some possible causes:\n"
 "  - OpenCL ICD (ocl-icd) missing,\n"
 "  - previous OpenCL errors leading to blocked devices,\n"
 "  - power management problems,\n"
 "  - buggy drivers,\n"
 "  - no OpenCL driver installed."
 msgstr ""
-"Platform detection failed. Some possible reasons:\n"
+"Platform detection failed. Some possible causes:\n"
 "  - OpenCL ICD (ocl-icd) missing,\n"
 "  - previous OpenCL errors leading to blocked devices,\n"
 "  - power management problems,\n"
@@ -8299,7 +8299,7 @@ msgstr "Sliders for gray value"
 
 #: ../src/develop/blend_gui.c:2341 ../src/develop/blend_gui.c:2389
 #: ../src/iop/channelmixerrgb.c:4677 ../src/iop/denoiseprofile.c:3714
-#: ../src/iop/rawdenoise.c:910 ../src/iop/rgbcurve.c:1361
+#: ../src/iop/rawdenoise.c:910 ../src/iop/rgbcurve.c:1358
 #: ../src/iop/rgblevels.c:1043 ../src/libs/filters/colors.c:137
 msgid "R"
 msgstr "R"
@@ -8310,7 +8310,7 @@ msgstr "Sliders for red channel"
 
 #: ../src/develop/blend_gui.c:2347 ../src/develop/blend_gui.c:2395
 #: ../src/iop/channelmixerrgb.c:4678 ../src/iop/denoiseprofile.c:3715
-#: ../src/iop/rawdenoise.c:911 ../src/iop/rgbcurve.c:1362
+#: ../src/iop/rawdenoise.c:911 ../src/iop/rgbcurve.c:1359
 #: ../src/iop/rgblevels.c:1044 ../src/libs/filters/colors.c:143
 msgid "G"
 msgstr "G"
@@ -8321,7 +8321,7 @@ msgstr "Sliders for green channel"
 
 #: ../src/develop/blend_gui.c:2353 ../src/develop/blend_gui.c:2401
 #: ../src/iop/channelmixerrgb.c:4679 ../src/iop/denoiseprofile.c:3716
-#: ../src/iop/rawdenoise.c:912 ../src/iop/rgbcurve.c:1363
+#: ../src/iop/rawdenoise.c:912 ../src/iop/rgbcurve.c:1360
 #: ../src/iop/rgblevels.c:1045 ../src/libs/filters/colors.c:146
 msgid "B"
 msgstr "B"
@@ -8404,13 +8404,13 @@ msgstr "Reset blend mask settings"
 
 #: ../src/develop/blend_gui.c:2543 ../src/iop/atrous.c:1797
 #: ../src/iop/colorzones.c:2641 ../src/iop/denoiseprofile.c:3711
-#: ../src/iop/rawdenoise.c:907 ../src/iop/rgbcurve.c:1360
+#: ../src/iop/rawdenoise.c:907 ../src/iop/rgbcurve.c:1357
 #: ../src/iop/rgblevels.c:1041 ../src/iop/tonecurve.c:1155
 msgid "channel"
 msgstr "Channel"
 
 #: ../src/develop/blend_gui.c:2558 ../src/iop/colorzones.c:2660
-#: ../src/iop/rgbcurve.c:1370 ../src/iop/tonecurve.c:1164
+#: ../src/iop/rgbcurve.c:1367 ../src/iop/tonecurve.c:1164
 msgid ""
 "pick GUI color from image\n"
 "ctrl+click or right-click to select an area"
@@ -8419,7 +8419,7 @@ msgstr ""
 "Ctrl+click or right-click to select an area"
 
 #: ../src/develop/blend_gui.c:2561 ../src/iop/colorzones.c:2662
-#: ../src/iop/rgbcurve.c:1372
+#: ../src/iop/rgbcurve.c:1369
 msgid "show color"
 msgstr "Show color"
 
@@ -8776,7 +8776,7 @@ msgstr ""
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: module `%s' version mismatch: %d != %d"
 
-#: ../src/develop/develop.c:2999
+#: ../src/develop/develop.c:3016
 msgid "duplicate module, can't move new instance after the base one\n"
 msgstr "Duplicate module, can't move new instance after the base one\n"
 
@@ -9329,10 +9329,14 @@ msgstr ""
 "'%s' as that is processed later in the pixel pipe.\n"
 "Raster mask is ignored."
 
-#: ../src/develop/tiling.c:820 ../src/develop/tiling.c:1173
+#: ../src/develop/tiling.c:819 ../src/develop/tiling.c:1172
 #, c-format
-msgid "tiling failed for module '%s'. output might be garbled."
-msgstr "Tiling failed for module '%s'. Output might be garbled."
+msgid ""
+"tiling failed for module '%s'. the output most likely will be OK, but you "
+"might want to check."
+msgstr ""
+"Tiling failed for module '%s'. The output most likely will be OK, but you "
+"might want to check."
 
 #: ../src/dtgtk/culling.c:223
 msgid "you have reached the start of your selection"
@@ -9546,8 +9550,8 @@ msgid "grouped images"
 msgstr "Grouped images"
 
 #: ../src/dtgtk/thumbnail.c:814 ../src/dtgtk/thumbnail.c:1623
-#: ../src/iop/ashift.c:6129 ../src/iop/ashift.c:6218 ../src/iop/ashift.c:6220
-#: ../src/iop/ashift.c:6222 ../src/libs/navigation.c:111
+#: ../src/iop/ashift.c:6138 ../src/iop/ashift.c:6227 ../src/iop/ashift.c:6229
+#: ../src/iop/ashift.c:6231 ../src/libs/navigation.c:111
 #: ../src/libs/navigation.c:193
 msgid "fit"
 msgstr "Fit"
@@ -9770,17 +9774,17 @@ msgstr "Scroll"
 msgid "pan"
 msgstr "Pan"
 
-#: ../src/gui/accelerators.c:98 ../src/iop/ashift.c:5788
-#: ../src/iop/ashift.c:5790 ../src/iop/ashift.c:5895 ../src/iop/ashift.c:5897
-#: ../src/iop/ashift.c:6221 ../src/iop/clipping.c:1955
+#: ../src/gui/accelerators.c:98 ../src/iop/ashift.c:5797
+#: ../src/iop/ashift.c:5799 ../src/iop/ashift.c:5904 ../src/iop/ashift.c:5906
+#: ../src/iop/ashift.c:6230 ../src/iop/clipping.c:1955
 #: ../src/iop/clipping.c:2147 ../src/iop/clipping.c:2163
 #: ../src/views/darkroom.c:2522 ../src/views/lighttable.c:1250
 msgid "horizontal"
 msgstr "Horizontal"
 
-#: ../src/gui/accelerators.c:99 ../src/iop/ashift.c:5788
-#: ../src/iop/ashift.c:5790 ../src/iop/ashift.c:5895 ../src/iop/ashift.c:5897
-#: ../src/iop/ashift.c:6219 ../src/iop/clipping.c:1954
+#: ../src/gui/accelerators.c:99 ../src/iop/ashift.c:5797
+#: ../src/iop/ashift.c:5799 ../src/iop/ashift.c:5904 ../src/iop/ashift.c:5906
+#: ../src/iop/ashift.c:6228 ../src/iop/clipping.c:1954
 #: ../src/iop/clipping.c:2148 ../src/iop/clipping.c:2162
 #: ../src/views/darkroom.c:2525 ../src/views/lighttable.c:1254
 msgid "vertical"
@@ -11107,7 +11111,7 @@ msgstr "Horizontally"
 msgid "vertically"
 msgstr "Vertically"
 
-#: ../src/gui/guides.c:715 ../src/iop/ashift.c:6223 ../src/iop/clipping.c:2149
+#: ../src/gui/guides.c:715 ../src/iop/ashift.c:6232 ../src/iop/clipping.c:2149
 #: ../src/iop/colorbalance.c:1892
 msgid "both"
 msgstr "Both"
@@ -11796,13 +11800,13 @@ msgstr "Tiling"
 msgid ""
 "tile an image into segments.\n"
 "\n"
-"makes encoding faster. the impact on quality reduction is negligible, but "
-"increases the file size."
+"makes encoding faster, but increases the file size. the loss of image "
+"quality is negligible."
 msgstr ""
 "Tile an image into segments.\n"
 "\n"
-"Makes encoding faster. The impact on quality reduction is negligible, but "
-"increases the file size."
+"Makes encoding faster, but increases the file size. The loss of image "
+"quality is negligible."
 
 #. compression
 #. Compression method combo box
@@ -11832,19 +11836,15 @@ msgstr "Quality"
 msgid ""
 "the quality of an image, less quality means fewer details.\n"
 "\n"
-"pixel format is based on quality:\n"
+"pixel format is controlled by quality:\n"
 "\n"
-"    91 - 100 -> YUV444\n"
-"    81 -  90 -> YUV422\n"
-"     5 -  80 -> YUV420\n"
+"5-80: YUV420, 81-90: YUV422, 91-100: YUV444"
 msgstr ""
 "The quality of an image, less quality means fewer details.\n"
 "\n"
-"Pixel format is based on quality:\n"
+"Pixel format is controlled by quality:\n"
 "\n"
-"    91 - 100 -> YUV444\n"
-"    81 -  90  -> YUV422\n"
-"      5 -  80  -> YUV420\n"
+"5-80: YUV420, 81-90: YUV422, 91-100: YUV444"
 
 #: ../src/imageio/format/copy.c:109 ../src/libs/copy_history.c:370
 #: ../src/libs/image.c:646
@@ -12031,7 +12031,7 @@ msgid "internal"
 msgstr "Internal"
 
 #: ../src/imageio/format/jxl.c:597 ../src/libs/duplicate.c:405
-#: ../src/libs/history.c:1132 ../src/libs/snapshots.c:836
+#: ../src/libs/history.c:1132 ../src/libs/snapshots.c:840
 msgid "original"
 msgstr "Original"
 
@@ -12580,23 +12580,23 @@ msgstr "Linear, RGB, scene-referred"
 msgid "geometric, RGB"
 msgstr "Geometric, RGB"
 
-#: ../src/iop/ashift.c:2862
+#: ../src/iop/ashift.c:2866
 msgid "automatic cropping failed"
 msgstr "Automatic cropping failed"
 
-#: ../src/iop/ashift.c:3272 ../src/iop/ashift.c:3324 ../src/iop/ashift.c:3371
+#: ../src/iop/ashift.c:3276 ../src/iop/ashift.c:3328 ../src/iop/ashift.c:3375
 msgid "data pending - please repeat"
 msgstr "Data pending - please repeat"
 
-#: ../src/iop/ashift.c:3281
+#: ../src/iop/ashift.c:3285
 msgid "could not detect structural data in image"
 msgstr "Could not detect structural data in image"
 
-#: ../src/iop/ashift.c:3293
+#: ../src/iop/ashift.c:3297
 msgid "could not run outlier removal"
 msgstr "Could not run outlier removal"
 
-#: ../src/iop/ashift.c:3470
+#: ../src/iop/ashift.c:3474
 #, c-format
 msgid ""
 "not enough structure for automatic correction\n"
@@ -12605,41 +12605,41 @@ msgstr ""
 "Not enough structure for automatic correction\n"
 "Minimum %d lines in each relevant direction"
 
-#: ../src/iop/ashift.c:3476
+#: ../src/iop/ashift.c:3480
 msgid "automatic correction failed, please correct manually"
 msgstr "Automatic correction failed, please correct manually"
 
-#: ../src/iop/ashift.c:5068
+#: ../src/iop/ashift.c:5077
 #, c-format
 msgid "only %d lines can be saved in parameters"
 msgstr "Only %d lines can be saved in parameters"
 
-#: ../src/iop/ashift.c:5148
+#: ../src/iop/ashift.c:5157
 #, c-format
 msgid "rotation adjusted by %3.2f° to %3.2f°"
 msgstr "Rotation adjusted by %3.2f° to %3.2f°"
 
-#: ../src/iop/ashift.c:5788 ../src/iop/ashift.c:5790 ../src/iop/ashift.c:5895
-#: ../src/iop/ashift.c:5897
+#: ../src/iop/ashift.c:5797 ../src/iop/ashift.c:5799 ../src/iop/ashift.c:5904
+#: ../src/iop/ashift.c:5906
 #, c-format
 msgid "lens shift (%s)"
 msgstr "Lens shift (%s)"
 
-#: ../src/iop/ashift.c:6063
+#: ../src/iop/ashift.c:6072
 msgid "manual perspective"
 msgstr "Manual perspective"
 
-#: ../src/iop/ashift.c:6108
+#: ../src/iop/ashift.c:6117
 msgctxt "section"
 msgid "perspective"
 msgstr "Perspective"
 
-#: ../src/iop/ashift.c:6115 ../src/iop/ashift.c:6224 ../src/iop/ashift.c:6226
-#: ../src/iop/ashift.c:6228
+#: ../src/iop/ashift.c:6124 ../src/iop/ashift.c:6233 ../src/iop/ashift.c:6235
+#: ../src/iop/ashift.c:6237
 msgid "structure"
 msgstr "Structure"
 
-#: ../src/iop/ashift.c:6150
+#: ../src/iop/ashift.c:6159
 msgid ""
 "rotate image\n"
 "right-click and drag to define a horizontal or vertical line by drawing on "
@@ -12649,19 +12649,19 @@ msgstr ""
 "Right-click and drag to define a horizontal or vertical line by drawing on "
 "the image"
 
-#: ../src/iop/ashift.c:6153 ../src/iop/ashift.c:6155
+#: ../src/iop/ashift.c:6162 ../src/iop/ashift.c:6164
 msgid "apply lens shift correction in one direction"
 msgstr "Apply lens shift correction in one direction"
 
-#: ../src/iop/ashift.c:6157
+#: ../src/iop/ashift.c:6166
 msgid "shear the image along one diagonal"
 msgstr "Shear the image along one diagonal"
 
-#: ../src/iop/ashift.c:6158 ../src/iop/clipping.c:2170
+#: ../src/iop/ashift.c:6167 ../src/iop/clipping.c:2170
 msgid "automatically crop to avoid black edges"
 msgstr "Automatically crop to avoid black edges"
 
-#: ../src/iop/ashift.c:6159
+#: ../src/iop/ashift.c:6168
 msgid ""
 "lens model of the perspective correction: generic or according to the focal "
 "length"
@@ -12669,12 +12669,12 @@ msgstr ""
 "Lens model of the perspective correction: generic or according to the focal "
 "length"
 
-#: ../src/iop/ashift.c:6162
+#: ../src/iop/ashift.c:6171
 msgid "focal length of the lens, default value set from EXIF data if available"
 msgstr ""
 "Focal length of the lens, default value set from EXIF data if available"
 
-#: ../src/iop/ashift.c:6165
+#: ../src/iop/ashift.c:6174
 msgid ""
 "crop factor of the camera sensor, default value set from EXIF data if "
 "available, manual setting is often required"
@@ -12682,7 +12682,7 @@ msgstr ""
 "Crop factor of the camera sensor, default value set from EXIF data if "
 "available, manual setting is often required"
 
-#: ../src/iop/ashift.c:6169
+#: ../src/iop/ashift.c:6178
 msgid ""
 "the level of lens dependent correction, set to maximum for full lens "
 "dependency, set to zero for the generic case"
@@ -12690,11 +12690,11 @@ msgstr ""
 "The level of lens dependent correction, set to maximum for full lens "
 "dependency, set to zero for the generic case"
 
-#: ../src/iop/ashift.c:6173
+#: ../src/iop/ashift.c:6182
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
 msgstr "Adjust aspect ratio of image by horizontal and vertical scaling"
 
-#: ../src/iop/ashift.c:6175
+#: ../src/iop/ashift.c:6184
 msgid ""
 "automatically correct for vertical perspective distortion\n"
 "ctrl+click to only fit rotation\n"
@@ -12704,7 +12704,7 @@ msgstr ""
 "Ctrl+click to only fit rotation\n"
 "Shift+click to only fit lens shift"
 
-#: ../src/iop/ashift.c:6179
+#: ../src/iop/ashift.c:6188
 msgid ""
 "automatically correct for horizontal perspective distortion\n"
 "ctrl+click to only fit rotation\n"
@@ -12714,7 +12714,7 @@ msgstr ""
 "Ctrl+click to only fit rotation\n"
 "Shift+click to only fit lens shift"
 
-#: ../src/iop/ashift.c:6183
+#: ../src/iop/ashift.c:6192
 msgid ""
 "automatically correct for vertical and horizontal perspective distortions, "
 "fitting rotation, lens shift in both directions, and shear\n"
@@ -12728,7 +12728,7 @@ msgstr ""
 "Shift+click to only fit lens shift\n"
 "Ctrl+Shift+click to only fit rotation and lens shift"
 
-#: ../src/iop/ashift.c:6190
+#: ../src/iop/ashift.c:6199
 msgid ""
 "automatically analyse line structure in image\n"
 "ctrl+click for an additional edge enhancement\n"
@@ -12740,43 +12740,43 @@ msgstr ""
 "Shift+click for an additional detail enhancement\n"
 "Ctrl+Shift+click for a combination of both methods"
 
-#: ../src/iop/ashift.c:6195
+#: ../src/iop/ashift.c:6204
 msgid "manually define perspective rectangle"
 msgstr "Manually define perspective rectangle"
 
-#: ../src/iop/ashift.c:6196
+#: ../src/iop/ashift.c:6205
 msgid "manually draw structure lines"
 msgstr "Manually draw structure lines"
 
-#: ../src/iop/ashift.c:6225
+#: ../src/iop/ashift.c:6234
 msgid "rectangle"
 msgstr "Rectangle"
 
-#: ../src/iop/ashift.c:6227
+#: ../src/iop/ashift.c:6236
 msgid "lines"
 msgstr "Lines"
 
-#: ../src/iop/ashift.c:6261 ../src/iop/clipping.c:3383
+#: ../src/iop/ashift.c:6270 ../src/iop/clipping.c:3383
 #, c-format
 msgid "[%s] define/rotate horizon"
 msgstr "[%s] define/rotate horizon"
 
-#: ../src/iop/ashift.c:6264
+#: ../src/iop/ashift.c:6273
 #, c-format
 msgid "[%s on segment] select segment"
 msgstr "[%s on segment] select segment"
 
-#: ../src/iop/ashift.c:6268
+#: ../src/iop/ashift.c:6277
 #, c-format
 msgid "[%s on segment] unselect segment"
 msgstr "[%s on segment] unselect segment"
 
-#: ../src/iop/ashift.c:6272
+#: ../src/iop/ashift.c:6281
 #, c-format
 msgid "[%s] select all segments from zone"
 msgstr "[%s] select all segments from zone"
 
-#: ../src/iop/ashift.c:6276
+#: ../src/iop/ashift.c:6285
 #, c-format
 msgid "[%s] unselect all segments from zone"
 msgstr "[%s] unselect all segments from zone"
@@ -13048,7 +13048,7 @@ msgstr "Nokia like"
 #. clang-format off
 #. smoother cubic spline curve
 #: ../src/iop/basecurve.c:331 ../src/iop/colorzones.c:2763
-#: ../src/iop/rgbcurve.c:1414 ../src/iop/tonecurve.c:1195
+#: ../src/iop/rgbcurve.c:1411 ../src/iop/tonecurve.c:1195
 msgid "cubic spline"
 msgstr "Cubic spline"
 
@@ -13109,7 +13109,7 @@ msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "Abscissa: input, ordinate: output. Works on RGB channels"
 
 #: ../src/iop/basecurve.c:2211 ../src/iop/basicadj.c:642
-#: ../src/iop/rgbcurve.c:1429 ../src/iop/rgblevels.c:1133
+#: ../src/iop/rgbcurve.c:1426 ../src/iop/rgblevels.c:1133
 #: ../src/iop/tonecurve.c:1206
 msgid "method to preserve colors when applying contrast"
 msgstr "Method to preserve colors when applying contrast"
@@ -13605,8 +13605,8 @@ msgstr "Pick border color from image"
 #: ../src/iop/borders.c:1044 ../src/iop/borders.c:1061
 #: ../src/iop/colorzones.c:2662 ../src/iop/colorzones.c:2677
 #: ../src/iop/negadoctor.c:867 ../src/iop/negadoctor.c:934
-#: ../src/iop/negadoctor.c:972 ../src/iop/rgbcurve.c:1372
-#: ../src/iop/rgbcurve.c:1382 ../src/iop/rgblevels.c:1075
+#: ../src/iop/negadoctor.c:972 ../src/iop/rgbcurve.c:1369
+#: ../src/iop/rgbcurve.c:1379 ../src/iop/rgblevels.c:1075
 #: ../src/iop/rgblevels.c:1083 ../src/iop/rgblevels.c:1091
 msgid "pickers"
 msgstr "Pickers"
@@ -15848,7 +15848,7 @@ msgstr "HSL base setting"
 msgid "orange"
 msgstr "Orange"
 
-#: ../src/iop/colorzones.c:2673 ../src/iop/rgbcurve.c:1378
+#: ../src/iop/colorzones.c:2673 ../src/iop/rgbcurve.c:1375
 msgid ""
 "create a curve based on an area from the image\n"
 "drag to create a flat curve\n"
@@ -15860,7 +15860,7 @@ msgstr ""
 "Ctrl+drag to create a positive curve\n"
 "Shift+drag to create a negative curve"
 
-#: ../src/iop/colorzones.c:2677 ../src/iop/rgbcurve.c:1382
+#: ../src/iop/colorzones.c:2677 ../src/iop/rgbcurve.c:1379
 msgid "create curve"
 msgstr "Create curve"
 
@@ -15885,22 +15885,22 @@ msgstr "Choose selection criterion, will be the abscissa in the graph"
 msgid "choose between a smoother or stronger effect"
 msgstr "Choose between a smoother or stronger effect"
 
-#: ../src/iop/colorzones.c:2762 ../src/iop/rgbcurve.c:1413
+#: ../src/iop/colorzones.c:2762 ../src/iop/rgbcurve.c:1410
 #: ../src/iop/tonecurve.c:1194
 msgid "interpolation method"
 msgstr "Interpolation method"
 
-#: ../src/iop/colorzones.c:2764 ../src/iop/rgbcurve.c:1415
+#: ../src/iop/colorzones.c:2764 ../src/iop/rgbcurve.c:1412
 #: ../src/iop/tonecurve.c:1196
 msgid "centripetal spline"
 msgstr "Centripetal spline"
 
-#: ../src/iop/colorzones.c:2765 ../src/iop/rgbcurve.c:1416
+#: ../src/iop/colorzones.c:2765 ../src/iop/rgbcurve.c:1413
 #: ../src/iop/tonecurve.c:1197
 msgid "monotonic spline"
 msgstr "Monotonic spline"
 
-#: ../src/iop/colorzones.c:2768 ../src/iop/rgbcurve.c:1419
+#: ../src/iop/colorzones.c:2768 ../src/iop/rgbcurve.c:1416
 #: ../src/iop/tonecurve.c:1199
 msgid ""
 "change this method if you see oscillations or cusps in the curve\n"
@@ -18040,7 +18040,7 @@ msgid "auto scale"
 msgstr "Auto scale"
 
 #: ../src/iop/lens.cc:4484
-msgid "automatic scale to available image size due to lensfun data"
+msgid "automatic scale to available image size due to Lensfun data"
 msgstr "Automatic scale to available image size due to Lensfun data"
 
 #: ../src/iop/lens.cc:4488
@@ -18105,7 +18105,7 @@ msgstr "Automatic scale to available image size"
 #: ../src/iop/lens.cc:4561
 msgid ""
 "select a correction mode either based on\n"
-" a) data and algorithms provided by the lensfun project\n"
+" a) data and algorithms provided by the Lensfun project\n"
 " b) embedded metadata provided by the camera or software vendor"
 msgstr ""
 "Select a correction mode either based on\n"
@@ -19440,19 +19440,19 @@ msgstr "Logarithm (base 2)"
 msgid "exponential (base 2)"
 msgstr "Exponential (base 2)"
 
-#: ../src/iop/rgbcurve.c:1355 ../src/iop/rgblevels.c:1038
+#: ../src/iop/rgbcurve.c:1352 ../src/iop/rgblevels.c:1038
 msgid "choose between linked and independent channels."
 msgstr "Choose between linked and independent channels."
 
-#: ../src/iop/rgbcurve.c:1361 ../src/iop/rgblevels.c:1043
+#: ../src/iop/rgbcurve.c:1358 ../src/iop/rgblevels.c:1043
 msgid "curve nodes for r channel"
 msgstr "Curve nodes for R channel"
 
-#: ../src/iop/rgbcurve.c:1362 ../src/iop/rgblevels.c:1044
+#: ../src/iop/rgbcurve.c:1359 ../src/iop/rgblevels.c:1044
 msgid "curve nodes for g channel"
 msgstr "Curve nodes for G channel"
 
-#: ../src/iop/rgbcurve.c:1363 ../src/iop/rgblevels.c:1045
+#: ../src/iop/rgbcurve.c:1360 ../src/iop/rgblevels.c:1045
 msgid "curve nodes for b channel"
 msgstr "Curve nodes for B channel"
 
@@ -24058,24 +24058,24 @@ msgctxt "snapshot sign"
 msgid "S"
 msgstr "S"
 
-#: ../src/libs/snapshots.c:658
+#: ../src/libs/snapshots.c:662
 msgid "snapshots for removed image have been deleted"
 msgstr "Snapshots for removed image have been deleted"
 
-#: ../src/libs/snapshots.c:699
+#: ../src/libs/snapshots.c:703
 #, c-format
 msgid "↗ %s '%s'"
 msgstr "↗ %s '%s'"
 
-#: ../src/libs/snapshots.c:699
+#: ../src/libs/snapshots.c:703
 msgid "this snapshot was taken from"
 msgstr "This snapshot was taken from"
 
-#: ../src/libs/snapshots.c:738
+#: ../src/libs/snapshots.c:742
 msgid "take snapshot"
 msgstr "Take snapshot"
 
-#: ../src/libs/snapshots.c:740
+#: ../src/libs/snapshots.c:744
 msgid ""
 "take snapshot to compare with another image or the same image at another "
 "stage of development"
@@ -24083,7 +24083,7 @@ msgstr ""
 "Take snapshot to compare with another image or the same image at another "
 "stage of development"
 
-#: ../src/libs/snapshots.c:786
+#: ../src/libs/snapshots.c:790
 msgid "toggle last snapshot"
 msgstr "Toggle last snapshot"
 
