@@ -168,9 +168,15 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
   else
   {
     basic_info.uses_original_profile = params->original == FALSE ? JXL_FALSE : JXL_TRUE;
-    const float distance = params->quality >= 30 ? 0.1f + (100 - params->quality) * 0.09f
-                                                 : 6.24f + powf(2.5f, (30 - params->quality) / 5.0f) / 6.25f;
-    LIBJXL_ASSERT(JxlEncoderSetFrameDistance(frame_settings, MIN(distance, 25.0f)));
+    const float distance
+#if JPEGXL_NUMERIC_VERSION < JPEGXL_COMPUTE_NUMERIC_VERSION(0, 9, 0)
+        = MIN(params->quality >= 30 ? 0.1f + (100 - params->quality) * 0.09f
+                                    : 6.24f + powf(2.5f, (30 - params->quality) / 5.0f) / 6.25f,
+              25.0f);
+#else
+        = JxlEncoderDistanceFromQuality(params->quality);
+#endif
+    LIBJXL_ASSERT(JxlEncoderSetFrameDistance(frame_settings, distance));
   }
 
   LIBJXL_ASSERT(JxlEncoderFrameSettingsSetOption(frame_settings, JXL_ENC_FRAME_SETTING_EFFORT, params->effort));
