@@ -4539,7 +4539,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_gui_new_collapsible_section
     (&g->csspot,
      "plugins/darkroom/channelmixerrgb/expand_picker_mapping",
-     _("spot color mapping"),
+     _("area color mapping"),
      GTK_BOX(self->widget),
      DT_ACTION(self));
 
@@ -4552,7 +4552,7 @@ void gui_init(struct dt_iop_module_t *self)
        " surface over your series of images."));
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL
-    (g->spot_mode, self, N_("mapping"), N_("spot mode"),
+    (g->spot_mode, self, N_("mapping"), N_("area mode"),
      _("\"correction\" automatically adjust the illuminant\n"
        "such that the input color is mapped to the target.\n"
        "\"measure\" simply shows how an input color is mapped by the CAT\n"
