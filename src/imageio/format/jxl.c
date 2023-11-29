@@ -26,6 +26,7 @@
 
 #include <jxl/encode.h>
 #include <jxl/resizable_parallel_runner.h>
+#include <jxl/version.h> /* TODO: workaround for v0.7, remove when bumping requirement */
 
 DT_MODULE(1)
 
