@@ -16,9 +16,9 @@ $ sha256sum darktable-4.6.0-win64.exe
 ??? darktable-4.6.0.exe
 ```
 
-When updating from the stable 4.2.x series, please bear in
+When updating from the stable 4.4 series, please bear in
 mind that your edits will be preserved during this process, but the new
-library and configuration will no longer be usable with 4.2.x.
+library and configuration will no longer be usable with 4.4.
 
 You are strongly advised to take a backup first.
 
@@ -400,7 +400,7 @@ changes (where available).
   versions has been put in place -- darktable releases will now only
   support those macOS versions that are also supported by Apple.
   Release 4.6 therefore drops support for macOS versions older than
-  11.3.
+  12.5.
 
 ## Changed Dependencies
 
@@ -415,7 +415,7 @@ changes (where available).
 ## RawSpeed changes
 
 
-## Camera support, compared to 4.2
+## Camera support, compared to 4.4
 
 ### Base Support
 
@@ -453,7 +453,6 @@ are available on raw.pixls.us:
 - Panasonic DMC-FX150
 - Pentax Q10
 - Phase One IQ250
-- Samsung EK-GN120
 - Sinar Hy6/ Sinarback eXact
 - ST Micro STV680
 
