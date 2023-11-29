@@ -264,11 +264,13 @@ static gboolean _supported_image(const gchar *filename)
   ext++;
 
   if(dt_conf_key_not_empty("libraw_extensions"))
-    extensions_whitelist = g_strjoin(" ", always_by_libraw, dt_conf_get_string_const("libraw_extensions"), NULL);
+    extensions_whitelist = g_strjoin(" ", always_by_libraw,
+                                     dt_conf_get_string_const("libraw_extensions"), NULL);
   else
     extensions_whitelist = g_strdup(always_by_libraw);
 
-  dt_print(DT_DEBUG_ALWAYS, "[libraw_open] extensions whitelist: `%s'\n", extensions_whitelist);
+  dt_print(DT_DEBUG_ALWAYS,
+           "[libraw_open] extensions whitelist: `%s'\n", extensions_whitelist);
 
   gchar *ext_lowercased = g_ascii_strdown(ext,-1);
   if(g_strstr_len(extensions_whitelist,-1,ext_lowercased))
@@ -285,10 +287,13 @@ static gboolean _supported_image(const gchar *filename)
 void _check_libraw_missing_support(const struct dt_image_t *img)
 {
   char lr_mk[64], lr_md[64], lr_al[64];
-  if(!dt_libraw_lookup_makermodel(img->exif_maker, img->exif_model, lr_mk, sizeof(lr_mk), lr_md, sizeof(lr_md),
+  if(!dt_libraw_lookup_makermodel(img->exif_maker, img->exif_model,
+                                  lr_mk, sizeof(lr_mk),
+                                  lr_md, sizeof(lr_md),
                                   lr_al, sizeof(lr_al)))
   {
-    const char *T1 = _("<span foreground='red'><b>WARNING</b></span>: camera is not fully supported!");
+    const char *T1 = _("<span foreground='red'><b>WARNING</b></span>:"
+                       " camera is not fully supported!");
     char *T2 = g_strdup_printf(_("colors for `%s' could be misrepresented,\n"
                                  "and edits might not be compatible with future versions."),
                                img->exif_model);
@@ -307,7 +312,8 @@ gboolean dt_libraw_lookup_makermodel(const char *maker, const char *model,
 {
   for(int i = 0; i < sizeof(modelMap) / sizeof(modelMap[0]); ++i)
   {
-    if(!g_strcmp0(maker, modelMap[i].exif_make) && !g_strcmp0(model, modelMap[i].exif_model))
+    if(!g_strcmp0(maker, modelMap[i].exif_make)
+       && !g_strcmp0(model, modelMap[i].exif_model))
     {
       //printf("input model: %s, exif model: %s\n", model, modelMap[i].exif_model);
       g_strlcpy(mk, modelMap[i].clean_make, mk_len);
@@ -320,7 +326,9 @@ gboolean dt_libraw_lookup_makermodel(const char *maker, const char *model,
 }
 
 
-dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
+dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
+                                           const char *filename,
+                                           dt_mipmap_buffer_t *mbuf)
 {
   int err = DT_IMAGEIO_LOAD_FAILED;
   int libraw_err = LIBRAW_SUCCESS;
@@ -346,9 +354,12 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename
   // but seems to be the best available. LibRaw crx decoder can actually
   // decode the raw data, but internal metadata like wb_coeffs, crops etc.
   // are not populated into libraw structure, or image is not of CFA type.
-  if(raw->rawdata.color.cam_mul[0] == 0.0f || dt_isnan(raw->rawdata.color.cam_mul[0]) || !raw->rawdata.raw_image)
+  if(raw->rawdata.color.cam_mul[0] == 0.0f
+     || dt_isnan(raw->rawdata.color.cam_mul[0])
+     || !raw->rawdata.raw_image)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[libraw_open] detected unsupported image `%s'\n", img->filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[libraw_open] detected unsupported image `%s'\n", img->filename);
     goto error;
   }
 
@@ -360,13 +371,17 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename
   ext++;
   if(!g_ascii_strncasecmp("cr3", ext, 3)) _check_libraw_missing_support(img);
 
-  // Copy white level (all linear_max[] equal single SpecularWhiteLevel for CR3, we can skip min or mean)
-  img->raw_white_point = raw->rawdata.color.linear_max[0] ? raw->rawdata.color.linear_max[0] :raw->rawdata.color.maximum;
+  // Copy white level (all linear_max[] equal single
+  // SpecularWhiteLevel for CR3, we can skip min or mean)
+  img->raw_white_point = raw->rawdata.color.linear_max[0]
+    ? raw->rawdata.color.linear_max[0]
+    :raw->rawdata.color.maximum;
 
   // Copy black level
   img->raw_black_level = raw->rawdata.color.black;
   for(size_t c = 0; c < 4; ++c)
-    img->raw_black_level_separate[c] = raw->rawdata.color.black + raw->rawdata.color.cblack[c];
+    img->raw_black_level_separate[c] =
+      raw->rawdata.color.black + raw->rawdata.color.cblack[c];
 
   // AsShot WB coeffs
   for(size_t c = 0; c < 4; ++c)
@@ -414,7 +429,9 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename
   void *buf = dt_mipmap_cache_alloc(mbuf, img);
   if(!buf)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[libraw_open] could not alloc full buffer for image `%s'\n", img->filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[libraw_open] could not alloc full buffer for image `%s'\n",
+             img->filename);
     err = DT_IMAGEIO_CACHE_FULL;
     goto error;
   }
@@ -463,7 +480,9 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename
 
 error:
   if(libraw_err != LIBRAW_SUCCESS)
-    dt_print(DT_DEBUG_ALWAYS, "[libraw_open] `%s': %s\n", img->filename, libraw_strerror(libraw_err));
+    dt_print(DT_DEBUG_ALWAYS,
+             "[libraw_open] `%s': %s\n",
+             img->filename, libraw_strerror(libraw_err));
   libraw_close(raw);
   return err;
 }
