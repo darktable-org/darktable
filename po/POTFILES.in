@@ -173,6 +173,7 @@ src/gui/presets.c
 src/gui/styles_dialog.c
 src/imageio/imageio.c
 src/imageio/imageio_qoi.c
+src/imageio/imageio_libraw.c
 src/imageio/format/avif.c
 src/imageio/format/copy.c
 src/imageio/format/exr.cc
