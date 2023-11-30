@@ -196,13 +196,24 @@ enum
   DT_BAUHAUS_LAST_SIGNAL
 };
 
+typedef struct dt_bauhaus_popup_t
+{
+  GtkWidget *window;
+  GtkWidget *area;
+  GtkBorder padding;     // padding of the popup. updated in show function
+  GdkRectangle position;
+  int offset;
+  int offcut;
+  gboolean composited;
+} dt_bauhaus_popup_t;
+
 typedef struct dt_bauhaus_t
 {
   struct dt_bauhaus_widget_t *current;
+  dt_bauhaus_popup_t popup;
+
   // the widget that has the mouse over it
   GtkWidget *hovered;
-  GtkWidget *popup_window;
-  GtkWidget *popup_area;
   // are set by the motion notification, to be used during drawing.
   float mouse_x, mouse_y;
   // time when the popup window was opened. this is sortof a hack to
@@ -231,7 +242,6 @@ typedef struct dt_bauhaus_t
   float quad_width;                      // width of the quad area to paint icons
   PangoFontDescription *pango_font_desc; // no need to recreate this for every string we want to print
   PangoFontDescription *pango_sec_font_desc; // as above but for section labels
-  GtkBorder *popup_padding;                  // padding of the popup. updated in show function
 
   // the slider popup has a blinking cursor
   guint cursor_timeout;
