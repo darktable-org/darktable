@@ -19,6 +19,8 @@
     Copyright 2004-2008 by Shawn Freeman, Udi Fuchs
 */
 
+#include <inttypes.h>
+
 #pragma once
 
 // Curve Types
@@ -55,7 +57,7 @@ typedef struct
 typedef struct
 {
   // Type for this curve
-  unsigned int m_spline_type;
+  uint32_t m_spline_type;
 
   // Box data
   float m_min_x;
@@ -64,7 +66,7 @@ typedef struct
   float m_max_y;
 
   // Number of anchor points
-  unsigned char m_numAnchors;
+  uint8_t m_numAnchors;
 
   // contains a list of anchors, 2 floats per each point, x-y format
   // max is 20 points
@@ -75,11 +77,11 @@ typedef struct
 typedef struct
 {
   // Number of samples to use for the curve.
-  unsigned int m_samplingRes;
-  unsigned int m_outputRes;
+  uint32_t m_samplingRes;
+  uint32_t m_outputRes;
 
   // Sampling array
-  unsigned short int *m_Samples; // jo: changed to short int to save memory
+  uint16_t *m_Samples; // jo: changed to short int to save memory
 
 } CurveSample;
 
