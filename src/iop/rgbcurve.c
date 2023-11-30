@@ -35,7 +35,7 @@
 
 #define DT_GUI_CURVE_EDITOR_INSET DT_PIXEL_APPLY_DPI(1)
 #define DT_IOP_RGBCURVE_RES 256
-#define DT_IOP_RGBCURVE_MAXNODES 20
+#define DT_IOP_RGBCURVE_MAXNODES MAX_ANCHORS
 #define DT_IOP_RGBCURVE_MIN_X_DISTANCE 0.0025f
 // max iccprofile file name length
 // must be in synch with filename in dt_colorspaces_color_profile_t in colorspaces.h
