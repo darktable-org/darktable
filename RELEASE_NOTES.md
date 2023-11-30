@@ -42,243 +42,267 @@ The following is a summary of the main features added to darktable
 4.6. Please see the user manual for more details of the individual
 changes (where available).
 
-- While editing images the history is periodically saved. This is done
-  every 10 seconds by default. The interval can be changed via the
-  preferences or fully disabled if the interval is set to 0.
+- Editing history is now periodically auto-saved (every 10 seconds)
+  while editing images in the darkroom view. The auto-save interval can
+  be changed (via a preference) or auto-save can be disabled entirely
+  (by setting the interval to 0).
 
-- New module, _rgb primaries_, can be used for delicate color corrections
-  as well as creative color grading. It moves the red, green and blue
-  primary colors around based on "hue" and "purity" parameters set by the
-  user. The underlying pixel operation is the same as channel mixing.
+- A new processing module _rgb primaries_ has been added. This module can be used
+  for delicate color corrections as well as creative color grading.
+  It allows the red, green and blue primary colors to be moved around
+  using "hue" and "purity" controls.
 
-- _sigmoid_ now features a _primaries_ section which can be used to
-  handle difficult lighting (such as LEDs) gracefully and tune the overall
-  look of the resulting image, allowing for pleasing sunsets, skin tones etc.
-  The feature applies only to the per-channel mode. It is loosely based on
-  ideas from Troy Sobotka's [AgX](https://github.com/sobotka/AgX-S2O3)
-  and related work and discussions in the [Blender community](https://blenderartists.org/t/feedback-development-filmic-baby-step-to-a-v2/1361663). Preset "smooth",
-  utilizing the new feature, is added to provide a good starting point.
+  The underlying pixel operation is essentially the same as channel mixing.
 
-- When panning or zooming, a low resolution placeholder used to be
-  shown until the image was fully recalculated. Now the part of the
-  previous high quality preview that is still visible is moved or
-  resized and only the edges are temporarily shown in low quality.
+- In addition, the _sigmoid_ module now includes a new _primaries_ section,
+  which can be used to gracefully handle difficult lighting situations
+  (e.g. LEDs) and tune the overall look of the image. Modifying these
+  parameters can provide pleasing sunsets, improved skin tones etc.
+  This feature can only be used with sigmoid's per-channel mode and is
+  loosely based on ideas from Troy Sobotka's [AgX](https://github.com/sobotka/AgX-S2O3)
+  and related work in the [Blender community](https://blenderartists.org/t/feedback-development-filmic-baby-step-to-a-v2/1361663).
+  The included "smooth" preset should provide a good starting point
+  for further corrections using this feature.
 
-  The full rework on the way the image is displayed has also removed
-  some annoying jumps of the image when replacing the low resolution
-  image by the final one or when switching between full and cropped
-  view (when the crop, retouch or liquify modules are un/focused).
+- When working with the liquify and retouch modules, the full uncropped
+  image is now always shown, with any crop indicated by displaying an overlaid
+  rectangle. This allows for cropped-out parts of the image to be used without
+  having to first disable the crop module and re-enable it when finished.
+
+- When panning or zooming in the darkrom view, a low resolution placeholder
+  used to be shown until the image was fully recalculated for the newly-visible
+  region. Now, if any part of the previous view is still visible, that part will
+  be immediately shown in high quality, with only the remainder of the image
+  being temporarily shown in low quality until the pipe has finished.
+
+  This has been achieved as part of a complete reworking of the darkroom image
+  display, which has also removed some annoying jumps when
+  replacing the low resolution placeholder with recalculated image data,
+  or when switching between full and cropped view
+  (when the crop, retouch or liquify modules are (un)focused).
 
 ## Performance Improvements
 
-- Initialize OpenCL in the background. Especially under Windows this
-  can take a long time (>1 minute) when the OpenCL modules need to be
-  (re)compiled, at first run or after driver updates. Nothing used to
-  happen during that time, making it look like darktable failed to
-  start. Now the UI comes up and reports progress in toast
-  messages. Until OpenCL is fully available processing will be slower.
+- OpenCL is now initialized in the background immediately after launching
+  the darktable UI, with progress indicated by a series of toast messages.
+  Previously, this was done before the main UI was lauched, which
+  could lead to significant delays (sometimes more than a minute) between
+  the user opening darktable and anything appearing on-screen, making
+  it appear as though darktable had failed to start. Note that processing
+  will be slower (since darktable will only use the CPU) until OpenCL is fully
+  initialized.
 
-- Implemented OpenCL code for embedded lens corrections.
+- An openCL code path has been implemented for lens correction using embedded
+  correction metadata.
 
-- Improve by 25% the display of the pictures on the map.
+- Image display speed in the map view has been increased by 25%.
 
-- Faster export of JPEG 2000 and B&W TIFF images.
+- Export speed has been improved for JPEG 2000 and B&W TIFF images.
+
+- The chromatic aberrations module is now approximagely 10% faster when
+  run on the CPU.
 
 ## Other Changes
 
-- Hotpixels module now also supports monochrome images.
+- The hot pixels module now supports monochrome images.
 
-- Retouch module do not need the internal guide widget, so it has been
-  removed.
+- The internal compositional guide widget has been removed from the retouch
+  module as it is not required (you can still display the guide globally).
 
-- Allow import session to be canceled by clicking on the cross in the
-  progress bar on bottom left.
+- A long-running import session can now be canceled by clicking on the cross
+  in the progress bar on the bottom left of the screen.
 
-- Add support for auto orientation when importing AVIF/HEIF images
+- Auto orientation is now supported when importing AVIF/HEIF images
   (requires at least libavif 0.9.2 and/or libheif 1.16.0).
 
-- Tune CA correct module performances (gain about 10% on CPU).
+- It is now possible to visualize raster masks in the same way as other
+  mask types by clicking the mask visualization icon.
 
-- Rastermasks are visualized the same way as other masks in the module
-  header and via the mask visualize button.
+- The dual demosaic mask visualization and performance have been improved.
 
-- Improved dual demosaicing mask visualizing and performance.
+- It is now possible to manually define additional vignette correction via
+  the lens correction module.
 
-- A manually controlled vignette correction has been added tot the
-  lens module.
+- The linear ProPhoto RGB color space can now be selected in the LUT 3D module.
 
-- Always show the full uncropped image with cropping rectangle as a
-  marker while working in liquify and retouch modules.
+- The following changes have been made to the OpenCL implementation:
 
-- Add linear ProPhoto RGB as possible LUT color-space.
-
-- A set of changes done on OpenCL support:
-
-  - Removed the benchmarking code from opencl as it didn't produce valid
+  - Benchmarking code has been removed as it no longer produces valid
     results on today's computers.
 
-  - Removed the preference option to select pinned memory transfer. Can
-    be selected on a per device basis.
+  - The "pinned memory transfer" option has now been removed from the
+    preferences dialog, though it can still be set on a per-device basis.
 
-  - Usage of "headroom" can be selected in preferences, the default
-    has been increased to 600Mb as more systems use graphics memory
-    nowadays.
+  - A new option "use all device memory" has been added to the preferences
+    dialog. Select this option to use all GPU memory, with the exception
+    of a 600Mb "headroom" which is left free for use by other applications.
+    A similar option was previously available in earlier versions of darktable,
+    however the headroom is now increased to 600Mb to account for greater
+    use of GPU acceleration on modern systems.
 
-  - Introduce selection of wanted OpenCL drivers in preferences.
+  - A new set of options have been added to the preferences dialog, to allow
+    selection of desired OpenCL drivers.
 
-- Add Display P3 built-in color profile for input, output, display,
-  working and soft-proofing.
+- A built-in "Display P3" color profile has been added for use in input,
+  output, display, working and soft-proofing profiles.
 
-- The highlights module is now made available for all non-raw files.
+- The highlight reconstruction module can now be used for all non-raw files.
 
-- The speed of scrolling through the filmstrip can be increased by
-  holding <kbd>shift</kbd>; you will move by half of the visible
-  images at a time. Holding <kbd>ctrl</kbd> while scrolling changes
-  the number of images shown ("zooms") and thereby the shift speed.
+- The scroll speed in the filmstrip can now be increased by
+  holding <kbd>Shift</kbd> while scrolling (filmstrip will move by half
+  of the visible images at a time). Holding <kbd>Ctrl</kbd> while scrolling
+  changes the number of images shown (zooms the filmstrip) and thereby also
+  changes the speed achieved when holding <kbd>Shift</kbd>.
 
-- Exported AVIF files no longer embed a superfluous ICC profile if the
-  color profile can be encoded as CICP (Coding-independent code
-  points).
+- Exported PNG files now embed a CICP (Coding-Independent Code
+  Points) encoded color profile in addition to ICC where possible.
 
-- Exported PNG files now include a CICP (Coding-independent code
-  points) encoded color profile in addition to ICC if possible.
+- Exported AVIF files now no longer embed a superfluous ICC profile if the
+  color profile can be encoded as CICP.
 
-- Improved scaling and placement of images in culling view to make
+- Improved scaling and placement of images in the culling view now make
   better use of available screen space.
 
-- When hovering the sample patches in the global color picker module
-  the areas are displayed on the central area and on the histogram (if
-  the corresponding option is selected). It is not necessary anymore
-  to have the color-picker activated. This enhanced behavior comes
-  handy when doing color grading for example.
+- When hovering over the sample patches in the global color picker module
+  those areas are displayed on the central image and on the histogram (if
+  the corresponding option is selected). It is no longer necessary
+  to have the color-picker activated when doing this. This enhanced behavior
+  is useful, for example, when color grading.
 
-- A function dt_bauhaus_widget_set_quad_tooltip was added that allows
-  setting a separate tooltip for the button linked to a slider or
-  dropdown (commonly color pickers).
+- It is now possible to display a tooltip for a slider or drop-down
+  and a separate tooltip for the button to its right (commonly a
+  color picker button). This was not possible in previous versions
+  of darktable, and was an issue where the button was not directly
+  linked to the slider (for example, a button for mask display).
 
-- Holding the <kbd>ctrl</kbd> key while double clicking a slider or
-  combo, which normally resets it to its default value, instead
-  restores the auto-applied preset for processing modules (if a preset
-  is marked as such).
+- Holding the <kbd>Ctrl</kbd> key while double clicking a slider or
+  drop-down in a processing module now restores any auto-applied
+  preset.
 
-- When multiple mask shapes are combined, in the popup menu for a
-  shape a tick mark is shown in front of the active combine mode,
-  which can be easier to read than the icon in front of the shape.
+- Where multiple drawn shapes are grouped (e.g. in a module's mask)
+  the mask manager module now displays a tick mark in front of the
+  active combination mode (in the popup menu) when right-clicking one of
+  the consituent shapes. This is usually much easier to read than the
+  "Venn diagram" icons in the main module UI.
 
-- Added mnemonics to dialog box buttons and marked default buttons so
-  pressing <kbd>Enter</kbd> will trigger them and close the dialog.
+- Mnemonics have been added to dialog boxes and default actions have been
+  assigned, so that pressing <kbd>Enter</kbd> will trigger the correct
+  action and close the dialog.
 
-- Extract more OpenEXR 3.2.0 attributes for image information if
-  present.
+- More OpenEXR 3.2.0 attributes can now be extracted and displayed in
+  the image information module, where present.
 
-- Add lens and cameras filters to the filtering module.
+- Lens and cameras filters have been to the collection filters module.
 
-- AVIF export changes: no conversion to YUV for lossless, update
-  quantizer selection logic and make lossy default.
+- AVIF exports have been changed so that there is now no conversion to YUV
+  for lossless. The quantizer selection logic has been updated and
+  "lossy" is now the default.
 
-- The generation of the preference dialog now takes the specification
-  of tabs and sections from darktable.xml.in too, so almost the
-  complete layout can be changed by just editing that file.
+- The content of the main preferences dialog is now (almost) entirely taken
+  from a single definition file (`darktable.xml.in`) making its layout
+  much easier to modify.
 
-- Changed the preference dialog dropdowns to use bauhaus widgets so it
-  conforms to (and offers the same behavior) as widgets in the rest of
-  the program.
+- The drop-downs in the preferences dialog now use the same (bauhaus)
+  widgets as the drop-downs in the rest of the application, offering
+  a more consistent behavior.
 
-- Improved numbers precision in configuration system.
+- The configuration system now has improved number precision.
 
-- Rework the collection module to be consistent about sorting. All
-  date/time can be reversed (older or newer first). Also the folder
-  can be reversed when sorted according to their id
-  (chronological). The preference has been renamed from id to
-  chronological for clarity.
+- The collections module has been reworked for more consistent sorting.
+  All date/time sort orders can now be reversed
+  (placing either the oldest or newest first).
+  The film roll order can also be reversed when ordered by 
+  id (which is equivalent to the film roll's first import date).
+  The "sort film rolls by" preference has been renamed from "id"
+  to "import time" to make this clearer.
 
-  The collection based on rating now use proper text like rejected
-  instead of -1 and the numbers are replaced by stars.
+  The collection filtering based on rating now uses proper text
+  (like "rejected" instead of -1) and the numbers are replaced by stars.
 
-  The color label collection now displays the color in the same order
-  as in all other part of the GUI.
+  The collection module now displays color labels in the same order
+  as in the rest of the UI.
 
-- Preference setting "after edit" for writing sidecar files now
-  accepts also adding a tag as a valid user edit.
+- Adding a tag to an image is now considered to be an "edit" and causes
+  XMP sidecars to be created/updated (unless XMP creation is disabled).
 
-- Added a thumbnail generating background job.
+- New functionality has been added to automatically generate thumbnails
+  in the background while the user is inactive in the lighttable view.
+  Currently this functionality is only available by running
+  `darktable-generate-cache` from the command-line. The new functionality
+  is controlled via a preference setting that defines which thumbnail
+  sizes to generate in the background (default "never").
 
-  While the user is inactive in lighttable mode a background crawler
-  job generates thumbnails - as done via darktable-generate-cache. The
-  requested thumbnail size is defined via a preferences setting
-  defaulting to "never".
+- Two new variables have been introduced to allow the camera crop factor
+  ("EXIF.CROP\_FACTOR") and 35mm-equivalent focal length
+  ("EXIF.FOCAL.LENGTH.EQUIV") to be displayed.
 
-- Two new variables have been introduced to get the camera crop factor
-  "EXIF.CROP_FACTOR" and the corresponding 35mm equivalent focal
-  length "EXIF.FOCAL.LENGTH.EQUIV".
+- Color harmony guides in the scopes module are now saved and restored
+  for every image. It is therefore no longer necessary to reset the
+  guides when going back to a previous edit. This information is also
+  stored in the XMP file so can be viewed when sharing edits or
+  re-importing a collection.
 
-- The harmony guides are now saved and restored for every image as for
-  all other image's properties. Going back to a previous edit it is
-  not necessary anymore to set the harmony guides again. And since
-  the information is saved in the XMP it can be passed over when
-  sharing pictures or restored when re-importing a collection.
+- It is now possible to control chroma subsampling in JPEG exports.
 
-- Added control over chroma subsampling in JPEG export.
+  This allows the user to reduce the color resolution, often resulting in
+  much smaller files that are virtually indistinguishable
+  from images with more color information.
 
-  This allows the user to reduce the color resolution and export in
-  most cases much smaller files that will be indistinguishable to the
-  human eye from images with more color information.
+  On the other hand, certain images will look better when the chroma
+  resolution is maximized. This includes images with small colored details
+  surrounded by a solid background (such as screenshots with colored text).
 
-  On the other hand, there are certain images that will look better
-  when the chroma resolution is maximized. These are images that
-  include small colored details surrounded by a solid background (such
-  as screenshots with colored text or photos of the like).
+- The option to ignore JPEG files when importing is now outdated,
+  given that many cameras can also output HEIF images. This option has
+  therefore now been changed to ignore all non-raw files.
 
-- The option to ignore only JPEG files when importing (which is
-  outdated in the days when some cameras can also shoot in HEIF) has
-  been changed to the option to ignore all non-raw files.
-
-- The lens correction module now supports embedded metadata in Olympus
+- The lens correction module now supports embedded metadata from Olympus
   .ORF files for correction of distortion and chromatic aberration.
 
-  The correction is equivalent to that applied by the camera body to
-  in-camera JPEGs. For older bodies which do not apply chromatic
-  aberration correction to the JPEGs, it is also not included in the
-  embedded metadata.
+  Thise correction is equivalent to that applied by the camera body to
+  in-camera JPEGs. For older bodies that do not apply chromatic
+  aberration correction to the JPEGs, the required information is
+  also excluded from the embedded metadata so darktable will be unable
+  to apply corrections.
 
   Vignetting correction based on embedded metadata is not supported.
-  If the camera's Shading Compensation option is enabled then the
-  vignetting correction will already be applied to the data in the raw
+  However, if the camera's "Shading Compensation" option is enabled, the
+  vignetting correction will already have been applied to the data in the raw
   file.
 
-- The shortcuts system received several refinements:
+- The shortcuts system has received several refinements:
 
-  - Deleting or overwriting a default shortcut moves it to the
+  - Deleting or overwriting a default shortcut now moves it to the
     "disabled defaults" category from where it can restored by
     pressing <kbd>Delete</kbd>. It is no longer necessary to uncheck
     "load default shortcuts at startup" (in prefs/misc/interface) to
     keep it disabled.
 
-  - Visual mapping mode has better mouse cursors to indicate whether
-    the widget under the cursor can have a shortcut or be added to (or
-    removed from) the quick access panel.
+  - Visual mapping mode now has improved mouse cursors to indicate whether
+    the widget under the cursor can have a shortcut assigned or be added
+    to (or removed from) the quick access panel.
 
-  - The shortcuts preference tab now explains that it may be more
-    convenient to use visual mapping mode.
+  - The shortcuts tab in the preferences dialog now explains that it may
+    be more convenient to use visual mapping mode.
 
-  - When combining a shortcut with a move (for example
-    <kbd>b+scroll</kbd>) separate actions can be triggered by up and
-    down moves. <kbd>b+scroll</kbd> up could cycle through the top
-    panel options and b+scroll down through the bottom panel
-    combinations.
+  - When combining a shortcut with a mouse move (for example
+    <kbd>b+scroll</kbd>), separate actions can be triggered by up and
+    down moves. For example, <kbd>b+scroll-up</kbd> could cycle
+    through the top panel options and <kbd>b+scroll-down</kbd>
+    through the bottom panel combinations.
 
-  - A problem with dropdown and slider popups opened via a shortcut
-    was fixed. They would immediately fill with the shortcut key
-    character. Now those popups are integrated into the shortcut
-    system, so most non-alphanumeric shortcuts continue to work. If a
+  - A problem with drop-down and slider popups opened via a shortcut,
+    whereby they would immediately fill with the shortcut key
+    character, was resolved. Those popups are now integrated into the shortcut
+    system, so most non-alphanumeric shortcuts will continue to work. If a
     dropdown value is changed while the popup is open (for example via
-    a calculation AI detection in color calibration), Lua script or
-    midi shortcut, the popup is correctly updated/repositioned. After
+    an automatic calculation in color calibration, a Lua script or a
+    midi shortcut), the popup is correctly updated/repositioned. After
     a popup is closed it can quickly be reopened to enter another
     value by pressing <kbd>Enter</kbd> (as long as the corresponding
     widget still has focus).
 
-- The color assessment mode ("white borders") for the secondary
+- The ISO 12464 color assessment mode for the secondary
   preview window is now activated independently from the main window
   (and saved between sessions) with a toggle in the
   <kbd>right-click</kbd> popover of the "display second window" button
@@ -286,81 +310,84 @@ changes (where available).
 
 ## Bug Fixes
 
-- Fixes OpenCL platform checking which could lead to a freeze of
-  darktable.
+- Fixed issues with the OpenCL platform checks that were causing freezes.
 
-- Fix the calculation of resizable widgets based on line size of
-  contents.
+- Fixed the size calculation of resizable widgets based on line size of
+  their contents.
 
-- Fixed a bug in the collection filter module where the conjunction of
-  multiple filters were not handled properly.
+- Fixed a bug in the collection filters module where the conjunction of
+  multiple filters was not handled properly.
 
-- Fix focus distance detection for Nikon Z mount lens corrections.
+- Fixed focus distance detection for Nikon Z mount lens corrections.
 
-- Fixed wrong cropping of sensor data for sraw dng files.
+- Fixed incorrect cropping of sensor data for SRaw dng files.
 
-- Apply the Lr color matrix only when importing a genuine Lr XMP.
+- Apply the LightRoom color matrix only when importing a genuine
+  LightRoom XMP.
 
-- Fix a crash when increasing the number of recent collections.
+- Fixed a crash when increasing the number of recent collections.
 
-- Fix crash when clicking & dragging the feather line on the path
+- Fixed a crash when clicking+dragging the feather line on the path
   mask.
 
-- Fixed crash when applying CMYK soft-proof ICC profile.
+- Fixed a crash when applying the CMYK soft-proof ICC profile.
 
 - The white borders for ISO 12464 color assessment (toggled with
-  <kbd>Ctrl</kbd>+B</kbd>) are now correctly sized and placed at all
-  zoom levels and don't flash when switching between low and high
+  <kbd>Ctrl+b</kbd>) are now correctly sized and placed at all
+  zoom levels and no longer flash when switching between low and high
   quality preview, both in the center view and secondary preview
   window.
 
-- Fix issue downloading to Piwigo when on conflict option is set to
-  "don't check".
+- Fixed an issue downloading to Piwigo when the "on conflict" option
+  was set to "don't check".
 
-- Fixed several mouse scroll wheel issues on macOS in combination with
-  the <kbd>shift</kbd> modifier key, i.e.: Color harmonies width,
-  module height, geotagging date/time.
+- Fixed several mouse scroll-wheel issues on macOS when used in combination
+  with the <kbd>Shift</kbd> modifier key (color harmonies width,
+  module height, geotagging date/time).
 
-- Fixing a bug for duplicate xmp sidecars making sure it has not been
-  used before across different databases.
+- When loading an XMP sidecar file from disk, resolved an issue where the
+  assigned "duplicate number" was already present in the database. This
+  has been resolved by instead recalculating the "duplicate number" at import
+  time for all duplicates.
 
 - For large collections on the lighttable and when using small
-  thumbnails (more than 15 per line) using the scrollbar or scrolling
-  the mouse to move donw or up may be slow. This has been improved
-  drastically. The lighttable has been tested with more than 50k and
-  20 thumbnails per line to be fast and responsive.
+  thumbnails (more than 15 per line), using the scrollbar or scrolling
+  the mouse to move up/down could be slow. The responsiveness of the
+  lighttable in this scenario has now been drastically improved and is
+  fast and responsive even with ~50k images and 20 thumbnails per line.
 
 - Fixed pixel errors in RAW Chromatic Aberration and LMMSE demosaic
-  resulting in less noise.
+  resulting in decreased noise.
 
-- Fixed 'Avoid colorshift' mode in RAW Chromatic Aberration.
+- Fixed the 'avoid colorshift' mode in the RAW Chromatic Aberrations
+  module.
 
-- Make sure that snapshot for removed images are not accessible
-  anymore. It was not the case and trying to display a snapshot based
-  on a removed image crashed darktable.
+- Fixed the snapshot module so that snapshots for removed images
+  are no longer accessible - this was previously causing crashes
+  when attempting to display a snapshot of a removed image.
 
-- Fix a potential crash when using a non supported ICC profile for
-  soft-proof.
+- Fixed a potential crash when using an unsupported ICC profile for
+  soft-proofing.
 
-- Fix multiple small precision issues when computing the borders in the
-  Framing module. For a 0% border on the right or the bottom sides
-  there was some time a one pixel border. This was dependent on the
-  actual export size or zoom level in darkroom.
+- Fixed multiple issues when computing borders in the framing module.
+  For a 0% border on the bottom or right-hand side a single pixel
+  border was sometimes shown, depending on the export size/zoom level.
 
-  Also a 0% border doesn't mean no border at all if the border's
-  aspect ratio chosen doesn't correspond to the image aspect.
+  Note that a 0% border doesn't necessarily mean no border at all
+  if the chosen aspect ratio doesn't correspond to the aspect ratio
+  of the image.
 
-- The tone equalizer internal luminance mask has been made more
-  resilient to distortion changes make with modules like lens
+- The internal luminance mask in the tone equalizer has been
+  made more resilient to distortion changes made with modules like lens
   correction, crop, etc. After activating a crop, the tone equalizer
-  picker will display the proper luminance values when flying over the
-  picture in darkroom center area.
+  cursor will now show the proper mask luminance values when hovering
+  over the image in the darkroom.
 
-- Fixed calculation of required graphics memory for modules doing
-  blending possibly avoiding crashes related to OpenCL.
+- Fixed calculation of required graphics memory for modules performing
+  blending operations, possibly avoiding crashes related to OpenCL.
 
 - Added the ability to calculate the crop factor for those cameras
-  that do not contain this information in the metadata.
+  that do not include this information in their Exif metadata.
 
 - Fixed various bugs related to feathering masks.
 
@@ -372,22 +399,22 @@ changes (where available).
 
 ### Bug Fixes
 
-- Fixed scripts_installer to handle user names with spaces on Windows.
+- Fixed `scripts_installer` to handle user names with spaces on Windows.
 
 ### Add action support for Lua
 
 
 ### Other Lua changes
 
-- Allow access to image change_timestamp.
+- Allow access to image `change_timestamp`.
 
 ## Notes
 
 - When exporting to AVIF, EXR, JPEG XL, or XCF, selecting specific
-  metadata (e.g. geo tag or creator) is not currently possible. For
+  metadata (e.g. geo-tag or creator) is not currently possible. For
   AVIF, EXR, JPEG XL, and XCF formats, darktable will not include any
   metadata fields unless the user selects all of the checkboxes in the
-  export preference options.
+  export module's preference options.
 
 - In order to support the correct display of numbers in darktable, the
   minimum supported Gtk version has had to be increased to
