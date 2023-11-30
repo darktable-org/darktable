@@ -514,7 +514,6 @@ void dt_masks_write_masks_history_item(const dt_imgid_t imgid,
                                        const int num,
                                        dt_masks_form_t *form);
 void dt_masks_free_form(dt_masks_form_t *form);
-void dt_masks_update_image(dt_develop_t *dev);
 void dt_masks_cleanup_unused(dt_develop_t *dev);
 
 /** function used to manipulate forms for masks */

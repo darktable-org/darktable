@@ -1105,6 +1105,9 @@ void dt_dev_add_masks_history_item(
   }
 
   // invalidate buffers and force redraw of darkroom
+  dev->full.pipe->changed |= DT_DEV_PIPE_SYNCH;
+  dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
+  dev->preview2.pipe->changed |= DT_DEV_PIPE_SYNCH;
   dt_dev_invalidate_all(dev);
   dt_pthread_mutex_unlock(&dev->history_mutex);
 
