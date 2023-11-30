@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "bauhaus/bauhaus.h"
 #include "common/collection.h"
 #include "common/darktable.h"
@@ -70,7 +71,7 @@ typedef enum dt_lib_metadata_id
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("selected image[s]");
+  return _("actions on selection");
 }
 
 dt_view_type_flags_t views(dt_lib_module_t *self)
