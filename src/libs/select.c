@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/collection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
@@ -36,7 +37,7 @@ DT_MODULE(1)
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("select");
+  return _("selection");
 }
 
 dt_view_type_flags_t views(dt_lib_module_t *self)
