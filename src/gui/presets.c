@@ -908,7 +908,7 @@ void dt_gui_presets_show_iop_edit_dialog(const char *name_in,
   g->iop = module;
   g->operation = g_strdup(module->op);
   g->op_version = module->version();
-  g->module_name = g_strdup(module->name());
+  g->module_name = g_strdup(module->op);
   g->callback = final_callback;
   g->data = data;
   g->parent = parent;
