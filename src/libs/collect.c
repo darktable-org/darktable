@@ -2106,12 +2106,12 @@ static void _list_view(dt_lib_collect_rule_t *dr)
         {
           gchar *order_by = NULL;
 
-          const gboolean is_chronological =
-            dt_conf_is_equal("plugins/collect/filmroll_sort", "chronological");
+          const gboolean sort_by_import_time =
+            dt_conf_is_equal("plugins/collect/filmroll_sort", "import time");
 
           const gboolean sort_descending = dt_conf_get_bool("plugins/collect/descending");
 
-          if(is_chronological)
+          if(sort_by_import_time)
           {
             if(sort_descending)
               order_by = g_strdup("film_rolls_id DESC");
