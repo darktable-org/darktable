@@ -748,7 +748,7 @@
     <name>plugins/collect/filmroll_sort</name>
     <type>
       <enum>
-        <option>chronological</option>
+        <option>import time</option>
         <option>folder name</option>
       </enum>
     </type>
