@@ -831,6 +831,7 @@ menuitem check:selected
 .dt_bauhaus_popup
 {
   color: shade(@fg_color, 0.9);
+  background-color: @grey_00;
   padding: 0.42em 0 0 0.42em;   /* set only padding on top and left margin due to some default hardcoded spacing on bottom and place for icons on some bauhaus on the right */
 }
 
