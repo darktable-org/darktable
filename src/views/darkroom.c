@@ -2913,13 +2913,13 @@ static void _unregister_modules_drag_n_drop(dt_view_t *self)
 
     GtkBox *container = dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER);
 
-    g_signal_handlers_disconnect_matched(container, G_SIGNAL_MATCH_FUNC | G_SIGNAL_MATCH_DATA, 0, 0, NULL, G_CALLBACK(_on_drag_begin), NULL);
-    g_signal_handlers_disconnect_matched(container, G_SIGNAL_MATCH_FUNC | G_SIGNAL_MATCH_DATA, 0, 0, NULL, G_CALLBACK(_on_drag_data_get), NULL);
-    g_signal_handlers_disconnect_matched(container, G_SIGNAL_MATCH_FUNC | G_SIGNAL_MATCH_DATA, 0, 0, NULL, G_CALLBACK(_on_drag_end), NULL);
-    g_signal_handlers_disconnect_matched(container, G_SIGNAL_MATCH_FUNC | G_SIGNAL_MATCH_DATA, 0, 0, NULL, G_CALLBACK(_on_drag_data_received), NULL);
-    g_signal_handlers_disconnect_matched(container, G_SIGNAL_MATCH_FUNC | G_SIGNAL_MATCH_DATA, 0, 0, NULL, G_CALLBACK(_on_drag_drop), NULL);
-    g_signal_handlers_disconnect_matched(container, G_SIGNAL_MATCH_FUNC | G_SIGNAL_MATCH_DATA, 0, 0, NULL, G_CALLBACK(_on_drag_motion), NULL);
-    g_signal_handlers_disconnect_matched(container, G_SIGNAL_MATCH_FUNC | G_SIGNAL_MATCH_DATA, 0, 0, NULL, G_CALLBACK(_on_drag_leave), NULL);
+    g_signal_handlers_disconnect_by_func(container, G_CALLBACK(_on_drag_begin), NULL);
+    g_signal_handlers_disconnect_by_func(container, G_CALLBACK(_on_drag_data_get), NULL);
+    g_signal_handlers_disconnect_by_func(container, G_CALLBACK(_on_drag_end), NULL);
+    g_signal_handlers_disconnect_by_func(container, G_CALLBACK(_on_drag_data_received), NULL);
+    g_signal_handlers_disconnect_by_func(container, G_CALLBACK(_on_drag_drop), NULL);
+    g_signal_handlers_disconnect_by_func(container, G_CALLBACK(_on_drag_motion), NULL);
+    g_signal_handlers_disconnect_by_func(container, G_CALLBACK(_on_drag_leave), NULL);
   }
 }
 

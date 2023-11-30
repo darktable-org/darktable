@@ -984,7 +984,8 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
      && gtk_window_get_window_type(top) != GTK_WINDOW_POPUP)
     return FALSE;
 
-  if(dt_key_modifier_state() & (GDK_BUTTON1_MASK|GDK_BUTTON2_MASK|GDK_BUTTON3_MASK))
+  if(dt_key_modifier_state() & (GDK_BUTTON1_MASK|GDK_BUTTON2_MASK|GDK_BUTTON3_MASK)
+     || darktable.bauhaus->current)
     return FALSE;
 
   gchar *markup_text = NULL;
