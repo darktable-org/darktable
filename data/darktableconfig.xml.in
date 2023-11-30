@@ -752,7 +752,7 @@
         <option>folder name</option>
       </enum>
     </type>
-    <default>chronological</default>
+    <default>import time</default>
     <shortdescription>sort film rolls by</shortdescription>
     <longdescription>sets the collections-list order for film rolls</longdescription>
   </dtconfig>
