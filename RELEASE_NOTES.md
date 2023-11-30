@@ -259,7 +259,7 @@ changes (where available).
 - The lens correction module now supports embedded metadata from Olympus
   .ORF files for correction of distortion and chromatic aberration.
 
-  Thise correction is equivalent to that applied by the camera body to
+  This correction is equivalent to that applied by the camera body to
   in-camera JPEGs. For older bodies that do not apply chromatic
   aberration correction to the JPEGs, the required information is
   also excluded from the embedded metadata so darktable will be unable
@@ -363,7 +363,7 @@ changes (where available).
   module.
 
 - Fixed the snapshot module so that snapshots for removed images
-  are no longer accessible - this was previously causing crashes
+  are no longer accessible – this was previously causing crashes
   when attempting to display a snapshot of a removed image.
 
 - Fixed a potential crash when using an unsupported ICC profile for
@@ -424,7 +424,7 @@ changes (where available).
   https://github.com/darktable-org/darktable/issues/13166.
 
 - Starting with release 4.4 a new support policy regarding macOS
-  versions has been put in place -- darktable releases will now only
+  versions has been put in place – darktable releases will now only
   support those macOS versions that are also supported by Apple.
   Release 4.6 therefore drops support for macOS versions older than
   12.5.
