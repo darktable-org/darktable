@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-29 07:06-0300\n"
-"PO-Revision-Date: 2023-11-29 07:06-0300\n"
+"POT-Creation-Date: 2023-11-29 21:21-0300\n"
+"PO-Revision-Date: 2023-11-29 21:21-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -6767,7 +6767,7 @@ msgstr "LibRaw"
 msgid "WebP"
 msgstr "WebP"
 
-#: ../src/common/image.h:233 ../src/imageio/format/jxl.c:475
+#: ../src/common/image.h:233 ../src/imageio/format/jxl.c:482
 msgid "JPEG XL"
 msgstr "JPEG XL"
 
@@ -11850,17 +11850,17 @@ msgstr ""
 "as cores para `%s' poderiam ser representadas erroneamente,\n"
 "e as edições podem não ser compatíveis com versões futuras."
 
-#: ../src/imageio/format/avif.c:89 ../src/imageio/format/jxl.c:560
+#: ../src/imageio/format/avif.c:89 ../src/imageio/format/jxl.c:567
 #: ../src/imageio/format/pdf.c:80 ../src/imageio/format/png.c:641
 #: ../src/imageio/format/tiff.c:904 ../src/imageio/format/xcf.c:357
 msgid "8 bit"
 msgstr "8 bit"
 
-#: ../src/imageio/format/avif.c:93 ../src/imageio/format/jxl.c:560
+#: ../src/imageio/format/avif.c:93 ../src/imageio/format/jxl.c:567
 msgid "10 bit"
 msgstr "10 bit"
 
-#: ../src/imageio/format/avif.c:97 ../src/imageio/format/jxl.c:560
+#: ../src/imageio/format/avif.c:97 ../src/imageio/format/jxl.c:567
 msgid "12 bit"
 msgstr "12 bit"
 
@@ -11878,7 +11878,7 @@ msgstr "profundidade de bits AVIF inválida!"
 
 #. Bit depth combo box
 #: ../src/imageio/format/avif.c:800 ../src/imageio/format/exr.cc:601
-#: ../src/imageio/format/jxl.c:559 ../src/imageio/format/pdf.c:661
+#: ../src/imageio/format/jxl.c:566 ../src/imageio/format/pdf.c:661
 #: ../src/imageio/format/png.c:639 ../src/imageio/format/tiff.c:900
 #: ../src/imageio/format/xcf.c:354
 msgid "bit depth"
@@ -11939,7 +11939,7 @@ msgstr "a compressão para a imagem"
 #. default
 #. digits
 #: ../src/imageio/format/avif.c:878 ../src/imageio/format/j2k.c:679
-#: ../src/imageio/format/jpeg.c:584 ../src/imageio/format/jxl.c:583
+#: ../src/imageio/format/jpeg.c:584 ../src/imageio/format/jxl.c:590
 #: ../src/imageio/format/webp.c:425 ../src/libs/camera.c:564
 msgid "quality"
 msgstr "qualidade"
@@ -11983,7 +11983,7 @@ msgstr "OpenEXR"
 msgid "16 bit (float)"
 msgstr "16 bit (ponto flutuante)"
 
-#: ../src/imageio/format/exr.cc:603 ../src/imageio/format/jxl.c:560
+#: ../src/imageio/format/exr.cc:603 ../src/imageio/format/jxl.c:567
 #: ../src/imageio/format/tiff.c:904 ../src/imageio/format/xcf.c:357
 msgid "32 bit (float)"
 msgstr "32 bit (ponto flutuante)"
@@ -12090,26 +12090,26 @@ msgstr "4:2:2"
 msgid "4:2:0"
 msgstr "4:2:0"
 
-#: ../src/imageio/format/jxl.c:560 ../src/imageio/format/pdf.c:81
+#: ../src/imageio/format/jxl.c:567 ../src/imageio/format/pdf.c:81
 #: ../src/imageio/format/png.c:641 ../src/imageio/format/tiff.c:904
 #: ../src/imageio/format/xcf.c:357
 msgid "16 bit"
 msgstr "16 bit"
 
 #. Pixel format combo box
-#: ../src/imageio/format/jxl.c:566 ../src/imageio/format/tiff.c:909
+#: ../src/imageio/format/jxl.c:573 ../src/imageio/format/tiff.c:909
 msgid "pixel type"
 msgstr "tipo do pixel"
 
-#: ../src/imageio/format/jxl.c:567 ../src/imageio/format/tiff.c:910
+#: ../src/imageio/format/jxl.c:574 ../src/imageio/format/tiff.c:910
 msgid "unsigned integer"
 msgstr "inteiro sem sinal"
 
-#: ../src/imageio/format/jxl.c:567 ../src/imageio/format/tiff.c:910
+#: ../src/imageio/format/jxl.c:574 ../src/imageio/format/tiff.c:910
 msgid "floating point"
 msgstr "ponto flutuante"
 
-#: ../src/imageio/format/jxl.c:584
+#: ../src/imageio/format/jxl.c:591
 msgid ""
 "the quality of the output image\n"
 "0-29 = very lossy\n"
@@ -12121,11 +12121,11 @@ msgstr ""
 "30-99 = qualidade comparável com JPEG\n"
 "100 = sem perda (somente para profundidade de bits inteira)"
 
-#: ../src/imageio/format/jxl.c:593
+#: ../src/imageio/format/jxl.c:600
 msgid "encoding color profile"
 msgstr "perfil de codificação de cores"
 
-#: ../src/imageio/format/jxl.c:594
+#: ../src/imageio/format/jxl.c:601
 msgid ""
 "the color profile used by the encoder\n"
 "permit internal XYB color space conversion for more efficient lossy "
@@ -12139,20 +12139,20 @@ msgstr ""
 "ou garante que nenhuma conversão ocorre para manter o espaço de cores da "
 "imagem original (sem perda implica nisto)"
 
-#: ../src/imageio/format/jxl.c:597
+#: ../src/imageio/format/jxl.c:604
 msgid "internal"
 msgstr "interno"
 
-#: ../src/imageio/format/jxl.c:597 ../src/libs/duplicate.c:405
+#: ../src/imageio/format/jxl.c:604 ../src/libs/duplicate.c:405
 #: ../src/libs/history.c:1132 ../src/libs/snapshots.c:840
 msgid "original"
 msgstr "original"
 
-#: ../src/imageio/format/jxl.c:611
+#: ../src/imageio/format/jxl.c:618
 msgid "encoding effort"
 msgstr "esforço de codificação"
 
-#: ../src/imageio/format/jxl.c:612
+#: ../src/imageio/format/jxl.c:619
 msgid ""
 "the effort used to encode the image, higher efforts will have better results "
 "at the expense of longer encoding times"
@@ -12160,11 +12160,11 @@ msgstr ""
 "o esforço usado para codificar a imagem, esforço maior terá melhor resultado "
 "com o custo de tempos de codificação maiores"
 
-#: ../src/imageio/format/jxl.c:623
+#: ../src/imageio/format/jxl.c:630
 msgid "decoding speed"
 msgstr "velocidade de decodificação"
 
-#: ../src/imageio/format/jxl.c:624
+#: ../src/imageio/format/jxl.c:631
 msgid "the preferred decoding speed with some sacrifice of quality"
 msgstr ""
 "a velocidade preferida para decodificação com algum sacrifício de qualidade"
@@ -14396,8 +14396,8 @@ msgid "temperature"
 msgstr "temperatura"
 
 #: ../src/iop/channelmixerrgb.c:4542
-msgid "spot color mapping"
-msgstr "mapeamento de cor pontual"
+msgid "area color mapping"
+msgstr "mapeamento de cor por área"
 
 #: ../src/iop/channelmixerrgb.c:4548
 msgid ""
@@ -14420,8 +14420,8 @@ msgid "mapping"
 msgstr "mapeamento"
 
 #: ../src/iop/channelmixerrgb.c:4555 ../src/iop/exposure.c:1206
-msgid "spot mode"
-msgstr "modo pontual"
+msgid "area mode"
+msgstr "mode de área"
 
 #: ../src/iop/channelmixerrgb.c:4556
 msgid ""
@@ -16900,8 +16900,8 @@ msgstr ""
 "do preto para fora do gama tornando valores RGB negativos."
 
 #: ../src/iop/exposure.c:1192
-msgid "spot exposure mapping"
-msgstr "mapeamento de exposição pontual"
+msgid "area exposure mapping"
+msgstr "mapeamento de exposição por área"
 
 #: ../src/iop/exposure.c:1198
 msgid ""
@@ -25869,6 +25869,12 @@ msgstr "mudar para uma janela clássica que ficará aberta após soltar a tecla.
 #: ../src/views/view.c:1514
 msgid "mouse actions"
 msgstr "ações com mouse"
+
+#~ msgid "spot color mapping"
+#~ msgstr "mapeamento de cor pontual"
+
+#~ msgid "spot mode"
+#~ msgstr "modo pontual"
 
 #~ msgid "save history while developing"
 #~ msgstr "salvar histórico enquanto desenvolve"
