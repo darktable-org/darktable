@@ -3091,6 +3091,23 @@ dt_iop_module_t *dt_iop_get_module(const char *op)
   return dt_iop_get_module_from_list(darktable.develop->iop, op);
 }
 
+dt_iop_module_so_t *dt_iop_get_module_so(const char *op)
+{
+  dt_iop_module_so_t *result = NULL;
+
+  for(GList *modules = darktable.iop; modules; modules = g_list_next(modules))
+  {
+    dt_iop_module_so_t *mod = (dt_iop_module_so_t *)modules->data;
+    if(dt_iop_module_is(mod, op))
+    {
+      result = mod;
+      break;
+    }
+  }
+
+  return result;
+}
+
 int dt_iop_get_module_flags(const char *op)
 {
   GList *modules = darktable.iop;

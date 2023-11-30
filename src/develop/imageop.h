@@ -449,6 +449,7 @@ dt_iop_module_t *dt_iop_get_colorout_module(void);
 /* returns the iop-module found in list with the given name */
 dt_iop_module_t *dt_iop_get_module_from_list(GList *iop_list, const char *op);
 dt_iop_module_t *dt_iop_get_module(const char *op);
+dt_iop_module_so_t *dt_iop_get_module_so(const char *op);
 /** returns module with op + multi_priority or NULL if not found on the list,
     if multi_priority == -1 do not check for it */
 dt_iop_module_t *dt_iop_get_module_by_op_priority(GList *modules,
