@@ -116,6 +116,9 @@ gboolean dt_has_same_path_basename(const char *filename1, const char *filename2)
 // set the filename2 extension to filename1 - return NULL if fails - result should be freed
 char *dt_copy_filename_extension(const char *filename1, const char *filename2);
 
+// change filename to have the given extension
+char *dt_filename_change_extension(const char *filename, const char *ext);
+
 // replaces all occurences of a substring in a string
 gchar *dt_str_replace(const char *string, const char *search, const char *replace);
 
