@@ -742,6 +742,12 @@ dialog .dialog-vbox
   margin: 0.42em;
 }
 
+dialog .text-button
+{
+  margin: 0.42em;
+  padding: 0.3em;
+}
+
 /* set top margin in bottom button bar to be the same as bottom margin applied above for main dialog window */
 dialog .dialog-action-box
 {
@@ -749,12 +755,14 @@ dialog .dialog-action-box
 }
 
 /* remove margin on the left for first left button only, then do the same for right margin for last right button only */
-dialog .dialog-action-box button:first-child
+dialog .dialog-action-box button:first-child,
+dialog .text-button:first-child
 {
   margin-left: 0;
 }
 
-dialog .dialog-action-box button:last-child
+dialog .dialog-action-box button:last-child,
+dialog .text-button:last-child
 {
   margin-right: 0;
 }
