@@ -1510,7 +1510,7 @@ border-bottom: 0.07em solid alpha(@selected_bg_color, 0.75);
 
 .search image.left
 {
-  padding: 0 0.21em;
+  padding: 0 0.4em;
 }
 
 .search image:disabled
