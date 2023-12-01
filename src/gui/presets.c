@@ -616,7 +616,11 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
                               _("be very careful with this option. "
                                 "this might be the last time you see your preset."));
   gtk_box_pack_start(box, GTK_WIDGET(g->filter), FALSE, FALSE, 0);
-  if(!g->iop)
+
+  // check if module_name is an IOP module
+  const dt_iop_module_so_t *module = dt_iop_get_module_so(g->module_name);
+
+  if(!module)
   {
     // lib usually don't support auto-init / autoapply
     gtk_widget_set_no_show_all(GTK_WIDGET(g->autoinit), TRUE);
@@ -625,6 +629,13 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
     // for libs, we don't want the filtering option as it's not implemented...
     gtk_widget_set_no_show_all(GTK_WIDGET(g->filter), TRUE);
   }
+  else
+  {
+    // without an IOP history we cannot support autoinit
+    gtk_widget_set_sensitive(GTK_WIDGET(g->autoinit), g->iop != NULL);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->filter), TRUE);
+  }
+
   g_signal_connect(G_OBJECT(g->autoapply), "toggled",
                    G_CALLBACK(_check_buttons_activated), g);
   g_signal_connect(G_OBJECT(g->filter), "toggled",
@@ -908,7 +919,7 @@ void dt_gui_presets_show_iop_edit_dialog(const char *name_in,
   g->iop = module;
   g->operation = g_strdup(module->op);
   g->op_version = module->version();
-  g->module_name = g_strdup(module->name());
+  g->module_name = g_strdup(module->op);
   g->callback = final_callback;
   g->data = data;
   g->parent = parent;
