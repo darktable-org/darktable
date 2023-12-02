@@ -391,6 +391,7 @@ scrolledwindow textview
 .dt_module_btn,
 .path-bar button,
 header button,
+.image-button,
 .text-button,
 .text-button radio, /* this line and following one are needed to set good margin inside some buttons, especially in header buttons in about dialog window and on radio button and label inside star icon overlay menu */
 .text-button label
@@ -743,18 +744,24 @@ dialog .dialog-vbox
 }
 
 /* set top margin in bottom button bar to be the same as bottom margin applied above for main dialog window */
-dialog .dialog-action-box
+dialog .dialog-action-box,
+#shortcut-controls,
+#preset-controls
 {
   margin-top: 0.42em;
 }
 
+dialog .dialog-vbox .text-button:not(.toggle)
+{
+  margin: 0.21em;
+}
 /* remove margin on the left for first left button only, then do the same for right margin for last right button only */
 dialog .dialog-action-box button:first-child
 {
   margin-left: 0;
 }
 
-dialog .dialog-action-box button:last-child
+dialog .dialog-vbox button:last-child:not(.toggle)
 {
   margin-right: 0;
 }
@@ -1114,18 +1121,6 @@ treeview header label
 }
 
 /* Set buttons and search field on presets and shortcuts control buttons */
-#shortcut-controls,
-#preset-controls
-{
-  margin-top: 0.35em;
-}
-
-#shortcut-controls button,
-#preset-controls button
-{
-  margin-left: 0.28em;
-}
-
 #shortcut-controls .search,
 #preferences-box #shortcut-controls check
 {
