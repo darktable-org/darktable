@@ -1556,7 +1556,7 @@ static void _generate_curve_lut(dt_dev_pixelpipe_t *pipe,
 {
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(pipe);
 
-  dt_iop_rgbcurve_node_t curve_nodes[3][DT_IOP_RGBCURVE_MAXNODES];
+  DT_ALIGNED_ARRAY dt_iop_rgbcurve_node_t curve_nodes[3][DT_IOP_RGBCURVE_MAXNODES];
 
   if(work_profile)
   {
