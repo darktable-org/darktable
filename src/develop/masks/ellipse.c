@@ -933,6 +933,8 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module,
    // we end the point dragging
     gui->point_dragging = -1;
 
+    dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
+
     // we save the updated shape
     dt_masks_update_image(darktable.develop);
 
@@ -943,6 +945,8 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module,
   {
     // we end the point dragging
     gui->point_border_dragging = -1;
+
+    dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we save the updated shape
     dt_masks_update_image(darktable.develop);
