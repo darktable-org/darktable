@@ -414,7 +414,6 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
     }
 
     module->enabled = mod_src->enabled;
-    module->multi_priority = mod_src->multi_priority;
 
     if(!module->multi_name_hand_edited)
     {
