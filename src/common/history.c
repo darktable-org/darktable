@@ -392,10 +392,6 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
         dt_iop_get_module_by_op_priority(dev_dest->iop, mod_src->op, -1);
 
       module = dt_dev_module_duplicate_ext(dev_dest, base, FALSE);
-      dt_ioppr_resync_modules_order(dev_dest);
-
-      // and record this module as we don't want to reuse it later
-      modules_used = g_list_append(modules_used, module);
 
       if(!module)
       {
@@ -403,6 +399,13 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
                  "[dt_history_merge_module_into_history]"
                  " can't load module %s\n", mod_src->op);
         module_added = FALSE;
+      }
+      else
+      {
+        dt_ioppr_resync_modules_order(dev_dest);
+
+        // and record this module as we don't want to reuse it later
+        modules_used = g_list_append(modules_used, module);
       }
     }
     else
