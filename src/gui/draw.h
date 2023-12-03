@@ -491,14 +491,13 @@ static inline float dt_draw_curve_calc_value(dt_draw_curve_t *c, const float x)
   return MIN(MAX(val, c->c.m_min_y), c->c.m_max_y);
 }
 
-static inline int dt_draw_curve_add_point(dt_draw_curve_t *c,
+static inline void dt_draw_curve_add_point(dt_draw_curve_t *c,
                                           const float x,
                                           const float y)
 {
   c->c.m_anchors[c->c.m_numAnchors].x = x;
   c->c.m_anchors[c->c.m_numAnchors].y = y;
   c->c.m_numAnchors++;
-  return 0;
 }
 
 // linear x linear y
