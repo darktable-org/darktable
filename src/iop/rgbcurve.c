@@ -35,7 +35,7 @@
 
 #define DT_GUI_CURVE_EDITOR_INSET DT_PIXEL_APPLY_DPI(1)
 #define DT_IOP_RGBCURVE_RES 256
-#define DT_IOP_RGBCURVE_MAXNODES 20
+#define DT_IOP_RGBCURVE_MAXNODES MAX_ANCHORS
 #define DT_IOP_RGBCURVE_MIN_X_DISTANCE 0.0025f
 // max iccprofile file name length
 // must be in synch with filename in dt_colorspaces_color_profile_t in colorspaces.h
@@ -100,9 +100,9 @@ typedef struct dt_iop_rgbcurve_gui_data_t
 
 typedef struct dt_iop_rgbcurve_data_t
 {
+  float table[DT_IOP_RGBCURVE_MAX_CHANNELS][0x10000];      // precomputed look-up tables for tone curve
   dt_iop_rgbcurve_params_t params;
   dt_draw_curve_t *curve[DT_IOP_RGBCURVE_MAX_CHANNELS];    // curves for pipe piece and pixel processing
-  float table[DT_IOP_RGBCURVE_MAX_CHANNELS][0x10000];      // precomputed look-up tables for tone curve
   float unbounded_coeffs[DT_IOP_RGBCURVE_MAX_CHANNELS][3]; // approximation for extrapolation
   int curve_changed[DT_IOP_RGBCURVE_MAX_CHANNELS];         // curve type or number of nodes changed?
   dt_colorspaces_color_profile_type_t type_work; // working color profile
@@ -271,18 +271,24 @@ void init_presets(dt_iop_module_so_t *self)
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 }
 
-static float _curve_to_mouse(const float x, const float zoom_factor, const float offset)
+static float _curve_to_mouse(const float x,
+                            const float zoom_factor,
+                            const float offset)
 {
   return (x - offset) * zoom_factor;
 }
 
-static float _mouse_to_curve(const float x, const float zoom_factor, const float offset)
+static float _mouse_to_curve(const float x,
+                              const float zoom_factor,
+                              const float offset)
 {
   return (x / zoom_factor) + offset;
 }
 
-static void picker_scale(const float *const in, float *out, dt_iop_rgbcurve_params_t *p,
-                         const dt_iop_order_iccprofile_info_t *const work_profile)
+static void picker_scale(const float *const in,
+                          float *out,
+                          dt_iop_rgbcurve_params_t *p,
+                          const dt_iop_order_iccprofile_info_t *const work_profile)
 {
   switch(p->curve_autoscale)
   {
@@ -322,14 +328,16 @@ static void picker_scale(const float *const in, float *out, dt_iop_rgbcurve_para
   for(int c = 0; c < 3; c++) out[c] = CLIP(out[c]);
 }
 
-static void _rgbcurve_show_hide_controls(dt_iop_rgbcurve_params_t *p, dt_iop_rgbcurve_gui_data_t *g)
+static void _rgbcurve_show_hide_controls(dt_iop_rgbcurve_params_t *p,
+                                          dt_iop_rgbcurve_gui_data_t *g)
 {
   gtk_notebook_set_show_tabs(g->channel_tabs, p->curve_autoscale == DT_S_SCALE_MANUAL_RGB);
 
   gtk_widget_set_visible(g->cmb_preserve_colors, p->curve_autoscale == DT_S_SCALE_AUTOMATIC_RGB);
 }
 
-static gboolean _is_identity(dt_iop_rgbcurve_params_t *p, rgbcurve_channel_t channel)
+static gboolean _is_identity(dt_iop_rgbcurve_params_t *p,
+                              rgbcurve_channel_t channel)
 {
   for(int k=0; k<p->curve_num_nodes[channel]; k++)
     if(p->curve_nodes[channel][k].x != p->curve_nodes[channel][k].y) return FALSE;
@@ -415,7 +423,10 @@ static void interpolator_callback(GtkWidget *widget, dt_iop_module_t *self)
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
-static void tab_switch_callback(GtkNotebook *notebook, GtkWidget *page, guint page_num, gpointer user_data)
+static void tab_switch_callback(GtkNotebook *notebook,
+                                GtkWidget *page,
+                                guint page_num,
+                                gpointer user_data)
 {
   if(darktable.gui->reset) return;
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -426,7 +437,10 @@ static void tab_switch_callback(GtkNotebook *notebook, GtkWidget *page, guint pa
   gtk_widget_queue_draw(self->widget);
 }
 
-static inline int _add_node(dt_iop_rgbcurve_node_t *curve_nodes, int *nodes, float x, float y)
+static inline int _add_node(dt_iop_rgbcurve_node_t *curve_nodes,
+                            int *nodes,
+                            float x,
+                            float y)
 {
   int selected = -1;
   if(curve_nodes[0].x > x)
@@ -455,8 +469,11 @@ static inline int _add_node(dt_iop_rgbcurve_node_t *curve_nodes, int *nodes, flo
   return selected;
 }
 
-static inline int _add_node_from_picker(dt_iop_rgbcurve_params_t *p, const float *const in, const float increment,
-                                        const int ch, const dt_iop_order_iccprofile_info_t *const work_profile)
+static inline int _add_node_from_picker(dt_iop_rgbcurve_params_t *p,
+                                        const float *const in,
+                                        const float increment,
+                                        const int ch,
+                                        const dt_iop_order_iccprofile_info_t *const work_profile)
 {
   float x = 0.f;
   float y = 0.f;
@@ -484,7 +501,8 @@ static inline int _add_node_from_picker(dt_iop_rgbcurve_params_t *p, const float
   return _add_node(p->curve_nodes[ch], &p->curve_num_nodes[ch], x, y);
 }
 
-void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
+void color_picker_apply(dt_iop_module_t *self,
+                        GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
   dt_iop_rgbcurve_gui_data_t *g = (dt_iop_rgbcurve_gui_data_t *)self->gui_data;
@@ -532,7 +550,9 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
   dt_control_queue_redraw_widget(self->widget);
 }
 
-static gboolean _sanity_check(const float x, const int selected, const int nodes,
+static gboolean _sanity_check(const float x,
+                              const int selected,
+                              const int nodes,
                               const dt_iop_rgbcurve_node_t *curve)
 {
   gboolean point_valid = TRUE;
@@ -553,7 +573,11 @@ static gboolean _sanity_check(const float x, const int selected, const int nodes
   return point_valid;
 }
 
-static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, float dx, float dy, guint state)
+static gboolean _move_point_internal(dt_iop_module_t *self,
+                                      GtkWidget *widget,
+                                      float dx,
+                                      float dy,
+                                      guint state)
 {
   dt_iop_rgbcurve_params_t *p = (dt_iop_rgbcurve_params_t *)self->params;
   dt_iop_rgbcurve_gui_data_t *g = (dt_iop_rgbcurve_gui_data_t *)self->gui_data;
@@ -583,7 +607,9 @@ static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, f
 
 #define RGBCURVE_DEFAULT_STEP (0.001f)
 
-static gboolean _area_scrolled_callback(GtkWidget *widget, GdkEventScroll *event, dt_iop_module_t *self)
+static gboolean _area_scrolled_callback(GtkWidget *widget,
+                                        GdkEventScroll *event,
+                                        dt_iop_module_t *self)
 {
   dt_iop_rgbcurve_params_t *p = (dt_iop_rgbcurve_params_t *)self->params;
   dt_iop_rgbcurve_gui_data_t *g = (dt_iop_rgbcurve_gui_data_t *)self->gui_data;
@@ -635,7 +661,9 @@ static gboolean _area_scrolled_callback(GtkWidget *widget, GdkEventScroll *event
   return TRUE;
 }
 
-static gboolean _area_key_press_callback(GtkWidget *widget, GdkEventKey *event, dt_iop_module_t *self)
+static gboolean _area_key_press_callback(GtkWidget *widget,
+                                          GdkEventKey *event,
+                                          dt_iop_module_t *self)
 {
   dt_iop_rgbcurve_params_t *p = (dt_iop_rgbcurve_params_t *)self->params;
   dt_iop_rgbcurve_gui_data_t *g = (dt_iop_rgbcurve_gui_data_t *)self->gui_data;
@@ -678,7 +706,9 @@ static gboolean _area_key_press_callback(GtkWidget *widget, GdkEventKey *event, 
 
 #undef RGBCURVE_DEFAULT_STEP
 
-static gboolean _area_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event, dt_iop_module_t *self)
+static gboolean _area_leave_notify_callback(GtkWidget *widget,
+                                            GdkEventCrossing *event,
+                                            dt_iop_module_t *self)
 {
   dt_iop_rgbcurve_gui_data_t *g = (dt_iop_rgbcurve_gui_data_t *)self->gui_data;
   if(!(event->state & GDK_BUTTON1_MASK))
@@ -1061,7 +1091,9 @@ finally:
   return TRUE;
 }
 
-static gboolean _area_motion_notify_callback(GtkWidget *widget, GdkEventMotion *event, dt_iop_module_t *self)
+static gboolean _area_motion_notify_callback(GtkWidget *widget,
+                                              GdkEventMotion *event,
+                                              dt_iop_module_t *self)
 {
   dt_iop_rgbcurve_gui_data_t *g = (dt_iop_rgbcurve_gui_data_t *)self->gui_data;
   dt_iop_rgbcurve_params_t *p = (dt_iop_rgbcurve_params_t *)self->params;
@@ -1454,7 +1486,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   // create part of the pixelpipe
-  dt_iop_rgbcurve_data_t *d = (dt_iop_rgbcurve_data_t *)malloc(sizeof(dt_iop_rgbcurve_data_t));
+  dt_iop_rgbcurve_data_t *d = (dt_iop_rgbcurve_data_t *)dt_alloc_align(64, sizeof(dt_iop_rgbcurve_data_t));
   const dt_iop_rgbcurve_params_t *const default_params = (dt_iop_rgbcurve_params_t *)self->default_params;
   piece->data = (void *)d;
   memcpy(&d->params, default_params, sizeof(dt_iop_rgbcurve_params_t));
@@ -1474,12 +1506,14 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
   for(int k = 0; k < 0x10000; k++) d->table[DT_IOP_RGBCURVE_B][k] = k / 0x10000; // identity for b
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(struct dt_iop_module_t *self,
+                  dt_dev_pixelpipe_t *pipe,
+                  dt_dev_pixelpipe_iop_t *piece)
 {
   // clean up everything again.
   dt_iop_rgbcurve_data_t *d = (dt_iop_rgbcurve_data_t *)(piece->data);
   for(int ch = 0; ch < DT_IOP_RGBCURVE_MAX_CHANNELS; ch++) dt_draw_curve_destroy(d->curve[ch]);
-  free(piece->data);
+  dt_free_align(piece->data);
   piece->data = NULL;
 }
 
@@ -1502,7 +1536,7 @@ void init_global(dt_iop_module_so_t *module)
 {
   const int program = 25; // rgbcurve.cl, from programs.conf
   dt_iop_rgbcurve_global_data_t *gd
-      = (dt_iop_rgbcurve_global_data_t *)malloc(sizeof(dt_iop_rgbcurve_global_data_t));
+      = (dt_iop_rgbcurve_global_data_t *)dt_alloc_align(64, sizeof(dt_iop_rgbcurve_global_data_t));
   module->data = gd;
 
   gd->kernel_rgbcurve = dt_opencl_create_kernel(program, "rgbcurve");
@@ -1512,17 +1546,17 @@ void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_rgbcurve_global_data_t *gd = (dt_iop_rgbcurve_global_data_t *)module->data;
   dt_opencl_free_kernel(gd->kernel_rgbcurve);
-  free(module->data);
+  dt_free_align(module->data);
   module->data = NULL;
 }
 
-// this will be called from process*()
-// it must be executed only if profile info has changed
-static void _generate_curve_lut(dt_dev_pixelpipe_t *pipe, dt_iop_rgbcurve_data_t *d)
+// called from commit_params
+static void _generate_curve_lut(dt_dev_pixelpipe_t *pipe,
+                                dt_iop_rgbcurve_data_t *d)
 {
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(pipe);
 
-  dt_iop_rgbcurve_node_t curve_nodes[3][DT_IOP_RGBCURVE_MAXNODES];
+  DT_ALIGNED_ARRAY dt_iop_rgbcurve_node_t curve_nodes[3][DT_IOP_RGBCURVE_MAXNODES];
 
   if(work_profile)
   {
@@ -1553,19 +1587,17 @@ static void _generate_curve_lut(dt_dev_pixelpipe_t *pipe, dt_iop_rgbcurve_data_t
 
   for(int ch = 0; ch < DT_IOP_RGBCURVE_MAX_CHANNELS; ch++)
   {
-    // take care of possible change of curve type or number of nodes (not yet implemented in UI)
+    // take care of possible change of curve type, number of nodes is explicitly set
+    // we only need a new curve if it's type has changed for a different interpolation
     if(d->curve_changed[ch])
     {
       dt_draw_curve_destroy(d->curve[ch]);
       d->curve[ch] = dt_draw_curve_new(0.0, 1.0, d->params.curve_type[ch]);
-      for(int k = 0; k < d->params.curve_num_nodes[ch]; k++)
-        (void)dt_draw_curve_add_point(d->curve[ch], curve_nodes[ch][k].x, curve_nodes[ch][k].y);
     }
-    else
-    {
-      for(int k = 0; k < d->params.curve_num_nodes[ch]; k++)
-        dt_draw_curve_set_point(d->curve[ch], k, curve_nodes[ch][k].x, curve_nodes[ch][k].y);
-    }
+
+    for(int k = 0; k < d->params.curve_num_nodes[ch]; k++)
+      dt_draw_curve_set_point(d->curve[ch], k, curve_nodes[ch][k].x, curve_nodes[ch][k].y);
+    d->curve[ch]->c.m_numAnchors = d->params.curve_num_nodes[ch];
 
     dt_draw_curve_calc_values(d->curve[ch], 0.0f, 1.0f, 0x10000, NULL, d->table[ch]);
   }
@@ -1583,8 +1615,10 @@ static void _generate_curve_lut(dt_dev_pixelpipe_t *pipe, dt_iop_rgbcurve_data_t
   }
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
+void commit_params(struct dt_iop_module_t *self,
+                    dt_iop_params_t *p1,
+                    dt_dev_pixelpipe_t *pipe,
+                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_rgbcurve_data_t *d = (dt_iop_rgbcurve_data_t *)(piece->data);
   dt_iop_rgbcurve_params_t *p = (dt_iop_rgbcurve_params_t *)p1;
@@ -1600,8 +1634,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   }
 
   for(int ch = 0; ch < DT_IOP_RGBCURVE_MAX_CHANNELS; ch++)
-    d->curve_changed[ch]
-        = (d->params.curve_type[ch] != p->curve_type[ch] || d->params.curve_nodes[ch] != p->curve_nodes[ch]);
+    d->curve_changed[ch] = d->params.curve_type[ch] != p->curve_type[ch];
+
+ _generate_curve_lut(piece->pipe, d);
 
   memcpy(&d->params, p, sizeof(dt_iop_rgbcurve_params_t));
 
@@ -1611,15 +1646,17 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(struct dt_iop_module_t *self,
+                dt_dev_pixelpipe_iop_t *piece,
+                cl_mem dev_in,
+                cl_mem dev_out,
+                const dt_iop_roi_t *const roi_in,
+                const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
 
   dt_iop_rgbcurve_data_t *d = (dt_iop_rgbcurve_data_t *)piece->data;
   dt_iop_rgbcurve_global_data_t *gd = (dt_iop_rgbcurve_global_data_t *)self->global_data;
-
-  _generate_curve_lut(piece->pipe, d);
 
   cl_int err = CL_SUCCESS;
 
@@ -1683,8 +1720,12 @@ cleanup:
 }
 #endif
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(struct dt_iop_module_t *self,
+              dt_dev_pixelpipe_iop_t *piece,
+              const void *const ivoid,
+              void *const ovoid,
+              const dt_iop_roi_t *const roi_in,
+              const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
 
@@ -1695,8 +1736,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     return; // image has been copied through to output and module's trouble flag has been updated
 
   dt_iop_rgbcurve_data_t *const restrict d = (dt_iop_rgbcurve_data_t *)(piece->data);
-
-  _generate_curve_lut(piece->pipe, d);
 
   const float xm_L = 1.0f / d->unbounded_coeffs[DT_IOP_RGBCURVE_R][0];
   const float xm_g = 1.0f / d->unbounded_coeffs[DT_IOP_RGBCURVE_G][0];
