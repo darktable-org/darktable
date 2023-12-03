@@ -128,16 +128,6 @@ void dt_mipmap_cache_get_with_caller(
     const char *file,
     int line);
 
-// convenience function with fewer params
-#define dt_mipmap_cache_write_get(A,B,C,D) dt_mipmap_cache_write_get_with_caller(A,B,C,D,__FILE__,__LINE__)
-void dt_mipmap_cache_write_get_with_caller(
-    dt_mipmap_cache_t *cache,
-    dt_mipmap_buffer_t *buf,
-    const dt_imgid_t imgid,
-    const int mip,
-    const char *file,
-    int line);
-
 // drop a lock
 #define dt_mipmap_cache_release(A, B) dt_mipmap_cache_release_with_caller(A, B, __FILE__, __LINE__)
 void dt_mipmap_cache_release_with_caller(dt_mipmap_cache_t *cache, dt_mipmap_buffer_t *buf, const char *file,
