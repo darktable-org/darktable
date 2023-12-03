@@ -928,11 +928,6 @@ void dt_mipmap_cache_get_with_caller(
   }
 }
 
-void dt_mipmap_cache_write_get_with_caller(dt_mipmap_cache_t *cache, dt_mipmap_buffer_t *buf, const dt_imgid_t imgid, const int mip, const char *file, int line)
-{
-  dt_mipmap_cache_get_with_caller(cache, buf, imgid, mip, DT_MIPMAP_BLOCKING, 'w', file, line);
-}
-
 void dt_mipmap_cache_release_with_caller(dt_mipmap_cache_t *cache, dt_mipmap_buffer_t *buf, const char *file,
                                          int line)
 {
