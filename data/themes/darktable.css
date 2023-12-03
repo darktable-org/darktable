@@ -1454,7 +1454,8 @@ border-bottom: 0.07em solid alpha(@selected_bg_color, 0.75);
 #import-presets,
 #modulegroups-ro
 {
-  font-style: italic;
+  margin-top: 1.0em;
+  font-weight: bold;
 }
 
 /* About window: set different background for credits view */
