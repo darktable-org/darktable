@@ -392,10 +392,6 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
         dt_iop_get_module_by_op_priority(dev_dest->iop, mod_src->op, -1);
 
       module = dt_dev_module_duplicate_ext(dev_dest, base, FALSE);
-      dt_ioppr_resync_modules_order(dev_dest);
-
-      // and record this module as we don't want to reuse it later
-      modules_used = g_list_append(modules_used, module);
 
       if(!module)
       {
@@ -404,6 +400,13 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
                  " can't load module %s\n", mod_src->op);
         module_added = FALSE;
       }
+      else
+      {
+        dt_ioppr_resync_modules_order(dev_dest);
+
+        // and record this module as we don't want to reuse it later
+        modules_used = g_list_append(modules_used, module);
+      }
     }
     else
     {
@@ -411,7 +414,6 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
     }
 
     module->enabled = mod_src->enabled;
-    module->multi_priority = mod_src->multi_priority;
 
     if(!module->multi_name_hand_edited)
     {
@@ -437,7 +439,7 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
 
   // we have the module, we will use the source module iop_order
   // unless there's already a module with that order
-  if(module_added)
+  if(module_added && mod_replace == NULL)
   {
     dt_iop_module_t *module_duplicate = NULL;
     // check if there's a module with the same iop_order
@@ -543,7 +545,10 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
     else
       dt_dev_add_history_item_ext(dev_dest, module, FALSE, TRUE);
 
-    dt_ioppr_resync_modules_order(dev_dest);
+    if(mod_replace == NULL)
+    {
+      dt_ioppr_resync_modules_order(dev_dest);
+    }
 
     dt_dev_pop_history_items_ext(dev_dest, dev_dest->history_end);
 
