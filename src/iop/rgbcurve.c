@@ -104,7 +104,7 @@ typedef struct dt_iop_rgbcurve_data_t
   dt_iop_rgbcurve_params_t params;
   dt_draw_curve_t *curve[DT_IOP_RGBCURVE_MAX_CHANNELS];    // curves for pipe piece and pixel processing
   float unbounded_coeffs[DT_IOP_RGBCURVE_MAX_CHANNELS][3]; // approximation for extrapolation
-  int curve_changed[DT_IOP_RGBCURVE_MAX_CHANNELS];         // curve type or number of nodes changed?
+  gboolean curve_changed[DT_IOP_RGBCURVE_MAX_CHANNELS];    // curve type changed?
   dt_colorspaces_color_profile_type_t type_work; // working color profile
   char filename_work[DT_IOP_COLOR_ICC_LEN];
 } dt_iop_rgbcurve_data_t;
@@ -784,7 +784,7 @@ static gboolean _area_draw_callback(GtkWidget *widget,
     g->minmax_curve_nodes[ch] = p->curve_num_nodes[ch];
     g->minmax_curve_type[ch] = p->curve_type[ch];
     for(int k = 0; k < p->curve_num_nodes[ch]; k++)
-      (void)dt_draw_curve_add_point(g->minmax_curve[ch],
+      dt_draw_curve_add_point(g->minmax_curve[ch],
                                     p->curve_nodes[ch][k].x, p->curve_nodes[ch][k].y);
   }
   else
@@ -1481,7 +1481,7 @@ void gui_init(struct dt_iop_module_t *self)
     g->minmax_curve_nodes[ch] = p->curve_num_nodes[ch];
     g->minmax_curve_type[ch] = p->curve_type[ch];
     for(int k = 0; k < p->curve_num_nodes[ch]; k++)
-      (void)dt_draw_curve_add_point(g->minmax_curve[ch],
+      dt_draw_curve_add_point(g->minmax_curve[ch],
                                     p->curve_nodes[ch][k].x,
                                     p->curve_nodes[ch][k].y);
   }
@@ -1638,7 +1638,7 @@ void init_pipe(struct dt_iop_module_t *self,
     d->params.curve_num_nodes[ch] = default_params->curve_num_nodes[ch];
     d->params.curve_type[ch] = default_params->curve_type[ch];
     for(int k = 0; k < default_params->curve_num_nodes[ch]; k++)
-      (void)dt_draw_curve_add_point(d->curve[ch], default_params->curve_nodes[ch][k].x,
+      dt_draw_curve_add_point(d->curve[ch], default_params->curve_nodes[ch][k].x,
                                     default_params->curve_nodes[ch][k].y);
   }
 
@@ -1695,7 +1695,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
-// called from commit_params
+// called from process*(), takes care of changed curve type
 static void _generate_curve_lut(dt_dev_pixelpipe_t *pipe,
                                 dt_iop_rgbcurve_data_t *d)
 {
@@ -1737,12 +1737,16 @@ static void _generate_curve_lut(dt_dev_pixelpipe_t *pipe,
 
   for(int ch = 0; ch < DT_IOP_RGBCURVE_MAX_CHANNELS; ch++)
   {
-    // take care of possible change of curve type, number of nodes is explicitly set
-    // we only need a new curve if it's type has changed for a different interpolation
+    /* take care of possible change of curve type, number of nodes is explicitly set.
+       We only need a new curve if it's type has changed for a different interpolation.
+       If we change the curve we avoid a possible race condition between pixelpipes.
+    */
     if(d->curve_changed[ch])
     {
-      dt_draw_curve_destroy(d->curve[ch]);
+      dt_draw_curve_t *oldcurve = d->curve[ch];
       d->curve[ch] = dt_draw_curve_new(0.0, 1.0, d->params.curve_type[ch]);
+      d->curve_changed[ch] = FALSE;
+      dt_draw_curve_destroy(oldcurve);
     }
 
     for(int k = 0; k < d->params.curve_num_nodes[ch]; k++)
@@ -1786,8 +1790,6 @@ void commit_params(struct dt_iop_module_t *self,
   for(int ch = 0; ch < DT_IOP_RGBCURVE_MAX_CHANNELS; ch++)
     d->curve_changed[ch] = d->params.curve_type[ch] != p->curve_type[ch];
 
- _generate_curve_lut(piece->pipe, d);
-
   memcpy(&d->params, p, sizeof(dt_iop_rgbcurve_params_t));
 
   // working color profile
@@ -1809,6 +1811,7 @@ int process_cl(struct dt_iop_module_t *self,
   dt_iop_rgbcurve_data_t *d = (dt_iop_rgbcurve_data_t *)piece->data;
   dt_iop_rgbcurve_global_data_t *gd = (dt_iop_rgbcurve_global_data_t *)self->global_data;
 
+ _generate_curve_lut(piece->pipe, d);
   cl_int err = CL_SUCCESS;
 
   cl_mem dev_r = NULL;
@@ -1909,6 +1912,7 @@ void process(struct dt_iop_module_t *self,
             // trouble flag has been updated
 
   dt_iop_rgbcurve_data_t *const restrict d = (dt_iop_rgbcurve_data_t *)(piece->data);
+ _generate_curve_lut(piece->pipe, d);
 
   const float xm_L = 1.0f / d->unbounded_coeffs[DT_IOP_RGBCURVE_R][0];
   const float xm_g = 1.0f / d->unbounded_coeffs[DT_IOP_RGBCURVE_G][0];
