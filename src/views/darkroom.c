@@ -1539,7 +1539,7 @@ static void _color_finder_quickbutton_clicked(GtkWidget *w, gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
   d->color_finder.enabled = !d->color_finder.enabled;
-  dt_dev_reprocess_center(d);
+  dt_control_queue_redraw_center();
 }
 
 static void _color_finder_value_callback(GtkWidget *slider, gpointer user_data)
@@ -1549,7 +1549,7 @@ static void _color_finder_value_callback(GtkWidget *slider, gpointer user_data)
   if(d->color_finder.enabled == FALSE)
     gtk_button_clicked(GTK_BUTTON(d->color_finder.button));
   else
-    dt_dev_reprocess_center(d);
+    dt_control_queue_redraw_center();
 }
 
 static void _color_finder_saturation_callback(GtkWidget *slider, gpointer user_data)
@@ -1559,7 +1559,7 @@ static void _color_finder_saturation_callback(GtkWidget *slider, gpointer user_d
   if(d->color_finder.enabled == FALSE)
     gtk_button_clicked(GTK_BUTTON(d->color_finder.button));
   else
-    dt_dev_reprocess_center(d);
+    dt_control_queue_redraw_center();
 }
 
 /* softproof */
@@ -2302,7 +2302,7 @@ void gui_init(dt_view_t *self)
     /** let's fill the encapsulating widgets */
 
     /* value */
-    GtkWidget *value = dt_bauhaus_slider_new_action(DT_ACTION(self), 0.0, 255.0, 2.0, 128.0, 0);
+    GtkWidget *value = dt_bauhaus_slider_new_action(DT_ACTION(self), 28.0, 228.0, 2.0, 128.0, 0);
     dt_bauhaus_slider_set(value, dev->color_finder.value);
     dt_bauhaus_widget_set_label(value, N_("settings"), N_("value"));
     gtk_widget_set_tooltip_text(value, _("targat value in HSV color space"));
