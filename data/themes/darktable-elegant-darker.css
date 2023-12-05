@@ -72,7 +72,8 @@ box *
                "SF Pro Display Light", "SF Pro Display",  /* Mac OS X default */
                "Ubuntu Light", "Ubuntu", "IPAPGothic",    /* Ubuntu default */
                "Cantarell",                               /* Gnome default */
-                sans-serif;                                /* default default */
+               "Arial Unicode MS",                        /* Unicode glyphs */
+                sans-serif;                               /* default default */
 }
 
 .dt_section_label:not(#blending-box),
@@ -84,6 +85,7 @@ box *
                "SF Pro Display Medium", "SF Pro Display",
                "Ubuntu Medium", "Ubuntu", "IPAPGothic",
                "Cantarell",
+               "Arial Unicode MS",
                 sans-serif;
 }
 
@@ -95,7 +97,8 @@ box *
                "SF Pro Display", "SF Pro Display",
                "Ubuntu Condensed", "Ubuntu", "IPAPGothic",
                "Cantarell",
-               sans-serif;
+               "Arial Unicode MS",
+                sans-serif;
 }
 
 .active_menu_item *, /* needed for some Pango issues not rendering synthetic bold for all OS */
@@ -109,5 +112,6 @@ tooltip label,
                "SF Pro Text",
                "Ubuntu", "IPAPGothic",
                "Cantarell",
+               "Arial Unicode MS",
                 sans-serif;
 }
