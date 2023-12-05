@@ -820,7 +820,7 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
   if(!filename) query = dt_util_dstrcat(query, ", filename%s",
                                         (first_order) ? " DESC" : "");
 
-  query = dt_util_dstrcat(query, ", version%s", (first_order) ? " DESC" : "");
+  query = dt_util_dstrcat(query, ", version ASC");
 
   return query;
 }
