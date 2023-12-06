@@ -1218,6 +1218,36 @@ void dt_opencl_init(
            "[opencl_init] found %d platform%s\n",
            num_platforms, num_platforms > 1 ? "s" : "");
 
+  // safety check for platforms; we must not have several versions for the same platform
+  {
+    gboolean multiple = FALSE;
+    char *platforms = calloc(num_platforms, sizeof(char) * DT_OPENCL_CBUFFSIZE);
+    for(int n = 0; n < num_platforms; n++)
+    {
+      cl_platform_id platform = all_platforms[n];
+      if((cl->dlocl->symbols->dt_clGetPlatformInfo)
+        (platform, CL_PLATFORM_NAME, DT_OPENCL_CBUFFSIZE, platforms + n * DT_OPENCL_CBUFFSIZE, NULL) != CL_SUCCESS)
+      {
+        multiple = TRUE;
+        break;
+      }
+      for(int k = 0; k < n; k++)
+      {
+        if(!strcmp(platforms + n * DT_OPENCL_CBUFFSIZE, platforms + k * DT_OPENCL_CBUFFSIZE))
+          multiple = TRUE;
+      }
+    }
+    free(platforms);
+
+    if(multiple)
+    {
+      dt_print(DT_DEBUG_OPENCL,
+                 "[opencl_init] detected wrong OpenCL platforms setup\n");
+      num_platforms = 0;
+      goto finally;
+    }
+  }
+
   for(int n = 0; n < num_platforms; n++)
   {
     cl_platform_id platform = all_platforms[n];
