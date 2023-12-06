@@ -302,6 +302,10 @@ changes (where available).
     value by pressing <kbd>Enter</kbd> (as long as the corresponding
     widget still has focus).
 
+  - On macOS the system shortcuts e.g. for copy and paste will now work
+    according to the macOS keyboard defaults, meaning using the <kbd>command</kbd>
+    key instead of the original Linux style <kbd>control</kbd> key.
+
 - The ISO 12464 color assessment mode for the secondary
   preview window is now activated independently from the main window
   (and saved between sessions) with a toggle in the
