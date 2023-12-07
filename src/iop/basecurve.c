@@ -724,6 +724,7 @@ int process_cl_fusion(struct dt_iop_module_t *self,
 
   int num_levels = num_levels_max;
 
+  err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   dev_tmp1 = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   if(dev_tmp1 == NULL) goto error;
 

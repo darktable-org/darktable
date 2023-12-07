@@ -1100,7 +1100,10 @@ int process_cl(struct dt_iop_module_t *self,
   hue_rotation_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), hue_rotation_matrix);
 
   if(input_matrix_cl == NULL || output_matrix_cl == NULL || gamut_LUT_cl == NULL || hue_rotation_matrix_cl == NULL)
+  {
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto error;
+  }
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_colorbalance_rgb, width, height,
     CLARG(dev_in), CLARG(dev_out),

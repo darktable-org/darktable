@@ -298,6 +298,7 @@ int process_cl(struct dt_iop_module_t *self,
     b = NULL; // make sure we don't clean it up twice
   }
 
+  err = DT_OPENCL_SYSMEM_ALLOCATION;
   dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   if(dev_tmp == NULL) goto error;
 

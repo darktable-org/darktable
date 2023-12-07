@@ -280,6 +280,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int raw_width = buf.width;
   const int raw_height = buf.height;
 
+  err = DT_OPENCL_SYSMEM_ALLOCATION;
   dev_raw = dt_opencl_copy_host_to_device(devid, buf.buf, raw_width, raw_height, sizeof(uint16_t));
   if(dev_raw == NULL) goto error;
 
@@ -340,6 +341,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       break;
   }
 
+  err = DT_OPENCL_SYSMEM_ALLOCATION;
   if(filters == 9u)
   {
     dev_xtrans

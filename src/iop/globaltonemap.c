@@ -408,7 +408,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                                       .sizex = 1 << 4, .sizey = 1 << 4 };
 
       if(!dt_opencl_local_buffer_opt(devid, gd->kernel_pixelmax_first, &flocopt))
-        goto error;
+        goto finally;
 
       const size_t bwidth = ROUNDUP(width, flocopt.sizex);
       const size_t bheight = ROUNDUP(height, flocopt.sizey);
@@ -421,7 +421,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                                       .sizex = 1 << 16, .sizey = 1 };
 
       if(!dt_opencl_local_buffer_opt(devid, gd->kernel_pixelmax_second, &slocopt))
-        goto error;
+        goto finally;
 
       const int reducesize = MIN(REDUCESIZE, ROUNDUP(bufsize, slocopt.sizex) / slocopt.sizex);
 
@@ -429,10 +429,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       size_t local[3];
 
       dev_m = dt_opencl_alloc_device_buffer(devid, sizeof(float) * bufsize);
-      if(dev_m == NULL) goto error;
+      if(dev_m == NULL) goto finally;
 
       dev_r = dt_opencl_alloc_device_buffer(devid, sizeof(float) * reducesize);
-      if(dev_r == NULL) goto error;
+      if(dev_r == NULL) goto finally;
 
       sizes[0] = bwidth;
       sizes[1] = bheight;
@@ -443,7 +443,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       dt_opencl_set_kernel_args(devid, gd->kernel_pixelmax_first, 0, CLARG(dev_in), CLARG(width), CLARG(height),
         CLARG(dev_m), CLLOCAL(sizeof(float) * flocopt.sizex * flocopt.sizey));
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_pixelmax_first, sizes, local);
-      if(err != CL_SUCCESS) goto error;
+      if(err != CL_SUCCESS) goto finally;
 
       sizes[0] = (size_t)reducesize * slocopt.sizex;
       sizes[1] = 1;
@@ -454,12 +454,12 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       dt_opencl_set_kernel_args(devid, gd->kernel_pixelmax_second, 0, CLARG(dev_m), CLARG(dev_r), CLARG(bufsize),
         CLLOCAL(sizeof(float) * slocopt.sizex));
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_pixelmax_second, sizes, local);
-      if(err != CL_SUCCESS) goto error;
+      if(err != CL_SUCCESS) goto finally;
 
       maximum = dt_alloc_align_float((size_t)reducesize);
       err = dt_opencl_read_buffer_from_device(devid, (void *)maximum, dev_r, 0,
                                             sizeof(float) * reducesize, CL_TRUE);
-      if(err != CL_SUCCESS) goto error;
+      if(err != CL_SUCCESS) goto finally;
 
       dt_opencl_release_mem_object(dev_r);
       dt_opencl_release_mem_object(dev_m);
@@ -505,30 +505,27 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   if(d->detail != 0.0f)
   {
+    err = DT_OPENCL_DEFAULT_ERROR;
     b = dt_bilateral_init_cl(devid, roi_in->width, roi_in->height, sigma_s, sigma_r);
-    if(!b) goto error;
+    if(!b) goto finally;
     // get detail from unchanged input buffer
     err = dt_bilateral_splat_cl(b, dev_in);
-    if(err != CL_SUCCESS) goto error;
+    if(err != CL_SUCCESS) goto finally;
   }
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gtkernel, width, height,
     CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(parameters));
-  if(err != CL_SUCCESS) goto error;
+  if(err != CL_SUCCESS) goto finally;
 
   if(d->detail != 0.0f)
   {
     err = dt_bilateral_blur_cl(b);
-    if(err != CL_SUCCESS) goto error;
+    if(err != CL_SUCCESS) goto finally;
     // and apply it to output buffer after logscale
     err = dt_bilateral_slice_to_output_cl(b, dev_in, dev_out, d->detail);
-    if(err != CL_SUCCESS) goto error;
-    dt_bilateral_free_cl(b);
   }
 
-  return CL_SUCCESS;
-
-error:
+finally:
   if(b) dt_bilateral_free_cl(b);
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_r);

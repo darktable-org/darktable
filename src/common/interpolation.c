@@ -1365,6 +1365,8 @@ int dt_interpolation_resample_cl(const struct dt_interpolation *itor,
   // store resampling plan to device memory hindex, vindex, hkernel,
   // vkernel: (v|h)maxtaps might be too small, so store a bit more
   // than needed
+  err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+
   dev_hindex = dt_opencl_copy_host_to_device_constant
     (devid, sizeof(int) * width * (hmaxtaps + 1), hindex);
   if(dev_hindex == NULL) goto error;
