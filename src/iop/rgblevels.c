@@ -675,7 +675,7 @@ static gboolean _area_scroll_callback(GtkWidget *widget,
   const float interval = 0.002 * dt_accel_get_speed_multiplier(widget, event->state);
   // Distance moved for each scroll event
   int delta_y;
-  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
+  if(dt_gui_get_scroll_unit_delta(event, &delta_y))
   {
     const float new_position = p->levels[c->channel][c->handle_move] - interval * delta_y;
     _rgblevels_move_handle(self, c->handle_move, new_position, p->levels[c->channel], c->drag_start_percentage);

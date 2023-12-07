@@ -1883,7 +1883,7 @@ static gboolean _area_scrolled_callback(GtkWidget *widget,
 
   if(darktable.develop->darkroom_skip_mouse_events)
   {
-    if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
+    if(dt_gui_get_scroll_unit_delta(event, &delta_y))
     {
       GtkAllocation allocation;
       gtk_widget_get_allocation(widget, &allocation);

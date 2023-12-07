@@ -3654,7 +3654,7 @@ static gboolean denoiseprofile_scrolled(GtkWidget *widget,
   if(dt_gui_ignore_scroll(event)) return FALSE;
 
   int delta_y;
-  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
+  if(dt_gui_get_scroll_unit_delta(event, &delta_y))
   {
     c->mouse_radius = CLAMP(c->mouse_radius * (1.f + 0.1f * delta_y),
                             0.2f / DT_IOP_DENOISE_PROFILE_BANDS, 1.f);

@@ -1319,7 +1319,7 @@ static gboolean rt_wdbar_scrolled(GtkWidget *widget,
   dt_iop_request_focus(self);
 
   int delta_y;
-  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
+  if(dt_gui_get_scroll_unit_delta(event, &delta_y))
   {
     if(g->lower_margin) // bottom slider
       rt_num_scales_update(p->num_scales - delta_y, self);

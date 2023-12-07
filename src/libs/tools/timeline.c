@@ -1322,7 +1322,7 @@ static gboolean _lib_timeline_scroll_callback(GtkWidget *w, GdkEventScroll *e, g
   {
     int z = strip->zoom;
     int delta_y = 0;
-    if(dt_gui_get_scroll_unit_deltas(e, NULL, &delta_y))
+    if(dt_gui_get_scroll_unit_delta(e, &delta_y))
     {
       if(delta_y < 0)
       {

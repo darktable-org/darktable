@@ -3696,7 +3696,7 @@ static gboolean _second_window_scrolled_callback(GtkWidget *widget,
                                                  dt_develop_t *dev)
 {
   int delta_y;
-  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
+  if(dt_gui_get_scroll_unit_delta(event, &delta_y))
   {
     const gboolean constrained = !dt_modifier_is(event->state, GDK_CONTROL_MASK);
     dt_dev_zoom_move(&dev->preview2, DT_ZOOM_SCROLL, 0.0f, delta_y < 0,
