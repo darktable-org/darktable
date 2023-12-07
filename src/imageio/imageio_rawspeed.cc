@@ -208,7 +208,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img,
     img->raw_black_level = r->blackLevel;
     img->raw_white_point = r->whitePoint;
 
-    if(r->blackLevelSeparate[0] == -1
+    if(!r->blackAreas.empty() || r->blackLevelSeparate[0] == -1
        || r->blackLevelSeparate[1] == -1
        || r->blackLevelSeparate[2] == -1
        || r->blackLevelSeparate[3] == -1)
