@@ -54,10 +54,8 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
     goto out;
   }
 
-  /* Be permissive so we can load even slightly-offspec files (libavif 0.9.1 or later) */
-#if AVIF_VERSION >= 90100
+  /* Be permissive so we can load even slightly-offspec files */
   decoder->strictFlags = AVIF_STRICT_DISABLED;
-#endif
 
   result = avifDecoderReadFile(decoder, &avif_image, filename);
   if(result != AVIF_RESULT_OK)
@@ -90,6 +88,18 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
       dt_exif_read_from_blob(img, exif->data + offset, exif->size - offset);
     }
   }
+
+  /* Override any Exif orientation from AVIF irot/imir transformations */
+  /* TODO: Add user crop from AVIF clap transformation */
+  const int angle = avif_image.transformFlags & AVIF_TRANSFORM_IROT ? avif_image.irot.angle : 0;
+  const int flip = avif_image.transformFlags & AVIF_TRANSFORM_IMIR
+#if AVIF_VERSION <= 110100
+                       ? avif_image.imir.mode
+#else
+                       ? avif_image.imir.axis
+#endif
+                       : -1;
+  img->orientation = dt_image_transformation_to_flip_bits(angle, flip);
 
   /* This will set the depth from the avif */
   avifRGBImageSetDefaults(&rgb, &avif_image);
@@ -259,21 +269,13 @@ int dt_imageio_avif_read_profile(const char *filename, uint8_t **out, dt_colorsp
     if(avif_image.colorPrimaries == AVIF_COLOR_PRIMARIES_BT709)
     {
       gboolean over = FALSE;
-      /* mistagged sRGB AVIFs exported before dt 3.8 */
-      if(avif_image.transferCharacteristics == AVIF_TRANSFER_CHARACTERISTICS_SRGB
-         && avif_image.matrixCoefficients == AVIF_MATRIX_COEFFICIENTS_BT709)
-      {
-        /* must be code value 5 (IEC 61966-2-1 sYCC) */
-        cicp->matrix_coefficients = AVIF_MATRIX_COEFFICIENTS_BT470BG;
-        over =  TRUE;
-      }
       /* mistagged Rec. 709 AVIFs exported before dt 3.6 */
-      else if(avif_image.transferCharacteristics == AVIF_TRANSFER_CHARACTERISTICS_BT470M
+      if(avif_image.transferCharacteristics == AVIF_TRANSFER_CHARACTERISTICS_BT470M
          && avif_image.matrixCoefficients == AVIF_MATRIX_COEFFICIENTS_BT709)
       {
         /* must be actual Rec. 709 instead of 2.2 gamma*/
         cicp->transfer_characteristics = AVIF_TRANSFER_CHARACTERISTICS_BT709;
-        over =  TRUE;
+        over = TRUE;
       }
 
       if(over)

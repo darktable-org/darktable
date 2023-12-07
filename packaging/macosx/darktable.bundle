@@ -38,6 +38,7 @@
   <data>${prefix}/share/mime</data>
   <data>${prefix}/share/curl/curl-ca-bundle.crt</data>
   <data>${prefix}/share/iso-codes/json/iso_639-2.json</data>
+  <data>${prefix}/share/themes/Mac/gtk-3.0/gtk-keys.css</data>
   <data dest="${bundle}/Contents/Resources/Icons.icns">${project}/Icons.icns</data>
   <data dest="${bundle}/Contents/Resources/share/applications/defaults.list">${project}/defaults.list</data>
   <data dest="${bundle}/Contents/Resources/share/applications/open.desktop">${project}/open.desktop</data>

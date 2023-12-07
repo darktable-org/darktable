@@ -161,15 +161,35 @@ int default_group()
 }
 
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
-                  void *new_params, const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  typedef struct dt_iop_negadoctor_params_v2_t
+  {
+    dt_iop_negadoctor_filmstock_t film_stock;
+    float Dmin[4];
+    float wb_high[4];
+    float wb_low[4];
+    float D_max;
+    float offset;
+    float black;
+    float gamma;
+    float soft_clip;
+    float exposure;
+  } dt_iop_negadoctor_params_v2_t;
+
+  if(old_version == 1)
   {
     typedef struct dt_iop_negadoctor_params_v1_t
     {
@@ -185,11 +205,9 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       float exposure;                         // extra exposure
     } dt_iop_negadoctor_params_v1_t;
 
-    dt_iop_negadoctor_params_v1_t *o = (dt_iop_negadoctor_params_v1_t *)old_params;
-    dt_iop_negadoctor_params_t *n = (dt_iop_negadoctor_params_t *)new_params;
-    dt_iop_negadoctor_params_t *d = (dt_iop_negadoctor_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
+    const dt_iop_negadoctor_params_v1_t *o = (dt_iop_negadoctor_params_v1_t *)old_params;
+    dt_iop_negadoctor_params_v2_t *n =
+      (dt_iop_negadoctor_params_v2_t *)malloc(sizeof(dt_iop_negadoctor_params_v2_t));
 
     // WARNING: when copying the arrays in a for loop, gcc wrongly assumed
     //          that n and o were aligned and used AVX instructions for me,
@@ -214,6 +232,9 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->soft_clip = o->soft_clip;
     n->exposure = o->exposure;
 
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_negadoctor_params_v2_t);
+    *new_version = 2;
     return 0;
   }
   return 1;
@@ -300,7 +321,7 @@ static inline void _process_pixel(const dt_aligned_pixel_t pix_in,
     {
       // Compress highlights. from https://lists.gnu.org/archive/html/openexr-devel/2005-03/msg00009.html
       pix_out[c] = (print_gamma[c] > soft_clip[c])
-        ? soft_clip[c] + (1.0f - e_to_gamma[c] * soft_clip_comp[c])
+        ? soft_clip[c] + (1.0f - e_to_gamma[c]) * soft_clip_comp[c]
         : print_gamma[c];
     }
 }
@@ -355,21 +376,13 @@ int process_cl(struct dt_iop_module_t *const self, dt_dev_pixelpipe_iop_t *const
   const dt_iop_negadoctor_data_t *const d = (dt_iop_negadoctor_data_t *)piece->data;
   const dt_iop_negadoctor_global_data_t *const gd = (dt_iop_negadoctor_global_data_t *)self->global_data;
 
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
-
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_negadoctor, width, height,
+  return dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_negadoctor, width, height,
     CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(d->Dmin), CLARG(d->wb_high),
     CLARG(d->offset), CLARG(d->exposure), CLARG(d->black), CLARG(d->gamma), CLARG(d->soft_clip), CLARG(d->soft_clip_comp));
-  if(err != CL_SUCCESS) goto error;
-    return TRUE;
-
-error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_negadoctor] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
 }
 #endif
 
@@ -383,6 +396,7 @@ void init(dt_iop_module_t *module)
   d->Dmin[0] = 1.00f;
   d->Dmin[1] = 0.45f;
   d->Dmin[2] = 0.25f;
+  d->Dmin[3] = 1.00f; // keep parameter validation with -d common happy
 }
 
 void init_presets(dt_iop_module_so_t *self)
@@ -564,6 +578,7 @@ static void WB_low_picker_callback(GtkColorButton *widget, dt_iop_module_t *self
 
   float RGB_min = v_minf(RGB);
   for(size_t k = 0; k < 3; k++) p->wb_low[k] = RGB[k] / RGB_min;
+  p->wb_low[3] = 1.0f;
 
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->wb_low_R, p->wb_low[0]);
@@ -611,6 +626,7 @@ static void WB_high_picker_callback(GtkColorButton *widget, dt_iop_module_t *sel
   dt_aligned_pixel_t RGB = { 2.0f - c.red, 2.0f - c.green, 2.0f - c.blue };
   float RGB_min = v_minf(RGB);
   for(size_t k = 0; k < 3; k++) p->wb_high[k] = RGB[k] / RGB_min;
+  p->wb_high[3] = 1.0f;
 
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->wb_high_R, p->wb_high[0]);
@@ -706,6 +722,7 @@ static void apply_auto_WB_low(dt_iop_module_t *self)
 
   const float RGB_v_min = v_minf(RGB_min); // warning: can be negative
   for(int c = 0; c < 3; c++) p->wb_low[c] =  RGB_v_min / RGB_min[c];
+  p->wb_low[3] = 1.0f;
 
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->wb_low_R, p->wb_low[0]);
@@ -732,6 +749,7 @@ static void apply_auto_WB_high(dt_iop_module_t *self)
 
   const float RGB_v_min = v_minf(RGB_min); // warning : must be positive
   for(int c = 0; c < 3; c++) p->wb_high[c] = RGB_min[c] / RGB_v_min;
+  p->wb_high[3] = 1.0f;
 
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->wb_high_R, p->wb_high[0]);
@@ -797,7 +815,8 @@ static void apply_auto_exposure(dt_iop_module_t *self)
 }
 
 
-void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
+                        dt_dev_pixelpipe_t *pipe)
 {
   if(darktable.gui->reset) return;
   dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
@@ -1083,4 +1102,3 @@ void gui_reset(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

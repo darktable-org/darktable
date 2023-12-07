@@ -223,7 +223,12 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
 
     if(status == JXL_DEC_COLOR_ENCODING)
     {
-      if(JxlDecoderGetICCProfileSize(decoder, &pixel_format, JXL_COLOR_PROFILE_TARGET_DATA, &icc_size)
+      if(JxlDecoderGetICCProfileSize(decoder,
+#if JPEGXL_NUMERIC_VERSION < JPEGXL_COMPUTE_NUMERIC_VERSION(0, 9, 0)
+                                     &pixel_format,
+#endif
+                                     JXL_COLOR_PROFILE_TARGET_DATA,
+                                     &icc_size)
          == JXL_DEC_SUCCESS)
       {
         if(icc_size)
@@ -231,7 +236,9 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
           img->profile_size = icc_size;
           img->profile = (uint8_t *)g_malloc0(icc_size);
           JxlDecoderGetColorAsICCProfile(decoder,
+#if JPEGXL_NUMERIC_VERSION < JPEGXL_COMPUTE_NUMERIC_VERSION(0, 9, 0)
                                          &pixel_format,
+#endif
                                          JXL_COLOR_PROFILE_TARGET_DATA,
                                          img->profile,
                                          icc_size);
@@ -287,7 +294,8 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
 
   } // end of processing loop
 
-  if(!img->exif_inited)
+  // Fallback reading if the Exif box is present but exiv2 didn't do the job
+  if(!img->exif_inited && exif_data)
   {
     JxlDecoderReleaseBoxBuffer(decoder);
     // First 4 bytes of Exif blob is an offset of the actual Exif data

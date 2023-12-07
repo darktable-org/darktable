@@ -86,7 +86,9 @@ int operation_tags()
   return IOP_TAG_DISTORT;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
@@ -103,7 +105,9 @@ const char **description(struct dt_iop_module_t *self)
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
-static void transform(const dt_dev_pixelpipe_iop_t *const piece, const float scale, const float *const x,
+static void transform(const dt_dev_pixelpipe_iop_t *const piece,
+                      const float scale,
+                      const float *const x,
                       float *o)
 {
   dt_iop_rotatepixels_data_t *d = (dt_iop_rotatepixels_data_t *)piece->data;
@@ -117,7 +121,9 @@ static void transform(const dt_dev_pixelpipe_iop_t *const piece, const float sca
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
-static void backtransform(const dt_dev_pixelpipe_iop_t *const piece, const float scale, const float *const x,
+static void backtransform(const dt_dev_pixelpipe_iop_t *const piece,
+                          const float scale,
+                          const float *const x,
                           float *o)
 {
   dt_iop_rotatepixels_data_t *d = (dt_iop_rotatepixels_data_t *)piece->data;
@@ -129,7 +135,10 @@ static void backtransform(const dt_dev_pixelpipe_iop_t *const piece, const float
   o[1] += d->ry * scale;
 }
 
-int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *const restrict points, size_t points_count)
+gboolean distort_transform(dt_iop_module_t *self,
+                           dt_dev_pixelpipe_iop_t *piece,
+                           float *const restrict points,
+                           size_t points_count)
 {
   const float scale = piece->buf_in.scale / piece->iscale;
 
@@ -151,11 +160,13 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
     points[i + 1] = po[1];
   }
 
-  return 1;
+  return TRUE;
 }
 
-int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *const restrict points,
-                          size_t points_count)
+gboolean distort_backtransform(dt_iop_module_t *self,
+                               dt_dev_pixelpipe_iop_t *piece,
+                               float *const restrict points,
+                               size_t points_count)
 {
   const float scale = piece->buf_in.scale / piece->iscale;
 
@@ -177,11 +188,15 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
     points[i + 1] = po[1];
   }
 
-  return 1;
+  return TRUE;
 }
 
-void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
-                  float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void distort_mask(struct dt_iop_module_t *self,
+                  struct dt_dev_pixelpipe_iop_t *piece,
+                  const float *const in,
+                  float *const out,
+                  const dt_iop_roi_t *const roi_in,
+                  const dt_iop_roi_t *const roi_out)
 {
   // TODO
   memset(out, 0, sizeof(float) * roi_out->width * roi_out->height);

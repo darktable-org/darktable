@@ -127,7 +127,9 @@ int flags()
   return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_DEPRECATED;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_LAB;
 }
@@ -141,10 +143,23 @@ const char **description(struct dt_iop_module_t *self)
                                       _("non-linear, Lab, display-referred"));
 }
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
-                  void *new_params, const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  typedef struct dt_iop_levels_params_v2_t
+  {
+    dt_iop_levels_mode_t mode;
+    float black;
+    float gray;
+    float white;
+    float levels[3];
+  } dt_iop_levels_params_v2_t;
+
+  if(old_version == 1)
   {
     typedef struct dt_iop_levels_params_v1_t
     {
@@ -152,15 +167,21 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       int levels_preset;
     } dt_iop_levels_params_v1_t;
 
-    dt_iop_levels_params_v1_t *o = (dt_iop_levels_params_v1_t *)old_params;
-    dt_iop_levels_params_t *n = (dt_iop_levels_params_t *)new_params;
-    dt_iop_levels_params_t *d = (dt_iop_levels_params_t *)self->default_params;
+    const dt_iop_levels_params_v1_t *o = (dt_iop_levels_params_v1_t *)old_params;
+    dt_iop_levels_params_v2_t *n =
+      (dt_iop_levels_params_v2_t *)malloc(sizeof(dt_iop_levels_params_v2_t));
 
-    *n = *d; // start with a fresh copy of default parameters
-
+    n->mode = LEVELS_MODE_MANUAL;
+    n->black = 0.0f;
+    n->gray = 50.0f;
+    n->white = 100.0f;
     n->levels[0] = o->levels[0];
     n->levels[1] = o->levels[1];
     n->levels[2] = o->levels[2];
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_levels_params_v2_t);
+    *new_version = 2;
     return 0;
   }
   return 1;
@@ -248,7 +269,8 @@ static void compute_lut(dt_dev_pixelpipe_iop_t *piece)
   }
 }
 
-void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
+                        dt_dev_pixelpipe_t *pipe)
 {
   dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
@@ -444,16 +466,10 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_levels, width, height,
     CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(dev_lut), CLARG(d->levels[0]),
     CLARG(d->levels[2]), CLARG(d->in_inv_gamma));
-  if(err != CL_SUCCESS) goto error;
-
-  dt_opencl_release_mem_object(dev_lut);
-
-  return TRUE;
 
 error:
   dt_opencl_release_mem_object(dev_lut);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_levels] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 }
 #endif
 
@@ -712,7 +728,7 @@ static gboolean dt_iop_levels_area_draw(GtkWidget *widget, cairo_t *crf, gpointe
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(GTK_WIDGET(c->area), &allocation);
-  int width = allocation.width, height = allocation.height;
+  int width = allocation.width, height = allocation.height - DT_RESIZE_HANDLE_SIZE;
   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
 
@@ -808,7 +824,7 @@ static gboolean dt_iop_levels_area_draw(GtkWidget *widget, cairo_t *crf, gpointe
   cairo_set_source_surface(crf, cst, 0, 0);
   cairo_paint(crf);
   cairo_surface_destroy(cst);
-  return TRUE;
+  return FALSE;
 }
 
 /**
@@ -870,7 +886,7 @@ static gboolean dt_iop_levels_motion_notify(GtkWidget *widget, GdkEventMotion *e
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  int height = allocation.height - 2 * inset, width = allocation.width - 2 * inset;
+  int height = allocation.height - 2 * inset - DT_RESIZE_HANDLE_SIZE, width = allocation.width - 2 * inset;
   if(!c->dragging)
   {
     c->mouse_x = CLAMP(event->x - inset, 0, width);

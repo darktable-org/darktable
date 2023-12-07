@@ -81,7 +81,7 @@ typedef struct dt_map_t
   int max_images_drawn;
   dt_map_box_t bbox;
   int time_out;
-  int timeout_event_source;
+  guint timeout_event_source;
   int thumbnail;
   dt_map_image_t *last_hovered_entry;
   struct
@@ -1359,7 +1359,7 @@ static void _view_map_changed_callback_delayed(gpointer user_data)
                                   * epsilon_factor * 0.01 * 0.000001 / R);
 
       dt_times_t start;
-      dt_get_times(&start);
+      dt_get_perf_times(&start);
       _dbscan(p, img_count, epsilon, min_images);
       dt_show_times(&start, "[map] dbscan calculation");
 
@@ -2199,7 +2199,7 @@ static void _track_add_point(OsmGpsMapTrack *track, OsmGpsMapPoint *point, OsmGp
   }
   else
   {
-    /* the line must be splitted in order to seek the geodesic line */
+    /* the line must be split in order to seek the geodesic line */
     OsmGpsMapPoint *ith_point;
     double f, ith_lat, ith_lon;
     const int n_segments = ceil(d / DT_MINIMUM_DISTANCE_FOR_GEODESIC);
@@ -2839,14 +2839,18 @@ static void _get_epsilon_neighbours(epsilon_neighbours_t *en, unsigned int index
 {
   // points are ordered by longitude
   // limit the exploration to epsilon east and west
+  const double x = db.points[index].x;
+  const double min_x = x - db.epsilon;
+  const double max_x = x + db.epsilon;
+  const double y = db.points[index].y;
   // west
-  for(int i = index; i < db.num_points; ++i)
+  for(int i = index+1; i < db.num_points; ++i)
   {
-    if(i == index || db.points[i].cluster_id >= 0)
-      continue;
-    if((db.points[i].x - db.points[index].x) > db.epsilon)
+    if(db.points[i].x > max_x)
       break;
-    if(fabs(db.points[i].y - db.points[index].y) > db.epsilon)
+    if(db.points[i].cluster_id >= 0)	// skip points which have already been assigned to a cluster
+      continue;
+    if(fabs(db.points[i].y - y) > db.epsilon)
       continue;
     else
     {
@@ -2855,13 +2859,13 @@ static void _get_epsilon_neighbours(epsilon_neighbours_t *en, unsigned int index
     }
   }
   // east
-  for(int i = index; i >= 0; --i)
+  for(int i = index-1; i >= 0; --i)
   {
-    if(i == (int)index || db.points[i].cluster_id >= 0)
-      continue;
-    if((db.points[index].x - db.points[i].x) > db.epsilon)
+    if(db.points[i].x < min_x)
       break;
-    if(fabs(db.points[index].y - db.points[i].y) > db.epsilon)
+    if(db.points[i].cluster_id >= 0)	// skip points which have already been assigned to a cluster
+      continue;
+    if(fabs(y - db.points[i].y) > db.epsilon)
       continue;
     else
     {
@@ -2879,12 +2883,9 @@ static void _dbscan_spread(unsigned int index)
   for(unsigned int i = 0; i < db.spreads->num_members; i++)
   {
     dt_geo_position_t *d = &db.points[db.spreads->index[i]];
-    if(d->cluster_id == NOISE || d->cluster_id == UNCLASSIFIED)
-    {
-      db.seeds->index[db.seeds->num_members] = db.spreads->index[i];
-      db.seeds->num_members++;
-      d->cluster_id = db.cluster_id;
-    }
+    db.seeds->index[db.seeds->num_members] = db.spreads->index[i];
+    db.seeds->num_members++;
+    d->cluster_id = db.cluster_id; // only NOISE/UNCLASSIFIED are in the list
   }
 }
 

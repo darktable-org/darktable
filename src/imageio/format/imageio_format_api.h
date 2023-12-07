@@ -55,9 +55,13 @@ REQUIRED(void, init, struct dt_imageio_module_format_t *self);
 REQUIRED(void, cleanup, struct dt_imageio_module_format_t *self);
 
 /* gets the current export parameters from gui/conf and stores in this struct for later use. */
-OPTIONAL(void *, legacy_params, struct dt_imageio_module_format_t *self, const void *const old_params,
-                                const size_t old_params_size, const int old_version, const int new_version,
-                                size_t *new_size);
+OPTIONAL(void *, legacy_params,
+         struct dt_imageio_module_format_t *self,
+         const void *const old_params,
+         const size_t old_params_size,
+         const int old_version,
+         int *new_version,
+         size_t *new_size);
 REQUIRED(size_t, params_size, struct dt_imageio_module_format_t *self);
 REQUIRED(void *, get_params, struct dt_imageio_module_format_t *self);
 REQUIRED(void, free_params, struct dt_imageio_module_format_t *self, struct dt_imageio_module_data_t *data);
@@ -103,4 +107,3 @@ OPTIONAL(int, read_image, struct dt_imageio_module_data_t *data, uint8_t *out);
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

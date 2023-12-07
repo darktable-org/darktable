@@ -116,6 +116,7 @@ const dt_iop_order_entry_t legacy_order[] = {
   { {27.5f }, "negadoctor", 0},
   { {27.5f }, "blurs", 0},
   { {27.5f }, "basicadj", 0},
+  { {27.5f }, "primaries", 0},
   { {28.0f }, "colorreconstruct", 0},
   { {29.0f }, "colorchecker", 0},
   { {30.0f }, "defringe", 0},
@@ -214,6 +215,7 @@ const dt_iop_order_entry_t v30_order[] = {
                                      // after scanner input color
                                      // profile
   { {28.5f }, "blurs", 0},           // physically-accurate blurs (motion and lens)
+  { {28.5f }, "primaries", 0},
   { {29.0f }, "nlmeans", 0},         // signal processing (denoising)
                                      //    -> needs a signal as scene-referred as possible (even if it works in Lab)
   { {30.0f }, "colorchecker", 0},    // calibration to "neutral" exchange colour space
@@ -324,6 +326,7 @@ const dt_iop_order_entry_t v30_jpg_order[] = {
   { { 28.5f }, "censorize", 0 },
   { { 28.5f }, "negadoctor", 0 },   // Cineon film encoding comes after scanner input color profile
   { { 28.5f }, "blurs", 0 },        // physically-accurate blurs (motion and lens)
+  { { 28.5f }, "primaries", 0},
   { { 29.0f }, "nlmeans", 0 },      // signal processing (denoising)
                                     //    -> needs a signal as scene-referred as possible (even if it works in Lab)
   { { 30.0f }, "colorchecker", 0 }, // calibration to "neutral" exchange colour space
@@ -907,6 +910,7 @@ GList *dt_ioppr_get_iop_order_list(const dt_imgid_t imgid,
           _insert_before(iop_order_list, "nlmeans", "negadoctor");
           _insert_before(iop_order_list, "negadoctor", "channelmixerrgb");
           _insert_before(iop_order_list, "negadoctor", "censorize");
+          _insert_before(iop_order_list, "negadoctor", "primaries");
           _insert_before(iop_order_list, "rgbcurve", "colorbalancergb");
           _insert_before(iop_order_list, "ashift", "cacorrectrgb");
           _insert_before(iop_order_list, "graduatednd", "crop");
@@ -2176,9 +2180,9 @@ void dt_ioppr_insert_module_instance(struct dt_develop_t *dev,
   dev->iop_order_list = g_list_insert_before(dev->iop_order_list, place, entry);
 }
 
-gboolean dt_ioppr_check_iop_order(dt_develop_t *dev,
-                                  const dt_imgid_t imgid,
-                                  const char *msg)
+gboolean dt_ioppr_check_iop_order_ext(dt_develop_t *dev,
+                                      const dt_imgid_t imgid,
+                                      const char *msg)
 {
   gboolean iop_order_ok = TRUE;
 

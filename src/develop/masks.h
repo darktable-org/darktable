@@ -267,6 +267,7 @@ typedef struct dt_masks_functions_t
                      float pzy,
                      const double pressure,
                      const int which,
+                     const float zoom_scale,
                      struct dt_masks_form_t *form,
                      const dt_imgid_t parentid,
                      struct dt_masks_form_gui_t *gui,
@@ -358,7 +359,6 @@ typedef struct dt_masks_form_gui_t
   // values for mouse positions, etc...
   float posx, posy, dx, dy, scrollx, scrolly, posx_source, posy_source;
   // TRUE if mouse has leaved the center window
-  gboolean mouse_leaved_center;
   gboolean form_selected;
   gboolean border_selected;
   gboolean source_selected;
@@ -399,8 +399,8 @@ typedef struct dt_masks_form_gui_t
   uint64_t pipe_hash;
 } dt_masks_form_gui_t;
 
-/** special value to indicate an invalid or unitialized coordinate (replaces */
-/** former use of NAN and isnan() by the most negative float) **/
+/** special value to indicate an invalid or uninitialized coordinate */
+/** (replaces former use of NAN and isnan() by the most negative float) **/
 #define DT_INVALID_COORDINATE (-FLT_MAX)
 
 /** the shape-specific function tables */
@@ -414,8 +414,8 @@ extern const dt_masks_functions_t dt_masks_functions_group;
 /** init dt_masks_form_gui_t struct with default values */
 void dt_masks_init_form_gui(dt_masks_form_gui_t *gui);
 
-/** get points in real space with respect of distortion dx and dy are used to eventually move the center of
- * the circle */
+/** get points in real space with respect of distortion dx and dy are
+ * used to eventually move the center of the circle */
 int dt_masks_get_points_border(dt_develop_t *dev,
                                dt_masks_form_t *form,
                                float **points,
@@ -454,6 +454,7 @@ static inline int dt_masks_get_mask(const dt_iop_module_t *const module,
     ? form->functions->get_mask(module, piece, form, buffer, width, height, posx, posy)
     : 0;
 }
+
 static inline int dt_masks_get_mask_roi(const dt_iop_module_t *const module,
                                         const dt_dev_pixelpipe_iop_t *const piece,
                                         dt_masks_form_t *const form,
@@ -523,33 +524,36 @@ void dt_masks_reset_form_gui(void);
 void dt_masks_reset_show_masks_icons(void);
 
 int dt_masks_events_mouse_moved(struct dt_iop_module_t *module,
-                                const double x,
-                                const double y,
+                                const float x,
+                                const float y,
                                 const double pressure,
-                                const int which);
+                                const int which,
+                                const float zoom_scale);
 int dt_masks_events_button_released(struct dt_iop_module_t *module,
-                                    const double x,
-                                    const double y,
+                                    const float x,
+                                    const float y,
                                     const int which,
-                                    const uint32_t state);
+                                    const uint32_t state,
+                                    const float zoom_scale);
 int dt_masks_events_button_pressed(struct dt_iop_module_t *module,
-                                   const double x,
-                                   const double y,
+                                   const float x,
+                                   const float y,
                                    const double pressure,
                                    const int which,
                                    const int type,
                                    const uint32_t state);
 int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module,
-                                   const double x,
-                                   const double y,
+                                   const float x,
+                                   const float y,
                                    const gboolean up,
                                    const uint32_t state);
 void dt_masks_events_post_expose(struct dt_iop_module_t *module,
                                  cairo_t *cr,
                                  const int32_t width,
                                  const int32_t height,
-                                 const int32_t pointerx,
-                                 const int32_t pointery);
+                                 const float pointerx,
+                                 const float pointery,
+                                 const float zoom_scale);
 int dt_masks_events_mouse_leave(struct dt_iop_module_t *module);
 int dt_masks_events_mouse_enter(struct dt_iop_module_t *module);
 
@@ -668,29 +672,20 @@ void dt_masks_extend_border(float *const mask,
                             const int width,
                             const int height,
                             const int border);
-void dt_masks_blur_9x9_coeff(float *coeffs, const float sigma);
-void dt_masks_blur_9x9(float *const src,
-                       float *const out,
-                       const int width,
-                       const int height,
-                       const float sigma);
-gboolean dt_masks_calc_rawdetail_mask(dt_dev_detail_mask_t *details,
-                                  float *const src,
-                                  const dt_aligned_pixel_t wb);
-gboolean dt_masks_calc_detail_mask(dt_dev_detail_mask_t *details,
-                               float *const out,
+void dt_masks_blur_coeff(float *coeffs, const float sigma);
+void dt_masks_blur(float *const src,
+                   float *const out,
+                   const int width,
+                   const int height,
+                   const float sigma,
+                   const float gain,
+                   const float clip);
+gboolean dt_masks_calc_scharr_mask(dt_dev_detail_mask_t *details,
+                                      float *const src,
+                                      const dt_aligned_pixel_t wb);
+float *dt_masks_calc_detail_mask(struct dt_dev_pixelpipe_iop_t *piece,
                                const float threshold,
                                const gboolean detail);
-
-/** the output data are blurred-val * gain and are clipped to be within 0 to clip
-    The returned int might be used to expand the border as this depends on sigma */
-int dt_masks_blur_fast(float *const src,
-                       float *const out,
-                       const int width,
-                       const int height,
-                       const float sigma,
-                       const float gain,
-                       const float clip);
 
 /** return the list of possible mouse actions */
 GSList *dt_masks_mouse_actions(dt_masks_form_t *form);
@@ -953,6 +948,18 @@ void dt_masks_line_stroke(cairo_t *cr,
 static inline float dt_masks_sensitive_dist(const float zoom_scale)
 {
   return DT_PIXEL_APPLY_DPI(7) / zoom_scale;
+}
+
+static inline void dt_masks_get_image_size(float *width,
+                                          float *height,
+                                          float *iwidth,
+                                          float *iheight)
+{
+  dt_dev_pixelpipe_t *preview = darktable.develop->preview_pipe;
+  if(width  ) *width   = preview->backbuf_width;
+  if(height ) *height  = preview->backbuf_height;
+  if(iwidth ) *iwidth  = preview->iwidth;
+  if(iheight) *iheight = preview->iheight;
 }
 
 #ifdef __cplusplus

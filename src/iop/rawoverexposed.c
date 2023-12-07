@@ -79,7 +79,9 @@ int flags()
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_HIDDEN | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_NO_HISTORY_STACK;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
@@ -142,7 +144,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   dt_boundingbox_t pts = {(float)(roi_out->x) / in_scale, (float)(roi_out->y) / in_scale,
                           (float)(roi_out->x + roi_out->width) / in_scale, (float)(roi_out->y + roi_out->height) / in_scale};
   printf("in  %f %f %f %f\n", pts[0], pts[1], pts[2], pts[3]);
-  dt_dev_distort_backtransform_plus(dev, dev->pipe, 0, priority, pts, 2);
+  dt_dev_distort_backtransform_plus(dev, dev->full.pipe, 0, priority, pts, 2);
   printf("out %f %f %f %f\n\n", pts[0], pts[1], pts[2], pts[3]);
 #endif
 
@@ -178,7 +180,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     }
 
     // where did they come from?
-    dt_dev_distort_backtransform_plus(self->dev, self->dev->pipe, iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, bufptr, roi_out->width);
+    dt_dev_distort_backtransform_plus(self->dev, self->dev->full.pipe, iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, bufptr, roi_out->width);
 
     for(int i = 0; i < roi_out->width; i++)
     {
@@ -304,7 +306,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     }
 
     // where did they come from?
-    dt_dev_distort_backtransform_plus(self->dev, self->dev->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, bufptr, roi_out->width);
+    dt_dev_distort_backtransform_plus(self->dev, self->dev->full.pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, bufptr, roi_out->width);
   }
 
   dev_coord = dt_opencl_alloc_device_buffer(devid, coordbufsize);
@@ -359,17 +361,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dt_opencl_set_kernel_args(devid, kernel, 11, CLARRAY(4, color));
 
   err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
-  if(err != CL_SUCCESS) goto error;
-
-  dt_opencl_release_mem_object(dev_xtrans);
-  dt_opencl_release_mem_object(dev_colors);
-  dt_opencl_release_mem_object(dev_thresholds);
-  dt_opencl_release_mem_object(dev_coord);
-  dt_free_align(coordbuf);
-  dt_opencl_release_mem_object(dev_raw);
-  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-
-  return TRUE;
 
 error:
   dt_opencl_release_mem_object(dev_xtrans);
@@ -379,8 +370,7 @@ error:
   dt_free_align(coordbuf);
   dt_opencl_release_mem_object(dev_raw);
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_rawoverexposed] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 }
 #endif
 

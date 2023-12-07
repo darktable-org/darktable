@@ -281,7 +281,7 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc,
                             const dt_iop_colorspace_type_t picker_cst,
                             const dt_iop_order_iccprofile_info_t *const profile)
 {
-  dt_times_t start_time = { 0 }, end_time = { 0 };
+  dt_times_t start_time = { 0 };
   dt_get_perf_times(&start_time);
 
   if(dsc->channels == 4u)
@@ -301,7 +301,7 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc,
         // legitimately negative
         // FIXME: this blurs whole image even when just a bit is sampled in the
         // case of CPU path
-        blur_2D_Bspline(pixel, denoised, tempbuf, roi->width, roi->height, 1, FALSE);
+        blur_2D_Bspline(pixel, denoised, tempbuf, padded_size, roi->width, roi->height, 1, FALSE);
         dt_free_align(tempbuf);
         source = denoised;
       }
@@ -362,15 +362,11 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc,
   else
     dt_unreachable_codepath();
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_get_times(&end_time);
-    dt_print(DT_DEBUG_ALWAYS,
-             "colorpicker stats reading %u channels (filters %u) cst %d -> %d "
-             "size %zu denoised %d took %.3f secs (%.3f CPU)\n",
-             dsc->channels, dsc->filters, image_cst, picker_cst, _box_size(box), denoise,
-             end_time.clock - start_time.clock, end_time.user - start_time.user);
-  }
+  dt_print(DT_DEBUG_PERF,
+           "colorpicker stats reading %u channels (filters %u) cst %d -> %d "
+           "size %zu denoised %d took %.3f secs (%.3f CPU)\n",
+           dsc->channels, dsc->filters, image_cst, picker_cst, _box_size(box), denoise,
+           dt_get_lap_time(&start_time.clock), dt_get_lap_utime(&start_time.user));
 }
 
 // clang-format off

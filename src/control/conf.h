@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -82,12 +82,10 @@ void dt_conf_set_int64(const char *name, int64_t val);
 void dt_conf_set_float(const char *name, float val);
 void dt_conf_set_bool(const char *name, int val);
 void dt_conf_set_string(const char *name, const char *val);
+void dt_conf_set_path(const char *name, const char *val);
 void dt_conf_set_folder_from_file_chooser(const char *name, GtkFileChooser *chooser);
-int dt_conf_get_int_fast(const char *name);
 int dt_conf_get_int(const char *name);
-int64_t dt_conf_get_int64_fast(const char *name);
 int64_t dt_conf_get_int64(const char *name);
-float dt_conf_get_float_fast(const char *name);
 float dt_conf_get_float(const char *name);
 int dt_conf_get_and_sanitize_int(const char *name, int min, int max);
 int64_t dt_conf_get_and_sanitize_int64(const char *name, int64_t min, int64_t max);
@@ -100,12 +98,13 @@ const char *dt_conf_get_string_const(const char *name);
 // get a freshly-allocated duplicate of the configuration string; safe
 // to use even if calling dt_conf_set_string
 gchar *dt_conf_get_string(const char *name);
+gchar *dt_conf_get_path(const char *name);
 gboolean dt_conf_get_folder_to_file_chooser(const char *name, GtkFileChooser *chooser);
 gboolean dt_conf_is_equal(const char *name, const char *value);
 void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries);
 void dt_conf_cleanup(dt_conf_t *cf);
 void dt_conf_save(dt_conf_t *cf);
-int dt_conf_key_exists(const char *key);
+gboolean dt_conf_key_exists(const char *key);
 gboolean dt_conf_key_not_empty(const char *key);
 GSList *dt_conf_all_string_entries(const char *dir);
 void dt_conf_string_entry_free(gpointer data);
@@ -133,7 +132,7 @@ const char *dt_confgen_get_tooltip(const char *name);
 gboolean dt_conf_is_default(const char *name);
 gchar* dt_conf_expand_default_dir(const char *dir);
 
-/** read filename and call callback() for every key/valye pair. if callback() returns non
+/** read filename and call callback() for every key/value pair. if callback() returns non
     NULL, the value is returned by dt_conf_read_values. This may be used to look for a
     a specific value in filename */
 gchar *dt_conf_read_values(const char *filename,

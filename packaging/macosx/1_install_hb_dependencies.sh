@@ -12,7 +12,7 @@ if ! [ -x "$(command -v brew)" ]; then
     echo 'Homebrew not found. Follow instructions as provided by https://brew.sh/ to install it.' >&2
     exit 1
 else
-    echo "Found homebrew running in $(arch)-based environment."
+    echo "Found homebrew running in $(uname -m)-based environment."
 fi
 
 # Make sure that homebrew is up-to-date
@@ -21,6 +21,7 @@ brew upgrade
 
 # Define homebrew dependencies
 hbDependencies="adwaita-icon-theme \
+    coreutils \
     cmake \
     pkg-config \
     cmocka \
@@ -32,13 +33,13 @@ hbDependencies="adwaita-icon-theme \
     glib \
     gmic \
     gphoto2 \
-    graphicsmagick \
+    imagemagick@6 \
     gtk-mac-integration \
     gtk+3 \
     icu4c \
     intltool \
     iso-codes \
-    jpeg \
+    jpeg-turbo \
     jpeg-xl \
     json-glib \
     jsonschema \
@@ -103,3 +104,4 @@ fi
 # link keg-only packages
 brew link --force libomp
 brew link --force libsoup@2
+brew link --force imagemagick@6

@@ -36,6 +36,8 @@ extern "C" {
  * DPI */
 #define DT_PIXEL_APPLY_DPI(value) ((value) * darktable.gui->dpi_factor)
 
+#define DT_RESIZE_HANDLE_SIZE DT_PIXEL_APPLY_DPI(5)
+
 typedef struct dt_gui_widgets_t
 {
 
@@ -60,7 +62,6 @@ typedef struct dt_gui_scrollbars_t
     GtkWidget *hscrollbar;
 
     gboolean visible;
-    gboolean dragging;
 } dt_gui_scrollbars_t;
 
 typedef enum dt_gui_color_t
@@ -143,8 +144,7 @@ typedef struct dt_gui_gtk_t
   gint scroll_mask;
   guint sidebar_scroll_mask;
 
-  cairo_filter_t filter_image;    // filtering used for all modules expect darkroom
-  cairo_filter_t dr_filter_image; // filtering used in the darkroom
+  cairo_filter_t filter_image;    // filtering used to scale images to screen
 
   dt_pthread_mutex_t mutex;
 } dt_gui_gtk_t;
@@ -199,6 +199,7 @@ static inline GdkPixbuf *dt_gdk_pixbuf_new_from_file_at_size(const char *filenam
 void dt_gui_add_class(GtkWidget *widget, const gchar *class_name);
 void dt_gui_remove_class(GtkWidget *widget, const gchar *class_name);
 
+void dt_open_url(const char *url);
 int dt_gui_gtk_init(dt_gui_gtk_t *gui);
 void dt_gui_gtk_run(dt_gui_gtk_t *gui);
 void dt_gui_gtk_cleanup(dt_gui_gtk_t *gui);

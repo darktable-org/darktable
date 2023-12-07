@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2018-2020 darktable developers.
+    Copyright (C) 2018-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -56,20 +56,35 @@ int flags()
   return IOP_FLAGS_HIDDEN | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_UNSAFE_COPY;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
-                  void *new_params, const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  typedef struct dt_iop_mask_manager_params_v2_t
   {
-    dt_iop_mask_manager_params_t *n = (dt_iop_mask_manager_params_t *)new_params;
-    dt_iop_mask_manager_params_t *d = (dt_iop_mask_manager_params_t *)self->default_params;
+    int dummy;
+  } dt_iop_mask_manager_params_v2_t;
 
-    *n = *d; // start with a fresh copy of default parameters
+  if(old_version == 1)
+  {
+    dt_iop_mask_manager_params_v2_t *n =
+      (dt_iop_mask_manager_params_v2_t *)malloc(sizeof(dt_iop_mask_manager_params_v2_t));
+
+    n->dummy = 0;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_mask_manager_params_v2_t);
+    *new_version = 2;
     return 0;
   }
   return 1;
@@ -86,21 +101,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
 
   size_t origin[] = { 0, 0, 0 };
   size_t region[] = { width, height, 1 };
-  err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
-  if(err != CL_SUCCESS) goto error;
-
-  return TRUE;
-
-error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_mask_manage] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
 }
 #endif
 
@@ -127,4 +134,3 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

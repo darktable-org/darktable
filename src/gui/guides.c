@@ -772,7 +772,7 @@ void dt_guides_draw(cairo_t *cr, const float left, const float top, const float 
 {
   const double dashes = DT_PIXEL_APPLY_DPI(5.0) / zoom_scale;
 
-  dt_iop_module_t *module = darktable.develop->gui_module;
+  dt_iop_module_t *module = dt_dev_gui_module();
 
   // first, we check if we need to show the guides or not
   gchar *key = _conf_get_path("global", "show", NULL);

@@ -6,83 +6,65 @@ parafin
 Edouard Gomez
 
 * translators:
-Pascal Obry
 Victor Forsiuk
+Pascal Obry
 Jeronimo Pellegrini
 Martin Straeten
 Kang-Wei Hsu
-EdgarLux
-Besmir Godolja
-Ryo Shinozaki
 Serkan ÖNDER
-mmardegan
-Luca Cignoni
-Marko Vertainen
-Maurizio Paglia
-Marcus Gama
+Ryo Shinozaki
+Besmir Godolja
 Nicolas Auffray
-Báthory Péter
-Matjaž Jeran
-Matt Maguire
 Petr Stasiak
-Stephan Hoek
+Tianhao Chai
+Matjaž Jeran
+Báthory Péter
+EdgarLux
 bajdero
-Matteo Mardegan
-alex
-alexbora
-Яна Тунгушпаева
+shinoryo
+shlomi
+François Delègue
+Hanno Schwalm
+Mario Zimmermann
+Tobias Kühne
 
 * contributors (at least 4 commits):
-Hanno Schwalm
 Victor Forsiuk
+Ralf Brown
+Hanno Schwalm
 Diederik ter Rahe
 Miloš Komarčević
-jandren
+Dan Torop
 Jeronimo Pellegrini
-Nicolas Auffray
 Martin Straeten
+Mario Zimmermann
+Mark-64
 Kang-Wei Hsu
-Simone Gotti
-Sakari Kapanen
-EdgarLux
+Nicolas Auffray
 rawfiner
-Besmir Godolja
-cyruscook
-quovadit
-Ryo Shinozaki
-Philippe Weyland
-Ralf Brown
-Chris Elston
 Serkan ÖNDER
-mmardegan
-Luca Cignoni
-Apfelkraut
-Marcus Gama
-Marko Vertainen
-Maurizio Paglia
-Simon Raffeiner
+Bill Ferguson
+Ryo Shinozaki
+Simone Gotti
+lhietal
+Besmir Godolja
+Dmitry Stoyanov
+Manuel Presnitz
+Petr Stasiak
+Tianhao Chai
+shonjir
 
 * Sub-module rawspeed contributors (at least 1 commit):
 Roman Lebedev
 Miloš Komarčević
-Daniel Vogelbacher
-maruncz
-Alex Tutubalin
-Artemis Tosini
-Georg Lukas
-Georg Niedrist
-LibRaw LLC
-Marko Toplak
-Milos Komarcevic
-Pascal Obry
-PeterWem
-Simon Raffeiner
-Sprite
-luz paz
-squid-f
-ubergeek801
+Jordan Neumeyer
+Philipp Lutz
+Thomas Baumann
+Howard Liberty
 
 * Sub-module integration contributors (at least 1 commit):
 Pascal Obry
+ralfbrown
+Simone Gotti
 
-And all those of you that made previous releases possible
+And all those of you that made previous releases possible.

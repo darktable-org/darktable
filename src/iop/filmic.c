@@ -177,15 +177,40 @@ const char *deprecated_msg()
   return _("this module is deprecated. better use filmic rgb module instead.");
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_LAB;
 }
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
-                  const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 3)
+  typedef struct dt_iop_filmic_params_v3_t
+  {
+    float grey_point_source;
+    float black_point_source;
+    float white_point_source;
+    float security_factor;
+    float grey_point_target;
+    float black_point_target;
+    float white_point_target;
+    float output_power;
+    float latitude_stops;
+    float contrast;
+    float saturation;
+    float global_saturation;
+    float balance;
+    int interpolator;
+    int preserve_color;
+  } dt_iop_filmic_params_v3_t;
+
+  if(old_version == 1)
   {
     typedef struct dt_iop_filmic_params_v1_t
     {
@@ -204,11 +229,9 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       int interpolator;
     } dt_iop_filmic_params_v1_t;
 
-    dt_iop_filmic_params_v1_t *o = (dt_iop_filmic_params_v1_t *)old_params;
-    dt_iop_filmic_params_t *n = (dt_iop_filmic_params_t *)new_params;
-    dt_iop_filmic_params_t *d = (dt_iop_filmic_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
+    const dt_iop_filmic_params_v1_t *o = (dt_iop_filmic_params_v1_t *)old_params;
+    dt_iop_filmic_params_v3_t *n =
+      (dt_iop_filmic_params_v3_t *)malloc(sizeof(dt_iop_filmic_params_v3_t));
 
     n->grey_point_source = o->grey_point_source;
     n->white_point_source = o->white_point_source;
@@ -225,10 +248,14 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->interpolator = o->interpolator;
     n->preserve_color = 0;
     n->global_saturation = 100;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_filmic_params_v3_t);
+    *new_version = 3;
     return 0;
   }
 
-  if(old_version == 2 && new_version == 3)
+  if(old_version == 2)
   {
     typedef struct dt_iop_filmic_params_v2_t
     {
@@ -248,11 +275,9 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       int preserve_color;
     } dt_iop_filmic_params_v2_t;
 
-    dt_iop_filmic_params_v2_t *o = (dt_iop_filmic_params_v2_t *)old_params;
-    dt_iop_filmic_params_t *n = (dt_iop_filmic_params_t *)new_params;
-    dt_iop_filmic_params_t *d = (dt_iop_filmic_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
+    const dt_iop_filmic_params_v2_t *o = (dt_iop_filmic_params_v2_t *)old_params;
+    dt_iop_filmic_params_v3_t *n =
+      (dt_iop_filmic_params_v3_t *)malloc(sizeof(dt_iop_filmic_params_v3_t));
 
     n->grey_point_source = o->grey_point_source;
     n->white_point_source = o->white_point_source;
@@ -269,6 +294,10 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->interpolator = o->interpolator;
     n->preserve_color = o->preserve_color;
     n->global_saturation = 100;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_filmic_params_v3_t);
+    *new_version = 3;
     return 0;
   }
   return 1;
@@ -563,16 +592,11 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(dynamic_range), CLARG(shadows_range),
     CLARG(grey), CLARG(dev_table), CLARG(diff_table), CLARG(contrast), CLARG(power), CLARG(preserve_color),
     CLARG(saturation));
-  if(err != CL_SUCCESS) goto error;
-  dt_opencl_release_mem_object(dev_table);
-  dt_opencl_release_mem_object(diff_table);
-  return TRUE;
 
 error:
   dt_opencl_release_mem_object(dev_table);
   dt_opencl_release_mem_object(diff_table);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_filmic] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 }
 #endif
 
@@ -743,7 +767,8 @@ static void apply_autotune(dt_iop_module_t *self)
   gtk_widget_queue_draw(self->widget);
 }
 
-void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
+                        dt_dev_pixelpipe_t *pipe)
 {
   dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
   if     (picker == g->grey_point_source)
@@ -1471,7 +1496,7 @@ static void _extra_options_button_changed(GtkDarktableToggleButton *widget, gpoi
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_filmic_gui_data_t *g = IOP_GUI_ALLOC(filmic);
-  dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->default_params;
+  const dt_iop_filmic_params_t *const p = (dt_iop_filmic_params_t *)self->default_params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
@@ -1526,7 +1551,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->security_factor, NULL, N_("safety factor"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->security_factor, TRUE, TRUE, 0);
   dt_bauhaus_slider_set_format(g->security_factor, "%");
-  gtk_widget_set_tooltip_text(g->security_factor, _("enlarge or shrink the computed dynamic range.\n"
+  gtk_widget_set_tooltip_text(g->security_factor, _("increase or decrease the computed dynamic range.\n"
                                                     "useful in conjunction with \"auto tune levels\"."));
   g_signal_connect(G_OBJECT(g->security_factor), "value-changed", G_CALLBACK(security_threshold_callback), self);
 
@@ -1674,4 +1699,3 @@ void gui_init(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

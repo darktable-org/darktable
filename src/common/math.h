@@ -28,7 +28,7 @@
 // select speed vs accuracy tradeoff
 // supported values for EXP_POLY_DEGREE are 4 and 5
 #define EXP_POLY_DEGREE 4
-// supported vlaues for LOG_POLY_DEGREE are 5 and 6
+// supported values for LOG_POLY_DEGREE are 5 and 6
 #define LOG_POLY_DEGREE 5
 
 // work around missing standard math.h symbols
@@ -63,11 +63,6 @@
 // Nan-safe: NaN compares false and will result in mn
 #define CLAMPF(a, mn, mx) ((a) >= (mn) ? ((a) <= (mx) ? (a) : (mx)) : (mn))
 
-static inline float clamp_range_f(const float x, const float low, const float high)
-{
-  return x > high ? high : (x < low ? low : x);
-}
-
 //*****************
 // functions to check for non-finite values
 // with -ffinite-math-only, the compiler is free to elide checks based
@@ -85,22 +80,22 @@ static inline float clamp_range_f(const float x, const float low, const float hi
 #pragma GCC optimize ("-fno-finite-math-only")
 #endif
 
-static inline gboolean dt_isnan(float val)
+static inline gboolean dt_isnan(const float val)
 {
   return isnan(val);
 }
 
-static inline gboolean dt_isinf(float val)
+static inline gboolean dt_isinf(const float val)
 {
   return isinf(val);
 }
 
-static inline gboolean dt_isfinite(float val)
+static inline gboolean dt_isfinite(const float val)
 {
   return isfinite(val);
 }
 
-static inline gboolean dt_isnormal(float val)
+static inline gboolean dt_isnormal(const float val)
 {
   return isnormal(val);
 }
@@ -132,7 +127,7 @@ static inline float interpolatef(const float a, const float b, const float c)
 
 // Kahan summation algorithm
 #ifdef _OPENMP
-#pragma omp declare simd aligned(c)
+#pragma omp declare simd
 #endif
 static inline float Kahan_sum(const float m, float *const __restrict__ c, const float add)
 {
@@ -292,6 +287,43 @@ static inline float sqf(const float x)
   return x * x;
 }
 
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(p:16)
+#endif
+static inline float median9f(const float *p)
+{
+  float p1 = MIN(p[1], p[2]);
+  float p2 = MAX(p[1], p[2]);
+  float p4 = MIN(p[4], p[5]);
+  float p5 = MAX(p[4], p[5]);
+  float p7 = MIN(p[7], p[8]);
+  float p8 = MAX(p[7], p[8]);
+  float p0 = MIN(p[0], p1);
+  float p1a = MAX(p[0], p1);
+  float p3 = MIN(p[3], p4);
+  float p4a = MAX(p[3], p4);
+  float p6 = MIN(p[6], p7);
+  float p7a = MAX(p[6], p7);
+  p1 = MIN(p1a, p2);
+  p2 = MAX(p1a, p2);
+  p4 = MIN(p4a, p5);
+  p5 = MAX(p4a, p5);
+  p7 = MIN(p7a, p8);
+  p8 = MAX(p7a, p8);
+  p3 = MAX(p0,p3);
+  p5 = MIN(p5, p8);
+  p7a = MAX(p4, p7);
+  p4 = MIN(p4, p7);
+  p6 = MAX(p3, p6);
+  p4 = MAX(p1, p4);
+  p2 = MIN(p2, p5);
+  p4a = MIN(p4, p7a);
+  p4 = MIN(p4a, p2);
+  p2 = MAX(p4a, p2);
+  p4 = MAX(p6, p4);
+  return MIN(p2,p4);
+}
 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(vector:16)
@@ -517,7 +549,7 @@ static inline void dt_vector_exp(const dt_aligned_pixel_t x, dt_aligned_pixel_t 
 // See http://www.devmaster.net/forums/showthread.php?p=43580 for the original
 static inline void dt_vector_exp2(const dt_aligned_pixel_t input, dt_aligned_pixel_t res)
 {
-  // clamp the exponent to the suported range
+  // clamp the exponent to the supported range
   static const dt_aligned_pixel_t lower_bound = { -126.99999f, -126.99999f, -126.99999f, -126.99999f };
   static const dt_aligned_pixel_t upper_bound = {  129.00000f,  129.00000f,  129.00000f,  129.00000f };
   static const dt_aligned_pixel_t v_half = { 0.5f, 0.5f, 0.5f, 0.5f };

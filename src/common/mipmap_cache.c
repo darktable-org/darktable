@@ -542,8 +542,13 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
   };
   // Set mipf to mip2 size as at most the user will be using an 8K screen and
   // have a preview that's ~4x smaller
-  cache->max_width[DT_MIPMAP_F] = mipsizes[DT_MIPMAP_2][0];
-  cache->max_height[DT_MIPMAP_F] = mipsizes[DT_MIPMAP_2][1];
+  const char *preview_downsample = dt_conf_get_string_const("preview_downsampling");
+  const float downsample = (!g_strcmp0(preview_downsample, "original")) ? 1.0f
+                         : (!g_strcmp0(preview_downsample, "to 1/2")) ? 0.5f
+                         : (!g_strcmp0(preview_downsample, "to 1/3")) ? 1/3.0f
+                         : 0.25f;
+  cache->max_width[DT_MIPMAP_F] = mipsizes[DT_MIPMAP_2][0] * downsample;
+  cache->max_height[DT_MIPMAP_F] = mipsizes[DT_MIPMAP_2][1] * downsample;
   for(int k = DT_MIPMAP_F-1; k >= 0; k--)
   {
     cache->max_width[k]  = mipsizes[k][0];
@@ -965,7 +970,7 @@ dt_mipmap_size_t dt_mipmap_cache_get_min_mip_from_pref(const char *value)
   if(strcmp(value, "720p") == 0)   return DT_MIPMAP_3;
   if(strcmp(value, "1080p") == 0)  return DT_MIPMAP_4;
   if(strcmp(value, "WQXGA") == 0)  return DT_MIPMAP_5;
-  if(strcmp(value, "4k") == 0)     return DT_MIPMAP_6;
+  if(strcmp(value, "4K") == 0)     return DT_MIPMAP_6;
   if(strcmp(value, "5K") == 0)     return DT_MIPMAP_7;
   return DT_MIPMAP_NONE;
 }

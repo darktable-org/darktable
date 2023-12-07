@@ -287,24 +287,32 @@ typedef struct dt_iop_toneequalizer_gui_data_t
   int area_active_node;
 
   // Flags for UI events
-  int valid_nodes_x;        // TRUE if x coordinates of graph nodes have been inited
-  int valid_nodes_y;        // TRUE if y coordinates of graph nodes have been inited
-  int area_cursor_valid;    // TRUE if mouse cursor is over the graph area
-  int area_dragging;        // TRUE if left-button has been pushed but not released and cursor motion is recorded
-  int cursor_valid;         // TRUE if mouse cursor is over the preview image
-  int has_focus;            // TRUE if the widget has the focus from GTK
+  gboolean valid_nodes_x;      // TRUE if x coordinates of graph nodes have been inited
+  gboolean valid_nodes_y;      // TRUE if y coordinates of graph nodes have been inited
+  gboolean area_cursor_valid;  // TRUE if mouse cursor is over the graph area
+  gboolean area_dragging;      // TRUE if left-button has been pushed
+                               // but not released and cursor motion
+                               // is recorded
+  gboolean cursor_valid;       // TRUE if mouse cursor is over the preview image
+  gboolean has_focus;          // TRUE if the widget has the focus from GTK
 
   // Flags for buffer caches invalidation
-  int interpolation_valid;  // TRUE if the interpolation_matrix is ready
-  int luminance_valid;      // TRUE if the luminance cache is ready
-  int histogram_valid;      // TRUE if the histogram cache and stats are ready
-  int lut_valid;            // TRUE if the gui_lut is ready
-  int graph_valid;          // TRUE if the UI graph view is ready
-  int user_param_valid;     // TRUE if users params set in interactive view are in bounds
-  int factors_valid;        // TRUE if radial-basis coeffs are ready
+  gboolean interpolation_valid; // TRUE if the interpolation_matrix is ready
+  gboolean luminance_valid;     // TRUE if the luminance cache is ready
+  gboolean histogram_valid;     // TRUE if the histogram cache and stats are ready
+  gboolean lut_valid;           // TRUE if the gui_lut is ready
+  gboolean graph_valid;         // TRUE if the UI graph view is ready
+  gboolean user_param_valid;    // TRUE if users params set in
+                                // interactive view are in bounds
+  gboolean factors_valid;       // TRUE if radial-basis coeffs are ready
 
+  gboolean distort_signal_actif;
 } dt_iop_toneequalizer_gui_data_t;
 
+/* the signal DT_SIGNAL_DEVELOP_DISTORT is used to refresh the internal
+   cached image buffer used for the on-canvas luminance picker. */
+static void _set_distort_signal(dt_iop_module_t *self);
+static void _unset_distort_signal(dt_iop_module_t *self);
 
 const char *name()
 {
@@ -337,9 +345,9 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
-int default_colorspace(dt_iop_module_t *self,
-                       dt_dev_pixelpipe_t *pipe,
-                       dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
@@ -347,10 +355,33 @@ int default_colorspace(dt_iop_module_t *self,
 int legacy_params(dt_iop_module_t *self,
                   const void *const old_params,
                   const int old_version,
-                  void *new_params,
-                  const int new_version)
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  typedef struct dt_iop_toneequalizer_params_v2_t
+  {
+    float noise;
+    float ultra_deep_blacks;
+    float deep_blacks;
+    float blacks;
+    float shadows;
+    float midtones;
+    float highlights;
+    float whites;
+    float speculars;
+    float blending;
+    float smoothing;
+    float feathering;
+    float quantization;
+    float contrast_boost;
+    float exposure_boost;
+    dt_iop_toneequalizer_filter_t details;
+    dt_iop_luminance_mask_method_t method;
+    int iterations;
+  } dt_iop_toneequalizer_params_v2_t;
+
+  if(old_version == 1)
   {
     typedef struct dt_iop_toneequalizer_params_v1_t
     {
@@ -362,14 +393,10 @@ int legacy_params(dt_iop_module_t *self,
       dt_iop_luminance_mask_method_t method;
     } dt_iop_toneequalizer_params_v1_t;
 
-    dt_iop_toneequalizer_params_v1_t *o =
+    const dt_iop_toneequalizer_params_v1_t *o =
       (dt_iop_toneequalizer_params_v1_t *)old_params;
-    dt_iop_toneequalizer_params_t *n =
-      (dt_iop_toneequalizer_params_t *)new_params;
-    dt_iop_toneequalizer_params_t *d =
-      (dt_iop_toneequalizer_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
+    dt_iop_toneequalizer_params_v2_t *n =
+      (dt_iop_toneequalizer_params_v2_t *)malloc(sizeof(dt_iop_toneequalizer_params_v2_t));
 
     // Olds params
     n->noise = o->noise;
@@ -392,8 +419,12 @@ int legacy_params(dt_iop_module_t *self,
     n->method = o->method;
 
     // New params
-    n->quantization = 0.01f;
+    n->quantization = 0.0f;
     n->smoothing = sqrtf(2.0f);
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_toneequalizer_params_v2_t);
+    *new_version = 2;
     return 0;
   }
   return 1;
@@ -582,7 +613,7 @@ static gboolean in_mask_editing(dt_iop_module_t *self)
   return dev->form_gui && dev->form_visible;
 }
 
-static void hash_set_get(uint64_t *hash_in,
+static void hash_set_get(const uint64_t *hash_in,
                          uint64_t *hash_out,
                          dt_pthread_mutex_t *lock)
 {
@@ -602,50 +633,12 @@ static void invalidate_luminance_cache(dt_iop_module_t *const self)
 
   dt_iop_gui_enter_critical_section(self);
   g->max_histogram = 1;
-  //g->luminance_valid = 0;
-  g->histogram_valid = 0;
+  g->luminance_valid = FALSE;
+  g->histogram_valid = FALSE;
   g->thumb_preview_hash = 0;
   g->ui_preview_hash = 0;
   dt_iop_gui_leave_critical_section(self);
   dt_iop_refresh_preview(self);
-}
-
-
-static int sanity_check(dt_iop_module_t *self)
-{
-  // If tone equalizer is put after flip/orientation module, the pixel
-  // buffer will be in landscape orientation even for pictures
-  // displayed in portrait orientation so the interactive editing will
-  // fail. Disable the module and issue a warning then.
-
-  const double position_self = self->iop_order;
-  const double position_min =
-    dt_ioppr_get_iop_order(self->dev->iop_order_list, "flip", 0);
-
-  if(position_self < position_min && self->enabled)
-  {
-    dt_control_log(_("tone equalizer needs to be after distortion modules"
-                     " in the pipeline – disabled"));
-    dt_print(DT_DEBUG_ALWAYS,
-            "tone equalizer needs to be after distortion modules"
-            " in the pipeline – disabled\n");
-    self->enabled = FALSE;
-    dt_dev_add_history_item(darktable.develop, self, FALSE);
-
-    if(self->dev->gui_attached)
-    {
-      // Repaint the on/off icon
-      if(self->off)
-      {
-        ++darktable.gui->reset;
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), self->enabled);
-        --darktable.gui->reset;
-      }
-    }
-    return 0;
-  }
-
-  return 1;
 }
 
 // gaussian-ish kernel - sum is == 1.0f so we don't care much about actual coeffs
@@ -702,6 +695,52 @@ static float get_luminance_from_buffer(const float *const buffer,
   return luminance;
 }
 
+static void _get_point(struct dt_iop_module_t *module,
+                       const int c_x,
+                       const int c_y,
+                       int *x,
+                       int *y)
+{
+  // TODO: For this to fully work non depending on the place of the module
+  //       in the pipe we need a dt_dev_distort_backtransform_plus that
+  //       can skip crop only. With the current version if toneequalizer
+  //       is moved below rotation & perspective it will fail as we are
+  //       then missing all the transform after tone-eq.
+  const double crop_order =
+    dt_ioppr_get_iop_order(module->dev->iop_order_list, "crop", 0);
+
+  float pts[2] = { c_x, c_y };
+
+  // only a forward backtransform as the buffer already contains all the transforms
+  // done before toneequal and we are speaking of on-screen cursor coordinates.
+  // also we do transform only after crop as crop does change roi for the whole pipe
+  // and so it is already part of the preview buffer cached in this implementation.
+  dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe,
+                                    crop_order,
+                                    DT_DEV_TRANSFORM_DIR_FORW_EXCL, pts, 1);
+  *x = pts[0];
+  *y = pts[1];
+}
+
+static float _luminance_from_module_buffer(dt_iop_module_t *self)
+{
+  dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
+
+  const size_t c_x = g->cursor_pos_x;
+  const size_t c_y = g->cursor_pos_y;
+
+  // get buffer x,y given the cursor position
+  int b_x = 0;
+  int b_y = 0;
+
+  _get_point(self, c_x, c_y, &b_x, &b_y);
+
+  return get_luminance_from_buffer(g->thumb_preview_buf,
+                                   g->thumb_preview_buf_width,
+                                   g->thumb_preview_buf_height,
+                                   b_x,
+                                   b_y);
+}
 
 /***
  * Exposure compensation computation
@@ -918,7 +957,6 @@ static inline void compute_luminance_mask(const float *const restrict in,
   }
 }
 
-
 /***
  * Actual transfer functions
  **/
@@ -998,22 +1036,14 @@ void toneeq_process(struct dt_iop_module_t *self,
 
   // Get the hash of the upstream pipe to track changes
   const int position = self->iop_order;
-  uint64_t hash = dt_dev_pixelpipe_cache_hash(piece->pipe->image.id,
-                                              roi_out, piece->pipe, position);
+  const uint64_t hash = dt_dev_pixelpipe_cache_hash(piece->pipe->image.id,
+                                                    roi_out, piece->pipe, position);
 
   // Sanity checks
   if(width < 1 || height < 1) return;
   if(roi_in->width < roi_out->width || roi_in->height < roi_out->height)
     return; // input should be at least as large as output
   if(piece->colors != 4) return;  // we need RGB signal
-
-  if(!sanity_check(self))
-  {
-    // if module just got disabled by sanity checks, due to pipe
-    // position, just pass input through
-    dt_iop_image_copy_by_size(out, in, width, height, ch);
-    return;
-  }
 
   // Init the luminance masks buffers
   gboolean cached = FALSE;
@@ -1041,7 +1071,7 @@ void toneeq_process(struct dt_iop_module_t *self,
       // Re-allocate a new buffer if the full preview size has changed
       if(g->full_preview_buf_width != width || g->full_preview_buf_height != height)
       {
-        if(g->full_preview_buf) dt_free_align(g->full_preview_buf);
+        dt_free_align(g->full_preview_buf);
         g->full_preview_buf = dt_alloc_align_float(num_elem);
         g->full_preview_buf_width = width;
         g->full_preview_buf_height = height;
@@ -1050,10 +1080,9 @@ void toneeq_process(struct dt_iop_module_t *self,
       luminance = g->full_preview_buf;
       cached = TRUE;
     }
-
     else if(piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
     {
-      // For DT_DEV_PIXELPIPE_PREVIEW, we need to cache is too to
+      // For DT_DEV_PIXELPIPE_PREVIEW, we need to cache it too to
       // compute the full image stats upon user request in GUI threads
       // locks are required since GUI reads and writes on that buffer.
 
@@ -1061,7 +1090,7 @@ void toneeq_process(struct dt_iop_module_t *self,
       dt_iop_gui_enter_critical_section(self);
       if(g->thumb_preview_buf_width != width || g->thumb_preview_buf_height != height)
       {
-        if(g->thumb_preview_buf) dt_free_align(g->thumb_preview_buf);
+        dt_free_align(g->thumb_preview_buf);
         g->thumb_preview_buf = dt_alloc_align_float(num_elem);
         g->thumb_preview_buf_width = width;
         g->thumb_preview_buf_height = height;
@@ -1629,7 +1658,8 @@ void commit_params(struct dt_iop_module_t *self,
   if(self->dev->gui_attached && g)
   {
     dt_iop_gui_enter_critical_section(self);
-    if(g->sigma != p->smoothing) g->interpolation_valid = FALSE;
+    if(g->sigma != p->smoothing)
+      g->interpolation_valid = FALSE;
     g->sigma = p->smoothing;
     g->user_param_valid = FALSE; // force updating channels factors
     dt_iop_gui_leave_critical_section(self);
@@ -1825,7 +1855,7 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, gpointer user_data)
     return;
   }
 
-  if(!g->luminance_valid || self->dev->pipe->processing || !g->histogram_valid)
+  if(!g->luminance_valid || self->dev->full.pipe->processing || !g->histogram_valid)
   {
     dt_control_log(_("wait for the preview to finish recomputing"));
     return;
@@ -1837,7 +1867,7 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, gpointer user_data)
   // so we aim at centering the exposure distribution on -4 EV
 
   dt_iop_gui_enter_critical_section(self);
-  g->histogram_valid = 0;
+  g->histogram_valid = FALSE;
   dt_iop_gui_leave_critical_section(self);
 
   update_histogram(self);
@@ -1892,7 +1922,7 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, gpointer user_data)
     return;
   }
 
-  if(!g->luminance_valid || self->dev->pipe->processing || !g->histogram_valid)
+  if(!g->luminance_valid || self->dev->full.pipe->processing || !g->histogram_valid)
   {
     dt_control_log(_("wait for the preview to finish recomputing"));
     return;
@@ -1900,7 +1930,7 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, gpointer user_data)
 
   // The goal is to spread 90 % of the exposure histogram in the [-7, -1] EV
   dt_iop_gui_enter_critical_section(self);
-  g->histogram_valid = 0;
+  g->histogram_valid = FALSE;
   dt_iop_gui_leave_critical_section(self);
 
   update_histogram(self);
@@ -1987,14 +2017,15 @@ static void show_luminance_mask_callback(GtkWidget *togglebutton,
 static void switch_cursors(struct dt_iop_module_t *self)
 {
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
-  if(!g || !self->dev->gui_attached) return;
+
+  if(!g || !self->dev->gui_attached)
+    return;
 
   GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
 
   // if we are editing masks or using colour-pickers, do not display controls
-  if(!sanity_check(self)
-     || in_mask_editing(self)
-     || dt_iop_color_picker_is_visible(self->dev))
+  if(in_mask_editing(self)
+     || dt_iop_canvas_not_sensitive(self->dev))
   {
     // display default cursor
     GdkCursor *const cursor =
@@ -2016,9 +2047,10 @@ static void switch_cursors(struct dt_iop_module_t *self)
     // do nothing and let the app decide
     return;
   }
-  else if( ((self->dev->pipe->processing) ||
-          (self->dev->image_status == DT_DEV_PIXELPIPE_DIRTY) ||
-          (self->dev->preview_status == DT_DEV_PIXELPIPE_DIRTY)) && g->cursor_valid)
+  else if((self->dev->full.pipe->processing
+           || self->dev->full.pipe->status == DT_DEV_PIXELPIPE_DIRTY
+           || self->dev->preview_pipe->status == DT_DEV_PIXELPIPE_DIRTY)
+          && g->cursor_valid)
   {
     // if pipe is busy or dirty but cursor is on preview,
     // display waiting cursor while pipe reprocesses
@@ -2028,7 +2060,7 @@ static void switch_cursors(struct dt_iop_module_t *self)
 
     dt_control_queue_redraw_center();
   }
-  else if(g->cursor_valid && !self->dev->pipe->processing)
+  else if(g->cursor_valid && !self->dev->full.pipe->processing)
   {
     // if pipe is clean and idle and cursor is on preview,
     // hide GTK cursor because we display our custom one
@@ -2044,7 +2076,8 @@ static void switch_cursors(struct dt_iop_module_t *self)
   {
     // if module is active and opened but cursor is out of the preview,
     // display default cursor
-    GdkCursor *const cursor = gdk_cursor_new_from_name(gdk_display_get_default(), "default");
+    GdkCursor *const cursor =
+      gdk_cursor_new_from_name(gdk_display_get_default(), "default");
     gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
     g_object_unref(cursor);
 
@@ -2061,37 +2094,24 @@ static void switch_cursors(struct dt_iop_module_t *self)
   }
 }
 
-
-int mouse_moved(struct dt_iop_module_t *self,
-                const double x,
-                const double y,
+int mouse_moved(dt_iop_module_t *self,
+                const float pzx,
+                const float pzy,
                 const double pressure,
-                const int which)
+                const int which,
+                const float zoom_scale)
 {
   // Whenever the mouse moves over the picture preview, store its
-  // coordinates in the GUI struct for later use. This works only if
-  // dev->preview_pipe perfectly overlaps with the UI preview meaning
-  // all distortions, cropping, rotations etc. are applied before this
-  // module in the pipe.
+  // coordinates in the GUI struct for later use.
 
-  dt_develop_t *dev = self->dev;
+  const dt_develop_t *dev = self->dev;
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
 
-  dt_iop_gui_enter_critical_section(self);
-  const int fail = !sanity_check(self);
-  dt_iop_gui_leave_critical_section(self);
-  if(fail) return 0;
-
-  const int wd = dev->preview_pipe->backbuf_width;
-  const int ht = dev->preview_pipe->backbuf_height;
-
   if(g == NULL) return 0;
-  if(wd < 1 || ht < 1) return 0;
 
-  float pzx, pzy;
-  dt_dev_get_pointer_zoom_pos(dev, x, y, &pzx, &pzy);
-  pzx += 0.5f;
-  pzy += 0.5f;
+  // compute the on-screen point where the mouse cursor is
+  float wd, ht;
+  if(!dt_dev_get_preview_size(dev, &wd, &ht)) return 0;
 
   const int x_pointer = pzx * wd;
   const int y_pointer = pzy * ht;
@@ -2113,15 +2133,11 @@ int mouse_moved(struct dt_iop_module_t *self,
   dt_iop_gui_leave_critical_section(self);
 
   // store the actual exposure too, to spare I/O op
-  if(g->cursor_valid && !dev->pipe->processing && g->luminance_valid)
-    g->cursor_exposure =
-      log2f(get_luminance_from_buffer(g->thumb_preview_buf,
-                                      g->thumb_preview_buf_width,
-                                      g->thumb_preview_buf_height,
-                                      (size_t)x_pointer,
-                                      (size_t)y_pointer));
+  if(g->cursor_valid && !dev->full.pipe->processing && g->luminance_valid)
+    g->cursor_exposure = log2f(_luminance_from_module_buffer(self));
 
   switch_cursors(self);
+
   return 1;
 }
 
@@ -2190,7 +2206,7 @@ static inline int set_new_params_interactive(const float control_exposure,
   {
     // Accept the solution
     dt_simd_memcpy(factors, g->factors, PIXEL_CHAN);
-    g->lut_valid = 0;
+    g->lut_valid = FALSE;
 
     // Convert the linear temp parameters to log gains and commit
     float gains[CHANNELS] DT_ALIGNED_ARRAY;
@@ -2202,7 +2218,7 @@ static inline int set_new_params_interactive(const float control_exposure,
     // Reset the GUI copy of user params
     get_channels_factors(factors, p);
     dt_simd_memcpy(factors, g->temp_user_params, CHANNELS);
-    g->user_param_valid = 1;
+    g->user_param_valid = TRUE;
   }
 
   return commit;
@@ -2210,8 +2226,8 @@ static inline int set_new_params_interactive(const float control_exposure,
 
 
 int scrolled(struct dt_iop_module_t *self,
-             const double x,
-             const double y,
+             const float x,
+             const float y,
              const int up,
              const uint32_t state)
 {
@@ -2219,7 +2235,6 @@ int scrolled(struct dt_iop_module_t *self,
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
   dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)self->params;
 
-  if(!sanity_check(self)) return 0;
   if(darktable.gui->reset) return 1;
   if(g == NULL) return 0;
   if(!g->has_focus) return 0;
@@ -2237,7 +2252,7 @@ int scrolled(struct dt_iop_module_t *self,
                     || !g->luminance_valid
                     || !g->interpolation_valid
                     || !g->user_param_valid
-                    || dev->pipe->processing
+                    || dev->full.pipe->processing
                     || !g->has_focus);
 
   dt_iop_gui_leave_critical_section(self);
@@ -2245,12 +2260,7 @@ int scrolled(struct dt_iop_module_t *self,
 
   // re-read the exposure in case it has changed
   dt_iop_gui_enter_critical_section(self);
-  g->cursor_exposure =
-    log2f(get_luminance_from_buffer(g->thumb_preview_buf,
-                                    g->thumb_preview_buf_width,
-                                    g->thumb_preview_buf_height,
-                                    (size_t)g->cursor_pos_x,
-                                    (size_t)g->cursor_pos_y));
+  g->cursor_exposure = log2f(_luminance_from_module_buffer(self));
 
   dt_iop_gui_leave_critical_section(self);
 
@@ -2383,12 +2393,13 @@ static void match_color_to_background(cairo_t *cr,
 }
 
 
-void gui_post_expose(struct dt_iop_module_t *self,
+void gui_post_expose(dt_iop_module_t *self,
                      cairo_t *cr,
-                     const int32_t width,
-                     const int32_t height,
-                     const int32_t pointerx,
-                     const int32_t pointery)
+                     const float width,
+                     const float height,
+                     const float pointerx,
+                     const float pointery,
+                     const float zoom_scale)
 {
   // Draw the custom exposure cursor over the image preview
 
@@ -2402,8 +2413,7 @@ void gui_post_expose(struct dt_iop_module_t *self,
 
   const int fail = (!g->cursor_valid
                     || !g->interpolation_valid
-                    || dev->pipe->processing
-                    || !sanity_check(self)
+                    || dev->full.pipe->processing
                     || !g->has_focus);
 
   dt_iop_gui_leave_critical_section(self);
@@ -2411,7 +2421,12 @@ void gui_post_expose(struct dt_iop_module_t *self,
   if(fail) return;
 
   if(!g->graph_valid)
-    if(!_init_drawing(self, self->widget, g)) return;
+    if(!_init_drawing(self, self->widget, g))
+      return;
+
+  // re-read the exposure in case it has changed
+  if(g->luminance_valid && self->enabled)
+    g->cursor_exposure = log2f(_luminance_from_module_buffer(self));
 
   dt_iop_gui_enter_critical_section(self);
 
@@ -2426,14 +2441,6 @@ void gui_post_expose(struct dt_iop_module_t *self,
   float luminance_out = 0.0f;
   if(g->luminance_valid && self->enabled)
   {
-    // re-read the exposure in case it has changed
-    g->cursor_exposure =
-      log2f(get_luminance_from_buffer(g->thumb_preview_buf,
-                                      g->thumb_preview_buf_width,
-                                      g->thumb_preview_buf_height,
-                                      (size_t)g->cursor_pos_x,
-                                      (size_t)g->cursor_pos_y));
-
     // Get the corresponding exposure
     exposure_in = g->cursor_exposure;
     luminance_in = exp2f(exposure_in);
@@ -2447,19 +2454,6 @@ void gui_post_expose(struct dt_iop_module_t *self,
   dt_iop_gui_leave_critical_section(self);
 
   if(dt_isnan(exposure_in)) return; // something went wrong
-
-  // Rescale and shift Cairo drawing coordinates
-  const float wd = dev->preview_pipe->backbuf_width;
-  const float ht = dev->preview_pipe->backbuf_height;
-  const float zoom_y = dt_control_get_dev_zoom_y();
-  const float zoom_x = dt_control_get_dev_zoom_x();
-  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  const int closeup = dt_control_get_dev_closeup();
-  const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
-  cairo_translate(cr, width / 2.0, height / 2.0);
-  cairo_scale(cr, zoom_scale, zoom_scale);
-  cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
-
 
   // set custom cursor dimensions
   const double outer_radius = 16.;
@@ -2564,6 +2558,49 @@ void gui_post_expose(struct dt_iop_module_t *self,
   }
 }
 
+static void _develop_distort_callback(gpointer instance,
+                                      gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
+  if(g == NULL) return;
+  if(!g->distort_signal_actif) return;
+
+  /* disable the distort signal now to avoid recursive call on this signal as we are
+     about to reprocess the preview pipe which has some module doing distortion. */
+
+  _unset_distort_signal(self);
+
+  /* we do reprocess the preview to get a new internal image buffer with the proper
+     image geometry. */
+  if(self->enabled)
+    dt_dev_reprocess_preview(darktable.develop);
+}
+
+static void _set_distort_signal(dt_iop_module_t *self)
+{
+  dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
+  if(self->enabled && !g->distort_signal_actif)
+  {
+    DT_DEBUG_CONTROL_SIGNAL_CONNECT
+      (darktable.signals,
+       DT_SIGNAL_DEVELOP_DISTORT,
+       G_CALLBACK(_develop_distort_callback), self);
+    g->distort_signal_actif = TRUE;
+  }
+}
+
+static void _unset_distort_signal(dt_iop_module_t *self)
+{
+  dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
+  if(g->distort_signal_actif)
+  {
+    DT_DEBUG_CONTROL_SIGNAL_DISCONNECT
+      (darktable.signals,
+       G_CALLBACK(_develop_distort_callback), self);
+    g->distort_signal_actif = FALSE;
+  }
+}
 
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
 {
@@ -2578,8 +2615,12 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
     const gboolean was_mask = g->mask_display;
     g->mask_display = FALSE;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_luminance_mask), FALSE);
-    if(was_mask) dt_dev_reprocess_center(self->dev);
+    if(was_mask)
+      dt_dev_reprocess_center(self->dev);
     dt_collection_hint_message(darktable.collection);
+
+    // no need for the distort signal anymore
+    _unset_distort_signal(self);
   }
   else
   {
@@ -2587,6 +2628,8 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
                               _("scroll over image to change tone exposure\n"
                                 "shift+scroll for large steps; "
                                 "ctrl+scroll for small steps"));
+    // listen to distort change again
+    _set_distort_signal(self);
   }
 }
 
@@ -2598,17 +2641,21 @@ static inline gboolean _init_drawing(dt_iop_module_t *const restrict self,
   // Cache the equalizer graph objects to avoid recomputing all the view at each redraw
   gtk_widget_get_allocation(widget, &g->allocation);
 
-  if(g->cst) cairo_surface_destroy(g->cst);
+  if(g->cst)
+    cairo_surface_destroy(g->cst);
   g->cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
                                          g->allocation.width, g->allocation.height);
 
-  if(g->cr) cairo_destroy(g->cr);
+  if(g->cr)
+    cairo_destroy(g->cr);
   g->cr = cairo_create(g->cst);
 
-  if(g->layout) g_object_unref(g->layout);
+  if(g->layout)
+    g_object_unref(g->layout);
   g->layout = pango_cairo_create_layout(g->cr);
 
-  if(g->desc) pango_font_description_free(g->desc);
+  if(g->desc)
+    pango_font_description_free(g->desc);
   g->desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
 
   pango_layout_set_font_description(g->layout, g->desc);
@@ -2722,7 +2769,7 @@ static inline gboolean _init_drawing(dt_iop_module_t *const restrict self,
   // end of caching section, this will not be drawn again
 
   dt_iop_gui_enter_critical_section(self);
-  g->graph_valid = 1;
+  g->graph_valid = TRUE;
   dt_iop_gui_leave_critical_section(self);
 
   return TRUE;
@@ -3072,7 +3119,7 @@ static gboolean area_button_press(GtkWidget *widget,
      && event->type == GDK_2BUTTON_PRESS)
   {
     dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)self->params;
-    dt_iop_toneequalizer_params_t *d =
+    const dt_iop_toneequalizer_params_t *const d =
       (dt_iop_toneequalizer_params_t *)self->default_params;
 
     // reset nodes params
@@ -3159,7 +3206,7 @@ static gboolean area_motion_notify(GtkWidget *widget,
       if(delta_x < radius_threshold)
       {
         g->area_active_node = i;
-        g->area_cursor_valid = 1;
+        g->area_cursor_valid = TRUE;
       }
     }
   }
@@ -3278,6 +3325,13 @@ static void _develop_preview_pipe_finished_callback(gpointer instance,
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
   if(g == NULL) return;
+
+  // now that the preview pipe is termintated, set back the distort signal to catch
+  // any new changes from a module doing distortion. this signal has been disconnected
+  // at the time the DT_SIGNAL_DEVELOP_DISTORT has been handled (see ) and a full
+  // reprocess of the preview has been scheduled.
+  _set_distort_signal(self);
+
   switch_cursors(self);
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
   gtk_widget_queue_draw(GTK_WIDGET(g->bar));
@@ -3292,7 +3346,6 @@ static void _develop_ui_pipe_finished_callback(gpointer instance,
   if(g == NULL) return;
   switch_cursors(self);
 }
-
 
 void gui_reset(struct dt_iop_module_t *self)
 {
@@ -3545,7 +3598,6 @@ void gui_init(struct dt_iop_module_t *self)
      G_CALLBACK(_develop_ui_pipe_started_callback), self);
 }
 
-
 void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
@@ -3563,13 +3615,15 @@ void gui_cleanup(struct dt_iop_module_t *self)
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
                                      G_CALLBACK(_develop_preview_pipe_finished_callback),
                                      self);
+  _unset_distort_signal(self);
 
-  if(g->thumb_preview_buf) dt_free_align(g->thumb_preview_buf);
-  if(g->full_preview_buf) dt_free_align(g->full_preview_buf);
-  if(g->desc) pango_font_description_free(g->desc);
+  dt_free_align(g->thumb_preview_buf);
+  dt_free_align(g->full_preview_buf);
+
+  if(g->desc)   pango_font_description_free(g->desc);
   if(g->layout) g_object_unref(g->layout);
-  if(g->cr) cairo_destroy(g->cr);
-  if(g->cst) cairo_surface_destroy(g->cst);
+  if(g->cr)     cairo_destroy(g->cr);
+  if(g->cst)    cairo_surface_destroy(g->cst);
 
   IOP_GUI_FREE;
 }

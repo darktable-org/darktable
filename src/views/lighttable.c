@@ -389,7 +389,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
 {
   dt_library_t *lib = (dt_library_t *)self->data;
 
-  const double start = dt_get_wtime();
+  const double start = dt_get_debug_wtime();
   const dt_lighttable_layout_t layout = dt_view_lighttable_get_layout(darktable.view_manager);
 
   // Let's show full preview if in that state...
@@ -429,9 +429,9 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   // we have started the first expose
   lib->already_started = TRUE;
 
-  const double end = dt_get_wtime();
-  if(darktable.unmuted & DT_DEBUG_PERF)
-    dt_print(DT_DEBUG_LIGHTTABLE, "[lighttable] expose took %0.04f sec\n", end - start);
+  dt_print(DT_DEBUG_LIGHTTABLE | DT_DEBUG_PERF,
+           "[lighttable] expose took %0.04f sec\n",
+           dt_get_wtime() - start);
 }
 
 void enter(dt_view_t *self)

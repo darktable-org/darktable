@@ -104,7 +104,7 @@ typedef enum dt_iop_tags_t
   IOP_TAG_NONE = 0,
   IOP_TAG_DISTORT = 1 << 0,
   IOP_TAG_DECORATION = 1 << 1,
-  IOP_TAG_CLIPPING = 1 << 2,
+  IOP_TAG_CROPPING = 1 << 2,
 
   // might be some other filters togglable by user?
   // IOP_TAG_SLOW       = 1<<3,
@@ -132,7 +132,8 @@ typedef enum dt_iop_flags_t
   IOP_FLAGS_ALLOW_FAST_PIPE = 1 << 12,   // Module can work with a fast pipe
   IOP_FLAGS_UNSAFE_COPY = 1 << 13,       // Unsafe to copy as part of history
   IOP_FLAGS_GUIDES_SPECIAL_DRAW = 1 << 14, // handle the grid drawing directly
-  IOP_FLAGS_GUIDES_WIDGET = 1 << 15       // require the guides widget
+  IOP_FLAGS_GUIDES_WIDGET = 1 << 15,      // require the guides widget
+  IOP_FLAGS_CROP_EXPOSER = 1 << 16        // offers crop exposing
 } dt_iop_flags_t;
 
 /** status of a module*/
@@ -161,19 +162,6 @@ typedef enum dt_dev_request_colorpick_flags_t
   DT_REQUEST_COLORPICK_OFF = 0,   // off
   DT_REQUEST_COLORPICK_MODULE = 1 // requested by module (should take precedence)
 } dt_dev_request_colorpick_flags_t;
-
-/** colorspace enums, must be in synch with dt_iop_colorspace_type_t
- * in color_conversion.cl */
-typedef enum dt_iop_colorspace_type_t
-{
-  IOP_CS_NONE = -1,
-  IOP_CS_RAW = 0,
-  IOP_CS_LAB = 1,
-  IOP_CS_RGB = 2,
-  IOP_CS_LCH = 3,
-  IOP_CS_HSL = 4,
-  IOP_CS_JZCZHZ = 5,
-} dt_iop_colorspace_type_t;
 
 /** part of the module which only contains the cached dlopen stuff. */
 typedef struct dt_iop_module_so_t
@@ -314,9 +302,6 @@ typedef struct dt_iop_module_t
   GtkWidget *guides_toggle;
   GtkWidget *guides_combo;
 
-  /** Last user action changed any module parameter via history? */
-  gboolean iopcache_hint;
-
   /** flag in case the module has troubles (bad settings) - if TRUE,
    * show a warning sign next to module label */
   gboolean has_trouble;
@@ -328,9 +313,6 @@ typedef struct dt_iop_module_t
   char multi_name[128]; // user may change this name
   gboolean multi_name_hand_edited;
   GtkWidget *multimenu_button;
-
-  /** delayed-event handling */
-  guint label_recompute_handle;
 
   void (*process_plain)(struct dt_iop_module_t *self,
                         struct dt_dev_pixelpipe_iop_t *piece,
@@ -364,6 +346,13 @@ gboolean dt_iop_load_module(dt_iop_module_t *module,
                        struct dt_develop_t *dev);
 /** calls module->cleanup and closes the dl connection. */
 void dt_iop_cleanup_module(dt_iop_module_t *module);
+/** migrate legacy params */
+int dt_iop_legacy_params(dt_iop_module_t *module,
+                         const void *const old_params,
+                         const int32_t old_params_size,
+                         const int old_version,
+                         void **new_params,
+                         int new_version);
 /** initialize pipe. */
 void dt_iop_init_pipe(struct dt_iop_module_t *module,
                       struct dt_dev_pixelpipe_t *pipe,
@@ -460,6 +449,7 @@ dt_iop_module_t *dt_iop_get_colorout_module(void);
 /* returns the iop-module found in list with the given name */
 dt_iop_module_t *dt_iop_get_module_from_list(GList *iop_list, const char *op);
 dt_iop_module_t *dt_iop_get_module(const char *op);
+dt_iop_module_so_t *dt_iop_get_module_so(const char *op);
 /** returns module with op + multi_priority or NULL if not found on the list,
     if multi_priority == -1 do not check for it */
 dt_iop_module_t *dt_iop_get_module_by_op_priority(GList *modules,
@@ -518,9 +508,6 @@ void dt_iop_connect_accels_multi(dt_iop_module_so_t *module);
 /** adds keyboard accels for all modules in the pipe */
 void dt_iop_connect_accels_all();
 
-/** get the module that accelerators are attached to for the current so */
-dt_iop_module_t *dt_iop_get_module_accel_curr(dt_iop_module_so_t *module);
-
 /** queue a refresh of the center (FULL), preview, or second-preview
  * windows, rerunning the pixelpipe from */
 /** the given module */
@@ -536,7 +523,7 @@ gboolean dt_iop_show_hide_header_buttons(dt_iop_module_t *module,
                                          const gboolean always_hide);
 
 /** add/remove mask indicator to iop module header */
-void add_remove_mask_indicator(dt_iop_module_t *module, gboolean add);
+void dt_iop_add_remove_mask_indicator(dt_iop_module_t *module, gboolean add);
 
 /** Set the trouble message for the module.  If non-empty, also flag
  ** the module as being in trouble; if empty or NULL, clear the
@@ -583,10 +570,16 @@ gboolean dt_iop_have_required_input_format(const int required_ch,
                                            const dt_iop_roi_t *const roi_in,
                                            const dt_iop_roi_t *const roi_out);
 
+// should module ignore mouse actions on gui elements, like handles or shapes?
+// returns true while color picker or snapshots active; show other elements dimmed
+gboolean dt_iop_canvas_not_sensitive(const struct dt_develop_t *dev);
+
 /* bring up module rename dialog */
 void dt_iop_gui_rename_module(dt_iop_module_t *module);
 
 void dt_iop_gui_changed(dt_action_t *action, GtkWidget *widget, gpointer data);
+
+gboolean dt_iop_module_is_skipped(const struct dt_develop_t *dev, const struct dt_iop_module_t *module);
 
 // copy the RGB channels of a pixel using nontemporal stores if
 // possible; includes the 'alpha' channel as well if faster due to
@@ -611,7 +604,7 @@ static inline void copy_pixel_nontemporal(
 
 // after writing data using copy_pixel_nontemporal, it is necessary to
 // ensure that the writes have completed before attempting reads from
-// a different core.  This function produces the required memmory
+// a different core.  This function produces the required memory
 // fence to ensure proper visibility
 static inline void dt_sfence()
 {

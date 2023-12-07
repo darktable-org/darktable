@@ -22,6 +22,7 @@
 #include "config.h"
 #endif
 
+#include "common/color_harmony.h"
 #include "common/colorspaces.h"
 #include "common/dtpthread.h"
 #include "develop/format.h"
@@ -152,7 +153,8 @@ typedef enum dt_image_correction_type_t
   CORRECTION_TYPE_NONE,
   CORRECTION_TYPE_SONY,
   CORRECTION_TYPE_FUJI,
-  CORRECTION_TYPE_DNG
+  CORRECTION_TYPE_DNG,
+  CORRECTION_TYPE_OLYMPUS
 } dt_image_correction_type_t;
 
 typedef union dt_image_correction_data_t
@@ -175,6 +177,12 @@ typedef union dt_image_correction_data_t
     gboolean has_warp;
     gboolean has_vignette;
   } dng;
+  struct {
+    gboolean has_dist;
+    float dist[4];
+    gboolean has_ca;
+    float ca[6];
+  } olympus;
 } dt_image_correction_data_t;
 
 typedef enum dt_image_loader_t
@@ -207,22 +215,22 @@ static const struct
 } loaders_info[LOADER_COUNT] =
 {
   { N_("unknown"),         '.'}, // EMPTY_FIELD
-  { N_("tiff"),            't'},
-  { N_("png"),             'p'},
-  { N_("j2k"),             'J'},
-  { N_("jpeg"),            'j'},
-  { N_("exr"),             'e'},
-  { N_("rgbe"),            'R'},
-  { N_("pfm"),             'P'},
+  { N_("TIFF"),            't'},
+  { N_("PNG"),             'p'},
+  { N_("JPEG 2000"),       'J'},
+  { N_("JPEG"),            'j'},
+  { N_("EXR"),             'e'},
+  { N_("RGBE"),            'R'},
+  { N_("PFM"),             'P'},
   { N_("GraphicsMagick"),  'g'},
-  { N_("rawspeed"),        'r'},
-  { N_("netpnm"),          'n'},
-  { N_("avif"),            'a'},
+  { N_("RawSpeed"),        'r'},
+  { N_("Netpbm"),          'n'},
+  { N_("AVIF"),            'a'},
   { N_("ImageMagick"),     'i'},
-  { N_("heif"),            'h'},
-  { N_("libraw"),          'l'},
-  { N_("webp"),            'w'},
-  { N_("jpeg xl"),         'L'},
+  { N_("HEIF"),            'h'},
+  { N_("LibRaw"),          'l'},
+  { N_("WebP"),            'w'},
+  { N_("JPEG XL"),         'L'},
   { N_("QOI"),             'q'}
 };
 
@@ -259,7 +267,6 @@ typedef struct dt_image_t
   char camera_model[64];
   char camera_alias[64];
   char camera_makermodel[128];
-  char camera_legacy_makermodel[128];
   gboolean camera_missing_sample;
 
   char filename[DT_MAX_FILENAME_LEN];
@@ -296,6 +303,9 @@ typedef struct dt_image_t
 
   /* gps coords */
   dt_image_geoloc_t geoloc;
+
+  /* color harmony guide */
+  dt_color_harmony_guide_t color_harmony_guide;
 
   /* needed in exposure iop for Deflicker */
   uint16_t raw_black_level;
@@ -338,23 +348,25 @@ typedef struct dt_image_basic_exif_t
 void dt_image_init(dt_image_t *img);
 /** Refresh makermodel from the raw and exif values **/
 void dt_image_refresh_makermodel(dt_image_t *img);
-/** returns non-zero if the image contains low-dynamic range data. */
+/** returns TRUE if the image contains low-dynamic range data. */
 gboolean dt_image_is_ldr(const dt_image_t *img);
-/** returns non-zero if the image contains mosaic data. */
+/** returns TRUE if the image contains mosaic data. */
 gboolean dt_image_is_raw(const dt_image_t *img);
-/** returns non-zero if the image contains float data. */
+/** returns TRUE if the image contains float data. */
 gboolean dt_image_is_hdr(const dt_image_t *img);
 /** set the monochrome flags if monochrome is TRUE and clear it otherwise */
 void dt_image_set_monochrome_flag(const dt_imgid_t imgid, const gboolean monochrome);
-/** returns non-zero if this image was taken using a monochrome camera */
+/** returns TRUE if this image was taken using a monochrome camera */
 gboolean dt_image_is_monochrome(const dt_image_t *img);
-/** returns non-zero if the image supports a color correction matrix */
+/** returns TRUE is image has a raw bayer sensor with RGB data */
+gboolean dt_image_is_bayerRGB(const dt_image_t *img);
+/** returns TRUE if the image supports a color correction matrix */
 gboolean dt_image_is_matrix_correction_supported(const dt_image_t *img);
-/** returns non-zero if the image supports the rawprepare module */
+/** returns TRUE if the image supports the rawprepare module */
 gboolean dt_image_is_rawprepare_supported(const dt_image_t *img);
 /** returns the bitmask containing info about monochrome images */
 int dt_image_monochrome_flags(const dt_image_t *img);
-/** returns true if the image has been tested to be monochrome and the
+/** returns TRUE if the image has been tested to be monochrome and the
  * image wants monochrome workflow */
 gboolean dt_image_use_monochrome_workflow(const dt_image_t *img);
 /** returns the image filename */
@@ -403,13 +415,13 @@ dt_imgid_t dt_image_get_id(const uint32_t film_id,
 /** imports a new image from raw/etc file and adds it to the data base and image cache. Use from threads other than lua.*/
 dt_imgid_t dt_image_import(int32_t film_id,
                            const char *filename,
-                           const gboolean override_ignore_jpegs,
+                           const gboolean override_ignore_nonraws,
                            const gboolean raise_signals);
 /** imports a new image from raw/etc file and adds it to the data base
  * and image cache. Use from lua thread.*/
 dt_imgid_t dt_image_import_lua(const int32_t film_id,
                                const char *filename,
-                               const gboolean override_ignore_jpegs);
+                               const gboolean override_ignore_nonraws);
 /** removes the given image from the database. */
 void dt_image_remove(const dt_imgid_t imgid);
 /** duplicates the given image in the database with the duplicate
@@ -496,6 +508,32 @@ static inline dt_image_orientation_t dt_image_orientation_to_flip_bits(const int
   }
 }
 
+/** return the raw orientation from heif transforms */
+static inline dt_image_orientation_t dt_image_transformation_to_flip_bits(const int angle, const int flip)
+{
+  if(angle == 1)
+  {
+    if(flip == 1) return ORIENTATION_TRANSVERSE;
+    if(flip == 0) return ORIENTATION_TRANSPOSE;
+    return ORIENTATION_ROTATE_CCW_90_DEG;
+  }
+  if(angle == 2)
+  {
+    if(flip == 1) return ORIENTATION_FLIP_VERTICALLY;
+    if(flip == 0) return ORIENTATION_FLIP_HORIZONTALLY;
+    return ORIENTATION_ROTATE_180_DEG;
+  }
+  if(angle == 3)
+  {
+    if(flip == 1) return ORIENTATION_TRANSPOSE;
+    if(flip == 0) return ORIENTATION_TRANSVERSE;
+    return ORIENTATION_ROTATE_CW_90_DEG;
+  }
+  if(flip == 1) return ORIENTATION_FLIP_HORIZONTALLY;
+  if(flip == 0) return ORIENTATION_FLIP_VERTICALLY;
+  return ORIENTATION_NONE;
+}
+
 /** physically move image with imgid and its duplicates to the film roll
  *  given by filmid. returns -1 on error, 0 on success. */
 int32_t dt_image_move(const dt_imgid_t imgid, const int32_t filmid);
@@ -553,6 +591,13 @@ float dt_image_get_exposure_bias(const struct dt_image_t *image_storage);
 char *dt_image_camera_missing_sample_message(const struct dt_image_t *img,
                                              const gboolean logmsg);
 void dt_image_check_camera_missing_sample(const struct dt_image_t *img);
+
+/**   insert the new maker/model/lens if it does not exists.
+      returns the corresponding id for the maker/model/lens */
+int32_t dt_image_get_camera_maker_id(const char *name);
+int32_t dt_image_get_camera_model_id(const char *name);
+int32_t dt_image_get_camera_lens_id(const char *name);
+int32_t dt_image_get_camera_id(const char *maker, const char *model);
 
 #ifdef __cplusplus
 } // extern "C"

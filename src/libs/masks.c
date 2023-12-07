@@ -29,6 +29,7 @@
 #include "gui/accelerators.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
+#include "gui/preferences.h"
 #include "gui/styles.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
@@ -109,19 +110,6 @@ const struct
       [ DT_MASKS_PROPERTY_CURVATURE] = { N_("curvature"), "%", -1, 1, FALSE },
       [ DT_MASKS_PROPERTY_COMPRESSION] = { N_("compression"), "%", 0.0001, 1, TRUE },
 };
-
-static const gchar *_pressure_sensitivity_names[] = { N_("off"),
-                                                      N_("hardness (relative)"),
-                                                      N_("hardness (absolute)"),
-                                                      N_("opacity (relative)"),
-                                                      N_("opacity (absolute)"),
-                                                      N_("brush size (relative)"),
-                                                      NULL };
-
-static const gchar *_brush_smoothing_names[] = { N_("low"),
-                                                 N_("medium"),
-                                                 N_("high"),
-                                                 NULL };
 
 gboolean _timeout_show_all_feathers(gpointer userdata)
 {
@@ -269,18 +257,6 @@ static void _update_all_properties(dt_lib_masks_t *self)
 
   gtk_widget_set_visible(self->pressure, drawing_brush && darktable.gui->have_pen_pressure);
   gtk_widget_set_visible(self->smoothing, drawing_brush);
-}
-
-static void _pressure_changed(GtkWidget *widget, gpointer user_data)
-{
-  dt_conf_set_string("pressure_sensitivity",
-                     _pressure_sensitivity_names[dt_bauhaus_combobox_get(widget)]);
-}
-
-static void _smoothing_changed(GtkWidget *widget, gpointer user_data)
-{
-  dt_conf_set_string("brush_smoothing",
-                     _brush_smoothing_names[dt_bauhaus_combobox_get(widget)]);
 }
 
 static void _lib_masks_get_values(GtkTreeModel *model,
@@ -542,6 +518,21 @@ static void _tree_operation(GtkButton *button, gpointer user_data)
     dt_masks_update_image(darktable.develop);
     dt_control_queue_redraw_center();
   }
+}
+
+static void _add_tree_operation(GtkMenuShell *menu,
+                                gchar *label,
+                                dt_masks_state_t state,
+                                dt_masks_state_t selected_states,
+                                gboolean sensitive)
+{
+  GtkWidget *item = gtk_check_menu_item_new_with_label(label);
+  gtk_widget_set_sensitive(item, sensitive);
+  if(selected_states & state)
+    gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), TRUE);
+  g_signal_connect(item, "activate", (GCallback)_tree_operation,
+                    GINT_TO_POINTER(state));
+  gtk_menu_shell_append(menu, item);
 }
 
 static void _swap_last_secondlast_item_visibility(dt_lib_masks_t *lm,
@@ -933,6 +924,7 @@ static int _tree_button_pressed(GtkWidget *treeview,
 
     gboolean is_first_row = FALSE;
     gboolean is_last_row = FALSE;
+    dt_masks_state_t selected_states = DT_MASKS_STATE_NONE;
 
     int grpid = NO_MASKID;
     int depth = 0;
@@ -964,6 +956,30 @@ static int _tree_button_pressed(GtkWidget *treeview,
         if(!is_last_row && !gtk_tree_path_prev(it0))
         {
           is_first_row = TRUE;
+        }
+      }
+
+      for(const GList *items_iter = selected;
+          items_iter;
+          items_iter = g_list_next(items_iter))
+      {
+        GtkTreePath *item = (GtkTreePath *)items_iter->data;
+
+        if(gtk_tree_model_get_iter(model, &iter, item))
+        {
+          dt_mask_id_t grid = INVALID_MASKID;
+          dt_mask_id_t id = INVALID_MASKID;
+          _lib_masks_get_values(model, &iter, NULL, &grid, &id);
+
+          dt_masks_form_t *grp2 = dt_masks_get_from_id(darktable.develop, grid);
+          if(grp2 && (grp2->type & DT_MASKS_GROUP))
+          {
+            for(const GList *pts = grp2->points; pts; pts = g_list_next(pts))
+            {
+              dt_masks_point_group_t *pt = (dt_masks_point_group_t *)pts->data;
+              if(pt->formid == id) selected_states |= pt->state;
+            }
+          }
         }
       }
 
@@ -1111,42 +1127,20 @@ static int _tree_button_pressed(GtkWidget *treeview,
     if(from_group && depth < 3)
     {
       gtk_menu_shell_append(menu, gtk_separator_menu_item_new());
-      item = gtk_menu_item_new_with_label(_("use inverted shape"));
-        g_signal_connect(item, "activate", (GCallback)_tree_operation,
-                         GINT_TO_POINTER(DT_MASKS_STATE_INVERSE));
-      gtk_menu_shell_append(menu, item);
+      _add_tree_operation(menu, _("use inverted shape"),
+                          DT_MASKS_STATE_INVERSE, selected_states, TRUE);
 
       gtk_menu_shell_append(menu, gtk_separator_menu_item_new());
-
-      item = gtk_menu_item_new_with_label(_("mode: union"));
-      gtk_widget_set_sensitive(item, !is_last_row);
-      g_signal_connect(item, "activate", (GCallback)_tree_operation,
-                        GINT_TO_POINTER(DT_MASKS_STATE_UNION));
-      gtk_menu_shell_append(menu, item);
-
-      item = gtk_menu_item_new_with_label(_("mode: intersection"));
-      gtk_widget_set_sensitive(item, !is_last_row);
-      g_signal_connect(item, "activate", (GCallback)_tree_operation,
-                        GINT_TO_POINTER(DT_MASKS_STATE_INTERSECTION));
-      gtk_menu_shell_append(menu, item);
-
-      item = gtk_menu_item_new_with_label(_("mode: difference"));
-      gtk_widget_set_sensitive(item, !is_last_row);
-      g_signal_connect(item, "activate", (GCallback)_tree_operation,
-                        GINT_TO_POINTER(DT_MASKS_STATE_DIFFERENCE));
-      gtk_menu_shell_append(menu, item);
-
-      item = gtk_menu_item_new_with_label(_("mode: sum"));
-      gtk_widget_set_sensitive(item, !is_last_row);
-      g_signal_connect(item, "activate", (GCallback)_tree_operation,
-                        GINT_TO_POINTER(DT_MASKS_STATE_SUM));
-      gtk_menu_shell_append(menu, item);
-
-      item = gtk_menu_item_new_with_label(_("mode: exclusion"));
-      gtk_widget_set_sensitive(item, !is_last_row);
-      g_signal_connect(item, "activate", (GCallback)_tree_operation,
-                        GINT_TO_POINTER(DT_MASKS_STATE_EXCLUSION));
-      gtk_menu_shell_append(menu, item);
+      _add_tree_operation(menu, _("mode: union"),
+                          DT_MASKS_STATE_UNION, selected_states, !is_last_row);
+      _add_tree_operation(menu, _("mode: intersection"),
+                          DT_MASKS_STATE_INTERSECTION, selected_states, !is_last_row);
+      _add_tree_operation(menu, _("mode: difference"),
+                          DT_MASKS_STATE_DIFFERENCE, selected_states, !is_last_row);
+      _add_tree_operation(menu, _("mode: sum"),
+                          DT_MASKS_STATE_SUM, selected_states, !is_last_row);
+      _add_tree_operation(menu, _("mode: exclusion"),
+                          DT_MASKS_STATE_EXCLUSION, selected_states, !is_last_row);
 
       gtk_menu_shell_append(menu, gtk_separator_menu_item_new());
       item = gtk_menu_item_new_with_label(_("move up"));
@@ -1350,13 +1344,15 @@ static void _lib_masks_list_recurs(GtkTreeStore *treestore,
       GtkTreeModel *model = GTK_TREE_MODEL(treestore);
       int pos = 0;
       GtkTreeIter iter;
-      gtk_tree_model_get_iter_first(model, &iter);
 
-      do
+      if(gtk_tree_model_get_iter_first(model, &iter))
       {
-        if (gtk_tree_model_iter_has_child(model, &iter))
-          ++pos;
-      } while(gtk_tree_model_iter_next(model, &iter));
+        do
+        {
+          if(gtk_tree_model_iter_has_child(model, &iter))
+            ++pos;
+        } while(gtk_tree_model_iter_next(model, &iter));
+      }
 
       // insert the child immediately after the last group
       gtk_tree_store_insert(treestore, &child, NULL, pos);
@@ -1929,34 +1925,12 @@ void gui_init(dt_lib_module_t *self)
                      G_CALLBACK(_property_changed), GINT_TO_POINTER(i));
   }
 
-  const char *psens = dt_conf_get_string_const("pressure_sensitivity");
-  int pos = 0;
-  for(int i = 0; _pressure_sensitivity_names[i]; i++)
-    if(!g_strcmp0(_pressure_sensitivity_names[i], psens)) pos = i;
-
-  d->pressure =
-    dt_bauhaus_combobox_new_full(DT_ACTION(self),
-                                 N_("properties"),
-                                 N_("pressure"),
-                                 _("pen pressure control for brush masks\n"
-                                   "'off': pressure reading ignored,\n"
-                                   "'hardness'/'opacity'/'brush size': pressure reading controls specified attribute,\n"
-                                   "'absolute'/'relative': pressure reading is taken directly as attribute value or multiplied with pre-defined setting."),
-                                 pos, _pressure_changed, NULL, _pressure_sensitivity_names);
+  d->pressure = dt_gui_preferences_enum(DT_ACTION(self), "pressure_sensitivity");
+  dt_bauhaus_widget_set_label(d->pressure, N_("properties"), N_("pressure"));
   gtk_box_pack_start(GTK_BOX(d->cs.container), d->pressure, FALSE, FALSE, 0);
 
-  const char *bsmooth = dt_conf_get_string_const("brush_smoothing");
-  pos = 0;
-  for(int i = 0; _brush_smoothing_names[i]; i++)
-    if(!g_strcmp0(_brush_smoothing_names[i], bsmooth)) pos = i;
-
-  d->smoothing =
-    dt_bauhaus_combobox_new_full(DT_ACTION(self),
-                                 N_("properties"),
-                                 N_("smoothing"),
-                                 _("smoothing of brush strokes\n"
-                                   "stronger smoothing leads to fewer nodes and easier editing but with lower control of accuracy."),
-                                 pos, _smoothing_changed, NULL, _brush_smoothing_names);
+  d->smoothing = dt_gui_preferences_enum(DT_ACTION(self), "brush_smoothing");
+  dt_bauhaus_widget_set_label(d->smoothing, N_("properties"), N_("smoothing"));
   gtk_box_pack_start(GTK_BOX(d->cs.container), d->smoothing, FALSE, FALSE, 0);
 
   // set proxy functions

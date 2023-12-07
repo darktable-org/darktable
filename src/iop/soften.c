@@ -90,7 +90,9 @@ int default_group()
   return IOP_GROUP_EFFECT | IOP_GROUP_EFFECTS;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
@@ -156,7 +158,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_soften_data_t *d = (dt_iop_soften_data_t *)piece->data;
   dt_iop_soften_global_data_t *gd = (dt_iop_soften_global_data_t *)self->global_data;
 
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
   cl_mem dev_tmp = NULL;
   cl_mem dev_m = NULL;
 
@@ -221,6 +222,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   size_t sizes[3];
   size_t local[3];
 
+  cl_int err = DT_OPENCL_SYSMEM_ALLOCATION;
   dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   if(dev_tmp == NULL) goto error;
 
@@ -271,19 +273,12 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_set_kernel_args(devid, gd->kernel_soften_mix, 0, CLARG(dev_in), CLARG(dev_tmp), CLARG(dev_out),
     CLARG(width), CLARG(height), CLARG(amount));
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_soften_mix, sizes);
-  if(err != CL_SUCCESS) goto error;
-
-  dt_opencl_release_mem_object(dev_m);
-  dt_opencl_release_mem_object(dev_tmp);
-  free(mat);
-  return TRUE;
 
 error:
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_tmp);
   free(mat);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_soften] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 }
 #endif
 

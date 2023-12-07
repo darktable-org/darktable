@@ -87,7 +87,9 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_LAB;
 }
@@ -101,15 +103,39 @@ const char **description(struct dt_iop_module_t *self)
                                       _("non-linear, Lab, display-referred"));
 }
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
-                  void *new_params, const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  typedef struct dt_iop_monochrome_params_v2_t
   {
-    dt_iop_monochrome_params_t *p1 = (dt_iop_monochrome_params_t *)old_params;
-    dt_iop_monochrome_params_t *p2 = (dt_iop_monochrome_params_t *)new_params;
-    memcpy(p2, p1, sizeof(dt_iop_monochrome_params_t) - sizeof(float));
-    p2->highlights = 0.0f;
+    float a;
+    float b;
+    float size;
+    float highlights;
+  } dt_iop_monochrome_params_v2_t;
+
+  if(old_version == 1)
+  {
+    typedef struct dt_iop_monochrome_params_v1_t
+    {
+      float a;
+      float b;
+      float size;
+    } dt_iop_monochrome_params_v1_t;
+
+    const dt_iop_monochrome_params_v1_t *o = (dt_iop_monochrome_params_v1_t *)old_params;
+    dt_iop_monochrome_params_v2_t *n =
+      (dt_iop_monochrome_params_v2_t *)malloc(sizeof(dt_iop_monochrome_params_v2_t));
+    memcpy(n, o, sizeof(dt_iop_monochrome_params_v1_t));
+    n->highlights = 0.0f;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_monochrome_params_v2_t);
+    *new_version = 2;
     return 0;
   }
   return 1;
@@ -255,16 +281,11 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_monochrome, width, height,
     CLARG(dev_in), CLARG(dev_tmp), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(d->a), CLARG(d->b),
     CLARG(sigma2), CLARG(d->highlights));
-  if(err != CL_SUCCESS) goto error;
-
-  dt_opencl_release_mem_object(dev_tmp);
-  return TRUE;
 
 error:
   dt_opencl_release_mem_object(dev_tmp);
-  dt_bilateral_free_cl(b);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_monochrome] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  if(b) dt_bilateral_free_cl(b);
+  return err;
 }
 #endif
 
@@ -409,7 +430,8 @@ static gboolean dt_iop_monochrome_draw(GtkWidget *widget, cairo_t *crf, gpointer
   return TRUE;
 }
 
-void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
+                        dt_dev_pixelpipe_t *pipe)
 {
   dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
 
@@ -464,7 +486,7 @@ static gboolean dt_iop_monochrome_button_press(GtkWidget *widget, GdkEventButton
     if(event->type == GDK_2BUTTON_PRESS)
     {
       // reset
-      dt_iop_monochrome_params_t *p0 = (dt_iop_monochrome_params_t *)self->default_params;
+      const dt_iop_monochrome_params_t *const p0 = (dt_iop_monochrome_params_t *)self->default_params;
       p->a = p0->a;
       p->b = p0->b;
       p->size = p0->size;
@@ -580,4 +602,3 @@ void gui_cleanup(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

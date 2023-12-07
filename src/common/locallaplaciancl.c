@@ -126,11 +126,9 @@ cl_int dt_local_laplacian_cl(
     cl_mem input,               // input buffer in some Labx or yuvx format
     cl_mem output)              // output buffer with colour
 {
-  cl_int err = -666;
+  if(b->bwidth <= 1 || b->bheight <= 1) return DT_OPENCL_DEFAULT_ERROR;
 
-  if(b->bwidth <= 1 || b->bheight <= 1) return err;
-
-  err = dt_opencl_enqueue_kernel_2d_args(b->devid, b->global->kernel_pad_input, b->bwidth, b->bheight,
+  cl_int err = dt_opencl_enqueue_kernel_2d_args(b->devid, b->global->kernel_pad_input, b->bwidth, b->bheight,
     CLARG(input), CLARG(b->dev_padded[0]), CLARG(b->width), CLARG(b->height), CLARG(b->max_supp), CLARG(b->bwidth),
     CLARG(b->bheight));
   if(err != CL_SUCCESS) goto error;
@@ -184,12 +182,10 @@ cl_int dt_local_laplacian_cl(
   // read back processed L channel and copy colours:
   err = dt_opencl_enqueue_kernel_2d_args(b->devid, b->global->kernel_write_back, b->width, b->height,
     CLARG(input), CLARG(b->dev_output[0]), CLARG(output), CLARG(b->max_supp), CLARG(b->width), CLARG(b->height));
-  if(err != CL_SUCCESS) goto error;
-
-  return CL_SUCCESS;
 
 error:
-  dt_print(DT_DEBUG_OPENCL, "[local laplacian cl] couldn't enqueue kernel! %s\n", cl_errstr(err));
+  if(err != CL_SUCCESS)
+    dt_print(DT_DEBUG_OPENCL, "[local laplacian cl] error %s\n", cl_errstr(err));
   return err;
 }
 

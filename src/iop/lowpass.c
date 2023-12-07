@@ -52,34 +52,6 @@ typedef enum dt_iop_lowpass_algo_t
   LOWPASS_ALGO_BILATERAL // $DESCRIPTION: "bilateral filter"
 } dt_iop_lowpass_algo_t;
 
-/* legacy version 1 params */
-typedef struct dt_iop_lowpass_params1_t
-{
-  dt_gaussian_order_t order;
-  float radius;
-  float contrast;
-  float saturation;
-} dt_iop_lowpass_params1_t;
-
-typedef struct dt_iop_lowpass_params2_t
-{
-  dt_gaussian_order_t order;
-  float radius;
-  float contrast;
-  float brightness;
-  float saturation;
-} dt_iop_lowpass_params2_t;
-
-typedef struct dt_iop_lowpass_params3_t
-{
-  dt_gaussian_order_t order;
-  float radius;
-  float contrast;
-  float brightness;
-  float saturation;
-  int unbound;
-} dt_iop_lowpass_params3_t;
-
 typedef struct dt_iop_lowpass_params_t
 {
   dt_gaussian_order_t order; // $DEFAULT: 0
@@ -147,9 +119,9 @@ int default_group()
   return IOP_GROUP_EFFECT | IOP_GROUP_EFFECTS;
 }
 
-int default_colorspace(dt_iop_module_t *self,
-                       dt_dev_pixelpipe_t *pipe,
-                       dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_LAB;
 }
@@ -157,13 +129,34 @@ int default_colorspace(dt_iop_module_t *self,
 int legacy_params(dt_iop_module_t *self,
                   const void *const old_params,
                   const int old_version,
-                  void *new_params,
-                  const int new_version)
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 4)
+  typedef struct dt_iop_lowpass_params_v4_t
   {
-    const dt_iop_lowpass_params1_t *old = old_params;
-    dt_iop_lowpass_params_t *new = new_params;
+    dt_gaussian_order_t order;
+    float radius;
+    float contrast;
+    float brightness;
+    float saturation;
+    dt_iop_lowpass_algo_t lowpass_algo;
+    int unbound;
+  } dt_iop_lowpass_params_v4_t;
+
+  if(old_version == 1)
+  {
+    typedef struct dt_iop_lowpass_params_v1_t
+    {
+      dt_gaussian_order_t order;
+      float radius;
+      float contrast;
+      float saturation;
+    } dt_iop_lowpass_params_v1_t;
+
+    const dt_iop_lowpass_params_v1_t *old = old_params;
+    dt_iop_lowpass_params_v4_t *new =
+      (dt_iop_lowpass_params_v4_t *)malloc(sizeof(dt_iop_lowpass_params_v4_t));
     new->order = old->order;
     new->radius = fabs(old->radius);
     new->contrast = old->contrast;
@@ -172,12 +165,25 @@ int legacy_params(dt_iop_module_t *self,
     new->lowpass_algo = old->radius < 0.0f ? LOWPASS_ALGO_BILATERAL : LOWPASS_ALGO_GAUSSIAN;
     new->unbound = 0;
 
+    *new_params = new;
+    *new_params_size = sizeof(dt_iop_lowpass_params_v4_t);
+    *new_version = 4;
     return 0;
   }
-  if(old_version == 2 && new_version == 4)
+  if(old_version == 2)
   {
-    const dt_iop_lowpass_params2_t *old = old_params;
-    dt_iop_lowpass_params_t *new = new_params;
+    typedef struct dt_iop_lowpass_params_v2_t
+    {
+      dt_gaussian_order_t order;
+      float radius;
+      float contrast;
+      float brightness;
+      float saturation;
+    } dt_iop_lowpass_params_v2_t;
+
+    const dt_iop_lowpass_params_v2_t *old = old_params;
+    dt_iop_lowpass_params_v4_t *new =
+      (dt_iop_lowpass_params_v4_t *)malloc(sizeof(dt_iop_lowpass_params_v4_t));
     new->order = old->order;
     new->radius = fabs(old->radius);
     new->contrast = old->contrast;
@@ -186,12 +192,26 @@ int legacy_params(dt_iop_module_t *self,
     new->lowpass_algo = old->radius < 0.0f ? LOWPASS_ALGO_BILATERAL : LOWPASS_ALGO_GAUSSIAN;
     new->unbound = 0;
 
+    *new_params = new;
+    *new_params_size = sizeof(dt_iop_lowpass_params_v4_t);
+    *new_version = 4;
     return 0;
   }
-  if(old_version == 3 && new_version == 4)
+  if(old_version == 3)
   {
-    const dt_iop_lowpass_params3_t *old = old_params;
-    dt_iop_lowpass_params_t *new = new_params;
+    typedef struct dt_iop_lowpass_params_v3_t
+    {
+      dt_gaussian_order_t order;
+      float radius;
+      float contrast;
+      float brightness;
+      float saturation;
+      int unbound;
+    } dt_iop_lowpass_params_v3_t;
+
+    const dt_iop_lowpass_params_v3_t *old = old_params;
+    dt_iop_lowpass_params_v4_t *new =
+      (dt_iop_lowpass_params_v4_t *)malloc(sizeof(dt_iop_lowpass_params_v4_t));
     new->order = old->order;
     new->radius = fabs(old->radius);
     new->contrast = old->contrast;
@@ -200,6 +220,9 @@ int legacy_params(dt_iop_module_t *self,
     new->lowpass_algo = old->radius < 0.0f ? LOWPASS_ALGO_BILATERAL : LOWPASS_ALGO_GAUSSIAN;
     new->unbound = old->unbound;
 
+    *new_params = new;
+    *new_params_size = sizeof(dt_iop_lowpass_params_v4_t);
+    *new_version = 4;
     return 0;
   }
   return 1;
@@ -298,15 +321,6 @@ int process_cl(struct dt_iop_module_t *self,
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_lowpass_mix, width, height,
     CLARG(dev_tmp), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(saturation), CLARG(dev_cm),
     CLARG(dev_ccoeffs), CLARG(dev_lm), CLARG(dev_lcoeffs), CLARG(unbound));
-  if(err != CL_SUCCESS) goto error;
-
-  dt_opencl_release_mem_object(dev_tmp);
-  dt_opencl_release_mem_object(dev_lcoeffs);
-  dt_opencl_release_mem_object(dev_lm);
-  dt_opencl_release_mem_object(dev_ccoeffs);
-  dt_opencl_release_mem_object(dev_cm);
-
-  return TRUE;
 
 error:
   if(g) dt_gaussian_free_cl(g);
@@ -317,8 +331,7 @@ error:
   dt_opencl_release_mem_object(dev_lm);
   dt_opencl_release_mem_object(dev_ccoeffs);
   dt_opencl_release_mem_object(dev_cm);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_lowpass] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 }
 #endif
 
@@ -404,7 +417,7 @@ void process(struct dt_iop_module_t *self,
     dt_gaussian_t *g = dt_gaussian_init(width, height, 4, Labmax, Labmin, sigma, order);
     if(!g)
     {
-      dt_iop_copy_image_roi(out, in, piece->colors, roi_in, roi_out, TRUE);
+      dt_iop_copy_image_roi(out, in, piece->colors, roi_in, roi_out);
       return;
     }
     dt_gaussian_blur_4c(g, in, out);
@@ -419,7 +432,7 @@ void process(struct dt_iop_module_t *self,
     dt_bilateral_t *b = dt_bilateral_init(width, height, sigma_s, sigma_r);
     if(!b)
     {
-      dt_iop_copy_image_roi(out, in, piece->colors, roi_in, roi_out, TRUE);
+      dt_iop_copy_image_roi(out, in, piece->colors, roi_in, roi_out);
       return;
     }
     dt_bilateral_splat(b, in);
@@ -599,4 +612,3 @@ void gui_init(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

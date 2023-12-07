@@ -54,7 +54,9 @@ int flags()
   return IOP_FLAGS_HIDDEN | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_FENCE | IOP_FLAGS_UNSAFE_COPY;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
@@ -303,15 +305,15 @@ static void _mask_display(const float *const restrict in,
 {
   // yellow, "unused" element aids vectorization
   const dt_aligned_pixel_t mask_color = { 1.0f, 1.0f, 0.0f };
-
+  const gboolean devel = dt_conf_get_bool("darkroom/ui/develop_mask");
   #ifdef _OPENMP
   #pragma omp parallel for simd default(none) schedule(static) \
     aligned(in, out: 64) aligned(mask_color: 16)                \
-    dt_omp_firstprivate(in, out, buffsize, alpha, mask_color)
+    dt_omp_firstprivate(in, out, buffsize, alpha, mask_color, devel)
   #endif
     for(size_t j = 0; j < buffsize; j+= 4)
     {
-      const float gray = 0.3f * in[j + 0] + 0.59f * in[j + 1] + 0.11f * in[j + 2];
+      const float gray = devel ? in[j + 3] : (0.3f * in[j + 0] + 0.59f * in[j + 1] + 0.11f * in[j + 2]);
       const dt_aligned_pixel_t pixel = { gray, gray, gray, gray };
       _write_pixel(pixel, out + j, mask_color, in[j + 3] * alpha);
     }

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -105,7 +105,9 @@ int default_group()
   return IOP_GROUP_EFFECT | IOP_GROUP_EFFECTS;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_LAB;
 }
@@ -209,19 +211,14 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_Lab_to_XYZ(Lab_sw, XYZ_sw);
 
   dev_m = dt_opencl_copy_host_to_device(devid, d->lut, 256, 256, sizeof(float));
-  if(dev_m == NULL) goto error;
+  if(dev_m == NULL) goto finish;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_lowlight, width, height,
     CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(XYZ_sw), CLARG(dev_m));
-  if(err != CL_SUCCESS) goto error;
 
+finish:
   dt_opencl_release_mem_object(dev_m);
-  return TRUE;
-
-error:
-  dt_opencl_release_mem_object(dev_m);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_lowlight] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 }
 #endif
 
@@ -262,7 +259,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_lowlight_data_t *d = (dt_iop_lowlight_data_t *)malloc(sizeof(dt_iop_lowlight_data_t));
-  dt_iop_lowlight_params_t *default_params = (dt_iop_lowlight_params_t *)self->default_params;
+  const dt_iop_lowlight_params_t *const default_params = (dt_iop_lowlight_params_t *)self->default_params;
   piece->data = (void *)d;
   d->curve = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
   (void)dt_draw_curve_add_point(d->curve, default_params->transition_x[DT_IOP_LOWLIGHT_BANDS - 2] - 1.0,
@@ -498,7 +495,8 @@ static gboolean lowlight_draw(GtkWidget *widget, cairo_t *crf, gpointer user_dat
   const int inset = DT_IOP_LOWLIGHT_INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  int width = allocation.width, height = allocation.height;
+  int width = allocation.width;
+  int height = allocation.height - DT_RESIZE_HANDLE_SIZE;
   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
 
@@ -671,7 +669,7 @@ static gboolean lowlight_draw(GtkWidget *widget, cairo_t *crf, gpointer user_dat
   cairo_set_source_surface(crf, cst, 0, 0);
   cairo_paint(crf);
   cairo_surface_destroy(cst);
-  return TRUE;
+  return FALSE;
 }
 
 static gboolean lowlight_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
@@ -682,7 +680,7 @@ static gboolean lowlight_motion_notify(GtkWidget *widget, GdkEventMotion *event,
   const int inset = DT_IOP_LOWLIGHT_INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  int height = allocation.height - 2 * inset, width = allocation.width - 2 * inset;
+  int height = allocation.height - 2 * inset - DT_RESIZE_HANDLE_SIZE, width = allocation.width - 2 * inset;
   if(!c->dragging) c->mouse_x = CLAMP(event->x - inset, 0, width) / (float)width;
   c->mouse_y = 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;
   if(c->dragging)
@@ -735,7 +733,7 @@ static gboolean lowlight_button_press(GtkWidget *widget, GdkEventButton *event, 
   {
     // reset current curve
     dt_iop_lowlight_params_t *p = (dt_iop_lowlight_params_t *)self->params;
-    dt_iop_lowlight_params_t *d = (dt_iop_lowlight_params_t *)self->default_params;
+    const dt_iop_lowlight_params_t *const d = (dt_iop_lowlight_params_t *)self->default_params;
     for(int k = 0; k < DT_IOP_LOWLIGHT_BANDS; k++)
     {
       p->transition_x[k] = d->transition_x[k];
@@ -751,7 +749,7 @@ static gboolean lowlight_button_press(GtkWidget *widget, GdkEventButton *event, 
     const int inset = DT_IOP_LOWLIGHT_INSET;
     GtkAllocation allocation;
     gtk_widget_get_allocation(widget, &allocation);
-    int height = allocation.height - 2 * inset, width = allocation.width - 2 * inset;
+    int height = allocation.height - 2 * inset - DT_RESIZE_HANDLE_SIZE, width = allocation.width - 2 * inset;
     c->mouse_pick
         = dt_draw_curve_calc_value(c->transition_curve, CLAMP(event->x - inset, 0, width) / (float)width);
     c->mouse_pick -= 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;
@@ -802,7 +800,7 @@ static gboolean lowlight_scrolled(GtkWidget *widget, GdkEventScroll *event, gpoi
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_lowlight_gui_data_t *c = IOP_GUI_ALLOC(lowlight);
-  dt_iop_lowlight_params_t *p = (dt_iop_lowlight_params_t *)self->default_params;
+  const dt_iop_lowlight_params_t *const p = (dt_iop_lowlight_params_t *)self->default_params;
 
   c->transition_curve = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
   (void)dt_draw_curve_add_point(c->transition_curve, p->transition_x[DT_IOP_LOWLIGHT_BANDS - 2] - 1.0,
@@ -848,4 +846,3 @@ void gui_cleanup(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

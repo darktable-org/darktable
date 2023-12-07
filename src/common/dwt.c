@@ -621,26 +621,19 @@ int dt_dwt_first_scale_visible_cl(dwt_params_cl_t *p)
 
 static cl_int dwt_subtract_layer_cl(cl_mem bl, cl_mem bh, dwt_params_cl_t *const p)
 {
-  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-
   const int devid = p->devid;
   const int kernel = p->global->kernel_dwt_subtract_layer;
-
 
   const float lpass_mult = (1.f / 16.f);
   const int width = p->width;
   const int height = p->height;
 
-  err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, p->width, p->height,
+  return dt_opencl_enqueue_kernel_2d_args(devid, kernel, p->width, p->height,
     CLARG(bl), CLARG(bh), CLARG((width)), CLARG((height)), CLARG(lpass_mult));
-
-  return err;
 }
 
 static cl_int dwt_add_layer_cl(cl_mem img, cl_mem layers, dwt_params_cl_t *const p, const int n_scale)
 {
-  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-
   const int devid = p->devid;
   const int kernel = p->global->kernel_dwt_add_img_to_layer;
 
@@ -648,10 +641,8 @@ static cl_int dwt_add_layer_cl(cl_mem img, cl_mem layers, dwt_params_cl_t *const
   const int width = p->width;
   const int height = p->height;
 
-  err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, p->width, p->height,
+  return dt_opencl_enqueue_kernel_2d_args(devid, kernel, p->width, p->height,
     CLARG(img), CLARG(layers), CLARG((width)), CLARG((height)));
-
-  return err;
 }
 
 static cl_int dwt_get_image_layer_cl(cl_mem layer, dwt_params_cl_t *const p)
@@ -686,25 +677,17 @@ static cl_int dwt_wavelet_decompose_cl(cl_mem img, dwt_params_cl_t *const p, _dw
 
   if(p->scales <= 0) goto cleanup;
 
+  err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   /* image buffers */
   buffer[0] = img;
   /* temporary storage */
   buffer[1] = dt_opencl_alloc_device_buffer(devid, sizeof(float) * p->ch * p->width * p->height);
-  if(buffer[1] == NULL)
-  {
-    dt_print(DT_DEBUG_ALWAYS, "[dwt] not enough memory for wavelet decomposition\n");
-    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-    goto cleanup;
-  }
+  if(buffer[1] == NULL) goto cleanup;
 
   // buffer to reconstruct the image
   layers = dt_opencl_alloc_device_buffer(devid, sizeof(float) * p->ch * p->width * p->height);
-  if(layers == NULL)
-  {
-    dt_print(DT_DEBUG_ALWAYS, "[dwt] not enough memory for wavelet decomposition\n");
-    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-    goto cleanup;
-  }
+  if(layers == NULL) goto cleanup;
+
   // init layer buffer
   {
     const int kernel = p->global->kernel_dwt_init_buffer;
@@ -720,12 +703,8 @@ static cl_int dwt_wavelet_decompose_cl(cl_mem img, dwt_params_cl_t *const p, _dw
   if(p->merge_from_scale > 0)
   {
     merged_layers = dt_opencl_alloc_device_buffer(devid, sizeof(float) * p->ch * p->width * p->height);
-    if(merged_layers == NULL)
-    {
-      dt_print(DT_DEBUG_ALWAYS, "[dwt] not enough memory for wavelet decomposition\n");
-      err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-      goto cleanup;
-    }
+    if(merged_layers == NULL) goto cleanup;
+
     // init reconstruct buffer
     {
       const int kernel = p->global->kernel_dwt_init_buffer;
@@ -749,12 +728,7 @@ static cl_int dwt_wavelet_decompose_cl(cl_mem img, dwt_params_cl_t *const p, _dw
     // when (*layer_func) uses too much memory I get a -4 error, so alloc and free for each scale
     // setup a temp buffer
     temp = dt_opencl_alloc_device_buffer(devid, sizeof(float) * p->ch * p->width * p->height);
-    if(temp == NULL)
-    {
-      dt_print(DT_DEBUG_ALWAYS, "[dwt] not enough memory for wavelet decomposition\n");
-      err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-      goto cleanup;
-    }
+    if(temp == NULL) goto cleanup;
 
     // hat transform by row
     {
@@ -783,11 +757,8 @@ static cl_int dwt_wavelet_decompose_cl(cl_mem img, dwt_params_cl_t *const p, _dw
       if(err != CL_SUCCESS) goto cleanup;
     }
 
-    if(temp)
-    {
-      dt_opencl_release_mem_object(temp);
-      temp = NULL;
-    }
+    dt_opencl_release_mem_object(temp);
+    temp = NULL;
 
     err = dwt_subtract_layer_cl(buffer[lpass], buffer[hpass], p);
     if(err != CL_SUCCESS) goto cleanup;
@@ -893,18 +864,16 @@ static cl_int dwt_wavelet_decompose_cl(cl_mem img, dwt_params_cl_t *const p, _dw
   }
 
 cleanup:
-  if(layers) dt_opencl_release_mem_object(layers);
-  if(merged_layers) dt_opencl_release_mem_object(merged_layers);
-  if(temp) dt_opencl_release_mem_object(temp);
-  if(buffer[1]) dt_opencl_release_mem_object(buffer[1]);
+  dt_opencl_release_mem_object(layers);
+  dt_opencl_release_mem_object(merged_layers);
+  dt_opencl_release_mem_object(temp);
+  dt_opencl_release_mem_object(buffer[1]);
 
   return err;
 }
 
 cl_int dwt_decompose_cl(dwt_params_cl_t *p, _dwt_layer_func_cl layer_func)
 {
-  cl_int err = CL_SUCCESS;
-
   // this is a zoom scale, not a wavelet scale
   if(p->preview_scale <= 0.f) p->preview_scale = 1.f;
 
@@ -929,9 +898,7 @@ cl_int dwt_decompose_cl(dwt_params_cl_t *p, _dwt_layer_func_cl layer_func)
   }
 
   // call the actual decompose
-  err = dwt_wavelet_decompose_cl(p->image, p, layer_func);
-
-  return err;
+  return dwt_wavelet_decompose_cl(p->image, p, layer_func);
 }
 
 #endif

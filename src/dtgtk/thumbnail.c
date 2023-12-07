@@ -601,16 +601,12 @@ static gboolean _event_image_draw(GtkWidget *widget,
 
   // if we have a rgbbuf but the thumb is not anymore the darkroom main one
   dt_develop_t *dev = darktable.develop;
-  const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
   if(thumb->img_surf_preview
-     && (v->view(v) != DT_VIEW_DARKROOM
-         || !dev->preview_pipe->output_backbuf
+     && (dt_view_get_current() != DT_VIEW_DARKROOM
+         || !dev->preview_pipe->backbuf
          || dev->preview_pipe->output_imgid != thumb->imgid))
   {
-    if(thumb->img_surf && cairo_surface_get_reference_count(thumb->img_surf) > 0)
-      cairo_surface_destroy(thumb->img_surf);
-    thumb->img_surf = NULL;
-    thumb->img_surf_dirty = TRUE;
+    dt_thumbnail_surface_destroy(thumb);
     thumb->img_surf_preview = FALSE;
   }
 
@@ -628,24 +624,22 @@ static gboolean _event_image_draw(GtkWidget *widget,
     _thumb_set_image_area(thumb, IMG_TO_FIT);
     gtk_widget_get_size_request(thumb->w_image_box, &image_w, &image_h);
 
-    if(v->view(v) == DT_VIEW_DARKROOM
+    if(dt_view_get_current() == DT_VIEW_DARKROOM
        && dev->preview_pipe->output_imgid == thumb->imgid
-       && dev->preview_pipe->output_backbuf)
+       && dev->preview_pipe->backbuf)
     {
       // the current thumb is the one currently developed in darkroom
       // better use the preview buffer for surface, in order to stay in sync
-      if(thumb->img_surf && cairo_surface_get_reference_count(thumb->img_surf) > 0)
-        cairo_surface_destroy(thumb->img_surf);
-      thumb->img_surf = NULL;
+      dt_thumbnail_surface_destroy(thumb);
 
       // get new surface with preview image
-      const int buf_width = dev->preview_pipe->output_backbuf_width;
-      const int buf_height = dev->preview_pipe->output_backbuf_height;
+      const int buf_width = dev->preview_pipe->backbuf_width;
+      const int buf_height = dev->preview_pipe->backbuf_height;
       uint8_t *rgbbuf = g_malloc0(sizeof(unsigned char) * 4 * buf_width * buf_height);
 
       dt_pthread_mutex_t *mutex = &dev->preview_pipe->backbuf_mutex;
       dt_pthread_mutex_lock(mutex);
-      memcpy(rgbbuf, dev->preview_pipe->output_backbuf,
+      memcpy(rgbbuf, dev->preview_pipe->backbuf,
              sizeof(unsigned char) * 4 * buf_width * buf_height);
       dt_pthread_mutex_unlock(mutex);
 
@@ -701,8 +695,12 @@ static gboolean _event_image_draw(GtkWidget *widget,
       cairo_surface_t *img_surf = NULL;
       if(thumb->zoomable)
       {
-        if(thumb->zoom > 1.0f)
-          thumb->zoom = MIN(thumb->zoom, dt_thumbnail_get_zoom100(thumb));
+        const float zoom100 = dt_thumbnail_get_zoom100(thumb);
+        // Any zoom100 > 1 is ensured to be correct
+
+        if(thumb->zoom > 1.0f && zoom100 > 1.0f)
+          thumb->zoom = MIN(thumb->zoom, zoom100);
+
         res = dt_view_image_get_surface(thumb->imgid,
                                         image_w * thumb->zoom,
                                         image_h * thumb->zoom,
@@ -1134,12 +1132,7 @@ void dt_thumbnail_update_selection(dt_thumbnail_t *thumb)
     selected = TRUE;
 
   // if there's a change, update the thumb
-  if(selected != thumb->selected)
-  {
-    thumb->selected = selected;
-    _thumb_update_icons(thumb);
-    gtk_widget_queue_draw(thumb->w_main);
-  }
+  dt_thumbnail_set_selection(thumb, selected);
 }
 
 static void _dt_selection_changed_callback(gpointer instance, gpointer user_data)
@@ -1182,11 +1175,10 @@ static void _dt_preview_updated_callback(gpointer instance, gpointer user_data)
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
   if(!gtk_widget_is_visible(thumb->w_main)) return;
 
-  const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
-  if(v->view(v) == DT_VIEW_DARKROOM
+  if(dt_view_get_current() == DT_VIEW_DARKROOM
      && (thumb->img_surf_preview
          || darktable.develop->preview_pipe->output_imgid == thumb->imgid)
-     && darktable.develop->preview_pipe->output_backbuf)
+     && darktable.develop->preview_pipe->backbuf)
   {
     // reset surface
     thumb->img_surf_dirty = TRUE;
@@ -1654,7 +1646,8 @@ dt_thumbnail_t *dt_thumbnail_new(const int width,
                                  const int rowid,
                                  const dt_thumbnail_overlay_t over,
                                  const dt_thumbnail_container_t container,
-                                 const gboolean tooltip)
+                                 const gboolean tooltip,
+                                 const dt_thumbnail_selection_t sel)
 {
   dt_thumbnail_t *thumb = calloc(1, sizeof(dt_thumbnail_t));
   thumb->width = width;
@@ -1696,7 +1689,10 @@ dt_thumbnail_t *dt_thumbnail_new(const int width,
 
   // let's see if the images are selected or active or mouse_overed
   _dt_active_images_callback(NULL, thumb);
-  _dt_selection_changed_callback(NULL, thumb);
+  if (sel == DT_THUMBNAIL_SELECTION_UNKNOWN)
+    _dt_selection_changed_callback(NULL, thumb);
+  else
+    thumb->selected = sel;
   if(dt_control_get_mouse_over_id() == thumb->imgid)
     dt_thumbnail_set_mouseover(thumb, TRUE);
 
@@ -1744,9 +1740,7 @@ void dt_thumbnail_destroy(dt_thumbnail_t *thumb)
                                      G_CALLBACK(_dt_image_info_changed_callback), thumb);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
                                      G_CALLBACK(_dt_collection_changed_callback), thumb);
-  if(thumb->img_surf && cairo_surface_get_reference_count(thumb->img_surf) > 0)
-    cairo_surface_destroy(thumb->img_surf);
-  thumb->img_surf = NULL;
+  dt_thumbnail_surface_destroy(thumb);
   if(thumb->w_main) gtk_widget_destroy(thumb->w_main);
   if(thumb->filename) g_free(thumb->filename);
   if(thumb->info_line) g_free(thumb->info_line);
@@ -2269,11 +2263,18 @@ float dt_thumbnail_get_zoom100(dt_thumbnail_t *thumb)
       (float)(thumb->height - thumb->img_margin->top - thumb->img_margin->bottom);
     const float used_w =
       (float)(thumb->width - thumb->img_margin->left - thumb->img_margin->right);
-    thumb->zoom_100 = fmaxf((float)w / used_w, (float)h / used_h);
-    if(thumb->zoom_100 < 1.0f) thumb->zoom_100 = 1.0f;
+    const float zoom100 = fmaxf((float)w / used_w, (float)h / used_h);
+
+    /* the thumb->zoom_100 value is kept for the thumbs lifetime so
+       we have to make sure this is only done if valid even in cornercases.
+       If not safe we won't keep it.
+    */
+    const gboolean safe = zoom100 >= 1.0f && thumb->img_width > 0;
+    if(safe)
+      thumb->zoom_100 = MAX(zoom100, 1.0f);
   }
 
-  return thumb->zoom_100;
+  return MAX(1.0f, thumb->zoom_100);
 }
 
 float dt_thumbnail_get_zoom_ratio(dt_thumbnail_t *thumb)
@@ -2329,6 +2330,23 @@ void dt_thumbnail_reload_infos(dt_thumbnail_t *thumb)
   g_free(lb);
 }
 
+void dt_thumbnail_surface_destroy(dt_thumbnail_t *thumb)
+{
+  // we need to check also the reference count to be sure the surface is not in an intermediate state
+  if(thumb->img_surf && cairo_surface_get_reference_count(thumb->img_surf) > 0)
+      cairo_surface_destroy(thumb->img_surf);
+  thumb->img_surf = NULL;
+  thumb->img_surf_dirty = TRUE;
+}
+
+void dt_thumbnail_set_selection(dt_thumbnail_t *thumb,
+                                const gboolean selected)
+{
+  if(thumb->selected == selected) return;
+  thumb->selected = selected;
+  _thumb_update_icons(thumb);
+  gtk_widget_queue_draw(thumb->w_main);
+}
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

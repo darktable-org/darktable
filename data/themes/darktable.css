@@ -18,9 +18,9 @@
 
 /*** This has been tested with GTK 3.24 on Gnome ***/
 
-/*--------------------------------------
-  - Perceptually uniform grey gradient -
-  --------------------------------------*/
+/*----------------------------------------------------------
+  - Perceptually uniform grey gradient on LCH color space. -
+  --------------------------------------------------------*/
 
 /* grey_00 = pure black is forbidden for visual assessment */
 @define-color grey_00 #000000;
@@ -187,7 +187,7 @@ Why that? Just because it's a developer choice and most classes use underscore i
 @define-color thumbnail_star_bg_color @grey_35;
 @define-color thumbnail_star_hover_color @grey_80;
 @define-color thumbnail_fg_color @grey_55;
-@define-color thumbnail_bg50_color @grey_100;
+@define-color thumbnail_bg50_color @grey_95;
 @define-color thumbnail_selected_bg_color @grey_70;
 @define-color thumbnail_hover_bg_color @grey_85;
 @define-color thumbnail_hover_fg_color @grey_90;
@@ -237,7 +237,7 @@ Why that? Just because it's a developer choice and most classes use underscore i
   background-image: none;
   color: @fg_color;
   font-size: 1em;   /* avoid changing this settings or you will made the UI quite awful (too big or too small) */
-  font-family: sans-serif;
+  font-family: sans-serif, "Arial Unicode MS";
   font-feature-settings: "tnum";
   font-weight: normal;
   box-shadow:none;
@@ -297,6 +297,7 @@ box,
 box *
 {
   background-color: transparent;
+  font-family: sans-serif, "Arial Unicode MS";
 }
 
 /*----------------------
@@ -353,7 +354,7 @@ textview,
   border: 1px solid @button_border; /* this too */
   border-radius: 0.21em;
   background-color: @button_bg;
-  font-family: sans-serif;
+  font-family: sans-serif, "Arial Unicode MS";
 }
 
 /* then set specific settings for all text zones and combo */
@@ -369,6 +370,7 @@ textview
 
 .combo,
 entry,
+#dt-metadata-multi,
 textview
 {
   padding: 0.07em 0.28em;   /* be sure to keep 0.07em padding, at least to scrolledwindow textview part. part of workaround just below */
@@ -390,6 +392,7 @@ scrolledwindow textview
 .dt_module_btn,
 .path-bar button,
 header button,
+.image-button,
 .text-button,
 .text-button radio, /* this line and following one are needed to set good margin inside some buttons, especially in header buttons in about dialog window and on radio button and label inside star icon overlay menu */
 .text-button label
@@ -591,7 +594,7 @@ dialog .sidebar row:selected:hover label,
   color: @plugin_label_color;
   padding: 0 0.14em 0.14em 0.45em;
   font-weight: normal;
-  font-family: sans-serif;
+  font-family: sans-serif, "Arial Unicode MS";
   font-size: 1.1em;
 }
 
@@ -599,7 +602,7 @@ dialog .sidebar row:selected:hover label,
 #iop-module-name
 {
   font-weight: lighter;
-  font-family: sans-serif;
+  font-family: sans-serif, "Arial Unicode MS";
   font-size: 0.8em;
 }
 
@@ -623,7 +626,7 @@ dialog .sidebar row:selected:hover label,
 {
   padding: 0.14em 0;
   color: @section_label;
-  font-family: sans-serif;
+  font-family: sans-serif, "Arial Unicode MS";
   font-weight: 500;
 }
 
@@ -742,18 +745,24 @@ dialog .dialog-vbox
 }
 
 /* set top margin in bottom button bar to be the same as bottom margin applied above for main dialog window */
-dialog .dialog-action-box
+dialog .dialog-action-box,
+#shortcut-controls,
+#preset-controls
 {
   margin-top: 0.42em;
 }
 
+dialog .dialog-vbox .text-button:not(.toggle)
+{
+  margin: 0.21em;
+}
 /* remove margin on the left for first left button only, then do the same for right margin for last right button only */
 dialog .dialog-action-box button:first-child
 {
   margin-left: 0;
 }
 
-dialog .dialog-action-box button:last-child
+dialog .dialog-vbox button:last-child:not(.toggle)
 {
   margin-right: 0;
 }
@@ -843,6 +852,7 @@ menuitem > arrow
 }
 
 /* and set menuitem related to sort of combobox like metadata presets in import module */
+menuitem label,
 #view-dropdown button,
 #view-dropdown menuitem,
 #view-label
@@ -897,7 +907,7 @@ notebook tabs,
 #guides-line,
 #modules-tabs
 {
-  font-family: sans-serif;
+  font-family: sans-serif, "Arial Unicode MS";
 }
 
 #blending-tabs,
@@ -1098,8 +1108,13 @@ treeview header label
   margin-right: 1.75em;
 }
 
-#preferences-notebook combobox,
-#preferences-notebook spinbutton,
+#preference_non_default
+{
+  font-weight: bolder;
+  margin: 0.07em;
+  min-width: 1em;
+}
+
 #preset-controls entry,
 #shortcut-controls entry
 {
@@ -1107,18 +1122,6 @@ treeview header label
 }
 
 /* Set buttons and search field on presets and shortcuts control buttons */
-#shortcut-controls,
-#preset-controls
-{
-  margin-top: 0.35em;
-}
-
-#shortcut-controls button,
-#preset-controls button
-{
-  margin-left: 0.28em;
-}
-
 #shortcut-controls .search,
 #preferences-box #shortcut-controls check
 {
@@ -1452,7 +1455,8 @@ border-bottom: 0.07em solid alpha(@selected_bg_color, 0.75);
 #import-presets,
 #modulegroups-ro
 {
-  font-style: italic;
+  margin-top: 1.0em;
+  font-weight: bold;
 }
 
 /* About window: set different background for credits view */
@@ -1503,7 +1507,7 @@ border-bottom: 0.07em solid alpha(@selected_bg_color, 0.75);
 
 .search image.left
 {
-  padding: 0 0.21em;
+  padding: 0 0.4em;
 }
 
 .search image:disabled
@@ -1606,6 +1610,18 @@ progressbar progress
   color: @disabled_fg_color;
 }
 
+#dt-metadata-changed
+{
+  font-style: italic;
+  text-decoration-line: underline;
+}
+
+#dt-metadata-multi
+{
+  font-style: italic;
+  margin: 0.07em; /* match textview */
+}
+
 /*---------------------
   - Set color pickers -
   ---------------------*/
@@ -1634,7 +1650,7 @@ progressbar progress
    be careful to not change that unless you really now what you do */
 #picker-black
 {
-  color: @grey_00;
+  color: @grey_05;
   border: 0;
 }
 
@@ -1646,7 +1662,7 @@ progressbar progress
 
 #picker-white
 {
-  color: @grey_100;
+  color: @grey_95;
   border: 0;
 }
 
@@ -1655,6 +1671,7 @@ progressbar progress
   ------------------------------------------------------------------*/
 /*** All states options are designed below, active, hover, selected, disabled and check states ***/
 /* Main states */
+.default, /* dialog button that activates with Enter */
 .dt_history_items:active,
 .dt_history_items:checked,
 button:active,
@@ -1668,7 +1685,6 @@ entry:checked,
 filechooser *:selected,
 menuitem:active,
 menuitem:selected,
-messagedialog .default,  /* this show that a button in confirmation action pop-up has the focus (no by default) */
 treeview *:selected:not(check),
 treeview *:checked:not(check),
 #main-histogram .dt_module_btn:checked:not(.rgb_toggle)
@@ -1753,6 +1769,7 @@ treeview *:active
   color: @field_active_fg;
 }
 
+#preferences-box .dt_bauhaus,
 treeview check:selected
 {
   background-color: @button_bg;
@@ -1819,6 +1836,7 @@ treeview#delete-dialog:selected
 {
    border-top: 2.4em solid @plugin_bg_color;
 }
+
 
 /*** --- Thumbtable css part ---
 
@@ -2107,6 +2125,12 @@ Details :
   color: @thumbnail_font_color;
 }
 
+.dt_overlays_always_extended.dt_fullview #thumb-main:hover #thumb-bottom-label,
+.dt_overlays_always_extended.dt_fullview #thumb-main:selected #thumb-bottom-label
+{
+  color: shade(@thumbnail_font_color,.75);
+}
+
 /* Set red reject icon when visible */
 .dt_overlays_hover #thumb-main:hover #thumb-reject:active,
 .dt_overlays_hover #thumb-main:hover #thumb-reject:hover,
@@ -2155,6 +2179,12 @@ Details :
 {
   color: @thumbnail_star_hover_color;
   background-color: @thumbnail_star_bg_color;
+}
+
+/* Set stars icon hover effect on fullview */
+.dt_fullview #thumb-main:hover #thumb-star:hover
+{
+  color: @lighttable_bg_color;
 }
 
 /* Set hover group and audio effect */
@@ -2252,8 +2282,8 @@ Details :
 .dt_fullview #thumb-main:hover #thumb-back,
 .dt_fullview #thumb-main:active #thumb-back
 {
-  background-color: transparent;
-  border: 0;
+  background-color: shade(@lighttable_bg_color,1.05);
+  border: 1px solid shade(@lighttable_bg_color,.95);
 }
 
 /* Set image borders */
@@ -2271,7 +2301,7 @@ Details :
 .dt_overlays_always.dt_fullview #thumb-bottom,
 .dt_overlays_always_extended.dt_fullview #thumb-bottom
 {
-  background-color: shade(@lighttable_bg_color, 1.1);
+  background-color: transparent;
 }
 
 /* Set zoom info */

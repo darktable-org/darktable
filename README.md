@@ -58,7 +58,7 @@ Requirements
 * Linux (64-bit)
 * FreeBSD (64-bit)
 * Windows (64-bit), 8.1 w/ [UCRT](https://support.microsoft.com/en-us/topic/update-for-universal-c-runtime-in-windows-c0514201-7fe6-95a3-b0a5-287930f3560c) and later
-* macOS 11.3 and later
+* macOS 12.5 and later
 
 *Big-endian platforms are not supported.*
 
@@ -89,31 +89,31 @@ you can build the software yourself following the instructions [below](#building
 
 ### Latest release
 
-4.2.1 (stable)
+4.4.2 (stable)
 
-* [Download executable for Windows](https://github.com/darktable-org/darktable/releases/download/release-4.2.1/darktable-4.2.1-win64.exe)
-* [Download executable for macOS on Intel](https://github.com/darktable-org/darktable/releases/download/release-4.2.1/darktable-4.2.1_x86_64.dmg)
-* [Download executable for macOS on Apple Silicon](https://github.com/darktable-org/darktable/releases/download/release-4.2.1/darktable-4.2.1_arm64.dmg)
-* [Install native packages and repositories for Linux](https://software.opensuse.org/download.html?project=graphics:darktable:stable&package=darktable)
+* [Download executable for Windows](https://github.com/darktable-org/darktable/releases/download/release-4.4.2/darktable-4.4.2-win64.exe)
+* [Download executable for macOS on Intel](https://github.com/darktable-org/darktable/releases/download/release-4.4.2/darktable-4.4.2-x86_64.dmg)
+* [Download executable for macOS on Apple Silicon](https://github.com/darktable-org/darktable/releases/download/release-4.4.2/darktable-4.4.2-arm64.dmg)
+* [Install native packages or add a third-party repository for Linux distros](https://software.opensuse.org/download.html?project=graphics:darktable:stable&package=darktable)
 * [Install Flatpak package for Linux](https://flathub.org/apps/details/org.darktable.Darktable)
 * [More information about installing darktable on any system](https://www.darktable.org/install/)
 
 *When using a pre-built package, ensure that it has been built with Lua, OpenCL, OpenMP and Colord support.
 These are optional and will not prevent darktable from running if missing,
 but their absence will degrade the user experience.
-Notably, some Flatpak, Snap and AppImage packages lack OpenCL and Lua support.*
+You can check for them by running darktable with the `--version` command line option.*
 
 ### Development snapshot
 
 The development snapshot reflects the current state of the master branch. It is intended for testing and is generally not safe. See the notes [below](#get-the-source) for warnings and precautions about using the master branch.
 
 * [Install native packages and repositories for Linux](https://software.opensuse.org/download.html?project=graphics:darktable:master&package=darktable) (one snapshot per day).
-* [Binary packages are provided for macOS and Windows on a nightly basis](https://github.com/darktable-org/darktable/actions/workflows/nightly.yml) (x86_64 only).
+* [Binary packages are provided for Linux (AppImage), macOS and Windows on a nightly basis](https://github.com/darktable-org/darktable/releases/tag/nightly) (x86_64 only).
 
 Updating from older versions
 ----------------------------
 
-When updating darktable from an older release, you only need install
+When updating darktable from an older release, you only need to install
 the newest version. Existing files will be preserved.
 
 However, newer releases occasionally need to change the structure of the library database
@@ -152,15 +152,15 @@ Building
 ### Dependencies
 
 Compatible compilers/toolchains:
-* Clang: 12 and later
+* Clang: 13 and later
 * GCC: 12 and later
 * MinGW-w64: 10 and later
-* XCode: 13.2 and later
+* XCode: 14.2 and later
 
 Required dependencies (minimum version):
 * CMake 3.18
 * GTK 3.24.15
-* GLib 2.40
+* GLib 2.56
 * SQLite 3.15 *(but 3.24 or newer strongly recommended)*
 * Exiv2 0.25 *(but at least 0.27.4 built with ISO BMFF support needed for Canon CR3 raw import)*
 
@@ -170,12 +170,12 @@ Required dependencies (no version requirement):
 
 Optional dependencies (minimum version):
 * OpenMP 4.5 *(for CPU multi-threading and SIMD vectorization)*
-* LLVM 3.9 *(for OpenCL checks at compilation time)*
+* LLVM 7 *(for OpenCL checks at compilation time)*
 * OpenCL 1.2 *(for GPU-accelerated computing)*
 * Lua 5.4 *(for plugins and extension scripting)*
 * libgphoto2 2.5 *(for camera tethering)*
 * Imath 3.1.0 *(for 16-bit "half" float TIFF export and faster import)*
-* libavif 0.8.2 *(for AVIF import & export)*
+* libavif 0.9.2 *(for AVIF import & export)*
 * libheif 1.13.0 *(for HEIF/HEIC/HIF import; also for AVIF import if no libavif)*
 * libjxl 0.7.0 *(for JPEG XL import & export)*
 * WebP 0.3.0 *(for WebP import & export)*
@@ -264,7 +264,7 @@ See below (in "Using") how to start a test install of the unstable version witho
 
 #### Latest stable release
 
-4.2.1
+4.4.2
 
 The darktable project releases two major versions every year, on Summer and Winter Solstices, tagged with even numbers (e.g. 4.0, 4.2, 4.4, 4.6).
 Minor revisions are tagged with a third digit (e.g. 4.0.1, 4.0.2) and mostly provide bug fixes and camera support.
@@ -274,7 +274,7 @@ You may want to compile these stable releases yourself to get better performance
 git clone --recurse-submodules --depth 1 https://github.com/darktable-org/darktable.git
 cd darktable
 git fetch --tags
-git checkout tags/release-4.2.1
+git checkout tags/release-4.4.2
 ```
 
 ### Get submodules
@@ -354,7 +354,7 @@ To use a test version of darktable without damaging your regular/stable version'
 /opt/darktable-test/bin/darktable --configdir "~/.config/darktable-test"
 ```
 
-and ensure that you set the option "write sidecar file for each image" to "never" in preferences -> storage -> XMP. This way,
+and ensure that you set the option "create sidecar file for each image" to "never" in preferences -> storage -> XMP. This way,
 your regular/stable version will save its configuration files in `~/.config/darktable`, as usual,
 the test/unstable one will save in `~/.config/darktable-test`, and the two versions will not produce database conflicts.
 

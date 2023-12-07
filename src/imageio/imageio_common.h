@@ -58,6 +58,8 @@ typedef enum dt_imageio_levels_t
   IMAGEIO_CHANNEL_MASK = 0xFF00
 } dt_imageio_levels_t;
 
+// Check that the image is raw by file extension
+gboolean dt_imageio_is_raw_by_extension(const char *extension);
 // Checks that the image is indeed an ldr image
 gboolean dt_imageio_is_ldr(const char *filename);
 // checks that the image has a monochrome preview attached

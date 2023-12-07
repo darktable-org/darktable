@@ -60,6 +60,7 @@ typedef enum dt_iop_lut3d_colorspace_t
   DT_IOP_REC709,      // $DESCRIPTION: "gamma Rec709 RGB"
   DT_IOP_LIN_REC709,  // $DESCRIPTION: "linear Rec709 RGB"
   DT_IOP_LIN_REC2020, // $DESCRIPTION: "linear Rec2020 RGB"
+  DT_IOP_LIN_PROPHOTO,// $DESCRIPTION: "linear ProPhoto RGB"
 } dt_iop_lut3d_colorspace_t;
 
 typedef enum dt_iop_lut3d_interpolation_t
@@ -154,15 +155,31 @@ int default_group()
   return IOP_GROUP_COLOR | IOP_GROUP_TECHNICAL;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
-                  const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 3)
+  typedef struct dt_iop_lut3d_params_v3_t
+  {
+    char filepath[DT_IOP_LUT3D_MAX_PATHNAME];
+    dt_iop_lut3d_colorspace_t colorspace;
+    dt_iop_lut3d_interpolation_t interpolation;
+    int nb_keypoints;
+    char c_clut[DT_IOP_LUT3D_MAX_KEYPOINTS*2*3];
+    char lutname[DT_IOP_LUT3D_MAX_LUTNAME];
+  } dt_iop_lut3d_params_v3_t;
+
+  if(old_version == 1)
   {
     typedef struct dt_iop_lut3d_params_v1_t
     {
@@ -171,17 +188,22 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       int interpolation;
     } dt_iop_lut3d_params_v1_t;
 
-    dt_iop_lut3d_params_v1_t *o = (dt_iop_lut3d_params_v1_t *)old_params;
-    dt_iop_lut3d_params_t *n = (dt_iop_lut3d_params_t *)new_params;
+    const dt_iop_lut3d_params_v1_t *o = (dt_iop_lut3d_params_v1_t *)old_params;
+    dt_iop_lut3d_params_v3_t *n =
+      (dt_iop_lut3d_params_v3_t *)malloc(sizeof(dt_iop_lut3d_params_v3_t));
     g_strlcpy(n->filepath, o->filepath, sizeof(n->filepath));
     n->colorspace = o->colorspace;
     n->interpolation = o->interpolation;
     n->nb_keypoints = 0;
     memset(&n->c_clut, 0, sizeof(n->c_clut));
     memset(&n->lutname, 0, sizeof(n->lutname));
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_lut3d_params_v3_t);
+    *new_version = 3;
     return 0;
   }
-  if(old_version == 2 && new_version == 3)
+  if(old_version == 2)
   {
     typedef struct dt_iop_lut3d_params_v2_t
     {
@@ -194,9 +216,14 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       uint32_t gmic_version;
     } dt_iop_lut3d_params_v2_t;
 
-    dt_iop_lut3d_params_v2_t *o = (dt_iop_lut3d_params_v2_t *)old_params;
-    dt_iop_lut3d_params_t *n = (dt_iop_lut3d_params_t *)new_params;
-    memcpy(n, o, sizeof(dt_iop_lut3d_params_t));
+    const dt_iop_lut3d_params_v2_t *o = (dt_iop_lut3d_params_v2_t *)old_params;
+    dt_iop_lut3d_params_v3_t *n =
+      (dt_iop_lut3d_params_v3_t *)malloc(sizeof(dt_iop_lut3d_params_v3_t));
+    memcpy(n, o, sizeof(dt_iop_lut3d_params_v3_t)); // v3 is smaller
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_lut3d_params_v3_t);
+    *new_version = 3;
     return 0;
   }
 
@@ -214,18 +241,15 @@ void correct_pixel_trilinear(const float *const in, float *const out,
 #endif
   for(size_t k = 0; k < (size_t)(pixel_nb * 4); k+=4)
   {
-    float *const input = ((float *const)in) + k;
+    const float *const input = in + k;
     float *const output = ((float *const)out) + k;
 
     int rgbi[3], i, j;
     float tmp[6];
     dt_aligned_pixel_t rgbd;
 
-    for(int c = 0; c < 3; ++c) input[c] = fminf(fmaxf(input[c], 0.0f), 1.0f);
-
-    rgbd[0] = input[0] * (float)(level - 1);
-    rgbd[1] = input[1] * (float)(level - 1);
-    rgbd[2] = input[2] * (float)(level - 1);
+    for_each_channel(c)
+      rgbd[c] = CLIP(input[c]) * (float)(level - 1);
 
     rgbi[0] = CLAMP((int)rgbd[0], 0, level - 2);
     rgbi[1] = CLAMP((int)rgbd[1], 0, level - 2);
@@ -292,16 +316,13 @@ void correct_pixel_tetrahedral(const float *const in, float *const out,
 #endif
   for(size_t k = 0; k < (size_t)(pixel_nb * 4); k+=4)
   {
-    float *const input = ((float *const)in) + k;
+    const float *const input = in + k;
     float *const output = ((float *const)out) + k;
 
     int rgbi[3];
     dt_aligned_pixel_t rgbd;
-    for(int c = 0; c < 3; ++c) input[c] = fminf(fmaxf(input[c], 0.0f), 1.0f);
-
-    rgbd[0] = input[0] * (float)(level - 1);
-    rgbd[1] = input[1] * (float)(level - 1);
-    rgbd[2] = input[2] * (float)(level - 1);
+    for_each_channel(c)
+      rgbd[c] = CLIP(input[c]) * (float)(level - 1);
 
     rgbi[0] = CLAMP((int)rgbd[0], 0, level - 2);
     rgbi[1] = CLAMP((int)rgbd[1], 0, level - 2);
@@ -380,16 +401,13 @@ void correct_pixel_pyramid(const float *const in, float *const out,
 #endif
   for(size_t k = 0; k < (size_t)(pixel_nb * 4); k+=4)
   {
-    float *const input = ((float *const)in) + k;
+    const float *const input = in + k;
     float *const output = ((float *const)out) + k;
 
     int rgbi[3];
     dt_aligned_pixel_t rgbd;
-    for(int c = 0; c < 3; ++c) input[c] = fminf(fmaxf(input[c], 0.0f), 1.0f);
-
-    rgbd[0] = input[0] * (float)(level - 1);
-    rgbd[1] = input[1] * (float)(level - 1);
-    rgbd[2] = input[2] * (float)(level - 1);
+    for_each_channel(c)
+      rgbd[c] = CLIP(input[c]) * (float)(level - 1);
 
     rgbi[0] = CLAMP((int)rgbd[0], 0, level - 2);
     rgbi[1] = CLAMP((int)rgbd[1], 0, level - 2);
@@ -498,8 +516,8 @@ uint16_t calculate_clut_haldclut(dt_iop_lut3d_params_t *const p, const char *con
            png.height, png.color_type, png.bit_depth);
   if(png.bit_depth !=8 && png.bit_depth != 16)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[lut3d] png bit-depth %d not supported\n", png.bit_depth);
-    dt_control_log(_("png bit-depth %d not supported"), png.bit_depth);
+    dt_print(DT_DEBUG_ALWAYS, "[lut3d] png bit depth %d is not supported\n", png.bit_depth);
+    dt_control_log(_("png bit depth %d is not supported"), png.bit_depth);
     fclose(png.f);
     png_destroy_read_struct(&png.png_ptr, &png.info_ptr, NULL);
     return 0;
@@ -753,22 +771,24 @@ uint16_t calculate_clut_cube(const char *const filepath, float **clut)
       {
         if(strtod(token[1], NULL) != 0.0f)
         {
-          dt_print(DT_DEBUG_ALWAYS, "[lut3d] DOMAIN MIN <> 0.0 is not supported\n");
-          dt_control_log(_("DOMAIN MIN <> 0.0 is not supported"));
+          dt_print(DT_DEBUG_ALWAYS, "[lut3d] DOMAIN MIN other than 0 is not supported\n");
+          dt_control_log(_("DOMAIN MIN other than 0 is not supported"));
           if(lclut) dt_free_align(lclut);
           free(line);
           fclose(cube_file);
+          return 0;
         }
       }
       else if(strcmp("DOMAIN_MAX", token[0]) == 0)
       {
         if(strtod(token[1], NULL) != 1.0f)
         {
-          dt_print(DT_DEBUG_ALWAYS, "[lut3d] DOMAIN MAX <> 1.0 is not supported\n");
-          dt_control_log(_("DOMAIN MAX <> 1.0 is not supported"));
+          dt_print(DT_DEBUG_ALWAYS, "[lut3d] DOMAIN MAX other than 1 is not supported\n");
+          dt_control_log(_("DOMAIN MAX other than 1 is not supported"));
           if(lclut) dt_free_align(lclut);
           free(line);
           fclose(cube_file);
+          return 0;
         }
       }
       else if(strcmp("LUT_1D_SIZE", token[0]) == 0)
@@ -986,6 +1006,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     = (d->params.colorspace == DT_IOP_SRGB) ? DT_COLORSPACE_SRGB
     : (d->params.colorspace == DT_IOP_REC709) ? DT_COLORSPACE_REC709
     : (d->params.colorspace == DT_IOP_ARGB) ? DT_COLORSPACE_ADOBERGB
+    : (d->params.colorspace == DT_IOP_LIN_PROPHOTO) ? DT_COLORSPACE_PROPHOTO_RGB
     : (d->params.colorspace == DT_IOP_LIN_REC709) ? DT_COLORSPACE_LIN_REC709
     : DT_COLORSPACE_LIN_REC2020;
   const dt_iop_order_iccprofile_info_t *const lut_profile
@@ -1004,7 +1025,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     clut_cl = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3 * level * level * level, (void *)clut);
     if(clut_cl == NULL)
     {
-      dt_print(DT_DEBUG_ALWAYS, "[lut3d process_cl] error allocating memory\n");
       err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
       goto cleanup;
     }
@@ -1031,17 +1051,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       CLARG(height));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_lut3d_none, sizes);
   }
-  if(err != CL_SUCCESS)
-  {
-    dt_print(DT_DEBUG_ALWAYS, "[lut3d process_cl] error %i enqueue kernel\n", err);
-    goto cleanup;
-  }
 
 cleanup:
-  if(clut_cl) dt_opencl_release_mem_object(clut_cl);
-
-  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl_lut3d] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return (err == CL_SUCCESS) ? TRUE : FALSE;
+  dt_opencl_release_mem_object(clut_cl);
+  return err;
 }
 #endif
 
@@ -1059,6 +1072,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     = (d->params.colorspace == DT_IOP_SRGB) ? DT_COLORSPACE_SRGB
     : (d->params.colorspace == DT_IOP_REC709) ? DT_COLORSPACE_REC709
     : (d->params.colorspace == DT_IOP_ARGB) ? DT_COLORSPACE_ADOBERGB
+    : (d->params.colorspace == DT_IOP_LIN_PROPHOTO) ? DT_COLORSPACE_PROPHOTO_RGB
     : (d->params.colorspace == DT_IOP_LIN_REC709) ? DT_COLORSPACE_LIN_REC709
     : DT_COLORSPACE_LIN_REC2020;
   const dt_iop_order_iccprofile_info_t *const lut_profile

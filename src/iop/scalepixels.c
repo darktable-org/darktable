@@ -71,7 +71,9 @@ int operation_tags()
   return IOP_TAG_DISTORT;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
@@ -109,7 +111,10 @@ static void precalculate_scale(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
   self->modify_roi_in(self, piece, &roi_out, &roi_in);
 }
 
-int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
+gboolean distort_transform(dt_iop_module_t *self,
+                           dt_dev_pixelpipe_iop_t *piece,
+                           float *points,
+                           size_t points_count)
 {
   precalculate_scale(self, piece);
   dt_iop_scalepixels_data_t *d = piece->data;
@@ -120,11 +125,13 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
     points[i+1] /= d->y_scale;
   }
 
-  return 1;
+  return TRUE;
 }
 
-int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points,
-                          size_t points_count)
+gboolean distort_backtransform(dt_iop_module_t *self,
+                               dt_dev_pixelpipe_iop_t *piece,
+                               float *points,
+                               size_t points_count)
 {
   precalculate_scale(self, piece);
   dt_iop_scalepixels_data_t *d = piece->data;
@@ -135,15 +142,18 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
     points[i+1] *= d->y_scale;
   }
 
-  return 1;
+  return TRUE;
 }
 
-void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
-                  float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void distort_mask(
+        struct dt_iop_module_t *self,
+        struct dt_dev_pixelpipe_iop_t *piece,
+        const float *const in,
+        float *const out,
+        const dt_iop_roi_t *const roi_in,
+        const dt_iop_roi_t *const roi_out)
 {
-  // TODO
-  memset(out, 0, sizeof(float) * roi_out->width * roi_out->height);
-  dt_print(DT_DEBUG_ALWAYS, "TODO: implement %s() in %s\n", __FUNCTION__, __FILE__);
+  dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out);
 }
 
 void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,

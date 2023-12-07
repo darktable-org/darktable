@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "colorspace.h"
 #include "common.h"
 
 typedef struct dt_iop_sigmoid_value_order_t
@@ -135,31 +136,23 @@ static inline void _preserve_hue_and_energy(float *pix_io,
                                             const dt_iop_sigmoid_value_order_t order,
                                             const float hue_preservation)
 {
-  if (per_channel[order.max] - per_channel[order.min] < 1e-9f ||
-    per_channel[order.mid] - per_channel[order.min] < 1e-9f )
-  {
-    pix_io[0] = per_channel[0];
-    pix_io[1] = per_channel[1];
-    pix_io[2] = per_channel[2];
-    return;  // Nothing to fix
-  }
-
   // Naive Hue correction of the middle channel
+  const float chroma = pix_io[order.max] - pix_io[order.min];
+  const float midscale = chroma != 0.f ? (pix_io[order.mid] - pix_io[order.min]) / chroma : 0.f;
   const float full_hue_correction =
-    per_channel[order.min] + ((per_channel[order.max] - per_channel[order.min]) *
-    (pix_io[order.mid] - pix_io[order.min]) / (pix_io[order.max] - pix_io[order.min]));
+    per_channel[order.min] + (per_channel[order.max] - per_channel[order.min]) * midscale;
   const float naive_hue_mid =
     (1.0f - hue_preservation) * per_channel[order.mid] + hue_preservation * full_hue_correction;
 
-  const float per_channel_energy = per_channel[order.min] + per_channel[order.mid] + per_channel[order.max];
+  const float per_channel_energy = per_channel[0] + per_channel[1] + per_channel[2];
   const float naive_hue_energy = per_channel[order.min] + naive_hue_mid + per_channel[order.max];
-  const float blend_factor = 2.0f * pix_io[order.min] / (pix_io[order.min] + pix_io[order.mid]);
-  const float midscale = (pix_io[order.mid] - pix_io[order.min]) / (pix_io[order.max] - pix_io[order.min]);
+  const float pix_in_min_plus_mid = pix_io[order.min] + pix_io[order.mid];
+  const float blend_factor = pix_in_min_plus_mid != 0.f ? 2.0f * pix_io[order.min] / pix_in_min_plus_mid : 0.f;
+  const float energy_target = blend_factor * per_channel_energy + (1.0f - blend_factor) * naive_hue_energy;
 
   // Preserve hue constrained to maintain the same energy as the per channel result
   if (naive_hue_mid <= per_channel[order.mid])
   {
-    const float energy_target = blend_factor * per_channel_energy + (1.0f - blend_factor) * naive_hue_energy;
     const float corrected_mid =
       ((1.0f - hue_preservation) * per_channel[order.mid] + hue_preservation *
       (midscale * per_channel[order.max] + (1.0f - midscale) * (energy_target - per_channel[order.max]))) /
@@ -170,7 +163,6 @@ static inline void _preserve_hue_and_energy(float *pix_io,
   }
   else
   {
-    const float energy_target = blend_factor * per_channel_energy + (1.0f - blend_factor) * naive_hue_energy;
     const float corrected_mid =
       ((1.0f - hue_preservation) * per_channel[order.mid] +
       hue_preservation * (per_channel[order.min] * (1.0f - midscale) +
@@ -190,7 +182,11 @@ sigmoid_loglogistic_per_channel (read_only image2d_t in,
                                  const float paper_exp,
                                  const float film_fog,
                                  const float contrast_power,
-                                 const float skew_power)
+                                 const float skew_power,
+                                 const float hue_preservation,
+                                 constant const float *const pipe_to_base,
+                                 constant const float *const base_to_rendering,
+                                 constant const float *const rendering_to_pipe)
 {
   const unsigned int x = get_global_id(0);
   const unsigned int y = get_global_id(1);
@@ -200,39 +196,13 @@ sigmoid_loglogistic_per_channel (read_only image2d_t in,
   float4 i = read_imagef(in, sampleri, (int2)(x, y));
   float alpha = i.w;
 
-  // Force negative values to zero
-  i = _desaturate_negative_values(i);
-
-  i = _generalized_loglogistic_sigmoid_vector(i, white_target, paper_exp, film_fog, contrast_power, skew_power);
-
-  // Copy over the alpha channel
-  i.w = alpha;
-
-  write_imagef(out, (int2)(x, y), i);
-}
-
-kernel void
-sigmoid_loglogistic_per_channel_interpolated (read_only image2d_t in,
-                                              write_only image2d_t out,
-                                              const int width,
-                                              const int height,
-                                              const float white_target,
-                                              const float paper_exp,
-                                              const float film_fog,
-                                              const float contrast_power,
-                                              const float skew_power,
-                                              const float hue_preservation)
-{
-  const unsigned int x = get_global_id(0);
-  const unsigned int y = get_global_id(1);
-
-  if(x >= width || y >= height) return;
-
-  float4 i = read_imagef(in, sampleri, (int2)(x, y));
-  float alpha = i.w;
+  i = matrix_product_float4(i, pipe_to_base);
 
   // Force negative values to zero
   i = _desaturate_negative_values(i);
+
+  // Convert to rendering primaries
+  i = matrix_product_float4(i, base_to_rendering);
   float pix_array[3] = {i.x, i.y, i.z};
 
   i = _generalized_loglogistic_sigmoid_vector(i, white_target, paper_exp, film_fog, contrast_power, skew_power);
@@ -244,6 +214,8 @@ sigmoid_loglogistic_per_channel_interpolated (read_only image2d_t in,
   _preserve_hue_and_energy(pix_array, per_channel, pixel_value_order, hue_preservation);
 
   i.xyz = (float3)(pix_array[0], pix_array[1], pix_array[2]);
+  i = matrix_product_float4(i, rendering_to_pipe);
+
   // Copy over the alpha channel
   i.w = alpha;
 

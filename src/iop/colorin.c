@@ -146,16 +146,16 @@ int flags()
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE;
 }
 
-int default_colorspace(dt_iop_module_t *self,
-                       dt_dev_pixelpipe_t *pipe,
-                       dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
 
-int input_colorspace(dt_iop_module_t *self,
-                     dt_dev_pixelpipe_t *pipe,
-                     dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t input_colorspace(dt_iop_module_t *self,
+                                          dt_dev_pixelpipe_t *pipe,
+                                          dt_dev_pixelpipe_iop_t *piece)
 {
   if(piece)
   {
@@ -166,9 +166,9 @@ int input_colorspace(dt_iop_module_t *self,
   return IOP_CS_RGB;
 }
 
-int output_colorspace(dt_iop_module_t *self,
-                      dt_dev_pixelpipe_t *pipe,
-                      dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t output_colorspace(dt_iop_module_t *self,
+                                           dt_dev_pixelpipe_t *pipe,
+                                           dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_LAB;
 }
@@ -196,12 +196,25 @@ static void _resolve_work_profile(dt_colorspaces_color_profile_type_t *work_type
 int legacy_params(dt_iop_module_t *self,
                   const void *const old_params,
                   const int old_version,
-                  void *new_params,
-                  const int new_version)
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
+  typedef struct dt_iop_colorin_params_v7_t
+  {
+    dt_colorspaces_color_profile_type_t type;
+    char filename[DT_IOP_COLOR_ICC_LEN];
+    dt_iop_color_intent_t intent;
+    dt_iop_color_normalize_t normalize;
+    gboolean blue_mapping;
+    // working color profile
+    dt_colorspaces_color_profile_type_t type_work;
+    char filename_work[DT_IOP_COLOR_ICC_LEN];
+  } dt_iop_colorin_params_v7_t;
+
 #define DT_IOP_COLOR_ICC_LEN_V5 100
 
-  if(old_version == 1 && new_version == 7)
+  if(old_version == 1)
   {
     typedef struct dt_iop_colorin_params_v1_t
     {
@@ -210,7 +223,8 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_colorin_params_v1_t;
 
     const dt_iop_colorin_params_v1_t *old = (dt_iop_colorin_params_v1_t *)old_params;
-    dt_iop_colorin_params_t *new = (dt_iop_colorin_params_t *)new_params;
+    dt_iop_colorin_params_v7_t *new =
+      (dt_iop_colorin_params_v7_t *)malloc(sizeof(dt_iop_colorin_params_v7_t));
     memset(new, 0, sizeof(*new));
 
     if(!strcmp(old->iccprofile, "eprofile"))
@@ -251,9 +265,13 @@ int legacy_params(dt_iop_module_t *self,
     new->blue_mapping = TRUE;
     new->type_work = DT_COLORSPACE_LIN_REC709;
     new->filename_work[0] = '\0';
+
+    *new_params = new;
+    *new_params_size = sizeof(dt_iop_colorin_params_v7_t);
+    *new_version = 7;
     return 0;
   }
-  if(old_version == 2 && new_version == 7)
+  if(old_version == 2)
   {
     typedef struct dt_iop_colorin_params_v2_t
     {
@@ -263,7 +281,8 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_colorin_params_v2_t;
 
     const dt_iop_colorin_params_v2_t *old = (dt_iop_colorin_params_v2_t *)old_params;
-    dt_iop_colorin_params_t *new = (dt_iop_colorin_params_t *)new_params;
+    dt_iop_colorin_params_v7_t *new =
+      (dt_iop_colorin_params_v7_t *)malloc(sizeof(dt_iop_colorin_params_v7_t));
     memset(new, 0, sizeof(*new));
 
     if(!strcmp(old->iccprofile, "eprofile"))
@@ -304,9 +323,13 @@ int legacy_params(dt_iop_module_t *self,
     new->blue_mapping = TRUE;
     new->type_work = DT_COLORSPACE_LIN_REC709;
     new->filename_work[0] = '\0';
+
+    *new_params = new;
+    *new_params_size = sizeof(dt_iop_colorin_params_v7_t);
+    *new_version = 7;
     return 0;
   }
-  if(old_version == 3 && new_version == 7)
+  if(old_version == 3)
   {
     typedef struct dt_iop_colorin_params_v3_t
     {
@@ -317,7 +340,8 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_colorin_params_v3_t;
 
     const dt_iop_colorin_params_v3_t *old = (dt_iop_colorin_params_v3_t *)old_params;
-    dt_iop_colorin_params_t *new = (dt_iop_colorin_params_t *)new_params;
+    dt_iop_colorin_params_v7_t *new =
+      (dt_iop_colorin_params_v7_t *)malloc(sizeof(dt_iop_colorin_params_v7_t));
     memset(new, 0, sizeof(*new));
 
     if(!strcmp(old->iccprofile, "eprofile"))
@@ -359,9 +383,12 @@ int legacy_params(dt_iop_module_t *self,
     new->type_work = DT_COLORSPACE_LIN_REC709;
     new->filename_work[0] = '\0';
 
+    *new_params = new;
+    *new_params_size = sizeof(dt_iop_colorin_params_v7_t);
+    *new_version = 7;
     return 0;
   }
-  if(old_version == 4 && new_version == 7)
+  if(old_version == 4)
   {
     typedef struct dt_iop_colorin_params_v4_t
     {
@@ -373,7 +400,8 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_colorin_params_v4_t;
 
     const dt_iop_colorin_params_v4_t *old = (dt_iop_colorin_params_v4_t *)old_params;
-    dt_iop_colorin_params_t *new = (dt_iop_colorin_params_t *)new_params;
+    dt_iop_colorin_params_v7_t *new =
+      (dt_iop_colorin_params_v7_t *)malloc(sizeof(dt_iop_colorin_params_v7_t));
     memset(new, 0, sizeof(*new));
 
     new->type = old->type;
@@ -384,9 +412,13 @@ int legacy_params(dt_iop_module_t *self,
     new->type_work = DT_COLORSPACE_LIN_REC709;
     new->filename_work[0] = '\0';
 
+
+    *new_params = new;
+    *new_params_size = sizeof(dt_iop_colorin_params_v7_t);
+    *new_version = 7;
     return 0;
   }
-  if(old_version == 5 && new_version == 7)
+  if(old_version == 5)
   {
     typedef struct dt_iop_colorin_params_v5_t
     {
@@ -401,7 +433,8 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_colorin_params_v5_t;
 
     const dt_iop_colorin_params_v5_t *old = (dt_iop_colorin_params_v5_t *)old_params;
-    dt_iop_colorin_params_t *new = (dt_iop_colorin_params_t *)new_params;
+    dt_iop_colorin_params_v7_t *new =
+      (dt_iop_colorin_params_v7_t *)malloc(sizeof(dt_iop_colorin_params_v7_t));
     memset(new, 0, sizeof(*new));
 
     new->type = old->type;
@@ -413,9 +446,12 @@ int legacy_params(dt_iop_module_t *self,
     g_strlcpy(new->filename_work, old->filename_work, sizeof(new->filename_work));
     _resolve_work_profile(&new->type_work, new->filename_work);
 
+    *new_params = new;
+    *new_params_size = sizeof(dt_iop_colorin_params_v7_t);
+    *new_version = 7;
     return 0;
   }
-  if(old_version == 6 && new_version == 7)
+  if(old_version == 6)
   {
     // The structure is equal to to v7 (current) but a new version is
     // introduced to convert invalid working profile choice to the
@@ -433,10 +469,14 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_colorin_params_v6_t;
 
     const dt_iop_colorin_params_v6_t *old = (dt_iop_colorin_params_v6_t *)old_params;
-    dt_iop_colorin_params_t *new = (dt_iop_colorin_params_t *)new_params;
+    dt_iop_colorin_params_v7_t *new =
+      (dt_iop_colorin_params_v7_t *)malloc(sizeof(dt_iop_colorin_params_v7_t));
     memcpy(new, old, sizeof(*new));
     _resolve_work_profile(&new->type_work, new->filename_work);
 
+    *new_params = new;
+    *new_params_size = sizeof(dt_iop_colorin_params_v7_t);
+    *new_version = 7;
     return 0;
   }
   return 1;
@@ -650,7 +690,7 @@ int process_cl(struct dt_iop_module_t *self,
     size_t region[] = { roi_in->width, roi_in->height, 1 };
     err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
     if(err != CL_SUCCESS) goto error;
-    return TRUE;
+    return CL_SUCCESS;
   }
 
   dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 9, cmat);
@@ -673,16 +713,6 @@ int process_cl(struct dt_iop_module_t *self,
                                          CLARG(dev_m), CLARG(dev_l), CLARG(dev_r),
                                          CLARG(dev_g), CLARG(dev_b),
                                          CLARG(blue_mapping), CLARG(dev_coeffs));
-  if(err != CL_SUCCESS) goto error;
-  dt_opencl_release_mem_object(dev_m);
-  dt_opencl_release_mem_object(dev_l);
-  dt_opencl_release_mem_object(dev_r);
-  dt_opencl_release_mem_object(dev_g);
-  dt_opencl_release_mem_object(dev_b);
-  dt_opencl_release_mem_object(dev_coeffs);
-
-  return TRUE;
-
 error:
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_l);
@@ -690,9 +720,7 @@ error:
   dt_opencl_release_mem_object(dev_g);
   dt_opencl_release_mem_object(dev_b);
   dt_opencl_release_mem_object(dev_coeffs);
-  dt_print(DT_DEBUG_OPENCL,
-           "[opencl_colorin] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 }
 #endif
 
@@ -821,60 +849,12 @@ static void _cmatrix_fastpath_simple(float *const restrict out,
   }
 }
 
-#ifdef __SSE2__
-static inline void _cmatrix_fastpath_clipping_sse(float *const restrict out,
-                                                  const float *const restrict in,
-                                                  size_t npixels,
-                                                  const dt_colormatrix_t nmatrix,
-                                                  const dt_colormatrix_t lmatrix)
-{
-  // only color matrix. use our optimized fast path!
-  const __m128 nm0 = _mm_set_ps(0.0f, nmatrix[2][0], nmatrix[1][0], nmatrix[0][0]);
-  const __m128 nm1 = _mm_set_ps(0.0f, nmatrix[2][1], nmatrix[1][1], nmatrix[0][1]);
-  const __m128 nm2 = _mm_set_ps(0.0f, nmatrix[2][2], nmatrix[1][2], nmatrix[0][2]);
-
-  const __m128 lm0 = _mm_set_ps(0.0f, lmatrix[2][0], lmatrix[1][0], lmatrix[0][0]);
-  const __m128 lm1 = _mm_set_ps(0.0f, lmatrix[2][1], lmatrix[1][1], lmatrix[0][1]);
-  const __m128 lm2 = _mm_set_ps(0.0f, lmatrix[2][2], lmatrix[1][2], lmatrix[0][2]);
-
-  // this function is called from inside a parallel for loop, so no
-  // need for further parallelization
-  for(size_t k = 0; k < npixels; k++)
-  {
-    __m128 input = _mm_load_ps(in + 4*k);
-    // convert to gamut space
-    __m128 nrgb = ((nm0 * _mm_shuffle_ps(input, input, _MM_SHUFFLE(0, 0, 0, 0))) +
-                   (nm1 * _mm_shuffle_ps(input, input, _MM_SHUFFLE(1, 1, 1, 1))) +
-                   (nm2 * _mm_shuffle_ps(input, input, _MM_SHUFFLE(2, 2, 2, 2))));
-    // clip to gamut
-    __m128 crgb = _mm_min_ps(_mm_max_ps(nrgb, _mm_set1_ps(0.0f)), _mm_set1_ps(1.0f));
-    // convert to output space
-    __m128 xyz = ((lm0 * _mm_shuffle_ps(crgb, crgb, _MM_SHUFFLE(0, 0, 0, 0))) +
-                  (lm1 * _mm_shuffle_ps(crgb, crgb, _MM_SHUFFLE(1, 1, 1, 1))) +
-                  (lm2 * _mm_shuffle_ps(crgb, crgb, _MM_SHUFFLE(2, 2, 2, 2))));
-    _mm_stream_ps(out + 4*k, dt_XYZ_to_Lab_sse2(xyz));
-  }
-  _mm_sfence();
-}
-#endif
-
 static inline void _cmatrix_fastpath_clipping(float *const restrict out,
                                               const float *const restrict in,
                                               size_t npixels,
                                               const dt_colormatrix_t nmatrix,
                                               const dt_colormatrix_t lmatrix)
 {
-#ifdef __SSE2__
-  // we can't remove the SSE version yet, because I haven't been able to
-  // convince GCC10 to put the color matrix rows into registers, unlike
-  // with the SSE version.  That makes the non-SSE version quite a bit
-  // slower with fewer than 32 threads.
-  if(darktable.codepath.SSE2)
-  {
-    _cmatrix_fastpath_clipping_sse(out, in, npixels, nmatrix, lmatrix);
-    return;
-  }
-#endif
   const dt_aligned_pixel_t nmatrix_row0 = { nmatrix[0][0],
                                             nmatrix[1][0],
                                             nmatrix[2][0],
@@ -922,7 +902,7 @@ static void process_cmatrix_fastpath(struct dt_iop_module_t *self,
 {
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   assert(piece->colors == 4);
-  const int clipping = (d->nrgb != NULL);
+  const gboolean clipping = (d->nrgb != NULL);
 
   const size_t npixels = (size_t)roi_out->width * roi_out->height;
   const float *const restrict in = (float*)ivoid;
@@ -932,13 +912,14 @@ static void process_cmatrix_fastpath(struct dt_iop_module_t *self,
   // figure out the number of pixels each thread needs to process
   // round up to a multiple of 4 pixels so that each chunk starts aligned(64)
   const size_t nthreads = dt_get_num_threads();
-  const size_t chunksize = 4 * (((npixels / nthreads) + 3) / 4);
+  const size_t chunksize = 4 * ((((npixels + nthreads - 1) / nthreads) + 3) / 4);
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(in, out, npixels, chunksize, nthreads, d, clipping)  \
   schedule(static)
   for(size_t chunk = 0; chunk < nthreads; chunk++)
   {
     size_t start = chunksize * dt_get_thread_num();
+    if (start >= npixels) continue;  // handle case when chunksize is < 4*nthreads and last thread has no work
     size_t end = MIN(start + chunksize, npixels);
     if(clipping)
       _cmatrix_fastpath_clipping(out + 4*start, in + 4*start,
@@ -988,43 +969,6 @@ static void _cmatrix_proper_simple(float *const restrict out,
   }
 }
 
-#ifdef __SSE2__
-static inline void _cmatrix_proper_clipping_sse(float *const restrict out,
-                                                const float *const restrict in,
-                                                size_t npixels,
-                                                const dt_iop_colorin_data_t *const d,
-                                                const dt_colormatrix_t nmatrix,
-                                                const dt_colormatrix_t lmatrix)
-{
-  const __m128 nm0 = _mm_set_ps(0.0f, d->nmatrix[2][0], d->nmatrix[1][0], d->nmatrix[0][0]);
-  const __m128 nm1 = _mm_set_ps(0.0f, d->nmatrix[2][1], d->nmatrix[1][1], d->nmatrix[0][1]);
-  const __m128 nm2 = _mm_set_ps(0.0f, d->nmatrix[2][2], d->nmatrix[1][2], d->nmatrix[0][2]);
-  const __m128 lm0 = _mm_set_ps(0.0f, d->lmatrix[2][0], d->lmatrix[1][0], d->lmatrix[0][0]);
-  const __m128 lm1 = _mm_set_ps(0.0f, d->lmatrix[2][1], d->lmatrix[1][1], d->lmatrix[0][1]);
-  const __m128 lm2 = _mm_set_ps(0.0f, d->lmatrix[2][2], d->lmatrix[1][2], d->lmatrix[0][2]);
-
-  // this function is called from inside a parallel for loop, so no need for further parallelization
-  for(size_t k = 0; k < npixels; k++)
-  {
-    dt_aligned_pixel_t cam;
-    copy_pixel(cam, in + 4*k);
-    _apply_tone_curves(cam, d);
-
-    // convert to clipping colorspace
-    __m128 nrgb = ((nm0 * _mm_set1_ps(cam[0]))
-                   + (nm1 * _mm_set1_ps(cam[1]))
-                   + (nm2 * _mm_set1_ps(cam[2])));
-    // clip to gamut
-    __m128 crgb = _mm_min_ps(_mm_max_ps(nrgb, _mm_set1_ps(0.0f)), _mm_set1_ps(1.0f));
-    // convert to output colorspace
-    __m128 xyz = ((lm0 * _mm_shuffle_ps(crgb, crgb, _MM_SHUFFLE(0, 0, 0, 0)))
-                  + (lm1 * _mm_shuffle_ps(crgb, crgb, _MM_SHUFFLE(1, 1, 1, 1)))
-                  + (lm2 * _mm_shuffle_ps(crgb, crgb, _MM_SHUFFLE(2, 2, 2, 2))));
-    _mm_stream_ps(out + 4*k, dt_XYZ_to_Lab_sse2(xyz));
-  }
-}
-#endif
-
 static inline void _cmatrix_proper_clipping(float *const restrict out,
                                             const float *const restrict in,
                                             size_t npixels,
@@ -1032,13 +976,6 @@ static inline void _cmatrix_proper_clipping(float *const restrict out,
                                             const dt_colormatrix_t nmatrix,
                                             const dt_colormatrix_t lmatrix)
 {
-#ifdef __SSE2__
-  if(darktable.codepath.SSE2)
-  {
-    _cmatrix_proper_clipping_sse(out, in, npixels, d, nmatrix, lmatrix);
-    return;
-  }
-#endif
   const dt_aligned_pixel_t nmatrix_row0 = { nmatrix[0][0],
                                             nmatrix[1][0],
                                             nmatrix[2][0],
@@ -1092,7 +1029,7 @@ static void process_cmatrix_proper(struct dt_iop_module_t *self,
 {
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   assert(piece->colors == 4);
-  const int clipping = (d->nrgb != NULL);
+  const gboolean clipping = (d->nrgb != NULL);
 
   const size_t npixels = (size_t)roi_out->width * roi_out->height;
   const float *const restrict in = (float*)ivoid;
@@ -1102,13 +1039,14 @@ static void process_cmatrix_proper(struct dt_iop_module_t *self,
   // figure out the number of pixels each thread needs to process
   // round up to a multiple of 4 pixels so that each chunk starts aligned(64)
   const size_t nthreads = dt_get_num_threads();
-  const size_t chunksize = 4 * (((npixels / nthreads) + 3) / 4);
+  const size_t chunksize = 4 * (((npixels / nthreads) + 4) / 4);
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(in, out, npixels, chunksize, nthreads, clipping, d) \
   schedule(static)
   for(size_t chunk = 0; chunk < nthreads; chunk++)
   {
     size_t start = chunksize * dt_get_thread_num();
+    if (start >= npixels) continue;  // handle case when chunksize is < 4*nthreads and last thread has no work
     size_t end = MIN(start + chunksize, npixels);
     if(clipping)
       _cmatrix_proper_clipping(out + 4*start, in + 4*start,

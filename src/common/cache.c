@@ -29,10 +29,9 @@
 
 // this implements a concurrent LRU cache
 
-void dt_cache_init(
-    dt_cache_t *cache,
-    size_t entry_size,
-    size_t cost_quota)
+void dt_cache_init(dt_cache_t *cache,
+                   const size_t entry_size,
+                   const size_t cost_quota)
 {
   cache->cost = 0;
   cache->lru = 0;
@@ -108,16 +107,19 @@ dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache, const uint32_t key, char m
 {
   gpointer orig_key, value;
   gboolean res;
-  double start = dt_get_wtime();
+  double start = dt_get_debug_wtime();
   dt_pthread_mutex_lock(&cache->lock);
-  res = g_hash_table_lookup_extended(
-      cache->hashtable, GINT_TO_POINTER(key), &orig_key, &value);
+  res = g_hash_table_lookup_extended(cache->hashtable,
+                                     GINT_TO_POINTER(key),
+                                     &orig_key,
+                                     &value);
   if(res)
   {
     dt_cache_entry_t *entry = (dt_cache_entry_t *)value;
     // lock the cache entry
-    const int result
-        = (mode == 'w') ? dt_pthread_rwlock_trywrlock(&entry->lock) : dt_pthread_rwlock_tryrdlock(&entry->lock);
+    const int result = (mode == 'w')
+      ? dt_pthread_rwlock_trywrlock(&entry->lock)
+      : dt_pthread_rwlock_tryrdlock(&entry->lock);
     if(result)
     { // need to give up mutex so other threads have a chance to get in between and
       // free the lock we're trying to acquire:
@@ -128,7 +130,7 @@ dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache, const uint32_t key, char m
     cache->lru = g_list_remove_link(cache->lru, entry->link);
     cache->lru = g_list_concat(cache->lru, entry->link);
     dt_pthread_mutex_unlock(&cache->lock);
-    double end = dt_get_wtime();
+    double end = dt_get_debug_wtime();
     if(end - start > 0.1)
       dt_print(DT_DEBUG_ALWAYS, "try+ wait time %.06fs mode %c \n", end - start, mode);
 
@@ -143,7 +145,7 @@ dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache, const uint32_t key, char m
     return entry;
   }
   dt_pthread_mutex_unlock(&cache->lock);
-  double end = dt_get_wtime();
+  double end = dt_get_debug_wtime();
   if(end - start > 0.1)
     dt_print(DT_DEBUG_ALWAYS, "try- wait time %.06fs\n", end - start);
   return 0;
@@ -152,21 +154,29 @@ dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache, const uint32_t key, char m
 // if found, the data void* is returned. if not, it is set to be
 // the given *data and a new hash table entry is created, which can be
 // found using the given key later on.
-dt_cache_entry_t *dt_cache_get_with_caller(dt_cache_t *cache, const uint32_t key, char mode, const char *file, int line)
+dt_cache_entry_t *dt_cache_get_with_caller(dt_cache_t *cache,
+                                           const uint32_t key,
+                                           const char mode,
+                                           const char *file,
+                                           const int line)
 {
   gpointer orig_key, value;
   gboolean res;
   int result;
-  double start = dt_get_wtime();
+  double start = dt_get_debug_wtime();
 restart:
   dt_pthread_mutex_lock(&cache->lock);
-  res = g_hash_table_lookup_extended(
-      cache->hashtable, GINT_TO_POINTER(key), &orig_key, &value);
+  res = g_hash_table_lookup_extended(cache->hashtable,
+                                     GINT_TO_POINTER(key),
+                                     &orig_key,
+                                     &value);
   if(res)
   { // yay, found. read lock and pass on.
     dt_cache_entry_t *entry = (dt_cache_entry_t *)value;
-    if(mode == 'w') result = dt_pthread_rwlock_trywrlock_with_caller(&entry->lock, file, line);
-    else            result = dt_pthread_rwlock_tryrdlock_with_caller(&entry->lock, file, line);
+    if(mode == 'w')
+      result = dt_pthread_rwlock_trywrlock_with_caller(&entry->lock, file, line);
+    else
+      result = dt_pthread_rwlock_tryrdlock_with_caller(&entry->lock, file, line);
     if(result)
     { // need to give up mutex so other threads have a chance to get in between and
       // free the lock we're trying to acquire:
@@ -216,6 +226,7 @@ restart:
   dt_cache_entry_t *entry = (dt_cache_entry_t *)g_slice_alloc(sizeof(dt_cache_entry_t));
   int ret = dt_pthread_rwlock_init(&entry->lock, 0);
   if(ret) dt_print(DT_DEBUG_ALWAYS, "rwlock init: %d\n", ret);
+
   entry->data = 0;
   entry->data_size = cache->entry_size;
   entry->cost = 1;
@@ -239,8 +250,10 @@ restart:
   const int write = ((mode == 'w') || cache->allocate);
 
   // write lock in case the caller requests it:
-  if(write) dt_pthread_rwlock_wrlock_with_caller(&entry->lock, file, line);
-  else      dt_pthread_rwlock_rdlock_with_caller(&entry->lock, file, line);
+  if(write)
+    dt_pthread_rwlock_wrlock_with_caller(&entry->lock, file, line);
+  else
+    dt_pthread_rwlock_rdlock_with_caller(&entry->lock, file, line);
 
   cache->cost += entry->cost;
 
@@ -248,7 +261,7 @@ restart:
   cache->lru = g_list_concat(cache->lru, entry->link);
 
   dt_pthread_mutex_unlock(&cache->lock);
-  double end = dt_get_wtime();
+  double end = dt_get_debug_wtime();
   if(end - start > 0.1)
     dt_print(DT_DEBUG_ALWAYS, "wait time %.06fs\n", end - start);
 
@@ -266,8 +279,10 @@ int dt_cache_remove(dt_cache_t *cache, const uint32_t key)
 restart:
   dt_pthread_mutex_lock(&cache->lock);
 
-  res = g_hash_table_lookup_extended(
-      cache->hashtable, GINT_TO_POINTER(key), &orig_key, &value);
+  res = g_hash_table_lookup_extended(cache->hashtable,
+                                     GINT_TO_POINTER(key),
+                                     &orig_key,
+                                     &value);
   entry = (dt_cache_entry_t *)value;
   if(!res)
   { // not found in cache, not deleting.
@@ -285,7 +300,8 @@ restart:
 
   if(entry->_lock_demoting)
   {
-    // oops, we are currently demoting (rw -> r) lock to this entry in some thread. do not touch!
+    // oops, we are currently demoting (rw -> r) lock to this entry in
+    // some thread. do not touch!
     dt_pthread_rwlock_unlock(&entry->lock);
     dt_pthread_mutex_unlock(&cache->lock);
     g_usleep(5);
@@ -316,7 +332,8 @@ restart:
   return 0;
 }
 
-// best-effort garbage collection. never blocks, never fails. well, sometimes it just doesn't free anything.
+// best-effort garbage collection. never blocks, never fails. well,
+// sometimes it just doesn't free anything.
 void dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
 {
   GList *l = cache->lru;
@@ -324,15 +341,20 @@ void dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
   {
     dt_cache_entry_t *entry = (dt_cache_entry_t *)l->data;
     assert(entry->link->data == entry);
-    l = g_list_next(l); // we might remove this element, so walk to the next one while we still have the pointer..
-    if(cache->cost < cache->cost_quota * fill_ratio) break;
+    l = g_list_next(l); // we might remove this element, so walk to
+                        // the next one while we still have the
+                        // pointer..
+    if(cache->cost < cache->cost_quota * fill_ratio)
+      break;
 
     // if still locked by anyone else give up:
-    if(dt_pthread_rwlock_trywrlock(&entry->lock)) continue;
+    if(dt_pthread_rwlock_trywrlock(&entry->lock))
+      continue;
 
     if(entry->_lock_demoting)
     {
-      // oops, we are currently demoting (rw -> r) lock to this entry in some thread. do not touch!
+      // oops, we are currently demoting (rw -> r) lock to this entry
+      // in some thread. do not touch!
       dt_pthread_rwlock_unlock(&entry->lock);
       continue;
     }
@@ -358,7 +380,10 @@ void dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
   }
 }
 
-void dt_cache_release_with_caller(dt_cache_t *cache, dt_cache_entry_t *entry, const char *file, int line)
+void dt_cache_release_with_caller(dt_cache_t *cache,
+                                  dt_cache_entry_t *entry,
+                                  const char *file,
+                                  const int line)
 {
 #if((__has_feature(address_sanitizer) || defined(__SANITIZE_ADDRESS__)) && 1)
   // yes, this is *HIGHLY* unportable and is accessing implementation details.
@@ -398,4 +423,3 @@ void dt_cache_release_with_caller(dt_cache_t *cache, dt_cache_entry_t *entry, co
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

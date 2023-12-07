@@ -304,8 +304,8 @@ static int _ellipse_get_points_source(dt_develop_t *dev,
                                       int *points_count,
                                       const dt_iop_module_t *module)
 {
-  const float wd = dev->preview_pipe->iwidth;
-  const float ht = dev->preview_pipe->iheight;
+  float wd, ht;
+  dt_masks_get_image_size(NULL, NULL, &wd, &ht);
 
   // compute the points of the target (center and circumference of circle)
   // we get the point in RAW image reference
@@ -366,8 +366,8 @@ static int _ellipse_get_points(dt_develop_t *dev,
                                float **points,
                                int *points_count)
 {
-  const float wd = dev->preview_pipe->iwidth;
-  const float ht = dev->preview_pipe->iheight;
+  float wd, ht;
+  dt_masks_get_image_size(NULL, NULL, &wd, &ht);
 
   *points = _points_to_transform(xx, yy, radius_a, radius_b,
                                  rotation, wd, ht, points_count);
@@ -577,6 +577,9 @@ static int _ellipse_events_button_pressed(struct dt_iop_module_t *module,
 {
   if(!gui) return 0;
 
+  float wd, ht, iwidth, iheight;
+  dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
+
   if(!gui->creation)
   {
     dt_masks_form_gui_points_t *gpt =
@@ -650,12 +653,10 @@ static int _ellipse_events_button_pressed(struct dt_iop_module_t *module,
         = (dt_masks_point_ellipse_t *)(malloc(sizeof(dt_masks_point_ellipse_t)));
 
     // we change the center value
-    const float wd = darktable.develop->preview_pipe->backbuf_width;
-    const float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = { pzx * wd, pzy * ht };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
-    ellipse->center[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
-    ellipse->center[1] = pts[1] / darktable.develop->preview_pipe->iheight;
+    ellipse->center[0] = pts[0] / iwidth;
+    ellipse->center[1] = pts[1] / iheight;
 
     if(form->type & DT_MASKS_CLONE)
     {
@@ -719,8 +720,8 @@ static int _ellipse_events_button_pressed(struct dt_iop_module_t *module,
       else
         gui2->form_dragging = TRUE;
       gui2->group_edited = gui2->group_selected = pos2;
-      gui2->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
-      gui2->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
+      gui2->posx = pzx * wd;
+      gui2->posy = pzy * ht;
       gui2->dx = 0.0;
       gui2->dy = 0.0;
       gui2->scrollx = pzx;
@@ -771,6 +772,9 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module,
                                            dt_masks_form_gui_t *gui,
                                            const int index)
 {
+  float wd, ht, iwidth, iheight;
+  dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
+
   if(which == 3
      && dt_is_valid_maskid(parentid)
      && gui->edit_mode == DT_MASKS_EDIT_FULL)
@@ -813,12 +817,10 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module,
     gui->form_dragging = FALSE;
 
     // we change the center value
-    const float wd = darktable.develop->preview_pipe->backbuf_width;
-    const float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
-    ellipse->center[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
-    ellipse->center[1] = pts[1] / darktable.develop->preview_pipe->iheight;
+    ellipse->center[0] = pts[0] / iwidth;
+    ellipse->center[1] = pts[1] / iheight;
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
@@ -882,8 +884,6 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module,
     // we end the form rotating
     gui->form_rotating = FALSE;
 
-    const float wd = darktable.develop->preview_pipe->backbuf_width;
-    const float ht = darktable.develop->preview_pipe->backbuf_height;
     const float x = pzx * wd;
     const float y = pzy * ht;
 
@@ -933,6 +933,8 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module,
    // we end the point dragging
     gui->point_dragging = -1;
 
+    dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
+
     // we save the updated shape
     dt_masks_update_image(darktable.develop);
 
@@ -943,6 +945,8 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module,
   {
     // we end the point dragging
     gui->point_border_dragging = -1;
+
+    dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we save the updated shape
     dt_masks_update_image(darktable.develop);
@@ -963,14 +967,12 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module,
     else
     {
       // we change the center value
-      const float wd = darktable.develop->preview_pipe->backbuf_width;
-      const float ht = darktable.develop->preview_pipe->backbuf_height;
       float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
 
       dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
-      form->source[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
-      form->source[1] = pts[1] / darktable.develop->preview_pipe->iheight;
+      form->source[0] = pts[0] / iwidth;
+      form->source[1] = pts[1] / iheight;
     }
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
@@ -1003,15 +1005,17 @@ static int _ellipse_events_mouse_moved(struct dt_iop_module_t *module,
                                        const float pzy,
                                        const double pressure,
                                        const int which,
+                                       const float zoom_scale,
                                        dt_masks_form_t *form,
                                        const dt_mask_id_t parentid,
                                        dt_masks_form_gui_t *gui,
                                        const int index)
 {
+  float wd, ht, iwidth, iheight;
+  dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
+
   if(gui->form_dragging || gui->source_dragging)
   {
-    const float wd = darktable.develop->preview_pipe->backbuf_width;
-    const float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
@@ -1019,13 +1023,13 @@ static int _ellipse_events_mouse_moved(struct dt_iop_module_t *module,
     {
       dt_masks_point_ellipse_t *ellipse =
         (dt_masks_point_ellipse_t *)((form->points)->data);
-      ellipse->center[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
-      ellipse->center[1] = pts[1] / darktable.develop->preview_pipe->iheight;
+      ellipse->center[0] = pts[0] / iwidth;
+      ellipse->center[1] = pts[1] / iheight;
     }
     else
     {
-      form->source[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
-      form->source[1] = pts[1] / darktable.develop->preview_pipe->iheight;
+      form->source[0] = pts[0] / iwidth;
+      form->source[1] = pts[1] / iheight;
     }
 
     // we recreate the form points
@@ -1118,8 +1122,6 @@ static int _ellipse_events_mouse_moved(struct dt_iop_module_t *module,
   {
     dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)((form->points)->data);
 
-    const float wd = darktable.develop->preview_pipe->backbuf_width;
-    const float ht = darktable.develop->preview_pipe->backbuf_height;
     const float x = pzx * wd;
     const float y = pzy * ht;
 
@@ -1164,13 +1166,10 @@ static int _ellipse_events_mouse_moved(struct dt_iop_module_t *module,
   }
   else if(!gui->creation)
   {
-    const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-    const int closeup = dt_control_get_dev_closeup();
-    const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 1);
     // transformed to backbuf dimensions
     const float as = dt_masks_sensitive_dist(zoom_scale);
-    const float x = pzx * darktable.develop->preview_pipe->backbuf_width;
-    const float y = pzy * darktable.develop->preview_pipe->backbuf_height;
+    const float x = pzx * wd;
+    const float y = pzy * ht;
 
     gboolean in = FALSE, inb = FALSE, ins = FALSE;
     int near = 0;
@@ -1254,6 +1253,9 @@ static void _ellipse_events_post_expose(cairo_t *cr,
 {
   (void)num_points; //unused arg, keep compiler from complaining
 
+  float wd, ht, iwidth, iheight;
+  dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
+
   dt_masks_form_gui_points_t *gpt =
     (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
 
@@ -1282,21 +1284,10 @@ static void _ellipse_events_post_expose(cairo_t *cr,
       const float rotation =
         dt_conf_get_float(DT_MASKS_CONF(form->type, ellipse, rotation));
 
-      float pzx = gui->posx;
-      float pzy = gui->posy;
-
-      if((pzx == -1.f && pzy == -1.f) || gui->mouse_leaved_center)
-      {
-        const float zoom_x = dt_control_get_dev_zoom_x();
-        const float zoom_y = dt_control_get_dev_zoom_y();
-        pzx = (.5f + zoom_x) * darktable.develop->preview_pipe->backbuf_width;
-        pzy = (.5f + zoom_y) * darktable.develop->preview_pipe->backbuf_height;
-      }
-
-      float pts[2] = { pzx, pzy };
+      float pts[2] = { gui->posx, gui->posy };
       dt_dev_distort_backtransform(darktable.develop, pts, 1);
-      x = pts[0] / darktable.develop->preview_pipe->iwidth;
-      y = pts[1] / darktable.develop->preview_pipe->iheight;
+      x = pts[0] / iwidth;
+      y = pts[1] / iheight;
 
       float *points = NULL;
       int points_count = 0;
@@ -1342,7 +1333,9 @@ static void _ellipse_events_post_expose(cairo_t *cr,
         x = 0.0f;
         y = 0.0f;
         dt_masks_calculate_source_pos_value(gui, DT_MASKS_ELLIPSE,
-                                            pzx, pzy, pzx, pzy, &x, &y, FALSE);
+                                            gui->posx, gui->posy,
+                                            gui->posx, gui->posy,
+                                            &x, &y, FALSE);
         dt_masks_draw_clone_source_pos(cr, zoom_scale, x, y);
       }
 
@@ -1696,19 +1689,14 @@ static int _ellipse_get_mask(const dt_iop_module_t *const module,
                              int *posx,
                              int *posy)
 {
-  double start2 = 0.0;
-  if(darktable.unmuted & DT_DEBUG_PERF) start2 = dt_get_wtime();
+  double start2 = dt_get_debug_wtime();
 
   // we get the area
   if(!_ellipse_get_area(module, piece, form, width, height, posx, posy)) return 0;
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] ellipse area took %0.04f sec\n",
-             form->name, dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] ellipse area took %0.04f sec\n",
+           form->name, dt_get_lap_time(&start2));
 
   // we get the ellipse values
   dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)((form->points)->data);
@@ -1726,13 +1714,9 @@ static int _ellipse_get_mask(const dt_iop_module_t *const module,
       points[(i * w + j) * 2 + 1] = (i + (*posy));
     }
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] ellipse draw took %0.04f sec\n",
-             form->name, dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] ellipse draw took %0.04f sec\n",
+           form->name, dt_get_lap_time(&start2));
 
   // we back transform all this points
   if(!dt_dev_distort_backtransform_plus(module->dev, piece->pipe, module->iop_order,
@@ -1743,13 +1727,9 @@ static int _ellipse_get_mask(const dt_iop_module_t *const module,
     return 0;
   }
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] ellipse transform took %0.04f sec\n", form->name,
-             dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] ellipse transform took %0.04f sec\n", form->name,
+           dt_get_lap_time(&start2));
 
   // we allocate the buffer
   *buffer = dt_alloc_align_float((size_t)w * h);
@@ -1797,8 +1777,9 @@ static int _ellipse_get_mask(const dt_iop_module_t *const module,
 
   dt_free_align(points);
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-    dt_print(DT_DEBUG_MASKS, "[masks %s] ellipse fill took %0.04f sec\n", form->name, dt_get_wtime() - start2);
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] ellipse fill took %0.04f sec\n",
+           form->name, dt_get_lap_time(&start2));
 
   return 1;
 }
@@ -1809,9 +1790,8 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module,
                                  const dt_iop_roi_t *roi,
                                  float *buffer)
 {
-  double start1 = 0.0;
+  double start1 = dt_get_debug_wtime();
   double start2 = start1;
-  if(darktable.unmuted & DT_DEBUG_PERF) start2 = start1 = dt_get_wtime();
 
   // we get the ellipse parameters
   dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)((form->points)->data);
@@ -1847,13 +1827,9 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module,
   const int gw = (w + grid - 1) / grid + 1;  // grid dimension of total roi
   const int gh = (h + grid - 1) / grid + 1;  // grid dimension of total roi
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] ellipse init took %0.04f sec\n",
-             form->name, dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] ellipse init took %0.04f sec\n",
+           form->name, dt_get_lap_time(&start2));
 
   // we look at the outer line of the shape - no effects outside of
   // this ellipse; we need many points as we do not know how the
@@ -1884,13 +1860,9 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module,
     ell[2 * n + 1] = center[1] + ta * sina * cosp + tb * cosa * sinp;
   }
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] ellipse outline took %0.04f sec\n",
-             form->name, dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] ellipse outline took %0.04f sec\n",
+           form->name, dt_get_lap_time(&start2));
 
   // we transform the outline from input image coordinates to current position in pixelpipe
   if(!dt_dev_distort_transform_plus(module->dev, piece->pipe, module->iop_order,
@@ -1901,13 +1873,9 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module,
     return 0;
   }
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] ellipse outline transform took %0.04f sec\n",
-             form->name, dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] ellipse outline transform took %0.04f sec\n",
+           form->name, dt_get_lap_time(&start2));
 
   // we get the min/max values ...
   float xmin = FLT_MAX, ymin = FLT_MAX, xmax = FLT_MIN, ymax = FLT_MIN;
@@ -1943,13 +1911,9 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module,
 
   dt_free_align(ell);
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] ellipse bounding box took %0.04f sec\n",
-             form->name, dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] ellipse bounding box took %0.04f sec\n",
+           form->name, dt_get_lap_time(&start2));
 
   // check if there is anything to do at all; only if width and height
   // of bounding box is 2 or greater the shape lies inside of roi and
@@ -1978,13 +1942,9 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module,
       points[index * 2 + 1] = (grid * j + py) * iscale;
     }
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] ellipse grid took %0.04f sec\n",
-             form->name, dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] ellipse grid took %0.04f sec\n",
+           form->name, dt_get_lap_time(&start2));
 
   // we back transform all these points to the input image coordinates
   if(!dt_dev_distort_backtransform_plus(module->dev, piece->pipe, module->iop_order,
@@ -1995,25 +1955,18 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module,
     return 0;
   }
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] ellipse transform took %0.04f sec\n", form->name,
-             dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] ellipse transform took %0.04f sec\n", form->name,
+           dt_get_lap_time(&start2));
 
   // we calculate the mask values at the transformed points; re-use
   // the points array for results; this requires out_scale==1 to
   // double the offsets at which they are stored
   _fill_mask((size_t)(bbh)*bbw, points, points, center, a, b, ta, tb, alpha, 1);
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS, "[masks %s] ellipse draw took %0.04f sec\n", form->name,
-             dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] ellipse draw took %0.04f sec\n", form->name,
+           dt_get_wtime() - start2);
 
   // we fill the pre-initialized output buffer by interpolation;
   // we only need to take the contents of our bounding box into account
@@ -2048,15 +2001,13 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module,
 
   dt_free_align(points);
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] ellipse fill took %0.04f sec\n",
-             form->name, dt_get_wtime() - start2);
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] ellipse total render took %0.04f sec\n", form->name,
-             dt_get_wtime() - start1);
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] ellipse fill took %0.04f sec\n",
+           form->name, dt_get_lap_time(&start2));
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] ellipse total render took %0.04f sec\n", form->name,
+           dt_get_lap_time(&start1));
+
   return 1;
 }
 

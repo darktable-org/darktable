@@ -96,9 +96,9 @@ int flags()
     | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_UNSAFE_COPY | IOP_FLAGS_GUIDES_WIDGET;
 }
 
-int default_colorspace(dt_iop_module_t *self,
-                       dt_dev_pixelpipe_t *pipe,
-                       dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
@@ -145,21 +145,25 @@ merge_two_orientations(dt_image_orientation_t raw_orientation,
 int legacy_params(dt_iop_module_t *self,
                   const void *const old_params,
                   const int old_version,
-                  void *new_params,
-                  const int new_version)
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  typedef struct dt_iop_flip_params_v2_t
+  {
+    dt_image_orientation_t orientation;
+  } dt_iop_flip_params_v2_t;
+
+  if(old_version == 1)
   {
     typedef struct dt_iop_flip_params_v1_t
     {
       int32_t orientation;
     } dt_iop_flip_params_v1_t;
 
-    const dt_iop_flip_params_v1_t *old = (dt_iop_flip_params_v1_t *)old_params;
-    dt_iop_flip_params_t *n = (dt_iop_flip_params_t *)new_params;
-    const dt_iop_flip_params_t *d = (dt_iop_flip_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
+    const dt_iop_flip_params_v1_t *o = (dt_iop_flip_params_v1_t *)old_params;
+    dt_iop_flip_params_v2_t *n =
+      (dt_iop_flip_params_v2_t *)malloc(sizeof(dt_iop_flip_params_v2_t));
 
     // we might be called from presets update infrastructure => there is no image
     dt_image_orientation_t image_orientation = ORIENTATION_NONE;
@@ -167,9 +171,13 @@ int legacy_params(dt_iop_module_t *self,
     if(self->dev)
       image_orientation = dt_image_orientation(&self->dev->image_storage);
 
-    n->orientation = merge_two_orientations(image_orientation,
-                                            (dt_image_orientation_t)(old->orientation));
+    n->orientation = merge_two_orientations
+      (image_orientation,
+       (dt_image_orientation_t)(o->orientation));
 
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_flip_params_v2_t);
+    *new_version = 2;
     return 0;
   }
   return 1;
@@ -206,16 +214,15 @@ static void backtransform(const int32_t *x,
   }
 }
 
-int distort_transform(dt_iop_module_t *self,
-                      dt_dev_pixelpipe_iop_t *piece,
-                      float *const restrict points,
-                      const size_t points_count)
+gboolean distort_transform(dt_iop_module_t *self,
+                           dt_dev_pixelpipe_iop_t *piece,
+                           float *const restrict points,
+                           const size_t points_count)
 {
-  // if(!self->enabled) return 2;
   const dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
 
   // nothing to be done if parameters are set to neutral values (no flip or swap)
-  if(d->orientation == 0) return 1;
+  if(d->orientation == 0) return TRUE;
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -243,19 +250,18 @@ int distort_transform(dt_iop_module_t *self,
     points[i + 1] = y;
   }
 
-  return 1;
+  return TRUE;
 }
 
-int distort_backtransform(dt_iop_module_t *self,
-                          dt_dev_pixelpipe_iop_t *piece,
-                          float *const restrict points,
-                          const size_t points_count)
+gboolean distort_backtransform(dt_iop_module_t *self,
+                               dt_dev_pixelpipe_iop_t *piece,
+                               float *const restrict points,
+                               const size_t points_count)
 {
-  // if(!self->enabled) return 2;
   const dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
 
   // nothing to be done if parameters are set to neutral values (no flip or swap)
-  if(d->orientation == 0) return 1;
+  if(d->orientation == 0) return TRUE;
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -282,7 +288,7 @@ int distort_backtransform(dt_iop_module_t *self,
     points[i + 1] = y;
   }
 
-  return 1;
+  return TRUE;
 }
 
 void distort_mask(struct dt_iop_module_t *self,
@@ -395,22 +401,14 @@ int process_cl(struct dt_iop_module_t *self,
 {
   const dt_iop_flip_data_t *data = (dt_iop_flip_data_t *)piece->data;
   const dt_iop_flip_global_data_t *gd = (dt_iop_flip_global_data_t *)self->global_data;
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
   const int orientation = data->orientation;
 
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_flip, width, height,
+  return dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_flip, width, height,
     CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(orientation));
-
-  if(err != CL_SUCCESS) goto error;
-  return TRUE;
-
-error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_flip] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
 }
 #endif
 

@@ -28,7 +28,7 @@ static inline float calcBlendFactor(float val, float threshold)
     // sigmoid function
     // result is in ]0;1] range
     // inflexion point is at (x, y) (threshold, 0.5)
-    return 1.0f / (1.0f + native_exp(16.0f - (16.0f / threshold) * val));
+    return 1.0f / (1.0f + dt_fast_expf(16.0f - (16.0f / threshold) * val));
 }
 
 // Populate cfa and rgb data by normalized input
@@ -48,7 +48,7 @@ __kernel void rcd_populate (__read_only image2d_t in, global float *cfa, global 
   cfa[idx] = rgbcol[idx] = val;
 }
 
-// Write back-normalized data in rgb channels to output 
+// Write back-normalized data in rgb channels to output
 __kernel void rcd_write_output (__write_only image2d_t out, global float *rgb0, global float *rgb1, global float *rgb2, const int w, const int height, const float scale, const int border)
 {
   const int col = get_global_id(0);
@@ -138,7 +138,7 @@ __kernel void rcd_step_3_1(global float *lpf, global float *cfa, global float *r
 
   // G@B and G@R interpolation
   rgb1[idx] = mix(V_Est, H_Est, VH_Disc);
-} 
+}
 
 // Step 4.0: Calculate the square of the P/Q diagonals color difference high pass filter
 __kernel void rcd_step_4_1(global float *cfa, global float *p_diff, global float *q_diff, const int w, const int height, const unsigned int filters)
@@ -164,7 +164,7 @@ __kernel void rcd_step_4_2(global float *PQ_dir, global float *p_diff, global fl
   const int idx = mad24(row, w, col);
   const int idx2 = idx / 2;
   const int idx3 = (idx - w - 1) / 2;
-  const int idx4 = (idx + w - 1) / 2;  
+  const int idx4 = (idx + w - 1) / 2;
   const float eps = 1e-10f;
 
   const float P_Stat = fmax(eps, p_diff[idx3]     + p_diff[idx2] + p_diff[idx4 + 1]);
@@ -184,7 +184,7 @@ __kernel void rcd_step_5_1(global float *PQ_dir, global float *rgb0, global floa
   global float *rgbc = rgb0;
   if(color == 1) rgbc = rgb1;
   else if(color == 2) rgbc = rgb2;
- 
+
   const int idx = mad24(row, w, col);
   const int pqidx = idx / 2;
   const int pqidx2 = (idx - w - 1) / 2;
@@ -248,7 +248,7 @@ __kernel void rcd_step_5_2(global float *VH_dir, global float *rgb0, global floa
 
     const float SNabs = fabs(rgbc[idx - w] - rgbc[idx + w]);
     const float EWabs = fabs(rgbc[idx - 1] - rgbc[idx + 1]);
- 
+
     // Cardinal gradients
     const float N_Grad = N1 + SNabs + fabs(rgbc[idx - w] - rgbc[idx - w3]);
     const float S_Grad = S1 + SNabs + fabs(rgbc[idx + w] - rgbc[idx + w3]);
@@ -268,6 +268,34 @@ __kernel void rcd_step_5_2(global float *VH_dir, global float *rgb0, global floa
     // R@G and B@G interpolation
     rgbc[idx] = rgb1[idx] + mix(V_Est, H_Est, VH_Disc);
   }
+}
+
+__kernel void write_blended_dual(__read_only image2d_t high,
+                                 __read_only image2d_t low,
+                                 __write_only image2d_t out,
+                                 const int w,
+                                 const int height,
+                                 global float *mask,
+                                 const int showmask)
+{
+  const int col = get_global_id(0);
+  const int row = get_global_id(1);
+  if((col >= w) || (row >= height)) return;
+  const int idx = mad24(row, w, col);
+
+  float4 data;
+
+  const float4 high_val = read_imagef(high, sampleri, (int2)(col, row));
+  const float4 low_val = read_imagef(low, sampleri, (int2)(col, row));
+  const float4 blender = mask[idx];
+  data = mix(low_val, high_val, blender);
+
+  if(showmask)
+    data.w = mask[idx];
+  else
+    data.w = 0.0f;
+
+  write_imagef(out, (int2)(col, row), fmax(data, 0.0f));
 }
 
 __kernel void calc_Y0_mask(global float *mask, __read_only image2d_t in, const int w, const int height, const float red, const float green, const float blue)
@@ -297,7 +325,7 @@ __kernel void calc_scharr_mask(global float *in, global float *out, const int w,
   int inrow = row < 1 ? 1 : row;
   inrow = row > height - 2 ? height - 2 : inrow;
 
-  const int idx = mad24(inrow, w, incol); 
+  const int idx = mad24(inrow, w, incol);
 
   // scharr operator
   const float gx = 47.0f * (in[idx-w-1] - in[idx-w+1])
@@ -310,8 +338,7 @@ __kernel void calc_scharr_mask(global float *in, global float *out, const int w,
   out[oidx] = gradient_magnitude / 16.0f;
 }
 
-
-__kernel void write_scharr_mask(global float *in, __write_only image2d_t out, const int w, const int height)
+__kernel void write_scharr_mask(global float *in, global float *out, const int w, const int height)
 {
   const int col = get_global_id(0);
   const int row = get_global_id(1);
@@ -324,7 +351,7 @@ __kernel void write_scharr_mask(global float *in, __write_only image2d_t out, co
   int inrow = row < 1 ? 1 : row;
   inrow = row > height - 2 ? height - 2 : inrow;
 
-  const int idx = mad24(inrow, w, incol); 
+  const int idx = mad24(inrow, w, incol);
 
   // scharr operator
   const float gx = 47.0f * (in[idx-w-1] - in[idx-w+1])
@@ -334,9 +361,8 @@ __kernel void write_scharr_mask(global float *in, __write_only image2d_t out, co
                 + 162.0f * (in[idx-w]   - in[idx+w])
                  + 47.0f * (in[idx-w+1] - in[idx+w+1]);
   const float gradient_magnitude = native_sqrt(sqrf(gx / 256.0f) + sqrf(gy / 256.0f));
-  write_imagef(out, (int2)(col, row), gradient_magnitude / 16.0f);
+  out[idx] = gradient_magnitude / 16.0f;
 }
-
 
 __kernel void calc_detail_blend(global float *in, global float *out, const int w, const int height, const float threshold, const int detail)
 {
@@ -344,55 +370,10 @@ __kernel void calc_detail_blend(global float *in, global float *out, const int w
   const int row = get_global_id(1);
   if((col >= w) || (row >= height)) return;
 
-  const int idx = mad24(row, w, col); 
+  const int idx = mad24(row, w, col);
 
   const float blend = ICLAMP(calcBlendFactor(in[idx], threshold), 0.0f, 1.0f);
   out[idx] = detail ? blend : 1.0f - blend;
-}
-
-__kernel void readin_mask(global float *mask, __read_only image2d_t in, const int w, const int height)
-{
-  const int col = get_global_id(0);
-  const int row = get_global_id(1);
-  if((col >= w) || (row >= height)) return;
-
-  const int idx = mad24(row, w, col);
-  const float val = read_imagef(in, sampleri, (int2)(col, row)).x;
-  mask[idx] = val;
-}
-
-__kernel void writeout_mask(global const float *mask, __write_only image2d_t out, const int w, const int height)
-{
-  const int col = get_global_id(0);
-  const int row = get_global_id(1);
-  if((col >= w) || (row >= height)) return;
-  const int idx = mad24(row, w, col);
-
-  const float val = mask[idx];
-  write_imagef(out, (int2)(col, row), val);  
-}
-
-__kernel void write_blended_dual(__read_only image2d_t high, __read_only image2d_t low, __write_only image2d_t out, const int w, const int height, global float *mask, const int showmask)
-{
-  const int col = get_global_id(0);
-  const int row = get_global_id(1);
-  if((col >= w) || (row >= height)) return;
-  const int idx = mad24(row, w, col);
-
-  float4 data;
-
-  if(showmask)
-  {
-    data = mask[idx];
-  }
-  else
-  {
-    const float4 high_val = read_imagef(high, sampleri, (int2)(col, row));
-    const float4 low_val = read_imagef(low, sampleri, (int2)(col, row));
-    const float4 blender = mask[idx];
-    data = mix(low_val, high_val, blender);
-  }
-  write_imagef(out, (int2)(col, row), fmax(data, 0.0f));
 }
 
 __kernel void fastblur_mask_9x9(global float *src, global float *out, const int w, const int height, global const float *kern)
@@ -406,7 +387,7 @@ __kernel void fastblur_mask_9x9(global float *src, global float *out, const int 
   incol = col > w - 5 ? w - 5 : incol;
   int inrow = row < 4 ? 4 : row;
   inrow = row > height - 5 ? height - 5 : inrow;
-  const int i = mad24(inrow, w, incol); 
+  const int i = mad24(inrow, w, incol);
 
   const int w2 = 2 * w;
   const int w3 = 3 * w;
@@ -576,7 +557,7 @@ kernel void rcd_border_redblue(read_only image2d_t in, write_only image2d_t out,
   const int c = FC(row, col, filters);
   float4 color = buffer[0];
   if(row > 0 && col > 0 && col < width - 1 && row < height - 1)
-  { 
+  {
     if(c == 1 || c == 3)
     { // calculate red and blue for green pixels:
       // need 4-nbhood:

@@ -41,15 +41,20 @@ void dt_image_cache_allocate(void *data,
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "SELECT id, group_id, film_id, width, height, filename, maker, model,"
-      "       lens, exposure, aperture, iso, focal_length, datetime_taken, flags,"
+      "SELECT mi.id, group_id, film_id, width, height, filename,"
+      "       mk.name, md.name, ln.name,"
+      "       exposure, aperture, iso, focal_length, datetime_taken, flags,"
       "       crop, orientation, focus_distance, raw_parameters,"
       "       longitude, latitude, altitude, color_matrix, colorspace, version,"
       "       raw_black, raw_maximum, aspect_ratio, exposure_bias,"
       "       import_timestamp, change_timestamp, export_timestamp, print_timestamp,"
-      "       output_width, output_height"
-      "  FROM main.images"
-      "  WHERE id = ?1",
+      "       output_width, output_height, cm.maker, cm.model, cm.alias"
+      "  FROM main.images AS mi"
+      "       LEFT JOIN main.cameras AS cm ON cm.id = mi.camera_id"
+      "       LEFT JOIN main.makers AS mk ON mk.id = mi.maker_id"
+      "       LEFT JOIN main.models AS md ON md.id = mi.model_id"
+      "       LEFT JOIN main.lens AS ln ON ln.id = mi.lens_id"
+      "  WHERE mi.id = ?1",
       -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, entry->key);
@@ -126,6 +131,17 @@ void dt_image_cache_allocate(void *data,
     img->final_width = sqlite3_column_int(stmt, 33);
     img->final_height = sqlite3_column_int(stmt, 34);
 
+    // normalized camera names
+    str = (char *)sqlite3_column_text(stmt, 35);
+    if(str) g_strlcpy(img->camera_maker, str, sizeof(img->camera_maker));
+    char *str2 = (char *)sqlite3_column_text(stmt, 36);
+    if(str2) g_strlcpy(img->camera_model, str2, sizeof(img->camera_model));
+    g_snprintf(img->camera_makermodel, sizeof(img->camera_makermodel), "%s %s", str, str2);
+    str = (char *)sqlite3_column_text(stmt, 37);
+    if(str) g_strlcpy(img->camera_alias, str, sizeof(img->camera_alias));
+
+    dt_color_harmony_get(entry->key, &img->color_harmony_guide);
+
     // buffer size? colorspace?
     if(img->flags & DT_IMAGE_LDR)
     {
@@ -167,7 +183,6 @@ void dt_image_cache_allocate(void *data,
   img->cache_entry = entry; // init backref
   // could downgrade lock write->read on entry->lock if we were using
   // concurrencykit..
-  dt_image_refresh_makermodel(img);
 }
 
 void dt_image_cache_deallocate(void *data, dt_cache_entry_t *entry)
@@ -261,15 +276,21 @@ void dt_image_cache_write_release(dt_image_cache_t *cache,
     else
       img->aspect_ratio = (float )img->height / (float )img->width;
   }
-  if(!dt_is_valid_imgid(img->id)) return;
+  if(!dt_is_valid_imgid(img->id))
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[image_cache_write_release] FATAL invalid image id %d\n", img->id);
+    return;
+  }
 
   sqlite3_stmt *stmt;
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2
     (dt_database_get(darktable.db),
      "UPDATE main.images"
-     " SET width = ?1, height = ?2, filename = ?3, maker = ?4, model = ?5,"
-     "     lens = ?6, exposure = ?7, aperture = ?8, iso = ?9, focal_length = ?10,"
+     " SET width = ?1, height = ?2, filename = ?3,"
+     "     maker_id = ?4, model_id = ?5, lens_id = ?6, camera_id = ?35,"
+     "     exposure = ?7, aperture = ?8, iso = ?9, focal_length = ?10,"
      "     focus_distance = ?11, film_id = ?12, datetime_taken = ?13, flags = ?14,"
      "     crop = ?15, orientation = ?16, raw_parameters = ?17, group_id = ?18,"
      "     longitude = ?19, latitude = ?20, altitude = ?21, color_matrix = ?22,"
@@ -279,13 +300,26 @@ void dt_image_cache_write_release(dt_image_cache_t *cache,
      "     print_timestamp = ?31, output_width = ?32, output_height = ?33"
      " WHERE id = ?34",
      -1, &stmt, NULL);
+
+  const int32_t maker_id = dt_image_get_camera_maker_id(img->exif_maker);
+  const int32_t model_id = dt_image_get_camera_model_id(img->exif_model);
+  const int32_t lens_id = dt_image_get_camera_lens_id(img->exif_lens);
+
+  // also make sure we update the camera_id and possibly the associated data
+  // in cameras table.
+
+  const int32_t camera_id = dt_image_get_camera_id(img->exif_maker, img->exif_model);
+
+  dt_color_harmony_set(img->id, img->color_harmony_guide);
+
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->width);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, img->height);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, img->filename, -1, SQLITE_STATIC);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, img->exif_maker, -1, SQLITE_STATIC);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 5, img->exif_model, -1, SQLITE_STATIC);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 6, img->exif_lens, -1, SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 4, maker_id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 5, model_id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 6, lens_id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 35, camera_id);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, img->exif_exposure);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, img->exif_aperture);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, img->exif_iso);
@@ -321,10 +355,14 @@ void dt_image_cache_write_release(dt_image_cache_t *cache,
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 32, img->final_width);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 33, img->final_height);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 34, img->id);
+
   const int rc = sqlite3_step(stmt);
   if(rc != SQLITE_DONE)
     dt_print(DT_DEBUG_ALWAYS,
-             "[image_cache_write_release] sqlite3 error %d\n", rc);
+             "[image_cache_write_release] sqlite3 error %d (%s) for imgid %d\n",
+             rc,
+             sqlite3_errmsg(dt_database_get(darktable.db)),
+             img->id);
   sqlite3_finalize(stmt);
 
   // TODO: make this work in relaxed mode, too.

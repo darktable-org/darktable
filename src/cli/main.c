@@ -35,6 +35,7 @@
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/points.h"
+#include "config.h"
 #include "control/conf.h"
 #include "develop/imageop.h"
 #include "imageio/imageio_common.h"
@@ -61,31 +62,50 @@
 
 static void usage(const char *progname)
 {
-  fprintf(stderr, "usage: %s [<input file or dir>] [<XMP file>] <output destination> [options] [--core <darktable options>]\n", progname);
-  fprintf(stderr, "\n");
-  fprintf(stderr, "options:\n");
-  fprintf(stderr, "   --width <max width> default: 0 = full resolution\n");
-  fprintf(stderr, "   --height <max height> default: 0 = full resolution\n");
-  fprintf(stderr, "   --bpp <bpp>, unsupported\n");
-  fprintf(stderr, "   --hq <0|1|false|true> default: true\n");
-  fprintf(stderr, "   --upscale <0|1|false|true>, default: false\n");
-  fprintf(stderr, "   --export_masks <0|1|false|true>, default: false\n");
-  fprintf(stderr, "   --style <style name>\n");
-  fprintf(stderr, "   --style-overwrite\n");
-  fprintf(stderr, "   --apply-custom-presets <0|1|false|true>, default: true\n");
-  fprintf(stderr, "                          disable for multiple instances\n");
-  fprintf(stderr, "   --out-ext <extension>, default from output destination or '.jpg'\n");
-  fprintf(stderr, "                          if specified, takes preference over output\n");
-  fprintf(stderr, "   --import <file or dir> specify input file or dir, can be used'\n");
-  fprintf(stderr, "                          multiple times instead of input file\n");
-  fprintf(stderr, "   --icc-type <type> specify icc type, default to NONE\n");
-  fprintf(stderr, "                     use --help icc-type for list of supported types\n");
-  fprintf(stderr, "   --icc-file <file> specify icc filename, default to NONE\n");
-  fprintf(stderr, "   --icc-intent <intent> specify icc intent, default to LAST\n");
-  fprintf(stderr, "                     use --help icc-intent for list of supported intents\n");
-  fprintf(stderr, "   --verbose\n");
-  fprintf(stderr, "   --help,-h [option]\n");
-  fprintf(stderr, "   --version\n");
+fprintf(stderr, "darktable %s\n"
+                "Copyright (C) 2012-%s Johannes Hanika and other contributors.\n"
+                "\n"
+                "<https://www.darktable.org>\n"
+                "darktable is an open source photography workflow application and\n"
+                "non-destructive raw developer for photographers.\n"
+                "GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>\n"
+                "This is free software: you are free to change and redistribute it.\n"
+                "There is NO WARRANTY, to the extent permitted by law.\n\n"
+                "Usage:\n"
+                "\n"
+                "  darktable-cli [IMAGE_FILE | IMAGE_FOLDER]\n"
+                "                [XMP_FILE] DIR [OPTIONS]\n"
+                "                [--core DARKTABLE_OPTIONS]\n"
+                "\n"
+                "Options:\n"
+                "   --apply-custom-presets <0|1|false|true>, default: true\n"
+                "                          disable for multiple instances\n"
+                "   --bpp <bpp>, unsupported\n"
+                "   --export_masks <0|1|false|true>, default: false\n"
+
+                "   --height <max height> default: 0 = full resolution\n"
+                "   --width <max width> default: 0 = full resolution\n"
+                
+                "   --hq <0|1|false|true> default: true\n"
+                "   --upscale <0|1|false|true>, default: false\n"
+                "   --style <style name>\n"
+                "   --style-overwrite\n"
+                "   --out-ext <extension>, default from output destination or '.jpg'\n"
+                "                          if specified, takes preference over output\n"
+                "   --import <file or dir> specify input file or dir, can be used'\n"
+                "                          multiple times instead of input file\n"
+                "   --icc-type <type> specify icc type, default to NONE\n"
+                "                     use --help icc-type for list of supported types\n"
+                "   --icc-file <file> specify icc filename, default to NONE\n"
+                "   --icc-intent <intent> specify icc intent, default to LAST\n"
+                "                     use --help icc-intent for list of supported intents\n"
+                "   --verbose\n"
+                "   -h, --help [option]\n"
+                "   -v, --version\n", 
+                darktable_package_version,
+                darktable_last_commit_year);
+
+  // FS TODO: to add instructions for DARKTABLE_OPTIONS
 }
 
 static void icc_types()
@@ -119,6 +139,7 @@ static void icc_types()
   fprintf(stderr, " HLG_REC2020\n");
   fprintf(stderr, " PQ_P3\n");
   fprintf(stderr, " HLG_P3\n");
+  fprintf(stderr, " DISPLAY_P3\n");
 }
 
 #define ICC_FROM_STR(name) if(!strcmp(option, #name)) return DT_COLORSPACE_ ## name;
@@ -151,6 +172,7 @@ static dt_colorspaces_color_profile_type_t get_icc_type(const char* option)
   ICC_FROM_STR(HLG_REC2020);
   ICC_FROM_STR(PQ_P3);
   ICC_FROM_STR(HLG_P3);
+  ICC_FROM_STR(DISPLAY_P3);
   return DT_COLORSPACE_LAST;
 }
 #undef ICC_FROM_STR
@@ -223,11 +245,12 @@ int main(int argc, char *arg[])
         }
         exit(1);
       }
-      else if(!strcmp(arg[k], "--version"))
-      {
-        printf("this is darktable-cli %s\ncopyright (c) 2012-%s johannes hanika, tobias ellinghaus\n",
-               darktable_package_version, darktable_last_commit_year);
-        exit(0);
+      else if(!strcmp(arg[k], "--version") || !strcmp(arg[k], "-v"))
+      {     
+          printf("darktable %s\nCopyright (C) 2012-%s Johannes Hanika and other contributors.\n\n",darktable_package_version, darktable_last_commit_year);
+          printf("See %s for detailed documentation.\n", PACKAGE_DOCS);
+          printf("See %s to report bugs.\n",PACKAGE_BUGREPORT);              
+          exit(0);
       }
       else if(!strcmp(arg[k], "--width") && argc > k + 1)
       {
@@ -650,6 +673,12 @@ int main(int argc, char *arg[])
     output_ext = g_strdup("tiff");
   }
 
+  if(!strcmp(output_ext, "jxl"))
+  {
+    g_free(output_ext);
+    output_ext = g_strdup("jpegxl");
+  }
+
   // init the export data structures
   dt_imageio_module_format_t *format;
   dt_imageio_module_storage_t *storage;
@@ -775,4 +804,3 @@ int main(int argc, char *arg[])
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

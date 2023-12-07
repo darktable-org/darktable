@@ -496,8 +496,8 @@ static void _blur_horizontal_Nch_Kahan(const size_t N,
   if(N > 16) return;
   if(N != 9) return;  // since we only use 9 channels at the moment, give the compiler a big hint
 
-  float DT_ALIGNED_ARRAY L[16] = { 0, 0, 0, 0 };
-  float DT_ALIGNED_ARRAY comp[16] = { 0, 0, 0, 0 };
+  float DT_ALIGNED_ARRAY L[16] =    { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
+  float DT_ALIGNED_ARRAY comp[16] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
   size_t hits = 0;
   // add up the left half of the window
   for(size_t x = 0; x < MIN(radius,width) ; x++)
@@ -809,7 +809,7 @@ static void _blur_vertical_16wide(float *const restrict buf,
   size_t mask = 1;
   for(size_t r = (2*radius+1); r > 1 ; r >>= 1) mask = (mask << 1) | 1;
 
-  float DT_ALIGNED_ARRAY L[16] = { 0, 0, 0, 0 };
+  float DT_ALIGNED_ARRAY L[16] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
   float hits = 0;
   // add up the left half of the window
   for(size_t y = 0; y < MIN(radius, height); y++)
@@ -870,9 +870,9 @@ static void _blur_vertical_16wide_Kahan(float *const restrict buf,
   size_t mask = 1;
   for(size_t r = (2*radius+1); r > 1 ; r >>= 1) mask = (mask << 1) | 1;
 
-  float DT_ALIGNED_ARRAY L[16] = { 0, 0, 0, 0 };
-  float DT_ALIGNED_ARRAY comp[16] = { 0, 0, 0, 0 };
-  float hits = 0;
+  float DT_ALIGNED_ARRAY L[16] =    { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
+  float DT_ALIGNED_ARRAY comp[16] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
+  float hits = 0.0f;
   // add up the left half of the window
   for(size_t y = 0; y < MIN(radius, height); y++)
   {
@@ -1129,7 +1129,7 @@ void dt_box_mean_horizontal(float *const restrict buf,
 {
   if(ch == (4|BOXFILTER_KAHAN_SUM))
   {
-    float *const restrict scratch = user_scratch ? user_scratch : dt_alloc_align_float(4*width);
+    float *const restrict scratch = user_scratch ? user_scratch : dt_alloc_align_float(4 * dt_round_size(width, 16));
     if(scratch)
     {
       _blur_horizontal_4ch_Kahan(buf, width, radius, scratch);
@@ -1141,7 +1141,7 @@ void dt_box_mean_horizontal(float *const restrict buf,
   }
   else if(ch == (9|BOXFILTER_KAHAN_SUM))
   {
-    float *const restrict scratch = user_scratch ? user_scratch : dt_alloc_align_float(9*width);
+    float *const restrict scratch = user_scratch ? user_scratch : dt_alloc_align_float(9 * dt_round_size(width, 16));
     if(scratch)
     {
       _blur_horizontal_Nch_Kahan(9, buf, width, radius, scratch);

@@ -225,7 +225,7 @@ static gchar *_default_print_date_func(const double value, const gboolean detail
 }
 static gboolean _default_decode_date_func(const gchar *text, double *value)
 {
-  long val = dt_datetime_exif_to_gtimespan(text);
+  GTimeSpan val = dt_datetime_exif_to_gtimespan(text);
   if(val > 0)
   {
     *value = val;
@@ -784,7 +784,7 @@ static void _popup_date_tree_selection_change(GtkTreeView *self, GtkDarktableRan
     }
 
     GMatchInfo *match_info;
-    // we capture each date componenent
+    // we capture each date component
     GRegex *regex = g_regex_new(
         "^\\s*(\\d{4})?(?::(\\d{2}))?(?::(\\d{2}))?(?: (\\d{2}))?(?::(\\d{2}))?(?::(\\d{2}))?\\s*$", 0, 0, NULL);
     g_regex_match_full(regex, text, -1, 0, 0, &match_info, NULL);
@@ -1748,7 +1748,7 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE, G_CALLBACK(_dt_pref_changed),
                                   range);
   gtk_widget_set_name((GtkWidget *)range, "dt-range");
-  
+
   return (GtkWidget *)range;
 }
 

@@ -31,8 +31,6 @@
 #include <unistd.h>
 #include <zlib.h>
 
-#include "control/control.h"
-
 #include <array>
 #include <cassert>
 #include <cmath>
@@ -44,6 +42,8 @@
 
 #include <exiv2/exiv2.hpp>
 
+#include "control/control.h"
+
 #if defined(_WIN32) && defined(EXV_UNICODE_PATH)
   #define WIDEN(s) pugi::as_wide(s)
 #else
@@ -54,6 +54,7 @@
 
 using namespace std;
 
+#include "common/color_harmony.h"
 #include "common/colorlabels.h"
 #include "common/darktable.h"
 #include "common/debug.h"
@@ -81,6 +82,26 @@ using namespace std;
 #define AnyError Error
 #define toLong toInt64
 #endif
+
+// For these models we can't calculate the correct crop factor or, for some we could, but we
+// prefer to take it from here, rather than complicate the calculation code with exceptions
+static const struct dt_model_cropfactor dt_cropfactors[] = {
+  {.model = "FinePix SL1000", // exiv2 doesn't yet read the tags we need to calculate correctly
+   .cropfactor = 5.6f
+  },
+  {.model = "FinePix E550", // tags contain incorrect data, so formula gives us incorrect result
+   .cropfactor = 4.65f
+  },
+  {.model = "XF10", // resolution was calculated relative to dimensions not typical of Fuji
+   .cropfactor = 1.5f
+  },
+  {.model = "FinePix S1", // resolution was calculated relative to dimensions not typical of Fuji
+   .cropfactor = 5.6f
+  },
+  {.model = "FinePix HS10 HS11", // calculation gives a slightly inaccurate result
+   .cropfactor = 5.64f
+  },
+};
 
 // persistent list of exiv2 tags. set up in dt_init()
 static GList *exiv2_taglist = NULL;
@@ -351,6 +372,9 @@ static void _exif_import_tags(dt_image_t *img, Exiv2::XmpData::iterator &pos);
 static void read_xmp_timestamps(Exiv2::XmpData &xmpData,
                                 dt_image_t *img,
                                 const int xmp_version);
+static void read_xmp_harmony_guide(Exiv2::XmpData &xmpData,
+                                   dt_image_t *img,
+                                   const int xmp_version);
 
 // this array should contain all XmpBag and XmpSeq keys used by dt
 const char *dt_xmp_keys[]
@@ -372,8 +396,10 @@ const char *dt_xmp_keys[]
         "Xmp.darktable.history_basic_hash",   "Xmp.darktable.history_auto_hash",
         "Xmp.darktable.history_current_hash", "Xmp.darktable.import_timestamp",
         "Xmp.darktable.change_timestamp",     "Xmp.darktable.export_timestamp",
-        "Xmp.darktable.print_timestamp",      "Xmp.acdsee.notes",
-        "Xmp.darktable.version_name",         "Xmp.dc.creator",
+        "Xmp.darktable.print_timestamp",      "Xmp.darktable.version_name",
+        "Xmp.darktable.harmony_guide_type",   "Xmp.darktable.harmony_guide_rotation",
+        "Xmp.darktable.harmony_guide_width",
+        "Xmp.acdsee.notes",                   "Xmp.dc.creator",
         "Xmp.dc.publisher",                   "Xmp.dc.title",
         "Xmp.dc.description",                 "Xmp.dc.rights",
         "Xmp.dc.format",                      "Xmp.xmpMM.DerivedFrom" };
@@ -722,23 +748,19 @@ static bool _exif_decode_iptc_data(dt_image_t *img, Exiv2::IptcData &iptcData)
     }
     if(FIND_IPTC_TAG("Iptc.Application2.DateCreated"))
     {
+      // exiv2 already converts IPTC date and time into ISO 8601 format
       GString *datetime = g_string_new(pos->toString().c_str());
 
-      // FIXME: Workaround for exiv2 reading partial IPTC DateCreated in YYYYMMDD format
-      if(g_regex_match_simple("^\\d{8}$", datetime->str,
-                              (GRegexCompileFlags)0, (GRegexMatchFlags)0))
-      {
-        datetime = g_string_insert_c(datetime, 6, ':');
-        datetime = g_string_insert_c(datetime, 4, ':');
-      }
-
+      datetime = g_string_append(datetime, "T");
       if(FIND_IPTC_TAG("Iptc.Application2.TimeCreated"))
       {
-        char *time = g_strndup(pos->toString().c_str(), 8); // remove timezone at the end
-        datetime = g_string_append(datetime, " ");
+        gchar *time = g_strdup(pos->toString().c_str());
         datetime = g_string_append(datetime, time);
-        free(time);
+        g_free(time);
       }
+      else
+        datetime = g_string_append(datetime, "00:00:00");
+
       dt_datetime_exif_to_img(img, datetime->str);
       g_string_free(datetime, TRUE);
     }
@@ -951,6 +973,50 @@ static gboolean _check_lens_correction_data(Exiv2::ExifData &exifData, dt_image_
     }
   }
 
+  /*
+   * Olympus distortion correction
+   */
+  if(Exiv2::versionNumber() >= EXIV2_MAKE_VERSION(0, 27, 4)
+     && _exif_read_exif_tag(exifData, &pos, "Exif.OlympusIp.0x150a"))
+  {
+    if(pos->count() == 4)
+    {
+      for(int i = 0; i < 4; i++)
+      {
+        const float kd = pos->toFloat(i);
+        img->exif_correction_data.olympus.dist[i] = kd;
+        if (kd != 0 && i < 3)
+        {
+          // Assume it's valid if any of the first three elements are nonzero. Ignore the
+          // fourth element since the null value for no correction is '0 0 0 1'
+          img->exif_correction_type = CORRECTION_TYPE_OLYMPUS;
+          img->exif_correction_data.olympus.has_dist = TRUE;
+        }
+      }
+    }
+  }
+
+  /*
+   * Olympus CA correction
+   */
+  if(Exiv2::versionNumber() >= EXIV2_MAKE_VERSION(0, 27, 4)
+    && _exif_read_exif_tag(exifData, &pos, "Exif.OlympusIp.0x150c"))
+  {
+    if(pos->count() == 6)
+    {
+      for(int i = 0; i < 6; i++)
+      {
+        const float kc = pos->toFloat(i);
+        img->exif_correction_data.olympus.ca[i] = kc;
+        if (kc != 0)
+        {
+          img->exif_correction_type = CORRECTION_TYPE_OLYMPUS;
+          img->exif_correction_data.olympus.has_ca = TRUE;
+        }
+      }
+    }
+  }
+
   return img->exif_correction_type != CORRECTION_TYPE_NONE;
 }
 
@@ -1153,14 +1219,97 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         img->exif_focal_length = pos->toFloat();
     }
 
-    /* Read focal length in 35mm if available and try to calculate crop factor */
+    // Read focal length in 35mm if available and try to calculate crop factor.
     if(FIND_EXIF_TAG("Exif.Photo.FocalLengthIn35mmFilm"))
     {
       const float focal_length_35mm = pos->toFloat();
       if(focal_length_35mm > 0.0f && img->exif_focal_length > 0.0f)
         img->exif_crop = focal_length_35mm / img->exif_focal_length;
       else
-        img->exif_crop = 1.0f;
+        img->exif_crop = 0.0f;
+    }
+
+    // If the tag for the equivalent focal length is missing or contains zero,
+    // let's try to get the crop factor by calculating the diagonal of the sensor:
+    if(img->exif_crop == 0.0f && FIND_EXIF_TAG("Exif.Photo.FocalPlaneXResolution"))
+    {
+      float x_resolution = pos->toFloat();
+      float y_resolution = 0.0f;
+      if(FIND_EXIF_TAG("Exif.Photo.FocalPlaneYResolution"))
+        y_resolution = pos->toFloat();
+      guint res_unit = 1;
+      if(FIND_EXIF_TAG("Exif.Photo.FocalPlaneResolutionUnit"))
+        res_unit = pos->toLong();
+      if(res_unit == 2) // inch
+      {
+        x_resolution /= 25.4f;
+        y_resolution /= 25.4f;
+      }
+      else
+      if(res_unit == 3) // centimeter
+      {
+        x_resolution /= 10.0f;
+        y_resolution /= 10.0f;
+      }
+      guint image_width = 0;
+      guint image_height = 0;
+      // We are entering the zoo of image dimensions metadata.
+      // Let's first try the Exif way of telling dimensions.
+      // For Canon and Sigma cameras, these are the valid raw image
+      // dimensions matching the the resolution tags.
+      // For Fujifilm cameras, this will get the pixel dimensions
+      // of the preview, not the sensor, because that's what the data
+      // in the resolution tags on most Fujifilm cameras seems to be
+      // calculated for.
+      if(FIND_EXIF_TAG("Exif.Photo.PixelXDimension"))
+        image_width = pos->toLong();
+      if(FIND_EXIF_TAG("Exif.Photo.PixelYDimension"))
+        image_height = pos->toLong();
+      // Then try the Adobe DNG way of telling dimensions.
+      // Exif.Image.ImageWidth/Length tags are also present in DNG files,
+      // but may contain the pixel dimensions of the preview image, which in
+      // this case will cause the diagonal calculation to be incorrect.
+      if(image_width == 0 && FIND_EXIF_TAG("Exif.SubImage1.NewSubfileType"))
+      {
+        if(pos->toLong() == 0)  // Primary image
+        {
+          if(FIND_EXIF_TAG("Exif.SubImage1.ImageWidth"))
+            image_width = pos->toLong();
+          if(FIND_EXIF_TAG("Exif.SubImage1.ImageLength"))
+            image_height = pos->toLong();
+        }
+      }
+      // The following tags in certain formats may contain pixel dimensions of
+      // the preview instead of the full image, while resolution is calculated
+      // relative to the full image dimensions. So we check them last.
+      if(image_width == 0)
+      {
+        if(FIND_EXIF_TAG("Exif.Image.ImageWidth"))
+          image_width = pos->toLong();
+        if(FIND_EXIF_TAG("Exif.Image.ImageLength"))
+          image_height = pos->toLong();
+      }
+
+      const float x_size_mm = (float)image_width / x_resolution;
+      const float y_size_mm = (float)image_height / y_resolution;
+      if(image_width && image_height) // We've got the data and can calculate the crop factor
+      {
+        const float sensor_diagonal = dt_fast_hypotf(x_size_mm, y_size_mm);
+        const float fullframe_diagonal = dt_fast_hypotf(36.0f, 24.0f);
+        img->exif_crop = fullframe_diagonal / sensor_diagonal;
+      }
+      else
+        img->exif_crop = 0.0f; // Will be shown as "no data" in the image information module
+    }
+
+    // Override crop factors for models for which we can't calculate the correct value
+    for (size_t i = 0; i < sizeof(dt_cropfactors)/sizeof(dt_cropfactors[0]); i++)
+    {
+      if(!strcmp(img->exif_model, dt_cropfactors[i].model))
+      {
+        img->exif_crop = dt_cropfactors[i].cropfactor;
+        break;
+      }
     }
 
     if(_check_usercrop(exifData, img))
@@ -1181,13 +1330,33 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     /*
      * Get the focus distance in meters.
      */
-    if(FIND_EXIF_TAG("Exif.NikonLd2.FocusDistance")
-       || FIND_EXIF_TAG("Exif.NikonLd3.FocusDistance")
-       || (Exiv2::testVersion(0, 27, 4)
-           && FIND_EXIF_TAG("Exif.NikonLd4.FocusDistance")))
+    if(Exiv2::testVersion(0, 27, 4) && FIND_EXIF_TAG("Exif.NikonLd4.LensID") && pos->toLong() != 0)
+    {
+      // Z lens, need to specifically look for the second instance of Exif.NikonLd4.FocusDistance
+      // unless using Exiv2 0.28.x and later (also expanded to 2 bytes of precision since 0.28.1).
+#if EXIV2_TEST_VERSION(0, 28, 0)
+      if(FIND_EXIF_TAG("Exif.NikonLd4.FocusDistance2"))
+      {
+        float value = pos->toFloat();
+        if(Exiv2::testVersion(0, 28, 1)) value /= 256.0f;
+#else
+      pos = exifData.end();
+      for(auto it = exifData.begin(); it != exifData.end(); it++)
+      {
+        if(it->key() == "Exif.NikonLd4.FocusDistance") pos = it;
+      }
+      if(pos != exifData.end() && pos->size())
+      {
+        float value = pos->toFloat();
+#endif
+        img->exif_focus_distance = 0.01f * pow(10.0f, value / 40.0f);
+      }
+    }
+    else if(FIND_EXIF_TAG("Exif.NikonLd2.FocusDistance") || FIND_EXIF_TAG("Exif.NikonLd3.FocusDistance")
+            || (Exiv2::testVersion(0, 27, 4) && FIND_EXIF_TAG("Exif.NikonLd4.FocusDistance")))
     {
       float value = pos->toFloat();
-      img->exif_focus_distance = (0.01 * pow(10, value / 40));
+      img->exif_focus_distance = 0.01f * pow(10.0f, value / 40.0f);
     }
     else if(FIND_EXIF_TAG("Exif.OlympusFi.FocusDistance"))
     {
@@ -1266,6 +1435,12 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       img->orientation = dt_image_orientation_to_flip_bits(pos->toLong());
     }
     else if(FIND_EXIF_TAG("Exif.PanasonicRaw.Orientation"))
+    {
+      img->orientation = dt_image_orientation_to_flip_bits(pos->toLong());
+    }
+    /* for e.g. Sinar backs the raw orientation is in a different subdirectory */
+    if(FIND_EXIF_TAG("Exif.Thumbnail.PhotometricInterpretation") && (32803 == pos->toLong())
+       && FIND_EXIF_TAG("Exif.Thumbnail.Orientation"))
     {
       img->orientation = dt_image_orientation_to_flip_bits(pos->toLong());
     }
@@ -1392,7 +1567,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     }
 
     /* Capitalize Nikon Z-mount lenses properly for UI presentation */
-    if(g_str_has_prefix(img->exif_lens, "NIKKOR"))
+    if(g_str_has_prefix(img->exif_lens, "NIKKOR") || g_str_has_prefix(img->exif_lens, "TAMRON"))
     {
       for(size_t i = 1; i <= 5; ++i)
         img->exif_lens[i] = g_ascii_tolower(img->exif_lens[i]);
@@ -3533,6 +3708,9 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
     int num = 0;
     gboolean all_ok = TRUE;
     GList *history_entries = NULL;
+    gboolean has_highlights = FALSE;
+    gboolean has_rawprepare = FALSE;
+    int add_to_history_end = 0;
 
     if(xmp_version < 2)
     {
@@ -3568,6 +3746,71 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
       goto end;
     }
     sqlite3_finalize(stmt);
+
+    if(xmp_version < 5)
+    {
+      /* Check if the XMP has the now default enabled highlights module.
+
+         If not we want to add this module but with the CLIP method instead of
+         the new default OPPOSED one. This is to keep compatibility with old-edits.
+
+         Starting with xmp_version = 5 all modules are always recorded, so we don't
+         want to check for this.
+      */
+
+      for(GList *iter = history_entries; iter; iter = g_list_next(iter))
+        {
+          history_entry_t *entry = (history_entry_t *)iter->data;
+
+          if(!strcmp(entry->operation, "highlights"))
+            has_highlights = TRUE;
+          else if(!strcmp(entry->operation, "rawprepare"))
+            has_rawprepare = TRUE;
+        }
+
+      // Module highlights is not part of history, add a simple CLIP method
+      if(has_rawprepare && !has_highlights)
+        {
+          // The following lines are Exif encoded parameters. the parameters from iop
+          // dt_iop_highlights_params_t are taken as raw bytes and encoded to be stored
+          // into the XMP. We have captured here:
+          //   - The default CLIP parameters (only the
+          //     method being set to DT_IOP_HIGHLIGHTS_CLIP and the clip field are
+          //     actually needed) for version 4 of highlights.
+          //   - The default blend parameters (no blending activated) for version 13
+          //     of dt_develop_blend_params_t.
+
+          const char *default_clip =
+            "000000000000803f00000000000000000000803f00000000"
+            "1e00000006000000cdcccc3e000000400000000000000000";
+          const char *no_blend = "gz11eJxjYGBgkGAAgRNODGiAEV0AJ2iwh+CRyscOAAdeGQQ=";
+
+          history_entry_t *entry = (history_entry_t *)calloc(1, sizeof(history_entry_t));
+          entry->operation = g_strdup("highlights");
+          entry->enabled = TRUE;
+          entry->modversion = 4;
+          entry->params = dt_exif_xmp_decode(default_clip,
+                                             strlen(default_clip),
+                                             &entry->params_len);
+          entry->multi_name = g_strdup("");
+          entry->multi_name_hand_edited = FALSE;
+          entry->multi_priority = 0;
+          entry->blendop_version = 13;
+          entry->blendop_params = dt_exif_xmp_decode(no_blend,
+                                                     strlen(no_blend),
+                                                     &entry->blendop_params_len);
+          // we insert the module in second position, just after
+          // rawprepare. This is to ensure that history_end do include
+          // this module. Just adding one to history_end won't work if the
+          // history_end is not pointing to the last history item.
+          entry->num = 1;
+          entry->iop_order = -1;
+
+          add_to_history_end++;
+          history_entries = g_list_append(history_entries, entry);
+        }
+    }
+
     // clang-format off
     DT_DEBUG_SQLITE3_PREPARE_V2
       (dt_database_get(darktable.db),
@@ -3589,7 +3832,13 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
       }
       else
       {
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, entry->num);
+        DT_DEBUG_SQLITE3_BIND_INT
+          (stmt, 2,
+           entry->num
+           + (entry->num > 1
+              || (entry->num == 1 && strcmp(entry->operation, "highlights"))
+              ? add_to_history_end
+              : 0));
       }
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, entry->modversion);
       DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, entry->operation, -1, SQLITE_TRANSIENT);
@@ -3761,7 +4010,7 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
     if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_end")))
        != xmpData.end() && num > 0)
     {
-      int history_end = MIN(pos->toLong(), num);
+      int history_end = MIN(pos->toLong(), num) + add_to_history_end;
       if(num_masks > 0) history_end++;
       if((history_end < 1) && preset_applied) preset_applied = -1;
       DT_DEBUG_SQLITE3_PREPARE_V2
@@ -3816,6 +4065,8 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
   end:
 
     read_xmp_timestamps(xmpData, img, xmp_version);
+
+    read_xmp_harmony_guide(xmpData, img, xmp_version);
 
     sqlite3_finalize(stmt);
 
@@ -4107,6 +4358,27 @@ static void set_xmp_timestamps(Exiv2::XmpData &xmpData, const dt_imgid_t imgid)
   sqlite3_finalize(stmt);
 }
 
+static void set_xmp_harmony_guide(Exiv2::XmpData &xmpData, const dt_imgid_t imgid)
+{
+  static const char *keys[] =
+  {
+    "Xmp.darktable.harmony_guide_type",
+    "Xmp.darktable.harmony_guide_rotation",
+    "Xmp.darktable.harmony_guide_width",
+  };
+  static const guint n_keys = G_N_ELEMENTS(keys);
+  dt_remove_xmp_keys(xmpData, keys, n_keys);
+
+  dt_color_harmony_guide_t guide;
+
+  if(dt_color_harmony_get(imgid, &guide))
+  {
+    xmpData["Xmp.darktable.harmony_guide_type"] = guide.type;
+    xmpData["Xmp.darktable.harmony_guide_rotation"] = guide.rotation;
+    xmpData["Xmp.darktable.harmony_guide_width"] = guide.width;
+  }
+}
+
 GTimeSpan _convert_unix_to_gtimespan(const time_t unix)
 {
   GDateTime *gdt = g_date_time_new_from_unix_utc(unix);
@@ -4148,6 +4420,30 @@ void read_xmp_timestamps(Exiv2::XmpData &xmpData, dt_image_t *img, const int xmp
       img->print_timestamp = pos->toLong();
     else if(pos->toLong() >= 1)
       img->print_timestamp = _convert_unix_to_gtimespan(pos->toLong());
+  }
+}
+
+// read color harmony guides from XmpData
+void read_xmp_harmony_guide(Exiv2::XmpData &xmpData,
+                            dt_image_t *img,
+                            const int xmp_version)
+{
+  Exiv2::XmpData::iterator pos;
+
+  if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.harmony_guide_type")))
+     != xmpData.end())
+  {
+    img->color_harmony_guide.type = (dt_color_harmony_type_t)pos->toLong();
+  }
+  if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.harmony_guide_rotation")))
+     != xmpData.end())
+  {
+    img->color_harmony_guide.rotation = (int) pos->toLong();
+  }
+  if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.harmony_guide_width")))
+     != xmpData.end())
+  {
+      img->color_harmony_guide.width = (dt_color_harmony_width_t)pos->toLong();
   }
 }
 
@@ -4329,6 +4625,8 @@ static void _exif_xmp_read_data(Exiv2::XmpData &xmpData,
 
   // timestamps
   set_xmp_timestamps(xmpData, imgid);
+
+  set_xmp_harmony_guide(xmpData, imgid);
 
   // GPS data
   dt_set_xmp_exif_geotag(xmpData, longitude, latitude, altitude);

@@ -16,11 +16,19 @@ scriptDir=$(pwd)
 buildDir="${scriptDir}/../../build"
 installDir="${buildDir}/macosx"
 
+# Options
+options=" \
+    -DUSE_GRAPHICSMAGICK=OFF \
+    -DUSE_IMAGEMAGICK=ON \
+    -DBUILD_CURVE_TOOLS=ON \
+    -DBUILD_NOISE_TOOLS=ON \
+"
+
 # Check for previous attempt and clean
 if [[ -d "$buildDir" ]]; then
     echo "Deleting directory $buildDir ... "
-    rm -R "$buildDir"
+    rm -rf "$buildDir"
 fi
 
 # Clean build here
-../../build.sh --install --build-type Release --prefix "$installDir"
+../../build.sh --install --build-generator Ninja --build-type Release --prefix "$installDir" -- $options

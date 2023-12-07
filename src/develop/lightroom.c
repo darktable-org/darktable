@@ -433,6 +433,7 @@ typedef struct lr_data_t
   gboolean has_rating;
 
   gdouble lat, lon;
+  gdouble lat_ref, lon_ref;
   gboolean has_gps;
 
   int color;
@@ -810,12 +811,57 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const dt_imgid_t
         data->has_rating = TRUE;
       }
     }
+    else if(!xmlStrcmp(name, (const xmlChar *)"GPSLatitudeRef"))
+    {
+      if (g_str_equal("N", (const char *)value))
+      {
+        data->lat_ref = 1;
+        if(!isnan(data->lat))
+        {
+          data->lat = (data->lat > 0) ? data->lat : -data->lat;
+        }
+      }
+      else
+      {
+        data->lat_ref = -1;
+        if(!isnan(data->lat))
+        {
+          data->lat = (data->lat < 0) ? data->lat : -data->lat;
+        }
+      }
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"GPSLongitudeRef"))
+    {
+      if (g_str_equal("E", (const char *)value))
+      {
+        data->lon_ref = 1;
+        if(!isnan(data->lon))
+        {
+          data->lon = (data->lon > 0) ? data->lat : -data->lon;
+        }
+      }
+      else
+      {
+        data->lon_ref = -1;
+        if(!isnan(data->lon))
+        {
+          data->lon = (data->lon < 0) ? data->lat : -data->lon;
+        }
+      }
+    }
     else if(!xmlStrcmp(name, (const xmlChar *)"GPSLatitude"))
     {
       double latitude = dt_util_gps_string_to_number((const char *)value);
       if(!isnan(latitude))
       {
-        data->lat = latitude;
+        if(!isnan(data->lat_ref))
+        {
+          data->lat =  ((latitude > 0) == (data->lat_ref > 0)) ? latitude : -latitude;
+        }
+        else
+        {
+          data->lat = latitude;
+        }
         data->has_gps = TRUE;
       }
     }
@@ -824,7 +870,14 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const dt_imgid_t
       double longitude = dt_util_gps_string_to_number((const char *)value);
       if(!isnan(longitude))
       {
-        data->lon = longitude;
+        if(!isnan(data->lon_ref))
+        {
+          data->lon =  ((longitude > 0) == (data->lon_ref > 0)) ? longitude : -longitude;
+        }
+        else
+        {
+          data->lon = longitude;
+        }
         data->has_gps = TRUE;
       }
     }
@@ -1074,6 +1127,7 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
   gboolean refresh_needed = FALSE;
   char imported[256] = { 0 };
   int n_import = 0;                // number of iop imported
+  gboolean is_lr = FALSE;
 
   // Get full pathname
   char *pathname = dt_get_lightroom_xmp(imgid);
@@ -1091,7 +1145,7 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
 
   // Parse xml document
 
-  doc = xmlParseEntity(pathname);
+  doc = xmlReadFile(pathname, NULL, 0);
 
   if(doc == NULL)
   {
@@ -1158,6 +1212,7 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
       g_free(pathname);
       return FALSE;
     }
+    is_lr = TRUE;
     xmlFree(value);
   }
 // we could bail out here if we ONLY wanted to load a file known to be from lightroom.
@@ -1193,6 +1248,8 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
   data.has_rating = FALSE;
   data.lat = NAN;
   data.lon = NAN;
+  data.lat_ref = NAN;
+  data.lon_ref = NAN;
   data.has_gps = FALSE;
   data.color = 0;
   data.has_colorlabel = FALSE;
@@ -1254,7 +1311,7 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
 
   //  Integrates into the history all the imported iop
 
-  if(dev != NULL && dt_image_is_raw(&dev->image_storage))
+  if(dev != NULL && is_lr && dt_image_is_raw(&dev->image_storage))
   {
     // set colorin to cmatrix which is the default from Adobe (so closer to what Lightroom does)
     dt_iop_colorin_params_v1_t pci = (dt_iop_colorin_params_v1_t){ "cmatrix", DT_INTENT_PERCEPTUAL };

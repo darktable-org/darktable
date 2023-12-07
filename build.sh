@@ -124,6 +124,7 @@ parse_args()
 		--)
 			shift
 			CMAKE_OPTIONS_FROM_CMDLINE="$@"
+			break
 			;;
 		*)
 			echo "warning: ignoring unknown option $option"

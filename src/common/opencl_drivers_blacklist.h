@@ -36,6 +36,7 @@ static const gchar *bad_opencl_drivers[] =
 */
 #if defined _WIN32
   "neo",
+  "d3d12",
 #endif
   NULL
 
