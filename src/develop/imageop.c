@@ -2205,7 +2205,7 @@ static gboolean _presets_scroll_callback(GtkWidget *widget,
                                          dt_iop_module_t *module)
 {
   int delta_y = 0;
-  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
+  if(dt_gui_get_scroll_unit_delta(event, &delta_y))
     dt_gui_presets_apply_adjacent_preset(module, delta_y);
 
   return TRUE;
