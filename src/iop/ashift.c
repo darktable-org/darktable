@@ -3751,6 +3751,7 @@ int process_cl(struct dt_iop_module_t *self,
   const float cx = roi_out->scale * fullwidth * d->cl;
   const float cy = roi_out->scale * fullheight * d->ct;
 
+  err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   dev_homo = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 9, ihomograph);
   if(dev_homo == NULL) goto error;
 
@@ -3781,6 +3782,7 @@ int process_cl(struct dt_iop_module_t *self,
       ldkernel = gd->kernel_ashift_lanczos3;
       break;
     default:
+      err = DT_OPENCL_DEFAULT_ERROR;
       goto error;
   }
 
