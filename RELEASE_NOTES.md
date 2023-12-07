@@ -211,7 +211,7 @@ changes (where available).
 - The collections module has been reworked for more consistent sorting.
   All date/time sort orders can now be reversed
   (placing either the oldest or newest first).
-  The film roll order can also be reversed when ordered by 
+  The film roll order can also be reversed when ordered by
   id (which is equivalent to the film roll's first import date).
   The "sort film rolls by" preference has been renamed from "id"
   to "import time" to make this clearer.
@@ -345,9 +345,9 @@ changes (where available).
 - Fixed an issue downloading to Piwigo when the "on conflict" option
   was set to "don't check".
 
-- Fixed several mouse scroll-wheel issues on macOS when used in combination
-  with the <kbd>Shift</kbd> modifier key (color harmonies width,
-  module height, geotagging date/time).
+- Fixed several mouse scroll-wheel issues on macOS when used in
+  combination with the <kbd>Shift</kbd> modifier key (color harmonies
+  width, module height, geotagging date/time, ...).
 
 - When loading an XMP sidecar file from disk, resolved an issue where the
   assigned "duplicate number" was already present in the database. This
