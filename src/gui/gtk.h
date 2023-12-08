@@ -34,7 +34,7 @@ extern "C" {
 
 /* helper macro that applies the DPI transformation to fixed pixel values. input should be defaulting to 96
  * DPI */
-#define DT_PIXEL_APPLY_DPI(value) ((value) * ((darktable.gui->dpi_factor < 1.0)? 1.0 : darktable.gui->dpi_factor))
+#define DT_PIXEL_APPLY_DPI(value) ((value) * darktable.gui->dpi_factor)
 
 #define DT_RESIZE_HANDLE_SIZE DT_PIXEL_APPLY_DPI(5)
 

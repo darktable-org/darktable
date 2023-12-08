@@ -1417,8 +1417,11 @@ void dt_configure_ppd_dpi(dt_gui_gtk_t *gui)
   {
 #ifdef GDK_WINDOWING_QUARTZ
     dt_osx_autoset_dpi(widget);
-#endif
+    // gtk/gdk gives wrong results for DPI on Macs
+    gui->dpi = 96.0;
+#else
     gui->dpi = gdk_screen_get_resolution(gtk_widget_get_screen(widget));
+#endif
     if(gui->dpi < 0.0)
     {
       gui->dpi = 96.0;
