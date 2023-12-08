@@ -3650,9 +3650,6 @@ static void _second_window_configure_ppd_dpi(dt_develop_t *dev)
   }
   else
   {
-#ifdef GDK_WINDOWING_QUARTZ
-    dt_osx_autoset_dpi(widget);
-#endif
     dev->preview2.dpi = gdk_screen_get_resolution(gtk_widget_get_screen(widget));
     if(dev->preview2.dpi < 0.0)
     {
