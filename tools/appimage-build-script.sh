@@ -42,4 +42,14 @@ export DISABLE_COPYRIGHT_FILES_DEPLOYMENT=1
 # Instruct LDAI (LinuxDeploy AppImage plugin) to embed AppImage update information
 export LDAI_UPDATE_INFORMATION="gh-releases-zsync|darktable-org|darktable|nightly|Darktable-*-x86_64.AppImage.zsync"
 
-./linuxdeploy-x86_64.AppImage --appdir ../AppDir --plugin gtk --output appimage
+# '--deploy-deps-only' are needed to tell linuxdeploy where to collect dependencies
+# of modules that are loaded via dlopen (and therefore cannot be found automatically)
+./linuxdeploy-x86_64.AppImage \
+  --appdir ../AppDir \
+  --plugin gtk \
+  --deploy-deps-only ../AppDir/usr/lib/x86_64-linux-gnu/darktable/plugins \
+  --deploy-deps-only ../AppDir/usr/lib/x86_64-linux-gnu/darktable/plugins/imageio/format \
+  --deploy-deps-only ../AppDir/usr/lib/x86_64-linux-gnu/darktable/plugins/imageio/storage \
+  --deploy-deps-only ../AppDir/usr/lib/x86_64-linux-gnu/darktable/plugins/lighttable \
+  --deploy-deps-only ../AppDir/usr/lib/x86_64-linux-gnu/darktable/views \
+  --output appimage
