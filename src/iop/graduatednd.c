@@ -216,9 +216,11 @@ static int _set_grad_from_points(
         float *offset)
 {
   // we want absolute positions
+  float wd, ht;
+  dt_dev_get_preview_size(self->dev, &wd, &ht);
   float pts[4]
-      = { xa * self->dev->preview_pipe->backbuf_width, ya * self->dev->preview_pipe->backbuf_height,
-          xb * self->dev->preview_pipe->backbuf_width, yb * self->dev->preview_pipe->backbuf_height };
+      = { xa * wd, ya * ht,
+          xb * wd, yb * ht };
   dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_FORW_EXCL, pts, 2);
   dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
   pts[0] /= (float)piece->buf_out.width;
@@ -436,10 +438,12 @@ static int _set_points_from_grad(
 
   if(!dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_FORW_EXCL, pts, 2))
     return 0;
-  *xa = pts[0] / self->dev->preview_pipe->backbuf_width;
-  *ya = pts[1] / self->dev->preview_pipe->backbuf_height;
-  *xb = pts[2] / self->dev->preview_pipe->backbuf_width;
-  *yb = pts[3] / self->dev->preview_pipe->backbuf_height;
+  float wd, ht;
+  dt_dev_get_preview_size(self->dev, &wd, &ht);
+  *xa = pts[0] / wd;
+  *ya = pts[1] / ht;
+  *xb = pts[2] / wd;
+  *yb = pts[3] / ht;
   return 1;
 }
 
@@ -483,29 +487,16 @@ void gui_reset(struct dt_iop_module_t *self)
   dt_iop_color_picker_reset(self, TRUE);
 }
 
-void gui_post_expose(
-	struct dt_iop_module_t *self,
-        cairo_t *cr,
-        int32_t width,
-        int32_t height,
-        int32_t pointerx,
-        int32_t pointery)
+void gui_post_expose(dt_iop_module_t *self,
+                     cairo_t *cr,
+                     const float wd,
+                     const float ht,
+                     const float pointerx,
+                     const float pointery,
+                     const float zoom_scale)
 {
-  dt_develop_t *dev = self->dev;
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
-
-  const float wd = dev->preview_pipe->backbuf_width;
-  const float ht = dev->preview_pipe->backbuf_height;
-  const float zoom_y = dt_control_get_dev_zoom_y();
-  const float zoom_x = dt_control_get_dev_zoom_x();
-  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  const int closeup = dt_control_get_dev_closeup();
-  const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
-
-  cairo_translate(cr, width / 2.0, height / 2.0f);
-  cairo_scale(cr, zoom_scale, zoom_scale);
-  cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
 
   // we get the extremities of the line
   if(g->define == 0)
@@ -516,7 +507,7 @@ void gui_post_expose(
 
   const float xa = g->xa * wd, xb = g->xb * wd, ya = g->ya * ht, yb = g->yb * ht;
   // the lines
-  const double lwidth = (dt_iop_color_picker_is_visible(darktable.develop) ? 0.5 : 1.0) / zoom_scale;
+  const double lwidth = (dt_iop_canvas_not_sensitive(darktable.develop) ? 0.5 : 1.0) / zoom_scale;
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
   if(g->selected == 3 || g->dragging == 3)
     cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(5.0) * lwidth);
@@ -537,13 +528,12 @@ void gui_post_expose(
   cairo_line_to(cr, xb, yb);
   cairo_stroke(cr);
 
-  if(dt_iop_color_picker_is_visible(darktable.develop))
+  if(dt_iop_canvas_not_sensitive(darktable.develop))
     return;
   // the extremities
-  const float pr_d = darktable.develop->preview_downsampling;
   float x1, y1, x2, y2;
   const float l = sqrtf((xb - xa) * (xb - xa) + (yb - ya) * (yb - ya));
-  const float ext = wd * 0.01f / pr_d / zoom_scale;
+  const float ext = wd * 0.01f / zoom_scale;
   x1 = xa + (xb - xa) * ext / l;
   y1 = ya + (yb - ya) * ext / l;
   x2 = (xa + x1) / 2.0;
@@ -589,21 +579,14 @@ void gui_post_expose(
   cairo_stroke(cr);
 }
 
-int mouse_moved(
-	struct dt_iop_module_t *self,
-        double x,
-        double y,
-        double pressure,
-        int which)
+int mouse_moved(dt_iop_module_t *self,
+                const float pzx,
+                const float pzy,
+                const double pressure,
+                const int which,
+                const float zoom_scale)
 {
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
-  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  const int closeup = dt_control_get_dev_closeup();
-  const float zoom_scale = dt_dev_get_zoom_scale(self->dev, zoom, 1<<closeup, 1);
-  float pzx, pzy;
-  dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
-  pzx += 0.5f;
-  pzy += 0.5f;
 
   // are we dragging something ?
   if(g->dragging > 0)
@@ -633,9 +616,8 @@ int mouse_moved(
   }
   else
   {
-    const float pr_d = darktable.develop->preview_downsampling;
     g->selected = 0;
-    const float ext = DT_PIXEL_APPLY_DPI(0.02f) / pr_d / zoom_scale;
+    const float ext = DT_PIXEL_APPLY_DPI(0.02f) / zoom_scale;
     // are we near extermity ?
     if(pzy > g->ya - ext && pzy < g->ya + ext && pzx > g->xa - ext && pzx < g->xa + ext)
     {
@@ -653,20 +635,16 @@ int mouse_moved(
   return 1;
 }
 
-int button_pressed(
-	struct dt_iop_module_t *self,
-        double x,
-        double y,
-        double pressure,
-        int which,
-        int type,
-        uint32_t state)
+int button_pressed(dt_iop_module_t *self,
+                   const float pzx,
+                   const float pzy,
+                   const double pressure,
+                   const int which,
+                   const int type,
+                   const uint32_t state,
+                   const float zoom_scale)
 {
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
-  float pzx, pzy;
-  dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
-  pzx += 0.5f;
-  pzy += 0.5f;
 
   if(which == 3)
   {
@@ -691,22 +669,17 @@ int button_pressed(
   return 0;
 }
 
-int button_released(
-	struct dt_iop_module_t *self,
-        double x,
-        double y,
-        int which,
-        uint32_t state)
+int button_released(dt_iop_module_t *self,
+                    const float pzx,
+                    const float pzy,
+                    const int which,
+                    const uint32_t state,
+                    const float zoom_scale)
 {
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
   if(g->dragging > 0)
   {
-    float pzx, pzy;
-    dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
-    pzx += 0.5f;
-    pzy += 0.5f;
-
     float r = 0.0, o = 0.0;
     _set_grad_from_points(self, g->xa, g->ya, g->xb, g->yb, &r, &o);
 
@@ -736,8 +709,8 @@ int button_released(
 
 int scrolled(
 	dt_iop_module_t *self,
-        double x,
-        double y,
+        float x,
+        float y,
         int up,
         uint32_t state)
 {

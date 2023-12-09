@@ -598,7 +598,7 @@ void process(struct dt_iop_module_t *self,
   if((piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
      && g
      && g->display_mask && self->dev->gui_attached
-     && (self == self->dev->gui_module) && (piece->pipe == self->dev->pipe))
+     && (self == self->dev->gui_module) && (piece->pipe == self->dev->full.pipe))
     process_display(self, piece, ivoid, ovoid, roi_in, roi_out);
   else if(d->mode == DT_IOP_COLORZONES_MODE_SMOOTH)
     process_v3(self, piece, ivoid, ovoid, roi_in, roi_out);
@@ -1883,7 +1883,7 @@ static gboolean _area_scrolled_callback(GtkWidget *widget,
 
   if(darktable.develop->darkroom_skip_mouse_events)
   {
-    if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
+    if(dt_gui_get_scroll_unit_delta(event, &delta_y))
     {
       GtkAllocation allocation;
       gtk_widget_get_allocation(widget, &allocation);

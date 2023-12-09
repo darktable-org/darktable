@@ -9,6 +9,10 @@ find_library(M_LIBRARY m)
 find_package(Exiv2 REQUIRED)
 include_directories(${Exiv2_INCLUDE_DIR})
 
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND Exiv2_VERSION VERSION_GREATER_EQUAL "0.28.0")
+    set(CMAKE_CXX_STANDARD 17)
+endif()
+
 add_executable(darktable-curve-tool darktable-curve-tool.c exif-wrapper.cpp)
 if (OPENMP_FOUND)
     set_target_properties(darktable-curve-tool PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS})

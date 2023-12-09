@@ -80,7 +80,7 @@ void _camera_tree_update(_widgets_camera_t *camera)
 
   // clang-format off
   g_snprintf(query, sizeof(query),
-             "SELECT cm.maker || ' ' || cm.model AS camera, COUNT(*) AS count"
+             "SELECT TRIM(cm.maker || ' ' || cm.model) AS camera, COUNT(*) AS count"
              " FROM main.images AS mi, main.cameras AS cm"
              " WHERE mi.camera_id = cm.id AND %s"
              " GROUP BY camera"
@@ -103,8 +103,11 @@ void _camera_tree_update(_widgets_camera_t *camera)
     else
     {
       gtk_list_store_append(GTK_LIST_STORE(name_model), &iter);
-      gtk_list_store_set(GTK_LIST_STORE(name_model), &iter, TREE_COL_TEXT, value, TREE_COL_TOOLTIP, value,
-                         TREE_COL_PATH, value_path, TREE_COL_COUNT, count, -1);
+      gtk_list_store_set(GTK_LIST_STORE(name_model), &iter,
+                         TREE_COL_TEXT, value,
+                         TREE_COL_TOOLTIP, value,
+                         TREE_COL_PATH, value_path,
+                         TREE_COL_COUNT, count, -1);
     }
     g_free(value_path);
   }
@@ -114,8 +117,11 @@ void _camera_tree_update(_widgets_camera_t *camera)
   if(unset > 0)
   {
     gtk_list_store_append(GTK_LIST_STORE(name_model), &iter);
-    gtk_list_store_set(GTK_LIST_STORE(name_model), &iter, TREE_COL_TEXT, "UNSET", TREE_COL_TOOLTIP,
-                       _("no camera defined."), TREE_COL_PATH, "UNSET", TREE_COL_COUNT, unset, -1);
+    gtk_list_store_set(GTK_LIST_STORE(name_model), &iter,
+                       TREE_COL_TEXT, _("unnamed"),
+                       TREE_COL_TOOLTIP, _("no camera defined."),
+                       TREE_COL_PATH, _("unnamed"),
+                       TREE_COL_COUNT, unset, -1);
   }
   camera->tree_ok = TRUE;
 }

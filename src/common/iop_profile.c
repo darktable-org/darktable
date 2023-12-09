@@ -1240,7 +1240,7 @@ void dt_ioppr_transform_image_colorspace
     return;
   }
 
-  dt_times_t start_time = { 0 }, end_time = { 0 };
+  dt_times_t start_time = { 0 };
   dt_get_perf_times(&start_time);
 
   // matrix should never be invalid, this is only to test it against lcms2!
@@ -1250,32 +1250,24 @@ void dt_ioppr_transform_image_colorspace
     _transform_matrix(self, image_in, image_out, width, height,
                       cst_from, cst_to, converted_cst, profile_info);
 
-    if(darktable.unmuted & DT_DEBUG_PERF)
-    {
-      dt_get_times(&end_time);
-      dt_print(DT_DEBUG_ALWAYS,
-               "[dt_ioppr_transform_image_colorspace] %s-->%s took %.3f secs (%.3f CPU) [%s%s]\n",
-               dt_iop_colorspace_to_name(cst_from), dt_iop_colorspace_to_name(cst_to),
-               end_time.clock - start_time.clock,
-               end_time.user - start_time.user,
-               self->op, dt_iop_get_instance_id(self));
-    }
+    dt_print(DT_DEBUG_PERF,
+             "[dt_ioppr_transform_image_colorspace] %s-->%s took %.3f secs (%.3f CPU) [%s%s]\n",
+             dt_iop_colorspace_to_name(cst_from), dt_iop_colorspace_to_name(cst_to),
+             dt_get_lap_time(&start_time.clock),
+             dt_get_lap_utime(&start_time.user),
+             self->op, dt_iop_get_instance_id(self));
   }
   else
   {
     _transform_lcms2(self, image_in, image_out, width, height,
                      cst_from, cst_to, converted_cst, profile_info);
 
-    if(darktable.unmuted & DT_DEBUG_PERF)
-    {
-      dt_get_times(&end_time);
-      dt_print(DT_DEBUG_ALWAYS,
-               "[dt_ioppr_transform_image_colorspace] %s-->%s took %.3f secs (%.3f lcms2) [%s%s]\n",
-               dt_iop_colorspace_to_name(cst_from), dt_iop_colorspace_to_name(cst_to),
-               end_time.clock - start_time.clock,
-               end_time.user - start_time.user,
-               self->op, dt_iop_get_instance_id(self));
-    }
+    dt_print(DT_DEBUG_PERF,
+             "[dt_ioppr_transform_image_colorspace] %s-->%s took %.3f secs (%.3f lcms2) [%s%s]\n",
+             dt_iop_colorspace_to_name(cst_from), dt_iop_colorspace_to_name(cst_to),
+             dt_get_lap_time(&start_time.clock),
+             dt_get_lap_utime(&start_time.user),
+             self->op, dt_iop_get_instance_id(self));
   }
 
   if(*converted_cst == cst_from)
@@ -1314,7 +1306,7 @@ void dt_ioppr_transform_image_colorspace_rgb
     return;
   }
 
-  dt_times_t start_time = { 0 }, end_time = { 0 };
+  dt_times_t start_time = { 0 };
   dt_get_perf_times(&start_time);
 
   if(dt_is_valid_colormatrix(profile_info_from->matrix_in[0][0])
@@ -1324,30 +1316,22 @@ void dt_ioppr_transform_image_colorspace_rgb
   {
     _transform_matrix_rgb(image_in, image_out, width, height, profile_info_from, profile_info_to);
 
-    if(darktable.unmuted & DT_DEBUG_PERF)
-    {
-      dt_get_times(&end_time);
-      dt_print(DT_DEBUG_ALWAYS,
-               "[dt_ioppr_transform_image_colorspace_rgb] RGB-->RGB took %.3f secs (%.3f CPU) [%s]\n",
-               end_time.clock - start_time.clock,
-               end_time.user - start_time.user,
-               (message) ? message : "");
-    }
+    dt_print(DT_DEBUG_PERF,
+             "[dt_ioppr_transform_image_colorspace_rgb] RGB-->RGB took %.3f secs (%.3f CPU) [%s]\n",
+             dt_get_lap_time(&start_time.clock),
+             dt_get_lap_utime(&start_time.user),
+             (message) ? message : "");
   }
   else
   {
     _transform_lcms2_rgb(image_in, image_out, width, height, profile_info_from, profile_info_to);
 
-    if(darktable.unmuted & DT_DEBUG_PERF)
-    {
-      dt_get_times(&end_time);
-      dt_print(DT_DEBUG_ALWAYS,
-               "[dt_ioppr_transform_image_colorspace_rgb] RGB-->RGB"
-               " took %.3f secs (%.3f lcms2) [%s]\n",
-               end_time.clock - start_time.clock,
-               end_time.user - start_time.user,
-               (message) ? message : "");
-    }
+    dt_print(DT_DEBUG_PERF,
+             "[dt_ioppr_transform_image_colorspace_rgb] RGB-->RGB"
+             " took %.3f secs (%.3f lcms2) [%s]\n",
+             dt_get_lap_time(&start_time.clock),
+             dt_get_lap_utime(&start_time.user),
+             (message) ? message : "");
   }
 }
 
@@ -1539,7 +1523,7 @@ gboolean dt_ioppr_transform_image_colorspace_cl
   if(dt_is_valid_colormatrix(profile_info->matrix_in[0][0])
      && dt_is_valid_colormatrix(profile_info->matrix_out[0][0]))
   {
-    dt_times_t start_time = { 0 }, end_time = { 0 };
+    dt_times_t start_time = { 0 };
     dt_get_perf_times(&start_time);
 
     size_t origin[] = { 0, 0, 0 };
@@ -1613,16 +1597,12 @@ gboolean dt_ioppr_transform_image_colorspace_cl
 
     *converted_cst = cst_to;
 
-    if(darktable.unmuted & DT_DEBUG_PERF)
-    {
-      dt_get_times(&end_time);
-      dt_print(DT_DEBUG_ALWAYS,
-               "[dt_ioppr_transform_image_colorspace_cl] %s-->%s took %.3f secs (%.3f GPU) [%s%s]\n",
-               dt_iop_colorspace_to_name(cst_from), dt_iop_colorspace_to_name(cst_to),
-               end_time.clock - start_time.clock,
-               end_time.user - start_time.user,
-               self->op, dt_iop_get_instance_id(self));
-    }
+    dt_print(DT_DEBUG_PERF,
+             "[dt_ioppr_transform_image_colorspace_cl] %s-->%s took %.3f secs (%.3f GPU) [%s%s]\n",
+             dt_iop_colorspace_to_name(cst_from), dt_iop_colorspace_to_name(cst_to),
+             dt_get_lap_time(&start_time.clock),
+             dt_get_lap_utime(&start_time.user),
+             self->op, dt_iop_get_instance_id(self));
   }
   else
   {
@@ -1728,7 +1708,7 @@ gboolean dt_ioppr_transform_image_colorspace_rgb_cl
      && dt_is_valid_colormatrix(profile_info_to->matrix_in[0][0])
      && dt_is_valid_colormatrix(profile_info_to->matrix_out[0][0]))
   {
-    dt_times_t start_time = { 0 }, end_time = { 0 };
+    dt_times_t start_time = { 0 };
     dt_get_perf_times(&start_time);
 
     size_t origin[] = { 0, 0, 0 };
@@ -1812,15 +1792,11 @@ gboolean dt_ioppr_transform_image_colorspace_rgb_cl
     if(err != CL_SUCCESS)
       goto cleanup;
 
-    if(darktable.unmuted & DT_DEBUG_PERF)
-    {
-      dt_get_times(&end_time);
-      dt_print(DT_DEBUG_ALWAYS,
-               "image colorspace transform RGB-->RGB CL took %.3f secs (%.3f GPU) [%s]\n",
-               end_time.clock - start_time.clock,
-               end_time.user - start_time.user,
-               (message) ? message : "");
-    }
+    dt_print(DT_DEBUG_PERF,
+             "image colorspace transform RGB-->RGB CL took %.3f secs (%.3f GPU) [%s]\n",
+             dt_get_lap_time(&start_time.clock),
+             dt_get_lap_utime(&start_time.user),
+             (message) ? message : "");
   }
   else
   {

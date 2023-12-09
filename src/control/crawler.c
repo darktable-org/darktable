@@ -52,7 +52,7 @@ typedef enum dt_control_crawler_cols_t
 
 typedef struct dt_control_crawler_result_t
 {
-  int id;
+  dt_imgid_t id;
   time_t timestamp_xmp;
   time_t timestamp_db;
   char *image_path, *xmp_path;
@@ -127,8 +127,8 @@ GList *dt_control_crawler_run(void)
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    const int id = sqlite3_column_int(stmt, 0);
-    const time_t timestamp = sqlite3_column_int(stmt, 1);
+    const dt_imgid_t id = sqlite3_column_int(stmt, 0);
+    const time_t timestamp = sqlite3_column_int64(stmt, 1);
     const int version = sqlite3_column_int(stmt, 2);
     const gchar *image_path = (char *)sqlite3_column_text(stmt, 3);
     int flags = sqlite3_column_int(stmt, 4);
@@ -355,7 +355,7 @@ static void _db_update_timestamp(const int id, const time_t timestamp)
      " SET write_timestamp = ?2"
      " WHERE id = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, timestamp);
+  DT_DEBUG_SQLITE3_BIND_INT64(stmt, 2, timestamp);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 }
@@ -838,6 +838,188 @@ void dt_control_crawler_show_image_list(GList *images)
 
   g_signal_connect(dialog, "response",
                    G_CALLBACK(dt_control_crawler_response_callback), gui);
+}
+
+/* backthumb crawler */
+
+/*
+  we use these checks while
+    a) creating mipmaps and
+    b) checking the database
+  to make sure
+    a) resources are made available again as soon as possible and
+    b) we can quit darktable almost immediately if application quits
+*/
+static inline gboolean _lighttable_silent(void)
+{
+  return dt_view_get_current() == DT_VIEW_LIGHTTABLE
+      && dt_get_wtime() > darktable.backthumbs.time;
+}
+
+static inline gboolean _still_thumbing(void)
+{
+  return darktable.backthumbs.running
+      && _lighttable_silent()
+      && darktable.backthumbs.mipsize != DT_MIPMAP_NONE;
+}
+
+static void _update_img_thumbs(const dt_imgid_t imgid,
+                              const dt_mipmap_size_t max_mip,
+                              const int64_t stamp)
+{
+  for(dt_mipmap_size_t k = max_mip;
+        k >= DT_MIPMAP_1 && _still_thumbing();
+        k--)
+  {
+    dt_mipmap_buffer_t buf;
+    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, k, DT_MIPMAP_BLOCKING, 'r');
+    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+  }
+  if(!_still_thumbing())
+    return;
+
+  // we have written all thumbs now so it's safe to write timestamp and mipsize
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "UPDATE main.images"
+                              " SET thumb_maxmip = ?2, thumb_timestamp = ?3"
+                              " WHERE id = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, max_mip);
+  DT_DEBUG_SQLITE3_BIND_INT64(stmt, 3, stamp);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  dt_mimap_cache_evict(darktable.mipmap_cache, imgid);
+
+  // we have this in darktable-generate-cache but is it really good/necessary?
+  // dt_history_hash_set_mipmap(imgid);
+}
+
+static int _update_all_thumbs(const dt_mipmap_size_t max_mip)
+{
+  int missed = 0;
+  int updated = 0;
+  sqlite3_stmt *stmt;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT id, import_timestamp, change_timestamp"
+                              " FROM main.images"
+                              " WHERE thumb_timestamp < import_timestamp"
+                              "  OR thumb_timestamp < change_timestamp"
+                              "  OR thumb_maxmip < ?1",
+                                -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, max_mip);
+  while(sqlite3_step(stmt) == SQLITE_ROW && _still_thumbing())
+  {
+    const dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
+    const int64_t stamp = MAX(sqlite3_column_int64(stmt, 1), sqlite3_column_int64(stmt, 2));
+
+    char path[PATH_MAX] = { 0 };
+    gboolean from_cache = FALSE;
+    dt_image_full_path(imgid, path, sizeof(path), &from_cache);
+    const gboolean available = dt_util_test_image_file(path);
+
+    if(available)
+    {
+      _update_img_thumbs(imgid, max_mip, stamp);
+      updated++;
+    }
+    else
+    {
+      missed++;
+      dt_print(DT_DEBUG_CACHE, "[thumb crawler] '%s' id=%d NOT available\n", path, imgid);
+    }
+  }
+  sqlite3_finalize(stmt);
+
+  dt_print(DT_DEBUG_CACHE,
+    "[thumb crawler] max_mip=%d, %d thumbs updated, %d not found, %s.\n",
+      max_mip, updated, missed,
+      _still_thumbing() ? "all done" : "interrupted by user activity");
+
+  return updated;
+}
+
+static void _reinitialize_thumbs_database(void)
+{
+  dt_conf_set_bool("backthumbs_initialize", FALSE);
+
+  dt_print(DT_DEBUG_CACHE, "[thumb crawler] initialize database\n");
+
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "UPDATE main.images"
+                              " SET thumb_maxmip = 0, thumb_timestamp = -1",
+                              -1, &stmt, NULL);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+  darktable.backthumbs.service = FALSE;
+}
+
+/* public */
+void dt_set_backthumb_time(const double next)
+{
+  dt_backthumb_t *bt = &darktable.backthumbs;
+  if(next > 0.5)
+    bt->time = dt_get_wtime() + next;
+  else
+    bt->time = fmax(bt->time, dt_get_wtime() + bt->idle);
+}
+
+void dt_update_thumbs_thread(void *p)
+{
+  dt_pthread_setname("thumbs_update");
+  dt_print(DT_DEBUG_CACHE, "[thumb crawler] started\n");
+  dt_backthumb_t *bt = &darktable.backthumbs;
+
+  bt->idle = (double)dt_conf_get_float("backthumbs_inactivity");
+  const gboolean dwriting = dt_conf_get_bool("cache_disk_backend");
+  const char *mipsize = dt_conf_get_string_const("backthumbs_mipsize");
+  bt->mipsize = dt_mipmap_cache_get_min_mip_from_pref(mipsize);
+  bt->service = FALSE;
+  if(!dwriting || bt->mipsize == DT_MIPMAP_NONE)
+  {
+    bt->running = FALSE;
+    dt_print(DT_DEBUG_CACHE, "[thumb crawler] closing due to preferences setting\n");
+    return;
+  }
+  bt->running = TRUE;
+
+  dt_set_backthumb_time(5.0);
+  int updated = 0;
+
+  // return if any thumbcache dir is not writable
+  for(dt_mipmap_size_t k = DT_MIPMAP_1; k <= DT_MIPMAP_7; k++)
+  {
+    char dirname[PATH_MAX] = { 0 };
+    snprintf(dirname, sizeof(dirname), "%s.d/%d", darktable.mipmap_cache->cachedir, k);
+    if(g_mkdir_with_parents(dirname, 0750))
+    {
+      dt_print(DT_DEBUG_CACHE, "[thumb crawler] can't create mipmap dir '%s'\n", dirname);
+      return;
+    }
+  }
+
+  while(bt->running)
+  {
+    for(int i = 0; i < 12 && bt->running && !bt->service; i++)
+      g_usleep(250000);
+
+    if(!bt->running)
+      break;
+
+    if(bt->service)
+      _reinitialize_thumbs_database();
+
+    if(_lighttable_silent() && bt->mipsize != DT_MIPMAP_NONE)
+      updated += _update_all_thumbs(bt->mipsize);
+
+    if(bt->mipsize == DT_MIPMAP_NONE)
+      bt->running = FALSE;
+  }
+  dt_print(DT_DEBUG_CACHE, "[thumb crawler] closing, %d mipmaps updated\n", updated);
 }
 
 // clang-format off

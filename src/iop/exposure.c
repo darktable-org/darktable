@@ -1103,7 +1103,7 @@ static void _spot_settings_changed_callback(GtkWidget *slider,
   // Re-run auto compute if color picker active and mode is correct
   const dt_spot_mode_t mode = dt_bauhaus_combobox_get(g->spot_mode);
   if(mode == DT_SPOT_MODE_CORRECT)
-    _auto_set_exposure(self, darktable.develop->pipe);
+    _auto_set_exposure(self, darktable.develop->full.pipe);
   // else : just record new values and do nothing
 }
 
@@ -1189,7 +1189,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_gui_new_collapsible_section
     (&g->cs,
      "plugins/darkroom/exposure/mapping",
-     _("spot exposure mapping"),
+     _("area exposure mapping"),
      GTK_BOX(self->widget),
      DT_ACTION(self));
 
@@ -1203,7 +1203,7 @@ void gui_init(struct dt_iop_module_t *self)
        "consistently-lit surface over your series of images."));
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL
-    (g->spot_mode, self, NULL, N_("spot mode"),
+    (g->spot_mode, self, NULL, N_("area mode"),
      _("\"correction\" automatically adjust exposure\n"
        "such that the input lightness is mapped to the target.\n"
        "\"measure\" simply shows how an input color is mapped by\n"

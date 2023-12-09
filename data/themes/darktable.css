@@ -237,7 +237,7 @@ Why that? Just because it's a developer choice and most classes use underscore i
   background-image: none;
   color: @fg_color;
   font-size: 1em;   /* avoid changing this settings or you will made the UI quite awful (too big or too small) */
-  font-family: sans-serif;
+  font-family: sans-serif, "Arial Unicode MS";
   font-feature-settings: "tnum";
   font-weight: normal;
   box-shadow:none;
@@ -297,6 +297,7 @@ box,
 box *
 {
   background-color: transparent;
+  font-family: sans-serif, "Arial Unicode MS";
 }
 
 /*----------------------
@@ -353,7 +354,7 @@ textview,
   border: 1px solid @button_border; /* this too */
   border-radius: 0.21em;
   background-color: @button_bg;
-  font-family: sans-serif;
+  font-family: sans-serif, "Arial Unicode MS";
 }
 
 /* then set specific settings for all text zones and combo */
@@ -391,6 +392,7 @@ scrolledwindow textview
 .dt_module_btn,
 .path-bar button,
 header button,
+.image-button,
 .text-button,
 .text-button radio, /* this line and following one are needed to set good margin inside some buttons, especially in header buttons in about dialog window and on radio button and label inside star icon overlay menu */
 .text-button label
@@ -592,7 +594,7 @@ dialog .sidebar row:selected:hover label,
   color: @plugin_label_color;
   padding: 0 0.14em 0.14em 0.45em;
   font-weight: normal;
-  font-family: sans-serif;
+  font-family: sans-serif, "Arial Unicode MS";
   font-size: 1.1em;
 }
 
@@ -600,7 +602,7 @@ dialog .sidebar row:selected:hover label,
 #iop-module-name
 {
   font-weight: lighter;
-  font-family: sans-serif;
+  font-family: sans-serif, "Arial Unicode MS";
   font-size: 0.8em;
 }
 
@@ -624,7 +626,7 @@ dialog .sidebar row:selected:hover label,
 {
   padding: 0.14em 0;
   color: @section_label;
-  font-family: sans-serif;
+  font-family: sans-serif, "Arial Unicode MS";
   font-weight: 500;
 }
 
@@ -743,18 +745,24 @@ dialog .dialog-vbox
 }
 
 /* set top margin in bottom button bar to be the same as bottom margin applied above for main dialog window */
-dialog .dialog-action-box
+dialog .dialog-action-box,
+#shortcut-controls,
+#preset-controls
 {
   margin-top: 0.42em;
 }
 
+dialog .dialog-vbox .text-button:not(.toggle)
+{
+  margin: 0.21em;
+}
 /* remove margin on the left for first left button only, then do the same for right margin for last right button only */
 dialog .dialog-action-box button:first-child
 {
   margin-left: 0;
 }
 
-dialog .dialog-action-box button:last-child
+dialog .dialog-vbox button:last-child:not(.toggle)
 {
   margin-right: 0;
 }
@@ -899,7 +907,7 @@ notebook tabs,
 #guides-line,
 #modules-tabs
 {
-  font-family: sans-serif;
+  font-family: sans-serif, "Arial Unicode MS";
 }
 
 #blending-tabs,
@@ -1114,18 +1122,6 @@ treeview header label
 }
 
 /* Set buttons and search field on presets and shortcuts control buttons */
-#shortcut-controls,
-#preset-controls
-{
-  margin-top: 0.35em;
-}
-
-#shortcut-controls button,
-#preset-controls button
-{
-  margin-left: 0.28em;
-}
-
 #shortcut-controls .search,
 #preferences-box #shortcut-controls check
 {
@@ -1459,7 +1455,8 @@ border-bottom: 0.07em solid alpha(@selected_bg_color, 0.75);
 #import-presets,
 #modulegroups-ro
 {
-  font-style: italic;
+  margin-top: 1.0em;
+  font-weight: bold;
 }
 
 /* About window: set different background for credits view */
@@ -1510,7 +1507,7 @@ border-bottom: 0.07em solid alpha(@selected_bg_color, 0.75);
 
 .search image.left
 {
-  padding: 0 0.21em;
+  padding: 0 0.4em;
 }
 
 .search image:disabled
@@ -2128,6 +2125,12 @@ Details :
   color: @thumbnail_font_color;
 }
 
+.dt_overlays_always_extended.dt_fullview #thumb-main:hover #thumb-bottom-label,
+.dt_overlays_always_extended.dt_fullview #thumb-main:selected #thumb-bottom-label
+{
+  color: shade(@thumbnail_font_color,.75);
+}
+
 /* Set red reject icon when visible */
 .dt_overlays_hover #thumb-main:hover #thumb-reject:active,
 .dt_overlays_hover #thumb-main:hover #thumb-reject:hover,
@@ -2176,6 +2179,12 @@ Details :
 {
   color: @thumbnail_star_hover_color;
   background-color: @thumbnail_star_bg_color;
+}
+
+/* Set stars icon hover effect on fullview */
+.dt_fullview #thumb-main:hover #thumb-star:hover
+{
+  color: @lighttable_bg_color;
 }
 
 /* Set hover group and audio effect */
@@ -2273,8 +2282,8 @@ Details :
 .dt_fullview #thumb-main:hover #thumb-back,
 .dt_fullview #thumb-main:active #thumb-back
 {
-  background-color: transparent;
-  border: 0;
+  background-color: shade(@lighttable_bg_color,1.05);
+  border: 1px solid shade(@lighttable_bg_color,.95);
 }
 
 /* Set image borders */
@@ -2292,7 +2301,7 @@ Details :
 .dt_overlays_always.dt_fullview #thumb-bottom,
 .dt_overlays_always_extended.dt_fullview #thumb-bottom
 {
-  background-color: shade(@lighttable_bg_color, 1.1);
+  background-color: transparent;
 }
 
 /* Set zoom info */

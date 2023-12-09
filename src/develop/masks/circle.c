@@ -216,6 +216,9 @@ static int _circle_events_button_pressed(struct dt_iop_module_t *module,
 {
   if(!gui) return 0;
 
+  float wd, ht, iwidth, iheight;
+  dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
+
   if(!gui->creation)
   {
     dt_masks_form_gui_points_t *gpt =
@@ -279,12 +282,10 @@ static int _circle_events_button_pressed(struct dt_iop_module_t *module,
       (dt_masks_point_circle_t *)(malloc(sizeof(dt_masks_point_circle_t)));
 
     // we change the center value
-    const float wd = darktable.develop->preview_pipe->backbuf_width;
-    const float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = { pzx * wd, pzy * ht };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
-    circle->center[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
-    circle->center[1] = pts[1] / darktable.develop->preview_pipe->iheight;
+    circle->center[0] = pts[0] / iwidth;
+    circle->center[1] = pts[1] / iheight;
 
     // calculate the source position
     if(form->type & DT_MASKS_CLONE)
@@ -345,8 +346,8 @@ static int _circle_events_button_pressed(struct dt_iop_module_t *module,
       else
         gui2->form_dragging = TRUE;
       gui2->group_edited = gui2->group_selected = pos2;
-      gui2->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
-      gui2->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
+      gui2->posx = pzx * wd;
+      gui2->posy = pzy * ht;
       gui2->dx = 0.0;
       gui2->dy = 0.0;
       gui2->scrollx = pzx;
@@ -398,6 +399,9 @@ static int _circle_events_button_released(struct dt_iop_module_t *module,
                                           dt_masks_form_gui_t *gui,
                                           const int index)
 {
+  float wd, ht, iwidth, iheight;
+  dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
+
   if(which == 3
      && dt_is_valid_maskid(parentid)
      && gui->edit_mode == DT_MASKS_EDIT_FULL)
@@ -439,12 +443,10 @@ static int _circle_events_button_released(struct dt_iop_module_t *module,
     gui->form_dragging = FALSE;
 
     // we change the center value
-    const float wd = darktable.develop->preview_pipe->backbuf_width;
-    const float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
-    circle->center[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
-    circle->center[1] = pts[1] / darktable.develop->preview_pipe->iheight;
+    circle->center[0] = pts[0] / iwidth;
+    circle->center[1] = pts[1] / iheight;
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
@@ -474,14 +476,12 @@ static int _circle_events_button_released(struct dt_iop_module_t *module,
     else
     {
       // we change the center value
-      const float wd = darktable.develop->preview_pipe->backbuf_width;
-      const float ht = darktable.develop->preview_pipe->backbuf_height;
       float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
 
       dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
-      form->source[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
-      form->source[1] = pts[1] / darktable.develop->preview_pipe->iheight;
+      form->source[0] = pts[0] / iwidth;
+      form->source[1] = pts[1] / iheight;
     }
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
@@ -524,28 +524,30 @@ static int _circle_events_mouse_moved(struct dt_iop_module_t *module,
                                       const float pzy,
                                       const double pressure,
                                       const int which,
+                                      const float zoom_scale,
                                       dt_masks_form_t *form,
                                       const dt_mask_id_t parentid,
                                       dt_masks_form_gui_t *gui,
                                       const int index)
 {
+  float wd, ht, iwidth, iheight;
+  dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
+
   if(gui->form_dragging || gui->source_dragging)
   {
-    const float wd = darktable.develop->preview_pipe->backbuf_width;
-    const float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
     if(gui->form_dragging)
     {
       dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)((form->points)->data);
-      circle->center[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
-      circle->center[1] = pts[1] / darktable.develop->preview_pipe->iheight;
+      circle->center[0] = pts[0] / iwidth;
+      circle->center[1] = pts[1] / iheight;
     }
     else
     {
-      form->source[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
-      form->source[1] = pts[1] / darktable.develop->preview_pipe->iheight;
+      form->source[0] = pts[0] / iwidth;
+      form->source[1] = pts[1] / iheight;
     }
 
     // we recreate the form points
@@ -587,12 +589,9 @@ static int _circle_events_mouse_moved(struct dt_iop_module_t *module,
   }
   else if(!gui->creation)
   {
-    const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-    const int closeup = dt_control_get_dev_closeup();
-    const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 1);
     const float as = dt_masks_sensitive_dist(zoom_scale);
-    const float x = pzx * darktable.develop->preview_pipe->backbuf_width;
-    const float y = pzy * darktable.develop->preview_pipe->backbuf_height;
+    const float x = pzx * wd;
+    const float y = pzy * ht;
     gboolean in, inb, ins;
     int near;
     float dist;
@@ -734,8 +733,9 @@ static int _circle_get_points_source(dt_develop_t *dev,
 {
   (void)radius2; // keep compiler from complaining about unused arg
   (void)rotation;
-  const float wd = dev->preview_pipe->iwidth;
-  const float ht = dev->preview_pipe->iheight;
+
+  float wd, ht;
+  dt_masks_get_image_size(NULL, NULL, &wd, &ht);
 
   // compute the points of the target (center and circumference of circle)
   // we get the point in RAW image reference
@@ -795,8 +795,8 @@ static int _circle_get_points(dt_develop_t *dev,
 {
   (void)radius2; // keep compiler from complaining about unused arg
   (void)rotation;
-  const float wd = dev->preview_pipe->iwidth;
-  const float ht = dev->preview_pipe->iheight;
+  float wd, ht;
+  dt_masks_get_image_size(NULL, NULL, &wd, &ht);
 
   // compute the points we need to transform (center and circumference of circle)
   *points = _points_to_transform(x, y, radius, wd, ht, points_count);
@@ -823,6 +823,9 @@ static void _circle_events_post_expose(cairo_t *cr,
   dt_masks_form_gui_points_t *gpt =
     (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
 
+  float wd, ht, iwidth, iheight;
+  dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
+
   // add a preview when creating a circle
   // in creation mode
   if(gui->creation)
@@ -837,20 +840,10 @@ static void _circle_events_post_expose(cairo_t *cr,
       float radius_b = dt_conf_get_float(DT_MASKS_CONF(form->type, circle, border));
       radius_b += radius_a;
 
-      // we get the circle center
-      float pzx = gui->posx;
-      float pzy = gui->posy;
-      if((pzx == -1.f && pzy == -1.f) || gui->mouse_leaved_center)
-      {
-        const float zoom_x = dt_control_get_dev_zoom_x();
-        const float zoom_y = dt_control_get_dev_zoom_y();
-        pzx = (.5f + zoom_x) * darktable.develop->preview_pipe->backbuf_width;
-        pzy = (.5f + zoom_y) * darktable.develop->preview_pipe->backbuf_height;
-      }
-      float pts[2] = { pzx, pzy };
+      float pts[2] = { gui->posx, gui->posy };
       dt_dev_distort_backtransform(darktable.develop, pts, 1);
-      float x = pts[0] / darktable.develop->preview_pipe->iwidth;
-      float y = pts[1] / darktable.develop->preview_pipe->iheight;
+      float x = pts[0] / iwidth;
+      float y = pts[1] / iheight;
 
       // we get all the points, distorted if needed of the sample form
       float *points = NULL;
@@ -881,7 +874,9 @@ static void _circle_events_post_expose(cairo_t *cr,
         x = 0.0f;
         y = 0.0f;
         dt_masks_calculate_source_pos_value(gui, DT_MASKS_CIRCLE,
-                                            pzx, pzy, pzx, pzy, &x, &y, FALSE);
+                                            gui->posx, gui->posy,
+                                            gui->posx, gui->posy,
+                                            &x, &y, FALSE);
         dt_masks_draw_clone_source_pos(cr, zoom_scale, x, y);
       }
 
@@ -1104,19 +1099,14 @@ static int _circle_get_mask(const dt_iop_module_t *const restrict module,
                             int *posx,
                             int *posy)
 {
-  double start2 = 0.0;
-  if(darktable.unmuted & DT_DEBUG_PERF) start2 = dt_get_wtime();
+  double start2 = dt_get_debug_wtime();
 
   // we get the area
   if(!_circle_get_area(module, piece, form, width, height, posx, posy)) return 0;
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] circle area took %0.04f sec\n",
-             form->name, dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] circle area took %0.04f sec\n",
+           form->name, dt_get_lap_time(&start2));
 
   // we get the circle values
   dt_masks_point_circle_t *const restrict circle =
@@ -1149,13 +1139,9 @@ static int _circle_get_mask(const dt_iop_module_t *const restrict module,
       p[2*j + 1] = y;
     }
   }
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] circle draw took %0.04f sec\n", form->name, dt_get_wtime() - start2);
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] circle draw took %0.04f sec\n", form->name, dt_get_lap_time(&start2));
 
-    start2 = dt_get_wtime();
-  }
   // we back transform all this points
   if(!dt_dev_distort_backtransform_plus(module->dev, piece->pipe, module->iop_order,
                                         DT_DEV_TRANSFORM_DIR_BACK_INCL,
@@ -1165,13 +1151,9 @@ static int _circle_get_mask(const dt_iop_module_t *const restrict module,
     return 0;
   }
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] circle transform took %0.04f sec\n", form->name,
-             dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] circle transform took %0.04f sec\n", form->name,
+           dt_get_lap_time(&start2));
 
   // we allocate the buffer
   *buffer = dt_alloc_align_float((size_t)w * h);
@@ -1212,10 +1194,9 @@ static int _circle_get_mask(const dt_iop_module_t *const restrict module,
 
   dt_free_align(points);
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] circle fill took %0.04f sec\n",
-             form->name, dt_get_wtime() - start2);
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] circle fill took %0.04f sec\n",
+           form->name, dt_get_lap_time(&start2));
 
   return 1;
 }
@@ -1227,10 +1208,8 @@ static int _circle_get_mask_roi(const dt_iop_module_t *const restrict module,
                                 const dt_iop_roi_t *const roi,
                                 float *const restrict buffer)
 {
-  double start1 = 0.0;
+  double start1 = dt_get_debug_wtime();
   double start2 = start1;
-
-  if(darktable.unmuted & DT_DEBUG_PERF) start2 = start1 = dt_get_wtime();
 
   // we get the circle parameters
   dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)((form->points)->data);
@@ -1259,13 +1238,9 @@ static int _circle_get_mask_roi(const dt_iop_module_t *const restrict module,
   // initialize output buffer with zero
   memset(buffer, 0, sizeof(float) * w * h);
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] circle init took %0.04f sec\n",
-             form->name, dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] circle init took %0.04f sec\n",
+           form->name, dt_get_lap_time(&start2));
 
   // we look at the outer circle of the shape - no effects outside of
   // this circle; we need many points as we do not know how the circle
@@ -1320,13 +1295,9 @@ static int _circle_get_mask_roi(const dt_iop_module_t *const restrict module,
     return 0;
   }
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] circle outline took %0.04f sec\n",
-             form->name, dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] circle outline took %0.04f sec\n",
+           form->name, dt_get_lap_time(&start2));
 
   // we get the min/max values ...
   float xmin = FLT_MAX, ymin = FLT_MAX, xmax = FLT_MIN, ymax = FLT_MIN;
@@ -1362,13 +1333,9 @@ static int _circle_get_mask_roi(const dt_iop_module_t *const restrict module,
 
   dt_free_align(circ);
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] circle bounding box took %0.04f sec\n",
-             form->name, dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] circle bounding box took %0.04f sec\n",
+           form->name, dt_get_lap_time(&start2));
 
   // check if there is anything to do at all; only if width and height
   // of bounding box is 2 or greater the shape lies inside of roi and
@@ -1398,12 +1365,8 @@ static int _circle_get_mask_roi(const dt_iop_module_t *const restrict module,
       points[index * 2 + 1] = (grid * j + py) * iscale;
     }
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] circle grid took %0.04f sec\n", form->name, dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] circle grid took %0.04f sec\n", form->name, dt_get_lap_time(&start2));
 
   // we back transform all these points to the input image coordinates
   if(!dt_dev_distort_backtransform_plus(module->dev, piece->pipe, module->iop_order,
@@ -1414,13 +1377,9 @@ static int _circle_get_mask_roi(const dt_iop_module_t *const restrict module,
     return 0;
   }
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] circle transform took %0.04f sec\n", form->name,
-             dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] circle transform took %0.04f sec\n", form->name,
+           dt_get_lap_time(&start2));
 
   // we calculate the mask values at the transformed points;
   // for results: re-use the points array
@@ -1449,13 +1408,9 @@ static int _circle_get_mask_roi(const dt_iop_module_t *const restrict module,
       points[2*index] = f * f;
     }
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] circle draw took %0.04f sec\n", form->name,
-             dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] circle draw took %0.04f sec\n", form->name,
+           dt_get_lap_time(&start2));
 
   // we fill the pre-initialized output buffer by interpolation;
   // we only need to take the contents of our bounding box into account
@@ -1490,15 +1445,12 @@ static int _circle_get_mask_roi(const dt_iop_module_t *const restrict module,
 
   dt_free_align(points);
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] circle fill took %0.04f sec\n",
-             form->name, dt_get_wtime() - start2);
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] circle total render took %0.04f sec\n", form->name,
-             dt_get_wtime() - start1);
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] circle fill took %0.04f sec\n",
+           form->name, dt_get_lap_time(&start2));
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] circle total render took %0.04f sec\n", form->name,
+           dt_get_lap_time(&start1));
 
   return 1;
 }

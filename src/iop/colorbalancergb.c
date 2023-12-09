@@ -623,17 +623,9 @@ static inline float lookup_gamut(const float *const gamut_lut, const float x)
 
   // fetch the corresponding y values
   const float y_prev = gamut_lut[xi];
-  const float y_next = gamut_lut[xii];
 
-  // assume that we are exactly on an integer LUT element
-  float out = y_prev;
-
-  if(x_next != x_prev)
-    // we are between 2 LUT elements : do linear interpolation
-    // actually, we only add the slope term on the previous one
-    out += (x_test - x_prev) * (y_next - y_prev) / (x_next - x_prev);
-
-  return out;
+  // return y_prev if we are on the same integer LUT element or do linear interpolation
+  return y_prev + ((xi != xii) ? (x_test - x_prev) * (gamut_lut[xii] - y_prev) : 0.0f);
 }
 
 void process(struct dt_iop_module_t *self,
@@ -1035,8 +1027,6 @@ int process_cl(struct dt_iop_module_t *self,
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
-
   // Get working color profile
   const struct dt_iop_order_iccprofile_info_t *const work_profile
       = dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
@@ -1049,7 +1039,7 @@ int process_cl(struct dt_iop_module_t *self,
 
   cl_mem input_matrix_cl = NULL;
   cl_mem output_matrix_cl = NULL;
-  cl_mem gamut_LUT = NULL;
+  cl_mem gamut_LUT_cl = NULL;
   cl_mem hue_rotation_matrix_cl = NULL;
 
   err = dt_ioppr_build_iccprofile_params_cl(work_profile, devid, &profile_info_cl, &profile_lut_cl,
@@ -1093,9 +1083,7 @@ int process_cl(struct dt_iop_module_t *self,
 
   input_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), input_matrix);
   output_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), output_matrix);
-
-  // Send gamut LUT to GPU
-  gamut_LUT = dt_opencl_copy_host_to_device(devid, d->gamut_LUT, LUT_ELEM, 1, sizeof(float));
+  gamut_LUT_cl = dt_opencl_copy_host_to_device_constant(devid, LUT_ELEM * sizeof(float), d->gamut_LUT);
 
   // Size of the checker
   const gint mask_display
@@ -1111,12 +1099,16 @@ int process_cl(struct dt_iop_module_t *self,
     = { cosf(d->hue_angle), -sinf(d->hue_angle), sinf(d->hue_angle), cosf(d->hue_angle) };
   hue_rotation_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), hue_rotation_matrix);
 
-  if(input_matrix_cl == NULL || output_matrix_cl == NULL || gamut_LUT == NULL || hue_rotation_matrix_cl == NULL)
+  if(input_matrix_cl == NULL || output_matrix_cl == NULL || gamut_LUT_cl == NULL || hue_rotation_matrix_cl == NULL)
+  {
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto error;
+  }
 
-  dt_opencl_set_kernel_args(devid, gd->kernel_colorbalance_rgb, 0, CLARG(dev_in), CLARG(dev_out),
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_colorbalance_rgb, width, height,
+    CLARG(dev_in), CLARG(dev_out),
     CLARG(width), CLARG(height), CLARG(dev_profile_info), CLARG(input_matrix_cl), CLARG(output_matrix_cl),
-    CLARG(gamut_LUT), CLARG(d->shadows_weight), CLARG(d->highlights_weight), CLARG(d->midtones_weight),
+    CLARG(gamut_LUT_cl), CLARG(d->shadows_weight), CLARG(d->highlights_weight), CLARG(d->midtones_weight),
     CLARG(d->mask_grey_fulcrum), CLARG(d->hue_angle), CLARG(d->chroma_global), CLARG(d->chroma), CLARG(d->vibrance),
     CLARG(d->global), CLARG(d->shadows), CLARG(d->highlights), CLARG(d->midtones), CLARG(d->white_fulcrum),
     CLARG(d->midtones_Y), CLARG(d->grey_fulcrum), CLARG(d->contrast), CLARG(d->brilliance_global),
@@ -1124,13 +1116,11 @@ int process_cl(struct dt_iop_module_t *self,
     CLARG(checker_1), CLARG(checker_2), CLARG(d->checker_color_1), CLARG(d->checker_color_2), CLARG(L_white),
     CLARG(d->saturation_formula), CLARG(hue_rotation_matrix_cl));
 
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorbalance_rgb, sizes);
-
 error:
   dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
   dt_opencl_release_mem_object(input_matrix_cl);
   dt_opencl_release_mem_object(output_matrix_cl);
-  dt_opencl_release_mem_object(gamut_LUT);
+  dt_opencl_release_mem_object(gamut_LUT_cl);
   dt_opencl_release_mem_object(hue_rotation_matrix_cl);
   return err;
 }
@@ -1268,10 +1258,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // this will be used to prevent users to mess up their images by pushing chroma out of gamut
   if(!d->lut_inited)
   {
-    float *const restrict LUT_saturation = dt_alloc_align_float(LUT_ELEM);
-
-    // init the LUT between -pi and pi by increments of 1°
-    for(size_t k = 0; k < LUT_ELEM; k++) LUT_saturation[k] = 0.f;
+    float *const restrict LUT_saturation = dt_calloc_align_float(LUT_ELEM);
 
     // Premultiply both matrices to go from D50 pipeline RGB to D65 XYZ in a single matrix dot product
     // instead of D50 pipeline to D50 XYZ (work_profile->matrix_in) and then D50 XYZ to D65 XYZ
@@ -1824,8 +1811,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   // or it is not a matrix profile, fall back to sRGB.
   const dt_iop_order_iccprofile_info_t *output_profile = NULL;
 
-  if(self->dev && self->dev->pipe)
-    output_profile = dt_ioppr_get_pipe_output_profile_info(self->dev->pipe);
+  if(self->dev && self->dev->full.pipe)
+    output_profile = dt_ioppr_get_pipe_output_profile_info(self->dev->full.pipe);
 
   if(!output_profile || !dt_is_valid_colormatrix(output_profile->matrix_out[0][0]))
   {

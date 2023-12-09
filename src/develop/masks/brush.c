@@ -706,8 +706,7 @@ static int _brush_get_pts_border(dt_develop_t *dev,
                                  int *payload_count,
                                  const int source)
 {
-  double start2 = 0.0;
-  if(darktable.unmuted & DT_DEBUG_PERF) start2 = dt_get_wtime();
+  double start2 = dt_get_debug_wtime();
 
   const float wd = pipe->iwidth;
   const float ht = pipe->iheight;
@@ -789,12 +788,9 @@ static int _brush_get_pts_border(dt_develop_t *dev,
   int cw = 1;
   int start_stamp = 0;
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS, "[masks %s] brush_points init took %0.04f sec\n", form->name,
-             dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] brush_points init took %0.04f sec\n", form->name,
+           dt_get_lap_time(&start2));
 
   // we render all segments first upwards, then downwards
   for(int n = 0; n < 2 * nb; n++)
@@ -1044,13 +1040,9 @@ static int _brush_get_pts_border(dt_develop_t *dev,
   // printf("points %d, border %d, playload %d\n", *points_count, border ? *border_count : -1, payload ?
   // *payload_count : -1);
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] brush_points point recurs %0.04f sec\n", form->name,
-             dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] brush_points point recurs %0.04f sec\n", form->name,
+           dt_get_lap_time(&start2));
 
   // and we transform them with all distorted modules
   if(source && transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
@@ -1093,10 +1085,9 @@ static int _brush_get_pts_border(dt_develop_t *dev,
         goto fail;
     }
 
-    if(darktable.unmuted & DT_DEBUG_PERF)
-      dt_print(DT_DEBUG_MASKS,
-               "[masks %s] path_points end took %0.04f sec\n",
-               form->name, dt_get_wtime() - start2);
+    dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+             "[masks %s] path_points end took %0.04f sec\n",
+             form->name, dt_get_lap_time(&start2));
 
     return 1;
   }
@@ -1106,10 +1097,9 @@ static int _brush_get_pts_border(dt_develop_t *dev,
     if(!border || dt_dev_distort_transform_plus(dev, pipe, iop_order,
                                                 transf_direction, *border, *border_count))
     {
-      if(darktable.unmuted & DT_DEBUG_PERF)
-        dt_print(DT_DEBUG_MASKS,
-                 "[masks %s] brush_points transform took %0.04f sec\n", form->name,
-                 dt_get_wtime() - start2);
+      dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+               "[masks %s] brush_points transform took %0.04f sec\n", form->name,
+               dt_get_lap_time(&start2));
       return 1;
     }
   }
@@ -1497,9 +1487,13 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module,
 {
   if(type == GDK_2BUTTON_PRESS || type == GDK_3BUTTON_PRESS) return 1;
   if(!gui) return 0;
+
   dt_masks_form_gui_points_t *gpt =
     (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
   if(!gpt) return 0;
+
+  float wd, ht, iwidth, iheight;
+  dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
 
   const float masks_border =
     MIN(dt_conf_get_float(DT_MASKS_CONF(form->type, brush, border)),
@@ -1528,9 +1522,6 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module,
   {
     if(gui->creation)
     {
-      const float wd = darktable.develop->preview_pipe->backbuf_width;
-      const float ht = darktable.develop->preview_pipe->backbuf_height;
-
       if(!gui->guipoints)
         gui->guipoints = dt_masks_dynbuf_init(200000, "brush guipoints");
       if(!gui->guipoints)
@@ -1658,14 +1649,12 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module,
         dt_masks_point_brush_t *bzpt =
           (dt_masks_point_brush_t *)(malloc(sizeof(dt_masks_point_brush_t)));
 
-        const float wd = darktable.develop->preview_pipe->backbuf_width;
-        const float ht = darktable.develop->preview_pipe->backbuf_height;
         float pts[2] = { pzx * wd, pzy * ht };
         dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
         // set coordinates
-        bzpt->corner[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
-        bzpt->corner[1] = pts[1] / darktable.develop->preview_pipe->iheight;
+        bzpt->corner[0] = pts[0] / iwidth;
+        bzpt->corner[1] = pts[1] / iheight;
         bzpt->ctrl1[0] = bzpt->ctrl1[1] = bzpt->ctrl2[0] = bzpt->ctrl2[1] = -1.0;
         bzpt->state = DT_MASKS_POINT_STATE_NORMAL;
 
@@ -1842,6 +1831,9 @@ static int _brush_events_button_released(struct dt_iop_module_t *module,
     (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
   if(!gpt) return 0;
 
+  float wd, ht, iwidth, iheight;
+  dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
+
   const float masks_border =
     MIN(dt_conf_get_float(DT_MASKS_CONF(form->type, brush, border)),
         BORDER_MAX);
@@ -1883,8 +1875,8 @@ static int _brush_events_button_released(struct dt_iop_module_t *module,
 
       for(int i = 0; i < gui->guipoints_count; i++)
       {
-        guipoints[i * 2] /= darktable.develop->preview_pipe->iwidth;
-        guipoints[i * 2 + 1] /= darktable.develop->preview_pipe->iheight;
+        guipoints[i * 2] /= iwidth;
+        guipoints[i * 2 + 1] /= iheight;
       }
 
       // we consolidate pen pressure readings into payload
@@ -2047,12 +2039,10 @@ static int _brush_events_button_released(struct dt_iop_module_t *module,
 
     // we get point0 new values
     dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)(form->points)->data;
-    float wd = darktable.develop->preview_pipe->backbuf_width;
-    float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
-    float dx = pts[0] / darktable.develop->preview_pipe->iwidth - point->corner[0];
-    float dy = pts[1] / darktable.develop->preview_pipe->iheight - point->corner[1];
+    float dx = pts[0] / iwidth - point->corner[0];
+    float dy = pts[1] / iheight - point->corner[1];
 
     // we move all points
     for(GList *points = form->points; points; points = g_list_next(points))
@@ -2082,12 +2072,10 @@ static int _brush_events_button_released(struct dt_iop_module_t *module,
     gui->source_dragging = FALSE;
 
     // we change the source value
-    float wd = darktable.develop->preview_pipe->backbuf_width;
-    float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
-    form->source[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
-    form->source[1] = pts[1] / darktable.develop->preview_pipe->iheight;
+    form->source[0] = pts[0] / iwidth;
+    form->source[1] = pts[1] / iheight;
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
@@ -2116,12 +2104,10 @@ static int _brush_events_button_released(struct dt_iop_module_t *module,
       return 1;
     }
     gui->scrollx = gui->scrolly = 0;
-    float wd = darktable.develop->preview_pipe->backbuf_width;
-    float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = { pzx * wd, pzy * ht };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
-    float dx = pts[0] / darktable.develop->preview_pipe->iwidth - point->corner[0];
-    float dy = pts[1] / darktable.develop->preview_pipe->iheight - point->corner[1];
+    float dx = pts[0] / iwidth - point->corner[0];
+    float dy = pts[1] / iheight - point->corner[1];
 
     point->corner[0] += dx;
     point->corner[1] += dy;
@@ -2146,20 +2132,18 @@ static int _brush_events_button_released(struct dt_iop_module_t *module,
     dt_masks_point_brush_t *point
         = (dt_masks_point_brush_t *)g_list_nth_data(form->points, gui->feather_dragging);
     gui->feather_dragging = -1;
-    const float wd = darktable.develop->preview_pipe->backbuf_width;
-    const float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = { pzx * wd, pzy * ht };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
     float p1x, p1y, p2x, p2y;
-    _brush_feather_to_ctrl(point->corner[0] * darktable.develop->preview_pipe->iwidth,
-                           point->corner[1] * darktable.develop->preview_pipe->iheight,
+    _brush_feather_to_ctrl(point->corner[0] * iwidth,
+                           point->corner[1] * iheight,
                            pts[0], pts[1],
                            &p1x, &p1y, &p2x, &p2y, TRUE);
-    point->ctrl1[0] = p1x / darktable.develop->preview_pipe->iwidth;
-    point->ctrl1[1] = p1y / darktable.develop->preview_pipe->iheight;
-    point->ctrl2[0] = p2x / darktable.develop->preview_pipe->iwidth;
-    point->ctrl2[1] = p2y / darktable.develop->preview_pipe->iheight;
+    point->ctrl1[0] = p1x / iwidth;
+    point->ctrl1[1] = p1y / iheight;
+    point->ctrl2[0] = p2x / iwidth;
+    point->ctrl2[1] = p2y / iheight;
 
     point->state = DT_MASKS_POINT_STATE_USER;
 
@@ -2193,28 +2177,28 @@ static int _brush_events_mouse_moved(struct dt_iop_module_t *module,
                                      float pzy,
                                      const double pressure,
                                      const int which,
+                                     const float zoom_scale,
                                      dt_masks_form_t *form,
                                      const dt_mask_id_t parentid,
                                      dt_masks_form_gui_t *gui,
                                      const int index)
 {
-  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  const int closeup = dt_control_get_dev_closeup();
-  const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 1);
   const float as = dt_masks_sensitive_dist(zoom_scale);
 
   if(!gui) return 0;
+
   dt_masks_form_gui_points_t *gpt =
     (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
   if(!gpt) return 0;
+
+  float wd, ht, iwidth, iheight;
+  dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
 
   if(gui->creation)
   {
     if(gui->guipoints)
     {
-      dt_masks_dynbuf_add_2(gui->guipoints,
-                            pzx * darktable.develop->preview_pipe->backbuf_width,
-                            pzy * darktable.develop->preview_pipe->backbuf_height);
+      dt_masks_dynbuf_add_2(gui->guipoints, pzx * wd, pzy * ht);
       const float border = dt_masks_dynbuf_get(gui->guipoints_payload, -4);
       const float hardness = dt_masks_dynbuf_get(gui->guipoints_payload, -3);
       const float density = dt_masks_dynbuf_get(gui->guipoints_payload, -2);
@@ -2227,14 +2211,12 @@ static int _brush_events_mouse_moved(struct dt_iop_module_t *module,
   }
   else if(gui->point_dragging >= 0)
   {
-    const float wd = darktable.develop->preview_pipe->backbuf_width;
-    const float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = { pzx * wd, pzy * ht };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
     dt_masks_point_brush_t *bzpt
         = (dt_masks_point_brush_t *)g_list_nth_data(form->points, gui->point_dragging);
-    pzx = pts[0] / darktable.develop->preview_pipe->iwidth;
-    pzy = pts[1] / darktable.develop->preview_pipe->iheight;
+    pzx = pts[0] / iwidth;
+    pzy = pts[1] / iheight;
     bzpt->ctrl1[0] += pzx - bzpt->corner[0];
     bzpt->ctrl2[0] += pzx - bzpt->corner[0];
     bzpt->ctrl1[1] += pzy - bzpt->corner[1];
@@ -2254,12 +2236,10 @@ static int _brush_events_mouse_moved(struct dt_iop_module_t *module,
     const GList *pt2 = g_list_next_wraparound(pt1, form->points);
     dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)pt1->data;
     dt_masks_point_brush_t *point2 = (dt_masks_point_brush_t *)pt2->data;
-    const float wd = darktable.develop->preview_pipe->backbuf_width;
-    const float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
-    const float dx = pts[0] / darktable.develop->preview_pipe->iwidth - point->corner[0];
-    const float dy = pts[1] / darktable.develop->preview_pipe->iheight - point->corner[1];
+    const float dx = pts[0] / iwidth - point->corner[0];
+    const float dy = pts[1] / iheight - point->corner[1];
 
     // we move all points
     point->corner[0] += dx;
@@ -2287,22 +2267,20 @@ static int _brush_events_mouse_moved(struct dt_iop_module_t *module,
   }
   else if(gui->feather_dragging >= 0)
   {
-    const float wd = darktable.develop->preview_pipe->backbuf_width;
-    const float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = { pzx * wd, pzy * ht };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
     dt_masks_point_brush_t *point
         = (dt_masks_point_brush_t *)g_list_nth_data(form->points, gui->feather_dragging);
 
     float p1x, p1y, p2x, p2y;
-    _brush_feather_to_ctrl(point->corner[0] * darktable.develop->preview_pipe->iwidth,
-                           point->corner[1] * darktable.develop->preview_pipe->iheight,
+    _brush_feather_to_ctrl(point->corner[0] * iwidth,
+                           point->corner[1] * iheight,
                            pts[0], pts[1],
                            &p1x, &p1y, &p2x, &p2y, TRUE);
-    point->ctrl1[0] = p1x / darktable.develop->preview_pipe->iwidth;
-    point->ctrl1[1] = p1y / darktable.develop->preview_pipe->iheight;
-    point->ctrl2[0] = p2x / darktable.develop->preview_pipe->iwidth;
-    point->ctrl2[1] = p2y / darktable.develop->preview_pipe->iheight;
+    point->ctrl1[0] = p1x / iwidth;
+    point->ctrl1[1] = p1y / iheight;
+    point->ctrl2[0] = p2x / iwidth;
+    point->ctrl2[1] = p2y / iheight;
     point->state = DT_MASKS_POINT_STATE_USER;
 
     _brush_init_ctrl_points(form);
@@ -2313,9 +2291,6 @@ static int _brush_events_mouse_moved(struct dt_iop_module_t *module,
   }
   else if(gui->point_border_dragging >= 0)
   {
-    const float wd = darktable.develop->preview_pipe->backbuf_width;
-    const float ht = darktable.develop->preview_pipe->backbuf_height;
-
     const int k = gui->point_border_dragging;
 
     // now we want to know the position reflected on actual corner/border segment
@@ -2331,11 +2306,10 @@ static int _brush_events_mouse_moved(struct dt_iop_module_t *module,
 
     dt_masks_point_brush_t *point =
       (dt_masks_point_brush_t *)g_list_nth_data(form->points, k);
-    const float nx = point->corner[0] * darktable.develop->preview_pipe->iwidth;
-    const float ny = point->corner[1] * darktable.develop->preview_pipe->iheight;
+    const float nx = point->corner[0] * iwidth;
+    const float ny = point->corner[1] * iheight;
     const float nr = sqrtf((pts[0] - nx) * (pts[0] - nx) + (pts[1] - ny) * (pts[1] - ny));
-    const float bdr = nr / fminf(darktable.develop->preview_pipe->iwidth,
-                                 darktable.develop->preview_pipe->iheight);
+    const float bdr = nr / fminf(iwidth, iheight);
 
     point->border[0] = point->border[1] = bdr;
 
@@ -2346,8 +2320,6 @@ static int _brush_events_mouse_moved(struct dt_iop_module_t *module,
   }
   else if(gui->form_dragging || gui->source_dragging)
   {
-    const float wd = darktable.develop->preview_pipe->backbuf_width;
-    const float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
@@ -2355,8 +2327,8 @@ static int _brush_events_mouse_moved(struct dt_iop_module_t *module,
     if(gui->form_dragging)
     {
       dt_masks_point_path_t *point = (dt_masks_point_path_t *)(form->points)->data;
-      const float dx = pts[0] / darktable.develop->preview_pipe->iwidth - point->corner[0];
-      const float dy = pts[1] / darktable.develop->preview_pipe->iheight - point->corner[1];
+      const float dx = pts[0] / iwidth - point->corner[0];
+      const float dy = pts[1] / iheight - point->corner[1];
       for(GList *points = form->points; points; points = g_list_next(points))
       {
         point = (dt_masks_point_path_t *)points->data;
@@ -2370,8 +2342,8 @@ static int _brush_events_mouse_moved(struct dt_iop_module_t *module,
     }
     else
     {
-      form->source[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
-      form->source[1] = pts[1] / darktable.develop->preview_pipe->iheight;
+      form->source[0] = pts[0] / iwidth;
+      form->source[1] = pts[1] / iheight;
     }
 
     // we recreate the form points
@@ -2390,8 +2362,8 @@ static int _brush_events_mouse_moved(struct dt_iop_module_t *module,
   // are we near a point or feather ?
   const guint nb = g_list_length(form->points);
 
-  pzx *= darktable.develop->preview_pipe->backbuf_width;
-  pzy *= darktable.develop->preview_pipe->backbuf_height;
+  pzx *= wd;
+  pzy *= ht;
 
   if((gui->group_selected == index) && gui->point_edited >= 0)
   {
@@ -2492,9 +2464,13 @@ static void _brush_events_post_expose(cairo_t *cr,
                                       const int nb)
 {
   if(!gui) return;
+
   dt_masks_form_gui_points_t *gpt =
     (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
   if(!gpt) return;
+
+  float wd, ht, iwidth, iheight;
+  dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
 
   double dashed[] = { 4.0, 4.0 };
   dashed[0] /= zoom_scale;
@@ -2504,10 +2480,7 @@ static void _brush_events_post_expose(cairo_t *cr,
   // in creation mode
   if(gui->creation)
   {
-    const float pr_d = darktable.develop->preview_downsampling;
-    const float iwd = darktable.develop->preview_pipe->iwidth;
-    const float iht = darktable.develop->preview_pipe->iheight;
-    const float min_iwd_iht = pr_d * MIN(iwd,iht);
+    const float min_iwd_iht = MIN(iwidth, iheight);
 
     if(gui->guipoints_count == 0)
     {
@@ -2525,37 +2498,24 @@ static void _brush_events_post_expose(cairo_t *cr,
       const float radius1 = masks_border * masks_hardness * min_iwd_iht;
       const float radius2 = masks_border * min_iwd_iht;
 
-      float xpos = 0.0f, ypos = 0.0f;
-      if((gui->posx == -1.0f && gui->posy == -1.0f)
-         || gui->mouse_leaved_center)
-      {
-        xpos = (.5f + dt_control_get_dev_zoom_x())
-          * darktable.develop->preview_pipe->backbuf_width;
-        ypos = (.5f + dt_control_get_dev_zoom_y())
-          * darktable.develop->preview_pipe->backbuf_height;
-      }
-      else
-      {
-        xpos = gui->posx;
-        ypos = gui->posy;
-      }
-
       cairo_save(cr);
       dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_BRUSH_CURSOR, opacity);
       cairo_set_line_width(cr, 3.0 / zoom_scale);
-      cairo_arc(cr, xpos, ypos, radius1, 0, 2.0 * M_PI);
+      cairo_arc(cr, gui->posx, gui->posy, radius1, 0, 2.0 * M_PI);
       cairo_fill_preserve(cr);
       cairo_set_source_rgba(cr, .8, .8, .8, .8);
       cairo_stroke(cr);
       cairo_set_dash(cr, dashed, len, 0);
-      cairo_arc(cr, xpos, ypos, radius2, 0, 2.0 * M_PI);
+      cairo_arc(cr, gui->posx, gui->posy, radius2, 0, 2.0 * M_PI);
       cairo_stroke(cr);
 
       if(form->type & DT_MASKS_CLONE)
       {
         float x = 0.0f, y = 0.0f;
-        dt_masks_calculate_source_pos_value(gui, DT_MASKS_BRUSH, xpos, ypos,
-                                            xpos, ypos, &x, &y, FALSE);
+        dt_masks_calculate_source_pos_value(gui, DT_MASKS_BRUSH,
+                                            gui->posx, gui->posy,
+                                            gui->posx, gui->posy,
+                                            &x, &y, FALSE);
         dt_masks_draw_clone_source_pos(cr, zoom_scale, x, y);
       }
 
@@ -2997,9 +2957,8 @@ static int _brush_get_mask(const dt_iop_module_t *const module,
                            int *posy)
 {
   if(!module) return 0;
-  double start = 0.0;
-  double start2 = 0.0;
-  if(darktable.unmuted & DT_DEBUG_PERF) start = start2 = dt_get_wtime();
+  double start = dt_get_debug_wtime();
+  double start2 = start;
 
   // we get buffers for all points
   float *points = NULL, *border = NULL, *payload = NULL;
@@ -3015,21 +2974,16 @@ static int _brush_get_mask(const dt_iop_module_t *const module,
     return 0;
   }
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] brush points took %0.04f sec\n",
-             form->name, dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] brush points took %0.04f sec\n",
+           form->name, dt_get_lap_time(&start2));
 
   const guint nb_corner = g_list_length(form->points);
   _brush_bounding_box(points, border, nb_corner, points_count, width, height, posx, posy);
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] brush_fill min max took %0.04f sec\n", form->name,
-             dt_get_wtime() - start2);
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] brush_fill min max took %0.04f sec\n", form->name,
+           dt_get_lap_time(&start2));
 
   // we allocate the buffer
   const size_t bufsize = (size_t)(*width) * (*height);
@@ -3062,9 +3016,9 @@ static int _brush_get_mask(const dt_iop_module_t *const module,
   dt_free_align(border);
   dt_free_align(payload);
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-    dt_print(DT_DEBUG_MASKS, "[masks %s] brush fill buffer took %0.04f sec\n", form->name,
-             dt_get_wtime() - start);
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] brush fill buffer took %0.04f sec\n", form->name,
+           dt_get_lap_time(&start));
 
   return 1;
 }
@@ -3128,9 +3082,8 @@ static int _brush_get_mask_roi(const dt_iop_module_t *const module,
                                float *buffer)
 {
   if(!module) return 0;
-  double start = 0.0;
-  double start2 = 0.0;
-  if(darktable.unmuted & DT_DEBUG_PERF) start = start2 = dt_get_wtime();
+  double start = dt_get_debug_wtime();
+  double start2 = start;
 
   const int px = roi->x;
   const int py = roi->y;
@@ -3154,13 +3107,9 @@ static int _brush_get_mask_roi(const dt_iop_module_t *const module,
     return 0;
   }
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] brush points took %0.04f sec\n",
-             form->name, dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] brush points took %0.04f sec\n",
+           form->name, dt_get_lap_time(&start2));
 
   const guint nb_corner = g_list_length(form->points);
 
@@ -3186,13 +3135,9 @@ static int _brush_get_mask_roi(const dt_iop_module_t *const module,
   _brush_bounding_box_raw(points, border, nb_corner,
                           points_count, &xmin, &xmax, &ymin, &ymax);
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS,
-             "[masks %s] brush_fill min max took %0.04f sec\n", form->name,
-             dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] brush_fill min max took %0.04f sec\n", form->name,
+           dt_get_lap_time(&start2));
 
   // check if the path completely lies outside of roi -> we're done/mask remains empty
   if(xmax < 0 || ymax < 0 || xmin >= width || ymin >= height)
@@ -3229,13 +3174,12 @@ static int _brush_get_mask_roi(const dt_iop_module_t *const module,
   dt_free_align(border);
   dt_free_align(payload);
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_print(DT_DEBUG_MASKS, "[masks %s] brush set falloff took %0.04f sec\n", form->name,
-             dt_get_wtime() - start2);
-    dt_print(DT_DEBUG_MASKS, "[masks %s] brush fill buffer took %0.04f sec\n", form->name,
-             dt_get_wtime() - start);
-  }
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] brush set falloff took %0.04f sec\n", form->name,
+           dt_get_lap_time(&start2));
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks %s] brush fill buffer took %0.04f sec\n", form->name,
+           dt_get_lap_time(&start));
 
   return 1;
 }

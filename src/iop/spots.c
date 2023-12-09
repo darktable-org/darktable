@@ -767,7 +767,7 @@ void init(dt_iop_module_t *module)
 
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
 {
-  if(self->enabled && !darktable.develop->image_loading)
+  if(self->enabled && !darktable.develop->full.pipe->loading)
   {
     dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
 

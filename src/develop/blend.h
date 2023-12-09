@@ -209,8 +209,10 @@ typedef struct dt_develop_blend_params_t
   float brightness;
   /** details threshold */
   float details;
+  /** feathering parameters version */
+  uint32_t feather_version;
   /** some reserved fields for future use */
-  uint32_t reserved[3];
+  uint32_t reserved[2];
   /** blendif parameters */
   float blendif_parameters[4 * DEVELOP_BLENDIF_SIZE];
   float blendif_boost_factors[DEVELOP_BLENDIF_SIZE];
@@ -237,8 +239,6 @@ typedef struct dt_blendop_cl_global_t
   int kernel_calc_Y0_mask;
   int kernel_calc_scharr_mask;
   int kernel_write_scharr_mask;
-  int kernel_write_mask;
-  int kernel_read_mask;
   int kernel_calc_blend;
   int kernel_mask_blur;
 } dt_blendop_cl_global_t;
@@ -334,7 +334,7 @@ typedef struct dt_iop_gui_blend_data_t
   int tab;
   int altmode[8][2];
   dt_dev_pixelpipe_display_mask_t save_for_leave;
-  int timeout_handle;
+  guint timeout_handle;
   GtkNotebook *channel_tabs;
   gboolean output_channels_shown;
 

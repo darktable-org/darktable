@@ -125,10 +125,17 @@ typedef struct dt_storage_piwigo_params_t
 
 dt_storage_piwigo_conflict_actions_t conflict_action;
 
-static char *_get_filename(dt_image_t *img)
+static char *_get_filename(const dt_image_t *img,
+                           dt_imageio_module_format_t *format,
+                           dt_imageio_module_data_t *fdata)
 {
   char filename[PATH_MAX] = { 0 };
   g_strlcpy (filename, img->filename, sizeof(filename));
+
+  const gchar *ext = format->extension(fdata);
+  char *new_name = dt_filename_change_extension(filename, ext);
+  g_strlcpy (filename, new_name, sizeof(filename));
+  g_free(new_name);
 
   if(img->version > 0)
     dt_image_path_append_version_no_db(img->version, filename, sizeof(filename));
@@ -778,6 +785,8 @@ static gboolean _piwigo_api_create_new_album(dt_storage_piwigo_params_t *p)
 
 static int _piwigo_api_get_image_id(dt_storage_piwigo_params_t *p,
                                     dt_image_t *img,
+                                    dt_imageio_module_format_t *format,
+                                    dt_imageio_module_data_t *fdata,
                                     const int page)
 {
   GList *args = NULL;
@@ -795,7 +804,7 @@ static int _piwigo_api_get_image_id(dt_storage_piwigo_params_t *p,
 
   g_list_free(args);
 
-  char *filename = _get_filename(img);
+  char *filename = _get_filename(img, format, fdata);
 
   if(p->api->response
      && !p->api->error_occured
@@ -836,7 +845,7 @@ static int _piwigo_api_get_image_id(dt_storage_piwigo_params_t *p,
               }
             }
             g_free(filename);
-            return _piwigo_api_get_image_id(p, img, page+1);
+            return _piwigo_api_get_image_id(p, img, format, fdata, page+1);
           }
         }
       }
@@ -991,9 +1000,13 @@ void gui_init(dt_imageio_module_storage_t *self)
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   ui->server_entry = GTK_ENTRY
     (dt_action_entry_new
-     (DT_ACTION(self), N_("server"),
-      G_CALLBACK(_piwigo_server_entry_changed), ui,
-      _("the server name\ndefault protocol is https\nspecify http:// if non secure server"),
+     (DT_ACTION(self),
+      N_("server"),
+      G_CALLBACK(_piwigo_server_entry_changed),
+      ui,
+      _("the server name\n"
+        "default protocol is https\n"
+        "specify insecure protocol http:// explicitly if that protocol is required"),
       last_account ? last_account->server : "piwigo.com"));
 
   gtk_widget_set_hexpand(GTK_WIDGET(ui->server_entry), TRUE);
@@ -1006,9 +1019,11 @@ void gui_init(dt_imageio_module_storage_t *self)
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   ui->user_entry = GTK_ENTRY
     (dt_action_entry_new
-     (DT_ACTION(self), N_("user"),
-      G_CALLBACK(_piwigo_entry_changed), ui,
-      _("the server name\ndefault protocol is https\nspecify http:// if non secure server"),
+     (DT_ACTION(self),
+      N_("user"),
+      G_CALLBACK(_piwigo_entry_changed),
+      ui,
+      NULL,
       last_account ? last_account->username : ""));
 
   gtk_widget_set_hexpand(GTK_WIDGET(ui->user_entry), TRUE);
@@ -1181,7 +1196,7 @@ int store(dt_imageio_module_storage_t *self,
 
   dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
 
-  char *filename = _get_filename(img);
+  char *filename = _get_filename(img, format, fdata);
   gchar *fname = g_strconcat(darktable.tmpdir, "/", filename, NULL);
 
   if((metadata->flags & DT_META_METADATA) && !(metadata->flags & DT_META_CALCULATED))
@@ -1251,11 +1266,11 @@ int store(dt_imageio_module_storage_t *self,
 
     if(status)
     {
-      int pwg_image_id = NO_IMGID;
+      int pwg_image_id = -1;
 
       if(conflict_action != DT_PIWIGO_CONFLICT_NOTHING)
       {
-        pwg_image_id = _piwigo_api_get_image_id(p, img, 0);
+        pwg_image_id = _piwigo_api_get_image_id(p, img, format, fdata, 0);
       }
 
       if(pwg_image_id >= 0 && conflict_action == DT_PIWIGO_CONFLICT_METADATA)

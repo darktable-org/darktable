@@ -636,8 +636,10 @@ void dt_interpolation_compute_pixel4c(const struct dt_interpolation *itor,
   int ix = (int)x;
   int iy = (int)y;
 
-  if(ix >= (itor->width - 1) && iy >= (itor->width - 1) && ix < (width - itor->width)
-     && iy < (height - itor->width))
+  if(ix >= (itor->width - 1)
+    && iy >= (itor->width - 1)
+    && ix < (width - itor->width)
+    && iy < (height - itor->width))
   {
     // Inside image boundary case
 
@@ -714,8 +716,7 @@ void dt_interpolation_compute_pixel4c(const struct dt_interpolation *itor,
   }
   else
   {
-    dt_print(DT_DEBUG_PIPE, "[dt_interpolation_compute_pixel4c] problem at (%i,%i) in %xx%i",
-      ix, iy, width, height);
+    // data for *out has no valid *in location so just set to zero.
     for_each_channel(c,aligned(out))
       out[c] = 0.0f;
   }
@@ -1364,6 +1365,8 @@ int dt_interpolation_resample_cl(const struct dt_interpolation *itor,
   // store resampling plan to device memory hindex, vindex, hkernel,
   // vkernel: (v|h)maxtaps might be too small, so store a bit more
   // than needed
+  err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+
   dev_hindex = dt_opencl_copy_host_to_device_constant
     (devid, sizeof(int) * width * (hmaxtaps + 1), hindex);
   if(dev_hindex == NULL) goto error;

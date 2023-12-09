@@ -107,12 +107,12 @@ static const char *avif_get_compression_string(enum avif_compression_type_e comp
   switch(comp)
   {
     case AVIF_COMP_LOSSLESS:
-      return "lossless";
+      return N_("lossless");
     case AVIF_COMP_LOSSY:
-      return "lossy";
+      return N_("lossy");
+    default:
+      return N_("unknown");
   }
-
-  return "unknown";
 }
 
 /* Lookup table for tiling choices */
@@ -156,6 +156,8 @@ void init(dt_imageio_module_format_t *self)
                                 dt_imageio_avif_t,
                                 bit_depth,
                                 int);
+
+  /* color mode */
   luaA_enum(darktable.lua_state.state,
             enum avif_color_mode_e);
   luaA_enum_value(darktable.lua_state.state,
@@ -165,6 +167,13 @@ void init(dt_imageio_module_format_t *self)
                   enum avif_color_mode_e,
                   AVIF_COLOR_MODE_GRAYSCALE);
 
+  dt_lua_register_module_member(darktable.lua_state.state,
+                                self,
+                                dt_imageio_avif_t,
+                                color_mode,
+                                enum avif_color_mode_e);
+
+  /* tiling */
   luaA_enum(darktable.lua_state.state,
             enum avif_tiling_e);
   luaA_enum_value(darktable.lua_state.state,
@@ -173,6 +182,12 @@ void init(dt_imageio_module_format_t *self)
   luaA_enum_value(darktable.lua_state.state,
                   enum avif_tiling_e,
                   AVIF_TILING_OFF);
+
+  dt_lua_register_module_member(darktable.lua_state.state,
+                                self,
+                                dt_imageio_avif_t,
+                                tiling,
+                                enum avif_tiling_e);
 
   /* compression type */
   luaA_enum(darktable.lua_state.state,
@@ -229,9 +244,8 @@ int write_image(struct dt_imageio_module_data_t *data,
   const size_t width = d->global.width;
   const size_t height = d->global.height;
   const size_t bit_depth = d->bit_depth > 0 ? d->bit_depth : 0;
-  enum avif_color_mode_e color_mode = d->color_mode;
 
-  switch(color_mode)
+  switch(d->color_mode)
   {
     case AVIF_COLOR_MODE_RGB:
       switch(d->compression_type)
@@ -299,7 +313,7 @@ int write_image(struct dt_imageio_module_data_t *data,
     case DT_COLORSPACE_SRGB:
       image->colorPrimaries = AVIF_COLOR_PRIMARIES_BT709;
       image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_SRGB;
-      image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT470BG;
+      image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT601;
       break;
     case DT_COLORSPACE_REC709:
       image->colorPrimaries = AVIF_COLOR_PRIMARIES_BT709;
@@ -803,7 +817,7 @@ void gui_init(dt_imageio_module_format_t *self)
   /*
    * Color mode combo box
    */
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->color_mode, self, NULL, N_("b&w as grayscale"),
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->color_mode, self, NULL, N_("B&W as grayscale"),
                                _("saving as grayscale will reduce the size for black & white images"), color_mode,
                                color_mode_changed, self, N_("no"), N_("yes"));
 
@@ -817,8 +831,8 @@ void gui_init(dt_imageio_module_format_t *self)
    */
   DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->tiling, self, NULL, N_("tiling"),
                                _("tile an image into segments.\n\n"
-                                 "makes encoding faster. the impact on quality reduction "
-                                 "is negligible, but increases the file size."),
+                                 "makes encoding faster, but increases the file size. "
+                                 "the loss of image quality is negligible."),
                                tiling, tiling_changed, self,
                                N_("on"), N_("off"));
   gtk_box_pack_start(GTK_BOX(self->widget),
@@ -866,13 +880,9 @@ void gui_init(dt_imageio_module_format_t *self)
   gtk_widget_set_tooltip_text(gui->quality,
           _("the quality of an image, less quality means fewer details.\n"
             "\n"
-            "the following applies only to lossy setting.\n"
+            "pixel format is controlled by quality:\n"
             "\n"
-            "pixel format based on quality:\n"
-            "\n"
-            "    91 - 100 -> YUV444\n"
-            "    81 -  90 -> YUV422\n"
-            "     5 -  80 -> YUV420\n"));
+            "5-80: YUV420, 81-90: YUV422, 91-100: YUV444"));
 
   dt_bauhaus_slider_set(gui->quality, quality);
 

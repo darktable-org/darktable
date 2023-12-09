@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "colorspace.h"
 #include "common.h"
 
 typedef struct dt_iop_sigmoid_value_order_t
@@ -182,7 +183,10 @@ sigmoid_loglogistic_per_channel (read_only image2d_t in,
                                  const float film_fog,
                                  const float contrast_power,
                                  const float skew_power,
-                                 const float hue_preservation)
+                                 const float hue_preservation,
+                                 constant const float *const pipe_to_base,
+                                 constant const float *const base_to_rendering,
+                                 constant const float *const rendering_to_pipe)
 {
   const unsigned int x = get_global_id(0);
   const unsigned int y = get_global_id(1);
@@ -192,8 +196,13 @@ sigmoid_loglogistic_per_channel (read_only image2d_t in,
   float4 i = read_imagef(in, sampleri, (int2)(x, y));
   float alpha = i.w;
 
+  i = matrix_product_float4(i, pipe_to_base);
+
   // Force negative values to zero
   i = _desaturate_negative_values(i);
+
+  // Convert to rendering primaries
+  i = matrix_product_float4(i, base_to_rendering);
   float pix_array[3] = {i.x, i.y, i.z};
 
   i = _generalized_loglogistic_sigmoid_vector(i, white_target, paper_exp, film_fog, contrast_power, skew_power);
@@ -205,6 +214,8 @@ sigmoid_loglogistic_per_channel (read_only image2d_t in,
   _preserve_hue_and_energy(pix_array, per_channel, pixel_value_order, hue_preservation);
 
   i.xyz = (float3)(pix_array[0], pix_array[1], pix_array[2]);
+  i = matrix_product_float4(i, rendering_to_pipe);
+
   // Copy over the alpha channel
   i.w = alpha;
 

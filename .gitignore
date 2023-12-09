@@ -24,3 +24,4 @@ output*png
 *.code-workspace
 Brewfile.lock.json
 CMakeLists.txt.user
+workspace/

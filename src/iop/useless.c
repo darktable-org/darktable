@@ -29,6 +29,15 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
 
+// Silence the compiler during dev of new module as we often
+// need to have temporary unfinished code that will hurt the
+// compiler.
+// THIS MUST be REMOVED before submitting a PR.
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#pragma GCC diagnostic ignored "-Wunused-function"
+
+
 // This is an example implementation of an image operation module that
 // does nothing useful.  It demonstrates how the different functions
 // work together. To build your own module, take all of the functions
@@ -195,7 +204,7 @@ int legacy_params(dt_iop_module_t *self,
 
   // do migration from 2 to 3 (one step at a time, this legacy_params
   // update is incremental and will be done as many time as needed to
-  // bring the parameters to the lastes version of the module.
+  // bring the parameters to the latest version of the module.
 
   if(old_version == 2)
   {
@@ -273,10 +282,10 @@ void tiling_callback(struct dt_iop_module_t *self,
 #if 0
 /** modify pixel coordinates according to the pixel shifts the module
  * applies (optional, per-pixel ops don't need) */
-int distort_transform(dt_iop_module_t *self,
-                      dt_dev_pixelpipe_iop_t *piece,
-                      float *points,
-                      const size_t points_count)
+gboolean distort_transform(dt_iop_module_t *self,
+                           dt_dev_pixelpipe_iop_t *piece,
+                           float *points,
+                           const size_t points_count)
 {
   const dt_iop_useless_params_t *d = (dt_iop_useless_params_t *)piece->data;
 
@@ -285,7 +294,7 @@ int distort_transform(dt_iop_module_t *self,
 
   // nothing to be done if parameters are set to neutral values (no pixel shifts)
   if(adjx == 0.0 && adjy == 0.0)
-    return 1;
+    return TRUE;
 
   // apply the coordinate adjustment to each provided point
   for(size_t i = 0; i < points_count * 2; i += 2)
@@ -294,16 +303,16 @@ int distort_transform(dt_iop_module_t *self,
     points[i + 1] -= adjy;
   }
 
-  return 1;  // return 1 on success, 0 if one or more points could not be transformed
+  return TRUE;  // return TRUE on success, FALSE if one or more points could not be transformed
 }
 #endif
 
 #if 0
 /** undo pixel shifts the module applies (optional, per-pixel ops don't need this) */
-int distort_backtransform(dt_iop_module_t *self,
-                          dt_dev_pixelpipe_iop_t *piece,
-                          float *points,
-                          const size_t points_count)
+gboolean distort_backtransform(dt_iop_module_t *self,
+                               dt_dev_pixelpipe_iop_t *piece,
+                               float *points,
+                               const size_t points_count)
 {
   const dt_iop_useless_params_t *d = (dt_iop_useless_params_t *)piece->data;
 
@@ -311,7 +320,7 @@ int distort_backtransform(dt_iop_module_t *self,
   const float adjy = 0.0;
 
   // nothing to be done if parameters are set to neutral values (no pixel shifts)
-  if(adjx == 0.0 && adjy == 0.0) return 1;
+  if(adjx == 0.0 && adjy == 0.0) return TRUE;
 
   // apply the inverse coordinate adjustment to each provided point
   for(size_t i = 0; i < points_count * 2; i += 2)
@@ -320,7 +329,7 @@ int distort_backtransform(dt_iop_module_t *self,
     points[i + 1] += adjy;
   }
 
-  return 1;  // return 1 on success, 0 if one or more points could not be back-transformed
+  return TRUE;  // return TRUE on success, FALSE if one or more points could not be back-transformed
 }
 #endif
 

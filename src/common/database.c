@@ -48,7 +48,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 44
+#define CURRENT_DATABASE_VERSION_LIBRARY 47
 #define CURRENT_DATABASE_VERSION_DATA    10
 
 // #define USE_NESTED_TRANSACTIONS
@@ -1292,7 +1292,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
               iop_order_list = g_list_delete_link(iop_order_list, s);
             }
 
-            // skip all multipe instances
+            // skip all multiple instances
             n = e;
             do
             {
@@ -2551,6 +2551,71 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     new_version = 44;
   }
+  else if(version == 44)
+  {
+    sqlite3_exec(db->handle, "PRAGMA foreign_keys = OFF", NULL, NULL, NULL);
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    // As we cannot rename a table if we have FOREIGN KEY or CASCADE
+    // we do a workaround by creating a tmp table and populate data twice.
+
+    TRY_EXEC("CREATE TABLE tmp_history_hash"
+                " (imgid INTEGER PRIMARY KEY,"
+                "  basic_hash BLOB, auto_hash BLOB, current_hash BLOB, mipmap_hash BLOB,"
+                "  FOREIGN KEY(imgid) REFERENCES images(id) ON UPDATE CASCADE ON DELETE CASCADE)",
+              "[init] can't create table tmp_history_hash\n");
+
+    TRY_EXEC("INSERT INTO tmp_history_hash"
+                " SELECT imgid, basic_hash, auto_hash, current_hash, mipmap_hash"
+                " FROM history_hash",
+              "[init] can't populate table tmp_history_hash\n");
+
+    TRY_EXEC("DROP TABLE history_hash",
+              "[init] can't drop table history_hash\n");
+
+    TRY_EXEC("CREATE TABLE history_hash"
+                " (imgid INTEGER PRIMARY KEY,"
+                "  basic_hash BLOB, auto_hash BLOB, current_hash BLOB, mipmap_hash BLOB,"
+                "  FOREIGN KEY(imgid) REFERENCES images(id) ON UPDATE CASCADE ON DELETE CASCADE)",
+              "[init] can't create new table history_hash\n");
+
+    TRY_EXEC("INSERT INTO history_hash"
+                " SELECT imgid, basic_hash, auto_hash, current_hash, mipmap_hash"
+                " FROM tmp_history_hash",
+              "[init] can't populate table history_hash\n");
+
+    TRY_EXEC("DROP TABLE tmp_history_hash",
+              "[init] can't drop table tmp_history_hash\n");
+
+    TRY_EXEC("ALTER TABLE images ADD COLUMN thumb_timestamp INTEGER default -1",
+             "[init] can't add fullthumb_hash column\n");
+
+    TRY_EXEC("ALTER TABLE images ADD COLUMN thumb_maxmip INTEGER default 0",
+             "[init] can't add fullthumb_maxmip column\n");
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    sqlite3_exec(db->handle, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
+
+    new_version = 45;
+  }
+  else if(version == 45)
+  {
+    TRY_EXEC("DROP TABLE IF EXISTS legacy_presets",
+              "[init] can't drop legacy_presets\n");
+
+    new_version = 46;
+  }
+  else if(version == 46)
+  {
+    TRY_EXEC("CREATE TABLE harmony_guide"
+             " (imgid INTEGER PRIMARY KEY,"
+             "  type INTEGER, rotation INTEGER, width INTEGER,"
+             "  FOREIGN KEY(imgid) REFERENCES images(id)"
+             "    ON UPDATE CASCADE ON DELETE CASCADE)",
+             "[init] can't create table harmony_guide\n");
+
+    new_version = 47;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -2917,6 +2982,7 @@ static void _create_library_schema(dt_database_t *db)
       "  history_end INTEGER, position INTEGER, aspect_ratio REAL, exposure_bias REAL,"
       "  import_timestamp INTEGER DEFAULT -1, change_timestamp INTEGER DEFAULT -1, "
       "  export_timestamp INTEGER DEFAULT -1, print_timestamp INTEGER DEFAULT -1, "
+      "  thumb_timestamp INTEGER DEFAULT -1, thumb_maxmip INTEGER DEFAULT 0, "
       "FOREIGN KEY(maker_id) REFERENCES makers(id) ON DELETE CASCADE ON UPDATE CASCADE, "
       "FOREIGN KEY(model_id) REFERENCES models(id) ON DELETE CASCADE ON UPDATE CASCADE, "
       "FOREIGN KEY(lens_id) REFERENCES lens(id) ON DELETE CASCADE ON UPDATE CASCADE, "
@@ -2989,7 +3055,7 @@ static void _create_library_schema(dt_database_t *db)
     (db->handle, "CREATE TABLE main.history_hash"
      " (imgid INTEGER PRIMARY KEY,"
      "  basic_hash BLOB, auto_hash BLOB, current_hash BLOB,"
-     "  mipmap_hash BLOB, fullthumb_hash BLOB, fullthumb_maxmip INTEGER,"
+     "  mipmap_hash BLOB,"
      "  FOREIGN KEY(imgid) REFERENCES images(id) ON UPDATE CASCADE ON DELETE CASCADE)",
      NULL, NULL, NULL);
 
@@ -2998,6 +3064,15 @@ static void _create_library_schema(dt_database_t *db)
                NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE INDEX main.metadata_index_key ON meta_data (key)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE INDEX main.metadata_index_value ON meta_data (value)", NULL, NULL, NULL);
+
+  sqlite3_exec
+    (db->handle,
+     "CREATE TABLE harmony_guide"
+     " (imgid INTEGER PRIMARY KEY,"
+     "  type INTEGER, rotation INTEGER, width INTEGER,"
+     "  FOREIGN KEY(imgid) REFERENCES images(id)"
+     "    ON UPDATE CASCADE ON DELETE CASCADE)",
+     NULL, NULL, NULL);
 
   // Some triggers to remove possible dangling refs in makers/models/lens/cameras
   sqlite3_exec
@@ -3040,7 +3115,7 @@ static void _create_library_schema(dt_database_t *db)
      " END",
      NULL, NULL, NULL);
 
-  // Finaly some views to ease walking the data
+  // Finally some views to ease walking the data
 
   // NOTE: datetime_taken is in nano-second since "0001-01-01 00:00:00"
   sqlite3_exec
@@ -3061,7 +3136,6 @@ static void _create_library_schema(dt_database_t *db)
      "   AND mi.film_id = fr.id"
      " ORDER BY normalized_camera, folders",
      NULL, NULL, NULL);
-
   // clang-format on
 }
 
@@ -3522,7 +3596,25 @@ static gboolean _upgrade_camera_table(const dt_database_t *db)
   return res;
 }
 
-void ask_for_upgrade(const gchar *dbname, const gboolean has_gui)
+static void _too_new_db_version(const gchar *dbname, const gboolean has_gui)
+{
+  if(!has_gui)
+    exit(1);
+
+  char *label_text = g_markup_printf_escaped
+    (_("the database schema version of\n"
+       "\n"
+       "<span style='italic'>%s</span>\n"
+       "\n"
+       "is too new for this build of darktable "
+       "(this means the database was created or upgraded by a newer darktable version)\n"),
+       dbname);
+  dt_gui_show_standalone_yes_no_dialog(_("darktable - too new db version"), label_text,
+                                         _("_quit darktable"), NULL);
+  g_free(label_text);
+}
+
+static void _ask_for_upgrade(const gchar *dbname, const gboolean has_gui)
 {
   // if there's no gui just leave
   if(!has_gui)
@@ -3666,11 +3758,11 @@ start:
   {
     dbname = dt_conf_get_string("database");
     if(!dbname)
-      snprintf(dbfilename_library, sizeof(dbfilename_library), "%s/library.db", datadir);
+      snprintf(dbfilename_library, sizeof(dbfilename_library), "%s%slibrary.db", datadir, G_DIR_SEPARATOR_S);
     else if(!strcmp(dbname, ":memory:"))
       g_strlcpy(dbfilename_library, dbname, sizeof(dbfilename_library));
     else if(dbname[0] != '/')
-      snprintf(dbfilename_library, sizeof(dbfilename_library), "%s/%s", datadir, dbname);
+      snprintf(dbfilename_library, sizeof(dbfilename_library), "%s%s%s", datadir, G_DIR_SEPARATOR_S, dbname);
     else
       g_strlcpy(dbfilename_library, dbname, sizeof(dbfilename_library));
   }
@@ -3686,7 +3778,7 @@ start:
   /* we also need a 2nd db with permanent data like presets, styles and tags */
   char dbfilename_data[PATH_MAX] = { 0 };
   if(load_data)
-    snprintf(dbfilename_data, sizeof(dbfilename_data), "%s/data.db", datadir);
+    snprintf(dbfilename_data, sizeof(dbfilename_data), "%s%sdata.db", datadir, G_DIR_SEPARATOR_S);
   else
     snprintf(dbfilename_data, sizeof(dbfilename_data), ":memory:");
 
@@ -3804,7 +3896,7 @@ start:
       sqlite3_finalize(stmt);
       if(db_version < CURRENT_DATABASE_VERSION_DATA)
       {
-        ask_for_upgrade(dbfilename_data, has_gui);
+        _ask_for_upgrade(dbfilename_data, has_gui);
 
         // older: upgrade
         if(!_upgrade_data_schema(db, db_version))
@@ -3818,7 +3910,7 @@ start:
           goto error;
         }
 
-        // upgrade was successfull, time for some housekeeping
+        // upgrade was successful, time for some housekeeping
         sqlite3_exec(db->handle, "VACUUM data", NULL, NULL, NULL);
         sqlite3_exec(db->handle, "ANALYZE data", NULL, NULL, NULL);
 
@@ -3826,6 +3918,7 @@ start:
       else if(db_version > CURRENT_DATABASE_VERSION_DATA)
       {
         // newer: bail out
+        _too_new_db_version(dbfilename_data, has_gui);
         dt_print(DT_DEBUG_ALWAYS,
                  "[init] database version of `%s' is too new for this build of darktable. aborting\n",
                  dbfilename_data);
@@ -3987,7 +4080,7 @@ start:
     sqlite3_finalize(stmt);
     if(db_version < CURRENT_DATABASE_VERSION_LIBRARY)
     {
-      ask_for_upgrade(dbfilename_library, has_gui);
+      _ask_for_upgrade(dbfilename_library, has_gui);
 
       // older: upgrade
       if(!_upgrade_library_schema(db, db_version))
@@ -4001,13 +4094,14 @@ start:
         goto error;
       }
 
-      // upgrade was successfull, time for some housekeeping
+      // upgrade was successful, time for some housekeeping
       sqlite3_exec(db->handle, "VACUUM main", NULL, NULL, NULL);
       sqlite3_exec(db->handle, "ANALYZE main", NULL, NULL, NULL);
     }
     else if(db_version > CURRENT_DATABASE_VERSION_LIBRARY)
     {
       // newer: bail out. it's better than what we did before: delete everything
+      _too_new_db_version(dbfilename_library, has_gui);
       dt_print(DT_DEBUG_ALWAYS,
                "[init] database version of `%s' is too new for this build of darktable. aborting\n",
                dbname);
@@ -4376,7 +4470,7 @@ void dt_database_perform_maintenance(const struct dt_database_t *db)
   if(calc_pre_size == 0)
   {
     dt_print(DT_DEBUG_SQL,
-             "[db maintenance] maintenance deemed unnecesary, performing only analyze.\n");
+             "[db maintenance] maintenance deemed unnecessary, performing only analyze.\n");
     DT_DEBUG_SQLITE3_EXEC(db->handle, "ANALYZE data", NULL, NULL, &err);
     ERRCHECK
     DT_DEBUG_SQLITE3_EXEC(db->handle, "ANALYZE main", NULL, NULL, &err);

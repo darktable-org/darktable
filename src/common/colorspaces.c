@@ -1898,7 +1898,7 @@ void dt_colorspaces_set_display_profile
   if(use_xatom)
   {
     GtkWidget *widget = (profile_type == DT_COLORSPACE_DISPLAY2)
-      ? darktable.develop->second_window.second_wnd
+      ? darktable.develop->second_wnd
       : dt_ui_center(darktable.gui->ui);
     GdkWindow *window = gtk_widget_get_window(widget);
     GdkScreen *screen = gtk_widget_get_screen(widget);
@@ -1929,7 +1929,7 @@ void dt_colorspaces_set_display_profile
   {
     CdWindow *window = cd_window_new();
     GtkWidget *center_widget = (profile_type == DT_COLORSPACE_DISPLAY2)
-                                   ? darktable.develop->second_window.second_wnd
+                                   ? darktable.develop->second_wnd
                                    : dt_ui_center(darktable.gui->ui);
     cd_window_get_profile(window, center_widget, NULL,
                           dt_colorspaces_get_display_profile_colord_callback,
@@ -1940,7 +1940,7 @@ void dt_colorspaces_set_display_profile
 #elif defined GDK_WINDOWING_QUARTZ
 #if 0
   GtkWidget *widget = (profile_type == DT_COLORSPACE_DISPLAY2)
-    ? darktable.develop->second_window.second_wnd
+    ? darktable.develop->second_wnd
     : dt_ui_center(darktable.gui->ui);
   GdkScreen *screen = gtk_widget_get_screen(widget);
   if(screen == NULL) screen = gdk_screen_get_default();
@@ -2090,6 +2090,7 @@ dt_colorspaces_color_profile_type_t dt_colorspaces_cicp_to_type
           switch(cicp->matrix_coefficients)
           {
             case DT_CICP_MATRIX_COEFFICIENTS_IDENTITY: /* support RGB (4:4:4 or lossless) */
+            case DT_CICP_MATRIX_COEFFICIENTS_REC709: /* support incorrectly tagged files */
             case DT_CICP_MATRIX_COEFFICIENTS_SYCC:
             case DT_CICP_MATRIX_COEFFICIENTS_REC601: /* support equivalents just in case of mistagging */
             case DT_CICP_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL: /* support incorrectly tagged files */
@@ -2212,6 +2213,9 @@ dt_colorspaces_color_profile_type_t dt_colorspaces_cicp_to_type
           switch(cicp->matrix_coefficients)
           {
             case DT_CICP_MATRIX_COEFFICIENTS_IDENTITY: /* support RGB (4:4:4 or lossless) */
+            case DT_CICP_MATRIX_COEFFICIENTS_REC709:
+            case DT_CICP_MATRIX_COEFFICIENTS_SYCC:
+            case DT_CICP_MATRIX_COEFFICIENTS_REC601:
             case DT_CICP_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL:
             case DT_CICP_MATRIX_COEFFICIENTS_UNSPECIFIED:
               return DT_COLORSPACE_PQ_P3;
@@ -2227,6 +2231,9 @@ dt_colorspaces_color_profile_type_t dt_colorspaces_cicp_to_type
           switch(cicp->matrix_coefficients)
           {
             case DT_CICP_MATRIX_COEFFICIENTS_IDENTITY: /* support RGB (4:4:4 or lossless) */
+            case DT_CICP_MATRIX_COEFFICIENTS_REC709:
+            case DT_CICP_MATRIX_COEFFICIENTS_SYCC:
+            case DT_CICP_MATRIX_COEFFICIENTS_REC601:
             case DT_CICP_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL:
             case DT_CICP_MATRIX_COEFFICIENTS_UNSPECIFIED:
               return DT_COLORSPACE_HLG_P3;
@@ -2242,6 +2249,9 @@ dt_colorspaces_color_profile_type_t dt_colorspaces_cicp_to_type
           switch(cicp->matrix_coefficients)
           {
             case DT_CICP_MATRIX_COEFFICIENTS_IDENTITY: /* support RGB (4:4:4 or lossless) */
+            case DT_CICP_MATRIX_COEFFICIENTS_REC709:
+            case DT_CICP_MATRIX_COEFFICIENTS_SYCC:
+            case DT_CICP_MATRIX_COEFFICIENTS_REC601:
             case DT_CICP_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL:
             case DT_CICP_MATRIX_COEFFICIENTS_UNSPECIFIED:
               return DT_COLORSPACE_DISPLAY_P3;

@@ -516,8 +516,8 @@ uint16_t calculate_clut_haldclut(dt_iop_lut3d_params_t *const p, const char *con
            png.height, png.color_type, png.bit_depth);
   if(png.bit_depth !=8 && png.bit_depth != 16)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[lut3d] png bit-depth %d not supported\n", png.bit_depth);
-    dt_control_log(_("png bit-depth %d not supported"), png.bit_depth);
+    dt_print(DT_DEBUG_ALWAYS, "[lut3d] png bit depth %d is not supported\n", png.bit_depth);
+    dt_control_log(_("png bit depth %d is not supported"), png.bit_depth);
     fclose(png.f);
     png_destroy_read_struct(&png.png_ptr, &png.info_ptr, NULL);
     return 0;

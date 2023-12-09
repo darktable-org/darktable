@@ -339,19 +339,22 @@ static void _signal_profile_user_changed(gpointer instance, uint8_t profile_type
   }
 }
 
-int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressure, int which)
+int mouse_moved(dt_iop_module_t *self,
+                const float pzx,
+                const float pzy,
+                const double pressure,
+                const int which,
+                const float zoom_scale)
 {
   int handled = 0;
   dt_iop_basicadj_gui_data_t *g = (dt_iop_basicadj_gui_data_t *)self->gui_data;
   if(g && g->draw_selected_region && g->button_down && self->enabled)
   {
-    float pzx, pzy;
-    dt_dev_get_pointer_zoom_pos(darktable.develop, x, y, &pzx, &pzy);
-    pzx += 0.5f;
-    pzy += 0.5f;
+    float wd, ht;
+    dt_dev_get_preview_size(self->dev, &wd, &ht);
 
-    g->posx_to = pzx * darktable.develop->preview_pipe->backbuf_width;
-    g->posy_to = pzy * darktable.develop->preview_pipe->backbuf_height;
+    g->posx_to = pzx * wd;
+    g->posy_to = pzy * ht;
 
     dt_control_queue_redraw_center();
 
@@ -361,7 +364,12 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   return handled;
 }
 
-int button_released(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state)
+int button_released(dt_iop_module_t *self,
+                    const float x,
+                    const float y,
+                    const int which,
+                    const uint32_t state,
+                    const float zoom_scale)
 {
   int handled = 0;
   dt_iop_basicadj_gui_data_t *g = (dt_iop_basicadj_gui_data_t *)self->gui_data;
@@ -393,8 +401,14 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
   return handled;
 }
 
-int button_pressed(struct dt_iop_module_t *self, double x, double y, double pressure, int which, int type,
-                   uint32_t state)
+int button_pressed(dt_iop_module_t *self,
+                   const float pzx,
+                   const float pzy,
+                   const double pressure,
+                   const int which,
+                   const int type,
+                   const uint32_t state,
+                   const float zoom_scale)
 {
   int handled = 0;
   dt_iop_basicadj_gui_data_t *g = (dt_iop_basicadj_gui_data_t *)self->gui_data;
@@ -408,13 +422,11 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
     }
     else if(which == 1)
     {
-      float pzx, pzy;
-      dt_dev_get_pointer_zoom_pos(darktable.develop, x, y, &pzx, &pzy);
-      pzx += 0.5f;
-      pzy += 0.5f;
+      float wd, ht;
+      dt_dev_get_preview_size(self->dev, &wd, &ht);
 
-      g->posx_from = g->posx_to = pzx * darktable.develop->preview_pipe->backbuf_width;
-      g->posy_from = g->posy_to = pzy * darktable.develop->preview_pipe->backbuf_height;
+      g->posx_from = g->posx_to = pzx * wd;
+      g->posy_from = g->posy_to = pzy * ht;
 
       g->button_down = 1;
 
@@ -425,35 +437,26 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
   return handled;
 }
 
-void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
-                     int32_t pointery)
+void gui_post_expose(dt_iop_module_t *self,
+                     cairo_t *cr,
+                     const float width,
+                     const float height,
+                     const float pointerx,
+                     const float pointery,
+                     const float zoom_scale)
 {
   dt_iop_basicadj_gui_data_t *g = (dt_iop_basicadj_gui_data_t *)self->gui_data;
   if(g == NULL || !self->enabled) return;
   if(!g->draw_selected_region || !g->button_down) return;
   if(g->posx_from == g->posx_to && g->posy_from == g->posy_to) return;
 
-  dt_develop_t *dev = darktable.develop;
-  const float wd = dev->preview_pipe->backbuf_width;
-  const float ht = dev->preview_pipe->backbuf_height;
-  const float zoom_y = dt_control_get_dev_zoom_y();
-  const float zoom_x = dt_control_get_dev_zoom_x();
-  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  const int closeup = dt_control_get_dev_closeup();
-  const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1 << closeup, 1);
-
   const float posx_from = fmin(g->posx_from, g->posx_to);
   const float posx_to = fmax(g->posx_from, g->posx_to);
   const float posy_from = fmin(g->posy_from, g->posy_to);
   const float posy_to = fmax(g->posy_from, g->posy_to);
 
-  cairo_save(cr);
   cairo_set_line_width(cr, 1.0 / zoom_scale);
   cairo_set_source_rgb(cr, .2, .2, .2);
-
-  cairo_translate(cr, width / 2.0, height / 2.0f);
-  cairo_scale(cr, zoom_scale, zoom_scale);
-  cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
 
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
 
@@ -464,8 +467,6 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   cairo_rectangle(cr, posx_from + 1.0 / zoom_scale, posy_from, (posx_to - posx_from) - 3. / zoom_scale,
                   (posy_to - posy_from) - 2. / zoom_scale);
   cairo_stroke(cr);
-
-  cairo_restore(cr);
 }
 
 void init_global(dt_iop_module_so_t *module)

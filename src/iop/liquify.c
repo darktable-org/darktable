@@ -540,12 +540,11 @@ typedef struct
   float from_scale;
   float to_scale;
   int transf_direction;
-  gboolean from_distort_transform;
 } distort_params_t;
 
-static void _distort_paths(const struct dt_iop_module_t *module,
-                           const distort_params_t *params,
-                           const dt_iop_liquify_params_t *p)
+static void _distort_paths_locked(const struct dt_iop_module_t *module,
+                                  const distort_params_t *params,
+                                  const dt_iop_liquify_params_t *p)
 {
   int len = 0;
 
@@ -603,35 +602,17 @@ static void _distort_paths(const struct dt_iop_module_t *module,
       break;
     }
   }
-  if(params->from_distort_transform)
+
+  if(params->transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
   {
-    if(params->transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
-    {
-      dt_dev_distort_transform_locked(params->develop, params->pipe, module->iop_order,
-                                      DT_DEV_TRANSFORM_DIR_BACK_EXCL, buffer, len);
-      dt_dev_distort_transform_locked(params->develop, params->pipe, module->iop_order,
-                                      DT_DEV_TRANSFORM_DIR_FORW_EXCL, buffer, len);
-    }
-    else
-      dt_dev_distort_transform_locked(params->develop, params->pipe, module->iop_order,
-                                      params->transf_direction, buffer, len);
+    dt_dev_distort_transform_locked(params->develop, params->pipe, module->iop_order,
+                                    DT_DEV_TRANSFORM_DIR_BACK_EXCL, buffer, len);
+    dt_dev_distort_transform_locked(params->develop, params->pipe, module->iop_order,
+                                    DT_DEV_TRANSFORM_DIR_FORW_EXCL, buffer, len);
   }
   else
-  {
-    if(params->transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
-    {
-      dt_dev_distort_transform_plus(params->develop, params->pipe,
-                                    module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_EXCL,
-                                    buffer, len);
-      dt_dev_distort_transform_plus(params->develop, params->pipe,
-                                    module->iop_order, DT_DEV_TRANSFORM_DIR_FORW_EXCL,
-                                    buffer, len);
-    }
-    else
-      dt_dev_distort_transform_plus(params->develop, params->pipe,
-                                    module->iop_order, params->transf_direction,
-                                    buffer, len);
-  }
+    dt_dev_distort_transform_locked(params->develop, params->pipe, module->iop_order,
+                                    params->transf_direction, buffer, len);
 
   // record back the transformed points
 
@@ -668,6 +649,15 @@ static void _distort_paths(const struct dt_iop_module_t *module,
   free(buffer);
 }
 
+static void _distort_paths_plus(const struct dt_iop_module_t *module,
+                                const distort_params_t *params,
+                                const dt_iop_liquify_params_t *p)
+{
+  dt_pthread_mutex_lock(&params->develop->history_mutex);
+  _distort_paths_locked(module, params, p);
+  dt_pthread_mutex_unlock(&params->develop->history_mutex);
+}
+
 static void distort_paths_raw_to_piece(const struct dt_iop_module_t *module,
                                        dt_dev_pixelpipe_t *pipe,
                                        const float roi_in_scale,
@@ -678,9 +668,11 @@ static void distort_paths_raw_to_piece(const struct dt_iop_module_t *module,
                                     pipe,
                                     pipe->iscale,
                                     roi_in_scale,
-                                    DT_DEV_TRANSFORM_DIR_BACK_EXCL,
-                                    from_distort_transform };
-  _distort_paths(module, &params, p);
+                                    DT_DEV_TRANSFORM_DIR_BACK_EXCL };
+  if(from_distort_transform)
+    _distort_paths_locked(module, &params, p);
+  else
+    _distort_paths_plus(module, &params, p);
 }
 
 // op-engine code
@@ -1292,11 +1284,11 @@ void modify_roi_in(struct dt_iop_module_t *module,
   cairo_region_destroy(roi_in_region);
 }
 
-static int _distort_xtransform(dt_iop_module_t *self,
-                               dt_dev_pixelpipe_iop_t *piece,
-                               float *const restrict points,
-                               const size_t points_count,
-                               const gboolean inverted)
+static gboolean _distort_xtransform(dt_iop_module_t *self,
+                                    dt_dev_pixelpipe_iop_t *piece,
+                                    float *const restrict points,
+                                    const size_t points_count,
+                                    const gboolean inverted)
 {
   const float scale = piece->iscale;
 
@@ -1339,7 +1331,7 @@ static int _distort_xtransform(dt_iop_module_t *self,
     _build_global_distortion_map(self, piece, scale, TRUE, &roi_in,
                                  &extent, inverted, &map);
 
-    if(map == NULL) return 0;
+    if(map == NULL) return FALSE;
 
     const int map_size =  extent.width * extent.height;
     const int x_last = extent.x + extent.width;
@@ -1376,7 +1368,7 @@ static int _distort_xtransform(dt_iop_module_t *self,
     dt_free_align((void *) map);
   }
 
-  return 1;
+  return TRUE;
 }
 
 static void start_drag(dt_iop_liquify_gui_data_t *g,
@@ -1397,18 +1389,18 @@ static gboolean is_dragging(const dt_iop_liquify_gui_data_t *g)
   return g->dragging.elem != NULL;
 }
 
-int distort_transform(dt_iop_module_t *self,
-                      dt_dev_pixelpipe_iop_t *piece,
-                      float *const restrict points,
-                      const size_t points_count)
+gboolean distort_transform(dt_iop_module_t *self,
+                           dt_dev_pixelpipe_iop_t *piece,
+                           float *const restrict points,
+                           const size_t points_count)
 {
   return _distort_xtransform(self, piece, points, points_count, TRUE);
 }
 
-int distort_backtransform(dt_iop_module_t *self,
-                          dt_dev_pixelpipe_iop_t *piece,
-                          float *const restrict points,
-                          const size_t points_count)
+gboolean distort_backtransform(dt_iop_module_t *self,
+                               dt_dev_pixelpipe_iop_t *piece,
+                               float *const restrict points,
+                               const size_t points_count)
 {
   return _distort_xtransform(self, piece, points, points_count, FALSE);
 }
@@ -1731,18 +1723,16 @@ static void set_line_width(cairo_t *cr,
                            dt_liquify_ui_width_enum_t w)
 {
   const double width = get_ui_width(scale, w);
-  cairo_set_line_width(cr, width * (dt_iop_color_picker_is_visible(darktable.develop) ? 0.5 : 1.0));
+  cairo_set_line_width(cr, width * (dt_iop_canvas_not_sensitive(darktable.develop) ? 0.5 : 1.0));
 }
 
 static gboolean detect_drag(const dt_iop_liquify_gui_data_t *g,
                             const double scale,
                             const float complex pt)
 {
-  const float pr_d = darktable.develop->preview_downsampling;
-
   // g->last_button1_pressed_pos is valid only while BUTTON1 is down
   return g->last_button1_pressed_pos != -1.0 &&
-    cabsf(pt - g->last_button1_pressed_pos) >= (GET_UI_WIDTH(MIN_DRAG) * pr_d / scale);
+    cabsf(pt - g->last_button1_pressed_pos) >= (GET_UI_WIDTH(MIN_DRAG) / scale);
 }
 
 static void update_warp_count(struct dt_iop_module_t *module)
@@ -1855,7 +1845,7 @@ static void _draw_paths(dt_iop_module_t *module,
 
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
 
-  const gboolean showhandle = dt_iop_color_picker_is_visible(darktable.develop) == FALSE;
+  const gboolean showhandle = dt_iop_canvas_not_sensitive(darktable.develop) == FALSE;
   // do not display any iterpolated items as slow when:
   //   - we are dragging (pan)
   //   - the button one is pressed
@@ -2732,19 +2722,13 @@ static void unselect_all(dt_iop_liquify_params_t *p)
       p->nodes[k].header.selected = 0;
 }
 
-static float get_zoom_scale(dt_develop_t *develop)
-{
-  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  const int closeup = dt_control_get_dev_closeup();
-  return dt_dev_get_zoom_scale(develop, zoom, 1<<closeup, 1);
-}
-
-void gui_post_expose(struct dt_iop_module_t *module,
+void gui_post_expose(dt_iop_module_t *module,
                      cairo_t *cr,
-                     const int32_t width,
-                     const int32_t height,
-                     const int32_t pointerx,
-                     const int32_t pointery)
+                     const float bb_width,
+                     const float bb_height,
+                     const float pointerx,
+                     const float pointery,
+                     const float zoom_scale)
 {
   dt_develop_t *develop = module->dev;
   dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *)module->gui_data;
@@ -2752,11 +2736,8 @@ void gui_post_expose(struct dt_iop_module_t *module,
   if(!g)
     return;
 
-  const float bb_width = develop->preview_pipe->backbuf_width;
-  const float bb_height = develop->preview_pipe->backbuf_height;
   const float iscale = develop->preview_pipe->iscale;
-  const float pr_d = develop->preview_downsampling;
-  const float scale = pr_d * MAX(bb_width, bb_height);
+  const float scale = MAX(bb_width, bb_height);
   if(bb_width < 1.0 || bb_height < 1.0)
     return;
 
@@ -2769,23 +2750,11 @@ void gui_post_expose(struct dt_iop_module_t *module,
   dt_iop_gui_leave_critical_section(module);
 
   // distort all points
-  dt_pthread_mutex_lock(&develop->preview_pipe_mutex);
   const distort_params_t d_params = { develop, develop->preview_pipe,
                                       iscale, 1.0 / scale,
-                                      DT_DEV_TRANSFORM_DIR_ALL,
-                                      FALSE };
-  _distort_paths(module, &d_params, &copy_params);
-  dt_pthread_mutex_unlock(&develop->preview_pipe_mutex);
+                                      DT_DEV_TRANSFORM_DIR_ALL };
+  _distort_paths_plus(module, &d_params, &copy_params);
 
-  // You're not supposed to understand this
-  const float zoom_x = dt_control_get_dev_zoom_x();
-  const float zoom_y = dt_control_get_dev_zoom_y();
-  const float zoom_scale = get_zoom_scale(develop);
-
-  // setup CAIRO coordinate system
-  cairo_translate(cr, 0.5 * width, 0.5 * height); // origin @ center of view
-  cairo_scale    (cr, zoom_scale, zoom_scale);    // the zoom
-  cairo_translate(cr, -bb_width * (0.5 + zoom_x), -bb_height * (0.5 + zoom_y));
   cairo_scale(cr, scale, scale);
 
   draw_paths(module, cr, 1.0 / (scale * zoom_scale), &copy_params);
@@ -2803,7 +2772,6 @@ void gui_focus(struct dt_iop_module_t *self,
     dt_collection_hint_message(darktable.collection);
     btn_make_radio_callback(NULL, NULL, self);
   }
-  self->dev->cropping.requester = (in && !darktable.develop->image_loading) ? self : NULL;
 }
 
 static void sync_pipe(struct dt_iop_module_t *module,
@@ -2838,19 +2806,13 @@ static void sync_pipe(struct dt_iop_module_t *module,
 */
 
 static void get_point_scale(struct dt_iop_module_t *module,
-                            const float x,
-                            const float y,
+                            const float pzx,
+                            const float pzy,
                             float complex *pt,
                             float *scale)
 {
-  const float pr_d = darktable.develop->preview_downsampling;
-
-  float pzx = 0.0f, pzy = 0.0f;
-  dt_dev_get_pointer_zoom_pos(darktable.develop, x, y, &pzx, &pzy);
-  pzx += 0.5f;
-  pzy += 0.5f;
-  const float wd = darktable.develop->preview_pipe->backbuf_width;
-  const float ht = darktable.develop->preview_pipe->backbuf_height;
+  float wd, ht;
+  dt_dev_get_preview_size(module->dev, &wd, &ht);
   float pts[2] = { pzx * wd, pzy * ht };
   dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe,
                                     module->iop_order,
@@ -2861,16 +2823,17 @@ static void get_point_scale(struct dt_iop_module_t *module,
   const float nx = pts[0] / darktable.develop->preview_pipe->iwidth;
   const float ny = pts[1] / darktable.develop->preview_pipe->iheight;
 
-  *scale = darktable.develop->preview_pipe->iscale * (pr_d * get_zoom_scale(module->dev));
-  *pt = (nx * darktable.develop->pipe->iwidth)
-    +  (ny * darktable.develop->pipe->iheight) * I;
+  *scale = darktable.develop->preview_pipe->iscale * (dt_dev_get_zoom_scale_full());
+  *pt = (nx * darktable.develop->full.pipe->iwidth)
+    +  (ny * darktable.develop->full.pipe->iheight) * I;
 }
 
-int mouse_moved(struct dt_iop_module_t *module,
-                 const double x,
-                 const double y,
-                 const double pressure,
-                 const int which)
+int mouse_moved(dt_iop_module_t *module,
+                const float x,
+                const float y,
+                const double pressure,
+                const int which,
+                const float zoom_scale)
 {
   dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *)module->gui_data;
   dt_iop_liquify_params_t *pa = (dt_iop_liquify_params_t *)module->params;
@@ -3084,8 +3047,7 @@ static void get_stamp_params(dt_iop_module_t *module,
   const dt_dev_pixelpipe_t *devpipe = darktable.develop->preview_pipe;
   const float iwd_min = MIN(devpipe->iwidth, devpipe->iheight);
   const float proc_wdht_min = MIN(devpipe->processed_width, devpipe->processed_height);
-  const float pr_d = darktable.develop->preview_downsampling;
-  const float scale = devpipe->iscale / (pr_d * get_zoom_scale(module->dev));
+  const float scale = devpipe->iscale / dt_dev_get_zoom_scale_full();
   const float im_scale = 0.09f * iwd_min * last_win_min * scale / proc_wdht_min;
 
   *radius = dt_conf_get_sanitize_float(CONF_RADIUS, 0.1f*im_scale,
@@ -3098,8 +3060,8 @@ static void get_stamp_params(dt_iop_module_t *module,
   add support for changing the radius and the strength vector for the temp node
  */
 int scrolled(struct dt_iop_module_t *module,
-             const double x,
-             const double y,
+             const float x,
+             const float y,
              const int up,
              const uint32_t state)
 {
@@ -3154,13 +3116,14 @@ int scrolled(struct dt_iop_module_t *module,
   return 0;
 }
 
-int button_pressed(struct dt_iop_module_t *module,
-                    const double x,
-                    const double y,
-                    const double pressure,
-                    const int which,
-                    const int type,
-                    const uint32_t state)
+int button_pressed(dt_iop_module_t *module,
+                   const float x,
+                   const float y,
+                   const double pressure,
+                   const int which,
+                   const int type,
+                   const uint32_t state,
+                   const float zoom_scale)
 {
   dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *)module->gui_data;
   dt_iop_liquify_params_t *p = (dt_iop_liquify_params_t *)module->params;
@@ -3252,7 +3215,7 @@ static void _start_new_shape(dt_iop_module_t *module)
   //  create initial shape at the center
   float complex pt = 0.0f;
   float scale = 1.0f;
-  get_point_scale(module, 0.5f * darktable.develop->width, 0.5f * darktable.develop->height, &pt, &scale);
+  get_point_scale(module, 0.5f * darktable.develop->full.width, 0.5f * darktable.develop->full.height, &pt, &scale);
   float radius = 0.0f, r = 1.0f, phi = 0.0f;
   get_stamp_params(module, &radius, &r, &phi);
   //  start a new path
@@ -3269,11 +3232,12 @@ static void _start_new_shape(dt_iop_module_t *module)
   g->last_hit = NOWHERE;
 }
 
-int button_released(struct dt_iop_module_t *module,
-                     const double x,
-                     const double y,
-                     const int which,
-                     const uint32_t state)
+int button_released(dt_iop_module_t *module,
+                    const float x,
+                    const float y,
+                    const int which,
+                    const uint32_t state,
+                    const float zoom_scale)
 {
   dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *)module->gui_data;
   dt_iop_liquify_params_t *p = (dt_iop_liquify_params_t *)module->params;

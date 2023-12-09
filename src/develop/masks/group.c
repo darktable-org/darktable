@@ -136,14 +136,12 @@ static int _group_events_mouse_moved(struct dt_iop_module_t *module,
                                      const float pzy,
                                      const double pressure,
                                      const int which,
+                                     const float zoom_scale,
                                      dt_masks_form_t *form,
                                      const int unused1,
                                      dt_masks_form_gui_t *gui,
                                      const int unused2)
 {
-  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  const int closeup = dt_control_get_dev_closeup();
-  const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 1);
   const float as = dt_masks_sensitive_dist(zoom_scale);
 
   // we first don't do anything if we are inside a scrolling session
@@ -168,7 +166,7 @@ static int _group_events_mouse_moved(struct dt_iop_module_t *module,
     if(!sel) return 0;
     int rep = 0;
     if(sel->functions)
-      rep = sel->functions->mouse_moved(module, pzx, pzy, pressure, which, sel, fpt->parentid,
+      rep = sel->functions->mouse_moved(module, pzx, pzy, pressure, which, zoom_scale, sel, fpt->parentid,
                                         gui, gui->group_edited);
     if(rep) return 1;
     // if a point is in state editing, then we don't want that another
@@ -200,8 +198,11 @@ static int _group_events_mouse_moved(struct dt_iop_module_t *module,
     float dist = FLT_MAX;
     inside = inside_border = inside_source = 0;
     near = -1;
-    const float xx = pzx * darktable.develop->preview_pipe->backbuf_width,
-                yy = pzy * darktable.develop->preview_pipe->backbuf_height;
+
+    float wd, ht;
+    dt_masks_get_image_size(&wd, &ht, NULL, NULL);
+    const float xx = pzx * wd,
+                yy = pzy * ht;
     if(frm && frm->functions && frm->functions->get_distance)
       frm->functions->get_distance(xx, yy, as, gui, pos, g_list_length(frm->points),
                                    &inside, &inside_border, &near, &inside_source, &dist);
@@ -222,7 +223,7 @@ static int _group_events_mouse_moved(struct dt_iop_module_t *module,
   if(sel && sel->functions)
   {
     gui->group_edited = gui->group_selected = sel_pos;
-    return sel->functions->mouse_moved(module, pzx, pzy, pressure, which,
+    return sel->functions->mouse_moved(module, pzx, pzy, pressure, which, zoom_scale,
                                        sel, sel_fpt->parentid, gui, gui->group_edited);
   }
 
@@ -327,12 +328,11 @@ static int _group_get_mask(const dt_iop_module_t *const module,
                                   &w[pos], &h[pos], &px[pos], &py[pos]);
       if(fpt->state & DT_MASKS_STATE_INVERSE)
       {
-        const double start = dt_get_wtime();
+        double start = dt_get_wtime();
         _inverse_mask(module, piece, sel, &bufs[pos], &w[pos], &h[pos], &px[pos], &py[pos]);
-        if(darktable.unmuted & DT_DEBUG_PERF)
-          dt_print(DT_DEBUG_MASKS,
-                   "[masks %s] inverse took %0.04f sec\n",
-                   sel->name, dt_get_wtime() - start);
+        dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+                 "[masks %s] inverse took %0.04f sec\n",
+                 sel->name, dt_get_lap_time(&start));
       }
       op[pos] = fpt->opacity;
       states[pos] = fpt->state;
@@ -362,7 +362,7 @@ static int _group_get_mask(const dt_iop_module_t *const module,
   // and we copy each buffer inside, row by row
   for(int i = 0; i < nb; i++)
   {
-    const double start = dt_get_wtime();
+    double start = dt_get_debug_wtime();
     if(states[i] & (DT_MASKS_STATE_UNION | DT_MASKS_STATE_SUM))
     {
       for(int y = 0; y < h[i]; y++)
@@ -443,10 +443,9 @@ static int _group_get_mask(const dt_iop_module_t *const module,
       }
     }
 
-    if(darktable.unmuted & DT_DEBUG_PERF)
-      dt_print(DT_DEBUG_MASKS,
-               "[masks %d] combine took %0.04f sec\n",
-               i, dt_get_wtime() - start);
+    dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+             "[masks %d] combine took %0.04f sec\n",
+             i, dt_get_lap_time(&start));
   }
 
   free(op);
@@ -715,8 +714,8 @@ static int _group_get_mask_roi(const dt_iop_module_t *const restrict module,
                                const dt_iop_roi_t *const roi,
                                float *const restrict buffer)
 {
-  double start = dt_get_wtime();
   if(!form->points) return 0;
+  double start = dt_get_debug_wtime();
   int nb_ok = 0;
 
   const int width = roi->width;
@@ -798,11 +797,9 @@ static int _group_get_mask_roi(const dt_iop_module_t *const restrict module,
           }
         }
 
-        if(darktable.unmuted & DT_DEBUG_PERF)
-          dt_print(DT_DEBUG_MASKS,
-                   "[masks %d] combine took %0.04f sec\n",
-                   nb_ok, dt_get_wtime() - start);
-        start = dt_get_wtime();
+        dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+                 "[masks %d] combine took %0.04f sec\n",
+                 nb_ok, dt_get_lap_time(&start));
 
         nb_ok++;
       }
@@ -832,15 +829,14 @@ int dt_masks_group_render_roi(dt_iop_module_t *module,
                               const dt_iop_roi_t *roi,
                               float *buffer)
 {
-  const double start = dt_get_wtime();
   if(!form) return 0;
 
+  double start = dt_get_debug_wtime();
   const int ok = dt_masks_get_mask_roi(module, piece, form, roi, buffer);
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-    dt_print(DT_DEBUG_MASKS,
-             "[masks] render all masks took %0.04f sec\n",
-             dt_get_wtime() - start);
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+           "[masks] render all masks took %0.04f sec\n",
+           dt_get_lap_time(&start));
   return ok;
 }
 

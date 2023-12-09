@@ -99,13 +99,22 @@ static const gchar *_supported_raw[]
         "orf", "ori", "pef", "raf", "raw", "rw2", "rwl", "sr2", "srf", "srw", "sti",
         "x3f", NULL };
 static const gchar *_supported_ldr[]
-    = { "bmp",  "bmq", "cap", "cine", "cs1",  "dcm", "gif", "gpr", "j2c",
-        "j2k",  "jng", "jp2", "jpc",  "jpeg", "jpg",
-        "miff", "mng", "pbm", "pfm",  "pgm",  "png", "pnm", "ppm",
-        "pxn",  "qtk", "rdc", "tif",  "tiff", "webp",
+    = { "bmp", "bmq", "cap", "cine", "cs1", "dcm",  "gif", "gpr", "j2c",  "j2k",
+        "jng", "jp2", "jpc", "jpeg", "jpg", "miff", "mng", "pbm", "pfm",  "pgm",
+        "png", "pnm", "ppm", "pxn",  "qoi", "qtk",  "rdc", "tif", "tiff", "webp",
         NULL };
 static const gchar *_supported_hdr[]
-    = { "avif", "exr", "hdr", "heic", "heif", "hif", "pfm", NULL };
+    = { "avif", "exr", "hdr", "heic", "heif", "hif", "jxl", "pfm", NULL };
+
+gboolean dt_imageio_is_raw_by_extension(const char *extension)
+{
+  const char *ext = g_str_has_prefix(extension, ".") ? extension + 1 : extension;
+  for(const char **i = _supported_raw; *i != NULL; i++)
+  {
+    if(!g_ascii_strncasecmp(ext, *i, strlen(*i))) return TRUE;
+  }
+  return FALSE;
+}
 
 // get the type of image from its extension
 dt_image_flags_t dt_imageio_get_type_from_extension(const char *extension)
@@ -769,6 +778,9 @@ int dt_imageio_export_with_flags(const dt_imgid_t imgid,
   const gboolean buf_is_downscaled =
     (thumbnail_export && dt_conf_get_bool("ui/performance"));
 
+  if(!thumbnail_export)
+    dt_set_backthumb_time(600.0); // make sure we don't interfere
+
   dt_mipmap_buffer_t buf;
   if(buf_is_downscaled)
     dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid,
@@ -1147,7 +1159,7 @@ int dt_imageio_export_with_flags(const dt_imgid_t imgid,
 
   // Check if all the metadata export flags are set for AVIF/EXR/JPEG XL/XCF (opt-in)
   //
-  // TODO: this is a workround as these formats do not support fine
+  // TODO: this is a workaround as these formats do not support fine
   // grained metadata control through dt_exif_xmp_attach_export()
   // below due to lack of exiv2 write support
   //
@@ -1241,6 +1253,8 @@ int dt_imageio_export_with_flags(const dt_imgid_t imgid,
                                   format_params, storage, storage_params);
   }
 
+  if(!thumbnail_export)
+    dt_set_backthumb_time(5.0);
   return 0; // success
 
 error:
@@ -1248,6 +1262,9 @@ error:
 error_early:
   dt_dev_cleanup(&dev);
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+
+  if(!thumbnail_export)
+    dt_set_backthumb_time(5.0);
   return 1;
 }
 

@@ -179,7 +179,7 @@ typedef int32_t dt_mask_id_t;
 // version of current performance configuration version
 // if you want to run an updated version of the performance configuration later
 // bump this number and make sure you have an updated logic in dt_configure_runtime_performance()
-#define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 15
+#define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 16
 #define DT_PERF_INFOSIZE 4096
 
 // every module has to define this:
@@ -299,6 +299,7 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_EXPOSE         = 1 << 26,
   DT_DEBUG_ALL            = 0xffffffff & ~DT_DEBUG_VERBOSE,
   DT_DEBUG_COMMON         = DT_DEBUG_OPENCL | DT_DEBUG_DEV | DT_DEBUG_MASKS | DT_DEBUG_PARAMS | DT_DEBUG_IMAGEIO | DT_DEBUG_PIPE,
+  DT_DEBUG_RESTRICT       = DT_DEBUG_VERBOSE | DT_DEBUG_PERF,
 } dt_debug_thread_t;
 
 typedef struct dt_codepath_t
@@ -316,6 +317,16 @@ typedef struct dt_sys_resources_t
   int level;
   gboolean tunehead;
 } dt_sys_resources_t;
+
+typedef struct dt_backthumb_t
+{
+  double time;
+  double idle;
+  gboolean service;
+  gboolean running;
+  gboolean capable;
+  int32_t mipsize;
+} dt_backthumb_t;
 
 typedef struct darktable_t
 {
@@ -378,6 +389,7 @@ typedef struct darktable_t
   GTimeZone *utc_tz;
   GDateTime *origin_gdt;
   struct dt_sys_resources_t dtresources;
+  struct dt_backthumb_t backthumbs;
 } darktable_t;
 
 typedef struct
@@ -395,14 +407,27 @@ int dt_init(int argc, char *argv[],
 
 void dt_get_sysresource_level();
 void dt_cleanup();
-void dt_print(dt_debug_thread_t thread,
-              const char *msg, ...)
-  __attribute__((format(printf, 2, 3)));
+
+/*
+  for performance reasons the debug log functions should only be called,
+  and their arguments evaluated, if flags in thread match what is requested.
+*/
+#define dt_debug_if(thread, func, ...)                            \
+  do{ if( ( (~DT_DEBUG_RESTRICT & (thread)) == DT_DEBUG_ALWAYS    \
+          || ~DT_DEBUG_RESTRICT & (thread) &  darktable.unmuted ) \
+         && !(DT_DEBUG_RESTRICT & (thread) & ~darktable.unmuted)) \
+        func(__VA_ARGS__); } while(0)
+
+#define dt_print_pipe(thread, ...) dt_debug_if(thread, dt_print_pipe_ext, __VA_ARGS__)
+#define dt_print(thread, ...) dt_debug_if(thread, dt_print_ext, __VA_ARGS__)
+#define dt_print_nts(thread, ...) dt_debug_if(thread, dt_print_nts_ext, __VA_ARGS__)
+
+void dt_print_ext(const char *msg, ...)
+  __attribute__((format(printf, 1, 2)));
 
 /* same as above but without time stamp : nts = no time stamp */
-void dt_print_nts(dt_debug_thread_t thread,
-                  const char *msg, ...)
-  __attribute__((format(printf, 2, 3)));
+void dt_print_nts_ext(const char *msg, ...)
+  __attribute__((format(printf, 1, 2)));
 
 int dt_worker_threads();
 size_t dt_get_available_mem();
@@ -549,24 +574,43 @@ static inline double dt_get_wtime(void)
   return time.tv_sec - 1290608000 + (1.0 / 1000000.0) * time.tv_usec;
 }
 
-static inline void dt_get_times(dt_times_t *t)
+static inline double dt_get_debug_wtime(void)
+{
+  return darktable.unmuted ? dt_get_wtime() : 0.0;
+}
+
+static inline double dt_get_lap_time(double *time)
+{
+  double prev = *time;
+  *time = dt_get_wtime();
+  return *time - prev;
+}
+
+static inline double dt_get_utime(void)
 {
   struct rusage ru;
-
   getrusage(RUSAGE_SELF, &ru);
+  return ru.ru_utime.tv_sec + ru.ru_utime.tv_usec * (1.0 / 1000000.0);
+}
+
+static inline double dt_get_lap_utime(double *time)
+{
+  double prev = *time;
+  *time = dt_get_utime();
+  return *time - prev;
+}
+
+static inline void dt_get_times(dt_times_t *t)
+{
   t->clock = dt_get_wtime();
-  t->user = ru.ru_utime.tv_sec + ru.ru_utime.tv_usec * (1.0 / 1000000.0);
+  t->user = dt_get_utime();
 }
 
 static inline void dt_get_perf_times(dt_times_t *t)
 {
   if(darktable.unmuted & DT_DEBUG_PERF)
   {
-    struct rusage ru;
-
-    getrusage(RUSAGE_SELF, &ru);
-    t->clock = dt_get_wtime();
-    t->user = ru.ru_utime.tv_sec + ru.ru_utime.tv_usec * (1.0 / 1000000.0);
+    dt_get_times(t);
   }
 }
 
@@ -729,6 +773,9 @@ static inline const GList *g_list_prev_wraparound(const GList *list)
 
 // checks internally for DT_DEBUG_MEMORY
 void dt_print_mem_usage();
+
+// try to start the backthumbs crawler
+void dt_start_backtumbs_crawler();
 
 void dt_configure_runtime_performance(const int version, char *config_info);
 // helper function which loads whatever image_to_load points to:

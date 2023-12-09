@@ -111,7 +111,10 @@ static void precalculate_scale(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
   self->modify_roi_in(self, piece, &roi_out, &roi_in);
 }
 
-int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
+gboolean distort_transform(dt_iop_module_t *self,
+                           dt_dev_pixelpipe_iop_t *piece,
+                           float *points,
+                           size_t points_count)
 {
   precalculate_scale(self, piece);
   dt_iop_scalepixels_data_t *d = piece->data;
@@ -122,11 +125,13 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
     points[i+1] /= d->y_scale;
   }
 
-  return 1;
+  return TRUE;
 }
 
-int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points,
-                          size_t points_count)
+gboolean distort_backtransform(dt_iop_module_t *self,
+                               dt_dev_pixelpipe_iop_t *piece,
+                               float *points,
+                               size_t points_count)
 {
   precalculate_scale(self, piece);
   dt_iop_scalepixels_data_t *d = piece->data;
@@ -137,7 +142,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
     points[i+1] *= d->y_scale;
   }
 
-  return 1;
+  return TRUE;
 }
 
 void distort_mask(

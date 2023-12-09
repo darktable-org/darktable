@@ -165,67 +165,85 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
    As there might be pipeline errors at the border we leave them alone.
    After these checks layers can be used later on.
 */
-  uint16_t layers = 3;  // default are rgb images
+  volatile uint16_t layers = 3;  // default are rgb images
 
-  if((d->global.height > 4) && (d->global.width > 4) && d->shortfile)
+  if(d->shortfile && (d->global.height > 4) && (d->global.width > 4))
   {
     layers = 1;    // let's now assume a grayscale
     if(d->bpp == 32 || (d->bpp == 16 && d->pixelformat))
     {
-      for(int y = 1; y < d->global.height-1; y++)
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(in_void, d) \
+  shared(layers) \
+  schedule(simd:static) \
+  collapse(2)
+#endif
+      for(int y = 1; y < d->global.height - 1; ++y)
       {
-        float *in = (float *)in_void + (size_t)4 * y * d->global.width;
-        for(int x = 1; x < d->global.width-1; x++, in += 4)
+        for(int x = 1; x < d->global.width - 1; ++x)
         {
-          if((fabsf(fmaxf(in[0], 0.001f) / fmaxf(in[1], 0.001f)) > 1.01f) ||
-             (fabsf(fmaxf(in[0], 0.001f) / fmaxf(in[2], 0.001f)) > 1.01f) ||
-             (fabsf(fmaxf(in[1], 0.001f) / fmaxf(in[2], 0.001f)) > 1.01f))
+          if(layers == 3) continue;
+          float *in = (float *)in_void + (size_t)(4 * (y * d->global.width + x));
+          if((fabsf(fmaxf(in[0], 0.001f) / fmaxf(in[1], 0.001f)) > 1.01f)
+             || (fabsf(fmaxf(in[0], 0.001f) / fmaxf(in[2], 0.001f)) > 1.01f)
+             || (fabsf(fmaxf(in[1], 0.001f) / fmaxf(in[2], 0.001f)) > 1.01f))
           {
             layers = 3;
-            goto checkdone;
           }
         }
       }
     }
     else if(d->bpp == 16 && !d->pixelformat)
     {
-      for(int y = 1; y < d->global.height-1; y++)
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(in_void, d) \
+  shared(layers) \
+  schedule(simd:static) \
+  collapse(2)
+#endif
+      for(int y = 1; y < d->global.height - 1; ++y)
       {
-        uint16_t *in = (uint16_t *)in_void + (size_t)4 * y * d->global.width;
-        for(int x = 1; x < d->global.width-1; x++, in += 4)
+        for(int x = 1; x < d->global.width - 1; ++x)
         {
-          if((abs(in[0] - in[1]) > 100) ||
-             (abs(in[0] - in[2]) > 100) ||
-             (abs(in[1] - in[2]) > 100))
+          if(layers == 3) continue;
+          uint16_t *in = (uint16_t *)in_void + (size_t)(4 * (y * d->global.width + x));
+          if((abs((int)in[0] - (int)in[1]) > 165) || (abs((int)in[0] - (int)in[2]) > 165)
+             || (abs((int)in[1] - (int)in[2]) > 165))
           {
             layers = 3;
-            goto checkdone;
           }
         }
       }
     }
     else // 8bpp
     {
-      for(int y = 1; y < d->global.height-1; y++)
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(in_void, d) \
+  shared(layers) \
+  schedule(simd:static) \
+  collapse(2)
+#endif
+      for(int y = 1; y < d->global.height - 1; ++y)
       {
-        uint8_t *in = (uint8_t *)in_void + (size_t)4 * y * d->global.width;
-        for(int x = 1; x < d->global.width-1; x++, in += 4)
+        for(int x = 1; x < d->global.width - 1; ++x)
         {
-          if((abs(in[0] - in[1]) > 5) ||
-             (abs(in[0] - in[2]) > 5) ||
-             (abs(in[1] - in[2]) > 5))
+          if(layers == 3) continue;
+          uint8_t *in = (uint8_t *)in_void + (size_t)(4 * (y * d->global.width + x));
+          if((abs((int)in[0] - (int)in[1]) > 2) || (abs((int)in[0] - (int)in[2]) > 2)
+             || (abs((int)in[1] - (int)in[2]) > 2))
           {
             layers = 3;
-            goto checkdone;
           }
         }
       }
     }
   }
 
-  checkdone:
-  if(layers == 1)
-    dt_control_log(_("will export as a grayscale image"));
+  if(d->shortfile && layers == 3)
+    dt_control_log(_("not a B&W image, will not export as grayscale"));
 
   TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, layers);
   TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, (uint16_t)d->bpp);
@@ -923,7 +941,7 @@ void gui_init(dt_imageio_module_format_t *self)
   gtk_widget_set_no_show_all(gui->compresslevel, TRUE);
 
   // shortfile option combo box
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->shortfiles, self, NULL, N_("b&w as grayscale"),
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->shortfiles, self, NULL, N_("B&W as grayscale"),
                                _("saving as grayscale will reduce the size for black & white images"), shortmode,
                                shortfile_combobox_changed, self, N_("no"), N_("yes"));
   dt_bauhaus_combobox_set_default(gui->shortfiles,

@@ -81,7 +81,7 @@ typedef struct dt_map_t
   int max_images_drawn;
   dt_map_box_t bbox;
   int time_out;
-  int timeout_event_source;
+  guint timeout_event_source;
   int thumbnail;
   dt_map_image_t *last_hovered_entry;
   struct
@@ -1359,7 +1359,7 @@ static void _view_map_changed_callback_delayed(gpointer user_data)
                                   * epsilon_factor * 0.01 * 0.000001 / R);
 
       dt_times_t start;
-      dt_get_times(&start);
+      dt_get_perf_times(&start);
       _dbscan(p, img_count, epsilon, min_images);
       dt_show_times(&start, "[map] dbscan calculation");
 

@@ -302,9 +302,6 @@ typedef struct dt_iop_module_t
   GtkWidget *guides_toggle;
   GtkWidget *guides_combo;
 
-  /** Last user action changed any module parameter via history? */
-  gboolean  write_input_hint;
-
   /** flag in case the module has troubles (bad settings) - if TRUE,
    * show a warning sign next to module label */
   gboolean has_trouble;
@@ -452,6 +449,7 @@ dt_iop_module_t *dt_iop_get_colorout_module(void);
 /* returns the iop-module found in list with the given name */
 dt_iop_module_t *dt_iop_get_module_from_list(GList *iop_list, const char *op);
 dt_iop_module_t *dt_iop_get_module(const char *op);
+dt_iop_module_so_t *dt_iop_get_module_so(const char *op);
 /** returns module with op + multi_priority or NULL if not found on the list,
     if multi_priority == -1 do not check for it */
 dt_iop_module_t *dt_iop_get_module_by_op_priority(GList *modules,
@@ -510,9 +508,6 @@ void dt_iop_connect_accels_multi(dt_iop_module_so_t *module);
 /** adds keyboard accels for all modules in the pipe */
 void dt_iop_connect_accels_all();
 
-/** get the module that accelerators are attached to for the current so */
-dt_iop_module_t *dt_iop_get_module_accel_curr(dt_iop_module_so_t *module);
-
 /** queue a refresh of the center (FULL), preview, or second-preview
  * windows, rerunning the pixelpipe from */
 /** the given module */
@@ -528,7 +523,7 @@ gboolean dt_iop_show_hide_header_buttons(dt_iop_module_t *module,
                                          const gboolean always_hide);
 
 /** add/remove mask indicator to iop module header */
-void add_remove_mask_indicator(dt_iop_module_t *module, gboolean add);
+void dt_iop_add_remove_mask_indicator(dt_iop_module_t *module, gboolean add);
 
 /** Set the trouble message for the module.  If non-empty, also flag
  ** the module as being in trouble; if empty or NULL, clear the
@@ -575,10 +570,16 @@ gboolean dt_iop_have_required_input_format(const int required_ch,
                                            const dt_iop_roi_t *const roi_in,
                                            const dt_iop_roi_t *const roi_out);
 
+// should module ignore mouse actions on gui elements, like handles or shapes?
+// returns true while color picker or snapshots active; show other elements dimmed
+gboolean dt_iop_canvas_not_sensitive(const struct dt_develop_t *dev);
+
 /* bring up module rename dialog */
 void dt_iop_gui_rename_module(dt_iop_module_t *module);
 
 void dt_iop_gui_changed(dt_action_t *action, GtkWidget *widget, gpointer data);
+
+gboolean dt_iop_module_is_skipped(const struct dt_develop_t *dev, const struct dt_iop_module_t *module);
 
 // copy the RGB channels of a pixel using nontemporal stores if
 // possible; includes the 'alpha' channel as well if faster due to

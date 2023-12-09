@@ -387,7 +387,7 @@ void dt_heal(const float *const src_buffer, float *dest_buffer, const float *con
 {
   if(ch != 4)
   {
-    dt_print(DT_DEBUG_ALWAYS,"dt_heal: full-color image required\n");
+    dt_print(DT_DEBUG_ALWAYS, "dt_heal: full-color image required\n");
     return;
   }
   const size_t subwidth = 4 * ((width+1)/2);  // round up to be able to handle odd widths

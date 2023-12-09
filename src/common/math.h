@@ -28,7 +28,7 @@
 // select speed vs accuracy tradeoff
 // supported values for EXP_POLY_DEGREE are 4 and 5
 #define EXP_POLY_DEGREE 4
-// supported vlaues for LOG_POLY_DEGREE are 5 and 6
+// supported values for LOG_POLY_DEGREE are 5 and 6
 #define LOG_POLY_DEGREE 5
 
 // work around missing standard math.h symbols
@@ -63,11 +63,6 @@
 // Nan-safe: NaN compares false and will result in mn
 #define CLAMPF(a, mn, mx) ((a) >= (mn) ? ((a) <= (mx) ? (a) : (mx)) : (mn))
 
-static inline float clamp_range_f(const float x, const float low, const float high)
-{
-  return x > high ? high : (x < low ? low : x);
-}
-
 //*****************
 // functions to check for non-finite values
 // with -ffinite-math-only, the compiler is free to elide checks based
@@ -85,22 +80,22 @@ static inline float clamp_range_f(const float x, const float low, const float hi
 #pragma GCC optimize ("-fno-finite-math-only")
 #endif
 
-static inline gboolean dt_isnan(float val)
+static inline gboolean dt_isnan(const float val)
 {
   return isnan(val);
 }
 
-static inline gboolean dt_isinf(float val)
+static inline gboolean dt_isinf(const float val)
 {
   return isinf(val);
 }
 
-static inline gboolean dt_isfinite(float val)
+static inline gboolean dt_isfinite(const float val)
 {
   return isfinite(val);
 }
 
-static inline gboolean dt_isnormal(float val)
+static inline gboolean dt_isnormal(const float val)
 {
   return isnormal(val);
 }
@@ -132,7 +127,7 @@ static inline float interpolatef(const float a, const float b, const float c)
 
 // Kahan summation algorithm
 #ifdef _OPENMP
-#pragma omp declare simd aligned(c)
+#pragma omp declare simd
 #endif
 static inline float Kahan_sum(const float m, float *const __restrict__ c, const float add)
 {
@@ -554,7 +549,7 @@ static inline void dt_vector_exp(const dt_aligned_pixel_t x, dt_aligned_pixel_t 
 // See http://www.devmaster.net/forums/showthread.php?p=43580 for the original
 static inline void dt_vector_exp2(const dt_aligned_pixel_t input, dt_aligned_pixel_t res)
 {
-  // clamp the exponent to the suported range
+  // clamp the exponent to the supported range
   static const dt_aligned_pixel_t lower_bound = { -126.99999f, -126.99999f, -126.99999f, -126.99999f };
   static const dt_aligned_pixel_t upper_bound = {  129.00000f,  129.00000f,  129.00000f,  129.00000f };
   static const dt_aligned_pixel_t v_half = { 0.5f, 0.5f, 0.5f, 0.5f };

@@ -618,7 +618,7 @@ static void process_clip(dt_dev_pixelpipe_iop_t *piece,
   const float *const in = (const float *const)ivoid;
   float *const out = (float *const)ovoid;
 
-  const int ch = (piece->pipe->dsc.filters) ? piece->colors : 1;
+  const int ch = piece->pipe->dsc.filters ? 1 : 4;
   const size_t msize = (size_t)roi_out->width * roi_out->height * ch;
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) \
@@ -639,7 +639,6 @@ static void process_visualize(dt_dev_pixelpipe_iop_t *piece,
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
   const uint32_t filters = piece->pipe->dsc.filters;
   const gboolean is_xtrans = (filters == 9u);
-  const gboolean is_linear = (filters == 0);
   const float *const in = (const float *const)ivoid;
   float *const out = (float *const)ovoid;
 
@@ -650,7 +649,7 @@ static void process_visualize(dt_dev_pixelpipe_iop_t *piece,
                            mclip * (cf[BLUE]  <= 0.0f ? 1.0f : cf[BLUE]),
                            mclip * (cf[GREEN] <= 0.0f ? 1.0f : cf[GREEN]) };
 
-  if(is_linear)
+  if(filters == 0)
   {
     const size_t npixels = roi_out->width * (size_t)roi_out->height;
 #ifdef _OPENMP
@@ -677,9 +676,10 @@ static void process_visualize(dt_dev_pixelpipe_iop_t *piece,
       for(int col = 0; col < roi_out->width; col++)
       {
         const size_t ox = (size_t)row * roi_out->width + col;
-        const int irow = row + roi_out->y;
-        const int icol = col + roi_out->x;
+        const int irow = row + roi_out->y - roi_in->y;
+        const int icol = col + roi_out->x - roi_in->x;
         const size_t ix = (size_t)irow * roi_in->width + icol;
+
         if((icol >= 0) && (irow >= 0) && (irow < roi_in->height) && (icol < roi_in->width))
         {
           const int c = is_xtrans ? FCxtrans(irow, icol, roi_in, xtrans) : FC(irow, icol, filters);
@@ -874,7 +874,14 @@ void commit_params(struct dt_iop_module_t *self,
 
   memcpy(d, p, sizeof(*p));
 
-  const gboolean linear = (piece->pipe->dsc.filters == 0);
+  const dt_image_t *img = &piece->pipe->image;
+  const uint32_t filters = img->buf_dsc.filters;
+  const gboolean rawprep = dt_image_is_rawprepare_supported(img);
+  const gboolean linear = (filters == 0);
+
+  // for non-raws always use clip
+  if(!rawprep)
+    d->mode = DT_IOP_HIGHLIGHTS_CLIP;
 
   /* no OpenCLfor
      1. DT_IOP_HIGHLIGHTS_INPAINT and DT_IOP_HIGHLIGHTS_SEGMENTS
@@ -971,10 +978,22 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
 
-  const uint32_t filters = self->dev->image_storage.buf_dsc.filters;
+  const dt_image_t *img = &self->dev->image_storage;
+  const uint32_t filters = img->buf_dsc.filters;
   const gboolean bayer = (filters != 0) && (filters != 9u);
+  const gboolean rawprep = dt_image_is_rawprepare_supported(img);
 
-  // Sanitize mode if wrongfully copied as part of the history of another pic or by preset / style
+  /* Sanitize mode if wrongfully
+   - copied as part of the history of another pic or by preset / style or
+   - by old edits that allowed opposed for non-raws
+  */
+  if(!rawprep)
+  {
+    p->mode = DT_IOP_HIGHLIGHTS_CLIP;
+    dt_bauhaus_combobox_set_from_value(g->mode, p->mode);
+    // not reported visually as so common and not relevant
+  }
+
   if((!bayer && (p->mode == DT_IOP_HIGHLIGHTS_LAPLACIAN))
     || ((filters == 0) && (p->mode == DT_IOP_HIGHLIGHTS_LCH
         || p->mode == DT_IOP_HIGHLIGHTS_INPAINT
@@ -1020,9 +1039,10 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
-  const gboolean monochrome = dt_image_is_monochrome(&self->dev->image_storage);
+  const dt_image_t *img = &self->dev->image_storage;
+  const gboolean monochrome = dt_image_is_monochrome(img);
   // enable this per default if raw or sraw if not real monochrome
-  self->default_enabled = dt_image_is_rawprepare_supported(&self->dev->image_storage) && !monochrome;
+  self->default_enabled = dt_image_is_rawprepare_supported(img) && !monochrome;
   self->hide_enable_button = monochrome;
   gtk_stack_set_visible_child_name(GTK_STACK(self->widget), !monochrome ? "default" : "notapplicable");
   dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
@@ -1039,23 +1059,38 @@ void reload_defaults(dt_iop_module_t *self)
   // we might be called from presets update infrastructure => there is no image
   if(!self->dev || !dt_is_valid_imgid(self->dev->image_storage.id)) return;
 
-  const gboolean monochrome = dt_image_is_monochrome(&self->dev->image_storage);
+  const dt_image_t *img = &self->dev->image_storage;
+  const gboolean monochrome = dt_image_is_monochrome(img);
+  const uint32_t filters = img->buf_dsc.filters;
+  const gboolean rawprep = dt_image_is_rawprepare_supported(img);
+  const gboolean sraw = rawprep && (filters == 0);
+  const gboolean xtrans = rawprep && (filters == 9u);
+
   // enable this per default if raw or sraw if not real monochrome
-  self->default_enabled = dt_image_is_rawprepare_supported(&self->dev->image_storage) && !monochrome;
+  self->default_enabled = rawprep && !monochrome;
   self->hide_enable_button = monochrome;
 
   if(self->widget)
     gtk_stack_set_visible_child_name(GTK_STACK(self->widget), !monochrome ? "default" : "notapplicable");
 
+  dt_iop_highlights_params_t *d = (dt_iop_highlights_params_t *)self->default_params;
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   if(g)
   {
     // rebuild the complete menu depending on sensor type and possibly active but obsolete mode
-    const uint32_t filters = self->dev->image_storage.buf_dsc.filters;
     dt_bauhaus_combobox_clear(g->mode);
 
     dt_introspection_type_enum_tuple_t *values = self->so->get_f("mode")->Enum.values;
-    if(filters == 0)
+
+    if(!rawprep)
+    {
+      dt_bauhaus_combobox_add_introspection(g->mode, NULL, values, DT_IOP_HIGHLIGHTS_CLIP,
+                                                                   DT_IOP_HIGHLIGHTS_OPPOSED);
+      // As we only have clip available we remove all other options
+      for(int i = 0; i < 6; i++) dt_bauhaus_combobox_remove_at(g->mode, 1);
+      d->mode = DT_IOP_HIGHLIGHTS_CLIP;
+    }
+    else if(sraw)
     {
       dt_bauhaus_combobox_add_introspection(g->mode, NULL, values, DT_IOP_HIGHLIGHTS_OPPOSED,
                                                                    DT_IOP_HIGHLIGHTS_OPPOSED);
@@ -1065,7 +1100,7 @@ void reload_defaults(dt_iop_module_t *self)
     else
     {
       dt_bauhaus_combobox_add_introspection(g->mode, NULL, values, DT_IOP_HIGHLIGHTS_OPPOSED,
-                                                                   filters == 9u
+                                                                   xtrans
                                                                    ? DT_IOP_HIGHLIGHTS_SEGMENTS
                                                                    : DT_IOP_HIGHLIGHTS_LAPLACIAN);
     }
@@ -1221,7 +1256,7 @@ void gui_init(struct dt_iop_module_t *self)
                                            "large values bring huge performance penalties"));
 
   GtkWidget *notapplicable = dt_ui_label_new(_("not applicable"));
-  gtk_widget_set_tooltip_text(notapplicable, _("this module only works with non-monochrome RAW and sRAW"));
+  gtk_widget_set_tooltip_text(notapplicable, _("this module does not work with monochrome RAW files"));
 
   // start building top level widget
   self->widget = gtk_stack_new();

@@ -175,6 +175,14 @@ gboolean dt_image_is_monochrome(const dt_image_t *img)
   return (img->flags & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER)) ? TRUE : FALSE;
 }
 
+gboolean dt_image_is_bayerRGB(const dt_image_t *img)
+{
+  return dt_image_is_raw(img)
+      && img->buf_dsc.filters != 9u
+      && !dt_image_is_monochrome(img)
+      && !(img->flags & DT_IMAGE_4BAYER);
+}
+
 static void _image_set_monochrome_flag(const dt_imgid_t imgid,
                                        const gboolean monochrome,
                                        const gboolean undo_on)
@@ -362,7 +370,8 @@ gboolean dt_image_safe_remove(const dt_imgid_t imgid)
   // always safe to remove if we do not have .xmp
   // FIXME ?? we might have remaining sidecar files from a situation with enabled writing.
   // Do we want to test and possibly remove them?
-  if(dt_image_get_xmp_mode() == DT_WRITE_XMP_NEVER) return TRUE;
+  if(dt_image_get_xmp_mode() == DT_WRITE_XMP_NEVER)
+    return TRUE;
 
   // check whether the original file is accessible
   char pathname[PATH_MAX] = { 0 };
@@ -804,13 +813,13 @@ void dt_image_update_final_size(const dt_imgid_t imgid)
   int ww = 0, hh = 0;
 
   if(darktable.develop
-     && darktable.develop->pipe
-     && darktable.develop->pipe->output_imgid == imgid)
+     && darktable.develop->full.pipe
+     && darktable.develop->full.pipe->output_imgid == imgid)
   {
-    dt_dev_pixelpipe_get_dimensions(darktable.develop->pipe,
+    dt_dev_pixelpipe_get_dimensions(darktable.develop->full.pipe,
                                     darktable.develop,
-                                    darktable.develop->pipe->iwidth,
-                                    darktable.develop->pipe->iheight,
+                                    darktable.develop->full.pipe->iwidth,
+                                    darktable.develop->full.pipe->iheight,
                                     &ww, &hh);
 
     dt_image_t *imgtmp = dt_image_cache_get(darktable.image_cache, imgid, 'w');
@@ -1148,6 +1157,39 @@ int32_t dt_image_duplicate(const dt_imgid_t imgid)
   return dt_image_duplicate_with_version(imgid, -1);
 }
 
+static int32_t _image_get_possible_version(const dt_imgid_t imgid,
+                                            const int32_t max_version)
+{
+  int32_t safe_max_version = 0;
+  char imgpath[PATH_MAX] = { 0 };
+  char versionpath[PATH_MAX] = { 0 };
+
+  gboolean from_cache = FALSE;
+  dt_image_full_path(imgid, imgpath, sizeof(imgpath), &from_cache);
+
+  for(int32_t version = MAX(1, max_version); version < 1000; version++)
+  {
+    g_strlcpy(versionpath, imgpath, sizeof(versionpath));
+    dt_image_path_append_version_no_db(version, versionpath, sizeof(versionpath));
+    const size_t len = strlen(versionpath);
+    g_snprintf(versionpath + len, sizeof(versionpath) - len, "%s", ".xmp");
+    if(!(g_file_test(versionpath, G_FILE_TEST_EXISTS) && g_file_test(versionpath, G_FILE_TEST_IS_REGULAR)))
+    {
+      safe_max_version = version;
+      // fprintf(stderr, "%s\n", versionpath);
+      break;
+    }
+  }
+  if(safe_max_version == 0)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "image_get_possible_version couldn't find a safe new version above %d\n",
+      max_version);
+    safe_max_version = max_version;
+  }
+
+  return safe_max_version;
+}
+
 static dt_imgid_t _image_duplicate_with_version_ext(const dt_imgid_t imgid,
                                                     const int32_t newversion)
 {
@@ -1184,14 +1226,14 @@ static dt_imgid_t _image_duplicate_with_version_ext(const dt_imgid_t imgid,
     (dt_database_get(darktable.db),
      "INSERT INTO main.images"
      "  (id, group_id, film_id, width, height, filename,"
-     "   maker_id, model_id, lens_id, exposure,"
+     "   maker_id, model_id, camera_id, lens_id, exposure,"
      "   aperture, iso, focal_length, focus_distance, datetime_taken, flags,"
      "   output_width, output_height, crop, raw_parameters, raw_black, raw_maximum,"
      "   orientation, longitude, latitude, altitude, color_matrix,"
      "   colorspace, version, max_version,"
      "   history_end, position, aspect_ratio, exposure_bias, import_timestamp)"
      " SELECT NULL, group_id, film_id, width, height, filename,"
-     "        maker_id, model_id, lens_id,"
+     "        maker_id, model_id, camera_id, lens_id,"
      "        exposure, aperture, iso, focal_length, focus_distance, datetime_taken,"
      "        flags, output_width, output_height, crop, raw_parameters,"
      "        raw_black, raw_maximum, orientation,"
@@ -1315,12 +1357,24 @@ static dt_imgid_t _image_duplicate_with_version_ext(const dt_imgid_t imgid,
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
+    int32_t safe_new_version = max_version + 1;
+    if(newversion == -1)
+    {
+      // we can't take for granted that we have an unused version by taking `max_version+1` as
+      // a) other database might also use this image file or
+      // b) duplicates had been removed from and later added to database.
+      safe_new_version = _image_get_possible_version(imgid, safe_new_version);
+      if(safe_new_version != max_version + 1)
+        dt_print(DT_DEBUG_ALWAYS, "dt_image_duplicate version forced %d -> %d\n",
+          max_version + 1, safe_new_version);
+    }
+
     // set version of new entry and max_version of all involved
     // duplicates (with same film_id and filename) this needs to
     // happen before we do anything with the image cache, as version
     // isn't updated through the cache
-    const int32_t version = (newversion != -1) ? newversion : max_version + 1;
-    max_version = (newversion != -1) ? MAX(max_version, newversion) : max_version + 1;
+    const int32_t version = (newversion != -1) ? newversion : safe_new_version;
+    max_version = (newversion != -1) ? MAX(max_version, newversion) : safe_new_version;
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "UPDATE main.images SET version=?1 WHERE id = ?2",
@@ -1424,6 +1478,8 @@ void dt_image_remove(const dt_imgid_t imgid)
 
   // also clear all thumbnails in mipmap_cache.
   dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
+
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGE_REMOVED, imgid, 0);
 }
 
 gboolean dt_image_altered(const dt_imgid_t imgid)
@@ -1616,7 +1672,7 @@ static int _image_read_duplicates(const uint32_t id,
 
 static uint32_t _image_import_internal(const int32_t film_id,
                                        const char *filename,
-                                       const gboolean override_ignore_jpegs,
+                                       const gboolean override_ignore_nonraws,
                                        const gboolean lua_locking,
                                        const gboolean raise_signals)
 {
@@ -1636,8 +1692,15 @@ static uint32_t _image_import_internal(const int32_t film_id,
     return 0;
   }
   char *ext = g_ascii_strdown(cc + 1, -1);
-  if(override_ignore_jpegs == FALSE && (!strcmp(ext, "jpg") || !strcmp(ext, "jpeg"))
-     && dt_conf_get_bool("ui_last/import_ignore_jpegs"))
+  // If this function is called with argument to obey "ignore non-raws" flag
+  // and this flag is set
+  // and the file has non-raw extension and is not a DNG file
+  // then quit without importing
+  if(override_ignore_nonraws == FALSE
+     && ext
+     && !dt_imageio_is_raw_by_extension(ext)
+     && g_ascii_strncasecmp(ext, "dng", sizeof("dng"))
+     && dt_conf_get_bool("ui_last/import_ignore_nonraws"))
   {
     g_free(normalized_filename);
     g_free(ext);
@@ -1679,6 +1742,7 @@ static uint32_t _image_import_internal(const int32_t film_id,
     return id;
   }
 
+  dt_set_backthumb_time(0.0);
   // also need to set the no-legacy bit, to make sure we get the right presets (new ones)
   uint32_t flags = dt_conf_get_int("ui_last/import_initial_rating");
   flags |= DT_IMAGE_NO_LEGACY_PRESETS;
@@ -1947,18 +2011,18 @@ dt_imgid_t dt_image_get_id(const uint32_t film_id, const gchar *filename)
 
 dt_imgid_t dt_image_import(const int32_t film_id,
                            const char *filename,
-                           const gboolean override_ignore_jpegs,
+                           const gboolean override_ignore_nonraws,
                            const gboolean raise_signals)
 {
-  return _image_import_internal(film_id, filename, override_ignore_jpegs,
+  return _image_import_internal(film_id, filename, override_ignore_nonraws,
                                 TRUE, raise_signals);
 }
 
 dt_imgid_t dt_image_import_lua(const int32_t film_id,
                                const char *filename,
-                               const gboolean override_ignore_jpegs)
+                               const gboolean override_ignore_nonraws)
 {
-  return _image_import_internal(film_id, filename, override_ignore_jpegs, FALSE, TRUE);
+  return _image_import_internal(film_id, filename, override_ignore_nonraws, FALSE, TRUE);
 }
 
 void dt_image_init(dt_image_t *img)
@@ -1973,6 +2037,8 @@ void dt_image_init(dt_image_t *img)
   img->change_timestamp = 0;
   img->export_timestamp = 0;
   img->print_timestamp = 0;
+
+  dt_color_harmony_init(&img->color_harmony_guide);
 
   img->legacy_flip.legacy = 0;
   img->legacy_flip.user_flip = 0;
@@ -2024,6 +2090,7 @@ void dt_image_init(dt_image_t *img)
   img->usercrop[2] = img->usercrop[3] = 1;
   img->dng_gain_maps = NULL;
   img->exif_correction_type = CORRECTION_TYPE_NONE;
+  memset(&img->exif_correction_data, 0, sizeof(img->exif_correction_data));
   img->cache_entry = 0;
 
   for(int k=0; k<4; k++)
@@ -2158,7 +2225,7 @@ int32_t dt_image_rename(const dt_imgid_t imgid, const int32_t filmid, const gcha
       // would return wrong version!
       while(dup_list)
       {
-        const int id = GPOINTER_TO_INT(dup_list->data);
+        const dt_imgid_t id = GPOINTER_TO_INT(dup_list->data);
         dt_image_t *img = dt_image_cache_get(darktable.image_cache, id, 'w');
         img->film_id = filmid;
         if(newname) g_strlcpy(img->filename, newname, DT_MAX_FILENAME_LEN);
@@ -2712,6 +2779,14 @@ int dt_image_local_copy_reset(const dt_imgid_t imgid)
 // xmp stuff
 // *******************************************************
 
+static gboolean _any_altered_data(const dt_imgid_t imgid)
+{
+  // either the image has been altered or some user's tag have
+  // been added.
+  return dt_image_altered(imgid)
+    || (dt_tag_count_attached(imgid, TRUE) > 0);
+}
+
 gboolean dt_image_write_sidecar_file(const dt_imgid_t imgid)
 {
   if(!dt_is_valid_imgid(imgid))
@@ -2740,7 +2815,7 @@ gboolean dt_image_write_sidecar_file(const dt_imgid_t imgid)
 
   // the sidecar is written only if required
   if((xmp_mode == DT_WRITE_XMP_ALWAYS)
-     || ((xmp_mode == DT_WRITE_XMP_LAZY) && dt_image_altered(imgid)))
+     || ((xmp_mode == DT_WRITE_XMP_LAZY) && _any_altered_data(imgid)))
   {
     dt_image_path_append_version(imgid, filename, sizeof(filename));
     g_strlcat(filename, ".xmp", sizeof(filename));
@@ -2776,9 +2851,9 @@ void dt_image_synch_xmps(const GList *img)
   }
 }
 
-void dt_image_synch_xmp(const int32_t selected)
+void dt_image_synch_xmp(const dt_imgid_t selected)
 {
-  if(selected > 0)
+  if(dt_is_valid_imgid(selected))
     dt_image_write_sidecar_file(selected);
   else
   {

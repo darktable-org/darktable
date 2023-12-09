@@ -820,7 +820,7 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
   if(!filename) query = dt_util_dstrcat(query, ", filename%s",
                                         (first_order) ? " DESC" : "");
 
-  query = dt_util_dstrcat(query, ", version%s", (first_order) ? " DESC" : "");
+  query = dt_util_dstrcat(query, ", version ASC");
 
   return query;
 }
@@ -1504,7 +1504,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       for(int i = 0; i < g_strv_length(elems); i++)
       {
         // if its undefined
-        if(!g_strcmp0(elems[i], "UNSET"))
+        if(!g_strcmp0(elems[i], _("unnamed")))
         {
           // clang-format off
           query = dt_util_dstrcat(query, "%scamera_id IN (SELECT id"
@@ -1616,7 +1616,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       elems = g_strsplit(escaped_text, ",", -1);
       for(int i = 0; i < g_strv_length(elems); i++)
       {
-        if(!g_strcmp0(elems[i], "UNSET"))
+        if(!g_strcmp0(elems[i], _("unnamed")))
         {
           query = dt_util_dstrcat
             (query,

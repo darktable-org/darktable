@@ -107,7 +107,7 @@ dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache, const uint32_t key, char m
 {
   gpointer orig_key, value;
   gboolean res;
-  double start = dt_get_wtime();
+  double start = dt_get_debug_wtime();
   dt_pthread_mutex_lock(&cache->lock);
   res = g_hash_table_lookup_extended(cache->hashtable,
                                      GINT_TO_POINTER(key),
@@ -130,7 +130,7 @@ dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache, const uint32_t key, char m
     cache->lru = g_list_remove_link(cache->lru, entry->link);
     cache->lru = g_list_concat(cache->lru, entry->link);
     dt_pthread_mutex_unlock(&cache->lock);
-    double end = dt_get_wtime();
+    double end = dt_get_debug_wtime();
     if(end - start > 0.1)
       dt_print(DT_DEBUG_ALWAYS, "try+ wait time %.06fs mode %c \n", end - start, mode);
 
@@ -145,7 +145,7 @@ dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache, const uint32_t key, char m
     return entry;
   }
   dt_pthread_mutex_unlock(&cache->lock);
-  double end = dt_get_wtime();
+  double end = dt_get_debug_wtime();
   if(end - start > 0.1)
     dt_print(DT_DEBUG_ALWAYS, "try- wait time %.06fs\n", end - start);
   return 0;
@@ -163,7 +163,7 @@ dt_cache_entry_t *dt_cache_get_with_caller(dt_cache_t *cache,
   gpointer orig_key, value;
   gboolean res;
   int result;
-  double start = dt_get_wtime();
+  double start = dt_get_debug_wtime();
 restart:
   dt_pthread_mutex_lock(&cache->lock);
   res = g_hash_table_lookup_extended(cache->hashtable,
@@ -261,7 +261,7 @@ restart:
   cache->lru = g_list_concat(cache->lru, entry->link);
 
   dt_pthread_mutex_unlock(&cache->lock);
-  double end = dt_get_wtime();
+  double end = dt_get_debug_wtime();
   if(end - start > 0.1)
     dt_print(DT_DEBUG_ALWAYS, "wait time %.06fs\n", end - start);
 

@@ -22,6 +22,7 @@
 #include "config.h"
 #endif
 
+#include "common/color_harmony.h"
 #include "common/colorspaces.h"
 #include "common/dtpthread.h"
 #include "develop/format.h"
@@ -152,7 +153,8 @@ typedef enum dt_image_correction_type_t
   CORRECTION_TYPE_NONE,
   CORRECTION_TYPE_SONY,
   CORRECTION_TYPE_FUJI,
-  CORRECTION_TYPE_DNG
+  CORRECTION_TYPE_DNG,
+  CORRECTION_TYPE_OLYMPUS
 } dt_image_correction_type_t;
 
 typedef union dt_image_correction_data_t
@@ -175,6 +177,12 @@ typedef union dt_image_correction_data_t
     gboolean has_warp;
     gboolean has_vignette;
   } dng;
+  struct {
+    gboolean has_dist;
+    float dist[4];
+    gboolean has_ca;
+    float ca[6];
+  } olympus;
 } dt_image_correction_data_t;
 
 typedef enum dt_image_loader_t
@@ -296,6 +304,9 @@ typedef struct dt_image_t
   /* gps coords */
   dt_image_geoloc_t geoloc;
 
+  /* color harmony guide */
+  dt_color_harmony_guide_t color_harmony_guide;
+
   /* needed in exposure iop for Deflicker */
   uint16_t raw_black_level;
   uint16_t raw_black_level_separate[4];
@@ -337,23 +348,25 @@ typedef struct dt_image_basic_exif_t
 void dt_image_init(dt_image_t *img);
 /** Refresh makermodel from the raw and exif values **/
 void dt_image_refresh_makermodel(dt_image_t *img);
-/** returns non-zero if the image contains low-dynamic range data. */
+/** returns TRUE if the image contains low-dynamic range data. */
 gboolean dt_image_is_ldr(const dt_image_t *img);
-/** returns non-zero if the image contains mosaic data. */
+/** returns TRUE if the image contains mosaic data. */
 gboolean dt_image_is_raw(const dt_image_t *img);
-/** returns non-zero if the image contains float data. */
+/** returns TRUE if the image contains float data. */
 gboolean dt_image_is_hdr(const dt_image_t *img);
 /** set the monochrome flags if monochrome is TRUE and clear it otherwise */
 void dt_image_set_monochrome_flag(const dt_imgid_t imgid, const gboolean monochrome);
-/** returns non-zero if this image was taken using a monochrome camera */
+/** returns TRUE if this image was taken using a monochrome camera */
 gboolean dt_image_is_monochrome(const dt_image_t *img);
-/** returns non-zero if the image supports a color correction matrix */
+/** returns TRUE is image has a raw bayer sensor with RGB data */
+gboolean dt_image_is_bayerRGB(const dt_image_t *img);
+/** returns TRUE if the image supports a color correction matrix */
 gboolean dt_image_is_matrix_correction_supported(const dt_image_t *img);
-/** returns non-zero if the image supports the rawprepare module */
+/** returns TRUE if the image supports the rawprepare module */
 gboolean dt_image_is_rawprepare_supported(const dt_image_t *img);
 /** returns the bitmask containing info about monochrome images */
 int dt_image_monochrome_flags(const dt_image_t *img);
-/** returns true if the image has been tested to be monochrome and the
+/** returns TRUE if the image has been tested to be monochrome and the
  * image wants monochrome workflow */
 gboolean dt_image_use_monochrome_workflow(const dt_image_t *img);
 /** returns the image filename */
@@ -402,13 +415,13 @@ dt_imgid_t dt_image_get_id(const uint32_t film_id,
 /** imports a new image from raw/etc file and adds it to the data base and image cache. Use from threads other than lua.*/
 dt_imgid_t dt_image_import(int32_t film_id,
                            const char *filename,
-                           const gboolean override_ignore_jpegs,
+                           const gboolean override_ignore_nonraws,
                            const gboolean raise_signals);
 /** imports a new image from raw/etc file and adds it to the data base
  * and image cache. Use from lua thread.*/
 dt_imgid_t dt_image_import_lua(const int32_t film_id,
                                const char *filename,
-                               const gboolean override_ignore_jpegs);
+                               const gboolean override_ignore_nonraws);
 /** removes the given image from the database. */
 void dt_image_remove(const dt_imgid_t imgid);
 /** duplicates the given image in the database with the duplicate

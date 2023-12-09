@@ -395,9 +395,15 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
 //        }
 //        break;
       case 12:
-        for(int i = 0; i < w * h; i++)
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(in, w, h, image, numcomps) \
+  schedule(simd:static) \
+  collapse(2)
+#endif
+        for(int i = 0; i < w * h; ++i)
         {
-          for(int k = 0; k < numcomps; k++)
+          for(int k = 0; k < numcomps; ++k)
             image->comps[k].data[i] = DOWNSAMPLE_FLOAT_TO_12BIT(in[i * 4 + k]);
         }
         break;

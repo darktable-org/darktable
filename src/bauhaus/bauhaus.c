@@ -422,7 +422,7 @@ static gboolean _popup_scroll(GtkWidget *widget,
 {
   dt_bauhaus_widget_t *w = darktable.bauhaus->current;
   int delta_y = 0;
-  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
+  if(dt_gui_get_scroll_unit_delta(event, &delta_y))
   {
     if(darktable.bauhaus->current->type == DT_BAUHAUS_COMBOBOX)
       _combobox_next_sensitive(w, delta_y, 0, w->data.combobox.mute_scrolling);
@@ -2909,7 +2909,7 @@ static gboolean _widget_scroll(GtkWidget *widget,
   gtk_widget_grab_focus(widget);
 
   int delta_y = 0;
-  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
+  if(dt_gui_get_scroll_unit_delta(event, &delta_y))
   {
     if(delta_y == 0) return TRUE;
 
@@ -3348,7 +3348,7 @@ static gboolean _popup_key_press(GtkWidget *widget,
         _slider_add_step(GTK_WIDGET(w), delta, event->state, FALSE);
       break;
     default:
-      if(!g_utf8_validate(event->string, -1, NULL)) return FALSE;
+      if(!event->string || !g_utf8_validate(event->string, -1, NULL)) return FALSE;
       const gunichar c = g_utf8_get_char(event->string);
       if(!g_unichar_isprint(c)) return FALSE;
       const long int char_width = g_utf8_next_char(event->string) - event->string;

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2020 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -60,17 +60,23 @@ typedef struct _dt_job_t
    processing.
     NOTE: maybe allow to pass a comparator for params.
  */
-static inline int dt_control_job_equal(_dt_job_t *j1, _dt_job_t *j2)
+static inline gboolean _control_job_equal(_dt_job_t *j1, _dt_job_t *j2)
 {
-  if(!j1 || !j2) return 0;
-  if(j1->params_size != 0 && j1->params_size == j2->params_size)
-    return (j1->execute == j2->execute && j1->state_changed_cb == j2->state_changed_cb
-            && j1->queue == j2->queue && (memcmp(j1->params, j2->params, j1->params_size) == 0));
-  return (j1->execute == j2->execute && j1->state_changed_cb == j2->state_changed_cb && j1->queue == j2->queue
+  if(!j1 || !j2) return FALSE;
+  if(j1->params_size != 0
+      && j1->params_size == j2->params_size)
+    return (j1->execute == j2->execute
+            && j1->state_changed_cb == j2->state_changed_cb
+            && j1->queue == j2->queue
+            && (memcmp(j1->params, j2->params, j1->params_size) == 0));
+  return (j1->execute == j2->execute
+          && j1->state_changed_cb == j2->state_changed_cb
+          && j1->queue == j2->queue
           && (g_strcmp0(j1->description, j2->description) == 0));
 }
 
-static void dt_control_job_set_state(_dt_job_t *job, dt_job_state_t state)
+static void _control_job_set_state(_dt_job_t *job,
+                                    dt_job_state_t state)
 {
   if(!job) return;
   dt_pthread_mutex_lock(&job->state_mutex);
@@ -96,16 +102,20 @@ dt_job_state_t dt_control_job_get_state(_dt_job_t *job)
 
 void dt_control_job_set_params(_dt_job_t *job, void *params, dt_job_destroy_callback callback)
 {
-  if(!job || dt_control_job_get_state(job) != DT_JOB_STATE_INITIALIZED) return;
+  if(!job || dt_control_job_get_state(job) != DT_JOB_STATE_INITIALIZED)
+    return;
   job->params = params;
   job->params_size = 0;
   job->params_destroy = callback;
 }
 
-void dt_control_job_set_params_with_size(dt_job_t *job, void *params, size_t params_size,
-                                         dt_job_destroy_callback callback)
+void dt_control_job_set_params_with_size(dt_job_t *job,
+                                        void *params,
+                                        size_t params_size,
+                                        dt_job_destroy_callback callback)
 {
-  if(!job || dt_control_job_get_state(job) != DT_JOB_STATE_INITIALIZED) return;
+  if(!job || dt_control_job_get_state(job) != DT_JOB_STATE_INITIALIZED)
+    return;
   job->params = params;
   job->params_size = params_size;
   job->params_destroy = callback;
@@ -117,7 +127,8 @@ void *dt_control_job_get_params(const _dt_job_t *job)
   return job->params;
 }
 
-dt_job_t *dt_control_job_create(dt_job_execute_callback execute, const char *msg, ...)
+dt_job_t *dt_control_job_create(dt_job_execute_callback execute,
+                                const char *msg, ...)
 {
   _dt_job_t *job = (_dt_job_t *)calloc(1, sizeof(_dt_job_t));
   if(!job) return NULL;
@@ -138,10 +149,12 @@ dt_job_t *dt_control_job_create(dt_job_execute_callback execute, const char *msg
 void dt_control_job_dispose(_dt_job_t *job)
 {
   if(!job) return;
-  if(job->progress) dt_control_progress_destroy(darktable.control, job->progress);
+  if(job->progress)
+    dt_control_progress_destroy(darktable.control, job->progress);
   job->progress = NULL;
-  dt_control_job_set_state(job, DT_JOB_STATE_DISPOSED);
-  if(job->params_destroy) job->params_destroy(job->params);
+  _control_job_set_state(job, DT_JOB_STATE_DISPOSED);
+  if(job->params_destroy)
+    job->params_destroy(job->params);
   dt_pthread_mutex_destroy(&job->state_mutex);
   dt_pthread_mutex_destroy(&job->wait_mutex);
   free(job);
@@ -164,7 +177,7 @@ static void dt_control_job_print(_dt_job_t *job)
 
 void dt_control_job_cancel(_dt_job_t *job)
 {
-  dt_control_job_set_state(job, DT_JOB_STATE_CANCELLED);
+  _control_job_set_state(job, DT_JOB_STATE_CANCELLED);
 }
 
 void dt_control_job_wait(_dt_job_t *job)
@@ -186,9 +199,10 @@ void dt_control_job_wait(_dt_job_t *job)
   }
 }
 
-static int32_t dt_control_run_job_res(dt_control_t *control, int32_t res)
+static gboolean _control_run_job_res(dt_control_t *control, int32_t res)
 {
-  if(((unsigned int)res) >= DT_CTL_WORKER_RESERVED) return -1;
+  if(((unsigned int)res) >= DT_CTL_WORKER_RESERVED)
+    return TRUE;
 
   _dt_job_t *job = NULL;
   dt_pthread_mutex_lock(&control->res_mutex);
@@ -199,7 +213,7 @@ static int32_t dt_control_run_job_res(dt_control_t *control, int32_t res)
   }
   control->new_res[res] = 0;
   dt_pthread_mutex_unlock(&control->res_mutex);
-  if(!job) return -1;
+  if(!job) return TRUE;
 
   /* change state to running */
   dt_pthread_mutex_lock(&job->wait_mutex);
@@ -209,22 +223,22 @@ static int32_t dt_control_run_job_res(dt_control_t *control, int32_t res)
     dt_control_job_print(job);
     dt_print(DT_DEBUG_CONTROL, "\n");
 
-    dt_control_job_set_state(job, DT_JOB_STATE_RUNNING);
+    _control_job_set_state(job, DT_JOB_STATE_RUNNING);
 
     /* execute job */
     job->result = job->execute(job);
 
-    dt_control_job_set_state(job, DT_JOB_STATE_FINISHED);
+    _control_job_set_state(job, DT_JOB_STATE_FINISHED);
     dt_print(DT_DEBUG_CONTROL, "[run_job-] %02d %f ", res, dt_get_wtime());
     dt_control_job_print(job);
     dt_print(DT_DEBUG_CONTROL, "\n");
   }
   dt_pthread_mutex_unlock(&job->wait_mutex);
   dt_control_job_dispose(job);
-  return 0;
+  return FALSE;
 }
 
-static _dt_job_t *dt_control_schedule_job(dt_control_t *control)
+static _dt_job_t *_control_schedule_job(dt_control_t *control)
 {
   /*
    * job scheduling works like this:
@@ -287,36 +301,36 @@ static _dt_job_t *dt_control_schedule_job(dt_control_t *control)
   return job;
 }
 
-static void dt_control_job_execute(_dt_job_t *job)
+static void _control_job_execute(_dt_job_t *job)
 {
   dt_print(DT_DEBUG_CONTROL, "[run_job+] %02d %f ", DT_CTL_WORKER_RESERVED + dt_control_get_threadid(),
            dt_get_wtime());
   dt_control_job_print(job);
-  dt_print(DT_DEBUG_CONTROL, "\n");
+  dt_print_nts(DT_DEBUG_CONTROL, "\n");
 
-  dt_control_job_set_state(job, DT_JOB_STATE_RUNNING);
+  _control_job_set_state(job, DT_JOB_STATE_RUNNING);
 
   /* execute job */
   job->result = job->execute(job);
 
-  dt_control_job_set_state(job, DT_JOB_STATE_FINISHED);
+  _control_job_set_state(job, DT_JOB_STATE_FINISHED);
 
   dt_print(DT_DEBUG_CONTROL, "[run_job-] %02d %f ", DT_CTL_WORKER_RESERVED + dt_control_get_threadid(),
            dt_get_wtime());
   dt_control_job_print(job);
-  dt_print(DT_DEBUG_CONTROL, "\n");
+  dt_print_nts(DT_DEBUG_CONTROL, "\n");
 }
 
-static int32_t dt_control_run_job(dt_control_t *control)
+static gboolean _control_run_job(dt_control_t *control)
 {
-  _dt_job_t *job = dt_control_schedule_job(control);
+  _dt_job_t *job = _control_schedule_job(control);
 
-  if(!job) return -1;
+  if(!job) return TRUE;
 
   /* change state to running */
   dt_pthread_mutex_lock(&job->wait_mutex);
   if(dt_control_job_get_state(job) == DT_JOB_STATE_QUEUED)
-    dt_control_job_execute(job);
+    _control_job_execute(job);
 
   dt_pthread_mutex_unlock(&job->wait_mutex);
 
@@ -329,15 +343,17 @@ static int32_t dt_control_run_job(dt_control_t *control)
   // and free it
   dt_control_job_dispose(job);
 
-  return 0;
+  return FALSE;
 }
 
-int32_t dt_control_add_job_res(dt_control_t *control, _dt_job_t *job, int32_t res)
+gboolean dt_control_add_job_res(dt_control_t *control,
+                                _dt_job_t *job,
+                                int32_t res)
 {
   if(((unsigned int)res) >= DT_CTL_WORKER_RESERVED || !job)
   {
     dt_control_job_dispose(job);
-    return 1;
+    return TRUE;
   }
 
   // TODO: pthread cancel and restart in tough cases?
@@ -346,15 +362,15 @@ int32_t dt_control_add_job_res(dt_control_t *control, _dt_job_t *job, int32_t re
   // if there is a job in the queue we have to discard that first
   if(control->job_res[res])
   {
-    dt_control_job_set_state(control->job_res[res], DT_JOB_STATE_DISCARDED);
+    _control_job_set_state(control->job_res[res], DT_JOB_STATE_DISCARDED);
     dt_control_job_dispose(control->job_res[res]);
   }
 
   dt_print(DT_DEBUG_CONTROL, "[add_job_res] %d | ", res);
   dt_control_job_print(job);
-  dt_print(DT_DEBUG_CONTROL, "\n");
+  dt_print_nts(DT_DEBUG_CONTROL, "\n");
 
-  dt_control_job_set_state(job, DT_JOB_STATE_QUEUED);
+  _control_job_set_state(job, DT_JOB_STATE_QUEUED);
   control->job_res[res] = job;
   control->new_res[res] = 1;
 
@@ -364,26 +380,28 @@ int32_t dt_control_add_job_res(dt_control_t *control, _dt_job_t *job, int32_t re
   pthread_cond_broadcast(&control->cond);
   dt_pthread_mutex_unlock(&control->cond_mutex);
 
-  return 0;
+  return FALSE;
 }
 
-int dt_control_add_job(dt_control_t *control, dt_job_queue_t queue_id, _dt_job_t *job)
+gboolean dt_control_add_job(dt_control_t *control,
+                            dt_job_queue_t queue_id,
+                            _dt_job_t *job)
 {
   if(((unsigned int)queue_id) >= DT_JOB_QUEUE_MAX || !job)
   {
     dt_control_job_dispose(job);
-    return 1;
+    return TRUE;
   }
 
   if(!control->running)
   {
     // whatever we are adding here won't be scheduled as the system isn't running. execute it synchronous instead.
     dt_pthread_mutex_lock(&job->wait_mutex); // is that even needed?
-    dt_control_job_execute(job);
+    _control_job_execute(job);
     dt_pthread_mutex_unlock(&job->wait_mutex);
 
     dt_control_job_dispose(job);
-    return 0;
+    return FALSE;
   }
 
   job->queue = queue_id;
@@ -397,7 +415,7 @@ int dt_control_add_job(dt_control_t *control, dt_job_queue_t queue_id, _dt_job_t
 
   dt_print(DT_DEBUG_CONTROL, "[add_job] %zu | ", length);
   dt_control_job_print(job);
-  dt_print(DT_DEBUG_CONTROL, "\n");
+  dt_print_nts(DT_DEBUG_CONTROL, "\n");
 
   if(queue_id == DT_JOB_QUEUE_SYSTEM_FG)
   {
@@ -408,15 +426,15 @@ int dt_control_add_job(dt_control_t *control, dt_job_queue_t queue_id, _dt_job_t
     for(int k = 0; k < control->num_threads; k++)
     {
       _dt_job_t *other_job = (_dt_job_t *)control->job[k];
-      if(dt_control_job_equal(job, other_job))
+      if(_control_job_equal(job, other_job))
       {
         dt_print(DT_DEBUG_CONTROL, "[add_job] found job already in scheduled: ");
         dt_control_job_print(other_job);
-        dt_print(DT_DEBUG_CONTROL, "\n");
+        dt_print_nts(DT_DEBUG_CONTROL, "\n");
 
         dt_pthread_mutex_unlock(&control->queue_mutex);
 
-        dt_control_job_set_state(job, DT_JOB_STATE_DISCARDED);
+        _control_job_set_state(job, DT_JOB_STATE_DISCARDED);
         dt_control_job_dispose(job);
 
         return 0; // there can't be any further copy
@@ -427,11 +445,11 @@ int dt_control_add_job(dt_control_t *control, dt_job_queue_t queue_id, _dt_job_t
     for(GList *iter = *queue; iter; iter = g_list_next(iter))
     {
       _dt_job_t *other_job = (_dt_job_t *)iter->data;
-      if(dt_control_job_equal(job, other_job))
+      if(_control_job_equal(job, other_job))
       {
         dt_print(DT_DEBUG_CONTROL, "[add_job] found job already in queue: ");
         dt_control_job_print(other_job);
-        dt_print(DT_DEBUG_CONTROL, "\n");
+        dt_print_nts(DT_DEBUG_CONTROL, "\n");
 
         *queue = g_list_delete_link(*queue, iter);
         length--;
@@ -451,7 +469,7 @@ int dt_control_add_job(dt_control_t *control, dt_job_queue_t queue_id, _dt_job_t
     if(length > DT_CONTROL_MAX_JOBS)
     {
       GList *last = g_list_last(*queue);
-      dt_control_job_set_state((_dt_job_t *)last->data, DT_JOB_STATE_DISCARDED);
+      _control_job_set_state((_dt_job_t *)last->data, DT_JOB_STATE_DISCARDED);
       dt_control_job_dispose((_dt_job_t *)last->data);
       *queue = g_list_delete_link(*queue, last);
       length--;
@@ -471,7 +489,7 @@ int dt_control_add_job(dt_control_t *control, dt_job_queue_t queue_id, _dt_job_t
     *queue = g_list_append(*queue, job);
     control->queue_length[queue_id]++;
   }
-  dt_control_job_set_state(job, DT_JOB_STATE_QUEUED);
+  _control_job_set_state(job, DT_JOB_STATE_QUEUED);
   dt_pthread_mutex_unlock(&control->queue_mutex);
 
   // notify workers
@@ -480,10 +498,10 @@ int dt_control_add_job(dt_control_t *control, dt_job_queue_t queue_id, _dt_job_t
   dt_pthread_mutex_unlock(&control->cond_mutex);
 
   // dispose of dropped job, if any
-  dt_control_job_set_state(job_for_disposal, DT_JOB_STATE_DISCARDED);
+  _control_job_set_state(job_for_disposal, DT_JOB_STATE_DISCARDED);
   dt_control_job_dispose(job_for_disposal);
 
-  return 0;
+  return FALSE;
 }
 
 static __thread int threadid = -1;
@@ -494,13 +512,13 @@ int32_t dt_control_get_threadid()
   return darktable.control->num_threads;
 }
 
-static int32_t dt_control_get_threadid_res()
+static inline int32_t _control_get_threadid_res()
 {
   if(threadid > -1) return threadid;
   return DT_CTL_WORKER_RESERVED;
 }
 
-static void *dt_control_work_res(void *ptr)
+static void *_control_work_res(void *ptr)
 {
 #ifdef _OPENMP // need to do this in every thread
   omp_set_num_threads(dt_get_num_threads());
@@ -512,11 +530,11 @@ static void *dt_control_work_res(void *ptr)
   snprintf(name, sizeof(name), "worker res %d", threadid);
   dt_pthread_setname(name);
   free(params);
-  int32_t threadid_res = dt_control_get_threadid_res();
+  int32_t threadid_res = _control_get_threadid_res();
   while(dt_control_running())
   {
     // dt_print(DT_DEBUG_CONTROL, "[control_work] %d\n", threadid_res);
-    if(dt_control_run_job_res(s, threadid_res) < 0)
+    if(_control_run_job_res(s, threadid_res))
     {
       // wait for a new job.
       int old;
@@ -531,7 +549,7 @@ static void *dt_control_work_res(void *ptr)
   return NULL;
 }
 
-static void *dt_control_worker_kicker(void *ptr)
+static void *_control_worker_kicker(void *ptr)
 {
   dt_control_t *control = (dt_control_t *)ptr;
   dt_pthread_setname("kicker");
@@ -545,7 +563,7 @@ static void *dt_control_worker_kicker(void *ptr)
   return NULL;
 }
 
-static void *dt_control_work(void *ptr)
+static void *_control_work(void *ptr)
 {
 #ifdef _OPENMP // need to do this in every thread
   omp_set_num_threads(dt_get_num_threads());
@@ -561,7 +579,7 @@ static void *dt_control_work(void *ptr)
   while(dt_control_running())
   {
     // dt_print(DT_DEBUG_CONTROL, "[control_work] %d\n", threadid);
-    if(dt_control_run_job(control) < 0)
+    if(_control_run_job(control))
     {
       // wait for a new job.
       dt_pthread_mutex_lock(&control->cond_mutex);
@@ -609,7 +627,7 @@ void dt_control_jobs_init(dt_control_t *control)
   control->thread = (pthread_t *)calloc(control->num_threads, sizeof(pthread_t));
   control->job = (dt_job_t **)calloc(control->num_threads, sizeof(dt_job_t *));
   dt_pthread_mutex_lock(&control->run_mutex);
-  control->running = 1;
+  control->running = TRUE;
   dt_pthread_mutex_unlock(&control->run_mutex);
   for(int k = 0; k < control->num_threads; k++)
   {
@@ -617,11 +635,11 @@ void dt_control_jobs_init(dt_control_t *control)
         = (worker_thread_parameters_t *)calloc(1, sizeof(worker_thread_parameters_t));
     params->self = control;
     params->threadid = k;
-    dt_pthread_create(&control->thread[k], dt_control_work, params);
+    dt_pthread_create(&control->thread[k], _control_work, params);
   }
 
   /* create queue kicker thread */
-  dt_pthread_create(&control->kick_on_workers_thread, dt_control_worker_kicker, control);
+  dt_pthread_create(&control->kick_on_workers_thread, _control_worker_kicker, control);
 
   for(int k = 0; k < DT_CTL_WORKER_RESERVED; k++)
   {
@@ -631,7 +649,7 @@ void dt_control_jobs_init(dt_control_t *control)
         = (worker_thread_parameters_t *)calloc(1, sizeof(worker_thread_parameters_t));
     params->self = control;
     params->threadid = k;
-    dt_pthread_create(&control->thread_res[k], dt_control_work_res, params);
+    dt_pthread_create(&control->thread_res[k], _control_work_res, params);
   }
   /* create thread taking care of connecting gphoto2 devices */
 #ifdef HAVE_GPHOTO2

@@ -203,13 +203,15 @@ void dt_confgen_init()
 
   <xsl:choose>
     <xsl:when test="../type = 'dir'">
-      <xsl:text>   gchar *default_path = dt_conf_expand_default_dir("</xsl:text><xsl:apply-templates select="../default"/>
-	  <xsl:text>");</xsl:text>
-	  <xsl:text>&#xA;</xsl:text>
-      <xsl:text>   _insert_default("</xsl:text><xsl:value-of select="../name" />
-	  <xsl:text>", default_path);</xsl:text>
-	  <xsl:text>&#xA;</xsl:text>
-	  <xsl:text>   g_free(default_path);&#xA;</xsl:text>
+      <xsl:text>   {&#xA;</xsl:text>
+      <xsl:text>      gchar *default_path = dt_conf_expand_default_dir("</xsl:text><xsl:apply-templates select="../default"/>
+      <xsl:text>");</xsl:text>
+      <xsl:text>&#xA;</xsl:text>
+      <xsl:text>      _insert_default("</xsl:text><xsl:value-of select="../name" />
+      <xsl:text>", default_path);</xsl:text>
+      <xsl:text>&#xA;</xsl:text>
+      <xsl:text>      g_free(default_path);&#xA;</xsl:text>
+      <xsl:text>   }&#xA;</xsl:text>
     </xsl:when>
     <xsl:otherwise>
       <xsl:text>   _insert_default("</xsl:text><xsl:value-of select="../name" />

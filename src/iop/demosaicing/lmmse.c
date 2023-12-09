@@ -395,7 +395,8 @@ static void lmmse_demosaic(
                 float *colc = qix[c] + rr * DT_LMMSE_TILESIZE + cc;
                 float *col1 = qix[1] + rr * DT_LMMSE_TILESIZE + cc;
                 // Assign 3x3 differential color values
-                const float p[9] = {colc[-w1-1] - col1[-w1-1],
+                const float p[9] __attribute__((aligned(16))) =
+                                  { colc[-w1-1] - col1[-w1-1],
                                     colc[-w1  ] - col1[-w1  ],
                                     colc[-w1+1] - col1[-w1+1],
                                     colc[   -1] - col1[   -1],
