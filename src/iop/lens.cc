@@ -1334,19 +1334,13 @@ static int _process_cl_lf(struct dt_iop_module_t *self,
   size_t origin[] = { 0, 0, 0 };
   size_t iregion[] = { (size_t)iwidth, (size_t)iheight, 1 };
   size_t oregion[] = { (size_t)owidth, (size_t)oheight, 1 };
-  size_t isizes[] = { (size_t)ROUNDUPDWD(iwidth, devid), (size_t)ROUNDUPDHT(iheight, devid), 1 };
-  size_t osizes[] = { (size_t)ROUNDUPDWD(owidth, devid), (size_t)ROUNDUPDHT(oheight, devid), 1 };
 
   int modflags;
   int ldkernel = -1;
   const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
 
   if(!d->lens || !d->lens->Maker || d->crop <= 0.0f)
-  {
-    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, oregion);
-    if(err != CL_SUCCESS) goto error;
-    return CL_SUCCESS;
-  }
+    return dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, oregion);
 
   switch(interpolation->id)
   {
@@ -1403,11 +1397,10 @@ static int _process_cl_lf(struct dt_iop_module_t *self,
       err = dt_opencl_write_buffer_to_device(devid, tmpbuf, dev_tmpbuf, 0, tmpbufsize, CL_TRUE);
       if(err != CL_SUCCESS) goto error;
 
-      dt_opencl_set_kernel_args(devid, ldkernel, 0,
+      err = dt_opencl_enqueue_kernel_2d_args(devid, ldkernel, owidth, oheight,
         CLARG(dev_in), CLARG(dev_tmp),
         CLARG(owidth), CLARG(oheight), CLARG(iwidth), CLARG(iheight), CLARG(roi_in_x), CLARG(roi_in_y),
         CLARG(dev_tmpbuf), CLARG((d->do_nan_checks)));
-      err = dt_opencl_enqueue_kernel_2d(devid, ldkernel, osizes);
       if(err != CL_SUCCESS) goto error;
     }
     else
@@ -1440,9 +1433,8 @@ static int _process_cl_lf(struct dt_iop_module_t *self,
       err = dt_opencl_write_buffer_to_device(devid, tmpbuf, dev_tmpbuf, 0, bsize, CL_TRUE);
       if(err != CL_SUCCESS) goto error;
 
-      dt_opencl_set_kernel_args(devid, gd->kernel_lens_vignette, 0,
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_lens_vignette, owidth, oheight,
         CLARG(dev_tmp), CLARG(dev_out), CLARG(owidth), CLARG(oheight), CLARG(dev_tmpbuf));
-      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_lens_vignette, osizes);
       if(err != CL_SUCCESS) goto error;
     }
     else
@@ -1477,9 +1469,8 @@ static int _process_cl_lf(struct dt_iop_module_t *self,
       err = dt_opencl_write_buffer_to_device(devid, tmpbuf, dev_tmpbuf, 0, bsize, CL_TRUE);
       if(err != CL_SUCCESS) goto error;
 
-      dt_opencl_set_kernel_args(devid, gd->kernel_lens_vignette, 0,
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_lens_vignette, iwidth, iheight,
         CLARG(dev_in), CLARG(dev_tmp), CLARG(iwidth), CLARG(iheight), CLARG(dev_tmpbuf));
-      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_lens_vignette, isizes);
       if(err != CL_SUCCESS) goto error;
     }
     else
@@ -1509,19 +1500,16 @@ static int _process_cl_lf(struct dt_iop_module_t *self,
       err = dt_opencl_write_buffer_to_device(devid, tmpbuf, dev_tmpbuf, 0, tmpbufsize, CL_TRUE);
       if(err != CL_SUCCESS) goto error;
 
-      dt_opencl_set_kernel_args(devid, ldkernel, 0,
+      err = dt_opencl_enqueue_kernel_2d_args(devid, ldkernel, owidth, oheight,
         CLARG(dev_tmp), CLARG(dev_out),
         CLARG(owidth), CLARG(oheight),
         CLARG(iwidth), CLARG(iheight),
         CLARG(roi_in_x), CLARG(roi_in_y),
         CLARG(dev_tmpbuf), CLARG((d->do_nan_checks)));
-      err = dt_opencl_enqueue_kernel_2d(devid, ldkernel, osizes);
-      if(err != CL_SUCCESS) goto error;
     }
     else
     {
       err = dt_opencl_enqueue_copy_image(devid, dev_tmp, dev_out, origin, origin, oregion);
-      if(err != CL_SUCCESS) goto error;
     }
   }
 
@@ -2671,10 +2659,11 @@ static gboolean _distort_transform_md(dt_iop_module_t *self,
       const float dr =
         _interpolate_linear_spline(d->knots_dist, d->cor_rgb[1], d->nc, r*sqrtf(cx*cx + cy*cy));
 
-      const float dist1 = points[i] - (dr*cx + w2), dist2 = points[i + 1] - (dr*cy + h2);
+      const float dist1 = points[i] - (dr*cx + w2);
+      const float dist2 = points[i + 1] - (dr*cy + h2);
 
-      if(fabs(dist1) < .5f
-         && fabs(dist2) < .5f)
+      if(fabsf(dist1) < .5f
+         && fabsf(dist2) < .5f)
         break;
 
       p1 += dist1;
