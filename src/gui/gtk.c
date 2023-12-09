@@ -1427,12 +1427,8 @@ void dt_configure_ppd_dpi(dt_gui_gtk_t *gui)
       dt_print(DT_DEBUG_CONTROL,
                "[screen resolution] setting the screen resolution to %f dpi\n", gui->dpi);
   }
-  #ifdef GDK_WINDOWING_QUARTZ
-    gui->dpi_factor = 1.0;
-  #else
     gui->dpi_factor
         = gui->dpi / 96; // according to man xrandr and the docs of gdk_screen_set_resolution 96 is the default
-  #endif
 }
 
 static gboolean _focus_in_out_event(GtkWidget *widget, GdkEvent *event, gpointer user_data)
