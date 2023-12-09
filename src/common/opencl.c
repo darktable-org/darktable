@@ -4075,7 +4075,12 @@ int dt_opencl_local_buffer_opt(const int devid,
           || workgroupsize < (size_t)(*blocksizex) * (*blocksizey)
           || kernelworkgroupsize < (size_t)(*blocksizex) * (*blocksizey))
     {
-      if(*blocksizex == 1 && *blocksizey == 1) return FALSE;
+      if(*blocksizex == 1 && *blocksizey == 1)
+      {
+        dt_print(DT_DEBUG_OPENCL,
+             "[dt_opencl_local_buffer_opt] no valid resource limits for device %d\n", devid);
+        return FALSE;
+      }
 
       if(*blocksizex > *blocksizey)
         *blocksizex >>= 1;
