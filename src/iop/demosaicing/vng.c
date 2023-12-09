@@ -569,7 +569,10 @@ static int process_vng_cl(
                                       .sizex = 1 << 8, .sizey = 1 << 8 };
 
       if(!dt_opencl_local_buffer_opt(devid, gd->kernel_vng_lin_interpolate, &locopt))
+      {
+        err = CL_INVALID_WORK_DIMENSION;
         goto error;
+      }
 
       size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
       size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
@@ -597,7 +600,10 @@ static int process_vng_cl(
                                       .sizex = 1 << 8, .sizey = 1 << 8 };
 
       if(!dt_opencl_local_buffer_opt(devid, gd->kernel_vng_interpolate, &locopt))
+      {
+        err = CL_INVALID_WORK_DIMENSION;
         goto error;
+      }
 
       size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
       size_t local[3] = { locopt.sizex, locopt.sizey, 1 };

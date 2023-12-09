@@ -1681,7 +1681,7 @@ static int process_markesteijn_cl(
   cl_mem dev_aux = NULL;
   cl_mem dev_edge_in = NULL;
   cl_mem dev_edge_out = NULL;
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
   cl_mem *dev_rgb = dev_rgbv;
 
@@ -1791,7 +1791,10 @@ static int process_markesteijn_cl(
                                     .sizex = 1 << 8, .sizey = 1 << 8 };
 
     if(!dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_green_minmax, &locopt_g1_g3))
+    {
+      err = CL_INVALID_WORK_DIMENSION;
       goto error;
+    }
 
     {
       size_t sizes[3] = { ROUNDUP(width, locopt_g1_g3.sizex), ROUNDUP(height, locopt_g1_g3.sizey), 1 };
@@ -1811,7 +1814,10 @@ static int process_markesteijn_cl(
                                     .sizex = 1 << 8, .sizey = 1 << 8 };
 
     if(!dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_interpolate_green, &locopt_g_interp))
+    {
+      err = CL_INVALID_WORK_DIMENSION;
       goto error;
+    }
 
     {
       size_t sizes[3] = { ROUNDUP(width, locopt_g_interp.sizex), ROUNDUP(height, locopt_g_interp.sizey), 1 };
@@ -1861,7 +1867,10 @@ static int process_markesteijn_cl(
                                       .sizex = 1 << 8, .sizey = 1 << 8 };
 
       if(!dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_solitary_green, &locopt_rb_g))
-      goto error;
+      {
+        err = CL_INVALID_WORK_DIMENSION;
+        goto error;
+      }
 
       cl_mem *dev_trgb = dev_rgb;
       for(int d = 0, i = 1, h = 0; d < 6; d++, i ^= 1, h ^= 2)
@@ -1888,7 +1897,10 @@ static int process_markesteijn_cl(
                                       .sizex = 1 << 8, .sizey = 1 << 8 };
 
       if(!dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_red_and_blue, &locopt_rb_br))
-      goto error;
+      {
+        err = CL_INVALID_WORK_DIMENSION;
+        goto error;
+      }
 
       for(int d = 0; d < 4; d++)
       {
@@ -1909,7 +1921,10 @@ static int process_markesteijn_cl(
                                       .sizex = 1 << 8, .sizey = 1 << 8 };
 
       if(!dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_interpolate_twoxtwo, &locopt_g22))
-      goto error;
+      {
+        err = CL_INVALID_WORK_DIMENSION;
+        goto error;
+      }
 
       for(int d = 0, n = 0; d < ndir; d += 2, n++)
       {
@@ -1946,7 +1961,10 @@ static int process_markesteijn_cl(
                                     .sizex = 1 << 8, .sizey = 1 << 8 };
 
     if(!dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_differentiate, &locopt_diff))
-    goto error;
+    {
+      err = CL_INVALID_WORK_DIMENSION;
+      goto error;
+    }
 
     for(int d = 0; d < ndir; d++)
     {
@@ -1992,7 +2010,10 @@ static int process_markesteijn_cl(
                                     .sizex = 1 << 8, .sizey = 1 << 8 };
 
     if(!dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_homo_set, &locopt_homo))
-    goto error;
+    {
+      err = CL_INVALID_WORK_DIMENSION;
+      goto error;
+    }
 
     for(int d = 0; d < ndir; d++)
     {
@@ -2018,7 +2039,10 @@ static int process_markesteijn_cl(
                                     .sizex = 1 << 8, .sizey = 1 << 8 };
 
     if(!dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_homo_sum, &locopt_homo_sum))
-    goto error;
+    {
+      err = CL_INVALID_WORK_DIMENSION;
+      goto error;
+    }
 
     for(int d = 0; d < ndir; d++)
     {
@@ -2159,6 +2183,7 @@ static int process_markesteijn_cl(
       size_t oorigin[] = { 0, 0, 0 };
       size_t region[] = { edges[n][2], edges[n][3], 1 };
 
+      err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
       // reserve input buffer for image edge
       dev_edge_in = dt_opencl_alloc_device(devid, edges[n][2], edges[n][3], sizeof(float));
       if(dev_edge_in == NULL) goto error;
