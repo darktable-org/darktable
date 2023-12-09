@@ -638,7 +638,7 @@ static void invalidate_luminance_cache(dt_iop_module_t *const self)
   g->thumb_preview_hash = 0;
   g->ui_preview_hash = 0;
   dt_iop_gui_leave_critical_section(self);
-  dt_iop_refresh_preview(self);
+  dt_iop_refresh_all(self);
 }
 
 // gaussian-ish kernel - sum is == 1.0f so we don't care much about actual coeffs
