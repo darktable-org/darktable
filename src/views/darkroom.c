@@ -3636,35 +3636,15 @@ static void _second_window_configure_ppd_dpi(dt_develop_t *dev)
   GtkWidget *widget = dev->second_wnd;
 
   dev->preview2.ppd = dt_get_system_gui_ppd(widget);
+  dev->preview2.dpi = dt_get_screen_resolution(widget);
 
-  // get the screen resolution
-  float screen_dpi_overwrite = dt_conf_get_float("screen_dpi_overwrite");
-  if(screen_dpi_overwrite > 0.0)
-  {
-    dev->preview2.dpi = screen_dpi_overwrite;
-    gdk_screen_set_resolution(gtk_widget_get_screen(widget), screen_dpi_overwrite);
-    dt_print(DT_DEBUG_CONTROL,
-             "[screen resolution] setting the screen resolution to %f dpi as specified in "
-             "the configuration file\n",
-             screen_dpi_overwrite);
-  }
-  else
-  {
-    dev->preview2.dpi = gdk_screen_get_resolution(gtk_widget_get_screen(widget));
-    if(dev->preview2.dpi < 0.0)
-    {
-      dev->preview2.dpi = 96.0;
-      gdk_screen_set_resolution(gtk_widget_get_screen(widget), 96.0);
-      dt_print(DT_DEBUG_CONTROL,
-               "[screen resolution] setting the screen resolution to the default 96 dpi\n");
-    }
-    else
-      dt_print(DT_DEBUG_CONTROL,
-               "[screen resolution] setting the screen resolution to %f dpi\n",
-               dev->preview2.dpi);
-  }
+#ifdef GDK_WINDOWING_QUARTZ
+  dev->preview2.dpi_factor
+      = dev->preview2.dpi / 72; // macOS has a fixed DPI of 72
+#else
   dev->preview2.dpi_factor
       = dev->preview2.dpi / 96; // according to man xrandr and the docs of gdk_screen_set_resolution 96 is the default
+#endif
 }
 
 static gboolean _second_window_draw_callback(GtkWidget *widget,

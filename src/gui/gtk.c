@@ -1391,6 +1391,35 @@ double dt_get_system_gui_ppd(GtkWidget *widget)
   return res;
 }
 
+double dt_get_screen_resolution(GtkWidget *widget)
+{
+  // get the screen resolution
+  float screen_dpi = dt_conf_get_float("screen_dpi_overwrite");
+  if(screen_dpi > 0.0)
+  {
+    gdk_screen_set_resolution(gtk_widget_get_screen(widget), screen_dpi);
+    dt_print(DT_DEBUG_CONTROL,
+             "[screen resolution] setting the screen resolution to %f dpi as specified in "
+             "the configuration file\n",
+             screen_dpi);
+  }
+  else
+  {
+    screen_dpi = gdk_screen_get_resolution(gtk_widget_get_screen(widget));
+    if(screen_dpi < 0.0) 
+    {
+      screen_dpi = 96.0;
+      gdk_screen_set_resolution(gtk_widget_get_screen(widget), 96.0);
+      dt_print(DT_DEBUG_CONTROL,
+               "[screen resolution] setting the screen resolution to the default 96 dpi\n");
+    }
+    else
+      dt_print(DT_DEBUG_CONTROL,
+               "[screen resolution] setting the screen resolution to %f dpi\n", screen_dpi);
+  }
+  return screen_dpi;
+}
+
 void dt_configure_ppd_dpi(dt_gui_gtk_t *gui)
 {
   GtkWidget *widget = gui->ui->main_window;
@@ -1402,31 +1431,9 @@ void dt_configure_ppd_dpi(dt_gui_gtk_t *gui)
       gui->ppd_thb *= DT_GUI_THUMBSIZE_REDUCE;
       gui->filter_image = CAIRO_FILTER_FAST;
   }
-  // get the screen resolution
-  const float screen_dpi_overwrite = dt_conf_get_float("screen_dpi_overwrite");
-  if(screen_dpi_overwrite > 0.0)
-  {
-    gui->dpi = screen_dpi_overwrite;
-    gdk_screen_set_resolution(gtk_widget_get_screen(widget), screen_dpi_overwrite);
-    dt_print(DT_DEBUG_CONTROL,
-             "[screen resolution] setting the screen resolution to %f dpi as specified in "
-             "the configuration file\n",
-             screen_dpi_overwrite);
-  }
-  else
-  {
-    gui->dpi = gdk_screen_get_resolution(gtk_widget_get_screen(widget));
-    if(gui->dpi < 0.0)
-    {
-      gui->dpi = 96.0;
-      gdk_screen_set_resolution(gtk_widget_get_screen(widget), 96.0);
-      dt_print(DT_DEBUG_CONTROL,
-               "[screen resolution] setting the screen resolution to the default 96 dpi\n");
-    }
-    else
-      dt_print(DT_DEBUG_CONTROL,
-               "[screen resolution] setting the screen resolution to %f dpi\n", gui->dpi);
-  }
+
+   gui->dpi = dt_get_screen_resolution(widget);
+
 #ifdef GDK_WINDOWING_QUARTZ
   gui->dpi_factor
       = gui->dpi / 72; // macOS has a fixed DPI of 72
