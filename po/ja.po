@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-11-30 19:32+0100\n"
-"PO-Revision-Date: 2023-12-11 23:24+0900\n"
+"PO-Revision-Date: 2023-12-11 23:52+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -4831,57 +4831,43 @@ msgstr "色相の保持"
 
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:152
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:261
-#, fuzzy
-#| msgid "saturation"
 msgid "red attenuation"
-msgstr "彩度"
+msgstr "赤 減衰"
 
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:158
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:265
-#, fuzzy
-#| msgid "reset rotation"
 msgid "red rotation"
-msgstr "回転をリセット"
+msgstr "赤 回転"
 
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:164
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:269
-#, fuzzy
-#| msgid "reset rotation"
 msgid "green attenuation"
-msgstr "回転をリセット"
+msgstr "緑 減衰"
 
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:170
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:273
-#, fuzzy
-#| msgid "reset rotation"
 msgid "green rotation"
-msgstr "回転をリセット"
+msgstr "緑 回転"
 
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:176
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:277
-#, fuzzy
-#| msgid "global saturation"
 msgid "blue attenuation"
-msgstr "全体の彩度（サチュレーション）"
+msgstr "青 減衰"
 
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:182
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:281
-#, fuzzy
-#| msgid "rotation"
 msgid "blue rotation"
-msgstr "回転"
+msgstr "青 回転"
 
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:188
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:285
-#, fuzzy
-#| msgid "recovery"
 msgid "recover purity"
-msgstr "復元"
+msgstr "純度の復元"
 
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:194
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:289
 msgid "base primaries"
-msgstr ""
+msgstr "ベースプライマリ"
 
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:303
 msgid "per channel"
@@ -19274,31 +19260,31 @@ msgstr "RGBプライマリ"
 
 #: ../src/iop/primaries.c:79
 msgid "adjustment of the RGB color primaries for color grading"
-msgstr ""
+msgstr "カラーグレーディングのためのRGBカラープライマリの調整"
 
 #: ../src/iop/primaries.c:395
 msgid "shift red towards yellow or magenta"
-msgstr ""
+msgstr "赤を黃またはマゼンタへずらす"
 
 #: ../src/iop/primaries.c:396
 msgid "red primary purity"
-msgstr ""
+msgstr "赤のプライマリの純度"
 
 #: ../src/iop/primaries.c:397
 msgid "shift green towards cyan or yellow"
-msgstr ""
+msgstr "緑をシアンまたは黄へずらす"
 
 #: ../src/iop/primaries.c:398
 msgid "green primary purity"
-msgstr ""
+msgstr "緑のプライマリの純度"
 
 #: ../src/iop/primaries.c:399
 msgid "shift blue towards magenta or cyan"
-msgstr ""
+msgstr "青をマゼンタまたはシアンへずらす"
 
 #: ../src/iop/primaries.c:400
 msgid "blue primary purity"
-msgstr ""
+msgstr "青のプライマリの純度"
 
 #: ../src/iop/profile_gamma.c:96
 msgid "unbreak input profile"
@@ -20044,7 +20030,7 @@ msgstr "アスペクト比をカスタム設定します"
 
 #: ../src/iop/sigmoid.c:943
 msgid "primaries to use as the base for below adjustments"
-msgstr ""
+msgstr "以下の調整のためのベースとして使用するプライマリ"
 
 #: ../src/iop/sigmoid.c:962
 #, fuzzy
@@ -20054,7 +20040,7 @@ msgstr "ブレンドの不透明度を設定します"
 
 #: ../src/iop/sigmoid.c:963
 msgid "rotate the red primary"
-msgstr ""
+msgstr "赤のプライマリを回転する"
 
 #: ../src/iop/sigmoid.c:964
 #, fuzzy
@@ -20064,7 +20050,7 @@ msgstr "ブレンドの不透明度を設定します"
 
 #: ../src/iop/sigmoid.c:965
 msgid "rotate the green primary"
-msgstr ""
+msgstr "緑のプライマリを回転する"
 
 #: ../src/iop/sigmoid.c:966
 #, fuzzy
@@ -20074,11 +20060,11 @@ msgstr "ブレンドの不透明度を設定します"
 
 #: ../src/iop/sigmoid.c:967
 msgid "rotate the blue primary"
-msgstr ""
+msgstr "青のプライマリを回転する"
 
 #: ../src/iop/sigmoid.c:974
 msgid "recover some of the original purity after the inset"
-msgstr ""
+msgstr "差し込み後に元の純度を幾らか回復する"
 
 #: ../src/iop/sigmoid.c:978
 msgid "display luminance"
