@@ -2115,7 +2115,8 @@ void dt_collection_sort_deserialize(const char *buf)
     if(buf[0] == '$') buf++;
   }
   dt_collection_update_query(darktable.collection,
-                             DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
+                             DT_COLLECTION_CHANGE_NEW_QUERY,
+                             DT_COLLECTION_PROP_UNDEF, NULL);
 }
 
 void dt_collection_sort_serialize(char *buf, int bufsize)
@@ -2638,7 +2639,8 @@ static void _dt_collection_filmroll_imported_callback(gpointer instance,
   collection->count_no_group = _dt_collection_compute_count(collection, TRUE);
   if(!collection->clone)
   {
-    if(old_count != collection->count_no_group) dt_collection_hint_message(collection);
+    if(old_count != collection->count_no_group)
+      dt_collection_hint_message(collection);
     dt_collection_update_query(collection,
                                DT_COLLECTION_CHANGE_NEW_QUERY,
                                DT_COLLECTION_PROP_UNDEF, NULL);

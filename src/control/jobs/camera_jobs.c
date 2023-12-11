@@ -221,12 +221,16 @@ dt_job_t *dt_camera_capture_job_create(const char *jobcode, uint32_t delay, uint
 }
 
 /** Listener interface for import job */
-void _camera_import_image_downloaded(const dt_camera_t *camera, const char *in_path,
-                                     const char *in_filename, const char *filename, void *data)
+void _camera_import_image_downloaded(const dt_camera_t *camera,
+                                     const char *in_path,
+                                     const char *in_filename,
+                                     const char *filename,
+                                     void *data)
 {
   // Import downloaded image to import filmroll
   dt_camera_import_t *t = (dt_camera_import_t *)data;
-  const dt_imgid_t imgid = dt_image_import(dt_import_session_film_id(t->shared.session), filename, FALSE, TRUE);
+  const dt_imgid_t imgid =
+    dt_image_import(dt_import_session_film_id(t->shared.session), filename, FALSE, TRUE);
 
   const time_t timestamp = (!in_path || !in_filename) ? 0 :
                dt_camctl_get_image_file_timestamp(darktable.camctl, in_path, in_filename);
@@ -242,7 +246,8 @@ void _camera_import_image_downloaded(const dt_camera_t *camera, const char *in_p
   dt_control_queue_redraw_center();
   gchar *basename = g_path_get_basename(filename);
   const int num_images = g_list_length(t->images);
-  dt_control_log(ngettext("%d/%d imported to %s", "%d/%d imported to %s", t->import_count + 1),
+  dt_control_log(ngettext("%d/%d imported to %s", "%d/%d imported to %s",
+                          t->import_count + 1),
                  t->import_count + 1, num_images, basename);
   g_free(basename);
 
@@ -252,7 +257,8 @@ void _camera_import_image_downloaded(const dt_camera_t *camera, const char *in_p
 
   if((imgid & 3) == 3)
   {
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, NULL);
+    dt_collection_update_query(darktable.collection,
+                               DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, NULL);
   }
 
   if(t->import_count + 1 == num_images)
@@ -267,8 +273,10 @@ void _camera_import_image_downloaded(const dt_camera_t *camera, const char *in_p
   t->import_count++;
 }
 
-static const char *_camera_request_image_filename(const dt_camera_t *camera, const char *filename,
-                                                  const dt_image_basic_exif_t *basic_exif, void *data)
+static const char *_camera_request_image_filename(const dt_camera_t *camera,
+                                                  const char *filename,
+                                                  const dt_image_basic_exif_t *basic_exif,
+                                                  void *data)
 {
   const gchar *file;
   struct dt_camera_shared_t *shared;
@@ -306,7 +314,8 @@ static int32_t dt_camera_import_job_run(dt_job_t *job)
   guint total = g_list_length(params->images);
   char message[512] = { 0 };
   snprintf(message, sizeof(message),
-           ngettext("importing %d image from camera", "importing %d images from camera", total), total);
+           ngettext("importing %d image from camera",
+                    "importing %d images from camera", total), total);
   dt_control_job_set_progress_message(job, message);
 
   // Switch to new filmroll
