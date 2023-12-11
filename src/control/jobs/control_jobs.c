@@ -2279,10 +2279,22 @@ static int32_t _control_import_job_run(dt_job_t *job)
                                           data->session, &imgs);
       if(filmid != -1 && first_filmid == -1)
       {
+        dt_collection_properties_t property =
+          dt_conf_get_int("plugins/lighttable/collect/item0");
+
+        if(property != DT_COLLECTION_PROP_FOLDERS
+           && property != DT_COLLECTION_PROP_FILMROLL)
+        {
+          // the current collection is not based on filmrolls or folders
+          // fallback to DT_COLLECTION_PROP_FILMROLL. Otherwise we keep
+          // the current property of the collection.
+          property = DT_COLLECTION_PROP_FILMROLL;
+        }
+
         first_filmid = filmid;
         const char *output_path = dt_import_session_path(data->session, FALSE);
         dt_conf_set_int("plugins/lighttable/collect/num_rules", 1);
-        dt_conf_set_int("plugins/lighttable/collect/item0", 0);
+        dt_conf_set_int("plugins/lighttable/collect/item0", property);
         dt_conf_set_string("plugins/lighttable/collect/string0", output_path);
         _collection_update(&last_coll_update, &update_interval);
       }
