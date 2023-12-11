@@ -1838,7 +1838,8 @@ static void _import_set_collection(const char *dirname)
     dt_conf_set_int("plugins/lighttable/collect/num_rules", 1);
     dt_conf_set_int("plugins/lighttable/collect/item0", property);
     dt_conf_set_string("plugins/lighttable/collect/string0", dirname);
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF,
+    dt_collection_update_query(darktable.collection,
+                               DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF,
                                NULL);
   }
 }
