@@ -26,10 +26,12 @@
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"
 #include "dtgtk/button.h"
+#include "dtgtk/drawingarea.h"
 #include "dtgtk/resetlabel.h"
 #include "dtgtk/togglebutton.h"
 #include "gui/accelerators.h"
 #include "gui/color_picker_proxy.h"
+#include "gui/drag_and_drop.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
 #include <assert.h>
@@ -89,7 +91,8 @@ typedef struct dt_iop_overlay_params_t
   dt_iop_overlay_base_scale_t scale_base; // $DEFAULT: DT_SCALE_MAINMENU_IMAGE $DESCRIPTION: "scale on"
   dt_iop_overlay_img_scale_t scale_img; // $DEFAULT: DT_SCALE_IMG_LARGER $DESCRIPTION: "scale marker to"
   dt_iop_overlay_svg_scale_t scale_svg; // $DEFAULT: DT_SCALE_SVG_WIDTH $DESCRIPTION: "scale marker reference"
-  dt_imgid_t imgid;
+  dt_imgid_t imgid; // $DEFAULT: NO_IMGID $DESCRIPTION: "overlay image id"
+  char filename[1024]; // $DEFAULT: 0 $DESCRIPTION: "full overlay's filename"
 } dt_iop_overlay_params_t;
 
 typedef struct dt_iop_overlay_data_t
@@ -114,10 +117,12 @@ typedef struct dt_iop_overlay_global_data_t
 
   size_t pwidth;
   size_t pheight;
+  guint thumb_timeout_id;
 } dt_iop_overlay_global_data_t;
 
 typedef struct dt_iop_overlay_gui_data_t
 {
+  GtkDrawingArea *area;
   GtkWidget *align[9];                               // Alignment buttons
   GtkWidget *opacity, *scale, *x_offset, *y_offset;  // opacity, scale, xoffs, yoffs
   GtkWidget *scale_base;                             // "scale on"
@@ -212,19 +217,42 @@ static void _setup_overlay(dt_iop_module_t *self)
 {
   dt_iop_overlay_params_t *p = (dt_iop_overlay_params_t *)self->params;
   dt_iop_overlay_global_data_t *gd = (dt_iop_overlay_global_data_t *)self->global_data;
+  dt_iop_overlay_gui_data_t *g = (dt_iop_overlay_gui_data_t *)self->gui_data;
 
-  const dt_imgid_t imgid = p->imgid;
-
-  if(!dt_is_valid_imgid(imgid))
+  if(!dt_is_valid_imgid(p->imgid))
     return;
 
-  if(dt_image_exists(imgid))
+  gboolean image_exists = dt_image_exists(p->imgid);
+
+  // The overlay image could have been removed from collection and
+  // imported again. Check if we can find
+  if(!image_exists)
+  {
+    const dt_imgid_t new_imgid = dt_image_get_id_full_path(p->filename);
+    if(dt_is_valid_imgid(new_imgid))
+    {
+      image_exists = TRUE;
+      p->imgid = new_imgid;
+      gtk_widget_queue_draw(GTK_WIDGET(g->area));
+    }
+    else
+    {
+      gchar *tooltip = g_strdup_printf
+        (_("overlay image missing from database\n\n"
+           "'%s'" ), p->filename);
+      gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), tooltip);
+    }
+  }
+
+  if(image_exists)
   {
     const dt_develop_t *dev = self->dev;
     const float iscale = p->scale / 100.0f;
 
     const size_t width  = CLAMP(dev->preview_pipe->iwidth / iscale, 2*1024, 8*1024);
     const size_t height = CLAMP(dev->preview_pipe->iheight / iscale, 2*1024, 8*1024);
+
+    gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), "");
 
     uint8_t *buf;
     size_t bw;
@@ -252,18 +280,20 @@ static void _setup_overlay(dt_iop_module_t *self)
   }
   else
   {
-    dt_control_log(_("image %d does not exists"), imgid);
+    dt_control_log(_("image %d does not exists"), p->imgid);
   }
 }
 
 static gboolean _build_overlay(gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_overlay_global_data_t *gd = (dt_iop_overlay_global_data_t *)self->global_data;
   dt_iop_overlay_params_t *p = (dt_iop_overlay_params_t *)self->params;
 
   if(p)
   {
     _setup_overlay(self);
+    gd->thumb_timeout_id = 0;
     dt_control_queue_redraw_center();
   }
   return FALSE;
@@ -285,14 +315,15 @@ void process(struct dt_iop_module_t *self,
   const float angle = (M_PI / 180) * (-data->rotate);
 
   // is overlay image ready
-  if(!gd->buf
-     || gd->pwidth != self->dev->preview_pipe->iwidth
-     || gd->pheight != self->dev->preview_pipe->iheight)
+  if(self->dev->preview_pipe
+     && (!gd->buf
+         || gd->pwidth != self->dev->preview_pipe->iwidth
+         || gd->pheight != self->dev->preview_pipe->iheight))
   {
     dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
 
     // let register a build of the overlay buffer
-    g_timeout_add(10, _build_overlay, self);
+    gd->thumb_timeout_id = g_timeout_add(10, _build_overlay, self);
 
     return;
   }
@@ -620,17 +651,41 @@ void process(struct dt_iop_module_t *self,
   dt_free_align(buf);
 }
 
-static void _imgid_callback(GtkWidget *entry, gpointer user_data)
+static void _draw_thumb(GtkWidget *area,
+                        cairo_t *crf,
+                        gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_overlay_gui_data_t *g = (dt_iop_overlay_gui_data_t *)self->gui_data;
   dt_iop_overlay_params_t *p = (dt_iop_overlay_params_t *)self->params;
 
-  p->imgid = atoi(gtk_entry_get_text(GTK_ENTRY(g->imgid)));
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(area, &allocation);
+  const int width = allocation.width;
+  const int height = allocation.height;
 
-  _setup_overlay(self);
+  if(dt_is_valid_imgid(p->imgid))
+  {
+    cairo_surface_t *surf = NULL;
+    const dt_view_surface_value_t res =
+      dt_view_image_get_surface(p->imgid, width, height, &surf, TRUE);
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+    if(res == DT_VIEW_SURFACE_OK)
+    {
+      cairo_set_source_surface(crf, surf, 0.0, 0.0);
+      cairo_paint(crf);
+    }
+  }
+  else
+  {
+    cairo_set_source_rgb(crf, 0, 0, 0);
+    cairo_set_line_width(crf, 3.0);
+    cairo_rectangle(crf, 0.0, 0.0, width, height);
+    cairo_move_to(crf, 0.0, 0.0);
+    cairo_line_to(crf, width, height);
+    cairo_move_to(crf, 0.0, height);
+    cairo_line_to(crf, width, 0.0);
+    cairo_stroke(crf);
+  }
 }
 
 static void _alignment_callback(GtkWidget *tb, gpointer user_data)
@@ -663,6 +718,16 @@ static void _alignment_callback(GtkWidget *tb, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+static void _signal_image_changed(gpointer instance, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_overlay_global_data_t *gd = (dt_iop_overlay_global_data_t *)self->global_data;
+
+  if(gd->thumb_timeout_id != 0)
+    g_source_remove(gd->thumb_timeout_id);
+  gd->thumb_timeout_id = 0;
+}
+
 void commit_params(struct dt_iop_module_t *self,
                    dt_iop_params_t *p1,
                    dt_dev_pixelpipe_t *pipe,
@@ -680,7 +745,6 @@ void commit_params(struct dt_iop_module_t *self,
   d->scale_base = p->scale_base;
   d->scale_img = p->scale_img;
   d->scale_svg = p->scale_svg;
-
   d->imgid = p->imgid;
 }
 
@@ -703,6 +767,7 @@ void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_overlay_gui_data_t *g = (dt_iop_overlay_gui_data_t *)self->gui_data;
   dt_iop_overlay_params_t *p = (dt_iop_overlay_params_t *)self->params;
+  dt_iop_overlay_global_data_t *gd = (dt_iop_overlay_global_data_t *)self->global_data;
 
   for(int i = 0; i < 9; i++)
   {
@@ -721,9 +786,8 @@ void gui_update(struct dt_iop_module_t *self)
     gtk_widget_set_visible(GTK_WIDGET(g->scale_svg), FALSE);
   }
 
-  char buf[128] = { 0 };
-  g_snprintf(buf, sizeof(buf), "%d", p->imgid);
-  gtk_entry_set_text(GTK_ENTRY(g->imgid), buf);
+  if(dt_is_valid_imgid(p->imgid))
+    gd->thumb_timeout_id = g_timeout_add(10, _build_overlay, self);
 }
 
 void gui_changed(dt_iop_module_t *self,
@@ -758,16 +822,61 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
+  dt_iop_overlay_global_data_t *gd = (dt_iop_overlay_global_data_t *)module->data;
+  if(gd->thumb_timeout_id != 0)
+    g_source_remove(gd->thumb_timeout_id);
+  gd->thumb_timeout_id = 0;
+
   free(module->data);
   module->data = NULL;
+}
+
+static void _drag_and_drop_received(GtkWidget *widget,
+                                    GdkDragContext *context,
+                                    gint x,
+                                    gint y,
+                                    GtkSelectionData *selection_data,
+                                    guint target_type,
+                                    guint time,
+                                    gpointer data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)data;
+  dt_iop_overlay_gui_data_t *g = (dt_iop_overlay_gui_data_t *)self->gui_data;
+  dt_iop_overlay_params_t *p = (dt_iop_overlay_params_t *)self->params;
+  dt_iop_overlay_global_data_t *gd = (dt_iop_overlay_global_data_t *)self->global_data;
+
+  gboolean success = FALSE;
+  if(selection_data != NULL && target_type == DND_TARGET_IMGID)
+  {
+    const int imgs_nb = gtk_selection_data_get_length(selection_data) / sizeof(dt_imgid_t);
+    if(imgs_nb)
+    {
+      dt_imgid_t *imgs = (dt_imgid_t *)gtk_selection_data_get_data(selection_data);
+
+      p->imgid = imgs[0];
+
+      gboolean from_cache = FALSE;
+      dt_image_full_path(p->imgid, p->filename, sizeof(p->filename), &from_cache);
+
+      gd->thumb_timeout_id = g_timeout_add(10, _build_overlay, self);
+      dt_dev_add_history_item(darktable.develop, self, TRUE);
+
+      gtk_widget_queue_draw(GTK_WIDGET(g->area));
+
+      success = TRUE;
+    }
+  }
+  gtk_drag_finish(context, success, FALSE, time);
 }
 
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_overlay_gui_data_t *g = IOP_GUI_ALLOC(overlay);
   dt_iop_overlay_params_t *p = (dt_iop_overlay_params_t *)self->params;
+  dt_iop_overlay_global_data_t *gd = (dt_iop_overlay_global_data_t *)self->global_data;
 
   p->imgid = NO_IMGID;
+  gd->thumb_timeout_id = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
@@ -776,21 +885,23 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(10));
   int line = 0;
 
-  // Image id & history
-  GtkWidget *label = dt_ui_label_new(_("image id"));
-  g->imgid = dt_action_entry_new(DT_ACTION(self),
-                                 N_("image id"),
-                                 G_CALLBACK(_imgid_callback),
-                                 self,
-                                 _("id of the image to use as overlay)"),
-                                 "");
-  gtk_grid_attach(grid, label, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(grid, g->imgid, label, GTK_POS_RIGHT, 2, 1);
+  g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(1.0));
+  g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(_draw_thumb), self);
+  gtk_widget_set_size_request(GTK_WIDGET(g->area), 150, 150);
+  gtk_grid_attach(grid, GTK_WIDGET(g->area), 0, line++, 1, 2);
 
-  g_signal_handlers_disconnect_by_func(G_OBJECT(g->imgid),
-                                       G_CALLBACK(_imgid_callback), self);
+  gtk_widget_grab_focus(GTK_WIDGET(g->area));
 
-  g_signal_connect(G_OBJECT(g->imgid), "activate", G_CALLBACK(_imgid_callback), self);
+  gtk_drag_dest_set
+    (GTK_WIDGET(g->area),  /* widget that will accept a drop */
+     GTK_DEST_DEFAULT_ALL, /* default actions for dest on DnD */
+     target_list_all,      /* lists of target to support */
+     n_targets_all,        /* size of list */
+     GDK_ACTION_MOVE      /* what to do with data after dropped */
+     );
+
+  g_signal_connect(GTK_WIDGET(g->area),
+                   "drag-data-received", G_CALLBACK(_drag_and_drop_received), self);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(grid), TRUE, TRUE, 0);
 
@@ -833,7 +944,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   // Create the 3x3 gtk table toggle button table...
   GtkWidget *bat = gtk_grid_new();
-  label = dtgtk_reset_label_new(_("alignment"), self, &p->alignment, sizeof(p->alignment));
+  GtkWidget *label = dtgtk_reset_label_new(_("alignment"), self, &p->alignment, sizeof(p->alignment));
   gtk_grid_attach(GTK_GRID(bat), label, 0, 0, 1, 3);
   gtk_widget_set_hexpand(label, TRUE);
   gtk_grid_set_row_spacing(GTK_GRID(bat), DT_PIXEL_APPLY_DPI(3));
@@ -859,11 +970,17 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->opacity, _("the opacity of the overlay"));
   gtk_widget_set_tooltip_text(g->scale, _("the scale of the overlay"));
   gtk_widget_set_tooltip_text(g->rotate, _("the rotation of the overlay"));
+
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
+                                  G_CALLBACK(_signal_image_changed), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
   IOP_GUI_FREE;
+
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
+                                     G_CALLBACK(_signal_image_changed), self);
 }
 
 // clang-format off
