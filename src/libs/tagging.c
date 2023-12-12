@@ -2957,10 +2957,10 @@ static void _event_dnd_received(GtkWidget *widget, GdkDragContext *context, gint
   else if((target_type == DND_TARGET_IMGID) && (selection_data != NULL))
   {
     GtkTreePath *path = NULL;
-    const int imgs_nb = gtk_selection_data_get_length(selection_data) / sizeof(uint32_t);
+    const int imgs_nb = gtk_selection_data_get_length(selection_data) / sizeof(dt_imgid_t);
     if(imgs_nb && gtk_tree_view_get_path_at_pos(tree, x, y, &path, NULL, NULL, NULL))
     {
-      const uint32_t *imgt = (uint32_t *)gtk_selection_data_get_data(selection_data);
+      const dt_imgid_t *imgt = (dt_imgid_t *)gtk_selection_data_get_data(selection_data);
       GList *imgs = NULL;
       for(int i = 0; i < imgs_nb; i++)
       {
