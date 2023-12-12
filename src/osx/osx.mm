@@ -39,24 +39,6 @@
 #include "osx.h"
 #include "libintl.h"
 
-void dt_osx_autoset_dpi(GtkWidget *widget)
-{
-#if 0
-  GdkScreen *screen = gtk_widget_get_screen(widget);
-  if(!screen)
-    screen = gdk_screen_get_default();
-  if(!screen)
-    return;
-
-  CGDirectDisplayID id = CGMainDisplayID();
-  CGSize size_in_mm = CGDisplayScreenSize(id);
-  int width = CGDisplayPixelsWide(id);
-  int height = CGDisplayPixelsHigh(id);
-  gdk_screen_set_resolution(screen,
-      25.4 * sqrt(width * width + height * height)
-           / sqrt(size_in_mm.width * size_in_mm.width + size_in_mm.height * size_in_mm.height));
-#endif
-}
 
 float dt_osx_get_ppd()
 {

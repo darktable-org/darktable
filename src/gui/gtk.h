@@ -210,6 +210,7 @@ int dt_gui_gtk_write_config();
 void dt_gui_gtk_set_source_rgb(cairo_t *cr, dt_gui_color_t);
 void dt_gui_gtk_set_source_rgba(cairo_t *cr, dt_gui_color_t, float opacity_coef);
 double dt_get_system_gui_ppd(GtkWidget *widget);
+double dt_get_screen_resolution(GtkWidget *widget);
 
 /* Check sidebar_scroll_default and modifier keys to determine if scroll event
  * should be processed by control or by panel. If default is panel scroll but

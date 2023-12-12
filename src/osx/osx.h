@@ -24,7 +24,6 @@
 extern "C" {
 #endif
 
-void dt_osx_autoset_dpi(GtkWidget *widget);
 float dt_osx_get_ppd();
 void dt_osx_disallow_fullscreen(GtkWidget *widget);
 gboolean dt_osx_file_trash(const char *filename, GError **error);
