@@ -671,7 +671,21 @@ static void _draw_thumb(GtkWidget *area,
 
     if(res == DT_VIEW_SURFACE_OK)
     {
-      cairo_set_source_surface(crf, surf, 0.0, 0.0);
+      // compute dx/dy to center thumb on the area
+      const int img_width = cairo_image_surface_get_width(surf);
+      const int img_height = cairo_image_surface_get_height(surf);
+
+      int dx = 0;
+      int dy = 0;
+
+      if(img_width > img_height)
+        dy = (height - img_height) / 2;
+      else
+        dx = (width - img_width) / 2;
+
+      dt_gui_gtk_set_source_rgb(crf, DT_GUI_COLOR_THUMBNAIL_BG);
+      cairo_paint(crf);
+      cairo_set_source_surface(crf, surf, dx, dy);
       cairo_paint(crf);
     }
   }
