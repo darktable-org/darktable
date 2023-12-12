@@ -395,6 +395,9 @@ changes (where available).
 
 - Fixed various bugs related to feathering masks.
 
+- Fixed a DPI scaling issue on macOS causing some GUI elements being
+  rendered too small.
+
 ## Lua
 
 ### API Version
