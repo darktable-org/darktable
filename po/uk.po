@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-11-30 19:32+0100\n"
-"PO-Revision-Date: 2023-11-30 21:19+0200\n"
+"PO-Revision-Date: 2023-12-14 00:14+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -17947,7 +17947,7 @@ msgstr "Обмежити видалення серпанку до певної �
 
 #: ../src/iop/highlights.c:173
 msgid "highlight reconstruction"
-msgstr "Відновлення переекспонованих ділянок"
+msgstr "Відновлення переекспонованого"
 
 #: ../src/iop/highlights.c:178
 msgid "avoid magenta highlights and try to recover highlights colors"
