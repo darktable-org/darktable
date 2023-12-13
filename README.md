@@ -57,7 +57,7 @@ Requirements
 
 * Linux (64-bit)
 * FreeBSD (64-bit)
-* Windows (64-bit), 8.1 w/ [UCRT](https://support.microsoft.com/en-us/topic/update-for-universal-c-runtime-in-windows-c0514201-7fe6-95a3-b0a5-287930f3560c) and later
+* Windows (64-bit), 10 1903 and later
 * macOS 13.5 and later
 
 *Big-endian platforms are not supported.*
@@ -71,7 +71,7 @@ prefer using darktable on Linux.*
 
 (workable minimum / **recommended minimum**):
 * RAM: 4 GB / **8 GB**
-* CPU: Intel Pentium 4 (Core 2 for Windows) / **Intel Core i5 4×2.4 GHz**
+* CPU: Intel Pentium 4 (Celeron 3000 for Windows) / **Intel Core i5 4×2.4 GHz**
 * GPU: none / **Nvidia with 1024 CUDA cores, 4 GB, OpenCL 1.2 compatible**
 * free disk space: 250 MB / **1 GB**
 
