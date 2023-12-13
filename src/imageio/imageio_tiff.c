@@ -368,13 +368,7 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
 
   t.image = img;
 
-#ifdef _WIN32
-  wchar_t *wfilename = g_utf8_to_utf16(filename, -1, NULL, NULL, NULL);
-  t.tiff = TIFFOpenW(wfilename, "rb");
-  g_free(wfilename);
-#else
   t.tiff = TIFFOpen(filename, "rb");
-#endif
 
   if(t.tiff == NULL) return DT_IMAGEIO_LOAD_FAILED;
 
@@ -508,13 +502,7 @@ int dt_imageio_tiff_read_profile(const char *filename, uint8_t **out)
 
   if(!(filename && *filename && out)) return 0;
 
-#ifdef _WIN32
-  wchar_t *wfilename = g_utf8_to_utf16(filename, -1, NULL, NULL, NULL);
-  tiff = TIFFOpenW(wfilename, "rb");
-  g_free(wfilename);
-#else
   tiff = TIFFOpen(filename, "rb");
-#endif
 
   if(tiff == NULL) return 0;
 

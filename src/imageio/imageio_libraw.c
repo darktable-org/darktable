@@ -374,7 +374,9 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
   if(!raw)
     return DT_IMAGEIO_LOAD_FAILED;
 
-#if defined(_WIN32) && (defined(UNICODE) || defined(_UNICODE))
+  // Windows widening can be dropped once https://github.com/LibRaw/LibRaw/issues/632
+  // is corectly fixed upstream.
+#if defined(_WIN32)
   wchar_t *wfilename = g_utf8_to_utf16(filename, -1, NULL, NULL, NULL);
   libraw_err = libraw_open_wfile(raw, wfilename);
   g_free(wfilename);
