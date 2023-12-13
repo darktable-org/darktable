@@ -44,12 +44,6 @@
 
 #include "control/control.h"
 
-#if defined(_WIN32) && defined(EXV_UNICODE_PATH)
-  #define WIDEN(s) pugi::as_wide(s)
-#else
-  #define WIDEN(s) (s)
-#endif
-
 #include <pugixml.hpp>
 
 using namespace std;
@@ -1052,7 +1046,7 @@ void dt_exif_img_check_additional_tags(dt_image_t *img,
 {
   try
   {
-    std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(WIDEN(filename)));
+    std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(filename));
     assert(image.get() != 0);
     read_metadata_threadsafe(image);
     Exiv2::ExifData &exifData = image->exifData();
@@ -2100,7 +2094,7 @@ gboolean dt_exif_get_thumbnail(const char *path,
 {
   try
   {
-    std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(WIDEN(path)));
+    std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(path));
     assert(image.get() != 0);
     read_metadata_threadsafe(image);
 
@@ -2164,7 +2158,7 @@ gboolean dt_exif_read(dt_image_t *img,
 
   try
   {
-    std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(WIDEN(path)));
+    std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(path));
     assert(image.get() != 0);
     read_metadata_threadsafe(image);
     bool res = true;
@@ -2229,7 +2223,7 @@ int dt_exif_write_blob(uint8_t *blob,
 {
   try
   {
-    std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(WIDEN(path)));
+    std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(path));
     assert(image.get() != 0);
     read_metadata_threadsafe(image);
     Exiv2::ExifData &imgExifData = image->exifData();
@@ -2310,7 +2304,7 @@ int dt_exif_read_blob(uint8_t **buf,
   *buf = NULL;
   try
   {
-    std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(WIDEN(path)));
+    std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(path));
     assert(image.get() != 0);
     read_metadata_threadsafe(image);
     Exiv2::ExifData &exifData = image->exifData();
@@ -3628,7 +3622,7 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
   try
   {
     // read xmp sidecar
-    std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(WIDEN(filename)));
+    std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(filename));
     assert(image.get() != 0);
     read_metadata_threadsafe(image);
     Exiv2::XmpData &xmpData = image->xmpData();
@@ -4943,7 +4937,7 @@ char *dt_exif_xmp_read_string(const dt_imgid_t imgid)
     {
       std::string xmpPacket;
 
-      Exiv2::DataBuf buf = Exiv2::readFile(WIDEN(input_filename));
+      Exiv2::DataBuf buf = Exiv2::readFile(input_filename);
 #if EXIV2_TEST_VERSION(0,28,0)
       xmpPacket.assign(buf.c_str(), buf.size());
 #else
@@ -4964,7 +4958,7 @@ char *dt_exif_xmp_read_string(const dt_imgid_t imgid)
       Exiv2::XmpData sidecarXmpData;
       std::string xmpPacket;
 
-      Exiv2::DataBuf buf = Exiv2::readFile(WIDEN(input_filename));
+      Exiv2::DataBuf buf = Exiv2::readFile(input_filename);
 #if EXIV2_TEST_VERSION(0,28,0)
       xmpPacket.assign(buf.c_str(), buf.size());
 #else
@@ -5291,7 +5285,7 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid,
     gboolean from_cache = TRUE;
     dt_image_full_path(imgid, input_filename, sizeof(input_filename), &from_cache);
 
-    std::unique_ptr<Exiv2::Image> img(Exiv2::ImageFactory::open(WIDEN(filename)));
+    std::unique_ptr<Exiv2::Image> img(Exiv2::ImageFactory::open(filename));
     // unfortunately it seems we have to read the metadata, to not
     // erase the exif(which we just wrote).  will make export slightly
     // slower, oh well.  img->clearXmpPacket();
@@ -5301,7 +5295,7 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid,
     {
       // initialize XMP and IPTC data with the one from the original file
       std::unique_ptr<Exiv2::Image> input_image
-        (Exiv2::ImageFactory::open(WIDEN(input_filename)));
+        (Exiv2::ImageFactory::open(input_filename));
       if(input_image.get() != 0)
       {
         read_metadata_threadsafe(input_image);
@@ -5326,7 +5320,7 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid,
       Exiv2::XmpData sidecarXmpData;
       std::string xmpPacket;
 
-      Exiv2::DataBuf buf = Exiv2::readFile(WIDEN(input_filename));
+      Exiv2::DataBuf buf = Exiv2::readFile(input_filename);
 #if EXIV2_TEST_VERSION(0,28,0)
       xmpPacket.assign(buf.c_str(), buf.size());
 #else
@@ -5580,7 +5574,7 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid,
         dt_control_log(_("cannot read XMP file '%s': '%s'"), filename, strerror(errno));
       }
 
-      Exiv2::DataBuf buf = Exiv2::readFile(WIDEN(filename));
+      Exiv2::DataBuf buf = Exiv2::readFile(filename);
 #if EXIV2_TEST_VERSION(0,28,0)
       xmpPacket.assign(buf.c_str(), buf.size());
 #else
