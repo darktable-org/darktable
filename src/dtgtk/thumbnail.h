@@ -153,24 +153,32 @@ typedef struct
   gboolean busy; // should we show the busy message ?
 } dt_thumbnail_t;
 
-dt_thumbnail_t *dt_thumbnail_new(int width,
-                                 int height,
-                                 float zoom_ratio,
-                                 dt_imgid_t imgid,
-                                 int rowid,
-                                 dt_thumbnail_overlay_t over,
-                                 dt_thumbnail_container_t container,
-                                 gboolean tooltip,
+dt_thumbnail_t *dt_thumbnail_new(const int width,
+                                 const int height,
+                                 const float zoom_ratio,
+                                 const dt_imgid_t imgid,
+                                 const int rowid,
+                                 const dt_thumbnail_overlay_t over,
+                                 const dt_thumbnail_container_t container,
+                                 const gboolean tooltip,
                                  const dt_thumbnail_selection_t sel);
 void dt_thumbnail_destroy(dt_thumbnail_t *thumb);
-GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio);
-void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean force, float zoom_ratio);
-void dt_thumbnail_set_group_border(dt_thumbnail_t *thumb, dt_thumbnail_border_t border);
-void dt_thumbnail_set_mouseover(dt_thumbnail_t *thumb, gboolean over);
+GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb,
+                                      const float zoom_ratio);
+void dt_thumbnail_resize(dt_thumbnail_t *thumb,
+                         const int width,
+                         const int height,
+                         const gboolean force,
+                         const float zoom_ratio);
+void dt_thumbnail_set_group_border(dt_thumbnail_t *thumb,
+                                   const dt_thumbnail_border_t border);
+void dt_thumbnail_set_mouseover(dt_thumbnail_t *thumb,
+                                const gboolean over);
 
 // set if the thumbnail should react (mouse_over) to drag and drop
 // note that it's just cosmetic as dropping occurs in thumbtable in any case
-void dt_thumbnail_set_drop(dt_thumbnail_t *thumb, gboolean accept_drop);
+void dt_thumbnail_set_drop(dt_thumbnail_t *thumb,
+                           const gboolean accept_drop);
 
 // update the information of the image and update icons accordingly
 void dt_thumbnail_update_infos(dt_thumbnail_t *thumb);
@@ -185,7 +193,9 @@ void dt_thumbnail_set_selection(dt_thumbnail_t *thumb,
 void dt_thumbnail_image_refresh(dt_thumbnail_t *thumb);
 
 // do we need to display simple overlays or extended ?
-void dt_thumbnail_set_overlay(dt_thumbnail_t *thumb, dt_thumbnail_overlay_t over, int timeout);
+void dt_thumbnail_set_overlay(dt_thumbnail_t *thumb,
+                              dt_thumbnail_overlay_t over,
+                              const int timeout);
 
 // force reloading image infos
 void dt_thumbnail_reload_infos(dt_thumbnail_t *thumb);
