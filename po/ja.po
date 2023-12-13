@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-11-30 19:32+0100\n"
-"PO-Revision-Date: 2023-12-11 23:52+0900\n"
+"PO-Revision-Date: 2023-12-13 11:18+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -1758,6 +1758,8 @@ msgid ""
 "if set, all unspecified platforms are accepted. only do this if no vendor "
 "driver is available"
 msgstr ""
+"設定した場合、全ての特定されていないプラットフォームが受け入れられます\n"
+"利用可能なベンダーのドライバが無い場合にのみこれを行ってください"
 
 #: ../build/bin/preferences_gen.h:6617
 msgid "security"
@@ -6296,12 +6298,16 @@ msgid ""
 "OpenCL 'per device' config data have been automatically extended by 'unified-"
 "fraction'."
 msgstr ""
+"「デバイス毎」のOpenCL設定データは「unified-fraction」によって自動的に拡張さ"
+"れました"
 
 #: ../src/common/darktable.c:2172
 msgid ""
 "OpenCL 'per device' compiler settings might have been updated.\n"
 "\n"
 msgstr ""
+"「デバイス毎」のOpenCLコンパイラ設定は更新されたかもしれません\n"
+"\n"
 
 #: ../src/common/database.c:3350
 #, c-format
@@ -17436,10 +17442,6 @@ msgstr ""
 # 算出されたダイナミックレンジを対称的に拡大縮小します。
 # 極端な輝度に余裕を与えるのに役立ちます
 #: ../src/iop/filmicrgb.c:4525
-#, fuzzy
-#| msgid ""
-#| "symmetrically enlarge or shrink the computed dynamic range.\n"
-#| "useful to give a safety margin to extreme luminances."
 msgid ""
 "symmetrically increase or decrease the computed dynamic range.\n"
 "useful to give a safety margin to extreme luminances."
@@ -17514,14 +17516,7 @@ msgid "balance"
 msgstr "バランス"
 
 #: ../src/iop/filmicrgb.c:4582
-#, fuzzy, no-c-format
-#| msgid ""
-#| "decide which reconstruction strategy to favor,\n"
-#| "between inpainting a smooth color gradient,\n"
-#| "or trying to recover the textured details.\n"
-#| "0% is an equal mix of both.\n"
-#| "increase if at least one RGB channel is not clipped.\n"
-#| "decrease if all RGB channels are clipped over large areas."
+#, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
 "inpainting a smooth color gradient\n"
@@ -17534,18 +17529,11 @@ msgstr ""
 "滑らかな色のグラデーションで塗りつぶして修復するか、テクスチャのあるディテー"
 "ルを復元するよう試みます\n"
 "0%に設定すると、両者を均等にミックスします\n"
-"少なくとも一つのRGBチャンネルがクリップしていない場合、値を上げます\n"
-"全てのRGBチャンネルが広範囲にわたってクリップしている場合、値を下げます"
+"少なくとも一つのRGBチャンネルがクリップしていない場合、値を上げてください\n"
+"全てのRGBチャンネルが広範囲にわたってクリップしている場合、値を下げてください"
 
 #: ../src/iop/filmicrgb.c:4593
-#, fuzzy, no-c-format
-#| msgid ""
-#| "decide which reconstruction strategy to favor,\n"
-#| "between blooming highlights like film does,\n"
-#| "or trying to recover sharp details.\n"
-#| "0% is an equal mix of both.\n"
-#| "increase if you want more details.\n"
-#| "decrease if you want more blur."
+#, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
 "blooming highlights like film does\n"
@@ -17558,18 +17546,11 @@ msgstr ""
 "フィルムのようにハイライトをブルームさせるか、シャープなディテールを復元する"
 "よう試みます\n"
 "0%に設定すると、両者を均等にミックスします\n"
-"細部を増やしたい場合、値を上げます\n"
-"ぼかしたい場合、値を下げます"
+"細部を増やしたい場合、値を上げてください\n"
+"ぼかしたい場合、値を下げてください"
 
 #: ../src/iop/filmicrgb.c:4605
-#, fuzzy, no-c-format
-#| msgid ""
-#| "decide which reconstruction strategy to favor,\n"
-#| "between recovering monochromatic highlights,\n"
-#| "or trying to recover colorful highlights.\n"
-#| "0% is an equal mix of both.\n"
-#| "increase if you want more color.\n"
-#| "decrease if you see magenta or out-of-gamut highlights."
+#, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
 "recovering monochromatic highlights\n"
@@ -17582,8 +17563,8 @@ msgstr ""
 "モノクロームのハイライトを復元するか、色のあるハイライトを復元するよう試みま"
 "す\n"
 "0%に設定すると、両者を均等にミックスします\n"
-"より色を付けたい場合、値を上げます\n"
-"マゼンタや色域外のハイライトが見られる場合、値を下げます"
+"より色を付けたい場合、値を上げてください\n"
+"マゼンタや色域外のハイライトが見られる場合、値を下げてください"
 
 #. Page LOOK
 #: ../src/iop/filmicrgb.c:4613
@@ -18015,14 +17996,6 @@ msgid "highlight reconstruction method"
 msgstr "ハイライトの再構成の方式"
 
 #: ../src/iop/highlights.c:1189
-#, fuzzy
-#| msgid ""
-#| "manually adjust the clipping threshold mostly used against magenta "
-#| "highlights\n"
-#| "the mask icon shows the clipped areas.\n"
-#| "you might use this for tuning 'laplacian', 'inpaint opposed' or "
-#| "'segmentation' modes,\n"
-#| "especially if camera white point is incorrect."
 msgid ""
 "manually adjust the clipping threshold mostly used against magenta "
 "highlights.\n"
@@ -18032,7 +18005,6 @@ msgid ""
 msgstr ""
 "マゼンタのハイライトを避けるよう、クリップのしきい値を手動で調整してくださ"
 "い\n"
-"マスクアイコンをクリックすると、クリップしている領域を表示します\n"
 "特に、カメラで設定したホワイトポイントが不正確な場合に、\n"
 "'ラプラシアン'、'反対を修復'、'セグメンテーション'モードで使用することをおす"
 "すめします"
@@ -18044,10 +18016,6 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/highlights.c:1203
-#, fuzzy
-#| msgid ""
-#| "combine closely related clipped segments by morphological operations.\n"
-#| "the mask button shows the exact positions of resulting segment borders."
 msgid ""
 "combine closely related clipped segments by morphological operations.\n"
 "this often leads to improved color reconstruction for tiny segments before "
@@ -18055,20 +18023,14 @@ msgid ""
 msgstr ""
 "密接に関連しあっているクリップしているセグメントをモフォロジー処理によって結"
 "合します\n"
-"マスクボタンをクリックすると、結果のセグメントの境界の正確な位置を表示します"
+"これにより、多くの場合、暗い背景の前の小さなセグメントの色の再構成がより優れ"
+"たものになります"
 
 #: ../src/iop/highlights.c:1206
 msgid "visualize the combined segments in a false color representation."
 msgstr ""
 
 #: ../src/iop/highlights.c:1213
-#, fuzzy
-#| msgid ""
-#| "select inpainting after segmentation analysis.\n"
-#| "increase to favour candidates found in segmentation analysis, decrease "
-#| "for opposed means inpainting.\n"
-#| "the mask button shows segments that are considered to have a good "
-#| "candidate."
 msgid ""
 "select inpainting after segmentation analysis.\n"
 "increase to favor candidates found in segmentation analysis, decrease for "
@@ -18076,9 +18038,7 @@ msgid ""
 msgstr ""
 "セグメンテーション分析後の修復を選択します\n"
 "値を上げると、セグメンテーション分析によって割り出された候補を利用します。値"
-"を下げると、反対の手段の修復を施します\n"
-"マスクボタンをクリックすると、良好な候補を得られると考えられるセグメントを表"
-"示します"
+"を下げると、反対の手段の修復を施します"
 
 #: ../src/iop/highlights.c:1216
 msgid ""
@@ -18106,9 +18066,6 @@ msgstr ""
 "イライトの再構成を保持し、グラデーションを避けます"
 
 #: ../src/iop/highlights.c:1231
-#, fuzzy
-#| msgid ""
-#| "set strength of reconstruction in regions with all photosites clipped"
 msgid "set strength of rebuilding in regions with all photosites clipped."
 msgstr "全てのフォトサイトがクリップした領域における再構成の強さを設定します"
 
@@ -18151,11 +18108,8 @@ msgstr ""
 "高い値にすると、パフォーマンスに大きな悪影響があります"
 
 #: ../src/iop/highlights.c:1259
-#, fuzzy
-#| msgid "this module only works with non-monochrome RAW and sRAW"
 msgid "this module does not work with monochrome RAW files"
-msgstr ""
-"このモジュールはモノクロでないRAWとsRAW画像でのみ使用することが出来ます"
+msgstr "このモジュールはモノクロのRAWファイルでは動作しません"
 
 #: ../src/iop/highpass.c:72
 msgid "highpass"
@@ -20948,14 +20902,6 @@ msgid "placement"
 msgstr "位置"
 
 #: ../src/iop/watermark.c:1378
-#, fuzzy
-#| msgid ""
-#| "scaling is done relative to this object\n"
-#| "• image: fits marker into whole image\n"
-#| "• larger border: fits larger marker border to larger image border\n"
-#| "• smaller border: fits larger marker border to smaller image border\n"
-#| "• height: fits marker height to image height, e.g. suitable for texts\n"
-#| "• advanced options: activates two additional drop-down menus"
 msgid ""
 "choose how to scale the watermark\n"
 "• image: scale watermark relative to whole image\n"
@@ -20966,7 +20912,7 @@ msgid ""
 "• height: scale watermark height to image height\n"
 "• advanced options: choose watermark and image dimensions independently"
 msgstr ""
-"スケール調整はこの基準に応じて行われます\n"
+"透かしの大きさの割合を決める方法を選んでください\n"
 "・画像：マーカーを画像全体に合わせます\n"
 "・長辺：マーカーの長辺を画像の長辺に合わせます\n"
 "・短辺：マーカーの短辺を画像の短辺に合わせます\n"
@@ -21551,16 +21497,12 @@ msgid "export"
 msgstr "エクスポート"
 
 #: ../src/libs/export.c:306
-#, fuzzy
-#| msgid "export selected"
 msgid "invalid format for export selected"
-msgstr "選択画像をエクスポート"
+msgstr "選択したエクスポートに無効なフォーマット"
 
 #: ../src/libs/export.c:311
-#, fuzzy
-#| msgid "export selected"
 msgid "invalid storage for export selected"
-msgstr "選択画像をエクスポート"
+msgstr "選択したエクスポートに無効なストレージ"
 
 #: ../src/libs/export.c:322
 msgid "export to disk"
@@ -25632,16 +25574,12 @@ msgid "histogram profile"
 msgstr "ヒストグラムのプロファイル"
 
 #: ../src/views/darkroom.c:2391
-#, fuzzy
-#| msgid "toggle ISO 12646 color assessment conditions"
 msgid "second preview window ISO 12646 color assessment"
-msgstr "ISO 12646色評価条件の表示／非表示を切り替えます"
+msgstr "ISO 12646色評価の第2プレビューウィンドウ"
 
 #: ../src/views/darkroom.c:2393
-#, fuzzy
-#| msgid "color assessment"
 msgid "color assessment second preview"
-msgstr "色の評価"
+msgstr "色の評価第2プレビュー"
 
 #: ../src/views/darkroom.c:2452 ../src/views/lighttable.c:1225
 msgid "display ICC profiles"
