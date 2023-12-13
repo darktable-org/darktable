@@ -1796,8 +1796,8 @@ static uint32_t _image_import_internal(const int32_t film_id,
   *cc2 = '\0';
   gchar *sql_pattern = g_strconcat(basename, ".%", NULL);
   dt_imgid_t group_id;
-  // in case we are not a jpg check if we need to change group representative
-  if(strcmp(ext, "jpg") != 0 && strcmp(ext, "jpeg") != 0)
+  // in case of a raw file - dng files are also accepted we need to change group representative
+  if(dt_imageio_is_raw_by_extension(ext) || !strcmp(ext, "dng"))
   {
     sqlite3_stmt *stmt2;
     // clang-format off
