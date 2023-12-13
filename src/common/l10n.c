@@ -341,17 +341,12 @@ dt_l10n_t *dt_l10n_init(const gchar *filename, const gboolean init_list)
   // the config file
   if(!ui_lang || !*ui_lang)
   {
-    const wchar_t *wcLocaleName = NULL;
-    wcLocaleName = dtwin_get_locale();
-    if(wcLocaleName != NULL)
+    const char *langLocale = NULL;
+    langLocale = dtwin_get_locale();
+    if(langLocale != NULL)
     {
-      gchar *langLocale;
-      langLocale = g_utf16_to_utf8(wcLocaleName, -1, NULL, NULL, NULL);
-      if(langLocale != NULL)
-      {
-        g_free(ui_lang);
-        ui_lang = g_strdup(langLocale);
-      }
+      g_free(ui_lang);
+      ui_lang = g_strdup(langLocale);
     }
   }
 #endif // defined (_WIN32)
