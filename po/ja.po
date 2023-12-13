@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-11-30 19:32+0100\n"
-"PO-Revision-Date: 2023-12-13 11:18+0900\n"
+"PO-Revision-Date: 2023-12-13 21:16+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -1939,15 +1939,6 @@ msgid "create XMP files"
 msgstr "XMPファイルを作成"
 
 #: ../build/bin/preferences_gen.h:7227
-#, fuzzy
-#| msgid ""
-#| "the sidecar files hold information about all your development steps to "
-#| "allow flawless re-importing of image files.\n"
-#| "\n"
-#| "depending on the selected mode sidecar files will be written:\n"
-#| " - 'never'\n"
-#| " - 'on import': immediately after importing the image\n"
-#| " - 'after edit': after any user change on the image."
 msgid ""
 "XMP sidecar files hold information about all your development steps to allow "
 "flawless re-importing of image files.\n"
@@ -1957,13 +1948,13 @@ msgid ""
 " - 'on import': immediately after importing the image\n"
 " - 'after edit': after any user change on the image or adding tags."
 msgstr ""
-"サイドカーファイルはユーザーによる現像の諸段階についての情報を有しており、画"
-"像ファイルの再インポートが欠落なく行われるようにします\n"
+"XMPサイドカーファイルはユーザーによる現像の全段階についての情報を有しており、"
+"画像ファイルの再インポートが欠落なく行われるようにします\n"
 "サイドカーファイルが書き込まれるタイミングは、選択されたモードごとに、次のと"
 "おりです\n"
 "- 許可しない\n"
 "- インポート時：画像をインポートした直後\n"
-"- 編集後：ユーザーが画像に変更を施すたび"
+"- 編集後：ユーザーが画像に変更を施す、またはタグを追加するたび"
 
 #: ../build/bin/preferences_gen.h:7248
 msgid "store XMP tags in compressed format"
@@ -1981,7 +1972,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:7283
 msgid "auto-save interval"
-msgstr "オートセーブの間隔"
+msgstr "自動保存の間隔"
 
 #: ../build/bin/preferences_gen.h:7306
 msgid ""
@@ -1990,8 +1981,8 @@ msgid ""
 "on slow drives."
 msgstr ""
 "設定された間隔で現像中に履歴を自動保存します\n"
-"0に設定するとオートセーブを無効にします\n"
-"低速なドライブではオートセーブは無効になるかもしれません"
+"0に設定すると自動保存を無効にします\n"
+"低速なドライブでは自動保存は無効になるかもしれません"
 
 #: ../build/bin/preferences_gen.h:7327
 msgid "look for updated XMP files on startup"
@@ -2136,13 +2127,6 @@ msgstr "簡易タグリストにおいて階層を省略する"
 # XMPファイルを作成するとき、階層タグが非階層タグのリストとしても追加され、他のプログラムでも見られるようになります
 # このオプションがチェックされると、darktable は最後の部分のみを加え、残りを無視します。 したがって 'foo|bar|baz' は 'baz'のみを追加します.
 #: ../build/bin/preferences_gen.h:7747
-#, fuzzy
-#| msgid ""
-#| "when creating XMP file the hierarchical tags are also added as a simple "
-#| "list\n"
-#| "of non-hierarchical ones to make them visible to some other programs.\n"
-#| "when this option is checked darktable will only include their last part\n"
-#| "and ignore the rest. so 'foo|bar|baz' will only add 'baz'."
 msgid ""
 "when creating an XMP sidecar file the hierarchical tags are also added as a "
 "simple list\n"
@@ -2150,8 +2134,8 @@ msgid ""
 "when this option is checked darktable will only include their last part\n"
 "and ignore the rest. so 'foo|bar|baz' will only add 'baz'."
 msgstr ""
-"XMPファイルを作成する時、階層タグは非階層タグの簡易リストとしても追加され、他"
-"のプログラムでも見られるようになります\n"
+"XMPサイドカーファイルを作成する時、階層タグは非階層タグの簡易リストとしても追"
+"加され、他のプログラムでも見られるようになります\n"
 "このオプションをチェックすると、darktableは最後の部分のみを追加し、残りを無視"
 "します。したがって'foo|bar|baz'は'baz'のみを追加します"
 
@@ -2164,11 +2148,6 @@ msgid "prefer focused instance"
 msgstr "フォーカスしているインスタンスを優先する"
 
 #: ../build/bin/preferences_gen.h:7788
-#, fuzzy
-#| msgid ""
-#| "where multiple module instances are present, these preferences control "
-#| "rules that are applied (in order) to decide which module instance "
-#| "shortcuts will be applied to"
 msgid ""
 "where multiple instances of a module are present, apply shortcuts to the "
 "instance that has focus\n"
@@ -2176,9 +2155,13 @@ msgid ""
 "(in order) to decide which module instance shortcuts will be applied to.\n"
 "note: blending shortcuts always apply to the focused instance"
 msgstr ""
-"複数のモジュールインスタンスが存在する場合、以下の設定は、どのモジュールイン"
-"スタンスにキーボードショートカットを適用するか決定するために（順番に）適用さ"
-"れるルールを制御します"
+"複数のモジュールインスタンスが存在する場合、フォーカスされているインスタンス"
+"へショートカットを適用します\n"
+"フォーカスされているものが無い場合、以下の設定が、どのモジュールインスタンス"
+"にショートカットを適用するか決定するために（順番に）適用されるルールを制御し"
+"ます\n"
+"注意：ブレンドのショートカットは常にフォーカスされているインスタンスに適用さ"
+"れます"
 
 #: ../build/bin/preferences_gen.h:7809
 msgid "prefer expanded instances"
@@ -2315,11 +2298,9 @@ msgid "sort film rolls by"
 msgstr "フィルムロールの分類"
 
 #: ../build/bin/preferences_gen.h:8292
-#, fuzzy
-#| msgid "technical"
 msgctxt "preferences"
 msgid "chronological"
-msgstr "テクニカル"
+msgstr "日付順"
 
 #: ../build/bin/preferences_gen.h:8295
 msgid "sets the collections-list order for film rolls"
@@ -2711,10 +2692,8 @@ msgstr "フレームラインの位置"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:218
 #: ../build/lib/darktable/plugins/introspection_borders.c:333
-#, fuzzy
-#| msgid "basic"
 msgid "basis"
-msgstr "ベーシック"
+msgstr "基準"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:347
 #: ../build/lib/darktable/plugins/introspection_borders.c:353
@@ -2750,16 +2729,12 @@ msgid "height"
 msgstr "高さ"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:356
-#, fuzzy
-#| msgid "shortcut"
 msgid "shorter"
-msgstr "ショートカット"
+msgstr "短辺"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:357
-#, fuzzy
-#| msgid "long"
 msgid "longer"
-msgstr "長押し"
+msgstr "長辺"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrect.c:42
 #: ../build/lib/darktable/plugins/introspection_cacorrect.c:91
@@ -4336,8 +4311,6 @@ msgstr "倍率色収差 青"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:286
 #: ../build/lib/darktable/plugins/introspection_lens.cc:465
-#, fuzzy
-#| msgid "distort"
 msgid "distortion"
 msgstr "歪曲"
 
@@ -4581,60 +4554,44 @@ msgstr "カラーフィルム"
 #: ../build/lib/darktable/plugins/introspection_primaries.c:75
 #: ../build/lib/darktable/plugins/introspection_primaries.c:160
 #: ../src/iop/primaries.c:406
-#, fuzzy
-#| msgid "lift hue"
 msgid "tint hue"
-msgstr "リフト 色相"
+msgstr "ティント 色相"
 
 #: ../build/lib/darktable/plugins/introspection_primaries.c:81
 #: ../build/lib/darktable/plugins/introspection_primaries.c:164
 #: ../src/iop/primaries.c:413
-#, fuzzy
-#| msgid "linearity"
 msgid "tint purity"
-msgstr "線形性"
+msgstr "ティント 純度"
 
 #: ../build/lib/darktable/plugins/introspection_primaries.c:87
 #: ../build/lib/darktable/plugins/introspection_primaries.c:168
-#, fuzzy
-#| msgid "red & blue"
 msgid "red hue"
-msgstr "赤＆青"
+msgstr "赤 色相"
 
 #: ../build/lib/darktable/plugins/introspection_primaries.c:93
 #: ../build/lib/darktable/plugins/introspection_primaries.c:172
-#, fuzzy
-#| msgid "security"
 msgid "red purity"
-msgstr "セキュリティ"
+msgstr "赤 純度"
 
 #: ../build/lib/darktable/plugins/introspection_primaries.c:99
 #: ../build/lib/darktable/plugins/introspection_primaries.c:176
-#, fuzzy
-#| msgid "green"
 msgid "green hue"
-msgstr "緑"
+msgstr "緑 色相"
 
 #: ../build/lib/darktable/plugins/introspection_primaries.c:105
 #: ../build/lib/darktable/plugins/introspection_primaries.c:180
-#, fuzzy
-#| msgid "security"
 msgid "green purity"
-msgstr "セキュリティ"
+msgstr "緑 純度"
 
 #: ../build/lib/darktable/plugins/introspection_primaries.c:111
 #: ../build/lib/darktable/plugins/introspection_primaries.c:184
-#, fuzzy
-#| msgid "blue shift"
 msgid "blue hue"
-msgstr "ブルーシフト"
+msgstr "青 色相"
 
 #: ../build/lib/darktable/plugins/introspection_primaries.c:117
 #: ../build/lib/darktable/plugins/introspection_primaries.c:188
-#, fuzzy
-#| msgid "blue shift"
 msgid "blue purity"
-msgstr "ブルーシフト"
+msgstr "青 純度"
 
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:85
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:158
@@ -6235,29 +6192,21 @@ msgstr ""
 "す"
 
 #: ../src/common/darktable.c:2129
-#, fuzzy
-#| msgid ""
-#| "instead you will find 'per device' data in 'cl_device_v4_canonical-name'. "
-#| "content is:"
 msgid ""
 "instead you will find 'per device' data in 'cldevice_v5_canonical-name'. "
 "content is:"
 msgstr ""
-"その代わりに、'cl_device_v4_canonical-name'に「デバイスごとの」データがありま"
+"その代わりに、'cldevice_v5_canonical-name'に「デバイスごとの」データがありま"
 "す。その内容は以下の通りです"
 
 #: ../src/common/darktable.c:2131 ../src/common/darktable.c:2150
 #: ../src/common/darktable.c:2165
-#, fuzzy
-#| msgid ""
-#| " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
-#| "'eventhandles' 'async' 'disable' 'magic'"
 msgid ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic' 'advantage' 'unified'"
 msgstr ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
-"'eventhandles' 'async' 'disable' 'magic'"
+"'eventhandles' 'async' 'disable' 'magic' 'advantage' 'unified'"
 
 #: ../src/common/darktable.c:2133 ../src/common/darktable.c:2152
 msgid "you may tune as before except 'magic'"
@@ -6464,6 +6413,12 @@ msgid ""
 "is too new for this build of darktable (this means the database was created "
 "or upgraded by a newer darktable version)\n"
 msgstr ""
+"データベーススキームのバージョン\n"
+"\n"
+"<span style='italic'>%s</span>\n"
+"\n"
+"はこのdarktableのビルドには新しすぎます（このデータベースはより新しいバージョ"
+"ンのdarktableによって作成または更新されたものです）\n"
 
 #: ../src/common/database.c:3612
 msgid "darktable - too new db version"
@@ -6928,14 +6883,20 @@ msgid ""
 "  - buggy drivers,\n"
 "  - no OpenCL driver installed."
 msgstr ""
+"プラットフォームの検出が出来ませんでした。幾つかの原因が考えられます\n"
+"  - OpenCL ICD (ocl-icd)の欠如\n"
+"  - 以前のOpenCLエラーによりデバイスがブロック\n"
+"  - パワーマネジメントの問題\n"
+"  - ドライバのバグ\n"
+"  - OpenCLドライバがインストールされていない"
 
 #: ../src/common/opencl.c:1277
 msgid "no devices found for unknown platform"
-msgstr ""
+msgstr "プラットフォームが不明であり、デバイスが検出されませんでした"
 
 #: ../src/common/opencl.c:1323
 msgid "not enough memory for OpenCL devices"
-msgstr ""
+msgstr "OpenCLデバイスのためのメモリが不足しています"
 
 #: ../src/common/opencl.c:1358
 msgid "no OpenCL devices found"
@@ -6963,7 +6924,7 @@ msgstr ""
 #: ../src/common/opencl.c:2283
 #, c-format
 msgid "building OpenCL program %s for %s"
-msgstr ""
+msgstr "OpenCLプログラム%sを%s向けに構成しています"
 
 #: ../src/common/pdf.h:88 ../src/iop/lens.cc:4071
 #: ../src/libs/filters/focal.c:74 ../src/libs/print_settings.c:81
@@ -7561,10 +7522,8 @@ msgid "starting to import images from camera"
 msgstr "カメラから画像をインポートし始めました"
 
 #: ../src/control/jobs/camera_jobs.c:302
-#, fuzzy
-#| msgid "starting to import images from camera"
 msgid "failed to import images from camera."
-msgstr "カメラから画像をインポートし始めました"
+msgstr "カメラから画像をインポートことが出来ませんでした"
 
 #: ../src/control/jobs/camera_jobs.c:309
 #, c-format
@@ -8707,7 +8666,7 @@ msgstr "非推奨"
 #: ../src/develop/blend_gui.c:3188
 #, c-format
 msgid "unknown blend mode '%d' in module '%s'"
-msgstr ""
+msgstr "不明なブレンドモード'%d'がモジュール'%s'で用いられています"
 
 #: ../src/develop/blend_gui.c:3497
 msgid "blending options"
@@ -8870,6 +8829,8 @@ msgid ""
 "autosaving history has been disabled for this session because of a slow "
 "drive used"
 msgstr ""
+"低速なドライブが用いられているため、このセッションでは履歴の自動保存が無効に"
+"なりました"
 
 #: ../src/develop/develop.c:2202
 #, c-format
@@ -8877,12 +8838,10 @@ msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s：モジュール`%s'のバージョンの不一致：%d != %d"
 
 #: ../src/develop/develop.c:3016
-#, fuzzy
-#| msgid "module duplicate, can't move new instance after the base one\n"
 msgid "duplicate module, can't move new instance after the base one\n"
 msgstr ""
 "モジュール複製\n"
-"新しいインスタンスをベースインスタンスの後ろに移動することが出来ません\n"
+"新しいインスタンスをベースインスタンスの後ろに移動することは出来ません\n"
 
 #: ../src/develop/imageop.c:1031
 msgid "new instance"
@@ -9421,6 +9380,14 @@ msgid ""
 "  - some drivers don't support needed number of events,\n"
 "  - too small headroom settings while using 'use all device memory'."
 msgstr ""
+"OpenCLエラーがありました。このセッションではOpenCLが無効になります。幾つかの"
+"原因が考えられます\n"
+"  - 設定を原因とするOpenCLリソース不足。デフォルト設定を試してください\n"
+"  - 何らかのデバイスのドライバのバグ。特定するためにコマンド`-d opencl'を加え"
+"てdarktableを起動してください\n"
+"  - 何らかのドライバが必要なイベント数をサポートしていない\n"
+"  - '全てのデバイスメモリを使用する'を選択した場合、ヘッドルームの設定が小さ"
+"すぎる"
 
 #: ../src/develop/pixelpipe_hb.c:2847
 #, c-format
@@ -9434,14 +9401,13 @@ msgstr ""
 "ラスターマスクは無視されます"
 
 #: ../src/develop/tiling.c:819 ../src/develop/tiling.c:1172
-#, fuzzy, c-format
-#| msgid "tiling failed for module '%s'. output might be garbled."
+#, c-format
 msgid ""
 "tiling failed for module '%s'. the output most likely will be OK, but you "
 "might want to check."
 msgstr ""
-"モジュール'%s'のタイリングに失敗しました。出力が文字化けしている可能性があり"
-"ます"
+"モジュール'%s'のタイリングに失敗しました\n"
+"出力は無事であると思われますが、確認したほうが良いかもしれません"
 
 #: ../src/dtgtk/culling.c:223
 msgid "you have reached the start of your selection"
@@ -10567,20 +10533,32 @@ msgid ""
 "\n"
 "<i>click <b> three times </b> to dismiss this notice permanently</i>"
 msgstr ""
+"可視の要素へのショートカットの割当には<b>ビジュアルショートカットマッピング</"
+"b>モードが推奨されます\n"
+"これは上部パネル内の設定ボタンの隣りにある<i>キーボード</i>ボタンによってオン"
+"オフ切り替えすることが出来ます。\n"
+"このモードでは、ウィジェットや領域上でクリックすることで、このダイアログが詳"
+"細な設定をするために適切な選択をしたうえで開かれます\n"
+"\n"
+"同一のアクションに複数のショートカットを割り当てることがｄきます。これは、モ"
+"ジュールボタンやスライダーに付随するカラーピッカーのような複数の<i>要素</i>が"
+"ある場合特に有用ですが、 <i>フォールバック</i>を有効にすることで、それと同じ"
+"単純なショートカットを使用しつつ、マウスクリックを加えることで<i>要素</i>また"
+"は<i>効果</i>を変更することが出来ます\n"
+"\n"
+"<i><b>3回</b>クリックするとこの通知を消すことが出来ます</i>"
 
 #: ../src/gui/accelerators.c:3452
 msgid "reinitialising input devices"
 msgstr "インプットデバイスを再初期化"
 
 #: ../src/gui/accelerators.c:3594
-#, fuzzy
-#| msgid "move"
 msgid "down move"
-msgstr "移動"
+msgstr "下へ移動"
 
 #: ../src/gui/accelerators.c:3594
 msgid "flip top/bottom first/last"
-msgstr ""
+msgstr "上／下、最初／最後を入れ替え"
 
 #: ../src/gui/accelerators.c:3679
 msgid "fallback to move"
@@ -10598,7 +10576,7 @@ msgstr "%sは%sに割り当てられています"
 
 #: ../src/gui/accelerators.c:4321
 msgid "short key press resets stuck keys"
-msgstr ""
+msgstr "キーを短く押すとキー押し固定をリセットします"
 
 #: ../src/gui/gtk.c:175 ../src/views/darkroom.c:3861
 msgid "darktable - darkroom preview"
@@ -11840,6 +11818,8 @@ msgstr "エクスポート時に適用するスタイル'%s'を見つけるこ�
 msgid ""
 "<span foreground='red'><b>WARNING</b></span>: camera is not fully supported!"
 msgstr ""
+"<span foreground='red'><b>警告</b></span>：カメラが完全にはサポートされていま"
+"せん"
 
 #: ../src/imageio/imageio_libraw.c:297
 #, c-format
@@ -11847,6 +11827,8 @@ msgid ""
 "colors for `%s' could be misrepresented,\n"
 "and edits might not be compatible with future versions."
 msgstr ""
+"`%s'の色は正確に表示されない可能性があり、\n"
+"編集は将来のバージョンとの互換性がないかもしれません"
 
 #: ../src/imageio/format/avif.c:89 ../src/imageio/format/jxl.c:567
 #: ../src/imageio/format/pdf.c:80 ../src/imageio/format/png.c:641
@@ -11891,10 +11873,8 @@ msgstr "画像に保存される色情報。値が大きいほど良質です"
 #.
 #. shortfile option combo box
 #: ../src/imageio/format/avif.c:820 ../src/imageio/format/tiff.c:944
-#, fuzzy
-#| msgid "grayscale"
 msgid "B&W as grayscale"
-msgstr "グレースケール"
+msgstr "グレースケールとして白黒"
 
 #: ../src/imageio/format/avif.c:821 ../src/imageio/format/tiff.c:945
 msgid "saving as grayscale will reduce the size for black & white images"
@@ -11908,12 +11888,6 @@ msgid "tiling"
 msgstr "タイリング"
 
 #: ../src/imageio/format/avif.c:833
-#, fuzzy
-#| msgid ""
-#| "tile an image into segments.\n"
-#| "\n"
-#| "makes encoding faster. the impact on quality reduction is negligible, but "
-#| "increases the file size."
 msgid ""
 "tile an image into segments.\n"
 "\n"
@@ -11922,8 +11896,8 @@ msgid ""
 msgstr ""
 "画像をタイル化してセグメントにします\n"
 "\n"
-"エンコードの速度が上がります。クオリティの低下は無視できる程度ですが、ファイ"
-"ルサイズが大きくなります"
+"エンコードの速度が上がりますが、ファイルサイズが大きくなります。クオリティの"
+"低下は無視できる程度です"
 
 #. compression
 #. Compression method combo box
@@ -11950,17 +11924,6 @@ msgid "quality"
 msgstr "クオリティ"
 
 #: ../src/imageio/format/avif.c:881
-#, fuzzy
-#| msgid ""
-#| "the quality of an image, less quality means fewer details.\n"
-#| "\n"
-#| "the following applies only to lossy setting\n"
-#| "\n"
-#| "pixelformat based on quality:\n"
-#| "\n"
-#| "    91% - 100% -> YUV444\n"
-#| "    81% -  90% -> YUV422\n"
-#| "     5% -  80% -> YUV420\n"
 msgid ""
 "the quality of an image, less quality means fewer details.\n"
 "\n"
@@ -11970,13 +11933,9 @@ msgid ""
 msgstr ""
 "画像のクオリティ。低クオリティだとディテールが減少します\n"
 "\n"
-"以下は非可逆モードに設定した場合にのみ適用されます\n"
+"ピクセル形式はクオリティにもとづきます\n"
 "\n"
-"クオリティにもとづくピクセル形式\n"
-"\n"
-"    91% - 100% -> YUV444\n"
-"    81% -  90% -> YUV422\n"
-"     5% -  80% -> YUV420\n"
+"5-80: YUV420, 81-90: YUV422, 91-100: YUV444"
 
 #: ../src/imageio/format/copy.c:109 ../src/libs/copy_history.c:370
 #: ../src/libs/image.c:647
@@ -12086,6 +12045,12 @@ msgid ""
 "4:2:2 - color sampling rate halved horizontally\n"
 "4:2:0 - color sampling rate halved horizontally and vertically"
 msgstr ""
+"JPEGエンコーダーのクロマサブサンプリングの設定\n"
+"自動 - クオリティの値によって定められたサブサンプリングを用います\n"
+"4:4:4 - クロマサブサンプリングをしません\n"
+"4:4:0 - 垂直に半減したカラーサンプリングレート\n"
+"4:2:2 - 水平に半減したカラーサンプリングレート\n"
+"4:2:0 - 水平および垂直に半減したカラーサンプリングレート"
 
 #: ../src/imageio/format/jpeg.c:604
 msgid "4:4:4"
@@ -12348,10 +12313,8 @@ msgid "PPM (16-bit)"
 msgstr "PPM（16ビット）"
 
 #: ../src/imageio/format/tiff.c:246
-#, fuzzy
-#| msgid "will export as a grayscale image"
 msgid "not a B&W image, will not export as grayscale"
-msgstr "グレイスケールの画像としてエクスポート"
+msgstr "白黒画像ではありません、グレースケールとしてエクスポートされません"
 
 #: ../src/imageio/format/tiff.c:925
 msgid "deflate with predictor"
@@ -12434,10 +12397,8 @@ msgid "overwrite"
 msgstr "上書き"
 
 #: ../src/imageio/storage/disk.c:270
-#, fuzzy
-#| msgid "overwrite"
 msgid "overwrite if changed"
-msgstr "上書き"
+msgstr "変更された場合上書き"
 
 #: ../src/imageio/storage/disk.c:271 ../src/imageio/storage/piwigo.c:1115
 msgid "skip"
@@ -12465,8 +12426,8 @@ msgstr[1] "%d／%d枚  `%s'をスキップ"
 #, c-format
 msgid "%d/%d skipping (not modified since export) `%s'"
 msgid_plural "%d/%d skipping (not modified since export) `%s'"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%d/%d スキップ（エクスポートから更新無し） `%s'"
+msgstr[1] "%d/%d スキップ（エクスポートから更新無し） `%s'"
 
 #: ../src/imageio/storage/disk.c:465 ../src/imageio/storage/email.c:194
 #: ../src/imageio/storage/gallery.c:458 ../src/imageio/storage/latex.c:377
@@ -12563,11 +12524,6 @@ msgid "server"
 msgstr "サーバー"
 
 #: ../src/imageio/storage/piwigo.c:998
-#, fuzzy
-#| msgid ""
-#| "the server name\n"
-#| "default protocol is https\n"
-#| "specify http:// if non secure server"
 msgid ""
 "the server name\n"
 "default protocol is https\n"
@@ -12575,7 +12531,7 @@ msgid ""
 msgstr ""
 "サーバー名\n"
 "デフォルトのプロトコルはhttps\n"
-"安全でないサーバーの場合はhttp：//を指定します"
+"必要な場合安全でないプロトコルhttp：//を明示的に指定します"
 
 #: ../src/imageio/storage/piwigo.c:1014 ../src/imageio/storage/piwigo.c:1021
 msgid "user"
@@ -12753,10 +12709,9 @@ msgid "only %d lines can be saved in parameters"
 msgstr "パラメータに保存することが出来る線は%d本のみです"
 
 #: ../src/iop/ashift.c:5157
-#, fuzzy, c-format
-#| msgid "rotation adjusted by %3.1f° to %3.1f°"
+#, c-format
 msgid "rotation adjusted by %3.2f° to %3.2f°"
-msgstr "rotation adjusted by %3.1f° to %3.1f°"
+msgstr "%3.1fから%3.1f°へ調整して回転"
 
 #: ../src/iop/ashift.c:5797 ../src/iop/ashift.c:5799 ../src/iop/ashift.c:5904
 #: ../src/iop/ashift.c:5906
@@ -13576,25 +13531,18 @@ msgid "15:10 postcard black"
 msgstr "15:10 ポストカード 黒"
 
 #: ../src/iop/borders.c:948
-#, fuzzy
-#| msgid "which filter to use for blurring"
 msgid "which dimension to use for the size calculation"
-msgstr "ぼかしに使用するフィルターの種類"
+msgstr "サイズの計算に用いる寸法"
 
 #: ../src/iop/borders.c:954
-#, fuzzy
-#| msgid "size of the border in percent of the full image"
 msgid "size of the border in percent of the chosen basis"
-msgstr "縁のサイズ（全画面に対する割合）"
+msgstr "縁のサイズ（選択した基準に対する割合）"
 
 #: ../src/iop/borders.c:956 ../src/iop/clipping.c:2271 ../src/iop/crop.c:1208
 msgid "aspect"
 msgstr "アスペクト比"
 
 #: ../src/iop/borders.c:957
-#, fuzzy
-#| msgid ""
-#| "select the aspect ratio (right click on slider below to type your own w:h)"
 msgid ""
 "select the aspect ratio\n"
 "(right click on slider below to type your own w:h)"
@@ -13682,15 +13630,13 @@ msgid "custom..."
 msgstr "カスタム..."
 
 #: ../src/iop/borders.c:984
-#, fuzzy
-#| msgid "set the custom aspect ratio (right click to enter number or w:h)"
 msgid ""
 "set the custom aspect ratio\n"
 "(right click to enter number or w:h)"
 msgstr ""
 "アスペクト比をカスタム設定します\n"
-"（下のスライダー上で右クリックしてカスタム設定（幅：高さ）を入力することが出"
-"来ます）"
+"（下のスライダー上で右クリックすると、数字または幅：高さを入力することが出来"
+"ます）"
 
 #: ../src/iop/borders.c:989
 msgid "aspect ratio orientation of the image with border"
@@ -13701,16 +13647,13 @@ msgid "horizontal position"
 msgstr "水平位置"
 
 #: ../src/iop/borders.c:992
-#, fuzzy
-#| msgid ""
-#| "select the horizontal position ratio relative to top or right click and "
-#| "type your own (y:h)"
 msgid ""
 "select the horizontal position ratio relative to top\n"
 "(right click on slider below to type your own x:w)"
 msgstr ""
-"上辺に対する水平位置の比を選択するか、右クリックしてカスタム設定を入力してく"
-"ださい (y:h)"
+"上辺に対する水平位置の比を選択します\n"
+"（下のスライダー上で右クリックすると、カスタム設定x:wを入力することが出来ま"
+"す）"
 
 #: ../src/iop/borders.c:995 ../src/iop/borders.c:1006
 msgid "center"
@@ -13741,16 +13684,13 @@ msgid "vertical position"
 msgstr "垂直位置"
 
 #: ../src/iop/borders.c:1003
-#, fuzzy
-#| msgid ""
-#| "select the vertical position ratio relative to left or right click and "
-#| "type your own (x:w)"
 msgid ""
 "select the vertical position ratio relative to left\n"
 "(right click on slider below to type your own y:h)"
 msgstr ""
-"左辺に対する垂直位置の比を選択するか、右クリックしてカスタム設定を入力します"
-"(x:w)"
+"左辺に対する垂直位置の比を選択します\n"
+"（下のスライダー上で右クリックすると、カスタム設定y:hを入力することが出来ま"
+"す）"
 
 #: ../src/iop/borders.c:1011
 msgid "custom vertical position"
@@ -13835,16 +13775,12 @@ msgid "activate colorshift correction for blue & red channels"
 msgstr "青および赤チャンネルの色ずれ補正を有効にします"
 
 #: ../src/iop/cacorrect.c:1434
-#, fuzzy
-#| msgid ""
-#| "automatic chromatic aberration correction\n"
-#| "only for Bayer raw files"
 msgid ""
 "automatic chromatic aberration correction\n"
 "only for Bayer raw files with 3 color channels"
 msgstr ""
 "色収差の自動補正\n"
-"ベイヤーセンサーのRAWファイルでのみ動作します"
+"3つの色チャンネルがあるベイヤーセンサーのRAWファイルでのみ動作します"
 
 #: ../src/iop/cacorrectrgb.c:164 ../src/iop/defringe.c:76
 msgid "chromatic aberrations"
@@ -14207,41 +14143,29 @@ msgid "double CAT applied"
 msgstr "色順応変換が二重に適用されています"
 
 #: ../src/iop/channelmixerrgb.c:2055
-#, fuzzy
-#| msgid ""
-#| "you have 2 instances or more of color calibration,\n"
-#| "all performing chromatic adaptation.\n"
-#| "this can lead to inconsistencies, unless you\n"
-#| "use them with masks or know what you are doing."
 msgid ""
 "you have 2 instances or more of color calibration,\n"
 "all providing chromatic adaptation.\n"
 "this can lead to inconsistencies unless you\n"
 "use them with masks or know what you are doing."
 msgstr ""
-"カラーキャリブレーションのインスタンスが2つ以上あり、全て色順応を行っていま"
+"カラーキャリブレーションのインスタンスが2つ以上あり、全て色順応を提示していま"
 "す\n"
-"マスクを使用していない場合、あるいは理解して行っていない場合、一貫性が損なわ"
-"れる可能性があります"
+"マスクを使用していない、あるいは理解して行っていない場合、一貫性が損なわれる"
+"可能性があります"
 
 #: ../src/iop/channelmixerrgb.c:2071
 msgid "white balance applied twice"
 msgstr "ホワイトバランスが2度適用されています"
 
 #: ../src/iop/channelmixerrgb.c:2072
-#, fuzzy
-#| msgid ""
-#| "the color calibration module is enabled,\n"
-#| "and performing chromatic adaptation.\n"
-#| "set the white balance here to camera reference (D65)\n"
-#| "or disable chromatic adaptation in color calibration."
 msgid ""
 "the color calibration module is enabled and already provides\n"
 "chromatic adaptation.\n"
 "set the white balance here to camera reference (D65)\n"
 "or disable chromatic adaptation in color calibration."
 msgstr ""
-"カラーキャリブレーションモジュールが有効になっていて、色順応を実行していま"
+"カラーキャリブレーションモジュールが有効になっていて、色順応を提示していま"
 "す\n"
 "ここでホワイトバランスをカメラのリファレンス値（D65）に設定するか、\n"
 "カラーキャリブレーションの色順応を無効にしてください"
@@ -14267,40 +14191,28 @@ msgid "white balance missing"
 msgstr "ホワイトバランスが見つかりません"
 
 #: ../src/iop/channelmixerrgb.c:2096
-#, fuzzy
-#| msgid ""
-#| "the color calibration module is enabled,\n"
-#| "and performing chromatic adaptation.\n"
-#| "set the white balance here to camera reference (D65)\n"
-#| "or disable chromatic adaptation in color calibration."
 msgid ""
 "this module is not providing a valid reference illuminant\n"
 "causing chromatic adaptation issues in color calibration.\n"
 "enable this module and either set it to reference\n"
 "or disable chromatic adaptation in color calibration."
 msgstr ""
-"カラーキャリブレーションモジュールが有効になっていて、色順応を実行していま"
-"す\n"
-"ここでホワイトバランスをカメラのリファレンス値（D65）に設定するか、\n"
+"このモジュールは有効な参照イルミナントを提示していません\n"
+"そのため、カラーキャリブレーションモジュールの色順応で問題が生じています\n"
+"このモジュールを有効にして参照イルミナントに設定するか、\n"
 "カラーキャリブレーションの色順応を無効にしてください"
 
 #: ../src/iop/channelmixerrgb.c:2105
-#, fuzzy
-#| msgid ""
-#| "the white balance module is not using the camera\n"
-#| "reference illuminant, which will cause issues here\n"
-#| "with chromatic adaptation. either set it to reference\n"
-#| "or disable chromatic adaptation here."
 msgid ""
 "the white balance module is not providing a valid reference\n"
 "illuminant causing issues with chromatic adaptation here.\n"
 "enable white balance and either set it to reference\n"
 "or disable chromatic adaptation here."
 msgstr ""
-"ホワイトバランスモジュールがカメラ参照のイルミナント設定を使用していないた"
-"め、このモジュールの色順応で問題が起こります\n"
-"ホワイトバランスモジュールの設定を変えるか、カラーカリブレーションモジュール"
-"の色順応を無効にしてください"
+"ホワイトバランスモジュールは有効な参照イルミナントを提示していません\n"
+"そのため、このモジュールの色順応で問題が生じています\n"
+"ホワイトモジュールを有効にして参照イルミナントに設定するか、\n"
+"このモジュールの色順応を無効にしてください"
 
 #: ../src/iop/channelmixerrgb.c:2196
 msgid "auto-detection of white balance completed"
@@ -17114,10 +17026,6 @@ msgstr ""
 "値を下げると、暗部のディテールをより多く回復します"
 
 #: ../src/iop/filmic.c:1554
-#, fuzzy
-#| msgid ""
-#| "enlarge or shrink the computed dynamic range.\n"
-#| "useful in conjunction with \"auto tune levels\"."
 msgid ""
 "increase or decrease the computed dynamic range.\n"
 "useful in conjunction with \"auto tune levels\"."
@@ -18014,6 +17922,8 @@ msgid ""
 "visualize clipped highlights in a false color representation.\n"
 "the effective clipping level also depends on the reconstruction method."
 msgstr ""
+"クリップしたハイライトを偽色で視覚化します\n"
+"有効なクリップレベルは再構成の方式にも依存します"
 
 #: ../src/iop/highlights.c:1203
 msgid ""
@@ -18028,7 +17938,7 @@ msgstr ""
 
 #: ../src/iop/highlights.c:1206
 msgid "visualize the combined segments in a false color representation."
-msgstr ""
+msgstr "結合したセグメントを偽色で視覚化します"
 
 #: ../src/iop/highlights.c:1213
 msgid ""
@@ -18044,7 +17954,7 @@ msgstr ""
 msgid ""
 "visualize segments that are considered to have a good candidate in a false "
 "color representation."
-msgstr ""
+msgstr "有力な候補があると思われるセグメントを偽色で視覚化します"
 
 #: ../src/iop/highlights.c:1225
 msgid ""
@@ -18071,7 +17981,7 @@ msgstr "全てのフォトサイトがクリップした領域における再構
 
 #: ../src/iop/highlights.c:1233
 msgid "show the effect that is added to already reconstructed data."
-msgstr ""
+msgstr "すでに再構成されているデータに加えられる効果を表示します"
 
 #: ../src/iop/highlights.c:1242
 msgid ""
@@ -18319,6 +18229,7 @@ msgstr "スケールの自動設定"
 #: ../src/iop/lens.cc:4484
 msgid "automatic scale to available image size due to Lensfun data"
 msgstr ""
+"Lensfunnoのデータにより利用可能な画像サイズに自動的にスケール調整します"
 
 #: ../src/iop/lens.cc:4488
 msgid "correct distortions or apply them"
@@ -18375,10 +18286,8 @@ msgid "image scaling"
 msgstr "画像のスケール調整"
 
 #: ../src/iop/lens.cc:4553
-#, fuzzy
-#| msgid "max scale is %i for this image size"
 msgid "automatic scale to available image size"
-msgstr "この画像サイズで使用できる最大のスケールは%iです"
+msgstr "使用可能な画像サイズに自動的にスケール調整"
 
 #: ../src/iop/lens.cc:4561
 msgid ""
@@ -18386,6 +18295,9 @@ msgid ""
 " a) data and algorithms provided by the Lensfun project\n"
 " b) embedded metadata provided by the camera or software vendor"
 msgstr ""
+"以下のどちらに基づいて補正を行うか選択してください\n"
+" a) Lensfunプロジェクトによって提供されたデータとアルゴリズム\n"
+" b) カメラまたはソフトウェアベンダーによって提供された埋め込みメタデータ"
 
 #: ../src/iop/lens.cc:4568
 msgid "which corrections to apply"
@@ -18743,8 +18655,7 @@ msgid "invalid png file %s"
 msgstr "pngファイル%sは無効です"
 
 #: ../src/iop/lut3d.c:520
-#, fuzzy, c-format
-#| msgid "png bit-depth %d not supported"
+#, c-format
 msgid "png bit depth %d is not supported"
 msgstr "pngのビット深度%dはサポートされていません"
 
@@ -19303,10 +19214,6 @@ msgid "optimize automatically"
 msgstr "自動最適化"
 
 #: ../src/iop/profile_gamma.c:670
-#, fuzzy
-#| msgid ""
-#| "enlarge or shrink the computed dynamic range\n"
-#| "this is useful when noise perturbates the measurements"
 msgid ""
 "increase or decrease the computed dynamic range\n"
 "this is useful when noise distorts the measurement"
@@ -19977,40 +19884,32 @@ msgid "primaries"
 msgstr "プライマリ"
 
 #: ../src/iop/sigmoid.c:937
-#, fuzzy
-#| msgid "set the custom aspect ratio"
 msgid "set custom primaries"
-msgstr "アスペクト比をカスタム設定します"
+msgstr "プライマリをカスタム設定します"
 
 #: ../src/iop/sigmoid.c:943
 msgid "primaries to use as the base for below adjustments"
 msgstr "以下の調整のためのベースとして使用するプライマリ"
 
 #: ../src/iop/sigmoid.c:962
-#, fuzzy
-#| msgid "set the opacity of the blending"
 msgid "attenuate the purity of the red primary"
-msgstr "ブレンドの不透明度を設定します"
+msgstr "赤のプライマリの純度を減衰させます"
 
 #: ../src/iop/sigmoid.c:963
 msgid "rotate the red primary"
 msgstr "赤のプライマリを回転する"
 
 #: ../src/iop/sigmoid.c:964
-#, fuzzy
-#| msgid "set the opacity of the blending"
 msgid "attenuate the purity of the green primary"
-msgstr "ブレンドの不透明度を設定します"
+msgstr "緑のプライマリの純度を減衰させます"
 
 #: ../src/iop/sigmoid.c:965
 msgid "rotate the green primary"
 msgstr "緑のプライマリを回転する"
 
 #: ../src/iop/sigmoid.c:966
-#, fuzzy
-#| msgid "set the opacity of the blending"
 msgid "attenuate the purity of the blue primary"
-msgstr "ブレンドの不透明度を設定します"
+msgstr "青のプライマリの純度を減衰させます"
 
 #: ../src/iop/sigmoid.c:967
 msgid "rotate the blue primary"
@@ -20326,10 +20225,8 @@ msgid "channel coefficients"
 msgstr "チャンネルの係数"
 
 #: ../src/iop/temperature.c:2097
-#, fuzzy
-#| msgid "previous"
 msgid "various"
-msgstr "以前"
+msgstr "複数"
 
 #: ../src/iop/temperature.c:2123
 msgid "white balance disabled for camera"
@@ -20922,11 +20819,11 @@ msgstr ""
 
 #: ../src/iop/watermark.c:1387
 msgid "reference image dimension against which to scale the watermark"
-msgstr ""
+msgstr "透かしのスケール調整で参照する画像の寸法"
 
 #: ../src/iop/watermark.c:1391
 msgid "watermark dimension to scale"
-msgstr ""
+msgstr "スケール調整する透かしの寸法"
 
 #: ../src/iop/watermark.c:1395 ../src/libs/print_settings.c:2675
 msgid "alignment"
@@ -22017,10 +21914,8 @@ msgid "actions"
 msgstr "アクション"
 
 #: ../src/libs/filtering.c:1784
-#, fuzzy
-#| msgid "red filter"
 msgid "reset quickfilters"
-msgstr "赤フィルター"
+msgstr "クイックフィルタをリセット"
 
 #: ../src/libs/filtering.c:1957
 msgid "sort order"
@@ -22498,14 +22393,12 @@ msgid "scopes"
 msgstr "スコープ"
 
 #: ../src/libs/histogram.c:757
-#, fuzzy
-#| msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgid ""
 "unsupported vectorscope profile selected, it will be replaced with linear "
 "Rec2020"
 msgstr ""
-"入力プロファイルがサポートされていません。リニアRec709 RGB に置き換えられてい"
-"ます！"
+"サポートされていないベクトルスコーププロファイルが選択されています。リニア"
+"Rec2020に置き換えられます"
 
 #: ../src/libs/histogram.c:1715
 msgid "scroll to coarse-rotate"
@@ -22708,10 +22601,8 @@ msgid "do you really want to clear history of current image?"
 msgstr "この画像の履歴を本当に削除しますか？"
 
 #: ../src/libs/image.c:74
-#, fuzzy
-#| msgid "actual selection"
 msgid "actions on selection"
-msgstr "現在の選択"
+msgstr "選択へのアクション"
 
 #: ../src/libs/image.c:302
 msgid "delete (trash)"
@@ -23006,10 +22897,8 @@ msgid "invalid override date/time format"
 msgstr "無効な上書き日時の形式です"
 
 #: ../src/libs/import.c:1986
-#, fuzzy
-#| msgid "storage directory"
 msgid "import base directory"
-msgstr "ストレージ・ディレクトリ"
+msgstr "ベースディレクトリをインポート"
 
 #: ../src/libs/import.c:1987
 msgid ""
@@ -23020,6 +22909,12 @@ msgid ""
 "inspect darktable preferences -> import.\n"
 "check and possibly correct the 'base directory naming pattern'"
 msgstr ""
+"画像をdarktableベースディレクトリにコピーする前に、ベースディレクトリが好みの"
+"場所に設定されていることを確認してください\n"
+"詳しい情報はdarktableのマニュアルをご覧ください\n"
+"\n"
+"設定のインポートタブをチェックし、必要であれば'ベースディレクトリ命名のひな"
+"型'を修正してください"
 
 #: ../src/libs/import.c:1991
 msgid "_come back & check"
@@ -24406,7 +24301,7 @@ msgstr "S"
 
 #: ../src/libs/snapshots.c:662
 msgid "snapshots for removed image have been deleted"
-msgstr ""
+msgstr "削除された画像のスナップショットは消去されています"
 
 #: ../src/libs/snapshots.c:703
 #, c-format
