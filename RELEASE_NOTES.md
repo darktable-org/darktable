@@ -547,7 +547,8 @@ are available on raw.pixls.us:
 
 - Albanian
 - Brazilian Portuguese
-- Chinese - China
+- Chinese (simplified)
+- Chinese (traditional)
 - Chinese - Taiwan
 - Czech
 - Dutch
