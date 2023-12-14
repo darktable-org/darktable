@@ -1796,7 +1796,8 @@ static uint32_t _image_import_internal(const int32_t film_id,
   *cc2 = '\0';
   gchar *sql_pattern = g_strconcat(basename, ".%", NULL);
   dt_imgid_t group_id;
-  // in case of a raw file - dng files are also accepted we need to change group representative
+  // in case of a raw file - dng files are also accepted -
+  // we need to change group representative
   if(dt_imageio_is_raw_by_extension(ext) || !strcmp(ext, "dng"))
   {
     sqlite3_stmt *stmt2;
@@ -1813,7 +1814,7 @@ static uint32_t _image_import_internal(const int32_t film_id,
     // if we have a group already
     if(sqlite3_step(stmt2) == SQLITE_ROW)
     {
-      int other_id = sqlite3_column_int(stmt2, 0);
+      dt_imgid_t other_id = sqlite3_column_int(stmt2, 0);
       dt_image_t *other_img = dt_image_cache_get(darktable.image_cache, other_id, 'w');
       gchar *other_basename = g_strdup(other_img->filename);
       gchar *cc3 = other_basename + strlen(other_img->filename);
@@ -1821,9 +1822,9 @@ static uint32_t _image_import_internal(const int32_t film_id,
         ;
       ++cc3;
       gchar *ext_lowercase = g_ascii_strdown(cc3, -1);
-      // if the group representative is a jpg, change group
-      // representative to this new imported image
-      if(!strcmp(ext_lowercase, "jpg") || !strcmp(ext_lowercase, "jpeg"))
+      // if the group representative is neither a definite raw nor a dng,
+      // change group representative to this new imported image.
+      if(!(dt_imageio_is_raw_by_extension(ext) || !strcmp(ext, "dng")))
       {
         other_img->group_id = id;
         dt_image_cache_write_release(darktable.image_cache, other_img, DT_IMAGE_CACHE_SAFE);
