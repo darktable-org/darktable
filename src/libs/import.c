@@ -639,6 +639,10 @@ static void _show_all_thumbs(dt_lib_module_t* self)
   }
 }
 
+static guint _import_set_file_list(const gchar *folder,
+                                   const int folder_lgth,
+                                   const int n,
+                                   dt_lib_module_t *self)
 static guint _import_set_file_list(const gchar *folder, const int folder_lgth,
                                    const int n, dt_lib_module_t *self)
 {
