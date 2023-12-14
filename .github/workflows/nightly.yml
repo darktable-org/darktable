@@ -189,7 +189,6 @@ jobs:
             python-jsonschema:p
             curl:p
             drmingw:p
-            exiv2:p
             gcc-libs:p
             gettext:p
             gmic:p
@@ -222,6 +221,10 @@ jobs:
             sqlite3:p
             zlib:p
           update: false
+      - name: Install the latest not yet broken version of exiv2
+        run: |
+          # It's a temporary fix, to be removed when the issue will be resolved
+          pacman -U --noconfirm https://repo.msys2.org/mingw/ucrt64/mingw-w64-ucrt-x86_64-exiv2-0.27.7-1-any.pkg.tar.zst
       - name: Cancel workflow if job fails
         if: ${{ failure() }}
         uses: andymckay/cancel-action@0.3
