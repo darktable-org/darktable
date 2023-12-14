@@ -1821,10 +1821,10 @@ static uint32_t _image_import_internal(const int32_t film_id,
       for(; *cc3 != '.' && cc3 > other_basename; cc3--)
         ;
       ++cc3;
-      gchar *ext_lowercase = g_ascii_strdown(cc3, -1);
+      gchar *other_ext = g_ascii_strdown(cc3, -1);
       // if the group representative is neither a definite raw nor a dng,
       // change group representative to this new imported image.
-      if(!(dt_imageio_is_raw_by_extension(ext) || !strcmp(ext, "dng")))
+      if(!(dt_imageio_is_raw_by_extension(other_ext) || !strcmp(other_ext, "dng")))
       {
         other_img->group_id = id;
         dt_image_cache_write_release(darktable.image_cache, other_img, DT_IMAGE_CACHE_SAFE);
@@ -1850,7 +1850,7 @@ static uint32_t _image_import_internal(const int32_t film_id,
                                      DT_IMAGE_CACHE_RELAXED);
         group_id = other_id;
       }
-      g_free(ext_lowercase);
+      g_free(other_ext);
       g_free(other_basename);
     }
     else
