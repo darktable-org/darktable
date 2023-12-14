@@ -2,69 +2,66 @@
 Pascal Obry
 Aldric Renaudin
 Roman Lebedev
-parafin
-Edouard Gomez
 
 * translators:
 Victor Forsiuk
 Pascal Obry
 Jeronimo Pellegrini
 Martin Straeten
+EdgarLux
+Marko Vertainen
 Kang-Wei Hsu
-Serkan ÖNDER
-Ryo Shinozaki
-Besmir Godolja
+Mario Zimmermann
+Matteo Mardegan
+RIM
+Fabio Sirna
 Nicolas Auffray
 Petr Stasiak
-Tianhao Chai
-Matjaž Jeran
+Яна Тунгушпаева
+Besmir Godolja
 Báthory Péter
-EdgarLux
+Kofa
+Matjaž Jeran
+Nicolas
+Ryo Shinozaki
+Serkan ÖNDER
+Tianhao Chai
 bajdero
-shinoryo
-shlomi
-François Delègue
-Hanno Schwalm
-Mario Zimmermann
-Tobias Kühne
 
 * contributors (at least 4 commits):
 Victor Forsiuk
-Ralf Brown
 Hanno Schwalm
 Diederik ter Rahe
-Miloš Komarčević
-Dan Torop
-Jeronimo Pellegrini
-Martin Straeten
 Mario Zimmermann
-Mark-64
+Jeronimo Pellegrini
+Sakari Kapanen
+Martin Straeten
+Ralf Brown
+Miloš Komarčević
+solarer
+Paolo DePetrillo
+Bill Ferguson
+Chris Elston
+gi-man
+EdgarLux
+Marko Vertainen
 Kang-Wei Hsu
 Nicolas Auffray
-rawfiner
-Serkan ÖNDER
-Bill Ferguson
-Ryo Shinozaki
-Simone Gotti
-lhietal
-Besmir Godolja
-Dmitry Stoyanov
-Manuel Presnitz
-Petr Stasiak
-Tianhao Chai
-shonjir
 
 * Sub-module rawspeed contributors (at least 1 commit):
 Roman Lebedev
 Miloš Komarčević
-Jordan Neumeyer
-Philipp Lutz
-Thomas Baumann
-Howard Liberty
+Georg Lukas
+Yattaro
+Jan Šmucr
+Jorge Nerín
+Massimo Paladin
+Michael Allman
+Omari Stephens
+Victor Forsiuk
 
 * Sub-module integration contributors (at least 1 commit):
 Pascal Obry
-ralfbrown
-Simone Gotti
+Sakari Kapanen
 
-And all those of you that made previous releases possible.
+And all those of you that made previous releases possible
