@@ -639,8 +639,10 @@ static void _show_all_thumbs(dt_lib_module_t* self)
   }
 }
 
-static guint _import_set_file_list(const gchar *folder, const int folder_lgth,
-                                   const int n, dt_lib_module_t *self)
+static guint _import_set_file_list(const gchar *folder,
+                                   const int folder_lgth,
+                                   const int n,
+                                   dt_lib_module_t *self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   GError *error = NULL;
@@ -677,6 +679,7 @@ static guint _import_set_file_list(const gchar *folder, const int folder_lgth,
     {
       const char *uifilename = g_file_info_get_display_name(info);
       const char *filename = g_file_info_get_name(info);
+      const GFileType filetype = g_file_info_get_file_type(info);
       if(!filename)
         continue;
 
@@ -690,13 +693,19 @@ static guint _import_set_file_list(const gchar *folder, const int folder_lgth,
         g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
       GDateTime *dt_datetime = g_date_time_new_from_unix_local(datetime);
       gchar *dt_txt = g_date_time_format(dt_datetime, "%x %X");
-      const GFileType filetype = g_file_info_get_file_type(info);
       gchar *uifullname = g_build_filename(folder, uifilename, NULL);
       gchar *fullname = g_build_filename(folder, filename, NULL);
 
       if(recursive && filetype == G_FILE_TYPE_DIRECTORY)
       {
-        nb = _import_set_file_list(fullname, folder_lgth, nb, self);
+        if(g_file_test(fullname, G_FILE_TEST_IS_SYMLINK))
+        {
+          dt_print(DT_DEBUG_CONTROL, "[import] skip symlink %s\n", fullname);
+        }
+        else
+        {
+          nb = _import_set_file_list(fullname, strlen(fullname), nb, self);
+        }
       }
       // Before adding to the import list, check that the format is supported by this build of dt
       else if(filetype != G_FILE_TYPE_DIRECTORY && dt_supported_image(filename))
