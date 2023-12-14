@@ -545,4 +545,20 @@ are available on raw.pixls.us:
 
 ## Translations
 
-- ???
+- Albanian
+- Brazilian Portuguese
+- Chinese - China
+- Chinese - Taiwan
+- Czech
+- Dutch
+- European Spanish
+- Finnish
+- French
+- German
+- Hungarian
+- Italian
+- Japanese
+- Polish
+- Russian
+- Slovenian
+- Ukrainian
