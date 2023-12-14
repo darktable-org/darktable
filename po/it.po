@@ -1,22 +1,23 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>, 2023.
 # Luca Cignoni <cigno5@users.noreply.github.com>, 2023.
+# Fabio Sirna <fabio@fabiosirna.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-12-13 22:39+0100\n"
-"PO-Revision-Date: 2023-12-12 22:05+0100\n"
-"Last-Translator: Luca Cignoni <cigno5@users.noreply.github.com>\n"
-"Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
+"PO-Revision-Date: 2023-12-14 12:17+0100\n"
+"Last-Translator: Fabio Sirna <fabio@fabiosirna.com>\n"
+"Language-Team: Italian <kde-i18n-doc@kde.org>\n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Lokalize 21.12.3\n"
+"X-Generator: Lokalize 22.04.3\n"
 
 #: ../build/bin/conf_gen.h:174
 msgctxt "preferences"
@@ -219,16 +220,15 @@ msgstr "Autore da assegnare al momento dell'importazione"
 
 #: ../build/bin/conf_gen.h:1003
 msgid "publisher to be applied when importing"
-msgstr "Editore da assegnare al momento dell'importazione"
+msgstr "Editore da assegnare durante l'importazione"
 
 #: ../build/bin/conf_gen.h:1009
 msgid "rights to be applied when importing"
-msgstr "Diritti da assegnare al momento dell'importazione"
+msgstr "Diritti da assegnare durante l'importazione"
 
 #: ../build/bin/conf_gen.h:1015
 msgid "comma separated tags to be applied when importing"
-msgstr ""
-"Etichette, separate da virgola, da assegnare al momento dell'importazione"
+msgstr "Etichette, separate da virgola, da assegnare durante l'importazione"
 
 #: ../build/bin/conf_gen.h:1021
 msgid "import tags from XMP"
@@ -244,14 +244,14 @@ msgstr "Valutazione iniziale di tutte le immagini quando importi un rullino"
 
 #: ../build/bin/conf_gen.h:1057
 msgid "ignore EXIF rating"
-msgstr "Ignora la valutazione EXIF"
+msgstr "Ignora la valutazione dell'EXIF"
 
 #: ../build/bin/conf_gen.h:1058
 msgid ""
 "ignore EXIF rating. if not set and EXIF rating is found, it overrides "
 "'initial rating'"
 msgstr ""
-"Ignora la valutazione EXIF. Se non è selezionato e viene trovata la "
+"Ignora la valutazione dell'EXIF. Se non è selezionato e viene trovata la "
 "valutazione EXIF, sovrascrive la 'valutazione iniziale'"
 
 #: ../build/bin/conf_gen.h:1063
@@ -280,11 +280,11 @@ msgstr ""
 
 #: ../build/bin/conf_gen.h:1075
 msgid "keep this window open"
-msgstr "Tenere questa finestra aperta"
+msgstr "Mantieni questa finestra aperta"
 
 #: ../build/bin/conf_gen.h:1076
 msgid "keep this window open to run several imports"
-msgstr "Tenere questa finestra aperta per avviare diverse importazioni"
+msgstr "Mantieni questa finestra aperta per avviare diverse importazioni"
 
 #: ../build/bin/conf_gen.h:1233 ../build/bin/conf_gen.h:1249
 #: ../build/bin/conf_gen.h:1277
@@ -453,7 +453,7 @@ msgstr ""
 #: ../build/bin/conf_gen.h:1914
 msgctxt "preferences"
 msgid "thumbnail"
-msgstr "Anteprima"
+msgstr "Miniatura"
 
 #: ../build/bin/conf_gen.h:1915
 msgctxt "preferences"
@@ -622,12 +622,12 @@ msgstr "monocromatico"
 #: ../build/bin/conf_gen.h:2882
 msgctxt "preferences"
 msgid "analogous"
-msgstr "Analogico"
+msgstr "Analogo"
 
 #: ../build/bin/conf_gen.h:2883
 msgctxt "preferences"
 msgid "analogous complementary"
-msgstr "Analogico complementare"
+msgstr "Analogo complementare"
 
 #: ../build/bin/conf_gen.h:2884
 msgctxt "preferences"
@@ -1811,7 +1811,7 @@ msgstr "Chiedi sempre prima di eliminare un'immagine."
 
 #: ../build/bin/preferences_gen.h:6707
 msgid "ask before discarding history stack"
-msgstr "Chiedi conferma prima di cancellare la coda di sviluppo"
+msgstr "Chiedi conferma prima di eliminare la coda di sviluppo"
 
 #: ../build/bin/preferences_gen.h:6720
 msgid "always ask the user before history stack is discarded on any image"
@@ -4860,7 +4860,7 @@ msgstr "Recupera purezza"
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:194
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:289
 msgid "base primaries"
-msgstr "Primari base"
+msgstr "Primarie base"
 
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:303
 msgid "per channel"
@@ -7277,7 +7277,7 @@ msgstr "Sott'acqua"
 
 #: ../src/common/wb_presets.c:74 ../src/views/darkroom.c:2286
 msgid "black & white"
-msgstr "Bianco & nero"
+msgstr "Bianconero"
 
 #: ../src/common/wb_presets.c:76
 msgid "spot WB"
@@ -7317,7 +7317,7 @@ msgstr "Viste"
 #: ../src/control/control.c:131
 msgctxt "accel"
 msgid "thumbtable"
-msgstr "Anteprime"
+msgstr "Miniature"
 
 #: ../src/control/control.c:138
 msgctxt "accel"
@@ -7828,7 +7828,7 @@ msgstr "Elimina immagini"
 #: ../src/control/jobs/control_jobs.c:1633
 #: ../src/control/jobs/control_jobs.c:1663
 msgid "delete image?"
-msgstr "Cancello l'immagine?"
+msgstr "Eliminare l'immagine?"
 
 #: ../src/control/jobs/control_jobs.c:1633
 msgid "delete images?"
@@ -9871,6 +9871,7 @@ msgid "translator-credits"
 msgstr ""
 "\"Matteo Mardegan <matteo@mardegan.org> (2019-2023)\n"
 "\"Luca Cignoni (2022-2023)\n"
+"\"Fabio Sirna (2023)\n"
 "\"\"Nelle precedenti versioni:\n"
 "\"\"Maurizio Paglia (2018-2022)\n"
 "\"\"Germano Massullo (2015-2017)\n"
@@ -10757,7 +10758,7 @@ msgstr "Stampa"
 #. register ctrl-q to quit:
 #: ../src/gui/gtk.c:1276
 msgid "quit"
-msgstr "Chiudi"
+msgstr "esci"
 
 #. Full-screen accelerator (no ESC handler here to enable quit-slideshow using ESC)
 #: ../src/gui/gtk.c:1279
@@ -14107,27 +14108,27 @@ msgstr "Lineare, RGB o XYZ"
 
 #: ../src/iop/channelmixerrgb.c:460
 msgid "B&W: luminance-based"
-msgstr "B/N: basato sulla luminanza"
+msgstr "B/N basato sulla luminanza"
 
 #: ../src/iop/channelmixerrgb.c:495
 msgid "B&W: ILFORD HP5+"
-msgstr "B/N: ILFORD HP5+"
+msgstr "B/N ILFORD HP5+"
 
 #: ../src/iop/channelmixerrgb.c:504
 msgid "B&W: ILFORD DELTA 100"
-msgstr "B/N: ILFORD DELTA 100"
+msgstr "B/N ILFORD DELTA 100"
 
 #: ../src/iop/channelmixerrgb.c:514
 msgid "B&W: ILFORD DELTA 400 - 3200"
-msgstr "B/N: ILFORD DELTA 400 - 3200"
+msgstr "B/N ILFORD DELTA 400 - 3200"
 
 #: ../src/iop/channelmixerrgb.c:523
 msgid "B&W: ILFORD FP4+"
-msgstr "B/N : ILFORD FP4+"
+msgstr "B/N ILFORD FP4+"
 
 #: ../src/iop/channelmixerrgb.c:532
 msgid "B&W: Fuji Acros 100"
-msgstr "B/N: Fuji Acros 100"
+msgstr "B/N Fuji Acros 100"
 
 #: ../src/iop/channelmixerrgb.c:549
 msgid "basic channel mixer"
@@ -15114,7 +15115,7 @@ msgstr "Mezzi toni: gamma / potenza"
 #: ../src/iop/colorbalance.c:1764
 msgctxt "section"
 msgid "highlights: gain / slope"
-msgstr "Alte luci: guadano / riduzione"
+msgstr "Alte luci: guadagno / riduzione"
 
 #: ../src/iop/colorbalance.c:1788
 msgid "shadows / mid-tones / highlights"
@@ -16056,11 +16057,11 @@ msgstr "sposta selettivamente tonalità, cromaticità e chiarezza dei pixel"
 
 #: ../src/iop/colorzones.c:684
 msgid "B&W: with red"
-msgstr "B/N: con il rosso"
+msgstr "B/N con il rosso"
 
 #: ../src/iop/colorzones.c:707
 msgid "B&W: with skin tones"
-msgstr "B/N: con toni della pelle"
+msgstr "B/N con toni della pelle"
 
 #: ../src/iop/colorzones.c:732
 msgid "polarizing filter"
@@ -16072,7 +16073,7 @@ msgstr "Toni naturali della pelle"
 
 #: ../src/iop/colorzones.c:784
 msgid "B&W: film"
-msgstr "B/N: pellicola"
+msgstr "B/N pellicola"
 
 #: ../src/iop/colorzones.c:804
 msgid "HSL base setting"
@@ -19223,7 +19224,7 @@ msgstr "Il modulo sovraesposizione ha fallito nella conversione colore"
 
 #: ../src/iop/primaries.c:74
 msgid "rgb primaries"
-msgstr "RGB primari"
+msgstr "Primarie RGB"
 
 #: ../src/iop/primaries.c:79
 msgid "adjustment of the RGB color primaries for color grading"
@@ -19235,7 +19236,7 @@ msgstr "Sposta il rosso verso il giallo o il magenta"
 
 #: ../src/iop/primaries.c:396
 msgid "red primary purity"
-msgstr "Purezza primaria rossa"
+msgstr "Purezza del rosso primario"
 
 #: ../src/iop/primaries.c:397
 msgid "shift green towards cyan or yellow"
@@ -19243,7 +19244,7 @@ msgstr "Sposta il verde verso il ciano o il giallo"
 
 #: ../src/iop/primaries.c:398
 msgid "green primary purity"
-msgstr "Purezza primaria verde"
+msgstr "Purezza del verde primario"
 
 #: ../src/iop/primaries.c:399
 msgid "shift blue towards magenta or cyan"
@@ -19251,7 +19252,7 @@ msgstr "Sposta il blu verso il magenta o il ciano"
 
 #: ../src/iop/primaries.c:400
 msgid "blue primary purity"
-msgstr "Purezza primaria blu"
+msgstr "Purezza del blu primario"
 
 #: ../src/iop/profile_gamma.c:96
 msgid "unbreak input profile"
@@ -19981,15 +19982,15 @@ msgstr ""
 
 #: ../src/iop/sigmoid.c:936 ../src/iop/sigmoid.c:940
 msgid "primaries"
-msgstr "Primari"
+msgstr "Primarie"
 
 #: ../src/iop/sigmoid.c:937
 msgid "set custom primaries"
-msgstr "Imposta primari personalizzati"
+msgstr "Imposta primarie personalizzate"
 
 #: ../src/iop/sigmoid.c:943
 msgid "primaries to use as the base for below adjustments"
-msgstr "primari da utilizzare come base per le regolazioni di seguito"
+msgstr "Primarie da utilizzare come base per le regolazioni di seguito"
 
 #: ../src/iop/sigmoid.c:962
 msgid "attenuate the purity of the red primary"
@@ -20004,6 +20005,7 @@ msgid "attenuate the purity of the green primary"
 msgstr "Attenua la purezza del verde primario"
 
 #: ../src/iop/sigmoid.c:965
+#, fuzzy
 msgid "rotate the green primary"
 msgstr "Ruota il verde primario"
 
@@ -21475,7 +21477,7 @@ msgstr "Aggiungi"
 
 #: ../src/libs/copy_history.c:409
 msgid "load sidecar file..."
-msgstr "Carica file XMP..."
+msgstr "Carica il file XMP..."
 
 #: ../src/libs/copy_history.c:410
 msgid ""
@@ -22719,7 +22721,7 @@ msgstr "Input maschera parametrica:"
 
 #: ../src/libs/history.c:1322
 msgid "delete image's history?"
-msgstr "Cancello "
+msgstr "Eliminare la cronologia dell'immagine?"
 
 #: ../src/libs/history.c:1323
 msgid "do you really want to clear history of current image?"
@@ -22918,7 +22920,7 @@ msgid ""
 "or quit the locking application"
 msgstr ""
 "La fotocamera è bloccata da un'altra applicazione\n"
-"assicurati che non sia più montata\n"
+"assicurati che non sia più collegata\n"
 "o chiudi l'applicazione che la blocca"
 
 #: ../src/libs/import.c:316
@@ -23498,7 +23500,7 @@ msgstr "CC BY"
 
 #: ../src/libs/metadata.c:794
 msgid "Creative Commons Attribution (CC BY)"
-msgstr "Attribuzione Creative Commons (CC-BY)"
+msgstr "(CC BY-NC-ND) Creative Commons - Attribuzione"
 
 #: ../src/libs/metadata.c:795
 msgid "CC BY-SA"
@@ -23506,7 +23508,8 @@ msgstr "CC BY-SA"
 
 #: ../src/libs/metadata.c:796
 msgid "Creative Commons Attribution-ShareAlike (CC BY-SA)"
-msgstr "Attribuzione Creative Commons - Condividi allo stesso modo (CC-BY-SA)"
+msgstr ""
+"(CC BY-SA) Creative Commons - Attribuzione – Condividi allo stesso modo"
 
 #: ../src/libs/metadata.c:797
 msgid "CC BY-ND"
@@ -23514,7 +23517,7 @@ msgstr "CC BY-ND"
 
 #: ../src/libs/metadata.c:798
 msgid "Creative Commons Attribution-NoDerivs (CC BY-ND)"
-msgstr "Attribuzione Creative Commons - No opere derivate (CC-BY-ND)"
+msgstr "(CC BY-ND) Creative Commons - Attribuzione – Non Opere Derivate"
 
 #: ../src/libs/metadata.c:799
 msgid "CC BY-NC"
@@ -23522,7 +23525,7 @@ msgstr "CC BY-NC"
 
 #: ../src/libs/metadata.c:800
 msgid "Creative Commons Attribution-NonCommercial (CC BY-NC)"
-msgstr "Attribuzione Creative Commons - Non commerciale (CC-BY-NC)"
+msgstr "(CC BY-NC) Creative Commons - Attribuzione – Non Commerciale"
 
 #: ../src/libs/metadata.c:801
 msgid "CC BY-NC-SA"
@@ -23531,8 +23534,8 @@ msgstr "CC BY-NC-SA"
 #: ../src/libs/metadata.c:802
 msgid "Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA)"
 msgstr ""
-"Attribuzione Creative Commons - Non commerciale - Condividi allo stesso modo "
-"(CC-BY-NC-SA)"
+"(CC BY-NC-SA) Creative Commons - Attribuzione – Non Commerciale – Condividi"
+" allo stesso modo"
 
 #: ../src/libs/metadata.c:803
 msgid "CC BY-NC-ND"
@@ -23541,7 +23544,8 @@ msgstr "CC BY-NC-ND"
 #: ../src/libs/metadata.c:804
 msgid "Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"
 msgstr ""
-"Attribuzione CreativeCommons-NonCommerciale-NoOpereDerivate (CC BY-NC-ND)"
+"(CC BY-NC-ND) Creative Commons - Attribuzione – Non Commerciale – Non Opere"
+" Derivate"
 
 #: ../src/libs/metadata.c:805 ../src/libs/metadata.c:806
 msgid "all rights reserved"
@@ -23706,11 +23710,11 @@ msgstr "Raccolte usate recentemente"
 
 #: ../src/libs/recentcollect.c:109
 msgid " and "
-msgstr " E "
+msgstr " e "
 
 #: ../src/libs/recentcollect.c:114
 msgid " or "
-msgstr " O "
+msgstr " o "
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
 #: ../src/libs/recentcollect.c:119
@@ -23756,8 +23760,8 @@ msgstr ""
 #: ../src/libs/modulegroups.c:594
 msgid "(some features may only be available in the full module interface)"
 msgstr ""
-"(alcune caratteristiche potrebbero esser disponibili solo nell'interfaccia "
-"completa del modulo)"
+"(alcune caratteristiche potrebbero esser disponibili solo nell'interfaccia"
+" completa del modulo)"
 
 #: ../src/libs/modulegroups.c:632
 #, c-format
@@ -25069,7 +25073,7 @@ msgstr "Asse del gamepad non valido"
 #. we write the label with the size category
 #: ../src/libs/tools/global_toolbox.c:215
 msgid "thumbnails overlays for size"
-msgstr "Anteprime delle sovrimpressioni per il formato"
+msgstr "Mostra la dimenstione nelle miniature"
 
 #: ../src/libs/tools/global_toolbox.c:249
 #: ../src/libs/tools/global_toolbox.c:312
@@ -25973,7 +25977,7 @@ msgstr "Rallenta"
 
 #: ../src/views/slideshow.c:738
 msgid "speed up"
-msgstr "Accellera"
+msgstr "Accelera"
 
 #: ../src/views/slideshow.c:743
 msgid "step forward"
