@@ -3786,13 +3786,11 @@ static gboolean pid_is_alive(int pid)
   HANDLE h = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
   if(h)
   {
-    wchar_t wfilename[MAX_PATH];
-    long unsigned int n_filename = sizeof(wfilename);
-    int ret = QueryFullProcessImageNameW(h, 0, wfilename, &n_filename);
-    char *filename = g_utf16_to_utf8(wfilename, -1, NULL, NULL, NULL);
-    if(ret && n_filename > 0 && filename && g_str_has_suffix(filename, "darktable.exe"))
+    char filename[MAX_PATH];
+    long unsigned int n_filename = sizeof(filename);
+    int ret = QueryFullProcessImageNameA(h, 0, filename, &n_filename);
+    if(ret && n_filename > 0 && g_str_has_suffix(filename, "darktable.exe"))
       pid_is_alive = TRUE;
-    g_free(filename);
     CloseHandle(h);
   }
 #else

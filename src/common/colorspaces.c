@@ -2009,21 +2009,19 @@ void dt_colorspaces_set_display_profile
   if(hdc != NULL)
   {
     DWORD len = 0;
-    GetICMProfile(hdc, &len, NULL);
-    wchar_t *wpath = g_new(wchar_t, len);
+    GetICMProfileA(hdc, &len, NULL);
+    char *path = g_new(char, len);
 
-    if(GetICMProfileW(hdc, &len, wpath))
+    if(GetICMProfileA(hdc, &len, path))
     {
-      gchar *path = g_utf16_to_utf8(wpath, -1, NULL, NULL, NULL);
       if(path)
       {
         gsize size;
         g_file_get_contents(path, (gchar **)&buffer, &size, NULL);
         buffer_size = size;
-        g_free(path);
       }
     }
-    g_free(wpath);
+    g_free(path);
     ReleaseDC(NULL, hdc);
   }
   profile_source = g_strdup("windows color profile api");

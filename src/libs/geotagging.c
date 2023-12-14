@@ -1128,25 +1128,25 @@ static GList *_lib_geotagging_get_timezones(void)
   {
     DWORD n_subkeys, max_subkey_len;
 
-    if(RegQueryInfoKey(hKey,
-                       NULL,
-                       NULL,
-                       NULL,
-                       &n_subkeys,
-                       &max_subkey_len,
-                       NULL,
-                       NULL,
-                       NULL,
-                       NULL,
-                       NULL,
-                       NULL) == ERROR_SUCCESS)
+    if(RegQueryInfoKeyA(hKey,
+                        NULL,
+                        NULL,
+                        NULL,
+                        &n_subkeys,
+                        &max_subkey_len,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL) == ERROR_SUCCESS)
     {
-      wchar_t *subkeyname = (wchar_t *)malloc(sizeof(wchar_t) * (max_subkey_len + 1));
+      char *subkeyname = (char *)malloc(max_subkey_len + 1);
 
       for(DWORD i = 1; i < n_subkeys; i++)
       {
         DWORD subkeyname_length = max_subkey_len + 1;
-        if(RegEnumKeyExW(hKey,
+        if(RegEnumKeyExA(hKey,
                          i,
                          subkeyname,
                          &subkeyname_length,
@@ -1156,21 +1156,19 @@ static GList *_lib_geotagging_get_timezones(void)
                          NULL) == ERROR_SUCCESS)
         {
           DWORD buffer_size;
-          char *subkeyname_utf8 = g_utf16_to_utf8(subkeyname, -1, NULL, NULL, NULL);
-          char *subkeypath_utf8 = g_strconcat(keypath, "\\", subkeyname_utf8, NULL);
-          wchar_t *subkeypath = g_utf8_to_utf16(subkeypath_utf8, -1, NULL, NULL, NULL);
-          if(RegGetValueW(HKEY_LOCAL_MACHINE,
+          char *subkeypath = g_strconcat(keypath, "\\", subkeyname, NULL);
+          if(RegGetValueA(HKEY_LOCAL_MACHINE,
                           subkeypath,
-                          L"Display",
+                          "Display",
                           RRF_RT_ANY,
                           NULL,
                           NULL,
                           &buffer_size) == ERROR_SUCCESS)
           {
-            wchar_t *display_name = (wchar_t *)malloc(buffer_size);
-            if(RegGetValueW(HKEY_LOCAL_MACHINE,
+            char *display_name = (char *)malloc(buffer_size);
+            if(RegGetValueA(HKEY_LOCAL_MACHINE,
                             subkeypath,
-                            L"Display",
+                            "Display",
                             RRF_RT_ANY,
                             NULL,
                             display_name,
@@ -1178,16 +1176,12 @@ static GList *_lib_geotagging_get_timezones(void)
             {
               tz_tuple_t *tz = (tz_tuple_t *)malloc(sizeof(tz_tuple_t));
 
-              tz->name = subkeyname_utf8;
-              tz->display = g_utf16_to_utf8(display_name, -1, NULL, NULL, NULL);
+              tz->name = subkeyname;
+              tz->display = display_name;
               timezones = g_list_prepend(timezones, tz);
-
-              subkeyname_utf8 = NULL; // to not free it later
             }
             free(display_name);
           }
-          g_free(subkeyname_utf8);
-          g_free(subkeypath_utf8);
           g_free(subkeypath);
         }
       }

@@ -161,14 +161,11 @@ GList *dt_control_crawler_run(void)
       gchar *xmp_path_locale = dt_util_normalize_path(xmp_path);
       int stat_res = -1;
 #ifdef _WIN32
-      // UTF8 paths fail in this context, but converting to UTF16 works
       struct _stati64 statbuf;
       if(xmp_path_locale) // in Windows dt_util_normalize_path returns
                           // NULL if file does not exist
       {
-        wchar_t *wfilename = g_utf8_to_utf16(xmp_path_locale, -1, NULL, NULL, NULL);
-        stat_res = _wstati64(wfilename, &statbuf);
-        g_free(wfilename);
+        stat_res = _stati64(xmp_path_locale, &statbuf);
       }
  #else
       struct stat statbuf;

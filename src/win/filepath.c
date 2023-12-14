@@ -39,17 +39,14 @@ GList* win_image_find_duplicates(const char* filename)
     const gchar *c2 = filename + strlen(filename);
     while(*c2 != '.' && c2 > filename) c2--;
     snprintf(c1 + strlen(*glob_pattern), pattern + sizeof(pattern) - c1 - strlen(*glob_pattern), "%s.xmp", c2);
-    wchar_t *wpattern = g_utf8_to_utf16(pattern, -1, NULL, NULL, NULL);
-    WIN32_FIND_DATAW data;
-    HANDLE handle = FindFirstFileW(wpattern, &data);
-    g_free(wpattern);
+    WIN32_FIND_DATAA data;
+    HANDLE handle = FindFirstFileA(pattern, &data);
     gchar *imgfile_without_path=g_strndup(c3,c2-c3); /*Need to remove path from front of filename*/
     if(handle != INVALID_HANDLE_VALUE)
     {
       do
       {
-        gchar *file = g_utf16_to_utf8(data.cFileName, -1, NULL, NULL, NULL);
-        gchar *short_file_name = g_strndup(file, strlen(file) - 4 + c2 - filename - strlen(filename));
+        gchar *short_file_name = g_strndup(data.cFileName, strlen(data.cFileName) - 4 + c2 - filename - strlen(filename));
         gboolean valid_xmp_name = FALSE;
         if(!(valid_xmp_name = (strlen(short_file_name) == strlen(imgfile_without_path))))
         {
@@ -66,12 +63,11 @@ GList* win_image_find_duplicates(const char* filename)
         }
 
         if(valid_xmp_name)
-            files = g_list_append(files, g_build_filename(imgpath, file, NULL));
+            files = g_list_append(files, g_build_filename(imgpath, data.cFileName, NULL));
 
         g_free(short_file_name);
-        g_free(file);
       }
-      while(FindNextFileW(handle, &data));
+      while(FindNextFileA(handle, &data));
 
     }
 
@@ -89,4 +85,3 @@ GList* win_image_find_duplicates(const char* filename)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

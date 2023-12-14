@@ -164,10 +164,8 @@ static LONG WINAPI dt_toplevel_exception_handler(PEXCEPTION_POINTERS pExceptionI
        "after you click on the OK button.\nIf you report this issue, "
        "please share this backtrace with the developers.\n",
        name_used);
-    wchar_t *wexception_message = g_utf8_to_utf16(exception_message, -1, NULL, NULL, NULL);
-    MessageBoxW(0, wexception_message, L"Error!", MB_OK);
+    MessageBoxA(0, exception_message, "Error!", MB_OK);
     g_free(exception_message);
-    g_free(wexception_message);
   }
 
   g_free(name_used);
@@ -259,4 +257,3 @@ void dt_set_signal_handlers()
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -363,21 +363,21 @@ void dtwin_set_thread_name(DWORD dwThreadID, const char *threadName)
 // When GLib version on Windows will be able to trash silently we can remove this function.
 boolean dt_win_file_trash(GFile *file, GCancellable *cancellable, GError **error)
 {
-  SHFILEOPSTRUCTW op = { 0 };
+  SHFILEOPSTRUCTA op = { 0 };
   gboolean success;
-  wchar_t *wfilename;
-  long len;
+  char *filename;
 
-  wfilename = g_utf8_to_utf16(g_file_get_parse_name(file), -1, NULL, &len, NULL);
+  filename = g_file_get_parse_name(file);
+  size_t len = strlen(filename);
   /* SHFILEOPSTRUCT.pFrom is double-zero-terminated */
-  wfilename = g_renew(wchar_t, wfilename, len + 2);
-  wfilename[len + 1] = 0;
+  filename = g_renew(char, filename, len + 2);
+  filename[len + 1] = 0;
 
   op.wFunc = FO_DELETE;
-  op.pFrom = wfilename;
+  op.pFrom = filename;
   op.fFlags = FOF_ALLOWUNDO | FOF_SILENT | FOF_NOCONFIRMATION;
 
-  success = SHFileOperationW(&op) == 0;
+  success = SHFileOperationA(&op) == 0;
 
   if(success && op.fAnyOperationsAborted)
   {
@@ -390,7 +390,7 @@ boolean dt_win_file_trash(GFile *file, GCancellable *cancellable, GError **error
     g_set_error(error, G_IO_ERROR, g_io_error_from_errno(0), "Unable to trash file %s",
                 g_file_get_parse_name(file));
 
-  g_free(wfilename);
+  g_free(filename);
   return success;
 }
 

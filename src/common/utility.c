@@ -339,14 +339,7 @@ gboolean dt_util_test_image_file(const char *filename)
 #ifdef _WIN32
   struct _stati64 stats;
 
-  // the code this replaced used utf8 paths with no problem
-  // utf8 paths will not work in this context for no reason
-  // that I can figure out, but converting utf8 to utf16 works
-  // fine.
-
-  wchar_t *wfilename = g_utf8_to_utf16(filename, -1, NULL, NULL, NULL);
-  const int result = _wstati64(wfilename, &stats);
-  g_free(wfilename);
+  const int result = _stati64(filename, &stats);
   if(result) return FALSE; // there was an error
  #else
   struct stat stats;
@@ -364,9 +357,7 @@ gboolean dt_util_test_writable_dir(const char *path)
 #ifdef _WIN32
   struct _stati64 stats;
 
-  wchar_t *wpath = g_utf8_to_utf16(path, -1, NULL, NULL, NULL);
-  const int result = _wstati64(wpath, &stats);
-  g_free(wpath);
+  const int result = _stati64(path, &stats);
 
   if(result)
   { // error while testing path:
@@ -749,25 +740,20 @@ gchar *dt_util_normalize_path(const gchar *_input)
   // this handles filenames in the formats <drive letter>:\path\to\file or \\host-name\share-name\file
   // some other formats like \Device\... are not supported
 
-  // the Windows api expects wide chars and not utf8 :(
-  wchar_t *wfilename = g_utf8_to_utf16(filename, -1, NULL, NULL, NULL);
-  g_free(filename);
-  if(!wfilename)
+  if(!filename)
     return NULL;
 
-  wchar_t LongPath[MAX_PATH] = {0};
-  const DWORD size = GetLongPathNameW(wfilename, LongPath, MAX_PATH);
-  g_free(wfilename);
+  char LongPath[MAX_PATH] = {0};
+  const DWORD size = GetLongPathNameA(filename, LongPath, MAX_PATH);
+  g_free(filename);
   if(size == 0 || size > MAX_PATH)
     return NULL;
 
-  // back to utf8!
-  filename = g_utf16_to_utf8(LongPath, -1, NULL, NULL, NULL);
+  filename = LongPath;
   if(!filename)
     return NULL;
 
   GFile *gfile = g_file_new_for_path(filename);
-  g_free(filename);
   if(!gfile)
     return NULL;
   filename = g_file_get_path(gfile);
