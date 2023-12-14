@@ -111,7 +111,8 @@ gboolean dt_imageio_is_raw_by_extension(const char *extension)
   const char *ext = g_str_has_prefix(extension, ".") ? extension + 1 : extension;
   for(const char **i = _supported_raw; *i != NULL; i++)
   {
-    if(!g_ascii_strncasecmp(ext, *i, strlen(*i))) return TRUE;
+    if(!g_ascii_strcasecmp(ext, *i))
+      return TRUE;
   }
   return FALSE;
 }
@@ -122,21 +123,21 @@ dt_image_flags_t dt_imageio_get_type_from_extension(const char *extension)
   const char *ext = g_str_has_prefix(extension, ".") ? extension + 1 : extension;
   for(const char **i = _supported_raw; *i != NULL; i++)
   {
-    if(!g_ascii_strncasecmp(ext, *i, strlen(*i)))
+    if(!g_ascii_strcasecmp(ext, *i))
     {
       return DT_IMAGE_RAW;
     }
   }
   for(const char **i = _supported_hdr; *i != NULL; i++)
   {
-    if(!g_ascii_strncasecmp(ext, *i, strlen(*i)))
+    if(!g_ascii_strcasecmp(ext, *i))
     {
       return DT_IMAGE_HDR;
     }
   }
   for(const char **i = _supported_ldr; *i != NULL; i++)
   {
-    if(!g_ascii_strncasecmp(ext, *i, strlen(*i)))
+    if(!g_ascii_strcasecmp(ext, *i))
     {
       return DT_IMAGE_LDR;
     }
