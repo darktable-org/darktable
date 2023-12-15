@@ -71,8 +71,11 @@ static void _do_select_none(dt_lib_module_t* self);
 static void _do_select_new(dt_lib_module_t* self);
 static void _update_places_list(dt_lib_module_t* self);
 static void _update_folders_list(dt_lib_module_t* self);
-static void _lib_import_select_folder(GtkWidget *widget, dt_lib_module_t *self);
-static void _remove_place(gchar *folder, GtkTreeIter iter, dt_lib_module_t* self);
+static void _lib_import_select_folder(GtkWidget *widget,
+                                      dt_lib_module_t *self);
+static void _remove_place(gchar *folder,
+                          GtkTreeIter iter,
+                          dt_lib_module_t* self);
 static GList* _get_custom_places();
 
 typedef enum dt_import_cols_t
@@ -192,7 +195,8 @@ int position(const dt_lib_module_t *self)
 #ifdef HAVE_GPHOTO2
 
 /* show import from camera dialog */
-static void _lib_import_from_camera_callback(GtkButton *button, dt_lib_module_t *self)
+static void _lib_import_from_camera_callback(GtkButton *button,
+                                             dt_lib_module_t *self)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)darktable.camctl;
   camctl->import_ui = TRUE;
@@ -206,14 +210,16 @@ static void _lib_import_from_camera_callback(GtkButton *button, dt_lib_module_t 
 }
 
 /* enter tethering mode for camera */
-static void _lib_import_tethered_callback(GtkToggleButton *button, gpointer data)
+static void _lib_import_tethered_callback(GtkToggleButton *button,
+                                          gpointer data)
 {
   /* select camera to work with before switching mode */
   dt_camctl_select_camera(darktable.camctl, (dt_camera_t *)data);
   dt_ctl_switch_mode_to("tethering");
 }
 
-static void _lib_import_mount_callback(GtkToggleButton *button, gpointer data)
+static void _lib_import_mount_callback(GtkToggleButton *button,
+                                       gpointer data)
 {
   dt_camera_unused_t *camera = (dt_camera_unused_t *)data;
   camera->trymount = TRUE;
@@ -221,7 +227,8 @@ static void _lib_import_mount_callback(GtkToggleButton *button, gpointer data)
   camctl->tickmask = 3;
 }
 
-static void _lib_import_unmount_callback(GtkToggleButton *button, gpointer data)
+static void _lib_import_unmount_callback(GtkToggleButton *button,
+                                         gpointer data)
 {
   dt_camera_t *camera = (dt_camera_t *)data;
   camera->unmount = TRUE;
@@ -261,7 +268,9 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
       }
       else
       {
-        snprintf(buffer, sizeof(buffer), _("device \"%s\" connected on port \"%s\"."), camera->model,
+        snprintf(buffer, sizeof(buffer),
+                 _("device \"%s\" connected on port \"%s\"."),
+                 camera->model,
                  camera->port);
         gtk_widget_set_tooltip_text(label, buffer);
       }
@@ -271,27 +280,36 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
       GtkWidget *vbx = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
       if(camera->can_import == TRUE)
       {
-        gtk_box_pack_start(GTK_BOX(vbx), (ib = gtk_button_new_with_label(_("copy & import from camera"))), FALSE,
-                           FALSE, 0);
-        gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(ib))), PANGO_ELLIPSIZE_END);
+        gtk_box_pack_start(GTK_BOX(vbx),
+                           (ib = gtk_button_new_with_label(_("copy & import from camera"))),
+                           FALSE, FALSE, 0);
+        gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(ib))),
+                                PANGO_ELLIPSIZE_END);
         d->import_camera = GTK_BUTTON(ib);
         d->camera = camera;
-        g_signal_connect(G_OBJECT(ib), "clicked", G_CALLBACK(_lib_import_from_camera_callback), self);
+        g_signal_connect(G_OBJECT(ib), "clicked",
+                         G_CALLBACK(_lib_import_from_camera_callback), self);
         gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(ib)), GTK_ALIGN_CENTER);
         dt_gui_add_help_link(ib, "import_camera");
       }
       if(camera->can_tether == TRUE)
       {
-        gtk_box_pack_start(GTK_BOX(vbx), (tb = gtk_button_new_with_label(_("tethered shoot"))), FALSE, FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbx),
+                           (tb = gtk_button_new_with_label(_("tethered shoot"))),
+                           FALSE, FALSE, 0);
         d->tethered_shoot = GTK_BUTTON(tb);
-        g_signal_connect(G_OBJECT(tb), "clicked", G_CALLBACK(_lib_import_tethered_callback), camera);
+        g_signal_connect(G_OBJECT(tb), "clicked",
+                         G_CALLBACK(_lib_import_tethered_callback), camera);
         gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(tb)), GTK_ALIGN_CENTER);
         dt_gui_add_help_link(tb, "import_camera");
       }
 
-      gtk_box_pack_start(GTK_BOX(vbx), (um = gtk_button_new_with_label(_("unmount camera"))), FALSE, FALSE, 0);
+      gtk_box_pack_start(GTK_BOX(vbx),
+                         (um = gtk_button_new_with_label(_("unmount camera"))),
+                         FALSE, FALSE, 0);
       d->unmount_camera = GTK_BUTTON(um);
-      g_signal_connect(G_OBJECT(um), "clicked", G_CALLBACK(_lib_import_unmount_callback), camera);
+      g_signal_connect(G_OBJECT(um), "clicked",
+                       G_CALLBACK(_lib_import_unmount_callback), camera);
       gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(um)), GTK_ALIGN_CENTER);
       dt_gui_add_help_link(um, "mount_camera");
 
@@ -310,19 +328,25 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
       gtk_box_pack_start(GTK_BOX(d->devices), label, FALSE, FALSE, 0);
 
       if(camera->used)
-        gtk_widget_set_tooltip_text(label, _("camera is locked by another application\n"
-                    "make sure it is no longer mounted\nor quit the locking application"));
+        gtk_widget_set_tooltip_text
+          (label,
+           _("camera is locked by another application\n"
+             "make sure it is no longer mounted\nor quit the locking application"));
       else if(camera->boring)
-        gtk_widget_set_tooltip_text(label, _("tethering and importing is disabled for this camera"));
+        gtk_widget_set_tooltip_text
+          (label,
+           _("tethering and importing is disabled for this camera"));
 
       GtkWidget *im = gtk_button_new_with_label(_("mount camera"));
       GtkWidget *vbx = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
       gtk_box_pack_start(GTK_BOX(vbx), im, FALSE, FALSE, 0);
-      gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(im))), PANGO_ELLIPSIZE_END);
+      gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(im))),
+                              PANGO_ELLIPSIZE_END);
       d->mount_camera = GTK_BUTTON(im);
 
-      g_signal_connect(G_OBJECT(im), "clicked", G_CALLBACK(_lib_import_mount_callback), camera);
+      g_signal_connect(G_OBJECT(im), "clicked",
+                       G_CALLBACK(_lib_import_mount_callback), camera);
       gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(im)), GTK_ALIGN_CENTER);
       dt_gui_add_help_link(im, "mount_camera");
 
@@ -332,10 +356,14 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
   dt_pthread_mutex_unlock(&camctl->lock);
   gtk_widget_show_all(GTK_WIDGET(d->devices));
 
-  dt_action_define(DT_ACTION(self), NULL, N_("copy & import from camera"), GTK_WIDGET(d->import_camera), &dt_action_def_button);
-  dt_action_define(DT_ACTION(self), NULL, N_("mount camera"), GTK_WIDGET(d->mount_camera), &dt_action_def_button);
-  dt_action_define(DT_ACTION(self), NULL, N_("tethered shoot"), GTK_WIDGET(d->tethered_shoot), &dt_action_def_button);
-  dt_action_define(DT_ACTION(self), NULL, N_("unmount camera"), GTK_WIDGET(d->unmount_camera), &dt_action_def_button);
+  dt_action_define(DT_ACTION(self), NULL, N_("copy & import from camera"),
+                   GTK_WIDGET(d->import_camera), &dt_action_def_button);
+  dt_action_define(DT_ACTION(self), NULL, N_("mount camera"),
+                   GTK_WIDGET(d->mount_camera), &dt_action_def_button);
+  dt_action_define(DT_ACTION(self), NULL, N_("tethered shoot"),
+                   GTK_WIDGET(d->tethered_shoot), &dt_action_def_button);
+  dt_action_define(DT_ACTION(self), NULL, N_("unmount camera"),
+                   GTK_WIDGET(d->unmount_camera), &dt_action_def_button);
 }
 
 static void _free_camera_files(gpointer data)
@@ -356,7 +384,8 @@ static guint _import_from_camera_set_file_list(dt_lib_module_t *self)
   {
     dt_camera_files_t *file = (dt_camera_files_t *)img->data;
     const char *ext = g_strrstr(file->filename, ".");
-    // Either we are not rejecting non-raw, or the file extension belongs to the raw format
+    // Either we are not rejecting non-raw, or the file extension
+    // belongs to the raw format
     if(include_nonraws ||
        (ext && ((dt_imageio_is_raw_by_extension(ext)) ||
                 !g_ascii_strncasecmp(ext, ".dng", sizeof(".dng")))))
@@ -513,8 +542,10 @@ static GdkPixbuf *_import_get_thumbnail(const gchar *filename)
 return pixbuf;
 }
 
-static void _thumb_set_in_listview(GtkTreeModel *model, GtkTreeIter *iter,
-                                   const gboolean thumb_sel, dt_lib_module_t *self)
+static void _thumb_set_in_listview(GtkTreeModel *model,
+                                   GtkTreeIter *iter,
+                                   const gboolean thumb_sel,
+                                   dt_lib_module_t *self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   gchar *filename;
@@ -522,7 +553,9 @@ static void _thumb_set_in_listview(GtkTreeModel *model, GtkTreeIter *iter,
   GdkPixbuf *pixbuf = NULL;
 #ifdef HAVE_GPHOTO2
   if(d->import_case == DT_IMPORT_CAMERA)
-    pixbuf = thumb_sel ? dt_camctl_get_thumbnail(darktable.camctl, d->camera, filename) : d->from.eye;
+    pixbuf = thumb_sel ?
+      dt_camctl_get_thumbnail(darktable.camctl, d->camera, filename)
+      : d->from.eye;
   else
 #endif
   {
@@ -538,7 +571,9 @@ static void _thumb_set_in_listview(GtkTreeModel *model, GtkTreeIter *iter,
   g_free(filename);
 }
 
-static gboolean _files_button_press(GtkWidget *view, GdkEventButton *event, dt_lib_module_t *self)
+static gboolean _files_button_press(GtkWidget *view,
+                                    GdkEventButton *event,
+                                    dt_lib_module_t *self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   if((event->type == GDK_BUTTON_PRESS && event->button == 1))
@@ -546,7 +581,8 @@ static gboolean _files_button_press(GtkWidget *view, GdkEventButton *event, dt_l
     GtkTreePath *path = NULL;
     GtkTreeViewColumn *column = NULL;
     // Get tree path for row that was clicked
-    if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view), (gint)event->x, (gint)event->y,
+    if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view),
+                                     (gint)event->x, (gint)event->y,
                                      &path, &column, NULL, NULL))
     {
       if(column == d->from.pixcol)
@@ -567,7 +603,8 @@ static gboolean _files_button_press(GtkWidget *view, GdkEventButton *event, dt_l
   {
     GtkTreePath *path = NULL;
     // Get tree path for row that was clicked
-    if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view), (gint)event->x, (gint)event->y,
+    if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view),
+                                     (gint)event->x, (gint)event->y,
                                      &path, NULL, NULL, NULL))
     {
       GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
@@ -600,7 +637,8 @@ static gboolean _thumb_set(gpointer user_data)
   return FALSE;
 }
 
-static void _all_thumb_toggled(GtkTreeViewColumn *column, dt_lib_module_t *self)
+static void _all_thumb_toggled(GtkTreeViewColumn *column,
+                               dt_lib_module_t *self)
 {
   GtkWidget *toggle = gtk_tree_view_column_get_widget(column);
   const gboolean thumb_sel = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(toggle));
@@ -629,7 +667,8 @@ static void _all_thumb_toggled(GtkTreeViewColumn *column, dt_lib_module_t *self)
 static void _show_all_thumbs(dt_lib_module_t* self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
-  const gboolean thumb_sel = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->from.thumbs));
+  const gboolean thumb_sel =
+    gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->from.thumbs));
   if(!d->from.event && thumb_sel)
   {
     // if the display is not yet started, start it
@@ -667,8 +706,9 @@ static guint _import_set_file_list(const gchar *folder,
 
   GFileInfo *info = NULL;
   guint nb = n;
-  /* get filmroll id for current directory. if not present, checking the db whether
-    the image has already been imported can be skipped */
+  /* get filmroll id for current directory. if not present, checking
+    the db whether the image has already been imported can be
+    skipped */
   int32_t filmroll_id = dt_film_get_id(folder);
   const gboolean recursive = dt_conf_get_bool("ui_last/import_recursive");
   const gboolean include_nonraws = !dt_conf_get_bool("ui_last/import_ignore_nonraws");
@@ -683,8 +723,8 @@ static guint _import_set_file_list(const gchar *folder,
       if(!filename)
         continue;
 
-      /* g_file_info_get_is_hidden() always returns 0 on macOS,
-        so we check if the filename starts with a '.' */
+      /* g_file_info_get_is_hidden() always returns 0 on macOS, so we
+         check if the filename starts with a '.' */
       const gboolean is_hidden = g_file_info_get_is_hidden(info) || filename[0] ==  '.';
       if (is_hidden)
         continue;
@@ -707,11 +747,13 @@ static guint _import_set_file_list(const gchar *folder,
           nb = _import_set_file_list(fullname, strlen(fullname), nb, self);
         }
       }
-      // Before adding to the import list, check that the format is supported by this build of dt
+      // Before adding to the import list, check that the format is
+      // supported by this build of dt
       else if(filetype != G_FILE_TYPE_DIRECTORY && dt_supported_image(filename))
       {
         const char *ext = g_strrstr(filename, ".");
-        // Either we are not rejecting non-raw, or the file extension belongs to the raw format
+        // Either we are not rejecting non-raw, or the file extension
+        // belongs to the raw format
         if(include_nonraws ||
            (ext && ((dt_imageio_is_raw_by_extension(ext)) ||
                     !g_ascii_strncasecmp(ext, ".dng", sizeof(".dng")))))
@@ -719,9 +761,11 @@ static guint _import_set_file_list(const gchar *folder,
           gboolean already_imported = FALSE;
           if(d->import_case == DT_IMPORT_INPLACE)
           {
-            /* check if image is already imported, using previously fetched filmroll id */
+            /* check if image is already imported, using previously
+             * fetched filmroll id */
             if(filmroll_id != -1)
-              already_imported = dt_image_get_id(filmroll_id, filename) == NO_IMGID ? FALSE : TRUE;
+              already_imported = dt_image_get_id(filmroll_id, filename) == NO_IMGID
+                ? FALSE : TRUE;
           }
           else
           {
@@ -757,14 +801,19 @@ static guint _import_set_file_list(const gchar *folder,
   return nb;
 }
 
-static void _update_images_number(GtkWidget *label, const guint nb_sel, const guint nb)
+static void _update_images_number(GtkWidget *label,
+                                  const guint nb_sel,
+                                  const guint nb)
 {
   char text[256] = { 0 };
-  snprintf(text, sizeof(text), ngettext("%d image out of %d selected", "%d images out of %d selected", nb_sel), nb_sel, nb);
+  snprintf(text, sizeof(text),
+           ngettext("%d image out of %d selected", "%d images out of %d selected",
+                    nb_sel), nb_sel, nb);
   gtk_label_set_text(GTK_LABEL(label), text);
 }
 
-static void _import_from_selection_changed(GtkTreeSelection *selection, dt_lib_module_t* self)
+static void _import_from_selection_changed(GtkTreeSelection *selection,
+                                           dt_lib_module_t* self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   const guint nb_sel = gtk_tree_selection_count_selected_rows(selection);
@@ -785,7 +834,8 @@ static void _update_layout(dt_lib_module_t* self)
   }
 }
 
-static void _usefn_toggled(GtkWidget *widget, dt_lib_module_t* self)
+static void _usefn_toggled(GtkWidget *widget,
+                           dt_lib_module_t* self)
 {
   _update_layout(self);
 }
@@ -801,7 +851,8 @@ static gboolean _update_files_list(gpointer user_data)
   gtk_tree_view_set_model(d->from.treeview, NULL);
   gtk_list_store_clear(d->from.store);
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(model),
-                                       GTK_TREE_SORTABLE_UNSORTED_SORT_COLUMN_ID, GTK_SORT_ASCENDING);
+                                       GTK_TREE_SORTABLE_UNSORTED_SORT_COLUMN_ID,
+                                       GTK_SORT_ASCENDING);
 #ifdef HAVE_GPHOTO2
   if(d->import_case == DT_IMPORT_CAMERA)
   {
@@ -830,33 +881,39 @@ static gboolean _update_files_list(gpointer user_data)
   return FALSE;
 }
 
-static void _import_new_toggled(GtkWidget *widget, dt_lib_module_t* self)
+static void _import_new_toggled(GtkWidget *widget,
+                                dt_lib_module_t* self)
 {
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) _do_select_new(self);
 }
 
-static void _ignore_nonraws_toggled(GtkWidget *widget, dt_lib_module_t* self)
+static void _ignore_nonraws_toggled(GtkWidget *widget,
+                                    dt_lib_module_t* self)
 {
   _update_files_list(self);
   _show_all_thumbs(self);
 }
 
-static void _recursive_toggled(GtkWidget *widget, dt_lib_module_t* self)
+static void _recursive_toggled(GtkWidget *widget,
+                               dt_lib_module_t* self)
 {
   _update_files_list(self);
   _show_all_thumbs(self);
 }
 
-static void _do_select_all_clicked(GtkWidget *widget, dt_lib_module_t* self)
+static void _do_select_all_clicked(GtkWidget *widget,
+                                   dt_lib_module_t* self)
 {
   _do_select_all(self);
 }
-static void _do_select_none_clicked(GtkWidget *widget, dt_lib_module_t* self)
+static void _do_select_none_clicked(GtkWidget *widget,
+                                    dt_lib_module_t* self)
 {
   _do_select_none(self);
 }
 
-static void _do_select_new_clicked(GtkWidget *widget, dt_lib_module_t* self)
+static void _do_select_new_clicked(GtkWidget *widget,
+                                   dt_lib_module_t* self)
 {
   _do_select_new(self);
 }
@@ -875,7 +932,8 @@ static void _expander_create(dt_gui_collapsible_section_t *cs,
      DT_ACTION(self));
 }
 
-static void _resize_dialog(GtkWidget *widget, dt_lib_module_t* self)
+static void _resize_dialog(GtkWidget *widget,
+                           dt_lib_module_t* self)
 {
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -883,7 +941,8 @@ static void _resize_dialog(GtkWidget *widget, dt_lib_module_t* self)
   dt_conf_set_int("ui_last/import_dialog_height", allocation.height);
 }
 
-static gboolean _find_iter_folder(GtkTreeModel *model, GtkTreeIter *iter,
+static gboolean _find_iter_folder(GtkTreeModel *model,
+                                  GtkTreeIter *iter,
                                   const char *folder)
 {
   gboolean found = FALSE;
@@ -909,11 +968,14 @@ static gboolean _find_iter_folder(GtkTreeModel *model, GtkTreeIter *iter,
   return found;
 }
 
-static void _get_folders_list(GtkTreeStore *store, GtkTreeIter *parent,
-                              const gchar *folder, const char *selected)
+static void _get_folders_list(GtkTreeStore *store,
+                              GtkTreeIter *parent,
+                              const gchar *folder,
+                              const char *selected)
 {
-  // each time a new folder is added, it is set as not expanded and assigned a fake child
-  // when expanded, the children are added and the fake child is reused
+  // each time a new folder is added, it is set as not expanded and
+  // assigned a fake child when expanded, the children are added and
+  // the fake child is reused
   GError *error = NULL;
   GFile *gfolder = g_file_new_for_path(folder);
   GFileEnumerator *dir_files = g_file_enumerate_children(gfolder,
@@ -953,8 +1015,10 @@ static void _get_folders_list(GtkTreeStore *store, GtkTreeIter *parent,
       const char *filename = g_file_info_get_name(info);
       if(!filename)
         continue;
-      const gboolean ishidden = g_file_info_get_attribute_boolean(info, G_FILE_ATTRIBUTE_STANDARD_IS_HIDDEN);
-      const gboolean canread = g_file_info_get_attribute_boolean(info, G_FILE_ATTRIBUTE_ACCESS_CAN_READ);
+      const gboolean ishidden =
+        g_file_info_get_attribute_boolean(info, G_FILE_ATTRIBUTE_STANDARD_IS_HIDDEN);
+      const gboolean canread =
+        g_file_info_get_attribute_boolean(info, G_FILE_ATTRIBUTE_ACCESS_CAN_READ);
       const GFileType filetype = g_file_info_get_file_type(info);
       if(filetype == G_FILE_TYPE_DIRECTORY && !ishidden && canread)
       {
@@ -1007,7 +1071,8 @@ static void _get_folders_list(GtkTreeStore *store, GtkTreeIter *parent,
   }
 }
 
-// workaround to erase parasitic selection when click on expander or empty part of the view
+// workaround to erase parasitic selection when click on expander or
+// empty part of the view
 static gboolean _clear_parasitic_selection(gpointer user_data)
 {
   if(dt_conf_is_equal("ui_last/import_last_directory", ""))
@@ -1021,11 +1086,14 @@ static gboolean _clear_parasitic_selection(gpointer user_data)
   return FALSE;
 }
 
-static gboolean _places_button_press(GtkWidget *view, GdkEventButton *event, dt_lib_module_t *self)
+static gboolean _places_button_press(GtkWidget *view,
+                                     GdkEventButton *event,
+                                     dt_lib_module_t *self)
 {
   gboolean res = FALSE;
   GtkTreePath *path = NULL;
-  if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view), (gint)event->x, (gint)event->y, &path, NULL, NULL, NULL))
+  if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view),
+                                   (gint)event->x, (gint)event->y, &path, NULL, NULL, NULL))
   {
     GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(view));
     GtkTreeIter iter;
@@ -1065,7 +1133,9 @@ static gboolean _places_button_press(GtkWidget *view, GdkEventButton *event, dt_
   return res;
 }
 
-static gboolean _folders_button_press(GtkWidget *view, GdkEventButton *event, dt_lib_module_t *self)
+static gboolean _folders_button_press(GtkWidget *view,
+                                      GdkEventButton *event,
+                                      dt_lib_module_t *self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   gboolean res = FALSE;
@@ -1074,11 +1144,13 @@ static gboolean _folders_button_press(GtkWidget *view, GdkEventButton *event, dt
   if((button_pressed == 1) && !modifier)
   {
     GtkTreePath *path = NULL;
-    if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view), event->x, event->y, &path, NULL, NULL, NULL))
+    if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view),
+                                     event->x, event->y, &path, NULL, NULL, NULL))
     {
       GdkRectangle rect;
       gtk_tree_view_get_cell_area(GTK_TREE_VIEW(view), path, d->from.foldercol, &rect);
-      const gboolean blank = gtk_tree_view_is_blank_at_pos(GTK_TREE_VIEW(view), event->x, event->y,
+      const gboolean blank = gtk_tree_view_is_blank_at_pos(GTK_TREE_VIEW(view),
+                                                           event->x, event->y,
                                                            NULL, NULL, NULL, NULL);
       // select and save new folder only if not click on expander
       if(blank || (event->x > rect.x))
@@ -1103,7 +1175,8 @@ static gboolean _folders_button_press(GtkWidget *view, GdkEventButton *event, dt
   if(event->type == GDK_DOUBLE_BUTTON_PRESS)
   {
     GtkTreePath *path = NULL;
-    gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view), event->x, event->y, &path, NULL, NULL, NULL);
+    gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view),
+                                  event->x, event->y, &path, NULL, NULL, NULL);
     if(gtk_tree_view_row_expanded(d->from.folderview, path))
       gtk_tree_view_collapse_row (d->from.folderview, path);
     else
@@ -1112,17 +1185,20 @@ static gboolean _folders_button_press(GtkWidget *view, GdkEventButton *event, dt
   }
 
   g_timeout_add_full(G_PRIORITY_DEFAULT_IDLE, 100, _clear_parasitic_selection, self, NULL);
-	return res;
+  return res;
 }
 
-static void _folder_order_clicked(GtkTreeViewColumn *column, dt_lib_module_t *self)
+static void _folder_order_clicked(GtkTreeViewColumn *column,
+                                  dt_lib_module_t *self)
 {
   dt_conf_set_bool("ui_last/import_last_folder_descending",
                   !dt_conf_get_bool("ui_last/import_last_folder_descending"));
 }
 
-static void _row_expanded(GtkTreeView *view, GtkTreeIter *iter,
-                          GtkTreePath *path, dt_lib_module_t *self)
+static void _row_expanded(GtkTreeView *view,
+                          GtkTreeIter *iter,
+                          GtkTreePath *path,
+                          dt_lib_module_t *self)
 {
   GtkTreeModel *model = gtk_tree_view_get_model(view);
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(model),
@@ -1132,24 +1208,28 @@ static void _row_expanded(GtkTreeView *view, GtkTreeIter *iter,
   gtk_tree_model_get(model, iter, DT_FOLDER_PATH, &fullname, -1);
   _get_folders_list(GTK_TREE_STORE(model), iter, fullname, "");
   g_free(fullname);
-  gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(model), DT_FOLDER_PATH,
-                                       dt_conf_get_bool("ui_last/import_last_folder_descending")
-                                       ? GTK_SORT_DESCENDING : GTK_SORT_ASCENDING);
+  gtk_tree_sortable_set_sort_column_id
+    (GTK_TREE_SORTABLE(model), DT_FOLDER_PATH,
+     dt_conf_get_bool("ui_last/import_last_folder_descending")
+     ? GTK_SORT_DESCENDING : GTK_SORT_ASCENDING);
 }
 
-static void _paned_position_changed(GtkWidget *widget, dt_lib_module_t* self)
+static void _paned_position_changed(GtkWidget *widget,
+                                    dt_lib_module_t* self)
 {
   const gint position = gtk_paned_get_position(GTK_PANED(widget));
   dt_conf_set_int("ui_last/import_dialog_paned_pos", position);
 }
 
-static void _paned_places_position_changed(GtkWidget *widget, dt_lib_module_t* self)
+static void _paned_places_position_changed(GtkWidget *widget,
+                                           dt_lib_module_t* self)
 {
   const gint position = gtk_paned_get_position(GTK_PANED(widget));
   dt_conf_set_int("ui_last/import_dialog_paned_places_pos", position);
 }
 
-static void _places_reset_callback(GtkWidget *widget, dt_lib_module_t* self)
+static void _places_reset_callback(GtkWidget *widget,
+                                   dt_lib_module_t* self)
 {
   dt_conf_set_bool("ui_last/import_dialog_show_home", TRUE);
   dt_conf_set_bool("ui_last/import_dialog_show_pictures", TRUE);
@@ -1158,15 +1238,18 @@ static void _places_reset_callback(GtkWidget *widget, dt_lib_module_t* self)
   _update_places_list(self);
 }
 
-static void _set_places_list(GtkWidget *places_paned, dt_lib_module_t* self)
+static void _set_places_list(GtkWidget *places_paned,
+                             dt_lib_module_t* self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
-  d->placesModel = gtk_list_store_new(DT_PLACES_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT);
+  d->placesModel = gtk_list_store_new(DT_PLACES_NUM_COLS, G_TYPE_STRING,
+                                      G_TYPE_STRING, G_TYPE_INT);
   d->placesView = gtk_tree_view_new_with_model(GTK_TREE_MODEL(d->placesModel));
 
   GtkWidget *places_top_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkWidget *places_header = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_tooltip_text(places_header, _("choose the root of the folder tree below"));
+  gtk_widget_set_tooltip_text(places_header,
+                              _("choose the root of the folder tree below"));
 
   GtkWidget *places_label = gtk_label_new(NULL);
   gchar *markup = g_strdup_printf("<b>  %s</b>",_("places"));
@@ -1175,54 +1258,68 @@ static void _set_places_list(GtkWidget *places_paned, dt_lib_module_t* self)
   gtk_box_pack_start(GTK_BOX(places_header), places_label, FALSE, FALSE, 0);
 
   GtkWidget *places_reset = dtgtk_button_new(dtgtk_cairo_paint_reset, 0, NULL);
-  gtk_widget_set_tooltip_text(places_reset, _("restore all default places you have removed by right-click"));
+  gtk_widget_set_tooltip_text
+    (places_reset,
+     _("restore all default places you have removed by right-click"));
   g_signal_connect(places_reset, "clicked", G_CALLBACK(_places_reset_callback), self);
   gtk_box_pack_end(GTK_BOX(places_header), places_reset, FALSE, FALSE, 0);
 
   GtkWidget *places_add = dtgtk_button_new(dtgtk_cairo_paint_plus_simple, 0, NULL);
-  gtk_widget_set_tooltip_text(places_add, _("add a custom place\n\nright-click on a place to remove it"));
+  gtk_widget_set_tooltip_text
+    (places_add,
+     _("add a custom place\n\nright-click on a place to remove it"));
   g_signal_connect(places_add, "clicked", G_CALLBACK(_lib_import_select_folder), self);
   gtk_box_pack_end(GTK_BOX(places_header), places_add, FALSE, FALSE, 0);
 
   gtk_box_pack_start(GTK_BOX(places_top_box), places_header, FALSE, FALSE, 0);
 
   GtkWidget *placesWindow = gtk_scrolled_window_new(NULL, NULL);
-  gtk_widget_set_tooltip_text(placesWindow, _("you can add custom places using the plus icon"));
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(placesWindow), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+  gtk_widget_set_tooltip_text(placesWindow,
+                              _("you can add custom places using the plus icon"));
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(placesWindow),
+                                 GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(d->placesView),FALSE);
   gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(d->placesView), DT_PLACES_PATH);
   gtk_container_add(GTK_CONTAINER(placesWindow), GTK_WIDGET(d->placesView));
 
-  GtkTreeViewColumn* placesColumn = gtk_tree_view_column_new_with_attributes("", gtk_cell_renderer_text_new(), "text", 0, NULL);
+  GtkTreeViewColumn* placesColumn =
+    gtk_tree_view_column_new_with_attributes("", gtk_cell_renderer_text_new(),
+                                             "text", 0, NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(d->placesView), placesColumn);
 
   gtk_box_pack_start(GTK_BOX(places_top_box), placesWindow, TRUE, TRUE, 0);
   gtk_paned_pack1(GTK_PANED(places_paned), places_top_box, TRUE, TRUE);
 
 
-  g_signal_connect(G_OBJECT(d->placesView), "button-press-event", G_CALLBACK(_places_button_press), self);
+  g_signal_connect(G_OBJECT(d->placesView), "button-press-event",
+                   G_CALLBACK(_places_button_press), self);
 }
 
 static void _set_folders_list(GtkWidget *places_paned, dt_lib_module_t* self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
-  GtkTreeStore *store = gtk_tree_store_new(DT_FOLDER_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN);
+  GtkTreeStore *store = gtk_tree_store_new(DT_FOLDER_NUM_COLS, G_TYPE_STRING,
+                                           G_TYPE_STRING, G_TYPE_BOOLEAN);
   GtkWidget *w = gtk_scrolled_window_new(NULL, NULL);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w), GTK_POLICY_AUTOMATIC, GTK_POLICY_ALWAYS);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w), GTK_POLICY_AUTOMATIC,
+                                 GTK_POLICY_ALWAYS);
   d->from.folderview = GTK_TREE_VIEW(gtk_tree_view_new());
   gtk_container_add(GTK_CONTAINER(w), GTK_WIDGET(d->from.folderview));
-  gtk_widget_set_tooltip_text(GTK_WIDGET(d->from.folderview), _("select a folder to see the content"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(d->from.folderview),
+                              _("select a folder to see the content"));
 
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
-  GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("folders"), renderer, "text",
+  GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("folders"),
+                                                                       renderer, "text",
                                                     DT_FOLDER_NAME, NULL);
   gtk_tree_view_append_column(d->from.folderview, column);
   gtk_tree_view_column_set_expand(column, TRUE);
   gtk_tree_view_column_set_resizable(column, TRUE);
   gtk_tree_view_set_expander_column(d->from.folderview, column);
   g_signal_connect(d->from.folderview, "row-expanded", G_CALLBACK(_row_expanded), self);
-  g_signal_connect(G_OBJECT(d->from.folderview), "button-press-event", G_CALLBACK(_folders_button_press), self);
+  g_signal_connect(G_OBJECT(d->from.folderview), "button-press-event",
+                   G_CALLBACK(_folders_button_press), self);
   gtk_tree_view_column_set_sort_column_id(column, DT_FOLDER_PATH);
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(store), DT_FOLDER_PATH,
                                 dt_conf_get_bool("ui_last/import_last_folder_descending")
@@ -1230,13 +1327,16 @@ static void _set_folders_list(GtkWidget *places_paned, dt_lib_module_t* self)
   g_signal_connect(column, "clicked", G_CALLBACK(_folder_order_clicked), self);
   gtk_tree_view_column_set_min_width(column, DT_PIXEL_APPLY_DPI(200));
   d->from.foldercol = column;
-  gtk_scrolled_window_set_min_content_width(GTK_SCROLLED_WINDOW(w), DT_PIXEL_APPLY_DPI(200));
+  gtk_scrolled_window_set_min_content_width(GTK_SCROLLED_WINDOW(w),
+                                            DT_PIXEL_APPLY_DPI(200));
   gtk_tree_view_set_model(d->from.folderview, GTK_TREE_MODEL(store));
   gtk_tree_view_set_headers_visible(d->from.folderview, TRUE);
   gtk_paned_pack2(GTK_PANED(places_paned), w, TRUE, TRUE);
 }
 
-static void _expand_folder(const char *folder, const gboolean select, dt_lib_module_t* self)
+static void _expand_folder(const char *folder,
+                           const gboolean select,
+                           dt_lib_module_t* self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   if(folder && folder[0])
@@ -1285,7 +1385,8 @@ static void _update_places_list(dt_lib_module_t* self)
     if(homedir)
     {
       current_place = homedir;
-      gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, _("home"), DT_PLACES_PATH,
+      gtk_list_store_insert_with_values(d->placesModel, &iter, -1,
+                                        DT_PLACES_NAME, _("home"), DT_PLACES_PATH,
                                         current_place, DT_PLACES_TYPE, DT_TYPE_HOME, -1);
       if(!g_strcmp0(current_place, last_place))
         gtk_tree_selection_select_iter(d->placesSelection, &iter);
@@ -1293,11 +1394,13 @@ static void _update_places_list(dt_lib_module_t* self)
     }
   }
 
-  if(dt_conf_get_bool("ui_last/import_dialog_show_pictures") && g_get_user_special_dir(G_USER_DIRECTORY_PICTURES))
+  if(dt_conf_get_bool("ui_last/import_dialog_show_pictures")
+     && g_get_user_special_dir(G_USER_DIRECTORY_PICTURES))
   {
     g_free(current_place);
     current_place = g_strdup(g_get_user_special_dir(G_USER_DIRECTORY_PICTURES));
-    gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, _("pictures"), DT_PLACES_PATH,
+    gtk_list_store_insert_with_values(d->placesModel, &iter, -1,
+                                      DT_PLACES_NAME, _("pictures"), DT_PLACES_PATH,
                                       current_place, DT_PLACES_TYPE, DT_TYPE_PIC, -1);
     if(!g_strcmp0(current_place, last_place))
       gtk_tree_selection_select_iter(d->placesSelection, &iter);
@@ -1332,8 +1435,10 @@ static void _update_places_list(dt_lib_module_t* self)
 
           gchar *volname = g_volume_get_name(volume->data);
           gchar *path = g_file_get_path(placesFile);
-          gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, volname,
-                                            DT_PLACES_PATH, path, DT_PLACES_TYPE, DT_TYPE_MOUNT, -1);
+          gtk_list_store_insert_with_values(d->placesModel, &iter, -1,
+                                            DT_PLACES_NAME, volname,
+                                            DT_PLACES_PATH, path,
+                                            DT_PLACES_TYPE, DT_TYPE_MOUNT, -1);
           g_free(volname);
           g_free(path);
 
@@ -1362,15 +1467,18 @@ static void _update_places_list(dt_lib_module_t* self)
     }
 #endif
 
-    gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, basename,
-                                      DT_PLACES_PATH, (char *)places_iter->data, DT_PLACES_TYPE, DT_TYPE_CUSTOM, -1);
+    gtk_list_store_insert_with_values(d->placesModel, &iter, -1,
+                                      DT_PLACES_NAME, basename,
+                                      DT_PLACES_PATH, (char *)places_iter->data,
+                                      DT_PLACES_TYPE, DT_TYPE_CUSTOM, -1);
     g_free(basename);
     if(!g_strcmp0(places_iter->data, last_place))
       gtk_tree_selection_select_iter(d->placesSelection, &iter);
   }
   g_free(last_place);
-  // the list returned by _get_custom_places references a single string that has been split on commas.  Release it
-  // by freeing the data of the list's first node
+  // the list returned by _get_custom_places references a single
+  // string that has been split on commas.  Release it by freeing the
+  // data of the list's first node
   if(places)
     g_free(places->data);
   g_list_free(places);
@@ -1389,9 +1497,10 @@ static void _update_folders_list(dt_lib_module_t* self)
                                        GTK_TREE_SORTABLE_UNSORTED_SORT_COLUMN_ID,
                                        GTK_SORT_ASCENDING);
   _get_folders_list(GTK_TREE_STORE(model), NULL, last_place, folder);
-  gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(model), DT_FOLDER_PATH,
-                                       dt_conf_get_bool("ui_last/import_last_folder_descending")
-                                       ? GTK_SORT_DESCENDING : GTK_SORT_ASCENDING);
+  gtk_tree_sortable_set_sort_column_id
+    (GTK_TREE_SORTABLE(model), DT_FOLDER_PATH,
+     dt_conf_get_bool("ui_last/import_last_folder_descending")
+     ? GTK_SORT_DESCENDING : GTK_SORT_ASCENDING);
   gtk_tree_view_set_model(d->from.folderview, model);
   g_object_unref(model);
 
@@ -1415,8 +1524,9 @@ static void _restore_place_name_comma(char *name)
     if(name[i] == '\1') name[i] = ',';
 }
 
-static gboolean _find_iter_place(GtkTreeModel *model, GtkTreeIter *iter,
-                                  const char *place)
+static gboolean _find_iter_place(GtkTreeModel *model,
+                                 GtkTreeIter *iter,
+                                 const char *place)
 {
   gboolean found = FALSE;
   if(!place) return found;
@@ -1431,7 +1541,8 @@ static gboolean _find_iter_place(GtkTreeModel *model, GtkTreeIter *iter,
   return found;
 }
 
-static void _add_custom_place(gchar *place, dt_lib_module_t* self)
+static void _add_custom_place(gchar *place,
+                              dt_lib_module_t* self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
 
@@ -1457,8 +1568,10 @@ static void _add_custom_place(gchar *place, dt_lib_module_t* self)
       basename = g_strdup(place);
     }
 #endif
-    gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, basename,
-                                      DT_PLACES_PATH, (char *)place, DT_PLACES_TYPE, DT_TYPE_CUSTOM, -1);
+    gtk_list_store_insert_with_values(d->placesModel, &iter, -1,
+                                      DT_PLACES_NAME, basename,
+                                      DT_PLACES_PATH, (char *)place,
+                                      DT_PLACES_TYPE, DT_TYPE_CUSTOM, -1);
     g_free(basename);
   }
 
@@ -1472,7 +1585,8 @@ static void _remove_place(gchar *place, GtkTreeIter iter, dt_lib_module_t* self)
   _escape_place_name_comma(place);
   const char *current_places = dt_conf_get_string_const("ui_last/import_custom_places");
   int type = 0;
-  gtk_tree_model_get(GTK_TREE_MODEL(d->placesModel), &iter, DT_PLACES_TYPE, &type, -1);
+  gtk_tree_model_get(GTK_TREE_MODEL(d->placesModel), &iter,
+                     DT_PLACES_TYPE, &type, -1);
 
   if(type == DT_TYPE_HOME)
     dt_conf_set_bool("ui_last/import_dialog_show_home", FALSE);
@@ -1515,16 +1629,19 @@ static GList* _get_custom_places()
   return places;
 }
 
-static void _lib_import_select_folder(GtkWidget *widget, dt_lib_module_t *self)
+static void _lib_import_select_folder(GtkWidget *widget,
+                                      dt_lib_module_t *self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 
   GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
-      _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_open"), _("_cancel"));
+      _("select directory"), GTK_WINDOW(win),
+      GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_open"), _("_cancel"));
 
   // run the native dialog
-  dt_conf_get_folder_to_file_chooser("ui_last/import_last_place", GTK_FILE_CHOOSER(filechooser));
+  dt_conf_get_folder_to_file_chooser("ui_last/import_last_place",
+                                     GTK_FILE_CHOOSER(filechooser));
   if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     char *dirname = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
@@ -1544,9 +1661,11 @@ static void _set_files_list(GtkWidget *rbox, dt_lib_module_t* self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   d->from.store = gtk_list_store_new(DT_IMPORT_NUM_COLS, G_TYPE_BOOLEAN, GDK_TYPE_PIXBUF,
-                                     G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+                                     G_TYPE_STRING, G_TYPE_STRING,
+                                     G_TYPE_STRING, G_TYPE_STRING,
                                      G_TYPE_UINT64);
-  d->from.eye = dt_draw_paint_to_pixbuf(GTK_WIDGET(d->from.dialog), 13, 0, dtgtk_cairo_paint_eye);
+  d->from.eye = dt_draw_paint_to_pixbuf(GTK_WIDGET(d->from.dialog), 13, 0,
+                                        dtgtk_cairo_paint_eye);
 
   // Create the treview with list model data store
   d->from.w = gtk_scrolled_window_new(NULL, NULL);
@@ -1556,8 +1675,9 @@ static void _set_files_list(GtkWidget *rbox, dt_lib_module_t* self)
   gtk_container_add(GTK_CONTAINER(d->from.w), GTK_WIDGET(d->from.treeview));
 
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
-  GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes("✔", renderer, "text",
-                                                    DT_IMPORT_UI_EXISTS, NULL);
+  GtkTreeViewColumn *column =
+    gtk_tree_view_column_new_with_attributes("✔", renderer, "text",
+                                             DT_IMPORT_UI_EXISTS, NULL);
   g_object_set(renderer, "xalign", 0.5, NULL);
   gtk_tree_view_append_column(d->from.treeview, column);
   gtk_tree_view_column_set_alignment(column, 0.5);
@@ -1582,7 +1702,9 @@ static void _set_files_list(GtkWidget *rbox, dt_lib_module_t* self)
   gtk_tree_view_append_column(d->from.treeview, column);
   gtk_tree_view_column_set_sort_column_id(column, DT_IMPORT_DATETIME);
   header = gtk_tree_view_column_get_button(column);
-  gtk_widget_set_tooltip_text(header, _("file 'modified date/time', may be different from 'Exif date/time'"));
+  gtk_widget_set_tooltip_text
+    (header,
+     _("file 'modified date/time', may be different from 'Exif date/time'"));
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(d->from.store),
                                        DT_IMPORT_DATETIME, GTK_SORT_ASCENDING);
 
@@ -1608,7 +1730,8 @@ static void _set_files_list(GtkWidget *rbox, dt_lib_module_t* self)
 
   GtkTreeSelection *selection = gtk_tree_view_get_selection(d->from.treeview);
   gtk_tree_selection_set_mode(selection, GTK_SELECTION_MULTIPLE);
-  g_signal_connect(G_OBJECT(selection), "changed", G_CALLBACK(_import_from_selection_changed), self);
+  g_signal_connect(G_OBJECT(selection), "changed",
+                   G_CALLBACK(_import_from_selection_changed), self);
 
   gtk_tree_view_set_model(d->from.treeview, GTK_TREE_MODEL(d->from.store));
   gtk_tree_view_set_headers_visible(d->from.treeview, TRUE);
@@ -1616,7 +1739,8 @@ static void _set_files_list(GtkWidget *rbox, dt_lib_module_t* self)
   gtk_box_pack_start(GTK_BOX(rbox), GTK_WIDGET(d->from.w), TRUE, TRUE, 0);
 }
 
-static void _browse_basedir_clicked(GtkWidget *widget, GtkEntry *basedir)
+static void _browse_basedir_clicked(GtkWidget *widget,
+                                    GtkEntry *basedir)
 {
   GtkWidget *topwindow = gtk_widget_get_toplevel(widget);
   if(!GTK_IS_WINDOW(topwindow))
@@ -1625,7 +1749,8 @@ static void _browse_basedir_clicked(GtkWidget *widget, GtkEntry *basedir)
   }
 
   GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
-      _("select directory"), GTK_WINDOW(topwindow), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_open"), _("_cancel"));
+      _("select directory"), GTK_WINDOW(topwindow),
+      GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_open"), _("_cancel"));
 
   gchar *old = g_strdup(gtk_entry_get_text(basedir));
   char *c = g_strstr_len(old, -1, "$");
@@ -1649,7 +1774,8 @@ static void _browse_basedir_clicked(GtkWidget *widget, GtkEntry *basedir)
   g_object_unref(filechooser);
 }
 
-static void _set_expander_content(GtkWidget *rbox, dt_lib_module_t* self)
+static void _set_expander_content(GtkWidget *rbox,
+                                  dt_lib_module_t* self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   // separator
@@ -1669,8 +1795,10 @@ static void _set_expander_content(GtkWidget *rbox, dt_lib_module_t* self)
   // import patterns
   grid = GTK_GRID(gtk_grid_new());
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
-  d->from.datetime = dt_gui_preferences_string(grid, "ui_last/import_datetime_override", 0, line++);
-  GtkWidget *basedir = dt_gui_preferences_string(grid, "session/base_directory_pattern", 0, line++);
+  d->from.datetime = dt_gui_preferences_string
+    (grid, "ui_last/import_datetime_override", 0, line++);
+  GtkWidget *basedir = dt_gui_preferences_string
+    (grid, "session/base_directory_pattern", 0, line++);
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   g_object_ref(basedir);
@@ -1682,11 +1810,14 @@ static void _set_expander_content(GtkWidget *rbox, dt_lib_module_t* self)
   gtk_widget_set_tooltip_text(browsedir, _("select directory"));
 
   gtk_box_pack_start(GTK_BOX(hbox), browsedir, FALSE, FALSE, 0);
-  g_signal_connect(G_OBJECT(browsedir), "clicked", G_CALLBACK(_browse_basedir_clicked), basedir);
-  gtk_grid_attach_next_to(grid, hbox, gtk_grid_get_child_at(grid, 0, line - 1), GTK_POS_RIGHT, 1, 1);
+  g_signal_connect(G_OBJECT(browsedir), "clicked", G_CALLBACK(_browse_basedir_clicked),
+                   basedir);
+  gtk_grid_attach_next_to(grid, hbox, gtk_grid_get_child_at(grid, 0, line - 1),
+                          GTK_POS_RIGHT, 1, 1);
 
   dt_gui_preferences_string(grid, "session/sub_directory_pattern", 0, line++);
-  GtkWidget *usefn = dt_gui_preferences_bool(grid, "session/use_filename", 0, line++, FALSE);
+  GtkWidget *usefn = dt_gui_preferences_bool(grid, "session/use_filename", 0,
+                                             line++, FALSE);
   d->from.fn_line = line;
   dt_gui_preferences_string(grid, "session/filename_pattern", 0, line++);
   gtk_box_pack_start(GTK_BOX(d->from.cs.container), GTK_WIDGET(grid), FALSE, FALSE, 0);
@@ -1715,11 +1846,12 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 
-  d->from.dialog = gtk_dialog_new_with_buttons(_(_import_text[d->import_case]), NULL,
-                                               GTK_DIALOG_MODAL,
-                                               _("_cancel"), GTK_RESPONSE_CANCEL,
-                                               _(_import_text[d->import_case]), GTK_RESPONSE_ACCEPT,
-                                               NULL);
+  d->from.dialog = gtk_dialog_new_with_buttons
+    (_(_import_text[d->import_case]), NULL,
+     GTK_DIALOG_MODAL,
+     _("_cancel"), GTK_RESPONSE_CANCEL,
+     _(_import_text[d->import_case]), GTK_RESPONSE_ACCEPT,
+     NULL);
   gtk_dialog_set_default_response(GTK_DIALOG(d->from.dialog), GTK_RESPONSE_ACCEPT);
   dt_gui_dialog_add_help(GTK_DIALOG(d->from.dialog), "import_dialog");
 
@@ -1731,8 +1863,10 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
                               dt_conf_get_int("ui_last/import_dialog_height"));
   gtk_window_set_transient_for(GTK_WINDOW(d->from.dialog), GTK_WINDOW(win));
   GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(d->from.dialog));
-  g_signal_connect(d->from.dialog, "check-resize", G_CALLBACK(_resize_dialog), self);
-  g_signal_connect(d->from.dialog, "key-press-event", G_CALLBACK(dt_handle_dialog_enter), self);
+  g_signal_connect(d->from.dialog, "check-resize",
+                   G_CALLBACK(_resize_dialog), self);
+  g_signal_connect(d->from.dialog, "key-press-event",
+                   G_CALLBACK(dt_handle_dialog_enter), self);
 
   // images numbers in action-box
   GtkWidget *box = dt_gui_container_first_child(GTK_CONTAINER(d->from.dialog));
@@ -1755,7 +1889,8 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(d->from.img_nb), TRUE, TRUE, 0);
 
   GtkWidget *paned = gtk_paned_new(GTK_ORIENTATION_HORIZONTAL);
-  gtk_paned_set_position(GTK_PANED(paned), dt_conf_get_int("ui_last/import_dialog_paned_pos"));
+  gtk_paned_set_position(GTK_PANED(paned),
+                         dt_conf_get_int("ui_last/import_dialog_paned_pos"));
 
   // right pane
   GtkWidget *rbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
@@ -1767,19 +1902,25 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   GtkGrid *grid = GTK_GRID(gtk_grid_new());
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
 
-  d->import_new = dt_gui_preferences_bool(grid, "ui_last/import_select_new", col++, line, TRUE);
+  d->import_new = dt_gui_preferences_bool(grid, "ui_last/import_select_new", col++,
+                                          line, TRUE);
   gtk_widget_set_hexpand(gtk_grid_get_child_at(grid, col++, line), TRUE);
-  g_signal_connect(G_OBJECT(d->import_new), "toggled", G_CALLBACK(_import_new_toggled), self);
+  g_signal_connect(G_OBJECT(d->import_new), "toggled",
+                   G_CALLBACK(_import_new_toggled), self);
 
   if(d->import_case != DT_IMPORT_CAMERA)
   {
-    d->recursive = dt_gui_preferences_bool(grid, "ui_last/import_recursive", col++, line, TRUE);
+    d->recursive = dt_gui_preferences_bool(grid, "ui_last/import_recursive", col++,
+                                           line, TRUE);
     gtk_widget_set_hexpand(gtk_grid_get_child_at(grid, col++, line), TRUE);
-    g_signal_connect(G_OBJECT(d->recursive), "toggled", G_CALLBACK(_recursive_toggled), self);
+    g_signal_connect(G_OBJECT(d->recursive), "toggled",
+                     G_CALLBACK(_recursive_toggled), self);
   }
-  GtkWidget *ignore_nonraws = dt_gui_preferences_bool(grid, "ui_last/import_ignore_nonraws", col++, line, TRUE);
+  GtkWidget *ignore_nonraws =
+    dt_gui_preferences_bool(grid, "ui_last/import_ignore_nonraws", col++, line, TRUE);
   gtk_widget_set_hexpand(gtk_grid_get_child_at(grid, col++, line++), TRUE);
-  g_signal_connect(G_OBJECT(ignore_nonraws), "toggled", G_CALLBACK(_ignore_nonraws_toggled), self);
+  g_signal_connect(G_OBJECT(ignore_nonraws), "toggled",
+                   G_CALLBACK(_ignore_nonraws_toggled), self);
   gtk_box_pack_start(GTK_BOX(rbox), GTK_WIDGET(grid), FALSE, FALSE, 8);
 
   // files list
@@ -1789,7 +1930,8 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
 #ifdef HAVE_GPHOTO2
   if(d->import_case == DT_IMPORT_CAMERA)
   {
-    d->from.info = dt_ui_label_new(_("please wait while prefetching the list of images from camera..."));
+    d->from.info = dt_ui_label_new
+      (_("please wait while prefetching the list of images from camera..."));
     gtk_label_set_single_line_mode(GTK_LABEL(d->from.info), FALSE);
     gtk_box_pack_start(GTK_BOX(rbox), d->from.info, FALSE, FALSE, 0);
   }
@@ -1803,8 +1945,10 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
 
     GtkWidget *places_paned = gtk_paned_new(GTK_ORIENTATION_VERTICAL);
 
-    gtk_paned_set_position(GTK_PANED(places_paned), dt_conf_get_int("ui_last/import_dialog_paned_places_pos"));
-    g_signal_connect(places_paned, "notify::position", G_CALLBACK(_paned_places_position_changed), self);
+    gtk_paned_set_position(GTK_PANED(places_paned),
+                           dt_conf_get_int("ui_last/import_dialog_paned_places_pos"));
+    g_signal_connect(places_paned, "notify::position",
+                     G_CALLBACK(_paned_places_position_changed), self);
 
     _set_places_list(places_paned, self);
     _set_folders_list(places_paned, self);
@@ -1834,7 +1978,8 @@ static void _import_set_collection(const char *dirname)
 {
   if(dirname)
   {
-    dt_collection_properties_t property = dt_conf_get_int("plugins/lighttable/collect/item0");
+    dt_collection_properties_t property =
+      dt_conf_get_int("plugins/lighttable/collect/item0");
 
     if(property != DT_COLLECTION_PROP_FOLDERS
        && property != DT_COLLECTION_PROP_FILMROLL)
@@ -1927,7 +2072,9 @@ static void _import_from_dialog_run(dt_lib_module_t* self)
       if(d->import_case != DT_IMPORT_INPLACE)
       {
         const char *entry = gtk_entry_get_text(GTK_ENTRY(d->from.datetime));
-        if(entry[0] && !dt_datetime_entry_to_exif(datetime_override, sizeof(datetime_override), entry))
+        if(entry[0]
+           && !dt_datetime_entry_to_exif(datetime_override,
+                                         sizeof(datetime_override), entry))
         {
           dt_control_log(_("invalid override date/time format"));
           break;
@@ -1958,7 +2105,8 @@ static void _import_from_dialog_run(dt_lib_module_t* self)
       }
     }
     gtk_tree_selection_unselect_all(selection);
-    if((d->import_case == DT_IMPORT_INPLACE) || !dt_conf_get_bool("ui_last/import_keep_open"))
+    if((d->import_case == DT_IMPORT_INPLACE)
+       || !dt_conf_get_bool("ui_last/import_keep_open"))
     {
       g_free(folder);
       break;
@@ -1985,7 +2133,8 @@ static void _import_from_dialog_free(dt_lib_module_t* self)
 static void _lib_import_from_callback(GtkWidget *widget, dt_lib_module_t* self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
-  d->import_case = (widget == GTK_WIDGET(d->import_inplace)) ? DT_IMPORT_INPLACE : DT_IMPORT_COPY;
+  d->import_case = (widget == GTK_WIDGET(d->import_inplace))
+    ? DT_IMPORT_INPLACE : DT_IMPORT_COPY;
 
   if(d->import_case == DT_IMPORT_COPY)
   {
@@ -1993,12 +2142,12 @@ static void _lib_import_from_callback(GtkWidget *widget, dt_lib_module_t* self)
     if(setup == FALSE)
     {
       const gboolean understood = dt_gui_show_standalone_yes_no_dialog
-            (_("import base directory"),
-             _("before copying images to the darktable base directory make sure it is defined as you prefer."
-               "\nfurther information can be found in the darktable manual."
-               "\n\ninspect darktable preferences -> import."
-               "\ncheck and possibly correct the 'base directory naming pattern'"),
-            _("_come back & check"), _("_understood & done"));
+        (_("import base directory"),
+         _("before copying images to the darktable base directory make sure it is defined as you prefer."
+           "\nfurther information can be found in the darktable manual."
+           "\n\ninspect darktable preferences -> import."
+           "\ncheck and possibly correct the 'base directory naming pattern'"),
+         _("_come back & check"), _("_understood & done"));
       if(understood)
         dt_conf_set_bool("setup_import_directory", TRUE);
       else
@@ -2064,17 +2213,20 @@ void gui_init(dt_lib_module_t *self)
   // add import buttons
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-  GtkWidget *widget = dt_action_button_new(self, N_("add to library..."), _lib_import_from_callback, self,
+  GtkWidget *widget = dt_action_button_new(self, N_("add to library..."),
+                                           _lib_import_from_callback, self,
                                            _("add existing images to the library"), 0, 0);
   d->import_inplace = GTK_BUTTON(widget);
   gtk_widget_set_can_focus(widget, TRUE);
   gtk_widget_set_receives_default(widget, TRUE);
   gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 
-  widget = dt_action_button_new(self, N_("copy & import..."), _lib_import_from_callback, self,
-                                _("copy and optionally rename images before adding them to the library"
-                                  "\npatterns can be defined to rename the images and specify the destination folders"),
-                                GDK_KEY_i, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  widget = dt_action_button_new
+    (self, N_("copy & import..."),
+     _lib_import_from_callback, self,
+     _("copy and optionally rename images before adding them to the library"
+       "\npatterns can be defined to rename the images and specify the destination folders"),
+     GDK_KEY_i, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
   d->import_copy = GTK_BUTTON(widget);
   gtk_widget_set_can_focus(widget, TRUE);
   gtk_widget_set_receives_default(widget, TRUE);
@@ -2089,20 +2241,24 @@ void gui_init(dt_lib_module_t *self)
 
   _lib_import_ui_devices_update(self);
 
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CAMERA_DETECTED, G_CALLBACK(_camera_detected),
-                            self);
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals,
+                                  DT_SIGNAL_CAMERA_DETECTED, G_CALLBACK(_camera_detected),
+                                  self);
 #endif
 
   // collapsible section
 
-  _expander_create(&d->cs, GTK_BOX(self->widget), _("parameters"), "ui_last/expander_import", self);
+  _expander_create(&d->cs, GTK_BOX(self->widget),
+                   _("parameters"), "ui_last/expander_import", self);
 
   GtkGrid *grid = GTK_GRID(gtk_grid_new());
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
   guint line = 0;
-  d->ignore_exif = dt_gui_preferences_bool(grid, "ui_last/ignore_exif_rating", 0, line++, FALSE);
+  d->ignore_exif = dt_gui_preferences_bool(grid, "ui_last/ignore_exif_rating", 0,
+                                           line++, FALSE);
   d->rating = dt_gui_preferences_int(grid, "ui_last/import_initial_rating", 0, line++);
-  d->apply_metadata = dt_gui_preferences_bool(grid, "ui_last/import_apply_metadata", 0, line++, FALSE);
+  d->apply_metadata = dt_gui_preferences_bool(grid, "ui_last/import_apply_metadata", 0,
+                                              line++, FALSE);
   d->metadata.apply_metadata = d->apply_metadata;
   gtk_box_pack_start(GTK_BOX(d->cs.container), GTK_WIDGET(grid), FALSE, FALSE, 0);
   d->metadata.box = GTK_WIDGET(d->cs.container);
@@ -2126,7 +2282,8 @@ void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
 #ifdef HAVE_GPHOTO2
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_camera_detected), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
+                                     G_CALLBACK(_camera_detected), self);
 #endif
 #ifdef USE_LUA
   detach_lua_widgets(d->extra_lua_widgets);
@@ -2219,11 +2376,13 @@ static char *_get_current_configuration(dt_lib_module_t *self)
   {
     if(_pref[i].type == DT_BOOL)
     {
-      pref = dt_util_dstrcat(pref, "%s=%d,", _pref[i].name, dt_conf_get_bool(_pref[i].key) ? 1 : 0);
+      pref = dt_util_dstrcat(pref, "%s=%d,", _pref[i].name,
+                             dt_conf_get_bool(_pref[i].key) ? 1 : 0);
     }
     else if(_pref[i].type == DT_INT)
     {
-      pref = dt_util_dstrcat(pref, "%s=%d,", _pref[i].name, dt_conf_get_int(_pref[i].key));
+      pref = dt_util_dstrcat(pref, "%s=%d,", _pref[i].name,
+                             dt_conf_get_int(_pref[i].key));
     }
     else if(_pref[i].type == DT_STRING)
     {
@@ -2244,7 +2403,8 @@ static char *_get_current_configuration(dt_lib_module_t *self)
 
       setting = g_strdup_printf("ui_last/import_last_%s", metadata_name);
       const char *metadata_value = dt_conf_get_string_const(setting);
-      pref = dt_util_dstrcat(pref, "%s=%d%s,", metadata_name, imported ? 1 : 0, metadata_value);
+      pref = dt_util_dstrcat(pref, "%s=%d%s,", metadata_name,
+                             imported ? 1 : 0, metadata_value);
       g_free(setting);
     }
   }
@@ -2252,12 +2412,14 @@ static char *_get_current_configuration(dt_lib_module_t *self)
   const gboolean imported = dt_conf_get_bool("ui_last/import_last_tags_imported");
   const char *tags_value = dt_conf_get_string_const("ui_last/import_last_tags");
   pref = dt_util_dstrcat(pref, "%s=%d%s,", "tags", imported ? 1 : 0, tags_value);
-  if(pref && *pref) pref[strlen(pref) - 1] = '\0';
+  if(pref && *pref)
+    pref[strlen(pref) - 1] = '\0';
 
   return pref;
 }
 
-static void _apply_preferences(const char *pref, dt_lib_module_t *self)
+static void _apply_preferences(const char *pref,
+                               dt_lib_module_t *self)
 {
   if(!pref || !pref[0]) return;
   _set_default_preferences(self);
@@ -2293,7 +2455,8 @@ static void _apply_preferences(const char *pref, dt_lib_module_t *self)
       // metadata
       const int j = dt_metadata_get_keyid_by_name(metadata_name);
       if(j == -1) continue;
-      gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", metadata_name);
+      gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag",
+                                       metadata_name);
       const uint32_t flag = (dt_conf_get_int(setting) & ~DT_METADATA_FLAG_IMPORTED) |
                             ((value[0] == '1') ? DT_METADATA_FLAG_IMPORTED : 0);
       dt_conf_set_int(setting, flag);
@@ -2338,7 +2501,8 @@ void init_presets(dt_lib_module_t *self)
 {
 }
 
-void *get_params(dt_lib_module_t *self, int *size)
+void *get_params(dt_lib_module_t *self,
+                 int *size)
 {
   *size = 0;
   char *params = _get_current_configuration(self);
@@ -2347,7 +2511,9 @@ void *get_params(dt_lib_module_t *self, int *size)
   return params;
 }
 
-int set_params(dt_lib_module_t *self, const void *params, int size)
+int set_params(dt_lib_module_t *self,
+               const void *params,
+               int size)
 {
   if(!params) return 1;
   _apply_preferences(params, self);
