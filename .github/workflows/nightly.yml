@@ -64,6 +64,7 @@ jobs:
             libglib2.0-dev \
             libgraphicsmagick1-dev \
             libgtk-3-dev \
+            libinih-dev \
             libjpeg-dev \
             libjson-glib-dev \
             liblcms2-dev \
@@ -100,7 +101,6 @@ jobs:
           sudo apt-get update
           sudo apt-get -y install \
             libavif-dev \
-            libexiv2-dev \
             libgmic-dev \
             libgphoto2-dev \
             libheif-dev \
@@ -109,6 +109,20 @@ jobs:
             libjxl-dev \
             x11proto-dev \
             libxfixes-dev;
+      - name: Build and install a more recent version of exiv2
+        run: |
+          git clone --branch v0.28.1 --depth 1 https://github.com/Exiv2/exiv2 src-exiv2
+          cd src-exiv2
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_SHARED_LIBS=ON \
+            -DEXIV2_ENABLE_BMFF=ON \
+            -DEXIV2_ENABLE_XMP=ON \
+            -DEXIV2_ENABLE_VIDEO=OFF \
+            -DCMAKE_INSTALL_PREFIX=/usr
+          cmake --build build
+          sudo cmake --install build
+          cd ..
       - name: Cancel workflow if job fails
         if: ${{ failure() }}
         uses: andymckay/cancel-action@0.3
