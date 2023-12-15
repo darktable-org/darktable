@@ -50,14 +50,14 @@ declare -A LANG_NAME=( [af]=Afrikaans
                        [sk]=Slovak
                        [sl]=Slovenian
                        [sq]=Albanian
-                       [sr@latin]="Serbian Latin"
-                       [sr]="Serbian Cyrilic"
+                       [sr@latin]="Serbian (Latin)"
+                       [sr]="Serbian (Cyrilic)"
                        [sv]=Swedish
                        [th]=Thai
                        [tr]=Turkish
                        [uk]=Ukrainian
-                       [zh_CN]="Chinese - (simplified)"
-                       [zh_TW]="Chinese - (traditional)" )
+                       [zh_CN]="Chinese (Simplified)"
+                       [zh_TW]="Chinese (Traditional)" )
 
 
 
