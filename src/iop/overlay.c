@@ -551,7 +551,6 @@ void process(struct dt_iop_module_t *self,
     svg_width = dimension.width * (svg_height / dimension.height);
   }
 
-
   /* For the rotation we need an extra cairo image as rotations are
      buggy via rsvg_handle_render_cairo.  distortions and blurred
      images are obvious but you also can easily have crashes.
@@ -691,7 +690,7 @@ static void _draw_thumb(GtkWidget *area,
   }
   else
   {
-    cairo_set_source_rgb(crf, 0, 0, 0);
+    dt_gui_gtk_set_source_rgb(crf, DT_GUI_COLOR_BG);
     cairo_set_line_width(crf, 3.0);
     cairo_rectangle(crf, 0.0, 0.0, width, height);
     cairo_move_to(crf, 0.0, 0.0);
@@ -699,6 +698,25 @@ static void _draw_thumb(GtkWidget *area,
     cairo_move_to(crf, 0.0, height);
     cairo_line_to(crf, width, 0.0);
     cairo_stroke(crf);
+
+    PangoFontDescription *desc =
+      pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+    pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
+    pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(12) * PANGO_SCALE);
+    PangoLayout *layout = pango_cairo_create_layout(crf);
+    pango_layout_set_font_description(layout, desc);
+    pango_layout_set_text(layout, _("drop image here"), -1);
+
+    PangoRectangle ink;
+    pango_layout_get_pixel_extents(layout, &ink, NULL);
+
+    dt_gui_gtk_set_source_rgb(crf, DT_GUI_COLOR_LIGHTTABLE_FONT);
+    cairo_move_to(crf,
+                  (width - ink.width) / 2.0,
+                  (height - ink.height) / 2.0);
+    pango_cairo_show_layout(crf, layout);
+    pango_font_description_free(desc);
+    g_object_unref(layout);
   }
 }
 
