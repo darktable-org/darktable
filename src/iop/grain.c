@@ -314,62 +314,6 @@ static double _simplex_noise(double xin, double yin, double zin)
   return 32.0 * (n0 + n1 + n2 + n3);
 }
 
-#define PRIME_LEVELS 4
-// static uint64_t _low_primes[PRIME_LEVELS] ={ 12503,14029,15649, 11369 };
-// uint64_t _mid_primes[PRIME_LEVELS] ={ 784697,875783, 536461,639259};
-
-/*static double __value_noise(uint32_t level,uint32_t x,uint32_t y)
-{
-  //uint32_t lvl=level%PRIME_LEVELS;
-  uint32_t n = x + y * 57;
-  n = (n<<13) ^ n;
-  return ( 1.0 - (( (n * (n * n * 15731 + 789221) +1376312589) & 0x7fffffff) / 1073741824.0));
-}
-
-static double __value_smooth_noise(uint32_t level,double x,double y)
-{
-  double corners = ( __value_noise(level,x-1, y-1)+__value_noise(level,x+1, y-1)+__value_noise(level,x-1,
-y+1)+__value_noise(level,x+1, y+1) ) / 16;
-  double sides   = ( __value_noise(level,x-1, y)  +__value_noise(level,x+1, y)  +__value_noise(level,x, y-1)
-+__value_noise(level,x, y+1) ) /  8;
-  double center  =  __value_noise(level,x, y) / 4;
-  return corners + sides + center;
-}
-
-static double __preline_cosine_interpolate(double a,double b,double x)
-{
-  double ft = x * 3.1415927;
-  double f = (1 - cos(ft)) * .5;
-  return  a*(1-f) + b*f;
-}
-
-static double __value_interpolate(uint32_t level,double x,double y)
-{
-  double fx = x - (uint32_t)x;
-  double fy = y - (uint32_t)y;
-
-  double v1 = __value_smooth_noise(level,(uint32_t)x,     (uint32_t)y);
-  double v2 = __value_smooth_noise(level,(uint32_t)x + 1, (uint32_t)y);
-  double v3 = __value_smooth_noise(level,(uint32_t)x,     (uint32_t)y + 1);
-  double v4 = __value_smooth_noise(level,(uint32_t)x + 1, (uint32_t)y + 1);
-
-  double i1 = __preline_cosine_interpolate(v1 , v2 , fx);
-  double i2 = __preline_cosine_interpolate(v3 , v4 , fx);
-
-  return __preline_cosine_interpolate(i1 , i2 , fy);
-}
-static double _perlin_2d_noise(double x,double y,uint32_t octaves,double persistance,double z)
-{
-  double f=1,a=1,total=0;
-
-  for(int o=0;o<octaves;o++) {
-    total+= (__value_interpolate(o,x*f/z,y*f/z)*a);
-    f=2*o;
-    a=persistance*o;
-  }
-  return total;
-}*/
-
 #define OCTAVES 3
 
 static double _simplex_2d_noise(double x, double y, double z)
