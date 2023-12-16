@@ -314,8 +314,6 @@ static double _simplex_noise(double xin, double yin, double zin)
   return 32.0 * (n0 + n1 + n2 + n3);
 }
 
-#define OCTAVES 3
-
 static double _simplex_2d_noise(double x, double y, double z)
 {
   double total = 0;
@@ -324,9 +322,9 @@ static double _simplex_2d_noise(double x, double y, double z)
   static const double f[] = {0.4910, 0.9441, 1.7280};
   static const double a[] = {0.2340, 0.7850, 1.2150};
 
-  for(uint32_t o = 0; o < OCTAVES; o++)
+  for(uint32_t octave = 0; octave < 3; octave++)
   {
-    total += (_simplex_noise(x * f[o] / z, y * f[o] / z, o) * a[o]);
+    total += (_simplex_noise(x * f[octave] / z, y * f[octave] / z, octave) * a[octave]);
   }
   return total;
 }
