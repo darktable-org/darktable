@@ -213,6 +213,17 @@ static GList *_get_disabled_modules(const int imgid, const int multi_priority)
   return result;
 }
 
+static void _clear_overlay(dt_iop_module_t *self)
+{
+  dt_iop_overlay_global_data_t *gd = (dt_iop_overlay_global_data_t *)self->global_data;
+  dt_free_align(gd->buf);
+  gd->buf = NULL;
+  gd->buf_width  = 0;
+  gd->buf_height = 0;
+  gd->pwidth     = 0;
+  gd->pheight    = 0;
+}
+
 static void _setup_overlay(dt_iop_module_t *self)
 {
   dt_iop_overlay_params_t *p = (dt_iop_overlay_params_t *)self->params;
@@ -220,8 +231,10 @@ static void _setup_overlay(dt_iop_module_t *self)
   dt_iop_overlay_gui_data_t *g = (dt_iop_overlay_gui_data_t *)self->gui_data;
 
   if(!dt_is_valid_imgid(p->imgid))
+  {
+    _clear_overlay(self);
     return;
-
+  }
   gboolean image_exists = dt_image_exists(p->imgid);
 
   // The overlay image could have been removed from collection and
@@ -308,6 +321,7 @@ void process(struct dt_iop_module_t *self,
 {
   dt_iop_overlay_data_t *data = (dt_iop_overlay_data_t *)piece->data;
   dt_iop_overlay_global_data_t *gd = (dt_iop_overlay_global_data_t *)self->global_data;
+  dt_iop_overlay_params_t *p = (dt_iop_overlay_params_t *)self->params;
 
   float *in = (float *)ivoid;
   float *out = (float *)ovoid;
@@ -315,15 +329,16 @@ void process(struct dt_iop_module_t *self,
   const float angle = (M_PI / 180) * (-data->rotate);
 
   // is overlay image ready
-  if(self->dev->preview_pipe
-     && (!gd->buf
-         || gd->pwidth != self->dev->preview_pipe->iwidth
-         || gd->pheight != self->dev->preview_pipe->iheight))
+  if(!gd->buf
+     || (self->dev->preview_pipe
+         && (gd->pwidth != self->dev->preview_pipe->iwidth
+             || gd->pheight != self->dev->preview_pipe->iheight)))
   {
     dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
 
-    // let register a build of the overlay buffer
-    gd->thumb_timeout_id = g_timeout_add(10, _build_overlay, self);
+    // let register a build of the overlay buffer if image id valid
+    if(dt_is_valid_imgid(p->imgid))
+      gd->thumb_timeout_id = g_timeout_add(10, _build_overlay, self);
 
     return;
   }
@@ -820,6 +835,16 @@ void gui_update(struct dt_iop_module_t *self)
 
   if(dt_is_valid_imgid(p->imgid))
     gd->thumb_timeout_id = g_timeout_add(10, _build_overlay, self);
+}
+
+void gui_reset(dt_iop_module_t *self)
+{
+  dt_iop_overlay_gui_data_t *g = (dt_iop_overlay_gui_data_t *)self->gui_data;
+  dt_iop_overlay_params_t *p = (dt_iop_overlay_params_t *)self->params;
+
+  p->imgid = NO_IMGID;
+  _clear_overlay(self);
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
 void gui_changed(dt_iop_module_t *self,
