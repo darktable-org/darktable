@@ -22,6 +22,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/interpolation.h"
 #include "develop/imageop.h"
+#include "develop/imageop_gui.h"
 #include "develop/tiling.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -37,11 +38,12 @@ typedef struct dt_iop_scalepixels_params_t
   // Aspect ratio of the pixels, usually 1 but some cameras need scaling
   // <1 means the image needs to be stretched vertically, (0.5 means 2x)
   // >1 means the image needs to be stretched horizontally (2 mean 2x)
-  float pixel_aspect_ratio; // $DEFAULT: 1.0f
+  float pixel_aspect_ratio; // $MIN: 0.5f $MAX: 2.0f $DEFAULT: 1.0f $DESCRIPTION: "pixel aspect ratio"
 } dt_iop_scalepixels_params_t;
 
 typedef struct dt_iop_scalepixels_gui_data_t
 {
+  GtkWidget *pixel_aspect_ratio;
 } dt_iop_scalepixels_gui_data_t;
 
 typedef struct dt_iop_scalepixels_data_t {
@@ -81,9 +83,12 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self,
-                                _("internal module to setup technical specificities of raw sensor.\n\n"
-                                  "you should not touch values here!"),
-                                NULL, NULL, NULL, NULL);
+                                _("module for setting pixel aspect ratio\n\n"
+                                "useful for certain sensor types and anamorphic desqueeze"),
+                                _("corrective"), 
+                                _("linear, RGB, scene-referred"), 
+                                _("linear, RGB"), 
+                                _("linear, RGB, scene-referred"));
 }
 
 static void transform(const dt_dev_pixelpipe_iop_t *const piece, float *p)
@@ -190,13 +195,6 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
   roi_in->height = hw[0];
   roi_in->width = hw[1];
 
-  float reduction_ratio = MAX(hw[0] / (piece->buf_in.height * 1.0f), hw[1] / (piece->buf_in.width * 1.0f));
-  if(reduction_ratio > 1.0f)
-  {
-    roi_in->height /= reduction_ratio;
-    roi_in->width /= reduction_ratio;
-  }
-
   dt_iop_scalepixels_data_t *d = piece->data;
   d->x_scale = (roi_in->width * 1.0f) / (roi_out->width * 1.0f);
   d->y_scale = (roi_in->height * 1.0f) / (roi_out->height * 1.0f);
@@ -273,26 +271,30 @@ void reload_defaults(dt_iop_module_t *self)
                            d->pixel_aspect_ratio > 0.0f &&
                            d->pixel_aspect_ratio != 1.0f);
 
-  // FIXME: does not work.
-  self->hide_enable_button = !self->default_enabled;
-
   if(self->widget)
     gtk_label_set_text(GTK_LABEL(self->widget), self->default_enabled
-                       ? _("automatic pixel scaling")
-                       :_("automatic pixel scaling\nonly works for the sensors that need it."));
+                       ? _("pixel scaling")
+                       :_("pixel scaling\nuseful for anamorphic desqueeze and sensors that need it."));
 }
 
 void gui_update(dt_iop_module_t *self)
 {
+  dt_iop_scalepixels_gui_data_t *g = (dt_iop_scalepixels_gui_data_t *)self->gui_data;
+  dt_iop_scalepixels_params_t *p = (dt_iop_scalepixels_params_t *)self->params;
+
+  dt_bauhaus_slider_set(g->pixel_aspect_ratio, p->pixel_aspect_ratio);
 }
 
 void gui_init(dt_iop_module_t *self)
 {
-  IOP_GUI_ALLOC(scalepixels);
+  dt_iop_scalepixels_gui_data_t *g = IOP_GUI_ALLOC(scalepixels);
 
-  self->widget = dt_ui_label_new("");
-  gtk_label_set_line_wrap(GTK_LABEL(self->widget), TRUE);
-
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  
+  g->pixel_aspect_ratio = dt_bauhaus_slider_from_params(self, "pixel_aspect_ratio");
+  dt_bauhaus_slider_set_step(g->pixel_aspect_ratio, .01);
+  dt_bauhaus_slider_set_digits(g->pixel_aspect_ratio, 2);
+  gtk_widget_set_tooltip_text(g->pixel_aspect_ratio, _("adjust pixel aspect ratio"));
 }
 
 // clang-format off
