@@ -552,7 +552,11 @@ static void _thumb_set_in_listview(GtkTreeModel *model,
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   gchar *filename;
-  gtk_tree_model_get(model, iter, DT_IMPORT_FILENAME, &filename, -1);
+  gchar *fullname;
+  gtk_tree_model_get(model, iter,
+                     DT_IMPORT_UI_FILENAME, &filename,
+                     DT_IMPORT_FILENAME, &fullname,
+                     -1);
   GdkPixbuf *pixbuf = NULL;
 #ifdef HAVE_GPHOTO2
   if(d->import_case == DT_IMPORT_CAMERA)
@@ -562,16 +566,17 @@ static void _thumb_set_in_listview(GtkTreeModel *model,
   else
 #endif
   {
-    const char *folder = dt_conf_get_string_const("ui_last/import_last_directory");
-    char *fullname = g_build_filename(folder, filename, NULL);
     pixbuf = thumb_sel ? _import_get_thumbnail(fullname) : d->from.eye;
     g_free(fullname);
   }
   gtk_list_store_set(d->from.store, iter, DT_IMPORT_SEL_THUMB, thumb_sel,
                                           DT_IMPORT_THUMB, pixbuf, -1);
 
-  if(pixbuf) g_object_ref(pixbuf);
+  if(pixbuf)
+    g_object_ref(pixbuf);
+
   g_free(filename);
+  g_free(fullname);
 }
 
 static gboolean _files_button_press(GtkWidget *view,
@@ -804,7 +809,7 @@ static void _add_file_callback(GObject *direnum,
           gtk_list_store_set(d->from.store, &iter,
                              DT_IMPORT_UI_EXISTS, already_imported ? "✔" : " ",
                              DT_IMPORT_UI_FILENAME, &uifullname[offset],
-                             DT_IMPORT_FILENAME, &fullname[offset],
+                             DT_IMPORT_FILENAME, fullname,
                              DT_IMPORT_UI_DATETIME, dt_txt,
                              DT_IMPORT_DATETIME, datetime,
                              DT_IMPORT_THUMB, d->from.eye,
