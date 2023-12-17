@@ -88,7 +88,7 @@ const char **description(struct dt_iop_module_t *self)
   return dt_iop_set_description(self, _("convert pipeline reference RGB to any display RGB\n"
                                         "using color profiles to remap RGB values"),
                                       _("mandatory"),
-                                      _("linear or non-linear, Lab, display-referred"),
+                                      _("linear or non-linear, RGB, display-referred"),
                                       _("defined by profile"),
                                       _("non-linear, RGB or Lab, display-referred"));
 }
@@ -115,7 +115,7 @@ dt_iop_colorspace_type_t input_colorspace(dt_iop_module_t *self,
                                           dt_dev_pixelpipe_t *pipe,
                                           dt_dev_pixelpipe_iop_t *piece)
 {
-  return IOP_CS_LAB;
+  return IOP_CS_RGB;
 }
 
 dt_iop_colorspace_type_t output_colorspace(dt_iop_module_t *self,
@@ -331,73 +331,62 @@ int process_cl(struct dt_iop_module_t *self,
 
   cl_mem dev_m = NULL, dev_r = NULL, dev_g = NULL, dev_b = NULL, dev_coeffs = NULL, dev_aux = NULL;
 
-  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
 
   const int devid = piece->pipe->devid;
-  const int width = roi_out->width;
-  const int height = roi_out->height;
-  const gboolean scaled = roi_in->width != width || roi_in->height != height;
+  const int owidth = roi_out->width;
+  const int oheight = roi_out->height;
+  const gboolean scaled = roi_in->width != owidth || roi_in->height != oheight;
+
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+  dev_aux = dt_opencl_alloc_device(devid, owidth, oheight, 4 * sizeof(float));
+  if(dev_aux == NULL) goto finalize;
+
+  size_t origin[] = { 0, 0, 0 };
+  size_t region[] = { owidth, oheight, 1 };
 
   if(scaled)
   {
-    /* we always get data presented here as IOP_CS_LAB via "transform colorspace" in pixelpipe.
-       As the interpolations work on rgb data we have to do some extra work here
-    */
-    cl_mem dev_rgb = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, 4 * sizeof(float));
-    const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
-
-    int dummy;
-    if(!dt_ioppr_transform_image_colorspace_cl(self, devid, dev_in, dev_rgb, roi_in->width, roi_in->height, IOP_CS_LAB, IOP_CS_RGB, &dummy, work_profile))
-    {
-      dt_opencl_release_mem_object(dev_rgb);
-      goto error;
-    }
-
-    dev_aux = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
-    if(dev_aux == NULL) goto error;
-
     const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
-    err = dt_interpolation_resample_cl(itor, devid, dev_aux, roi_out, dev_rgb, roi_in);
-    dt_opencl_release_mem_object(dev_rgb);
-    if(err != CL_SUCCESS) goto error;
-
-    if(!dt_ioppr_transform_image_colorspace_cl(self, devid, dev_aux, dev_aux, width, height, IOP_CS_RGB, IOP_CS_LAB, &dummy, work_profile))
-      goto error;
+    err = dt_interpolation_resample_cl(itor, devid, dev_aux, roi_out, dev_in, roi_in);
   }
   else
-    dev_aux = dev_in;
+    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_aux, origin, origin, region);
+  if(err != CL_SUCCESS) goto finalize;
 
-  if(d->type == DT_COLORSPACE_LAB)
+  int dummy;
+  if(!dt_ioppr_transform_image_colorspace_cl(self, devid, dev_aux, dev_aux, owidth, oheight, IOP_CS_RGB, IOP_CS_LAB, &dummy, work_profile))
   {
-    size_t origin[] = { 0, 0, 0 };
-    size_t region[] = { roi_out->width, roi_out->height, 1 };
-    err = dt_opencl_enqueue_copy_image(devid, dev_aux, dev_out, origin, origin, region);
-    if(err != CL_SUCCESS) goto error;
-    else return err;
+    err = DT_OPENCL_PROCESS_CL;
+    goto finalize;
   }
 
-  float cmatrix[9];
-  pack_3xSSE_to_3x3(d->cmatrix, cmatrix);
-  dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 9, cmatrix);
-  if(dev_m == NULL) goto error;
-  dev_r = dt_opencl_copy_host_to_device(devid, d->lut[0], 256, 256, sizeof(float));
-  if(dev_r == NULL) goto error;
-  dev_g = dt_opencl_copy_host_to_device(devid, d->lut[1], 256, 256, sizeof(float));
-  if(dev_g == NULL) goto error;
-  dev_b = dt_opencl_copy_host_to_device(devid, d->lut[2], 256, 256, sizeof(float));
-  if(dev_b == NULL) goto error;
-  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3 * 3, (float *)d->unbounded_coeffs);
-  if(dev_coeffs == NULL) goto error;
+  if(d->type == DT_COLORSPACE_LAB)
+    err = dt_opencl_enqueue_copy_image(devid, dev_aux, dev_out, origin, origin, region);
+  else
+  {
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    float cmatrix[9];
+    pack_3xSSE_to_3x3(d->cmatrix, cmatrix);
+    dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 9, cmatrix);
+    if(dev_m == NULL) goto finalize;
+    dev_r = dt_opencl_copy_host_to_device(devid, d->lut[0], 256, 256, sizeof(float));
+    if(dev_r == NULL) goto finalize;
+    dev_g = dt_opencl_copy_host_to_device(devid, d->lut[1], 256, 256, sizeof(float));
+    if(dev_g == NULL) goto finalize;
+    dev_b = dt_opencl_copy_host_to_device(devid, d->lut[2], 256, 256, sizeof(float));
+    if(dev_b == NULL) goto finalize;
+    dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3 * 3, (float *)d->unbounded_coeffs);
+    if(dev_coeffs == NULL) goto finalize;
 
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_colorout, width, height,
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_colorout, owidth, oheight,
         CLARG(dev_aux), CLARG(dev_out),
-        CLARG(width), CLARG(height),
+        CLARG(owidth), CLARG(oheight),
         CLARG(dev_m), CLARG(dev_r), CLARG(dev_g), CLARG(dev_b), CLARG(dev_coeffs));
-  if(err != CL_SUCCESS) goto error;
+  }
 
-error:
-  if(dev_aux != dev_in)
-    dt_opencl_release_mem_object(dev_aux);
+finalize:
+  dt_opencl_release_mem_object(dev_aux);
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_r);
   dt_opencl_release_mem_object(dev_g);
@@ -594,42 +583,37 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     return;
 
   const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
-  const size_t npixels = (size_t)roi_out->width * roi_out->height;
+  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+  const size_t opixels = (size_t)roi_out->width * roi_out->height;
   const gboolean scaled = roi_in->width != roi_out->width || roi_in->height != roi_out->height;
 
   float *const restrict out = (float *)ovoid;
   float *in = (float *)ivoid;
 
+  float *aux = dt_alloc_align_float(4 * opixels);
+  int dummy;
   if(scaled)
   {
-    const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
-    int dummy;
-
-    in = dt_alloc_align_float(4 * npixels);
-    float *rgb = dt_alloc_align_float((size_t)4 * roi_in->width * roi_in->height);
-    dt_ioppr_transform_image_colorspace(self, (float *)ivoid, rgb, roi_in->width, roi_in->height, IOP_CS_LAB, IOP_CS_RGB, &dummy, work_profile);
-
     const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
     dt_interpolation_resample(itor,
-        in, roi_out, roi_out->width * 4 * sizeof(float),
-        rgb, roi_in, roi_in->width * 4 * sizeof(float));
-    dt_free_align(rgb);
-
-    dt_ioppr_transform_image_colorspace(self, in, in, roi_out->width, roi_out->height, IOP_CS_RGB, IOP_CS_LAB, &dummy, work_profile);
+        aux, roi_out, roi_out->width * 4 * sizeof(float),
+        in, roi_in, roi_in->width * 4 * sizeof(float));
+    dt_ioppr_transform_image_colorspace(self, aux, aux, roi_out->width, roi_out->height, IOP_CS_RGB, IOP_CS_LAB, &dummy, work_profile);
   }
+  else
+    dt_ioppr_transform_image_colorspace(self, in, aux, roi_in->width, roi_in->height, IOP_CS_RGB, IOP_CS_LAB, &dummy, work_profile);
 
   if(d->type == DT_COLORSPACE_LAB)
-    dt_iop_image_copy(out, in, 4 * npixels);
+    dt_iop_image_copy(out, aux, 4 * opixels);
   else if(dt_is_valid_colormatrix(d->cmatrix[0][0]))
   {
-    if(!_transform_cmatrix(d, out, in, npixels))
+    if(!_transform_cmatrix(d, out, aux, opixels))
       process_fastpath_apply_tonecurves(self, piece, ovoid, roi_out);
   }
   else
-    _transform_lcms(d, out, in, npixels);
+    _transform_lcms(d, out, aux, opixels);
 
-  if(scaled)
-    dt_free_align(in);
+  dt_free_align(aux);
 }
 
 static cmsHPROFILE _make_clipping_profile(cmsHPROFILE profile)
@@ -873,8 +857,7 @@ void modify_roi_in(dt_iop_module_t *self,
   const gboolean fullroi = self->dev->gui_attached
                           && (piece->pipe->type == DT_DEV_PIXELPIPE_FULL
                             || piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW2)
-                          && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(self->dev->late_scaling.button))
-                          && piece->pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE;
+                          && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(self->dev->late_scaling.button));
   if(!fullroi)
     return;
 
