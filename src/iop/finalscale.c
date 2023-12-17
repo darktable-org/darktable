@@ -75,8 +75,12 @@ void modify_roi_in(dt_iop_module_t *self,
   roi_in->width  = (roi_out->width  - .5f)/roi_out->scale;
   roi_in->height = (roi_out->height - .5f)/roi_out->scale;
 */
-  roi_in->width  = ceilf(roi_out->width / roi_out->scale);
-  roi_in->height = ceilf(roi_out->height / roi_out->scale);
+
+  // always avoid
+  // - expanding roi_in dimensions to more than what is provided
+  // - processing micro-sizes
+  roi_in->width  = MAX(16, MIN(ceilf(roi_out->width / roi_out->scale), piece->buf_in.width));
+  roi_in->height = MAX(16, MIN(ceilf(roi_out->height / roi_out->scale), piece->buf_in.height));
   roi_in->scale = 1.0f;
 }
 

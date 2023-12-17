@@ -448,28 +448,25 @@ void modify_roi_in(
     const int dy = roi_in->y % aligner;
 
 /*
-    // This code is correctly working on CPU, OpenCL artefacts needs a FIXME
+    // This implements snapping to closest position, meant for optimized xtrans position
+    // but with problems at extreme zoom levels
     const int shift_x = (dx > aligner / 2) ? aligner - dx : -dx;
     const int shift_y = (dy > aligner / 2) ? aligner - dy : -dy;
 
-    roi_in->x = MAX(0, roi_in->x + shift_x);
-    roi_in->y = MAX(0, roi_in->y + shift_y);
-
-    // if we shift to the right/bottom we also need to expand the roi
-    roi_in->width += MAX(0, shift_x);
-    roi_in->height += MAX(0, shift_y);
+    roi_in->x += shift_x;
+    roi_in->y += shift_y;
 */
 
-    roi_in->x = MAX(0, roi_in->x - dx);
-    roi_in->y = MAX(0, roi_in->y - dy);
+    // currently we always snap to left & upper
+    roi_in->x -= dx;
+    roi_in->y -= dy;
   }
 
-  // clamp numeric inaccuracies to full buffer, to avoid scaling/copying in pixelpipe:
-  if(abs(piece->pipe->image.width - roi_in->width) < MAX(ceilf(1.0f / roi_out->scale), 10))
-    roi_in->width = piece->pipe->image.width;
-
-  if(abs(piece->pipe->image.height - roi_in->height) < MAX(ceilf(1.0f / roi_out->scale), 10))
-    roi_in->height = piece->pipe->image.height;
+  // clamp to full buffer fixing numeric inaccuracies
+  roi_in->x = MAX(0, roi_in->x);
+  roi_in->y = MAX(0, roi_in->y);
+  roi_in->width = MIN(roi_in->width, piece->buf_in.width);
+  roi_in->height = MIN(roi_in->height, piece->buf_in.height);
 }
 
 void tiling_callback(
