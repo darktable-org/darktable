@@ -1907,22 +1907,6 @@ Details :
   border: 1px solid @lighttable_bg_color;
 }
 
-/* Last active images animation */
-@keyframes lastactive
-{
-  0% {border-color: @lighttable_bg_color; border-width : 0.14em;}
-  50% {border-color: @thumbnail_bg50_color; border-width : 0.28em;}
-  100% {border-color: @lighttable_bg_color; border-width : 0.14em;}
-}
-
-.dt_last_active #thumb-back
-{
-  animation-name: lastactive;
-  animation-duration: 4s;
-  animation-timing-function: linear;
-  animation-iteration-count: 3;
-}
-
 /* set selected image and/or focus one */
 #thumb-main:active #thumb-back,
 #thumb-main:selected #thumb-back
