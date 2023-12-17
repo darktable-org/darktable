@@ -2133,12 +2133,12 @@ static gboolean _dev_pixelpipe_process_rec(
         */
         important_cl =
            (pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE)
-           && ((pipe->type == DT_DEV_PIXELPIPE_FULL) // ignored in fast mode
-              || (pipe->type == DT_DEV_PIXELPIPE_PREVIEW))
+           && pipe->type & DT_DEV_PIXELPIPE_BASIC
            && dev->gui_attached
            && ((module == dt_dev_gui_module())
                 || darktable.develop->history_last_module == module
-                || dt_iop_module_is(module->so, "colorout"));
+                || dt_iop_module_is(module->so, "colorout")
+                || dt_iop_module_is(module->so, "finalscale"));
 
         if(important_cl)
         {
