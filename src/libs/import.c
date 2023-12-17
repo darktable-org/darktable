@@ -663,9 +663,12 @@ static void _all_thumb_toggled(GtkTreeViewColumn *column,
     d->from.event = 0;
     GtkTreeModel *model = GTK_TREE_MODEL(d->from.store);
     GtkTreeIter iter;
-    for(gboolean valid = gtk_tree_model_get_iter_first(model, &iter); valid;
+    for(gboolean valid = gtk_tree_model_get_iter_first(model, &iter);
+        valid;
         valid = gtk_tree_model_iter_next(model, &iter))
+    {
       _thumb_set_in_listview(model, &iter, FALSE, self);
+    }
   }
   else if(!d->from.event)
   {
@@ -838,13 +841,13 @@ static void _add_file_callback(GObject *direnum,
           }
 
           // if folder is root, consider one folder separator less
-          const int offset = (g_path_skip_root(folder)[0]
+          const int offset = g_path_skip_root(folder)[0]
 #ifdef WIN32
           // .. but for Windows UNC there will be a folder separator anyway
                         || dt_util_path_is_UNC(folder)
 #endif
                         ? strlen(folder) + 1
-                        : strlen(folder));
+                        : strlen(folder);
 
           GtkTreeIter iter;
           gtk_list_store_append(d->from.store, &iter);
