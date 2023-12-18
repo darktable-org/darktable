@@ -68,10 +68,12 @@ static void _import_from_dialog_run(dt_lib_module_t* self);
 static void _import_from_dialog_free(dt_lib_module_t* self);
 static void _do_select_all(dt_lib_module_t* self);
 static void _do_select_none(dt_lib_module_t* self);
-static void _do_select_new(dt_lib_module_t* self);
+static uint32_t _do_select_new(dt_lib_module_t* self);
 static void _update_places_list(dt_lib_module_t* self);
 static gboolean _update_files_list(gpointer user_data);
 static void _update_folders_list(dt_lib_module_t* self);
+static void _update_images_number(dt_lib_module_t* self,
+                                  const guint nb_sel);
 static void _lib_import_select_folder(GtkWidget *widget,
                                       dt_lib_module_t *self);
 static void _remove_place(gchar *folder,
@@ -172,6 +174,7 @@ typedef struct dt_lib_import_t
 
   dt_gui_collapsible_section_t cs;
 
+  gboolean is_importing;
   GList *to_be_visited;
 
 #ifdef USE_LUA
@@ -705,17 +708,19 @@ static void _import_cancel(dt_lib_module_t *self)
     g_cancellable_cancel(d->cancel_iter);
 }
 
-static void _import_active(dt_lib_module_t *self, const gboolean active)
+static void _import_active(dt_lib_module_t *self,
+                           const gboolean active,
+                           const uint32_t nb_sel)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
-
-  GtkWidget *accept = gtk_dialog_get_widget_for_response
-    (GTK_DIALOG(d->from.dialog), GTK_RESPONSE_ACCEPT);
 
   gtk_widget_set_sensitive(d->select_all, active);
   gtk_widget_set_sensitive(d->select_none, active);
   gtk_widget_set_sensitive(d->select_new, active);
-  gtk_widget_set_sensitive(accept, active);
+
+  if(!active || nb_sel > 0)
+    gtk_dialog_set_response_sensitive(GTK_DIALOG(d->from.dialog),
+                                      GTK_RESPONSE_ACCEPT, active);
 }
 
 static void _add_file_callback(GObject *direnum,
@@ -743,17 +748,16 @@ static void _add_file_callback(GObject *direnum,
   }
   else if(file_list == NULL)
   {
-    /* Done listing */
-    if(dt_conf_get_bool("ui_last/import_select_new"))
-      _do_select_new(self);
-    else
-      _do_select_all(self);
+    // Done listing on this iterator
 
     g_object_unref(gfolder);
     g_file_enumerator_close(dir_files, NULL, NULL);
     g_object_unref(direnum);
 
-    // do we have more to parse
+    _update_images_number(self, 0);
+
+    // Do we have more to parse
+
     if(d->to_be_visited)
     {
       GList *l = g_list_first(d->to_be_visited);
@@ -764,7 +768,22 @@ static void _add_file_callback(GObject *direnum,
     }
     else
     {
-      _import_active(self, TRUE);
+      // Nothing more to parse, do select the images
+      // according to the preference.
+      uint32_t count_sel = 0;
+
+      if(dt_conf_get_bool("ui_last/import_select_new"))
+      {
+        count_sel = _do_select_new(self);
+      }
+      else
+      {
+        _do_select_all(self);
+        count_sel = d->from.nb;
+      }
+      d->is_importing = FALSE;
+      _import_active(self, TRUE, count_sel);
+      _update_images_number(self, count_sel);
     }
 
     return;
@@ -924,18 +943,20 @@ static void _import_set_file_list_start(const gchar *folder,
 
   d->from.nb = 0;
   d->to_be_visited = NULL;
+  d->is_importing = TRUE;
 
   _import_set_file_list(folder, self);
 }
 
-static void _update_images_number(GtkWidget *label,
-                                  const guint nb_sel,
-                                  const guint nb)
+static void _update_images_number(dt_lib_module_t* self,
+                                  const guint nb_sel)
 {
+  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
+  GtkWidget *label = d->from.img_nb;
   char text[256] = { 0 };
   snprintf(text, sizeof(text),
            ngettext("%d image out of %d selected", "%d images out of %d selected",
-                    nb_sel), nb_sel, nb);
+                    nb_sel), nb_sel, d->from.nb);
   gtk_label_set_text(GTK_LABEL(label), text);
 }
 
@@ -944,9 +965,10 @@ static void _import_from_selection_changed(GtkTreeSelection *selection,
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   const guint nb_sel = gtk_tree_selection_count_selected_rows(selection);
-  _update_images_number(d->from.img_nb, nb_sel, d->from.nb);
-  gtk_dialog_set_response_sensitive(GTK_DIALOG(d->from.dialog),
-                                    GTK_RESPONSE_ACCEPT, nb_sel ? TRUE : FALSE);
+  _update_images_number(self, nb_sel);
+  if(!d->is_importing)
+    gtk_dialog_set_response_sensitive(GTK_DIALOG(d->from.dialog),
+                                      GTK_RESPONSE_ACCEPT, nb_sel ? TRUE : FALSE);
 }
 
 static void _update_layout(dt_lib_module_t* self)
@@ -2096,7 +2118,7 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   }
   else
   {
-    _import_active(self, FALSE);
+    _import_active(self, FALSE, 0);
     gtk_widget_show_all(d->from.dialog);
   }
 
@@ -2144,13 +2166,14 @@ static void _do_select_none(dt_lib_module_t* self)
   gtk_tree_selection_unselect_all(selection);
 }
 
-static void _do_select_new(dt_lib_module_t* self)
+static uint32_t _do_select_new(dt_lib_module_t* self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
 
   GtkTreeIter iter;
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->from.treeview));
   GtkTreeSelection *selection = gtk_tree_view_get_selection(d->from.treeview);
+  uint32_t count = 0;
 
   gtk_tree_selection_unselect_all(selection);
 
@@ -2161,10 +2184,15 @@ static void _do_select_new(dt_lib_module_t* self)
       gchar *sel = NULL;
       gtk_tree_model_get(model, &iter, DT_IMPORT_UI_EXISTS, &sel, -1);
       if(sel && !strcmp(sel, " "))
+      {
         gtk_tree_selection_select_iter(selection, &iter);
+        count++;
+      }
     }
     while(gtk_tree_model_iter_next(model, &iter));
   }
+
+  return count;
 }
 
 static void _import_from_dialog_run(dt_lib_module_t* self)
