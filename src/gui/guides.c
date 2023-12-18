@@ -878,11 +878,10 @@ static void _settings_autoshow_menu(GtkWidget *button, struct dt_iop_module_t *m
   GtkWidget *popover = darktable.view_manager->guides_popover;
   gtk_popover_set_relative_to(GTK_POPOVER(popover), button);
 
-  g_object_set(G_OBJECT(popover), "transitions-enabled", FALSE, NULL);
-
   dt_guides_update_popover_values();
 
-  gtk_widget_show_all(popover);
+  // use popover_popup for transition and widget_show for not
+  gtk_widget_show(popover);
 }
 
 void dt_guides_init_module_widget(GtkWidget *iopw, struct dt_iop_module_t *module)

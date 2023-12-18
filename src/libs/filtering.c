@@ -1749,7 +1749,6 @@ static void _topbar_show_pref_menu(dt_lib_module_t *self, GtkWidget *bt)
 
   // initialize the popover
   d->topbar_popup = gtk_popover_new(bt);
-  g_object_set(G_OBJECT(d->topbar_popup), "transitions-enabled", FALSE, NULL);
 
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_container_add(GTK_CONTAINER(d->topbar_popup), vbox);
