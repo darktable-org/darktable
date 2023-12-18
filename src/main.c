@@ -29,7 +29,6 @@
 #endif
 
 #ifdef _WIN32
-#include "win/main_wrapper.h"
 #include "common/datetime.h"
 #endif
 

@@ -209,14 +209,13 @@ if(WIN32)
   # add it to have proper time.h functions available
   ADD_DEFINITIONS(-D_POSIX_THREAD_SAFE_FUNCTIONS)
 
-  # avoid calling legacy ANSI win api functions
-  add_definitions("-DUNICODE -D_UNICODE")
-
   # add icon, version, ... resources for Windows executable
   configure_file("${CMAKE_SOURCE_DIR}/data/pixmaps/dt_logo_128x128.ico" "${CMAKE_BINARY_DIR}/data/pixmaps/dt_logo_128x128.ico" COPYONLY)
   SET(CMAKE_RC_COMPILE_OBJECT "<CMAKE_RC_COMPILER> -O coff <DEFINES> -i <SOURCE> -o <OBJECT>")
   set(RESOURCE_OBJECT "${CMAKE_CURRENT_BINARY_DIR}/win/darktable.rc")
   configure_file("${CMAKE_CURRENT_SOURCE_DIR}/win/darktable.rc.in" "${CMAKE_CURRENT_BINARY_DIR}/win/darktable.rc")
+  configure_file("${CMAKE_CURRENT_SOURCE_DIR}/win/cli.rc" "${CMAKE_CURRENT_BINARY_DIR}/win/cli.rc" COPYONLY)
+  configure_file("${CMAKE_CURRENT_SOURCE_DIR}/win/utf8.manifest" "${CMAKE_CURRENT_BINARY_DIR}/win/utf8.manifest" COPYONLY)
 endif(WIN32)
 
 set(SOURCES ${SOURCE_FILES} ${HEADER_FILES})
@@ -676,7 +675,7 @@ if(NOT CUSTOM_CFLAGS)
 endif(NOT CUSTOM_CFLAGS)
 
 if(WIN32)
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc -municode")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc")
   set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc")
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc")
 

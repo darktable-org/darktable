@@ -24,6 +24,7 @@ target_link_libraries(darktable-chart
                         lib_darktable
                         m)
 if (WIN32)
+  target_sources(darktable-chart PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/../win/cli.rc")
   set_target_properties(darktable-chart PROPERTIES LINK_FLAGS "-mwindows -Wl,-subsystem,windows")
   _detach_debuginfo (darktable-chart bin)
 else()

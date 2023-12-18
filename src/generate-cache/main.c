@@ -41,10 +41,6 @@
 #include "osx/osx.h"
 #endif
 
-#ifdef _WIN32
-#include "win/main_wrapper.h"
-#endif
-
 static int generate_thumbnail_cache(const dt_mipmap_size_t min_mip, const dt_mipmap_size_t max_mip, const dt_imgid_t min_imgid, const int32_t max_imgid)
 {
   fprintf(stderr, _("creating cache directories\n"));
@@ -268,4 +264,3 @@ int main(int argc, char *arg[])
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

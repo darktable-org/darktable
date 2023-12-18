@@ -34,10 +34,6 @@
 #include "osx/osx.h"
 #endif
 
-#ifdef _WIN32
-#include "win/main_wrapper.h"
-#endif
-
 const double thrs = 200.0;
 
 static const point_t bb_ref[] = {{.x=.0, .y=.0}, {.x=1., .y=0.}, {.x=1., .y=1.}, {.x=0., .y=1.}};
@@ -1936,4 +1932,3 @@ int main(int argc, char *argv[])
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

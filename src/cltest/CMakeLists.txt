@@ -1,10 +1,12 @@
 include_directories(${DARKTABLE_BINDIR})
+
 add_executable(darktable-cltest main.c)
 
 set_target_properties(darktable-cltest PROPERTIES LINKER_LANGUAGE C)
 target_link_libraries(darktable-cltest lib_darktable)
 
 if (WIN32)
+  target_sources(darktable-cltest PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/../win/cli.rc")
   _detach_debuginfo (darktable-cltest bin)
 else()
     set_target_properties(darktable-cltest
