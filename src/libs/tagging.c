@@ -3116,7 +3116,6 @@ void gui_init(dt_lib_module_t *self)
   renderer = gtk_cell_renderer_toggle_new();
   gtk_tree_view_column_pack_start(col, renderer, TRUE);
   gtk_tree_view_column_set_cell_data_func(col, renderer, _tree_select_show, NULL, NULL);
-  g_object_set(renderer, "indicator-size", 8, NULL);  // too big by default
 
   col = gtk_tree_view_column_new();
   gtk_tree_view_append_column(view, col);
@@ -3230,7 +3229,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_view_column_pack_start(col, renderer, TRUE);
   gtk_cell_renderer_toggle_set_activatable(GTK_CELL_RENDERER_TOGGLE(renderer), TRUE);
   gtk_tree_view_column_set_cell_data_func(col, renderer, _tree_select_show, NULL, NULL);
-  g_object_set(renderer, "indicator-size", 8, NULL);  // too big by default
 
   col = gtk_tree_view_column_new();
   gtk_tree_view_append_column(view, col);
