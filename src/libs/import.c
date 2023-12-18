@@ -706,6 +706,9 @@ static void _import_cancel(dt_lib_module_t *self)
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   if(d->cancel_iter)
     g_cancellable_cancel(d->cancel_iter);
+
+  d->from.nb = 0;
+  _update_images_number(self, 0);
 }
 
 static void _import_active(dt_lib_module_t *self,
@@ -1264,6 +1267,7 @@ static gboolean _places_button_press(GtkWidget *view,
       gtk_tree_selection_select_path(place_selection, path);
       dt_conf_set_string("ui_last/import_last_place", folder_path);
       dt_conf_set_string("ui_last/import_last_directory", "");
+      _import_cancel(self);
       _update_folders_list(self);
       _update_files_list(self);
     }
