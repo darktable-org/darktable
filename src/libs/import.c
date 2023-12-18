@@ -945,6 +945,8 @@ static void _import_set_file_list_start(const gchar *folder,
   d->to_be_visited = NULL;
   d->is_importing = TRUE;
 
+  _import_active(self, FALSE, 0);
+
   _import_set_file_list(folder, self);
 }
 
@@ -2118,7 +2120,6 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   }
   else
   {
-    _import_active(self, FALSE, 0);
     gtk_widget_show_all(d->from.dialog);
   }
 
