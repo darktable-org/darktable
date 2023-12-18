@@ -51,10 +51,6 @@
 #include "osx/osx.h"
 #endif
 
-#ifdef _WIN32
-#include "win/main_wrapper.h"
-#endif
-
 #define DT_MAX_STYLE_NAME_LENGTH 128
 
 // Make sure it's OK to limit output extension length
