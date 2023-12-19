@@ -88,7 +88,7 @@ jobs:
           echo "VERSION=$(git describe --tags | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')-$(uname -m)" >> $GITHUB_ENV
       - name: Package upload
         if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: darktable-${{ env.VERSION }}.dmg
           path: ${{ env.INSTALL_PREFIX }}/darktable-${{ env.VERSION }}.dmg
