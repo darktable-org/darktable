@@ -84,7 +84,7 @@ jobs:
           update: true
       - run: git config --global core.autocrlf input
         shell: bash
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ vars.RELEASE_TAG }}
           submodules: true
@@ -124,7 +124,7 @@ jobs:
           ([[ ${MSYSTEM_CARCH} == x86_64 ]] && echo "SYSTEM=win64" || echo "SYSTEM=woa64") >> $GITHUB_ENV
       - name: Package upload
         if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: darktable-${{ env.VERSION }}-${{ env.SYSTEM }}.exe
           path: ${{ env.BUILD_DIR }}/darktable-${{ env.VERSION }}-${{ env.SYSTEM }}.exe
@@ -161,7 +161,7 @@ jobs:
       GENERATOR: ${{ matrix.generator }}
       TARGET: ${{ matrix.target }}
     steps:          
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ vars.RELEASE_TAG }}
           submodules: true
@@ -212,7 +212,7 @@ jobs:
           echo "VERSION=$(git describe --tags | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')-$(uname -m)" >> $GITHUB_ENV
       - name: Package upload
         if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: darktable-${{ env.VERSION }}.dmg
           path: ${{ env.INSTALL_PREFIX }}/darktable-${{ env.VERSION }}.dmg
