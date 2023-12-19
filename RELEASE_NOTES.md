@@ -192,7 +192,7 @@ changes (where available).
 - More OpenEXR 3.2.0 attributes can now be extracted and displayed in
   the image information module, where present.
 
-- Lens and cameras filters have been to the collection filters module.
+- Lens and cameras filters have been added to the collection filters module.
 
 - AVIF exports have been changed so that there is now no conversion to YUV
   for lossless. The quantizer selection logic has been updated and
