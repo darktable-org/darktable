@@ -297,7 +297,7 @@ changes (where available).
     system, so most non-alphanumeric shortcuts will continue to work. If a
     dropdown value is changed while the popup is open (for example via
     an automatic calculation in color calibration, a Lua script or a
-    midi shortcut), the popup is correctly updated/repositioned. After
+    MIDI shortcut), the popup is correctly updated/repositioned. After
     a popup is closed it can quickly be reopened to enter another
     value by pressing <kbd>Enter</kbd> (as long as the corresponding
     widget still has focus).
