@@ -77,10 +77,16 @@ void modify_roi_in(dt_iop_module_t *self,
   roi_in->y /= roi_out->scale;
 /*
   Keep <= v4.2 code here as reference
-  That lead to rounded-down width&height so if in case of a scale of 1 both would be one less than roi_out
-  dimensions. This is bad because we have to fight the missing data by adopting either scale or size in
-  dt_imageio_export_with_flags() leading to either reduced size or some slight upscale of the output image.
-  // out = in * scale + .5f to more precisely round to user input in export module:
+
+  That lead to rounded-down width&height so if in case of a scale of 1
+  both would be one less than roi_out dimensions. This is bad because
+  we have to fight the missing data by adopting either scale or size
+  in dt_imageio_export_with_flags() leading to either reduced size or
+  some slight upscale of the output image.
+
+  // out = in * scale + .5f to more precisely round to user input in
+  // export module:
+
   roi_in->width  = (roi_out->width  - .5f)/roi_out->scale;
   roi_in->height = (roi_out->height - .5f)/roi_out->scale;
 */
@@ -88,8 +94,10 @@ void modify_roi_in(dt_iop_module_t *self,
   // always avoid
   // - expanding roi_in dimensions to more than what is provided
   // - processing micro-sizes
-  roi_in->width  = MAX(16, MIN(ceilf(roi_out->width / roi_out->scale), piece->buf_in.width));
-  roi_in->height = MAX(16, MIN(ceilf(roi_out->height / roi_out->scale), piece->buf_in.height));
+  roi_in->width  = MAX(16, MIN(ceilf(roi_out->width / roi_out->scale),
+                               piece->buf_in.width));
+  roi_in->height = MAX(16, MIN(ceilf(roi_out->height / roi_out->scale),
+                               piece->buf_in.height));
   roi_in->scale = 1.0f;
 
   if(_gui_fullpipe(piece))
@@ -130,7 +138,8 @@ int process_cl(struct dt_iop_module_t *self,
   }
 
   const int devid = piece->pipe->devid;
-  const gboolean scaled = roi_in->width != roi_out->width || roi_in->height != roi_out->height;
+  const gboolean scaled = roi_in->width != roi_out->width
+    || roi_in->height != roi_out->height;
 
   dt_print_pipe(DT_DEBUG_IMAGEIO,
                 "clip_and_zoom_roi CL",
@@ -158,7 +167,8 @@ void process(dt_iop_module_t *self,
 {
   dt_print_pipe(DT_DEBUG_IMAGEIO,
                 "clip_and_zoom_roi", piece->pipe, self, roi_in, roi_out, "\n");
-  const gboolean scaled = roi_in->width != roi_out->width || roi_in->height != roi_out->height;
+  const gboolean scaled = roi_in->width != roi_out->width
+    || roi_in->height != roi_out->height;
   float *const restrict out = (float *)ovoid;
   float *in = (float *)ivoid;
   if(scaled)
