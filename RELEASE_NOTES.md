@@ -324,7 +324,7 @@ changes (where available).
 
 - Fixed focus distance detection for Nikon Z mount lens corrections.
 
-- Fixed incorrect cropping of sensor data for SRaw dng files.
+- Fixed incorrect cropping of sensor data for sRaw dng files.
 
 - Apply the LightRoom color matrix only when importing a genuine
   LightRoom XMP.
