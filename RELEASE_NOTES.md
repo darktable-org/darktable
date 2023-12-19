@@ -69,7 +69,7 @@ changes (where available).
   rectangle. This allows for cropped-out parts of the image to be used without
   having to first disable the crop module and re-enable it when finished.
 
-- When panning or zooming in the darkrom view, a low resolution placeholder
+- When panning or zooming in the darkroom view, a low resolution placeholder
   used to be shown until the image was fully recalculated for the newly-visible
   region. Now, if any part of the previous view is still visible, that part will
   be immediately shown in high quality, with only the remainder of the image
