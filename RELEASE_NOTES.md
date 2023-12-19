@@ -199,7 +199,7 @@ changes (where available).
   "lossy" is now the default.
 
 - The content of the main preferences dialog is now (almost) entirely taken
-  from a single definition file (`darktable.xml.in`) making its layout
+  from a single definition file (`darktableconfig.xml.in`) making its layout
   much easier to modify.
 
 - The drop-downs in the preferences dialog now use the same (bauhaus)
