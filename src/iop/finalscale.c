@@ -20,6 +20,7 @@
 #endif
 #include "common/interpolation.h"
 #include "common/opencl.h"
+#include "common/imagebuf.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "develop/tiling.h"
@@ -57,6 +58,12 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_RGB;
 }
 
+static inline gboolean _gui_fullpipe(dt_dev_pixelpipe_iop_t *piece)
+{
+  return piece->pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW2 | DT_DEV_PIXELPIPE_IMAGE)
+        && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(darktable.develop->late_scaling.button));
+}
+
 void modify_roi_in(dt_iop_module_t *self,
                    dt_dev_pixelpipe_iop_t *piece,
                    const dt_iop_roi_t *const roi_out,
@@ -82,12 +89,21 @@ void modify_roi_in(dt_iop_module_t *self,
   roi_in->width  = MAX(16, MIN(ceilf(roi_out->width / roi_out->scale), piece->buf_in.width));
   roi_in->height = MAX(16, MIN(ceilf(roi_out->height / roi_out->scale), piece->buf_in.height));
   roi_in->scale = 1.0f;
+
+  if(_gui_fullpipe(piece))
+  {
+    roi_in->x = 0;
+    roi_in->y = 0;
+    roi_in->width = piece->buf_in.width;
+    roi_in->height = piece->buf_in.height;
+  }
 }
 
 void distort_mask(struct dt_iop_module_t *self,
                   struct dt_dev_pixelpipe_iop_t *piece,
                   const float *const in,
-                  float *const out, const dt_iop_roi_t *const roi_in,
+                  float *const out,
+                  const dt_iop_roi_t *const roi_in,
                   const dt_iop_roi_t *const roi_out)
 {
   const struct dt_interpolation *itor =
@@ -112,22 +128,46 @@ int process_cl(struct dt_iop_module_t *self,
   }
 
   const int devid = piece->pipe->devid;
-  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_IMAGEIO,
+  const gboolean scaled = roi_in->width != roi_out->width || roi_in->height != roi_out->height;
+
+  dt_print_pipe(DT_DEBUG_IMAGEIO,
                 "clip_and_zoom_roi CL",
                 piece->pipe, self, roi_in, roi_out, "device=%i\n", devid);
-  return dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_in, roi_out, roi_in);
+  if(scaled)
+  {
+    const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+    return dt_interpolation_resample_cl(itor, devid, dev_out, roi_out, dev_in, roi_in);
+  }
+  else
+  {
+    size_t origin[] = { 0, 0, 0 };
+    size_t region[] = { roi_out->width, roi_out->height, 1 };
+    return dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
+  }
 }
 #endif
 
 void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
-             const void *const ivoid, void *const ovoid,
+             const void *const ivoid,
+             void *const ovoid,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_IMAGEIO,
+  dt_print_pipe(DT_DEBUG_IMAGEIO,
                 "clip_and_zoom_roi", piece->pipe, self, roi_in, roi_out, "\n");
-  dt_iop_clip_and_zoom_roi(ovoid, ivoid, roi_out, roi_in, roi_out->width, roi_in->width);
+  const gboolean scaled = roi_in->width != roi_out->width || roi_in->height != roi_out->height;
+  float *const restrict out = (float *)ovoid;
+  float *in = (float *)ivoid;
+  if(scaled)
+  {
+    const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+    dt_interpolation_resample(itor,
+        out, roi_out, roi_out->width * 4 * sizeof(float),
+        in, roi_in, roi_in->width * 4 * sizeof(float));
+  }
+  else
+    dt_iop_image_copy(out, in, 4 * (size_t) roi_out->width * roi_out->height);
 }
 
 void commit_params(dt_iop_module_t *self,
@@ -135,7 +175,8 @@ void commit_params(dt_iop_module_t *self,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  if(piece->pipe->type != DT_DEV_PIXELPIPE_EXPORT) piece->enabled = FALSE;
+  piece->enabled = piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT
+                  || _gui_fullpipe(piece);
 }
 
 void init_pipe(dt_iop_module_t *self,
