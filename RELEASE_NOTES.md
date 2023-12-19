@@ -92,7 +92,7 @@ changes (where available).
   will be slower (since darktable will only use the CPU) until OpenCL is fully
   initialized.
 
-- An openCL code path has been implemented for lens correction using embedded
+- An OpenCL code path has been implemented for lens correction using embedded
   correction metadata.
 
 - Image display speed in the map view has been increased by 25%.
