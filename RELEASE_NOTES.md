@@ -99,7 +99,7 @@ changes (where available).
 
 - Export speed has been improved for JPEG 2000 and B&W TIFF images.
 
-- The chromatic aberrations module is now approximagely 10% faster when
+- The chromatic aberrations module is now approximately 10% faster when
   run on the CPU.
 
 ## Other Changes
@@ -182,7 +182,7 @@ changes (where available).
 - Where multiple drawn shapes are grouped (e.g. in a module's mask)
   the mask manager module now displays a tick mark in front of the
   active combination mode (in the popup menu) when right-clicking one of
-  the consituent shapes. This is usually much easier to read than the
+  the constituent shapes. This is usually much easier to read than the
   "Venn diagram" icons in the main module UI.
 
 - Mnemonics have been added to dialog boxes and default actions have been
