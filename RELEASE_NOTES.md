@@ -85,7 +85,7 @@ changes (where available).
 
 - OpenCL is now initialized in the background immediately after launching
   the darktable UI, with progress indicated by a series of toast messages.
-  Previously, this was done before the main UI was lauched, which
+  Previously, this was done before the main UI was launched, which
   could lead to significant delays (sometimes more than a minute) between
   the user opening darktable and anything appearing on-screen, making
   it appear as though darktable had failed to start. Note that processing
