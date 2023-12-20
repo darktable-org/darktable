@@ -2209,12 +2209,18 @@ void gui_init(dt_view_t *self)
   dt_view_manager_module_toolbox_add(darktable.view_manager, dev->iso_12646.button, DT_VIEW_DARKROOM);
 
   /* Enable late-scaling button */
-  dev->late_scaling.button = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_fullpreview, 0, NULL);
-  ac = dt_action_define(sa, NULL, N_("export view scaling"), dev->late_scaling.button, &dt_action_def_toggle);
-  gtk_widget_set_tooltip_text(dev->late_scaling.button,
-                              _("toggle export view scaling, if 'on' darktable processes image data as it does while exporting"));
-  g_signal_connect(G_OBJECT(dev->late_scaling.button), "clicked", G_CALLBACK(_latescaling_quickbutton_clicked), dev);
-  dt_view_manager_module_toolbox_add(darktable.view_manager, dev->late_scaling.button, DT_VIEW_DARKROOM);
+  dev->late_scaling.button =
+    dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_fullpreview, 0, NULL);
+  ac = dt_action_define(sa, NULL, N_("high quality processing"),
+                        dev->late_scaling.button, &dt_action_def_toggle);
+  gtk_widget_set_tooltip_text
+    (dev->late_scaling.button,
+     _("toggle high quality processing,"
+       " if activated darktable processes image data as it does while exporting"));
+  g_signal_connect(G_OBJECT(dev->late_scaling.button), "clicked",
+                   G_CALLBACK(_latescaling_quickbutton_clicked), dev);
+  dt_view_manager_module_toolbox_add(darktable.view_manager,
+                                     dev->late_scaling.button, DT_VIEW_DARKROOM);
 
   GtkWidget *colorscheme, *mode;
 
