@@ -43,33 +43,15 @@ static uint64_t _opposed_parhash(dt_dev_pixelpipe_iop_t *piece)
   dt_iop_buffer_dsc_t *dsc = &piece->pipe->dsc;
   dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
 
-  // bernstein hash (djb2)
-  uint64_t hash = 5381;
-
-  char *pstr = (char *) &dsc->rawprepare;
-  for(size_t ip = 0; ip < sizeof(dsc->rawprepare); ip++)
-    hash = ((hash << 5) + hash) ^ pstr[ip];
-
-  pstr = (char *) &dsc->temperature;
-  for(size_t ip = 0; ip < sizeof(dsc->temperature); ip++)
-    hash = ((hash << 5) + hash) ^ pstr[ip];
-
-  pstr = (char *) &d->clip;
-  for(size_t ip = 0; ip < sizeof(d->clip); ip++)
-    hash = ((hash << 5) + hash) ^ pstr[ip];
-
-  return hash;
+  uint64_t hash = dt_hash(DT_INITHASH, &dsc->rawprepare, sizeof(dsc->rawprepare));
+  hash = dt_hash(hash, &dsc->temperature, sizeof(dsc->temperature));
+  return dt_hash(hash, &d->clip, sizeof(d->clip));
 }
 
 static uint64_t _opposed_hash(dt_dev_pixelpipe_iop_t *piece)
 {
   uint64_t hash = _opposed_parhash(piece);
-
-  char *pstr = (char *) &piece->pipe->image.id;
-  for(size_t ip = 0; ip < sizeof(piece->pipe->image.id); ip++)
-    hash = ((hash << 5) + hash) ^ pstr[ip];
-
-  return hash;
+  return dt_hash(hash, &piece->pipe->image.id, sizeof(piece->pipe->image.id));
 }
 
 static inline float _calc_linear_refavg(const float *in, const int color)

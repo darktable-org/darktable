@@ -3915,7 +3915,7 @@ static void _get_bounded_inside(const float *points,
 static uint64_t _get_lines_hash(const dt_iop_ashift_line_t *lines,
                                 const int lines_count)
 {
-  uint64_t hash = 5381;
+  uint64_t hash = DT_INITHASH;
   for(int n = 0; n < lines_count; n++)
   {
     const dt_boundingbox_t v = { lines[n].p1[0],
@@ -3929,7 +3929,7 @@ static uint64_t _get_lines_hash(const dt_iop_ashift_line_t *lines,
 
     for(size_t i = 0; i < 4; i++) {
       x.f = v[i];
-      hash = ((hash << 5) + hash) ^ x.u;
+      hash = dt_hash(hash, &x.u, sizeof(uint32_t));
     }
   }
   return hash;
