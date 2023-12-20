@@ -2997,11 +2997,7 @@ gboolean dt_dev_write_scharr_mask(dt_dev_pixelpipe_iop_t *piece,
   if(dt_masks_calc_scharr_mask(&p->scharr, rgb, wb))
     goto error;
 
-  uint64_t hash = 5381;
-  const char *str = (const char *)&p->scharr.roi;
-  for(size_t i = 0; i < sizeof(dt_iop_roi_t); i++)
-    hash = ((hash << 5) + hash) ^ str[i];
-  p->scharr.hash = hash;
+  p->scharr.hash = dt_hash(DT_INITHASH, &p->scharr.roi, sizeof(dt_iop_roi_t));
 
   dt_print_pipe(DT_DEBUG_PIPE, "write scharr mask CPU", p, NULL, roi_in, NULL, "\n");
   if(darktable.dump_pfm_module && (piece->pipe->type & DT_DEV_PIXELPIPE_EXPORT))
@@ -3066,11 +3062,7 @@ gboolean dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
   p->scharr.data = mask;
   memcpy(&p->scharr.roi, roi_in, sizeof(dt_iop_roi_t));
 
-  uint64_t hash = 5381;
-  const char *str = (const char *)&p->scharr.roi;
-  for(size_t i = 0; i < sizeof(dt_iop_roi_t); i++)
-    hash = ((hash << 5) + hash) ^ str[i];
-  p->scharr.hash = hash;
+  p->scharr.hash = dt_hash(DT_INITHASH, &p->scharr.roi, sizeof(dt_iop_roi_t));
 
   dt_print_pipe(DT_DEBUG_PIPE, "write scharr mask CL", p, NULL, roi_in, NULL, "\n");
   if(darktable.dump_pfm_module && (piece->pipe->type & DT_DEV_PIXELPIPE_EXPORT))

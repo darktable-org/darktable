@@ -1960,21 +1960,9 @@ static void _commit_params_lf(struct dt_iop_module_t *self,
   #pragma GCC optimize ("fast-math", "fp-contract=fast", "finite-math-only", "no-math-errno")
 #endif
 
-/* manually controlled vignette using a linear spline */
-static uint64_t _get_vignette_hash(dt_iop_lens_data_t *d)
-{
-  uint64_t hash = 5381;
-  char *pstr = (char *)(&d->v_radius);
-  // radius & steepness are the parameters used for the spline so represented in the cache
-  for(size_t ip = 0; ip < 2 * sizeof(float); ip++)
-    hash = ((hash << 5) + hash) ^ pstr[ip];
-
-  return hash;
-}
-
 static void _init_vignette_spline(dt_iop_lens_data_t *d)
 {
-  uint64_t vhash = _get_vignette_hash(d);
+  uint64_t vhash = dt_hash(DT_INITHASH, &d->v_radius, 2 * sizeof(float));
   if(d->vighash == vhash) return;
   d->vighash = vhash;
 

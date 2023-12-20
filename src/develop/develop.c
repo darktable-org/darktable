@@ -3262,7 +3262,7 @@ uint64_t dt_dev_hash_plus(dt_develop_t *dev,
                           const double iop_order,
                           const dt_dev_transform_direction_t transf_direction)
 {
-  uint64_t hash = 5381;
+  uint64_t hash = DT_INITHASH;
   dt_pthread_mutex_lock(&dev->history_mutex);
   GList *modules = g_list_last(pipe->iop);
   GList *pieces = g_list_last(pipe->nodes);
@@ -3285,7 +3285,7 @@ uint64_t dt_dev_hash_plus(dt_develop_t *dev,
                           || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_EXCL
                               && module->iop_order < iop_order)))
     {
-      hash = ((hash << 5) + hash) ^ piece->hash;
+      hash = dt_hash(hash, &piece->hash, sizeof(uint64_t));
     }
     modules = g_list_previous(modules);
     pieces = g_list_previous(pieces);
@@ -3374,7 +3374,7 @@ uint64_t dt_dev_hash_distort_plus(dt_develop_t *dev,
                                   const double iop_order,
                                   const dt_dev_transform_direction_t transf_direction)
 {
-  uint64_t hash = 5381;
+  uint64_t hash = DT_INITHASH;
   dt_pthread_mutex_lock(&dev->history_mutex);
   GList *modules = g_list_last(pipe->iop);
   GList *pieces = g_list_last(pipe->nodes);
@@ -3398,7 +3398,7 @@ uint64_t dt_dev_hash_distort_plus(dt_develop_t *dev,
            || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_EXCL
                && module->iop_order < iop_order)))
     {
-      hash = ((hash << 5) + hash) ^ piece->hash;
+      hash = dt_hash(hash, &piece->hash, sizeof(uint64_t));
     }
     modules = g_list_previous(modules);
     pieces = g_list_previous(pieces);
