@@ -324,7 +324,7 @@ changes (where available).
 
 - Fixed focus distance detection for Nikon Z mount lens corrections.
 
-- Fixed incorrect cropping of sensor data for sRaw dng files.
+- Fixed incorrect cropping of sensor data for sRaw DNG files.
 
 - Apply the Lightroom color matrix only when importing a genuine
   Lightroom XMP sidecar file.
@@ -456,18 +456,18 @@ changes (where available).
 - Canon EOS Kiss F
 - Canon EOS Kiss X50
 - Canon EOS Kiss X90
-- Canon IXY 220F (dng, chdk)
-- Canon PowerShot SX220 HS (chdk)
+- Canon IXY 220F (DNG, CHDK)
+- Canon PowerShot SX220 HS (CHDK)
 - Fujifilm FinePix SL1000
 - Fujifilm X-S20 (compressed)
-- ImBack ImB35mm (chdk)
-- Leica M10-D (dng)
-- Leica M10-P (dng)
-- Leica M10-R (dng)
-- Leica M11-P (dng)
-- Leica Q2 Monochrom (dng)
-- Leica SL2 (dng)
-- Leica SL2-S (dng)
+- ImBack ImB35mm (CHDK)
+- Leica M10-D (DNG)
+- Leica M10-P (DNG)
+- Leica M10-R (DNG)
+- Leica M11-P (DNG)
+- Leica Q2 Monochrom (DNG)
+- Leica SL2 (DNG)
+- Leica SL2-S (DNG)
 - Nikon Coolpix A1000 (12bit-uncompressed)
 - Nikon Z f (14bit-compressed)
 - OM System TG-7
@@ -483,14 +483,14 @@ changes (where available).
 - Pentax K-3 Mark III Monochrome
 - Pentax KF
 - Samsung EK-GN120
-- Samsung G920F (dng)
-- Samsung G935F (dng)
-- Samsung GX10 (dng)
-- Samsung GX20 (dng)
-- Sigma fp (dng)
-- Sigma fp L (dng)
-- Sigma sd Quattro (dng)
-- Sigma sd Quattro H (dng)
+- Samsung G920F (DNG)
+- Samsung G935F (DNG)
+- Samsung GX10 (DNG)
+- Samsung GX20 (DNG)
+- Sigma fp (DNG)
+- Sigma fp L (DNG)
+- Sigma sd Quattro (DNG)
+- Sigma sd Quattro H (DNG)
 - Sinar eVolution 75
 - Sony ILCE-6700
 - Sony ILCE-7CM2
