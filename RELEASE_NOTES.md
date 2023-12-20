@@ -135,9 +135,9 @@ changes (where available).
 
   - A new option "use all device memory" has been added to the preferences
     dialog. Select this option to use all GPU memory, with the exception
-    of a 600Mb "headroom" which is left free for use by other applications.
+    of a 600MB "headroom" which is left free for use by other applications.
     A similar option was previously available in earlier versions of darktable,
-    however the headroom is now increased to 600Mb to account for greater
+    however the headroom is now increased to 600MB to account for greater
     use of GPU acceleration on modern systems.
 
   - A new set of options have been added to the preferences dialog, to allow
