@@ -51,7 +51,7 @@ declare -A LANG_NAME=( [af]=Afrikaans
                        [sl]=Slovenian
                        [sq]=Albanian
                        [sr@latin]="Serbian (Latin)"
-                       [sr]="Serbian (Cyrilic)"
+                       [sr]="Serbian (Cyrillic)"
                        [sv]=Swedish
                        [th]=Thai
                        [tr]=Turkish
