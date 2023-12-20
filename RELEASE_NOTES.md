@@ -326,8 +326,8 @@ changes (where available).
 
 - Fixed incorrect cropping of sensor data for sRaw dng files.
 
-- Apply the LightRoom color matrix only when importing a genuine
-  LightRoom XMP.
+- Apply the Lightroom color matrix only when importing a genuine
+  Lightroom XMP sidecar file.
 
 - Fixed a crash when increasing the number of recent collections.
 
