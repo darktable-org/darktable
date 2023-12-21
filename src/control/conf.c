@@ -320,7 +320,8 @@ gchar *dt_conf_get_path(const char *name)
   const char *path = _conf_get_var(name);
   const dt_confgen_value_t *item = g_hash_table_lookup(darktable.conf->x_confgen, name);
 
-  if(item
+  if(path[0]
+     && item
      && item->type == DT_PATH
      && !g_file_test(path, G_FILE_TEST_IS_DIR | G_FILE_TEST_IS_SYMLINK))
   {
