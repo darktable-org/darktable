@@ -288,8 +288,6 @@ void dt_osx_prepare_environment()
     g_free(lib_path);
     g_free(res_path);
   }
-
-  dt_metal_get_devices();
 }
 
 void dt_osx_focus_window()
