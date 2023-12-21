@@ -104,6 +104,10 @@ typedef struct dt_thumbtable_t
   // scroll timeout values
   guint scroll_timeout_id;
   float scroll_value;
+
+  // different controller for event processing
+  GtkGesture *gesture_button_primary;
+
 } dt_thumbtable_t;
 
 dt_thumbtable_t *dt_thumbtable_new();
