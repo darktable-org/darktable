@@ -460,11 +460,11 @@ static gboolean _thumbtable_update_scrollbars(dt_thumbtable_t *table)
   // if the scrollbar is currently visible and we want to hide it we
   // first ensure that with the width without the scrollbar, we won't
   // need a scrollbar
+  const int bar = gtk_widget_get_allocated_width(darktable.gui->scrollbars.vscrollbar);
   if(gtk_widget_get_visible(darktable.gui->scrollbars.vscrollbar)
      && nblines <= table->rows - 1)
   {
-    const int nw = table->view_width +
-      gtk_widget_get_allocated_width(darktable.gui->scrollbars.vscrollbar);
+    const int nw = table->view_width + bar;
     if(nblines * nw / table->thumbs_per_row >= table->view_height)
     {
       dt_view_set_scrollbar(darktable.view_manager->current_view,
@@ -472,9 +472,14 @@ static gboolean _thumbtable_update_scrollbars(dt_thumbtable_t *table)
       return TRUE;
     }
   }
-  // in filemanager, no horizontal bar, and vertical bar reference is 1 thumb.
+  /* In filemanager, no horizontal bar, and vertical bar reference is 1 thumb.
+     We make sure to show a scrollbar - and thus keep thumbs slightly smaller -
+     if not showing it required to avoid an unstable state.
+  */
+  const float thresh = (float)(table->view_width / table->thumbs_per_row)
+                    / (float)((table->view_width - bar) / table->thumbs_per_row) - 1.0f;
   dt_view_set_scrollbar(darktable.view_manager->current_view,
-                        0, 0, 0, 0, lbefore, 0, maxvalue, pagesize);
+                        0, 0, 0, 0, lbefore, 0, maxvalue - thresh, pagesize);
   table->code_scrolling = FALSE;
   return (lbefore >= maxvalue);
 }
@@ -1113,7 +1118,7 @@ static gboolean _event_scroll(GtkWidget *widget,
 }
 
 // display help text in the center view if there's no image to show
-static int _lighttable_expose_empty(cairo_t *cr,
+static void _lighttable_expose_empty(cairo_t *cr,
                                     int32_t width,
                                     int32_t height,
                                     const gboolean lighttable)
@@ -1180,7 +1185,6 @@ static int _lighttable_expose_empty(cairo_t *cr,
 
   pango_font_description_free(desc);
   g_object_unref(layout);
-  return 0;
 }
 
 static gboolean _event_draw(GtkWidget *widget,
