@@ -15,7 +15,7 @@ jobs:
         with:
           fetch-depth: 200
           path: src
-      - uses: dawidd6/action-download-artifact@v2
+      - uses: dawidd6/action-download-artifact@v3
         continue-on-error: true
         with:
           workflow: irc.yml
@@ -60,7 +60,7 @@ jobs:
           message: |-
             Showing last ${{ steps.gitlog.outputs.llc }} commit(s) to ${{ github.repository }}:
             ${{ steps.gitlog.outputs.log }}
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: recent_commit
           path: recent_commit

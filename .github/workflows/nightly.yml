@@ -154,9 +154,10 @@ jobs:
                  --conf plugins/lighttable/export/iccintent=0
       - name: Package upload
         if: ${{ success() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: ${{ env.BUILD_DIR }}/Darktable-*.AppImage*
+          name: artifact-appimage
           retention-days: 1
 
   Windows:
@@ -289,9 +290,10 @@ jobs:
           ([[ ${MSYSTEM_CARCH} == x86_64 ]] && echo "SYSTEM=win64" || echo "SYSTEM=woa64") >> $GITHUB_ENV
       - name: Package upload
         if: ${{ success() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: ${{ env.BUILD_DIR }}/darktable-${{ env.VERSION }}-${{ env.SYSTEM }}.exe
+          name: artifact-windows
           retention-days: 2
 
   macOS:
@@ -378,9 +380,10 @@ jobs:
           echo "VERSION=$(git describe --tags --match release-* | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')-$(uname -m)" >> $GITHUB_ENV
       - name: Package upload
         if: ${{ success() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: ${{ env.INSTALL_PREFIX }}/darktable-${{ env.VERSION }}.dmg
+          name: artifact-macos
           retention-days: 2
 
   upload_to_release:
@@ -391,7 +394,7 @@ jobs:
     needs: [AppImage, Windows, macOS]
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
       - name: Update nightly release
         uses: andelf/nightly-release@main
         env:
@@ -418,4 +421,6 @@ jobs:
 
             __Please help us improve Darktable by reporting any issues you encounter!__ :wink:
           files: |
-            artifact/*
+            artifact-appimage/*
+            artifact-windows/*
+            artifact-macos/*

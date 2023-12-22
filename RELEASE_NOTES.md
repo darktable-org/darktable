@@ -69,7 +69,7 @@ changes (where available).
   rectangle. This allows for cropped-out parts of the image to be used without
   having to first disable the crop module and re-enable it when finished.
 
-- When panning or zooming in the darkrom view, a low resolution placeholder
+- When panning or zooming in the darkroom view, a low resolution placeholder
   used to be shown until the image was fully recalculated for the newly-visible
   region. Now, if any part of the previous view is still visible, that part will
   be immediately shown in high quality, with only the remainder of the image
@@ -85,21 +85,21 @@ changes (where available).
 
 - OpenCL is now initialized in the background immediately after launching
   the darktable UI, with progress indicated by a series of toast messages.
-  Previously, this was done before the main UI was lauched, which
+  Previously, this was done before the main UI was launched, which
   could lead to significant delays (sometimes more than a minute) between
   the user opening darktable and anything appearing on-screen, making
   it appear as though darktable had failed to start. Note that processing
   will be slower (since darktable will only use the CPU) until OpenCL is fully
   initialized.
 
-- An openCL code path has been implemented for lens correction using embedded
+- An OpenCL code path has been implemented for lens correction using embedded
   correction metadata.
 
 - Image display speed in the map view has been increased by 25%.
 
 - Export speed has been improved for JPEG 2000 and B&W TIFF images.
 
-- The chromatic aberrations module is now approximagely 10% faster when
+- The chromatic aberrations module is now approximately 10% faster when
   run on the CPU.
 
 ## Other Changes
@@ -135,9 +135,9 @@ changes (where available).
 
   - A new option "use all device memory" has been added to the preferences
     dialog. Select this option to use all GPU memory, with the exception
-    of a 600Mb "headroom" which is left free for use by other applications.
+    of a 600MB "headroom" which is left free for use by other applications.
     A similar option was previously available in earlier versions of darktable,
-    however the headroom is now increased to 600Mb to account for greater
+    however the headroom is now increased to 600MB to account for greater
     use of GPU acceleration on modern systems.
 
   - A new set of options have been added to the preferences dialog, to allow
@@ -182,7 +182,7 @@ changes (where available).
 - Where multiple drawn shapes are grouped (e.g. in a module's mask)
   the mask manager module now displays a tick mark in front of the
   active combination mode (in the popup menu) when right-clicking one of
-  the consituent shapes. This is usually much easier to read than the
+  the constituent shapes. This is usually much easier to read than the
   "Venn diagram" icons in the main module UI.
 
 - Mnemonics have been added to dialog boxes and default actions have been
@@ -192,14 +192,14 @@ changes (where available).
 - More OpenEXR 3.2.0 attributes can now be extracted and displayed in
   the image information module, where present.
 
-- Lens and cameras filters have been to the collection filters module.
+- Lens and cameras filters have been added to the collection filters module.
 
 - AVIF exports have been changed so that there is now no conversion to YUV
   for lossless. The quantizer selection logic has been updated and
   "lossy" is now the default.
 
 - The content of the main preferences dialog is now (almost) entirely taken
-  from a single definition file (`darktable.xml.in`) making its layout
+  from a single definition file (`darktableconfig.xml.in`) making its layout
   much easier to modify.
 
 - The drop-downs in the preferences dialog now use the same (bauhaus)
@@ -297,7 +297,7 @@ changes (where available).
     system, so most non-alphanumeric shortcuts will continue to work. If a
     dropdown value is changed while the popup is open (for example via
     an automatic calculation in color calibration, a Lua script or a
-    midi shortcut), the popup is correctly updated/repositioned. After
+    MIDI shortcut), the popup is correctly updated/repositioned. After
     a popup is closed it can quickly be reopened to enter another
     value by pressing <kbd>Enter</kbd> (as long as the corresponding
     widget still has focus).
@@ -324,10 +324,10 @@ changes (where available).
 
 - Fixed focus distance detection for Nikon Z mount lens corrections.
 
-- Fixed incorrect cropping of sensor data for SRaw dng files.
+- Fixed incorrect cropping of sensor data for sRaw dng files.
 
-- Apply the LightRoom color matrix only when importing a genuine
-  LightRoom XMP.
+- Apply the Lightroom color matrix only when importing a genuine
+  Lightroom XMP sidecar file.
 
 - Fixed a crash when increasing the number of recent collections.
 
