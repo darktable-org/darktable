@@ -515,6 +515,7 @@ static void _process_common_setup(dt_iop_module_t *self,
 #ifdef __APPLE__
 int process_metal()
 {
+  // TODO: this is only dummy-code to test the call of metal routines
   dt_metal_list_devices(darktable.metal);
   return 0;
 }
