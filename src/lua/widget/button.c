@@ -29,7 +29,18 @@ struct dt_lua_ellipsize_mode_info
   dt_lua_ellipsize_mode_t mode;
 };
 
+struct dt_lua_halign_mode_info
+{
+  gboolean used;
+  dt_lua_align_t halign;
+};
+
 static struct dt_lua_ellipsize_mode_info ellipsize_store =
+{
+  .used = FALSE
+};
+
+static struct dt_lua_halign_mode_info halign_store =
 {
   .used = FALSE
 };
@@ -72,6 +83,29 @@ static int ellipsize_member(lua_State *L)
   }
   ellipsize = gtk_label_get_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button->widget))));
   luaA_push(L, dt_lua_ellipsize_mode_t, &ellipsize);
+  return 1;
+}
+
+static int halign_member(lua_State *L)
+{
+  lua_button button;
+  luaA_to(L, lua_button, &button, 1);
+  dt_lua_align_t halign;
+  if(lua_gettop(L) > 2)
+  {
+    luaA_to(L, dt_lua_align_t, &halign, 3);
+    // check for label before trying to ellipsize it
+    if(gtk_button_get_label(GTK_BUTTON(button->widget)))
+      gtk_widget_set_halign(GTK_WIDGET(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button->widget)))), halign);
+    else
+    {
+      halign_store.halign = halign;
+      halign_store.used = TRUE;
+    }
+    return 0;
+  }
+  halign = gtk_widget_get_halign(GTK_WIDGET(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button->widget)))));
+  luaA_push(L, dt_lua_align_t, &halign);
   return 1;
 }
 
@@ -118,6 +152,9 @@ int dt_lua_init_widget_button(lua_State* L)
   lua_pushcfunction(L,ellipsize_member);
   dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, lua_button, "ellipsize");
+  lua_pushcfunction(L,halign_member);
+  dt_lua_gtk_wrap(L);
+  dt_lua_type_register(L, lua_button, "halign");
   dt_lua_widget_register_gtk_callback(L,lua_button,"clicked","clicked_callback",G_CALLBACK(clicked_callback));
 
   return 0;
