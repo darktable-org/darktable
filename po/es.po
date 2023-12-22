@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: darktable 4.6\n"
+"Project-Id-Version: darktable 4.6.x\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-12-02 20:18-0600\n"
-"PO-Revision-Date: 2023-12-14 01:31-0600\n"
+"PO-Revision-Date: 2023-12-21 23:12-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -7793,7 +7793,7 @@ msgstr "Exportando %d / %d a %s"
 #: ../src/views/print.c:369
 #, c-format
 msgid "image `%s' is currently unavailable"
-msgstr "La imagen «%s» no está actualmente disponible"
+msgstr "La imagen «%s» actualmente no está disponible"
 
 #: ../src/control/jobs/control_jobs.c:1554
 msgid "merge HDR image"
@@ -10609,7 +10609,7 @@ msgid ""
 msgstr ""
 "La forma recomendada de asignar atajos a los elementos visuales es en el "
 "modo <b>mapeo visual de atajos de teclado</b>.\n"
-"Se activa pulsando el icono de <i>\"teclado\"</i> al lado de preferencias en "
+"Se activa pulsando el ícono de <i>\"teclado\"</i> al lado de preferencias en "
 "la parte superior derecha del panel. Con este modo activo, se pulsa sobre "
 "algún componente de control o un área. Se abrirá el cuadro de diálogo con la "
 "selección adecuada de la configuración avanzada.\n"
@@ -10617,11 +10617,11 @@ msgstr ""
 "Se pueden asignar varios atajos a la misma acción. Es bastante útil cuando "
 "se tienen varios <i>elementos</i>, como los botones de los módulos o los "
 "selectores de color de los controles deslizantes. Sin embargo, con la opción "
-"<i>alternativas</i>activada se pueden utilizar los mismos atajos "
+"<i>alternativas</i> activada se pueden utilizar los mismos atajos "
 "individuales y cambiar el <i>elemento</i> o <i>efecto</i> añadiendo "
-"pulsaciónes del ratón.\n"
+"pulsaciones del ratón.\n"
 "\n"
-"<i>click <b> three times </b> to dismiss this notice permanently</i>"
+"<i>Pulse <b> tres veces </b> para ocultar este aviso permanentemente</i>"
 
 #: ../src/gui/accelerators.c:3452
 msgid "reinitialising input devices"
@@ -11634,7 +11634,7 @@ msgstr "Descripción o información adicional"
 
 #: ../src/gui/presets.c:601
 msgid "reset all module parameters to their default values"
-msgstr "Reinicializar todos los parámetros del móudulo a los valores iniciales"
+msgstr "Reinicializar los valores de todos los parámetros del módulo"
 
 #: ../src/gui/presets.c:604
 msgid ""
@@ -15080,7 +15080,7 @@ msgstr "división de tono verde azulado (módulo 1º)"
 
 #: ../src/iop/colorbalance.c:311
 msgid "generic film"
-msgstr "pelicula genérica"
+msgstr "película genérica"
 
 #: ../src/iop/colorbalance.c:315
 msgid "similar to Kodak Portra"
@@ -17999,7 +17999,7 @@ msgstr "Realiza una imitación de los granos de haluro de plata"
 
 #: ../src/iop/grain.c:600
 msgid "the grain size (~ISO of the film)"
-msgstr "Tamaño del grano (~ISO de la pelicula)"
+msgstr "Tamaño del grano (~ISO de la película)"
 
 #: ../src/iop/grain.c:604
 msgid "the strength of applied grain"
