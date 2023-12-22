@@ -242,7 +242,7 @@ typedef struct dt_iop_lens_data_t
   float v_steepness;
   float reserved[2];
   float vigspline[VIGSPLINES];
-  uint32_t vighash;
+  dt_hash_t vighash;
 } dt_iop_lens_data_t;
 
 
@@ -1962,7 +1962,7 @@ static void _commit_params_lf(struct dt_iop_module_t *self,
 
 static void _init_vignette_spline(dt_iop_lens_data_t *d)
 {
-  uint64_t vhash = dt_hash(DT_INITHASH, &d->v_radius, 2 * sizeof(float));
+  dt_hash_t vhash = dt_hash(DT_INITHASH, &d->v_radius, 2 * sizeof(float));
   if(d->vighash == vhash) return;
   d->vighash = vhash;
 

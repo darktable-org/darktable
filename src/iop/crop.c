@@ -101,7 +101,7 @@ typedef struct dt_iop_crop_gui_data_t
   float prev_clip_x, prev_clip_y, prev_clip_w, prev_clip_h;
   /* maximum clip box */
   float clip_max_x, clip_max_y, clip_max_w, clip_max_h;
-  uint64_t clip_max_pipe_hash;
+  dt_hash_t clip_max_pipe_hash;
 
   int cropping;
   gboolean shift_hold;

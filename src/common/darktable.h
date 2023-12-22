@@ -653,7 +653,8 @@ static inline int dt_get_thread_num()
 }
 
 #define DT_INITHASH 5381
-static inline uint64_t dt_hash(uint64_t hash, const void *data, const size_t size)
+typedef uint64_t dt_hash_t;
+static inline dt_hash_t dt_hash(dt_hash_t hash, const void *data, const size_t size)
 {
   const uint8_t* str = (uint8_t*)data;
   // Scramble bits in str to create an (hopefully) unique hash representing the state of str
