@@ -47,6 +47,7 @@ hbDependencies="adwaita-icon-theme \
     libavif \
     libheif \
     libomp \
+    libraw \
     librsvg \
     libsecret \
     little-cms2 \
