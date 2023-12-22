@@ -61,6 +61,8 @@ for more information on how to contribute._
 - When using the recursive mode in the import dialog, the thumbs for
   pictures discovered in sub-directories are now properly displayed.
 
+- Fix memory and resource leaks in the QOI image loader.
+
 ## Lua
 
 ### API Version
