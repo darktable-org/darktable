@@ -57,7 +57,7 @@ typedef struct dt_dev_pixelpipe_iop_t
 
   float iscale;        // input actually just downscaled buffer? iscale*iwidth = actual width
   int iwidth, iheight; // width and height of input buffer
-  uint64_t hash;       // hash of params and enabled.
+  dt_hash_t hash;       // hash of params and enabled.
   int bpc;             // bits per channel, 32 means float
   int colors;          // how many colors per pixel
   dt_iop_roi_t buf_in,
@@ -93,7 +93,7 @@ typedef enum dt_dev_pixelpipe_status_t
 typedef struct dt_dev_detail_mask_t
 {
   dt_iop_roi_t roi;
-  uint64_t hash;
+  dt_hash_t hash;
   float *data;
 } dt_dev_detail_mask_t;
 
@@ -144,7 +144,7 @@ typedef struct dt_dev_pixelpipe_t
   int backbuf_width, backbuf_height;
   float backbuf_scale;
   float backbuf_zoom_x, backbuf_zoom_y;
-  uint64_t backbuf_hash;
+  dt_hash_t backbuf_hash;
   dt_pthread_mutex_t mutex, backbuf_mutex, busy_mutex;
   int final_width, final_height;
 

@@ -88,7 +88,7 @@ typedef struct dt_iop_levels_gui_data_t
   GtkWidget *percentile_grey;
   GtkWidget *percentile_white;
   float auto_levels[3];
-  uint64_t hash;
+  dt_hash_t hash;
   GtkWidget *blackpick, *greypick, *whitepick;
 } dt_iop_levels_gui_data_t;
 
@@ -347,7 +347,7 @@ static void commit_params_late(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
     if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
     {
       dt_iop_gui_enter_critical_section(self);
-      const uint64_t hash = g->hash;
+      const dt_hash_t hash = g->hash;
       dt_iop_gui_leave_critical_section(self);
 
       // note that the case 'hash == 0' on first invocation in a session implies that d->levels[]
@@ -376,7 +376,7 @@ static void commit_params_late(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
 
     if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) && d->mode == LEVELS_MODE_AUTOMATIC)
     {
-      uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
+      dt_hash_t hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
       dt_iop_gui_enter_critical_section(self);
       g->auto_levels[0] = d->levels[0];
       g->auto_levels[1] = d->levels[1];
