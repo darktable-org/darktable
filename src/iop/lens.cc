@@ -242,7 +242,7 @@ typedef struct dt_iop_lens_data_t
   float v_steepness;
   float reserved[2];
   float vigspline[VIGSPLINES];
-  uint32_t vighash;
+  uint64_t vighash;
 } dt_iop_lens_data_t;
 
 
