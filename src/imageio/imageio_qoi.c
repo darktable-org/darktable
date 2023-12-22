@@ -59,8 +59,13 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img,
     // if we can't read even first 4 bytes, it's more like file disappeared
     return DT_IMAGEIO_FILE_NOT_FOUND;
   }
+
   if(memcmp(read_buffer, "qoif", 4) != 0)
   {
+    fclose(f);
+    g_free(read_buffer);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[qoi_open] no proper file header in %s\n", filename);
     return DT_IMAGEIO_LOAD_FAILED;
   }
 
@@ -130,6 +135,7 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img,
   img->loader = LOADER_QOI;
 
   QOI_FREE(int_RGBA_buf);
+  g_free(read_buffer);
 
   return DT_IMAGEIO_OK;
 }
