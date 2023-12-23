@@ -577,6 +577,7 @@ void process(struct dt_iop_module_t *self,
 
   /* create cairo context and setup transformation/scale */
   cairo_t *cr = cairo_create(surface);
+
   /* create cairo context for the scaled overlay */
   cairo_t *cr_two = cairo_create(surface_two);
 
@@ -640,22 +641,24 @@ void process(struct dt_iop_module_t *self,
   cairo_surface_flush(surface);
 
   /* render surface on output */
-  guint8 *sd = image;
   const float opacity = data->opacity / 100.0f;
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(roi_out, in, out, sd, opacity, ch)   \
+  dt_omp_firstprivate(roi_out, in, out, image, opacity, ch)   \
   schedule(static)
 #endif
   for(int j = 0; j < roi_out->height * roi_out->width; j++)
   {
     float *const i = in + ch*j;
     float *const o = out + ch*j;
-    guint8 *const s = sd + 4*j;
+    guint8 *const s = image + 4*j;
 
-    o[0] = (1.0f - opacity) * i[0] + (opacity * s[2] / 255.0f);
-    o[1] = (1.0f - opacity) * i[1] + (opacity * s[1] / 255.0f);
-    o[2] = (1.0f - opacity) * i[2] + (opacity * s[0] / 255.0f);
+    const float alpha = (s[3] / 255.0f) * opacity;
+
+    o[0] = (1.0f - alpha) * i[0] + (opacity * s[2] / 255.0f);
+    o[1] = (1.0f - alpha) * i[1] + (opacity * s[1] / 255.0f);
+    o[2] = (1.0f - alpha) * i[2] + (opacity * s[0] / 255.0f);
     o[3] = in[3];
   }
 
