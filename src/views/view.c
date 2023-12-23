@@ -1794,7 +1794,7 @@ cairo_surface_t *dt_view_create_surface(uint8_t *buffer,
     (buffer, CAIRO_FORMAT_RGB24, processed_width, processed_height, stride);
 }
 
-dt_view_context_t dt_view_get_view_context(void)
+dt_view_context_t dt_view_get_context_hash(void)
 {
   dt_develop_t *dev = darktable.develop;
   dt_dev_zoom_t zoom;
@@ -1806,18 +1806,20 @@ dt_view_context_t dt_view_get_view_context(void)
   // calculate a hash on view parameters. Use flt_prec here to avoid different hashes
   // for irrelevant variations for the zooms.
   const float flt_prec = 1.e6;
-  const uint32_t test[6] = {(uint32_t)dev->full.iso_12646,
+  const uint32_t test[] = { (uint32_t)dev->full.iso_12646,
                             (uint32_t)darktable.gui->show_focus_peaking,
                             (uint32_t)closeup,
                             (uint32_t)(zoom_scale * flt_prec),
                             (uint32_t)(zoom_x * flt_prec),
-                            (uint32_t)(zoom_y * flt_prec)};
+                            (uint32_t)(zoom_y * flt_prec),
+                            (uint32_t)(dev->late_scaling.enabled) };
+
   return (dt_view_context_t)dt_hash(DT_INITHASH, &test, sizeof(test));
 }
 
-gboolean dt_view_check_view_context(dt_view_context_t *ctx)
+gboolean dt_view_check_context_hash(dt_view_context_t *ctx)
 {
-  const dt_view_context_t curctx = dt_view_get_view_context();
+  const dt_view_context_t curctx = dt_view_get_context_hash();
   if(curctx == *ctx)
   {
     return TRUE;

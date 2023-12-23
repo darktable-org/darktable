@@ -1432,6 +1432,15 @@ static void _iso_12646_quickbutton_clicked(GtkWidget *w, gpointer user_data)
   dt_dev_configure(&dev->full);
 }
 
+static void _latescaling_quickbutton_clicked(GtkWidget *w, gpointer user_data)
+{
+  dt_develop_t *dev = (dt_develop_t *)user_data;
+  if(!dev->gui_attached) return;
+
+  dev->late_scaling.enabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w));
+  dt_dev_reprocess_center(dev);
+}
+
 /* overlay color */
 static void _guides_quickbutton_clicked(GtkWidget *widget, gpointer user_data)
 {
@@ -2198,6 +2207,20 @@ void gui_init(dt_view_t *self)
                               _("toggle ISO 12646 color assessment conditions"));
   g_signal_connect(G_OBJECT(dev->iso_12646.button), "clicked", G_CALLBACK(_iso_12646_quickbutton_clicked), dev);
   dt_view_manager_module_toolbox_add(darktable.view_manager, dev->iso_12646.button, DT_VIEW_DARKROOM);
+
+  /* Enable late-scaling button */
+  dev->late_scaling.button =
+    dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_fullpreview, 0, NULL);
+  ac = dt_action_define(sa, NULL, N_("high quality processing"),
+                        dev->late_scaling.button, &dt_action_def_toggle);
+  gtk_widget_set_tooltip_text
+    (dev->late_scaling.button,
+     _("toggle high quality processing,"
+       " if activated darktable processes image data as it does while exporting"));
+  g_signal_connect(G_OBJECT(dev->late_scaling.button), "clicked",
+                   G_CALLBACK(_latescaling_quickbutton_clicked), dev);
+  dt_view_manager_module_toolbox_add(darktable.view_manager,
+                                     dev->late_scaling.button, DT_VIEW_DARKROOM);
 
   GtkWidget *colorscheme, *mode;
 

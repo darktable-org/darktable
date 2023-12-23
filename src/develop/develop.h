@@ -326,6 +326,13 @@ typedef struct dt_develop_t
     GtkWidget *button; // yes, ugliness is the norm. what did you expect ?
   } iso_12646;
 
+  // late scaling down from full roi
+  struct
+  {
+    GtkWidget *button;
+    gboolean enabled;
+  } late_scaling;
+
   // the display profile related things (softproof, gamut check, profiles ...)
   struct
   {
