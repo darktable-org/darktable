@@ -46,6 +46,8 @@ changes (where available).
 
 ## Other Changes
 
+- Changed the sort order of tags to a natural and case insensitive order.
+
 ## Bug Fixes
 
 ## Lua
