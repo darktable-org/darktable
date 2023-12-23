@@ -48,7 +48,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 47
+#define CURRENT_DATABASE_VERSION_LIBRARY 48
 #define CURRENT_DATABASE_VERSION_DATA    10
 
 // #define USE_NESTED_TRANSACTIONS
@@ -2616,6 +2616,17 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     new_version = 47;
   }
+  else if(version == 47)
+  {
+    TRY_EXEC("CREATE TABLE overlay"
+             " (imgid INTEGER, overlay_id INTEGER,"
+             "  PRIMARY KEY (imgid, overlay_id),"
+             "  FOREIGN KEY(imgid) REFERENCES images(id)"
+             "    ON UPDATE CASCADE ON DELETE CASCADE)",
+             "[init] can't create table overlay\n");
+
+    new_version = 48;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -3070,6 +3081,15 @@ static void _create_library_schema(dt_database_t *db)
      "CREATE TABLE harmony_guide"
      " (imgid INTEGER PRIMARY KEY,"
      "  type INTEGER, rotation INTEGER, width INTEGER,"
+     "  FOREIGN KEY(imgid) REFERENCES images(id)"
+     "    ON UPDATE CASCADE ON DELETE CASCADE)",
+     NULL, NULL, NULL);
+
+  sqlite3_exec
+    (db->handle,
+     "CREATE TABLE overlay"
+     " (imgid INTEGER, overlay_id INTEGER,"
+     "  PRIMARY KEY (imgid, overlay_id),"
      "  FOREIGN KEY(imgid) REFERENCES images(id)"
      "    ON UPDATE CASCADE ON DELETE CASCADE)",
      NULL, NULL, NULL);
