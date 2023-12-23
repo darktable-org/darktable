@@ -2777,6 +2777,9 @@ void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe,
     if(!_skip_piece_on_tags(piece))
     {
       module->modify_roi_out(module, piece, &roi_out, &roi_in);
+      if((darktable.unmuted & DT_DEBUG_PIPE) && memcmp(&roi_out, &roi_in, sizeof(dt_iop_roi_t)))
+      dt_print_pipe(DT_DEBUG_PIPE,
+                  "modify roi OUT", piece->pipe, module, &roi_in, &roi_out, "\n");
     }
     else
     {
