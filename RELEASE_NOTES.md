@@ -63,6 +63,8 @@ for more information on how to contribute._
 
 - Fix memory and resource leaks in the QOI image loader.
 
+- Fixed RGBE image loader.
+
 ## Lua
 
 ### API Version
