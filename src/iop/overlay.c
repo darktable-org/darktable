@@ -21,6 +21,7 @@
 #include "common/tags.h"
 #include "common/variables.h"
 #include "common/datetime.h"
+#include "common/overlay.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -211,6 +212,16 @@ static GList *_get_disabled_modules(const int imgid, const int multi_priority)
   }
 
   return result;
+}
+
+static void _module_remove_callback(gpointer instance,
+                                    dt_iop_module_t *self,
+                                    gpointer user_data)
+{
+  dt_iop_overlay_params_t *p = (dt_iop_overlay_params_t *)self->params;
+
+  if(dt_is_valid_imgid(p->imgid))
+    dt_overlay_remove(self->dev->image_storage.id, p->imgid);
 }
 
 static void _clear_overlay(dt_iop_module_t *self)
@@ -841,6 +852,14 @@ void gui_update(struct dt_iop_module_t *self)
     gd->thumb_timeout_id = g_timeout_add(10, _build_overlay, self);
 }
 
+void reload_defaults(dt_iop_module_t *self)
+{
+  dt_iop_overlay_params_t *p = (dt_iop_overlay_params_t *)self->params;
+
+  if(dt_is_valid_imgid(p->imgid))
+    dt_overlay_remove(self->dev->image_storage.id, p->imgid);
+}
+
 void gui_reset(dt_iop_module_t *self)
 {
   dt_iop_overlay_gui_data_t *g = (dt_iop_overlay_gui_data_t *)self->gui_data;
@@ -914,7 +933,13 @@ static void _drag_and_drop_received(GtkWidget *widget,
     {
       dt_imgid_t *imgs = (dt_imgid_t *)gtk_selection_data_get_data(selection_data);
 
+      // remove previous overly if valid
+      if(dt_is_valid_imgid(p->imgid))
+        dt_overlay_remove(self->dev->image_storage.id, p->imgid);
+
+      // and record the new one
       p->imgid = imgs[0];
+      dt_overlay_record(self->dev->image_storage.id, p->imgid);
 
       gboolean from_cache = FALSE;
       dt_image_full_path(p->imgid, p->filename, sizeof(p->filename), &from_cache);
@@ -1034,6 +1059,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
                                   G_CALLBACK(_signal_image_changed), self);
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_REMOVE,
+                                  G_CALLBACK(_module_remove_callback), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -1042,6 +1069,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
                                      G_CALLBACK(_signal_image_changed), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
+                                     G_CALLBACK(_module_remove_callback), self);
 }
 
 // clang-format off
