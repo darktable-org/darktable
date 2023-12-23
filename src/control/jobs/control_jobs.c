@@ -33,6 +33,7 @@
 #include "common/import_session.h"
 #include "common/utility.h"
 #include "common/datetime.h"
+#include "common/overlay.h"
 #include "control/conf.h"
 #include "develop/imageop_math.h"
 #include "imageio/imageio_common.h"
@@ -835,33 +836,51 @@ static int32_t dt_control_remove_images_job_run(dt_job_t *job)
     }
   }
   sqlite3_finalize(stmt);
+  g_free(imgs);
 
   if(!remove_ok)
   {
     dt_control_log(_("cannot remove local copy when the original file is not accessible."));
-    free(imgs);
     return 0;
   }
 
-  // update remove status
-  _set_remove_flag(imgs);
-
-  dt_collection_update(darktable.collection);
-
-  // We need a list of files to regenerate .xmp files if there are duplicates
-  GList *list = _get_full_pathname(imgs);
-
-  free(imgs);
+  char *really_removed = NULL;
 
   double fraction = 0.0f;
   while(t)
   {
-    dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
-    dt_image_remove(imgid);
+    const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
+    GList *overlay = dt_overlay_get_used_in_imgs(imgid);
+    if(overlay)
+    {
+      const int nbimg = g_list_length(overlay);
+      char *filename = dt_image_get_filename(imgid);
+      dt_control_log
+        (ngettext("not removing image '%s' used as overlay in %d image",
+                  "not removing image '%s' used as overlay in %d images", nbimg),
+         filename, nbimg);
+      g_list_free(overlay);
+      g_free(filename);
+    }
+    else
+    {
+      really_removed = dt_util_dstrcat(really_removed, really_removed?",%d":"%d", imgid);
+      dt_image_remove(imgid);
+    }
     t = g_list_next(t);
     fraction += 1.0 / total;
     dt_control_job_set_progress(job, fraction);
   }
+
+  // update remove status
+  _set_remove_flag(really_removed);
+
+  dt_collection_update(darktable.collection);
+
+  // We need a list of files to regenerate .xmp files if there are duplicates
+  GList *list = _get_full_pathname(really_removed);
+
+  g_free(really_removed);
 
   while(list)
   {
