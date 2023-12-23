@@ -213,7 +213,7 @@ void gui_post_expose(dt_lib_module_t *self,
   if(!dt_is_valid_imgid(d->imgid))
     return;
 
-  const gboolean view_ok = dt_view_check_view_context(&d->view_ctx);
+  const gboolean view_ok = dt_view_check_context_hash(&d->view_ctx);
 
   if(!view_ok || d->preview_id != d->imgid)
   {
