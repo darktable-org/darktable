@@ -175,7 +175,7 @@ void gui_post_expose(dt_lib_module_t *self,
   {
     dt_lib_snapshot_t *snap = &d->snapshot[d->selected];
 
-    const dt_view_context_t ctx = dt_view_get_view_context();
+    const dt_view_context_t ctx = dt_view_get_context_hash();
 
     // if a new snapshot is needed, do this now
     if(d->snap_requested && snap->ctx == ctx)
