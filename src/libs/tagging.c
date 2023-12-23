@@ -2663,6 +2663,16 @@ static gint _sort_tree_count_func(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIt
   return (count_b - count_a);
 }
 
+static inline gint _compare_utf8_no_case(const char *a, const char *b)
+{
+  char *a_nc = g_utf8_casefold(a, -1);
+  char *b_nc = g_utf8_casefold(b, -1);
+  const gint sort = g_utf8_collate(a_nc, b_nc);
+  g_free(a_nc);
+  g_free(b_nc);
+  return sort;
+}
+
 static gint _sort_tree_tag_func(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, dt_lib_module_t *self)
 {
   char *tag_a = NULL;
@@ -2671,7 +2681,9 @@ static gint _sort_tree_tag_func(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter
   gtk_tree_model_get(model, b, DT_LIB_TAGGING_COL_TAG, &tag_b, -1);
   if(tag_a == NULL) tag_a = g_strdup("");
   if(tag_b == NULL) tag_b = g_strdup("");
-  const gboolean sort = g_strcmp0(tag_a, tag_b);
+
+  const gint sort = _compare_utf8_no_case(tag_a, tag_b);
+
   g_free(tag_a);
   g_free(tag_b);
   return sort;
@@ -2699,7 +2711,8 @@ static gint _sort_tree_path_func(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIte
   else
     tag_b = g_strdup("");
 
-  const gboolean sort = g_strcmp0(tag_a, tag_b);
+  const gint sort = _compare_utf8_no_case(tag_a, tag_b);
+
   g_free(tag_a);
   g_free(tag_b);
   return sort;
