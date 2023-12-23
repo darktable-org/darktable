@@ -315,7 +315,6 @@ int RGBE_ReadPixels_RLE(FILE *fp, float *data, int scanline_width, int num_scanl
 #undef RGBE_VALID_GAMMA
 #undef RGBE_VALID_EXPOSURE
 
-#undef RGBE_RETURN_SUCCESS
 #undef RGBE_RETURN_FAILURE
 
 #undef RGBE_DATA_RED
@@ -411,28 +410,40 @@ dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img, const char *filename, 
   FILE *f = g_fopen(filename, "rb");
   if(!f) return DT_IMAGEIO_LOAD_FAILED;
 
+  float *rgbe_buf = NULL;
   rgbe_header_info info;
-  if(RGBE_ReadHeader(f, &img->width, &img->height, &info)) goto error_corrupt;
+  if(RGBE_ReadHeader(f, &img->width, &img->height, &info) != RGBE_RETURN_SUCCESS)
+    goto rgbe_failed;
 
   img->buf_dsc.channels = 4;
   img->buf_dsc.datatype = TYPE_FLOAT;
   float *buf = (float *)dt_mipmap_cache_alloc(mbuf, img);
   if(!buf) goto error_cache_full;
 
-  if(RGBE_ReadPixels_RLE(f, buf, img->width, img->height)) goto error_corrupt;
+  rgbe_buf = dt_alloc_align_float((size_t) img->width * img->height * 4);
+  if(!rgbe_buf) goto rgbe_failed;
+
+  if(RGBE_ReadPixels_RLE(f, rgbe_buf, img->width, img->height) != RGBE_RETURN_SUCCESS)
+    goto rgbe_failed;
+
   fclose(f);
 
   // repair nan/inf etc
-  const size_t width = img->width;
-  const size_t height = img->height;
+  const size_t npixels = (size_t)img->width * img->height;
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(width, height, buf) \
-  collapse(2)
+  dt_omp_firstprivate(npixels, buf, rgbe_buf)
 #endif
-  for(size_t i = width * height; i > 0; i--)
-    for(int c = 0; c < 3; c++)
-      buf[4 * (i - 1) + c] = fmaxf(0.0f, fminf(10000.0, buf[3 * (i - 1) + c]));
+  for(size_t i = 0; i < npixels; i++)
+  {
+    dt_aligned_pixel_t pix = {0.0f, 0.0f, 0.0f, 0.0f};
+    for_three_channels(c)
+      pix[c] = fmaxf(0.0f, fminf(10000.0f, rgbe_buf[3 * i + c]));
+    copy_pixel_nontemporal(&buf[4*i], pix);
+  }
+
+  dt_free_align(rgbe_buf);
 
   // set the color matrix
   float m[4][4];
@@ -457,14 +468,16 @@ dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img, const char *filename, 
   img->loader = LOADER_RGBE;
   return DT_IMAGEIO_OK;
 
-error_corrupt:
+rgbe_failed:
   fclose(f);
+  dt_free_align(rgbe_buf);
   return DT_IMAGEIO_LOAD_FAILED;
 error_cache_full:
   fclose(f);
   return DT_IMAGEIO_CACHE_FULL;
 }
 
+#undef RGBE_RETURN_SUCCESS
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
