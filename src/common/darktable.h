@@ -652,6 +652,20 @@ static inline int dt_get_thread_num()
 #endif
 }
 
+#define DT_INITHASH 5381
+typedef uint64_t dt_hash_t;
+static inline dt_hash_t dt_hash(dt_hash_t hash, const void *data, const size_t size)
+{
+  const uint8_t* str = (uint8_t*)data;
+  // Scramble bits in str to create an (hopefully) unique hash representing the state of str
+  // Dan Bernstein algo v2 http://www.cse.yorku.ca/~oz/hash.html
+  // hash should be inited to DT_INITHASH if first run, or from a previous hash computed with this function.
+  for(size_t i = 0; i < size; i++)
+    hash = ((hash << 5) + hash) ^ str[i];
+
+  return hash;
+}
+
 // Allocate a buffer for 'n' objects each of size 'objsize' bytes for
 // each of the program's threads.  Ensures that there is no false
 // sharing among threads by aligning and rounding up the allocation to

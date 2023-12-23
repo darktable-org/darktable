@@ -647,7 +647,7 @@ void dt_view_paint_surface(cairo_t *cr,
                            float buf_zoom_x,
                            float buf_zoom_y);
 
-typedef uint64_t dt_view_context_t;
+typedef dt_hash_t dt_view_context_t;
 
 dt_view_context_t dt_view_get_view_context(void);
 

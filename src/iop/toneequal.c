@@ -232,8 +232,8 @@ typedef struct dt_iop_toneequalizer_gui_data_t
   int pipe_order;
 
   // 6 uint64 to pack - contiguous-ish memory
-  uint64_t ui_preview_hash;
-  uint64_t thumb_preview_hash;
+  dt_hash_t ui_preview_hash;
+  dt_hash_t thumb_preview_hash;
   size_t full_preview_buf_width, full_preview_buf_height;
   size_t thumb_preview_buf_width, thumb_preview_buf_height;
 
@@ -613,8 +613,8 @@ static gboolean in_mask_editing(dt_iop_module_t *self)
   return dev->form_gui && dev->form_visible;
 }
 
-static void hash_set_get(const uint64_t *hash_in,
-                         uint64_t *hash_out,
+static void hash_set_get(const dt_hash_t *hash_in,
+                         dt_hash_t *hash_out,
                          dt_pthread_mutex_t *lock)
 {
   // Set or get a hash in a struct the thread-safe way
@@ -1036,7 +1036,7 @@ void toneeq_process(struct dt_iop_module_t *self,
 
   // Get the hash of the upstream pipe to track changes
   const int position = self->iop_order;
-  const uint64_t hash = dt_dev_pixelpipe_cache_hash(piece->pipe->image.id,
+  const dt_hash_t hash = dt_dev_pixelpipe_cache_hash(piece->pipe->image.id,
                                                     roi_out, piece->pipe, position);
 
   // Sanity checks
@@ -1128,7 +1128,7 @@ void toneeq_process(struct dt_iop_module_t *self,
 
     if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
     {
-      uint64_t saved_hash;
+      dt_hash_t saved_hash;
       hash_set_get(&g->ui_preview_hash, &saved_hash, &self->gui_lock);
 
       dt_iop_gui_enter_critical_section(self);
@@ -1144,7 +1144,7 @@ void toneeq_process(struct dt_iop_module_t *self,
     }
     else if(piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
     {
-      uint64_t saved_hash;
+      dt_hash_t saved_hash;
       hash_set_get(&g->thumb_preview_hash, &saved_hash, &self->gui_lock);
 
       dt_iop_gui_enter_critical_section(self);
