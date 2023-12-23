@@ -68,6 +68,7 @@ FILE(GLOB SOURCE_FILES
   "common/nlmeans_core.c"
   "common/noiseprofiles.c"
   "common/opencl.c"
+  "common/overlay.c"
   "common/pdf.c"
   "common/presets.c"
   "common/pwstorage/backend_kwallet.c"
