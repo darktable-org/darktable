@@ -329,10 +329,11 @@ void process(struct dt_iop_module_t *self,
   const float angle = (M_PI / 180) * (-data->rotate);
 
   // is overlay image ready
-  if(!gd->buf
-     || (self->dev->preview_pipe
-         && (gd->pwidth != self->dev->preview_pipe->iwidth
-             || gd->pheight != self->dev->preview_pipe->iheight)))
+  if(!dt_is_valid_imgid(p->imgid)
+     || (!gd->buf
+         || (self->dev->preview_pipe
+             && (gd->pwidth != self->dev->preview_pipe->iwidth
+                 || gd->pheight != self->dev->preview_pipe->iheight))))
   {
     dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
 
