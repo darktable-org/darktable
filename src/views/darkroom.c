@@ -1437,6 +1437,7 @@ static void _latescaling_quickbutton_clicked(GtkWidget *w, gpointer user_data)
   dt_develop_t *dev = (dt_develop_t *)user_data;
   if(!dev->gui_attached) return;
 
+  dev->late_scaling.enabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w));
   dt_dev_reprocess_center(dev);
 }
 

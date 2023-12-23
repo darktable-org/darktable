@@ -60,8 +60,10 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 
 static inline gboolean _gui_fullpipe(dt_dev_pixelpipe_iop_t *piece)
 {
-  return piece->pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW2 | DT_DEV_PIXELPIPE_IMAGE)
-        && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(darktable.develop->late_scaling.button));
+  return piece->pipe->type & (DT_DEV_PIXELPIPE_FULL
+                              | DT_DEV_PIXELPIPE_PREVIEW2
+                              | DT_DEV_PIXELPIPE_IMAGE)
+    && darktable.develop->late_scaling.enabled;
 }
 
 void modify_roi_in(dt_iop_module_t *self,
