@@ -616,24 +616,6 @@ dt_hash_t dt_dev_hash_distort_plus(dt_develop_t *dev,
                                   struct dt_dev_pixelpipe_t *pipe,
                                   const double iop_order,
                                   const dt_dev_transform_direction_t transf_direction);
-/** same as dt_dev_wait_hash but only for distorting modules
-gboolean dt_dev_wait_hash_distort
-  (dt_develop_t *dev,
-   struct dt_dev_pixelpipe_t *pipe,
-   const double iop_order,
-   const dt_dev_transform_direction_t transf_direction,
-   dt_pthread_mutex_t *lock,
-   const volatile uint64_t *const hash);
-*/
-/** same as dt_dev_sync_pixelpipe_hash but only for distorting modules
-gboolean dt_dev_sync_pixelpipe_hash_distort
-  (dt_develop_t *dev,
-   struct dt_dev_pixelpipe_t *pipe,
-   const double iop_order,
-   const dt_dev_transform_direction_t transf_direction,
-   dt_pthread_mutex_t *lock,
-   const volatile uint64_t *const hash);
-*/
 /*
  *   history undo support helpers for darkroom
  */
