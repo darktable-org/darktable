@@ -720,14 +720,6 @@ static inline int vec3isnull(const float *const v)
   return (fabsf(v[0]) < eps && fabsf(v[1]) < eps && fabsf(v[2]) < eps);
 }
 
-#ifdef ASHIFT_DEBUG
-static void print_roi(const dt_iop_roi_t *roi, const char *label)
-{
-  printf("{ %5d  %5d  %5d  %5d  %.6f } %s\n",
-         roi->x, roi->y, roi->width, roi->height, roi->scale, label);
-}
-#endif
-
 static inline void _shadow_crop_box(dt_iop_ashift_params_t *p,
                                     dt_iop_ashift_gui_data_t *g)
 {
@@ -1223,11 +1215,6 @@ void modify_roi_out(struct dt_iop_module_t *self,
 
   roi_out->width = floorf(width);
   roi_out->height = floorf(height);
-
-#ifdef ASHIFT_DEBUG
-  print_roi(roi_in, "roi_in (going into modify_roi_out)");
-  print_roi(roi_out, "roi_out (after modify_roi_out)");
-#endif
 }
 
 void modify_roi_in(struct dt_iop_module_t *self,
@@ -1301,10 +1288,6 @@ void modify_roi_in(struct dt_iop_module_t *self,
   roi_in->y = CLAMP(roi_in->y, 0, (int)floorf(orig_h));
   roi_in->width = CLAMP(roi_in->width, 1, (int)floorf(orig_w) - roi_in->x);
   roi_in->height = CLAMP(roi_in->height, 1, (int)floorf(orig_h) - roi_in->y);
-#ifdef ASHIFT_DEBUG
-  print_roi(roi_out, "roi_out (going into modify_roi_in)");
-  print_roi(roi_in, "roi_in (after modify_roi_in)");
-#endif
 }
 
 // simple conversion of rgb image into greyscale variant suitable for
