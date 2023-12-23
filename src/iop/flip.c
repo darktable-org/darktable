@@ -307,8 +307,6 @@ void distort_mask(struct dt_iop_module_t *self,
                           roi_in->width, roi_in->height, stride, d->orientation);
 }
 
-// 1st pass: how large would the output be, given this input roi?
-// this is always called with the full buffer before processing.
 void modify_roi_out(struct dt_iop_module_t *self,
                     struct dt_dev_pixelpipe_iop_t *piece,
                     dt_iop_roi_t *roi_out,
@@ -325,7 +323,6 @@ void modify_roi_out(struct dt_iop_module_t *self,
   }
 }
 
-// 2nd pass: which roi would this operation need as input to fill the given output region?
 void modify_roi_in(struct dt_iop_module_t *self,
                    struct dt_dev_pixelpipe_iop_t *piece,
                    const dt_iop_roi_t *roi_out,
