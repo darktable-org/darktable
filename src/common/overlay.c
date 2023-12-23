@@ -19,6 +19,7 @@
 #include <sqlite3.h>
 
 #include "common/debug.h"
+#include "common/tags.h"
 #include "overlay.h"
 
 void dt_overlay_record(const dt_imgid_t imgid, const dt_imgid_t overlay_id)
@@ -34,6 +35,13 @@ void dt_overlay_record(const dt_imgid_t imgid, const dt_imgid_t overlay_id)
 
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+
+  // add a tag with the main image
+  guint tagid = 0;
+  char tagname[512];
+  snprintf(tagname, sizeof(tagname), "darktable|overlay|%d", imgid);
+  dt_tag_new(tagname, &tagid);
+  dt_tag_attach(tagid, overlay_id, FALSE, FALSE);
 }
 
 void dt_overlay_remove(const dt_imgid_t imgid, const dt_imgid_t overlay_id)
@@ -48,6 +56,11 @@ void dt_overlay_remove(const dt_imgid_t imgid, const dt_imgid_t overlay_id)
 
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+
+  // remove tag with the main image
+  char tagname[512];
+  snprintf(tagname, sizeof(tagname), "darktable|overlay|%d", imgid);
+  dt_tag_detach_by_string(tagname, overlay_id, FALSE, FALSE);
 }
 
 GList *dt_overlay_get_imgs(const dt_imgid_t imgid)
