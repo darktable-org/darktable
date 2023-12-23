@@ -396,7 +396,7 @@ typedef struct dt_masks_form_gui_t
 
   // ids
   dt_mask_id_t formid;
-  uint64_t pipe_hash;
+  dt_hash_t pipe_hash;
 } dt_masks_form_gui_t;
 
 /** special value to indicate an invalid or uninitialized coordinate */

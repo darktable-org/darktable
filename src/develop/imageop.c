@@ -2084,9 +2084,7 @@ void dt_iop_commit_params(dt_iop_module_t *module,
     /* and we add masks */
     dt_masks_group_get_hash_buffer(grp, str + pos);
 
-    uint64_t hash = 5381;
-    for(int i = 0; i < length; i++) hash = ((hash << 5) + hash) ^ str[i];
-    piece->hash = hash;
+    piece->hash = dt_hash(DT_INITHASH, str, length);
 
     free(str);
   }

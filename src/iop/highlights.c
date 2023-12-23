@@ -320,7 +320,7 @@ int legacy_params(dt_iop_module_t *self,
 
 static dt_aligned_pixel_t img_oppchroma;
 static gboolean img_oppclipped = TRUE;
-static uint64_t img_opphash = ULLONG_MAX;
+static dt_hash_t img_opphash = ULLONG_MAX;
 
 #include "hlreconstruct/segmentation.c"
 #include "hlreconstruct/segbased.c"

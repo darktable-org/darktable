@@ -580,9 +580,9 @@ struct dt_dev_pixelpipe_iop_t *dt_dev_distort_get_iop_pipe(dt_develop_t *dev,
  * hash functions
  */
 /** generate hash value out of all module settings of pixelpipe */
-uint64_t dt_dev_hash(dt_develop_t *dev);
+dt_hash_t dt_dev_hash(dt_develop_t *dev);
 /** same function, but we can specify iop with priority between pmin and pmax */
-uint64_t dt_dev_hash_plus(dt_develop_t *dev,
+dt_hash_t dt_dev_hash_plus(dt_develop_t *dev,
                           struct dt_dev_pixelpipe_t *pipe,
                           const double iop_order,
                           const dt_dev_transform_direction_t transf_direction);
@@ -593,7 +593,7 @@ gboolean dt_dev_wait_hash(dt_develop_t *dev,
                      const double iop_order,
                      const dt_dev_transform_direction_t transf_direction,
                      dt_pthread_mutex_t *lock,
-                     const volatile uint64_t *const hash);
+                     const volatile dt_hash_t *const hash);
 /** synchronize pixelpipe by means hash values by waiting with timeout
  * and potential reprocessing */
 gboolean dt_dev_sync_pixelpipe_hash(dt_develop_t *dev,
@@ -601,11 +601,11 @@ gboolean dt_dev_sync_pixelpipe_hash(dt_develop_t *dev,
                                const double iop_order,
                                const dt_dev_transform_direction_t transf_direction,
                                dt_pthread_mutex_t *lock,
-                               const volatile uint64_t *const hash);
+                               const volatile dt_hash_t *const hash);
 /** generate hash value out of module settings of all distorting modules of pixelpipe */
-uint64_t dt_dev_hash_distort(dt_develop_t *dev);
+dt_hash_t dt_dev_hash_distort(dt_develop_t *dev);
 /** same function, but we can specify iop with priority between pmin and pmax */
-uint64_t dt_dev_hash_distort_plus(dt_develop_t *dev,
+dt_hash_t dt_dev_hash_distort_plus(dt_develop_t *dev,
                                   struct dt_dev_pixelpipe_t *pipe,
                                   const double iop_order,
                                   const dt_dev_transform_direction_t transf_direction);

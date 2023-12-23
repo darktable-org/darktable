@@ -46,8 +46,8 @@ gboolean dt_dev_pixelpipe_cache_init(
   cache->data = (void **) calloc(entries, csize);
   cache->size = (size_t *)((void *)cache->data + entries * sizeof(void *));
   cache->dsc = (dt_iop_buffer_dsc_t *)((void *)cache->size + entries * sizeof(size_t));
-  cache->hash = (uint64_t *)((void *)cache->dsc + entries * sizeof(dt_iop_buffer_dsc_t));
-  cache->used = (int32_t *)((void *)cache->hash + entries * sizeof(uint64_t));
+  cache->hash = (dt_hash_t *)((void *)cache->dsc + entries * sizeof(dt_iop_buffer_dsc_t));
+  cache->used = (int32_t *)((void *)cache->hash + entries * sizeof(dt_hash_t));
   cache->ioporder = (int32_t *)((void *)cache->used + entries * sizeof(int32_t));
 
   for(int k = 0; k < entries; k++)
@@ -103,14 +103,11 @@ void dt_dev_pixelpipe_cache_cleanup(struct dt_dev_pixelpipe_t *pipe)
   cache->data = NULL;
 }
 
-static uint64_t _dev_pixelpipe_cache_basichash(
+static dt_hash_t _dev_pixelpipe_cache_basichash(
            const dt_imgid_t imgid,
            struct dt_dev_pixelpipe_t *pipe,
            const int position)
 {
-  // bernstein hash (djb2)
-  uint64_t hash = 5381;
-
   /* What do we use for the basic hash
        1) imgid as all structures using the hash might possibly contain data from other images
        2) pipe->type for the cache it's important to keep status of fast mode included here
@@ -123,10 +120,7 @@ static uint64_t _dev_pixelpipe_cache_basichash(
   const uint32_t hashing_pipemode[3] = {(uint32_t)imgid,
                                         (uint32_t)pipe->type,
                                         (uint32_t)pipe->want_detail_mask };
-
-  char *pstr = (char *)hashing_pipemode;
-  for(size_t ip = 0; ip < sizeof(hashing_pipemode); ip++)
-    hash = ((hash << 5) + hash) ^ pstr[ip];
+  dt_hash_t hash = dt_hash(DT_INITHASH, &hashing_pipemode, sizeof(hashing_pipemode));
 
   // go through all modules up to position and compute a hash using the operation and params.
   GList *pieces = pipe->nodes;
@@ -141,20 +135,16 @@ static uint64_t _dev_pixelpipe_cache_basichash(
 
     if(!skipped)
     {
-      hash = ((hash << 5) + hash) ^ piece->hash;
+      hash = dt_hash(hash, &piece->hash, sizeof(piece->hash));
       if(piece->module->request_color_pick != DT_REQUEST_COLORPICK_OFF)
       {
         if(darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
         {
-          const char *str = (const char *)darktable.lib->proxy.colorpicker.primary_sample->box;
-          for(size_t i = 0; i < sizeof(float) * 4; i++)
-            hash = ((hash << 5) + hash) ^ str[i];
+          hash = dt_hash(hash, darktable.lib->proxy.colorpicker.primary_sample->box, 4 * sizeof(float));
         }
         else if(darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
         {
-          const char *str = (const char *)darktable.lib->proxy.colorpicker.primary_sample->point;
-          for(size_t i = 0; i < sizeof(float) * 2; i++)
-            hash = ((hash << 5) + hash) ^ str[i];
+          hash = dt_hash(hash, darktable.lib->proxy.colorpicker.primary_sample->point, 2 * sizeof(float));
         }
       }
     }
@@ -163,28 +153,22 @@ static uint64_t _dev_pixelpipe_cache_basichash(
   return hash;
 }
 
-uint64_t dt_dev_pixelpipe_cache_hash(
+dt_hash_t dt_dev_pixelpipe_cache_hash(
            const dt_imgid_t imgid,
            const dt_iop_roi_t *roi,
            struct dt_dev_pixelpipe_t *pipe,
            const int position)
 {
-  uint64_t hash = _dev_pixelpipe_cache_basichash(imgid, pipe, position);
+  dt_hash_t hash = _dev_pixelpipe_cache_basichash(imgid, pipe, position);
   // also include roi data
-  char *str = (char *)roi;
-  for(size_t i = 0; i < sizeof(dt_iop_roi_t); i++)
-    hash = ((hash << 5) + hash) ^ str[i];
-
-  str = (char *)&pipe->scharr.hash;
-  for(size_t i = 0; i < sizeof(uint64_t); i++)
-    hash = ((hash << 5) + hash) ^ str[i];
-
-  return hash;
+  // FIXME include full roi data in cachelines
+  hash = dt_hash(hash, roi, sizeof(dt_iop_roi_t));
+  return dt_hash(hash, &pipe->scharr.hash, sizeof(pipe->scharr.hash));
 }
 
 gboolean dt_dev_pixelpipe_cache_available(
            dt_dev_pixelpipe_t *pipe,
-           const uint64_t hash,
+           const dt_hash_t hash,
            const size_t size)
 {
   if(pipe->mask_display
@@ -261,7 +245,7 @@ static int _get_cacheline(struct dt_dev_pixelpipe_t *pipe)
 static gboolean _get_by_hash(
           struct dt_dev_pixelpipe_t *pipe,
           struct dt_iop_module_t *module,
-          const uint64_t hash,
+          const dt_hash_t hash,
           const size_t size,
           void **data,
           dt_iop_buffer_dsc_t **dsc)
@@ -302,7 +286,7 @@ static gboolean _get_by_hash(
 
 gboolean dt_dev_pixelpipe_cache_get(
            struct dt_dev_pixelpipe_t *pipe,
-           const uint64_t hash,
+           const dt_hash_t hash,
            const size_t size,
            void **data,
            dt_iop_buffer_dsc_t **dsc,

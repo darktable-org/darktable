@@ -3252,17 +3252,17 @@ dt_dev_pixelpipe_iop_t *dt_dev_distort_get_iop_pipe(dt_develop_t *dev,
   return NULL;
 }
 
-uint64_t dt_dev_hash(dt_develop_t *dev)
+dt_hash_t dt_dev_hash(dt_develop_t *dev)
 {
   return dt_dev_hash_plus(dev, dev->preview_pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL);
 }
 
-uint64_t dt_dev_hash_plus(dt_develop_t *dev,
+dt_hash_t dt_dev_hash_plus(dt_develop_t *dev,
                           struct dt_dev_pixelpipe_t *pipe,
                           const double iop_order,
                           const dt_dev_transform_direction_t transf_direction)
 {
-  uint64_t hash = 5381;
+  dt_hash_t hash = DT_INITHASH;
   dt_pthread_mutex_lock(&dev->history_mutex);
   GList *modules = g_list_last(pipe->iop);
   GList *pieces = g_list_last(pipe->nodes);
@@ -3285,7 +3285,7 @@ uint64_t dt_dev_hash_plus(dt_develop_t *dev,
                           || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_EXCL
                               && module->iop_order < iop_order)))
     {
-      hash = ((hash << 5) + hash) ^ piece->hash;
+      hash = dt_hash(hash, &piece->hash, sizeof(piece->hash));
     }
     modules = g_list_previous(modules);
     pieces = g_list_previous(pieces);
@@ -3299,7 +3299,7 @@ gboolean dt_dev_wait_hash(dt_develop_t *dev,
                           const double iop_order,
                           const dt_dev_transform_direction_t transf_direction,
                           dt_pthread_mutex_t *lock,
-                          const volatile uint64_t *const hash)
+                          const volatile dt_hash_t *const hash)
 {
   const int usec = 5000;
   int nloop;
@@ -3320,7 +3320,7 @@ gboolean dt_dev_wait_hash(dt_develop_t *dev,
     if(dt_atomic_get_int(&pipe->shutdown))
       return TRUE;  // stop waiting if pipe shuts down
 
-    uint64_t probehash;
+    dt_hash_t probehash;
 
     if(lock)
     {
@@ -3345,7 +3345,7 @@ gboolean dt_dev_sync_pixelpipe_hash(dt_develop_t *dev,
                                     const double iop_order,
                                     const dt_dev_transform_direction_t transf_direction,
                                     dt_pthread_mutex_t *lock,
-                                    const volatile uint64_t *const hash)
+                                    const volatile dt_hash_t *const hash)
 {
   // first wait for matching hash values
   if(dt_dev_wait_hash(dev, pipe, iop_order, transf_direction, lock, hash))
@@ -3364,17 +3364,17 @@ gboolean dt_dev_sync_pixelpipe_hash(dt_develop_t *dev,
   return FALSE;
 }
 
-uint64_t dt_dev_hash_distort(dt_develop_t *dev)
+dt_hash_t dt_dev_hash_distort(dt_develop_t *dev)
 {
   return dt_dev_hash_distort_plus(dev, dev->preview_pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL);
 }
 
-uint64_t dt_dev_hash_distort_plus(dt_develop_t *dev,
+dt_hash_t dt_dev_hash_distort_plus(dt_develop_t *dev,
                                   struct dt_dev_pixelpipe_t *pipe,
                                   const double iop_order,
                                   const dt_dev_transform_direction_t transf_direction)
 {
-  uint64_t hash = 5381;
+  dt_hash_t hash = DT_INITHASH;
   dt_pthread_mutex_lock(&dev->history_mutex);
   GList *modules = g_list_last(pipe->iop);
   GList *pieces = g_list_last(pipe->nodes);
@@ -3398,7 +3398,7 @@ uint64_t dt_dev_hash_distort_plus(dt_develop_t *dev,
            || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_EXCL
                && module->iop_order < iop_order)))
     {
-      hash = ((hash << 5) + hash) ^ piece->hash;
+      hash = dt_hash(hash, &piece->hash, sizeof(piece->hash));
     }
     modules = g_list_previous(modules);
     pieces = g_list_previous(pieces);
