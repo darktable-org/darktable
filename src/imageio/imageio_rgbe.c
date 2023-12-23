@@ -414,12 +414,15 @@ dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img, const char *filename, 
   rgbe_header_info info;
   if(RGBE_ReadHeader(f, &img->width, &img->height, &info)) goto error_corrupt;
 
+  float *readbuf = g_malloc((size_t)img->height * img->width * 3 * 4);
+  if(!readbuf) goto error_cache_full;
+
   img->buf_dsc.channels = 4;
   img->buf_dsc.datatype = TYPE_FLOAT;
-  float *buf = (float *)dt_mipmap_cache_alloc(mbuf, img);
-  if(!buf) goto error_cache_full;
+  float *mipbuf = (float *)dt_mipmap_cache_alloc(mbuf, img);
+  if(!mipbuf) goto error_cache_full;
 
-  if(RGBE_ReadPixels_RLE(f, buf, img->width, img->height)) goto error_corrupt;
+  if(RGBE_ReadPixels_RLE(f, readbuf, img->width, img->height)) goto error_corrupt;
   fclose(f);
 
   // repair nan/inf etc
@@ -427,12 +430,15 @@ dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img, const char *filename, 
   const size_t height = img->height;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(width, height, buf) \
-  collapse(2)
+  dt_omp_firstprivate(width, height, readbuf) \
+  shared(mipbuf)
 #endif
-  for(size_t i = width * height; i > 0; i--)
-    for(int c = 0; c < 3; c++)
-      buf[4 * (i - 1) + c] = fmaxf(0.0f, fminf(10000.0, buf[3 * (i - 1) + c]));
+  for(size_t i = 0; i < width * height; i++)
+  {
+    mipbuf[4 * i] = fmaxf(0.0f, fminf(10000.0, readbuf[3 * i]));
+    mipbuf[4 * i + 1] = fmaxf(0.0f, fminf(10000.0, readbuf[3 * i + 1]));
+    mipbuf[4 * i + 2] = fmaxf(0.0f, fminf(10000.0, readbuf[3 * i + 2]));
+  }
 
   // set the color matrix
   float m[4][4];
@@ -447,6 +453,8 @@ dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img, const char *filename, 
     }
 
   mat3inv((float *)img->d65_color_matrix, (float *)mat);
+
+  g_free(readbuf);
 
   img->buf_dsc.cst = IOP_CS_RGB;
   img->buf_dsc.filters = 0u;
