@@ -29,6 +29,7 @@ build/lib/darktable/plugins/introspection_colormapping.c
 build/lib/darktable/plugins/introspection_colorout.c
 build/lib/darktable/plugins/introspection_colorreconstruction.c
 build/lib/darktable/plugins/introspection_colortransfer.c
+build/lib/darktable/plugins/introspection_colorequal.c
 build/lib/darktable/plugins/introspection_colorzones.c
 build/lib/darktable/plugins/introspection_crop.c
 build/lib/darktable/plugins/introspection_defringe.c
@@ -223,6 +224,7 @@ src/iop/colormapping.c
 src/iop/colorout.c
 src/iop/colorreconstruction.c
 src/iop/colortransfer.c
+src/iop/colorequal.c
 src/iop/colorzones.c
 src/iop/crop.c
 src/iop/defringe.c
