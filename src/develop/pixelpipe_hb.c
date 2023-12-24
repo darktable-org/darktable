@@ -1154,7 +1154,7 @@ static gboolean _pixelpipe_process_on_CPU(
   if(cst_from != cst_to)
     dt_print_pipe(DT_DEBUG_PIPE,
            "transform colorspace CPU",
-           piece->pipe, module, roi_in, roi_out, "%s -> %s\n",
+           piece->pipe, module, roi_in, NULL, " %s -> %s\n",
            dt_iop_colorspace_to_name(cst_from),
            dt_iop_colorspace_to_name(cst_to));
 
@@ -1411,7 +1411,7 @@ static gboolean _dev_pixelpipe_process_rec(
       return TRUE;
 
     dt_print_pipe(DT_DEBUG_PIPE,
-                  "pixelpipe data: from cache", pipe, module, &roi_in, roi_out, "\n");
+                  "pixelpipe data: from cache", pipe, module, &roi_in, NULL, "\n");
     // we're done! as colorpicker/scopes only work on gamma iop
     // input -- which is unavailable via cache -- there's no need to
     // run these
@@ -1537,13 +1537,13 @@ static gboolean _dev_pixelpipe_process_rec(
   if(dt_atomic_get_int(&pipe->shutdown))
     return TRUE;
 
-  const gboolean important_out = module
+  const gboolean important = module
       && (pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE)
       && (((pipe->type & DT_DEV_PIXELPIPE_PREVIEW) && dt_iop_module_is(module->so, "colorout"))
        || ((pipe->type & DT_DEV_PIXELPIPE_FULL)    && dt_iop_module_is(module->so, "gamma")));
 
   dt_dev_pixelpipe_cache_get(pipe, hash, bufsize,
-                             output, out_format, module, important_out);
+                             output, out_format, module, important);
 
   if(dt_atomic_get_int(&pipe->shutdown))
     return TRUE;
@@ -1710,19 +1710,12 @@ static gboolean _dev_pixelpipe_process_rec(
           cl_mem_input = dt_opencl_alloc_device(pipe->devid,
                                                 roi_in.width, roi_in.height, in_bpp);
           if(cl_mem_input == NULL)
-          {
-            dt_print_pipe(DT_DEBUG_OPENCL,
-              "pixelpipe process CL", pipe, module, &roi_in, roi_out, "%s\n",
-                "couldn't generate input buffer");
             success_opencl = FALSE;
-          }
 
           if(success_opencl)
           {
-            cl_int err = dt_opencl_write_host_to_device(pipe->devid, input, cl_mem_input,
-                                                        roi_in.width, roi_in.height,
-                                                        in_bpp);
-            if(err != CL_SUCCESS)
+            if(dt_opencl_write_host_to_device(pipe->devid, input, cl_mem_input,
+                                              roi_in.width, roi_in.height, in_bpp) != CL_SUCCESS)
             {
               dt_print_pipe(DT_DEBUG_OPENCL,
                 "pixelpipe process CL", pipe, module, &roi_in, roi_out, "%s\n",
@@ -1744,12 +1737,7 @@ static gboolean _dev_pixelpipe_process_rec(
           *cl_mem_output = dt_opencl_alloc_device(pipe->devid,
                                                   roi_out->width, roi_out->height, bpp);
           if(*cl_mem_output == NULL)
-          {
-            dt_print_pipe(DT_DEBUG_OPENCL,
-              "pixelpipe process CL", pipe, module, &roi_in, roi_out, "%s\n",
-                "couldn't allocate output buffer");
             success_opencl = FALSE;
-          }
         }
 
         // indirectly give gpu some air to breathe (and to do display related stuff)
@@ -1763,7 +1751,7 @@ static gboolean _dev_pixelpipe_process_rec(
         {
           if(cst_from != cst_to)
             dt_print_pipe(DT_DEBUG_PIPE,
-               "transform colorspace CL", piece->pipe, module, &roi_in, roi_out, "%s -> %s\n",
+               "transform colorspace CL", piece->pipe, module, &roi_in, NULL, " %s -> %s\n",
                dt_iop_colorspace_to_name(cst_from),
                dt_iop_colorspace_to_name(cst_to));
           success_opencl = dt_ioppr_transform_image_colorspace_cl
@@ -2155,14 +2143,14 @@ static gboolean _dev_pixelpipe_process_rec(
               important_cl = FALSE;
               dt_print_pipe(DT_DEBUG_OPENCL,
                 "pixelpipe process CL", pipe, module, &roi_in, roi_out, "%s\n",
-                  "couldn't copy data back to host memory (B)");
+                  "couldn't copy important data back to host memory (B)");
               /* late opencl error, not likely to happen here */
               /* that's all we do here, we later make sure to invalidate cache line */
             }
             else
             {
               dt_print_pipe(DT_DEBUG_PIPE,
-                "pixelpipe process CL", pipe, module, &roi_in, roi_out, "cl input data to host\n");
+                "copy CL data to host", pipe, module, &roi_in, NULL, "\n");
               /* success: cache line is valid now, so we will not need
                  to invalidate it later */
               valid_input_on_gpu_only = FALSE;
@@ -2192,15 +2180,12 @@ static gboolean _dev_pixelpipe_process_rec(
       {
         /* Bad luck, opencl failed. Let's clean up and fall back to cpu module */
         dt_print_pipe(DT_DEBUG_OPENCL,
-           "pixelpipe process CL", pipe, module, &roi_in, roi_out, "%s\n",
+           "pixelpipe aborts CL", pipe, module, &roi_in, roi_out, "%s\n",
                 "couldn't run module on GPU, falling back to CPU");
 
         /* we might need to free unused output buffer */
-        if(*cl_mem_output != NULL)
-        {
-          dt_opencl_release_mem_object(*cl_mem_output);
-          *cl_mem_output = NULL;
-        }
+        dt_opencl_release_mem_object(*cl_mem_output);
+        *cl_mem_output = NULL;
 
         /* check where our input buffer is located */
         if(cl_mem_input != NULL)
@@ -2337,7 +2322,8 @@ static gboolean _dev_pixelpipe_process_rec(
         && (pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE)
         && (has_focus || darktable.develop->history_last_module == module || important_cl))
     {
-      dt_print_pipe(DT_DEBUG_PIPE, "importance hints", pipe, module, &roi_in, roi_out, "%s%s%s\n",
+      dt_print_pipe(DT_DEBUG_PIPE,
+        "importance hints", pipe, module, &roi_in, NULL, " %s%s%s\n",
         darktable.develop->history_last_module == module ? "input_hint " : "",
         has_focus ? "focus " : "",
         important_cl ? "cldata" : "");
@@ -2791,6 +2777,9 @@ void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe,
     if(!_skip_piece_on_tags(piece))
     {
       module->modify_roi_out(module, piece, &roi_out, &roi_in);
+      if((darktable.unmuted & DT_DEBUG_PIPE) && memcmp(&roi_out, &roi_in, sizeof(dt_iop_roi_t)))
+      dt_print_pipe(DT_DEBUG_PIPE,
+                  "modify roi OUT", piece->pipe, module, &roi_in, &roi_out, "\n");
     }
     else
     {
