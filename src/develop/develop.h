@@ -369,7 +369,7 @@ void dt_dev_load_image(dt_develop_t *dev,
 void dt_dev_reload_image(dt_develop_t *dev,
                          const dt_imgid_t imgid);
 /** checks if provided imgid is the image currently in develop */
-gboolean dt_dev_is_current_image(dt_develop_t *dev,
+gboolean dt_dev_is_current_image(const dt_develop_t *dev,
                                  const dt_imgid_t imgid);
 const dt_dev_history_item_t *dt_dev_get_history_item(dt_develop_t *dev,
                                                      const char *op);

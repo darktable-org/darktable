@@ -2770,7 +2770,7 @@ void dt_dev_get_viewport_params(dt_dev_viewport_t *port,
   dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
 }
 
-gboolean dt_dev_is_current_image(dt_develop_t *dev,
+gboolean dt_dev_is_current_image(const dt_develop_t *dev,
                                  const dt_imgid_t imgid)
 {
   return (dev->image_storage.id == imgid) ? TRUE : FALSE;
