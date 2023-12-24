@@ -94,8 +94,9 @@ typedef struct dt_iop_overlay_params_t
   dt_iop_overlay_svg_scale_t scale_svg; // $DEFAULT: DT_SCALE_SVG_WIDTH $DESCRIPTION: "scale marker reference"
   dt_imgid_t imgid; // $DEFAULT: NO_IMGID $DESCRIPTION: "overlay image id"
   char filename[1024]; // $DEFAULT: 0 $DESCRIPTION: "full overlay's filename"
-  int index; // $DEFAULT: 0 $DESCRIPTION: "index of overlay buffer cache in global data"
-  dt_hash_t hash;
+  size_t buf_width; // $DEFAULT: 0 $DESCRIPTION: "no image"
+  size_t buf_height; // $DEFAULT: 0 $DESCRIPTION: "no image"
+  int64_t hash; // $DEFAULT: 0 $DESCRIPTION: "NULL pointer"
 } dt_iop_overlay_params_t;
 
 typedef struct dt_iop_overlay_data_t
@@ -112,28 +113,16 @@ typedef struct dt_iop_overlay_data_t
   dt_imgid_t imgid;
   int index;
   char filename[1024];
-} dt_iop_overlay_data_t;
-
-typedef struct dt_iop_overlay_buf_t
-{
-  dt_imgid_t imgid;
-  char filename[1024];
-  float scale;
-  uint8_t *buf;
   size_t buf_width;
   size_t buf_height;
+  uint8_t *buf;
+} dt_iop_overlay_data_t;
 
-  size_t pwidth;
-  size_t pheight;
-  guint thumb_timeout_id;
-} dt_iop_overlay_buf_t;
-
-#define MAX_OVERLAY 20
+#define MAX_OVERLAY 50
 
 typedef struct dt_iop_overlay_global_data_t
 {
-  int index;
-  dt_iop_overlay_buf_t buf[MAX_OVERLAY];
+  uint8_t *cache[MAX_OVERLAY];
 } dt_iop_overlay_global_data_t;
 
 typedef struct dt_iop_overlay_gui_data_t
@@ -150,19 +139,17 @@ typedef struct dt_iop_overlay_gui_data_t
 
 /* Notes about the implementation.
 
-   This tricky part is that it is not possible to render the overlay
-   image from process. This is because the pipe has locks and it is
-   not possible at this time to initiate a new pipe to render the
-   overlay (see _setup_overlay).
+   The creation of the overlay image use a standard pipe run. This is
+   not fast so a cache is used.
 
    - The cached overlay buffers are stored into the global data. One slot is
-     allocated for each instances.
+     allocated for each instances (index is the multi_priority).
 
-   - In parameters we have the inded of the cache entry in global data.
+   - In parameters we have the width x height of the cached image buffer.
 
    - A hash is added in parameter to ensure the parameters are changed
      when the cache is changed too and so ensure that the proper
-     buffer is displayed. This hash contains values not part of parameters.
+     buffer is displayed. This hash is the buffer pointer casted as uint64_t.
  */
 
 const char *name()
@@ -198,9 +185,11 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_RGB;
 }
 
-static GList *_get_disabled_modules(const int imgid, const int multi_priority)
+static GList *_get_disabled_modules(const dt_iop_module_t *self)
 {
-  dt_develop_t *dev = darktable.develop;
+  const dt_develop_t *dev = self->dev;
+  const int imgid = dev->image_storage.id;
+  const int multi_priority = self->multi_priority;
 
   // we want the list of all modules in imgid that are after the current
   // overlay module iop-order. And also colorin and colorout. Note that we
@@ -246,6 +235,14 @@ static GList *_get_disabled_modules(const int imgid, const int multi_priority)
   return result;
 }
 
+static void _clear_cache_entry(dt_iop_module_t *self, const int index)
+{
+  dt_iop_overlay_global_data_t *gd = (dt_iop_overlay_global_data_t *)self->global_data;
+
+  dt_free_align(gd->cache[index]);
+  gd->cache[index] = NULL;
+}
+
 static void _module_remove_callback(gpointer instance,
                                     dt_iop_module_t *self,
                                     gpointer user_data)
@@ -256,33 +253,18 @@ static void _module_remove_callback(gpointer instance,
     dt_overlay_remove(self->dev->image_storage.id, p->imgid);
 }
 
-static void _clear_overlay_entry(dt_iop_overlay_buf_t *buf)
-{
-  if(buf->thumb_timeout_id != 0)
-    g_source_remove(buf->thumb_timeout_id);
-
-  dt_free_align(buf->buf);
-  buf->buf              = NULL;
-  buf->buf_width        = 0;
-  buf->buf_height       = 0;
-  buf->pwidth           = 0;
-  buf->pheight          = 0;
-  buf->thumb_timeout_id = 0;
-  buf->imgid            = NO_IMGID;
-}
-
-static void _setup_overlay(dt_iop_module_t *self)
+static void _setup_overlay(dt_iop_module_t *self,
+                           dt_dev_pixelpipe_iop_t *piece,
+                           uint8_t **pbuf)
 {
   dt_iop_overlay_params_t *p = (dt_iop_overlay_params_t *)self->params;
-  dt_iop_overlay_global_data_t *gd = (dt_iop_overlay_global_data_t *)self->global_data;
   dt_iop_overlay_gui_data_t *g = (dt_iop_overlay_gui_data_t *)self->gui_data;
+  dt_iop_overlay_data_t *data = (dt_iop_overlay_data_t *)piece->data;
 
-  dt_iop_overlay_buf_t *b = &gd->buf[gd->index];
-  const dt_imgid_t imgid = b->imgid;
+  const dt_imgid_t imgid = data->imgid;
 
-  if(!dt_is_valid_imgid(imgid))
+  if(!p || !dt_is_valid_imgid(imgid))
   {
-    _clear_overlay_entry(b);
     return;
   }
 
@@ -292,7 +274,7 @@ static void _setup_overlay(dt_iop_module_t *self)
   // imported again. Check if we can find
   if(!image_exists)
   {
-    const dt_imgid_t new_imgid = dt_image_get_id_full_path(b->filename);
+    const dt_imgid_t new_imgid = dt_image_get_id_full_path(data->filename);
     if(dt_is_valid_imgid(new_imgid))
     {
       image_exists = TRUE;
@@ -300,7 +282,7 @@ static void _setup_overlay(dt_iop_module_t *self)
       dt_dev_add_history_item(darktable.develop, self, TRUE);
       gtk_widget_queue_draw(GTK_WIDGET(g->area));
     }
-    else
+    else if(g)
     {
       gchar *tooltip = g_strdup_printf
         (_("overlay image missing from database\n\n"
@@ -311,19 +293,19 @@ static void _setup_overlay(dt_iop_module_t *self)
 
   if(image_exists)
   {
-    const float iscale = b->scale / 100.0f;
+    dt_develop_t *dev = self->dev;
 
-    const size_t width  = CLAMP(b->pwidth / iscale, 2*1024, 8*1024);
-    const size_t height = CLAMP(b->pheight / iscale, 2*1024, 8*1024);
+    const size_t width  = dev->image_storage.width;
+    const size_t height = dev->image_storage.width;
 
-    gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), "");
+    if(g)
+      gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), "");
 
     uint8_t *buf;
     size_t bw;
     size_t bh;
 
-    GList *disabled_modules = _get_disabled_modules(self->dev->image_storage.id,
-                                                    self->multi_priority);
+    GList *disabled_modules = _get_disabled_modules(self);
 
     dt_dev_image(imgid, width, height,
                  -1,
@@ -331,37 +313,21 @@ static void _setup_overlay(dt_iop_module_t *self)
                  NULL, NULL,
                  -1, disabled_modules);
 
-    uint8_t *old_buf = b->buf;
+    uint8_t *old_buf = *pbuf;
 
-    b->buf        = buf;
-    b->buf_width  = bw;
-    b->buf_height = bh;
-    b->thumb_timeout_id = 0;
+    p->hash          = (int64_t)buf;
+    p->buf_width     = bw;
+    p->buf_height    = bh;
+    data->buf_width  = bw;
+    data->buf_height = bh;
 
+    *pbuf = buf;
     dt_free_align(old_buf);
-
-    const uint32_t test[] = { (uint32_t)imgid,
-                              (uint32_t)bw,
-                              (uint32_t)bh,
-                              (uint32_t)width,
-                              (uint32_t)height };
-
-    p->hash = dt_hash(DT_INITHASH, &test, sizeof(test));
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
   else
   {
     dt_control_log(_("image %d does not exists"), imgid);
   }
-}
-
-static gboolean _build_overlay(gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-
-  _setup_overlay(self);
-  dt_control_queue_redraw_center();
-  return FALSE;
 }
 
 void process(struct dt_iop_module_t *self,
@@ -378,30 +344,28 @@ void process(struct dt_iop_module_t *self,
   float *out = (float *)ovoid;
   const int ch = piece->colors;
   const float angle = (M_PI / 180) * (-data->rotate);
+  const int index   = self->multi_priority;
 
-  dt_iop_overlay_buf_t *b = &gd->buf[data->index];
+  uint8_t *cbuf = NULL;
 
-  // is overlay image ready
-  if(self->dev->preview_pipe
-     && (!dt_is_valid_imgid(data->imgid)
-         || (!b->buf
-             || (b->pwidth != self->dev->preview_pipe->iwidth
-                 || b->pheight != self->dev->preview_pipe->iheight))))
+  // if called from darkroom so edited image the is one in
+  // darktable->develop then we use the cache, otherwise we just use a
+  // scratch buffer local to process for rendering.
+  uint8_t **pbuf = self->dev->image_storage.id == darktable.develop->image_storage.id
+    ? &gd->cache[index]
+    : &cbuf;
+
+  if(!*pbuf)
   {
-    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
+    // need the overlay, create the buffer now
+    _setup_overlay(self, piece, pbuf);
 
-    // let register a build of the overlay buffer if image id valid
-    gd->index = data->index;
-    b->imgid = data->imgid;
-    b->scale = data->scale;
-    b->pwidth = self->dev->preview_pipe->iwidth;
-    b->pheight = self->dev->preview_pipe->iheight;
-    g_strlcpy(b->filename, data->filename, sizeof(data->filename));
-
-    if(dt_is_valid_imgid(data->imgid))
-      b->thumb_timeout_id = g_timeout_add(10, _build_overlay, self);
-
-    return;
+    if(!*pbuf)
+    {
+      // image does not exist / not rendered -> copy in to out
+      dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
+      return;
+    }
   }
 
   /* setup stride for performance */
@@ -441,12 +405,12 @@ void process(struct dt_iop_module_t *self,
 
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
 
-  const size_t bw = b->buf_width;
-  const size_t bh = b->buf_height;
+  const size_t bw = data->buf_width;
+  const size_t bh = data->buf_height;
 
   const size_t size_buf = bw * bh * sizeof(uint32_t);
   uint8_t *buf = (uint8_t *)dt_alloc_align(64, size_buf);
-  memcpy(buf, b->buf, size_buf);
+  memcpy(buf, *pbuf, size_buf);
 
   // load overlay image into surface 2
   surface_two = dt_view_create_surface(buf, bw, bh);
@@ -829,19 +793,6 @@ static void _alignment_callback(GtkWidget *tb, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void _signal_image_changed(gpointer instance, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_overlay_global_data_t *gd = (dt_iop_overlay_global_data_t *)self->global_data;
-  dt_iop_overlay_params_t *p = (dt_iop_overlay_params_t *)self->params;
-
-  for(int k=0; k<MAX_OVERLAY; k++)
-    _clear_overlay_entry(&gd->buf[k]);
-
-  p->hash = 0;
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
 void commit_params(struct dt_iop_module_t *self,
                    dt_iop_params_t *p1,
                    dt_dev_pixelpipe_t *pipe,
@@ -849,6 +800,9 @@ void commit_params(struct dt_iop_module_t *self,
 {
   dt_iop_overlay_params_t *p = (dt_iop_overlay_params_t *)p1;
   dt_iop_overlay_data_t *d = (dt_iop_overlay_data_t *)piece->data;
+  dt_iop_overlay_global_data_t *gd = (dt_iop_overlay_global_data_t *)self->global_data;
+
+  const int index   = self->multi_priority;
 
   d->opacity    = p->opacity;
   d->scale      = p->scale;
@@ -860,7 +814,9 @@ void commit_params(struct dt_iop_module_t *self,
   d->scale_img  = p->scale_img;
   d->scale_svg  = p->scale_svg;
   d->imgid      = p->imgid;
-  d->index      = p->index;
+  d->buf        = gd->cache[index];
+  d->buf_width  = p->buf_width;
+  d->buf_height = p->buf_height;
   g_strlcpy(d->filename, p->filename, sizeof(p->filename));
 }
 
@@ -901,21 +857,9 @@ void gui_update(struct dt_iop_module_t *self)
     gtk_widget_set_visible(GTK_WIDGET(g->scale_svg), FALSE);
   }
 
-  p->index = self->multi_priority;
-  p->hash = 0;
-
-  if(dt_is_valid_imgid(p->imgid))
-    dt_control_queue_redraw_center();
-}
-
-void reload_defaults(dt_iop_module_t *self)
-{
-  dt_iop_overlay_params_t *p = (dt_iop_overlay_params_t *)self->params;
-
-  if(dt_is_valid_imgid(p->imgid))
-    dt_overlay_remove(self->dev->image_storage.id, p->imgid);
-
-  p->index = self->multi_priority;
+  // enterring from darkroom, clear cache
+  for(int k=0; k<MAX_OVERLAY; k++)
+    _clear_cache_entry(self, k);
 }
 
 void gui_reset(dt_iop_module_t *self)
@@ -923,7 +867,9 @@ void gui_reset(dt_iop_module_t *self)
   dt_iop_overlay_gui_data_t *g = (dt_iop_overlay_gui_data_t *)self->gui_data;
   dt_iop_overlay_params_t *p = (dt_iop_overlay_params_t *)self->params;
 
-  p->index = self->multi_priority;
+  if(dt_is_valid_imgid(p->imgid))
+    dt_overlay_remove(self->dev->image_storage.id, p->imgid);
+
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
@@ -960,13 +906,16 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_overlay_global_data_t *gd = (dt_iop_overlay_global_data_t *)module->data;
-
-  for(int k=0; k<MAX_OVERLAY; k++)
-    _clear_overlay_entry(&gd->buf[k]);
-
   free(module->data);
   module->data = NULL;
+}
+
+static void _signal_image_changed(gpointer instance, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+
+  for(int k=0; k<MAX_OVERLAY; k++)
+    _clear_cache_entry(self, k);
 }
 
 static void _drag_and_drop_received(GtkWidget *widget,
@@ -981,7 +930,6 @@ static void _drag_and_drop_received(GtkWidget *widget,
   dt_iop_module_t *self = (dt_iop_module_t *)data;
   dt_iop_overlay_gui_data_t *g = (dt_iop_overlay_gui_data_t *)self->gui_data;
   dt_iop_overlay_params_t *p = (dt_iop_overlay_params_t *)self->params;
-  dt_iop_overlay_global_data_t *gd = (dt_iop_overlay_global_data_t *)self->global_data;
 
   gboolean success = FALSE;
   if(selection_data != NULL && target_type == DND_TARGET_IMGID)
@@ -989,6 +937,7 @@ static void _drag_and_drop_received(GtkWidget *widget,
     const int imgs_nb = gtk_selection_data_get_length(selection_data) / sizeof(dt_imgid_t);
     if(imgs_nb)
     {
+      const int index  = self->multi_priority;
       dt_imgid_t *imgs = (dt_imgid_t *)gtk_selection_data_get_data(selection_data);
 
       // remove previous overly if valid
@@ -997,12 +946,14 @@ static void _drag_and_drop_received(GtkWidget *widget,
 
       // and record the new one
       p->imgid = imgs[0];
-      _clear_overlay_entry(&gd->buf[p->index]);
+      p->hash = 0;
+      _clear_cache_entry(self, index);
 
       dt_overlay_record(self->dev->image_storage.id, p->imgid);
 
       gboolean from_cache = FALSE;
       dt_image_full_path(p->imgid, p->filename, sizeof(p->filename), &from_cache);
+
       dt_dev_add_history_item(darktable.develop, self, TRUE);
 
       dt_control_queue_redraw_center();
@@ -1019,9 +970,6 @@ void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_overlay_gui_data_t *g = IOP_GUI_ALLOC(overlay);
   dt_iop_overlay_params_t *p = (dt_iop_overlay_params_t *)self->params;
-
-//  p->imgid = NO_IMGID;
-//  p->index = self->multi_priority;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
@@ -1042,7 +990,7 @@ void gui_init(struct dt_iop_module_t *self)
      GTK_DEST_DEFAULT_ALL, /* default actions for dest on DnD */
      target_list_all,      /* lists of target to support */
      n_targets_all,        /* size of list */
-     GDK_ACTION_MOVE      /* what to do with data after dropped */
+     GDK_ACTION_MOVE       /* what to do with data after dropped */
      );
 
   g_signal_connect(GTK_WIDGET(g->area),
@@ -1089,7 +1037,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   // Create the 3x3 gtk table toggle button table...
   GtkWidget *bat = gtk_grid_new();
-  GtkWidget *label = dtgtk_reset_label_new(_("alignment"), self, &p->alignment, sizeof(p->alignment));
+  GtkWidget *label = dtgtk_reset_label_new(_("alignment"),
+                                           self, &p->alignment, sizeof(p->alignment));
   gtk_grid_attach(GTK_GRID(bat), label, 0, 0, 1, 3);
   gtk_widget_set_hexpand(label, TRUE);
   gtk_grid_set_row_spacing(GTK_GRID(bat), DT_PIXEL_APPLY_DPI(3));
@@ -1116,10 +1065,11 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->scale, _("the scale of the overlay"));
   gtk_widget_set_tooltip_text(g->rotate, _("the rotation of the overlay"));
 
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
-                                  G_CALLBACK(_signal_image_changed), self);
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_REMOVE,
                                   G_CALLBACK(_module_remove_callback), self);
+
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
+                                  G_CALLBACK(_signal_image_changed), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -1127,9 +1077,10 @@ void gui_cleanup(struct dt_iop_module_t *self)
   IOP_GUI_FREE;
 
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_signal_image_changed), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
                                      G_CALLBACK(_module_remove_callback), self);
+
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
+                                     G_CALLBACK(_signal_image_changed), self);
 }
 
 // clang-format off
