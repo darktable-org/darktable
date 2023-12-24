@@ -851,14 +851,25 @@ static int32_t dt_control_remove_images_job_run(dt_job_t *job)
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
     GList *overlay = dt_overlay_get_used_in_imgs(imgid);
-    if(overlay)
+    int exist_count = 0;
+
+    // count images still using this overlay (that is still in db)
+    GList *l = overlay;
+    while(l)
     {
-      const int nbimg = g_list_length(overlay);
+      const dt_imgid_t _imgid = GPOINTER_TO_INT(l->data);
+      if(dt_image_exists(_imgid))
+        exist_count++;
+      l = g_list_next(l);
+    }
+
+    if(exist_count > 0)
+    {
       char *filename = dt_image_get_filename(imgid);
       dt_control_log
         (ngettext("not removing image '%s' used as overlay in %d image",
-                  "not removing image '%s' used as overlay in %d images", nbimg),
-         filename, nbimg);
+                  "not removing image '%s' used as overlay in %d images", exist_count),
+         filename, exist_count);
       g_list_free(overlay);
       g_free(filename);
     }
