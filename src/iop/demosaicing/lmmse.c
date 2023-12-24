@@ -156,10 +156,7 @@ static void lmmse_demosaic(
   // refinement steps
   const int refine = (mode > 2) ? mode - 2 : 0;
 
-  const float scaler = fmaxf(1.0f,
-                             fmaxf(piece->pipe->dsc.processed_maximum[0],
-                                   fmaxf(piece->pipe->dsc.processed_maximum[1],
-                                         piece->pipe->dsc.processed_maximum[2])));
+  const float scaler = dt_iop_get_processed_maximum(piece);
   const float revscaler = 1.0f / scaler;
 
   const int num_vertical =   1 + (height - 2 * LMMSE_OVERLAP -1) / LMMSE_TILEVALID;

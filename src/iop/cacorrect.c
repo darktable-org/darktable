@@ -289,11 +289,7 @@ void process(
     return;
   }
 
-  const float scaler = fmaxf(1.0f,
-                       fmaxf(piece->pipe->dsc.processed_maximum[0],
-                       fmaxf(piece->pipe->dsc.processed_maximum[1],
-                             piece->pipe->dsc.processed_maximum[2])));
-
+  const float scaler = dt_iop_get_processed_maximum(piece);
   dt_iop_image_scaled_copy(out, input, 1.0f / scaler, roi_in->width, roi_in->height, 1);
 
   if(run_fast) goto writeout;

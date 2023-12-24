@@ -139,8 +139,7 @@ void amaze_demosaic(dt_dev_pixelpipe_iop_t *piece,
   int winh = roi_in->height;
 
   const int width = winw, height = winh;
-  const float clip_pt = fminf(piece->pipe->dsc.processed_maximum[0],
-                              fminf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
+  const float clip_pt = dt_iop_get_processed_minimum(piece);
   const float clip_pt8 = 0.8f * clip_pt;
 
 // this allows to pass AMAZETS to the code. On some machines larger AMAZETS is faster
@@ -1238,7 +1237,7 @@ void amaze_demosaic(dt_dev_pixelpipe_iop_t *piece,
                                       + (hvwt[(indx + v1) >> 1]) * Dgrb[0][(indx + v1) >> 1])
                                          * temp,
                                0.0, 1.0);
- 
+
                 out[(row * roi_out->width + col) * 4 + 2]
                     = _clampnan(rgbgreen[indx]
                                    - ((hvwt[(indx - v1) >> 1]) * Dgrb[1][(indx - v1) >> 1]
