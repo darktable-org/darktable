@@ -502,8 +502,7 @@ int process_cl(struct dt_iop_module_t *self,
         dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->pipe->dsc.xtrans), piece->pipe->dsc.xtrans);
         if(dev_xtrans == NULL) goto finish;
 
-        size_t sizes[] = { ROUNDUPDWD(roi_out->width, devid), ROUNDUPDHT(roi_out->height, devid), 1 };
-        dt_opencl_set_kernel_args(devid, gd->kernel_highlights_false_color, 0,
+        err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_false_color, roi_out->width, roi_out->height,
           CLARG(dev_in), CLARG(dev_out),
           CLARG(roi_out->width), CLARG(roi_out->height),
           CLARG(roi_in->width), CLARG(roi_in->height),
@@ -511,15 +510,12 @@ int process_cl(struct dt_iop_module_t *self,
           CLARG(filters), CLARG(dev_xtrans),
           CLARG(dev_clips));
 
-        err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights_false_color, sizes);
         goto finish;
       }
     }
   }
 
-  const float clip = d->clip
-                     * fminf(piece->pipe->dsc.processed_maximum[0],
-                             fminf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
+  const float clip = d->clip * dt_iop_get_processed_minimum(piece);
 
   if(!filters)
   {
@@ -576,9 +572,10 @@ int process_cl(struct dt_iop_module_t *self,
   }
   else if(d->mode == DT_IOP_HIGHLIGHTS_LAPLACIAN)
   {
-    const dt_aligned_pixel_t clips = {  0.995f * d->clip * piece->pipe->dsc.processed_maximum[0],
-                                        0.995f * d->clip * piece->pipe->dsc.processed_maximum[1],
-                                        0.995f * d->clip * piece->pipe->dsc.processed_maximum[2], clip };
+    const float clipper = d->clip * highlights_clip_magics[DT_IOP_HIGHLIGHTS_LAPLACIAN];
+    const dt_aligned_pixel_t clips = { clipper * piece->pipe->dsc.processed_maximum[0],
+                                       clipper * piece->pipe->dsc.processed_maximum[1],
+                                       clipper * piece->pipe->dsc.processed_maximum[2], clip };
     err = process_laplacian_bayer_cl(self, piece, dev_in, dev_out, roi_in, roi_out, clips);
   }
   else // (d->mode == DT_IOP_HIGHLIGHTS_CLIP)
@@ -596,9 +593,8 @@ int process_cl(struct dt_iop_module_t *self,
   {
     // The guided laplacian and opposed are the modes that keeps signal scene-referred and don't clip highlights to 1
     // For the other modes, we need to notify the pipeline that white point has changed
-    const float m = fmaxf(fmaxf(piece->pipe->dsc.processed_maximum[0], piece->pipe->dsc.processed_maximum[1]),
-                          piece->pipe->dsc.processed_maximum[2]);
-    for(int k = 0; k < 3; k++) piece->pipe->dsc.processed_maximum[k] = m;
+    const float m = dt_iop_get_processed_maximum(piece);
+    for_three_channels(k) piece->pipe->dsc.processed_maximum[k] = m;
   }
 
   finish:
@@ -728,19 +724,16 @@ void process(struct dt_iop_module_t *self,
     high_quality = (level >= min_s);
   }
 
-  const float clip
-      = data->clip * fminf(piece->pipe->dsc.processed_maximum[0],
-                           fminf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
+  const float clip = data->clip * dt_iop_get_processed_minimum(piece);
 
   if(filters == 0)
   {
     if(data->mode == DT_IOP_HIGHLIGHTS_CLIP)
     {
       process_clip(piece, ivoid, ovoid, roi_in, roi_out, clip);
-      for(int k=0;k<3;k++)
-        piece->pipe->dsc.processed_maximum[k]
-          = fminf(piece->pipe->dsc.processed_maximum[0],
-                  fminf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
+      const float m = dt_iop_get_processed_minimum(piece);
+      for_three_channels(k)
+        piece->pipe->dsc.processed_maximum[k] = m;
     }
     else
     {
@@ -753,9 +746,10 @@ void process(struct dt_iop_module_t *self,
   {
     case DT_IOP_HIGHLIGHTS_INPAINT: // a1ex's (magiclantern) idea of color inpainting:
     {
-      const float clips[4] = { 0.987 * data->clip * piece->pipe->dsc.processed_maximum[0],
-                               0.987 * data->clip * piece->pipe->dsc.processed_maximum[1],
-                               0.987 * data->clip * piece->pipe->dsc.processed_maximum[2], clip };
+      const float clipper = data->clip * highlights_clip_magics[DT_IOP_HIGHLIGHTS_INPAINT];
+      const float clips[4] = { clipper * piece->pipe->dsc.processed_maximum[0],
+                               clipper * piece->pipe->dsc.processed_maximum[1],
+                               clipper * piece->pipe->dsc.processed_maximum[2], clip };
 
       if(filters == 9u)
       {
@@ -839,9 +833,10 @@ void process(struct dt_iop_module_t *self,
 
     case DT_IOP_HIGHLIGHTS_LAPLACIAN:
     {
-      const dt_aligned_pixel_t clips = { 0.995f * data->clip * piece->pipe->dsc.processed_maximum[0],
-                                         0.995f * data->clip * piece->pipe->dsc.processed_maximum[1],
-                                         0.995f * data->clip * piece->pipe->dsc.processed_maximum[2], clip };
+      const float clipper = data->clip * highlights_clip_magics[DT_IOP_HIGHLIGHTS_LAPLACIAN];
+      const dt_aligned_pixel_t clips = { clipper * piece->pipe->dsc.processed_maximum[0],
+                                         clipper * piece->pipe->dsc.processed_maximum[1],
+                                         clipper * piece->pipe->dsc.processed_maximum[2], clip };
       process_laplacian_bayer(self, piece, ivoid, ovoid, roi_in, roi_out, clips);
       break;
     }
@@ -858,9 +853,8 @@ void process(struct dt_iop_module_t *self,
   {
     // The guided laplacian, inpaint opposed and segmentation modes keep signal scene-referred and don't clip highlights to 1
     // For the other modes, we need to notify the pipeline that white point has changed
-    const float m = fmaxf(fmaxf(piece->pipe->dsc.processed_maximum[0], piece->pipe->dsc.processed_maximum[1]),
-                          piece->pipe->dsc.processed_maximum[2]);
-    for(int k = 0; k < 3; k++) piece->pipe->dsc.processed_maximum[k] = m;
+    const float m = dt_iop_get_processed_maximum(piece);
+    for_three_channels(k) piece->pipe->dsc.processed_maximum[k] = m;
   }
 }
 
