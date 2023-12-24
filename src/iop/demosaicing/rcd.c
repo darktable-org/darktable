@@ -301,7 +301,7 @@ static void rcd_demosaic(
 
   rcd_ppg_border(out, in, width, height, filters, RCD_MARGIN);
 
-  const float scaler = fmaxf(piece->pipe->dsc.processed_maximum[0], fmaxf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
+  const float scaler = dt_iop_get_processed_maximum(piece);
   const float revscaler = 1.0f / scaler;
 
   const int num_vertical = 1 + (height - 2 * RCD_BORDER -1) / RCD_TILEVALID;
@@ -703,7 +703,7 @@ static int process_rcd_cl(
 
     {
       // populate data
-      const float scaler = 1.0f / fmaxf(piece->pipe->dsc.processed_maximum[0], fmaxf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
+      const float scaler = 1.0f / dt_iop_get_processed_maximum(piece);
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_populate, width, height,
         CLARG(dev_in), CLARG(cfa), CLARG(rgb0), CLARG(rgb1), CLARG(rgb2), CLARG(width), CLARG(height),
         CLARG(piece->pipe->dsc.filters), CLARG(scaler));
@@ -765,8 +765,7 @@ static int process_rcd_cl(
         CLARG(VH_dir), CLARG(rgb0), CLARG(rgb1), CLARG(rgb2), CLARG(width), CLARG(height), CLARG(piece->pipe->dsc.filters));
       if(err != CL_SUCCESS) goto error;
     }
-    const float scaler = fmaxf(piece->pipe->dsc.processed_maximum[0], fmaxf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
-
+    const float scaler = dt_iop_get_processed_maximum(piece);
     {
       // write output
       const int myborder = RCD_MARGIN;
