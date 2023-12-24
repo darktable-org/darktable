@@ -271,16 +271,6 @@ static void _clear_overlay_entry(dt_iop_overlay_buf_t *buf)
   buf->imgid            = NO_IMGID;
 }
 
-static void _clear_overlay(dt_iop_module_t *self)
-{
-  dt_iop_overlay_params_t *p = (dt_iop_overlay_params_t *)self->params;
-  dt_iop_overlay_global_data_t *gd = (dt_iop_overlay_global_data_t *)self->global_data;
-
-  dt_iop_overlay_buf_t *b = &gd->buf[p->index];
-
-  _clear_overlay_entry(b);
-}
-
 static void _setup_overlay(dt_iop_module_t *self)
 {
   dt_iop_overlay_params_t *p = (dt_iop_overlay_params_t *)self->params;
@@ -350,7 +340,8 @@ static void _setup_overlay(dt_iop_module_t *self)
 
     dt_free_align(old_buf);
 
-    const uint32_t test[] = { (uint32_t)bw,
+    const uint32_t test[] = { (uint32_t)imgid,
+                              (uint32_t)bw,
                               (uint32_t)bh,
                               (uint32_t)width,
                               (uint32_t)height };
@@ -841,7 +832,14 @@ static void _alignment_callback(GtkWidget *tb, gpointer user_data)
 static void _signal_image_changed(gpointer instance, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  _clear_overlay(self);
+  dt_iop_overlay_global_data_t *gd = (dt_iop_overlay_global_data_t *)self->global_data;
+  dt_iop_overlay_params_t *p = (dt_iop_overlay_params_t *)self->params;
+
+  for(int k=0; k<MAX_OVERLAY; k++)
+    _clear_overlay_entry(&gd->buf[k]);
+
+  p->hash = 0;
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 void commit_params(struct dt_iop_module_t *self,
@@ -904,6 +902,7 @@ void gui_update(struct dt_iop_module_t *self)
   }
 
   p->index = self->multi_priority;
+  p->hash = 0;
 
   if(dt_is_valid_imgid(p->imgid))
     dt_control_queue_redraw_center();
