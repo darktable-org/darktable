@@ -203,8 +203,6 @@ void distort_mask(struct dt_iop_module_t *self,
   dt_print(DT_DEBUG_ALWAYS, "TODO: implement %s() in %s\n", __FUNCTION__, __FILE__);
 }
 
-// 1st pass: how large would the output be, given this input roi?
-// this is always called with the full buffer before processing.
 void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,
                     const dt_iop_roi_t *const roi_in)
 {
@@ -247,7 +245,6 @@ void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop
   roi_out->height = MAX(0, roi_out->height & ~1);
 }
 
-// 2nd pass: which roi would this operation need as input to fill the given output region?
 void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_out,
                    dt_iop_roi_t *roi_in)
 {

@@ -418,8 +418,6 @@ void modify_roi_out(
   roi_out->y = 0;
 }
 
-// which roi input is needed to process to this output?
-// roi_out is unchanged, full buffer in is full buffer out.
 void modify_roi_in(
         struct dt_iop_module_t *self,
         struct dt_dev_pixelpipe_iop_t *piece,
