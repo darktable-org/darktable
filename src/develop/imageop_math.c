@@ -213,7 +213,7 @@ int dt_iop_clip_and_zoom_roi_cl(int devid,
             (devid, in, dev_in, roi_in->width, roi_in->height, 4 * sizeof(float));
       if(err == CL_SUCCESS)
       {
-        dt_iop_clip_and_zoom_roi(out, in, roi_out, roi_in, 0, 0);
+        dt_iop_clip_and_zoom_roi(out, in, roi_out, roi_in, roi_out->width, roi_in->width);
         err = dt_opencl_write_host_to_device
               (devid, out, dev_out, roi_out->width, roi_out->height, 4 * sizeof(float));
       }
