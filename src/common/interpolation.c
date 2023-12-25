@@ -73,16 +73,6 @@ static void _show_2_times(const dt_times_t *start,
   }
 }
 
-#if DEBUG_PRINT_VERBOSE
-#define debug_extra(...)               \
-  do                                   \
-  {                                    \
-    fprintf(stderr, __VA_ARGS__);      \
-  } while(0)
-#else
-#define debug_extra(...)
-#endif
-
 /* --------------------------------------------------------------------------
  * Generic helpers
  * ------------------------------------------------------------------------*/
@@ -1109,8 +1099,6 @@ static void _interpolation_resample_plain(const struct dt_interpolation *itor,
     // Process each output column
     for(size_t ox = 0; ox < width; ox++)
     {
-      debug_extra("output %p [% 4d % 4d]\n", out, ox, oy);
-
       // This will hold the resulting pixel
       dt_aligned_pixel_t vs = { 0.0f, 0.0f, 0.0f, 0.0f };
 
@@ -1456,10 +1444,8 @@ int dt_interpolation_resample_roi_cl(const struct dt_interpolation *itor,
 static void _interpolation_resample_1c_plain(const struct dt_interpolation *itor,
                                              float *out,
                                              const dt_iop_roi_t *const roi_out,
-                                             const int32_t out_stride,
                                              const float *const in,
-                                             const dt_iop_roi_t *const roi_in,
-                                             const int32_t in_stride)
+                                             const dt_iop_roi_t *const roi_in)
 {
   int *hindex = NULL;
   int *hlength = NULL;
@@ -1474,6 +1460,9 @@ static void _interpolation_resample_1c_plain(const struct dt_interpolation *itor
   dt_times_t start = { 0 }, mid = { 0 };
   dt_get_perf_times(&start);
 
+  const size_t out_stride = roi_out->width * sizeof(float);
+  const size_t in_stride = roi_in->width * sizeof(float);
+
   // Fast code path for 1:1 copy, only cropping area can change
   if(roi_out->scale == 1.f)
   {
@@ -1485,8 +1474,8 @@ static void _interpolation_resample_1c_plain(const struct dt_interpolation *itor
 #endif
     for(int y = 0; y < roi_out->height; y++)
     {
-      float *i = (float *)((char *)in + (size_t)in_stride * (y + roi_out->y) + x0);
-      float *o = (float *)((char *)out + (size_t)out_stride * y);
+      float *i = (float *)((char *)in + in_stride * (y + roi_out->y) + x0);
+      float *o = (float *)((char *)out + out_stride * y);
       memcpy(o, i, out_stride);
     }
     dt_show_times_f(&start, "[resample_1c_plain]", "1:1 copy/crop of %dx%d pixels",
@@ -1534,8 +1523,6 @@ static void _interpolation_resample_1c_plain(const struct dt_interpolation *itor
     // Process each output column
     for(int ox = 0; ox < roi_out->width; ox++)
     {
-      debug_extra("output %p [% 4d % 4d]\n", out, ox, oy);
-
       // This will hold the resulting pixel
       float vs = 0.0f;
 
@@ -1545,7 +1532,7 @@ static void _interpolation_resample_1c_plain(const struct dt_interpolation *itor
       for(int iy = 0; iy < vl; iy++)
       {
         // This is our input line
-        const float *i = (float *)((char *)in + (size_t)in_stride * vindex[viidx++]);
+        const float *i = (float *)((char *)in + in_stride * vindex[viidx++]);
 
         float vhs = 0.0f;
 
@@ -1596,13 +1583,10 @@ static void _interpolation_resample_1c_plain(const struct dt_interpolation *itor
 void dt_interpolation_resample_1c(const struct dt_interpolation *itor,
                                   float *out,
                                   const dt_iop_roi_t *const roi_out,
-                                  const int32_t out_stride,
                                   const float *const in,
-                                  const dt_iop_roi_t *const roi_in,
-                                  const int32_t in_stride)
+                                  const dt_iop_roi_t *const roi_in)
 {
-  return _interpolation_resample_1c_plain(itor, out, roi_out, out_stride,
-                                          in, roi_in, in_stride);
+  return _interpolation_resample_1c_plain(itor, out, roi_out, in, roi_in);
 }
 
 /** Applies resampling (re-scaling) on a specific region-of-interest of an image. The input
@@ -1612,10 +1596,8 @@ void dt_interpolation_resample_1c(const struct dt_interpolation *itor,
 void dt_interpolation_resample_roi_1c(const struct dt_interpolation *itor,
                                       float *out,
                                       const dt_iop_roi_t *const roi_out,
-                                      const int32_t out_stride,
                                       const float *const in,
-                                      const dt_iop_roi_t *const roi_in,
-                                      const int32_t in_stride)
+                                      const dt_iop_roi_t *const roi_in)
 {
   dt_iop_roi_t oroi = *roi_out;
   oroi.x = oroi.y = 0;
@@ -1623,7 +1605,7 @@ void dt_interpolation_resample_roi_1c(const struct dt_interpolation *itor,
   dt_iop_roi_t iroi = *roi_in;
   iroi.x = iroi.y = 0;
 
-  dt_interpolation_resample_1c(itor, out, &oroi, out_stride, in, &iroi, in_stride);
+  dt_interpolation_resample_1c(itor, out, &oroi, in, &iroi);
 }
 
 // clang-format off
