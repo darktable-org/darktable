@@ -1484,8 +1484,7 @@ static gboolean _dev_pixelpipe_process_rec(
         roi_in.scale = 1.0f;
         dt_print_pipe(DT_DEBUG_PIPE,
           "pixelpipe data: clip&zoom", pipe, module, &roi_in, roi_out, "\n");
-        dt_iop_clip_and_zoom(*output, pipe->input, roi_out, &roi_in,
-                             roi_out->width, pipe->iwidth);
+        dt_iop_clip_and_zoom(*output, pipe->input, roi_out, &roi_in);
       }
     }
 
