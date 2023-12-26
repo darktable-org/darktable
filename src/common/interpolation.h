@@ -131,14 +131,12 @@ const struct dt_interpolation *dt_interpolation_new(enum dt_interpolation_type t
  * @param in_stride [in] Input line stride in <strong>bytes</strong>
  */
 void dt_interpolation_resample(const struct dt_interpolation *itor, float *out,
-                               const dt_iop_roi_t *const roi_out, const int32_t out_stride,
-                               const float *const in, const dt_iop_roi_t *const roi_in,
-                               const int32_t in_stride);
+                               const dt_iop_roi_t *const roi_out,
+                               const float *const in, const dt_iop_roi_t *const roi_in);
 
 void dt_interpolation_resample_roi(const struct dt_interpolation *itor, float *out,
-                                   const dt_iop_roi_t *const roi_out, const int32_t out_stride,
-                                   const float *const in, const dt_iop_roi_t *const roi_in,
-                                   const int32_t in_stride);
+                                   const dt_iop_roi_t *const roi_out,
+                                   const float *const in, const dt_iop_roi_t *const roi_in);
 
 #ifdef HAVE_OPENCL
 typedef struct dt_interpolation_cl_global_t
@@ -182,16 +180,13 @@ int dt_interpolation_resample_roi_cl(const struct dt_interpolation *itor, int de
                                      const dt_iop_roi_t *const roi_in);
 #endif
 
-// same as above for single channel images (i.e., masks). no SSE or CPU code paths for now
-void dt_interpolation_resample_1c(const struct dt_interpolation *itor, float *out,
-                                  const dt_iop_roi_t *const roi_out, const int32_t out_stride,
-                                  const float *const in, const dt_iop_roi_t *const roi_in,
-                                  const int32_t in_stride);
+void dt_interpolation_resample_1c(const struct dt_interpolation *itor,
+                                  float *out, const dt_iop_roi_t *const roi_out,
+                                  const float *const in, const dt_iop_roi_t *const roi_in);
 
-void dt_interpolation_resample_roi_1c(const struct dt_interpolation *itor, float *out,
-                                      const dt_iop_roi_t *const roi_out, const int32_t out_stride,
-                                      const float *const in, const dt_iop_roi_t *const roi_in,
-                                      const int32_t in_stride);
+void dt_interpolation_resample_roi_1c(const struct dt_interpolation *itor,
+                                      float *out, const dt_iop_roi_t *const roi_out,
+                                      const float *const in, const dt_iop_roi_t *const roi_in);
 
 #ifdef __cplusplus
 } // extern "C"

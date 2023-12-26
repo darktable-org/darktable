@@ -118,9 +118,7 @@ void distort_mask(struct dt_iop_module_t *self,
 {
   const struct dt_interpolation *itor =
     dt_interpolation_new(DT_INTERPOLATION_USERPREF);
-  dt_interpolation_resample_roi_1c(itor,
-                                   out, roi_out, roi_out->width * sizeof(float),
-                                   in, roi_in, roi_in->width * sizeof(float));
+  dt_interpolation_resample_1c(itor, out, roi_out, in, roi_in);
 }
 
 #ifdef HAVE_OPENCL
@@ -138,23 +136,11 @@ int process_cl(struct dt_iop_module_t *self,
   }
 
   const int devid = piece->pipe->devid;
-  const gboolean scaled = roi_in->width != roi_out->width
-    || roi_in->height != roi_out->height;
 
   dt_print_pipe(DT_DEBUG_IMAGEIO,
                 "clip_and_zoom_roi CL",
                 piece->pipe, self, roi_in, roi_out, "device=%i\n", devid);
-  if(scaled)
-  {
-    const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
-    return dt_interpolation_resample_cl(itor, devid, dev_out, roi_out, dev_in, roi_in);
-  }
-  else
-  {
-    size_t origin[] = { 0, 0, 0 };
-    size_t region[] = { roi_out->width, roi_out->height, 1 };
-    return dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
-  }
+  return dt_iop_clip_and_zoom_cl(devid, dev_out, dev_in, roi_out, roi_in);
 }
 #endif
 
@@ -167,19 +153,8 @@ void process(dt_iop_module_t *self,
 {
   dt_print_pipe(DT_DEBUG_IMAGEIO,
                 "clip_and_zoom_roi", piece->pipe, self, roi_in, roi_out, "\n");
-  const gboolean scaled = roi_in->width != roi_out->width
-    || roi_in->height != roi_out->height;
-  float *const restrict out = (float *)ovoid;
-  float *in = (float *)ivoid;
-  if(scaled)
-  {
-    const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
-    dt_interpolation_resample(itor,
-        out, roi_out, roi_out->width * 4 * sizeof(float),
-        in, roi_in, roi_in->width * 4 * sizeof(float));
-  }
-  else
-    dt_iop_image_copy(out, in, 4 * (size_t) roi_out->width * roi_out->height);
+
+  dt_iop_clip_and_zoom((float *)ovoid, (float *)ivoid, roi_out, roi_in);
 }
 
 void commit_params(dt_iop_module_t *self,
