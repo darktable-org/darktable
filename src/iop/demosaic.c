@@ -403,8 +403,7 @@ void distort_mask(
         const dt_iop_roi_t *const roi_out)
 {
   const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
-  dt_interpolation_resample_roi_1c(itor, out, roi_out, roi_out->width * sizeof(float), in, roi_in,
-                                   roi_in->width * sizeof(float));
+  dt_interpolation_resample_roi_1c(itor, out, roi_out, in, roi_in);
 }
 
 void modify_roi_out(
@@ -737,7 +736,7 @@ void process(
     {
       roi = *roi_out;
       dt_print_pipe(DT_DEBUG_PIPE, "clip_and_zoom_roi", piece->pipe, self, roi_in, roi_out, "\n");
-      dt_iop_clip_and_zoom_roi((float *)o, tmp, &roi, &roo, roi.width, roo.width);
+      dt_iop_clip_and_zoom_roi((float *)o, tmp, &roi, &roo);
       dt_free_align(tmp);
     }
   }
