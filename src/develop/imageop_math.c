@@ -156,8 +156,7 @@ void dt_iop_clip_and_zoom(float *out,
                           const dt_iop_roi_t *const roi_in)
 {
   const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
-  dt_interpolation_resample(itor, out, roi_out, roi_out->width * 4 * sizeof(float), in, roi_in,
-                            roi_in->width * 4 * sizeof(float));
+  dt_interpolation_resample(itor, out, roi_out, in, roi_in);
 }
 
 // apply clip and zoom on the image region supplied in the input buffer.
@@ -168,9 +167,7 @@ void dt_iop_clip_and_zoom_roi(float *out,
                               const dt_iop_roi_t *const roi_in)
 {
   const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
-  dt_interpolation_resample_roi(itor,
-                                out, roi_out, roi_out->width * 4 * sizeof(float),
-                                in, roi_in, roi_in->width * 4 * sizeof(float));
+  dt_interpolation_resample_roi(itor, out, roi_out, in, roi_in);
 }
 
 #ifdef HAVE_OPENCL
