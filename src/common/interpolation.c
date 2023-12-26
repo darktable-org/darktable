@@ -1013,10 +1013,8 @@ static gboolean _prepare_resampling_plan(const struct dt_interpolation *itor,
 static void _interpolation_resample_plain(const struct dt_interpolation *itor,
                                           float *out,
                                           const dt_iop_roi_t *const roi_out,
-                                          const int32_t out_stride,
                                           const float *const in,
-                                          const dt_iop_roi_t *const roi_in,
-                                          const int32_t in_stride)
+                                          const dt_iop_roi_t *const roi_in)
 {
   int *hindex = NULL;
   int *hlength = NULL;
@@ -1026,8 +1024,8 @@ static void _interpolation_resample_plain(const struct dt_interpolation *itor,
   float *vkernel = NULL;
   int *vmeta = NULL;
 
-  const int32_t in_stride_floats = in_stride / sizeof(float);
-  const int32_t out_stride_floats = out_stride / sizeof(float);
+  const int32_t in_stride_floats = roi_in->width * 4;
+  const int32_t out_stride_floats = roi_out->width * 4;
 
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
                 "resample_plain", NULL, NULL, roi_in, roi_out, "%s\n",itor->name);
@@ -1041,14 +1039,14 @@ static void _interpolation_resample_plain(const struct dt_interpolation *itor,
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(in, in_stride, out_stride, roi_out, x0) \
+    dt_omp_firstprivate(in, in_stride_floats, out_stride_floats, roi_out, x0) \
     shared(out)
 #endif
     for(int y = 0; y < roi_out->height; y++)
     {
-      memcpy((char *)out + (size_t)out_stride * y,
-             (char *)in + (size_t)in_stride * (y + roi_out->y) + x0,
-             out_stride);
+      memcpy((char *)out + (size_t)out_stride_floats * sizeof(float) * y,
+             (char *)in + (size_t)in_stride_floats * sizeof(float) * (y + roi_out->y) + x0,
+             out_stride_floats * sizeof(float));
     }
 
     dt_show_times_f(&start, "[resample_plain]", "1:1 copy/crop of %dx%d pixels",
@@ -1166,10 +1164,8 @@ exit:
 void dt_interpolation_resample(const struct dt_interpolation *itor,
                                float *out,
                                const dt_iop_roi_t *const roi_out,
-                               const int32_t out_stride,
                                const float *const in,
-                               const dt_iop_roi_t *const roi_in,
-                               const int32_t in_stride)
+                               const dt_iop_roi_t *const roi_in)
 {
   if(out == NULL)
   {
@@ -1177,8 +1173,7 @@ void dt_interpolation_resample(const struct dt_interpolation *itor,
     return;
   }
 
-  return _interpolation_resample_plain(itor, out, roi_out, out_stride, in,
-                                       roi_in, in_stride);
+  return _interpolation_resample_plain(itor, out, roi_out, in, roi_in);
 }
 
 /** Applies resampling (re-scaling) on a specific region-of-interest
@@ -1189,10 +1184,8 @@ void dt_interpolation_resample(const struct dt_interpolation *itor,
 void dt_interpolation_resample_roi(const struct dt_interpolation *itor,
                                    float *out,
                                    const dt_iop_roi_t *const roi_out,
-                                   const int32_t out_stride,
                                    const float *const in,
-                                   const dt_iop_roi_t *const roi_in,
-                                   const int32_t in_stride)
+                                   const dt_iop_roi_t *const roi_in)
 {
   dt_iop_roi_t oroi = *roi_out;
   oroi.x = oroi.y = 0;
@@ -1200,7 +1193,7 @@ void dt_interpolation_resample_roi(const struct dt_interpolation *itor,
   dt_iop_roi_t iroi = *roi_in;
   iroi.x = iroi.y = 0;
 
-  dt_interpolation_resample(itor, out, &oroi, out_stride, in, &iroi, in_stride);
+  dt_interpolation_resample(itor, out, &oroi, in, &iroi);
 }
 
 #ifdef HAVE_OPENCL

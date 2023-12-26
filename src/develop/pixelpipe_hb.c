@@ -1451,7 +1451,7 @@ static gboolean _dev_pixelpipe_process_rec(
     {
       if(roi_in.scale == 1.0f)
       {
-        // fast branch for 1:1 pixel copies.
+        // fast branch for 1:1 pixel copies. Supports all type of files via bpp.
 
         // last minute clamping to catch potential out-of-bounds in roi_in and roi_out
         const int in_x = MAX(roi_in.x, 0);
@@ -1482,19 +1482,21 @@ static gboolean _dev_pixelpipe_process_rec(
         roi_in.width = pipe->iwidth;
         roi_in.height = pipe->iheight;
         roi_in.scale = 1.0f;
+        const gboolean valid_bpp = (bpp == 4 * sizeof(float));
         dt_print_pipe(DT_DEBUG_PIPE,
-          "pixelpipe data: clip&zoom", pipe, module, &roi_in, roi_out, "\n");
-        dt_iop_clip_and_zoom(*output, pipe->input, roi_out, &roi_in);
+          "pixelpipe data: clip&zoom", pipe, module, &roi_in, roi_out, "%s\n",
+          valid_bpp ? "" : "requires 4 floats data");
+        if(valid_bpp)
+          dt_iop_clip_and_zoom(*output, pipe->input, roi_out, &roi_in);
+        else
+          dt_iop_image_fill(*output, 0.0f, roi_out->width, roi_out->height, 4);
       }
     }
 
     dt_show_times_f(&start, "[dev_pixelpipe]",
                     "initing base buffer [%s]", dt_dev_pixelpipe_type_to_str(pipe->type));
 
-    if(dt_atomic_get_int(&pipe->shutdown))
-      return TRUE;
-
-    return FALSE;
+    return dt_atomic_get_int(&pipe->shutdown) ? TRUE : FALSE;
   }
 
   // 3b) recurse and obtain output array in &input
