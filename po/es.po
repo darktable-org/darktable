@@ -12130,7 +12130,7 @@ msgstr "JPEG (8 bits)"
 
 #: ../src/imageio/format/jpeg.c:594
 msgid "chroma subsampling"
-msgstr "submuestreo de croma"
+msgstr "submuestreo de color"
 
 #: ../src/imageio/format/jpeg.c:595
 msgid ""
