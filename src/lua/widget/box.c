@@ -61,6 +61,81 @@ static int orientation_member(lua_State *L)
   return 1;
 }
 
+void _get_packing_info(lua_box box, gboolean *expand, gboolean *fill, guint *padding)
+{
+  GList *children = gtk_container_get_children(GTK_CONTAINER(box->widget));
+  for(const GList *l = children; l; l = g_list_next(l))
+  {
+    gtk_box_query_child_packing(GTK_BOX(box->widget), GTK_WIDGET(l->data), expand, fill, padding, NULL);
+    break;
+  }
+  g_list_free(children);
+}
+
+void _set_packing_info(lua_box box, gboolean expand, gboolean fill, guint padding)
+{
+  GList *children = gtk_container_get_children(GTK_CONTAINER(box->widget));
+  for(const GList *l = children; l; l = g_list_next(l))
+  {
+    gtk_box_set_child_packing(GTK_BOX(box->widget), GTK_WIDGET(l->data), expand, fill, padding, GTK_PACK_START);
+  }
+  g_list_free(children);
+}
+
+static int packing_expand_member(lua_State *L)
+{
+  lua_box box;
+  luaA_to(L, lua_box, &box, 1);
+  gboolean old_fill;
+  gboolean old_expand;
+  guint old_padding;
+  _get_packing_info(box, &old_expand, &old_fill, &old_padding);
+  if(lua_gettop(L) > 2) {
+    gboolean expand = lua_toboolean(L, 3);
+    if(gtk_orientable_get_orientation(GTK_ORIENTABLE(box->widget)) == GTK_ORIENTATION_HORIZONTAL)
+      _set_packing_info(box, expand, old_fill, old_padding);
+    return 0;
+  }
+  lua_pushboolean(L, old_expand);
+  return 1;
+}
+
+static int packing_fill_member(lua_State *L)
+{
+  lua_box box;
+  luaA_to(L, lua_box, &box, 1);
+  gboolean old_fill;
+  gboolean old_expand;
+  guint old_padding;
+  _get_packing_info(box, &old_expand, &old_fill, &old_padding);
+  if(lua_gettop(L) > 2) {
+    gboolean fill = lua_toboolean(L, 3);
+    if(gtk_orientable_get_orientation(GTK_ORIENTABLE(box->widget)) == GTK_ORIENTATION_HORIZONTAL)
+      _set_packing_info(box, old_expand, fill, old_padding);
+    return 0;
+  }
+  lua_pushboolean(L, old_fill);
+  return 1;
+}
+
+static int packing_padding_member(lua_State *L)
+{
+  lua_box box;
+  luaA_to(L, lua_box, &box, 1);
+  gboolean old_fill;
+  gboolean old_expand;
+  guint old_padding;
+  _get_packing_info(box, &old_expand, &old_fill, &old_padding);
+  if(lua_gettop(L) > 2) {
+    guint padding = lua_tointeger(L, 3);
+    if(gtk_orientable_get_orientation(GTK_ORIENTABLE(box->widget)) == GTK_ORIENTATION_HORIZONTAL)
+      _set_packing_info(box, old_expand, old_fill, padding);
+    return 0;
+  }
+  lua_pushboolean(L, old_padding);
+  return 1;
+}
+
 int dt_lua_init_widget_box(lua_State* L)
 {
   dt_lua_init_widget_type(L,&box_type,lua_box,GTK_TYPE_BOX);
@@ -68,6 +143,15 @@ int dt_lua_init_widget_box(lua_State* L)
   lua_pushcfunction(L,orientation_member);
   dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, lua_box, "orientation");
+  lua_pushcfunction(L,packing_expand_member);
+  dt_lua_gtk_wrap(L);
+  dt_lua_type_register(L, lua_box, "packing_expand");
+  lua_pushcfunction(L,packing_fill_member);
+  dt_lua_gtk_wrap(L);
+  dt_lua_type_register(L, lua_box, "packing_fill");
+  lua_pushcfunction(L,packing_padding_member);
+  dt_lua_gtk_wrap(L);
+  dt_lua_type_register(L, lua_box, "packing_padding");
   return 0;
 }
 // clang-format off
