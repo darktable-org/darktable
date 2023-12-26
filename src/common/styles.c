@@ -1284,9 +1284,9 @@ GList *dt_styles_get_item_list(const char *name,
       }
       item->name = g_strdup(iname);
       item->operation = g_strdup((char *)sqlite3_column_text(stmt, 3));
-      item->multi_name = g_strdup((char *)sqlite3_column_text(stmt, 7));
+      item->multi_name = g_strdup(multi_name);
       item->multi_name_hand_edited = multi_name_hand_edited;
-      item->iop_order = sqlite3_column_double(stmt, 8);
+      item->iop_order = 0;
       result = g_list_prepend(result, item);
     }
     sqlite3_finalize(stmt);
