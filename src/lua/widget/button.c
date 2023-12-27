@@ -57,9 +57,9 @@ static dt_lua_widget_type_t button_type =
 static void clicked_callback(GtkButton *widget, gpointer user_data)
 {
   dt_lua_async_call_alien(dt_lua_widget_trigger_callback,
-      0,NULL,NULL,
-      LUA_ASYNC_TYPENAME,"lua_widget",user_data,
-      LUA_ASYNC_TYPENAME,"const char*","clicked",
+      0, NULL, NULL,
+      LUA_ASYNC_TYPENAME, "lua_widget", user_data,
+      LUA_ASYNC_TYPENAME, "const char*", "clicked",
       LUA_ASYNC_DONE);
 }
 
@@ -112,11 +112,11 @@ static int halign_member(lua_State *L)
 static int label_member(lua_State *L)
 {
   lua_button button;
-  luaA_to(L,lua_button,&button,1);
+  luaA_to(L, lua_button, &button, 1);
   if(lua_gettop(L) > 2)
   {
-    const char * label = luaL_checkstring(L,3);
-    gtk_button_set_label(GTK_BUTTON(button->widget),label);
+    const char * label = luaL_checkstring(L, 3);
+    gtk_button_set_label(GTK_BUTTON(button->widget), label);
     if(ellipsize_store.used)
     {
       gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button->widget))), ellipsize_store.mode);
@@ -124,7 +124,7 @@ static int label_member(lua_State *L)
     }
     return 0;
   }
-  lua_pushstring(L,gtk_button_get_label(GTK_BUTTON(button->widget)));
+  lua_pushstring(L, gtk_button_get_label(GTK_BUTTON(button->widget)));
   return 1;
 }
 
@@ -133,14 +133,14 @@ static int image_member(lua_State *L)
   lua_button button;
   GtkWidget *image;
 
-  luaA_to(L,lua_button,&button,1);
+  luaA_to(L, lua_button, &button, 1);
   if(lua_gettop(L) > 2)
   {
-    const char * imagefile = luaL_checkstring(L,3);
+    const char * imagefile = luaL_checkstring(L, 3);
     image = gtk_image_new_from_file (imagefile);
-    gtk_button_set_image(GTK_BUTTON(button->widget),image);
-    gtk_button_set_image_position(GTK_BUTTON(button->widget),GTK_POS_LEFT);
-    gtk_button_set_always_show_image(GTK_BUTTON(button->widget),true);
+    gtk_button_set_image(GTK_BUTTON(button->widget), image);
+    gtk_button_set_image_position(GTK_BUTTON(button->widget), GTK_POS_LEFT);
+    gtk_button_set_always_show_image(GTK_BUTTON(button->widget), true);
     return 0;
   }
   return 0;
@@ -159,24 +159,24 @@ static int tostring_member(lua_State *L)
 
 int dt_lua_init_widget_button(lua_State* L)
 {
-  dt_lua_init_widget_type(L,&button_type,lua_button,GTK_TYPE_BUTTON);
+  dt_lua_init_widget_type(L, &button_type, lua_button, GTK_TYPE_BUTTON);
 
   lua_pushcfunction(L, tostring_member);
   dt_lua_gtk_wrap(L);
   dt_lua_type_setmetafield(L, lua_button, "__tostring");
-  lua_pushcfunction(L,label_member);
+  lua_pushcfunction(L, label_member);
   dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, lua_button, "label");
-  lua_pushcfunction(L,image_member);
+  lua_pushcfunction(L, image_member);
   dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, lua_button, "image");
-  lua_pushcfunction(L,ellipsize_member);
+  lua_pushcfunction(L, ellipsize_member);
   dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, lua_button, "ellipsize");
-  lua_pushcfunction(L,halign_member);
+  lua_pushcfunction(L, halign_member);
   dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, lua_button, "halign");
-  dt_lua_widget_register_gtk_callback(L,lua_button,"clicked","clicked_callback",G_CALLBACK(clicked_callback));
+  dt_lua_widget_register_gtk_callback(L, lua_button, "clicked", "clicked_callback", G_CALLBACK(clicked_callback));
 
   return 0;
 }
