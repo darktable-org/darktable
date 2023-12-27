@@ -32,19 +32,19 @@ static dt_lua_widget_type_t box_type = {
 static void box_init(lua_State* L)
 {
   lua_box box;
-  luaA_to(L,lua_box,&box,-1);
-  gtk_orientable_set_orientation(GTK_ORIENTABLE(box->widget),GTK_ORIENTATION_VERTICAL);
+  luaA_to(L, lua_box, &box, -1);
+  gtk_orientable_set_orientation(GTK_ORIENTABLE(box->widget), GTK_ORIENTATION_VERTICAL);
 }
 
 
 static int orientation_member(lua_State *L)
 {
   lua_box box;
-  luaA_to(L,lua_box,&box,1);
+  luaA_to(L, lua_box, &box, 1);
   dt_lua_orientation_t orientation;
   if(lua_gettop(L) > 2) {
-    luaA_to(L,dt_lua_orientation_t,&orientation,3);
-    gtk_orientable_set_orientation(GTK_ORIENTABLE(box->widget),orientation);
+    luaA_to(L, dt_lua_orientation_t, &orientation, 3);
+    gtk_orientable_set_orientation(GTK_ORIENTABLE(box->widget), orientation);
     if(gtk_orientable_get_orientation(GTK_ORIENTABLE(box->widget)) == GTK_ORIENTATION_HORIZONTAL)
     {
       GList *children = gtk_container_get_children(GTK_CONTAINER(box->widget));
@@ -57,7 +57,7 @@ static int orientation_member(lua_State *L)
     return 0;
   }
   orientation = gtk_orientable_get_orientation(GTK_ORIENTABLE(box->widget));
-  luaA_push(L,dt_lua_orientation_t,&orientation);
+  luaA_push(L, dt_lua_orientation_t, &orientation);
   return 1;
 }
 
@@ -132,24 +132,24 @@ static int packing_padding_member(lua_State *L)
       _set_packing_info(box, old_expand, old_fill, padding);
     return 0;
   }
-  lua_pushboolean(L, old_padding);
+  lua_pushinteger(L, old_padding);
   return 1;
 }
 
 int dt_lua_init_widget_box(lua_State* L)
 {
-  dt_lua_init_widget_type(L,&box_type,lua_box,GTK_TYPE_BOX);
+  dt_lua_init_widget_type(L, &box_type, lua_box, GTK_TYPE_BOX);
 
-  lua_pushcfunction(L,orientation_member);
+  lua_pushcfunction(L, orientation_member);
   dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, lua_box, "orientation");
-  lua_pushcfunction(L,packing_expand_member);
+  lua_pushcfunction(L, packing_expand_member);
   dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, lua_box, "packing_expand");
-  lua_pushcfunction(L,packing_fill_member);
+  lua_pushcfunction(L, packing_fill_member);
   dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, lua_box, "packing_fill");
-  lua_pushcfunction(L,packing_padding_member);
+  lua_pushcfunction(L, packing_padding_member);
   dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, lua_box, "packing_padding");
   return 0;
