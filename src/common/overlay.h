@@ -43,9 +43,12 @@ void dt_overlay_remove(const dt_imgid_t imgid, const dt_imgid_t overlay_id);
 GList *dt_overlay_get_imgs(const dt_imgid_t imgid);
 
 /*
-  Get list of all images where overlay_id is used as overlay
+  Get list of all images where overlay_id is used as overlay.
+  If except_self is TRUE do not return the self image references
+  (where imgid == overlay_id).
 */
-GList *dt_overlay_get_used_in_imgs(const dt_imgid_t overlay_id);
+GList *dt_overlay_get_used_in_imgs(const dt_imgid_t overlay_id,
+                                   const gboolean except_self);
 
 #ifdef __cplusplus
 } // extern "C"

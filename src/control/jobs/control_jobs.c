@@ -850,7 +850,7 @@ static int32_t dt_control_remove_images_job_run(dt_job_t *job)
   while(t)
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
-    GList *overlay = dt_overlay_get_used_in_imgs(imgid);
+    GList *overlay = dt_overlay_get_used_in_imgs(imgid, TRUE);
     int exist_count = 0;
 
     // count images still using this overlay (that is still in db)
