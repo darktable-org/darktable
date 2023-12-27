@@ -867,7 +867,10 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       else if(!strcmp(argv[k], "--version") || !strcmp(argv[k], "-v"))
       {
         char *theversion = _get_version_string();
-        printf("%s", theversion);
+        printf("this is %s", theversion);
+#ifdef USE_LUA
+        printf("Lua support enabled\n");
+#endif
         g_free(theversion);
         return 1;
       }
