@@ -85,16 +85,19 @@ GList *dt_overlay_get_imgs(const dt_imgid_t imgid)
   return res;
 }
 
-GList *dt_overlay_get_used_in_imgs(const dt_imgid_t overlay_id)
+GList *dt_overlay_get_used_in_imgs(const dt_imgid_t overlay_id,
+                                   const gboolean except_self)
 {
   sqlite3_stmt *stmt;
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT imgid"
                               " FROM overlay"
-                              " WHERE overlay_id = ?1",
+                              " WHERE overlay_id = ?1"
+                              "   AND imgid != ?2",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, overlay_id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, except_self ? overlay_id : -1);
 
   GList *res = NULL;
 
