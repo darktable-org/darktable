@@ -39,10 +39,11 @@
 // 4.2.0 was 9.0.0 (view toolbox functions and snapshot filename removed)
 // 4.4.0 was 9.1.0 (added mimic and dt_lua_image_t changes)
 // 4.6.0 was 9.2.0 (added change_timestamp to dt_image_t)
+// 4.8.0 was 9.3.0 (added button and box widget enhancements)
 /* incompatible API change */
 #define LUA_API_VERSION_MAJOR 9
 /* backward compatible API change */
-#define LUA_API_VERSION_MINOR 2
+#define LUA_API_VERSION_MINOR 3
 /* bugfixes that should not change anything to the API */
 #define LUA_API_VERSION_PATCH 0
 /* suffix for unstable version */
