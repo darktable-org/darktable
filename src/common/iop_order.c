@@ -101,10 +101,10 @@ const dt_iop_order_entry_t legacy_order[] = {
   { {18.0f }, "rotatepixels", 0},
   { {19.0f }, "scalepixels", 0},
   { {20.0f }, "flip", 0},
+  { {20.5f }, "enlargecanvas", 0},
   { {21.0f }, "clipping", 0},
   { {21.5f }, "toneequal", 0},
   { {21.7f }, "crop", 0},
-  { {21.8f }, "enlargecanvas", 0},
   { {21.9f }, "overlay", 0},
   { {22.0f }, "graduatednd", 0},
   { {23.0f }, "basecurve", 0},
@@ -192,6 +192,7 @@ const dt_iop_order_entry_t v30_order[] = {
                                   // lensfun does not reintroduce
                                   // chromatic aberrations when trying
                                   // to correct them
+  { {13.8f }, "enlargecanvas", 0},
   { {14.0f }, "hazeremoval", 0},
   { {15.0f }, "ashift", 0},
   { {16.0f }, "flip", 0},
@@ -206,8 +207,7 @@ const dt_iop_order_entry_t v30_order[] = {
                                      // roi_in
   { {24.5f }, "crop", 0},            // should go after all modules
                                      // that may need a wider roi_in
-  { {24.7f }, "enlargecanvas", 0},   // should go after all modules
-  { {24.7f }, "overlay", 0},         // that may need a wider roi_in
+  { {24.7f }, "overlay", 0},
   { {25.0f }, "graduatednd", 0},
   { {26.0f }, "profile_gamma", 0},
   { {27.0f }, "equalizer", 0},
@@ -310,6 +310,7 @@ const dt_iop_order_entry_t v30_jpg_order[] = {
   { { 28.0f }, "cacorrectrgb", 0}, // correct chromatic aberrations after lens correction so that lensfun
                                   // does not reintroduce chromatic aberrations when trying to correct them
   { { 28.0f }, "hazeremoval", 0},
+  { { 28.0f }, "enlargecanvas", 0},
   { { 28.0f }, "ashift", 0},
   { { 28.0f }, "flip", 0},
   { { 28.0f }, "clipping", 0},
@@ -322,8 +323,7 @@ const dt_iop_order_entry_t v30_jpg_order[] = {
   { { 28.0f }, "toneequal", 0},       // last module that need enlarged roi_in
   { { 28.0f }, "crop", 0},            // should go after all modules
                                       // that may need a wider roi_in
-  { { 28.0f }, "enlargecanvas", 0},   // should go after all modules
-  { { 28.0f }, "overlay", 0},         // that may need a wider roi_in
+  { { 28.0f }, "overlay", 0},
   { { 28.0f }, "graduatednd", 0},
   { { 28.0f }, "profile_gamma", 0},
   { { 28.0f }, "equalizer", 0},
@@ -921,7 +921,7 @@ GList *dt_ioppr_get_iop_order_list(const dt_imgid_t imgid,
           _insert_before(iop_order_list, "rgbcurve", "colorbalancergb");
           _insert_before(iop_order_list, "ashift", "cacorrectrgb");
           _insert_before(iop_order_list, "graduatednd", "crop");
-          _insert_before(iop_order_list, "crop", "enlargecanvas");
+          _insert_before(iop_order_list, "cacorrectrgb", "enlargecanvas");
           _insert_before(iop_order_list, "crop", "overlay");
           _insert_before(iop_order_list, "colorbalance", "diffuse");
           _insert_before(iop_order_list, "nlmeans", "blurs");
