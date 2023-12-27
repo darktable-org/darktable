@@ -139,11 +139,28 @@ static int image_member(lua_State *L)
     const char * imagefile = luaL_checkstring(L, 3);
     image = gtk_image_new_from_file (imagefile);
     gtk_button_set_image(GTK_BUTTON(button->widget), image);
-    gtk_button_set_image_position(GTK_BUTTON(button->widget), GTK_POS_LEFT);
-    gtk_button_set_always_show_image(GTK_BUTTON(button->widget), true);
+    gtk_button_set_always_show_image(GTK_BUTTON(button->widget), TRUE);
     return 0;
   }
   return 0;
+}
+
+static int image_align_member(lua_State *L)
+{
+  lua_button button;
+  luaA_to(L, lua_button, &button, 1);
+  dt_lua_align_t image_align;
+  if(lua_gettop(L) > 2)
+  {
+    luaA_to(L, dt_lua_align_t, &image_align, 3);
+    // check for image before trying to ellipsize it
+    if(gtk_button_get_image(GTK_BUTTON(button->widget)))
+      gtk_button_set_image_position(GTK_BUTTON(button->widget), image_align);
+    return 0;
+  }
+  image_align = gtk_button_get_image_position(GTK_BUTTON(button->widget));
+  luaA_push(L, dt_lua_align_t, &image_align);
+  return 1;
 }
 
 static int tostring_member(lua_State *L)
@@ -170,6 +187,9 @@ int dt_lua_init_widget_button(lua_State* L)
   lua_pushcfunction(L, image_member);
   dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, lua_button, "image");
+  lua_pushcfunction(L, image_align_member);
+  dt_lua_gtk_wrap(L);
+  dt_lua_type_register(L, lua_button, "image_align");
   lua_pushcfunction(L, ellipsize_member);
   dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, lua_button, "ellipsize");
