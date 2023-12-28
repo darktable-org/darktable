@@ -228,4 +228,5 @@ are available on raw.pixls.us:
 - Polish
 - Russian
 - Slovenian
+- Turkish
 - Ukrainian
