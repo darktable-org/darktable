@@ -88,7 +88,7 @@ typedef struct dt_iop_colorreconstruct_gui_data_t
   GtkWidget *precedence;
   GtkWidget *hue;
   dt_iop_colorreconstruct_bilateral_frozen_t *can;
-  uint64_t hash;
+  dt_hash_t hash;
 } dt_iop_colorreconstruct_gui_data_t;
 
 typedef struct dt_iop_colorreconstruct_data_t
@@ -670,7 +670,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // here is where we generate the canned bilateral grid of the preview pipe for later use
   if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
   {
-    uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
+    dt_hash_t hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
     dt_iop_gui_enter_critical_section(self);
     dt_iop_colorreconstruct_bilateral_dump(g->can);
     g->can = dt_iop_colorreconstruct_bilateral_freeze(b);
@@ -1078,7 +1078,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
   {
-    uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
+    dt_hash_t hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
     dt_iop_gui_enter_critical_section(self);
     dt_iop_colorreconstruct_bilateral_dump(g->can);
     g->can = dt_iop_colorreconstruct_bilateral_freeze_cl(b);

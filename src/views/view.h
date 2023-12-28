@@ -647,11 +647,11 @@ void dt_view_paint_surface(cairo_t *cr,
                            float buf_zoom_x,
                            float buf_zoom_y);
 
-typedef uint64_t dt_view_context_t;
+typedef dt_hash_t dt_view_context_t;
 
-dt_view_context_t dt_view_get_view_context(void);
+dt_view_context_t dt_view_get_context_hash(void);
 
-gboolean dt_view_check_view_context(dt_view_context_t *ctx);
+gboolean dt_view_check_context_hash(dt_view_context_t *ctx);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

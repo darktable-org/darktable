@@ -1794,9 +1794,7 @@ cairo_surface_t *dt_view_create_surface(uint8_t *buffer,
     (buffer, CAIRO_FORMAT_RGB24, processed_width, processed_height, stride);
 }
 
-#define ADD_TO_CONTEXT(v) ctx = ((ctx << 5) + ctx) ^ (dt_view_context_t)(v);
-
-dt_view_context_t dt_view_get_view_context(void)
+dt_view_context_t dt_view_get_context_hash(void)
 {
   dt_develop_t *dev = darktable.develop;
   dt_dev_zoom_t zoom;
@@ -1804,25 +1802,24 @@ dt_view_context_t dt_view_get_view_context(void)
   float zoom_x, zoom_y;
   dt_dev_get_viewport_params(&dev->full, &zoom, &closeup, &zoom_x, &zoom_y);
   const float zoom_scale = dt_dev_get_zoom_scale(&dev->full, zoom, 1<<closeup, 1);
-  const gboolean iso_12646 = dev->full.iso_12646;
-  const gboolean focus_peaking = darktable.gui->show_focus_peaking;
+
+  // calculate a hash on view parameters. Use flt_prec here to avoid different hashes
+  // for irrelevant variations for the zooms.
   const float flt_prec = 1.e6;
+  const uint32_t test[] = { (uint32_t)dev->full.iso_12646,
+                            (uint32_t)darktable.gui->show_focus_peaking,
+                            (uint32_t)closeup,
+                            (uint32_t)(zoom_scale * flt_prec),
+                            (uint32_t)(zoom_x * flt_prec),
+                            (uint32_t)(zoom_y * flt_prec),
+                            (uint32_t)(dev->late_scaling.enabled) };
 
-  dt_view_context_t ctx = 0;
-  ADD_TO_CONTEXT(closeup);
-  ADD_TO_CONTEXT((int)(zoom_scale * flt_prec));
-  ADD_TO_CONTEXT((int)(zoom_x * flt_prec));
-  ADD_TO_CONTEXT((int)(zoom_y * flt_prec));
-  ADD_TO_CONTEXT(iso_12646);
-  ADD_TO_CONTEXT(focus_peaking);
-
-  // dt_print(DT_DEBUG_EXPOSE, "dt_view_get_view_context ctx==%" PRIx64 " scale=%f\n", ctx, zoom_scale);
-  return ctx;
+  return (dt_view_context_t)dt_hash(DT_INITHASH, &test, sizeof(test));
 }
 
-gboolean dt_view_check_view_context(dt_view_context_t *ctx)
+gboolean dt_view_check_context_hash(dt_view_context_t *ctx)
 {
-  const dt_view_context_t curctx = dt_view_get_view_context();
+  const dt_view_context_t curctx = dt_view_get_context_hash();
   if(curctx == *ctx)
   {
     return TRUE;

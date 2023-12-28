@@ -266,7 +266,9 @@ void process(
 
   dt_iop_cacorrect_data_t *d = (dt_iop_cacorrect_data_t *)piece->data;
 
-  const gboolean avoidshift = d->avoidshift;
+  // the colorshift avoiding requires non-downscaled data for sure so we
+  // don't do this for preview
+  const gboolean avoidshift = d->avoidshift && !(piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW);
   const int iterations = d->iterations;
 
   // Because we can't break parallel processing, we need a switch do handle the errors
@@ -287,11 +289,7 @@ void process(
     return;
   }
 
-  const float scaler = fmaxf(1.0f,
-                       fmaxf(piece->pipe->dsc.processed_maximum[0],
-                       fmaxf(piece->pipe->dsc.processed_maximum[1],
-                             piece->pipe->dsc.processed_maximum[2])));
-
+  const float scaler = dt_iop_get_processed_maximum(piece);
   dt_iop_image_scaled_copy(out, input, 1.0f / scaler, roi_in->width, roi_in->height, 1);
 
   if(run_fast) goto writeout;

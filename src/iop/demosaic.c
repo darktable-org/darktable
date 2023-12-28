@@ -403,8 +403,7 @@ void distort_mask(
         const dt_iop_roi_t *const roi_out)
 {
   const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
-  dt_interpolation_resample_roi_1c(itor, out, roi_out, roi_out->width * sizeof(float), in, roi_in,
-                                   roi_in->width * sizeof(float));
+  dt_interpolation_resample_roi_1c(itor, out, roi_out, in, roi_in);
 }
 
 void modify_roi_out(
@@ -418,8 +417,6 @@ void modify_roi_out(
   roi_out->y = 0;
 }
 
-// which roi input is needed to process to this output?
-// roi_out is unchanged, full buffer in is full buffer out.
 void modify_roi_in(
         struct dt_iop_module_t *self,
         struct dt_dev_pixelpipe_iop_t *piece,
@@ -448,28 +445,25 @@ void modify_roi_in(
     const int dy = roi_in->y % aligner;
 
 /*
-    // This code is correctly working on CPU, OpenCL artefacts needs a FIXME
+    // This implements snapping to closest position, meant for optimized xtrans position
+    // but with problems at extreme zoom levels
     const int shift_x = (dx > aligner / 2) ? aligner - dx : -dx;
     const int shift_y = (dy > aligner / 2) ? aligner - dy : -dy;
 
-    roi_in->x = MAX(0, roi_in->x + shift_x);
-    roi_in->y = MAX(0, roi_in->y + shift_y);
-
-    // if we shift to the right/bottom we also need to expand the roi
-    roi_in->width += MAX(0, shift_x);
-    roi_in->height += MAX(0, shift_y);
+    roi_in->x += shift_x;
+    roi_in->y += shift_y;
 */
 
-    roi_in->x = MAX(0, roi_in->x - dx);
-    roi_in->y = MAX(0, roi_in->y - dy);
+    // currently we always snap to left & upper
+    roi_in->x -= dx;
+    roi_in->y -= dy;
   }
 
-  // clamp numeric inaccuracies to full buffer, to avoid scaling/copying in pixelpipe:
-  if(abs(piece->pipe->image.width - roi_in->width) < MAX(ceilf(1.0f / roi_out->scale), 10))
-    roi_in->width = piece->pipe->image.width;
-
-  if(abs(piece->pipe->image.height - roi_in->height) < MAX(ceilf(1.0f / roi_out->scale), 10))
-    roi_in->height = piece->pipe->image.height;
+  // clamp to full buffer fixing numeric inaccuracies
+  roi_in->x = MAX(0, roi_in->x);
+  roi_in->y = MAX(0, roi_in->y);
+  roi_in->width = MIN(roi_in->width, piece->buf_in.width);
+  roi_in->height = MIN(roi_in->height, piece->buf_in.height);
 }
 
 void tiling_callback(
@@ -742,7 +736,7 @@ void process(
     {
       roi = *roi_out;
       dt_print_pipe(DT_DEBUG_PIPE, "clip_and_zoom_roi", piece->pipe, self, roi_in, roi_out, "\n");
-      dt_iop_clip_and_zoom_roi((float *)o, tmp, &roi, &roo, roi.width, roo.width);
+      dt_iop_clip_and_zoom_roi((float *)o, tmp, &roi, &roo);
       dt_free_align(tmp);
     }
   }

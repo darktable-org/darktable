@@ -928,11 +928,6 @@ void dt_mipmap_cache_get_with_caller(
   }
 }
 
-void dt_mipmap_cache_write_get_with_caller(dt_mipmap_cache_t *cache, dt_mipmap_buffer_t *buf, const dt_imgid_t imgid, const int mip, const char *file, int line)
-{
-  dt_mipmap_cache_get_with_caller(cache, buf, imgid, mip, DT_MIPMAP_BLOCKING, 'w', file, line);
-}
-
 void dt_mipmap_cache_release_with_caller(dt_mipmap_cache_t *cache, dt_mipmap_buffer_t *buf, const char *file,
                                          int line)
 {
@@ -1110,7 +1105,7 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
     // downsample
     dt_print_pipe(DT_DEBUG_PIPE,
                   "mipmap clip and zoom", NULL, NULL, &roi_in, &roi_out, "\n");
-    dt_iop_clip_and_zoom(out, (const float *)buf.buf, &roi_out, &roi_in, roi_out.width, roi_in.width);
+    dt_iop_clip_and_zoom(out, (const float *)buf.buf, &roi_out, &roi_in);
   }
 
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);

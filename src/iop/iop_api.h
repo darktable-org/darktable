@@ -213,10 +213,34 @@ OPTIONAL(void, change_image, struct dt_iop_module_t *self);
 DEFAULT(void, cleanup_pipe, struct dt_iop_module_t *self,
                             struct dt_dev_pixelpipe_t *pipe,
                             struct dt_dev_pixelpipe_iop_t *piece);
+/*
+  modify_roi_in and modify_roi_out are used inside the pixelpipe to calculate regions of interest (roi).
+
+  2nd pass: which roi would this operation need as input to fill the given output region?
+  Called while preparing a pixelpipe for processing traversing all modules from last to first!
+  Initial roi_in is what we got by the 1st pass via dt_dev_pixelpipe_get_dimensions
+
+  Modules requiring data from somewhere else it's roi_out will have to make sure those data
+  can be accessed.
+  Examples: crop, retouch, lens for morphing modules,
+    highlights, cacorrect or finalscale for modules that might enforce the full pixelpipe
+
+  Be aware that the tiling code also makes use of this to calculate the roi of a tile.
+*/
 OPTIONAL(void, modify_roi_in, struct dt_iop_module_t *self,
                               struct dt_dev_pixelpipe_iop_t *piece,
                               const struct dt_iop_roi_t *roi_out,
                               struct dt_iop_roi_t *roi_in);
+/*
+  1st pass: how large would the output be, given this input roi?
+
+  Used in dt_dev_pixelpipe_get_dimensions() traversing all active modules
+  in the pipe from first to last module calculating the final dimension.
+
+  This is always called with the full buffer before processing for the first tested module.
+  For all active modules without the function declared the roi_out will be the same as it's roi_in.
+  Examples: rawprepare, crop
+*/
 OPTIONAL(void, modify_roi_out, struct dt_iop_module_t *self,
                                struct dt_dev_pixelpipe_iop_t *piece,
                                struct dt_iop_roi_t *roi_out,

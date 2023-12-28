@@ -64,6 +64,7 @@ jobs:
             libglib2.0-dev \
             libgraphicsmagick1-dev \
             libgtk-3-dev \
+            libinih-dev \
             libjpeg-dev \
             libjson-glib-dev \
             liblcms2-dev \
@@ -100,7 +101,6 @@ jobs:
           sudo apt-get update
           sudo apt-get -y install \
             libavif-dev \
-            libexiv2-dev \
             libgmic-dev \
             libgphoto2-dev \
             libheif-dev \
@@ -109,6 +109,20 @@ jobs:
             libjxl-dev \
             x11proto-dev \
             libxfixes-dev;
+      - name: Build and install a more recent version of exiv2
+        run: |
+          git clone --branch v0.28.1 --depth 1 https://github.com/Exiv2/exiv2 src-exiv2
+          cd src-exiv2
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_SHARED_LIBS=ON \
+            -DEXIV2_ENABLE_BMFF=ON \
+            -DEXIV2_ENABLE_XMP=ON \
+            -DEXIV2_ENABLE_VIDEO=OFF \
+            -DCMAKE_INSTALL_PREFIX=/usr
+          cmake --build build
+          sudo cmake --install build
+          cd ..
       - name: Cancel workflow if job fails
         if: ${{ failure() }}
         uses: andymckay/cancel-action@0.3
@@ -140,9 +154,10 @@ jobs:
                  --conf plugins/lighttable/export/iccintent=0
       - name: Package upload
         if: ${{ success() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: ${{ env.BUILD_DIR }}/Darktable-*.AppImage*
+          name: artifact-appimage
           retention-days: 1
 
   Windows:
@@ -189,7 +204,6 @@ jobs:
             python-jsonschema:p
             curl:p
             drmingw:p
-            exiv2:p
             gcc-libs:p
             gettext:p
             gmic:p
@@ -222,6 +236,14 @@ jobs:
             sqlite3:p
             zlib:p
           update: false
+      - name: Install the latest not yet broken version of exiv2
+        run: |
+          # It's a temporary fix, to be removed when the issue will be resolved
+          pacman -U --noconfirm https://repo.msys2.org/mingw/ucrt64/mingw-w64-ucrt-x86_64-exiv2-0.27.7-1-any.pkg.tar.zst
+      - name: Install the latest still safe to display cyrillic texts version of pango
+        run: |
+          # It's a temporary fix, to be removed when the issue #13084 will be resolved
+          pacman -U --noconfirm https://repo.msys2.org/mingw/ucrt64/mingw-w64-ucrt-x86_64-pango-1.50.11-1-any.pkg.tar.zst
       - name: Cancel workflow if job fails
         if: ${{ failure() }}
         uses: andymckay/cancel-action@0.3
@@ -268,9 +290,10 @@ jobs:
           ([[ ${MSYSTEM_CARCH} == x86_64 ]] && echo "SYSTEM=win64" || echo "SYSTEM=woa64") >> $GITHUB_ENV
       - name: Package upload
         if: ${{ success() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: ${{ env.BUILD_DIR }}/darktable-${{ env.VERSION }}-${{ env.SYSTEM }}.exe
+          name: artifact-windows
           retention-days: 2
 
   macOS:
@@ -357,9 +380,10 @@ jobs:
           echo "VERSION=$(git describe --tags --match release-* | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')-$(uname -m)" >> $GITHUB_ENV
       - name: Package upload
         if: ${{ success() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: ${{ env.INSTALL_PREFIX }}/darktable-${{ env.VERSION }}.dmg
+          name: artifact-macos
           retention-days: 2
 
   upload_to_release:
@@ -370,7 +394,7 @@ jobs:
     needs: [AppImage, Windows, macOS]
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
       - name: Update nightly release
         uses: andelf/nightly-release@main
         env:
@@ -397,4 +421,6 @@ jobs:
 
             __Please help us improve Darktable by reporting any issues you encounter!__ :wink:
           files: |
-            artifact/*
+            artifact-appimage/*
+            artifact-windows/*
+            artifact-macos/*

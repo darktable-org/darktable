@@ -356,7 +356,7 @@ static int green_equilibration_cl(
   cl_mem dev_out2 = NULL;
   float *sumsum = NULL;
 
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
   if(data->green_eq == DT_IOP_GREEN_EQ_BOTH)
   {
@@ -393,7 +393,10 @@ static int green_equilibration_cl(
                                     .sizex = 1 << 4, .sizey = 1 << 4 };
 
     if(!dt_opencl_local_buffer_opt(devid, gd->kernel_green_eq_favg_reduce_first, &flocopt))
+    {
+      err = CL_INVALID_WORK_DIMENSION;
       goto error;
+    }
 
     const size_t bwidth = ROUNDUP(width, flocopt.sizex);
     const size_t bheight = ROUNDUP(height, flocopt.sizey);
@@ -418,12 +421,19 @@ static int green_equilibration_cl(
                                     .sizex = 1 << 16, .sizey = 1 };
 
     if(!dt_opencl_local_buffer_opt(devid, gd->kernel_green_eq_favg_reduce_second, &slocopt))
+    {
+      err = CL_INVALID_WORK_DIMENSION;
       goto error;
+    }
 
     const int reducesize = MIN(DT_REDUCESIZE_MIN, ROUNDUP(bufsize, slocopt.sizex) / slocopt.sizex);
 
     dev_r = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 2 * reducesize);
-    if(dev_r == NULL) goto error;
+    if(dev_r == NULL)
+    {
+      err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+      goto error;
+    }
 
     size_t ssizes[3] = { (size_t)reducesize * slocopt.sizex, 1, 1 };
     size_t slocal[3] = { slocopt.sizex, 1, 1 };
@@ -434,7 +444,12 @@ static int green_equilibration_cl(
     if(err != CL_SUCCESS) goto error;
 
     sumsum = dt_alloc_align_float((size_t)2 * reducesize);
-    if(sumsum == NULL) goto error;
+    if(sumsum == NULL)
+    {
+      err = DT_OPENCL_SYSMEM_ALLOCATION;
+      goto error;
+    }
+
     err = dt_opencl_read_buffer_from_device(devid, (void *)sumsum, dev_r, 0,
                                             sizeof(float) * 2 * reducesize, CL_TRUE);
     if(err != CL_SUCCESS) goto error;
@@ -465,7 +480,10 @@ static int green_equilibration_cl(
                                     .sizex = 1 << 8, .sizey = 1 << 8 };
 
     if(!dt_opencl_local_buffer_opt(devid, gd->kernel_green_eq_lavg, &locopt))
+    {
+      err = CL_INVALID_WORK_DIMENSION;
       goto error;
+    }
 
     size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
     size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
@@ -506,7 +524,7 @@ static int process_default_cl(
   cl_mem dev_tmp = NULL;
   cl_mem dev_med = NULL;
   cl_mem dev_green_eq = NULL;
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
   if(qual_flags & DT_DEMOSAIC_FULL_SCALE)
   {
@@ -529,6 +547,7 @@ static int process_default_cl(
     }
 
     // need to reserve scaled auxiliary buffer or use dev_out
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     if(scaled)
     {
       dev_aux = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
@@ -572,7 +591,11 @@ static int process_default_cl(
       if(data->median_thrs > 0.0f)
       {
         dev_med = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
-        if(dev_med == NULL) goto error;
+        if(dev_med == NULL)
+        {
+          err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+          goto error;
+        }
 
         dt_opencl_local_buffer_t locopt
           = (dt_opencl_local_buffer_t){ .xoffset = 2*2, .xfactor = 1, .yoffset = 2*2, .yfactor = 1,
@@ -580,7 +603,10 @@ static int process_default_cl(
                                         .sizex = 1 << 8, .sizey = 1 << 8 };
 
         if(!dt_opencl_local_buffer_opt(devid, gd->kernel_pre_median, &locopt))
-        goto error;
+        {
+          err = CL_INVALID_WORK_DIMENSION;
+          goto error;
+        }
 
         size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
         size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
@@ -599,7 +625,10 @@ static int process_default_cl(
                                         .sizex = 1 << 8, .sizey = 1 << 8 };
 
         if(!dt_opencl_local_buffer_opt(devid, gd->kernel_ppg_green, &locopt))
-        goto error;
+        {
+          err = CL_INVALID_WORK_DIMENSION;
+          goto error;
+        }
 
         size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
         size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
@@ -617,7 +646,10 @@ static int process_default_cl(
                                         .sizex = 1 << 8, .sizey = 1 << 8 };
 
         if(!dt_opencl_local_buffer_opt(devid, gd->kernel_ppg_redblue, &locopt))
-        goto error;
+        {
+          err = CL_INVALID_WORK_DIMENSION;
+          goto error;
+        }
 
         size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
         size_t local[3] = { locopt.sizex, locopt.sizey, 1 };

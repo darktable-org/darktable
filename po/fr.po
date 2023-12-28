@@ -712,7 +712,7 @@ msgstr "Relatif à la scène (Filmique RVB)"
 #: ../build/bin/conf_gen.h:3134
 msgctxt "preferences"
 msgid "scene-referred (sigmoid)"
-msgstr "Relatif à la scène (Sigmoid)"
+msgstr "Relatif à la scène (Sigmoïde)"
 
 #: ../build/bin/conf_gen.h:3135
 msgctxt "preferences"
@@ -1530,7 +1530,7 @@ msgid ""
 msgstr ""
 "Le flux de travail « Relatif à la scène » est basé sur des modules linéaires "
 "et activera automatiquement\n"
-"les modules« Filmique RVB» ou « Sigmoid », « Calibration des couleurs » et "
+"les modules « Filmique RVB » ou « Sigmoïde », « Calibration des couleurs » et "
 "« Exposition ».\n"
 "Le flux de travail « Relatif à l’affichage » est basé sur des modules Lab et "
 "activera automatiquement\n"
@@ -19978,7 +19978,7 @@ msgstr "Seuil d’activation du renforcement"
 
 #: ../src/iop/sigmoid.c:195
 msgid "sigmoid"
-msgstr "Sigmoid"
+msgstr "Sigmoïde"
 
 #: ../src/iop/sigmoid.c:200
 msgid "tone mapping|view transform|display transform"

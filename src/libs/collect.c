@@ -1225,12 +1225,18 @@ static void free_tuple(gpointer data)
   free(tuple);
 }
 
-static gint sort_folder_tag(gconstpointer a, gconstpointer b)
+static gint _sort_folder_tag(gconstpointer a, gconstpointer b)
 {
   const name_key_tuple_t *tuple_a = (const name_key_tuple_t *)a;
   const name_key_tuple_t *tuple_b = (const name_key_tuple_t *)b;
 
-  return g_strcmp0(tuple_a->collate_key, tuple_b->collate_key);
+  if (tuple_a->status != -1)
+    // collection type: folders
+    // In this case the collate_key is filled by g_utf8_collate_key_for_filename()
+    // which cannot be compared by g_utf8_collate() so we use g_strcmp0() here
+    return g_strcmp0(tuple_a->collate_key, tuple_b->collate_key);
+  else
+    return g_utf8_collate(tuple_a->collate_key, tuple_b->collate_key);
 }
 
 // create a key such that  _("not tagged") & "darktable|" are coming first,
@@ -1560,7 +1566,7 @@ static void _tree_view(dt_lib_collect_rule_t *dr)
     g_free(query);
 
     // this order should not be altered. the right feeding of the tree relies on it.
-    sorted_names = g_list_sort(sorted_names, sort_folder_tag);
+    sorted_names = g_list_sort(sorted_names, _sort_folder_tag);
     const gboolean sort_descend = dt_conf_get_bool("plugins/collect/descending");
     if(sorting_always_asc || !sort_descend)
       sorted_names = g_list_reverse(sorted_names);

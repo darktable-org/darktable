@@ -101,7 +101,7 @@ typedef struct dt_iop_crop_gui_data_t
   float prev_clip_x, prev_clip_y, prev_clip_w, prev_clip_h;
   /* maximum clip box */
   float clip_max_x, clip_max_y, clip_max_w, clip_max_h;
-  uint64_t clip_max_pipe_hash;
+  dt_hash_t clip_max_pipe_hash;
 
   int cropping;
   gboolean shift_hold;
@@ -333,8 +333,6 @@ void distort_mask(struct dt_iop_module_t *self,
   dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out);
 }
 
-// 1st pass: how large would the output be, given this input roi?
-// this is always called with the full buffer before processing.
 void modify_roi_out(struct dt_iop_module_t *self,
                     struct dt_dev_pixelpipe_iop_t *piece,
                     dt_iop_roi_t *roi_out,
@@ -355,7 +353,6 @@ void modify_roi_out(struct dt_iop_module_t *self,
   if(roi_out->height < 5) roi_out->height = 5;
 }
 
-// 2nd pass: which roi would this operation need as input to fill the given output region?
 void modify_roi_in(struct dt_iop_module_t *self,
                    struct dt_dev_pixelpipe_iop_t *piece,
                    const dt_iop_roi_t *roi_out,

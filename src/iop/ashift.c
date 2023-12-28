@@ -408,9 +408,9 @@ typedef struct dt_iop_ashift_gui_data_t
   int buf_x_off;
   int buf_y_off;
   float buf_scale;
-  uint64_t lines_hash;
-  uint64_t grid_hash;
-  uint64_t buf_hash;
+  dt_hash_t lines_hash;
+  dt_hash_t grid_hash;
+  dt_hash_t buf_hash;
   dt_iop_ashift_fitaxis_t lastfit;
   float lastx;
   float lasty;
@@ -719,14 +719,6 @@ static inline int vec3isnull(const float *const v)
   const float eps = 1e-10f;
   return (fabsf(v[0]) < eps && fabsf(v[1]) < eps && fabsf(v[2]) < eps);
 }
-
-#ifdef ASHIFT_DEBUG
-static void print_roi(const dt_iop_roi_t *roi, const char *label)
-{
-  printf("{ %5d  %5d  %5d  %5d  %.6f } %s\n",
-         roi->x, roi->y, roi->width, roi->height, roi->scale, label);
-}
-#endif
 
 static inline void _shadow_crop_box(dt_iop_ashift_params_t *p,
                                     dt_iop_ashift_gui_data_t *g)
@@ -1223,11 +1215,6 @@ void modify_roi_out(struct dt_iop_module_t *self,
 
   roi_out->width = floorf(width);
   roi_out->height = floorf(height);
-
-#ifdef ASHIFT_DEBUG
-  print_roi(roi_in, "roi_in (going into modify_roi_out)");
-  print_roi(roi_out, "roi_out (after modify_roi_out)");
-#endif
 }
 
 void modify_roi_in(struct dt_iop_module_t *self,
@@ -1301,10 +1288,6 @@ void modify_roi_in(struct dt_iop_module_t *self,
   roi_in->y = CLAMP(roi_in->y, 0, (int)floorf(orig_h));
   roi_in->width = CLAMP(roi_in->width, 1, (int)floorf(orig_w) - roi_in->x);
   roi_in->height = CLAMP(roi_in->height, 1, (int)floorf(orig_h) - roi_in->y);
-#ifdef ASHIFT_DEBUG
-  print_roi(roi_out, "roi_out (going into modify_roi_in)");
-  print_roi(roi_in, "roi_in (after modify_roi_in)");
-#endif
 }
 
 // simple conversion of rgb image into greyscale variant suitable for
@@ -3546,7 +3529,7 @@ void process(struct dt_iop_module_t *self,
       ? 1 : 0;
 
     // did modules prior to this one in pixelpipe have changed? -> check via hash value
-    const uint64_t hash = dt_dev_hash_plus(self->dev, self->dev->preview_pipe,
+    const dt_hash_t hash = dt_dev_hash_plus(self->dev, self->dev->preview_pipe,
                                            self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_EXCL);
 
     dt_iop_gui_enter_critical_section(self);
@@ -3697,7 +3680,7 @@ int process_cl(struct dt_iop_module_t *self,
       fabs(fmod(alpha + M_PI, M_PI) - M_PI / 2.0f) < M_PI / 4.0f ? 1 : 0;
 
     // do modules coming before this one in pixelpipe have changed? -> check via hash value
-    const uint64_t hash = dt_dev_hash_plus(self->dev, self->dev->preview_pipe,
+    const dt_hash_t hash = dt_dev_hash_plus(self->dev, self->dev->preview_pipe,
                                            self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_EXCL);
 
     dt_iop_gui_enter_critical_section(self);
@@ -3912,10 +3895,10 @@ static void _get_bounded_inside(const float *points,
 }
 
 // generate hash value for lines taking into account only the end point coordinates
-static uint64_t _get_lines_hash(const dt_iop_ashift_line_t *lines,
+static dt_hash_t _get_lines_hash(const dt_iop_ashift_line_t *lines,
                                 const int lines_count)
 {
-  uint64_t hash = 5381;
+  dt_hash_t hash = DT_INITHASH;
   for(int n = 0; n < lines_count; n++)
   {
     const dt_boundingbox_t v = { lines[n].p1[0],
@@ -3927,9 +3910,10 @@ static uint64_t _get_lines_hash(const dt_iop_ashift_line_t *lines,
         uint32_t u;
     } x;
 
-    for(size_t i = 0; i < 4; i++) {
+    for(size_t i = 0; i < 4; i++)
+    {
       x.f = v[i];
-      hash = ((hash << 5) + hash) ^ x.u;
+      hash = dt_hash(hash, &x.u, sizeof(uint32_t));
     }
   }
   return hash;
@@ -4426,9 +4410,9 @@ void gui_post_expose(dt_iop_module_t *self,
 
   // get hash value that changes if distortions from here to the end
   // of the pixelpipe changed
-  const uint64_t hash = dt_dev_hash_distort(dev);
+  const dt_hash_t hash = dt_dev_hash_distort(dev);
   // get hash value that changes if coordinates of lines have changed
-  const uint64_t lines_hash = _get_lines_hash(g->lines, g->lines_count);
+  const dt_hash_t lines_hash = _get_lines_hash(g->lines, g->lines_count);
 
   // points data are missing or outdated, or distortion has changed?
   if(g->points == NULL || g->points_idx == NULL || hash != g->grid_hash

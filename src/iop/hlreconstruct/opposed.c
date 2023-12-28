@@ -38,38 +38,20 @@
    Again the algorithm has been developed in collaboration by @garagecoder and @Iain from gmic team and @jenshannoschwalm from dt.
 */
 
-static uint64_t _opposed_parhash(dt_dev_pixelpipe_iop_t *piece)
+static dt_hash_t _opposed_parhash(dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_buffer_dsc_t *dsc = &piece->pipe->dsc;
   dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
 
-  // bernstein hash (djb2)
-  uint64_t hash = 5381;
-
-  char *pstr = (char *) &dsc->rawprepare;
-  for(size_t ip = 0; ip < sizeof(dsc->rawprepare); ip++)
-    hash = ((hash << 5) + hash) ^ pstr[ip];
-
-  pstr = (char *) &dsc->temperature;
-  for(size_t ip = 0; ip < sizeof(dsc->temperature); ip++)
-    hash = ((hash << 5) + hash) ^ pstr[ip];
-
-  pstr = (char *) &d->clip;
-  for(size_t ip = 0; ip < sizeof(d->clip); ip++)
-    hash = ((hash << 5) + hash) ^ pstr[ip];
-
-  return hash;
+  dt_hash_t hash = dt_hash(DT_INITHASH, &dsc->rawprepare, sizeof(dsc->rawprepare));
+  hash = dt_hash(hash, &dsc->temperature, sizeof(dsc->temperature));
+  return dt_hash(hash, &d->clip, sizeof(d->clip));
 }
 
-static uint64_t _opposed_hash(dt_dev_pixelpipe_iop_t *piece)
+static dt_hash_t _opposed_hash(dt_dev_pixelpipe_iop_t *piece)
 {
-  uint64_t hash = _opposed_parhash(piece);
-
-  char *pstr = (char *) &piece->pipe->image.id;
-  for(size_t ip = 0; ip < sizeof(piece->pipe->image.id); ip++)
-    hash = ((hash << 5) + hash) ^ pstr[ip];
-
-  return hash;
+  dt_hash_t hash = _opposed_parhash(piece);
+  return dt_hash(hash, &piece->pipe->image.id, sizeof(piece->pipe->image.id));
 }
 
 static inline float _calc_linear_refavg(const float *in, const int color)
@@ -118,7 +100,7 @@ static void _process_linear_opposed(
         const gboolean quality)
 {
   dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
-  const float clipval = 0.987f * d->clip;
+  const float clipval = highlights_clip_magics[DT_IOP_HIGHLIGHTS_OPPOSED] * d->clip;
   const dt_iop_buffer_dsc_t *dsc = &piece->pipe->dsc;
   const gboolean wbon = dsc->temperature.enabled;
   const dt_aligned_pixel_t icoeffs = { wbon ? dsc->temperature.coeffs[0] : 1.0f,
@@ -251,7 +233,7 @@ static float *_process_opposed(
   dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
   const uint32_t filters = piece->pipe->dsc.filters;
-  const float clipval = 0.987f * d->clip;
+  const float clipval = highlights_clip_magics[DT_IOP_HIGHLIGHTS_OPPOSED] * d->clip;
   const dt_iop_buffer_dsc_t *dsc = &piece->pipe->dsc;
   const gboolean wbon = dsc->temperature.enabled;
   const dt_aligned_pixel_t icoeffs = { wbon ? dsc->temperature.coeffs[0] : 1.0f,
@@ -263,7 +245,7 @@ static float *_process_opposed(
   const size_t mheight = roi_in->height / 3;
   const size_t msize = dt_round_size((size_t) (mwidth+1) * (mheight+1), 16);
 
-  const uint64_t opphash = _opposed_hash(piece);
+  const dt_hash_t opphash = _opposed_hash(piece);
   dt_aligned_pixel_t chrominance = {0.0f, 0.0f, 0.0f, 0.0f};
 
   if(opphash == img_opphash)
@@ -461,7 +443,7 @@ static cl_int process_opposed_cl(
 
   const int devid = piece->pipe->devid;
   const uint32_t filters = piece->pipe->dsc.filters;
-  const float clipval = 0.987f * d->clip;
+  const float clipval = highlights_clip_magics[DT_IOP_HIGHLIGHTS_OPPOSED] * d->clip;
   const dt_iop_buffer_dsc_t *dsc = &piece->pipe->dsc;
   const gboolean wbon = dsc->temperature.enabled;
   const dt_aligned_pixel_t icoeffs = { wbon ? dsc->temperature.coeffs[0] : 1.0f,
@@ -487,7 +469,7 @@ static cl_int process_opposed_cl(
   const int mheight = roi_in->height / 3;
   const int msize = dt_round_size((size_t) (mwidth+1) * (mheight+1), 16);
 
-  const uint64_t opphash = _opposed_hash(piece);
+  const dt_hash_t opphash = _opposed_hash(piece);
   const int fastcopymode = (opphash == img_opphash) && !img_oppclipped;
 
   if(!fastcopymode)

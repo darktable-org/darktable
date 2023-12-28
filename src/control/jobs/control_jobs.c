@@ -2241,7 +2241,8 @@ static GList *_apply_lua_filter(GList *images)
 
 static int32_t _control_import_job_run(dt_job_t *job)
 {
-  dt_control_image_enumerator_t *params = (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
+  dt_control_image_enumerator_t *params =
+    (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
   dt_control_import_t *data = params->data;
   uint32_t cntr = 0;
   char message[512] = { 0 };
@@ -2256,7 +2257,8 @@ static int32_t _control_import_job_run(dt_job_t *job)
 
   GList *t = params->index;
   const guint total = g_list_length(t);
-  snprintf(message, sizeof(message), ngettext("importing %d image", "importing %d images", total), total);
+  snprintf(message, sizeof(message), ngettext("importing %d image",
+                                              "importing %d images", total), total);
   dt_control_job_set_progress_message(job, message);
 
   GList *imgs = NULL;
@@ -2272,13 +2274,27 @@ static int32_t _control_import_job_run(dt_job_t *job)
   {
     if(data->session)
     {
-      filmid = _control_import_image_copy((char *)img->data, &prev_filename, &prev_output, data->session, &imgs);
+      filmid = _control_import_image_copy((char *)img->data,
+                                          &prev_filename, &prev_output,
+                                          data->session, &imgs);
       if(filmid != -1 && first_filmid == -1)
       {
+        dt_collection_properties_t property =
+          dt_conf_get_int("plugins/lighttable/collect/item0");
+
+        if(property != DT_COLLECTION_PROP_FOLDERS
+           && property != DT_COLLECTION_PROP_FILMROLL)
+        {
+          // the current collection is not based on filmrolls or folders
+          // fallback to DT_COLLECTION_PROP_FILMROLL. Otherwise we keep
+          // the current property of the collection.
+          property = DT_COLLECTION_PROP_FILMROLL;
+        }
+
         first_filmid = filmid;
         const char *output_path = dt_import_session_path(data->session, FALSE);
         dt_conf_set_int("plugins/lighttable/collect/num_rules", 1);
-        dt_conf_set_int("plugins/lighttable/collect/item0", 0);
+        dt_conf_set_int("plugins/lighttable/collect/item0", property);
         dt_conf_set_string("plugins/lighttable/collect/string0", output_path);
         _collection_update(&last_coll_update, &update_interval);
       }
@@ -2292,7 +2308,9 @@ static int32_t _control_import_job_run(dt_job_t *job)
     if(currtime - last_prog_update > PROGRESS_UPDATE_INTERVAL)
     {
       last_prog_update = currtime;
-      snprintf(message, sizeof(message), ngettext("importing %d/%d image", "importing %d/%d images", cntr), cntr, total);
+      snprintf(message, sizeof(message),
+               ngettext("importing %d/%d image",
+                        "importing %d/%d images", cntr), cntr, total);
       dt_control_job_set_progress_message(job, message);
       dt_control_job_set_progress(job, fraction);
       g_usleep(100);
