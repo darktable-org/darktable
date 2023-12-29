@@ -1240,14 +1240,14 @@ static char *tag_collate_key(char *tag)
   const size_t len = strlen(tag);
   char *result = g_malloc(len + 2);
   if(!g_strcmp0(tag, _("not tagged")))
-    *result = '\1';
+    *result = ' ';  // 1
   else if(g_str_has_prefix(tag, "darktable|"))
-    *result = '\2';
+    *result = '!';  // 2
   else
-    *result = '\3';
+    *result = '"';  // 3
   memcpy(result + 1, tag, len + 1);
   for(char *iter = result + 1; *iter; iter++)
-    if(*iter == '|') *iter = '\1';
+    if(*iter == '|') *iter = ' ';
   return result;
 }
 
