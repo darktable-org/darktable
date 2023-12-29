@@ -467,6 +467,10 @@ static inline void* dt_calloc_aligned(const size_t size)
   if(buf) memset(buf, 0, size);
   return buf;
 }
+static inline int *dt_alloc_align_int(const size_t n_ints)
+{
+  return (int*)__builtin_assume_aligned(dt_alloc_aligned(n_ints * sizeof(int)), DT_CACHELINE_BYTES);
+}
 static inline float *dt_alloc_align_float(const size_t nfloats)
 {
   return (float*)__builtin_assume_aligned(dt_alloc_aligned(nfloats * sizeof(float)),

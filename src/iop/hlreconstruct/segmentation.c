@@ -637,11 +637,11 @@ gboolean dt_segmentation_init_struct(dt_iop_segmentation_t *seg,
 
   seg->data =   dt_calloc_aligned(bsize);
   seg->tmp =    dt_alloc_aligned(bsize);
-  seg->size =   dt_alloc_aligned(slots * sizeof(int));
-  seg->xmin =   dt_alloc_aligned(slots * sizeof(int));
-  seg->xmax =   dt_alloc_aligned(slots * sizeof(int));
-  seg->ymin =   dt_alloc_aligned(slots * sizeof(int));
-  seg->ymax =   dt_alloc_aligned(slots * sizeof(int));
+  seg->size =   dt_alloc_align_int(slots);
+  seg->xmin =   dt_alloc_align_int(slots);
+  seg->xmax =   dt_alloc_align_int(slots);
+  seg->ymin =   dt_alloc_align_int(slots);
+  seg->ymax =   dt_alloc_align_int(slots);
   seg->val1 =   dt_alloc_align_float(slots);
   seg->val2 =   dt_alloc_align_float(slots);
 
