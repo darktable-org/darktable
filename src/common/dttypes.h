@@ -32,6 +32,18 @@
 #define DT_RESTRICT restrict
 #endif
 
+// Configure the size of a CPU cacheline in bytes, floats, and pixels.  On most current architectures,
+// a cacheline contains 64 bytes, but Apple Silicon (M-series processors) uses 128-byte cache lines.
+#if defined(__APPLE__) && defined(__aarch64__)
+#define DT_CACHELINE_BYTES 128
+#define DT_CACHELINE_FLOATS 32
+#define DT_CACHELINE_PIXELS 8
+#else
+#define DT_CACHELINE_BYTES 64
+#define DT_CACHELINE_FLOATS 16
+#define DT_CACHELINE_PIXELS 4
+#endif /* __APPLE__ && __aarch64__ */
+
 // Helper to force heap vectors to be aligned on 64 byte blocks to enable AVX2
 // If this is applied to a struct member and the struct is allocated on the heap, then it must be allocated
 // on a 64 byte boundary to avoid crashes or undefined behavior because of unaligned memory access.
