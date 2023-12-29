@@ -272,7 +272,7 @@ int write_image(dt_imageio_module_data_t *jpg_tmp,
     }
   }
 
-  uint8_t *row = dt_alloc_aligned(sizeof(uint8_t) * 3 * jpg->global.width);
+  uint8_t *row = dt_alloc_align_uint8(3 * jpg->global.width);
   const uint8_t *buf;
   while(jpg->cinfo.next_scanline < jpg->cinfo.image_height)
   {

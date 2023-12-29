@@ -291,7 +291,7 @@ int dt_imageio_jpeg_compress(const uint8_t *in,
   if(quality > 90) jpg.cinfo.comp_info[0].v_samp_factor = 1;
   if(quality > 92) jpg.cinfo.comp_info[0].h_samp_factor = 1;
   jpeg_start_compress(&(jpg.cinfo), TRUE);
-  uint8_t *row = dt_alloc_aligned(sizeof(uint8_t) * 3 * width);
+  uint8_t *row = dt_alloc_align_uint8(3 * width);
   const uint8_t *buf;
   while(jpg.cinfo.next_scanline < jpg.cinfo.image_height)
   {
@@ -548,7 +548,7 @@ int dt_imageio_jpeg_write_with_icc_profile(const char *filename,
 
   if(exif && exif_len > 0 && exif_len < 65534) jpeg_write_marker(&(jpg.cinfo), JPEG_APP0 + 1, exif, exif_len);
 
-  uint8_t *row = dt_alloc_aligned(sizeof(uint8_t) * 3 * width);
+  uint8_t *row = dt_alloc_align_uint8(3 * width);
   const uint8_t *buf;
   while(jpg.cinfo.next_scanline < jpg.cinfo.image_height)
   {
@@ -778,7 +778,7 @@ dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img,
   img->width = jpg.width;
   img->height = jpg.height;
 
-  uint8_t *tmp = (uint8_t *)dt_alloc_aligned(sizeof(uint8_t) * 4 * jpg.width * jpg.height);
+  uint8_t *tmp = dt_alloc_align_uint8(4 * jpg.width * jpg.height);
   if(dt_imageio_jpeg_read(&jpg, tmp))
   {
     dt_free_align(tmp);

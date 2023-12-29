@@ -471,6 +471,10 @@ static inline int *dt_alloc_align_int(const size_t n_ints)
 {
   return (int*)__builtin_assume_aligned(dt_alloc_aligned(n_ints * sizeof(int)), DT_CACHELINE_BYTES);
 }
+static inline uint8_t *dt_alloc_align_uint8(const size_t n_ints)
+{
+  return (uint8_t*)__builtin_assume_aligned(dt_alloc_aligned(n_ints * sizeof(uint8_t)), DT_CACHELINE_BYTES);
+}
 static inline float *dt_alloc_align_float(const size_t nfloats)
 {
   return (float*)__builtin_assume_aligned(dt_alloc_aligned(nfloats * sizeof(float)),
