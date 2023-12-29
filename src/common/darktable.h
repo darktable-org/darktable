@@ -480,6 +480,11 @@ static inline float *dt_alloc_align_float(const size_t nfloats)
   return (float*)__builtin_assume_aligned(dt_alloc_aligned(nfloats * sizeof(float)),
                                           DT_CACHELINE_BYTES);
 }
+static inline double *dt_alloc_align_double(const size_t ndoubles)
+{
+  return (double*)__builtin_assume_aligned(dt_alloc_aligned(ndoubles * sizeof(double)),
+                                           DT_CACHELINE_BYTES);
+}
 static inline float *dt_calloc_align_float(const size_t nfloats)
 {
   float *const buf = (float*)dt_alloc_align_float(nfloats);
