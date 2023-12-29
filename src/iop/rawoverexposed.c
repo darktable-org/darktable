@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2016-2021 darktable developers.
+   Copyright (C) 2016-2023 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -286,7 +286,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   const size_t coordbufsize = (size_t)height * width * 2 * sizeof(float);
 
-  coordbuf = dt_alloc_align(64, coordbufsize);
+  coordbuf = dt_alloc_aligned(coordbufsize);
   if(coordbuf == NULL) goto error;
 
 #ifdef _OPENMP

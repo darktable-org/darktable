@@ -248,7 +248,7 @@ icc_end:
     const size_t width = exr->global.width;
     const size_t height = exr->global.height;
     stride = 3 * sizeof(unsigned short);
-    out_image = dt_alloc_align(64, stride * width * height);
+    out_image = dt_alloc_aligned(stride * width * height);
     if(out_image == NULL)
     {
       dt_print(DT_DEBUG_ALWAYS, "[exr export] error allocating image conversion buffer\n");
@@ -329,7 +329,7 @@ icc_end:
           const size_t width = exr->global.width;
           const size_t height = exr->global.height;
           stride = sizeof(unsigned short);
-          void *out_mask = dt_alloc_align(64, stride * width * height);
+          void *out_mask = dt_alloc_aligned(stride * width * height);
           if(out_mask == NULL)
           {
             dt_print(DT_DEBUG_ALWAYS, "[exr export] error allocating mask conversion buffer\n");

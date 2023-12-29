@@ -561,7 +561,7 @@ uint16_t calculate_clut_haldclut(dt_iop_lut3d_params_t *const p, const char *con
   const size_t buf_size = (size_t)png.height * png_get_rowbytes(png.png_ptr, png.info_ptr);
   dt_print(DT_DEBUG_DEV, "[lut3d] allocating %zu bytes for png file\n", buf_size);
   uint8_t *buf = NULL;
-  buf = dt_alloc_align(16, buf_size);
+  buf = dt_alloc_aligned(buf_size);
   if(!buf)
   {
     dt_print(DT_DEBUG_ALWAYS, "[lut3d] error allocating buffer for png LUT\n");

@@ -948,7 +948,7 @@ static void _pixelpipe_picker_cl(const int devid,
   if(buffer && bufsize >= size * bpp)
     pixel = buffer;
   else
-    pixel = tmpbuf = dt_alloc_align(64, size * bpp);
+    pixel = tmpbuf = dt_alloc_aligned(size * bpp);
 
   if(pixel == NULL) return;
 

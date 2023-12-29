@@ -1625,8 +1625,7 @@ void init_pipe(struct dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece)
 {
   // create part of the pixelpipe
-  dt_iop_rgbcurve_data_t *d =
-    (dt_iop_rgbcurve_data_t *)dt_alloc_align(64, sizeof(dt_iop_rgbcurve_data_t));
+  dt_iop_rgbcurve_data_t *d = (dt_iop_rgbcurve_data_t *)dt_alloc_aligned(sizeof(dt_iop_rgbcurve_data_t));
   const dt_iop_rgbcurve_params_t *const default_params =
     (dt_iop_rgbcurve_params_t *)self->default_params;
   piece->data = (void *)d;
@@ -1681,7 +1680,7 @@ void init_global(dt_iop_module_so_t *module)
 {
   const int program = 25; // rgbcurve.cl, from programs.conf
   dt_iop_rgbcurve_global_data_t *gd =
-    (dt_iop_rgbcurve_global_data_t *)dt_alloc_align(64, sizeof(dt_iop_rgbcurve_global_data_t));
+    (dt_iop_rgbcurve_global_data_t *)dt_alloc_aligned(sizeof(dt_iop_rgbcurve_global_data_t));
   module->data = gd;
 
   gd->kernel_rgbcurve = dt_opencl_create_kernel(program, "rgbcurve");

@@ -459,17 +459,17 @@ void dt_dump_pipe_pfm(const char *mod,
                       const gboolean input,
                       const char *pipe);
 
-void *dt_alloc_align(const size_t alignment, const size_t size);
+void *dt_alloc_aligned(const size_t size);
 
-static inline void* dt_calloc_align(const size_t alignment, const size_t size)
+static inline void* dt_calloc_aligned(const size_t size)
 {
-  void *buf = dt_alloc_align(alignment, size);
+  void *buf = dt_alloc_aligned(size);
   if(buf) memset(buf, 0, size);
   return buf;
 }
 static inline float *dt_alloc_align_float(const size_t nfloats)
 {
-  return (float*)__builtin_assume_aligned(dt_alloc_align(DT_CACHELINE_BYTES, nfloats * sizeof(float)),
+  return (float*)__builtin_assume_aligned(dt_alloc_aligned(nfloats * sizeof(float)),
                                           DT_CACHELINE_BYTES);
 }
 static inline float *dt_calloc_align_float(const size_t nfloats)
@@ -682,7 +682,7 @@ static inline void *dt_alloc_perthread(const size_t n,
   const size_t cache_lines = (alloc_size+DT_CACHELINE_BYTES-1)/DT_CACHELINE_BYTES;
   *padded_size = DT_CACHELINE_BYTES * cache_lines / objsize;
   const size_t total_bytes = DT_CACHELINE_BYTES * cache_lines * dt_get_num_threads();
-  return __builtin_assume_aligned(dt_alloc_align(DT_CACHELINE_BYTES, total_bytes), DT_CACHELINE_BYTES);
+  return __builtin_assume_aligned(dt_alloc_aligned(total_bytes), DT_CACHELINE_BYTES);
 }
 static inline void *dt_calloc_perthread(const size_t n,
                                         const size_t objsize,

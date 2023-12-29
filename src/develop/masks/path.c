@@ -516,7 +516,7 @@ static int _path_find_self_intersection(dt_masks_dynbuf_t *inter,
   const size_t ss = (size_t)hb * wb;
   if(ss < 10 || hb < 0 || wb < 0) return 0;
 
-  int *binter = dt_alloc_align(64, sizeof(int) * ss);
+  int *binter = dt_alloc_aligned(sizeof(int) * ss);
   if(binter == NULL) return 0;
   memset(binter, 0, sizeof(int) * ss);
 
@@ -3253,7 +3253,7 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module,
   // deal with feather if it does not lie outside of roi
   if(!path_encircles_roi)
   {
-    int *dpoints = dt_alloc_align(64, sizeof(int) * 4 * border_count);
+    int *dpoints = dt_alloc_aligned(sizeof(int) * 4 * border_count);
     if(dpoints == NULL)
     {
       dt_free_align(points);

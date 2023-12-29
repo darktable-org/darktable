@@ -118,7 +118,7 @@ static void _process_linear_opposed(
 
   dt_aligned_pixel_t chrominance = {0.0f, 0.0f, 0.0f, 0.0f};
 
-  char *mask = (quality) ? dt_calloc_align(64, 6 * msize * sizeof(char)) : NULL;
+  char *mask = (quality) ? dt_calloc_aligned(6 * msize * sizeof(char)) : NULL;
   if(mask)
   {
     gboolean anyclipped = FALSE;
@@ -260,7 +260,7 @@ static float *_process_opposed(
   }
   else
   {
-    char *mask = (quality) ? dt_calloc_align(64, 6 * msize * sizeof(char)) : NULL;
+    char *mask = (quality) ? dt_calloc_aligned(6 * msize * sizeof(char)) : NULL;
     if(mask)
     {
       gboolean anyclipped = FALSE;
