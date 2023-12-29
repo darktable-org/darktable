@@ -302,14 +302,14 @@ float *dt_dev_get_raster_mask(const struct dt_dev_pixelpipe_iop_t *piece,
 void dt_dev_clear_scharr_mask(dt_dev_pixelpipe_t *pipe);
 
 gboolean dt_dev_write_scharr_mask(dt_dev_pixelpipe_iop_t *piece,
-                                     float *const rgb,
-                                     const dt_iop_roi_t *const roi_in,
-                                     const gboolean mode);
+                                  float *const rgb,
+                                  const dt_iop_roi_t *const roi_in,
+                                  const gboolean mode);
 #ifdef HAVE_OPENCL
-gboolean dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
-                                        cl_mem in,
-                                        const dt_iop_roi_t *const roi_in,
-                                        const gboolean mode);
+int dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
+                                cl_mem in,
+                                const dt_iop_roi_t *const roi_in,
+                                const gboolean mode);
 #endif
 
 /* specialized version of dt_print for pixelpipe debugging */
