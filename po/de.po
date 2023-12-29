@@ -11918,7 +11918,7 @@ msgstr "Stil „%s” kann zum Exportieren nicht gefunden werden."
 msgid ""
 "<span foreground='red'><b>WARNING</b></span>: camera is not fully supported!"
 msgstr ""
-"<span foreground=‚red‘><b>WARNUNG</b></span>: Kamera wird nicht vollständig "
+"<span foreground='red'><b>WARNUNG</b></span>: Kamera wird nicht vollständig "
 "unterstützt!"
 
 #: ../src/imageio/imageio_libraw.c:297
