@@ -787,7 +787,8 @@ static int process_rcd_cl(
     dev_green_eq = cfa = rgb0 = rgb1 = rgb2 = VH_dir = PQ_dir = VP_diff = HQ_diff = NULL;
 
     if(piece->pipe->want_detail_mask)
-      dt_dev_write_scharr_mask_cl(piece, dev_aux, roi_in, TRUE);
+      err = dt_dev_write_scharr_mask_cl(piece, dev_aux, roi_in, TRUE);
+    if(err != CL_SUCCESS) goto error;
 
     if(scaled)
     {
