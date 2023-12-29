@@ -1368,7 +1368,7 @@ void process(dt_iop_module_t *self,
     return;
   }
 
-  uint8_t *const restrict mask = dt_alloc_aligned(sizeof(uint8_t) * width * height);
+  uint8_t *const restrict mask = dt_alloc_align_uint8(width * height);
 
   float *restrict in = DT_IS_ALIGNED((float *const restrict)ivoid);
   float *const restrict out = DT_IS_ALIGNED((float *const restrict)ovoid);

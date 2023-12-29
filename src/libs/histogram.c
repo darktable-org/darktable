@@ -2567,7 +2567,7 @@ void gui_init(dt_lib_module_t *self)
     d->waveform_max_bins
     * cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_tones);
   for(int ch=0; ch<3; ch++)
-    d->waveform_img[ch] = dt_alloc_aligned(sizeof(uint8_t) * MAX(bytes_hori, bytes_vert));
+    d->waveform_img[ch] = dt_alloc_align_uint8(MAX(bytes_hori, bytes_vert));
 
   // FIXME: what is the appropriate resolution for this: balance
   // memory use, processing speed, helpful resolution
@@ -2575,11 +2575,11 @@ void gui_init(dt_lib_module_t *self)
   // FIXME: make this and waveform params #DEFINEd or const above,
   // rather than set here?
   d->vectorscope_diameter_px = 384;
-  d->vectorscope_graph = dt_alloc_aligned(sizeof(uint8_t) * d->vectorscope_diameter_px *
+  d->vectorscope_graph = dt_alloc_align_uint8(d->vectorscope_diameter_px *
      cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->vectorscope_diameter_px));
   d->vectorscope_bkgd =
-    dt_alloc_aligned(sizeof(uint8_t) * 4U * d->vectorscope_diameter_px *
-                     cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, d->vectorscope_diameter_px));
+    dt_alloc_align_uint8(4U * d->vectorscope_diameter_px *
+                         cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, d->vectorscope_diameter_px));
   d->hue_ring_prof = NULL;
   d->hue_ring_scale = DT_LIB_HISTOGRAM_SCALE_N;
   d->hue_ring_colorspace = DT_LIB_HISTOGRAM_VECTORSCOPE_N;
