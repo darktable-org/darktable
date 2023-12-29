@@ -2448,6 +2448,8 @@ GList *dt_ioppr_deserialize_text_iop_order_list(const char *buf)
   return iop_order_list;
 
  error:
+  dt_print(DT_DEBUG_ALWAYS,
+           "[deserialize text iop_order_list] corruped iop order list:\n'%s'", buf);
   g_list_free_full(iop_order_list, free);
   return NULL;
 }
@@ -2503,6 +2505,8 @@ GList *dt_ioppr_deserialize_iop_order_list(const char *buf,
   return iop_order_list;
 
  error:
+  dt_print(DT_DEBUG_ALWAYS,
+           "[deserialize iop_order_list] corruped iop order list (size %d)\n", (int)size);
   g_list_free_full(iop_order_list, free);
   return NULL;
 }
