@@ -1693,7 +1693,7 @@ void init_pipe(struct dt_iop_module_t *self,
                dt_dev_pixelpipe_t *pipe,
                dt_dev_pixelpipe_iop_t *piece)
 {
-  piece->data = dt_calloc_aligned(sizeof(dt_iop_toneequalizer_data_t));
+  piece->data = dt_calloc1_align_type(dt_iop_toneequalizer_data_t);
 }
 
 

@@ -126,7 +126,7 @@ float dt_image_distance_transform(float *const src,
     float *f = dt_alloc_align_float(maxdim);
     float *z = dt_alloc_align_float(maxdim + 1);
     float *d = dt_alloc_align_float(maxdim);
-    int *v = dt_alloc_aligned(maxdim * sizeof (int));
+    int *v = dt_alloc_align_int(maxdim);
 
     // transform along columns
 #ifdef _OPENMP
