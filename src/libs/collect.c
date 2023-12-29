@@ -1230,13 +1230,7 @@ static gint _sort_folder_tag(gconstpointer a, gconstpointer b)
   const name_key_tuple_t *tuple_a = (const name_key_tuple_t *)a;
   const name_key_tuple_t *tuple_b = (const name_key_tuple_t *)b;
 
-  if (tuple_a->status != -1)
-    // collection type: folders
-    // In this case the collate_key is filled by g_utf8_collate_key_for_filename()
-    // which cannot be compared by g_utf8_collate() so we use g_strcmp0() here
-    return g_strcmp0(tuple_a->collate_key, tuple_b->collate_key);
-  else
-    return g_utf8_collate(tuple_a->collate_key, tuple_b->collate_key);
+  return g_strcmp0(tuple_a->collate_key, tuple_b->collate_key);
 }
 
 // create a key such that  _("not tagged") & "darktable|" are coming first,
@@ -1551,7 +1545,11 @@ static void _tree_view(dt_lib_collect_rule_t *dr)
         g_free(name_folded);
       }
       else
-        collate_key = tag_collate_key(name);
+      {
+        char *tck = tag_collate_key(name);
+        collate_key = g_utf8_collate_key_for_filename(tck, -1);
+        g_free(tck);
+      }
 
       name_key_tuple_t *tuple = (name_key_tuple_t *)malloc(sizeof(name_key_tuple_t));
       tuple->name = name;
