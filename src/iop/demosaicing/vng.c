@@ -381,7 +381,7 @@ static int process_vng_cl(
   cl_mem dev_code = NULL;
   cl_mem dev_ips = NULL;
   cl_mem dev_green_eq = NULL;
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
   int32_t(*lookup)[16][32] = NULL;
 
@@ -389,7 +389,7 @@ static int process_vng_cl(
   {
     dev_xtrans
         = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->pipe->dsc.xtrans), piece->pipe->dsc.xtrans);
-    if(dev_xtrans == NULL) goto error;
+    if(dev_xtrans == NULL) goto finish;
   }
 
   if(qual_flags & DT_DEMOSAIC_FULL_SCALE)
@@ -514,22 +514,23 @@ static int process_vng_cl(
 
 
     dev_lookup = dt_opencl_copy_host_to_device_constant(devid, lookup_size, lookup);
-    if(dev_lookup == NULL) goto error;
+    if(dev_lookup == NULL) goto finish;
 
     dev_code = dt_opencl_copy_host_to_device_constant(devid, sizeof(code), code);
-    if(dev_code == NULL) goto error;
+    if(dev_code == NULL) goto finish;
 
     dev_ips = dt_opencl_copy_host_to_device_constant(devid, ips_size, ips);
-    if(dev_ips == NULL) goto error;
+    if(dev_ips == NULL) goto finish;
 
     // green equilibration for Bayer sensors
     if(piece->pipe->dsc.filters != 9u && data->green_eq != DT_IOP_GREEN_EQ_NO)
     {
       dev_green_eq = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float));
-      if(dev_green_eq == NULL) goto error;
+      if(dev_green_eq == NULL) goto finish;
 
-      if(!green_equilibration_cl(self, piece, dev_in, dev_green_eq, roi_in))
-        goto error;
+      err = green_equilibration_cl(self, piece, dev_in, dev_green_eq, roi_in);
+      if(err != CL_SUCCESS)
+        goto finish;
 
       dev_in = dev_green_eq;
     }
@@ -538,10 +539,11 @@ static int process_vng_cl(
     int height = roi_out->height;
 
     // need to reserve scaled auxiliary buffer or use dev_out
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     if(scaled)
     {
       dev_aux = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
-      if(dev_aux == NULL) goto error;
+      if(dev_aux == NULL) goto finish;
       width = roi_in->width;
       height = roi_in->height;
     }
@@ -549,7 +551,7 @@ static int process_vng_cl(
       dev_aux = dev_out;
 
     dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
-    if(dev_tmp == NULL) goto error;
+    if(dev_tmp == NULL) goto finish;
 
     {
       // manage borders for linear interpolation part
@@ -558,7 +560,7 @@ static int process_vng_cl(
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_vng_border_interpolate, width, height,
         CLARG(dev_in), CLARG(dev_tmp), CLARG(width), CLARG(height), CLARG(border), CLARG(roi_in->x), CLARG(roi_in->y),
         CLARG(filters4), CLARG(dev_xtrans));
-      if(err != CL_SUCCESS) goto error;
+      if(err != CL_SUCCESS) goto finish;
     }
 
     {
@@ -571,7 +573,7 @@ static int process_vng_cl(
       if(!dt_opencl_local_buffer_opt(devid, gd->kernel_vng_lin_interpolate, &locopt))
       {
         err = CL_INVALID_WORK_DIMENSION;
-        goto error;
+        goto finish;
       }
 
       size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
@@ -579,7 +581,7 @@ static int process_vng_cl(
       dt_opencl_set_kernel_args(devid, gd->kernel_vng_lin_interpolate, 0, CLARG(dev_in), CLARG(dev_tmp),
         CLARG(width), CLARG(height), CLARG(filters4), CLARG(dev_lookup), CLLOCAL(sizeof(float) * (locopt.sizex + 2) * (locopt.sizey + 2)));
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_vng_lin_interpolate, sizes, local);
-      if(err != CL_SUCCESS) goto error;
+      if(err != CL_SUCCESS) goto finish;
     }
 
 
@@ -589,7 +591,7 @@ static int process_vng_cl(
       size_t origin[] = { 0, 0, 0 };
       size_t region[] = { width, height, 1 };
       err = dt_opencl_enqueue_copy_image(devid, dev_tmp, dev_aux, origin, origin, region);
-      if(err != CL_SUCCESS) goto error;
+      if(err != CL_SUCCESS) goto finish;
     }
     else
     {
@@ -602,7 +604,7 @@ static int process_vng_cl(
       if(!dt_opencl_local_buffer_opt(devid, gd->kernel_vng_interpolate, &locopt))
       {
         err = CL_INVALID_WORK_DIMENSION;
-        goto error;
+        goto finish;
       }
 
       size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
@@ -611,7 +613,7 @@ static int process_vng_cl(
         CLARG(width), CLARG(height), CLARG(roi_in->x), CLARG(roi_in->y), CLARG(filters4), CLARRAY(4, processed_maximum),
         CLARG(dev_xtrans), CLARG(dev_ips), CLARG(dev_code), CLLOCAL(sizeof(float) * 4 * (locopt.sizex + 4) * (locopt.sizey + 4)));
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_vng_interpolate, sizes, local);
-      if(err != CL_SUCCESS) goto error;
+      if(err != CL_SUCCESS) goto finish;
     }
 
     {
@@ -621,7 +623,7 @@ static int process_vng_cl(
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_vng_border_interpolate, width, height,
         CLARG(dev_in), CLARG(dev_aux), CLARG(width), CLARG(height), CLARG(border), CLARG(roi_in->x), CLARG(roi_in->y),
         CLARG(filters4), CLARG(dev_xtrans));
-      if(err != CL_SUCCESS) goto error;
+      if(err != CL_SUCCESS) goto finish;
     }
 
     if(filters4 != 9)
@@ -630,51 +632,44 @@ static int process_vng_cl(
       size_t origin[] = { 0, 0, 0 };
       size_t region[] = { width, height, 1 };
       err = dt_opencl_enqueue_copy_image(devid, dev_aux, dev_tmp, origin, origin, region);
-      if(err != CL_SUCCESS) goto error;
+      if(err != CL_SUCCESS) goto finish;
 
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_vng_green_equilibrate, width, height,
         CLARG(dev_tmp), CLARG(dev_aux), CLARG(width), CLARG(height));
-      if(err != CL_SUCCESS) goto error;
+      if(err != CL_SUCCESS) goto finish;
     }
 
     if(piece->pipe->want_detail_mask && data->demosaicing_method == DT_IOP_DEMOSAIC_VNG)
-      dt_dev_write_scharr_mask_cl(piece, dev_aux, roi_in, TRUE);
+      err = dt_dev_write_scharr_mask_cl(piece, dev_aux, roi_in, TRUE);
+    if(err != CL_SUCCESS) goto finish;
 
     if(scaled)
     {
       dt_print_pipe(DT_DEBUG_PIPE, "clip_and_zoom_roi_cl", piece->pipe, self, roi_in, roi_out, "\n");
       // scale temp buffer to output buffer
       err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_aux, roi_out, roi_in);
-      if(err != CL_SUCCESS) goto error;
+      if(err != CL_SUCCESS) goto finish;
     }
   }
   else
   {
+    const int zero = 0;
+    const int width = roi_out->width;
+    const int height = roi_out->height;
     // sample half-size or third-size image
     if(piece->pipe->dsc.filters == 9u)
-    {
-      const int width = roi_out->width;
-      const int height = roi_out->height;
-
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zoom_third_size, width, height,
         CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(roi_in->x), CLARG(roi_in->y),
         CLARG(roi_in->width), CLARG(roi_in->height), CLARG(roi_out->scale), CLARG(dev_xtrans));
-      if(err != CL_SUCCESS) goto error;
-    }
     else
-    {
-      const int zero = 0;
-      const int width = roi_out->width;
-      const int height = roi_out->height;
-
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zoom_half_size, width, height,
         CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(zero), CLARG(zero), CLARG(roi_in->width),
         CLARG(roi_in->height), CLARG(roi_out->scale), CLARG(piece->pipe->dsc.filters));
-      if(err != CL_SUCCESS) goto error;
-    }
+    if(err != CL_SUCCESS) goto finish;
   }
+  err = CL_SUCCESS; // we got here so no error to be reported / returned
 
-error:
+finish:
   if(dev_aux != dev_out) dt_opencl_release_mem_object(dev_aux);
   dt_opencl_release_mem_object(dev_tmp);
   dt_opencl_release_mem_object(dev_xtrans);
@@ -685,7 +680,7 @@ error:
   dt_opencl_release_mem_object(dev_green_eq);
   free(ips);
   if(data->color_smoothing && smooth)
-    err =color_smoothing_cl(self, piece, dev_out, dev_out, roi_out, data->color_smoothing);
+    err = color_smoothing_cl(self, piece, dev_out, dev_out, roi_out, data->color_smoothing);
 
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] vng problem '%s'\n", cl_errstr(err));
