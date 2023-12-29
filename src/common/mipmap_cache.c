@@ -253,7 +253,7 @@ void *dt_mipmap_cache_alloc(dt_mipmap_buffer_t *buf, const dt_image_t *img)
 
     entry->data_size = 0;
 
-    entry->data = dt_alloc_align(64, buffer_size);
+    entry->data = dt_alloc_aligned(buffer_size);
 
     if(!entry->data)
     {
@@ -321,7 +321,7 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
       entry->data_size = sizeof(*dsc) + sizeof(float) * 4 * 64;
     }
 
-    entry->data = dt_alloc_align(64, entry->data_size);
+    entry->data = dt_alloc_aligned(entry->data_size);
 
     // dt_print(DT_DEBUG_ALWAYS, "[mipmap cache] alloc dynamic for key %u %p\n", key, *buf);
     if(!(entry->data))
@@ -369,7 +369,7 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
         fseek(f, 0, SEEK_END);
         const long len = ftell(f);
         if(len <= 0) goto read_error; // coverity madness
-        blob = (uint8_t *)dt_alloc_align(64, len);
+        blob = (uint8_t *)dt_alloc_aligned(len);
         if(!blob) goto read_error;
         fseek(f, 0, SEEK_SET);
         const int rd = fread(blob, sizeof(uint8_t), len, f);

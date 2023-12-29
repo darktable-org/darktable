@@ -170,7 +170,7 @@ int dt_imageio_large_thumbnail(const char *filename,
     if(dt_imageio_jpeg_decompress_header(buf, bufsize, &jpg))
       goto error;
 
-    *buffer = (uint8_t *)dt_alloc_align(64, sizeof(uint8_t) * 4 * jpg.width * jpg.height);
+    *buffer = (uint8_t *)dt_alloc_aligned(sizeof(uint8_t) * 4 * jpg.width * jpg.height);
     if(!*buffer) goto error;
 
     *width = jpg.width;
@@ -215,8 +215,7 @@ int dt_imageio_large_thumbnail(const char *filename,
                                        // embedded thumbnails are
                                        // always srgb
 
-    *buffer = (uint8_t *)dt_alloc_align(64,
-                                        sizeof(uint8_t) * 4 * image->columns * image->rows);
+    *buffer = (uint8_t *)dt_alloc_aligned(sizeof(uint8_t) * 4 * image->columns * image->rows);
     if(!*buffer) goto error_gm;
 
     for(uint32_t row = 0; row < image->rows; row++)
@@ -1475,7 +1474,7 @@ cairo_surface_t *dt_imageio_preview(const dt_imgid_t imgid,
   dat.head.height = height;
   dat.head.style_append = TRUE;
   dat.bpp = 8;
-  dat.buf = (uint8_t *)dt_alloc_align(64, sizeof(uint32_t) * width * height);
+  dat.buf = (uint8_t *)dt_alloc_aligned(sizeof(uint32_t) * width * height);
 
   g_strlcpy(dat.head.style, style_name, sizeof(dat.head.style));
 

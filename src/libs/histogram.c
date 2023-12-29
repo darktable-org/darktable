@@ -788,7 +788,8 @@ static void _lib_histogram_process_vectorscope
   // histogram profile PCS (always D50)?
   //
   // FIXME: pre-allocate? -- use the same buffer as for waveform?
-  dt_atomic_int *const restrict binned = __builtin_assume_aligned(dt_alloc_align(64, sizeof(int) * diam_px * diam_px), 64);
+  dt_atomic_int *const restrict binned =
+    __builtin_assume_aligned(dt_alloc_aligned(sizeof(int) * diam_px * diam_px), DT_CACHELINE_BYTES);
   memset(binned, 0, sizeof(int) * diam_px * diam_px);
   // FIXME: move verbosed interleaved comments into a method note at
   // the start, as the code itself is succinct and clear
@@ -2486,7 +2487,7 @@ void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
   dt_lib_histogram_t *d =
-    (dt_lib_histogram_t *)dt_calloc_align(64, sizeof(dt_lib_histogram_t));
+    (dt_lib_histogram_t *)dt_calloc_aligned(sizeof(dt_lib_histogram_t));
   self->data = (void *)d;
 
   dt_pthread_mutex_init(&d->lock, NULL);
@@ -2523,7 +2524,7 @@ void gui_init(dt_lib_module_t *self)
   int a = dt_conf_get_int("plugins/darkroom/histogram/vectorscope/angle");
   d->vectorscope_angle = a * M_PI / 180.0;
 
-  d->histogram = (uint32_t *)dt_alloc_align(64, 4 * HISTOGRAM_BINS * sizeof(uint32_t));
+  d->histogram = (uint32_t *)dt_alloc_aligned(4 * HISTOGRAM_BINS * sizeof(uint32_t));
   memset(d->histogram, 0, 4 * HISTOGRAM_BINS * sizeof(uint32_t));
   d->histogram_max = 0;
 
@@ -2566,7 +2567,7 @@ void gui_init(dt_lib_module_t *self)
     d->waveform_max_bins
     * cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_tones);
   for(int ch=0; ch<3; ch++)
-    d->waveform_img[ch] = dt_alloc_align(64, sizeof(uint8_t) * MAX(bytes_hori, bytes_vert));
+    d->waveform_img[ch] = dt_alloc_aligned(sizeof(uint8_t) * MAX(bytes_hori, bytes_vert));
 
   // FIXME: what is the appropriate resolution for this: balance
   // memory use, processing speed, helpful resolution
@@ -2574,13 +2575,11 @@ void gui_init(dt_lib_module_t *self)
   // FIXME: make this and waveform params #DEFINEd or const above,
   // rather than set here?
   d->vectorscope_diameter_px = 384;
-  d->vectorscope_graph = dt_alloc_align
-    (64, sizeof(uint8_t) * d->vectorscope_diameter_px *
+  d->vectorscope_graph = dt_alloc_aligned(sizeof(uint8_t) * d->vectorscope_diameter_px *
      cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->vectorscope_diameter_px));
   d->vectorscope_bkgd =
-    dt_alloc_align(64, sizeof(uint8_t) * 4U * d->vectorscope_diameter_px *
-                   cairo_format_stride_for_width
-                     (CAIRO_FORMAT_RGB24, d->vectorscope_diameter_px));
+    dt_alloc_aligned(sizeof(uint8_t) * 4U * d->vectorscope_diameter_px *
+                     cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, d->vectorscope_diameter_px));
   d->hue_ring_prof = NULL;
   d->hue_ring_scale = DT_LIB_HISTOGRAM_SCALE_N;
   d->hue_ring_colorspace = DT_LIB_HISTOGRAM_VECTORSCOPE_N;
