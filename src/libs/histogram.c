@@ -788,9 +788,7 @@ static void _lib_histogram_process_vectorscope
   // histogram profile PCS (always D50)?
   //
   // FIXME: pre-allocate? -- use the same buffer as for waveform?
-  dt_atomic_int *const restrict binned =
-    __builtin_assume_aligned(dt_alloc_aligned(sizeof(int) * diam_px * diam_px), DT_CACHELINE_BYTES);
-  memset(binned, 0, sizeof(int) * diam_px * diam_px);
+  dt_atomic_int *const restrict binned = (dt_atomic_int*)dt_calloc_align_int(diam_px * diam_px);
   // FIXME: move verbosed interleaved comments into a method note at
   // the start, as the code itself is succinct and clear
   //
@@ -2486,8 +2484,7 @@ void view_leave(struct dt_lib_module_t *self,
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_histogram_t *d =
-    (dt_lib_histogram_t *)dt_calloc_aligned(sizeof(dt_lib_histogram_t));
+  dt_lib_histogram_t *d = dt_calloc1_align_type(dt_lib_histogram_t);
   self->data = (void *)d;
 
   dt_pthread_mutex_init(&d->lock, NULL);
