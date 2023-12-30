@@ -590,8 +590,10 @@ void expose(
                            darktable.lib->proxy.colorpicker.live_samples, FALSE);
   }
 
-  // draw guide lines if needed
-  if(!dev->gui_module || !(dev->gui_module->flags() & IOP_FLAGS_GUIDES_SPECIAL_DRAW))
+  const gboolean special_draw = dev->gui_module
+                             && dev->gui_module->flags() & IOP_FLAGS_GUIDES_SPECIAL_DRAW;
+  // draw guide lines if there is no active gui_module doing it via post_expose
+  if(!special_draw)
     dt_guides_draw(cri, 0.0f, 0.0f, wd, ht, zoom_scale);
 
   // draw colorpicker for in focus module or execute module callback hook
