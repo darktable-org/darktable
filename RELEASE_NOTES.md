@@ -65,6 +65,9 @@ for more information on how to contribute._
 
 - Fixed RGBE image loader.
 
+- Fixes possible issue with guides not displayed in Perspective
+  Correction module.
+
 ## Lua
 
 ### API Version
