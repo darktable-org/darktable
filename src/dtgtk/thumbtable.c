@@ -903,7 +903,9 @@ static void _zoomable_zoom(dt_thumbtable_t *table,
     // we compute new position taking anchor image as reference
     th->x = anchor_posx - (anchor_x - posx) * new_size;
     th->y = anchor_posy - (anchor_y - posy) * new_size;
-    if(th->y + table->thumb_size <= 0 || th->y > table->view_height)
+    if(table->list->next
+       && (th->y + table->thumb_size <= 0
+           || th->y > table->view_height))
     {
       th_invalid = g_list_prepend(th_invalid, th);
       GList *ll = l;
