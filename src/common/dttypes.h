@@ -65,6 +65,16 @@ typedef float DT_ALIGNED_ARRAY dt_colormatrix_t[4][4];
 #define DT_PIXEL_SIMD_CHANNELS 4
 #endif
 
+// A function to compute how many pixels each thread should process in a parallelized for loop.
+// For very small RoIs on a CPU with lots of threads, the last one or two hardware threads can end
+// up without any work, so there needs to be a check whether the starting offset exceeds the total
+// number of pixels to be processed.
+static inline size_t dt_cacheline_chunks(const size_t npixels, const size_t nthreads)
+{
+  return DT_CACHELINE_PIXELS * ((((npixels + nthreads - 1) / nthreads) + (DT_CACHELINE_PIXELS-1))
+                                / DT_CACHELINE_PIXELS);
+}
+
 // A macro which gives us a configurable shorthand to produce the optimal performance when processing all of the
 // channels in a pixel.  Its first argument is the name of the variable to be used inside the 'for' loop it creates,
 // while the optional second argument is a set of OpenMP directives, typically specifying variable alignment.

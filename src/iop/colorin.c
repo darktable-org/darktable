@@ -909,17 +909,17 @@ static void process_cmatrix_fastpath(struct dt_iop_module_t *self,
   float *const restrict  out = (float*)ovoid;
 
 #ifdef _OPENMP
-  // figure out the number of pixels each thread needs to process
-  // round up to a multiple of 4 pixels so that each chunk starts aligned(64)
+  // figure out the number of pixels each thread needs to process,
+  // rounded up to a multiple of the CPU's cache line size
   const size_t nthreads = dt_get_num_threads();
-  const size_t chunksize = 4 * ((((npixels + nthreads - 1) / nthreads) + 3) / 4);
+  const size_t chunksize = dt_cacheline_chunks(npixels, nthreads);
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(in, out, npixels, chunksize, nthreads, d, clipping)  \
   schedule(static)
   for(size_t chunk = 0; chunk < nthreads; chunk++)
   {
     size_t start = chunksize * dt_get_thread_num();
-    if (start >= npixels) continue;  // handle case when chunksize is < 4*nthreads and last thread has no work
+    if (start >= npixels) continue;  // when npixels is small enough, rounding can leave last thread w/o wok
     size_t end = MIN(start + chunksize, npixels);
     if(clipping)
       _cmatrix_fastpath_clipping(out + 4*start, in + 4*start,
@@ -1036,17 +1036,17 @@ static void process_cmatrix_proper(struct dt_iop_module_t *self,
   float *const restrict  out = (float*)ovoid;
 
 #ifdef _OPENMP
-  // figure out the number of pixels each thread needs to process
-  // round up to a multiple of 4 pixels so that each chunk starts aligned(64)
+  // figure out the number of pixels each thread needs to process,
+  // rounded up to a multiple of the CPU's cache line size
   const size_t nthreads = dt_get_num_threads();
-  const size_t chunksize = 4 * (((npixels / nthreads) + 4) / 4);
+  const size_t chunksize = dt_cacheline_chunks(npixels, nthreads);
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(in, out, npixels, chunksize, nthreads, clipping, d) \
   schedule(static)
   for(size_t chunk = 0; chunk < nthreads; chunk++)
   {
     size_t start = chunksize * dt_get_thread_num();
-    if (start >= npixels) continue;  // handle case when chunksize is < 4*nthreads and last thread has no work
+    if (start >= npixels) continue;  // when npixels is small enough, rounding can leave last thread w/o wok
     size_t end = MIN(start + chunksize, npixels);
     if(clipping)
       _cmatrix_proper_clipping(out + 4*start, in + 4*start,
