@@ -469,6 +469,8 @@ static inline void* dt_calloc_aligned(const size_t size)
 }
 #define dt_calloc1_align_type(TYPE) \
   ((TYPE*)__builtin_assume_aligned(dt_calloc_aligned(sizeof(TYPE)), DT_CACHELINE_BYTES))
+#define dt_calloc_align_type(TYPE, count) \
+  ((TYPE*)__builtin_assume_aligned(dt_calloc_aligned(count * sizeof(TYPE)), DT_CACHELINE_BYTES))
 static inline int* dt_calloc_align_int(const size_t n_ints)
 {
   return (int*)__builtin_assume_aligned(dt_calloc_aligned(n_ints * sizeof(int)), DT_CACHELINE_BYTES);
@@ -476,6 +478,9 @@ static inline int* dt_calloc_align_int(const size_t n_ints)
 
 #define dt_alloc1_align_type(TYPE) \
   ((TYPE*)__builtin_assume_aligned(dt_alloc_aligned(sizeof(TYPE)), DT_CACHELINE_BYTES))
+
+#define dt_alloc_align_type(TYPE, count) \
+  ((TYPE*)__builtin_assume_aligned(dt_alloc_aligned(count * sizeof(TYPE)), DT_CACHELINE_BYTES))
 
 static inline int *dt_alloc_align_int(const size_t n_ints)
 {

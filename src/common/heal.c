@@ -327,8 +327,8 @@ static void _heal_laplace_loop(float *const restrict red_pixels, float *const re
   // a handful of runs in each row of pixels.
   // Note that using `unsigned` instead of size_t, the stamp is limited to ~8 gigapixels (the main image can be larger)
   const size_t subwidth = (width+1)/2;  // round up to be able to handle odd widths
-  unsigned *const restrict red_runs = dt_alloc_aligned(sizeof(unsigned) * subwidth * (height + 2));
-  unsigned *const restrict black_runs = dt_alloc_aligned(sizeof(unsigned) * subwidth * (height + 2));
+  unsigned *const restrict red_runs = dt_alloc_align_type(unsigned, subwidth * (height + 2));
+  unsigned *const restrict black_runs = dt_alloc_align_type(unsigned, subwidth * (height + 2));
   if(!red_runs || !black_runs)
   {
     dt_print(DT_DEBUG_ALWAYS, "_heal_laplace_loop: error allocating memory for healing\n");
