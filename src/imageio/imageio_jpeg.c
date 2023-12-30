@@ -539,7 +539,7 @@ int dt_imageio_jpeg_write_with_icc_profile(const char *filename,
     cmsSaveProfileToMem(out_profile, 0, &len);
     if(len > 0)
     {
-      unsigned char *buf = dt_alloc_aligned(sizeof(unsigned char) * len);
+      unsigned char *buf = dt_alloc_align_type(unsigned char, len);
       cmsSaveProfileToMem(out_profile, buf, &len);
       write_icc_profile(&(jpg.cinfo), buf, len);
       dt_free_align(buf);

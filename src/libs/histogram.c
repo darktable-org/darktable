@@ -2521,7 +2521,7 @@ void gui_init(dt_lib_module_t *self)
   int a = dt_conf_get_int("plugins/darkroom/histogram/vectorscope/angle");
   d->vectorscope_angle = a * M_PI / 180.0;
 
-  d->histogram = (uint32_t *)dt_alloc_aligned(4 * HISTOGRAM_BINS * sizeof(uint32_t));
+  d->histogram = dt_alloc_align_type(uint32_t, 4 * HISTOGRAM_BINS);
   memset(d->histogram, 0, 4 * HISTOGRAM_BINS * sizeof(uint32_t));
   d->histogram_max = 0;
 

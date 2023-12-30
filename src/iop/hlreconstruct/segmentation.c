@@ -559,7 +559,7 @@ void dt_segmentize_plane(dt_iop_segmentation_t *seg)
   const int width = seg->width;
   const int height = seg->height;
   stack.size = (size_t)width * height / 32;
-  stack.el = dt_alloc_aligned(stack.size * sizeof(dt_pos_t));
+  stack.el = dt_alloc_align_type(dt_pos_t, stack.size);
   if(!stack.el)
   {
     dt_print(DT_DEBUG_ALWAYS, "[segmentize_plane] can't allocate segmentation stack\n");

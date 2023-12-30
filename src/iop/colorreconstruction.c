@@ -288,7 +288,7 @@ static dt_iop_colorreconstruct_bilateral_t *dt_iop_colorreconstruct_bilateral_in
   b->scale = iscale / roi->scale;
   b->sigma_s = MAX(roi->height / (b->size_y - 1.0f), roi->width / (b->size_x - 1.0f));
   b->sigma_r = 100.0f / (b->size_z - 1.0f);
-  b->buf = dt_alloc_aligned(sizeof(dt_iop_colorreconstruct_Lab_t) * b->size_x * b->size_y * b->size_z);
+  b->buf = dt_alloc_align_type(dt_iop_colorreconstruct_Lab_t, b->size_x * b->size_y * b->size_z);
   if(!b->buf)
   {
     dt_print(DT_DEBUG_ALWAYS, "[color reconstruction] not able to allocate buffer (b)\n");
@@ -326,7 +326,7 @@ static dt_iop_colorreconstruct_bilateral_frozen_t *dt_iop_colorreconstruct_bilat
   bf->scale = b->scale;
   bf->sigma_s = b->sigma_s;
   bf->sigma_r = b->sigma_r;
-  bf->buf = dt_alloc_aligned(sizeof(dt_iop_colorreconstruct_Lab_t) * b->size_x * b->size_y * b->size_z);
+  bf->buf = dt_alloc_align_type(dt_iop_colorreconstruct_Lab_t, b->size_x * b->size_y * b->size_z);
   if(bf->buf && b->buf)
   {
     memcpy(bf->buf, b->buf, sizeof(dt_iop_colorreconstruct_Lab_t) * b->size_x * b->size_y * b->size_z);
@@ -362,7 +362,7 @@ static dt_iop_colorreconstruct_bilateral_t *dt_iop_colorreconstruct_bilateral_th
   b->scale = bf->scale;
   b->sigma_s = bf->sigma_s;
   b->sigma_r = bf->sigma_r;
-  b->buf = dt_alloc_aligned(sizeof(dt_iop_colorreconstruct_Lab_t) * b->size_x * b->size_y * b->size_z);
+  b->buf = dt_alloc_align_type(dt_iop_colorreconstruct_Lab_t, b->size_x * b->size_y * b->size_z);
   if(b->buf && bf->buf)
   {
     memcpy(b->buf, bf->buf, sizeof(dt_iop_colorreconstruct_Lab_t) * b->size_x * b->size_y * b->size_z);
@@ -830,7 +830,7 @@ static dt_iop_colorreconstruct_bilateral_frozen_t *dt_iop_colorreconstruct_bilat
   bf->scale = b->scale;
   bf->sigma_s = b->sigma_s;
   bf->sigma_r = b->sigma_r;
-  bf->buf = dt_alloc_aligned(sizeof(dt_iop_colorreconstruct_Lab_t) * b->size_x * b->size_y * b->size_z);
+  bf->buf = dt_alloc_align_type(dt_iop_colorreconstruct_Lab_t, b->size_x * b->size_y * b->size_z);
   if(bf->buf && b->dev_grid)
   {
     // read bilateral grid from device memory to host buffer (blocking)

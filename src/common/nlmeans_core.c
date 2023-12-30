@@ -109,7 +109,7 @@ static struct patch_t* define_patches(
     n_patches = (n_patches + 1) / 2;
   *num_patches = n_patches ;
   // allocate a cacheline-aligned buffer
-  struct patch_t* patches = dt_alloc_aligned(sizeof(struct patch_t) * n_patches);
+  struct patch_t* patches = dt_alloc_align_type(struct patch_t, n_patches);
   // set up the patch offsets
   int patch_num = 0;
   int shift = 0;
