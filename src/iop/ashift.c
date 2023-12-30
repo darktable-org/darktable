@@ -4362,6 +4362,8 @@ void gui_post_expose(dt_iop_module_t *self,
 
     cairo_restore(cr);
   }
+  else
+    dt_guides_draw(cr, 0.0f, 0.0f, wd, ht, zoom_scale);
 
   // we draw the straightening line
   if(g->straightening)
