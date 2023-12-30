@@ -908,31 +908,24 @@ static void process_cmatrix_fastpath(struct dt_iop_module_t *self,
   const float *const restrict in = (float*)ivoid;
   float *const restrict  out = (float*)ovoid;
 
-#ifdef _OPENMP
   // figure out the number of pixels each thread needs to process,
   // rounded up to a multiple of the CPU's cache line size
   const size_t nthreads = dt_get_num_threads();
   const size_t chunksize = dt_cacheline_chunks(npixels, nthreads);
+#ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, out, npixels, chunksize, nthreads, d, clipping)  \
+  dt_omp_firstprivate(in, out, npixels, chunksize, d, clipping)  \
   schedule(static)
-  for(size_t chunk = 0; chunk < nthreads; chunk++)
-  {
-    size_t start = chunksize * dt_get_thread_num();
-    if (start >= npixels) continue;  // when npixels is small enough, rounding can leave last thread w/o wok
-    size_t end = MIN(start + chunksize, npixels);
-    if(clipping)
-      _cmatrix_fastpath_clipping(out + 4*start, in + 4*start,
-                                 end-start, d->nmatrix, d->lmatrix);
-    else
-      _cmatrix_fastpath_simple(out + 4*start, in + 4*start, end-start, d->cmatrix);
-  }
-#else // no OpenMP
-  if(clipping)
-    _cmatrix_fastpath_clipping(out, in, npixels, d->nmatrix, d->lmatrix);
-  else
-    _cmatrix_fastpath_simple(out, in, npixels, d->cmatrix);
 #endif
+  for(size_t chunkstart = 0; chunkstart < npixels; chunkstart += chunksize)
+  {
+    size_t end = MIN(chunkstart + chunksize, npixels);
+    if(clipping)
+      _cmatrix_fastpath_clipping(out + 4*chunkstart, in + 4*chunkstart, end-chunkstart,
+                                 d->nmatrix, d->lmatrix);
+    else
+      _cmatrix_fastpath_simple(out + 4*chunkstart, in + 4*chunkstart, end-chunkstart, d->cmatrix);
+  }
   // ensure that all nontemporal writes have been flushed to RAM before we return
   dt_omploop_sfence();
 }
@@ -1035,31 +1028,24 @@ static void process_cmatrix_proper(struct dt_iop_module_t *self,
   const float *const restrict in = (float*)ivoid;
   float *const restrict  out = (float*)ovoid;
 
-#ifdef _OPENMP
   // figure out the number of pixels each thread needs to process,
   // rounded up to a multiple of the CPU's cache line size
   const size_t nthreads = dt_get_num_threads();
   const size_t chunksize = dt_cacheline_chunks(npixels, nthreads);
+#ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, out, npixels, chunksize, nthreads, clipping, d) \
+  dt_omp_firstprivate(in, out, npixels, chunksize, clipping, d) \
   schedule(static)
-  for(size_t chunk = 0; chunk < nthreads; chunk++)
-  {
-    size_t start = chunksize * dt_get_thread_num();
-    if (start >= npixels) continue;  // when npixels is small enough, rounding can leave last thread w/o wok
-    size_t end = MIN(start + chunksize, npixels);
-    if(clipping)
-      _cmatrix_proper_clipping(out + 4*start, in + 4*start,
-                               end-start, d, d->nmatrix, d->lmatrix);
-    else
-      _cmatrix_proper_simple(out + 4*start, in + 4*start, end-start, d, d->cmatrix);
-  }
-#else
-  if(clipping)
-    _cmatrix_proper_clipping(out, in, npixels, d,d->nmatrix, d->lmatrix);
-  else
-    _cmatrix_proper_simple(out, in, npixels, d, d->cmatrix);
 #endif
+  for(size_t chunkstart = 0; chunkstart < npixels; chunkstart += chunksize)
+  {
+    size_t end = MIN(chunkstart + chunksize, npixels);
+    if(clipping)
+      _cmatrix_proper_clipping(out + 4*chunkstart, in + 4*chunkstart,
+                               end-chunkstart, d, d->nmatrix, d->lmatrix);
+    else
+      _cmatrix_proper_simple(out + 4*chunkstart, in + 4*chunkstart, end-chunkstart, d, d->cmatrix);
+  }
   // ensure that all nontemporal writes have been flushed to RAM before we return
   dt_omploop_sfence();
 }
