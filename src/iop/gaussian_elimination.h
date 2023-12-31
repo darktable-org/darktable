@@ -159,8 +159,8 @@ static inline int pseudo_solve_gaussian(double *const restrict A,
     return 0;
   }
 
-  double *const restrict A_square = dt_alloc_align(64, n * n * sizeof(double));
-  double *const restrict y_square = dt_alloc_align(64, n * sizeof(double));
+  double *const restrict A_square = dt_alloc_align_double(n * n);
+  double *const restrict y_square = dt_alloc_align_double(n);
 
   #ifdef _OPENMP
   #pragma omp parallel sections
