@@ -409,7 +409,7 @@ void process(struct dt_iop_module_t *self,
   const size_t bh = data->buf_height;
 
   const size_t size_buf = bw * bh * sizeof(uint32_t);
-  uint8_t *buf = (uint8_t *)dt_alloc_align(64, size_buf);
+  uint8_t *buf = (uint8_t *)dt_alloc_aligned(size_buf);
   memcpy(buf, *pbuf, size_buf);
 
   // load overlay image into surface 2
