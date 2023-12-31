@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2022-23 darktable developers.
+    Copyright (C) 2022-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -118,7 +118,7 @@ static void _process_linear_opposed(
 
   dt_aligned_pixel_t chrominance = {0.0f, 0.0f, 0.0f, 0.0f};
 
-  char *mask = (quality) ? dt_calloc_align(64, 6 * msize * sizeof(char)) : NULL;
+  char *mask = (quality) ? dt_calloc_align_type(char, 6 * msize) : NULL;
   if(mask)
   {
     gboolean anyclipped = FALSE;
@@ -260,7 +260,7 @@ static float *_process_opposed(
   }
   else
   {
-    char *mask = (quality) ? dt_calloc_align(64, 6 * msize * sizeof(char)) : NULL;
+    char *mask = (quality) ? dt_calloc_align_type(char, 6 * msize) : NULL;
     if(mask)
     {
       gboolean anyclipped = FALSE;

@@ -515,21 +515,21 @@ static void _transform_lcms(const dt_iop_colorout_data_t *const d,
                             const size_t npixels)
 {
   const int gamutcheck = (d->mode == DT_PROFILE_GAMUTCHECK);
-  // figure out the number of pixels each thread needs to process
-  // round up to a multiple of 4 pixels so that each chunk starts aligned(64)
+  // figure out the number of pixels each thread needs to process,
+  // rounded up to a multiple of the CPU's cache line size
   const size_t nthreads = dt_get_num_threads();
-  const size_t chunksize = 4 * ((((npixels + nthreads - 1) / nthreads) + 3) / 4);
+  const size_t chunksize = dt_cacheline_chunks(npixels, nthreads);
+#ifdef _OPENMP
 #pragma omp parallel for default(none)                                  \
-    dt_omp_firstprivate(in, out, npixels, chunksize, nthreads, d, gamutcheck) \
+    dt_omp_firstprivate(in, out, npixels, chunksize, d, gamutcheck) \
     schedule(static)
-  for(size_t chunk = 0; chunk < nthreads; chunk++)
+#endif
+  for(size_t chunkstart = 0; chunkstart < npixels; chunkstart += chunksize)
   {
-    size_t start = chunksize * dt_get_thread_num();
-    if (start >= npixels) continue;  // handle case when chunksize is < 4*nthreads and last thread has no work
-    size_t count = MIN(start + chunksize, npixels) - start;
-    float *const outp = out + 4 * start;
+    size_t count = MIN(chunkstart + chunksize, npixels) - chunkstart;
+    float *const outp = out + 4 * chunkstart;
 
-    cmsDoTransform(d->xform, in + 4*start, outp, count);
+    cmsDoTransform(d->xform, in + 4*chunkstart, outp, count);
 
     if(gamutcheck)
     {

@@ -233,7 +233,7 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
       const uint8_t *const p_buf = cam->live_view_buffer;
 
       // draw live view image
-      uint8_t *const tmp_i = dt_alloc_align(64, sizeof(uint8_t) * pw * ph * 4);
+      uint8_t *const tmp_i = dt_alloc_align_uint8(pw * ph * 4);
       if(tmp_i)
       {
         const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, pw);

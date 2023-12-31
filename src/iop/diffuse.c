@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2021-23 darktable developers.
+   Copyright (C) 2021-2023 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -1368,7 +1368,7 @@ void process(dt_iop_module_t *self,
     return;
   }
 
-  uint8_t *const restrict mask = dt_alloc_align(64, sizeof(uint8_t) * width * height);
+  uint8_t *const restrict mask = dt_alloc_align_uint8(width * height);
 
   float *restrict in = DT_IS_ALIGNED((float *const restrict)ivoid);
   float *const restrict out = DT_IS_ALIGNED((float *const restrict)ovoid);

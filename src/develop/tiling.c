@@ -698,7 +698,7 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
            dt_dev_pixelpipe_type_to_str(piece->pipe->type), tiles_x, tiles_y, width, height, overlap);
 
   /* reserve input and output buffers for tiles */
-  input = dt_alloc_align(64, (size_t)width * height * in_bpp);
+  input = dt_alloc_aligned((size_t)width * height * in_bpp);
   if(input == NULL)
   {
     dt_print(DT_DEBUG_TILING,
@@ -706,7 +706,7 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
              dt_dev_pixelpipe_type_to_str(piece->pipe->type), self->op, dt_iop_get_instance_id(self));
     goto error;
   }
-  output = dt_alloc_align(64, (size_t)width * height * out_bpp);
+  output = dt_alloc_aligned((size_t)width * height * out_bpp);
   if(output == NULL)
   {
     dt_print(DT_DEBUG_TILING,
@@ -1096,7 +1096,7 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
                iroi_full.width, iroi_full.height, iroi_full.x, iroi_full.y);
 
       /* prepare input tile buffer */
-      input = dt_alloc_align(64, (size_t)iroi_full.width * iroi_full.height * in_bpp);
+      input = dt_alloc_aligned((size_t)iroi_full.width * iroi_full.height * in_bpp);
       if(input == NULL)
       {
         dt_print(DT_DEBUG_TILING,
@@ -1104,7 +1104,7 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
                  dt_dev_pixelpipe_type_to_str(piece->pipe->type), self->op, dt_iop_get_instance_id(self));
         goto error;
       }
-      output = dt_alloc_align(64, (size_t)oroi_full.width * oroi_full.height * out_bpp);
+      output = dt_alloc_aligned((size_t)oroi_full.width * oroi_full.height * out_bpp);
       if(output == NULL)
       {
         dt_print(DT_DEBUG_TILING,

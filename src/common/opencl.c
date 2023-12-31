@@ -3386,7 +3386,7 @@ void dt_opencl_dump_pipe_pfm(const char* mod,
   const int width = dt_opencl_get_image_width(img);
   const int height = dt_opencl_get_image_height(img);
   const int element_size = dt_opencl_get_image_element_size(img);
-  float *data = dt_alloc_align(64, (size_t)width * height * element_size);
+  float *data = dt_alloc_aligned((size_t)width * height * element_size);
   if(data)
   {
     const cl_int err =

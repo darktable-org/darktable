@@ -203,8 +203,7 @@ static void vng_interpolate(
   // if only linear interpolation is requested we can stop it here
   if(only_vng_linear) return;
 
-  char *buffer
-      = (char *)dt_alloc_align(64, sizeof(**brow) * width * 3 + sizeof(*ip) * prow * pcol * 320);
+  char *buffer = (char *)dt_alloc_aligned(sizeof(**brow) * width * 3 + sizeof(*ip) * prow * pcol * 320);
   if(!buffer)
   {
     dt_print(DT_DEBUG_ALWAYS, "[demosaic] not able to allocate VNG buffer\n");

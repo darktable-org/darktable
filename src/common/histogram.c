@@ -176,7 +176,7 @@ void _hist_worker(dt_dev_histogram_collection_params_t *const histogram_params,
   {
     if(*histogram)
       dt_free_align(*histogram);
-    *histogram = dt_alloc_align(64, buf_size);
+    *histogram = dt_alloc_aligned(buf_size);
     if(!*histogram) return;
     histogram_stats->buf_size = buf_size;
   }
