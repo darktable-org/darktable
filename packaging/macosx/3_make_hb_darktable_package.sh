@@ -58,7 +58,7 @@ function install_dependencies {
 
                 # Install dependency if not yet existant
                 if [[ ! -f "$dynDepTargetFile" ]]; then
-                    echo "Installing dependency <$hbDependency> of <$1>."
+                    echo "Installing dependency $hbDependency of $1"
 
                     # Copy dependency as not yet existant
                     cp -L "$hbDependency" "$dynDepTargetFile"
@@ -77,6 +77,9 @@ function install_dependencies {
 function reset_exec_path {
     local hbDependencies
 
+    # Store file name
+    libraryOrigFile=$(basename "$1")
+
     # Get shared libraries used of current executable
     oToolLDependencies=$(otool -L "$1" 2>/dev/null | grep compatibility | cut -d\( -f1 | sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//' | uniq)
 
@@ -85,7 +88,7 @@ function reset_exec_path {
         # Only need to reset binaries that live outside of lib/darktable
         oToolLoader=$(otool -l "$1" 2>/dev/null | grep '@loader_path' | cut -d\( -f1 | sed 's/^[[:blank:]]*path[[:blank:]]*//;s/[[:blank:]]*$//' )
         if [[ "$oToolLoader" == "@loader_path/../lib/darktable" ]]; then
-            echo "Resetting loader path for libdarktable.dylib of <$1>"
+            echo "Resetting loader path for libdarktable.dylib of $libraryOrigFile"
             install_name_tool -rpath @loader_path/../lib/darktable @loader_path/../Resources/lib/darktable "$1" || true
         fi
     fi
@@ -108,7 +111,7 @@ function reset_exec_path {
             dynDepOrigFile=$(basename "$hbDependency")
             dynDepTargetFile="$dtResourcesDir/lib/$dynDepOrigFile"
 
-            echo "Resetting executable path for dependency <$hbDependency> of <$1>"
+            echo "Resetting executable path for $dynDepOrigFile of $libraryOrigFile"
 
             # Set correct executable path
             install_name_tool -change "$hbDependency" "@executable_path/../Resources/lib/$dynDepOrigFile" "$1"  || true
@@ -116,7 +119,7 @@ function reset_exec_path {
             # Check for loader path
             oToolLoader=$(otool -L "$1" 2>/dev/null | grep '@loader_path' | grep $dynDepOrigFile | cut -d\( -f1 | sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//' ) || true
             if [[ -n "$oToolLoader" ]]; then
-                echo "Resetting loader path for dependency <$hbDependency> of <$1>"
+                echo "Resetting loader path for $hbDependency of $libraryOrigFile"
                 oToolLoaderNew=$(echo $oToolLoader | sed "s#@loader_path/##" | sed "s#../../../../opt/.*##")
                 install_name_tool -change "$oToolLoader" "@loader_path/${oToolLoaderNew}${dynDepOrigFile}" "$1"  || true
             fi
@@ -129,11 +132,7 @@ function reset_exec_path {
 
     # Set correct ID to new destination if required
     if [[ "$oToolDDependencies" == *"$homebrewHome"* ]]; then
-
-        # Store file name
-        libraryOrigFile=$(basename "$1")
-
-        echo "Resetting library ID of <$1>"
+        echo "Resetting library ID of $libraryOrigFile"
 
         # Set correct library id
         install_name_tool -id "@executable_path/../Resources/lib/$libraryOrigFile" "$1"  || true
