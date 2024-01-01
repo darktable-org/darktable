@@ -2971,6 +2971,8 @@ gboolean dt_dev_write_scharr_mask(dt_dev_pixelpipe_iop_t *piece,
 {
   dt_dev_pixelpipe_t *p = piece->pipe;
   dt_dev_clear_scharr_mask(p);
+  if(piece->pipe->tiling)
+    goto error;
 
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -3011,6 +3013,9 @@ int dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
 {
   dt_dev_pixelpipe_t *p = piece->pipe;
   dt_dev_clear_scharr_mask(p);
+
+  if(piece->pipe->tiling)
+    return DT_OPENCL_PROCESS_CL;
 
   const int width = roi_in->width;
   const int height = roi_in->height;
