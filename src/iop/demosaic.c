@@ -1107,7 +1107,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   // The details mask calculation required for dual demosaicing does not allow tiling.
   if((d->green_eq == DT_IOP_GREEN_EQ_FULL
       || d->green_eq == DT_IOP_GREEN_EQ_BOTH)
-      || (use_method & DT_DEMOSAIC_DUAL))
+      || use_method & DT_DEMOSAIC_DUAL
+      || piece->pipe->want_detail_mask)
   {
     piece->process_tiling_ready = FALSE;
   }
