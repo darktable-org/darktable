@@ -840,7 +840,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
 
   dt_print_pipe(DT_DEBUG_PIPE,
        "refine_detail_mask on GPU",
-       piece->pipe, self, roi_in, roi_out, "\n");
+       piece->pipe, self, roi_in, roi_out, "scharr %ix%i\n", iwidth, iheight);
 
   lum = dt_alloc_align_float((size_t)iwidth * iheight);
   out = dt_opencl_alloc_device_buffer(devid, sizeof(float) * iwidth * iheight);
@@ -878,6 +878,8 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
 
   dt_opencl_release_mem_object(blur);
   dt_opencl_release_mem_object(out);
+  out = NULL;
+  blur = NULL;
 
   // here we have the slightly blurred full detail mask available
   float *warp_mask = dt_dev_distort_detail_mask(p, lum, self);
