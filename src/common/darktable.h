@@ -164,6 +164,9 @@ typedef int32_t dt_imgid_t;
   INVALID_MASKID is used while testing in mask manager
 */
 
+#define DT_DEVICE_CPU -1
+#define DT_DEVICE_NONE -2
+
 typedef int32_t dt_mask_id_t;
 #define INVALID_MASKID (-1)
 #define NO_MASKID (0)

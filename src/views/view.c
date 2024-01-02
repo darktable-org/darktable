@@ -1672,7 +1672,7 @@ void dt_view_paint_surface(cairo_t *cr,
 
   dt_print_pipe(DT_DEBUG_EXPOSE,
       "dt_view_paint_surface",
-        port->pipe, NULL, NULL, NULL,
+        port->pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
         "viewport zoom_scale %6.3f backbuf_scale %6.3f "
         "(x=%6.2f y=%6.2f) -> (x=%+.3f y=%+.3f)\n",
         zoom_scale, backbuf_scale,
@@ -1737,7 +1737,7 @@ void dt_view_paint_surface(cairo_t *cr,
 
     dt_print_pipe(DT_DEBUG_EXPOSE,
         "dt_view_paint_surface",
-         dev->preview_pipe, NULL, NULL, NULL,
+         dev->preview_pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
          "size %4lux%-4lu processed %4.0fx%-4.0f "
          "buf %4dx%-4d scale=%.3f "
          "zoom (x=%6.2f y=%6.2f) -> offset (x=%+.3f y=%+.3f)\n",
@@ -1755,7 +1755,7 @@ void dt_view_paint_surface(cairo_t *cr,
   {
     dt_print_pipe(DT_DEBUG_EXPOSE,
         "dt_view_paint_surface",
-         port->pipe, NULL, NULL, NULL,
+         port->pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
          "size %4lux%-4lu processed %4dx%-4d "
          "buf %4dx%-4d scale=%.3f "
          "zoom (x=%6.2f y=%6.2f) -> offset (x=%+.3f y=%+.3f)\n",

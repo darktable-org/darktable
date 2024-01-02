@@ -358,7 +358,7 @@ static float *_process_opposed(
       }
 
       dt_print_pipe(DT_DEBUG_PIPE,
-          "opposed chroma CPU", piece->pipe, self, roi_in, roi_out,
+          "opposed chroma", piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out,
           "red: %3.4f, green: %3.4f, blue: %3.4f for hash=%" PRIx64 "%s%s\n",
           chrominance[0], chrominance[1], chrominance[2],
           _opposed_parhash(piece),
@@ -559,7 +559,7 @@ static cl_int process_opposed_cl(
     }
 
     dt_print_pipe(DT_DEBUG_PIPE,
-        "opposed chroma CL", piece->pipe, self, roi_in, roi_out,
+        "opposed chroma", piece->pipe, self, piece->pipe->devid, roi_in, roi_out,
         "red: %3.4f, green: %3.4f, blue: %3.4f for hash=%" PRIx64 "%s%s\n",
         chrominance[0], chrominance[1], chrominance[2],
         _opposed_parhash(piece),

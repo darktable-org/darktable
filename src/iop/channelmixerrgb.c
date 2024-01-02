@@ -2036,7 +2036,7 @@ static void _set_trouble_messages(struct dt_iop_module_t *self)
     && !dt_image_is_monochrome(&dev->image_storage);
 
   dt_print_pipe(DT_DEBUG_PARAMS, "chroma trouble data",
-      NULL, self, NULL, NULL,
+      NULL, self, DT_DEVICE_NONE, NULL, NULL,
       "D65=%s.  NOW %.3f %.3f %.3f, D65 %.3f %.3f %.3f, AS-SHOT %.3f %.3f %.3f\n",
     dt_dev_is_D65_chroma(dev) ? "YES" : "NO",
     chr->wb_coeffs[0], chr->wb_coeffs[1], chr->wb_coeffs[2],
