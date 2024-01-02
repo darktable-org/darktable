@@ -1133,8 +1133,8 @@ static gboolean _pixelpipe_process_on_CPU(
   if(dt_atomic_get_int(&pipe->shutdown))
     return TRUE;
 
-  // the data buffers must always have a 64 alignment
-  if((((uintptr_t)input) & 63) || (((uintptr_t)*output) & 63))
+  // the data buffers must always have an alignment to DT_CACHELINE_BYTES
+  if((((uintptr_t)input) & (DT_CACHELINE_BYTES - 1)) || (((uintptr_t)*output) & (DT_CACHELINE_BYTES - 1)))
     dt_print(DT_DEBUG_ALWAYS,
              "[pixelpipe_process CPU] buffer aligment problem: IN=%p OUT=%p\n",
              input, *output);

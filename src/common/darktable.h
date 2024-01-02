@@ -171,8 +171,8 @@ typedef int32_t dt_mask_id_t;
 // testing for a valid form
 #define dt_is_valid_maskid(n) ((n) > NO_MASKID)
 
-/* Helper to force stack vectors to be aligned on 64-byte blocks to enable AVX2 */
-#define DT_IS_ALIGNED(x) __builtin_assume_aligned(x, 64)
+/* Helper to force stack vectors to be aligned on DT_CACHELINE_BYTES blocks to enable AVX2 */
+#define DT_IS_ALIGNED(x) __builtin_assume_aligned(x, DT_CACHELINE_BYTES)
 
 #define DT_MODULE_VERSION 25 // version of dt's module interface
 
