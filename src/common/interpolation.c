@@ -44,9 +44,6 @@ enum border_mode
  * unnecessary modes in interpolation codepath */
 #define INTERPOLATION_BORDER_MODE BORDER_MIRROR
 
-// Defines minimum alignment requirement for critical SIMD code
-#define SSE_ALIGNMENT 64
-
 // Defines the maximum kernel half length
 // !! Make sure to sync this with the filter array !!
 #define MAX_HALF_FILTER_WIDTH 3
@@ -868,12 +865,12 @@ static gboolean _prepare_resampling_plan(const struct dt_interpolation *itor,
   int nlengths = out;
   const int nindex = maxtapsapixel * out;
   const int nkernel = maxtapsapixel * out;
-  const size_t lengthreq = dt_round_size(nlengths * sizeof(int), SSE_ALIGNMENT);
-  const size_t indexreq = dt_round_size(nindex * sizeof(int), SSE_ALIGNMENT);
-  const size_t kernelreq = dt_round_size(nkernel * sizeof(float), SSE_ALIGNMENT);
-  const size_t scratchreq = dt_round_size(maxtapsapixel * sizeof(float) + 4 * sizeof(float), SSE_ALIGNMENT);
+  const size_t lengthreq = dt_round_size(nlengths * sizeof(int), DT_CACHELINE_BYTES);
+  const size_t indexreq = dt_round_size(nindex * sizeof(int), DT_CACHELINE_BYTES);
+  const size_t kernelreq = dt_round_size(nkernel * sizeof(float), DT_CACHELINE_BYTES);
+  const size_t scratchreq = dt_round_size(maxtapsapixel * sizeof(float) + 4 * sizeof(float), DT_CACHELINE_BYTES);
   // NB: because sse versions compute four taps a time
-  const size_t metareq = dt_round_size(pmeta ? 4 * sizeof(int) * out : 0, SSE_ALIGNMENT);
+  const size_t metareq = dt_round_size(pmeta ? 4 * sizeof(int) * out : 0, DT_CACHELINE_BYTES);
 
   const size_t totalreq = kernelreq + lengthreq + indexreq + scratchreq + metareq;
   void *blob = dt_alloc_aligned(totalreq);
