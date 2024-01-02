@@ -711,7 +711,6 @@ static gboolean _event_image_draw(GtkWidget *widget,
       {
         const float zoom100 = dt_thumbnail_get_zoom100(thumb);
         // Any zoom100 > 1 is ensured to be correct
-
         if(thumb->zoom > 1.0f && zoom100 > 1.0f)
           thumb->zoom = MIN(thumb->zoom, zoom100);
 
@@ -2299,15 +2298,8 @@ float dt_thumbnail_get_zoom100(dt_thumbnail_t *thumb)
       (float)(thumb->height - thumb->img_margin->top - thumb->img_margin->bottom);
     const float used_w =
       (float)(thumb->width - thumb->img_margin->left - thumb->img_margin->right);
-    const float zoom100 = fmaxf((float)w / used_w, (float)h / used_h);
 
-    /* the thumb->zoom_100 value is kept for the thumbs lifetime so
-       we have to make sure this is only done if valid even in cornercases.
-       If not safe we won't keep it.
-    */
-    const gboolean safe = zoom100 >= 1.0f && thumb->img_width > 0;
-    if(safe)
-      thumb->zoom_100 = MAX(zoom100, 1.0f);
+    thumb->zoom_100 = MAX(1.0f, fmaxf((float)w / used_w, (float)h / used_h));
   }
 
   return MAX(1.0f, thumb->zoom_100);
