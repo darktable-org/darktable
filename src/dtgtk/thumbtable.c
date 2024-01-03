@@ -888,7 +888,6 @@ static void _zoomable_zoom(dt_thumbtable_t *table,
     y - (y - anchor_y * table->thumb_size - table->thumbs_area.y) * ratio;
 
   // we move and resize each thumbs
-  GList *th_invalid = NULL;
   dt_thumbnail_t *first = NULL;
   dt_thumbnail_t *last = NULL;
   GList *l = table->list;
@@ -903,20 +902,11 @@ static void _zoomable_zoom(dt_thumbtable_t *table,
     // we compute new position taking anchor image as reference
     th->x = anchor_posx - (anchor_x - posx) * new_size;
     th->y = anchor_posy - (anchor_y - posy) * new_size;
-    if(th->y + table->thumb_size <= 0 || th->y > table->view_height)
-    {
-      th_invalid = g_list_prepend(th_invalid, th);
-      GList *ll = l;
-      l = g_list_next(l);
-      table->list = g_list_delete_link(table->list, ll);
-      if(table->drag_thumb == th)
-        table->drag_thumb = NULL;
-    }
-    else
-    {
-      gtk_layout_move(GTK_LAYOUT(table->widget), th->w_main, th->x, th->y);
-      l = g_list_next(l);
-    }
+
+    // we move the thumbnail to its new position.
+    // in some case the thumbnail may be out of sight. This will be handled later.
+    gtk_layout_move(GTK_LAYOUT(table->widget), th->w_main, th->x, th->y);
+    l = g_list_next(l);
     dt_thumbnail_resize(th, new_size, new_size, FALSE, IMG_TO_FIT);
   }
 
@@ -932,6 +922,27 @@ static void _zoomable_zoom(dt_thumbtable_t *table,
   posx = MAX(space - table->thumbs_area.x - table->thumbs_area.width, posx);
   if(posx != 0 || posy != 0)
     _move(table, posx, posy, FALSE);
+
+  // now we search for thumbnails out of sight
+  GList *th_invalid = NULL;
+  l = table->list;
+  while(l)
+  {
+    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    if(th->y + table->thumb_size <= 0 || th->y > table->view_height)
+    {
+      th_invalid = g_list_prepend(th_invalid, th);
+      GList *ll = l;
+      l = g_list_next(l);
+      table->list = g_list_delete_link(table->list, ll);
+      if(table->drag_thumb == th)
+        table->drag_thumb = NULL;
+    }
+    else
+    {
+      l = g_list_next(l);
+    }
+  }
 
   // and we load/unload thumbs if needed
   int changed = _thumbs_load_needed(table, &th_invalid, first, last);
