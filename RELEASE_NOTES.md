@@ -68,6 +68,8 @@ for more information on how to contribute._
 - Fixes possible issue with guides not displayed in Perspective
   Correction module.
 
+- Fix non persistent zoom level in culling mode when switching images.
+
 ## Lua
 
 ### API Version
