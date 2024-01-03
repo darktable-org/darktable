@@ -1942,9 +1942,9 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
       {
         if(report)
           dt_print(DT_DEBUG_ALWAYS,
-                   "[iop_validate_params] `%s' failed for not null terminated type string"
-                   " \"%s\";\n",
-                   name, field->header.type_name);
+             "[iop_validate_params] `%s' failed for not null terminated type string"
+             " \"%s\";\n",
+               name, field->header.type_name);
         all_ok = FALSE;
       }
     }
@@ -1959,7 +1959,7 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
         {
           if(report)
             dt_print(DT_DEBUG_ALWAYS, "[iop_validate_params] `%s' failed"
-                     " for type \"%s\", for array element \"%d\"\n",
+                   " for type \"%s\", for array element \"%d\"\n",
                      name, field->header.type_name, i);
           all_ok = FALSE;
           break;
@@ -1968,8 +1968,10 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
     }
     break;
   case DT_INTROSPECTION_TYPE_FLOAT:
-    all_ok = dt_isnan(*(float*)p)
-      || ((*(float*)p >= field->Float.Min && *(float*)p <= field->Float.Max));
+     all_ok = dt_isnan(*(float*)p)
+      || dt_isinf(*(float*)p)
+      || (*(float*)p == field->Float.Default)
+      || (*(float*)p >= field->Float.Min && *(float*)p <= field->Float.Max);
     break;
   case DT_INTROSPECTION_TYPE_INT:
     all_ok = (*(int*)p >= field->Int.Min && *(int*)p <= field->Int.Max);
@@ -2021,7 +2023,7 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
   }
 
   if(!all_ok && report)
-    dt_print(DT_DEBUG_ALWAYS,
+    dt_print(DT_DEBUG_PARAMS,
              "[iop_validate_params] `%s' failed for type \"%s\"%s%s\n",
              name, field->header.type_name,
              *field->header.name ? ", field: " : "",
