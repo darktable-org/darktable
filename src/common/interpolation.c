@@ -590,7 +590,7 @@ float dt_interpolation_compute_sample(const struct dt_interpolation *itor,
     // invalid coordinate
     r = 0.0f;
   }
-  return r;
+  return fmaxf(0.0f, r);
 }
 
 /* --------------------------------------------------------------------------
@@ -702,7 +702,7 @@ void dt_interpolation_compute_pixel4c(const struct dt_interpolation *itor,
     }
 
     for_each_channel(c,aligned(out))
-      out[c] = oonorm * pixel[c];
+      out[c] = fmaxf(0.0f, oonorm * pixel[c]);
   }
   else
   {
