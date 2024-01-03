@@ -155,7 +155,7 @@ void dt_iop_clip_and_zoom(float *out,
                           const dt_iop_roi_t *const roi_out,
                           const dt_iop_roi_t *const roi_in)
 {
-  const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
   dt_interpolation_resample(itor, out, roi_out, in, roi_in);
 }
 
@@ -179,7 +179,7 @@ int dt_iop_clip_and_zoom_cl(int devid,
                             const dt_iop_roi_t *const roi_out,
                             const dt_iop_roi_t *const roi_in)
 {
-  const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
   return dt_interpolation_resample_cl(itor, devid, dev_out, roi_out, dev_in, roi_in);
 }
 
