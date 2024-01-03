@@ -136,7 +136,7 @@ GHashTable *dt_pwstorage_apple_keychain_get(const backend_apple_keychain_context
     kSecAttrLabel,
     kSecMatchLimit,
     kSecReturnAttributes,
-    kSecReturnData
+    kSecReturnRef
   };
 
   gchar *label = g_strconcat("darktable@", slot, NULL);
@@ -144,7 +144,7 @@ GHashTable *dt_pwstorage_apple_keychain_get(const backend_apple_keychain_context
   const CFTypeRef values[] = {
     kSecClassGenericPassword,
     CFStringCreateWithCString(NULL, label, kCFStringEncodingUTF8),
-    kSecMatchLimitOne,
+    kSecMatchLimitAll,
     kCFBooleanTrue,
     kCFBooleanTrue
   };
@@ -154,28 +154,32 @@ GHashTable *dt_pwstorage_apple_keychain_get(const backend_apple_keychain_context
                                               (const void**) values, 
                                               5, NULL, NULL);
 
-  CFDictionaryRef item = NULL;
-  OSStatus res = SecItemCopyMatching(query, (CFTypeRef *) &item);
+  CFArrayRef items = NULL;
+  OSStatus res = SecItemCopyMatching(query, (CFTypeRef *) &items);
 
   g_free(label);
   CFRelease(query);
   CFRelease(values[1]);
 
   if (res == errSecSuccess) {
-    CFStringRef description = CFDictionaryGetValue(item, kSecAttrDescription);
-    const gchar *key = CFStringGetCStringPtr(description, kCFStringEncodingUTF8);
-    
-    CFDataRef pwdata = CFDictionaryGetValue(item, kSecValueData);
-    CFStringRef pw = CFStringCreateFromExternalRepresentation(NULL, pwdata, kCFStringEncodingUTF8);
-    const gchar *value =  CFStringGetCStringPtr(pw, kCFStringEncodingUTF8);
-    
-    dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_apple_keychain_get] reading (%s, %s)\n", key, value);
+    for (int i = 0; i < CFArrayGetCount(items); i++) {
+      CFDictionaryRef item = CFArrayGetValueAtIndex(items, i);
 
+      CFStringRef description = CFDictionaryGetValue(item, kSecAttrDescription);
+      const gchar *key = CFStringGetCStringPtr(description, kCFStringEncodingUTF8);
+      
+      CFDataRef pwdata = CFDictionaryGetValue(item, kSecValueRef);
+      CFStringRef pw = CFStringCreateFromExternalRepresentation(NULL, pwdata, kCFStringEncodingUTF8);
+      const gchar *value =  CFStringGetCStringPtr(pw, kCFStringEncodingUTF8);
+      
+      dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_apple_keychain_get] reading (%s, %s)\n", key, value);
 
-    g_hash_table_insert(table, g_strdup(key), g_strdup(value));
+      g_hash_table_insert(table, g_strdup(key), g_strdup(value));
 
-    CFRelease(item);
-    CFRelease(pw);
+      CFRelease(pw);
+    }
+
+    CFRelease(items);
   }
 
   return table;
