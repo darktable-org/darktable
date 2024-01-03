@@ -157,7 +157,7 @@ const dt_pwstorage_t *dt_pwstorage_new()
     case PW_STORAGE_BACKEND_APPLE_KEYCHAIN:
 #ifdef HAVE_APPLE_KEYCHAIN
       dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_new] using apple keychain backend for username/password storage.\n");
-      pwstorage->backend_context = NULL;
+      pwstorage->backend_context = (void *)dt_pwstorage_apple_keychain_new();
       pwstorage->pw_storage_backend = PW_STORAGE_BACKEND_APPLE_KEYCHAIN;
 #else
       dt_print(DT_DEBUG_PWSTORAGE,
@@ -207,7 +207,9 @@ void dt_pwstorage_destroy(const dt_pwstorage_t *pwstorage)
 #endif
       break;
     case PW_STORAGE_BACKEND_APPLE_KEYCHAIN:
-      // TODO: destroy for Apple keychain
+#ifdef HAVE_APPLE_KEYCHAIN
+      dt_pwstorage_apple_keychain_destroy(pwstorage->backend_context);
+#endif
       break;
   }
 }
@@ -262,8 +264,10 @@ GHashTable *dt_pwstorage_get(const gchar *slot)
 #endif
       break;
     case PW_STORAGE_BACKEND_APPLE_KEYCHAIN:
+#ifdef HAVE_APPLE_KEYCHAIN
       return dt_pwstorage_apple_keychain_get((backend_apple_keychain_context_t *) darktable.pwstorage->backend_context,
                                              slot);
+#endif
       break;
   }
 
