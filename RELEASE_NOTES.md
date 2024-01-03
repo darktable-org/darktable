@@ -48,6 +48,8 @@ changes (where available).
 
 - Changed the sort order of tags to a natural and case insensitive order.
 
+- Added Apple Keychain password storage backend for macOS devices.
+
 ## Bug Fixes
 
 ## Lua
