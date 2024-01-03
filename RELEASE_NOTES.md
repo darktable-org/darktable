@@ -70,6 +70,9 @@ for more information on how to contribute._
 
 - Fix non persistent zoom level in culling mode when switching images.
 
+- Fix crashes related to details mask if running on low OpenCL or
+  system memory.
+
 ## Lua
 
 ### API Version
