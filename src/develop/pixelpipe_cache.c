@@ -61,7 +61,7 @@ gboolean dt_dev_pixelpipe_cache_init(
   for(int k = 0; k < entries; k++)
   {
     cache->size[k] = size;
-    cache->data[k] = (void *)dt_alloc_align(64, size);
+    cache->data[k] = (void *)dt_alloc_aligned(size);
     if(!cache->data[k])
       goto alloc_memory_fail;
 
@@ -324,7 +324,7 @@ gboolean dt_dev_pixelpipe_cache_get(
   {
     dt_free_align(cache->data[cline]);
     cache->allmem -= cache->size[cline];
-    cache->data[cline] = (void *)dt_alloc_align(64, size);
+    cache->data[cline] = (void *)dt_alloc_aligned(size);
     if(cache->data[cline])
     {
       cache->size[cline] = size;

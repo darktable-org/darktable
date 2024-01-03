@@ -514,7 +514,7 @@ int process_cl(
   cl_mem dev_sub = NULL;
   cl_mem dev_div = NULL;
   cl_mem dev_gainmap[4] = {NULL};
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
   int kernel = -1;
   gboolean gainmap_args = FALSE;
@@ -574,8 +574,9 @@ int process_cl(
     const float rel_to_map[2] = { 1.0f / d->gainmaps[0]->map_spacing_h, 1.0f / d->gainmaps[0]->map_spacing_v };
     const float map_origin[2] = { d->gainmaps[0]->map_origin_h, d->gainmaps[0]->map_origin_v };
 
-    for(int i = 0; i < 4; i++)
+     for(int i = 0; i < 4; i++)
     {
+      err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
       dev_gainmap[i] = dt_opencl_alloc_device(devid, map_size[0], map_size[1], sizeof(float));
       if(dev_gainmap[i] == NULL) goto finish;
       err = dt_opencl_write_host_to_device(devid, d->gainmaps[i]->map_gain, dev_gainmap[i],

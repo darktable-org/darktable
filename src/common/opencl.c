@@ -3386,7 +3386,7 @@ void dt_opencl_dump_pipe_pfm(const char* mod,
   const int width = dt_opencl_get_image_width(img);
   const int height = dt_opencl_get_image_height(img);
   const int element_size = dt_opencl_get_image_element_size(img);
-  float *data = dt_alloc_align(64, (size_t)width * height * element_size);
+  float *data = dt_alloc_aligned((size_t)width * height * element_size);
   if(data)
   {
     const cl_int err =
@@ -3428,7 +3428,7 @@ void dt_opencl_memory_statistics(int devid, const cl_mem mem, const dt_opencl_me
 
 /* amount of graphics memory declared as available depends on max_global_mem and
    "resourcelevel". We garantee
-   - a headroom of 400MB in all cases not using tuned cl
+   - a headroom of DT_OPENCL_DEFAULT_HEADROOM MB in all cases not using tuned cl
    - 256MB to simulate a minimum system
    - 2GB to simalate a reference system
 
@@ -3477,7 +3477,7 @@ void dt_opencl_check_tuning(const int devid)
       : DT_OPENCL_DEFAULT_HEADROOM;
 
     const int reserved_mb =
-      MAX(1, headroom) + (cl->dev[devid].clmem_error ? 400 : 0);
+      MAX(1, headroom) + (cl->dev[devid].clmem_error ? DT_OPENCL_DEFAULT_HEADROOM : 0);
     const int global_mb = cl->dev[devid].max_global_mem / 1024lu / 1024lu;
     cl->dev[devid].used_available = (size_t)
       (MAX(0, global_mb - reserved_mb)) * 1024ul * 1024ul;
@@ -3485,7 +3485,7 @@ void dt_opencl_check_tuning(const int devid)
   else
   {
     // calculate data from fractions
-    const size_t disposable = allmem - 400ul * 1024ul * 1024ul;
+    const size_t disposable = allmem - DT_OPENCL_DEFAULT_HEADROOM * 1024ul * 1024ul;
     const int fraction = MIN(1024lu, MAX(0, res->fractions[res->group + 3]));
     cl->dev[devid].used_available =
       MAX(256ul * 1024ul * 1024ul, disposable / 1024ul * fraction);

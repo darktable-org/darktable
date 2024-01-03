@@ -559,7 +559,7 @@ void dt_segmentize_plane(dt_iop_segmentation_t *seg)
   const int width = seg->width;
   const int height = seg->height;
   stack.size = (size_t)width * height / 32;
-  stack.el = dt_alloc_align(64, stack.size * sizeof(dt_pos_t));
+  stack.el = dt_alloc_align_type(dt_pos_t, stack.size);
   if(!stack.el)
   {
     dt_print(DT_DEBUG_ALWAYS, "[segmentize_plane] can't allocate segmentation stack\n");
@@ -635,13 +635,13 @@ gboolean dt_segmentation_init_struct(dt_iop_segmentation_t *seg,
   const int slots = MAX(256, MIN(islots, DT_SEG_ID_MASK - 2));
   const size_t bsize = (size_t) width * height * sizeof(uint32_t);
 
-  seg->data =   dt_calloc_align(64, bsize);
-  seg->tmp =    dt_alloc_align(64, bsize);
-  seg->size =   dt_alloc_align(64, slots * sizeof(int));
-  seg->xmin =   dt_alloc_align(64, slots * sizeof(int));
-  seg->xmax =   dt_alloc_align(64, slots * sizeof(int));
-  seg->ymin =   dt_alloc_align(64, slots * sizeof(int));
-  seg->ymax =   dt_alloc_align(64, slots * sizeof(int));
+  seg->data =   dt_calloc_aligned(bsize);
+  seg->tmp =    dt_alloc_aligned(bsize);
+  seg->size =   dt_alloc_align_int(slots);
+  seg->xmin =   dt_alloc_align_int(slots);
+  seg->xmax =   dt_alloc_align_int(slots);
+  seg->ymin =   dt_alloc_align_int(slots);
+  seg->ymax =   dt_alloc_align_int(slots);
   seg->val1 =   dt_alloc_align_float(slots);
   seg->val2 =   dt_alloc_align_float(slots);
 

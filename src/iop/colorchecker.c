@@ -437,8 +437,7 @@ void process(struct dt_iop_module_t *self,
   // convert patch data from struct of arrays to array of structs so
   // we can vectorize operations
   const int num_patches = data->num_patches;
-  dt_aligned_pixel_t *sources =
-    dt_alloc_align(64, sizeof(dt_aligned_pixel_t) * num_patches);
+  dt_aligned_pixel_t *sources = dt_alloc_align_type(dt_aligned_pixel_t, num_patches);
   for(int i = 0; i < num_patches; i++)
   {
     sources[i][0] = data->source_Lab[3 * i];
@@ -446,8 +445,7 @@ void process(struct dt_iop_module_t *self,
     sources[i][2] = data->source_Lab[3 * i + 2];
     sources[i][3] = 0.0f;
   }
-  dt_aligned_pixel_t *patches =
-    dt_alloc_align(64, sizeof(dt_aligned_pixel_t) * (num_patches + 1));
+  dt_aligned_pixel_t *patches = dt_alloc_align_type(dt_aligned_pixel_t, (num_patches + 1));
   for(int i = 0; i <= num_patches; i++)
   {
     patches[i][0] = data->coeff_L[i];

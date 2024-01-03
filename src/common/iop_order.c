@@ -2442,11 +2442,14 @@ GList *dt_ioppr_deserialize_text_iop_order_list(const char *buf)
 
   _ioppr_reset_iop_order(iop_order_list);
 
-  if(!_ioppr_sanity_check_iop_order(iop_order_list)) goto error;
+  if(!_ioppr_sanity_check_iop_order(iop_order_list))
+    goto error;
 
   return iop_order_list;
 
  error:
+  dt_print(DT_DEBUG_ALWAYS,
+           "[deserialize text iop_order_list] corrupted iop order list:\n'%s'", buf);
   g_list_free_full(iop_order_list, free);
   return NULL;
 }
@@ -2468,7 +2471,11 @@ GList *dt_ioppr_deserialize_iop_order_list(const char *buf,
     const int32_t len = *(int32_t *)buf;
     buf += sizeof(int32_t);
 
-    if(len < 0 || len > 20) { free(entry); goto error; }
+    if(len < 0 || len > 20)
+    {
+      free(entry);
+      goto error;
+    }
 
     // set module name
     memcpy(entry->operation, buf, len);
@@ -2479,7 +2486,11 @@ GList *dt_ioppr_deserialize_iop_order_list(const char *buf,
     entry->instance = *(int32_t *)buf;
     buf += sizeof(int32_t);
 
-    if(entry->instance < 0 || entry->instance > 1000) { free(entry); goto error; }
+    if(entry->instance < 0 || entry->instance > 1000)
+    {
+      free(entry);
+      goto error;
+    }
 
     // append to the list
     iop_order_list = g_list_prepend(iop_order_list, entry);
@@ -2494,6 +2505,8 @@ GList *dt_ioppr_deserialize_iop_order_list(const char *buf,
   return iop_order_list;
 
  error:
+  dt_print(DT_DEBUG_ALWAYS,
+           "[deserialize iop_order_list] corrupted iop order list (size %d)\n", (int)size);
   g_list_free_full(iop_order_list, free);
   return NULL;
 }

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,8 +18,8 @@
 
 
 #define DT_UNIT_TEST
-// define dt alloc, so we don't need to include the rest of dt:
-#define dt_alloc_align(A, B) malloc(B)
+// define dt alloc_aligned, so we don't need to include the rest of dt:
+#define dt_alloc_aligned(A, B) malloc(B)
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 // unit test for the concurrent hopscotch hashmap and the LRU cache built on top of it.

@@ -171,7 +171,7 @@ typedef int32_t dt_mask_id_t;
 // testing for a valid form
 #define dt_is_valid_maskid(n) ((n) > NO_MASKID)
 
-/* Helper to force stack vectors to be aligned on 64 bits blocks to enable AVX2 */
+/* Helper to force stack vectors to be aligned on 64-byte blocks to enable AVX2 */
 #define DT_IS_ALIGNED(x) __builtin_assume_aligned(x, 64)
 
 #define DT_MODULE_VERSION 25 // version of dt's module interface
@@ -459,23 +459,52 @@ void dt_dump_pipe_pfm(const char *mod,
                       const gboolean input,
                       const char *pipe);
 
-void *dt_alloc_align(const size_t alignment, const size_t size);
+void *dt_alloc_aligned(const size_t size);
 
-static inline void* dt_calloc_align(const size_t alignment, const size_t size)
+static inline void* dt_calloc_aligned(const size_t size)
 {
-  void *buf = dt_alloc_align(alignment, size);
+  void *buf = dt_alloc_aligned(size);
   if(buf) memset(buf, 0, size);
   return buf;
 }
-static inline float *dt_alloc_align_float(const size_t pixels)
+#define dt_calloc1_align_type(TYPE) \
+  ((TYPE*)__builtin_assume_aligned(dt_calloc_aligned(sizeof(TYPE)), DT_CACHELINE_BYTES))
+#define dt_calloc_align_type(TYPE, count) \
+  ((TYPE*)__builtin_assume_aligned(dt_calloc_aligned(count * sizeof(TYPE)), DT_CACHELINE_BYTES))
+static inline int* dt_calloc_align_int(const size_t n_ints)
 {
-  return (float*)__builtin_assume_aligned(dt_alloc_align(64, pixels * sizeof(float)), 64);
+  return (int*)__builtin_assume_aligned(dt_calloc_aligned(n_ints * sizeof(int)), DT_CACHELINE_BYTES);
 }
-static inline float *dt_calloc_align_float(const size_t pixels)
+
+#define dt_alloc1_align_type(TYPE) \
+  ((TYPE*)__builtin_assume_aligned(dt_alloc_aligned(sizeof(TYPE)), DT_CACHELINE_BYTES))
+
+#define dt_alloc_align_type(TYPE, count) \
+  ((TYPE*)__builtin_assume_aligned(dt_alloc_aligned(count * sizeof(TYPE)), DT_CACHELINE_BYTES))
+
+static inline int *dt_alloc_align_int(const size_t n_ints)
 {
-  float *const buf = (float*)dt_alloc_align(64, pixels * sizeof(float));
-  if(buf) memset(buf, 0, pixels * sizeof(float));
-  return (float*)__builtin_assume_aligned(buf, 64);
+  return (int*)__builtin_assume_aligned(dt_alloc_aligned(n_ints * sizeof(int)), DT_CACHELINE_BYTES);
+}
+static inline uint8_t *dt_alloc_align_uint8(const size_t n_ints)
+{
+  return (uint8_t*)__builtin_assume_aligned(dt_alloc_aligned(n_ints * sizeof(uint8_t)), DT_CACHELINE_BYTES);
+}
+static inline float *dt_alloc_align_float(const size_t nfloats)
+{
+  return (float*)__builtin_assume_aligned(dt_alloc_aligned(nfloats * sizeof(float)),
+                                          DT_CACHELINE_BYTES);
+}
+static inline double *dt_alloc_align_double(const size_t ndoubles)
+{
+  return (double*)__builtin_assume_aligned(dt_alloc_aligned(ndoubles * sizeof(double)),
+                                           DT_CACHELINE_BYTES);
+}
+static inline float *dt_calloc_align_float(const size_t nfloats)
+{
+  float *const buf = (float*)dt_alloc_align_float(nfloats);
+  if(buf) memset(buf, 0, nfloats * sizeof(float));
+  return (float*)__builtin_assume_aligned(buf, DT_CACHELINE_BYTES);
 }
 size_t dt_round_size(const size_t size, const size_t alignment);
 
@@ -678,10 +707,10 @@ static inline void *dt_alloc_perthread(const size_t n,
                                        size_t* padded_size)
 {
   const size_t alloc_size = n * objsize;
-  const size_t cache_lines = (alloc_size+63)/64;
-  *padded_size = 64 * cache_lines / objsize;
-  return __builtin_assume_aligned
-    (dt_alloc_align(64, 64 * cache_lines * dt_get_num_threads()), 64);
+  const size_t cache_lines = (alloc_size+DT_CACHELINE_BYTES-1)/DT_CACHELINE_BYTES;
+  *padded_size = DT_CACHELINE_BYTES * cache_lines / objsize;
+  const size_t total_bytes = DT_CACHELINE_BYTES * cache_lines * dt_get_num_threads();
+  return __builtin_assume_aligned(dt_alloc_aligned(total_bytes), DT_CACHELINE_BYTES);
 }
 static inline void *dt_calloc_perthread(const size_t n,
                                         const size_t objsize,

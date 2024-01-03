@@ -948,7 +948,7 @@ static void _pixelpipe_picker_cl(const int devid,
   if(buffer && bufsize >= size * bpp)
     pixel = buffer;
   else
-    pixel = tmpbuf = dt_alloc_align(64, size * bpp);
+    pixel = tmpbuf = dt_alloc_aligned(size * bpp);
 
   if(pixel == NULL) return;
 
@@ -2971,6 +2971,8 @@ gboolean dt_dev_write_scharr_mask(dt_dev_pixelpipe_iop_t *piece,
 {
   dt_dev_pixelpipe_t *p = piece->pipe;
   dt_dev_clear_scharr_mask(p);
+  if(piece->pipe->tiling)
+    goto error;
 
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -3004,13 +3006,16 @@ gboolean dt_dev_write_scharr_mask(dt_dev_pixelpipe_iop_t *piece,
 }
 
 #ifdef HAVE_OPENCL
-gboolean dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
-                                        cl_mem in,
-                                        const dt_iop_roi_t *const roi_in,
-                                        const gboolean rawmode)
+int dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
+                                cl_mem in,
+                                const dt_iop_roi_t *const roi_in,
+                                const gboolean rawmode)
 {
   dt_dev_pixelpipe_t *p = piece->pipe;
   dt_dev_clear_scharr_mask(p);
+
+  if(piece->pipe->tiling)
+    return DT_OPENCL_PROCESS_CL;
 
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -3022,7 +3027,7 @@ gboolean dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
   cl_mem tmp = NULL;
   float *mask = NULL;
 
-  cl_int err = CL_SUCCESS;
+  cl_int err = DT_OPENCL_SYSMEM_ALLOCATION;
   mask = dt_alloc_align_float((size_t)width * height);
   out = dt_opencl_alloc_device_buffer(devid, sizeof(float) * width * height);
   tmp = dt_opencl_alloc_device_buffer(devid, sizeof(float) * width * height);

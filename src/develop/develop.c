@@ -3490,7 +3490,7 @@ void dt_dev_image(const dt_imgid_t imgid,
 
   const uint32_t bufsize =
     sizeof(uint32_t) * pipe->backbuf_width * pipe->backbuf_height;
-  *buf = dt_alloc_align(64, bufsize);
+  *buf = dt_alloc_aligned(bufsize);
   memcpy(*buf, pipe->backbuf, bufsize);
 
   if(buf_width) *buf_width = pipe->backbuf_width;

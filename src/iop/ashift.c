@@ -3901,20 +3901,11 @@ static dt_hash_t _get_lines_hash(const dt_iop_ashift_line_t *lines,
   dt_hash_t hash = DT_INITHASH;
   for(int n = 0; n < lines_count; n++)
   {
-    const dt_boundingbox_t v = { lines[n].p1[0],
-                                 lines[n].p1[1],
-                                 lines[n].p2[0],
-                                 lines[n].p2[1] };
-    union {
-        float f;
-        uint32_t u;
-    } x;
-
-    for(size_t i = 0; i < 4; i++)
-    {
-      x.f = v[i];
-      hash = dt_hash(hash, &x.u, sizeof(uint32_t));
-    }
+    const uint32_t v[4] = { (uint32_t)lines[n].p1[0],
+                            (uint32_t)lines[n].p1[1],
+                            (uint32_t)lines[n].p2[0],
+                            (uint32_t)lines[n].p2[1] };
+    hash = dt_hash(hash, &v, sizeof(v));
   }
   return hash;
 }
@@ -4346,6 +4337,8 @@ void gui_post_expose(dt_iop_module_t *self,
 
     cairo_restore(cr);
   }
+  else
+    dt_guides_draw(cr, 0.0f, 0.0f, wd, ht, zoom_scale);
 
   // we draw the straightening line
   if(g->straightening)

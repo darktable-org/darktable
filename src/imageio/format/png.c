@@ -290,7 +290,7 @@ int write_image(dt_imageio_module_data_t *p_tmp, const char *filename, const voi
    */
   png_set_filler(png_ptr, 0, PNG_FILLER_AFTER);
 
-  png_bytep *row_pointers = dt_alloc_align(64, sizeof(png_bytep) * height);
+  png_bytep *row_pointers = dt_alloc_align_type(png_bytep, height);
 
   if(p->bpp > 8)
   {

@@ -479,7 +479,7 @@ uint8_t calculate_clut_compressed(dt_iop_lut3d_params_t *const p, const char *co
 
   get_cache_filename(p->lutname, cache_filename);
   buf_size_lut = (size_t)(level * level * level * 3);
-  lclut = dt_alloc_align(16, sizeof(float) * buf_size_lut);
+  lclut = dt_alloc_align_float(buf_size_lut);
   if(!lclut)
   {
     dt_print(DT_DEBUG_ALWAYS, "[lut3d] error allocating buffer for gmz LUT\n");
@@ -561,7 +561,7 @@ uint16_t calculate_clut_haldclut(dt_iop_lut3d_params_t *const p, const char *con
   const size_t buf_size = (size_t)png.height * png_get_rowbytes(png.png_ptr, png.info_ptr);
   dt_print(DT_DEBUG_DEV, "[lut3d] allocating %zu bytes for png file\n", buf_size);
   uint8_t *buf = NULL;
-  buf = dt_alloc_align(16, buf_size);
+  buf = dt_alloc_aligned(buf_size);
   if(!buf)
   {
     dt_print(DT_DEBUG_ALWAYS, "[lut3d] error allocating buffer for png LUT\n");
@@ -579,7 +579,7 @@ uint16_t calculate_clut_haldclut(dt_iop_lut3d_params_t *const p, const char *con
   }
   const size_t buf_size_lut = (size_t)png.height * png.height * 3;
   dt_print(DT_DEBUG_DEV, "[lut3d] allocating %zu floats for png LUT - level %d\n", buf_size_lut, level);
-  float *lclut = dt_alloc_align(16, sizeof(float) * buf_size_lut);
+  float *lclut = dt_alloc_align_float(buf_size_lut);
   if(!lclut)
   {
     dt_print(DT_DEBUG_ALWAYS, "[lut3d] error - allocating buffer for png LUT\n");
@@ -773,7 +773,7 @@ uint16_t calculate_clut_cube(const char *const filepath, float **clut)
         {
           dt_print(DT_DEBUG_ALWAYS, "[lut3d] DOMAIN MIN other than 0 is not supported\n");
           dt_control_log(_("DOMAIN MIN other than 0 is not supported"));
-          if(lclut) dt_free_align(lclut);
+          dt_free_align(lclut);
           free(line);
           fclose(cube_file);
           return 0;
@@ -785,7 +785,7 @@ uint16_t calculate_clut_cube(const char *const filepath, float **clut)
         {
           dt_print(DT_DEBUG_ALWAYS, "[lut3d] DOMAIN MAX other than 1 is not supported\n");
           dt_control_log(_("DOMAIN MAX other than 1 is not supported"));
-          if(lclut) dt_free_align(lclut);
+          dt_free_align(lclut);
           free(line);
           fclose(cube_file);
           return 0;
@@ -812,7 +812,7 @@ uint16_t calculate_clut_cube(const char *const filepath, float **clut)
         }
         buf_size = level * level * level * 3;
         dt_print(DT_DEBUG_DEV, "[lut3d] allocating %zu bytes for cube LUT - level %d\n", buf_size, level);
-        lclut = dt_alloc_align(16, sizeof(float) * buf_size);
+        lclut = dt_alloc_align_float(buf_size);
         if(!lclut)
         {
           dt_print(DT_DEBUG_ALWAYS, "[lut3d] error - allocating buffer for cube LUT\n");
@@ -917,7 +917,7 @@ uint16_t calculate_clut_3dl(const char *const filepath, float **clut)
             }
             buf_size = level * level * level * 3;
             dt_print(DT_DEBUG_DEV, "[lut3d] allocating %zu bytes for 3dl LUT - level %d\n", buf_size, level);
-            lclut = dt_alloc_align(16, sizeof(float) * buf_size);
+            lclut = dt_alloc_align_float(buf_size);
             if(!lclut)
             {
               dt_print(DT_DEBUG_ALWAYS, "[lut3d] error - allocating buffer for 3dl LUT\n");
@@ -1030,7 +1030,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     }
     if(transform)
     {
-      const int success = dt_ioppr_transform_image_colorspace_rgb_cl(devid, dev_in, dev_out, width, height,
+      const gboolean success = dt_ioppr_transform_image_colorspace_rgb_cl(devid,
+        dev_in, dev_out, width, height,
         work_profile, lut_profile, "work profile to LUT profile");
       if(!success)
        transform = FALSE;
@@ -1041,9 +1042,15 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       dt_opencl_set_kernel_args(devid, kernel, 0, CLARG(dev_in));
     dt_opencl_set_kernel_args(devid, kernel, 1, CLARG(dev_out), CLARG(width), CLARG(height), CLARG(clut_cl), CLARG(level));
     err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+    if(err != CL_SUCCESS)
+      goto cleanup;
+
     if(transform)
-      dt_ioppr_transform_image_colorspace_rgb_cl(devid, dev_out, dev_out, width, height,
-        lut_profile, work_profile, "LUT profile to work profile");
+    {
+      if(!dt_ioppr_transform_image_colorspace_rgb_cl(devid, dev_out, dev_out, width, height,
+        lut_profile, work_profile, "LUT profile to work profile"))
+        err = DT_OPENCL_PROCESS_CL;
+    }
   }
   else
   { // no lut: identity kernel
