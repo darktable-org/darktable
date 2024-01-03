@@ -347,7 +347,7 @@ gboolean dt_dev_pixelpipe_cache_get(
   cache->hash[cline]      = masking ? INVALID_CACHEHASH : hash;
 
   const dt_iop_buffer_dsc_t *cdsc = *dsc;
-  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "pixelpipe_cache_get",
+  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "pipe cache get",
     pipe, module, DT_DEVICE_NONE, NULL, NULL,
     "%s %sline%3i(%2i) at %p. hash=%" PRIx64 "%s\n",
      dt_iop_colorspace_to_name(cdsc->cst),
@@ -459,7 +459,7 @@ void dt_dev_pixelpipe_cache_checkmem(struct dt_dev_pixelpipe_t *pipe)
   }
 
   _cline_stats(cache);
-  dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe_cache_checkmem", pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
+  dt_print_pipe(DT_DEBUG_PIPE, "pipe cache check", pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
     "%i lines (important=%i, used=%i). Freed %iMB. Using using %iMB, limit=%iMB\n",
     cache->entries, cache->limportant, cache->lused,
     _to_mb(freed), _to_mb(cache->allmem), _to_mb(cache->memlimit));
