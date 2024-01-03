@@ -2868,6 +2868,7 @@
         <option>none</option>
         <option capability="libsecret">libsecret</option>
         <option capability="kwallet">kwallet</option>
+        <option capability="apple_keychain">Apple keychain</option>
       </enum>
     </type>
     <default>auto</default>
