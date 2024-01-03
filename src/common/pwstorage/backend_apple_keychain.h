@@ -1,5 +1,5 @@
 // This file is part of darktable
-// Copyright (C) 2023 darktable developers.
+// Copyright (C) 2024 darktable developers.
 
 // darktable is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -24,6 +24,12 @@ typedef struct backend_apple_keychain_context_t
 } backend_apple_keychain_context_t;
 
 
+/** Initializes a new apple keychain backend context. */
+const backend_apple_keychain_context_t *dt_pwstorage_apple_keychain_new();
+
+/** Cleanup and destroy apple keychain backend context. */
+void dt_pwstorage_apple_keychain_destroy(const backend_apple_keychain_context_t *context);
+
 /** Store (key,value) pairs. */
 gboolean dt_pwstorage_apple_keychain_set(const backend_apple_keychain_context_t *context, 
                                          const gchar *slot,
@@ -32,7 +38,6 @@ gboolean dt_pwstorage_apple_keychain_set(const backend_apple_keychain_context_t 
 /** Load (key,value) pairs. */
 GHashTable *dt_pwstorage_apple_keychain_get(const backend_apple_keychain_context_t *context,
                                             const gchar *slot);
-
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
