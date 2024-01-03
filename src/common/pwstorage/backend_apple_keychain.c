@@ -27,7 +27,7 @@ gboolean dt_pwstorage_apple_keychain_set(const backend_apple_keychain_context_t 
                                          const gchar *slot,
                                          GHashTable *table)
 {
-  OSStatus result;
+  OSStatus result = errSecSuccess;
 
   GHashTableIter iter;
   g_hash_table_iter_init(&iter, table);
@@ -37,91 +37,104 @@ gboolean dt_pwstorage_apple_keychain_set(const backend_apple_keychain_context_t 
   {
     dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_apple_keychain_set] storing (%s, %s)\n", (gchar *) key, (gchar *) value);
 
-    gchar *label = g_strconcat("darktable@", slot, NULL);
-    const CFStringRef pw = CFStringCreateWithCString(NULL, value, kCFStringEncodingUTF8);
+    gchar *lbl = g_strconcat("darktable - ", slot, NULL);
+    const CFStringRef label = CFStringCreateWithCString(NULL, lbl, kCFStringEncodingUTF8);
+    g_free(lbl);
+
+    // Parse server, username and password from JSON value
+    // {"server":"www.example.com","username":"myuser","password":"mypassword"}
+    JsonParser *json_parser = json_parser_new();
+
+    if(json_parser_load_from_data(json_parser, value, -1, NULL) == FALSE)
+    {
+      g_object_unref(json_parser);
+      continue;
+    }
+
+    // Read JSON
+    JsonNode *json_root = json_parser_get_root(json_parser);
+    JsonReader *json_reader = json_reader_new(json_root);
+
+    GHashTable *v_attributes = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+
+    // Save each element as a key/value pair
+    gint n_attributes = json_reader_count_members(json_reader);
+    for(gint i = 0; i < n_attributes; i++)
+    {
+      if(json_reader_read_element(json_reader, i) == FALSE)
+      {
+        continue;
+      }
+
+      const gchar *k = json_reader_get_member_name(json_reader);
+      const gchar *v = json_reader_get_string_value(json_reader);
+
+      g_hash_table_insert(v_attributes, g_strdup(k), g_strdup(v));
+
+      json_reader_end_element(json_reader);
+    }
+
+    g_object_unref(json_reader);
+    g_object_unref(json_parser);
+
+    gchar *attr_server = g_strdup((gchar *) g_hash_table_lookup(v_attributes, "server"));
+    gchar *attr_username = g_strdup((gchar *) g_hash_table_lookup(v_attributes, "username"));
+    gchar *attr_password = g_strdup((gchar *) g_hash_table_lookup(v_attributes, "password"));
+
+    const CFStringRef server = CFStringCreateWithCString(NULL, attr_server, kCFStringEncodingUTF8);
+    const CFStringRef username = CFStringCreateWithCString(NULL, attr_username, kCFStringEncodingUTF8);
+    const CFStringRef password = CFStringCreateWithCString(NULL, attr_password, kCFStringEncodingUTF8);
+
+    g_free(attr_server);
+    g_free(attr_username);
+    g_free(attr_password);
+
+    // encrypted password
+    CFDataRef password_enc = CFStringCreateExternalRepresentation(NULL, password, kCFStringEncodingUTF8, 0);
+    CFRelease(password);
+
+    g_hash_table_destroy(v_attributes);
 
     // seach for an existing entry in the keychain
-    const CFStringRef search_keys[] = {
-      kSecClass,
-      kSecAttrLabel,
-      kSecAttrAccount,
-      kSecMatchLimit
-    };
-
-    const CFTypeRef search_values[] = {
-      kSecClassGenericPassword,
-      CFStringCreateWithCString(NULL, label, kCFStringEncodingUTF8),
-      CFStringCreateWithCString(NULL, key, kCFStringEncodingUTF8),
-      kSecMatchLimitOne
-    };
-
-    CFDictionaryRef search_query  = CFDictionaryCreate(kCFAllocatorDefault, 
-                                                       (const void**) search_keys, 
-                                                       (const void**) search_values, 
-                                                       4, NULL, NULL);
+    CFMutableDictionaryRef search_query = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, NULL, NULL);
+    CFDictionaryAddValue(search_query, kSecClass, kSecClassInternetPassword);
+    CFDictionaryAddValue(search_query, kSecAttrLabel, label);
+    CFDictionaryAddValue(search_query, kSecAttrServer, server);
+    CFDictionaryAddValue(search_query, kSecAttrAccount, username);
+    CFDictionaryAddValue(search_query, kSecMatchLimit, kSecMatchLimitOne);
 
     OSStatus search_result = SecItemCopyMatching(search_query, NULL);
 
     if (search_result == errSecItemNotFound)
     {
       // create new entry
-      const CFStringRef keys[] = {
-        kSecClass,
-        kSecAttrAccount,
-        kSecValueData,
-        kSecAttrDescription,
-        kSecAttrLabel
-      };
-
-      const CFTypeRef values[] = {
-        kSecClassGenericPassword,
-        CFStringCreateWithCString(NULL, key, kCFStringEncodingUTF8),
-        CFStringCreateExternalRepresentation(NULL, pw, kCFStringEncodingUTF8, 0),
-        CFStringCreateWithCString(NULL, key, kCFStringEncodingUTF8),
-        CFStringCreateWithCString(NULL, label, kCFStringEncodingUTF8)
-      };
-
-      CFDictionaryRef query  = CFDictionaryCreate(kCFAllocatorDefault, 
-                                                  (const void**) keys, 
-                                                  (const void**) values, 
-                                                  5, NULL, NULL);
+      CFMutableDictionaryRef query = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, NULL, NULL);
+      CFDictionaryAddValue(query, kSecClass, kSecClassInternetPassword);
+      CFDictionaryAddValue(query, kSecAttrLabel, label);
+      CFDictionaryAddValue(query, kSecAttrServer, server);
+      CFDictionaryAddValue(query, kSecAttrAccount, username);
+      CFDictionaryAddValue(query, kSecValueData, password_enc);
 
       result = SecItemAdd(query, NULL);
 
       CFRelease(query);
-      CFRelease(values[1]);
-      CFRelease(values[2]);
-      CFRelease(values[3]);
-      CFRelease(values[4]);
     }
     else
     {
       // update the existing entry
-      const CFStringRef attribute_keys[] = {
-        kSecValueData
-      };
-
-      const CFTypeRef attribute_values[] = {
-        CFStringCreateExternalRepresentation(NULL, pw, kCFStringEncodingUTF8, 0)
-      };
-
-      CFDictionaryRef attributes = CFDictionaryCreate(kCFAllocatorDefault, 
-                                                      (const void**) attribute_keys, 
-                                                      (const void**) attribute_values, 
-                                                      1, NULL, NULL);
-
+      CFMutableDictionaryRef attributes = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, NULL, NULL);
+      CFDictionaryAddValue(attributes, kSecValueData, password_enc);
 
       result = SecItemUpdate(search_query, attributes);
 
       CFRelease(attributes);
-      CFRelease(attribute_values[0]);
     }
-    
-    g_free(label);
-    CFRelease(pw);
+
+    CFRelease(label);
     CFRelease(search_query);
-    CFRelease(search_values[1]);
-    CFRelease(search_values[2]);
+    CFRelease(server);
+    CFRelease(username);
+    CFRelease(password_enc);
   }
 
   return result == errSecSuccess;
@@ -139,7 +152,7 @@ GHashTable *dt_pwstorage_apple_keychain_get(const backend_apple_keychain_context
     kSecReturnRef
   };
 
-  gchar *label = g_strconcat("darktable@", slot, NULL);
+  gchar *label = g_strconcat("darktable - ", slot, NULL);
 
   const CFTypeRef values[] = {
     kSecClassGenericPassword,
