@@ -831,7 +831,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
   if(p->scharr.data == NULL)
   {
     dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_OPENCL,
-       "refine_detail_mask",
+       "refine detail mask",
        piece->pipe, self, piece->pipe->devid, roi_in, roi_out, "no detail data available\n");
     return;
   }
