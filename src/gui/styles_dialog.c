@@ -165,7 +165,8 @@ void _gui_styles_get_active_items(dt_gui_styles_dialog_t *sd,
         }
         else // item from image
         {
-          *update = g_list_append(*update, GINT_TO_POINTER(autoinit ? -update_num : update_num));
+          *update = g_list_append(*update,
+                                  GINT_TO_POINTER(autoinit ? -update_num : update_num));
           *enabled = g_list_append(*enabled, GINT_TO_POINTER(0));
         }
       }
@@ -183,7 +184,8 @@ static void _gui_styles_select_all_items(dt_gui_styles_dialog_t *d, const gboole
   {
     do
     {
-      gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_STYLE_ITEMS_COL_ENABLED, active, -1);
+      gtk_list_store_set(GTK_LIST_STORE(model), &iter,
+                         DT_STYLE_ITEMS_COL_ENABLED, active, -1);
     } while(gtk_tree_model_iter_next(model, &iter));
   }
 }
@@ -473,7 +475,7 @@ static void _gui_styles_update_toggled(GtkCellRendererToggle *cell,
   gtk_tree_path_free(path);
 }
 
-void dt_gui_styles_dialog_new(dt_imgid_t imgid)
+void dt_gui_styles_dialog_new(const dt_imgid_t imgid)
 {
   _gui_styles_dialog_run(FALSE, NULL, imgid);
 }
@@ -834,11 +836,14 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, dt_imgid_t i
     }
   }
 
-  if(has_item) gtk_box_pack_start(sbox, GTK_WIDGET(sd->items), TRUE, TRUE, 0);
+  if(has_item)
+    gtk_box_pack_start(sbox, GTK_WIDGET(sd->items), TRUE, TRUE, 0);
 
-  if(has_new_item) gtk_box_pack_start(sbox, GTK_WIDGET(sd->items_new), TRUE, TRUE, 0);
+  if(has_new_item)
+    gtk_box_pack_start(sbox, GTK_WIDGET(sd->items_new), TRUE, TRUE, 0);
 
-  if(edit) gtk_box_pack_start(GTK_BOX(content_area), GTK_WIDGET(sd->duplicate), FALSE, TRUE, 0);
+  if(edit)
+    gtk_box_pack_start(GTK_BOX(content_area), GTK_WIDGET(sd->duplicate), FALSE, TRUE, 0);
 
   g_object_unref(liststore);
   g_object_unref(liststore_new);

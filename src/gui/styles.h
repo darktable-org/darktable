@@ -21,7 +21,7 @@
 #include <cairo.h>
 
 /** shows a dialog for creating a new style */
-void dt_gui_styles_dialog_new(dt_imgid_t imgid);
+void dt_gui_styles_dialog_new(const dt_imgid_t imgid);
 
 /** shows a dialog for editing existing style */
 void dt_gui_styles_dialog_edit(const char *name);
