@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2021 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #pragma once
 
 #include <stdlib.h>
+#include <inttypes.h>
 
 // default number of iterations to run for dt_box_mean
 #define BOX_ITERATIONS 8
@@ -28,17 +29,17 @@
 #define BOXFILTER_KAHAN_SUM 0x1000000
 
 // ch = number of channels per pixel.  Supported values: 1, 2, 4, and 4|Kahan
-void dt_box_mean(float *const buf, const size_t height, const size_t width, const int ch,
-                 const int radius, const unsigned interations);
+void dt_box_mean(float *const buf, const size_t height, const size_t width, const uint32_t ch,
+                 const size_t radius, const uint32_t interations);
 // run a single iteration horizonally over a single row.  Supported values for ch: 4|Kahan
 // 'scratch' must point at a buffer large enough to hold ch*width floats, or be NULL
-void dt_box_mean_horizontal(float *const restrict buf, const size_t width, const int ch, const int radius,
+void dt_box_mean_horizontal(float *const restrict buf, const size_t width, const uint32_t ch, const size_t radius,
                             float *const restrict scratch);
 // run a single iteration vertically over the entire image.  Supported values for ch: 4|Kahan
-void dt_box_mean_vertical(float *const buf, const size_t height, const size_t width, const int ch, const int radius);
+void dt_box_mean_vertical(float *const buf, const size_t height, const size_t width, const uint32_t ch, const size_t radius);
 
-void dt_box_min(float *const buf, const size_t height, const size_t width, const int ch, const int radius);
-void dt_box_max(float *const buf, const size_t height, const size_t width, const int ch, const int radius);
+void dt_box_min(float *const buf, const size_t height, const size_t width, const uint32_t ch, const size_t radius);
+void dt_box_max(float *const buf, const size_t height, const size_t width, const uint32_t ch, const size_t radius);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
