@@ -303,6 +303,8 @@ static void _edit_clicked(GtkWidget *w, gpointer user_data)
   GtkTreeModel *model= gtk_tree_view_get_model(d->tree);
 
   GList *styles = gtk_tree_selection_get_selected_rows(selection, &model);
+  GList *new_name_list = NULL;
+
   for(const GList *style = styles; style; style = g_list_next(style))
   {
     char *name = NULL;
@@ -315,12 +317,46 @@ static void _edit_clicked(GtkWidget *w, gpointer user_data)
 
     if(name)
     {
-      dt_gui_styles_dialog_edit(name);
+      char *new_name = NULL;
+      // update view is necessary as we may have changed the style name
+      dt_gui_styles_dialog_edit(name, &new_name);
+      new_name_list = g_list_prepend(new_name_list, new_name);
       _gui_styles_update_view(d);
       g_free(name);
     }
   }
-  g_list_free_full (styles, (GDestroyNotify) gtk_tree_path_free);
+
+  // we need to iterate over all styles
+  if(new_name_list)
+  {
+    gboolean valid = gtk_tree_model_get_iter_first(model, &iter);
+    for(; valid; valid = gtk_tree_model_iter_next(model, &iter))
+    {
+      char *name = NULL;
+      GValue value = {0,};
+      gtk_tree_model_get_value(model, &iter, DT_STYLES_COL_FULLNAME, &value);
+      if(G_VALUE_HOLDS_STRING(&value))
+        name = g_strdup(g_value_get_string(&value));
+      g_value_unset(&value);
+
+      if(name)
+      {
+        // and select back all the previously selected paths
+        for(const GList *sname = new_name_list; sname; sname = g_list_next(sname))
+        {
+          const char *newname = (char *)sname->data;
+          if(newname && !strcmp(name, newname))
+          {
+            gtk_tree_selection_select_iter(selection, &iter);
+            break;
+          }
+        }
+        g_free(name);
+      }
+    }
+  }
+  g_list_free_full(new_name_list, g_free);
+  g_list_free_full(styles, (GDestroyNotify) gtk_tree_path_free);
 }
 
 gboolean _ask_before_delete_style(const gint style_cnt)
