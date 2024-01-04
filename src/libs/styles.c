@@ -232,7 +232,8 @@ static void _styles_row_activated_callback(GtkTreeView *view,
   GList *list = dt_act_on_get_images(TRUE, TRUE, FALSE);
   if(name)
   {
-    dt_styles_apply_to_list(name, list, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->duplicate)));
+    dt_styles_apply_to_list(name, list,
+                            gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->duplicate)));
     g_free(name);
   }
   g_list_free(list);
@@ -272,7 +273,10 @@ static void _apply_clicked(GtkWidget *w, gpointer user_data)
 
   GList *list = dt_act_on_get_images(TRUE, TRUE, FALSE);
 
-  if(list) dt_multiple_styles_apply_to_list(style_names, list, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->duplicate)));
+  if(list)
+    dt_multiple_styles_apply_to_list
+      (style_names, list,
+       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->duplicate)));
 
   g_list_free_full(style_names, g_free);
   g_list_free(list);
@@ -321,11 +325,12 @@ static void _edit_clicked(GtkWidget *w, gpointer user_data)
 
 gboolean _ask_before_delete_style(const gint style_cnt)
 {
-return !dt_conf_get_bool("plugins/lighttable/style/ask_before_delete_style")
-       || dt_gui_show_yes_no_dialog(
-            ngettext("remove style?", "remove styles?", style_cnt),
-            ngettext("do you really want to remove %d style?", "do you really want to remove %d styles?", style_cnt),
-            style_cnt);
+  return !dt_conf_get_bool("plugins/lighttable/style/ask_before_delete_style")
+    || dt_gui_show_yes_no_dialog(
+      ngettext("remove style?", "remove styles?", style_cnt),
+      ngettext("do you really want to remove %d style?",
+               "do you really want to remove %d styles?", style_cnt),
+      style_cnt);
 }
 
 static void _delete_clicked(GtkWidget *w, gpointer user_data)
@@ -434,18 +439,22 @@ static void _export_clicked(GtkWidget *w, gpointer user_data)
 
           if(dt_conf_get_bool("plugins/lighttable/style/ask_before_delete_style"))
           {
-            GtkWidget *dialog_overwrite_export = gtk_dialog_new_with_buttons(_("overwrite style?"), GTK_WINDOW(win),
-                                                                             GTK_DIALOG_DESTROY_WITH_PARENT,
-                                                                             _("_cancel"), GTK_RESPONSE_CANCEL,
-                                                                             _("_skip"), GTK_RESPONSE_NONE,
-                                                                             _("_overwrite"), GTK_RESPONSE_ACCEPT, NULL);
-            gtk_dialog_set_default_response(GTK_DIALOG(dialog_overwrite_export), GTK_RESPONSE_CANCEL);
+            GtkWidget *dialog_overwrite_export =
+              gtk_dialog_new_with_buttons(_("overwrite style?"), GTK_WINDOW(win),
+                                          GTK_DIALOG_DESTROY_WITH_PARENT,
+                                          _("_cancel"), GTK_RESPONSE_CANCEL,
+                                          _("_skip"), GTK_RESPONSE_NONE,
+                                          _("_overwrite"), GTK_RESPONSE_ACCEPT, NULL);
+            gtk_dialog_set_default_response(GTK_DIALOG(dialog_overwrite_export),
+                                            GTK_RESPONSE_CANCEL);
 
             // contents for dialog
-            GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog_overwrite_export));
+            GtkWidget *content_area =
+              gtk_dialog_get_content_area(GTK_DIALOG(dialog_overwrite_export));
             sprintf(overwrite_str, _("style `%s' already exists.\ndo you want to overwrite existing style?\n"), stylename);
             GtkWidget *label = gtk_label_new(overwrite_str);
-            GtkWidget *overwrite_dialog_check_button = gtk_check_button_new_with_label(_("apply this option to all existing styles"));
+            GtkWidget *overwrite_dialog_check_button =
+              gtk_check_button_new_with_label(_("apply this option to all existing styles"));
 
             gtk_container_add(GTK_CONTAINER(content_area), label);
             gtk_container_add(GTK_CONTAINER(content_area), overwrite_dialog_check_button);
