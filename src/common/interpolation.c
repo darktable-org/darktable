@@ -555,7 +555,7 @@ float dt_interpolation_compute_sample(const struct dt_interpolation *itor,
       s += kernelv[i] * h;
       in += linestride;
     }
-    r = s / (normh * normv);
+    r = fmaxf(0.0f, s / (normh * normv));
   }
   else if(ix >= 0 && iy >= 0 && ix < width && iy < height)
   {
@@ -593,7 +593,7 @@ float dt_interpolation_compute_sample(const struct dt_interpolation *itor,
       s += kernelv[i] * h;
     }
 
-    r = s / (normh * normv);
+    r = fmaxf(0.0f, s / (normh * normv));
   }
   else
   {
@@ -668,7 +668,7 @@ void dt_interpolation_compute_pixel4c(const struct dt_interpolation *itor,
     }
 
     for_each_channel(c,aligned(out))
-      out[c] = oonorm * pixel[c];
+      out[c] = fmaxf(0.0f, oonorm * pixel[c]);
   }
   else if(ix >= 0 && iy >= 0 && ix < width && iy < height)
   {
@@ -712,7 +712,7 @@ void dt_interpolation_compute_pixel4c(const struct dt_interpolation *itor,
     }
 
     for_each_channel(c,aligned(out))
-      out[c] = oonorm * pixel[c];
+      out[c] = fmaxf(0.0f, oonorm * pixel[c]);
   }
   else
   {
