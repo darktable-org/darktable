@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 4.6.x\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-12-02 20:18-0600\n"
-"PO-Revision-Date: 2023-12-21 23:12-0600\n"
+"PO-Revision-Date: 2024-01-03 20:33-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -3865,7 +3865,7 @@ msgstr "percentil"
 #: ../build/lib/darktable/plugins/introspection_exposure.c:85
 #: ../build/lib/darktable/plugins/introspection_exposure.c:150
 msgid "target level"
-msgstr "nivel de objetivo"
+msgstr "valor de referencia"
 
 #: ../build/lib/darktable/plugins/introspection_exposure.c:91
 #: ../build/lib/darktable/plugins/introspection_exposure.c:154
@@ -4332,7 +4332,7 @@ msgstr "modo"
 #: ../build/lib/darktable/plugins/introspection_lens.cc:433
 #: ../src/iop/lens.cc:4474
 msgid "target geometry"
-msgstr "Geometría del objetivo"
+msgstr "geometría del objetivo"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:268
 #: ../build/lib/darktable/plugins/introspection_lens.cc:453
@@ -4377,7 +4377,7 @@ msgstr "Escala de imagen"
 #: ../build/lib/darktable/plugins/introspection_lens.cc:346
 #: ../build/lib/darktable/plugins/introspection_lens.cc:505
 msgid "steepness"
-msgstr "inclinación"
+msgstr "gradiente"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:527
 msgid "embedded metadata"
@@ -9879,7 +9879,7 @@ msgstr "y..."
 #: ../src/gui/about.c:59
 msgid "translator-credits"
 msgstr ""
-"Edgar De la Luz «EdgarLux» (2019-2023)\n"
+"Edgar De la Luz «EdgarLux» (2019-2024)\n"
 "Tatica Leandro (2012-2017)\n"
 "José Carlos García Sogo (2011-2014)\n"
 "Roberto Quintero (2010-2011)\n"
@@ -17035,15 +17035,17 @@ msgstr ""
 #, no-c-format
 msgid "where in the histogram to meter for deflicking. E.g. 50% is median"
 msgstr ""
-"Punto en donde se medirá el histograma para eliminar el parpadeo (Ejemplo: "
-"el 50% es mediano)"
+"Determina la posición en el histograma que se utilizará para la compensación "
+"automática de la exposición\n"
+"(útil para ajustar la misma exposición en un conjunto de imágenes). Ejemplo: "
+"el 50% es la mediana."
 
 #: ../src/iop/exposure.c:1156
 msgid ""
 "where to place the exposure level for processed pics, EV below overexposure."
 msgstr ""
-"El lugar del nivel de exposición en las fotos procesadas, debajo de la "
-"sobreexposición EV."
+"Establece el valor de exposición EV de referencia en relación al punto "
+"blanco de la cámara."
 
 #: ../src/iop/exposure.c:1160
 msgid "computed EC: "
@@ -18501,7 +18503,7 @@ msgstr "viñeteado"
 
 #: ../src/iop/lens.cc:4606
 msgid "amount of the applied optical vignetting correction"
-msgstr "Proporción de corrección viñeteado óptico aplicada"
+msgstr "Intensidad del efecto de corrección de viñeteado óptico aplicada"
 
 #: ../src/iop/lens.cc:4608
 msgid "show applied optical vignette correction mask"
@@ -18509,11 +18511,12 @@ msgstr "Muestra la máscara de corrección de viñeteado óptico aplicada"
 
 #: ../src/iop/lens.cc:4618
 msgid "radius of uncorrected centre"
-msgstr "Radio del centro sin corregir"
+msgstr "Área central que no es modificada por la corrección."
 
 #: ../src/iop/lens.cc:4624
 msgid "steepness of the correction effect outside of radius"
-msgstr "Inclinación del efecto de correción fuera del radio"
+msgstr ""
+"Intensidad del efecto de corrección en el gradiente (área externa al radio)."
 
 #: ../src/iop/levels.c:112
 msgid "this module is deprecated. please use the RGB levels module instead."
