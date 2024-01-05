@@ -645,7 +645,9 @@ static void _remove_snapshot_entry(dt_lib_module_t *self, const uint32_t index)
     d->selected = -1;
 }
 
-static void _signal_image_removed(gpointer instance, dt_imgid_t imgid, gpointer user_data)
+static void _signal_image_removed(gpointer instance,
+                                  const dt_imgid_t imgid,
+                                  gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
