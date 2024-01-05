@@ -138,8 +138,8 @@ int process_cl(struct dt_iop_module_t *self,
   const int devid = piece->pipe->devid;
 
   dt_print_pipe(DT_DEBUG_IMAGEIO,
-                "clip_and_zoom_roi CL",
-                piece->pipe, self, roi_in, roi_out, "device=%i\n", devid);
+                "clip_and_zoom_roi",
+                piece->pipe, self, piece->pipe->devid, roi_in, roi_out, "device=%i\n", devid);
   return dt_iop_clip_and_zoom_cl(devid, dev_out, dev_in, roi_out, roi_in);
 }
 #endif
@@ -152,7 +152,7 @@ void process(dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_out)
 {
   dt_print_pipe(DT_DEBUG_IMAGEIO,
-                "clip_and_zoom_roi", piece->pipe, self, roi_in, roi_out, "\n");
+                "clip_and_zoom_roi", piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out, "\n");
 
   dt_iop_clip_and_zoom((float *)ovoid, (float *)ivoid, roi_out, roi_in);
 }

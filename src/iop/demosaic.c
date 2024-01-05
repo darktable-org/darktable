@@ -735,7 +735,8 @@ void process(
     if(scaled)
     {
       roi = *roi_out;
-      dt_print_pipe(DT_DEBUG_PIPE, "clip_and_zoom_roi", piece->pipe, self, roi_in, roi_out, "\n");
+      dt_print_pipe(DT_DEBUG_PIPE, "clip_and_zoom_roi",
+        piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out, "\n");
       dt_iop_clip_and_zoom_roi((float *)o, tmp, &roi, &roo);
       dt_free_align(tmp);
     }
