@@ -900,6 +900,17 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget,
     gtk_widget_set_sensitive(d->take_button, FALSE);
 }
 
+static int _lib_snapshots_get_activated(dt_lib_module_t *self, GtkWidget *widget)
+{
+  dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
+
+  for(uint32_t k = 0; k < d->num_snapshots; k++)
+    if(widget == d->snapshot[k].button)
+      return k;
+
+  return -1;
+}
+
 static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
@@ -914,11 +925,11 @@ static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, gpointer us
   /* check if snapshot is activated */
   if(gtk_toggle_button_get_active(widget))
   {
+    d->selected = _lib_snapshots_get_activated(self, GTK_WIDGET(widget));
+
     /* lets deactivate all togglebuttons except for self */
     for(uint32_t k = 0; k < d->num_snapshots; k++)
-      if(GTK_WIDGET(widget) == d->snapshot[k].button)
-        d->selected = k;
-      else
+      if(d->selected != k)
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->snapshot[k].button), FALSE);
   }
   darktable.lib->proxy.snapshots.enabled = d->selected >= 0;
