@@ -1876,7 +1876,7 @@ dt_iop_module_t *dt_iop_commit_blend_params(dt_iop_module_t *module,
         module->raster_mask.sink.id = blendop_params->raster_mask_id;
         dt_print_pipe(DT_DEBUG_PIPE,
                       "commit_blend_params",
-                      NULL, module, NULL, NULL, "raster mask from '%s%s' %s\n",
+                      NULL, module, DT_DEVICE_NONE, NULL, NULL, "raster mask from '%s%s' %s\n",
                       candidate->op, dt_iop_get_instance_id(candidate),
                       new ? "new" : "existing");
 
@@ -1894,7 +1894,7 @@ dt_iop_module_t *dt_iop_commit_blend_params(dt_iop_module_t *module,
   {
     dt_print_pipe(DT_DEBUG_PIPE,
                   "commit_blend_params",
-                  NULL, module, NULL, NULL, "clear raster mask source '%s%s'\n",
+                  NULL, module, DT_DEVICE_NONE, NULL, NULL, "clear raster mask source '%s%s'\n",
                   sink_source->op, dt_iop_get_instance_id(sink_source));
     g_hash_table_remove(module->raster_mask.sink.source->raster_mask.source.users, module);
   }

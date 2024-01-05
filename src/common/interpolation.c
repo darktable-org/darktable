@@ -44,9 +44,6 @@ enum border_mode
  * unnecessary modes in interpolation codepath */
 #define INTERPOLATION_BORDER_MODE BORDER_MIRROR
 
-// Defines minimum alignment requirement for critical SIMD code
-#define SSE_ALIGNMENT 64
-
 // Defines the maximum kernel half length
 // !! Make sure to sync this with the filter array !!
 #define MAX_HALF_FILTER_WIDTH 3
@@ -868,12 +865,12 @@ static gboolean _prepare_resampling_plan(const struct dt_interpolation *itor,
   int nlengths = out;
   const int nindex = maxtapsapixel * out;
   const int nkernel = maxtapsapixel * out;
-  const size_t lengthreq = dt_round_size(nlengths * sizeof(int), SSE_ALIGNMENT);
-  const size_t indexreq = dt_round_size(nindex * sizeof(int), SSE_ALIGNMENT);
-  const size_t kernelreq = dt_round_size(nkernel * sizeof(float), SSE_ALIGNMENT);
-  const size_t scratchreq = dt_round_size(maxtapsapixel * sizeof(float) + 4 * sizeof(float), SSE_ALIGNMENT);
+  const size_t lengthreq = dt_round_size(nlengths * sizeof(int), DT_CACHELINE_BYTES);
+  const size_t indexreq = dt_round_size(nindex * sizeof(int), DT_CACHELINE_BYTES);
+  const size_t kernelreq = dt_round_size(nkernel * sizeof(float), DT_CACHELINE_BYTES);
+  const size_t scratchreq = dt_round_size(maxtapsapixel * sizeof(float) + 4 * sizeof(float), DT_CACHELINE_BYTES);
   // NB: because sse versions compute four taps a time
-  const size_t metareq = dt_round_size(pmeta ? 4 * sizeof(int) * out : 0, SSE_ALIGNMENT);
+  const size_t metareq = dt_round_size(pmeta ? 4 * sizeof(int) * out : 0, DT_CACHELINE_BYTES);
 
   const size_t totalreq = kernelreq + lengthreq + indexreq + scratchreq + metareq;
   void *blob = dt_alloc_aligned(totalreq);
@@ -1028,7 +1025,7 @@ static void _interpolation_resample_plain(const struct dt_interpolation *itor,
   const int32_t out_stride_floats = roi_out->width * 4;
 
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
-                "resample_plain", NULL, NULL, roi_in, roi_out, "%s\n",itor->name);
+                "resample_plain", NULL, NULL, DT_DEVICE_CPU, roi_in, roi_out, "%s\n",itor->name);
   dt_times_t start = { 0 }, mid = { 0 };
   dt_get_perf_times(&start);
 
@@ -1259,7 +1256,7 @@ int dt_interpolation_resample_cl(const struct dt_interpolation *itor,
   cl_mem dev_vmeta = NULL;
 
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
-                "resample_cl", NULL, NULL, roi_in, roi_out, "%s\n", itor->name);
+                "resample", NULL, NULL, devid, roi_in, roi_out, "%s\n", itor->name);
   dt_times_t start = { 0 }, mid = { 0 };
   dt_get_perf_times(&start);
 
@@ -1396,7 +1393,7 @@ error:
   if(err == CL_SUCCESS)
     _show_2_times(&start, &mid, "resample_cl");
   else if(err != CL_INVALID_WORK_GROUP_SIZE)
-    dt_print_pipe(DT_DEBUG_OPENCL, "interpolation_resample_cl", NULL, NULL, roi_in, roi_out,
+    dt_print_pipe(DT_DEBUG_OPENCL, "interpolation_resample", NULL, NULL, devid, roi_in, roi_out,
       "Error: %s\n", cl_errstr(err));
 
   dt_opencl_release_mem_object(dev_hindex);
@@ -1449,7 +1446,7 @@ static void _interpolation_resample_1c_plain(const struct dt_interpolation *itor
   int *vmeta = NULL;
 
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
-                "resample_1c_plain", NULL, NULL, roi_in, roi_out, "%s\n", itor->name);
+      "resample_1c_plain", NULL, NULL, DT_DEVICE_CPU, roi_in, roi_out, "%s\n", itor->name);
   dt_times_t start = { 0 }, mid = { 0 };
   dt_get_perf_times(&start);
 
