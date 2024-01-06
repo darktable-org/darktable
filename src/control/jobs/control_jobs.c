@@ -1200,7 +1200,9 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
 
     int duplicates = 0;
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-    if(sqlite3_step(stmt) == SQLITE_ROW) duplicates = sqlite3_column_int(stmt, 0);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+      duplicates = sqlite3_column_int(stmt, 0);
+
     sqlite3_reset(stmt);
     sqlite3_clear_bindings(stmt);
 
@@ -1215,7 +1217,8 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
       // there are no further duplicates so we can remove the source
       // data file
       delete_status = delete_file_from_disk(filename, &delete_on_error);
-      if(delete_status == _DT_DELETE_STATUS_REMOVE || delete_status == _DT_DELETE_STATUS_DELETED)
+      if(delete_status == _DT_DELETE_STATUS_REMOVE
+         || delete_status == _DT_DELETE_STATUS_DELETED)
       {
         // if the file has been deleted or should only be removed ->
         // remove image from collection
