@@ -862,14 +862,17 @@ void gui_update(struct dt_iop_module_t *self)
     _clear_cache_entry(self, k);
 }
 
-void gui_reset(dt_iop_module_t *self)
+void reload_defaults(dt_iop_module_t *self)
 {
-  dt_iop_overlay_gui_data_t *g = (dt_iop_overlay_gui_data_t *)self->gui_data;
   dt_iop_overlay_params_t *p = (dt_iop_overlay_params_t *)self->params;
 
   if(dt_is_valid_imgid(p->imgid))
     dt_overlay_remove(self->dev->image_storage.id, p->imgid);
+}
 
+void gui_reset(dt_iop_module_t *self)
+{
+  dt_iop_overlay_gui_data_t *g = (dt_iop_overlay_gui_data_t *)self->gui_data;
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
