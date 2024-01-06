@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2023 darktable developers.
+    Copyright (C) 2023-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,6 +31,11 @@ extern "C" {
   Record overlay_id as being used as overlay in imgid
 */
 void dt_overlay_record(const dt_imgid_t imgid, const dt_imgid_t overlay_id);
+
+/*
+  Remove all overlay as being used in imgid
+*/
+void dt_overlays_remove(const dt_imgid_t imgid);
 
 /*
   Remove overlay_id as being used as overlay in imgid
