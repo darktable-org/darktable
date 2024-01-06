@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2023 darktable developers.
+    Copyright (C) 2023-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -42,6 +42,21 @@ void dt_overlay_record(const dt_imgid_t imgid, const dt_imgid_t overlay_id)
   snprintf(tagname, sizeof(tagname), "darktable|overlay|%d", imgid);
   dt_tag_new(tagname, &tagid);
   dt_tag_attach(tagid, overlay_id, FALSE, FALSE);
+}
+
+void dt_overlays_remove(const dt_imgid_t imgid)
+{
+  GList *overlay = dt_overlay_get_imgs(imgid);
+
+  GList *l = overlay;
+  while(l)
+  {
+    const dt_imgid_t _imgid = GPOINTER_TO_INT(l->data);
+    dt_overlay_remove(imgid, _imgid);
+    l = g_list_next(l);
+  }
+
+  g_list_free(overlay);
 }
 
 void dt_overlay_remove(const dt_imgid_t imgid, const dt_imgid_t overlay_id)
