@@ -860,6 +860,7 @@ void gui_update(struct dt_iop_module_t *self)
   // enterring from darkroom, clear cache
   for(int k=0; k<MAX_OVERLAY; k++)
     _clear_cache_entry(self, k);
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
 void reload_defaults(dt_iop_module_t *self)
@@ -868,6 +869,8 @@ void reload_defaults(dt_iop_module_t *self)
 
   if(dt_is_valid_imgid(p->imgid))
     dt_overlay_remove(self->dev->image_storage.id, p->imgid);
+
+  p->imgid = NO_IMGID;
 }
 
 void gui_reset(dt_iop_module_t *self)
@@ -896,6 +899,8 @@ void gui_changed(dt_iop_module_t *self,
       gtk_widget_set_visible(GTK_WIDGET(g->scale_svg), FALSE);
     }
   }
+
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
