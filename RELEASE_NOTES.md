@@ -73,6 +73,8 @@ for more information on how to contribute._
 - Fix crashes related to details mask if running on low OpenCL or
   system memory.
 
+- Fix wrong first snapshot rendering after creating a second snapshot.
+
 ## Lua
 
 ### API Version
