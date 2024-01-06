@@ -103,9 +103,8 @@ gchar *dt_util_float_to_str(const gchar *format, const double value)
   _configthreadlocale(_ENABLE_PER_THREAD_LOCALE);
   setlocale (LC_NUMERIC, "C");
 #else
-  locale_t locale = uselocale((locale_t) 0);
   locale_t nlocale = newlocale(LC_NUMERIC_MASK, "C", (locale_t) 0);
-  uselocale(nlocale);
+  locale_t locale = uselocale(nlocale);
 #endif
 
   gchar *txt = g_strdup_printf(format, value);
