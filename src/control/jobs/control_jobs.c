@@ -805,6 +805,25 @@ static GList *_get_full_pathname(char *imgs)
   return g_list_reverse(list);  // list was built in reverse order, so un-reverse it
 }
 
+static int32_t _count_images_using_overlay(dt_imgid_t imgid)
+{
+  GList *overlay = dt_overlay_get_used_in_imgs(imgid, TRUE);
+  int exist_count = 0;
+
+  // count images still using this overlay (that is still in db)
+  GList *l = overlay;
+  while(l)
+  {
+    const dt_imgid_t _imgid = GPOINTER_TO_INT(l->data);
+    if(dt_image_exists(_imgid))
+      exist_count++;
+    l = g_list_next(l);
+  }
+  g_list_free(overlay);
+
+  return exist_count;
+}
+
 static int32_t dt_control_remove_images_job_run(dt_job_t *job)
 {
   dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
@@ -850,18 +869,7 @@ static int32_t dt_control_remove_images_job_run(dt_job_t *job)
   while(t)
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
-    GList *overlay = dt_overlay_get_used_in_imgs(imgid, TRUE);
-    int exist_count = 0;
-
-    // count images still using this overlay (that is still in db)
-    GList *l = overlay;
-    while(l)
-    {
-      const dt_imgid_t _imgid = GPOINTER_TO_INT(l->data);
-      if(dt_image_exists(_imgid))
-        exist_count++;
-      l = g_list_next(l);
-    }
+    const int32_t exist_count = _count_images_using_overlay(imgid);
 
     if(exist_count > 0)
     {
@@ -870,7 +878,6 @@ static int32_t dt_control_remove_images_job_run(dt_job_t *job)
         (ngettext("not removing image '%s' used as overlay in %d image",
                   "not removing image '%s' used as overlay in %d images", exist_count),
          filename, exist_count);
-      g_list_free(overlay);
       g_free(filename);
     }
     else
