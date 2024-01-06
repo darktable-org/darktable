@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -42,6 +42,8 @@ typedef struct dt_lib_snapshot_t
   GtkWidget *status;
   GtkWidget *name;
   GtkWidget *entry;
+  GtkWidget *restore_button;
+  GtkWidget *bbox;
   char *module;
   char *label;
   dt_view_context_t ctx;
@@ -81,6 +83,9 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget,
                                                        gpointer user_data);
 
 static void _lib_snapshots_toggled_callback(GtkToggleButton *widget,
+                                            gpointer user_data);
+
+static void _lib_snapshots_restore_callback(GtkButton *widget,
                                             gpointer user_data);
 
 const char *name(dt_lib_module_t *self)
@@ -538,6 +543,12 @@ static void _init_snapshot_entry(dt_lib_module_t *self, dt_lib_snapshot_t *s)
   gtk_widget_set_halign(s->entry, GTK_ALIGN_START);
   g_signal_connect(G_OBJECT(s->entry), "activate",
                    G_CALLBACK(_entry_activated_callback), self);
+
+  s->restore_button = gtk_button_new_with_label("⤓");
+  gtk_widget_set_tooltip_text(s->restore_button,
+                              _("restore snapshot into current history"));
+  g_signal_connect(G_OBJECT(s->restore_button), "clicked",
+                   G_CALLBACK(_lib_snapshots_restore_callback), self);
 }
 
 static void _clear_snapshot_entry(dt_lib_snapshot_t *s)
@@ -552,6 +563,7 @@ static void _clear_snapshot_entry(dt_lib_snapshot_t *s)
     gtk_widget_set_tooltip_text(s->button, "");
     gtk_widget_set_tooltip_text(lstatus, "");
     gtk_widget_hide(s->button);
+    gtk_widget_hide(s->restore_button);
   }
 
   g_free(s->module);
@@ -645,7 +657,9 @@ static void _remove_snapshot_entry(dt_lib_module_t *self, const uint32_t index)
     d->selected = -1;
 }
 
-static void _signal_image_removed(gpointer instance, dt_imgid_t imgid, gpointer user_data)
+static void _signal_image_removed(gpointer instance,
+                                  const dt_imgid_t imgid,
+                                  gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
@@ -774,11 +788,17 @@ void gui_init(dt_lib_module_t *self)
 
     gtk_container_add(GTK_CONTAINER(s->button), box);
 
+    // add snap button and restore button
+    s->bbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    gtk_box_pack_start(GTK_BOX(s->bbox), s->button, TRUE, TRUE, 0);
+    gtk_box_pack_end(GTK_BOX(s->bbox), s->restore_button, FALSE, FALSE, 0);
+
     /* add button to snapshot box */
-    gtk_box_pack_end(GTK_BOX(d->snapshots_box), s->button, FALSE, FALSE, 0);
+    gtk_box_pack_end(GTK_BOX(d->snapshots_box), s->bbox, FALSE, FALSE, 0);
 
     /* prevent widget to show on external show all */
     gtk_widget_set_no_show_all(s->button, TRUE);
+    gtk_widget_set_no_show_all(s->restore_button, TRUE);
   }
 
   /* add snapshot box and take snapshot button to widget ui*/
@@ -894,10 +914,25 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget,
 
   /* show active snapshot slots */
   for(uint32_t k = 0; k < d->num_snapshots; k++)
+  {
     gtk_widget_show(d->snapshot[k].button);
+    gtk_widget_show(d->snapshot[k].restore_button);
+  }
 
   if(d->num_snapshots == MAX_SNAPSHOT)
     gtk_widget_set_sensitive(d->take_button, FALSE);
+}
+
+static int _lib_snapshots_get_activated(dt_lib_module_t *self, GtkWidget *widget)
+{
+  dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
+
+  for(uint32_t k = 0; k < d->num_snapshots; k++)
+    if(widget == d->snapshot[k].button
+       || widget == d->snapshot[k].restore_button)
+      return k;
+
+  return -1;
 }
 
 static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, gpointer user_data)
@@ -914,11 +949,11 @@ static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, gpointer us
   /* check if snapshot is activated */
   if(gtk_toggle_button_get_active(widget))
   {
+    d->selected = _lib_snapshots_get_activated(self, GTK_WIDGET(widget));
+
     /* lets deactivate all togglebuttons except for self */
     for(uint32_t k = 0; k < d->num_snapshots; k++)
-      if(GTK_WIDGET(widget) == d->snapshot[k].button)
-        d->selected = k;
-      else
+      if(d->selected != k)
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->snapshot[k].button), FALSE);
   }
   darktable.lib->proxy.snapshots.enabled = d->selected >= 0;
@@ -927,6 +962,50 @@ static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, gpointer us
 
   /* redraw center view */
   dt_control_queue_redraw_center();
+}
+
+static void _lib_snapshots_restore_callback(GtkButton *widget, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
+
+  const int restore_idx = _lib_snapshots_get_activated(self, GTK_WIDGET(widget));
+
+  dt_lib_snapshot_t *s = &d->snapshot[restore_idx];
+
+  const dt_imgid_t imgid = s->imgid;
+
+  sqlite3_stmt *stmt;
+
+  // delete current histroy
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "DELETE FROM main.history WHERE imgid = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  // rollback to snapshot history
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "INSERT INTO main.history"
+     " SELECT ?1, num, module, operation, op_params,"
+     "        enabled, blendop_params, blendop_version, multi_priority,"
+     "        multi_name, multi_name_hand_edited"
+     " FROM memory.history_snapshot"
+     " WHERE id = ?2",
+     -1, &stmt, NULL);
+
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, s->id);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  // reload history and set back snapshot history end
+  darktable.develop->history_end = s->history_end;
+  dt_dev_reload_history_items(darktable.develop);
+  darktable.develop->history_end = s->history_end;
+  dt_dev_write_history(darktable.develop);
 }
 
 #ifdef USE_LUA
