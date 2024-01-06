@@ -45,10 +45,10 @@ typedef enum dt_iop_canvas_color_t
 
 typedef struct dt_iop_enlargecanvas_params_t
 {
-  float percent_left;   // $MIN: 0 $MAX: 100.0 $DEFAULT: 0
-  float percent_right;  // $MIN: 0 $MAX: 100.0 $DEFAULT: 0
-  float percent_top;    // $MIN: 0 $MAX: 100.0 $DEFAULT: 0
-  float percent_bottom; // $MIN: 0 $MAX: 100.0 $DEFAULT: 0
+  float percent_left;   // $MIN: 0 $MAX: 100.0 $DEFAULT: 0 $DESCRIPTION: "percent left"
+  float percent_right;  // $MIN: 0 $MAX: 100.0 $DEFAULT: 0 $DESCRIPTION: "percent right"
+  float percent_top;    // $MIN: 0 $MAX: 100.0 $DEFAULT: 0 $DESCRIPTION: "percent top"
+  float percent_bottom; // $MIN: 0 $MAX: 100.0 $DEFAULT: 0 $DESCRIPTION: "percent bottom"
   dt_iop_canvas_color_t color;
 } dt_iop_enlargecanvas_params_t;
 
