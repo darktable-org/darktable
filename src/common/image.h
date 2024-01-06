@@ -371,6 +371,8 @@ int dt_image_monochrome_flags(const dt_image_t *img);
 gboolean dt_image_use_monochrome_workflow(const dt_image_t *img);
 /** returns the image filename */
 char *dt_image_get_filename(const dt_imgid_t imgid);
+/** returns true if the image exists on the database */
+gboolean dt_image_exists(const dt_imgid_t imgid);
 /** returns the full path name where the image was imported
  * from. from_cache=TRUE check and return local cached filename if
  * any. */
