@@ -586,7 +586,7 @@ static void _clear_snapshots(dt_lib_module_t *self)
   for(uint32_t k = 0; k < d->num_snapshots; k++)
   {
     dt_lib_snapshot_t *s = &d->snapshot[k];
-
+    s->id = k;
     _clear_snapshot_entry(s);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(s->button), FALSE);
   }
@@ -753,6 +753,7 @@ void gui_init(dt_lib_module_t *self)
   for(int k = 0; k < MAX_SNAPSHOT; k++)
   {
     dt_lib_snapshot_t *s = &d->snapshot[k];
+    s->id = k;
 
     _clear_snapshot_entry(s);
     _init_snapshot_entry(self, s);
@@ -816,6 +817,10 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget,
   dt_dev_write_history(darktable.develop);
 
   dt_lib_snapshot_t *s = &d->snapshot[d->num_snapshots];
+
+  // set new snapshot_id
+  s->id = d->num_snapshots;
+
   _clear_snapshot_entry(s);
 
   if(darktable.develop->history_end > 0)
@@ -841,10 +846,6 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget,
 
   s->history_end = darktable.develop->history_end;
   s->imgid = darktable.develop->image_storage.id;
-
-  // set new snapshot_id
-
-  s->id = d->num_snapshots;
 
   sqlite3_stmt *stmt;
 
