@@ -281,14 +281,16 @@ static void _gui_styles_edit_style_response(GtkDialog *dialog,
     _gui_styles_select_all_items(g, FALSE);
     return;
   }
-  else if(response_id == GTK_RESPONSE_ACCEPT)
+
+  g->newname = g_strdup(gtk_entry_get_text(GTK_ENTRY(g->name)));
+
+  if(response_id == GTK_RESPONSE_ACCEPT)
   {
     /* get the filtered list from dialog */
     GList *result = NULL, *update = NULL;
 
     _gui_styles_get_active_items(g, &result, &update);
 
-    g->newname = g_strdup(gtk_entry_get_text(GTK_ENTRY(g->name)));
     if(g->newname && *g->newname)
     {
       if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->duplicate)))
