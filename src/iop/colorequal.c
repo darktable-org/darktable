@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2022-2023 darktable developers.
+    Copyright (C) 2022-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -840,7 +840,7 @@ static inline void _periodic_RBF_interpolate(float nodes[NODES], const float smo
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  piece->data = dt_calloc_align(64, sizeof(dt_iop_colorequal_data_t));
+  piece->data = dt_calloc_aligned(sizeof(dt_iop_colorequal_data_t));
   dt_iop_colorequal_data_t *d = (dt_iop_colorequal_data_t *)piece->data;
   d->LUT_saturation = dt_alloc_align_float(LUT_ELEM);
   d->LUT_hue = dt_alloc_align_float(LUT_ELEM);
