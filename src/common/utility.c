@@ -99,7 +99,7 @@ guint dt_util_str_occurence(const gchar *haystack, const gchar *needle)
 
 gchar *dt_util_float_to_str(const gchar *format, const double value)
 {
-#if defined(_MSC_VER)
+#if defined(WIN32)
   _configthreadlocale(_ENABLE_PER_THREAD_LOCALE);
   setlocale (LC_NUMERIC, "C");
 #else
@@ -110,7 +110,7 @@ gchar *dt_util_float_to_str(const gchar *format, const double value)
 
   gchar *txt = g_strdup_printf(format, value);
   
-#if defined(_MSC_VER)
+#if defined(WIN32)
   _configthreadlocale(_DISABLE_PER_THREAD_LOCALE);
 #else
   uselocale(locale);
