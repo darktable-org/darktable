@@ -1177,6 +1177,19 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
   {
     _dt_delete_status_t delete_status = _DT_DELETE_STATUS_UNKNOWN;
     const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
+    const int32_t exist_count = _count_images_using_overlay(imgid);
+
+    if(exist_count > 0)
+    {
+      char *filename = dt_image_get_filename(imgid);
+      dt_control_log
+        (ngettext("not deleting image '%s' used as overlay in %d image",
+                  "not deleting image '%s' used as overlay in %d images", exist_count),
+         filename, exist_count);
+      g_free(filename);
+      goto delete_next_file;
+    }
+
     char filename[PATH_MAX] = { 0 };
     gboolean from_cache = FALSE;
     dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
