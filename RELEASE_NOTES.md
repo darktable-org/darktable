@@ -75,6 +75,8 @@ for more information on how to contribute._
 
 - Fix wrong first snapshot rendering after creating a second snapshot.
 
+- Keep selected styles in the style dialog after editing them.
+
 ## Lua
 
 ### API Version
