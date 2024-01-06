@@ -69,7 +69,7 @@ static gchar *_aperture_print_func(const double value, const gboolean detailled)
 {
   if(detailled)
   {
-    return g_strdup_printf("%s%.1lf", detailled ? "f/" : "", value);
+    return g_strdup_printf("f/%.1lf", value);
   }
   else
   {
