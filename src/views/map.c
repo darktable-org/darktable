@@ -2614,10 +2614,10 @@ static void _drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, 
   gboolean success = FALSE;
   if(selection_data != NULL && target_type == DND_TARGET_IMGID)
   {
-    const int imgs_nb = gtk_selection_data_get_length(selection_data) / sizeof(uint32_t);
+    const int imgs_nb = gtk_selection_data_get_length(selection_data) / sizeof(dt_imgid_t);
     if(imgs_nb)
     {
-      uint32_t *imgt = (uint32_t *)gtk_selection_data_get_data(selection_data);
+      dt_imgid_t *imgt = (dt_imgid_t *)gtk_selection_data_get_data(selection_data);
       if(imgs_nb == 1 && imgt[0] == -1)
       {
         // move of location
@@ -2628,8 +2628,9 @@ static void _drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, 
         lib->loc.main.data.lat = lat, lib->loc.main.data.lon = lon;
         const float prev_ratio = lib->loc.main.data.ratio;
         lib->loc.main.data.ratio = _view_map_get_angles_ratio(lib, lib->loc.main.data.lat,
-                                   lib->loc.main.data.lon);
-        lib->loc.main.data.delta2 = lib->loc.main.data.delta2 * prev_ratio / lib->loc.main.data.ratio;
+                                                              lib->loc.main.data.lon);
+        lib->loc.main.data.delta2 =
+          lib->loc.main.data.delta2 * prev_ratio / lib->loc.main.data.ratio;
         osm_gps_map_point_free(pt);
         _view_map_update_location_geotag(self);
         _view_map_draw_main_location(lib, &lib->loc.main);
@@ -2732,10 +2733,10 @@ static void _view_map_dnd_remove_callback(GtkWidget *widget, GdkDragContext *con
 
   if(selection_data != NULL && target_type == DND_TARGET_IMGID)
   {
-    const int imgs_nb = gtk_selection_data_get_length(selection_data) / sizeof(uint32_t);
+    const int imgs_nb = gtk_selection_data_get_length(selection_data) / sizeof(dt_imgid_t);
     if(imgs_nb)
     {
-      uint32_t *imgt = (uint32_t *)gtk_selection_data_get_data(selection_data);
+      dt_imgid_t *imgt = (dt_imgid_t *)gtk_selection_data_get_data(selection_data);
       GList *imgs = NULL;
       for(int i = 0; i < imgs_nb; i++)
       {
@@ -2950,4 +2951,3 @@ static void _dbscan(dt_geo_position_t *points, unsigned int num_points,
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

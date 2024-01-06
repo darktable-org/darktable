@@ -189,7 +189,7 @@ void gui_post_expose(dt_lib_module_t *self,
                    &snap->buf, &snap->scale,
                    &snap->width, &snap->height,
                    &snap->zoom_x, &snap->zoom_y,
-                   snap->id);
+                   snap->id, NULL);
       d->snap_requested = FALSE;
       d->expose_again_timeout_id = 0;
     }

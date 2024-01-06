@@ -291,6 +291,8 @@ gboolean dt_dev_pixelpipe_process_no_gamma(dt_dev_pixelpipe_t *pipe,
 void dt_dev_pixelpipe_disable_after(dt_dev_pixelpipe_t *pipe, const char *op);
 // disable given op and all that comes before it in the pipe:
 void dt_dev_pixelpipe_disable_before(dt_dev_pixelpipe_t *pipe, const char *op);
+// disable given op only:
+void dt_dev_pixelpipe_module_enabled(dt_dev_pixelpipe_t *pipe, const char *op, const gboolean enable);
 
 // helper function to pass a raster mask through a (so far) processed pipe
 float *dt_dev_get_raster_mask(const struct dt_dev_pixelpipe_iop_t *piece,

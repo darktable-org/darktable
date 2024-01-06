@@ -424,6 +424,28 @@ void dt_image_full_path(const dt_imgid_t imgid,
   }
 }
 
+gboolean dt_image_exists(const dt_imgid_t imgid)
+{
+  sqlite3_stmt *stmt;
+  gboolean exists = FALSE;
+
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT id FROM main.images"
+                              " WHERE id = ?1",
+                              -1, &stmt, NULL);
+  // clang-format on
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    exists = TRUE;
+  }
+  sqlite3_finalize(stmt);
+
+  return exists;
+}
+
 char *dt_image_get_filename(const dt_imgid_t imgid)
 {
   sqlite3_stmt *stmt;
