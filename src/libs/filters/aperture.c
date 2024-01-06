@@ -67,7 +67,7 @@ static gboolean _aperture_update(dt_lib_filtering_rule_t *rule)
 
 static gchar *_aperture_print_func(const double value, const gboolean detailled)
 {
-  if (detailled)
+  if(detailled)
   {
     return g_strdup_printf("%s%.1lf", detailled ? "f/" : "", value);
   }
