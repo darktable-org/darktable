@@ -360,7 +360,7 @@ static void _load_add_Nwide_Kahan(const size_t N,
   }
 }
 
-static void store_scaled_Nwide(const size_t N,
+static void _store_scaled_Nwide(const size_t N,
     float *const restrict out,
     const float *const restrict in,
     const float scale)
@@ -494,7 +494,6 @@ static void _blur_horizontal_Nch_Kahan(const size_t N,
     float *const restrict scratch)
 {
   if(N > 16) return;
-  if(N != 9) return;  // since we only use 9 channels at the moment, give the compiler a big hint
 
   float DT_ALIGNED_ARRAY L[16] =    { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
   float DT_ALIGNED_ARRAY comp[16] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
@@ -512,13 +511,13 @@ static void _blur_horizontal_Nch_Kahan(const size_t N,
     const int np = x + radius;
     hits++;
     _load_add_Nwide_Kahan(N, scratch + N*np, L, buf + N*np, comp);
-    store_scaled_Nwide(N, buf + N*x, L, hits);
+    _store_scaled_Nwide(N, buf + N*x, L, hits);
   }
   // if radius > width/2, we have pixels for which we can neither add new values (x+radius >= width) nor
   //  remove old values (x-radius < 0)
   for(; x <= radius && x < width; x++)
   {
-    store_scaled_Nwide(N, buf + N*x, L, hits);
+    _store_scaled_Nwide(N, buf + N*x, L, hits);
   }
   // process the blur for the bulk of the scan line
   for(; x + radius < width; x++)
@@ -527,7 +526,7 @@ static void _blur_horizontal_Nch_Kahan(const size_t N,
     const int np = x + radius;
     _sub_Nwide_Kahan(N, L, scratch + N*op, comp);
     _load_add_Nwide_Kahan(N, scratch + N*np, L, buf + N*np, comp);
-    store_scaled_Nwide(N, buf + N*x, L, hits);
+    _store_scaled_Nwide(N, buf + N*x, L, hits);
   }
   // process the right end where we have no more values to add to the running sum
   for(; x < width; x++)
@@ -535,7 +534,7 @@ static void _blur_horizontal_Nch_Kahan(const size_t N,
     const int op = x - radius - 1;
     hits--;
     _sub_Nwide_Kahan(N, L, scratch + N*op, comp);
-    store_scaled_Nwide(N, buf + N*x, L, hits);
+    _store_scaled_Nwide(N, buf + N*x, L, hits);
   }
   return;
 }
