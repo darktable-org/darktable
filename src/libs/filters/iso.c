@@ -20,6 +20,7 @@
   This file contains the necessary routines to implement a filter for the filtering module
 */
 
+#include "common/utility.h"
 
 static gboolean _iso_update(dt_lib_filtering_rule_t *rule)
 {
@@ -91,12 +92,7 @@ static gchar *_iso_print_func(const double value, const gboolean detailled)
   }
   else
   {
-    gchar *locale = g_strdup(setlocale(LC_ALL, NULL));
-    setlocale(LC_NUMERIC, "C");
-    gchar *txt = g_strdup_printf("%.0lf", value);
-    setlocale(LC_NUMERIC, locale);
-    g_free(locale);
-    return txt;
+    return dt_util_float_to_str("%.0lf", value);
   }
 }
 
