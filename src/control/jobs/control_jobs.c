@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1194,10 +1194,6 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
     gboolean from_cache = FALSE;
     dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
 
-#ifdef _WIN32
-    char *dirname = g_path_get_dirname(filename);
-#endif
-
     int duplicates = 0;
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -1268,9 +1264,6 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
     }
 
 delete_next_file:
-#ifdef _WIN32
-    g_free(dirname);
-#endif
     t = g_list_next(t);
     fraction += 1.0 / total;
     dt_control_job_set_progress(job, fraction);
