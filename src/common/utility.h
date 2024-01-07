@@ -33,6 +33,8 @@ gchar *dt_util_dstrcat(gchar *str, const gchar *format, ...) __attribute__((form
 gchar *dt_util_str_replace(const gchar *string, const gchar *pattern, const gchar *substitute);
 /** count the number of occurrences of needle in haystack */
 guint dt_util_str_occurence(const gchar *haystack, const gchar *needle);
+/** format a floating point number string with dot separator locale independent */
+gchar *dt_util_float_to_str(const gchar *format, const double value);
 /** generate a string from the elements of the list, separated by separator. the result has to be freed. */
 gchar *dt_util_glist_to_str(const gchar *separator, GList *items);
 /** generate a GList from the elements of a string, separated by separator. the result has to be freed. */
