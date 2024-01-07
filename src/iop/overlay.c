@@ -218,7 +218,6 @@ static GList *_get_disabled_modules(const dt_iop_module_t *self)
            && (dt_iop_module_is(mod->so, "enlargecanvas")
                || dt_iop_module_is(mod->so, "overlay")
                || dt_iop_module_is(mod->so, "crop")
-               || dt_iop_module_is(mod->so, "flip")
                || dt_iop_module_is(mod->so, "ashift"))))
     {
       result = g_list_prepend(result, mod->op);
