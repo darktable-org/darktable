@@ -280,7 +280,8 @@ static void _setup_overlay(dt_iop_module_t *self,
       image_exists = TRUE;
       p->imgid = new_imgid;
       dt_dev_add_history_item(darktable.develop, self, TRUE);
-      gtk_widget_queue_draw(GTK_WIDGET(g->area));
+      if(g)
+        gtk_widget_queue_draw(GTK_WIDGET(g->area));
     }
     else if(g)
     {
