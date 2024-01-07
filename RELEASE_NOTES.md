@@ -80,6 +80,10 @@ for more information on how to contribute._
 - Fix collection selection for ISO, aperture and aspect ratio to work
   in all locale (independent of the locale decimal separator).
 
+- Fix RAW CA correction module which could crash due to rounding issue
+  while computing an internal buffer size. This would cause a buffer
+  overflow and possibly crash darktable.
+
 ## Lua
 
 ### API Version
