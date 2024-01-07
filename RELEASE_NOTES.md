@@ -77,6 +77,9 @@ for more information on how to contribute._
 
 - Keep selected styles in the style dialog after editing them.
 
+- Fix collection selection for ISO, aperture and aspect ratio to work
+  in all locale (independent of the locale decimal separator).
+
 ## Lua
 
 ### API Version
