@@ -633,10 +633,7 @@ static void _pop_undo(gpointer user_data,
     dev->iop = iop_temp;
 
     // topology has changed
-    if(pipe_remove)
-    {
-      dt_dev_pixelpipe_rebuild(dev);
-    }
+    dt_dev_pixelpipe_rebuild(dev);
 
     dt_pthread_mutex_unlock(&dev->history_mutex);
 

@@ -1001,11 +1001,23 @@ static void _lib_snapshots_restore_callback(GtkButton *widget, gpointer user_dat
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
+  dt_dev_undo_start_record(darktable.develop);
+
   // reload history and set back snapshot history end
-  darktable.develop->history_end = s->history_end;
   dt_dev_reload_history_items(darktable.develop);
+
+  dt_dev_pixelpipe_rebuild(darktable.develop);
   darktable.develop->history_end = s->history_end;
+  dt_dev_pop_history_items(darktable.develop, darktable.develop->history_end);
+  dt_ioppr_resync_modules_order(darktable.develop);
+  dt_dev_modulegroups_set(darktable.develop,
+                          dt_dev_modulegroups_get(darktable.develop));
+  dt_image_update_final_size(imgid);
+
   dt_dev_write_history(darktable.develop);
+
+  /* signal history changed */
+  dt_dev_undo_end_record(darktable.develop);
 }
 
 #ifdef USE_LUA
