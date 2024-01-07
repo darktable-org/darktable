@@ -281,7 +281,15 @@ void process(
   float *RawDataTmp = NULL;
   float *Gtmp = NULL;
 
-  float *out = dt_alloc_align_float(roi_in->width * roi_in->height);
+  const size_t width = roi_in->width;
+  const size_t height = roi_in->height;
+  const size_t ibsize = dt_round_size(width, DT_CACHELINE_FLOATS) * (height + 2);
+
+  const size_t h_width = (width + 1) / 2;
+  const size_t h_height = (height + 1) / 2;
+  const size_t h_bsize = dt_round_size(h_width, DT_CACHELINE_FLOATS) * (h_height + 2);
+
+  float *out = dt_alloc_align_float(ibsize);
   if(!out)
   {
     dt_iop_copy_image_roi(ovoid, ivoid, piece->colors, roi_in, roi_out);
@@ -290,14 +298,10 @@ void process(
   }
 
   const float scaler = dt_iop_get_processed_maximum(piece);
-  dt_iop_image_scaled_copy(out, input, 1.0f / scaler, roi_in->width, roi_in->height, 1);
+  dt_iop_image_scaled_copy(out, input, 1.0f / scaler, width, height, 1);
 
   if(run_fast) goto writeout;
 
-  const size_t width = roi_in->width;
-  const size_t height = roi_in->height;
-  const size_t h_width = (width + 1) / 2;
-  const size_t h_height = (height + 1) / 2;
 
   const float *const in = out;
 
@@ -316,10 +320,9 @@ void process(
 
   if(avoidshift)
   {
-    const size_t buffsize = h_width * h_height + 4;
-    redfactor = dt_calloc_align_float(buffsize);
-    bluefactor = dt_calloc_align_float(buffsize);
-    oldraw = dt_calloc_align_float(buffsize * 2);
+    redfactor = dt_calloc_align_float(h_bsize);
+    bluefactor = dt_calloc_align_float(h_bsize);
+    oldraw = dt_calloc_align_float(h_bsize * 2);
     if(!redfactor || !bluefactor || !oldraw)
     {
       dt_print(DT_DEBUG_ALWAYS,"[cacorrect] out of memory, skipping\n");
@@ -343,10 +346,10 @@ void process(
   double fitparams[2][2][16];
 
   // temporary array to store simple interpolation of G
-  Gtmp = dt_calloc_align_float((size_t)height * dt_round_size(width, 16) + 4);
+  Gtmp = dt_calloc_align_float(ibsize);
 
   // temporary array to avoid race conflicts, only every second pixel needs to be saved here
-  RawDataTmp = dt_alloc_align_float((size_t)height * dt_round_size(width / 2, 16) + 4);
+  RawDataTmp = dt_alloc_align_float(ibsize / 2);
 
   if(!Gtmp || !RawDataTmp)
   {
