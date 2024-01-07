@@ -590,12 +590,6 @@ void expose(
                            darktable.lib->proxy.colorpicker.live_samples, FALSE);
   }
 
-  const gboolean special_draw = dev->gui_module
-                             && dev->gui_module->flags() & IOP_FLAGS_GUIDES_SPECIAL_DRAW;
-  // draw guide lines if there is no active gui_module doing it via post_expose
-  if(!special_draw)
-    dt_guides_draw(cri, 0.0f, 0.0f, wd, ht, zoom_scale);
-
   // draw colorpicker for in focus module or execute module callback hook
   // FIXME: draw picker in gui_post_expose() hook in
   // libs/colorpicker.c -- catch would be that live samples would
@@ -631,6 +625,7 @@ void expose(
     dt_masks_events_post_expose(dev->gui_module, cri, width, height, pzx, pzy, zoom_scale);
   }
 
+  gboolean guides = FALSE;
   // true if anything could be exposed
   if(dev->gui_module && dev->gui_module != dev->proxy.rotate)
   {
@@ -643,6 +638,7 @@ void expose(
          port->pipe, dev->cropping.exposer, NULL, NULL, "%dx%d, px=%d py=%d\n",
          width, height, pointerx, pointery);
       _module_gui_post_expose(dev->cropping.exposer, cri, wd, ht, pzx, pzy, zoom_scale);
+      guides = TRUE;
     }
 
     // gui active module
@@ -653,14 +649,19 @@ void expose(
          port->pipe, dev->gui_module, NULL, NULL, "%dx%d, px=%d py=%d\n",
          width, height, pointerx, pointery);
       _module_gui_post_expose(dev->gui_module, cri, wd, ht, pzx, pzy, zoom_scale);
+      guides = TRUE;
     }
   }
 
-  if(dev->proxy.rotate)
+  if(!guides && dev->proxy.rotate)
   {
     // reminder, we want this to be exposed always for guidings
     _module_gui_post_expose(dev->proxy.rotate, cri, wd, ht, pzx, pzy, zoom_scale);
+    guides = TRUE;
   }
+
+  if(!guides)
+    dt_guides_draw(cri, 0.0f, 0.0f, wd, ht, zoom_scale);
 
   cairo_restore(cri);
 
