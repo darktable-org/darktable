@@ -283,11 +283,11 @@ void process(
 
   const size_t width = roi_in->width;
   const size_t height = roi_in->height;
-  const size_t ibsize = dt_round_size(width, DT_CACHELINE_FLOATS) * (height + 2);
+  const size_t ibsize = dt_round_size(width, 16) * (height + 2);
 
   const size_t h_width = (width + 1) / 2;
   const size_t h_height = (height + 1) / 2;
-  const size_t h_bsize = dt_round_size(h_width, DT_CACHELINE_FLOATS) * (h_height + 2);
+  const size_t h_bsize = dt_round_size(h_width, 16) * (h_height + 2);
 
   float *out = dt_alloc_align_float(ibsize);
   if(!out)
