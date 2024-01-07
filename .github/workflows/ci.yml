@@ -176,7 +176,7 @@ jobs:
       fail-fast: true
       matrix:
         btype:
-          - Debug
+          - Release
         msystem:
           #- CLANG64
           - UCRT64
