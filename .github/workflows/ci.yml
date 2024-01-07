@@ -288,7 +288,7 @@ jobs:
           - { os: macos-12,    xcode: 14.2,   deployment: 12.5 } # LLVM14
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
-        btype: [ Debug ]
+        btype: [ Release ]
         target:
           - skiptest
         generator:
