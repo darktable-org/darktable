@@ -360,7 +360,7 @@ if(USE_AVIF)
   # no version check in config mode because of major only match policy
   find_package(libavif CONFIG)
   if(TARGET avif)
-    if(libavif_VERSION VERSION_GREATER_EQUAL 0.9.2)
+    if(libavif_VERSION VERSION_GREATER_EQUAL 0.9.3)
       list(APPEND LIBS avif)
       add_definitions(-DHAVE_LIBAVIF=1)
       list(APPEND SOURCES "imageio/imageio_avif.c")

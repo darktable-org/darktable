@@ -132,7 +132,7 @@ for more information on how to contribute._
 
 ### Optional
 
-- Bump libavif to 0.9.2
+- Bump libavif to 0.9.3
 
 ## RawSpeed changes
 
