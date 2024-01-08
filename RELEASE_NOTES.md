@@ -98,7 +98,7 @@ changes (where available).
 
 ### Optional
 
-- Bump libavif to 0.9.2
+- Bump libavif to 0.9.3
 
 ## RawSpeed changes
 
