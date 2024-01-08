@@ -787,6 +787,9 @@ static void _add_file_callback(GObject *direnum,
       d->is_importing = FALSE;
       _import_active(self, TRUE, count_sel);
       _update_images_number(self, count_sel);
+
+      gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(d->from.store),
+                                           DT_IMPORT_DATETIME, GTK_SORT_ASCENDING);
     }
 
     return;
@@ -955,6 +958,16 @@ static void _import_set_file_list_start(const gchar *folder,
   d->to_be_visited = NULL;
   d->is_importing = TRUE;
 
+  const gboolean recursive = dt_conf_get_bool("ui_last/import_recursive");
+
+  if(recursive)
+  {
+    // disable sorting as it is very costly for large set of files
+    gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(d->from.store),
+                                         GTK_TREE_SORTABLE_UNSORTED_SORT_COLUMN_ID,
+                                         GTK_SORT_ASCENDING);
+  }
+
   _import_active(self, FALSE, 0);
 
   _import_set_file_list(folder, self);
@@ -1029,8 +1042,6 @@ static gboolean _update_files_list(gpointer user_data)
     if(folder[0])
       _import_set_file_list_start(folder, self);
     g_free(folder);
-    gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(model),
-                                         DT_IMPORT_DATETIME, GTK_SORT_ASCENDING);
   }
   gtk_tree_view_set_model(d->from.treeview, model);
   g_object_unref(model);
