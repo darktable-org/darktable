@@ -42,6 +42,24 @@ The following is a summary of the main features added to darktable
 4.8. Please see the user manual for more details of the individual
 changes (where available).
 
+- Two new modules have been introduced to support images composition.
+
+  - Enlarge Canvas : As the name imply this module can be used to add
+    areas on the left, right, top or bottom of the image. The new area
+    can be assigned different color to help masking if necessary. The
+    new areas can the be filled with the Retouch module by copying
+    some other part of the image, using Liquify if the area is small
+    or the new module overlay.
+
+  - Overlay : This module can be used to add new content on the image
+    by overlaying pixels from the current image or another image. The
+    overlay content is defined by a drag-and-drop from the filmstrip
+    to the Overlay module. This new content can be scaled, rotated and
+    shifted horizontally or vertically. Using a mask it can be used to
+    fill an area created by the Enlarge Canvas or to add some new part
+    into the image using masking. A common example is to overlay
+    multiply pictures of a firework to create a bigger one.
+
 ## Performance Improvements
 
 ## Other Changes
