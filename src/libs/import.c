@@ -696,7 +696,7 @@ static void _show_all_thumbs(dt_lib_module_t* self)
   }
 }
 
-#define FILE_REQUEST_BLOCK 10
+#define FILE_REQUEST_BLOCK 50
 
 static void _import_set_file_list(const gchar *folder,
                                   dt_lib_module_t *self);
@@ -737,7 +737,6 @@ static void _add_file_callback(GObject *direnum,
   GFileEnumerator *dir_files = G_FILE_ENUMERATOR(direnum);
   GList *file_list = g_file_enumerator_next_files_finish(dir_files, result, &error);
   GFile* gfolder = g_file_enumerator_get_container(dir_files);
-  char *folder = g_file_get_path(gfolder);
 
   if(error)
   {
@@ -746,6 +745,7 @@ static void _add_file_callback(GObject *direnum,
     g_file_enumerator_close(dir_files, NULL, NULL);
     g_object_unref(gfolder);
     g_object_unref(direnum);
+    g_list_free_full(file_list, g_object_unref);
     g_error_free(error);
     return;
   }
@@ -796,6 +796,17 @@ static void _add_file_callback(GObject *direnum,
     const gboolean recursive = dt_conf_get_bool("ui_last/import_recursive");
     const gboolean include_nonraws = !dt_conf_get_bool("ui_last/import_ignore_nonraws");
 
+    char *folder = g_file_get_path(gfolder);
+
+    // if folder is root, consider one folder separator less
+    const int offset = g_path_skip_root(folder)[0]
+#ifdef WIN32
+      // .. but for Windows UNC there will be a folder separator anyway
+      || dt_util_path_is_UNC(folder)
+#endif
+      ? strlen(folder) + 1
+      : strlen(folder);
+
     for(GList *node = file_list;
         node;
         node = node->next)
@@ -804,9 +815,13 @@ static void _add_file_callback(GObject *direnum,
 
       const char *uifilename = g_file_info_get_display_name(info);
       const char *filename = g_file_info_get_name(info);
-      const GFileType filetype = g_file_info_get_file_type(info);
+
       if(!filename)
         continue;
+
+      const GFileType filetype = g_file_info_get_file_type(info);
+      const time_t datetime =
+        g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
 
       /* g_file_info_get_is_hidden() always returns 0 on macOS, so we
          check if the filename starts with a '.' */
@@ -814,10 +829,6 @@ static void _add_file_callback(GObject *direnum,
       if (is_hidden)
         continue;
 
-      const time_t datetime =
-        g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
-      GDateTime *dt_datetime = g_date_time_new_from_unix_local(datetime);
-      gchar *dt_txt = g_date_time_format(dt_datetime, "%x %X");
       gchar *uifullname = g_build_filename(folder, uifilename, NULL);
       gchar *fullname = g_build_filename(folder, filename, NULL);
 
@@ -829,7 +840,7 @@ static void _add_file_callback(GObject *direnum,
         }
         else
         {
-          d->to_be_visited = g_list_append(d->to_be_visited, g_strdup(fullname));
+          d->to_be_visited = g_list_prepend(d->to_be_visited, g_strdup(fullname));
         }
       }
       // Before adding to the import list, check that the format is
@@ -862,14 +873,8 @@ static void _add_file_callback(GObject *direnum,
             g_free(basename);
           }
 
-          // if folder is root, consider one folder separator less
-          const int offset = g_path_skip_root(folder)[0]
-#ifdef WIN32
-          // .. but for Windows UNC there will be a folder separator anyway
-                        || dt_util_path_is_UNC(folder)
-#endif
-                        ? strlen(folder) + 1
-                        : strlen(folder);
+          GDateTime *dt_datetime = g_date_time_new_from_unix_local(datetime);
+          gchar *dt_txt = g_date_time_format(dt_datetime, "%x %X");
 
           GtkTreeIter iter;
           gtk_list_store_append(d->from.store, &iter);
@@ -882,11 +887,11 @@ static void _add_file_callback(GObject *direnum,
                              DT_IMPORT_THUMB, d->from.eye,
                              -1);
           d->from.nb++;
+          g_free(dt_txt);
         }
 
         g_free(fullname);
         g_free(uifullname);
-        g_free(dt_txt);
       }
       g_object_unref(info);
     }
@@ -897,6 +902,7 @@ static void _add_file_callback(GObject *direnum,
                                        d->cancel_iter,
                                        _add_file_callback,
                                        user_data);
+    g_free(folder);
   }
   g_list_free(file_list);
 }
