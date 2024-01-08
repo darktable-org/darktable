@@ -84,6 +84,8 @@ for more information on how to contribute._
   while computing an internal buffer size. This would cause a buffer
   overflow and possibly crash darktable.
 
+- Include LibRaw fix for artifacts when decoding high ISO Canon CR3s.
+
 ## Lua
 
 ### API Version
