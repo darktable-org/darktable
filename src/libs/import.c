@@ -793,6 +793,13 @@ static void _add_file_callback(GObject *direnum,
   }
   else
   {
+    g_file_enumerator_next_files_async(G_FILE_ENUMERATOR(direnum),
+                                       FILE_REQUEST_BLOCK,
+                                       G_PRIORITY_LOW,
+                                       d->cancel_iter,
+                                       _add_file_callback,
+                                       user_data);
+
     const gboolean recursive = dt_conf_get_bool("ui_last/import_recursive");
     const gboolean include_nonraws = !dt_conf_get_bool("ui_last/import_ignore_nonraws");
 
@@ -896,12 +903,6 @@ static void _add_file_callback(GObject *direnum,
       g_object_unref(info);
     }
 
-    g_file_enumerator_next_files_async(G_FILE_ENUMERATOR(direnum),
-                                       FILE_REQUEST_BLOCK,
-                                       G_PRIORITY_LOW,
-                                       d->cancel_iter,
-                                       _add_file_callback,
-                                       user_data);
     g_free(folder);
   }
   g_list_free(file_list);
