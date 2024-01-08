@@ -3364,7 +3364,10 @@ void dt_database_show_error(const dt_database_t *db)
     char lck_pathname[1024];
     snprintf(lck_pathname, sizeof(lck_pathname), "%s.lock", db->error_dbfilename);
     char *lck_dirname = g_strdup(lck_pathname);
-    *g_strrstr(lck_dirname, "/") = '\0';
+    char *last_dirsep_position = g_strrstr(lck_dirname, "/");
+    if(last_dirsep_position)
+      *last_dirsep_position = '\0';  // make lck_dirname contain only the directory name
+
     // clang-format off
     char *label_text = g_markup_printf_escaped(
         _("\n"
