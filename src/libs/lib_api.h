@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2021 darktable developers.
+    Copyright (C) 2016-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -18,6 +18,7 @@
 
 #include "common/module_api.h"
 #include <glib.h>
+#include <gtk/gtk.h>
 
 #ifdef FULL_API_H
 
@@ -64,6 +65,8 @@ OPTIONAL(void, gui_reset, struct dt_lib_module_t *self);
     triggered by dt_lib_gui_queue_update.
     don't use for widgets accessible via actions when hidden. */
 OPTIONAL(void, gui_update, struct dt_lib_module_t *self);
+
+OPTIONAL(GtkWidget *, gui_tool_box, struct dt_lib_module_t *self);
 
 /** entering a view, only called if lib is displayed on the new view */
 OPTIONAL(void, view_enter, struct dt_lib_module_t *self, struct dt_view_t *old_view, struct dt_view_t *new_view);
