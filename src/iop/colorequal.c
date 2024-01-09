@@ -80,11 +80,11 @@ typedef struct dt_iop_colorequal_params_t
   float smoothing_brightness;    // $MIN: 0.05 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "curve smoothing"
 
   float white_level;        // $MIN: -2.0 $MAX: 16.0 $DEFAULT: 1.0 $DESCRIPTION: "white level"
-  float chroma_size;         // $MIN: 1 $MAX: 25 $DEFAULT: 8 $DESCRIPTION: "chroma prefilter size"
+  float chroma_size;        // $MIN: 1.0 $MAX: 10. $DEFAULT: 3.0 $DESCRIPTION: "chroma prefilter size"
   float chroma_feathering;  // $MIN: 1.0 $MAX: 10. $DEFAULT: 5.0 $DESCRIPTION: "chroma prefilter feathering"
 
-  float param_size;        // $MIN: 3 $MAX: 128 $DEFAULT: 16 $DESCRIPTION: "parameters smoothing size"
-  float param_feathering;  // $MIN: 1.0 $MAX: 10. $DEFAULT: 5.0 $DESCRIPTION: "parameters feathering"
+  float param_size;        // $MIN: 3 $MAX: 128 $DEFAULT: 50 $DESCRIPTION: "parameters smoothing size"
+  float param_feathering;  // $MIN: 1.0 $MAX: 10. $DEFAULT: 6.0 $DESCRIPTION: "parameters feathering"
 
 
   gboolean use_filter; // $DEFAULT: FALSE $DESCRIPTION: "use guided filter"
@@ -207,67 +207,25 @@ typedef struct dt_iop_colorequal_gui_data_t
   float *gamut_LUT;
 } dt_iop_colorequal_gui_data_t;
 
-
-// We already have 2 blurring libs :
-// - boxfilter.h, which has become obfuscated to the point that it's write-only code from now on,
-// - gaussian.h, that manages to write gaussian coeffs in a kernel without ever using an exponential.
-// Both those libs do things so clever that I don't understand them,
-// and they output NaN here when applied on UV chromaticity coordinates.
-static inline void blur_2D_bspline(float *input, float *output, const size_t width, const size_t height, const size_t chan, const int radius)
+void _mean_gaussian(float *const buf,
+                 const size_t width,
+                 const size_t height,
+                 const uint32_t ch,
+                 const float sigma)
 {
-  // Temp buffer
-  float *temp = dt_alloc_align_float(width * height * chan);
-  const size_t kernel_size = 2 * radius + 1;
-
-  // horizontal pass
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, width, chan, radius, temp, input, output, kernel_size)  \
-  schedule(simd:static)
-#endif
-  for(int i = 0; i < height; i++)
-    for(int j = 0; j < width; j++)
-    {
-      // We are going to write the output transposed
-      float *const out = temp + (j * height + i) * chan;
-      for(size_t c = 0; c < chan; c++) out[c] = 0.f;
-
-      // Convolve over rows
-      for(int k = 0; k < kernel_size; k++)
-      {
-        const int index = (i * width + CLAMP(j + k - radius, 0, width - 1)) * chan;
-        for(int c = 0; c < chan; c++) out[c] += input[index + c] / (float)kernel_size;
-      }
-    }
-
-  // vertical pass on the tranposed buffer, aka horizontal again
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, width, chan, radius, temp, input, output, kernel_size)  \
-  schedule(simd:static)
-#endif
-  for(int i = 0; i < width; i++)
-    for(int j = 0; j < height; j++)
-    {
-      // We are going to write the output transposed
-      float *const out = output + (j * width + i) * chan;
-      for(size_t c = 0; c < chan; c++) out[c] = 0.f;
-
-      // Convolve over rows
-      for(int k = 0; k < kernel_size; k++)
-      {
-        const int index = (i * height + CLAMP(j + k - radius, 0, height - 1)) * chan;
-        for(int c = 0; c < chan; c++) out[c] += temp[index + c] / (float)kernel_size;
-      }
-    }
-
-  dt_free_align(temp);
+  const float range = 1.0e9;
+  const dt_aligned_pixel_t max = {range, range, range, range};
+  const dt_aligned_pixel_t min = {-range, -range, -range, -range};
+  dt_gaussian_t *g = dt_gaussian_init(width, height, ch, max, min, sigma, 0);
+  if(!g) return;
+  dt_gaussian_blur(g, buf, buf);
+  dt_gaussian_free(g);
 }
 
-
 void _prefilter_chromaticity(float *const restrict UV,
-                              const size_t width, const size_t height,
-                              const float sigma, const float epsilon)
+                              const dt_iop_roi_t *const roi,
+                              const float csigma,
+                              const float epsilon)
 {
   // We guide the 3-channels corrections with the 2-channels chromaticity coordinates UV
   // aka we express corrections = a * UV + b where a is a 2×2 matrix and b a constant
@@ -277,10 +235,13 @@ void _prefilter_chromaticity(float *const restrict UV,
   // but this is actually desirable here since chromaticity -> 0 means neutral greys
   // and we want to discard them as much as possible from any color equalization.
 
+  const float sigma = csigma * roi->scale;
+  const size_t width = roi->width;
+  const size_t height = roi->height;
   // Downsample for speed-up
   const size_t pixels = width * height;
   const float scaling = fmaxf(fminf(sigma, 4.0f), 1.0f);
-  const size_t ds_sigma = fmaxf(roundf(sigma / scaling), 1);
+  const float gsigma = fmaxf(0.1f, 0.5f * sigma / scaling);
   const size_t ds_height = height / scaling;
   const size_t ds_width = width / scaling;
   const size_t ds_pixels = ds_width * ds_height;
@@ -317,8 +278,8 @@ void _prefilter_chromaticity(float *const restrict UV,
   // as the by-the-book box blur (unweighted local average) would.
 
   // We use unbounded signals, so don't care for the internal value clipping
-  blur_2D_bspline(ds_UV, ds_UV, ds_width, ds_height, 2, ds_sigma);
-  blur_2D_bspline(covariance, covariance, ds_width, ds_height, 4, ds_sigma);
+  _mean_gaussian(ds_UV, ds_width, ds_height, 2, gsigma);
+  _mean_gaussian(covariance, ds_width, ds_height, 4, gsigma);
 
   // Finish the UV covariance matrix computation by subtracting avg(x) * avg(y)
   // to avg(x * y) already computed
@@ -382,21 +343,14 @@ void _prefilter_chromaticity(float *const restrict UV,
 
     b[2 * k + 0] = ds_UV[2 * k + 0] - a[4 * k + 0] * ds_UV[2 * k + 0] - a[4 * k + 1] * ds_UV[2 * k + 1];
     b[2 * k + 1] = ds_UV[2 * k + 1] - a[4 * k + 2] * ds_UV[2 * k + 0] - a[4 * k + 3] * ds_UV[2 * k + 1];
-
-    /*
-    fprintf(stdout, "sigma : %f - %f - %f - %f\n", Sigma[0], Sigma[1], Sigma[2], Sigma[3]);
-    fprintf(stdout, "sigma inv : %f - %f - %f - %f\n", sigma_inv[0], sigma_inv[1], sigma_inv[2], sigma_inv[3]);
-    fprintf(stdout, "U : a, b : %f - %f - %f\n", a_U[2 * k + 0], a_U[2 * k + 1], b_U[k]);
-    fprintf(stdout, "V : a, b : %f - %f - %f\n", a_V[2 * k + 0], a_V[2 * k + 1], b_V[k]);
-    */
   }
 
   dt_free_align(covariance);
   dt_free_align(ds_UV);
 
   // Compute the averages of a and b for each filter
-  blur_2D_bspline(a, a, ds_width, ds_height, 4, ds_sigma);
-  blur_2D_bspline(b, b, ds_width, ds_height, 2, ds_sigma);
+  _mean_gaussian(a, ds_width, ds_height, 4, gsigma);
+  _mean_gaussian(b, ds_width, ds_height, 2, gsigma);
 
   // Upsample a and b to real-size image
   float *const restrict a_full = dt_alloc_align_float(pixels * 4);
@@ -424,9 +378,11 @@ void _prefilter_chromaticity(float *const restrict UV,
   dt_free_align(b_full);
 }
 
-void _guide_with_chromaticity(float *const restrict UV, float *const restrict corrections,
-                              const size_t width, const size_t height,
-                              const float sigma, const float epsilon)
+void _guide_with_chromaticity(float *const restrict UV,
+                              float *const restrict corrections,
+                              const dt_iop_roi_t *const roi,
+                              const float csigma,
+                              const float epsilon)
 {
   // We guide the 3-channels corrections with the 2-channels chromaticity coordinates UV
   // aka we express corrections = a * UV + b where a is a 2×2 matrix and b a constant
@@ -437,9 +393,13 @@ void _guide_with_chromaticity(float *const restrict UV, float *const restrict co
   // and we want to discard them as much as possible from any color equalization.
 
   // Downsample for speed-up
+  const float sigma = csigma * roi->scale;
+  const size_t width = roi->width;
+  const size_t height = roi->height;
+  // Downsample for speed-up
   const size_t pixels = width * height;
   const float scaling = fmaxf(fminf(sigma, 4.0f), 1.0f);
-  const float ds_sigma = fmaxf(sigma / scaling, 1.0f);
+  const float gsigma = fmaxf(0.1f, 0.5f * sigma / scaling);
   const size_t ds_height = height / scaling;
   const size_t ds_width = width / scaling;
   const size_t ds_pixels = ds_width * ds_height;
@@ -507,10 +467,10 @@ void _guide_with_chromaticity(float *const restrict UV, float *const restrict co
   // as the by-the-book box blur (unweighted local average) would.
 
   // We use unbounded signals, so don't care for the internal value clipping
-  dt_box_mean(ds_UV, ds_height, ds_width, 2, ds_sigma, 1);
-  dt_box_mean(covariance, ds_height, ds_width, 4, ds_sigma, 1);
-  dt_box_mean(ds_corrections, ds_height, ds_width, 4, ds_sigma, 1);
-  dt_box_mean(correlations, ds_height, ds_width, 4, ds_sigma, 1);
+  _mean_gaussian(ds_UV, ds_width, ds_height, 2, gsigma);
+  _mean_gaussian(covariance, ds_width, ds_height, 4, gsigma);
+  _mean_gaussian(ds_corrections, ds_width, ds_height, 4, gsigma);
+  _mean_gaussian(correlations, ds_width, ds_height, 4, gsigma);
 
   // Finish the UV covariance matrix computation by subtracting avg(x) * avg(y)
   // to avg(x * y) already computed
@@ -528,11 +488,6 @@ void _guide_with_chromaticity(float *const restrict UV, float *const restrict co
     covariance[4 * k + 2] -= ds_UV[2 * k + 0] * ds_UV[2 * k + 1];
     // covar(V, V) = var(V)
     covariance[4 * k + 3] -= ds_UV[2 * k + 1] * ds_UV[2 * k + 1];
-
-    /*
-    fprintf(stdout, "covariance : %f - %f - %f - %f\n", covariance[4 * k + 0],
-            covariance[4 * k + 1], covariance[4 * k + 2], covariance[4 * k + 3]);
-    */
   }
 
   // Finish the guide * guided correlation computation
@@ -601,13 +556,6 @@ void _guide_with_chromaticity(float *const restrict UV, float *const restrict co
     // b = avg(chan) - dot_product(a_chan * avg(UV))
     b[2 * k + 0] = ds_corrections[4 * k + 1] - a[4 * k + 0] * ds_UV[2 * k + 0] - a[4 * k + 1] * ds_UV[2 * k + 1];
     b[2 * k + 1] = ds_corrections[4 * k + 2] - a[4 * k + 2] * ds_UV[2 * k + 0] - a[4 * k + 3] * ds_UV[2 * k + 1];
-
-    /*
-    fprintf(stdout, "sigma : %f - %f - %f - %f\n", Sigma[0], Sigma[1], Sigma[2], Sigma[3]);
-    fprintf(stdout, "sigma inv : %f - %f - %f - %f\n", sigma_inv[0], sigma_inv[1], sigma_inv[2], sigma_inv[3]);
-    fprintf(stdout, "U : a, b : %f - %f - %f\n", a[4 * k + 0], a[4 * k + 1], b[2 * k + 0]);
-    fprintf(stdout, "V : a, b : %f - %f - %f\n", a[4 * k + 2], a[4 * k + 3], b[2 * k + 1]);
-    */
   }
 
   dt_free_align(ds_corrections);
@@ -615,9 +563,9 @@ void _guide_with_chromaticity(float *const restrict UV, float *const restrict co
   dt_free_align(correlations);
   dt_free_align(covariance);
 
-  // Compute the averages of a and b for each filter
-  dt_box_mean(a, ds_height, ds_width, 4, ds_sigma, 16);
-  dt_box_mean(b, ds_height, ds_width, 2, ds_sigma, 16);
+  // Compute the averages of a and b for each filter and blur slightly stronger
+  _mean_gaussian(a, ds_width, ds_height, 4, 4.0f * gsigma);
+  _mean_gaussian(b, ds_width, ds_height, 2, 4.0f * gsigma);
 
   // Upsample a and b to real-size image
   float *const restrict a_full = dt_alloc_align_float(pixels * 4);
@@ -647,17 +595,12 @@ void _guide_with_chromaticity(float *const restrict UV, float *const restrict co
   dt_free_align(b_full);
 }
 
-/*
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
-{
-  dt_iop_colorequal_data_t *d = (dt_iop_colorequal_data_t *)piece->data;
-  blur_2D_bspline((float *)i, (float *)o, roi_out->width, roi_out->height, 4, d->chroma_size);
-}
-*/
-
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(struct dt_iop_module_t *self,
+              dt_dev_pixelpipe_iop_t *piece,
+              const void *const i,
+              void *const o,
+              const dt_iop_roi_t *const roi_in,
+              const dt_iop_roi_t *const roi_out)
 {
   dt_iop_colorequal_data_t *d = (dt_iop_colorequal_data_t *)piece->data;
 
@@ -686,7 +629,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // STEP 1: convert image from RGB to darktable UCS LUV
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(ch, npixels, in, out, UV, L, corrections, input_matrix, d, white)  \
+  dt_omp_firstprivate(ch, npixels, in, out, UV, L, corrections, input_matrix, d, white) \
   schedule(simd:static) aligned(in, out, UV, L, corrections, input_matrix : 64)
 #endif
   for(size_t k = 0; k < npixels; k++)
@@ -697,17 +640,16 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // Convert to XYZ D65
     dt_aligned_pixel_t XYZ_D65 = { 0.f };
     dot_product(pix_in, input_matrix, XYZ_D65);
-    for_each_channel(c, aligned(XYZ_D65)) XYZ_D65[c] = fmaxf(XYZ_D65[c], 0.f);
-
     // Convert to dt UCS 22 UV and store UV
     dt_aligned_pixel_t xyY = { 0.f };
     dt_XYZ_to_xyY(XYZ_D65, xyY);
+
     xyY_to_dt_UCS_UV(xyY, uv);
     L[k] = Y_to_dt_UCS_L_star(xyY[2]);
   }
 
   // STEP 2 : smoothen UV to avoid discontinuities in hue
-  if(d->use_filter) _prefilter_chromaticity(UV, roi_out->width, roi_out->height, d->chroma_size, d->chroma_feathering);
+  if(d->use_filter) _prefilter_chromaticity(UV, roi_out, d->chroma_size, d->chroma_feathering);
 
   // STEP 3 : carry-on with conversion from LUV to HSB
 
@@ -740,7 +682,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // STEP 2: apply a guided filter on the corrections, guided with UV chromaticity, to ensure
   // spatially-contiguous corrections even though the hue is not perfectly constant
   // this will help avoiding chroma noise.
-  if(d->use_filter) _guide_with_chromaticity(UV, corrections, roi_out->width, roi_out->height, d->param_size, d->param_feathering);
+  if(d->use_filter) _guide_with_chromaticity(UV, corrections, roi_out, d->param_size, d->param_feathering);
 
   // STEP 3: apply the corrections and convert back to RGB
 #ifdef _OPENMP
@@ -787,7 +729,10 @@ static inline float _cosine_coeffs(const float l, const float c)
 }
 
 
-static inline void _periodic_RBF_interpolate(float nodes[NODES], const float smoothing, float *const LUT, const gboolean clip)
+static inline void _periodic_RBF_interpolate(float nodes[NODES],
+                                            const float smoothing,
+                                            float *const LUT,
+                                            const gboolean clip)
 {
   // Perform a periodic interpolation across hue angles using radial-basis functions
   // see https://eng.aurelienpierre.com/2022/06/interpolating-hue-angles/#Refined-approach
@@ -901,8 +846,10 @@ static inline void _pack_brightness(struct dt_iop_colorequal_params_t *p, float 
 }
 
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
+void commit_params(struct dt_iop_module_t *self,
+                    dt_iop_params_t *p1,
+                    dt_dev_pixelpipe_t *pipe,
+                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_colorequal_params_t *p = (dt_iop_colorequal_params_t *)p1;
   dt_iop_colorequal_data_t *d = (dt_iop_colorequal_data_t *)piece->data;
@@ -914,9 +861,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->param_feathering = powf(10.f, -p->param_feathering);
   d->use_filter = p->use_filter;
 
-  float sat_values[NODES];
-  float hue_values[NODES];
-  float bright_values[NODES];
+  float DT_ALIGNED_ARRAY sat_values[NODES];
+  float DT_ALIGNED_ARRAY hue_values[NODES];
+  float DT_ALIGNED_ARRAY bright_values[NODES];
 
   _pack_saturation(p, sat_values);
   _periodic_RBF_interpolate(sat_values, 1.f / p->smoothing_saturation * M_PI_F, d->LUT_saturation, TRUE);
@@ -950,9 +897,10 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 }
 
 
-static inline void _build_dt_UCS_HSB_gradients(dt_aligned_pixel_t HSB, dt_aligned_pixel_t RGB,
-                                               const struct dt_iop_order_iccprofile_info_t *work_profile,
-                                               const float *const gamut_LUT)
+static inline void _build_dt_UCS_HSB_gradients(dt_aligned_pixel_t HSB,
+                                              dt_aligned_pixel_t RGB,
+                                              const struct dt_iop_order_iccprofile_info_t *work_profile,
+                                              const float *const gamut_LUT)
 {
   // Generate synthetic HSB gradients and convert to display RGB
 
@@ -981,9 +929,13 @@ static inline void _build_dt_UCS_HSB_gradients(dt_aligned_pixel_t HSB, dt_aligne
 }
 
 
-static inline void _draw_sliders_saturation_gradient(const float sat_min, const float sat_max, const float hue, const float brightness,
-                                                     GtkWidget *const slider, const struct dt_iop_order_iccprofile_info_t *work_profile,
-                                                     const float *const gamut_LUT)
+static inline void _draw_sliders_saturation_gradient(const float sat_min,
+                                                    const float sat_max,
+                                                    const float hue,
+                                                    const float brightness,
+                                                    GtkWidget *const slider,
+                                                    const struct dt_iop_order_iccprofile_info_t *work_profile,
+                                                    const float *const gamut_LUT)
 {
   const float range = sat_max - sat_min;
 
@@ -997,8 +949,11 @@ static inline void _draw_sliders_saturation_gradient(const float sat_min, const 
   }
 }
 
-static inline void _draw_sliders_hue_gradient(const float sat, const float hue, const float brightness,
-                                              GtkWidget *const slider, const struct dt_iop_order_iccprofile_info_t *work_profile,
+static inline void _draw_sliders_hue_gradient(const float sat,
+                                              const float hue,
+                                              const float brightness,
+                                              GtkWidget *const slider,
+                                              const struct dt_iop_order_iccprofile_info_t *work_profile,
                                               const float *const gamut_LUT)
 {
   const float hue_min = hue - M_PI_F;
@@ -1013,9 +968,11 @@ static inline void _draw_sliders_hue_gradient(const float sat, const float hue, 
   }
 }
 
-static inline void _draw_sliders_brightness_gradient(const float sat, const float hue,
-                                                     GtkWidget *const slider, const struct dt_iop_order_iccprofile_info_t *work_profile,
-                                                     const float *const gamut_LUT)
+static inline void _draw_sliders_brightness_gradient(const float sat,
+                                                    const float hue,
+                                                    GtkWidget *const slider,
+                                                    const struct dt_iop_order_iccprofile_info_t *work_profile,
+                                                    const float *const gamut_LUT)
 {
   for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
   {
@@ -1068,9 +1025,12 @@ static inline void _init_sliders(dt_iop_module_t *self)
 }
 
 
-static void _init_graph_backgrounds(cairo_pattern_t *gradients[GRAPH_GRADIENTS], dt_iop_colorequal_channel_t channel,
+static void _init_graph_backgrounds(cairo_pattern_t *gradients[GRAPH_GRADIENTS],
+                                    dt_iop_colorequal_channel_t channel,
                                     struct dt_iop_order_iccprofile_info_t *work_profile,
-                                    const size_t graph_width, const float *const restrict gamut_LUT, const float max_saturation)
+                                    const size_t graph_width,
+                                    const float *const restrict gamut_LUT,
+                                    const float max_saturation)
 {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -1116,7 +1076,7 @@ static void _init_graph_backgrounds(cairo_pattern_t *gradients[GRAPH_GRADIENTS],
 }
 
 
-static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
+static gboolean _iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
@@ -1358,8 +1318,10 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   return TRUE;
 }
 
-void pipe_RGB_to_Ych(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, const dt_aligned_pixel_t RGB,
-                     dt_aligned_pixel_t Ych)
+static void _pipe_RGB_to_Ych(dt_iop_module_t *self,
+                    dt_dev_pixelpipe_t *pipe,
+                    const dt_aligned_pixel_t RGB,
+                    dt_aligned_pixel_t Ych)
 {
   const struct dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_current_profile_info(self, pipe);
   if(work_profile == NULL) return; // no point
@@ -1383,7 +1345,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   dt_iop_colorequal_params_t *p = (dt_iop_colorequal_params_t *)self->params;
 
   dt_aligned_pixel_t max_Ych = { 0.f };
-  pipe_RGB_to_Ych(self, pipe, (const float *)self->picked_color_max, max_Ych);
+  _pipe_RGB_to_Ych(self, pipe, (const float *)self->picked_color_max, max_Ych);
 
   ++darktable.gui->reset;
   if(picker == g->white_level)
@@ -1400,7 +1362,9 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
 }
 
 
-static void _channel_tabs_switch_callback(GtkNotebook *notebook, GtkWidget *page, guint page_num,
+static void _channel_tabs_switch_callback(GtkNotebook *notebook,
+                                          GtkWidget *page,
+                                          guint page_num,
                                           dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
@@ -1519,7 +1483,7 @@ void gui_init(struct dt_iop_module_t *self)
   //dt_conf_get_int("plugins/darkroom/colorequal/aspect_percent") / 100.0;
   g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(aspect));
   g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
-  g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(dt_iop_tonecurve_draw), self);
+  g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(_iop_tonecurve_draw), self);
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->area), TRUE, TRUE, 0);
 
   // start building top level widget
