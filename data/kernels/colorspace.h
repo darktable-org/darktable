@@ -624,20 +624,35 @@ static inline float4 dt_uvY_to_xyY(const float4 uvY)
 
 static inline float4 dt_XYZ_to_xyY(const float4 XYZ)
 {
+  // see cpu implementation for details
   float4 xyY;
   const float sum = XYZ.x + XYZ.y + XYZ.z;
-  xyY.xy = XYZ.xy / sum;
+  if(XYZ.x == 0.0f && XYZ.y == 0.0f && XYZ.z == 0.0f)
+  {
+    xyY.x = 2.0f / 4.5f;
+    xyY.y = 1.0f / 4.5f;
+  }
+  else
+  {
+    xyY.xy = XYZ.xy / sum;
+  }
+
   xyY.z = XYZ.y;
   xyY.w = XYZ.w;
+
   return xyY;
 }
 
 static inline float4 dt_xyY_to_XYZ(const float4 xyY)
 {
-  float4 XYZ;
-  XYZ.x = xyY.z * xyY.x / xyY.y;
-  XYZ.y = xyY.z;
-  XYZ.z = xyY.z * (1.f - xyY.x - xyY.y) / xyY.y;
+  // see cpu implementation for details
+  float4 XYZ = 0.0f;
+  if(xyY.y != 0.0f)
+  {
+    XYZ.x = xyY.z * xyY.x / xyY.y;
+    XYZ.y = xyY.z;
+    XYZ.z = xyY.z * (1.f - xyY.x - xyY.y) / xyY.y;
+  }
   XYZ.w = xyY.w;
   return XYZ;
 }
