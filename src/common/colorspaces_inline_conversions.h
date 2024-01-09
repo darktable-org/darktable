@@ -276,21 +276,29 @@ static inline void dt_Lab_to_linearRGB(
 #endif
 static inline void dt_XYZ_to_xyY(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t xyY)
 {
+  const gboolean black = XYZ[0] == 0.0f && XYZ[1] == 0.0f && XYZ[2] == 0.0f;
+  /* the calculation for black would fail with NaNs as result.
+     According to http://www.brucelindbloom.com/index.html?Eqn_XYZ_to_xyY.html
+     we would want the chromaticity coordinates of the reference white.
+     As this is a costly operation requiring dev->white-balance data we use a rough guess
+     of 2.0, 1.0, 1.5
+  */
   const float sum = XYZ[0] + XYZ[1] + XYZ[2];
-  xyY[0] = XYZ[0] / sum;
-  xyY[1] = XYZ[1] / sum;
+  xyY[0] = black ? 2.0f / 4.5f : XYZ[0] / sum;
+  xyY[1] = black ? 1.0f / 4.5f : XYZ[1] / sum;
   xyY[2] = XYZ[1];
 }
-
 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(xyY, XYZ:16)
 #endif
 static inline void dt_xyY_to_XYZ(const dt_aligned_pixel_t xyY, dt_aligned_pixel_t XYZ)
 {
-  XYZ[0] = xyY[2] * xyY[0] / xyY[1];
-  XYZ[1] = xyY[2];
-  XYZ[2] = xyY[2] * (1.f - xyY[0] - xyY[1]) / xyY[1];
+  const gboolean bad = xyY[1] == 0.0f;
+  // according to http://brucelindbloom.com/index.html?Eqn_xyY_to_XYZ.html
+  XYZ[0] = bad ? 0.0f : xyY[2] * xyY[0] / xyY[1];
+  XYZ[1] = bad ? 0.0f : xyY[2];
+  XYZ[2] = bad ? 0.0f : xyY[2] * (1.f - xyY[0] - xyY[1]) / xyY[1];
 }
 
 
