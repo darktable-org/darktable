@@ -817,6 +817,7 @@ static void _add_file_callback(GObject *direnum,
       ? strlen(folder) + 1
       : strlen(folder);
 
+    const int32_t filmroll_id = dt_film_get_id(folder);
     for(GList *node = file_list;
         node;
         node = node->next)
@@ -867,7 +868,6 @@ static void _add_file_callback(GObject *direnum,
           gboolean already_imported = FALSE;
           if(d->import_case == DT_IMPORT_INPLACE)
           {
-            const int32_t filmroll_id = dt_film_get_id(folder);
             /* check if image is already imported, using previously
              * fetched filmroll id */
             if(filmroll_id != -1)
