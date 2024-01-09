@@ -24,8 +24,11 @@
 #include "common/file_location.h"
 #include "common/module.h"
 
-GList *dt_module_load_modules(const char *subdir, size_t module_size,
-                              int (*load_module_so)(void *module, const char *libname, const char *plugin_name),
+GList *dt_module_load_modules(const char *subdir,
+                              const size_t module_size,
+                              int (*load_module_so)(void *module,
+                                                    const char *libname,
+                                                    const char *plugin_name),
                               void (*init_module)(void *module),
                               gint (*sort_modules)(gconstpointer a, gconstpointer b))
 {
@@ -41,12 +44,14 @@ GList *dt_module_load_modules(const char *subdir, size_t module_size,
   while((dir_name = g_dir_read_name(dir)))
   {
     // get lib*.so
-    if(!g_str_has_prefix(dir_name, SHARED_MODULE_PREFIX)) continue;
-    if(!g_str_has_suffix(dir_name, SHARED_MODULE_SUFFIX)) continue;
+    if(!g_str_has_prefix(dir_name, SHARED_MODULE_PREFIX))
+      continue;
+    if(!g_str_has_suffix(dir_name, SHARED_MODULE_SUFFIX))
+      continue;
     char *plugin_name = g_strndup(dir_name + name_offset, strlen(dir_name) - name_end);
     void *module = calloc(1, module_size);
     gchar *libname = g_module_build_path(plugindir, plugin_name);
-    int res = load_module_so(module, libname, plugin_name);
+    const int res = load_module_so(module, libname, plugin_name);
     g_free(libname);
     g_free(plugin_name);
     if(res)
@@ -56,7 +61,8 @@ GList *dt_module_load_modules(const char *subdir, size_t module_size,
     }
     plugin_list = g_list_prepend(plugin_list, module);
 
-    if(init_module) init_module(module);
+    if(init_module)
+      init_module(module);
   }
   g_dir_close(dir);
 
@@ -73,4 +79,3 @@ GList *dt_module_load_modules(const char *subdir, size_t module_size,
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
