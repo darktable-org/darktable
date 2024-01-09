@@ -2167,7 +2167,7 @@ static void _list_view(dt_lib_collect_rule_t *dr)
           folder = dt_image_film_roll_name(folder);
           status = !sqlite3_column_int(stmt, 3);
         }
-        else if (property == DT_COLLECTION_PROP_RATING)
+        else if(property == DT_COLLECTION_PROP_RATING)
         {
           const int rating = sqlite3_column_int(stmt, 0);
           switch(rating)

@@ -662,7 +662,9 @@ static int dt_lib_load_module(void *m,
 #ifdef USE_LUA
   dt_lua_lib_register(darktable.lua_state.state, module);
 #endif
-  if(module->init) module->init(module);
+
+  if(module->init)
+    module->init(module);
 
   return 0;
 }
@@ -865,7 +867,8 @@ static void dt_lib_init_module(void *m)
 
 void dt_lib_unload_module(dt_lib_module_t *module)
 {
-  if(module->module) g_module_close(module->module);
+  if(module->module)
+    g_module_close(module->module);
 }
 
 static void dt_lib_gui_reset_callback(GtkButton *button,
@@ -897,7 +900,8 @@ static void presets_popup_callback(GtkButton *button,
   dt_gui_menu_popup(darktable.gui->presets_popup_menu, GTK_WIDGET(button),
                     GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
 
-  if(button) dtgtk_button_set_active(DTGTK_BUTTON(button), FALSE);
+  if(button)
+    dtgtk_button_set_active(DTGTK_BUTTON(button), FALSE);
 }
 
 
@@ -1199,7 +1203,8 @@ void dt_lib_init(dt_lib_t *lib)
                                                   dt_lib_load_module,
                                                   dt_lib_init_module,
                                                   dt_lib_sort_plugins);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals,
+                                  DT_SIGNAL_PREFERENCES_CHANGE,
                                   G_CALLBACK(_preferences_changed), lib);
 }
 
@@ -1294,7 +1299,8 @@ gboolean dt_lib_is_visible(dt_lib_module_t *module)
 {
   gchar *key = _get_lib_view_path(module, "_visible");
   gboolean ret = TRUE; /* if not key found, always make module visible */
-  if(key && dt_conf_key_exists(key)) ret = dt_conf_get_bool(key);
+  if(key && dt_conf_key_exists(key))
+    ret = dt_conf_get_bool(key);
   g_free(key);
 
   return ret;
@@ -1305,15 +1311,16 @@ void dt_lib_set_visible(dt_lib_module_t *module,
 {
   gchar *key = _get_lib_view_path(module, "_visible");
   GtkWidget *widget;
-  if(key) dt_conf_set_bool(key, visible);
+  if(key)
+    dt_conf_set_bool(key, visible);
   g_free(key);
+
   if(module->widget)
   {
     if(module->expander)
       widget = module->expander;
     else
       widget = module->widget;
-
 
     if(visible)
       gtk_widget_show(GTK_WIDGET(widget));
