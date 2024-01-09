@@ -278,7 +278,9 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
       if(old_view->leave) old_view->leave(old_view);
 
       /* iterator plugins and cleanup plugins in current view */
-      for(GList *iter = darktable.lib->plugins; iter; iter = g_list_next(iter))
+      for(GList *iter = darktable.lib->plugins;
+          iter;
+          iter = g_list_next(iter))
       {
         dt_lib_module_t *plugin = (dt_lib_module_t *)(iter->data);
 
@@ -323,10 +325,13 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
   if(old_view)
   {
     /* leave current view */
-    if(old_view->leave) old_view->leave(old_view);
+    if(old_view->leave)
+      old_view->leave(old_view);
 
     /* iterator plugins and cleanup plugins in current view */
-    for(GList *iter = darktable.lib->plugins; iter; iter = g_list_next(iter))
+    for(GList *iter = darktable.lib->plugins;
+        iter;
+        iter = g_list_next(iter))
     {
       dt_lib_module_t *plugin = (dt_lib_module_t *)(iter->data);
 

@@ -1315,7 +1315,6 @@ static void _tree_view(dt_lib_collect_rule_t *dr)
   dt_lib_collect_t *d = get_collect(dr);
   const int property = _combo_get_active_collection(dr->combo);
   char *format_separator = "";
-  gboolean sorting_always_asc = TRUE;
 
   switch(property)
   {
@@ -1333,7 +1332,6 @@ static void _tree_view(dt_lib_collect_rule_t *dr)
     case DT_COLLECTION_PROP_EXPORT_TIMESTAMP:
     case DT_COLLECTION_PROP_PRINT_TIMESTAMP:
       format_separator = "%s:";
-      sorting_always_asc = FALSE;
       break;
   }
 
@@ -1566,7 +1564,7 @@ static void _tree_view(dt_lib_collect_rule_t *dr)
     // this order should not be altered. the right feeding of the tree relies on it.
     sorted_names = g_list_sort(sorted_names, _sort_folder_tag);
     const gboolean sort_descend = dt_conf_get_bool("plugins/collect/descending");
-    if(sorting_always_asc || !sort_descend)
+    if(!sort_descend)
       sorted_names = g_list_reverse(sorted_names);
 
     const gboolean no_uncategorized =
@@ -1816,6 +1814,8 @@ static void _list_view(dt_lib_collect_rule_t *dr)
     gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(d->listfilter));
   if(d->view_rule != property)
   {
+    const gboolean sort_descending = dt_conf_get_bool("plugins/collect/descending");
+
     sqlite3_stmt *stmt;
     GtkTreeIter iter;
     g_object_unref(d->listfilter);
@@ -1838,7 +1838,9 @@ static void _list_view(dt_lib_collect_rule_t *dr)
                    "  WHERE mi.camera_id = cm.id"
                    "    AND %s "
                    "  GROUP BY LOWER(camera)"
-                   "  ORDER BY LOWER(camera)", where_ext);
+                   "  ORDER BY LOWER(camera) %s",
+                   where_ext,
+                   sort_descending ? "DESC" : "ASC");
         // clang-format on
         break;
 
@@ -1863,8 +1865,10 @@ static void _list_view(dt_lib_collect_rule_t *dr)
                    "            FROM main.history_hash) ON id = imgid"
                    " WHERE %s"
                    " GROUP BY force_order"
-                   " ORDER BY force_order",
-                   _("basic"), _("auto applied"), _("altered"), _("basic"), where_ext);
+                   " ORDER BY force_order %s",
+                   _("basic"), _("auto applied"), _("altered"), _("basic"),
+                   where_ext,
+                   sort_descending ? "DESC" : "ASC");
         // clang-format on
         break;
 
@@ -1881,11 +1885,12 @@ static void _list_view(dt_lib_collect_rule_t *dr)
                    "       END as force_order"
                    " FROM main.images AS mi "
                    " WHERE %s"
-                   " GROUP BY force_order ORDER BY force_order",
+                   " GROUP BY force_order ORDER BY force_order %s",
                    DT_IMAGE_LOCAL_COPY,
                    _("copied locally"),
                    _("not copied locally"),
-                   DT_IMAGE_LOCAL_COPY, where_ext);
+                   DT_IMAGE_LOCAL_COPY, where_ext,
+                   sort_descending ? "DESC" : "ASC");
         // clang-format on
         break;
 
@@ -1895,7 +1900,10 @@ static void _list_view(dt_lib_collect_rule_t *dr)
                    "SELECT ROUND(aspect_ratio,1), 1, COUNT(*) AS count"
                    " FROM main.images AS mi "
                    " WHERE %s"
-                   " GROUP BY ROUND(aspect_ratio,1)", where_ext);
+                   " GROUP BY ROUND(aspect_ratio,1)"
+                   " ORDER BY ROUND(aspect_ratio,1) %s",
+                   where_ext,
+                   sort_descending ? "DESC" : "ASC");
         // clang-format on
         break;
 
@@ -1916,8 +1924,10 @@ static void _list_view(dt_lib_collect_rule_t *dr)
                    " ON id = color_labels_id "
                    " WHERE %s"
                    " GROUP BY color"
-                   " ORDER BY color ASC",
-                   _("red"), _("yellow"), _("green"), _("blue"), _("purple"), where_ext);
+                   " ORDER BY color %s",
+                   _("red"), _("yellow"), _("green"), _("blue"), _("purple"),
+                   where_ext,
+                   sort_descending ? "DESC" : "ASC");
         // clang-format on
         break;
 
@@ -1932,7 +1942,8 @@ static void _list_view(dt_lib_collect_rule_t *dr)
                    "  WHERE mi.lens_id = ln.id"
                    "    AND %s"
                    "  GROUP BY LOWER(lens)"
-                   "  ORDER BY LOWER(lens)", where_ext);
+                   "  ORDER BY LOWER(lens) %s", where_ext,
+                   sort_descending ? "DESC" : "ASC");
         // clang-format on
         break;
 
@@ -1944,8 +1955,9 @@ static void _list_view(dt_lib_collect_rule_t *dr)
                    " FROM main.images AS mi"
                    " WHERE %s"
                    " GROUP BY CAST(focal_length AS INTEGER)"
-                   " ORDER BY CAST(focal_length AS INTEGER)",
-                   where_ext);
+                   " ORDER BY CAST(focal_length AS INTEGER) %s",
+                   where_ext,
+                   sort_descending ? "DESC" : "ASC");
         // clang-format on
         break;
 
@@ -1956,8 +1968,9 @@ static void _list_view(dt_lib_collect_rule_t *dr)
                    " FROM main.images AS mi"
                    " WHERE %s"
                    " GROUP BY iso"
-                   " ORDER BY iso ASC",
-                   where_ext);
+                   " ORDER BY iso %s",
+                   where_ext,
+                   sort_descending ? "DESC" : "ASC");
         // clang-format on
         break;
 
@@ -1968,8 +1981,9 @@ static void _list_view(dt_lib_collect_rule_t *dr)
                    " FROM main.images AS mi"
                    " WHERE %s"
                    " GROUP BY aperture"
-                   " ORDER BY aperture ASC",
-                   where_ext);
+                   " ORDER BY aperture %s",
+                   where_ext,
+                   sort_descending ? "DESC" : "ASC");
         // clang-format on
         break;
 
@@ -1983,8 +1997,9 @@ static void _list_view(dt_lib_collect_rule_t *dr)
                    " FROM main.images AS mi"
                    " WHERE %s"
                    " GROUP BY _exposure"
-                   " ORDER BY exposure",
-                  where_ext);
+                   " ORDER BY exposure %s",
+                   where_ext,
+                   sort_descending ? "DESC" : "ASC");
         // clang-format on
         break;
 
@@ -1995,7 +2010,9 @@ static void _list_view(dt_lib_collect_rule_t *dr)
                    " FROM main.images AS mi"
                    " WHERE %s"
                    " GROUP BY lower(filename)"
-                   " ORDER BY lower(filename) ASC", where_ext);
+                   " ORDER BY lower(filename) %s",
+                   where_ext,
+                   sort_descending ? "DESC" : "ASC");
         // clang-format on
         break;
 
@@ -2013,8 +2030,10 @@ static void _list_view(dt_lib_collect_rule_t *dr)
                    " FROM main.images AS mi"
                    " WHERE %s"
                    " GROUP BY force_order"
-                   " ORDER BY force_order ASC",
-                   _("group leaders"),  _("group followers"), where_ext);
+                   " ORDER BY force_order %s",
+                   _("group leaders"),  _("group followers"),
+                   where_ext,
+                   sort_descending ? "DESC" : "ASC");
         // clang-format on
         break;
 
@@ -2031,8 +2050,9 @@ static void _list_view(dt_lib_collect_rule_t *dr)
                  "  ON m.operation = h.operation"
                  " WHERE %s"
                  " GROUP BY lower(module_name)"
-                 " ORDER BY lower(module_name) ASC",
-                 where_ext);
+                 " ORDER BY lower(module_name) %s",
+                 where_ext,
+                 sort_descending ? "DESC" : "ASC");
         // clang-format on
         break;
 
@@ -2053,8 +2073,9 @@ static void _list_view(dt_lib_collect_rule_t *dr)
                    "  ON mo.imgid = mi.id"
                    " WHERE %s"
                    " GROUP BY ver"
-                   " ORDER BY ver ASC",
-                   orders, where_ext);
+                   " ORDER BY ver %s",
+                   orders, where_ext,
+                   sort_descending ? "DESC" : "ASC");
           // clang-format on
           g_free(orders);
         }
@@ -2070,7 +2091,8 @@ static void _list_view(dt_lib_collect_rule_t *dr)
                      " FROM main.images AS mi"
                      " WHERE %s"
                      " GROUP BY rating"
-                     " ORDER BY rating ASC", where_ext);
+                     " ORDER BY rating %s", where_ext,
+                     sort_descending ? "DESC" : "ASC");
           // clang-format on
         }
         break;
@@ -2100,8 +2122,9 @@ static void _list_view(dt_lib_collect_rule_t *dr)
                      "  ON id = meta_data_id"
                      " WHERE %s"
                      " GROUP BY lower(value)"
-                     " ORDER BY force_order ASC, lower(value) ASC",
-                     _("not defined"), keyid, where_ext);
+                     " ORDER BY force_order ASC, lower(value) %s",
+                     _("not defined"), keyid, where_ext,
+                     sort_descending ? "DESC" : "ASC");
             // clang-format on
           }
         }
@@ -2113,18 +2136,19 @@ static void _list_view(dt_lib_collect_rule_t *dr)
           const gboolean sort_by_import_time =
             dt_conf_is_equal("plugins/collect/filmroll_sort", "import time");
 
-          const gboolean sort_descending = dt_conf_get_bool("plugins/collect/descending");
-
           if(sort_by_import_time)
           {
             if(sort_descending)
               order_by = g_strdup("film_rolls_id DESC");
             else
-              order_by = g_strdup("film_rolls_id");
+              order_by = g_strdup("film_rolls_id ASC");
           }
           else
           {
-            order_by = g_strdup("lower(folder) ASC");
+            if(sort_descending)
+              order_by = g_strdup("lower(folder) DESC");
+            else
+              order_by = g_strdup("lower(folder) ASC");
           }
 
           // clang-format off
@@ -2167,7 +2191,7 @@ static void _list_view(dt_lib_collect_rule_t *dr)
           folder = dt_image_film_roll_name(folder);
           status = !sqlite3_column_int(stmt, 3);
         }
-        else if (property == DT_COLLECTION_PROP_RATING)
+        else if(property == DT_COLLECTION_PROP_RATING)
         {
           const int rating = sqlite3_column_int(stmt, 0);
           switch(rating)
@@ -3473,6 +3497,43 @@ static void _history_previous(dt_action_t *action)
   {
     dt_collection_deserialize(line, FALSE);
   }
+}
+
+static void _sort_reverse_changed(GtkDarktableToggleButton *widget, gpointer user_data)
+{
+  const gboolean reverse = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  if(reverse)
+    dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(widget),
+                                 dtgtk_cairo_paint_sortby,
+                                 CPF_DIRECTION_DOWN, NULL);
+  else
+    dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(widget),
+                                 dtgtk_cairo_paint_sortby,
+                                 CPF_DIRECTION_UP, NULL);
+  dt_conf_set_bool("plugins/collect/descending", reverse);
+  gtk_widget_queue_draw((GtkWidget*)widget);
+
+  dt_collection_update_query(darktable.collection,
+                             DT_COLLECTION_CHANGE_NEW_QUERY,
+                             DT_COLLECTION_PROP_UNDEF, NULL);
+}
+
+GtkWidget *gui_tool_box(dt_lib_module_t *self)
+{
+  // specific header action
+  const gboolean sort_descend = dt_conf_get_bool("plugins/collect/descending");
+
+  GtkWidget *sortb = dtgtk_togglebutton_new(dtgtk_cairo_paint_sortby,
+                                            sort_descend
+                                            ? CPF_DIRECTION_DOWN
+                                            : CPF_DIRECTION_UP,
+                                            NULL);
+  dt_gui_add_class(sortb, "dt_ignore_fg_state");
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(sortb), sort_descend);
+  g_signal_connect(G_OBJECT(sortb),
+                   "toggled",
+                   G_CALLBACK(_sort_reverse_changed), self);
+  return sortb;
 }
 
 void gui_init(dt_lib_module_t *self)
