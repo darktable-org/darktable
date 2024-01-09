@@ -60,6 +60,13 @@ jobs:
         generator:
           #- Unix Makefiles
           - Ninja
+        include:
+          # We want one run in CI to be Debug to make sure the Debug build isn't broken
+          - os: { label: ubuntu-latest, code: latest }
+            btype: Debug
+            compiler: { compiler: GNU13,  CC: gcc-13,   CXX: g++-13,     packages: gcc-13 g++-13 }
+            target: skiptest
+            generator: Ninja
     env:
       CC: ${{ matrix.compiler.CC }}
       CXX: ${{ matrix.compiler.CXX }}
