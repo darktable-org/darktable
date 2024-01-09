@@ -68,6 +68,10 @@ changes (where available).
 
 - Added Apple Keychain password storage backend for macOS devices.
 
+- Collect module sorting has been integrated into the module's header
+  instead of a preference. All collections can now be sorted easily by
+  a single click on the sort button.
+
 ## Bug Fixes
 
 ## Lua
