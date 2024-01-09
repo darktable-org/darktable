@@ -1157,6 +1157,10 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   dt_action_define(&module->actions, NULL, NULL, module->reset_button, NULL);
   gtk_box_pack_end(GTK_BOX(header), module->reset_button, FALSE, FALSE, 0);
 
+  /* add button box - for module's specific action button */
+  if(module->gui_tool_box)
+    gtk_box_pack_end(GTK_BOX(header), module->gui_tool_box(module), FALSE, FALSE, 0);
+
   gtk_widget_show_all(expander);
   dt_gui_add_class(module->widget, "dt_plugin_ui_main");
   dt_gui_add_class(pluginui_frame, "dt_plugin_ui");
