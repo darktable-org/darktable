@@ -735,9 +735,9 @@ int legacy_params(dt_iop_module_t *self,
     dt_iop_filmicrgb_params_v6_t *n =
       (dt_iop_filmicrgb_params_v6_t *)malloc(sizeof(dt_iop_filmicrgb_params_v6_t));
 
-    *n = *(dt_iop_filmicrgb_params_v6_t*)o; // structure didn't change
-                                            // except the enum instead of
-                                            // gint for internal_version
+    memcpy(n, o, sizeof(dt_iop_filmicrgb_params_v4_t));
+    // structure didn't change except the enum instead of gint for internal_version
+
     // we still need to convert the internal_version (in year) to the enum
     switch(o->internal_version)
     {
