@@ -43,7 +43,7 @@ permissions:
 jobs:
 
   Linux:
-    name: Linux.${{ matrix.os.code }}.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
+    name: Linux.${{ matrix.compiler.compiler }}
     runs-on: ${{ matrix.os.label }}
     strategy:
       fail-fast: true
@@ -52,13 +52,11 @@ jobs:
           - { label: ubuntu-latest, code: latest }
         compiler:
           - { compiler: GNU13,  CC: gcc-13,   CXX: g++-13,     packages: gcc-13 g++-13 }
-          - { compiler: LLVM15, CC: clang-15, CXX: clang++-15, packages: clang-15 libomp-15-dev llvm-15-dev libc++-15-dev libc++abi1-15 lld-15 clang-tools-15 mlir-15-tools libmlir-15-dev}
         btype:
           - Release
         target:
           - build
         generator:
-          #- Unix Makefiles
           - Ninja
     env:
       CC: ${{ matrix.compiler.CC }}
@@ -170,26 +168,29 @@ jobs:
           ./run.sh --no-opencl --no-deltae --fast-fail
 
   Windows:
-    name: Windows.${{ matrix.msystem }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
+    name: Windows.${{ matrix.compiler.compiler }}
     runs-on: windows-latest
     strategy:
       fail-fast: true
       matrix:
         btype:
           - Debug
+        compiler:
+          - { compiler: GNU,  CC: gcc,   CXX: g++ }
+          - { compiler: LLVM, CC: clang, CXX: clang++ }
         msystem:
-          #- CLANG64
           - UCRT64
         target:
           - skiptest
         generator:
-          #- MSYS Makefiles
           - Ninja
         eco: [-DDONT_USE_INTERNAL_LIBRAW=ON]
     defaults:
       run:
         shell: msys2 {0}
     env:
+      CC: ${{ matrix.compiler.CC }}
+      CXX: ${{ matrix.compiler.CXX }}
       SRC_DIR: ${{ github.workspace }}/src
       BUILD_DIR: ${{ github.workspace }}/build
       INSTALL_PREFIX: ${{ github.workspace }}/install
@@ -208,6 +209,7 @@ jobs:
             po4a
           pacboy: >-
             cc:p
+            clang:p
             cmake:p
             cmocka:p
             libxslt:p
@@ -243,6 +245,7 @@ jobs:
             omp:p
             openexr:p
             openjpeg2:p
+            openmp:p
             osm-gps-map:p
             portmidi:p
             pugixml:p
@@ -279,7 +282,7 @@ jobs:
                  --conf plugins/lighttable/export/iccintent=0
 
   macOS:
-    name: macOS.${{ matrix.compiler.compiler }}.${{ matrix.build.xcode }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
+    name: macOS.${{ matrix.compiler.compiler }}.${{ matrix.build.xcode }}
     runs-on: ${{ matrix.build.os }}
     strategy:
       fail-fast: true
