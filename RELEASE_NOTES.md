@@ -42,7 +42,8 @@ for more information on how to contribute._
 
 ## Performance Improvements
 
-- n/a
+- Fix some OpenCL code paths that could produce garbled or unprocessed
+  output without back reporting the the pixel-pipe.
 
 ## Other Changes
 
@@ -83,6 +84,9 @@ for more information on how to contribute._
 - Fix RAW CA correction module which could crash due to rounding issue
   while computing an internal buffer size. This would cause a buffer
   overflow and possibly crash darktable.
+
+- Avoid undershoots while interpolating in Lens, Perspective
+  Correction, Retouch and Liquify modules.
 
 - Include LibRaw fix for artifacts when decoding high ISO Canon CR3s.
 
