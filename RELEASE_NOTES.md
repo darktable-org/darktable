@@ -60,6 +60,12 @@ changes (where available).
     into the image using masking. A common example is to overlay
     multiply pictures of a firework to create a bigger one.
 
+- Implemented a toggle switch for the darkroom mode forcing the
+  pixel-pipe processing to use the whole image data instead of just the
+  area displayed. This allows the user to inspect processed data
+  without errors introduced via internal scaling and equals what we
+  get by exporting in "high quality resampling" mode.
+
 ## Performance Improvements
 
 ## Other Changes
@@ -71,6 +77,10 @@ changes (where available).
 - Collect module sorting has been integrated into the module's header
   instead of a preference. All collections can now be sorted easily by
   a single click on the sort button.
+
+- Removed "unrestricted" mode from darktable's preferences resources
+  for safety. This setting has been proved to be unsafe in many
+  cases. It can still be enabled via the resource file if needed.
 
 ## Bug Fixes
 
