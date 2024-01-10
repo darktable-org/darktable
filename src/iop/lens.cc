@@ -461,7 +461,7 @@ int legacy_params(dt_iop_module_t *self,
     n->cor_vig_ft = 1.f;
 
     // new in v7
-    n->scale_md_v1 = 0.0f;
+    n->scale_md_v1 = 1.0f;
 
     // new in v8
     n->cor_ca_r_ft = 1.f;
@@ -527,7 +527,7 @@ int legacy_params(dt_iop_module_t *self,
     n->cor_vig_ft = 1.f;
 
     // new in v7
-    n->scale_md_v1 = 0.0f;
+    n->scale_md_v1 = 1.0f;
 
     // new in v8
     n->cor_ca_r_ft = 1.f;
@@ -594,7 +594,7 @@ int legacy_params(dt_iop_module_t *self,
     n->cor_vig_ft = 1.f;
 
     // new in v7
-    n->scale_md_v1 = 0.0f;
+    n->scale_md_v1 = 1.0f;
 
     // new in v8
     n->cor_ca_r_ft = 1.f;
@@ -662,7 +662,7 @@ int legacy_params(dt_iop_module_t *self,
     n->cor_vig_ft = 1.f;
 
     // new in v7
-    n->scale_md_v1 = 0.0f;
+    n->scale_md_v1 = 1.0f;
 
     // new in v8
     n->cor_ca_r_ft = 1.f;
@@ -732,7 +732,7 @@ int legacy_params(dt_iop_module_t *self,
     n->cor_vig_ft = o->cor_vig_ft;
 
     // new in v7
-    n->scale_md_v1 = 0.0f;
+    n->scale_md_v1 = 1.0f;
 
     // new in v8
     n->cor_ca_r_ft = 1.f;
