@@ -60,6 +60,13 @@ jobs:
         generator:
           #- Unix Makefiles
           - Ninja
+        include:
+          # We want one run in CI to be Debug to make sure the Debug build isn't broken
+          - os: { label: ubuntu-latest, code: latest }
+            btype: Debug
+            compiler: { compiler: GNU13,  CC: gcc-13,   CXX: g++-13,     packages: gcc-13 g++-13 }
+            target: skiptest
+            generator: Ninja
     env:
       CC: ${{ matrix.compiler.CC }}
       CXX: ${{ matrix.compiler.CXX }}
@@ -176,7 +183,7 @@ jobs:
       fail-fast: true
       matrix:
         btype:
-          - Debug
+          - Release
         msystem:
           #- CLANG64
           - UCRT64
@@ -288,7 +295,7 @@ jobs:
           - { os: macos-12,    xcode: 14.2,   deployment: 12.5 } # LLVM14
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
-        btype: [ Debug ]
+        btype: [ Release ]
         target:
           - skiptest
         generator:
