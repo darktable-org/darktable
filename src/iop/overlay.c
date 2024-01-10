@@ -168,6 +168,11 @@ const char **description(struct dt_iop_module_t *self)
      _("linear, RGB, scene-referred"));
 }
 
+const char *aliases()
+{
+  return _("composition|layering|stacked");
+}
+
 int flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
