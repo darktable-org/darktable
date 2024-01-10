@@ -86,6 +86,11 @@ const char** description(struct dt_iop_module_t *self)
      _("linear, RGB, scene-referred"));
 }
 
+const char *aliases()
+{
+  return _("composition");
+}
+
 int flags()
 {
   return IOP_GROUP_EFFECT | IOP_GROUP_EFFECTS;
