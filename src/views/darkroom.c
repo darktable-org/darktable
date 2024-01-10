@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2234,7 +2234,7 @@ void gui_init(dt_view_t *self)
     ac = dt_action_define(sa, N_("raw overexposed"), N_("toggle"), dev->rawoverexposed.button, &dt_action_def_toggle);
     dt_shortcut_register(ac, 0, 0, GDK_KEY_o, GDK_SHIFT_MASK);
     gtk_widget_set_tooltip_text(dev->rawoverexposed.button,
-                                _("toggle raw over exposed indication\nright click for options"));
+                                _("toggle indication of raw overexposure\nright click for options"));
     g_signal_connect(G_OBJECT(dev->rawoverexposed.button), "clicked",
                      G_CALLBACK(_rawoverexposed_quickbutton_clicked), dev);
     dt_view_manager_module_toolbox_add(darktable.view_manager, dev->rawoverexposed.button, DT_VIEW_DARKROOM);
@@ -2256,7 +2256,7 @@ void gui_init(dt_view_t *self)
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(mode), TRUE, TRUE, 0);
 
     DT_BAUHAUS_COMBOBOX_NEW_FULL(colorscheme, self, N_("raw overexposed"), N_("color scheme"),
-                                _("select the solid color to indicate over exposure.\nwill only be used if mode = mark with solid color"),
+                                _("select the solid color to indicate overexposure.\nwill only be used if mode = mark with solid color"),
                                 dev->rawoverexposed.colorscheme,
                                 rawoverexposed_colorscheme_callback, dev,
                                 NC_("solidcolor", "red"),
