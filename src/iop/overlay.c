@@ -185,10 +185,10 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_RGB;
 }
 
-static GList *_get_disabled_modules(const dt_iop_module_t *self)
+static GList *_get_disabled_modules(const dt_iop_module_t *self,
+                                    const dt_imgid_t imgid)
 {
   const dt_develop_t *dev = self->dev;
-  const int imgid = dev->image_storage.id;
   const int multi_priority = self->multi_priority;
 
   // we want the list of all modules in imgid that are after the current
@@ -305,7 +305,7 @@ static void _setup_overlay(dt_iop_module_t *self,
     size_t bw;
     size_t bh;
 
-    GList *disabled_modules = _get_disabled_modules(self);
+    GList *disabled_modules = _get_disabled_modules(self, imgid);
 
     dt_dev_image(imgid, width, height,
                  -1,
