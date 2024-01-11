@@ -27,6 +27,9 @@
   #define TYPE_XYZA_FLT (FLOAT_SH(1)|COLORSPACE_SH(PT_XYZ)|EXTRA_SH(1)|CHANNELS_SH(3)|BYTES_SH(4))
 #endif
 
+//D65 (sRGB, AdobeRGB, Rec2020)
+static const cmsCIExyY D65xyY = {0.312700492, 0.329000939, 1.0};
+
 /** colorspace enums, must be in synch with dt_iop_colorspace_type_t
  * in color_conversion.cl */
 typedef enum dt_iop_colorspace_type_t
