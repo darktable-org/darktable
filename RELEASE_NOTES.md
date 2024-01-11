@@ -94,6 +94,9 @@ changes (where available).
 
 - Fixed `scripts_installer` to handle user names with spaces on Windows.
 
+- Fixed a wrong behaviour when double-clicking on the navigation menu
+  in the map module.
+
 ### Add action support for Lua
 
 
