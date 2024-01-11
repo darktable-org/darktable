@@ -1898,8 +1898,13 @@ static gboolean _view_map_button_press_callback(GtkWidget *w, GdkEventButton *e,
     const gint osd_y = g_value_get_int(&value);
     g_object_get_property((GObject*) lib->osd, "dpad-radius", &value);
     const gint dpad_radius = g_value_get_int(&value);
+    g_object_get_property((GObject*) lib->osd, "show-zoom", &value);
+    // g_value_get_boolean returns FALSE although the value is 1! Bug?
+    const gint show_zoom = g_value_get_int(&value);  
+    const gint zoom_height = show_zoom? 40:0;
 
-    if(e->x >= osd_x && e->x <= osd_x+2*dpad_radius && e->y >= osd_y && e->y <= osd_y+2*dpad_radius)
+    if(e->x >= osd_x && e->x <= osd_x+2*dpad_radius && 
+       e->y >= osd_y && e->y <= osd_y+2*dpad_radius+zoom_height)
     {
       return FALSE;
     }
