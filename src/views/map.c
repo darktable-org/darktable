@@ -1884,6 +1884,27 @@ static gboolean _view_map_button_press_callback(GtkWidget *w, GdkEventButton *e,
     g_list_free(lib->selected_images);
     lib->selected_images = NULL;
   }
+
+  if(lib->osd)
+  {
+    // check if the OSD circle was clicked
+    GValue value = {
+      0,
+    };
+
+    g_object_get_property((GObject*) lib->osd, "osd-x", &value);
+    const gint osd_x = g_value_get_int(&value);
+    g_object_get_property((GObject*) lib->osd, "osd-y", &value);
+    const gint osd_y = g_value_get_int(&value);
+    g_object_get_property((GObject*) lib->osd, "dpad-radius", &value);
+    const gint dpad_radius = g_value_get_int(&value);
+
+    if(e->x >= osd_x && e->x <= osd_x+2*dpad_radius && e->y >= osd_y && e->y <= osd_y+2*dpad_radius)
+    {
+      return FALSE;
+    }
+  }
+
   if(e->button == 1)
   {
     // check if the click was in a location form - crtl gives priority to images
