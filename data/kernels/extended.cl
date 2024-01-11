@@ -288,9 +288,9 @@ void
 encrypt_tea(unsigned int *arg)
 {
   const unsigned int key[] = {0xa341316c, 0xc8013ea4, 0xad90777d, 0x7e95761e};
+  const unsigned int delta = 0x9e3779b9;
   unsigned int v0 = arg[0], v1 = arg[1];
   unsigned int sum = 0;
-  unsigned int delta = 0x9e3779b9;
   for(int i = 0; i < TEA_ROUNDS; i++)
   {
     sum += delta;
