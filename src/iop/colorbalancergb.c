@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020-2023 darktable developers.
+    Copyright (C) 2020-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2015,22 +2015,30 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "perceptual brilliance grading")), FALSE, FALSE, 0);
   sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("brilliance"));
 
+  /*
+  We really should soft-limit the brilliance sliders to ±20%, as values higher than
+  +20% could quickly lead to heavy artifacts when combined with some other modules.
+  */
   g->brilliance_global = dt_bauhaus_slider_from_params(self, "brilliance_global");
+  dt_bauhaus_slider_set_soft_range(g->brilliance_global, -0.2f, 0.2f);
   dt_bauhaus_slider_set_digits(g->brilliance_global, 4);
   dt_bauhaus_slider_set_format(g->brilliance_global, "%");
   gtk_widget_set_tooltip_text(g->brilliance_global, _("add or remove brilliance by an absolute amount"));
 
   g->brilliance_shadows = dt_bauhaus_slider_from_params(sect, "brilliance_shadows");
+  dt_bauhaus_slider_set_soft_range(g->brilliance_shadows, -0.2f, 0.2f);
   dt_bauhaus_slider_set_digits(g->brilliance_shadows, 4);
   dt_bauhaus_slider_set_format(g->brilliance_shadows, "%");
   gtk_widget_set_tooltip_text(g->brilliance_shadows, _("increase or decrease brilliance proportionally to the original pixel brilliance"));
 
   g->brilliance_midtones= dt_bauhaus_slider_from_params(sect, "brilliance_midtones");
+  dt_bauhaus_slider_set_soft_range(g->brilliance_midtones, -0.2f, 0.2f);
   dt_bauhaus_slider_set_digits(g->brilliance_midtones, 4);
   dt_bauhaus_slider_set_format(g->brilliance_midtones, "%");
   gtk_widget_set_tooltip_text(g->brilliance_midtones, _("increase or decrease brilliance proportionally to the original pixel brilliance"));
 
   g->brilliance_highlights = dt_bauhaus_slider_from_params(sect, "brilliance_highlights");
+  dt_bauhaus_slider_set_soft_range(g->brilliance_highlights, -0.2f, 0.2f);
   dt_bauhaus_slider_set_digits(g->brilliance_highlights, 4);
   dt_bauhaus_slider_set_format(g->brilliance_highlights, "%");
   gtk_widget_set_tooltip_text(g->brilliance_highlights, _("increase or decrease brilliance proportionally to the original pixel brilliance"));
