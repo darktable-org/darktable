@@ -82,6 +82,9 @@ changes (where available).
   for safety. This setting has been proved to be unsafe in many
   cases. It can still be enabled via the resource file if needed.
 
+- Add buttons next to the snapshots to allow restoring it as the new
+  history.
+
 ## Bug Fixes
 
 ## Lua
