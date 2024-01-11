@@ -19,7 +19,7 @@
 #pragma once
 
 #include "common/math.h" // also loads darkable.h, sse.h, <xmmintrin.h>
-
+#include "common/colorspaces.h"
 
 #ifdef __SSE2__
 static inline __m128 lab_f_inv_m(const __m128 x)
@@ -279,13 +279,12 @@ static inline void dt_XYZ_to_xyY(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_
   const gboolean black = XYZ[0] == 0.0f && XYZ[1] == 0.0f && XYZ[2] == 0.0f;
   /* the calculation for black would fail with NaNs as result.
      According to http://www.brucelindbloom.com/index.html?Eqn_XYZ_to_xyY.html
-     we would want the chromaticity coordinates of the reference white.
-     As this is a costly operation requiring dev->white-balance data we use a rough guess
-     of 2.0, 1.0, 1.5
+     we would want the pipes chromaticity coordinates of the reference white.
+     The best guess as a fallback is from D65_xyY so
   */
   const float sum = XYZ[0] + XYZ[1] + XYZ[2];
-  xyY[0] = black ? 2.0f / 4.5f : XYZ[0] / sum;
-  xyY[1] = black ? 1.0f / 4.5f : XYZ[1] / sum;
+  xyY[0] = black ? D65xyY.x : XYZ[0] / sum;
+  xyY[1] = black ? D65xyY.y : XYZ[1] / sum;
   xyY[2] = XYZ[1];
 }
 

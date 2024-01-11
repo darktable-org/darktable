@@ -624,13 +624,13 @@ static inline float4 dt_uvY_to_xyY(const float4 uvY)
 
 static inline float4 dt_XYZ_to_xyY(const float4 XYZ)
 {
-  // see cpu implementation for details
+  // see cpu implementation for details, use D65_xy as fallback
   float4 xyY;
   const float sum = XYZ.x + XYZ.y + XYZ.z;
   if(XYZ.x == 0.0f && XYZ.y == 0.0f && XYZ.z == 0.0f)
   {
-    xyY.x = 2.0f / 4.5f;
-    xyY.y = 1.0f / 4.5f;
+    xyY.x = 0.312700492f;
+    xyY.y = 0.329000939f;
   }
   else
   {
