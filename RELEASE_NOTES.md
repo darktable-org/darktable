@@ -90,6 +90,12 @@ for more information on how to contribute._
 
 - Include LibRaw fix for artifacts when decoding high ISO Canon CR3s.
 
+- Fix possible wrong module's name when applying styles. The module
+  name could be a garbled text.
+
+- Fix possible wrong default value initialized in lens legacy
+  parameter migration from version 2.
+
 ## Lua
 
 ### API Version
