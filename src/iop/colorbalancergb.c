@@ -911,6 +911,7 @@ void process(struct dt_iop_module_t *self,
     else
     {
       dt_aligned_pixel_t xyY, JCH, HCB;
+      dt_vector_clipneg(XYZ_D65);
       dt_XYZ_to_xyY(XYZ_D65, xyY);
       xyY_to_dt_UCS_JCH(xyY, L_white, JCH);
       dt_UCS_JCH_to_HCB(JCH, HCB);
@@ -922,8 +923,8 @@ void process(struct dt_iop_module_t *self,
       // This would be the full matrice of direct rotation if we didn't need only its last row
       //const float DT_ALIGNED_PIXEL M_rot_dir[2][2] = { { cos_T, -sin_T }, {  sin_T, cos_T } };
 
-      float P = HCB[1];
-      float W = sin_T * HCB[1] + cos_T * HCB[2];
+      const float P = MAX(FLT_MIN, HCB[1]); // as HCB[1] is at least zero we don't fiddle with sign
+      const float W = sin_T * HCB[1] + cos_T * HCB[2];
 
       float a = MAX(1.f + d->saturation_global + scalar_product(opacities, saturation), 0.f);
       const float b = MAX(1.f + d->brilliance_global + scalar_product(opacities, brilliance), 0.f);
