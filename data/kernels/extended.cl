@@ -980,6 +980,7 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
   }
   else
   {
+    XYZ_D65 = fmax(0.0f, XYZ_D65);
     float4 xyY = dt_XYZ_to_xyY(XYZ_D65);
     float4 JCH = xyY_to_dt_UCS_JCH(xyY, L_white);
     float4 HCB = dt_UCS_JCH_to_HCB(JCH);
@@ -991,8 +992,8 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
     // This would be the full matrice of direct rotation if we didn't need only its last row
     //const float M_rot_dir[2][2] = { { cos_T, -sin_T }, {  sin_T, cos_T } };
 
-    float P = HCB.y;
-    float W = sin_T * HCB.y + cos_T * HCB.z;
+    const float P = fmax(FLT_MIN, HCB.y);
+    const float W = sin_T * HCB.y + cos_T * HCB.z;
 
     float a = fmax(1.f + saturation_global + dot(opacities, saturation), 0.f);
     const float b = fmax(1.f + brilliance_global + dot(opacities, brilliance), 0.f);
