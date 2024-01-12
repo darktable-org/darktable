@@ -16,6 +16,36 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/* Midi mapping is supported, here is the reference for loupedeck+
+midi:D7=iop/colorequal/page;hue
+midi:D#7=iop/colorequal/page
+midi:E7=iop/colorequal/page;brightness
+None;midi:CC1=iop/colorequal/hue/red
+None;midi:CC2=iop/colorequal/hue/orange
+None;midi:CC3=iop/colorequal/hue/lime
+None;midi:CC4=iop/colorequal/hue/green
+None;midi:CC5=iop/colorequal/hue/turquoise
+None;midi:CC6=iop/colorequal/hue/blue
+None;midi:CC7=iop/colorequal/hue/lavender
+None;midi:CC8=iop/colorequal/hue/purple
+None;midi:CC9=iop/colorequal/saturation/red
+None;midi:CC10=iop/colorequal/saturation/orange
+None;midi:CC11=iop/colorequal/saturation/lime
+None;midi:CC12=iop/colorequal/saturation/green
+None;midi:CC13=iop/colorequal/saturation/turquoise
+None;midi:CC14=iop/colorequal/saturation/blue
+None;midi:CC15=iop/colorequal/saturation/lavender
+None;midi:CC16=iop/colorequal/saturation/purple
+None;midi:CC17=iop/colorequal/bright/red
+None;midi:CC18=iop/colorequal/bright/orange
+None;midi:CC19=iop/colorequal/bright/lime
+None;midi:CC20=iop/colorequal/bright/green
+None;midi:CC21=iop/colorequal/bright/turquoise
+None;midi:CC22=iop/colorequal/bright/blue
+None;midi:CC23=iop/colorequal/bright/lavender
+None;midi:CC24=iop/colorequal/bright/purple
+*/
+
 #include "common/extra_optimizations.h"
 
 #ifdef HAVE_CONFIG_H
@@ -1502,6 +1532,14 @@ void gui_init(struct dt_iop_module_t *self)
   g->sat_sliders[5] = g->sat_blue = dt_bauhaus_slider_from_params(self, "sat_blue");
   g->sat_sliders[6] = g->sat_lavender = dt_bauhaus_slider_from_params(self, "sat_lavender");
   g->sat_sliders[7] = g->sat_purple = dt_bauhaus_slider_from_params(self, "sat_purple");
+  dt_bauhaus_widget_set_label(g->sat_sliders[0], N_("saturation"), N_("red"));
+  dt_bauhaus_widget_set_label(g->sat_sliders[1], N_("saturation"), N_("orange"));
+  dt_bauhaus_widget_set_label(g->sat_sliders[2], N_("saturation"), N_("lime"));
+  dt_bauhaus_widget_set_label(g->sat_sliders[3], N_("saturation"), N_("green"));
+  dt_bauhaus_widget_set_label(g->sat_sliders[4], N_("saturation"), N_("turquoise"));
+  dt_bauhaus_widget_set_label(g->sat_sliders[5], N_("saturation"), N_("blue"));
+  dt_bauhaus_widget_set_label(g->sat_sliders[6], N_("saturation"), N_("lavender"));
+  dt_bauhaus_widget_set_label(g->sat_sliders[7], N_("saturation"), N_("purple"));
 
   self->widget = dt_ui_notebook_page(g->notebook, N_("hue"), _("change hue hue-wise"));
 
@@ -1515,6 +1553,14 @@ void gui_init(struct dt_iop_module_t *self)
   g->hue_sliders[5] = g->hue_blue = dt_bauhaus_slider_from_params(self, "hue_blue");
   g->hue_sliders[6] = g->hue_lavender = dt_bauhaus_slider_from_params(self, "hue_lavender");
   g->hue_sliders[7] = g->hue_purple = dt_bauhaus_slider_from_params(self, "hue_purple");
+  dt_bauhaus_widget_set_label(g->hue_sliders[0], N_("hue"), N_("red"));
+  dt_bauhaus_widget_set_label(g->hue_sliders[1], N_("hue"), N_("orange"));
+  dt_bauhaus_widget_set_label(g->hue_sliders[2], N_("hue"), N_("lime"));
+  dt_bauhaus_widget_set_label(g->hue_sliders[3], N_("hue"), N_("green"));
+  dt_bauhaus_widget_set_label(g->hue_sliders[4], N_("hue"), N_("turquoise"));
+  dt_bauhaus_widget_set_label(g->hue_sliders[5], N_("hue"), N_("blue"));
+  dt_bauhaus_widget_set_label(g->hue_sliders[6], N_("hue"), N_("lavender"));
+  dt_bauhaus_widget_set_label(g->hue_sliders[7], N_("hue"), N_("purple"));
 
   self->widget = dt_ui_notebook_page(g->notebook, N_("brightness"), _("change brightness hue-wise"));
 
@@ -1528,6 +1574,14 @@ void gui_init(struct dt_iop_module_t *self)
   g->bright_sliders[5] = g->bright_blue = dt_bauhaus_slider_from_params(self, "bright_blue");
   g->bright_sliders[6] = g->bright_lavender = dt_bauhaus_slider_from_params(self, "bright_lavender");
   g->bright_sliders[7] = g->bright_purple = dt_bauhaus_slider_from_params(self, "bright_purple");
+  dt_bauhaus_widget_set_label(g->bright_sliders[0], N_("bright"), N_("red"));
+  dt_bauhaus_widget_set_label(g->bright_sliders[1], N_("bright"), N_("orange"));
+  dt_bauhaus_widget_set_label(g->bright_sliders[2], N_("bright"), N_("lime"));
+  dt_bauhaus_widget_set_label(g->bright_sliders[3], N_("bright"), N_("green"));
+  dt_bauhaus_widget_set_label(g->bright_sliders[4], N_("bright"), N_("turquoise"));
+  dt_bauhaus_widget_set_label(g->bright_sliders[5], N_("bright"), N_("blue"));
+  dt_bauhaus_widget_set_label(g->bright_sliders[6], N_("bright"), N_("lavender"));
+  dt_bauhaus_widget_set_label(g->bright_sliders[7], N_("bright"), N_("purple"));
 
   self->widget = dt_ui_notebook_page(g->notebook, N_("options"), _(""));
   g->white_level = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "white_level"));
