@@ -37,13 +37,13 @@ None;midi:CC14=iop/colorequal/saturation/blue
 None;midi:CC15=iop/colorequal/saturation/lavender
 None;midi:CC16=iop/colorequal/saturation/purple
 None;midi:CC17=iop/colorequal/bright/red
-None;midi:CC18=iop/colorequal/bright/orange
-None;midi:CC19=iop/colorequal/bright/lime
-None;midi:CC20=iop/colorequal/bright/green
-None;midi:CC21=iop/colorequal/bright/turquoise
-None;midi:CC22=iop/colorequal/bright/blue
-None;midi:CC23=iop/colorequal/bright/lavender
-None;midi:CC24=iop/colorequal/bright/purple
+None;midi:CC18=iop/colorequal/brightness/orange
+None;midi:CC19=iop/colorequal/brightness/lime
+None;midi:CC20=iop/colorequal/brightness/green
+None;midi:CC21=iop/colorequal/brightness/turquoise
+None;midi:CC22=iop/colorequal/brightness/blue
+None;midi:CC23=iop/colorequal/brightness/lavender
+None;midi:CC24=iop/colorequal/brightness/purple
 */
 
 #include "common/extra_optimizations.h"
@@ -154,8 +154,8 @@ typedef struct dt_iop_colorequal_params_t
 
 typedef enum dt_iop_colorequal_channel_t
 {
-  SATURATION = 0,
-  HUE = 1,
+  HUE = 0,
+  SATURATION = 1,
   BRIGHTNESS = 2,
   NUM_CHANNELS = 3,
 } dt_iop_colorequal_channel_t;
@@ -180,12 +180,22 @@ typedef struct dt_iop_colorequal_data_t
 
 const char *name()
 {
-  return _("Color equalizer");
+  return _("color equalizer");
 }
 
 const char *aliases()
 {
-  return _("Color zones");
+  return _("color zones");
+}
+
+const char **description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description
+    (self, _("change saturation, hue and brightness depending on local hue"),
+     _("corrective and creative"),
+     _("linear, RGB, scene-referred"),
+     _("quasi-linear, RGB"),
+     _("quasi-linear, RGB, scene-referred"));
 }
 
 int default_group()
@@ -1104,7 +1114,7 @@ static void _init_graph_backgrounds(cairo_pattern_t *gradients[GRAPH_GRADIENTS],
 }
 
 
-static gboolean _iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
+static gboolean _iop_colorequalizer_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
@@ -1511,7 +1521,7 @@ void gui_init(struct dt_iop_module_t *self)
   //dt_conf_get_int("plugins/darkroom/colorequal/aspect_percent") / 100.0;
   g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(aspect));
   g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
-  g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(_iop_tonecurve_draw), self);
+  g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(_iop_colorequalizer_draw), self);
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->area), TRUE, TRUE, 0);
 
   // start building top level widget
@@ -1520,29 +1530,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_action_define_iop(self, NULL, N_("page"), GTK_WIDGET(g->notebook), &notebook_def);
   g_signal_connect(G_OBJECT(g->notebook), "switch_page", G_CALLBACK(_channel_tabs_switch_callback), self);
 
-  self->widget = dt_ui_notebook_page(g->notebook, N_("saturation"), _("change saturation hue-wise"));
-
-  g->smoothing_saturation = dt_bauhaus_slider_from_params(self, "smoothing_saturation");
-
-  g->sat_sliders[0] = g->sat_red = dt_bauhaus_slider_from_params(self, "sat_red");
-  g->sat_sliders[1] = g->sat_orange = dt_bauhaus_slider_from_params(self, "sat_orange");
-  g->sat_sliders[2] = g->sat_lime = dt_bauhaus_slider_from_params(self, "sat_lime");
-  g->sat_sliders[3] = g->sat_green = dt_bauhaus_slider_from_params(self, "sat_green");
-  g->sat_sliders[4] = g->sat_turquoise = dt_bauhaus_slider_from_params(self, "sat_turquoise");
-  g->sat_sliders[5] = g->sat_blue = dt_bauhaus_slider_from_params(self, "sat_blue");
-  g->sat_sliders[6] = g->sat_lavender = dt_bauhaus_slider_from_params(self, "sat_lavender");
-  g->sat_sliders[7] = g->sat_purple = dt_bauhaus_slider_from_params(self, "sat_purple");
-  dt_bauhaus_widget_set_label(g->sat_sliders[0], N_("saturation"), N_("red"));
-  dt_bauhaus_widget_set_label(g->sat_sliders[1], N_("saturation"), N_("orange"));
-  dt_bauhaus_widget_set_label(g->sat_sliders[2], N_("saturation"), N_("lime"));
-  dt_bauhaus_widget_set_label(g->sat_sliders[3], N_("saturation"), N_("green"));
-  dt_bauhaus_widget_set_label(g->sat_sliders[4], N_("saturation"), N_("turquoise"));
-  dt_bauhaus_widget_set_label(g->sat_sliders[5], N_("saturation"), N_("blue"));
-  dt_bauhaus_widget_set_label(g->sat_sliders[6], N_("saturation"), N_("lavender"));
-  dt_bauhaus_widget_set_label(g->sat_sliders[7], N_("saturation"), N_("purple"));
-
   self->widget = dt_ui_notebook_page(g->notebook, N_("hue"), _("change hue hue-wise"));
-
   g->smoothing_hue = dt_bauhaus_slider_from_params(self, "smoothing_hue");
 
   g->hue_sliders[0] = g->hue_red = dt_bauhaus_slider_from_params(self, "hue_red");
@@ -1562,8 +1550,28 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->hue_sliders[6], N_("hue"), N_("lavender"));
   dt_bauhaus_widget_set_label(g->hue_sliders[7], N_("hue"), N_("purple"));
 
-  self->widget = dt_ui_notebook_page(g->notebook, N_("brightness"), _("change brightness hue-wise"));
+  self->widget = dt_ui_notebook_page(g->notebook, N_("saturation"), _("change saturation hue-wise"));
+  g->smoothing_saturation = dt_bauhaus_slider_from_params(self, "smoothing_saturation");
 
+  g->sat_sliders[0] = g->sat_red = dt_bauhaus_slider_from_params(self, "sat_red");
+  g->sat_sliders[1] = g->sat_orange = dt_bauhaus_slider_from_params(self, "sat_orange");
+  g->sat_sliders[2] = g->sat_lime = dt_bauhaus_slider_from_params(self, "sat_lime");
+  g->sat_sliders[3] = g->sat_green = dt_bauhaus_slider_from_params(self, "sat_green");
+  g->sat_sliders[4] = g->sat_turquoise = dt_bauhaus_slider_from_params(self, "sat_turquoise");
+  g->sat_sliders[5] = g->sat_blue = dt_bauhaus_slider_from_params(self, "sat_blue");
+  g->sat_sliders[6] = g->sat_lavender = dt_bauhaus_slider_from_params(self, "sat_lavender");
+  g->sat_sliders[7] = g->sat_purple = dt_bauhaus_slider_from_params(self, "sat_purple");
+  dt_bauhaus_widget_set_label(g->sat_sliders[0], N_("saturation"), N_("red"));
+  dt_bauhaus_widget_set_label(g->sat_sliders[1], N_("saturation"), N_("orange"));
+  dt_bauhaus_widget_set_label(g->sat_sliders[2], N_("saturation"), N_("lime"));
+  dt_bauhaus_widget_set_label(g->sat_sliders[3], N_("saturation"), N_("green"));
+  dt_bauhaus_widget_set_label(g->sat_sliders[4], N_("saturation"), N_("turquoise"));
+  dt_bauhaus_widget_set_label(g->sat_sliders[5], N_("saturation"), N_("blue"));
+  dt_bauhaus_widget_set_label(g->sat_sliders[6], N_("saturation"), N_("lavender"));
+  dt_bauhaus_widget_set_label(g->sat_sliders[7], N_("saturation"), N_("purple"));
+
+
+  self->widget = dt_ui_notebook_page(g->notebook, N_("brightness"), _("change brightness hue-wise"));
   g->smoothing_bright = dt_bauhaus_slider_from_params(self, "smoothing_brightness");
 
   g->bright_sliders[0] = g->bright_red = dt_bauhaus_slider_from_params(self, "bright_red");
@@ -1574,14 +1582,14 @@ void gui_init(struct dt_iop_module_t *self)
   g->bright_sliders[5] = g->bright_blue = dt_bauhaus_slider_from_params(self, "bright_blue");
   g->bright_sliders[6] = g->bright_lavender = dt_bauhaus_slider_from_params(self, "bright_lavender");
   g->bright_sliders[7] = g->bright_purple = dt_bauhaus_slider_from_params(self, "bright_purple");
-  dt_bauhaus_widget_set_label(g->bright_sliders[0], N_("bright"), N_("red"));
-  dt_bauhaus_widget_set_label(g->bright_sliders[1], N_("bright"), N_("orange"));
-  dt_bauhaus_widget_set_label(g->bright_sliders[2], N_("bright"), N_("lime"));
-  dt_bauhaus_widget_set_label(g->bright_sliders[3], N_("bright"), N_("green"));
-  dt_bauhaus_widget_set_label(g->bright_sliders[4], N_("bright"), N_("turquoise"));
-  dt_bauhaus_widget_set_label(g->bright_sliders[5], N_("bright"), N_("blue"));
-  dt_bauhaus_widget_set_label(g->bright_sliders[6], N_("bright"), N_("lavender"));
-  dt_bauhaus_widget_set_label(g->bright_sliders[7], N_("bright"), N_("purple"));
+  dt_bauhaus_widget_set_label(g->bright_sliders[0], N_("brightness"), N_("red"));
+  dt_bauhaus_widget_set_label(g->bright_sliders[1], N_("brightness"), N_("orange"));
+  dt_bauhaus_widget_set_label(g->bright_sliders[2], N_("brightness"), N_("lime"));
+  dt_bauhaus_widget_set_label(g->bright_sliders[3], N_("brightness"), N_("green"));
+  dt_bauhaus_widget_set_label(g->bright_sliders[4], N_("brightness"), N_("turquoise"));
+  dt_bauhaus_widget_set_label(g->bright_sliders[5], N_("brightness"), N_("blue"));
+  dt_bauhaus_widget_set_label(g->bright_sliders[6], N_("brightness"), N_("lavender"));
+  dt_bauhaus_widget_set_label(g->bright_sliders[7], N_("brightness"), N_("purple"));
 
   self->widget = dt_ui_notebook_page(g->notebook, N_("options"), _(""));
   g->white_level = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "white_level"));
