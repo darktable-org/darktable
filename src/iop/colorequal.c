@@ -1705,9 +1705,9 @@ void gui_init(struct dt_iop_module_t *self)
 
   GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  const float aspect = 2.f / 3.f;
-  //dt_conf_get_int("plugins/darkroom/colorequal/aspect_percent") / 100.0;
-  g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(aspect));
+  g->area = GTK_DRAWING_AREA
+    (dt_ui_resize_wrap(NULL, 0,
+                       "plugins/darkroom/colorequal/aspect_percent"));
   g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
   gtk_widget_set_can_focus(GTK_WIDGET(g->area), TRUE);
   gtk_widget_add_events(GTK_WIDGET(g->area),
