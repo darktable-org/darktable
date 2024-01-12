@@ -36,7 +36,7 @@ None;midi:CC13=iop/colorequal/saturation/turquoise
 None;midi:CC14=iop/colorequal/saturation/blue
 None;midi:CC15=iop/colorequal/saturation/lavender
 None;midi:CC16=iop/colorequal/saturation/purple
-None;midi:CC17=iop/colorequal/bright/red
+None;midi:CC17=iop/colorequal/brightness/red
 None;midi:CC18=iop/colorequal/brightness/orange
 None;midi:CC19=iop/colorequal/brightness/lime
 None;midi:CC20=iop/colorequal/brightness/green
@@ -132,14 +132,14 @@ typedef struct dt_iop_colorequal_params_t
   float sat_lavender;  // $MIN: 0. $MAX: 2. $DEFAULT: 1.0 $DESCRIPTION: "lavender"
   float sat_purple;    // $MIN: 0. $MAX: 2. $DEFAULT: 1.0 $DESCRIPTION: "purple"
 
-  float hue_red;       // $MIN: -180. $MAX: 180 $DEFAULT: 0. $DESCRIPTION: "red"
-  float hue_orange;    // $MIN: -180. $MAX: 180 $DEFAULT: 0. $DESCRIPTION: "orange"
-  float hue_lime;      // $MIN: -180. $MAX: 180 $DEFAULT: 0. $DESCRIPTION: "lime"
-  float hue_green;     // $MIN: -180. $MAX: 180 $DEFAULT: 0. $DESCRIPTION: "green"
-  float hue_turquoise; // $MIN: -180. $MAX: 180 $DEFAULT: 0. $DESCRIPTION: "turquoise"
-  float hue_blue;      // $MIN: -180. $MAX: 180 $DEFAULT: 0. $DESCRIPTION: "blue"
-  float hue_lavender;  // $MIN: -180. $MAX: 180 $DEFAULT: 0. $DESCRIPTION: "lavender"
-  float hue_purple;    // $MIN: -180. $MAX: 180 $DEFAULT: 0. $DESCRIPTION: "purple"
+  float hue_red;       // $MIN: -180. $MAX: 180 $DEFAULT: 0.0 $DESCRIPTION: "red"
+  float hue_orange;    // $MIN: -180. $MAX: 180 $DEFAULT: 0.0 $DESCRIPTION: "orange"
+  float hue_lime;      // $MIN: -180. $MAX: 180 $DEFAULT: 0.0 $DESCRIPTION: "lime"
+  float hue_green;     // $MIN: -180. $MAX: 180 $DEFAULT: 0.0 $DESCRIPTION: "green"
+  float hue_turquoise; // $MIN: -180. $MAX: 180 $DEFAULT: 0.0 $DESCRIPTION: "turquoise"
+  float hue_blue;      // $MIN: -180. $MAX: 180 $DEFAULT: 0.0 $DESCRIPTION: "blue"
+  float hue_lavender;  // $MIN: -180. $MAX: 180 $DEFAULT: 0.0 $DESCRIPTION: "lavender"
+  float hue_purple;    // $MIN: -180. $MAX: 180 $DEFAULT: 0.0 $DESCRIPTION: "purple"
 
   float bright_red;       // $MIN: 0. $MAX: 2. $DEFAULT: 1.0 $DESCRIPTION: "red"
   float bright_orange;    // $MIN: 0. $MAX: 2. $DEFAULT: 1.0 $DESCRIPTION: "orange"
@@ -243,6 +243,12 @@ typedef struct dt_iop_colorequal_gui_data_t
   gboolean gradients_cached;
 
   float *gamut_LUT;
+
+  gboolean dragging;
+  int selected;
+  float points[NODES+1][2];
+  float mouse_x;
+  float mouse_y;
 } dt_iop_colorequal_gui_data_t;
 
 void _mean_gaussian(float *const buf,
@@ -1021,7 +1027,6 @@ static inline void _draw_sliders_brightness_gradient(const float sat,
   }
 }
 
-
 static inline void _init_sliders(dt_iop_module_t *self)
 {
   dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
@@ -1031,7 +1036,6 @@ static inline void _init_sliders(dt_iop_module_t *self)
   {
     GtkWidget *const slider = g->sat_sliders[k];
     _draw_sliders_saturation_gradient(0.f, g->max_saturation, _get_hue_node(k), SLIDER_BRIGHTNESS, slider, g->white_adapted_profile, g->gamut_LUT);
-    dt_bauhaus_slider_set_feedback(slider, 0);
     dt_bauhaus_slider_set_format(slider, " %");
     dt_bauhaus_slider_set_offset(slider, -100.0f);
     dt_bauhaus_slider_set_digits(slider, 2);
@@ -1043,7 +1047,6 @@ static inline void _init_sliders(dt_iop_module_t *self)
   {
     GtkWidget *const slider = g->hue_sliders[k];
     _draw_sliders_hue_gradient(g->max_saturation, _get_hue_node(k), SLIDER_BRIGHTNESS, slider, g->white_adapted_profile, g->gamut_LUT);
-    dt_bauhaus_slider_set_feedback(slider, 0);
     dt_bauhaus_slider_set_format(slider, " °");
     dt_bauhaus_slider_set_digits(slider, 2);
     gtk_widget_queue_draw(slider);
@@ -1054,7 +1057,6 @@ static inline void _init_sliders(dt_iop_module_t *self)
   {
     GtkWidget *const slider = g->bright_sliders[k];
     _draw_sliders_brightness_gradient(g->max_saturation, _get_hue_node(k), slider, g->white_adapted_profile, g->gamut_LUT);
-    dt_bauhaus_slider_set_feedback(slider, 0);
     dt_bauhaus_slider_set_format(slider, " %");
     dt_bauhaus_slider_set_offset(slider, -100.0f);
     dt_bauhaus_slider_set_digits(slider, 2);
@@ -1064,7 +1066,7 @@ static inline void _init_sliders(dt_iop_module_t *self)
 
 
 static void _init_graph_backgrounds(cairo_pattern_t *gradients[GRAPH_GRADIENTS],
-                                    dt_iop_colorequal_channel_t channel,
+                                    const dt_iop_colorequal_channel_t channel,
                                     struct dt_iop_order_iccprofile_info_t *work_profile,
                                     const size_t graph_width,
                                     const float *const restrict gamut_LUT,
@@ -1330,12 +1332,15 @@ static gboolean _iop_colorequalizer_draw(GtkWidget *widget, cairo_t *crf, gpoint
     set_color(cr, darktable.bauhaus->graph_fg);
     cairo_stroke_preserve(cr);
 
-    /*
-    if(g->area_active_node == k)
-      set_color(g->cr, darktable.bauhaus->graph_fg);
+    // record nodes positions for motion events
+    g->points[k][0] = xn;
+    g->points[k][1] = yn;
+
+    if(g->selected == k
+       || (k == NODES && g->selected == 0))
+      set_color(cr, darktable.bauhaus->graph_fg);
     else
-      */
-    set_color(cr, darktable.bauhaus->graph_bg);
+      set_color(cr, darktable.bauhaus->graph_bg);
 
     cairo_fill(cr);
   }
@@ -1415,6 +1420,188 @@ static void _channel_tabs_switch_callback(GtkNotebook *notebook,
     g->channel = (dt_iop_colorequal_channel_t)page_num;
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
   }
+}
+
+static void _area_set_value(dt_iop_colorequal_gui_data_t *g,
+                            const float graph_height,
+                            const float pos)
+{
+  GtkWidget **w = NULL;
+  float factor = .0f;
+  float max = .0f;
+
+  switch(g->channel)
+  {
+     case(SATURATION):
+       w = g->sat_sliders;
+       factor = 0.5f;
+       max = 100.0f;
+       break;
+     case(HUE):
+       w = g->hue_sliders;
+       factor = 1.f / (2.f * M_PI_F);
+       max = (100.0f / 180.0f) * 100.0f;
+       break;
+     case(BRIGHTNESS):
+     default:
+       w = g->bright_sliders;
+       factor = 0.5f;
+       max = 100.0f;
+       break;
+  }
+
+  const float val = (0.5f - (pos / graph_height)) * max / factor;
+  dt_bauhaus_slider_set_val(w[g->selected], val);
+}
+
+static void _area_set_pos(dt_iop_colorequal_gui_data_t *g,
+                          const float pos)
+{
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(GTK_WIDGET(g->area), &allocation);
+  const float graph_height = allocation.height;
+
+  const float y = CLAMP(pos, .0f, graph_height);
+
+  _area_set_value(g, graph_height, y);
+}
+
+static void _area_reset_nodes(dt_iop_colorequal_gui_data_t *g)
+{
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(GTK_WIDGET(g->area), &allocation);
+  const float graph_height = allocation.height;
+  const float y = graph_height / 2.0f;
+
+  if(g->selected >= 0)
+  {
+    _area_set_value(g, graph_height, y);
+  }
+  else
+  {
+    for(int k=0; k<NODES+1; k++)
+    {
+      g->selected = k;
+      _area_set_value(g, graph_height, y);
+    }
+    g->selected = -1;
+  }
+}
+
+static gboolean _area_scrolled_callback(GtkWidget *widget,
+                                        GdkEventScroll *event,
+                                        gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+
+  gboolean redraw = FALSE;
+
+  int delta_y;
+  if(dt_gui_get_scroll_unit_delta(event, &delta_y))
+  {
+    _area_set_pos(g, g->mouse_y + delta_y);
+    g->mouse_y += delta_y;
+
+    redraw = TRUE;
+  }
+
+  if(redraw)
+    gtk_widget_queue_draw(GTK_WIDGET(g->area));
+
+  return TRUE;
+}
+
+static gboolean _area_motion_notify_callback(GtkWidget *widget,
+                                             GdkEventMotion *event,
+                                             gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+
+  gboolean redraw = FALSE;
+
+  if(g->dragging)
+  {
+    const float dy = g->mouse_y - event->y;
+
+    if(fabsf(dy) > 1.0f)
+    {
+      _area_set_pos(g, event->y);
+
+      g->mouse_y = event->y;
+
+      redraw = TRUE;
+    }
+  }
+  else
+  {
+    // look if close to a node
+    const float epsilon = DT_PIXEL_APPLY_DPI(10.0);
+
+    const int oldsel = g->selected;
+    g->selected = -1;
+    g->mouse_y = event->y;
+
+    for(int k=0; k<NODES+1; k++)
+    {
+      if(fabsf(g->points[k][0] - (float)event->x) < epsilon
+         && fabsf(g->points[k][1] - (float)event->y) < epsilon)
+      {
+        // if last node, select node 0 (same node actually)
+        g->selected = k == NODES ? 0 : k;
+        break;
+      }
+    }
+
+    redraw = oldsel != g->selected;
+  }
+
+  if(redraw)
+    gtk_widget_queue_draw(GTK_WIDGET(g->area));
+
+  return TRUE;
+}
+
+static gboolean _area_button_press_callback(GtkWidget *widget,
+                                            GdkEventButton *event,
+                                            gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+
+  if(event->button == 1)
+  {
+    g->mouse_x = event->x;
+    g->mouse_y = event->y;
+
+    if(event->type == GDK_2BUTTON_PRESS)
+    {
+      _area_reset_nodes(g);
+    }
+    else
+    {
+      g->dragging = TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
+static gboolean _area_button_release_callback(GtkWidget *widget,
+                                              GdkEventButton *event,
+                                              gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+
+  if(event->button == 1)
+  {
+    g->dragging = FALSE;
+    return TRUE;
+  }
+
+  return FALSE;
 }
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
@@ -1502,6 +1689,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->white_adapted_profile = D65_adapt_iccprofile(work_profile);
   g->work_profile = work_profile;
   g->gradients_cached = FALSE;
+  g->selected = -1;
 
   // Init the display gamut LUT - Default to Rec709 D65 aka linear sRGB
   g->gamut_LUT = dt_alloc_align_float(LUT_ELEM);
@@ -1521,7 +1709,22 @@ void gui_init(struct dt_iop_module_t *self)
   //dt_conf_get_int("plugins/darkroom/colorequal/aspect_percent") / 100.0;
   g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(aspect));
   g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
+  gtk_widget_set_can_focus(GTK_WIDGET(g->area), TRUE);
+  gtk_widget_add_events(GTK_WIDGET(g->area),
+                        GDK_BUTTON_PRESS_MASK
+                        | GDK_POINTER_MOTION_MASK
+                        | GDK_BUTTON_RELEASE_MASK
+                        | GDK_SCROLL_MASK
+                        | GDK_SMOOTH_SCROLL_MASK);
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(_iop_colorequalizer_draw), self);
+  g_signal_connect(G_OBJECT(g->area), "button-press-event",
+                   G_CALLBACK(_area_button_press_callback), self);
+  g_signal_connect(G_OBJECT(g->area), "button-release-event",
+                   G_CALLBACK(_area_button_release_callback), self);
+  g_signal_connect(G_OBJECT(g->area), "motion-notify-event",
+                   G_CALLBACK(_area_motion_notify_callback), self);
+  g_signal_connect(G_OBJECT(g->area), "scroll-event",
+                   G_CALLBACK(_area_scrolled_callback), self);
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->area), TRUE, TRUE, 0);
 
   // start building top level widget
