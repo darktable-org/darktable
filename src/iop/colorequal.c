@@ -32,7 +32,6 @@
 #include "common/chromatic_adaptation.h"
 #include "common/darktable_ucs_22_helpers.h"
 #include "common/darktable.h"
-#include "common/fast_guided_filter.h"
 #include "common/eigf.h"
 #include "common/interpolation.h"
 #include "common/opencl.h"
@@ -80,14 +79,13 @@ typedef struct dt_iop_colorequal_params_t
   float smoothing_brightness;    // $MIN: 0.05 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "curve smoothing"
 
   float white_level;        // $MIN: -2.0 $MAX: 16.0 $DEFAULT: 1.0 $DESCRIPTION: "white level"
-  float chroma_size;        // $MIN: 1.0 $MAX: 10. $DEFAULT: 3.0 $DESCRIPTION: "chroma prefilter size"
-  float chroma_feathering;  // $MIN: 1.0 $MAX: 10. $DEFAULT: 5.0 $DESCRIPTION: "chroma prefilter feathering"
+  float chroma_size;        // $MIN: 1.0 $MAX: 10. $DEFAULT: 3.0 $DESCRIPTION: "analysis radius"
+  float chroma_feathering;  // $MIN: 1.0 $MAX: 10. $DEFAULT: 5.0 $DESCRIPTION: "analysis feathering"
 
-  float param_size;        // $MIN: 3 $MAX: 128 $DEFAULT: 50 $DESCRIPTION: "parameters smoothing size"
-  float param_feathering;  // $MIN: 1.0 $MAX: 10. $DEFAULT: 6.0 $DESCRIPTION: "parameters feathering"
+  float param_size;        // $MIN: 3 $MAX: 128 $DEFAULT: 50 $DESCRIPTION: "effect radius"
+  float param_feathering;  // $MIN: 1.0 $MAX: 10. $DEFAULT: 6.0 $DESCRIPTION: "effect feathering"
 
-
-  gboolean use_filter; // $DEFAULT: FALSE $DESCRIPTION: "use guided filter"
+  gboolean use_filter; // $DEFAULT: TRUE $DESCRIPTION: "use guided filter"
 
   // Note: what follows is tedious because each param needs to be declared separately.
   // A more efficient way would be to use 3 arrays of 8 elements,
@@ -152,12 +150,12 @@ typedef struct dt_iop_colorequal_data_t
 
 const char *name()
 {
-  return _("color equalizer");
+  return _("Color equalizer");
 }
 
 const char *aliases()
 {
-  return _("color zones");
+  return _("Color zones");
 }
 
 int default_group()
@@ -1537,11 +1535,22 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->white_level, _(" EV"));
 
   g->use_filter = dt_bauhaus_toggle_from_params(self, "use_filter");
+
   g->chroma_size = dt_bauhaus_slider_from_params(self, "chroma_size");
+  dt_bauhaus_slider_set_digits(g->chroma_size, 1);
+  dt_bauhaus_slider_set_format(g->chroma_size, _(" pix"));
+  gtk_widget_set_tooltip_text(g->chroma_size, _("blurring radius of chroma prefilter analysis"));
+
   g->chroma_feathering = dt_bauhaus_slider_from_params(self, "chroma_feathering");
+  dt_bauhaus_slider_set_digits(g->chroma_feathering, 1);
 
   g->param_size = dt_bauhaus_slider_from_params(self, "param_size");
+  dt_bauhaus_slider_set_digits(g->param_size, 1);
+  dt_bauhaus_slider_set_format(g->param_size, _(" pix"));
+  gtk_widget_set_tooltip_text(g->param_size, _("blurring radius of applied parameters"));
+
   g->param_feathering = dt_bauhaus_slider_from_params(self, "param_feathering");
+  dt_bauhaus_slider_set_digits(g->param_feathering, 1);
 
   _init_sliders(self);
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->notebook), TRUE, TRUE, 0);
