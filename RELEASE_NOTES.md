@@ -96,6 +96,9 @@ for more information on how to contribute._
 - Fix possible wrong default value initialized in lens legacy
   parameter migration from version 2.
 
+- Fix garbeld output and possibly OpenCL errors for very dark regions
+  in colorbalance rgb.
+
 ## Lua
 
 ### API Version
