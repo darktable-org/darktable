@@ -2023,7 +2023,9 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft_range(g->brilliance_global, -0.2f, 0.2f);
   dt_bauhaus_slider_set_digits(g->brilliance_global, 4);
   dt_bauhaus_slider_set_format(g->brilliance_global, "%");
-  gtk_widget_set_tooltip_text(g->brilliance_global, _("add or remove brilliance by an absolute amount"));
+  gtk_widget_set_tooltip_text(g->brilliance_global, _("add or remove brilliance by an absolute amount\n"
+                                                      "if the sum of the global brilliance and highlights brilliance values > 20%, artifacts\n"
+                                                      "with any subsequent wavelets, guided filter or blurring operations may appear"));
 
   g->brilliance_shadows = dt_bauhaus_slider_from_params(sect, "brilliance_shadows");
   dt_bauhaus_slider_set_soft_range(g->brilliance_shadows, -0.2f, 0.2f);
@@ -2041,7 +2043,9 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft_range(g->brilliance_highlights, -0.2f, 0.2f);
   dt_bauhaus_slider_set_digits(g->brilliance_highlights, 4);
   dt_bauhaus_slider_set_format(g->brilliance_highlights, "%");
-  gtk_widget_set_tooltip_text(g->brilliance_highlights, _("increase or decrease brilliance proportionally to the original pixel brilliance"));
+  gtk_widget_set_tooltip_text(g->brilliance_highlights, _("increase or decrease brilliance proportionally to the original pixel brilliance\n"
+                                                          "if the sum of the global brilliance and highlights brilliance values > 20%, artifacts\n"
+                                                          "with any subsequent wavelets, guided filter or blurring operations may appear"));
 
   // Page 4-ways
   self->widget = dt_ui_notebook_page(g->notebook, N_("4 ways"), _("selective color grading"));
