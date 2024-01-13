@@ -153,7 +153,6 @@ typedef struct dt_iop_colorbalancergb_data_t
   float shadows_weight, highlights_weight, midtones_weight, mask_grey_fulcrum;
   float white_fulcrum, grey_fulcrum;
   float *gamut_LUT;
-  float *chroma_LUT;
   float max_chroma;
   dt_aligned_pixel_t checker_color_1, checker_color_2;
   dt_iop_colorbalancrgb_saturation_t saturation_formula;
@@ -1271,7 +1270,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     {
       #ifdef _OPENMP
       #pragma omp parallel for default(none) \
-            dt_omp_firstprivate(input_matrix, p) schedule(static) dt_omp_sharedconst(LUT_saturation) \
+            dt_omp_firstprivate(input_matrix, p) schedule(static) \
+            reduction(max : LUT_saturation[:LUT_ELEM]) \
             collapse(3)
       #endif
       for(size_t r = 0; r < STEPS; r++)
@@ -1297,22 +1297,13 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
             hue = Jch[2];
 
             const size_t index = roundf((LUT_ELEM - 1) * (hue + M_PI_F) / (2.f * M_PI_F));
-            LUT_saturation[index] = MAX(saturation, LUT_saturation[index]);
+            LUT_saturation[index] = fmaxf(saturation, LUT_saturation[index]);
           }
 
-      // anti-aliasing on the LUT (simple 5-taps 1D box average)
-      for(size_t k = 2; k < LUT_ELEM - 2; k++)
-        d->gamut_LUT[k] = (LUT_saturation[k - 2] + LUT_saturation[k - 1] + LUT_saturation[k] + LUT_saturation[k + 1] + LUT_saturation[k + 2]) / 5.f;
-
-      // handle bounds
-      d->gamut_LUT[0] = (LUT_saturation[LUT_ELEM - 2] + LUT_saturation[LUT_ELEM - 1] + LUT_saturation[0] + LUT_saturation[1] + LUT_saturation[2]) / 5.f;
-      d->gamut_LUT[1] = (LUT_saturation[LUT_ELEM - 1] + LUT_saturation[0] + LUT_saturation[1] + LUT_saturation[2] + LUT_saturation[3]) / 5.f;
-      d->gamut_LUT[LUT_ELEM - 1] = (LUT_saturation[LUT_ELEM - 3] + LUT_saturation[LUT_ELEM - 2] + LUT_saturation[LUT_ELEM - 1] + LUT_saturation[0] + LUT_saturation[1]) / 5.f;
-      d->gamut_LUT[LUT_ELEM - 2] = (LUT_saturation[LUT_ELEM - 4] + LUT_saturation[LUT_ELEM - 3] + LUT_saturation[LUT_ELEM - 2] + LUT_saturation[LUT_ELEM - 1] + LUT_saturation[0]) / 5.f;
     }
     else if(p->saturation_formula == DT_COLORBALANCE_SATURATION_DTUCS)
     {
-      dt_aligned_pixel_t D65_xyY = { 0.31269999999999992f,  0.32899999999999996f ,  1.f, 0.f };
+      const dt_aligned_pixel_t D65_xyY = { D65xyY.x, D65xyY.y,  1.f, 0.f };
 
       // Compute the RGB space primaries in xyY
       dt_aligned_pixel_t RGB_red   = { 1.f, 0.f, 0.f, 0.f };
@@ -1334,14 +1325,14 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
       const float h_green = atan2f(xyY_green[1] - D65_xyY[1], xyY_green[0] - D65_xyY[0]);
       const float h_blue  = atan2f(xyY_blue[1] - D65_xyY[1], xyY_blue[0] - D65_xyY[0]);
 
-       float *const restrict dt_UCS_LUT = d->gamut_LUT;
-
       // March the gamut boundary in CIE xyY 1931 by angular steps of 0.02°
       #ifdef _OPENMP
         #pragma omp parallel for default(none) \
               dt_omp_firstprivate(input_matrix, xyY_red, xyY_green, xyY_blue, h_red, h_green, h_blue, D65_xyY) \
-              schedule(static) dt_omp_sharedconst(dt_UCS_LUT)
+              reduction(max : LUT_saturation[:LUT_ELEM]) \
+              schedule(static)
       #endif
+
       for(int i = 0; i < 50 * 360; i++)
       {
         const float angle = -M_PI_F + ((float)i) / (50.f * 360.f) * 2.f * M_PI_F;
@@ -1382,18 +1373,24 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
         xyY_to_dt_UCS_UV(xyY, UV_star_prime);
 
         // Get the hue angle in darktable UCS
-        const float H = atan2f(UV_star_prime[1], UV_star_prime[0]) * 180.f / M_PI_F;
-        const float H_round = roundf(H);
-        if(fabsf(H - H_round) < 0.02f)
-        {
-          int index = (int)(H_round + 180);
-          index += (index < 0) ? 360 : 0;
-          index -= (index > 359) ? 360 : 0;
-          // Warning: we store M², the square of the colorfulness
-          dt_UCS_LUT[index] = UV_star_prime[0] * UV_star_prime[0] + UV_star_prime[1] * UV_star_prime[1];
-        }
+        const float hue = atan2f(UV_star_prime[1], UV_star_prime[0]);
+        int index = roundf((LUT_ELEM - 1) * (hue + M_PI_F) / (2.f * M_PI_F));
+        index += (index < 0) ? LUT_ELEM : 0;
+        index -= (index >= LUT_ELEM) ? LUT_ELEM : 0;
+        // Warning: we store M², the square of the colorfulness
+        LUT_saturation[index] = fmaxf(LUT_saturation[index], UV_star_prime[0] * UV_star_prime[0] + UV_star_prime[1] * UV_star_prime[1]);
       }
     }
+
+    // anti-aliasing on the LUT (simple 5-taps 1D box average)
+    for(size_t k = 2; k < LUT_ELEM - 2; k++)
+      d->gamut_LUT[k] = (LUT_saturation[k - 2] + LUT_saturation[k - 1] + LUT_saturation[k] + LUT_saturation[k + 1] + LUT_saturation[k + 2]) / 5.f;
+
+    // handle bounds
+    d->gamut_LUT[0] = (LUT_saturation[LUT_ELEM - 2] + LUT_saturation[LUT_ELEM - 1] + LUT_saturation[0] + LUT_saturation[1] + LUT_saturation[2]) / 5.f;
+    d->gamut_LUT[1] = (LUT_saturation[LUT_ELEM - 1] + LUT_saturation[0] + LUT_saturation[1] + LUT_saturation[2] + LUT_saturation[3]) / 5.f;
+    d->gamut_LUT[LUT_ELEM - 1] = (LUT_saturation[LUT_ELEM - 3] + LUT_saturation[LUT_ELEM - 2] + LUT_saturation[LUT_ELEM - 1] + LUT_saturation[0] + LUT_saturation[1]) / 5.f;
+    d->gamut_LUT[LUT_ELEM - 2] = (LUT_saturation[LUT_ELEM - 4] + LUT_saturation[LUT_ELEM - 3] + LUT_saturation[LUT_ELEM - 2] + LUT_saturation[LUT_ELEM - 1] + LUT_saturation[0]) / 5.f;
 
     dt_free_align(LUT_saturation);
     d->lut_inited = TRUE;
