@@ -72,6 +72,7 @@ typedef struct dt_lib_tagging_t
     gboolean tag_source;
   } drag;
   gboolean update_selected_tags;
+  gboolean tags_natural_sort;
 } dt_lib_tagging_t;
 
 typedef struct dt_tag_op_t
@@ -2654,6 +2655,18 @@ static void _toggle_tree_button_callback(GtkToggleButton *source, dt_lib_module_
   _init_treeview(self, 1);
 }
 
+static void _preferences_changed_callback(gpointer instance, dt_lib_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
+  const gboolean tags_natural_sort = dt_conf_get_bool("tags_natural_sort");
+  if(d->tags_natural_sort == tags_natural_sort) return;
+  d->tags_natural_sort = tags_natural_sort;
+  _update_layout(self);
+  _init_treeview(self, 0);
+  _init_treeview(self, 1);
+}
+
 static gint _sort_tree_count_func(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, dt_lib_module_t *self)
 {
   guint count_a = 0;
@@ -2663,18 +2676,11 @@ static gint _sort_tree_count_func(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIt
   return (count_b - count_a);
 }
 
-static inline gint _compare_utf8_no_case(const char *a, const char *b)
+static gint _compare_utf8_no_case(const char *a, const char *b)
 {
-  char *a_nc = g_utf8_casefold(a, -1);
-  char *a_nc_nat = g_utf8_collate_key_for_filename(a_nc, -1);
-  g_free(a_nc);
-
-  char *b_nc = g_utf8_casefold(b, -1);
-  char *b_nc_nat = g_utf8_collate_key_for_filename(b_nc, -1);
-  g_free(b_nc);
-
+  char *a_nc_nat = g_utf8_collate_key_for_filename(a, -1);
+  char *b_nc_nat = g_utf8_collate_key_for_filename(b, -1);
   const gint sort = g_strcmp0(a_nc_nat, b_nc_nat);
-
   g_free(a_nc_nat);
   g_free(b_nc_nat);
   return sort;
@@ -2682,6 +2688,7 @@ static inline gint _compare_utf8_no_case(const char *a, const char *b)
 
 static gint _sort_tree_tag_func(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, dt_lib_module_t *self)
 {
+  dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;  
   char *tag_a = NULL;
   char *tag_b = NULL;
   gtk_tree_model_get(model, a, DT_LIB_TAGGING_COL_TAG, &tag_a, -1);
@@ -2689,8 +2696,8 @@ static gint _sort_tree_tag_func(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter
   if(tag_a == NULL) tag_a = g_strdup("");
   if(tag_b == NULL) tag_b = g_strdup("");
 
-  const gint sort = _compare_utf8_no_case(tag_a, tag_b);
-
+  const gint sort = d->tags_natural_sort? _compare_utf8_no_case(tag_a, tag_b) : g_strcmp0(tag_a, tag_b);
+  
   g_free(tag_a);
   g_free(tag_b);
   return sort;
@@ -2698,6 +2705,7 @@ static gint _sort_tree_tag_func(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter
 
 static gint _sort_tree_path_func(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, dt_lib_module_t *self)
 {
+  dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;  
   char *tag_a = NULL;
   char *tag_b = NULL;
   gtk_tree_model_get(model, a, DT_LIB_TAGGING_COL_PATH, &tag_a, -1);
@@ -2718,7 +2726,7 @@ static gint _sort_tree_path_func(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIte
   else
     tag_b = g_strdup("");
 
-  const gint sort = _compare_utf8_no_case(tag_a, tag_b);
+  const gint sort = d->tags_natural_sort? _compare_utf8_no_case(tag_a, tag_b) : g_strcmp0(tag_a, tag_b);
 
   g_free(tag_a);
   g_free(tag_b);
@@ -3096,6 +3104,7 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)calloc(sizeof(dt_lib_tagging_t),1);
   self->data = (void *)d;
   d->last_tag = NULL;
+  d->tags_natural_sort = dt_conf_get_bool("tags_natural_sort");
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
@@ -3322,6 +3331,8 @@ void gui_init(dt_lib_module_t *self)
                             G_CALLBACK(_lib_selection_changed_callback), self);
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_collection_updated_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
+                            G_CALLBACK(_preferences_changed_callback), self);                            
 
   d->collection = g_malloc(4096);
   _update_layout(self);

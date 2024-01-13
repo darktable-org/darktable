@@ -1235,7 +1235,7 @@ static gint _sort_folder_tag(gconstpointer a, gconstpointer b)
 
 // create a key such that  _("not tagged") & "darktable|" are coming first,
 // and the rest is ordered such that sub tags are coming directly behind their parent
-static char *tag_collate_key(char *tag)
+static char* _tag_collate_key(char *tag)
 {
   const size_t len = strlen(tag);
   char *result = g_malloc(len + 2);
@@ -1514,6 +1514,7 @@ static void _tree_view(dt_lib_collect_rule_t *dr)
     // because it knows nothing about path separators.
     GList *sorted_names = NULL;
     guint index = 0;
+    const gboolean tags_natural_sort = dt_conf_get_bool("tags_natural_sort");
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
       char *name;
@@ -1544,9 +1545,16 @@ static void _tree_view(dt_lib_collect_rule_t *dr)
       }
       else
       {
-        char *tck = tag_collate_key(name);
-        collate_key = g_utf8_collate_key_for_filename(tck, -1);
-        g_free(tck);
+        if(tags_natural_sort)
+        {
+          char *tck = _tag_collate_key(name);
+          collate_key = g_utf8_collate_key_for_filename(tck, -1);
+          g_free(tck);
+        }
+        else
+        {
+          collate_key = _tag_collate_key(name);
+        }
       }
 
       name_key_tuple_t *tuple = (name_key_tuple_t *)malloc(sizeof(name_key_tuple_t));
