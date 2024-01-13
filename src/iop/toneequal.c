@@ -3456,6 +3456,34 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->smoothing), "value-changed",
                    G_CALLBACK(smoothing_callback), self);
 
+  g->exposure_boost = dt_bauhaus_slider_from_params(self, "exposure_boost");
+  dt_bauhaus_slider_set_soft_range(g->exposure_boost, -4.0, 4.0);
+  dt_bauhaus_slider_set_format(g->exposure_boost, _(" EV"));
+  gtk_widget_set_tooltip_text
+    (g->exposure_boost,
+     _("use this to slide the mask average exposure along channels\n"
+       "for a better control of the exposure correction with the available nodes.\n"
+       "the magic wand will auto-adjust the average exposure"));
+  dt_bauhaus_widget_set_quad_paint(g->exposure_boost, dtgtk_cairo_paint_wand, 0, NULL);
+  dt_bauhaus_widget_set_quad_toggle(g->exposure_boost, FALSE);
+  g_signal_connect(G_OBJECT(g->exposure_boost), "quad-pressed",
+                   G_CALLBACK(auto_adjust_exposure_boost), self);
+
+  g->contrast_boost = dt_bauhaus_slider_from_params(self, "contrast_boost");
+  dt_bauhaus_slider_set_soft_range(g->contrast_boost, -2.0, 2.0);
+  dt_bauhaus_slider_set_format(g->contrast_boost, _(" EV"));
+  gtk_widget_set_tooltip_text
+    (g->contrast_boost,
+     _("use this to counter the averaging effect of the guided filter\n"
+       "and dilate the mask contrast around -4EV\n"
+       "this allows to spread the exposure histogram over more channels\n"
+       "for a better control of the exposure correction.\n"
+       "the magic wand will auto-adjust the contrast"));
+  dt_bauhaus_widget_set_quad_paint(g->contrast_boost, dtgtk_cairo_paint_wand, 0, NULL);
+  dt_bauhaus_widget_set_quad_toggle(g->contrast_boost, FALSE);
+  g_signal_connect(G_OBJECT(g->contrast_boost), "quad-pressed",
+                   G_CALLBACK(auto_adjust_contrast_boost), self);
+
   // Masking options
 
   self->widget = dt_ui_notebook_page(g->notebook, N_("masking"), NULL);
