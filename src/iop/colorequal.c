@@ -250,6 +250,7 @@ typedef struct dt_iop_colorequal_gui_data_t
   float *gamut_LUT;
 
   gboolean dragging;
+  gboolean scrolling;
   int selected;
   float points[NODES+1][2];
   float mouse_x;
@@ -1535,36 +1536,54 @@ static void _channel_tabs_switch_callback(GtkNotebook *notebook,
   }
 }
 
+static GtkWidget *_get_selected(dt_iop_colorequal_gui_data_t *g)
+{
+  GtkWidget **w = NULL;
+  switch(g->channel)
+  {
+     case(SATURATION):
+       w = g->sat_sliders;
+       break;
+     case(HUE):
+       w = g->hue_sliders;
+       break;
+     case(BRIGHTNESS):
+     default:
+       w = g->bright_sliders;
+       break;
+  }
+
+  return w[g->selected];
+}
+
 static void _area_set_value(dt_iop_colorequal_gui_data_t *g,
                             const float graph_height,
                             const float pos)
 {
-  GtkWidget **w = NULL;
   float factor = .0f;
   float max = .0f;
 
   switch(g->channel)
   {
      case(SATURATION):
-       w = g->sat_sliders;
        factor = 0.5f;
        max = 100.0f;
        break;
      case(HUE):
-       w = g->hue_sliders;
        factor = 1.f / (2.f * M_PI_F);
        max = (100.0f / 180.0f) * 100.0f;
        break;
      case(BRIGHTNESS):
      default:
-       w = g->bright_sliders;
        factor = 0.5f;
        max = 100.0f;
        break;
   }
 
+  GtkWidget *w = _get_selected(g);
+
   const float val = (0.5f - (pos / graph_height)) * max / factor;
-  dt_bauhaus_slider_set_val(w[g->selected], val);
+  dt_bauhaus_slider_set_val(w, val);
 }
 
 static void _area_set_pos(dt_iop_colorequal_gui_data_t *g,
@@ -1613,7 +1632,10 @@ static gboolean _area_scrolled_callback(GtkWidget *widget,
   int delta_y;
   if(dt_gui_get_scroll_unit_delta(event, &delta_y))
   {
-    _area_set_pos(g, g->mouse_y + delta_y);
+    GtkWidget *w = _get_selected(g);
+
+    const float val = dt_bauhaus_slider_get_val(w) - delta_y;
+    dt_bauhaus_slider_set_val(w, val);
 
     redraw = TRUE;
   }
@@ -1633,11 +1655,16 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget,
 
   gboolean redraw = FALSE;
 
-  if(g->dragging)
-  {
-    const float dy = g->mouse_y - event->y;
+  const uint8_t dy = (uint8_t)fabs(g->mouse_y - event->y);
+  const uint8_t dx = (uint8_t)fabs(g->mouse_x - event->x);
 
-    if(fabsf(dy) > 1.0f)
+  if(g->scrolling)
+  {
+    g->scrolling = FALSE;
+  }
+  else if(g->dragging)
+  {
+    if(dy > DT_PIXEL_APPLY_DPI(1))
     {
       _area_set_pos(g, event->y);
 
@@ -1646,7 +1673,8 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget,
       redraw = TRUE;
     }
   }
-  else
+  else if(dy > DT_PIXEL_APPLY_DPI(2)     // protect against small motion while scrolling
+          || dx > DT_PIXEL_APPLY_DPI(2))
   {
     // look if close to a node
     const float epsilon = DT_PIXEL_APPLY_DPI(10.0);
