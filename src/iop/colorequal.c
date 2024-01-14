@@ -1394,7 +1394,7 @@ static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
 
   // Build the curve LUT and plotting params for the current channel
   g->LUT = dt_alloc_align_float(LUT_ELEM);
-  float values[NODES];
+  float DT_ALIGNED_ARRAY values[NODES];
   float smoothing;
   float offset;
   float factor;
