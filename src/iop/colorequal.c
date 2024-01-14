@@ -272,6 +272,11 @@ void _mean_gaussian(float *const buf,
   dt_gaussian_free(g);
 }
 
+static inline float _get_scaling(const float sigma)
+{
+  return MAX(1.0f, MIN(4.0f, floorf(sigma - 1.5f)));
+}
+
 void _prefilter_chromaticity(float *const restrict UV,
                              const dt_iop_roi_t *const roi,
                              const float csigma,
@@ -293,8 +298,8 @@ void _prefilter_chromaticity(float *const restrict UV,
   const size_t height = roi->height;
   // possibly downsample for speed-up
   const size_t pixels = width * height;
-  const float scaling = MAX(MIN(sigma, 4.0f), 1.0f);
-  const float gsigma = MAX(0.0f, 0.5f * sigma / scaling);
+  const float scaling = _get_scaling(sigma);
+  const float gsigma = MAX(0.5f, 0.5f * sigma / scaling);
   const size_t ds_height = height / scaling;
   const size_t ds_width = width / scaling;
   const size_t ds_pixels = ds_width * ds_height;
@@ -478,8 +483,8 @@ void _guide_with_chromaticity(float *const restrict UV,
   const size_t height = roi->height;
   // Downsample for speed-up
   const size_t pixels = width * height;
-  const float scaling = MAX(MIN(sigma, 4.0f), 1.0f);
-  const float gsigma = MAX(0.0f, 0.5f * sigma / scaling);
+  const float scaling = _get_scaling(sigma);
+  const float gsigma = MAX(0.5f, 0.5f * sigma / scaling);
   const size_t ds_height = height / scaling;
   const size_t ds_width = width / scaling;
   const size_t ds_pixels = ds_width * ds_height;
