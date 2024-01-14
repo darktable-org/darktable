@@ -2001,7 +2001,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->bright_sliders[6], N_("brightness"), N_("lavender"));
   dt_bauhaus_widget_set_label(g->bright_sliders[7], N_("brightness"), N_("purple"));
 
-  self->widget = dt_ui_notebook_page(g->notebook, N_("options"), _(""));
+  self->widget = dt_ui_notebook_page(g->notebook, N_("options"), NULL);
   g->white_level = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
                                        dt_bauhaus_slider_from_params(self, "white_level"));
   dt_bauhaus_slider_set_soft_range(g->white_level, -2., +2.);
