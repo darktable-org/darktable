@@ -1538,22 +1538,26 @@ static void _channel_tabs_switch_callback(GtkNotebook *notebook,
 
 static GtkWidget *_get_selected(dt_iop_colorequal_gui_data_t *g)
 {
-  GtkWidget **w = NULL;
-  switch(g->channel)
+  GtkWidget *w = NULL;
+
+  if(g->selected >= 0)
   {
-     case(SATURATION):
-       w = g->sat_sliders;
-       break;
-     case(HUE):
-       w = g->hue_sliders;
-       break;
-     case(BRIGHTNESS):
-     default:
-       w = g->bright_sliders;
-       break;
+    switch(g->channel)
+    {
+       case(SATURATION):
+         w = g->sat_sliders[g->selected];
+         break;
+       case(HUE):
+         w = g->hue_sliders[g->selected];
+         break;
+       case(BRIGHTNESS):
+       default:
+         w = g->bright_sliders[g->selected];
+         break;
+    }
   }
 
-  return w[g->selected];
+  return w;
 }
 
 static void _area_set_value(dt_iop_colorequal_gui_data_t *g,
@@ -1563,27 +1567,30 @@ static void _area_set_value(dt_iop_colorequal_gui_data_t *g,
   float factor = .0f;
   float max = .0f;
 
-  switch(g->channel)
-  {
-     case(SATURATION):
-       factor = 0.5f;
-       max = 100.0f;
-       break;
-     case(HUE):
-       factor = 1.f / (2.f * M_PI_F);
-       max = (100.0f / 180.0f) * 100.0f;
-       break;
-     case(BRIGHTNESS):
-     default:
-       factor = 0.5f;
-       max = 100.0f;
-       break;
-  }
-
   GtkWidget *w = _get_selected(g);
 
-  const float val = (0.5f - (pos / graph_height)) * max / factor;
-  dt_bauhaus_slider_set_val(w, val);
+  if(w)
+  {
+    switch(g->channel)
+    {
+       case(SATURATION):
+         factor = 0.5f;
+         max = 100.0f;
+         break;
+       case(HUE):
+         factor = 1.f / (2.f * M_PI_F);
+         max = (100.0f / 180.0f) * 100.0f;
+         break;
+       case(BRIGHTNESS):
+       default:
+         factor = 0.5f;
+         max = 100.0f;
+         break;
+    }
+
+    const float val = (0.5f - (pos / graph_height)) * max / factor;
+    dt_bauhaus_slider_set_val(w, val);
+  }
 }
 
 static void _area_set_pos(dt_iop_colorequal_gui_data_t *g,
@@ -1634,10 +1641,13 @@ static gboolean _area_scrolled_callback(GtkWidget *widget,
   {
     GtkWidget *w = _get_selected(g);
 
-    const float val = dt_bauhaus_slider_get_val(w) - delta_y;
-    dt_bauhaus_slider_set_val(w, val);
+    if(w)
+    {
+      const float val = dt_bauhaus_slider_get_val(w) - delta_y;
+      dt_bauhaus_slider_set_val(w, val);
 
-    redraw = TRUE;
+      redraw = TRUE;
+    }
   }
 
   if(redraw)
