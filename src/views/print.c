@@ -415,6 +415,7 @@ void enter(dt_view_t *self)
 void leave(dt_view_t *self)
 {
   dt_print_t *prt = (dt_print_t*)self->data;
+  GtkWidget *widget = dt_ui_center(darktable.gui->ui);
 
   /* disconnect from mipmap updated signal */
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
@@ -427,8 +428,9 @@ void leave(dt_view_t *self)
                                      (gpointer)self);
 
   dt_printing_clear_boxes(prt->imgs);
-//  g_signal_disconnect(widget, "drag-data-received", G_CALLBACK(_drag_and_drop_received));
-//  g_signal_disconnect(widget, "drag-motion", G_CALLBACK(_drag_motion_received));
+
+  g_signal_handlers_disconnect_by_func(widget, G_CALLBACK(_drag_and_drop_received), self);
+  g_signal_handlers_disconnect_by_func(widget, G_CALLBACK(_drag_motion_received), self);
 }
 
 // clang-format off
