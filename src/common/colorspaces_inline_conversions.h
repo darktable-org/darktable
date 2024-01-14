@@ -1355,9 +1355,9 @@ static inline float dt_UCS_L_star_to_Y(const float L_star)
 
 // L_star upper limit is 2.098883786377 truncated to 32-bit float and last decimal removed.
 // By clipping L_star to this limit, we ensure dt_UCS_L_star_to_Y() doesn't divide by zero.
-static const float DT_UCS_L_STAR_UPPER_LIMIT = 2.098883f;
+static const float DT_UCS_L_STAR_UPPER_LIMIT = 2.09885f;
 // Y upper limit is calculated from the above L star upper limit.
-static const float DT_UCS_Y_UPPER_LIMIT = 13237757000.f;
+static const float DT_UCS_Y_UPPER_LIMIT = 1e8f;
 
 
 #ifdef _OPENMP
