@@ -2039,6 +2039,8 @@ static void _event_dnd_begin(GtkWidget *widget,
 
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
 
+  darktable.control->last_clicked_filmstrip_id =
+    dt_control_get_mouse_over_id();
   table->drag_list = dt_act_on_get_images(FALSE, TRUE, TRUE);
 
 #ifdef HAVE_MAP

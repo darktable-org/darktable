@@ -100,7 +100,10 @@ static void _drag_and_drop_received(GtkWidget *widget,
     {
       dt_imgid_t *imgs = (dt_imgid_t *)gtk_selection_data_get_data(selection_data);
 
-      const dt_imgid_t imgid = imgs[0];
+      const dt_imgid_t fid = darktable.control->last_clicked_filmstrip_id;
+      const dt_imgid_t imgid = dt_is_valid_imgid(fid)
+        ? fid
+        : imgs[0];
 
       dt_printing_setup_image(prt->imgs, bidx, imgid,
                               100, 100, ALIGNMENT_CENTER);
