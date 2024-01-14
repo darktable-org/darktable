@@ -49,9 +49,6 @@ static const cmsCIEXYZ d65 = {0.95045471, 1.00000000, 1.08905029};
 //D60
 //static const cmsCIExyY d60 = {0.32168, 0.33767, 1.0};
 
-//D50 (ProPhoto RGB)
-static const cmsCIExyY D50xyY = {0.3457, 0.3585, 1.0};
-
 // D65:
 static const cmsCIExyYTRIPLE sRGB_Primaries = {
   {0.6400, 0.3300, 1.0}, // red
