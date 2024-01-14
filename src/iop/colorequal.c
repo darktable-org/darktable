@@ -393,15 +393,15 @@ void _prefilter_chromaticity(float *const restrict UV,
     {
       // find a_1, a_2 s.t. U' = a_1 * U + a_2 * V
       a[4 * k + 0] = (covariance[4 * k + 0] * sigma_inv[0]
-                      + covariance[4 * k + 1] * sigma_inv[1]);
+                    + covariance[4 * k + 1] * sigma_inv[1]);
       a[4 * k + 1] = (covariance[4 * k + 0] * sigma_inv[2]
-                      + covariance[4 * k + 1] * sigma_inv[3]);
+                    + covariance[4 * k + 1] * sigma_inv[3]);
 
       // find a_3, a_4 s.t. V' = a_3 * U + a_4 V
       a[4 * k + 2] = (covariance[4 * k + 2] * sigma_inv[0]
-                      + covariance[4 * k + 3] * sigma_inv[1]);
+                    + covariance[4 * k + 3] * sigma_inv[1]);
       a[4 * k + 3] = (covariance[4 * k + 2] * sigma_inv[2]
-                      + covariance[4 * k + 3] * sigma_inv[3]);
+                    + covariance[4 * k + 3] * sigma_inv[3]);
     }
     else
     {
@@ -446,9 +446,11 @@ void _prefilter_chromaticity(float *const restrict UV,
     // For each correction factor, we re-express it as a[0] * U + a[1] * V + b
     float uv[2] = { UV[2 * k + 0], UV[2 * k + 1] };
     UV[2 * k + 0] = a_full[4 * k + 0] * uv[0]
-      + a_full[4 * k + 1] * uv[1] + b_full[2 * k + 0];
+                  + a_full[4 * k + 1] * uv[1]
+                  + b_full[2 * k + 0];
     UV[2 * k + 1] = a_full[4 * k + 2] * uv[0]
-      + a_full[4 * k + 3] * uv[1] + b_full[2 * k + 1];
+                  + a_full[4 * k + 3] * uv[1]
+                  + b_full[2 * k + 1];
   }
 
   dt_free_align(a);
@@ -614,8 +616,10 @@ void _guide_with_chromaticity(float *const restrict UV,
   {
     // Extract the 2×2 covariance matrix sigma = cov(U, V) at current pixel
     dt_aligned_pixel_t Sigma
-        = { covariance[4 * k + 0], covariance[4 * k + 1],
-            covariance[4 * k + 2], covariance[4 * k + 3] };
+        = { covariance[4 * k + 0],
+            covariance[4 * k + 1],
+            covariance[4 * k + 2],
+            covariance[4 * k + 3] };
 
     // Add the covariance threshold : sigma' = sigma + epsilon * Identity
     Sigma[0] += epsilon;
@@ -624,8 +628,11 @@ void _guide_with_chromaticity(float *const restrict UV,
     // Invert the 2×2 sigma matrix algebraically
     // see https://www.mathcentre.ac.uk/resources/uploaded/sigma-matrices7-2009-1.pdf
     const float det = fmax((Sigma[0] * Sigma[3] - Sigma[1] * Sigma[2]), 1e-15f);
-    dt_aligned_pixel_t sigma_inv = { Sigma[3] / det, -Sigma[1] / det,
-                                    -Sigma[2] / det,  Sigma[0] / det };
+    dt_aligned_pixel_t sigma_inv
+        = { Sigma[3] / det,
+           -Sigma[1] / det,
+           -Sigma[2] / det,
+            Sigma[0] / det };
     // Note : epsilon prevents determinant == 0 so the invert exists all the time
 
     // a(chan) = dot_product(cov(chan, uv), sigma_inv)
@@ -636,14 +643,14 @@ void _guide_with_chromaticity(float *const restrict UV,
     if(fabsf(det) > 4.f * FLT_EPSILON)
     {
       a[4 * k + 0] = (correlations[4 * k + 0] * sigma_inv[0]
-                      + correlations[4 * k + 1] * sigma_inv[1]);
+                    + correlations[4 * k + 1] * sigma_inv[1]);
       a[4 * k + 1] = (correlations[4 * k + 0] * sigma_inv[2]
-                      + correlations[4 * k + 1] * sigma_inv[3]);
+                    + correlations[4 * k + 1] * sigma_inv[3]);
 
       a[4 * k + 2] = (correlations[4 * k + 2] * sigma_inv[0]
-                      + correlations[4 * k + 3] * sigma_inv[1]);
+                    + correlations[4 * k + 3] * sigma_inv[1]);
       a[4 * k + 3] = (correlations[4 * k + 2] * sigma_inv[2]
-                      + correlations[4 * k + 3] * sigma_inv[3]);
+                    + correlations[4 * k + 3] * sigma_inv[3]);
     }
     else
     {
@@ -693,9 +700,11 @@ void _guide_with_chromaticity(float *const restrict UV,
     float uv[2] = { UV[2 * k + 0], UV[2 * k + 1] };
     // corrections[4 * k + 0] = a_full[6 * k + 0] * uv[0] + a_full[6 * k + 1] * uv[1] + b_full[4 * k + 0];
     corrections[4 * k + 1] = a_full[4 * k + 0] * uv[0]
-      + a_full[4 * k + 1] * uv[1] + b_full[2 * k + 0];
+                           + a_full[4 * k + 1] * uv[1]
+                           + b_full[2 * k + 0];
     corrections[4 * k + 2] = a_full[4 * k + 2] * uv[0]
-      + a_full[4 * k + 3] * uv[1] + b_full[2 * k + 1];
+                           + a_full[4 * k + 3] * uv[1]
+                           + b_full[2 * k + 1];
   }
 
   dt_free_align(a);
