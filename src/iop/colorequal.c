@@ -448,8 +448,11 @@ void _prefilter_chromaticity(float *const restrict UV,
 
   dt_free_align(a);
   dt_free_align(b);
-  if(resized) dt_free_align(a_full);
-  if(resized) dt_free_align(b_full);
+  if(resized)
+  {
+    dt_free_align(a_full);
+    dt_free_align(b_full);
+  }
 }
 
 void _guide_with_chromaticity(float *const restrict UV,
@@ -650,8 +653,11 @@ void _guide_with_chromaticity(float *const restrict UV,
       - a[4 * k + 3] * ds_UV[2 * k + 1];
   }
 
-  if(resized) dt_free_align(ds_corrections);
-  if(resized) dt_free_align(ds_UV);
+  if(resized)
+  {
+    dt_free_align(ds_corrections);
+    dt_free_align(ds_UV);
+  }
   dt_free_align(correlations);
   dt_free_align(covariance);
 
@@ -689,8 +695,11 @@ void _guide_with_chromaticity(float *const restrict UV,
 
   dt_free_align(a);
   dt_free_align(b);
-  if(resized) dt_free_align(a_full);
-  if(resized) dt_free_align(b_full);
+  if(resized)
+  {
+    dt_free_align(a_full);
+    dt_free_align(b_full);
+  }
 }
 
 void process(struct dt_iop_module_t *self,
