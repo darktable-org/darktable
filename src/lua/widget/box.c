@@ -82,7 +82,7 @@ void _set_packing_info(lua_box box, gboolean expand, gboolean fill, guint paddin
   g_list_free(children);
 }
 
-static int packing_expand_member(lua_State *L)
+static int expand_member(lua_State *L)
 {
   lua_box box;
   luaA_to(L, lua_box, &box, 1);
@@ -100,7 +100,7 @@ static int packing_expand_member(lua_State *L)
   return 1;
 }
 
-static int packing_fill_member(lua_State *L)
+static int fill_member(lua_State *L)
 {
   lua_box box;
   luaA_to(L, lua_box, &box, 1);
@@ -118,7 +118,7 @@ static int packing_fill_member(lua_State *L)
   return 1;
 }
 
-static int packing_padding_member(lua_State *L)
+static int padding_member(lua_State *L)
 {
   lua_box box;
   luaA_to(L, lua_box, &box, 1);
@@ -143,15 +143,15 @@ int dt_lua_init_widget_box(lua_State* L)
   lua_pushcfunction(L, orientation_member);
   dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, lua_box, "orientation");
-  lua_pushcfunction(L, packing_expand_member);
+  lua_pushcfunction(L, expand_member);
   dt_lua_gtk_wrap(L);
-  dt_lua_type_register(L, lua_box, "packing_expand");
-  lua_pushcfunction(L, packing_fill_member);
+  dt_lua_type_register(L, lua_box, "expand");
+  lua_pushcfunction(L, fill_member);
   dt_lua_gtk_wrap(L);
-  dt_lua_type_register(L, lua_box, "packing_fill");
-  lua_pushcfunction(L, packing_padding_member);
+  dt_lua_type_register(L, lua_box, "fill");
+  lua_pushcfunction(L, padding_member);
   dt_lua_gtk_wrap(L);
-  dt_lua_type_register(L, lua_box, "packing_padding");
+  dt_lua_type_register(L, lua_box, "padding");
   return 0;
 }
 // clang-format off
