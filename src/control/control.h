@@ -157,6 +157,7 @@ typedef struct dt_control_t
   double button_x, button_y;
   int history_start;
   dt_imgid_t mouse_over_id;
+  dt_imgid_t last_clicked_filmstrip_id;
   gboolean lock_cursor_shape;
 
   // message log
