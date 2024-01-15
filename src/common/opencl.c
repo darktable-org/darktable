@@ -1235,7 +1235,12 @@ void dt_opencl_init(
       for(int k = 0; k < n; k++)
       {
         if(!strcmp(platforms + n * DT_OPENCL_CBUFFSIZE, platforms + k * DT_OPENCL_CBUFFSIZE))
+        {
           multiple = TRUE;
+          dt_print(DT_DEBUG_OPENCL,
+                   "[opencl_init] found multiple drivers for the platform '%s'\n",
+                   platforms + k * DT_OPENCL_CBUFFSIZE);
+        }
       }
     }
     free(platforms);
