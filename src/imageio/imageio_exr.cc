@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -45,7 +45,9 @@
 #include "imageio/imageio_exr.h"
 #include "imageio/imageio_exr.hh"
 
-dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
+dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img,
+                                        const char *filename,
+                                        dt_mipmap_buffer_t *mbuf)
 {
   bool isTiled = false;
 
@@ -61,7 +63,8 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
 
 
   /* verify openexr image */
-  if(!Imf::isOpenExrFile((const char *)filename, isTiled)) return DT_IMAGEIO_LOAD_FAILED;
+  if(!Imf::isOpenExrFile((const char *)filename, isTiled))
+    return DT_IMAGEIO_LOAD_FAILED;
 
   /* open exr file */
   try
@@ -85,8 +88,13 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
   const Imf::Header &header = isTiled ? fileTiled->header() : file->header();
 
   /* check that channels available is any of supported RGB(a) */
-  bool hasR = false, hasG = false, hasB = false;
-  for(Imf::ChannelList::ConstIterator i = header.channels().begin(); i != header.channels().end(); ++i)
+  bool hasR = false;
+  bool hasG = false;
+  bool hasB = false;
+
+  for(Imf::ChannelList::ConstIterator i = header.channels().begin();
+      i != header.channels().end();
+      ++i)
   {
     std::string name(i.name());
     if(name == "R") hasR = true;
@@ -95,7 +103,9 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
   }
   if(!(hasR && hasG && hasB))
   {
-    dt_print(DT_DEBUG_ALWAYS, "[exr_open] error: only images with RGB(A) channels are supported, skipping `%s'\n", img->filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[exr_open] error: only images with RGB(A) channels are supported,"
+             " skipping `%s'\n", img->filename);
     return DT_IMAGEIO_LOAD_FAILED;
   }
 
@@ -120,9 +130,12 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
     }
     else
     {
-      if(Imf::hasOwner(header)) dt_metadata_set_import(img->id, "Xmp.dc.rights", Imf::owner(header).c_str());
+      if(Imf::hasOwner(header))
+        dt_metadata_set_import(img->id, "Xmp.dc.rights",
+                               Imf::owner(header).c_str());
       if(Imf::hasComments(header))
-        dt_metadata_set_import(img->id, "Xmp.dc.description", Imf::comments(header).c_str());
+        dt_metadata_set_import(img->id, "Xmp.dc.description",
+                               Imf::comments(header).c_str());
       if(Imf::hasCapDate(header))
       {
         // utcOffset can be ignored for now, see dt_datetime_exif_to_numbers()
@@ -135,27 +148,36 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
         img->geoloc.longitude = Imf::longitude(header);
         img->geoloc.latitude = Imf::latitude(header);
       }
-      if(Imf::hasAltitude(header)) img->geoloc.elevation = Imf::altitude(header);
-      if(Imf::hasFocus(header)) img->exif_focus_distance = Imf::focus(header);
-      if(Imf::hasExpTime(header)) img->exif_exposure = Imf::expTime(header);
-      if(Imf::hasAperture(header)) img->exif_aperture = Imf::aperture(header);
-      if(Imf::hasIsoSpeed(header)) img->exif_iso = Imf::isoSpeed(header);
+      if(Imf::hasAltitude(header))
+        img->geoloc.elevation = Imf::altitude(header);
+      if(Imf::hasFocus(header))
+        img->exif_focus_distance = Imf::focus(header);
+      if(Imf::hasExpTime(header))
+        img->exif_exposure = Imf::expTime(header);
+      if(Imf::hasAperture(header))
+        img->exif_aperture = Imf::aperture(header);
+      if(Imf::hasIsoSpeed(header))
+        img->exif_iso = Imf::isoSpeed(header);
+
 // the OPENEXR_VERSION_HEX macro is broken for 3.2.0 and earlier, must compute directly
 #if(((OPENEXR_VERSION_MAJOR << 24) | (OPENEXR_VERSION_MINOR << 16) | (OPENEXR_VERSION_PATCH << 8)) >= 0x03020000)
       if(Imf::hasCameraMake(header))
       {
-        g_strlcpy(img->exif_maker, Imf::cameraMake(header).c_str(), sizeof(img->exif_maker));
+        g_strlcpy(img->exif_maker,
+                  Imf::cameraMake(header).c_str(), sizeof(img->exif_maker));
       }
       if(Imf::hasCameraModel(header))
       {
-        g_strlcpy(img->exif_model, Imf::cameraModel(header).c_str(), sizeof(img->exif_model));
+        g_strlcpy(img->exif_model,
+                  Imf::cameraModel(header).c_str(), sizeof(img->exif_model));
       }
       // Make sure we copy the exif make and model to the correct place if needed
       dt_image_refresh_makermodel(img);
 
       if(Imf::hasLensModel(header))
       {
-        g_strlcpy(img->exif_lens, Imf::lensModel(header).c_str(), sizeof(img->exif_lens));
+        g_strlcpy(img->exif_lens,
+                  Imf::lensModel(header).c_str(), sizeof(img->exif_lens));
 
         if(Imf::hasLensMake(header) && Imf::lensMake(header) == "Canon")
         {
@@ -174,11 +196,13 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
         /* Capitalize Nikon Z-mount lenses properly for UI presentation */
         if(g_str_has_prefix(img->exif_lens, "NIKKOR"))
         {
-          for(size_t i = 1; i <= 5; ++i) img->exif_lens[i] = g_ascii_tolower(img->exif_lens[i]);
+          for(size_t i = 1; i <= 5; ++i)
+            img->exif_lens[i] = g_ascii_tolower(img->exif_lens[i]);
         }
       }
 
-      if(Imf::hasNominalFocalLength(header)) img->exif_focal_length = Imf::nominalFocalLength(header);
+      if(Imf::hasNominalFocalLength(header))
+        img->exif_focal_length = Imf::nominalFocalLength(header);
 #endif
     }
   }
@@ -194,7 +218,9 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
   float *buf = (float *)dt_mipmap_cache_alloc(mbuf, img);
   if(!buf)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[exr_open] error: could not alloc full buffer for image `%s'\n", img->filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[exr_open] error: could not alloc full buffer for image `%s'\n",
+             img->filename);
     return DT_IMAGEIO_CACHE_FULL;
   }
 
@@ -204,13 +230,17 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
   xstride = sizeof(float) * 4;
   ystride = sizeof(float) * img->width * 4;
   frameBuffer.insert(
-      "R", Imf::Slice(Imf::FLOAT, (char *)(buf - dx * 4 - dy * img->width * 4 + 0), xstride, ystride, 1, 1, 0.0));
+      "R", Imf::Slice(Imf::FLOAT, (char *)(buf - dx * 4 - dy * img->width * 4 + 0),
+                      xstride, ystride, 1, 1, 0.0));
   frameBuffer.insert(
-      "G", Imf::Slice(Imf::FLOAT, (char *)(buf - dx * 4 - dy * img->width * 4 + 1), xstride, ystride, 1, 1, 0.0));
+      "G", Imf::Slice(Imf::FLOAT, (char *)(buf - dx * 4 - dy * img->width * 4 + 1),
+                      xstride, ystride, 1, 1, 0.0));
   frameBuffer.insert(
-      "B", Imf::Slice(Imf::FLOAT, (char *)(buf - dx * 4 - dy * img->width * 4 + 2), xstride, ystride, 1, 1, 0.0));
+      "B", Imf::Slice(Imf::FLOAT, (char *)(buf - dx * 4 - dy * img->width * 4 + 2),
+                      xstride, ystride, 1, 1, 0.0));
   frameBuffer.insert(
-      "A", Imf::Slice(Imf::FLOAT, (char *)(buf - dx * 4 - dy * img->width * 4 + 3), xstride, ystride, 1, 1, 0.0));
+      "A", Imf::Slice(Imf::FLOAT, (char *)(buf - dx * 4 - dy * img->width * 4 + 3),
+                      xstride, ystride, 1, 1, 0.0));
 
   if(isTiled)
   {
@@ -223,29 +253,35 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
     file->readPixels(dw.min.y, dw.max.y);
   }
 
-  /* try to get the chromaticities and whitepoint. this will add the default linear rec709 profile when nothing
-   * was embedded and look as if it was embedded in colorin. better than defaulting to something wrong there. */
+  /* try to get the chromaticities and whitepoint. this will add the
+   * default linear rec709 profile when nothing was embedded and look
+   * as if it was embedded in colorin. better than defaulting to
+   * something wrong there. */
   Imf::Chromaticities chromaticities;
-  float whiteLuminance = 1.0;
+  float whiteLuminance = 1.0f;
 
   if(Imf::hasChromaticities(header))
   {
     chromaticities = Imf::chromaticities(header);
 
     /* adapt chromaticities to D65 expected by colorin */
-    cmsCIExyY red_xy = { chromaticities.red[0], chromaticities.red[1], 1.0 };
+    cmsCIExyY red_xy = { chromaticities.red[0],
+                         chromaticities.red[1], 1.0 };
     cmsCIEXYZ srcRed;
     cmsxyY2XYZ(&srcRed, &red_xy);
 
-    cmsCIExyY green_xy = { chromaticities.green[0], chromaticities.green[1], 1.0 };
+    cmsCIExyY green_xy = { chromaticities.green[0],
+                           chromaticities.green[1], 1.0 };
     cmsCIEXYZ srcGreen;
     cmsxyY2XYZ(&srcGreen, &green_xy);
 
-    cmsCIExyY blue_xy = { chromaticities.blue[0], chromaticities.blue[1], 1.0 };
+    cmsCIExyY blue_xy = { chromaticities.blue[0],
+                          chromaticities.blue[1], 1.0 };
     cmsCIEXYZ srcBlue;
     cmsxyY2XYZ(&srcBlue, &blue_xy);
 
-    const cmsCIExyY srcWhite_xy = { chromaticities.white[0], chromaticities.white[1], 1.0 };
+    const cmsCIExyY srcWhite_xy = { chromaticities.white[0],
+                                    chromaticities.white[1], 1.0 };
     cmsCIEXYZ srcWhite;
     cmsxyY2XYZ(&srcWhite, &srcWhite_xy);
 
