@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 #include "common/history_snapshot.h"
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
+#include "common/overlay.h"
 #include "common/tags.h"
 #include "common/undo.h"
 #include "common/utility.h"
@@ -108,6 +109,9 @@ void dt_history_delete_on_image_ext(const dt_imgid_t imgid,
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+
+  // remove all overlays for this image
+  dt_overlays_remove(imgid);
 
   _remove_preset_flag(imgid);
 

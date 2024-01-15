@@ -263,7 +263,8 @@ static gboolean _get_by_hash(
            Anyway this has to be accepted as a dt bug so we always report
         */
         cache->hash[k] = INVALID_CACHEHASH;
-        dt_print_pipe(DT_DEBUG_ALWAYS, "CACHELINE_SIZE ERROR", pipe, module, NULL, NULL, "\n");
+        dt_print_pipe(DT_DEBUG_ALWAYS, "CACHELINE_SIZE ERROR",
+          pipe, module, DT_DEVICE_NONE, NULL, NULL, "\n");
       }
       else if(pipe->mask_display || pipe->nocache)
       {
@@ -305,7 +306,7 @@ gboolean dt_dev_pixelpipe_cache_get(
   {
     const dt_iop_buffer_dsc_t *cdsc = *dsc;
     dt_print_pipe(DT_DEBUG_PIPE, "cache HIT",
-          pipe, module, NULL, NULL,
+          pipe, module, DT_DEVICE_NONE, NULL, NULL,
           "%s, hash=%" PRIx64 "\n",
           dt_iop_colorspace_to_name(cdsc->cst), hash);
     return FALSE;
@@ -346,8 +347,8 @@ gboolean dt_dev_pixelpipe_cache_get(
   cache->hash[cline]      = masking ? INVALID_CACHEHASH : hash;
 
   const dt_iop_buffer_dsc_t *cdsc = *dsc;
-  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "pixelpipe_cache_get",
-    pipe, module, NULL, NULL,
+  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "pipe cache get",
+    pipe, module, DT_DEVICE_NONE, NULL, NULL,
     "%s %sline%3i(%2i) at %p. hash=%" PRIx64 "%s\n",
      dt_iop_colorspace_to_name(cdsc->cst),
      important ? "important " : "",
@@ -458,7 +459,7 @@ void dt_dev_pixelpipe_cache_checkmem(struct dt_dev_pixelpipe_t *pipe)
   }
 
   _cline_stats(cache);
-  dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe_cache_checkmem", pipe, NULL, NULL, NULL,
+  dt_print_pipe(DT_DEBUG_PIPE, "pipe cache check", pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
     "%i lines (important=%i, used=%i). Freed %iMB. Using using %iMB, limit=%iMB\n",
     cache->entries, cache->limportant, cache->lused,
     _to_mb(freed), _to_mb(cache->allmem), _to_mb(cache->memlimit));
@@ -469,7 +470,7 @@ void dt_dev_pixelpipe_cache_report(struct dt_dev_pixelpipe_t *pipe)
   dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
 
   _cline_stats(cache);
-  dt_print_pipe(DT_DEBUG_PIPE, "cache report", pipe, NULL, NULL, NULL,
+  dt_print_pipe(DT_DEBUG_PIPE, "cache report", pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
     "%i lines (important=%i, used=%i, invalid=%i). Using %iMB, limit=%iMB. Hits/run=%.2f. Hits/test=%.3f\n",
     cache->entries, cache->limportant, cache->lused, cache->linvalid,
     _to_mb(cache->allmem), _to_mb(cache->memlimit),

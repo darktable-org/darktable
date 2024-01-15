@@ -347,6 +347,8 @@ typedef struct dt_develop_t
   int mask_form_selected_id; // select a mask inside an iop
   gboolean darkroom_skip_mouse_events; // skip mouse events for masks
   gboolean darkroom_mouse_in_center_area; // TRUE if the mouse cursor is in center area
+
+  GList *module_filter_out;
 } dt_develop_t;
 
 void dt_dev_init(dt_develop_t *dev, gboolean gui_attached);
@@ -367,7 +369,7 @@ void dt_dev_load_image(dt_develop_t *dev,
 void dt_dev_reload_image(dt_develop_t *dev,
                          const dt_imgid_t imgid);
 /** checks if provided imgid is the image currently in develop */
-gboolean dt_dev_is_current_image(dt_develop_t *dev,
+gboolean dt_dev_is_current_image(const dt_develop_t *dev,
                                  const dt_imgid_t imgid);
 const dt_dev_history_item_t *dt_dev_get_history_item(dt_develop_t *dev,
                                                      const char *op);
@@ -639,7 +641,8 @@ void dt_dev_image(const dt_imgid_t imgid,
                   size_t *buf_height,
                   float *zoom_x,
                   float *zoom_y,
-                  const int32_t snapshot_id);
+                  const int32_t snapshot_id,
+                  GList *module_filter_out);
 
 
 gboolean dt_dev_equal_chroma(const float *f, const double *d);

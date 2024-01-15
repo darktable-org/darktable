@@ -696,7 +696,7 @@ static void _show_all_thumbs(dt_lib_module_t* self)
   }
 }
 
-#define FILE_REQUEST_BLOCK 10
+#define FILE_REQUEST_BLOCK 50
 
 static void _import_set_file_list(const gchar *folder,
                                   dt_lib_module_t *self);
@@ -737,7 +737,6 @@ static void _add_file_callback(GObject *direnum,
   GFileEnumerator *dir_files = G_FILE_ENUMERATOR(direnum);
   GList *file_list = g_file_enumerator_next_files_finish(dir_files, result, &error);
   GFile* gfolder = g_file_enumerator_get_container(dir_files);
-  char *folder = g_file_get_path(gfolder);
 
   if(error)
   {
@@ -746,6 +745,7 @@ static void _add_file_callback(GObject *direnum,
     g_file_enumerator_close(dir_files, NULL, NULL);
     g_object_unref(gfolder);
     g_object_unref(direnum);
+    g_list_free_full(file_list, g_object_unref);
     g_error_free(error);
     return;
   }
@@ -787,15 +787,37 @@ static void _add_file_callback(GObject *direnum,
       d->is_importing = FALSE;
       _import_active(self, TRUE, count_sel);
       _update_images_number(self, count_sel);
+
+      gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(d->from.store),
+                                           DT_IMPORT_DATETIME, GTK_SORT_ASCENDING);
     }
 
     return;
   }
   else
   {
+    g_file_enumerator_next_files_async(G_FILE_ENUMERATOR(direnum),
+                                       FILE_REQUEST_BLOCK,
+                                       G_PRIORITY_LOW,
+                                       d->cancel_iter,
+                                       _add_file_callback,
+                                       user_data);
+
     const gboolean recursive = dt_conf_get_bool("ui_last/import_recursive");
     const gboolean include_nonraws = !dt_conf_get_bool("ui_last/import_ignore_nonraws");
 
+    char *folder = g_file_get_path(gfolder);
+
+    // if folder is root, consider one folder separator less
+    const int offset = g_path_skip_root(folder)[0]
+#ifdef WIN32
+      // .. but for Windows UNC there will be a folder separator anyway
+      || dt_util_path_is_UNC(folder)
+#endif
+      ? strlen(folder) + 1
+      : strlen(folder);
+
+    const int32_t filmroll_id = dt_film_get_id(folder);
     for(GList *node = file_list;
         node;
         node = node->next)
@@ -804,9 +826,13 @@ static void _add_file_callback(GObject *direnum,
 
       const char *uifilename = g_file_info_get_display_name(info);
       const char *filename = g_file_info_get_name(info);
-      const GFileType filetype = g_file_info_get_file_type(info);
+
       if(!filename)
         continue;
+
+      const GFileType filetype = g_file_info_get_file_type(info);
+      const time_t datetime =
+        g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
 
       /* g_file_info_get_is_hidden() always returns 0 on macOS, so we
          check if the filename starts with a '.' */
@@ -814,10 +840,6 @@ static void _add_file_callback(GObject *direnum,
       if (is_hidden)
         continue;
 
-      const time_t datetime =
-        g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
-      GDateTime *dt_datetime = g_date_time_new_from_unix_local(datetime);
-      gchar *dt_txt = g_date_time_format(dt_datetime, "%x %X");
       gchar *uifullname = g_build_filename(folder, uifilename, NULL);
       gchar *fullname = g_build_filename(folder, filename, NULL);
 
@@ -829,7 +851,7 @@ static void _add_file_callback(GObject *direnum,
         }
         else
         {
-          d->to_be_visited = g_list_append(d->to_be_visited, g_strdup(fullname));
+          d->to_be_visited = g_list_prepend(d->to_be_visited, g_strdup(fullname));
         }
       }
       // Before adding to the import list, check that the format is
@@ -846,7 +868,6 @@ static void _add_file_callback(GObject *direnum,
           gboolean already_imported = FALSE;
           if(d->import_case == DT_IMPORT_INPLACE)
           {
-            const int32_t filmroll_id = dt_film_get_id(folder);
             /* check if image is already imported, using previously
              * fetched filmroll id */
             if(filmroll_id != -1)
@@ -862,14 +883,8 @@ static void _add_file_callback(GObject *direnum,
             g_free(basename);
           }
 
-          // if folder is root, consider one folder separator less
-          const int offset = g_path_skip_root(folder)[0]
-#ifdef WIN32
-          // .. but for Windows UNC there will be a folder separator anyway
-                        || dt_util_path_is_UNC(folder)
-#endif
-                        ? strlen(folder) + 1
-                        : strlen(folder);
+          GDateTime *dt_datetime = g_date_time_new_from_unix_local(datetime);
+          gchar *dt_txt = g_date_time_format(dt_datetime, "%x %X");
 
           GtkTreeIter iter;
           gtk_list_store_append(d->from.store, &iter);
@@ -882,21 +897,16 @@ static void _add_file_callback(GObject *direnum,
                              DT_IMPORT_THUMB, d->from.eye,
                              -1);
           d->from.nb++;
+          g_free(dt_txt);
         }
 
         g_free(fullname);
         g_free(uifullname);
-        g_free(dt_txt);
       }
       g_object_unref(info);
     }
 
-    g_file_enumerator_next_files_async(G_FILE_ENUMERATOR(direnum),
-                                       FILE_REQUEST_BLOCK,
-                                       G_PRIORITY_LOW,
-                                       d->cancel_iter,
-                                       _add_file_callback,
-                                       user_data);
+    g_free(folder);
   }
   g_list_free(file_list);
 }
@@ -947,6 +957,16 @@ static void _import_set_file_list_start(const gchar *folder,
   d->from.nb = 0;
   d->to_be_visited = NULL;
   d->is_importing = TRUE;
+
+  const gboolean recursive = dt_conf_get_bool("ui_last/import_recursive");
+
+  if(recursive)
+  {
+    // disable sorting as it is very costly for large set of files
+    gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(d->from.store),
+                                         GTK_TREE_SORTABLE_UNSORTED_SORT_COLUMN_ID,
+                                         GTK_SORT_ASCENDING);
+  }
 
   _import_active(self, FALSE, 0);
 
@@ -1022,8 +1042,6 @@ static gboolean _update_files_list(gpointer user_data)
     if(folder[0])
       _import_set_file_list_start(folder, self);
     g_free(folder);
-    gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(model),
-                                         DT_IMPORT_DATETIME, GTK_SORT_ASCENDING);
   }
   gtk_tree_view_set_model(d->from.treeview, model);
   g_object_unref(model);

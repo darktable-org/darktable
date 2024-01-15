@@ -212,7 +212,10 @@ static int _process_image(dt_slideshow_t *d,
      NULL,
      &width,
      &height,
-     NULL, NULL, -1);
+     NULL,
+     NULL,
+     -1,
+     NULL);
 
   dt_pthread_mutex_lock(&d->lock);
 

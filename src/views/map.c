@@ -1884,6 +1884,32 @@ static gboolean _view_map_button_press_callback(GtkWidget *w, GdkEventButton *e,
     g_list_free(lib->selected_images);
     lib->selected_images = NULL;
   }
+
+  if(lib->osd)
+  {
+    // check if the OSD circle was clicked
+    GValue value = {
+      0,
+    };
+
+    g_object_get_property((GObject*) lib->osd, "osd-x", &value);
+    const gint osd_x = g_value_get_int(&value);
+    g_object_get_property((GObject*) lib->osd, "osd-y", &value);
+    const gint osd_y = g_value_get_int(&value);
+    g_object_get_property((GObject*) lib->osd, "dpad-radius", &value);
+    const gint dpad_radius = g_value_get_int(&value);
+    g_object_get_property((GObject*) lib->osd, "show-zoom", &value);
+    // g_value_get_boolean returns FALSE although the value is 1! Bug?
+    const gint show_zoom = g_value_get_int(&value);  
+    const gint zoom_height = show_zoom? 40:0;
+
+    if(e->x >= osd_x && e->x <= osd_x+2*dpad_radius && 
+       e->y >= osd_y && e->y <= osd_y+2*dpad_radius+zoom_height)
+    {
+      return FALSE;
+    }
+  }
+
   if(e->button == 1)
   {
     // check if the click was in a location form - crtl gives priority to images
@@ -2614,10 +2640,10 @@ static void _drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, 
   gboolean success = FALSE;
   if(selection_data != NULL && target_type == DND_TARGET_IMGID)
   {
-    const int imgs_nb = gtk_selection_data_get_length(selection_data) / sizeof(uint32_t);
+    const int imgs_nb = gtk_selection_data_get_length(selection_data) / sizeof(dt_imgid_t);
     if(imgs_nb)
     {
-      uint32_t *imgt = (uint32_t *)gtk_selection_data_get_data(selection_data);
+      dt_imgid_t *imgt = (dt_imgid_t *)gtk_selection_data_get_data(selection_data);
       if(imgs_nb == 1 && imgt[0] == -1)
       {
         // move of location
@@ -2628,8 +2654,9 @@ static void _drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, 
         lib->loc.main.data.lat = lat, lib->loc.main.data.lon = lon;
         const float prev_ratio = lib->loc.main.data.ratio;
         lib->loc.main.data.ratio = _view_map_get_angles_ratio(lib, lib->loc.main.data.lat,
-                                   lib->loc.main.data.lon);
-        lib->loc.main.data.delta2 = lib->loc.main.data.delta2 * prev_ratio / lib->loc.main.data.ratio;
+                                                              lib->loc.main.data.lon);
+        lib->loc.main.data.delta2 =
+          lib->loc.main.data.delta2 * prev_ratio / lib->loc.main.data.ratio;
         osm_gps_map_point_free(pt);
         _view_map_update_location_geotag(self);
         _view_map_draw_main_location(lib, &lib->loc.main);
@@ -2732,10 +2759,10 @@ static void _view_map_dnd_remove_callback(GtkWidget *widget, GdkDragContext *con
 
   if(selection_data != NULL && target_type == DND_TARGET_IMGID)
   {
-    const int imgs_nb = gtk_selection_data_get_length(selection_data) / sizeof(uint32_t);
+    const int imgs_nb = gtk_selection_data_get_length(selection_data) / sizeof(dt_imgid_t);
     if(imgs_nb)
     {
-      uint32_t *imgt = (uint32_t *)gtk_selection_data_get_data(selection_data);
+      dt_imgid_t *imgt = (dt_imgid_t *)gtk_selection_data_get_data(selection_data);
       GList *imgs = NULL;
       for(int i = 0; i < imgs_nb; i++)
       {
@@ -2950,4 +2977,3 @@ static void _dbscan(dt_geo_position_t *points, unsigned int num_points,
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

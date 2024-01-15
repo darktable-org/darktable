@@ -1572,6 +1572,7 @@ void init_presets(dt_lib_module_t *self)
   AM("colorin");
   AM("colorout");
   AM("colorzones");
+  AM("colorequal");
   AM("lut3d");
   AM("monochrome");
   AM("profile");
@@ -1602,11 +1603,13 @@ void init_presets(dt_lib_module_t *self)
   AM("borders");
   AM("colorize");
   AM("colormapping");
+  AM("enlargecanvas");
   AM("graduatednd");
   AM("grain");
   AM("highpass");
   AM("lowlight");
   AM("lowpass");
+  AM("overlay");
   AM("soften");
   AM("splittoning");
   AM("vignette");
@@ -1638,7 +1641,7 @@ void init_presets(dt_lib_module_t *self)
 
   SMG(C_("modulegroup", "grading"), "grading");
   AM("channelmixerrgb");
-  AM("colorzones");
+  AM("colorequal");
   AM("graduatednd");
   AM("rgbcurve");
   AM("rgblevels");
@@ -1693,9 +1696,11 @@ void init_presets(dt_lib_module_t *self)
 
   SMG(C_("modulegroup", "effect"), "effect");
   AM("borders");
+  AM("enlargecanvas");
   AM("colorize");
   AM("graduatednd");
   AM("grain");
+  AM("overlay");
   AM("splittoning");
   AM("vignette");
   AM("watermark");
@@ -1724,7 +1729,7 @@ void init_presets(dt_lib_module_t *self)
   SMG(C_("modulegroup", "color"), "color");
   AM("channelmixerrgb");
   AM("colorbalancergb");
-  AM("colorzones");
+  AM("colorequal");
   AM("primaries");
 
   SMG(C_("modulegroup", "correct"), "correct");
@@ -1742,8 +1747,10 @@ void init_presets(dt_lib_module_t *self)
   SMG(C_("modulegroup", "effect"), "effect");
   AM("atrous");
   AM("borders");
+  AM("enlargecanvas");
   AM("graduatednd");
   AM("grain");
+  AM("overlay");
   AM("vignette");
   AM("watermark");
   AM("censorize");

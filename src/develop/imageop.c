@@ -1876,7 +1876,7 @@ dt_iop_module_t *dt_iop_commit_blend_params(dt_iop_module_t *module,
         module->raster_mask.sink.id = blendop_params->raster_mask_id;
         dt_print_pipe(DT_DEBUG_PIPE,
                       "commit_blend_params",
-                      NULL, module, NULL, NULL, "raster mask from '%s%s' %s\n",
+                      NULL, module, DT_DEVICE_NONE, NULL, NULL, "raster mask from '%s%s' %s\n",
                       candidate->op, dt_iop_get_instance_id(candidate),
                       new ? "new" : "existing");
 
@@ -1894,7 +1894,7 @@ dt_iop_module_t *dt_iop_commit_blend_params(dt_iop_module_t *module,
   {
     dt_print_pipe(DT_DEBUG_PIPE,
                   "commit_blend_params",
-                  NULL, module, NULL, NULL, "clear raster mask source '%s%s'\n",
+                  NULL, module, DT_DEVICE_NONE, NULL, NULL, "clear raster mask source '%s%s'\n",
                   sink_source->op, dt_iop_get_instance_id(sink_source));
     g_hash_table_remove(module->raster_mask.sink.source->raster_mask.source.users, module);
   }
@@ -1942,9 +1942,9 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
       {
         if(report)
           dt_print(DT_DEBUG_ALWAYS,
-                   "[iop_validate_params] `%s' failed for not null terminated type string"
-                   " \"%s\";\n",
-                   name, field->header.type_name);
+             "[iop_validate_params] `%s' failed for not null terminated type string"
+             " \"%s\";\n",
+               name, field->header.type_name);
         all_ok = FALSE;
       }
     }
@@ -1959,7 +1959,7 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
         {
           if(report)
             dt_print(DT_DEBUG_ALWAYS, "[iop_validate_params] `%s' failed"
-                     " for type \"%s\", for array element \"%d\"\n",
+                   " for type \"%s\", for array element \"%d\"\n",
                      name, field->header.type_name, i);
           all_ok = FALSE;
           break;
@@ -1968,8 +1968,10 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
     }
     break;
   case DT_INTROSPECTION_TYPE_FLOAT:
-    all_ok = dt_isnan(*(float*)p)
-      || ((*(float*)p >= field->Float.Min && *(float*)p <= field->Float.Max));
+     all_ok = dt_isnan(*(float*)p)
+      || dt_isinf(*(float*)p)
+      || (*(float*)p == field->Float.Default)
+      || (*(float*)p >= field->Float.Min && *(float*)p <= field->Float.Max);
     break;
   case DT_INTROSPECTION_TYPE_INT:
     all_ok = (*(int*)p >= field->Int.Min && *(int*)p <= field->Int.Max);
@@ -2021,7 +2023,7 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
   }
 
   if(!all_ok && report)
-    dt_print(DT_DEBUG_ALWAYS,
+    dt_print(DT_DEBUG_PARAMS,
              "[iop_validate_params] `%s' failed for type \"%s\"%s%s\n",
              name, field->header.type_name,
              *field->header.name ? ", field: " : "",

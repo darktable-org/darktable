@@ -20,6 +20,7 @@
   This file contains the necessary routines to implement a filter for the filtering module
 */
 
+#include "common/utility.h"
 
 static gboolean _aperture_update(dt_lib_filtering_rule_t *rule)
 {
@@ -67,7 +68,14 @@ static gboolean _aperture_update(dt_lib_filtering_rule_t *rule)
 
 static gchar *_aperture_print_func(const double value, const gboolean detailled)
 {
-  return g_strdup_printf("%s%.1lf", detailled ? "f/" : "", value);
+  if(detailled)
+  {
+    return g_strdup_printf("f/%.1lf", value);
+  }
+  else
+  {
+    return dt_util_float_to_str("%.1f", value);
+  }
 }
 
 static void _aperture_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,

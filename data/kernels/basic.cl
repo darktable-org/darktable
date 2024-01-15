@@ -1968,7 +1968,7 @@ lens_distort_bilinear (read_only image2d_t in, write_only image2d_t out, const i
   ry = (ry <= iheight - 1) ? ry : iheight - 1;
   pixel.z = read_imagef(in, samplerf, (float2)(rx, ry)).z;
 
-  pixel = all(isfinite(pixel.xyz)) ? pixel : (float4)0.0f;
+  pixel = all(isfinite(pixel.xyz)) ? fmax(0.0f, pixel) : (float4)0.0f;
 
   write_imagef (out, (int2)(x, y), pixel);
 }
@@ -2112,7 +2112,7 @@ lens_distort_bicubic (read_only image2d_t in,
   }
   pixel.z = sum/weight;
 
-  pixel = all(isfinite(pixel.xyz)) ? pixel : (float4)0.0f;
+  pixel = all(isfinite(pixel.xyz)) ? fmax(0.0f, pixel) : (float4)0.0f;
 
   write_imagef (out, (int2)(x, y), pixel);
 }
@@ -2257,7 +2257,7 @@ lens_distort_lanczos2 (read_only image2d_t in,
   }
   pixel.z = sum/weight;
 
-  pixel = all(isfinite(pixel.xyz)) ? pixel : (float4)0.0f;
+  pixel = all(isfinite(pixel.xyz)) ? fmax(0.0f, pixel) : (float4)0.0f;
 
   write_imagef (out, (int2)(x, y), pixel);
 }
@@ -2394,7 +2394,7 @@ lens_distort_lanczos3 (read_only image2d_t in, write_only image2d_t out, const i
   }
   pixel.z = sum/weight;
 
-  pixel = all(isfinite(pixel.xyz)) ? pixel : (float4)0.0f;
+  pixel = all(isfinite(pixel.xyz)) ? fmax(0.0f, pixel) : (float4)0.0f;
 
   write_imagef (out, (int2)(x, y), pixel);
 }
@@ -3059,8 +3059,8 @@ kernel void md_lens_correction(read_only image2d_t in,
       _interpolate_linear_spline(knots_dist, &cor_rgb[plane * MAXKNOTS], knots, radius);
     const float xs = dr*cx + w2 - roix;
     const float ys = dr*cy + h2 - roiy;
-    output[c] = interpolation_compute_sample(in, itor_mode, itor_width,
-                                             xs, ys, iwidth, iheight, c);
+    output[c] = fmax(0.0f, interpolation_compute_sample(in, itor_mode, itor_width,
+                                             xs, ys, iwidth, iheight, c));
   }
 
   float4 pixel = {output[0], output[1], output[2], output[3]};

@@ -42,11 +42,48 @@ The following is a summary of the main features added to darktable
 4.8. Please see the user manual for more details of the individual
 changes (where available).
 
+- Two new modules have been introduced to support images composition.
+
+  - Enlarge Canvas : As the name imply this module can be used to add
+    areas on the left, right, top or bottom of the image. The new area
+    can be assigned different color to help masking if necessary. The
+    new areas can the be filled with the Retouch module by copying
+    some other part of the image, using Liquify if the area is small
+    or the new module overlay.
+
+  - Overlay : This module can be used to add new content on the image
+    by overlaying pixels from the current image or another image. The
+    overlay content is defined by a drag-and-drop from the filmstrip
+    to the Overlay module. This new content can be scaled, rotated and
+    shifted horizontally or vertically. Using a mask it can be used to
+    fill an area created by the Enlarge Canvas or to add some new part
+    into the image using masking. A common example is to overlay
+    multiply pictures of a firework to create a bigger one.
+
+- Implemented a toggle switch for the darkroom mode forcing the
+  pixel-pipe processing to use the whole image data instead of just the
+  area displayed. This allows the user to inspect processed data
+  without errors introduced via internal scaling and equals what we
+  get by exporting in "high quality resampling" mode.
+
 ## Performance Improvements
 
 ## Other Changes
 
 - Changed the sort order of tags to a natural and case insensitive order.
+
+- Added Apple Keychain password storage backend for macOS devices.
+
+- Collect module sorting has been integrated into the module's header
+  instead of a preference. All collections can now be sorted easily by
+  a single click on the sort button.
+
+- Removed "unrestricted" mode from darktable's preferences resources
+  for safety. This setting has been proved to be unsafe in many
+  cases. It can still be enabled via the resource file if needed.
+
+- Add buttons next to the snapshots to allow restoring it as the new
+  history.
 
 ## Bug Fixes
 
@@ -59,6 +96,9 @@ changes (where available).
 ### Bug Fixes
 
 - Fixed `scripts_installer` to handle user names with spaces on Windows.
+
+- Fixed a wrong behaviour when double-clicking on the navigation menu
+  in the map module.
 
 ### Add action support for Lua
 
@@ -96,7 +136,7 @@ changes (where available).
 
 ### Optional
 
-- Bump libavif to 0.9.2
+- Bump libavif to 0.9.3
 
 ## RawSpeed changes
 

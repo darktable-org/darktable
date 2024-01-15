@@ -330,8 +330,8 @@ static dt_dev_history_item_t *_search_history_by_module(GList *history_list,
 }
 
 static gboolean _check_deleted_instances(dt_develop_t *dev,
-                                    GList **_iop_list,
-                                    GList *history_list)
+                                         GList **_iop_list,
+                                         GList *history_list)
 {
   GList *iop_list = *_iop_list;
   gboolean deleted_module_found = FALSE;
@@ -407,7 +407,8 @@ static gboolean _check_deleted_instances(dt_develop_t *dev,
     {
       deleted_module_found = TRUE;
 
-      if(darktable.develop->gui_module == mod) dt_iop_request_focus(NULL);
+      if(darktable.develop->gui_module == mod)
+        dt_iop_request_focus(NULL);
 
       ++darktable.gui->reset;
 
@@ -444,7 +445,8 @@ static gboolean _check_deleted_instances(dt_develop_t *dev,
 
     modules = g_list_next(modules);
   }
-  if(deleted_module_found) iop_list = g_list_sort(iop_list, dt_sort_iop_by_order);
+  if(deleted_module_found)
+    iop_list = g_list_sort(iop_list, dt_sort_iop_by_order);
 
   *_iop_list = iop_list;
 
@@ -553,7 +555,8 @@ static gboolean _create_deleted_modules(GList **_iop_list, GList *history_list)
 
         // and do that also in the undo/redo lists
         struct _cb_data udata = { module, hitem->multi_priority };
-        dt_undo_iterate_internal(darktable.undo, DT_UNDO_HISTORY, &udata, &_undo_items_cb);
+        dt_undo_iterate_internal(darktable.undo, DT_UNDO_HISTORY,
+                                 &udata, &_undo_items_cb);
         done = TRUE;
       }
 
@@ -567,7 +570,8 @@ static gboolean _create_deleted_modules(GList **_iop_list, GList *history_list)
   return changed;
 }
 
-static void _pop_undo(gpointer user_data, dt_undo_type_t type,
+static void _pop_undo(gpointer user_data,
+                      dt_undo_type_t type,
                       dt_undo_data_t data,
                       dt_undo_action_t action,
                       GList **imgs)
@@ -629,10 +633,7 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type,
     dev->iop = iop_temp;
 
     // topology has changed
-    if(pipe_remove)
-    {
-      dt_dev_pixelpipe_rebuild(dev);
-    }
+    dt_dev_pixelpipe_rebuild(dev);
 
     dt_pthread_mutex_unlock(&dev->history_mutex);
 
@@ -645,12 +646,14 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type,
 
     dt_ioppr_resync_modules_order(dev);
 
-    dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
+    dt_dev_modulegroups_set(darktable.develop,
+                            dt_dev_modulegroups_get(darktable.develop));
 
     if(dev->gui_module)
     {
       dt_masks_set_edit_mode(dev->gui_module, hist->mask_edit_mode);
-      darktable.develop->gui_module->request_mask_display = hist->request_mask_display;
+      darktable.develop->gui_module->request_mask_display =
+        hist->request_mask_display;
       dt_iop_gui_update_blendif(darktable.develop->gui_module);
       dt_iop_gui_blend_data_t *bd =
         (dt_iop_gui_blend_data_t *)(dev->gui_module->blend_data);
@@ -1253,7 +1256,7 @@ static gboolean _lib_history_button_clicked_callback(GtkWidget *widget,
 
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) return FALSE;
 
-  // ctrl-click just show the corresponding module in modulegroups
+  // shift-click just show the corresponding module in modulegroups
   if(dt_modifier_is(e->state, GDK_SHIFT_MASK))
   {
     const int num = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "history-number"));

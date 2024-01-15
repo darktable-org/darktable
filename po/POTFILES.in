@@ -1,5 +1,6 @@
 build/bin/conf_gen.h
 build/bin/preferences_gen.h
+build/bin/tools/darktable_authors.h
 build/lib/darktable/plugins/introspection_ashift.c
 build/lib/darktable/plugins/introspection_atrous.c
 build/lib/darktable/plugins/introspection_basecurve.c
@@ -28,6 +29,7 @@ build/lib/darktable/plugins/introspection_colormapping.c
 build/lib/darktable/plugins/introspection_colorout.c
 build/lib/darktable/plugins/introspection_colorreconstruction.c
 build/lib/darktable/plugins/introspection_colortransfer.c
+build/lib/darktable/plugins/introspection_colorequal.c
 build/lib/darktable/plugins/introspection_colorzones.c
 build/lib/darktable/plugins/introspection_crop.c
 build/lib/darktable/plugins/introspection_defringe.c
@@ -35,6 +37,7 @@ build/lib/darktable/plugins/introspection_demosaic.c
 build/lib/darktable/plugins/introspection_denoiseprofile.c
 build/lib/darktable/plugins/introspection_diffuse.c
 build/lib/darktable/plugins/introspection_dither.c
+build/lib/darktable/plugins/introspection_enlargecanvas.c
 build/lib/darktable/plugins/introspection_equalizer.c
 build/lib/darktable/plugins/introspection_exposure.c
 build/lib/darktable/plugins/introspection_filmic.c
@@ -61,6 +64,7 @@ build/lib/darktable/plugins/introspection_monochrome.c
 build/lib/darktable/plugins/introspection_negadoctor.c
 build/lib/darktable/plugins/introspection_nlmeans.c
 build/lib/darktable/plugins/introspection_overexposed.c
+build/lib/darktable/plugins/introspection_overlay.c
 build/lib/darktable/plugins/introspection_primaries.c
 build/lib/darktable/plugins/introspection_profile_gamma.c
 build/lib/darktable/plugins/introspection_rawdenoise.c
@@ -87,7 +91,6 @@ build/lib/darktable/plugins/introspection_vibrance.c
 build/lib/darktable/plugins/introspection_vignette.c
 build/lib/darktable/plugins/introspection_watermark.c
 build/lib/darktable/plugins/introspection_zonesystem.c
-build/bin/tools/darktable_authors.h
 build/share/darktable/org.darktable.darktable.desktop.in
 data/org.darktable.darktable.appdata.xml.in
 data/org.darktable.darktable.desktop.in
@@ -171,9 +174,6 @@ src/gui/import_metadata.c
 src/gui/preferences.c
 src/gui/presets.c
 src/gui/styles_dialog.c
-src/imageio/imageio.c
-src/imageio/imageio_qoi.c
-src/imageio/imageio_libraw.c
 src/imageio/format/avif.c
 src/imageio/format/copy.c
 src/imageio/format/exr.cc
@@ -187,6 +187,9 @@ src/imageio/format/ppm.c
 src/imageio/format/tiff.c
 src/imageio/format/webp.c
 src/imageio/format/xcf.c
+src/imageio/imageio.c
+src/imageio/imageio_libraw.c
+src/imageio/imageio_qoi.c
 src/imageio/storage/disk.c
 src/imageio/storage/email.c
 src/imageio/storage/gallery.c
@@ -221,6 +224,7 @@ src/iop/colormapping.c
 src/iop/colorout.c
 src/iop/colorreconstruction.c
 src/iop/colortransfer.c
+src/iop/colorequal.c
 src/iop/colorzones.c
 src/iop/crop.c
 src/iop/defringe.c
@@ -234,6 +238,7 @@ src/iop/demosaicing/xtrans.c
 src/iop/denoiseprofile.c
 src/iop/diffuse.c
 src/iop/dither.c
+src/iop/enlargecanvas.c
 src/iop/equalizer.c
 src/iop/exposure.c
 src/iop/filmic.c
@@ -260,6 +265,7 @@ src/iop/monochrome.c
 src/iop/negadoctor.c
 src/iop/nlmeans.c
 src/iop/overexposed.c
+src/iop/overlay.c
 src/iop/primaries.c
 src/iop/profile_gamma.c
 src/iop/rawdenoise.c
@@ -325,10 +331,10 @@ src/libs/map_settings.c
 src/libs/masks.c
 src/libs/metadata.c
 src/libs/metadata_view.c
-src/libs/recentcollect.c
 src/libs/modulegroups.c
 src/libs/navigation.c
 src/libs/print_settings.c
+src/libs/recentcollect.c
 src/libs/recentcollect.c
 src/libs/select.c
 src/libs/session.c

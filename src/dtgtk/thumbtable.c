@@ -888,7 +888,6 @@ static void _zoomable_zoom(dt_thumbtable_t *table,
     y - (y - anchor_y * table->thumb_size - table->thumbs_area.y) * ratio;
 
   // we move and resize each thumbs
-  GList *th_invalid = NULL;
   dt_thumbnail_t *first = NULL;
   dt_thumbnail_t *last = NULL;
   GList *l = table->list;
@@ -903,20 +902,11 @@ static void _zoomable_zoom(dt_thumbtable_t *table,
     // we compute new position taking anchor image as reference
     th->x = anchor_posx - (anchor_x - posx) * new_size;
     th->y = anchor_posy - (anchor_y - posy) * new_size;
-    if(th->y + table->thumb_size <= 0 || th->y > table->view_height)
-    {
-      th_invalid = g_list_prepend(th_invalid, th);
-      GList *ll = l;
-      l = g_list_next(l);
-      table->list = g_list_delete_link(table->list, ll);
-      if(table->drag_thumb == th)
-        table->drag_thumb = NULL;
-    }
-    else
-    {
-      gtk_layout_move(GTK_LAYOUT(table->widget), th->w_main, th->x, th->y);
-      l = g_list_next(l);
-    }
+
+    // we move the thumbnail to its new position.
+    // in some case the thumbnail may be out of sight. This will be handled later.
+    gtk_layout_move(GTK_LAYOUT(table->widget), th->w_main, th->x, th->y);
+    l = g_list_next(l);
     dt_thumbnail_resize(th, new_size, new_size, FALSE, IMG_TO_FIT);
   }
 
@@ -932,6 +922,27 @@ static void _zoomable_zoom(dt_thumbtable_t *table,
   posx = MAX(space - table->thumbs_area.x - table->thumbs_area.width, posx);
   if(posx != 0 || posy != 0)
     _move(table, posx, posy, FALSE);
+
+  // now we search for thumbnails out of sight
+  GList *th_invalid = NULL;
+  l = table->list;
+  while(l)
+  {
+    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    if(th->y + table->thumb_size <= 0 || th->y > table->view_height)
+    {
+      th_invalid = g_list_prepend(th_invalid, th);
+      GList *ll = l;
+      l = g_list_next(l);
+      table->list = g_list_delete_link(table->list, ll);
+      if(table->drag_thumb == th)
+        table->drag_thumb = NULL;
+    }
+    else
+    {
+      l = g_list_next(l);
+    }
+  }
 
   // and we load/unload thumbs if needed
   int changed = _thumbs_load_needed(table, &th_invalid, first, last);
@@ -1263,8 +1274,6 @@ static gboolean _event_button_press(GtkWidget *widget,
   dt_set_backthumb_time(0.0);
 
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
-  const dt_view_manager_t *vm = darktable.view_manager;
-  dt_view_t *view = vm->current_view;
   const dt_imgid_t id = dt_control_get_mouse_over_id();
 
   if(dt_is_valid_imgid(id)
@@ -1274,16 +1283,6 @@ static gboolean _event_button_press(GtkWidget *widget,
      && event->type == GDK_2BUTTON_PRESS)
   {
     dt_view_manager_switch(darktable.view_manager, "darkroom");
-  }
-  else if(dt_is_valid_imgid(id)
-          && event->button == 1
-          && table->mode == DT_THUMBTABLE_MODE_FILMSTRIP
-          && event->type == GDK_BUTTON_PRESS
-          && strcmp(view->module_name, "map")
-          && dt_modifier_is(event->state, 0))
-  {
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
-                                  DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, id);
   }
 
   if(event->button == 1 && event->type == GDK_BUTTON_PRESS)
@@ -1374,6 +1373,16 @@ static gboolean _event_button_release(GtkWidget *widget,
                                     DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, id);
       return TRUE;
     }
+    else if(dt_is_valid_imgid(id)
+            && event->button == 1
+            && table->mode == DT_THUMBTABLE_MODE_FILMSTRIP
+            && event->type == GDK_BUTTON_RELEASE
+            && strcmp(view->module_name, "map")
+            && dt_modifier_is(event->state, 0))
+      {
+        DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
+                                      DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, id);
+      }
   }
 
   if(table->mode != DT_THUMBTABLE_MODE_ZOOM)
@@ -1966,10 +1975,24 @@ static void _event_dnd_get(GtkWidget *widget,
       {
         dt_imgid_t *imgs = malloc(sizeof(uint32_t) * imgs_nb);
         GList *l = table->drag_list;
-        for(int i = 0; i < imgs_nb; i++)
+
+        int start = 0;
+        // make sure that imgs[0] is the last selected imgid, that is the
+        // one clicked when starting the d&d.
+        if(dt_is_valid_imgid(darktable.control->last_clicked_filmstrip_id))
         {
-          imgs[i] = GPOINTER_TO_INT(l->data);
-          l = g_list_next(l);
+          imgs[0] = darktable.control->last_clicked_filmstrip_id;
+          start = 1;
+        }
+
+        for(int i = start; i < imgs_nb; i++)
+        {
+          const dt_imgid_t id = GPOINTER_TO_INT(l->data);
+          if(i > 0 && id != imgs[0])
+          {
+            imgs[i] = GPOINTER_TO_INT(l->data);
+            l = g_list_next(l);
+          }
         }
         gtk_selection_data_set(selection_data,
                                gtk_selection_data_get_target(selection_data),
@@ -2030,6 +2053,8 @@ static void _event_dnd_begin(GtkWidget *widget,
 
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
 
+  darktable.control->last_clicked_filmstrip_id =
+    dt_control_get_mouse_over_id();
   table->drag_list = dt_act_on_get_images(FALSE, TRUE, TRUE);
 
 #ifdef HAVE_MAP

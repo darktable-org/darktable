@@ -101,9 +101,11 @@ const dt_iop_order_entry_t legacy_order[] = {
   { {18.0f }, "rotatepixels", 0},
   { {19.0f }, "scalepixels", 0},
   { {20.0f }, "flip", 0},
+  { {20.5f }, "enlargecanvas", 0},
   { {21.0f }, "clipping", 0},
   { {21.5f }, "toneequal", 0},
   { {21.7f }, "crop", 0},
+  { {21.9f }, "overlay", 0},
   { {22.0f }, "graduatednd", 0},
   { {23.0f }, "basecurve", 0},
   { {24.0f }, "bilateral", 0},
@@ -124,6 +126,7 @@ const dt_iop_order_entry_t legacy_order[] = {
   { {32.0f }, "vibrance", 0},
   { {33.0f }, "colorbalance", 0},
   { {33.5f }, "colorbalancergb", 0},
+  { {33.5f }, "colorequal", 0},
   { {34.0f }, "colorize", 0},
   { {35.0f }, "colortransfer", 0},
   { {36.0f }, "colormapping", 0},
@@ -193,6 +196,8 @@ const dt_iop_order_entry_t v30_order[] = {
   { {14.0f }, "hazeremoval", 0},
   { {15.0f }, "ashift", 0},
   { {16.0f }, "flip", 0},
+  { {16.5f }, "enlargecanvas", 0},
+  { {16.7f }, "overlay", 0},
   { {17.0f }, "clipping", 0},
   { {18.0f }, "liquify", 0},
   { {19.0f }, "spots", 0},
@@ -240,6 +245,7 @@ const dt_iop_order_entry_t v30_order[] = {
   { {40.0f }, "basicadj", 0},        // module mixing view/model/control at once, usage should be discouraged
   { {41.0f }, "colorbalance", 0},    // scene-referred color manipulation
   { {41.5f }, "colorbalancergb", 0},    // scene-referred color manipulation
+  { {41.7f }, "colorequal", 0},
   { {42.0f }, "rgbcurve", 0},        // really versatile way to edit colour in scene-referred and display-referred workflow
   { {43.0f }, "rgblevels", 0},       // same
   { {44.0f }, "basecurve", 0},       // conversion from scene-referred to display referred, reverse-engineered
@@ -308,6 +314,8 @@ const dt_iop_order_entry_t v30_jpg_order[] = {
   { { 28.0f }, "hazeremoval", 0},
   { { 28.0f }, "ashift", 0},
   { { 28.0f }, "flip", 0},
+  { { 28.0f }, "enlargecanvas", 0},
+  { { 28.0f }, "overlay", 0},
   { { 28.0f }, "clipping", 0},
   { { 28.0f }, "liquify", 0},
   { { 28.0f }, "spots", 0},
@@ -316,7 +324,8 @@ const dt_iop_order_entry_t v30_jpg_order[] = {
   { { 28.0f }, "mask_manager", 0},
   { { 28.0f }, "tonemap", 0},
   { { 28.0f }, "toneequal", 0},       // last module that need enlarged roi_in
-  { { 28.0f }, "crop", 0},            // should go after all modules that may need a wider roi_in
+  { { 28.0f }, "crop", 0},            // should go after all modules
+                                      // that may need a wider roi_in
   { { 28.0f }, "graduatednd", 0},
   { { 28.0f }, "profile_gamma", 0},
   { { 28.0f }, "equalizer", 0},
@@ -352,6 +361,7 @@ const dt_iop_order_entry_t v30_jpg_order[] = {
   { { 40.0f }, "basicadj", 0 },        // module mixing view/model/control at once, usage should be discouraged
   { { 41.0f }, "colorbalance", 0 },    // scene-referred color manipulation
   { { 41.5f }, "colorbalancergb", 0 }, // scene-referred color manipulation
+  { { 41.7f }, "colorequal", 0 },
   { { 42.0f }, "rgbcurve", 0 },      // really versatile way to edit colour in scene-referred and display-referred
                                      // workflow
   { { 43.0f }, "rgblevels", 0 },     // same
@@ -914,9 +924,12 @@ GList *dt_ioppr_get_iop_order_list(const dt_imgid_t imgid,
           _insert_before(iop_order_list, "rgbcurve", "colorbalancergb");
           _insert_before(iop_order_list, "ashift", "cacorrectrgb");
           _insert_before(iop_order_list, "graduatednd", "crop");
+          _insert_before(iop_order_list, "flip", "enlargecanvas");
+          _insert_before(iop_order_list, "enlargecanvas", "overlay");
           _insert_before(iop_order_list, "colorbalance", "diffuse");
           _insert_before(iop_order_list, "nlmeans", "blurs");
           _insert_before(iop_order_list, "filmicrgb", "sigmoid");
+          _insert_before(iop_order_list, "rgbcurve", "colorequal");
         }
       }
       else if(version == DT_IOP_ORDER_LEGACY)

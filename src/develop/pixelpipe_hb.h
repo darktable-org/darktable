@@ -291,6 +291,8 @@ gboolean dt_dev_pixelpipe_process_no_gamma(dt_dev_pixelpipe_t *pipe,
 void dt_dev_pixelpipe_disable_after(dt_dev_pixelpipe_t *pipe, const char *op);
 // disable given op and all that comes before it in the pipe:
 void dt_dev_pixelpipe_disable_before(dt_dev_pixelpipe_t *pipe, const char *op);
+// disable given op only:
+void dt_dev_pixelpipe_module_enabled(dt_dev_pixelpipe_t *pipe, const char *op, const gboolean enable);
 
 // helper function to pass a raster mask through a (so far) processed pipe
 float *dt_dev_get_raster_mask(const struct dt_dev_pixelpipe_iop_t *piece,
@@ -316,10 +318,11 @@ int dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
 void dt_print_pipe_ext(const char *title,
                        const dt_dev_pixelpipe_t *pipe,
                        const struct dt_iop_module_t *mod,
+                       const int device,
                        const dt_iop_roi_t *roi_in,
                        const dt_iop_roi_t *roi_out,
                        const char *msg, ...)
-  __attribute__((format(printf, 6, 7)));
+  __attribute__((format(printf, 7, 8)));
 
 // helper function writing the pipe-processed ctmask data to dest
 float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_t *pipe,

@@ -424,6 +424,28 @@ void dt_image_full_path(const dt_imgid_t imgid,
   }
 }
 
+gboolean dt_image_exists(const dt_imgid_t imgid)
+{
+  sqlite3_stmt *stmt;
+  gboolean exists = FALSE;
+
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT id FROM main.images"
+                              " WHERE id = ?1",
+                              -1, &stmt, NULL);
+  // clang-format on
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    exists = TRUE;
+  }
+  sqlite3_finalize(stmt);
+
+  return exists;
+}
+
 char *dt_image_get_filename(const dt_imgid_t imgid)
 {
   sqlite3_stmt *stmt;
@@ -577,10 +599,13 @@ void dt_image_set_xmp_rating(dt_image_t *img, const int rating)
 void dt_image_get_location(const dt_imgid_t imgid, dt_image_geoloc_t *geoloc)
 {
   const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
-  geoloc->longitude = img->geoloc.longitude;
-  geoloc->latitude = img->geoloc.latitude;
-  geoloc->elevation = img->geoloc.elevation;
-  dt_image_cache_read_release(darktable.image_cache, img);
+  if(img)
+  {
+    geoloc->longitude = img->geoloc.longitude;
+    geoloc->latitude = img->geoloc.latitude;
+    geoloc->elevation = img->geoloc.elevation;
+    dt_image_cache_read_release(darktable.image_cache, img);
+  }
 }
 
 static void _set_location(const dt_imgid_t imgid, const dt_image_geoloc_t *geoloc)

@@ -19,7 +19,7 @@
 #pragma once
 
 #include "common/math.h" // also loads darkable.h, sse.h, <xmmintrin.h>
-
+#include "common/colorspaces.h"
 
 #ifdef __SSE2__
 static inline __m128 lab_f_inv_m(const __m128 x)
@@ -276,21 +276,28 @@ static inline void dt_Lab_to_linearRGB(
 #endif
 static inline void dt_XYZ_to_xyY(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t xyY)
 {
+  const gboolean black = XYZ[0] == 0.0f && XYZ[1] == 0.0f && XYZ[2] == 0.0f;
+  /* the calculation for black would fail with NaNs as result.
+     According to http://www.brucelindbloom.com/index.html?Eqn_XYZ_to_xyY.html
+     we would want the pipes chromaticity coordinates of the reference white.
+     The best guess as a fallback is from D65_xyY so
+  */
   const float sum = XYZ[0] + XYZ[1] + XYZ[2];
-  xyY[0] = XYZ[0] / sum;
-  xyY[1] = XYZ[1] / sum;
+  xyY[0] = black ? D65xyY.x : XYZ[0] / sum;
+  xyY[1] = black ? D65xyY.y : XYZ[1] / sum;
   xyY[2] = XYZ[1];
 }
-
 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(xyY, XYZ:16)
 #endif
 static inline void dt_xyY_to_XYZ(const dt_aligned_pixel_t xyY, dt_aligned_pixel_t XYZ)
 {
-  XYZ[0] = xyY[2] * xyY[0] / xyY[1];
-  XYZ[1] = xyY[2];
-  XYZ[2] = xyY[2] * (1.f - xyY[0] - xyY[1]) / xyY[1];
+  const gboolean bad = xyY[1] == 0.0f;
+  // according to http://brucelindbloom.com/index.html?Eqn_xyY_to_XYZ.html
+  XYZ[0] = bad ? 0.0f : xyY[2] * xyY[0] / xyY[1];
+  XYZ[1] = bad ? 0.0f : xyY[2];
+  XYZ[2] = bad ? 0.0f : xyY[2] * (1.f - xyY[0] - xyY[1]) / xyY[1];
 }
 
 
@@ -1355,9 +1362,15 @@ static inline float dt_UCS_L_star_to_Y(const float L_star)
 
 // L_star upper limit is 2.098883786377 truncated to 32-bit float and last decimal removed.
 // By clipping L_star to this limit, we ensure dt_UCS_L_star_to_Y() doesn't divide by zero.
-static const float DT_UCS_L_STAR_UPPER_LIMIT = 2.098883f;
+// static const float DT_UCS_L_STAR_UPPER_LIMIT = 2.098883f;
 // Y upper limit is calculated from the above L star upper limit.
-static const float DT_UCS_Y_UPPER_LIMIT = 13237757000.f;
+// static const float DT_UCS_Y_UPPER_LIMIT = 13237757000.f;
+
+// Instead of using above theoretical values we use some modified versions
+// that not avoid div-by-zero but div-by-close-to-zero
+// this leads to more stability for extremely bright parts as we avoid single float precision overflows
+static const float DT_UCS_L_STAR_UPPER_LIMIT = 2.09885f;
+static const float DT_UCS_Y_UPPER_LIMIT = 1e8f;
 
 
 #ifdef _OPENMP
@@ -1389,6 +1402,18 @@ static inline void xyY_to_dt_UCS_UV(const dt_aligned_pixel_t xyY, float UV_star_
 
 }
 
+#ifdef _OPENMP
+#pragma omp declare simd aligned(JCH: 16)
+#endif
+static inline void dt_UCS_LUV_to_JCH(const float L_star, const float L_white, const float UV_star_prime[2], dt_aligned_pixel_t JCH)
+{
+  const float M2 = UV_star_prime[0] * UV_star_prime[0] + UV_star_prime[1] * UV_star_prime[1]; // square of colorfulness M
+
+  // should be JCH[0] = powf(L_star / L_white), cz) but we treat only the case where cz = 1
+  JCH[0] = L_star / L_white;
+  JCH[1] = 15.932993652962535f * powf(L_star, 0.6523997524738018f) * powf(M2, 0.6007557017508491f) / L_white;
+  JCH[2] = atan2f(UV_star_prime[1], UV_star_prime[0]);
+ }
 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(xyY, JCH: 16)
@@ -1407,14 +1432,7 @@ static inline void xyY_to_dt_UCS_JCH(const dt_aligned_pixel_t xyY, const float L
   float UV_star_prime[2];
   xyY_to_dt_UCS_UV(xyY, UV_star_prime);
 
-  // L_star must be clipped to the valid range of dt UCS
-  const float L_star = Y_to_dt_UCS_L_star(CLAMPF(xyY[2], 0.f, DT_UCS_Y_UPPER_LIMIT));
-  const float M2 = UV_star_prime[0] * UV_star_prime[0] + UV_star_prime[1] * UV_star_prime[1]; // square of colorfulness M
-
-  // should be JCH[0] = powf(L_star / L_white), cz) but we treat only the case where cz = 1
-  JCH[0] = L_star / L_white;
-  JCH[1] = 15.932993652962535f * powf(L_star, 0.6523997524738018f) * powf(M2, 0.6007557017508491f) / L_white;
-  JCH[2] = atan2f(UV_star_prime[1], UV_star_prime[0]);
+  dt_UCS_LUV_to_JCH(Y_to_dt_UCS_L_star(xyY[2]), L_white, UV_star_prime, JCH);
 }
 
 
@@ -1511,6 +1529,17 @@ static inline void dt_UCS_HPW_to_HSB(const dt_aligned_pixel_t HPW, dt_aligned_pi
   HSB[0] = HPW[0];
   HSB[1] = HPW[1] * HPW[2];
   HSB[2] = fmaxf(sqrtf(HPW[2] * HPW[2] - HSB[1] * HSB[1]), 0.f);
+}
+
+static inline void dt_UCS_HSB_to_XYZ(const dt_aligned_pixel_t HSB, const float L_w, dt_aligned_pixel_t XYZ)
+{
+  // Quick path
+  dt_aligned_pixel_t JCH = { 0.f };
+  dt_aligned_pixel_t xyY = { 0.f };
+
+  dt_UCS_HSB_to_JCH(HSB, JCH);
+  dt_UCS_JCH_to_xyY(JCH, L_w, xyY);
+  dt_xyY_to_XYZ(xyY, XYZ);
 }
 
 #undef DT_RESTRICT

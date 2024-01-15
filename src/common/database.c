@@ -48,7 +48,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 47
+#define CURRENT_DATABASE_VERSION_LIBRARY 48
 #define CURRENT_DATABASE_VERSION_DATA    10
 
 // #define USE_NESTED_TRANSACTIONS
@@ -2616,6 +2616,17 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     new_version = 47;
   }
+  else if(version == 47)
+  {
+    TRY_EXEC("CREATE TABLE overlay"
+             " (imgid INTEGER, overlay_id INTEGER,"
+             "  PRIMARY KEY (imgid, overlay_id),"
+             "  FOREIGN KEY(imgid) REFERENCES images(id)"
+             "    ON UPDATE CASCADE ON DELETE CASCADE)",
+             "[init] can't create table overlay\n");
+
+    new_version = 48;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -3074,6 +3085,15 @@ static void _create_library_schema(dt_database_t *db)
      "    ON UPDATE CASCADE ON DELETE CASCADE)",
      NULL, NULL, NULL);
 
+  sqlite3_exec
+    (db->handle,
+     "CREATE TABLE overlay"
+     " (imgid INTEGER, overlay_id INTEGER,"
+     "  PRIMARY KEY (imgid, overlay_id),"
+     "  FOREIGN KEY(imgid) REFERENCES images(id)"
+     "    ON UPDATE CASCADE ON DELETE CASCADE)",
+     NULL, NULL, NULL);
+
   // Some triggers to remove possible dangling refs in makers/models/lens/cameras
   sqlite3_exec
     (db->handle,
@@ -3344,7 +3364,10 @@ void dt_database_show_error(const dt_database_t *db)
     char lck_pathname[1024];
     snprintf(lck_pathname, sizeof(lck_pathname), "%s.lock", db->error_dbfilename);
     char *lck_dirname = g_strdup(lck_pathname);
-    *g_strrstr(lck_dirname, "/") = '\0';
+    char *last_dirsep_position = g_strrstr(lck_dirname, G_DIR_SEPARATOR_S);
+    if(last_dirsep_position)
+      *last_dirsep_position = '\0';  // make lck_dirname contain only the directory name
+
     // clang-format off
     char *label_text = g_markup_printf_escaped(
         _("\n"

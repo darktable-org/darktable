@@ -46,14 +46,8 @@
 
 static const cmsCIEXYZ d65 = {0.95045471, 1.00000000, 1.08905029};
 
-//D65 (sRGB, AdobeRGB, Rec2020)
-static const cmsCIExyY D65xyY = {0.312700492, 0.329000939, 1.0};
-
 //D60
 //static const cmsCIExyY d60 = {0.32168, 0.33767, 1.0};
-
-//D50 (ProPhoto RGB)
-static const cmsCIExyY D50xyY = {0.3457, 0.3585, 1.0};
 
 // D65:
 static const cmsCIExyYTRIPLE sRGB_Primaries = {

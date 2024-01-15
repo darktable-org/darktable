@@ -1300,13 +1300,15 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table,
       // something > 0 to trigger draw events
       int nw = 40;
       int nh = 40;
-      if(table->mode == DT_CULLING_MODE_PREVIEW)
+      if(table->mode == DT_CULLING_MODE_PREVIEW ||
+         (table->mode == DT_CULLING_MODE_CULLING && table->thumbs_count == 1))
       {
         nw = table->view_width;
         nh = table->view_height;
       }
       else if(table->list)
       {
+
         dt_thumbnail_t *th_model = (dt_thumbnail_t *)(table->list)->data;
         nw = th_model->width;
         nh = th_model->height;

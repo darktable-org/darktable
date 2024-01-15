@@ -20,6 +20,8 @@
   This file contains the necessary routines to implement a filter for the filtering module
 */
 
+#include "common/utility.h"
+
 static gboolean _ratio_update(dt_lib_filtering_rule_t *rule)
 {
   if(!rule->w_specific) return FALSE;
@@ -110,11 +112,7 @@ static double _ratio_value_from_band_func(const double value)
 
 static gchar *_ratio_print_func(const double value, const gboolean detailled)
 {
-  gchar *locale = g_strdup(setlocale(LC_ALL, NULL));
-  setlocale(LC_NUMERIC, "C");
-  gchar *txt = g_strdup_printf("%.2lf", value);
-  setlocale(LC_NUMERIC, locale);
-  g_free(locale);
+  gchar *txt = dt_util_float_to_str("%.2lf", value);
 
   if(detailled)
   {
