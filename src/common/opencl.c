@@ -1249,6 +1249,7 @@ void dt_opencl_init(
     {
       dt_print(DT_DEBUG_OPENCL,
                "[opencl_init] detected wrong OpenCL platforms setup: multiple drivers for some platform\n");
+      logerror = _("found mutiple installed drivers for some platform(s)");
       num_platforms = 0;
       goto finally;
     }
