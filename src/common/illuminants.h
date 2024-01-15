@@ -257,8 +257,8 @@ static inline int illuminant_to_xy(const dt_illuminant_t illuminant, // primary 
     case DT_ILLUMINANT_PIPE:
     {
       // darktable default pipeline D50
-      x = 0.34567f;
-      y = 0.35850f;
+      x = D50xyY.x;
+      y = D50xyY.y;
       break;
     }
     case DT_ILLUMINANT_E:

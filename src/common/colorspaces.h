@@ -27,11 +27,12 @@
   #define TYPE_XYZA_FLT (FLOAT_SH(1)|COLORSPACE_SH(PT_XYZ)|EXTRA_SH(1)|CHANNELS_SH(3)|BYTES_SH(4))
 #endif
 
+// CIE 1931 2° as used in dt
 //D50 (ProPhoto RGB)
-static const cmsCIExyY D50xyY = {0.3457, 0.3585, 1.0};
+static const cmsCIExyY D50xyY = {0.34567, 0.35850, 1.0};
 
 //D65 (sRGB, AdobeRGB, Rec2020)
-static const cmsCIExyY D65xyY = {0.312700492, 0.329000939, 1.0};
+static const cmsCIExyY D65xyY = {0.31271, 0.32902, 1.0};
 
 /** colorspace enums, must be in synch with dt_iop_colorspace_type_t
  * in color_conversion.cl */

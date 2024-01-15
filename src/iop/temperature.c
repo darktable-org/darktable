@@ -291,7 +291,7 @@ static double spd_blackbody(unsigned long int wavelength, double TempK)
  */
 static double spd_daylight(unsigned long int wavelength, double TempK)
 {
-  cmsCIExyY WhitePoint = { 0.3127, 0.3290, 1.0 };
+  cmsCIExyY WhitePoint = { D65xyY.x, D65xyY.y, 1.0 };
 
   /*
    * Bruce Lindbloom, "TempK to xy"

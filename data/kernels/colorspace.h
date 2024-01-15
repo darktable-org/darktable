@@ -629,8 +629,8 @@ static inline float4 dt_XYZ_to_xyY(const float4 XYZ)
   const float sum = XYZ.x + XYZ.y + XYZ.z;
   if(XYZ.x == 0.0f && XYZ.y == 0.0f && XYZ.z == 0.0f)
   {
-    xyY.x = 0.312700492f;
-    xyY.y = 0.329000939f;
+    xyY.x = (float)0.31271;
+    xyY.y = (float)0.32902;
   }
   else
   {
