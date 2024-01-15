@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1221,6 +1221,7 @@ void dt_opencl_init(
   // safety check for platforms; we must not have several versions for the same platform
   {
     gboolean multiple = FALSE;
+    gboolean found_invalid_platform = FALSE;
     char *platforms = calloc(num_platforms, sizeof(char) * DT_OPENCL_CBUFFSIZE);
     for(int n = 0; n < num_platforms; n++)
     {
@@ -1228,7 +1229,7 @@ void dt_opencl_init(
       if((cl->dlocl->symbols->dt_clGetPlatformInfo)
         (platform, CL_PLATFORM_NAME, DT_OPENCL_CBUFFSIZE, platforms + n * DT_OPENCL_CBUFFSIZE, NULL) != CL_SUCCESS)
       {
-        multiple = TRUE;
+        found_invalid_platform = TRUE;
         break;
       }
       for(int k = 0; k < n; k++)
@@ -1242,7 +1243,14 @@ void dt_opencl_init(
     if(multiple)
     {
       dt_print(DT_DEBUG_OPENCL,
-                 "[opencl_init] detected wrong OpenCL platforms setup\n");
+               "[opencl_init] detected wrong OpenCL platforms setup: multiple drivers for some platform\n");
+      num_platforms = 0;
+      goto finally;
+    }
+    if(found_invalid_platform)
+    {
+      dt_print(DT_DEBUG_OPENCL,
+               "[opencl_init] detected wrong OpenCL platforms setup: found invalid platform\n");
       num_platforms = 0;
       goto finally;
     }
