@@ -20,7 +20,7 @@
 
 /*
   we can't guarantee the order of label and ellipsize|halign calls so
-  sometimes we have to store the ellipsize|hali mode until the
+  sometimes we have to store the ellipsize|halign mode until the
   label is created.
 */
 struct dt_lua_ellipsize_mode_info
@@ -29,10 +29,21 @@ struct dt_lua_ellipsize_mode_info
   dt_lua_ellipsize_mode_t mode;
 };
 
-struct dt_lua_halign_mode_info
+struct dt_lua_halign_info
 {
   gboolean used;
   dt_lua_align_t halign;
+};
+
+/*
+  we can't guarantee the order of image and position_type calls so
+  sometimes we have to store the position_type mode until the
+  label is created.
+*/
+struct dt_lua_position_type_info
+{
+  gboolean used;
+  dt_lua_position_type_t position;
 };
 
 static struct dt_lua_ellipsize_mode_info ellipsize_store =
@@ -40,7 +51,12 @@ static struct dt_lua_ellipsize_mode_info ellipsize_store =
   .used = FALSE
 };
 
-static struct dt_lua_halign_mode_info halign_store =
+static struct dt_lua_halign_info halign_store =
+{
+  .used = FALSE
+};
+
+static struct dt_lua_position_type_info position_type_store =
 {
   .used = FALSE
 };
@@ -145,26 +161,36 @@ static int image_member(lua_State *L)
     image = gtk_image_new_from_file (imagefile);
     gtk_button_set_image(GTK_BUTTON(button->widget), image);
     gtk_button_set_always_show_image(GTK_BUTTON(button->widget), TRUE);
+    if(position_type_store.used)
+    {
+      gtk_button_set_image_position(GTK_BUTTON(button->widget), position_type_store.position);
+      position_type_store.used = FALSE;
+    }
     return 0;
   }
   return 0;
 }
 
-static int image_align_member(lua_State *L)
+static int image_position_member(lua_State *L)
 {
   lua_button button;
   luaA_to(L, lua_button, &button, 1);
-  dt_lua_align_t image_align;
+  dt_lua_position_type_t image_position;
   if(lua_gettop(L) > 2)
   {
-    luaA_to(L, dt_lua_align_t, &image_align, 3);
+    luaA_to(L, dt_lua_position_type_t, &image_position, 3);
     // check for image before trying to ellipsize it
     if(gtk_button_get_image(GTK_BUTTON(button->widget)))
-      gtk_button_set_image_position(GTK_BUTTON(button->widget), image_align);
+      gtk_button_set_image_position(GTK_BUTTON(button->widget), image_position);
+    else
+    {
+      position_type_store.position = image_position;
+      position_type_store.used = TRUE;
+    }
     return 0;
   }
-  image_align = gtk_button_get_image_position(GTK_BUTTON(button->widget));
-  luaA_push(L, dt_lua_align_t, &image_align);
+  image_position = gtk_button_get_image_position(GTK_BUTTON(button->widget));
+  luaA_push(L, dt_lua_position_type_t, &image_position);
   return 1;
 }
 
@@ -192,9 +218,9 @@ int dt_lua_init_widget_button(lua_State* L)
   lua_pushcfunction(L, image_member);
   dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, lua_button, "image");
-  lua_pushcfunction(L, image_align_member);
+  lua_pushcfunction(L, image_position_member);
   dt_lua_gtk_wrap(L);
-  dt_lua_type_register(L, lua_button, "image_align");
+  dt_lua_type_register(L, lua_button, "image_position");
   lua_pushcfunction(L, ellipsize_member);
   dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, lua_button, "ellipsize");
