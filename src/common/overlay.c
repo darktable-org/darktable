@@ -125,3 +125,27 @@ GList *dt_overlay_get_used_in_imgs(const dt_imgid_t overlay_id,
 
   return res;
 }
+
+gboolean dt_overlay_used_by(const dt_imgid_t imgid, const dt_imgid_t overlay_id)
+{
+  sqlite3_stmt *stmt;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT 1"
+                              " FROM overlay"
+                              " WHERE imgid = ?1"
+                              "   AND overlay_id = ?2",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, overlay_id);
+
+  gboolean result = FALSE;
+
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    result = TRUE;
+  }
+  sqlite3_finalize(stmt);
+
+  return result;
+}
