@@ -53,6 +53,7 @@
 #include "libs/modulegroups.h"
 #include "views/view.h"
 #include "views/view_api.h"
+
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
@@ -70,10 +71,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-
-#ifndef G_SOURCE_FUNC // Defined for glib >= 2.58
-#define G_SOURCE_FUNC(f) ((GSourceFunc) (void (*)(void)) (f))
-#endif
 
 DT_MODULE(1)
 
