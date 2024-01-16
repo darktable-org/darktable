@@ -953,27 +953,42 @@ static void _drag_and_drop_received(GtkWidget *widget,
       const int index  = self->multi_priority;
       dt_imgid_t *imgs = (dt_imgid_t *)gtk_selection_data_get_data(selection_data);
 
-      // remove previous overly if valid
-      if(dt_is_valid_imgid(p->imgid))
-        dt_overlay_remove(self->dev->image_storage.id, p->imgid);
+      const dt_imgid_t imgid = imgs[0];
 
-      // and record the new one
-      p->imgid = imgs[0];
-      p->hash = 0;
-      _clear_cache_entry(self, index);
+      // check for cross-references, that is this imgid should not be using
+      // the current image as overlay.
 
-      dt_overlay_record(self->dev->image_storage.id, p->imgid);
+      if(dt_overlay_used_by(imgid, self->dev->image_storage.id))
+      {
+        dt_control_log
+          (_("cannot use image %d as overlay"
+             " as it is using itself the current image as overlay"),
+           imgid);
+      }
+      else
+      {
+        // remove previous overlay if valid
+        if(dt_is_valid_imgid(p->imgid))
+          dt_overlay_remove(self->dev->image_storage.id, p->imgid);
 
-      gboolean from_cache = FALSE;
-      dt_image_full_path(p->imgid, p->filename, sizeof(p->filename), &from_cache);
+        // and record the new one
+        p->imgid = imgid;
+        p->hash = 0;
+        _clear_cache_entry(self, index);
 
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+        dt_overlay_record(self->dev->image_storage.id, p->imgid);
 
-      dt_control_queue_redraw_center();
+        gboolean from_cache = FALSE;
+        dt_image_full_path(p->imgid, p->filename, sizeof(p->filename), &from_cache);
 
-      gtk_widget_queue_draw(GTK_WIDGET(g->area));
+        dt_dev_add_history_item(darktable.develop, self, TRUE);
 
-      success = TRUE;
+        dt_control_queue_redraw_center();
+
+        gtk_widget_queue_draw(GTK_WIDGET(g->area));
+
+        success = TRUE;
+      }
     }
   }
   gtk_drag_finish(context, success, FALSE, time);
