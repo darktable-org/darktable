@@ -232,6 +232,7 @@ typedef struct dt_iop_colorequal_gui_data_t
 
   GtkNotebook *notebook;
   GtkDrawingArea *area;
+  dt_gui_collapsible_section_t cs;
   float *LUT;
   dt_iop_colorequal_channel_t channel;
 
@@ -246,11 +247,9 @@ typedef struct dt_iop_colorequal_gui_data_t
   float *gamut_LUT;
 
   gboolean dragging;
-  gboolean scrolling;
+  gboolean on_node;
   int selected;
   float points[NODES+1][2];
-  float mouse_x;
-  float mouse_y;
 } dt_iop_colorequal_gui_data_t;
 
 void _mean_gaussian(float *const buf,
@@ -1176,7 +1175,7 @@ static inline void _init_sliders(dt_iop_module_t *self)
                                       SLIDER_BRIGHTNESS, slider,
                                       g->white_adapted_profile,
                                       g->gamut_LUT);
-    dt_bauhaus_slider_set_format(slider, " %");
+    dt_bauhaus_slider_set_format(slider, "%");
     dt_bauhaus_slider_set_offset(slider, -100.0f);
     dt_bauhaus_slider_set_digits(slider, 2);
     gtk_widget_queue_draw(slider);
@@ -1190,7 +1189,7 @@ static inline void _init_sliders(dt_iop_module_t *self)
                                SLIDER_BRIGHTNESS, slider,
                                g->white_adapted_profile,
                                g->gamut_LUT);
-    dt_bauhaus_slider_set_format(slider, " °");
+    dt_bauhaus_slider_set_format(slider, "°");
     dt_bauhaus_slider_set_digits(slider, 2);
     gtk_widget_queue_draw(slider);
   }
@@ -1203,7 +1202,7 @@ static inline void _init_sliders(dt_iop_module_t *self)
                                       slider,
                                       g->white_adapted_profile,
                                       g->gamut_LUT);
-    dt_bauhaus_slider_set_format(slider, " %");
+    dt_bauhaus_slider_set_format(slider, "%");
     dt_bauhaus_slider_set_offset(slider, -100.0f);
     dt_bauhaus_slider_set_digits(slider, 2);
     gtk_widget_queue_draw(slider);
@@ -1502,8 +1501,7 @@ static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
     g->points[k][0] = xn;
     g->points[k][1] = yn;
 
-    if(g->selected == k
-       || (k == NODES && g->selected == 0))
+    if(g->on_node && g->selected == k % NODES)
       set_color(cr, darktable.bauhaus->graph_fg);
     else
       set_color(cr, darktable.bauhaus->graph_bg);
@@ -1524,7 +1522,7 @@ static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
   cairo_surface_destroy(cst);
   g_object_unref(layout);
   pango_font_description_free(desc);
-  return TRUE;
+  return FALSE;
 }
 
 static void _pipe_RGB_to_Ych(dt_iop_module_t *self,
@@ -1597,23 +1595,21 @@ static GtkWidget *_get_selected(dt_iop_colorequal_gui_data_t *g)
 {
   GtkWidget *w = NULL;
 
-  if(g->selected >= 0)
+  switch(g->channel)
   {
-    switch(g->channel)
-    {
-       case(SATURATION):
-         w = g->sat_sliders[g->selected];
-         break;
-       case(HUE):
-         w = g->hue_sliders[g->selected];
-         break;
-       case(BRIGHTNESS):
-       default:
-         w = g->bright_sliders[g->selected];
-         break;
-    }
+    case(SATURATION):
+      w = g->sat_sliders[g->selected];
+      break;
+    case(HUE):
+      w = g->hue_sliders[g->selected];
+      break;
+    case(BRIGHTNESS):
+    default:
+      w = g->bright_sliders[g->selected];
+      break;
   }
 
+  gtk_widget_realize(w);
   return w;
 }
 
@@ -1669,7 +1665,7 @@ static void _area_reset_nodes(dt_iop_colorequal_gui_data_t *g)
   const float graph_height = allocation.height;
   const float y = graph_height / 2.0f;
 
-  if(g->selected >= 0)
+  if(g->on_node)
   {
     _area_set_value(g, graph_height, y);
   }
@@ -1680,7 +1676,7 @@ static void _area_reset_nodes(dt_iop_colorequal_gui_data_t *g)
       g->selected = k;
       _area_set_value(g, graph_height, y);
     }
-    g->selected = -1;
+    g->on_node = FALSE;
   }
 }
 
@@ -1691,26 +1687,7 @@ static gboolean _area_scrolled_callback(GtkWidget *widget,
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
 
-  gboolean redraw = FALSE;
-
-  int delta_y;
-  if(dt_gui_get_scroll_unit_delta(event, &delta_y))
-  {
-    GtkWidget *w = _get_selected(g);
-
-    if(w)
-    {
-      const float val = dt_bauhaus_slider_get_val(w) - delta_y;
-      dt_bauhaus_slider_set_val(w, val);
-
-      redraw = TRUE;
-    }
-  }
-
-  if(redraw)
-    gtk_widget_queue_draw(GTK_WIDGET(g->area));
-
-  return TRUE;
+  return gtk_widget_event(_get_selected(g), (GdkEvent*)event);
 }
 
 static gboolean _area_motion_notify_callback(GtkWidget *widget,
@@ -1720,53 +1697,18 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget,
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
 
-  gboolean redraw = FALSE;
-
-  const uint8_t dy = (uint8_t)fabs(g->mouse_y - event->y);
-  const uint8_t dx = (uint8_t)fabs(g->mouse_x - event->x);
-
-  if(gtk_notebook_get_current_page (g->notebook) <= BRIGHTNESS)
+  if(g->dragging && g->on_node)
+    _area_set_pos(g, event->y);
+  else
   {
-    if(g->scrolling)
-    {
-      g->scrolling = FALSE;
-    }
-    else if(g->dragging)
-    {
-      if(dy > DT_PIXEL_APPLY_DPI(1))
-      {
-        _area_set_pos(g, event->y);
-
-        g->mouse_y = event->y;
-
-        redraw = TRUE;
-      }
-    }
-    else if(dy > DT_PIXEL_APPLY_DPI(2)     // protect against small motion while scrolling
-            || dx > DT_PIXEL_APPLY_DPI(2))
-    {
-      // look if close to a node
-      const float epsilon = DT_PIXEL_APPLY_DPI(10.0);
-
-      const int oldsel = g->selected;
-      g->selected = -1;
-      g->mouse_y = event->y;
-
-      for(int k=0; k<NODES+1; k++)
-      {
-        if(fabsf(g->points[k][0] - (float)event->x) < epsilon
-           && fabsf(g->points[k][1] - (float)event->y) < epsilon)
-        {
-          // if last node, select node 0 (same node actually)
-          g->selected = k == NODES ? 0 : k;
-          break;
-        }
-      }
-
-      redraw = oldsel != g->selected;
-    }
-
-    if(redraw)
+    // look if close to a node
+    const float epsilon = DT_PIXEL_APPLY_DPI(10.0);
+    const int oldsel = g->selected;
+    const int oldon = g->on_node;
+    g->selected = (int)(((float)event->x - g->points[0][0]) / (g->points[1][0] - g->points[0][0]) + 0.5f) % NODES;
+    g->on_node = fabsf(g->points[g->selected][1] - (float)event->y) < epsilon;
+    gtk_widget_set_tooltip_text(widget, DT_BAUHAUS_WIDGET(g->sat_sliders[g->selected])->label);
+    if(oldsel != g->selected || oldon != g->on_node)
       gtk_widget_queue_draw(GTK_WIDGET(g->area));
   }
 
@@ -1780,23 +1722,24 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
 
-  if(gtk_notebook_get_current_page (g->notebook) <= BRIGHTNESS)
+  if(event->button == 1)
   {
-    if(event->button == 1)
+    if(event->type == GDK_2BUTTON_PRESS)
     {
-      g->mouse_x = event->x;
-      g->mouse_y = event->y;
-
-      if(event->type == GDK_2BUTTON_PRESS)
-      {
-        _area_reset_nodes(g);
-      }
-      else
-      {
-        g->dragging = TRUE;
-      }
+      _area_reset_nodes(g);
+    }
+    else
+    {
+      g->dragging = TRUE;
     }
   }
+  else if(event->button == 2)
+  {
+    dt_conf_set_bool("plugins/darkroom/colorequal/show_sliders", gtk_widget_get_visible(g->cs.expander));
+    gui_update(self);
+  }
+  else
+    return gtk_widget_event(_get_selected(g), (GdkEvent*)event);
 
   return FALSE;
 }
@@ -1889,6 +1832,20 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->use_filter), p->use_filter);
   gui_changed(self, NULL, NULL);
+
+  gboolean show_sliders = dt_conf_get_bool("plugins/darkroom/colorequal/show_sliders");
+  gtk_widget_set_visible(g->cs.expander, !show_sliders);
+  gtk_widget_set_name(GTK_WIDGET(g->cs.container), show_sliders ? NULL : "collapsible");
+  if((gtk_notebook_get_n_pages(g->notebook) == 4) ^ show_sliders)
+  {
+    g_object_ref(g->cs.container);
+    gtk_container_remove(GTK_CONTAINER(gtk_widget_get_parent(GTK_WIDGET(g->cs.container))), GTK_WIDGET(g->cs.container));
+    if(show_sliders)
+      gtk_notebook_append_page(g->notebook, GTK_WIDGET(g->cs.container), dt_ui_label_new(_("options")));
+    else
+      gtk_container_add(GTK_CONTAINER(dtgtk_expander_get_body_event_box(DTGTK_EXPANDER(g->cs.expander))), GTK_WIDGET(g->cs.container));
+    g_object_unref(g->cs.container);
+  }
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -1904,7 +1861,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->white_adapted_profile = D65_adapt_iccprofile(work_profile);
   g->work_profile = work_profile;
   g->gradients_cached = FALSE;
-  g->selected = -1;
+  g->on_node = FALSE;
 
   // Init the display gamut LUT - Default to Rec709 D65 aka linear sRGB
   g->gamut_LUT = dt_alloc_align_float(LUT_ELEM);
@@ -1924,6 +1881,7 @@ void gui_init(struct dt_iop_module_t *self)
     (dt_ui_resize_wrap(NULL, 0,
                        "plugins/darkroom/colorequal/aspect_percent"));
   g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
+  dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(g->area), NULL);
   gtk_widget_set_can_focus(GTK_WIDGET(g->area), TRUE);
   gtk_widget_add_events(GTK_WIDGET(g->area),
                         GDK_BUTTON_PRESS_MASK
@@ -1949,94 +1907,93 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->notebook), "switch_page",
                    G_CALLBACK(_channel_tabs_switch_callback), self);
 
+  GtkWidget *prv_grp = NULL, *group;
+#define GROUP_SLIDERS \
+  group = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0); \
+  if(prv_grp) \
+    g_object_bind_property(group, "visible", prv_grp, "visible", G_BINDING_DEFAULT); \
+  gtk_box_pack_start(GTK_BOX(self->widget), group, TRUE, TRUE, 0); \
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0); \
+  gtk_box_pack_start(GTK_BOX(group), self->widget, TRUE, TRUE, 0); \
+  prv_grp = group;
+
+  dt_iop_module_t *sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("hue"));
   self->widget = dt_ui_notebook_page(g->notebook, N_("hue"), _("change hue hue-wise"));
-  g->smoothing_hue = dt_bauhaus_slider_from_params(self, "smoothing_hue");
+  g->smoothing_hue = dt_bauhaus_slider_from_params(sect, "smoothing_hue");
 
+  GROUP_SLIDERS
   g->hue_sliders[0] = g->hue_red =
-    dt_bauhaus_slider_from_params(self, "hue_red");
+    dt_bauhaus_slider_from_params(sect, "hue_red");
   g->hue_sliders[1] = g->hue_orange =
-    dt_bauhaus_slider_from_params(self, "hue_orange");
+    dt_bauhaus_slider_from_params(sect, "hue_orange");
   g->hue_sliders[2] = g->hue_lime =
-    dt_bauhaus_slider_from_params(self, "hue_lime");
+    dt_bauhaus_slider_from_params(sect, "hue_lime");
   g->hue_sliders[3] = g->hue_green =
-    dt_bauhaus_slider_from_params(self, "hue_green");
+    dt_bauhaus_slider_from_params(sect, "hue_green");
   g->hue_sliders[4] = g->hue_turquoise =
-    dt_bauhaus_slider_from_params(self, "hue_turquoise");
+    dt_bauhaus_slider_from_params(sect, "hue_turquoise");
   g->hue_sliders[5] = g->hue_blue =
-    dt_bauhaus_slider_from_params(self, "hue_blue");
+    dt_bauhaus_slider_from_params(sect, "hue_blue");
   g->hue_sliders[6] = g->hue_lavender =
-    dt_bauhaus_slider_from_params(self, "hue_lavender");
+    dt_bauhaus_slider_from_params(sect, "hue_lavender");
   g->hue_sliders[7] = g->hue_purple =
-    dt_bauhaus_slider_from_params(self, "hue_purple");
-  dt_bauhaus_widget_set_label(g->hue_sliders[0], N_("hue"), N_("red"));
-  dt_bauhaus_widget_set_label(g->hue_sliders[1], N_("hue"), N_("orange"));
-  dt_bauhaus_widget_set_label(g->hue_sliders[2], N_("hue"), N_("lime"));
-  dt_bauhaus_widget_set_label(g->hue_sliders[3], N_("hue"), N_("green"));
-  dt_bauhaus_widget_set_label(g->hue_sliders[4], N_("hue"), N_("turquoise"));
-  dt_bauhaus_widget_set_label(g->hue_sliders[5], N_("hue"), N_("blue"));
-  dt_bauhaus_widget_set_label(g->hue_sliders[6], N_("hue"), N_("lavender"));
-  dt_bauhaus_widget_set_label(g->hue_sliders[7], N_("hue"), N_("purple"));
+    dt_bauhaus_slider_from_params(sect, "hue_purple");
 
+  sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("saturation"));
   self->widget = dt_ui_notebook_page(g->notebook, N_("saturation"),
                                      _("change saturation hue-wise"));
-  g->smoothing_saturation = dt_bauhaus_slider_from_params(self, "smoothing_saturation");
+  g->smoothing_saturation = dt_bauhaus_slider_from_params(sect, "smoothing_saturation");
 
+  GROUP_SLIDERS
   g->sat_sliders[0] = g->sat_red =
-    dt_bauhaus_slider_from_params(self, "sat_red");
+    dt_bauhaus_slider_from_params(sect, "sat_red");
   g->sat_sliders[1] = g->sat_orange =
-    dt_bauhaus_slider_from_params(self, "sat_orange");
+    dt_bauhaus_slider_from_params(sect, "sat_orange");
   g->sat_sliders[2] = g->sat_lime =
-    dt_bauhaus_slider_from_params(self, "sat_lime");
+    dt_bauhaus_slider_from_params(sect, "sat_lime");
   g->sat_sliders[3] = g->sat_green =
-    dt_bauhaus_slider_from_params(self, "sat_green");
+    dt_bauhaus_slider_from_params(sect, "sat_green");
   g->sat_sliders[4] = g->sat_turquoise =
-    dt_bauhaus_slider_from_params(self, "sat_turquoise");
+    dt_bauhaus_slider_from_params(sect, "sat_turquoise");
   g->sat_sliders[5] = g->sat_blue =
-    dt_bauhaus_slider_from_params(self, "sat_blue");
+    dt_bauhaus_slider_from_params(sect, "sat_blue");
   g->sat_sliders[6] = g->sat_lavender =
-    dt_bauhaus_slider_from_params(self, "sat_lavender");
+    dt_bauhaus_slider_from_params(sect, "sat_lavender");
   g->sat_sliders[7] = g->sat_purple =
-    dt_bauhaus_slider_from_params(self, "sat_purple");
-  dt_bauhaus_widget_set_label(g->sat_sliders[0], N_("saturation"), N_("red"));
-  dt_bauhaus_widget_set_label(g->sat_sliders[1], N_("saturation"), N_("orange"));
-  dt_bauhaus_widget_set_label(g->sat_sliders[2], N_("saturation"), N_("lime"));
-  dt_bauhaus_widget_set_label(g->sat_sliders[3], N_("saturation"), N_("green"));
-  dt_bauhaus_widget_set_label(g->sat_sliders[4], N_("saturation"), N_("turquoise"));
-  dt_bauhaus_widget_set_label(g->sat_sliders[5], N_("saturation"), N_("blue"));
-  dt_bauhaus_widget_set_label(g->sat_sliders[6], N_("saturation"), N_("lavender"));
-  dt_bauhaus_widget_set_label(g->sat_sliders[7], N_("saturation"), N_("purple"));
+    dt_bauhaus_slider_from_params(sect, "sat_purple");
 
-
+  sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("brightness"));
   self->widget = dt_ui_notebook_page(g->notebook, N_("brightness"),
                                      _("change brightness hue-wise"));
-  g->smoothing_bright = dt_bauhaus_slider_from_params(self, "smoothing_brightness");
+  g->smoothing_bright = dt_bauhaus_slider_from_params(sect, "smoothing_brightness");
 
+  GROUP_SLIDERS
   g->bright_sliders[0] = g->bright_red =
-    dt_bauhaus_slider_from_params(self, "bright_red");
+    dt_bauhaus_slider_from_params(sect, "bright_red");
   g->bright_sliders[1] = g->bright_orange =
-    dt_bauhaus_slider_from_params(self, "bright_orange");
+    dt_bauhaus_slider_from_params(sect, "bright_orange");
   g->bright_sliders[2] = g->bright_lime =
-    dt_bauhaus_slider_from_params(self, "bright_lime");
+    dt_bauhaus_slider_from_params(sect, "bright_lime");
   g->bright_sliders[3] = g->bright_green =
-    dt_bauhaus_slider_from_params(self, "bright_green");
+    dt_bauhaus_slider_from_params(sect, "bright_green");
   g->bright_sliders[4] = g->bright_turquoise =
-    dt_bauhaus_slider_from_params(self, "bright_turquoise");
+    dt_bauhaus_slider_from_params(sect, "bright_turquoise");
   g->bright_sliders[5] = g->bright_blue =
-    dt_bauhaus_slider_from_params(self, "bright_blue");
+    dt_bauhaus_slider_from_params(sect, "bright_blue");
   g->bright_sliders[6] = g->bright_lavender =
-    dt_bauhaus_slider_from_params(self, "bright_lavender");
+    dt_bauhaus_slider_from_params(sect, "bright_lavender");
   g->bright_sliders[7] = g->bright_purple =
-    dt_bauhaus_slider_from_params(self, "bright_purple");
-  dt_bauhaus_widget_set_label(g->bright_sliders[0], N_("brightness"), N_("red"));
-  dt_bauhaus_widget_set_label(g->bright_sliders[1], N_("brightness"), N_("orange"));
-  dt_bauhaus_widget_set_label(g->bright_sliders[2], N_("brightness"), N_("lime"));
-  dt_bauhaus_widget_set_label(g->bright_sliders[3], N_("brightness"), N_("green"));
-  dt_bauhaus_widget_set_label(g->bright_sliders[4], N_("brightness"), N_("turquoise"));
-  dt_bauhaus_widget_set_label(g->bright_sliders[5], N_("brightness"), N_("blue"));
-  dt_bauhaus_widget_set_label(g->bright_sliders[6], N_("brightness"), N_("lavender"));
-  dt_bauhaus_widget_set_label(g->bright_sliders[7], N_("brightness"), N_("purple"));
+    dt_bauhaus_slider_from_params(sect, "bright_purple");
 
-  self->widget = dt_ui_notebook_page(g->notebook, N_("options"), NULL);
+  dt_gui_new_collapsible_section
+    (&g->cs,
+     "plugins/darkroom/colorequal/expand_options",
+     _("options"),
+     GTK_BOX(box),
+     DT_ACTION(self));
+  g_object_bind_property(g->cs.expander, "visible", prv_grp, "visible", G_BINDING_INVERT_BOOLEAN);
+  self->widget = GTK_WIDGET(g->cs.container);
+
   g->white_level = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
                                        dt_bauhaus_slider_from_params(self, "white_level"));
   dt_bauhaus_slider_set_soft_range(g->white_level, -2., +2.);
@@ -2059,10 +2016,10 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->notebook), TRUE, TRUE, 0);
 
   // restore the previously saved active tab
-  const int active_page = dt_conf_get_int("plugins/darkroom/colorequal/gui_page");
+  const guint active_page = dt_conf_get_int("plugins/darkroom/colorequal/gui_page");
   gtk_widget_show(gtk_notebook_get_nth_page(g->notebook, active_page));
   gtk_notebook_set_current_page(g->notebook, active_page);
-  g->channel = (active_page == NUM_CHANNELS) ? SATURATION : active_page;
+  g->channel = (active_page >= NUM_CHANNELS) ? SATURATION : active_page;
 
   self->widget = GTK_WIDGET(box);
 }
