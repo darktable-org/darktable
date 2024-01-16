@@ -91,8 +91,8 @@ None;midi:CC24=iop/colorequal/brightness/purple
 // sRGB primary red records at 20° of hue in darktable UCS 22, so we offset the whole hue range
 // such that red is the origin hues in the GUI. This is consistent with HSV/HSL color wheels UI.
 #define ANGLE_SHIFT +20.f
-#define DEG_TO_RAD(x) ((x + ANGLE_SHIFT) * M_PI / 180.f)
-#define RAD_TO_DEG(x) (x * 180.f / M_PI - ANGLE_SHIFT)
+#define DEG_TO_RAD(x) (((x) + ANGLE_SHIFT) * M_PI / 180.f)
+#define RAD_TO_DEG(x) ((x) * 180.f / M_PI - ANGLE_SHIFT)
 
 #define NODES 8
 
@@ -1553,7 +1553,7 @@ void color_picker_apply(dt_iop_module_t *self,
     dt_bauhaus_slider_set(g->white_level, p->white_level);
   }
   else
-    fprintf(stderr, "[colorequal] unknown color picker\n");
+    dt_print(DT_DEBUG_PIPE, "[colorequal] unknown color picker\n");
   --darktable.gui->reset;
 
   gui_changed(self, picker, NULL);
@@ -1822,7 +1822,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     if(g->white_adapted_profile != NULL)
       memcpy(input_matrix, g->white_adapted_profile->matrix_in, sizeof(dt_colormatrix_t));
     else
-      fprintf(stderr, "[colorequal] display color space falls back to sRGB\n");
+      dt_print(DT_DEBUG_PIPE, "[colorequal] display color space falls back to sRGB\n");
 
     dt_UCS_22_build_gamut_LUT(input_matrix, g->gamut_LUT);
     g->max_saturation = get_minimum_saturation(g->gamut_LUT, SLIDER_BRIGHTNESS, 1.f);
