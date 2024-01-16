@@ -1809,7 +1809,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   {
     // Re-init the profiles
     if(g->white_adapted_profile)
-      free(g->white_adapted_profile);
+      dt_free_align(g->white_adapted_profile);
     g->white_adapted_profile = D65_adapt_iccprofile(work_profile);
     g->work_profile = work_profile;
     g->gradients_cached = FALSE;
@@ -1845,7 +1845,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
   if(g->white_adapted_profile)
   {
-    free(g->white_adapted_profile);
+    dt_free_align(g->white_adapted_profile);
     g->white_adapted_profile = NULL;
   }
 
@@ -1879,7 +1879,7 @@ void gui_init(struct dt_iop_module_t *self)
   if(self->dev)
     work_profile = dt_ioppr_get_pipe_output_profile_info(self->dev->full.pipe);
   if(g->white_adapted_profile)
-    free(g->white_adapted_profile);
+    dt_free_align(g->white_adapted_profile);
   g->white_adapted_profile = D65_adapt_iccprofile(work_profile);
   g->work_profile = work_profile;
   g->gradients_cached = FALSE;
