@@ -1387,8 +1387,9 @@ static inline void xyY_to_dt_UCS_UV(const dt_aligned_pixel_t xyY, float UV_star_
   for_each_channel(c, aligned(xyY, UVD, x_factors, y_factors, offsets))
     UVD[c] = x_factors[c] * xyY[0] + y_factors[c] * xyY[1] + offsets[c];
 
-  UVD[0] /= UVD[2];
-  UVD[1] /= UVD[2];
+  const float div = (UVD[2] >= 0.0f) ? MAX(FLT_MIN, UVD[2]) : MIN(-FLT_MIN, UVD[2]);
+  UVD[0] /= div;
+  UVD[1] /= div;
 
   float UV_star[2] = { 0.f };
   const float factors[2]     = { 1.39656225667f, 1.4513954287f };
@@ -1478,8 +1479,9 @@ static inline void dt_UCS_JCH_to_xyY(const dt_aligned_pixel_t JCH, const float L
   for_each_channel(c, aligned(xyD, UV, U_factors, V_factors, offsets))
     xyD[c] = U_factors[c] * UV[0] + V_factors[c] * UV[1] + offsets[c];
 
-  xyY[0] = xyD[0] / xyD[2];
-  xyY[1] = xyD[1] / xyD[2];
+  const float div = (xyD[2] >= 0.0f) ? MAX(FLT_MIN, xyD[2]) : MIN(-FLT_MIN, xyD[2]);
+  xyY[0] = xyD[0] / div;
+  xyY[1] = xyD[1] / div;
   xyY[2] = dt_UCS_L_star_to_Y(L_star);
 }
 
