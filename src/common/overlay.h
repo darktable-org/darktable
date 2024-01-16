@@ -55,6 +55,9 @@ GList *dt_overlay_get_imgs(const dt_imgid_t imgid);
 GList *dt_overlay_get_used_in_imgs(const dt_imgid_t overlay_id,
                                    const gboolean except_self);
 
+/* Return TRUE is overlay_id is used by imgid */
+gboolean dt_overlay_used_by(const dt_imgid_t imgid, const dt_imgid_t overlay_id);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif /* __cplusplus */
