@@ -233,7 +233,8 @@ static inline struct dt_iop_order_iccprofile_info_t * D65_adapt_iccprofile(struc
   if(work_profile) // && !isnan(work_profile->matrix_in[0][0]))
   {
     // Alloc
-    struct dt_iop_order_iccprofile_info_t *white_adapted_profile = (dt_iop_order_iccprofile_info_t *)malloc(sizeof(dt_iop_order_iccprofile_info_t));
+    struct dt_iop_order_iccprofile_info_t *white_adapted_profile =
+      (dt_iop_order_iccprofile_info_t *)dt_alloc_aligned(sizeof(dt_iop_order_iccprofile_info_t));
 
     // Init a new temp profile by copying the base profile
     memcpy(white_adapted_profile, work_profile, sizeof(dt_iop_order_iccprofile_info_t));
