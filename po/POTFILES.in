@@ -368,3 +368,6 @@ src/views/print.c
 src/views/slideshow.c
 src/views/tethering.c
 src/views/view.c
+src/external/lua-scripts/official/check_for_updates.lua
+src/external/lua-scripts/official/copy_paste_metadata.lua
+src/external/lua-scripts/tools/script_manager.lua
