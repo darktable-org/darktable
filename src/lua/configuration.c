@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2013-2020 darktable developers.
+   Copyright (C) 2013-2024 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -14,7 +14,8 @@
 
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
- */
+*/
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -112,6 +113,11 @@ int dt_lua_init_configuration(lua_State *L)
   lua_pushstring(L, tmp_path);
   lua_settable(L, -3);
 
+  lua_pushstring(L, "locale_dir");
+  dt_loc_get_localedir(tmp_path, sizeof(tmp_path));
+  lua_pushstring(L, tmp_path);
+  lua_settable(L, -3);
+
   lua_pushstring(L, "version");
   lua_pushstring(L, darktable_package_version);
   lua_settable(L, -3);
@@ -176,4 +182,3 @@ int dt_lua_init_configuration(lua_State *L)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
