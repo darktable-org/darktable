@@ -58,7 +58,6 @@ jobs:
         target:
           - skiptest
         generator:
-          #- Unix Makefiles
           - Ninja
         include:
           # We want one run in CI to be Debug to make sure the Debug build isn't broken
@@ -190,7 +189,6 @@ jobs:
         target:
           - skiptest
         generator:
-          #- MSYS Makefiles
           - Ninja
         eco: [-DDONT_USE_INTERNAL_LIBRAW=ON]
     defaults:
