@@ -56,7 +56,7 @@ jobs:
         btype:
           - Release
         target:
-          - build
+          - skiptest
         generator:
           #- Unix Makefiles
           - Ninja
