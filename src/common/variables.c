@@ -560,10 +560,14 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
       nb_digit = (uint8_t)*variable[0] & 0b1111;
       (*variable) ++;
     }
+    guint shift = 0;
+    if(_has_prefix(variable, "_")){
+      shift = (gint) strtol(*variable, variable, 10);
+    }
     result = g_strdup_printf("%.*u", nb_digit,
                              params->sequence >= 0
-                             ? params->sequence
-                             : params->data->sequence);
+                             ? params->sequence + shift
+                             : params->data->sequence + shift);
   }
   else if(_has_prefix(variable, "USERNAME"))
     result = g_strdup(g_get_user_name());
