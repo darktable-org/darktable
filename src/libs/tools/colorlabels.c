@@ -68,6 +68,30 @@ static gboolean _lib_colorlabels_enter_notify_callback(GtkWidget *widget, GdkEve
   return FALSE;
 }
 
+static char *_get_tooltip_for(const int coloridx)
+{
+  char *confname = g_strdup_printf("colorlabel/%s", dt_colorlabels_name[coloridx]);
+  gchar *text = dt_conf_get_string(confname);
+  char *tooltip = g_strdup_printf(_("toggle color label of selected images%s%s"),
+                                  text[0] ? "\n": "", text[0] ? text : "");
+  g_free(confname);
+  g_free(text);
+
+  return tooltip;
+}
+
+static void _preference_changed(gpointer instance, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_colorlabels_t *d = (dt_lib_colorlabels_t *)self->data;
+
+  for(int k = 0; k < 6; k++)
+  {
+    char *tooltip = _get_tooltip_for(k);
+    gtk_widget_set_tooltip_text(d->buttons[k], tooltip);
+  }
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -84,7 +108,9 @@ void gui_init(dt_lib_module_t *self)
     d->buttons[k] = button;
     dt_gui_add_class(d->buttons[k], "dt_no_hover");
     dt_gui_add_class(d->buttons[k], "dt_dimmed");
-    gtk_widget_set_tooltip_text(button, _("toggle color label of selected images"));
+    char *tooltip = _get_tooltip_for(k);
+    gtk_widget_set_tooltip_text(button, tooltip);
+    g_free(tooltip);
     gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
     g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_colorlabels_button_clicked_callback),
                      GINT_TO_POINTER(k));
@@ -100,12 +126,18 @@ void gui_init(dt_lib_module_t *self)
   dt_shortcut_register(ac, 5, 0, GDK_KEY_F5, 0);
 
   gtk_widget_set_name(self->widget, "lib-label-colors");
+
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
+                                  G_CALLBACK(_preference_changed), (gpointer)self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
   g_free(self->data);
   self->data = NULL;
+
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
+                                     G_CALLBACK(_preference_changed), self);
 }
 
 static void _lib_colorlabels_button_clicked_callback(GtkWidget *w, gpointer user_data)
