@@ -2669,7 +2669,7 @@ static inline gint _compare_utf8_no_case(const char *a, const char *b)
   char *b_nc_nat = g_utf8_collate_key_for_filename(b, -1);
 
   const gint sort = g_strcmp0(a_nc_nat, b_nc_nat);
-  
+
   g_free(a_nc_nat);
   g_free(b_nc_nat);
   return sort;
