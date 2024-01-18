@@ -555,19 +555,46 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
   else if(_has_prefix(variable, "SEQUENCE"))
   {
     uint8_t nb_digit = 4;
+    guint shift = 1;
+    // old $(SEQUENCEn) syntax for backwards compatibility
     if(g_ascii_isdigit(*variable[0]))
     {
       nb_digit = (uint8_t)*variable[0] & 0b1111;
       (*variable) ++;
     }
-    guint shift = 0;
-    if(_has_prefix(variable, "_")){
-      shift = (gint) strtol(*variable, variable, 10);
+    // new $(SEQUENCE[n,m]) syntax
+    // allows \[[0-9]+,[0-9]+] (PCER)
+    // everything else will be ignored
+    if(*variable[0] == '[') {
+      (*variable) ++;
+      bool complete = false;
+      if(g_ascii_isdigit(*variable[0]))
+      {
+        nb_digit = (uint8_t) strtol(*variable, variable, 10);
+        if(*variable[0] == ',')
+        {
+          (*variable) ++;
+          if(g_ascii_isdigit(*variable[0]))
+          {
+            shift = (gint) strtol(*variable, variable, 10);
+            if(*variable[0] == ']') 
+            {
+              (*variable) ++;
+              complete = true;
+            }
+          }
+        }
+      }
+      if(!complete) {
+        // didn't match completely so reset all changes
+        nb_digit = 4;
+        shift = 1;
+      }
     }
     result = g_strdup_printf("%.*u", nb_digit,
                              params->sequence >= 0
-                             ? params->sequence + shift
-                             : params->data->sequence + shift);
+                             ? params->sequence + shift - 1
+                             : params->data->sequence + shift - 1);
   }
   else if(_has_prefix(variable, "USERNAME"))
     result = g_strdup(g_get_user_name());
@@ -761,14 +788,29 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
   {
     // CATEGORY should be followed by n [0,9] and
     // "(category)". category can contain 0 or more '|'
+    // or
+    // $(CATEGORY[n,category]) with category as above
+    bool new_syntax = false;
+    if(*variable[0] == '[') {
+      (*variable) ++;
+      new_syntax = true;
+    }
     if(g_ascii_isdigit(*variable[0]))
     {
       const uint8_t level = (uint8_t)*variable[0] & 0b1111;
       (*variable) ++;
-      if(*variable[0] == '(')
+      if((!new_syntax && *variable[0] == '(') != (new_syntax && *variable[0] == ','))
       {
         char *category = g_strdup(*variable + 1);
-        char *end = g_strstr_len(category, -1, ")");
+        char *end = NULL;
+        if(new_syntax) 
+        {
+          end = g_strstr_len(category, -1, "]");
+        }
+        else
+        {
+          end = g_strstr_len(category, -1, ")");
+        }
         if(end)
         {
           end[0] = '|';
