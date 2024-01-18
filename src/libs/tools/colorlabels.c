@@ -62,7 +62,9 @@ int position(const dt_lib_module_t *self)
   return 1001;
 }
 
-static gboolean _lib_colorlabels_enter_notify_callback(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+static gboolean _lib_colorlabels_enter_notify_callback(GtkWidget *widget,
+                                                       GdkEventCrossing *event,
+                                                       gpointer user_data)
 {
   darktable.control->element = (GPOINTER_TO_INT(user_data) + 1) % 6;
   return FALSE;
@@ -79,7 +81,8 @@ static char *_get_tooltip_for(const int coloridx)
   return tooltip;
 }
 
-static void _preference_changed(gpointer instance, gpointer user_data)
+static void _preference_changed(gpointer instance,
+                                gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_colorlabels_t *d = (dt_lib_colorlabels_t *)self->data;
@@ -94,16 +97,19 @@ static void _preference_changed(gpointer instance, gpointer user_data)
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_colorlabels_t *d = (dt_lib_colorlabels_t *)g_malloc0(sizeof(dt_lib_colorlabels_t));
+  dt_lib_colorlabels_t *d =
+    (dt_lib_colorlabels_t *)g_malloc0(sizeof(dt_lib_colorlabels_t));
   self->data = (void *)d;
 
-  /* create buttons */
+  /* create buttons box */
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  GtkWidget *button;
+
   dt_action_t *ac;
+
   for(int k = 0; k < 6; k++)
   {
-    button = dtgtk_button_new(dtgtk_cairo_paint_label, (k | 8 | CPF_LABEL_PURPLE), NULL);
+    GtkWidget *button =
+      dtgtk_button_new(dtgtk_cairo_paint_label, (k | 8 | CPF_LABEL_PURPLE), NULL);
     d->buttons[k] = button;
     dt_gui_add_class(d->buttons[k], "dt_no_hover");
     dt_gui_add_class(d->buttons[k], "dt_dimmed");
@@ -111,11 +117,14 @@ void gui_init(dt_lib_module_t *self)
     gtk_widget_set_tooltip_text(button, tooltip);
     g_free(tooltip);
     gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
-    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_colorlabels_button_clicked_callback),
+    g_signal_connect(G_OBJECT(button), "clicked",
+                     G_CALLBACK(_lib_colorlabels_button_clicked_callback),
                      GINT_TO_POINTER(k));
-    g_signal_connect(G_OBJECT(button), "enter-notify-event", G_CALLBACK(_lib_colorlabels_enter_notify_callback),
+    g_signal_connect(G_OBJECT(button), "enter-notify-event",
+                     G_CALLBACK(_lib_colorlabels_enter_notify_callback),
                      GINT_TO_POINTER(k));
-    ac = dt_action_define(&darktable.control->actions_thumb, NULL, N_("color label"), button, &dt_action_def_color_label);
+    ac = dt_action_define(&darktable.control->actions_thumb, NULL,
+                          N_("color label"), button, &dt_action_def_color_label);
   }
 
   dt_shortcut_register(ac, 1, 0, GDK_KEY_F1, 0);
@@ -143,7 +152,8 @@ static void _lib_colorlabels_button_clicked_callback(GtkWidget *w, gpointer user
 {
   GList *imgs = dt_act_on_get_images(FALSE, TRUE, FALSE);
   dt_colorlabels_toggle_label_on_list(imgs, GPOINTER_TO_INT(user_data), TRUE);
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_COLORLABEL,
+  dt_collection_update_query(darktable.collection,
+                             DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_COLORLABEL,
                              imgs);
 }
 
