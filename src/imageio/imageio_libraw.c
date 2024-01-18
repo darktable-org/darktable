@@ -216,6 +216,13 @@ const model_map_t modelMap[] = {
     .clean_model = "PowerShot G5 X Mark II",
     .clean_alias = "PowerShot G5 X Mark II"
   },
+  {
+    .exif_make = "Canon",
+    .exif_model = "Canon PowerShot SX70 HS",
+    .clean_make = "Canon",
+    .clean_model = "PowerShot SX70 HS",
+    .clean_alias = "PowerShot SX70 HS"
+  },
 #if LIBRAW_COMPILE_CHECK_VERSION_NOTLESS(0, 22)
   {
     .exif_make = "Canon",
