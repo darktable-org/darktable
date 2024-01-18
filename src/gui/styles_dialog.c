@@ -336,6 +336,12 @@ static void _gui_styles_edit_style_response(GtkDialog *dialog,
       return;
     }
   }
+
+  // finalize the dialog
+  g_free(g->nameorig);
+  g_free(g->newname);
+  g_free(g);
+
   gtk_widget_destroy(GTK_WIDGET(dialog));
 }
 
@@ -869,10 +875,6 @@ static void _gui_styles_dialog_run(gboolean edit,
   {
     *new_name = g_strdup(sd->newname);
   }
-
-  g_free(sd->nameorig);
-  g_free(sd->newname);
-  g_free(sd);
 
   g_object_unref(is_active_pb);
   g_object_unref(is_inactive_pb);
