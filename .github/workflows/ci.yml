@@ -107,7 +107,6 @@ jobs:
             libcairo2-dev \
             libcolord-dev \
             libcolord-gtk-dev \
-            libcmocka-dev \
             libcups2-dev \
             libcurl4-gnutls-dev \
             libexiv2-dev \
@@ -214,7 +213,6 @@ jobs:
           pacboy: >-
             cc:p
             cmake:p
-            cmocka:p
             libxslt:p
             ninja:p
             nsis:p
