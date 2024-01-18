@@ -622,19 +622,20 @@ static inline float4 dt_uvY_to_xyY(const float4 uvY)
   return xyY;
 }
 
-static inline float4 dt_XYZ_to_xyY(const float4 XYZ)
+static inline float4 dt_D65_XYZ_to_xyY(const float4 sXYZ)
 {
   // see cpu implementation for details, use D65_xy as fallback
+  float4 XYZ = fmax(0.0f, sXYZ);
   float4 xyY;
   const float sum = XYZ.x + XYZ.y + XYZ.z;
-  if(XYZ.x == 0.0f && XYZ.y == 0.0f && XYZ.z == 0.0f)
+  if(sum > 0.0f)
   {
-    xyY.x = (float)0.31271;
-    xyY.y = (float)0.32902;
+    xyY.xy = XYZ.xy / sum;
   }
   else
   {
-    xyY.xy = XYZ.xy / sum;
+    xyY.x = (float)0.31271;
+    xyY.y = (float)0.32902;
   }
 
   xyY.z = XYZ.y;

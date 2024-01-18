@@ -761,7 +761,7 @@ void process(struct dt_iop_module_t *self,
     dot_product(pix_in, input_matrix, XYZ_D65);
     // Convert to dt UCS 22 UV and store UV
     dt_aligned_pixel_t xyY = { 0.f };
-    dt_XYZ_to_xyY(XYZ_D65, xyY);
+    dt_D65_XYZ_to_xyY(XYZ_D65, xyY);
 
     xyY_to_dt_UCS_UV(xyY, uv);
     L[k] = Y_to_dt_UCS_L_star(xyY[2]);

@@ -980,8 +980,7 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
   }
   else
   {
-    XYZ_D65 = fmax(0.0f, XYZ_D65);
-    float4 xyY = dt_XYZ_to_xyY(XYZ_D65);
+    float4 xyY = dt_D65_XYZ_to_xyY(XYZ_D65);
     float4 JCH = xyY_to_dt_UCS_JCH(xyY, L_white);
     float4 HCB = dt_UCS_JCH_to_HCB(JCH);
 

@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  Copyright (C) 2010-2023 darktable developers.
+  Copyright (C) 2010-2024 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -1731,9 +1731,14 @@ static void _extract_color_checker(const float *const restrict in,
   // convert back the illuminant to XYZ then xyY
   dt_aligned_pixel_t illuminant_XYZ, illuminant_xyY = { .0f };
   convert_any_LMS_to_XYZ(illuminant, illuminant_XYZ, kind);
+  dt_vector_clipneg(illuminant_XYZ);
   const float Y_illu = illuminant_XYZ[1];
-  for(size_t c = 0; c < 3; c++) illuminant_XYZ[c] /= Y_illu;
-  dt_XYZ_to_xyY(illuminant_XYZ, illuminant_xyY);
+  for(size_t c = 0; c < 3; c++)
+  {
+    if(Y_illu > 0.0f)
+      illuminant_XYZ[c] /= Y_illu;
+  }
+  dt_D50_XYZ_to_xyY(illuminant_XYZ, illuminant_xyY);
 
   // save the illuminant in GUI struct for commit
   g->xy[0] = illuminant_xyY[0];
