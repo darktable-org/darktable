@@ -505,7 +505,7 @@ static void _lib_histogram_vectorscope_bkgd
                                      vs_prof->lutsize,
                                      vs_prof->nonlinearlut);
           dt_aligned_pixel_t xyY;
-          dt_XYZ_to_xyY(XYZ_D50, xyY);
+          dt_D50_XYZ_to_xyY(XYZ_D50, xyY);
           dt_xyY_to_Luv(xyY, chromaticity);
           dt_XYZ_to_Rec709_D50(XYZ_D50, rgb_display);
           break;
@@ -687,7 +687,7 @@ static void _get_chromaticity(const dt_aligned_pixel_t RGB,
       // how does the result change if we adapt to D65 then convert to
       // L*u*v* with a D65 whitepoint?
       dt_aligned_pixel_t xyY_D50;
-      dt_XYZ_to_xyY(XYZ_D50, xyY_D50);
+      dt_D50_XYZ_to_xyY(XYZ_D50, xyY_D50);
       // using D50 correct u*v* (not u'v') to be relative to the
       // whitepoint (important for vectorscope) and as u*v* is more
       // evenly spaced

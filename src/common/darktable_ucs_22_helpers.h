@@ -45,9 +45,9 @@ static inline void dt_UCS_22_build_gamut_LUT(dt_colormatrix_t input_matrix, floa
   dot_product(RGB_blue, input_matrix, XYZ_blue);
 
   dt_aligned_pixel_t xyY_red, xyY_green, xyY_blue;
-  dt_XYZ_to_xyY(XYZ_red, xyY_red);
-  dt_XYZ_to_xyY(XYZ_green, xyY_green);
-  dt_XYZ_to_xyY(XYZ_blue, xyY_blue);
+  dt_D65_XYZ_to_xyY(XYZ_red, xyY_red);
+  dt_D65_XYZ_to_xyY(XYZ_green, xyY_green);
+  dt_D65_XYZ_to_xyY(XYZ_blue, xyY_blue);
 
   // Get the "hue" angles of the primaries in xy compared to D65
   const float h_red   = atan2f(xyY_red[1] - D65_xyY[1], xyY_red[0] - D65_xyY[0]);
