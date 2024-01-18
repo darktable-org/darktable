@@ -76,8 +76,14 @@ static char *_get_tooltip_for(const int coloridx)
   snprintf(confname, sizeof(confname), "colorlabel/%s", dt_colorlabels_name[coloridx]);
 
   const gchar *text = dt_conf_get_string_const(confname);
-  char *tooltip = g_strdup_printf(_("toggle color label of selected images%s%s"),
-                                  text[0] ? "\n": "", text[0] ? text : "");
+
+  char *tooltip =
+    text[0]
+    ? g_markup_printf_escaped(_("toggle color label of selected images\n"
+                                "<i>%s</i>"),
+                              text)
+    : g_strdup(_("toggle color label of selected images"));
+
   return tooltip;
 }
 
@@ -90,7 +96,7 @@ static void _preference_changed(gpointer instance,
   for(int k = 0; k < 6; k++)
   {
     char *tooltip = _get_tooltip_for(k);
-    gtk_widget_set_tooltip_text(d->buttons[k], tooltip);
+    gtk_widget_set_tooltip_markup(d->buttons[k], tooltip);
   }
 }
 
@@ -114,7 +120,7 @@ void gui_init(dt_lib_module_t *self)
     dt_gui_add_class(d->buttons[k], "dt_no_hover");
     dt_gui_add_class(d->buttons[k], "dt_dimmed");
     char *tooltip = _get_tooltip_for(k);
-    gtk_widget_set_tooltip_text(button, tooltip);
+    gtk_widget_set_tooltip_markup(button, tooltip);
     g_free(tooltip);
     gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
     g_signal_connect(G_OBJECT(button), "clicked",
