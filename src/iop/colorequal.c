@@ -800,10 +800,10 @@ void process(struct dt_iop_module_t *self,
       : 0.f;
     corrections_out[1] = (JCH[1] > 0.f)
       ? lookup_gamut(d->LUT_saturation, pix_out[0])
-      : 0.f;
+      : 1.f;
     corrections_out[2] = (JCH[1] > 0.f)
       ? 16.f * pix_out[1] * (lookup_gamut(d->LUT_brightness, pix_out[0]) - 1.f) + 1.f
-      : 0.f;
+      : 1.f;
 
     // Copy alpha
     pix_out[3] = pix_in[3];
