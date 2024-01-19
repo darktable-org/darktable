@@ -179,7 +179,7 @@ const dt_gtkentry_completion_spec *dt_gtkentry_get_default_path_compl_list()
           { "VERSION.NAME", N_("$(VERSION.NAME) - version name from metadata") },
           { "JOBCODE", N_("$(JOBCODE) - job code for import") },
           { "SEQUENCE", N_("$(SEQUENCE) - sequence number") },
-          { "SEQUENCE[4,1]", N_("$(SEQUENCE[n,m]) - sequence number, n: number of digits, m: start number.") },
+          { "SEQUENCE[4,1]", N_("$(SEQUENCE[n,m]) - sequence number, n: number of digits, m: start number") },
           { "WIDTH.MAX", N_("$(WIDTH.MAX) - maximum image export width") },
           { "WIDTH.SENSOR", N_("$(WIDTH.SENSOR) - image sensor width") },
           { "WIDTH.RAW", N_("$(WIDTH.RAW) - RAW image width") },

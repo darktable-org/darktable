@@ -35,6 +35,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <ctype.h>
 
 typedef struct dt_variables_data_t
 {
@@ -264,6 +265,59 @@ static char *_variables_get_latitude(dt_variables_params_t *params)
     const gchar NS = params->data->latitude < 0 ? 'S' : 'N';
     return g_strdup_printf("%c%09.6f", NS, fabs(params->data->latitude));
   }
+}
+
+static int _get_parameters(char **variable, char **parameters, size_t max_param)
+/*
+ * @param char **variable - The variable to read parameters from
+ * @param char **parameters - a pointer to where list of parameters are stored in
+ * @param size_t max_param - The maximum number of parameters to read
+ *                           (and parameters has space for pointers)
+ * @return The number of parameters, -1 if any error
+ *
+ * You should free the string in parameters with g_free() after usage unless 
+ * returnvalue is 0 or -1;
+ */
+{
+  if(*variable[0] == '[') 
+  {
+    (*variable) ++;
+    // Make sure we parameter[0] will point at start of gstring, so we can free it.
+    while(*variable[0] == ',')
+    {
+      (*variable) ++;
+    }
+    *parameters = g_strdup(*variable);
+    char *end = g_strstr_len(*parameters, -1, "]");
+    if(end)
+    {
+      end[0] = '\0';
+      (*variable) += strlen(*parameters) + 1;
+
+      size_t count = 0;
+      char *token = strtok(*parameters, ",");
+      while (token != NULL && count < max_param)
+      {
+        *parameters = token;
+        parameters++;
+        count++;
+        token = strtok(NULL, ",");
+      }
+      return count;
+    }
+  }
+  return -1;
+}
+
+static bool _is_number(char *str)
+{
+  if(*str == '-' || *str == '+') str++;
+  if(!isdigit(*str)) return false;  // don't take empty strings
+  while(*str) {
+    if(!isdigit(*str)) return false;
+    str++;
+  }
+  return true; 
 }
 
 static char *_get_base_value(dt_variables_params_t *params, char **variable)
@@ -565,31 +619,17 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     // new $(SEQUENCE[n,m]) syntax
     // allows \[[0-9]+,[0-9]+] (PCER)
     // everything else will be ignored
-    if(*variable[0] == '[') {
-      (*variable) ++;
-      bool complete = false;
-      if(g_ascii_isdigit(*variable[0]))
+    else if(*variable[0] == '[') 
+    {
+      char *parameters[2] = {NULL};
+      int num = _get_parameters(variable, parameters, 2);
+      if(num == 2 && _is_number(parameters[0]) && _is_number(parameters[1]))
       {
-        nb_digit = (uint8_t) strtol(*variable, variable, 10);
-        if(*variable[0] == ',')
-        {
-          (*variable) ++;
-          if(g_ascii_isdigit(*variable[0]))
-          {
-            shift = (gint) strtol(*variable, variable, 10);
-            if(*variable[0] == ']') 
-            {
-              (*variable) ++;
-              complete = true;
-            }
-          }
-        }
+        
+        nb_digit = (uint8_t) strtol(parameters[0], NULL, 10);
+        shift = (gint) strtol(parameters[1], NULL, 10);
       }
-      if(!complete) {
-        // didn't match completely so reset all changes
-        nb_digit = 4;
-        shift = 1;
-      }
+      g_free(parameters[0]);
     }
     result = g_strdup_printf("%.*u", nb_digit,
                              params->sequence >= 0
@@ -788,29 +828,15 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
   {
     // CATEGORY should be followed by n [0,9] and
     // "(category)". category can contain 0 or more '|'
-    // or
-    // $(CATEGORY[n,category]) with category as above
-    bool new_syntax = false;
-    if(*variable[0] == '[') {
-      (*variable) ++;
-      new_syntax = true;
-    }
     if(g_ascii_isdigit(*variable[0]))
     {
       const uint8_t level = (uint8_t)*variable[0] & 0b1111;
       (*variable) ++;
-      if((!new_syntax && *variable[0] == '(') != (new_syntax && *variable[0] == ','))
+      if(*variable[0] == '(')
       {
         char *category = g_strdup(*variable + 1);
         char *end = NULL;
-        if(new_syntax) 
-        {
-          end = g_strstr_len(category, -1, "]");
-        }
-        else
-        {
-          end = g_strstr_len(category, -1, ")");
-        }
+        end = g_strstr_len(category, -1, ")");
         if(end)
         {
           end[0] = '|';
@@ -825,6 +851,25 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
         }
         g_free(category);
       }
+    }
+    // $(CATEGORY[n,category]) with category as above (new syntax)
+    else if(*variable[0] == '[')
+    {
+      char *parameters[2] = {NULL};
+      int num = _get_parameters(variable, parameters, 2);
+      if(num == 2 && g_ascii_isdigit(*parameters[0]))
+      {
+        const uint8_t level = (uint8_t)*parameters[0] & 0b1111;
+        parameters[1][strlen(parameters[1]) + 1] = '\0';
+        parameters[1][strlen(parameters[1])] = '|';
+        char *tag = dt_tag_get_subtags(params->imgid, parameters[1], (int)level);
+        if(tag)
+        {
+          result = g_strdup(tag);
+          g_free(tag);
+        }
+      }
+      g_free(parameters[0]);
     }
   }
   else if(_has_prefix(variable, "TAGS") || _has_prefix(variable, "IMAGE.TAGS"))
