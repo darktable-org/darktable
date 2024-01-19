@@ -686,6 +686,8 @@ void _guide_with_chromaticity(float *const restrict UV,
     b_full = dt_alloc_align_float(pixels * 2);
     interpolate_bilinear(a, ds_width, ds_height, a_full, width, height, 4);
     interpolate_bilinear(b, ds_width, ds_height, b_full, width, height, 2);
+    dt_free_align(a);
+    dt_free_align(b);
   }
 
   // Apply the guided filter
@@ -697,7 +699,7 @@ void _guide_with_chromaticity(float *const restrict UV,
   for(size_t k = 0; k < pixels; k++)
   {
     // For each correction factor, we re-express it as a[0] * U + a[1] * V + b
-    float uv[2] = { UV[2 * k + 0], UV[2 * k + 1] };
+    const float uv[2] = { UV[2 * k + 0], UV[2 * k + 1] };
     // corrections[4 * k + 0] = a_full[6 * k + 0] * uv[0] + a_full[6 * k + 1] * uv[1] + b_full[4 * k + 0];
     corrections[4 * k + 1] = a_full[4 * k + 0] * uv[0]
                            + a_full[4 * k + 1] * uv[1]
@@ -707,13 +709,8 @@ void _guide_with_chromaticity(float *const restrict UV,
                            + b_full[2 * k + 1];
   }
 
-  dt_free_align(a);
-  dt_free_align(b);
-  if(resized)
-  {
-    dt_free_align(a_full);
-    dt_free_align(b_full);
-  }
+  dt_free_align(a_full);
+  dt_free_align(b_full);
 }
 
 void process(struct dt_iop_module_t *self,
@@ -795,15 +792,21 @@ void process(struct dt_iop_module_t *self,
     dt_UCS_JCH_to_HSB(JCH, pix_out);
 
     // Get the boosts - if chroma = 0, we have a neutral grey so set everything to 0
-    corrections_out[0] = (JCH[1] > 0.f)
-      ? lookup_gamut(d->LUT_hue, pix_out[0])
-      : 0.f;
-    corrections_out[1] = (JCH[1] > 0.f)
-      ? lookup_gamut(d->LUT_saturation, pix_out[0])
-      : 1.f;
-    corrections_out[2] = (JCH[1] > 0.f)
-      ? 16.f * pix_out[1] * (lookup_gamut(d->LUT_brightness, pix_out[0]) - 1.f) + 1.f
-      : 1.f;
+
+    if(JCH[1] > 0.f)
+    {
+      const float hue = pix_out[0];
+      const float sat = pix_out[1];
+      corrections_out[0] = lookup_gamut(d->LUT_hue, hue);
+      corrections_out[1] = lookup_gamut(d->LUT_saturation, hue);
+      corrections_out[2] = 16.f * sat * (lookup_gamut(d->LUT_brightness, hue) - 1.f) + 1.f;
+    }
+    else
+    {
+      corrections_out[0] = 0.0f;
+      corrections_out[1] = 1.0f;
+      corrections_out[2] = 1.0f;
+    }
 
     // Copy alpha
     pix_out[3] = pix_in[3];
