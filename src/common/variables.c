@@ -35,7 +35,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include <ctype.h>
 
 typedef struct dt_variables_data_t
 {
@@ -312,9 +311,9 @@ static int _get_parameters(char **variable, char **parameters, size_t max_param)
 static bool _is_number(char *str)
 {
   if(*str == '-' || *str == '+') str++;
-  if(!isdigit(*str)) return false;  // don't take empty strings
+  if(!g_ascii_isdigit(*str)) return false;  // don't take empty strings
   while(*str) {
-    if(!isdigit(*str)) return false;
+    if(!g_ascii_isdigit(*str)) return false;
     str++;
   }
   return true; 
