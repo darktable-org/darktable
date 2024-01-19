@@ -650,7 +650,7 @@ void expose(
     }
   }
 
-  if(!guides && dev->proxy.rotate)
+  if((!guides || darktable.control->button_down_which == 3) && dev->proxy.rotate)
   {
     // reminder, we want this to be exposed always for guidings
     _module_gui_post_expose(dev->proxy.rotate, cri, wd, ht, pzx, pzy, zoom_scale);
