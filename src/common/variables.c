@@ -278,13 +278,13 @@ static int _get_parameters(char **variable, char **parameters, size_t max_param)
  * returnvalue is 0 or -1;
  */
 {
+  *parameters = NULL;
   if(*variable[0] == '[') 
   {
     (*variable) ++;
-    // Make sure we parameter[0] will point at start of gstring, so we can free it.
-    while(*variable[0] == ',')
+    if(*variable[0] == ',')
     {
-      (*variable) ++;
+      return -1;
     }
     *parameters = g_strdup(*variable);
     char *end = g_strstr_len(*parameters, -1, "]");
@@ -621,12 +621,14 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     else if(*variable[0] == '[') 
     {
       char *parameters[2] = {NULL};
-      int num = _get_parameters(variable, parameters, 2);
-      if(num == 2 && _is_number(parameters[0]) && _is_number(parameters[1]))
+      const int num = _get_parameters(variable, parameters, 2);
+      if(num >= 1 && _is_number(parameters[0]))
       {
-        
         nb_digit = (uint8_t) strtol(parameters[0], NULL, 10);
-        shift = (gint) strtol(parameters[1], NULL, 10);
+        if(num == 2 && _is_number(parameters[1])) 
+        {
+          shift = (gint) strtol(parameters[1], NULL, 10);
+        }
       }
       g_free(parameters[0]);
     }
@@ -855,7 +857,7 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     else if(*variable[0] == '[')
     {
       char *parameters[2] = {NULL};
-      int num = _get_parameters(variable, parameters, 2);
+      const int num = _get_parameters(variable, parameters, 2);
       if(num == 2 && g_ascii_isdigit(*parameters[0]))
       {
         const uint8_t level = (uint8_t)*parameters[0] & 0b1111;
