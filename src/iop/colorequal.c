@@ -799,7 +799,7 @@ void process(struct dt_iop_module_t *self,
       const float sat = pix_out[1];
       corrections_out[0] = lookup_gamut(d->LUT_hue, hue);
       corrections_out[1] = lookup_gamut(d->LUT_saturation, hue);
-      corrections_out[2] = 16.f * sat * (lookup_gamut(d->LUT_brightness, hue) - 1.f) + 1.f;
+      corrections_out[2] = 16.f * sat * (lookup_gamut(d->LUT_brightness, hue) - 1.f);
     }
     else
     {
@@ -834,8 +834,13 @@ void process(struct dt_iop_module_t *self,
 
     // Apply the corrections
     pix_out[0] += corrections_out[0]; // WARNING: hue is an offset
+
+    /* Define a weighing function for brightness correction based on saturation
+       with an inflection point at 0.15 reaching ~80% of correction at 0.2
+    */
+    const float weight = 1.0f / (1.0f + expf(-(30.0f*(pix_out[1] - 0.15f))));
     pix_out[1] *= corrections_out[1]; // the brightness and saturation are gains
-    pix_out[2] *= corrections_out[2];
+    pix_out[2] *= 1.0f + (weight * corrections_out[2]);
 
     // Sanitize gamut
     gamut_map_HSB(pix_out, d->gamut_LUT, white);
