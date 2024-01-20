@@ -623,7 +623,9 @@ void expose(
   }
 
   // if dragging the rotation line, do it and nothing else
-  if(darktable.control->button_down_which == 3 && dev->proxy.rotate)
+  if(dev->proxy.rotate
+     && (darktable.control->button_down_which == 3
+         || dev->gui_module == dev->proxy.rotate))
   {
     // reminder, we want this to be exposed always for guidings
     _module_gui_post_expose(dev->proxy.rotate, cri, wd, ht, pzx, pzy, zoom_scale);
