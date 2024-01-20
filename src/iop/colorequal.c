@@ -110,11 +110,7 @@ typedef struct dt_iop_colorequal_params_t
 
   float white_level;        // $MIN: -2.0 $MAX: 16.0 $DEFAULT: 1.0 $DESCRIPTION: "white level"
   float chroma_size;        // $MIN: 1.0 $MAX: 10. $DEFAULT: 3.0 $DESCRIPTION: "analysis radius"
-  float chroma_feathering;  // $MIN: 1.0 $MAX: 10. $DEFAULT: 5.0 $DESCRIPTION: "analysis feathering"
-
-  float param_size;        // $MIN: 3 $MAX: 128 $DEFAULT: 50 $DESCRIPTION: "effect radius"
-  float param_feathering;  // $MIN: 1.0 $MAX: 10. $DEFAULT: 6.0 $DESCRIPTION: "effect feathering"
-
+  float param_size;        // $MIN: 3 $MAX: 128 $DEFAULT: 3.0 $DESCRIPTION: "effect radius"
   gboolean use_filter; // $DEFAULT: TRUE $DESCRIPTION: "use guided filter"
 
   // Note: what follows is tedious because each param needs to be declared separately.
@@ -226,7 +222,7 @@ typedef struct dt_iop_colorequal_gui_data_t
   GtkWidget *bright_turquoise, *bright_blue, *bright_lavender, *bright_purple;
 
   GtkWidget *smoothing_saturation, *smoothing_bright, *smoothing_hue;
-  GtkWidget *chroma_size, *chroma_feathering, *param_size, *param_feathering, *use_filter;
+  GtkWidget *chroma_size, *param_size, *use_filter;
 
   // Array-like re-indexing of the above for efficient uniform
   // handling in loops Populate the array in gui_init()
@@ -1010,9 +1006,9 @@ void commit_params(struct dt_iop_module_t *self,
 
   d->white_level = exp2f(p->white_level);
   d->chroma_size = p->chroma_size;
-  d->chroma_feathering = powf(10.f, -p->chroma_feathering);
+  d->chroma_feathering = powf(10.f, -5.0f);
   d->param_size = p->param_size;
-  d->param_feathering = powf(10.f, -p->param_feathering);
+  d->param_feathering = powf(10.f, -6.0f);
   d->use_filter = p->use_filter;
 
   float DT_ALIGNED_ARRAY sat_values[NODES];
@@ -2037,16 +2033,10 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->chroma_size,
                               _("blurring radius of chroma prefilter analysis"));
 
-  g->chroma_feathering = dt_bauhaus_slider_from_params(self, "chroma_feathering");
-  dt_bauhaus_slider_set_digits(g->chroma_feathering, 1);
-
   g->param_size = dt_bauhaus_slider_from_params(self, "param_size");
   dt_bauhaus_slider_set_digits(g->param_size, 1);
   dt_bauhaus_slider_set_format(g->param_size, _(" px"));
   gtk_widget_set_tooltip_text(g->param_size, _("blurring radius of applied parameters"));
-
-  g->param_feathering = dt_bauhaus_slider_from_params(self, "param_feathering");
-  dt_bauhaus_slider_set_digits(g->param_feathering, 1);
 
   _init_sliders(self);
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->notebook), TRUE, TRUE, 0);
