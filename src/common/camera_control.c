@@ -110,8 +110,7 @@ static void _camctl_unlock(const dt_camctl_t *c);
 
 /** Updates the cached configuration with a copy of camera configuration */
 static void _camera_configuration_update(const dt_camctl_t *c, const dt_camera_t *camera);
-/** Commit the changes in cached configuration to the camera configuration */
-static void _camera_configuration_commit(const dt_camctl_t *c, const dt_camera_t *camera);
+static void _camera_configuration_single_update(const dt_camctl_t *c, const dt_camera_t *camera, const char* name);
 /** Compares new_config with old_config and notifies listeners of the changes. */
 static void _camera_configuration_notify_change(const dt_camctl_t *c,
                                                 const dt_camera_t *camera,
@@ -378,26 +377,17 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
       dt_print(DT_DEBUG_CAMCTL, "[camera_control] executing set camera config job %s=%s\n",
                spj->name, spj->value);
 
-      CameraWidget *config; // Copy of camera configuration
+      dt_pthread_mutex_lock(&cam->config_lock);
       CameraWidget *widget;
-      gp_camera_get_config(cam->gpcam, &config, c->gpcontext);
-      if(gp_widget_get_child_by_name(config, spj->name, &widget) == GP_OK)
+      if(gp_widget_get_child_by_name(camera->configuration, spj->name, &widget) == GP_OK)
       {
-        gp_widget_set_value(widget, spj->value);
-        gp_camera_set_config(cam->gpcam, config, c->gpcontext);
+        gp_widget_set_value(widget , spj->value);
+        gp_camera_set_single_config(cam->gpcam, spj->name, widget, c->gpcontext);
       }
-      /* dt_pthread_mutex_lock( &cam->config_lock );
-       CameraWidget *widget;
-       if(  gp_widget_get_child_by_name ( camera->configuration, spj->name, &widget) == GP_OK) {
-         gp_widget_set_value ( widget , spj->value);
-         //gp_widget_set_changed( widget, 1 );
-         cam->config_changed=TRUE;
-       }
 
-       dt_pthread_mutex_unlock( &cam->config_lock);*/
+      dt_pthread_mutex_unlock(&cam->config_lock);
       g_free(spj->name);
       g_free(spj->value);
-      gp_widget_free(config);
     }
     break;
 
@@ -407,10 +397,9 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
       dt_print(DT_DEBUG_CAMCTL, "[camera_control] executing set camera config job %s=%d",
                spj->name, spj->value);
 
-      CameraWidget *config; // Copy of camera configuration
+      dt_pthread_mutex_lock(&cam->config_lock);
       CameraWidget *widget;
-      gp_camera_get_config(cam->gpcam, &config, c->gpcontext);
-      if(gp_widget_get_child_by_name(config, spj->name, &widget) == GP_OK)
+      if(gp_widget_get_child_by_name(camera->configuration, spj->name, &widget) == GP_OK)
       {
         if(spj->value >= 0 && spj->value < gp_widget_count_choices(widget))
         {
@@ -419,21 +408,13 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
           dt_print(DT_DEBUG_CAMCTL, " (%s)", choice);
 
           gp_widget_set_value(widget, choice);
-          gp_camera_set_config(cam->gpcam, config, c->gpcontext);
+          gp_camera_set_single_config(cam->gpcam, spj->name, widget, c->gpcontext);
         }
       }
-      /* dt_pthread_mutex_lock( &cam->config_lock );
-       CameraWidget *widget;
-       if(  gp_widget_get_child_by_name ( camera->configuration, spj->name, &widget) == GP_OK) {
-         gp_widget_set_value ( widget , spj->value);
-         //gp_widget_set_changed( widget, 1 );
-         cam->config_changed=TRUE;
-       }
 
-       dt_pthread_mutex_unlock( &cam->config_lock);*/
+      dt_pthread_mutex_unlock(&cam->config_lock);
       dt_print(DT_DEBUG_CAMCTL, "\n");
       g_free(spj->name);
-      gp_widget_free(config);
     }
     break;
     case _JOB_TYPE_SET_PROPERTY_TOGGLE:
@@ -442,17 +423,16 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
       dt_print(DT_DEBUG_CAMCTL, "[camera_control] executing camera config job to toggle %s\n",
                spj->name);
 
-      CameraWidget *config; // Copy of camera configuration
+      dt_pthread_mutex_lock(&cam->config_lock);
       CameraWidget *widget;
-      gp_camera_get_config(cam->gpcam, &config, c->gpcontext);
-      if(gp_widget_get_child_by_name(config, spj->name, &widget) == GP_OK)
+      if(gp_widget_get_child_by_name(cam->configuration, spj->name, &widget) == GP_OK)
       {
         const int value = 1;
         gp_widget_set_value(widget, &value);
-        gp_camera_set_config(cam->gpcam, config, c->gpcontext);
+        gp_camera_set_single_config(cam->gpcam, spj->name, widget, c->gpcontext);
       }
+      dt_pthread_mutex_unlock(&cam->config_lock);
       g_free(spj->name);
-      gp_widget_free(config);
     }
       break;
     case _JOB_TYPE_SET_PROPERTY_INT:
@@ -461,10 +441,9 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
       dt_print(DT_DEBUG_CAMCTL, "[camera_control] executing set camera config job %s=%d\n",
                spj->name, spj->value);
 
-      CameraWidget *config; // Copy of camera configuration
+      dt_pthread_mutex_lock(&cam->config_lock);
       CameraWidget *widget;
-      gp_camera_get_config(cam->gpcam, &config, c->gpcontext);
-      if(gp_widget_get_child_by_name(config, spj->name, &widget) == GP_OK)
+      if(gp_widget_get_child_by_name(cam->configuration, spj->name, &widget) == GP_OK)
       {
         const int value = spj->value;
         const int set_value_succeeds = gp_widget_set_value(widget, &value);
@@ -474,7 +453,7 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
                    "[camera_control] setting int value %d on %s failed with code %d",
                    spj->value, spj->name, set_value_succeeds);
         }
-        const int set_config_succeeds = gp_camera_set_config(cam->gpcam, config, c->gpcontext);
+        const int set_config_succeeds = gp_camera_set_single_config(cam->gpcam, spj->name, widget, c->gpcontext);
         if(set_value_succeeds != GP_OK)
         {
           dt_print(DT_DEBUG_CAMCTL,
@@ -482,8 +461,8 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
                    set_config_succeeds);
         }
       }
+      dt_pthread_mutex_unlock(&cam->config_lock);
       g_free(spj->name);
-      gp_widget_free(config);
     }
     break;
     case _JOB_TYPE_SET_PROPERTY_FLOAT:
@@ -493,10 +472,9 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
                "[camera_control] executing set camera config float job %s=%.2f\n",
                spj->name, spj->value);
 
-      CameraWidget *config; // Copy of camera configuration
+      dt_pthread_mutex_lock(&cam->config_lock);
       CameraWidget *widget;
-      gp_camera_get_config(cam->gpcam, &config, c->gpcontext);
-      if(gp_widget_get_child_by_name(config, spj->name, &widget) == GP_OK)
+      if(gp_widget_get_child_by_name(cam->configuration, spj->name, &widget) == GP_OK)
       {
         const float value = spj->value;
         const int set_value_succeeds = gp_widget_set_value(widget, &value);
@@ -506,7 +484,7 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
                    "[camera_control] setting int value %.2f on %s failed with code %d",
                    spj->value, spj->name, set_value_succeeds);
         }
-        const int set_config_succeeds = gp_camera_set_config(cam->gpcam, config, c->gpcontext);
+        const int set_config_succeeds = gp_camera_set_single_config(cam->gpcam, spj->name, widget, c->gpcontext);
         if(set_value_succeeds != GP_OK)
         {
           dt_print(DT_DEBUG_CAMCTL,
@@ -514,8 +492,8 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
                    set_config_succeeds);
         }
       }
+      dt_pthread_mutex_unlock(&cam->config_lock);
       g_free(spj->name);
-      gp_widget_free(config);
     }
       break;
     default:
@@ -1046,9 +1024,6 @@ static void *_camera_event_thread(void *data)
     // Let's check if there are jobs in queue to process
     gpointer job;
     while((job = _camera_get_job(camctl, camera)) != NULL) _camera_process_job(camctl, camera, job);
-
-    // Check it jobs did change the configuration
-    if(camera->config_changed == TRUE) _camera_configuration_commit(camctl, camera);
   }
 
   dt_print(DT_DEBUG_CAMCTL, "[camera_control] exiting camera thread.\n");
@@ -1882,9 +1857,44 @@ static void _camera_poll_events(const dt_camctl_t *c, const dt_camera_t *cam)
       {
         // Property change event occurred on camera
         // let's update cache and signalling
-        dt_print(DT_DEBUG_CAMCTL, "[camera_control] Camera configuration change event, lets update internal "
-                                  "configuration cache.\n");
-        _camera_configuration_update(c, cam);
+
+        dt_print(DT_DEBUG_CAMCTL, "[camera_control] Camera configuration change event '%s', lets update internal "
+                                  "configuration cache.\n", (char*)data);
+        // Update individual properties with gp_camera_get_single_config
+        if (strstr((char*)data, "PTP Property") && strstr((char*)data, "changed"))
+        {
+          // Use the property name if provided
+          // (GUI elements use this name and won't update if the numeric code is used instead)
+          if (strstr((char*)data, "changed,"))
+          {
+            char * nameStart = strchr(data + strlen("PTP Property "), '"');
+            if (nameStart != NULL)
+            {
+              // Skip quotation marks
+              nameStart += 1;
+              const char *nameEnd = strchr(nameStart, '"');
+              if (nameEnd != NULL)
+              {
+                char *name = g_malloc0(nameEnd - nameStart + 1);
+                strncpy(name, nameStart, nameEnd - nameStart);
+                name[nameEnd - nameStart] = '\0';
+                _camera_configuration_single_update(c, cam, name);
+                dt_free_align(name);
+                return;
+              }
+            }
+            dt_print(DT_DEBUG_CAMCTL, "[camera_control] Unable to parse event '%s', \
+                falling back to updating by code.", (char*)data);
+          }
+          char code[5];
+          strncpy(code, data + strlen("PTP Property "), 4);
+          code[4] = '\0';
+          _camera_configuration_single_update(c, cam, code);
+        }
+        else
+        {
+          _camera_configuration_update(c, cam);
+        }
       }
     }
     else if(event == GP_EVENT_FILE_ADDED)
@@ -2013,17 +2023,26 @@ end:
   }
 }
 
-static void _camera_configuration_commit(const dt_camctl_t *c, const dt_camera_t *camera)
+static void _camera_configuration_single_update(const dt_camctl_t *c, const dt_camera_t *camera, const char* name)
 {
-  g_assert(camera != NULL);
-
   dt_camera_t *cam = (dt_camera_t *)camera;
-
   dt_pthread_mutex_lock(&cam->config_lock);
-  if(gp_camera_set_config(camera->gpcam, camera->configuration, c->gpcontext) != GP_OK)
-    dt_print(DT_DEBUG_CAMCTL, "[camera_control] Failed to commit configuration changes to camera\n");
-
-  cam->config_changed = FALSE;
+  CameraWidget *remote;
+  if (gp_camera_get_single_config(camera->gpcam, name, &remote, c->gpcontext) != GP_OK)
+  {
+    dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to get config value for property %s\n", name);
+    dt_pthread_mutex_unlock(&cam->config_lock);
+    return;
+  }
+  // merge remote copy with cache and notify on changed properties to host application
+  _camera_configuration_notify_change(c, camera, remote, camera->configuration);
+  CameraWidget *old_config_child = NULL;
+  if(gp_widget_get_child_by_name(cam->configuration, name, &old_config_child) == GP_OK)
+  {
+    void* value = NULL;
+    gp_widget_get_value(remote, value);
+    gp_widget_set_value(old_config_child, value);
+  }
   dt_pthread_mutex_unlock(&cam->config_lock);
 }
 
