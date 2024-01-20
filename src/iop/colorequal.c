@@ -1714,47 +1714,50 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget,
   const uint8_t dy = (uint8_t)fabs(g->mouse_y - event->y);
   const uint8_t dx = (uint8_t)fabs(g->mouse_x - event->x);
 
-  if(g->scrolling)
+  if(gtk_notebook_get_current_page (g->notebook) <= BRIGHTNESS)
   {
-    g->scrolling = FALSE;
-  }
-  else if(g->dragging)
-  {
-    if(dy > DT_PIXEL_APPLY_DPI(1))
+    if(g->scrolling)
     {
-      _area_set_pos(g, event->y);
-
-      g->mouse_y = event->y;
-
-      redraw = TRUE;
+      g->scrolling = FALSE;
     }
-  }
-  else if(dy > DT_PIXEL_APPLY_DPI(2)     // protect against small motion while scrolling
-          || dx > DT_PIXEL_APPLY_DPI(2))
-  {
-    // look if close to a node
-    const float epsilon = DT_PIXEL_APPLY_DPI(10.0);
-
-    const int oldsel = g->selected;
-    g->selected = -1;
-    g->mouse_y = event->y;
-
-    for(int k=0; k<NODES+1; k++)
+    else if(g->dragging)
     {
-      if(fabsf(g->points[k][0] - (float)event->x) < epsilon
-         && fabsf(g->points[k][1] - (float)event->y) < epsilon)
+      if(dy > DT_PIXEL_APPLY_DPI(1))
       {
-        // if last node, select node 0 (same node actually)
-        g->selected = k == NODES ? 0 : k;
-        break;
+        _area_set_pos(g, event->y);
+
+        g->mouse_y = event->y;
+
+        redraw = TRUE;
       }
     }
+    else if(dy > DT_PIXEL_APPLY_DPI(2)     // protect against small motion while scrolling
+            || dx > DT_PIXEL_APPLY_DPI(2))
+    {
+      // look if close to a node
+      const float epsilon = DT_PIXEL_APPLY_DPI(10.0);
 
-    redraw = oldsel != g->selected;
+      const int oldsel = g->selected;
+      g->selected = -1;
+      g->mouse_y = event->y;
+
+      for(int k=0; k<NODES+1; k++)
+      {
+        if(fabsf(g->points[k][0] - (float)event->x) < epsilon
+           && fabsf(g->points[k][1] - (float)event->y) < epsilon)
+        {
+          // if last node, select node 0 (same node actually)
+          g->selected = k == NODES ? 0 : k;
+          break;
+        }
+      }
+
+      redraw = oldsel != g->selected;
+    }
+
+    if(redraw)
+      gtk_widget_queue_draw(GTK_WIDGET(g->area));
   }
-
-  if(redraw)
-    gtk_widget_queue_draw(GTK_WIDGET(g->area));
 
   return TRUE;
 }
@@ -1766,18 +1769,21 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
 
-  if(event->button == 1)
+  if(gtk_notebook_get_current_page (g->notebook) <= BRIGHTNESS)
   {
-    g->mouse_x = event->x;
-    g->mouse_y = event->y;
+    if(event->button == 1)
+    {
+      g->mouse_x = event->x;
+      g->mouse_y = event->y;
 
-    if(event->type == GDK_2BUTTON_PRESS)
-    {
-      _area_reset_nodes(g);
-    }
-    else
-    {
-      g->dragging = TRUE;
+      if(event->type == GDK_2BUTTON_PRESS)
+      {
+        _area_reset_nodes(g);
+      }
+      else
+      {
+        g->dragging = TRUE;
+      }
     }
   }
 
