@@ -47,7 +47,6 @@ typedef struct dt_camera_t
   /** Registered timeout func */
   CameraTimeoutFunc timeout;
 
-  gboolean config_changed;
   dt_pthread_mutex_t config_lock;
   /** This camera/device can import images. */
   gboolean can_import;
