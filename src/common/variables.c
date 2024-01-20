@@ -274,12 +274,12 @@ static int _get_parameters(char **variable, char **parameters, size_t max_param)
  *                           (and parameters has space for pointers)
  * @return The number of parameters, -1 if any error
  *
- * You should free the string in parameters with g_free() after usage unless 
+ * You should free the string in parameters with g_free() after usage unless
  * returnvalue is 0 or -1;
  */
 {
   *parameters = NULL;
-  if(*variable[0] == '[') 
+  if(*variable[0] == '[')
   {
     (*variable) ++;
     if(*variable[0] == ',')
@@ -316,7 +316,7 @@ static bool _is_number(char *str)
     if(!g_ascii_isdigit(*str)) return false;
     str++;
   }
-  return true; 
+  return true;
 }
 
 static char *_get_base_value(dt_variables_params_t *params, char **variable)
@@ -618,14 +618,14 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     // new $(SEQUENCE[n,m]) syntax
     // allows \[[0-9]+,[0-9]+] (PCER)
     // everything else will be ignored
-    else if(*variable[0] == '[') 
+    else if(*variable[0] == '[')
     {
       char *parameters[2] = {NULL};
       const int num = _get_parameters(variable, parameters, 2);
       if(num >= 1 && _is_number(parameters[0]))
       {
         nb_digit = (uint8_t) strtol(parameters[0], NULL, 10);
-        if(num == 2 && _is_number(parameters[1])) 
+        if(num == 2 && _is_number(parameters[1]))
         {
           shift = (gint) strtol(parameters[1], NULL, 10);
         }
