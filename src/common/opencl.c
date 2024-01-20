@@ -622,6 +622,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
     g_strlcpy(platform_name, "unknownplatform", DT_OPENCL_CBUFFSIZE);
 
 
+  gboolean is_mesa = FALSE;
   device_name_cleaned = strdup(device_name);
   // If platform_vendor starts with Mesa (matches also Mesa/X.org) remove
   // everything starting with the first open parenthesis and removes trailing
@@ -629,6 +630,10 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   if(!strncasecmp(platform_vendor, "Mesa", 4))
   {
     device_name_cleaned = g_strchomp(_strsep(&device_name_cleaned, "("));
+    dt_print_nts(DT_DEBUG_OPENCL,
+                   "OpenCL Mesa platform `%s' --> `%s'\n",
+                   platform_vendor, device_name_cleaned);
+    is_mesa = TRUE;
   }
 
   // get the fullname
@@ -649,8 +654,8 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
                "   DEVICE:                   %d: '%s'%s\n",
                k, device_name, (newdevice) ? ", NEW" : "" );
   dt_print_nts(DT_DEBUG_OPENCL,
-               "   PLATFORM, VENDOR & ID:    %s, %s, ID=%d\n",
-               platform_display_name, platform_vendor, vendor_id);
+               "   PLATFORM, VENDOR & ID:    %s, %s%s, ID=%d\n",
+               platform_display_name, is_mesa ? "Mesa:" : "", platform_vendor, vendor_id);
   dt_print_nts(DT_DEBUG_OPENCL,
                "   CANONICAL NAME:           %s\n", cl->dev[dev].cname);
 
@@ -1187,7 +1192,8 @@ void dt_opencl_init(
               "  - previous OpenCL errors leading to blocked devices,\n"
               "  - power management problems,\n"
               "  - buggy drivers,\n"
-              "  - no OpenCL driver installed.");
+              "  - no OpenCL driver installed,\n"
+              "  - multiple drivers installed per platform\n");
 
   cl_int err = (cl->dlocl->symbols->dt_clGetPlatformIDs)(0, NULL, &num_platforms);
   if((err != CL_SUCCESS) || (num_platforms == 0))
@@ -1220,32 +1226,23 @@ void dt_opencl_init(
 
   // safety check for platforms; we must not have several versions for the same platform
   {
-    gboolean multiple = FALSE;
     char *platforms = calloc(num_platforms, sizeof(char) * DT_OPENCL_CBUFFSIZE);
     for(int n = 0; n < num_platforms; n++)
     {
       cl_platform_id platform = all_platforms[n];
       if((cl->dlocl->symbols->dt_clGetPlatformInfo)
         (platform, CL_PLATFORM_NAME, DT_OPENCL_CBUFFSIZE, platforms + n * DT_OPENCL_CBUFFSIZE, NULL) != CL_SUCCESS)
-      {
-        multiple = TRUE;
         break;
-      }
+
       for(int k = 0; k < n; k++)
       {
         if(!strcmp(platforms + n * DT_OPENCL_CBUFFSIZE, platforms + k * DT_OPENCL_CBUFFSIZE))
-          multiple = TRUE;
+        dt_print(DT_DEBUG_OPENCL,
+           "[opencl_init] possibly a multiple platform problem for `%s'\n",
+           platforms + n * DT_OPENCL_CBUFFSIZE);
       }
     }
     free(platforms);
-
-    if(multiple)
-    {
-      dt_print(DT_DEBUG_OPENCL,
-                 "[opencl_init] detected wrong OpenCL platforms setup\n");
-      num_platforms = 0;
-      goto finally;
-    }
   }
 
   for(int n = 0; n < num_platforms; n++)
@@ -1449,7 +1446,10 @@ finally:
   }
 
   if(logerror && opencl_requested)
-    dt_control_log(_("OpenCL initializing problem:\n%s"), logerror);
+  {
+    dt_control_log(_("OpenCL initializing problem:\n%s\ndisabling OpenCL for now"), logerror);
+    dt_conf_set_bool("opencl", FALSE);
+  }
 
   if(cl->inited)
   {
