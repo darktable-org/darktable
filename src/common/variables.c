@@ -310,10 +310,16 @@ static int _get_parameters(char **variable, char **parameters, size_t max_param)
 
 static gboolean _is_number(char *str)
 {
-  if(*str == '-' || *str == '+') str++;
-  if(!g_ascii_isdigit(*str)) return FALSE;  // don't take empty strings
-  while(*str) {
-    if(!g_ascii_isdigit(*str)) return FALSE;
+  if(*str == '-' || *str == '+')
+    str++;
+
+  if(!g_ascii_isdigit(*str))
+    return FALSE;  // don't take empty strings
+
+  while(*str)
+  {
+    if(!g_ascii_isdigit(*str))
+      return FALSE;
     str++;
   }
   return TRUE;
