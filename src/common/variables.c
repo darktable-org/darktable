@@ -308,7 +308,7 @@ static int _get_parameters(char **variable, char **parameters, size_t max_param)
   return -1;
 }
 
-static bool _is_number(char *str)
+static gboolean _is_number(char *str)
 {
   if(*str == '-' || *str == '+') str++;
   if(!g_ascii_isdigit(*str)) return false;  // don't take empty strings
