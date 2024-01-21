@@ -99,6 +99,8 @@ for more information on how to contribute._
 - Fix garbeld output and possibly OpenCL errors for very dark regions
   in colorbalance rgb.
 
+- Fixes OpenCL startup for different cards per platform.
+
 ## Lua
 
 ### API Version
