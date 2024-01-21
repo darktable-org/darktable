@@ -361,7 +361,6 @@ src/lua/image.c
 src/lua/lualib.c
 src/lua/preferences.c
 src/views/darkroom.c
-src/views/knight.c
 src/views/lighttable.c
 src/views/map.c
 src/views/print.c
