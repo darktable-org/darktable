@@ -831,10 +831,8 @@ void process(struct dt_iop_module_t *self,
     // Apply the corrections
     pix_out[0] += corrections_out[0]; // WARNING: hue is an offset
 
-    /* Define a weighing function for brightness correction based on saturation
-       with an inflection point at 0.15 reaching ~80% of correction at 0.2
-    */
-    const float weight = 1.0f / (1.0f + expf(-(30.0f*(pix_out[1] - 0.15f))));
+    // Define a weighing function for brightness correction based on saturation
+    const float weight = CLIP(10.0f * (pix_out[1] - 0.03f));
     pix_out[1] *= corrections_out[1]; // the brightness and saturation are gains
     pix_out[2] *= 1.0f + (weight * corrections_out[2]);
 
