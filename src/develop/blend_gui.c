@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2023 darktable developers.
+    Copyright (C) 2012-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2774,7 +2774,7 @@ void dt_iop_gui_init_masks(GtkWidget *blendw, dt_iop_module_t *module)
     GtkWidget *abox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     bd->masks_edit = dt_iop_togglebutton_new(module, "blend`tools",
                                              N_("show and edit mask elements"),
-                                             N_("show and edit in restricted mode"),
+                                             N_("show and edit in restricted mode (no moving/resizing of shapes)"),
                                              G_CALLBACK(_blendop_masks_show_and_edit),
                                              FALSE, 0, 0,
                                              dtgtk_cairo_paint_masks_eye, abox);
