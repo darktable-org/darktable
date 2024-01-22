@@ -208,16 +208,14 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img,
     img->raw_black_level = r->blackLevel;
     img->raw_white_point = r->whitePoint;
 
-    if(!r->blackAreas.empty() || r->blackLevelSeparate[0] == -1
-       || r->blackLevelSeparate[1] == -1
-       || r->blackLevelSeparate[2] == -1
-       || r->blackLevelSeparate[3] == -1)
+    if(!r->blackAreas.empty() || !r->blackLevelSeparate)
     {
       r->calculateBlackAreas();
     }
 
+    const auto bl = *(r->blackLevelSeparate->getAsArray1DRef());
     for(uint8_t i = 0; i < 4; i++)
-      img->raw_black_level_separate[i] = r->blackLevelSeparate[i];
+      img->raw_black_level_separate[i] = bl(i);
 
     if(r->blackLevel == -1)
     {
@@ -398,7 +396,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img,
                                         r->metadata.model.c_str(),
                                         r->metadata.mode.c_str());
 
-    if(cam && cam->supportStatus == Camera::SupportStatus::NoSamples)
+    if(cam && cam->supportStatus == Camera::SupportStatus::SupportedNoSamples)
       img->camera_missing_sample = TRUE;
   }
   catch(const std::exception &exc)
@@ -551,7 +549,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img,
                                       r->metadata.model.c_str(),
                                       r->metadata.mode.c_str());
 
-  if(cam && cam->supportStatus == Camera::SupportStatus::NoSamples)
+  if(cam && cam->supportStatus == Camera::SupportStatus::SupportedNoSamples)
     img->camera_missing_sample = TRUE;
 
   return DT_IMAGEIO_OK;
