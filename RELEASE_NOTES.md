@@ -31,75 +31,75 @@ Since darktable 4.4:
 - 49 issues closed
 
 
-_Please note that the darktable documentation is not currently complete for release 4.6
-and contributions are greatly appreciated. Please see the
-[project documentation](https://github.com/darktable-org/dtdocs#contributing)
-for more information on how to contribute._
-
 ## The Big Ones
 
-- n/a
+- Documentation is now complete for darktable 4.6 including translation
+  into Ukrainian and Dutch.
 
 ## Performance Improvements
 
-- Fix some OpenCL code paths that could produce garbled or unprocessed
-  output without back reporting the the pixel-pipe.
+- Fixed some OpenCL code paths that could produce garbled or unprocessed
+  output without reporting the issue back to the the pixel-pipe.
 
 ## Other Changes
 
-- Pictures discovery from the import dialog is now done
-  asynchronously. This means that a long parsing (due to recursive
-  mode used in a directory having a huge number of directories and
-  files) can be interrupted by just selecting another place, directory
-  or un-checking the recursive mode.
+- Image discovery from the import dialog is now performed
+  asynchronously. This means that a long parsing (due to using recursive
+  mode in a directory with a huge number of sub-directories and
+  files) can be interrupted by selecting another place/directory
+  or un-checking recursive mode.
 
 ## Bug Fixes
 
-- Fixed issue with the import dialog in recursive mode. Using this
-  mode without having selected a directory would freeze darktable due
-  to parsing the whole disk. After a long time it would recover though.
+- Fixed an issue with importing images in recursive mode. Using this
+  mode without having first selected a directory could freeze darktable due
+  to it having to parse the whole disk (though it would recover eventually).
 
-- When using the recursive mode in the import dialog, the thumbs for
-  pictures discovered in sub-directories are now properly displayed.
+- When importing images in recursive mode, the thumbs for
+  images discovered in sub-directories are now properly displayed.
 
-- Fix memory and resource leaks in the QOI image loader.
+- Fixed memory and resource leaks in the QOI image loader.
 
 - Fixed RGBE image loader.
 
-- Fixes possible issue with guides not displayed in Perspective
-  Correction module.
+- Fixed possible issue with guide lines not being displayed in the
+  Rotate and Perspective module.
 
-- Fix non persistent zoom level in culling mode when switching images.
+- Fixed non-persistent zoom level in culling mode when switching images.
 
-- Fix crashes related to details mask if running on low OpenCL or
+- Fixed crashes related to details mask when running low on GPU or
   system memory.
 
-- Fix wrong first snapshot rendering after creating a second snapshot.
+- Fixed incorrect rendering of an initial snapshot after creating a
+  second snapshot.
 
 - Keep selected styles in the style dialog after editing them.
 
-- Fix collection selection for ISO, aperture and aspect ratio to work
-  in all locale (independent of the locale decimal separator).
+- Fixed collection selection for ISO, aperture and aspect ratio to work
+  in all locales (independent of any locale-specific decimal separator).
 
-- Fix RAW CA correction module which could crash due to rounding issue
-  while computing an internal buffer size. This would cause a buffer
-  overflow and possibly crash darktable.
+- Fixed RAW Chromatic Aberrations module, which could crash due to a
+  rounding issue while computing an internal buffer size. This could
+  cause a buffer overflow and possibly crash darktable.
 
-- Avoid undershoots while interpolating in Lens, Perspective
-  Correction, Retouch and Liquify modules.
+- Avoid undershoots while interpolating in Lens Correction, Rotate and
+  Perspective, Retouch and Liquify modules.
 
-- Include LibRaw fix for artifacts when decoding high ISO Canon CR3s.
+- Include LibRaw fix for artifacts when decoding high-ISO Canon CR3 files.
 
-- Fix possible wrong module's name when applying styles. The module
-  name could be a garbled text.
+- Fixed possible incorrect module name when applying styles, whereby the
+  module name was showing garbled text.
 
-- Fix possible wrong default value initialized in lens legacy
+- Fixed possible incorrect default value initialized in Lens Correction legacy
   parameter migration from version 2.
 
-- Fix garbeld output and possibly OpenCL errors for very dark regions
-  in colorbalance rgb.
+- Fixed garbled output and possible OpenCL errors for very dark regions
+  in Color Balance RGB.
 
-- Fixes OpenCL startup for different cards per platform.
+- Fixed OpenCL startup for various cards.
+
+- Fixed issue where the right-click-and-drag rotation line was not being
+  displayed on the image when a darkroom module was expanded.
 
 ## Lua
 
