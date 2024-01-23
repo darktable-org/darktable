@@ -782,6 +782,8 @@ void process(struct dt_iop_module_t *self,
   if(d->use_filter)
     _prefilter_chromaticity(UV, saturations, roi_out, d->chroma_size, d->chroma_feathering);
 
+  _mean_gaussian(saturations, roi_out->width, roi_out->height, 1, 4.0f);
+
   // STEP 3 : carry-on with conversion from LUV to HSB
 
 #ifdef _OPENMP
