@@ -1378,7 +1378,8 @@ static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
   cairo_surface_destroy(surface);
   */
 
-  // instead of the above, we simply generate 16 linear horizontal gradients and stack them vertically
+  // instead of the above, we simply generate 16 linear horizontal
+  // gradients and stack them vertically
   if(!g->gradients_cached)
   {
     // Refresh the cache of gradients
@@ -1705,9 +1706,11 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget,
     const float epsilon = DT_PIXEL_APPLY_DPI(10.0);
     const int oldsel = g->selected;
     const int oldon = g->on_node;
-    g->selected = (int)(((float)event->x - g->points[0][0]) / (g->points[1][0] - g->points[0][0]) + 0.5f) % NODES;
+    g->selected = (int)(((float)event->x - g->points[0][0])
+                        / (g->points[1][0] - g->points[0][0]) + 0.5f) % NODES;
     g->on_node = fabsf(g->points[g->selected][1] - (float)event->y) < epsilon;
-    gtk_widget_set_tooltip_text(widget, DT_BAUHAUS_WIDGET(g->sat_sliders[g->selected])->label);
+    gtk_widget_set_tooltip_text(widget,
+                                DT_BAUHAUS_WIDGET(g->sat_sliders[g->selected])->label);
     if(oldsel != g->selected || oldon != g->on_node)
       gtk_widget_queue_draw(GTK_WIDGET(g->area));
   }
@@ -1735,7 +1738,8 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
   }
   else if(event->button == 2)
   {
-    dt_conf_set_bool("plugins/darkroom/colorequal/show_sliders", gtk_widget_get_visible(g->cs.expander));
+    dt_conf_set_bool("plugins/darkroom/colorequal/show_sliders",
+                     gtk_widget_get_visible(g->cs.expander));
     gui_update(self);
   }
   else
@@ -1836,14 +1840,19 @@ void gui_update(dt_iop_module_t *self)
   gboolean show_sliders = dt_conf_get_bool("plugins/darkroom/colorequal/show_sliders");
   gtk_widget_set_visible(g->cs.expander, !show_sliders);
   gtk_widget_set_name(GTK_WIDGET(g->cs.container), show_sliders ? NULL : "collapsible");
+
   if((gtk_notebook_get_n_pages(g->notebook) == 4) ^ show_sliders)
   {
     g_object_ref(g->cs.container);
     gtk_container_remove(GTK_CONTAINER(gtk_widget_get_parent(GTK_WIDGET(g->cs.container))), GTK_WIDGET(g->cs.container));
     if(show_sliders)
-      gtk_notebook_append_page(g->notebook, GTK_WIDGET(g->cs.container), dt_ui_label_new(_("options")));
+      gtk_notebook_append_page
+        (g->notebook,
+         GTK_WIDGET(g->cs.container), dt_ui_label_new(_("options")));
     else
-      gtk_container_add(GTK_CONTAINER(dtgtk_expander_get_body_event_box(DTGTK_EXPANDER(g->cs.expander))), GTK_WIDGET(g->cs.container));
+      gtk_container_add
+        (GTK_CONTAINER(dtgtk_expander_get_body_event_box(DTGTK_EXPANDER(g->cs.expander))),
+         GTK_WIDGET(g->cs.container));
     g_object_unref(g->cs.container);
   }
 }
@@ -1991,7 +2000,8 @@ void gui_init(struct dt_iop_module_t *self)
      _("options"),
      GTK_BOX(box),
      DT_ACTION(self));
-  g_object_bind_property(g->cs.expander, "visible", prv_grp, "visible", G_BINDING_INVERT_BOOLEAN);
+  g_object_bind_property(g->cs.expander, "visible",
+                         prv_grp, "visible", G_BINDING_INVERT_BOOLEAN);
   self->widget = GTK_WIDGET(g->cs.container);
 
   g->white_level = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
