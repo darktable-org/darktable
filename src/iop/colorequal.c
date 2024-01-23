@@ -1710,7 +1710,7 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget,
                         / (g->points[1][0] - g->points[0][0]) + 0.5f) % NODES;
     g->on_node = fabsf(g->points[g->selected][1] - (float)event->y) < epsilon;
 
-    char *tooltip = g_strdup_printf("middle click to toggle sliders vibility\n\n%s",
+    char *tooltip = g_strdup_printf(_("middle click to toggle sliders vibility\n\n%s"),
                                     DT_BAUHAUS_WIDGET(g->sat_sliders[g->selected])->label);
     gtk_widget_set_tooltip_text(widget, tooltip);
     g_free(tooltip);
