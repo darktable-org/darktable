@@ -435,6 +435,8 @@ void _prefilter_chromaticity(float *const restrict UV,
     b_full = dt_alloc_align_float(pixels * 2);
     interpolate_bilinear(a, ds_width, ds_height, a_full, width, height, 4);
     interpolate_bilinear(b, ds_width, ds_height, b_full, width, height, 2);
+    dt_free_align(a);
+    dt_free_align(b);
   }
 
   // Apply the guided filter
@@ -457,13 +459,8 @@ void _prefilter_chromaticity(float *const restrict UV,
     UV[2 * k + 1] = interpolatef(weight, cv[1], uv[1]);
   }
 
-  dt_free_align(a);
-  dt_free_align(b);
-  if(resized)
-  {
-    dt_free_align(a_full);
-    dt_free_align(b_full);
-  }
+  dt_free_align(a_full);
+  dt_free_align(b_full);
 }
 
 void _guide_with_chromaticity(float *const restrict UV,
