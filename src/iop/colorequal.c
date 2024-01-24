@@ -274,7 +274,7 @@ static inline float _get_scaling(const float sigma)
 
 static inline float _logistic_weight(const float val)
 {
-  return 1.0f / (1.0f + expf(-(20.0f * (val - 0.2f))));
+  return 1.0f / (1.0f + expf(-(20.0f * (val - 0.6f))));
 }
 
 void _prefilter_chromaticity(float *const restrict UV,
@@ -703,7 +703,7 @@ void _guide_with_chromaticity(float *const restrict UV,
     const float uv[2] = { UV[2 * k + 0], UV[2 * k + 1] };
     const float cv[2] = { a_full[4 * k + 0] * uv[0] + a_full[4 * k + 1] * uv[1] + b_full[2 * k + 0],
                           a_full[4 * k + 2] * uv[0] + a_full[4 * k + 3] * uv[1] + b_full[2 * k + 1] };
-    const float weight = _logistic_weight(3.0f * sats[k]);
+    const float weight = _logistic_weight(sats[k]);
     corrections[4 * k + 1] = interpolatef(weight, cv[0], 1.0f);
     corrections[4 * k + 2] = interpolatef(weight, cv[1], 1.0f);
   }
