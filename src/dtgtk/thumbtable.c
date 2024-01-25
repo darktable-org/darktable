@@ -1047,7 +1047,12 @@ static gboolean _event_scroll_compressed(gpointer user_data)
 {
   if (!user_data) return FALSE;
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
-  if (table->scroll_value == 0) return FALSE;
+  if (table->scroll_value == 0)
+  {
+    table->scroll_timeout_id = 0;
+    return FALSE;
+  }
+
   float delta = table->scroll_value;
 
   // starting from here, all further scroll event will count for the next round
