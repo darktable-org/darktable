@@ -765,9 +765,17 @@ void process(struct dt_iop_module_t *self,
     dt_aligned_pixel_t xyY = { 0.f };
     dt_D65_XYZ_to_xyY(XYZ_D65, xyY);
 
-    const float dmin = MIN(XYZ_D65[0], MIN(XYZ_D65[1], XYZ_D65[2]));
-    const float dmax = MAX(XYZ_D65[0], MAX(XYZ_D65[1], XYZ_D65[2]));
+    // XYZ : X mix of RGB / Y Luminance / Z quasi equivalent to blue in RGB
+    const float _X = XYZ_D65[0];
+    const float _Y = XYZ_D65[1];
+    const float _Z = XYZ_D65[2];
+
+    const float _1Y2 = (1.0f - _Y) / 2.0f;
+
+    const float dmin = MIN(_X, MIN(_1Y2, _Z));
+    const float dmax = MAX(_X, MAX(_1Y2, _Z));
     const float delta = dmax - dmin;
+
     saturations[k] = (fabsf(dmax) > 1e-6f && fabsf(delta) > 1e-6f) ? delta / dmax : 0.0f;
 
     xyY_to_dt_UCS_UV(xyY, uv);
