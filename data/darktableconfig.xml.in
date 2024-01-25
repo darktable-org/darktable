@@ -203,12 +203,6 @@
     <default>5</default>
     <shortdescription>waiting time between each picture in slideshow</shortdescription>
   </dtconfig>
-  <dtconfig>
-    <name>ui_last/no_april1st</name>
-    <type>bool</type>
-    <default>true</default>
-    <shortdescription>do not show april 1st game</shortdescription>
-  </dtconfig>
 <!-- be sure to keep the code in sync when changing this enum, see common/darktable.c void dt_get_sysresource_level() -->
   <dtconfig prefs="processing" section="cpugpu">
     <name>resourcelevel</name>
