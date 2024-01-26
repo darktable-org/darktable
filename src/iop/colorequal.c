@@ -91,8 +91,8 @@ None;midi:CC24=iop/colorequal/brightness/purple
 // sRGB primary red records at 20° of hue in darktable UCS 22, so we offset the whole hue range
 // such that red is the origin hues in the GUI. This is consistent with HSV/HSL color wheels UI.
 #define ANGLE_SHIFT +20.f
-#define DEG_TO_RAD(x) ((x + ANGLE_SHIFT) * M_PI / 180.f)
-#define RAD_TO_DEG(x) (x * 180.f / M_PI - ANGLE_SHIFT)
+#define DEG_TO_RAD(x) (((x) + ANGLE_SHIFT) * M_PI / 180.f)
+#define RAD_TO_DEG(x) ((x) * 180.f / M_PI - ANGLE_SHIFT)
 
 #define NODES 8
 
@@ -109,12 +109,8 @@ typedef struct dt_iop_colorequal_params_t
   float smoothing_brightness;    // $MIN: 0.05 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "curve smoothing"
 
   float white_level;        // $MIN: -2.0 $MAX: 16.0 $DEFAULT: 1.0 $DESCRIPTION: "white level"
-  float chroma_size;        // $MIN: 1.0 $MAX: 10. $DEFAULT: 3.0 $DESCRIPTION: "analysis radius"
-  float chroma_feathering;  // $MIN: 1.0 $MAX: 10. $DEFAULT: 5.0 $DESCRIPTION: "analysis feathering"
-
-  float param_size;        // $MIN: 3 $MAX: 128 $DEFAULT: 50 $DESCRIPTION: "effect radius"
-  float param_feathering;  // $MIN: 1.0 $MAX: 10. $DEFAULT: 6.0 $DESCRIPTION: "effect feathering"
-
+  float chroma_size;        // $MIN: 1.0 $MAX: 10. $DEFAULT: 2.0 $DESCRIPTION: "analysis radius"
+  float param_size;        // $MIN: 3 $MAX: 128 $DEFAULT: 25.0 $DESCRIPTION: "effect radius"
   gboolean use_filter; // $DEFAULT: TRUE $DESCRIPTION: "use guided filter"
 
   // Note: what follows is tedious because each param needs to be declared separately.
@@ -226,7 +222,7 @@ typedef struct dt_iop_colorequal_gui_data_t
   GtkWidget *bright_turquoise, *bright_blue, *bright_lavender, *bright_purple;
 
   GtkWidget *smoothing_saturation, *smoothing_bright, *smoothing_hue;
-  GtkWidget *chroma_size, *chroma_feathering, *param_size, *param_feathering, *use_filter;
+  GtkWidget *chroma_size, *param_size, *use_filter;
 
   // Array-like re-indexing of the above for efficient uniform
   // handling in loops Populate the array in gui_init()
@@ -236,6 +232,7 @@ typedef struct dt_iop_colorequal_gui_data_t
 
   GtkNotebook *notebook;
   GtkDrawingArea *area;
+  dt_gui_collapsible_section_t cs;
   float *LUT;
   dt_iop_colorequal_channel_t channel;
 
@@ -250,11 +247,9 @@ typedef struct dt_iop_colorequal_gui_data_t
   float *gamut_LUT;
 
   gboolean dragging;
-  gboolean scrolling;
+  gboolean on_node;
   int selected;
   float points[NODES+1][2];
-  float mouse_x;
-  float mouse_y;
 } dt_iop_colorequal_gui_data_t;
 
 void _mean_gaussian(float *const buf,
@@ -277,7 +272,13 @@ static inline float _get_scaling(const float sigma)
   return MAX(1.0f, MIN(4.0f, floorf(sigma - 1.5f)));
 }
 
+static inline float _logistic_weight(const float val)
+{
+  return 1.0f / (1.0f + expf(-(20.0f * (val - 0.2f))));
+}
+
 void _prefilter_chromaticity(float *const restrict UV,
+                             float *const restrict sats,
                              const dt_iop_roi_t *const roi,
                              const float csigma,
                              const float epsilon)
@@ -433,37 +434,37 @@ void _prefilter_chromaticity(float *const restrict UV,
     b_full = dt_alloc_align_float(pixels * 2);
     interpolate_bilinear(a, ds_width, ds_height, a_full, width, height, 4);
     interpolate_bilinear(b, ds_width, ds_height, b_full, width, height, 2);
+    dt_free_align(a);
+    dt_free_align(b);
   }
 
   // Apply the guided filter
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(pixels, a_full, b_full, UV)  \
-  schedule(simd:static) aligned(a_full, b_full, UV: 64)
+  dt_omp_firstprivate(pixels, a_full, b_full, UV, sats)  \
+  schedule(simd:static) aligned(a_full, b_full, sats, UV: 64)
 #endif
   for(size_t k = 0; k < pixels; k++)
   {
     // For each correction factor, we re-express it as a[0] * U + a[1] * V + b
-    float uv[2] = { UV[2 * k + 0], UV[2 * k + 1] };
-    UV[2 * k + 0] = a_full[4 * k + 0] * uv[0]
-                  + a_full[4 * k + 1] * uv[1]
-                  + b_full[2 * k + 0];
-    UV[2 * k + 1] = a_full[4 * k + 2] * uv[0]
-                  + a_full[4 * k + 3] * uv[1]
-                  + b_full[2 * k + 1];
+    const float uv[2] = { UV[2 * k + 0], UV[2 * k + 1] };
+    const float cv[2] = { a_full[4 * k + 0] * uv[0] + a_full[4 * k + 1] * uv[1] + b_full[2 * k + 0],
+                          a_full[4 * k + 2] * uv[0] + a_full[4 * k + 3] * uv[1] + b_full[2 * k + 1] };
+
+    // we avoid chroma blurring into achromatic areas by interpolating
+    // input UV vs corrected UV
+    const float weight = _logistic_weight(3.0f * sats[k]);
+    UV[2 * k + 0] = interpolatef(weight, cv[0], uv[0]);
+    UV[2 * k + 1] = interpolatef(weight, cv[1], uv[1]);
   }
 
-  dt_free_align(a);
-  dt_free_align(b);
-  if(resized)
-  {
-    dt_free_align(a_full);
-    dt_free_align(b_full);
-  }
+  dt_free_align(a_full);
+  dt_free_align(b_full);
 }
 
 void _guide_with_chromaticity(float *const restrict UV,
                               float *const restrict corrections,
+                              float *const restrict sats,
                               const dt_iop_roi_t *const roi,
                               const float csigma,
                               const float epsilon)
@@ -686,34 +687,29 @@ void _guide_with_chromaticity(float *const restrict UV,
     b_full = dt_alloc_align_float(pixels * 2);
     interpolate_bilinear(a, ds_width, ds_height, a_full, width, height, 4);
     interpolate_bilinear(b, ds_width, ds_height, b_full, width, height, 2);
+    dt_free_align(a);
+    dt_free_align(b);
   }
 
   // Apply the guided filter
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(pixels, a_full, b_full, corrections, UV)  \
-  schedule(simd:static) aligned(a_full, b_full, corrections, UV: 64)
+  dt_omp_firstprivate(pixels, a_full, b_full, corrections, UV, sats)  \
+  schedule(simd:static) aligned(a_full, b_full, corrections, sats, UV: 64)
 #endif
   for(size_t k = 0; k < pixels; k++)
   {
     // For each correction factor, we re-express it as a[0] * U + a[1] * V + b
-    float uv[2] = { UV[2 * k + 0], UV[2 * k + 1] };
-    // corrections[4 * k + 0] = a_full[6 * k + 0] * uv[0] + a_full[6 * k + 1] * uv[1] + b_full[4 * k + 0];
-    corrections[4 * k + 1] = a_full[4 * k + 0] * uv[0]
-                           + a_full[4 * k + 1] * uv[1]
-                           + b_full[2 * k + 0];
-    corrections[4 * k + 2] = a_full[4 * k + 2] * uv[0]
-                           + a_full[4 * k + 3] * uv[1]
-                           + b_full[2 * k + 1];
+    const float uv[2] = { UV[2 * k + 0], UV[2 * k + 1] };
+    const float cv[2] = { a_full[4 * k + 0] * uv[0] + a_full[4 * k + 1] * uv[1] + b_full[2 * k + 0],
+                          a_full[4 * k + 2] * uv[0] + a_full[4 * k + 3] * uv[1] + b_full[2 * k + 1] };
+    const float weight = _logistic_weight(3.0f * sats[k]);
+    corrections[4 * k + 1] = interpolatef(weight, cv[0], 1.0f);
+    corrections[4 * k + 2] = interpolatef(weight, cv[1], 1.0f);
   }
 
-  dt_free_align(a);
-  dt_free_align(b);
-  if(resized)
-  {
-    dt_free_align(a_full);
-    dt_free_align(b_full);
-  }
+  dt_free_align(a_full);
+  dt_free_align(b_full);
 }
 
 void process(struct dt_iop_module_t *self,
@@ -745,14 +741,15 @@ void process(struct dt_iop_module_t *self,
   float *const restrict UV = dt_alloc_align_float(npixels * 2);
   float *const restrict corrections = dt_alloc_align_float(npixels * 4);
   float *const restrict L = dt_alloc_align_float(npixels);
+  float *const restrict saturations = dt_alloc_align_float(npixels);
 
   const float white = Y_to_dt_UCS_L_star(d->white_level);
 
   // STEP 1: convert image from RGB to darktable UCS LUV
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(ch, npixels, in, out, UV, L, corrections, input_matrix, d, white) \
-  schedule(simd:static) aligned(in, out, UV, L, corrections, input_matrix : 64)
+  dt_omp_firstprivate(ch, npixels, in, UV, L, corrections, saturations, input_matrix, d, white) \
+  schedule(simd:static) aligned(in, UV, L, corrections, saturations, input_matrix : 64)
 #endif
   for(size_t k = 0; k < npixels; k++)
   {
@@ -764,15 +761,24 @@ void process(struct dt_iop_module_t *self,
     dot_product(pix_in, input_matrix, XYZ_D65);
     // Convert to dt UCS 22 UV and store UV
     dt_aligned_pixel_t xyY = { 0.f };
-    dt_XYZ_to_xyY(XYZ_D65, xyY);
+    dt_D65_XYZ_to_xyY(XYZ_D65, xyY);
+
+    const float dmin = MIN(XYZ_D65[0], MIN(XYZ_D65[1], XYZ_D65[2]));
+    const float dmax = MAX(XYZ_D65[0], MAX(XYZ_D65[1], XYZ_D65[2]));
+    const float delta = dmax - dmin;
+    saturations[k] = (fabsf(dmax) > 1e-6f && fabsf(delta) > 1e-6f) ? delta / dmax : 0.0f;
 
     xyY_to_dt_UCS_UV(xyY, uv);
     L[k] = Y_to_dt_UCS_L_star(xyY[2]);
   }
 
+  _mean_gaussian(saturations, roi_out->width, roi_out->height, 1, 0.3f);
+
   // STEP 2 : smoothen UV to avoid discontinuities in hue
   if(d->use_filter)
-    _prefilter_chromaticity(UV, roi_out, d->chroma_size, d->chroma_feathering);
+    _prefilter_chromaticity(UV, saturations, roi_out, d->chroma_size, d->chroma_feathering);
+
+  _mean_gaussian(saturations, roi_out->width, roi_out->height, 1, 4.0f);
 
   // STEP 3 : carry-on with conversion from LUV to HSB
 
@@ -795,15 +801,21 @@ void process(struct dt_iop_module_t *self,
     dt_UCS_JCH_to_HSB(JCH, pix_out);
 
     // Get the boosts - if chroma = 0, we have a neutral grey so set everything to 0
-    corrections_out[0] = (JCH[1] > 0.f)
-      ? lookup_gamut(d->LUT_hue, pix_out[0])
-      : 0.f;
-    corrections_out[1] = (JCH[1] > 0.f)
-      ? lookup_gamut(d->LUT_saturation, pix_out[0])
-      : 0.f;
-    corrections_out[2] = (JCH[1] > 0.f)
-      ? 16.f * pix_out[1] * (lookup_gamut(d->LUT_brightness, pix_out[0]) - 1.f) + 1.f
-      : 0.f;
+
+    if(JCH[1] > 0.f)
+    {
+      const float hue = pix_out[0];
+      const float sat = pix_out[1];
+      corrections_out[0] = lookup_gamut(d->LUT_hue, hue);
+      corrections_out[1] = lookup_gamut(d->LUT_saturation, hue);
+      corrections_out[2] = sat * (lookup_gamut(d->LUT_brightness, hue) - 1.0f) + 1.0f;
+    }
+    else
+    {
+      corrections_out[0] = 0.0f;
+      corrections_out[1] = 1.0f;
+      corrections_out[2] = 1.0f;
+    }
 
     // Copy alpha
     pix_out[3] = pix_in[3];
@@ -814,13 +826,13 @@ void process(struct dt_iop_module_t *self,
   // though the hue is not perfectly constant this will help avoiding
   // chroma noise.
   if(d->use_filter)
-    _guide_with_chromaticity(UV, corrections, roi_out, d->param_size, d->param_feathering);
+    _guide_with_chromaticity(UV, corrections, saturations, roi_out, d->param_size, d->param_feathering);
 
   // STEP 3: apply the corrections and convert back to RGB
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(ch, npixels, out, corrections, output_matrix, white, d)  \
-  schedule(simd:static) aligned(out, corrections, output_matrix: 64)
+  dt_omp_firstprivate(ch, npixels, out, corrections, saturations, output_matrix, white, d)  \
+  schedule(simd:static) aligned(out, corrections, saturations, output_matrix: 64)
 #endif
   for(size_t k = 0; k < npixels; k++)
   {
@@ -831,8 +843,9 @@ void process(struct dt_iop_module_t *self,
 
     // Apply the corrections
     pix_out[0] += corrections_out[0]; // WARNING: hue is an offset
-    pix_out[1] *= corrections_out[1]; // the brightness and saturation are gains
-    pix_out[2] *= corrections_out[2];
+    // pix_out[1] (saturation) and pix_out[2] (brightness) are gains
+    pix_out[1] *= corrections_out[1];
+    pix_out[2] *= 1.0f + 4.0f * (corrections_out[2] - 1.0f);
 
     // Sanitize gamut
     gamut_map_HSB(pix_out, d->gamut_LUT, white);
@@ -846,6 +859,7 @@ void process(struct dt_iop_module_t *self,
   }
 
   dt_free_align(corrections);
+  dt_free_align(saturations);
   dt_free_align(UV);
   dt_free_align(L);
 }
@@ -1002,9 +1016,9 @@ void commit_params(struct dt_iop_module_t *self,
 
   d->white_level = exp2f(p->white_level);
   d->chroma_size = p->chroma_size;
-  d->chroma_feathering = powf(10.f, -p->chroma_feathering);
+  d->chroma_feathering = powf(10.f, -5.0f);
   d->param_size = p->param_size;
-  d->param_feathering = powf(10.f, -p->param_feathering);
+  d->param_feathering = powf(10.f, -6.0f);
   d->use_filter = p->use_filter;
 
   float DT_ALIGNED_ARRAY sat_values[NODES];
@@ -1161,7 +1175,7 @@ static inline void _init_sliders(dt_iop_module_t *self)
                                       SLIDER_BRIGHTNESS, slider,
                                       g->white_adapted_profile,
                                       g->gamut_LUT);
-    dt_bauhaus_slider_set_format(slider, " %");
+    dt_bauhaus_slider_set_format(slider, "%");
     dt_bauhaus_slider_set_offset(slider, -100.0f);
     dt_bauhaus_slider_set_digits(slider, 2);
     gtk_widget_queue_draw(slider);
@@ -1175,7 +1189,7 @@ static inline void _init_sliders(dt_iop_module_t *self)
                                SLIDER_BRIGHTNESS, slider,
                                g->white_adapted_profile,
                                g->gamut_LUT);
-    dt_bauhaus_slider_set_format(slider, " °");
+    dt_bauhaus_slider_set_format(slider, "°");
     dt_bauhaus_slider_set_digits(slider, 2);
     gtk_widget_queue_draw(slider);
   }
@@ -1188,7 +1202,7 @@ static inline void _init_sliders(dt_iop_module_t *self)
                                       slider,
                                       g->white_adapted_profile,
                                       g->gamut_LUT);
-    dt_bauhaus_slider_set_format(slider, " %");
+    dt_bauhaus_slider_set_format(slider, "%");
     dt_bauhaus_slider_set_offset(slider, -100.0f);
     dt_bauhaus_slider_set_digits(slider, 2);
     gtk_widget_queue_draw(slider);
@@ -1364,7 +1378,8 @@ static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
   cairo_surface_destroy(surface);
   */
 
-  // instead of the above, we simply generate 16 linear horizontal gradients and stack them vertically
+  // instead of the above, we simply generate 16 linear horizontal
+  // gradients and stack them vertically
   if(!g->gradients_cached)
   {
     // Refresh the cache of gradients
@@ -1487,8 +1502,7 @@ static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
     g->points[k][0] = xn;
     g->points[k][1] = yn;
 
-    if(g->selected == k
-       || (k == NODES && g->selected == 0))
+    if(g->on_node && g->selected == k % NODES)
       set_color(cr, darktable.bauhaus->graph_fg);
     else
       set_color(cr, darktable.bauhaus->graph_bg);
@@ -1509,7 +1523,7 @@ static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
   cairo_surface_destroy(cst);
   g_object_unref(layout);
   pango_font_description_free(desc);
-  return TRUE;
+  return FALSE;
 }
 
 static void _pipe_RGB_to_Ych(dt_iop_module_t *self,
@@ -1553,7 +1567,7 @@ void color_picker_apply(dt_iop_module_t *self,
     dt_bauhaus_slider_set(g->white_level, p->white_level);
   }
   else
-    fprintf(stderr, "[colorequal] unknown color picker\n");
+    dt_print(DT_DEBUG_PIPE, "[colorequal] unknown color picker\n");
   --darktable.gui->reset;
 
   gui_changed(self, picker, NULL);
@@ -1582,23 +1596,21 @@ static GtkWidget *_get_selected(dt_iop_colorequal_gui_data_t *g)
 {
   GtkWidget *w = NULL;
 
-  if(g->selected >= 0)
+  switch(g->channel)
   {
-    switch(g->channel)
-    {
-       case(SATURATION):
-         w = g->sat_sliders[g->selected];
-         break;
-       case(HUE):
-         w = g->hue_sliders[g->selected];
-         break;
-       case(BRIGHTNESS):
-       default:
-         w = g->bright_sliders[g->selected];
-         break;
-    }
+    case(SATURATION):
+      w = g->sat_sliders[g->selected];
+      break;
+    case(HUE):
+      w = g->hue_sliders[g->selected];
+      break;
+    case(BRIGHTNESS):
+    default:
+      w = g->bright_sliders[g->selected];
+      break;
   }
 
+  gtk_widget_realize(w);
   return w;
 }
 
@@ -1654,7 +1666,7 @@ static void _area_reset_nodes(dt_iop_colorequal_gui_data_t *g)
   const float graph_height = allocation.height;
   const float y = graph_height / 2.0f;
 
-  if(g->selected >= 0)
+  if(g->on_node)
   {
     _area_set_value(g, graph_height, y);
   }
@@ -1665,7 +1677,7 @@ static void _area_reset_nodes(dt_iop_colorequal_gui_data_t *g)
       g->selected = k;
       _area_set_value(g, graph_height, y);
     }
-    g->selected = -1;
+    g->on_node = FALSE;
   }
 }
 
@@ -1676,26 +1688,7 @@ static gboolean _area_scrolled_callback(GtkWidget *widget,
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
 
-  gboolean redraw = FALSE;
-
-  int delta_y;
-  if(dt_gui_get_scroll_unit_delta(event, &delta_y))
-  {
-    GtkWidget *w = _get_selected(g);
-
-    if(w)
-    {
-      const float val = dt_bauhaus_slider_get_val(w) - delta_y;
-      dt_bauhaus_slider_set_val(w, val);
-
-      redraw = TRUE;
-    }
-  }
-
-  if(redraw)
-    gtk_widget_queue_draw(GTK_WIDGET(g->area));
-
-  return TRUE;
+  return gtk_widget_event(_get_selected(g), (GdkEvent*)event);
 }
 
 static gboolean _area_motion_notify_callback(GtkWidget *widget,
@@ -1705,52 +1698,25 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget,
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
 
-  gboolean redraw = FALSE;
-
-  const uint8_t dy = (uint8_t)fabs(g->mouse_y - event->y);
-  const uint8_t dx = (uint8_t)fabs(g->mouse_x - event->x);
-
-  if(g->scrolling)
-  {
-    g->scrolling = FALSE;
-  }
-  else if(g->dragging)
-  {
-    if(dy > DT_PIXEL_APPLY_DPI(1))
-    {
-      _area_set_pos(g, event->y);
-
-      g->mouse_y = event->y;
-
-      redraw = TRUE;
-    }
-  }
-  else if(dy > DT_PIXEL_APPLY_DPI(2)     // protect against small motion while scrolling
-          || dx > DT_PIXEL_APPLY_DPI(2))
+  if(g->dragging && g->on_node)
+    _area_set_pos(g, event->y);
+  else
   {
     // look if close to a node
     const float epsilon = DT_PIXEL_APPLY_DPI(10.0);
-
     const int oldsel = g->selected;
-    g->selected = -1;
-    g->mouse_y = event->y;
+    const int oldon = g->on_node;
+    g->selected = (int)(((float)event->x - g->points[0][0])
+                        / (g->points[1][0] - g->points[0][0]) + 0.5f) % NODES;
+    g->on_node = fabsf(g->points[g->selected][1] - (float)event->y) < epsilon;
 
-    for(int k=0; k<NODES+1; k++)
-    {
-      if(fabsf(g->points[k][0] - (float)event->x) < epsilon
-         && fabsf(g->points[k][1] - (float)event->y) < epsilon)
-      {
-        // if last node, select node 0 (same node actually)
-        g->selected = k == NODES ? 0 : k;
-        break;
-      }
-    }
-
-    redraw = oldsel != g->selected;
+    char *tooltip = g_strdup_printf(_("middle click to toggle sliders visibility\n\n%s"),
+                                    DT_BAUHAUS_WIDGET(g->sat_sliders[g->selected])->label);
+    gtk_widget_set_tooltip_text(widget, tooltip);
+    g_free(tooltip);
+    if(oldsel != g->selected || oldon != g->on_node)
+      gtk_widget_queue_draw(GTK_WIDGET(g->area));
   }
-
-  if(redraw)
-    gtk_widget_queue_draw(GTK_WIDGET(g->area));
 
   return TRUE;
 }
@@ -1764,9 +1730,6 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
 
   if(event->button == 1)
   {
-    g->mouse_x = event->x;
-    g->mouse_y = event->y;
-
     if(event->type == GDK_2BUTTON_PRESS)
     {
       _area_reset_nodes(g);
@@ -1776,6 +1739,14 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
       g->dragging = TRUE;
     }
   }
+  else if(event->button == 2)
+  {
+    dt_conf_set_bool("plugins/darkroom/colorequal/show_sliders",
+                     gtk_widget_get_visible(g->cs.expander));
+    gui_update(self);
+  }
+  else
+    return gtk_widget_event(_get_selected(g), (GdkEvent*)event);
 
   return FALSE;
 }
@@ -1809,7 +1780,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   {
     // Re-init the profiles
     if(g->white_adapted_profile)
-      free(g->white_adapted_profile);
+      dt_free_align(g->white_adapted_profile);
     g->white_adapted_profile = D65_adapt_iccprofile(work_profile);
     g->work_profile = work_profile;
     g->gradients_cached = FALSE;
@@ -1822,7 +1793,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     if(g->white_adapted_profile != NULL)
       memcpy(input_matrix, g->white_adapted_profile->matrix_in, sizeof(dt_colormatrix_t));
     else
-      fprintf(stderr, "[colorequal] display color space falls back to sRGB\n");
+      dt_print(DT_DEBUG_PIPE, "[colorequal] display color space falls back to sRGB\n");
 
     dt_UCS_22_build_gamut_LUT(input_matrix, g->gamut_LUT);
     g->max_saturation = get_minimum_saturation(g->gamut_LUT, SLIDER_BRIGHTNESS, 1.f);
@@ -1845,7 +1816,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
   if(g->white_adapted_profile)
   {
-    free(g->white_adapted_profile);
+    dt_free_align(g->white_adapted_profile);
     g->white_adapted_profile = NULL;
   }
 
@@ -1868,6 +1839,25 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->use_filter), p->use_filter);
   gui_changed(self, NULL, NULL);
+
+  gboolean show_sliders = dt_conf_get_bool("plugins/darkroom/colorequal/show_sliders");
+  gtk_widget_set_visible(g->cs.expander, !show_sliders);
+  gtk_widget_set_name(GTK_WIDGET(g->cs.container), show_sliders ? NULL : "collapsible");
+
+  if((gtk_notebook_get_n_pages(g->notebook) == 4) ^ show_sliders)
+  {
+    g_object_ref(g->cs.container);
+    gtk_container_remove(GTK_CONTAINER(gtk_widget_get_parent(GTK_WIDGET(g->cs.container))), GTK_WIDGET(g->cs.container));
+    if(show_sliders)
+      gtk_notebook_append_page
+        (g->notebook,
+         GTK_WIDGET(g->cs.container), dt_ui_label_new(_("options")));
+    else
+      gtk_container_add
+        (GTK_CONTAINER(dtgtk_expander_get_body_event_box(DTGTK_EXPANDER(g->cs.expander))),
+         GTK_WIDGET(g->cs.container));
+    g_object_unref(g->cs.container);
+  }
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -1879,11 +1869,11 @@ void gui_init(struct dt_iop_module_t *self)
   if(self->dev)
     work_profile = dt_ioppr_get_pipe_output_profile_info(self->dev->full.pipe);
   if(g->white_adapted_profile)
-    free(g->white_adapted_profile);
+    dt_free_align(g->white_adapted_profile);
   g->white_adapted_profile = D65_adapt_iccprofile(work_profile);
   g->work_profile = work_profile;
   g->gradients_cached = FALSE;
-  g->selected = -1;
+  g->on_node = FALSE;
 
   // Init the display gamut LUT - Default to Rec709 D65 aka linear sRGB
   g->gamut_LUT = dt_alloc_align_float(LUT_ELEM);
@@ -1903,6 +1893,7 @@ void gui_init(struct dt_iop_module_t *self)
     (dt_ui_resize_wrap(NULL, 0,
                        "plugins/darkroom/colorequal/aspect_percent"));
   g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
+  dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(g->area), NULL);
   gtk_widget_set_can_focus(GTK_WIDGET(g->area), TRUE);
   gtk_widget_add_events(GTK_WIDGET(g->area),
                         GDK_BUTTON_PRESS_MASK
@@ -1928,94 +1919,94 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->notebook), "switch_page",
                    G_CALLBACK(_channel_tabs_switch_callback), self);
 
+  GtkWidget *prv_grp = NULL, *group;
+#define GROUP_SLIDERS \
+  group = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0); \
+  if(prv_grp) \
+    g_object_bind_property(group, "visible", prv_grp, "visible", G_BINDING_DEFAULT); \
+  gtk_box_pack_start(GTK_BOX(self->widget), group, TRUE, TRUE, 0); \
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0); \
+  gtk_box_pack_start(GTK_BOX(group), self->widget, TRUE, TRUE, 0); \
+  prv_grp = group;
+
+  dt_iop_module_t *sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("hue"));
   self->widget = dt_ui_notebook_page(g->notebook, N_("hue"), _("change hue hue-wise"));
-  g->smoothing_hue = dt_bauhaus_slider_from_params(self, "smoothing_hue");
+  g->smoothing_hue = dt_bauhaus_slider_from_params(sect, "smoothing_hue");
 
+  GROUP_SLIDERS
   g->hue_sliders[0] = g->hue_red =
-    dt_bauhaus_slider_from_params(self, "hue_red");
+    dt_bauhaus_slider_from_params(sect, "hue_red");
   g->hue_sliders[1] = g->hue_orange =
-    dt_bauhaus_slider_from_params(self, "hue_orange");
+    dt_bauhaus_slider_from_params(sect, "hue_orange");
   g->hue_sliders[2] = g->hue_lime =
-    dt_bauhaus_slider_from_params(self, "hue_lime");
+    dt_bauhaus_slider_from_params(sect, "hue_lime");
   g->hue_sliders[3] = g->hue_green =
-    dt_bauhaus_slider_from_params(self, "hue_green");
+    dt_bauhaus_slider_from_params(sect, "hue_green");
   g->hue_sliders[4] = g->hue_turquoise =
-    dt_bauhaus_slider_from_params(self, "hue_turquoise");
+    dt_bauhaus_slider_from_params(sect, "hue_turquoise");
   g->hue_sliders[5] = g->hue_blue =
-    dt_bauhaus_slider_from_params(self, "hue_blue");
+    dt_bauhaus_slider_from_params(sect, "hue_blue");
   g->hue_sliders[6] = g->hue_lavender =
-    dt_bauhaus_slider_from_params(self, "hue_lavender");
+    dt_bauhaus_slider_from_params(sect, "hue_lavender");
   g->hue_sliders[7] = g->hue_purple =
-    dt_bauhaus_slider_from_params(self, "hue_purple");
-  dt_bauhaus_widget_set_label(g->hue_sliders[0], N_("hue"), N_("red"));
-  dt_bauhaus_widget_set_label(g->hue_sliders[1], N_("hue"), N_("orange"));
-  dt_bauhaus_widget_set_label(g->hue_sliders[2], N_("hue"), N_("lime"));
-  dt_bauhaus_widget_set_label(g->hue_sliders[3], N_("hue"), N_("green"));
-  dt_bauhaus_widget_set_label(g->hue_sliders[4], N_("hue"), N_("turquoise"));
-  dt_bauhaus_widget_set_label(g->hue_sliders[5], N_("hue"), N_("blue"));
-  dt_bauhaus_widget_set_label(g->hue_sliders[6], N_("hue"), N_("lavender"));
-  dt_bauhaus_widget_set_label(g->hue_sliders[7], N_("hue"), N_("purple"));
+    dt_bauhaus_slider_from_params(sect, "hue_purple");
 
+  sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("saturation"));
   self->widget = dt_ui_notebook_page(g->notebook, N_("saturation"),
                                      _("change saturation hue-wise"));
-  g->smoothing_saturation = dt_bauhaus_slider_from_params(self, "smoothing_saturation");
+  g->smoothing_saturation = dt_bauhaus_slider_from_params(sect, "smoothing_saturation");
 
+  GROUP_SLIDERS
   g->sat_sliders[0] = g->sat_red =
-    dt_bauhaus_slider_from_params(self, "sat_red");
+    dt_bauhaus_slider_from_params(sect, "sat_red");
   g->sat_sliders[1] = g->sat_orange =
-    dt_bauhaus_slider_from_params(self, "sat_orange");
+    dt_bauhaus_slider_from_params(sect, "sat_orange");
   g->sat_sliders[2] = g->sat_lime =
-    dt_bauhaus_slider_from_params(self, "sat_lime");
+    dt_bauhaus_slider_from_params(sect, "sat_lime");
   g->sat_sliders[3] = g->sat_green =
-    dt_bauhaus_slider_from_params(self, "sat_green");
+    dt_bauhaus_slider_from_params(sect, "sat_green");
   g->sat_sliders[4] = g->sat_turquoise =
-    dt_bauhaus_slider_from_params(self, "sat_turquoise");
+    dt_bauhaus_slider_from_params(sect, "sat_turquoise");
   g->sat_sliders[5] = g->sat_blue =
-    dt_bauhaus_slider_from_params(self, "sat_blue");
+    dt_bauhaus_slider_from_params(sect, "sat_blue");
   g->sat_sliders[6] = g->sat_lavender =
-    dt_bauhaus_slider_from_params(self, "sat_lavender");
+    dt_bauhaus_slider_from_params(sect, "sat_lavender");
   g->sat_sliders[7] = g->sat_purple =
-    dt_bauhaus_slider_from_params(self, "sat_purple");
-  dt_bauhaus_widget_set_label(g->sat_sliders[0], N_("saturation"), N_("red"));
-  dt_bauhaus_widget_set_label(g->sat_sliders[1], N_("saturation"), N_("orange"));
-  dt_bauhaus_widget_set_label(g->sat_sliders[2], N_("saturation"), N_("lime"));
-  dt_bauhaus_widget_set_label(g->sat_sliders[3], N_("saturation"), N_("green"));
-  dt_bauhaus_widget_set_label(g->sat_sliders[4], N_("saturation"), N_("turquoise"));
-  dt_bauhaus_widget_set_label(g->sat_sliders[5], N_("saturation"), N_("blue"));
-  dt_bauhaus_widget_set_label(g->sat_sliders[6], N_("saturation"), N_("lavender"));
-  dt_bauhaus_widget_set_label(g->sat_sliders[7], N_("saturation"), N_("purple"));
+    dt_bauhaus_slider_from_params(sect, "sat_purple");
 
-
+  sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("brightness"));
   self->widget = dt_ui_notebook_page(g->notebook, N_("brightness"),
                                      _("change brightness hue-wise"));
-  g->smoothing_bright = dt_bauhaus_slider_from_params(self, "smoothing_brightness");
+  g->smoothing_bright = dt_bauhaus_slider_from_params(sect, "smoothing_brightness");
 
+  GROUP_SLIDERS
   g->bright_sliders[0] = g->bright_red =
-    dt_bauhaus_slider_from_params(self, "bright_red");
+    dt_bauhaus_slider_from_params(sect, "bright_red");
   g->bright_sliders[1] = g->bright_orange =
-    dt_bauhaus_slider_from_params(self, "bright_orange");
+    dt_bauhaus_slider_from_params(sect, "bright_orange");
   g->bright_sliders[2] = g->bright_lime =
-    dt_bauhaus_slider_from_params(self, "bright_lime");
+    dt_bauhaus_slider_from_params(sect, "bright_lime");
   g->bright_sliders[3] = g->bright_green =
-    dt_bauhaus_slider_from_params(self, "bright_green");
+    dt_bauhaus_slider_from_params(sect, "bright_green");
   g->bright_sliders[4] = g->bright_turquoise =
-    dt_bauhaus_slider_from_params(self, "bright_turquoise");
+    dt_bauhaus_slider_from_params(sect, "bright_turquoise");
   g->bright_sliders[5] = g->bright_blue =
-    dt_bauhaus_slider_from_params(self, "bright_blue");
+    dt_bauhaus_slider_from_params(sect, "bright_blue");
   g->bright_sliders[6] = g->bright_lavender =
-    dt_bauhaus_slider_from_params(self, "bright_lavender");
+    dt_bauhaus_slider_from_params(sect, "bright_lavender");
   g->bright_sliders[7] = g->bright_purple =
-    dt_bauhaus_slider_from_params(self, "bright_purple");
-  dt_bauhaus_widget_set_label(g->bright_sliders[0], N_("brightness"), N_("red"));
-  dt_bauhaus_widget_set_label(g->bright_sliders[1], N_("brightness"), N_("orange"));
-  dt_bauhaus_widget_set_label(g->bright_sliders[2], N_("brightness"), N_("lime"));
-  dt_bauhaus_widget_set_label(g->bright_sliders[3], N_("brightness"), N_("green"));
-  dt_bauhaus_widget_set_label(g->bright_sliders[4], N_("brightness"), N_("turquoise"));
-  dt_bauhaus_widget_set_label(g->bright_sliders[5], N_("brightness"), N_("blue"));
-  dt_bauhaus_widget_set_label(g->bright_sliders[6], N_("brightness"), N_("lavender"));
-  dt_bauhaus_widget_set_label(g->bright_sliders[7], N_("brightness"), N_("purple"));
+    dt_bauhaus_slider_from_params(sect, "bright_purple");
 
-  self->widget = dt_ui_notebook_page(g->notebook, N_("options"), NULL);
+  dt_gui_new_collapsible_section
+    (&g->cs,
+     "plugins/darkroom/colorequal/expand_options",
+     _("options"),
+     GTK_BOX(box),
+     DT_ACTION(self));
+  g_object_bind_property(g->cs.expander, "visible",
+                         prv_grp, "visible", G_BINDING_INVERT_BOOLEAN);
+  self->widget = GTK_WIDGET(g->cs.container);
+
   g->white_level = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
                                        dt_bauhaus_slider_from_params(self, "white_level"));
   dt_bauhaus_slider_set_soft_range(g->white_level, -2., +2.);
@@ -2029,25 +2020,19 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->chroma_size,
                               _("blurring radius of chroma prefilter analysis"));
 
-  g->chroma_feathering = dt_bauhaus_slider_from_params(self, "chroma_feathering");
-  dt_bauhaus_slider_set_digits(g->chroma_feathering, 1);
-
   g->param_size = dt_bauhaus_slider_from_params(self, "param_size");
   dt_bauhaus_slider_set_digits(g->param_size, 1);
   dt_bauhaus_slider_set_format(g->param_size, _(" px"));
   gtk_widget_set_tooltip_text(g->param_size, _("blurring radius of applied parameters"));
 
-  g->param_feathering = dt_bauhaus_slider_from_params(self, "param_feathering");
-  dt_bauhaus_slider_set_digits(g->param_feathering, 1);
-
   _init_sliders(self);
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->notebook), TRUE, TRUE, 0);
 
   // restore the previously saved active tab
-  const int active_page = dt_conf_get_int("plugins/darkroom/colorequal/gui_page");
+  const guint active_page = dt_conf_get_int("plugins/darkroom/colorequal/gui_page");
   gtk_widget_show(gtk_notebook_get_nth_page(g->notebook, active_page));
   gtk_notebook_set_current_page(g->notebook, active_page);
-  g->channel = (active_page == NUM_CHANNELS) ? SATURATION : active_page;
+  g->channel = (active_page >= NUM_CHANNELS) ? SATURATION : active_page;
 
   self->widget = GTK_WIDGET(box);
 }

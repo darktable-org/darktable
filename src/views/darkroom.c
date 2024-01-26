@@ -53,6 +53,7 @@
 #include "libs/modulegroups.h"
 #include "views/view.h"
 #include "views/view_api.h"
+
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
@@ -70,10 +71,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-
-#ifndef G_SOURCE_FUNC // Defined for glib >= 2.58
-#define G_SOURCE_FUNC(f) ((GSourceFunc) (void (*)(void)) (f))
-#endif
 
 DT_MODULE(1)
 
@@ -625,43 +622,50 @@ void expose(
     dt_masks_events_post_expose(dev->gui_module, cri, width, height, pzx, pzy, zoom_scale);
   }
 
-  gboolean guides = FALSE;
-  // true if anything could be exposed
-  if(dev->gui_module && dev->gui_module != dev->proxy.rotate)
-  {
-    // the cropping.exposer->gui_post_expose needs special care
-    if(expose_full
-       && dev->gui_module->operation_tags_filter() & IOP_TAG_CROPPING)
-    {
-      dt_print_pipe(DT_DEBUG_EXPOSE,
-        "expose cropper",
-         port->pipe, dev->cropping.exposer, DT_DEVICE_NONE, NULL, NULL, "%dx%d, px=%d py=%d\n",
-         width, height, pointerx, pointery);
-      _module_gui_post_expose(dev->cropping.exposer, cri, wd, ht, pzx, pzy, zoom_scale);
-      guides = TRUE;
-    }
-
-    // gui active module
-    if(dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS)
-    {
-      dt_print_pipe(DT_DEBUG_EXPOSE,
-        "expose module",
-         port->pipe, dev->gui_module, DT_DEVICE_NONE, NULL, NULL, "%dx%d, px=%d py=%d\n",
-         width, height, pointerx, pointery);
-      _module_gui_post_expose(dev->gui_module, cri, wd, ht, pzx, pzy, zoom_scale);
-      guides = TRUE;
-    }
-  }
-
-  if(!guides && dev->proxy.rotate)
+  // if dragging the rotation line, do it and nothing else
+  if(dev->proxy.rotate
+     && (darktable.control->button_down_which == 3
+         || dev->gui_module == dev->proxy.rotate))
   {
     // reminder, we want this to be exposed always for guidings
     _module_gui_post_expose(dev->proxy.rotate, cri, wd, ht, pzx, pzy, zoom_scale);
-    guides = TRUE;
   }
+  else
+  {
+    gboolean guides = FALSE;
+    // true if anything could be exposed
+    if(dev->gui_module && dev->gui_module != dev->proxy.rotate)
+    {
+      // the cropping.exposer->gui_post_expose needs special care
+      if(expose_full
+         && dev->gui_module->operation_tags_filter() & IOP_TAG_CROPPING)
+      {
+        dt_print_pipe(DT_DEBUG_EXPOSE,
+                      "expose cropper",
+                      port->pipe, dev->cropping.exposer,
+                      DT_DEVICE_NONE, NULL, NULL, "%dx%d, px=%d py=%d\n",
+                      width, height, pointerx, pointery);
+        _module_gui_post_expose(dev->cropping.exposer, cri, wd, ht, pzx, pzy, zoom_scale);
+        guides = TRUE;
+      }
 
-  if(!guides)
-    dt_guides_draw(cri, 0.0f, 0.0f, wd, ht, zoom_scale);
+      // gui active module
+      if(dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS)
+      {
+        dt_print_pipe(DT_DEBUG_EXPOSE,
+                      "expose module",
+                      port->pipe, dev->gui_module,
+                      DT_DEVICE_NONE, NULL, NULL,
+                      "%dx%d, px=%d py=%d\n",
+                      width, height, pointerx, pointery);
+        _module_gui_post_expose(dev->gui_module, cri, wd, ht, pzx, pzy, zoom_scale);
+        guides = TRUE;
+      }
+    }
+
+    if(!guides)
+      dt_guides_draw(cri, 0.0f, 0.0f, wd, ht, zoom_scale);
+  }
 
   cairo_restore(cri);
 

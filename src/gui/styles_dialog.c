@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2022 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -42,7 +43,7 @@ typedef struct dt_gui_styles_dialog_t
   gboolean edit;
   dt_imgid_t imgid;
   gchar *nameorig;
-  gchar *newname;
+  gchar **newname;
   GtkWidget *name, *description, *duplicate;
   GtkTreeView *items;
   GtkTreeView *items_new;
@@ -215,19 +216,22 @@ static void _gui_styles_new_style_response(GtkDialog *dialog,
     _gui_styles_get_active_items(g, &result, NULL);
 
     /* create the style from imageid */
-    g->newname = g_strdup(gtk_entry_get_text(GTK_ENTRY(g->name)));
-    if(g->newname && *g->newname)
-    {
+    char *newname = g_strdup(gtk_entry_get_text(GTK_ENTRY(g->name)));
 
+    if(g->newname)
+      *g->newname = newname;
+
+    if(newname && *newname)
+    {
       /* show prompt dialog when style already exists */
-      if(g->newname && (dt_styles_exists(g->newname)) != 0)
+      if(g->newname && (dt_styles_exists(newname)) != 0)
       {
         /* on button yes delete style name for overwriting */
         if(dt_gui_show_yes_no_dialog
            (_("overwrite style?"),
-            _("style `%s' already exists.\ndo you want to overwrite?"), g->newname))
+            _("style `%s' already exists.\ndo you want to overwrite?"), newname))
         {
-          dt_styles_delete_by_name(g->newname);
+          dt_styles_delete_by_name(newname);
         }
         else
         {
@@ -236,25 +240,25 @@ static void _gui_styles_new_style_response(GtkDialog *dialog,
         }
       }
 
-      if(dt_styles_create_from_image(g->newname,
+      if(dt_styles_create_from_image(newname,
                                      gtk_entry_get_text(GTK_ENTRY(g->description)),
                                      g->imgid,
                                      result,
                                      _gui_styles_is_copy_module_order_set(g)))
       {
-        dt_control_log(_("style named '%s' successfully created"), g->newname);
+        dt_control_log(_("style named '%s' successfully created"), newname);
       };
     }
     else
     {
       /* show dialog if name is missing from entry */
       GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
-      GtkWidget *dlg_changename
-                    = gtk_message_dialog_new(GTK_WINDOW(window),
-                                             GTK_DIALOG_DESTROY_WITH_PARENT,
-                                             GTK_MESSAGE_WARNING,
-                                             GTK_BUTTONS_OK,
-                                             _("please give style a name"));
+      GtkWidget *dlg_changename =
+        gtk_message_dialog_new(GTK_WINDOW(window),
+                               GTK_DIALOG_DESTROY_WITH_PARENT,
+                               GTK_MESSAGE_WARNING,
+                               GTK_BUTTONS_OK,
+                               _("please give style a name"));
 #ifdef GDK_WINDOWING_QUARTZ
       dt_osx_disallow_fullscreen(dlg_changename);
 #endif
@@ -264,6 +268,11 @@ static void _gui_styles_new_style_response(GtkDialog *dialog,
       return;
     }
   }
+
+  // finalize the dialog
+  g_free(g->nameorig);
+  g_free(g);
+
   gtk_widget_destroy(GTK_WIDGET(dialog));
 }
 
@@ -282,7 +291,10 @@ static void _gui_styles_edit_style_response(GtkDialog *dialog,
     return;
   }
 
-  g->newname = g_strdup(gtk_entry_get_text(GTK_ENTRY(g->name)));
+  char *newname = g_strdup(gtk_entry_get_text(GTK_ENTRY(g->name)));
+
+  if(g->newname)
+    *g->newname = newname;
 
   if(response_id == GTK_RESPONSE_ACCEPT)
   {
@@ -291,12 +303,12 @@ static void _gui_styles_edit_style_response(GtkDialog *dialog,
 
     _gui_styles_get_active_items(g, &result, &update);
 
-    if(g->newname && *g->newname)
+    if(newname && *newname)
     {
       if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->duplicate)))
       {
         dt_styles_create_from_style(g->nameorig,
-                                    g->newname,
+                                    newname,
                                     gtk_entry_get_text(GTK_ENTRY(g->description)),
                                     result,
                                     g->imgid,
@@ -307,7 +319,7 @@ static void _gui_styles_edit_style_response(GtkDialog *dialog,
       else
       {
         dt_styles_update(g->nameorig,
-                         g->newname,
+                         newname,
                          gtk_entry_get_text(GTK_ENTRY(g->description)),
                          result,
                          g->imgid,
@@ -315,7 +327,7 @@ static void _gui_styles_edit_style_response(GtkDialog *dialog,
                          _gui_styles_is_copy_module_order_set(g),
                          _gui_styles_is_update_module_order_set(g));
       }
-      dt_control_log(_("style %s was successfully saved"), g->newname);
+      dt_control_log(_("style %s was successfully saved"), newname);
     }
     else
     {
@@ -336,6 +348,11 @@ static void _gui_styles_edit_style_response(GtkDialog *dialog,
       return;
     }
   }
+
+  // finalize the dialog
+  g_free(g->nameorig);
+  g_free(g);
+
   gtk_widget_destroy(GTK_WIDGET(dialog));
 }
 
@@ -515,13 +532,15 @@ static void _gui_styles_dialog_run(gboolean edit,
 
   sd->nameorig = g_strdup(name);
   sd->imgid = imgid;
-  sd->newname = NULL;
+  sd->newname = new_name;
 
   if(edit)
   {
     snprintf(title, sizeof(title), "%s \"%s\"", _("edit style"), name);
     sd->duplicate = gtk_check_button_new_with_label(_("duplicate style"));
-    gtk_widget_set_tooltip_text(sd->duplicate, _("creates a duplicate of the style before applying changes"));
+    gtk_widget_set_tooltip_text
+      (sd->duplicate,
+       _("creates a duplicate of the style before applying changes"));
   }
   else
   {
@@ -542,7 +561,8 @@ static void _gui_styles_dialog_run(gboolean edit,
   dt_osx_disallow_fullscreen(GTK_WIDGET(dialog));
 #endif
 
-  GtkContainer *content_area = GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog)));
+  GtkContainer *content_area =
+    GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog)));
 
   // label box
   GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
@@ -571,8 +591,9 @@ static void _gui_styles_dialog_run(gboolean edit,
 
   sd->description = gtk_entry_new();
   gtk_entry_set_placeholder_text(GTK_ENTRY(sd->description), _("description"));
-  gtk_widget_set_tooltip_text(sd->description,
-                              _("enter a description for the new style, this description is searchable"));
+  gtk_widget_set_tooltip_text
+    (sd->description,
+     _("enter a description for the new style, this description is searchable"));
   gtk_entry_set_activates_default(GTK_ENTRY(sd->description), TRUE);
 
   /*set values*/
@@ -864,15 +885,6 @@ static void _gui_styles_dialog_run(gboolean edit,
 
   gtk_widget_show_all(GTK_WIDGET(dialog));
   gtk_dialog_run(GTK_DIALOG(dialog));
-
-  if(edit && new_name)
-  {
-    *new_name = g_strdup(sd->newname);
-  }
-
-  g_free(sd->nameorig);
-  g_free(sd->newname);
-  g_free(sd);
 
   g_object_unref(is_active_pb);
   g_object_unref(is_inactive_pb);

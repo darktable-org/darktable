@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2559,7 +2559,7 @@ void cmsCIEXYZ_to_xy(const cmsCIEXYZ *const cmsXYZ, float xy[2])
 {
   dt_aligned_pixel_t XYZ = { cmsXYZ->X, cmsXYZ->Y, cmsXYZ->Z, 0.f };
   dt_aligned_pixel_t xyY;
-  dt_XYZ_to_xyY(XYZ, xyY);
+  dt_D50_XYZ_to_xyY(XYZ, xyY);
   xy[0] = xyY[0];
   xy[1] = xyY[1];
 }

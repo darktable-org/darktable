@@ -1,5 +1,5 @@
 #    This file is part of darktable.
-#    Copyright (C) 2016-2023 darktable developers.
+#    Copyright (C) 2016-2024 darktable developers.
 #
 #    darktable is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -51,7 +51,6 @@ brew 'osm-gps-map'
 brew 'portmidi'
 brew 'pugixml'
 brew 'sdl2'
-brew 'cmocka'
 brew 'curl'
 brew 'perl'
 brew 'webp'

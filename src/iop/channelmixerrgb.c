@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  Copyright (C) 2010-2023 darktable developers.
+  Copyright (C) 2010-2024 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -1032,7 +1032,7 @@ static inline void _auto_detect_WB(const float *const restrict in,
    // Convert RGB to xy
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(width, height, ch, in, temp, RGB_to_XYZ) \
+  dt_omp_firstprivate(width, height, ch, in, temp, RGB_to_XYZ, D50xyY) \
   collapse(2) schedule(simd:static)
 #endif
   for(size_t i = 0; i < height; i++)
@@ -1056,7 +1056,7 @@ static inline void _auto_detect_WB(const float *const restrict in,
       XYZ[1] /= sum;   // y
 
       // Shift the chromaticity plane so the D50 point (target) becomes the origin
-      const float D50[2] = { 0.34567f, 0.35850f };
+      const float D50[2] = { D50xyY.x, D50xyY.y };
       const float norm = dt_fast_hypotf(D50[0], D50[1]);
 
       temp[index    ] = (XYZ[0] - D50[0]) / norm;
@@ -1182,7 +1182,7 @@ static inline void _auto_detect_WB(const float *const restrict in,
       }
   }
 
-  const float D50[2] = { 0.34567f, 0.35850 };
+  const float D50[2] = { D50xyY.x, D50xyY.y };
   const float norm_D50 = dt_fast_hypotf(D50[0], D50[1]);
 
   for(size_t c = 0; c < 2; c++)
@@ -1706,7 +1706,7 @@ static void _extract_color_checker(const float *const restrict in,
 
   // compute reference illuminant
   dt_aligned_pixel_t D50_XYZ;
-  illuminant_xy_to_XYZ(0.34567f, 0.35850f, D50_XYZ);
+  illuminant_xy_to_XYZ(D50xyY.x, D50xyY.y, D50_XYZ);
 
   // normalize luminances - note : illuminant is normalized by definition
   const float Y_test = XYZ_grey_test[1];
@@ -1731,9 +1731,14 @@ static void _extract_color_checker(const float *const restrict in,
   // convert back the illuminant to XYZ then xyY
   dt_aligned_pixel_t illuminant_XYZ, illuminant_xyY = { .0f };
   convert_any_LMS_to_XYZ(illuminant, illuminant_XYZ, kind);
+  dt_vector_clipneg(illuminant_XYZ);
   const float Y_illu = illuminant_XYZ[1];
-  for(size_t c = 0; c < 3; c++) illuminant_XYZ[c] /= Y_illu;
-  dt_XYZ_to_xyY(illuminant_XYZ, illuminant_xyY);
+  for(size_t c = 0; c < 3; c++)
+  {
+    if(Y_illu > 0.0f)
+      illuminant_XYZ[c] /= Y_illu;
+  }
+  dt_D50_XYZ_to_xyY(illuminant_XYZ, illuminant_xyY);
 
   // save the illuminant in GUI struct for commit
   g->xy[0] = illuminant_xyY[0];

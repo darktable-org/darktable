@@ -3359,6 +3359,23 @@ static gboolean _scroll_wrap_aspect(GtkWidget *w, GdkEventScroll *event, const c
 }
 
 static gboolean _resize_wrap_dragging = FALSE;
+static GtkWidget *_resize_wrap_hovered = NULL;
+
+static gboolean _resize_wrap_draw_handle(GtkWidget *w, void *cr, gpointer user_data)
+{
+  if(w != _resize_wrap_hovered) return FALSE;
+
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(w, &allocation);
+
+  set_color(cr, darktable.bauhaus->color_fg_insensitive);
+  cairo_move_to(cr, allocation.width / 8 * 3, allocation.height - DT_RESIZE_HANDLE_SIZE / 4 * 3);
+  cairo_line_to(cr, allocation.width / 8 * 5, allocation.height - DT_RESIZE_HANDLE_SIZE / 4 * 3);
+  cairo_set_line_width(cr, DT_RESIZE_HANDLE_SIZE / 2);
+  cairo_stroke(cr);
+
+  return FALSE;
+}
 
 static gboolean _resize_wrap_motion(GtkWidget *widget, GdkEventMotion *event, const char *config_str)
 {
@@ -3409,8 +3426,11 @@ static gboolean _resize_wrap_button(GtkWidget *widget, GdkEventButton *event, co
   return FALSE;
 }
 
-static gboolean _resize_wrap_leave(GtkWidget *widget, GdkEventCrossing *event, const char *config_str)
+static gboolean _resize_wrap_enter_leave(GtkWidget *widget, GdkEventCrossing *event, const char *config_str)
 {
+  _resize_wrap_hovered = event->type == GDK_ENTER_NOTIFY || event->detail == GDK_NOTIFY_INFERIOR || _resize_wrap_dragging ? widget : NULL;
+  gtk_widget_queue_draw(widget);
+
   if(event->mode == GDK_CROSSING_GTK_UNGRAB)
     _resize_wrap_dragging = FALSE;
   if(!_resize_wrap_dragging)
@@ -3449,7 +3469,9 @@ GtkWidget *dt_ui_resize_wrap(GtkWidget *w, gint min_size, char *config_str)
   g_signal_connect(G_OBJECT(w), "motion-notify-event", G_CALLBACK(_resize_wrap_motion), config_str);
   g_signal_connect(G_OBJECT(w), "button-press-event", G_CALLBACK(_resize_wrap_button), config_str);
   g_signal_connect(G_OBJECT(w), "button-release-event", G_CALLBACK(_resize_wrap_button), config_str);
-  g_signal_connect(G_OBJECT(w), "leave-notify-event", G_CALLBACK(_resize_wrap_leave), config_str);
+  g_signal_connect(G_OBJECT(w), "enter-notify-event", G_CALLBACK(_resize_wrap_enter_leave), config_str);
+  g_signal_connect(G_OBJECT(w), "leave-notify-event", G_CALLBACK(_resize_wrap_enter_leave), config_str);
+  g_signal_connect_after(G_OBJECT(w), "draw", G_CALLBACK(_resize_wrap_draw_handle), NULL);
 
   return w;
 }

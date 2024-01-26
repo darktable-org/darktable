@@ -45,9 +45,9 @@ static inline void dt_UCS_22_build_gamut_LUT(dt_colormatrix_t input_matrix, floa
   dot_product(RGB_blue, input_matrix, XYZ_blue);
 
   dt_aligned_pixel_t xyY_red, xyY_green, xyY_blue;
-  dt_XYZ_to_xyY(XYZ_red, xyY_red);
-  dt_XYZ_to_xyY(XYZ_green, xyY_green);
-  dt_XYZ_to_xyY(XYZ_blue, xyY_blue);
+  dt_D65_XYZ_to_xyY(XYZ_red, xyY_red);
+  dt_D65_XYZ_to_xyY(XYZ_green, xyY_green);
+  dt_D65_XYZ_to_xyY(XYZ_blue, xyY_blue);
 
   // Get the "hue" angles of the primaries in xy compared to D65
   const float h_red   = atan2f(xyY_red[1] - D65_xyY[1], xyY_red[0] - D65_xyY[0]);
@@ -233,7 +233,8 @@ static inline struct dt_iop_order_iccprofile_info_t * D65_adapt_iccprofile(struc
   if(work_profile) // && !isnan(work_profile->matrix_in[0][0]))
   {
     // Alloc
-    struct dt_iop_order_iccprofile_info_t *white_adapted_profile = (dt_iop_order_iccprofile_info_t *)malloc(sizeof(dt_iop_order_iccprofile_info_t));
+    struct dt_iop_order_iccprofile_info_t *white_adapted_profile =
+      (dt_iop_order_iccprofile_info_t *)dt_alloc_aligned(sizeof(dt_iop_order_iccprofile_info_t));
 
     // Init a new temp profile by copying the base profile
     memcpy(white_adapted_profile, work_profile, sizeof(dt_iop_order_iccprofile_info_t));

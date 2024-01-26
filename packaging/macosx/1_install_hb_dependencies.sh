@@ -24,7 +24,6 @@ hbDependencies="adwaita-icon-theme \
     coreutils \
     cmake \
     pkg-config \
-    cmocka \
     curl \
     desktop-file-utils \
     exiv2 \

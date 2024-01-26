@@ -56,9 +56,8 @@ jobs:
         btype:
           - Release
         target:
-          - build
+          - skiptest
         generator:
-          #- Unix Makefiles
           - Ninja
         include:
           # We want one run in CI to be Debug to make sure the Debug build isn't broken
@@ -108,7 +107,6 @@ jobs:
             libcairo2-dev \
             libcolord-dev \
             libcolord-gtk-dev \
-            libcmocka-dev \
             libcups2-dev \
             libcurl4-gnutls-dev \
             libexiv2-dev \
@@ -190,7 +188,6 @@ jobs:
         target:
           - skiptest
         generator:
-          #- MSYS Makefiles
           - Ninja
         eco: [-DDONT_USE_INTERNAL_LIBRAW=ON]
     defaults:
@@ -216,7 +213,6 @@ jobs:
           pacboy: >-
             cc:p
             cmake:p
-            cmocka:p
             libxslt:p
             ninja:p
             nsis:p
