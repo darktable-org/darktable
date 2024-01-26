@@ -1047,31 +1047,29 @@ static gboolean _event_scroll_compressed(gpointer user_data)
 {
   if (!user_data) return FALSE;
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
-  if (table->scroll_value == 0)
+
+  if (table->scroll_value != 0)
   {
-    table->scroll_timeout_id = 0;
-    return FALSE;
+    float delta = table->scroll_value;
+
+    // starting from here, all further scroll event will count for the next round
+    table->scroll_value = 0;
+
+    // for filemanager and filmstrip, scrolled = move for
+    // filemanager we ensure to fallback to show full row (can be
+    // half shown if scrollbar used)
+    int move = table->thumb_size * delta;
+    // if we scroll up and the thumb is half visible, then realign first
+    if(delta < 0 && table->thumbs_area.y != 0)
+      move += table->thumb_size -table->thumbs_area.y;
+
+    _move(table, 0, -move, TRUE);
+
+    // ensure the hovered image is the right one
+    dt_thumbnail_t *th = _thumb_get_under_mouse(table);
+    if(th)
+      dt_control_set_mouse_over_id(th->imgid);
   }
-
-  float delta = table->scroll_value;
-
-  // starting from here, all further scroll event will count for the next round
-  table->scroll_value = 0;
-
-  // for filemanager and filmstrip, scrolled = move for
-  // filemanager we ensure to fallback to show full row (can be
-  // half shown if scrollbar used)
-  int move = table->thumb_size * delta;
-  // if we scroll up and the thumb is half visible, then realign first
-  if(delta < 0 && table->thumbs_area.y != 0)
-    move += table->thumb_size -table->thumbs_area.y;
-
-  _move(table, 0, -move, TRUE);
-
-  // ensure the hovered image is the right one
-  dt_thumbnail_t *th = _thumb_get_under_mouse(table);
-  if(th)
-    dt_control_set_mouse_over_id(th->imgid);
 
   // we reset the id value at the end, to ensure we don't get more
   // than 1 pending scroll
