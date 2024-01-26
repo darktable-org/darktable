@@ -101,6 +101,8 @@ Since darktable 4.4:
 - Fixed issue where the right-click-and-drag rotation line was not being
   displayed on the image when a darkroom module was expanded.
 
+- Fixed lighttable scrolling freeze when using a trackpad.
+
 ## Lua
 
 ### API Version
