@@ -110,7 +110,7 @@ typedef struct dt_iop_colorequal_params_t
 
   float white_level;        // $MIN: -2.0 $MAX: 16.0 $DEFAULT: 1.0 $DESCRIPTION: "white level"
   float chroma_size;        // $MIN: 1.0 $MAX: 10. $DEFAULT: 2.0 $DESCRIPTION: "analysis radius"
-  float param_size;        // $MIN: 3 $MAX: 128 $DEFAULT: 25.0 $DESCRIPTION: "effect radius"
+  float param_size;        // $MIN: 3 $MAX: 128 $DEFAULT: 3.0 $DESCRIPTION: "effect radius"
   gboolean use_filter; // $DEFAULT: TRUE $DESCRIPTION: "use guided filter"
 
   // Note: what follows is tedious because each param needs to be declared separately.
@@ -272,9 +272,9 @@ static inline float _get_scaling(const float sigma)
   return MAX(1.0f, MIN(4.0f, floorf(sigma - 1.5f)));
 }
 
-static inline float _logistic_weight(const float val)
+static inline float _logistic_weight(const float val, const float offset)
 {
-  return 1.0f / (1.0f + expf(-(20.0f * (val - 0.2f))));
+  return 1.0f / (1.0f + expf(-(20.0f * (val - offset))));
 }
 
 void _prefilter_chromaticity(float *const restrict UV,
@@ -453,7 +453,7 @@ void _prefilter_chromaticity(float *const restrict UV,
 
     // we avoid chroma blurring into achromatic areas by interpolating
     // input UV vs corrected UV
-    const float weight = _logistic_weight(3.0f * sats[k]);
+    const float weight = _logistic_weight(3.0f * sats[k], 0.2f);
     UV[2 * k + 0] = interpolatef(weight, cv[0], uv[0]);
     UV[2 * k + 1] = interpolatef(weight, cv[1], uv[1]);
   }
@@ -691,10 +691,23 @@ void _guide_with_chromaticity(float *const restrict UV,
     dt_free_align(b);
   }
 
+  // Weighting saturation and brightneess of the guiding filter by a
+  // logistic function. It is based on csigma (the effect radius) to
+  // avoid bleeding in sharp edges (csigma = 3px) and better
+  // smoothness when csigma is getting bigger.
+  //
+  // The curve for csigma 3px:
+  // echo "x=0:0.01:1; csigma=3; offset=0.6-((csigma - 3.0) / 125.0 * 0.6); y=1./(1.0+exp(-(20.0 * (x - offset)))); plot(x,y); pause()" | octave
+  //
+  // The curve for csigma 25px:
+  // echo "x=0:0.01:1; csigma=25; offset=0.6-((csigma - 3.0) / 125.0 * 0.6); y=1./(1.0+exp(-(20.0 * (x - offset)))); plot(x,y); pause()" | octave
+  //
+  const float weight_offset = 0.6f - ((csigma - 3.0f) / 125.0f * 0.6f);
+
   // Apply the guided filter
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(pixels, a_full, b_full, corrections, UV, sats)  \
+  dt_omp_firstprivate(pixels, a_full, b_full, corrections, UV, sats, weight_offset)   \
   schedule(simd:static) aligned(a_full, b_full, corrections, sats, UV: 64)
 #endif
   for(size_t k = 0; k < pixels; k++)
@@ -703,7 +716,7 @@ void _guide_with_chromaticity(float *const restrict UV,
     const float uv[2] = { UV[2 * k + 0], UV[2 * k + 1] };
     const float cv[2] = { a_full[4 * k + 0] * uv[0] + a_full[4 * k + 1] * uv[1] + b_full[2 * k + 0],
                           a_full[4 * k + 2] * uv[0] + a_full[4 * k + 3] * uv[1] + b_full[2 * k + 1] };
-    const float weight = _logistic_weight(3.0f * sats[k]);
+    const float weight = _logistic_weight(sats[k], weight_offset);
     corrections[4 * k + 1] = interpolatef(weight, cv[0], 1.0f);
     corrections[4 * k + 2] = interpolatef(weight, cv[1], 1.0f);
   }
@@ -763,9 +776,20 @@ void process(struct dt_iop_module_t *self,
     dt_aligned_pixel_t xyY = { 0.f };
     dt_D65_XYZ_to_xyY(XYZ_D65, xyY);
 
-    const float dmin = MIN(XYZ_D65[0], MIN(XYZ_D65[1], XYZ_D65[2]));
-    const float dmax = MAX(XYZ_D65[0], MAX(XYZ_D65[1], XYZ_D65[2]));
+    // XYZ : X mix of RGB / Y Luminance / Z quasi equivalent to blue in RGB
+    const float _X = XYZ_D65[0];
+    const float _Y = XYZ_D65[1];
+    const float _Z = XYZ_D65[2];
+
+    // We take inv _Y to give more weith to the shadows /
+    // mid-tones. We divide by two to have a better balance between
+    // brightness and choma.
+    const float _1Y2 = (1.0f - _Y) / 2.0f;
+
+    const float dmin = MIN(_X, MIN(_1Y2, _Z));
+    const float dmax = MAX(_X, MAX(_1Y2, _Z));
     const float delta = dmax - dmin;
+
     saturations[k] = (fabsf(dmax) > 1e-6f && fabsf(delta) > 1e-6f) ? delta / dmax : 0.0f;
 
     xyY_to_dt_UCS_UV(xyY, uv);
@@ -844,8 +868,8 @@ void process(struct dt_iop_module_t *self,
     // Apply the corrections
     pix_out[0] += corrections_out[0]; // WARNING: hue is an offset
     // pix_out[1] (saturation) and pix_out[2] (brightness) are gains
-    pix_out[1] *= corrections_out[1];
-    pix_out[2] *= 1.0f + 4.0f * (corrections_out[2] - 1.0f);
+    pix_out[1] = MAX(0.0f, pix_out[1] * (1.0f + 2.0f * (corrections_out[1] - 1.0f)));
+    pix_out[2] *= 1.0f + 8.0f * (corrections_out[2] - 1.0f);
 
     // Sanitize gamut
     gamut_map_HSB(pix_out, d->gamut_LUT, white);
