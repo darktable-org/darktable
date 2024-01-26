@@ -691,6 +691,17 @@ void _guide_with_chromaticity(float *const restrict UV,
     dt_free_align(b);
   }
 
+  // Weighting saturation and brightneess of the guiding filter by a
+  // logistic function. It is based on csigma (the effect radius) to
+  // avoid bleeding in sharp edges (csigma = 3px) and better
+  // smoothness when csigma is getting bigger.
+  //
+  // The curve for csigma 3px:
+  // echo "x=0:0.01:1; csigma=3; offset=0.6-((csigma - 3.0) / 125.0 * 0.6); y=1./(1.0+exp(-(20.0 * (x - offset)))); plot(x,y); pause()" | octave
+  //
+  // The curve for csigma 25px:
+  // echo "x=0:0.01:1; csigma=25; offset=0.6-((csigma - 3.0) / 125.0 * 0.6); y=1./(1.0+exp(-(20.0 * (x - offset)))); plot(x,y); pause()" | octave
+  //
   const float weight_offset = 0.6f - ((csigma - 3.0f) / 125.0f * 0.6f);
 
   // Apply the guided filter
@@ -770,6 +781,9 @@ void process(struct dt_iop_module_t *self,
     const float _Y = XYZ_D65[1];
     const float _Z = XYZ_D65[2];
 
+    // We take inv _Y to give more weith to the shadows /
+    // mid-tones. We divide by two to have a better balance between
+    // brightness and choma.
     const float _1Y2 = (1.0f - _Y) / 2.0f;
 
     const float dmin = MIN(_X, MIN(_1Y2, _Z));
