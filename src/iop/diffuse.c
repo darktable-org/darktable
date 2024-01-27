@@ -606,10 +606,10 @@ void init_presets(dt_iop_module_so_t *self)
                                  .radius_center = 0,
                                  .radius = 170,
 
-                                 .first = -0.1f,
-                                 .second = 0.f,
-                                 .third = 0.f,
-                                 .fourth = -0.1f,
+                                 .first = -0.15f,
+                                 .second = 0.05f,
+                                 .third = 0.05f,
+                                 .fourth = -0.15f,
 
                                  .anisotropy_first = 10.f,
                                  .anisotropy_second = 0.f,
@@ -617,7 +617,7 @@ void init_presets(dt_iop_module_so_t *self)
                                  .anisotropy_fourth = 10.f,
 
                                  .sharpness = 0.0f,
-                                 .regularization = 1.f,
+                                 .regularization = 2.f,
                                  .variance_threshold = 0.f,
 
                                  .threshold = 0.0f
