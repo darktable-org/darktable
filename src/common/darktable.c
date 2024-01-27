@@ -1631,7 +1631,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       not_again = dt_gui_show_standalone_yes_no_dialog
         (_("configuration information"),
          config_info,
-         _("_show this information again"), _("_dismiss"));
+         _("_show this message again"), _("_dismiss"));
 
     if(not_again || (last_configure_version == 0))
       dt_conf_set_int("performance_configuration_version_completed",
