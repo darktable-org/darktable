@@ -714,34 +714,40 @@ static void _dev_auto_save(dt_develop_t *dev)
   static double last = 0.0;
 
   const double user_delay = (double)dt_conf_get_int("autosave_interval");
-  const double now = dt_get_wtime();
-
   const dt_imgid_t imgid = dev->image_storage.id;
 
   /* We can only autosave database & xmp while we have a valid image id
      and we are not currently loading or changing it in main darkroom
   */
   const gboolean saving = (user_delay >= 1.0)
-                        && ((now - last) > user_delay)
+                        && ((dt_get_wtime() - last) > user_delay)
                         && !dev->full.pipe->loading
                         && dev->requested_id == imgid
                         && dt_is_valid_imgid(imgid);
 
   if(saving)
   {
+    // avoid saving for fast repeated calls
+    last = dt_get_wtime();
     // Ok, lets save status for image
     dt_dev_write_history(dev);
-    dt_image_write_sidecar_file(imgid);
-    last = now;
 
-    const double spent = dt_get_wtime() - now;
-    dt_print(DT_DEBUG_DEV, "autosave history took %fsec\n", spent);
+    // check for slow drives
+    const double start = dt_get_wtime();
+    dt_image_write_sidecar_file(imgid);
+    const double after = dt_get_wtime();
+
+    dt_print(DT_DEBUG_DEV, "autosave history took %.3fs (hist) %.3fs (drive)\n",
+        start - last, after - start);
 
     // if writing to database and the xmp took too long we disable
     // autosaving mode for this session
-    if(spent > 0.5)
+    if((after - last) > 0.5)
     {
       dev->autosaving = FALSE;
+      dt_print(DT_DEBUG_ALL, "autosave history disabled, took %.3fs (hist) %.3fs (drive)\n",
+        start - last, after - start);
+
       dt_control_log(_("autosaving history has been disabled"
                        " for this session because of a slow drive used"));
     }
