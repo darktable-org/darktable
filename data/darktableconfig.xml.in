@@ -25,7 +25,6 @@
   <dttab name="storage" title="storage">
     <section name="database" title="database"/>
     <section name="XMP" title="XMP sidecar files"/>
-    <section name="colorlabels" title="color label description"/>
   </dttab>
   <dttab name="misc" title="miscellaneous">
     <section name="interface" title="interface"/>
@@ -3456,31 +3455,31 @@
     <shortdescription>look for updated XMP files on startup</shortdescription>
     <longdescription>check file modification times of all XMP files on startup to check if any got updated in the meantime</longdescription>
   </dtconfig>
-  <dtconfig prefs="storage" section="colorlabels">
+  <dtconfig>
     <name>colorlabel/red</name>
     <type>string</type>
     <default></default>
     <shortdescription>red color label</shortdescription>
   </dtconfig>
-  <dtconfig prefs="storage" section="colorlabels">
+  <dtconfig>
     <name>colorlabel/yellow</name>
     <type>string</type>
     <default></default>
     <shortdescription>yellow color label</shortdescription>
   </dtconfig>
-  <dtconfig prefs="storage" section="colorlabels">
+  <dtconfig>
     <name>colorlabel/green</name>
     <type>string</type>
     <default></default>
     <shortdescription>green color label</shortdescription>
   </dtconfig>
-  <dtconfig prefs="storage" section="colorlabels">
+  <dtconfig>
     <name>colorlabel/blue</name>
     <type>string</type>
     <default></default>
     <shortdescription>blue color label</shortdescription>
   </dtconfig>
-  <dtconfig prefs="storage" section="colorlabels">
+  <dtconfig>
     <name>colorlabel/purple</name>
     <type>string</type>
     <default></default>
