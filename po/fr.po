@@ -22613,7 +22613,7 @@ msgstr "Ctrl+molette pour pivoter finement"
 
 #: ../src/libs/histogram.c:1717
 msgid "shift+scroll to change width"
-msgstr "Ctrl+molette pour changer la largeur"
+msgstr "Maj+molette pour changer la largeur"
 
 #: ../src/libs/histogram.c:1718
 msgid "alt+scroll to cycle"
