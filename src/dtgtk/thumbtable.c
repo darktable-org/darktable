@@ -1988,14 +1988,16 @@ static void _event_dnd_get(GtkWidget *widget,
           start = 1;
         }
 
-        for(int i = start; i < imgs_nb; i++)
+        int curr = start;  // keep track of how many images have been added to D&D list
+        for(int i = 0; i < imgs_nb; i++)
         {
           const dt_imgid_t id = GPOINTER_TO_INT(l->data);
-          if(i > 0 && id != imgs[0])
+          if(start == 0 || id != imgs[0])
           {
-            imgs[i] = GPOINTER_TO_INT(l->data);
-            l = g_list_next(l);
+            // this image isn't the one which was forced to be first, so add it to the D&D list
+            imgs[curr++] = GPOINTER_TO_INT(l->data);
           }
+          l = g_list_next(l);
         }
         gtk_selection_data_set(selection_data,
                                gtk_selection_data_get_target(selection_data),
