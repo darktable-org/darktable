@@ -1976,31 +1976,33 @@ static void _event_dnd_get(GtkWidget *widget,
       const int imgs_nb = g_list_length(table->drag_list);
       if(imgs_nb)
       {
-        dt_imgid_t *imgs = malloc(sizeof(uint32_t) * imgs_nb);
+        dt_imgid_t *imgs = malloc(sizeof(dt_imgid_t) * imgs_nb);
         GList *l = table->drag_list;
 
-        int start = 0;
+        int idx = 0;
         // make sure that imgs[0] is the last selected imgid, that is the
         // one clicked when starting the d&d.
         if(dt_is_valid_imgid(darktable.control->last_clicked_filmstrip_id))
         {
-          imgs[0] = darktable.control->last_clicked_filmstrip_id;
-          start = 1;
+          imgs[idx] = darktable.control->last_clicked_filmstrip_id;
+          idx++;
         }
 
-        for(int i = start; i < imgs_nb; i++)
+        while(l)
         {
           const dt_imgid_t id = GPOINTER_TO_INT(l->data);
-          if(i > 0 && id != imgs[0])
+          if(id != imgs[0])
           {
-            imgs[i] = GPOINTER_TO_INT(l->data);
-            l = g_list_next(l);
+            imgs[idx] = id;
+            idx++;
+            if(idx >= imgs_nb)
+              break;
           }
+          l = g_list_next(l);
         }
         gtk_selection_data_set(selection_data,
                                gtk_selection_data_get_target(selection_data),
-                               _DWORD, (guchar *)imgs, imgs_nb * sizeof(uint32_t));
-        free(imgs);
+                               _DWORD, (guchar *)imgs, imgs_nb * sizeof(dt_imgid_t));
       }
       break;
     }
