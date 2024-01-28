@@ -34,7 +34,9 @@ Since darktable 4.4:
 ## The Big Ones
 
 - Documentation is now complete for darktable 4.6 including translation
-  into Ukrainian and Dutch.
+  into Ukrainian, Polish and Dutch.
+  See [https://www.darktable.org/resources](https://www.darktable.org/resources)
+  for details.
 
 ## Performance Improvements
 
