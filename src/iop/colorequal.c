@@ -532,7 +532,7 @@ void _guide_with_chromaticity(float *const restrict UV,
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(ds_pixels, ds_UV, ds_corrections, correlations)  \
-  schedule(simd:static) aligned(ds_UV, ds_corrections: 64)
+  schedule(simd:static) aligned(ds_UV, ds_corrections, correlations: 64)
 #endif
   for(size_t k = 0; k < ds_pixels; k++)
   {
@@ -588,7 +588,7 @@ void _guide_with_chromaticity(float *const restrict UV,
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(ds_pixels, ds_UV, ds_corrections, correlations)  \
-  schedule(simd:static) aligned(ds_UV, ds_corrections: 64)
+  schedule(simd:static) aligned(ds_UV, ds_corrections, correlations: 64)
 #endif
   for(size_t k = 0; k < ds_pixels; k++)
   {
@@ -611,7 +611,7 @@ void _guide_with_chromaticity(float *const restrict UV,
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(ds_pixels, ds_UV, covariance, correlations, ds_corrections, a, b, epsilon)  \
-  schedule(simd:static) aligned(ds_UV, covariance: 64)
+  schedule(simd:static) aligned(ds_UV, covariance, correlations, ds_corrections, a, b: 64)
 #endif
   for(size_t k = 0; k < ds_pixels; k++)
   {
@@ -628,7 +628,7 @@ void _guide_with_chromaticity(float *const restrict UV,
 
     // Invert the 2×2 sigma matrix algebraically
     // see https://www.mathcentre.ac.uk/resources/uploaded/sigma-matrices7-2009-1.pdf
-    const float det = fmax((Sigma[0] * Sigma[3] - Sigma[1] * Sigma[2]), 1e-15f);
+    const float det = MAX((Sigma[0] * Sigma[3] - Sigma[1] * Sigma[2]), 1e-15f);
     dt_aligned_pixel_t sigma_inv
         = { Sigma[3] / det,
            -Sigma[1] / det,
@@ -675,6 +675,7 @@ void _guide_with_chromaticity(float *const restrict UV,
   dt_free_align(covariance);
 
   // Compute the averages of a and b for each filter and blur slightly stronger
+  // FIXME likely the blurring here is by far too strong ...
   _mean_gaussian(a, ds_width, ds_height, 4, 4.0f * gsigma);
   _mean_gaussian(b, ds_width, ds_height, 2, 4.0f * gsigma);
 
@@ -761,8 +762,8 @@ void process(struct dt_iop_module_t *self,
   // STEP 1: convert image from RGB to darktable UCS LUV
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(ch, npixels, in, UV, L, corrections, saturations, input_matrix, d, white) \
-  schedule(simd:static) aligned(in, UV, L, corrections, saturations, input_matrix : 64)
+  dt_omp_firstprivate(ch, npixels, in, UV, L, saturations, input_matrix, white) \
+  schedule(simd:static) aligned(in, UV, L, saturations, input_matrix : 64)
 #endif
   for(size_t k = 0; k < npixels; k++)
   {
@@ -783,7 +784,7 @@ void process(struct dt_iop_module_t *self,
 
     // We take inv _Y to give more weith to the shadows /
     // mid-tones. We divide by two to have a better balance between
-    // brightness and choma.
+    // brightness and chroma.
     const float _1Y2 = (1.0f - _Y) / 2.0f;
 
     const float dmin = MIN(_X, MIN(_1Y2, _Z));
@@ -802,6 +803,7 @@ void process(struct dt_iop_module_t *self,
   if(d->use_filter)
     _prefilter_chromaticity(UV, saturations, roi_out, d->chroma_size, d->chroma_feathering);
 
+  // FIXME blurring according to sigma ?
   _mean_gaussian(saturations, roi_out->width, roi_out->height, 1, 4.0f);
 
   // STEP 3 : carry-on with conversion from LUV to HSB
@@ -815,8 +817,7 @@ void process(struct dt_iop_module_t *self,
   {
     const float *const restrict pix_in = __builtin_assume_aligned(in + k * ch, 16);
     float *const restrict pix_out = __builtin_assume_aligned(out + k * ch, 16);
-    float *const restrict corrections_out =
-      __builtin_assume_aligned(corrections + k * ch, 16);
+    float *const restrict corrections_out = __builtin_assume_aligned(corrections + k * 4, 16);
     float *const restrict uv = UV + k * 2;
 
     // Finish the conversion to dt UCS JCH then HSB
@@ -860,10 +861,8 @@ void process(struct dt_iop_module_t *self,
 #endif
   for(size_t k = 0; k < npixels; k++)
   {
-    const float *const restrict corrections_out =
-      __builtin_assume_aligned(corrections + k * ch, 16);
-    float *const restrict pix_out =
-      __builtin_assume_aligned(out + k * ch, 16);
+    const float *const restrict corrections_out = __builtin_assume_aligned(corrections + k * 4, 16);
+    float *const restrict pix_out = __builtin_assume_aligned(out + k * ch, 16);
 
     // Apply the corrections
     pix_out[0] += corrections_out[0]; // WARNING: hue is an offset
@@ -1049,6 +1048,7 @@ void commit_params(struct dt_iop_module_t *self,
   float DT_ALIGNED_ARRAY hue_values[NODES];
   float DT_ALIGNED_ARRAY bright_values[NODES];
 
+  // FIXME only calc LUTs if necessary
   _pack_saturation(p, sat_values);
   _periodic_RBF_interpolate(sat_values,
                             1.f / p->smoothing_saturation * M_PI_F,
