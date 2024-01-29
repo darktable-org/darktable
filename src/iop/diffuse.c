@@ -600,6 +600,31 @@ void init_presets(dt_iop_module_so_t *self)
                              sizeof(dt_iop_diffuse_params_t), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
+  dt_gui_presets_add_generic(_("local contrast: fine"), self->op, self->version(),
+                             &(dt_iop_diffuse_params_t)
+                               { .iterations = 5,
+                                 .radius_center = 0,
+                                 .radius = 170,
+
+                                 .first = -0.15f,
+                                 .second = 0.05f,
+                                 .third = 0.05f,
+                                 .fourth = -0.15f,
+
+                                 .anisotropy_first = 10.f,
+                                 .anisotropy_second = 0.f,
+                                 .anisotropy_third = 0.f,
+                                 .anisotropy_fourth = 10.f,
+
+                                 .sharpness = 0.0f,
+                                 .regularization = 2.f,
+                                 .variance_threshold = 0.f,
+
+                                 .threshold = 0.0f
+                               },
+                             sizeof(dt_iop_diffuse_params_t), 1,
+                             DEVELOP_BLEND_CS_RGB_SCENE);
+
   dt_gui_presets_add_generic(_("inpaint highlights"), self->op, self->version(),
                              &(dt_iop_diffuse_params_t)
                                { .iterations = 32,
