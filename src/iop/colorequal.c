@@ -274,7 +274,9 @@ static inline float _get_scaling(const float sigma)
 
 static inline float _logistic_weight(const float val, const float offset)
 {
-  return 1.0f / (1.0f + expf(-(20.0f * (val - offset))));
+  // dt_fast_expf(x) has significant errors for x > 0
+  // so for val < offset
+  return 1.0f / (1.0f + dt_fast_expf(-(20.0f * (val - offset))));
 }
 
 void _prefilter_chromaticity(float *const restrict UV,
