@@ -85,6 +85,11 @@ changes (where available).
 - Add buttons next to the snapshots to allow restoring it as the new
   history.
 
+- Using <kbd>Right-Click</kbd> on color label icons (bottom toolbar of
+  lighttable) it is possible to add a description to color
+  labels. This is an handy way of remembering the color label usage in
+  the workflow.
+
 ## Bug Fixes
 
 ## Lua
