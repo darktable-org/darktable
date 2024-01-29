@@ -753,7 +753,7 @@ static void _draw_thumb(GtkWidget *area,
     pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(12) * PANGO_SCALE);
     PangoLayout *layout = pango_cairo_create_layout(crf);
     pango_layout_set_font_description(layout, desc);
-    pango_layout_set_text(layout, _("drop image here"), -1);
+    pango_layout_set_text(layout, _("drop\nimage\nhere"), -1);
 
     PangoRectangle ink;
     pango_layout_get_pixel_extents(layout, &ink, NULL);
