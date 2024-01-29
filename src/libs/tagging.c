@@ -1240,6 +1240,21 @@ static void _pop_menu_attached_detach(GtkWidget *menuitem, dt_lib_module_t *self
   _detach_selected_tag(d->attached_view, self);
 }
 
+static void _pop_menu_attached_find(GtkWidget *menuitem, dt_lib_module_t *self)
+{
+  dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
+  gchar *name;
+  GtkTreeIter iter;
+  GtkTreeModel *model = NULL;
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(d->attached_view);
+  if(!gtk_tree_selection_get_selected(selection, &model, &iter)) return;
+
+  gtk_tree_model_get(model, &iter,
+                     DT_LIB_TAGGING_COL_TAG, &name, -1);
+
+  gtk_entry_set_text(d->entry, name);
+}
+
 static void _pop_menu_attached(GtkWidget *treeview, GdkEventButton *event, dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
@@ -1266,6 +1281,10 @@ static void _pop_menu_attached(GtkWidget *treeview, GdkEventButton *event, dt_li
   menuitem = gtk_menu_item_new_with_label(_("detach tag"));
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
   g_signal_connect(menuitem, "activate", (GCallback)_pop_menu_attached_detach, self);
+
+  menuitem = gtk_menu_item_new_with_label(_("find tag"));
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+  g_signal_connect(menuitem, "activate", (GCallback)_pop_menu_attached_find, self);
 
   gtk_widget_show_all(GTK_WIDGET(menu));
 
