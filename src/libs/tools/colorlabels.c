@@ -254,7 +254,8 @@ static void _lib_colorlabels_button_clicked_callback(GtkWidget *w,
   const gint colorlabel = _get_colorlabel(self, w);
 
   if(event->type == GDK_BUTTON_PRESS
-     && event->button == 3)
+     && event->button == 3
+     && colorlabel != 5)  // The button to reset colorlabels needs no description
   {
     d->colorlabel = colorlabel;
     _lib_colorlabels_edit(self, event);
