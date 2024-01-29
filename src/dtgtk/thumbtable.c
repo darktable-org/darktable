@@ -1976,7 +1976,7 @@ static void _event_dnd_get(GtkWidget *widget,
       const int imgs_nb = g_list_length(table->drag_list);
       if(imgs_nb)
       {
-        dt_imgid_t *imgs = malloc(sizeof(dt_imgid_t) * imgs_nb);
+        dt_imgid_t *imgs = calloc(imgs_nb, sizeof(dt_imgid_t));
         GList *l = table->drag_list;
 
         int idx = 0;
