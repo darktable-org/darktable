@@ -600,7 +600,7 @@ void init_presets(dt_iop_module_so_t *self)
                              sizeof(dt_iop_diffuse_params_t), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
-  dt_gui_presets_add_generic(_("local contrast fine"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("local contrast: fine"), self->op, self->version(),
                              &(dt_iop_diffuse_params_t)
                                { .iterations = 5,
                                  .radius_center = 0,
