@@ -193,16 +193,14 @@ static inline void _imageio_dng_write_tiff_header(
   else // bayer
     b = _imageio_dng_make_tag(EXIF_TAG_SENS_PATTERN, BYTE, 4, cfapattern, buf, b, &cnt); /* bayer PATTERN */
 
-  b = _imageio_dng_make_tag(EXIF_TAG_VERSION, BYTE, 4, (1 << 24)|(2 << 16), buf, b, &cnt);
-  b = _imageio_dng_make_tag(EXIF_TAG_BACK_VERSION, BYTE, 4, (1 << 24)|(1 << 16), buf, b, &cnt);
+  b = _imageio_dng_make_tag(EXIF_TAG_VERSION, BYTE, 4, (1 << 24)|(4 << 16), buf, b, &cnt);
+  b = _imageio_dng_make_tag(EXIF_TAG_BACK_VERSION, BYTE, 4, (1 << 24)|(4 << 16), buf, b, &cnt);
 
-  union {
-      float f;
-      uint32_t u;
-  } white;
-  white.f = whitelevel;
-
-  b = _imageio_dng_make_tag(EXIF_TAG_WHITE_LEVEL, LONG, 1, white.u, buf, b, &cnt); /* WhiteLevel in float, actually. */
+  b = _imageio_dng_make_tag(EXIF_TAG_WHITE_LEVEL, RATIONAL, 1, data, buf, b, &cnt); /* WhiteLevel */
+  den = 10000;
+  _imageio_dng_write_buf(buf, data, (int)roundf(whitelevel * den));
+  _imageio_dng_write_buf(buf, data + 4, den);
+  data += 8;
 
   // ColorMatrix1 try to get camera matrix else m[k] like before
   if(dt_is_valid_colormatrix(adobe_XYZ_to_CAM[0][0]))
