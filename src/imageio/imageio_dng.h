@@ -43,10 +43,10 @@
 static inline void _imageio_dng_write_buf(uint8_t *buf, const uint32_t d, const int val)
 {
   if(d + 4 >= HEADBUFFSIZE) return;
-  buf[d + 3] = val & 0xff;
-  buf[d + 2] = (val >> 8) & 0xff;
-  buf[d + 1] = (val >> 16) & 0xff;
-  buf[d] = val >> 24;
+  buf[d] = val & 0xff;
+  buf[d + 1] = (val >> 8) & 0xff;
+  buf[d + 2] = (val >> 16) & 0xff;
+  buf[d + 3] = val >> 24;
 }
 
 static inline int _imageio_dng_make_tag(
@@ -60,7 +60,7 @@ static inline int _imageio_dng_make_tag(
 {
   if(b + 12 < HEADBUFFSIZE)
   {
-    _imageio_dng_write_buf(buf, b, (tag << 16) | type);
+    _imageio_dng_write_buf(buf, b, (type << 16) | tag);
     _imageio_dng_write_buf(buf, b+4, lng);
     _imageio_dng_write_buf(buf, b+8, fld);
     *cnt = *cnt + 1;
@@ -92,10 +92,10 @@ static inline void _imageio_dng_write_tiff_header(
 
   memset(buf, 0, sizeof(buf));
   /* TIFF file header.  */
-  buf[0] = 0x4d;
-  buf[1] = 0x4d;
-  buf[3] = 42;
-  buf[7] = 8;
+  buf[0] = 0x49;
+  buf[1] = 0x49;
+  buf[2] = 42;
+  buf[4] = 8;
   uint32_t b = 10;
 
   // If you want to add other tags written to a dng file include the the ID in the enum to
@@ -132,34 +132,19 @@ static inline void _imageio_dng_write_tiff_header(
   uint32_t data = 10 + (__LINE__ - first_tag - 1) * 12 ; // takes care of the header an num of lines
 
   b = _imageio_dng_make_tag(EXIF_TAG_SUBFILE, LONG, 1, 0, buf, b, &cnt);
-  b = _imageio_dng_make_tag(EXIF_TAG_IMGWIDTH, SHORT, 1, (xs << 16), buf, b, &cnt);
-  b = _imageio_dng_make_tag(EXIF_TAG_IMGLENGTH, SHORT, 1, (ys << 16), buf, b, &cnt);
-  b = _imageio_dng_make_tag(EXIF_TAG_BPS, SHORT, 1, 32 << 16, buf, b, &cnt);
-  b = _imageio_dng_make_tag(EXIF_TAG_COMPRESS, SHORT, 1, (1 << 16), buf, b, &cnt);
-  b = _imageio_dng_make_tag(EXIF_TAG_PHOTOMINTREP, SHORT, 1, 32803 << 16, buf, b, &cnt);
-  b = _imageio_dng_make_tag(EXIF_TAG_ORIENTATION, SHORT, 1, 1 << 16, buf, b, &cnt);
-  b = _imageio_dng_make_tag(EXIF_TAG_SAMPLES_PER_PIXEL, SHORT, 1, channels << 16, buf, b, &cnt);
-  b = _imageio_dng_make_tag(EXIF_TAG_ROWS_PER_STRIP, SHORT, 1, (ys << 16), buf, b, &cnt);
+  b = _imageio_dng_make_tag(EXIF_TAG_IMGWIDTH, SHORT, 1, xs, buf, b, &cnt);
+  b = _imageio_dng_make_tag(EXIF_TAG_IMGLENGTH, SHORT, 1, ys, buf, b, &cnt);
+  b = _imageio_dng_make_tag(EXIF_TAG_BPS, SHORT, 1, 32, buf, b, &cnt);
+  b = _imageio_dng_make_tag(EXIF_TAG_COMPRESS, SHORT, 1, 1, buf, b, &cnt);
+  b = _imageio_dng_make_tag(EXIF_TAG_PHOTOMINTREP, SHORT, 1, 32803, buf, b, &cnt);
+  b = _imageio_dng_make_tag(EXIF_TAG_STRIP_OFFSET, LONG, 1, 0, buf, b, &cnt);
+  uint32_t ofst = b - 4; // remember buffer address for updating strip offset later
+  b = _imageio_dng_make_tag(EXIF_TAG_ORIENTATION, SHORT, 1, 1, buf, b, &cnt);
+  b = _imageio_dng_make_tag(EXIF_TAG_SAMPLES_PER_PIXEL, SHORT, 1, channels, buf, b, &cnt);
+  b = _imageio_dng_make_tag(EXIF_TAG_ROWS_PER_STRIP, SHORT, 1, ys, buf, b, &cnt);
   b = _imageio_dng_make_tag(EXIF_TAG_STRIP_BCOUNT, LONG, 1, (ys * xs * channels*4), buf, b, &cnt);
-  b = _imageio_dng_make_tag(EXIF_TAG_PLANAR_CONFIG, SHORT, 1, (1 << 16), buf, b, &cnt);
-  b = _imageio_dng_make_tag(EXIF_TAG_SAMPLE_FORMAT, SHORT, 1, (3 << 16), buf, b, &cnt);
-
-  b = _imageio_dng_make_tag(EXIF_TAG_ACTIVE_AREA, LONG, 4, data, buf, b, &cnt);
-  _imageio_dng_write_buf(buf, data, 0);
-  _imageio_dng_write_buf(buf, data+4, 0);
-  _imageio_dng_write_buf(buf, data+8, ys);
-  _imageio_dng_write_buf(buf, data+12, xs);
-  data += 16;
-
-  b = _imageio_dng_make_tag(EXIF_TAG_CROP_ORIGIN, LONG, 2, data, buf, b, &cnt);
-  _imageio_dng_write_buf(buf, data, 0);
-  _imageio_dng_write_buf(buf, data+4, 0);
-  data += 8;
-
-  b = _imageio_dng_make_tag(EXIF_TAG_CROP_SIZE, LONG, 2, data, buf, b, &cnt);
-  _imageio_dng_write_buf(buf, data, xs);
-  _imageio_dng_write_buf(buf, data+4, ys);
-  data += 8;
+  b = _imageio_dng_make_tag(EXIF_TAG_PLANAR_CONFIG, SHORT, 1, 1, buf, b, &cnt);
+  b = _imageio_dng_make_tag(EXIF_TAG_SAMPLE_FORMAT, SHORT, 1, 3, buf, b, &cnt);
 
   if(filter == 9u) // xtrans
     b = _imageio_dng_make_tag(EXIF_TAG_REPEAT_PATTERN, SHORT, 2, (6 << 16) | 6, buf, b, &cnt);
@@ -170,16 +155,16 @@ static inline void _imageio_dng_write_tiff_header(
   switch(filter)
   {
     case 0x94949494:
-      cfapattern = (0 << 24) | (1 << 16) | (1 << 8) | 2; // rggb
+      cfapattern = (2 << 24) | (1 << 16) | (1 << 8) | 0; // rggb
       break;
     case 0x49494949:
-      cfapattern = (1 << 24) | (2 << 16) | (0 << 8) | 1; // gbrg
+      cfapattern = (1 << 24) | (0 << 16) | (2 << 8) | 1; // gbrg
       break;
     case 0x61616161:
-      cfapattern = (1 << 24) | (0 << 16) | (2 << 8) | 1; // grbg
+      cfapattern = (1 << 24) | (2 << 16) | (0 << 8) | 1; // grbg
       break;
     default:                                             // case 0x16161616:
-      cfapattern = (2 << 24) | (1 << 16) | (1 << 8) | 0; // bggr
+      cfapattern = (0 << 24) | (1 << 16) | (1 << 8) | 2; // bggr
       break;
   }
 
@@ -193,13 +178,23 @@ static inline void _imageio_dng_write_tiff_header(
   else // bayer
     b = _imageio_dng_make_tag(EXIF_TAG_SENS_PATTERN, BYTE, 4, cfapattern, buf, b, &cnt); /* bayer PATTERN */
 
-  b = _imageio_dng_make_tag(EXIF_TAG_VERSION, BYTE, 4, (1 << 24)|(4 << 16), buf, b, &cnt);
-  b = _imageio_dng_make_tag(EXIF_TAG_BACK_VERSION, BYTE, 4, (1 << 24)|(4 << 16), buf, b, &cnt);
+  b = _imageio_dng_make_tag(EXIF_TAG_VERSION, BYTE, 4, 1 | (4 << 8), buf, b, &cnt);
+  b = _imageio_dng_make_tag(EXIF_TAG_BACK_VERSION, BYTE, 4, 1 | (4 << 8), buf, b, &cnt);
 
   b = _imageio_dng_make_tag(EXIF_TAG_WHITE_LEVEL, RATIONAL, 1, data, buf, b, &cnt); /* WhiteLevel */
   den = 10000;
   _imageio_dng_write_buf(buf, data, (int)roundf(whitelevel * den));
   _imageio_dng_write_buf(buf, data + 4, den);
+  data += 8;
+
+  b = _imageio_dng_make_tag(EXIF_TAG_CROP_ORIGIN, LONG, 2, data, buf, b, &cnt);
+  _imageio_dng_write_buf(buf, data, 0);
+  _imageio_dng_write_buf(buf, data+4, 0);
+  data += 8;
+
+  b = _imageio_dng_make_tag(EXIF_TAG_CROP_SIZE, LONG, 2, data, buf, b, &cnt);
+  _imageio_dng_write_buf(buf, data, xs);
+  _imageio_dng_write_buf(buf, data+4, ys);
   data += 8;
 
   // ColorMatrix1 try to get camera matrix else m[k] like before
@@ -228,13 +223,21 @@ static inline void _imageio_dng_write_tiff_header(
   }
   data += 3 * 8;
 
-  b = _imageio_dng_make_tag(EXIF_TAG_ILLUMINANT1, SHORT, 1, DT_LS_D65 << 16, buf, b, &cnt);
+  b = _imageio_dng_make_tag(EXIF_TAG_ILLUMINANT1, SHORT, 1, DT_LS_D65, buf, b, &cnt);
 
-  // We have all tags using data now written so we can finally use strip offset 
-  b = _imageio_dng_make_tag(EXIF_TAG_STRIP_OFFSET, LONG, 1, data, buf, b, &cnt);
-  b = _imageio_dng_make_tag(EXIF_TAG_NEXT_IFD, 0, 0, 0, buf, b, &cnt);
+  b = _imageio_dng_make_tag(EXIF_TAG_ACTIVE_AREA, LONG, 4, data, buf, b, &cnt);
+  _imageio_dng_write_buf(buf, data, 0);
+  _imageio_dng_write_buf(buf, data+4, 0);
+  _imageio_dng_write_buf(buf, data+8, ys);
+  _imageio_dng_write_buf(buf, data+12, xs);
+  data += 16;
 
-  buf[9] = cnt - 1; /* write number of directory entries of this ifd */
+  // We have all tags using data now written so we can finally use strip offset
+  _imageio_dng_write_buf(buf, ofst, data); 
+
+  buf[8] = cnt; /* write number of directory entries of this IFD */
+
+  b = _imageio_dng_make_tag(EXIF_TAG_NEXT_IFD, 0, 0, 0, buf, b, &cnt); // terminate
 
   if(data >= HEADBUFFSIZE)
   {
