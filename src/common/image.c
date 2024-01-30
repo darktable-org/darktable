@@ -2035,7 +2035,7 @@ dt_imgid_t dt_image_get_id(const uint32_t film_id, const gchar *filename)
   return id;
 }
 
-dt_imgid_t dt_image_import(const int32_t film_id,
+dt_imgid_t dt_image_import(const dt_filmid_t film_id,
                            const char *filename,
                            const gboolean override_ignore_nonraws,
                            const gboolean raise_signals)
@@ -2044,7 +2044,7 @@ dt_imgid_t dt_image_import(const int32_t film_id,
                                 TRUE, raise_signals);
 }
 
-dt_imgid_t dt_image_import_lua(const int32_t film_id,
+dt_imgid_t dt_image_import_lua(const dt_filmid_t film_id,
                                const char *filename,
                                const gboolean override_ignore_nonraws)
 {

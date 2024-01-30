@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -154,9 +154,11 @@ extern "C" {
 #endif
 
 typedef int32_t dt_imgid_t;
+typedef int32_t dt_filmid_t;
 #define NO_IMGID (0)
+#define NO_FILMID (0)
 #define dt_is_valid_imgid(n) ((n) > NO_IMGID)
-
+#define dt_is_valid_filmid(n) ((n) > NO_FILMID)
 /*
   A dt_mask_id_t can be
   0  -> a formless mask
@@ -827,7 +829,7 @@ void dt_configure_runtime_performance(const int version, char *config_info);
 // helper function which loads whatever image_to_load points to:
 // single image files or whole directories it tells you if it was a
 // single image or a directory in single_image (when it's not NULL)
-int dt_load_from_string(const gchar *image_to_load,
+dt_imgid_t dt_load_from_string(const gchar *image_to_load,
                         const gboolean open_image_in_dr,
                         gboolean *single_image);
 

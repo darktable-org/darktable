@@ -85,7 +85,7 @@ fprintf(stderr, "darktable %s\n"
 
                 "   --height <max height> default: 0 = full resolution\n"
                 "   --width <max width> default: 0 = full resolution\n"
-                
+
                 "   --hq <0|1|false|true> default: true\n"
                 "   --upscale <0|1|false|true>, default: false\n"
                 "   --style <style name>\n"
@@ -101,7 +101,7 @@ fprintf(stderr, "darktable %s\n"
                 "                     use --help icc-intent for list of supported intents\n"
                 "   --verbose\n"
                 "   -h, --help [option]\n"
-                "   -v, --version\n", 
+                "   -v, --version\n",
                 darktable_package_version,
                 darktable_last_commit_year);
 
@@ -246,10 +246,10 @@ int main(int argc, char *arg[])
         exit(1);
       }
       else if(!strcmp(arg[k], "--version") || !strcmp(arg[k], "-v"))
-      {     
+      {
           printf("darktable %s\nCopyright (C) 2012-%s Johannes Hanika and other contributors.\n\n",darktable_package_version, darktable_last_commit_year);
           printf("See %s for detailed documentation.\n", PACKAGE_DOCS);
-          printf("See %s to report bugs.\n",PACKAGE_BUGREPORT);              
+          printf("See %s to report bugs.\n",PACKAGE_BUGREPORT);
           exit(0);
       }
       else if(!strcmp(arg[k], "--width") && argc > k + 1)
@@ -548,7 +548,7 @@ int main(int argc, char *arg[])
 
     if(g_file_test(input, G_FILE_TEST_IS_DIR))
     {
-      const int filmid = dt_film_import(input);
+      const dt_filmid_t filmid = dt_film_import(input);
       if(!filmid)
       {
         // one of inputs was a failure, no prob
@@ -561,13 +561,13 @@ int main(int argc, char *arg[])
     else
     {
       dt_film_t film;
-      int filmid = 0;
+      dt_filmid_t filmid = NO_FILMID;
 
       gchar *directory = g_path_get_dirname(input);
       filmid = dt_film_new(&film, directory);
-      const int32_t id = dt_image_import(filmid, input, TRUE, TRUE);
+      const dt_imgid_t id = dt_image_import(filmid, input, TRUE, TRUE);
       g_free(directory);
-      if(!id)
+      if(!dt_is_valid_imgid(id))
       {
         fprintf(stderr, _("error: can't open file %s"), input);
         fprintf(stderr, "\n");
