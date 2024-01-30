@@ -196,9 +196,9 @@ static int films_new(lua_State *L)
 
   dt_film_t my_film;
   dt_film_init(&my_film);
-  int film_id = dt_film_new(&my_film, final_path);
+  dt_filmid_t film_id = dt_film_new(&my_film, final_path);
   g_free(final_path);
-  if(film_id)
+  if(dt_is_valid_filmid(film_id))
   {
     luaA_push(L, dt_lua_film_t, &film_id);
     return 1;

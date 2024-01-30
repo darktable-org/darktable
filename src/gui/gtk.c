@@ -872,7 +872,7 @@ static gboolean _osx_openfile_callback(GtkOSXApplication *OSXapp, gchar *path, g
 static gboolean _osx_openfile_callback(GtkosxApplication *OSXapp, gchar *path, gpointer user_data)
 #endif
 {
-  return dt_load_from_string(path, TRUE, NULL) > 0;
+  return dt_is_valid_imgid(dt_load_from_string(path, TRUE, NULL));
 }
 #endif
 
@@ -1406,7 +1406,7 @@ double dt_get_screen_resolution(GtkWidget *widget)
   else
   {
     screen_dpi = gdk_screen_get_resolution(gtk_widget_get_screen(widget));
-    if(screen_dpi < 0.0) 
+    if(screen_dpi < 0.0)
     {
       screen_dpi = 96.0;
       gdk_screen_set_resolution(gtk_widget_get_screen(widget), 96.0);

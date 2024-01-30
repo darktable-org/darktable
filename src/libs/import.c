@@ -817,7 +817,7 @@ static void _add_file_callback(GObject *direnum,
       ? strlen(folder) + 1
       : strlen(folder);
 
-    const int32_t filmroll_id = dt_film_get_id(folder);
+    const dt_filmid_t filmroll_id = dt_film_get_id(folder);
     for(GList *node = file_list;
         node;
         node = node->next)
