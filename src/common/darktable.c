@@ -362,28 +362,28 @@ gboolean dt_supported_image(const gchar *filename)
   return supported;
 }
 
-int dt_load_from_string(const gchar *input,
+dt_imgid_t dt_load_from_string(const gchar *input,
                         const gboolean open_image_in_dr,
                         gboolean *single_image)
 {
-  int32_t id = 0;
-  if(input == NULL || input[0] == '\0') return 0;
+  dt_imgid_t id = NO_IMGID;
+  if(input == NULL || input[0] == '\0') return NO_IMGID;
 
   char *filename = dt_util_normalize_path(input);
 
   if(filename == NULL)
   {
     dt_control_log(_("found strange path `%s'"), input);
-    return 0;
+    return NO_IMGID;
   }
 
   if(g_file_test(filename, G_FILE_TEST_IS_DIR))
   {
     // import a directory into a film roll
-    id = dt_film_import(filename);
-    if(id)
+    const dt_filmid_t filmid = dt_film_import(filename);
+    if(dt_is_valid_filmid(filmid))
     {
-      dt_film_open(id);
+      dt_film_open(filmid);
       dt_ctl_switch_mode_to("lighttable");
     }
     else
@@ -397,10 +397,10 @@ int dt_load_from_string(const gchar *input,
     // import a single image
     gchar *directory = g_path_get_dirname((const gchar *)filename);
     dt_film_t film;
-    const int filmid = dt_film_new(&film, directory);
+    const dt_filmid_t filmid = dt_film_new(&film, directory);
     id = dt_image_import(filmid, filename, TRUE, TRUE);
     g_free(directory);
-    if(id)
+    if(dt_is_valid_imgid(id))
     {
       dt_film_open(filmid);
       // make sure buffers are loaded (load full for testing)
@@ -411,7 +411,7 @@ int dt_load_from_string(const gchar *input,
       dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
       if(!loaded)
       {
-        id = 0;
+        id = NO_IMGID;
         dt_control_log(_("file `%s' has unknown format!"), filename);
       }
       else

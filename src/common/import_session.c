@@ -79,8 +79,8 @@ static gboolean _import_session_initialize_filmroll(dt_import_session_t *self, c
   }
   /* open one or initialize a filmroll for the session */
   self->film = (dt_film_t *)g_malloc0(sizeof(dt_film_t));
-  const int32_t film_id = dt_film_new(self->film, path);
-  if(film_id == 0)
+  const dt_filmid_t film_id = dt_film_new(self->film, path);
+  if(!dt_is_valid_filmid(film_id))
   {
     dt_print(DT_DEBUG_ALWAYS, "[import_session] Failed to initialize film roll.\n");
     _import_session_cleanup_filmroll(self);
