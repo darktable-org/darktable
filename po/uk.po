@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-01-28 07:56+0100\n"
-"PO-Revision-Date: 2024-01-28 22:58+0200\n"
+"POT-Creation-Date: 2024-01-29 22:34+0100\n"
+"PO-Revision-Date: 2024-01-30 20:16+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -85,7 +85,7 @@ msgid "on import"
 msgstr "при імпорті"
 
 #: ../build/bin/conf_gen.h:357 ../build/bin/conf_gen.h:1219
-#: ../build/bin/conf_gen.h:1235 ../build/bin/conf_gen.h:3297
+#: ../build/bin/conf_gen.h:1235 ../build/bin/conf_gen.h:3322
 #: ../build/bin/preferences_gen.h:5607
 msgctxt "preferences"
 msgid "always"
@@ -153,7 +153,7 @@ msgstr "Hex"
 
 #: ../build/bin/conf_gen.h:763 ../build/bin/conf_gen.h:1904
 #: ../build/bin/conf_gen.h:2566 ../build/bin/conf_gen.h:2877
-#: ../build/bin/conf_gen.h:3133
+#: ../build/bin/conf_gen.h:3158
 msgctxt "preferences"
 msgid "none"
 msgstr "немає"
@@ -519,7 +519,7 @@ msgctxt "preferences"
 msgid "lanczos3"
 msgstr "lanczos3"
 
-#: ../build/bin/conf_gen.h:2565 ../build/bin/conf_gen.h:3300
+#: ../build/bin/conf_gen.h:2565 ../build/bin/conf_gen.h:3325
 #: ../build/bin/preferences_gen.h:6997
 msgctxt "preferences"
 msgid "auto"
@@ -705,26 +705,26 @@ msgctxt "preferences"
 msgid "colord"
 msgstr "colord"
 
-#: ../build/bin/conf_gen.h:3130 ../build/bin/preferences_gen.h:5921
+#: ../build/bin/conf_gen.h:3155 ../build/bin/preferences_gen.h:5921
 msgctxt "preferences"
 msgid "scene-referred (filmic)"
 msgstr "на основі сцен (filmic)"
 
-#: ../build/bin/conf_gen.h:3131
+#: ../build/bin/conf_gen.h:3156
 msgctxt "preferences"
 msgid "scene-referred (sigmoid)"
 msgstr "на основі сцен (сигмоїда)"
 
-#: ../build/bin/conf_gen.h:3132
+#: ../build/bin/conf_gen.h:3157
 msgctxt "preferences"
 msgid "display-referred (legacy)"
 msgstr "на основі відображення (застаріло)"
 
-#: ../build/bin/conf_gen.h:3227
+#: ../build/bin/conf_gen.h:3252
 msgid "camera time zone"
 msgstr "Часовий пояс камери"
 
-#: ../build/bin/conf_gen.h:3228
+#: ../build/bin/conf_gen.h:3253
 msgid ""
 "most cameras don't store the time zone in EXIF. give the correct time zone "
 "so the GPX data can be correctly matched"
@@ -732,62 +732,62 @@ msgstr ""
 "Більшість камер на записує часовий пояс в EXIF. Вкажіть правильний часовий "
 "пояс, щоб дані з GPX були застосовані коректно."
 
-#: ../build/bin/conf_gen.h:3239
+#: ../build/bin/conf_gen.h:3264
 msgctxt "preferences"
 msgid "no color"
 msgstr "не змінювати"
 
-#: ../build/bin/conf_gen.h:3240
+#: ../build/bin/conf_gen.h:3265
 msgctxt "preferences"
 msgid "illuminant color"
 msgstr "колір джерела світла"
 
-#: ../build/bin/conf_gen.h:3241
+#: ../build/bin/conf_gen.h:3266
 msgctxt "preferences"
 msgid "effect emulation"
 msgstr "емуляція ефекту"
 
-#: ../build/bin/conf_gen.h:3287
+#: ../build/bin/conf_gen.h:3312
 msgctxt "preferences"
 msgid "list"
 msgstr "список"
 
-#: ../build/bin/conf_gen.h:3288
+#: ../build/bin/conf_gen.h:3313
 msgctxt "preferences"
 msgid "tabs"
 msgstr "вкладки"
 
-#: ../build/bin/conf_gen.h:3289
+#: ../build/bin/conf_gen.h:3314
 msgctxt "preferences"
 msgid "columns"
 msgstr "колонки"
 
-#: ../build/bin/conf_gen.h:3298
+#: ../build/bin/conf_gen.h:3323
 msgctxt "preferences"
 msgid "active"
 msgstr "при наведенні"
 
-#: ../build/bin/conf_gen.h:3299
+#: ../build/bin/conf_gen.h:3324
 msgctxt "preferences"
 msgid "dim"
 msgstr "підсвічувати тьмяні"
 
-#: ../build/bin/conf_gen.h:3301
+#: ../build/bin/conf_gen.h:3326
 msgctxt "preferences"
 msgid "fade"
 msgstr "поступово прибирати"
 
-#: ../build/bin/conf_gen.h:3302
+#: ../build/bin/conf_gen.h:3327
 msgctxt "preferences"
 msgid "fit"
 msgstr "пріоритет імені модуля"
 
-#: ../build/bin/conf_gen.h:3303
+#: ../build/bin/conf_gen.h:3328
 msgctxt "preferences"
 msgid "smooth"
 msgstr "гасити одночасно при недостатній ширині"
 
-#: ../build/bin/conf_gen.h:3304
+#: ../build/bin/conf_gen.h:3329
 msgctxt "preferences"
 msgid "glide"
 msgstr "витісняти при недостатній ширині"
@@ -2850,7 +2850,7 @@ msgstr "Дуже велика хроматична аберація"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:527
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:159
 #: ../src/common/collection.c:1374 ../src/common/color_vocabulary.c:232
-#: ../src/common/colorlabels.c:333 ../src/develop/blend_gui.c:2383
+#: ../src/common/colorlabels.c:374 ../src/develop/blend_gui.c:2383
 #: ../src/develop/blend_gui.c:2431 ../src/develop/lightroom.c:887
 #: ../src/gui/gtk.c:3192 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:356
 #: ../src/iop/channelmixer.c:637 ../src/iop/channelmixer.c:647
@@ -2870,7 +2870,7 @@ msgstr "червоний"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:539
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:158
 #: ../src/common/collection.c:1378 ../src/common/color_vocabulary.c:277
-#: ../src/common/colorlabels.c:335 ../src/develop/blend_gui.c:2389
+#: ../src/common/colorlabels.c:376 ../src/develop/blend_gui.c:2389
 #: ../src/develop/blend_gui.c:2437 ../src/develop/lightroom.c:891
 #: ../src/gui/gtk.c:3193 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:361
 #: ../src/iop/channelmixer.c:638 ../src/iop/channelmixer.c:653
@@ -2891,7 +2891,7 @@ msgstr "зелений"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:547
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:160
 #: ../src/common/collection.c:1380 ../src/common/color_vocabulary.c:324
-#: ../src/common/colorlabels.c:336 ../src/develop/blend_gui.c:2395
+#: ../src/common/colorlabels.c:377 ../src/develop/blend_gui.c:2395
 #: ../src/develop/blend_gui.c:2443 ../src/develop/lightroom.c:893
 #: ../src/gui/gtk.c:3194 ../src/iop/bilateral.cc:366
 #: ../src/iop/channelmixer.c:639 ../src/iop/channelmixer.c:659
@@ -3508,7 +3508,7 @@ msgstr "лавандовий"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:523
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:555
 #: ../src/common/collection.c:1382 ../src/common/color_vocabulary.c:339
-#: ../src/common/colorlabels.c:337 ../src/iop/colorzones.c:2505
+#: ../src/common/colorlabels.c:378 ../src/iop/colorzones.c:2505
 #: ../src/libs/collect.c:1928 ../src/libs/filters/colors.c:264
 msgid "purple"
 msgstr "Пурпурний"
@@ -3808,7 +3808,7 @@ msgstr "Y0U0V0"
 #. two more sharpness (standard & strong)
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:123
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:248
-#: ../src/iop/atrous.c:1685 ../src/iop/diffuse.c:657 ../src/iop/highpass.c:376
+#: ../src/iop/atrous.c:1685 ../src/iop/diffuse.c:682 ../src/iop/highpass.c:376
 msgid "sharpness"
 msgstr "Різкість"
 
@@ -5697,10 +5697,10 @@ msgstr "Час останнього друку"
 msgid "history"
 msgstr "Історія"
 
-#: ../src/common/collection.c:623 ../src/common/colorlabels.c:341
+#: ../src/common/collection.c:623 ../src/common/colorlabels.c:382
 #: ../src/develop/lightroom.c:1607 ../src/dtgtk/thumbnail.c:1583
 #: ../src/libs/filtering.c:68 ../src/libs/filters/colors.c:301
-#: ../src/libs/filters/colors.c:312 ../src/libs/tools/colorlabels.c:93
+#: ../src/libs/filters/colors.c:312 ../src/libs/tools/colorlabels.c:142
 msgid "color label"
 msgstr "Кольорова позначка"
 
@@ -5763,7 +5763,7 @@ msgstr "Рейтинг"
 msgid "search"
 msgstr "Пошук"
 
-#: ../src/common/collection.c:1376 ../src/common/colorlabels.c:334
+#: ../src/common/collection.c:1376 ../src/common/colorlabels.c:375
 #: ../src/develop/lightroom.c:889 ../src/gui/guides.c:732
 #: ../src/iop/colorzones.c:2501 ../src/iop/temperature.c:1902
 #: ../src/libs/collect.c:1928 ../src/libs/filters/colors.c:261
@@ -6127,16 +6127,16 @@ msgstr "маджента"
 msgid "color not found"
 msgstr "колір не знайдено"
 
-#: ../src/common/colorlabels.c:309
+#: ../src/common/colorlabels.c:349
 #, c-format
 msgid "colorlabels set to %s"
 msgstr "кольорові позначки встановлено в %s"
 
-#: ../src/common/colorlabels.c:311
+#: ../src/common/colorlabels.c:351
 msgid "all colorlabels removed"
 msgstr "всі кольорові позначки видалено"
 
-#: ../src/common/colorlabels.c:332 ../src/gui/accelerators.c:188
+#: ../src/common/colorlabels.c:373 ../src/gui/accelerators.c:188
 #: ../src/libs/image.c:660
 msgid "clear"
 msgstr "Очистити"
@@ -6711,7 +6711,7 @@ msgstr "Не вдається прочитати файл XMP '%s': '%s'"
 msgid "cannot write XMP file '%s': '%s'"
 msgstr "Не вдається записати в файл XMP '%s': '%s'"
 
-#: ../src/common/fast_guided_filter.h:316
+#: ../src/common/fast_guided_filter.h:331
 msgid "fast guided filter failed to allocate memory, check your RAM settings"
 msgstr ""
 "Швидкий керований фільтр не зміг виділити пам'ять, перевірте налаштування "
@@ -7633,17 +7633,17 @@ msgstr "_Закрити"
 
 #. setup selection accelerators
 #. action-box
-#: ../src/control/crawler.c:786 ../src/dtgtk/thumbtable.c:2787
+#: ../src/control/crawler.c:786 ../src/dtgtk/thumbtable.c:2789
 #: ../src/libs/import.c:2050 ../src/libs/select.c:136
 msgid "select all"
 msgstr "Вибрати всі"
 
-#: ../src/control/crawler.c:787 ../src/dtgtk/thumbtable.c:2789
+#: ../src/control/crawler.c:787 ../src/dtgtk/thumbtable.c:2791
 #: ../src/libs/import.c:2054 ../src/libs/select.c:140
 msgid "select none"
 msgstr "Скасувати вибір"
 
-#: ../src/control/crawler.c:788 ../src/dtgtk/thumbtable.c:2791
+#: ../src/control/crawler.c:788 ../src/dtgtk/thumbtable.c:2793
 #: ../src/libs/select.c:144
 msgid "invert selection"
 msgstr "Інвертувати вибір"
@@ -9926,39 +9926,39 @@ msgid "cached thumbnails invalidation"
 msgstr "Анулювання кешованих мініатюр"
 
 #. setup history key accelerators
-#: ../src/dtgtk/thumbtable.c:2770
+#: ../src/dtgtk/thumbtable.c:2772
 msgid "copy history"
 msgstr "Копіювати історію"
 
-#: ../src/dtgtk/thumbtable.c:2772
+#: ../src/dtgtk/thumbtable.c:2774
 msgid "copy history parts"
 msgstr "Копіювати частини історії"
 
-#: ../src/dtgtk/thumbtable.c:2774
+#: ../src/dtgtk/thumbtable.c:2776
 msgid "paste history"
 msgstr "Вставити історію"
 
-#: ../src/dtgtk/thumbtable.c:2776
+#: ../src/dtgtk/thumbtable.c:2778
 msgid "paste history parts"
 msgstr "Вставити частини історії"
 
-#: ../src/dtgtk/thumbtable.c:2778 ../src/libs/copy_history.c:394
+#: ../src/dtgtk/thumbtable.c:2780 ../src/libs/copy_history.c:394
 msgid "discard history"
 msgstr "Видалити історію"
 
-#: ../src/dtgtk/thumbtable.c:2781
+#: ../src/dtgtk/thumbtable.c:2783
 msgid "duplicate image"
 msgstr "Створити дублікат зображення"
 
-#: ../src/dtgtk/thumbtable.c:2783
+#: ../src/dtgtk/thumbtable.c:2785
 msgid "duplicate image virgin"
 msgstr "Створити дублікат нередагованого зображення"
 
-#: ../src/dtgtk/thumbtable.c:2793 ../src/libs/select.c:148
+#: ../src/dtgtk/thumbtable.c:2795 ../src/libs/select.c:148
 msgid "select film roll"
 msgstr "Вибрати плівку"
 
-#: ../src/dtgtk/thumbtable.c:2795 ../src/libs/select.c:152
+#: ../src/dtgtk/thumbtable.c:2797 ../src/libs/select.c:152
 msgid "select untouched"
 msgstr "Вибрати необроблені"
 
@@ -16822,23 +16822,27 @@ msgid "simulate line drawing"
 msgstr "Імітувати малюнок"
 
 #: ../src/iop/diffuse.c:603
+msgid "local contrast: fine"
+msgstr "Локальний контраст: дрібно"
+
+#: ../src/iop/diffuse.c:628
 msgid "inpaint highlights"
 msgstr "Домальовувати переекспоноване"
 
 #. fast presets for slow hardware
-#: ../src/iop/diffuse.c:630
+#: ../src/iop/diffuse.c:655
 msgid "sharpness: fast"
 msgstr "Різкість: швидко"
 
-#: ../src/iop/diffuse.c:682
+#: ../src/iop/diffuse.c:707
 msgid "sharpness: strong"
 msgstr "Різкість: сильно"
 
-#: ../src/iop/diffuse.c:707
+#: ../src/iop/diffuse.c:732
 msgid "local contrast: fast"
 msgstr "Локальний контраст: швидко"
 
-#: ../src/iop/diffuse.c:1418 ../src/iop/diffuse.c:1693
+#: ../src/iop/diffuse.c:1443 ../src/iop/diffuse.c:1718
 msgid "diffuse/sharpen failed to allocate memory, check your RAM settings"
 msgstr ""
 "Не вдалося виділити пам'ять для модуля \"Дифузія / різкість\", перевірте "
@@ -16846,13 +16850,13 @@ msgstr ""
 
 #. Additional parameters
 #. Camera settings
-#: ../src/iop/diffuse.c:1797 ../src/iop/splittoning.c:533
+#: ../src/iop/diffuse.c:1822 ../src/iop/splittoning.c:533
 #: ../src/libs/camera.c:486
 msgctxt "section"
 msgid "properties"
 msgstr "Параметри"
 
-#: ../src/iop/diffuse.c:1803
+#: ../src/iop/diffuse.c:1828
 msgid ""
 "more iterations make the effect stronger but the module slower.\n"
 "this is analogous to giving more time to the diffusion reaction.\n"
@@ -16864,7 +16868,7 @@ msgstr ""
 "Якщо ви плануєте збільшувати різкість або підмальовувати,\n"
 "більша кількість ітерацій допоможе реконструкції."
 
-#: ../src/iop/diffuse.c:1812
+#: ../src/iop/diffuse.c:1837
 msgid ""
 "main scale of the diffusion.\n"
 "zero makes diffusion act on the finest details more heavily.\n"
@@ -16878,7 +16882,7 @@ msgstr ""
 "Установіть на нуль для відновлення різкості і знешумлення.\n"
 "Збільште, щоб натомість діяти на локальний контраст."
 
-#: ../src/iop/diffuse.c:1822
+#: ../src/iop/diffuse.c:1847
 msgid ""
 "width of the diffusion around the central radius.\n"
 "high values diffuse on a large band of radii.\n"
@@ -16892,12 +16896,12 @@ msgstr ""
 "Якщо ви плануєте усувати розмиття,\n"
 "радіус повинен бути приблизно на ширині розмиття вашого об’єктива."
 
-#: ../src/iop/diffuse.c:1829
+#: ../src/iop/diffuse.c:1854
 msgctxt "section"
 msgid "speed (sharpen ↔ diffuse)"
 msgstr "Швидкість (різкість ↔ дифузія)"
 
-#: ../src/iop/diffuse.c:1836
+#: ../src/iop/diffuse.c:1861
 msgid ""
 "diffusion speed of low-frequency wavelet layers\n"
 "in the direction of 1st order anisotropy (set below).\n"
@@ -16913,7 +16917,7 @@ msgstr ""
 "позитивні значення застосовують дифузію та розмивають,\n"
 "нуль нічого не робить."
 
-#: ../src/iop/diffuse.c:1846
+#: ../src/iop/diffuse.c:1871
 msgid ""
 "diffusion speed of low-frequency wavelet layers\n"
 "in the direction of 2nd order anisotropy (set below).\n"
@@ -16929,7 +16933,7 @@ msgstr ""
 "позитивні значення застосовують дифузію та розмивають,\n"
 "нуль нічого не робить."
 
-#: ../src/iop/diffuse.c:1856
+#: ../src/iop/diffuse.c:1881
 msgid ""
 "diffusion speed of high-frequency wavelet layers\n"
 "in the direction of 3rd order anisotropy (set below).\n"
@@ -16945,7 +16949,7 @@ msgstr ""
 "позитивні значення застосовують дифузію та розмивають,\n"
 "нуль нічого не робить."
 
-#: ../src/iop/diffuse.c:1866
+#: ../src/iop/diffuse.c:1891
 msgid ""
 "diffusion speed of high-frequency wavelet layers\n"
 "in the direction of 4th order anisotropy (set below).\n"
@@ -16961,12 +16965,12 @@ msgstr ""
 "позитивні значення застосовують дифузію та розмивають,\n"
 "нуль нічого не робить."
 
-#: ../src/iop/diffuse.c:1872
+#: ../src/iop/diffuse.c:1897
 msgctxt "section"
 msgid "direction"
 msgstr "Напрямок"
 
-#: ../src/iop/diffuse.c:1879
+#: ../src/iop/diffuse.c:1904
 msgid ""
 "direction of 1st order speed (set above).\n"
 "\n"
@@ -16980,7 +16984,7 @@ msgstr ""
 "при позитивних значеннях скоріше уникає контурів (ізофотів),\n"
 "нуль впливає на обидва напрямки однаково (ізотропно)."
 
-#: ../src/iop/diffuse.c:1888
+#: ../src/iop/diffuse.c:1913
 msgid ""
 "direction of 2nd order speed (set above).\n"
 "\n"
@@ -16994,7 +16998,7 @@ msgstr ""
 "при позитивних значеннях скоріше уникає контурів (ізофотів),\n"
 "нуль впливає на обидва напрямки однаково (ізотропно)."
 
-#: ../src/iop/diffuse.c:1897
+#: ../src/iop/diffuse.c:1922
 msgid ""
 "direction of 3rd order speed (set above).\n"
 "\n"
@@ -17008,7 +17012,7 @@ msgstr ""
 "при позитивних значеннях скоріше уникає контурів (ізофотів),\n"
 "нуль впливає на обидва напрямки однаково (ізотропно)."
 
-#: ../src/iop/diffuse.c:1906
+#: ../src/iop/diffuse.c:1931
 msgid ""
 "direction of 4th order speed (set above).\n"
 "\n"
@@ -17022,12 +17026,12 @@ msgstr ""
 "при позитивних значеннях скоріше уникає контурів (ізофотів),\n"
 "нуль впливає на обидва напрямки однаково (ізотропно)."
 
-#: ../src/iop/diffuse.c:1912
+#: ../src/iop/diffuse.c:1937
 msgctxt "section"
 msgid "edge management"
 msgstr "Управління контурами"
 
-#: ../src/iop/diffuse.c:1919
+#: ../src/iop/diffuse.c:1944
 msgid ""
 "increase or decrease the sharpness of the highest frequencies.\n"
 "can be used to keep details after blooming,\n"
@@ -17037,7 +17041,7 @@ msgstr ""
 "Можна використовувати для збереження деталей після світіння,\n"
 "для окремого збільшення різкості встановіть швидкість на негативні значення."
 
-#: ../src/iop/diffuse.c:1926
+#: ../src/iop/diffuse.c:1951
 msgid ""
 "define the sensitivity of the variance penalty for edges.\n"
 "increase to exclude more edges from diffusion,\n"
@@ -17047,7 +17051,7 @@ msgstr ""
 "Збільште, щоб виключити більше контурів з дифузії,\n"
 "якщо з’являються окантовки або ореоли."
 
-#: ../src/iop/diffuse.c:1933
+#: ../src/iop/diffuse.c:1958
 msgid ""
 "define the variance threshold between edge amplification and penalty.\n"
 "decrease if you want pixels on smooth surfaces get a boost,\n"
@@ -17059,12 +17063,12 @@ msgstr ""
 "збільште, якщо бачите шум на гладких поверхнях або\n"
 "якщо темні ділянки здаються занадто різкими порівняно з яскравими."
 
-#: ../src/iop/diffuse.c:1939
+#: ../src/iop/diffuse.c:1964
 msgctxt "section"
 msgid "diffusion spatiality"
 msgstr "Просторовість дифузії"
 
-#: ../src/iop/diffuse.c:1946
+#: ../src/iop/diffuse.c:1971
 msgid ""
 "luminance threshold for the mask.\n"
 "0. disables the luminance masking and applies the module on the whole "
@@ -19460,8 +19464,14 @@ msgid "image %d does not exists"
 msgstr "Зображення %d не існує"
 
 #: ../src/iop/overlay.c:756
-msgid "drop image here"
-msgstr "Опустіть зображення сюди"
+msgid ""
+"drop\n"
+"image\n"
+"here"
+msgstr ""
+"Опустіть\n"
+"зображення\n"
+"сюди"
 
 #: ../src/iop/overlay.c:964
 #, c-format
@@ -25181,11 +25191,20 @@ msgstr "Налаштування тегів"
 msgid "battery indicator"
 msgstr "Індикатор батареї"
 
-#: ../src/libs/tools/colorlabels.c:42
+#: ../src/libs/tools/colorlabels.c:61
 msgid "colorlabels"
 msgstr "Кольорові позначки"
 
-#: ../src/libs/tools/colorlabels.c:87
+#: ../src/libs/tools/colorlabels.c:104
+#, c-format
+msgid ""
+"toggle color label of selected images\n"
+"<i>%s</i>"
+msgstr ""
+"Перемкнути кольорову позначку вибраних зображень\n"
+"<i>%s</i>"
+
+#: ../src/libs/tools/colorlabels.c:107
 msgid "toggle color label of selected images"
 msgstr "Перемкнути кольорову позначку вибраних зображень"
 
