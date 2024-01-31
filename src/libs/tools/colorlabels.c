@@ -238,6 +238,8 @@ static void _lib_colorlabels_edit(dt_lib_module_t *self,
                    G_CALLBACK(_lib_colorlabels_destroy), self);
   g_signal_connect(entry, "key-press-event",
                    G_CALLBACK(_lib_colorlabels_key_press), self);
+  gtk_widget_set_tooltip_text(entry,
+                              _("enter a description of how you use this color label"));
 
   gtk_widget_show_all(d->floating_window);
   gtk_widget_grab_focus(entry);
@@ -254,7 +256,8 @@ static void _lib_colorlabels_button_clicked_callback(GtkWidget *w,
   const gint colorlabel = _get_colorlabel(self, w);
 
   if(event->type == GDK_BUTTON_PRESS
-     && event->button == 3)
+     && event->button == 3
+     && colorlabel != 5)  // The button to reset colorlabels needs no description
   {
     d->colorlabel = colorlabel;
     _lib_colorlabels_edit(self, event);
