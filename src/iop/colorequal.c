@@ -1833,6 +1833,17 @@ static gboolean _area_button_release_callback(GtkWidget *widget,
   return FALSE;
 }
 
+static gboolean _area_size_callback(GtkWidget *widget,
+                                              GdkEventButton *event,
+                                              gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  g->gradients_cached = FALSE;
+  return FALSE;
+}
+
+
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
   dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
@@ -1987,6 +1998,8 @@ void gui_init(struct dt_iop_module_t *self)
                    G_CALLBACK(_area_motion_notify_callback), self);
   g_signal_connect(G_OBJECT(g->area), "scroll-event",
                    G_CALLBACK(_area_scrolled_callback), self);
+  g_signal_connect(G_OBJECT(g->area), "size_allocate",
+                   G_CALLBACK(_area_size_callback), self);
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->area), TRUE, TRUE, 0);
 
   // start building top level widget
