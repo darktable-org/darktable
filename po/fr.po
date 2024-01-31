@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-01-29 22:34+0100\n"
-"PO-Revision-Date: 2024-01-29 22:35+0100\n"
+"POT-Creation-Date: 2024-01-31 18:49+0100\n"
+"PO-Revision-Date: 2024-01-31 18:50+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -5464,11 +5464,11 @@ msgstr "Menu déroulant"
 #: ../src/libs/metadata.c:462 ../src/libs/metadata_view.c:1222
 #: ../src/libs/modulegroups.c:3473 ../src/libs/recentcollect.c:228
 #: ../src/libs/styles.c:433 ../src/libs/styles.c:481 ../src/libs/styles.c:574
-#: ../src/libs/styles.c:669 ../src/libs/tagging.c:1488
-#: ../src/libs/tagging.c:1579 ../src/libs/tagging.c:1670
-#: ../src/libs/tagging.c:1806 ../src/libs/tagging.c:2085
-#: ../src/libs/tagging.c:2520 ../src/libs/tagging.c:2556
-#: ../src/libs/tagging.c:3517
+#: ../src/libs/styles.c:669 ../src/libs/tagging.c:1507
+#: ../src/libs/tagging.c:1598 ../src/libs/tagging.c:1689
+#: ../src/libs/tagging.c:1825 ../src/libs/tagging.c:2104
+#: ../src/libs/tagging.c:2539 ../src/libs/tagging.c:2575
+#: ../src/libs/tagging.c:3536
 msgid "_cancel"
 msgstr "_Annuler"
 
@@ -5476,9 +5476,9 @@ msgstr "_Annuler"
 #: ../src/gui/styles_dialog.c:556 ../src/libs/collect.c:3271
 #: ../src/libs/export_metadata.c:277 ../src/libs/metadata.c:463
 #: ../src/libs/metadata_view.c:1223 ../src/libs/recentcollect.c:229
-#: ../src/libs/styles.c:433 ../src/libs/tagging.c:1671
-#: ../src/libs/tagging.c:1807 ../src/libs/tagging.c:2086
-#: ../src/libs/tagging.c:3518
+#: ../src/libs/styles.c:433 ../src/libs/tagging.c:1690
+#: ../src/libs/tagging.c:1826 ../src/libs/tagging.c:2105
+#: ../src/libs/tagging.c:3537
 msgid "_save"
 msgstr "_Enregistrer"
 
@@ -5689,7 +5689,7 @@ msgid "camera"
 msgstr "Boîtier"
 
 #: ../src/common/collection.c:607 ../src/libs/export_metadata.c:176
-#: ../src/libs/tagging.c:3327
+#: ../src/libs/tagging.c:3346
 msgid "tag"
 msgstr "Mot-clé"
 
@@ -6757,25 +6757,25 @@ msgid "fast guided filter failed to allocate memory, check your RAM settings"
 msgstr ""
 "Le filtre guidé n’a pas assez de mémoire, vérifier la configuration de la RAM"
 
-#: ../src/common/film.c:356
+#: ../src/common/film.c:312
 msgid "do you want to remove this empty directory?"
 msgid_plural "do you want to remove these empty directories?"
 msgstr[0] "Supprimer ce répertoire vide ?"
 msgstr[1] "Supprimer ces répertoires vides ?"
 
-#: ../src/common/film.c:363
+#: ../src/common/film.c:319
 msgid "remove empty directory?"
 msgid_plural "remove empty directories?"
 msgstr[0] "Supprimer le répertoire vide ?"
 msgstr[1] "Supprimer les répertoires vides ?"
 
-#: ../src/common/film.c:383 ../src/gui/preferences.c:814
+#: ../src/common/film.c:339 ../src/gui/preferences.c:814
 #: ../src/gui/styles_dialog.c:586 ../src/libs/geotagging.c:830
 #: ../src/libs/import.c:1864
 msgid "name"
 msgstr "Nom"
 
-#: ../src/common/film.c:492
+#: ../src/common/film.c:448
 msgid ""
 "cannot remove film roll having local copies with non accessible originals"
 msgstr ""
@@ -8980,7 +8980,7 @@ msgid "adjust the fulcrum used by some blending operations"
 msgstr "Ajuste le pivot utilisé par quelques opérations de fusion"
 
 #. Add opacity/scale sliders to table
-#: ../src/develop/blend_gui.c:3625 ../src/iop/overlay.c:1030
+#: ../src/develop/blend_gui.c:3625 ../src/iop/overlay.c:1031
 #: ../src/iop/watermark.c:1362 ../src/libs/masks.c:105
 msgid "opacity"
 msgstr "Opacité"
@@ -9214,7 +9214,7 @@ msgstr "Afficher"
 
 #: ../src/develop/imageop.c:3774 ../src/libs/modulegroups.c:3322
 #: ../src/libs/modulegroups.c:3445 ../src/libs/modulegroups.c:3826
-#: ../src/libs/tagging.c:3294
+#: ../src/libs/tagging.c:3313
 msgid "new"
 msgstr "Nouveau"
 
@@ -10160,7 +10160,7 @@ msgid "altgr"
 msgstr "AltGr"
 
 #: ../src/gui/accelerators.c:127 ../src/gui/accelerators.c:174
-#: ../src/libs/tagging.c:1804
+#: ../src/libs/tagging.c:1823
 msgid "edit"
 msgstr "Modifier"
 
@@ -10202,7 +10202,7 @@ msgstr "Premier"
 
 #: ../src/gui/accelerators.c:146 ../src/gui/accelerators.c:159
 #: ../src/gui/accelerators.c:356 ../src/libs/filters/rating_range.c:295
-#: ../src/libs/tagging.c:3165 ../src/views/darkroom.c:2238
+#: ../src/libs/tagging.c:3184 ../src/views/darkroom.c:2238
 #: ../src/views/darkroom.c:2288 ../src/views/darkroom.c:2524
 msgid "toggle"
 msgstr "Basculer"
@@ -10668,7 +10668,7 @@ msgstr "Id du périphérique"
 msgid "select file to export"
 msgstr "Sélectionne le fichier à exporter"
 
-#: ../src/gui/accelerators.c:2632 ../src/libs/tagging.c:2556
+#: ../src/gui/accelerators.c:2632 ../src/libs/tagging.c:2575
 msgid "_export"
 msgstr "_Exporter"
 
@@ -10700,7 +10700,7 @@ msgstr "Effacer d’abord les raccourcis du périphérique"
 msgid "select file to import"
 msgstr "Sélectionner le fichier à importer"
 
-#: ../src/gui/accelerators.c:2723 ../src/libs/tagging.c:2520
+#: ../src/gui/accelerators.c:2723 ../src/libs/tagging.c:2539
 msgid "_import"
 msgstr "_Importer"
 
@@ -10777,7 +10777,7 @@ msgid "restore default shortcuts or previous state"
 msgstr "Restaurer les raccourcis par défaut ou leur état précédent"
 
 #: ../src/gui/accelerators.c:3007 ../src/libs/styles.c:932
-#: ../src/libs/tagging.c:3297
+#: ../src/libs/tagging.c:3316
 msgid "import..."
 msgstr "Importer…"
 
@@ -10786,7 +10786,7 @@ msgid "fully or partially import shortcuts from file"
 msgstr "Importer tout ou partiellement les raccourcis"
 
 #: ../src/gui/accelerators.c:3012 ../src/libs/styles.c:939
-#: ../src/libs/tagging.c:3300
+#: ../src/libs/tagging.c:3319
 msgid "export..."
 msgstr "Exporter…"
 
@@ -11824,8 +11824,8 @@ msgstr "Éditer « %s » pour le module « %s »"
 msgid "_export..."
 msgstr "_Exporter…"
 
-#: ../src/gui/presets.c:564 ../src/libs/tagging.c:1489
-#: ../src/libs/tagging.c:1580
+#: ../src/gui/presets.c:564 ../src/libs/tagging.c:1508
+#: ../src/libs/tagging.c:1599
 msgid "_delete"
 msgstr "_Supprimer"
 
@@ -18604,7 +18604,7 @@ msgid "find lens"
 msgstr "Objectif"
 
 #. scale
-#: ../src/iop/lens.cc:4622 ../src/iop/overlay.c:1041 ../src/iop/vignette.c:1055
+#: ../src/iop/lens.cc:4622 ../src/iop/overlay.c:1042 ../src/iop/vignette.c:1055
 #: ../src/iop/watermark.c:1372 ../src/libs/export.c:1264
 msgid "scale"
 msgstr "Échelle"
@@ -19539,7 +19539,8 @@ msgstr ""
 msgid "image %d does not exists"
 msgstr "Image %d n'existe pas"
 
-#: ../src/iop/overlay.c:756
+#. TRANSLATORS: This text must be very narrow, check in the GUI that it is not truncated
+#: ../src/iop/overlay.c:757
 msgid ""
 "drop\n"
 "image\n"
@@ -19549,7 +19550,7 @@ msgstr ""
 "une image\n"
 "ici"
 
-#: ../src/iop/overlay.c:964
+#: ../src/iop/overlay.c:965
 #, c-format
 msgid ""
 "cannot use image %d as overlay as it is using itself the current image as "
@@ -19558,12 +19559,12 @@ msgstr ""
 "Impossible d'utiliser l'image « %d » comme superposition car elle utilise "
 "elle même l'image courante comme superposition"
 
-#: ../src/iop/overlay.c:1034 ../src/iop/watermark.c:1365
+#: ../src/iop/overlay.c:1035 ../src/iop/watermark.c:1365
 msgctxt "section"
 msgid "placement"
 msgstr "Placement"
 
-#: ../src/iop/overlay.c:1049
+#: ../src/iop/overlay.c:1050
 msgid ""
 "choose how to scale the overlay\n"
 "• image: scale overlay relative to whole image\n"
@@ -19585,31 +19586,31 @@ msgstr ""
 " • Options avancées – Permet de choisir les dimensions de l'image et de la "
 "superposition indépendamment"
 
-#: ../src/iop/overlay.c:1060
+#: ../src/iop/overlay.c:1061
 msgid "reference image dimension against which to scale the overlay"
 msgstr ""
 "La dimension de référence de l'image à partir de laquelle mettre la "
 "superposition à l'échelle"
 
-#: ../src/iop/overlay.c:1064
+#: ../src/iop/overlay.c:1065
 msgid "overlay dimension to scale"
 msgstr "dimension de la superposition à mettre à l'échelle"
 
-#: ../src/iop/overlay.c:1068 ../src/iop/watermark.c:1395
+#: ../src/iop/overlay.c:1069 ../src/iop/watermark.c:1395
 #: ../src/libs/print_settings.c:2675
 msgid "alignment"
 msgstr "Alignement"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/overlay.c:1092
+#: ../src/iop/overlay.c:1093
 msgid "the opacity of the overlay"
 msgstr "Opacité de la superposition"
 
-#: ../src/iop/overlay.c:1093
+#: ../src/iop/overlay.c:1094
 msgid "the scale of the overlay"
 msgstr "Taille de la supperposition"
 
-#: ../src/iop/overlay.c:1094
+#: ../src/iop/overlay.c:1095
 msgid "the rotation of the overlay"
 msgstr "La rotation de la superposition"
 
@@ -21671,7 +21672,7 @@ msgstr "Préférences des collections"
 
 #: ../src/libs/collect.c:3295 ../src/libs/export.c:1126
 #: ../src/libs/metadata.c:615 ../src/libs/metadata_view.c:1339
-#: ../src/libs/recentcollect.c:295 ../src/libs/tagging.c:3541
+#: ../src/libs/recentcollect.c:295 ../src/libs/tagging.c:3560
 msgid "preferences..."
 msgstr "Préférences…"
 
@@ -23850,8 +23851,8 @@ msgstr ""
 "collecte et d’importation,\n"
 "et seront également exportées."
 
-#: ../src/libs/metadata.c:529 ../src/libs/tagging.c:1705
-#: ../src/libs/tagging.c:1854
+#: ../src/libs/metadata.c:529 ../src/libs/tagging.c:1724
+#: ../src/libs/tagging.c:1873
 msgid "private"
 msgstr "Privée"
 
@@ -24951,7 +24952,7 @@ msgstr "Créer…"
 msgid "create styles from history stack of selected images"
 msgstr "Créer des styles à partir des images sélectionnées"
 
-#: ../src/libs/styles.c:918 ../src/libs/tagging.c:2283
+#: ../src/libs/styles.c:918 ../src/libs/tagging.c:2302
 msgid "edit..."
 msgstr "Éditer…"
 
@@ -24980,27 +24981,31 @@ msgstr ""
 msgid "tagging"
 msgstr "Mots-clés"
 
-#: ../src/libs/tagging.c:1258
+#: ../src/libs/tagging.c:1273
 msgid "attach tag to all"
 msgstr ""
 "Attache le mot-clé\n"
 "à toutes les images sélectionnées."
 
-#: ../src/libs/tagging.c:1266 ../src/libs/tagging.c:2256
+#: ../src/libs/tagging.c:1281 ../src/libs/tagging.c:2275
 msgid "detach tag"
 msgstr "Détacher le mot-clé"
 
-#: ../src/libs/tagging.c:1486
+#: ../src/libs/tagging.c:1285
+msgid "find tag"
+msgstr "Chercher le mot-clé"
+
+#: ../src/libs/tagging.c:1505
 msgid "delete tag?"
 msgstr "Supprimer le mot-clé ?"
 
-#: ../src/libs/tagging.c:1496 ../src/libs/tagging.c:1587
-#: ../src/libs/tagging.c:1814 ../src/libs/tagging.c:2093
+#: ../src/libs/tagging.c:1515 ../src/libs/tagging.c:1606
+#: ../src/libs/tagging.c:1833 ../src/libs/tagging.c:2112
 #, c-format
 msgid "selected: %s"
 msgstr "Sélectionné : « %s »"
 
-#: ../src/libs/tagging.c:1503
+#: ../src/libs/tagging.c:1522
 #, c-format
 msgid ""
 "do you really want to delete the tag `%s'?\n"
@@ -25016,73 +25021,73 @@ msgstr[1] ""
 "Il est assigné à %d images."
 
 # lorsque l’action n’engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/libs/tagging.c:1537
+#: ../src/libs/tagging.c:1556
 #, c-format
 msgid "tag %s removed"
 msgstr "Mot-clé « %s » supprimé"
 
-#: ../src/libs/tagging.c:1577
+#: ../src/libs/tagging.c:1596
 msgid "delete node?"
 msgstr "Effacer le nœud ?"
 
-#: ../src/libs/tagging.c:1594
+#: ../src/libs/tagging.c:1613
 #, c-format
 msgid "<u>%d</u> tag will be deleted"
 msgid_plural "<u>%d</u> tags will be deleted"
 msgstr[0] "<u>%d</u> mot-clé sera supprimé"
 msgstr[1] "<u>%d</u> mots-clés seront supprimés"
 
-#: ../src/libs/tagging.c:1599 ../src/libs/tagging.c:1826
-#: ../src/libs/tagging.c:2105
+#: ../src/libs/tagging.c:1618 ../src/libs/tagging.c:1845
+#: ../src/libs/tagging.c:2124
 #, c-format
 msgid "<u>%d</u> image will be updated"
 msgid_plural "<u>%d</u> images will be updated"
 msgstr[0] "<u>%d</u> image sera mise à jour"
 msgstr[1] "<u>%d</u> images seront mises à jour"
 
-#: ../src/libs/tagging.c:1625
+#: ../src/libs/tagging.c:1644
 #, c-format
 msgid "%d tags removed"
 msgstr "%d mots-clés supprimés"
 
-#: ../src/libs/tagging.c:1668
+#: ../src/libs/tagging.c:1687
 msgid "create tag"
 msgstr "Créer un mot-clé"
 
-#: ../src/libs/tagging.c:1681 ../src/libs/tagging.c:1834
+#: ../src/libs/tagging.c:1700 ../src/libs/tagging.c:1853
 msgid "name: "
 msgstr "Nom : "
 
-#: ../src/libs/tagging.c:1696
+#: ../src/libs/tagging.c:1715
 #, c-format
 msgid "add to: \"%s\" "
 msgstr "Ajouter à « %s » "
 
-#: ../src/libs/tagging.c:1702 ../src/libs/tagging.c:1851
+#: ../src/libs/tagging.c:1721 ../src/libs/tagging.c:1870
 msgid "category"
 msgstr "Catégorie"
 
-#: ../src/libs/tagging.c:1711 ../src/libs/tagging.c:1860
+#: ../src/libs/tagging.c:1730 ../src/libs/tagging.c:1879
 msgid "synonyms: "
 msgstr "Synonymes : "
 
-#: ../src/libs/tagging.c:1728 ../src/libs/tagging.c:1882
-#: ../src/libs/tagging.c:2128
+#: ../src/libs/tagging.c:1747 ../src/libs/tagging.c:1901
+#: ../src/libs/tagging.c:2147
 msgid "empty tag is not allowed, aborting"
 msgstr "Mot-clé vide interdit, annulation."
 
-#: ../src/libs/tagging.c:1739
+#: ../src/libs/tagging.c:1758
 msgid "tag name already exists. aborting."
 msgstr "Le mot-clé existe déjà, annulation."
 
-#: ../src/libs/tagging.c:1821 ../src/libs/tagging.c:2100
+#: ../src/libs/tagging.c:1840 ../src/libs/tagging.c:2119
 #, c-format
 msgid "<u>%d</u> tag will be updated"
 msgid_plural "<u>%d</u> tags will be updated"
 msgstr[0] "<u>%d</u> mot-clé sera mis à jour"
 msgstr[1] "<u>%d</u> mots-clés seront mis à jour"
 
-#: ../src/libs/tagging.c:1884
+#: ../src/libs/tagging.c:1903
 msgid ""
 "'|' character is not allowed for renaming tag.\n"
 "to modify the hierarchy use rename path instead. Aborting."
@@ -25090,101 +25095,101 @@ msgstr ""
 "« | » n’est pas utilisable dans le nom d’un mot-clé,\n"
 "pour modifier une hiérarchie utiliser l’action « Renommer le chemin »."
 
-#: ../src/libs/tagging.c:1923 ../src/libs/tagging.c:2031
+#: ../src/libs/tagging.c:1942 ../src/libs/tagging.c:2050
 #, c-format
 msgid "at least one new tag name (%s) already exists, aborting"
 msgstr "Au moins un nouveau mot-clé (%s) existe déjà, annulation."
 
-#: ../src/libs/tagging.c:2083
+#: ../src/libs/tagging.c:2102
 msgid "change path"
 msgstr "Changer le chemin"
 
-#: ../src/libs/tagging.c:2130
+#: ../src/libs/tagging.c:2149
 msgid "'|' misplaced, empty tag is not allowed, aborting"
 msgstr "« | » mal placé, un mot-clé vide est interdit, annulation"
 
 # lorsque l’action n’engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/libs/tagging.c:2226
+#: ../src/libs/tagging.c:2245
 #, c-format
 msgid "tag %s created"
 msgstr "Mot-clé « %s » créé"
 
-#: ../src/libs/tagging.c:2252
+#: ../src/libs/tagging.c:2271
 msgid "attach tag"
 msgstr "Attacher le mot-clé"
 
-#: ../src/libs/tagging.c:2265
+#: ../src/libs/tagging.c:2284
 msgid "create tag..."
 msgstr "Créer un mot-clé…"
 
-#: ../src/libs/tagging.c:2271
+#: ../src/libs/tagging.c:2290
 msgid "delete tag"
 msgstr "Supprimer un mot-clé"
 
-#: ../src/libs/tagging.c:2278
+#: ../src/libs/tagging.c:2297
 msgid "delete node"
 msgstr "Supprimer le nœud"
 
-#: ../src/libs/tagging.c:2291
+#: ../src/libs/tagging.c:2310
 msgid "change path..."
 msgstr "Changer le chemin…"
 
-#: ../src/libs/tagging.c:2301
+#: ../src/libs/tagging.c:2320
 msgid "set as a tag"
 msgstr "Défini comme mot-clé"
 
-#: ../src/libs/tagging.c:2312
+#: ../src/libs/tagging.c:2331
 msgid "copy to entry"
 msgstr "Copier dans le champ de saisie"
 
-#: ../src/libs/tagging.c:2329
+#: ../src/libs/tagging.c:2348
 msgid "go to tag collection"
 msgstr "Aller à la collection liée au mot-clé"
 
-#: ../src/libs/tagging.c:2335
+#: ../src/libs/tagging.c:2354
 msgid "go back to work"
 msgstr "Retourner au module des mots-clés"
 
-#: ../src/libs/tagging.c:2492
+#: ../src/libs/tagging.c:2511
 #, c-format
 msgid "%s"
 msgstr "%s"
 
-#: ../src/libs/tagging.c:2493
+#: ../src/libs/tagging.c:2512
 msgid "(private)"
 msgstr "(privé)"
 
-#: ../src/libs/tagging.c:2519
+#: ../src/libs/tagging.c:2538
 msgid "select a keyword file"
 msgstr "Sélectionner un fichier de mot-clés"
 
-#: ../src/libs/tagging.c:2532
+#: ../src/libs/tagging.c:2551
 msgid "error importing tags"
 msgstr "Erreur lors de l’importation de mots-clés"
 
-#: ../src/libs/tagging.c:2534
+#: ../src/libs/tagging.c:2553
 #, c-format
 msgid "%zd tags imported"
 msgstr "« %zd » mots-clés importés"
 
-#: ../src/libs/tagging.c:2555
+#: ../src/libs/tagging.c:2574
 msgid "select file to export to"
 msgstr "Sélectionne le fichier pour l’exportation"
 
-#: ../src/libs/tagging.c:2569
+#: ../src/libs/tagging.c:2588
 msgid "error exporting tags"
 msgstr "Erreur lors de l’exportation de mots-clés"
 
-#: ../src/libs/tagging.c:2571
+#: ../src/libs/tagging.c:2590
 #, c-format
 msgid "%zd tags exported"
 msgstr "« %zd » mots-clés exportés"
 
-#: ../src/libs/tagging.c:3010
+#: ../src/libs/tagging.c:3029
 msgid "drop to root"
 msgstr "Replacer à la racine"
 
-#: ../src/libs/tagging.c:3146
+#: ../src/libs/tagging.c:3165
 msgid ""
 "attached tags\n"
 "press Delete or double-click to detach\n"
@@ -25196,47 +25201,47 @@ msgstr ""
 " • Clic droit pour afficher le menu des actions du mot-clé sélectionné,\n"
 " • Touche Tab pour donner le focus à la zone d’entrée."
 
-#: ../src/libs/tagging.c:3157
+#: ../src/libs/tagging.c:3176
 msgid "attach"
 msgstr "Attacher"
 
-#: ../src/libs/tagging.c:3158
+#: ../src/libs/tagging.c:3177
 msgid "attach tag to all selected images"
 msgstr "Attacher le mot-clé aux images sélectionnées"
 
-#: ../src/libs/tagging.c:3161
+#: ../src/libs/tagging.c:3180
 msgid "detach"
 msgstr "Détacher"
 
-#: ../src/libs/tagging.c:3162
+#: ../src/libs/tagging.c:3181
 msgid "detach tag from all selected images"
 msgstr "Détacher le mot-clé des images sélectionnées"
 
-#: ../src/libs/tagging.c:3175
+#: ../src/libs/tagging.c:3194
 msgid "toggle list with / without hierarchy"
 msgstr "Basculer la liste hiérarchique"
 
-#: ../src/libs/tagging.c:3175
+#: ../src/libs/tagging.c:3194
 msgid "hide"
 msgstr "Cacher"
 
-#: ../src/libs/tagging.c:3177
+#: ../src/libs/tagging.c:3196
 msgid "toggle sort by name or by count"
 msgstr "Changer le classement par nom ou par nombre"
 
-#: ../src/libs/tagging.c:3177
+#: ../src/libs/tagging.c:3196
 msgid "sort"
 msgstr "Trier"
 
-#: ../src/libs/tagging.c:3179
+#: ../src/libs/tagging.c:3198
 msgid "toggle show or not darktable tags"
 msgstr "Basculer l’affichage des mots-clés spécifiques à darktable"
 
-#: ../src/libs/tagging.c:3179
+#: ../src/libs/tagging.c:3198
 msgid "dttags"
 msgstr "Dttags"
 
-#: ../src/libs/tagging.c:3195
+#: ../src/libs/tagging.c:3214
 msgid ""
 "enter tag name\n"
 "press Enter to create a new tag and attach it on selected images\n"
@@ -25248,11 +25253,11 @@ msgstr ""
 " • Touches Tab ou Bas pour aller vers le premier mot-clé affiché,\n"
 " • Maj+Tab pour sélectionner le premier mot-clé utilisateur attaché."
 
-#: ../src/libs/tagging.c:3206 ../src/libs/tagging.c:3212
+#: ../src/libs/tagging.c:3225 ../src/libs/tagging.c:3231
 msgid "clear entry"
 msgstr "Effacer le texte"
 
-#: ../src/libs/tagging.c:3259
+#: ../src/libs/tagging.c:3278
 msgid ""
 "tag dictionary,\n"
 "Enter or double-click to attach selected tag on selected images\n"
@@ -25269,48 +25274,48 @@ msgstr ""
 " • Clic droit pour les autres actions sur le mot-clé sélectionné,\n"
 " • Maj+Tab pour donner le focus à la zone de saisie."
 
-#: ../src/libs/tagging.c:3294
+#: ../src/libs/tagging.c:3313
 msgid ""
 "create a new tag with the\n"
 "name you entered"
 msgstr "Créer un nouveau mot-clé à partir de la saisie"
 
-#: ../src/libs/tagging.c:3297
+#: ../src/libs/tagging.c:3316
 msgid "import tags from a Lightroom keyword file"
 msgstr "Importer des mots-clés depuis un fichier de mots-clés Lightroom"
 
-#: ../src/libs/tagging.c:3300
+#: ../src/libs/tagging.c:3319
 msgid "export all tags to a Lightroom keyword file"
 msgstr "Exporter tous les mots-clés dans un fichier de mots-clés Lightroom"
 
-#: ../src/libs/tagging.c:3304
+#: ../src/libs/tagging.c:3323
 msgid "toggle list / tree view"
 msgstr "Changer la vue liste / arbre"
 
-#: ../src/libs/tagging.c:3304
+#: ../src/libs/tagging.c:3323
 msgid "tree"
 msgstr "Arbre"
 
-#: ../src/libs/tagging.c:3306
+#: ../src/libs/tagging.c:3325
 msgid "toggle list with / without suggestion"
 msgstr "Afficher la liste avec / sans les suggestions"
 
-#: ../src/libs/tagging.c:3306
+#: ../src/libs/tagging.c:3325
 msgid "suggestion"
 msgstr "Suggestion"
 
-#: ../src/libs/tagging.c:3328
+#: ../src/libs/tagging.c:3347
 msgid "redo last tag"
 msgstr "Ré-appliquer le mot-clé"
 
-#: ../src/libs/tagging.c:3411
+#: ../src/libs/tagging.c:3430
 msgid ""
 "tag shortcut is not active with tag tree view. please switch to list view"
 msgstr ""
 "Le raccourci de mots-clés n’est pas actif lorsque la vue est arborescente, "
 "changer pour la vue en liste."
 
-#: ../src/libs/tagging.c:3515
+#: ../src/libs/tagging.c:3534
 msgid "tagging settings"
 msgstr "Paramètres des mots-clés"
 
@@ -25335,6 +25340,10 @@ msgstr ""
 #: ../src/libs/tools/colorlabels.c:107
 msgid "toggle color label of selected images"
 msgstr "Basculer le label de couleur des images sélectionnées"
+
+#: ../src/libs/tools/colorlabels.c:242
+msgid "enter a description of how you use this color label"
+msgstr "Entrer une description sur l'utilisation de ce label de couleur"
 
 #: ../src/libs/tools/filmstrip.c:45
 msgid "filmstrip"
