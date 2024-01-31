@@ -451,11 +451,12 @@ static gboolean _scale_mdlclick(GtkEntry *spin,
                                 GdkEventButton *event,
                                 dt_lib_export_t *d)
 {
-  if(event->button == 2)
+  if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
   {
     dt_conf_set_string(CONFIG_PREFIX "resizing_factor", "1");
     g_signal_handlers_block_by_func(spin, _scale_changed, d);
     gtk_entry_set_text(GTK_ENTRY(spin), "1");
+    gtk_editable_select_region(GTK_EDITABLE(spin), 0, -1);
     g_signal_handlers_unblock_by_func(spin, _scale_changed, d);
   }
   else
@@ -465,38 +466,44 @@ static gboolean _scale_mdlclick(GtkEntry *spin,
   return FALSE;
 }
 
-static void _widht_mdlclick(GtkEntry *spin,
-                            GdkEventButton *event,
-                            gpointer user_data)
+static gboolean _widht_mdlclick(GtkEntry *spin,
+                                GdkEventButton *event,
+                                gpointer user_data)
 {
-  if(event->button == 2)
+  if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
   {
     dt_conf_set_int(CONFIG_PREFIX "width", 0);
     g_signal_handlers_block_by_func(spin, _width_changed, user_data);
     gtk_entry_set_text(GTK_ENTRY(spin), "0");
+    gtk_editable_select_region(GTK_EDITABLE(spin), 0, -1);
     g_signal_handlers_unblock_by_func(spin, _width_changed, user_data);
   }
   else
   {
     _width_changed(GTK_EDITABLE(spin), user_data);
   }
+
+  return FALSE;
 }
 
-static void _height_mdlclick(GtkEntry *spin,
-                             GdkEventButton *event,
-                             gpointer user_data)
+static gboolean _height_mdlclick(GtkEntry *spin,
+                                 GdkEventButton *event,
+                                 gpointer user_data)
 {
-  if(event->button == 2)
+  if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
   {
     dt_conf_set_int(CONFIG_PREFIX "height", 0);
     g_signal_handlers_block_by_func(spin, _height_changed, user_data);
     gtk_entry_set_text(GTK_ENTRY(spin), "0");
+    gtk_editable_select_region(GTK_EDITABLE(spin), 0, -1);
     g_signal_handlers_unblock_by_func(spin, _height_changed, user_data);
   }
   else
   {
     _height_changed(GTK_EDITABLE(spin), user_data);
   }
+
+  return FALSE;
 }
 
 static void _size_in_px_update(dt_lib_export_t *d)
