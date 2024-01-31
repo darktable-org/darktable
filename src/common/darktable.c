@@ -363,8 +363,8 @@ gboolean dt_supported_image(const gchar *filename)
 }
 
 dt_imgid_t dt_load_from_string(const gchar *input,
-                        const gboolean open_image_in_dr,
-                        gboolean *single_image)
+                               const gboolean open_image_in_dr,
+                               gboolean *single_image)
 {
   dt_imgid_t id = NO_IMGID;
   if(input == NULL || input[0] == '\0') return NO_IMGID;
