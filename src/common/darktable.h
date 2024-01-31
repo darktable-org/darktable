@@ -830,8 +830,8 @@ void dt_configure_runtime_performance(const int version, char *config_info);
 // single image files or whole directories it tells you if it was a
 // single image or a directory in single_image (when it's not NULL)
 dt_imgid_t dt_load_from_string(const gchar *image_to_load,
-                        const gboolean open_image_in_dr,
-                        gboolean *single_image);
+                               const gboolean open_image_in_dr,
+                               gboolean *single_image);
 
 #define dt_unreachable_codepath_with_desc(D)                                                                 \
   dt_unreachable_codepath_with_caller(D, __FILE__, __LINE__, __FUNCTION__)
