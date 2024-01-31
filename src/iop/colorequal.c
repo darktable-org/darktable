@@ -100,6 +100,8 @@ None;midi:CC24=iop/colorequal/brightness/purple
 
 #define GRAPH_GRADIENTS 64
 
+// #define COLOREQUAL_DEBUG
+
 DT_MODULE_INTROSPECTION(1, dt_iop_colorequal_params_t)
 
 typedef struct dt_iop_colorequal_params_t
@@ -246,6 +248,7 @@ typedef struct dt_iop_colorequal_gui_data_t
 
   float *gamut_LUT;
 
+  gboolean masking;
   gboolean dragging;
   gboolean on_node;
   int selected;
@@ -745,6 +748,12 @@ void process(struct dt_iop_module_t *self,
 
   if(piece->colors != 4) return;
 
+#ifdef COLOREQUAL_DEBUG
+  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
+  const gboolean masking = g && fullpipe && g->masking;
+#endif
+
   const float *const restrict in = (float*)i;
   float *const restrict out = (float*)o;
 
@@ -892,6 +901,27 @@ void process(struct dt_iop_module_t *self,
     dot_product(XYZ_D65, output_matrix, pix_out);
   }
 
+#ifdef COLOREQUAL_DEBUG
+  if(masking)
+  {
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(npixels, out, b_corrections, saturations)  \
+  schedule(simd:static) aligned(out, b_corrections, saturations: 64)
+#endif
+    for(size_t k = 0; k < npixels; k++)
+    {
+      float *const restrict pix_out = __builtin_assume_aligned(out + k * 4, 16);
+      const float sat = saturations[k];
+      const float corr = 32.0f * (b_corrections[k] - 1.0f);
+      const gboolean sign = corr < 0.0f;
+
+      pix_out[0] = MAX(0.0f, sign ? sat * (1.0f + corr) : sat);
+      pix_out[1] = MAX(0.0f, sign ? sat * (1.0f + corr) : sat * (1.0f - corr));
+      pix_out[2] = MAX(0.0f, sign ? sat                 : sat * (1.0f - corr));
+    }
+  }
+#endif
   dt_free_align(corrections);
   dt_free_align(b_corrections);
   dt_free_align(saturations);
@@ -1896,6 +1926,17 @@ void gui_update(dt_iop_module_t *self)
   }
 }
 
+#ifdef COLOREQUAL_DEBUG
+static void _param_callback(GtkWidget *quad, gpointer user_data)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  g->masking = (dt_bauhaus_widget_get_quad_active(quad)) ? TRUE : FALSE;
+  dt_dev_reprocess_center(self->dev);
+}
+#endif
+
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_colorequal_gui_data_t *g = IOP_GUI_ALLOC(colorequal);
@@ -2060,6 +2101,13 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->param_size, 1);
   dt_bauhaus_slider_set_format(g->param_size, _(" px"));
   gtk_widget_set_tooltip_text(g->param_size, _("blurring radius of applied parameters"));
+
+#ifdef COLOREQUAL_DEBUG
+  dt_bauhaus_widget_set_quad_paint(g->param_size, dtgtk_cairo_paint_showmask, 0, NULL);
+  dt_bauhaus_widget_set_quad_toggle(g->param_size, TRUE);
+  dt_bauhaus_widget_set_quad_active(g->param_size, FALSE);
+  g_signal_connect(G_OBJECT(g->param_size), "quad-pressed", G_CALLBACK(_param_callback), self);
+#endif
 
   _init_sliders(self);
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->notebook), TRUE, TRUE, 0);
