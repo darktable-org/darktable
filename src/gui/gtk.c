@@ -2730,7 +2730,7 @@ void dt_gui_show_help(GtkWidget *widget)
       // array of languages the usermanual supports.
       // NULL MUST remain the last element of the array
       const char *supported_languages[] =
-        { "en", "fr", "de", "eo", "es", "gl", "it", "pl", "pt-br", "uk", NULL };
+        { "en", "fr", "de", "eo", "es", "gl", "it", "nl", "pl", "pt-br", "uk", NULL };
       int lang_index = 0;
       gboolean is_language_supported = FALSE;
 
