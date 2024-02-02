@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2010-2023 darktable developers.
+   Copyright (C) 2010-2024 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -329,7 +329,10 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
         dt_print(DT_DEBUG_CAMCTL, "[camera_control] live view failed to get preview data: %s\n",
                  gp_result_as_string(res));
       }
-      else
+      // to avoid a crash check that data is not null and data_size >
+      // 0. there is cases where this occurs even if the above call to
+      // gp_file_get_data_and_size returns GP_OK.
+      else if(data && data_size > 0)
       {
         // everything worked
         dt_imageio_jpeg_t jpg;
