@@ -921,6 +921,11 @@ static inline gboolean dt_check_gimpmode(const char *mode)
   return darktable.gimp.mode ? strcmp(darktable.gimp.mode, mode) == 0 : FALSE;
 }
 
+static inline gboolean dt_check_gimpmode_ok(const char *mode)
+{
+  return darktable.gimp.mode ? !darktable.gimp.error && strcmp(darktable.gimp.mode, mode) == 0 : FALSE;
+}
+
 #ifdef __cplusplus
 } // extern "C"
 #endif /* __cplusplus */
