@@ -16,6 +16,10 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "common/darktable.h"
+#include "common/image.h"
+#include "develop/develop.h"
+#include "common/gimp.h"
+#include "common/image_cache.h"
 #include "gui/gtk.h"
 #include <stdlib.h>
 
@@ -91,7 +95,59 @@ int main(int argc, char *argv[])
 #endif
 
   if(dt_init(argc, argv, TRUE, TRUE, NULL)) exit(1);
+
+  if(dt_check_gimpmode("version"))
+  {
+    fprintf(stdout, "\n%d\n", DT_GIMP_VERSION);
+    exit(0);
+  }
+
+  if(dt_check_gimpmode("file") && !darktable.gimp.error)
+  {
+    const dt_imgid_t id = dt_gimp_load_darkroom(darktable.gimp.path);
+    if(!dt_is_valid_imgid(id))
+      darktable.gimp.error = TRUE;
+  }
+
+  if(dt_check_gimpmode("thumb") && !darktable.gimp.error)
+  {
+    const dt_imgid_t id = dt_gimp_load_image(darktable.gimp.path);
+    if(dt_is_valid_imgid(id))
+    {
+      if(!dt_export_gimp_file(id))
+        darktable.gimp.error = TRUE;
+    }
+    else
+      darktable.gimp.error = TRUE;
+  }
+
+  if(darktable.gimp.error)
+  {
+    fprintf(stdout, "\nerror\n");
+    exit(1);
+  }
+
+  if(dt_check_gimpmode("thumb")) exit(darktable.gimp.error ? 1 : 0);
+
   dt_gui_gtk_run(darktable.gui);
+
+  if(dt_check_gimpmode("file") && !darktable.gimp.error)
+  {
+    const dt_imgid_t id = darktable.gimp.imgid;
+    if(!darktable.gimp.error && dt_is_valid_imgid(id))
+    {
+      if(!dt_export_gimp_file(id))
+        darktable.gimp.error = TRUE;
+    }
+  }
+  dt_cleanup();
+
+  if(darktable.gimp.error)
+  {
+    fprintf(stdout, "\nerror\n");
+    exit(1);
+  }
+
 
 #ifdef _WIN32
   if(redirect_output)
