@@ -264,9 +264,12 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img,
     {
       img->flags |= DT_IMAGE_HDR;
 
-      // we assume that image is normalized before.
-      // FIXME: not true for hdrmerge DNG's.
-      for(int k = 0; k < 4; k++) img->buf_dsc.processed_maximum[k] = 1.0f;
+      // We assume that float images should already be normalized.
+      // Also consider 1.0f in binary32 (legacy dt HDR files) as white point magic value;
+      // otherwise (e.g. HDRMerge files), let rawprepare normalize as usual.
+      if(r->whitePoint == 0x3F800000) img->raw_white_point = 1;
+      if(img->raw_white_point == 1)
+        for(int k = 0; k < 4; k++) img->buf_dsc.processed_maximum[k] = 1.0f;
     }
 
     img->buf_dsc.filters = 0u;
