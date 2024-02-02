@@ -511,5 +511,5 @@ jobs:
           files: |
             artifact-appimage/*
             artifact-windows/*
-            artifact-macos-intel/*
-            artifact-macos-arm/*
+            artifact-macos-arm64/*
+            artifact-macos-x86_64/*
