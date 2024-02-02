@@ -382,7 +382,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           path: ${{ env.INSTALL_PREFIX }}/darktable-${{ env.VERSION }}.dmg
-          name: artifact-macos-intel
+          name: artifact-macos-x86_64
           retention-days: 2
 
   macOS:
