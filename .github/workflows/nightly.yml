@@ -471,7 +471,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           path: ${{ env.INSTALL_PREFIX }}/darktable-${{ env.VERSION }}.dmg
-          name: artifact-macos-arm
+          name: artifact-macos-arm64
           retention-days: 2
 
   upload_to_release:
