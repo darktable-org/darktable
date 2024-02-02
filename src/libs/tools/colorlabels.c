@@ -128,7 +128,10 @@ void gui_init(dt_lib_module_t *self)
     d->buttons[k] = button;
     dt_gui_add_class(d->buttons[k], "dt_no_hover");
     dt_gui_add_class(d->buttons[k], "dt_dimmed");
-    char *tooltip = _get_tooltip_for(k);
+    // Only the first 5 buttons are color label togglers, the last one clears all labels
+    char *tooltip = k < 5
+                    ? _get_tooltip_for(k)
+                    : g_strdup(_("clear color labels of selected images"));
     gtk_widget_set_tooltip_markup(button, tooltip);
     g_free(tooltip);
     gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
