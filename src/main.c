@@ -96,20 +96,17 @@ int main(int argc, char *argv[])
 
   if(dt_init(argc, argv, TRUE, TRUE, NULL)) exit(1);
 
-  if(dt_check_gimpmode("version"))
-  {
-    fprintf(stdout, "\n%d\n", DT_GIMP_VERSION);
-    exit(0);
-  }
+  if(dt_check_gimpmode_ok("version"))
+    fprintf(stdout, "\n<<<gimp\n%d\ngimp>>>\n", DT_GIMP_VERSION);
 
-  if(dt_check_gimpmode("file") && !darktable.gimp.error)
+  if(dt_check_gimpmode_ok("file"))
   {
     const dt_imgid_t id = dt_gimp_load_darkroom(darktable.gimp.path);
     if(!dt_is_valid_imgid(id))
       darktable.gimp.error = TRUE;
   }
 
-  if(dt_check_gimpmode("thumb") && !darktable.gimp.error)
+  if(dt_check_gimpmode_ok("thumb"))
   {
     const dt_imgid_t id = dt_gimp_load_image(darktable.gimp.path);
     if(dt_is_valid_imgid(id))
@@ -121,33 +118,19 @@ int main(int argc, char *argv[])
       darktable.gimp.error = TRUE;
   }
 
-  if(darktable.gimp.error)
+  if(!darktable.gimp.mode || dt_check_gimpmode_ok("file"))
+    dt_gui_gtk_run(darktable.gui);
+
+  if(dt_check_gimpmode_ok("file"))
   {
-    fprintf(stdout, "\nerror\n");
-    exit(1);
+    if(!dt_export_gimp_file(darktable.gimp.imgid))
+      darktable.gimp.error = TRUE;
   }
 
-  if(dt_check_gimpmode("thumb")) exit(darktable.gimp.error ? 1 : 0);
-
-  dt_gui_gtk_run(darktable.gui);
-
-  if(dt_check_gimpmode("file") && !darktable.gimp.error)
-  {
-    const dt_imgid_t id = darktable.gimp.imgid;
-    if(!darktable.gimp.error && dt_is_valid_imgid(id))
-    {
-      if(!dt_export_gimp_file(id))
-        darktable.gimp.error = TRUE;
-    }
-  }
   dt_cleanup();
 
-  if(darktable.gimp.error)
-  {
-    fprintf(stdout, "\nerror\n");
-    exit(1);
-  }
-
+  if(darktable.gimp.mode && darktable.gimp.error)
+    fprintf(stdout, "\n<<<gimp\nerror\ngimp>>>\n");
 
 #ifdef _WIN32
   if(redirect_output)
@@ -159,7 +142,8 @@ int main(int argc, char *argv[])
   }
 #endif
 
-  exit(0);
+  const int exitcode = darktable.gimp.mode ? (darktable.gimp.error ? 1 : 0) : 0;
+  exit(exitcode);
 }
 
 // clang-format off

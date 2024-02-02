@@ -21,12 +21,6 @@
 #include "control/control.h"
 #include <glib.h>
 
-void dt_gimp_init_settings(void)
-{
-  darktable.unmuted_signal_dbg_acts = 0;
-  darktable.unmuted = 0;
-}
-
 gboolean dt_export_gimp_file(const dt_imgid_t id)
 {
   const gboolean thumb = dt_check_gimpmode("thumb");
@@ -69,13 +63,14 @@ gboolean dt_export_gimp_file(const dt_imgid_t id)
                   NULL,  // icc_filename
                   DT_INTENT_PERCEPTUAL, // for xcf it's irrelevant, for jpeg we want it
                   NULL);  // &metadata
-  fprintf(stdout, "\n%s%s\n", path, thumb ? ".jpg" : ".xcf");
+  fprintf(stdout, "<<<gimp\n%s%s\n", path, thumb ? ".jpg" : ".xcf");
   if(thumb)
   {
     dt_image_t *image = dt_image_cache_get(darktable.image_cache, id, 'r');
     fprintf(stdout, "%i %i\n", image->width, image->height);
     dt_image_cache_read_release(darktable.image_cache, image);
   }
+  fprintf(stdout, "gimp>>>\n");
   return TRUE;
 }
 
