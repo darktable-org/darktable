@@ -556,7 +556,6 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module,
       {
         return 0;
       }
-      dt_masks_update_image(darktable.develop);
     }
     return 1;
   }
@@ -826,9 +825,6 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module,
     // we recreate the form points
     dt_masks_gui_form_create(form, gui, index, module);
 
-    // we save the move
-    dt_masks_update_image(darktable.develop);
-
     if(gui->creation_continuous)
     {
       dt_masks_form_t *form_new = dt_masks_create(form->type);
@@ -870,9 +866,6 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module,
 
     // we recreate the form points
     dt_masks_gui_form_create(form, gui, index, module);
-
-    // we save the new parameters
-    dt_masks_update_image(darktable.develop);
 
     return 1;
   }
@@ -922,9 +915,6 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module,
     // we recreate the form points
     dt_masks_gui_form_create(form, gui, index, module);
 
-    // we save the rotation
-    dt_masks_update_image(darktable.develop);
-
     return 1;
   }
   else if(gui->point_dragging >= 1
@@ -935,9 +925,6 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module,
 
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
-    // we save the updated shape
-    dt_masks_update_image(darktable.develop);
-
     return 1;
   }
   else if(gui->point_border_dragging >= 1
@@ -947,9 +934,6 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module,
     gui->point_border_dragging = -1;
 
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
-
-    // we save the updated shape
-    dt_masks_update_image(darktable.develop);
 
     return 1;
   }
@@ -978,9 +962,6 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module,
 
     // we recreate the form points
     dt_masks_gui_form_create(form, gui, index, module);
-
-    // we save the move
-    dt_masks_update_image(darktable.develop);
 
     if(gui->creation_continuous)
     {

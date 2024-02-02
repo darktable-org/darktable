@@ -1770,11 +1770,10 @@ void dt_masks_form_remove(struct dt_iop_module_t *module,
         break;
       }
     }
-    if(ok) dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
-    if(ok && module)
+    if(ok)
     {
+      dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
       dt_masks_iop_update(module);
-      dt_masks_update_image(darktable.develop);
     }
     if(ok && grp->points == NULL) dt_masks_form_remove(module, NULL, grp);
     return;
@@ -1835,7 +1834,6 @@ void dt_masks_form_remove(struct dt_iop_module_t *module,
           {
             form_removed = TRUE;
             dt_masks_iop_update(m);
-            dt_masks_update_image(darktable.develop);
             if(iopgrp->points == NULL) dt_masks_form_remove(m, NULL, iopgrp);
           }
         }
@@ -1880,7 +1878,6 @@ float dt_masks_form_change_opacity(dt_masks_form_t *form,
         fpt->opacity = opacity;
         dt_toast_log(_("opacity: %.0f%%"), opacity * 100);
         dt_dev_add_masks_history_item(darktable.develop, NULL, TRUE);
-        dt_masks_update_image(darktable.develop);
       }
       return opacity;
     }
@@ -2071,18 +2068,6 @@ char *dt_masks_group_get_hash_buffer(dt_masks_form_t *form, char *str)
     }
   }
   return str + pos;
-}
-
-void dt_masks_update_image(dt_develop_t *dev)
-{
-  /* invalidate image data*/
-  // dt_similarity_image_dirty(dev->image_storage.id);
-
-  // invalidate buffers and force redraw of darkroom
-  dev->full.pipe->changed |= DT_DEV_PIPE_SYNCH;
-  dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
-  dev->preview2.pipe->changed |= DT_DEV_PIPE_SYNCH;
-  dt_dev_invalidate_all(dev);
 }
 
 // adds formid to used array

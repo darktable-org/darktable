@@ -173,7 +173,6 @@ static int _gradient_events_mouse_scrolled(struct dt_iop_module_t *module,
       dt_conf_set_float(DT_MASKS_CONF(form->type, gradient, compression),
                         gradient->compression);
       dt_toast_log(_("compression: %3.2f%%"), gradient->compression*100.0f);
-      dt_masks_update_image(darktable.develop);
     }
     else if(gui->edit_mode == DT_MASKS_EDIT_FULL)
     {
@@ -186,7 +185,6 @@ static int _gradient_events_mouse_scrolled(struct dt_iop_module_t *module,
       dt_toast_log(_("curvature: %3.2f%%"), gradient->curvature*50.0f);
       dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
       dt_masks_gui_form_create(form, gui, index, module);
-      dt_masks_update_image(darktable.develop);
     }
     return 1;
   }
@@ -218,8 +216,6 @@ static int _gradient_events_button_pressed(struct dt_iop_module_t *module,
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     dt_masks_gui_form_create(form, gui, index, module);
-
-    dt_masks_update_image(darktable.develop);
 
     return 1;
   }
@@ -405,9 +401,6 @@ static int _gradient_events_button_released(struct dt_iop_module_t *module,
     // we recreate the form points
     dt_masks_gui_form_create(form, gui, index, module);
 
-    // we save the move
-    dt_masks_update_image(darktable.develop);
-
     return 1;
   }
   else if(gui->form_rotating
@@ -456,9 +449,6 @@ static int _gradient_events_button_released(struct dt_iop_module_t *module,
     // we recreate the form points
     dt_masks_gui_form_create(form, gui, index, module);
 
-    // we save the rotation
-    dt_masks_update_image(darktable.develop);
-
     return 1;
   }
   else if(gui->gradient_toggling)
@@ -480,9 +470,6 @@ static int _gradient_events_button_released(struct dt_iop_module_t *module,
 
     // we recreate the form points
     dt_masks_gui_form_create(form, gui, index, module);
-
-    // we save the new parameters
-    dt_masks_update_image(darktable.develop);
 
     return 1;
   }
