@@ -254,6 +254,8 @@ are available on raw.pixls.us:
 
 ## Translations
 
+- Add support for Dutch online help which is now fully complete.
+
 - Albanian
 - Brazilian Portuguese
 - Chinese (Simplified)
