@@ -1171,7 +1171,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
           if(!darktable.gimp.error)
           {
             dbfilename_from_command = ":memory:";
-            dt_gimp_init_settings();
           }
         }
       }
