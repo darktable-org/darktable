@@ -256,6 +256,14 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
   dt_view_t *old_view = vm->current_view;
   dt_view_t *new_view = (dt_view_t *)nv; // views belong to us, we can de-const them :-)
 
+  // possibly avoid switch for as we are gimping
+  if(old_view
+      && new_view
+      && dt_check_gimpmode("file")
+      && !darktable.gimp.error
+      && dt_view_get_current() == DT_VIEW_DARKROOM)
+    return FALSE;
+
   // reset the cursor to the default one
   dt_control_change_cursor(GDK_LEFT_PTR);
 

@@ -55,6 +55,7 @@
 #include "common/points.h"
 #include "common/resource_limits.h"
 #include "common/undo.h"
+#include "common/gimp.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/crawler.h"
@@ -1128,6 +1129,52 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
         darktable.pipe_cache = FALSE;
         argv[k] = NULL;
       }
+      else if(!strcmp(argv[k], "--gimp"))
+      {
+        argv[k] = NULL;
+        darktable.gimp.error = TRUE;
+
+        if(argc > k + 1)
+        {
+          darktable.gimp.mode = argv[++k];
+          argv[k-1] = NULL;
+          argv[k] = NULL;
+
+          if(dt_check_gimpmode("version"))
+            darktable.gimp.error = FALSE;
+          else if(dt_check_gimpmode("file") && (argc > k + 1))
+          {
+            darktable.gimp.path = argv[++k];
+            argv[k-1] = NULL;
+            argv[k] = NULL;
+
+            if(g_file_test(darktable.gimp.path, G_FILE_TEST_IS_REGULAR))
+              darktable.gimp.error = FALSE;
+
+          }
+          else if(dt_check_gimpmode("thumb") && (argc > k + 2))
+          {
+            darktable.gimp.path = argv[++k];
+            argv[k-1] = NULL;
+            argv[k] = NULL;
+            if(g_file_test(darktable.gimp.path, G_FILE_TEST_IS_REGULAR))
+            {
+              darktable.gimp.size = atol(argv[k + 1]);
+              k++;
+              argv[k-1] = NULL;
+              argv[k] = NULL;
+              if(darktable.gimp.size > 0)
+                darktable.gimp.error = FALSE;
+            }
+          }
+
+          if(!darktable.gimp.error)
+          {
+            dbfilename_from_command = ":memory:";
+            dt_gimp_init_settings();
+          }
+        }
+      }
       else if(!strcmp(argv[k], "--"))
       {
         // "--" confuses the argument parser of glib/gtk. remove it.
@@ -1440,7 +1487,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   res->total_memory = _get_total_memory() * 1024lu;
 
   char *config_info = calloc(1, DT_PERF_INFOSIZE);
-  if(last_configure_version != DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION)
+  if(last_configure_version != DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION
+    && !darktable.gimp.mode)
     dt_configure_runtime_performance(last_configure_version, config_info);
 
   dt_get_sysresource_level();
@@ -1666,7 +1714,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   dt_print(DT_DEBUG_CONTROL,
            "[dt_init] startup took %f seconds\n", dt_get_wtime() - start_wtime);
-
   return 0;
 }
 
@@ -1677,7 +1724,7 @@ void dt_get_sysresource_level()
   static int oldtunehead = -999;
 
   dt_sys_resources_t *res = &darktable.dtresources;
-  const gboolean tunehead = dt_conf_get_bool("opencl_tune_headroom");
+  const gboolean tunehead = !darktable.gimp.mode && dt_conf_get_bool("opencl_tune_headroom");
   int level = 1;
   const char *config = dt_conf_get_string_const("resourcelevel");
   /** These levels must correspond with preferences in xml.in
@@ -1688,7 +1735,7 @@ void dt_get_sysresource_level()
         - add a line of fraction in int fractions[] or ref_resources[] above
         - add a line in darktableconfig.xml.in if available via UI
   */
-  if(config)
+  if(config && !darktable.gimp.mode)
   {
          if(!strcmp(config, "default"))      level = 1;
     else if(!strcmp(config, "small"))        level = 0;

@@ -333,6 +333,15 @@ typedef struct dt_backthumb_t
   int32_t mipsize;
 } dt_backthumb_t;
 
+typedef struct dt_gimp_t
+{
+  int32_t size;
+  char *mode;
+  char *path;
+  dt_imgid_t imgid;
+  gboolean error;
+} dt_gimp_t;
+
 typedef struct darktable_t
 {
   dt_codepath_t codepath;
@@ -395,6 +404,7 @@ typedef struct darktable_t
   GDateTime *origin_gdt;
   struct dt_sys_resources_t dtresources;
   struct dt_backthumb_t backthumbs;
+  struct dt_gimp_t gimp;
 } darktable_t;
 
 typedef struct
@@ -904,6 +914,11 @@ static inline const gchar *NQ_(const gchar *String)
 {
   const gchar *context_end = strchr(String, '|');
   return context_end ? context_end + 1 : String;
+}
+
+static inline gboolean dt_check_gimpmode(const char *mode)
+{
+  return darktable.gimp.mode ? strcmp(darktable.gimp.mode, mode) == 0 : FALSE;
 }
 
 #ifdef __cplusplus

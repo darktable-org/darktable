@@ -339,6 +339,8 @@ void dt_image_film_roll(const dt_image_t *img,
 dt_imageio_write_xmp_t dt_image_get_xmp_mode()
 {
   dt_imageio_write_xmp_t res = DT_WRITE_XMP_NEVER;
+  if(darktable.gimp.mode) return res;
+
   const char *config = dt_conf_get_string_const("write_sidecar_files");
   if(config)
   {
