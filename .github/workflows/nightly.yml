@@ -295,9 +295,9 @@ jobs:
           name: artifact-windows
           retention-days: 2
 
-  macOS:
+  macOS-Intel:
     if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
-    name: Nightly darktable macOS
+    name: Nightly darktable macOS Intel
     runs-on: ${{ matrix.build.os }}
     strategy:
       fail-fast: true
@@ -382,12 +382,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           path: ${{ env.INSTALL_PREFIX }}/darktable-${{ env.VERSION }}.dmg
-          name: artifact-macos
+          name: artifact-macos-intel
           retention-days: 2
 
-  macOS-ARM:
+  macOS:
     if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
-    name: Nightly darktable macOS ARM
+    name: Nightly darktable macOS
     runs-on: ${{ matrix.build.os }}
     strategy:
       fail-fast: true
@@ -479,7 +479,7 @@ jobs:
       # We need write permission to update the nightly tag
       contents: write
     runs-on: ubuntu-latest
-    needs: [AppImage, Windows, macOS, macOS-ARM]
+    needs: [AppImage, Windows, macOS-Intel, macOS]
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v4
@@ -511,5 +511,5 @@ jobs:
           files: |
             artifact-appimage/*
             artifact-windows/*
-            artifact-macos/*
+            artifact-macos-intel/*
             artifact-macos-arm/*
