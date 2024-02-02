@@ -593,11 +593,10 @@ static void rt_shape_selection_changed(dt_iop_module_t *self)
 // helpers
 //---------------------------------------------------------------------------------
 
-static gboolean rt_masks_form_change_opacity(dt_iop_module_t *self,
-                                             const dt_mask_id_t formid,
-                                             const float opacity)
+static void rt_masks_form_change_opacity(dt_iop_module_t *self,
+                                         const dt_mask_id_t formid,
+                                         const float opacity)
 {
-  gboolean changed = FALSE;
   dt_masks_point_group_t *grpt = rt_get_mask_point_group(self, formid);
   if(grpt)
   {
@@ -607,10 +606,8 @@ static gboolean rt_masks_form_change_opacity(dt_iop_module_t *self,
       grpt->opacity = new_opacity;
       dt_conf_set_float("plugins/darkroom/masks/opacity", grpt->opacity);
       dt_dev_add_masks_history_item(darktable.develop, self, TRUE);
-      changed = TRUE;
     }
   }
-  return changed;
 }
 
 static void rt_paste_forms_from_scale(dt_iop_retouch_params_t *p,
@@ -1797,8 +1794,7 @@ static void rt_mask_opacity_callback(GtkWidget *slider,
   if(dt_is_valid_maskid(shape_id))
   {
     const float opacity = dt_bauhaus_slider_get(slider);
-    if(rt_masks_form_change_opacity(self, shape_id, opacity))
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    rt_masks_form_change_opacity(self, shape_id, opacity);
   }
 }
 
