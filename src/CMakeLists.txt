@@ -40,6 +40,7 @@ FILE(GLOB SOURCE_FILES
   "common/file_location.c"
   "common/film.c"
   "common/gaussian.c"
+  "common/gimp.c"
   "common/gpx.c"
   "common/grouping.c"
   "common/guided_filter.c"

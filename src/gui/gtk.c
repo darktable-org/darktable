@@ -1369,7 +1369,6 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
     cairo_surface_destroy(darktable.gui->surface);
     darktable.gui->surface = NULL;
   }
-  dt_cleanup();
 }
 
 // refactored function to read current ppd, because gtk for osx has been unreliable
