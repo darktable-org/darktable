@@ -303,7 +303,8 @@ jobs:
       fail-fast: true
       matrix:
         build:
-          - { os: macos-12, xcode: 14.2, deployment: 12.5 } # LLVM14, native
+          - { os: macos-12, xcode: 14.2, deployment: 12.5 } # LLVM14, x86_64
+          - { os: macos-14, xcode: 15.2, deployment: 14.0 } # LLVM16, arm64
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
         btype: [ Release ]
@@ -334,7 +335,7 @@ jobs:
         run: |
           brew update > /dev/null || true
           # brew upgrade || true        # No need for a very time-consuming upgrade of ALL packages
-          brew upgrade gd               # See https://github.com/Homebrew/homebrew-core/issues/141766
+          brew install --force gd       # See https://github.com/Homebrew/homebrew-core/issues/141766
           brew tap Homebrew/bundle
           cd src/.ci
           export HOMEBREW_NO_INSTALL_UPGRADE=1
@@ -349,7 +350,6 @@ jobs:
         if: ${{ failure() }}
         uses: andymckay/cancel-action@0.3
       - name: Build and Install
-          # todo: use linker which supports --wrap, ld.bfd and ld.gold support it
         run: |
           cmake -E make_directory "${BUILD_DIR}";
           cmake -E make_directory "${INSTALL_PREFIX}";
@@ -373,16 +373,19 @@ jobs:
       - name: Create DMG file
         run: |
           ./src/packaging/macosx/4_make_hb_darktable_dmg.sh
+      - name: Get architecture
+        run: |
+          echo "ARCHITECTURE=$(uname -m)" >> $GITHUB_ENV
       - name: Get version info
         run: |
           cd ${{ env.SRC_DIR }}
-          echo "VERSION=$(git describe --tags --match release-* | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')-$(uname -m)" >> $GITHUB_ENV
+          echo "VERSION=$(git describe --tags --match release-* | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')-${{ env.ARCHITECTURE }}" >> $GITHUB_ENV
       - name: Package upload
         if: ${{ success() }}
         uses: actions/upload-artifact@v4
         with:
           path: ${{ env.INSTALL_PREFIX }}/darktable-${{ env.VERSION }}.dmg
-          name: artifact-macos
+          name: artifact-macos-${{ env.ARCHITECTURE }}
           retention-days: 2
 
   upload_to_release:
@@ -418,8 +421,11 @@ jobs:
             Just ignore it. This file contains technical information required by AppImage
             auto-updaters such as [AppImageUpdate](https://appimage.github.io/AppImageUpdate/).
 
+            The macOS `*-x86_64.dmg` package requires at least macOS 12.5 (Big Sur), the 
+            `*-arm64.dmg` package requires at least macOS 14.0 (Sonoma).
+
             __Please help us improve Darktable by reporting any issues you encounter!__ :wink:
           files: |
             artifact-appimage/*
             artifact-windows/*
-            artifact-macos/*
+            artifact-macos-*/*
