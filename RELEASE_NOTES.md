@@ -105,6 +105,8 @@ Since darktable 4.4:
 
 - Fixed lighttable scrolling freeze when using a trackpad.
 
+- Fix compatibility issues with HDR created DNG files.
+
 ## Lua
 
 ### API Version
