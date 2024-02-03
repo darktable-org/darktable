@@ -100,8 +100,6 @@ None;midi:CC24=iop/colorequal/brightness/purple
 
 #define GRAPH_GRADIENTS 64
 
-// #define COLOREQUAL_DEBUG
-
 DT_MODULE_INTROSPECTION(1, dt_iop_colorequal_params_t)
 
 typedef struct dt_iop_colorequal_params_t
@@ -248,7 +246,7 @@ typedef struct dt_iop_colorequal_gui_data_t
 
   float *gamut_LUT;
 
-  gboolean masking;
+  int mask_mode;
   gboolean dragging;
   gboolean on_node;
   int selected;
@@ -748,11 +746,9 @@ void process(struct dt_iop_module_t *self,
 
   if(piece->colors != 4) return;
 
-#ifdef COLOREQUAL_DEBUG
   dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
-  const gboolean masking = g && fullpipe && g->masking;
-#endif
+  const int mask_mode = g && fullpipe ? g->mask_mode : 0;
 
   const float *const restrict in = (float*)i;
   float *const restrict out = (float*)o;
@@ -873,55 +869,64 @@ void process(struct dt_iop_module_t *self,
   if(d->use_filter)
     _guide_with_chromaticity(UV, corrections, saturations, b_corrections, roi_out, d->param_size, d->param_feathering);
 
-  // STEP 3: apply the corrections and convert back to RGB
+  const float rweight = powf(2.0f * d->param_size, 0.20f);
+  if(mask_mode == 0)
+  {
+    // STEP 3: apply the corrections and convert back to RGB
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(npixels, out, corrections, b_corrections, saturations, output_matrix, white, d)  \
-  schedule(simd:static) aligned(out, corrections, b_corrections, saturations, output_matrix: 64)
+  dt_omp_firstprivate(npixels, out, corrections, b_corrections, saturations, output_matrix, white, rweight, d)  \
+  schedule(simd:static) aligned(out, b_corrections, saturations, output_matrix: 64)
 #endif
-  for(size_t k = 0; k < npixels; k++)
-  {
-    const float *const restrict corrections_out = corrections + k * 2;
-    float *const restrict pix_out = __builtin_assume_aligned(out + k * 4, 16);
+    for(size_t k = 0; k < npixels; k++)
+    {
+      const float *const restrict corrections_out = corrections + k * 2;
+      float *const restrict pix_out = __builtin_assume_aligned(out + k * 4, 16);
 
-    // Apply the corrections
-    pix_out[0] += corrections_out[0]; // WARNING: hue is an offset
-    // pix_out[1] (saturation) and pix_out[2] (brightness) are gains
-    pix_out[1] = MAX(0.0f, pix_out[1] * (1.0f + 2.0f * (corrections_out[1] - 1.0f)));
-    pix_out[2] *= 1.0f + 8.0f * (b_corrections[k] - 1.0f);
+      // Apply the corrections
+      pix_out[0] += corrections_out[0]; // WARNING: hue is an offset
+      // pix_out[1] (saturation) and pix_out[2] (brightness) are gains
+      pix_out[1] = MAX(0.0f, pix_out[1] * (1.0f + rweight * (corrections_out[1] - 1.0f)));
+      pix_out[2] *= 1.0f + 4.0f * rweight * (b_corrections[k] - 1.0f);
 
-    // Sanitize gamut
-    gamut_map_HSB(pix_out, d->gamut_LUT, white);
+      // Sanitize gamut
+      gamut_map_HSB(pix_out, d->gamut_LUT, white);
 
-    // Convert back to XYZ D65
-    dt_aligned_pixel_t XYZ_D65 = { 0.f };
-    dt_UCS_HSB_to_XYZ(pix_out, white, XYZ_D65);
+      // Convert back to XYZ D65
+      dt_aligned_pixel_t XYZ_D65 = { 0.f };
+      dt_UCS_HSB_to_XYZ(pix_out, white, XYZ_D65);
 
-    // And back to pipe RGB through XYZ D50
-    dot_product(XYZ_D65, output_matrix, pix_out);
+      // And back to pipe RGB through XYZ D50
+      dot_product(XYZ_D65, output_matrix, pix_out);
+    }
   }
-
-#ifdef COLOREQUAL_DEBUG
-  if(masking)
+  else
   {
+    const int mode = mask_mode - 1;
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(npixels, out, b_corrections, saturations)  \
+  dt_omp_firstprivate(npixels, out, b_corrections, corrections, saturations, mode, rweight)  \
   schedule(simd:static) aligned(out, b_corrections, saturations: 64)
 #endif
     for(size_t k = 0; k < npixels; k++)
     {
       float *const restrict pix_out = __builtin_assume_aligned(out + k * 4, 16);
-      const float sat = saturations[k];
-      const float corr = 32.0f * (b_corrections[k] - 1.0f);
-      const gboolean sign = corr < 0.0f;
+      const float *const restrict corrections_out = corrections + k * 2;
+      const float val = pix_out[2];
+      float corr = corrections_out[0];  // default is hue shift
 
-      pix_out[0] = MAX(0.0f, sign ? sat * (1.0f + corr) : sat);
-      pix_out[1] = MAX(0.0f, sign ? sat * (1.0f + corr) : sat * (1.0f - corr));
-      pix_out[2] = MAX(0.0f, sign ? sat                 : sat * (1.0f - corr));
+      if(mode == BRIGHTNESS)
+        corr = 4.0f * rweight * (b_corrections[k] - 1.0f);
+      else if(mode == SATURATION)
+        corr = rweight * (corrections_out[1] - 1.0f);
+
+      const gboolean sign = corr < 0.0f;
+      pix_out[0] = MAX(0.0f, sign ? val * (1.0f + corr) : val);
+      pix_out[1] = MAX(0.0f, sign ? val * (1.0f + corr) : val * (1.0f - corr));
+      pix_out[2] = MAX(0.0f, sign ? val                 : val * (1.0f - corr));
     }
   }
-#endif
+
   dt_free_align(corrections);
   dt_free_align(b_corrections);
   dt_free_align(saturations);
@@ -1335,6 +1340,32 @@ static void _init_graph_backgrounds(cairo_pattern_t *gradients[GRAPH_GRADIENTS],
 }
 
 
+void reload_defaults(dt_iop_module_t *self)
+{
+  // we might be called from presets update infrastructure => there is no image
+  if(!self->dev || !dt_is_valid_imgid(self->dev->image_storage.id)) return;
+
+  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  if(g)
+  {
+    // reset masking
+    dt_bauhaus_widget_set_quad_active(g->param_size, FALSE);
+    g->mask_mode = 0;
+  }
+}
+
+void gui_focus(struct dt_iop_module_t *self, gboolean in)
+{
+  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  if(!in)
+  {
+    const int mask_mode = g->mask_mode;
+    dt_bauhaus_widget_set_quad_active(g->param_size, FALSE);
+    g->mask_mode = 0;
+    if(mask_mode) dt_dev_reprocess_center(self->dev);
+  }
+}
+
 static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
                                          cairo_t *crf,
                                          gpointer user_data)
@@ -1640,6 +1671,14 @@ void color_picker_apply(dt_iop_module_t *self,
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+static void _masking_callback(GtkWidget *quad, gpointer user_data)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  g->mask_mode = (dt_bauhaus_widget_get_quad_active(quad)) ? g->channel + 1 : 0;
+  dt_dev_reprocess_center(self->dev);
+}
 
 static void _channel_tabs_switch_callback(GtkNotebook *notebook,
                                           GtkWidget *page,
@@ -1656,6 +1695,11 @@ static void _channel_tabs_switch_callback(GtkNotebook *notebook,
     g->channel = (dt_iop_colorequal_channel_t)page_num;
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
   }
+
+  const gboolean masking = dt_bauhaus_widget_get_quad_active(g->param_size);
+  g->mask_mode = masking ? g->channel + 1 : 0;
+  if(masking)
+    dt_dev_reprocess_center(self->dev);
 }
 
 static GtkWidget *_get_selected(dt_iop_colorequal_gui_data_t *g)
@@ -1919,6 +1963,11 @@ void gui_update(dt_iop_module_t *self)
 
   gboolean show_sliders = dt_conf_get_bool("plugins/darkroom/colorequal/show_sliders");
   gtk_widget_set_visible(g->cs.expander, !show_sliders);
+
+  // reset masking
+  dt_bauhaus_widget_set_quad_active(g->param_size, FALSE);
+  g->mask_mode = 0;
+
   gtk_widget_set_name(GTK_WIDGET(g->cs.container), show_sliders ? NULL : "collapsible");
 
   if((gtk_notebook_get_n_pages(g->notebook) == 4) ^ show_sliders)
@@ -1936,17 +1985,6 @@ void gui_update(dt_iop_module_t *self)
     g_object_unref(g->cs.container);
   }
 }
-
-#ifdef COLOREQUAL_DEBUG
-static void _param_callback(GtkWidget *quad, gpointer user_data)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
-  g->masking = (dt_bauhaus_widget_get_quad_active(quad)) ? TRUE : FALSE;
-  dt_dev_reprocess_center(self->dev);
-}
-#endif
 
 void gui_init(struct dt_iop_module_t *self)
 {
@@ -2115,12 +2153,13 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->param_size, _(" px"));
   gtk_widget_set_tooltip_text(g->param_size, _("blurring radius of applied parameters"));
 
-#ifdef COLOREQUAL_DEBUG
   dt_bauhaus_widget_set_quad_paint(g->param_size, dtgtk_cairo_paint_showmask, 0, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->param_size, TRUE);
   dt_bauhaus_widget_set_quad_active(g->param_size, FALSE);
-  g_signal_connect(G_OBJECT(g->param_size), "quad-pressed", G_CALLBACK(_param_callback), self);
-#endif
+  g_signal_connect(G_OBJECT(g->param_size), "quad-pressed", G_CALLBACK(_masking_callback), self);
+  dt_bauhaus_widget_set_quad_tooltip(g->param_size,
+    _("visualize changed output for the selected tab.\n"
+    "red shows inceased data, blue decreased."));
 
   _init_sliders(self);
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->notebook), TRUE, TRUE, 0);
