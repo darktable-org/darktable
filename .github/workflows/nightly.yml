@@ -405,6 +405,7 @@ jobs:
           tag_name: nightly
           prerelease: true
           name: 'Darktable nightly build $$'
+          # Please do not modify the body text by adding line breaks in paragraphs, as this text should display well on screens of different widths
           body: |
             This is a nightly build of Darktable.
 
