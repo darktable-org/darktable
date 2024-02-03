@@ -421,7 +421,7 @@ jobs:
             Just ignore it. This file contains technical information required by AppImage
             auto-updaters such as [AppImageUpdate](https://appimage.github.io/AppImageUpdate/).
 
-            The macOS `*-x86_64.dmg` package requires at least macOS 12.5 (Big Sur), the 
+            The macOS `*-x86_64.dmg` package requires at least macOS 12.5 (Monterey), the 
             `*-arm64.dmg` package requires at least macOS 14.0 (Sonoma).
 
             __Please help us improve Darktable by reporting any issues you encounter!__ :wink:
