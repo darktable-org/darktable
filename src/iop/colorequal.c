@@ -869,12 +869,13 @@ void process(struct dt_iop_module_t *self,
   if(d->use_filter)
     _guide_with_chromaticity(UV, corrections, saturations, b_corrections, roi_out, d->param_size, d->param_feathering);
 
+  const float rweight = powf(2.0f * d->param_size, 0.20f);
   if(mask_mode == 0)
   {
     // STEP 3: apply the corrections and convert back to RGB
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(npixels, out, corrections, b_corrections, saturations, output_matrix, white, d)  \
+  dt_omp_firstprivate(npixels, out, corrections, b_corrections, saturations, output_matrix, white, rweight, d)  \
   schedule(simd:static) aligned(out, b_corrections, saturations, output_matrix: 64)
 #endif
     for(size_t k = 0; k < npixels; k++)
@@ -885,8 +886,8 @@ void process(struct dt_iop_module_t *self,
       // Apply the corrections
       pix_out[0] += corrections_out[0]; // WARNING: hue is an offset
       // pix_out[1] (saturation) and pix_out[2] (brightness) are gains
-      pix_out[1] = MAX(0.0f, pix_out[1] * (1.0f + 2.0f * (corrections_out[1] - 1.0f)));
-      pix_out[2] *= 1.0f + 8.0f * (b_corrections[k] - 1.0f);
+      pix_out[1] = MAX(0.0f, pix_out[1] * (1.0f + rweight * (corrections_out[1] - 1.0f)));
+      pix_out[2] *= 1.0f + 4.0f * rweight * (b_corrections[k] - 1.0f);
 
       // Sanitize gamut
       gamut_map_HSB(pix_out, d->gamut_LUT, white);
@@ -904,7 +905,7 @@ void process(struct dt_iop_module_t *self,
     const int mode = mask_mode - 1;
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(npixels, out, b_corrections, corrections, saturations, mode)  \
+  dt_omp_firstprivate(npixels, out, b_corrections, corrections, saturations, mode, rweight)  \
   schedule(simd:static) aligned(out, b_corrections, saturations: 64)
 #endif
     for(size_t k = 0; k < npixels; k++)
@@ -915,9 +916,9 @@ void process(struct dt_iop_module_t *self,
       float corr = corrections_out[0];  // default is hue shift
 
       if(mode == BRIGHTNESS)
-        corr = 8.0f * (b_corrections[k] - 1.0f);
+        corr = 4.0f * rweight * (b_corrections[k] - 1.0f);
       else if(mode == SATURATION)
-        corr = corrections_out[1] - 1.0f;
+        corr = rweight * (corrections_out[1] - 1.0f);
 
       const gboolean sign = corr < 0.0f;
       pix_out[0] = MAX(0.0f, sign ? val * (1.0f + corr) : val);
