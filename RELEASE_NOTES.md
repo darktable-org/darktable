@@ -107,6 +107,8 @@ Since darktable 4.4:
 
 - Fix compatibility issues with HDR created DNG files.
 
+- Fix possible crash when using the capture's live view mode.
+
 ## Lua
 
 ### API Version
