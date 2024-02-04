@@ -785,7 +785,7 @@ void process(struct dt_iop_module_t *self,
     // We want to avoid any change of hue, saturation or brightness in achromatic
     // parts of the image. We make sure we have expose independent saturation as the
     // weighing parameter and use a pretty sharp logistic transition on it.
-    weights[k] = 1.0f / (1.0f + dt_fast_expf(-(20.0f * (3.0f * val - 0.2f))));
+    weights[k] = 1.0f / (1.0f + dt_fast_expf(-(20.0f * (2.0f * val - 0.4f))));
 
     xyY_to_dt_UCS_UV(xyY, uv);
     L[k] = Y_to_dt_UCS_L_star(xyY[2]);
@@ -881,20 +881,22 @@ void process(struct dt_iop_module_t *self,
     const int mode = mask_mode - 1;
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(npixels, out, b_corrections, corrections, mode)  \
-  schedule(simd:static) aligned(out, corrections, b_corrections: 64)
+  dt_omp_firstprivate(npixels, out, b_corrections, corrections, weights, mode)  \
+  schedule(simd:static) aligned(out, corrections, b_corrections, weights: 64)
 #endif
     for(size_t k = 0; k < npixels; k++)
     {
       float *const restrict pix_out = __builtin_assume_aligned(out + k * 4, 16);
       const float *const restrict corrections_out = corrections + k * 2;
-      const float val = pix_out[2];
-      float corr = corrections_out[0];  // default is hue shift
+      const float val = 0.1f + pix_out[2];    // background is brightness
+      float corr = 2.0f * (weights[k] - 0.5f);  // weight as default
 
       if(mode == BRIGHTNESS)
         corr = 4.0f * b_corrections[k];
       else if(mode == SATURATION)
         corr = corrections_out[1] - 1.0f;
+      else if(mode == HUE)
+        corr = corrections_out[0];
 
       const gboolean sign = corr < 0.0f;
       pix_out[0] = MAX(0.0f, sign ? val * (1.0f + corr) : val);
@@ -1326,6 +1328,7 @@ void reload_defaults(dt_iop_module_t *self)
   {
     // reset masking
     dt_bauhaus_widget_set_quad_active(g->param_size, FALSE);
+    dt_bauhaus_widget_set_quad_active(g->chroma_size, FALSE);
     g->mask_mode = 0;
   }
 }
@@ -1337,6 +1340,7 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   {
     const int mask_mode = g->mask_mode;
     dt_bauhaus_widget_set_quad_active(g->param_size, FALSE);
+    dt_bauhaus_widget_set_quad_active(g->chroma_size, FALSE);
     g->mask_mode = 0;
     if(mask_mode) dt_dev_reprocess_center(self->dev);
   }
@@ -1647,12 +1651,24 @@ void color_picker_apply(dt_iop_module_t *self,
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void _masking_callback(GtkWidget *quad, gpointer user_data)
+static void _masking_callback_p(GtkWidget *quad, gpointer user_data)
 {
   if(darktable.gui->reset) return;
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  dt_bauhaus_widget_set_quad_active(g->chroma_size, FALSE);
+
   g->mask_mode = (dt_bauhaus_widget_get_quad_active(quad)) ? g->channel + 1 : 0;
+  dt_dev_reprocess_center(self->dev);
+}
+
+static void _masking_callback_c(GtkWidget *quad, gpointer user_data)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  dt_bauhaus_widget_set_quad_active(g->param_size, FALSE);
+  g->mask_mode = (dt_bauhaus_widget_get_quad_active(quad)) ? 4 : 0;
   dt_dev_reprocess_center(self->dev);
 }
 
@@ -1672,9 +1688,11 @@ static void _channel_tabs_switch_callback(GtkNotebook *notebook,
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
   }
 
-  const gboolean masking = dt_bauhaus_widget_get_quad_active(g->param_size);
-  g->mask_mode = masking ? g->channel + 1 : 0;
-  if(masking)
+  const int old_mask_mode = g->mask_mode;
+  const gboolean masking_p = dt_bauhaus_widget_get_quad_active(g->param_size);
+  const gboolean masking_c = dt_bauhaus_widget_get_quad_active(g->chroma_size);
+  g->mask_mode = masking_p ? g->channel + 1 : (masking_c ? 4 : 0);
+  if(g->mask_mode != old_mask_mode)
     dt_dev_reprocess_center(self->dev);
 }
 
@@ -1942,6 +1960,7 @@ void gui_update(dt_iop_module_t *self)
 
   // reset masking
   dt_bauhaus_widget_set_quad_active(g->param_size, FALSE);
+  dt_bauhaus_widget_set_quad_active(g->chroma_size, FALSE);
   g->mask_mode = 0;
 
   gtk_widget_set_name(GTK_WIDGET(g->cs.container), show_sliders ? NULL : "collapsible");
@@ -2123,6 +2142,13 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->chroma_size, _(" px"));
   gtk_widget_set_tooltip_text(g->chroma_size,
                               _("blurring radius of chroma prefilter analysis"));
+  dt_bauhaus_widget_set_quad_paint(g->chroma_size, dtgtk_cairo_paint_showmask, 0, NULL);
+  dt_bauhaus_widget_set_quad_toggle(g->chroma_size, TRUE);
+  dt_bauhaus_widget_set_quad_active(g->chroma_size, FALSE);
+  g_signal_connect(G_OBJECT(g->chroma_size), "quad-pressed", G_CALLBACK(_masking_callback_c), self);
+  dt_bauhaus_widget_set_quad_tooltip(g->chroma_size,
+    _("visualize weighing function on changed output.\n"
+      "red shows possibly changed data, blueish parts will not be changed.\n"));
 
   g->param_size = dt_bauhaus_slider_from_params(self, "param_size");
   dt_bauhaus_slider_set_digits(g->param_size, 1);
@@ -2132,7 +2158,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_paint(g->param_size, dtgtk_cairo_paint_showmask, 0, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->param_size, TRUE);
   dt_bauhaus_widget_set_quad_active(g->param_size, FALSE);
-  g_signal_connect(G_OBJECT(g->param_size), "quad-pressed", G_CALLBACK(_masking_callback), self);
+  g_signal_connect(G_OBJECT(g->param_size), "quad-pressed", G_CALLBACK(_masking_callback_p), self);
   dt_bauhaus_widget_set_quad_tooltip(g->param_size,
     _("visualize changed output for the selected tab.\n"
     "red shows inceased data, blue decreased."));
