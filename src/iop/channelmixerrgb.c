@@ -33,6 +33,11 @@
                       "tree-vectorize", "no-math-errno")
 #endif
 
+// #define AI_ACTIVATED
+/* AI feature not good enough so disabled for now
+   If enabled there must be $DESCRIPTION: entries in illuminants.h for bauhaus
+*/
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -999,6 +1004,8 @@ static inline void _loop_switch(const float *const restrict in,
 #define OFF 4
 
 
+#ifdef AI_ACTIVATED
+
 #if defined(__GNUC__) && defined(_WIN32)
   // On Windows there is a rounding issue making the image full
   // black. For a discussion about the issue and tested solutions see
@@ -1016,20 +1023,17 @@ static inline void _auto_detect_WB(const float *const restrict in,
                                    const dt_colormatrix_t RGB_to_XYZ,
                                    dt_aligned_pixel_t xyz)
 {
-  /**
-   * Detect the chromaticity of the illuminant based on the grey edges hypothesis.
-   * So we compute a laplacian filter and get the weighted average of its chromaticities
-   *
-   * Inspired by :
-   *  A Fast White Balance Algorithm Based on Pixel Greyness, Ba Thai·Guang Deng·Robert Ross
-   *  https://www.researchgate.net/profile/Ba_Son_Thai/publication/308692177_A_Fast_White_Balance_Algorithm_Based_on_Pixel_Greyness/
-   *
-   *  Edge-Based Color Constancy, Joost van de Weijer, Theo Gevers, Arjan Gijsenij
-   *  https://hal.inria.fr/inria-00548686/document
-   *
-  */
+   /* Detect the chromaticity of the illuminant based on the grey edges hypothesis.
+      So we compute a laplacian filter and get the weighted average of its chromaticities
 
-   // Convert RGB to xy
+      Inspired by :
+      A Fast White Balance Algorithm Based on Pixel Greyness, Ba Thai·Guang Deng·Robert Ross
+      https://www.researchgate.net/profile/Ba_Son_Thai/publication/308692177_A_Fast_White_Balance_Algorithm_Based_on_Pixel_Greyness/
+
+      Edge-Based Color Constancy, Joost van de Weijer, Theo Gevers, Arjan Gijsenij
+      https://hal.inria.fr/inria-00548686/document
+    */
+// Convert RGB to xy
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(width, height, ch, in, temp, RGB_to_XYZ, D50xyY) \
@@ -1192,6 +1196,8 @@ static inline void _auto_detect_WB(const float *const restrict in,
 #if defined(__GNUC__) && defined(_WIN32)
   #pragma GCC pop_options
 #endif
+
+#endif // AI_ACTIVATED
 
 static void _declare_cat_on_pipe(struct dt_iop_module_t *self, const gboolean preset)
 {
@@ -2166,8 +2172,9 @@ void process(struct dt_iop_module_t *self,
   // auto-detect WB upon request
   if(self->dev->gui_attached && g)
   {
+#ifdef AI_ACTIVATED
     gboolean exit = FALSE;
-
+#endif
     if(g->run_profile && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
     {
       dt_iop_gui_enter_critical_section(self);
@@ -2177,6 +2184,7 @@ void process(struct dt_iop_module_t *self,
       dt_iop_gui_leave_critical_section(self);
     }
 
+#ifdef AI_ACTIVATED
     if(data->illuminant_type == DT_ILLUMINANT_DETECT_EDGES
        || data->illuminant_type == DT_ILLUMINANT_DETECT_SURFACES)
     {
@@ -2202,6 +2210,7 @@ void process(struct dt_iop_module_t *self,
     }
 
     if(exit) return;
+#endif
   }
 
   if(data->illuminant_type == DT_ILLUMINANT_CAMERA)
@@ -3000,10 +3009,13 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_channelmixer_rgb_gui_data_t *g =
     (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
+
+  if(g == NULL) return;
+
+#ifdef AI_ACTIVATED
   dt_iop_channelmixer_rgb_params_t *p =
     (dt_iop_channelmixer_rgb_params_t *)self->params;
 
-  if(g == NULL) return;
   if(p->illuminant != DT_ILLUMINANT_DETECT_EDGES
      && p->illuminant != DT_ILLUMINANT_DETECT_SURFACES)
   {
@@ -3041,6 +3053,9 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_
   gui_changed(self, NULL, NULL);
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
+#else // non AI_ACTIVATED
+  gui_changed(self, NULL, NULL);
+#endif
 }
 
 static void _preview_pipe_finished_callback(gpointer instance, gpointer user_data)
@@ -3161,10 +3176,13 @@ void commit_params(struct dt_iop_module_t *self,
     if( (g->run_profile && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
         || // color checker extraction mode
         (g->run_validation && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+#ifdef AI_ACTIVATED
         || // delta E validation
         ( (d->illuminant_type == DT_ILLUMINANT_DETECT_EDGES ||
            d->illuminant_type == DT_ILLUMINANT_DETECT_SURFACES ) && // WB extraction mode
-           (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) ) )
+           (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) )
+#endif
+      )
     {
       piece->process_cl_ready = FALSE;
     }
@@ -4040,12 +4058,14 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
       if(found)
         dt_control_log(_("white balance successfully extracted from raw image"));
     }
+#ifdef AI_ACTIVATED
     else if(p->illuminant == DT_ILLUMINANT_DETECT_EDGES
             || p->illuminant == DT_ILLUMINANT_DETECT_SURFACES)
     {
       // We need to recompute only the full preview
       dt_control_log(_("auto-detection of white balance started…"));
     }
+#endif
   }
 
   if(w == g->illuminant
@@ -4816,7 +4836,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
   IOP_GUI_FREE;
 }
-
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
