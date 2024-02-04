@@ -1832,7 +1832,15 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
 
-  if(event->button == 1)
+  if(event->button == 2
+     || (event->button == 1 // Ctrl+Click alias for macOS
+         && dt_modifier_is(event->state, GDK_CONTROL_MASK)))
+  {
+    dt_conf_set_bool("plugins/darkroom/colorequal/show_sliders",
+                     gtk_widget_get_visible(g->cs.expander));
+    gui_update(self);
+  }
+  else if(event->button == 1)
   {
     if(event->type == GDK_2BUTTON_PRESS)
     {
@@ -1842,12 +1850,6 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
     {
       g->dragging = TRUE;
     }
-  }
-  else if(event->button == 2)
-  {
-    dt_conf_set_bool("plugins/darkroom/colorequal/show_sliders",
-                     gtk_widget_get_visible(g->cs.expander));
-    gui_update(self);
   }
   else
     return gtk_widget_event(_get_selected(g), (GdkEvent*)event);
