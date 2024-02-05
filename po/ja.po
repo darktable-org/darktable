@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-02-03 11:17+0100\n"
-"PO-Revision-Date: 2024-02-06 00:47+0900\n"
+"PO-Revision-Date: 2024-02-06 00:52+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -16172,15 +16172,15 @@ msgstr "オプション"
 
 #: ../src/iop/colorequal.c:2023
 msgid "change hue hue-wise"
-msgstr "色相によって色相を変更します"
+msgstr "色相に応じて色相を変更します"
 
 #: ../src/iop/colorequal.c:2046
 msgid "change saturation hue-wise"
-msgstr "色相によって彩度（サチュレーション）を変更します"
+msgstr "色相に応じて彩度（サチュレーション）を変更します"
 
 #: ../src/iop/colorequal.c:2069
 msgid "change brightness hue-wise"
-msgstr "色相によって明るさ（ブライトネス）を変更します"
+msgstr "色相に応じて明るさ（ブライトネス）を変更します"
 
 #: ../src/iop/colorequal.c:2109 ../src/iop/colorequal.c:2115
 msgid " px"
