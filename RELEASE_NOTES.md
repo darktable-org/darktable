@@ -90,6 +90,9 @@ changes (where available).
   labels. This is an handy way of remembering the color label usage in
   the workflow.
 
+- Removed the AI options in color calibration module because of
+  mediocre quality.
+
 ## Bug Fixes
 
 ## Lua
