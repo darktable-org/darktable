@@ -124,7 +124,7 @@ jobs:
           cd ..
       - name: Cancel workflow if job fails
         if: ${{ failure() }}
-        uses: andymckay/cancel-action@0.3
+        uses: andymckay/cancel-action@0.4
       - uses: actions/checkout@v4
         with:
           ref: ${{ env.BRANCH }}
@@ -245,7 +245,7 @@ jobs:
           pacman -U --noconfirm https://repo.msys2.org/mingw/ucrt64/mingw-w64-ucrt-x86_64-pango-1.50.11-1-any.pkg.tar.zst
       - name: Cancel workflow if job fails
         if: ${{ failure() }}
-        uses: andymckay/cancel-action@0.3
+        uses: andymckay/cancel-action@0.4
       - run: git config --global core.autocrlf input
         shell: bash
       - uses: actions/checkout@v4
@@ -348,7 +348,7 @@ jobs:
           brew link --overwrite --force imagemagick@6
       - name: Cancel workflow if job fails
         if: ${{ failure() }}
-        uses: andymckay/cancel-action@0.3
+        uses: andymckay/cancel-action@0.4
       - name: Build and Install
         run: |
           cmake -E make_directory "${BUILD_DIR}";
