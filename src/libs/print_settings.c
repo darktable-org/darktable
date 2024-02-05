@@ -1972,6 +1972,17 @@ void gui_post_expose(struct dt_lib_module_t *self,
                        img->screen.y + img->screen.height);
       cairo_stroke(cr);
     }
+    else if (k == ps->last_selected)
+    {
+      const double dash[] = { DT_PIXEL_APPLY_DPI(5.0), DT_PIXEL_APPLY_DPI(5.0) };
+      cairo_set_line_width(cr, 1);
+      cairo_set_dash(cr, dash, 1, DT_PIXEL_APPLY_DPI(5));
+      cairo_set_source_rgba(cr, .6, .6, .6, 1.0);
+      cairo_rectangle(cr,
+                      img->screen.x,     img->screen.y,
+                      img->screen.width, img->screen.height);
+      cairo_stroke(cr);
+    }
 
     if(k == ps->imgs.motion_over)
     {
