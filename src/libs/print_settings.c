@@ -1288,7 +1288,8 @@ static void _set_orientation(dt_lib_print_settings_t *ps, dt_imgid_t imgid)
   dt_control_queue_redraw_center();
 }
 
-static void _load_image_full_page(dt_lib_print_settings_t *ps, dt_imgid_t imgid)
+static void _load_image_full_page(dt_lib_print_settings_t *ps,
+                                  const dt_imgid_t imgid)
 {
   _set_orientation(ps, imgid);
 
@@ -1315,7 +1316,9 @@ static void _print_settings_update_callback(gpointer instance,
   // if a mipmap has arrived for an image just activated in fullpage
   // mode, reorient the page (landscape or portrait) based on the
   // mipmap's orientation
-  if(ps->imgs.count == 1 && ps->imgs.box[0].imgid == imgid && !ps->has_changed)
+  if(ps->imgs.count == 1
+     && ps->imgs.box[0].imgid == imgid
+     && !ps->has_changed)
   {
     dt_printing_clear_box(&ps->imgs.box[0]);
     _load_image_full_page(ps, imgid);
@@ -2240,7 +2243,8 @@ static void _width_changed(GtkWidget *widget, gpointer user_data)
   dt_control_queue_redraw_center();
 }
 
-static void _height_changed(GtkWidget *widget, gpointer user_data)
+static void _height_changed(GtkWidget *widget,
+                            gpointer user_data)
 {
   if(darktable.gui->reset) return;
 
@@ -2259,7 +2263,8 @@ static void _height_changed(GtkWidget *widget, gpointer user_data)
   dt_control_queue_redraw_center();
 }
 
-static void _x_changed(GtkWidget *widget, gpointer user_data)
+static void _x_changed(GtkWidget *widget,
+                       gpointer user_data)
 {
   if(darktable.gui->reset) return;
 
@@ -2278,7 +2283,8 @@ static void _x_changed(GtkWidget *widget, gpointer user_data)
   dt_control_queue_redraw_center();
 }
 
-static void _y_changed(GtkWidget *widget, gpointer user_data)
+static void _y_changed(GtkWidget *widget,
+                       gpointer user_data)
 {
   if(darktable.gui->reset) return;
 
