@@ -405,24 +405,17 @@ jobs:
           tag_name: nightly
           prerelease: true
           name: 'Darktable nightly build $$'
+          # Please do not modify the body text by adding line breaks in paragraphs, as this text should display well on screens of different widths
           body: |
             This is a nightly build of Darktable.
 
-            You can use this if you want to try new features without waiting for releases.
-            From time to time, in development builds, old difficult-to-reproduce bugs are
-            fixed, but it is also true that in the development process with the introduction
-            of new complex code, the stability of the program may suffer compared to
-            official releases, so **use it with caution**!
+            You can use this if you want to try new features without waiting for releases. From time to time, in development builds, old difficult-to-reproduce bugs are fixed, but it is also true that in the development process with the introduction of new complex code, the stability of the program may suffer compared to official releases, so **use it with caution**!
 
-            Also, new versions can make changes to the database schema, so it's best to run
-            them with a separate library.
+            Also, new versions can make changes to the database schema, so it's best to run them with a separate library.
 
-            The `*.AppImage.zsync` file is not intended to be downloaded and used locally.
-            Just ignore it. This file contains technical information required by AppImage
-            auto-updaters such as [AppImageUpdate](https://appimage.github.io/AppImageUpdate/).
+            The `*.AppImage.zsync` file is not intended to be downloaded and used locally. Just ignore it. This file contains technical information required by AppImage auto-updaters such as [AppImageUpdate](https://appimage.github.io/AppImageUpdate/).
 
-            The macOS `*-x86_64.dmg` package requires at least macOS 12.5 (Monterey), the 
-            `*-arm64.dmg` package requires at least macOS 14.0 (Sonoma).
+            The macOS `*-x86_64.dmg` package requires at least macOS 12.5 (Monterey), the `*-arm64.dmg` package requires at least macOS 14.0 (Sonoma).
 
             __Please help us improve Darktable by reporting any issues you encounter!__ :wink:
           files: |
