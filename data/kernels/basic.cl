@@ -324,7 +324,8 @@ static float _calc_refavg(
         int row,
         int col,
         int maxrow,
-        int maxcol)
+        int maxcol,
+        global const float *correction)
 {
   float mean[3] = { 0.0f, 0.0f, 0.0f };
   float sum[3] =  { 0.0f, 0.0f, 0.0f };
@@ -348,7 +349,7 @@ static float _calc_refavg(
 
   const float onethird = 1.0f / 3.0f;
   for(int c = 0; c < 3; c++)
-    mean[c] = (cnt[c] > 0.0f) ? pow(sum[c] / cnt[c], onethird) : 0.0f;
+    mean[c] = (cnt[c] > 0.0f) ? pow((correction[c] * sum[c]) / cnt[c], onethird) : 0.0f;
 
   const float croot_refavg[3] = { 0.5f * (mean[1] + mean[2]), 0.5f * (mean[0] + mean[2]), 0.5f * (mean[0] + mean[1])};
   const int color = (filters == 9u) ? FCxtrans(row, col, xtrans) : FC(row, col, filters);
@@ -472,7 +473,8 @@ kernel void highlights_chroma(
         const int mwidth,
         const unsigned int filters,
         global const unsigned char (*const xtrans)[6],
-        global const float *clips)
+        global const float *clips,
+        global const float *correction)
 {
   const int row = get_global_id(0);
 
@@ -489,7 +491,7 @@ kernel void highlights_chroma(
     const int px = color * msize + mad24(row/3, mwidth, col/3);
     if(mask[px] && (inval > 0.2f*clips[color]) && (inval < clips[color]))
     {
-      const float ref = _calc_refavg(in, xtrans, filters, row, col, height, width);
+      const float ref = _calc_refavg(in, xtrans, filters, row, col, height, width, correction);
       sum[color] += inval - ref;
       cnt[color] += 1.0f;
     }
@@ -518,6 +520,7 @@ kernel void highlights_opposed(
         global const unsigned char (*const xtrans)[6],
         global const float *clips,
         global const float *chroma,
+        global const float *correction,
         const int fastcopymode)
 {
   const int x = get_global_id(0);
@@ -537,7 +540,7 @@ kernel void highlights_opposed(
       const int color = (filters == 9u) ? FCxtrans(irow, icol, xtrans) : FC(irow, icol, filters);
       if(val >= clips[color])
       {
-        const float ref = _calc_refavg(in, xtrans, filters, irow, icol, iheight, iwidth);
+        const float ref = _calc_refavg(in, xtrans, filters, irow, icol, iheight, iwidth, correction);
         val = fmax(val, ref + chroma[color]);
       }
     }
