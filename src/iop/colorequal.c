@@ -888,20 +888,31 @@ void process(struct dt_iop_module_t *self,
     {
       float *const restrict pix_out = __builtin_assume_aligned(out + k * 4, 16);
       const float *const restrict corrections_out = corrections + k * 2;
-      const float val = 0.1f + pix_out[2];    // background is brightness
-      float corr = 2.0f * (weights[k] - 0.5f);  // weight as default
 
-      if(mode == BRIGHTNESS)
-        corr = 5.0f * b_corrections[k];
-      else if(mode == SATURATION)
-        corr = 1.25f * (corrections_out[1] - 1.0f);
-      else if(mode == HUE)
-        corr = corrections_out[0];
+      float val = 2.0f * pix_out[2];
+      float corr = 0.0f;
+      switch(mode)
+      {
+        case BRIGHTNESS:
+          corr = 4.0f * b_corrections[k];
+          break;
+        case SATURATION:
+          val = 5.0f * pix_out[1];
+          corr = corrections_out[1] - 1.0f;
+          break;
+        case HUE:
+          corr = 0.2f * corrections_out[0];
+          break;
+        default:
+          corr = weights[k] - 0.5f;
+      }
 
-      const gboolean sign = corr < 0.0f;
-      pix_out[0] = MAX(0.0f, sign ? val * (1.0f + corr) : val);
-      pix_out[1] = MAX(0.0f, sign ? val * (1.0f + corr) : val * (1.0f - corr));
-      pix_out[2] = MAX(0.0f, sign ? val                 : val * (1.0f - corr));
+      const gboolean neg = corr < 0.0f;
+      corr = fabsf(corr);
+      val += 0.1f;
+      pix_out[0] = MAX(0.0f, neg ? val - corr : val);
+      pix_out[1] = MAX(0.0f, neg ? val - corr : val - corr);
+      pix_out[2] = MAX(0.0f, neg ? val        : val - corr);
     }
   }
 
