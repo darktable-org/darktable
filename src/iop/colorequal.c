@@ -862,8 +862,8 @@ void process(struct dt_iop_module_t *self,
       // Apply the corrections
       pix_out[0] += corrections_out[0]; // WARNING: hue is an offset
       // pix_out[1] (saturation) and pix_out[2] (brightness) are gains
-      pix_out[1] = MAX(0.0f, pix_out[1] * (1.0f + 1.25f * (corrections_out[1] - 1.0f)));
-      pix_out[2] = MAX(0.0f, pix_out[2] * (1.0f + 5.0f * b_corrections[k]));
+      pix_out[1] = MAX(0.0f, pix_out[1] * (1.0f + 1.5f * (corrections_out[1] - 1.0f)));
+      pix_out[2] = MAX(0.0f, pix_out[2] * (1.0f + 6.0f * b_corrections[k]));
 
       // Sanitize gamut
       gamut_map_HSB(pix_out, d->gamut_LUT, white);
