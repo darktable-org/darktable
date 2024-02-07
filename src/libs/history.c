@@ -1294,6 +1294,17 @@ static gboolean _lib_history_button_clicked_callback(GtkWidget *widget,
   dt_dev_reorder_gui_module_list(darktable.develop);
   dt_image_update_final_size(imgid);
 
+  /* FIXME
+    The pixelpipe cache is reflecting parameters and it's related output correctness.
+    Yet - there are modules that require fresh data for internal visualizing.
+    As there is currently no way to know about that we do a brute-force way and simply
+    invalidate cachelines.
+    (we might want an additional iop module flag and keep track of that in pixelpipe cache code ???)
+    For raws we have at least rawprepare and demosaic
+  */
+  const int order = dt_image_is_raw(&darktable.develop->image_storage) ? 2 : 0;
+  dt_dev_pixelpipe_cache_invalidate_later(darktable.develop->preview_pipe, order);
+
   /* signal history changed */
   dt_dev_undo_end_record(darktable.develop);
 
