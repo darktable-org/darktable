@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2023 darktable developers.
+    Copyright (C) 2019-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -81,14 +81,15 @@
 
 
 __DT_CLONE_TARGETS__
-static inline int choleski_decompose_fast(const float *const restrict A,
-                                          float *const restrict L, size_t n)
+static inline gboolean _choleski_decompose_fast(const float *const restrict A,
+                                              float *const restrict L,
+                                              size_t n)
 {
   // A is input n×n matrix, decompose it into L such that A = L × L'
   // fast variant : we don't check values for negatives in sqrt,
   // ensure you know the properties of your matrix.
 
-  if(A[0] <= 0.0f) return 0; // failure : non positive definite matrice
+  if(A[0] <= 0.0f) return FALSE; // failure : non positive definite matrice
 
   for(size_t i = 0; i < n; i++)
     for(size_t j = 0; j < (i + 1); j++)
@@ -103,20 +104,21 @@ static inline int choleski_decompose_fast(const float *const restrict A,
                         (A[i * n + j] - sum) / L[j * n + j];
     }
 
-  return 1; // success
+  return TRUE; // success
 }
 
 
 __DT_CLONE_TARGETS__
-static inline int choleski_decompose_safe(const float *const restrict A,
-                                          float *const restrict L, size_t n)
+static inline gboolean _choleski_decompose_safe(const float *const restrict A,
+                                              float *const restrict L,
+                                              size_t n)
 {
   // A is input n×n matrix, decompose it into L such that A = L × L'
   // slow and safe variant : we check values for negatives in sqrt and divisions by 0.
 
-  if(A[0] <= 0.0f) return 0; // failure : non positive definite matrice
+  if(A[0] <= 0.0f) return FALSE; // failure : non positive definite matrice
 
-  int valid = 1;
+  gboolean valid = TRUE;
 
   for(size_t i = 0; i < n; i++)
     for(size_t j = 0; j < (i + 1); j++)
@@ -132,7 +134,7 @@ static inline int choleski_decompose_safe(const float *const restrict A,
 
         if(temp < 0.0f)
         {
-          valid = 0;
+          valid = FALSE;
           L[i * n + j] = NAN;
         }
         else
@@ -144,7 +146,7 @@ static inline int choleski_decompose_safe(const float *const restrict A,
 
         if(temp == 0.0f)
         {
-          valid = 0;
+          valid = FALSE;
           L[i * n + j] = NAN;
         }
         else
@@ -157,9 +159,10 @@ static inline int choleski_decompose_safe(const float *const restrict A,
 
 
 __DT_CLONE_TARGETS__
-static inline int triangular_descent_fast(const float *const restrict L,
-                                          const float *const restrict y, float *const restrict b,
-                                          const size_t n)
+static inline gboolean _triangular_descent_fast(const float *const restrict L,
+                                              const float *const restrict y,
+                                              float *const restrict b,
+                                              const size_t n)
 {
   // solve L × b = y for b
   // use the lower triangular part of L from top to bottom
@@ -173,19 +176,20 @@ static inline int triangular_descent_fast(const float *const restrict L,
     b[i] = sum / L[i * n + i];
   }
 
-  return 1; // success !
+  return TRUE; // success !
 }
 
 
 __DT_CLONE_TARGETS__
-static inline int triangular_descent_safe(const float *const restrict L,
-                                          const float *const restrict y, float *const restrict b,
-                                          const size_t n)
+static inline gboolean _triangular_descent_safe(const float *const restrict L,
+                                              const float *const restrict y,
+                                              float *const restrict b,
+                                              const size_t n)
 {
   // solve L × b = y for b
   // use the lower triangular part of L from top to bottom
 
-  int valid = 1;
+  gboolean valid = TRUE;
 
   for(size_t i = 0; i < n; ++i)
   {
@@ -200,7 +204,7 @@ static inline int triangular_descent_safe(const float *const restrict L,
     else
     {
       b[i] = NAN;
-      valid = 0;
+      valid = FALSE;
     }
   }
 
@@ -209,9 +213,10 @@ static inline int triangular_descent_safe(const float *const restrict L,
 
 
 __DT_CLONE_TARGETS__
-static inline int triangular_ascent_fast(const float *const restrict L,
-                              const float *const restrict b, float *const restrict x,
-                              const size_t n)
+static inline gboolean _triangular_ascent_fast(const float *const restrict L,
+                                              const float *const restrict b,
+                                              float *const restrict x,
+                                              const size_t n)
 {
   // solve L' × x = b for x
   // use the lower triangular part of L transposed from bottom to top
@@ -225,19 +230,20 @@ static inline int triangular_ascent_fast(const float *const restrict L,
     x[i] = sum / L[i * n + i];
   }
 
-  return 1; // success !
+  return TRUE; // success !
 }
 
 
 __DT_CLONE_TARGETS__
-static inline int triangular_ascent_safe(const float *const restrict L,
-                              const float *const restrict b, float *const restrict x,
-                              const size_t n)
+static inline gboolean _triangular_ascent_safe(const float *const restrict L,
+                                              const float *const restrict b,
+                                              float *const restrict x,
+                                              const size_t n)
 {
   // solve L' × x = b for x
   // use the lower triangular part of L transposed from bottom to top
 
-  int valid = 1;
+  gboolean valid = TRUE;
 
   for(int i = (n - 1); i > -1 ; --i)
   {
@@ -251,7 +257,7 @@ static inline int triangular_ascent_safe(const float *const restrict L,
     else
     {
       x[i] = NAN;
-      valid = 0;
+      valid = FALSE;
     }
   }
 
@@ -260,9 +266,10 @@ static inline int triangular_ascent_safe(const float *const restrict L,
 
 
 __DT_CLONE_TARGETS__
-static inline int solve_hermitian(const float *const restrict A,
-                                  float *const restrict y,
-                                  const size_t n, const int checks)
+static inline gboolean _solve_hermitian(const float *const restrict A,
+                                        float *const restrict y,
+                                        const size_t n,
+                                        const gboolean checks)
 {
   // Solve A x = y where A an hermitian positive definite matrix n × n
   // x and y are n vectors. Output the result in y
@@ -279,34 +286,34 @@ static inline int solve_hermitian(const float *const restrict A,
 
   // clock_t start = clock();
 
-  int valid = 0;
+  gboolean valid = FALSE;
   float *const restrict x = dt_alloc_align_float(n);
   float *const restrict L = dt_alloc_align_float(n * n);
 
   if(!x || !L)
   {
-    if(x) dt_free_align(x);
-    if(L) dt_free_align(L);
+    dt_free_align(x);
+    dt_free_align(L);
     dt_control_log(_("Choleski decomposition failed to allocate memory, check your RAM settings"));
     dt_print(DT_DEBUG_ALWAYS, "Choleski decomposition failed to allocate memory, check your RAM settings\n");
-    return 0;
+    return FALSE;
   }
 
   // LU decomposition
-  valid = (checks) ? choleski_decompose_safe(A, L, n) :
-                     choleski_decompose_fast(A, L, n) ;
+  valid = (checks) ? _choleski_decompose_safe(A, L, n) :
+                     _choleski_decompose_fast(A, L, n) ;
   if(!valid) dt_print(DT_DEBUG_ALWAYS, "Cholesky decomposition returned NaNs\n");
 
   // Triangular descent
   if(valid)
-    valid = (checks) ? triangular_descent_safe(L, y, x, n) :
-                       triangular_descent_fast(L, y, x, n) ;
+    valid = (checks) ? _triangular_descent_safe(L, y, x, n) :
+                       _triangular_descent_fast(L, y, x, n) ;
   if(!valid) dt_print(DT_DEBUG_ALWAYS, "Cholesky LU triangular descent returned NaNs\n");
 
   // Triangular ascent
   if(valid)
-    valid = (checks) ? triangular_ascent_safe(L, x, y, n) :
-                       triangular_ascent_fast(L, x, y, n);
+    valid = (checks) ? _triangular_ascent_safe(L, x, y, n) :
+                       _triangular_ascent_fast(L, x, y, n);
   if(!valid) dt_print(DT_DEBUG_ALWAYS, "Cholesky LU triangular ascent returned NaNs\n");
 
   dt_free_align(x);
@@ -320,9 +327,10 @@ static inline int solve_hermitian(const float *const restrict A,
 
 
 __DT_CLONE_TARGETS__
-static inline int transpose_dot_matrix(float *const restrict A, // input
-                                       float *const restrict A_square, // output
-                                       const size_t m, const size_t n)
+static inline gboolean _transpose_dot_matrix(float *const restrict A, // input
+                                            float *const restrict A_square, // output
+                                            const size_t m,
+                                            const size_t n)
 {
   // Construct the square symmetrical definite positive matrix A' A,
   // BUT only compute the lower triangle part for performance
@@ -337,15 +345,16 @@ static inline int transpose_dot_matrix(float *const restrict A, // input
       A_square[i * n + j] = sum;
     }
 
-  return 1;
+  return TRUE;
 }
 
 
 __DT_CLONE_TARGETS__
-static inline int transpose_dot_vector(float *const restrict A, // input
-                                       float *const restrict y, // input
-                                       float *const restrict y_square, // output
-                                       const size_t m, const size_t n)
+static inline gboolean _transpose_dot_vector(float *const restrict A, // input
+                                            float *const restrict y, // input
+                                            float *const restrict y_square, // output
+                                            const size_t m,
+                                            const size_t n)
 {
   // Construct the vector A' y
 
@@ -358,26 +367,27 @@ static inline int transpose_dot_vector(float *const restrict A, // input
     y_square[i] = sum;
   }
 
-  return 1;
+  return TRUE;
 }
 
 
 __DT_CLONE_TARGETS__
-static inline int pseudo_solve(float *const restrict A,
-                               float *const restrict y,
-                               const size_t m, const size_t n, const int checks)
+static inline gboolean pseudo_solve(float *const restrict A,
+                                    float *const restrict y,
+                                    const size_t m,
+                                    const size_t n,
+                                    const gboolean checks)
 {
   // Solve the linear problem A x = y with the over-constrained rectanguler matrice A
   // of dimension m × n (m >= n) by the least squares method
 
   //clock_t start = clock();
 
-  int valid = 1;
+  gboolean valid = TRUE;
   if(m < n)
   {
-    valid = 0;
     dt_print(DT_DEBUG_ALWAYS, "Pseudo solve: cannot cast %zu × %zu matrice\n", m, n);
-    return valid;
+    return FALSE;
   }
 
   float *const restrict A_square = dt_alloc_align_float(n * n);
@@ -385,10 +395,10 @@ static inline int pseudo_solve(float *const restrict A,
 
   if(!A_square || !y_square)
   {
-    if(A_square) dt_free_align(A_square);
-    if(y_square) dt_free_align(y_square);
+    dt_free_align(A_square);
+    dt_free_align(y_square);
     dt_control_log(_("Choleski decomposition failed to allocate memory, check your RAM settings"));
-    return 0;
+    return FALSE;
   }
 
   #ifdef _OPENMP
@@ -400,7 +410,7 @@ static inline int pseudo_solve(float *const restrict A,
     #endif
     {
       // Prepare the least squares matrix = A' A
-      valid = transpose_dot_matrix(A, A_square, m, n);
+      valid = _transpose_dot_matrix(A, A_square, m, n);
     }
 
     #ifdef _OPENMP
@@ -408,13 +418,13 @@ static inline int pseudo_solve(float *const restrict A,
     #endif
     {
       // Prepare the y square vector = A' y
-      valid = transpose_dot_vector(A, y, y_square, m, n);
+      valid = _transpose_dot_vector(A, y, y_square, m, n);
     }
   }
 
 
   // Solve A' A x = A' y for x
-  valid = solve_hermitian(A_square, y_square, n, checks);
+  valid = _solve_hermitian(A_square, y_square, n, checks);
   dt_simd_memcpy(y_square, y, n);
 
   dt_free_align(y_square);
