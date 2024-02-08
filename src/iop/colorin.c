@@ -1171,12 +1171,7 @@ static void process_lcms2_bm(struct dt_iop_module_t *self,
       cmsDoTransform(d->xform_cam_nrgb, out, out, width);
 
       for(int j = 0; j < width; j++)
-      {
-        for_each_channel(c)
-        {
-          out[4*j+c] = CLAMP(out[4*j+c], 0.0f, 1.0f);
-        }
-      }
+        dt_vector_clip(&out[4*j]);
 
       cmsDoTransform(d->xform_nrgb_Lab, out, out, width);
     }
@@ -1211,10 +1206,7 @@ static void process_lcms2_proper(struct dt_iop_module_t *self,
     if(correcting)
     {
       for(size_t x = 0; x < 4 * width; x += 4)
-      {
-        for_each_channel(c)
-          scratch[x+c] = in[x+c] * corr[c];
-      }
+        dt_vector_mul(&scratch[x], &in[x], corr);
       in = scratch;
     }
 
@@ -1230,12 +1222,7 @@ static void process_lcms2_proper(struct dt_iop_module_t *self,
       cmsDoTransform(d->xform_cam_nrgb, in, out, width);
 
       for(int j = 0; j < width; j++)
-      {
-        for_each_channel(c)
-        {
-          out[4*j+c] = CLAMP(out[4*j+c], 0.0f, 1.0f);
-        }
-      }
+        dt_vector_clip(&out[4*j]);
 
       cmsDoTransform(d->xform_nrgb_Lab, out, out, width);
     }
@@ -1295,10 +1282,7 @@ void process(struct dt_iop_module_t *self,
   schedule(static)
 #endif
       for(size_t idx = 0; idx < pix; idx += 4)
-      {
-        for_each_channel(c)
-          out[idx+c] = in[idx+c] * coeffs[c];
-      }
+        dt_vector_mul(&out[idx], &in[idx], coeffs);
     }
     else
       dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, piece->colors);
