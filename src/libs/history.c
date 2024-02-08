@@ -58,7 +58,6 @@ typedef struct dt_lib_history_t
   int record_history_level; // set to +1 in signal DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE
                             // and back to -1 in DT_SIGNAL_DEVELOP_HISTORY_CHANGE. We want
                             // to avoid multiple will-change before a change cb.
-  int history_itemcount;
 } dt_lib_history_t;
 
 /* 3 widgets in each history line */
@@ -116,7 +115,6 @@ void gui_init(dt_lib_module_t *self)
 
   d->record_undo = TRUE;
   d->record_history_level = 0;
-  d->history_itemcount = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_widget_set_name(self->widget, "history-ui");
@@ -1119,6 +1117,11 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
   d->record_history_level--;
   d->record_undo = TRUE;
 
+  // scroll to the top
+  GtkWidget *sw = gtk_widget_get_ancestor(d->history_box, GTK_TYPE_SCROLLED_WINDOW);
+  GtkAdjustment* adj = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(sw));
+  gtk_adjustment_set_value(adj, 0);
+
   dt_lib_gui_queue_update(self);
 }
 
@@ -1170,16 +1173,6 @@ void gui_update(dt_lib_module_t *self)
   /* show all widgets */
   gtk_widget_show_all(d->history_box);
   dt_gui_widget_reallocate_now(d->history_box);
-
-  if (num != d->history_itemcount)
-  {
-    // history has changed, scroll to the top
-    GtkWidget *sw = gtk_widget_get_ancestor(d->history_box, GTK_TYPE_SCROLLED_WINDOW);
-    GtkAdjustment* adj = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(sw));
-    gtk_adjustment_set_value(adj, 0);
-  }
-
-  d->history_itemcount = num;
 
   dt_pthread_mutex_unlock(&darktable.develop->history_mutex);
 }
