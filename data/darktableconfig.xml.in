@@ -2854,12 +2854,12 @@
         <option>none</option>
         <option capability="libsecret">libsecret</option>
         <option capability="kwallet">kwallet</option>
-        <option capability="apple_keychain">Apple keychain</option>
+        <option capability="apple_keychain">apple_keychain</option>
       </enum>
     </type>
     <default>auto</default>
     <shortdescription>password storage backend to use</shortdescription>
-    <longdescription>the storage backend for password storage: auto, none, libsecret, kwallet</longdescription>
+    <longdescription>the storage backend for password storage: auto, none, libsecret, kwallet, apple_keychain</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/export/icctype</name>
