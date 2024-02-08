@@ -74,7 +74,7 @@ typedef struct dt_iop_temperature_params_t
   float green;   // $MIN: 0.0 $MAX: 8.0
   float blue;    // $MIN: 0.0 $MAX: 8.0
   float various; // $MIN: 0.0 $MAX: 8.0
-  int preset;
+  int preset;    // $DEFAULT: DT_IOP_TEMP_D65_LATE
 } dt_iop_temperature_params_t;
 
 typedef struct dt_iop_temperature_gui_data_t
@@ -515,6 +515,24 @@ static inline void scaled_copy_4wide(float *const outp,
     outp[c] = inp[c] * coeffs[c];
 }
 
+static inline void _publish_chroma(dt_dev_pixelpipe_iop_t *piece)
+{
+  const dt_iop_temperature_data_t *const d = (dt_iop_temperature_data_t *)piece->data;
+  struct dt_iop_module_t *self = piece->module;
+  dt_dev_chroma_t *chr = &self->dev->chroma;
+
+  piece->pipe->dsc.temperature.enabled = piece->enabled;
+  chr->temperature = self;
+  for_four_channels(k)
+  {
+    piece->pipe->dsc.temperature.coeffs[k] = d->coeffs[k];
+    piece->pipe->dsc.processed_maximum[k] =
+      d->coeffs[k] * piece->pipe->dsc.processed_maximum[k];
+    chr->wb_coeffs[k] = d->coeffs[k];
+  }
+  chr->late_correction = (d->preset == DT_IOP_TEMP_D65_LATE);
+}
+
 void process(struct dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
@@ -634,17 +652,7 @@ void process(struct dt_iop_module_t *self,
     }
   }
 
-  piece->pipe->dsc.temperature.enabled = TRUE;
-  dt_dev_chroma_t *chr = &self->dev->chroma;
-  chr->temperature = self;
-  for_four_channels(k)
-  {
-    piece->pipe->dsc.temperature.coeffs[k] = d->coeffs[k];
-    piece->pipe->dsc.processed_maximum[k] =
-      d->coeffs[k] * piece->pipe->dsc.processed_maximum[k];
-    chr->wb_coeffs[k] = d->coeffs[k];
-  }
-  chr->late_correction = (d->preset == DT_IOP_TEMP_D65_LATE);
+  _publish_chroma(piece);
 }
 
 #ifdef HAVE_OPENCL
@@ -699,17 +707,7 @@ int process_cl(struct dt_iop_module_t *self,
     CLARG(roi_out->x), CLARG(roi_out->y), CLARG(dev_xtrans));
   if(err != CL_SUCCESS) goto error;
 
-  piece->pipe->dsc.temperature.enabled = TRUE;
-  dt_dev_chroma_t *chr = &self->dev->chroma;
-  chr->temperature = self;
-  for_four_channels(k)
-  {
-    piece->pipe->dsc.temperature.coeffs[k] = d->coeffs[k];
-    piece->pipe->dsc.processed_maximum[k] =
-      d->coeffs[k] * piece->pipe->dsc.processed_maximum[k];
-    chr->wb_coeffs[k] = d->coeffs[k];
-  }
-  chr->late_correction = (d->preset == DT_IOP_TEMP_D65_LATE);
+  _publish_chroma(piece);
 
 error:
   dt_opencl_release_mem_object(dev_coeffs);
@@ -748,6 +746,7 @@ void commit_params(struct dt_iop_module_t *self,
   // 4Bayer images not implemented in OpenCL yet
   if(self->dev->image_storage.flags & DT_IMAGE_4BAYER)
     piece->process_cl_ready = FALSE;
+
   d->preset = p->preset;
   chr->late_correction = (p->preset == DT_IOP_TEMP_D65_LATE);
 }
@@ -1636,10 +1635,17 @@ void reload_defaults(dt_iop_module_t *module)
       double coeffs[4] = { 0 };
       if(is_modern && !calculate_bogus_daylight_wb(module, coeffs))
       {
-        dcoeffs[0] = coeffs[0]/coeffs[1];
+        for_four_channels(k)
+          dcoeffs[k] = as_shot[k];
+        chr->late_correction = TRUE;
+        dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)module->params;
+        p->preset = DT_IOP_TEMP_D65_LATE;
+/*
+         dcoeffs[0] = coeffs[0]/coeffs[1];
         dcoeffs[2] = coeffs[2]/coeffs[1];
         dcoeffs[3] = coeffs[3]/coeffs[1];
         dcoeffs[1] = 1.0f;
+*/
       }
       else
       {
@@ -1667,7 +1673,7 @@ void reload_defaults(dt_iop_module_t *module)
     dt_bauhaus_slider_set_default(g->scale_y, dcoeffs[3]);
 
     for_four_channels(k)
-       g->mod_coeff[k] = daylights[k];
+      g->mod_coeff[k] = dcoeffs[k];
 
     float TempK, tint;
     mul2temp(module, d, &TempK, &tint);
@@ -1694,6 +1700,12 @@ void reload_defaults(dt_iop_module_t *module)
     generate_preset_combo(module);
 
     gui_sliders_update(module);
+
+    dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_D65_LATE);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_d65_late), TRUE);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_asshot), FALSE);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_user), FALSE);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_d65), FALSE);
   }
 }
 
