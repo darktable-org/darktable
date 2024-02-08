@@ -811,11 +811,8 @@ static inline void _loop_switch(const float *const restrict in,
       dt_colormatrix_mul(MIX_to_XYZ, RGB_to_XYZ, MIX);
       break;
   }
-
-  dt_aligned_pixel_t min_value = { 0.0f, 0.0f, 0.0f, 0.0f };
-  if(!clip)
-    for_each_channel(c)
-      min_value[c] = -FLT_MAX;
+  const float minval = clip ? 0.0f : -FLT_MAX;
+  const dt_aligned_pixel_t min_value = { minval, minval, minval, minval };
 
   dt_colormatrix_t RGB_to_XYZ_trans;
   dt_colormatrix_transpose(RGB_to_XYZ_trans, RGB_to_XYZ);
@@ -840,8 +837,7 @@ static inline void _loop_switch(const float *const restrict in,
     dt_aligned_pixel_t temp_one;
     dt_aligned_pixel_t temp_two;
 
-    for(size_t c = 0; c < DT_PIXEL_SIMD_CHANNELS; c++)
-      temp_two[c] = fmaxf(in[k + c], min_value[c]);
+    dt_vector_max(temp_two, &in[k], min_value);
 
     /* WE START IN PIPELINE RGB */
 
@@ -934,25 +930,21 @@ static inline void _loop_switch(const float *const restrict in,
 
     // Clip in LMS
     if(clip)
-      for(size_t c = 0; c < DT_PIXEL_SIMD_CHANNELS; c++)
-        temp_one[c] = fmaxf(temp_one[c], 0.0f);
+      dt_vector_clipneg(temp_one);
 
     // Apply lightness / saturation adjustment
     _luma_chroma(temp_one, saturation, lightness, temp_two, version);
 
     // Clip in LMS
     if(clip)
-      for(size_t c = 0; c < DT_PIXEL_SIMD_CHANNELS; c++)
-        temp_two[c] = fmaxf(temp_two[c], 0.0f);
+      dt_vector_clipneg(temp_two);
 
     // Save
     if(apply_grey)
     {
       // Turn LMS, XYZ or pipeline RGB into monochrome
       const float grey_mix = fmaxf(scalar_product(temp_two, grey), 0.0f);
-
-      out[k] = out[k + 1] = out[k + 2] = grey_mix;
-      out[k + 3] = in[k + 3]; // alpha mask
+      temp_two[0] = temp_two[1] = temp_two[2] = grey_mix;
     }
     else
     {
@@ -981,21 +973,17 @@ static inline void _loop_switch(const float *const restrict in,
 
       // Clip in XYZ
       if(clip)
-        for(size_t c = 0; c < DT_PIXEL_SIMD_CHANNELS; c++)
-          temp_one[c] = fmaxf(temp_one[c], 0.0f);
+        dt_vector_clipneg(temp_one);
 
       // Convert back to RGB
       dt_apply_transposed_color_matrix(temp_one, XYZ_to_RGB_trans, temp_two);
 
       if(clip)
-        for(size_t c = 0; c < DT_PIXEL_SIMD_CHANNELS; c++)
-          out[k + c] = fmaxf(temp_two[c], 0.0f);
-      else
-        for(size_t c = 0; c < DT_PIXEL_SIMD_CHANNELS; c++)
-          out[k + c] = temp_two[c];
-
-//      out[k + 3] = in[k + 3]; // alpha mask
+        dt_vector_clipneg(temp_two);
     }
+
+    temp_two[3] = in[k + 3]; // alpha mask
+    copy_pixel_nontemporal(&out[k], temp_two);
   }
 }
 
