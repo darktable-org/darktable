@@ -598,40 +598,35 @@ void init_presets(dt_iop_module_so_t *self)
 static gboolean _get_white_balance_coeff(struct dt_iop_module_t *self,
                                     dt_aligned_pixel_t custom_wb)
 {
-  // Init output with a no-op
-  for_four_channels(k) custom_wb[k] = 1.f;
-
-  if(!dt_image_is_matrix_correction_supported(&self->dev->image_storage)) return 1;
-
-  // First, get the D65-ish coeffs from the input matrix
-  // keep this in synch with calculate_bogus_daylight_wb from temperature.c !
-  // predicts the bogus D65 that temperature.c will compute for the camera input matrix
-  double bwb[4];
-
-  if(dt_colorspaces_conversion_matrices_rgb
-     (self->dev->image_storage.adobe_XYZ_to_CAM,
-      NULL, NULL,
-      self->dev->image_storage.d65_color_matrix, bwb))
-  {
-    // normalize green:
-    bwb[0] /= bwb[1];
-    bwb[2] /= bwb[1];
-    bwb[3] /= bwb[1];
-    bwb[1] = 1.0;
-  }
-  else
-     return TRUE;
-
-  // Second, if the temperature module is not using these, for example
-  // because they are wrong and user made a correct preset, find the
-  // WB adaptation ratio
   const dt_dev_chroma_t *chr = &self->dev->chroma;
-  if(chr->wb_coeffs[0] > 1.0 || chr->wb_coeffs[1] > 1.0 || chr->wb_coeffs[2] > 1.0)
+
+  // Init output with a no-op
+  for_four_channels(k)
+    custom_wb[k] = 1.0f;
+
+  if(!dt_image_is_matrix_correction_supported(&self->dev->image_storage))
+    return TRUE;
+
+  // If we use D65 there are unchanged corrections
+  if(dt_dev_is_D65_chroma(self->dev))
+    return FALSE;
+
+  const gboolean valid_chroma =
+    chr->D65coeffs[0] > 0.0 && chr->D65coeffs[1] > 0.0 && chr->D65coeffs[2] > 0.0;
+
+  const gboolean changed_chroma =
+    chr->wb_coeffs[0] > 1.0 || chr->wb_coeffs[1] > 1.0 || chr->wb_coeffs[2] > 1.0;
+
+  // Otherwise - for example because the user made a correct preset, find the
+  // WB adaptation ratio
+  if(valid_chroma && changed_chroma)
   {
     for_four_channels(k)
-      custom_wb[k] = bwb[k] / chr->wb_coeffs[k];
+      custom_wb[k] = chr->D65coeffs[k] / chr->wb_coeffs[k];
+    return FALSE;
   }
-  return FALSE;
+  else
+    return TRUE;
 }
 
 
@@ -4039,7 +4034,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
       // Get camera WB and update illuminant
       dt_aligned_pixel_t custom_wb;
       _get_white_balance_coeff(self, custom_wb);
-      const int found = find_temperature_from_raw_coeffs(&(self->dev->image_storage),
+      const gboolean found = find_temperature_from_raw_coeffs(&(self->dev->image_storage),
                                                          custom_wb, &(p->x), &(p->y));
       _check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, &(p->adaptation));
 
