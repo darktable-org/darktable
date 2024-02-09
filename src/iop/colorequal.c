@@ -22,28 +22,28 @@ midi:D#7=iop/colorequal/page
 midi:E7=iop/colorequal/page;brightness
 None;midi:CC1=iop/colorequal/hue/red
 None;midi:CC2=iop/colorequal/hue/orange
-None;midi:CC3=iop/colorequal/hue/lime
+None;midi:CC3=iop/colorequal/hue/yellow
 None;midi:CC4=iop/colorequal/hue/green
-None;midi:CC5=iop/colorequal/hue/turquoise
+None;midi:CC5=iop/colorequal/hue/cyan
 None;midi:CC6=iop/colorequal/hue/blue
 None;midi:CC7=iop/colorequal/hue/lavender
-None;midi:CC8=iop/colorequal/hue/purple
+None;midi:CC8=iop/colorequal/hue/magenta
 None;midi:CC9=iop/colorequal/saturation/red
 None;midi:CC10=iop/colorequal/saturation/orange
-None;midi:CC11=iop/colorequal/saturation/lime
+None;midi:CC11=iop/colorequal/saturation/yellow
 None;midi:CC12=iop/colorequal/saturation/green
-None;midi:CC13=iop/colorequal/saturation/turquoise
+None;midi:CC13=iop/colorequal/saturation/cyan
 None;midi:CC14=iop/colorequal/saturation/blue
 None;midi:CC15=iop/colorequal/saturation/lavender
-None;midi:CC16=iop/colorequal/saturation/purple
+None;midi:CC16=iop/colorequal/saturation/magenta
 None;midi:CC17=iop/colorequal/brightness/red
 None;midi:CC18=iop/colorequal/brightness/orange
-None;midi:CC19=iop/colorequal/brightness/lime
+None;midi:CC19=iop/colorequal/brightness/yellow
 None;midi:CC20=iop/colorequal/brightness/green
-None;midi:CC21=iop/colorequal/brightness/turquoise
+None;midi:CC21=iop/colorequal/brightness/cyan
 None;midi:CC22=iop/colorequal/brightness/blue
 None;midi:CC23=iop/colorequal/brightness/lavender
-None;midi:CC24=iop/colorequal/brightness/purple
+None;midi:CC24=iop/colorequal/brightness/magenta
 */
 
 #include "common/extra_optimizations.h"
@@ -119,32 +119,32 @@ typedef struct dt_iop_colorequal_params_t
   // So we do it the tedious way here, and let the introspection magic connect sliders to params automatically,
   // then we pack the params in arrays in commit_params().
 
-  float sat_red;       // $MIN: 0. $MAX: 2. $DEFAULT: 1.0 $DESCRIPTION: "red"
-  float sat_orange;    // $MIN: 0. $MAX: 2. $DEFAULT: 1.0 $DESCRIPTION: "orange"
-  float sat_lime;      // $MIN: 0. $MAX: 2. $DEFAULT: 1.0 $DESCRIPTION: "lime"
-  float sat_green;     // $MIN: 0. $MAX: 2. $DEFAULT: 1.0 $DESCRIPTION: "green"
-  float sat_turquoise; // $MIN: 0. $MAX: 2. $DEFAULT: 1.0 $DESCRIPTION: "turquoise"
-  float sat_blue;      // $MIN: 0. $MAX: 2. $DEFAULT: 1.0 $DESCRIPTION: "blue"
-  float sat_lavender;  // $MIN: 0. $MAX: 2. $DEFAULT: 1.0 $DESCRIPTION: "lavender"
-  float sat_purple;    // $MIN: 0. $MAX: 2. $DEFAULT: 1.0 $DESCRIPTION: "purple"
+  float sat_red;         // $MIN: 0. $MAX: 2. $DEFAULT: 1.0 $DESCRIPTION: "red"
+  float sat_orange;      // $MIN: 0. $MAX: 2. $DEFAULT: 1.0 $DESCRIPTION: "orange"
+  float sat_yellow;      // $MIN: 0. $MAX: 2. $DEFAULT: 1.0 $DESCRIPTION: "yellow"
+  float sat_green;       // $MIN: 0. $MAX: 2. $DEFAULT: 1.0 $DESCRIPTION: "green"
+  float sat_cyan;        // $MIN: 0. $MAX: 2. $DEFAULT: 1.0 $DESCRIPTION: "cyan"
+  float sat_blue;        // $MIN: 0. $MAX: 2. $DEFAULT: 1.0 $DESCRIPTION: "blue"
+  float sat_lavender;    // $MIN: 0. $MAX: 2. $DEFAULT: 1.0 $DESCRIPTION: "lavender"
+  float sat_magenta;     // $MIN: 0. $MAX: 2. $DEFAULT: 1.0 $DESCRIPTION: "magenta"
 
-  float hue_red;       // $MIN: -180. $MAX: 180. $DEFAULT: 0.0 $DESCRIPTION: "red"
-  float hue_orange;    // $MIN: -180. $MAX: 180. $DEFAULT: 0.0 $DESCRIPTION: "orange"
-  float hue_lime;      // $MIN: -180. $MAX: 180. $DEFAULT: 0.0 $DESCRIPTION: "lime"
-  float hue_green;     // $MIN: -180. $MAX: 180. $DEFAULT: 0.0 $DESCRIPTION: "green"
-  float hue_turquoise; // $MIN: -180. $MAX: 180. $DEFAULT: 0.0 $DESCRIPTION: "turquoise"
-  float hue_blue;      // $MIN: -180. $MAX: 180. $DEFAULT: 0.0 $DESCRIPTION: "blue"
-  float hue_lavender;  // $MIN: -180. $MAX: 180. $DEFAULT: 0.0 $DESCRIPTION: "lavender"
-  float hue_purple;    // $MIN: -180. $MAX: 180. $DEFAULT: 0.0 $DESCRIPTION: "purple"
+  float hue_red;         // $MIN: -180. $MAX: 180. $DEFAULT: 0.0 $DESCRIPTION: "red"
+  float hue_orange;      // $MIN: -180. $MAX: 180. $DEFAULT: 0.0 $DESCRIPTION: "orange"
+  float hue_yellow;      // $MIN: -180. $MAX: 180. $DEFAULT: 0.0 $DESCRIPTION: "yellow"
+  float hue_green;       // $MIN: -180. $MAX: 180. $DEFAULT: 0.0 $DESCRIPTION: "green"
+  float hue_cyan;        // $MIN: -180. $MAX: 180. $DEFAULT: 0.0 $DESCRIPTION: "cyan"
+  float hue_blue;        // $MIN: -180. $MAX: 180. $DEFAULT: 0.0 $DESCRIPTION: "blue"
+  float hue_lavender;    // $MIN: -180. $MAX: 180. $DEFAULT: 0.0 $DESCRIPTION: "lavender"
+  float hue_magenta;     // $MIN: -180. $MAX: 180. $DEFAULT: 0.0 $DESCRIPTION: "magenta"
 
-  float bright_red;       // $MIN: 0. $MAX: 2. $DEFAULT: 1.0 $DESCRIPTION: "red"
-  float bright_orange;    // $MIN: 0. $MAX: 2. $DEFAULT: 1.0 $DESCRIPTION: "orange"
-  float bright_lime;      // $MIN: 0. $MAX: 2. $DEFAULT: 1.0 $DESCRIPTION: "lime"
-  float bright_green;     // $MIN: 0. $MAX: 2. $DEFAULT: 1.0 $DESCRIPTION: "green"
-  float bright_turquoise; // $MIN: 0. $MAX: 2. $DEFAULT: 1.0 $DESCRIPTION: "turquoise"
-  float bright_blue;      // $MIN: 0. $MAX: 2. $DEFAULT: 1.0 $DESCRIPTION: "blue"
-  float bright_lavender;  // $MIN: 0. $MAX: 2. $DEFAULT: 1.0 $DESCRIPTION: "lavender"
-  float bright_purple;    // $MIN: 0. $MAX: 2. $DEFAULT: 1.0 $DESCRIPTION: "purple"
+  float bright_red;      // $MIN: 0. $MAX: 2. $DEFAULT: 1.0 $DESCRIPTION: "red"
+  float bright_orange;   // $MIN: 0. $MAX: 2. $DEFAULT: 1.0 $DESCRIPTION: "orange"
+  float bright_yellow;   // $MIN: 0. $MAX: 2. $DEFAULT: 1.0 $DESCRIPTION: "yellow"
+  float bright_green;    // $MIN: 0. $MAX: 2. $DEFAULT: 1.0 $DESCRIPTION: "green"
+  float bright_cyan;     // $MIN: 0. $MAX: 2. $DEFAULT: 1.0 $DESCRIPTION: "cyan"
+  float bright_blue;     // $MIN: 0. $MAX: 2. $DEFAULT: 1.0 $DESCRIPTION: "blue"
+  float bright_lavender; // $MIN: 0. $MAX: 2. $DEFAULT: 1.0 $DESCRIPTION: "lavender"
+  float bright_magenta;  // $MIN: 0. $MAX: 2. $DEFAULT: 1.0 $DESCRIPTION: "magenta"
 } dt_iop_colorequal_params_t;
 
 typedef enum dt_iop_colorequal_channel_t
@@ -211,12 +211,12 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 typedef struct dt_iop_colorequal_gui_data_t
 {
   GtkWidget *white_level;
-  GtkWidget *sat_red, *sat_orange, *sat_lime, *sat_green;
-  GtkWidget *sat_turquoise, *sat_blue, *sat_lavender, *sat_purple;
-  GtkWidget *hue_red, *hue_orange, *hue_lime, *hue_green;
-  GtkWidget *hue_turquoise, *hue_blue, *hue_lavender, *hue_purple;
-  GtkWidget *bright_red, *bright_orange, *bright_lime, *bright_green;
-  GtkWidget *bright_turquoise, *bright_blue, *bright_lavender, *bright_purple;
+  GtkWidget *sat_red, *sat_orange, *sat_yellow, *sat_green;
+  GtkWidget *sat_cyan, *sat_blue, *sat_lavender, *sat_magenta;
+  GtkWidget *hue_red, *hue_orange, *hue_yellow, *hue_green;
+  GtkWidget *hue_cyan, *hue_blue, *hue_lavender, *hue_magenta;
+  GtkWidget *bright_red, *bright_orange, *bright_yellow, *bright_green;
+  GtkWidget *bright_cyan, *bright_blue, *bright_lavender, *bright_magenta;
 
   GtkWidget *smoothing_saturation, *smoothing_bright, *smoothing_hue;
   GtkWidget *chroma_size, *param_size, *use_filter;
@@ -1027,12 +1027,12 @@ static inline void _pack_saturation(struct dt_iop_colorequal_params_t *p,
 {
   array[0] = p->sat_red;
   array[1] = p->sat_orange;
-  array[2] = p->sat_lime;
+  array[2] = p->sat_yellow;
   array[3] = p->sat_green;
-  array[4] = p->sat_turquoise;
+  array[4] = p->sat_cyan;
   array[5] = p->sat_blue;
   array[6] = p->sat_lavender;
-  array[7] = p->sat_purple;
+  array[7] = p->sat_magenta;
 }
 
 static inline void _pack_hue(struct dt_iop_colorequal_params_t *p,
@@ -1040,12 +1040,12 @@ static inline void _pack_hue(struct dt_iop_colorequal_params_t *p,
 {
   array[0] = p->hue_red;
   array[1] = p->hue_orange;
-  array[2] = p->hue_lime;
+  array[2] = p->hue_yellow;
   array[3] = p->hue_green;
-  array[4] = p->hue_turquoise;
+  array[4] = p->hue_cyan;
   array[5] = p->hue_blue;
   array[6] = p->hue_lavender;
-  array[7] = p->hue_purple;
+  array[7] = p->hue_magenta;
 
   for(int i = 0; i < NODES; i++)
     array[i] = array[i] / 180.f * M_PI_F; // Convert to radians
@@ -1056,12 +1056,12 @@ static inline void _pack_brightness(struct dt_iop_colorequal_params_t *p,
 {
   array[0] = p->bright_red;
   array[1] = p->bright_orange;
-  array[2] = p->bright_lime;
+  array[2] = p->bright_yellow;
   array[3] = p->bright_green;
-  array[4] = p->bright_turquoise;
+  array[4] = p->bright_cyan;
   array[5] = p->bright_blue;
   array[6] = p->bright_lavender;
-  array[7] = p->bright_purple;
+  array[7] = p->bright_magenta;
 }
 
 
@@ -2074,18 +2074,18 @@ void gui_init(struct dt_iop_module_t *self)
     dt_bauhaus_slider_from_params(sect, "hue_red");
   g->hue_sliders[1] = g->hue_orange =
     dt_bauhaus_slider_from_params(sect, "hue_orange");
-  g->hue_sliders[2] = g->hue_lime =
-    dt_bauhaus_slider_from_params(sect, "hue_lime");
+  g->hue_sliders[2] = g->hue_yellow =
+    dt_bauhaus_slider_from_params(sect, "hue_yellow");
   g->hue_sliders[3] = g->hue_green =
     dt_bauhaus_slider_from_params(sect, "hue_green");
-  g->hue_sliders[4] = g->hue_turquoise =
-    dt_bauhaus_slider_from_params(sect, "hue_turquoise");
+  g->hue_sliders[4] = g->hue_cyan =
+    dt_bauhaus_slider_from_params(sect, "hue_cyan");
   g->hue_sliders[5] = g->hue_blue =
     dt_bauhaus_slider_from_params(sect, "hue_blue");
   g->hue_sliders[6] = g->hue_lavender =
     dt_bauhaus_slider_from_params(sect, "hue_lavender");
-  g->hue_sliders[7] = g->hue_purple =
-    dt_bauhaus_slider_from_params(sect, "hue_purple");
+  g->hue_sliders[7] = g->hue_magenta =
+    dt_bauhaus_slider_from_params(sect, "hue_magenta");
 
   sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("saturation"));
   self->widget = dt_ui_notebook_page(g->notebook, N_("saturation"),
@@ -2097,18 +2097,18 @@ void gui_init(struct dt_iop_module_t *self)
     dt_bauhaus_slider_from_params(sect, "sat_red");
   g->sat_sliders[1] = g->sat_orange =
     dt_bauhaus_slider_from_params(sect, "sat_orange");
-  g->sat_sliders[2] = g->sat_lime =
-    dt_bauhaus_slider_from_params(sect, "sat_lime");
+  g->sat_sliders[2] = g->sat_yellow =
+    dt_bauhaus_slider_from_params(sect, "sat_yellow");
   g->sat_sliders[3] = g->sat_green =
     dt_bauhaus_slider_from_params(sect, "sat_green");
-  g->sat_sliders[4] = g->sat_turquoise =
-    dt_bauhaus_slider_from_params(sect, "sat_turquoise");
+  g->sat_sliders[4] = g->sat_cyan =
+    dt_bauhaus_slider_from_params(sect, "sat_cyan");
   g->sat_sliders[5] = g->sat_blue =
     dt_bauhaus_slider_from_params(sect, "sat_blue");
   g->sat_sliders[6] = g->sat_lavender =
     dt_bauhaus_slider_from_params(sect, "sat_lavender");
-  g->sat_sliders[7] = g->sat_purple =
-    dt_bauhaus_slider_from_params(sect, "sat_purple");
+  g->sat_sliders[7] = g->sat_magenta =
+    dt_bauhaus_slider_from_params(sect, "sat_magenta");
 
   sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("brightness"));
   self->widget = dt_ui_notebook_page(g->notebook, N_("brightness"),
@@ -2120,18 +2120,18 @@ void gui_init(struct dt_iop_module_t *self)
     dt_bauhaus_slider_from_params(sect, "bright_red");
   g->bright_sliders[1] = g->bright_orange =
     dt_bauhaus_slider_from_params(sect, "bright_orange");
-  g->bright_sliders[2] = g->bright_lime =
-    dt_bauhaus_slider_from_params(sect, "bright_lime");
+  g->bright_sliders[2] = g->bright_yellow =
+    dt_bauhaus_slider_from_params(sect, "bright_yellow");
   g->bright_sliders[3] = g->bright_green =
     dt_bauhaus_slider_from_params(sect, "bright_green");
-  g->bright_sliders[4] = g->bright_turquoise =
-    dt_bauhaus_slider_from_params(sect, "bright_turquoise");
+  g->bright_sliders[4] = g->bright_cyan =
+    dt_bauhaus_slider_from_params(sect, "bright_cyan");
   g->bright_sliders[5] = g->bright_blue =
     dt_bauhaus_slider_from_params(sect, "bright_blue");
   g->bright_sliders[6] = g->bright_lavender =
     dt_bauhaus_slider_from_params(sect, "bright_lavender");
-  g->bright_sliders[7] = g->bright_purple =
-    dt_bauhaus_slider_from_params(sect, "bright_purple");
+  g->bright_sliders[7] = g->bright_magenta =
+    dt_bauhaus_slider_from_params(sect, "bright_magenta");
 
   dt_gui_new_collapsible_section
     (&g->cs,
