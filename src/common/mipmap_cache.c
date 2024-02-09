@@ -757,7 +757,7 @@ void dt_mipmap_cache_get_with_caller(
       {
         // load the image:
         // make sure we access the r/w lock as shortly as possible!
-        dt_image_t buffered_image;
+        dt_image_t DT_ALIGNED_ARRAY buffered_image;
         const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
         buffered_image = *cimg;
         // dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
