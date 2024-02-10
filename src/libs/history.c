@@ -1169,6 +1169,14 @@ void gui_update(dt_lib_module_t *self)
   gtk_widget_show_all(d->history_box);
   dt_gui_widget_reallocate_now(d->history_box);
 
+  if (num == darktable.develop->history_end)
+  {
+    // history has changed, scroll to the top
+    GtkWidget *sw = gtk_widget_get_ancestor(d->history_box, GTK_TYPE_SCROLLED_WINDOW);
+    GtkAdjustment* adj = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(sw));
+    gtk_adjustment_set_value(adj, 0);
+  }
+
   dt_pthread_mutex_unlock(&darktable.develop->history_mutex);
 }
 
