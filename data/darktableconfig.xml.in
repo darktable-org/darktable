@@ -2846,7 +2846,7 @@
     <shortdescription>XCF bit depth (bpp)</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="security" section="other">
+  <dtconfig prefs="security" section="other" restart="true">
     <name>plugins/pwstorage/pwstorage_backend</name>
     <type>
       <enum>
