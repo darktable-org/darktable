@@ -109,7 +109,7 @@ const dt_pwstorage_t *dt_pwstorage_new()
       pwstorage->pw_storage_backend = PW_STORAGE_BACKEND_NONE;
       pwstorage->backend_context = NULL;
       dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_new] no storage backend. not storing username/password. "
-                                   "please change in preferences, core tab.\n");
+                                   "please change in preferences, security tab.\n");
       break;
     case PW_STORAGE_BACKEND_LIBSECRET:
 #ifdef HAVE_LIBSECRET
