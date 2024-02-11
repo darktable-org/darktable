@@ -2082,10 +2082,10 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = box;
   g->hue_shift = dt_bauhaus_slider_from_params(self, "hue_shift");
-  dt_bauhaus_slider_set_format(g->hue_shift, _(" °"));
+  dt_bauhaus_slider_set_format(g->hue_shift, "°");
   dt_bauhaus_slider_set_digits(g->hue_shift, 0);
   gtk_widget_set_tooltip_text(g->hue_shift,
-                              _("shift nodes to lower or higher hue as desired"));
+                              _("shift nodes to lower or higher hue"));
 
   // start building top level widget
   static dt_action_def_t notebook_def = { };
