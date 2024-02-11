@@ -41,7 +41,7 @@ Since darktable 4.4:
 ## Performance Improvements
 
 - Fixed some OpenCL code paths that could produce garbled or unprocessed
-  output without reporting the issue back to the the pixel-pipe.
+  output without reporting the issue back to the pixel-pipe.
 
 ## Other Changes
 
@@ -103,11 +103,14 @@ Since darktable 4.4:
 - Fixed issue where the right-click-and-drag rotation line was not being
   displayed on the image when a darkroom module was expanded.
 
-- Fixed lighttable scrolling freeze when using a trackpad.
+- Fixed lighttable scrolling freeze when using a track-pad.
 
 - Fix compatibility issues with HDR created DNG files.
 
 - Fix possible crash when using the capture's live view mode.
+
+- Fixed a zooming bug in lighttable culling mode where some images' area
+  could be plain grey or having a very small thumb.
 
 ## Lua
 
