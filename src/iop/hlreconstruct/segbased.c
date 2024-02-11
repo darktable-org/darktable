@@ -474,9 +474,10 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
   const dt_aligned_pixel_t cube_coeffs = { powf(clips[0], 1.0f / HL_POWERF), powf(clips[1], 1.0f / HL_POWERF), powf(clips[2], 1.0f / HL_POWERF)};
 
   const dt_dev_chroma_t *chr = &piece->module->dev->chroma;
-  const dt_aligned_pixel_t correction = { (float)(chr->D65coeffs[0] / chr->as_shot[0]),
-                                          (float)(chr->D65coeffs[1] / chr->as_shot[1]),
-                                          (float)(chr->D65coeffs[2] / chr->as_shot[2]),
+  const gboolean late = chr->late_correction;
+  const dt_aligned_pixel_t correction = { late ? (float)(chr->D65coeffs[0] / chr->as_shot[0]) : 1.0f,
+                                          late ? (float)(chr->D65coeffs[1] / chr->as_shot[1]) : 1.0f,
+                                          late ? (float)(chr->D65coeffs[2] / chr->as_shot[2]) : 1.0f,
                                           1.0f };
   const int recovery_mode = data->recovery;
   const float strength = data->strength;
@@ -529,7 +530,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
   #pragma omp parallel for default(none) \
   reduction( | : has_allclipped) \
   reduction( + : anyclipped) \
-  dt_omp_firstprivate(tmpout, roi_in, plane, isegments, cube_coeffs, refavg, xtrans, pwidth, filters, xshifter) \
+  dt_omp_firstprivate(tmpout, roi_in, plane, isegments, cube_coeffs, refavg, xtrans, pwidth, filters, xshifter, correction) \
   schedule(static) collapse(2)
 #endif
   for(int row = 1; row < roi_in->height-1; row++)
@@ -555,7 +556,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
         }
 
         for_each_channel(c)
-          mean[c] = (cnt[c] > 0.0f) ? powf(mean[c] / cnt[c], 1.0f / HL_POWERF) : 0.0f;
+          mean[c] = (cnt[c] > 0.0f) ? powf(correction[c] * mean[c] / cnt[c], 1.0f / HL_POWERF) : 0.0f;
         const dt_aligned_pixel_t cube_refavg = { 0.5f * (mean[1] + mean[2]),
                                                  0.5f * (mean[0] + mean[2]),
                                                  0.5f * (mean[0] + mean[1]),
