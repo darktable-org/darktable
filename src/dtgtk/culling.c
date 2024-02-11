@@ -1225,6 +1225,17 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table,
   gchar *query = NULL;
   sqlite3_stmt *stmt;
 
+  int nw = 40;
+  int nh = 40;
+
+  // get width/height before the list is destroyed
+  if(table->list)
+  {
+    dt_thumbnail_t *th_model = (dt_thumbnail_t *)(table->list)->data;
+    nw = th_model->width;
+    nh = th_model->height;
+  }
+
   // let's create a hashtable of table->list in order to speddup search in next loop
   GHashTable *htable = g_hash_table_new_full(g_int_hash, g_int_equal, NULL, _list_remove_thumb);
   for(const GList *l = table->list; l; l = g_list_next(l))
@@ -1298,41 +1309,26 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table,
       // we create a completely new thumb we set its size to the thumb
       // it replace in the list if any otherwise we set it to
       // something > 0 to trigger draw events
-      int nw = 40;
-      int nh = 40;
       if(table->mode == DT_CULLING_MODE_PREVIEW ||
          (table->mode == DT_CULLING_MODE_CULLING && table->thumbs_count == 1))
       {
         nw = table->view_width;
         nh = table->view_height;
       }
-      else if(table->list)
-      {
 
-        dt_thumbnail_t *th_model = (dt_thumbnail_t *)(table->list)->data;
-        nw = th_model->width;
-        nh = th_model->height;
-      }
-      if(table->mode == DT_CULLING_MODE_PREVIEW)
-        thumb = dt_thumbnail_new(nw,
-                                 nh,
-                                 table->zoom_ratio,
-                                 nid,
-                                 nrow,
-                                 table->overlays,
-                                 DT_THUMBNAIL_CONTAINER_PREVIEW,
-                                 table->show_tooltips,
-                                 selected);
-      else
-        thumb = dt_thumbnail_new(nw,
-                                 nh,
-                                 table->zoom_ratio,
-                                 nid,
-                                 nrow,
-                                 table->overlays,
-                                 DT_THUMBNAIL_CONTAINER_CULLING,
-                                 table->show_tooltips,
-                                 selected);
+      const dt_thumbnail_container_t container = table->mode == DT_CULLING_MODE_PREVIEW
+        ? DT_THUMBNAIL_CONTAINER_PREVIEW
+        : DT_THUMBNAIL_CONTAINER_CULLING;
+
+      thumb = dt_thumbnail_new(nw,
+                               nh,
+                               table->zoom_ratio,
+                               nid,
+                               nrow,
+                               table->overlays,
+                               container,
+                               table->show_tooltips,
+                               selected);
 
       thumb->display_focus = table->focus;
       thumb->sel_mode = DT_THUMBNAIL_SEL_MODE_DISABLED;
