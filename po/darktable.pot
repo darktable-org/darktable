@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-02-11 08:25+0100\n"
+"POT-Creation-Date: 2024-02-11 17:20+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2564,12 +2564,12 @@ msgid "very large chromatic aberration"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:158
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:254
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:302
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:350
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:463
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:495
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:527
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:260
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:308
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:356
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:475
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:507
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:539
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:159
 #: ../src/common/collection.c:1374 ../src/common/color_vocabulary.c:232
 #: ../src/common/colorlabels.c:374 ../src/develop/blend_gui.c:2383
@@ -2584,12 +2584,12 @@ msgid "red"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:159
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:272
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:320
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:368
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:475
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:507
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:539
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:278
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:326
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:374
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:487
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:519
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:551
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:158
 #: ../src/common/collection.c:1378 ../src/common/color_vocabulary.c:277
 #: ../src/common/colorlabels.c:376 ../src/develop/blend_gui.c:2389
@@ -2605,12 +2605,12 @@ msgid "green"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:160
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:284
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:332
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:380
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:483
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:515
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:547
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:290
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:338
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:386
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:495
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:527
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:559
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:160
 #: ../src/common/collection.c:1380 ../src/common/color_vocabulary.c:324
 #: ../src/common/colorlabels.c:377 ../src/develop/blend_gui.c:2395
@@ -2946,8 +2946,8 @@ msgstr ""
 #: ../src/develop/blend_gui.c:2464 ../src/iop/channelmixer.c:634
 #: ../src/iop/channelmixerrgb.c:4524 ../src/iop/channelmixerrgb.c:4639
 #: ../src/iop/colorbalance.c:2000 ../src/iop/colorize.c:343
-#: ../src/iop/colorreconstruction.c:1249 ../src/iop/colorequal.c:2068
-#: ../src/iop/colorequal.c:2069 ../src/iop/colorzones.c:2646
+#: ../src/iop/colorreconstruction.c:1249 ../src/iop/colorequal.c:2107
+#: ../src/iop/colorequal.c:2108 ../src/iop/colorzones.c:2646
 msgid "hue"
 msgstr ""
 
@@ -3146,85 +3146,94 @@ msgstr ""
 msgid "saturated colors"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:212
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:218
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:224
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:435
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:439
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:443
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:230
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:447
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:451
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:455
 #: ../src/iop/toneequal.c:3448
 msgid "curve smoothing"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:230
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:447
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:236
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:459
 msgid "white level"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:236
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:451
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:242
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:463
 msgid "analysis radius"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:242
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:455
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:248
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:467
 msgid "effect radius"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:248
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:459
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:254
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:471
 msgid "use guided filter"
-msgstr ""
-
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:260
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:308
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:356
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:467
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:499
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:531
-#: ../src/iop/colorzones.c:2500
-msgid "orange"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:266
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:314
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:362
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:471
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:503
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:535
-msgid "lime"
-msgstr ""
-
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:278
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:326
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:374
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:479
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:511
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:543
-#: ../src/common/color_vocabulary.c:289
-msgid "turquoise"
+#: ../src/iop/colorzones.c:2500
+msgid "orange"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:290
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:338
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:386
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:487
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:519
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:551
-#: ../src/common/color_vocabulary.c:343
-msgid "lavender"
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:272
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:320
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:368
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:483
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:515
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:547
+#: ../src/common/collection.c:1376 ../src/common/colorlabels.c:375
+#: ../src/develop/lightroom.c:889 ../src/gui/guides.c:732
+#: ../src/iop/colorzones.c:2501 ../src/iop/temperature.c:2004
+#: ../src/libs/collect.c:1928 ../src/libs/filters/colors.c:261
+msgid "yellow"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:284
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:332
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:380
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:491
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:523
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:555
+#: ../src/common/color_vocabulary.c:298 ../src/gui/guides.c:733
+#: ../src/iop/temperature.c:2002
+msgid "cyan"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:296
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:344
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:392
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:491
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:523
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:555
-#: ../src/common/collection.c:1382 ../src/common/color_vocabulary.c:339
-#: ../src/common/colorlabels.c:378 ../src/iop/colorzones.c:2505
-#: ../src/libs/collect.c:1928 ../src/libs/filters/colors.c:264
-msgid "purple"
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:499
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:531
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:563
+#: ../src/common/color_vocabulary.c:343
+msgid "lavender"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:302
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:350
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:398
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:503
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:535
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:567
+#: ../src/common/color_vocabulary.c:341 ../src/gui/guides.c:734
+#: ../src/iop/colorzones.c:2506 ../src/iop/temperature.c:2000
+msgid "magenta"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:404
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:571
+msgid "node placement"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:78
@@ -3977,7 +3986,7 @@ msgstr ""
 #: ../src/iop/colorbalance.c:2017 ../src/iop/colorbalancergb.c:1990
 #: ../src/iop/colorchecker.c:1486 ../src/iop/colorcontrast.c:82
 #: ../src/iop/colorcorrection.c:268 ../src/iop/colorize.c:356
-#: ../src/iop/colorequal.c:2090 ../src/iop/colorequal.c:2091
+#: ../src/iop/colorequal.c:2129 ../src/iop/colorequal.c:2130
 #: ../src/iop/lowpass.c:602 ../src/iop/soften.c:368 ../src/iop/velvia.c:75
 #: ../src/iop/vibrance.c:72 ../src/iop/vignette.c:1058
 msgid "saturation"
@@ -4648,8 +4657,8 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_retouch.c:285
 #: ../build/lib/darktable/plugins/introspection_retouch.c:426
 #: ../src/iop/basicadj.c:650 ../src/iop/channelmixerrgb.c:4691
-#: ../src/iop/colisa.c:299 ../src/iop/colorequal.c:2113
-#: ../src/iop/colorequal.c:2114 ../src/iop/lowpass.c:601
+#: ../src/iop/colisa.c:299 ../src/iop/colorequal.c:2152
+#: ../src/iop/colorequal.c:2153 ../src/iop/lowpass.c:601
 #: ../src/iop/soften.c:372 ../src/iop/vignette.c:1057 ../src/libs/history.c:966
 msgid "brightness"
 msgstr ""
@@ -5429,11 +5438,10 @@ msgstr ""
 msgid "search"
 msgstr ""
 
-#: ../src/common/collection.c:1376 ../src/common/colorlabels.c:375
-#: ../src/develop/lightroom.c:889 ../src/gui/guides.c:732
-#: ../src/iop/colorzones.c:2501 ../src/iop/temperature.c:2004
-#: ../src/libs/collect.c:1928 ../src/libs/filters/colors.c:261
-msgid "yellow"
+#: ../src/common/collection.c:1382 ../src/common/color_vocabulary.c:339
+#: ../src/common/colorlabels.c:378 ../src/iop/colorzones.c:2505
+#: ../src/libs/collect.c:1928 ../src/libs/filters/colors.c:264
+msgid "purple"
 msgstr ""
 
 #: ../src/common/collection.c:1400 ../src/libs/collect.c:1869
@@ -5699,6 +5707,10 @@ msgstr ""
 msgid "light sea green"
 msgstr ""
 
+#: ../src/common/color_vocabulary.c:289
+msgid "turquoise"
+msgstr ""
+
 #. 192° - cyan
 #: ../src/common/color_vocabulary.c:294
 msgid "dark slate gray"
@@ -5715,11 +5727,6 @@ msgstr ""
 #: ../src/common/color_vocabulary.c:297 ../src/common/color_vocabulary.c:317
 #: ../src/iop/colorzones.c:2503
 msgid "aqua"
-msgstr ""
-
-#: ../src/common/color_vocabulary.c:298 ../src/gui/guides.c:733
-#: ../src/iop/temperature.c:2002
-msgid "cyan"
 msgstr ""
 
 #. 216° - medium blue
@@ -5781,11 +5788,6 @@ msgstr ""
 
 #: ../src/common/color_vocabulary.c:340
 msgid "dark magenta"
-msgstr ""
-
-#: ../src/common/color_vocabulary.c:341 ../src/gui/guides.c:734
-#: ../src/iop/colorzones.c:2506 ../src/iop/temperature.c:2000
-msgid "magenta"
 msgstr ""
 
 #: ../src/common/color_vocabulary.c:346
@@ -8186,7 +8188,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:2693 ../src/develop/blend_gui.c:3614
 #: ../src/iop/basicadj.c:630 ../src/iop/colorbalancergb.c:2161
-#: ../src/iop/colorequal.c:2149 ../src/iop/exposure.c:1138
+#: ../src/iop/colorequal.c:2188 ../src/iop/exposure.c:1138
 #: ../src/iop/exposure.c:1153 ../src/iop/filmic.c:1528 ../src/iop/filmic.c:1541
 #: ../src/iop/filmic.c:1583 ../src/iop/filmicrgb.c:4504
 #: ../src/iop/filmicrgb.c:4515 ../src/iop/filmicrgb.c:4549
@@ -12022,7 +12024,7 @@ msgstr ""
 #: ../src/iop/blurs.c:93 ../src/iop/blurs.c:94 ../src/iop/channelmixerrgb.c:239
 #: ../src/iop/channelmixerrgb.c:241 ../src/iop/clipping.c:364
 #: ../src/iop/clipping.c:366 ../src/iop/colorbalancergb.c:185
-#: ../src/iop/colorin.c:137 ../src/iop/colorequal.c:189 ../src/iop/crop.c:135
+#: ../src/iop/colorin.c:137 ../src/iop/colorequal.c:186 ../src/iop/crop.c:135
 #: ../src/iop/crop.c:137 ../src/iop/demosaic.c:296
 #: ../src/iop/denoiseprofile.c:780 ../src/iop/denoiseprofile.c:782
 #: ../src/iop/diffuse.c:146 ../src/iop/diffuse.c:148
@@ -12231,7 +12233,7 @@ msgid "add or remove local contrast, sharpness, acutance"
 msgstr ""
 
 #: ../src/iop/atrous.c:133 ../src/iop/bilateral.cc:102
-#: ../src/iop/colorequal.c:188 ../src/iop/diffuse.c:145
+#: ../src/iop/colorequal.c:185 ../src/iop/diffuse.c:145
 #: ../src/iop/enlargecanvas.c:83 ../src/iop/exposure.c:131
 #: ../src/iop/filmicrgb.c:352 ../src/iop/graduatednd.c:146
 #: ../src/iop/negadoctor.c:146 ../src/iop/overlay.c:165
@@ -12404,7 +12406,7 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/atrous.c:1818 ../src/iop/colorbalancergb.c:2129
-#: ../src/iop/colorequal.c:2030 ../src/iop/colorzones.c:2732
+#: ../src/iop/colorequal.c:2062 ../src/iop/colorzones.c:2732
 #: ../src/iop/denoiseprofile.c:3747 ../src/iop/filmicrgb.c:4471
 #: ../src/iop/lowlight.c:821 ../src/iop/rawdenoise.c:935
 #: ../src/iop/toneequal.c:3424
@@ -13528,7 +13530,7 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/channelmixerrgb.c:4468 ../src/iop/clipping.c:2137
-#: ../src/iop/colorbalancergb.c:1944 ../src/iop/colorequal.c:2054
+#: ../src/iop/colorbalancergb.c:1944 ../src/iop/colorequal.c:2093
 #: ../src/iop/filmicrgb.c:4483 ../src/iop/negadoctor.c:848
 #: ../src/iop/toneequal.c:3372 ../src/libs/image.c:490
 #: ../src/views/lighttable.c:1258
@@ -15026,28 +15028,28 @@ msgid ""
 "and move to the new color mapping module."
 msgstr ""
 
-#: ../src/iop/colorequal.c:176
+#: ../src/iop/colorequal.c:173
 msgid "color equalizer"
 msgstr ""
 
-#: ../src/iop/colorequal.c:181 ../src/iop/colorzones.c:139
+#: ../src/iop/colorequal.c:178 ../src/iop/colorzones.c:139
 #: ../src/iop/colorzones.c:2573
 msgid "color zones"
 msgstr ""
 
-#: ../src/iop/colorequal.c:187
+#: ../src/iop/colorequal.c:184
 msgid "change saturation, hue and brightness depending on local hue"
 msgstr ""
 
-#: ../src/iop/colorequal.c:190 ../src/iop/toneequal.c:334
+#: ../src/iop/colorequal.c:187 ../src/iop/toneequal.c:334
 msgid "quasi-linear, RGB"
 msgstr ""
 
-#: ../src/iop/colorequal.c:191 ../src/iop/toneequal.c:335
+#: ../src/iop/colorequal.c:188 ../src/iop/toneequal.c:335
 msgid "quasi-linear, RGB, scene-referred"
 msgstr ""
 
-#: ../src/iop/colorequal.c:1828
+#: ../src/iop/colorequal.c:1863
 #, c-format
 msgid ""
 "middle click to toggle sliders visibility\n"
@@ -15056,42 +15058,46 @@ msgid ""
 msgstr ""
 
 #. Page OPTIONS
-#: ../src/iop/colorequal.c:1988 ../src/iop/colorequal.c:2139
+#: ../src/iop/colorequal.c:2020 ../src/iop/colorequal.c:2178
 #: ../src/iop/filmicrgb.c:4675
 msgid "options"
 msgstr ""
 
-#: ../src/iop/colorequal.c:2069
+#: ../src/iop/colorequal.c:2088
+msgid "shift nodes to lower or higher hue"
+msgstr ""
+
+#: ../src/iop/colorequal.c:2108
 msgid "change hue hue-wise"
 msgstr ""
 
-#: ../src/iop/colorequal.c:2092
+#: ../src/iop/colorequal.c:2131
 msgid "change saturation hue-wise"
 msgstr ""
 
-#: ../src/iop/colorequal.c:2115
+#: ../src/iop/colorequal.c:2154
 msgid "change brightness hue-wise"
 msgstr ""
 
-#: ../src/iop/colorequal.c:2155 ../src/iop/colorequal.c:2168
+#: ../src/iop/colorequal.c:2195 ../src/iop/colorequal.c:2208
 msgid " px"
 msgstr ""
 
-#: ../src/iop/colorequal.c:2157
+#: ../src/iop/colorequal.c:2197
 msgid "blurring radius of chroma prefilter analysis"
 msgstr ""
 
-#: ../src/iop/colorequal.c:2163
+#: ../src/iop/colorequal.c:2203
 msgid ""
 "visualize weighing function on changed output.\n"
 "red shows possibly changed data, blueish parts will not be changed.\n"
 msgstr ""
 
-#: ../src/iop/colorequal.c:2169
+#: ../src/iop/colorequal.c:2209
 msgid "blurring radius of applied parameters"
 msgstr ""
 
-#: ../src/iop/colorequal.c:2176
+#: ../src/iop/colorequal.c:2216
 msgid ""
 "visualize changed output for the selected tab.\n"
 "red shows increased data, blue decreased."
