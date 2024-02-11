@@ -623,10 +623,8 @@ static gboolean _get_white_balance_coeff(struct dt_iop_module_t *self,
   {
     for_four_channels(k)
       custom_wb[k] = chr->D65coeffs[k] / chr->wb_coeffs[k];
-    return FALSE;
   }
-  else
-    return TRUE;
+  return FALSE;
 }
 
 
@@ -3905,30 +3903,29 @@ void reload_defaults(dt_iop_module_t *module)
 
   // check if we could register
   const gboolean CAT_already_applied =
-    (module->dev->chroma.adaptation != NULL)      // CAT exists
-    && (module->dev->chroma.adaptation != module) // and it is not us
-    && (!dt_image_is_monochrome(img));
+    (module->dev->chroma.adaptation != NULL)       // CAT exists
+    && (module->dev->chroma.adaptation != module); // and it is not us
 
   module->default_enabled = FALSE;
 
-  dt_aligned_pixel_t custom_wb;
-  if(!CAT_already_applied
-     && is_modern
-     && !_get_white_balance_coeff(module, custom_wb)
-     && !dt_image_is_monochrome(img))
+  if(CAT_already_applied || dt_image_is_monochrome(img))
   {
-    // if workflow = modern and we find WB coeffs, take care of white balance here
-    if(find_temperature_from_raw_coeffs(img, custom_wb, &(d->x), &(d->y)))
-      d->illuminant = DT_ILLUMINANT_CAMERA;
-
-    _check_if_close_to_daylight(d->x, d->y,
-                                &(d->temperature), &(d->illuminant), &(d->adaptation));
+    // simple channel mixer
+    d->illuminant = DT_ILLUMINANT_PIPE;
+    d->adaptation = DT_ADAPTATION_RGB;
   }
   else
   {
-    // otherwise, simple channel mixer
-    d->illuminant = DT_ILLUMINANT_PIPE;
-    d->adaptation = DT_ADAPTATION_RGB;
+    d->adaptation = DT_ADAPTATION_CAT16;
+
+    dt_aligned_pixel_t custom_wb;
+    if(!_get_white_balance_coeff(module, custom_wb))
+    {
+      if(find_temperature_from_raw_coeffs(img, custom_wb, &(d->x), &(d->y)))
+        d->illuminant = DT_ILLUMINANT_CAMERA;
+    _check_if_close_to_daylight(d->x, d->y,
+                                &(d->temperature), &(d->illuminant), &(d->adaptation));
+    }
   }
 
   dt_iop_channelmixer_rgb_gui_data_t *g =
