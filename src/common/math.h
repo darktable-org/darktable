@@ -476,6 +476,14 @@ static inline void dt_vector_max(dt_aligned_pixel_t max,
 #endif
 }
 
+static inline void dt_vector_max_nan(dt_aligned_pixel_t max,
+                                 const dt_aligned_pixel_t v1,
+                                 const dt_aligned_pixel_t v2)
+{
+  for_four_channels(c)
+    max[c] = fmaxf(v1[c], v2[c]);
+}
+
 static inline void dt_vector_round(const dt_aligned_pixel_t input, dt_aligned_pixel_t rounded)
 {
   // unfortunately, casting to int truncates toward zero, so we need to use an SSE intrinsic to
@@ -696,6 +704,13 @@ static inline void dt_vector_clipneg(dt_aligned_pixel_t values)
   static const dt_aligned_pixel_t zero = { 0.0f, 0.0f, 0.0f, 0.0f };
   dt_vector_max(values, values, zero);
 }
+
+static inline void dt_vector_clipneg_nan(dt_aligned_pixel_t values)
+{
+  static const dt_aligned_pixel_t zero = { 0.0f, 0.0f, 0.0f, 0.0f };
+  dt_vector_max_nan(values, values, zero);
+}
+
 
 /** Compute approximate sines, four at a time.
  * This function behaves correctly for the range [-pi pi] only.
