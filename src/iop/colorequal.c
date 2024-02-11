@@ -246,6 +246,8 @@ typedef struct dt_iop_colorequal_gui_data_t
   gboolean on_node;
   int selected;
   float points[NODES+1][2];
+
+  GtkWidget *box[3];
 } dt_iop_colorequal_gui_data_t;
 
 int legacy_params(dt_iop_module_t *self,
@@ -1730,6 +1732,20 @@ static void _channel_tabs_switch_callback(GtkNotebook *notebook,
   // For the first 3 tabs, update color channel and redraw the graph
   if(page_num < NUM_CHANNELS)
   {
+    // reparent the graph
+    // get current size
+    const gint sx = gtk_widget_get_allocated_width(GTK_WIDGET(g->area));
+    const gint sy = gtk_widget_get_allocated_height(GTK_WIDGET(g->area));
+
+    // make sure we keep a ref to avoid the widget to be destroyed
+    g_object_ref(GTK_WIDGET(g->area));
+    gtk_container_remove(GTK_CONTAINER(g->box[g->channel]), GTK_WIDGET(g->area));
+    gtk_container_add(GTK_CONTAINER(g->box[page_num]), GTK_WIDGET(g->area));
+    g_object_unref(GTK_WIDGET(g->area));
+
+    // restore aspect & size
+    gtk_widget_set_size_request(GTK_WIDGET(g->area), sx, sy);
+
     g->channel = (dt_iop_colorequal_channel_t)page_num;
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
   }
@@ -2055,6 +2071,15 @@ void gui_init(struct dt_iop_module_t *self)
 
   GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
+  // start building top level widget
+  static dt_action_def_t notebook_def = { };
+  g->notebook = dt_ui_notebook_new(&notebook_def);
+  dt_action_define_iop(self, NULL, N_("page"), GTK_WIDGET(g->notebook), &notebook_def);
+  g_signal_connect(G_OBJECT(g->notebook), "switch_page",
+                   G_CALLBACK(_channel_tabs_switch_callback), self);
+  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->notebook), TRUE, TRUE, 0);
+
+  // graph
   g->area = GTK_DRAWING_AREA
     (dt_ui_resize_wrap(NULL, 0,
                        "plugins/darkroom/colorequal/aspect_percent"));
@@ -2078,7 +2103,7 @@ void gui_init(struct dt_iop_module_t *self)
                    G_CALLBACK(_area_scrolled_callback), self);
   g_signal_connect(G_OBJECT(g->area), "size_allocate",
                    G_CALLBACK(_area_size_callback), self);
-  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->area), TRUE, TRUE, 0);
+//  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->area), TRUE, TRUE, 0);
 
   self->widget = box;
   g->hue_shift = dt_bauhaus_slider_from_params(self, "hue_shift");
@@ -2086,13 +2111,6 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->hue_shift, 0);
   gtk_widget_set_tooltip_text(g->hue_shift,
                               _("shift nodes to lower or higher hue"));
-
-  // start building top level widget
-  static dt_action_def_t notebook_def = { };
-  g->notebook = dt_ui_notebook_new(&notebook_def);
-  dt_action_define_iop(self, NULL, N_("page"), GTK_WIDGET(g->notebook), &notebook_def);
-  g_signal_connect(G_OBJECT(g->notebook), "switch_page",
-                   G_CALLBACK(_channel_tabs_switch_callback), self);
 
   GtkWidget *prv_grp = NULL, *group;
 #define GROUP_SLIDERS \
@@ -2106,6 +2124,9 @@ void gui_init(struct dt_iop_module_t *self)
 
   dt_iop_module_t *sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("hue"));
   self->widget = dt_ui_notebook_page(g->notebook, N_("hue"), _("change hue hue-wise"));
+
+  g->box[0] = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->box[0], TRUE, TRUE, 0);
   g->smoothing_hue = dt_bauhaus_slider_from_params(sect, "smoothing_hue");
 
   GROUP_SLIDERS
@@ -2129,7 +2150,11 @@ void gui_init(struct dt_iop_module_t *self)
   sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("saturation"));
   self->widget = dt_ui_notebook_page(g->notebook, N_("saturation"),
                                      _("change saturation hue-wise"));
+
+  g->box[1] = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->box[1], TRUE, TRUE, 0);
   g->smoothing_saturation = dt_bauhaus_slider_from_params(sect, "smoothing_saturation");
+
 
   GROUP_SLIDERS
   g->sat_sliders[0] = g->sat_red =
@@ -2152,6 +2177,9 @@ void gui_init(struct dt_iop_module_t *self)
   sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("brightness"));
   self->widget = dt_ui_notebook_page(g->notebook, N_("brightness"),
                                      _("change brightness hue-wise"));
+
+  g->box[2] = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->box[2], TRUE, TRUE, 0);
   g->smoothing_bright = dt_bauhaus_slider_from_params(sect, "smoothing_brightness");
 
   GROUP_SLIDERS
@@ -2217,13 +2245,14 @@ void gui_init(struct dt_iop_module_t *self)
     "red shows increased data, blue decreased."));
 
   _init_sliders(self);
-  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->notebook), TRUE, TRUE, 0);
 
   // restore the previously saved active tab
   const guint active_page = dt_conf_get_int("plugins/darkroom/colorequal/gui_page");
   gtk_widget_show(gtk_notebook_get_nth_page(g->notebook, active_page));
   gtk_notebook_set_current_page(g->notebook, active_page);
   g->channel = (active_page >= NUM_CHANNELS) ? SATURATION : active_page;
+
+  gtk_container_add(GTK_CONTAINER(g->box[active_page]), GTK_WIDGET(g->area));
 
   self->widget = GTK_WIDGET(box);
 }
