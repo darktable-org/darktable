@@ -596,7 +596,7 @@ void init_presets(dt_iop_module_so_t *self)
 
 
 static gboolean _get_white_balance_coeff(struct dt_iop_module_t *self,
-                                    dt_aligned_pixel_t custom_wb)
+                                         dt_aligned_pixel_t custom_wb)
 {
   const dt_dev_chroma_t *chr = &self->dev->chroma;
 
@@ -2004,8 +2004,10 @@ void validate_color_checker(const float *const restrict in,
 
 static void _set_trouble_messages(struct dt_iop_module_t *self)
 {
-  const dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
-  const dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
+  const dt_iop_channelmixer_rgb_params_t *p =
+    (dt_iop_channelmixer_rgb_params_t *)self->params;
+  const dt_iop_channelmixer_rgb_gui_data_t *g =
+    (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
   const dt_develop_t *dev = self->dev;
   const dt_dev_chroma_t *chr = &dev->chroma;
 
@@ -3547,7 +3549,9 @@ static void _update_illuminant_color(dt_iop_module_t *self)
   _update_xy_color(self);
 }
 
-static gboolean _illuminant_color_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
+static gboolean _illuminant_color_draw(GtkWidget *widget,
+                                       cairo_t *crf,
+                                       gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_channelmixer_rgb_params_t *p =
@@ -3590,7 +3594,9 @@ static gboolean _illuminant_color_draw(GtkWidget *widget, cairo_t *crf, gpointer
   return TRUE;
 }
 
-static gboolean target_color_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
+static gboolean target_color_draw(GtkWidget *widget,
+                                  cairo_t *crf,
+                                  gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_channelmixer_rgb_gui_data_t *g =
@@ -3635,7 +3641,9 @@ static gboolean target_color_draw(GtkWidget *widget, cairo_t *crf, gpointer user
   return TRUE;
 }
 
-static gboolean origin_color_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
+static gboolean origin_color_draw(GtkWidget *widget,
+                                  cairo_t *crf,
+                                  gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_channelmixer_rgb_gui_data_t *g =
@@ -3732,7 +3740,8 @@ static void _update_approx_cct(dt_iop_module_t *self)
 }
 
 
-static void illum_xy_callback(GtkWidget *slider, gpointer user_data)
+static void illum_xy_callback(GtkWidget *slider,
+                              gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
@@ -3923,8 +3932,8 @@ void reload_defaults(dt_iop_module_t *module)
     {
       if(find_temperature_from_raw_coeffs(img, custom_wb, &(d->x), &(d->y)))
         d->illuminant = DT_ILLUMINANT_CAMERA;
-    _check_if_close_to_daylight(d->x, d->y,
-                                &(d->temperature), &(d->illuminant), &(d->adaptation));
+      _check_if_close_to_daylight(d->x, d->y,
+                                  &(d->temperature), &(d->illuminant), &(d->adaptation));
     }
   }
 
@@ -3963,7 +3972,8 @@ void reload_defaults(dt_iop_module_t *module)
 }
 
 
-static void _spot_settings_changed_callback(GtkWidget *slider, dt_iop_module_t *self)
+static void _spot_settings_changed_callback(GtkWidget *slider,
+                                            dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
 
@@ -3998,7 +4008,9 @@ static void _spot_settings_changed_callback(GtkWidget *slider, dt_iop_module_t *
 }
 
 
-void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
+void gui_changed(dt_iop_module_t *self,
+                 GtkWidget *w,
+                 void *previous)
 {
   dt_iop_channelmixer_rgb_params_t *p =
     (dt_iop_channelmixer_rgb_params_t *)self->params;
@@ -4166,7 +4178,8 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   gui_changed(self, NULL, NULL);
 }
 
-void _auto_set_illuminant(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
+void _auto_set_illuminant(dt_iop_module_t *self,
+                          dt_dev_pixelpipe_t *pipe)
 {
   dt_iop_channelmixer_rgb_gui_data_t *g =
     (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
