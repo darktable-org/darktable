@@ -832,7 +832,7 @@ static inline void _loop_switch(const float *const restrict in,
     dt_aligned_pixel_t temp_one;
     dt_aligned_pixel_t temp_two;
 
-    dt_vector_max(temp_two, &in[k], min_value);
+    dt_vector_max_nan(temp_two, &in[k], min_value);
 
     /* WE START IN PIPELINE RGB */
 
@@ -925,14 +925,14 @@ static inline void _loop_switch(const float *const restrict in,
 
     // Clip in LMS
     if(clip)
-      dt_vector_clipneg(temp_one);
+      dt_vector_clipneg_nan(temp_one);
 
     // Apply lightness / saturation adjustment
     _luma_chroma(temp_one, saturation, lightness, temp_two, version);
 
     // Clip in LMS
     if(clip)
-      dt_vector_clipneg(temp_two);
+      dt_vector_clipneg_nan(temp_two);
 
     // Save
     if(apply_grey)
@@ -968,13 +968,13 @@ static inline void _loop_switch(const float *const restrict in,
 
       // Clip in XYZ
       if(clip)
-        dt_vector_clipneg(temp_one);
+        dt_vector_clipneg_nan(temp_one);
 
       // Convert back to RGB
       dt_apply_transposed_color_matrix(temp_one, XYZ_to_RGB_trans, temp_two);
 
       if(clip)
-        dt_vector_clipneg(temp_two);
+        dt_vector_clipneg_nan(temp_two);
     }
 
     temp_two[3] = in[k + 3]; // alpha mask
