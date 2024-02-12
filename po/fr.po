@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-02-11 17:20+0100\n"
-"PO-Revision-Date: 2024-02-11 17:21+0100\n"
+"POT-Creation-Date: 2024-02-12 18:10+0100\n"
+"PO-Revision-Date: 2024-02-12 18:10+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1498,7 +1498,7 @@ msgstr "Répertoire 3D LUT racine"
 #: ../build/bin/preferences_gen.h:5876 ../src/control/jobs/control_jobs.c:1858
 #: ../src/control/jobs/control_jobs.c:1915 ../src/gui/preferences.c:1080
 #: ../src/gui/presets.c:421 ../src/imageio/storage/disk.c:197
-#: ../src/imageio/storage/disk.c:261 ../src/imageio/storage/gallery.c:149
+#: ../src/imageio/storage/disk.c:277 ../src/imageio/storage/gallery.c:149
 #: ../src/imageio/storage/gallery.c:213 ../src/imageio/storage/latex.c:145
 #: ../src/imageio/storage/latex.c:199 ../src/libs/import.c:1814
 #: ../src/libs/import.c:1927 ../src/libs/import.c:1985 ../src/libs/styles.c:432
@@ -2520,7 +2520,7 @@ msgstr "Préserver les couleurs"
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:153
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:270
 #: ../src/gui/guides.c:712 ../src/iop/basecurve.c:2215
-#: ../src/iop/channelmixerrgb.c:4741 ../src/iop/clipping.c:1950
+#: ../src/iop/channelmixerrgb.c:4751 ../src/iop/clipping.c:1950
 #: ../src/iop/clipping.c:2143 ../src/iop/clipping.c:2158
 #: ../src/iop/retouch.c:507 ../src/libs/collect.c:2067
 #: ../src/libs/colorpicker.c:51 ../src/libs/export.c:1101
@@ -2869,7 +2869,7 @@ msgstr "Aberrations chromatiques importantes"
 #: ../src/develop/blend_gui.c:2431 ../src/develop/lightroom.c:887
 #: ../src/gui/gtk.c:3192 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:356
 #: ../src/iop/channelmixer.c:637 ../src/iop/channelmixer.c:647
-#: ../src/iop/channelmixerrgb.c:4683 ../src/iop/colorzones.c:2499
+#: ../src/iop/channelmixerrgb.c:4693 ../src/iop/colorzones.c:2499
 #: ../src/iop/enlargecanvas.c:466 ../src/iop/temperature.c:2014
 #: ../src/iop/temperature.c:2206 ../src/libs/collect.c:1928
 #: ../src/libs/filters/colors.c:260 ../src/libs/histogram.c:2720
@@ -2889,7 +2889,7 @@ msgstr "Rouge"
 #: ../src/develop/blend_gui.c:2437 ../src/develop/lightroom.c:891
 #: ../src/gui/gtk.c:3193 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:361
 #: ../src/iop/channelmixer.c:638 ../src/iop/channelmixer.c:653
-#: ../src/iop/channelmixerrgb.c:4684 ../src/iop/colorzones.c:2502
+#: ../src/iop/channelmixerrgb.c:4694 ../src/iop/colorzones.c:2502
 #: ../src/iop/enlargecanvas.c:465 ../src/iop/temperature.c:1998
 #: ../src/iop/temperature.c:2016 ../src/iop/temperature.c:2207
 #: ../src/libs/collect.c:1928 ../src/libs/filters/colors.c:262
@@ -2910,7 +2910,7 @@ msgstr "Vert"
 #: ../src/develop/blend_gui.c:2443 ../src/develop/lightroom.c:893
 #: ../src/gui/gtk.c:3194 ../src/iop/bilateral.cc:366
 #: ../src/iop/channelmixer.c:639 ../src/iop/channelmixer.c:659
-#: ../src/iop/channelmixerrgb.c:4685 ../src/iop/colorzones.c:2504
+#: ../src/iop/channelmixerrgb.c:4695 ../src/iop/colorzones.c:2504
 #: ../src/iop/enlargecanvas.c:467 ../src/iop/temperature.c:2018
 #: ../src/iop/temperature.c:2208 ../src/libs/collect.c:1928
 #: ../src/libs/filters/colors.c:263 ../src/libs/histogram.c:2702
@@ -3213,8 +3213,8 @@ msgstr "Lift, gamma, gain (sRVB)"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:501
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:256
 #: ../src/develop/blend_gui.c:2409 ../src/develop/blend_gui.c:2457
-#: ../src/iop/atrous.c:1801 ../src/iop/channelmixerrgb.c:4531
-#: ../src/iop/channelmixerrgb.c:4647 ../src/iop/colorbalancergb.c:1966
+#: ../src/iop/atrous.c:1801 ../src/iop/channelmixerrgb.c:4541
+#: ../src/iop/channelmixerrgb.c:4657 ../src/iop/colorbalancergb.c:1966
 #: ../src/iop/colorzones.c:2645 ../src/iop/nlmeans.c:471
 msgid "chroma"
 msgstr "Chroma"
@@ -3237,10 +3237,10 @@ msgstr "Chroma"
 #: ../build/lib/darktable/plugins/introspection_splittoning.c:142
 #: ../src/develop/blend_gui.c:2368 ../src/develop/blend_gui.c:2402
 #: ../src/develop/blend_gui.c:2464 ../src/iop/channelmixer.c:634
-#: ../src/iop/channelmixerrgb.c:4524 ../src/iop/channelmixerrgb.c:4639
+#: ../src/iop/channelmixerrgb.c:4534 ../src/iop/channelmixerrgb.c:4649
 #: ../src/iop/colorbalance.c:2000 ../src/iop/colorize.c:343
-#: ../src/iop/colorreconstruction.c:1249 ../src/iop/colorequal.c:2107
-#: ../src/iop/colorequal.c:2108 ../src/iop/colorzones.c:2646
+#: ../src/iop/colorreconstruction.c:1249 ../src/iop/colorequal.c:2125
+#: ../src/iop/colorequal.c:2126 ../src/iop/colorzones.c:2646
 msgid "hue"
 msgstr "Teinte"
 
@@ -3435,7 +3435,7 @@ msgid "range extent"
 msgstr "Étendue de luminance"
 
 #: ../build/lib/darktable/plugins/introspection_colorreconstruction.c:154
-#: ../src/iop/channelmixerrgb.c:4743
+#: ../src/iop/channelmixerrgb.c:4753
 msgid "saturated colors"
 msgstr "Couleurs saturées"
 
@@ -3550,7 +3550,7 @@ msgstr "Mode"
 
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:255
 #: ../src/develop/blend_gui.c:2347 ../src/iop/channelmixer.c:636
-#: ../src/iop/channelmixerrgb.c:4630 ../src/iop/colorchecker.c:1451
+#: ../src/iop/channelmixerrgb.c:4640 ../src/iop/colorchecker.c:1451
 #: ../src/iop/colorize.c:362 ../src/iop/colorzones.c:2644
 #: ../src/iop/exposure.c:1257
 msgid "lightness"
@@ -4281,7 +4281,7 @@ msgstr "Densité"
 #: ../src/iop/colorbalance.c:2017 ../src/iop/colorbalancergb.c:1990
 #: ../src/iop/colorchecker.c:1486 ../src/iop/colorcontrast.c:82
 #: ../src/iop/colorcorrection.c:268 ../src/iop/colorize.c:356
-#: ../src/iop/colorequal.c:2129 ../src/iop/colorequal.c:2130
+#: ../src/iop/colorequal.c:2150 ../src/iop/colorequal.c:2151
 #: ../src/iop/lowpass.c:602 ../src/iop/soften.c:368 ../src/iop/velvia.c:75
 #: ../src/iop/vibrance.c:72 ../src/iop/vignette.c:1058
 msgid "saturation"
@@ -4952,9 +4952,9 @@ msgstr "Mode de remplissage"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:285
 #: ../build/lib/darktable/plugins/introspection_retouch.c:426
-#: ../src/iop/basicadj.c:650 ../src/iop/channelmixerrgb.c:4691
-#: ../src/iop/colisa.c:299 ../src/iop/colorequal.c:2152
-#: ../src/iop/colorequal.c:2153 ../src/iop/lowpass.c:601
+#: ../src/iop/basicadj.c:650 ../src/iop/channelmixerrgb.c:4701
+#: ../src/iop/colisa.c:299 ../src/iop/colorequal.c:2177
+#: ../src/iop/colorequal.c:2178 ../src/iop/lowpass.c:601
 #: ../src/iop/soften.c:372 ../src/iop/vignette.c:1057 ../src/libs/history.c:966
 msgid "brightness"
 msgstr "Luminosité"
@@ -5844,7 +5844,7 @@ msgstr[1] "<b>%d</b> images sélectionnées parmi <b>%d</b>"
 
 #: ../src/common/color_vocabulary.c:38 ../src/develop/blend_gui.c:2377
 #: ../src/develop/blend_gui.c:2425 ../src/gui/guides.c:729
-#: ../src/iop/channelmixerrgb.c:4694 ../src/iop/levels.c:687
+#: ../src/iop/channelmixerrgb.c:4704 ../src/iop/levels.c:687
 #: ../src/iop/rgblevels.c:969 ../src/iop/rgblevels.c:1083
 msgid "gray"
 msgstr "Gris"
@@ -7615,7 +7615,7 @@ msgstr "%ij %02dh %02dm %02ds"
 msgid "XMP"
 msgstr "XMP"
 
-#: ../src/control/crawler.c:733 ../src/imageio/storage/disk.c:250
+#: ../src/control/crawler.c:733 ../src/imageio/storage/disk.c:266
 #: ../src/imageio/storage/gallery.c:202 ../src/imageio/storage/latex.c:190
 #: ../src/imageio/storage/latex.c:208
 msgid "path"
@@ -8564,7 +8564,7 @@ msgid "sliders for gray value"
 msgstr "Conditions de fusion sur le canal gris"
 
 #: ../src/develop/blend_gui.c:2378 ../src/develop/blend_gui.c:2426
-#: ../src/iop/channelmixerrgb.c:4683 ../src/iop/denoiseprofile.c:3714
+#: ../src/iop/channelmixerrgb.c:4693 ../src/iop/denoiseprofile.c:3714
 #: ../src/iop/rawdenoise.c:910 ../src/iop/rgbcurve.c:1501
 #: ../src/iop/rgblevels.c:1043 ../src/libs/filters/colors.c:137
 msgid "R"
@@ -8575,7 +8575,7 @@ msgid "sliders for red channel"
 msgstr "Conditions de fusion sur le canal rouge"
 
 #: ../src/develop/blend_gui.c:2384 ../src/develop/blend_gui.c:2432
-#: ../src/iop/channelmixerrgb.c:4684 ../src/iop/denoiseprofile.c:3715
+#: ../src/iop/channelmixerrgb.c:4694 ../src/iop/denoiseprofile.c:3715
 #: ../src/iop/rawdenoise.c:911 ../src/iop/rgbcurve.c:1502
 #: ../src/iop/rgblevels.c:1044 ../src/libs/filters/colors.c:143
 msgid "G"
@@ -8586,7 +8586,7 @@ msgid "sliders for green channel"
 msgstr "Conditions de fusion sur le canal vert"
 
 #: ../src/develop/blend_gui.c:2390 ../src/develop/blend_gui.c:2438
-#: ../src/iop/channelmixerrgb.c:4685 ../src/iop/denoiseprofile.c:3716
+#: ../src/iop/channelmixerrgb.c:4695 ../src/iop/denoiseprofile.c:3716
 #: ../src/iop/rawdenoise.c:912 ../src/iop/rgbcurve.c:1503
 #: ../src/iop/rgblevels.c:1045 ../src/libs/filters/colors.c:146
 msgid "B"
@@ -8731,7 +8731,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:2693 ../src/develop/blend_gui.c:3614
 #: ../src/iop/basicadj.c:630 ../src/iop/colorbalancergb.c:2161
-#: ../src/iop/colorequal.c:2188 ../src/iop/exposure.c:1138
+#: ../src/iop/colorequal.c:2216 ../src/iop/exposure.c:1138
 #: ../src/iop/exposure.c:1153 ../src/iop/filmic.c:1528 ../src/iop/filmic.c:1541
 #: ../src/iop/filmic.c:1583 ../src/iop/filmicrgb.c:4504
 #: ../src/iop/filmicrgb.c:4515 ../src/iop/filmicrgb.c:4549
@@ -12383,7 +12383,7 @@ msgstr "Taille du papier non valide"
 msgid "invalid border size, using 0"
 msgstr "Taille des bords non valide, 0 est utilisé"
 
-#: ../src/imageio/format/pdf.c:257 ../src/imageio/storage/disk.c:460
+#: ../src/imageio/format/pdf.c:257 ../src/imageio/storage/disk.c:476
 #: ../src/imageio/storage/email.c:187 ../src/imageio/storage/gallery.c:409
 #: ../src/imageio/storage/gallery.c:450 ../src/imageio/storage/piwigo.c:1245
 #, c-format
@@ -12639,7 +12639,7 @@ msgstr ""
 msgid "file on disk"
 msgstr "Fichier sur le disque"
 
-#: ../src/imageio/storage/disk.c:251 ../src/imageio/storage/gallery.c:204
+#: ../src/imageio/storage/disk.c:267 ../src/imageio/storage/gallery.c:204
 #: ../src/imageio/storage/latex.c:191
 msgid ""
 "enter the path where to put exported images\n"
@@ -12650,55 +12650,55 @@ msgstr ""
 "Les variables supportent les substitutions comme le shell bash.\n"
 "Taper « $( » pour activer la complétion et voir la liste des variables."
 
-#: ../src/imageio/storage/disk.c:265 ../src/imageio/storage/piwigo.c:1122
+#: ../src/imageio/storage/disk.c:281 ../src/imageio/storage/piwigo.c:1122
 msgid "on conflict"
 msgstr "Sur conflit"
 
-#: ../src/imageio/storage/disk.c:268
+#: ../src/imageio/storage/disk.c:284
 msgid "create unique filename"
 msgstr "Créer un fichier unique"
 
 #. DT_COPY_HISTORY_APPEND
-#: ../src/imageio/storage/disk.c:269 ../src/imageio/storage/piwigo.c:1126
+#: ../src/imageio/storage/disk.c:285 ../src/imageio/storage/piwigo.c:1126
 #: ../src/libs/copy_history.c:404 ../src/libs/image.c:670
 #: ../src/libs/styles.c:899
 msgid "overwrite"
 msgstr "Écraser"
 
-#: ../src/imageio/storage/disk.c:270
+#: ../src/imageio/storage/disk.c:286
 msgid "overwrite if changed"
 msgstr "Écraser si modifié"
 
-#: ../src/imageio/storage/disk.c:271 ../src/imageio/storage/piwigo.c:1124
+#: ../src/imageio/storage/disk.c:287 ../src/imageio/storage/piwigo.c:1124
 msgid "skip"
 msgstr "Sauter"
 
-#: ../src/imageio/storage/disk.c:371 ../src/imageio/storage/gallery.c:326
+#: ../src/imageio/storage/disk.c:387 ../src/imageio/storage/gallery.c:326
 #: ../src/imageio/storage/latex.c:289
 #, c-format
 msgid "could not create directory `%s'!"
 msgstr "Impossible de créer le dossier « %s »"
 
-#: ../src/imageio/storage/disk.c:382
+#: ../src/imageio/storage/disk.c:398
 #, c-format
 msgid "could not write to directory `%s'!"
 msgstr "Impossible d’écrire dans le répertoire « %s »"
 
-#: ../src/imageio/storage/disk.c:419
+#: ../src/imageio/storage/disk.c:435
 #, c-format
 msgid "%d/%d skipping `%s'"
 msgid_plural "%d/%d skipping `%s'"
 msgstr[0] "%d/%d, « %s » sauté"
 msgstr[1] "%d/%d, « %s » sautés"
 
-#: ../src/imageio/storage/disk.c:441
+#: ../src/imageio/storage/disk.c:457
 #, c-format
 msgid "%d/%d skipping (not modified since export) `%s'"
 msgid_plural "%d/%d skipping (not modified since export) `%s'"
 msgstr[0] "%d/%d sauter (non modifié depuis la dernière exportation) « %s »"
 msgstr[1] "%d/%d sauter (non modifié depuis la dernière exportation) « %s »"
 
-#: ../src/imageio/storage/disk.c:465 ../src/imageio/storage/email.c:194
+#: ../src/imageio/storage/disk.c:481 ../src/imageio/storage/email.c:194
 #: ../src/imageio/storage/gallery.c:458 ../src/imageio/storage/latex.c:377
 #, c-format
 msgid "%d/%d exported to `%s'"
@@ -12706,7 +12706,7 @@ msgid_plural "%d/%d exported to `%s'"
 msgstr[0] "%d/%d exportée vers « %s »"
 msgstr[1] "%d/%d exportées vers « %s »"
 
-#: ../src/imageio/storage/disk.c:530
+#: ../src/imageio/storage/disk.c:546
 msgid ""
 "you are going to export in overwrite mode, this will overwrite any existing "
 "images\n"
@@ -13341,7 +13341,7 @@ msgstr ""
 "uniquement dans les résultats des sections Luma et Chroma."
 
 #: ../src/iop/atrous.c:1818 ../src/iop/colorbalancergb.c:2129
-#: ../src/iop/colorequal.c:2062 ../src/iop/colorzones.c:2732
+#: ../src/iop/colorequal.c:2087 ../src/iop/colorzones.c:2732
 #: ../src/iop/denoiseprofile.c:3747 ../src/iop/filmicrgb.c:4471
 #: ../src/iop/lowlight.c:821 ../src/iop/rawdenoise.c:935
 #: ../src/iop/toneequal.c:3424
@@ -14333,35 +14333,35 @@ msgstr "Mixeur de canaux de base"
 msgid "swap G and R"
 msgstr "Échanger V et R"
 
-#: ../src/iop/channelmixerrgb.c:1918
+#: ../src/iop/channelmixerrgb.c:1916
 msgid "(daylight)"
 msgstr "(lumière du jour)"
 
-#: ../src/iop/channelmixerrgb.c:1920
+#: ../src/iop/channelmixerrgb.c:1918
 msgid "(black body)"
 msgstr "(corps noir)"
 
-#: ../src/iop/channelmixerrgb.c:1922
+#: ../src/iop/channelmixerrgb.c:1920
 msgid "(invalid)"
 msgstr "(invalide)"
 
-#: ../src/iop/channelmixerrgb.c:1926 ../src/iop/channelmixerrgb.c:1984
+#: ../src/iop/channelmixerrgb.c:1924 ../src/iop/channelmixerrgb.c:1982
 msgid "very good"
 msgstr "Très bon"
 
-#: ../src/iop/channelmixerrgb.c:1928 ../src/iop/channelmixerrgb.c:1986
+#: ../src/iop/channelmixerrgb.c:1926 ../src/iop/channelmixerrgb.c:1984
 msgid "good"
 msgstr "Bon"
 
-#: ../src/iop/channelmixerrgb.c:1930 ../src/iop/channelmixerrgb.c:1988
+#: ../src/iop/channelmixerrgb.c:1928 ../src/iop/channelmixerrgb.c:1986
 msgid "passable"
 msgstr "Passable"
 
-#: ../src/iop/channelmixerrgb.c:1932 ../src/iop/channelmixerrgb.c:1990
+#: ../src/iop/channelmixerrgb.c:1930 ../src/iop/channelmixerrgb.c:1988
 msgid "bad"
 msgstr "Mauvais"
 
-#: ../src/iop/channelmixerrgb.c:1939
+#: ../src/iop/channelmixerrgb.c:1937
 #, c-format
 msgid ""
 "\n"
@@ -14398,7 +14398,7 @@ msgstr ""
 "Compensation d’exposition : \t%+.2f IL\n"
 "Décalage du noir : \t\t\t%+.4f"
 
-#: ../src/iop/channelmixerrgb.c:1995
+#: ../src/iop/channelmixerrgb.c:1993
 #, c-format
 msgid ""
 "\n"
@@ -14503,12 +14503,12 @@ msgstr "Détection automatique de la balance des blancs terminée"
 msgid "channelmixerrgb works only on RGB input"
 msgstr "« Calibration des couleurs » ne marche qu’avec une entrée RVB"
 
-#: ../src/iop/channelmixerrgb.c:3696
+#: ../src/iop/channelmixerrgb.c:3702
 #, c-format
 msgid "CCT: %.0f K (daylight)"
 msgstr "CCT : %.0f K (lumière du jour)"
 
-#: ../src/iop/channelmixerrgb.c:3699
+#: ../src/iop/channelmixerrgb.c:3705
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant can be accurately modeled by a daylight spectrum,\n"
@@ -14519,12 +14519,12 @@ msgstr ""
 "du jour,\n"
 "donc sa température est pertinente et significative avec un illuminant D."
 
-#: ../src/iop/channelmixerrgb.c:3705
+#: ../src/iop/channelmixerrgb.c:3711
 #, c-format
 msgid "CCT: %.0f K (black body)"
 msgstr "CCT : %.0f K (corps noir)"
 
-#: ../src/iop/channelmixerrgb.c:3708
+#: ../src/iop/channelmixerrgb.c:3714
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant can be accurately modeled by a black body spectrum,\n"
@@ -14536,12 +14536,12 @@ msgstr ""
 "donc sa température est pertinente et significative avec un illuminant "
 "planckien."
 
-#: ../src/iop/channelmixerrgb.c:3714
+#: ../src/iop/channelmixerrgb.c:3720
 #, c-format
 msgid "CCT: %.0f K (invalid)"
 msgstr "CCT : %.0f K (invalide)"
 
-#: ../src/iop/channelmixerrgb.c:3717
+#: ../src/iop/channelmixerrgb.c:3723
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant cannot be accurately modeled by a daylight or black body "
@@ -14555,12 +14555,12 @@ msgstr ""
 "donc sa température n’est ni pertinente ni significative et il faut utiliser "
 "un illuminant personnalisé."
 
-#: ../src/iop/channelmixerrgb.c:3726
+#: ../src/iop/channelmixerrgb.c:3732
 #, c-format
 msgid "CCT: undefined"
 msgstr "CCT : non défini"
 
-#: ../src/iop/channelmixerrgb.c:3729
+#: ../src/iop/channelmixerrgb.c:3735
 msgid ""
 "the approximated correlated color temperature\n"
 "cannot be computed at all so you need to use a custom illuminant."
@@ -14568,16 +14568,16 @@ msgstr ""
 "La température de couleur proximale approchée\n"
 "ne peut être estimée, utiliser un illuminant personnalisé."
 
-#: ../src/iop/channelmixerrgb.c:4042
+#: ../src/iop/channelmixerrgb.c:4051
 msgid "white balance successfully extracted from raw image"
 msgstr "La balance des blancs a été extraite de l’image RAW avec succès"
 
 #. We need to recompute only the full preview
-#: ../src/iop/channelmixerrgb.c:4049
+#: ../src/iop/channelmixerrgb.c:4058
 msgid "auto-detection of white balance started…"
 msgstr "L’auto-détection de la balance des blancs a démarré…"
 
-#: ../src/iop/channelmixerrgb.c:4155
+#: ../src/iop/channelmixerrgb.c:4164
 msgid ""
 "color calibration: the sum of the gray channel parameters is zero, "
 "normalization will be disabled."
@@ -14586,7 +14586,7 @@ msgstr ""
 "la normalisation va être désactivée."
 
 #. Write report in GUI
-#: ../src/iop/channelmixerrgb.c:4200
+#: ../src/iop/channelmixerrgb.c:4210
 #, c-format
 msgid ""
 "L: \t%.1f %%\n"
@@ -14597,8 +14597,8 @@ msgstr ""
 "h : \t%.1f °\n"
 "c : \t%.1f"
 
-#: ../src/iop/channelmixerrgb.c:4468 ../src/iop/clipping.c:2137
-#: ../src/iop/colorbalancergb.c:1944 ../src/iop/colorequal.c:2093
+#: ../src/iop/channelmixerrgb.c:4478 ../src/iop/clipping.c:2137
+#: ../src/iop/colorbalancergb.c:1944 ../src/iop/colorequal.c:2077
 #: ../src/iop/filmicrgb.c:4483 ../src/iop/negadoctor.c:848
 #: ../src/iop/toneequal.c:3372 ../src/libs/image.c:490
 #: ../src/views/lighttable.c:1258
@@ -14606,19 +14606,19 @@ msgid "page"
 msgstr "Page"
 
 #. Page CAT
-#: ../src/iop/channelmixerrgb.c:4471
+#: ../src/iop/channelmixerrgb.c:4481
 msgid "CAT"
 msgstr "CAT"
 
-#: ../src/iop/channelmixerrgb.c:4472
+#: ../src/iop/channelmixerrgb.c:4482
 msgid "chromatic adaptation transform"
 msgstr "Transformation d’adaptation chromatique"
 
-#: ../src/iop/channelmixerrgb.c:4474
+#: ../src/iop/channelmixerrgb.c:4484
 msgid "adaptation"
 msgstr "Adaptation"
 
-#: ../src/iop/channelmixerrgb.c:4477
+#: ../src/iop/channelmixerrgb.c:4487
 msgid ""
 "choose the method to adapt the illuminant\n"
 "and the colorspace in which the module works: \n"
@@ -14640,7 +14640,7 @@ msgstr ""
 " • Aucun désactive toute adaptation et utilise l’espace RVB de travail du "
 "pipeline."
 
-#: ../src/iop/channelmixerrgb.c:4497
+#: ../src/iop/channelmixerrgb.c:4507
 msgid ""
 "this is the color of the scene illuminant before chromatic adaptation\n"
 "this color will be turned into pure white by the adaptation."
@@ -14648,27 +14648,27 @@ msgstr ""
 "Couleur de l’illuminant de la scène avant l’adaptation chromatique,\n"
 "elle sera transformée en blanc pur par l’adaptation."
 
-#: ../src/iop/channelmixerrgb.c:4505
+#: ../src/iop/channelmixerrgb.c:4515
 msgid "picker"
 msgstr "Pipette"
 
-#: ../src/iop/channelmixerrgb.c:4507 ../src/iop/temperature.c:2117
+#: ../src/iop/channelmixerrgb.c:4517 ../src/iop/temperature.c:2117
 msgid "set white balance to detected from area"
 msgstr "Choisir la balance des blancs depuis une zone"
 
-#: ../src/iop/channelmixerrgb.c:4511 ../src/iop/negadoctor.c:972
+#: ../src/iop/channelmixerrgb.c:4521 ../src/iop/negadoctor.c:972
 msgid "illuminant"
 msgstr "Illuminant"
 
-#: ../src/iop/channelmixerrgb.c:4517 ../src/iop/temperature.c:2184
+#: ../src/iop/channelmixerrgb.c:4527 ../src/iop/temperature.c:2184
 msgid "temperature"
 msgstr "Température"
 
-#: ../src/iop/channelmixerrgb.c:4548
+#: ../src/iop/channelmixerrgb.c:4558
 msgid "area color mapping"
 msgstr "Mappage zone de couleurs"
 
-#: ../src/iop/channelmixerrgb.c:4554
+#: ../src/iop/channelmixerrgb.c:4564
 msgid ""
 "define a target chromaticity (hue and chroma) for a particular region of the "
 "image (the control sample), which you then match against the same target "
@@ -14684,17 +14684,17 @@ msgstr ""
 "essentielle du sujet,\n"
 "ou une surface immobile et éclairée de manière constante dans les images."
 
-#: ../src/iop/channelmixerrgb.c:4561 ../src/iop/channelmixerrgb.c:4576
-#: ../src/iop/channelmixerrgb.c:4630 ../src/iop/channelmixerrgb.c:4639
-#: ../src/iop/channelmixerrgb.c:4647
+#: ../src/iop/channelmixerrgb.c:4571 ../src/iop/channelmixerrgb.c:4586
+#: ../src/iop/channelmixerrgb.c:4640 ../src/iop/channelmixerrgb.c:4649
+#: ../src/iop/channelmixerrgb.c:4657
 msgid "mapping"
 msgstr "Mappage"
 
-#: ../src/iop/channelmixerrgb.c:4561 ../src/iop/exposure.c:1206
+#: ../src/iop/channelmixerrgb.c:4571 ../src/iop/exposure.c:1206
 msgid "area mode"
 msgstr "Mode de la zone"
 
-#: ../src/iop/channelmixerrgb.c:4562
+#: ../src/iop/channelmixerrgb.c:4572
 msgid ""
 "\"correction\" automatically adjust the illuminant\n"
 "such that the input color is mapped to the target.\n"
@@ -14707,19 +14707,19 @@ msgstr ""
 "CAT,\n"
 "et peut être utilisée pour échantillonner la cible"
 
-#: ../src/iop/channelmixerrgb.c:4567 ../src/iop/exposure.c:1212
+#: ../src/iop/channelmixerrgb.c:4577 ../src/iop/exposure.c:1212
 msgid "correction"
 msgstr "Correction"
 
-#: ../src/iop/channelmixerrgb.c:4568 ../src/iop/exposure.c:1213
+#: ../src/iop/channelmixerrgb.c:4578 ../src/iop/exposure.c:1213
 msgid "measure"
 msgstr "Mesure"
 
-#: ../src/iop/channelmixerrgb.c:4574
+#: ../src/iop/channelmixerrgb.c:4584
 msgid "take channel mixing into account"
 msgstr "Prendre en compte le mixeur de canaux"
 
-#: ../src/iop/channelmixerrgb.c:4581
+#: ../src/iop/channelmixerrgb.c:4591
 msgid ""
 "compute the target by taking the channel mixing into account.\n"
 "if disabled, only the CAT is considered."
@@ -14727,16 +14727,16 @@ msgstr ""
 "Calcule la cible en utilisant le mixage des canaux en cours.\n"
 "Si désactivé seul le CAT est considéré."
 
-#: ../src/iop/channelmixerrgb.c:4593 ../src/iop/exposure.c:1220
+#: ../src/iop/channelmixerrgb.c:4603 ../src/iop/exposure.c:1220
 msgctxt "section"
 msgid "input"
 msgstr "Entrée"
 
-#: ../src/iop/channelmixerrgb.c:4600 ../src/iop/exposure.c:1228
+#: ../src/iop/channelmixerrgb.c:4610 ../src/iop/exposure.c:1228
 msgid "the input color that should be mapped to the target"
 msgstr "La couleur d’entrée à mapper sur la cible"
 
-#: ../src/iop/channelmixerrgb.c:4606
+#: ../src/iop/channelmixerrgb.c:4616
 msgid ""
 "L: \tN/A\n"
 "h: \tN/A\n"
@@ -14746,114 +14746,114 @@ msgstr ""
 "h : \tN/A\n"
 "c : \tN/A"
 
-#: ../src/iop/channelmixerrgb.c:4609 ../src/iop/exposure.c:1236
+#: ../src/iop/channelmixerrgb.c:4619 ../src/iop/exposure.c:1236
 msgid "these LCh coordinates are computed from CIE Lab 1976 coordinates"
 msgstr "Ces coordonnés LCh sont calculés depuis les coordonnés CIE Lab 1976"
 
-#: ../src/iop/channelmixerrgb.c:4617 ../src/iop/exposure.c:1243
+#: ../src/iop/channelmixerrgb.c:4627 ../src/iop/exposure.c:1243
 msgctxt "section"
 msgid "target"
 msgstr "Cible"
 
-#: ../src/iop/channelmixerrgb.c:4624
+#: ../src/iop/channelmixerrgb.c:4634
 msgid "the desired target color after mapping"
 msgstr "La cible recherchée après le mappage de l’exposition"
 
-#: ../src/iop/channelmixerrgb.c:4663
+#: ../src/iop/channelmixerrgb.c:4673
 msgid "input R"
 msgstr "R en entrée"
 
-#: ../src/iop/channelmixerrgb.c:4668
+#: ../src/iop/channelmixerrgb.c:4678
 msgid "input G"
 msgstr "V en entrée"
 
-#: ../src/iop/channelmixerrgb.c:4673
+#: ../src/iop/channelmixerrgb.c:4683
 msgid "input B"
 msgstr "B en entrée"
 
-#: ../src/iop/channelmixerrgb.c:4683
+#: ../src/iop/channelmixerrgb.c:4693
 msgid "output R"
 msgstr "R en sortie"
 
-#: ../src/iop/channelmixerrgb.c:4684
+#: ../src/iop/channelmixerrgb.c:4694
 msgid "output G"
 msgstr "V en sortie"
 
-#: ../src/iop/channelmixerrgb.c:4685
+#: ../src/iop/channelmixerrgb.c:4695
 msgid "output B"
 msgstr "B en sortie"
 
-#: ../src/iop/channelmixerrgb.c:4687
+#: ../src/iop/channelmixerrgb.c:4697
 msgid "colorfulness"
 msgstr "Saturation"
 
-#: ../src/iop/channelmixerrgb.c:4687
+#: ../src/iop/channelmixerrgb.c:4697
 msgid "output colorfulness"
 msgstr "Saturation de la sortie"
 
-#: ../src/iop/channelmixerrgb.c:4691
+#: ../src/iop/channelmixerrgb.c:4701
 msgid "output brightness"
 msgstr "Luminosité de la sortie"
 
-#: ../src/iop/channelmixerrgb.c:4694
+#: ../src/iop/channelmixerrgb.c:4704
 msgid "output gray"
 msgstr "Gris en sortie"
 
-#: ../src/iop/channelmixerrgb.c:4709
+#: ../src/iop/channelmixerrgb.c:4719
 msgid "calibrate with a color checker"
 msgstr "Calibrer avec une charte couleur"
 
-#: ../src/iop/channelmixerrgb.c:4714
+#: ../src/iop/channelmixerrgb.c:4724
 msgid "use a color checker target to autoset CAT and channels"
 msgstr "Utiliser une charte couleur pour régler la CAT et les canaux"
 
-#: ../src/iop/channelmixerrgb.c:4721 ../src/iop/channelmixerrgb.c:4734
-#: ../src/iop/channelmixerrgb.c:4752 ../src/iop/channelmixerrgb.c:4770
-#: ../src/iop/channelmixerrgb.c:4779 ../src/iop/channelmixerrgb.c:4787
+#: ../src/iop/channelmixerrgb.c:4731 ../src/iop/channelmixerrgb.c:4744
+#: ../src/iop/channelmixerrgb.c:4762 ../src/iop/channelmixerrgb.c:4780
+#: ../src/iop/channelmixerrgb.c:4789 ../src/iop/channelmixerrgb.c:4797
 msgid "calibrate"
 msgstr "Calibrer"
 
-#: ../src/iop/channelmixerrgb.c:4721
+#: ../src/iop/channelmixerrgb.c:4731
 msgid "chart"
 msgstr "Charte"
 
-#: ../src/iop/channelmixerrgb.c:4722
+#: ../src/iop/channelmixerrgb.c:4732
 msgid "choose the vendor and the type of your chart"
 msgstr "Choisir le fabricant et le modèle de la charte"
 
-#: ../src/iop/channelmixerrgb.c:4724
+#: ../src/iop/channelmixerrgb.c:4734
 msgid "Xrite ColorChecker 24 pre-2014"
 msgstr "Xrite ColorChecker 24 (avant 2014)"
 
-#: ../src/iop/channelmixerrgb.c:4725
+#: ../src/iop/channelmixerrgb.c:4735
 msgid "Xrite ColorChecker 24 post-2014"
 msgstr "Xrite ColorChecker 24 (après 2014)"
 
-#: ../src/iop/channelmixerrgb.c:4726
+#: ../src/iop/channelmixerrgb.c:4736
 msgid "Datacolor SpyderCheckr 24 pre-2018"
 msgstr "Datacolor SpyderCheckr 24 (avant 2018)"
 
-#: ../src/iop/channelmixerrgb.c:4727
+#: ../src/iop/channelmixerrgb.c:4737
 msgid "Datacolor SpyderCheckr 24 post-2018"
 msgstr "Datacolor SpyderCheckr 24 (après 2018)"
 
-#: ../src/iop/channelmixerrgb.c:4728
+#: ../src/iop/channelmixerrgb.c:4738
 msgid "Datacolor SpyderCheckr 48 pre-2018"
 msgstr "Datacolor SpyderCheckr 48 (avant 2018)"
 
-#: ../src/iop/channelmixerrgb.c:4729
+#: ../src/iop/channelmixerrgb.c:4739
 msgid "Datacolor SpyderCheckr 48 post-2018"
 msgstr "Datacolor SpyderCheckr 48 (après 2018)"
 
-#: ../src/iop/channelmixerrgb.c:4730
+#: ../src/iop/channelmixerrgb.c:4740
 msgid "Datacolor SpyderCheckr Photo"
 msgstr "Datacolor SpyderCheckr Photo"
 
-#: ../src/iop/channelmixerrgb.c:4734
+#: ../src/iop/channelmixerrgb.c:4744
 msgid "optimize for"
 msgstr "Optimisé pour"
 
-#: ../src/iop/channelmixerrgb.c:4735
+#: ../src/iop/channelmixerrgb.c:4745
 msgid ""
 "choose the colors that will be optimized with higher priority.\n"
 "neutral colors gives the lowest average delta E but a high maximum delta E\n"
@@ -14870,35 +14870,35 @@ msgstr ""
 " • « Sans » est un compromis entre les deux.\n"
 "Les autres choix visent à protéger certaines teintes."
 
-#: ../src/iop/channelmixerrgb.c:4742
+#: ../src/iop/channelmixerrgb.c:4752
 msgid "neutral colors"
 msgstr "Couleurs neutres"
 
-#: ../src/iop/channelmixerrgb.c:4744
+#: ../src/iop/channelmixerrgb.c:4754
 msgid "skin and soil colors"
 msgstr "Couleurs de peau et de terres"
 
-#: ../src/iop/channelmixerrgb.c:4745
+#: ../src/iop/channelmixerrgb.c:4755
 msgid "foliage colors"
 msgstr "Couleurs du feuillage"
 
-#: ../src/iop/channelmixerrgb.c:4746
+#: ../src/iop/channelmixerrgb.c:4756
 msgid "sky and water colors"
 msgstr "Couleurs du ciel et de l’eau"
 
-#: ../src/iop/channelmixerrgb.c:4747
+#: ../src/iop/channelmixerrgb.c:4757
 msgid "average delta E"
 msgstr "Delta E moyen"
 
-#: ../src/iop/channelmixerrgb.c:4748
+#: ../src/iop/channelmixerrgb.c:4758
 msgid "maximum delta E"
 msgstr "Delta E maximum"
 
-#: ../src/iop/channelmixerrgb.c:4752
+#: ../src/iop/channelmixerrgb.c:4762
 msgid "patch scale"
 msgstr "Échelle du patch"
 
-#: ../src/iop/channelmixerrgb.c:4755
+#: ../src/iop/channelmixerrgb.c:4765
 msgid ""
 "reduce the radius of the patches to select the more or less central part.\n"
 "useful when the perspective correction is sloppy or\n"
@@ -14908,31 +14908,31 @@ msgstr ""
 "Utile lorsque la correction de la perspective est grossière\n"
 "ou que le cadre des patchs projette une ombre sur les bords du patch."
 
-#: ../src/iop/channelmixerrgb.c:4765
+#: ../src/iop/channelmixerrgb.c:4775
 msgid "the delta E is using the CIE 2000 formula"
 msgstr "Le delta E utilise la formule CIE 2000"
 
-#: ../src/iop/channelmixerrgb.c:4770
+#: ../src/iop/channelmixerrgb.c:4780
 msgid "accept"
 msgstr "Accepter"
 
-#: ../src/iop/channelmixerrgb.c:4776
+#: ../src/iop/channelmixerrgb.c:4786
 msgid "accept the computed profile and set it in the module"
 msgstr "Accepter le profil calculé et le régler dans le module"
 
-#: ../src/iop/channelmixerrgb.c:4779
+#: ../src/iop/channelmixerrgb.c:4789
 msgid "recompute"
 msgstr "Recalculer"
 
-#: ../src/iop/channelmixerrgb.c:4783
+#: ../src/iop/channelmixerrgb.c:4793
 msgid "recompute the profile"
 msgstr "Recalculer le profil"
 
-#: ../src/iop/channelmixerrgb.c:4787
+#: ../src/iop/channelmixerrgb.c:4797
 msgid "validate"
 msgstr "Valider"
 
-#: ../src/iop/channelmixerrgb.c:4791
+#: ../src/iop/channelmixerrgb.c:4801
 msgid "check the output delta E"
 msgstr "Vérifier le delta E de sortie"
 
@@ -16266,7 +16266,7 @@ msgstr "Quasi-linéaire, RVB"
 msgid "quasi-linear, RGB, scene-referred"
 msgstr "Relatif à la scène, quasi-linéaire, RVB"
 
-#: ../src/iop/colorequal.c:1863
+#: ../src/iop/colorequal.c:1879
 #, c-format
 msgid ""
 "middle click to toggle sliders visibility\n"
@@ -16278,49 +16278,49 @@ msgstr ""
 "%s"
 
 #. Page OPTIONS
-#: ../src/iop/colorequal.c:2020 ../src/iop/colorequal.c:2178
+#: ../src/iop/colorequal.c:2036 ../src/iop/colorequal.c:2206
 #: ../src/iop/filmicrgb.c:4675
 msgid "options"
 msgstr "Options"
 
-#: ../src/iop/colorequal.c:2088
+#: ../src/iop/colorequal.c:2113
 msgid "shift nodes to lower or higher hue"
 msgstr "Décale les nœuds vers les teintes adjacentes"
 
-#: ../src/iop/colorequal.c:2108
+#: ../src/iop/colorequal.c:2126
 msgid "change hue hue-wise"
 msgstr "Change la teinte d'une couleur"
 
-#: ../src/iop/colorequal.c:2131
+#: ../src/iop/colorequal.c:2152
 msgid "change saturation hue-wise"
 msgstr "Change la saturation pour une teinte de couleur"
 
-#: ../src/iop/colorequal.c:2154
+#: ../src/iop/colorequal.c:2179
 msgid "change brightness hue-wise"
 msgstr "Change la luminosité pour une teinte de couleur"
 
-#: ../src/iop/colorequal.c:2195 ../src/iop/colorequal.c:2208
+#: ../src/iop/colorequal.c:2223 ../src/iop/colorequal.c:2236
 msgid " px"
 msgstr " px"
 
-#: ../src/iop/colorequal.c:2197
+#: ../src/iop/colorequal.c:2225
 msgid "blurring radius of chroma prefilter analysis"
 msgstr "Rayon du flou pour le pre-filtre d'analyse du chroma"
 
-#: ../src/iop/colorequal.c:2203
+#: ../src/iop/colorequal.c:2231
 msgid ""
 "visualize weighing function on changed output.\n"
-"red shows possibly changed data, blueish parts will not be changed.\n"
+"red shows possibly changed data, blueish parts will not be changed."
 msgstr ""
 "Affiche la fonction de pondérations sur la sortie.\n"
 "En rouge les données qui peuvent changer, en bleu celles qui ne changeront "
-"pas.\n"
+"pas."
 
-#: ../src/iop/colorequal.c:2209
+#: ../src/iop/colorequal.c:2237
 msgid "blurring radius of applied parameters"
 msgstr "Rayon du flou sur les paramètres appliqués"
 
-#: ../src/iop/colorequal.c:2216
+#: ../src/iop/colorequal.c:2244
 msgid ""
 "visualize changed output for the selected tab.\n"
 "red shows increased data, blue decreased."
