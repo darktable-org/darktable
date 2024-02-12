@@ -90,7 +90,7 @@ None;midi:CC24=iop/colorequal/brightness/magenta
 
 #define NODES 8
 
-#define SLIDER_BRIGHTNESS 0.50f // 50 %
+#define SLIDER_BRIGHTNESS 0.6f // 60 %
 
 #define GRAPH_GRADIENTS 64
 
@@ -1191,9 +1191,8 @@ static inline void _build_dt_UCS_HSB_gradients
     dt_XYZ_to_sRGB(XYZ_D50, RGB);
   }
 
-  for_each_channel(c, aligned(RGB)) RGB[c] = CLIP(RGB[c]);
+  dt_vector_clip(RGB);
 }
-
 
 static inline void _draw_sliders_saturation_gradient
   (const float sat_min,
@@ -1325,7 +1324,7 @@ static void _init_graph_backgrounds(cairo_pattern_t *gradients[GRAPH_GRADIENTS],
     {
       const float x = (float)k / (float)(LUT_ELEM);
       const float y = (float)(GRAPH_GRADIENTS - i) / (float)(GRAPH_GRADIENTS);
-      float hue = _deg_to_rad((float)k);
+      const float hue = _deg_to_rad((float)k);
       dt_aligned_pixel_t RGB = {  1.0f, 1.0f, 1.0f, 1.0f };
 
       switch(channel)
@@ -1501,7 +1500,7 @@ static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
   cairo_surface_destroy(surface);
   */
 
-  // instead of the above, we simply generate 16 linear horizontal
+  // instead of the above, we simply generate GRAPH_GRADIENTS linear horizontal
   // gradients and stack them vertically
   if(!g->gradients_cached)
   {
@@ -1515,12 +1514,12 @@ static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
   }
 
   cairo_set_line_width(cr, 0.0);
-
+  const double grad_height = graph_height / GRAPH_GRADIENTS;
   for(int i = 0; i < GRAPH_GRADIENTS; i++)
   {
     // cairo painting is not thread-safe, so we need to paint the gradients in sequence
-    cairo_rectangle(cr, 0.0, graph_height / (float)GRAPH_GRADIENTS * (float)i,
-                    graph_width, graph_height / (float)GRAPH_GRADIENTS);
+    cairo_rectangle(cr, 0.0, grad_height * (double)i,
+                    graph_width, ceil(grad_height));
     cairo_set_source(cr, g->gradients[g->channel][i]);
     cairo_fill(cr);
   }
@@ -1977,7 +1976,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
       dt_print(DT_DEBUG_PIPE, "[colorequal] display color space falls back to sRGB\n");
 
     dt_UCS_22_build_gamut_LUT(input_matrix, g->gamut_LUT);
-    g->max_saturation = get_minimum_saturation(g->gamut_LUT, SLIDER_BRIGHTNESS, 1.f);
+    g->max_saturation = get_minimum_saturation(g->gamut_LUT, 1.0f, 1.f);
   }
 
   ++darktable.gui->reset;
@@ -2069,7 +2068,7 @@ void gui_init(struct dt_iop_module_t *self)
     memcpy(input_matrix, g->white_adapted_profile->matrix_in, sizeof(dt_colormatrix_t));
 
   dt_UCS_22_build_gamut_LUT(input_matrix, g->gamut_LUT);
-  g->max_saturation = get_minimum_saturation(g->gamut_LUT, SLIDER_BRIGHTNESS, 1.f);
+  g->max_saturation = get_minimum_saturation(g->gamut_LUT, 1.0f, 1.f);
 
   GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
