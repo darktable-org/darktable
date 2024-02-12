@@ -198,14 +198,17 @@ static void button_clicked(GtkWidget *widget,
         _("_select as output destination"), _("_cancel"));
 
   gchar *old = g_strdup(gtk_entry_get_text(d->entry));
-  char *c = g_strstr_len(old, -1, "$");
-  if(c) *c = '\0';
-  gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), old);
+  gchar *filename = g_path_get_basename(old);
+  gchar *dirname = g_path_get_dirname(old);
+
+  gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), dirname);
   g_free(old);
+  g_free(dirname);
+
   if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     gchar *dir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
-    char *composed = g_build_filename(dir, "$(FILE_NAME)", NULL);
+    char *composed = g_build_filename(dir, filename, NULL);
 
     // composed can now contain '\': on Windows it's the path separator,
     // on other platforms it can be part of a regular folder name.
@@ -219,6 +222,7 @@ static void button_clicked(GtkWidget *widget,
     g_free(composed);
     g_free(escaped);
   }
+  g_free(filename);
   g_object_unref(filechooser);
 }
 
