@@ -819,7 +819,9 @@ void process(struct dt_iop_module_t *self,
     // We want to avoid any change of hue, saturation or brightness in achromatic
     // parts of the image. We make sure we have expose independent saturation as the
     // weighing parameter and use a pretty sharp logistic transition on it.
-    weights[k] = 1.0f / (1.0f + dt_fast_expf(-(20.0f * (2.0f * val - 0.4f))));
+    const float coef = dt_fast_expf(-(20.0f * (2.0f * val - 0.4f)));
+
+    weights[k] = fmaxf(1.0f / (1.0f + coef), 0.0f);
 
     xyY_to_dt_UCS_UV(xyY, uv);
     L[k] = Y_to_dt_UCS_L_star(xyY[2]);
