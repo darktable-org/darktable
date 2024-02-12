@@ -112,6 +112,13 @@ Since darktable 4.4:
 - Fixed a zooming bug in lighttable culling mode where some images' area
   could be plain grey or having a very small thumb.
 
+- Fixed some missing pipe recomputing making processing modules' graph
+  (Tone Equalizer for example) not properly updated.
+
+- Fixed several mouse scroll-wheel issues on macOS when used in
+  combination with the <kbd>Shift</kbd> modifier key (color harmonies
+  width, module height, geotagging date/time, ...).
+
 ## Lua
 
 ### API Version
