@@ -2229,7 +2229,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->chroma_size), "quad-pressed", G_CALLBACK(_masking_callback_c), self);
   dt_bauhaus_widget_set_quad_tooltip(g->chroma_size,
     _("visualize weighing function on changed output.\n"
-      "red shows possibly changed data, blueish parts will not be changed.\n"));
+      "red shows possibly changed data, blueish parts will not be changed."));
 
   g->param_size = dt_bauhaus_slider_from_params(self, "param_size");
   dt_bauhaus_slider_set_digits(g->param_size, 1);
