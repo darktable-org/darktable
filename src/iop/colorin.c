@@ -952,9 +952,9 @@ static void process_cmatrix_fastpath(struct dt_iop_module_t *self,
 
   // figure out the number of pixels each thread needs to process,
   // rounded up to a multiple of the CPU's cache line size
+#ifdef _OPENMP
   const size_t nthreads = dt_get_num_threads();
   const size_t chunksize = dt_cacheline_chunks(npixels, nthreads);
-#ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(in, out, npixels, chunksize, nthreads, d, clipping, corr)  \
   schedule(static)
@@ -1080,9 +1080,9 @@ static void process_cmatrix_proper(struct dt_iop_module_t *self,
 
   // figure out the number of pixels each thread needs to process,
   // rounded up to a multiple of the CPU's cache line size
+#ifdef _OPENMP
   const size_t nthreads = dt_get_num_threads();
   const size_t chunksize = dt_cacheline_chunks(npixels, nthreads);
-#ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(in, out, npixels, chunksize, nthreads, clipping, d, corr) \
   schedule(static)
