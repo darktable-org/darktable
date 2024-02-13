@@ -2103,7 +2103,6 @@ void gui_init(struct dt_iop_module_t *self)
                    G_CALLBACK(_area_scrolled_callback), self);
   g_signal_connect(G_OBJECT(g->area), "size_allocate",
                    G_CALLBACK(_area_size_callback), self);
-//  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->area), TRUE, TRUE, 0);
 
   self->widget = box;
   g->hue_shift = dt_bauhaus_slider_from_params(self, "hue_shift");
