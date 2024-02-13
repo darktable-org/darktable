@@ -1908,6 +1908,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
     if(event->type == GDK_2BUTTON_PRESS)
     {
       _area_reset_nodes(g);
+      return TRUE;
     }
     else
     {
