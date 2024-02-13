@@ -1734,8 +1734,8 @@ static void _channel_tabs_switch_callback(GtkNotebook *notebook,
   {
     // reparent the graph
     // get current size
-    const gint sx = gtk_widget_get_allocated_width(GTK_WIDGET(g->area));
-    const gint sy = gtk_widget_get_allocated_height(GTK_WIDGET(g->area));
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(GTK_WIDGET(g->area), &allocation);
 
     // make sure we keep a ref to avoid the widget to be destroyed
     g_object_ref(GTK_WIDGET(g->area));
@@ -1744,7 +1744,8 @@ static void _channel_tabs_switch_callback(GtkNotebook *notebook,
     g_object_unref(GTK_WIDGET(g->area));
 
     // restore aspect & size
-    gtk_widget_set_size_request(GTK_WIDGET(g->area), sx, sy);
+    gtk_widget_set_size_request(GTK_WIDGET(g->area),
+                                allocation.width, allocation.height);
 
     g->channel = (dt_iop_colorequal_channel_t)page_num;
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
