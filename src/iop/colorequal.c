@@ -90,7 +90,7 @@ None;midi:CC24=iop/colorequal/brightness/magenta
 
 #define NODES 8
 
-#define SLIDER_BRIGHTNESS 0.50f // 50 %
+#define SLIDER_BRIGHTNESS 0.6f // 60 %
 
 #define GRAPH_GRADIENTS 64
 
@@ -98,9 +98,9 @@ DT_MODULE_INTROSPECTION(2, dt_iop_colorequal_params_t)
 
 typedef struct dt_iop_colorequal_params_t
 {
-  float smoothing_saturation;    // $MIN: 0.05 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "curve smoothing"
-  float smoothing_hue;           // $MIN: 0.05 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "curve smoothing"
-  float smoothing_brightness;    // $MIN: 0.05 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "curve smoothing"
+  float reserved1;
+  float smoothing_hue;           // $MIN: 0.05 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "hue curve"
+  float reserved2;
 
   float white_level;        // $MIN: -2.0 $MAX: 16.0 $DEFAULT: 1.0 $DESCRIPTION: "white level"
   float chroma_size;        // $MIN: 1.0 $MAX: 10.0 $DEFAULT: 1.5 $DESCRIPTION: "analysis radius"
@@ -215,7 +215,7 @@ typedef struct dt_iop_colorequal_gui_data_t
   GtkWidget *bright_red, *bright_orange, *bright_yellow, *bright_green;
   GtkWidget *bright_cyan, *bright_blue, *bright_lavender, *bright_magenta;
 
-  GtkWidget *smoothing_saturation, *smoothing_bright, *smoothing_hue;
+  GtkWidget *smoothing_hue;
   GtkWidget *chroma_size, *param_size, *use_filter;
   GtkWidget *hue_shift;
 
@@ -1122,7 +1122,7 @@ void commit_params(struct dt_iop_module_t *self,
   // FIXME only calc LUTs if necessary
   _pack_saturation(p, sat_values);
   _periodic_RBF_interpolate(sat_values,
-                            1.f / p->smoothing_saturation * M_PI_F,
+                            M_PI_F,
                             d->LUT_saturation, d->hue_shift, TRUE);
 
   _pack_hue(p, hue_values);
@@ -1132,7 +1132,7 @@ void commit_params(struct dt_iop_module_t *self,
 
   _pack_brightness(p, bright_values);
   _periodic_RBF_interpolate(bright_values,
-                            1.f / p->smoothing_brightness * M_PI_F,
+                            M_PI_F,
                             d->LUT_brightness, d->hue_shift, TRUE);
 
   // Check if the RGB working profile has changed in pipe
@@ -1193,9 +1193,8 @@ static inline void _build_dt_UCS_HSB_gradients
     dt_XYZ_to_sRGB(XYZ_D50, RGB);
   }
 
-  for_each_channel(c, aligned(RGB)) RGB[c] = CLIP(RGB[c]);
+  dt_vector_clip(RGB);
 }
-
 
 static inline void _draw_sliders_saturation_gradient
   (const float sat_min,
@@ -1327,7 +1326,7 @@ static void _init_graph_backgrounds(cairo_pattern_t *gradients[GRAPH_GRADIENTS],
     {
       const float x = (float)k / (float)(LUT_ELEM);
       const float y = (float)(GRAPH_GRADIENTS - i) / (float)(GRAPH_GRADIENTS);
-      float hue = _deg_to_rad((float)k);
+      const float hue = _deg_to_rad((float)k);
       dt_aligned_pixel_t RGB = {  1.0f, 1.0f, 1.0f, 1.0f };
 
       switch(channel)
@@ -1503,7 +1502,7 @@ static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
   cairo_surface_destroy(surface);
   */
 
-  // instead of the above, we simply generate 16 linear horizontal
+  // instead of the above, we simply generate GRAPH_GRADIENTS linear horizontal
   // gradients and stack them vertically
   if(!g->gradients_cached)
   {
@@ -1517,12 +1516,12 @@ static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
   }
 
   cairo_set_line_width(cr, 0.0);
-
+  const double grad_height = graph_height / GRAPH_GRADIENTS;
   for(int i = 0; i < GRAPH_GRADIENTS; i++)
   {
     // cairo painting is not thread-safe, so we need to paint the gradients in sequence
-    cairo_rectangle(cr, 0.0, graph_height / (float)GRAPH_GRADIENTS * (float)i,
-                    graph_width, graph_height / (float)GRAPH_GRADIENTS);
+    cairo_rectangle(cr, 0.0, grad_height * (double)i,
+                    graph_width, ceil(grad_height));
     cairo_set_source(cr, g->gradients[g->channel][i]);
     cairo_fill(cr);
   }
@@ -1559,7 +1558,7 @@ static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
     case SATURATION:
     {
       _pack_saturation(p, values);
-      smoothing = p->smoothing_saturation;
+      smoothing = 1.0f;
       clip = TRUE;
       offset = 1.f;
       factor = 0.5f;
@@ -1578,7 +1577,7 @@ static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
     default:
     {
       _pack_brightness(p, values);
-      smoothing = p->smoothing_brightness;
+      smoothing = 1.0f;
       clip = TRUE;
       offset = 1.0f;
       factor = 0.5f;
@@ -1979,7 +1978,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
       dt_print(DT_DEBUG_PIPE, "[colorequal] display color space falls back to sRGB\n");
 
     dt_UCS_22_build_gamut_LUT(input_matrix, g->gamut_LUT);
-    g->max_saturation = get_minimum_saturation(g->gamut_LUT, SLIDER_BRIGHTNESS, 1.f);
+    g->max_saturation = get_minimum_saturation(g->gamut_LUT, 1.0f, 1.f);
   }
 
   ++darktable.gui->reset;
@@ -2071,7 +2070,7 @@ void gui_init(struct dt_iop_module_t *self)
     memcpy(input_matrix, g->white_adapted_profile->matrix_in, sizeof(dt_colormatrix_t));
 
   dt_UCS_22_build_gamut_LUT(input_matrix, g->gamut_LUT);
-  g->max_saturation = get_minimum_saturation(g->gamut_LUT, SLIDER_BRIGHTNESS, 1.f);
+  g->max_saturation = get_minimum_saturation(g->gamut_LUT, 1.0f, 1.f);
 
   GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
@@ -2130,7 +2129,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->box[0] = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->box[0], TRUE, TRUE, 0);
-  g->smoothing_hue = dt_bauhaus_slider_from_params(sect, "smoothing_hue");
 
   GROUP_SLIDERS
   g->hue_sliders[0] = g->hue_red =
@@ -2156,7 +2154,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->box[1] = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->box[1], TRUE, TRUE, 0);
-  g->smoothing_saturation = dt_bauhaus_slider_from_params(sect, "smoothing_saturation");
 
 
   GROUP_SLIDERS
@@ -2183,7 +2180,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->box[2] = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->box[2], TRUE, TRUE, 0);
-  g->smoothing_bright = dt_bauhaus_slider_from_params(sect, "smoothing_brightness");
 
   GROUP_SLIDERS
   g->bright_sliders[0] = g->bright_red =
@@ -2218,6 +2214,9 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft_range(g->white_level, -2., +2.);
   dt_bauhaus_slider_set_format(g->white_level, _(" EV"));
 
+  g->smoothing_hue = dt_bauhaus_slider_from_params(sect, "smoothing_hue");
+  gtk_widget_set_tooltip_text(g->smoothing_hue,
+                              _("change for sharper or softer hue curve"));
 
   g->use_filter = dt_bauhaus_toggle_from_params(self, "use_filter");
 
