@@ -99,7 +99,7 @@ DT_MODULE_INTROSPECTION(2, dt_iop_colorequal_params_t)
 typedef struct dt_iop_colorequal_params_t
 {
   float reserved1;
-  float smoothing_hue;           // $MIN: 0.05 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "curve smoothing"
+  float smoothing_hue;           // $MIN: 0.05 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "hue curve"
   float reserved2;
 
   float white_level;        // $MIN: -2.0 $MAX: 16.0 $DEFAULT: 1.0 $DESCRIPTION: "white level"
@@ -2127,7 +2127,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->box[0] = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->box[0], TRUE, TRUE, 0);
-  g->smoothing_hue = dt_bauhaus_slider_from_params(sect, "smoothing_hue");
 
   GROUP_SLIDERS
   g->hue_sliders[0] = g->hue_red =
@@ -2213,6 +2212,9 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft_range(g->white_level, -2., +2.);
   dt_bauhaus_slider_set_format(g->white_level, _(" EV"));
 
+  g->smoothing_hue = dt_bauhaus_slider_from_params(sect, "smoothing_hue");
+  gtk_widget_set_tooltip_text(g->smoothing_hue,
+                              _("change for sharper or softer hue curve"));
 
   g->use_filter = dt_bauhaus_toggle_from_params(self, "use_filter");
 
