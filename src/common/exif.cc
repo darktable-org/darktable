@@ -4250,17 +4250,17 @@ static void dt_set_xmp_dt_history(Exiv2::XmpData &xmpData,
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    int32_t modversion = sqlite3_column_int(stmt, 0);
+    const int32_t modversion = sqlite3_column_int(stmt, 0);
     const char *operation = (const char *)sqlite3_column_text(stmt, 1);
-    int32_t params_len = sqlite3_column_bytes(stmt, 2);
+    const int32_t params_len = sqlite3_column_bytes(stmt, 2);
     const void *params_blob = sqlite3_column_blob(stmt, 2);
     const int32_t enabled = sqlite3_column_int(stmt, 3);
     const void *blendop_blob = sqlite3_column_blob(stmt, 4);
-    int32_t blendop_params_len = sqlite3_column_bytes(stmt, 4);
-    int32_t blendop_version = sqlite3_column_int(stmt, 5);
-    int32_t multi_priority = sqlite3_column_int(stmt, 6);
+    const int32_t blendop_params_len = sqlite3_column_bytes(stmt, 4);
+    const int32_t blendop_version = sqlite3_column_int(stmt, 5);
+    const int32_t multi_priority = sqlite3_column_int(stmt, 6);
     const char *multi_name = (const char *)sqlite3_column_text(stmt, 7);
-    int32_t hist_num = sqlite3_column_int(stmt, 8);
+    const int32_t hist_num = sqlite3_column_int(stmt, 8);
     const int32_t multi_name_hand_edited = sqlite3_column_int(stmt, 9);
 
     if(!operation) continue; // no op is fatal.
