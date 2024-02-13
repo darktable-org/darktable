@@ -1839,7 +1839,7 @@ static void _area_reset_nodes(dt_iop_colorequal_gui_data_t *g)
   }
   else
   {
-    for(int k=0; k<NODES+1; k++)
+    for(int k=0; k<NODES; k++)
     {
       g->selected = k;
       _area_set_value(g, graph_height, y);
