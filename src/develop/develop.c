@@ -3191,10 +3191,19 @@ gboolean dt_dev_distort_transform_plus
    float *points,
    const size_t points_count)
 {
+  const double start = dt_get_debug_wtime();
   dt_pthread_mutex_lock(&dev->history_mutex);
+  const double locker = dt_get_debug_wtime();
+
   dt_dev_distort_transform_locked(dev, pipe, iop_order, transf_direction,
                                   points, points_count);
   dt_pthread_mutex_unlock(&dev->history_mutex);
+
+  const double end = dt_get_debug_wtime();
+  if(end - start > 0.1)
+    dt_print_pipe(DT_DEBUG_PIPE,
+                  "distort transform", pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
+                   "locker %.3fs, distorting %.3fs\n", locker - start, end - locker);
   return TRUE;
 }
 
@@ -3249,11 +3258,20 @@ gboolean dt_dev_distort_backtransform_plus
    float *points,
    const size_t points_count)
 {
+  const double start = dt_get_debug_wtime();
   dt_pthread_mutex_lock(&dev->history_mutex);
+  const double locker = dt_get_debug_wtime();
+
   const gboolean success = dt_dev_distort_backtransform_locked
     (dev, pipe, iop_order,
      transf_direction, points, points_count);
   dt_pthread_mutex_unlock(&dev->history_mutex);
+
+  const double end = dt_get_debug_wtime();
+  if(end - start > 0.1)
+    dt_print_pipe(DT_DEBUG_PIPE,
+                  "distort backtransform", pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
+                   "locker %.3fs, distorting %.3fs\n", locker - start, end - locker);
   return success;
 }
 
