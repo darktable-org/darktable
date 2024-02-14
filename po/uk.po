@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-02-12 18:10+0100\n"
-"PO-Revision-Date: 2024-02-14 15:39+0200\n"
+"POT-Creation-Date: 2024-02-14 18:43+0100\n"
+"PO-Revision-Date: 2024-02-14 23:08+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -2845,12 +2845,12 @@ msgid "very large chromatic aberration"
 msgstr "Дуже велика хроматична аберація"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:158
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:260
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:308
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:356
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:475
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:507
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:539
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:258
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:306
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:354
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:473
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:505
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:537
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:159
 #: ../src/common/collection.c:1374 ../src/common/color_vocabulary.c:232
 #: ../src/common/colorlabels.c:374 ../src/develop/blend_gui.c:2383
@@ -2865,12 +2865,12 @@ msgid "red"
 msgstr "Червоний"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:159
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:278
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:326
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:374
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:487
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:519
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:551
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:276
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:324
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:372
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:485
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:517
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:549
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:158
 #: ../src/common/collection.c:1378 ../src/common/color_vocabulary.c:277
 #: ../src/common/colorlabels.c:376 ../src/develop/blend_gui.c:2389
@@ -2886,12 +2886,12 @@ msgid "green"
 msgstr "Зелений"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:160
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:290
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:338
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:386
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:495
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:527
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:559
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:288
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:336
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:384
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:493
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:525
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:557
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:160
 #: ../src/common/collection.c:1380 ../src/common/color_vocabulary.c:324
 #: ../src/common/colorlabels.c:377 ../src/develop/blend_gui.c:2395
@@ -3227,8 +3227,8 @@ msgstr "Кольоровість"
 #: ../src/develop/blend_gui.c:2464 ../src/iop/channelmixer.c:634
 #: ../src/iop/channelmixerrgb.c:4534 ../src/iop/channelmixerrgb.c:4649
 #: ../src/iop/colorbalance.c:2000 ../src/iop/colorize.c:343
-#: ../src/iop/colorreconstruction.c:1249 ../src/iop/colorequal.c:2125
-#: ../src/iop/colorequal.c:2126 ../src/iop/colorzones.c:2646
+#: ../src/iop/colorreconstruction.c:1249 ../src/iop/colorequal.c:2127
+#: ../src/iop/colorequal.c:2128 ../src/iop/colorzones.c:2646
 msgid "hue"
 msgstr "Відтінок"
 
@@ -3427,52 +3427,47 @@ msgstr "Вимір яскравості"
 msgid "saturated colors"
 msgstr "Насичені кольори"
 
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:218
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:224
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:230
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:447
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:451
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:455
-#: ../src/iop/toneequal.c:3448
-msgid "curve smoothing"
-msgstr "Згладжування кривої"
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:222
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:449
+msgid "hue curve"
+msgstr "Крива відтінку"
 
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:236
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:459
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:234
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:457
 msgid "white level"
 msgstr "Рівень білого"
 
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:242
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:463
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:240
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:461
 msgid "analysis radius"
 msgstr "Радіус проби"
 
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:248
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:467
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:246
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:465
 msgid "effect radius"
 msgstr "Радіус ефекту"
 
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:254
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:471
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:252
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:469
 msgid "use guided filter"
 msgstr "Використовувати керований фільтр"
 
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:266
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:314
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:362
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:479
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:511
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:543
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:264
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:312
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:360
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:477
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:509
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:541
 #: ../src/iop/colorzones.c:2500
 msgid "orange"
 msgstr "Помаранчевий"
 
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:272
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:320
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:368
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:483
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:515
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:547
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:270
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:318
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:366
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:481
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:513
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:545
 #: ../src/common/collection.c:1376 ../src/common/colorlabels.c:375
 #: ../src/develop/lightroom.c:889 ../src/gui/guides.c:732
 #: ../src/iop/colorzones.c:2501 ../src/iop/temperature.c:2004
@@ -3480,40 +3475,40 @@ msgstr "Помаранчевий"
 msgid "yellow"
 msgstr "Жовтий"
 
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:284
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:332
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:380
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:491
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:523
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:555
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:282
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:330
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:378
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:489
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:521
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:553
 #: ../src/common/color_vocabulary.c:298 ../src/gui/guides.c:733
 #: ../src/iop/temperature.c:2002
 msgid "cyan"
 msgstr "Ціан"
 
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:296
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:344
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:392
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:499
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:531
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:563
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:294
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:342
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:390
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:497
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:529
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:561
 #: ../src/common/color_vocabulary.c:343
 msgid "lavender"
 msgstr "Лавандовий"
 
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:302
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:350
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:398
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:503
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:535
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:567
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:300
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:348
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:396
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:501
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:533
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:565
 #: ../src/common/color_vocabulary.c:341 ../src/gui/guides.c:734
 #: ../src/iop/colorzones.c:2506 ../src/iop/temperature.c:2000
 msgid "magenta"
 msgstr "Маджента"
 
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:404
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:571
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:402
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:569
 msgid "node placement"
 msgstr "Зміщення вузлів"
 
@@ -4267,7 +4262,7 @@ msgstr "Щільність"
 #: ../src/iop/colorbalance.c:2017 ../src/iop/colorbalancergb.c:1990
 #: ../src/iop/colorchecker.c:1486 ../src/iop/colorcontrast.c:82
 #: ../src/iop/colorcorrection.c:268 ../src/iop/colorize.c:356
-#: ../src/iop/colorequal.c:2150 ../src/iop/colorequal.c:2151
+#: ../src/iop/colorequal.c:2151 ../src/iop/colorequal.c:2152
 #: ../src/iop/lowpass.c:602 ../src/iop/soften.c:368 ../src/iop/velvia.c:75
 #: ../src/iop/vibrance.c:72 ../src/iop/vignette.c:1058
 msgid "saturation"
@@ -8725,7 +8720,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:2693 ../src/develop/blend_gui.c:3614
 #: ../src/iop/basicadj.c:630 ../src/iop/colorbalancergb.c:2161
-#: ../src/iop/colorequal.c:2216 ../src/iop/exposure.c:1138
+#: ../src/iop/colorequal.c:2215 ../src/iop/exposure.c:1138
 #: ../src/iop/exposure.c:1153 ../src/iop/filmic.c:1528 ../src/iop/filmic.c:1541
 #: ../src/iop/filmic.c:1583 ../src/iop/filmicrgb.c:4504
 #: ../src/iop/filmicrgb.c:4515 ../src/iop/filmicrgb.c:4549
@@ -13291,7 +13286,7 @@ msgstr ""
 "Впливає лише на результати вкладок \"яскравість\" і \"кольоровість\""
 
 #: ../src/iop/atrous.c:1818 ../src/iop/colorbalancergb.c:2129
-#: ../src/iop/colorequal.c:2087 ../src/iop/colorzones.c:2732
+#: ../src/iop/colorequal.c:2090 ../src/iop/colorzones.c:2732
 #: ../src/iop/denoiseprofile.c:3747 ../src/iop/filmicrgb.c:4471
 #: ../src/iop/lowlight.c:821 ../src/iop/rawdenoise.c:935
 #: ../src/iop/toneequal.c:3424
@@ -14554,7 +14549,7 @@ msgstr ""
 "c: \t%.1f"
 
 #: ../src/iop/channelmixerrgb.c:4478 ../src/iop/clipping.c:2137
-#: ../src/iop/colorbalancergb.c:1944 ../src/iop/colorequal.c:2077
+#: ../src/iop/colorbalancergb.c:1944 ../src/iop/colorequal.c:2080
 #: ../src/iop/filmicrgb.c:4483 ../src/iop/negadoctor.c:848
 #: ../src/iop/toneequal.c:3372 ../src/libs/image.c:490
 #: ../src/views/lighttable.c:1258
@@ -16212,7 +16207,7 @@ msgstr "квазілінійна, RGB"
 msgid "quasi-linear, RGB, scene-referred"
 msgstr "квазілінійний простір, RGB, на основі сцен"
 
-#: ../src/iop/colorequal.c:1879
+#: ../src/iop/colorequal.c:1881
 #, c-format
 msgid ""
 "middle click to toggle sliders visibility\n"
@@ -16224,20 +16219,20 @@ msgstr ""
 "%s"
 
 #. Page OPTIONS
-#: ../src/iop/colorequal.c:2036 ../src/iop/colorequal.c:2206
+#: ../src/iop/colorequal.c:2039 ../src/iop/colorequal.c:2205
 #: ../src/iop/filmicrgb.c:4675
 msgid "options"
 msgstr "Опції"
 
-#: ../src/iop/colorequal.c:2113
+#: ../src/iop/colorequal.c:2115
 msgid "shift nodes to lower or higher hue"
 msgstr "Зсув вузлів по відтінках"
 
-#: ../src/iop/colorequal.c:2126
+#: ../src/iop/colorequal.c:2128
 msgid "change hue hue-wise"
 msgstr "Зміна відтінку відносно відтінку"
 
-#: ../src/iop/colorequal.c:2152
+#: ../src/iop/colorequal.c:2153
 msgid "change saturation hue-wise"
 msgstr "Зміна насиченості відносно відтінку"
 
@@ -16245,15 +16240,19 @@ msgstr "Зміна насиченості відносно відтінку"
 msgid "change brightness hue-wise"
 msgstr "Зміна яскравості відносно відтінку"
 
-#: ../src/iop/colorequal.c:2223 ../src/iop/colorequal.c:2236
+#: ../src/iop/colorequal.c:2219
+msgid "change for sharper or softer hue curve"
+msgstr "Змінити на різкішу або м’якшу криву відтінку"
+
+#: ../src/iop/colorequal.c:2225 ../src/iop/colorequal.c:2238
 msgid " px"
 msgstr " px"
 
-#: ../src/iop/colorequal.c:2225
+#: ../src/iop/colorequal.c:2227
 msgid "blurring radius of chroma prefilter analysis"
 msgstr "Радіус розмиття проби попереднього фільтра кольоровості"
 
-#: ../src/iop/colorequal.c:2231
+#: ../src/iop/colorequal.c:2233
 msgid ""
 "visualize weighing function on changed output.\n"
 "red shows possibly changed data, blueish parts will not be changed."
@@ -16261,11 +16260,11 @@ msgstr ""
 "Візуалізувати функцію зважування на зміненому виході.\n"
 "Червоний показує ймовірно змінені значення, блакитні частини не зміняться."
 
-#: ../src/iop/colorequal.c:2237
+#: ../src/iop/colorequal.c:2239
 msgid "blurring radius of applied parameters"
 msgstr "Радіус розмиття застосованих параметрів"
 
-#: ../src/iop/colorequal.c:2244
+#: ../src/iop/colorequal.c:2246
 msgid ""
 "visualize changed output for the selected tab.\n"
 "red shows increased data, blue decreased."
@@ -20855,6 +20854,10 @@ msgstr "Просунутий"
 #: ../src/iop/toneequal.c:3444
 msgid "double-click to reset the curve"
 msgstr "Подвійний клік для скидання кривої"
+
+#: ../src/iop/toneequal.c:3448
+msgid "curve smoothing"
+msgstr "Згладжування кривої"
 
 #: ../src/iop/toneequal.c:3451
 msgid ""
