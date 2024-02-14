@@ -211,8 +211,8 @@ sudo zypper si -d darktable
 sed -e '/^#\sdeb-src /s/^# *//;t;d' "/etc/apt/sources.list" \
   | sudo tee /etc/apt/sources.list.d/darktable-sources-tmp.list > /dev/null \
   && (
-    sudo apt-get update
-    sudo apt-get build-dep darktable
+    sudo apt update
+    sudo apt build-dep darktable
   )
 sudo rm /etc/apt/sources.list.d/darktable-sources-tmp.list
 ```
@@ -220,7 +220,7 @@ sudo rm /etc/apt/sources.list.d/darktable-sources-tmp.list
 #### Debian
 
 ```bash
-sudo apt-get build-dep darktable
+sudo apt build-dep darktable
 ```
 
 #### Install missing dependencies

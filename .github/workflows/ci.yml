@@ -89,12 +89,12 @@ jobs:
           sudo add-apt-repository ppa:ubuntu-toolchain-r/test
           sudo add-apt-repository -y universe
           sudo add-apt-repository -y multiverse
-          sudo apt-get update
-          sudo eatmydata apt-get -y install \
+          sudo apt update
+          sudo eatmydata apt -qq install \
             ${{ matrix.compiler.packages }}
       - name: Install Base Dependencies
         run: |
-          sudo eatmydata apt-get -y install \
+          sudo eatmydata apt -qq install \
             build-essential \
             appstream-util \
             desktop-file-utils \

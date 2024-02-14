@@ -38,12 +38,12 @@ jobs:
         run: |
           # Remove azure mirror because it is unreliable and sometimes unpredictably leads to failed CI
           sudo sed -i 's/azure\.//' /etc/apt/sources.list
-          sudo apt-get update
-          sudo apt-get -y install \
+          sudo apt update
+          sudo eatmydata apt -qq install \
             ${{ matrix.compiler.packages }}
       - name: Install Base Dependencies
         run: |
-          sudo apt-get -y install \
+          sudo eatmydata apt -qq install \
             build-essential \
             appstream-util \
             desktop-file-utils \
