@@ -221,9 +221,12 @@ typedef struct dt_iop_colorequal_gui_data_t
 
   // Array-like re-indexing of the above for efficient uniform
   // handling in loops Populate the array in gui_init()
+  GtkWidget *slider_group[3];
   GtkWidget *sat_sliders[NODES];
   GtkWidget *hue_sliders[NODES];
   GtkWidget *bright_sliders[NODES];
+  int page_num;
+  GtkWidget *opts_box;
 
   GtkNotebook *notebook;
   GtkDrawingArea *area;
@@ -1733,28 +1736,16 @@ static void _channel_tabs_switch_callback(GtkNotebook *notebook,
   // For the first 3 tabs, update color channel and redraw the graph
   if(page_num < NUM_CHANNELS)
   {
-    // reparent the graph
-    // get current size
-    GtkAllocation allocation;
-    gtk_widget_get_allocation(GTK_WIDGET(g->area), &allocation);
-
-    // make sure we keep a ref to avoid the widget to be destroyed
-    g_object_ref(GTK_WIDGET(g->area));
-    gtk_container_remove(GTK_CONTAINER(g->box[g->channel]), GTK_WIDGET(g->area));
-    gtk_container_add(GTK_CONTAINER(g->box[page_num]), GTK_WIDGET(g->area));
-    g_object_unref(GTK_WIDGET(g->area));
-
-    // restore aspect & size
-    gtk_widget_set_size_request(GTK_WIDGET(g->area),
-                                allocation.width, allocation.height);
-
     g->channel = (dt_iop_colorequal_channel_t)page_num;
-    gtk_widget_queue_draw(GTK_WIDGET(g->area));
   }
+
+  g->page_num = page_num;
+  gui_update(self);
 
   const int old_mask_mode = g->mask_mode;
   const gboolean masking_p = dt_bauhaus_widget_get_quad_active(g->param_size);
   const gboolean masking_c = dt_bauhaus_widget_get_quad_active(g->chroma_size);
+
   g->mask_mode = masking_p ? g->channel + 1 : (masking_c ? 4 : 0);
   if(g->mask_mode != old_mask_mode)
     dt_dev_reprocess_center(self->dev);
@@ -1938,6 +1929,7 @@ static gboolean _area_button_release_callback(GtkWidget *widget,
   return FALSE;
 }
 
+
 static gboolean _area_size_callback(GtkWidget *widget,
                                               GdkEventButton *event,
                                               gpointer user_data)
@@ -1947,7 +1939,6 @@ static gboolean _area_size_callback(GtkWidget *widget,
   g->gradients_cached = FALSE;
   return FALSE;
 }
-
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
@@ -2029,20 +2020,60 @@ void gui_update(dt_iop_module_t *self)
 
   gtk_widget_set_name(GTK_WIDGET(g->cs.container), show_sliders ? NULL : "collapsible");
 
-  if((gtk_notebook_get_n_pages(g->notebook) == 4) ^ show_sliders)
+  const int nbpage = gtk_notebook_get_n_pages(g->notebook);
+
+  if((nbpage == 4) ^ show_sliders)
   {
-    g_object_ref(g->cs.container);
-    gtk_container_remove(GTK_CONTAINER(gtk_widget_get_parent(GTK_WIDGET(g->cs.container))), GTK_WIDGET(g->cs.container));
+    GtkWidget *cs = GTK_WIDGET(g->cs.container);
+
+    g_object_ref(cs);
+    gtk_container_remove(GTK_CONTAINER(gtk_widget_get_parent(cs)), cs);
+
     if(show_sliders)
-      gtk_notebook_append_page
-        (g->notebook,
-         GTK_WIDGET(g->cs.container), dt_ui_label_new(_("options")));
+    {
+      // create a new tab for options
+      GtkWidget *np = dt_ui_notebook_page(g->notebook, N_("options"), _("options"));
+      // move options container into the opts_box (inlined into the main gui box)
+      gtk_container_add(GTK_CONTAINER(g->opts_box), cs);
+      gtk_widget_show_all(np);
+    }
     else
+    {
+      // remove options notebook tab
+      gtk_notebook_remove_page(g->notebook, 3);
+      // add the options container into the collapsible section
       gtk_container_add
         (GTK_CONTAINER(dtgtk_expander_get_body_event_box(DTGTK_EXPANDER(g->cs.expander))),
-         GTK_WIDGET(g->cs.container));
-    g_object_unref(g->cs.container);
+         cs);
+    }
+
+    g_object_unref(cs);
   }
+
+  // hide all groups of sliders
+  for(int k = 0; k < 3; k++)
+    gtk_widget_hide(g->slider_group[k]);
+
+  // display widgets depening on the selected notebook page
+  if(g->page_num < 3)
+  {
+    gtk_widget_show(GTK_WIDGET(g->area));
+    gtk_widget_show(g->hue_shift);
+    gtk_widget_hide(g->opts_box);
+
+    if(show_sliders)
+    {
+      gtk_widget_show_all(g->slider_group[g->page_num]);
+    }
+  }
+  else
+  {
+    gtk_widget_hide(GTK_WIDGET(g->area));
+    gtk_widget_hide(g->hue_shift);
+    gtk_widget_show_all(g->opts_box);
+  }
+
+  gtk_widget_queue_draw(GTK_WIDGET(g->notebook));
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -2082,6 +2113,12 @@ void gui_init(struct dt_iop_module_t *self)
                    G_CALLBACK(_channel_tabs_switch_callback), self);
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->notebook), TRUE, TRUE, 0);
 
+  // add notebook tab, will remain empty as we need to share the graph. the widgets
+  // to show/hide are handled in gui_update depending on the actual tab selected.
+  dt_ui_notebook_page(g->notebook, N_("hue"), _("change hue hue-wise"));
+  dt_ui_notebook_page(g->notebook, N_("saturation"), _("change saturation hue-wise"));
+  dt_ui_notebook_page(g->notebook, N_("brightness"), _("change brightness hue-wise"));
+
   // graph
   g->area = GTK_DRAWING_AREA
     (dt_ui_resize_wrap(NULL, 0,
@@ -2106,6 +2143,12 @@ void gui_init(struct dt_iop_module_t *self)
                    G_CALLBACK(_area_scrolled_callback), self);
   g_signal_connect(G_OBJECT(g->area), "size_allocate",
                    G_CALLBACK(_area_size_callback), self);
+  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->area), TRUE, TRUE, 0);
+
+  // box containing all options. the widget in here can be either into a collapsible
+  // section or inside this box when the options tab is activated.
+  g->opts_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->opts_box), TRUE, TRUE, 0);
 
   self->widget = box;
   g->hue_shift = dt_bauhaus_slider_from_params(self, "hue_shift");
@@ -2114,21 +2157,17 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->hue_shift,
                               _("shift nodes to lower or higher hue"));
 
-  GtkWidget *prv_grp = NULL, *group;
-#define GROUP_SLIDERS \
+  GtkWidget *group;
+  int group_n = 0;
+
+#define GROUP_SLIDERS                               \
   group = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0); \
-  if(prv_grp) \
-    g_object_bind_property(group, "visible", prv_grp, "visible", G_BINDING_DEFAULT); \
-  gtk_box_pack_start(GTK_BOX(self->widget), group, TRUE, TRUE, 0); \
+  gtk_box_pack_start(GTK_BOX(box), group, TRUE, TRUE, 0); \
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0); \
   gtk_box_pack_start(GTK_BOX(group), self->widget, TRUE, TRUE, 0); \
-  prv_grp = group;
+  g->slider_group[group_n++] = group;
 
   dt_iop_module_t *sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("hue"));
-  self->widget = dt_ui_notebook_page(g->notebook, N_("hue"), _("change hue hue-wise"));
-
-  g->box[0] = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->box[0], TRUE, TRUE, 0);
 
   GROUP_SLIDERS
   g->hue_sliders[0] = g->hue_red =
@@ -2149,12 +2188,6 @@ void gui_init(struct dt_iop_module_t *self)
     dt_bauhaus_slider_from_params(sect, "hue_magenta");
 
   sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("saturation"));
-  self->widget = dt_ui_notebook_page(g->notebook, N_("saturation"),
-                                     _("change saturation hue-wise"));
-
-  g->box[1] = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->box[1], TRUE, TRUE, 0);
-
 
   GROUP_SLIDERS
   g->sat_sliders[0] = g->sat_red =
@@ -2175,11 +2208,6 @@ void gui_init(struct dt_iop_module_t *self)
     dt_bauhaus_slider_from_params(sect, "sat_magenta");
 
   sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("brightness"));
-  self->widget = dt_ui_notebook_page(g->notebook, N_("brightness"),
-                                     _("change brightness hue-wise"));
-
-  g->box[2] = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->box[2], TRUE, TRUE, 0);
 
   GROUP_SLIDERS
   g->bright_sliders[0] = g->bright_red =
@@ -2205,8 +2233,6 @@ void gui_init(struct dt_iop_module_t *self)
      _("options"),
      GTK_BOX(box),
      DT_ACTION(self));
-  g_object_bind_property(g->cs.expander, "visible",
-                         prv_grp, "visible", G_BINDING_INVERT_BOOLEAN);
   self->widget = GTK_WIDGET(g->cs.container);
 
   g->white_level = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
@@ -2250,11 +2276,13 @@ void gui_init(struct dt_iop_module_t *self)
 
   // restore the previously saved active tab
   const guint active_page = dt_conf_get_int("plugins/darkroom/colorequal/gui_page");
-  gtk_widget_show(gtk_notebook_get_nth_page(g->notebook, active_page));
-  gtk_notebook_set_current_page(g->notebook, active_page);
+  if(active_page < 3)
+  {
+    gtk_widget_show(gtk_notebook_get_nth_page(g->notebook, active_page));
+    gtk_notebook_set_current_page(g->notebook, active_page);
+  }
   g->channel = (active_page >= NUM_CHANNELS) ? SATURATION : active_page;
-
-  gtk_container_add(GTK_CONTAINER(g->box[active_page]), GTK_WIDGET(g->area));
+  g->page_num = active_page;
 
   self->widget = GTK_WIDGET(box);
 }
