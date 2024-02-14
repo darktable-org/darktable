@@ -162,6 +162,7 @@ if(APPLE)
 endif(APPLE)
 
 include(compiler-versions)
+include(debug-info)
 
 if(WIN32)
   message("-- Win32 build detected, setting default features")
