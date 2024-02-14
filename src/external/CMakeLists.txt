@@ -5,6 +5,22 @@ endif()
 add_library(whereami STATIC "${CMAKE_CURRENT_SOURCE_DIR}/whereami/src/whereami.c")
 target_include_directories(whereami PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/whereami/src/")
 
+set(OPENCL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/OpenCL")
+
+if(NOT(EXISTS "${OPENCL_PATH}" AND IS_DIRECTORY "${OPENCL_PATH}" AND EXISTS "${OPENCL_PATH}/CL/opencl.h"))
+  message("OpenCL submodule not found. You probably want to run:\n$ git submodule init\nand then\n$ git submodule update\nOr let the OS headers to be used.")
+endif()
+
+################################################################################
+# RawSpeed block
+
+string(TOUPPER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE_UPPERCASE)
+
+set(RAWSPEED_${CMAKE_BUILD_TYPE_UPPERCASE}_BUILD 1)
+if(RAWSPEED_RELWITHDEBINFO_BUILD)
+  set(CMAKE_BUILD_TYPE "Release")
+endif()
+
 set(BUILD_TESTING_SAVE "${BUILD_TESTING}")
 set(BUILD_BENCHMARKING_SAVE "${BUILD_BENCHMARKING}")
 
@@ -18,12 +34,6 @@ set(RAWSPEED_BINARY_PREFIX "darktable")
 
 if(NOT(EXISTS "${RAWSPEED_PATH}" AND IS_DIRECTORY "${RAWSPEED_PATH}" AND EXISTS "${RAWSPEED_PATH}/CMakeLists.txt"))
   message(FATAL_ERROR "RawSpeed submodule not found. You probably want to run:\n$ git submodule init\nand then\n$ git submodule update")
-endif()
-
-set(OPENCL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/OpenCL")
-
-if(NOT(EXISTS "${OPENCL_PATH}" AND IS_DIRECTORY "${OPENCL_PATH}" AND EXISTS "${OPENCL_PATH}/CL/opencl.h"))
-  message("OpenCL submodule not found. You probably want to run:\n$ git submodule init\nand then\n$ git submodule update\nOr let the OS headers to be used.")
 endif()
 
 set(CMAKE_INSTALL_DATAROOTDIR_SAVE "${CMAKE_INSTALL_DATAROOTDIR}")

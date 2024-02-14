@@ -19,22 +19,17 @@
 #    * and the newest one that is available in *both* the
 #      debian stable *and* the latest ubuntu LTS
 #
-# As of the time of writing (2023-10-22), the next (winter) darktable release
-# will happen in 2023-12 ish. By that time:
-# * debian 12 (Bookworm) will have been released,
-#   coming with gcc-12 and LLVM15
-# * Ubuntu 22.04.1 LTS (Jammy Jellyfish) will be the newest LTS,
-#   coming with gcc-12 and LLVM15
-# * macOS 12 (Big Sur) be the oldest supported macOS version,
-#   with the newest supported Xcode version being 14.2 (LLVM14-based !)
+# As of the time of writing (2024-02-14), the next (summer) darktable release
+# will happen in 2024-06 ish. By that time:
+# * debian 12 (Bookworm) is the newest debian stable,
+#   coming with gcc-12 and LLVM16
+# * Ubuntu 24.04 LTS (Noble Numbat) will have been released,
+#   coming with gcc-14 and LLVM18
+# * macOS 13 (Ventura) be the oldest supported macOS version,
+#   with the newest supported Xcode version being 15.2 (LLVM16-based !)
 #
-# Therefore, we require GCC12, macOS 12 + Xcode 14.2, and LLVM14.
-#
-# The next+1 (fall) darktable release will happen 2023-12 ish,
-# and by that time, macOS 11 will have EOL'd on 2023-10 ish,
-# so after the spring release, macOS 12 will become required,
-# and that will allow us to require Xcode 14.2 (LLVM14-based),
-# and that will allow us to require LLVM14,
+# Therefore, we currently require GCC12, macOS 12 + Xcode 14.2, and LLVM14.
+# but should be able to require GCC12, macOS 13 + Xcode 15.2, and LLVM16.
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU" AND CMAKE_C_COMPILER_VERSION VERSION_LESS 12)
   message(SEND_ERROR "GNU C compiler version ${CMAKE_C_COMPILER_VERSION} is too old and is unsupported. Version 12+ is required.")
