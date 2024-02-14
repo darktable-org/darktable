@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-02-12 18:10+0100\n"
-"PO-Revision-Date: 2024-02-14 14:54+0200\n"
+"PO-Revision-Date: 2024-02-14 15:39+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -2862,7 +2862,7 @@ msgstr "Дуже велика хроматична аберація"
 #: ../src/iop/temperature.c:2206 ../src/libs/collect.c:1928
 #: ../src/libs/filters/colors.c:260 ../src/libs/histogram.c:2720
 msgid "red"
-msgstr "червоний"
+msgstr "Червоний"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:159
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:278
@@ -2883,7 +2883,7 @@ msgstr "червоний"
 #: ../src/libs/collect.c:1928 ../src/libs/filters/colors.c:262
 #: ../src/libs/histogram.c:2711
 msgid "green"
-msgstr "зелений"
+msgstr "Зелений"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:160
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:290
@@ -2903,7 +2903,7 @@ msgstr "зелений"
 #: ../src/iop/temperature.c:2208 ../src/libs/collect.c:1928
 #: ../src/libs/filters/colors.c:263 ../src/libs/histogram.c:2702
 msgid "blue"
-msgstr "синій"
+msgstr "Синій"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:164
 msgid "standard"
@@ -3489,7 +3489,7 @@ msgstr "Жовтий"
 #: ../src/common/color_vocabulary.c:298 ../src/gui/guides.c:733
 #: ../src/iop/temperature.c:2002
 msgid "cyan"
-msgstr "ціан"
+msgstr "Ціан"
 
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:296
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:344
@@ -3499,7 +3499,7 @@ msgstr "ціан"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:563
 #: ../src/common/color_vocabulary.c:343
 msgid "lavender"
-msgstr "лавандовий"
+msgstr "Лавандовий"
 
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:302
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:350
@@ -3510,7 +3510,7 @@ msgstr "лавандовий"
 #: ../src/common/color_vocabulary.c:341 ../src/gui/guides.c:734
 #: ../src/iop/colorzones.c:2506 ../src/iop/temperature.c:2000
 msgid "magenta"
-msgstr "маджента"
+msgstr "Маджента"
 
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:404
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:571
@@ -5870,91 +5870,91 @@ msgstr "щока"
 #: ../src/common/color_vocabulary.c:202
 #, c-format
 msgid "average %s skin tone\n"
-msgstr "середній відтінок шкіри %s\n"
+msgstr "Середній відтінок шкіри %s\n"
 
 #. 0° - pinkish red
 #: ../src/common/color_vocabulary.c:222
 msgid "deep purple"
-msgstr "глибокий пурпуровий"
+msgstr "Глибокий пурпуровий"
 
 #. L = 10 %
 #: ../src/common/color_vocabulary.c:223
 msgid "fuchsia"
-msgstr "фуксія"
+msgstr "Фуксія"
 
 #. L = 30 %
 #: ../src/common/color_vocabulary.c:224
 msgid "medium magenta"
-msgstr "середній маджентовий"
+msgstr "Середній маджентовий"
 
 #. L = 50 %
 #: ../src/common/color_vocabulary.c:225
 msgid "violet pink"
-msgstr "фіолетово-рожевий"
+msgstr "Фіолетово-рожевий"
 
 #. L = 70 %
 #: ../src/common/color_vocabulary.c:226
 msgid "plum violet"
-msgstr "сливово-фіолетовий"
+msgstr "Сливово-фіолетовий"
 
 #. 24° - red
 #: ../src/common/color_vocabulary.c:231
 msgid "dark red"
-msgstr "темно-червоний"
+msgstr "Темно-червоний"
 
 #: ../src/common/color_vocabulary.c:233
 msgid "crimson"
-msgstr "малиновий"
+msgstr "Малиновий"
 
 #: ../src/common/color_vocabulary.c:234
 msgid "salmon"
-msgstr "лососевий"
+msgstr "Лососевий"
 
 #: ../src/common/color_vocabulary.c:235
 msgid "pink"
-msgstr "рожевий"
+msgstr "Рожевий"
 
 #. 48° - orangy red
 #: ../src/common/color_vocabulary.c:240
 msgid "maroon"
-msgstr "темно-бордовий (марун, гранатовий)"
+msgstr "Темно-бордовий (марун, гранатовий)"
 
 #: ../src/common/color_vocabulary.c:241
 msgid "dark orange red"
-msgstr "темно-помаранчево-червоний"
+msgstr "Темно-помаранчево-червоний"
 
 #: ../src/common/color_vocabulary.c:242
 msgid "orange red"
-msgstr "помаранчево-червоний"
+msgstr "Помаранчево-червоний"
 
 #: ../src/common/color_vocabulary.c:243
 msgid "coral"
-msgstr "кораловий"
+msgstr "Кораловий"
 
 #: ../src/common/color_vocabulary.c:244 ../src/common/color_vocabulary.c:261
 msgid "khaki"
-msgstr "хакі"
+msgstr "Хакі"
 
 #. 72° - orange
 #: ../src/common/color_vocabulary.c:249
 msgid "brown"
-msgstr "коричневий (брунатний)"
+msgstr "Коричневий (брунатний)"
 
 #: ../src/common/color_vocabulary.c:250
 msgid "chocolate"
-msgstr "шоколадний"
+msgstr "Шоколадний"
 
 #: ../src/common/color_vocabulary.c:251
 msgid "dark gold"
-msgstr "темно-золотий"
+msgstr "Темно-золотий"
 
 #: ../src/common/color_vocabulary.c:252
 msgid "gold"
-msgstr "золотий"
+msgstr "Золотий"
 
 #: ../src/common/color_vocabulary.c:253
 msgid "sandy brown"
-msgstr "пісочний"
+msgstr "Пісочний"
 
 #. 96° - yellow olive
 #. 120° - green
@@ -5962,143 +5962,143 @@ msgstr "пісочний"
 #: ../src/common/color_vocabulary.c:258 ../src/common/color_vocabulary.c:267
 #: ../src/common/color_vocabulary.c:276
 msgid "dark green"
-msgstr "темно-зелений"
+msgstr "Темно-зелений"
 
 #: ../src/common/color_vocabulary.c:259
 msgid "dark olive green"
-msgstr "темно-оливково-зелений"
+msgstr "Темно-оливково-зелений"
 
 #: ../src/common/color_vocabulary.c:260
 msgid "olive"
-msgstr "оливковий"
+msgstr "Оливковий"
 
 #: ../src/common/color_vocabulary.c:262
 msgid "beige"
-msgstr "бежевий"
+msgstr "Бежевий"
 
 #: ../src/common/color_vocabulary.c:268 ../src/common/color_vocabulary.c:278
 msgid "forest green"
-msgstr "лісовий зелений"
+msgstr "Лісовий зелений"
 
 #: ../src/common/color_vocabulary.c:269
 msgid "olive drab"
-msgstr "ніжно-оливковий"
+msgstr "Ніжно-оливковий"
 
 #: ../src/common/color_vocabulary.c:270
 msgid "yellow green"
-msgstr "жовто-зелений"
+msgstr "Жовто-зелений"
 
 #: ../src/common/color_vocabulary.c:271 ../src/common/color_vocabulary.c:280
 msgid "pale green"
-msgstr "блідо-зелений"
+msgstr "Блідо-зелений"
 
 #: ../src/common/color_vocabulary.c:279
 msgid "lime green"
-msgstr "лаймовий"
+msgstr "Лаймовий"
 
 #. 168° - greenish cyian
 #: ../src/common/color_vocabulary.c:285
 msgid "dark sea green"
-msgstr "темний морської хвилі"
+msgstr "Темний морської хвилі"
 
 #: ../src/common/color_vocabulary.c:286
 msgid "sea green"
-msgstr "морської хвилі"
+msgstr "Морської хвилі"
 
 #: ../src/common/color_vocabulary.c:287 ../src/common/color_vocabulary.c:304
 msgid "teal"
-msgstr "зеленувато-блакитний (чирковий)"
+msgstr "Зеленувато-блакитний (чирковий)"
 
 #: ../src/common/color_vocabulary.c:288
 msgid "light sea green"
-msgstr "світлий морської хвилі"
+msgstr "Світлий морської хвилі"
 
 #: ../src/common/color_vocabulary.c:289
 msgid "turquoise"
-msgstr "бірюзовий"
+msgstr "Бірюзовий"
 
 #. 192° - cyan
 #: ../src/common/color_vocabulary.c:294
 msgid "dark slate gray"
-msgstr "темно-сірий шифер"
+msgstr "Темно-сірий шифер"
 
 #: ../src/common/color_vocabulary.c:295
 msgid "light slate gray"
-msgstr "світло-сірий шифер"
+msgstr "Світло-сірий шифер"
 
 #: ../src/common/color_vocabulary.c:296 ../src/common/color_vocabulary.c:305
 msgid "dark cyan"
-msgstr "темний ціановий"
+msgstr "Темний ціановий"
 
 #: ../src/common/color_vocabulary.c:297 ../src/common/color_vocabulary.c:317
 #: ../src/iop/colorzones.c:2503
 msgid "aqua"
-msgstr "аква"
+msgstr "Аква"
 
 #. 216° - medium blue
 #: ../src/common/color_vocabulary.c:303
 msgid "navy blue"
-msgstr "темно-синій"
+msgstr "Темно-синій"
 
 #: ../src/common/color_vocabulary.c:306 ../src/common/color_vocabulary.c:316
 msgid "deep sky blue"
-msgstr "глибокий блакитний/лазуровий"
+msgstr "Глибокий блакитний/лазуровий"
 
 #: ../src/common/color_vocabulary.c:307
 msgid "aquamarine blue"
-msgstr "аквамариновий синій"
+msgstr "Аквамариновий синій"
 
 #. 240° - blue and 264° - bluer than blue
 #. these are collapsed because CIE Lab 1976 sucks for blues
 #. 288° - more blue
 #: ../src/common/color_vocabulary.c:313 ../src/common/color_vocabulary.c:322
 msgid "dark blue"
-msgstr "темно-синій"
+msgstr "Темно-синій"
 
 #: ../src/common/color_vocabulary.c:314 ../src/common/color_vocabulary.c:323
 msgid "medium blue"
-msgstr "середньо-синій"
+msgstr "Середньо-синій"
 
 #: ../src/common/color_vocabulary.c:315
 msgid "azure blue"
-msgstr "лазуровий синій"
+msgstr "Лазуровий синій"
 
 #: ../src/common/color_vocabulary.c:325
 msgid "light sky blue"
-msgstr "світлий блакитний/лазуровий"
+msgstr "Світлий блакитний/лазуровий"
 
 #: ../src/common/color_vocabulary.c:326
 msgid "light blue"
-msgstr "світло-синій"
+msgstr "Світло-синій"
 
 #. 312° - violet
 #: ../src/common/color_vocabulary.c:331
 msgid "indigo"
-msgstr "індиго"
+msgstr "Індиго"
 
 #: ../src/common/color_vocabulary.c:332
 msgid "dark violet"
-msgstr "глибокий фіолетовий"
+msgstr "Глибокий фіолетовий"
 
 #: ../src/common/color_vocabulary.c:333
 msgid "blue violet"
-msgstr "блакитно-фіолетовий"
+msgstr "Блакитно-фіолетовий"
 
 #: ../src/common/color_vocabulary.c:334 ../src/common/color_vocabulary.c:342
 msgid "violet"
-msgstr "фіолетовий"
+msgstr "Фіолетовий"
 
 #: ../src/common/color_vocabulary.c:335
 msgid "plum"
-msgstr "сливовий"
+msgstr "Сливовий"
 
 #: ../src/common/color_vocabulary.c:340
 msgid "dark magenta"
-msgstr "темний маджентовий"
+msgstr "Темний маджентовий"
 
 #: ../src/common/color_vocabulary.c:346
 msgid "color not found"
-msgstr "колір не знайдено"
+msgstr "Колір не знайдено"
 
 #: ../src/common/colorlabels.c:349
 #, c-format
