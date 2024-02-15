@@ -28,7 +28,7 @@
 #include <sqlite3.h>
 #include <inttypes.h>
 
-void dt_image_cache_allocate(void *data,
+static void _image_cache_allocate(void *data,
                              dt_cache_entry_t *entry)
 {
   entry->cost = sizeof(dt_image_t);
@@ -185,7 +185,7 @@ void dt_image_cache_allocate(void *data,
   // concurrencykit..
 }
 
-void dt_image_cache_deallocate(void *data, dt_cache_entry_t *entry)
+static void _image_cache_deallocate(void *data, dt_cache_entry_t *entry)
 {
   dt_image_t *img = (dt_image_t *)entry->data;
   g_free(img->profile);
@@ -204,8 +204,8 @@ void dt_image_cache_init(dt_image_cache_t *cache)
   const uint32_t max_mem = 50 * 1024 * 1024;
   const uint32_t num = (uint32_t)(1.5f * max_mem / sizeof(dt_image_t));
   dt_cache_init(&cache->cache, sizeof(dt_image_t), max_mem);
-  dt_cache_set_allocate_callback(&cache->cache, &dt_image_cache_allocate, cache);
-  dt_cache_set_cleanup_callback(&cache->cache, &dt_image_cache_deallocate, cache);
+  dt_cache_set_allocate_callback(&cache->cache, &_image_cache_allocate, cache);
+  dt_cache_set_cleanup_callback(&cache->cache, &_image_cache_deallocate, cache);
 
   dt_print(DT_DEBUG_CACHE, "[image_cache] has %d entries\n", num);
 }
