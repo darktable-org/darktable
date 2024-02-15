@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -261,10 +261,12 @@ void dt_image_cache_read_release(dt_image_cache_t *cache,
 // drops the write privileges on an image struct.
 // this triggers a write-through to sql, and if the setting
 // is present, also to xmp sidecar files (safe setting).
-void dt_image_cache_write_release(dt_image_cache_t *cache,
+void dt_image_cache_write_release_info(dt_image_cache_t *cache,
                                   dt_image_t *img,
-                                  const dt_image_cache_write_mode_t mode)
+                                  const dt_image_cache_write_mode_t mode,
+                                  const char *info)
 {
+  const double start = dt_get_debug_wtime();
   union {
       struct dt_image_raw_parameters_t s;
       uint32_t u;
@@ -371,10 +373,26 @@ void dt_image_cache_write_release(dt_image_cache_t *cache,
     // rest about sidecars:
     // also synch dttags file:
     dt_image_write_sidecar_file(img->id);
+    if(info)
+    {
+      const double end = dt_get_debug_wtime();
+      dt_print_pipe(DT_DEBUG_PIPE,
+                  "cache_write_released", NULL, NULL, DT_DEVICE_NONE, NULL, NULL,
+                  "from `%s', imgid=%i took %.3fs\n", info, img->id, end - start);
+    }
   }
   dt_cache_release(&cache->cache, img->cache_entry);
 }
 
+// drops the write privileges on an image struct.
+// this triggers a write-through to sql, and if the setting
+// is present, also to xmp sidecar files (safe setting).
+void dt_image_cache_write_release(dt_image_cache_t *cache,
+                                  dt_image_t *img,
+                                  const dt_image_cache_write_mode_t mode)
+{
+  dt_image_cache_write_release_info(cache, img, mode, NULL);
+}
 
 // remove the image from the cache
 void dt_image_cache_remove(dt_image_cache_t *cache,
