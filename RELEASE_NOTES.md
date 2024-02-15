@@ -215,11 +215,12 @@ changes (where available).
 
 ### Missing Compression Mode Support
 
+- Adobe enhanced DNGs (JPEG XL flavor)
 - Apple ProRAW DNGs
-- CinemaDNG lossless (Blackmagic, DJI, etc.)
+- CinemaDNG lossless (Blackmagic, some DJI, etc.)
 - Fujifilm lossy RAFs
 - Nikon high efficiency NEFs
-- Samsung Expert RAW DNGs
+- Samsung Expert RAW DNGs (JPEG XL flavor)
 - Sony downsized lossless ARWs ("M" for full-frame, "S" for full-frame & APS-C)
 
 ### Suspended Support
@@ -238,7 +239,6 @@ are available on raw.pixls.us:
 - Minolta DiMAGE 5
 - Olympus SP320
 - Panasonic DMC-FX150
-- Pentax Q10
 - Phase One IQ250
 - Sinar Hy6/ Sinarback eXact
 - ST Micro STV680
