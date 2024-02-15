@@ -4568,8 +4568,10 @@ static void _set_xmp_dt_metadata(Exiv2::XmpData &xmpData,
 // helper to create an xmp data thing. throws exiv2 exceptions if
 // stuff goes wrong.
 static void _exif_xmp_read_data(Exiv2::XmpData &xmpData,
-                                const dt_imgid_t imgid)
+                                const dt_imgid_t imgid,
+                                const char *info)
 {
+  const double start = dt_get_debug_wtime();
   const int xmp_version = DT_XMP_EXIF_VERSION;
   int stars = 1, raw_params = 0, history_end = -1;
   double longitude = NAN, latitude = NAN, altitude = NAN;
@@ -4706,6 +4708,11 @@ static void _exif_xmp_read_data(Exiv2::XmpData &xmpData,
   }
 
   dt_history_hash_free(&hash);
+
+  const double end = dt_get_debug_wtime();
+  dt_print(DT_DEBUG_DEV,
+    "exif_xmp_read_data: %s. imgid=%i, hist=%i, took %.3fs\n",
+    info, imgid, history_end, end - start);
 }
 
 // helper to create an xmp data thing. throws exiv2 exceptions if stuff goes wrong.
@@ -4895,7 +4902,7 @@ char *dt_exif_xmp_read_string(const dt_imgid_t imgid)
 
     // last but not least attach what we have in DB to the XMP. in theory that should be
     // the same as what we just copied over from the sidecar file, but you never know ...
-    _exif_xmp_read_data(xmpData, imgid);
+    _exif_xmp_read_data(xmpData, imgid, "dt_exif_xmp_read_string");
 
     // serialize the xmp data and output the xmp packet
     std::string xmpPacket;
@@ -5501,7 +5508,7 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid, const char *filename)
     }
 
     // initialize xmp data:
-    _exif_xmp_read_data(xmpData, imgid);
+    _exif_xmp_read_data(xmpData, imgid, "dt_exif_xmp_write");
 
     // serialize the xmp data and output the xmp packet
     if(Exiv2::XmpParser::encode(xmpPacket, xmpData,

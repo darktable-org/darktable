@@ -53,7 +53,8 @@ static void _remove_preset_flag(const dt_imgid_t imgid)
   image->flags &= ~DT_IMAGE_AUTO_PRESETS_APPLIED;
 
   // write through to sql+xmp
-  dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+  dt_image_cache_write_release_info(darktable.image_cache, image,
+    DT_IMAGE_CACHE_SAFE, "_remove_preset_flag");
 }
 
 void dt_history_delete_on_image_ext(const dt_imgid_t imgid,
@@ -172,10 +173,11 @@ gboolean dt_history_load_and_apply(const dt_imgid_t imgid,
 
     if(dt_exif_xmp_read(img, filename, history_only))
     {
-      dt_image_cache_write_release
+      dt_image_cache_write_release_info
         (darktable.image_cache, img,
          // ugly but if not history_only => called from crawler - do not write the xmp
-         history_only ? DT_IMAGE_CACHE_SAFE : DT_IMAGE_CACHE_RELAXED);
+         history_only ? DT_IMAGE_CACHE_SAFE : DT_IMAGE_CACHE_RELAXED,
+         "dt_history_load_and_apply");
       dt_unlock_image(imgid);
       return TRUE;
     }
@@ -190,10 +192,11 @@ gboolean dt_history_load_and_apply(const dt_imgid_t imgid,
     if(dt_dev_is_current_image(darktable.develop, imgid))
       dt_dev_reload_history_items(darktable.develop);
 
-    dt_image_cache_write_release
+    dt_image_cache_write_release_info
       (darktable.image_cache, img,
        // ugly but if not history_only => called from crawler - do not write the xmp
-       history_only ? DT_IMAGE_CACHE_SAFE : DT_IMAGE_CACHE_RELAXED);
+       history_only ? DT_IMAGE_CACHE_SAFE : DT_IMAGE_CACHE_RELAXED,
+       "dt_history_load_and_apply");
     dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
     dt_image_update_final_size(imgid);
   }

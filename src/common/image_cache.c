@@ -376,9 +376,8 @@ void dt_image_cache_write_release_info(dt_image_cache_t *cache,
     if(info)
     {
       const double end = dt_get_debug_wtime();
-      dt_print_pipe(DT_DEBUG_PIPE,
-                  "cache_write_released", NULL, NULL, DT_DEVICE_NONE, NULL, NULL,
-                  "from `%s', imgid=%i took %.3fs\n", info, img->id, end - start);
+      dt_print(DT_DEBUG_DEV,
+        "cache_write_released from `%s', imgid=%i took %.3fs\n", info, img->id, end - start);
     }
   }
   dt_cache_release(&cache->cache, img->cache_entry);
@@ -412,7 +411,8 @@ void dt_image_cache_set_change_timestamp(dt_image_cache_t *cache,
   dt_image_t *img = (dt_image_t *)entry->data;
   img->cache_entry = entry;
   img->change_timestamp = dt_datetime_now_to_gtimespan();
-  dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_SAFE);
+  dt_image_cache_write_release_info(cache, img,
+    DT_IMAGE_CACHE_SAFE, "dt_image_cache_set_change_timestamp");
 }
 
 void dt_image_cache_set_change_timestamp_from_image(dt_image_cache_t *cache,
@@ -432,7 +432,8 @@ void dt_image_cache_set_change_timestamp_from_image(dt_image_cache_t *cache,
   dt_image_t *img = (dt_image_t *)entry->data;
   img->cache_entry = entry;
   img->change_timestamp = change_timestamp;
-  dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_SAFE);
+  dt_image_cache_write_release_info(cache, img,
+    DT_IMAGE_CACHE_SAFE, "dt_image_cache_set_change_timestamp_from_image");
 }
 
 void dt_image_cache_unset_change_timestamp(dt_image_cache_t *cache,
@@ -445,7 +446,8 @@ void dt_image_cache_unset_change_timestamp(dt_image_cache_t *cache,
   dt_image_t *img = (dt_image_t *)entry->data;
   img->cache_entry = entry;
   img->change_timestamp = 0;
-  dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_SAFE);
+  dt_image_cache_write_release_info(cache, img,
+    DT_IMAGE_CACHE_SAFE, "dt_image_cache_unset_change_timestamp");
 }
 
 void dt_image_cache_set_export_timestamp(dt_image_cache_t *cache,
@@ -458,7 +460,8 @@ void dt_image_cache_set_export_timestamp(dt_image_cache_t *cache,
   dt_image_t *img = (dt_image_t *)entry->data;
   img->cache_entry = entry;
   img->export_timestamp = dt_datetime_now_to_gtimespan();
-  dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_SAFE);
+  dt_image_cache_write_release_info(cache, img,
+    DT_IMAGE_CACHE_SAFE, "dt_image_cache_set_export_timestamp");
 }
 
 void dt_image_cache_set_print_timestamp(dt_image_cache_t *cache,
@@ -471,7 +474,8 @@ void dt_image_cache_set_print_timestamp(dt_image_cache_t *cache,
   dt_image_t *img = (dt_image_t *)entry->data;
   img->cache_entry = entry;
   img->print_timestamp = dt_datetime_now_to_gtimespan();
-  dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_SAFE);
+  dt_image_cache_write_release_info(cache, img,
+    DT_IMAGE_CACHE_SAFE, "dt_image_cache_set_print_timestamp");
 }
 
 // clang-format off
