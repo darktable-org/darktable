@@ -1465,7 +1465,8 @@ static int32_t dt_control_refresh_exif_run(dt_job_t *job)
       if(img)
       {
         dt_exif_read(img, sourcefile);
-        dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
+        dt_image_cache_write_release_info(darktable.image_cache, img,
+          DT_IMAGE_CACHE_SAFE, "dt_control_refresh_exif_run");
       }
       else
         dt_print(DT_DEBUG_ALWAYS,

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2211,7 +2211,8 @@ static void _color_harmony_changed_record(dt_lib_histogram_t *d)
          &d->harmony_guide,
          sizeof(dt_color_harmony_guide_t));
 
-  dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
+  dt_image_cache_write_release_info(darktable.image_cache, img,
+    DT_IMAGE_CACHE_SAFE, "histogram color_harmony_changed_record");
 }
 
 static gboolean _color_harmony_clicked(GtkWidget *button,
