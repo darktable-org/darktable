@@ -2211,8 +2211,9 @@ static void _color_harmony_changed_record(dt_lib_histogram_t *d)
          &d->harmony_guide,
          sizeof(dt_color_harmony_guide_t));
 
-  dt_image_cache_write_release_info(darktable.image_cache, img,
-    DT_IMAGE_CACHE_SAFE, "histogram color_harmony_changed_record");
+  dt_image_cache_write_release_info
+    (darktable.image_cache, img,
+     DT_IMAGE_CACHE_SAFE, "histogram color_harmony_changed_record");
 }
 
 static gboolean _color_harmony_clicked(GtkWidget *button,

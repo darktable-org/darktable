@@ -35,7 +35,7 @@ void dt_grouping_add_to_group(const dt_imgid_t group_id,
   dt_image_t *img = dt_image_cache_get(darktable.image_cache, image_id, 'w');
   img->group_id = group_id;
   dt_image_cache_write_release_info(darktable.image_cache, img,
-    DT_IMAGE_CACHE_SAFE, "dt_grouping_add_to_group");
+                                    DT_IMAGE_CACHE_SAFE, "dt_grouping_add_to_group");
   GList *imgs = NULL;
   imgs = g_list_prepend(imgs, GINT_TO_POINTER(image_id));
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
@@ -70,7 +70,7 @@ dt_imgid_t dt_grouping_remove_from_group(const dt_imgid_t image_id)
       dt_image_t *other_img = dt_image_cache_get(darktable.image_cache, other_id, 'w');
       other_img->group_id = new_group_id;
       dt_image_cache_write_release_info(darktable.image_cache, other_img,
-        DT_IMAGE_CACHE_SAFE, "dt_grouping_add_to_group");
+                                        DT_IMAGE_CACHE_SAFE, "dt_grouping_add_to_group");
       imgs = g_list_prepend(imgs, GINT_TO_POINTER(other_id));
     }
     sqlite3_finalize(stmt);
@@ -100,7 +100,7 @@ dt_imgid_t dt_grouping_remove_from_group(const dt_imgid_t image_id)
     new_group_id = wimg->group_id;
     wimg->group_id = image_id;
     dt_image_cache_write_release_info(darktable.image_cache, wimg,
-      DT_IMAGE_CACHE_SAFE, "dt_grouping_add_to_group");
+                                      DT_IMAGE_CACHE_SAFE, "dt_grouping_add_to_group");
     imgs = g_list_prepend(imgs, GINT_TO_POINTER(image_id));
     // refresh also the group leader which may be alone now
     imgs = g_list_prepend(imgs, GINT_TO_POINTER(img_group_id));
@@ -129,7 +129,8 @@ dt_imgid_t dt_grouping_change_representative(const dt_imgid_t image_id)
     dt_image_t *other_img = dt_image_cache_get(darktable.image_cache, other_id, 'w');
     other_img->group_id = image_id;
     dt_image_cache_write_release_info(darktable.image_cache, other_img,
-      DT_IMAGE_CACHE_SAFE, "dt_grouping_change_representative");
+                                      DT_IMAGE_CACHE_SAFE,
+                                      "dt_grouping_change_representative");
     imgs = g_list_prepend(imgs, GINT_TO_POINTER(other_id));
   }
   sqlite3_finalize(stmt);

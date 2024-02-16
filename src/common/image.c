@@ -618,7 +618,7 @@ static void _set_location(const dt_imgid_t imgid, const dt_image_geoloc_t *geolo
   memcpy(&image->geoloc, geoloc, sizeof(dt_image_geoloc_t));
 
   dt_image_cache_write_release_info(darktable.image_cache, image,
-    DT_IMAGE_CACHE_SAFE, "_set_location");
+                                    DT_IMAGE_CACHE_SAFE, "_set_location");
 }
 
 static void _set_datetime(const dt_imgid_t imgid, const char *datetime)
@@ -629,7 +629,7 @@ static void _set_datetime(const dt_imgid_t imgid, const char *datetime)
   dt_datetime_exif_to_img(image, datetime);
 
   dt_image_cache_write_release_info(darktable.image_cache, image,
-    DT_IMAGE_CACHE_SAFE, "_set_datetime");
+                                    DT_IMAGE_CACHE_SAFE, "_set_datetime");
 }
 
 static void _pop_undo(gpointer user_data,
@@ -1090,7 +1090,8 @@ void dt_image_set_raw_aspect_ratio(const dt_imgid_t imgid)
 
   /* store */
   dt_image_cache_write_release_info(darktable.image_cache, image,
-    DT_IMAGE_CACHE_SAFE, "dt_image_set_raw_aspect_ratio");
+                                    DT_IMAGE_CACHE_SAFE,
+                                    "dt_image_set_raw_aspect_ratio");
 }
 
 void dt_image_set_aspect_ratio_to(const dt_imgid_t imgid,
@@ -1152,7 +1153,8 @@ void dt_image_reset_aspect_ratio(const dt_imgid_t imgid, const gboolean raise)
 
   /* store */
   dt_image_cache_write_release_info(darktable.image_cache, image,
-    DT_IMAGE_CACHE_SAFE, "dt_image_reset_aspect_ratio");
+                                    DT_IMAGE_CACHE_SAFE,
+                                    "dt_image_reset_aspect_ratio");
 
   if(raise && darktable.collection->params.sorts[DT_COLLECTION_SORT_ASPECT_RATIO])
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
@@ -1858,7 +1860,8 @@ static dt_imgid_t _image_import_internal(const dt_filmid_t film_id,
       {
         other_img->group_id = id;
         dt_image_cache_write_release_info(darktable.image_cache, other_img,
-          DT_IMAGE_CACHE_SAFE, "_image_import_internal");
+                                          DT_IMAGE_CACHE_SAFE,
+                                          "_image_import_internal");
         sqlite3_stmt *stmt3;
         DT_DEBUG_SQLITE3_PREPARE_V2
           (dt_database_get(darktable.db),
@@ -1870,7 +1873,8 @@ static dt_imgid_t _image_import_internal(const dt_filmid_t film_id,
           dt_image_t *group_img = dt_image_cache_get(darktable.image_cache, other_id, 'w');
           group_img->group_id = id;
           dt_image_cache_write_release_info(darktable.image_cache, group_img,
-                                       DT_IMAGE_CACHE_SAFE, "_image_import_internal");
+                                            DT_IMAGE_CACHE_SAFE,
+                                            "_image_import_internal");
         }
         group_id = id;
         sqlite3_finalize(stmt3);

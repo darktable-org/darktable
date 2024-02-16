@@ -1084,21 +1084,21 @@ static _dt_delete_status_t delete_file_from_disk
          || !(send_to_trash || res & _DT_DELETE_DIALOG_CHOICE_PHYSICAL))
       {
         const char *filename_display = NULL;
-        GFileInfo *gfileinfo = g_file_query_info(
-            gfile,
-            G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME,
-            G_FILE_QUERY_INFO_NONE,
-            NULL /*cancellable*/,
-            NULL /*error*/);
+        GFileInfo *gfileinfo =
+          g_file_query_info(gfile,
+                            G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME,
+                            G_FILE_QUERY_INFO_NONE,
+                            NULL /*cancellable*/,
+                            NULL /*error*/);
         if(gfileinfo != NULL)
           filename_display = g_file_info_get_attribute_string(
               gfileinfo,
               G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME);
 
-        res = _dt_delete_file_display_modal_dialog(
-            send_to_trash,
-            filename_display == NULL ? filename : filename_display,
-            gerror == NULL ? NULL : gerror->message);
+        res = _dt_delete_file_display_modal_dialog
+          (send_to_trash,
+           filename_display == NULL ? filename : filename_display,
+           gerror == NULL ? NULL : gerror->message);
         g_object_unref(gfileinfo);
 
         if(res & _DT_DELETE_DIALOG_CHOICE_ALL)
@@ -1466,7 +1466,8 @@ static int32_t dt_control_refresh_exif_run(dt_job_t *job)
       {
         dt_exif_read(img, sourcefile);
         dt_image_cache_write_release_info(darktable.image_cache, img,
-          DT_IMAGE_CACHE_SAFE, "dt_control_refresh_exif_run");
+                                          DT_IMAGE_CACHE_SAFE,
+                                          "dt_control_refresh_exif_run");
       }
       else
         dt_print(DT_DEBUG_ALWAYS,
@@ -2339,10 +2340,11 @@ static int _control_import_image_copy(const char *filename,
     {
       GError *error = NULL;
       GFile *gfile = g_file_new_for_path(filename);
-      GFileInfo *info = g_file_query_info(gfile,
-                                G_FILE_ATTRIBUTE_STANDARD_NAME ","
-                                G_FILE_ATTRIBUTE_TIME_MODIFIED,
-                                G_FILE_QUERY_INFO_NONE, NULL, &error);
+      GFileInfo *info = g_file_query_info
+        (gfile,
+         G_FILE_ATTRIBUTE_STANDARD_NAME ","
+         G_FILE_ATTRIBUTE_TIME_MODIFIED,
+         G_FILE_QUERY_INFO_NONE, NULL, &error);
       const char *fn = g_file_info_get_name(info);
       // FIXME set a routine common with import.c
       const time_t datetime =
