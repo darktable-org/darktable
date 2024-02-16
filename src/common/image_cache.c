@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@
 #include <sqlite3.h>
 #include <inttypes.h>
 
-void dt_image_cache_allocate(void *data,
+static void _image_cache_allocate(void *data,
                              dt_cache_entry_t *entry)
 {
   entry->cost = sizeof(dt_image_t);
@@ -185,7 +185,7 @@ void dt_image_cache_allocate(void *data,
   // concurrencykit..
 }
 
-void dt_image_cache_deallocate(void *data, dt_cache_entry_t *entry)
+static void _image_cache_deallocate(void *data, dt_cache_entry_t *entry)
 {
   dt_image_t *img = (dt_image_t *)entry->data;
   g_free(img->profile);
@@ -204,8 +204,8 @@ void dt_image_cache_init(dt_image_cache_t *cache)
   const uint32_t max_mem = 50 * 1024 * 1024;
   const uint32_t num = (uint32_t)(1.5f * max_mem / sizeof(dt_image_t));
   dt_cache_init(&cache->cache, sizeof(dt_image_t), max_mem);
-  dt_cache_set_allocate_callback(&cache->cache, &dt_image_cache_allocate, cache);
-  dt_cache_set_cleanup_callback(&cache->cache, &dt_image_cache_deallocate, cache);
+  dt_cache_set_allocate_callback(&cache->cache, &_image_cache_allocate, cache);
+  dt_cache_set_cleanup_callback(&cache->cache, &_image_cache_deallocate, cache);
 
   dt_print(DT_DEBUG_CACHE, "[image_cache] has %d entries\n", num);
 }
@@ -259,12 +259,16 @@ void dt_image_cache_read_release(dt_image_cache_t *cache,
 }
 
 // drops the write privileges on an image struct.
-// this triggers a write-through to sql, and if the setting
-// is present, also to xmp sidecar files (safe setting).
-void dt_image_cache_write_release(dt_image_cache_t *cache,
+// this triggers a write-through to sql, and if
+// a) mode == DT_IMAGE_CACHE_SAFE
+// b) sidecar writing is desired via conf setting
+// also to xmp sidecar files.
+void dt_image_cache_write_release_info(dt_image_cache_t *cache,
                                   dt_image_t *img,
-                                  const dt_image_cache_write_mode_t mode)
+                                  const dt_image_cache_write_mode_t mode,
+                                  const char *info)
 {
+  const double start = dt_get_debug_wtime();
   union {
       struct dt_image_raw_parameters_t s;
       uint32_t u;
@@ -279,7 +283,7 @@ void dt_image_cache_write_release(dt_image_cache_t *cache,
   if(!dt_is_valid_imgid(img->id))
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[image_cache_write_release] FATAL invalid image id %d\n", img->id);
+             "[image_cache_write_release] from `%s`. FATAL invalid image id %d\n", info, img->id);
     return;
   }
 
@@ -359,22 +363,32 @@ void dt_image_cache_write_release(dt_image_cache_t *cache,
   const int rc = sqlite3_step(stmt);
   if(rc != SQLITE_DONE)
     dt_print(DT_DEBUG_ALWAYS,
-             "[image_cache_write_release] sqlite3 error %d (%s) for imgid %d\n",
+             "[image_cache_write_release] from `%s' sqlite3 error %d (%s) for imgid %d\n",
+             info,
              rc,
              sqlite3_errmsg(dt_database_get(darktable.db)),
              img->id);
   sqlite3_finalize(stmt);
 
-  // TODO: make this work in relaxed mode, too.
   if(mode == DT_IMAGE_CACHE_SAFE)
   {
-    // rest about sidecars:
-    // also synch dttags file:
     dt_image_write_sidecar_file(img->id);
+    if(info)
+    {
+      const double spent = dt_get_debug_wtime() - start;
+      dt_print(DT_DEBUG_CACHE,
+        "[image_cache_write_release] from `%s', imgid=%i took %.3fs\n", info, img->id, spent);
+    }
   }
   dt_cache_release(&cache->cache, img->cache_entry);
 }
 
+void dt_image_cache_write_release(dt_image_cache_t *cache,
+                                  dt_image_t *img,
+                                  const dt_image_cache_write_mode_t mode)
+{
+  dt_image_cache_write_release_info(cache, img, mode, NULL);
+}
 
 // remove the image from the cache
 void dt_image_cache_remove(dt_image_cache_t *cache,
@@ -394,7 +408,7 @@ void dt_image_cache_set_change_timestamp(dt_image_cache_t *cache,
   dt_image_t *img = (dt_image_t *)entry->data;
   img->cache_entry = entry;
   img->change_timestamp = dt_datetime_now_to_gtimespan();
-  dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_SAFE);
+  dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_RELAXED);
 }
 
 void dt_image_cache_set_change_timestamp_from_image(dt_image_cache_t *cache,
@@ -414,7 +428,7 @@ void dt_image_cache_set_change_timestamp_from_image(dt_image_cache_t *cache,
   dt_image_t *img = (dt_image_t *)entry->data;
   img->cache_entry = entry;
   img->change_timestamp = change_timestamp;
-  dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_SAFE);
+  dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_RELAXED);
 }
 
 void dt_image_cache_unset_change_timestamp(dt_image_cache_t *cache,
@@ -427,7 +441,7 @@ void dt_image_cache_unset_change_timestamp(dt_image_cache_t *cache,
   dt_image_t *img = (dt_image_t *)entry->data;
   img->cache_entry = entry;
   img->change_timestamp = 0;
-  dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_SAFE);
+  dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_RELAXED);
 }
 
 void dt_image_cache_set_export_timestamp(dt_image_cache_t *cache,
@@ -440,7 +454,7 @@ void dt_image_cache_set_export_timestamp(dt_image_cache_t *cache,
   dt_image_t *img = (dt_image_t *)entry->data;
   img->cache_entry = entry;
   img->export_timestamp = dt_datetime_now_to_gtimespan();
-  dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_SAFE);
+  dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_RELAXED);
 }
 
 void dt_image_cache_set_print_timestamp(dt_image_cache_t *cache,
@@ -453,7 +467,7 @@ void dt_image_cache_set_print_timestamp(dt_image_cache_t *cache,
   dt_image_t *img = (dt_image_t *)entry->data;
   img->cache_entry = entry;
   img->print_timestamp = dt_datetime_now_to_gtimespan();
-  dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_SAFE);
+  dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_RELAXED);
 }
 
 // clang-format off

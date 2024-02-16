@@ -617,7 +617,8 @@ static void _set_location(const dt_imgid_t imgid, const dt_image_geoloc_t *geolo
 
   memcpy(&image->geoloc, geoloc, sizeof(dt_image_geoloc_t));
 
-  dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+  dt_image_cache_write_release_info(darktable.image_cache, image,
+    DT_IMAGE_CACHE_SAFE, "_set_location");
 }
 
 static void _set_datetime(const dt_imgid_t imgid, const char *datetime)
@@ -627,7 +628,8 @@ static void _set_datetime(const dt_imgid_t imgid, const char *datetime)
 
   dt_datetime_exif_to_img(image, datetime);
 
-  dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+  dt_image_cache_write_release_info(darktable.image_cache, image,
+    DT_IMAGE_CACHE_SAFE, "_set_datetime");
 }
 
 static void _pop_undo(gpointer user_data,
@@ -1087,7 +1089,8 @@ void dt_image_set_raw_aspect_ratio(const dt_imgid_t imgid)
     image->aspect_ratio = (float )image->height / (float )image->width;
 
   /* store */
-  dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+  dt_image_cache_write_release_info(darktable.image_cache, image,
+    DT_IMAGE_CACHE_SAFE, "dt_image_set_raw_aspect_ratio");
 }
 
 void dt_image_set_aspect_ratio_to(const dt_imgid_t imgid,
@@ -1148,7 +1151,8 @@ void dt_image_reset_aspect_ratio(const dt_imgid_t imgid, const gboolean raise)
   image->aspect_ratio = 0.f;
 
   /* store */
-  dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+  dt_image_cache_write_release_info(darktable.image_cache, image,
+    DT_IMAGE_CACHE_SAFE, "dt_image_reset_aspect_ratio");
 
   if(raise && darktable.collection->params.sorts[DT_COLLECTION_SORT_ASPECT_RATIO])
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
@@ -1697,18 +1701,17 @@ static int _image_read_duplicates(const uint32_t id,
   return count_xmps_processed;
 }
 
-static uint32_t _image_import_internal(const int32_t film_id,
+static dt_imgid_t _image_import_internal(const dt_filmid_t film_id,
                                        const char *filename,
                                        const gboolean override_ignore_nonraws,
                                        const gboolean lua_locking,
                                        const gboolean raise_signals)
 {
-  const dt_imageio_write_xmp_t xmp_mode = dt_image_get_xmp_mode();
   char *normalized_filename = dt_util_normalize_path(filename);
   if(!normalized_filename || !dt_util_test_image_file(normalized_filename))
   {
     g_free(normalized_filename);
-    return 0;
+    return NO_IMGID;
   }
   const char *cc = normalized_filename + strlen(normalized_filename);
   for(; *cc != '.' && cc > normalized_filename; cc--)
@@ -1716,7 +1719,7 @@ static uint32_t _image_import_internal(const int32_t film_id,
   if(!strcasecmp(cc, ".dt") || !strcasecmp(cc, ".dttags") || !strcasecmp(cc, ".xmp"))
   {
     g_free(normalized_filename);
-    return 0;
+    return NO_IMGID;
   }
   char *ext = g_ascii_strdown(cc + 1, -1);
   // If this function is called with argument to obey "ignore non-raws" flag
@@ -1731,7 +1734,7 @@ static uint32_t _image_import_internal(const int32_t film_id,
   {
     g_free(normalized_filename);
     g_free(ext);
-    return 0;
+    return NO_IMGID;
   }
   int supported = 0;
   for(const char **i = dt_supported_extensions; *i != NULL; i++)
@@ -1744,7 +1747,7 @@ static uint32_t _image_import_internal(const int32_t film_id,
   {
     g_free(normalized_filename);
     g_free(ext);
-    return 0;
+    return NO_IMGID;
   }
   int rc;
   sqlite3_stmt *stmt;
@@ -1854,7 +1857,8 @@ static uint32_t _image_import_internal(const int32_t film_id,
       if(!(dt_imageio_is_raw_by_extension(other_ext) || !strcmp(other_ext, "dng")))
       {
         other_img->group_id = id;
-        dt_image_cache_write_release(darktable.image_cache, other_img, DT_IMAGE_CACHE_SAFE);
+        dt_image_cache_write_release_info(darktable.image_cache, other_img,
+          DT_IMAGE_CACHE_SAFE, "_image_import_internal");
         sqlite3_stmt *stmt3;
         DT_DEBUG_SQLITE3_PREPARE_V2
           (dt_database_get(darktable.db),
@@ -1865,8 +1869,8 @@ static uint32_t _image_import_internal(const int32_t film_id,
           other_id = sqlite3_column_int(stmt3, 0);
           dt_image_t *group_img = dt_image_cache_get(darktable.image_cache, other_id, 'w');
           group_img->group_id = id;
-          dt_image_cache_write_release(darktable.image_cache, group_img,
-                                       DT_IMAGE_CACHE_SAFE);
+          dt_image_cache_write_release_info(darktable.image_cache, group_img,
+                                       DT_IMAGE_CACHE_SAFE, "_image_import_internal");
         }
         group_id = id;
         sqlite3_finalize(stmt3);
@@ -1956,9 +1960,8 @@ static uint32_t _image_import_internal(const int32_t film_id,
   // make sure that there are no stale thumbnails left
   dt_mipmap_cache_remove(darktable.mipmap_cache, id);
 
-  //synch database entries to xmp
-  if(xmp_mode == DT_WRITE_XMP_ALWAYS)
-    dt_image_synch_all_xmp(normalized_filename);
+  // Always keep write timestamp in database and possibly write xmp
+  dt_image_synch_all_xmp(normalized_filename);
 
   g_free(imgfname);
   g_free(basename);
@@ -2646,7 +2649,7 @@ int32_t dt_image_copy(const dt_imgid_t imgid, const int32_t filmid)
   return dt_image_copy_rename(imgid, filmid, NULL);
 }
 
-int dt_image_local_copy_set(const dt_imgid_t imgid)
+gboolean dt_image_local_copy_set(const dt_imgid_t imgid)
 {
   gchar srcpath[PATH_MAX] = { 0 };
   gchar destpath[PATH_MAX] = { 0 };
@@ -2660,7 +2663,7 @@ int dt_image_local_copy_set(const dt_imgid_t imgid)
   if(!g_file_test(srcpath, G_FILE_TEST_IS_REGULAR))
   {
     dt_control_log(_("cannot create local copy when the original file is not accessible."));
-    return 1;
+    return TRUE;
   }
 
   if(!g_file_test(destpath, G_FILE_TEST_EXISTS))
@@ -2676,7 +2679,7 @@ int dt_image_local_copy_set(const dt_imgid_t imgid)
       dt_control_log(_("cannot create local copy."));
       g_object_unref(dest);
       g_object_unref(src);
-      return 1;
+      return TRUE;
     }
 
     g_object_unref(dest);
@@ -2690,13 +2693,13 @@ int dt_image_local_copy_set(const dt_imgid_t imgid)
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
 
   dt_control_queue_redraw_center();
-  return 0;
+  return FALSE;
 }
 
-static int _nb_other_local_copy_for(const dt_imgid_t imgid)
+static gboolean _nb_other_local_copy_for(const dt_imgid_t imgid)
 {
   sqlite3_stmt *stmt;
-  int result = 1;
+  gboolean result = TRUE;
 
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -2719,7 +2722,7 @@ static int _nb_other_local_copy_for(const dt_imgid_t imgid)
   return result;
 }
 
-int dt_image_local_copy_reset(const dt_imgid_t imgid)
+gboolean dt_image_local_copy_reset(const dt_imgid_t imgid)
 {
   gchar destpath[PATH_MAX] = { 0 };
   gchar locppath[PATH_MAX] = { 0 };
@@ -2736,7 +2739,7 @@ int dt_image_local_copy_reset(const dt_imgid_t imgid)
   dt_image_cache_read_release(darktable.image_cache, imgr);
 
   if(!local_copy_exists)
-    return 0;
+    return FALSE;
 
   // check that the original file is accessible
 
@@ -2754,7 +2757,7 @@ int dt_image_local_copy_reset(const dt_imgid_t imgid)
      && !g_file_test(destpath, G_FILE_TEST_EXISTS))
   {
     dt_control_log(_("cannot remove local copy when the original file is not accessible."));
-    return 1;
+    return TRUE;
   }
 
   // get name of local copy
@@ -2800,7 +2803,7 @@ int dt_image_local_copy_reset(const dt_imgid_t imgid)
 
   dt_control_queue_redraw_center();
 
-  return 0;
+  return FALSE;
 }
 
 // *******************************************************
