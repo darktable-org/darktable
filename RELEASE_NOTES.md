@@ -24,11 +24,11 @@ You are strongly advised to take a backup first.
 
 #### Important note: to make sure that darktable can keep on supporting the raw file format for your camera, *please* read [this post](https://discuss.pixls.us/t/raw-samples-wanted/5420?u=lebedevri) on how/what raw samples you can contribute to ensure that we have the *full* raw sample set for your camera under CC0 license!
 
-Since darktable 4.4:
+Since darktable 4.6.0:
 
-- 1648 commits to darktable+rawspeed
-- 553 pull requests handled
-- 49 issues closed
+- 606 commits to darktable+rawspeed
+- 57 pull requests handled
+- 12 issues closed
 
 
 ## The Big Ones
@@ -180,15 +180,45 @@ Since darktable 4.4:
 - Canon IXY 220F (dng, chdk)
 - Canon PowerShot SX220 HS (chdk)
 - Fujifilm FinePix SL1000
+- Fujifilm GFX100 II (compressed)
 - Fujifilm X-S20 (compressed)
+- Hasselblad CFV-50c
+- Hasselblad CFV-50c
+- Hasselblad CFV-50c
+- Hasselblad CFV-50c
+- Hasselblad CFV-50c
+- Hasselblad CFV-50c
+- Hasselblad CFV-50c
+- Hasselblad CFV-50c
+- Hasselblad CFV-50c
+- Hasselblad CFV-50c
+- Hasselblad CFV-50c
+- Hasselblad CFV II 50C
+- Hasselblad CFV II 50C
+- Hasselblad CFV 100C
+- Hasselblad CFV 100C
 - ImBack ImB35mm (chdk)
+- Leica M (Typ 262) (dng)
+- Leica M-D (Typ 262) (dng)
 - Leica M10-D (dng)
 - Leica M10-P (dng)
 - Leica M10-R (dng)
 - Leica M11-P (dng)
 - Leica Q2 Monochrom (dng)
+- Leica S (Typ 007) (dng)
+- Leica S2 (dng)
+- Leica S3 (dng)
 - Leica SL2 (dng)
 - Leica SL2-S (dng)
+- Leica T (Typ 701) (dng)
+- Leica TL (dng)
+- Leica TL2 (dng)
+- Leica V-Lux 4 (4:3, 3:2, 1:1, 16:9)
+- Leica V-Lux 5 (3:2)
+- Leica X (Typ 113) (dng)
+- Leica X Vario (Typ 107) (dng)
+- Leica X-U (Typ 113) (dng)
+- Leica X1 (dng)
 - Nikon Coolpix A1000 (12bit-uncompressed)
 - Nikon Z f (14bit-compressed)
 - OM System TG-7
@@ -203,11 +233,14 @@ Since darktable 4.4:
 - Panasonic DMC-GM1S (4:3, 3:2, 16:9, 1:1)
 - Pentax K-3 Mark III Monochrome
 - Pentax KF
+- Pentax Q-S1 (dng)
+- Pentax Q10 (dng)
 - Samsung EK-GN120
 - Samsung G920F (dng)
 - Samsung G935F (dng)
 - Samsung GX10 (dng)
 - Samsung GX20 (dng)
+- Samsung NX3300
 - Sigma fp (dng)
 - Sigma fp L (dng)
 - Sigma sd Quattro (dng)
@@ -224,15 +257,18 @@ Since darktable 4.4:
 - Leica M (Typ 240)
 - Olympus E-P7
 - Olympus TG-6
+- Phase One IQ180
 - Sony ILCE-7CM2
 
 ### Noise Profiles
 
 - Canon IXY 220F
+- Nikon Z 8
 - Nikon Z f
 - Olympus E-P7
 - Pentax *ist DS
 - Sony ILCE-6700
+- Sony ILCE-7CM2
 
 ### Missing Compression Mode Support
 
