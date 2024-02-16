@@ -551,8 +551,8 @@ int32_t dt_image_copy(const dt_imgid_t imgid, const int32_t filmid);
 dt_imgid_t dt_image_copy_rename(const dt_imgid_t imgid,
                                 const int32_t filmid,
                                 const gchar *newname);
-int dt_image_local_copy_set(const dt_imgid_t imgid);
-int dt_image_local_copy_reset(const dt_imgid_t imgid);
+gboolean dt_image_local_copy_set(const dt_imgid_t imgid);
+gboolean dt_image_local_copy_reset(const dt_imgid_t imgid);
 /* check whether it is safe to remove a file */
 gboolean dt_image_safe_remove(const dt_imgid_t imgid);
 /* try to sync .xmp for all local copies */

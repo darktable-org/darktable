@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -108,7 +108,7 @@ dt_imgid_t dt_grouping_remove_from_group(const dt_imgid_t image_id)
 }
 
 /** make an image the representative of the group it is in */
-int dt_grouping_change_representative(const dt_imgid_t image_id)
+dt_imgid_t dt_grouping_change_representative(const dt_imgid_t image_id)
 {
   sqlite3_stmt *stmt;
 
@@ -122,7 +122,7 @@ int dt_grouping_change_representative(const dt_imgid_t image_id)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, group_id);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    const int other_id = sqlite3_column_int(stmt, 0);
+    const dt_imgid_t other_id = sqlite3_column_int(stmt, 0);
     dt_image_t *other_img = dt_image_cache_get(darktable.image_cache, other_id, 'w');
     other_img->group_id = image_id;
     dt_image_cache_write_release(darktable.image_cache, other_img, DT_IMAGE_CACHE_SAFE);

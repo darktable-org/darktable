@@ -2646,7 +2646,7 @@ int32_t dt_image_copy(const dt_imgid_t imgid, const int32_t filmid)
   return dt_image_copy_rename(imgid, filmid, NULL);
 }
 
-int dt_image_local_copy_set(const dt_imgid_t imgid)
+gboolean dt_image_local_copy_set(const dt_imgid_t imgid)
 {
   gchar srcpath[PATH_MAX] = { 0 };
   gchar destpath[PATH_MAX] = { 0 };
@@ -2660,7 +2660,7 @@ int dt_image_local_copy_set(const dt_imgid_t imgid)
   if(!g_file_test(srcpath, G_FILE_TEST_IS_REGULAR))
   {
     dt_control_log(_("cannot create local copy when the original file is not accessible."));
-    return 1;
+    return TRUE;
   }
 
   if(!g_file_test(destpath, G_FILE_TEST_EXISTS))
@@ -2676,7 +2676,7 @@ int dt_image_local_copy_set(const dt_imgid_t imgid)
       dt_control_log(_("cannot create local copy."));
       g_object_unref(dest);
       g_object_unref(src);
-      return 1;
+      return TRUE;
     }
 
     g_object_unref(dest);
@@ -2690,13 +2690,13 @@ int dt_image_local_copy_set(const dt_imgid_t imgid)
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
 
   dt_control_queue_redraw_center();
-  return 0;
+  return FALSE;
 }
 
-static int _nb_other_local_copy_for(const dt_imgid_t imgid)
+static gboolean _nb_other_local_copy_for(const dt_imgid_t imgid)
 {
   sqlite3_stmt *stmt;
-  int result = 1;
+  gboolean result = TRUE;
 
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -2719,7 +2719,7 @@ static int _nb_other_local_copy_for(const dt_imgid_t imgid)
   return result;
 }
 
-int dt_image_local_copy_reset(const dt_imgid_t imgid)
+gboolean dt_image_local_copy_reset(const dt_imgid_t imgid)
 {
   gchar destpath[PATH_MAX] = { 0 };
   gchar locppath[PATH_MAX] = { 0 };
@@ -2736,7 +2736,7 @@ int dt_image_local_copy_reset(const dt_imgid_t imgid)
   dt_image_cache_read_release(darktable.image_cache, imgr);
 
   if(!local_copy_exists)
-    return 0;
+    return FALSE;
 
   // check that the original file is accessible
 
@@ -2754,7 +2754,7 @@ int dt_image_local_copy_reset(const dt_imgid_t imgid)
      && !g_file_test(destpath, G_FILE_TEST_EXISTS))
   {
     dt_control_log(_("cannot remove local copy when the original file is not accessible."));
-    return 1;
+    return TRUE;
   }
 
   // get name of local copy
