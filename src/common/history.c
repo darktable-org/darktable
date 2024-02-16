@@ -54,7 +54,8 @@ static void _remove_preset_flag(const dt_imgid_t imgid)
 
   // write through to sql+xmp
   dt_image_cache_write_release_info(darktable.image_cache, image,
-    DT_IMAGE_CACHE_SAFE, "_remove_preset_flag");
+                                    DT_IMAGE_CACHE_SAFE,
+                                    "_remove_preset_flag");
 }
 
 void dt_history_delete_on_image_ext(const dt_imgid_t imgid,

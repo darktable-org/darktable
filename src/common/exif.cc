@@ -370,11 +370,11 @@ public:
 static void _exif_import_tags(dt_image_t *img, Exiv2::XmpData::iterator &pos);
 
 static void _read_xmp_timestamps(Exiv2::XmpData &xmpData,
-                                dt_image_t *img,
-                                const int xmp_version);
+                                 dt_image_t *img,
+                                 const int xmp_version);
 static void _read_xmp_harmony_guide(Exiv2::XmpData &xmpData,
-                                   dt_image_t *img,
-                                   const int xmp_version);
+                                    dt_image_t *img,
+                                    const int xmp_version);
 
 // this array should contain all XmpBag and XmpSeq keys used by dt
 const char *dt_xmp_keys[]
@@ -410,8 +410,8 @@ static const guint dt_xmp_keys_n = G_N_ELEMENTS(dt_xmp_keys);
 // inspired by ufraw_exiv2.cc:
 
 static void _strlcpy_to_utf8(char *dest, size_t dest_max,
-                               Exiv2::ExifData::const_iterator &pos,
-                               Exiv2::ExifData &exifData)
+                             Exiv2::ExifData::const_iterator &pos,
+                             Exiv2::ExifData &exifData)
 {
   std::string str = pos->print(&exifData);
 
@@ -453,8 +453,8 @@ static void _remove_known_keys(Exiv2::XmpData &xmp)
 }
 
 static void _remove_exif_keys(Exiv2::ExifData &exif,
-                                const char *keys[],
-                                const unsigned int n_keys)
+                              const char *keys[],
+                              const unsigned int n_keys)
 {
   for(unsigned int i = 0; i < n_keys; i++)
   {
@@ -475,8 +475,8 @@ static void _remove_exif_keys(Exiv2::ExifData &exif,
 }
 
 static void _remove_xmp_keys(Exiv2::XmpData &xmp,
-                               const char *keys[],
-                               const unsigned int n_keys)
+                             const char *keys[],
+                             const unsigned int n_keys)
 {
   for(unsigned int i = 0; i < n_keys; i++)
   {
@@ -497,8 +497,8 @@ static void _remove_xmp_keys(Exiv2::XmpData &xmp,
 }
 
 static bool _exif_read_xmp_tag(Exiv2::XmpData &xmpData,
-                                 Exiv2::XmpData::iterator *pos,
-                                 string key)
+                               Exiv2::XmpData::iterator *pos,
+                               string key)
 {
   try
   {
@@ -4160,8 +4160,8 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
 
 // add history metadata to XmpData
 static void _set_xmp_dt_history(Exiv2::XmpData &xmpData,
-                                  const dt_imgid_t imgid,
-                                  int history_end)
+                                const dt_imgid_t imgid,
+                                int history_end)
 {
   sqlite3_stmt *stmt;
 
@@ -4362,7 +4362,7 @@ static void _set_xmp_timestamps(Exiv2::XmpData &xmpData,
 }
 
 static void _set_xmp_harmony_guide(Exiv2::XmpData &xmpData,
-                                  const dt_imgid_t imgid)
+                                   const dt_imgid_t imgid)
 {
   static const char *keys[] =
   {
@@ -4431,8 +4431,8 @@ void _read_xmp_timestamps(Exiv2::XmpData &xmpData,
 
 // read color harmony guides from XmpData
 void _read_xmp_harmony_guide(Exiv2::XmpData &xmpData,
-                            dt_image_t *img,
-                            const int xmp_version)
+                             dt_image_t *img,
+                             const int xmp_version)
 {
   Exiv2::XmpData::iterator pos;
 
@@ -4468,9 +4468,9 @@ static void _remove_xmp_exif_geotag(Exiv2::XmpData &xmpData)
 }
 
 static void _set_xmp_exif_geotag(Exiv2::XmpData &xmpData,
-                                   double longitude,
-                                   double latitude,
-                                   const double altitude)
+                                 double longitude,
+                                 double latitude,
+                                 const double altitude)
 {
   _remove_xmp_exif_geotag(xmpData);
 
@@ -4519,8 +4519,8 @@ static void _set_xmp_exif_geotag(Exiv2::XmpData &xmpData,
 }
 
 static void _set_xmp_dt_metadata(Exiv2::XmpData &xmpData,
-                                   const dt_imgid_t imgid,
-                                   const gboolean export_flag)
+                                 const dt_imgid_t imgid,
+                                 const gboolean export_flag)
 {
   sqlite3_stmt *stmt;
   // metadata
@@ -5042,8 +5042,8 @@ const std::pair<std::array<float, 4>, bool> getRegionNormalized(
  * TODO: support Xmp.MP.RegionInfo/MPRI:Regions[i]/MPReg:Rectangle tags
  */
 static void _transform_face_tags(Exiv2::XmpData &xmp,
-                            dt_develop_t *dev,
-                            dt_dev_pixelpipe_t *pipe)
+                                 dt_develop_t *dev,
+                                 dt_dev_pixelpipe_t *pipe)
 {
   using Exiv2::XmpData;
   using Exiv2::XmpKey;
@@ -5459,7 +5459,8 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid,
 }
 
 // write xmp sidecar file: returns TRUE in case of errors
-gboolean dt_exif_xmp_write(const dt_imgid_t imgid, const char *filename)
+gboolean dt_exif_xmp_write(const dt_imgid_t imgid,
+                           const char *filename)
 {
   // refuse to write sidecar for non-existent image:
   char imgfname[PATH_MAX] = { 0 };
@@ -5634,7 +5635,7 @@ void dt_exif_get_basic_data(const uint8_t *data,
   }
 }
 
-static void _exif_log_handler(int log_level, const char *message)
+static void _exif_log_handler(const int log_level, const char *message)
 {
   if(log_level >= Exiv2::LogMsg::level())
   {

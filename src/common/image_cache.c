@@ -264,9 +264,9 @@ void dt_image_cache_read_release(dt_image_cache_t *cache,
 // b) sidecar writing is desired via conf setting
 // also to xmp sidecar files.
 void dt_image_cache_write_release_info(dt_image_cache_t *cache,
-                                  dt_image_t *img,
-                                  const dt_image_cache_write_mode_t mode,
-                                  const char *info)
+                                       dt_image_t *img,
+                                       const dt_image_cache_write_mode_t mode,
+                                       const char *info)
 {
   const double start = dt_get_debug_wtime();
   union {
@@ -283,7 +283,8 @@ void dt_image_cache_write_release_info(dt_image_cache_t *cache,
   if(!dt_is_valid_imgid(img->id))
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[image_cache_write_release] from `%s`. FATAL invalid image id %d\n", info, img->id);
+             "[image_cache_write_release] from `%s`. FATAL invalid image id %d\n",
+             info, img->id);
     return;
   }
 
@@ -377,7 +378,8 @@ void dt_image_cache_write_release_info(dt_image_cache_t *cache,
     {
       const double spent = dt_get_debug_wtime() - start;
       dt_print(DT_DEBUG_CACHE,
-        "[image_cache_write_release] from `%s', imgid=%i took %.3fs\n", info, img->id, spent);
+               "[image_cache_write_release] from `%s', imgid=%i took %.3fs\n",
+               info, img->id, spent);
     }
   }
   dt_cache_release(&cache->cache, img->cache_entry);

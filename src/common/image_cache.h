@@ -75,9 +75,9 @@ void dt_image_cache_write_release(dt_image_cache_t *cache,
                                   const dt_image_cache_write_mode_t mode);
 // As above with some additional information
 void dt_image_cache_write_release_info(dt_image_cache_t *cache,
-                                  dt_image_t *img,
-                                  const dt_image_cache_write_mode_t mode,
-                                  const char *info);
+                                       dt_image_t *img,
+                                       const dt_image_cache_write_mode_t mode,
+                                       const char *info);
 
 // remove the image from the cache
 void dt_image_cache_remove(dt_image_cache_t *cache,

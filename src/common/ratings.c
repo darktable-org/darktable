@@ -74,7 +74,7 @@ static void _ratings_apply_to_image(const dt_imgid_t imgid, const int rating)
     }
     // synch through:
     dt_image_cache_write_release_info(darktable.image_cache, image,
-      DT_IMAGE_CACHE_SAFE, "_ratings_apply_to_image");
+                                      DT_IMAGE_CACHE_SAFE, "_ratings_apply_to_image");
   }
   else
   {
@@ -328,4 +328,3 @@ const dt_action_def_t dt_action_def_rating
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
