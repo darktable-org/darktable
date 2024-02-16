@@ -1701,18 +1701,17 @@ static int _image_read_duplicates(const uint32_t id,
   return count_xmps_processed;
 }
 
-static uint32_t _image_import_internal(const int32_t film_id,
+static dt_imgid_t _image_import_internal(const dt_filmid_t film_id,
                                        const char *filename,
                                        const gboolean override_ignore_nonraws,
                                        const gboolean lua_locking,
                                        const gboolean raise_signals)
 {
-  const dt_imageio_write_xmp_t xmp_mode = dt_image_get_xmp_mode();
   char *normalized_filename = dt_util_normalize_path(filename);
   if(!normalized_filename || !dt_util_test_image_file(normalized_filename))
   {
     g_free(normalized_filename);
-    return 0;
+    return NO_IMGID;
   }
   const char *cc = normalized_filename + strlen(normalized_filename);
   for(; *cc != '.' && cc > normalized_filename; cc--)
@@ -1720,7 +1719,7 @@ static uint32_t _image_import_internal(const int32_t film_id,
   if(!strcasecmp(cc, ".dt") || !strcasecmp(cc, ".dttags") || !strcasecmp(cc, ".xmp"))
   {
     g_free(normalized_filename);
-    return 0;
+    return NO_IMGID;
   }
   char *ext = g_ascii_strdown(cc + 1, -1);
   // If this function is called with argument to obey "ignore non-raws" flag
@@ -1735,7 +1734,7 @@ static uint32_t _image_import_internal(const int32_t film_id,
   {
     g_free(normalized_filename);
     g_free(ext);
-    return 0;
+    return NO_IMGID;
   }
   int supported = 0;
   for(const char **i = dt_supported_extensions; *i != NULL; i++)
@@ -1748,7 +1747,7 @@ static uint32_t _image_import_internal(const int32_t film_id,
   {
     g_free(normalized_filename);
     g_free(ext);
-    return 0;
+    return NO_IMGID;
   }
   int rc;
   sqlite3_stmt *stmt;
@@ -1961,9 +1960,8 @@ static uint32_t _image_import_internal(const int32_t film_id,
   // make sure that there are no stale thumbnails left
   dt_mipmap_cache_remove(darktable.mipmap_cache, id);
 
-  //synch database entries to xmp
-  if(xmp_mode == DT_WRITE_XMP_ALWAYS)
-    dt_image_synch_all_xmp(normalized_filename);
+  // Always keep write timestamp in database and possibly write xmp
+  dt_image_synch_all_xmp(normalized_filename);
 
   g_free(imgfname);
   g_free(basename);
