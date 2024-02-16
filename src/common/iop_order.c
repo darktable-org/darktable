@@ -148,6 +148,7 @@ const dt_iop_order_entry_t legacy_order[] = {
   { {51.0f }, "relight", 0},
   { {52.0f }, "colorcorrection", 0},
   { {53.0f }, "sharpen", 0},
+  { {53.8f }, "pixeldeblur", 0},
   { {54.0f }, "lowpass", 0},
   { {55.0f }, "highpass", 0},
   { {56.0f }, "grain", 0},
@@ -227,6 +228,7 @@ const dt_iop_order_entry_t v30_order[] = {
   { {33.0f }, "lowpass", 0},         // same
   { {34.0f }, "highpass", 0},        // same
   { {35.0f }, "sharpen", 0},         // same, worst than atrous in same use-case, less control overall
+  { {35.8f }, "pixeldeblur", 0},     // pixel level deblurring
 
   { {37.0f }, "colortransfer", 0},   // probably better if source and destination colours are neutralized in the same
                                   //    colour exchange space, hence after colorin and colorcheckr,
@@ -316,7 +318,8 @@ const dt_iop_order_entry_t v30_jpg_order[] = {
   { { 28.0f }, "mask_manager", 0},
   { { 28.0f }, "tonemap", 0},
   { { 28.0f }, "toneequal", 0},       // last module that need enlarged roi_in
-  { { 28.0f }, "crop", 0},            // should go after all modules that may need a wider roi_in
+  { { 28.0f }, "crop", 0},            // should go after all modules
+                                      // that may need a wider roi_in
   { { 28.0f }, "graduatednd", 0},
   { { 28.0f }, "profile_gamma", 0},
   { { 28.0f }, "equalizer", 0},
@@ -338,6 +341,7 @@ const dt_iop_order_entry_t v30_jpg_order[] = {
   { { 33.0f }, "lowpass", 0 },       // same
   { { 34.0f }, "highpass", 0 },      // same
   { { 35.0f }, "sharpen", 0 },       // same, worst than atrous in same use-case, less control overall
+  { { 35.8f }, "pixeldeblur", 0},      // pixel level deblurring
 
   { { 37.0f }, "colortransfer", 0 }, // probably better if source and destination colours are neutralized in the
                                      // same
@@ -2442,11 +2446,14 @@ GList *dt_ioppr_deserialize_text_iop_order_list(const char *buf)
 
   _ioppr_reset_iop_order(iop_order_list);
 
-  if(!_ioppr_sanity_check_iop_order(iop_order_list)) goto error;
+  if(!_ioppr_sanity_check_iop_order(iop_order_list))
+    goto error;
 
   return iop_order_list;
 
  error:
+  dt_print(DT_DEBUG_ALWAYS,
+           "[deserialize text iop_order_list] corrupted iop order list:\n'%s'", buf);
   g_list_free_full(iop_order_list, free);
   return NULL;
 }
@@ -2468,7 +2475,11 @@ GList *dt_ioppr_deserialize_iop_order_list(const char *buf,
     const int32_t len = *(int32_t *)buf;
     buf += sizeof(int32_t);
 
-    if(len < 0 || len > 20) { free(entry); goto error; }
+    if(len < 0 || len > 20)
+    {
+      free(entry);
+      goto error;
+    }
 
     // set module name
     memcpy(entry->operation, buf, len);
@@ -2479,7 +2490,11 @@ GList *dt_ioppr_deserialize_iop_order_list(const char *buf,
     entry->instance = *(int32_t *)buf;
     buf += sizeof(int32_t);
 
-    if(entry->instance < 0 || entry->instance > 1000) { free(entry); goto error; }
+    if(entry->instance < 0 || entry->instance > 1000)
+    {
+      free(entry);
+      goto error;
+    }
 
     // append to the list
     iop_order_list = g_list_prepend(iop_order_list, entry);
@@ -2494,6 +2509,8 @@ GList *dt_ioppr_deserialize_iop_order_list(const char *buf,
   return iop_order_list;
 
  error:
+  dt_print(DT_DEBUG_ALWAYS,
+           "[deserialize iop_order_list] corrupted iop order list (size %d)\n", (int)size);
   g_list_free_full(iop_order_list, free);
   return NULL;
 }

@@ -1596,6 +1596,7 @@ void init_presets(dt_lib_module_t *self)
   AM("rotatepixels");
   AM("scalepixels");
   AM("sharpen");
+  AM("pixeldeblur");
 
   SMG(C_("modulegroup", "effect"), "effect");
   AM("bloom");
@@ -1649,6 +1650,7 @@ void init_presets(dt_lib_module_t *self)
   AM("monochrome");
   AM("retouch");
   AM("sharpen");
+  AM("pixeldeblur");
   AM("vignette");
   AM("watermark");
 
@@ -1689,6 +1691,7 @@ void init_presets(dt_lib_module_t *self)
   AM("retouch");
   AM("liquify");
   AM("sharpen");
+  AM("pixeldeblur");
   AM("nlmeans");
 
   SMG(C_("modulegroup", "effect"), "effect");
@@ -1737,6 +1740,7 @@ void init_presets(dt_lib_module_t *self)
   AM("retouch");
   AM("liquify");
   AM("sharpen");
+  AM("pixeldeblur");
   AM("nlmeans");
 
   SMG(C_("modulegroup", "effect"), "effect");
