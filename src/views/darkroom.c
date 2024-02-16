@@ -3148,6 +3148,9 @@ void leave(dt_view_t *self)
         LUA_ASYNC_DONE);
 #endif
   }
+  else
+    dt_image_synch_xmp(imgid);
+
 
   // clear gui.
 

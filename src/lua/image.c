@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2013-2023 darktable developers.
+   Copyright (C) 2013-2024 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -62,7 +62,8 @@ static dt_image_t *checkwriteimage(lua_State *L, int index)
 
 static void releasewriteimage(lua_State *L, dt_image_t *image)
 {
-  dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+  dt_image_cache_write_release_info(darktable.image_cache, image,
+    DT_IMAGE_CACHE_SAFE, "lua releasewriteimage");
 }
 
 void dt_lua_image_push(lua_State *L, const dt_imgid_t imgid)

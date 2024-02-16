@@ -825,13 +825,13 @@ void dt_mipmap_cache_get_with_caller(
     // note that concurrencykit has rw locks that can be demoted from w->r without losing the lock in between.
     if(mode == 'r')
     {
-      entry->_lock_demoting = 1;
+      entry->_lock_demoting = TRUE;
       // drop the write lock
       dt_cache_release(&_get_cache(cache, mip)->cache, entry);
       // get a read lock
       buf->cache_entry = entry = dt_cache_get(&_get_cache(cache, mip)->cache, key, mode);
       ASAN_UNPOISON_MEMORY_REGION(entry->data, dt_mipmap_buffer_dsc_size);
-      entry->_lock_demoting = 0;
+      entry->_lock_demoting = FALSE;
       dsc = (struct dt_mipmap_buffer_dsc *)buf->cache_entry->data;
     }
 

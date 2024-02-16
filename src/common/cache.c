@@ -233,7 +233,7 @@ restart:
   entry->cost = 1;
   entry->link = g_list_append(0, entry);
   entry->key = key;
-  entry->_lock_demoting = 0;
+  entry->_lock_demoting = FALSE;
 
   g_hash_table_insert(cache->hashtable, GINT_TO_POINTER(key), entry);
 
