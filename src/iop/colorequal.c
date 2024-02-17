@@ -90,9 +90,7 @@ None;midi:CC24=iop/colorequal/brightness/magenta
 
 #define NODES 8
 
-#define SLIDER_BRIGHTNESS 0.6f // 60 %
-
-#define GRAPH_GRADIENTS 64
+#define SLIDER_BRIGHTNESS 0.65f // 65 %
 
 DT_MODULE_INTROSPECTION(2, dt_iop_colorequal_params_t)
 
@@ -237,7 +235,8 @@ typedef struct dt_iop_colorequal_gui_data_t
   dt_iop_order_iccprofile_info_t *work_profile;
   dt_iop_order_iccprofile_info_t *white_adapted_profile;
 
-  cairo_pattern_t *gradients[NUM_CHANNELS][GRAPH_GRADIENTS];
+  unsigned char *b_data[NUM_CHANNELS];
+  cairo_surface_t *b_surface[NUM_CHANNELS];
 
   float max_saturation;
   gboolean gradients_cached;
@@ -839,8 +838,10 @@ void process(struct dt_iop_module_t *self,
 
   // STEP 3 : carry-on with conversion from LUV to HSB
 
+  float B_norm = 0.01f;
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
+  reduction(max: B_norm) \
   dt_omp_firstprivate(npixels, in, out, UV, L, corrections, b_corrections, d, white)  \
   schedule(simd:static) aligned(in, out, UV, L, corrections, b_corrections : 64)
 #endif
@@ -856,7 +857,7 @@ void process(struct dt_iop_module_t *self,
     dt_aligned_pixel_t JCH = { 0.0f, 0.0f, 0.0f, 0.0f };
     dt_UCS_LUV_to_JCH(L[k], white, uv, JCH);
     dt_UCS_JCH_to_HSB(JCH, pix_out);
-
+    B_norm = fmaxf(B_norm, pix_out[2]);
     // Get the boosts - if chroma = 0, we have a neutral grey so set everything to 0
 
     if(JCH[1] > 0.f)
@@ -918,9 +919,10 @@ void process(struct dt_iop_module_t *self,
   else
   {
     const int mode = mask_mode - 1;
+    B_norm = 1.5f / B_norm;
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(npixels, out, b_corrections, corrections, weights, mode)  \
+  dt_omp_firstprivate(npixels, out, b_corrections, corrections, weights, mode, B_norm)  \
   schedule(simd:static) aligned(out, corrections, b_corrections, weights: 64)
 #endif
     for(size_t k = 0; k < npixels; k++)
@@ -928,27 +930,25 @@ void process(struct dt_iop_module_t *self,
       float *const restrict pix_out = __builtin_assume_aligned(out + k * 4, 16);
       const float *const restrict corrections_out = corrections + k * 2;
 
-      float val = 2.0f * pix_out[2];
+      const float val = pix_out[2] * B_norm;
       float corr = 0.0f;
       switch(mode)
       {
         case BRIGHTNESS:
-          corr = 4.0f * b_corrections[k];
+          corr = 6.0f * b_corrections[k];
           break;
         case SATURATION:
-          val = 5.0f * pix_out[1];
           corr = corrections_out[1] - 1.0f;
           break;
         case HUE:
           corr = 0.2f * corrections_out[0];
           break;
         default:
-          corr = weights[k] - 0.5f;
+          corr = 0.5f * (weights[k] - 0.5f);
       }
 
       const gboolean neg = corr < 0.0f;
       corr = fabsf(corr);
-      val += 0.1f;
       pix_out[0] = MAX(0.0f, neg ? val - corr : val);
       pix_out[1] = MAX(0.0f, neg ? val - corr : val - corr);
       pix_out[2] = MAX(0.0f, neg ? val        : val - corr);
@@ -1307,66 +1307,57 @@ static inline void _init_sliders(dt_iop_module_t *self)
   }
 }
 
-
-static void _init_graph_backgrounds(cairo_pattern_t *gradients[GRAPH_GRADIENTS],
-                                    const dt_iop_colorequal_channel_t channel,
-                                    struct dt_iop_order_iccprofile_info_t *work_profile,
-                                    const size_t graph_width,
-                                    const float *const restrict gamut_LUT,
-                                    const float max_saturation,
-                                    const float hue_shift)
+static void _init_graph_backgrounds(dt_iop_colorequal_gui_data_t *g,
+                                    const float graph_width,
+                                    const float graph_height,
+                                    const float *const restrict gamut_LUT)
 {
+  const int gwidth = graph_width;
+  const int gheight = graph_height;
+  const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, gwidth);
+  const float max_saturation = g->max_saturation;
+
+  for(int c = 0; c < NUM_CHANNELS; c++)
+  {
+    if(g->b_data[c])
+      free(g->b_data[c]);
+    g->b_data[c] = malloc(stride * gheight);
+
+    if(g->b_surface[c])
+      cairo_surface_destroy(g->b_surface[c]);
+    g->b_surface[c] = cairo_image_surface_create_for_data(g->b_data[c], CAIRO_FORMAT_RGB24, gwidth, gheight, stride);
+  }
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(graph_width, channel, work_profile, gamut_LUT, max_saturation, hue_shift) \
-  schedule(static) shared(gradients)
+  dt_omp_firstprivate(gheight, gwidth, stride, g, gamut_LUT, max_saturation, graph_width, graph_height) \
+  schedule(static) collapse(2)
 #endif
-  for(int i = 0; i < GRAPH_GRADIENTS; i++)
+  for(int i = 0; i < gheight; i++)
   {
-    // parallelize the gradients color stop generation
-    gradients[i] = cairo_pattern_create_linear(0.0, 0.0, graph_width, 0.0);
-    for(int k = 0; k < LUT_ELEM; k++)
+    for(int j = 0; j < gwidth; j++)
     {
-      const float x = (float)k / (float)(LUT_ELEM);
-      const float y = (float)(GRAPH_GRADIENTS - i) / (float)(GRAPH_GRADIENTS);
-      const float hue = _deg_to_rad((float)k);
-      dt_aligned_pixel_t RGB = {  1.0f, 1.0f, 1.0f, 1.0f };
+      const size_t idx = i * stride + j * 4;
+      const float x = 360.0f * (float)(gwidth - j - 1) / (graph_width - 1.0f) - 90.0f;
+      const float y = 1.0f - (float)i / (graph_height - 1.0f);
+      const float hue = (x < -180.0f) ? _deg_to_rad(x +180.0f) : _deg_to_rad(x);
+      const float hhue = hue - (y - 0.5f) * 2.f * M_PI_F;
 
-      switch(channel)
+      dt_aligned_pixel_t RGB;
+      dt_aligned_pixel_t HSB[NUM_CHANNELS] = {{ hhue, max_saturation,     SLIDER_BRIGHTNESS,      1.0f },
+                                              { hue,  max_saturation * y, SLIDER_BRIGHTNESS,      1.0f },
+                                              { hue,  max_saturation,     SLIDER_BRIGHTNESS * y,  1.0f } };
+
+      for(int k = 0; k < NUM_CHANNELS; k++)
       {
-        case(SATURATION):
-        {
-          _build_dt_UCS_HSB_gradients
-            ((dt_aligned_pixel_t){ hue, max_saturation * y,
-                                   SLIDER_BRIGHTNESS, 1.f },
-              RGB, work_profile, gamut_LUT);
-          break;
-        }
-        case(HUE):
-        {
-          _build_dt_UCS_HSB_gradients
-            ((dt_aligned_pixel_t){ hue + (y - 0.5f) * 2.f * M_PI_F,
-                                   max_saturation, SLIDER_BRIGHTNESS, 1.f },
-              RGB, work_profile, gamut_LUT);
-          break;
-        }
-        case(BRIGHTNESS):
-        {
-          _build_dt_UCS_HSB_gradients
-            ((dt_aligned_pixel_t){ hue, max_saturation, y, 1.f },
-             RGB, work_profile, gamut_LUT);
-          break;
-        }
-        default:
-        {
-          break;
-        }
+        _build_dt_UCS_HSB_gradients(HSB[k], RGB, g->white_adapted_profile, gamut_LUT);
+        for_three_channels(c)
+          g->b_data[k][idx + c] = roundf(RGB[c] * 255.f);
       }
-      cairo_pattern_add_color_stop_rgba(gradients[i], x, RGB[0], RGB[1], RGB[2], 1.0);
     }
   }
+  g->gradients_cached = TRUE;
 }
-
 
 void reload_defaults(dt_iop_module_t *self)
 {
@@ -1433,16 +1424,16 @@ static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
 
   const float inset = DT_PIXEL_APPLY_DPI(4);
   const float margin_top = inset;
-  const float margin_bottom = line_height + 2 * inset;
-  const float margin_left = 0;
-  const float margin_right = 0;
+  const float margin_bottom = line_height + 2.0 * inset;
+  const float margin_left = 0.0;
+  const float margin_right = 0.0;
 
   const float graph_width =
     allocation.width - margin_right - margin_left;   // align the right border on sliders
   const float graph_height =
     allocation.height - margin_bottom - margin_top; // give room to nodes
 
-  gtk_render_background(context, cr, 0, 0, allocation.width, allocation.height);
+  gtk_render_background(context, cr, 0.0, 0.0, allocation.width, allocation.height);
 
   // draw x gradient as axis legend
   cairo_pattern_t *grad = cairo_pattern_create_linear(margin_left, 0.0, graph_width, 0.0);
@@ -1454,7 +1445,7 @@ static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
       const float hue = _deg_to_rad((float)k);
       dt_aligned_pixel_t RGB = { 1.f };
       _build_dt_UCS_HSB_gradients((dt_aligned_pixel_t){ hue, g->max_saturation,
-                                                        SLIDER_BRIGHTNESS, 1.f },
+                                                        SLIDER_BRIGHTNESS, 1.0f },
         RGB, g->white_adapted_profile, g->gamut_LUT);
       cairo_pattern_add_color_stop_rgba(grad, x, RGB[0], RGB[1], RGB[2], 1.0);
     }
@@ -1468,84 +1459,32 @@ static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
 
   // set the graph as the origin of the coordinates
   cairo_translate(cr, margin_left, margin_top);
-  cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
 
-  // draw background 2D gradients
-
-  /* This should work and yet it does not.
-  * Colors are shifted in hue and in saturation. I suspect some CMS is kicking in and changes the white point.
-  * Or the conversion to 8 bits uint is messed up.
-
-  const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, graph_width);
-  unsigned char *data = malloc(stride * line_height);
-  cairo_surface_t *surface = cairo_image_surface_create_for_data(data, CAIRO_FORMAT_RGB24, (size_t)graph_width, (size_t)line_height, stride);
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(data, graph_height, graph_width, line_height) \
-  schedule(static) collapse(2)
-#endif
-  for(size_t i = 0; i < (size_t)line_height; i++)
-    for(size_t j = 0; j < (size_t)graph_width; j++)
-    {
-      const size_t k = ((i * (size_t)graph_width) + j) * 4;
-      const float x = (float)(graph_width - j - 1) * 360.f / (float)(graph_width - 1);
-      //const float y = 1.f - (float)i / (float)(graph_height - 1);
-      float hue = DEG_TO_RAD((float)x - 120.f);
-      dt_aligned_pixel_t RGB = { 1.f };
-      _build_dt_UCS_HSB_gradients((dt_aligned_pixel_t){ hue, 0.08f, 0.5f, 1.f }, RGB);
-      for(size_t c = 0; c < 3; ++c) data[k + c] = roundf(RGB[c] * 255.f);
-    }
-
-  cairo_rectangle(cr, margin_left, graph_height - line_height, graph_width, line_height);
-  cairo_set_source_surface(cr, surface, 0, graph_height - line_height);
-
-  cairo_fill(cr);
-  free(data);
-  cairo_surface_destroy(surface);
-  */
-
-  // instead of the above, we simply generate GRAPH_GRADIENTS linear horizontal
-  // gradients and stack them vertically
+  // possibly recalculate and draw background
   if(!g->gradients_cached)
-  {
-    // Refresh the cache of gradients
-    for(dt_iop_colorequal_channel_t chan = 0; chan < NUM_CHANNELS; chan++)
-      _init_graph_backgrounds(g->gradients[chan], chan,
-                              g->white_adapted_profile,
-                              graph_width, g->gamut_LUT, g->max_saturation, p->hue_shift);
+    _init_graph_backgrounds(g, graph_width, graph_height, g->gamut_LUT);
 
-    g->gradients_cached = TRUE;
-  }
-
-  cairo_set_line_width(cr, 0.0);
-  const double grad_height = graph_height / GRAPH_GRADIENTS;
-  for(int i = 0; i < GRAPH_GRADIENTS; i++)
-  {
-    // cairo painting is not thread-safe, so we need to paint the gradients in sequence
-    cairo_rectangle(cr, 0.0, grad_height * (double)i,
-                    graph_width, ceil(grad_height));
-    cairo_set_source(cr, g->gradients[g->channel][i]);
-    cairo_fill(cr);
-  }
+  cairo_rectangle(cr, 0.0, 0.0, graph_width, graph_height);
+  cairo_set_source_surface(cr, g->b_surface[g->channel], 0.0, 0.0);
+  cairo_fill(cr);
 
   cairo_rectangle(cr, 0, 0, graph_width, graph_height);
   cairo_clip(cr);
 
   // draw grid
+  cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(0.5));
   set_color(cr, darktable.bauhaus->graph_border);
   dt_draw_grid(cr, 8, 0, 0, graph_width, graph_height);
 
   // draw ground level
   set_color(cr, darktable.bauhaus->graph_fg);
-  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1));
-  cairo_move_to(cr, 0, 0.5 * graph_height);
-  cairo_line_to(cr, graph_width, 0.5 * graph_height);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0));
+  dt_draw_line(cr, 0.0, 0.5 * graph_height, graph_width, 0.5 * graph_height);
   cairo_stroke(cr);
 
   GdkRGBA fg_color = darktable.bauhaus->graph_fg;
-  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0));
   set_color(cr, fg_color);
 
   // Build the curve LUT and plotting params for the current channel
@@ -1617,8 +1556,7 @@ static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
     // fill bars
     cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(6));
     set_color(cr, darktable.bauhaus->color_fill);
-    cairo_move_to(cr, xn, 0.5 * graph_height);
-    cairo_line_to(cr, xn, yn);
+    dt_draw_line(cr, xn, 0.5 * graph_height, xn, yn);
     cairo_stroke(cr);
 
     // bullets
@@ -1676,7 +1614,7 @@ static void _pipe_RGB_to_Ych(dt_iop_module_t *self,
   XYZ_to_Ych(XYZ_D65, Ych);
 
   if(Ych[2] < 0.f)
-    Ych[2] = 2.f * M_PI + Ych[2];
+    Ych[2] = 2.f * M_PI_F + Ych[2];
 }
 
 void color_picker_apply(dt_iop_module_t *self,
@@ -1740,11 +1678,14 @@ static void _channel_tabs_switch_callback(GtkNotebook *notebook,
   }
 
   g->page_num = page_num;
-  gui_update(self);
 
   const int old_mask_mode = g->mask_mode;
   const gboolean masking_p = dt_bauhaus_widget_get_quad_active(g->param_size);
   const gboolean masking_c = dt_bauhaus_widget_get_quad_active(g->chroma_size);
+  gui_update(self);
+
+  dt_bauhaus_widget_set_quad_active(g->param_size, masking_p);
+  dt_bauhaus_widget_set_quad_active(g->chroma_size, masking_c);
 
   g->mask_mode = masking_p ? g->channel + 1 : (masking_c ? 4 : 0);
   if(g->mask_mode != old_mask_mode)
@@ -1992,10 +1933,14 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
   dt_free_align(g->gamut_LUT);
 
-  // Destroy the gradients cache
+  // Destroy the background cache
   for(dt_iop_colorequal_channel_t chan = 0; chan < NUM_CHANNELS; chan++)
-    for(int i = 0; i < GRAPH_GRADIENTS; i++)
-      cairo_pattern_destroy(g->gradients[chan][i]);
+  {
+    if(g->b_data[chan])
+      free(g->b_data[chan]);
+    if(g->b_surface[chan])
+      cairo_surface_destroy(g->b_surface[chan]);
+  }
 
   dt_conf_set_int("plugins/darkroom/colorequal/gui_page",
                   gtk_notebook_get_current_page (g->notebook));
@@ -2090,6 +2035,11 @@ void gui_init(struct dt_iop_module_t *self)
   g->work_profile = work_profile;
   g->gradients_cached = FALSE;
   g->on_node = FALSE;
+  for(dt_iop_colorequal_channel_t chan = 0; chan < NUM_CHANNELS; chan++)
+  {
+    g->b_data[chan] = NULL;
+    g->b_surface[chan] = NULL;
+  }
 
   // Init the display gamut LUT - Default to Rec709 D65 aka linear sRGB
   g->gamut_LUT = dt_alloc_align_float(LUT_ELEM);
