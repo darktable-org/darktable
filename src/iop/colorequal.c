@@ -839,8 +839,10 @@ void process(struct dt_iop_module_t *self,
 
   // STEP 3 : carry-on with conversion from LUV to HSB
 
+  float B_norm = 0.01f;
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
+  reduction(max: B_norm) \
   dt_omp_firstprivate(npixels, in, out, UV, L, corrections, b_corrections, d, white)  \
   schedule(simd:static) aligned(in, out, UV, L, corrections, b_corrections : 64)
 #endif
@@ -856,7 +858,7 @@ void process(struct dt_iop_module_t *self,
     dt_aligned_pixel_t JCH = { 0.0f, 0.0f, 0.0f, 0.0f };
     dt_UCS_LUV_to_JCH(L[k], white, uv, JCH);
     dt_UCS_JCH_to_HSB(JCH, pix_out);
-
+    B_norm = fmaxf(B_norm, pix_out[2]);
     // Get the boosts - if chroma = 0, we have a neutral grey so set everything to 0
 
     if(JCH[1] > 0.f)
@@ -918,9 +920,10 @@ void process(struct dt_iop_module_t *self,
   else
   {
     const int mode = mask_mode - 1;
+    B_norm = 1.5f / B_norm;
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(npixels, out, b_corrections, corrections, weights, mode)  \
+  dt_omp_firstprivate(npixels, out, b_corrections, corrections, weights, mode, B_norm)  \
   schedule(simd:static) aligned(out, corrections, b_corrections, weights: 64)
 #endif
     for(size_t k = 0; k < npixels; k++)
@@ -928,27 +931,25 @@ void process(struct dt_iop_module_t *self,
       float *const restrict pix_out = __builtin_assume_aligned(out + k * 4, 16);
       const float *const restrict corrections_out = corrections + k * 2;
 
-      float val = 2.0f * pix_out[2];
+      const float val = pix_out[2] * B_norm;
       float corr = 0.0f;
       switch(mode)
       {
         case BRIGHTNESS:
-          corr = 4.0f * b_corrections[k];
+          corr = 6.0f * b_corrections[k];
           break;
         case SATURATION:
-          val = 5.0f * pix_out[1];
           corr = corrections_out[1] - 1.0f;
           break;
         case HUE:
           corr = 0.2f * corrections_out[0];
           break;
         default:
-          corr = weights[k] - 0.5f;
+          corr = 0.5f * (weights[k] - 0.5f);
       }
 
       const gboolean neg = corr < 0.0f;
       corr = fabsf(corr);
-      val += 0.1f;
       pix_out[0] = MAX(0.0f, neg ? val - corr : val);
       pix_out[1] = MAX(0.0f, neg ? val - corr : val - corr);
       pix_out[2] = MAX(0.0f, neg ? val        : val - corr);
@@ -1740,11 +1741,14 @@ static void _channel_tabs_switch_callback(GtkNotebook *notebook,
   }
 
   g->page_num = page_num;
-  gui_update(self);
 
   const int old_mask_mode = g->mask_mode;
   const gboolean masking_p = dt_bauhaus_widget_get_quad_active(g->param_size);
   const gboolean masking_c = dt_bauhaus_widget_get_quad_active(g->chroma_size);
+  gui_update(self);
+
+  dt_bauhaus_widget_set_quad_active(g->param_size, masking_p);
+  dt_bauhaus_widget_set_quad_active(g->chroma_size, masking_c);
 
   g->mask_mode = masking_p ? g->channel + 1 : (masking_c ? 4 : 0);
   if(g->mask_mode != old_mask_mode)
