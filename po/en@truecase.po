@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-02-14 18:43+0100\n"
-"PO-Revision-Date: 2024-02-14 23:05+0200\n"
+"POT-Creation-Date: 2024-02-17 19:12+0100\n"
+"PO-Revision-Date: 2024-02-17 20:51+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: en\n"
@@ -857,7 +857,7 @@ msgstr "This setting has been modified"
 msgid "?"
 msgstr "?"
 
-#: ../build/bin/preferences_gen.h:4251 ../src/control/jobs/control_jobs.c:2595
+#: ../build/bin/preferences_gen.h:4251 ../src/control/jobs/control_jobs.c:2598
 #: ../src/libs/import.c:187
 msgid "import"
 msgstr "Import"
@@ -1471,8 +1471,8 @@ msgstr ""
 msgid "LUT 3D root folder"
 msgstr "LUT 3D root folder"
 
-#: ../build/bin/preferences_gen.h:5876 ../src/control/jobs/control_jobs.c:1858
-#: ../src/control/jobs/control_jobs.c:1915 ../src/gui/preferences.c:1080
+#: ../build/bin/preferences_gen.h:5876 ../src/control/jobs/control_jobs.c:1860
+#: ../src/control/jobs/control_jobs.c:1917 ../src/gui/preferences.c:1080
 #: ../src/gui/presets.c:421 ../src/imageio/storage/disk.c:197
 #: ../src/imageio/storage/disk.c:277 ../src/imageio/storage/gallery.c:149
 #: ../src/imageio/storage/gallery.c:213 ../src/imageio/storage/latex.c:145
@@ -2805,7 +2805,7 @@ msgstr "Very large chromatic aberration"
 #: ../src/iop/channelmixerrgb.c:4693 ../src/iop/colorzones.c:2499
 #: ../src/iop/enlargecanvas.c:466 ../src/iop/temperature.c:2014
 #: ../src/iop/temperature.c:2206 ../src/libs/collect.c:1928
-#: ../src/libs/filters/colors.c:260 ../src/libs/histogram.c:2720
+#: ../src/libs/filters/colors.c:260 ../src/libs/histogram.c:2722
 msgid "red"
 msgstr "Red"
 
@@ -2826,7 +2826,7 @@ msgstr "Red"
 #: ../src/iop/enlargecanvas.c:465 ../src/iop/temperature.c:1998
 #: ../src/iop/temperature.c:2016 ../src/iop/temperature.c:2207
 #: ../src/libs/collect.c:1928 ../src/libs/filters/colors.c:262
-#: ../src/libs/histogram.c:2711
+#: ../src/libs/histogram.c:2713
 msgid "green"
 msgstr "Green"
 
@@ -2846,7 +2846,7 @@ msgstr "Green"
 #: ../src/iop/channelmixerrgb.c:4695 ../src/iop/colorzones.c:2504
 #: ../src/iop/enlargecanvas.c:467 ../src/iop/temperature.c:2018
 #: ../src/iop/temperature.c:2208 ../src/libs/collect.c:1928
-#: ../src/libs/filters/colors.c:263 ../src/libs/histogram.c:2702
+#: ../src/libs/filters/colors.c:263 ../src/libs/histogram.c:2704
 msgid "blue"
 msgstr "Blue"
 
@@ -3152,6 +3152,8 @@ msgstr "Lift, gamma, gain (sRGB)"
 msgid "chroma"
 msgstr "Chroma"
 
+#. add notebook tab, will remain empty as we need to share the graph. the widgets
+#. to show/hide are handled in gui_update depending on the actual tab selected.
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:238
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:256
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:274
@@ -3172,8 +3174,8 @@ msgstr "Chroma"
 #: ../src/develop/blend_gui.c:2464 ../src/iop/channelmixer.c:634
 #: ../src/iop/channelmixerrgb.c:4534 ../src/iop/channelmixerrgb.c:4649
 #: ../src/iop/colorbalance.c:2000 ../src/iop/colorize.c:343
-#: ../src/iop/colorreconstruction.c:1249 ../src/iop/colorequal.c:2127
-#: ../src/iop/colorequal.c:2128 ../src/iop/colorzones.c:2646
+#: ../src/iop/colorreconstruction.c:1249 ../src/iop/colorequal.c:2068
+#: ../src/iop/colorequal.c:2120 ../src/iop/colorzones.c:2646
 msgid "hue"
 msgstr "Hue"
 
@@ -4207,7 +4209,7 @@ msgstr "Density"
 #: ../src/iop/colorbalance.c:2017 ../src/iop/colorbalancergb.c:1990
 #: ../src/iop/colorchecker.c:1486 ../src/iop/colorcontrast.c:82
 #: ../src/iop/colorcorrection.c:268 ../src/iop/colorize.c:356
-#: ../src/iop/colorequal.c:2151 ../src/iop/colorequal.c:2152
+#: ../src/iop/colorequal.c:2069 ../src/iop/colorequal.c:2140
 #: ../src/iop/lowpass.c:602 ../src/iop/soften.c:368 ../src/iop/velvia.c:75
 #: ../src/iop/vibrance.c:72 ../src/iop/vignette.c:1058
 msgid "saturation"
@@ -4878,8 +4880,8 @@ msgstr "Fill mode"
 #: ../build/lib/darktable/plugins/introspection_retouch.c:285
 #: ../build/lib/darktable/plugins/introspection_retouch.c:426
 #: ../src/iop/basicadj.c:650 ../src/iop/channelmixerrgb.c:4701
-#: ../src/iop/colisa.c:299 ../src/iop/colorequal.c:2177
-#: ../src/iop/colorequal.c:2178 ../src/iop/lowpass.c:601
+#: ../src/iop/colisa.c:299 ../src/iop/colorequal.c:2070
+#: ../src/iop/colorequal.c:2160 ../src/iop/lowpass.c:601
 #: ../src/iop/soften.c:372 ../src/iop/vignette.c:1057 ../src/libs/history.c:966
 msgid "brightness"
 msgstr "Brightness"
@@ -5351,8 +5353,8 @@ msgid "dropdown"
 msgstr "Dropdown"
 
 #: ../src/chart/main.c:504 ../src/common/database.c:3395
-#: ../src/control/jobs/control_jobs.c:1859
-#: ../src/control/jobs/control_jobs.c:1918 ../src/gui/accelerators.c:2498
+#: ../src/control/jobs/control_jobs.c:1861
+#: ../src/control/jobs/control_jobs.c:1920 ../src/gui/accelerators.c:2498
 #: ../src/gui/accelerators.c:2580 ../src/gui/accelerators.c:2633
 #: ../src/gui/accelerators.c:2662 ../src/gui/accelerators.c:2724
 #: ../src/gui/hist_dialog.c:226 ../src/gui/preferences.c:1042
@@ -5672,7 +5674,7 @@ msgstr "Module order"
 msgid "range rating"
 msgstr "Range rating"
 
-#: ../src/common/collection.c:651 ../src/common/ratings.c:321
+#: ../src/common/collection.c:651 ../src/common/ratings.c:322
 #: ../src/develop/lightroom.c:1582 ../src/libs/filtering.c:67
 #: ../src/libs/tools/ratings.c:110
 msgid "rating"
@@ -6206,8 +6208,8 @@ msgstr "Error loading directory `%s'"
 msgid "file `%s' has unknown format!"
 msgstr "File `%s' has unknown format!"
 
-#: ../src/common/darktable.c:429 ../src/control/jobs/control_jobs.c:2336
-#: ../src/control/jobs/control_jobs.c:2402
+#: ../src/common/darktable.c:429 ../src/control/jobs/control_jobs.c:2338
+#: ../src/control/jobs/control_jobs.c:2405
 #, c-format
 msgid "error loading file `%s'"
 msgstr "Error loading file `%s'"
@@ -6606,12 +6608,12 @@ msgstr ""
 "Fast exposure independent guided filter failed to allocate memory, check "
 "your RAM settings"
 
-#: ../src/common/exif.cc:5482
+#: ../src/common/exif.cc:5496
 #, c-format
 msgid "cannot read XMP file '%s': '%s'"
 msgstr "Cannot read XMP file '%s': '%s'"
 
-#: ../src/common/exif.cc:5540
+#: ../src/common/exif.cc:5554
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
 msgstr "Cannot write XMP file '%s': '%s'"
@@ -6644,7 +6646,7 @@ msgid ""
 msgstr ""
 "Cannot remove film roll having local copies with non accessible originals"
 
-#: ../src/common/history.c:885
+#: ../src/common/history.c:889
 msgid "you need to copy history from an image before you paste it onto another"
 msgstr ""
 "You need to copy history from an image before you paste it onto another"
@@ -6653,88 +6655,88 @@ msgstr ""
 msgid "orphaned image"
 msgstr "Orphaned image"
 
-#: ../src/common/image.c:656
+#: ../src/common/image.c:658
 #, c-format
 msgid "geo-location undone for %d image"
 msgid_plural "geo-location undone for %d images"
 msgstr[0] "Geo-location undone for %d image"
 msgstr[1] "Geo-location undone for %d images"
 
-#: ../src/common/image.c:658
+#: ../src/common/image.c:660
 #, c-format
 msgid "geo-location re-applied to %d image"
 msgid_plural "geo-location re-applied to %d images"
 msgstr[0] "Geo-location re-applied to %d image"
 msgstr[1] "Geo-location re-applied to %d images"
 
-#: ../src/common/image.c:681
+#: ../src/common/image.c:683
 #, c-format
 msgid "date/time undone for %d image"
 msgid_plural "date/time undone for %d images"
 msgstr[0] "Date/time undone for %d image"
 msgstr[1] "Date/time undone for %d images"
 
-#: ../src/common/image.c:683
+#: ../src/common/image.c:685
 #, c-format
 msgid "date/time re-applied to %d image"
 msgid_plural "date/time re-applied to %d images"
 msgstr[0] "Date/time re-applied to %d image"
 msgstr[1] "Date/time re-applied to %d images"
 
-#: ../src/common/image.c:2288
+#: ../src/common/image.c:2295
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "Cannot access local copy `%s'"
 
-#: ../src/common/image.c:2295
+#: ../src/common/image.c:2302
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "Cannot write local copy `%s'"
 
-#: ../src/common/image.c:2302
+#: ../src/common/image.c:2309
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "Error moving local copy `%s' -> `%s'"
 
-#: ../src/common/image.c:2319
+#: ../src/common/image.c:2326
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "Error moving `%s': file not found"
 
-#: ../src/common/image.c:2329
+#: ../src/common/image.c:2336
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "Error moving `%s' -> `%s': file exists"
 
-#: ../src/common/image.c:2333
+#: ../src/common/image.c:2340
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "Error moving `%s' -> `%s'"
 
-#: ../src/common/image.c:2662
+#: ../src/common/image.c:2669
 msgid "cannot create local copy when the original file is not accessible."
 msgstr "Cannot create local copy when the original file is not accessible."
 
-#: ../src/common/image.c:2676
+#: ../src/common/image.c:2683
 msgid "cannot create local copy."
 msgstr "Cannot create local copy."
 
-#: ../src/common/image.c:2756 ../src/control/jobs/control_jobs.c:862
+#: ../src/common/image.c:2763 ../src/control/jobs/control_jobs.c:862
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr "Cannot remove local copy when the original file is not accessible."
 
-#: ../src/common/image.c:2929
+#: ../src/common/image.c:2936
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
 msgstr[0] "%d local copy has been synchronized"
 msgstr[1] "%d local copies have been synchronized"
 
-#: ../src/common/image.c:3130
+#: ../src/common/image.c:3137
 msgid "<b>WARNING</b>: camera is missing samples!"
 msgstr "<b>WARNING</b>: camera is missing samples!"
 
-#: ../src/common/image.c:3131
+#: ../src/common/image.c:3138
 msgid ""
 "You must provide samples in <a href='https://raw.pixls.us/'>https://raw."
 "pixls.us/</a>"
@@ -6742,7 +6744,7 @@ msgstr ""
 "You must provide samples in <a href='https://raw.pixls.us/'>https://raw."
 "pixls.us/</a>"
 
-#: ../src/common/image.c:3132
+#: ../src/common/image.c:3139
 #, c-format
 msgid ""
 "for `%s' `%s'\n"
@@ -6751,11 +6753,11 @@ msgstr ""
 "for `%s' `%s'\n"
 "in as many format/compression/bit depths as possible"
 
-#: ../src/common/image.c:3135
+#: ../src/common/image.c:3142
 msgid "or the <b>RAW won't be readable</b> in next version."
 msgstr "or the <b>RAW won't be readable</b> in next version."
 
-#: ../src/common/image.h:217 ../src/common/ratings.c:283
+#: ../src/common/image.h:217 ../src/common/ratings.c:284
 #: ../src/imageio/format/avif.c:114 ../src/libs/history.c:846
 #: ../src/libs/snapshots.c:862
 msgid "unknown"
@@ -7033,74 +7035,74 @@ msgid "GNOME Keyring backend is no longer supported. configure a different one"
 msgstr ""
 "GNOME Keyring backend is no longer supported. Configure a different one"
 
-#: ../src/common/ratings.c:172
+#: ../src/common/ratings.c:173
 #, c-format
 msgid "rejecting %d image"
 msgid_plural "rejecting %d images"
 msgstr[0] "Rejecting %d image"
 msgstr[1] "Rejecting %d images"
 
-#: ../src/common/ratings.c:174
+#: ../src/common/ratings.c:175
 #, c-format
 msgid "applying rating %d to %d image"
 msgid_plural "applying rating %d to %d images"
 msgstr[0] "Applying rating %d to %d image"
 msgstr[1] "Applying rating %d to %d images"
 
-#: ../src/common/ratings.c:221
+#: ../src/common/ratings.c:222
 msgid "no images selected to apply rating"
 msgstr "No images selected to apply rating"
 
-#: ../src/common/ratings.c:274 ../src/libs/metadata_view.c:355
+#: ../src/common/ratings.c:275 ../src/libs/metadata_view.c:355
 msgid "image rejected"
 msgstr "Image rejected"
 
-#: ../src/common/ratings.c:276
+#: ../src/common/ratings.c:277
 msgid "image rated to 0 star"
 msgstr "Image rated to 0 star"
 
-#: ../src/common/ratings.c:278
+#: ../src/common/ratings.c:279
 #, c-format
 msgid "image rated to %s"
 msgstr "Image rated to %s"
 
-#: ../src/common/ratings.c:305 ../src/views/lighttable.c:766
+#: ../src/common/ratings.c:306 ../src/views/lighttable.c:766
 msgid "select"
 msgstr "Select"
 
-#: ../src/common/ratings.c:306
+#: ../src/common/ratings.c:307
 msgid "upgrade"
 msgstr "Upgrade"
 
-#: ../src/common/ratings.c:307
+#: ../src/common/ratings.c:308
 msgid "downgrade"
 msgstr "Downgrade"
 
-#: ../src/common/ratings.c:311
+#: ../src/common/ratings.c:312
 msgid "zero"
 msgstr "Zero"
 
-#: ../src/common/ratings.c:312 ../src/libs/filters/rating_range.c:304
+#: ../src/common/ratings.c:313 ../src/libs/filters/rating_range.c:304
 msgid "one"
 msgstr "One"
 
-#: ../src/common/ratings.c:313 ../src/libs/filters/rating_range.c:305
+#: ../src/common/ratings.c:314 ../src/libs/filters/rating_range.c:305
 msgid "two"
 msgstr "Two"
 
-#: ../src/common/ratings.c:314 ../src/libs/filters/rating_range.c:306
+#: ../src/common/ratings.c:315 ../src/libs/filters/rating_range.c:306
 msgid "three"
 msgstr "Three"
 
-#: ../src/common/ratings.c:315 ../src/libs/filters/rating_range.c:307
+#: ../src/common/ratings.c:316 ../src/libs/filters/rating_range.c:307
 msgid "four"
 msgstr "Four"
 
-#: ../src/common/ratings.c:316 ../src/libs/filters/rating_range.c:308
+#: ../src/common/ratings.c:317 ../src/libs/filters/rating_range.c:308
 msgid "five"
 msgstr "Five"
 
-#: ../src/common/ratings.c:317
+#: ../src/common/ratings.c:318
 msgid "reject"
 msgstr "Reject"
 
@@ -7794,57 +7796,57 @@ msgid_plural "refreshing info for %d images"
 msgstr[0] "Refreshing info for %d image"
 msgstr[1] "Refreshing info for %d images"
 
-#: ../src/control/jobs/control_jobs.c:1543
+#: ../src/control/jobs/control_jobs.c:1545
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] "Exporting %d image.."
 msgstr[1] "Exporting %d images.."
 
-#: ../src/control/jobs/control_jobs.c:1545
+#: ../src/control/jobs/control_jobs.c:1547
 msgid "no image to export"
 msgstr "No image to export"
 
-#: ../src/control/jobs/control_jobs.c:1583
+#: ../src/control/jobs/control_jobs.c:1585
 #, c-format
 msgid "exporting %d / %d to %s"
 msgstr "Exporting %d / %d to %s"
 
-#: ../src/control/jobs/control_jobs.c:1598 ../src/views/darkroom.c:728
+#: ../src/control/jobs/control_jobs.c:1600 ../src/views/darkroom.c:728
 #: ../src/views/print.c:325
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "Image `%s' is currently unavailable"
 
-#: ../src/control/jobs/control_jobs.c:1707
+#: ../src/control/jobs/control_jobs.c:1709
 msgid "merge HDR image"
 msgstr "Merge HDR image"
 
-#: ../src/control/jobs/control_jobs.c:1725
+#: ../src/control/jobs/control_jobs.c:1727
 msgid "duplicate images"
 msgstr "Duplicate images"
 
-#: ../src/control/jobs/control_jobs.c:1735
+#: ../src/control/jobs/control_jobs.c:1737
 msgid "flip images"
 msgstr "Flip images"
 
-#: ../src/control/jobs/control_jobs.c:1744
+#: ../src/control/jobs/control_jobs.c:1746
 msgid "set monochrome images"
 msgstr "Set monochrome images"
 
-#: ../src/control/jobs/control_jobs.c:1752
+#: ../src/control/jobs/control_jobs.c:1754
 msgid "remove images"
 msgstr "Remove images"
 
-#: ../src/control/jobs/control_jobs.c:1765
+#: ../src/control/jobs/control_jobs.c:1767
 msgid "remove image?"
 msgstr "Remove image?"
 
-#: ../src/control/jobs/control_jobs.c:1765
+#: ../src/control/jobs/control_jobs.c:1767
 msgid "remove images?"
 msgstr "Remove images?"
 
-#: ../src/control/jobs/control_jobs.c:1766
+#: ../src/control/jobs/control_jobs.c:1768
 #, c-format
 msgid ""
 "do you really want to remove %d image from darktable\n"
@@ -7860,21 +7862,21 @@ msgstr[1] ""
 "(without deleting files on disk)?"
 
 #. first get all selected images, to avoid the set changing during ui interaction
-#: ../src/control/jobs/control_jobs.c:1782
-#: ../src/control/jobs/control_jobs.c:1815
+#: ../src/control/jobs/control_jobs.c:1784
+#: ../src/control/jobs/control_jobs.c:1817
 msgid "delete images"
 msgstr "Delete images"
 
-#: ../src/control/jobs/control_jobs.c:1798
-#: ../src/control/jobs/control_jobs.c:1828
+#: ../src/control/jobs/control_jobs.c:1800
+#: ../src/control/jobs/control_jobs.c:1830
 msgid "delete image?"
 msgstr "Delete image?"
 
-#: ../src/control/jobs/control_jobs.c:1798
+#: ../src/control/jobs/control_jobs.c:1800
 msgid "delete images?"
 msgstr "Delete images?"
 
-#: ../src/control/jobs/control_jobs.c:1799
+#: ../src/control/jobs/control_jobs.c:1801
 #, c-format
 msgid ""
 "do you really want to physically delete %d image\n"
@@ -7889,14 +7891,14 @@ msgstr[1] ""
 "Do you really want to physically delete %d images\n"
 "(using trash if possible)?"
 
-#: ../src/control/jobs/control_jobs.c:1801
+#: ../src/control/jobs/control_jobs.c:1803
 #, c-format
 msgid "do you really want to physically delete %d image from disk?"
 msgid_plural "do you really want to physically delete %d images from disk?"
 msgstr[0] "Do you really want to physically delete %d image from disk?"
 msgstr[1] "Do you really want to physically delete %d images from disk?"
 
-#: ../src/control/jobs/control_jobs.c:1829
+#: ../src/control/jobs/control_jobs.c:1831
 msgid ""
 "do you really want to physically delete selected image (using trash if "
 "possible)?"
@@ -7904,26 +7906,26 @@ msgstr ""
 "Do you really want to physically delete selected image (using trash if "
 "possible)?"
 
-#: ../src/control/jobs/control_jobs.c:1830
+#: ../src/control/jobs/control_jobs.c:1832
 msgid "do you really want to physically delete selected image from disk?"
 msgstr "Do you really want to physically delete selected image from disk?"
 
-#: ../src/control/jobs/control_jobs.c:1846
+#: ../src/control/jobs/control_jobs.c:1848
 msgid "move images"
 msgstr "Move images"
 
-#: ../src/control/jobs/control_jobs.c:1859
-#: ../src/control/jobs/control_jobs.c:1917
+#: ../src/control/jobs/control_jobs.c:1861
+#: ../src/control/jobs/control_jobs.c:1919
 msgid "_select as destination"
 msgstr "_Select as destination"
 
-#: ../src/control/jobs/control_jobs.c:1879
+#: ../src/control/jobs/control_jobs.c:1881
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] "Move image?"
 msgstr[1] "Move images?"
 
-#: ../src/control/jobs/control_jobs.c:1880
+#: ../src/control/jobs/control_jobs.c:1882
 #, c-format
 msgid ""
 "do you really want to physically move %d image to %s?\n"
@@ -7938,104 +7940,104 @@ msgstr[1] ""
 "Do you really want to physically move %d images to %s?\n"
 "(all duplicates will be moved along)"
 
-#: ../src/control/jobs/control_jobs.c:1903
+#: ../src/control/jobs/control_jobs.c:1905
 msgid "copy images"
 msgstr "Copy images"
 
-#: ../src/control/jobs/control_jobs.c:1940
+#: ../src/control/jobs/control_jobs.c:1942
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] "Copy image?"
 msgstr[1] "Copy images?"
 
-#: ../src/control/jobs/control_jobs.c:1941
+#: ../src/control/jobs/control_jobs.c:1943
 #, c-format
 msgid "do you really want to physically copy %d image to %s?"
 msgid_plural "do you really want to physically copy %d images to %s?"
 msgstr[0] "Do you really want to physically copy %d image to %s?"
 msgstr[1] "Do you really want to physically copy %d images to %s?"
 
-#: ../src/control/jobs/control_jobs.c:1960
-#: ../src/control/jobs/control_jobs.c:1970
+#: ../src/control/jobs/control_jobs.c:1962
+#: ../src/control/jobs/control_jobs.c:1972
 msgid "local copy images"
 msgstr "Local copy images"
 
-#: ../src/control/jobs/control_jobs.c:1980 ../src/libs/image.c:674
+#: ../src/control/jobs/control_jobs.c:1982 ../src/libs/image.c:674
 msgid "refresh EXIF"
 msgstr "Refresh EXIF"
 
-#: ../src/control/jobs/control_jobs.c:2056
+#: ../src/control/jobs/control_jobs.c:2058
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr "Failed to get parameters from storage module `%s', aborting export.."
 
-#: ../src/control/jobs/control_jobs.c:2073
+#: ../src/control/jobs/control_jobs.c:2075
 msgid "export images"
 msgstr "Export images"
 
-#: ../src/control/jobs/control_jobs.c:2128
+#: ../src/control/jobs/control_jobs.c:2130
 #, c-format
 msgid "adding time offset to %d image"
 msgstr "Adding time offset to %d image"
 
-#: ../src/control/jobs/control_jobs.c:2129
+#: ../src/control/jobs/control_jobs.c:2131
 #, c-format
 msgid "setting date/time of %d image"
 msgstr "Setting date/time of %d image"
 
-#: ../src/control/jobs/control_jobs.c:2131
+#: ../src/control/jobs/control_jobs.c:2133
 #, c-format
 msgid "adding time offset to %d images"
 msgstr "Adding time offset to %d images"
 
-#: ../src/control/jobs/control_jobs.c:2132
+#: ../src/control/jobs/control_jobs.c:2134
 #, c-format
 msgid "setting date/time of %d images"
 msgstr "Setting date/time of %d images"
 
-#: ../src/control/jobs/control_jobs.c:2178
+#: ../src/control/jobs/control_jobs.c:2180
 #, c-format
 msgid "added time offset to %d image"
 msgstr "Added time offset to %d image"
 
-#: ../src/control/jobs/control_jobs.c:2179
+#: ../src/control/jobs/control_jobs.c:2181
 #, c-format
 msgid "set date/time of %d image"
 msgstr "Set date/time of %d image"
 
-#: ../src/control/jobs/control_jobs.c:2181
+#: ../src/control/jobs/control_jobs.c:2183
 #, c-format
 msgid "added time offset to %d images"
 msgstr "Added time offset to %d images"
 
-#: ../src/control/jobs/control_jobs.c:2182
+#: ../src/control/jobs/control_jobs.c:2184
 #, c-format
 msgid "set date/time of %d images"
 msgstr "Set date/time of %d images"
 
-#: ../src/control/jobs/control_jobs.c:2225
+#: ../src/control/jobs/control_jobs.c:2227
 msgid "time offset"
 msgstr "Time offset"
 
-#: ../src/control/jobs/control_jobs.c:2256 ../src/libs/copy_history.c:414
+#: ../src/control/jobs/control_jobs.c:2258 ../src/libs/copy_history.c:414
 msgid "write sidecar files"
 msgstr "Write sidecar files"
 
-#: ../src/control/jobs/control_jobs.c:2482 ../src/control/jobs/film_jobs.c:297
+#: ../src/control/jobs/control_jobs.c:2485 ../src/control/jobs/film_jobs.c:297
 #, c-format
 msgid "importing %d image"
 msgid_plural "importing %d images"
 msgstr[0] "Importing %d image"
 msgstr[1] "Importing %d images"
 
-#: ../src/control/jobs/control_jobs.c:2535
+#: ../src/control/jobs/control_jobs.c:2538
 #, c-format
 msgid "importing %d/%d image"
 msgid_plural "importing %d/%d images"
 msgstr[0] "Importing %d/%d image"
 msgstr[1] "Importing %d/%d images"
 
-#: ../src/control/jobs/control_jobs.c:2546
+#: ../src/control/jobs/control_jobs.c:2549
 #, c-format
 msgid "imported %d image"
 msgid_plural "imported %d images"
@@ -8591,7 +8593,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:2693 ../src/develop/blend_gui.c:3614
 #: ../src/iop/basicadj.c:630 ../src/iop/colorbalancergb.c:2161
-#: ../src/iop/colorequal.c:2215 ../src/iop/exposure.c:1138
+#: ../src/iop/colorequal.c:2191 ../src/iop/exposure.c:1138
 #: ../src/iop/exposure.c:1153 ../src/iop/filmic.c:1528 ../src/iop/filmic.c:1541
 #: ../src/iop/filmic.c:1583 ../src/iop/filmicrgb.c:4504
 #: ../src/iop/filmicrgb.c:4515 ../src/iop/filmicrgb.c:4549
@@ -10637,7 +10639,7 @@ msgstr "%s assigned to %s"
 msgid "short key press resets stuck keys"
 msgstr "Short key press resets stuck keys"
 
-#: ../src/gui/gtk.c:175 ../src/views/darkroom.c:3868
+#: ../src/gui/gtk.c:175 ../src/views/darkroom.c:3871
 msgid "darktable - darkroom preview"
 msgstr "Darktable - Darkroom preview"
 
@@ -12312,7 +12314,7 @@ msgstr ""
 "Draft -- images are replaced with boxes\n"
 "Debug -- only show the outlines and bounding boxes"
 
-#: ../src/imageio/format/pdf.c:693
+#: ../src/imageio/format/pdf.c:693 ../src/libs/tools/lighttable.c:325
 msgid "normal"
 msgstr "Normal"
 
@@ -12711,7 +12713,7 @@ msgstr "Corrective or creative"
 #: ../src/iop/blurs.c:93 ../src/iop/blurs.c:94 ../src/iop/channelmixerrgb.c:239
 #: ../src/iop/channelmixerrgb.c:241 ../src/iop/clipping.c:364
 #: ../src/iop/clipping.c:366 ../src/iop/colorbalancergb.c:185
-#: ../src/iop/colorin.c:137 ../src/iop/colorequal.c:186 ../src/iop/crop.c:135
+#: ../src/iop/colorin.c:137 ../src/iop/colorequal.c:184 ../src/iop/crop.c:135
 #: ../src/iop/crop.c:137 ../src/iop/demosaic.c:296
 #: ../src/iop/denoiseprofile.c:780 ../src/iop/denoiseprofile.c:782
 #: ../src/iop/diffuse.c:146 ../src/iop/diffuse.c:148
@@ -12947,7 +12949,7 @@ msgid "add or remove local contrast, sharpness, acutance"
 msgstr "Add or remove local contrast, sharpness, acutance"
 
 #: ../src/iop/atrous.c:133 ../src/iop/bilateral.cc:102
-#: ../src/iop/colorequal.c:185 ../src/iop/diffuse.c:145
+#: ../src/iop/colorequal.c:183 ../src/iop/diffuse.c:145
 #: ../src/iop/enlargecanvas.c:83 ../src/iop/exposure.c:131
 #: ../src/iop/filmicrgb.c:352 ../src/iop/graduatednd.c:146
 #: ../src/iop/negadoctor.c:146 ../src/iop/overlay.c:165
@@ -13122,7 +13124,7 @@ msgstr ""
 "Only changes results of luma and chroma tabs"
 
 #: ../src/iop/atrous.c:1818 ../src/iop/colorbalancergb.c:2129
-#: ../src/iop/colorequal.c:2090 ../src/iop/colorzones.c:2732
+#: ../src/iop/colorequal.c:2077 ../src/iop/colorzones.c:2732
 #: ../src/iop/denoiseprofile.c:3747 ../src/iop/filmicrgb.c:4471
 #: ../src/iop/lowlight.c:821 ../src/iop/rawdenoise.c:935
 #: ../src/iop/toneequal.c:3424
@@ -14366,7 +14368,7 @@ msgstr ""
 "c: \t%.1f"
 
 #: ../src/iop/channelmixerrgb.c:4478 ../src/iop/clipping.c:2137
-#: ../src/iop/colorbalancergb.c:1944 ../src/iop/colorequal.c:2080
+#: ../src/iop/colorbalancergb.c:1944 ../src/iop/colorequal.c:2061
 #: ../src/iop/filmicrgb.c:4483 ../src/iop/negadoctor.c:848
 #: ../src/iop/toneequal.c:3372 ../src/libs/image.c:490
 #: ../src/views/lighttable.c:1258
@@ -15970,28 +15972,28 @@ msgstr ""
 "and is only here so you can switch it off\n"
 "and move to the new color mapping module."
 
-#: ../src/iop/colorequal.c:173
+#: ../src/iop/colorequal.c:171
 msgid "color equalizer"
 msgstr "Color equalizer"
 
-#: ../src/iop/colorequal.c:178 ../src/iop/colorzones.c:139
+#: ../src/iop/colorequal.c:176 ../src/iop/colorzones.c:139
 #: ../src/iop/colorzones.c:2573
 msgid "color zones"
 msgstr "Color zones"
 
-#: ../src/iop/colorequal.c:184
+#: ../src/iop/colorequal.c:182
 msgid "change saturation, hue and brightness depending on local hue"
 msgstr "Change saturation, hue and brightness depending on local hue"
 
-#: ../src/iop/colorequal.c:187 ../src/iop/toneequal.c:334
+#: ../src/iop/colorequal.c:185 ../src/iop/toneequal.c:334
 msgid "quasi-linear, RGB"
 msgstr "Quasi-linear, RGB"
 
-#: ../src/iop/colorequal.c:188 ../src/iop/toneequal.c:335
+#: ../src/iop/colorequal.c:186 ../src/iop/toneequal.c:335
 msgid "quasi-linear, RGB, scene-referred"
 msgstr "Quasi-linear, RGB, scene-referred"
 
-#: ../src/iop/colorequal.c:1881
+#: ../src/iop/colorequal.c:1813
 #, c-format
 msgid ""
 "middle click to toggle sliders visibility\n"
@@ -16002,41 +16004,42 @@ msgstr ""
 "\n"
 "%s"
 
+#. create a new tab for options
 #. Page OPTIONS
-#: ../src/iop/colorequal.c:2039 ../src/iop/colorequal.c:2205
+#: ../src/iop/colorequal.c:1980 ../src/iop/colorequal.c:2183
 #: ../src/iop/filmicrgb.c:4675
 msgid "options"
 msgstr "Options"
 
-#: ../src/iop/colorequal.c:2115
-msgid "shift nodes to lower or higher hue"
-msgstr "Shift nodes to lower or higher hue"
-
-#: ../src/iop/colorequal.c:2128
+#: ../src/iop/colorequal.c:2068
 msgid "change hue hue-wise"
 msgstr "Change hue hue-wise"
 
-#: ../src/iop/colorequal.c:2153
+#: ../src/iop/colorequal.c:2069
 msgid "change saturation hue-wise"
 msgstr "Change saturation hue-wise"
 
-#: ../src/iop/colorequal.c:2179
+#: ../src/iop/colorequal.c:2070
 msgid "change brightness hue-wise"
 msgstr "Change brightness hue-wise"
 
-#: ../src/iop/colorequal.c:2219
+#: ../src/iop/colorequal.c:2108
+msgid "shift nodes to lower or higher hue"
+msgstr "Shift nodes to lower or higher hue"
+
+#: ../src/iop/colorequal.c:2195
 msgid "change for sharper or softer hue curve"
 msgstr "Change for sharper or softer hue curve"
 
-#: ../src/iop/colorequal.c:2225 ../src/iop/colorequal.c:2238
+#: ../src/iop/colorequal.c:2201 ../src/iop/colorequal.c:2214
 msgid " px"
 msgstr " px"
 
-#: ../src/iop/colorequal.c:2227
+#: ../src/iop/colorequal.c:2203
 msgid "blurring radius of chroma prefilter analysis"
 msgstr "Blurring radius of chroma prefilter analysis"
 
-#: ../src/iop/colorequal.c:2233
+#: ../src/iop/colorequal.c:2209
 msgid ""
 "visualize weighing function on changed output.\n"
 "red shows possibly changed data, blueish parts will not be changed."
@@ -16044,11 +16047,11 @@ msgstr ""
 "Visualize weighing function on changed output.\n"
 "Red shows possibly changed data, blueish parts will not be changed."
 
-#: ../src/iop/colorequal.c:2239
+#: ../src/iop/colorequal.c:2215
 msgid "blurring radius of applied parameters"
 msgstr "Blurring radius of applied parameters"
 
-#: ../src/iop/colorequal.c:2246
+#: ../src/iop/colorequal.c:2222
 msgid ""
 "visualize changed output for the selected tab.\n"
 "red shows increased data, blue decreased."
@@ -20994,7 +20997,7 @@ msgctxt "section"
 msgid "camera control"
 msgstr "Camera control"
 
-#: ../src/libs/camera.c:421 ../src/libs/histogram.c:2675
+#: ../src/libs/camera.c:421 ../src/libs/histogram.c:2677
 msgid "modes"
 msgstr "Modes"
 
@@ -22493,7 +22496,7 @@ msgstr "Waveform"
 msgid "RGB parade"
 msgstr "RGB parade"
 
-#: ../src/libs/histogram.c:126 ../src/libs/histogram.c:2618
+#: ../src/libs/histogram.c:126 ../src/libs/histogram.c:2620
 msgid "histogram"
 msgstr "Histogram"
 
@@ -22565,44 +22568,44 @@ msgstr "Set view to RYB"
 msgid "set view to u*v*"
 msgstr "Set view to u*v*"
 
-#: ../src/libs/histogram.c:2621 ../src/libs/histogram.c:2687
+#: ../src/libs/histogram.c:2623 ../src/libs/histogram.c:2689
 msgid "cycle histogram modes"
 msgstr "Cycle histogram modes"
 
-#: ../src/libs/histogram.c:2626 ../src/libs/histogram.c:2689
+#: ../src/libs/histogram.c:2628 ../src/libs/histogram.c:2691
 msgid "hide histogram"
 msgstr "Hide histogram"
 
-#: ../src/libs/histogram.c:2692 ../src/libs/histogram.c:2725
+#: ../src/libs/histogram.c:2694 ../src/libs/histogram.c:2727
 msgid "switch histogram view"
 msgstr "Switch histogram view"
 
-#: ../src/libs/histogram.c:2700
+#: ../src/libs/histogram.c:2702
 msgid "toggle blue channel"
 msgstr "Toggle blue channel"
 
-#: ../src/libs/histogram.c:2702 ../src/libs/histogram.c:2711
-#: ../src/libs/histogram.c:2720
+#: ../src/libs/histogram.c:2704 ../src/libs/histogram.c:2713
+#: ../src/libs/histogram.c:2722
 msgid "toggle colors"
 msgstr "Toggle colors"
 
-#: ../src/libs/histogram.c:2709
+#: ../src/libs/histogram.c:2711
 msgid "toggle green channel"
 msgstr "Toggle green channel"
 
-#: ../src/libs/histogram.c:2718
+#: ../src/libs/histogram.c:2720
 msgid "toggle red channel"
 msgstr "Toggle red channel"
 
-#: ../src/libs/histogram.c:2730
+#: ../src/libs/histogram.c:2732
 msgid "cycle vectorscope types"
 msgstr "Cycle vectorscope types"
 
-#: ../src/libs/histogram.c:2741
+#: ../src/libs/histogram.c:2743
 msgid "color harmonies"
 msgstr "Color harmonies"
 
-#: ../src/libs/histogram.c:2755
+#: ../src/libs/histogram.c:2757
 msgid "cycle color harmonies"
 msgstr "Cycle color harmonies"
 
@@ -25207,6 +25210,10 @@ msgstr "Click to exit culling layout."
 msgid "click to enter culling layout in dynamic mode."
 msgstr "Click to enter culling layout in dynamic mode."
 
+#: ../src/libs/tools/lighttable.c:326
+msgid "focus detection"
+msgstr "Focus detection"
+
 #: ../src/libs/tools/lighttable.c:365
 msgid "toggle filemanager layout"
 msgstr "Toggle filemanager layout"
@@ -25719,51 +25726,51 @@ msgstr "Redo"
 msgid "change keyboard shortcut slider precision"
 msgstr "Change keyboard shortcut slider precision"
 
-#: ../src/views/darkroom.c:3595
+#: ../src/views/darkroom.c:3598
 msgid "keyboard shortcut slider precision: fine"
 msgstr "Keyboard shortcut slider precision: fine"
 
-#: ../src/views/darkroom.c:3597
+#: ../src/views/darkroom.c:3600
 msgid "keyboard shortcut slider precision: normal"
 msgstr "Keyboard shortcut slider precision: normal"
 
-#: ../src/views/darkroom.c:3599
+#: ../src/views/darkroom.c:3602
 msgid "keyboard shortcut slider precision: coarse"
 msgstr "Keyboard shortcut slider precision: coarse"
 
-#: ../src/views/darkroom.c:3614
+#: ../src/views/darkroom.c:3617
 msgid "switch to lighttable"
 msgstr "Switch to Lighttable"
 
-#: ../src/views/darkroom.c:3615 ../src/views/lighttable.c:882
+#: ../src/views/darkroom.c:3618 ../src/views/lighttable.c:882
 msgid "zoom in the image"
 msgstr "Zoom in the image"
 
-#: ../src/views/darkroom.c:3616
+#: ../src/views/darkroom.c:3619
 msgid "unbounded zoom in the image"
 msgstr "Unbounded zoom in the image"
 
-#: ../src/views/darkroom.c:3617
+#: ../src/views/darkroom.c:3620
 msgid "zoom to 100% 200% and back"
 msgstr "Zoom to 100% 200% and back"
 
-#: ../src/views/darkroom.c:3618 ../src/views/lighttable.c:885
+#: ../src/views/darkroom.c:3621 ../src/views/lighttable.c:885
 msgid "pan a zoomed image"
 msgstr "Pan a zoomed image"
 
-#: ../src/views/darkroom.c:3620 ../src/views/lighttable.c:927
+#: ../src/views/darkroom.c:3623 ../src/views/lighttable.c:927
 msgid "[modules] expand module without closing others"
 msgstr "[modules] expand module without closing others"
 
-#: ../src/views/darkroom.c:3621 ../src/views/lighttable.c:928
+#: ../src/views/darkroom.c:3624 ../src/views/lighttable.c:928
 msgid "[modules] expand module and close others"
 msgstr "[modules] expand module and close others"
 
-#: ../src/views/darkroom.c:3623
+#: ../src/views/darkroom.c:3626
 msgid "[modules] rename module"
 msgstr "[modules] rename module"
 
-#: ../src/views/darkroom.c:3625
+#: ../src/views/darkroom.c:3628
 msgid "[modules] change module position in pipe"
 msgstr "[modules] change module position in pipe"
 
