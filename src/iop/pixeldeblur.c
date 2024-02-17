@@ -46,8 +46,6 @@
 
 DT_MODULE_INTROSPECTION(2, dt_iop_pixeldeblur_params_t)
 
-#define MAXR 12
-
 // note -- the comments after the // are used by the introspection module to define min,max,default
 typedef struct dt_iop_pixeldeblur_params_t
 {
@@ -55,7 +53,7 @@ typedef struct dt_iop_pixeldeblur_params_t
   float gaussian_strength; // $MIN:  0.0  $MAX:  1.0 $DEFAULT: 0.0 $DESCRIPTION: "Smooth deblur algorithm"
   float halo_control;      // $MIN:  0.0  $MAX:  1.0 $DEFAULT: 0.33 $DESCRIPTION: "Halo control"
   float iterations;        // $MIN:  1.0  $MAX: 10.0 $DEFAULT: 2.0 $DESCRIPTION: "iterations"
-  float noise_threshold;   // $MIN:  1.0  $MAX:  4.0 $DEFAULT: 2.5 $DESCRIPTION: "Threshold to correct noise pixels"
+  float noise_threshold;   // $MIN:  0.25  $MAX:  4.0 $DEFAULT: 2.5 $DESCRIPTION: "Threshold to correct noise pixels"
   gboolean large_radius;   // $MIN: FALSE $MAX: TRUE $DEFAULT: FALSE $DESCRIPTION" "Large radius for pixel comparisions"
 } dt_iop_pixeldeblur_params_t;
 
@@ -516,16 +514,17 @@ void clean_noisy_pixels(gray_image *pImg_input, gray_image *pImg_tmp, gray_image
       float cpe= pImg_tmp->data[i_c]-mean ; // central pixel error
 
       if(var > 0.) {
-        r = cpe/sqrt(var) ;
+        r = cpe/sqrtf(var) ;
       }
 
       // noise pixel correction 
-      float acpe = fabs(cpe) ;
+      float abs_cpe = fabsf(cpe) ;
+      float abs_r = fabsf(r) ;
 
       // using maxval here to normalize the absolute value error
       // if in Lab space maxval will be 100., if in RGB space maxval will be 1.
-      if(acpe > .001*maxval && fabs(r) > noise_threshold) {
-        float ratio = noise_threshold/fabs(r) ;
+      if(abs_cpe > .001f*maxval && abs_r > noise_threshold) {
+        float ratio = noise_threshold/abs_r ;
         float delta=ratio*cpe-cpe ;
         delta=-cpe ;
 
@@ -543,8 +542,8 @@ void clean_noisy_pixels(gray_image *pImg_input, gray_image *pImg_tmp, gray_image
       int n_in_window = window2vector(pImg_input, x, y, 1, v) ;
 
       int n_pos=0 ; // number of neighbors whose value is greater than central pixel
-      float min=200. ;
-      float max=-200. ;
+      float min=200.f ;
+      float max=-200.f ;
 
       for(int i=0 ; i < 4 ; i++) {
         if(v[4] < v[i]) n_pos++ ;
@@ -561,13 +560,13 @@ void clean_noisy_pixels(gray_image *pImg_input, gray_image *pImg_tmp, gray_image
       if(n_pos < 1) {
         // central pixel looks like a local min
         // restrain it to be equal to the neighbor max
-        pImg_damping->data[i_c] = .01 - .01*halo_control ;
+        pImg_damping->data[i_c] = .01f - .01f*halo_control ;
       }
 
       if(n_pos > 7) {
         // central pixel looks like a local max
         // restrain it to be equal to the neighbor min
-        pImg_damping->data[i_c] = .01 - .01*halo_control ;
+        pImg_damping->data[i_c] = .01f - .01f*halo_control ;
       }
 #endif
 
@@ -672,7 +671,7 @@ void perform_heat_transfer(gray_image *pImg_input, gray_image *pDeltas, float sc
       // this should be replaced by the appropriate amount
       // determined from a blurring kernel
       // looks like 1/dist is definitely better than 1./dist**2
-      neighbor_wgt[i] = 1./sqrt(dist_sq) ;
+      neighbor_wgt[i] = 1./sqrtf(dist_sq) ;
 /*            neighbor_wgt[i] = 1./dist_sq ;  */
     }
 
@@ -790,10 +789,9 @@ int Lab_pixel_sharpen(const_Lab_image *img_in, Lab_image *img_out, const int wid
     return 1;
   }
 
-  // retrieve the L component from the input image
+  // retrieve the component from the input image
   // need to have this in a re-writeable array, but not alter the orginal
-  // input image, L is the at index 0
-    // copy the channel to the buffer
+  // copy the channel to the buffer
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
     dt_omp_firstprivate(size,img_in,component_to_sharpen,Img_damping,Img_input0) \
@@ -811,13 +809,13 @@ int Lab_pixel_sharpen(const_Lab_image *img_in, Lab_image *img_out, const int wid
 
   clean_noisy_pixels(&Img_input0, &Img_tmp, &Img_cpe, &Img_damping, noise_threshold, maxval, halo_control) ;
 
-  if(scaled_amount > 1.e-12 && d->gaussian_strength > .0001) {
+  if(scaled_amount > 1.e-12f && d->gaussian_strength > .0001f) {
     // convert gaussian strength to sigma
     int window_size=3 ;
     float even_wgts = 1./(float)(window_size*window_size) ;
-    float ln_sigma = -1.03554422509484*log(even_wgts) -1.38836752342413 ; // log(sigma) required to produce nearly even weights in all window cells
+    float ln_sigma = -1.03554422509484f*logf(even_wgts) -1.38836752342413f ; // log(sigma) required to produce nearly even weights in all window cells
     float sigma1 = expf(ln_sigma) ;
-    float sigma = 0.25+(sigma1-0.25)*d->gaussian_strength ;  // a sigma of 0.25 produces a distribution where the very center cell has a weight of about .998
+    float sigma = 0.25f+(sigma1-0.25f)*d->gaussian_strength ;  // a sigma of 0.25 produces a distribution where the very center cell has a weight of about .998
     dt_gaussian_t *g = dt_gaussian_init(width, height, 1, &maxval, &minval, sigma, 0) ;
     dt_gaussian_blur(g,Img_input0.data,Img_blurred.data) ;
     dt_gaussian_free(g) ;
@@ -839,113 +837,113 @@ int Lab_pixel_sharpen(const_Lab_image *img_in, Lab_image *img_out, const int wid
 
     printf("Iteration %d of %d\n", iteration+1, n_iterations) ;
 
-    if(scaled_amount > 1.e-12) {
+    if(scaled_amount > 1.e-12f) {
       // constrain_backward_diffusion
 
-    // apply the changes back to Img_input
+      // apply the changes back to Img_input
 
-    // element 0 of pixels img_out now has the sum of changes to L required
-    // now add the changes to Img_input with apply halo constraints
-    // another approach may be to asymptotically approach halo constraints during calculations in the previous for loops
+      // element 0 of pixels img_out now has the sum of changes to L required
+      // now add the changes to Img_input with apply halo constraints
+      // another approach may be to asymptotically approach halo constraints during calculations in the previous for loops
 
-    size_t n_halo_pixels=0 ;
+      size_t n_halo_pixels=0 ;
 
-    int nb_deltas[4][2] = {
-      {1,0},
-      {0,1},
-      {-1,0},
-      {0,-1}
-    };
+      int nb_deltas[4][2] = {
+        {1,0},
+        {0,1},
+        {-1,0},
+        {0,-1}
+      };
 
-    for(int y=1 ; y < height-1 ; y++) {
-      int base_i=y*width ;
+      for(int y=1 ; y < height-1 ; y++) {
+        int base_i=y*width ;
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) dt_omp_firstprivate(y,halo_control,deltas,base_i,nb_deltas, height, width, Img_blurred, Img_input, Img_damping) reduction(+:n_halo_pixels)
 #endif
-      for(int x=1 ; x < width-1 ; x++) {
+        for(int x=1 ; x < width-1 ; x++) {
 
-        int i_c=x + base_i ;
-        // compare N,S,E,W
-        for(int nb=0 ; nb < 4 ; nb++) {
-          int nb_y=nb_deltas[nb][0] + y ;
-          int nb_x=nb_deltas[nb][1] + x ;
-          int nb_i=nb_x + nb_y*width ;
+          int i_c=x + base_i ;
+          // compare N,S,E,W
+          for(int nb=0 ; nb < 4 ; nb++) {
+            int nb_y=nb_deltas[nb][0] + y ;
+            int nb_x=nb_deltas[nb][1] + x ;
+            int nb_i=nb_x + nb_y*width ;
 
-          float d0 = Img_blurred.data[i_c] - Img_blurred.data[nb_i] ;
-          float v_new = Img_input.data[i_c] + deltas.data[i_c] ;
-          float vnb_new = Img_input.data[nb_i] + deltas.data[nb_i] ;
-          float d_new = v_new - vnb_new ;
+            float d0 = Img_blurred.data[i_c] - Img_blurred.data[nb_i] ;
+            float v_new = Img_input.data[i_c] + deltas.data[i_c] ;
+            float vnb_new = Img_input.data[nb_i] + deltas.data[nb_i] ;
+            float d_new = v_new - vnb_new ;
 
-          if( (d0 < 0. && d_new > 0.) || (d0 > 0. && d_new < 0.) ) {
-            n_halo_pixels++ ;
+            if( (d0 < 0. && d_new > 0.) || (d0 > 0. && d_new < 0.) ) {
+              n_halo_pixels++ ;
 
-            if(fabs(deltas.data[i_c]) > fabs(deltas.data[nb_i])) {
-              // pixel at i changed the most, make it's new value equal to
-              // the previous value of the neighbor
-              float new_delta = Img_input.data[nb_i] - Img_input.data[i_c] ;
+              if(fabs(deltas.data[i_c]) > fabs(deltas.data[nb_i])) {
+                // pixel at i changed the most, make its new value equal to
+                // the previous value of the neighbor
+                float new_delta = Img_input.data[nb_i] - Img_input.data[i_c] ;
 
-              // may want to try sqrt(halo_control) here
-              deltas.data[i_c] = (1.-halo_control)*deltas.data[i_c]+halo_control*new_delta ;
+                // may want to try sqrt(halo_control) here
+                deltas.data[i_c] = (1.-halo_control)*deltas.data[i_c]+halo_control*new_delta ;
 
-              // just halo_control here
-              Img_damping.data[i_c] *= (1.-halo_control) ;
-            } else {
-              // vice-versa
-              float new_delta = Img_input.data[i_c] - Img_input.data[nb_i] ;
+                // just halo_control here
+                Img_damping.data[i_c] *= (1.-halo_control) ;
+              } else {
+                // vice-versa
+                float new_delta = Img_input.data[i_c] - Img_input.data[nb_i] ;
 
-              // may want to try sqrt(halo_control) here
-              deltas.data[nb_i] = (1.-halo_control)*deltas.data[nb_i]+halo_control*new_delta ;
+                // may want to try sqrt(halo_control) here
+                deltas.data[nb_i] = (1.-halo_control)*deltas.data[nb_i]+halo_control*new_delta ;
 
-              // just halo_control here
-              Img_damping.data[nb_i] *= (1.-halo_control) ;
+                // just halo_control here
+                Img_damping.data[nb_i] *= (1.-halo_control) ;
+              }
             }
           }
-        }
 
 #ifndef PREDAMP_localminmax
-        // unfortunately looks like this must be done at every iteration
+          // unfortunately looks like this must be done at every iteration
 
-        int n_pos=0 ;
-        float min=200. ;
-        float max=-200. ;
-        float v_ic = Img_input.data[i_c] + deltas.data[i_c] ;
+          int n_greater=0 ;
+          float min=200.f ;
+          float max=-200.f ;
+          float v_ic = Img_input.data[i_c] + deltas.data[i_c] ;
 
-        for(int ib=base_i-width ; ib <= base_i+width ; ib += width) {
+          for(int ib=base_i-width ; ib <= base_i+width ; ib += width) {
 #ifdef _OPENMP
 #pragma omp simd
 #endif
-          for(int ix=x-1 ; ix <= x+1 ; ix++) {
-            if(ix == x && ib == base_i) continue ;
-            int i=ib+ix ;
-            float v = Img_input.data[i] + deltas.data[i] ;
+            for(int ix=x-1 ; ix <= x+1 ; ix++) {
+              if(ix == x && ib == base_i) continue ;
+              int i=ib+ix ;
+              float v = Img_input.data[i] + deltas.data[i] ;
 
-            if(v_ic < v) n_pos++ ;
-            if(min > v) min = v ;
-            if(max < v) max = v ;
+              if(v_ic < v) n_greater++ ;
+              if(min > v) min = v ;
+              if(max < v) max = v ;
+            }
           }
-        }
 
-        if(n_pos < 1) {
-          // central pixel looks like a local min
-          // restrain it to be equal to the neighbor max
-          float new_delta = max - Img_input.data[i_c] ;
-          deltas.data[i_c] = new_delta ;
-          Img_damping.data[i_c] = (1.-halo_control) ;
-        }
+          if(n_greater < 1) {
+            // central pixel looks like a local min
+            // restrain it to be equal to the neighbor max
+            float new_delta = max - Img_input.data[i_c] ;
+            deltas.data[i_c] = new_delta ;
+            Img_damping.data[i_c] = (1.f-halo_control) ;
+          }
 
-        if(n_pos > 7) {
-          // central pixel looks like a local max
-          // restrain it to be equal to the neighbor min
-          float new_delta = min - Img_input.data[i_c] ;
-          deltas.data[i_c] = new_delta ;
-          Img_damping.data[i_c] = (1.-halo_control) ;
-        }
+          if(n_greater > 7) {
+            // central pixel looks like a local max
+            // restrain it to be equal to the neighbor min
+            float new_delta = min - Img_input.data[i_c] ;
+            deltas.data[i_c] = new_delta ;
+            Img_damping.data[i_c] = (1.f-halo_control) ;
+          }
 #endif
 
 
+        }
       }
-    }
       printf("Detected %d pixels with gradient reversals\n", (int)n_halo_pixels) ;
     }
 
@@ -968,7 +966,7 @@ int Lab_pixel_sharpen(const_Lab_image *img_in, Lab_image *img_out, const int wid
 #pragma omp parallel for default(none) dt_omp_firstprivate(size,img_out,height,width,Img_input,Img_input0,Img_blurred,component_to_sharpen)
 #endif
       for(size_t i = 0; i < size; i++) {
-          float delta = 0. ; // by default a border pixel is not changed
+          float delta = 0.f ; // by default a border pixel is not changed
           float *pixel_out = img_out->data + i * img_out->stride;
 
           int y = (int)i/width ;
@@ -986,7 +984,7 @@ int Lab_pixel_sharpen(const_Lab_image *img_in, Lab_image *img_out, const int wid
 
 #ifndef DARKTABLE_COMPILE
         for(size_t i = 0; i < size; i++) {
-          float delta = 0. ; // by default a border pixel is not changed
+          float delta = 0.f ; // by default a border pixel is not changed
           float *pixel_out = img_out->data + i * img_out->stride;
 
           int y = (int)i/width ;
@@ -1004,10 +1002,10 @@ int Lab_pixel_sharpen(const_Lab_image *img_in, Lab_image *img_out, const int wid
 
             float v ;
 
-            if(normalize_factor < .9) {
+            if(normalize_factor < .9f) {
 
               if(component_to_sharpen == 0) {
-                v = Img_damping.data[i]*100. ;
+                v = Img_damping.data[i]*100.f ;
             } else {
                 // multiply the original a or b by 1.-damping
                 v = (1.-Img_damping.data[i]) ;
@@ -1023,10 +1021,10 @@ int Lab_pixel_sharpen(const_Lab_image *img_in, Lab_image *img_out, const int wid
 
             float v ;
 
-            if(normalize_factor < .9) {
+            if(normalize_factor < .9f) {
 
               if(component_to_sharpen == 0) {
-                v = Img_blurred.data[i]/2. ;
+                v = Img_blurred.data[i]/2.f ;
               } else {
                 // multiply the original a or b by 1.-damping
                 v = (1.-Img_blurred.data[i]) ;
@@ -1083,7 +1081,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   // Special case handling: very small image with one or two dimensions below 2*rad+1 treat as no processing and just
   // pass through.  also, if piece->iscale > 1.2, no point trying to improve an image that is already scaled down by 1./1.2
-  if((float)piece->iscale > 1.2 || rad == 0 || (roi_out->width < 2 * rad + 1 || roi_out->height < 2 * rad + 1))
+  if((float)piece->iscale > 1.2f || rad == 0 || (roi_out->width < 2 * rad + 1 || roi_out->height < 2 * rad + 1))
   {
     printf("PIXELDEBLUR: COPY WxH= %d x %d\n", width, height) ;
     dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, 4);
@@ -1203,8 +1201,6 @@ void cleanup_global(dt_iop_module_so_t *module)
   free(module->data);
   module->data = NULL;
 }
-
-#undef MAXR
 
 #endif
 
