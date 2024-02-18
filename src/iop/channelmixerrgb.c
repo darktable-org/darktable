@@ -200,8 +200,8 @@ typedef struct dt_iop_channelmixer_rbg_data_t
   float DT_ALIGNED_PIXEL grey[CHANNEL_SIZE];
   dt_aligned_pixel_t illuminant; // XYZ coordinates of illuminant
   float p, gamut;
-  int apply_grey;
-  int clip;
+  gboolean apply_grey;
+  gboolean clip;
   dt_adaptation_t adaptation;
   dt_illuminant_t illuminant_type;
   dt_iop_channelmixer_rgb_version_t version;
@@ -217,7 +217,7 @@ typedef struct dt_iop_channelmixer_rgb_global_data_t
 } dt_iop_channelmixer_rgb_global_data_t;
 
 
-void _auto_set_illuminant(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe);
+static void _auto_set_illuminant(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe);
 
 
 const char *name()
@@ -775,8 +775,8 @@ static inline void _loop_switch(const float *const restrict in,
                                 const dt_aligned_pixel_t grey,
                                 const float p,
                                 const float gamut,
-                                const int clip,
-                                const int apply_grey,
+                                const gboolean clip,
+                                const gboolean apply_grey,
                                 const dt_adaptation_t kind,
                                 const dt_iop_channelmixer_rgb_version_t version)
 {
@@ -1306,11 +1306,11 @@ static void _check_if_close_to_daylight(const float x,
 #define DEG_TO_RAD(x) (x * M_PI / 180.f)
 #define RAD_TO_DEG(x) (x * 180.f / M_PI)
 
-static inline void compute_patches_delta_E(const float *const restrict patches,
-                                           const dt_color_checker_t *const checker,
-                                           float *const restrict delta_E,
-                                           float *const restrict avg_delta_E,
-                                           float *const restrict max_delta_E)
+static inline void _compute_patches_delta_E(const float *const restrict patches,
+                                            const dt_color_checker_t *const checker,
+                                            float *const restrict delta_E,
+                                            float *const restrict avg_delta_E,
+                                            float *const restrict max_delta_E)
 {
   // Compute the delta E
 
@@ -1677,7 +1677,7 @@ static void _extract_color_checker(const float *const restrict in,
   // Compute the delta E
   float pre_wb_delta_E = 0.f;
   float pre_wb_max_delta_E = 0.f;
-  compute_patches_delta_E(patches, g->checker, g->delta_E_in,
+  _compute_patches_delta_E(patches, g->checker, g->delta_E_in,
                           &pre_wb_delta_E, &pre_wb_max_delta_E);
 
   /* find the scene illuminant */
@@ -1712,7 +1712,7 @@ static void _extract_color_checker(const float *const restrict in,
 
   // solve the equation to find the scene illuminant
   dt_aligned_pixel_t illuminant = { 0.0f };
-  for(size_t c = 0; c < 3; c++)
+  for_three_channels(c)
     illuminant[c] = D50_LMS[c] * LMS_grey_test[c] / LMS_grey_ref[c];
 
   // convert back the illuminant to XYZ then xyY
@@ -1720,7 +1720,7 @@ static void _extract_color_checker(const float *const restrict in,
   convert_any_LMS_to_XYZ(illuminant, illuminant_XYZ, kind);
   dt_vector_clipneg(illuminant_XYZ);
   const float Y_illu = illuminant_XYZ[1];
-  for(size_t c = 0; c < 3; c++)
+  for_three_channels(c)
   {
     if(Y_illu > 0.0f)
       illuminant_XYZ[c] /= Y_illu;
@@ -1789,7 +1789,7 @@ static void _extract_color_checker(const float *const restrict in,
   // Compute the delta E
   float post_wb_delta_E = 0.f;
   float post_wb_max_delta_E = 0.f;
-  compute_patches_delta_E(patches, g->checker, g->delta_E_in,
+  _compute_patches_delta_E(patches, g->checker, g->delta_E_in,
                           &post_wb_delta_E, &post_wb_max_delta_E);
 
   /* Compute the matrix of mix */
@@ -1901,7 +1901,7 @@ static void _extract_color_checker(const float *const restrict in,
   // Compute the delta E
   float post_mix_delta_E = 0.f;
   float post_mix_max_delta_E = 0.f;
-  compute_patches_delta_E(patches, g->checker, g->delta_E_in,
+  _compute_patches_delta_E(patches, g->checker, g->delta_E_in,
                           &post_mix_delta_E, &post_mix_max_delta_E);
 
   // get the temperature
@@ -1960,12 +1960,12 @@ static void _extract_color_checker(const float *const restrict in,
   dt_free_align(patches);
 }
 
-void validate_color_checker(const float *const restrict in,
-                            const dt_iop_roi_t *const roi_in,
-                            dt_iop_channelmixer_rgb_gui_data_t *g,
-                            const dt_colormatrix_t RGB_to_XYZ,
-                            const dt_colormatrix_t XYZ_to_RGB,
-                            const dt_colormatrix_t XYZ_to_CAM)
+static void _validate_color_checker(const float *const restrict in,
+                                    const dt_iop_roi_t *const roi_in,
+                                    dt_iop_channelmixer_rgb_gui_data_t *g,
+                                    const dt_colormatrix_t RGB_to_XYZ,
+                                    const dt_colormatrix_t XYZ_to_RGB,
+                                    const dt_colormatrix_t XYZ_to_CAM)
 {
   float *const restrict patches = dt_alloc_align_float(4 * g->checker->patches);
   extraction_result_t extraction_result =
@@ -1974,7 +1974,7 @@ void validate_color_checker(const float *const restrict in,
   // Compute the delta E
   float pre_wb_delta_E = 0.f;
   float pre_wb_max_delta_E = 0.f;
-  compute_patches_delta_E(patches, g->checker, g->delta_E_in,
+  _compute_patches_delta_E(patches, g->checker, g->delta_E_in,
                           &pre_wb_delta_E, &pre_wb_max_delta_E);
 
   gchar *diagnostic;
@@ -2285,7 +2285,7 @@ void process(struct dt_iop_module_t *self,
   if(self->dev->gui_attached && g)
     if(g->run_validation && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
     {
-      validate_color_checker(out, roi_out, g, RGB_to_XYZ, XYZ_to_RGB, XYZ_to_CAM);
+      _validate_color_checker(out, roi_out, g, RGB_to_XYZ, XYZ_to_RGB, XYZ_to_CAM);
       g->run_validation = FALSE;
     }
 }
@@ -2463,7 +2463,7 @@ static inline void _update_bounding_box(dt_iop_channelmixer_rgb_gui_data_t *g,
   get_homography(g->box, g->ideal_box, g->inverse_homography);
 }
 
-static inline void init_bounding_box(dt_iop_channelmixer_rgb_gui_data_t *g,
+static inline void _init_bounding_box(dt_iop_channelmixer_rgb_gui_data_t *g,
                                      const float width,
                                      const float height)
 {
@@ -2603,7 +2603,7 @@ int button_pressed(dt_iop_module_t *self,
     dt_iop_gui_enter_critical_section(self);
     g->checker_ready = FALSE;
     g->profile_ready = FALSE;
-    init_bounding_box(g, wd, ht);
+    _init_bounding_box(g, wd, ht);
     dt_iop_gui_leave_critical_section(self);
 
     dt_control_queue_redraw_center();
@@ -2818,7 +2818,7 @@ void gui_post_expose(dt_iop_module_t *self,
   }
 }
 
-static void optimize_changed_callback(GtkWidget *widget, gpointer user_data)
+static void _optimize_changed_callback(GtkWidget *widget, gpointer user_data)
 {
   if(darktable.gui->reset) return;
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -2833,7 +2833,7 @@ static void optimize_changed_callback(GtkWidget *widget, gpointer user_data)
   dt_iop_gui_leave_critical_section(self);
 }
 
-static void checker_changed_callback(GtkWidget *widget, gpointer user_data)
+static void _checker_changed_callback(GtkWidget *widget, gpointer user_data)
 {
   if(darktable.gui->reset) return;
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -2849,13 +2849,13 @@ static void checker_changed_callback(GtkWidget *widget, gpointer user_data)
 
   dt_iop_gui_enter_critical_section(self);
   g->profile_ready = FALSE;
-  init_bounding_box(g, wd, ht);
+  _init_bounding_box(g, wd, ht);
   dt_iop_gui_leave_critical_section(self);
 
   dt_control_queue_redraw_center();
 }
 
-static void safety_changed_callback(GtkWidget *widget, gpointer user_data)
+static void _safety_changed_callback(GtkWidget *widget, gpointer user_data)
 {
   if(darktable.gui->reset) return;
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -2871,7 +2871,7 @@ static void safety_changed_callback(GtkWidget *widget, gpointer user_data)
 }
 
 
-static void start_profiling_callback(GtkWidget *togglebutton, dt_iop_module_t *self)
+static void _start_profiling_callback(GtkWidget *togglebutton, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_request_focus(self);
@@ -2886,13 +2886,13 @@ static void start_profiling_callback(GtkWidget *togglebutton, dt_iop_module_t *s
 
   // init bounding box
   dt_iop_gui_enter_critical_section(self);
-  init_bounding_box(g, wd, ht);
+  _init_bounding_box(g, wd, ht);
   dt_iop_gui_leave_critical_section(self);
 
   dt_control_queue_redraw_center();
 }
 
-static void run_profile_callback(GtkWidget *widget,
+static void _run_profile_callback(GtkWidget *widget,
                                  GdkEventButton *event,
                                  gpointer user_data)
 {
@@ -2908,7 +2908,7 @@ static void run_profile_callback(GtkWidget *widget,
   dt_dev_reprocess_preview(self->dev);
 }
 
-static void run_validation_callback(GtkWidget *widget,
+static void _run_validation_callback(GtkWidget *widget,
                                     GdkEventButton *event,
                                     gpointer user_data)
 {
@@ -3594,7 +3594,7 @@ static gboolean _illuminant_color_draw(GtkWidget *widget,
   return TRUE;
 }
 
-static gboolean target_color_draw(GtkWidget *widget,
+static gboolean _target_color_draw(GtkWidget *widget,
                                   cairo_t *crf,
                                   gpointer user_data)
 {
@@ -3641,7 +3641,7 @@ static gboolean target_color_draw(GtkWidget *widget,
   return TRUE;
 }
 
-static gboolean origin_color_draw(GtkWidget *widget,
+static gboolean _origin_color_draw(GtkWidget *widget,
                                   cairo_t *crf,
                                   gpointer user_data)
 {
@@ -3740,7 +3740,7 @@ static void _update_approx_cct(dt_iop_module_t *self)
 }
 
 
-static void illum_xy_callback(GtkWidget *slider,
+static void _illum_xy_callback(GtkWidget *slider,
                               gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -4178,8 +4178,8 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   gui_changed(self, NULL, NULL);
 }
 
-void _auto_set_illuminant(dt_iop_module_t *self,
-                          dt_dev_pixelpipe_t *pipe)
+static void _auto_set_illuminant(dt_iop_module_t *self,
+                                 dt_dev_pixelpipe_t *pipe)
 {
   dt_iop_channelmixer_rgb_gui_data_t *g =
     (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
@@ -4534,7 +4534,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->illum_x, NULL, N_("hue"));
   dt_bauhaus_slider_set_format(g->illum_x, "°");
   g_signal_connect(G_OBJECT(g->illum_x), "value-changed",
-                   G_CALLBACK(illum_xy_callback), self);
+                   G_CALLBACK(_illum_xy_callback), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->illum_x), FALSE, FALSE, 0);
 
   g->illum_y = dt_bauhaus_slider_new_with_range(self, 0., 100., 0, 0, 1);
@@ -4542,7 +4542,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->illum_y, "%");
   dt_bauhaus_slider_set_hard_max(g->illum_y, ILLUM_Y_MAX);
   g_signal_connect(G_OBJECT(g->illum_y), "value-changed",
-                   G_CALLBACK(illum_xy_callback), self);
+                   G_CALLBACK(_illum_xy_callback), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->illum_y), FALSE, FALSE, 0);
 
   g->gamut = dt_bauhaus_slider_from_params(self, "gamut");
@@ -4610,7 +4610,7 @@ void gui_init(struct dt_iop_module_t *self)
                               _("the input color that should be mapped to the target"));
 
   g_signal_connect(G_OBJECT(g->origin_spot), "draw",
-                   G_CALLBACK(origin_color_draw), self);
+                   G_CALLBACK(_origin_color_draw), self);
   gtk_box_pack_start(GTK_BOX(vvbox), g->origin_spot, TRUE, TRUE, 0);
 
   g->Lch_origin = gtk_label_new(_("L: \tN/A\nh: \tN/A\nc: \tN/A"));
@@ -4633,7 +4633,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->target_spot),
                               _("the desired target color after mapping"));
 
-  g_signal_connect(G_OBJECT(g->target_spot), "draw", G_CALLBACK(target_color_draw), self);
+  g_signal_connect(G_OBJECT(g->target_spot), "draw", G_CALLBACK(_target_color_draw), self);
   gtk_box_pack_start(GTK_BOX(vvbox), g->target_spot, TRUE, TRUE, 0);
 
   g->lightness_spot = dt_bauhaus_slider_new_with_range(self, 0., LIGHTNESS_MAX, 0, 0, 1);
@@ -4723,14 +4723,14 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->cs.expander,
                               _("use a color checker target to autoset CAT and channels"));
   g_signal_connect(G_OBJECT(g->cs.toggle), "toggled",
-                   G_CALLBACK(start_profiling_callback), self);
+                   G_CALLBACK(_start_profiling_callback), self);
 
   GtkWidget *collapsible = GTK_WIDGET(g->cs.container);
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL
     (g->checkers_list, self, N_("calibrate"), N_("chart"),
      _("choose the vendor and the type of your chart"),
-     0, checker_changed_callback, self,
+     0, _checker_changed_callback, self,
      N_("Xrite ColorChecker 24 pre-2014"),
      N_("Xrite ColorChecker 24 post-2014"),
      N_("Datacolor SpyderCheckr 24 pre-2018"),
@@ -4747,7 +4747,7 @@ void gui_init(struct dt_iop_module_t *self)
        "saturated colors gives the lowest maximum delta E but a high average delta E\n"
        "none is a trade-off between both\n"
        "the others are special behaviors to protect some hues"),
-     0, optimize_changed_callback, self,
+     0, _optimize_changed_callback, self,
      N_("none"),
      N_("neutral colors"),
      N_("saturated colors"),
@@ -4766,7 +4766,7 @@ void gui_init(struct dt_iop_module_t *self)
        "useful when the perspective correction is sloppy or\n"
        "the patches frame cast a shadows on the edges of the patch." ));
   g_signal_connect(G_OBJECT(g->safety), "value-changed",
-                   G_CALLBACK(safety_changed_callback), self);
+                   G_CALLBACK(_safety_changed_callback), self);
   gtk_box_pack_start(GTK_BOX(collapsible), GTK_WIDGET(g->safety), TRUE, TRUE, 0);
 
   g->label_delta_E = dt_ui_label_new("");
@@ -4789,7 +4789,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_action_define_iop(self, N_("calibrate"), N_("recompute"),
                        g->button_profile, &dt_action_def_button);
   g_signal_connect(G_OBJECT(g->button_profile), "button-press-event",
-                   G_CALLBACK(run_profile_callback), (gpointer)self);
+                   G_CALLBACK(_run_profile_callback), (gpointer)self);
   gtk_widget_set_tooltip_text(g->button_profile, _("recompute the profile"));
   gtk_box_pack_end(GTK_BOX(toolbar), GTK_WIDGET(g->button_profile), FALSE, FALSE, 0);
 
@@ -4797,7 +4797,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_action_define_iop(self, N_("calibrate"), N_("validate"),
                        g->button_validate, &dt_action_def_button);
   g_signal_connect(G_OBJECT(g->button_validate), "button-press-event",
-                   G_CALLBACK(run_validation_callback), (gpointer)self);
+                   G_CALLBACK(_run_validation_callback), (gpointer)self);
   gtk_widget_set_tooltip_text(g->button_validate, _("check the output delta E"));
   gtk_box_pack_end(GTK_BOX(toolbar), GTK_WIDGET(g->button_validate), FALSE, FALSE, 0);
 
