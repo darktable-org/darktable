@@ -1988,10 +1988,10 @@ void dt_gui_presets_update_fl(const char *name,
   sqlite3_finalize(stmt);
 }
 
-void dt_gui_presets_update_ldr(const char *name,
+void dt_gui_presets_update_format(const char *name,
                                const dt_dev_operation_t op,
                                const int32_t version,
-                               const int ldrflag)
+                               const int flag)
 {
   sqlite3_stmt *stmt;
   // clang-format off
@@ -2001,7 +2001,7 @@ void dt_gui_presets_update_ldr(const char *name,
                               " WHERE operation=?2 AND op_version=?3 AND name=?4",
                               -1, &stmt, NULL);
   // clang-format on
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, ldrflag);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, flag);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, op, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, version);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, name, -1, SQLITE_TRANSIENT);
@@ -2012,7 +2012,7 @@ void dt_gui_presets_update_ldr(const char *name,
 void dt_gui_presets_update_autoapply(const char *name,
                                      const dt_dev_operation_t op,
                                      const int32_t version,
-                                     const int autoapply)
+                                     const gboolean autoapply)
 {
   sqlite3_stmt *stmt;
   // clang-format off
