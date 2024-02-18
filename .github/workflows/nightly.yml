@@ -303,7 +303,7 @@ jobs:
       fail-fast: true
       matrix:
         build:
-          - { os: macos-12, xcode: 14.2, deployment: 12.5 } # LLVM14, x86_64
+          - { os: macos-13, xcode: 15.2, deployment: 13.5 } # LLVM16, x86_64
           - { os: macos-14, xcode: 15.2, deployment: 14.0 } # LLVM16, arm64
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
@@ -415,7 +415,7 @@ jobs:
 
             The `*.AppImage.zsync` file is not intended to be downloaded and used locally. Just ignore it. This file contains technical information required by AppImage auto-updaters such as [AppImageUpdate](https://appimage.github.io/AppImageUpdate/).
 
-            The macOS `*-x86_64.dmg` package requires at least macOS 12.5 (Monterey), the `*-arm64.dmg` package requires at least macOS 14.0 (Sonoma).
+            The macOS `*-x86_64.dmg` package requires at least macOS 13.5 (Ventura), the `*-arm64.dmg` package requires at least macOS 14.0 (Sonoma).
 
             __Please help us improve Darktable by reporting any issues you encounter!__ :wink:
           files: |
