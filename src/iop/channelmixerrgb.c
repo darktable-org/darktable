@@ -1683,11 +1683,11 @@ static void _extract_color_checker(const float *const restrict in,
   /* find the scene illuminant */
 
   // find reference grey patch
-  dt_aligned_pixel_t XYZ_grey_ref;
+  dt_aligned_pixel_t XYZ_grey_ref = { 0.0f };
   dt_Lab_to_XYZ(g->checker->values[g->checker->middle_grey].Lab, XYZ_grey_ref);
 
   // find test grey patch
-  dt_aligned_pixel_t XYZ_grey_test;
+  dt_aligned_pixel_t XYZ_grey_test = { 0.0f };
   for(size_t c = 0; c < 3; c++)
     XYZ_grey_test[c] = patches[g->checker->middle_grey * 4 + c];
 
@@ -1696,13 +1696,11 @@ static void _extract_color_checker(const float *const restrict in,
   illuminant_xy_to_XYZ(D50xyY.x, D50xyY.y, D50_XYZ);
 
   // normalize luminances - note : illuminant is normalized by definition
-  const float Y_test = XYZ_grey_test[1];
-  const float Y_ref = XYZ_grey_ref[1];
-  for(size_t c = 0; c < 3; c++)
-  {
-    XYZ_grey_ref[c] /= Y_ref;
-    XYZ_grey_test[c] /= Y_test;
-  }
+  const float Y_test = MAX(NORM_MIN, XYZ_grey_test[1]);
+  const float Y_ref = MAX(NORM_MIN, XYZ_grey_ref[1]);
+
+  dt_vector_div1(XYZ_grey_ref, XYZ_grey_ref, Y_ref);
+  dt_vector_div1(XYZ_grey_test, XYZ_grey_test, Y_test);
 
   // convert XYZ to LMS
   dt_aligned_pixel_t LMS_grey_ref, LMS_grey_test, D50_LMS;
@@ -1719,12 +1717,8 @@ static void _extract_color_checker(const float *const restrict in,
   dt_aligned_pixel_t illuminant_XYZ, illuminant_xyY = { .0f };
   convert_any_LMS_to_XYZ(illuminant, illuminant_XYZ, kind);
   dt_vector_clipneg(illuminant_XYZ);
-  const float Y_illu = illuminant_XYZ[1];
-  for_three_channels(c)
-  {
-    if(Y_illu > 0.0f)
-      illuminant_XYZ[c] /= Y_illu;
-  }
+  const float Y_illu = MAX(NORM_MIN, illuminant_XYZ[1]);
+  dt_vector_div1(illuminant_XYZ, illuminant_XYZ, Y_illu);
   dt_D50_XYZ_to_xyY(illuminant_XYZ, illuminant_xyY);
 
   // save the illuminant in GUI struct for commit
@@ -4222,15 +4216,18 @@ static void _auto_set_illuminant(dt_iop_module_t *self,
   dt_colormatrix_t MIX = { { 0.f } };
 
   float norm_R = 1.0f;
-  if(p->normalize_R) norm_R = p->red[0] + p->red[1] + p->red[2];
+  if(p->normalize_R)
+    norm_R = MAX(NORM_MIN, p->red[0] + p->red[1] + p->red[2]);
 
   float norm_G = 1.0f;
-  if(p->normalize_G) norm_G = p->green[0] + p->green[1] + p->green[2];
+  if(p->normalize_G)
+    norm_G = MAX(NORM_MIN, p->green[0] + p->green[1] + p->green[2]);
 
   float norm_B = 1.0f;
-  if(p->normalize_B) norm_B = p->blue[0] + p->blue[1] + p->blue[2];
+  if(p->normalize_B)
+    norm_B = MAX(NORM_MIN, p->blue[0] + p->blue[1] + p->blue[2]);
 
-  for(int i = 0; i < 3; i++)
+  for_three_channels(i)
   {
     MIX[0][i] = p->red[i] / norm_R;
     MIX[1][i] = p->green[i] / norm_G;
@@ -4264,7 +4261,7 @@ static void _auto_set_illuminant(dt_iop_module_t *self,
     convert_any_XYZ_to_LMS(XYZ_illuminant, LMS_illuminant, adaptation);
 
     // For the non-linear Bradford
-    const float pp = powf(0.818155f / LMS_illuminant[2], 0.0834f);
+    const float pp = powf(0.818155f / MAX(NORM_MIN, LMS_illuminant[2]), 0.0834f);
 
     //fprintf(stdout, "illuminant: %i\n", p->illuminant);
     //fprintf(stdout, "x: %f, y: %f\n", x, y);
@@ -4320,8 +4317,8 @@ static void _auto_set_illuminant(dt_iop_module_t *self,
 
     dt_LCH_2_Lab(Lch_target, Lab_target);
     dt_Lab_to_XYZ(Lab_target, XYZ_target);
-    const float Y_target = XYZ_target[1];
-    for(int c = 0; c < 3; c++) XYZ_target[c] /= Y_target;
+    const float Y_target = MAX(NORM_MIN, XYZ_target[1]);
+    dt_vector_div1(XYZ_target, XYZ_target, Y_target);
     convert_any_XYZ_to_LMS(XYZ_target, LMS_target, p->adaptation);
 
     // optionally, apply the inverse mixing on the target
@@ -4356,7 +4353,7 @@ static void _auto_set_illuminant(dt_iop_module_t *self,
 
       // Undo the channel mixing on the reference color
       // So we get the expected target color after the CAT
-      dt_aligned_pixel_t temp;
+      dt_aligned_pixel_t temp = { 0.0f };
       dot_product(LMS_target, MIX_INV, temp);
 
       //fprintf(stdout, "LMS before channel mixer inversion : \t%f \t%f \t%f\n", LMS_target[0], LMS_target[1], LMS_target[2]);
@@ -4365,8 +4362,8 @@ static void _auto_set_illuminant(dt_iop_module_t *self,
       // convert back to XYZ to normalize luminance again
       // in case the matrix is not normalized
       convert_any_LMS_to_XYZ(temp, XYZ_target, p->adaptation);
-      const float Y_mix = XYZ_target[1];
-      for(int c = 0; c < 3; c++) XYZ_target[c] /= Y_mix;
+      const float Y_mix = MAX(NORM_MIN, XYZ_target[1]);
+      dt_vector_div1(XYZ_target, XYZ_target, Y_mix);
       convert_any_XYZ_to_LMS(XYZ_target, LMS_target, p->adaptation);
 
       //fprintf(stdout, "LMS target after everything : %f \t%f \t%f\n", LMS_target[0], LMS_target[1], LMS_target[2]);
@@ -4377,8 +4374,8 @@ static void _auto_set_illuminant(dt_iop_module_t *self,
 
     // Get the input color in LMS space
     dt_aligned_pixel_t LMS = { 0.f };
-    const float Y = XYZ[1];
-    for(int c = 0; c < 3; c++) XYZ[c] /= Y;
+    const float Y = MAX(NORM_MIN, XYZ[1]);
+    dt_vector_div1(XYZ, XYZ, Y);
     convert_any_XYZ_to_LMS(XYZ, LMS, p->adaptation);
 
     // Find the illuminant
