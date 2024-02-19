@@ -137,7 +137,6 @@ void init(dt_view_t *self)
   lua_pushcfunction(L, dt_lua_event_multiinstance_trigger);
   dt_lua_event_add(L, "darkroom-image-loaded");
 #endif
-  dev->autosaving = TRUE;
 }
 
 uint32_t view(const dt_view_t *self)
@@ -734,6 +733,10 @@ gboolean try_enter(dt_view_t *self)
   darktable.develop->image_storage.id = imgid;
 
   dt_dev_reset_chroma(darktable.develop);
+
+  // possible enable autosaving due to conf setting but wait for some seconds for first save
+  darktable.develop->autosaving = (double)dt_conf_get_int("autosave_interval") > 1.0;
+  darktable.develop->autosave_time = dt_get_wtime() + 10.0;
   return FALSE;
 }
 
@@ -833,6 +836,10 @@ static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid)
   dt_dev_write_history(dev);
 
   dev->requested_id = imgid;
+
+  // possible enable autosaving due to conf setting but wait for some seconds for first save
+  darktable.develop->autosaving = (double)dt_conf_get_int("autosave_interval") > 1.0;
+  darktable.develop->autosave_time = dt_get_wtime() + 10.0;
 
   g_idle_add(_dev_load_requested_image, dev);
 }

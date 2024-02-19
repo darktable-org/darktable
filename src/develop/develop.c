@@ -73,6 +73,7 @@ void dt_dev_init(dt_develop_t *dev,
   dt_image_init(&dev->image_storage);
   dev->history_updating = dev->image_force_reload = FALSE;
   dev->autosaving = FALSE;
+  dev->autosave_time = 0.0;
   dev->image_invalid_cnt = 0;
   dev->full.pipe = dev->preview_pipe = dev->preview2.pipe = NULL;
   dev->histogram_pre_tonecurve = NULL;
@@ -710,46 +711,34 @@ static void _dev_write_history_item(const dt_imgid_t imgid,
 
 static void _dev_auto_save(dt_develop_t *dev)
 {
-  // keep track of last saving time
-  static double last = 0.0;
-
   const double user_delay = (double)dt_conf_get_int("autosave_interval");
   const dt_imgid_t imgid = dev->image_storage.id;
 
   /* We can only autosave database & xmp while we have a valid image id
      and we are not currently loading or changing it in main darkroom
   */
+  const double start = dt_get_wtime();
   const gboolean saving = (user_delay >= 1.0)
-                        && ((dt_get_wtime() - last) > user_delay)
+                        && ((start - dev->autosave_time) > user_delay)
                         && !dev->full.pipe->loading
                         && dev->requested_id == imgid
                         && dt_is_valid_imgid(imgid);
 
   if(saving)
   {
-    // avoid saving for fast repeated calls
-    last = dt_get_wtime();
-    // Ok, lets save status for image
     dt_dev_write_history(dev);
-
-    // check for slow drives
-    const double start = dt_get_wtime();
     dt_image_write_sidecar_file(imgid);
     const double after = dt_get_wtime();
-
-    dt_print(DT_DEBUG_DEV, "autosave history took %.3fs (hist) %.3fs (drive)\n",
-        start - last, after - start);
-
+    dev->autosave_time = after;
     // if writing to database and the xmp took too long we disable
-    // autosaving mode for this session
-    if((after - last) > 0.5)
+    // autosaving mode for this image
+    if((after - start) > 0.5)
     {
       dev->autosaving = FALSE;
-      dt_print(DT_DEBUG_ALL, "autosave history disabled, took %.3fs (hist) %.3fs (drive)\n",
-        start - last, after - start);
+      dt_print(DT_DEBUG_DEV, "autosave history disabled, took %.3fs\n", after - start);
 
-      dt_control_log(_("autosaving history has been disabled"
-                       " for this session because of a slow drive used"));
+      dt_control_log(_("autosaving history has been disabled for this image"
+                       " because of a very large history a slow drive being used"));
     }
   }
 }
