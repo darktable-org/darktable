@@ -122,9 +122,9 @@ void dt_gui_presets_update_fl(const char *name,
                               const float max);
 /** update dt_gui_presets_format_flag_t */
 void dt_gui_presets_update_format(const char *name,
-                               const dt_dev_operation_t op,
-                               const int32_t version,
-                               const int flag);
+                                  const dt_dev_operation_t op,
+                                  const int32_t version,
+                                  const int flag);
 /** set auto apply property of preset. */
 void dt_gui_presets_update_autoapply(const char *name,
                                      const dt_dev_operation_t op,

@@ -1989,9 +1989,9 @@ void dt_gui_presets_update_fl(const char *name,
 }
 
 void dt_gui_presets_update_format(const char *name,
-                               const dt_dev_operation_t op,
-                               const int32_t version,
-                               const int flag)
+                                  const dt_dev_operation_t op,
+                                  const int32_t version,
+                                  const int flag)
 {
   sqlite3_stmt *stmt;
   // clang-format off
