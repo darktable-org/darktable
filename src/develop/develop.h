@@ -171,6 +171,7 @@ typedef struct dt_develop_t
   gboolean focus_hash;   // determines whether to start a new history item or to merge down.
   gboolean history_updating, image_force_reload, first_load;
   gboolean autosaving;
+  double autosave_time;
   int32_t image_invalid_cnt;
   uint32_t timestamp;
   uint32_t preview_average_delay;
