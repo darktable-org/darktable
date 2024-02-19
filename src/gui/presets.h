@@ -120,16 +120,16 @@ void dt_gui_presets_update_fl(const char *name,
                               const int32_t version,
                               const float min,
                               const float max);
-/** update ldr flag: 0-don't care, 1-low dynamic range, 2-raw */
-void dt_gui_presets_update_ldr(const char *name,
+/** update dt_gui_presets_format_flag_t */
+void dt_gui_presets_update_format(const char *name,
                                const dt_dev_operation_t op,
                                const int32_t version,
-                               const int ldrflag);
+                               const int flag);
 /** set auto apply property of preset. */
 void dt_gui_presets_update_autoapply(const char *name,
                                      const dt_dev_operation_t op,
                                      const int32_t version,
-                                     const int autoapply);
+                                     const gboolean autoapply);
 /** set filter mode. if 1, the preset will only show for matching images. */
 void dt_gui_presets_update_filter(const char *name,
                                   const dt_dev_operation_t op,
