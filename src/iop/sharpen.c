@@ -108,7 +108,7 @@ void init_presets(dt_iop_module_so_t *self)
                              1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   // restrict to raw images
   dt_gui_presets_update_format(_("sharpen"), self->op,
-                            self->version(), FOR_RAW);
+                               self->version(), FOR_RAW);
 }
 
 static float *const init_gaussian_kernel(const int rad, const size_t mat_size, const float sigma2)
@@ -453,4 +453,3 @@ void gui_init(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
