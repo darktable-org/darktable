@@ -259,24 +259,6 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
   piece->data = NULL;
 }
 
-void reload_defaults(dt_iop_module_t *self)
-{
-  dt_iop_scalepixels_params_t *d = self->default_params;
-
-  const dt_image_t *const image = &(self->dev->image_storage);
-
-  d->pixel_aspect_ratio = image->pixel_aspect_ratio;
-
-  self->default_enabled = (!dt_isnan(d->pixel_aspect_ratio) &&
-                           d->pixel_aspect_ratio > 0.0f &&
-                           d->pixel_aspect_ratio != 1.0f);
-
-  if(self->widget)
-    gtk_label_set_text(GTK_LABEL(self->widget), self->default_enabled
-                       ? _("pixel scaling")
-                       :_("pixel scaling\nuseful for anamorphic desqueeze and sensors that need it."));
-}
-
 void gui_update(dt_iop_module_t *self)
 {
   dt_iop_scalepixels_gui_data_t *g = (dt_iop_scalepixels_gui_data_t *)self->gui_data;
