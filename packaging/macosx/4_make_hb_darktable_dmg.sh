@@ -19,6 +19,11 @@ cd "$buildDir"/
 # Generate symlink to applications folder for easier drag & drop within dmg
 ln -s /Applications package/ || true
 
+if [ -n "${GITHUB_RUN_ID}" ]; then
+  # see https://github.com/actions/runner-images/issues/7522
+  echo "Killing XProtect..."; sudo pkill -9 XProtect >/dev/null || true;
+fi
+
 # Create temporary rw image
 hdiutil create -srcfolder package -volname "${PROGN}" -fs HFS+ \
 	-fsargs "-c c=64,a=16,e=16" -format UDRW pack.temp.dmg
