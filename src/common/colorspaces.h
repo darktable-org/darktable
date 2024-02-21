@@ -292,8 +292,8 @@ static inline void rgb2hsl(const dt_aligned_pixel_t rgb,
                            float *l)
 {
   const float r = rgb[0], g = rgb[1], b = rgb[2];
-  const float pmax = fmaxf(r, fmax(g, b));
-  const float pmin = fminf(r, fmin(g, b));
+  const float pmax = fmaxf(r, fmaxf(g, b));
+  const float pmin = fminf(r, fminf(g, b));
   const float delta = (pmax - pmin);
 
   float hv = 0, sv = 0, lv = (pmin + pmax) / 2.0;
