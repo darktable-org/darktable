@@ -124,6 +124,7 @@ typedef struct dt_iop_overlay_gui_data_t
   GtkWidget *scale_svg;                              // scale reference of marker
   GtkWidget *rotate;
   GtkWidget *imgid;
+  gboolean drop_inside;
 } dt_iop_overlay_gui_data_t;
 
 /* Notes about the implementation.
@@ -692,6 +693,7 @@ static void _draw_thumb(GtkWidget *area,
                         gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_overlay_gui_data_t *g = (dt_iop_overlay_gui_data_t *)self->gui_data;
   dt_iop_overlay_params_t *p = (dt_iop_overlay_params_t *)self->params;
 
   GtkAllocation allocation;
@@ -730,6 +732,10 @@ static void _draw_thumb(GtkWidget *area,
     dt_gui_gtk_set_source_rgb(crf, DT_GUI_COLOR_BG);
     cairo_set_line_width(crf, 3.0);
     cairo_rectangle(crf, 0.0, 0.0, width, height);
+    if(g->drop_inside)
+    {
+      cairo_fill(crf);
+    }
     cairo_move_to(crf, 0.0, 0.0);
     cairo_line_to(crf, width, height);
     cairo_move_to(crf, 0.0, height);
@@ -984,6 +990,33 @@ static void _drag_and_drop_received(GtkWidget *widget,
   gtk_drag_finish(context, success, FALSE, time);
 }
 
+static gboolean _on_drag_motion(GtkWidget *widget,
+                                GdkDragContext *dc,
+                                gint x,
+                                gint y,
+                                guint time,
+                                gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_overlay_gui_data_t *g = (dt_iop_overlay_gui_data_t *)self->gui_data;
+
+  g->drop_inside = TRUE;
+  gtk_widget_queue_draw(widget);
+  return TRUE;
+}
+
+static void _on_drag_leave(GtkWidget *widget,
+                           GdkDragContext *dc,
+                           guint time,
+                           gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_overlay_gui_data_t *g = (dt_iop_overlay_gui_data_t *)self->gui_data;
+
+  g->drop_inside = FALSE;
+  gtk_widget_queue_draw(widget);
+}
+
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_overlay_gui_data_t *g = IOP_GUI_ALLOC(overlay);
@@ -1013,6 +1046,10 @@ void gui_init(struct dt_iop_module_t *self)
 
   g_signal_connect(GTK_WIDGET(g->area),
                    "drag-data-received", G_CALLBACK(_drag_and_drop_received), self);
+  g_signal_connect(GTK_WIDGET(g->area),
+                   "drag-motion", G_CALLBACK(_on_drag_motion), self);
+  g_signal_connect(GTK_WIDGET(g->area),
+                   "drag-leave", G_CALLBACK(_on_drag_leave), self);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(grid), TRUE, TRUE, 0);
 
