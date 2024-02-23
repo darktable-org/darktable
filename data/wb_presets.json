@@ -31562,6 +31562,1334 @@
           ]
         },
         {
+          "model": "X-H2",
+          "presets": [
+            {
+              "name": "Daylight",
+              "tuning": -9,
+              "channels": [
+                1.8443708609271523,
+                1,
+                1.0695364238410596,
+                0
+              ]
+            },
+            {
+              "name": "Daylight",
+              "tuning": -8,
+              "channels": [
+                1.8443708609271523,
+                1,
+                1.2119205298013245,
+                0
+              ]
+            },
+            {
+              "name": "Daylight",
+              "tuning": -7,
+              "channels": [
+                1.8443708609271523,
+                1,
+                1.3741721854304636,
+                0
+              ]
+            },
+            {
+              "name": "Daylight",
+              "tuning": -6,
+              "channels": [
+                1.8443708609271523,
+                1,
+                1.4569536423841059,
+                0
+              ]
+            },
+            {
+              "name": "Daylight",
+              "tuning": -5,
+              "channels": [
+                1.8443708609271523,
+                1,
+                1.5496688741721854,
+                0
+              ]
+            },
+            {
+              "name": "Daylight",
+              "tuning": -4,
+              "channels": [
+                1.8443708609271523,
+                1,
+                1.6456953642384107,
+                0
+              ]
+            },
+            {
+              "name": "Daylight",
+              "tuning": -3,
+              "channels": [
+                1.8443708609271523,
+                1,
+                1.695364238410596,
+                0
+              ]
+            },
+            {
+              "name": "Daylight",
+              "tuning": -2,
+              "channels": [
+                1.8443708609271523,
+                1,
+                1.7350993377483444,
+                0
+              ]
+            },
+            {
+              "name": "Daylight",
+              "tuning": -1,
+              "channels": [
+                1.8443708609271523,
+                1,
+                1.8013245033112584,
+                0
+              ]
+            },
+            {
+              "name": "Daylight",
+              "channels": [
+                1.8443708609271523,
+                1,
+                1.8642384105960266,
+                0
+              ]
+            },
+            {
+              "name": "Daylight",
+              "tuning": 1,
+              "channels": [
+                1.8443708609271523,
+                1,
+                1.8940397350993377,
+                0
+              ]
+            },
+            {
+              "name": "Daylight",
+              "tuning": 2,
+              "channels": [
+                1.8443708609271523,
+                1,
+                1.9370860927152318,
+                0
+              ]
+            },
+            {
+              "name": "Daylight",
+              "tuning": 3,
+              "channels": [
+                1.8443708609271523,
+                1,
+                1.9933774834437086,
+                0
+              ]
+            },
+            {
+              "name": "Daylight",
+              "tuning": 4,
+              "channels": [
+                1.8443708609271523,
+                1,
+                2.0397350993377485,
+                0
+              ]
+            },
+            {
+              "name": "Daylight",
+              "tuning": 5,
+              "channels": [
+                1.8443708609271523,
+                1,
+                2.129139072847682,
+                0
+              ]
+            },
+            {
+              "name": "Daylight",
+              "tuning": 6,
+              "channels": [
+                1.8443708609271523,
+                1,
+                2.2317880794701987,
+                0
+              ]
+            },
+            {
+              "name": "Daylight",
+              "tuning": 7,
+              "channels": [
+                1.8443708609271523,
+                1,
+                2.327814569536424,
+                0
+              ]
+            },
+            {
+              "name": "Daylight",
+              "tuning": 8,
+              "channels": [
+                1.8443708609271523,
+                1,
+                2.5463576158940397,
+                0
+              ]
+            },
+            {
+              "name": "Daylight",
+              "tuning": 9,
+              "channels": [
+                1.8443708609271523,
+                1,
+                2.7913907284768213,
+                0
+              ]
+            },
+            {
+              "name": "Cloudy",
+              "tuning": -9,
+              "channels": [
+                2.021472392638037,
+                1,
+                0.9263803680981595,
+                0
+              ]
+            },
+            {
+              "name": "Cloudy",
+              "tuning": -8,
+              "channels": [
+                2.0165562913907285,
+                1,
+                1.0463576158940397,
+                0
+              ]
+            },
+            {
+              "name": "Cloudy",
+              "tuning": -7,
+              "channels": [
+                2.0165562913907285,
+                1,
+                1.185430463576159,
+                0
+              ]
+            },
+            {
+              "name": "Cloudy",
+              "tuning": -6,
+              "channels": [
+                2.0165562913907285,
+                1,
+                1.2582781456953642,
+                0
+              ]
+            },
+            {
+              "name": "Cloudy",
+              "tuning": -5,
+              "channels": [
+                2.0165562913907285,
+                1,
+                1.3377483443708609,
+                0
+              ]
+            },
+            {
+              "name": "Cloudy",
+              "tuning": -4,
+              "channels": [
+                2.0165562913907285,
+                1,
+                1.4205298013245033,
+                0
+              ]
+            },
+            {
+              "name": "Cloudy",
+              "tuning": -3,
+              "channels": [
+                2.0165562913907285,
+                1,
+                1.4635761589403973,
+                0
+              ]
+            },
+            {
+              "name": "Cloudy",
+              "tuning": -2,
+              "channels": [
+                2.0165562913907285,
+                1,
+                1.4966887417218544,
+                0
+              ]
+            },
+            {
+              "name": "Cloudy",
+              "tuning": -1,
+              "channels": [
+                2.0165562913907285,
+                1,
+                1.5562913907284768,
+                0
+              ]
+            },
+            {
+              "name": "Cloudy",
+              "channels": [
+                2.0165562913907285,
+                1,
+                1.609271523178808,
+                0
+              ]
+            },
+            {
+              "name": "Cloudy",
+              "tuning": 1,
+              "channels": [
+                2.0165562913907285,
+                1,
+                1.6357615894039734,
+                0
+              ]
+            },
+            {
+              "name": "Cloudy",
+              "tuning": 2,
+              "channels": [
+                2.0165562913907285,
+                1,
+                1.6721854304635762,
+                0
+              ]
+            },
+            {
+              "name": "Cloudy",
+              "tuning": 3,
+              "channels": [
+                2.0165562913907285,
+                1,
+                1.7218543046357615,
+                0
+              ]
+            },
+            {
+              "name": "Cloudy",
+              "tuning": 4,
+              "channels": [
+                2.0165562913907285,
+                1,
+                1.7615894039735098,
+                0
+              ]
+            },
+            {
+              "name": "Cloudy",
+              "tuning": 5,
+              "channels": [
+                2.0165562913907285,
+                1,
+                1.8377483443708609,
+                0
+              ]
+            },
+            {
+              "name": "Cloudy",
+              "tuning": 6,
+              "channels": [
+                2.0165562913907285,
+                1,
+                1.923841059602649,
+                0
+              ]
+            },
+            {
+              "name": "Cloudy",
+              "tuning": 7,
+              "channels": [
+                2.0165562913907285,
+                1,
+                2.0099337748344372,
+                0
+              ]
+            },
+            {
+              "name": "Cloudy",
+              "tuning": 8,
+              "channels": [
+                2.0165562913907285,
+                1,
+                2.198675496688742,
+                0
+              ]
+            },
+            {
+              "name": "Cloudy",
+              "tuning": 9,
+              "channels": [
+                2.0165562913907285,
+                1,
+                2.410596026490066,
+                0
+              ]
+            },
+            {
+              "name": "Incandescent",
+              "tuning": -9,
+              "channels": [
+                1.2516556291390728,
+                1,
+                1.6258278145695364,
+                0
+              ]
+            },
+            {
+              "name": "Incandescent",
+              "tuning": -8,
+              "channels": [
+                1.2516556291390728,
+                1,
+                1.8443708609271523,
+                0
+              ]
+            },
+            {
+              "name": "Incandescent",
+              "tuning": -7,
+              "channels": [
+                1.2516556291390728,
+                1,
+                2.0927152317880795,
+                0
+              ]
+            },
+            {
+              "name": "Incandescent",
+              "tuning": -6,
+              "channels": [
+                1.2516556291390728,
+                1,
+                2.218543046357616,
+                0
+              ]
+            },
+            {
+              "name": "Incandescent",
+              "tuning": -5,
+              "channels": [
+                1.2516556291390728,
+                1,
+                2.3609271523178808,
+                0
+              ]
+            },
+            {
+              "name": "Incandescent",
+              "tuning": -4,
+              "channels": [
+                1.2516556291390728,
+                1,
+                2.506622516556291,
+                0
+              ]
+            },
+            {
+              "name": "Incandescent",
+              "tuning": -3,
+              "channels": [
+                1.2516556291390728,
+                1,
+                2.5827814569536423,
+                0
+              ]
+            },
+            {
+              "name": "Incandescent",
+              "tuning": -2,
+              "channels": [
+                1.2516556291390728,
+                1,
+                2.642384105960265,
+                0
+              ]
+            },
+            {
+              "name": "Incandescent",
+              "tuning": -1,
+              "channels": [
+                1.2516556291390728,
+                1,
+                2.7450331125827816,
+                0
+              ]
+            },
+            {
+              "name": "Incandescent",
+              "channels": [
+                1.2516556291390728,
+                1,
+                2.837748344370861,
+                0
+              ]
+            },
+            {
+              "name": "Incandescent",
+              "tuning": 1,
+              "channels": [
+                1.2516556291390728,
+                1,
+                2.884105960264901,
+                0
+              ]
+            },
+            {
+              "name": "Incandescent",
+              "tuning": 2,
+              "channels": [
+                1.2516556291390728,
+                1,
+                2.947019867549669,
+                0
+              ]
+            },
+            {
+              "name": "Incandescent",
+              "tuning": 3,
+              "channels": [
+                1.2516556291390728,
+                1,
+                3.033112582781457,
+                0
+              ]
+            },
+            {
+              "name": "Incandescent",
+              "tuning": 4,
+              "channels": [
+                1.2516556291390728,
+                1,
+                3.1026490066225167,
+                0
+              ]
+            },
+            {
+              "name": "Incandescent",
+              "tuning": 5,
+              "channels": [
+                1.2516556291390728,
+                1,
+                3.23841059602649,
+                0
+              ]
+            },
+            {
+              "name": "Incandescent",
+              "tuning": 6,
+              "channels": [
+                1.2516556291390728,
+                1,
+                3.3940397350993377,
+                0
+              ]
+            },
+            {
+              "name": "Incandescent",
+              "tuning": 7,
+              "channels": [
+                1.2516556291390728,
+                1,
+                3.543046357615894,
+                0
+              ]
+            },
+            {
+              "name": "Incandescent",
+              "tuning": 8,
+              "channels": [
+                1.2516556291390728,
+                1,
+                3.8741721854304636,
+                0
+              ]
+            },
+            {
+              "name": "Incandescent",
+              "tuning": 9,
+              "channels": [
+                1.2516556291390728,
+                1,
+                4.251655629139073,
+                0
+              ]
+            },
+            {
+              "name": "Day White Fluorescent",
+              "tuning": -9,
+              "channels": [
+                1.9933774834437086,
+                1,
+                1.1490066225165563,
+                0
+              ]
+            },
+            {
+              "name": "Day White Fluorescent",
+              "tuning": -8,
+              "channels": [
+                1.9933774834437086,
+                1,
+                1.304635761589404,
+                0
+              ]
+            },
+            {
+              "name": "Day White Fluorescent",
+              "tuning": -7,
+              "channels": [
+                1.9933774834437086,
+                1,
+                1.4801324503311257,
+                0
+              ]
+            },
+            {
+              "name": "Day White Fluorescent",
+              "tuning": -6,
+              "channels": [
+                1.9933774834437086,
+                1,
+                1.5662251655629138,
+                0
+              ]
+            },
+            {
+              "name": "Day White Fluorescent",
+              "tuning": -5,
+              "channels": [
+                1.9933774834437086,
+                1,
+                1.6688741721854305,
+                0
+              ]
+            },
+            {
+              "name": "Day White Fluorescent",
+              "tuning": -4,
+              "channels": [
+                1.9933774834437086,
+                1,
+                1.771523178807947,
+                0
+              ]
+            },
+            {
+              "name": "Day White Fluorescent",
+              "tuning": -3,
+              "channels": [
+                1.9933774834437086,
+                1,
+                1.8278145695364238,
+                0
+              ]
+            },
+            {
+              "name": "Day White Fluorescent",
+              "tuning": -2,
+              "channels": [
+                1.9933774834437086,
+                1,
+                1.8675496688741722,
+                0
+              ]
+            },
+            {
+              "name": "Day White Fluorescent",
+              "tuning": -1,
+              "channels": [
+                1.9933774834437086,
+                1,
+                1.9403973509933774,
+                0
+              ]
+            },
+            {
+              "name": "Day White Fluorescent",
+              "channels": [
+                1.9933774834437086,
+                1,
+                2.006622516556291,
+                0
+              ]
+            },
+            {
+              "name": "Day White Fluorescent",
+              "tuning": 1,
+              "channels": [
+                1.9933774834437086,
+                1,
+                2.0397350993377485,
+                0
+              ]
+            },
+            {
+              "name": "Day White Fluorescent",
+              "tuning": 2,
+              "channels": [
+                1.9933774834437086,
+                1,
+                2.0860927152317883,
+                0
+              ]
+            },
+            {
+              "name": "Day White Fluorescent",
+              "tuning": 3,
+              "channels": [
+                1.9933774834437086,
+                1,
+                2.1456953642384105,
+                0
+              ]
+            },
+            {
+              "name": "Day White Fluorescent",
+              "tuning": 4,
+              "channels": [
+                1.9933774834437086,
+                1,
+                2.1953642384105962,
+                0
+              ]
+            },
+            {
+              "name": "Day White Fluorescent",
+              "tuning": 5,
+              "channels": [
+                1.9933774834437086,
+                1,
+                2.2913907284768213,
+                0
+              ]
+            },
+            {
+              "name": "Day White Fluorescent",
+              "tuning": 6,
+              "channels": [
+                1.9933774834437086,
+                1,
+                2.4006622516556293,
+                0
+              ]
+            },
+            {
+              "name": "Day White Fluorescent",
+              "tuning": 7,
+              "channels": [
+                1.9933774834437086,
+                1,
+                2.5033112582781456,
+                0
+              ]
+            },
+            {
+              "name": "Day White Fluorescent",
+              "tuning": 8,
+              "channels": [
+                1.9933774834437086,
+                1,
+                2.73841059602649,
+                0
+              ]
+            },
+            {
+              "name": "Day White Fluorescent",
+              "tuning": 9,
+              "channels": [
+                1.9933774834437086,
+                1,
+                3.006622516556291,
+                0
+              ]
+            },
+            {
+              "name": "Daylight Fluorescent",
+              "tuning": -9,
+              "channels": [
+                2.3353658536585367,
+                1,
+                0.9207317073170732,
+                0
+              ]
+            },
+            {
+              "name": "Daylight Fluorescent",
+              "tuning": -8,
+              "channels": [
+                2.337748344370861,
+                1,
+                1.0430463576158941,
+                0
+              ]
+            },
+            {
+              "name": "Daylight Fluorescent",
+              "tuning": -7,
+              "channels": [
+                2.337748344370861,
+                1,
+                1.185430463576159,
+                0
+              ]
+            },
+            {
+              "name": "Daylight Fluorescent",
+              "tuning": -6,
+              "channels": [
+                2.337748344370861,
+                1,
+                1.2549668874172186,
+                0
+              ]
+            },
+            {
+              "name": "Daylight Fluorescent",
+              "tuning": -5,
+              "channels": [
+                2.337748344370861,
+                1,
+                1.3377483443708609,
+                0
+              ]
+            },
+            {
+              "name": "Daylight Fluorescent",
+              "tuning": -4,
+              "channels": [
+                2.337748344370861,
+                1,
+                1.4172185430463575,
+                0
+              ]
+            },
+            {
+              "name": "Daylight Fluorescent",
+              "tuning": -3,
+              "channels": [
+                2.337748344370861,
+                1,
+                1.4602649006622517,
+                0
+              ]
+            },
+            {
+              "name": "Daylight Fluorescent",
+              "tuning": -2,
+              "channels": [
+                2.337748344370861,
+                1,
+                1.4933774834437086,
+                0
+              ]
+            },
+            {
+              "name": "Daylight Fluorescent",
+              "tuning": -1,
+              "channels": [
+                2.337748344370861,
+                1,
+                1.5529801324503312,
+                0
+              ]
+            },
+            {
+              "name": "Daylight Fluorescent",
+              "channels": [
+                2.337748344370861,
+                1,
+                1.6059602649006623,
+                0
+              ]
+            },
+            {
+              "name": "Daylight Fluorescent",
+              "tuning": 1,
+              "channels": [
+                2.337748344370861,
+                1,
+                1.6324503311258278,
+                0
+              ]
+            },
+            {
+              "name": "Daylight Fluorescent",
+              "tuning": 2,
+              "channels": [
+                2.337748344370861,
+                1,
+                1.6688741721854305,
+                0
+              ]
+            },
+            {
+              "name": "Daylight Fluorescent",
+              "tuning": 3,
+              "channels": [
+                2.337748344370861,
+                1,
+                1.718543046357616,
+                0
+              ]
+            },
+            {
+              "name": "Daylight Fluorescent",
+              "tuning": 4,
+              "channels": [
+                2.337748344370861,
+                1,
+                1.7549668874172186,
+                0
+              ]
+            },
+            {
+              "name": "Daylight Fluorescent",
+              "tuning": 5,
+              "channels": [
+                2.337748344370861,
+                1,
+                1.8344370860927153,
+                0
+              ]
+            },
+            {
+              "name": "Daylight Fluorescent",
+              "tuning": 6,
+              "channels": [
+                2.337748344370861,
+                1,
+                1.9205298013245033,
+                0
+              ]
+            },
+            {
+              "name": "Daylight Fluorescent",
+              "tuning": 7,
+              "channels": [
+                2.337748344370861,
+                1,
+                2.0033112582781456,
+                0
+              ]
+            },
+            {
+              "name": "Daylight Fluorescent",
+              "tuning": 8,
+              "channels": [
+                2.337748344370861,
+                1,
+                2.19205298013245,
+                0
+              ]
+            },
+            {
+              "name": "Daylight Fluorescent",
+              "tuning": 9,
+              "channels": [
+                2.337748344370861,
+                1,
+                2.4072847682119205,
+                0
+              ]
+            },
+            {
+              "name": "White Fluorescent",
+              "tuning": -9,
+              "channels": [
+                1.8940397350993377,
+                1,
+                1.4370860927152318,
+                0
+              ]
+            },
+            {
+              "name": "White Fluorescent",
+              "tuning": -8,
+              "channels": [
+                1.8940397350993377,
+                1,
+                1.6291390728476822,
+                0
+              ]
+            },
+            {
+              "name": "White Fluorescent",
+              "tuning": -7,
+              "channels": [
+                1.8940397350993377,
+                1,
+                1.8476821192052981,
+                0
+              ]
+            },
+            {
+              "name": "White Fluorescent",
+              "tuning": -6,
+              "channels": [
+                1.8940397350993377,
+                1,
+                1.9569536423841059,
+                0
+              ]
+            },
+            {
+              "name": "White Fluorescent",
+              "tuning": -5,
+              "channels": [
+                1.8940397350993377,
+                1,
+                2.0860927152317883,
+                0
+              ]
+            },
+            {
+              "name": "White Fluorescent",
+              "tuning": -4,
+              "channels": [
+                1.8940397350993377,
+                1,
+                2.2119205298013247,
+                0
+              ]
+            },
+            {
+              "name": "White Fluorescent",
+              "tuning": -3,
+              "channels": [
+                1.8940397350993377,
+                1,
+                2.281456953642384,
+                0
+              ]
+            },
+            {
+              "name": "White Fluorescent",
+              "tuning": -2,
+              "channels": [
+                1.8940397350993377,
+                1,
+                2.334437086092715,
+                0
+              ]
+            },
+            {
+              "name": "White Fluorescent",
+              "tuning": -1,
+              "channels": [
+                1.8940397350993377,
+                1,
+                2.423841059602649,
+                0
+              ]
+            },
+            {
+              "name": "White Fluorescent",
+              "channels": [
+                1.8940397350993377,
+                1,
+                2.506622516556291,
+                0
+              ]
+            },
+            {
+              "name": "White Fluorescent",
+              "tuning": 1,
+              "channels": [
+                1.8940397350993377,
+                1,
+                2.5496688741721854,
+                0
+              ]
+            },
+            {
+              "name": "White Fluorescent",
+              "tuning": 2,
+              "channels": [
+                1.8940397350993377,
+                1,
+                2.6059602649006623,
+                0
+              ]
+            },
+            {
+              "name": "White Fluorescent",
+              "tuning": 3,
+              "channels": [
+                1.8940397350993377,
+                1,
+                2.6788079470198674,
+                0
+              ]
+            },
+            {
+              "name": "White Fluorescent",
+              "tuning": 4,
+              "channels": [
+                1.8940397350993377,
+                1,
+                2.7417218543046356,
+                0
+              ]
+            },
+            {
+              "name": "White Fluorescent",
+              "tuning": 5,
+              "channels": [
+                1.8940397350993377,
+                1,
+                2.8609271523178808,
+                0
+              ]
+            },
+            {
+              "name": "White Fluorescent",
+              "tuning": 6,
+              "channels": [
+                1.8940397350993377,
+                1,
+                3.0,
+                0
+              ]
+            },
+            {
+              "name": "White Fluorescent",
+              "tuning": 7,
+              "channels": [
+                1.8940397350993377,
+                1,
+                3.129139072847682,
+                0
+              ]
+            },
+            {
+              "name": "White Fluorescent",
+              "tuning": 8,
+              "channels": [
+                1.8940397350993377,
+                1,
+                3.4205298013245033,
+                0
+              ]
+            },
+            {
+              "name": "White Fluorescent",
+              "tuning": 9,
+              "channels": [
+                1.8940397350993377,
+                1,
+                3.7549668874172184,
+                0
+              ]
+            },
+            {
+              "name": "Underwater",
+              "tuning": -9,
+              "channels": [
+                1.8410596026490067,
+                1,
+                1.076158940397351,
+                0
+              ]
+            },
+            {
+              "name": "Underwater",
+              "tuning": -8,
+              "channels": [
+                1.8410596026490067,
+                1,
+                1.218543046357616,
+                0
+              ]
+            },
+            {
+              "name": "Underwater",
+              "tuning": -7,
+              "channels": [
+                1.8410596026490067,
+                1,
+                1.3841059602649006,
+                0
+              ]
+            },
+            {
+              "name": "Underwater",
+              "tuning": -6,
+              "channels": [
+                1.8410596026490067,
+                1,
+                1.466887417218543,
+                0
+              ]
+            },
+            {
+              "name": "Underwater",
+              "tuning": -5,
+              "channels": [
+                1.8410596026490067,
+                1,
+                1.5629139072847682,
+                0
+              ]
+            },
+            {
+              "name": "Underwater",
+              "tuning": -4,
+              "channels": [
+                1.8410596026490067,
+                1,
+                1.6589403973509933,
+                0
+              ]
+            },
+            {
+              "name": "Underwater",
+              "tuning": -3,
+              "channels": [
+                1.8410596026490067,
+                1,
+                1.7086092715231789,
+                0
+              ]
+            },
+            {
+              "name": "Underwater",
+              "tuning": -2,
+              "channels": [
+                1.8410596026490067,
+                1,
+                1.7483443708609272,
+                0
+              ]
+            },
+            {
+              "name": "Underwater",
+              "tuning": -1,
+              "channels": [
+                1.8410596026490067,
+                1,
+                1.814569536423841,
+                0
+              ]
+            },
+            {
+              "name": "Underwater",
+              "channels": [
+                1.8410596026490067,
+                1,
+                1.8774834437086092,
+                0
+              ]
+            },
+            {
+              "name": "Underwater",
+              "tuning": 1,
+              "channels": [
+                1.8410596026490067,
+                1,
+                1.9072847682119205,
+                0
+              ]
+            },
+            {
+              "name": "Underwater",
+              "tuning": 2,
+              "channels": [
+                1.8410596026490067,
+                1,
+                1.9503311258278146,
+                0
+              ]
+            },
+            {
+              "name": "Underwater",
+              "tuning": 3,
+              "channels": [
+                1.8410596026490067,
+                1,
+                2.006622516556291,
+                0
+              ]
+            },
+            {
+              "name": "Underwater",
+              "tuning": 4,
+              "channels": [
+                1.8410596026490067,
+                1,
+                2.052980132450331,
+                0
+              ]
+            },
+            {
+              "name": "Underwater",
+              "tuning": 5,
+              "channels": [
+                1.8410596026490067,
+                1,
+                2.142384105960265,
+                0
+              ]
+            },
+            {
+              "name": "Underwater",
+              "tuning": 6,
+              "channels": [
+                1.8410596026490067,
+                1,
+                2.2450331125827816,
+                0
+              ]
+            },
+            {
+              "name": "Underwater",
+              "tuning": 7,
+              "channels": [
+                1.8410596026490067,
+                1,
+                2.3443708609271523,
+                0
+              ]
+            },
+            {
+              "name": "Underwater",
+              "tuning": 8,
+              "channels": [
+                1.8410596026490067,
+                1,
+                2.562913907284768,
+                0
+              ]
+            },
+            {
+              "name": "Underwater",
+              "tuning": 9,
+              "channels": [
+                1.8410596026490067,
+                1,
+                2.8112582781456954,
+                0
+              ]
+            }
+          ]
+        },
+        {
           "model": "X-H2S",
           "presets": [
             {
