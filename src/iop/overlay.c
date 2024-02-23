@@ -17,10 +17,6 @@
 */
 
 #include "bauhaus/bauhaus.h"
-#include "common/imagebuf.h"
-#include "common/tags.h"
-#include "common/variables.h"
-#include "common/datetime.h"
 #include "common/overlay.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -31,24 +27,17 @@
 #include "dtgtk/resetlabel.h"
 #include "dtgtk/togglebutton.h"
 #include "gui/accelerators.h"
-#include "gui/color_picker_proxy.h"
 #include "gui/drag_and_drop.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+
 #include <assert.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "common/file_location.h"
-#include "common/metadata.h"
-#include "common/utility.h"
-
 DT_MODULE_INTROSPECTION(1, dt_iop_overlay_params_t)
-
-// gchar *checksum = g_compute_checksum_for_data(G_CHECKSUM_MD5,data,length);
 
 typedef enum dt_iop_overlay_base_scale_t
 {
