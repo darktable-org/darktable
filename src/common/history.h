@@ -140,6 +140,7 @@ char *dt_history_get_name_label(const char *name,
 /** get list of history items for image */
 GList *dt_history_get_items(const dt_imgid_t imgid,
                             const gboolean enabled,
+                            const gboolean multi_priority_order,
                             const gboolean markup);
 
 /** get list of history items for image as a nice string */
