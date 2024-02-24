@@ -821,7 +821,7 @@ static void _gui_styles_dialog_run(gboolean edit,
                        -1);
     g_free(label);
 
-    GList *items = dt_history_get_items(imgid, FALSE, TRUE);
+    GList *items = dt_history_get_items(imgid, FALSE, TRUE, TRUE);
     if(items)
     {
       for(const GList *items_iter = items; items_iter; items_iter = g_list_next(items_iter))

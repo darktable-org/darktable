@@ -311,7 +311,7 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
     dt_draw_paint_to_pixbuf(GTK_WIDGET(dialog), 10, 0, dtgtk_cairo_paint_showmask);
 
   /* fill list with history items */
-  GList *items = dt_history_get_items(imgid, FALSE, TRUE);
+  GList *items = dt_history_get_items(imgid, FALSE, TRUE, TRUE);
   if(items)
   {
     GtkTreeIter iter;

@@ -1007,23 +1007,27 @@ char *dt_history_get_name_label(const char *name,
 
 GList *dt_history_get_items(const dt_imgid_t imgid,
                             const gboolean enabled,
+                            const gboolean multi_priority_order,
                             const gboolean markup)
 {
   GList *result = NULL;
   sqlite3_stmt *stmt;
 
+  gchar *query = g_strdup_printf
+    ("SELECT num, operation, enabled, multi_name, blendop_params"
+     " FROM main.history"
+     " WHERE imgid=?1"
+     "   AND num IN (SELECT MAX(num)"
+     "               FROM main.history hst2"
+     "               WHERE hst2.imgid=?1"
+     "                 AND hst2.operation=main.history.operation"
+     "               GROUP BY multi_priority)"
+     "   AND enabled in (1, ?2)"
+     " ORDER BY %s DESC", multi_priority_order ? "multi_priority" : "num");
+
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT num, operation, enabled, multi_name, blendop_params"
-                              " FROM main.history"
-                              " WHERE imgid=?1"
-                              "   AND num IN (SELECT MAX(num)"
-                              "               FROM main.history hst2"
-                              "               WHERE hst2.imgid=?1"
-                              "                 AND hst2.operation=main.history.operation"
-                              "               GROUP BY multi_priority)"
-                              "   AND enabled in (1, ?2)"
-                              " ORDER BY num DESC",
+                              query,
                               -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -1050,6 +1054,8 @@ GList *dt_history_get_items(const dt_imgid_t imgid,
     result = g_list_prepend(result, item);
   }
   sqlite3_finalize(stmt);
+  g_free(query);
+
   return g_list_reverse(result);   // list was built in reverse order, so un-reverse it
 }
 
