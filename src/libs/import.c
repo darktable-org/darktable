@@ -726,26 +726,27 @@ static void _import_active(dt_lib_module_t *self,
                                       GTK_RESPONSE_ACCEPT, active);
 }
 
-static void _add_file_callback(GObject *direnum,
-                               GAsyncResult *result,
-                               gpointer user_data)
+static void _import_add_file_callback(GObject *direnum,
+                                      GAsyncResult *result,
+                                      gpointer user_data)
 {
   dt_lib_module_t* self = (dt_lib_module_t *)user_data;
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
 
   GError *error = NULL;
   GFileEnumerator *dir_files = G_FILE_ENUMERATOR(direnum);
+
   GList *file_list = g_file_enumerator_next_files_finish(dir_files, result, &error);
   GFile* gfolder = g_file_enumerator_get_container(dir_files);
 
   if(error)
   {
-    // called when the iterator is cancelled
-    // g_critical("Unable to add files to list, error: %s", error->message);
     g_file_enumerator_close(dir_files, NULL, NULL);
     g_object_unref(gfolder);
     g_object_unref(direnum);
     g_list_free_full(file_list, g_object_unref);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[_import_add_file_callback] error: %s", error->message);
     g_error_free(error);
     return;
   }
@@ -800,7 +801,7 @@ static void _add_file_callback(GObject *direnum,
                                        FILE_REQUEST_BLOCK,
                                        G_PRIORITY_LOW,
                                        d->cancel_iter,
-                                       _add_file_callback,
+                                       _import_add_file_callback,
                                        user_data);
 
     const gboolean recursive = dt_conf_get_bool("ui_last/import_recursive");
@@ -824,8 +825,7 @@ static void _add_file_callback(GObject *direnum,
     {
       GFileInfo *info = node->data;
 
-      const char *uifilename = g_file_info_get_display_name(info);
-      const char *filename = g_file_info_get_name(info);
+      const char *filename = g_file_info_get_display_name(info);
 
       if(!filename)
         continue;
@@ -837,10 +837,9 @@ static void _add_file_callback(GObject *direnum,
       /* g_file_info_get_is_hidden() always returns 0 on macOS, so we
          check if the filename starts with a '.' */
       const gboolean is_hidden = g_file_info_get_is_hidden(info) || filename[0] ==  '.';
-      if (is_hidden)
+      if(is_hidden)
         continue;
 
-      gchar *uifullname = g_build_filename(folder, uifilename, NULL);
       gchar *fullname = g_build_filename(folder, filename, NULL);
 
       if(recursive && filetype == G_FILE_TYPE_DIRECTORY)
@@ -890,7 +889,7 @@ static void _add_file_callback(GObject *direnum,
           gtk_list_store_append(d->from.store, &iter);
           gtk_list_store_set(d->from.store, &iter,
                              DT_IMPORT_UI_EXISTS, already_imported ? "✔" : " ",
-                             DT_IMPORT_UI_FILENAME, &uifullname[offset],
+                             DT_IMPORT_UI_FILENAME, &fullname[offset],
                              DT_IMPORT_FILENAME, fullname,
                              DT_IMPORT_UI_DATETIME, dt_txt,
                              DT_IMPORT_DATETIME, datetime,
@@ -901,7 +900,6 @@ static void _add_file_callback(GObject *direnum,
         }
 
         g_free(fullname);
-        g_free(uifullname);
       }
       g_object_unref(info);
     }
@@ -911,39 +909,52 @@ static void _add_file_callback(GObject *direnum,
   g_list_free(file_list);
 }
 
-static void _import_set_file_list(const gchar *folder,
-                                  dt_lib_module_t *self)
+void _import_enum_callback(GObject* source_object,
+                           GAsyncResult* res,
+                           gpointer user_data)
 {
+  dt_lib_module_t* self = (dt_lib_module_t *)user_data;
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
 
   GError *error = NULL;
-  GFile *gfolder = g_file_new_for_path(folder);
-
-  GFileEnumerator *dir_files =
-    g_file_enumerate_children(gfolder,
-                              G_FILE_ATTRIBUTE_STANDARD_NAME ","
-                              G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME ","
-                              G_FILE_ATTRIBUTE_TIME_MODIFIED ","
-                              G_FILE_ATTRIBUTE_STANDARD_IS_HIDDEN ","
-                              G_FILE_ATTRIBUTE_STANDARD_TYPE,
-                              G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS,
-                              d->cancel_iter,
-                              &error);
+  GFile *file = G_FILE (source_object);
+  GFileEnumerator *dir_files = g_file_enumerate_children_finish(file, res, &error);
 
   if(error)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[_import_set_file_list] unable to create iterator,"
+             "[_import_enum_callback] unable to create iterator,"
              " error: %s", error->message);
     g_error_free(error);
   }
+
 
   g_file_enumerator_next_files_async(dir_files,
                                      FILE_REQUEST_BLOCK,
                                      G_PRIORITY_LOW,
                                      d->cancel_iter,
-                                     _add_file_callback,
+                                     _import_add_file_callback,
                                      self);
+}
+
+static void _import_set_file_list(const gchar *folder,
+                                  dt_lib_module_t *self)
+{
+  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
+
+  GFile *gfolder = g_file_new_for_path(folder);
+
+  g_file_enumerate_children_async(gfolder,
+                                  G_FILE_ATTRIBUTE_STANDARD_NAME ","
+                                  G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME ","
+                                  G_FILE_ATTRIBUTE_TIME_MODIFIED ","
+                                  G_FILE_ATTRIBUTE_STANDARD_IS_HIDDEN ","
+                                  G_FILE_ATTRIBUTE_STANDARD_TYPE,
+                                  G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS,
+                                  G_PRIORITY_LOW,
+                                  d->cancel_iter,
+                                  _import_enum_callback,
+                                  self);
 }
 
 static void _import_set_file_list_start(const gchar *folder,
