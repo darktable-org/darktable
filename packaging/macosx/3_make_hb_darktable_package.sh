@@ -218,7 +218,8 @@ done
 # Add homebrew shared objects
 dtSharedObjDirs="ImageMagick gtk-3.0 gdk-pixbuf-2.0 gio"
 for dtSharedObj in $dtSharedObjDirs; do
-    cp -LR "$homebrewHome"/lib/"$dtSharedObj" "$dtResourcesDir"/lib/
+    mkdir "$dtResourcesDir"/lib/"$dtSharedObj"
+    cp -LR "$homebrewHome"/lib/"$dtSharedObj"/* "$dtResourcesDir"/lib/"$dtSharedObj"/
 done
 
 dtSharedObjDirs="libgphoto2 libgphoto2_port"
@@ -274,6 +275,9 @@ loadersCacheFile="$dtResourcesDir"/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache
 sed -i '' "s#$homebrewHome/lib/gdk-pixbuf-2.0/2.10.0/loaders#@executable_path/../Resources/lib/gdk-pixbuf-2.0/2.10.0/loaders#g" "$loadersCacheFile"
 # Move it to the right place
 mv "$loadersCacheFile" "$dtResourcesDir"/etc/gtk-3.0/
+
+# ImageMagick config files
+cp -R $homebrewHome/Cellar/imagemagick/*/etc $dtResourcesDir
 
 # Install homebrew dependencies of lib subdirectories
 dtLibFiles=$(find -E "$dtResourcesDir"/lib/*/* -regex '.*\.(so|dylib)')
