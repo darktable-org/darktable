@@ -343,9 +343,6 @@ jobs:
           # handle keg-only libs
           brew link --force libomp
           brew link --force libsoup@2
-      - name: use ImageMagick 6
-        run: |
-          brew link --overwrite --force imagemagick@6
       - name: Cancel workflow if job fails
         if: ${{ failure() }}
         uses: andymckay/cancel-action@0.4

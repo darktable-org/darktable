@@ -373,7 +373,6 @@ jobs:
           # handle keg-only libs
           brew link --force libomp
           brew link --force libsoup@2
-          brew link --overwrite --force imagemagick@6
       - name: Build and Install
           # todo: use linker which supports --wrap, ld.bfd and ld.gold support it
         run: |
