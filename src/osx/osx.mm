@@ -219,8 +219,11 @@ void dt_osx_prepare_environment()
     g_setenv("GTK_DATA_PREFIX", res_path, TRUE);
     g_setenv("GTK_EXE_PREFIX", res_path, TRUE);
     g_setenv("GTK_PATH", res_path, TRUE);
+
+    gchar* etc_path = g_build_filename(res_path, "etc", NULL);
+    gchar* lib_path = g_build_filename(res_path, "lib", NULL);
+
     {
-      gchar* etc_path = g_build_filename(res_path, "etc", NULL);
       g_setenv("XDG_CONFIG_DIRS", etc_path, TRUE);
       {
         gchar* gtk_im_path = g_build_filename(etc_path, "gtk-3.0", "gtk.immodules", NULL);
@@ -232,7 +235,6 @@ void dt_osx_prepare_environment()
         g_setenv("GDK_PIXBUF_MODULE_FILE", pixbuf_path, TRUE);
         g_free(pixbuf_path);
       }
-      g_free(etc_path);
     }
     {
       gchar* share_path = g_build_filename(res_path, "share", NULL);
@@ -245,7 +247,6 @@ void dt_osx_prepare_environment()
       g_free(share_path);
     }
     {
-      gchar* lib_path = g_build_filename(res_path, "lib", NULL);
       {
         gchar* io_path = g_build_filename(lib_path, "libgphoto2_port", NULL);
         g_setenv("IOLIBS", io_path, TRUE);
@@ -261,9 +262,25 @@ void dt_osx_prepare_environment()
         g_setenv("GIO_MODULE_DIR", gio_path, TRUE);
         g_free(gio_path);
       }
-      g_free(lib_path);
     }
+
+#ifdef HAVE_IMAGEMAGICK7
+    {
+      g_setenv("MAGICK_HOME", res_path, TRUE);
+      gchar* im_config_path = g_build_filename(etc_path, "ImageMagick-7", NULL);
+      g_setenv("MAGICK_CONFIGURE_PATH", im_config_path, TRUE);
+      g_free(im_config_path);
+      gchar* im_modules_path = g_build_filename(lib_path, "ImageMagick", "modules-Q16HDRI", NULL);
+      g_setenv("MAGICK_CODER_MODULE_PATH", im_modules_path, TRUE);
+      g_setenv("MAGICK_CODER_FILTER_PATH", im_modules_path, TRUE);
+      g_free(im_modules_path);
+    }
+#endif
+
     _setup_ssl_trust(res_path); //uses GIO, so call after GIO_MODULE_DIR is set
+
+    g_free(etc_path);
+    g_free(lib_path);
     g_free(res_path);
   }
 }
