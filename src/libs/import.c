@@ -969,6 +969,9 @@ static void _import_set_file_list_start(const gchar *folder,
   d->to_be_visited = NULL;
   d->is_importing = TRUE;
 
+  // new selected folder, disable the thumb display button
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->from.thumbs), FALSE);
+
   const gboolean recursive = dt_conf_get_bool("ui_last/import_recursive");
 
   if(recursive)
