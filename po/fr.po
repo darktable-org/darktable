@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-02-17 19:12+0100\n"
-"PO-Revision-Date: 2024-02-28 14:54+0100\n"
+"PO-Revision-Date: 2024-02-28 15:04+0100\n"
 "Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -5122,7 +5122,7 @@ msgstr "P3 Affichage"
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:135
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:232
 msgid "color space"
-msgstr "espace de couleur"
+msgstr "Espace de couleur"
 
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:263
 msgid "Lab, linked channels"
@@ -18322,7 +18322,7 @@ msgstr ""
 "À utiliser après l’analyse de la segmentation.\n"
 "Augmenter pour favoriser les candidats trouvés dans l’analyse de "
 "segmentation,\n"
-"diminuer pour une effet opposé."
+"diminuer pour un effet opposé."
 
 #: ../src/iop/highlights.c:1210
 msgid ""
