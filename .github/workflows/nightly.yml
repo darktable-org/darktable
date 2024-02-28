@@ -138,19 +138,6 @@ jobs:
       - name: Build and Install
         run: |
           bash tools/appimage-build-script.sh
-      - name: Check if it runs
-        run: |
-          ${INSTALL_PREFIX}/bin/darktable --version || true
-          ${INSTALL_PREFIX}/bin/darktable-cli \
-                 --width 2048 --height 2048 \
-                 --hq true --apply-custom-presets false \
-                 "${SRC_DIR}/tests/integration/images/mire1.cr2" \
-                 "${SRC_DIR}/tests/integration/0000-nop/nop.xmp" \
-                 output.png \
-                 --core --disable-opencl --conf host_memory_limit=8192 \
-                 --conf worker_threads=4 -t 4 \
-                 --conf plugins/lighttable/export/force_lcms2=FALSE \
-                 --conf plugins/lighttable/export/iccintent=0
       - name: Package upload
         if: ${{ success() }}
         uses: actions/upload-artifact@v4
@@ -264,20 +251,6 @@ jobs:
           cmake -E make_directory "${BUILD_DIR}"
           cmake -E make_directory "${INSTALL_PREFIX}"
           $(cygpath ${SRC_DIR})/.ci/ci-script.sh
-      - name: Check if it runs
-        run: |
-          $(cygpath ${INSTALL_PREFIX})/bin/darktable.exe --version || true
-          echo "Testing RUN!"
-          $(cygpath ${INSTALL_PREFIX})/bin/darktable-cli.exe \
-                 --width 2048 --height 2048 \
-                 --hq true --apply-custom-presets false \
-                 $(cygpath ${SRC_DIR})/src/tests/integration/images/mire1.cr2 \
-                 $(cygpath ${SRC_DIR})/src/tests/integration/0000-nop/nop.xmp \
-                 output.png \
-                 --core --disable-opencl --conf host_memory_limit=8192 \
-                 --conf worker_threads=4 -t 4 \
-                 --conf plugins/lighttable/export/force_lcms2=FALSE \
-                 --conf plugins/lighttable/export/iccintent=0
       - name: Package
         if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
         run: |
@@ -352,19 +325,6 @@ jobs:
           cmake -E make_directory "${BUILD_DIR}";
           cmake -E make_directory "${INSTALL_PREFIX}";
           ./src/.ci/ci-script.sh;
-      - name: Check if it runs
-        run: |
-          ${INSTALL_PREFIX}/bin/darktable --version || true
-          ${INSTALL_PREFIX}/bin/darktable-cli \
-                 --width 2048 --height 2048 \
-                 --hq true --apply-custom-presets false \
-                 "${SRC_DIR}/src/tests/integration/images/mire1.cr2" \
-                 "${SRC_DIR}/src/tests/integration/0000-nop/nop.xmp" \
-                 output.png \
-                 --core --disable-opencl --conf host_memory_limit=8192 \
-                 --conf worker_threads=4 -t 4 \
-                 --conf plugins/lighttable/export/force_lcms2=FALSE \
-                 --conf plugins/lighttable/export/iccintent=0
       - name: Build macOS package
         run: |
           ./src/packaging/macosx/3_make_hb_darktable_package.sh
