@@ -3,8 +3,8 @@ msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-02-17 19:12+0100\n"
-"PO-Revision-Date: 2024-02-14 18:45+0100\n"
-"Last-Translator: Pascal Obry <pascal@obry.net>\n"
+"PO-Revision-Date: 2024-02-28 14:54+0100\n"
+"Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
 "MIME-Version: 1.0\n"
@@ -2984,7 +2984,7 @@ msgstr "Compression du gamut"
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:336
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:489
 msgid "clip negative RGB from gamut"
-msgstr "Écrêter les valeurs RVB négatives du gamut"
+msgstr "Tronquer les valeurs RVB négatives du gamut"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:342
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:493
@@ -8214,7 +8214,7 @@ msgstr "Différence"
 #: ../src/develop/blend_gui.c:54
 msgctxt "blendmode"
 msgid "normal bounded"
-msgstr "Normal écrêté"
+msgstr "Normal tronqué"
 
 #: ../src/develop/blend_gui.c:56 ../src/libs/live_view.c:343
 msgctxt "blendmode"
@@ -16168,7 +16168,7 @@ msgstr "Reconstruction des couleurs"
 #: ../src/iop/colorreconstruction.c:119
 msgid "recover clipped highlights by propagating surrounding colors"
 msgstr ""
-"Récupère les hautes lumières écrêtées\n"
+"Récupère les hautes lumières tronquées\n"
 "par propagation des couleurs environnantes"
 
 #: ../src/iop/colorreconstruction.c:647 ../src/iop/colorreconstruction.c:1053
@@ -18304,7 +18304,7 @@ msgid ""
 "this often leads to improved color reconstruction for tiny segments before "
 "dark background."
 msgstr ""
-"Combiner des segments écrêtés proches par des opérations morphologiques.\n"
+"Combiner des segments tronqués proches par des opérations morphologiques.\n"
 "Cela améliore souvent la reconstruction des couleurs pour les petits "
 "segments avant un arrière plan sombre."
 
