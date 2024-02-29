@@ -233,6 +233,7 @@ jobs:
             pugixml:p
             SDL2:p
             sqlite3:p
+            webp-pixbuf-loader:p
             zlib:p
           update: false
       - name: Install the latest not yet broken version of exiv2
