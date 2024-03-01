@@ -1343,7 +1343,7 @@ static void show_hide_controls(dt_iop_module_t *self)
   if((nb_luts > 1) || ((nb_luts > 0) &&
        g_str_has_prefix(dt_bauhaus_combobox_get_text(g->filepath), invalid_filepath_prefix)))
   {
-    int nb_pixels = (20*(nb_luts+1) > 200) ? 200 : 20*(nb_luts);
+    int nb_pixels = (20*(nb_luts+1) > 350) ? 350 : 20*(nb_luts);
     if(nb_luts > 100)
       gtk_widget_set_visible(g->lutentry, TRUE);
     else
@@ -1454,30 +1454,6 @@ static void lutname_callback(GtkTreeSelection *selection, dt_iop_module_t *self)
     }
     g_free(lutname);
   }
-}
-
-static gboolean mouse_scroll(GtkWidget *view, GdkEventScroll *event, dt_lib_module_t *self)
-{
-  GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
-  GtkTreeIter iter;
-  GtkTreeModel *model = gtk_tree_view_get_model((GtkTreeView *)view);
-  if(gtk_tree_selection_get_selected(selection, &model, &iter))
-  {
-    gboolean next = FALSE;
-    if(event->delta_y > 0)
-      next = gtk_tree_model_iter_next(model, &iter);
-    else
-      next = gtk_tree_model_iter_previous(model, &iter);
-    if(next)
-    {
-      gtk_tree_selection_select_iter(selection, &iter);
-      GtkTreePath *path = gtk_tree_model_get_path(model, &iter);
-      gtk_tree_view_set_cursor((GtkTreeView *)view, path, NULL, FALSE);
-      gtk_tree_path_free(path);
-      return TRUE;
-    }
-  }
-  return FALSE;
 }
 #endif // HAVE_GMIC
 
@@ -1738,7 +1714,6 @@ void gui_init(dt_iop_module_t *self)
   GtkTreeSelection *selection = gtk_tree_view_get_selection(view);
   gtk_tree_selection_set_mode(selection, GTK_SELECTION_SINGLE);
   g->lutname_handler_id = g_signal_connect(G_OBJECT(selection), "changed", G_CALLBACK(lutname_callback), self);
-  g_signal_connect(G_OBJECT(view), "scroll-event", G_CALLBACK(mouse_scroll), (gpointer)self);
   gtk_box_pack_start((GtkBox *)self->widget, sw , TRUE, TRUE, 0);
 #endif // HAVE_GMIC
 
