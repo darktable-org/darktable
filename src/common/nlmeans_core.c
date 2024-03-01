@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -422,19 +423,12 @@ void nlmeans_denoise(
             {
               distortion += (col_sums[col+radius] - col_sums[col-radius-1]);
               const float wt = gh(distortion * sharpness);
-#if defined(__SSE__) && defined(__GNUC__) && __GNUC__ < 12
-              // GCC10 has really poor code generation here, so manually force vectorized evaluation
-              __m128 pixel = _mm_loadu_ps(in+4*col+offset);
-              pixel[3] = 1.0f;
-              ((__m128*)out)[col] += (pixel * _mm_set1_ps(wt));
-#else
               const float *const inpx = in+4*col;
               const dt_aligned_pixel_t pixel = { inpx[offset], inpx[offset+1], inpx[offset+2], 1.0f };
               for_four_channels(c,aligned(pixel,out:16))
               {
                 out[4*col+c] += pixel[c] * wt;
               }
-#endif  /* __SSE__ && __GNUC__ */
               _mm_prefetch(in+4*col+offset+stride,_MM_HINT_T0);	// try to ensure next row is ready in time
             }
           }
@@ -447,19 +441,12 @@ void nlmeans_denoise(
               const float dissimilarity = (distortion + pixel_difference(in+4*col,in+4*col+offset,center_norm))
                                            / (1.0f + params->center_weight);
               const float wt = gh(fmaxf(0.0f, dissimilarity * sharpness - 2.0f));
-#if defined(__SSE__) && defined(__GNUC__) && __GNUC__ < 12
-              // GCC10 has really poor code generation here, so manually force vectorized evaluation
-              __m128 pixel = _mm_loadu_ps(in+4*col+offset);
-              pixel[3] = 1.0f;
-              ((__m128*)out)[col] += (pixel * _mm_set1_ps(wt));
-#else
               const float *const inpx = in + 4*col;
               const dt_aligned_pixel_t pixel = { inpx[offset], inpx[offset+1], inpx[offset+2], 1.0f };
               for_four_channels(c,aligned(pixel,out:16))
               {
                 out[4*col+c] += pixel[c] * wt;
               }
-#endif
               _mm_prefetch(in+4*col+offset+stride,_MM_HINT_T0);	// try to ensure next row is ready in time
             }
           }
@@ -828,6 +815,7 @@ error:
   return err;
 }
 #endif /* HAVE_OPENCL */
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
