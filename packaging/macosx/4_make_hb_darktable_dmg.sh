@@ -25,32 +25,32 @@ try_count=0
 hdiutil_success=0
 
 while [ $hdiutil_success -ne 1 -a $try_count -lt 8 ]; do
-	# Create temporary rw image
+    # Create temporary rw image
     if hdiutil create -srcfolder package -volname "${PROGN}" -fs HFS+ \
-		-fsargs "-c c=64,a=16,e=16" -format UDRW pack.temp.dmg
+        -fsargs "-c c=64,a=16,e=16" -format UDRW pack.temp.dmg
     then
         hdiutil_success=1
         break
     fi
     try_count=$(( $try_count + 1 ))
-	echo "'hdiutil create' failed (attempt ${try_count}). Retrying..."
+    echo "'hdiutil create' failed (attempt ${try_count}). Retrying..."
     sleep 1
 done
 
 if [ $hdiutil_success -ne 1 -a -n "${GITHUB_RUN_ID}" ]; then
-	# Still no success after 8 attempts.
-	# If we are on github runner, kill the Xprotect service and make one
-	# final attempt.
+    # Still no success after 8 attempts.
+    # If we are on github runner, kill the Xprotect service and make one
+    # final attempt.
     # see https://github.com/actions/runner-images/issues/7522
-	echo "Killing XProtect..."
-	sudo pkill -9 XProtect >/dev/null || true;
-	sleep 3
+    echo "Killing XProtect..."
+    sudo pkill -9 XProtect >/dev/null || true;
+    sleep 3
 
     if hdiutil create -srcfolder package -volname "${PROGN}" -fs HFS+ \
-		-fsargs "-c c=64,a=16,e=16" -format UDRW pack.temp.dmg
+        -fsargs "-c c=64,a=16,e=16" -format UDRW pack.temp.dmg
     then
         hdiutil_success=1
-	fi
+    fi
 fi
 
 if [ $hdiutil_success -ne 1 ]; then
@@ -60,22 +60,22 @@ fi
 
 # Mount image without autoopen to create window style params
 device=$(hdiutil attach -readwrite -noverify -autoopen "pack.temp.dmg" |
-	egrep '^/dev/' | sed 1q | awk '{print $1}')
+    egrep '^/dev/' | sed 1q | awk '{print $1}')
 
 echo '
  tell application "Finder"
-	tell disk "'${PROGN}'"
-		set current view of container window to icon view
-		set toolbar visible of container window to false
-		set statusbar visible of container window to false
-		set the bounds of container window to {400, 100, 885, 330}
-		set theViewOptions to the icon view options of container window
-		set arrangement of theViewOptions to not arranged
-		set icon size of theViewOptions to 72
-		set position of item "'${PROGN}'" of container window to {100, 100}
-		set position of item "Applications" of container window to {375, 100}
-		update without registering applications
-	end tell
+    tell disk "'${PROGN}'"
+        set current view of container window to icon view
+        set toolbar visible of container window to false
+        set statusbar visible of container window to false
+        set the bounds of container window to {400, 100, 885, 330}
+        set theViewOptions to the icon view options of container window
+        set arrangement of theViewOptions to not arranged
+        set icon size of theViewOptions to 72
+        set position of item "'${PROGN}'" of container window to {100, 100}
+        set position of item "Applications" of container window to {375, 100}
+        update without registering applications
+    end tell
  end tell
 ' | osascript
 
