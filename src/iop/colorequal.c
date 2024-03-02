@@ -2178,7 +2178,10 @@ static gboolean _area_scrolled_callback(GtkWidget *widget,
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
 
-  return gtk_widget_event(_get_slider(g, g->selected), (GdkEvent*)event);
+  GtkWidget *w = dt_modifier_is(event->state, GDK_MOD1_MASK)
+               ? GTK_WIDGET(g->notebook)
+               : _get_slider(g, g->selected);
+  return gtk_widget_event(w, (GdkEvent*)event);
 }
 
 static gboolean _area_motion_notify_callback(GtkWidget *widget,
@@ -2490,7 +2493,7 @@ void gui_init(struct dt_iop_module_t *self)
                        "plugins/darkroom/colorequal/aspect_percent"));
   g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
   dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(g->area), &_action_def_coloreq);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("double-click to reset the curve\nmiddle click to toggle sliders visibility"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("double-click to reset the curve\nmiddle click to toggle sliders visibility\nalt+scroll to change page"));
   gtk_widget_set_can_focus(GTK_WIDGET(g->area), TRUE);
   gtk_widget_add_events(GTK_WIDGET(g->area),
                         GDK_BUTTON_PRESS_MASK
