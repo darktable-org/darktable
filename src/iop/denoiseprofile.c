@@ -3653,6 +3653,9 @@ static gboolean denoiseprofile_scrolled(GtkWidget *widget,
 
   if(dt_gui_ignore_scroll(event)) return FALSE;
 
+  if(dt_modifier_is(event->state, GDK_MOD1_MASK))
+    return gtk_widget_event(GTK_WIDGET(c->channel > DT_DENOISE_PROFILE_B ? c->channel_tabs_Y0U0V0 : c->channel_tabs), (GdkEvent*)event);
+
   int delta_y;
   if(dt_gui_get_scroll_unit_delta(event, &delta_y))
   {
@@ -3677,7 +3680,7 @@ static void denoiseprofile_tab_switch(GtkNotebook *notebook,
     c->channel = (dt_iop_denoiseprofile_channel_t)page_num + DT_DENOISE_PROFILE_Y0;
   else
     c->channel = (dt_iop_denoiseprofile_channel_t)page_num;
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(GTK_WIDGET(c->area));
 }
 
 void gui_init(dt_iop_module_t *self)
