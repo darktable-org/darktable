@@ -589,10 +589,10 @@ static gboolean _history_copy_and_paste_on_image_merge(const dt_imgid_t imgid,
   dev_src->iop = dt_iop_load_modules_ext(dev_src, TRUE);
   dev_dest->iop = dt_iop_load_modules_ext(dev_dest, TRUE);
 
-  dt_dev_read_history_ext(dev_src, imgid, TRUE, -1);
+  dt_dev_read_history_ext(dev_src, imgid, TRUE);
 
   // This prepends the default modules and converts just in case it's an empty history
-  dt_dev_read_history_ext(dev_dest, dest_imgid, TRUE, -1);
+  dt_dev_read_history_ext(dev_dest, dest_imgid, TRUE);
 
   dt_ioppr_check_iop_order(dev_src, imgid,
                            "_history_copy_and_paste_on_image_merge ");

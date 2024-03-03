@@ -27,15 +27,12 @@ dt_undo_lt_history_t *dt_history_snapshot_item_init(void)
   return (dt_undo_lt_history_t *)g_malloc0(sizeof(dt_undo_lt_history_t));
 }
 
-void dt_history_snapshot_undo_create(const dt_imgid_t imgid,
-                                     int *snap_id,
-                                     int *history_end)
+void _history_snapshot_create(const dt_imgid_t imgid,
+                              const int snap_id,
+                              int *history_end)
 {
-  // create history & mask snapshots for imgid, return the snapshot id
   sqlite3_stmt *stmt;
   gboolean all_ok = TRUE;
-
-  dt_lock_image(imgid);
 
   // get current history end
   *history_end = 0;
@@ -47,19 +44,6 @@ void dt_history_snapshot_undo_create(const dt_imgid_t imgid,
 
   if(sqlite3_step(stmt) == SQLITE_ROW)
     *history_end = sqlite3_column_int(stmt, 0);
-  sqlite3_finalize(stmt);
-
-  // get max snapshot
-
-  *snap_id = 0;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT MAX(id)"
-                              " FROM memory.undo_history"
-                              " WHERE imgid=?1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-    *snap_id = sqlite3_column_int(stmt, 0) + 1;
   sqlite3_finalize(stmt);
 
   dt_database_start_transaction(darktable.db);
@@ -74,7 +58,7 @@ void dt_history_snapshot_undo_create(const dt_imgid_t imgid,
        "  VALUES (?1, ?2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0)"
        , -1, &stmt, NULL);
     // clang-format on
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, *snap_id);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, snap_id);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
     all_ok = all_ok && (sqlite3_step(stmt) == SQLITE_DONE);
 
@@ -92,7 +76,7 @@ void dt_history_snapshot_undo_create(const dt_imgid_t imgid,
                               "  FROM main.history"
                               "  WHERE imgid=?2", -1, &stmt, NULL);
   // clang-format on
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, *snap_id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, snap_id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
   all_ok = all_ok && (sqlite3_step(stmt) == SQLITE_DONE);
   sqlite3_finalize(stmt);
@@ -107,7 +91,7 @@ void dt_history_snapshot_undo_create(const dt_imgid_t imgid,
                               "  FROM main.masks_history"
                               "  WHERE imgid=?2", -1, &stmt, NULL);
   // clang-format on
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, *snap_id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, snap_id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
   all_ok = all_ok && (sqlite3_step(stmt) == SQLITE_DONE);
   sqlite3_finalize(stmt);
@@ -121,7 +105,7 @@ void dt_history_snapshot_undo_create(const dt_imgid_t imgid,
                               "  FROM main.module_order"
                               "  WHERE imgid=?2", -1, &stmt, NULL);
   // clang-format on
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, *snap_id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, snap_id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
   all_ok = all_ok && (sqlite3_step(stmt) == SQLITE_DONE);
 
@@ -138,13 +122,45 @@ void dt_history_snapshot_undo_create(const dt_imgid_t imgid,
              "[dt_history_snapshot_undo_create] fails to create a snapshot for %d\n",
              imgid);
   }
+}
+
+void dt_history_snapshot_create(const dt_imgid_t imgid,
+                                const int snap_id)
+{
+  int history_end;
+  _history_snapshot_create(imgid, snap_id, &history_end);
+}
+
+void dt_history_snapshot_undo_create(const dt_imgid_t imgid,
+                                     int *snap_id,
+                                     int *history_end)
+{
+  // create history & mask snapshots for imgid, return the snapshot id
+  sqlite3_stmt *stmt;
+
+  dt_lock_image(imgid);
+
+  // get max snapshot
+
+  *snap_id = 0;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT MAX(id)"
+                              " FROM memory.undo_history"
+                              " WHERE imgid=?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    *snap_id = sqlite3_column_int(stmt, 0) + 1;
+  sqlite3_finalize(stmt);
+
+  _history_snapshot_create(imgid, *snap_id, history_end);
 
   dt_unlock_image(imgid);
 }
 
-static void _history_snapshot_undo_restore(const dt_imgid_t imgid,
-                                           const int snap_id,
-                                           const int history_end)
+static void _history_snapshot_restore(const dt_imgid_t imgid,
+                                      const int snap_id,
+                                      const int history_end)
 {
   // restore the given snapshot for imgid
   sqlite3_stmt *stmt;
@@ -238,8 +254,30 @@ static void _history_snapshot_undo_restore(const dt_imgid_t imgid,
   dt_history_hash_write_from_history(imgid, DT_HISTORY_HASH_CURRENT);
 }
 
-static void _clear_undo_snapshot(const dt_imgid_t imgid,
+void dt_history_snapshot_restore(const dt_imgid_t imgid,
                                  const int snap_id)
+{
+  sqlite3_stmt *stmt;
+  int history_end = -1;
+
+  // get current history end
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT MAX(num)"
+                              " FROM memory.undo_history"
+                              " WHERE id=?1 AND imgid=?2", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, snap_id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    history_end = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+
+  if(history_end != -1)
+    _history_snapshot_restore(imgid, snap_id, history_end);
+}
+
+void dt_history_snapshot_clear(const dt_imgid_t imgid,
+                               const int snap_id)
 {
   sqlite3_stmt *stmt;
 
@@ -275,12 +313,12 @@ void dt_history_snapshot_undo_lt_history_data_free(gpointer data)
 {
   dt_undo_lt_history_t *hist = (dt_undo_lt_history_t *)data;
 
-  _clear_undo_snapshot(hist->imgid, hist->after);
+  dt_history_snapshot_clear(hist->imgid, hist->after);
 
   // this is the first element in for this image, it corresponds to
   // the initial status, we can safely remove it now
   if(hist->before == 0)
-    _clear_undo_snapshot(hist->imgid, hist->before);
+    dt_history_snapshot_clear(hist->imgid, hist->before);
 
   g_free(hist);
 }
@@ -297,11 +335,11 @@ void dt_history_snapshot_undo_pop(gpointer user_data,
 
     if(action == DT_ACTION_UNDO)
     {
-      _history_snapshot_undo_restore(hist->imgid, hist->before, hist->before_history_end);
+      _history_snapshot_restore(hist->imgid, hist->before, hist->before_history_end);
     }
     else
     {
-      _history_snapshot_undo_restore(hist->imgid, hist->after, hist->after_history_end);
+      _history_snapshot_restore(hist->imgid, hist->after, hist->after_history_end);
     }
 
     *imgs = g_list_append(*imgs, GINT_TO_POINTER(hist->imgid));

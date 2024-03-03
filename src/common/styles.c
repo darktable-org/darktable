@@ -957,7 +957,7 @@ void _styles_apply_to_image_ext(const char *name,
       g_list_free_full(mi, g_free);
     }
 
-    dt_dev_read_history_ext(dev_dest, newimgid, TRUE, -1);
+    dt_dev_read_history_ext(dev_dest, newimgid, TRUE);
 
     dt_ioppr_check_iop_order(dev_dest, newimgid, "dt_styles_apply_to_image ");
 

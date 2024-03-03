@@ -44,6 +44,17 @@ void dt_history_snapshot_undo_pop(gpointer user_data,
 
 void dt_history_snapshot_undo_lt_history_data_free(gpointer data);
 
+/* create/restore/clear an history snapshot, those are generic routines
+   used for darkroom history snapshot and sharing code with the history
+   undo.
+*/
+void dt_history_snapshot_create(const dt_imgid_t imgid,
+                                const int snap_id);
+void dt_history_snapshot_restore(const dt_imgid_t imgid,
+                                 const int snap_id);
+void dt_history_snapshot_clear(const dt_imgid_t imgid,
+                               const int snap_id);
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
