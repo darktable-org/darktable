@@ -1185,7 +1185,8 @@ void dt_history_compress_on_image(const dt_imgid_t imgid)
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, op_mask_manager, -1, SQLITE_TRANSIENT);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    if(sqlite3_column_int(stmt, 0) == 1) manager_position = TRUE;
+    if(sqlite3_column_int(stmt, 0) == 1)
+      manager_position = TRUE;
   }
   sqlite3_finalize(stmt);
 
@@ -1231,7 +1232,8 @@ void dt_history_compress_on_image(const dt_imgid_t imgid)
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
     "SELECT COUNT(*) FROM main.masks_history WHERE imgid = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  if(sqlite3_step(stmt) == SQLITE_ROW) masks_count = sqlite3_column_int(stmt, 0);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    masks_count = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
 
   if(masks_count > 0)
@@ -1517,7 +1519,8 @@ GList *dt_history_duplicate(GList *hist)
     new->blend_params = malloc(sizeof(dt_develop_blend_params_t));
     memcpy(new->blend_params, old->blend_params, sizeof(dt_develop_blend_params_t));
 
-    if(old->forms) new->forms = dt_masks_dup_forms_deep(old->forms, NULL);
+    if(old->forms)
+      new->forms = dt_masks_dup_forms_deep(old->forms, NULL);
 
     result = g_list_prepend(result, new);
   }

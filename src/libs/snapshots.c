@@ -1013,7 +1013,6 @@ static void _lib_snapshots_restore_callback(GtkButton *widget, gpointer user_dat
   dt_dev_modulegroups_set(darktable.develop,
                           dt_dev_modulegroups_get(darktable.develop));
   dt_image_update_final_size(imgid);
-
   dt_dev_write_history(darktable.develop);
 
   /* signal history changed */
