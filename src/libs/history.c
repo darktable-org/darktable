@@ -1346,7 +1346,7 @@ void gui_reset(dt_lib_module_t *self)
   {
     dt_dev_undo_start_record(darktable.develop);
 
-    dt_history_delete_on_image_ext(imgid, FALSE);
+    dt_history_delete_on_image_ext(imgid, FALSE, TRUE);
 
     dt_dev_undo_end_record(darktable.develop);
 
