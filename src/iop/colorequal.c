@@ -92,12 +92,15 @@ None;midi:CC24=iop/colorequal/brightness/magenta
 #define SATSIZE 4096
 #define SLIDER_BRIGHTNESS 0.65f // 65 %
 
-DT_MODULE_INTROSPECTION(2, dt_iop_colorequal_params_t)
+#define SAT_EFFECT 2.0f
+#define BRIGHT_EFFECT 8.0f
+
+DT_MODULE_INTROSPECTION(3, dt_iop_colorequal_params_t)
 
 typedef struct dt_iop_colorequal_params_t
 {
-  float reserved1;
-  float smoothing_hue;           // $MIN: 0.05 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "hue curve"
+  float threshold;          // $MIN: -0.1 $MAX: 0.1 $DEFAULT: 0.0 $DESCRIPTION: "saturation threshold"
+  float smoothing_hue;      // $MIN: 0.05 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "hue curve"
   float reserved2;
 
   float white_level;        // $MIN: -2.0 $MAX: 16.0 $DEFAULT: 1.0 $DESCRIPTION: "white level"
@@ -147,7 +150,11 @@ typedef enum dt_iop_colorequal_channel_t
   SATURATION = 1,
   BRIGHTNESS = 2,
   NUM_CHANNELS = 3,
+  GRAD_SWITCH = 4,
+  SATURATION_GRAD = SATURATION + GRAD_SWITCH,
+  BRIGHTNESS_GRAD = BRIGHTNESS + GRAD_SWITCH
 } dt_iop_colorequal_channel_t;
+
 
 typedef struct dt_iop_colorequal_data_t
 {
@@ -164,6 +171,8 @@ typedef struct dt_iop_colorequal_data_t
   gboolean use_filter;
   dt_iop_order_iccprofile_info_t *work_profile;
   float hue_shift;
+  float threshold;
+  float max_brightness;
 } dt_iop_colorequal_data_t;
 
 const char *name()
@@ -213,7 +222,7 @@ typedef struct dt_iop_colorequal_gui_data_t
   GtkWidget *bright_red, *bright_orange, *bright_yellow, *bright_green;
   GtkWidget *bright_cyan, *bright_blue, *bright_lavender, *bright_magenta;
 
-  GtkWidget *smoothing_hue;
+  GtkWidget *smoothing_hue, *threshold;
   GtkWidget *chroma_size, *param_size, *use_filter;
   GtkWidget *hue_shift;
 
@@ -268,10 +277,36 @@ int legacy_params(dt_iop_module_t *self,
 
     memcpy(n, o, sizeof(dt_iop_colorequal_params_t) - sizeof(float));
     n->hue_shift = 0.0f;
-
     *new_params = n;
     *new_params_size = sizeof(dt_iop_colorequal_params_t);
     *new_version = 2;
+    return 0;
+  }
+
+  if(old_version == 2)
+  {
+    const dt_iop_colorequal_params_t *o =
+      (dt_iop_colorequal_params_t *)old_params;
+    dt_iop_colorequal_params_t *n =
+      (dt_iop_colorequal_params_t *)malloc(sizeof(dt_iop_colorequal_params_t));
+
+    memcpy(n, o, sizeof(dt_iop_colorequal_params_t) - sizeof(float));
+    n->threshold = 0.024f;  // in v1/2 we had an inflection point of 0.1
+
+    // brightness and saturation slider ranges have been expanded by 4:3 so we correct here
+    const float *sodata = &o->sat_red;
+    const float *bodata = &o->bright_red;
+    float *sndata = &n->sat_red;
+    float *bndata = &n->bright_red;
+    for(int i = 0; i < NODES; i++)
+    {
+      sndata[i] = 1.0f + 0.75f * (sodata[i] - 1.0f);
+      bndata[i] = 1.0f + 0.75f * (bodata[i] - 1.0f);
+    }
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_colorequal_params_t);
+    *new_version = 3;
     return 0;
   }
 
@@ -311,23 +346,20 @@ static inline float _deg_to_rad(const float angle)
 
 /* We use precalculated data for the logistic weighing function for performance and stability
    and do linear interpolation at runtime. Avoids banding effects and allows a sharp transition.
-   By uncommenting SATCURVE the function will be shown in the masking modes.
 */
-#define SATCURVE
-static float satweights[SATSIZE + 1];
+static float satweights[2 * SATSIZE + 1];
 static void _init_satweights(void)
 {
-  for(int i = 0; i < SATSIZE + 1; i++)
+  for(int i = -SATSIZE; i < SATSIZE + 1; i++)
   {
-    const double val = 1.0 / (double)SATSIZE * (double)i;
-    const double coef = exp(-(60.0 * (val - 0.1)));
-    satweights[i] = (float)(fmax(1.0 / (1.0 + coef), 0.0));
+    const double val = 0.5 / (double)SATSIZE * (double)i;
+    satweights[i+SATSIZE] = (float)(1.0 / (1.0 + exp(-60.0 * val)));
   }
 }
 
 static inline float _get_satweight(const float sat)
 {
-  const float isat = (float)SATSIZE * CLIP(sat);
+  const float isat = (float)SATSIZE * (1.0f + CLAMP(sat, -0.5f, 0.5f));
   const float base = floorf(isat);
   const int i = base;
   return satweights[i] + (isat - base) * (satweights[i+1] - satweights[i]);
@@ -337,7 +369,8 @@ void _prefilter_chromaticity(float *const restrict UV,
                              float *const restrict saturation,
                              const dt_iop_roi_t *const roi,
                              const float csigma,
-                             const float epsilon)
+                             const float epsilon,
+                             const float sat_shift)
 {
   // We guide the 3-channels corrections with the 2-channels
   // chromaticity coordinates UV aka we express corrections = a * UV +
@@ -356,7 +389,7 @@ void _prefilter_chromaticity(float *const restrict UV,
   // possibly downsample for speed-up
   const size_t pixels = width * height;
   const float scaling = _get_scaling(sigma);
-  const float gsigma = MAX(0.3f, 0.5f * sigma / scaling);
+  const float gsigma = MAX(0.2f, 0.5f * sigma / scaling);
   const size_t ds_height = height / scaling;
   const size_t ds_width = width / scaling;
   const size_t ds_pixels = ds_width * ds_height;
@@ -497,7 +530,7 @@ void _prefilter_chromaticity(float *const restrict UV,
   // Apply the guided filter
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(pixels, a_full, b_full, UV, saturation)  \
+  dt_omp_firstprivate(pixels, a_full, b_full, UV, saturation, sat_shift)  \
   schedule(simd:static) aligned(a_full, b_full, saturation, UV: 64)
 #endif
   for(size_t k = 0; k < pixels; k++)
@@ -509,8 +542,8 @@ void _prefilter_chromaticity(float *const restrict UV,
 
     // we avoid chroma blurring into achromatic areas by interpolating
     // input UV vs corrected UV
-    UV[2 * k + 0] = interpolatef(_get_satweight(saturation[k]), cv[0], uv[0]);
-    UV[2 * k + 1] = interpolatef(_get_satweight(saturation[k]), cv[1], uv[1]);
+    UV[2 * k + 0] = interpolatef(_get_satweight(saturation[k] - sat_shift), cv[0], uv[0]);
+    UV[2 * k + 1] = interpolatef(_get_satweight(saturation[k] - sat_shift), cv[1], uv[1]);
   }
 
   dt_free_align(a_full);
@@ -523,7 +556,9 @@ void _guide_with_chromaticity(float *const restrict UV,
                               float *const restrict b_corrections,
                               const dt_iop_roi_t *const roi,
                               const float csigma,
-                              const float epsilon)
+                              const float epsilon,
+                              const float bright_shift,
+                              const float sat_shift)
 {
   // We guide the 3-channels corrections with the 2-channels
   // chromaticity coordinates UV aka we express corrections = a * UV +
@@ -615,7 +650,7 @@ void _guide_with_chromaticity(float *const restrict UV,
   _mean_gaussian(ds_UV, ds_width, ds_height, 2, gsigma);
   _mean_gaussian(covariance, ds_width, ds_height, 4, gsigma);
   _mean_gaussian(ds_corrections, ds_width, ds_height, 2, gsigma);
-  _mean_gaussian(ds_b_corrections, ds_width, ds_height, 1, 0.2f * gsigma);
+  _mean_gaussian(ds_b_corrections, ds_width, ds_height, 1, 0.1f * gsigma);
   _mean_gaussian(correlations, ds_width, ds_height, 4, gsigma);
 
   // Finish the UV covariance matrix computation by subtracting avg(x) * avg(y)
@@ -736,7 +771,7 @@ void _guide_with_chromaticity(float *const restrict UV,
   // Apply the guided filter
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(pixels, a_full, b_full, corrections, b_corrections, UV, saturation)   \
+  dt_omp_firstprivate(pixels, a_full, b_full, corrections, b_corrections, UV, saturation, bright_shift, sat_shift)   \
   schedule(simd:static) aligned(a_full, b_full, corrections, saturation, UV: 64)
 #endif
   for(size_t k = 0; k < pixels; k++)
@@ -745,8 +780,8 @@ void _guide_with_chromaticity(float *const restrict UV,
     const float uv[2] = { UV[2 * k + 0], UV[2 * k + 1] };
     const float cv[2] = { a_full[4 * k + 0] * uv[0] + a_full[4 * k + 1] * uv[1] + b_full[2 * k + 0],
                           a_full[4 * k + 2] * uv[0] + a_full[4 * k + 3] * uv[1] + b_full[2 * k + 1] };
-    corrections[2 * k + 1] = interpolatef(_get_satweight(saturation[k]), cv[0], 1.0f);
-    b_corrections[k] = interpolatef(_get_satweight(saturation[k] * 0.5f), cv[1], 0.0f);
+    corrections[2 * k + 1] = interpolatef(_get_satweight(saturation[k] - sat_shift), cv[0], 1.0f);
+    b_corrections[k] = interpolatef(_get_satweight(saturation[k] - bright_shift), cv[1], 0.0f);
   }
 
   dt_free_align(a_full);
@@ -771,7 +806,9 @@ void process(struct dt_iop_module_t *self,
   const float *const restrict in = (float*)i;
   float *const restrict out = (float*)o;
 
-  const size_t npixels = (size_t)roi_out->width * roi_out->height;
+  const int owidth = roi_out->width;
+  const int oheight = roi_out->height;
+  const size_t npixels = (size_t)owidth * oheight;
 
   // STEP 0: prepare the RGB <-> XYZ D65 matrices
   // see colorbalancergb.c process() for the details, it's exactly the same
@@ -787,16 +824,29 @@ void process(struct dt_iop_module_t *self,
   float *const restrict UV = dt_alloc_align_float(npixels * 2);
   float *const restrict corrections = dt_alloc_align_float(npixels * 2);
   float *const restrict b_corrections = dt_alloc_align_float(npixels);
-  float *const restrict L = dt_alloc_align_float(npixels);
+  float *const restrict tmp = dt_alloc_align_float(npixels);
   float *const restrict saturation = dt_alloc_align_float(npixels);
 
   const float white = Y_to_dt_UCS_L_star(d->white_level);
 
+  /* We use the logistic weighing function to diminish effects in the guided filter for locations
+     with low chromacity. The logistic function is precalculated for a inflection point of zero
+     so we have to shift the input value (saturation) for both brightness and saturation corrections.
+     The default can be shifted by the threshold slider.
+     Depending on the maximum for the eight brightness sliders we increase the brightness shift, the value
+     of 0.01 has been found by a lot of testing to be safe.
+     As increased param_size leads to propagation of brightness into achromatic parts we have to correct for that too.
+  */
+  const float sat_shift = d->threshold;
+  const float max_brightness_shift = 0.01f * d->max_brightness;
+  const float corr_max_brightness_shift = max_brightness_shift * MIN(5.0f, sqrtf(d->param_size));
+  const float bright_shift = sat_shift + corr_max_brightness_shift;
+
   // STEP 1: convert image from RGB to darktable UCS LUV and calc saturation
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(npixels, in, UV, L, saturation, input_matrix, white) \
-  schedule(simd:static) aligned(in, UV, L, saturation, input_matrix : 64)
+  dt_omp_firstprivate(npixels, in, UV, tmp, saturation, input_matrix, white) \
+  schedule(simd:static) aligned(in, UV, tmp, saturation, input_matrix : 64)
 #endif
   for(size_t k = 0; k < npixels; k++)
   {
@@ -817,7 +867,7 @@ void process(struct dt_iop_module_t *self,
     saturation[k] = (dmax > NORM_MIN && delta > NORM_MIN) ? delta / dmax : 0.0f;
 
     xyY_to_dt_UCS_UV(xyY, uv);
-    L[k] = Y_to_dt_UCS_L_star(xyY[2]);
+    tmp[k] = Y_to_dt_UCS_L_star(xyY[2]);
   }
 
   // We blur the saturation slightly depending on roi_scale
@@ -825,60 +875,63 @@ void process(struct dt_iop_module_t *self,
 
   // STEP 2 : smoothen UV to avoid discontinuities in hue
   if(d->use_filter)
-    _prefilter_chromaticity(UV, saturation, roi_out, d->chroma_size, d->chroma_feathering);
+    _prefilter_chromaticity(UV, saturation, roi_out, d->chroma_size, d->chroma_feathering, sat_shift);
 
   // STEP 3 : carry-on with conversion from LUV to HSB
   float B_norm = NORM_MIN;
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
   reduction(max: B_norm) \
-  dt_omp_firstprivate(npixels, in, out, UV, L, corrections, b_corrections, d, white)  \
-  schedule(simd:static) aligned(in, out, UV, L, corrections, b_corrections : 64)
+  dt_omp_firstprivate(owidth, oheight, in, out, UV, tmp, corrections, b_corrections, saturation, d, white)  \
+  schedule(simd:static) aligned(in, out, UV, tmp, corrections, b_corrections, saturation : 64)
 #endif
-  for(size_t k = 0; k < npixels; k++)
+  for(int row = 0; row < oheight; row++)
   {
-    const float *const restrict pix_in = __builtin_assume_aligned(in + k * 4, 16);
-    float *const restrict pix_out = __builtin_assume_aligned(out + k * 4, 16);
-    float *const restrict corrections_out = corrections + k * 2;
-
-    float *const restrict uv = UV + k * 2;
-
-    // Finish the conversion to dt UCS JCH then HSB
-    dt_aligned_pixel_t JCH = { 0.0f, 0.0f, 0.0f, 0.0f };
-    dt_UCS_LUV_to_JCH(L[k], white, uv, JCH);
-    dt_UCS_JCH_to_HSB(JCH, pix_out);
-    B_norm = fmaxf(B_norm, pix_out[2]);
-    // Get the boosts - if chroma = 0, we have a neutral grey so set everything to 0
-
-    if(JCH[1] > NORM_MIN)
+    for(int col = 0; col < owidth; col++)
     {
-      const float hue = pix_out[0];
-      const float sat = pix_out[1];
-      corrections_out[0] = lookup_gamut(d->LUT_hue, hue);
-      corrections_out[1] = lookup_gamut(d->LUT_saturation, hue);
-      b_corrections[k] = sat * (lookup_gamut(d->LUT_brightness, hue) - 1.0f);
-    }
-    else
-    {
-      corrections_out[0] = 0.0f;
-      corrections_out[1] = 1.0f;
-      b_corrections[k] = 0.0f;
-    }
+      const size_t k = (size_t)row * owidth + col;
 
-    // Copy alpha
-    pix_out[3] = pix_in[3];
+      const float *const restrict pix_in = __builtin_assume_aligned(in + k * 4, 16);
+      float *const restrict pix_out = __builtin_assume_aligned(out + k * 4, 16);
+      float *const restrict corrections_out = corrections + k * 2;
+
+      float *const restrict uv = UV + k * 2;
+
+      // Finish the conversion to dt UCS JCH then HSB
+      dt_aligned_pixel_t JCH = { 0.0f, 0.0f, 0.0f, 0.0f };
+      dt_UCS_LUV_to_JCH(tmp[k], white, uv, JCH);
+      dt_UCS_JCH_to_HSB(JCH, pix_out);
+      B_norm = fmaxf(B_norm, pix_out[2]);
+
+      // Get the boosts - if chroma = 0, we have a neutral grey so set everything to 0
+      if(JCH[1] > NORM_MIN)
+      {
+        const float hue = pix_out[0];
+        const float sat = pix_out[1];
+        corrections_out[0] = lookup_gamut(d->LUT_hue, hue);
+        corrections_out[1] = lookup_gamut(d->LUT_saturation, hue);
+        b_corrections[k] = sat * (lookup_gamut(d->LUT_brightness, hue) - 1.0f);
+      }
+      else
+      {
+        corrections_out[0] = 0.0f;
+        corrections_out[1] = 1.0f;
+        b_corrections[k] = 0.0f;
+      }
+
+      // Copy alpha
+      pix_out[3] = pix_in[3];
+    }
   }
 
-  // STEP 2: apply a guided filter on the corrections, guided with UV
-  // chromaticity, to ensure spatially-contiguous corrections even
-  // though the hue is not perfectly constant this will help avoiding
-  // chroma noise.
+  // STEP 4: apply a guided filter on the corrections, guided with UV chromaticity, to ensure spatially-contiguous corrections.
+  // Even if the hue is not perfectly constant this will help avoiding chroma noise.
   if(d->use_filter)
-    _guide_with_chromaticity(UV, corrections, saturation, b_corrections, roi_out, d->param_size, d->param_feathering);
+    _guide_with_chromaticity(UV, corrections, saturation, b_corrections, roi_out, d->param_size, d->param_feathering, bright_shift, sat_shift);
 
   if(mask_mode == 0)
   {
-    // STEP 3: apply the corrections and convert back to RGB
+    // STEP 5: apply the corrections and convert back to RGB
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(npixels, out, corrections, b_corrections, output_matrix, white, d)  \
@@ -892,8 +945,8 @@ void process(struct dt_iop_module_t *self,
       // Apply the corrections
       pix_out[0] += corrections_out[0]; // WARNING: hue is an offset
       // pix_out[1] (saturation) and pix_out[2] (brightness) are gains
-      pix_out[1] = MAX(0.0f, pix_out[1] * (1.0f + 1.5f * (corrections_out[1] - 1.0f)));
-      pix_out[2] = MAX(0.0f, pix_out[2] * (1.0f + 6.0f * b_corrections[k]));
+      pix_out[1] = MAX(0.0f, pix_out[1] * (1.0f + SAT_EFFECT * (corrections_out[1] - 1.0f)));
+      pix_out[2] = MAX(0.0f, pix_out[2] * (1.0f + BRIGHT_EFFECT * b_corrections[k]));
 
       // Sanitize gamut
       gamut_map_HSB(pix_out, d->gamut_LUT, white);
@@ -912,8 +965,8 @@ void process(struct dt_iop_module_t *self,
     B_norm = 1.0f / B_norm;
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(npixels, out, b_corrections, corrections, saturation, mode, B_norm)  \
-  schedule(simd:static) aligned(out, corrections, b_corrections, saturation: 64)
+  dt_omp_firstprivate(npixels, out, b_corrections, corrections, saturation, tmp, mode, B_norm, sat_shift, bright_shift)  \
+  schedule(simd:static) aligned(out, corrections, b_corrections, saturation, tmp: 64)
 #endif
     for(size_t k = 0; k < npixels; k++)
     {
@@ -925,44 +978,52 @@ void process(struct dt_iop_module_t *self,
       switch(mode)
       {
         case BRIGHTNESS:
-          corr = 6.0f * b_corrections[k];
+          corr = BRIGHT_EFFECT * b_corrections[k];
           break;
         case SATURATION:
-          corr = corrections_out[1] - 1.0f;
+          corr = SAT_EFFECT * (corrections_out[1] - 1.0f);
           break;
-        case HUE:
+        case BRIGHTNESS_GRAD:
+          corr = _get_satweight(saturation[k] - bright_shift) - 0.5f;
+          break;
+        case SATURATION_GRAD:
+          corr = _get_satweight(saturation[k] - sat_shift) - 0.5f;
+          break;
+
+        default:  // HUE
           corr = 0.2f * corrections_out[0];
-          break;
-        default:
-          corr = _get_satweight(saturation[k]) - 0.5f;
       }
 
       const gboolean neg = corr < 0.0f;
-      pix_out[0] = MAX(0.0f, neg ? val + corr : val);
-      pix_out[1] = MAX(0.0f, neg ? val + corr : val - corr);
-      pix_out[2] = MAX(0.0f, neg ? val        : val - corr);
+      corr = 0.3f * fabsf(corr);
+      corr = corr < 1e-3 ? 0.0f : powf(corr, 0.8f);
+      pix_out[0] = MAX(0.0f, neg ? val - corr : val);
+      pix_out[1] = MAX(0.0f, val - corr);
+      pix_out[2] = MAX(0.0f, neg ? val : val - corr);
     }
 
-#ifdef SATCURVE
-    // visualize weighing function
-    for(int col = 0; col < 8 * roi_out->width; col++)
+    if((mode == BRIGHTNESS_GRAD) || (mode == SATURATION_GRAD))
     {
-      const float sat = (float)col / (float)roi_out->width / 8.0f;
-      const float weight = _get_satweight(sat);
-      const int row = (int)((1.0f - weight) * (float)(roi_out->height-1));
-      const size_t k = row * roi_out->width + col / 8;
-      float *const restrict pix_out = __builtin_assume_aligned(out + k * 4, 16);
-      pix_out[0] = pix_out[2] = 0.0f;
-      pix_out[1] = 1.0f;
+      for(int col = 0; col < 8 * roi_out->width; col++)
+      {
+        const float sat = (float)col / (float)roi_out->width / 8.0f;
+        const float weight = _get_satweight(sat - (mode == SATURATION_GRAD ? sat_shift : bright_shift));
+        if(weight > 0.001f && weight < 0.999f)
+        {
+          const int row = (int)((1.0f - weight) * (float)(roi_out->height-1));
+          const size_t k = row * roi_out->width + col / 8;
+          out[4*k] = out[4*k+2] = 0.0f;
+          out[4*k+1] = 1.0f;
+        }
+      }
     }
   }
-#endif
 
   dt_free_align(corrections);
   dt_free_align(b_corrections);
   dt_free_align(saturation);
   dt_free_align(UV);
-  dt_free_align(L);
+  dt_free_align(tmp);
 }
 
 static inline float _get_hue_node(const int k, const float hue_shift)
@@ -1120,7 +1181,8 @@ void commit_params(struct dt_iop_module_t *self,
   d->param_feathering = powf(10.f, -6.0f);
   d->use_filter = p->use_filter;
   d->hue_shift = p->hue_shift;
-
+  // default inflection point at a sat of 6%; allow selection up to 28%
+  d->threshold = -0.015f + 0.3f * sqrf(5.0f * (p->threshold + 0.1f));
   float DT_ALIGNED_ARRAY sat_values[NODES];
   float DT_ALIGNED_ARRAY hue_values[NODES];
   float DT_ALIGNED_ARRAY bright_values[NODES];
@@ -1137,6 +1199,11 @@ void commit_params(struct dt_iop_module_t *self,
                             d->LUT_hue, d->hue_shift, FALSE);
 
   _pack_brightness(p, bright_values);
+
+  d->max_brightness = 1.0f;
+  for(int c = 0; c < NODES; c++)
+    d->max_brightness = fmaxf(d->max_brightness, bright_values[c]);
+
   _periodic_RBF_interpolate(bright_values,
                             M_PI_F,
                             d->LUT_brightness, d->hue_shift, TRUE);
@@ -1372,7 +1439,7 @@ void reload_defaults(dt_iop_module_t *self)
   {
     // reset masking
     dt_bauhaus_widget_set_quad_active(g->param_size, FALSE);
-    dt_bauhaus_widget_set_quad_active(g->chroma_size, FALSE);
+    dt_bauhaus_widget_set_quad_active(g->threshold, FALSE);
     g->mask_mode = 0;
   }
 }
@@ -1384,7 +1451,7 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   {
     const int mask_mode = g->mask_mode;
     dt_bauhaus_widget_set_quad_active(g->param_size, FALSE);
-    dt_bauhaus_widget_set_quad_active(g->chroma_size, FALSE);
+    dt_bauhaus_widget_set_quad_active(g->threshold, FALSE);
     g->mask_mode = 0;
     if(mask_mode) dt_dev_reprocess_center(self->dev);
   }
@@ -1649,19 +1716,18 @@ static void _masking_callback_p(GtkWidget *quad, gpointer user_data)
   if(darktable.gui->reset) return;
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
-  dt_bauhaus_widget_set_quad_active(g->chroma_size, FALSE);
-
+  dt_bauhaus_widget_set_quad_active(g->threshold, FALSE);
   g->mask_mode = (dt_bauhaus_widget_get_quad_active(quad)) ? g->channel + 1 : 0;
   dt_dev_reprocess_center(self->dev);
 }
 
-static void _masking_callback_c(GtkWidget *quad, gpointer user_data)
+static void _masking_callback_t(GtkWidget *quad, gpointer user_data)
 {
   if(darktable.gui->reset) return;
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
   dt_bauhaus_widget_set_quad_active(g->param_size, FALSE);
-  g->mask_mode = (dt_bauhaus_widget_get_quad_active(quad)) ? 4 : 0;
+  g->mask_mode = (dt_bauhaus_widget_get_quad_active(quad)) ? GRAD_SWITCH + g->channel + 1 : 0;
   dt_dev_reprocess_center(self->dev);
 }
 
@@ -1684,13 +1750,13 @@ static void _channel_tabs_switch_callback(GtkNotebook *notebook,
 
   const int old_mask_mode = g->mask_mode;
   const gboolean masking_p = dt_bauhaus_widget_get_quad_active(g->param_size);
-  const gboolean masking_c = dt_bauhaus_widget_get_quad_active(g->chroma_size);
+  const gboolean masking_t = dt_bauhaus_widget_get_quad_active(g->threshold);
   gui_update(self);
 
   dt_bauhaus_widget_set_quad_active(g->param_size, masking_p);
-  dt_bauhaus_widget_set_quad_active(g->chroma_size, masking_c);
+  dt_bauhaus_widget_set_quad_active(g->threshold, masking_t);
 
-  g->mask_mode = masking_p ? g->channel + 1 : (masking_c ? 4 : 0);
+  g->mask_mode = masking_p ? g->channel + 1 : (masking_t ? GRAD_SWITCH + g->channel + 1 : 0);
   if(g->mask_mode != old_mask_mode)
     dt_dev_reprocess_center(self->dev);
 }
@@ -2204,13 +2270,23 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->chroma_size, _(" px"));
   gtk_widget_set_tooltip_text(g->chroma_size,
                               _("blurring radius of chroma prefilter analysis"));
-  dt_bauhaus_widget_set_quad_paint(g->chroma_size, dtgtk_cairo_paint_showmask, 0, NULL);
-  dt_bauhaus_widget_set_quad_toggle(g->chroma_size, TRUE);
-  dt_bauhaus_widget_set_quad_active(g->chroma_size, FALSE);
-  g_signal_connect(G_OBJECT(g->chroma_size), "quad-pressed", G_CALLBACK(_masking_callback_c), self);
-  dt_bauhaus_widget_set_quad_tooltip(g->chroma_size,
-    _("visualize weighing function on changed output.\n"
+
+  g->threshold = dt_bauhaus_slider_from_params(self, "threshold");
+  dt_bauhaus_slider_set_digits(g->threshold, 3);
+  dt_bauhaus_slider_set_format(g->threshold, _("%"));
+  dt_bauhaus_widget_set_quad_paint(g->threshold, dtgtk_cairo_paint_showmask, 0, NULL);
+  dt_bauhaus_widget_set_quad_toggle(g->threshold, TRUE);
+  dt_bauhaus_widget_set_quad_active(g->threshold, FALSE);
+  g_signal_connect(G_OBJECT(g->threshold), "quad-pressed", G_CALLBACK(_masking_callback_t), self);
+  dt_bauhaus_widget_set_quad_tooltip(g->threshold,
+    _("visualize weighing function on changed output and view weighing curve.\n"
       "red shows possibly changed data, blueish parts will not be changed."));
+
+  gtk_widget_set_tooltip_text(g->threshold,
+                              _("set saturation threshold for the guided filter.\n"
+                                " - decrease to allow changes in areas with low chromacity\n"
+                                " - increase to restrict changes to higher chromacities.\n"
+                                "   increases contrast and avoids brightness changes in low chromacity areas."));
 
   g->param_size = dt_bauhaus_slider_from_params(self, "param_size");
   dt_bauhaus_slider_set_digits(g->param_size, 1);
