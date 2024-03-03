@@ -554,6 +554,7 @@ void _guide_with_chromaticity(float *const restrict UV,
                               float *const restrict corrections,
                               float *const restrict saturation,
                               float *const restrict b_corrections,
+                              float *const restrict gradients,
                               const dt_iop_roi_t *const roi,
                               const float csigma,
                               const float epsilon,
@@ -771,8 +772,8 @@ void _guide_with_chromaticity(float *const restrict UV,
   // Apply the guided filter
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(pixels, a_full, b_full, corrections, b_corrections, UV, saturation, bright_shift, sat_shift)   \
-  schedule(simd:static) aligned(a_full, b_full, corrections, saturation, UV: 64)
+  dt_omp_firstprivate(pixels, a_full, b_full, corrections, b_corrections, gradients, UV, saturation, bright_shift, sat_shift)   \
+  schedule(simd:static) aligned(a_full, b_full, corrections, saturation, gradients, UV: 64)
 #endif
   for(size_t k = 0; k < pixels; k++)
   {
@@ -781,7 +782,7 @@ void _guide_with_chromaticity(float *const restrict UV,
     const float cv[2] = { a_full[4 * k + 0] * uv[0] + a_full[4 * k + 1] * uv[1] + b_full[2 * k + 0],
                           a_full[4 * k + 2] * uv[0] + a_full[4 * k + 3] * uv[1] + b_full[2 * k + 1] };
     corrections[2 * k + 1] = interpolatef(_get_satweight(saturation[k] - sat_shift), cv[0], 1.0f);
-    b_corrections[k] = interpolatef(_get_satweight(saturation[k] - bright_shift), cv[1], 0.0f);
+    b_corrections[k] = interpolatef(gradients[k] * _get_satweight(saturation[k] - bright_shift), cv[1], 0.0f);
   }
 
   dt_free_align(a_full);
@@ -842,6 +843,15 @@ void process(struct dt_iop_module_t *self,
   const float corr_max_brightness_shift = max_brightness_shift * MIN(5.0f, sqrtf(d->param_size));
   const float bright_shift = sat_shift + corr_max_brightness_shift;
 
+  /* We want information about sharp transitions of saturation for halo suppression.
+     As the scharr operator is faster and more stable for roi->scale changes we use
+       it instead of local variance.
+     We reduce chroma noise effects by using a minimum threshold of 0.02 and by sqaring the gradient.
+     The gradient_amp corrects a gradient of 0.5 to be 1.0 and takes care
+       of maximum changed brightness and roi scale.
+  */
+  const float gradient_amp = 4.0f * sqrtf(d->max_brightness) * sqrf(roi_out->scale);
+
   // STEP 1: convert image from RGB to darktable UCS LUV and calc saturation
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
@@ -882,7 +892,7 @@ void process(struct dt_iop_module_t *self,
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
   reduction(max: B_norm) \
-  dt_omp_firstprivate(owidth, oheight, in, out, UV, tmp, corrections, b_corrections, saturation, d, white)  \
+  dt_omp_firstprivate(owidth, oheight, in, out, UV, tmp, corrections, b_corrections, saturation, d, white, gradient_amp)  \
   schedule(simd:static) aligned(in, out, UV, tmp, corrections, b_corrections, saturation : 64)
 #endif
   for(int row = 0; row < oheight; row++)
@@ -902,6 +912,15 @@ void process(struct dt_iop_module_t *self,
       dt_UCS_LUV_to_JCH(tmp[k], white, uv, JCH);
       dt_UCS_JCH_to_HSB(JCH, pix_out);
       B_norm = fmaxf(B_norm, pix_out[2]);
+
+      // As tmp[k] is not used any longer as L(uminance) we re-use it for the saturation gradient
+      if(d->use_filter)
+      {
+        const int vrow = MIN(oheight - 2, MAX(1, row));
+        const int vcol = MIN(owidth - 2, MAX(1, col));
+        const size_t kk = vrow * owidth + vcol;
+        tmp[k] = CLIP(1.0f - gradient_amp * sqrf(MAX(0.0f, scharr_gradient(&saturation[kk], owidth) - 0.02f)));
+      }
 
       // Get the boosts - if chroma = 0, we have a neutral grey so set everything to 0
       if(JCH[1] > NORM_MIN)
@@ -924,10 +943,15 @@ void process(struct dt_iop_module_t *self,
     }
   }
 
-  // STEP 4: apply a guided filter on the corrections, guided with UV chromaticity, to ensure spatially-contiguous corrections.
-  // Even if the hue is not perfectly constant this will help avoiding chroma noise.
   if(d->use_filter)
-    _guide_with_chromaticity(UV, corrections, saturation, b_corrections, roi_out, d->param_size, d->param_feathering, bright_shift, sat_shift);
+  {
+    // blur the saturation gradients
+    _mean_gaussian(tmp, roi_out->width, roi_out->height, 1, roi_out->scale);
+
+    // STEP 4: apply a guided filter on the corrections, guided with UV chromaticity, to ensure spatially-contiguous corrections.
+    // Even if the hue is not perfectly constant this will help avoiding chroma noise.
+    _guide_with_chromaticity(UV, corrections, saturation, b_corrections, tmp, roi_out, d->param_size, d->param_feathering, bright_shift, sat_shift);
+  }
 
   if(mask_mode == 0)
   {
@@ -965,7 +989,7 @@ void process(struct dt_iop_module_t *self,
     B_norm = 1.0f / B_norm;
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(npixels, out, b_corrections, corrections, saturation, tmp, mode, B_norm, sat_shift, bright_shift)  \
+  dt_omp_firstprivate(npixels, out, b_corrections, corrections, saturation, tmp, mode, B_norm, sat_shift, bright_shift, d) \
   schedule(simd:static) aligned(out, corrections, b_corrections, saturation, tmp: 64)
 #endif
     for(size_t k = 0; k < npixels; k++)
@@ -1000,6 +1024,13 @@ void process(struct dt_iop_module_t *self,
       pix_out[0] = MAX(0.0f, neg ? val - corr : val);
       pix_out[1] = MAX(0.0f, val - corr);
       pix_out[2] = MAX(0.0f, neg ? val : val - corr);
+
+      const float gv = 1.0f - tmp[k];
+      if(mode == BRIGHTNESS && d->use_filter && gv > 0.2f)
+      {
+        pix_out[0] = pix_out[2] = 0.0f;
+        pix_out[1] = gv;
+      }
     }
 
     if((mode == BRIGHTNESS_GRAD) || (mode == SATURATION_GRAD))
