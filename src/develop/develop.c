@@ -1935,10 +1935,17 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
 
     if(dev->snapshot_id != -1)
     {
-      DT_DEBUG_SQLITE3_EXEC
+      sqlite3_stmt *stmt;
+
+      DT_DEBUG_SQLITE3_PREPARE_V2
         (dt_database_get(darktable.db),
-         "INSERT INTO memory.history_snapshot SELECT * FROM memory.history",
-         NULL, NULL, NULL);
+         "INSERT INTO memory.undo_history"
+         " SELECT ?1, * FROM memory.history",
+         -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->snapshot_id);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+
       DT_DEBUG_SQLITE3_EXEC
         (dt_database_get(darktable.db),
          "DELETE FROM memory.history", NULL, NULL, NULL);
@@ -1984,7 +1991,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
                                 "       op_params, enabled, blendop_params,"
                                 "       blendop_version, multi_priority, multi_name,"
                                 "       multi_name_hand_edited"
-                                " FROM memory.history_snapshot"
+                                " FROM memory.undo_history"
                                 " WHERE id = ?1"
                                 " ORDER BY num",
                                 -1, &stmt, NULL);

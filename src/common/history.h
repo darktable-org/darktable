@@ -87,7 +87,9 @@ gboolean dt_history_copy_and_paste_on_image(const dt_imgid_t imgid,
 void dt_history_delete_on_image(const dt_imgid_t imgid);
 
 /** as above but control whether to record undo/redo */
-void dt_history_delete_on_image_ext(const dt_imgid_t imgid, const gboolean undo);
+void dt_history_delete_on_image_ext(const dt_imgid_t imgid,
+                                    const gboolean undo,
+                                    const gboolean init_history);
 
 /** copy history from imgid and pasts on selected images, merge or overwrite... */
 gboolean dt_history_copy(const dt_imgid_t imgid);

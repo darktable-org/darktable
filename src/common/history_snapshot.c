@@ -170,7 +170,7 @@ static void _history_snapshot_restore(const dt_imgid_t imgid,
 
   dt_database_start_transaction(darktable.db);
 
-  dt_history_delete_on_image_ext(imgid, FALSE);
+  dt_history_delete_on_image_ext(imgid, FALSE, FALSE);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
   // if no history end it means the image history was discarded,
@@ -255,23 +255,9 @@ static void _history_snapshot_restore(const dt_imgid_t imgid,
 }
 
 void dt_history_snapshot_restore(const dt_imgid_t imgid,
-                                 const int snap_id)
+                                 const int snap_id,
+                                 const int history_end)
 {
-  sqlite3_stmt *stmt;
-  int history_end = -1;
-
-  // get current history end
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT MAX(num)"
-                              " FROM memory.undo_history"
-                              " WHERE id=?1 AND imgid=?2", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, snap_id);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
-
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-    history_end = sqlite3_column_int(stmt, 0);
-  sqlite3_finalize(stmt);
-
   if(history_end != -1)
     _history_snapshot_restore(imgid, snap_id, history_end);
 }

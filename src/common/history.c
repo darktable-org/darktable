@@ -59,7 +59,8 @@ static void _remove_preset_flag(const dt_imgid_t imgid)
 }
 
 void dt_history_delete_on_image_ext(const dt_imgid_t imgid,
-                                    const gboolean undo)
+                                    const gboolean undo,
+                                    const gboolean init_history)
 {
   dt_undo_lt_history_t *hist = undo?dt_history_snapshot_item_init():NULL;
 
@@ -115,11 +116,16 @@ void dt_history_delete_on_image_ext(const dt_imgid_t imgid,
   // remove all overlays for this image
   dt_overlays_remove(imgid);
 
-  _remove_preset_flag(imgid);
+  // we do not init history for the darkroom snapshots as the whole history
+  // (module, masks, module order) will be replaced later.
+  if(init_history)
+  {
+    _remove_preset_flag(imgid);
 
-  /* if current image in develop reload history */
-  if(dt_dev_is_current_image(darktable.develop, imgid))
-    dt_dev_reload_history_items(darktable.develop);
+    /* if current image in develop reload history */
+    if(dt_dev_is_current_image(darktable.develop, imgid))
+      dt_dev_reload_history_items(darktable.develop);
+  }
 
   /* make sure mipmaps are recomputed */
   dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
@@ -156,7 +162,7 @@ void dt_history_delete_on_image_ext(const dt_imgid_t imgid,
 
 void dt_history_delete_on_image(const dt_imgid_t imgid)
 {
-  dt_history_delete_on_image_ext(imgid, TRUE);
+  dt_history_delete_on_image_ext(imgid, TRUE, TRUE);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 }
 
@@ -2009,7 +2015,7 @@ gboolean dt_history_delete_on_list(const GList *list, const gboolean undo)
     dt_history_snapshot_undo_create(hist->imgid,
                                     &hist->before, &hist->before_history_end);
 
-    dt_history_delete_on_image_ext(imgid, FALSE);
+    dt_history_delete_on_image_ext(imgid, FALSE, TRUE);
 
     dt_history_snapshot_undo_create(hist->imgid, &hist->after, &hist->after_history_end);
     dt_undo_record(darktable.undo, NULL, DT_UNDO_LT_HISTORY,
