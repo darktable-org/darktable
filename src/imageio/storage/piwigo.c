@@ -645,30 +645,7 @@ static void _piwigo_refresh_albums(dt_storage_piwigo_gui_data_t *ui,
     if(ui->api == NULL || !ui->api->authenticated) return;
   }
 
-  gchar *to_select;
   int index = 0;
-
-  // get the new album name, it will be checked in the
-  if(select_album == NULL)
-  {
-    to_select = g_strdup(dt_bauhaus_combobox_get_text(ui->album_list));
-    if(to_select)
-    {
-      // cut the count of picture in album to get the name only
-      gchar *p = to_select;
-      while(*p)
-      {
-        if(*p == ' ' && *(p+1) == '(')
-        {
-          *p = '\0';
-          break;
-        }
-        p++;
-      }
-    }
-  }
-  else
-    to_select = g_strdup(select_album);
 
   // First clear the combobox except first 2 items (none / create new album)
   dt_bauhaus_combobox_clear(ui->album_list);
@@ -725,7 +702,7 @@ static void _piwigo_refresh_albums(dt_storage_piwigo_gui_data_t *ui,
       snprintf(data, sizeof(data), "%*c%s (%"PRId64")", indent * 3, ' ',
                new_album->name, new_album->size);
 
-      if(to_select && !strcmp(new_album->name, to_select))
+      if(select_album && !strcmp(new_album->name, select_album))
         index = i + 1;
 
       g_strlcpy(new_album->label, data, sizeof(new_album->label));
@@ -740,8 +717,6 @@ static void _piwigo_refresh_albums(dt_storage_piwigo_gui_data_t *ui,
   }
   else
     dt_control_log(_("cannot refresh albums"));
-
-  g_free(to_select);
 
   gtk_widget_set_sensitive(GTK_WIDGET(ui->album_list), TRUE);
   gtk_widget_set_sensitive(GTK_WIDGET(ui->parent_album_list), TRUE);
@@ -949,7 +924,7 @@ static void _piwigo_refresh_clicked(GtkButton *button, gpointer data)
   dt_storage_piwigo_gui_data_t *ui = (dt_storage_piwigo_gui_data_t *)data;
 
   gchar *last_album = dt_conf_get_string("storage/piwigo/last_album");
-  _piwigo_refresh_albums(ui, NULL);
+  _piwigo_refresh_albums(ui, last_album);
   dt_conf_set_string("storage/piwigo/last_album", last_album);
   g_free(last_album);
 }
@@ -1157,7 +1132,9 @@ static gboolean _finalize_store(gpointer user_data)
     g_list_free(args);
   }
 
-  _piwigo_refresh_albums(g, dt_bauhaus_combobox_get_text(g->album_list));
+  gchar *last_album = dt_conf_get_string("storage/piwigo/last_album");
+  _piwigo_refresh_albums(g, last_album);
+  g_free(last_album);
 
   return FALSE;
 }
