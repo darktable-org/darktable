@@ -914,7 +914,6 @@ static void _piwigo_login_clicked(GtkButton *button, gpointer data)
 
   gchar *last_album = dt_conf_get_string("storage/piwigo/last_album");
   _piwigo_refresh_albums(ui, last_album);
-  dt_conf_set_string("storage/piwigo/last_album", last_album);
   g_free(last_album);
 }
 
@@ -925,7 +924,6 @@ static void _piwigo_refresh_clicked(GtkButton *button, gpointer data)
 
   gchar *last_album = dt_conf_get_string("storage/piwigo/last_album");
   _piwigo_refresh_albums(ui, last_album);
-  dt_conf_set_string("storage/piwigo/last_album", last_album);
   g_free(last_album);
 }
 
