@@ -54,7 +54,7 @@ void _history_snapshot_create(const dt_imgid_t imgid,
     // clang-format off
     DT_DEBUG_SQLITE3_PREPARE_V2
       (dt_database_get(darktable.db),
-       "INSERT INTO memory.undo_history"
+       "INSERT INTO memory.snapshot_history"
        "  VALUES (?1, ?2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0)"
        , -1, &stmt, NULL);
     // clang-format on
@@ -69,7 +69,7 @@ void _history_snapshot_create(const dt_imgid_t imgid,
 
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "INSERT INTO memory.undo_history"
+                              "INSERT INTO memory.snapshot_history"
                               "  SELECT ?1, imgid, num, module, operation, op_params,"
                               "         enabled, blendop_params, blendop_version,"
                               "         multi_priority, multi_name, multi_name_hand_edited "
@@ -85,7 +85,7 @@ void _history_snapshot_create(const dt_imgid_t imgid,
 
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "INSERT INTO memory.undo_masks_history"
+                              "INSERT INTO memory.snapshot_masks_history"
                               "  SELECT ?1, imgid, num, formid, form, name, version,"
                               "         points, points_count, source"
                               "  FROM main.masks_history"
@@ -100,7 +100,7 @@ void _history_snapshot_create(const dt_imgid_t imgid,
 
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "INSERT INTO memory.undo_module_order"
+                              "INSERT INTO memory.snapshot_module_order"
                               "  SELECT ?1, imgid, version, iop_list"
                               "  FROM main.module_order"
                               "  WHERE imgid=?2", -1, &stmt, NULL);
@@ -145,7 +145,7 @@ void dt_history_snapshot_undo_create(const dt_imgid_t imgid,
   *snap_id = 0;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT MAX(id)"
-                              " FROM memory.undo_history"
+                              " FROM memory.snapshot_history"
                               " WHERE imgid=?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
 
@@ -188,7 +188,7 @@ static void _history_snapshot_restore(const dt_imgid_t imgid,
                               "  SELECT imgid, num, module, operation, op_params, enabled, "
                               "         blendop_params, blendop_version, multi_priority,"
                               "         multi_name, multi_name_hand_edited "
-                              "  FROM memory.undo_history"
+                              "  FROM memory.snapshot_history"
                               "  WHERE imgid=?2 AND id=?1", -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, snap_id);
@@ -203,7 +203,7 @@ static void _history_snapshot_restore(const dt_imgid_t imgid,
                               "INSERT INTO main.masks_history"
                               "  SELECT imgid, num, formid, form, name, version,"
                               "         points, points_count, source"
-                              "  FROM memory.undo_masks_history"
+                              "  FROM memory.snapshot_masks_history"
                               "  WHERE imgid=?2 AND id=?1",
                               -1, &stmt, NULL);
   // clang-format on
@@ -218,7 +218,7 @@ static void _history_snapshot_restore(const dt_imgid_t imgid,
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "INSERT INTO main.module_order"
                               "  SELECT imgid, version, iop_list"
-                              "  FROM memory.undo_module_order"
+                              "  FROM memory.snapshot_module_order"
                               "  WHERE imgid=?2 AND id=?1", -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, snap_id);
@@ -268,7 +268,7 @@ void dt_history_snapshot_clear(const dt_imgid_t imgid,
   sqlite3_stmt *stmt;
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "DELETE FROM memory.undo_history"
+                              "DELETE FROM memory.snapshot_history"
                               " WHERE id=?1 AND imgid=?2",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, snap_id);
@@ -277,7 +277,7 @@ void dt_history_snapshot_clear(const dt_imgid_t imgid,
   sqlite3_finalize(stmt);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "DELETE FROM memory.undo_masks_history"
+                              "DELETE FROM memory.snapshot_masks_history"
                               " WHERE id=?1 AND imgid=?2",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, snap_id);
@@ -286,7 +286,7 @@ void dt_history_snapshot_clear(const dt_imgid_t imgid,
   sqlite3_finalize(stmt);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "DELETE FROM memory.undo_module_order"
+                              "DELETE FROM memory.snapshot_module_order"
                               " WHERE id=?1 AND imgid=?2",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, snap_id);

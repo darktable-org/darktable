@@ -943,7 +943,7 @@ void dt_masks_read_masks_history(dt_develop_t *dev, const dt_imgid_t imgid)
     DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
       "SELECT imgid, formid, form, name, version, points, points_count, source, num"
-      " FROM memory.undo_masks_history"
+      " FROM memory.snapshot_masks_history"
       " WHERE id = ?1"
       "   AND num < ?2"
       " ORDER BY num",

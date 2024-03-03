@@ -1939,7 +1939,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
 
       DT_DEBUG_SQLITE3_PREPARE_V2
         (dt_database_get(darktable.db),
-         "INSERT INTO memory.undo_history"
+         "INSERT INTO memory.snapshot_history"
          " SELECT ?1, * FROM memory.history",
          -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->snapshot_id);
@@ -1991,7 +1991,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
                                 "       op_params, enabled, blendop_params,"
                                 "       blendop_version, multi_priority, multi_name,"
                                 "       multi_name_hand_edited"
-                                " FROM memory.undo_history"
+                                " FROM memory.snapshot_history"
                                 " WHERE id = ?1"
                                 " ORDER BY num",
                                 -1, &stmt, NULL);
