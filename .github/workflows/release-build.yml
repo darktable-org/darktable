@@ -16,8 +16,8 @@ jobs:
       fail-fast: true
       matrix:
         build:
-          - { os: macos-12, xcode: 14.2, deployment: 12.5 } # LLVM14, x86_64
-          - { os: macos-14, xcode: 15.2, deployment: 14.0 } # LLVM16, arm64
+          #- { os: macos-12, xcode: 14.2, deployment: 12.5 } # LLVM14, x86_64
+          - { os: macos-14, xcode: 15.2, deployment: 12.5 } # LLVM16, arm64
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
         btype: [ Release ]
