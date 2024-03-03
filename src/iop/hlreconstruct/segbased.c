@@ -245,16 +245,7 @@ static void _initial_gradients(const size_t w,
       const size_t v = (size_t)row * w + col;
       float g = 0.0f;
       if((distance[v] > 0.0f) && (distance[v] < 2.0f))
-      {
-        // scharr operator
-        const float gx = 47.0f * (luminance[v-w-1] - luminance[v-w+1])
-                      + 162.0f * (luminance[v-1]   - luminance[v+1])
-                       + 47.0f * (luminance[v+w-1] - luminance[v+w+1]);
-        const float gy = 47.0f * (luminance[v-w-1] - luminance[v+w-1])
-                      + 162.0f * (luminance[v-w]   - luminance[v+w])
-                       + 47.0f * (luminance[v-w+1] - luminance[v+w+1]);
-        g = 4.0f * sqrtf(sqrf(gx / 256.0f) + sqrf(gy / 256.0f));
-      }
+        g = 4.0f * scharr_gradient(&luminance[v], w);
       gradient[v] = g;
     }
   }

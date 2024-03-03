@@ -143,6 +143,15 @@ static inline float Kahan_sum(const float m,
    return t2;
 }
 
+static inline float scharr_gradient(const float *p, const int w)
+{
+  const float gx = 47.0f / 255.0f * (p[-w-1] - p[-w+1] + p[w-1]  - p[w+1])
+                + 162.0f / 255.0f * (p[-1] - p[1]);
+  const float gy = 47.0f / 255.0f * (p[-w-1] - p[w-1]  + p[-w+1] - p[w+1])
+                + 162.0f / 255.0f * (p[-w] - p[w]);
+  return sqrtf(sqrf(gx) + sqrf(gy));
+}
+
 static inline float Log2(const float x)
 {
   return (x > 0.0f) ? (logf(x) / DT_M_LN2f) : x;
