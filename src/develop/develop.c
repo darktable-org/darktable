@@ -61,6 +61,7 @@ void dt_dev_init(dt_develop_t *dev,
   dev->gui_leaving = FALSE;
   dev->gui_synch = FALSE;
   dt_pthread_mutex_init(&dev->history_mutex, NULL);
+  dev->snapshot_id = -1;
   dev->history_end = 0;
   dev->history = NULL; // empty list
   dev->history_postpone_invalidate = FALSE;
@@ -585,9 +586,8 @@ float dt_dev_get_zoomed_in(void)
   return cur_scale / min_scale;
 }
 
-void dt_dev_load_image_ext(dt_develop_t *dev,
-                           const dt_imgid_t imgid,
-                           const int32_t snapshot_id)
+void dt_dev_load_image(dt_develop_t *dev,
+                       const dt_imgid_t imgid)
 {
   dt_lock_image(imgid);
 
@@ -607,18 +607,12 @@ void dt_dev_load_image_ext(dt_develop_t *dev,
   dt_pthread_mutex_lock(&darktable.dev_threadsafe);
   dev->iop = dt_iop_load_modules(dev);
 
-  dt_dev_read_history_ext(dev, dev->image_storage.id, FALSE, snapshot_id);
+  dt_dev_read_history_ext(dev, dev->image_storage.id, FALSE);
   dt_pthread_mutex_unlock(&darktable.dev_threadsafe);
 
   dev->first_load = FALSE;
 
   dt_unlock_image(imgid);
-}
-
-void dt_dev_load_image(dt_develop_t *dev,
-                       const dt_imgid_t imgid)
-{
-  dt_dev_load_image_ext(dev, imgid, -1);
 }
 
 void dt_dev_configure(dt_dev_viewport_t *port)
@@ -1884,8 +1878,7 @@ char *_print_validity(const gboolean state)
 
 void dt_dev_read_history_ext(dt_develop_t *dev,
                              const dt_imgid_t imgid,
-                             const gboolean no_image,
-                             const int32_t snapshot_id)
+                             const gboolean no_image)
 {
   if(!dt_is_valid_imgid(imgid)) return;
   if(!dev->iop) return;
@@ -1940,7 +1933,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
 
     // if a snapshot move all auto-presets into the history_snapshot table
 
-    if(snapshot_id != -1)
+    if(dev->snapshot_id != -1)
     {
       DT_DEBUG_SQLITE3_EXEC
         (dt_database_get(darktable.db),
@@ -1969,7 +1962,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
 
   // Load current image history from DB
   // clang-format off
-  if(snapshot_id == -1)
+  if(dev->snapshot_id == -1)
   {
     // not a snapshot, read from main history
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -1995,7 +1988,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
                                 " WHERE id = ?1"
                                 " ORDER BY num",
                                 -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, snapshot_id);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->snapshot_id);
   }
   // clang-format on
 
@@ -2028,7 +2021,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     const int bl_length = sqlite3_column_bytes(stmt, 6);
 
     // Sanity checks
-    const gboolean is_valid_id = (id == imgid || (snapshot_id != -1));
+    const gboolean is_valid_id = (id == imgid || (dev->snapshot_id != -1));
     const gboolean has_module_name = (module_name != NULL);
 
     if(!(has_module_name && is_valid_id))
@@ -2264,7 +2257,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
 
   dt_ioppr_resync_modules_order(dev);
 
-  if(snapshot_id == -1)
+  if(dev->snapshot_id == -1)
   {
     // find the new history end
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -2295,7 +2288,9 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
   dt_dev_masks_list_change(dev);
 
   // make sure module_dev is in sync with history
-  if(snapshot_id != -1) goto end_rh;
+
+  if(dev->snapshot_id != -1)
+    goto end_rh;
 
   _dev_write_history(dev, imgid);
   dt_ioppr_write_iop_order_list(dev->iop_order_list, imgid);
@@ -2344,7 +2339,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
 
 void dt_dev_read_history(dt_develop_t *dev)
 {
-  dt_dev_read_history_ext(dev, dev->image_storage.id, FALSE, -1);
+  dt_dev_read_history_ext(dev, dev->image_storage.id, FALSE);
 }
 
 void dt_dev_reprocess_all(dt_develop_t *dev)
@@ -3466,7 +3461,7 @@ void dt_dev_image(const dt_imgid_t imgid,
                   size_t *buf_height,
                   float *zoom_x,
                   float *zoom_y,
-                  const int32_t snapshot_id,
+                  const int snapshot_id,
                   GList *module_filter_out)
 {
   dt_develop_t dev;
@@ -3477,7 +3472,9 @@ void dt_dev_image(const dt_imgid_t imgid,
   pipe->type |= DT_DEV_PIXELPIPE_IMAGE;
   // load image and set history_end
 
-  dt_dev_load_image_ext(&dev, imgid, snapshot_id);
+  dev.snapshot_id = snapshot_id;
+
+  dt_dev_load_image(&dev, imgid);
 
   if(history_end != -1 && snapshot_id == -1)
     dt_dev_pop_history_items_ext(&dev, history_end);
