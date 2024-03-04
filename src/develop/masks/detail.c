@@ -270,14 +270,7 @@ gboolean dt_masks_calc_scharr_mask(dt_dev_detail_mask_t *details,
     for(size_t col = 1; col < width - 1; col++)
     {
       const size_t idx = row * width + col;
-      // scharr operator
-      const float gx = 47.0f * (tmp[idx-width-1] - tmp[idx-width+1])
-                    + 162.0f * (tmp[idx-1]       - tmp[idx+1])
-                     + 47.0f * (tmp[idx+width-1] - tmp[idx+width+1]);
-      const float gy = 47.0f * (tmp[idx-width-1] - tmp[idx+width-1])
-                    + 162.0f * (tmp[idx-width]   - tmp[idx+width])
-                     + 47.0f * (tmp[idx-width+1] - tmp[idx+width+1]);
-      const float gradient_magnitude = sqrtf(sqrf(gx / 256.0f) + sqrf(gy / 256.0f));
+      const float gradient_magnitude = scharr_gradient(&tmp[idx], width);
       mask[idx] = gradient_magnitude / 16.0f;
     }
   }
