@@ -2298,7 +2298,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->chroma_size = dt_bauhaus_slider_from_params(self, "chroma_size");
   dt_bauhaus_slider_set_digits(g->chroma_size, 1);
-  dt_bauhaus_slider_set_format(g->chroma_size, _(" px"));
+  dt_bauhaus_slider_set_format(g->chroma_size, _(_(" px")));
   gtk_widget_set_tooltip_text(g->chroma_size,
                               _("blurring radius of chroma prefilter analysis"));
 
@@ -2321,7 +2321,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->param_size = dt_bauhaus_slider_from_params(self, "param_size");
   dt_bauhaus_slider_set_digits(g->param_size, 1);
-  dt_bauhaus_slider_set_format(g->param_size, _(" px"));
+  dt_bauhaus_slider_set_format(g->param_size, _(_(" px")));
   gtk_widget_set_tooltip_text(g->param_size, _("blurring radius of applied parameters"));
 
   dt_bauhaus_widget_set_quad_paint(g->param_size, dtgtk_cairo_paint_showmask, 0, NULL);
