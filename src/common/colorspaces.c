@@ -283,6 +283,7 @@ static cmsHPROFILE _create_lcms_profile(const char *desc,
                                         const cmsCIExyY *whitepoint,
                                         const cmsCIExyYTRIPLE *primaries,
                                         cmsToneCurve *trc,
+                                        const cmsVideoSignalType *cicp,
                                         const gboolean v2)
 {
   cmsMLU *mlu1 = cmsMLUalloc(NULL, 1);
@@ -294,6 +295,10 @@ static cmsHPROFILE _create_lcms_profile(const char *desc,
   cmsHPROFILE profile = cmsCreateRGBProfile(whitepoint, primaries, out_curves);
 
   if(v2) cmsSetProfileVersion(profile, 2.4);
+#if LCMS_VERSION >= 2140
+  else if(cicp)
+    cmsWriteTag(profile, cmsSigcicpTag, cicp);
+#endif
 
   cmsSetHeaderFlags(profile, cmsEmbeddedProfileTrue);
 
@@ -391,9 +396,19 @@ static cmsHPROFILE _colorspaces_create_srgb_profile(const gboolean v2)
     { 2.4, 1.0 / 1.055,  0.055 / 1.055, 1.0 / 12.92, 0.04045 };
   cmsToneCurve *transferFunction = cmsBuildParametricToneCurve(NULL, 4, srgb_parameters);
 
+#if LCMS_VERSION >= 2140
+  cmsVideoSignalType cicp = { 1, 13, 0, 1 }; /* ITU-T Rec. H.273 */
+#endif
+
   cmsHPROFILE profile = _create_lcms_profile("sRGB", "sRGB",
                                              &D65xyY, &sRGB_Primaries,
-                                             transferFunction, v2);
+                                             transferFunction,
+#if LCMS_VERSION >= 2140
+                                             &cicp,
+#else
+                                             NULL,
+#endif
+                                             v2);
 
   cmsFreeToneCurve(transferFunction);
 
@@ -421,7 +436,7 @@ static cmsHPROFILE dt_colorspaces_create_brg_profile()
 
   cmsHPROFILE profile = _create_lcms_profile("BRG", "BRG",
                                              &D65xyY, &BRG_Primaries,
-                                             transferFunction, TRUE);
+                                             transferFunction, NULL, TRUE);
 
   cmsFreeToneCurve(transferFunction);
 
@@ -436,7 +451,7 @@ static cmsHPROFILE dt_colorspaces_create_gamma_rec709_rgb_profile(void)
 
   cmsHPROFILE profile = _create_lcms_profile("Gamma Rec709 RGB", "Gamma Rec709 RGB",
                                              &D65xyY, &Rec709_Primaries,
-                                             transferFunction, TRUE);
+                                             transferFunction, NULL, TRUE);
 
   cmsFreeToneCurve(transferFunction);
 
@@ -451,7 +466,7 @@ static cmsHPROFILE dt_colorspaces_create_adobergb_profile(void)
 
   cmsHPROFILE profile = _create_lcms_profile("Adobe RGB (compatible)", "Adobe RGB",
                                              &D65xyY, &Adobe_Primaries,
-                                             transferFunction, TRUE);
+                                             transferFunction, NULL, TRUE);
 
   cmsFreeToneCurve(transferFunction);
 
@@ -642,7 +657,7 @@ static cmsHPROFILE dt_colorspaces_create_linear_rec709_rgb_profile(void)
 
   cmsHPROFILE profile = _create_lcms_profile("Linear Rec709 RGB", "Linear Rec709 RGB",
                                              &D65xyY, &Rec709_Primaries,
-                                             transferFunction, TRUE);
+                                             transferFunction, NULL, TRUE);
 
   cmsFreeToneCurve(transferFunction);
 
@@ -655,7 +670,7 @@ static cmsHPROFILE dt_colorspaces_create_linear_rec2020_rgb_profile(void)
 
   cmsHPROFILE profile = _create_lcms_profile("Linear Rec2020 RGB", "Linear Rec2020 RGB",
                                              &D65xyY, &Rec2020_Primaries,
-                                             transferFunction, TRUE);
+                                             transferFunction, NULL, TRUE);
 
   cmsFreeToneCurve(transferFunction);
 
@@ -668,7 +683,7 @@ static cmsHPROFILE dt_colorspaces_create_pq_rec2020_rgb_profile(void)
 
   cmsHPROFILE profile = _create_lcms_profile("PQ Rec2020 RGB", "PQ Rec2020 RGB",
                                              &D65xyY, &Rec2020_Primaries,
-                                             transferFunction, TRUE);
+                                             transferFunction, NULL, TRUE);
 
   cmsFreeToneCurve(transferFunction);
 
@@ -681,7 +696,7 @@ static cmsHPROFILE dt_colorspaces_create_hlg_rec2020_rgb_profile(void)
 
   cmsHPROFILE profile = _create_lcms_profile("HLG Rec2020 RGB", "HLG Rec2020 RGB",
                                              &D65xyY, &Rec2020_Primaries,
-                                             transferFunction, TRUE);
+                                             transferFunction, NULL, TRUE);
 
   cmsFreeToneCurve(transferFunction);
 
@@ -694,7 +709,7 @@ static cmsHPROFILE dt_colorspaces_create_pq_p3_rgb_profile(void)
 
   cmsHPROFILE profile = _create_lcms_profile("PQ P3 RGB", "PQ P3 RGB",
                                              &D65xyY, &P3_Primaries,
-                                             transferFunction, TRUE);
+                                             transferFunction, NULL, TRUE);
 
   cmsFreeToneCurve(transferFunction);
 
@@ -707,7 +722,7 @@ static cmsHPROFILE dt_colorspaces_create_hlg_p3_rgb_profile(void)
 
   cmsHPROFILE profile = _create_lcms_profile("HLG P3 RGB", "HLG P3 RGB",
                                              &D65xyY, &P3_Primaries,
-                                             transferFunction, TRUE);
+                                             transferFunction, NULL, TRUE);
 
   cmsFreeToneCurve(transferFunction);
 
@@ -722,7 +737,7 @@ static cmsHPROFILE dt_colorspaces_create_display_p3_rgb_profile(void)
 
   cmsHPROFILE profile = _create_lcms_profile("Display P3 RGB", "Display P3 RGB",
                                              &D65xyY, &P3_Primaries,
-                                             transferFunction, TRUE);
+                                             transferFunction, NULL, TRUE);
 
   cmsFreeToneCurve(transferFunction);
 
@@ -735,7 +750,7 @@ static cmsHPROFILE dt_colorspaces_create_linear_prophoto_rgb_profile(void)
 
   cmsHPROFILE profile = _create_lcms_profile("Linear ProPhoto RGB", "Linear ProPhoto RGB",
                                              &D50xyY,  &ProPhoto_Primaries,
-                                             transferFunction, TRUE);
+                                             transferFunction, NULL, TRUE);
 
   cmsFreeToneCurve(transferFunction);
 
@@ -753,7 +768,7 @@ static cmsHPROFILE dt_colorspaces_create_linear_infrared_profile(void)
   cmsHPROFILE profile = _create_lcms_profile("Linear Infrared BGR",
                                              "darktable Linear Infrared BGR",
                                              &D65xyY, &BGR_Primaries,
-                                             transferFunction, FALSE);
+                                             transferFunction, NULL, FALSE);
 
   cmsFreeToneCurve(transferFunction);
 
