@@ -83,7 +83,9 @@ changes (where available).
   cases. It can still be enabled via the resource file if needed.
 
 - Add buttons next to the snapshots to allow restoring it as the new
-  history.
+  history. Also the snapshots are now supporting drawn masks. It is
+  possible to visualize the difference between the main darkroom view
+  and a snapshot with different masking for example.
 
 - Using <kbd>Right-Click</kbd> on color label icons (bottom toolbar of
   lighttable) it is possible to add a description to color
