@@ -95,7 +95,15 @@ changes (where available).
 - Removed the AI options in color calibration module because of
   mediocre quality.
 
+- It is now possible to import in-place pictures in a gvfs mount on
+  GNU/Linux.
+
+- Add a dashed outline of the current selected area in the print view.
+
 ## Bug Fixes
+
+- Fix copy of multiple instances to ensure the proper order is applied
+  when pasting to a new image.
 
 ## Lua
 
