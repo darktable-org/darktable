@@ -2087,21 +2087,21 @@ static void _channel_tabs_switch_callback(GtkNotebook *notebook,
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
-static GtkWidget *_get_selected(dt_iop_colorequal_gui_data_t *g)
+static GtkWidget *_get_slider(dt_iop_colorequal_gui_data_t *g, int selected)
 {
   GtkWidget *w = NULL;
 
   switch(g->channel)
   {
     case(SATURATION):
-      w = g->sat_sliders[g->selected];
+      w = g->sat_sliders[selected];
       break;
     case(HUE):
-      w = g->hue_sliders[g->selected];
+      w = g->hue_sliders[selected];
       break;
     case(BRIGHTNESS):
     default:
-      w = g->bright_sliders[g->selected];
+      w = g->bright_sliders[selected];
       break;
   }
 
@@ -2116,7 +2116,7 @@ static void _area_set_value(dt_iop_colorequal_gui_data_t *g,
   float factor = .0f;
   float max = .0f;
 
-  GtkWidget *w = _get_selected(g);
+  GtkWidget *w = _get_slider(g, g->selected);
 
   if(w)
   {
@@ -2178,7 +2178,7 @@ static gboolean _area_scrolled_callback(GtkWidget *widget,
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
 
-  return gtk_widget_event(_get_selected(g), (GdkEvent*)event);
+  return gtk_widget_event(_get_slider(g, g->selected), (GdkEvent*)event);
 }
 
 static gboolean _area_motion_notify_callback(GtkWidget *widget,
@@ -2199,11 +2199,7 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget,
     g->selected = (int)(((float)event->x - g->points[0][0])
                         / (g->points[1][0] - g->points[0][0]) + 0.5f) % NODES;
     g->on_node = fabsf(g->points[g->selected][1] - (float)event->y) < epsilon;
-
-    char *tooltip = g_strdup_printf(_("middle click to toggle sliders visibility\n\n%s"),
-                                    DT_BAUHAUS_WIDGET(g->sat_sliders[g->selected])->label);
-    gtk_widget_set_tooltip_text(widget, tooltip);
-    g_free(tooltip);
+    darktable.control->element = g->selected;
     if(oldsel != g->selected || oldon != g->on_node)
       gtk_widget_queue_draw(GTK_WIDGET(g->area));
   }
@@ -2239,7 +2235,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
     }
   }
   else
-    return gtk_widget_event(_get_selected(g), (GdkEvent*)event);
+    return gtk_widget_event(_get_slider(g, g->selected), (GdkEvent*)event);
 
   return FALSE;
 }
@@ -2409,12 +2405,36 @@ void gui_update(dt_iop_module_t *self)
   gtk_widget_queue_draw(GTK_WIDGET(g->notebook));
 }
 
-void gui_reset(struct dt_iop_module_t *self)
+static float _action_process_colorequal(gpointer target,
+                                        dt_action_element_t element,
+                                        dt_action_effect_t effect,
+                                        float move_size)
 {
+  dt_iop_module_t *self = g_object_get_data(G_OBJECT(target), "iop-instance");
   dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
 
-  gtk_widget_queue_draw(GTK_WIDGET(g->area));
+  GtkWidget *w = _get_slider(g, element);
+  const int index = dt_action_widget(w)->type - DT_ACTION_TYPE_WIDGET - 1;
+  const dt_action_def_t *def = darktable.control->widget_definitions->pdata[index];
+
+  return def->process(w, DT_ACTION_ELEMENT_DEFAULT, effect, move_size);
 }
+
+static const dt_action_element_def_t _action_elements_colorequal[]
+  = { { N_("red"      ), dt_action_effect_value },
+      { N_("orange"   ), dt_action_effect_value },
+      { N_("yellow"   ), dt_action_effect_value },
+      { N_("green"    ), dt_action_effect_value },
+      { N_("cyan"     ), dt_action_effect_value },
+      { N_("blue"     ), dt_action_effect_value },
+      { N_("lavender" ), dt_action_effect_value },
+      { N_("magenta"  ), dt_action_effect_value },
+      { NULL } };
+
+static const dt_action_def_t _action_def_coloreq
+  = { N_("color equalizer"),
+      _action_process_colorequal,
+      _action_elements_colorequal };
 
 void gui_init(struct dt_iop_module_t *self)
 {
@@ -2469,7 +2489,8 @@ void gui_init(struct dt_iop_module_t *self)
     (dt_ui_resize_wrap(NULL, 0,
                        "plugins/darkroom/colorequal/aspect_percent"));
   g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
-  dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(g->area), NULL);
+  dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(g->area), &_action_def_coloreq);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("double-click to reset the curve\nmiddle click to toggle sliders visibility"));
   gtk_widget_set_can_focus(GTK_WIDGET(g->area), TRUE);
   gtk_widget_add_events(GTK_WIDGET(g->area),
                         GDK_BUTTON_PRESS_MASK
