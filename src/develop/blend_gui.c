@@ -3664,7 +3664,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
                                 DT_INTROSPECTION_TYPE_FLOAT);
     dt_bauhaus_widget_set_label(bd->feathering_radius_slider,
                                 N_("blend"), N_("feathering radius"));
-    dt_bauhaus_slider_set_format(bd->feathering_radius_slider, " px");
+    dt_bauhaus_slider_set_format(bd->feathering_radius_slider, _(" px"));
     gtk_widget_set_tooltip_text(bd->feathering_radius_slider,
                                 _("spatial radius of feathering"));
     g_signal_connect(G_OBJECT(bd->feathering_radius_slider), "value-changed",
@@ -3676,7 +3676,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
                                 &module->blend_params->blur_radius,
                                 DT_INTROSPECTION_TYPE_FLOAT);
     dt_bauhaus_widget_set_label(bd->blur_radius_slider, N_("blend"), N_("blurring radius"));
-    dt_bauhaus_slider_set_format(bd->blur_radius_slider, " px");
+    dt_bauhaus_slider_set_format(bd->blur_radius_slider, _(" px"));
     gtk_widget_set_tooltip_text(bd->blur_radius_slider,
                                 _("radius for gaussian blur of blend mask"));
     g_signal_connect(G_OBJECT(bd->blur_radius_slider), "value-changed",

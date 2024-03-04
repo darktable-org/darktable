@@ -1832,7 +1832,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->radius_center = dt_bauhaus_slider_from_params(self, "radius_center");
   dt_bauhaus_slider_set_soft_range(g->radius_center, 0., 512.);
-  dt_bauhaus_slider_set_format(g->radius_center, " px");
+  dt_bauhaus_slider_set_format(g->radius_center, _(" px"));
   gtk_widget_set_tooltip_text(
       g->radius_center, _("main scale of the diffusion.\n"
                           "zero makes diffusion act on the finest details more heavily.\n"
@@ -1842,7 +1842,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->radius = dt_bauhaus_slider_from_params(self, "radius");
   dt_bauhaus_slider_set_soft_range(g->radius, 1., 512.);
-  dt_bauhaus_slider_set_format(g->radius, " px");
+  dt_bauhaus_slider_set_format(g->radius, _(" px"));
   gtk_widget_set_tooltip_text(
       g->radius, _("width of the diffusion around the central radius.\n"
                    "high values diffuse on a large band of radii.\n"
