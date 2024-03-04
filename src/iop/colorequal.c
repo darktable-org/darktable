@@ -2304,7 +2304,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->threshold = dt_bauhaus_slider_from_params(self, "threshold");
   dt_bauhaus_slider_set_digits(g->threshold, 3);
-  dt_bauhaus_slider_set_format(g->threshold, _("%"));
+  dt_bauhaus_slider_set_format(g->threshold, "%");
   dt_bauhaus_widget_set_quad_paint(g->threshold, dtgtk_cairo_paint_showmask, 0, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->threshold, TRUE);
   dt_bauhaus_widget_set_quad_active(g->threshold, FALSE);
