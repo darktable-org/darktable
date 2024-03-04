@@ -566,19 +566,17 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_useless_gui_data_t *g = (dt_iop_useless_gui_data_t *)self->gui_data;
   dt_iop_useless_params_t *p = (dt_iop_useless_params_t *)self->params;
 
-  dt_bauhaus_slider_set(g->scale, p->checker_scale);
-
-  // For introspection based widgets (dt_bauhaus_slider_from_params)
-  // do not use any transformations here (for example *100 for
+  // introspection based bauhaus widgets, created with
+  // dt_bauhaus_slider_from_params or dt_bauhaus_combobox_from_params,
+  // get updated automatically.
+  // they cannot use any transformations here (for example *100 for
   // percentages) because that will break enforcement of $MIN/$MAX.
   // Use dt_bauhaus_slider_set_factor/offset in gui_init instead.
-  dt_bauhaus_slider_set(g->factor, p->factor);
 
   // dt_bauhaus_toggle_from_params creates a standard gtk_toggle_button.
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->check), p->check);
 
-  // Use set_from_value to correctly handle out of order values.
-  dt_bauhaus_combobox_set_from_value(g->method, p->method);
+  dt_bauhaus_slider_set(g->extra, 0.0f);
 
   // Any configuration changes to the gui that depend on field values
   // should be done here, or can be done in gui_changed which can then
