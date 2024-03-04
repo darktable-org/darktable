@@ -732,7 +732,7 @@ static void _dev_auto_save(dt_develop_t *dev)
       dt_print(DT_DEBUG_DEV, "autosave history disabled, took %.3fs\n", after - start);
 
       dt_control_log(_("autosaving history has been disabled for this image"
-                       " because of a very large history a slow drive being used"));
+                       " because of a very large history or a slow drive being used"));
     }
   }
 }
