@@ -925,7 +925,9 @@ void dt_masks_read_masks_history(dt_develop_t *dev, const dt_imgid_t imgid)
 
   sqlite3_stmt *stmt;
   // clang-format off
-  DT_DEBUG_SQLITE3_PREPARE_V2(
+  if(dev->snapshot_id == -1)
+  {
+    DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
       "SELECT imgid, formid, form, name, version, points, points_count, source, num"
       " FROM main.masks_history"
@@ -933,9 +935,23 @@ void dt_masks_read_masks_history(dt_develop_t *dev, const dt_imgid_t imgid)
       "   AND num < ?2"
       " ORDER BY num",
       -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, dev->history_end);
+  }
+  else
+  {
+    DT_DEBUG_SQLITE3_PREPARE_V2(
+      dt_database_get(darktable.db),
+      "SELECT imgid, formid, form, name, version, points, points_count, source, num"
+      " FROM memory.snapshot_masks_history"
+      " WHERE id = ?1"
+      "   AND num < ?2"
+      " ORDER BY num",
+      -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->snapshot_id);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, dev->history_end);
+  }
   // clang-format on
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, dev->history_end);
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {

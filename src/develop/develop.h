@@ -188,6 +188,7 @@ typedef struct dt_develop_t
   // by the iop through the copy their respective pixelpipe holds, for thread-safety.
   dt_image_t image_storage;
   dt_imgid_t requested_id;
+  int32_t snapshot_id; /* for the darkroom snapshots */
 
   // history stack
   dt_pthread_mutex_t history_mutex;
@@ -402,8 +403,7 @@ void dt_dev_write_history_ext(dt_develop_t *dev, const dt_imgid_t imgid);
 void dt_dev_write_history(dt_develop_t *dev);
 void dt_dev_read_history_ext(dt_develop_t *dev,
                              const dt_imgid_t imgid,
-                             const gboolean no_image,
-                             const gboolean snapshot);
+                             const gboolean no_image);
 void dt_dev_read_history(dt_develop_t *dev);
 void dt_dev_free_history_item(gpointer data);
 void dt_dev_invalidate_history_module(GList *list,

@@ -59,7 +59,8 @@ static void _remove_preset_flag(const dt_imgid_t imgid)
 }
 
 void dt_history_delete_on_image_ext(const dt_imgid_t imgid,
-                                    const gboolean undo)
+                                    const gboolean undo,
+                                    const gboolean init_history)
 {
   dt_undo_lt_history_t *hist = undo?dt_history_snapshot_item_init():NULL;
 
@@ -115,11 +116,16 @@ void dt_history_delete_on_image_ext(const dt_imgid_t imgid,
   // remove all overlays for this image
   dt_overlays_remove(imgid);
 
-  _remove_preset_flag(imgid);
+  // we do not init history for the darkroom snapshots as the whole history
+  // (module, masks, module order) will be replaced later.
+  if(init_history)
+  {
+    _remove_preset_flag(imgid);
 
-  /* if current image in develop reload history */
-  if(dt_dev_is_current_image(darktable.develop, imgid))
-    dt_dev_reload_history_items(darktable.develop);
+    /* if current image in develop reload history */
+    if(dt_dev_is_current_image(darktable.develop, imgid))
+      dt_dev_reload_history_items(darktable.develop);
+  }
 
   /* make sure mipmaps are recomputed */
   dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
@@ -156,7 +162,7 @@ void dt_history_delete_on_image_ext(const dt_imgid_t imgid,
 
 void dt_history_delete_on_image(const dt_imgid_t imgid)
 {
-  dt_history_delete_on_image_ext(imgid, TRUE);
+  dt_history_delete_on_image_ext(imgid, TRUE, TRUE);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 }
 
@@ -589,10 +595,10 @@ static gboolean _history_copy_and_paste_on_image_merge(const dt_imgid_t imgid,
   dev_src->iop = dt_iop_load_modules_ext(dev_src, TRUE);
   dev_dest->iop = dt_iop_load_modules_ext(dev_dest, TRUE);
 
-  dt_dev_read_history_ext(dev_src, imgid, TRUE, -1);
+  dt_dev_read_history_ext(dev_src, imgid, TRUE);
 
   // This prepends the default modules and converts just in case it's an empty history
-  dt_dev_read_history_ext(dev_dest, dest_imgid, TRUE, -1);
+  dt_dev_read_history_ext(dev_dest, dest_imgid, TRUE);
 
   dt_ioppr_check_iop_order(dev_src, imgid,
                            "_history_copy_and_paste_on_image_merge ");
@@ -1185,7 +1191,8 @@ void dt_history_compress_on_image(const dt_imgid_t imgid)
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, op_mask_manager, -1, SQLITE_TRANSIENT);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    if(sqlite3_column_int(stmt, 0) == 1) manager_position = TRUE;
+    if(sqlite3_column_int(stmt, 0) == 1)
+      manager_position = TRUE;
   }
   sqlite3_finalize(stmt);
 
@@ -1231,7 +1238,8 @@ void dt_history_compress_on_image(const dt_imgid_t imgid)
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
     "SELECT COUNT(*) FROM main.masks_history WHERE imgid = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  if(sqlite3_step(stmt) == SQLITE_ROW) masks_count = sqlite3_column_int(stmt, 0);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    masks_count = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
 
   if(masks_count > 0)
@@ -1517,7 +1525,8 @@ GList *dt_history_duplicate(GList *hist)
     new->blend_params = malloc(sizeof(dt_develop_blend_params_t));
     memcpy(new->blend_params, old->blend_params, sizeof(dt_develop_blend_params_t));
 
-    if(old->forms) new->forms = dt_masks_dup_forms_deep(old->forms, NULL);
+    if(old->forms)
+      new->forms = dt_masks_dup_forms_deep(old->forms, NULL);
 
     result = g_list_prepend(result, new);
   }
@@ -2006,7 +2015,7 @@ gboolean dt_history_delete_on_list(const GList *list, const gboolean undo)
     dt_history_snapshot_undo_create(hist->imgid,
                                     &hist->before, &hist->before_history_end);
 
-    dt_history_delete_on_image_ext(imgid, FALSE);
+    dt_history_delete_on_image_ext(imgid, FALSE, TRUE);
 
     dt_history_snapshot_undo_create(hist->imgid, &hist->after, &hist->after_history_end);
     dt_undo_record(darktable.undo, NULL, DT_UNDO_LT_HISTORY,
