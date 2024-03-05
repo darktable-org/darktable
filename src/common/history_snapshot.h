@@ -49,7 +49,8 @@ void dt_history_snapshot_undo_lt_history_data_free(gpointer data);
    undo.
 */
 void dt_history_snapshot_create(const dt_imgid_t imgid,
-                                const int snap_id);
+                                const int snap_id,
+                                const int history_end);
 void dt_history_snapshot_restore(const dt_imgid_t imgid,
                                  const int snap_id,
                                  const int history_end);
