@@ -861,7 +861,7 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget,
   s->history_end = darktable.develop->history_end;
   s->imgid = darktable.develop->image_storage.id;
 
-  dt_history_snapshot_create(s->imgid, s->id);
+  dt_history_snapshot_create(s->imgid, s->id, s->history_end);
 
   GtkLabel *lnum =
     (GtkLabel *)_lib_snapshot_button_get_item(s->button, _SNAPSHOT_BUTTON_NUM);
