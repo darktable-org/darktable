@@ -105,6 +105,8 @@ changes (where available).
 - Fix copy of multiple instances to ensure the proper order is applied
   when pasting to a new image.
 
+- Fixing raw chromatic aberration on clang based systems.
+
 ## Lua
 
 ### API Version
