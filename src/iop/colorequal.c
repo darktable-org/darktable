@@ -99,7 +99,7 @@ DT_MODULE_INTROSPECTION(3, dt_iop_colorequal_params_t)
 
 typedef struct dt_iop_colorequal_params_t
 {
-  float threshold;          // $MIN: -0.1 $MAX: 0.1 $DEFAULT: 0.0 $DESCRIPTION: "saturation threshold"
+  float threshold;          // $MIN: -0.1 $MAX: 0.2 $DEFAULT: 0.0 $DESCRIPTION: "saturation threshold"
   float smoothing_hue;      // $MIN: 0.05 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "hue curve"
   float reserved2;
 
@@ -173,6 +173,7 @@ typedef struct dt_iop_colorequal_data_t
   float hue_shift;
   float threshold;
   float max_brightness;
+  float steepness;
 } dt_iop_colorequal_data_t;
 
 const char *name()
@@ -247,6 +248,7 @@ typedef struct dt_iop_colorequal_gui_data_t
   unsigned char *b_data[NUM_CHANNELS];
   cairo_surface_t *b_surface[NUM_CHANNELS];
 
+  float graph_height;
   float max_saturation;
   gboolean gradients_cached;
 
@@ -348,12 +350,12 @@ static inline float _deg_to_rad(const float angle)
    and do linear interpolation at runtime. Avoids banding effects and allows a sharp transition.
 */
 static float satweights[2 * SATSIZE + 1];
-static void _init_satweights(void)
+static void _init_satweights(const float steepness)
 {
   for(int i = -SATSIZE; i < SATSIZE + 1; i++)
   {
     const double val = 0.5 / (double)SATSIZE * (double)i;
-    satweights[i+SATSIZE] = (float)(1.0 / (1.0 + exp(-60.0 * val)));
+    satweights[i+SATSIZE] = (float)(1.0 / (1.0 + exp((double)steepness * val)));
   }
 }
 
@@ -811,6 +813,8 @@ void process(struct dt_iop_module_t *self,
   const int oheight = roi_out->height;
   const size_t npixels = (size_t)owidth * oheight;
 
+  _init_satweights(d->steepness);
+
   // STEP 0: prepare the RGB <-> XYZ D65 matrices
   // see colorbalancergb.c process() for the details, it's exactly the same
   const struct dt_iop_order_iccprofile_info_t *const work_profile =
@@ -1212,8 +1216,10 @@ void commit_params(struct dt_iop_module_t *self,
   d->param_feathering = powf(10.f, -6.0f);
   d->use_filter = p->use_filter;
   d->hue_shift = p->hue_shift;
-  // default inflection point at a sat of 6%; allow selection up to 28%
+  // default inflection point at a sat of 6%; allow selection up to ~60%
   d->threshold = -0.015f + 0.3f * sqrf(5.0f * (p->threshold + 0.1f));
+  // for a saturation threshold of > 0.1 the weighing function is flattened for a smoother roll on/off
+  d->steepness = -60.0 + 200.0 * (double)(MAX(0.0f, p->threshold - 0.024f));
   float DT_ALIGNED_ARRAY sat_values[NODES];
   float DT_ALIGNED_ARRAY hue_values[NODES];
   float DT_ALIGNED_ARRAY bright_values[NODES];
@@ -1533,6 +1539,7 @@ static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
     allocation.width - margin_right - margin_left;   // align the right border on sliders
   const float graph_height =
     allocation.height - margin_bottom - margin_top; // give room to nodes
+  g->graph_height = graph_height;
 
   gtk_render_background(context, cr, 0.0, 0.0, allocation.width, allocation.height);
 
@@ -1850,10 +1857,7 @@ static void _area_set_value(dt_iop_colorequal_gui_data_t *g,
 static void _area_set_pos(dt_iop_colorequal_gui_data_t *g,
                           const float pos)
 {
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(GTK_WIDGET(g->area), &allocation);
-  const float graph_height = allocation.height;
-
+  const float graph_height = MAX(1.0f, g->graph_height);
   const float y = CLAMP(pos, 0.0f, graph_height);
 
   _area_set_value(g, graph_height, y);
@@ -1861,9 +1865,7 @@ static void _area_set_pos(dt_iop_colorequal_gui_data_t *g,
 
 static void _area_reset_nodes(dt_iop_colorequal_gui_data_t *g)
 {
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(GTK_WIDGET(g->area), &allocation);
-  const float graph_height = allocation.height;
+  const float graph_height = MAX(1.0f, g->graph_height);
   const float y = graph_height / 2.0f;
 
   if(g->on_node)
@@ -2345,12 +2347,6 @@ void gui_init(struct dt_iop_module_t *self)
   g->page_num = active_page;
 
   self->widget = GTK_WIDGET(box);
-}
-
-void init(dt_iop_module_t *self)
-{
-  dt_iop_default_init(self);
-  _init_satweights();
 }
 
 // clang-format off
