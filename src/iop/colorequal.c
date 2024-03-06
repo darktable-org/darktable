@@ -173,6 +173,7 @@ typedef struct dt_iop_colorequal_data_t
   float hue_shift;
   float threshold;
   float max_brightness;
+  float steepness;
 } dt_iop_colorequal_data_t;
 
 const char *name()
@@ -349,12 +350,12 @@ static inline float _deg_to_rad(const float angle)
    and do linear interpolation at runtime. Avoids banding effects and allows a sharp transition.
 */
 static float satweights[2 * SATSIZE + 1];
-static void _init_satweights(void)
+static void _init_satweights(const float steepness)
 {
   for(int i = -SATSIZE; i < SATSIZE + 1; i++)
   {
     const double val = 0.5 / (double)SATSIZE * (double)i;
-    satweights[i+SATSIZE] = (float)(1.0 / (1.0 + exp(-60.0 * val)));
+    satweights[i+SATSIZE] = (float)(1.0 / (1.0 + exp((double)steepness * val)));
   }
 }
 
@@ -812,6 +813,8 @@ void process(struct dt_iop_module_t *self,
   const int oheight = roi_out->height;
   const size_t npixels = (size_t)owidth * oheight;
 
+  _init_satweights(d->steepness);
+
   // STEP 0: prepare the RGB <-> XYZ D65 matrices
   // see colorbalancergb.c process() for the details, it's exactly the same
   const struct dt_iop_order_iccprofile_info_t *const work_profile =
@@ -1215,6 +1218,8 @@ void commit_params(struct dt_iop_module_t *self,
   d->hue_shift = p->hue_shift;
   // default inflection point at a sat of 6%; allow selection up to ~60%
   d->threshold = -0.015f + 0.3f * sqrf(5.0f * (p->threshold + 0.1f));
+  // for a saturation threshold of > 0.1 the weighing function is flattened for a smoother roll on/off
+  d->steepness = -60.0 + 200.0 * (double)(MAX(0.0f, p->threshold - 0.024f));
   float DT_ALIGNED_ARRAY sat_values[NODES];
   float DT_ALIGNED_ARRAY hue_values[NODES];
   float DT_ALIGNED_ARRAY bright_values[NODES];
@@ -2342,12 +2347,6 @@ void gui_init(struct dt_iop_module_t *self)
   g->page_num = active_page;
 
   self->widget = GTK_WIDGET(box);
-}
-
-void init(dt_iop_module_t *self)
-{
-  dt_iop_default_init(self);
-  _init_satweights();
 }
 
 // clang-format off
