@@ -35,6 +35,10 @@ DT_MODULE(1)
 #define HANDLE_SIZE 0.02
 #define MAX_SNAPSHOT 10
 
+// the snapshot offset in the memory table to use an area not used by the
+// undo/redo support.
+#define SNAPSHOT_ID_OFFSET 0xFFFFFF00
+
 /* a snapshot */
 typedef struct dt_lib_snapshot_t
 {
@@ -589,7 +593,7 @@ static void _clear_snapshots(dt_lib_module_t *self)
   for(uint32_t k = 0; k < d->num_snapshots; k++)
   {
     dt_lib_snapshot_t *s = &d->snapshot[k];
-    s->id = k;
+    s->id = SNAPSHOT_ID_OFFSET | k;
     _clear_snapshot_entry(s);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(s->button), FALSE);
   }
@@ -758,7 +762,7 @@ void gui_init(dt_lib_module_t *self)
   for(int k = 0; k < MAX_SNAPSHOT; k++)
   {
     dt_lib_snapshot_t *s = &d->snapshot[k];
-    s->id = k;
+    s->id = SNAPSHOT_ID_OFFSET | k;
 
     _clear_snapshot_entry(s);
     _init_snapshot_entry(self, s);
@@ -817,8 +821,6 @@ void gui_cleanup(dt_lib_module_t *self)
   g_free(self->data);
   self->data = NULL;
 }
-
-#define SNAPSHOT_ID_OFFSET 0xFFFFFF00
 
 static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget,
                                                        gpointer user_data)
