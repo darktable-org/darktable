@@ -43,7 +43,7 @@ permissions:
 jobs:
 
   Linux:
-    name: Linux.${{ matrix.distro }}.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
+    name: Linux.${{ matrix.distro }}.${{ matrix.compiler.compiler }}.${{ matrix.btype }}
     runs-on: ubuntu-latest
     container:
       image: ${{ matrix.distro }}
@@ -222,7 +222,7 @@ jobs:
           ./run.sh --no-opencl --no-deltae --fast-fail
 
   Windows:
-    name: Windows.${{ matrix.msystem }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
+    name: Windows.${{ matrix.msystem }}.${{ matrix.btype }}
     runs-on: windows-latest
     strategy:
       fail-fast: true
