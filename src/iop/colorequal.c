@@ -99,7 +99,7 @@ DT_MODULE_INTROSPECTION(3, dt_iop_colorequal_params_t)
 
 typedef struct dt_iop_colorequal_params_t
 {
-  float threshold;          // $MIN: -0.1 $MAX: 0.1 $DEFAULT: 0.0 $DESCRIPTION: "saturation threshold"
+  float threshold;          // $MIN: -0.1 $MAX: 0.2 $DEFAULT: 0.0 $DESCRIPTION: "saturation threshold"
   float smoothing_hue;      // $MIN: 0.05 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "hue curve"
   float reserved2;
 
