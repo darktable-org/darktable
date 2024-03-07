@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-02-17 19:12+0100\n"
-"PO-Revision-Date: 2024-02-28 15:04+0100\n"
+"PO-Revision-Date: 2024-03-07 19:07+0100\n"
 "Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1461,7 +1461,7 @@ msgstr "Traitement de l’image"
 
 #: ../build/bin/preferences_gen.h:5766
 msgid "always use LittleCMS 2 to apply output color profile"
-msgstr "Toujours utiliser LittleCMS 2 pour le profil couleur de sortie"
+msgstr "Toujours utiliser LittleCMS 2 pour le profil de couleur de sortie"
 
 #: ../build/bin/preferences_gen.h:5779
 msgid "this is slower than the default."
@@ -8244,7 +8244,7 @@ msgstr "Diviser"
 #: ../src/develop/blend_gui.c:67
 msgctxt "blendmode"
 msgid "addition"
-msgstr "Addition"
+msgstr "Additionner"
 
 #: ../src/develop/blend_gui.c:69
 msgctxt "blendmode"
@@ -9039,7 +9039,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:3708
 msgid "mask refinement"
-msgstr "Amélioration du masque"
+msgstr "Raffinement du masque"
 
 #: ../src/develop/develop.c:751
 msgid ""
@@ -12336,7 +12336,7 @@ msgid ""
 "or ensure no conversion to keep original image color space (implied for "
 "lossless)"
 msgstr ""
-"Le profil couleur utilisé par l’encodeur.\n"
+"Le profil de couleur utilisé par l’encodeur.\n"
 "Permet une conversion de l’espace de couleur XYB en interne pour une "
 "compression avec perte plus efficace,\n"
 "ou ne permet pas de conversion pour conserver l’espace de couleur de l’image "
@@ -15930,7 +15930,7 @@ msgstr "Règle la saturation globale"
 
 #: ../src/iop/colorin.c:127
 msgid "input color profile"
-msgstr "Profil couleur d’entrée"
+msgstr "Profil de couleur d’entrée"
 
 #: ../src/iop/colorin.c:132
 msgid ""
