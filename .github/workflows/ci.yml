@@ -43,7 +43,7 @@ permissions:
 jobs:
 
   Linux:
-    name: Linux.${{ matrix.distro }}.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
+    name: Linux.${{ matrix.distro }}.${{ matrix.compiler.compiler }}.${{ matrix.btype }}
     runs-on: ubuntu-latest
     container:
       image: ${{ matrix.distro }}
@@ -222,7 +222,7 @@ jobs:
           ./run.sh --no-opencl --no-deltae --fast-fail
 
   Windows:
-    name: Windows.${{ matrix.msystem }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
+    name: Windows.${{ matrix.msystem }}.${{ matrix.btype }}
     runs-on: windows-latest
     strategy:
       fail-fast: true
@@ -248,7 +248,6 @@ jobs:
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
       TARGET: ${{ matrix.target }}
       GENERATOR: ${{ matrix.generator }}
-      # todo: use linker which supports --wrap, ld.bfd and ld.gold support it
     steps:
       - uses: msys2/setup-msys2@v2
         with:
@@ -329,7 +328,7 @@ jobs:
                  --conf plugins/lighttable/export/iccintent=0
 
   macOS:
-    name: macOS.${{ matrix.compiler.compiler }}.${{ matrix.build.xcode }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
+    name: macOS.${{ matrix.build.os }}.${{ matrix.compiler.compiler }}.${{ matrix.build.xcode }}.${{ matrix.btype }}
     runs-on: ${{ matrix.build.os }}
     strategy:
       fail-fast: true
@@ -374,7 +373,6 @@ jobs:
           brew link --force libomp
           brew link --force libsoup@2
       - name: Build and Install
-          # todo: use linker which supports --wrap, ld.bfd and ld.gold support it
         run: |
           cmake -E make_directory "${BUILD_DIR}";
           cmake -E make_directory "${INSTALL_PREFIX}";
