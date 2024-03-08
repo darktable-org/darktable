@@ -148,8 +148,13 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     size_t xmp_len;
     if(xmp_string && (xmp_len = strlen(xmp_string)) > 0)
     {
-      xcf_set(xcf, XCF_PROP, XCF_PROP_PARASITES, "gimp-metadata", XCF_PARASITE_PERSISTENT, xmp_len, xmp_string);
+      // Prepend the expected "GIMP_XMP_1"
+      const char *GIMP_XMP_PREFIX = "GIMP_XMP_1";
+      char *xmp_buf = g_strjoin(NULL, GIMP_XMP_PREFIX, xmp_string, NULL);
+      xcf_set(xcf, XCF_PROP, XCF_PROP_PARASITES, "gimp-metadata", XCF_PARASITE_PERSISTENT,
+              xmp_len + strlen(GIMP_XMP_PREFIX), xmp_buf);
       g_free(xmp_string);
+      g_free(xmp_buf);
     }
   }
 
