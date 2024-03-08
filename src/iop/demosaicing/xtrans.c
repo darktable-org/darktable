@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1672,10 +1672,10 @@ static int process_markesteijn_cl(
   cl_mem dev_tmptmp = NULL;
   cl_mem dev_xtrans = NULL;
   cl_mem dev_green_eq = NULL;
-  cl_mem dev_rgbv[8] = { NULL };
-  cl_mem dev_drv[8] = { NULL };
-  cl_mem dev_homo[8] = { NULL };
-  cl_mem dev_homosum[8] = { NULL };
+  cl_mem dev_rgbv[8] =    { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+  cl_mem dev_drv[8] =     { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+  cl_mem dev_homo[8] =    { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+  cl_mem dev_homosum[8] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
   cl_mem dev_gminmax = NULL;
   cl_mem dev_allhex = NULL;
   cl_mem dev_aux = NULL;

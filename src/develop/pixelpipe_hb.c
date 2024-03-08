@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1466,7 +1466,7 @@ static gboolean _dev_pixelpipe_process_rec(
         const int cp_width = MAX(0, MIN(roi_out->width, pipe->iwidth - in_x));
         const int cp_height = MIN(roi_out->height, pipe->iheight - in_y);
         dt_print_pipe(DT_DEBUG_PIPE,
-          (cp_width > 0) ? "pixelpipe data: 1:1 copied" : "pixelpipe data: 1:1 none",
+          (cp_width > 0) ? "pixelpipe data 1:1 copied" : "pixelpipe data 1:1 none",
           pipe, module, DT_DEVICE_NONE, &roi_in, roi_out, "bpp=%lu\n", bpp);
         if(cp_width > 0)
         {
@@ -1709,6 +1709,10 @@ static gboolean _dev_pixelpipe_process_rec(
 
     if(possible_cl)
     {
+      const int cst_from = input_cst_cl;
+      const int cst_to = module->input_colorspace(module, pipe, piece);
+      const int cst_out = module->output_colorspace(module, pipe, piece);
+
       if(fits_on_device)
       {
         /* image is small enough -> try to directly process entire image with opencl */
@@ -1718,7 +1722,12 @@ static gboolean _dev_pixelpipe_process_rec(
           cl_mem_input = dt_opencl_alloc_device(pipe->devid,
                                                 roi_in.width, roi_in.height, in_bpp);
           if(cl_mem_input == NULL)
+          {
+            dt_print_pipe(DT_DEBUG_OPENCL | DT_DEBUG_PIPE,
+              "no input cl_mem",
+              piece->pipe, module, pipe->devid, &roi_in, roi_out, "\n");
             success_opencl = FALSE;
+          }
 
           if(success_opencl)
           {
@@ -1745,16 +1754,18 @@ static gboolean _dev_pixelpipe_process_rec(
           *cl_mem_output = dt_opencl_alloc_device(pipe->devid,
                                                   roi_out->width, roi_out->height, bpp);
           if(*cl_mem_output == NULL)
+          {
+            dt_print_pipe(DT_DEBUG_OPENCL | DT_DEBUG_PIPE,
+              "no output cl_mem",
+              piece->pipe, module, pipe->devid, &roi_in, roi_out, "\n");
             success_opencl = FALSE;
+          }
         }
 
         // indirectly give gpu some air to breathe (and to do display related stuff)
         dt_iop_nap(dt_opencl_micro_nap(pipe->devid));
 
         // transform to input colorspace
-        const int cst_from = input_cst_cl;
-        const int cst_to = module->input_colorspace(module, pipe, piece);
-        const int cst_out = module->output_colorspace(module, pipe, piece);
         if(success_opencl)
         {
           if(cst_from != cst_to)
@@ -1767,7 +1778,7 @@ static gboolean _dev_pixelpipe_process_rec(
              cl_mem_input, cl_mem_input,
              roi_in.width, roi_in.height,
              input_cst_cl,
-             module->input_colorspace(module, pipe, piece),
+             cst_to,
              &input_cst_cl,
              work_profile);
         }
@@ -1867,7 +1878,7 @@ static gboolean _dev_pixelpipe_process_rec(
 
           const int err = module->process_cl(module, piece, cl_mem_input, *cl_mem_output,
                                               &roi_in, roi_out);
-          success_opencl = err >= CL_SUCCESS;
+          success_opencl = err == CL_SUCCESS;
 
           if(!success_opencl)
             dt_print_pipe(DT_DEBUG_OPENCL,
@@ -1994,9 +2005,14 @@ static gboolean _dev_pixelpipe_process_rec(
         // transform to module input colorspace
         if(success_opencl)
         {
+          if(cst_from != cst_to)
+            dt_print_pipe(DT_DEBUG_PIPE,
+               "transform colorspace", piece->pipe, module, pipe->devid, &roi_in, NULL, " %s -> %s\n",
+               dt_iop_colorspace_to_name(cst_from),
+               dt_iop_colorspace_to_name(cst_to));
           dt_ioppr_transform_image_colorspace
             (module, input, input, roi_in.width, roi_in.height,
-             input_format->cst, module->input_colorspace(module, pipe, piece),
+             input_format->cst, cst_to,
              &input_format->cst, work_profile);
         }
 
@@ -2017,9 +2033,15 @@ static gboolean _dev_pixelpipe_process_rec(
            meaningful messages in case of error */
         if(success_opencl)
         {
+          dt_print_pipe(DT_DEBUG_PIPE,
+                        "pipe tile process",
+                        piece->pipe, module, pipe->devid, &roi_in, roi_out, "%s%s%s\n",
+                        dt_iop_colorspace_to_name(cst_to),
+                        cst_to != cst_out ? " -> " : "",
+                        cst_to != cst_out ? dt_iop_colorspace_to_name(cst_out) : "");
           const int err = module->process_tiling_cl(module, piece, input, *output,
                                                      &roi_in, roi_out, in_bpp);
-          success_opencl = err >= CL_SUCCESS;
+          success_opencl = err == CL_SUCCESS;
 
           if(!success_opencl)
             dt_print_pipe(DT_DEBUG_OPENCL,
