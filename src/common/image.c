@@ -915,7 +915,8 @@ gboolean dt_image_get_final_size(const dt_imgid_t imgid, int *width, int *height
   return res;
 }
 
-void dt_image_set_flip(const dt_imgid_t imgid, const dt_image_orientation_t orientation)
+void dt_image_set_flip(const dt_imgid_t imgid,
+                       const dt_image_orientation_t orientation)
 {
   sqlite3_stmt *stmt;
   // push new orientation to sql via additional history entry:
@@ -925,9 +926,9 @@ void dt_image_set_flip(const dt_imgid_t imgid, const dt_image_orientation_t orie
                               " WHERE imgid = ?1", -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  const int iop_flip_MODVER = 2;
   int num = 0;
-  if(sqlite3_step(stmt) == SQLITE_ROW) num = sqlite3_column_int(stmt, 0);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    num = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
 
   // clang-format off
@@ -1002,7 +1003,9 @@ dt_image_orientation_t dt_image_get_orientation(const dt_imgid_t imgid)
       &stmt, NULL);
     // clang-format on
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-    if(sqlite3_step(stmt) == SQLITE_ROW && sqlite3_column_int(stmt, 1) != 0)
+
+    if(sqlite3_step(stmt) == SQLITE_ROW
+       && sqlite3_column_int(stmt, 1) != 0)
     {
       // use introspection to get the orientation from the binary params blob
       const void *params = sqlite3_column_blob(stmt, 0);
