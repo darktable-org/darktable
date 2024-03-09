@@ -931,6 +931,14 @@ void dt_image_set_flip(const dt_imgid_t imgid,
     num = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
 
+  const dt_iop_module_so_t *flip = dt_iop_get_module_so("flip");
+  const dt_introspection_t *flip_i = flip->get_introspection();
+
+  void *params = calloc(1, flip_i->size);
+  dt_image_orientation_t *orientation_p =
+    ((dt_image_orientation_t *)flip->get_p(params, "orientation"));
+  *orientation_p = orientation;
+
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2
     (dt_database_get(darktable.db),
@@ -942,10 +950,12 @@ void dt_image_set_flip(const dt_imgid_t imgid,
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, num);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, iop_flip_MODVER);
-  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 4, &orientation, sizeof(int32_t), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, flip_i->params_version);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 4, params, flip_i->size, SQLITE_TRANSIENT);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+
+  free(params);
 
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2
