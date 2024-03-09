@@ -39,7 +39,7 @@ The algorithm follows these basic ideas:
 4. In all 3 color planes we look for isolated areas being clipped (segments).
    These segments also include the unclipped photosites at the borders, we also use these locations for estimating the global chrominance.
    Inside these segments we look for a candidate to represent the value we take for restoration.
-   Choosing the candidate is done at all non-clipped locations of a segment, the best candidate is selected via a weighing
+   Choosing the candidate is done at all non-clipped locations of a segment, the best candidate is selected via a weighting
    function - the weight is derived from
    - the local standard deviation in a 5x5 area and
    - the median value of unclipped positions also in a 5x5 area.
@@ -55,7 +55,7 @@ The chosen segmentation algorithm works like this:
 3. The segmentation algorithm uses a modified floodfill, it also takes care of the surrounding rectangle of every segment
    and marks the segment borders.
 4. After segmentation we check every segment for
-   - the segment's best candidate via the weighing function
+   - the segment's best candidate via the weighting function
    - the candidates location
 */
 
