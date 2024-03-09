@@ -2312,7 +2312,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_active(g->threshold, FALSE);
   g_signal_connect(G_OBJECT(g->threshold), "quad-pressed", G_CALLBACK(_masking_callback_t), self);
   dt_bauhaus_widget_set_quad_tooltip(g->threshold,
-    _("visualize weighing function on changed output and view weighing curve.\n"
+    _("visualize weighting function on changed output and view weighting curve.\n"
       "red shows possibly changed data, blueish parts will not be changed."));
 
   gtk_widget_set_tooltip_text(g->threshold,
