@@ -1023,13 +1023,11 @@ GList *dt_history_get_items(const dt_imgid_t imgid,
     ("SELECT num, operation, enabled, multi_name, blendop_params"
      " FROM main.history"
      " WHERE imgid=?1"
-     "   AND num IN (SELECT MAX(num)"
-     "               FROM main.history hst2"
-     "               WHERE hst2.imgid=?1"
-     "                 AND hst2.operation=main.history.operation"
-     "               GROUP BY multi_priority)"
      "   AND enabled in (1, ?2)"
-     " ORDER BY %s DESC", multi_priority_order ? "multi_priority" : "num");
+     " GROUP BY num, operation, multi_priority"
+     " ORDER BY %s DESC, %s DESC",
+     multi_priority_order ? "multi_priority" : "num",
+     multi_priority_order ? "num" : "multi_priority");
 
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
