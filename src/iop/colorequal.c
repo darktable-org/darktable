@@ -346,7 +346,7 @@ static inline float _deg_to_rad(const float angle)
   return (angle + ANGLE_SHIFT) * M_PI_F / 180.f;
 }
 
-/* We use precalculated data for the logistic weighing function for performance and stability
+/* We use precalculated data for the logistic weighting function for performance and stability
    and do linear interpolation at runtime. Avoids banding effects and allows a sharp transition.
 */
 static float satweights[2 * SATSIZE + 1];
@@ -834,7 +834,7 @@ void process(struct dt_iop_module_t *self,
 
   const float white = Y_to_dt_UCS_L_star(d->white_level);
 
-  /* We use the logistic weighing function to diminish effects in the guided filter for locations
+  /* We use the logistic weighting function to diminish effects in the guided filter for locations
      with low chromacity. The logistic function is precalculated for a inflection point of zero
      so we have to shift the input value (saturation) for both brightness and saturation corrections.
      The default can be shifted by the threshold slider.
@@ -1218,7 +1218,7 @@ void commit_params(struct dt_iop_module_t *self,
   d->hue_shift = p->hue_shift;
   // default inflection point at a sat of 6%; allow selection up to ~60%
   d->threshold = -0.015f + 0.3f * sqrf(5.0f * (p->threshold + 0.1f));
-  // for a saturation threshold of > 0.1 the weighing function is flattened for a smoother roll on/off
+  // for a saturation threshold of > 0.1 the weighting function is flattened for a smoother roll on/off
   d->steepness = -60.0 + 200.0 * (double)(MAX(0.0f, p->threshold - 0.024f));
   float DT_ALIGNED_ARRAY sat_values[NODES];
   float DT_ALIGNED_ARRAY hue_values[NODES];
@@ -2312,7 +2312,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_active(g->threshold, FALSE);
   g_signal_connect(G_OBJECT(g->threshold), "quad-pressed", G_CALLBACK(_masking_callback_t), self);
   dt_bauhaus_widget_set_quad_tooltip(g->threshold,
-    _("visualize weighing function on changed output and view weighing curve.\n"
+    _("visualize weighting function on changed output and view weighting curve.\n"
       "red shows possibly changed data, blueish parts will not be changed."));
 
   gtk_widget_set_tooltip_text(g->threshold,
