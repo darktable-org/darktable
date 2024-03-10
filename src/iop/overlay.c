@@ -144,14 +144,14 @@ typedef struct dt_iop_overlay_gui_data_t
 
 const char *name()
 {
-  return _("overlay");
+  return _("composite");
 }
 
 const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description
     (self,
-     _("image overlay"),
+     _("combine with elements from a processed image"),
      _("corrective and creative"),
      _("linear, RGB, scene-referred"),
      _("linear, RGB"),
@@ -160,7 +160,7 @@ const char **description(struct dt_iop_module_t *self)
 
 const char *aliases()
 {
-  return _("composition|layering|stacked");
+  return _("layer|stack|overlay");
 }
 
 int flags()
@@ -749,7 +749,7 @@ static void _draw_thumb(GtkWidget *area,
     PangoLayout *layout = pango_cairo_create_layout(crf);
     pango_layout_set_font_description(layout, desc);
     // TRANSLATORS: This text must be very narrow, check in the GUI that it is not truncated
-    pango_layout_set_text(layout, _("drop\nimage\nhere"), -1);
+    pango_layout_set_text(layout, _("drop\nimage\nfrom filmstrip\nhere"), -1);
 
     PangoRectangle ink;
     pango_layout_get_pixel_extents(layout, &ink, NULL);
