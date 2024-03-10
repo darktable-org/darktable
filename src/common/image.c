@@ -915,7 +915,8 @@ gboolean dt_image_get_final_size(const dt_imgid_t imgid, int *width, int *height
   return res;
 }
 
-void dt_image_set_flip(const dt_imgid_t imgid, const dt_image_orientation_t orientation)
+void dt_image_set_flip(const dt_imgid_t imgid,
+                       const dt_image_orientation_t orientation)
 {
   sqlite3_stmt *stmt;
   // push new orientation to sql via additional history entry:
@@ -925,10 +926,18 @@ void dt_image_set_flip(const dt_imgid_t imgid, const dt_image_orientation_t orie
                               " WHERE imgid = ?1", -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  const int iop_flip_MODVER = 2;
   int num = 0;
-  if(sqlite3_step(stmt) == SQLITE_ROW) num = sqlite3_column_int(stmt, 0);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    num = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
+
+  const dt_iop_module_so_t *flip = dt_iop_get_module_so("flip");
+  const dt_introspection_t *flip_i = flip->get_introspection();
+
+  void *params = calloc(1, flip_i->size);
+  dt_image_orientation_t *orientation_p =
+    ((dt_image_orientation_t *)flip->get_p(params, "orientation"));
+  *orientation_p = orientation;
 
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2
@@ -941,10 +950,12 @@ void dt_image_set_flip(const dt_imgid_t imgid, const dt_image_orientation_t orie
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, num);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, iop_flip_MODVER);
-  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 4, &orientation, sizeof(int32_t), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, flip_i->params_version);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 4, params, flip_i->size, SQLITE_TRANSIENT);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+
+  free(params);
 
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2
@@ -972,19 +983,7 @@ void dt_image_set_flip(const dt_imgid_t imgid, const dt_image_orientation_t orie
 dt_image_orientation_t dt_image_get_orientation(const dt_imgid_t imgid)
 {
   // find the flip module -- the pointer stays valid until darktable shuts down
-  static dt_iop_module_so_t *flip = NULL;
-  if(flip == NULL)
-  {
-    for(const GList *modules = darktable.iop; modules; modules = g_list_next(modules))
-    {
-      dt_iop_module_so_t *module = (dt_iop_module_so_t *)(modules->data);
-      if(dt_iop_module_is(module, "flip"))
-      {
-        flip = module;
-        break;
-      }
-    }
-  }
+  const dt_iop_module_so_t *flip = dt_iop_get_module_so("flip");
 
   dt_image_orientation_t orientation = ORIENTATION_NULL;
 
@@ -1002,7 +1001,9 @@ dt_image_orientation_t dt_image_get_orientation(const dt_imgid_t imgid)
       &stmt, NULL);
     // clang-format on
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-    if(sqlite3_step(stmt) == SQLITE_ROW && sqlite3_column_int(stmt, 1) != 0)
+
+    if(sqlite3_step(stmt) == SQLITE_ROW
+       && sqlite3_column_int(stmt, 1) != 0)
     {
       // use introspection to get the orientation from the binary params blob
       const void *params = sqlite3_column_blob(stmt, 0);
