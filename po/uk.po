@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-03-04 22:09+0100\n"
-"PO-Revision-Date: 2024-03-05 11:09+0200\n"
+"POT-Creation-Date: 2024-03-10 17:17+0100\n"
+"PO-Revision-Date: 2024-03-10 19:15+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -3229,8 +3229,8 @@ msgstr "Кольоровість"
 #: ../src/develop/blend_gui.c:2464 ../src/iop/channelmixer.c:634
 #: ../src/iop/channelmixerrgb.c:4531 ../src/iop/channelmixerrgb.c:4646
 #: ../src/iop/colorbalance.c:2000 ../src/iop/colorize.c:343
-#: ../src/iop/colorreconstruction.c:1249 ../src/iop/colorequal.c:2168
-#: ../src/iop/colorequal.c:2220 ../src/iop/colorzones.c:2646
+#: ../src/iop/colorreconstruction.c:1249 ../src/iop/colorequal.c:2170
+#: ../src/iop/colorequal.c:2222 ../src/iop/colorzones.c:2646
 msgid "hue"
 msgstr "Відтінок"
 
@@ -4269,7 +4269,7 @@ msgstr "Щільність"
 #: ../src/iop/colorbalance.c:2017 ../src/iop/colorbalancergb.c:1990
 #: ../src/iop/colorchecker.c:1486 ../src/iop/colorcontrast.c:82
 #: ../src/iop/colorcorrection.c:268 ../src/iop/colorize.c:356
-#: ../src/iop/colorequal.c:2169 ../src/iop/colorequal.c:2240
+#: ../src/iop/colorequal.c:2171 ../src/iop/colorequal.c:2242
 #: ../src/iop/lowpass.c:602 ../src/iop/soften.c:368 ../src/iop/velvia.c:75
 #: ../src/iop/vibrance.c:72 ../src/iop/vignette.c:1058
 msgid "saturation"
@@ -4940,8 +4940,8 @@ msgstr "Режим заливки"
 #: ../build/lib/darktable/plugins/introspection_retouch.c:285
 #: ../build/lib/darktable/plugins/introspection_retouch.c:426
 #: ../src/iop/basicadj.c:650 ../src/iop/channelmixerrgb.c:4698
-#: ../src/iop/colisa.c:299 ../src/iop/colorequal.c:2170
-#: ../src/iop/colorequal.c:2260 ../src/iop/lowpass.c:601
+#: ../src/iop/colisa.c:299 ../src/iop/colorequal.c:2172
+#: ../src/iop/colorequal.c:2262 ../src/iop/lowpass.c:601
 #: ../src/iop/soften.c:372 ../src/iop/vignette.c:1057 ../src/libs/history.c:966
 msgid "brightness"
 msgstr "Яскравість"
@@ -6764,49 +6764,49 @@ msgstr[0] "Дату/час повторно застосовано для %d з�
 msgstr[1] "Дату/час повторно застосовано для %d зображень"
 msgstr[2] "Дату/час повторно застосовано для %d зображень"
 
-#: ../src/common/image.c:2295
+#: ../src/common/image.c:2296
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "Не вдається отримати доступ до локальної копії `%s'"
 
-#: ../src/common/image.c:2302
+#: ../src/common/image.c:2303
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "Не вдається записати локальну копію `%s'"
 
-#: ../src/common/image.c:2309
+#: ../src/common/image.c:2310
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "Помилка переміщення локальної копії `%s' -> `%s'"
 
-#: ../src/common/image.c:2326
+#: ../src/common/image.c:2327
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "Помилка переміщення `%s': файл не знайдено"
 
-#: ../src/common/image.c:2336
+#: ../src/common/image.c:2337
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "Помилка переміщення `%s' -> `%s': файл існує"
 
-#: ../src/common/image.c:2340
+#: ../src/common/image.c:2341
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "Помилка переміщення `%s' -> `%s'"
 
-#: ../src/common/image.c:2669
+#: ../src/common/image.c:2670
 msgid "cannot create local copy when the original file is not accessible."
 msgstr "Неможливо створити локальну копію, коли оригінал недоступний."
 
-#: ../src/common/image.c:2683
+#: ../src/common/image.c:2684
 msgid "cannot create local copy."
 msgstr "Неможливо створити локальну копію."
 
-#: ../src/common/image.c:2763 ../src/control/jobs/control_jobs.c:862
+#: ../src/common/image.c:2764 ../src/control/jobs/control_jobs.c:862
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr "Неможливо видалити локальну копію, коли оригінал недоступний."
 
-#: ../src/common/image.c:2936
+#: ../src/common/image.c:2937
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -6814,11 +6814,11 @@ msgstr[0] "%d локальну копію синхронізовано"
 msgstr[1] "%d локальні копії синхронізовано"
 msgstr[2] "%d локальних копій синхронізовано"
 
-#: ../src/common/image.c:3137
+#: ../src/common/image.c:3138
 msgid "<b>WARNING</b>: camera is missing samples!"
 msgstr "<b>ПОПЕРЕДЖЕННЯ</b>: відсутні зразки зображень із цієї моделі камери!"
 
-#: ../src/common/image.c:3138
+#: ../src/common/image.c:3139
 msgid ""
 "You must provide samples in <a href='https://raw.pixls.us/'>https://raw."
 "pixls.us/</a>"
@@ -6826,7 +6826,7 @@ msgstr ""
 "Вам слід надати такі зразки, завантаживши їх на сайт <a href='https://raw."
 "pixls.us/'>https://raw.pixls.us/</a>"
 
-#: ../src/common/image.c:3139
+#: ../src/common/image.c:3140
 #, c-format
 msgid ""
 "for `%s' `%s'\n"
@@ -6835,7 +6835,7 @@ msgstr ""
 "для `%s' `%s'\n"
 "у якомога більшій кількості форматів/варіантів стиснення/глибин кольору"
 
-#: ../src/common/image.c:3142
+#: ../src/common/image.c:3143
 msgid "or the <b>RAW won't be readable</b> in next version."
 msgstr ""
 "інакше <b>RAW з цієї камери не буде читатися</b> у наступній версії "
@@ -6843,7 +6843,7 @@ msgstr ""
 
 #: ../src/common/image.h:217 ../src/common/ratings.c:284
 #: ../src/imageio/format/avif.c:114 ../src/libs/history.c:846
-#: ../src/libs/snapshots.c:856
+#: ../src/libs/snapshots.c:858
 msgid "unknown"
 msgstr "невідомо"
 
@@ -8732,7 +8732,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:2693 ../src/develop/blend_gui.c:3614
 #: ../src/iop/basicadj.c:630 ../src/iop/colorbalancergb.c:2161
-#: ../src/iop/colorequal.c:2291 ../src/iop/exposure.c:1138
+#: ../src/iop/colorequal.c:2293 ../src/iop/exposure.c:1138
 #: ../src/iop/exposure.c:1153 ../src/iop/filmic.c:1528 ../src/iop/filmic.c:1541
 #: ../src/iop/filmic.c:1583 ../src/iop/filmicrgb.c:4504
 #: ../src/iop/filmicrgb.c:4515 ../src/iop/filmicrgb.c:4549
@@ -9002,8 +9002,8 @@ msgid "feathering radius"
 msgstr "Радіус розтушовки"
 
 #: ../src/develop/blend_gui.c:3667 ../src/develop/blend_gui.c:3679
-#: ../src/iop/colorbalancergb.c:2191 ../src/iop/colorequal.c:2301
-#: ../src/iop/colorequal.c:2324 ../src/iop/diffuse.c:1835
+#: ../src/iop/colorbalancergb.c:2191 ../src/iop/colorequal.c:2303
+#: ../src/iop/colorequal.c:2326 ../src/iop/diffuse.c:1835
 #: ../src/iop/diffuse.c:1845 ../src/iop/retouch.c:2729
 msgid " px"
 msgstr " px"
@@ -9587,7 +9587,7 @@ msgstr ""
 "зображень.\n"
 "Імовірно, причиною є застосування пресету, стилю, або копіювання історії"
 
-#: ../src/develop/pixelpipe_hb.c:2707
+#: ../src/develop/pixelpipe_hb.c:2729
 msgid ""
 "OpenCL errors encountered; disabling OpenCL for this session! some possible "
 "causes:\n"
@@ -9608,7 +9608,7 @@ msgstr ""
 "  - Занадто малі параметри запасу при використанні опції 'використовувати "
 "всю пам'ять пристрою'."
 
-#: ../src/develop/pixelpipe_hb.c:2860
+#: ../src/develop/pixelpipe_hb.c:2882
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -9619,7 +9619,7 @@ msgstr ""
 "модуля '%s', бо це обробляється пізніше в конвеєрі.\n"
 "Растрова маска ігнорується."
 
-#: ../src/develop/tiling.c:819 ../src/develop/tiling.c:1172
+#: ../src/develop/tiling.c:817 ../src/develop/tiling.c:1173
 #, c-format
 msgid ""
 "tiling failed for module '%s'. the output most likely will be OK, but you "
@@ -12318,7 +12318,7 @@ msgid "internal"
 msgstr "Внутрішній"
 
 #: ../src/imageio/format/jxl.c:604 ../src/libs/duplicate.c:405
-#: ../src/libs/history.c:1135 ../src/libs/snapshots.c:859
+#: ../src/libs/history.c:1135 ../src/libs/snapshots.c:861
 msgid "original"
 msgstr "Оригінал"
 
@@ -12893,7 +12893,7 @@ msgstr "коригуюче чи креативне"
 #: ../src/iop/blurs.c:93 ../src/iop/blurs.c:94 ../src/iop/channelmixerrgb.c:239
 #: ../src/iop/channelmixerrgb.c:241 ../src/iop/clipping.c:364
 #: ../src/iop/clipping.c:366 ../src/iop/colorbalancergb.c:185
-#: ../src/iop/colorin.c:137 ../src/iop/colorequal.c:193 ../src/iop/crop.c:135
+#: ../src/iop/colorin.c:137 ../src/iop/colorequal.c:194 ../src/iop/crop.c:135
 #: ../src/iop/crop.c:137 ../src/iop/demosaic.c:296
 #: ../src/iop/denoiseprofile.c:780 ../src/iop/denoiseprofile.c:782
 #: ../src/iop/diffuse.c:146 ../src/iop/diffuse.c:148
@@ -13133,7 +13133,7 @@ msgid "add or remove local contrast, sharpness, acutance"
 msgstr "Додати або прибрати локальний контраст, різкість, гостроту"
 
 #: ../src/iop/atrous.c:133 ../src/iop/bilateral.cc:102
-#: ../src/iop/colorequal.c:192 ../src/iop/diffuse.c:145
+#: ../src/iop/colorequal.c:193 ../src/iop/diffuse.c:145
 #: ../src/iop/enlargecanvas.c:83 ../src/iop/exposure.c:131
 #: ../src/iop/filmicrgb.c:352 ../src/iop/graduatednd.c:146
 #: ../src/iop/negadoctor.c:146 ../src/iop/overlay.c:155
@@ -13308,7 +13308,7 @@ msgstr ""
 "Впливає лише на результати вкладок \"яскравість\" і \"кольоровість\""
 
 #: ../src/iop/atrous.c:1818 ../src/iop/colorbalancergb.c:2129
-#: ../src/iop/colorequal.c:2177 ../src/iop/colorzones.c:2732
+#: ../src/iop/colorequal.c:2179 ../src/iop/colorzones.c:2732
 #: ../src/iop/denoiseprofile.c:3747 ../src/iop/filmicrgb.c:4471
 #: ../src/iop/lowlight.c:821 ../src/iop/rawdenoise.c:935
 #: ../src/iop/toneequal.c:3424
@@ -14009,15 +14009,15 @@ msgstr "лінійний простір, raw, на основі сцен"
 msgid "linear, raw"
 msgstr "лінійна, raw"
 
-#: ../src/iop/cacorrect.c:1425
+#: ../src/iop/cacorrect.c:1340
 msgid "iteration runs, default is twice"
 msgstr "Кількість ітерацій, за замовчуванням дві"
 
-#: ../src/iop/cacorrect.c:1428
+#: ../src/iop/cacorrect.c:1343
 msgid "activate colorshift correction for blue & red channels"
 msgstr "Активувати корекцію зміщення кольорів для синього та червоного каналів"
 
-#: ../src/iop/cacorrect.c:1435
+#: ../src/iop/cacorrect.c:1350
 msgid ""
 "automatic chromatic aberration correction\n"
 "only for Bayer raw files with 3 color channels"
@@ -14572,7 +14572,7 @@ msgstr ""
 "c: \t%.1f"
 
 #: ../src/iop/channelmixerrgb.c:4475 ../src/iop/clipping.c:2137
-#: ../src/iop/colorbalancergb.c:1944 ../src/iop/colorequal.c:2161
+#: ../src/iop/colorbalancergb.c:1944 ../src/iop/colorequal.c:2163
 #: ../src/iop/filmicrgb.c:4483 ../src/iop/negadoctor.c:848
 #: ../src/iop/toneequal.c:3372 ../src/libs/image.c:490
 #: ../src/views/lighttable.c:1258
@@ -16177,7 +16177,7 @@ msgstr "Коли і як давати пріоритет певним кольо
 msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "Тон відтінку, якому слід надавати перевагу над іншими відтінками"
 
-#: ../src/iop/colorreconstruction.c:1270 ../src/iop/demosaic.c:1320
+#: ../src/iop/colorreconstruction.c:1270 ../src/iop/demosaic.c:1327
 #: ../src/iop/highlights.c:1252
 msgid "not applicable"
 msgstr "Не застосовується"
@@ -16208,29 +16208,29 @@ msgstr ""
 "Він тут лише для того, щоб ви могли його вимкнути\n"
 "і перейти до нового модуля відображення кольорів."
 
-#: ../src/iop/colorequal.c:180
+#: ../src/iop/colorequal.c:181
 msgid "color equalizer"
 msgstr "Еквалайзер кольорів"
 
-#: ../src/iop/colorequal.c:185 ../src/iop/colorzones.c:139
+#: ../src/iop/colorequal.c:186 ../src/iop/colorzones.c:139
 #: ../src/iop/colorzones.c:2573
 msgid "color zones"
 msgstr "Колірні зони"
 
-#: ../src/iop/colorequal.c:191
+#: ../src/iop/colorequal.c:192
 msgid "change saturation, hue and brightness depending on local hue"
 msgstr ""
 "Змінювати насиченість, відтінок і яскравість залежно від локального відтінку"
 
-#: ../src/iop/colorequal.c:194 ../src/iop/toneequal.c:334
+#: ../src/iop/colorequal.c:195 ../src/iop/toneequal.c:334
 msgid "quasi-linear, RGB"
 msgstr "квазілінійна, RGB"
 
-#: ../src/iop/colorequal.c:195 ../src/iop/toneequal.c:335
+#: ../src/iop/colorequal.c:196 ../src/iop/toneequal.c:335
 msgid "quasi-linear, RGB, scene-referred"
 msgstr "квазілінійний простір, RGB, на основі сцен"
 
-#: ../src/iop/colorequal.c:1913
+#: ../src/iop/colorequal.c:1915
 #, c-format
 msgid ""
 "middle click to toggle sliders visibility\n"
@@ -16243,45 +16243,45 @@ msgstr ""
 
 #. create a new tab for options
 #. Page OPTIONS
-#: ../src/iop/colorequal.c:2080 ../src/iop/colorequal.c:2283
+#: ../src/iop/colorequal.c:2082 ../src/iop/colorequal.c:2285
 #: ../src/iop/filmicrgb.c:4675
 msgid "options"
 msgstr "Опції"
 
-#: ../src/iop/colorequal.c:2168
+#: ../src/iop/colorequal.c:2170
 msgid "change hue hue-wise"
 msgstr "Зміна відтінку відносно відтінку"
 
-#: ../src/iop/colorequal.c:2169
+#: ../src/iop/colorequal.c:2171
 msgid "change saturation hue-wise"
 msgstr "Зміна насиченості відносно відтінку"
 
-#: ../src/iop/colorequal.c:2170
+#: ../src/iop/colorequal.c:2172
 msgid "change brightness hue-wise"
 msgstr "Зміна яскравості відносно відтінку"
 
-#: ../src/iop/colorequal.c:2208
+#: ../src/iop/colorequal.c:2210
 msgid "shift nodes to lower or higher hue"
 msgstr "Зсув вузлів по відтінках"
 
-#: ../src/iop/colorequal.c:2295
+#: ../src/iop/colorequal.c:2297
 msgid "change for sharper or softer hue curve"
 msgstr "Змінити на різкішу або м’якшу криву відтінку"
 
-#: ../src/iop/colorequal.c:2303
+#: ../src/iop/colorequal.c:2305
 msgid "blurring radius of chroma prefilter analysis"
 msgstr "Радіус розмиття проби попереднього фільтра кольоровості"
 
-#: ../src/iop/colorequal.c:2313
+#: ../src/iop/colorequal.c:2315
 msgid ""
-"visualize weighing function on changed output and view weighing curve.\n"
+"visualize weighting function on changed output and view weighting curve.\n"
 "red shows possibly changed data, blueish parts will not be changed."
 msgstr ""
 "Візуалізувати функцію зважування на зміненому виході та переглянути криву "
 "зважування.\n"
 "Червоний показує ймовірно змінені значення, блакитні частини не зміняться."
 
-#: ../src/iop/colorequal.c:2317
+#: ../src/iop/colorequal.c:2319
 msgid ""
 "set saturation threshold for the guided filter.\n"
 " - decrease to allow changes in areas with low chromacity\n"
@@ -16294,11 +16294,11 @@ msgstr ""
 "   збільшує контрастність і запобігає змінам яскравості в областях із "
 "низькою хроматичністю."
 
-#: ../src/iop/colorequal.c:2325
+#: ../src/iop/colorequal.c:2327
 msgid "blurring radius of applied parameters"
 msgstr "Радіус розмиття застосованих параметрів"
 
-#: ../src/iop/colorequal.c:2332
+#: ../src/iop/colorequal.c:2334
 msgid ""
 "visualize changed output for the selected tab.\n"
 "red shows increased data, blue decreased."
@@ -16483,12 +16483,12 @@ msgid "reconstruct full RGB pixels from a sensor color filter array reading"
 msgstr ""
 "Реконструювати повні RGB-пікселі з даних масиву кольорових фільтрів сенсора"
 
-#: ../src/iop/demosaic.c:1129
+#: ../src/iop/demosaic.c:1136
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "Матрицю кольорів `%s' не знайдено для Bayer4 зображення!"
 
-#: ../src/iop/demosaic.c:1281
+#: ../src/iop/demosaic.c:1288
 msgid ""
 "Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
 "slow.\n"
@@ -16500,7 +16500,7 @@ msgstr ""
 "LMMSE найкраще підходить для зображень з високим значенням ISO.\n"
 "Варіанти з двома методами подвоюють час обробки."
 
-#: ../src/iop/demosaic.c:1285
+#: ../src/iop/demosaic.c:1292
 msgid ""
 "X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
 "chroma are slow.\n"
@@ -16510,11 +16510,11 @@ msgstr ""
 "domain chroma повільні.\n"
 "Варіанти з двома методами подвоюють час обробки."
 
-#: ../src/iop/demosaic.c:1291
+#: ../src/iop/demosaic.c:1298
 msgid "Bayer4 sensor demosaicing methods."
 msgstr "Методи демозаїкізації Bayer4."
 
-#: ../src/iop/demosaic.c:1295
+#: ../src/iop/demosaic.c:1302
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off\n"
@@ -16524,7 +16524,7 @@ msgstr ""
 "0.0 - вимикає медіанну фільтрацію\n"
 "1.0 - ігнорувати контури"
 
-#: ../src/iop/demosaic.c:1300
+#: ../src/iop/demosaic.c:1307
 msgid ""
 "contrast threshold for dual demosaic.\n"
 "set to 0.0 for high frequency content\n"
@@ -16536,7 +16536,7 @@ msgstr ""
 "1.0 - для плоского вмісту\n"
 "Перемикач візуалізує маску"
 
-#: ../src/iop/demosaic.c:1308
+#: ../src/iop/demosaic.c:1315
 msgid ""
 "LMMSE refinement steps. the median steps average the output,\n"
 "refine adds some recalculation of red & blue channels"
@@ -16544,16 +16544,16 @@ msgstr ""
 "Кроки уточнення LMMSE. Медіанні кроки усереднюють вихід,\n"
 "уточнення додає певний перерахунок червоних та синіх каналів"
 
-#: ../src/iop/demosaic.c:1311
+#: ../src/iop/demosaic.c:1318
 msgid "how many color smoothing median steps after demosaicing"
 msgstr ""
 "Кількість медіанних проходів згладжування кольорів після демозаїкізації"
 
-#: ../src/iop/demosaic.c:1314
+#: ../src/iop/demosaic.c:1321
 msgid "green channels matching method"
 msgstr "Метод вирівнювання зелених каналів"
 
-#: ../src/iop/demosaic.c:1321
+#: ../src/iop/demosaic.c:1328
 msgid "demosaicing is only used for color raw images"
 msgstr "Демозаїкізація використовується лише для кольорових raw зображень"
 
@@ -19461,17 +19461,17 @@ msgstr "Не вдалося виділити буфер в модулі пере
 msgid "module overexposed failed in color conversion"
 msgstr "Не вдалося перетворення кольорів в модулі переекспонованого"
 
-#: ../src/iop/overlay.c:147 ../src/libs/live_view.c:310
-msgid "overlay"
-msgstr "Накладення"
+#: ../src/iop/overlay.c:147
+msgid "composite"
+msgstr "Композитинг"
 
 #: ../src/iop/overlay.c:154
-msgid "image overlay"
-msgstr "Накладення зображення"
+msgid "combine with elements from a processed image"
+msgstr "Поєднання зображення з елементами обробленого зображення"
 
 #: ../src/iop/overlay.c:163
-msgid "composition|layering|stacked"
-msgstr "composition|layering|stacked"
+msgid "layer|stack|overlay"
+msgstr "layer|stack|overlay"
 
 #: ../src/iop/overlay.c:283
 #, c-format
@@ -19494,10 +19494,12 @@ msgstr "Зображення %d не існує"
 msgid ""
 "drop\n"
 "image\n"
+"from filmstrip\n"
 "here"
 msgstr ""
 "Опустіть\n"
-"зображення\n"
+"зображення зі\n"
+"стрічки знімків\n"
 "сюди"
 
 #: ../src/iop/overlay.c:960
@@ -23482,6 +23484,10 @@ msgstr "Віддалити точку фокусування (маленькі �
 msgid "move focus point out (big steps)"
 msgstr "Віддалити точку фокусування (великі кроки)"
 
+#: ../src/libs/live_view.c:310
+msgid "overlay"
+msgstr "Накладення"
+
 #: ../src/libs/live_view.c:312
 msgid "selected image"
 msgstr "Вибране зображення"
@@ -24754,37 +24760,37 @@ msgstr "Код завдання"
 msgid "create"
 msgstr "Створити"
 
-#: ../src/libs/snapshots.c:94
+#: ../src/libs/snapshots.c:98
 msgid "snapshots"
 msgstr "Миттєві знімки"
 
-#: ../src/libs/snapshots.c:143
+#: ../src/libs/snapshots.c:147
 msgctxt "snapshot sign"
 msgid "S"
 msgstr "S"
 
-#: ../src/libs/snapshots.c:550
+#: ../src/libs/snapshots.c:554
 msgid "restore snapshot into current history"
 msgstr "Відновити миттєвий знімок в поточну історію"
 
-#: ../src/libs/snapshots.c:667
+#: ../src/libs/snapshots.c:671
 msgid "snapshots for removed image have been deleted"
 msgstr "Миттєві знімки для видаленого зображення видалено"
 
-#: ../src/libs/snapshots.c:708
+#: ../src/libs/snapshots.c:712
 #, c-format
 msgid "↗ %s '%s'"
 msgstr "↗ %s '%s'"
 
-#: ../src/libs/snapshots.c:708
+#: ../src/libs/snapshots.c:712
 msgid "this snapshot was taken from"
 msgstr "Цей миттєвий знімок зроблено з"
 
-#: ../src/libs/snapshots.c:747
+#: ../src/libs/snapshots.c:751
 msgid "take snapshot"
 msgstr "Зробити миттєвий знімок"
 
-#: ../src/libs/snapshots.c:749
+#: ../src/libs/snapshots.c:753
 msgid ""
 "take snapshot to compare with another image or the same image at another "
 "stage of development"
@@ -24792,7 +24798,7 @@ msgstr ""
 "Зробити миттєвий знімок, щоб порівняти з іншим зображенням або тим самим "
 "зображенням на іншій стадії обробки"
 
-#: ../src/libs/snapshots.c:802
+#: ../src/libs/snapshots.c:806
 msgid "toggle last snapshot"
 msgstr "Перемкнути останній моментальний знімок"
 
@@ -26408,6 +26414,12 @@ msgstr ""
 #: ../src/views/view.c:1527
 msgid "mouse actions"
 msgstr "Дії за допомогою миші"
+
+#~ msgid "image overlay"
+#~ msgstr "Накладення зображення"
+
+#~ msgid "composition|layering|stacked"
+#~ msgstr "composition|layering|stacked"
 
 #~ msgid "RustiCL"
 #~ msgstr "RustiCL"
