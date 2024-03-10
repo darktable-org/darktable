@@ -1481,6 +1481,185 @@ void reload_defaults(dt_iop_module_t *self)
   }
 }
 
+void init_presets(dt_iop_module_so_t *self)
+{
+  // bleach bypass
+  dt_iop_colorequal_params_t p1 =
+    { .threshold       = -0.10f,
+      .smoothing_hue   = 1.0f,
+      .reserved2       = 0.0f,
+      .white_level     = 1.0f,
+      .chroma_size     = 1.5f,
+      .param_size      = 1.0f,
+      .use_filter      = TRUE,
+
+      .sat_red         = 1.0f - 0.2215f,
+      .sat_orange      = 1.0f - 0.1772f,
+      .sat_yellow      = 1.0f - 0.3861f,
+      .sat_green       = 1.0f - 0.3924f,
+      .sat_cyan        = 1.0f - 0.4557f,
+      .sat_blue        = 1.0f - 0.4177f,
+      .sat_lavender    = 1.0f - 0.2468f,
+      .sat_magenta     = 1.0f - 0.2532f,
+
+      .hue_red         = 15.46f,
+      .hue_orange      = 0.0f,
+      .hue_yellow      = -2.21f,
+      .hue_green       = 28.72f,
+      .hue_cyan        = 16.57f,
+      .hue_blue        = 0.0f,
+      .hue_lavender    = 0.0f,
+      .hue_magenta     = 0.0f,
+
+      .bright_red      = 1.0f - 0.250f,
+      .bright_orange   = 1.0f - 0.250f,
+      .bright_yellow   = 1.0f - 0.250f,
+      .bright_green    = 1.0f - 0.350f,
+      .bright_cyan     = 1.0f - 0.350f,
+      .bright_blue     = 1.0f - 0.250f,
+      .bright_lavender = 1.0f - 0.250f,
+      .bright_magenta  = 1.0f - 0.250f,
+
+      .hue_shift       = 0.0f
+    };
+
+  dt_gui_presets_add_generic(_("bleach bypass"), self->op,
+                             self->version(), &p1, sizeof(p1),
+                             1, DEVELOP_BLEND_CS_RGB_SCENE);
+
+  // Kodachrome 64 like
+  dt_iop_colorequal_params_t p2 =
+    { .threshold       = 0.093f,
+      .smoothing_hue   = 1.0f,
+      .reserved2       = 0.0f,
+      .white_level     = 1.0f,
+      .chroma_size     = 1.5f,
+      .param_size      = 19.0f,
+      .use_filter      = TRUE,
+
+      .sat_red         = 1.0f + 0.2390f,
+      .sat_orange      = 1.0f + 0.0377f,
+      .sat_yellow      = 1.0f - 0.1761f,
+      .sat_green       = 1.0f - 0.1635f,
+      .sat_cyan        = 1.0f - 0.0126f,
+      .sat_blue        = 1.0f + 0.0126f,
+      .sat_lavender    = 1.0f - 0.0000f,
+      .sat_magenta     = 1.0f + 0.1384f,
+
+      .hue_red         = -2.20f,
+      .hue_orange      = -17.56f,
+      .hue_yellow      = -3.29f,
+      .hue_green       = 32.93f,
+      .hue_cyan        = 14.27f,
+      .hue_blue        = 6.59f,
+      .hue_lavender    = -7.68f,
+      .hue_magenta     = 0.0f,
+
+      .bright_red      = 1.0f - 0.0063f,
+      .bright_orange   = 1.0f + 0.1824f,
+      .bright_yellow   = 1.0f - 0.1950f,
+      .bright_green    = 1.0f - 0.2390f,
+      .bright_cyan     = 1.0f - 0.2453f,
+      .bright_blue     = 1.0f + 0.0377f,
+      .bright_lavender = 1.0f - 0.1572f,
+      .bright_magenta  = 1.0f - 0.1384f,
+
+      .hue_shift       = 0.0f
+    };
+
+  dt_gui_presets_add_generic(_("Kodachrome 64 like"), self->op,
+                             self->version(), &p2, sizeof(p2),
+                             1, DEVELOP_BLEND_CS_RGB_SCENE);
+
+  // Kodachrome Porta 400
+  dt_iop_colorequal_params_t p3 =
+    { .threshold       = 0.099f,
+      .smoothing_hue   = 1.0f,
+      .reserved2       = 0.0f,
+      .white_level     = 1.0f,
+      .chroma_size     = 1.5f,
+      .param_size      = 1.0f,
+      .use_filter      = TRUE,
+
+      .sat_red         = 1.0f + 0.0692f,
+      .sat_orange      = 1.0f + 0.0503f,
+      .sat_yellow      = 1.0f - 0.0000f,
+      .sat_green       = 1.0f - 0.0000f,
+      .sat_cyan        = 1.0f - 0.0000f,
+      .sat_blue        = 1.0f - 0.0000f,
+      .sat_lavender    = 1.0f - 0.0000f,
+      .sat_magenta     = 1.0f - 0.0000f,
+
+      .hue_red         = 9.88f,
+      .hue_orange      = -4.39,
+      .hue_yellow      = 15.37f,
+      .hue_green       = 8.78f,
+      .hue_cyan        = 2.20f,
+      .hue_blue        = -19.76f,
+      .hue_lavender    = -3.29f,
+      .hue_magenta     = 0.0f,
+
+      .bright_red      = 1.0f + 0.0881f,
+      .bright_orange   = 1.0f + 0.0629f,
+      .bright_yellow   = 1.0f + 0.0629f,
+      .bright_green    = 1.0f - 0.1069f,
+      .bright_cyan     = 1.0f - 0.1069f,
+      .bright_blue     = 1.0f - 0.1006f,
+      .bright_lavender = 1.0f - 0.0189f,
+      .bright_magenta  = 1.0f - 0.0000f,
+
+      .hue_shift       = -23.0f
+    };
+
+  dt_gui_presets_add_generic(_("Kodachrome Porta 400 like"), self->op,
+                             self->version(), &p3, sizeof(p3),
+                             1, DEVELOP_BLEND_CS_RGB_SCENE);
+
+  // Teal & Orange
+  dt_iop_colorequal_params_t p4 =
+    { .threshold       = 0.084f,
+      .smoothing_hue   = 0.52f,
+      .reserved2       = 0.0f,
+      .white_level     = 1.0f,
+      .chroma_size     = 1.5f,
+      .param_size      = 1.0f,
+      .use_filter      = TRUE,
+
+      .sat_red         = 1.0f + 0.1572f,
+      .sat_orange      = 1.0f - 0.0063f,
+      .sat_yellow      = 1.0f - 0.3270f,
+      .sat_green       = 1.0f - 0.0377f,
+      .sat_cyan        = 1.0f - 0.0000f,
+      .sat_blue        = 1.0f + 0.0126f,
+      .sat_lavender    = 1.0f - 0.0000f,
+      .sat_magenta     = 1.0f - 0.0000f,
+
+      .hue_red         = 15.37f,
+      .hue_orange      = -24.15f,
+      .hue_yellow      = 75.74f,
+      .hue_green       = 42.81f,
+      .hue_cyan        = 2.20f,
+      .hue_blue        = -36.22f,
+      .hue_lavender    = 2.20f,
+      .hue_magenta     = 42.81f,
+
+      .bright_red      = 1.0f - 0.0000f,
+      .bright_orange   = 1.0f - 0.0000f,
+      .bright_yellow   = 1.0f - 0.0000f,
+      .bright_green    = 1.0f - 0.0000f,
+      .bright_cyan     = 1.0f - 0.0000f,
+      .bright_blue     = 1.0f - 0.0000f,
+      .bright_lavender = 1.0f - 0.0000f,
+      .bright_magenta  = 1.0f - 0.0000f,
+
+      .hue_shift       = 0.0f
+    };
+
+  dt_gui_presets_add_generic(_("teal & orange"), self->op,
+                             self->version(), &p4, sizeof(p4),
+                             1, DEVELOP_BLEND_CS_RGB_SCENE);
+}
+
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
 {
   dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
