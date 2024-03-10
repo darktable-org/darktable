@@ -1306,11 +1306,12 @@ void gui_init(struct dt_iop_module_t *self)
   g->dual_thrs = dt_bauhaus_slider_from_params(self, "dual_thrs");
   dt_bauhaus_slider_set_digits(g->dual_thrs, 2);
   gtk_widget_set_tooltip_text(g->dual_thrs, _("contrast threshold for dual demosaic.\nset to 0.0 for high frequency content\n"
-                                                "set to 1.0 for flat content\ntoggle to visualize the mask"));
+                                                "set to 1.0 for flat content"));
   dt_bauhaus_widget_set_quad_paint(g->dual_thrs, dtgtk_cairo_paint_showmask, 0, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->dual_thrs, TRUE);
   dt_bauhaus_widget_set_quad_active(g->dual_thrs, FALSE);
   g_signal_connect(G_OBJECT(g->dual_thrs), "quad-pressed", G_CALLBACK(_visualize_callback), self);
+  dt_bauhaus_widget_set_quad_tooltip(g->dual_thrs, _("toggle to visualize the mask"));
 
   g->lmmse_refine = dt_bauhaus_combobox_from_params(self, "lmmse_refine");
   gtk_widget_set_tooltip_text(g->lmmse_refine, _("LMMSE refinement steps. the median steps average the output,\nrefine adds some recalculation of red & blue channels"));
