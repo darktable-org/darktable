@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-03-10 17:17+0100\n"
-"PO-Revision-Date: 2024-03-10 19:05+0200\n"
+"POT-Creation-Date: 2024-03-11 08:17+0100\n"
+"PO-Revision-Date: 2024-03-11 12:02+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: en\n"
@@ -3174,8 +3174,8 @@ msgstr "Chroma"
 #: ../src/develop/blend_gui.c:2464 ../src/iop/channelmixer.c:634
 #: ../src/iop/channelmixerrgb.c:4531 ../src/iop/channelmixerrgb.c:4646
 #: ../src/iop/colorbalance.c:2000 ../src/iop/colorize.c:343
-#: ../src/iop/colorreconstruction.c:1249 ../src/iop/colorequal.c:2170
-#: ../src/iop/colorequal.c:2222 ../src/iop/colorzones.c:2646
+#: ../src/iop/colorreconstruction.c:1249 ../src/iop/colorequal.c:2349
+#: ../src/iop/colorequal.c:2401 ../src/iop/colorzones.c:2646
 msgid "hue"
 msgstr "Hue"
 
@@ -4214,7 +4214,7 @@ msgstr "Density"
 #: ../src/iop/colorbalance.c:2017 ../src/iop/colorbalancergb.c:1990
 #: ../src/iop/colorchecker.c:1486 ../src/iop/colorcontrast.c:82
 #: ../src/iop/colorcorrection.c:268 ../src/iop/colorize.c:356
-#: ../src/iop/colorequal.c:2171 ../src/iop/colorequal.c:2242
+#: ../src/iop/colorequal.c:2350 ../src/iop/colorequal.c:2421
 #: ../src/iop/lowpass.c:602 ../src/iop/soften.c:368 ../src/iop/velvia.c:75
 #: ../src/iop/vibrance.c:72 ../src/iop/vignette.c:1058
 msgid "saturation"
@@ -4885,8 +4885,8 @@ msgstr "Fill mode"
 #: ../build/lib/darktable/plugins/introspection_retouch.c:285
 #: ../build/lib/darktable/plugins/introspection_retouch.c:426
 #: ../src/iop/basicadj.c:650 ../src/iop/channelmixerrgb.c:4698
-#: ../src/iop/colisa.c:299 ../src/iop/colorequal.c:2172
-#: ../src/iop/colorequal.c:2262 ../src/iop/lowpass.c:601
+#: ../src/iop/colisa.c:299 ../src/iop/colorequal.c:2351
+#: ../src/iop/colorequal.c:2441 ../src/iop/lowpass.c:601
 #: ../src/iop/soften.c:372 ../src/iop/vignette.c:1057 ../src/libs/history.c:966
 msgid "brightness"
 msgstr "Brightness"
@@ -8603,7 +8603,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:2693 ../src/develop/blend_gui.c:3614
 #: ../src/iop/basicadj.c:630 ../src/iop/colorbalancergb.c:2161
-#: ../src/iop/colorequal.c:2293 ../src/iop/exposure.c:1138
+#: ../src/iop/colorequal.c:2472 ../src/iop/exposure.c:1138
 #: ../src/iop/exposure.c:1153 ../src/iop/filmic.c:1528 ../src/iop/filmic.c:1541
 #: ../src/iop/filmic.c:1583 ../src/iop/filmicrgb.c:4504
 #: ../src/iop/filmicrgb.c:4515 ../src/iop/filmicrgb.c:4549
@@ -8870,8 +8870,8 @@ msgid "feathering radius"
 msgstr "Feathering radius"
 
 #: ../src/develop/blend_gui.c:3667 ../src/develop/blend_gui.c:3679
-#: ../src/iop/colorbalancergb.c:2191 ../src/iop/colorequal.c:2303
-#: ../src/iop/colorequal.c:2326 ../src/iop/diffuse.c:1835
+#: ../src/iop/colorbalancergb.c:2191 ../src/iop/colorequal.c:2482
+#: ../src/iop/colorequal.c:2505 ../src/iop/diffuse.c:1835
 #: ../src/iop/diffuse.c:1845 ../src/iop/retouch.c:2729
 msgid " px"
 msgstr " px"
@@ -13142,7 +13142,7 @@ msgstr ""
 "Only changes results of luma and chroma tabs"
 
 #: ../src/iop/atrous.c:1818 ../src/iop/colorbalancergb.c:2129
-#: ../src/iop/colorequal.c:2179 ../src/iop/colorzones.c:2732
+#: ../src/iop/colorequal.c:2358 ../src/iop/colorzones.c:2732
 #: ../src/iop/denoiseprofile.c:3747 ../src/iop/filmicrgb.c:4471
 #: ../src/iop/lowlight.c:821 ../src/iop/rawdenoise.c:935
 #: ../src/iop/toneequal.c:3424
@@ -14387,7 +14387,7 @@ msgstr ""
 "c: \t%.1f"
 
 #: ../src/iop/channelmixerrgb.c:4475 ../src/iop/clipping.c:2137
-#: ../src/iop/colorbalancergb.c:1944 ../src/iop/colorequal.c:2163
+#: ../src/iop/colorbalancergb.c:1944 ../src/iop/colorequal.c:2342
 #: ../src/iop/filmicrgb.c:4483 ../src/iop/negadoctor.c:848
 #: ../src/iop/toneequal.c:3372 ../src/libs/image.c:490
 #: ../src/views/lighttable.c:1258
@@ -16012,7 +16012,23 @@ msgstr "Quasi-linear, RGB"
 msgid "quasi-linear, RGB, scene-referred"
 msgstr "Quasi-linear, RGB, scene-referred"
 
-#: ../src/iop/colorequal.c:1915
+#: ../src/iop/colorequal.c:1526
+msgid "bleach bypass"
+msgstr "Bleach bypass"
+
+#: ../src/iop/colorequal.c:1570
+msgid "Kodachrome 64 like"
+msgstr "Kodachrome 64 like"
+
+#: ../src/iop/colorequal.c:1614
+msgid "Kodachrome Porta 400 like"
+msgstr "Kodak Portra 400 like"
+
+#: ../src/iop/colorequal.c:1658
+msgid "teal & orange"
+msgstr "Teal & orange"
+
+#: ../src/iop/colorequal.c:2094
 #, c-format
 msgid ""
 "middle click to toggle sliders visibility\n"
@@ -16025,36 +16041,36 @@ msgstr ""
 
 #. create a new tab for options
 #. Page OPTIONS
-#: ../src/iop/colorequal.c:2082 ../src/iop/colorequal.c:2285
+#: ../src/iop/colorequal.c:2261 ../src/iop/colorequal.c:2464
 #: ../src/iop/filmicrgb.c:4675
 msgid "options"
 msgstr "Options"
 
-#: ../src/iop/colorequal.c:2170
+#: ../src/iop/colorequal.c:2349
 msgid "change hue hue-wise"
 msgstr "Change hue hue-wise"
 
-#: ../src/iop/colorequal.c:2171
+#: ../src/iop/colorequal.c:2350
 msgid "change saturation hue-wise"
 msgstr "Change saturation hue-wise"
 
-#: ../src/iop/colorequal.c:2172
+#: ../src/iop/colorequal.c:2351
 msgid "change brightness hue-wise"
 msgstr "Change brightness hue-wise"
 
-#: ../src/iop/colorequal.c:2210
+#: ../src/iop/colorequal.c:2389
 msgid "shift nodes to lower or higher hue"
 msgstr "Shift nodes to lower or higher hue"
 
-#: ../src/iop/colorequal.c:2297
+#: ../src/iop/colorequal.c:2476
 msgid "change for sharper or softer hue curve"
 msgstr "Change for sharper or softer hue curve"
 
-#: ../src/iop/colorequal.c:2305
+#: ../src/iop/colorequal.c:2484
 msgid "blurring radius of chroma prefilter analysis"
 msgstr "Blurring radius of chroma prefilter analysis"
 
-#: ../src/iop/colorequal.c:2315
+#: ../src/iop/colorequal.c:2494
 msgid ""
 "visualize weighting function on changed output and view weighting curve.\n"
 "red shows possibly changed data, blueish parts will not be changed."
@@ -16062,7 +16078,7 @@ msgstr ""
 "Visualize weighting function on changed output and view weighting curve.\n"
 "Red shows possibly changed data, blueish parts will not be changed."
 
-#: ../src/iop/colorequal.c:2319
+#: ../src/iop/colorequal.c:2498
 msgid ""
 "set saturation threshold for the guided filter.\n"
 " - decrease to allow changes in areas with low chromacity\n"
@@ -16074,11 +16090,11 @@ msgstr ""
 " - increase to restrict changes to higher chromacities.\n"
 "   increases contrast and avoids brightness changes in low chromacity areas."
 
-#: ../src/iop/colorequal.c:2327
+#: ../src/iop/colorequal.c:2506
 msgid "blurring radius of applied parameters"
 msgstr "Blurring radius of applied parameters"
 
-#: ../src/iop/colorequal.c:2334
+#: ../src/iop/colorequal.c:2513
 msgid ""
 "visualize changed output for the selected tab.\n"
 "red shows increased data, blue decreased."
