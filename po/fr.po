@@ -3,8 +3,8 @@ msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-03-10 17:17+0100\n"
-"PO-Revision-Date: 2024-03-10 17:20+0100\n"
-"Last-Translator: Pascal Obry <pascal@obry.net>\n"
+"PO-Revision-Date: 2024-03-11 08:45+0100\n"
+"Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
 "MIME-Version: 1.0\n"
@@ -1335,14 +1335,14 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:5393
 msgid "hide built-in presets for processing modules"
-msgstr "Cacher les préréglages internes des modules de développement"
+msgstr "Cacher les préréglages internes des modules de traitement"
 
 #: ../build/bin/preferences_gen.h:5406
 msgid ""
 "hides built-in presets of processing modules in both presets and favourites "
 "menu."
 msgstr ""
-"Cache les préréglages internes des modules de développement,\n"
+"Cache les préréglages internes des modules de traitement,\n"
 "dans les menus des préréglages et les favoris."
 
 #: ../build/bin/preferences_gen.h:5427 ../build/bin/preferences_gen.h:5440
@@ -1351,7 +1351,7 @@ msgstr "Afficher le contrôle des guides dans l’interface des modules"
 
 #: ../build/bin/preferences_gen.h:5461
 msgid "expand a single processing module at a time"
-msgstr "Déplier un seul module de développement à la fois"
+msgstr "Déplier un seul module de traitement à la fois"
 
 #: ../build/bin/preferences_gen.h:5474
 msgid "this option toggles the behavior of shift clicking in darkroom mode"
@@ -1384,11 +1384,11 @@ msgstr ""
 #: ../build/bin/preferences_gen.h:5563
 msgid "scroll processing modules to the top when expanded"
 msgstr ""
-"Repositionner les modules de développement en haut lorsqu’ils sont dépliés"
+"Repositionner les modules de traitement en haut lorsqu’ils sont dépliés"
 
 #: ../build/bin/preferences_gen.h:5597
 msgid "show right-side buttons in processing module headers"
-msgstr "Afficher les boutons d’entête des modules de développement"
+msgstr "Afficher les boutons d’entête des modules de traitement"
 
 #: ../build/bin/preferences_gen.h:5611
 msgid ""
