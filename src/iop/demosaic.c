@@ -866,6 +866,7 @@ int process_cl(
 
   if(!dual) goto finish;
 
+  err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   low_image = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
   if(low_image == NULL) goto finish;
 

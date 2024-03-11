@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2017-2023 darktable developers.
+    Copyright (C) 2017-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -631,7 +631,7 @@ error:
 }
 
 
-void guided_filter_cl(int devid,
+int guided_filter_cl(int devid,
                       cl_mem guide,
                       cl_mem in,
                       cl_mem out,
@@ -664,6 +664,7 @@ void guided_filter_cl(int devid,
     if(err != CL_SUCCESS)
       dt_print(DT_DEBUG_OPENCL, "[guided filter] opencl cpu fallback error %s\n", cl_errstr(err));
   }
+  return err;
 }
 
 #endif

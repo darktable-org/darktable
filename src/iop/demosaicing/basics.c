@@ -404,7 +404,11 @@ static int green_equilibration_cl(
     const int bufsize = (bwidth / flocopt.sizex) * (bheight / flocopt.sizey);
 
     dev_m = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 2 * bufsize);
-    if(dev_m == NULL) goto error;
+    if(dev_m == NULL)
+    {
+      err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+      goto error;
+    }
 
     size_t fsizes[3] = { bwidth, bheight, 1 };
     size_t flocal[3] = { flocopt.sizex, flocopt.sizey, 1 };
@@ -578,7 +582,11 @@ static int process_default_cl(
     else if(demosaicing_method == DT_IOP_DEMOSAIC_PPG)
     {
       dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
-      if(dev_tmp == NULL) goto error;
+      if(dev_tmp == NULL)
+      {
+        err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+        goto error;
+      }
 
       {
         const int myborder = 3;

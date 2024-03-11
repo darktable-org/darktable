@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2017-2021 darktable developers.
+    Copyright (C) 2017-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -74,7 +74,7 @@ dt_guided_filter_cl_global_t *dt_guided_filter_init_cl_global();
 
 void dt_guided_filter_free_cl_global(dt_guided_filter_cl_global_t *g);
 
-void guided_filter_cl(int devid, cl_mem guide, cl_mem in, cl_mem out, int width, int height, int ch, int w,
+int guided_filter_cl(int devid, cl_mem guide, cl_mem in, cl_mem out, int width, int height, int ch, int w,
                       float sqrt_eps, float guide_weight, float min, float max);
 
 #endif

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -621,7 +621,11 @@ static int process_rcd_cl(
     if(data->green_eq != DT_IOP_GREEN_EQ_NO)
     {
       dev_green_eq = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float));
-      if(dev_green_eq == NULL) goto error;
+      if(dev_green_eq == NULL)
+      {
+        err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+        goto error;
+      }
       err = green_equilibration_cl(self, piece, dev_in, dev_green_eq, roi_in);
       if(err != CL_SUCCESS) goto error;
       dev_in = dev_green_eq;
@@ -631,7 +635,11 @@ static int process_rcd_cl(
     if(scaled)
     {
       dev_aux = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
-      if(dev_aux == NULL) goto error;
+      if(dev_aux == NULL)
+      {
+        err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+        goto error;
+      }
       width = roi_in->width;
       height = roi_in->height;
     }
@@ -639,7 +647,11 @@ static int process_rcd_cl(
       dev_aux = dev_out;
 
     dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
-    if(dev_tmp == NULL) goto error;
+    if(dev_tmp == NULL)
+    {
+      err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+      goto error;
+    }
 
     {
       const int myborder = 3;
@@ -684,6 +696,7 @@ static int process_rcd_cl(
     dt_opencl_release_mem_object(dev_tmp);
     dev_tmp = NULL;
 
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     cfa = dt_opencl_alloc_device_buffer(devid, sizeof(float) * roi_in->width * roi_in->height);
     if(cfa == NULL) goto error;
     VH_dir = dt_opencl_alloc_device_buffer(devid, sizeof(float) * roi_in->width * roi_in->height);

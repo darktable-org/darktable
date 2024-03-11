@@ -1697,7 +1697,7 @@ static int process_markesteijn_cl(
     int width = roi_in->width;
     int height = roi_in->height;
     const int passes = ((data->demosaicing_method & ~DT_DEMOSAIC_DUAL) == DT_IOP_DEMOSAIC_MARKESTEIJN_3) ? 3 : 1;
-    const int ndir = 4 << (passes > 1);
+    const int ndir = passes > 1 ? 8 : 4 ;
     const int pad_tile = (passes == 1) ? 12 : 17;
 
     static const short orth[12] = { 1, 0, 0, 1, -1, 0, 0, -1, 1, 0, 0, 1 },
@@ -1766,14 +1766,11 @@ static int process_markesteijn_cl(
       dev_tmp = dev_out;
     }
 
-    {
-      // copy from dev_in to first rgb image buffer.
-      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_markesteijn_initial_copy, width, height,
+    // copy from dev_in to first rgb image buffer.
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_markesteijn_initial_copy, width, height,
         CLARG(dev_in), CLARG(dev_rgb[0]), CLARG(width), CLARG(height), CLARG(roi_in->x), CLARG(roi_in->y),
         CLARG(dev_xtrans));
-      if(err != CL_SUCCESS) goto error;
-    }
-
+    if(err != CL_SUCCESS) goto error;
 
     // duplicate dev_rgb[0] to dev_rgb[1], dev_rgb[2], and dev_rgb[3]
     for(int c = 1; c <= 3; c++)
@@ -1946,6 +1943,7 @@ static int process_markesteijn_cl(
     // jump back to the first set of rgb buffers (this is a noop for Markesteijn-1)
     dev_rgb = dev_rgbv;
 
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     // prepare derivatives buffers
     for(int n = 0; n < ndir; n++)
     {
@@ -1984,6 +1982,7 @@ static int process_markesteijn_cl(
     }
 
     // reserve buffers for homogeneity maps and sum maps
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     for(int n = 0; n < ndir; n++)
     {
       dev_homo[n] = dt_opencl_alloc_device_buffer(devid, sizeof(unsigned char) * width * height);
@@ -2085,6 +2084,7 @@ static int process_markesteijn_cl(
     }
 
     // need to get another temp buffer for the output image (may use the space of dev_drv[] freed earlier)
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     dev_tmptmp = dt_opencl_alloc_device(devid, (size_t)width, height, sizeof(float) * 4);
     if(dev_tmptmp == NULL) goto error;
 
@@ -2115,12 +2115,10 @@ static int process_markesteijn_cl(
       if(err != CL_SUCCESS) goto error;
     }
 
-    {
-      // process the final image
-      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_markesteijn_final, width, height,
+    // process the final image
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_markesteijn_final, width, height,
         CLARG(dev_tmptmp), CLARG(dev_tmp), CLARG(width), CLARG(height), CLARG(pad_tile), CLARRAY(4, processed_maximum));
-      if(err != CL_SUCCESS) goto error;
-    }
+    if(err != CL_SUCCESS) goto error;
 
     // now it's time to get rid of most of the temporary buffers (except of dev_tmp and dev_xtrans)
     for(int n = 0; n < 8; n++)
