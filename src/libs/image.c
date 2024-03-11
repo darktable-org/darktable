@@ -27,6 +27,7 @@
 #include "common/undo.h"
 #include "common/metadata.h"
 #include "common/tags.h"
+#include "common/overlay.h"
 #include "control/control.h"
 #include "control/jobs.h"
 #include "control/jobs/control_jobs.h"
@@ -52,6 +53,7 @@ typedef struct dt_lib_image_t
   GtkWidget *delete_button, *create_hdr_button;
   GtkWidget *duplicate_button, *reset_button, *move_button, *copy_button;
   GtkWidget *group_button, *ungroup_button, *cache_button, *uncache_button;
+  GtkWidget *composite_button;
   GtkWidget *refresh_button, *set_monochrome_button, *set_color_button;
   GtkWidget *copy_metadata_button, *paste_metadata_button, *clear_metadata_button;
   GtkWidget *ratings_flag, *colors_flag, *metadata_flag, *geotags_flag, *tags_flag;
@@ -150,6 +152,152 @@ static void _duplicate_virgin(dt_action_t *action)
   dt_control_duplicate_images(TRUE);
 }
 
+void dt_image_create_composite(void)
+{
+  GList *imgs = dt_act_on_get_images(TRUE, TRUE, TRUE);
+  const gboolean act_on_one = g_list_is_singleton(imgs);
+
+  // get main image (first one) which will be the one with added composite modules.
+
+  GList *l = imgs;
+  const dt_imgid_t imgid = GPOINTER_TO_INT(l->data);
+
+  GList *iop_list = dt_ioppr_get_iop_order_list(imgid, FALSE);
+  GList *mi_list = dt_ioppr_extract_multi_instances_list(iop_list);
+
+  int iop_order = dt_ioppr_get_iop_order_last(iop_list, "overlay") + 1;
+
+  // if only one image then it is composited from itself
+  if(!act_on_one)
+    l = g_list_next(l);
+
+  const dt_iop_module_so_t *composite = dt_iop_get_module_so("overlay");
+  const dt_introspection_t *composite_i = composite->get_introspection();
+
+  sqlite3_stmt *stmt = NULL;
+
+  // history end
+  int num = 0;
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "SELECT IFNULL(MAX(num)+1, 0)"
+     " FROM main.history"
+     " WHERE imgid = ?1", -1, &stmt, NULL);
+  // clang-format on
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    num = sqlite3_column_int(stmt, 0);
+  }
+  sqlite3_finalize(stmt);
+
+  // multi-priority
+  int multi_priority = 0;
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "SELECT IFNULL(MAX(multi_priority)+1,0)"
+     " FROM main.history"
+     " WHERE operation = 'overlay' AND imgid = ?1", -1, &stmt, NULL);
+  // clang-format on
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    multi_priority = sqlite3_column_int(stmt, 1);
+  }
+  sqlite3_finalize(stmt);
+
+  dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
+
+  while(l)
+  {
+    const dt_imgid_t cimgid = GPOINTER_TO_INT(l->data);
+
+    // params
+    void *params = calloc(1, composite_i->size);
+    dt_imgid_t *p_imgid = (dt_imgid_t *)composite->get_p(params, "imgid");
+    float *p_scale = (float *)composite->get_p(params, "scale");
+    float *p_opacity = (float *)composite->get_p(params, "opacity");
+    int *p_alignment = (int *)composite->get_p(params, "alignment");
+    char *p_filename = (char *)composite->get_p(params, "filename");
+
+    char *filename = dt_image_get_filename(cimgid);
+
+    *p_imgid = cimgid;
+    *p_scale = 100.0f;
+    *p_opacity = 50.0f;
+    *p_alignment = 4;
+    g_strlcpy(p_filename, filename, 1024);
+
+    // clang-format off
+    DT_DEBUG_SQLITE3_PREPARE_V2
+      (dt_database_get(darktable.db),
+       "INSERT INTO main.history"
+       "  (imgid, num, module, operation, op_params, enabled, "
+       "   blendop_params, blendop_version, multi_priority, multi_name)"
+       " VALUES (?1, ?2, ?3, 'overlay', ?4, 1, NULL, 0, ?5, '') ",
+       -1, &stmt, NULL);
+    // clang-format on
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, num++);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, composite_i->params_version);
+    DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 4, params, composite_i->size, SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 5, multi_priority);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
+    free(params);
+
+    // iop order (add multiple instance)
+    dt_iop_order_entry_t *iop_entry = calloc(1, sizeof(dt_iop_order_entry_t));
+    iop_entry->o.iop_order = iop_order++;
+    iop_entry->instance = multi_priority;
+    g_strlcpy(iop_entry->name, "", sizeof(iop_entry->name));
+    g_strlcpy(iop_entry->operation, "overlay", sizeof(iop_entry->operation));
+    mi_list = g_list_append(mi_list, iop_entry);
+
+    multi_priority++;
+    dt_overlay_record(imgid, cimgid);
+
+    l = g_list_next(l);
+  }
+
+  if(mi_list)
+  {
+    // record all new multi-instance of overlay module
+    iop_list = dt_ioppr_merge_module_multi_instance_iop_order_list
+      (iop_list, "overlay", mi_list);
+  }
+
+  dt_ioppr_write_iop_order_list(iop_list, imgid);
+
+  g_list_free_full(iop_list, g_free);
+
+  // update history end
+  dt_image_set_history_end(imgid, num);
+
+  dt_undo_end_group(darktable.undo);
+
+  g_list_free(imgs);
+
+  dt_image_cache_set_change_timestamp(darktable.image_cache, imgid);
+  dt_history_hash_write_from_history(imgid, DT_HISTORY_HASH_CURRENT);
+  dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
+  dt_image_write_sidecar_file(imgid);
+
+  dt_collection_update_query(darktable.collection,
+                             DT_COLLECTION_CHANGE_RELOAD,
+                             DT_COLLECTION_PROP_UNDEF,
+                             g_list_prepend(NULL, GINT_TO_POINTER(imgid)));
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
+                                DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgid);
+  dt_control_queue_redraw_center();
+}
+
 static void button_clicked(GtkWidget *widget, gpointer user_data)
 {
   const int i = GPOINTER_TO_INT(user_data);
@@ -182,6 +330,8 @@ static void button_clicked(GtkWidget *widget, gpointer user_data)
     dt_control_reset_local_copy_images();
   else if(i == 14)
     dt_control_refresh_exif();
+  else if(i == 15)
+    dt_image_create_composite();
 }
 
 void gui_update(dt_lib_module_t *self)
@@ -212,6 +362,7 @@ void gui_update(dt_lib_module_t *self)
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->cache_button), act_on_any);
   gtk_widget_set_sensitive(GTK_WIDGET(d->uncache_button), act_on_any);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->composite_button), act_on_any);
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->group_button), selected_cnt > 1);
 
@@ -587,6 +738,12 @@ void gui_init(dt_lib_module_t *self)
                                            _("remove selected images from the group"),
                                            GDK_KEY_g, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
   gtk_grid_attach(grid, d->ungroup_button, 2, line++, 2, 1);
+
+  d->composite_button = dt_action_button_new
+    (self, N_("create composite"),
+     button_clicked, GINT_TO_POINTER(15),
+     _("create a composite from selected images"), 0, 0);
+  gtk_grid_attach(grid, d->composite_button, 0, line, 2, 1);
 
   // metadata operations
   grid = GTK_GRID(gtk_grid_new());
