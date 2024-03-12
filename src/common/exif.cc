@@ -1588,28 +1588,22 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     if((pos = Exiv2::whiteBalance(exifData)) != exifData.end() && pos->size())
     {
       _strlcpy_to_utf8(img->exif_whitebalance, sizeof(img->exif_whitebalance), pos, exifData);
-      printf("hugo: whiteBalance: %s\n", img->exif_whitebalance);
     }
-    
+
     if(FIND_EXIF_TAG("Exif.Photo.Flash"))
     {
       _strlcpy_to_utf8(img->exif_flash, sizeof(img->exif_flash), pos, exifData);
-      printf("hugo: flash: %s\n", img->exif_flash);
     }
-    
+
     if(FIND_EXIF_TAG("Exif.Photo.ExposureProgram"))
     {
       _strlcpy_to_utf8(img->exif_exposure_program, sizeof(img->exif_exposure_program), pos, exifData);
-      printf("hugo: exposureProgram: %s\n", img->exif_exposure_program);
     }
-    
+
     if(FIND_EXIF_TAG("Exif.Photo.MeteringMode"))
     {
       _strlcpy_to_utf8(img->exif_metering_mode, sizeof(img->exif_metering_mode), pos, exifData);
-      printf("hugo: meteringMode: %s\n", img->exif_metering_mode);
     }
-    
-
 
     char datetime[DT_DATETIME_LENGTH];
     _find_datetime_taken(exifData, pos, datetime);
