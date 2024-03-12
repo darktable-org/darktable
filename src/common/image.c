@@ -1280,14 +1280,16 @@ static dt_imgid_t _image_duplicate_with_version_ext(const dt_imgid_t imgid,
      "   output_width, output_height, crop, raw_parameters, raw_black, raw_maximum,"
      "   orientation, longitude, latitude, altitude, color_matrix,"
      "   colorspace, version, max_version,"
-     "   history_end, position, aspect_ratio, exposure_bias, import_timestamp)"
+     "   history_end, position, aspect_ratio, exposure_bias, import_timestamp,"
+     "   whitebalance_id, flash_id, exposure_program_id, metering_mode_id)"
      " SELECT NULL, group_id, film_id, width, height, filename,"
      "        maker_id, model_id, camera_id, lens_id,"
      "        exposure, aperture, iso, focal_length, focus_distance, datetime_taken,"
      "        flags, output_width, output_height, crop, raw_parameters,"
      "        raw_black, raw_maximum, orientation,"
      "        longitude, latitude, altitude, color_matrix, colorspace, NULL, NULL, 0, ?1,"
-     "        aspect_ratio, exposure_bias, import_timestamp"
+     "        aspect_ratio, exposure_bias, import_timestamp,"
+     "        whitebalance_id, flash_id, exposure_program_id, metering_mode_id"
      " FROM main.images WHERE id = ?2",
      -1, &stmt, NULL);
   // clang-format on
@@ -2457,14 +2459,16 @@ dt_imgid_t dt_image_copy_rename(const dt_imgid_t imgid,
          "   output_width, output_height, crop, raw_parameters,"
          "   raw_black, raw_maximum, orientation,"
          "   longitude, latitude, altitude, color_matrix, colorspace, version, max_version,"
-         "   position, aspect_ratio, exposure_bias)"
+         "   position, aspect_ratio, exposure_bias,"
+         "   whitebalance, flash, exposure_program, metering_mode)"
          " SELECT NULL, group_id, ?1 as film_id, width, height, ?2 as filename,"
          "        maker_id, model_id, lens_id,"
          "        exposure, aperture, iso, focal_length, focus_distance, datetime_taken,"
          "        flags, width, height, crop, raw_parameters, raw_black, raw_maximum,"
          "        orientation, longitude, latitude, altitude,"
          "        color_matrix, colorspace, -1, -1,"
-         "        ?3, aspect_ratio, exposure_bias"
+         "        ?3, aspect_ratio, exposure_bias,"
+         "        whitebalance, flash, exposure_program, metering_mode"
          " FROM main.images"
          " WHERE id = ?4",
         -1, &stmt, NULL);
@@ -3189,8 +3193,8 @@ void dt_image_check_camera_missing_sample(const struct dt_image_t *img)
   }
 }
 
-static int32_t _image_get_set_camera_id(const char *table,
-                                        const char *name)
+static int32_t _image_get_set_name_id(const char *table,
+                                      const char *name)
 {
   sqlite3_stmt *stmt;
 
@@ -3231,17 +3235,37 @@ static int32_t _image_get_set_camera_id(const char *table,
 
 int32_t dt_image_get_camera_maker_id(const char *name)
 {
-  return _image_get_set_camera_id("makers", name);
+  return _image_get_set_name_id("makers", name);
 }
 
 int32_t dt_image_get_camera_model_id(const char *name)
 {
-  return _image_get_set_camera_id("models", name);
+  return _image_get_set_name_id("models", name);
 }
 
 int32_t dt_image_get_camera_lens_id(const char *name)
 {
-  return _image_get_set_camera_id("lens", name);
+  return _image_get_set_name_id("lens", name);
+}
+
+int32_t dt_image_get_whitebalance_id(const char *name)
+{
+  return _image_get_set_name_id("whitebalance", name);
+}
+
+int32_t dt_image_get_flash_id(const char *name)
+{
+  return _image_get_set_name_id("flash", name);
+}
+
+int32_t dt_image_get_exposure_program_id(const char *name)
+{
+  return _image_get_set_name_id("exposure_program", name);
+}
+
+int32_t dt_image_get_metering_mode_id(const char *name)
+{
+  return _image_get_set_name_id("metering_mode", name);
 }
 
 int32_t dt_image_get_camera_id(const char *maker, const char *model)

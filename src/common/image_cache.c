@@ -302,13 +302,19 @@ void dt_image_cache_write_release_info(dt_image_cache_t *cache,
      "     colorspace = ?23, raw_black = ?24, raw_maximum = ?25,"
      "     aspect_ratio = ROUND(?26,1), exposure_bias = ?27,"
      "     import_timestamp = ?28, change_timestamp = ?29, export_timestamp = ?30,"
-     "     print_timestamp = ?31, output_width = ?32, output_height = ?33"
-     " WHERE id = ?34",
+     "     print_timestamp = ?31, output_width = ?32, output_height = ?33,"
+     "     whitebalance_id = ?36, flash_id = ?37,"
+     "     exposure_program_id = ?38, metering_mode_id = ?39"
+     " WHERE id = ?40",
      -1, &stmt, NULL);
 
   const int32_t maker_id = dt_image_get_camera_maker_id(img->exif_maker);
   const int32_t model_id = dt_image_get_camera_model_id(img->exif_model);
   const int32_t lens_id = dt_image_get_camera_lens_id(img->exif_lens);
+  const int32_t whitebalance_id = dt_image_get_whitebalance_id(img->exif_whitebalance);
+  const int32_t flash_id = dt_image_get_flash_id(img->exif_flash);
+  const int32_t exposure_program_id = dt_image_get_exposure_program_id(img->exif_exposure_program);
+  const int32_t metering_mode_id = dt_image_get_metering_mode_id(img->exif_metering_mode);
 
   // also make sure we update the camera_id and possibly the associated data
   // in cameras table.
@@ -359,7 +365,11 @@ void dt_image_cache_write_release_info(dt_image_cache_t *cache,
     DT_DEBUG_SQLITE3_BIND_INT64(stmt, 31, img->print_timestamp);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 32, img->final_width);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 33, img->final_height);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 34, img->id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 36, whitebalance_id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 37, flash_id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 38, exposure_program_id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 39, metering_mode_id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 40, img->id);
 
   const int rc = sqlite3_step(stmt);
   if(rc != SQLITE_DONE)

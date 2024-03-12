@@ -48,7 +48,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 50
+#define CURRENT_DATABASE_VERSION_LIBRARY 51
 #define CURRENT_DATABASE_VERSION_DATA    10
 
 // #define USE_NESTED_TRANSACTIONS
@@ -2675,6 +2675,110 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
     new_version = 50;
   }
+  else if(version == 50)
+  {
+    sqlite3_exec(db->handle, "PRAGMA foreign_keys = OFF", NULL, NULL, NULL);
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    TRY_EXEC("CREATE TABLE whitebalance"
+             " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+             "  name VARCHAR)",
+              "[init] can't create table whitebalance\n"); 
+    TRY_EXEC("CREATE UNIQUE INDEX whitebalance_name ON whitebalance (name)",
+             "[init] can't create index `whitebalance_name' on table `whitebalance'\n"); 
+
+    TRY_EXEC("CREATE TABLE flash"
+             " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+             "  name VARCHAR)",
+              "[init] can't create table flash\n"); 
+    TRY_EXEC("CREATE UNIQUE INDEX flash_name ON flash (name)",
+             "[init] can't create index `flash_name' on table `flash'\n"); 
+
+    TRY_EXEC("CREATE TABLE exposure_program"
+             " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+             "  name VARCHAR)",
+              "[init] can't create table exposure_program\n"); 
+    TRY_EXEC("CREATE UNIQUE INDEX exposure_program_name ON exposure_program (name)",
+             "[init] can't create index `exposure_program_name' on table `exposure_program'\n"); 
+
+    TRY_EXEC("CREATE TABLE metering_mode"
+             " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+             "  name VARCHAR)",
+              "[init] can't create table metering_mode\n"); 
+    TRY_EXEC("CREATE UNIQUE INDEX metering_mode_name ON metering_mode (name)",
+             "[init] can't create index `metering_mode_name' on table `metering_mode'\n"); 
+
+    TRY_EXEC("CREATE TABLE images_new"
+             " (id INTEGER PRIMARY KEY AUTOINCREMENT, group_id INTEGER, film_id INTEGER,"
+             "  width INTEGER, height INTEGER, filename VARCHAR,"
+             "  maker_id INTEGER, model_id INTEGER, lens_id INTEGER, camera_id INTEGER,"
+             "  exposure REAL, aperture REAL, iso REAL, focal_length REAL,"
+             "  focus_distance REAL, datetime_taken INTEGER, flags INTEGER,"
+             "  output_width INTEGER, output_height INTEGER, crop REAL,"
+             "  raw_parameters INTEGER, raw_black INTEGER, raw_maximum INTEGER,"
+             "  orientation INTEGER, longitude REAL,"
+             "  latitude REAL, altitude REAL, color_matrix BLOB, colorspace INTEGER,"
+             "  version INTEGER, max_version INTEGER, write_timestamp INTEGER,"
+             "  history_end INTEGER, position INTEGER, aspect_ratio REAL, exposure_bias REAL,"
+             "  import_timestamp INTEGER DEFAULT -1, change_timestamp INTEGER DEFAULT -1, "
+             "  export_timestamp INTEGER DEFAULT -1, print_timestamp INTEGER DEFAULT -1, "
+             "  thumb_timestamp INTEGER DEFAULT -1, thumb_maxmip INTEGER DEFAULT 0, "
+             "  whitebalance_id INTEGER, flash_id INTEGER, "
+             "  exposure_program_id INTEGER, metering_mode_id INTEGER, "
+             "FOREIGN KEY(maker_id) REFERENCES makers(id) ON DELETE CASCADE ON UPDATE CASCADE, "
+             "FOREIGN KEY(model_id) REFERENCES models(id) ON DELETE CASCADE ON UPDATE CASCADE, "
+             "FOREIGN KEY(lens_id) REFERENCES lens(id) ON DELETE CASCADE ON UPDATE CASCADE, "
+             "FOREIGN KEY(camera_id) REFERENCES cameras(id) ON DELETE CASCADE ON UPDATE CASCADE, "
+             "FOREIGN KEY(film_id) REFERENCES film_rolls(id) ON DELETE CASCADE ON UPDATE CASCADE, "
+             "FOREIGN KEY(group_id) REFERENCES images(id) ON DELETE RESTRICT ON UPDATE CASCADE, "
+             "FOREIGN KEY(whitebalance_id) REFERENCES whitebalance(id) ON DELETE CASCADE ON UPDATE CASCADE, "
+             "FOREIGN KEY(flash_id) REFERENCES flash(id) ON DELETE CASCADE ON UPDATE CASCADE, "
+             "FOREIGN KEY(exposure_program_id) REFERENCES exposure_program(id) ON DELETE CASCADE ON UPDATE CASCADE, "
+             "FOREIGN KEY(metering_mode_id) REFERENCES metering_mode(id) ON DELETE CASCADE ON UPDATE CASCADE)",
+             "[init] can't create new table images");
+    
+    TRY_EXEC("INSERT INTO images_new"
+             " SELECT id, group_id, film_id, width, height, filename,"
+             "        maker_id, model_id, lens_id, camera_id,"
+             "        exposure, aperture, iso, focal_length,"
+             "        focus_distance, datetime_taken, flags,"
+             "        output_width, output_height, crop,"
+             "        raw_parameters, raw_black, raw_maximum,"
+             "        orientation, longitude,"
+             "        latitude, altitude, color_matrix, colorspace, version,"
+             "        max_version, write_timestamp, history_end, position,"
+             "        aspect_ratio, exposure_bias,"
+             "        import_timestamp, change_timestamp, export_timestamp, print_timestamp,"
+             "        thumb_timestamp, thumb_maxmip,"
+             "        NULL, NULL, NULL, NULL"
+             "  FROM images",
+             "[init] can't populate new images table\n");
+
+    TRY_EXEC("DROP TABLE images",
+             "[init] can't drop table images\n");
+
+    TRY_EXEC("ALTER TABLE images_new RENAME TO images",
+             "[init] can't rename images\n");
+
+    // recreate the indexesx
+    TRY_EXEC("CREATE INDEX image_position_index ON images (position)",
+             "[init] can't add image_position_index\n");
+    TRY_EXEC("CREATE INDEX images_filename_index ON images (filename, version)",
+             "[init] can't recreate images_filename_index\n");
+    TRY_EXEC("CREATE INDEX images_film_id_index ON images (film_id, filename)",
+             "[init] can't recreate images_film_id_index\n");
+    TRY_EXEC("CREATE INDEX images_group_id_index ON images (group_id, id)",
+             "[init] can't recreate images_group_id_index\n");
+    TRY_EXEC("CREATE INDEX images_latlong_index ON images (latitude DESC, longitude DESC)",
+             "[init] can't add images_latlong_index\n");
+    TRY_EXEC("CREATE INDEX images_datetime_taken ON images (datetime_taken)",
+             "[init] can't create images_datetime_taken\n");
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    sqlite3_exec(db->handle, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
+
+    new_version = 51;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -3024,6 +3128,46 @@ static void _create_library_schema(dt_database_t *db)
     (db->handle,
      "CREATE UNIQUE INDEX cameras_name ON cameras (maker, model, alias)",
      NULL, NULL, NULL);
+  ////////////////////////////// white balance
+  sqlite3_exec(db->handle,
+               "CREATE TABLE whitebalance"
+               " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+               "  name VARCHAR)",
+               NULL, NULL, NULL);
+  sqlite3_exec
+    (db->handle,
+     "CREATE UNIQUE INDEX whitebalance_name ON whitebalance (name)",
+     NULL, NULL, NULL);
+  ////////////////////////////// flash
+  sqlite3_exec(db->handle,
+               "CREATE TABLE flash"
+               " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+               "  name VARCHAR)",
+               NULL, NULL, NULL);
+  sqlite3_exec
+    (db->handle,
+     "CREATE UNIQUE INDEX flash_name ON flash (name)",
+     NULL, NULL, NULL);
+  ////////////////////////////// exposure program
+  sqlite3_exec(db->handle,
+               "CREATE TABLE exposure_program"
+               " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+               "  name VARCHAR)",
+               NULL, NULL, NULL);
+  sqlite3_exec
+    (db->handle,
+     "CREATE UNIQUE INDEX exposure_program_name ON exposure_program (name)",
+     NULL, NULL, NULL);
+  ////////////////////////////// metering mode
+  sqlite3_exec(db->handle,
+               "CREATE TABLE metering_mode"
+               " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+               "  name VARCHAR)",
+               NULL, NULL, NULL);
+  sqlite3_exec
+    (db->handle,
+     "CREATE UNIQUE INDEX metering_mode_name ON metering_mode (name)",
+     NULL, NULL, NULL);
   ////////////////////////////// images
   sqlite3_exec(
       db->handle,
@@ -3042,12 +3186,18 @@ static void _create_library_schema(dt_database_t *db)
       "  import_timestamp INTEGER DEFAULT -1, change_timestamp INTEGER DEFAULT -1, "
       "  export_timestamp INTEGER DEFAULT -1, print_timestamp INTEGER DEFAULT -1, "
       "  thumb_timestamp INTEGER DEFAULT -1, thumb_maxmip INTEGER DEFAULT 0, "
+      "  whitebalance_id INTEGER, flash_id INTEGER, "
+      "  exposure_program_id INTEGER, metering_mode_id INTEGER, "
       "FOREIGN KEY(maker_id) REFERENCES makers(id) ON DELETE CASCADE ON UPDATE CASCADE, "
       "FOREIGN KEY(model_id) REFERENCES models(id) ON DELETE CASCADE ON UPDATE CASCADE, "
       "FOREIGN KEY(lens_id) REFERENCES lens(id) ON DELETE CASCADE ON UPDATE CASCADE, "
       "FOREIGN KEY(camera_id) REFERENCES cameras(id) ON DELETE CASCADE ON UPDATE CASCADE, "
       "FOREIGN KEY(film_id) REFERENCES film_rolls(id) ON DELETE CASCADE ON UPDATE CASCADE, "
-      "FOREIGN KEY(group_id) REFERENCES images(id) ON DELETE RESTRICT ON UPDATE CASCADE)",
+      "FOREIGN KEY(group_id) REFERENCES images(id) ON DELETE RESTRICT ON UPDATE CASCADE), "
+      "FOREIGN KEY(whitebalance_id) REFERENCES whitebalance(id) ON DELETE CASCADE ON UPDATE CASCADE, "
+      "FOREIGN KEY(flash_id) REFERENCES flash(id) ON DELETE CASCADE ON UPDATE CASCADE, "
+      "FOREIGN KEY(exposure_program_id) REFERENCES exposure_program(id) ON DELETE CASCADE ON UPDATE CASCADE, "
+      "FOREIGN KEY(metering_mode_id) REFERENCES metering_mode(id) ON DELETE CASCADE ON UPDATE CASCADE",
       NULL, NULL, NULL);
   sqlite3_exec(db->handle,
                "CREATE INDEX main.images_group_id_index ON images (group_id, id)",
