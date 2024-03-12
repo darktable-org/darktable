@@ -1662,10 +1662,6 @@ static int process_markesteijn_cl(
   const int devid = piece->pipe->devid;
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
 
-  const float processed_maximum[4]
-      = { piece->pipe->dsc.processed_maximum[0], piece->pipe->dsc.processed_maximum[1],
-          piece->pipe->dsc.processed_maximum[2], 1.0f };
-
   const int qual_flags = demosaic_qual_flags(piece, &self->dev->image_storage, roi_out);
 
   cl_mem dev_tmp = NULL;
@@ -2117,7 +2113,7 @@ static int process_markesteijn_cl(
 
     // process the final image
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_markesteijn_final, width, height,
-        CLARG(dev_tmptmp), CLARG(dev_tmp), CLARG(width), CLARG(height), CLARG(pad_tile), CLARRAY(4, processed_maximum));
+        CLARG(dev_tmptmp), CLARG(dev_tmp), CLARG(width), CLARG(height), CLARG(pad_tile));
     if(err != CL_SUCCESS) goto error;
 
     // now it's time to get rid of most of the temporary buffers (except of dev_tmp and dev_xtrans)

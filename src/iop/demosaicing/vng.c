@@ -365,10 +365,6 @@ static int process_vng_cl(
   const int pcol = (filters4 == 9u) ? 6 : 2;
   const int devid = piece->pipe->devid;
 
-  const float processed_maximum[4]
-      = { piece->pipe->dsc.processed_maximum[0], piece->pipe->dsc.processed_maximum[1],
-          piece->pipe->dsc.processed_maximum[2], 1.0f };
-
   const int qual_flags = demosaic_qual_flags(piece, img, roi_out);
 
   int *ips = NULL;
@@ -609,7 +605,7 @@ static int process_vng_cl(
       size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
       size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
       dt_opencl_set_kernel_args(devid, gd->kernel_vng_interpolate, 0, CLARG(dev_tmp), CLARG(dev_aux),
-        CLARG(width), CLARG(height), CLARG(roi_in->x), CLARG(roi_in->y), CLARG(filters4), CLARRAY(4, processed_maximum),
+        CLARG(width), CLARG(height), CLARG(roi_in->x), CLARG(roi_in->y), CLARG(filters4),
         CLARG(dev_xtrans), CLARG(dev_ips), CLARG(dev_code), CLLOCAL(sizeof(float) * 4 * (locopt.sizex + 4) * (locopt.sizey + 4)));
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_vng_interpolate, sizes, local);
       if(err != CL_SUCCESS) goto finish;
