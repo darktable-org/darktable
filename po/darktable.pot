@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-03-11 08:17+0100\n"
+"POT-Creation-Date: 2024-03-12 18:41+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -4478,7 +4478,7 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_overlay.c:302
 #: ../build/lib/darktable/plugins/introspection_watermark.c:323
-#: ../src/imageio/format/tiff.c:125 ../src/imageio/format/xcf.c:159
+#: ../src/imageio/format/tiff.c:125 ../src/imageio/format/xcf.c:164
 #: ../src/iop/borders.c:957
 msgid "image"
 msgstr ""
@@ -11243,7 +11243,7 @@ msgstr ""
 
 #: ../src/imageio/format/avif.c:89 ../src/imageio/format/jxl.c:567
 #: ../src/imageio/format/pdf.c:80 ../src/imageio/format/png.c:641
-#: ../src/imageio/format/tiff.c:904 ../src/imageio/format/xcf.c:357
+#: ../src/imageio/format/tiff.c:904 ../src/imageio/format/xcf.c:362
 msgid "8 bit"
 msgstr ""
 
@@ -11271,7 +11271,7 @@ msgstr ""
 #: ../src/imageio/format/avif.c:800 ../src/imageio/format/exr.cc:601
 #: ../src/imageio/format/jxl.c:566 ../src/imageio/format/pdf.c:661
 #: ../src/imageio/format/png.c:639 ../src/imageio/format/tiff.c:900
-#: ../src/imageio/format/xcf.c:354
+#: ../src/imageio/format/xcf.c:359
 msgid "bit depth"
 msgstr ""
 
@@ -11363,7 +11363,7 @@ msgid "16 bit (float)"
 msgstr ""
 
 #: ../src/imageio/format/exr.cc:603 ../src/imageio/format/jxl.c:567
-#: ../src/imageio/format/tiff.c:904 ../src/imageio/format/xcf.c:357
+#: ../src/imageio/format/tiff.c:904 ../src/imageio/format/xcf.c:362
 msgid "32 bit (float)"
 msgstr ""
 
@@ -11464,7 +11464,7 @@ msgstr ""
 
 #: ../src/imageio/format/jxl.c:567 ../src/imageio/format/pdf.c:81
 #: ../src/imageio/format/png.c:641 ../src/imageio/format/tiff.c:904
-#: ../src/imageio/format/xcf.c:357
+#: ../src/imageio/format/xcf.c:362
 msgid "16 bit"
 msgstr ""
 
@@ -11720,7 +11720,7 @@ msgstr ""
 msgid "graphic"
 msgstr ""
 
-#: ../src/imageio/format/xcf.c:314
+#: ../src/imageio/format/xcf.c:319
 msgid "XCF"
 msgstr ""
 
@@ -15020,7 +15020,7 @@ msgstr ""
 msgid "the hue tone which should be given precedence over other hue tones"
 msgstr ""
 
-#: ../src/iop/colorreconstruction.c:1270 ../src/iop/demosaic.c:1327
+#: ../src/iop/colorreconstruction.c:1270 ../src/iop/demosaic.c:1329
 #: ../src/iop/highlights.c:1252
 msgid "not applicable"
 msgstr ""
@@ -15074,7 +15074,7 @@ msgid "Kodachrome 64 like"
 msgstr ""
 
 #: ../src/iop/colorequal.c:1614
-msgid "Kodachrome Porta 400 like"
+msgid "Kodak Portra 400 like"
 msgstr ""
 
 #: ../src/iop/colorequal.c:1658
@@ -15296,12 +15296,12 @@ msgstr ""
 msgid "reconstruct full RGB pixels from a sensor color filter array reading"
 msgstr ""
 
-#: ../src/iop/demosaic.c:1136
+#: ../src/iop/demosaic.c:1137
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr ""
 
-#: ../src/iop/demosaic.c:1288
+#: ../src/iop/demosaic.c:1289
 msgid ""
 "Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
 "slow.\n"
@@ -15309,47 +15309,50 @@ msgid ""
 "dual demosaicers double processing time."
 msgstr ""
 
-#: ../src/iop/demosaic.c:1292
+#: ../src/iop/demosaic.c:1293
 msgid ""
 "X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
 "chroma are slow.\n"
 "dual demosaicers double processing time."
 msgstr ""
 
-#: ../src/iop/demosaic.c:1298
+#: ../src/iop/demosaic.c:1299
 msgid "Bayer4 sensor demosaicing methods."
 msgstr ""
 
-#: ../src/iop/demosaic.c:1302
+#: ../src/iop/demosaic.c:1303
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off\n"
 "set to 1.0 to ignore edges"
 msgstr ""
 
-#: ../src/iop/demosaic.c:1307
+#: ../src/iop/demosaic.c:1308
 msgid ""
 "contrast threshold for dual demosaic.\n"
 "set to 0.0 for high frequency content\n"
-"set to 1.0 for flat content\n"
-"toggle to visualize the mask"
+"set to 1.0 for flat content"
 msgstr ""
 
-#: ../src/iop/demosaic.c:1315
+#: ../src/iop/demosaic.c:1314
+msgid "toggle to visualize the mask"
+msgstr ""
+
+#: ../src/iop/demosaic.c:1317
 msgid ""
 "LMMSE refinement steps. the median steps average the output,\n"
 "refine adds some recalculation of red & blue channels"
 msgstr ""
 
-#: ../src/iop/demosaic.c:1318
+#: ../src/iop/demosaic.c:1320
 msgid "how many color smoothing median steps after demosaicing"
 msgstr ""
 
-#: ../src/iop/demosaic.c:1321
+#: ../src/iop/demosaic.c:1323
 msgid "green channels matching method"
 msgstr ""
 
-#: ../src/iop/demosaic.c:1328
+#: ../src/iop/demosaic.c:1330
 msgid "demosaicing is only used for color raw images"
 msgstr ""
 
@@ -18767,7 +18770,7 @@ msgstr ""
 msgid "`%s' color matrix not found for image"
 msgstr ""
 
-#: ../src/iop/temperature.c:1494
+#: ../src/iop/temperature.c:1519
 #, c-format
 msgid "failed to read camera white balance information from `%s'!"
 msgstr ""
