@@ -1571,7 +1571,7 @@ void init_presets(dt_iop_module_so_t *self)
                              self->version(), &p2, sizeof(p2),
                              1, DEVELOP_BLEND_CS_RGB_SCENE);
 
-  // Kodachrome Porta 400
+  // Kodak Portra 400
   dt_iop_colorequal_params_t p3 =
     { .threshold       = 0.099f,
       .smoothing_hue   = 1.0f,
@@ -1611,7 +1611,7 @@ void init_presets(dt_iop_module_so_t *self)
       .hue_shift       = -23.0f
     };
 
-  dt_gui_presets_add_generic(_("Kodachrome Porta 400 like"), self->op,
+  dt_gui_presets_add_generic(_("Kodak Portra 400 like"), self->op,
                              self->version(), &p3, sizeof(p3),
                              1, DEVELOP_BLEND_CS_RGB_SCENE);
 
