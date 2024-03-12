@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-03-11 08:17+0100\n"
-"PO-Revision-Date: 2024-03-11 12:28+0200\n"
+"POT-Creation-Date: 2024-03-12 18:41+0100\n"
+"PO-Revision-Date: 2024-03-12 20:21+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -4759,7 +4759,7 @@ msgstr "У знака міра масштабу"
 
 #: ../build/lib/darktable/plugins/introspection_overlay.c:302
 #: ../build/lib/darktable/plugins/introspection_watermark.c:323
-#: ../src/imageio/format/tiff.c:125 ../src/imageio/format/xcf.c:159
+#: ../src/imageio/format/tiff.c:125 ../src/imageio/format/xcf.c:164
 #: ../src/iop/borders.c:957
 msgid "image"
 msgstr "Зображення"
@@ -12027,7 +12027,7 @@ msgstr "Неможливо створити стиль із незміненог
 
 #: ../src/imageio/format/avif.c:89 ../src/imageio/format/jxl.c:567
 #: ../src/imageio/format/pdf.c:80 ../src/imageio/format/png.c:641
-#: ../src/imageio/format/tiff.c:904 ../src/imageio/format/xcf.c:357
+#: ../src/imageio/format/tiff.c:904 ../src/imageio/format/xcf.c:362
 msgid "8 bit"
 msgstr "8 біт"
 
@@ -12055,7 +12055,7 @@ msgstr "Недійсна бітова глибина AVIF!"
 #: ../src/imageio/format/avif.c:800 ../src/imageio/format/exr.cc:601
 #: ../src/imageio/format/jxl.c:566 ../src/imageio/format/pdf.c:661
 #: ../src/imageio/format/png.c:639 ../src/imageio/format/tiff.c:900
-#: ../src/imageio/format/xcf.c:354
+#: ../src/imageio/format/xcf.c:359
 msgid "bit depth"
 msgstr "Бітова глибина"
 
@@ -12158,7 +12158,7 @@ msgid "16 bit (float)"
 msgstr "16 біт (рухома кома)"
 
 #: ../src/imageio/format/exr.cc:603 ../src/imageio/format/jxl.c:567
-#: ../src/imageio/format/tiff.c:904 ../src/imageio/format/xcf.c:357
+#: ../src/imageio/format/tiff.c:904 ../src/imageio/format/xcf.c:362
 msgid "32 bit (float)"
 msgstr "32 біти (рухома кома)"
 
@@ -12266,7 +12266,7 @@ msgstr "4:2:0"
 
 #: ../src/imageio/format/jxl.c:567 ../src/imageio/format/pdf.c:81
 #: ../src/imageio/format/png.c:641 ../src/imageio/format/tiff.c:904
-#: ../src/imageio/format/xcf.c:357
+#: ../src/imageio/format/xcf.c:362
 msgid "16 bit"
 msgstr "16 біт"
 
@@ -12556,7 +12556,7 @@ msgstr "photo"
 msgid "graphic"
 msgstr "graphic"
 
-#: ../src/imageio/format/xcf.c:314
+#: ../src/imageio/format/xcf.c:319
 msgid "XCF"
 msgstr "XCF"
 
@@ -16177,7 +16177,7 @@ msgstr "Коли і як давати пріоритет певним кольо
 msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "Тон відтінку, якому слід надавати перевагу над іншими відтінками"
 
-#: ../src/iop/colorreconstruction.c:1270 ../src/iop/demosaic.c:1327
+#: ../src/iop/colorreconstruction.c:1270 ../src/iop/demosaic.c:1329
 #: ../src/iop/highlights.c:1252
 msgid "not applicable"
 msgstr "Не застосовується"
@@ -16239,7 +16239,7 @@ msgid "Kodachrome 64 like"
 msgstr "Kodachrome 64"
 
 #: ../src/iop/colorequal.c:1614
-msgid "Kodachrome Porta 400 like"
+msgid "Kodak Portra 400 like"
 msgstr "Kodak Portra 400"
 
 #: ../src/iop/colorequal.c:1658
@@ -16499,12 +16499,12 @@ msgid "reconstruct full RGB pixels from a sensor color filter array reading"
 msgstr ""
 "Реконструювати повні RGB-пікселі з даних масиву кольорових фільтрів сенсора"
 
-#: ../src/iop/demosaic.c:1136
+#: ../src/iop/demosaic.c:1137
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "Матрицю кольорів `%s' не знайдено для Bayer4 зображення!"
 
-#: ../src/iop/demosaic.c:1288
+#: ../src/iop/demosaic.c:1289
 msgid ""
 "Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
 "slow.\n"
@@ -16516,7 +16516,7 @@ msgstr ""
 "LMMSE найкраще підходить для зображень з високим значенням ISO.\n"
 "Варіанти з двома методами подвоюють час обробки."
 
-#: ../src/iop/demosaic.c:1292
+#: ../src/iop/demosaic.c:1293
 msgid ""
 "X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
 "chroma are slow.\n"
@@ -16526,11 +16526,11 @@ msgstr ""
 "domain chroma повільні.\n"
 "Варіанти з двома методами подвоюють час обробки."
 
-#: ../src/iop/demosaic.c:1298
+#: ../src/iop/demosaic.c:1299
 msgid "Bayer4 sensor demosaicing methods."
 msgstr "Методи демозаїкізації Bayer4."
 
-#: ../src/iop/demosaic.c:1302
+#: ../src/iop/demosaic.c:1303
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off\n"
@@ -16540,19 +16540,21 @@ msgstr ""
 "0.0 - вимикає медіанну фільтрацію\n"
 "1.0 - ігнорувати контури"
 
-#: ../src/iop/demosaic.c:1307
+#: ../src/iop/demosaic.c:1308
 msgid ""
 "contrast threshold for dual demosaic.\n"
 "set to 0.0 for high frequency content\n"
-"set to 1.0 for flat content\n"
-"toggle to visualize the mask"
+"set to 1.0 for flat content"
 msgstr ""
 "Поріг контрасту для подвійної демозаїкізації.\n"
 "0.0 - для високочастотного вмісту\n"
-"1.0 - для плоского вмісту\n"
-"Перемикач візуалізує маску"
+"1.0 - для плоского вмісту"
 
-#: ../src/iop/demosaic.c:1315
+#: ../src/iop/demosaic.c:1314
+msgid "toggle to visualize the mask"
+msgstr "Перемкнути візуалізацію маски"
+
+#: ../src/iop/demosaic.c:1317
 msgid ""
 "LMMSE refinement steps. the median steps average the output,\n"
 "refine adds some recalculation of red & blue channels"
@@ -16560,16 +16562,16 @@ msgstr ""
 "Кроки уточнення LMMSE. Медіанні кроки усереднюють вихід,\n"
 "уточнення додає певний перерахунок червоних та синіх каналів"
 
-#: ../src/iop/demosaic.c:1318
+#: ../src/iop/demosaic.c:1320
 msgid "how many color smoothing median steps after demosaicing"
 msgstr ""
 "Кількість медіанних проходів згладжування кольорів після демозаїкізації"
 
-#: ../src/iop/demosaic.c:1321
+#: ../src/iop/demosaic.c:1323
 msgid "green channels matching method"
 msgstr "Метод вирівнювання зелених каналів"
 
-#: ../src/iop/demosaic.c:1328
+#: ../src/iop/demosaic.c:1330
 msgid "demosaicing is only used for color raw images"
 msgstr "Демозаїкізація використовується лише для кольорових raw зображень"
 
@@ -20545,7 +20547,7 @@ msgstr ""
 msgid "`%s' color matrix not found for image"
 msgstr "Матрицю кольорів `%s' не знайдено для зображення"
 
-#: ../src/iop/temperature.c:1494
+#: ../src/iop/temperature.c:1519
 #, c-format
 msgid "failed to read camera white balance information from `%s'!"
 msgstr "Не вдалося прочитати інформацію про баланс білого з камери `%s'!"
