@@ -1485,19 +1485,6 @@ static void _find_coeffs(dt_iop_module_t *module, double coeffs[4])
     return;
   }
 
-  if(!_ignore_missing_wb(&(module->dev->image_storage)))
-  {
-    //  only display this if we have a sample, otherwise it is better to keep
-    //  on screen the more important message about missing sample and the way
-    //  to contribute.
-    if(!img->camera_missing_sample)
-      dt_control_log(_("failed to read camera white balance information from `%s'!"),
-                     img->filename);
-    dt_print(DT_DEBUG_ALWAYS,
-             "[temperature] failed to read camera white balance information from `%s'!\n",
-             img->filename);
-  }
-
   double bwb[4];
   if(!_calculate_bogus_daylight_wb(module, bwb))
   {
@@ -1523,6 +1510,19 @@ static void _find_coeffs(dt_iop_module_t *module, double coeffs[4])
   }
 
   // did not find preset either?
+  if(!_ignore_missing_wb(&(module->dev->image_storage)))
+  {
+    //  only display this if we have a sample, otherwise it is better to keep
+    //  on screen the more important message about missing sample and the way
+    //  to contribute.
+    if(!img->camera_missing_sample)
+      dt_control_log(_("failed to read camera white balance information from `%s'!"),
+                     img->filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[temperature] failed to read camera white balance information from `%s'!\n",
+             img->filename);
+  }
+
   // final security net: hardcoded default that fits most cams.
   coeffs[0] = 2.0;
   coeffs[1] = 1.0;
