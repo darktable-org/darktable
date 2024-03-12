@@ -151,7 +151,7 @@ vng_lin_interpolate(read_only image2d_t in, write_only image2d_t out, const int 
 
 kernel void
 vng_interpolate(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                const int rin_x, const int rin_y, const unsigned int filters, const float4 processed_maximum,
+                const int rin_x, const int rin_y, const unsigned int filters,
                 global const unsigned char (*const xtrans)[6], global const int (*const ips),
                 global const int (*const code)[16], local float *buffer)
 {
@@ -212,12 +212,12 @@ vng_interpolate(read_only image2d_t in, write_only image2d_t out, const int widt
     const int x0 = (short)(offset0 & 0xffffu);
     const int y0 = (short)(offset0 >> 16);
     const int idx0 = 4 * mad24(y0, stride, x0);
-  
+
     const int offset1 = ip[1];
     const int x1 = (short)(offset1 & 0xffffu);
     const int y1 = (short)(offset1 >> 16);
     const int idx1 = 4 * mad24(y1, stride, x1);
-  
+
     const int weight = (short)(ip[2] & 0xffffu);
     const int color = (short)(ip[2] >> 16);
 
@@ -343,7 +343,7 @@ clip_and_zoom_demosaic_third_size_xtrans(read_only image2d_t in, write_only imag
   const int py = clamp((int)round((y - 0.5f) * px_footprint), 0, rin_ht - 3);
 
   const int xmax = min(rin_wd - 3, px + 3 * samples);
-  const int ymax = min(rin_ht - 3, py + 3 * samples);  
+  const int ymax = min(rin_ht - 3, py + 3 * samples);
 
   for(int yy = py; yy <= ymax; yy += 3)
     for(int xx = px; xx <= xmax; xx += 3)
