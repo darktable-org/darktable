@@ -258,6 +258,10 @@ typedef struct dt_image_t
   char exif_maker[64];
   char exif_model[64];
   char exif_lens[128];
+  char exif_whitebalance[64];
+  char exif_flash[64];
+  char exif_exposure_program[64];
+  char exif_metering_mode[64];
   GTimeSpan exif_datetime_taken;
 
   dt_image_correction_type_t exif_correction_type;
