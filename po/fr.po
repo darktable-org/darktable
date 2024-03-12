@@ -16285,7 +16285,7 @@ msgstr "Relatif à la scène, quasi-linéaire, RVB"
 
 #: ../src/iop/colorequal.c:1526
 msgid "bleach bypass"
-msgstr " Traitement sans blanchiment"
+msgstr "Traitement sans blanchiment"
 
 #: ../src/iop/colorequal.c:1570
 msgid "Kodachrome 64 like"
