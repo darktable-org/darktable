@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-03-11 10:18-0300\n"
-"PO-Revision-Date: 2024-03-11 10:30-0300\n"
+"POT-Creation-Date: 2024-03-13 07:52-0300\n"
+"PO-Revision-Date: 2024-03-13 07:57-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -1130,11 +1130,15 @@ msgid ""
 "to generate all thumbnails of your entire collection offline, run 'darktable-"
 "generate-cache'."
 msgstr ""
-"se habilitado, escreve miniaturas no disco (.cache/darktable/) quando despejados do cache em memória.\n"
-"note que isto pode usar muita memória (vários gigabytes para 20k imagens) e nunca apagará miniaturas cacheadas novamente.\n"
+"se habilitado, escreve miniaturas no disco (.cache/darktable/) quando "
+"despejados do cache em memória.\n"
+"note que isto pode usar muita memória (vários gigabytes para 20k imagens) e "
+"nunca apagará miniaturas cacheadas novamente.\n"
 "é seguro, no entanto, apagá-las manualmente, se você quiser.\n"
-"o desempenho da mesa de luz aumentará muito durante a navegação pelas fotos.\n"
-"para gerar miniaturas de toda a coleção, offline, execute 'darktable-generate-cache'."
+"o desempenho da mesa de luz aumentará muito durante a navegação pelas "
+"fotos.\n"
+"para gerar miniaturas de toda a coleção, offline, execute 'darktable-"
+"generate-cache'."
 
 #: ../build/bin/preferences_gen.h:4804
 msgid "enable disk backend for full preview cache"
@@ -1150,10 +1154,13 @@ msgid ""
 "light table performance will be increased greatly when zooming image in full "
 "preview mode."
 msgstr ""
-"se habilitado, escreve miniaturas no disco (.cache/darktable/) quando despejados do cache em memória.\n"
-"note que isto pode usar muita memória (vários gigabytes para 20k imagens) e nunca apagará miniaturas cacheadas novamente.\n"
+"se habilitado, escreve miniaturas no disco (.cache/darktable/) quando "
+"despejados do cache em memória.\n"
+"note que isto pode usar muita memória (vários gigabytes para 20k imagens) e "
+"nunca apagará miniaturas cacheadas novamente.\n"
 "é seguro, no entanto, apagá-las manualmente, se você quiser.\n"
-"o desempenho da mesa de luz aumentará muito durante a navegação pelas fotos no modo de visualização completa."
+"o desempenho da mesa de luz aumentará muito durante a navegação pelas fotos "
+"no modo de visualização completa."
 
 #: ../build/bin/preferences_gen.h:4838
 msgid "generate thumbnails in background"
@@ -2831,12 +2838,12 @@ msgid "very large chromatic aberration"
 msgstr "aberração cromática muito grande"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:158
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:259
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:307
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:355
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:474
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:506
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:538
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:260
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:308
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:356
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:475
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:507
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:539
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:159
 #: ../src/common/collection.c:1374 ../src/common/color_vocabulary.c:232
 #: ../src/common/colorlabels.c:374 ../src/develop/blend_gui.c:2383
@@ -2851,12 +2858,12 @@ msgid "red"
 msgstr "vermelho"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:159
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:277
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:325
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:373
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:486
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:518
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:550
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:278
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:326
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:374
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:487
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:519
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:551
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:158
 #: ../src/common/collection.c:1378 ../src/common/color_vocabulary.c:277
 #: ../src/common/colorlabels.c:376 ../src/develop/blend_gui.c:2389
@@ -2872,12 +2879,12 @@ msgid "green"
 msgstr "verde"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:160
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:289
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:337
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:385
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:494
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:526
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:558
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:290
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:338
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:386
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:495
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:527
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:559
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:160
 #: ../src/common/collection.c:1380 ../src/common/color_vocabulary.c:324
 #: ../src/common/colorlabels.c:377 ../src/develop/blend_gui.c:2395
@@ -3215,8 +3222,8 @@ msgstr "croma"
 #: ../src/develop/blend_gui.c:2464 ../src/iop/channelmixer.c:634
 #: ../src/iop/channelmixerrgb.c:4531 ../src/iop/channelmixerrgb.c:4646
 #: ../src/iop/colorbalance.c:2000 ../src/iop/colorize.c:343
-#: ../src/iop/colorreconstruction.c:1249 ../src/iop/colorequal.c:2349
-#: ../src/iop/colorequal.c:2401 ../src/iop/colorzones.c:2646
+#: ../src/iop/colorreconstruction.c:1249 ../src/iop/colorequal.c:2365
+#: ../src/iop/colorequal.c:2417 ../src/iop/colorzones.c:2646
 msgid "hue"
 msgstr "matiz"
 
@@ -3313,6 +3320,8 @@ msgstr "pivô (fulcrum) de contraste de cinza"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:412
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:585
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:230
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:455
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:116
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:237
 #: ../src/gui/guides.c:740 ../src/iop/basicadj.c:637 ../src/iop/bilat.c:468
@@ -3415,52 +3424,52 @@ msgstr "extensão da faixa"
 msgid "saturated colors"
 msgstr "cores saturadas"
 
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:217
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:446
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:218
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:447
 msgid "saturation threshold"
 msgstr "limiar de saturação"
 
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:223
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:450
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:224
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:451
 msgid "hue curve"
 msgstr "curva de matiz"
 
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:235
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:458
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:236
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:459
 msgid "white level"
 msgstr "nível de branco"
 
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:241
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:462
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:242
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:463
 msgid "analysis radius"
 msgstr "raio de análise"
 
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:247
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:466
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:248
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:467
 msgid "effect radius"
 msgstr "raio de efeito"
 
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:253
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:470
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:254
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:471
 msgid "use guided filter"
 msgstr "usar filtro guiado"
 
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:265
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:313
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:361
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:478
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:510
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:542
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:266
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:314
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:362
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:479
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:511
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:543
 #: ../src/iop/colorzones.c:2500
 msgid "orange"
 msgstr "laranja"
 
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:271
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:319
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:367
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:482
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:514
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:546
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:272
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:320
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:368
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:483
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:515
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:547
 #: ../src/common/collection.c:1376 ../src/common/colorlabels.c:375
 #: ../src/develop/lightroom.c:889 ../src/gui/guides.c:732
 #: ../src/iop/colorzones.c:2501 ../src/iop/temperature.c:2008
@@ -3468,40 +3477,40 @@ msgstr "laranja"
 msgid "yellow"
 msgstr "amarelo"
 
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:283
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:331
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:379
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:490
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:522
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:554
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:284
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:332
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:380
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:491
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:523
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:555
 #: ../src/common/color_vocabulary.c:298 ../src/gui/guides.c:733
 #: ../src/iop/temperature.c:2006
 msgid "cyan"
 msgstr "ciano"
 
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:295
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:343
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:391
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:498
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:530
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:562
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:296
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:344
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:392
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:499
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:531
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:563
 #: ../src/common/color_vocabulary.c:343
 msgid "lavender"
 msgstr "lavanda"
 
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:301
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:349
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:397
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:502
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:534
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:566
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:302
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:350
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:398
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:503
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:535
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:567
 #: ../src/common/color_vocabulary.c:341 ../src/gui/guides.c:734
 #: ../src/iop/colorzones.c:2506 ../src/iop/temperature.c:2004
 msgid "magenta"
 msgstr "magenta"
 
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:403
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:570
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:404
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:571
 msgid "node placement"
 msgstr "posicionamento do nó"
 
@@ -4255,7 +4264,7 @@ msgstr "densidade"
 #: ../src/iop/colorbalance.c:2017 ../src/iop/colorbalancergb.c:1990
 #: ../src/iop/colorchecker.c:1486 ../src/iop/colorcontrast.c:82
 #: ../src/iop/colorcorrection.c:268 ../src/iop/colorize.c:356
-#: ../src/iop/colorequal.c:2350 ../src/iop/colorequal.c:2421
+#: ../src/iop/colorequal.c:2366 ../src/iop/colorequal.c:2437
 #: ../src/iop/lowpass.c:602 ../src/iop/soften.c:368 ../src/iop/velvia.c:75
 #: ../src/iop/vibrance.c:72 ../src/iop/vignette.c:1058
 msgid "saturation"
@@ -4745,7 +4754,7 @@ msgstr "referência de escala do marcador"
 
 #: ../build/lib/darktable/plugins/introspection_overlay.c:302
 #: ../build/lib/darktable/plugins/introspection_watermark.c:323
-#: ../src/imageio/format/tiff.c:125 ../src/imageio/format/xcf.c:159
+#: ../src/imageio/format/tiff.c:125 ../src/imageio/format/xcf.c:164
 #: ../src/iop/borders.c:957
 msgid "image"
 msgstr "imagem"
@@ -4926,8 +4935,8 @@ msgstr "modo de preenchimento"
 #: ../build/lib/darktable/plugins/introspection_retouch.c:285
 #: ../build/lib/darktable/plugins/introspection_retouch.c:426
 #: ../src/iop/basicadj.c:650 ../src/iop/channelmixerrgb.c:4698
-#: ../src/iop/colisa.c:299 ../src/iop/colorequal.c:2351
-#: ../src/iop/colorequal.c:2441 ../src/iop/lowpass.c:601
+#: ../src/iop/colisa.c:299 ../src/iop/colorequal.c:2367
+#: ../src/iop/colorequal.c:2457 ../src/iop/lowpass.c:601
 #: ../src/iop/soften.c:372 ../src/iop/vignette.c:1057 ../src/libs/history.c:966
 msgid "brightness"
 msgstr "brilho"
@@ -8666,7 +8675,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:2693 ../src/develop/blend_gui.c:3614
 #: ../src/iop/basicadj.c:630 ../src/iop/colorbalancergb.c:2161
-#: ../src/iop/colorequal.c:2472 ../src/iop/exposure.c:1138
+#: ../src/iop/colorequal.c:2488 ../src/iop/exposure.c:1138
 #: ../src/iop/exposure.c:1153 ../src/iop/filmic.c:1528 ../src/iop/filmic.c:1541
 #: ../src/iop/filmic.c:1583 ../src/iop/filmicrgb.c:4504
 #: ../src/iop/filmicrgb.c:4515 ../src/iop/filmicrgb.c:4549
@@ -8934,8 +8943,8 @@ msgid "feathering radius"
 msgstr "raio de enevoamento"
 
 #: ../src/develop/blend_gui.c:3667 ../src/develop/blend_gui.c:3679
-#: ../src/iop/colorbalancergb.c:2191 ../src/iop/colorequal.c:2482
-#: ../src/iop/colorequal.c:2505 ../src/iop/diffuse.c:1835
+#: ../src/iop/colorbalancergb.c:2191 ../src/iop/colorequal.c:2501
+#: ../src/iop/colorequal.c:2532 ../src/iop/diffuse.c:1835
 #: ../src/iop/diffuse.c:1845 ../src/iop/retouch.c:2729
 msgid " px"
 msgstr " px"
@@ -8985,7 +8994,9 @@ msgstr "refinamento da máscara"
 msgid ""
 "autosaving history has been disabled for this image because of a very large "
 "history or a slow drive being used"
-msgstr "a gravação automática do histórico foi desabilitada para esta sessão por causa de um histórico muito grande ou de um drive lento sendo usado"
+msgstr ""
+"a gravação automática do histórico foi desabilitada para esta sessão por "
+"causa de um histórico muito grande ou de um drive lento sendo usado"
 
 #: ../src/develop/develop.c:2213
 #, c-format
@@ -11959,7 +11970,7 @@ msgstr "não é possível criar estilo de uma imagem inalterada"
 
 #: ../src/imageio/format/avif.c:89 ../src/imageio/format/jxl.c:567
 #: ../src/imageio/format/pdf.c:80 ../src/imageio/format/png.c:641
-#: ../src/imageio/format/tiff.c:904 ../src/imageio/format/xcf.c:357
+#: ../src/imageio/format/tiff.c:904 ../src/imageio/format/xcf.c:362
 msgid "8 bit"
 msgstr "8 bit"
 
@@ -11987,7 +11998,7 @@ msgstr "profundidade de bits AVIF inválida!"
 #: ../src/imageio/format/avif.c:800 ../src/imageio/format/exr.cc:601
 #: ../src/imageio/format/jxl.c:566 ../src/imageio/format/pdf.c:661
 #: ../src/imageio/format/png.c:639 ../src/imageio/format/tiff.c:900
-#: ../src/imageio/format/xcf.c:354
+#: ../src/imageio/format/xcf.c:359
 msgid "bit depth"
 msgstr "profundidade de bits"
 
@@ -12091,7 +12102,7 @@ msgid "16 bit (float)"
 msgstr "16 bit (ponto flutuante)"
 
 #: ../src/imageio/format/exr.cc:603 ../src/imageio/format/jxl.c:567
-#: ../src/imageio/format/tiff.c:904 ../src/imageio/format/xcf.c:357
+#: ../src/imageio/format/tiff.c:904 ../src/imageio/format/xcf.c:362
 msgid "32 bit (float)"
 msgstr "32 bit (ponto flutuante)"
 
@@ -12199,7 +12210,7 @@ msgstr "4:2:0"
 
 #: ../src/imageio/format/jxl.c:567 ../src/imageio/format/pdf.c:81
 #: ../src/imageio/format/png.c:641 ../src/imageio/format/tiff.c:904
-#: ../src/imageio/format/xcf.c:357
+#: ../src/imageio/format/xcf.c:362
 msgid "16 bit"
 msgstr "16 bit"
 
@@ -12488,7 +12499,7 @@ msgstr "foto"
 msgid "graphic"
 msgstr "gráfico"
 
-#: ../src/imageio/format/xcf.c:314
+#: ../src/imageio/format/xcf.c:319
 msgid "XCF"
 msgstr "XCF"
 
@@ -13238,7 +13249,7 @@ msgstr ""
 "só muda resultado das abas de luma e croma"
 
 #: ../src/iop/atrous.c:1818 ../src/iop/colorbalancergb.c:2129
-#: ../src/iop/colorequal.c:2358 ../src/iop/colorzones.c:2732
+#: ../src/iop/colorequal.c:2374 ../src/iop/colorzones.c:2732
 #: ../src/iop/denoiseprofile.c:3747 ../src/iop/filmicrgb.c:4471
 #: ../src/iop/lowlight.c:821 ../src/iop/rawdenoise.c:935
 #: ../src/iop/toneequal.c:3424
@@ -14488,7 +14499,7 @@ msgstr ""
 "c: \t%.1f"
 
 #: ../src/iop/channelmixerrgb.c:4475 ../src/iop/clipping.c:2137
-#: ../src/iop/colorbalancergb.c:1944 ../src/iop/colorequal.c:2342
+#: ../src/iop/colorbalancergb.c:1944 ../src/iop/colorequal.c:2358
 #: ../src/iop/filmicrgb.c:4483 ../src/iop/negadoctor.c:848
 #: ../src/iop/toneequal.c:3372 ../src/libs/image.c:490
 #: ../src/views/lighttable.c:1258
@@ -16082,7 +16093,7 @@ msgid "the hue tone which should be given precedence over other hue tones"
 msgstr ""
 "tom de matiz ao qual deve ser dada precedência sobre outros tons de matiz"
 
-#: ../src/iop/colorreconstruction.c:1270 ../src/iop/demosaic.c:1327
+#: ../src/iop/colorreconstruction.c:1270 ../src/iop/demosaic.c:1329
 #: ../src/iop/highlights.c:1252
 msgid "not applicable"
 msgstr "não aplicável"
@@ -16131,23 +16142,23 @@ msgstr "quase-linear, RGB"
 msgid "quasi-linear, RGB, scene-referred"
 msgstr "quase-linear, RGB, relativo à cena"
 
-#: ../src/iop/colorequal.c:1526
+#: ../src/iop/colorequal.c:1543
 msgid "bleach bypass"
 msgstr "ignorar branqueamento"
 
-#: ../src/iop/colorequal.c:1570
+#: ../src/iop/colorequal.c:1587
 msgid "Kodachrome 64 like"
 msgstr "Similar a Kodachrome 64"
 
-#: ../src/iop/colorequal.c:1614
-msgid "Kodachrome Porta 400 like"
-msgstr "Similar a Kodachrome Porta 400"
+#: ../src/iop/colorequal.c:1631
+msgid "Kodak Portra 400 like"
+msgstr "Similar a Kodachrome Portra 400"
 
-#: ../src/iop/colorequal.c:1658
+#: ../src/iop/colorequal.c:1675
 msgid "teal & orange"
 msgstr "verde-azulado e laranja"
 
-#: ../src/iop/colorequal.c:2094
+#: ../src/iop/colorequal.c:2111
 #, c-format
 msgid ""
 "middle click to toggle sliders visibility\n"
@@ -16160,44 +16171,58 @@ msgstr ""
 
 #. create a new tab for options
 #. Page OPTIONS
-#: ../src/iop/colorequal.c:2261 ../src/iop/colorequal.c:2464
+#: ../src/iop/colorequal.c:2277 ../src/iop/colorequal.c:2480
 #: ../src/iop/filmicrgb.c:4675
 msgid "options"
 msgstr "opções"
 
-#: ../src/iop/colorequal.c:2349
+#: ../src/iop/colorequal.c:2365
 msgid "change hue hue-wise"
 msgstr "muda a matiz de uma cor"
 
-#: ../src/iop/colorequal.c:2350
+#: ../src/iop/colorequal.c:2366
 msgid "change saturation hue-wise"
 msgstr "muda saturação de uma matiz de cor"
 
-#: ../src/iop/colorequal.c:2351
+#: ../src/iop/colorequal.c:2367
 msgid "change brightness hue-wise"
 msgstr "muda luminosidade de uma matiz de cor"
 
-#: ../src/iop/colorequal.c:2389
+#: ../src/iop/colorequal.c:2405
 msgid "shift nodes to lower or higher hue"
 msgstr "deslocar nós para matiz mais baixa ou mais alta"
 
-#: ../src/iop/colorequal.c:2476
+#: ../src/iop/colorequal.c:2490
+msgid ""
+"the white level set manually or via the picker restricts brightness "
+"corrections\n"
+"to stay below the defined level. the default is fine for most images."
+msgstr ""
+"o nível de branco definido manualmente ou pelo seletor restringe as correções de brilho\n"
+"para ficarem abaixo do nível definido. o default é bom para a maioria das imagens"
+
+#: ../src/iop/colorequal.c:2495
 msgid "change for sharper or softer hue curve"
 msgstr "mudar para curva de matiz mais suave ou mais acentuada"
 
-#: ../src/iop/colorequal.c:2484
-msgid "blurring radius of chroma prefilter analysis"
-msgstr "raio de desfoque para análise de pré-filtro de croma"
+#: ../src/iop/colorequal.c:2503
+msgid ""
+"blurring radius of chroma prefilter analysis.\n"
+"increase if there is large local variance of hue or strong chroma noise."
+msgstr ""
+"raio de desfoque da análise de croma pré-filtro.\n"
+"aumente se há grande variância local de matiz ou ruído forde em croma."
 
-#: ../src/iop/colorequal.c:2494
+#: ../src/iop/colorequal.c:2514
 msgid ""
 "visualize weighting function on changed output and view weighting curve.\n"
 "red shows possibly changed data, blueish parts will not be changed."
 msgstr ""
 "visualizar função de peso na saída modificada e visualizar a curva de peso.\n"
-"vermelho mostra dados possivelmente modificados, partes azuladas não serão modificadas."
+"vermelho mostra dados possivelmente modificados, partes azuladas não serão "
+"modificadas."
 
-#: ../src/iop/colorequal.c:2498
+#: ../src/iop/colorequal.c:2518
 msgid ""
 "set saturation threshold for the guided filter.\n"
 " - decrease to allow changes in areas with low chromacity\n"
@@ -16207,13 +16232,22 @@ msgstr ""
 "definir limiar de saturação para o filtro guiado.\n"
 " - diminua para permitir mudanças em áreas com cromaticidade baixa\n"
 " - aumente para restringir mudanças para altas cromaticidades\n"
-"   aumenta contraste e evita mudanças de brilho em áreas com baixa cromaticidade."
+"   aumenta contraste e evita mudanças de brilho em áreas com baixa "
+"cromaticidade."
 
-#: ../src/iop/colorequal.c:2506
+#: ../src/iop/colorequal.c:2526
+msgid ""
+"set saturation contrast for the guided filter.\n"
+" - increase to favour sharp transitions between saturations leading to "
+"higher contrast\n"
+" - decrease for smoother transitions."
+msgstr ""
+
+#: ../src/iop/colorequal.c:2533
 msgid "blurring radius of applied parameters"
 msgstr "raio de desfoque para parâmetros aplicados"
 
-#: ../src/iop/colorequal.c:2513
+#: ../src/iop/colorequal.c:2540
 msgid ""
 "visualize changed output for the selected tab.\n"
 "red shows increased data, blue decreased."
@@ -16401,12 +16435,12 @@ msgstr ""
 "reconstrói pixels RGB completamente a partir de uma leitura da\n"
 "matriz de filtro de cor do sensor da câmera"
 
-#: ../src/iop/demosaic.c:1136
+#: ../src/iop/demosaic.c:1137
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "`%s' matriz de cor não encontrada para imagem 4bayer!"
 
-#: ../src/iop/demosaic.c:1288
+#: ../src/iop/demosaic.c:1289
 msgid ""
 "Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
 "slow.\n"
@@ -16418,7 +16452,7 @@ msgstr ""
 "LMMSE é melhor para imagens com ISO alto.\n"
 "interpoladores cromáticos duplos duplicam tempo de processamento."
 
-#: ../src/iop/demosaic.c:1292
+#: ../src/iop/demosaic.c:1293
 msgid ""
 "X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
 "chroma are slow.\n"
@@ -16428,11 +16462,11 @@ msgstr ""
 "croma no domínio da frequência são lentos.\n"
 "interpoladores cromáticos duplos duplicam tempo de processamento."
 
-#: ../src/iop/demosaic.c:1298
+#: ../src/iop/demosaic.c:1299
 msgid "Bayer4 sensor demosaicing methods."
 msgstr "métodos de interpolação cromática para sensores Bayer4."
 
-#: ../src/iop/demosaic.c:1302
+#: ../src/iop/demosaic.c:1303
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off\n"
@@ -16442,19 +16476,21 @@ msgstr ""
 "defina 0.0 para desativar.\n"
 "defina 1.0 para ignorar bordas."
 
-#: ../src/iop/demosaic.c:1307
+#: ../src/iop/demosaic.c:1308
 msgid ""
 "contrast threshold for dual demosaic.\n"
 "set to 0.0 for high frequency content\n"
-"set to 1.0 for flat content\n"
-"toggle to visualize the mask"
+"set to 1.0 for flat content"
 msgstr ""
 "limite de contraste para interpolação cromática dual.\n"
 "defina em 0.0 para conteúdo de alta frequência\n"
-"defina em 1.0 para conteúdo plano\n"
-"alterne para visualizar a máscara"
+"defina em 1.0 para conteúdo plano"
 
-#: ../src/iop/demosaic.c:1315
+#: ../src/iop/demosaic.c:1314
+msgid "toggle to visualize the mask"
+msgstr "alternar para visualizar a máscara"
+
+#: ../src/iop/demosaic.c:1317
 msgid ""
 "LMMSE refinement steps. the median steps average the output,\n"
 "refine adds some recalculation of red & blue channels"
@@ -16462,15 +16498,15 @@ msgstr ""
 "passos de refinamento LMMSE. os passos de mediana calculam média da saída,\n"
 "os de refinamento adicionam algum recálculo de canais vermelho & azul."
 
-#: ../src/iop/demosaic.c:1318
+#: ../src/iop/demosaic.c:1320
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "quantos passos de suavização média após interpolação cromática"
 
-#: ../src/iop/demosaic.c:1321
+#: ../src/iop/demosaic.c:1323
 msgid "green channels matching method"
 msgstr "método de correspondência canal verde"
 
-#: ../src/iop/demosaic.c:1328
+#: ../src/iop/demosaic.c:1330
 msgid "demosaicing is only used for color raw images"
 msgstr "demosaic só é usado em imagens RAW."
 
@@ -20416,7 +20452,7 @@ msgstr ""
 msgid "`%s' color matrix not found for image"
 msgstr "matriz de cores `%s' não encontrada para imagem"
 
-#: ../src/iop/temperature.c:1494
+#: ../src/iop/temperature.c:1519
 #, c-format
 msgid "failed to read camera white balance information from `%s'!"
 msgstr "falha ao ler informação de balanço de branco de `%s' da câmera!"
@@ -26278,6 +26314,9 @@ msgstr "mudar para uma janela clássica que ficará aberta após soltar a tecla.
 #: ../src/views/view.c:1527
 msgid "mouse actions"
 msgstr "ações com mouse"
+
+#~ msgid "blurring radius of chroma prefilter analysis"
+#~ msgstr "raio de desfoque para análise de pré-filtro de croma"
 
 #~ msgid "image overlay"
 #~ msgstr "imagem de sobreposição"
