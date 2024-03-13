@@ -4012,6 +4012,8 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
     if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_end")))
        != xmpData.end() && num > 0)
     {
+      stmt = NULL;
+
       int history_end = MIN(pos->toLong(), num) + add_to_history_end;
       if(num_masks > 0)
         history_end++;
@@ -4070,7 +4072,8 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
 
     _read_xmp_harmony_guide(xmpData, img, xmp_version);
 
-    sqlite3_finalize(stmt);
+    if(stmt)
+      sqlite3_finalize(stmt);
 
     // set or clear bit in image struct. ONLY set if the
     // Xmp.darktable.auto_presets_applied was 1 AND there was a
