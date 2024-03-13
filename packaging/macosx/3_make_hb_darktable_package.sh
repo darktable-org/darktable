@@ -183,6 +183,9 @@ mkdir -p "$dtExecDir"
 mkdir -p "$dtResourcesDir"/share/applications
 mkdir -p "$dtResourcesDir"/etc/gtk-3.0
 
+# exiv2 expects the localization files in '../share/locale'
+ln -s "Resources/share" "$dtWorkingDir"/Contents/share
+
 # Add basic elements
 cp Info.plist "$dtWorkingDir"/Contents/
 echo "APPL$dtAppName" >>"$dtWorkingDir"/Contents/PkgInfo
@@ -230,7 +233,7 @@ for dtSharedObj in $dtSharedObjDirs; do
 done
 
 # Add homebrew translations
-dtTranslations="gtk30 gtk30-properties gtk-mac-integration iso_639-2 gphoto2"
+dtTranslations="gtk30 gtk30-properties gtk-mac-integration iso_639-2 gphoto2 exiv2"
 for dtTranslation in $dtTranslations; do
     install_translations "$dtTranslation"
 done
