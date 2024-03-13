@@ -1355,7 +1355,6 @@ static void _cleanup_history(const dt_imgid_t imgid)
 void dt_dev_write_history_ext(dt_develop_t *dev,
                               const dt_imgid_t imgid)
 {
-  sqlite3_stmt *stmt;
   dt_lock_image(imgid);
 
   _cleanup_history(imgid);
@@ -1379,13 +1378,7 @@ void dt_dev_write_history_ext(dt_develop_t *dev,
   }
 
   // update history end
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "UPDATE main.images SET history_end = ?1 WHERE id = ?2", -1,
-                              &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->history_end);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
+  dt_image_set_history_end(imgid, dev->history_end);
 
   // write the current iop-order-list for this image
 

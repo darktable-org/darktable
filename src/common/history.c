@@ -819,16 +819,7 @@ static gboolean _history_copy_and_paste_on_image_overwrite(const dt_imgid_t imgi
     }
     sqlite3_finalize(stmt);
 
-    // clang-format off
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "UPDATE main.images SET history_end = ?2"
-                                " WHERE id = ?1",
-                                -1, &stmt, NULL);
-    // clang-format on
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, history_end);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
+    dt_image_set_history_end(dest_imgid, history_end);
 
     // copy the module order
 
@@ -1337,16 +1328,8 @@ void dt_history_truncate_on_image(const dt_imgid_t imgid,
   sqlite3_finalize(stmt);
 
   // update history end
-  // clang-format off
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "UPDATE main.images"
-                              " SET history_end = ?1"
-                              " WHERE id = ?2 ", -1, &stmt, NULL);
-  // clang-format on
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, history_end);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
+  dt_image_set_history_end(imgid, history_end);
+
   dt_unlock_image(imgid);
   dt_history_hash_write_from_history(imgid, DT_HISTORY_HASH_CURRENT);
 
@@ -1424,12 +1407,7 @@ int dt_history_compress_on_list(const GList *imgs)
         }
       }
       // update history end
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-        "UPDATE main.images SET history_end = ?2 WHERE id = ?1", -1, &stmt2, NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, imgid);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt2, 2, done);
-      sqlite3_step(stmt2);
-      sqlite3_finalize(stmt2);
+      dt_image_set_history_end(imgid, done);
 
       dt_image_write_sidecar_file(imgid);
     }

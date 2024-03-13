@@ -1219,13 +1219,7 @@ static void _lib_history_truncate(const gboolean compress)
   sqlite3_finalize(stmt);
 
   // select the new history end corresponding to the one before the history compression
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "UPDATE main.images SET history_end=?2 WHERE id=?1",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, darktable.develop->history_end);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
+  dt_image_set_history_end(imgid, darktable.develop->history_end);
 
   dt_dev_reload_history_items(darktable.develop);
   dt_dev_undo_end_record(darktable.develop);

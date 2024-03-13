@@ -4013,15 +4013,15 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
        != xmpData.end() && num > 0)
     {
       int history_end = MIN(pos->toLong(), num) + add_to_history_end;
-      if(num_masks > 0) history_end++;
-      if((history_end < 1) && preset_applied) preset_applied = -1;
-      DT_DEBUG_SQLITE3_PREPARE_V2
-        (dt_database_get(darktable.db),
-         "UPDATE main.images SET history_end = ?1 WHERE id = ?2", -1,
-         &stmt, NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, history_end);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, img->id);
-      if(sqlite3_step(stmt) != SQLITE_DONE)
+      if(num_masks > 0)
+        history_end++;
+
+      if((history_end < 1) && preset_applied)
+        preset_applied = -1;
+
+      const gboolean ok = dt_image_set_history_end(img->id, history_end);
+
+      if(!ok)
       {
         dt_print(DT_DEBUG_ALWAYS,
                  "[exif] error writing history_end for image %d\n", img->id);

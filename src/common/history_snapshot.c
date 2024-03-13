@@ -226,15 +226,7 @@ static void _history_snapshot_restore(const dt_imgid_t imgid,
  end_restore:
 
   // set history end
-
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "UPDATE main.images"
-                              " SET history_end=?2"
-                              " WHERE id=?1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, history_end);
-  all_ok &= (sqlite3_step(stmt) == SQLITE_DONE);
-  sqlite3_finalize(stmt);
+  all_ok &= dt_image_set_history_end(imgid, history_end);
 
   if(all_ok)
     dt_database_release_transaction(darktable.db);
