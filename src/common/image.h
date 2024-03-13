@@ -476,6 +476,9 @@ void dt_image_set_aspect_ratio_if_different(const dt_imgid_t imgid,
 /** reset the image final/cropped aspect ratio to 0.0 */
 void dt_image_reset_aspect_ratio(const dt_imgid_t imgid,
                                  const gboolean raise);
+/** reset the image final/cropped aspect ratio to 0.0 */
+gboolean dt_image_set_history_end(const dt_imgid_t imgid,
+                                  const int history_end);
 /** get the ratio of cropped raw sensor data */
 float dt_image_get_sensor_ratio(const dt_image_t *img);
 /** returns the orientation bits of the image from exif. */
