@@ -48,12 +48,17 @@ static void _image_cache_allocate(void *data,
       "       longitude, latitude, altitude, color_matrix, colorspace, version,"
       "       raw_black, raw_maximum, aspect_ratio, exposure_bias,"
       "       import_timestamp, change_timestamp, export_timestamp, print_timestamp,"
-      "       output_width, output_height, cm.maker, cm.model, cm.alias"
+      "       output_width, output_height, cm.maker, cm.model, cm.alias,"
+      "       wb.name, fl.name, ep.name, mm.name"
       "  FROM main.images AS mi"
       "       LEFT JOIN main.cameras AS cm ON cm.id = mi.camera_id"
       "       LEFT JOIN main.makers AS mk ON mk.id = mi.maker_id"
       "       LEFT JOIN main.models AS md ON md.id = mi.model_id"
       "       LEFT JOIN main.lens AS ln ON ln.id = mi.lens_id"
+      "       LEFT JOIN main.whitebalance AS wb ON wb.id = mi.whitebalance_id"
+      "       LEFT JOIN main.flash AS fl ON fl.id = mi.flash_id"
+      "       LEFT JOIN main.exposure_program AS ep ON ep.id = mi.exposure_program_id"
+      "       LEFT JOIN main.metering_mode AS mm ON mm.id = mi.metering_mode_id"
       "  WHERE mi.id = ?1",
       -1, &stmt, NULL);
   // clang-format on
@@ -139,6 +144,15 @@ static void _image_cache_allocate(void *data,
     g_snprintf(img->camera_makermodel, sizeof(img->camera_makermodel), "%s %s", str, str2);
     str = (char *)sqlite3_column_text(stmt, 37);
     if(str) g_strlcpy(img->camera_alias, str, sizeof(img->camera_alias));
+
+    str = (char *)sqlite3_column_text(stmt, 38);
+    if(str) g_strlcpy(img->exif_whitebalance, str, sizeof(img->exif_whitebalance));
+    str = (char *)sqlite3_column_text(stmt, 39);
+    if(str) g_strlcpy(img->exif_flash, str, sizeof(img->exif_flash));
+    str = (char *)sqlite3_column_text(stmt, 40);
+    if(str) g_strlcpy(img->exif_exposure_program, str, sizeof(img->exif_exposure_program));
+    str = (char *)sqlite3_column_text(stmt, 41);
+    if(str) g_strlcpy(img->exif_metering_mode, str, sizeof(img->exif_metering_mode));
 
     dt_color_harmony_get(entry->key, &img->color_harmony_guide);
 

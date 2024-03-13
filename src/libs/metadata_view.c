@@ -91,6 +91,10 @@ enum
   md_exif_aperture,
   md_exif_exposure,
   md_exif_exposure_bias,
+  md_exif_exposure_program,
+  md_exif_whitebalance,
+  md_exif_flash,
+  md_exif_metering_mode,
   md_exif_focal_length,
   md_exif_focal_length_ff,
   md_exif_crop_factor,
@@ -142,6 +146,10 @@ static const char *_labels[] = {
   N_("aperture"),
   N_("exposure"),
   N_("exposure bias"),
+  N_("exposure program"),
+  N_("white balance"),
+  N_("flash"),
+  N_("metering mode"),
   N_("focal length"),
   N_("35mm equiv focal length"),
   N_("crop factor"),
@@ -528,6 +536,10 @@ void gui_update(dt_lib_module_t *self)
                                          "COUNT(DISTINCT aperture), "
                                          "COUNT(DISTINCT exposure), "
                                          "COUNT(DISTINCT IFNULL(exposure_bias, '')), "
+                                         "COUNT(DISTINCT IFNULL(exposure_program_id, '')), "
+                                         "COUNT(DISTINCT IFNULL(whitebalance_id, '')), "
+                                         "COUNT(DISTINCT IFNULL(flash_id, '')), "
+                                         "COUNT(DISTINCT IFNULL(metering_mode_id, '')), "
                                          "COUNT(DISTINCT focal_length), "
                                          "COUNT(DISTINCT focus_distance), "
                                          "COUNT(DISTINCT iso), "
@@ -731,6 +743,22 @@ void gui_update(dt_lib_module_t *self)
           (void)g_snprintf(text, sizeof(text), _("%+.2f EV"), (double)img->exif_exposure_bias);
         }
         _metadata_update_value(md_exif_exposure_bias, text, self);
+        break;
+
+      case md_exif_exposure_program:
+        _metadata_update_value(md_exif_exposure_program, img->exif_exposure_program, self);
+        break;
+
+      case md_exif_whitebalance:
+        _metadata_update_value(md_exif_whitebalance, img->exif_whitebalance, self);
+        break;
+
+      case md_exif_flash:
+        _metadata_update_value(md_exif_flash, img->exif_flash, self);
+        break;
+
+      case md_exif_metering_mode:
+        _metadata_update_value(md_exif_metering_mode, img->exif_metering_mode, self);
         break;
 
       case md_exif_focal_length:
