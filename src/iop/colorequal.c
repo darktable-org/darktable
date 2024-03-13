@@ -95,13 +95,13 @@ None;midi:CC24=iop/colorequal/brightness/magenta
 #define SAT_EFFECT 2.0f
 #define BRIGHT_EFFECT 8.0f
 
-DT_MODULE_INTROSPECTION(3, dt_iop_colorequal_params_t)
+DT_MODULE_INTROSPECTION(4, dt_iop_colorequal_params_t)
 
 typedef struct dt_iop_colorequal_params_t
 {
-  float threshold;          // $MIN: -0.1 $MAX: 0.2 $DEFAULT: 0.0 $DESCRIPTION: "saturation threshold"
+  float threshold;          // $MIN: 0.0 $MAX: 0.3 $DEFAULT: 0.1 $DESCRIPTION: "saturation threshold"
   float smoothing_hue;      // $MIN: 0.05 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "hue curve"
-  float reserved2;
+  float contrast;           // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "contrast"
 
   float white_level;        // $MIN: -2.0 $MAX: 16.0 $DEFAULT: 1.0 $DESCRIPTION: "white level"
   float chroma_size;        // $MIN: 1.0 $MAX: 10.0 $DEFAULT: 1.5 $DESCRIPTION: "analysis radius"
@@ -173,7 +173,7 @@ typedef struct dt_iop_colorequal_data_t
   float hue_shift;
   float threshold;
   float max_brightness;
-  float steepness;
+  float contrast;
 } dt_iop_colorequal_data_t;
 
 const char *name()
@@ -223,7 +223,7 @@ typedef struct dt_iop_colorequal_gui_data_t
   GtkWidget *bright_red, *bright_orange, *bright_yellow, *bright_green;
   GtkWidget *bright_cyan, *bright_blue, *bright_lavender, *bright_magenta;
 
-  GtkWidget *smoothing_hue, *threshold;
+  GtkWidget *smoothing_hue, *threshold, *contrast;
   GtkWidget *chroma_size, *param_size, *use_filter;
   GtkWidget *hue_shift;
 
@@ -312,6 +312,23 @@ int legacy_params(dt_iop_module_t *self,
     return 0;
   }
 
+  if(old_version == 3)
+  {
+    const dt_iop_colorequal_params_t *o =
+      (dt_iop_colorequal_params_t *)old_params;
+    dt_iop_colorequal_params_t *n =
+      (dt_iop_colorequal_params_t *)malloc(sizeof(dt_iop_colorequal_params_t));
+
+    memcpy(n, o, sizeof(dt_iop_colorequal_params_t) - sizeof(float));
+    n->threshold = o->threshold + 0.1f;
+    n->contrast = -5.0f * MAX(0.0f, o->threshold - 0.024f); // sort of magic from what we had
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_colorequal_params_t);
+    *new_version = 4;
+    return 0;
+  }
+
   return 1;
 }
 
@@ -350,12 +367,13 @@ static inline float _deg_to_rad(const float angle)
    and do linear interpolation at runtime. Avoids banding effects and allows a sharp transition.
 */
 static float satweights[2 * SATSIZE + 1];
-static void _init_satweights(const float steepness)
+static void _init_satweights(const float contrast)
 {
+  const double factor = -60.0 - 40.0 * (double)contrast;
   for(int i = -SATSIZE; i < SATSIZE + 1; i++)
   {
     const double val = 0.5 / (double)SATSIZE * (double)i;
-    satweights[i+SATSIZE] = (float)(1.0 / (1.0 + exp((double)steepness * val)));
+    satweights[i+SATSIZE] = (float)(1.0 / (1.0 + exp(factor * val)));
   }
 }
 
@@ -813,7 +831,7 @@ void process(struct dt_iop_module_t *self,
   const int oheight = roi_out->height;
   const size_t npixels = (size_t)owidth * oheight;
 
-  _init_satweights(d->steepness);
+  _init_satweights(d->contrast);
 
   // STEP 0: prepare the RGB <-> XYZ D65 matrices
   // see colorbalancergb.c process() for the details, it's exactly the same
@@ -859,7 +877,7 @@ void process(struct dt_iop_module_t *self,
   // STEP 1: convert image from RGB to darktable UCS LUV and calc saturation
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(npixels, in, UV, tmp, saturation, input_matrix, white) \
+  dt_omp_firstprivate(npixels, in, UV, tmp, saturation, input_matrix) \
   schedule(simd:static) aligned(in, UV, tmp, saturation, input_matrix : 64)
 #endif
   for(size_t k = 0; k < npixels; k++)
@@ -1217,9 +1235,8 @@ void commit_params(struct dt_iop_module_t *self,
   d->use_filter = p->use_filter;
   d->hue_shift = p->hue_shift;
   // default inflection point at a sat of 6%; allow selection up to ~60%
-  d->threshold = -0.015f + 0.3f * sqrf(5.0f * (p->threshold + 0.1f));
-  // for a saturation threshold of > 0.1 the weighting function is flattened for a smoother roll on/off
-  d->steepness = -60.0 + 200.0 * (double)(MAX(0.0f, p->threshold - 0.024f));
+  d->threshold = -0.015f + 0.3f * sqrf(5.0f * p->threshold);
+  d->contrast = p->contrast;
   float DT_ALIGNED_ARRAY sat_values[NODES];
   float DT_ALIGNED_ARRAY hue_values[NODES];
   float DT_ALIGNED_ARRAY bright_values[NODES];
@@ -1485,9 +1502,9 @@ void init_presets(dt_iop_module_so_t *self)
 {
   // bleach bypass
   dt_iop_colorequal_params_t p1 =
-    { .threshold       = -0.10f,
+    { .threshold       = 0.0f,
       .smoothing_hue   = 1.0f,
-      .reserved2       = 0.0f,
+      .contrast        = 0.0f,
       .white_level     = 1.0f,
       .chroma_size     = 1.5f,
       .param_size      = 1.0f,
@@ -1529,9 +1546,9 @@ void init_presets(dt_iop_module_so_t *self)
 
   // Kodachrome 64 like
   dt_iop_colorequal_params_t p2 =
-    { .threshold       = 0.093f,
+    { .threshold       = 0.193f,
       .smoothing_hue   = 1.0f,
-      .reserved2       = 0.0f,
+      .contrast        = -0.345f,
       .white_level     = 1.0f,
       .chroma_size     = 1.5f,
       .param_size      = 19.0f,
@@ -1573,9 +1590,9 @@ void init_presets(dt_iop_module_so_t *self)
 
   // Kodak Portra 400
   dt_iop_colorequal_params_t p3 =
-    { .threshold       = 0.099f,
+    { .threshold       = 0.199f,
       .smoothing_hue   = 1.0f,
-      .reserved2       = 0.0f,
+      .contrast        = -0.375f,
       .white_level     = 1.0f,
       .chroma_size     = 1.5f,
       .param_size      = 1.0f,
@@ -1617,9 +1634,9 @@ void init_presets(dt_iop_module_so_t *self)
 
   // Teal & Orange
   dt_iop_colorequal_params_t p4 =
-    { .threshold       = 0.084f,
+    { .threshold       = 0.184f,
       .smoothing_hue   = 0.52f,
-      .reserved2       = 0.0f,
+      .contrast        = -0.3f,
       .white_level     = 1.0f,
       .chroma_size     = 1.5f,
       .param_size      = 1.0f,
@@ -2153,8 +2170,8 @@ static gboolean _area_button_release_callback(GtkWidget *widget,
 
 
 static gboolean _area_size_callback(GtkWidget *widget,
-                                              GdkEventButton *event,
-                                              gpointer user_data)
+                                    GdkEventButton *event,
+                                    gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
@@ -2234,15 +2251,14 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_colorequal_params_t *p = (dt_iop_colorequal_params_t *)self->params;
   dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->use_filter), p->use_filter);
-  gui_changed(self, NULL, NULL);
+
+  // reset masking
+  g->mask_mode = 0;
+  dt_bauhaus_widget_set_quad_active(g->param_size, FALSE);
+  dt_bauhaus_widget_set_quad_active(g->threshold, FALSE);
 
   gboolean show_sliders = dt_conf_get_bool("plugins/darkroom/colorequal/show_sliders");
   gtk_widget_set_visible(g->cs.expander, !show_sliders);
-
-  // reset masking
-  dt_bauhaus_widget_set_quad_active(g->param_size, FALSE);
-  dt_bauhaus_widget_set_quad_active(g->chroma_size, FALSE);
-  g->mask_mode = 0;
 
   gtk_widget_set_name(GTK_WIDGET(g->cs.container), show_sliders ? NULL : "collapsible");
 
@@ -2470,6 +2486,9 @@ void gui_init(struct dt_iop_module_t *self)
                                        dt_bauhaus_slider_from_params(self, "white_level"));
   dt_bauhaus_slider_set_soft_range(g->white_level, -2., +2.);
   dt_bauhaus_slider_set_format(g->white_level, _(" EV"));
+  gtk_widget_set_tooltip_text(g->white_level,
+                              _("the white level set manually or via the picker restricts brightness corrections\n"
+                                "to stay below the defined level. the default is fine for most images."));
 
   g->smoothing_hue = dt_bauhaus_slider_from_params(sect, "smoothing_hue");
   gtk_widget_set_tooltip_text(g->smoothing_hue,
@@ -2481,7 +2500,8 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->chroma_size, 1);
   dt_bauhaus_slider_set_format(g->chroma_size, _(_(" px")));
   gtk_widget_set_tooltip_text(g->chroma_size,
-                              _("blurring radius of chroma prefilter analysis"));
+                              _("blurring radius of chroma prefilter analysis.\n"
+                                "increase if there is large local variance of hue or strong chroma noise."));
 
   g->threshold = dt_bauhaus_slider_from_params(self, "threshold");
   dt_bauhaus_slider_set_digits(g->threshold, 3);
@@ -2499,6 +2519,13 @@ void gui_init(struct dt_iop_module_t *self)
                                 " - decrease to allow changes in areas with low chromacity\n"
                                 " - increase to restrict changes to higher chromacities.\n"
                                 "   increases contrast and avoids brightness changes in low chromacity areas."));
+
+  g->contrast = dt_bauhaus_slider_from_params(self, "contrast");
+  dt_bauhaus_slider_set_digits(g->contrast, 3);
+  gtk_widget_set_tooltip_text(g->contrast,
+                              _("set saturation contrast for the guided filter.\n"
+                                " - increase to favour sharp transitions between saturations leading to higher contrast\n"
+                                " - decrease for smoother transitions."));
 
   g->param_size = dt_bauhaus_slider_from_params(self, "param_size");
   dt_bauhaus_slider_set_digits(g->param_size, 1);
