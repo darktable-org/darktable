@@ -197,6 +197,9 @@ GList *dt_ioppr_get_multiple_instances_iop_order_list(dt_imgid_t imgid, gboolean
 int dt_ioppr_get_iop_order(GList *iop_order_list,
                            const char *op_name,
                            const int multi_priority);
+/** returns the last (max) iop_order from iop_order_list list with operation = op_name */
+int dt_ioppr_get_iop_order_last(GList *iop_order_list,
+                                const char *op_name);
 /** returns TRUE if operation/multi-priority is before base_operation (first in pipe) on the iop-list */
 gboolean dt_ioppr_is_iop_before(GList *iop_order_list,
                                 const char *base_operation,
@@ -255,7 +258,9 @@ GList *dt_ioppr_extract_multi_instances_list(GList *iop_order_list);
  * above into a canonical iop-order list */
 GList *dt_ioppr_merge_multi_instance_iop_order_list(GList *iop_order_list,
                                                     GList *multi_instance_list);
-
+GList *dt_ioppr_merge_module_multi_instance_iop_order_list(GList *iop_order_list,
+                                                           const char *operation,
+                                                           GList *multi_instance_list);
 /** returns TRUE if there's a module_so without a iop_order defined */
 gboolean dt_ioppr_check_so_iop_order(GList *iop_list,
                                      GList *iop_order_list);

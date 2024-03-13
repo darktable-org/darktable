@@ -577,6 +577,26 @@ int dt_ioppr_get_iop_order(GList *iop_order_list,
   return iop_order;
 }
 
+int dt_ioppr_get_iop_order_last(GList *iop_order_list,
+                                const char *op_name)
+{
+  int iop_order = INT_MIN;
+
+  for(GList *l = iop_order_list;
+      l;
+      l = g_list_next(l))
+  {
+    const dt_iop_order_entry_t *const restrict entry = (dt_iop_order_entry_t *)l->data;
+    if(!strcmp(op_name, entry->operation))
+    {
+      iop_order = MAX(entry->o.iop_order, iop_order);
+      break;
+    }
+  }
+
+  return iop_order;
+}
+
 gboolean dt_ioppr_is_iop_before(GList *iop_order_list,
                                 const char *base_operation,
                                 const char *operation,
