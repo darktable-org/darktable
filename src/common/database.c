@@ -2754,11 +2754,34 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
              "  FROM images",
              "[init] can't populate new images table\n");
 
+    // NOTE: datetime_taken is in nano-second since "0001-01-01 00:00:00"
+    TRY_EXEC("DROP VIEW v_images",
+             "[init] can't drop v_images view\n");
+
     TRY_EXEC("DROP TABLE images",
              "[init] can't drop table images\n");
 
     TRY_EXEC("ALTER TABLE images_new RENAME TO images",
              "[init] can't rename images\n");
+
+    TRY_EXEC
+      ("CREATE VIEW v_images AS"
+       " SELECT mi.id AS id, mk.name AS maker, md.name AS model, ln.name AS lens,"
+       "        cm.maker || ' ' || cm.model AS normalized_camera, "
+       "        cm.alias AS camera_alias,"
+       "        exposure, aperture, iso,"
+       "        datetime(datetime_taken/1000000"
+       "                 + unixepoch('0001-01-01 00:00:00'), 'unixepoch') AS datetime,"
+       "        fr.folder AS folders, filename"
+       " FROM images AS mi,"
+       "      makers AS mk, models AS md, lens AS ln, cameras AS cm, film_rolls AS fr"
+       " WHERE mi.maker_id = mk.id"
+       "   AND mi.model_id = md.id"
+       "   AND mi.lens_id = ln.id"
+       "   AND mi.camera_id = cm.id"
+       "   AND mi.film_id = fr.id"
+       " ORDER BY normalized_camera, folders",
+       "[init] can't create view v_images\n");
 
     // recreate the indexesx
     TRY_EXEC("CREATE INDEX image_position_index ON images (position)",
@@ -3193,11 +3216,11 @@ static void _create_library_schema(dt_database_t *db)
       "FOREIGN KEY(lens_id) REFERENCES lens(id) ON DELETE CASCADE ON UPDATE CASCADE, "
       "FOREIGN KEY(camera_id) REFERENCES cameras(id) ON DELETE CASCADE ON UPDATE CASCADE, "
       "FOREIGN KEY(film_id) REFERENCES film_rolls(id) ON DELETE CASCADE ON UPDATE CASCADE, "
-      "FOREIGN KEY(group_id) REFERENCES images(id) ON DELETE RESTRICT ON UPDATE CASCADE), "
+      "FOREIGN KEY(group_id) REFERENCES images(id) ON DELETE RESTRICT ON UPDATE CASCADE, "
       "FOREIGN KEY(whitebalance_id) REFERENCES whitebalance(id) ON DELETE CASCADE ON UPDATE CASCADE, "
       "FOREIGN KEY(flash_id) REFERENCES flash(id) ON DELETE CASCADE ON UPDATE CASCADE, "
       "FOREIGN KEY(exposure_program_id) REFERENCES exposure_program(id) ON DELETE CASCADE ON UPDATE CASCADE, "
-      "FOREIGN KEY(metering_mode_id) REFERENCES metering_mode(id) ON DELETE CASCADE ON UPDATE CASCADE",
+      "FOREIGN KEY(metering_mode_id) REFERENCES metering_mode(id) ON DELETE CASCADE ON UPDATE CASCADE)",
       NULL, NULL, NULL);
   sqlite3_exec(db->handle,
                "CREATE INDEX main.images_group_id_index ON images (group_id, id)",
