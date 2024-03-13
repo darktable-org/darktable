@@ -1200,7 +1200,7 @@ static gboolean _pixelpipe_process_on_CPU(
   if(!fitting && piece->process_tiling_ready)
   {
     dt_print_pipe(DT_DEBUG_PIPE,
-                  "process TILE", piece->pipe, module, DT_DEVICE_CPU, roi_in, roi_out, "\n");
+                  "process tiled", piece->pipe, module, DT_DEVICE_CPU, roi_in, roi_out, "\n");
     module->process_tiling(module, piece, input, *output, roi_in, roi_out, in_bpp);
 
     *pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_CPU
@@ -1210,7 +1210,7 @@ static gboolean _pixelpipe_process_on_CPU(
   else
   {
     dt_print_pipe(DT_DEBUG_PIPE,
-       "pipe process",
+       "process",
        piece->pipe, module, DT_DEVICE_CPU, roi_in, roi_out, "%s%s%s%s\n",
        dt_iop_colorspace_to_name(cst_to),
        cst_to != cst_out ? " -> " : "",
@@ -1735,7 +1735,7 @@ static gboolean _dev_pixelpipe_process_rec(
                                               roi_in.width, roi_in.height, in_bpp) != CL_SUCCESS)
             {
               dt_print_pipe(DT_DEBUG_OPENCL,
-                "pipe process", pipe, module, pipe->devid, &roi_in, roi_out, "%s\n",
+                "process", pipe, module, pipe->devid, &roi_in, roi_out, "%s\n",
                   "couldn't copy image to OpenCL device");
               success_opencl = FALSE;
             }
@@ -1824,7 +1824,7 @@ static gboolean _dev_pixelpipe_process_rec(
         if(success_opencl)
         {
           dt_print_pipe(DT_DEBUG_PIPE,
-                        "pipe process",
+                        "process",
                         piece->pipe, module, pipe->devid, &roi_in, roi_out, "%s%s%s\n",
                         dt_iop_colorspace_to_name(cst_to),
                         cst_to != cst_out ? " -> " : "",
@@ -1983,7 +1983,7 @@ static gboolean _dev_pixelpipe_process_rec(
                                                            in_bpp) != CL_SUCCESS)
           {
             dt_print_pipe(DT_DEBUG_OPENCL,
-              "pipe process", pipe, module, pipe->devid, &roi_in, roi_out, "%s\n",
+              "process", pipe, module, pipe->devid, &roi_in, roi_out, "%s\n",
                 "couldn't copy data back to host memory (A)");
             dt_opencl_release_mem_object(cl_mem_input);
             pipe->opencl_error = TRUE;
@@ -2034,14 +2034,14 @@ static gboolean _dev_pixelpipe_process_rec(
         if(success_opencl)
         {
           dt_print_pipe(DT_DEBUG_PIPE,
-                        "pipe tile process",
+                        "process tiled",
                         piece->pipe, module, pipe->devid, &roi_in, roi_out, "%s%s%s\n",
                         dt_iop_colorspace_to_name(cst_to),
                         cst_to != cst_out ? " -> " : "",
                         cst_to != cst_out ? dt_iop_colorspace_to_name(cst_out) : "");
           const int err = module->process_tiling_cl(module, piece, input, *output,
                                                      &roi_in, roi_out, in_bpp);
-          success_opencl = err == CL_SUCCESS;
+          success_opencl = (err == CL_SUCCESS);
 
           if(!success_opencl)
             dt_print_pipe(DT_DEBUG_OPENCL,
@@ -2172,7 +2172,7 @@ static gboolean _dev_pixelpipe_process_rec(
             {
               important_cl = FALSE;
               dt_print_pipe(DT_DEBUG_OPENCL,
-                "pipe process", pipe, module, pipe->devid, &roi_in, roi_out, "%s\n",
+                "process", pipe, module, pipe->devid, &roi_in, roi_out, "%s\n",
                   "couldn't copy important data back to host memory (B)");
               /* late opencl error, not likely to happen here */
               /* that's all we do here, we later make sure to invalidate cache line */
@@ -2228,7 +2228,7 @@ static gboolean _dev_pixelpipe_process_rec(
                                            in_bpp) != CL_SUCCESS)
           {
             dt_print_pipe(DT_DEBUG_OPENCL,
-              "pixelpipe process", pipe, module, pipe->devid, &roi_in, roi_out, "%s\n",
+              "process", pipe, module, pipe->devid, &roi_in, roi_out, "%s\n",
                 "couldn't copy data back to host memory (C)");
             dt_opencl_release_mem_object(cl_mem_input);
             pipe->opencl_error = TRUE;
@@ -2265,7 +2265,7 @@ static gboolean _dev_pixelpipe_process_rec(
                                          in_bpp) != CL_SUCCESS)
         {
           dt_print_pipe(DT_DEBUG_OPENCL,
-            "pipe process", pipe, module, pipe->devid, &roi_in, roi_out, "%s\n",
+            "process", pipe, module, pipe->devid, &roi_in, roi_out, "%s\n",
               "couldn't copy data back to host memory (D)");
           dt_opencl_release_mem_object(cl_mem_input);
           pipe->opencl_error = TRUE;
@@ -2609,10 +2609,9 @@ static gboolean _dev_pixelpipe_process_rec_and_backcopy(
       if(err != CL_SUCCESS)
       {
         /* this indicates a opencl problem earlier in the pipeline */
-        dt_print(DT_DEBUG_OPENCL,
-                 "[pixelpipe process_rec_and_backcopy CL] [%s]"
-                 " late opencl error detected while copying back to cpu buffer: %s\n",
-                 dt_dev_pixelpipe_type_to_str(pipe->type), cl_errstr(err));
+        dt_print_pipe(DT_DEBUG_OPENCL,
+            "process", pipe, NULL, pipe->devid, NULL, roi_out,
+            "late opencl error detected while copying back to cpu buffer:%s\n", cl_errstr(err));
         pipe->opencl_error = TRUE;
         ret = TRUE;
       }

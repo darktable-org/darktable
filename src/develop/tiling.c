@@ -1453,7 +1453,7 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self,
              "too many tiles: %d x %d\n",
              dt_dev_pixelpipe_type_to_str(piece->pipe->type),
              self->op, dt_iop_get_instance_id(self), tiles_x, tiles_y);
-    return FALSE;
+    return DT_OPENCL_PROCESS_CL;
   }
 
   dt_print(DT_DEBUG_TILING,
@@ -1849,7 +1849,7 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self,
              "[default_process_tiling_cl_roi] [%s] aborted tiling for module '%s%s'. too many tiles: %dx%d\n",
              dt_dev_pixelpipe_type_to_str(piece->pipe->type),
              self->op, dt_iop_get_instance_id(self), tiles_x, tiles_y);
-    return FALSE;
+    return DT_OPENCL_PROCESS_CL;
   }
 
   /* calculate tile width and height excl. overlap (i.e. the good part) for output.
