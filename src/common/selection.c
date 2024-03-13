@@ -72,12 +72,13 @@ static void _selection_select(dt_selection_t *selection,
          || darktable.gui->expanded_group_id == img_group_id
          || !selection->collection)
       {
-        query = g_strdup_printf("INSERT OR IGNORE INTO main.selected_images VALUES (%u)", imgid);
+        query = g_strdup_printf("INSERT OR IGNORE INTO main.selected_images (imgid)"
+                                " VALUES (%u)", imgid);
       }
       else
       {
         // clang-format off
-        query = g_strdup_printf("INSERT OR IGNORE INTO main.selected_images"
+        query = g_strdup_printf("INSERT OR IGNORE INTO main.selected_images (imgid)"
                                 "  SELECT id"
                                 "  FROM main.images "
                                 "  WHERE group_id = %d AND id IN (%s)",
@@ -161,8 +162,9 @@ void dt_selection_invert(dt_selection_t *selection)
 {
   if(!selection->collection) return;
 
-  gchar *fullq = g_strdup_printf("INSERT OR IGNORE INTO main.selected_images %s",
-                                 dt_collection_get_query(selection->collection));
+  gchar *fullq = g_strdup_printf
+    ("INSERT OR IGNORE INTO main.selected_images (imgid) %s",
+     dt_collection_get_query(selection->collection));
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "INSERT INTO memory.tmp_selection"
@@ -291,8 +293,9 @@ void dt_selection_select_all(dt_selection_t *selection)
 {
   if(!selection->collection) return;
 
-  gchar *fullq = g_strdup_printf("INSERT OR IGNORE INTO main.selected_images %s",
-                                 dt_collection_get_query_no_group(selection->collection));
+  gchar *fullq = g_strdup_printf
+    ("INSERT OR IGNORE INTO main.selected_images (imgid) %s",
+     dt_collection_get_query_no_group(selection->collection));
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "DELETE FROM main.selected_images", NULL, NULL, NULL);
@@ -378,8 +381,9 @@ void dt_selection_select_range(dt_selection_t *selection,
 
   dt_collection_update(selection->collection);
 
-  gchar *fullq = g_strdup_printf("INSERT OR IGNORE INTO main.selected_images %s",
-                                 dt_collection_get_query_no_group(selection->collection));
+  gchar *fullq = g_strdup_printf
+    ("INSERT OR IGNORE INTO main.selected_images (imgid) %s",
+     dt_collection_get_query_no_group(selection->collection));
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), fullq, -1, &stmt, NULL);
 
@@ -414,7 +418,7 @@ void dt_selection_select_filmroll(dt_selection_t *selection)
                         "DELETE FROM main.selected_images", NULL, NULL, NULL);
   // clang-format off
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-                        "INSERT OR IGNORE INTO main.selected_images"
+                        "INSERT OR IGNORE INTO main.selected_images (imgid)"
                         "  SELECT id FROM main.images"
                         "   WHERE film_id IN (SELECT film_id"
                         "                     FROM main.images AS a"
@@ -445,7 +449,7 @@ void dt_selection_select_unaltered(dt_selection_t *selection)
   DT_DEBUG_SQLITE3_EXEC
     (dt_database_get(darktable.db),
      "INSERT OR IGNORE"
-     " INTO main.selected_images"
+     " INTO main.selected_images (imgid)"
      " SELECT h.imgid"
      "  FROM memory.collected_images as ci, main.history_hash as h"
      "  WHERE ci.imgid = h.imgid"
@@ -469,7 +473,8 @@ void dt_selection_select_list(struct dt_selection_t *selection, GList *list)
     int count = 1;
     dt_imgid_t imgid = GPOINTER_TO_INT(list->data);
     selection->last_single_id = imgid;
-    gchar *query = g_strdup_printf("INSERT OR IGNORE INTO main.selected_images VALUES (%d)", imgid);
+    gchar *query = g_strdup_printf("INSERT OR IGNORE INTO main.selected_images (imgid)"
+                                   " VALUES (%d)", imgid);
     list = g_list_next(list);
     while(list && count < 400)
     {
@@ -503,10 +508,9 @@ gchar *dt_selection_get_list_query(struct dt_selection_t *selection,
     // we don't want to get image hidden because of grouping
     // clang-format off
     query = g_strdup_printf
-      ("SELECT m.imgid"
-       " FROM memory.collected_images as m"
-       " WHERE m.imgid IN (SELECT s.imgid FROM main.selected_images as s)%s",
-       ordering ? " ORDER BY m.rowid DESC" : "");
+      ("SELECT s.imgid FROM main.selected_images as s"
+       " WHERE s.imgid IN (SELECT m.imgid FROM memory.collected_images as m)%s",
+       ordering ? " ORDER BY num DESC" : "");
     // clang-format on
   }
   else

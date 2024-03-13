@@ -48,7 +48,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 48
+#define CURRENT_DATABASE_VERSION_LIBRARY 49
 #define CURRENT_DATABASE_VERSION_DATA    10
 
 // #define USE_NESTED_TRANSACTIONS
@@ -2627,6 +2627,40 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     new_version = 48;
   }
+  else if(version == 48)
+  {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    TRY_EXEC("CREATE TABLE tmp_selected_images (imgid INTEGER PRIMARY KEY)",
+             "[init] can't create table tmp_selected_images\n");
+
+    TRY_EXEC("INSERT INTO tmp_selected_images"
+             " SELECT imgid FROM selected_images",
+              "[init] can't populate table tmp_selected_images\n");
+
+    TRY_EXEC("DROP TABLE selected_images",
+              "[init] can't drop selected_images\n");
+
+    TRY_EXEC("CREATE TABLE selected_images (num INTEGER PRIMARY KEY AUTOINCREMENT,"
+             "                              imgid INTEGER,"
+             "  FOREIGN KEY(imgid) REFERENCES images(id)"
+             "    ON UPDATE CASCADE ON DELETE CASCADE)",
+             "[init] can't create table selected_images\n");
+
+    TRY_EXEC("CREATE UNIQUE INDEX selected_images_ni"
+             " ON selected_images (num, imgid)",
+             "[init] can't create index selected_images_ni\n");
+
+    TRY_EXEC("INSERT INTO selected_images (imgid)"
+             " SELECT imgid FROM tmp_selected_images",
+              "[init] can't populate table selected_images\n");
+
+    TRY_EXEC("DROP TABLE tmp_selected_images",
+              "[init] can't drop tmp_selected_images\n");
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 49;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -3019,7 +3053,13 @@ static void _create_library_schema(dt_database_t *db)
 
   ////////////////////////////// selected_images
   sqlite3_exec(db->handle,
-               "CREATE TABLE main.selected_images (imgid INTEGER PRIMARY KEY)",
+               "CREATE TABLE main.selected_images (num INTEGER PRIMARY KEY AUTOINCREMENT,"
+               "                                   imgid INTEGER)",
+               NULL, NULL, NULL);
+
+  sqlite3_exec(db->handle,
+               "CREATE UNIQUE INDEX main.selected_images_ni"
+               " ON main.selected_images (num, imgid)",
                NULL, NULL, NULL);
   ////////////////////////////// history
   sqlite3_exec(
