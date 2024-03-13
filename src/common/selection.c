@@ -55,7 +55,8 @@ static void _selection_update_collection(gpointer instance,
                                          gpointer imgs, int next,
                                          gpointer user_data);
 
-static void _selection_select(dt_selection_t *selection, dt_imgid_t imgid)
+static void _selection_select(dt_selection_t *selection,
+                              dt_imgid_t imgid)
 {
   if(dt_is_valid_imgid(imgid))
   {
@@ -66,7 +67,9 @@ static void _selection_select(dt_selection_t *selection, dt_imgid_t imgid)
       dt_image_cache_read_release(darktable.image_cache, image);
 
       gchar *query = NULL;
-      if(!darktable.gui || !darktable.gui->grouping || darktable.gui->expanded_group_id == img_group_id
+      if(!darktable.gui
+         || !darktable.gui->grouping
+         || darktable.gui->expanded_group_id == img_group_id
          || !selection->collection)
       {
         query = g_strdup_printf("INSERT OR IGNORE INTO main.selected_images VALUES (%u)", imgid);
@@ -194,14 +197,16 @@ void dt_selection_clear(const dt_selection_t *selection)
   dt_collection_hint_message(darktable.collection);
 }
 
-void dt_selection_select(dt_selection_t *selection, const dt_imgid_t imgid)
+void dt_selection_select(dt_selection_t *selection,
+                         const dt_imgid_t imgid)
 {
   if(!dt_is_valid_imgid(imgid)) return;
   _selection_select(selection, imgid);
   selection->last_single_id = imgid;
 }
 
-void dt_selection_deselect(dt_selection_t *selection, const dt_imgid_t imgid)
+void dt_selection_deselect(dt_selection_t *selection,
+                           const dt_imgid_t imgid)
 {
   selection->last_single_id = NO_IMGID;
 
@@ -223,9 +228,10 @@ void dt_selection_deselect(dt_selection_t *selection, const dt_imgid_t imgid)
       else
       {
         // clang-format off
-        query = g_strdup_printf("DELETE FROM main.selected_images WHERE imgid IN "
-                                "(SELECT id FROM main.images WHERE group_id = %d)",
-                                img_group_id);
+        query = g_strdup_printf
+          ("DELETE FROM main.selected_images"
+           " WHERE imgid IN (SELECT id FROM main.images WHERE group_id = %d)",
+           img_group_id);
         // clang-format on
       }
 
@@ -349,7 +355,8 @@ void dt_selection_select_range(dt_selection_t *selection,
     // clang-format off
     DT_DEBUG_SQLITE3_PREPARE_V2(
         dt_database_get(darktable.db),
-        "SELECT m.rowid, m.imgid FROM memory.collected_images AS m, main.selected_images AS s"
+        "SELECT m.rowid, m.imgid"
+        " FROM memory.collected_images AS m, main.selected_images AS s"
         " WHERE m.imgid=s.imgid"
         " ORDER BY m.rowid DESC"
         " LIMIT 1",
@@ -486,7 +493,8 @@ void dt_selection_select_list(struct dt_selection_t *selection, GList *list)
 // return the query used to get the selection
 // be carefull : if ordering is TRUE, the order depend of only_visible :
 // DESC order if only_visible is TRUE ; ASC order otherwise...
-gchar *dt_selection_get_list_query(struct dt_selection_t *selection, const gboolean only_visible,
+gchar *dt_selection_get_list_query(struct dt_selection_t *selection,
+                                   const gboolean only_visible,
                                    const gboolean ordering)
 {
   gchar *query = NULL;
@@ -494,10 +502,11 @@ gchar *dt_selection_get_list_query(struct dt_selection_t *selection, const gbool
   {
     // we don't want to get image hidden because of grouping
     // clang-format off
-    query = g_strdup_printf("SELECT m.imgid"
-                            " FROM memory.collected_images as m"
-                            " WHERE m.imgid IN (SELECT s.imgid FROM main.selected_images as s)%s",
-                            ordering ? " ORDER BY m.rowid DESC" : "");
+    query = g_strdup_printf
+      ("SELECT m.imgid"
+       " FROM memory.collected_images as m"
+       " WHERE m.imgid IN (SELECT s.imgid FROM main.selected_images as s)%s",
+       ordering ? " ORDER BY m.rowid DESC" : "");
     // clang-format on
   }
   else
@@ -533,12 +542,17 @@ GList *dt_selection_get_list(struct dt_selection_t *selection,
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   g_free(query);
-  while(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
+
+  while(stmt != NULL
+        && sqlite3_step(stmt) == SQLITE_ROW)
   {
     l = g_list_prepend(l, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
   }
-  if(!(only_visible && ordering)) l = g_list_reverse(l);
-  if(stmt) sqlite3_finalize(stmt);
+
+  if(!(only_visible && ordering))
+    l = g_list_reverse(l);
+  if(stmt)
+    sqlite3_finalize(stmt);
 
   return l;
 }
