@@ -1186,6 +1186,21 @@ float dt_image_set_aspect_ratio(const dt_imgid_t imgid, const gboolean raise)
   return aspect_ratio;
 }
 
+gboolean dt_image_set_history_end(const dt_imgid_t imgid,
+                                  const int history_end)
+{
+  sqlite3_stmt *stmt = NULL;
+  // update history end
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "UPDATE main.images SET history_end = ?1 WHERE id = ?2",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, history_end);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+  const gboolean ok = (sqlite3_step(stmt) == SQLITE_DONE);
+  sqlite3_finalize(stmt);
+  return ok;
+}
+
 int32_t dt_image_duplicate(const dt_imgid_t imgid)
 {
   return dt_image_duplicate_with_version(imgid, -1);
