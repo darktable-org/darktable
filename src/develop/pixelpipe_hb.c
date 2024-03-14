@@ -2643,7 +2643,7 @@ gboolean dt_dev_pixelpipe_process(
   dt_print(DT_DEBUG_MEMORY, "[memory] before pixelpipe process\n");
   dt_print_mem_usage();
 
-  if(pipe->devid >= 0) dt_opencl_events_reset(pipe->devid);
+  if(pipe->devid > DT_DEVICE_CPU) dt_opencl_events_reset(pipe->devid);
 
   dt_iop_roi_t roi = (dt_iop_roi_t){ x, y, width, height, scale };
   pipe->final_width = width;
@@ -2680,7 +2680,7 @@ restart:
   dt_iop_buffer_dsc_t *out_format = &_out_format;
 
 #ifdef HAVE_OPENCL
-  if(pipe->devid >= 0)
+  if(pipe->devid > DT_DEVICE_CPU)
     dt_print_pipe(DT_DEBUG_PIPE, "pipe starting", pipe, NULL, pipe->devid, &roi, &roi, "ID %i, %s\n",
       pipe->image.id,
       darktable.opencl->dev[pipe->devid].cname);
@@ -2750,7 +2750,7 @@ restart:
     g_list_free_full(pipe->forms, (void (*)(void *))dt_masks_free_form);
     pipe->forms = NULL;
   }
-  if(pipe->devid >= 0)
+  if(pipe->devid > DT_DEVICE_CPU)
   {
     dt_opencl_unlock_device(pipe->devid);
     pipe->devid = DT_DEVICE_CPU;
