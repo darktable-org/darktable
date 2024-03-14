@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-03-04 22:09+0100\n"
-"PO-Revision-Date: 2024-03-09 17:23+0100\n"
+"POT-Creation-Date: 2024-03-12 18:41+0100\n"
+"PO-Revision-Date: 2024-03-14 23:01+0100\n"
 "Last-Translator: Martin Straeten <martin.straeten@gmail.com>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -3248,8 +3248,8 @@ msgstr "Chrominanz"
 #: ../src/develop/blend_gui.c:2464 ../src/iop/channelmixer.c:634
 #: ../src/iop/channelmixerrgb.c:4531 ../src/iop/channelmixerrgb.c:4646
 #: ../src/iop/colorbalance.c:2000 ../src/iop/colorize.c:343
-#: ../src/iop/colorreconstruction.c:1249 ../src/iop/colorequal.c:2168
-#: ../src/iop/colorequal.c:2220 ../src/iop/colorzones.c:2646
+#: ../src/iop/colorreconstruction.c:1249 ../src/iop/colorequal.c:2349
+#: ../src/iop/colorequal.c:2401 ../src/iop/colorzones.c:2646
 msgid "hue"
 msgstr "Farbton"
 
@@ -4299,7 +4299,7 @@ msgstr "Dichte"
 #: ../src/iop/colorbalance.c:2017 ../src/iop/colorbalancergb.c:1990
 #: ../src/iop/colorchecker.c:1486 ../src/iop/colorcontrast.c:82
 #: ../src/iop/colorcorrection.c:268 ../src/iop/colorize.c:356
-#: ../src/iop/colorequal.c:2169 ../src/iop/colorequal.c:2240
+#: ../src/iop/colorequal.c:2350 ../src/iop/colorequal.c:2421
 #: ../src/iop/lowpass.c:602 ../src/iop/soften.c:368 ../src/iop/velvia.c:75
 #: ../src/iop/vibrance.c:72 ../src/iop/vignette.c:1058
 msgid "saturation"
@@ -4790,7 +4790,7 @@ msgstr "Skalierungsreferenz"
 
 #: ../build/lib/darktable/plugins/introspection_overlay.c:302
 #: ../build/lib/darktable/plugins/introspection_watermark.c:323
-#: ../src/imageio/format/tiff.c:125 ../src/imageio/format/xcf.c:159
+#: ../src/imageio/format/tiff.c:125 ../src/imageio/format/xcf.c:164
 #: ../src/iop/borders.c:957
 msgid "image"
 msgstr "Bild"
@@ -4974,8 +4974,8 @@ msgstr "Füllmodus"
 #: ../build/lib/darktable/plugins/introspection_retouch.c:285
 #: ../build/lib/darktable/plugins/introspection_retouch.c:426
 #: ../src/iop/basicadj.c:650 ../src/iop/channelmixerrgb.c:4698
-#: ../src/iop/colisa.c:299 ../src/iop/colorequal.c:2170
-#: ../src/iop/colorequal.c:2260 ../src/iop/lowpass.c:601
+#: ../src/iop/colisa.c:299 ../src/iop/colorequal.c:2351
+#: ../src/iop/colorequal.c:2441 ../src/iop/lowpass.c:601
 #: ../src/iop/soften.c:372 ../src/iop/vignette.c:1057 ../src/libs/history.c:966
 msgid "brightness"
 msgstr "Helligkeit"
@@ -6810,64 +6810,64 @@ msgid_plural "date/time re-applied to %d images"
 msgstr[0] "setze Datum/Zeit für %d Bild wieder zugeordnet"
 msgstr[1] "setze Datum/Zeit für %d Bilder wieder zugeordnet"
 
-#: ../src/common/image.c:2295
+#: ../src/common/image.c:2296
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "auf lokale Kopie „%s” kann nicht zugegriffen werden."
 
-#: ../src/common/image.c:2302
+#: ../src/common/image.c:2303
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "lokale Kopie „%s” kann nicht erzeugt werden."
 
-#: ../src/common/image.c:2309
+#: ../src/common/image.c:2310
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "Fehler beim Verschieben lokaler Kopie „%s” auf „%s”"
 
-#: ../src/common/image.c:2326
+#: ../src/common/image.c:2327
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "Fehler beim Verschieben „%s”: Datei nicht gefunden"
 
-#: ../src/common/image.c:2336
+#: ../src/common/image.c:2337
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "Fehler beim Verschieben „%s” auf „%s”: Datei existiert bereits"
 
-#: ../src/common/image.c:2340
+#: ../src/common/image.c:2341
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "Fehler beim Verschieben „%s” auf „%s”"
 
-#: ../src/common/image.c:2669
+#: ../src/common/image.c:2670
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "lokale Kopie kann nicht erzeugt werden, wenn die Originaldatei nicht "
 "zugänglich ist."
 
-#: ../src/common/image.c:2683
+#: ../src/common/image.c:2684
 msgid "cannot create local copy."
 msgstr "lokale Kopie kann nicht erzeugt werden."
 
-#: ../src/common/image.c:2763 ../src/control/jobs/control_jobs.c:862
+#: ../src/common/image.c:2764 ../src/control/jobs/control_jobs.c:862
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "lokale Kopie kann nicht entfernt werden, wenn die Originaldatei nicht "
 "zugänglich ist."
 
-#: ../src/common/image.c:2936
+#: ../src/common/image.c:2937
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
 msgstr[0] "%d lokale Kopie wurde synchronisiert"
 msgstr[1] "%d lokale Kopien wurden synchronisiert"
 
-#: ../src/common/image.c:3137
+#: ../src/common/image.c:3138
 msgid "<b>WARNING</b>: camera is missing samples!"
 msgstr "<b>WARNUNG</b>: Es fehlen Beispielbilder für die Kamera!"
 
-#: ../src/common/image.c:3138
+#: ../src/common/image.c:3139
 msgid ""
 "You must provide samples in <a href='https://raw.pixls.us/'>https://raw."
 "pixls.us/</a>"
@@ -6875,7 +6875,7 @@ msgstr ""
 "Bitte unter <a href='https://raw.pixls.us/'>https://raw.pixls.us/</a> "
 "Beispielbilder bereitstellen"
 
-#: ../src/common/image.c:3139
+#: ../src/common/image.c:3140
 #, c-format
 msgid ""
 "for `%s' `%s'\n"
@@ -6884,14 +6884,14 @@ msgstr ""
 "für „%s“ „%s“\n"
 "in so vielen Formaten/Komprimierungen/Bit-Stufen wie möglich"
 
-#: ../src/common/image.c:3142
+#: ../src/common/image.c:3143
 msgid "or the <b>RAW won't be readable</b> in next version."
 msgstr ""
 "sonst ist das <b>RAW </b> in der nächsten Version <b>nicht mehr lesbar </b>."
 
 #: ../src/common/image.h:217 ../src/common/ratings.c:284
 #: ../src/imageio/format/avif.c:114 ../src/libs/history.c:846
-#: ../src/libs/snapshots.c:856
+#: ../src/libs/snapshots.c:858
 msgid "unknown"
 msgstr "unbekannt"
 
@@ -8744,7 +8744,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:2693 ../src/develop/blend_gui.c:3614
 #: ../src/iop/basicadj.c:630 ../src/iop/colorbalancergb.c:2161
-#: ../src/iop/colorequal.c:2291 ../src/iop/exposure.c:1138
+#: ../src/iop/colorequal.c:2472 ../src/iop/exposure.c:1138
 #: ../src/iop/exposure.c:1153 ../src/iop/filmic.c:1528 ../src/iop/filmic.c:1541
 #: ../src/iop/filmic.c:1583 ../src/iop/filmicrgb.c:4504
 #: ../src/iop/filmicrgb.c:4515 ../src/iop/filmicrgb.c:4549
@@ -9015,8 +9015,8 @@ msgid "feathering radius"
 msgstr "Anpassungsradius"
 
 #: ../src/develop/blend_gui.c:3667 ../src/develop/blend_gui.c:3679
-#: ../src/iop/colorbalancergb.c:2191 ../src/iop/colorequal.c:2301
-#: ../src/iop/colorequal.c:2324 ../src/iop/diffuse.c:1835
+#: ../src/iop/colorbalancergb.c:2191 ../src/iop/colorequal.c:2482
+#: ../src/iop/colorequal.c:2505 ../src/iop/diffuse.c:1835
 #: ../src/iop/diffuse.c:1845 ../src/iop/retouch.c:2729
 msgid " px"
 msgstr "px"
@@ -9605,7 +9605,7 @@ msgstr ""
 "Vermutlich eine Folge einer Voreinstellung, eines Stils oder Kopieren und "
 "Einfügen eines Verlaufs"
 
-#: ../src/develop/pixelpipe_hb.c:2707
+#: ../src/develop/pixelpipe_hb.c:2729
 msgid ""
 "OpenCL errors encountered; disabling OpenCL for this session! some possible "
 "causes:\n"
@@ -9626,7 +9626,7 @@ msgstr ""
 "  - zu kleine Headroom-Einstellungen bei Verwendung von ‚use all device "
 "memory‘."
 
-#: ../src/develop/pixelpipe_hb.c:2860
+#: ../src/develop/pixelpipe_hb.c:2882
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -9637,7 +9637,7 @@ msgstr ""
 "da dieses später in der Pixelpipe verarbeitet wird.\n"
 "Rastermaske wird ignoriert."
 
-#: ../src/develop/tiling.c:819 ../src/develop/tiling.c:1172
+#: ../src/develop/tiling.c:817 ../src/develop/tiling.c:1173
 #, c-format
 msgid ""
 "tiling failed for module '%s'. the output most likely will be OK, but you "
@@ -12051,7 +12051,7 @@ msgstr "Kann keinen Stil aus unbearbeitetem Bild erzeugen"
 
 #: ../src/imageio/format/avif.c:89 ../src/imageio/format/jxl.c:567
 #: ../src/imageio/format/pdf.c:80 ../src/imageio/format/png.c:641
-#: ../src/imageio/format/tiff.c:904 ../src/imageio/format/xcf.c:357
+#: ../src/imageio/format/tiff.c:904 ../src/imageio/format/xcf.c:362
 msgid "8 bit"
 msgstr "8 Bit"
 
@@ -12079,7 +12079,7 @@ msgstr "ungültige AVIF bit Rate!"
 #: ../src/imageio/format/avif.c:800 ../src/imageio/format/exr.cc:601
 #: ../src/imageio/format/jxl.c:566 ../src/imageio/format/pdf.c:661
 #: ../src/imageio/format/png.c:639 ../src/imageio/format/tiff.c:900
-#: ../src/imageio/format/xcf.c:354
+#: ../src/imageio/format/xcf.c:359
 msgid "bit depth"
 msgstr "Farbtiefe"
 
@@ -12184,7 +12184,7 @@ msgid "16 bit (float)"
 msgstr "16 Bit (Fließkomma)"
 
 #: ../src/imageio/format/exr.cc:603 ../src/imageio/format/jxl.c:567
-#: ../src/imageio/format/tiff.c:904 ../src/imageio/format/xcf.c:357
+#: ../src/imageio/format/tiff.c:904 ../src/imageio/format/xcf.c:362
 msgid "32 bit (float)"
 msgstr "32 Bit (Fließkomma)"
 
@@ -12291,7 +12291,7 @@ msgstr "4:2:0"
 
 #: ../src/imageio/format/jxl.c:567 ../src/imageio/format/pdf.c:81
 #: ../src/imageio/format/png.c:641 ../src/imageio/format/tiff.c:904
-#: ../src/imageio/format/xcf.c:357
+#: ../src/imageio/format/xcf.c:362
 msgid "16 bit"
 msgstr "16 Bit"
 
@@ -12343,7 +12343,7 @@ msgid "internal"
 msgstr "intern"
 
 #: ../src/imageio/format/jxl.c:604 ../src/libs/duplicate.c:405
-#: ../src/libs/history.c:1135 ../src/libs/snapshots.c:859
+#: ../src/libs/history.c:1135 ../src/libs/snapshots.c:861
 msgid "original"
 msgstr "Original"
 
@@ -12579,7 +12579,7 @@ msgstr "Foto"
 msgid "graphic"
 msgstr "Grafik"
 
-#: ../src/imageio/format/xcf.c:314
+#: ../src/imageio/format/xcf.c:319
 msgid "XCF"
 msgstr "XCF"
 
@@ -12917,7 +12917,7 @@ msgstr "Korrekturen oder Effekte"
 #: ../src/iop/blurs.c:93 ../src/iop/blurs.c:94 ../src/iop/channelmixerrgb.c:239
 #: ../src/iop/channelmixerrgb.c:241 ../src/iop/clipping.c:364
 #: ../src/iop/clipping.c:366 ../src/iop/colorbalancergb.c:185
-#: ../src/iop/colorin.c:137 ../src/iop/colorequal.c:193 ../src/iop/crop.c:135
+#: ../src/iop/colorin.c:137 ../src/iop/colorequal.c:194 ../src/iop/crop.c:135
 #: ../src/iop/crop.c:137 ../src/iop/demosaic.c:296
 #: ../src/iop/denoiseprofile.c:780 ../src/iop/denoiseprofile.c:782
 #: ../src/iop/diffuse.c:146 ../src/iop/diffuse.c:148
@@ -13159,7 +13159,7 @@ msgid "add or remove local contrast, sharpness, acutance"
 msgstr "lokalen Kontrast, Schärfe, Konturschärfe hinzufügen oder entfernen"
 
 #: ../src/iop/atrous.c:133 ../src/iop/bilateral.cc:102
-#: ../src/iop/colorequal.c:192 ../src/iop/diffuse.c:145
+#: ../src/iop/colorequal.c:193 ../src/iop/diffuse.c:145
 #: ../src/iop/enlargecanvas.c:83 ../src/iop/exposure.c:131
 #: ../src/iop/filmicrgb.c:352 ../src/iop/graduatednd.c:146
 #: ../src/iop/negadoctor.c:146 ../src/iop/overlay.c:155
@@ -13336,7 +13336,7 @@ msgstr ""
 "Luminanz- und Chrominanz-Tabs auf das Bild auswirken."
 
 #: ../src/iop/atrous.c:1818 ../src/iop/colorbalancergb.c:2129
-#: ../src/iop/colorequal.c:2177 ../src/iop/colorzones.c:2732
+#: ../src/iop/colorequal.c:2358 ../src/iop/colorzones.c:2732
 #: ../src/iop/denoiseprofile.c:3747 ../src/iop/filmicrgb.c:4471
 #: ../src/iop/lowlight.c:821 ../src/iop/rawdenoise.c:935
 #: ../src/iop/toneequal.c:3424
@@ -14034,15 +14034,15 @@ msgstr "linear, RAW, szenenbezogen"
 msgid "linear, raw"
 msgstr "linear, RAW"
 
-#: ../src/iop/cacorrect.c:1425
+#: ../src/iop/cacorrect.c:1340
 msgid "iteration runs, default is twice"
 msgstr "Iterationsläufe, Standard ist zweimal"
 
-#: ../src/iop/cacorrect.c:1428
+#: ../src/iop/cacorrect.c:1343
 msgid "activate colorshift correction for blue & red channels"
 msgstr "Farbverschiebungskorrektur für blaue und rote Kanäle aktivieren"
 
-#: ../src/iop/cacorrect.c:1435
+#: ../src/iop/cacorrect.c:1350
 msgid ""
 "automatic chromatic aberration correction\n"
 "only for Bayer raw files with 3 color channels"
@@ -14594,7 +14594,7 @@ msgstr ""
 "c: \t%.1f"
 
 #: ../src/iop/channelmixerrgb.c:4475 ../src/iop/clipping.c:2137
-#: ../src/iop/colorbalancergb.c:1944 ../src/iop/colorequal.c:2161
+#: ../src/iop/colorbalancergb.c:1944 ../src/iop/colorequal.c:2342
 #: ../src/iop/filmicrgb.c:4483 ../src/iop/negadoctor.c:848
 #: ../src/iop/toneequal.c:3372 ../src/libs/image.c:490
 #: ../src/views/lighttable.c:1258
@@ -16195,7 +16195,7 @@ msgstr "ob und wie Ersatzfarben bevorzugt werden"
 msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "der Farbton, der gegenüber anderen bevorzugt werden soll"
 
-#: ../src/iop/colorreconstruction.c:1270 ../src/iop/demosaic.c:1320
+#: ../src/iop/colorreconstruction.c:1270 ../src/iop/demosaic.c:1329
 #: ../src/iop/highlights.c:1252
 msgid "not applicable"
 msgstr "nicht anwendbar"
@@ -16222,28 +16222,46 @@ msgstr ""
 "und ist nur noch hier, damit Du es abschalten\n"
 "und durch das neue Farbtransfer ersetzen kannst."
 
-#: ../src/iop/colorequal.c:180
+#: ../src/iop/colorequal.c:181
 msgid "color equalizer"
 msgstr "Farb-Equalizer"
 
-#: ../src/iop/colorequal.c:185 ../src/iop/colorzones.c:139
+#: ../src/iop/colorequal.c:186 ../src/iop/colorzones.c:139
 #: ../src/iop/colorzones.c:2573
 msgid "color zones"
 msgstr "Farbbereiche"
 
-#: ../src/iop/colorequal.c:191
+#: ../src/iop/colorequal.c:192
 msgid "change saturation, hue and brightness depending on local hue"
 msgstr "Sättigung, Farbton und Helligkeit je Farbton ändern"
 
-#: ../src/iop/colorequal.c:194 ../src/iop/toneequal.c:334
+#: ../src/iop/colorequal.c:195 ../src/iop/toneequal.c:334
 msgid "quasi-linear, RGB"
 msgstr "quasi-linear, RGB"
 
-#: ../src/iop/colorequal.c:195 ../src/iop/toneequal.c:335
+#: ../src/iop/colorequal.c:196 ../src/iop/toneequal.c:335
 msgid "quasi-linear, RGB, scene-referred"
 msgstr "quasi-linear, RGB, szenenbezogen"
 
-#: ../src/iop/colorequal.c:1913
+#: ../src/iop/colorequal.c:1526
+#| msgid "none (bypass)"
+msgid "bleach bypass"
+msgstr "Bleach Bypass"
+
+#: ../src/iop/colorequal.c:1570
+msgid "Kodachrome 64 like"
+msgstr "Kodachrome 64 "
+
+#: ../src/iop/colorequal.c:1614
+msgid "Kodak Portra 400 like"
+msgstr "Kodak Portra 400"
+
+#: ../src/iop/colorequal.c:1658
+#| msgid "set range"
+msgid "teal & orange"
+msgstr "Teal & Orange"
+
+#: ../src/iop/colorequal.c:2094
 #, c-format
 msgid ""
 "middle click to toggle sliders visibility\n"
@@ -16256,47 +16274,47 @@ msgstr ""
 
 #. create a new tab for options
 #. Page OPTIONS
-#: ../src/iop/colorequal.c:2080 ../src/iop/colorequal.c:2283
+#: ../src/iop/colorequal.c:2261 ../src/iop/colorequal.c:2464
 #: ../src/iop/filmicrgb.c:4675
 msgid "options"
 msgstr "Optionen"
 
-#: ../src/iop/colorequal.c:2168
+#: ../src/iop/colorequal.c:2349
 msgid "change hue hue-wise"
 msgstr "Farbton je Farbton ändern"
 
-#: ../src/iop/colorequal.c:2169
+#: ../src/iop/colorequal.c:2350
 msgid "change saturation hue-wise"
 msgstr "Sättigung je Farbton ändern"
 
-#: ../src/iop/colorequal.c:2170
+#: ../src/iop/colorequal.c:2351
 msgid "change brightness hue-wise"
 msgstr "Helligkeit je Farbton ändern"
 
-#: ../src/iop/colorequal.c:2208
+#: ../src/iop/colorequal.c:2389
 msgid "shift nodes to lower or higher hue"
 msgstr "verschiebt die Knoten zu höheren oder niedrigeren Farbtonwerten"
 
-#: ../src/iop/colorequal.c:2295
+#: ../src/iop/colorequal.c:2476
 msgid "change for sharper or softer hue curve"
 msgstr "anpassen für spitzeren oder glatteren Verlauf der Farbkurve "
 
-#: ../src/iop/colorequal.c:2303
+#: ../src/iop/colorequal.c:2484
 msgid "blurring radius of chroma prefilter analysis"
 msgstr "Verlaufsradius für die Chroma-Vorfilteranalyse"
 
 # unfortunately no explanation available what exactly is shown
-#: ../src/iop/colorequal.c:2313
+#: ../src/iop/colorequal.c:2494
 msgid ""
-"visualize weighing function on changed output and view weighing curve.\n"
+"visualize weighting function on changed output and view weighting curve.\n"
 "red shows possibly changed data, blueish parts will not be changed."
 msgstr ""
-"visualisiert die Gewichtungsfunktion anhand der Änderung der Ausgabeund "
+"visualisiert die Gewichtungsfunktion anhand der Änderung der Ausgabe und "
 "zeigt die Gewichtungskurve an.\n"
 "Rot zeigt möglicherweise veränderte Daten an, bläuliche Teile werden nicht "
 "verändert."
 
-#: ../src/iop/colorequal.c:2317
+#: ../src/iop/colorequal.c:2498
 msgid ""
 "set saturation threshold for the guided filter.\n"
 " - decrease to allow changes in areas with low chromacity\n"
@@ -16311,11 +16329,11 @@ msgstr ""
 "   erhöht den Kontrast und vermeidet Helligkeitsänderungen in Bereichen mit "
 "geringer Farbintensität."
 
-#: ../src/iop/colorequal.c:2325
+#: ../src/iop/colorequal.c:2506
 msgid "blurring radius of applied parameters"
 msgstr "Verlaufsradius für die gewählten Anpassungen"
 
-#: ../src/iop/colorequal.c:2332
+#: ../src/iop/colorequal.c:2513
 msgid ""
 "visualize changed output for the selected tab.\n"
 "red shows increased data, blue decreased."
@@ -16504,12 +16522,12 @@ msgstr ""
 "Rekonstruktion der RGB Pixel aus Helligkeitswerten eines Sensors mit "
 "Farbfiltermatrix"
 
-#: ../src/iop/demosaic.c:1129
+#: ../src/iop/demosaic.c:1137
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "„%s” Farbmatrix für 4-Bayer-Bild nicht gefunden!"
 
-#: ../src/iop/demosaic.c:1281
+#: ../src/iop/demosaic.c:1289
 msgid ""
 "Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
 "slow.\n"
@@ -16521,7 +16539,7 @@ msgstr ""
 "LMMSE ist für High ISO Bilder geeignet.\n"
 "Dual-Demosaic verdoppelt die Verarbeitungszeit."
 
-#: ../src/iop/demosaic.c:1285
+#: ../src/iop/demosaic.c:1293
 msgid ""
 "X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
 "chroma are slow.\n"
@@ -16531,14 +16549,14 @@ msgstr ""
 "Chromi sind langsam.\n"
 "Dual-Demosaic verdoppelt die Verarbeitungszeit."
 
-#: ../src/iop/demosaic.c:1291
+#: ../src/iop/demosaic.c:1299
 msgid "Bayer4 sensor demosaicing methods."
 msgstr "Bayer4 Demosaicing Methoden"
 
 # WTF? Wer bitte soll das verstehen?
 # stimmt - wo kommt das vor?
 # wo ist der Vorschlag für bessere Übersetzung?
-#: ../src/iop/demosaic.c:1295
+#: ../src/iop/demosaic.c:1303
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off\n"
@@ -16548,19 +16566,21 @@ msgstr ""
 "Auf 0.0 setzen zum Ausschalten.\n"
 "Auf 1.0 setzen, um Kanten zu ignorieren."
 
-#: ../src/iop/demosaic.c:1300
+#: ../src/iop/demosaic.c:1308
 msgid ""
 "contrast threshold for dual demosaic.\n"
 "set to 0.0 for high frequency content\n"
-"set to 1.0 for flat content\n"
-"toggle to visualize the mask"
+"set to 1.0 for flat content"
 msgstr ""
 "Kontrastschwelle für Dual-Demosaic\n"
 "0.0 für hochfrequente Inhalte\n"
-"1.0 für gleichmäßige Inhalte\n"
-"umschalten, um die Maske zu visualisieren"
+"1.0 für gleichmäßige Inhalte"
 
-#: ../src/iop/demosaic.c:1308
+#: ../src/iop/demosaic.c:1314
+msgid "toggle to visualize the mask"
+msgstr "Maskenanzeige ein/ausschalten"
+
+#: ../src/iop/demosaic.c:1317
 msgid ""
 "LMMSE refinement steps. the median steps average the output,\n"
 "refine adds some recalculation of red & blue channels"
@@ -16569,15 +16589,15 @@ msgstr ""
 "Ausgabe,\n"
 "Verfeinerung fügt einige Neuberechnungen der roten und blauen Kanäle hinzu"
 
-#: ../src/iop/demosaic.c:1311
+#: ../src/iop/demosaic.c:1320
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "wie viele Median-Schritte zur Farbglättung nach dem Demosaicing"
 
-#: ../src/iop/demosaic.c:1314
+#: ../src/iop/demosaic.c:1323
 msgid "green channels matching method"
 msgstr "Methode zum Abgleichen des Grünkanals"
 
-#: ../src/iop/demosaic.c:1321
+#: ../src/iop/demosaic.c:1330
 msgid "demosaicing is only used for color raw images"
 msgstr "Demosaicing funktioniert nur mit RAW-Bildern."
 
@@ -19508,17 +19528,17 @@ msgstr "Modul „Überbelichtet“ bei Pufferzuweisung fehlgeschlagen"
 msgid "module overexposed failed in color conversion"
 msgstr "Modul „Überbelichtet“ bei Farbkonvertierung fehlgeschlagen"
 
-#: ../src/iop/overlay.c:147 ../src/libs/live_view.c:310
-msgid "overlay"
-msgstr "Überlagern"
+#: ../src/iop/overlay.c:147
+msgid "composite"
+msgstr "Komposit"
 
 #: ../src/iop/overlay.c:154
-msgid "image overlay"
-msgstr "Bild Overlays"
+msgid "combine with elements from a processed image"
+msgstr "mit Elementen aus einem bearbeiteten Bild kombinieren"
 
 #: ../src/iop/overlay.c:163
-msgid "composition|layering|stacked"
-msgstr "Komposition|Überlagerung|Stacking"
+msgid "layer|stack|overlay"
+msgstr "Ebene|Stapel|Overlay"
 
 #: ../src/iop/overlay.c:283
 #, c-format
@@ -19541,9 +19561,11 @@ msgstr "Bild %d ist nicht vorhanden"
 msgid ""
 "drop\n"
 "image\n"
+"from filmstrip\n"
 "here"
 msgstr ""
 "Bild\n"
+"vom Filmstreifen\n"
 "hier\n"
 "ablegen"
 
@@ -20568,7 +20590,7 @@ msgstr "Anpassung der RAW-RGB Kanäle für Weißabgleich und Demosaicing"
 msgid "`%s' color matrix not found for image"
 msgstr "„%s” Farbmatrix für Bild nicht gefunden"
 
-#: ../src/iop/temperature.c:1494
+#: ../src/iop/temperature.c:1519
 #, c-format
 msgid "failed to read camera white balance information from `%s'!"
 msgstr "Konnte Weißabgleichsdaten der Kamera nicht aus „%s“ lesen!"
@@ -23538,6 +23560,10 @@ msgstr "Fokuspunkt wegrücken (kleine Schritte)"
 msgid "move focus point out (big steps)"
 msgstr "Fokuspunkt wegrücken (große Schritte)"
 
+#: ../src/libs/live_view.c:310
+msgid "overlay"
+msgstr "Überlagern"
+
 #: ../src/libs/live_view.c:312
 msgid "selected image"
 msgstr "ausgewähltes Bild"
@@ -24824,37 +24850,37 @@ msgstr "Job-Kode"
 msgid "create"
 msgstr "erzeugen"
 
-#: ../src/libs/snapshots.c:94
+#: ../src/libs/snapshots.c:98
 msgid "snapshots"
 msgstr "Snapshots"
 
-#: ../src/libs/snapshots.c:143
+#: ../src/libs/snapshots.c:147
 msgctxt "snapshot sign"
 msgid "S"
 msgstr "S"
 
-#: ../src/libs/snapshots.c:550
+#: ../src/libs/snapshots.c:554
 msgid "restore snapshot into current history"
 msgstr "Verlaufsstapel auf Basis des Snapshots wiederherstellen"
 
-#: ../src/libs/snapshots.c:667
+#: ../src/libs/snapshots.c:671
 msgid "snapshots for removed image have been deleted"
 msgstr "Snapshots für das entfernte Bild wurden gelöscht"
 
-#: ../src/libs/snapshots.c:708
+#: ../src/libs/snapshots.c:712
 #, c-format
 msgid "↗ %s '%s'"
 msgstr "↗ %s „%s“"
 
-#: ../src/libs/snapshots.c:708
+#: ../src/libs/snapshots.c:712
 msgid "this snapshot was taken from"
 msgstr "Snapshot von"
 
-#: ../src/libs/snapshots.c:747
+#: ../src/libs/snapshots.c:751
 msgid "take snapshot"
 msgstr "Snapshot erstellen"
 
-#: ../src/libs/snapshots.c:749
+#: ../src/libs/snapshots.c:753
 msgid ""
 "take snapshot to compare with another image or the same image at another "
 "stage of development"
@@ -24862,7 +24888,7 @@ msgstr ""
 "Snapshot erstellen, um mit einem anderen Bild oder dem aktuellen Bild in "
 "einem anderen Bearbeitungszustand zu vergleichen"
 
-#: ../src/libs/snapshots.c:802
+#: ../src/libs/snapshots.c:806
 msgid "toggle last snapshot"
 msgstr "letzten Snapshot ein-/ausschalten"
 
@@ -26480,3 +26506,9 @@ msgstr ""
 #: ../src/views/view.c:1527
 msgid "mouse actions"
 msgstr "Mausaktionen"
+
+#~ msgid "image overlay"
+#~ msgstr "Bild Overlays"
+
+#~ msgid "composition|layering|stacked"
+#~ msgstr "Komposition|Überlagerung|Stacking"
