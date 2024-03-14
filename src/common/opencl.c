@@ -1964,7 +1964,7 @@ static void dt_opencl_update_priorities(const char *configstr)
 int dt_opencl_lock_device(const int pipetype)
 {
   dt_opencl_t *cl = darktable.opencl;
-  if(!cl->inited) return -1;
+  if(!cl->inited) return DT_DEVICE_CPU;
 
   dt_pthread_mutex_lock(&cl->lock);
 
@@ -2013,7 +2013,7 @@ int dt_opencl_lock_device(const int pipetype)
     {
       const int *prio = priority;
 
-      while(*prio != -1)
+      while(*prio != DT_DEVICE_CPU)
       {
         if(!dt_pthread_mutex_BAD_trylock(&cl->dev[*prio].lock))
         {
@@ -2027,7 +2027,7 @@ int dt_opencl_lock_device(const int pipetype)
       if(!mandatory)
       {
         free(priority);
-        return -1;
+        return DT_DEVICE_CPU;
       }
 
       dt_iop_nap(usec);
@@ -2049,17 +2049,16 @@ int dt_opencl_lock_device(const int pipetype)
 
   free(priority);
 
-  // no free GPU :(
   // use CPU processing, if no free device:
-  return -1;
+  return DT_DEVICE_CPU;
 }
 
-void dt_opencl_unlock_device(const int dev)
+void dt_opencl_unlock_device(const int devid)
 {
   dt_opencl_t *cl = darktable.opencl;
   if(!cl->inited) return;
-  if(dev < 0 || dev >= cl->num_devs) return;
-  dt_pthread_mutex_BAD_unlock(&cl->dev[dev].lock);
+  if(devid > DT_DEVICE_CPU && devid < cl->num_devs)
+    dt_pthread_mutex_BAD_unlock(&cl->dev[devid].lock);
 }
 
 static FILE *fopen_stat(const char *filename, struct stat *st)
