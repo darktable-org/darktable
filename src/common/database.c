@@ -48,7 +48,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 49
+#define CURRENT_DATABASE_VERSION_LIBRARY 50
 #define CURRENT_DATABASE_VERSION_DATA    10
 
 // #define USE_NESTED_TRANSACTIONS
@@ -2660,6 +2660,20 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
     new_version = 49;
+  }
+  else if(version == 49)
+  {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    TRY_EXEC("DROP INDEX selected_images_ni",
+             "[init] can't create index selected_images_ni\n");
+
+    TRY_EXEC("CREATE UNIQUE INDEX selected_images_ni"
+             " ON selected_images (imgid)",
+             "[init] can't create index selected_images_ni\n");
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 50;
   }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
