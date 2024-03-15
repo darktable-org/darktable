@@ -1585,20 +1585,25 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       _strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
     }
 
-#if 0
-    /* Read flash mode */
-    if( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.Flash")))
-         != exifData.end() && pos->size())
+    if((pos = Exiv2::whiteBalance(exifData)) != exifData.end() && pos->size())
     {
-      uf_strlcpy_to_utf8(uf->conf->flashText, max_name, pos, exifData);
+      _strlcpy_to_utf8(img->exif_whitebalance, sizeof(img->exif_whitebalance), pos, exifData);
     }
-    /* Read White Balance Setting */
-    if( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.WhiteBalance")))
-         != exifData.end() && pos->size())
+
+    if(FIND_EXIF_TAG("Exif.Photo.Flash"))
     {
-      uf_strlcpy_to_utf8(uf->conf->whiteBalanceText, max_name, pos, exifData);
+      _strlcpy_to_utf8(img->exif_flash, sizeof(img->exif_flash), pos, exifData);
     }
-#endif
+
+    if(FIND_EXIF_TAG("Exif.Photo.ExposureProgram"))
+    {
+      _strlcpy_to_utf8(img->exif_exposure_program, sizeof(img->exif_exposure_program), pos, exifData);
+    }
+
+    if(FIND_EXIF_TAG("Exif.Photo.MeteringMode"))
+    {
+      _strlcpy_to_utf8(img->exif_metering_mode, sizeof(img->exif_metering_mode), pos, exifData);
+    }
 
     char datetime[DT_DATETIME_LENGTH];
     _find_datetime_taken(exifData, pos, datetime);

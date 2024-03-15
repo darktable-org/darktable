@@ -258,6 +258,10 @@ typedef struct dt_image_t
   char exif_maker[64];
   char exif_model[64];
   char exif_lens[128];
+  char exif_whitebalance[64];
+  char exif_flash[64];
+  char exif_exposure_program[64];
+  char exif_metering_mode[64];
   GTimeSpan exif_datetime_taken;
 
   dt_image_correction_type_t exif_correction_type;
@@ -597,11 +601,15 @@ char *dt_image_camera_missing_sample_message(const struct dt_image_t *img,
                                              const gboolean logmsg);
 void dt_image_check_camera_missing_sample(const struct dt_image_t *img);
 
-/**   insert the new maker/model/lens if it does not exists.
-      returns the corresponding id for the maker/model/lens */
+/**   insert the new data if it does not exists.
+      returns the corresponding id for the name */
 int32_t dt_image_get_camera_maker_id(const char *name);
 int32_t dt_image_get_camera_model_id(const char *name);
 int32_t dt_image_get_camera_lens_id(const char *name);
+int32_t dt_image_get_whitebalance_id(const char *name);
+int32_t dt_image_get_flash_id(const char *name);
+int32_t dt_image_get_exposure_program_id(const char *name);
+int32_t dt_image_get_metering_mode_id(const char *name);
 int32_t dt_image_get_camera_id(const char *maker, const char *model);
 
 #ifdef __cplusplus
