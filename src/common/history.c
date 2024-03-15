@@ -628,12 +628,39 @@ static gboolean _history_copy_and_paste_on_image_merge(const dt_imgid_t imgid,
 
       const dt_dev_history_item_t *hist = g_list_nth_data(dev_src->history, abs(num));
 
-      if(hist)
+      // check if we have a change for the same module & same instance in the
+      // following of the list. If so, we want to skip this history as we will
+      // apply another history for the same module but with possibly different
+      // parameters.
+
+      gboolean same_instance_following = FALSE;
+
+      for(const GList *p = ops; p && p != l; p = g_list_next(p))
+      {
+        const int pnum = GPOINTER_TO_INT(p->data);
+        const dt_dev_history_item_t *phist = g_list_nth_data(dev_src->history, abs(pnum));
+
+        if(!strcmp(hist->module->op, phist->module->op)
+           && hist->module->multi_priority == phist->module->multi_priority)
+        {
+          same_instance_following = TRUE;
+          break;
+        }
+      }
+
+      if(hist && !same_instance_following)
       {
         if(!dt_iop_is_hidden(hist->module))
         {
-          dt_print(DT_DEBUG_IOPORDER, "  module %20s, multiprio %i\n",
-                   hist->module->op, hist->module->multi_priority);
+          dt_print(DT_DEBUG_IOPORDER, "  module %20s, multiprio %i, num %d\n",
+                   hist->module->op, hist->module->multi_priority, num);
+
+          // make sure we use the proper params/blend as the module is set with the
+          // last version of this module.
+          memcpy(hist->module->params, hist->params,
+                 hist->module->params_size);
+          memcpy(hist->module->blend_params, hist->blend_params,
+                 sizeof(dt_develop_blend_params_t));
 
           mod_list = g_list_prepend(mod_list, hist->module);
           autoinit_list = g_list_prepend(autoinit_list, GINT_TO_POINTER(autoinit));
