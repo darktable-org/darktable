@@ -535,7 +535,7 @@ static void view_popup_menu_onRemove(GtkWidget *menuitem,
 
     // clang-format off
     fullq = g_strdup_printf
-      ("INSERT INTO main.selected_images"
+      ("INSERT INTO main.selected_images (imgid)"
        " SELECT id"
        " FROM main.images"
        " WHERE film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s%%')",
