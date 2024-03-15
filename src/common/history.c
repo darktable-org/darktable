@@ -683,6 +683,7 @@ static gboolean _history_copy_and_paste_on_image_merge(const dt_imgid_t imgid,
   {
     dt_iop_module_t *mod = (dt_iop_module_t *)l->data;
     const gboolean autoinit = GPOINTER_TO_INT(ai->data);
+
     dt_history_merge_module_into_history
       (dev_dest, dev_src, mod, &modules_used, FALSE, autoinit);
     ai = g_list_next(ai);
@@ -1950,7 +1951,9 @@ gboolean dt_history_paste_parts_on_list(const GList *list, gboolean undo)
     return FALSE;
   }
 
-  if(undo) dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
+  if(undo)
+    dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
+
   for(const GList *l = l_copy; l; l = g_list_next(l))
   {
     const int dest = GPOINTER_TO_INT(l->data);
@@ -1960,7 +1963,9 @@ gboolean dt_history_paste_parts_on_list(const GList *list, gboolean undo)
                                        darktable.view_manager->copy_paste.copy_iop_order,
                                        darktable.view_manager->copy_paste.full_copy);
   }
-  if(undo) dt_undo_end_group(darktable.undo);
+
+  if(undo)
+    dt_undo_end_group(darktable.undo);
 
   g_list_free(l_copy);
 

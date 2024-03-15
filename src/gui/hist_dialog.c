@@ -164,14 +164,16 @@ static gboolean _gui_is_set(GList *selops,
                             const unsigned int num)
 {
   /* nothing to filter */
-  if(!selops) return TRUE;
+  if(!selops)
+    return TRUE;
 
   for(GList *l = selops; l; l = g_list_next(l))
   {
     if(l->data)
     {
       const unsigned int lnum = GPOINTER_TO_UINT(l->data);
-      if(lnum == num) return TRUE;
+      if(lnum == num)
+        return TRUE;
     }
   }
   return FALSE;
