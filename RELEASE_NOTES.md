@@ -100,6 +100,11 @@ changes (where available).
 
 - Add a dashed outline of the current selected area in the print view.
 
+- Added a few more EXIF fields to the image information module: White
+  balance, exposure program, flash and metering mode.  These get
+  filled automatically for new imports. For existing photos please
+  perform a "refresh EXIF" on the selected images.
+
 ## Bug Fixes
 
 - Fix copy of multiple instances to ensure the proper order is applied
