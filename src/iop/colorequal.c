@@ -1993,6 +1993,8 @@ static void _channel_tabs_switch_callback(GtkNotebook *notebook,
   g->mask_mode = masking_p ? g->channel + 1 : (masking_t ? GRAD_SWITCH + g->channel + 1 : 0);
   if(g->mask_mode != old_mask_mode)
     dt_dev_reprocess_center(self->dev);
+
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
 static GtkWidget *_get_selected(dt_iop_colorequal_gui_data_t *g)
