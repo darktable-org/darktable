@@ -360,7 +360,8 @@ float dt_dev_get_preview_downsampling();
 void dt_dev_process_image_job(dt_develop_t *dev,
                               dt_dev_viewport_t *port,
                               struct dt_dev_pixelpipe_t *pipe,
-                              dt_signal_t signal);
+                              dt_signal_t signal,
+                              const int devid);
 // launch jobs above
 void dt_dev_process_image(dt_develop_t *dev);
 void dt_dev_process_preview(dt_develop_t *dev);
@@ -631,6 +632,7 @@ void dt_dev_undo_end_record(dt_develop_t *dev);
  * develop an image and returns the buf and processed width / height.
  * this is done as in the context of the darkroom, meaning that the
  * final processed sizes will align perfectly on the darkroom view.
+ * if called with a valid CL devid that device is used without locking/unlocking as the caller is doing that
  */
 void dt_dev_image(const dt_imgid_t imgid,
                   const size_t width,
@@ -643,7 +645,8 @@ void dt_dev_image(const dt_imgid_t imgid,
                   float *zoom_x,
                   float *zoom_y,
                   const int32_t snapshot_id,
-                  GList *module_filter_out);
+                  GList *module_filter_out,
+                  const int devid);
 
 
 gboolean dt_dev_equal_chroma(const float *f, const double *d);

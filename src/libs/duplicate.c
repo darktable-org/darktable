@@ -223,7 +223,7 @@ void gui_post_expose(dt_lib_module_t *self,
     dt_dev_image(d->imgid, width, height, -1,
                  &d->buf, &d->scale,
                  &d->buf_width, &d->buf_height,
-                 &d->zoom_x, &d->zoom_y, -1, NULL);
+                 &d->zoom_x, &d->zoom_y, -1, NULL, DT_DEVICE_NONE);
 
     d->preview_id = d->imgid;
   }
