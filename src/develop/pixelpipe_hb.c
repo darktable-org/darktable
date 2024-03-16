@@ -2633,7 +2633,7 @@ gboolean dt_dev_pixelpipe_process(
            const int devid)
 {
   pipe->processing = TRUE;
-  pipe->nocache = FALSE;
+  pipe->nocache = (pipe->type & DT_DEV_PIXELPIPE_IMAGE) != 0;
   pipe->runs++;
   pipe->opencl_enabled = dt_opencl_running();
 
