@@ -2527,7 +2527,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->contrast,
                               _("set saturation contrast for the guided filter.\n"
                                 " - increase to favour sharp transitions between saturations leading to higher contrast\n"
-                                " - decrease for smoother transitions."));
+                                " - decrease for smoother transitions"));
 
   g->param_size = dt_bauhaus_slider_from_params(self, "param_size");
   dt_bauhaus_slider_set_digits(g->param_size, 1);
