@@ -208,7 +208,8 @@ static GList *_get_disabled_modules(const dt_iop_module_t *self,
     //   the current image. This is needed to avoid recursive
     //   image references.
     if((disable
-        && !dt_iop_module_is(mod->so, "gamma") && !dt_iop_module_is(mod->so, "finalscale"))
+        && !dt_iop_module_is(mod->so, "gamma")
+        && !dt_iop_module_is(mod->so, "finalscale"))
        || (is_current
            && (dt_iop_module_is(mod->so, "enlargecanvas")
                || dt_iop_module_is(mod->so, "overlay")
