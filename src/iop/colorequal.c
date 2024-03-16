@@ -2518,9 +2518,9 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_widget_set_tooltip_text(g->threshold,
                               _("set saturation threshold for the guided filter.\n"
-                                " - decrease to allow changes in areas with low chromacity\n"
-                                " - increase to restrict changes to higher chromacities.\n"
-                                "   increases contrast and avoids brightness changes in low chromacity areas."));
+                                " - decrease to allow changes in areas with low chromaticity\n"
+                                " - increase to restrict changes to higher chromaticities\n"
+                                "   increases contrast and avoids brightness changes in low chromaticity areas"));
 
   g->contrast = dt_bauhaus_slider_from_params(self, "contrast");
   dt_bauhaus_slider_set_digits(g->contrast, 3);
