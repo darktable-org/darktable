@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-03-15 19:59+0100\n"
-"PO-Revision-Date: 2024-03-15 22:26+0200\n"
+"POT-Creation-Date: 2024-03-16 20:07+0100\n"
+"PO-Revision-Date: 2024-03-16 22:23+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -8953,7 +8953,7 @@ msgid "adjust the fulcrum used by some blending operations"
 msgstr "Регулювання точки опори, яку використовують деякі операції змішування"
 
 #. Add opacity/scale sliders to table
-#: ../src/develop/blend_gui.c:3625 ../src/iop/overlay.c:1057
+#: ../src/develop/blend_gui.c:3625 ../src/iop/overlay.c:1061
 #: ../src/iop/watermark.c:1362 ../src/libs/masks.c:105
 msgid "opacity"
 msgstr "Непрозорість"
@@ -9050,7 +9050,7 @@ msgstr ""
 msgid "mask refinement"
 msgstr "Уточнення маски"
 
-#: ../src/develop/develop.c:734
+#: ../src/develop/develop.c:735
 msgid ""
 "autosaving history has been disabled for this image because of a very large "
 "history or a slow drive being used"
@@ -9058,12 +9058,12 @@ msgstr ""
 "Автозбереження історії вимкнено для цього зображення через дуже велику "
 "історію або використання повільного диска"
 
-#: ../src/develop/develop.c:2206
+#: ../src/develop/develop.c:2207
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: невідповідність версій модуля `%s': %d != %d"
 
-#: ../src/develop/develop.c:3022
+#: ../src/develop/develop.c:3023
 msgid "duplicate module, can't move new instance after the base one\n"
 msgstr "Не вдається перемістити новий екземпляр модуля після базового\n"
 
@@ -9589,7 +9589,7 @@ msgstr ""
 "зображень.\n"
 "Імовірно, причиною є застосування пресету, стилю, або копіювання історії"
 
-#: ../src/develop/pixelpipe_hb.c:2728
+#: ../src/develop/pixelpipe_hb.c:2735
 msgid ""
 "OpenCL errors encountered; disabling OpenCL for this session! some possible "
 "causes:\n"
@@ -9610,7 +9610,7 @@ msgstr ""
 "  - Занадто малі параметри запасу при використанні опції 'використовувати "
 "всю пам'ять пристрою'."
 
-#: ../src/develop/pixelpipe_hb.c:2881
+#: ../src/develop/pixelpipe_hb.c:2892
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -9848,7 +9848,7 @@ msgstr "Згруповані зображення"
 msgid "fit"
 msgstr "Підгонка"
 
-#: ../src/dtgtk/thumbtable.c:1158 ../src/views/slideshow.c:425
+#: ../src/dtgtk/thumbtable.c:1158 ../src/views/slideshow.c:426
 msgid "there are no images in this collection"
 msgstr "В цій колекції немає зображень"
 
@@ -10908,7 +10908,7 @@ msgstr "Камера"
 msgid "map"
 msgstr "Мапа"
 
-#: ../src/gui/gtk.c:1269 ../src/views/slideshow.c:393
+#: ../src/gui/gtk.c:1269 ../src/views/slideshow.c:394
 msgid "slideshow"
 msgstr "Слайд-шоу"
 
@@ -16317,22 +16317,22 @@ msgstr ""
 #: ../src/iop/colorequal.c:2520
 msgid ""
 "set saturation threshold for the guided filter.\n"
-" - decrease to allow changes in areas with low chromacity\n"
-" - increase to restrict changes to higher chromacities.\n"
-"   increases contrast and avoids brightness changes in low chromacity areas."
+" - decrease to allow changes in areas with low chromaticity\n"
+" - increase to restrict changes to higher chromaticities\n"
+"   increases contrast and avoids brightness changes in low chromaticity areas"
 msgstr ""
 "Встановити поріг насиченості для керованого фільтра.\n"
 " - зменшення дозволяє змінювати ділянки з низькою хроматичністю\n"
-" - збільшення обмежує зміни ділянками вищої хроматичності.\n"
+" - збільшення обмежує зміни ділянками вищої хроматичності\n"
 "   збільшує контрастність і запобігає змінам яскравості в областях із "
-"низькою хроматичністю."
+"низькою хроматичністю"
 
 #: ../src/iop/colorequal.c:2528
 msgid ""
 "set saturation contrast for the guided filter.\n"
 " - increase to favour sharp transitions between saturations leading to "
 "higher contrast\n"
-" - decrease for smoother transitions."
+" - decrease for smoother transitions"
 msgstr ""
 "Встановити контраст насиченості для керованого фільтра.\n"
 "- збільшення сприяє різким переходам між насиченостями, що призводить до "
@@ -18615,7 +18615,7 @@ msgid "find lens"
 msgstr "Знайти об'єктив"
 
 #. scale
-#: ../src/iop/lens.cc:4622 ../src/iop/overlay.c:1068 ../src/iop/vignette.c:1055
+#: ../src/iop/lens.cc:4622 ../src/iop/overlay.c:1072 ../src/iop/vignette.c:1055
 #: ../src/iop/watermark.c:1372 ../src/libs/export.c:1264
 msgid "scale"
 msgstr "Масштаб"
@@ -19520,7 +19520,7 @@ msgstr "Поєднання зображення з елементами обро
 msgid "layer|stack|overlay"
 msgstr "layer|stack|overlay"
 
-#: ../src/iop/overlay.c:283
+#: ../src/iop/overlay.c:285
 #, c-format
 msgid ""
 "overlay image missing from database\n"
@@ -19531,13 +19531,13 @@ msgstr ""
 "\n"
 "'%s'"
 
-#: ../src/iop/overlay.c:324
+#: ../src/iop/overlay.c:326
 #, c-format
 msgid "image %d does not exists"
 msgstr "Зображення %d не існує"
 
 #. TRANSLATORS: This text must be very narrow, check in the GUI that it is not truncated
-#: ../src/iop/overlay.c:752
+#: ../src/iop/overlay.c:756
 msgid ""
 "drop\n"
 "image\n"
@@ -19549,7 +19549,7 @@ msgstr ""
 "стрічки знімків\n"
 "сюди"
 
-#: ../src/iop/overlay.c:960
+#: ../src/iop/overlay.c:964
 #, c-format
 msgid ""
 "cannot use image %d as overlay as it is using itself the current image as "
@@ -19558,12 +19558,12 @@ msgstr ""
 "Неможливо використати зображення %d як накладення, оскільки воно "
 "використовує поточне зображення як накладення"
 
-#: ../src/iop/overlay.c:1061 ../src/iop/watermark.c:1365
+#: ../src/iop/overlay.c:1065 ../src/iop/watermark.c:1365
 msgctxt "section"
 msgid "placement"
 msgstr "Розміщення"
 
-#: ../src/iop/overlay.c:1076
+#: ../src/iop/overlay.c:1080
 msgid ""
 "choose how to scale the overlay\n"
 "• image: scale overlay relative to whole image\n"
@@ -19583,29 +19583,29 @@ msgstr ""
 "• Висота: масштабувати висоту накладення відносно висоти зображення\n"
 "• Додаткові опції: вибрати сторони накладення та зображення окремо"
 
-#: ../src/iop/overlay.c:1087
+#: ../src/iop/overlay.c:1091
 msgid "reference image dimension against which to scale the overlay"
 msgstr "Сторона зображення, відносно якої масштабуватиметься накладення"
 
-#: ../src/iop/overlay.c:1091
+#: ../src/iop/overlay.c:1095
 msgid "overlay dimension to scale"
 msgstr "Сторона накладення, яка масштабуватиметься"
 
-#: ../src/iop/overlay.c:1095 ../src/iop/watermark.c:1395
+#: ../src/iop/overlay.c:1099 ../src/iop/watermark.c:1395
 #: ../src/libs/print_settings.c:2692
 msgid "alignment"
 msgstr "Вирівнювання"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/overlay.c:1119
+#: ../src/iop/overlay.c:1123
 msgid "the opacity of the overlay"
 msgstr "Непрозорість накладення"
 
-#: ../src/iop/overlay.c:1120
+#: ../src/iop/overlay.c:1124
 msgid "the scale of the overlay"
 msgstr "Масштаб накладення"
 
-#: ../src/iop/overlay.c:1121
+#: ../src/iop/overlay.c:1125
 msgid "the rotation of the overlay"
 msgstr "Обертання накладення"
 
@@ -26359,26 +26359,26 @@ msgctxt "view"
 msgid "print"
 msgstr "Друк"
 
-#: ../src/views/slideshow.c:358
+#: ../src/views/slideshow.c:359
 msgid "end of images"
 msgstr "Кінець зображень"
 
-#: ../src/views/slideshow.c:379
+#: ../src/views/slideshow.c:380
 msgid "end of images. press any key to return to lighttable mode"
 msgstr ""
 "Кінець зображень. Натисніть будь-яку клавішу, щоб повернутися до режиму "
 "світлого стола."
 
-#: ../src/views/slideshow.c:512
+#: ../src/views/slideshow.c:513
 msgid "waiting to start slideshow"
 msgstr "Очікування запуску слайд-шоу"
 
-#: ../src/views/slideshow.c:681 ../src/views/slideshow.c:708
-#: ../src/views/slideshow.c:716
+#: ../src/views/slideshow.c:682 ../src/views/slideshow.c:709
+#: ../src/views/slideshow.c:717
 msgid "slideshow paused"
 msgstr "Слайд-шоу призупинено"
 
-#: ../src/views/slideshow.c:689 ../src/views/slideshow.c:699
+#: ../src/views/slideshow.c:690 ../src/views/slideshow.c:700
 #, c-format
 msgid "slideshow delay set to %d second"
 msgid_plural "slideshow delay set to %d seconds"
@@ -26386,35 +26386,35 @@ msgstr[0] "Затримку слайд-шоу встановлено на %d с�
 msgstr[1] "Затримку слайд-шоу встановлено на %d секунди"
 msgstr[2] "Затримку слайд-шоу встановлено на %d секунд"
 
-#: ../src/views/slideshow.c:731
+#: ../src/views/slideshow.c:732
 msgid "start and stop"
 msgstr "Пуск і зупинка"
 
-#: ../src/views/slideshow.c:733
+#: ../src/views/slideshow.c:734
 msgid "exit slideshow"
 msgstr "Вийти зі слайд-шоу"
 
-#: ../src/views/slideshow.c:737
+#: ../src/views/slideshow.c:738
 msgid "slow down"
 msgstr "Уповільнити"
 
-#: ../src/views/slideshow.c:741
+#: ../src/views/slideshow.c:742
 msgid "speed up"
 msgstr "Прискорити"
 
-#: ../src/views/slideshow.c:746
+#: ../src/views/slideshow.c:747
 msgid "step forward"
 msgstr "Наступне зображення"
 
-#: ../src/views/slideshow.c:748
+#: ../src/views/slideshow.c:749
 msgid "step back"
 msgstr "Попереднє зображення"
 
-#: ../src/views/slideshow.c:756
+#: ../src/views/slideshow.c:757
 msgid "go to next image"
 msgstr "Перейти до наступного зображення"
 
-#: ../src/views/slideshow.c:758
+#: ../src/views/slideshow.c:759
 msgid "go to previous image"
 msgstr "Перейти до попереднього зображення"
 
