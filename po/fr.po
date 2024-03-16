@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-03-15 19:59+0100\n"
-"PO-Revision-Date: 2024-03-15 20:10+0100\n"
+"POT-Creation-Date: 2024-03-16 20:07+0100\n"
+"PO-Revision-Date: 2024-03-16 20:08+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -8961,7 +8961,7 @@ msgid "adjust the fulcrum used by some blending operations"
 msgstr "Ajuste le pivot utilisé par quelques opérations de fusion"
 
 #. Add opacity/scale sliders to table
-#: ../src/develop/blend_gui.c:3625 ../src/iop/overlay.c:1057
+#: ../src/develop/blend_gui.c:3625 ../src/iop/overlay.c:1061
 #: ../src/iop/watermark.c:1362 ../src/libs/masks.c:105
 msgid "opacity"
 msgstr "Opacité"
@@ -9061,7 +9061,7 @@ msgstr ""
 msgid "mask refinement"
 msgstr "Raffinement du masque"
 
-#: ../src/develop/develop.c:734
+#: ../src/develop/develop.c:735
 msgid ""
 "autosaving history has been disabled for this image because of a very large "
 "history or a slow drive being used"
@@ -9069,12 +9069,12 @@ msgstr ""
 "La sauvegarde automatique a été désactivé pour cette image à cause d'un "
 "historique long ou d'un disque lent utilisé"
 
-#: ../src/develop/develop.c:2206
+#: ../src/develop/develop.c:2207
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s : Module « %s » version non cohérente : %d != %d"
 
-#: ../src/develop/develop.c:3022
+#: ../src/develop/develop.c:3023
 msgid "duplicate module, can't move new instance after the base one\n"
 msgstr ""
 "Duplication de module, impossible de déplacer la nouvelle instance après "
@@ -9602,7 +9602,7 @@ msgstr ""
 "Probablement introduit en appliquant un préréglage, un style ou un copier/"
 "coller d’historique."
 
-#: ../src/develop/pixelpipe_hb.c:2728
+#: ../src/develop/pixelpipe_hb.c:2735
 msgid ""
 "OpenCL errors encountered; disabling OpenCL for this session! some possible "
 "causes:\n"
@@ -9623,7 +9623,7 @@ msgstr ""
 " • Le « headroom » est trop petit lorsque l'option « Utiliser toute la "
 "mémoire du périphérique » est positionnée."
 
-#: ../src/develop/pixelpipe_hb.c:2881
+#: ../src/develop/pixelpipe_hb.c:2892
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -9861,7 +9861,7 @@ msgstr "Images groupées"
 msgid "fit"
 msgstr "Ajusté"
 
-#: ../src/dtgtk/thumbtable.c:1158 ../src/views/slideshow.c:425
+#: ../src/dtgtk/thumbtable.c:1158 ../src/views/slideshow.c:426
 msgid "there are no images in this collection"
 msgstr "Il n’y a pas d’images dans cette collection"
 
@@ -10952,7 +10952,7 @@ msgstr "Capture"
 msgid "map"
 msgstr "Carte"
 
-#: ../src/gui/gtk.c:1269 ../src/views/slideshow.c:393
+#: ../src/gui/gtk.c:1269 ../src/views/slideshow.c:394
 msgid "slideshow"
 msgstr "Diaporama"
 
@@ -16372,9 +16372,9 @@ msgstr ""
 #: ../src/iop/colorequal.c:2520
 msgid ""
 "set saturation threshold for the guided filter.\n"
-" - decrease to allow changes in areas with low chromacity\n"
-" - increase to restrict changes to higher chromacities.\n"
-"   increases contrast and avoids brightness changes in low chromacity areas."
+" - decrease to allow changes in areas with low chromaticity\n"
+" - increase to restrict changes to higher chromaticities\n"
+"   increases contrast and avoids brightness changes in low chromaticity areas"
 msgstr ""
 "Définit le seuil de saturation pour le filtre guidé.\n"
 " • Diminuer pour permettre les changements dans des zones à faible "
@@ -16388,7 +16388,7 @@ msgid ""
 "set saturation contrast for the guided filter.\n"
 " - increase to favour sharp transitions between saturations leading to "
 "higher contrast\n"
-" - decrease for smoother transitions."
+" - decrease for smoother transitions"
 msgstr ""
 "Définit le contraste de saturation pour le filtre guidé.\n"
 " • Augmenter : favorise les transitions dures entre les saturations donnant "
@@ -18677,7 +18677,7 @@ msgid "find lens"
 msgstr "Objectif"
 
 #. scale
-#: ../src/iop/lens.cc:4622 ../src/iop/overlay.c:1068 ../src/iop/vignette.c:1055
+#: ../src/iop/lens.cc:4622 ../src/iop/overlay.c:1072 ../src/iop/vignette.c:1055
 #: ../src/iop/watermark.c:1372 ../src/libs/export.c:1264
 msgid "scale"
 msgstr "Échelle"
@@ -19596,7 +19596,7 @@ msgstr "Combiner avec des éléments d'une image développée"
 msgid "layer|stack|overlay"
 msgstr "couche|pile|empiler|superposition"
 
-#: ../src/iop/overlay.c:283
+#: ../src/iop/overlay.c:285
 #, c-format
 msgid ""
 "overlay image missing from database\n"
@@ -19607,13 +19607,13 @@ msgstr ""
 "\n"
 "« %s »"
 
-#: ../src/iop/overlay.c:324
+#: ../src/iop/overlay.c:326
 #, c-format
 msgid "image %d does not exists"
 msgstr "Image %d n'existe pas"
 
 #. TRANSLATORS: This text must be very narrow, check in the GUI that it is not truncated
-#: ../src/iop/overlay.c:752
+#: ../src/iop/overlay.c:756
 msgid ""
 "drop\n"
 "image\n"
@@ -19625,7 +19625,7 @@ msgstr ""
 "depuis le bandeau\n"
 "ici"
 
-#: ../src/iop/overlay.c:960
+#: ../src/iop/overlay.c:964
 #, c-format
 msgid ""
 "cannot use image %d as overlay as it is using itself the current image as "
@@ -19634,12 +19634,12 @@ msgstr ""
 "Impossible d'utiliser l'image « %d » comme superposition car elle utilise "
 "elle même l'image courante comme superposition"
 
-#: ../src/iop/overlay.c:1061 ../src/iop/watermark.c:1365
+#: ../src/iop/overlay.c:1065 ../src/iop/watermark.c:1365
 msgctxt "section"
 msgid "placement"
 msgstr "Placement"
 
-#: ../src/iop/overlay.c:1076
+#: ../src/iop/overlay.c:1080
 msgid ""
 "choose how to scale the overlay\n"
 "• image: scale overlay relative to whole image\n"
@@ -19661,31 +19661,31 @@ msgstr ""
 " • Options avancées – Permet de choisir les dimensions de l'image et de la "
 "superposition indépendamment"
 
-#: ../src/iop/overlay.c:1087
+#: ../src/iop/overlay.c:1091
 msgid "reference image dimension against which to scale the overlay"
 msgstr ""
 "La dimension de référence de l'image à partir de laquelle mettre la "
 "superposition à l'échelle"
 
-#: ../src/iop/overlay.c:1091
+#: ../src/iop/overlay.c:1095
 msgid "overlay dimension to scale"
 msgstr "dimension de la superposition à mettre à l'échelle"
 
-#: ../src/iop/overlay.c:1095 ../src/iop/watermark.c:1395
+#: ../src/iop/overlay.c:1099 ../src/iop/watermark.c:1395
 #: ../src/libs/print_settings.c:2692
 msgid "alignment"
 msgstr "Alignement"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/overlay.c:1119
+#: ../src/iop/overlay.c:1123
 msgid "the opacity of the overlay"
 msgstr "Opacité de la superposition"
 
-#: ../src/iop/overlay.c:1120
+#: ../src/iop/overlay.c:1124
 msgid "the scale of the overlay"
 msgstr "Taille de la supperposition"
 
-#: ../src/iop/overlay.c:1121
+#: ../src/iop/overlay.c:1125
 msgid "the rotation of the overlay"
 msgstr "La rotation de la superposition"
 
@@ -26487,60 +26487,60 @@ msgctxt "view"
 msgid "print"
 msgstr "Impression"
 
-#: ../src/views/slideshow.c:358
+#: ../src/views/slideshow.c:359
 msgid "end of images"
 msgstr "Fin des images"
 
-#: ../src/views/slideshow.c:379
+#: ../src/views/slideshow.c:380
 msgid "end of images. press any key to return to lighttable mode"
 msgstr ""
 "Fin des images, appuyez sur une touche pour revenir à la table lumineuse."
 
-#: ../src/views/slideshow.c:512
+#: ../src/views/slideshow.c:513
 msgid "waiting to start slideshow"
 msgstr "Le diaporama est prêt à être lancé"
 
-#: ../src/views/slideshow.c:681 ../src/views/slideshow.c:708
-#: ../src/views/slideshow.c:716
+#: ../src/views/slideshow.c:682 ../src/views/slideshow.c:709
+#: ../src/views/slideshow.c:717
 msgid "slideshow paused"
 msgstr "Diaporama en pause"
 
-#: ../src/views/slideshow.c:689 ../src/views/slideshow.c:699
+#: ../src/views/slideshow.c:690 ../src/views/slideshow.c:700
 #, c-format
 msgid "slideshow delay set to %d second"
 msgid_plural "slideshow delay set to %d seconds"
 msgstr[0] "Temporisation du diaporama ajustée à %d seconde"
 msgstr[1] "Temporisation du diaporama ajustée à %d secondes"
 
-#: ../src/views/slideshow.c:731
+#: ../src/views/slideshow.c:732
 msgid "start and stop"
 msgstr "Marche et arrêt"
 
-#: ../src/views/slideshow.c:733
+#: ../src/views/slideshow.c:734
 msgid "exit slideshow"
 msgstr "Quitter le diaporama"
 
-#: ../src/views/slideshow.c:737
+#: ../src/views/slideshow.c:738
 msgid "slow down"
 msgstr "Ralentir"
 
-#: ../src/views/slideshow.c:741
+#: ../src/views/slideshow.c:742
 msgid "speed up"
 msgstr "Accélérer"
 
-#: ../src/views/slideshow.c:746
+#: ../src/views/slideshow.c:747
 msgid "step forward"
 msgstr "Image suivante"
 
-#: ../src/views/slideshow.c:748
+#: ../src/views/slideshow.c:749
 msgid "step back"
 msgstr "Image précédente"
 
-#: ../src/views/slideshow.c:756
+#: ../src/views/slideshow.c:757
 msgid "go to next image"
 msgstr "Passe au fichier suivant"
 
-#: ../src/views/slideshow.c:758
+#: ../src/views/slideshow.c:759
 msgid "go to previous image"
 msgstr "Passer à l’image précédente"
 
