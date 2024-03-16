@@ -3464,14 +3464,15 @@ void dt_dev_image(const dt_imgid_t imgid,
                   float *zoom_y,
                   const int snapshot_id,
                   GList *module_filter_out,
-                  const int devid)
+                  const int devid,
+                  const gboolean finalscale)
 {
   dt_develop_t dev;
   dt_dev_init(&dev, TRUE);
   dev.gui_attached = FALSE;
   dt_dev_pixelpipe_t *pipe = dev.full.pipe;
 
-  pipe->type |= DT_DEV_PIXELPIPE_IMAGE;
+  pipe->type |= DT_DEV_PIXELPIPE_IMAGE | (finalscale ? DT_DEV_PIXELPIPE_IMAGE_FINAL : 0);
   // load image and set history_end
 
   dev.snapshot_id = snapshot_id;
