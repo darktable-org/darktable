@@ -203,10 +203,11 @@ static GList *_get_disabled_modules(const dt_iop_module_t *self,
     dt_iop_module_t *mod = (dt_iop_module_t *)(l->data);
 
     // if disable is actif
-    // - disable module except if gamma
-    // - disable overlay & enlargecanvas if overlay is working on
+    // - disable module except if gamma / finalscale
+    // - disable overlay, enlargecanvas if overlay is working on
     //   the current image. This is needed to avoid recursive
-    //   image references.
+    //   image references. Also disable crop, ashift which are not
+    //   wanted here (double crop / shift).
     if((disable
         && !dt_iop_module_is(mod->so, "gamma")
         && !dt_iop_module_is(mod->so, "finalscale"))
