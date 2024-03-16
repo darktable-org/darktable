@@ -87,7 +87,7 @@ void dt_dev_pixelpipe_cache_cleanup(struct dt_dev_pixelpipe_t *pipe)
 {
   dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
 
-  if(pipe->type & DT_DEV_PIXELPIPE_FULL)
+  if(pipe->type == DT_DEV_PIXELPIPE_FULL)
   {
     dt_print(DT_DEBUG_PIPE, "Session fullpipe cache report. hits/run=%.2f, hits/test=%.3f\n",
     (double)(cache->hits) / fmax(1.0, pipe->runs),

@@ -208,7 +208,7 @@ static GList *_get_disabled_modules(const dt_iop_module_t *self,
     //   the current image. This is needed to avoid recursive
     //   image references.
     if((disable
-        && !dt_iop_module_is(mod->so, "gamma"))
+        && !dt_iop_module_is(mod->so, "gamma") && !dt_iop_module_is(mod->so, "finalscale"))
        || (is_current
            && (dt_iop_module_is(mod->so, "enlargecanvas")
                || dt_iop_module_is(mod->so, "overlay")
@@ -306,7 +306,7 @@ static void _setup_overlay(dt_iop_module_t *self,
                  -1,
                  &buf, NULL, &bw, &bh,
                  NULL, NULL,
-                 -1, disabled_modules);
+                 -1, disabled_modules, piece->pipe->devid);
 
     uint8_t *old_buf = *pbuf;
 
@@ -349,6 +349,8 @@ void process(struct dt_iop_module_t *self,
   uint8_t **pbuf = self->dev->image_storage.id == darktable.develop->image_storage.id
     ? &gd->cache[index]
     : &cbuf;
+
+  pbuf = &cbuf; // comment line to enable overlay cache
 
   if(!*pbuf)
   {
