@@ -163,6 +163,7 @@ void commit_params(dt_iop_module_t *self,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   piece->enabled = piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT
+                  || pipe->type & DT_DEV_PIXELPIPE_IMAGE
                   || _gui_fullpipe(piece);
 }
 

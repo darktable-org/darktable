@@ -1062,7 +1062,7 @@ int dt_imageio_export_with_flags(const dt_imgid_t imgid,
     // we can use openmp further down):
     if(bpp == 8)
       dt_dev_pixelpipe_process(&pipe, &dev, 0, 0,
-                               processed_width, processed_height, scale);
+                               processed_width, processed_height, scale, DT_DEVICE_NONE);
     else
       dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0,
                                         processed_width, processed_height, scale);

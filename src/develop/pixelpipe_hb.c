@@ -2520,7 +2520,7 @@ gboolean dt_dev_pixelpipe_process_no_gamma(
   }
 
   if(gamma) gamma->enabled = FALSE;
-  const gboolean ret = dt_dev_pixelpipe_process(pipe, dev, x, y, width, height, scale);
+  const gboolean ret = dt_dev_pixelpipe_process(pipe, dev, x, y, width, height, scale, DT_DEVICE_NONE);
   if(gamma) gamma->enabled = TRUE;
   return ret;
 }
@@ -2629,16 +2629,20 @@ gboolean dt_dev_pixelpipe_process(
            const int y,
            const int width,
            const int height,
-           const float scale)
+           const float scale,
+           const int devid)
 {
   pipe->processing = TRUE;
-  pipe->nocache = FALSE;
+  pipe->nocache = (pipe->type & DT_DEV_PIXELPIPE_IMAGE) != 0;
   pipe->runs++;
   pipe->opencl_enabled = dt_opencl_running();
-  pipe->devid = (pipe->opencl_enabled) ? dt_opencl_lock_device(pipe->type)
-                                       : DT_DEVICE_CPU; // try to get/lock opencl resource
 
-  dt_dev_pixelpipe_cache_checkmem(pipe);
+  // if devid is a valid CL device we don't lock it as the caller has done so already
+  const gboolean claimed = devid > DT_DEVICE_CPU;
+  pipe->devid = pipe->opencl_enabled ? (claimed ? devid : dt_opencl_lock_device(pipe->type)) : DT_DEVICE_CPU;
+
+  if(!claimed)  // don't free cachelines as the caller is using them
+    dt_dev_pixelpipe_cache_checkmem(pipe);
 
   dt_print(DT_DEBUG_MEMORY, "[memory] before pixelpipe process\n");
   dt_print_mem_usage();
@@ -2695,7 +2699,7 @@ restart:
                                                                &roi,
                                                                modules, pieces, pos);
   // get status summary of opencl queue by checking the eventlist
-  const gboolean oclerr = (pipe->devid >= 0)
+  const gboolean oclerr = (pipe->devid > DT_DEVICE_CPU)
                           ? (dt_opencl_events_flush(pipe->devid, TRUE) != 0)
                           : FALSE;
 
@@ -2708,7 +2712,10 @@ restart:
   {
     // Well, there were errors -> we might need to free an invalid opencl memory object
     dt_opencl_release_mem_object(cl_mem_out);
-    dt_opencl_unlock_device(pipe->devid); // release opencl resource
+
+    if(!claimed) // only unlock if locked above
+      dt_opencl_unlock_device(pipe->devid); // release opencl resource
+
     dt_pthread_mutex_lock(&pipe->busy_mutex);
     pipe->opencl_enabled = FALSE; // disable opencl for this pipe
     pipe->opencl_error = FALSE;   // reset error status
@@ -2750,11 +2757,14 @@ restart:
     g_list_free_full(pipe->forms, (void (*)(void *))dt_masks_free_form);
     pipe->forms = NULL;
   }
+
   if(pipe->devid > DT_DEVICE_CPU)
   {
-    dt_opencl_unlock_device(pipe->devid);
+    if(!claimed) // only unlock if locked above
+      dt_opencl_unlock_device(pipe->devid);
     pipe->devid = DT_DEVICE_CPU;
   }
+
   // ... and in case of other errors ...
   if(err)
   {
@@ -2791,7 +2801,8 @@ restart:
   pipe->backbuf_height = height;
   dt_pthread_mutex_unlock(&pipe->backbuf_mutex);
 
-  dt_dev_pixelpipe_cache_report(pipe);
+  if(!claimed)
+    dt_dev_pixelpipe_cache_report(pipe);
 
   dt_print_pipe(DT_DEBUG_PIPE, "pipe finished", pipe, NULL, old_devid, &roi, &roi, "\n\n");
 
