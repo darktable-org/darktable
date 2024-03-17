@@ -264,6 +264,8 @@ static void _setup_overlay(dt_iop_module_t *self,
     return;
   }
 
+  dt_develop_t *dev = self->dev;
+
   gboolean image_exists = dt_image_exists(imgid);
 
   // The overlay image could have been removed from collection and
@@ -275,7 +277,7 @@ static void _setup_overlay(dt_iop_module_t *self,
     {
       image_exists = TRUE;
       p->imgid = new_imgid;
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      dt_dev_add_history_item(dev, self, TRUE);
       if(g)
         gtk_widget_queue_draw(GTK_WIDGET(g->area));
     }
@@ -290,8 +292,6 @@ static void _setup_overlay(dt_iop_module_t *self,
 
   if(image_exists)
   {
-    dt_develop_t *dev = self->dev;
-
     const size_t width  = dev->image_storage.width;
     const size_t height = dev->image_storage.width;
 
@@ -317,6 +317,8 @@ static void _setup_overlay(dt_iop_module_t *self,
     p->buf_height    = bh;
     data->buf_width  = bw;
     data->buf_height = bh;
+
+    dt_dev_add_history_item(dev, self, TRUE);
 
     *pbuf = buf;
     dt_free_align(old_buf);
@@ -351,8 +353,6 @@ void process(struct dt_iop_module_t *self,
   uint8_t **pbuf = self->dev->image_storage.id == darktable.develop->image_storage.id
     ? &gd->cache[index]
     : &cbuf;
-
-  pbuf = &cbuf; // comment line to enable overlay cache
 
   if(!*pbuf)
   {
@@ -972,8 +972,10 @@ static void _drag_and_drop_received(GtkWidget *widget,
           dt_overlay_remove(self->dev->image_storage.id, p->imgid);
 
         // and record the new one
-        p->imgid = imgid;
-        p->hash = 0;
+        p->imgid         = imgid;
+        p->hash          = 0;
+        p->buf_width     = 0;
+        p->buf_height    = 0;
         _clear_cache_entry(self, index);
 
         dt_overlay_record(self->dev->image_storage.id, p->imgid);
