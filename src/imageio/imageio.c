@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -147,13 +147,13 @@ dt_image_flags_t dt_imageio_get_type_from_extension(const char *extension)
 }
 
 // load a full-res thumbnail:
-int dt_imageio_large_thumbnail(const char *filename,
+gboolean dt_imageio_large_thumbnail(const char *filename,
                                uint8_t **buffer,
                                int32_t *width,
                                int32_t *height,
                                dt_colorspaces_color_profile_type_t *color_space)
 {
-  int res = 1;
+  int res = TRUE;
 
   uint8_t *buf = NULL;
   char *mime_type = NULL;
@@ -185,7 +185,7 @@ int dt_imageio_large_thumbnail(const char *filename,
       goto error;
     }
 
-    res = 0;
+    res = FALSE;
   }
   else
   {
@@ -236,7 +236,7 @@ int dt_imageio_large_thumbnail(const char *filename,
       }
     }
 
-    res = 0;
+    res = FALSE;
 
   error_gm:
     if(image) DestroyImage(image);
@@ -287,11 +287,11 @@ int dt_imageio_large_thumbnail(const char *filename,
       goto error_im;
     }
 
-    res = 0;
+    res = FALSE;
 
 error_im:
     DestroyMagickWand(image);
-    if(res != 0) goto error;
+    if(res) goto error;
 #else
     dt_print(DT_DEBUG_ALWAYS,
       "[dt_imageio_large_thumbnail] error: The thumbnail image is not in "
@@ -634,7 +634,7 @@ gboolean dt_imageio_is_ldr(const char *filename)
   return FALSE;
 }
 
-int dt_imageio_is_hdr(const char *filename)
+gboolean dt_imageio_is_hdr(const char *filename)
 {
   const char *c = filename + strlen(filename);
   while(c > filename && *c != '.') c--;
@@ -644,8 +644,8 @@ int dt_imageio_is_hdr(const char *filename)
        || !strcasecmp(c, ".exr")
 #endif
       )
-      return 1;
-  return 0;
+      return TRUE;
+  return FALSE;
 }
 
 // transparent read method to load ldr image to dt_raw_image_t with
@@ -708,7 +708,7 @@ void dt_imageio_to_fractional(const float in,
   }
 }
 
-int dt_imageio_export(const dt_imgid_t imgid,
+gboolean dt_imageio_export(const dt_imgid_t imgid,
                       const char *filename,
                       dt_imageio_module_format_t *format,
                       dt_imageio_module_data_t *format_params,
@@ -727,9 +727,9 @@ int dt_imageio_export(const dt_imgid_t imgid,
 {
   if(strcmp(format->mime(format_params), "x-copy") == 0)
     /* This is a just a copy, skip process and just export */
-    return format->write_image(format_params, filename, NULL, icc_type,
+    return (format->write_image(format_params, filename, NULL, icc_type,
                                icc_filename, NULL, 0, imgid, num, total, NULL,
-                               export_masks);
+                               export_masks)) != 0;
   else
   {
     const gboolean is_scaling =
@@ -746,7 +746,7 @@ int dt_imageio_export(const dt_imgid_t imgid,
 
 // internal function: to avoid exif blob reading + 8-bit byteorder
 // flag + high-quality override
-int dt_imageio_export_with_flags(const dt_imgid_t imgid,
+gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
                                  const char *filename,
                                  dt_imageio_module_format_t *format,
                                  dt_imageio_module_data_t *format_params,
@@ -1195,17 +1195,17 @@ int dt_imageio_export_with_flags(const dt_imgid_t imgid,
     const int length = dt_exif_read_blob(&exif_profile, pathname, imgid, sRGB,
                                          processed_width, processed_height, 0);
 
-    res = format->write_image(format_params, filename, outbuf, icc_type,
+    res = (format->write_image(format_params, filename, outbuf, icc_type,
                               icc_filename, exif_profile, length, imgid,
-                              num, total, &pipe, export_masks);
+                              num, total, &pipe, export_masks)) != 0;
 
     free(exif_profile);
   }
   else
   {
-    res = format->write_image(format_params, filename, outbuf, icc_type,
+    res = (format->write_image(format_params, filename, outbuf, icc_type,
                               icc_filename, NULL, 0, imgid, num, total,
-                              &pipe, export_masks);
+                              &pipe, export_masks)) != 0;
   }
 
   if(res)
@@ -1255,7 +1255,7 @@ int dt_imageio_export_with_flags(const dt_imgid_t imgid,
 
   if(!thumbnail_export)
     dt_set_backthumb_time(5.0);
-  return 0; // success
+  return FALSE; // success
 
 error:
   dt_dev_pixelpipe_cleanup(&pipe);
@@ -1265,7 +1265,7 @@ error_early:
 
   if(!thumbnail_export)
     dt_set_backthumb_time(5.0);
-  return 1;
+  return TRUE;
 }
 
 
