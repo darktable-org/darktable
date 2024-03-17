@@ -308,7 +308,7 @@ static void _setup_overlay(dt_iop_module_t *self,
                  -1,
                  &buf, NULL, &bw, &bh,
                  NULL, NULL,
-                 -1, disabled_modules, piece->pipe->devid);
+                 -1, disabled_modules, piece->pipe->devid, TRUE);
 
     uint8_t *old_buf = *pbuf;
 
