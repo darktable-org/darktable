@@ -651,7 +651,16 @@ const char *dt_collection_name_untranslated(const dt_collection_properties_t pro
       return N_("rating");
     case DT_COLLECTION_PROP_TEXTSEARCH:
       return N_("search");
-    case DT_COLLECTION_PROP_LAST:             return NULL;
+    case DT_COLLECTION_PROP_WHITEBALANCE:
+      return N_("white balance");
+    case DT_COLLECTION_PROP_FLASH:
+      return N_("flash");
+    case DT_COLLECTION_PROP_EXPOSURE_PROGRAM:
+      return N_("exposure program");
+    case DT_COLLECTION_PROP_METERING_MODE:
+      return N_("metering mode");
+    case DT_COLLECTION_PROP_LAST:
+      return NULL;
     default:
     {
       if(prop >= DT_COLLECTION_PROP_METADATA
@@ -1632,6 +1641,111 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
           g_free(lens);
         }
 
+      }
+      g_strfreev(elems);
+      query = dt_util_dstrcat(query, ")");
+      break;
+
+    case DT_COLLECTION_PROP_WHITEBALANCE: // white balance
+      query = g_strdup("(");
+      // handle the possibility of multiple values
+      elems = g_strsplit(escaped_text, ",", -1);
+      for(int i = 0; i < g_strv_length(elems); i++)
+      {
+        if(!g_strcmp0(elems[i], _("unnamed")))
+        {
+          query = dt_util_dstrcat
+            (query,
+             "%swhitebalance_id IN (SELECT id FROM main.whitebalance WHERE name IS NULL OR TRIM(name)=''",
+             i>0?" OR ":"");
+        }
+        else
+        {
+          gchar *whitebalance = _add_wildcards(elems[i]);
+          query = dt_util_dstrcat(query,
+                                  "%swhitebalance_id IN (SELECT id FROM main.whitebalance WHERE name LIKE '%s')",
+                                  i>0?" OR ":"", whitebalance);
+          g_free(whitebalance);
+        }
+
+      }
+      g_strfreev(elems);
+      query = dt_util_dstrcat(query, ")");
+      break;
+
+    case DT_COLLECTION_PROP_FLASH: // flash
+      query = g_strdup("(");
+      // handle the possibility of multiple values
+      elems = g_strsplit(escaped_text, ",", -1);
+      for(int i = 0; i < g_strv_length(elems); i++)
+      {
+        if(!g_strcmp0(elems[i], _("unnamed")))
+        {
+          query = dt_util_dstrcat
+            (query,
+             "%sflash_id IN (SELECT id FROM main.flash WHERE name IS NULL OR TRIM(name)=''",
+             i>0?" OR ":"");
+        }
+        else
+        {
+          gchar *flash = _add_wildcards(elems[i]);
+          query = dt_util_dstrcat(query,
+                                  "%sflash_id IN (SELECT id FROM main.flash WHERE name LIKE '%s')",
+                                  i>0?" OR ":"", flash);
+          g_free(flash);
+        }
+      }
+      g_strfreev(elems);
+      query = dt_util_dstrcat(query, ")");
+      break;
+
+    case DT_COLLECTION_PROP_EXPOSURE_PROGRAM: // exposure program
+      query = g_strdup("(");
+      // handle the possibility of multiple values
+      elems = g_strsplit(escaped_text, ",", -1);
+      for(int i = 0; i < g_strv_length(elems); i++)
+      {
+        if(!g_strcmp0(elems[i], _("unnamed")))
+        {
+          query = dt_util_dstrcat
+            (query,
+             "%sexposure_program_id IN (SELECT id FROM main.exposure_program WHERE name IS NULL OR TRIM(name)=''",
+             i>0?" OR ":"");
+        }
+        else
+        {
+          gchar *exposure_program = _add_wildcards(elems[i]);
+          query = dt_util_dstrcat(query,
+                                  "%sexposure_program_id IN (SELECT id FROM main.exposure_program WHERE name LIKE '%s')",
+                                  i>0?" OR ":"", exposure_program);
+          g_free(exposure_program);
+        }
+      }
+      g_strfreev(elems);
+      query = dt_util_dstrcat(query, ")");
+      break;
+
+    case DT_COLLECTION_PROP_METERING_MODE: // metering mode
+      query = g_strdup("(");
+      // handle the possibility of multiple values
+      elems = g_strsplit(escaped_text, ",", -1);
+      for(int i = 0; i < g_strv_length(elems); i++)
+      {
+        if(!g_strcmp0(elems[i], _("unnamed")))
+        {
+          query = dt_util_dstrcat
+            (query,
+             "%smetering_mode_id IN (SELECT id FROM main.metering_mode WHERE name IS NULL OR TRIM(name)=''",
+             i>0?" OR ":"");
+        }
+        else
+        {
+          gchar *metering_mode = _add_wildcards(elems[i]);
+          query = dt_util_dstrcat(query,
+                                  "%smetering_mode_id IN (SELECT id FROM main.metering_mode WHERE name LIKE '%s')",
+                                  i>0?" OR ":"", metering_mode);
+          g_free(metering_mode);
+        }
       }
       g_strfreev(elems);
       query = dt_util_dstrcat(query, ")");

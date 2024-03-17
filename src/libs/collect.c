@@ -45,7 +45,7 @@
 #include "osx/osx.h"
 #endif
 
-DT_MODULE(3)
+DT_MODULE(4)
 
 #define MAX_RULES 10
 
@@ -279,6 +279,70 @@ void *legacy_params(struct dt_lib_module_t *self,
 
     *new_size = old_params_size;
     *new_version = 3;
+
+    return (void *)new;
+  }
+  else if(old_version == 3)
+  {
+    /* from v3 to v4 we have added 4 new filters for white balance, flash, exposure program
+       and metering mode */
+    dt_lib_collect_params_t *old = (dt_lib_collect_params_t *)old_params;
+
+    if(old->rules > MAX_RULES)
+      /* preset is corrupted, return NULL and drop the preset */
+      return NULL;
+
+    dt_lib_collect_params_t *new = (dt_lib_collect_params_t *)malloc(old_params_size);
+
+    const int table[DT_COLLECTION_PROP_LAST] =
+      {
+        DT_COLLECTION_PROP_FILMROLL,
+        DT_COLLECTION_PROP_FOLDERS,
+        DT_COLLECTION_PROP_FILENAME,
+        DT_COLLECTION_PROP_CAMERA,
+        DT_COLLECTION_PROP_LENS,
+        DT_COLLECTION_PROP_APERTURE,
+        DT_COLLECTION_PROP_EXPOSURE,
+        DT_COLLECTION_PROP_FOCAL_LENGTH,
+        DT_COLLECTION_PROP_ISO,
+        DT_COLLECTION_PROP_DAY,
+        DT_COLLECTION_PROP_TIME,
+        DT_COLLECTION_PROP_IMPORT_TIMESTAMP,
+        DT_COLLECTION_PROP_CHANGE_TIMESTAMP,
+        DT_COLLECTION_PROP_EXPORT_TIMESTAMP,
+        DT_COLLECTION_PROP_PRINT_TIMESTAMP,
+        DT_COLLECTION_PROP_GEOTAGGING,
+        DT_COLLECTION_PROP_ASPECT_RATIO,
+        DT_COLLECTION_PROP_TAG,
+        DT_COLLECTION_PROP_COLORLABEL,
+
+        // spaces for the metadata, see metadata.h
+        DT_COLLECTION_PROP_COLORLABEL + 1,
+        DT_COLLECTION_PROP_COLORLABEL + 2,
+        DT_COLLECTION_PROP_COLORLABEL + 3,
+        DT_COLLECTION_PROP_COLORLABEL + 4,
+        DT_COLLECTION_PROP_COLORLABEL + 5,
+
+        DT_COLLECTION_PROP_METADATA,
+        DT_COLLECTION_PROP_GROUPING,
+        DT_COLLECTION_PROP_LOCAL_COPY,
+
+        DT_COLLECTION_PROP_HISTORY,
+        DT_COLLECTION_PROP_MODULE,
+        DT_COLLECTION_PROP_ORDER
+      };
+
+    new->rules = old->rules;
+
+    for(int r = 0; r < old->rules; r++)
+    {
+      new->rule[r].item = table[old->rule[r].item];
+      new->rule[r].mode = old->rule[r].mode;
+      memcpy(new->rule[r].string, old->rule[r].string, PARAM_STRING_SIZE);
+    }
+
+    *new_size = old_params_size;
+    *new_version = 4;
 
     return (void *)new;
   }
@@ -1947,6 +2011,58 @@ static void _list_view(dt_lib_collect_rule_t *dr)
         // clang-format on
         break;
 
+      case DT_COLLECTION_PROP_WHITEBALANCE: // white balance
+        // clang-format off
+        g_snprintf(query, sizeof(query),
+                   "SELECT wb.name AS whitebalance, 1, COUNT(*) AS count"
+                   "  FROM main.images AS mi, main.whitebalance AS wb"
+                   "  WHERE mi.whitebalance_id = wb.id"
+                   "    AND %s"
+                   "  GROUP BY LOWER(whitebalance)"
+                   "  ORDER BY LOWER(whitebalance) %s", where_ext,
+                   sort_descending ? "DESC" : "ASC");
+        // clang-format on
+        break;
+
+      case DT_COLLECTION_PROP_FLASH: // white balance
+        // clang-format off
+        g_snprintf(query, sizeof(query),
+                   "SELECT fl.name AS flash, 1, COUNT(*) AS count"
+                   "  FROM main.images AS mi, main.flash AS fl"
+                   "  WHERE mi.flash_id = fl.id"
+                   "    AND %s"
+                   "  GROUP BY LOWER(flash)"
+                   "  ORDER BY LOWER(flash) %s", where_ext,
+                   sort_descending ? "DESC" : "ASC");
+        // clang-format on
+        break;
+
+      case DT_COLLECTION_PROP_EXPOSURE_PROGRAM: // exposure program
+        // clang-format off
+        g_snprintf(query, sizeof(query),
+                   "SELECT ep.name AS exposure_program, 1, COUNT(*) AS count"
+                   "  FROM main.images AS mi, main.exposure_program AS ep"
+                   "  WHERE mi.exposure_program_id = ep.id"
+                   "    AND %s"
+                   "  GROUP BY LOWER(exposure_program)"
+                   "  ORDER BY LOWER(exposure_program) %s", where_ext,
+                   sort_descending ? "DESC" : "ASC");
+        // clang-format on
+        break;
+
+      case DT_COLLECTION_PROP_METERING_MODE: // metering mode
+        // clang-format off
+        g_snprintf(query, sizeof(query),
+                   "SELECT mm.name AS metering_mode, 1, COUNT(*) AS count"
+                   "  FROM main.images AS mi, main.metering_mode AS mm"
+                   "  WHERE mi.metering_mode_id = mm.id"
+                   "    AND %s"
+                   "  GROUP BY LOWER(metering_mode)"
+                   "  ORDER BY LOWER(metering_mode) %s", where_ext,
+                   sort_descending ? "DESC" : "ASC");
+        // clang-format on
+        break;
+
       case DT_COLLECTION_PROP_FOCAL_LENGTH: // focal length
         // clang-format off
         g_snprintf(query, sizeof(query),
@@ -3249,6 +3365,10 @@ static void _populate_collect_combo(GtkWidget *w)
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FOCAL_LENGTH);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ISO);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ASPECT_RATIO);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_WHITEBALANCE);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FLASH);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_EXPOSURE_PROGRAM);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METERING_MODE);
 
     dt_bauhaus_combobox_add_section(w, _("darktable"));
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GROUPING);
