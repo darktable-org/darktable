@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -45,7 +45,7 @@
 #include "osx/osx.h"
 #endif
 
-DT_MODULE(4)
+DT_MODULE(3)
 
 #define MAX_RULES 10
 
@@ -279,70 +279,6 @@ void *legacy_params(struct dt_lib_module_t *self,
 
     *new_size = old_params_size;
     *new_version = 3;
-
-    return (void *)new;
-  }
-  else if(old_version == 3)
-  {
-    /* from v3 to v4 we have added 4 new filters for white balance, flash, exposure program
-       and metering mode */
-    dt_lib_collect_params_t *old = (dt_lib_collect_params_t *)old_params;
-
-    if(old->rules > MAX_RULES)
-      /* preset is corrupted, return NULL and drop the preset */
-      return NULL;
-
-    dt_lib_collect_params_t *new = (dt_lib_collect_params_t *)malloc(old_params_size);
-
-    const int table[DT_COLLECTION_PROP_LAST] =
-      {
-        DT_COLLECTION_PROP_FILMROLL,
-        DT_COLLECTION_PROP_FOLDERS,
-        DT_COLLECTION_PROP_FILENAME,
-        DT_COLLECTION_PROP_CAMERA,
-        DT_COLLECTION_PROP_LENS,
-        DT_COLLECTION_PROP_APERTURE,
-        DT_COLLECTION_PROP_EXPOSURE,
-        DT_COLLECTION_PROP_FOCAL_LENGTH,
-        DT_COLLECTION_PROP_ISO,
-        DT_COLLECTION_PROP_DAY,
-        DT_COLLECTION_PROP_TIME,
-        DT_COLLECTION_PROP_IMPORT_TIMESTAMP,
-        DT_COLLECTION_PROP_CHANGE_TIMESTAMP,
-        DT_COLLECTION_PROP_EXPORT_TIMESTAMP,
-        DT_COLLECTION_PROP_PRINT_TIMESTAMP,
-        DT_COLLECTION_PROP_GEOTAGGING,
-        DT_COLLECTION_PROP_ASPECT_RATIO,
-        DT_COLLECTION_PROP_TAG,
-        DT_COLLECTION_PROP_COLORLABEL,
-
-        // spaces for the metadata, see metadata.h
-        DT_COLLECTION_PROP_COLORLABEL + 1,
-        DT_COLLECTION_PROP_COLORLABEL + 2,
-        DT_COLLECTION_PROP_COLORLABEL + 3,
-        DT_COLLECTION_PROP_COLORLABEL + 4,
-        DT_COLLECTION_PROP_COLORLABEL + 5,
-
-        DT_COLLECTION_PROP_METADATA,
-        DT_COLLECTION_PROP_GROUPING,
-        DT_COLLECTION_PROP_LOCAL_COPY,
-
-        DT_COLLECTION_PROP_HISTORY,
-        DT_COLLECTION_PROP_MODULE,
-        DT_COLLECTION_PROP_ORDER
-      };
-
-    new->rules = old->rules;
-
-    for(int r = 0; r < old->rules; r++)
-    {
-      new->rule[r].item = table[old->rule[r].item];
-      new->rule[r].mode = old->rule[r].mode;
-      memcpy(new->rule[r].string, old->rule[r].string, PARAM_STRING_SIZE);
-    }
-
-    *new_size = old_params_size;
-    *new_version = 4;
 
     return (void *)new;
   }

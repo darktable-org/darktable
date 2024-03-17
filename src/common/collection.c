@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1656,7 +1656,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         {
           query = dt_util_dstrcat
             (query,
-             "%swhitebalance_id IN (SELECT id FROM main.whitebalance WHERE name IS NULL OR TRIM(name)=''",
+             "%swhitebalance_id IN (SELECT id FROM main.whitebalance WHERE name IS NULL OR TRIM(name)='')",
              i>0?" OR ":"");
         }
         else
@@ -1683,7 +1683,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         {
           query = dt_util_dstrcat
             (query,
-             "%sflash_id IN (SELECT id FROM main.flash WHERE name IS NULL OR TRIM(name)=''",
+             "%sflash_id IN (SELECT id FROM main.flash WHERE name IS NULL OR TRIM(name)='')",
              i>0?" OR ":"");
         }
         else
@@ -1709,7 +1709,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         {
           query = dt_util_dstrcat
             (query,
-             "%sexposure_program_id IN (SELECT id FROM main.exposure_program WHERE name IS NULL OR TRIM(name)=''",
+             "%sexposure_program_id IN (SELECT id FROM main.exposure_program WHERE name IS NULL OR TRIM(name)='')",
              i>0?" OR ":"");
         }
         else
@@ -1735,7 +1735,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         {
           query = dt_util_dstrcat
             (query,
-             "%smetering_mode_id IN (SELECT id FROM main.metering_mode WHERE name IS NULL OR TRIM(name)=''",
+             "%smetering_mode_id IN (SELECT id FROM main.metering_mode WHERE name IS NULL OR TRIM(name)='')",
              i>0?" OR ":"");
         }
         else
