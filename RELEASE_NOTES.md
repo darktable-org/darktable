@@ -112,6 +112,10 @@ changes (where available).
 
 - Fixing raw chromatic aberration on clang based systems.
 
+- Fixes backthumb crawler for deleted history. We make sure that the
+  crawler is aware of a deleted history and so will regenerate the
+  thumbs as expected.
+
 ## Lua
 
 ### API Version
