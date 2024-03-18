@@ -208,7 +208,7 @@ typedef struct dt_iop_demosaic_data_t
 static gboolean get_thumb_quality(int width, int height)
 {
   // we check if we need ultra-high quality thumbnail for this size
-  const int level = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, width, height);
+  const dt_mipmap_size_t level = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, width, height);
   const char *min = dt_conf_get_string_const("plugins/lighttable/thumbnail_hq_min_level");
   const dt_mipmap_size_t min_s = dt_mipmap_cache_get_min_mip_from_pref(min);
 

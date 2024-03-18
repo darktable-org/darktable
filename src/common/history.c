@@ -91,7 +91,7 @@ void dt_history_delete_on_image_ext(const dt_imgid_t imgid,
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "UPDATE main.images"
-                              " SET history_end = 0, aspect_ratio = 0.0"
+                              " SET history_end = 0, aspect_ratio = 0.0, thumb_timestamp = -1, thumb_maxmip = 0"
                               " WHERE id = ?1",
                               -1, &stmt, NULL);
   // clang-format on
