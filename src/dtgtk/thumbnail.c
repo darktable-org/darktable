@@ -215,8 +215,6 @@ static void _image_get_infos(dt_thumbnail_t *thumb)
 {
   if(!dt_is_valid_imgid(thumb->imgid))
     return;
-  if(thumb->over == DT_THUMBNAIL_OVERLAYS_NONE)
-    return;
 
   // we only get here infos that might change, others(exif, ...) are
   // cached on widget creation
