@@ -430,13 +430,16 @@ static void _strlcpy_to_utf8(char *dest, size_t dest_max,
 
 // if a numerical exif value n has no string repsentation in exiv2
 // the returned string is a useless "(n)" which can be descarded
-static void _exif_value_str(const int value, char *dest, size_t dest_max,
+static void _exif_value_str(const int value,
+                            char *dest, 
+                            size_t dest_max,
                             Exiv2::ExifData::const_iterator &pos,
                             Exiv2::ExifData &exifData)
 {
   _strlcpy_to_utf8(dest, dest_max, pos, exifData);
   gchar *str_value = g_strdup_printf("(%d)", value);
-  if (g_strcmp0(dest, str_value) == 0) {
+  if(g_strcmp0(dest, str_value) == 0)
+  {
     dest[0] = '\0';
   }
   g_free(str_value);
@@ -925,7 +928,7 @@ static gboolean _check_lens_correction_data(Exiv2::ExifData &exifData, dt_image_
         const float kc = posc->toFloat(i + 1);
         const float kv = posv->toFloat(i + 1);
         // check that the knots position is the same for distortion, ca and vignetting,
-        if (kd != kc || kd != kv)
+        if(kd != kc || kd != kv)
         {
           img->exif_correction_type = CORRECTION_TYPE_NONE;
           break;
@@ -959,7 +962,7 @@ static gboolean _check_lens_correction_data(Exiv2::ExifData &exifData, dt_image_
         if(i != 0) kc = posc->toFloat(i);
         const float kv = posv->toFloat(i + 1);
         // check that the knots position is the same for distortion, ca and vignetting,
-        if (kd != kc || kd != kv)
+        if(kd != kc || kd != kv)
         {
           img->exif_correction_type = CORRECTION_TYPE_NONE;
           break;
@@ -1003,7 +1006,7 @@ static gboolean _check_lens_correction_data(Exiv2::ExifData &exifData, dt_image_
       {
         const float kd = pos->toFloat(i);
         img->exif_correction_data.olympus.dist[i] = kd;
-        if (kd != 0 && i < 3)
+        if(kd != 0 && i < 3)
         {
           // Assume it's valid if any of the first three elements are nonzero. Ignore the
           // fourth element since the null value for no correction is '0 0 0 1'
@@ -1026,7 +1029,7 @@ static gboolean _check_lens_correction_data(Exiv2::ExifData &exifData, dt_image_
       {
         const float kc = pos->toFloat(i);
         img->exif_correction_data.olympus.ca[i] = kc;
-        if (kc != 0)
+        if(kc != 0)
         {
           img->exif_correction_type = CORRECTION_TYPE_OLYMPUS;
           img->exif_correction_data.olympus.has_ca = TRUE;
@@ -1610,7 +1613,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     if(FIND_EXIF_TAG("Exif.Photo.Flash"))
     {
       const int value = pos->toLong();
-      if (value != 0)
+      if(value != 0)
       {
         _strlcpy_to_utf8(img->exif_flash, sizeof(img->exif_flash), pos, exifData);
       }
@@ -1619,7 +1622,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     if(FIND_EXIF_TAG("Exif.Photo.ExposureProgram"))
     {
       const int value = pos->toLong();
-      if (value != 0)
+      if(value != 0)
       {
         _exif_value_str(value, img->exif_exposure_program, sizeof(img->exif_exposure_program), pos, exifData);
       }
@@ -1628,7 +1631,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     if(FIND_EXIF_TAG("Exif.Photo.MeteringMode"))
     {
       const int value = pos->toLong();
-      if (value != 0)
+      if(value != 0)
       {
         _exif_value_str(value, img->exif_metering_mode, sizeof(img->exif_metering_mode), pos, exifData);
       }
@@ -5056,7 +5059,7 @@ const std::pair<std::array<float, 4>, bool> getRegionNormalized(
   float y = yIt->toFloat() * imgHeight;
 
   /* MWG regions use (x,y) as the center of the region */
-  if (regionType == RegionType::MWG)
+  if(regionType == RegionType::MWG)
   {
     x -= w/2;
     y -= h/2;
