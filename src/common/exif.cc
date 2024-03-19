@@ -425,7 +425,23 @@ static void _strlcpy_to_utf8(char *dest, size_t dest_max,
   {
     g_strlcpy(dest, str.c_str(), dest_max);
   }
+  g_strstrip(dest);
 }
+
+// if a numerical exif value n has no string repsentation in exiv2
+// the returned string is a useless "(n)" which can be descarded
+static void _exif_value_str(const int value, char *dest, size_t dest_max,
+                            Exiv2::ExifData::const_iterator &pos,
+                            Exiv2::ExifData &exifData)
+{
+  _strlcpy_to_utf8(dest, dest_max, pos, exifData);
+  gchar *str_value = g_strdup_printf("(%d)", value);
+  if (g_strcmp0(dest, str_value) == 0) {
+    dest[0] = '\0';
+  }
+  g_free(str_value);
+}
+
 
 // function to remove known dt keys and subtrees from xmpdata, so not
 // to append them twice this should work because dt first reads all
@@ -1587,22 +1603,35 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
 
     if((pos = Exiv2::whiteBalance(exifData)) != exifData.end() && pos->size())
     {
-      _strlcpy_to_utf8(img->exif_whitebalance, sizeof(img->exif_whitebalance), pos, exifData);
+      const int value = pos->toLong();
+      _exif_value_str(value, img->exif_whitebalance, sizeof(img->exif_whitebalance), pos, exifData);
     }
 
     if(FIND_EXIF_TAG("Exif.Photo.Flash"))
     {
-      _strlcpy_to_utf8(img->exif_flash, sizeof(img->exif_flash), pos, exifData);
+      const int value = pos->toLong();
+      if (value != 0)
+      {
+        _strlcpy_to_utf8(img->exif_flash, sizeof(img->exif_flash), pos, exifData);
+      }
     }
 
     if(FIND_EXIF_TAG("Exif.Photo.ExposureProgram"))
     {
-      _strlcpy_to_utf8(img->exif_exposure_program, sizeof(img->exif_exposure_program), pos, exifData);
+      const int value = pos->toLong();
+      if (value != 0)
+      {
+        _exif_value_str(value, img->exif_exposure_program, sizeof(img->exif_exposure_program), pos, exifData);
+      }
     }
 
     if(FIND_EXIF_TAG("Exif.Photo.MeteringMode"))
     {
-      _strlcpy_to_utf8(img->exif_metering_mode, sizeof(img->exif_metering_mode), pos, exifData);
+      const int value = pos->toLong();
+      if (value != 0)
+      {
+        _exif_value_str(value, img->exif_metering_mode, sizeof(img->exif_metering_mode), pos, exifData);
+      }
     }
 
     char datetime[DT_DATETIME_LENGTH];
