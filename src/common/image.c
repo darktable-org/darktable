@@ -3200,7 +3200,7 @@ static int32_t _image_get_set_name_id(const char *table,
 
   char *query = g_strdup_printf("SELECT id"
                                 "  FROM main.%s"
-                                "  WHERE name = '%s'",
+                                "  WHERE LOWER(name) = LOWER('%s')",
                                 table,
                                 name);
 
