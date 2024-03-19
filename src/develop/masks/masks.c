@@ -255,6 +255,7 @@ void dt_masks_gui_form_test_create(dt_masks_form_t *form,
   {
     if(gui->pipe_hash != darktable.develop->preview_pipe->backbuf_hash)
     {
+      dt_print(DT_DEBUG_EXPOSE, "[dt_masks_gui_form_test_create] refreshes mask visualizer\n");
       gui->pipe_hash = 0;
       gui->formid = NO_MASKID;
       g_list_free_full(gui->points, dt_masks_form_gui_points_free);
@@ -1255,6 +1256,7 @@ int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module,
   return ret;
 }
 
+// visualize mask from viewport
 void dt_masks_events_post_expose(struct dt_iop_module_t *module,
                                  cairo_t *cr,
                                  const int32_t width,
