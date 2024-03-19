@@ -116,6 +116,11 @@ changes (where available).
   crawler is aware of a deleted history and so will regenerate the
   thumbs as expected.
 
+- Fix drawn masks visualizing in darkroom after pixelpipe module have
+  changed. The drawn masks will now be properly adjusted if there is
+  new distortion on the pipe for example. This was not the case until
+  one was editing the mask.
+
 ## Lua
 
 ### API Version
