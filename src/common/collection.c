@@ -1245,12 +1245,12 @@ static gchar *_add_wildcards(const gchar *text)
   gchar *cam1 = NULL;
   gchar *cam2 = NULL;
   if(g_str_has_prefix(text, "\""))
-    cam1 = g_utf8_substring(text, 1, strlen(text));
+    cam1 = g_utf8_substring(text, 1, g_utf8_strlen(text, -1));
   else
     cam1 = g_strdup_printf("%%%s", text);
 
   if(g_str_has_suffix(cam1, "\""))
-    cam2 = g_utf8_substring(cam1, 0, strlen(cam1)-1);
+    cam2 = g_utf8_substring(cam1, 0, g_utf8_strlen(cam1, -1)-1);
   else
     cam2 = g_strdup_printf("%s%%", cam1);
 
