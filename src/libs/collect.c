@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1947,6 +1947,58 @@ static void _list_view(dt_lib_collect_rule_t *dr)
         // clang-format on
         break;
 
+      case DT_COLLECTION_PROP_WHITEBALANCE: // white balance
+        // clang-format off
+        g_snprintf(query, sizeof(query),
+                   "SELECT wb.name AS whitebalance, 1, COUNT(*) AS count"
+                   "  FROM main.images AS mi, main.whitebalance AS wb"
+                   "  WHERE mi.whitebalance_id = wb.id"
+                   "    AND %s"
+                   "  GROUP BY LOWER(whitebalance)"
+                   "  ORDER BY LOWER(whitebalance) %s", where_ext,
+                   sort_descending ? "DESC" : "ASC");
+        // clang-format on
+        break;
+
+      case DT_COLLECTION_PROP_FLASH: // white balance
+        // clang-format off
+        g_snprintf(query, sizeof(query),
+                   "SELECT fl.name AS flash, 1, COUNT(*) AS count"
+                   "  FROM main.images AS mi, main.flash AS fl"
+                   "  WHERE mi.flash_id = fl.id"
+                   "    AND %s"
+                   "  GROUP BY LOWER(flash)"
+                   "  ORDER BY LOWER(flash) %s", where_ext,
+                   sort_descending ? "DESC" : "ASC");
+        // clang-format on
+        break;
+
+      case DT_COLLECTION_PROP_EXPOSURE_PROGRAM: // exposure program
+        // clang-format off
+        g_snprintf(query, sizeof(query),
+                   "SELECT ep.name AS exposure_program, 1, COUNT(*) AS count"
+                   "  FROM main.images AS mi, main.exposure_program AS ep"
+                   "  WHERE mi.exposure_program_id = ep.id"
+                   "    AND %s"
+                   "  GROUP BY LOWER(exposure_program)"
+                   "  ORDER BY LOWER(exposure_program) %s", where_ext,
+                   sort_descending ? "DESC" : "ASC");
+        // clang-format on
+        break;
+
+      case DT_COLLECTION_PROP_METERING_MODE: // metering mode
+        // clang-format off
+        g_snprintf(query, sizeof(query),
+                   "SELECT mm.name AS metering_mode, 1, COUNT(*) AS count"
+                   "  FROM main.images AS mi, main.metering_mode AS mm"
+                   "  WHERE mi.metering_mode_id = mm.id"
+                   "    AND %s"
+                   "  GROUP BY LOWER(metering_mode)"
+                   "  ORDER BY LOWER(metering_mode) %s", where_ext,
+                   sort_descending ? "DESC" : "ASC");
+        // clang-format on
+        break;
+
       case DT_COLLECTION_PROP_FOCAL_LENGTH: // focal length
         // clang-format off
         g_snprintf(query, sizeof(query),
@@ -3249,6 +3301,10 @@ static void _populate_collect_combo(GtkWidget *w)
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FOCAL_LENGTH);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ISO);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ASPECT_RATIO);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_WHITEBALANCE);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FLASH);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_EXPOSURE_PROGRAM);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METERING_MODE);
 
     dt_bauhaus_combobox_add_section(w, _("darktable"));
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GROUPING);

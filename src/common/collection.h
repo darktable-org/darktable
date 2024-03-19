@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -110,7 +110,12 @@ typedef enum dt_collection_properties_t
   DT_COLLECTION_PROP_LAST,
 
   DT_COLLECTION_PROP_UNDEF,
-  DT_COLLECTION_PROP_SORT
+  DT_COLLECTION_PROP_SORT,
+
+  DT_COLLECTION_PROP_WHITEBALANCE,
+  DT_COLLECTION_PROP_FLASH,
+  DT_COLLECTION_PROP_EXPOSURE_PROGRAM,
+  DT_COLLECTION_PROP_METERING_MODE
 } dt_collection_properties_t;
 
 typedef enum dt_collection_change_t
