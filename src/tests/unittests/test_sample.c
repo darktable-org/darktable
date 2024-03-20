@@ -23,10 +23,6 @@
 
 #include <cmocka.h>
 
-#ifdef _WIN32
-#include "win/main_wrapper.h"
-#endif
-
 static void test_sample(void **state)
 {
   // most efficient test: does just nothing :-)

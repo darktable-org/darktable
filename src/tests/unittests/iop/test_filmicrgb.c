@@ -35,10 +35,6 @@
 
 #include "iop/filmicrgb.c"
 
-#ifdef _WIN32
-#include "win/main_wrapper.h"
-#endif
-
 /*
  * DEFINITIONS
  */
