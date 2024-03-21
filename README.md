@@ -58,7 +58,7 @@ Requirements
 * Linux (64-bit)
 * FreeBSD (64-bit)
 * Windows (64-bit), 8.1 w/ [UCRT](https://support.microsoft.com/en-us/topic/update-for-universal-c-runtime-in-windows-c0514201-7fe6-95a3-b0a5-287930f3560c) and later
-* macOS 12.5 and later
+* macOS 13.5 and later
 
 *Big-endian platforms are not supported.*
 
@@ -153,10 +153,10 @@ Building
 ### Dependencies
 
 Compatible compilers/toolchains:
-* Clang: 13 and later
+* Clang: 15 and later
 * GCC: 12 and later
 * MinGW-w64: 10 and later
-* XCode: 14.2 and later
+* XCode: 15.2 and later
 
 Required dependencies (minimum version):
 * CMake 3.18
