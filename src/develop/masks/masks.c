@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2023 darktable developers.
+    Copyright (C) 2013-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1089,7 +1089,7 @@ void dt_masks_free_form(dt_masks_form_t *form)
   free(form);
 }
 
-int dt_masks_events_mouse_leave(struct dt_iop_module_t *module)
+gboolean dt_masks_events_mouse_leave(struct dt_iop_module_t *module)
 {
   dt_develop_t *dev = darktable.develop;
   if(dev->form_gui)
@@ -1105,20 +1105,20 @@ int dt_masks_events_mouse_leave(struct dt_iop_module_t *module)
 
     dt_control_hinter_message(darktable.control, "");
   }
-  return 0;
+  return FALSE;
 }
 
-int dt_masks_events_mouse_enter(struct dt_iop_module_t *module)
+gboolean dt_masks_events_mouse_enter(struct dt_iop_module_t *module)
 {
-  return 0;
+  return FALSE;
 }
 
-int dt_masks_events_mouse_moved(struct dt_iop_module_t *module,
-                                const float pzx,
-                                const float pzy,
-                                const double pressure,
-                                const int which,
-                                const float zoom_scale)
+gboolean dt_masks_events_mouse_moved(struct dt_iop_module_t *module,
+                                    const float pzx,
+                                    const float pzy,
+                                    const double pressure,
+                                    const int which,
+                                    const float zoom_scale)
 {
   // record mouse position even if there are no masks visible
   dt_masks_form_gui_t *gui = darktable.develop->form_gui;
@@ -1144,12 +1144,12 @@ int dt_masks_events_mouse_moved(struct dt_iop_module_t *module,
   return rep;
 }
 
-int dt_masks_events_button_released(struct dt_iop_module_t *module,
-                                    const float pzx,
-                                    const float pzy,
-                                    const int which,
-                                    const uint32_t state,
-                                    const float zoom_scale)
+gboolean dt_masks_events_button_released(struct dt_iop_module_t *module,
+                                        const float pzx,
+                                        const float pzy,
+                                        const int which,
+                                        const uint32_t state,
+                                        const float zoom_scale)
 {
   dt_develop_t *dev = darktable.develop;
   dt_masks_form_t *form = dev->form_visible;
@@ -1168,16 +1168,16 @@ int dt_masks_events_button_released(struct dt_iop_module_t *module,
     return ret;
   }
 
-  return 0;
+  return FALSE;
 }
 
-int dt_masks_events_button_pressed(struct dt_iop_module_t *module,
-                                   const float pzx,
-                                   const float pzy,
-                                   const double pressure,
-                                   const int which,
-                                   const int type,
-                                   const uint32_t state)
+gboolean dt_masks_events_button_pressed(struct dt_iop_module_t *module,
+                                        const float pzx,
+                                        const float pzy,
+                                        const double pressure,
+                                        const int which,
+                                        const int type,
+                                        const uint32_t state)
 {
   dt_masks_form_t *form = darktable.develop->form_visible;
   dt_masks_form_gui_t *gui = darktable.develop->form_gui;
@@ -1212,25 +1212,25 @@ int dt_masks_events_button_pressed(struct dt_iop_module_t *module,
       || which == 3; // swallow right-clicks even when not handled so
                      // right-drag rotate is disabled when forms
                      // visible
-  return 0;
+  return FALSE;
 }
 
-int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module,
-                                   const float pzx,
-                                   const float pzy,
-                                   const gboolean up,
-                                   const uint32_t state)
+gboolean dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module,
+                                        const float pzx,
+                                        const float pzy,
+                                        const gboolean up,
+                                        const uint32_t state)
 {
   dt_masks_form_t *form = darktable.develop->form_visible;
   dt_masks_form_gui_t *gui = darktable.develop->form_gui;
 
-  int ret = 0;
+  gboolean ret = FALSE;
   const gboolean incr = dt_mask_scroll_increases(up);
 
   if(form->functions)
-    ret = form->functions->mouse_scrolled(module, pzx, pzy,
+    ret = (form->functions->mouse_scrolled(module, pzx, pzy,
                                           incr ? 1 : 0,
-                                          state, form, 0, gui, 0);
+                                          state, form, 0, gui, 0)) != 0;
 
   if(gui)
   {
@@ -1247,7 +1247,7 @@ int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module,
       dt_toast_log(_("opacity: %.0f%%"), opacity * 100);
       dt_dev_masks_list_change(darktable.develop);
 
-      ret = 1;
+      ret = TRUE;
     }
 
     _set_hinter_message(gui, form);
@@ -2244,11 +2244,11 @@ void dt_masks_cleanup_unused(dt_develop_t *dev)
     dt_dev_add_masks_history_item(dev, NULL, TRUE);
 }
 
-int dt_masks_point_in_form_exact(const float x,
-                                 const float y,
-                                 float *points,
-                                 const int points_start,
-                                 const int points_count)
+gboolean dt_masks_point_in_form_exact(const float x,
+                                      const float y,
+                                      float *points,
+                                      const int points_start,
+                                      const int points_count)
 {
   // we use ray casting algorithm to avoid most problems with
   // horizontal segments, y should be rounded as int so that there's
@@ -2283,18 +2283,18 @@ int dt_masks_point_in_form_exact(const float x,
       i = next++;
       if(next >= points_count) next = start;
     }
-    return (nb & 1);
+    return (nb & 1) != 0;
   }
-  return 0;
+  return FALSE;
 }
 
-int dt_masks_point_in_form_near(const float x,
-                                const float y,
-                                float *points,
-                                const int points_start,
-                                const int points_count,
-                                const float distance,
-                                int *near)
+gboolean dt_masks_point_in_form_near(const float x,
+                                    const float y,
+                                    float *points,
+                                    const int points_start,
+                                    const int points_count,
+                                    const float distance,
+                                    int *near)
 {
   // we use ray casting algorithm to avoid most problems with
   // horizontal segments.
@@ -2340,9 +2340,9 @@ int dt_masks_point_in_form_near(const float x,
       if(next >= points_count)
         next = start;
     }
-    return (nb & 1);
+    return (nb & 1) != 0;
   }
-  return 0;
+  return FALSE;
 }
 
 float dt_masks_drag_factor(dt_masks_form_gui_t *gui,
@@ -2353,7 +2353,7 @@ float dt_masks_drag_factor(dt_masks_form_gui_t *gui,
   // we need the reference points
   dt_masks_form_gui_points_t *gpt = g_list_nth_data(gui->points, index);
 
-  if(!gpt) return 0;
+  if(!gpt) return 0.0f;
 
   float *boundary = border ? gpt->border : gpt->points;
   const float xref = gpt->points[0];
