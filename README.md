@@ -156,7 +156,7 @@ Compatible compilers/toolchains:
 * Clang: 13 and later
 * GCC: 12 and later
 * MinGW-w64: 10 and later
-* XCode: 14.2 and later
+* XCode: 15.2 and later
 
 Required dependencies (minimum version):
 * CMake 3.18
