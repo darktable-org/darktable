@@ -1255,7 +1255,7 @@ static gchar **_strsplit_quotes(const gchar *string,
   g_return_val_if_fail(delimiter != NULL, NULL);
   g_return_val_if_fail(delimiter[0] != '\0', NULL);
 
-  if (max_tokens < 1)
+  if(max_tokens < 1)
   {
     max_tokens = G_MAXINT;
     string_list = g_ptr_array_new();
@@ -2604,6 +2604,21 @@ void dt_collection_update_query(const dt_collection_t *collection,
     gchar *text = dt_conf_get_string(confname);
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", i);
     const int mode = dt_conf_get_int(confname);
+
+    if(*text
+       && g_strcmp0(text, _("unnamed")) != 0
+       && (property == DT_COLLECTION_PROP_CAMERA
+       || property == DT_COLLECTION_PROP_LENS
+       || property == DT_COLLECTION_PROP_WHITEBALANCE
+       || property == DT_COLLECTION_PROP_FLASH
+       || property == DT_COLLECTION_PROP_EXPOSURE_PROGRAM
+       || property == DT_COLLECTION_PROP_METERING_MODE))
+    {
+      gchar *text_quoted = g_strdup_printf("\"%s\"", text);
+      g_free(text);
+      text = g_strdup(text_quoted);
+      g_free(text_quoted);
+    }
 
     _get_query_part(property, text, mode, FALSE, &nb, &query_parts[i]);
 
