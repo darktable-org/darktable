@@ -341,8 +341,9 @@ void dt_masks_gui_form_save_creation(dt_develop_t *dev,
   // count only the same forms to have a clean numbering
   for(GList *l = dev->forms; l; l = g_list_next(l))
   {
-    dt_masks_form_t *f = (dt_masks_form_t *)l->data;
-    if(f->type == form->type) nb++;
+    const dt_masks_form_t *f = (dt_masks_form_t *)l->data;
+    if(f->type == form->type)
+      nb++;
   }
 
   gboolean exist = FALSE;
@@ -359,7 +360,7 @@ void dt_masks_gui_form_save_creation(dt_develop_t *dev,
 
     for(GList *l = dev->forms; l; l = g_list_next(l))
     {
-      dt_masks_form_t *f = (dt_masks_form_t *)l->data;
+      const dt_masks_form_t *f = (dt_masks_form_t *)l->data;
       if(!strcmp(f->name, form->name))
       {
         exist = TRUE;
@@ -1114,11 +1115,11 @@ gboolean dt_masks_events_mouse_enter(struct dt_iop_module_t *module)
 }
 
 gboolean dt_masks_events_mouse_moved(struct dt_iop_module_t *module,
-                                    const float pzx,
-                                    const float pzy,
-                                    const double pressure,
-                                    const int which,
-                                    const float zoom_scale)
+                                     const float pzx,
+                                     const float pzy,
+                                     const double pressure,
+                                     const int which,
+                                     const float zoom_scale)
 {
   // record mouse position even if there are no masks visible
   dt_masks_form_gui_t *gui = darktable.develop->form_gui;
@@ -1145,11 +1146,11 @@ gboolean dt_masks_events_mouse_moved(struct dt_iop_module_t *module,
 }
 
 gboolean dt_masks_events_button_released(struct dt_iop_module_t *module,
-                                        const float pzx,
-                                        const float pzy,
-                                        const int which,
-                                        const uint32_t state,
-                                        const float zoom_scale)
+                                         const float pzx,
+                                         const float pzy,
+                                         const int which,
+                                         const uint32_t state,
+                                         const float zoom_scale)
 {
   dt_develop_t *dev = darktable.develop;
   dt_masks_form_t *form = dev->form_visible;
@@ -2289,12 +2290,12 @@ gboolean dt_masks_point_in_form_exact(const float x,
 }
 
 gboolean dt_masks_point_in_form_near(const float x,
-                                    const float y,
-                                    float *points,
-                                    const int points_start,
-                                    const int points_count,
-                                    const float distance,
-                                    int *near)
+                                     const float y,
+                                     float *points,
+                                     const int points_start,
+                                     const int points_count,
+                                     const float distance,
+                                     int *near)
 {
   // we use ray casting algorithm to avoid most problems with
   // horizontal segments.

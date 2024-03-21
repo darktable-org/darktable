@@ -523,17 +523,17 @@ void dt_masks_reset_form_gui(void);
 void dt_masks_reset_show_masks_icons(void);
 
 gboolean dt_masks_events_mouse_moved(struct dt_iop_module_t *module,
-                                    const float x,
-                                    const float y,
-                                    const double pressure,
-                                    const int which,
-                                    const float zoom_scale);
+                                     const float x,
+                                     const float y,
+                                     const double pressure,
+                                     const int which,
+                                     const float zoom_scale);
 gboolean dt_masks_events_button_released(struct dt_iop_module_t *module,
-                                        const float x,
-                                        const float y,
-                                        const int which,
-                                        const uint32_t state,
-                                        const float zoom_scale);
+                                         const float x,
+                                         const float y,
+                                         const int which,
+                                         const uint32_t state,
+                                         const float zoom_scale);
 gboolean dt_masks_events_button_pressed(struct dt_iop_module_t *module,
                                         const float x,
                                         const float y,
@@ -680,11 +680,11 @@ void dt_masks_blur(float *const src,
                    const float gain,
                    const float clip);
 gboolean dt_masks_calc_scharr_mask(dt_dev_detail_mask_t *details,
-                                      float *const src,
-                                      const dt_aligned_pixel_t wb);
+                                   float *const src,
+                                   const dt_aligned_pixel_t wb);
 float *dt_masks_calc_detail_mask(struct dt_dev_pixelpipe_iop_t *piece,
-                               const float threshold,
-                               const gboolean detail);
+                                 const float threshold,
+                                 const gboolean detail);
 
 /** return the list of possible mouse actions */
 GSList *dt_masks_mouse_actions(dt_masks_form_t *form);
@@ -695,7 +695,8 @@ void dt_group_events_post_expose(cairo_t *cr,
                                  dt_masks_form_gui_t *gui);
 
 /** code for dynamic handling of intermediate buffers */
-static inline gboolean _dt_masks_dynbuf_growto(dt_masks_dynbuf_t *a, const size_t newsize)
+static inline gboolean _dt_masks_dynbuf_growto(dt_masks_dynbuf_t *a,
+                                               const size_t newsize)
 {
   float *newbuf = dt_alloc_align_float(newsize);
   if (!newbuf)
