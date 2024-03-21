@@ -784,15 +784,15 @@ static void _histogram_collect_cl(const int devid,
 
 // calculate box in current module's coordinates for the color picker
 // FIXME: move this to common color picker code?
-static int _pixelpipe_picker_box(dt_iop_module_t *module,
-                                 const dt_iop_roi_t *roi,
-                                 const dt_colorpicker_sample_t *const sample,
-                                 dt_pixelpipe_picker_source_t picker_source,
-                                 int *box)
+static gboolean _pixelpipe_picker_box(dt_iop_module_t *module,
+                                      const dt_iop_roi_t *roi,
+                                      const dt_colorpicker_sample_t *const sample,
+                                      dt_pixelpipe_picker_source_t picker_source,
+                                      int *box)
 {
   if(picker_source == PIXELPIPE_PICKER_OUTPUT
      && !sample->pick_output)
-    return 1;
+    return TRUE;
 
   float wd, ht;
   dt_dev_get_preview_size(darktable.develop, &wd, &ht);
@@ -855,9 +855,9 @@ static int _pixelpipe_picker_box(dt_iop_module_t *module,
   // safety check: area needs to have minimum 1 pixel width and height
   if(box[2] - box[0] < 1
      || box[3] - box[1] < 1)
-    return 1;
+    return TRUE;
 
-  return 0;
+  return FALSE;
 }
 
 // color picking for module
