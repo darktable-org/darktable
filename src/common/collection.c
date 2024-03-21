@@ -1240,6 +1240,90 @@ void dt_collection_split_operator_exposure(const gchar *input,
   g_regex_unref(regex);
 }
 
+// Split a string at the given delimiter, preserving strings in "quotes".
+// So the string "\""ab,cd\",ef,\"ghi\"" with the delimiter "," gives
+// ["ab,cd",ef,"ghi"]
+static gchar **_strsplit_quotes(const gchar *string,
+                                const gchar *delimiter,
+                                gint max_tokens)
+{
+  char *s;
+  const gchar *remainder;
+  GPtrArray *string_list;
+
+  g_return_val_if_fail(string != NULL, NULL);
+  g_return_val_if_fail(delimiter != NULL, NULL);
+  g_return_val_if_fail(delimiter[0] != '\0', NULL);
+
+  if (max_tokens < 1)
+  {
+    max_tokens = G_MAXINT;
+    string_list = g_ptr_array_new();
+  }
+  else
+  {
+    string_list = g_ptr_array_new_full(max_tokens + 1, NULL);
+  }
+
+  const int total_len = g_utf8_strlen(string, -1);
+  const gchar *delim;
+  gint quote_len = 0;
+
+  remainder = string;
+
+  if(g_str_has_prefix(remainder, "\""))
+  {
+    delim = "\"";
+    quote_len = 1;
+  }
+  else
+  {
+    delim = delimiter;
+  }
+  gsize delimiter_len = strlen(delim);
+  
+  s = strstr(remainder+quote_len, delim);
+  if(s)
+  {
+    while(--max_tokens && s)
+    {
+      gsize len = s - remainder + quote_len;
+      g_ptr_array_add(string_list, g_strndup(remainder, len));
+      remainder = s + delimiter_len + quote_len;
+
+      if(remainder > string+total_len)
+      {
+        // we reached the end
+        remainder = string+total_len;
+        break;
+      }
+
+      if(g_str_has_prefix(remainder, "\""))
+      {
+        delim = "\"";
+        quote_len = 1;
+      }
+      else
+      {
+        delim = delimiter;
+        quote_len = 0;
+      }
+      delimiter_len = strlen(delim);
+
+      s = strstr(remainder+quote_len, delim);
+    }
+  }
+
+  if(*remainder)
+  {
+    g_ptr_array_add(string_list, g_strdup(remainder));
+  }
+
+  g_ptr_array_add(string_list, NULL);
+
+  return (char **) g_ptr_array_free(string_list, FALSE);
+}
+
 static gchar *_add_wildcards(const gchar *text)
 {
   gchar *cam1 = NULL;
@@ -1509,7 +1593,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     case DT_COLLECTION_PROP_CAMERA: // camera
       query = g_strdup("(");
       // handle the possibility of multiple values
-      elems = g_strsplit(escaped_text, ",", -1);
+      elems = _strsplit_quotes(escaped_text, ",", -1);
       for(int i = 0; i < g_strv_length(elems); i++)
       {
         // if its undefined
@@ -1622,7 +1706,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     case DT_COLLECTION_PROP_LENS: // lens
       query = g_strdup("(");
       // handle the possibility of multiple values
-      elems = g_strsplit(escaped_text, ",", -1);
+      elems = _strsplit_quotes(escaped_text, ",", -1);
       for(int i = 0; i < g_strv_length(elems); i++)
       {
         if(!g_strcmp0(elems[i], _("unnamed")))
@@ -1649,7 +1733,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     case DT_COLLECTION_PROP_WHITEBALANCE: // white balance
       query = g_strdup("(");
       // handle the possibility of multiple values
-      elems = g_strsplit(escaped_text, ",", -1);
+      elems = _strsplit_quotes(escaped_text, ",", -1);
       for(int i = 0; i < g_strv_length(elems); i++)
       {
         if(!g_strcmp0(elems[i], _("unnamed")))
@@ -1676,7 +1760,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     case DT_COLLECTION_PROP_FLASH: // flash
       query = g_strdup("(");
       // handle the possibility of multiple values
-      elems = g_strsplit(escaped_text, ",", -1);
+      elems = _strsplit_quotes(escaped_text, ",", -1);
       for(int i = 0; i < g_strv_length(elems); i++)
       {
         if(!g_strcmp0(elems[i], _("unnamed")))
@@ -1702,7 +1786,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     case DT_COLLECTION_PROP_EXPOSURE_PROGRAM: // exposure program
       query = g_strdup("(");
       // handle the possibility of multiple values
-      elems = g_strsplit(escaped_text, ",", -1);
+      elems = _strsplit_quotes(escaped_text, ",", -1);      
       for(int i = 0; i < g_strv_length(elems); i++)
       {
         if(!g_strcmp0(elems[i], _("unnamed")))
@@ -1728,7 +1812,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     case DT_COLLECTION_PROP_METERING_MODE: // metering mode
       query = g_strdup("(");
       // handle the possibility of multiple values
-      elems = g_strsplit(escaped_text, ",", -1);
+      elems = _strsplit_quotes(escaped_text, ",", -1);      
       for(int i = 0; i < g_strv_length(elems); i++)
       {
         if(!g_strcmp0(elems[i], _("unnamed")))
