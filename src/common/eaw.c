@@ -216,9 +216,9 @@ void eaw_synthesize(float *const out, const float *const in, const float *const 
   const size_t npixels = (size_t)width * height;
 
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
   dt_omp_firstprivate(in, out, detail, npixels, thresh, boostval)       \
-  schedule(simd:static)
+  schedule(static)
 #endif
   for(size_t k = 0; k < npixels; k++)
   {

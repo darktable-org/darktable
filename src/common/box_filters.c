@@ -1211,9 +1211,6 @@ void dt_box_mean_vertical(float *const buf,
 static inline float _window_max(const float *x, int n)
 {
   float m = -(FLT_MAX);
-#ifdef _OPENMP
-#pragma omp simd reduction(max : m)
-#endif
   for(int j = 0; j < n; j++)
     m = MAX(m, x[j]);
   return m;
@@ -1386,9 +1383,6 @@ void dt_box_max(float *const buf,
 static inline float _window_min(const float *x, int n)
 {
   float m = FLT_MAX;
-#ifdef _OPENMP
-#pragma omp simd reduction(min : m)
-#endif
   for(int j = 0; j < n; j++)
     m = MIN(m, x[j]);
   return m;

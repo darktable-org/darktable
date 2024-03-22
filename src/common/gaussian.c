@@ -332,9 +332,9 @@ void dt_gaussian_blur_4c(dt_gaussian_t *g, const float *const in, float *const o
 
 // vertical blur column by column
 #ifdef _OPENMP
-#pragma omp parallel for simd aligned(in,temp) default(none)            \
+#pragma omp parallel for default(none)            \
   dt_omp_firstprivate(in, width, height, temp, Labmin, Labmax, a0, a1, a2, a3, b1, b2, coefp, coefn) \
-  schedule(simd:static)
+  schedule(static)
 #endif
   for(size_t i = 0; i < width; i++)
   {

@@ -1086,9 +1086,9 @@ static inline gint mask_clipped_pixels(const float *const restrict in, float *co
   const unsigned int oldMode = dt_mm_enable_flush_zero();
 
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
   dt_omp_firstprivate(in, mask, normalize, feathering, width, height) \
-  schedule(simd:static) aligned(mask, in:64) reduction(+:clipped)
+  schedule(static) reduction(+:clipped)
 #endif
   for(size_t k = 0; k < 4 * height * width; k += 4)
   {
