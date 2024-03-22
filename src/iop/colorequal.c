@@ -876,9 +876,9 @@ void process(struct dt_iop_module_t *self,
 
   // STEP 1: convert image from RGB to darktable UCS LUV and calc saturation
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
   dt_omp_firstprivate(npixels, in, UV, tmp, saturation, input_matrix) \
-  schedule(simd:static) aligned(in, UV, tmp, saturation, input_matrix : 64)
+  schedule(static)
 #endif
   for(size_t k = 0; k < npixels; k++)
   {
@@ -893,8 +893,8 @@ void process(struct dt_iop_module_t *self,
     dt_D65_XYZ_to_xyY(XYZ_D65, xyY);
 
     // calc saturation from input data
-    const float dmin = MIN(pix_in[0], MIN(pix_in[1], pix_in[2]));
-    const float dmax = MAX(pix_in[0], MAX(pix_in[1], pix_in[2]));
+    const float dmin = fminf(pix_in[0], fminf(pix_in[1], pix_in[2]));
+    const float dmax = fmaxf(pix_in[0], fmaxf(pix_in[1], pix_in[2]));
     const float delta = dmax - dmin;
     saturation[k] = (dmax > NORM_MIN && delta > NORM_MIN) ? delta / dmax : 0.0f;
 
@@ -912,10 +912,10 @@ void process(struct dt_iop_module_t *self,
   // STEP 3 : carry-on with conversion from LUV to HSB
   float B_norm = NORM_MIN;
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
   reduction(max: B_norm) \
   dt_omp_firstprivate(owidth, oheight, in, out, UV, tmp, corrections, b_corrections, saturation, d, white, gradient_amp)  \
-  schedule(simd:static) aligned(in, out, UV, tmp, corrections, b_corrections, saturation : 64)
+  schedule(static)
 #endif
   for(int row = 0; row < oheight; row++)
   {
@@ -979,9 +979,9 @@ void process(struct dt_iop_module_t *self,
   {
     // STEP 5: apply the corrections and convert back to RGB
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
   dt_omp_firstprivate(npixels, out, corrections, b_corrections, output_matrix, white, d)  \
-  schedule(simd:static) aligned(out, b_corrections, output_matrix: 64)
+  schedule(static)
 #endif
     for(size_t k = 0; k < npixels; k++)
     {
@@ -1010,9 +1010,9 @@ void process(struct dt_iop_module_t *self,
     const int mode = mask_mode - 1;
     B_norm = 1.0f / B_norm;
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
   dt_omp_firstprivate(npixels, out, b_corrections, corrections, saturation, tmp, mode, B_norm, sat_shift, bright_shift, d) \
-  schedule(simd:static) aligned(out, corrections, b_corrections, saturation, tmp: 64)
+  schedule(static)
 #endif
     for(size_t k = 0; k < npixels; k++)
     {

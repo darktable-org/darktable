@@ -94,7 +94,7 @@ static inline void dt_focuspeaking(cairo_t *cr, const int buf_width, const int b
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none)             \
   dt_omp_firstprivate(image, luma, npixels)             \
-  schedule(static) aligned(image, luma:64)
+  schedule(simd:static) aligned(image, luma:64)
 #endif
   for(size_t index = 0; index < npixels; index++)
     {

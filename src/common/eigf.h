@@ -193,9 +193,9 @@ void eigf_blending(float *const restrict image, const float *const restrict mask
                   const float feathering)
 {
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
   dt_omp_firstprivate(image, mask, av, Ndim, feathering, filter) \
-  schedule(simd:static) aligned(image, mask, av:64)
+  schedule(static)
 #endif
   for(size_t k = 0; k < Ndim; k++)
   {

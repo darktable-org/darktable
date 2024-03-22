@@ -355,10 +355,10 @@ void process(struct dt_iop_module_t *const self, dt_dev_pixelpipe_iop_t *const p
   const float *const restrict offset = __builtin_assume_aligned(d->offset, 16);
 
 #ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
+  #pragma omp parallel for default(none) \
     dt_omp_firstprivate(d, in, out, roi_out, exposure, black, gamma, soft_clip, soft_clip_comp, \
                         Dmin, wb_high, offset)                                              \
-    aligned(in, out:64)
+    schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->height * roi_out->width * 4; k += 4)
   {

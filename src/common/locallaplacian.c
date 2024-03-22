@@ -180,9 +180,9 @@ static inline void gauss_reduce(
 #ifdef _OPENMP
   // DON'T parallelize the very smallest levels of the pyramid, as the threading overhead
   // is greater than the time needed to do it sequentially
-#pragma omp parallel for simd default(none) if(ch*cw>2000)  \
+#pragma omp parallel for default(none) if(ch*cw>2000)  \
   dt_omp_firstprivate(coarse, cw, ch, input, wd) \
-  schedule(simd:static)
+  schedule(static)
 #endif
   for(size_t j=1;j<ch-1;j++)
   {

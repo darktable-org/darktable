@@ -150,7 +150,7 @@ static void _channel_display_false_color(const float *const restrict in,
   {
     case DT_DEV_PIXELPIPE_DISPLAY_a:
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) schedule(static) \
+#pragma omp parallel for simd default(none) schedule(simd:static) \
   aligned(in, out: 64) aligned(mask_color: 16)                  \
   dt_omp_firstprivate(in, out, buffsize, alpha, mask_color)
 #endif
@@ -268,8 +268,7 @@ static void _channel_display_false_color(const float *const restrict in,
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_hz:
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) schedule(static) \
-  aligned(in, out: 64) aligned(mask_color: 16)                  \
+#pragma omp parallel for default(none) schedule(static) \
   dt_omp_firstprivate(in, out, buffsize, alpha, mask_color)
 #endif
       for(size_t j = 0; j < buffsize; j += 4)

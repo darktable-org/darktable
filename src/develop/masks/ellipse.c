@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2023 darktable developers.
+    Copyright (C) 2013-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -280,7 +280,7 @@ static float *_points_to_transform(const float xx,
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
     dt_omp_firstprivate(l, points, x, y, a, b, cosv, sinv)  \
-    schedule(static) if(l > 100) aligned(points:64)
+    schedule(simd:static) if(l > 100) aligned(points:64)
 #endif
   for(int i = 5; i < l + 5; i++)
   {

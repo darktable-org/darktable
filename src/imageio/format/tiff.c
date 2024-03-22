@@ -173,11 +173,10 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
     if(d->bpp == 32 || (d->bpp == 16 && d->pixelformat))
     {
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
   dt_omp_firstprivate(in_void, d) \
   shared(layers) \
-  schedule(simd:static) \
-  collapse(2)
+  schedule(static) collapse(2)
 #endif
       for(int y = 1; y < d->global.height - 1; ++y)
       {
@@ -185,9 +184,9 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
         {
           if(layers == 3) continue;
           float *in = (float *)in_void + (size_t)(4 * (y * d->global.width + x));
-          if((fabsf(fmaxf(in[0], 0.001f) / fmaxf(in[1], 0.001f)) > 1.01f)
-             || (fabsf(fmaxf(in[0], 0.001f) / fmaxf(in[2], 0.001f)) > 1.01f)
-             || (fabsf(fmaxf(in[1], 0.001f) / fmaxf(in[2], 0.001f)) > 1.01f))
+          if((fabsf(MAX(in[0], 0.001f) / MAX(in[1], 0.001f)) > 1.01f)
+             || (fabsf(MAX(in[0], 0.001f) / MAX(in[2], 0.001f)) > 1.01f)
+             || (fabsf(MAX(in[1], 0.001f) / MAX(in[2], 0.001f)) > 1.01f))
           {
             layers = 3;
           }
@@ -197,11 +196,10 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
     else if(d->bpp == 16 && !d->pixelformat)
     {
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
   dt_omp_firstprivate(in_void, d) \
   shared(layers) \
-  schedule(simd:static) \
-  collapse(2)
+  schedule(static) collapse(2)
 #endif
       for(int y = 1; y < d->global.height - 1; ++y)
       {
@@ -220,11 +218,10 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
     else // 8bpp
     {
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
   dt_omp_firstprivate(in_void, d) \
   shared(layers) \
-  schedule(simd:static) \
-  collapse(2)
+  schedule(static) collapse(2)
 #endif
       for(int y = 1; y < d->global.height - 1; ++y)
       {
