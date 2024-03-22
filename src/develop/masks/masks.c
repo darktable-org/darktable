@@ -515,18 +515,7 @@ static int dt_masks_legacy_params_v1_to_v2(dt_develop_t *dev, void *params)
   {
     if(dev->iop == NULL) return 1;
 
-    const char *opname = "flip";
-    dt_iop_module_t *module = NULL;
-
-    for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
-    {
-      dt_iop_module_t *find_op = (dt_iop_module_t *)modules->data;
-      if(!strcmp(find_op->op, opname))
-      {
-        module = find_op;
-        break;
-      }
-    }
+    dt_iop_module_t *module = dt_iop_get_module_from_list(dev->iop, "flip");
 
     if(module == NULL) return 1;
 
