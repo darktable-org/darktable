@@ -1959,43 +1959,6 @@ static void _manage_editor_basics_update_list(dt_lib_module_t *self)
   gtk_widget_show_all(d->edit_basics_box);
 }
 
-static void _basics_cleanup_list(dt_lib_module_t *self, gboolean edition)
-{
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
-
-  // ensure here that there's no basics widget of a module not present in one other group
-  GList *l = edition ? d->edit_basics : d->basics;
-  while(l)
-  {
-    dt_lib_modulegroups_basic_item_t *item = (dt_lib_modulegroups_basic_item_t *)l->data;
-    gboolean exists = FALSE;
-    for(GList *ll = edition ? d->edit_groups : d->groups; ll; ll = g_list_next(ll))
-    {
-      dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)ll->data;
-      if(g_list_find_custom(gr->modules, item->module_op, _iop_compare))
-      {
-        exists = TRUE;
-        break;
-      }
-    }
-    // if the module doesn't exists, let's remove the widget
-    if(!exists)
-    {
-      GList *ln = g_list_next(l);
-      _basics_free_item(item);
-      if(edition)
-        d->edit_basics = g_list_delete_link(d->edit_basics, l);
-      else
-        d->basics = g_list_delete_link(d->basics, l);
-      l = ln;
-      continue;
-    }
-    l = g_list_next(l);
-  }
-  // if we are on edition mode, we need to update the box too
-  if(edition && d->edit_basics_box && GTK_IS_BOX(d->edit_basics_box)) _manage_editor_basics_update_list(self);
-}
-
 int set_params(dt_lib_module_t *self, const void *params, int size)
 {
   if(!params) return 1;
@@ -2063,8 +2026,6 @@ static void _manage_editor_module_remove(GtkWidget *widget, GdkEventButton *even
       break;
     }
   }
-  // we also remove eventual widgets of this module in basics
-  _basics_cleanup_list(self, TRUE);
 }
 
 static void _manage_editor_module_update_list(dt_lib_module_t *self, dt_lib_modulegroups_group_t *gr)
@@ -3022,9 +2983,6 @@ static void _manage_editor_group_remove(GtkWidget *widget, GdkEventButton *event
 
   // and we update arrows
   _manage_editor_group_update_arrows(groups_box);
-
-  // we also cleanup basics widgets list
-  _basics_cleanup_list(self, TRUE);
 }
 
 static void _manage_editor_group_name_changed(GtkWidget *tb, GdkEventButton *event, dt_lib_module_t *self)
@@ -3627,7 +3585,6 @@ static void _manage_editor_load(const char *preset, dt_lib_module_t *self)
     _preset_from_string(self, (char *)blob, TRUE);
     d->edit_basics_box = NULL;
     d->edit_basics_groupbox = NULL;
-    _basics_cleanup_list(self, TRUE);
     d->edit_preset = g_strdup(sel_preset);
 
     autoapply = sqlite3_column_int(stmt, 2);
