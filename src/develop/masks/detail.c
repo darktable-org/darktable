@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2023 darktable developers.
+    Copyright (C) 2013-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -218,10 +218,10 @@ void dt_masks_blur(float *const restrict src,
   const size_t w3 = 3*width;
   const size_t w4 = 4*width;
 #ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
+  #pragma omp parallel for default(none) \
   dt_omp_firstprivate(blurmat, src, out, clip, gain) \
   dt_omp_sharedconst(width, height, w1, w2, w3, w4) \
-  schedule(simd:static) aligned(src, out : 64)
+  schedule(static)
  #endif
   for(size_t row = 4; row < height - 4; row++)
   {
@@ -261,9 +261,9 @@ gboolean dt_masks_calc_scharr_mask(dt_dev_detail_mask_t *details,
   }
 
 #ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
+  #pragma omp parallel for default(none) \
   dt_omp_firstprivate(mask, tmp, width, height) \
-  schedule(simd:static) aligned(mask, tmp : 64)
+  schedule(static)
  #endif
   for(size_t row = 1; row < height - 1; row++)
   {

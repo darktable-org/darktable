@@ -241,9 +241,9 @@ static inline void apply_linear_blending_w_geomean(float *const restrict image,
                                                    const size_t num_elem)
 {
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
 dt_omp_firstprivate(image, ab, num_elem) \
-schedule(simd:static) aligned(image, ab:64)
+schedule(static)
 #endif
   for(size_t k = 0; k < num_elem; k++)
   {
@@ -272,9 +272,9 @@ static inline void quantize(const float *const restrict image,
   {
     // fast track
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
 dt_omp_firstprivate(image, out, num_elem, sampling, clip_min, clip_max) \
-schedule(simd:static) aligned(image, out:64)
+schedule(static)
 #endif
     for(size_t k = 0; k < num_elem; k++)
       out[k] = fast_clamp(exp2f(floorf(log2f(image[k]))), clip_min, clip_max);
@@ -284,9 +284,9 @@ schedule(simd:static) aligned(image, out:64)
   {
     // slow track
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
 dt_omp_firstprivate(image, out, num_elem, sampling, clip_min, clip_max) \
-schedule(simd:static) aligned(image, out:64)
+schedule(static)
 #endif
     for(size_t k = 0; k < num_elem; k++)
       out[k] = fast_clamp(exp2f(floorf(log2f(image[k]) / sampling) * sampling), clip_min, clip_max);
