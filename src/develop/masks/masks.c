@@ -611,8 +611,8 @@ static void dt_masks_legacy_params_v2_to_v3_transform(const dt_image_t *img,
 
   const float cx = (float)img->crop_x, cy = (float)img->crop_y;
 
-  const float cw = (float)(img->width - img->crop_x - img->crop_right);
-  const float ch = (float)(img->height - img->crop_y - img->crop_bottom);
+  const float cw = dt_image_raw_width(img);
+  const float ch = dt_image_raw_height(img);
 
   /*
    * masks coordinates are normalized, so we need to:
@@ -631,8 +631,8 @@ static void dt_masks_legacy_params_v2_to_v3_transform_only_rescale
 {
   const float w = (float)img->width, h = (float)img->height;
 
-  const float cw = (float)(img->width - img->crop_x - img->crop_right);
-  const float ch = (float)(img->height - img->crop_y - img->crop_bottom);
+  const float cw = dt_image_raw_width(img);
+  const float ch = dt_image_raw_height(img);
 
   /*
    * masks coordinates are normalized, so we need to:
