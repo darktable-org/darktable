@@ -42,6 +42,25 @@ int dt_lua_duplicate_image(lua_State *L)
   return 1;
 }
 
+int dt_lua_duplicate_image_with_history(lua_State *L)
+{
+  dt_imgid_t imgid;
+  dt_imgid_t newid;
+  luaA_to(L, dt_lua_image_t, &imgid, -1);
+  newid = dt_image_duplicate(imgid);
+  if(!dt_is_valid_imgid(newid))
+  {
+    luaA_push(L, dt_lua_image_t, &imgid);
+    return 1;
+  }
+  else
+  {
+    dt_history_copy_and_paste_on_image(imgid, newid, FALSE, NULL, TRUE, TRUE);
+    luaA_push(L, dt_lua_image_t, &newid);
+    return 1;
+  }
+}
+
 int dt_lua_delete_image(lua_State *L)
 {
   dt_imgid_t imgid;
