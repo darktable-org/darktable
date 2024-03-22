@@ -1379,8 +1379,8 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
   if((ret == DT_IMAGEIO_OK) && (was_bw != dt_image_monochrome_flags(img)))
     dt_imageio_update_monochrome_workflow_tag(img->id, dt_image_monochrome_flags(img));
 
-  img->p_width = img->width - img->crop_x - img->crop_right;
-  img->p_height = img->height - img->crop_y - img->crop_bottom;
+  img->p_width = dt_image_raw_width(img);
+  img->p_height = dt_image_raw_height(img);
 
   return ret;
 }
