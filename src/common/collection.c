@@ -315,7 +315,9 @@ int dt_collection_update(const dt_collection_t *collection)
 
   // get all the sort items
   dt_collection_params_t *params = (dt_collection_params_t *)&collection->params;
-  for(int i = 0; i < DT_COLLECTION_SORT_LAST; i++) params->sorts[i] = FALSE;
+  for(int i = 0; i < DT_COLLECTION_SORT_LAST; i++)
+    params->sorts[i] = FALSE;
+
   const int nb_sort = CLAMP(dt_conf_get_int("plugins/lighttable/filtering/num_sort"),
                             0, DT_COLLECTION_MAX_RULES);
   char confname[200] = { 0 };
@@ -423,7 +425,8 @@ void dt_collection_reset(const dt_collection_t *collection)
 const gchar *dt_collection_get_query(const dt_collection_t *collection)
 {
   /* ensure there is a query string for collection */
-  if(!collection->query) dt_collection_update(collection);
+  if(!collection->query)
+    dt_collection_update(collection);
 
   return collection->query;
 }
@@ -431,7 +434,8 @@ const gchar *dt_collection_get_query(const dt_collection_t *collection)
 const gchar *dt_collection_get_query_no_group(const dt_collection_t *collection)
 {
   /* ensure there is a query string for collection */
-  if(!collection->query_no_group) dt_collection_update(collection);
+  if(!collection->query_no_group)
+    dt_collection_update(collection);
 
   return collection->query_no_group;
 }
@@ -473,7 +477,9 @@ gchar *dt_collection_get_extended_where(const dt_collection_t *collection,
     // we only want collect rules, not filtering ones
     const int nb_rules = CLAMP(dt_conf_get_int("plugins/lighttable/collect/num_rules"),
                                1, 10);
-    for(int i = 0; (i < nb_rules && collection->where_ext[i] != NULL); i++)
+    for(int i = 0;
+        i < nb_rules && collection->where_ext[i] != NULL;
+        i++)
     {
       // exclude the one rule from extended where
       if(i != exclude || mode == 1)
@@ -491,7 +497,9 @@ gchar *dt_collection_get_extended_where(const dt_collection_t *collection,
                                1, 10);
     gchar *rules_txt = g_strdup("");
 
-    for(int i = 0; (i < nb_rules && collection->where_ext[i] != NULL); i++)
+    for(int i = 0;
+        i < nb_rules && collection->where_ext[i] != NULL;
+        i++)
     {
       rules_txt = dt_util_dstrcat(rules_txt, "%s", collection->where_ext[i]);
     }
@@ -505,14 +513,17 @@ gchar *dt_collection_get_extended_where(const dt_collection_t *collection,
     const int nb_filters = CLAMP(dt_conf_get_int("plugins/lighttable/filtering/num_rules"),
                                  0, 10);
 
-    for(int i = 0; (i < nb_filters && collection->where_ext[i + nb_rules] != NULL); i++)
+    for(int i = 0;
+        i < nb_filters && collection->where_ext[i + nb_rules] != NULL;
+        i++)
     {
       rules_txt = dt_util_dstrcat(rules_txt, "%s", collection->where_ext[i + nb_rules]);
     }
 
     if(g_strcmp0(rules_txt, ""))
     {
-      if(g_strcmp0(complete_string, "")) complete_string = dt_util_dstrcat(complete_string, " AND ");
+      if(g_strcmp0(complete_string, ""))
+        complete_string = dt_util_dstrcat(complete_string, " AND ");
       complete_string = dt_util_dstrcat(complete_string, "(%s)", rules_txt);
     }
     g_free(rules_txt);
@@ -575,7 +586,7 @@ static void _collection_update_aspect_ratio(const dt_collection_t *collection)
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
-    double start = dt_get_wtime();
+    const double start = dt_get_wtime();
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
       const dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
@@ -811,9 +822,12 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
     g_free(sq);
 
     // set the "already done" values
-    if(sort == DT_COLLECTION_SORT_FILENAME) filename = TRUE;
-    if(i == 0) first_order = sortorder;
-    if(sort == lastsort) already_last_sort = TRUE;
+    if(sort == DT_COLLECTION_SORT_FILENAME)
+      filename = TRUE;
+    if(i == 0)
+      first_order = sortorder;
+    if(sort == lastsort)
+      already_last_sort = TRUE;
   }
 
   // and last sort order set
@@ -822,12 +836,14 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
     gchar *lsq = _dt_collection_get_sort_text(lastsort, lastsortorder);
     query = dt_util_dstrcat(query, ", %s", lsq);
     g_free(lsq);
-    if(lastsort == DT_COLLECTION_SORT_FILENAME) filename = TRUE;
+    if(lastsort == DT_COLLECTION_SORT_FILENAME)
+      filename = TRUE;
   }
 
   // complete the query with fallback if needed
-  if(!filename) query = dt_util_dstrcat(query, ", filename%s",
-                                        (first_order) ? " DESC" : "");
+  if(!filename)
+    query = dt_util_dstrcat(query, ", filename%s",
+                            (first_order) ? " DESC" : "");
 
   query = dt_util_dstrcat(query, ", version ASC");
 
@@ -1075,7 +1091,8 @@ static char *_dt_collection_compute_datetime(const char *operator,
     res = dt_datetime_entry_to_exif(bound, sizeof(bound), input);
   if(res)
     return g_strdup(bound);
-  else return NULL;
+  else
+    return NULL;
 }
 /* splits an input string into a date-time part and an optional operator part.
    operator can be any of "=", "<", ">", "<=", ">=" and "<>".
@@ -1109,8 +1126,10 @@ void dt_collection_split_operator_datetime(const gchar *input,
     gchar *txt = g_match_info_fetch(match_info, 1);
     gchar *txt2 = g_match_info_fetch(match_info, 2);
 
-    if(!g_str_has_prefix(txt, "-")) *number1 = _dt_collection_compute_datetime(">=", txt);
-    if(!g_str_has_prefix(txt2, "+")) *number2 = _dt_collection_compute_datetime("<=", txt2);
+    if(!g_str_has_prefix(txt, "-"))
+      *number1 = _dt_collection_compute_datetime(">=", txt);
+    if(!g_str_has_prefix(txt2, "+"))
+      *number2 = _dt_collection_compute_datetime("<=", txt2);
 
     // special handle of relative dates
     if(g_str_has_prefix(txt, "-") && *number2)
@@ -1281,13 +1300,13 @@ static gchar **_strsplit_quotes(const gchar *string,
     delim = delimiter;
   }
   gsize delimiter_len = strlen(delim);
-  
+
   s = strstr(remainder+quote_len, delim);
   if(s)
   {
     while(--max_tokens && s)
     {
-      gsize len = s - remainder + quote_len;
+      const gsize len = s - remainder + quote_len;
       g_ptr_array_add(string_list, g_strndup(remainder, len));
       remainder = s + delimiter_len + quote_len;
 
@@ -1321,7 +1340,7 @@ static gchar **_strsplit_quotes(const gchar *string,
 
   g_ptr_array_add(string_list, NULL);
 
-  return (char **) g_ptr_array_free(string_list, FALSE);
+  return (char **)g_ptr_array_free(string_list, FALSE);
 }
 
 static gchar *_add_wildcards(const gchar *text)
@@ -1786,7 +1805,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     case DT_COLLECTION_PROP_EXPOSURE_PROGRAM: // exposure program
       query = g_strdup("(");
       // handle the possibility of multiple values
-      elems = _strsplit_quotes(escaped_text, ",", -1);      
+      elems = _strsplit_quotes(escaped_text, ",", -1);
       for(int i = 0; i < g_strv_length(elems); i++)
       {
         if(!g_strcmp0(elems[i], _("unnamed")))
@@ -1812,7 +1831,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     case DT_COLLECTION_PROP_METERING_MODE: // metering mode
       query = g_strdup("(");
       // handle the possibility of multiple values
-      elems = _strsplit_quotes(escaped_text, ",", -1);      
+      elems = _strsplit_quotes(escaped_text, ",", -1);
       for(int i = 0; i < g_strv_length(elems); i++)
       {
         if(!g_strcmp0(elems[i], _("unnamed")))
