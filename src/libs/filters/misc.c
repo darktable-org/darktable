@@ -81,38 +81,75 @@ void _misc_tree_update(_widgets_misc_t *misc)
 
   gchar *table = NULL;
   gchar *tooltip = NULL;
-  if (misc->prop == DT_COLLECTION_PROP_WHITEBALANCE)
+
+  if(misc->prop == DT_COLLECTION_PROP_CAMERA)
+  {
+    tooltip = g_strdup(_("no camera defined"));
+  }
+  else if(misc->prop == DT_COLLECTION_PROP_LENS)
+  {
+    tooltip = g_strdup(_("no lens defined"));
+  }
+  else if(misc->prop == DT_COLLECTION_PROP_WHITEBALANCE)
   {
     table = g_strdup("whitebalance");
     tooltip = g_strdup(_("no white balance defined"));
   }
-  else if (misc->prop == DT_COLLECTION_PROP_FLASH)
+  else if(misc->prop == DT_COLLECTION_PROP_FLASH)
   {
     table = g_strdup("flash");
     tooltip = g_strdup(_("no flash defined"));
   }
-  if (misc->prop == DT_COLLECTION_PROP_EXPOSURE_PROGRAM)
+  else if(misc->prop == DT_COLLECTION_PROP_EXPOSURE_PROGRAM)
   {
     table = g_strdup("exposure_program");
-    tooltip = g_strdup(_("no exposure_program defined"));
+    tooltip = g_strdup(_("no exposure program defined"));
   }
-  if (misc->prop == DT_COLLECTION_PROP_METERING_MODE)
+  else if(misc->prop == DT_COLLECTION_PROP_METERING_MODE)
   {
     table = g_strdup("metering_mode");
     tooltip = g_strdup(_("no metering mode defined"));
   }
 
-  // clang-format off
-  g_snprintf(query, sizeof(query),
-             "SELECT t.name"
-             "     , COUNT(*) AS count"
-             " FROM main.images AS mi"
-             " JOIN main.%s AS t"
-             " WHERE mi.%s_id = t.id AND %s"
-             " GROUP BY name"
-             " ORDER BY name",
-             table, table,
-             d->last_where_ext);
+  if(misc->prop == DT_COLLECTION_PROP_CAMERA)
+  {
+    // clang-format off
+    g_snprintf(query, sizeof(query),
+               "SELECT TRIM(cm.maker || ' ' || cm.model) AS camera, COUNT(*) AS count"
+               " FROM main.images AS mi, main.cameras AS cm"
+               " WHERE mi.camera_id = cm.id AND %s"
+               " GROUP BY camera"
+               " ORDER BY camera",
+               d->last_where_ext);
+  }
+  else if(misc->prop == DT_COLLECTION_PROP_LENS)
+  {
+    // clang-format off
+    g_snprintf(query, sizeof(query),
+               "SELECT CASE LOWER(TRIM(ln.name))"
+               "         WHEN 'n/a' THEN ''"
+               "         ELSE ln.name"
+               "       END AS lens, COUNT(*) AS count"
+               " FROM main.images AS mi, main.lens AS ln"
+               " WHERE mi.lens_id = ln.id AND %s"
+               " GROUP BY lens"
+               " ORDER BY lens",
+               d->last_where_ext);
+  }
+  else // white balance, flash, exposure program, metering mode
+  {
+    // clang-format off
+    g_snprintf(query, sizeof(query),
+               "SELECT t.name"
+               "     , COUNT(*) AS count"
+               " FROM main.images AS mi"
+               " JOIN main.%s AS t"
+               " WHERE mi.%s_id = t.id AND %s"
+               " GROUP BY name"
+               " ORDER BY name",
+               table, table,
+               d->last_where_ext);
+  }
 
   g_free(table);
 
@@ -346,28 +383,42 @@ static void _misc_widget_init(dt_lib_filtering_rule_t *rule,
 
   gchar *name = NULL;
   gchar *tooltip = NULL;
-  if (prop == DT_COLLECTION_PROP_WHITEBALANCE)
+  if(prop == DT_COLLECTION_PROP_CAMERA)
+  {
+    name = g_strdup(_("camera"));
+    tooltip = g_strdup(_("enter camera to search.\n"
+                         "multiple values can be separated by ','\n"
+                         "\nright-click to get existing cameras"));
+  }
+  else if(prop == DT_COLLECTION_PROP_LENS)
+  {
+    name = g_strdup(_("lens"));
+    tooltip = g_strdup(_("enter lens to search.\n"
+                         "multiple values can be separated by ','\n"
+                         "\nright-click to get existing lenses"));
+  }
+  else if(prop == DT_COLLECTION_PROP_WHITEBALANCE)
   {
     name = g_strdup(_("white balance"));
     tooltip = g_strdup(_("enter white balance to search.\n"
                          "multiple values can be separated by ','\n"
                          "\nright-click to get existing white balances"));
   }
-  else if (prop == DT_COLLECTION_PROP_FLASH)
+  else if(prop == DT_COLLECTION_PROP_FLASH)
   {
     name = g_strdup(_("flash"));
     tooltip = g_strdup(_("enter flash to search.\n"
                          "multiple values can be separated by ','\n"
                          "\nright-click to get existing flashes"));
   }
-  else if (prop == DT_COLLECTION_PROP_EXPOSURE_PROGRAM)
+  else if(prop == DT_COLLECTION_PROP_EXPOSURE_PROGRAM)
   {
     name = g_strdup(_("exposure program"));
     tooltip = g_strdup(_("enter exposure program to search.\n"
                          "multiple values can be separated by ','\n"
                          "\nright-click to get existing exposure programs"));
   }
-  else if (prop == DT_COLLECTION_PROP_METERING_MODE)
+  else if(prop == DT_COLLECTION_PROP_METERING_MODE)
   {
     name = g_strdup(_("metering mode"));
     tooltip = g_strdup(_("enter metering mode to search.\n"
