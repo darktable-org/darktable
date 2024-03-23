@@ -1313,7 +1313,7 @@ static gchar **_strsplit_quotes(const gchar *string,
       if(remainder > string+total_len)
       {
         // we reached the end
-        remainder = string+total_len;
+        remainder = string + total_len;
         break;
       }
 
@@ -1329,7 +1329,7 @@ static gchar **_strsplit_quotes(const gchar *string,
       }
       delimiter_len = strlen(delim);
 
-      s = strstr(remainder+quote_len, delim);
+      s = strstr(remainder + quote_len, delim);
     }
   }
 
