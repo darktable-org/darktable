@@ -1301,7 +1301,7 @@ static gchar **_strsplit_quotes(const gchar *string,
   }
   gsize delimiter_len = strlen(delim);
 
-  s = strstr(remainder+quote_len, delim);
+  s = strstr(remainder + quote_len, delim);
   if(s)
   {
     while(--max_tokens && s)
@@ -1310,7 +1310,7 @@ static gchar **_strsplit_quotes(const gchar *string,
       g_ptr_array_add(string_list, g_strndup(remainder, len));
       remainder = s + delimiter_len + quote_len;
 
-      if(remainder > string+total_len)
+      if(remainder > string + total_len)
       {
         // we reached the end
         remainder = string + total_len;
@@ -1353,7 +1353,7 @@ static gchar *_add_wildcards(const gchar *text)
     cam1 = g_strdup_printf("%%%s", text);
 
   if(g_str_has_suffix(cam1, "\""))
-    cam2 = g_utf8_substring(cam1, 0, g_utf8_strlen(cam1, -1)-1);
+    cam2 = g_utf8_substring(cam1, 0, g_utf8_strlen(cam1, -1) - 1);
   else
     cam2 = g_strdup_printf("%s%%", cam1);
 
@@ -1388,9 +1388,9 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     case DT_COLLECTION_PROP_FOLDERS: // folders
       {
         // replace * at the end with OR-clause to include subfolders
-        if((escaped_length > 0) && (escaped_text[escaped_length-1] == '*'))
+        if((escaped_length > 0) && (escaped_text[escaped_length - 1] == '*'))
         {
-          escaped_text[escaped_length-1] = '\0';
+          escaped_text[escaped_length - 1] = '\0';
           // clang-format off
           query = g_strdup_printf
             ("(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s' OR folder LIKE '%s"
@@ -1400,9 +1400,9 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         }
         // replace |% at the end with /% to only show subfolders
         else if((escaped_length > 1)
-                && (strcmp(escaped_text+escaped_length-2, "|%") == 0 ))
+                && (strcmp(escaped_text + escaped_length - 2, "|%") == 0 ))
         {
-          escaped_text[escaped_length-2] = '\0';
+          escaped_text[escaped_length - 2] = '\0';
           // clang-format off
           query = g_strdup_printf
             ("(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s"
@@ -1540,9 +1540,9 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         char *name_clause = g_strdup_printf("t.name LIKE \'%s\' || \'%s\'",
             dt_map_location_data_tag_root(), escaped_text2 ? escaped_text2 : "%");
 
-        if(escaped_text2 && (escaped_text2[strlen(escaped_text2)-1] == '*'))
+        if(escaped_text2 && (escaped_text2[strlen(escaped_text2) - 1] == '*'))
         {
-          escaped_text2[strlen(escaped_text2)-1] = '\0';
+          escaped_text2[strlen(escaped_text2) - 1] = '\0';
           name_clause = g_strdup_printf("(t.name LIKE \'%s\' || \'%s\' OR t.name LIKE \'%s\' || \'%s|%%\')",
           dt_map_location_data_tag_root(), escaped_text2 , dt_map_location_data_tag_root(), escaped_text2);
         }
@@ -1654,11 +1654,11 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       }
       else if(is_insensitive)
       {
-        if((escaped_length > 0) && (escaped_text[escaped_length-1] == '*'))
+        if((escaped_length > 0) && (escaped_text[escaped_length - 1] == '*'))
         {
           // shift-click adds an asterix * to include items in and under this hierarchy
           // without using a wildcard % which also would include similar named items
-          escaped_text[escaped_length-1] = '\0';
+          escaped_text[escaped_length - 1] = '\0';
           // clang-format off
           query = g_strdup_printf
             ("(mi.id IN (SELECT imgid FROM main.tagged_images"
@@ -1680,12 +1680,12 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       }
       else
       {
-        if((escaped_length > 0) && (escaped_text[escaped_length-1] == '*'))
+        if((escaped_length > 0) && (escaped_text[escaped_length - 1] == '*'))
         {
           // shift-click adds an asterix * to include items in and
           // under this hierarchy without using a wildcard % which
           // also would include similar named items
-          escaped_text[escaped_length-1] = '\0';
+          escaped_text[escaped_length - 1] = '\0';
           // clang-format off
           query = g_strdup_printf
             ("(mi.id IN (SELECT imgid FROM main.tagged_images"
@@ -1695,10 +1695,10 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
              escaped_text, escaped_text, escaped_text);
           // clang-format on
         }
-        else if((escaped_length > 0) && (escaped_text[escaped_length-1] == '%'))
+        else if((escaped_length > 0) && (escaped_text[escaped_length - 1] == '%'))
         {
           // ends with % or |%
-          escaped_text[escaped_length-1] = '\0';
+          escaped_text[escaped_length - 1] = '\0';
           // clang-format off
           query = g_strdup_printf
             ("(mi.id IN (SELECT imgid FROM main.tagged_images"
@@ -2472,8 +2472,12 @@ void dt_collection_deserialize(const char *buf, const gboolean filtering)
         dt_conf_set_int(confname, k);
         break;
       }
-      while(buf[0] != '$' && buf[0] != '\0') buf++;
-      if(buf[0] == '$') buf++;
+
+      while(buf[0] != '$' && buf[0] != '\0')
+        buf++;
+
+      if(buf[0] == '$')
+        buf++;
     }
   }
   dt_collection_update_query(darktable.collection,
