@@ -1611,11 +1611,10 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         img->exif_lens[i] = g_ascii_tolower(img->exif_lens[i]);
     }
 
-    // finally the lens has only numbers and parentheses, let's try to use
-    // Exif.Photo.LensModel if defined.
-
+    // finally we check if an "Unknwon Lens (xxx)" was returned by using
+    // a regular expression search.
     std::string lens(img->exif_lens);
-    if(std::string::npos == lens.find_first_not_of(" (1234567890)")
+    if(std::regex_search(lens, std::regex("\\(\\d+\\)$"))
        && FIND_EXIF_TAG("Exif.Photo.LensModel"))
     {
       _strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
