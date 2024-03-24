@@ -1613,12 +1613,28 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
 
     // finally we check if an "Unknwon Lens (xxx)" was returned by using
     // a regular expression search.
-    std::string lens(img->exif_lens);
-    if(std::regex_search(lens, std::regex("\\(\\d+\\)$"))
-       && FIND_EXIF_TAG("Exif.Photo.LensModel"))
+    GMatchInfo *match_info;
+
+    GRegex *regex = g_regex_new("\\(\\d+\\)$",
+                        (GRegexCompileFlags) 0, 
+                        (GRegexMatchFlags) 0, 
+                        NULL);
+    g_regex_match_full(regex, 
+                       img->exif_lens, 
+                       -1, 
+                       0, 
+                       (GRegexMatchFlags) 0,
+                       &match_info,
+                       NULL);
+    const int match_count = g_match_info_get_match_count(match_info);
+    if(match_count >0
+        && FIND_EXIF_TAG("Exif.Photo.LensModel"))
     {
       _strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
     }
+
+    g_match_info_free(match_info);
+    g_regex_unref(regex);
 
     if((pos = Exiv2::whiteBalance(exifData)) != exifData.end() && pos->size())
     {
