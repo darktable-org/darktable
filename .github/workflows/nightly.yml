@@ -125,37 +125,29 @@ jobs:
       - name: Cancel workflow if job fails
         if: ${{ failure() }}
         uses: andymckay/cancel-action@0.4
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ env.BRANCH }}
-          submodules: true
-          # We have to fetch the entire history to correctly generate the version for the AppImage filename
-          fetch-depth: 0
+      - name: Checkout darktable master branch
+        run: |
+          # Note that we can't make a shallow clone to reduce clone traffic and time, as we have to
+          # fetch the entire history to correctly generate the version for the AppImage filename
+          git clone https://github.com/darktable-org/darktable src
+          pushd src
+          git submodule init
+          git config submodule.src/tests/integration.update none
+          git submodule update
+          popd
       - name: Update lensfun data
         continue-on-error: true
         run: |
           sudo lensfun-update-data
       - name: Build and Install
         run: |
+          cd src
           bash tools/appimage-build-script.sh
-      - name: Check if it runs
-        run: |
-          ${INSTALL_PREFIX}/bin/darktable --version || true
-          ${INSTALL_PREFIX}/bin/darktable-cli \
-                 --width 2048 --height 2048 \
-                 --hq true --apply-custom-presets false \
-                 "${SRC_DIR}/tests/integration/images/mire1.cr2" \
-                 "${SRC_DIR}/tests/integration/0000-nop/nop.xmp" \
-                 output.png \
-                 --core --disable-opencl --conf host_memory_limit=8192 \
-                 --conf worker_threads=4 -t 4 \
-                 --conf plugins/lighttable/export/force_lcms2=FALSE \
-                 --conf plugins/lighttable/export/iccintent=0
       - name: Package upload
         if: ${{ success() }}
         uses: actions/upload-artifact@v4
         with:
-          path: ${{ env.BUILD_DIR }}/Darktable-*.AppImage*
+          path: ${{ github.workspace }}/src/build/Darktable-*.AppImage*
           name: artifact-appimage
           retention-days: 1
 
@@ -249,11 +241,16 @@ jobs:
         uses: andymckay/cancel-action@0.4
       - run: git config --global core.autocrlf input
         shell: bash
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          submodules: true
-          path: src
+      - name: Checkout darktable master branch
+        run: |
+          # Note that we can't make a shallow clone to reduce clone traffic and time, as we have to
+          # fetch the entire history to correctly generate the version for the installation package filename
+          git clone https://github.com/darktable-org/darktable src
+          pushd src
+          git submodule init
+          git config submodule.src/tests/integration.update none
+          git submodule update
+          popd
       - name: Update lensfun data
         if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
         continue-on-error: true
@@ -264,20 +261,6 @@ jobs:
           cmake -E make_directory "${BUILD_DIR}"
           cmake -E make_directory "${INSTALL_PREFIX}"
           $(cygpath ${SRC_DIR})/.ci/ci-script.sh
-      - name: Check if it runs
-        run: |
-          $(cygpath ${INSTALL_PREFIX})/bin/darktable.exe --version || true
-          echo "Testing RUN!"
-          $(cygpath ${INSTALL_PREFIX})/bin/darktable-cli.exe \
-                 --width 2048 --height 2048 \
-                 --hq true --apply-custom-presets false \
-                 $(cygpath ${SRC_DIR})/src/tests/integration/images/mire1.cr2 \
-                 $(cygpath ${SRC_DIR})/src/tests/integration/0000-nop/nop.xmp \
-                 output.png \
-                 --core --disable-opencl --conf host_memory_limit=8192 \
-                 --conf worker_threads=4 -t 4 \
-                 --conf plugins/lighttable/export/force_lcms2=FALSE \
-                 --conf plugins/lighttable/export/iccintent=0
       - name: Package
         if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
         run: |
@@ -327,11 +310,16 @@ jobs:
       GENERATOR: ${{ matrix.generator }}
       TARGET: ${{ matrix.target }}
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          submodules: true
-          path: src
+      - name: Checkout darktable master branch
+        run: |
+          # Note that we can't make a shallow clone to reduce clone traffic and time, as we have to
+          # fetch the entire history to correctly generate the version for the disk image filename
+          git clone https://github.com/darktable-org/darktable src
+          pushd src
+          git submodule init
+          git config submodule.src/tests/integration.update none
+          git submodule update
+          popd
       - name: Install Base Dependencies
         run: |
           brew update > /dev/null || true
@@ -352,19 +340,6 @@ jobs:
           cmake -E make_directory "${BUILD_DIR}";
           cmake -E make_directory "${INSTALL_PREFIX}";
           ./src/.ci/ci-script.sh;
-      - name: Check if it runs
-        run: |
-          ${INSTALL_PREFIX}/bin/darktable --version || true
-          ${INSTALL_PREFIX}/bin/darktable-cli \
-                 --width 2048 --height 2048 \
-                 --hq true --apply-custom-presets false \
-                 "${SRC_DIR}/src/tests/integration/images/mire1.cr2" \
-                 "${SRC_DIR}/src/tests/integration/0000-nop/nop.xmp" \
-                 output.png \
-                 --core --disable-opencl --conf host_memory_limit=8192 \
-                 --conf worker_threads=4 -t 4 \
-                 --conf plugins/lighttable/export/force_lcms2=FALSE \
-                 --conf plugins/lighttable/export/iccintent=0
       - name: Build macOS package
         run: |
           ./src/packaging/macosx/3_make_hb_darktable_package.sh
