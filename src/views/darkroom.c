@@ -465,10 +465,6 @@ void expose(
     dev->gui_synch = FALSE;
   }
 
-  if(_full_request(dev)) dt_dev_process_image(dev);
-  if(_preview_request(dev)) dt_dev_process_preview(dev);
-  if(_preview2_request(dev)) dt_dev_process_preview2(dev);
-
   float pzx = 0.0f, pzy = 0.0f, zoom_scale = 0.0f;
   dt_dev_get_pointer_zoom_pos(port, pointerx, pointery, &pzx, &pzy, &zoom_scale);
 
@@ -619,6 +615,10 @@ void expose(
     }
     g_free(load_txt);
   }
+
+  if(_full_request(dev)) dt_dev_process_image(dev);
+  if(_preview_request(dev)) dt_dev_process_preview(dev);
+  if(_preview2_request(dev)) dt_dev_process_preview2(dev);
 
   /* if we are in full preview mode, we don"t want anything else than the image */
   if(dev->full_preview)
@@ -3396,8 +3396,6 @@ static gboolean _second_window_draw_callback(GtkWidget *widget,
 {
   cairo_set_source_rgb(cri, 0.2, 0.2, 0.2);
 
-  if(_preview2_request(dev)) dt_dev_process_preview2(dev);
-
   if(dev->preview2.pipe->backbuf)  // do we have an image?
   {
     // draw image
@@ -3407,6 +3405,8 @@ static gboolean _second_window_draw_callback(GtkWidget *widget,
     _view_paint_surface(cri, dev->preview2.orig_width, dev->preview2.orig_height,
                         &dev->preview2, DT_WINDOW_SECOND);
   }
+
+  if(_preview2_request(dev)) dt_dev_process_preview2(dev);
 
   return TRUE;
 }
