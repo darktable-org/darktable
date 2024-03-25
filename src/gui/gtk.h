@@ -325,33 +325,49 @@ typedef enum dt_ui_border_t
 } dt_ui_border_t;
 
 /** \brief add's a widget to a defined container */
-void dt_ui_container_add_widget(struct dt_ui_t *ui, const dt_ui_container_t c, GtkWidget *w);
+void dt_ui_container_add_widget(struct dt_ui_t *ui,
+                                const dt_ui_container_t c,
+                                GtkWidget *w);
 /** \brief gives a widget focus in the container */
-void dt_ui_container_focus_widget(struct dt_ui_t *ui, const dt_ui_container_t c, GtkWidget *w);
+void dt_ui_container_focus_widget(struct dt_ui_t *ui,
+                                  const dt_ui_container_t c,
+                                  GtkWidget *w);
 /** \brief calls a callback on all children widgets from container */
-void dt_ui_container_foreach(struct dt_ui_t *ui, const dt_ui_container_t c, GtkCallback callback);
+void dt_ui_container_foreach(struct dt_ui_t *ui,
+                             const dt_ui_container_t c,
+                             GtkCallback callback);
 /** \brief destroy all child widgets from container */
-void dt_ui_container_destroy_children(struct dt_ui_t *ui, const dt_ui_container_t c);
+void dt_ui_container_destroy_children(struct dt_ui_t *ui,
+                                      const dt_ui_container_t c);
 /** \brief shows/hide a panel */
-void dt_ui_panel_show(struct dt_ui_t *ui, const dt_ui_panel_t, gboolean show, gboolean write);
+void dt_ui_panel_show(struct dt_ui_t *ui,
+                      const dt_ui_panel_t,
+                      const gboolean show,
+                      const gboolean write);
 /** \brief restore saved state of panel visibility for current view */
 void dt_ui_restore_panels(struct dt_ui_t *ui);
 /** \brief update scrollbars for current view */
 void dt_ui_update_scrollbars(struct dt_ui_t *ui);
 /** show or hide scrollbars */
-void dt_ui_scrollbars_show(struct dt_ui_t *ui, gboolean show);
+void dt_ui_scrollbars_show(struct dt_ui_t *ui, const gboolean show);
 /** \brief toggle view of panels eg. collapse/expands to previous view state */
 void dt_ui_toggle_panels_visibility(struct dt_ui_t *ui);
 /** \brief draw user's attention */
 void dt_ui_notify_user();
 /** \brief get visible state of panel */
-gboolean dt_ui_panel_visible(struct dt_ui_t *ui, const dt_ui_panel_t);
+gboolean dt_ui_panel_visible(struct dt_ui_t *ui,
+                             const dt_ui_panel_t);
 /**  \brief get width of right, left, or bottom panel */
-int dt_ui_panel_get_size(struct dt_ui_t *ui, const dt_ui_panel_t p);
+int dt_ui_panel_get_size(struct dt_ui_t *ui,
+                         const dt_ui_panel_t p);
 /**  \brief set width of right, left, or bottom panel */
-void dt_ui_panel_set_size(struct dt_ui_t *ui, const dt_ui_panel_t p, int s);
+void dt_ui_panel_set_size(struct dt_ui_t *ui,
+                          const dt_ui_panel_t p,
+                          int s);
 /** \brief is the panel ancestor of widget */
-gboolean dt_ui_panel_ancestor(struct dt_ui_t *ui, const dt_ui_panel_t p, GtkWidget *w);
+gboolean dt_ui_panel_ancestor(struct dt_ui_t *ui,
+                              const dt_ui_panel_t p,
+                              GtkWidget *w);
 /** \brief get the center drawable widget */
 GtkWidget *dt_ui_center(struct dt_ui_t *ui);
 GtkWidget *dt_ui_center_base(struct dt_ui_t *ui);
@@ -364,7 +380,8 @@ GtkWidget *dt_ui_log_msg(struct dt_ui_t *ui);
 /** \brief get the toast message widget */
 GtkWidget *dt_ui_toast_msg(struct dt_ui_t *ui);
 
-GtkBox *dt_ui_get_container(struct dt_ui_t *ui, const dt_ui_container_t c);
+GtkBox *dt_ui_get_container(struct dt_ui_t *ui,
+                            const dt_ui_container_t c);
 
 /*  activate ellipsization of the combox entries */
 void dt_ellipsize_combo(GtkComboBox *cbox);
@@ -399,23 +416,36 @@ extern const struct dt_action_def_t dt_action_def_tabs_none;
 
 GtkNotebook *dt_ui_notebook_new(struct dt_action_def_t *def);
 
-GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook, const char *text, const char *tooltip);
+GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook,
+                               const char *text,
+                               const char *tooltip);
 
-// show a dialog box with 2 buttons in case some user interaction is required BEFORE dt's gui is initialised.
-// this expects gtk_init() to be called already which should be the case during most of dt's init phase.
-gboolean dt_gui_show_standalone_yes_no_dialog(const char *title, const char *markup, const char *no_text,
+// show a dialog box with 2 buttons in case some user interaction is
+// required BEFORE dt's gui is initialised.  this expects gtk_init()
+// to be called already which should be the case during most of dt's
+// init phase.
+gboolean dt_gui_show_standalone_yes_no_dialog(const char *title,
+                                              const char *markup,
+                                              const char *no_text,
                                               const char *yes_text);
 
-// similar to the one above. this one asks the user for some string. the hint is shown in the empty entry box
-char *dt_gui_show_standalone_string_dialog(const char *title, const char *markup, const char *placeholder,
-                                           const char *no_text, const char *yes_text);
+// similar to the one above. this one asks the user for some
+// string. the hint is shown in the empty entry box
+char *dt_gui_show_standalone_string_dialog(const char *title,
+                                           const char *markup,
+                                           const char *placeholder,
+                                           const char *no_text,
+                                           const char *yes_text);
 
 // returns TRUE if YES was answered, FALSE otherwise
-gboolean dt_gui_show_yes_no_dialog(const char *title, const char *format, ...);
+gboolean dt_gui_show_yes_no_dialog(const char *title,
+                                   const char *format, ...);
 
-void dt_gui_add_help_link(GtkWidget *widget, const char *link);
+void dt_gui_add_help_link(GtkWidget *widget,
+                          const char *link);
 char *dt_gui_get_help_url(GtkWidget *widget);
-void dt_gui_dialog_add_help(GtkDialog *dialog, const char *topic);
+void dt_gui_dialog_add_help(GtkDialog *dialog,
+                            const char *topic);
 void dt_gui_show_help(GtkWidget *widget);
 
 // load a CSS theme
@@ -431,7 +461,9 @@ guint dt_gui_translated_key_state(GdkEventKey *event);
 // return modifier keys currently pressed, independent of any key event
 GdkModifierType dt_key_modifier_state();
 
-GtkWidget *dt_ui_resize_wrap(GtkWidget *w, gint min_size, char *config_str);
+GtkWidget *dt_ui_resize_wrap(GtkWidget *w,
+                             const gint min_size,
+                             char *config_str);
 
 // check whether the given container has any user-added children
 gboolean dt_gui_container_has_children(GtkContainer *container);
@@ -440,28 +472,41 @@ int dt_gui_container_num_children(GtkContainer *container);
 // return the first child of the given container
 GtkWidget *dt_gui_container_first_child(GtkContainer *container);
 // return the requested child of the given container, or NULL if it has fewer children
-GtkWidget *dt_gui_container_nth_child(GtkContainer *container, int which);
+GtkWidget *dt_gui_container_nth_child(GtkContainer *container,
+                                      const int which);
 
-// remove all of the children we've added to the container.  Any which no longer have any references will
-// be destroyed.
+// remove all of the children we've added to the container.  Any which
+// no longer have any references will be destroyed.
 void dt_gui_container_remove_children(GtkContainer *container);
 
-// delete all of the children we've added to the container.  Use this function only if you are SURE
-// there are no other references to any of the children (if in doubt, use dt_gui_container_remove_children
+// delete all of the children we've added to the container.  Use this
+// function only if you are SURE there are no other references to any
+// of the children (if in doubt, use dt_gui_container_remove_children
 // instead; it's a bit slower but safer).
 void dt_gui_container_destroy_children(GtkContainer *container);
 
-void dt_gui_menu_popup(GtkMenu *menu, GtkWidget *button, GdkGravity widget_anchor, GdkGravity menu_anchor);
+void dt_gui_menu_popup(GtkMenu *menu,
+                       GtkWidget *button,
+                       GdkGravity widget_anchor,
+                       GdkGravity menu_anchor);
 
-void dt_gui_draw_rounded_rectangle(cairo_t *cr, float width, float height, float x, float y);
+void dt_gui_draw_rounded_rectangle(cairo_t *cr,
+                                   float width,
+                                   float height,
+                                   float x,
+                                   float y);
 
 void dt_gui_widget_reallocate_now(GtkWidget *widget);
 
-// event handler for "key-press-event" of GtkTreeView to decide if focus switches to GtkSearchEntry
-gboolean dt_gui_search_start(GtkWidget *widget, GdkEventKey *event, GtkSearchEntry *entry);
+// event handler for "key-press-event" of GtkTreeView to decide if
+// focus switches to GtkSearchEntry
+gboolean dt_gui_search_start(GtkWidget *widget,
+                             GdkEventKey *event,
+                             GtkSearchEntry *entry);
 
 // event handler for "stop-search" of GtkSearchEntry
-void dt_gui_search_stop(GtkSearchEntry *entry, GtkWidget *widget);
+void dt_gui_search_stop(GtkSearchEntry *entry,
+                        GtkWidget *widget);
 
 // create a collapsible section, insert in parent, return the container
 void dt_gui_new_collapsible_section(dt_gui_collapsible_section_t *cs,
@@ -476,7 +521,8 @@ void dt_gui_update_collapsible_section(dt_gui_collapsible_section_t *cs);
 void dt_gui_hide_collapsible_section(dt_gui_collapsible_section_t *cs);
 
 // is delay between first and second click/press longer than double-click time?
-gboolean dt_gui_long_click(const int second, const int first);
+gboolean dt_gui_long_click(const int second,
+                           const int first);
 
 #ifdef __cplusplus
 } // extern "C"
