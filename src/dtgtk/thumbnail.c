@@ -224,10 +224,26 @@ static void _image_get_infos(dt_thumbnail_t *thumb)
   const dt_image_t *img = dt_image_cache_get(darktable.image_cache, thumb->imgid, 'r');
   if(img)
   {
-    thumb->has_localcopy = (img->flags & DT_IMAGE_LOCAL_COPY);
     thumb->rating = img->flags & DT_IMAGE_REJECTED
       ? DT_VIEW_REJECT
       : (img->flags & DT_VIEW_RATINGS_MASK);
+  }
+  // if the rating has changed, update the thumbnail class to denote whether it is rejected.
+  if(old_rating != thumb->rating)
+  {
+    _thumb_update_rating_class(thumb);
+  }
+
+  // we do not need to retrieve any further information unless an overlay is shown.
+  if(thumb->over == DT_THUMBNAIL_OVERLAYS_NONE)
+  {
+    dt_image_cache_read_release(darktable.image_cache, img);
+    return;
+  }
+
+  if(img)
+  {
+    thumb->has_localcopy = (img->flags & DT_IMAGE_LOCAL_COPY);
     thumb->is_bw = dt_image_monochrome_flags(img);
     thumb->is_bw_flow = dt_image_use_monochrome_workflow(img);
     thumb->is_hdr = dt_image_is_hdr(img);
@@ -236,12 +252,6 @@ static void _image_get_infos(dt_thumbnail_t *thumb)
 
     dt_image_cache_read_release(darktable.image_cache, img);
   }
-  // if the rating as changed, update the rejected
-  if(old_rating != thumb->rating)
-  {
-    _thumb_update_rating_class(thumb);
-  }
-
   // colorlabels
   thumb->colorlabels = 0;
   DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.get_color);
