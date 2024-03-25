@@ -216,9 +216,7 @@ void dt_check_opendir(const char* context, const char* directory)
   }
 
 #if _WIN32
-  wchar_t *wdirectory = g_utf8_to_utf16 (directory, -1, NULL, NULL, NULL);
-  DWORD attribs = GetFileAttributesW(wdirectory);
-  g_free(wdirectory);
+  DWORD attribs = GetFileAttributesA(directory);
   if(attribs != INVALID_FILE_ATTRIBUTES &&
       (attribs & FILE_ATTRIBUTE_DIRECTORY))
   {
@@ -304,4 +302,3 @@ void dt_loc_get_sharedir(char *sharedir, size_t bufsize)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

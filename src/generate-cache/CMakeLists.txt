@@ -1,5 +1,9 @@
 include_directories(${DARKTABLE_BINDIR})
-add_executable(darktable-generate-cache main.c)
+
+if(WIN32)
+  set(CLI_RESOURCE_OBJECT "${CMAKE_CURRENT_BINARY_DIR}/../win/cli.rc")
+endif(WIN32)
+add_executable(darktable-generate-cache main.c ${CLI_RESOURCE_OBJECT})
 
 set_target_properties(darktable-generate-cache PROPERTIES LINKER_LANGUAGE C)
 target_link_libraries(darktable-generate-cache lib_darktable whereami)

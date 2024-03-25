@@ -1,5 +1,9 @@
+if(WIN32)
+  set(CLI_RESOURCE_OBJECT "${CMAKE_CURRENT_BINARY_DIR}/../win/cli.rc")
+endif(WIN32)
 add_executable(darktable-chart
                main.c
+               ${CLI_RESOURCE_OBJECT}
                colorchart.c
                deltaE.c
                pfm.c

@@ -3,10 +3,6 @@
 
 #include <stdio.h>
 
-#ifdef _WIN32
-#include "win/main_wrapper.h"
-#endif
-
 typedef struct test_case_t
 {
   char *input, *expected_result;

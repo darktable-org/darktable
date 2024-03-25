@@ -27,9 +27,9 @@
 #endif
 #endif
 
-const wchar_t *dtwin_get_locale()
+const char *dtwin_get_locale()
 {
-  wchar_t *posix = NULL;
+  char *posix = NULL;
   LCID lcid;
 
   lcid = GetUserDefaultLCID();
@@ -39,217 +39,230 @@ const wchar_t *dtwin_get_locale()
   switch(lang_id)
   {
     case LANG_AFRIKAANS:
-      posix = L"af";
+      posix = "af";
       break;
     case LANG_ARABIC:
-      posix = L"ar";
+      posix = "ar";
       break;
     case LANG_AZERI:
-      posix = L"az";
+      posix = "az";
       break;
     case LANG_BENGALI:
-      posix = L"bn";
+      posix = "bn";
       break;
     case LANG_BULGARIAN:
-      posix = L"bg";
+      posix = "bg";
       break;
     case LANG_CATALAN:
-      posix = L"ca";
+      posix = "ca";
       break;
     case LANG_CZECH:
-      posix = L"cs";
+      posix = "cs";
       break;
     case LANG_DANISH:
-      posix = L"da";
+      posix = "da";
       break;
     case LANG_ESTONIAN:
-      posix = L"et";
+      posix = "et";
       break;
     case LANG_PERSIAN:
-      posix = L"fa";
+      posix = "fa";
       break;
     case LANG_GERMAN:
-      posix = L"de";
+      posix = "de";
       break;
     case LANG_GREEK:
-      posix = L"el";
+      posix = "el";
       break;
     case LANG_ENGLISH:
       switch(sub_id)
       {
         case SUBLANG_ENGLISH_UK:
-          posix = L"en_GB";
+          posix = "en_GB";
           break;
         case SUBLANG_ENGLISH_AUS:
-          posix = L"en_AU";
+          posix = "en_AU";
           break;
         case SUBLANG_ENGLISH_CAN:
-          posix = L"en_CA";
+          posix = "en_CA";
           break;
         default:
-          posix = L"en";
+          posix = "en";
           break;
       }
       break;
     case LANG_SPANISH:
-      posix = L"es";
+      posix = "es";
       break;
     case LANG_BASQUE:
-      posix = L"eu";
+      posix = "eu";
       break;
     case LANG_FINNISH:
-      posix = L"fi";
+      posix = "fi";
       break;
     case LANG_FRENCH:
-      posix = L"fr";
+      posix = "fr";
       break;
     case LANG_GALICIAN:
-      posix = L"gl";
+      posix = "gl";
       break;
     case LANG_GUJARATI:
-      posix = L"gu";
+      posix = "gu";
       break;
     case LANG_HEBREW:
-      posix = L"he";
+      posix = "he";
       break;
     case LANG_HINDI:
-      posix = L"hi";
+      posix = "hi";
       break;
     case LANG_HUNGARIAN:
-      posix = L"hu";
+      posix = "hu";
       break;
     case LANG_ICELANDIC:
       break;
     case LANG_INDONESIAN:
-      posix = L"id";
+      posix = "id";
       break;
     case LANG_ITALIAN:
-      posix = L"it";
+      posix = "it";
       break;
     case LANG_JAPANESE:
-      posix = L"ja";
+      posix = "ja";
       break;
     case LANG_GEORGIAN:
-      posix = L"ka";
+      posix = "ka";
       break;
     case LANG_KANNADA:
-      posix = L"kn";
+      posix = "kn";
       break;
     case LANG_KOREAN:
-      posix = L"ko";
+      posix = "ko";
       break;
     case LANG_LITHUANIAN:
-      posix = L"lt";
+      posix = "lt";
       break;
     case LANG_MACEDONIAN:
-      posix = L"mk";
+      posix = "mk";
       break;
     case LANG_DUTCH:
-      posix = L"nl";
+      posix = "nl";
       break;
     case LANG_NEPALI:
-      posix = L"ne";
+      posix = "ne";
       break;
     case LANG_NORWEGIAN:
       switch(sub_id)
       {
         case SUBLANG_NORWEGIAN_BOKMAL:
-          posix = L"nb";
+          posix = "nb";
           break;
         case SUBLANG_NORWEGIAN_NYNORSK:
-          posix = L"nn";
+          posix = "nn";
           break;
       }
       break;
     case LANG_PUNJABI:
-      posix = L"pa";
+      posix = "pa";
       break;
     case LANG_POLISH:
-      posix = L"pl";
+      posix = "pl";
       break;
     case LANG_PASHTO:
-      posix = L"ps";
+      posix = "ps";
       break;
     case LANG_PORTUGUESE:
       switch(sub_id)
       {
         case SUBLANG_PORTUGUESE_BRAZILIAN:
-          posix = L"pt_BR";
+          posix = "pt_BR";
           break;
         default:
-          posix = L"pt";
+          posix = "pt";
           break;
       }
       break;
     case LANG_ROMANIAN:
-      posix = L"ro";
+      posix = "ro";
       break;
     case LANG_RUSSIAN:
-      posix = L"ru";
+      posix = "ru";
       break;
     case LANG_SLOVAK:
-      posix = L"sk";
+      posix = "sk";
       break;
     case LANG_SLOVENIAN:
-      posix = L"sl";
+      posix = "sl";
       break;
     case LANG_ALBANIAN:
-      posix = L"sq";
+      posix = "sq";
       break;
     /* LANG_CROATIAN == LANG_SERBIAN == LANG_BOSNIAN */
     case LANG_SERBIAN:
       switch(sub_id)
       {
         case SUBLANG_SERBIAN_LATIN:
-          posix = L"sr@Latn";
+        case SUBLANG_SERBIAN_BOSNIA_HERZEGOVINA_LATIN:
+        case SUBLANG_SERBIAN_SERBIA_LATIN:
+        case SUBLANG_SERBIAN_MONTENEGRO_LATIN:
+          posix = "sr@latin";
           break;
         case SUBLANG_SERBIAN_CYRILLIC:
-          posix = L"sr";
+        case SUBLANG_SERBIAN_SERBIA_CYRILLIC:
+          posix = "sr";
+          break;
+        case SUBLANG_SERBIAN_BOSNIA_HERZEGOVINA_CYRILLIC:
+        case SUBLANG_SERBIAN_MONTENEGRO_CYRILLIC:
+          posix = "sr@ije";
+          break;
+        case SUBLANG_BOSNIAN_BOSNIA_HERZEGOVINA_LATIN:
+          posix = "bs";
           break;
         case SUBLANG_BOSNIAN_BOSNIA_HERZEGOVINA_CYRILLIC:
-        case SUBLANG_BOSNIAN_BOSNIA_HERZEGOVINA_LATIN:
-          posix = L"bs";
+          posix = "bs@cyrillic";
           break;
+        case SUBLANG_CROATIAN_CROATIA:
         case SUBLANG_CROATIAN_BOSNIA_HERZEGOVINA_LATIN:
-          posix = L"hr";
+          posix = "hr";
           break;
+        default:
+          posix = "hr";
       }
       break;
     case LANG_SWEDISH:
-      posix = L"sv";
+      posix = "sv";
       break;
     case LANG_TAMIL:
-      posix = L"ta";
+      posix = "ta";
       break;
     case LANG_TELUGU:
-      posix = L"te";
+      posix = "te";
       break;
     case LANG_THAI:
-      posix = L"th";
+      posix = "th";
       break;
     case LANG_TURKISH:
-      posix = L"tr";
+      posix = "tr";
       break;
     case LANG_UKRAINIAN:
-      posix = L"uk";
+      posix = "uk";
       break;
     case LANG_VIETNAMESE:
-      posix = L"vi";
+      posix = "vi";
       break;
     case LANG_XHOSA:
-      posix = L"xh";
+      posix = "xh";
       break;
     case LANG_CHINESE:
       switch(sub_id)
       {
         case SUBLANG_CHINESE_SIMPLIFIED:
-          posix = L"zh_CN";
+          posix = "zh_CN";
           break;
         case SUBLANG_CHINESE_TRADITIONAL:
-          posix = L"zh_TW";
+          posix = "zh_TW";
           break;
         default:
-          posix = L"zh";
+          posix = "zh";
           break;
       }
       break;
@@ -307,13 +320,13 @@ const wchar_t *dtwin_get_locale()
     switch(lcid)
     {
       case 0x0455:
-        posix = L"my_MM";
+        posix = "my_MM";
         break; /* Myanmar (Burmese) */
       case 9999:
-        posix = L"ku";
+        posix = "ku";
         break; /* Kurdish (from NSIS) */
       default:
-        posix = L"en";
+        posix = "en";
     }
   }
 
@@ -350,21 +363,21 @@ void dtwin_set_thread_name(DWORD dwThreadID, const char *threadName)
 // When GLib version on Windows will be able to trash silently we can remove this function.
 boolean dt_win_file_trash(GFile *file, GCancellable *cancellable, GError **error)
 {
-  SHFILEOPSTRUCTW op = { 0 };
+  SHFILEOPSTRUCTA op = { 0 };
   gboolean success;
-  wchar_t *wfilename;
-  long len;
+  char *filename;
 
-  wfilename = g_utf8_to_utf16(g_file_get_parse_name(file), -1, NULL, &len, NULL);
+  filename = g_file_get_parse_name(file);
+  size_t len = strlen(filename);
   /* SHFILEOPSTRUCT.pFrom is double-zero-terminated */
-  wfilename = g_renew(wchar_t, wfilename, len + 2);
-  wfilename[len + 1] = 0;
+  filename = g_renew(char, filename, len + 2);
+  filename[len + 1] = 0;
 
   op.wFunc = FO_DELETE;
-  op.pFrom = wfilename;
+  op.pFrom = filename;
   op.fFlags = FOF_ALLOWUNDO | FOF_SILENT | FOF_NOCONFIRMATION;
 
-  success = SHFileOperationW(&op) == 0;
+  success = SHFileOperationA(&op) == 0;
 
   if(success && op.fAnyOperationsAborted)
   {
@@ -377,7 +390,7 @@ boolean dt_win_file_trash(GFile *file, GCancellable *cancellable, GError **error
     g_set_error(error, G_IO_ERROR, g_io_error_from_errno(0), "Unable to trash file %s",
                 g_file_get_parse_name(file));
 
-  g_free(wfilename);
+  g_free(filename);
   return success;
 }
 
