@@ -2080,56 +2080,18 @@ dt_colorspaces_color_profile_type_t dt_colorspaces_cicp_to_type
       {
         /* SRGB */
         case DT_CICP_TRANSFER_CHARACTERISTICS_SRGB:
-
-          switch(cicp->matrix_coefficients)
-          {
-            case DT_CICP_MATRIX_COEFFICIENTS_IDENTITY: /* support RGB (4:4:4 or lossless) */
-            case DT_CICP_MATRIX_COEFFICIENTS_REC709: /* support incorrectly tagged files */
-            case DT_CICP_MATRIX_COEFFICIENTS_SYCC:
-            case DT_CICP_MATRIX_COEFFICIENTS_REC601: /* support equivalents just in case of mistagging */
-            case DT_CICP_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL: /* support incorrectly tagged files */
-            case DT_CICP_MATRIX_COEFFICIENTS_UNSPECIFIED:
-              return DT_COLORSPACE_SRGB;
-            default:
-              break;
-          }
-
-          break; /* SRGB */
+          return DT_COLORSPACE_SRGB;
 
         /* REC709 */
         case DT_CICP_TRANSFER_CHARACTERISTICS_REC709:
         case DT_CICP_TRANSFER_CHARACTERISTICS_REC601:      /* support equivalents just in case of mistagging */
         case DT_CICP_TRANSFER_CHARACTERISTICS_REC2020_10B: /* support equivalents just in case of mistagging */
         case DT_CICP_TRANSFER_CHARACTERISTICS_REC2020_12B: /* support equivalents just in case of mistagging */
-
-          switch(cicp->matrix_coefficients)
-          {
-            case DT_CICP_MATRIX_COEFFICIENTS_IDENTITY: /* support RGB (4:4:4 or lossless) */
-            case DT_CICP_MATRIX_COEFFICIENTS_REC709:
-            case DT_CICP_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL:
-            case DT_CICP_MATRIX_COEFFICIENTS_UNSPECIFIED:
-              return DT_COLORSPACE_REC709;
-            default:
-              break;
-          }
-
-          break; /* REC709 */
+          return DT_COLORSPACE_REC709;
 
         /* LINEAR REC709 */
         case DT_CICP_TRANSFER_CHARACTERISTICS_LINEAR:
-
-          switch(cicp->matrix_coefficients)
-          {
-            case DT_CICP_MATRIX_COEFFICIENTS_IDENTITY: /* support RGB (4:4:4 or lossless) */
-            case DT_CICP_MATRIX_COEFFICIENTS_REC709:
-            case DT_CICP_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL:
-            case DT_CICP_MATRIX_COEFFICIENTS_UNSPECIFIED:
-              return DT_COLORSPACE_LIN_REC709;
-            default:
-              break;
-          }
-
-          break; /* LINEAR REC709 */
+          return DT_COLORSPACE_LIN_REC709;
 
         default:
           break;
@@ -2144,51 +2106,15 @@ dt_colorspaces_color_profile_type_t dt_colorspaces_cicp_to_type
       {
         /* LINEAR REC2020 */
         case DT_CICP_TRANSFER_CHARACTERISTICS_LINEAR:
-
-          switch(cicp->matrix_coefficients)
-          {
-            case DT_CICP_MATRIX_COEFFICIENTS_IDENTITY: /* support RGB (4:4:4 or lossless) */
-            case DT_CICP_MATRIX_COEFFICIENTS_REC2020_NCL:
-            case DT_CICP_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL:
-            case DT_CICP_MATRIX_COEFFICIENTS_UNSPECIFIED:
-              return DT_COLORSPACE_LIN_REC2020;
-            default:
-              break;
-          }
-
-          break; /* LINEAR REC2020 */
+          return DT_COLORSPACE_LIN_REC2020;
 
         /* PQ REC2020 */
         case DT_CICP_TRANSFER_CHARACTERISTICS_PQ:
-
-          switch(cicp->matrix_coefficients)
-          {
-            case DT_CICP_MATRIX_COEFFICIENTS_IDENTITY: /* support RGB (4:4:4 or lossless) */
-            case DT_CICP_MATRIX_COEFFICIENTS_REC2020_NCL:
-            case DT_CICP_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL:
-            case DT_CICP_MATRIX_COEFFICIENTS_UNSPECIFIED:
-              return DT_COLORSPACE_PQ_REC2020;
-            default:
-              break;
-          }
-
-          break; /* PQ REC2020 */
+          return DT_COLORSPACE_PQ_REC2020;
 
         /* HLG REC2020 */
         case DT_CICP_TRANSFER_CHARACTERISTICS_HLG:
-
-          switch(cicp->matrix_coefficients)
-          {
-            case DT_CICP_MATRIX_COEFFICIENTS_IDENTITY: /* support RGB (4:4:4 or lossless) */
-            case DT_CICP_MATRIX_COEFFICIENTS_REC2020_NCL:
-            case DT_CICP_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL:
-            case DT_CICP_MATRIX_COEFFICIENTS_UNSPECIFIED:
-              return DT_COLORSPACE_HLG_REC2020;
-            default:
-              break;
-          }
-
-          break; /* HLG REC2020 */
+          return DT_COLORSPACE_HLG_REC2020;
 
         default:
           break;
@@ -2203,57 +2129,15 @@ dt_colorspaces_color_profile_type_t dt_colorspaces_cicp_to_type
       {
         /* PQ P3 */
         case DT_CICP_TRANSFER_CHARACTERISTICS_PQ:
-
-          switch(cicp->matrix_coefficients)
-          {
-            case DT_CICP_MATRIX_COEFFICIENTS_IDENTITY: /* support RGB (4:4:4 or lossless) */
-            case DT_CICP_MATRIX_COEFFICIENTS_REC709:
-            case DT_CICP_MATRIX_COEFFICIENTS_SYCC:
-            case DT_CICP_MATRIX_COEFFICIENTS_REC601:
-            case DT_CICP_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL:
-            case DT_CICP_MATRIX_COEFFICIENTS_UNSPECIFIED:
-              return DT_COLORSPACE_PQ_P3;
-            default:
-              break;
-          }
-
-          break; /* PQ P3 */
+          return DT_COLORSPACE_PQ_P3;
 
         /* HLG P3 */
         case DT_CICP_TRANSFER_CHARACTERISTICS_HLG:
-
-          switch(cicp->matrix_coefficients)
-          {
-            case DT_CICP_MATRIX_COEFFICIENTS_IDENTITY: /* support RGB (4:4:4 or lossless) */
-            case DT_CICP_MATRIX_COEFFICIENTS_REC709:
-            case DT_CICP_MATRIX_COEFFICIENTS_SYCC:
-            case DT_CICP_MATRIX_COEFFICIENTS_REC601:
-            case DT_CICP_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL:
-            case DT_CICP_MATRIX_COEFFICIENTS_UNSPECIFIED:
-              return DT_COLORSPACE_HLG_P3;
-            default:
-              break;
-          }
-
-          break; /* HLG P3 */
+          return DT_COLORSPACE_HLG_P3;
 
         /* Display P3 */
         case DT_CICP_TRANSFER_CHARACTERISTICS_SRGB:
-
-          switch(cicp->matrix_coefficients)
-          {
-            case DT_CICP_MATRIX_COEFFICIENTS_IDENTITY: /* support RGB (4:4:4 or lossless) */
-            case DT_CICP_MATRIX_COEFFICIENTS_REC709:
-            case DT_CICP_MATRIX_COEFFICIENTS_SYCC:
-            case DT_CICP_MATRIX_COEFFICIENTS_REC601:
-            case DT_CICP_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL:
-            case DT_CICP_MATRIX_COEFFICIENTS_UNSPECIFIED:
-              return DT_COLORSPACE_DISPLAY_P3;
-            default:
-              break;
-          }
-
-          break; /* Display P3 */
+          return DT_COLORSPACE_DISPLAY_P3;
 
         default:
           break;
@@ -2268,17 +2152,7 @@ dt_colorspaces_color_profile_type_t dt_colorspaces_cicp_to_type
       {
         /* LINEAR XYZ */
         case DT_CICP_TRANSFER_CHARACTERISTICS_LINEAR:
-
-          switch(cicp->matrix_coefficients)
-          {
-            case DT_CICP_MATRIX_COEFFICIENTS_IDENTITY:
-            case DT_CICP_MATRIX_COEFFICIENTS_UNSPECIFIED:
-              return DT_COLORSPACE_XYZ;
-            default:
-              break;
-          }
-
-          break; /* LINEAR XYZ */
+          return DT_COLORSPACE_XYZ;
 
         default:
           break;
