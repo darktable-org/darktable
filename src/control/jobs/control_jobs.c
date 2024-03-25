@@ -1451,6 +1451,11 @@ static int32_t dt_control_refresh_exif_run(dt_job_t *job)
   snprintf(message, sizeof(message), ngettext("refreshing info for %d image",
                                               "refreshing info for %d images",
                                               total), total);
+
+  // refresh EXIF should only refresh the EXIF data, no metadata
+  const gboolean apply_metadata = dt_conf_get_bool("ui_last/import_apply_metadata");
+  dt_conf_set_bool("ui_last/import_apply_metadata", FALSE);
+
   dt_control_job_set_progress_message(job, message);
   while(t)
   {
@@ -1486,6 +1491,9 @@ static int32_t dt_control_refresh_exif_run(dt_job_t *job)
   dt_collection_update_query(darktable.collection,
                              DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
                              g_list_copy(params->index));
+
+  dt_conf_set_bool("ui_last/import_apply_metadata", apply_metadata);
+
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
   dt_control_queue_redraw_center();
