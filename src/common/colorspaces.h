@@ -153,12 +153,7 @@ typedef enum dt_colorspaces_cicp_transfer_characteristics_t
 typedef enum dt_colorspaces_cicp_matrix_coefficients_t
 {
     DT_CICP_MATRIX_COEFFICIENTS_IDENTITY = 0,
-    DT_CICP_MATRIX_COEFFICIENTS_REC709 = 1,
-    DT_CICP_MATRIX_COEFFICIENTS_UNSPECIFIED = 2,
-    DT_CICP_MATRIX_COEFFICIENTS_SYCC = 5,
-    DT_CICP_MATRIX_COEFFICIENTS_REC601 = 6,
-    DT_CICP_MATRIX_COEFFICIENTS_REC2020_NCL = 9,
-    DT_CICP_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL = 12
+    DT_CICP_MATRIX_COEFFICIENTS_UNSPECIFIED = 2
 } dt_colorspaces_cicp_matrix_coefficients_t;
 
 typedef struct dt_colorspaces_t
