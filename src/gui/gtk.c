@@ -3693,14 +3693,19 @@ static gboolean _resize_wrap_scroll(GtkScrolledWindow *sw,
                                     GdkEventScroll *event,
                                     const char *config_str)
 {
+  // no move needed
+  int delta_y = 0;
+  dt_gui_get_scroll_unit_delta(event, &delta_y);
+
+  if(delta_y == 0 )
+    return FALSE;
+
   GtkWidget *w = gtk_bin_get_child(GTK_BIN(sw));
-  if(GTK_IS_VIEWPORT(w)) w = gtk_bin_get_child(GTK_BIN(w));
+
+  if(GTK_IS_VIEWPORT(w))
+    w = gtk_bin_get_child(GTK_BIN(w));
 
   const gint increment = _get_container_row_heigth(w);
-
-  int delta_y = 0;
-
-  dt_gui_get_scroll_unit_delta(event, &delta_y);
 
   if(dt_modifier_is(event->state, GDK_SHIFT_MASK | GDK_MOD1_MASK))
   {
