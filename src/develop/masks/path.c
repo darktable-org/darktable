@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2023 darktable developers.
+    Copyright (C) 2013-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -3378,7 +3378,8 @@ static void _path_set_hint_message(const dt_masks_form_gui_t *const gui,
               msgbuf_len);
   else if(gui->seg_selected >= 0)
     g_strlcat(msgbuf,
-              _("<b>move segment</b>: drag\n<b>add node</b>: ctrl+click"), msgbuf_len);
+              _("<b>move segment</b>: drag, <b>add node</b>: ctrl+click\n"
+                "<b>remove path</b>: right-click"), msgbuf_len);
   else if(gui->form_selected)
     g_snprintf(msgbuf, msgbuf_len,
                _("<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
