@@ -1451,6 +1451,7 @@ static int32_t dt_control_refresh_exif_run(dt_job_t *job)
   snprintf(message, sizeof(message), ngettext("refreshing info for %d image",
                                               "refreshing info for %d images",
                                               total), total);
+
   dt_control_job_set_progress_message(job, message);
   while(t)
   {
@@ -1464,6 +1465,7 @@ static int32_t dt_control_refresh_exif_run(dt_job_t *job)
       dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
       if(img)
       {
+        img->job_flags |= DT_IMAGE_JOB_NO_METADATA; // no metadata refresh, only EXIF
         dt_exif_read(img, sourcefile);
         dt_image_cache_write_release_info(darktable.image_cache, img,
                                           DT_IMAGE_CACHE_SAFE,
@@ -1486,6 +1488,7 @@ static int32_t dt_control_refresh_exif_run(dt_job_t *job)
   dt_collection_update_query(darktable.collection,
                              DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
                              g_list_copy(params->index));
+
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
   dt_control_queue_redraw_center();

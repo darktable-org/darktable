@@ -2026,7 +2026,8 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
 
 void dt_exif_apply_default_metadata(dt_image_t *img)
 {
-  if(dt_conf_get_bool("ui_last/import_apply_metadata") == TRUE)
+  if(dt_conf_get_bool("ui_last/import_apply_metadata")
+     && !(img->job_flags & DT_IMAGE_JOB_NO_METADATA))
   {
     char *str;
 

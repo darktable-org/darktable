@@ -2153,6 +2153,8 @@ void dt_image_init(dt_image_t *img)
   for(int k=0; k<4; k++)
     for(int i=0; i<3; i++)
       dt_mark_colormatrix_invalid(&img->adobe_XYZ_to_CAM[k][i]);
+
+  img->job_flags = DT_IMAGE_JOB_NONE;
 }
 
 void dt_image_refresh_makermodel(dt_image_t *img)
