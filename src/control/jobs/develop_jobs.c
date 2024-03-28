@@ -23,7 +23,7 @@ static int32_t dt_dev_process_preview_job_run(dt_job_t *job)
 {
   dt_develop_t *dev = dt_control_job_get_params(job);
   dt_dev_process_image_job(dev, NULL, dev->preview_pipe,
-                           DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED);
+                           DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, DT_DEVICE_NONE);
   return 0;
 }
 
@@ -31,7 +31,7 @@ static int32_t dt_dev_process_preview2_job_run(dt_job_t *job)
 {
   dt_develop_t *dev = dt_control_job_get_params(job);
   dt_dev_process_image_job(dev, &dev->preview2, dev->preview2.pipe,
-                           DT_SIGNAL_DEVELOP_PREVIEW2_PIPE_FINISHED);
+                           DT_SIGNAL_DEVELOP_PREVIEW2_PIPE_FINISHED, DT_DEVICE_NONE);
   return 0;
 }
 
@@ -39,7 +39,7 @@ static int32_t dt_dev_process_image_job_run(dt_job_t *job)
 {
   dt_develop_t *dev = dt_control_job_get_params(job);
   dt_dev_process_image_job(dev, &dev->full, dev->full.pipe,
-                           DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED);
+                           DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED, DT_DEVICE_NONE);
   return 0;
 }
 

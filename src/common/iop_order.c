@@ -125,8 +125,8 @@ const dt_iop_order_entry_t legacy_order[] = {
   { {31.0f }, "equalizer", 0},
   { {32.0f }, "vibrance", 0},
   { {33.0f }, "colorbalance", 0},
+  { {33.2f }, "colorequal", 0},
   { {33.5f }, "colorbalancergb", 0},
-  { {33.5f }, "colorequal", 0},
   { {34.0f }, "colorize", 0},
   { {35.0f }, "colortransfer", 0},
   { {36.0f }, "colormapping", 0},
@@ -244,8 +244,8 @@ const dt_iop_order_entry_t v30_order[] = {
                                   //    very good in scene-referred workflow
   { {40.0f }, "basicadj", 0},        // module mixing view/model/control at once, usage should be discouraged
   { {41.0f }, "colorbalance", 0},    // scene-referred color manipulation
+  { {41.2f }, "colorequal", 0},
   { {41.5f }, "colorbalancergb", 0},    // scene-referred color manipulation
-  { {41.7f }, "colorequal", 0},
   { {42.0f }, "rgbcurve", 0},        // really versatile way to edit colour in scene-referred and display-referred workflow
   { {43.0f }, "rgblevels", 0},       // same
   { {44.0f }, "basecurve", 0},       // conversion from scene-referred to display referred, reverse-engineered
@@ -360,8 +360,8 @@ const dt_iop_order_entry_t v30_jpg_order[] = {
                                     //    good in scene-referred workflow
   { { 40.0f }, "basicadj", 0 },        // module mixing view/model/control at once, usage should be discouraged
   { { 41.0f }, "colorbalance", 0 },    // scene-referred color manipulation
+  { { 41.2f }, "colorequal", 0 },
   { { 41.5f }, "colorbalancergb", 0 }, // scene-referred color manipulation
-  { { 41.7f }, "colorequal", 0 },
   { { 42.0f }, "rgbcurve", 0 },      // really versatile way to edit colour in scene-referred and display-referred
                                      // workflow
   { { 43.0f }, "rgblevels", 0 },     // same
@@ -573,6 +573,26 @@ int dt_ioppr_get_iop_order(GList *iop_order_list,
     dt_print(DT_DEBUG_ALWAYS,
              "cannot get iop-order for %s instance %d\n",
              op_name, multi_priority);
+
+  return iop_order;
+}
+
+int dt_ioppr_get_iop_order_last(GList *iop_order_list,
+                                const char *op_name)
+{
+  int iop_order = INT_MIN;
+
+  for(GList *l = iop_order_list;
+      l;
+      l = g_list_next(l))
+  {
+    const dt_iop_order_entry_t *const restrict entry = (dt_iop_order_entry_t *)l->data;
+    if(!strcmp(op_name, entry->operation))
+    {
+      iop_order = MAX(entry->o.iop_order, iop_order);
+      break;
+    }
+  }
 
   return iop_order;
 }
@@ -929,7 +949,7 @@ GList *dt_ioppr_get_iop_order_list(const dt_imgid_t imgid,
           _insert_before(iop_order_list, "colorbalance", "diffuse");
           _insert_before(iop_order_list, "nlmeans", "blurs");
           _insert_before(iop_order_list, "filmicrgb", "sigmoid");
-          _insert_before(iop_order_list, "rgbcurve", "colorequal");
+          _insert_before(iop_order_list, "colorbalancergb", "colorequal");
         }
       }
       else if(version == DT_IOP_ORDER_LEGACY)

@@ -55,7 +55,6 @@ jobs:
             libcairo2-dev \
             libcolord-dev \
             libcolord-gtk-dev \
-            libcmocka-dev \
             libcups2-dev \
             libcurl4-gnutls-dev \
             libimage-exiftool-perl \
@@ -125,38 +124,30 @@ jobs:
           cd ..
       - name: Cancel workflow if job fails
         if: ${{ failure() }}
-        uses: andymckay/cancel-action@0.3
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ env.BRANCH }}
-          submodules: true
-          # We have to fetch the entire history to correctly generate the version for the AppImage filename
-          fetch-depth: 0
+        uses: andymckay/cancel-action@0.4
+      - name: Checkout darktable master branch
+        run: |
+          # Note that we can't make a shallow clone to reduce clone traffic and time, as we have to
+          # fetch the entire history to correctly generate the version for the AppImage filename
+          git clone https://github.com/darktable-org/darktable src
+          pushd src
+          git submodule init
+          git config submodule.src/tests/integration.update none
+          git submodule update
+          popd
       - name: Update lensfun data
         continue-on-error: true
         run: |
           sudo lensfun-update-data
       - name: Build and Install
         run: |
+          cd src
           bash tools/appimage-build-script.sh
-      - name: Check if it runs
-        run: |
-          ${INSTALL_PREFIX}/bin/darktable --version || true
-          ${INSTALL_PREFIX}/bin/darktable-cli \
-                 --width 2048 --height 2048 \
-                 --hq true --apply-custom-presets false \
-                 "${SRC_DIR}/tests/integration/images/mire1.cr2" \
-                 "${SRC_DIR}/tests/integration/0000-nop/nop.xmp" \
-                 output.png \
-                 --core --disable-opencl --conf host_memory_limit=8192 \
-                 --conf worker_threads=4 -t 4 \
-                 --conf plugins/lighttable/export/force_lcms2=FALSE \
-                 --conf plugins/lighttable/export/iccintent=0
       - name: Package upload
         if: ${{ success() }}
         uses: actions/upload-artifact@v4
         with:
-          path: ${{ env.BUILD_DIR }}/Darktable-*.AppImage*
+          path: ${{ github.workspace }}/src/build/Darktable-*.AppImage*
           name: artifact-appimage
           retention-days: 1
 
@@ -234,6 +225,7 @@ jobs:
             pugixml:p
             SDL2:p
             sqlite3:p
+            webp-pixbuf-loader:p
             zlib:p
           update: false
       - name: Install the latest not yet broken version of exiv2
@@ -246,14 +238,19 @@ jobs:
           pacman -U --noconfirm https://repo.msys2.org/mingw/ucrt64/mingw-w64-ucrt-x86_64-pango-1.50.11-1-any.pkg.tar.zst
       - name: Cancel workflow if job fails
         if: ${{ failure() }}
-        uses: andymckay/cancel-action@0.3
+        uses: andymckay/cancel-action@0.4
       - run: git config --global core.autocrlf input
         shell: bash
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          submodules: true
-          path: src
+      - name: Checkout darktable master branch
+        run: |
+          # Note that we can't make a shallow clone to reduce clone traffic and time, as we have to
+          # fetch the entire history to correctly generate the version for the installation package filename
+          git clone https://github.com/darktable-org/darktable src
+          pushd src
+          git submodule init
+          git config submodule.src/tests/integration.update none
+          git submodule update
+          popd
       - name: Update lensfun data
         if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
         continue-on-error: true
@@ -264,20 +261,6 @@ jobs:
           cmake -E make_directory "${BUILD_DIR}"
           cmake -E make_directory "${INSTALL_PREFIX}"
           $(cygpath ${SRC_DIR})/.ci/ci-script.sh
-      - name: Check if it runs
-        run: |
-          $(cygpath ${INSTALL_PREFIX})/bin/darktable.exe --version || true
-          echo "Testing RUN!"
-          $(cygpath ${INSTALL_PREFIX})/bin/darktable-cli.exe \
-                 --width 2048 --height 2048 \
-                 --hq true --apply-custom-presets false \
-                 $(cygpath ${SRC_DIR})/src/tests/integration/images/mire1.cr2 \
-                 $(cygpath ${SRC_DIR})/src/tests/integration/0000-nop/nop.xmp \
-                 output.png \
-                 --core --disable-opencl --conf host_memory_limit=8192 \
-                 --conf worker_threads=4 -t 4 \
-                 --conf plugins/lighttable/export/force_lcms2=FALSE \
-                 --conf plugins/lighttable/export/iccintent=0
       - name: Package
         if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
         run: |
@@ -304,7 +287,8 @@ jobs:
       fail-fast: true
       matrix:
         build:
-          - { os: macos-12, xcode: 14.2, deployment: 12.5 } # LLVM14, native
+          - { os: macos-13, xcode: 15.2, deployment: 13.5 } # LLVM16, x86_64
+          - { os: macos-14, xcode: 15.2, deployment: 14.0 } # LLVM16, arm64
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
         btype: [ Release ]
@@ -326,16 +310,21 @@ jobs:
       GENERATOR: ${{ matrix.generator }}
       TARGET: ${{ matrix.target }}
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          submodules: true
-          path: src
+      - name: Checkout darktable master branch
+        run: |
+          # Note that we can't make a shallow clone to reduce clone traffic and time, as we have to
+          # fetch the entire history to correctly generate the version for the disk image filename
+          git clone https://github.com/darktable-org/darktable src
+          pushd src
+          git submodule init
+          git config submodule.src/tests/integration.update none
+          git submodule update
+          popd
       - name: Install Base Dependencies
         run: |
           brew update > /dev/null || true
           # brew upgrade || true        # No need for a very time-consuming upgrade of ALL packages
-          brew upgrade gd               # See https://github.com/Homebrew/homebrew-core/issues/141766
+          brew install --force gd       # See https://github.com/Homebrew/homebrew-core/issues/141766
           brew tap Homebrew/bundle
           cd src/.ci
           export HOMEBREW_NO_INSTALL_UPGRADE=1
@@ -343,47 +332,33 @@ jobs:
           # handle keg-only libs
           brew link --force libomp
           brew link --force libsoup@2
-      - name: use ImageMagick 6
-        run: |
-          brew link --overwrite --force imagemagick@6
       - name: Cancel workflow if job fails
         if: ${{ failure() }}
-        uses: andymckay/cancel-action@0.3
+        uses: andymckay/cancel-action@0.4
       - name: Build and Install
-          # todo: use linker which supports --wrap, ld.bfd and ld.gold support it
         run: |
           cmake -E make_directory "${BUILD_DIR}";
           cmake -E make_directory "${INSTALL_PREFIX}";
           ./src/.ci/ci-script.sh;
-      - name: Check if it runs
-        run: |
-          ${INSTALL_PREFIX}/bin/darktable --version || true
-          ${INSTALL_PREFIX}/bin/darktable-cli \
-                 --width 2048 --height 2048 \
-                 --hq true --apply-custom-presets false \
-                 "${SRC_DIR}/src/tests/integration/images/mire1.cr2" \
-                 "${SRC_DIR}/src/tests/integration/0000-nop/nop.xmp" \
-                 output.png \
-                 --core --disable-opencl --conf host_memory_limit=8192 \
-                 --conf worker_threads=4 -t 4 \
-                 --conf plugins/lighttable/export/force_lcms2=FALSE \
-                 --conf plugins/lighttable/export/iccintent=0
       - name: Build macOS package
         run: |
           ./src/packaging/macosx/3_make_hb_darktable_package.sh
       - name: Create DMG file
         run: |
           ./src/packaging/macosx/4_make_hb_darktable_dmg.sh
+      - name: Get architecture
+        run: |
+          echo "ARCHITECTURE=$(uname -m)" >> $GITHUB_ENV
       - name: Get version info
         run: |
           cd ${{ env.SRC_DIR }}
-          echo "VERSION=$(git describe --tags --match release-* | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')-$(uname -m)" >> $GITHUB_ENV
+          echo "VERSION=$(git describe --tags --match release-* | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')-${{ env.ARCHITECTURE }}" >> $GITHUB_ENV
       - name: Package upload
         if: ${{ success() }}
         uses: actions/upload-artifact@v4
         with:
           path: ${{ env.INSTALL_PREFIX }}/darktable-${{ env.VERSION }}.dmg
-          name: artifact-macos
+          name: artifact-macos-${{ env.ARCHITECTURE }}
           retention-days: 2
 
   upload_to_release:
@@ -403,24 +378,20 @@ jobs:
           tag_name: nightly
           prerelease: true
           name: 'Darktable nightly build $$'
+          # Please do not modify the body text by adding line breaks in paragraphs, as this text should display well on screens of different widths
           body: |
             This is a nightly build of Darktable.
 
-            You can use this if you want to try new features without waiting for releases.
-            From time to time, in development builds, old difficult-to-reproduce bugs are
-            fixed, but it is also true that in the development process with the introduction
-            of new complex code, the stability of the program may suffer compared to
-            official releases, so **use it with caution**!
+            You can use this if you want to try new features without waiting for releases. From time to time, in development builds, old difficult-to-reproduce bugs are fixed, but it is also true that in the development process with the introduction of new complex code, the stability of the program may suffer compared to official releases, so **use it with caution**!
 
-            Also, new versions can make changes to the database schema, so it's best to run
-            them with a separate library.
+            Also, new versions can make changes to the database schema, so it's best to run them with a separate library.
 
-            The `*.AppImage.zsync` file is not intended to be downloaded and used locally.
-            Just ignore it. This file contains technical information required by AppImage
-            auto-updaters such as [AppImageUpdate](https://appimage.github.io/AppImageUpdate/).
+            The `*.AppImage.zsync` file is not intended to be downloaded and used locally. Just ignore it. This file contains technical information required by AppImage auto-updaters such as [AppImageUpdate](https://appimage.github.io/AppImageUpdate/).
+
+            The macOS `*-x86_64.dmg` package requires at least macOS 13.5 (Ventura), the `*-arm64.dmg` package requires at least macOS 14.0 (Sonoma).
 
             __Please help us improve Darktable by reporting any issues you encounter!__ :wink:
           files: |
             artifact-appimage/*
             artifact-windows/*
-            artifact-macos/*
+            artifact-macos-*/*

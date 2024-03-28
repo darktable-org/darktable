@@ -171,6 +171,7 @@ typedef struct dt_develop_t
   gboolean focus_hash;   // determines whether to start a new history item or to merge down.
   gboolean history_updating, image_force_reload, first_load;
   gboolean autosaving;
+  double autosave_time;
   int32_t image_invalid_cnt;
   uint32_t timestamp;
   uint32_t preview_average_delay;
@@ -187,6 +188,7 @@ typedef struct dt_develop_t
   // by the iop through the copy their respective pixelpipe holds, for thread-safety.
   dt_image_t image_storage;
   dt_imgid_t requested_id;
+  int32_t snapshot_id; /* for the darkroom snapshots */
 
   // history stack
   dt_pthread_mutex_t history_mutex;
@@ -358,7 +360,8 @@ float dt_dev_get_preview_downsampling();
 void dt_dev_process_image_job(dt_develop_t *dev,
                               dt_dev_viewport_t *port,
                               struct dt_dev_pixelpipe_t *pipe,
-                              dt_signal_t signal);
+                              dt_signal_t signal,
+                              const int devid);
 // launch jobs above
 void dt_dev_process_image(dt_develop_t *dev);
 void dt_dev_process_preview(dt_develop_t *dev);
@@ -401,8 +404,7 @@ void dt_dev_write_history_ext(dt_develop_t *dev, const dt_imgid_t imgid);
 void dt_dev_write_history(dt_develop_t *dev);
 void dt_dev_read_history_ext(dt_develop_t *dev,
                              const dt_imgid_t imgid,
-                             const gboolean no_image,
-                             const gboolean snapshot);
+                             const gboolean no_image);
 void dt_dev_read_history(dt_develop_t *dev);
 void dt_dev_free_history_item(gpointer data);
 void dt_dev_invalidate_history_module(GList *list,
@@ -630,6 +632,7 @@ void dt_dev_undo_end_record(dt_develop_t *dev);
  * develop an image and returns the buf and processed width / height.
  * this is done as in the context of the darkroom, meaning that the
  * final processed sizes will align perfectly on the darkroom view.
+ * if called with a valid CL devid that device is used without locking/unlocking as the caller is doing that
  */
 void dt_dev_image(const dt_imgid_t imgid,
                   const size_t width,
@@ -642,7 +645,9 @@ void dt_dev_image(const dt_imgid_t imgid,
                   float *zoom_x,
                   float *zoom_y,
                   const int32_t snapshot_id,
-                  GList *module_filter_out);
+                  GList *module_filter_out,
+                  const int devid,
+                  const gboolean finalscale);
 
 
 gboolean dt_dev_equal_chroma(const float *f, const double *d);

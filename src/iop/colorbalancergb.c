@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020-2023 darktable developers.
+    Copyright (C) 2020-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -910,8 +910,7 @@ void process(struct dt_iop_module_t *self,
     else
     {
       dt_aligned_pixel_t xyY, JCH, HCB;
-      dt_vector_clipneg(XYZ_D65);
-      dt_XYZ_to_xyY(XYZ_D65, xyY);
+      dt_D65_XYZ_to_xyY(XYZ_D65, xyY);
       xyY_to_dt_UCS_JCH(xyY, L_white, JCH);
       dt_UCS_JCH_to_HCB(JCH, HCB);
 
@@ -1316,9 +1315,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
       dot_product(RGB_blue, input_matrix, XYZ_blue);
 
       dt_aligned_pixel_t xyY_red, xyY_green, xyY_blue;
-      dt_XYZ_to_xyY(XYZ_red, xyY_red);
-      dt_XYZ_to_xyY(XYZ_green, xyY_green);
-      dt_XYZ_to_xyY(XYZ_blue, xyY_blue);
+      dt_D65_XYZ_to_xyY(XYZ_red, xyY_red);
+      dt_D65_XYZ_to_xyY(XYZ_green, xyY_green);
+      dt_D65_XYZ_to_xyY(XYZ_blue, xyY_blue);
 
       // Get the "hue" angles of the primaries in xy compared to D65
       const float h_red   = atan2f(xyY_red[1] - D65_xyY[1], xyY_red[0] - D65_xyY[0]);
@@ -2189,7 +2188,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(row2), FALSE, FALSE, 0);
 
   g->checker_size = dt_bauhaus_slider_new_with_range(self, 2., 32., 0, 8., 0);
-  dt_bauhaus_slider_set_format(g->checker_size, " px");
+  dt_bauhaus_slider_set_format(g->checker_size, _(" px"));
   dt_bauhaus_widget_set_label(g->checker_size,  NULL, _("checkerboard size"));
   g_signal_connect(G_OBJECT(g->checker_size), "value-changed", G_CALLBACK(checker_size_callback), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->checker_size), FALSE, FALSE, 0);

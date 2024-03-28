@@ -53,6 +53,7 @@
 #include "libs/modulegroups.h"
 #include "views/view.h"
 #include "views/view_api.h"
+
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
@@ -70,10 +71,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-
-#ifndef G_SOURCE_FUNC // Defined for glib >= 2.58
-#define G_SOURCE_FUNC(f) ((GSourceFunc) (void (*)(void)) (f))
-#endif
 
 DT_MODULE(1)
 
@@ -140,7 +137,6 @@ void init(dt_view_t *self)
   lua_pushcfunction(L, dt_lua_event_multiinstance_trigger);
   dt_lua_event_add(L, "darkroom-image-loaded");
 #endif
-  dev->autosaving = TRUE;
 }
 
 uint32_t view(const dt_view_t *self)
@@ -625,43 +621,50 @@ void expose(
     dt_masks_events_post_expose(dev->gui_module, cri, width, height, pzx, pzy, zoom_scale);
   }
 
-  gboolean guides = FALSE;
-  // true if anything could be exposed
-  if(dev->gui_module && dev->gui_module != dev->proxy.rotate)
-  {
-    // the cropping.exposer->gui_post_expose needs special care
-    if(expose_full
-       && dev->gui_module->operation_tags_filter() & IOP_TAG_CROPPING)
-    {
-      dt_print_pipe(DT_DEBUG_EXPOSE,
-        "expose cropper",
-         port->pipe, dev->cropping.exposer, DT_DEVICE_NONE, NULL, NULL, "%dx%d, px=%d py=%d\n",
-         width, height, pointerx, pointery);
-      _module_gui_post_expose(dev->cropping.exposer, cri, wd, ht, pzx, pzy, zoom_scale);
-      guides = TRUE;
-    }
-
-    // gui active module
-    if(dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS)
-    {
-      dt_print_pipe(DT_DEBUG_EXPOSE,
-        "expose module",
-         port->pipe, dev->gui_module, DT_DEVICE_NONE, NULL, NULL, "%dx%d, px=%d py=%d\n",
-         width, height, pointerx, pointery);
-      _module_gui_post_expose(dev->gui_module, cri, wd, ht, pzx, pzy, zoom_scale);
-      guides = TRUE;
-    }
-  }
-
-  if(!guides && dev->proxy.rotate)
+  // if dragging the rotation line, do it and nothing else
+  if(dev->proxy.rotate
+     && (darktable.control->button_down_which == 3
+         || dev->gui_module == dev->proxy.rotate))
   {
     // reminder, we want this to be exposed always for guidings
     _module_gui_post_expose(dev->proxy.rotate, cri, wd, ht, pzx, pzy, zoom_scale);
-    guides = TRUE;
   }
+  else
+  {
+    gboolean guides = FALSE;
+    // true if anything could be exposed
+    if(dev->gui_module && dev->gui_module != dev->proxy.rotate)
+    {
+      // the cropping.exposer->gui_post_expose needs special care
+      if(expose_full
+         && dev->gui_module->operation_tags_filter() & IOP_TAG_CROPPING)
+      {
+        dt_print_pipe(DT_DEBUG_EXPOSE,
+                      "expose cropper",
+                      port->pipe, dev->cropping.exposer,
+                      DT_DEVICE_NONE, NULL, NULL, "%dx%d, px=%d py=%d\n",
+                      width, height, pointerx, pointery);
+        _module_gui_post_expose(dev->cropping.exposer, cri, wd, ht, pzx, pzy, zoom_scale);
+        guides = TRUE;
+      }
 
-  if(!guides)
-    dt_guides_draw(cri, 0.0f, 0.0f, wd, ht, zoom_scale);
+      // gui active module
+      if(dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS)
+      {
+        dt_print_pipe(DT_DEBUG_EXPOSE,
+                      "expose module",
+                      port->pipe, dev->gui_module,
+                      DT_DEVICE_NONE, NULL, NULL,
+                      "%dx%d, px=%d py=%d\n",
+                      width, height, pointerx, pointery);
+        _module_gui_post_expose(dev->gui_module, cri, wd, ht, pzx, pzy, zoom_scale);
+        guides = TRUE;
+      }
+    }
+
+    if(!guides)
+      dt_guides_draw(cri, 0.0f, 0.0f, wd, ht, zoom_scale);
+  }
 
   cairo_restore(cri);
 
@@ -730,6 +733,10 @@ gboolean try_enter(dt_view_t *self)
   darktable.develop->image_storage.id = imgid;
 
   dt_dev_reset_chroma(darktable.develop);
+
+  // possible enable autosaving due to conf setting but wait for some seconds for first save
+  darktable.develop->autosaving = (double)dt_conf_get_int("autosave_interval") > 1.0;
+  darktable.develop->autosave_time = dt_get_wtime() + 10.0;
   return FALSE;
 }
 
@@ -829,6 +836,10 @@ static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid)
   dt_dev_write_history(dev);
 
   dev->requested_id = imgid;
+
+  // possible enable autosaving due to conf setting but wait for some seconds for first save
+  darktable.develop->autosaving = (double)dt_conf_get_int("autosave_interval") > 1.0;
+  darktable.develop->autosave_time = dt_get_wtime() + 10.0;
 
   g_idle_add(_dev_load_requested_image, dev);
 }
@@ -2909,13 +2920,13 @@ static void _unregister_modules_drag_n_drop(dt_view_t *self)
 
     GtkBox *container = dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER);
 
-    g_signal_handlers_disconnect_matched(container, G_SIGNAL_MATCH_FUNC | G_SIGNAL_MATCH_DATA, 0, 0, NULL, G_CALLBACK(_on_drag_begin), NULL);
-    g_signal_handlers_disconnect_matched(container, G_SIGNAL_MATCH_FUNC | G_SIGNAL_MATCH_DATA, 0, 0, NULL, G_CALLBACK(_on_drag_data_get), NULL);
-    g_signal_handlers_disconnect_matched(container, G_SIGNAL_MATCH_FUNC | G_SIGNAL_MATCH_DATA, 0, 0, NULL, G_CALLBACK(_on_drag_end), NULL);
-    g_signal_handlers_disconnect_matched(container, G_SIGNAL_MATCH_FUNC | G_SIGNAL_MATCH_DATA, 0, 0, NULL, G_CALLBACK(_on_drag_data_received), NULL);
-    g_signal_handlers_disconnect_matched(container, G_SIGNAL_MATCH_FUNC | G_SIGNAL_MATCH_DATA, 0, 0, NULL, G_CALLBACK(_on_drag_drop), NULL);
-    g_signal_handlers_disconnect_matched(container, G_SIGNAL_MATCH_FUNC | G_SIGNAL_MATCH_DATA, 0, 0, NULL, G_CALLBACK(_on_drag_motion), NULL);
-    g_signal_handlers_disconnect_matched(container, G_SIGNAL_MATCH_FUNC | G_SIGNAL_MATCH_DATA, 0, 0, NULL, G_CALLBACK(_on_drag_leave), NULL);
+    g_signal_handlers_disconnect_by_func(container, G_CALLBACK(_on_drag_begin), NULL);
+    g_signal_handlers_disconnect_by_func(container, G_CALLBACK(_on_drag_data_get), NULL);
+    g_signal_handlers_disconnect_by_func(container, G_CALLBACK(_on_drag_end), NULL);
+    g_signal_handlers_disconnect_by_func(container, G_CALLBACK(_on_drag_data_received), NULL);
+    g_signal_handlers_disconnect_by_func(container, G_CALLBACK(_on_drag_drop), NULL);
+    g_signal_handlers_disconnect_by_func(container, G_CALLBACK(_on_drag_motion), NULL);
+    g_signal_handlers_disconnect_by_func(container, G_CALLBACK(_on_drag_leave), NULL);
   }
 }
 
@@ -3144,6 +3155,9 @@ void leave(dt_view_t *self)
         LUA_ASYNC_DONE);
 #endif
   }
+  else
+    dt_image_synch_xmp(imgid);
+
 
   // clear gui.
 

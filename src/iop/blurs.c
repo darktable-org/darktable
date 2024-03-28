@@ -182,8 +182,8 @@ static inline void create_lens_kernel(float *const restrict buffer,
   const float radius = (float)(width - 1) / 2.f - 1;
 
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) dt_omp_firstprivate(width, height, buffer, n, m, k, rotation, eps, radius) \
-    schedule(simd: static) aligned(buffer:64) collapse(2)
+#pragma omp parallel for default(none) dt_omp_firstprivate(width, height, buffer, n, m, k, rotation, eps, radius) \
+    schedule(static) collapse(2)
 #endif
   for(size_t i = 0; i < height; i++)
     for(size_t j = 0; j < width; j++)
@@ -275,8 +275,8 @@ static inline void create_gauss_kernel(float *const restrict buffer,
   const float radius = (width - 1) / 2.f - 1;
 
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) dt_omp_firstprivate(width, height, buffer, radius) \
-    schedule(simd: static) aligned(buffer:64) collapse(2)
+#pragma omp parallel for default(none) dt_omp_firstprivate(width, height, buffer, radius) \
+    schedule(static) collapse(2)
 #endif
   for(size_t i = 0; i < height; i++)
     for(size_t j = 0; j < width; j++)

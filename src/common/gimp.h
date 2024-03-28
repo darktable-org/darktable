@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2024 darktable developers.
+    Copyright (C) 2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,16 +16,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#define DT_GIMP_VERSION 1
 
-#include "curl/curl.h"
+gboolean dt_export_gimp_file(const dt_imgid_t id);
 
-/* reset connection and set initial setup */
-void dt_curl_init(CURL *curl, gboolean verbose);
-
-// clang-format off
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
-// clang-format on
-
+dt_imgid_t dt_gimp_load_darkroom(const char *file);
+dt_imgid_t dt_gimp_load_image(const char *file);

@@ -32,7 +32,7 @@ static inline void dt_UCS_22_build_gamut_LUT(dt_colormatrix_t input_matrix, floa
   // init the LUT between -180° and 180° by increments of 1°
   for(size_t k = 0; k < LUT_ELEM; k++) gamut_LUT[k] = 0.f;
 
-  dt_aligned_pixel_t D65_xyY = { 0.31269999999999992f,  0.32899999999999996f ,  1.f, 0.f };
+  dt_aligned_pixel_t D65_xyY = { D65xyY.x,  D65xyY.y,  1.f, 0.f };
 
   // Compute the RGB space primaries in xyY
   dt_aligned_pixel_t RGB_red   = { 1.f, 0.f, 0.f, 0.f };
@@ -45,20 +45,23 @@ static inline void dt_UCS_22_build_gamut_LUT(dt_colormatrix_t input_matrix, floa
   dot_product(RGB_blue, input_matrix, XYZ_blue);
 
   dt_aligned_pixel_t xyY_red, xyY_green, xyY_blue;
-  dt_XYZ_to_xyY(XYZ_red, xyY_red);
-  dt_XYZ_to_xyY(XYZ_green, xyY_green);
-  dt_XYZ_to_xyY(XYZ_blue, xyY_blue);
+  dt_D65_XYZ_to_xyY(XYZ_red, xyY_red);
+  dt_D65_XYZ_to_xyY(XYZ_green, xyY_green);
+  dt_D65_XYZ_to_xyY(XYZ_blue, xyY_blue);
 
   // Get the "hue" angles of the primaries in xy compared to D65
   const float h_red   = atan2f(xyY_red[1] - D65_xyY[1], xyY_red[0] - D65_xyY[0]);
   const float h_green = atan2f(xyY_green[1] - D65_xyY[1], xyY_green[0] - D65_xyY[0]);
   const float h_blue  = atan2f(xyY_blue[1] - D65_xyY[1], xyY_blue[0] - D65_xyY[0]);
 
+  float *const restrict lut_sampler = dt_calloc_align_float(LUT_ELEM);
+
   // March the gamut boundary in CIE xyY 1931 by angular steps of 0.02°
   #ifdef _OPENMP
     #pragma omp parallel for default(none) \
           dt_omp_firstprivate(input_matrix, xyY_red, xyY_green, xyY_blue, h_red, h_green, h_blue, D65_xyY) \
-          schedule(static) dt_omp_sharedconst(gamut_LUT)
+          reduction(max : lut_sampler[:LUT_ELEM]) \
+        schedule(static)
   #endif
   for(int i = 0; i < 50 * 360; i++)
   {
@@ -100,17 +103,23 @@ static inline void dt_UCS_22_build_gamut_LUT(dt_colormatrix_t input_matrix, floa
     xyY_to_dt_UCS_UV(xyY, UV_star_prime);
 
     // Get the hue angle in darktable UCS
-    const float H = atan2f(UV_star_prime[1], UV_star_prime[0]) * 180.f / M_PI_F;
-    const float H_round = roundf(H);
-    if(fabsf(H - H_round) < 0.02f)
-    {
-      int index = (int)(H_round + 180);
-      index += (index < 0) ? 360 : 0;
-      index -= (index > 359) ? 360 : 0;
-      // Warning: we store M², the square of the colorfulness
-      gamut_LUT[index] = UV_star_prime[0] * UV_star_prime[0] + UV_star_prime[1] * UV_star_prime[1];
-    }
+    const float hue = atan2f(UV_star_prime[1], UV_star_prime[0]);
+    int index = roundf((LUT_ELEM - 1) * (hue + M_PI_F) / (2.f * M_PI_F));
+    index += (index < 0) ? LUT_ELEM : 0;
+    index -= (index >= LUT_ELEM) ? LUT_ELEM : 0;
+    // Warning: we store M², the square of the colorfulness
+    lut_sampler[index] = fmaxf(lut_sampler[index], UV_star_prime[0] * UV_star_prime[0] + UV_star_prime[1] * UV_star_prime[1]);
   }
+  // anti-aliasing on the LUT (simple 5-taps 1D box average)
+  for(size_t k = 2; k < LUT_ELEM - 2; k++)
+    gamut_LUT[k] = (lut_sampler[k - 2] + lut_sampler[k - 1] + lut_sampler[k] + lut_sampler[k + 1] + lut_sampler[k + 2]) / 5.f;
+
+  // handle bounds
+  gamut_LUT[0] = (lut_sampler[LUT_ELEM - 2] + lut_sampler[LUT_ELEM - 1] + lut_sampler[0] + lut_sampler[1] + lut_sampler[2]) / 5.f;
+  gamut_LUT[1] = (lut_sampler[LUT_ELEM - 1] + lut_sampler[0] + lut_sampler[1] + lut_sampler[2] + lut_sampler[3]) / 5.f;
+  gamut_LUT[LUT_ELEM - 1] = (lut_sampler[LUT_ELEM - 3] + lut_sampler[LUT_ELEM - 2] + lut_sampler[LUT_ELEM - 1] + lut_sampler[0] + lut_sampler[1]) / 5.f;
+  gamut_LUT[LUT_ELEM - 2] = (lut_sampler[LUT_ELEM - 4] + lut_sampler[LUT_ELEM - 3] + lut_sampler[LUT_ELEM - 2] + lut_sampler[LUT_ELEM - 1] + lut_sampler[0]) / 5.f;
+  dt_free_align(lut_sampler);
 }
 
 
@@ -224,7 +233,8 @@ static inline struct dt_iop_order_iccprofile_info_t * D65_adapt_iccprofile(struc
   if(work_profile) // && !isnan(work_profile->matrix_in[0][0]))
   {
     // Alloc
-    struct dt_iop_order_iccprofile_info_t *white_adapted_profile = (dt_iop_order_iccprofile_info_t *)malloc(sizeof(dt_iop_order_iccprofile_info_t));
+    struct dt_iop_order_iccprofile_info_t *white_adapted_profile =
+      (dt_iop_order_iccprofile_info_t *)dt_alloc_aligned(sizeof(dt_iop_order_iccprofile_info_t));
 
     // Init a new temp profile by copying the base profile
     memcpy(white_adapted_profile, work_profile, sizeof(dt_iop_order_iccprofile_info_t));

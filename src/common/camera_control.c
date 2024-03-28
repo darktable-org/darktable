@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2010-2023 darktable developers.
+   Copyright (C) 2010-2024 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -95,23 +95,28 @@ typedef struct _camctl_camera_set_property_float_job_t
 } _camctl_camera_set_property_float_job_t;
 
 /** Initializes camera */
-static gboolean _camera_initialize(const dt_camctl_t *c, dt_camera_t *cam);
+static gboolean _camera_initialize(const dt_camctl_t *c,
+                                   dt_camera_t *cam);
 
 /** Poll camera events, this one is called from the thread handling the camera. */
-static void _camera_poll_events(const dt_camctl_t *c, const dt_camera_t *cam);
+static void _camera_poll_events(const dt_camctl_t *c,
+                                const dt_camera_t *cam);
 
 /** Lock camera control and notify listener. \note Locks mutex and
  * signals CAMERA_CONTROL_BUSY. \remarks all interface functions
  * available to host application should lock/unlock its operation. */
-static void _camctl_lock(const dt_camctl_t *c, const dt_camera_t *cam);
+static void _camctl_lock(const dt_camctl_t *c,
+                         const dt_camera_t *cam);
 /** Lock camera control and notify listener. \note Locks mutex and
  * signals CAMERA_CONTROL_AVAILABLE. \see _camctl_lock() */
 static void _camctl_unlock(const dt_camctl_t *c);
 
 /** Updates the cached configuration with a copy of camera configuration */
-static void _camera_configuration_update(const dt_camctl_t *c, const dt_camera_t *camera);
-/** Commit the changes in cached configuration to the camera configuration */
-static void _camera_configuration_commit(const dt_camctl_t *c, const dt_camera_t *camera);
+static void _camera_configuration_update(const dt_camctl_t *c,
+                                         const dt_camera_t *camera);
+static void _camera_configuration_single_update(const dt_camctl_t *c,
+                                                const dt_camera_t *camera,
+                                                const char* name);
 /** Compares new_config with old_config and notifies listeners of the changes. */
 static void _camera_configuration_notify_change(const dt_camctl_t *c,
                                                 const dt_camera_t *camera,
@@ -122,8 +127,11 @@ static void _camera_add_job(const dt_camctl_t *c,
                             const dt_camera_t *camera,
                             gpointer job);
 /** Get a job from the queue */
-static gpointer _camera_get_job(const dt_camctl_t *c, const dt_camera_t *camera);
-static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera, gpointer job);
+static gpointer _camera_get_job(const dt_camctl_t *c,
+                                const dt_camera_t *camera);
+static void _camera_process_job(const dt_camctl_t *c,
+                                const dt_camera_t *camera,
+                                gpointer job);
 
 /** Dispatch functions for listener interfaces */
 static const char *_dispatch_request_image_path(const dt_camctl_t *c,
@@ -138,9 +146,12 @@ static void _dispatch_camera_image_downloaded(const dt_camctl_t *c,
                                               const char *in_path,
                                               const char *in_filename,
                                               const char *filename);
-static void _dispatch_camera_connected(const dt_camctl_t *c, const dt_camera_t *camera);
-static void _dispatch_camera_disconnected(const dt_camctl_t *c, const dt_camera_t *camera);
-static void _dispatch_control_status(const dt_camctl_t *c, dt_camctl_status_t status);
+static void _dispatch_camera_connected(const dt_camctl_t *c,
+                                       const dt_camera_t *camera);
+static void _dispatch_camera_disconnected(const dt_camctl_t *c,
+                                          const dt_camera_t *camera);
+static void _dispatch_control_status(const dt_camctl_t *c,
+                                     dt_camctl_status_t status);
 static void _dispatch_camera_error(const dt_camctl_t *c,
                                    const dt_camera_t *camera,
                                    dt_camera_error_t error);
@@ -154,7 +165,10 @@ static void dt_camctl_camera_destroy(dt_camera_t *cam);
 
 static int logid = 0;
 
-static void _gphoto_log25(GPLogLevel level, const char *domain, const char *log, void *data)
+static void _gphoto_log25(GPLogLevel level,
+                          const char *domain,
+                          const char *log,
+                          void *data)
 {
   dt_print(DT_DEBUG_CAMCTL, "[camera_control] %s %s\n", domain, log);
 }
@@ -172,7 +186,9 @@ static void _disable_debug()
   gp_log_remove_func(logid);
 }
 
-static void _error_func_dispatch25(GPContext *context, const char *text, void *data)
+static void _error_func_dispatch25(GPContext *context,
+                                   const char *text,
+                                   void *data)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)data;
   dt_print(DT_DEBUG_CAMCTL, "[camera_control] gphoto2 error: %s\n", text);
@@ -187,9 +203,10 @@ static void _error_func_dispatch25(GPContext *context, const char *text, void *d
       dt_print(DT_DEBUG_CAMCTL,
                "[camera_control] PTP error `%s' for camera %s on port %s\n",
                text, cam->model, cam->port);
-      dt_control_log(_("camera `%s' on port `%s' error %s\n"
-                       "\nmake sure your camera allows access and is not mounted otherwise"),
-                     cam->model, cam->port, text);
+      dt_control_log
+        (_("camera `%s' on port `%s' error %s\n"
+           "\nmake sure your camera allows access and is not mounted otherwise"),
+         cam->model, cam->port, text);
       cam->ptperror = TRUE;
     }
 
@@ -201,12 +218,16 @@ static void _error_func_dispatch25(GPContext *context, const char *text, void *d
   }
 }
 
-static void _status_func_dispatch25(GPContext *context, const char *text, void *data)
+static void _status_func_dispatch25(GPContext *context,
+                                    const char *text,
+                                    void *data)
 {
   dt_print(DT_DEBUG_CAMCTL, "[camera_control] gphoto2 status: %s\n", text);
 }
 
-static void _message_func_dispatch25(GPContext *context, const char *text, void *data)
+static void _message_func_dispatch25(GPContext *context,
+                                     const char *text,
+                                     void *data)
 {
   dt_print(DT_DEBUG_CAMCTL, "[camera_control] gphoto2 message: %s\n", text);
 }
@@ -214,7 +235,8 @@ static void _message_func_dispatch25(GPContext *context, const char *text, void 
 static gboolean _camera_timeout_job(gpointer data)
 {
   dt_camera_t *cam = (dt_camera_t *)data;
-  dt_print(DT_DEBUG_CAMCTL, "[camera_control] Calling timeout func for camera %p.\n", cam);
+  dt_print(DT_DEBUG_CAMCTL,
+           "[camera_control] Calling timeout func for camera %p.\n", cam);
   cam->timeout(cam->gpcam, cam->gpcontext);
   return TRUE;
 }
@@ -232,16 +254,21 @@ static int _camera_start_timeout_func(Camera *c,
   return g_timeout_add_seconds(timeout, _camera_timeout_job, cam);
 }
 
-static void _camera_stop_timeout_func(Camera *c, int id, void *data)
+static void _camera_stop_timeout_func(Camera *c,
+                                      const int id,
+                                      void *data)
 {
   dt_camera_t *cam = (dt_camera_t *)data;
-  dt_print(DT_DEBUG_CAMCTL, "[camera_control] Removing timeout %d for camera %p.\n", id, cam);
+  dt_print(DT_DEBUG_CAMCTL,
+           "[camera_control] Removing timeout %d for camera %p.\n", id, cam);
   g_source_remove(id);
   cam->timeout = NULL;
 }
 
 
-static void _camera_add_job(const dt_camctl_t *c, const dt_camera_t *camera, gpointer job)
+static void _camera_add_job(const dt_camctl_t *c,
+                            const dt_camera_t *camera,
+                            gpointer job)
 {
   dt_camera_t *cam = (dt_camera_t *)camera;
   dt_pthread_mutex_lock(&cam->jobqueue_lock);
@@ -249,7 +276,8 @@ static void _camera_add_job(const dt_camctl_t *c, const dt_camera_t *camera, gpo
   dt_pthread_mutex_unlock(&cam->jobqueue_lock);
 }
 
-static gpointer _camera_get_job(const dt_camctl_t *c, const dt_camera_t *camera)
+static gpointer _camera_get_job(const dt_camctl_t *c,
+                                const dt_camera_t *camera)
 {
   dt_camera_t *cam = (dt_camera_t *)camera;
   dt_pthread_mutex_lock(&cam->jobqueue_lock);
@@ -264,7 +292,9 @@ static gpointer _camera_get_job(const dt_camctl_t *c, const dt_camera_t *camera)
 }
 
 
-static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera, gpointer job)
+static void _camera_process_job(const dt_camctl_t *c,
+                                const dt_camera_t *camera,
+                                gpointer job)
 {
   dt_camera_t *cam = (dt_camera_t *)camera;
   _camctl_camera_job_t *j = (_camctl_camera_job_t *)job;
@@ -273,7 +303,8 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
 
     case _JOB_TYPE_EXECUTE_CAPTURE:
     {
-      dt_print(DT_DEBUG_CAMCTL, "[camera_control] executing remote camera capture job\n");
+      dt_print(DT_DEBUG_CAMCTL,
+               "[camera_control] executing remote camera capture job\n");
       CameraFilePath fp;
       int res = GP_OK;
       if((res = gp_camera_capture(camera->gpcam, GP_CAPTURE_IMAGE, &fp, c->gpcontext)) == GP_OK)
@@ -291,22 +322,26 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
         if(handle != -1)
         {
           gp_file_new_from_fd(&destination, handle);
-          if(gp_camera_file_get(camera->gpcam, fp.folder, fp.name, GP_FILE_TYPE_NORMAL, destination,
+          if(gp_camera_file_get(camera->gpcam, fp.folder,
+                                fp.name, GP_FILE_TYPE_NORMAL, destination,
                                 c->gpcontext) == GP_OK)
           {
             // Notify listeners of captured image
             _dispatch_camera_image_downloaded(c, camera, NULL, NULL, output);
           }
           else
-            dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to download file %s\n", output);
+            dt_print(DT_DEBUG_CAMCTL,
+                     "[camera_control] failed to download file %s\n", output);
           close(handle);
         }
         else
-          dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to download file %s\n", output);
+          dt_print(DT_DEBUG_CAMCTL,
+                   "[camera_control] failed to download file %s\n", output);
         g_free(output);
       }
       else
-        dt_print(DT_DEBUG_CAMCTL, "[camera_control] capture job failed to capture image: %s\n",
+        dt_print(DT_DEBUG_CAMCTL,
+                 "[camera_control] capture job failed to capture image: %s\n",
                  gp_result_as_string(res));
     }
     break;
@@ -322,36 +357,48 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
 
       if((res = gp_camera_capture_preview(cam->gpcam, fp, c->gpcontext)) != GP_OK)
       {
-        dt_print(DT_DEBUG_CAMCTL, "[camera_control] live view failed to capture preview: %s\n",
+        dt_print(DT_DEBUG_CAMCTL,
+                 "[camera_control] live view failed to capture preview: %s\n",
                  gp_result_as_string(res));
       }
       else if((res = gp_file_get_data_and_size(fp, &data, &data_size)) != GP_OK)
       {
-        dt_print(DT_DEBUG_CAMCTL, "[camera_control] live view failed to get preview data: %s\n",
+        dt_print(DT_DEBUG_CAMCTL,
+                 "[camera_control] live view failed to get preview data: %s\n",
                  gp_result_as_string(res));
       }
-      else
+      // to avoid a crash check that data is not null and data_size >
+      // 0. there is cases where this occurs even if the above call to
+      // gp_file_get_data_and_size returns GP_OK.
+      else if(data && data_size > 0)
       {
         // everything worked
         dt_imageio_jpeg_t jpg;
         if(dt_imageio_jpeg_decompress_header(data, data_size, &jpg))
         {
-          dt_print(DT_DEBUG_CAMCTL, "[camera_control] live view failed to decompress jpeg header\n");
+          dt_print(DT_DEBUG_CAMCTL,
+                   "[camera_control] live view failed to decompress jpeg header\n");
         }
         else
         {
-          // FIXME: is the live view ever tagged with a profile? testing so far (limited to Canon EOS 5D Mark III) hasn't found one
+          // FIXME: is the live view ever tagged with a profile?
+          // testing so far (limited to Canon EOS 5D Mark III) hasn't
+          // found one
           // dt_colorspaces_color_profile_type_t color_space = dt_imageio_jpeg_read_color_space(&jpg);
           //if(color_space == DT_COLORSPACE_DISPLAY)
-          //  color_space = DT_COLORSPACE_SRGB;            // no embedded colorspace, assume is sRGB
-          uint8_t *const buffer = (uint8_t *)dt_alloc_align_uint8(4 * jpg.width * jpg.height);
+          //  color_space = DT_COLORSPACE_SRGB;
+          // no embedded colorspace, assume is sRGB
+          uint8_t *const buffer =
+            (uint8_t *)dt_alloc_align_uint8(4 * jpg.width * jpg.height);
           if(!buffer)
           {
-            dt_print(DT_DEBUG_CAMCTL, "[camera_control] live view could not allocate image buffer\n");
+            dt_print(DT_DEBUG_CAMCTL,
+                     "[camera_control] live view could not allocate image buffer\n");
           }
           else if(dt_imageio_jpeg_decompress(&jpg, buffer))
           {
-            dt_print(DT_DEBUG_CAMCTL, "[camera_control] live view failed to decompress jpeg\n");
+            dt_print(DT_DEBUG_CAMCTL,
+                     "[camera_control] live view failed to decompress jpeg\n");
           }
           else
           {
@@ -374,43 +421,37 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
 
     case _JOB_TYPE_SET_PROPERTY_STRING:
     {
-      _camctl_camera_set_property_string_job_t *spj = (_camctl_camera_set_property_string_job_t *)job;
-      dt_print(DT_DEBUG_CAMCTL, "[camera_control] executing set camera config job %s=%s\n",
+      _camctl_camera_set_property_string_job_t *spj =
+        (_camctl_camera_set_property_string_job_t *)job;
+      dt_print(DT_DEBUG_CAMCTL,
+               "[camera_control] executing set camera config job %s=%s\n",
                spj->name, spj->value);
 
-      CameraWidget *config; // Copy of camera configuration
+      dt_pthread_mutex_lock(&cam->config_lock);
       CameraWidget *widget;
-      gp_camera_get_config(cam->gpcam, &config, c->gpcontext);
-      if(gp_widget_get_child_by_name(config, spj->name, &widget) == GP_OK)
+      if(gp_widget_get_child_by_name(camera->configuration, spj->name, &widget) == GP_OK)
       {
-        gp_widget_set_value(widget, spj->value);
-        gp_camera_set_config(cam->gpcam, config, c->gpcontext);
+        gp_widget_set_value(widget , spj->value);
+        gp_camera_set_single_config(cam->gpcam, spj->name, widget, c->gpcontext);
       }
-      /* dt_pthread_mutex_lock( &cam->config_lock );
-       CameraWidget *widget;
-       if(  gp_widget_get_child_by_name ( camera->configuration, spj->name, &widget) == GP_OK) {
-         gp_widget_set_value ( widget , spj->value);
-         //gp_widget_set_changed( widget, 1 );
-         cam->config_changed=TRUE;
-       }
 
-       dt_pthread_mutex_unlock( &cam->config_lock);*/
+      dt_pthread_mutex_unlock(&cam->config_lock);
       g_free(spj->name);
       g_free(spj->value);
-      gp_widget_free(config);
     }
     break;
 
     case _JOB_TYPE_SET_PROPERTY_CHOICE:
     {
-      _camctl_camera_set_property_choice_job_t *spj = (_camctl_camera_set_property_choice_job_t *)job;
-      dt_print(DT_DEBUG_CAMCTL, "[camera_control] executing set camera config job %s=%d",
+      _camctl_camera_set_property_choice_job_t *spj =
+        (_camctl_camera_set_property_choice_job_t *)job;
+      dt_print(DT_DEBUG_CAMCTL,
+               "[camera_control] executing set camera config job %s=%d",
                spj->name, spj->value);
 
-      CameraWidget *config; // Copy of camera configuration
+      dt_pthread_mutex_lock(&cam->config_lock);
       CameraWidget *widget;
-      gp_camera_get_config(cam->gpcam, &config, c->gpcontext);
-      if(gp_widget_get_child_by_name(config, spj->name, &widget) == GP_OK)
+      if(gp_widget_get_child_by_name(camera->configuration, spj->name, &widget) == GP_OK)
       {
         if(spj->value >= 0 && spj->value < gp_widget_count_choices(widget))
         {
@@ -419,52 +460,46 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
           dt_print(DT_DEBUG_CAMCTL, " (%s)", choice);
 
           gp_widget_set_value(widget, choice);
-          gp_camera_set_config(cam->gpcam, config, c->gpcontext);
+          gp_camera_set_single_config(cam->gpcam, spj->name, widget, c->gpcontext);
         }
       }
-      /* dt_pthread_mutex_lock( &cam->config_lock );
-       CameraWidget *widget;
-       if(  gp_widget_get_child_by_name ( camera->configuration, spj->name, &widget) == GP_OK) {
-         gp_widget_set_value ( widget , spj->value);
-         //gp_widget_set_changed( widget, 1 );
-         cam->config_changed=TRUE;
-       }
 
-       dt_pthread_mutex_unlock( &cam->config_lock);*/
+      dt_pthread_mutex_unlock(&cam->config_lock);
       dt_print(DT_DEBUG_CAMCTL, "\n");
       g_free(spj->name);
-      gp_widget_free(config);
     }
     break;
     case _JOB_TYPE_SET_PROPERTY_TOGGLE:
     {
-      _camctl_camera_set_property_toggle_job_t *spj = (_camctl_camera_set_property_toggle_job_t *)job;
-      dt_print(DT_DEBUG_CAMCTL, "[camera_control] executing camera config job to toggle %s\n",
+      _camctl_camera_set_property_toggle_job_t *spj =
+        (_camctl_camera_set_property_toggle_job_t *)job;
+      dt_print(DT_DEBUG_CAMCTL,
+               "[camera_control] executing camera config job to toggle %s\n",
                spj->name);
 
-      CameraWidget *config; // Copy of camera configuration
+      dt_pthread_mutex_lock(&cam->config_lock);
       CameraWidget *widget;
-      gp_camera_get_config(cam->gpcam, &config, c->gpcontext);
-      if(gp_widget_get_child_by_name(config, spj->name, &widget) == GP_OK)
+      if(gp_widget_get_child_by_name(cam->configuration, spj->name, &widget) == GP_OK)
       {
         const int value = 1;
         gp_widget_set_value(widget, &value);
-        gp_camera_set_config(cam->gpcam, config, c->gpcontext);
+        gp_camera_set_single_config(cam->gpcam, spj->name, widget, c->gpcontext);
       }
+      dt_pthread_mutex_unlock(&cam->config_lock);
       g_free(spj->name);
-      gp_widget_free(config);
     }
       break;
     case _JOB_TYPE_SET_PROPERTY_INT:
     {
-      _camctl_camera_set_property_int_job_t *spj = (_camctl_camera_set_property_int_job_t *)job;
-      dt_print(DT_DEBUG_CAMCTL, "[camera_control] executing set camera config job %s=%d\n",
+      _camctl_camera_set_property_int_job_t *spj =
+        (_camctl_camera_set_property_int_job_t *)job;
+      dt_print(DT_DEBUG_CAMCTL,
+               "[camera_control] executing set camera config job %s=%d\n",
                spj->name, spj->value);
 
-      CameraWidget *config; // Copy of camera configuration
+      dt_pthread_mutex_lock(&cam->config_lock);
       CameraWidget *widget;
-      gp_camera_get_config(cam->gpcam, &config, c->gpcontext);
-      if(gp_widget_get_child_by_name(config, spj->name, &widget) == GP_OK)
+      if(gp_widget_get_child_by_name(cam->configuration, spj->name, &widget) == GP_OK)
       {
         const int value = spj->value;
         const int set_value_succeeds = gp_widget_set_value(widget, &value);
@@ -474,7 +509,8 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
                    "[camera_control] setting int value %d on %s failed with code %d",
                    spj->value, spj->name, set_value_succeeds);
         }
-        const int set_config_succeeds = gp_camera_set_config(cam->gpcam, config, c->gpcontext);
+        const int set_config_succeeds =
+          gp_camera_set_single_config(cam->gpcam, spj->name, widget, c->gpcontext);
         if(set_value_succeeds != GP_OK)
         {
           dt_print(DT_DEBUG_CAMCTL,
@@ -482,21 +518,21 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
                    set_config_succeeds);
         }
       }
+      dt_pthread_mutex_unlock(&cam->config_lock);
       g_free(spj->name);
-      gp_widget_free(config);
     }
     break;
     case _JOB_TYPE_SET_PROPERTY_FLOAT:
     {
-      _camctl_camera_set_property_float_job_t *spj = (_camctl_camera_set_property_float_job_t *)job;
+      _camctl_camera_set_property_float_job_t *spj =
+        (_camctl_camera_set_property_float_job_t *)job;
       dt_print(DT_DEBUG_CAMCTL,
                "[camera_control] executing set camera config float job %s=%.2f\n",
                spj->name, spj->value);
 
-      CameraWidget *config; // Copy of camera configuration
+      dt_pthread_mutex_lock(&cam->config_lock);
       CameraWidget *widget;
-      gp_camera_get_config(cam->gpcam, &config, c->gpcontext);
-      if(gp_widget_get_child_by_name(config, spj->name, &widget) == GP_OK)
+      if(gp_widget_get_child_by_name(cam->configuration, spj->name, &widget) == GP_OK)
       {
         const float value = spj->value;
         const int set_value_succeeds = gp_widget_set_value(widget, &value);
@@ -506,7 +542,8 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
                    "[camera_control] setting int value %.2f on %s failed with code %d",
                    spj->value, spj->name, set_value_succeeds);
         }
-        const int set_config_succeeds = gp_camera_set_config(cam->gpcam, config, c->gpcontext);
+        const int set_config_succeeds =
+          gp_camera_set_single_config(cam->gpcam, spj->name, widget, c->gpcontext);
         if(set_value_succeeds != GP_OK)
         {
           dt_print(DT_DEBUG_CAMCTL,
@@ -514,12 +551,13 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
                    set_config_succeeds);
         }
       }
+      dt_pthread_mutex_unlock(&cam->config_lock);
       g_free(spj->name);
-      gp_widget_free(config);
     }
       break;
     default:
-      dt_print(DT_DEBUG_CAMCTL, "[camera_control] process of unknown job type 0x%x\n", j->type);
+      dt_print(DT_DEBUG_CAMCTL,
+               "[camera_control] process of unknown job type 0x%x\n", j->type);
       break;
   }
 
@@ -579,22 +617,26 @@ gboolean dt_camctl_camera_start_live_view(const dt_camctl_t *c)
   dt_camera_t *cam = (dt_camera_t *)camctl->active_camera;
   if(cam == NULL)
   {
-    dt_print(DT_DEBUG_CAMCTL, "[camera_control] Failed to start live view, camera==NULL\n");
+    dt_print(DT_DEBUG_CAMCTL,
+             "[camera_control] Failed to start live view, camera==NULL\n");
     return FALSE;
   }
   else
-    dt_print(DT_DEBUG_CAMCTL, "[camera_control] Starting live view\n");
+    dt_print(DT_DEBUG_CAMCTL,
+             "[camera_control] Starting live view\n");
 
   if(cam->can_live_view == FALSE)
   {
-    dt_print(DT_DEBUG_CAMCTL, "[camera_control] Camera does not support live view\n");
+    dt_print(DT_DEBUG_CAMCTL,
+             "[camera_control] Camera does not support live view\n");
     return FALSE;
   }
   cam->is_live_viewing = TRUE;
   dt_camctl_camera_set_property_int(camctl, NULL, "eosviewfinder", 1);
   dt_camctl_camera_set_property_int(camctl, NULL, "viewfinder", 1);
 
-  dt_pthread_create(&cam->live_view_thread, &dt_camctl_camera_get_live_view, (void *)camctl);
+  dt_pthread_create(&cam->live_view_thread,
+                    &dt_camctl_camera_get_live_view, (void *)camctl);
 
   return TRUE;
 }
@@ -606,7 +648,8 @@ void dt_camctl_camera_stop_live_view(const dt_camctl_t *c)
   if(!cam) return;
   if(cam->is_live_viewing == FALSE)
   {
-    dt_print(DT_DEBUG_CAMCTL, "[camera_control] Not in live view mode, nothing to stop\n");
+    dt_print(DT_DEBUG_CAMCTL,
+             "[camera_control] Not in live view mode, nothing to stop\n");
     return;
   }
   dt_print(DT_DEBUG_CAMCTL, "[camera_control] Stopping live view\n");
@@ -621,7 +664,8 @@ static void _camctl_lock(const dt_camctl_t *c, const dt_camera_t *cam)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)c;
   dt_pthread_mutex_BAD_lock(&camctl->lock);
-  dt_print(DT_DEBUG_CAMCTL, "[camera_control] camera control locked for %s\n", cam->model);
+  dt_print(DT_DEBUG_CAMCTL,
+           "[camera_control] camera control locked for %s\n", cam->model);
   camctl->active_camera = cam;
   _dispatch_control_status(c, CAMERA_CONTROL_BUSY);
 }
@@ -633,9 +677,11 @@ static void _camctl_unlock(const dt_camctl_t *c)
   camctl->active_camera = NULL;
   dt_pthread_mutex_BAD_unlock(&camctl->lock);
   if(cam)
-    dt_print(DT_DEBUG_CAMCTL, "[camera_control] camera control un-locked for %s\n", cam->model);
+    dt_print(DT_DEBUG_CAMCTL,
+             "[camera_control] camera control un-locked for %s\n", cam->model);
   else
-    dt_print(DT_DEBUG_CAMCTL, "[camera_control] camera control un-locked for unknown camera\n");
+    dt_print(DT_DEBUG_CAMCTL,
+             "[camera_control] camera control un-locked for unknown camera\n");
   _dispatch_control_status(c, CAMERA_CONTROL_AVAILABLE);
 }
 
@@ -649,9 +695,12 @@ dt_camctl_t *dt_camctl_new()
   camctl->ticker = 1;
   camctl->tickmask = 0x0F;
 
-  gp_context_set_status_func(camctl->gpcontext, (GPContextStatusFunc)_status_func_dispatch25, camctl);
-  gp_context_set_error_func(camctl->gpcontext, (GPContextErrorFunc)_error_func_dispatch25, camctl);
-  gp_context_set_message_func(camctl->gpcontext, (GPContextMessageFunc)_message_func_dispatch25, camctl);
+  gp_context_set_status_func(camctl->gpcontext,
+                             (GPContextStatusFunc)_status_func_dispatch25, camctl);
+  gp_context_set_error_func(camctl->gpcontext,
+                            (GPContextErrorFunc)_error_func_dispatch25, camctl);
+  gp_context_set_message_func(camctl->gpcontext,
+                              (GPContextMessageFunc)_message_func_dispatch25, camctl);
 
   // Load all camera drivers we know...
   gp_abilities_list_new(&camctl->gpcams);
@@ -686,7 +735,8 @@ static void dt_camctl_camera_destroy_struct(dt_camera_t *cam)
 static void dt_camctl_camera_destroy(dt_camera_t *cam)
 {
   if(!cam) return;
-  dt_print(DT_DEBUG_CAMCTL, "[camera_control] destroy %s on port %s\n", cam->model, cam->port);
+  dt_print(DT_DEBUG_CAMCTL,
+           "[camera_control] destroy %s on port %s\n", cam->model, cam->port);
 
   for(GList *it = cam->open_gpfiles; it; it = g_list_delete_link(it, it))
   {
@@ -742,7 +792,8 @@ gboolean dt_camctl_have_unused_cameras(const dt_camctl_t *c)
   return (c->unused_cameras) ? TRUE : FALSE;
 }
 
-void dt_camctl_register_listener(const dt_camctl_t *c, dt_camctl_listener_t *listener)
+void dt_camctl_register_listener(const dt_camctl_t *c,
+                                 dt_camctl_listener_t *listener)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)c;
   // Just locking mutex and prevent signalling CAMERA_CONTROL_BUSY
@@ -750,7 +801,8 @@ void dt_camctl_register_listener(const dt_camctl_t *c, dt_camctl_listener_t *lis
   if(g_list_find(camctl->listeners, listener) == NULL)
   {
     camctl->listeners = g_list_append(camctl->listeners, listener);
-    dt_print(DT_DEBUG_CAMCTL, "[camera_control] registering listener %p\n", listener);
+    dt_print(DT_DEBUG_CAMCTL,
+             "[camera_control] registering listener %p\n", listener);
   }
   else
     dt_print(DT_DEBUG_CAMCTL,
@@ -758,7 +810,8 @@ void dt_camctl_register_listener(const dt_camctl_t *c, dt_camctl_listener_t *lis
   dt_pthread_mutex_unlock(&camctl->listeners_lock);
 }
 
-void dt_camctl_unregister_listener(const dt_camctl_t *c, dt_camctl_listener_t *listener)
+void dt_camctl_unregister_listener(const dt_camctl_t *c,
+                                   dt_camctl_listener_t *listener)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)c;
   // Just locking mutex and prevent signalling CAMERA_CONTROL_BUSY
@@ -794,7 +847,8 @@ static gboolean dt_camctl_update_cameras(const dt_camctl_t *c)
   const int ports_available = gp_port_info_list_count(camctl->gpports);
   if(ports_available != ports_cnt)
   {
-    dt_print(DT_DEBUG_CAMCTL, "[camera_control] loaded %d port drivers.\n", ports_available);
+    dt_print(DT_DEBUG_CAMCTL,
+             "[camera_control] loaded %d port drivers.\n", ports_available);
     ports_cnt = ports_available;
   }
 
@@ -805,7 +859,8 @@ static gboolean dt_camctl_update_cameras(const dt_camctl_t *c)
   const int connected_cnt = gp_list_count(available_cameras);
   if(connected_cnt != cameras_cnt)
   {
-    dt_print(DT_DEBUG_CAMCTL, "[camera_control] %d cameras connected\n", connected_cnt);
+    dt_print(DT_DEBUG_CAMCTL,
+             "[camera_control] %d cameras connected\n", connected_cnt);
     cameras_cnt = connected_cnt;
   }
 
@@ -818,7 +873,8 @@ static gboolean dt_camctl_update_cameras(const dt_camctl_t *c)
     gp_list_get_value(available_cameras, i, &s);
     testcam->port = g_strdup(s);
 
-    // FIXME we might better test elsewhere for special port drivers, have it active while debugging
+    // FIXME we might better test elsewhere for special port drivers,
+    // have it active while debugging
     if(!(strncmp(testcam->port, "disk:", 5)) && !(darktable.unmuted & DT_DEBUG_CAMCTL))
     {
       g_free(testcam);
@@ -827,11 +883,13 @@ static gboolean dt_camctl_update_cameras(const dt_camctl_t *c)
 
     GList *citem;
     // look for freshly connected cameras;
-    if(((citem = g_list_find_custom(c->cameras, testcam, _compare_camera_by_camera)) == NULL)
+    if(((citem = g_list_find_custom(c->cameras,
+                                    testcam, _compare_camera_by_camera)) == NULL)
        || g_strcmp0(((dt_camera_unused_t *)citem->data)->port, testcam->port) != 0)
     {
       GList *c2item;
-      if(((c2item = g_list_find_custom(c->unused_cameras, testcam, _compare_camera_by_camera)) == NULL)
+      if(((c2item = g_list_find_custom(c->unused_cameras,
+                                       testcam, _compare_camera_by_camera)) == NULL)
          || g_strcmp0(((dt_camera_unused_t *)c2item->data)->port, testcam->port) != 0)
       {
         dt_camera_unused_t *unused_camera = g_malloc0(sizeof(dt_camera_unused_t));
@@ -870,7 +928,8 @@ static gboolean dt_camctl_update_cameras(const dt_camctl_t *c)
                  "[camera_control] remove %s on port %s from ununsed camera list\n",
                  cam->model, cam->port);
         dt_camera_unused_t *oldcam = (dt_camera_unused_t *)unused_item->data;
-        camctl->unused_cameras = unused_item = g_list_delete_link(c->unused_cameras, unused_item);
+        camctl->unused_cameras = unused_item =
+          g_list_delete_link(c->unused_cameras, unused_item);
         dt_camctl_unused_camera_destroy(oldcam);
         changed_camera = TRUE;
       }
@@ -889,9 +948,10 @@ static gboolean dt_camctl_update_cameras(const dt_camctl_t *c)
                      "[camera_control] failed to initialize %s on port %s, likely "
                      "causes are: locked by another application, no access to udev etc.\n",
                      camera->model, camera->port);
-            dt_control_log(_("failed to initialize `%s' on port `%s', likely "
-                             "causes are: locked by another application, no access to devices etc"),
-                           camera->model, camera->port);
+            dt_control_log
+              (_("failed to initialize `%s' on port `%s', likely "
+                 "causes are: locked by another application, no access to devices etc"),
+               camera->model, camera->port);
             g_free(camera);
             cam->used = TRUE;
             continue;
@@ -902,7 +962,8 @@ static gboolean dt_camctl_update_cameras(const dt_camctl_t *c)
             dt_print(DT_DEBUG_CAMCTL,
                      "[camera_control] %s on port %s doesn't support import or tether\n",
                      camera->model, camera->port);
-            dt_control_log(_("`%s' on port `%s' is not interesting because it supports neither tethering nor import"),
+            dt_control_log(_("`%s' on port `%s' is not interesting"
+                             " because it supports neither tethering nor import"),
                                camera->model, camera->port);
             g_free(camera);
             cam->boring = TRUE;
@@ -921,10 +982,12 @@ static gboolean dt_camctl_update_cameras(const dt_camctl_t *c)
           changed_camera = TRUE;
 
           dt_print(DT_DEBUG_CAMCTL,
-                   "[camera_control] remove %s on port %s from ununsed camera list as mounted\n",
+                   "[camera_control] remove %s on port %s from"
+                   " ununsed camera list as mounted\n",
                    cam->model, cam->port);
           dt_camera_unused_t *oldcam = (dt_camera_unused_t *)unused_item->data;
-          camctl->unused_cameras = unused_item = g_list_delete_link(c->unused_cameras, unused_item);
+          camctl->unused_cameras = unused_item =
+            g_list_delete_link(c->unused_cameras, unused_item);
           dt_camctl_unused_camera_destroy(oldcam);
          // Notify listeners of connected camera
          _dispatch_camera_connected(camctl, camera);
@@ -946,8 +1009,11 @@ static gboolean dt_camctl_update_cameras(const dt_camctl_t *c)
         const gchar *myport;
         gp_list_get_name(available_cameras, i, &mymodel);
         gp_list_get_value(available_cameras, i, &myport);
-        if((g_strcmp0(mymodel, cam->model) == 0) && (g_strcmp0(myport, cam->port) == 0))
+        if((g_strcmp0(mymodel, cam->model) == 0)
+           && (g_strcmp0(myport, cam->port) == 0))
+        {
           removed = FALSE;
+        }
       }
       if(removed)
       {
@@ -984,8 +1050,9 @@ static gboolean dt_camctl_update_cameras(const dt_camctl_t *c)
   gp_list_unref(available_cameras);
 
   dt_pthread_mutex_unlock(&camctl->lock);
-  // tell the world that we are done. this assumes that there is just one global camctl.
-  // if there would ever be more it would be easy to pass c with the signal.
+  // tell the world that we are done. this assumes that there is just
+  // one global camctl.  if there would ever be more it would be easy
+  // to pass c with the signal.
   if(changed_camera)
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CAMERA_DETECTED);
 
@@ -1008,7 +1075,8 @@ void *dt_update_cameras_thread(void *ptr)
 
     if(camctl)
     {
-      if(camctl->import_ui == FALSE && dt_view_get_current() == DT_VIEW_LIGHTTABLE)
+      if(camctl->import_ui == FALSE
+         && dt_view_get_current() == DT_VIEW_LIGHTTABLE)
 //TODO:  && import module is expanded and visible
       {
         camctl->ticker += 1;
@@ -1022,7 +1090,9 @@ void *dt_update_cameras_thread(void *ptr)
         }
       }
       else
-        camctl->tickmask = 3; // want to be responsive right after other modes are done - scan in one second
+        camctl->tickmask = 3; // want to be responsive right after
+                              // other modes are done - scan in one
+                              // second
     }
   }
   return 0;
@@ -1036,7 +1106,8 @@ static void *_camera_event_thread(void *data)
 
   const dt_camera_t *camera = camctl->active_camera;
 
-  dt_print(DT_DEBUG_CAMCTL, "[camera_control] starting camera event thread of context %p\n", data);
+  dt_print(DT_DEBUG_CAMCTL,
+           "[camera_control] starting camera event thread of context %p\n", data);
 
   while(camera->is_tethering == TRUE)
   {
@@ -1045,10 +1116,8 @@ static void *_camera_event_thread(void *data)
 
     // Let's check if there are jobs in queue to process
     gpointer job;
-    while((job = _camera_get_job(camctl, camera)) != NULL) _camera_process_job(camctl, camera, job);
-
-    // Check it jobs did change the configuration
-    if(camera->config_changed == TRUE) _camera_configuration_commit(camctl, camera);
+    while((job = _camera_get_job(camctl, camera)) != NULL)
+      _camera_process_job(camctl, camera, job);
   }
 
   dt_print(DT_DEBUG_CAMCTL, "[camera_control] exiting camera thread.\n");
@@ -1056,7 +1125,8 @@ static void *_camera_event_thread(void *data)
   return NULL;
 }
 
-static gboolean _camera_initialize(const dt_camctl_t *c, dt_camera_t *cam)
+static gboolean _camera_initialize(const dt_camctl_t *c,
+                                   dt_camera_t *cam)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)c;
   CameraAbilities a;
@@ -1069,7 +1139,8 @@ static gboolean _camera_initialize(const dt_camctl_t *c, dt_camera_t *cam)
     if(err != GP_OK)
      {
       dt_print(DT_DEBUG_CAMCTL,
-               "[camera_control] failed to gp_abilities_list_get_abilities %s\n", cam->model);
+               "[camera_control] failed to gp_abilities_list_get_abilities %s\n",
+               cam->model);
       return FALSE;
     }
 
@@ -1077,7 +1148,8 @@ static gboolean _camera_initialize(const dt_camctl_t *c, dt_camera_t *cam)
     if(err != GP_OK)
      {
       dt_print(DT_DEBUG_CAMCTL,
-               "[camera_control] failed to gp_camera_set_abilities %s\n", cam->model);
+               "[camera_control] failed to gp_camera_set_abilities %s\n",
+               cam->model);
       return FALSE;
     }
 
@@ -1086,14 +1158,16 @@ static gboolean _camera_initialize(const dt_camctl_t *c, dt_camera_t *cam)
     if(err != GP_OK)
     {
       dt_print(DT_DEBUG_CAMCTL,
-               "[camera_control] failed to gp_port_info_list_get_info %s\n", cam->model);
+               "[camera_control] failed to gp_port_info_list_get_info %s\n",
+               cam->model);
       return FALSE;
     }
     err = gp_camera_set_port_info(cam->gpcam, pi);
     if(err != GP_OK)
     {
       dt_print(DT_DEBUG_CAMCTL,
-               "[camera_control] failed to gp_camera_set_port_info %s\n", cam->model);
+               "[camera_control] failed to gp_camera_set_port_info %s\n",
+               cam->model);
       return FALSE;
     }
 
@@ -1115,7 +1189,8 @@ static gboolean _camera_initialize(const dt_camctl_t *c, dt_camera_t *cam)
 
     if(gp_camera_init(cam->gpcam, camctl->gpcontext) != GP_OK)
     {
-      dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to initialize %s on port %s\n", cam->model,
+      dt_print(DT_DEBUG_CAMCTL,
+               "[camera_control] failed to initialize %s on port %s\n", cam->model,
                cam->port);
       return FALSE;
     }
@@ -1124,13 +1199,15 @@ static gboolean _camera_initialize(const dt_camctl_t *c, dt_camera_t *cam)
     gp_camera_get_config(cam->gpcam, &cam->configuration, c->gpcontext);
 
     // TODO: find a more robust way for this, once we find out how to do it with non-EOS cameras
-    cam->can_live_view_advanced = cam->can_live_view
-                                  && (dt_camctl_camera_property_exists(camctl, cam, "eoszoomposition")
-                                  || dt_camctl_camera_property_exists(camctl, cam, "manualfocusdrive"));
+    cam->can_live_view_advanced =
+      cam->can_live_view
+      && (dt_camctl_camera_property_exists(camctl, cam, "eoszoomposition")
+          || dt_camctl_camera_property_exists(camctl, cam, "manualfocusdrive"));
 
     // initialize timeout callbacks eg. keep alive, some cameras needs it.
     cam->gpcontext = camctl->gpcontext;
-    gp_camera_set_timeout_funcs(cam->gpcam, (CameraTimeoutStartFunc)_camera_start_timeout_func,
+    gp_camera_set_timeout_funcs(cam->gpcam,
+                                (CameraTimeoutStartFunc)_camera_start_timeout_func,
                                 (CameraTimeoutStopFunc)_camera_stop_timeout_func, cam);
     // initialize the list of open gphoto files
     cam->open_gpfiles = NULL;
@@ -1140,7 +1217,8 @@ static gboolean _camera_initialize(const dt_camctl_t *c, dt_camera_t *cam)
     dt_pthread_mutex_init(&cam->live_view_buffer_mutex, NULL);
     dt_pthread_mutex_init(&cam->live_view_synch, NULL);
 
-    dt_print(DT_DEBUG_CAMCTL, "[camera_control] %s on port %s initialized\n", cam->model, cam->port);
+    dt_print(DT_DEBUG_CAMCTL,
+             "[camera_control] %s on port %s initialized\n", cam->model, cam->port);
   }
   return TRUE;
 }
@@ -1150,7 +1228,9 @@ static int _sort_filename(gchar *a, gchar *b)
   return g_strcmp0(a, b);
 }
 
-void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *images)
+void dt_camctl_import(const dt_camctl_t *c,
+                      const dt_camera_t *cam,
+                      GList *images)
 {
   GList *ifiles = g_list_sort(images, (GCompareFunc)_sort_filename);
   char *prev_file = NULL;
@@ -1180,7 +1260,8 @@ void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *image
     dt_image_basic_exif_t basic_exif = {0};
 
     gp_file_new(&camfile);
-    if((res = gp_camera_file_get(cam->gpcam, folder, filename, GP_FILE_TYPE_NORMAL, camfile, NULL)) < GP_OK)
+    if((res = gp_camera_file_get(cam->gpcam, folder,
+                                 filename, GP_FILE_TYPE_NORMAL, camfile, NULL)) < GP_OK)
     {
       dt_print(DT_DEBUG_CAMCTL,
                "[camera_control] gphoto import failed: %s\n", gp_result_as_string(res));
@@ -1240,7 +1321,8 @@ void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *image
   _camctl_unlock(c);
 }
 
-void dt_camctl_select_camera(const dt_camctl_t *c, const dt_camera_t *cam)
+void dt_camctl_select_camera(const dt_camctl_t *c,
+                             const dt_camera_t *cam)
 {
   _camctl_lock(c, cam);
   dt_camctl_t *camctl = (dt_camctl_t *)c;
@@ -1257,10 +1339,13 @@ time_t dt_camctl_get_image_file_timestamp(const dt_camctl_t *c,
     return 0;
   // Lets check the type of file...
   CameraFileInfo cfi;
-  if(!(gp_camera_file_get_info(c->active_camera->gpcam, path, filename, &cfi, c->gpcontext) == GP_OK))
+  if(!(gp_camera_file_get_info(c->active_camera->gpcam,
+                               path, filename, &cfi, c->gpcontext) == GP_OK))
   {
     dt_print(DT_DEBUG_CAMCTL,
-    "[camera_control] failed to get file information of %s in folder %s on device\n", filename, path);
+             "[camera_control] failed to get file information"
+             " of %s in folder %s on device\n",
+             filename, path);
   }
   else
     timestamp = cfi.file.mtime;
@@ -1268,7 +1353,8 @@ time_t dt_camctl_get_image_file_timestamp(const dt_camctl_t *c,
   return timestamp;
 }
 
-static GList *_camctl_recursive_get_list(const dt_camctl_t *c, char *path)
+static GList *_camctl_recursive_get_list(const dt_camctl_t *c,
+                                         char *path)
 {
   GList *imgs = NULL;
 
@@ -1276,7 +1362,8 @@ static GList *_camctl_recursive_get_list(const dt_camctl_t *c, char *path)
   CameraList *files;
   const char *filename;
   gp_list_new(&files);
-  if(gp_camera_folder_list_files(c->active_camera->gpcam, path, files, c->gpcontext) == GP_OK)
+  if(gp_camera_folder_list_files(c->active_camera->gpcam,
+                                 path, files, c->gpcontext) == GP_OK)
   {
     for(int i = 0; i < gp_list_count(files); i++)
     {
@@ -1284,10 +1371,12 @@ static GList *_camctl_recursive_get_list(const dt_camctl_t *c, char *path)
 
       // Lets check the type of file...
       CameraFileInfo cfi;
-      if(!(gp_camera_file_get_info(c->active_camera->gpcam, path, filename, &cfi, c->gpcontext) == GP_OK))
+      if(!(gp_camera_file_get_info(c->active_camera->gpcam,
+                                   path, filename, &cfi, c->gpcontext) == GP_OK))
       {
         dt_print(DT_DEBUG_CAMCTL,
-          "[camera_control] failed to get file information of %s in folder %s on device\n",
+                 "[camera_control] failed to get file information"
+                 " of %s in folder %s on device\n",
                  filename, path);
       }
       else
@@ -1305,7 +1394,8 @@ static GList *_camctl_recursive_get_list(const dt_camctl_t *c, char *path)
   // Recurse into folders in current folder...
   CameraList *folders;
   gp_list_new(&folders);
-  if(gp_camera_folder_list_folders(c->active_camera->gpcam, path, folders, c->gpcontext) == GP_OK)
+  if(gp_camera_folder_list_folders(c->active_camera->gpcam,
+                                   path, folders, c->gpcontext) == GP_OK)
   {
     const char *foldername;
     for(int i = 0; i < gp_list_count(folders); i++)
@@ -1324,7 +1414,8 @@ static GList *_camctl_recursive_get_list(const dt_camctl_t *c, char *path)
   return imgs;
 }
 
-GList *dt_camctl_get_images_list(const dt_camctl_t *c, dt_camera_t *cam)
+GList *dt_camctl_get_images_list(const dt_camctl_t *c,
+                                 dt_camera_t *cam)
 {
   _camctl_lock(c, cam);
   GList *imgs = _camctl_recursive_get_list(c, "/");
@@ -1349,10 +1440,13 @@ static GdkPixbuf *_camctl_get_thumbnail(const dt_camctl_t *c,
   CameraFile *preview = NULL;
   // Lets check the type of file...
   CameraFileInfo cfi;
-  if(!(gp_camera_file_get_info(c->active_camera->gpcam, folder, fn, &cfi, c->gpcontext) == GP_OK))
+  if(!(gp_camera_file_get_info(c->active_camera->gpcam,
+                               folder, fn, &cfi, c->gpcontext) == GP_OK))
   {
     dt_print(DT_DEBUG_CAMCTL,
-      "[camera_control] failed to get file information of %s in folder %s on device\n", fn, folder);
+             "[camera_control] failed to get file information"
+             " of %s in folder %s on device\n",
+             fn, folder);
     return NULL;
   }
   int gotpreview = 0;
@@ -1362,10 +1456,14 @@ static GdkPixbuf *_camctl_get_thumbnail(const dt_camctl_t *c,
   if(gp_camera_file_get(c->active_camera->gpcam, folder, fn, GP_FILE_TYPE_PREVIEW, preview,
      c->gpcontext) == GP_OK)
     gotpreview = 1;
-  if((gotpreview == 0) && (cfi.file.size > 0) && (cfi.file.size < 512000))
+
+  if(gotpreview == 0
+     && cfi.file.size > 0
+     && cfi.file.size < 512000)
   {
-    if(gp_camera_file_get(c->active_camera->gpcam, folder, fn, GP_FILE_TYPE_NORMAL, preview,
-         c->gpcontext) == GP_OK)
+    if(gp_camera_file_get(c->active_camera->gpcam,
+                          folder, fn, GP_FILE_TYPE_NORMAL, preview,
+                          c->gpcontext) == GP_OK)
       gotpreview = 1;
   }
 
@@ -1374,7 +1472,8 @@ static GdkPixbuf *_camctl_get_thumbnail(const dt_camctl_t *c,
   {
     gp_file_free(preview);
     preview = NULL;
-    dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed preview of %s in folder %s\n", fn, folder);
+    dt_print(DT_DEBUG_CAMCTL,
+             "[camera_control] failed preview of %s in folder %s\n", fn, folder);
     return NULL;
   }
 
@@ -1402,20 +1501,32 @@ static GdkPixbuf *_camctl_get_thumbnail(const dt_camctl_t *c,
       g_object_unref(pixbuf);
     }
     /* Why can't we just gp_file_free(preview) at once?
-       1. we may open the dialog with thumb selection multiple times, if we gp_camera_file_get
-          multiple times we oly have valid data the first time, **not** when re-reading.
-          Symptom is not-seeing the thumbs when reopening this dialog.
-       2. Also gphoto internal mem-management get's this wrong leading to double-free or alike.
-          This has been in dt for very long.
-       3. Freeing a gp_file only works if we passed an address & size so the gphoto de-allocation
-          get's it right.
-       4. I tried to use gp_camera_file_read (to allow passing address & size) but after reading
-          gphoto issues it becomes obvious that this doesn't work as it's internals are not implemented
+
+       1. we may open the dialog with thumb selection multiple times,
+          if we gp_camera_file_get multiple times we oly have valid
+          data the first time, **not** when re-reading.  Symptom is
+          not-seeing the thumbs when reopening this dialog.
+
+       2. Also gphoto internal mem-management get's this wrong leading
+          to double-free or alike.  This has been in dt for very long.
+
+       3. Freeing a gp_file only works if we passed an address & size
+          so the gphoto de-allocation get's it right.
+
+       4. I tried to use gp_camera_file_read (to allow passing address
+          & size) but after reading gphoto issues it becomes obvious
+          that this doesn't work as it's internals are not implemented
           for some drivers.
-       5. As the thumbs extractor has preallocated memory gp_file_free works fine, this means it's the
-          better option compare to reading a small file.
-       6. Unfortunately this is basically a gphoto issue we can't solve here so we have to bypass it.
-       7. We keep the open gp_files in a Glist and close them when the camera is disconnected
+
+       5. As the thumbs extractor has preallocated memory gp_file_free
+          works fine, this means it's the better option compare to
+          reading a small file.
+
+       6. Unfortunately this is basically a gphoto issue we can't
+          solve here so we have to bypass it.
+
+       7. We keep the open gp_files in a Glist and close them when the
+          camera is disconnected
     */
     cam->open_gpfiles = g_list_append(cam->open_gpfiles, preview);
   }
@@ -1424,7 +1535,9 @@ static GdkPixbuf *_camctl_get_thumbnail(const dt_camctl_t *c,
   return thumb;
 }
 
-GdkPixbuf *dt_camctl_get_thumbnail(const dt_camctl_t *c, dt_camera_t *cam, const gchar *filename)
+GdkPixbuf *dt_camctl_get_thumbnail(const dt_camctl_t *c,
+                                   dt_camera_t *cam,
+                                   const gchar *filename)
 {
   _camctl_lock(c, cam);
   GdkPixbuf *thumb = _camctl_get_thumbnail(c, cam, filename);
@@ -1432,16 +1545,20 @@ GdkPixbuf *dt_camctl_get_thumbnail(const dt_camctl_t *c, dt_camera_t *cam, const
   return thumb;
 }
 
-int dt_camctl_can_enter_tether_mode(const dt_camctl_t *c, const dt_camera_t *cam)
+int dt_camctl_can_enter_tether_mode(const dt_camctl_t *c,
+                                    const dt_camera_t *cam)
 {
   /* first check if camera is provided else use wanted cam */
-  if(cam == NULL) cam = c->wanted_camera;
+  if(cam == NULL)
+    cam = c->wanted_camera;
 
   /* check if wanted cam is available else use active camera */
-  if(cam == NULL) cam = c->active_camera;
+  if(cam == NULL)
+    cam = c->active_camera;
 
   /* check if active cam is available else use first detected one */
-  if(cam == NULL && c->cameras) cam = c->cameras->data;
+  if(cam == NULL && c->cameras)
+    cam = c->cameras->data;
 
   if(cam && cam->can_tether)
   {
@@ -1453,16 +1570,21 @@ int dt_camctl_can_enter_tether_mode(const dt_camctl_t *c, const dt_camera_t *cam
   return 0;
 }
 
-void dt_camctl_tether_mode(const dt_camctl_t *c, const dt_camera_t *cam, gboolean enable)
+void dt_camctl_tether_mode(const dt_camctl_t *c,
+                           const dt_camera_t *cam,
+                           gboolean enable)
 {
   /* first check if camera is provided else use wanted cam */
-  if(cam == NULL) cam = c->wanted_camera;
+  if(cam == NULL)
+    cam = c->wanted_camera;
 
   /* check if wanted cam is available else use active camera */
-  if(cam == NULL) cam = c->active_camera;
+  if(cam == NULL)
+    cam = c->active_camera;
 
   /* check if active cam is available else use first detected one */
-  if(cam == NULL && c->cameras) cam = c->cameras->data;
+  if(cam == NULL && c->cameras)
+    cam = c->cameras->data;
 
   if(cam && cam->can_tether)
   {
@@ -1488,16 +1610,21 @@ void dt_camctl_tether_mode(const dt_camctl_t *c, const dt_camera_t *cam, gboolea
     }
   }
   else
-    dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to set tether mode with reason: %s\n",
+    dt_print(DT_DEBUG_CAMCTL,
+             "[camera_control] failed to set tether mode with reason: %s\n",
              cam ? "device does not support tethered capture" : "no active camera");
 }
 
-const char *dt_camctl_camera_get_model(const dt_camctl_t *c, const dt_camera_t *cam)
+const char *dt_camctl_camera_get_model(const dt_camctl_t *c,
+                                       const dt_camera_t *cam)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)c;
-  if(!cam && (cam = camctl->active_camera) == NULL && (cam = camctl->wanted_camera) == NULL)
+  if(!cam
+     && (cam = camctl->active_camera) == NULL
+     && (cam = camctl->wanted_camera) == NULL)
   {
-    dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to get model of camera, camera==NULL\n");
+    dt_print(DT_DEBUG_CAMCTL,
+             "[camera_control] failed to get model of camera, camera==NULL\n");
     return NULL;
   }
   return cam->model;
@@ -1530,11 +1657,14 @@ static void _camera_build_property_menu(CameraWidget *widget,
         gtk_menu_item_set_submenu(item, gtk_menu_new());
 
         /* recurse into submenu */
-        _camera_build_property_menu(child, GTK_MENU(gtk_menu_item_get_submenu(item)), item_activate,
+        _camera_build_property_menu(child,
+                                    GTK_MENU(gtk_menu_item_get_submenu(item)),
+                                    item_activate,
                                     user_data);
 
         /* add submenu item to menu if not empty*/
-        GList *children = gtk_container_get_children(GTK_CONTAINER(gtk_menu_item_get_submenu(item)));
+        GList *children =
+          gtk_container_get_children(GTK_CONTAINER(gtk_menu_item_get_submenu(item)));
         if(children)
         {
           gtk_menu_shell_append(GTK_MENU_SHELL(menu), GTK_WIDGET(item));
@@ -1545,7 +1675,9 @@ static void _camera_build_property_menu(CameraWidget *widget,
       {
         /* check widget type */
         gp_widget_get_type(child, &type);
-        if(type == GP_WIDGET_MENU || type == GP_WIDGET_TEXT || type == GP_WIDGET_RADIO)
+        if(type == GP_WIDGET_MENU
+           || type == GP_WIDGET_TEXT
+           || type == GP_WIDGET_RADIO)
         {
           /* construct menu item for property */
           gp_widget_get_name(child, &sk);
@@ -1567,14 +1699,17 @@ void dt_camctl_camera_build_property_menu(const dt_camctl_t *c,
 {
   /* get active camera */
   dt_camctl_t *camctl = (dt_camctl_t *)c;
-  if(!cam && (cam = camctl->active_camera) == NULL && (cam = camctl->wanted_camera) == NULL)
+  if(!cam
+     && (cam = camctl->active_camera) == NULL
+     && (cam = camctl->wanted_camera) == NULL)
   {
     dt_print(DT_DEBUG_CAMCTL,
              "[camera_control] failed to build property menu from camera, camera==NULL\n");
     return;
   }
 
-  dt_print(DT_DEBUG_CAMCTL, "[camera_control] building property menu from camera configuration\n");
+  dt_print(DT_DEBUG_CAMCTL,
+           "[camera_control] building property menu from camera configuration\n");
 
   /* lock camera config mutex while recursive building property menu */
   dt_camera_t *camera = (dt_camera_t *)cam;
@@ -1593,14 +1728,18 @@ void dt_camctl_camera_set_property_string(const dt_camctl_t *c,
                                           const char *value)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)c;
-  if(!cam && (cam = camctl->active_camera) == NULL && (cam = camctl->wanted_camera) == NULL)
+  if(!cam
+     && (cam = camctl->active_camera) == NULL
+     && (cam = camctl->wanted_camera) == NULL)
   {
-    dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to set property from camera, camera==NULL\n");
+    dt_print(DT_DEBUG_CAMCTL,
+             "[camera_control] failed to set property from camera, camera==NULL\n");
     return;
   }
   dt_camera_t *camera = (dt_camera_t *)cam;
 
-  _camctl_camera_set_property_string_job_t *job = g_malloc(sizeof(_camctl_camera_set_property_string_job_t));
+  _camctl_camera_set_property_string_job_t *job =
+    g_malloc(sizeof(_camctl_camera_set_property_string_job_t));
   job->type = _JOB_TYPE_SET_PROPERTY_STRING;
   job->name = g_strdup(property_name);
   job->value = g_strdup(value);
@@ -1614,14 +1753,18 @@ void dt_camctl_camera_set_property_toggle(const dt_camctl_t *c,
                                           const char *property_name)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)c;
-  if(!cam && (cam = camctl->active_camera) == NULL && (cam = camctl->wanted_camera) == NULL)
+  if(!cam
+     && (cam = camctl->active_camera) == NULL
+     && (cam = camctl->wanted_camera) == NULL)
   {
-    dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to set property from camera, camera==NULL\n");
+    dt_print(DT_DEBUG_CAMCTL,
+             "[camera_control] failed to set property from camera, camera==NULL\n");
     return;
   }
   dt_camera_t *camera = (dt_camera_t *)cam;
 
-  _camctl_camera_set_property_toggle_job_t *job = g_malloc(sizeof(_camctl_camera_set_property_toggle_job_t));
+  _camctl_camera_set_property_toggle_job_t *job =
+    g_malloc(sizeof(_camctl_camera_set_property_toggle_job_t));
   job->type = _JOB_TYPE_SET_PROPERTY_TOGGLE;
   job->name = g_strdup(property_name);
 
@@ -1635,9 +1778,12 @@ void dt_camctl_camera_set_property_choice(const dt_camctl_t *c,
                                           const int value)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)c;
-  if(!cam && (cam = camctl->active_camera) == NULL && (cam = camctl->wanted_camera) == NULL)
+  if(!cam
+     && (cam = camctl->active_camera) == NULL
+     && (cam = camctl->wanted_camera) == NULL)
   {
-    dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to set property from camera, camera==NULL\n");
+    dt_print(DT_DEBUG_CAMCTL,
+             "[camera_control] failed to set property from camera, camera==NULL\n");
     return;
   }
   dt_camera_t *camera = (dt_camera_t *)cam;
@@ -1658,14 +1804,18 @@ void dt_camctl_camera_set_property_int(const dt_camctl_t *c,
                                        const int value)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)c;
-  if(!cam && (cam = camctl->active_camera) == NULL && (cam = camctl->wanted_camera) == NULL)
+  if(!cam
+     && (cam = camctl->active_camera) == NULL
+     && (cam = camctl->wanted_camera) == NULL)
   {
-    dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to set property from camera, camera==NULL\n");
+    dt_print(DT_DEBUG_CAMCTL,
+             "[camera_control] failed to set property from camera, camera==NULL\n");
     return;
   }
   dt_camera_t *camera = (dt_camera_t *)cam;
 
-  _camctl_camera_set_property_int_job_t *job = g_malloc(sizeof(_camctl_camera_set_property_int_job_t));
+  _camctl_camera_set_property_int_job_t *job =
+    g_malloc(sizeof(_camctl_camera_set_property_int_job_t));
   job->type = _JOB_TYPE_SET_PROPERTY_INT;
   job->name = g_strdup(property_name);
   job->value = value;
@@ -1680,9 +1830,12 @@ void dt_camctl_camera_set_property_float(const dt_camctl_t *c,
                                          const float value)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)c;
-  if(!cam && (cam = camctl->active_camera) == NULL && (cam = camctl->wanted_camera) == NULL)
+  if(!cam
+     && (cam = camctl->active_camera) == NULL
+     && (cam = camctl->wanted_camera) == NULL)
   {
-    dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to set property from camera, camera==NULL\n");
+    dt_print(DT_DEBUG_CAMCTL,
+             "[camera_control] failed to set property from camera, camera==NULL\n");
     return;
   }
   dt_camera_t *camera = (dt_camera_t *)cam;
@@ -1702,9 +1855,12 @@ const char *dt_camctl_camera_get_property(const dt_camctl_t *c,
                                           const char *property_name)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)c;
-  if(!cam && (cam = camctl->active_camera) == NULL && (cam = camctl->wanted_camera) == NULL)
+  if(!cam
+     && (cam = camctl->active_camera) == NULL
+     && (cam = camctl->wanted_camera) == NULL)
   {
-    dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to get property from camera, camera==NULL\n");
+    dt_print(DT_DEBUG_CAMCTL,
+             "[camera_control] failed to get property from camera, camera==NULL\n");
     return NULL;
   }
   dt_camera_t *camera = (dt_camera_t *)cam;
@@ -1725,10 +1881,13 @@ int dt_camctl_camera_property_exists(const dt_camctl_t *c,
 {
   int exists = 0;
   dt_camctl_t *camctl = (dt_camctl_t *)c;
-  if(!cam && ((cam = camctl->active_camera) == NULL && (cam = camctl->wanted_camera) == NULL))
+  if(!cam
+     && (cam = camctl->active_camera) == NULL
+     && (cam = camctl->wanted_camera) == NULL)
   {
     dt_print(DT_DEBUG_CAMCTL,
-             "[camera_control] failed to check if property exists in camera configuration, camera == NULL\n");
+             "[camera_control] failed to check if property exists"
+             " in camera configuration, camera == NULL\n");
     return 0;
   }
 
@@ -1737,14 +1896,16 @@ int dt_camctl_camera_property_exists(const dt_camctl_t *c,
   if(camera->configuration == NULL)
   {
     dt_print(DT_DEBUG_CAMCTL,
-             "[camera_control] failed to check if property exists in camera configuration, camera configuration == NULL\n");
+             "[camera_control] failed to check if property exists"
+             " in camera configuration, camera configuration == NULL\n");
     return 0;
   }
 
   dt_pthread_mutex_lock(&camera->config_lock);
 
   CameraWidget *widget;
-  if(gp_widget_get_child_by_name(camera->configuration, property_name, &widget) == GP_OK) exists = 1;
+  if(gp_widget_get_child_by_name(camera->configuration, property_name, &widget) == GP_OK)
+    exists = 1;
 
   dt_pthread_mutex_unlock(&camera->config_lock);
 
@@ -1757,7 +1918,9 @@ int dt_camctl_camera_get_property_type(const dt_camctl_t *c,
                                        CameraWidgetType *widget_type)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)c;
-  if(!cam && (cam = camctl->active_camera) == NULL && (cam = camctl->wanted_camera) == NULL)
+  if(!cam
+     && (cam = camctl->active_camera) == NULL
+     && (cam = camctl->wanted_camera) == NULL)
   {
     dt_print(DT_DEBUG_CAMCTL,
              "[camera_control] failed to get property type from camera, camera==NULL\n");
@@ -1767,18 +1930,21 @@ int dt_camctl_camera_get_property_type(const dt_camctl_t *c,
   int retrieved_widget_type = GP_ERROR;
   dt_pthread_mutex_lock(&camera->config_lock);
   CameraWidget *widget;
-  int retrieved_property = gp_widget_get_child_by_name(camera->configuration, property_name, &widget);
+  int retrieved_property =
+    gp_widget_get_child_by_name(camera->configuration, property_name, &widget);
   if(retrieved_property != GP_OK)
   {
     dt_print(DT_DEBUG_CAMCTL,
-             "[camera_control] failed to get property %s from camera config. Error Code: %d\n",
+             "[camera_control] failed to get property %s from camera config."
+             " Error Code: %d\n",
              property_name, retrieved_property);
   } else {
     retrieved_widget_type = gp_widget_get_type(widget, widget_type);
     if(retrieved_widget_type != GP_OK)
     {
       dt_print(DT_DEBUG_CAMCTL,
-               "[camera_control] failed to get property type for %s from camera config. Error Code: %d\n",
+               "[camera_control] failed to get property type for %s from camera config."
+               " Error Code: %d\n",
                property_name, retrieved_widget_type);
     }
   }
@@ -1793,22 +1959,27 @@ const char *dt_camctl_camera_property_get_first_choice(const dt_camctl_t *c,
 {
   const char *value = NULL;
   dt_camctl_t *camctl = (dt_camctl_t *)c;
-  if(!cam && ((cam = camctl->active_camera) == NULL && (cam = camctl->wanted_camera) == NULL))
+  if(!cam
+     && (cam = camctl->active_camera) == NULL
+     && (cam = camctl->wanted_camera) == NULL)
   {
     dt_print(DT_DEBUG_CAMCTL,
-             "[camera_control] failed to get first choice of property from camera, camera==NULL\n");
+             "[camera_control] failed to get first choice of property from camera,"
+             " camera==NULL\n");
     return NULL;
   }
   dt_camera_t *camera = (dt_camera_t *)cam;
   dt_pthread_mutex_lock(&camera->config_lock);
-  if(gp_widget_get_child_by_name(camera->configuration, property_name, &camera->current_choice.widget)
-     == GP_OK)
+  if(gp_widget_get_child_by_name(camera->configuration, property_name,
+                                 &camera->current_choice.widget) == GP_OK)
   {
     camera->current_choice.index = 0;
-    gp_widget_get_choice(camera->current_choice.widget, camera->current_choice.index, &value);
+    gp_widget_get_choice(camera->current_choice.widget,
+                         camera->current_choice.index, &value);
   }
   else
-    dt_print(DT_DEBUG_CAMCTL, "[camera_control] property name '%s' not found in camera configuration.\n",
+    dt_print(DT_DEBUG_CAMCTL,
+             "[camera_control] property name '%s' not found in camera configuration.\n",
              property_name);
 
   dt_pthread_mutex_unlock(&camera->config_lock);
@@ -1822,10 +1993,13 @@ const char *dt_camctl_camera_property_get_next_choice(const dt_camctl_t *c,
 {
   const char *value = NULL;
   dt_camctl_t *camctl = (dt_camctl_t *)c;
-  if(!cam && ((cam = camctl->active_camera) == NULL && (cam = camctl->wanted_camera) == NULL))
+  if(!cam
+     && (cam = camctl->active_camera) == NULL
+     && (cam = camctl->wanted_camera) == NULL)
   {
     dt_print(DT_DEBUG_CAMCTL,
-             "[camera_control] Failed to get next choice of property from camera, camera==NULL\n");
+             "[camera_control] Failed to get next choice of property from camera,"
+             " camera==NULL\n");
     return NULL;
   }
   dt_camera_t *camera = (dt_camera_t *)cam;
@@ -1833,10 +2007,12 @@ const char *dt_camctl_camera_property_get_next_choice(const dt_camctl_t *c,
   if(camera->current_choice.widget)
   {
 
-    if(++camera->current_choice.index < gp_widget_count_choices(camera->current_choice.widget))
+    if(++camera->current_choice.index
+       < gp_widget_count_choices(camera->current_choice.widget))
     {
       // get the choice value...
-      gp_widget_get_choice(camera->current_choice.widget, camera->current_choice.index, &value);
+      gp_widget_get_choice(camera->current_choice.widget,
+                           camera->current_choice.index, &value);
     }
     else
     {
@@ -1850,12 +2026,14 @@ const char *dt_camctl_camera_property_get_next_choice(const dt_camctl_t *c,
   return value;
 }
 
-void dt_camctl_camera_capture(const dt_camctl_t *c, const dt_camera_t *cam)
+void dt_camctl_camera_capture(const dt_camctl_t *c,
+                              const dt_camera_t *cam)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)c;
   if(!cam && (cam = camctl->active_camera) == NULL)
   {
-    dt_print(DT_DEBUG_CAMCTL, "[camera_control] Failed to capture from camera, camera==NULL\n");
+    dt_print(DT_DEBUG_CAMCTL,
+             "[camera_control] Failed to capture from camera, camera==NULL\n");
     return;
   }
   dt_camera_t *camera = (dt_camera_t *)cam;
@@ -1865,7 +2043,8 @@ void dt_camctl_camera_capture(const dt_camctl_t *c, const dt_camera_t *cam)
   _camera_add_job(camctl, camera, job);
 }
 
-static void _camera_poll_events(const dt_camctl_t *c, const dt_camera_t *cam)
+static void _camera_poll_events(const dt_camctl_t *c,
+                                const dt_camera_t *cam)
 {
   CameraEventType event;
   gpointer data;
@@ -1882,9 +2061,47 @@ static void _camera_poll_events(const dt_camctl_t *c, const dt_camera_t *cam)
       {
         // Property change event occurred on camera
         // let's update cache and signalling
-        dt_print(DT_DEBUG_CAMCTL, "[camera_control] Camera configuration change event, lets update internal "
-                                  "configuration cache.\n");
-        _camera_configuration_update(c, cam);
+
+        dt_print
+          (DT_DEBUG_CAMCTL,
+           "[camera_control] Camera configuration change event '%s', lets update internal "
+           "configuration cache.\n", (char*)data);
+        // Update individual properties with gp_camera_get_single_config
+        if (strstr((char*)data, "PTP Property") && strstr((char*)data, "changed"))
+        {
+          // Use the property name if provided (GUI elements use this
+          // name and won't update if the numeric code is used
+          // instead)
+          if (strstr((char*)data, "changed,"))
+          {
+            char * nameStart = strchr(data + strlen("PTP Property "), '"');
+            if (nameStart != NULL)
+            {
+              // Skip quotation marks
+              nameStart += 1;
+              const char *nameEnd = strchr(nameStart, '"');
+              if (nameEnd != NULL)
+              {
+                char *name = g_malloc0(nameEnd - nameStart + 1);
+                strncpy(name, nameStart, nameEnd - nameStart);
+                name[nameEnd - nameStart] = '\0';
+                _camera_configuration_single_update(c, cam, name);
+                dt_free_align(name);
+                return;
+              }
+            }
+            dt_print(DT_DEBUG_CAMCTL, "[camera_control] Unable to parse event '%s', \
+                falling back to updating by code.", (char*)data);
+          }
+          char code[5];
+          strncpy(code, data + strlen("PTP Property "), 4);
+          code[4] = '\0';
+          _camera_configuration_single_update(c, cam, code);
+        }
+        else
+        {
+          _camera_configuration_update(c, cam);
+        }
       }
     }
     else if(event == GP_EVENT_FILE_ADDED)
@@ -1905,18 +2122,21 @@ static void _camera_poll_events(const dt_camctl_t *c, const dt_camera_t *cam)
         if(handle != -1)
         {
           gp_file_new_from_fd(&destination, handle);
-          if(gp_camera_file_get(cam->gpcam, fp->folder, fp->name, GP_FILE_TYPE_NORMAL, destination,
+          if(gp_camera_file_get(cam->gpcam, fp->folder,
+                                fp->name, GP_FILE_TYPE_NORMAL, destination,
                                 c->gpcontext) == GP_OK)
           {
             // Notify listeners of captured image
             _dispatch_camera_image_downloaded(c, cam, NULL, NULL, output);
           }
           else
-            dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to download file %s\n", output);
+            dt_print(DT_DEBUG_CAMCTL,
+                     "[camera_control] failed to download file %s\n", output);
           close(handle);
         }
         else
-          dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to download file %s\n", output);
+          dt_print(DT_DEBUG_CAMCTL,
+                   "[camera_control] failed to download file %s\n", output);
         g_free(output);
       }
     }
@@ -1946,11 +2166,15 @@ static void _camera_configuration_notify_change(const dt_camctl_t *c,
   else
   {
     CameraWidget *old_config_child = NULL;
-    if(gp_widget_get_child_by_name(old_config, new_config_name, &old_config_child) != GP_OK) return;
+    if(gp_widget_get_child_by_name(old_config,
+                                   new_config_name, &old_config_child) != GP_OK)
+      return;
 
     CameraWidgetType new_config_type, old_config_type;
-    if(gp_widget_get_type(new_config, &new_config_type) != GP_OK) return;
-    if(gp_widget_get_type(old_config_child, &old_config_type) != GP_OK) return;
+    if(gp_widget_get_type(new_config, &new_config_type) != GP_OK)
+      return;
+    if(gp_widget_get_type(old_config_child, &old_config_type) != GP_OK)
+      return;
 
 
     //
@@ -1974,60 +2198,87 @@ static void _camera_configuration_notify_change(const dt_camctl_t *c,
     //
     // Lets compare values and notify on change or by notifyAll flag
     //
-    if(new_config_type == GP_WIDGET_MENU || new_config_type == GP_WIDGET_TEXT || new_config_type == GP_WIDGET_RADIO ||
-       old_config_type == GP_WIDGET_MENU || old_config_type == GP_WIDGET_TEXT || old_config_type == GP_WIDGET_RADIO)
+    if(new_config_type == GP_WIDGET_MENU
+       || new_config_type == GP_WIDGET_TEXT
+       || new_config_type == GP_WIDGET_RADIO
+       || old_config_type == GP_WIDGET_MENU
+       || old_config_type == GP_WIDGET_TEXT
+       || old_config_type == GP_WIDGET_RADIO)
     {
       char *new_config_value = NULL;
       char *old_config_value = NULL;
 
-      // gphoto2 has a "feature" that turns RANGE with a small value range and step size of 1 into a MENU.
-      // that can for example happen when detaching the lens. the focus range suddenly shrinks to 0 .. 0 and becomes
-      // a MENU. See https://redmine.darktable.org/issues/12004 for the crash resulting from that.
+      // gphoto2 has a "feature" that turns RANGE with a small value
+      // range and step size of 1 into a MENU.  that can for example
+      // happen when detaching the lens. the focus range suddenly
+      // shrinks to 0 .. 0 and becomes a MENU. See
+      // https://redmine.darktable.org/issues/12004 for the crash
+      // resulting from that.
 
       // Get new_config and old_config value to be compared
       if(new_config_type == GP_WIDGET_RANGE)
       {
         float value;
-        if(gp_widget_get_value(new_config, &value) != GP_OK) goto end;
+        if(gp_widget_get_value(new_config, &value) != GP_OK)
+          goto end;
         new_config_value = g_strdup_printf("%.0f", value);
       }
       else
-        if(gp_widget_get_value(new_config, &new_config_value) != GP_OK) goto end;
+        if(gp_widget_get_value(new_config, &new_config_value) != GP_OK)
+          goto end;
 
       if(old_config_type == GP_WIDGET_RANGE)
       {
         float value;
-        if(gp_widget_get_value(old_config_child, &value) != GP_OK) goto end;
+        if(gp_widget_get_value(old_config_child, &value) != GP_OK)
+          goto end;
         old_config_value = g_strdup_printf("%.0f", value);
       }
       else
-        if(gp_widget_get_value(old_config_child, &old_config_value) != GP_OK) goto end;
+        if(gp_widget_get_value(old_config_child, &old_config_value) != GP_OK)
+          goto end;
 
       if(g_strcmp0(new_config_value, old_config_value) != 0)
-        _dispatch_camera_property_value_changed(c, camera, new_config_name, new_config_value);
+        _dispatch_camera_property_value_changed(c, camera, new_config_name,
+                                                new_config_value);
 
 end:
-      if(new_config_type == GP_WIDGET_RANGE) g_free(new_config_value);
-      if(old_config_type == GP_WIDGET_RANGE) g_free(old_config_value);
+      if(new_config_type == GP_WIDGET_RANGE)
+        g_free(new_config_value);
+      if(old_config_type == GP_WIDGET_RANGE)
+        g_free(old_config_value);
     }
   }
 }
 
-static void _camera_configuration_commit(const dt_camctl_t *c, const dt_camera_t *camera)
+static void _camera_configuration_single_update(const dt_camctl_t *c,
+                                                const dt_camera_t *camera,
+                                                const char* name)
 {
-  g_assert(camera != NULL);
-
   dt_camera_t *cam = (dt_camera_t *)camera;
-
   dt_pthread_mutex_lock(&cam->config_lock);
-  if(gp_camera_set_config(camera->gpcam, camera->configuration, c->gpcontext) != GP_OK)
-    dt_print(DT_DEBUG_CAMCTL, "[camera_control] Failed to commit configuration changes to camera\n");
-
-  cam->config_changed = FALSE;
+  CameraWidget *remote;
+  if (gp_camera_get_single_config(camera->gpcam, name, &remote, c->gpcontext) != GP_OK)
+  {
+    dt_print(DT_DEBUG_CAMCTL,
+             "[camera_control] failed to get config value for property %s\n", name);
+    dt_pthread_mutex_unlock(&cam->config_lock);
+    return;
+  }
+  // merge remote copy with cache and notify on changed properties to host application
+  _camera_configuration_notify_change(c, camera, remote, camera->configuration);
+  CameraWidget *old_config_child = NULL;
+  if(gp_widget_get_child_by_name(cam->configuration, name, &old_config_child) == GP_OK)
+  {
+    void* value = NULL;
+    gp_widget_get_value(remote, value);
+    gp_widget_set_value(old_config_child, value);
+  }
   dt_pthread_mutex_unlock(&cam->config_lock);
 }
 
-static void _camera_configuration_update(const dt_camctl_t *c, const dt_camera_t *camera)
+static void _camera_configuration_update(const dt_camctl_t *c,
+                                         const dt_camera_t *camera)
 {
   dt_camera_t *cam = (dt_camera_t *)camera;
   dt_pthread_mutex_lock(&cam->config_lock);

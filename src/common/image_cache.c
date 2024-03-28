@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@
 #include <sqlite3.h>
 #include <inttypes.h>
 
-void dt_image_cache_allocate(void *data,
+static void _image_cache_allocate(void *data,
                              dt_cache_entry_t *entry)
 {
   entry->cost = sizeof(dt_image_t);
@@ -48,12 +48,17 @@ void dt_image_cache_allocate(void *data,
       "       longitude, latitude, altitude, color_matrix, colorspace, version,"
       "       raw_black, raw_maximum, aspect_ratio, exposure_bias,"
       "       import_timestamp, change_timestamp, export_timestamp, print_timestamp,"
-      "       output_width, output_height, cm.maker, cm.model, cm.alias"
+      "       output_width, output_height, cm.maker, cm.model, cm.alias,"
+      "       wb.name, fl.name, ep.name, mm.name"
       "  FROM main.images AS mi"
       "       LEFT JOIN main.cameras AS cm ON cm.id = mi.camera_id"
       "       LEFT JOIN main.makers AS mk ON mk.id = mi.maker_id"
       "       LEFT JOIN main.models AS md ON md.id = mi.model_id"
       "       LEFT JOIN main.lens AS ln ON ln.id = mi.lens_id"
+      "       LEFT JOIN main.whitebalance AS wb ON wb.id = mi.whitebalance_id"
+      "       LEFT JOIN main.flash AS fl ON fl.id = mi.flash_id"
+      "       LEFT JOIN main.exposure_program AS ep ON ep.id = mi.exposure_program_id"
+      "       LEFT JOIN main.metering_mode AS mm ON mm.id = mi.metering_mode_id"
       "  WHERE mi.id = ?1",
       -1, &stmt, NULL);
   // clang-format on
@@ -140,6 +145,15 @@ void dt_image_cache_allocate(void *data,
     str = (char *)sqlite3_column_text(stmt, 37);
     if(str) g_strlcpy(img->camera_alias, str, sizeof(img->camera_alias));
 
+    str = (char *)sqlite3_column_text(stmt, 38);
+    if(str) g_strlcpy(img->exif_whitebalance, str, sizeof(img->exif_whitebalance));
+    str = (char *)sqlite3_column_text(stmt, 39);
+    if(str) g_strlcpy(img->exif_flash, str, sizeof(img->exif_flash));
+    str = (char *)sqlite3_column_text(stmt, 40);
+    if(str) g_strlcpy(img->exif_exposure_program, str, sizeof(img->exif_exposure_program));
+    str = (char *)sqlite3_column_text(stmt, 41);
+    if(str) g_strlcpy(img->exif_metering_mode, str, sizeof(img->exif_metering_mode));
+
     dt_color_harmony_get(entry->key, &img->color_harmony_guide);
 
     // buffer size? colorspace?
@@ -185,7 +199,7 @@ void dt_image_cache_allocate(void *data,
   // concurrencykit..
 }
 
-void dt_image_cache_deallocate(void *data, dt_cache_entry_t *entry)
+static void _image_cache_deallocate(void *data, dt_cache_entry_t *entry)
 {
   dt_image_t *img = (dt_image_t *)entry->data;
   g_free(img->profile);
@@ -204,8 +218,8 @@ void dt_image_cache_init(dt_image_cache_t *cache)
   const uint32_t max_mem = 50 * 1024 * 1024;
   const uint32_t num = (uint32_t)(1.5f * max_mem / sizeof(dt_image_t));
   dt_cache_init(&cache->cache, sizeof(dt_image_t), max_mem);
-  dt_cache_set_allocate_callback(&cache->cache, &dt_image_cache_allocate, cache);
-  dt_cache_set_cleanup_callback(&cache->cache, &dt_image_cache_deallocate, cache);
+  dt_cache_set_allocate_callback(&cache->cache, &_image_cache_allocate, cache);
+  dt_cache_set_cleanup_callback(&cache->cache, &_image_cache_deallocate, cache);
 
   dt_print(DT_DEBUG_CACHE, "[image_cache] has %d entries\n", num);
 }
@@ -259,12 +273,16 @@ void dt_image_cache_read_release(dt_image_cache_t *cache,
 }
 
 // drops the write privileges on an image struct.
-// this triggers a write-through to sql, and if the setting
-// is present, also to xmp sidecar files (safe setting).
-void dt_image_cache_write_release(dt_image_cache_t *cache,
-                                  dt_image_t *img,
-                                  const dt_image_cache_write_mode_t mode)
+// this triggers a write-through to sql, and if
+// a) mode == DT_IMAGE_CACHE_SAFE
+// b) sidecar writing is desired via conf setting
+// also to xmp sidecar files.
+void dt_image_cache_write_release_info(dt_image_cache_t *cache,
+                                       dt_image_t *img,
+                                       const dt_image_cache_write_mode_t mode,
+                                       const char *info)
 {
+  const double start = dt_get_debug_wtime();
   union {
       struct dt_image_raw_parameters_t s;
       uint32_t u;
@@ -279,7 +297,8 @@ void dt_image_cache_write_release(dt_image_cache_t *cache,
   if(!dt_is_valid_imgid(img->id))
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[image_cache_write_release] FATAL invalid image id %d\n", img->id);
+             "[image_cache_write_release] from `%s`. FATAL invalid image id %d\n",
+             info, img->id);
     return;
   }
 
@@ -297,13 +316,19 @@ void dt_image_cache_write_release(dt_image_cache_t *cache,
      "     colorspace = ?23, raw_black = ?24, raw_maximum = ?25,"
      "     aspect_ratio = ROUND(?26,1), exposure_bias = ?27,"
      "     import_timestamp = ?28, change_timestamp = ?29, export_timestamp = ?30,"
-     "     print_timestamp = ?31, output_width = ?32, output_height = ?33"
-     " WHERE id = ?34",
+     "     print_timestamp = ?31, output_width = ?32, output_height = ?33,"
+     "     whitebalance_id = ?36, flash_id = ?37,"
+     "     exposure_program_id = ?38, metering_mode_id = ?39"
+     " WHERE id = ?40",
      -1, &stmt, NULL);
 
   const int32_t maker_id = dt_image_get_camera_maker_id(img->exif_maker);
   const int32_t model_id = dt_image_get_camera_model_id(img->exif_model);
   const int32_t lens_id = dt_image_get_camera_lens_id(img->exif_lens);
+  const int32_t whitebalance_id = dt_image_get_whitebalance_id(img->exif_whitebalance);
+  const int32_t flash_id = dt_image_get_flash_id(img->exif_flash);
+  const int32_t exposure_program_id = dt_image_get_exposure_program_id(img->exif_exposure_program);
+  const int32_t metering_mode_id = dt_image_get_metering_mode_id(img->exif_metering_mode);
 
   // also make sure we update the camera_id and possibly the associated data
   // in cameras table.
@@ -354,27 +379,42 @@ void dt_image_cache_write_release(dt_image_cache_t *cache,
     DT_DEBUG_SQLITE3_BIND_INT64(stmt, 31, img->print_timestamp);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 32, img->final_width);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 33, img->final_height);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 34, img->id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 36, whitebalance_id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 37, flash_id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 38, exposure_program_id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 39, metering_mode_id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 40, img->id);
 
   const int rc = sqlite3_step(stmt);
   if(rc != SQLITE_DONE)
     dt_print(DT_DEBUG_ALWAYS,
-             "[image_cache_write_release] sqlite3 error %d (%s) for imgid %d\n",
+             "[image_cache_write_release] from `%s' sqlite3 error %d (%s) for imgid %d\n",
+             info,
              rc,
              sqlite3_errmsg(dt_database_get(darktable.db)),
              img->id);
   sqlite3_finalize(stmt);
 
-  // TODO: make this work in relaxed mode, too.
   if(mode == DT_IMAGE_CACHE_SAFE)
   {
-    // rest about sidecars:
-    // also synch dttags file:
     dt_image_write_sidecar_file(img->id);
+    if(info)
+    {
+      const double spent = dt_get_debug_wtime() - start;
+      dt_print(DT_DEBUG_CACHE,
+               "[image_cache_write_release] from `%s', imgid=%i took %.3fs\n",
+               info, img->id, spent);
+    }
   }
   dt_cache_release(&cache->cache, img->cache_entry);
 }
 
+void dt_image_cache_write_release(dt_image_cache_t *cache,
+                                  dt_image_t *img,
+                                  const dt_image_cache_write_mode_t mode)
+{
+  dt_image_cache_write_release_info(cache, img, mode, NULL);
+}
 
 // remove the image from the cache
 void dt_image_cache_remove(dt_image_cache_t *cache,
@@ -394,7 +434,7 @@ void dt_image_cache_set_change_timestamp(dt_image_cache_t *cache,
   dt_image_t *img = (dt_image_t *)entry->data;
   img->cache_entry = entry;
   img->change_timestamp = dt_datetime_now_to_gtimespan();
-  dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_SAFE);
+  dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_RELAXED);
 }
 
 void dt_image_cache_set_change_timestamp_from_image(dt_image_cache_t *cache,
@@ -414,7 +454,7 @@ void dt_image_cache_set_change_timestamp_from_image(dt_image_cache_t *cache,
   dt_image_t *img = (dt_image_t *)entry->data;
   img->cache_entry = entry;
   img->change_timestamp = change_timestamp;
-  dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_SAFE);
+  dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_RELAXED);
 }
 
 void dt_image_cache_unset_change_timestamp(dt_image_cache_t *cache,
@@ -427,7 +467,7 @@ void dt_image_cache_unset_change_timestamp(dt_image_cache_t *cache,
   dt_image_t *img = (dt_image_t *)entry->data;
   img->cache_entry = entry;
   img->change_timestamp = 0;
-  dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_SAFE);
+  dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_RELAXED);
 }
 
 void dt_image_cache_set_export_timestamp(dt_image_cache_t *cache,
@@ -440,7 +480,7 @@ void dt_image_cache_set_export_timestamp(dt_image_cache_t *cache,
   dt_image_t *img = (dt_image_t *)entry->data;
   img->cache_entry = entry;
   img->export_timestamp = dt_datetime_now_to_gtimespan();
-  dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_SAFE);
+  dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_RELAXED);
 }
 
 void dt_image_cache_set_print_timestamp(dt_image_cache_t *cache,
@@ -453,7 +493,7 @@ void dt_image_cache_set_print_timestamp(dt_image_cache_t *cache,
   dt_image_t *img = (dt_image_t *)entry->data;
   img->cache_entry = entry;
   img->print_timestamp = dt_datetime_now_to_gtimespan();
-  dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_SAFE);
+  dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_RELAXED);
 }
 
 // clang-format off

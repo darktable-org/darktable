@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -140,7 +140,7 @@ extern "C" {
 /* Create cloned functions for various CPU SSE generations */
 /* See for instructions https://hannes.hauswedell.net/post/2017/12/09/fmv/ */
 /* TL;DR : use only on SIMD functions containing low-level paralellized/vectorized loops */
-#if __has_attribute(target_clones) && !defined(_WIN32) && !defined(NATIVE_ARCH)
+#if __has_attribute(target_clones) && !defined(_WIN32) && !defined(NATIVE_ARCH) && !defined(__APPLE__)
 # if defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
 #define __DT_CLONE_TARGETS__ __attribute__((target_clones("default", "sse2", "sse3", "sse4.1", "sse4.2", "popcnt", "avx", "avx2", "avx512f", "fma4")))
 # elif defined(__PPC64__)
@@ -154,9 +154,11 @@ extern "C" {
 #endif
 
 typedef int32_t dt_imgid_t;
+typedef int32_t dt_filmid_t;
 #define NO_IMGID (0)
+#define NO_FILMID (0)
 #define dt_is_valid_imgid(n) ((n) > NO_IMGID)
-
+#define dt_is_valid_filmid(n) ((n) > NO_FILMID)
 /*
   A dt_mask_id_t can be
   0  -> a formless mask
@@ -331,6 +333,15 @@ typedef struct dt_backthumb_t
   int32_t mipsize;
 } dt_backthumb_t;
 
+typedef struct dt_gimp_t
+{
+  int32_t size;
+  char *mode;
+  char *path;
+  dt_imgid_t imgid;
+  gboolean error;
+} dt_gimp_t;
+
 typedef struct darktable_t
 {
   dt_codepath_t codepath;
@@ -393,6 +404,7 @@ typedef struct darktable_t
   GDateTime *origin_gdt;
   struct dt_sys_resources_t dtresources;
   struct dt_backthumb_t backthumbs;
+  struct dt_gimp_t gimp;
 } darktable_t;
 
 typedef struct
@@ -827,9 +839,9 @@ void dt_configure_runtime_performance(const int version, char *config_info);
 // helper function which loads whatever image_to_load points to:
 // single image files or whole directories it tells you if it was a
 // single image or a directory in single_image (when it's not NULL)
-int dt_load_from_string(const gchar *image_to_load,
-                        const gboolean open_image_in_dr,
-                        gboolean *single_image);
+dt_imgid_t dt_load_from_string(const gchar *image_to_load,
+                               const gboolean open_image_in_dr,
+                               gboolean *single_image);
 
 #define dt_unreachable_codepath_with_desc(D)                                                                 \
   dt_unreachable_codepath_with_caller(D, __FILE__, __LINE__, __FUNCTION__)
@@ -902,6 +914,16 @@ static inline const gchar *NQ_(const gchar *String)
 {
   const gchar *context_end = strchr(String, '|');
   return context_end ? context_end + 1 : String;
+}
+
+static inline gboolean dt_check_gimpmode(const char *mode)
+{
+  return darktable.gimp.mode ? strcmp(darktable.gimp.mode, mode) == 0 : FALSE;
+}
+
+static inline gboolean dt_check_gimpmode_ok(const char *mode)
+{
+  return darktable.gimp.mode ? !darktable.gimp.error && strcmp(darktable.gimp.mode, mode) == 0 : FALSE;
 }
 
 #ifdef __cplusplus

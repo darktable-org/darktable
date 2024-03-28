@@ -2301,6 +2301,49 @@ void dtgtk_cairo_paint_bulb(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
   FINISH
 }
 
+void dtgtk_cairo_paint_bulb_mod(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(0.95, 1, 0, -0.05)
+
+  const float line_width = 0.1;
+
+  cairo_rectangle(cr, 0.78, 0.950, .22, 0.22);
+  if(flags & CPF_ACTIVE)
+  {
+    cairo_stroke_preserve(cr);
+    cairo_fill(cr);
+  }
+  else
+    cairo_stroke(cr);
+
+  // glass
+  cairo_arc_negative(cr, 0.5, 0.38, 0.4, 1., M_PI - 1.);
+  cairo_close_path(cr);
+
+  if(flags & CPF_ACTIVE)
+  {
+    cairo_stroke_preserve(cr);
+    cairo_fill(cr);
+  }
+  else
+  {
+    cairo_stroke(cr);
+    cairo_arc(cr, 0.5, 0.38, 0.2, -M_PI / 3.0, -M_PI / 6.);
+    cairo_stroke(cr);
+  }
+
+  // screw
+  cairo_move_to(cr, 0.33, 0.38 + 0.36 + 1 * line_width);
+  cairo_line_to(cr, 0.67, 0.38 + 0.36 + 1 * line_width);
+  cairo_stroke(cr);
+
+  // nib
+  cairo_arc(cr, 0.5, 0.38 + 0.36 + 2. * line_width, 2.0 * line_width, 0, M_PI);
+  cairo_fill(cr);
+
+  FINISH
+}
+
 
 void dtgtk_cairo_paint_rawoverexposed(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {

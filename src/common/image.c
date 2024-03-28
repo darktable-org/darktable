@@ -339,6 +339,8 @@ void dt_image_film_roll(const dt_image_t *img,
 dt_imageio_write_xmp_t dt_image_get_xmp_mode()
 {
   dt_imageio_write_xmp_t res = DT_WRITE_XMP_NEVER;
+  if(darktable.gimp.mode) return res;
+
   const char *config = dt_conf_get_string_const("write_sidecar_files");
   if(config)
   {
@@ -599,10 +601,13 @@ void dt_image_set_xmp_rating(dt_image_t *img, const int rating)
 void dt_image_get_location(const dt_imgid_t imgid, dt_image_geoloc_t *geoloc)
 {
   const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
-  geoloc->longitude = img->geoloc.longitude;
-  geoloc->latitude = img->geoloc.latitude;
-  geoloc->elevation = img->geoloc.elevation;
-  dt_image_cache_read_release(darktable.image_cache, img);
+  if(img)
+  {
+    geoloc->longitude = img->geoloc.longitude;
+    geoloc->latitude = img->geoloc.latitude;
+    geoloc->elevation = img->geoloc.elevation;
+    dt_image_cache_read_release(darktable.image_cache, img);
+  }
 }
 
 static void _set_location(const dt_imgid_t imgid, const dt_image_geoloc_t *geoloc)
@@ -612,7 +617,8 @@ static void _set_location(const dt_imgid_t imgid, const dt_image_geoloc_t *geolo
 
   memcpy(&image->geoloc, geoloc, sizeof(dt_image_geoloc_t));
 
-  dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+  dt_image_cache_write_release_info(darktable.image_cache, image,
+                                    DT_IMAGE_CACHE_SAFE, "_set_location");
 }
 
 static void _set_datetime(const dt_imgid_t imgid, const char *datetime)
@@ -622,7 +628,8 @@ static void _set_datetime(const dt_imgid_t imgid, const char *datetime)
 
   dt_datetime_exif_to_img(image, datetime);
 
-  dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+  dt_image_cache_write_release_info(darktable.image_cache, image,
+                                    DT_IMAGE_CACHE_SAFE, "_set_datetime");
 }
 
 static void _pop_undo(gpointer user_data,
@@ -908,7 +915,8 @@ gboolean dt_image_get_final_size(const dt_imgid_t imgid, int *width, int *height
   return res;
 }
 
-void dt_image_set_flip(const dt_imgid_t imgid, const dt_image_orientation_t orientation)
+void dt_image_set_flip(const dt_imgid_t imgid,
+                       const dt_image_orientation_t orientation)
 {
   sqlite3_stmt *stmt;
   // push new orientation to sql via additional history entry:
@@ -918,10 +926,18 @@ void dt_image_set_flip(const dt_imgid_t imgid, const dt_image_orientation_t orie
                               " WHERE imgid = ?1", -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  const int iop_flip_MODVER = 2;
   int num = 0;
-  if(sqlite3_step(stmt) == SQLITE_ROW) num = sqlite3_column_int(stmt, 0);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    num = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
+
+  const dt_iop_module_so_t *flip = dt_iop_get_module_so("flip");
+  const dt_introspection_t *flip_i = flip->get_introspection();
+
+  void *params = calloc(1, flip_i->size);
+  dt_image_orientation_t *orientation_p =
+    ((dt_image_orientation_t *)flip->get_p(params, "orientation"));
+  *orientation_p = orientation;
 
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2
@@ -934,10 +950,12 @@ void dt_image_set_flip(const dt_imgid_t imgid, const dt_image_orientation_t orie
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, num);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, iop_flip_MODVER);
-  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 4, &orientation, sizeof(int32_t), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, flip_i->params_version);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 4, params, flip_i->size, SQLITE_TRANSIENT);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+
+  free(params);
 
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2
@@ -965,19 +983,7 @@ void dt_image_set_flip(const dt_imgid_t imgid, const dt_image_orientation_t orie
 dt_image_orientation_t dt_image_get_orientation(const dt_imgid_t imgid)
 {
   // find the flip module -- the pointer stays valid until darktable shuts down
-  static dt_iop_module_so_t *flip = NULL;
-  if(flip == NULL)
-  {
-    for(const GList *modules = darktable.iop; modules; modules = g_list_next(modules))
-    {
-      dt_iop_module_so_t *module = (dt_iop_module_so_t *)(modules->data);
-      if(dt_iop_module_is(module, "flip"))
-      {
-        flip = module;
-        break;
-      }
-    }
-  }
+  const dt_iop_module_so_t *flip = dt_iop_get_module_so("flip");
 
   dt_image_orientation_t orientation = ORIENTATION_NULL;
 
@@ -995,7 +1001,9 @@ dt_image_orientation_t dt_image_get_orientation(const dt_imgid_t imgid)
       &stmt, NULL);
     // clang-format on
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-    if(sqlite3_step(stmt) == SQLITE_ROW && sqlite3_column_int(stmt, 1) != 0)
+
+    if(sqlite3_step(stmt) == SQLITE_ROW
+       && sqlite3_column_int(stmt, 1) != 0)
     {
       // use introspection to get the orientation from the binary params blob
       const void *params = sqlite3_column_blob(stmt, 0);
@@ -1082,7 +1090,9 @@ void dt_image_set_raw_aspect_ratio(const dt_imgid_t imgid)
     image->aspect_ratio = (float )image->height / (float )image->width;
 
   /* store */
-  dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+  dt_image_cache_write_release_info(darktable.image_cache, image,
+                                    DT_IMAGE_CACHE_SAFE,
+                                    "dt_image_set_raw_aspect_ratio");
 }
 
 void dt_image_set_aspect_ratio_to(const dt_imgid_t imgid,
@@ -1143,7 +1153,9 @@ void dt_image_reset_aspect_ratio(const dt_imgid_t imgid, const gboolean raise)
   image->aspect_ratio = 0.f;
 
   /* store */
-  dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+  dt_image_cache_write_release_info(darktable.image_cache, image,
+                                    DT_IMAGE_CACHE_SAFE,
+                                    "dt_image_reset_aspect_ratio");
 
   if(raise && darktable.collection->params.sorts[DT_COLLECTION_SORT_ASPECT_RATIO])
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
@@ -1172,6 +1184,21 @@ float dt_image_set_aspect_ratio(const dt_imgid_t imgid, const gboolean raise)
   }
 
   return aspect_ratio;
+}
+
+gboolean dt_image_set_history_end(const dt_imgid_t imgid,
+                                  const int history_end)
+{
+  sqlite3_stmt *stmt = NULL;
+  // update history end
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "UPDATE main.images SET history_end = ?1 WHERE id = ?2",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, history_end);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+  const gboolean ok = (sqlite3_step(stmt) == SQLITE_DONE);
+  sqlite3_finalize(stmt);
+  return ok;
 }
 
 int32_t dt_image_duplicate(const dt_imgid_t imgid)
@@ -1253,14 +1280,16 @@ static dt_imgid_t _image_duplicate_with_version_ext(const dt_imgid_t imgid,
      "   output_width, output_height, crop, raw_parameters, raw_black, raw_maximum,"
      "   orientation, longitude, latitude, altitude, color_matrix,"
      "   colorspace, version, max_version,"
-     "   history_end, position, aspect_ratio, exposure_bias, import_timestamp)"
+     "   history_end, position, aspect_ratio, exposure_bias, import_timestamp,"
+     "   whitebalance_id, flash_id, exposure_program_id, metering_mode_id)"
      " SELECT NULL, group_id, film_id, width, height, filename,"
      "        maker_id, model_id, camera_id, lens_id,"
      "        exposure, aperture, iso, focal_length, focus_distance, datetime_taken,"
      "        flags, output_width, output_height, crop, raw_parameters,"
      "        raw_black, raw_maximum, orientation,"
      "        longitude, latitude, altitude, color_matrix, colorspace, NULL, NULL, 0, ?1,"
-     "        aspect_ratio, exposure_bias, import_timestamp"
+     "        aspect_ratio, exposure_bias, import_timestamp,"
+     "        whitebalance_id, flash_id, exposure_program_id, metering_mode_id"
      " FROM main.images WHERE id = ?2",
      -1, &stmt, NULL);
   // clang-format on
@@ -1692,18 +1721,17 @@ static int _image_read_duplicates(const uint32_t id,
   return count_xmps_processed;
 }
 
-static uint32_t _image_import_internal(const int32_t film_id,
+static dt_imgid_t _image_import_internal(const dt_filmid_t film_id,
                                        const char *filename,
                                        const gboolean override_ignore_nonraws,
                                        const gboolean lua_locking,
                                        const gboolean raise_signals)
 {
-  const dt_imageio_write_xmp_t xmp_mode = dt_image_get_xmp_mode();
   char *normalized_filename = dt_util_normalize_path(filename);
   if(!normalized_filename || !dt_util_test_image_file(normalized_filename))
   {
     g_free(normalized_filename);
-    return 0;
+    return NO_IMGID;
   }
   const char *cc = normalized_filename + strlen(normalized_filename);
   for(; *cc != '.' && cc > normalized_filename; cc--)
@@ -1711,7 +1739,7 @@ static uint32_t _image_import_internal(const int32_t film_id,
   if(!strcasecmp(cc, ".dt") || !strcasecmp(cc, ".dttags") || !strcasecmp(cc, ".xmp"))
   {
     g_free(normalized_filename);
-    return 0;
+    return NO_IMGID;
   }
   char *ext = g_ascii_strdown(cc + 1, -1);
   // If this function is called with argument to obey "ignore non-raws" flag
@@ -1726,7 +1754,7 @@ static uint32_t _image_import_internal(const int32_t film_id,
   {
     g_free(normalized_filename);
     g_free(ext);
-    return 0;
+    return NO_IMGID;
   }
   int supported = 0;
   for(const char **i = dt_supported_extensions; *i != NULL; i++)
@@ -1739,7 +1767,7 @@ static uint32_t _image_import_internal(const int32_t film_id,
   {
     g_free(normalized_filename);
     g_free(ext);
-    return 0;
+    return NO_IMGID;
   }
   int rc;
   sqlite3_stmt *stmt;
@@ -1849,7 +1877,9 @@ static uint32_t _image_import_internal(const int32_t film_id,
       if(!(dt_imageio_is_raw_by_extension(other_ext) || !strcmp(other_ext, "dng")))
       {
         other_img->group_id = id;
-        dt_image_cache_write_release(darktable.image_cache, other_img, DT_IMAGE_CACHE_SAFE);
+        dt_image_cache_write_release_info(darktable.image_cache, other_img,
+                                          DT_IMAGE_CACHE_SAFE,
+                                          "_image_import_internal");
         sqlite3_stmt *stmt3;
         DT_DEBUG_SQLITE3_PREPARE_V2
           (dt_database_get(darktable.db),
@@ -1860,8 +1890,9 @@ static uint32_t _image_import_internal(const int32_t film_id,
           other_id = sqlite3_column_int(stmt3, 0);
           dt_image_t *group_img = dt_image_cache_get(darktable.image_cache, other_id, 'w');
           group_img->group_id = id;
-          dt_image_cache_write_release(darktable.image_cache, group_img,
-                                       DT_IMAGE_CACHE_SAFE);
+          dt_image_cache_write_release_info(darktable.image_cache, group_img,
+                                            DT_IMAGE_CACHE_SAFE,
+                                            "_image_import_internal");
         }
         group_id = id;
         sqlite3_finalize(stmt3);
@@ -1951,9 +1982,8 @@ static uint32_t _image_import_internal(const int32_t film_id,
   // make sure that there are no stale thumbnails left
   dt_mipmap_cache_remove(darktable.mipmap_cache, id);
 
-  //synch database entries to xmp
-  if(xmp_mode == DT_WRITE_XMP_ALWAYS)
-    dt_image_synch_all_xmp(normalized_filename);
+  // Always keep write timestamp in database and possibly write xmp
+  dt_image_synch_all_xmp(normalized_filename);
 
   g_free(imgfname);
   g_free(basename);
@@ -2032,7 +2062,7 @@ dt_imgid_t dt_image_get_id(const uint32_t film_id, const gchar *filename)
   return id;
 }
 
-dt_imgid_t dt_image_import(const int32_t film_id,
+dt_imgid_t dt_image_import(const dt_filmid_t film_id,
                            const char *filename,
                            const gboolean override_ignore_nonraws,
                            const gboolean raise_signals)
@@ -2041,7 +2071,7 @@ dt_imgid_t dt_image_import(const int32_t film_id,
                                 TRUE, raise_signals);
 }
 
-dt_imgid_t dt_image_import_lua(const int32_t film_id,
+dt_imgid_t dt_image_import_lua(const dt_filmid_t film_id,
                                const char *filename,
                                const gboolean override_ignore_nonraws)
 {
@@ -2080,6 +2110,10 @@ void dt_image_init(dt_image_t *img)
   memset(img->exif_maker, 0, sizeof(img->exif_maker));
   memset(img->exif_model, 0, sizeof(img->exif_model));
   memset(img->exif_lens, 0, sizeof(img->exif_lens));
+  memset(img->exif_whitebalance, 0, sizeof(img->exif_whitebalance));
+  memset(img->exif_flash, 0, sizeof(img->exif_flash));
+  memset(img->exif_exposure_program, 0, sizeof(img->exif_exposure_program));
+  memset(img->exif_metering_mode, 0, sizeof(img->exif_metering_mode));
   memset(img->camera_maker, 0, sizeof(img->camera_maker));
   memset(img->camera_model, 0, sizeof(img->camera_model));
   memset(img->camera_alias, 0, sizeof(img->camera_alias));
@@ -2425,14 +2459,16 @@ dt_imgid_t dt_image_copy_rename(const dt_imgid_t imgid,
          "   output_width, output_height, crop, raw_parameters,"
          "   raw_black, raw_maximum, orientation,"
          "   longitude, latitude, altitude, color_matrix, colorspace, version, max_version,"
-         "   position, aspect_ratio, exposure_bias)"
+         "   position, aspect_ratio, exposure_bias,"
+         "   whitebalance, flash, exposure_program, metering_mode)"
          " SELECT NULL, group_id, ?1 as film_id, width, height, ?2 as filename,"
          "        maker_id, model_id, lens_id,"
          "        exposure, aperture, iso, focal_length, focus_distance, datetime_taken,"
          "        flags, width, height, crop, raw_parameters, raw_black, raw_maximum,"
          "        orientation, longitude, latitude, altitude,"
          "        color_matrix, colorspace, -1, -1,"
-         "        ?3, aspect_ratio, exposure_bias"
+         "        ?3, aspect_ratio, exposure_bias,"
+         "        whitebalance, flash, exposure_program, metering_mode"
          " FROM main.images"
          " WHERE id = ?4",
         -1, &stmt, NULL);
@@ -2641,7 +2677,7 @@ int32_t dt_image_copy(const dt_imgid_t imgid, const int32_t filmid)
   return dt_image_copy_rename(imgid, filmid, NULL);
 }
 
-int dt_image_local_copy_set(const dt_imgid_t imgid)
+gboolean dt_image_local_copy_set(const dt_imgid_t imgid)
 {
   gchar srcpath[PATH_MAX] = { 0 };
   gchar destpath[PATH_MAX] = { 0 };
@@ -2655,7 +2691,7 @@ int dt_image_local_copy_set(const dt_imgid_t imgid)
   if(!g_file_test(srcpath, G_FILE_TEST_IS_REGULAR))
   {
     dt_control_log(_("cannot create local copy when the original file is not accessible."));
-    return 1;
+    return TRUE;
   }
 
   if(!g_file_test(destpath, G_FILE_TEST_EXISTS))
@@ -2671,7 +2707,7 @@ int dt_image_local_copy_set(const dt_imgid_t imgid)
       dt_control_log(_("cannot create local copy."));
       g_object_unref(dest);
       g_object_unref(src);
-      return 1;
+      return TRUE;
     }
 
     g_object_unref(dest);
@@ -2685,13 +2721,13 @@ int dt_image_local_copy_set(const dt_imgid_t imgid)
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
 
   dt_control_queue_redraw_center();
-  return 0;
+  return FALSE;
 }
 
-static int _nb_other_local_copy_for(const dt_imgid_t imgid)
+static gboolean _nb_other_local_copy_for(const dt_imgid_t imgid)
 {
   sqlite3_stmt *stmt;
-  int result = 1;
+  gboolean result = TRUE;
 
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -2714,7 +2750,7 @@ static int _nb_other_local_copy_for(const dt_imgid_t imgid)
   return result;
 }
 
-int dt_image_local_copy_reset(const dt_imgid_t imgid)
+gboolean dt_image_local_copy_reset(const dt_imgid_t imgid)
 {
   gchar destpath[PATH_MAX] = { 0 };
   gchar locppath[PATH_MAX] = { 0 };
@@ -2731,7 +2767,7 @@ int dt_image_local_copy_reset(const dt_imgid_t imgid)
   dt_image_cache_read_release(darktable.image_cache, imgr);
 
   if(!local_copy_exists)
-    return 0;
+    return FALSE;
 
   // check that the original file is accessible
 
@@ -2749,7 +2785,7 @@ int dt_image_local_copy_reset(const dt_imgid_t imgid)
      && !g_file_test(destpath, G_FILE_TEST_EXISTS))
   {
     dt_control_log(_("cannot remove local copy when the original file is not accessible."));
-    return 1;
+    return TRUE;
   }
 
   // get name of local copy
@@ -2795,7 +2831,7 @@ int dt_image_local_copy_reset(const dt_imgid_t imgid)
 
   dt_control_queue_redraw_center();
 
-  return 0;
+  return FALSE;
 }
 
 // *******************************************************
@@ -3157,14 +3193,14 @@ void dt_image_check_camera_missing_sample(const struct dt_image_t *img)
   }
 }
 
-static int32_t _image_get_set_camera_id(const char *table,
-                                        const char *name)
+static int32_t _image_get_set_name_id(const char *table,
+                                      const char *name)
 {
   sqlite3_stmt *stmt;
 
   char *query = g_strdup_printf("SELECT id"
                                 "  FROM main.%s"
-                                "  WHERE name = '%s'",
+                                "  WHERE LOWER(name) = LOWER('%s')",
                                 table,
                                 name);
 
@@ -3199,17 +3235,37 @@ static int32_t _image_get_set_camera_id(const char *table,
 
 int32_t dt_image_get_camera_maker_id(const char *name)
 {
-  return _image_get_set_camera_id("makers", name);
+  return _image_get_set_name_id("makers", name);
 }
 
 int32_t dt_image_get_camera_model_id(const char *name)
 {
-  return _image_get_set_camera_id("models", name);
+  return _image_get_set_name_id("models", name);
 }
 
 int32_t dt_image_get_camera_lens_id(const char *name)
 {
-  return _image_get_set_camera_id("lens", name);
+  return _image_get_set_name_id("lens", name);
+}
+
+int32_t dt_image_get_whitebalance_id(const char *name)
+{
+  return _image_get_set_name_id("whitebalance", name);
+}
+
+int32_t dt_image_get_flash_id(const char *name)
+{
+  return _image_get_set_name_id("flash", name);
+}
+
+int32_t dt_image_get_exposure_program_id(const char *name)
+{
+  return _image_get_set_name_id("exposure_program", name);
+}
+
+int32_t dt_image_get_metering_mode_id(const char *name)
+{
+  return _image_get_set_name_id("metering_mode", name);
 }
 
 int32_t dt_image_get_camera_id(const char *maker, const char *model)

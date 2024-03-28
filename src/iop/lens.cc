@@ -1016,10 +1016,8 @@ static float _get_autoscale_lf(dt_iop_module_t *self,
     if(lenslist)
     {
       const dt_image_t *img = &(self->dev->image_storage);
-
-      // FIXME: get those from rawprepare IOP somehow !!!
-      const int iwd = img->width - img->crop_x - img->crop_right,
-                iht = img->height - img->crop_y - img->crop_bottom;
+      const int iwd = dt_image_raw_width(img);
+      const int iht = dt_image_raw_height(img);
 
       // create dummy modifier
       const dt_iop_lens_data_t d =
@@ -2528,10 +2526,8 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
   // TODO(sgotti) Theoretically, since the distortion function should always be
   // monotonic and the center is always the center of the image, we should only
   // look at the the shorter image radius and 1 ignoring intermediate values
-
-  // FIXME: get those from rawprepare IOP somehow !!!
-  const float iwd2 = 0.5f *(img->width - img->crop_x - img->crop_right),
-              iht2 = 0.5f *(img->height - img->crop_y - img->crop_bottom);
+  const float iwd2 = 0.5f * dt_image_raw_width(img);
+  const float iht2 = 0.5f * dt_image_raw_height(img);
 
   const float r = sqrtf(iwd2 * iwd2 + iht2 * iht2);
   const float sr = fminf(iwd2, iht2);

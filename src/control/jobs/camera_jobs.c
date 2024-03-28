@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -72,38 +72,49 @@ typedef struct dt_camera_import_t
 static int32_t dt_camera_capture_job_run(dt_job_t *job)
 {
   dt_camera_capture_t *params = dt_control_job_get_params(job);
-  int total;
   char message[512] = { 0 };
   double fraction = 0;
 
-  total = params->brackets ? params->count * params->brackets : params->count;
-  snprintf(message, sizeof(message), ngettext("capturing %d image", "capturing %d images", total), total);
+  int total = params->brackets ? params->count * params->brackets : params->count;
+  snprintf(message, sizeof(message),
+           ngettext("capturing %d image", "capturing %d images", total), total);
 
   dt_control_job_set_progress_message(job, message);
 
   /* try to get exp program mode for nikon */
-  char *expprogram = (char *)dt_camctl_camera_get_property(darktable.camctl, NULL, "expprogram");
+  char *expprogram = (char *)dt_camctl_camera_get_property(darktable.camctl,
+                                                           NULL, "expprogram");
 
   /* if fail, lets try fetching mode for cannon */
   if(!expprogram)
-    expprogram = (char *)dt_camctl_camera_get_property(darktable.camctl, NULL, "autoexposuremode");
+    expprogram = (char *)dt_camctl_camera_get_property(darktable.camctl,
+                                                       NULL, "autoexposuremode");
 
   /* Fetch all values for shutterspeed and initialize current value */
   GList *values = NULL;
   gconstpointer original_value = NULL;
-  const char *cvalue = dt_camctl_camera_get_property(darktable.camctl, NULL, "shutterspeed");
-  const char *value = dt_camctl_camera_property_get_first_choice(darktable.camctl, NULL, "shutterspeed");
+  const char *cvalue = dt_camctl_camera_get_property(darktable.camctl,
+                                                     NULL, "shutterspeed");
+  const char *value = dt_camctl_camera_property_get_first_choice(darktable.camctl,
+                                                                 NULL, "shutterspeed");
 
   /* get values for bracketing */
-  if(params->brackets && expprogram && expprogram[0] == 'M' && value && cvalue)
+  if(params->brackets
+     && expprogram
+     && expprogram[0] == 'M'
+     && value
+     && cvalue)
   {
     do
     {
       // Add value to list
       values = g_list_prepend(values, g_strdup(value));
-      // Check if current values is the same as original value, then lets store item ptr
-      if(strcmp(value, cvalue) == 0) original_value = values->data;
-    } while((value = dt_camctl_camera_property_get_next_choice(darktable.camctl, NULL, "shutterspeed"))
+      // Check if current values is the same as original value, then
+      // lets store item ptr
+      if(strcmp(value, cvalue) == 0)
+        original_value = values->data;
+    } while((value = dt_camctl_camera_property_get_next_choice(darktable.camctl,
+                                                               NULL, "shutterspeed"))
             != NULL);
   }
   else
@@ -130,8 +141,9 @@ static int32_t dt_camera_capture_job_run(dt_job_t *job)
       {
         if(b == 0)
         {
-          // First bracket, step down time with (steps*brackets), also check so we never set the longest
-          // shuttertime which would be bulb mode
+          // First bracket, step down time with (steps*brackets), also
+          // check so we never set the longest shuttertime which would
+          // be bulb mode
           for(uint32_t s = 0; s < (params->steps * params->brackets); s++)
             if(g_list_next(current_value) && g_list_next(g_list_next(current_value)))
               current_value = g_list_next(current_value);
@@ -143,13 +155,15 @@ static int32_t dt_camera_capture_job_run(dt_job_t *job)
 
           // Step up with (steps)
           for(uint32_t s = 0; s < params->steps; s++)
-            if(g_list_previous(current_value)) current_value = g_list_previous(current_value);
+            if(g_list_previous(current_value))
+              current_value = g_list_previous(current_value);
         }
       }
 
       // set the time property for bracket capture
       if(params->brackets && current_value)
-        dt_camctl_camera_set_property_string(darktable.camctl, NULL, "shutterspeed", current_value->data);
+        dt_camctl_camera_set_property_string(darktable.camctl, NULL,
+                                             "shutterspeed", current_value->data);
 
       // Capture image
       dt_camctl_camera_capture(darktable.camctl, NULL);
@@ -165,7 +179,8 @@ static int32_t dt_camera_capture_job_run(dt_job_t *job)
         g_usleep(params->delay * G_USEC_PER_SEC);
 
       current_value = g_list_find(values, original_value);
-      dt_camctl_camera_set_property_string(darktable.camctl, NULL, "shutterspeed", current_value->data);
+      dt_camctl_camera_set_property_string(darktable.camctl, NULL,
+                                           "shutterspeed", current_value->data);
     }
   }
 
@@ -180,7 +195,8 @@ static int32_t dt_camera_capture_job_run(dt_job_t *job)
 static dt_camera_capture_t *dt_camera_capture_alloc()
 {
   dt_camera_capture_t *params = calloc(1, sizeof(dt_camera_capture_t));
-  if(!params) return NULL;
+  if(!params)
+    return NULL;
 
   // FIXME: unused
   params->shared.session = dt_import_session_new();
@@ -197,11 +213,17 @@ static void dt_camera_capture_cleanup(void *p)
   free(params);
 }
 
-dt_job_t *dt_camera_capture_job_create(const char *jobcode, uint32_t delay, uint32_t count, uint32_t brackets,
-                                       uint32_t steps)
+dt_job_t *dt_camera_capture_job_create(const char *jobcode,
+                                       const uint32_t delay,
+                                       const uint32_t count,
+                                       const uint32_t brackets,
+                                       const uint32_t steps)
 {
-  dt_job_t *job = dt_control_job_create(&dt_camera_capture_job_run, "remote capture of image(s)");
-  if(!job) return NULL;
+  dt_job_t *job = dt_control_job_create(&dt_camera_capture_job_run,
+                                        "remote capture of image(s)");
+  if(!job)
+    return NULL;
+
   dt_camera_capture_t *params = dt_camera_capture_alloc();
   if(!params)
   {
@@ -234,7 +256,8 @@ void _camera_import_image_downloaded(const dt_camera_t *camera,
 
   const time_t timestamp = (!in_path || !in_filename) ? 0 :
                dt_camctl_get_image_file_timestamp(darktable.camctl, in_path, in_filename);
-  if(timestamp && dt_is_valid_imgid(imgid))
+  if(timestamp
+     && dt_is_valid_imgid(imgid))
   {
     char dt_txt[DT_DATETIME_EXIF_LENGTH];
     dt_datetime_unix_to_exif(dt_txt, sizeof(dt_txt), &timestamp);
@@ -292,7 +315,9 @@ static const char *_camera_request_image_filename(const dt_camera_t *camera,
   return g_strdup(file);
 }
 
-static const char *_camera_request_image_path(const dt_camera_t *camera, const dt_image_basic_exif_t *basic_exif, void *data)
+static const char *_camera_request_image_path(const dt_camera_t *camera,
+                                              const dt_image_basic_exif_t *basic_exif,
+                                              void *data)
 {
   struct dt_camera_shared_t *shared;
   shared = (struct dt_camera_shared_t *)data;
@@ -343,7 +368,8 @@ static int32_t dt_camera_import_job_run(dt_job_t *job)
 static dt_camera_import_t *dt_camera_import_alloc()
 {
   dt_camera_import_t *params = calloc(1, sizeof(dt_camera_import_t));
-  if(!params) return NULL;
+  if(!params)
+    return NULL;
 
   params->shared.session = dt_import_session_new();
 
@@ -362,12 +388,15 @@ static void dt_camera_import_cleanup(void *p)
   free(params);
 }
 
-dt_job_t *dt_camera_import_job_create(GList *images, struct dt_camera_t *camera,
+dt_job_t *dt_camera_import_job_create(GList *images,
+                                      struct dt_camera_t *camera,
                                       const char *time_override)
 {
-  dt_job_t *job = dt_control_job_create(&dt_camera_import_job_run, "import selected images from camera");
+  dt_job_t *job = dt_control_job_create(&dt_camera_import_job_run,
+                                        "import selected images from camera");
   if(!job)
     return NULL;
+
   dt_camera_import_t *params = dt_camera_import_alloc();
   if(!params)
   {
@@ -379,7 +408,8 @@ dt_job_t *dt_camera_import_job_create(GList *images, struct dt_camera_t *camera,
   dt_control_job_set_params(job, params, dt_camera_import_cleanup);
 
   /* initialize import session for camera import job */
-  if(time_override && time_override[0]) dt_import_session_set_time(params->shared.session, time_override);
+  if(time_override && time_override[0])
+    dt_import_session_set_time(params->shared.session, time_override);
   const char *jobcode = dt_conf_get_string_const("ui_last/import_jobcode");
   dt_import_session_set_name(params->shared.session, jobcode);
 

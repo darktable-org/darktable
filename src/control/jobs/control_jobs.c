@@ -147,10 +147,10 @@ static int32_t _generic_dt_control_fileop_images_job_run
 
   // create new film roll for the destination directory
   dt_film_t new_film;
-  const int32_t film_id = dt_film_new(&new_film, newdir);
+  const dt_filmid_t film_id = dt_film_new(&new_film, newdir);
   g_free(newdir);
 
-  if(film_id <= 0)
+  if(!dt_is_valid_filmid(film_id))
   {
     dt_control_log(_("failed to create film roll for destination directory,"
                      " aborting move.."));
@@ -610,7 +610,7 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   // import new image
   gchar *directory = g_path_get_dirname((const gchar *)pathname);
   dt_film_t film;
-  const int filmid = dt_film_new(&film, directory);
+  const dt_filmid_t filmid = dt_film_new(&film, directory);
   const dt_imgid_t imageid = dt_image_import(filmid, pathname, TRUE, TRUE);
   g_free(directory);
 
@@ -1084,21 +1084,21 @@ static _dt_delete_status_t delete_file_from_disk
          || !(send_to_trash || res & _DT_DELETE_DIALOG_CHOICE_PHYSICAL))
       {
         const char *filename_display = NULL;
-        GFileInfo *gfileinfo = g_file_query_info(
-            gfile,
-            G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME,
-            G_FILE_QUERY_INFO_NONE,
-            NULL /*cancellable*/,
-            NULL /*error*/);
+        GFileInfo *gfileinfo =
+          g_file_query_info(gfile,
+                            G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME,
+                            G_FILE_QUERY_INFO_NONE,
+                            NULL /*cancellable*/,
+                            NULL /*error*/);
         if(gfileinfo != NULL)
           filename_display = g_file_info_get_attribute_string(
               gfileinfo,
               G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME);
 
-        res = _dt_delete_file_display_modal_dialog(
-            send_to_trash,
-            filename_display == NULL ? filename : filename_display,
-            gerror == NULL ? NULL : gerror->message);
+        res = _dt_delete_file_display_modal_dialog
+          (send_to_trash,
+           filename_display == NULL ? filename : filename_display,
+           gerror == NULL ? NULL : gerror->message);
         g_object_unref(gfileinfo);
 
         if(res & _DT_DELETE_DIALOG_CHOICE_ALL)
@@ -1465,7 +1465,9 @@ static int32_t dt_control_refresh_exif_run(dt_job_t *job)
       if(img)
       {
         dt_exif_read(img, sourcefile);
-        dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
+        dt_image_cache_write_release_info(darktable.image_cache, img,
+                                          DT_IMAGE_CACHE_SAFE,
+                                          "dt_control_refresh_exif_run");
       }
       else
         dt_print(DT_DEBUG_ALWAYS,
@@ -2338,10 +2340,11 @@ static int _control_import_image_copy(const char *filename,
     {
       GError *error = NULL;
       GFile *gfile = g_file_new_for_path(filename);
-      GFileInfo *info = g_file_query_info(gfile,
-                                G_FILE_ATTRIBUTE_STANDARD_NAME ","
-                                G_FILE_ATTRIBUTE_TIME_MODIFIED,
-                                G_FILE_QUERY_INFO_NONE, NULL, &error);
+      GFileInfo *info = g_file_query_info
+        (gfile,
+         G_FILE_ATTRIBUTE_STANDARD_NAME ","
+         G_FILE_ATTRIBUTE_TIME_MODIFIED,
+         G_FILE_QUERY_INFO_NONE, NULL, &error);
       const char *fn = g_file_info_get_name(info);
       // FIXME set a routine common with import.c
       const time_t datetime =
@@ -2397,9 +2400,9 @@ static int _control_import_image_insitu(const char *filename,
   dt_conf_set_int("ui_last/import_last_image", -1);
   char *dirname = dt_util_path_get_dirname(filename);
   dt_film_t film;
-  const int filmid = dt_film_new(&film, dirname);
+  const dt_filmid_t filmid = dt_film_new(&film, dirname);
   const dt_imgid_t imgid = dt_image_import(filmid, filename, FALSE, FALSE);
-  if(!imgid) dt_control_log(_("error loading file `%s'"), filename);
+  if(!dt_is_valid_imgid(imgid)) dt_control_log(_("error loading file `%s'"), filename);
   else
   {
     *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(imgid));

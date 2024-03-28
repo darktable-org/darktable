@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2022-2023 darktable developers.
+    Copyright (C) 2022-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ The algorithm follows these basic ideas:
 4. In all 3 color planes we look for isolated areas being clipped (segments).
    These segments also include the unclipped photosites at the borders, we also use these locations for estimating the global chrominance.
    Inside these segments we look for a candidate to represent the value we take for restoration.
-   Choosing the candidate is done at all non-clipped locations of a segment, the best candidate is selected via a weighing
+   Choosing the candidate is done at all non-clipped locations of a segment, the best candidate is selected via a weighting
    function - the weight is derived from
    - the local standard deviation in a 5x5 area and
    - the median value of unclipped positions also in a 5x5 area.
@@ -55,7 +55,7 @@ The chosen segmentation algorithm works like this:
 3. The segmentation algorithm uses a modified floodfill, it also takes care of the surrounding rectangle of every segment
    and marks the segment borders.
 4. After segmentation we check every segment for
-   - the segment's best candidate via the weighing function
+   - the segment's best candidate via the weighting function
    - the candidates location
 */
 
@@ -195,6 +195,7 @@ static inline float _calc_refavg(const float *in,
                                  const int row,
                                  const int col,
                                  const dt_iop_roi_t *const roi,
+                                 const dt_aligned_pixel_t correction,
                                  const gboolean linear)
 {
   const int color = (filters == 9u) ? FCxtrans(row, col, roi, xtrans) : FC(row, col, filters);
@@ -217,7 +218,7 @@ static inline float _calc_refavg(const float *in,
     }
   }
   for_each_channel(c)
-    mean[c] = (cnt[c] > 0.0f) ? powf(mean[c] / cnt[c], 1.0f / HL_POWERF) : 0.0f;
+    mean[c] = (cnt[c] > 0.0f) ? powf((correction[c] * mean[c]) / cnt[c], 1.0f / HL_POWERF) : 0.0f;
 
   const dt_aligned_pixel_t croot_refavg = { 0.5f * (mean[1] + mean[2]),
                                             0.5f * (mean[0] + mean[2]),
@@ -244,16 +245,7 @@ static void _initial_gradients(const size_t w,
       const size_t v = (size_t)row * w + col;
       float g = 0.0f;
       if((distance[v] > 0.0f) && (distance[v] < 2.0f))
-      {
-        // scharr operator
-        const float gx = 47.0f * (luminance[v-w-1] - luminance[v-w+1])
-                      + 162.0f * (luminance[v-1]   - luminance[v+1])
-                       + 47.0f * (luminance[v+w-1] - luminance[v+w+1]);
-        const float gy = 47.0f * (luminance[v-w-1] - luminance[v+w-1])
-                      + 162.0f * (luminance[v-w]   - luminance[v+w])
-                       + 47.0f * (luminance[v-w+1] - luminance[v+w+1]);
-        g = 4.0f * sqrtf(sqrf(gx / 256.0f) + sqrf(gy / 256.0f));
-      }
+        g = 4.0f * scharr_gradient(&luminance[v], w);
       gradient[v] = g;
     }
   }
@@ -469,9 +461,15 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
   const float clipval = fmaxf(0.1f, 0.987f * data->clip);
   const dt_aligned_pixel_t icoeffs = { piece->pipe->dsc.temperature.coeffs[0], piece->pipe->dsc.temperature.coeffs[1], piece->pipe->dsc.temperature.coeffs[2]};
-  const dt_aligned_pixel_t clips = { clipval * icoeffs[0], clipval * icoeffs[1], clipval * icoeffs[2]}; 
+  const dt_aligned_pixel_t clips = { clipval * icoeffs[0], clipval * icoeffs[1], clipval * icoeffs[2]};
   const dt_aligned_pixel_t cube_coeffs = { powf(clips[0], 1.0f / HL_POWERF), powf(clips[1], 1.0f / HL_POWERF), powf(clips[2], 1.0f / HL_POWERF)};
 
+  const dt_dev_chroma_t *chr = &piece->module->dev->chroma;
+  const gboolean late = chr->late_correction;
+  const dt_aligned_pixel_t correction = { late ? (float)(chr->D65coeffs[0] / chr->as_shot[0]) : 1.0f,
+                                          late ? (float)(chr->D65coeffs[1] / chr->as_shot[1]) : 1.0f,
+                                          late ? (float)(chr->D65coeffs[2] / chr->as_shot[2]) : 1.0f,
+                                          1.0f };
   const int recovery_mode = data->recovery;
   const float strength = data->strength;
 
@@ -523,7 +521,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
   #pragma omp parallel for default(none) \
   reduction( | : has_allclipped) \
   reduction( + : anyclipped) \
-  dt_omp_firstprivate(tmpout, roi_in, plane, isegments, cube_coeffs, refavg, xtrans, pwidth, filters, xshifter) \
+  dt_omp_firstprivate(tmpout, roi_in, plane, isegments, cube_coeffs, refavg, xtrans, pwidth, filters, xshifter, correction) \
   schedule(static) collapse(2)
 #endif
   for(int row = 1; row < roi_in->height-1; row++)
@@ -549,7 +547,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
         }
 
         for_each_channel(c)
-          mean[c] = (cnt[c] > 0.0f) ? powf(mean[c] / cnt[c], 1.0f / HL_POWERF) : 0.0f;
+          mean[c] = (cnt[c] > 0.0f) ? powf(correction[c] * mean[c] / cnt[c], 1.0f / HL_POWERF) : 0.0f;
         const dt_aligned_pixel_t cube_refavg = { 0.5f * (mean[1] + mean[2]),
                                                  0.5f * (mean[0] + mean[2]),
                                                  0.5f * (mean[0] + mean[1]),
@@ -562,7 +560,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
           plane[c][o] = mean[c];
           refavg[c][o] = cube_refavg[c];
           if(mean[c] > cube_coeffs[c])
-          { 
+          {
             allclipped += 1;
             isegments[c].data[o] = 1;
           }
@@ -575,7 +573,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
   }
 
   if((anyclipped < 20) && vmode == DT_HIGHLIGHTS_MASK_OFF)
-    goto finish; 
+    goto finish;
 
   for(int i = 0; i < HL_RGB_PLANES; i++)
     dt_masks_extend_border(plane[i], pwidth, pheight, HL_BORDER);
@@ -603,7 +601,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(clips, input, tmpout, roi_in, xtrans, isegments, plane, filters, pwidth) \
+  dt_omp_firstprivate(clips, input, tmpout, roi_in, xtrans, isegments, plane, filters, pwidth, correction) \
   schedule(static) collapse(2)
 #endif
   for(int row = 1; row < roi_in->height-1; row++)
@@ -623,7 +621,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
           if(candidate != 0.0f)
           {
             const float cand_reference = isegments[color].val2[pid];
-            const float refavg_here = _calc_refavg(&input[idx], xtrans, filters, row, col, roi_in, FALSE);
+            const float refavg_here = _calc_refavg(&input[idx], xtrans, filters, row, col, roi_in, correction, FALSE);
             const float oval = powf(refavg_here + candidate - cand_reference, HL_POWERF);
             tmpout[idx] = plane[color][o] = fmaxf(inval, oval);
           }

@@ -20,6 +20,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/debug.h"
 #include "common/file_location.h"
+#include "common/history_snapshot.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -33,6 +34,10 @@ DT_MODULE(1)
 
 #define HANDLE_SIZE 0.02
 #define MAX_SNAPSHOT 10
+
+// the snapshot offset in the memory table to use an area not used by the
+// undo/redo support.
+#define SNAPSHOT_ID_OFFSET 0xFFFFFF00
 
 /* a snapshot */
 typedef struct dt_lib_snapshot_t
@@ -194,7 +199,7 @@ void gui_post_expose(dt_lib_module_t *self,
                    &snap->buf, &snap->scale,
                    &snap->width, &snap->height,
                    &snap->zoom_x, &snap->zoom_y,
-                   snap->id, NULL);
+                   snap->id, NULL, DT_DEVICE_NONE, FALSE);
       d->snap_requested = FALSE;
       d->expose_again_timeout_id = 0;
     }
@@ -553,6 +558,10 @@ static void _init_snapshot_entry(dt_lib_module_t *self, dt_lib_snapshot_t *s)
 
 static void _clear_snapshot_entry(dt_lib_snapshot_t *s)
 {
+  // delete corresponding entry from the database
+
+  dt_history_snapshot_clear(s->imgid, s->id);
+
   s->ctx = 0;
   s->imgid = NO_IMGID;
   s->history_end = -1;
@@ -572,20 +581,6 @@ static void _clear_snapshot_entry(dt_lib_snapshot_t *s)
   s->module = NULL;
   s->label = NULL;
   s->buf = NULL;
-
-  // and delete corresponding entry from the database
-
-  sqlite3_stmt *stmt;
-
-  DT_DEBUG_SQLITE3_PREPARE_V2
-    (dt_database_get(darktable.db),
-     "DELETE FROM memory.history_snapshot"
-     " WHERE id = ?1",
-     -1, &stmt, NULL);
-
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, s->id);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
 }
 
 static void _clear_snapshots(dt_lib_module_t *self)
@@ -598,7 +593,7 @@ static void _clear_snapshots(dt_lib_module_t *self)
   for(uint32_t k = 0; k < d->num_snapshots; k++)
   {
     dt_lib_snapshot_t *s = &d->snapshot[k];
-    s->id = k;
+    s->id = SNAPSHOT_ID_OFFSET | k;
     _clear_snapshot_entry(s);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(s->button), FALSE);
   }
@@ -767,7 +762,7 @@ void gui_init(dt_lib_module_t *self)
   for(int k = 0; k < MAX_SNAPSHOT; k++)
   {
     dt_lib_snapshot_t *s = &d->snapshot[k];
-    s->id = k;
+    s->id = SNAPSHOT_ID_OFFSET | k;
 
     _clear_snapshot_entry(s);
     _init_snapshot_entry(self, s);
@@ -838,8 +833,9 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget,
 
   dt_lib_snapshot_t *s = &d->snapshot[d->num_snapshots];
 
-  // set new snapshot_id
-  s->id = d->num_snapshots;
+  // set new snapshot_id, to not clash with the undo snapshot make the snapshot
+  // id at a specific offset.
+  s->id = SNAPSHOT_ID_OFFSET | d->num_snapshots;
 
   _clear_snapshot_entry(s);
 
@@ -867,23 +863,7 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget,
   s->history_end = darktable.develop->history_end;
   s->imgid = darktable.develop->image_storage.id;
 
-  sqlite3_stmt *stmt;
-
-  DT_DEBUG_SQLITE3_PREPARE_V2
-    (dt_database_get(darktable.db),
-     "INSERT INTO memory.history_snapshot"
-     " SELECT ?1, num, module, operation, op_params,"
-     "        enabled, blendop_params, blendop_version, multi_priority,"
-     "        multi_name, multi_name_hand_edited"
-     " FROM main.history"
-     " WHERE imgid = ?2 AND num < ?3",
-     -1, &stmt, NULL);
-
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, s->id);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, s->imgid);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, s->history_end);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
+  dt_history_snapshot_create(s->imgid, s->id, s->history_end);
 
   GtkLabel *lnum =
     (GtkLabel *)_lib_snapshot_button_get_item(s->button, _SNAPSHOT_BUTTON_NUM);
@@ -975,31 +955,7 @@ static void _lib_snapshots_restore_callback(GtkButton *widget, gpointer user_dat
 
   const dt_imgid_t imgid = s->imgid;
 
-  sqlite3_stmt *stmt;
-
-  // delete current histroy
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "DELETE FROM main.history WHERE imgid = ?1",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-
-  // rollback to snapshot history
-  DT_DEBUG_SQLITE3_PREPARE_V2
-    (dt_database_get(darktable.db),
-     "INSERT INTO main.history"
-     " SELECT ?1, num, module, operation, op_params,"
-     "        enabled, blendop_params, blendop_version, multi_priority,"
-     "        multi_name, multi_name_hand_edited"
-     " FROM memory.history_snapshot"
-     " WHERE id = ?2",
-     -1, &stmt, NULL);
-
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, s->id);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
+  dt_history_snapshot_restore(imgid, s->id, s->history_end);
 
   dt_dev_undo_start_record(darktable.develop);
 
@@ -1013,7 +969,6 @@ static void _lib_snapshots_restore_callback(GtkButton *widget, gpointer user_dat
   dt_dev_modulegroups_set(darktable.develop,
                           dt_dev_modulegroups_get(darktable.develop));
   dt_image_update_final_size(imgid);
-
   dt_dev_write_history(darktable.develop);
 
   /* signal history changed */

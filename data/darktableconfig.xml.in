@@ -203,12 +203,6 @@
     <default>5</default>
     <shortdescription>waiting time between each picture in slideshow</shortdescription>
   </dtconfig>
-  <dtconfig>
-    <name>ui_last/no_april1st</name>
-    <type>bool</type>
-    <default>true</default>
-    <shortdescription>do not show april 1st game</shortdescription>
-  </dtconfig>
 <!-- be sure to keep the code in sync when changing this enum, see common/darktable.c void dt_get_sysresource_level() -->
   <dtconfig prefs="processing" section="cpugpu">
     <name>resourcelevel</name>
@@ -390,7 +384,7 @@
     <name>clplatform_rusticl</name>
     <type>bool</type>
     <default>false</default>
-    <shortdescription>RustiCL</shortdescription>
+    <shortdescription>RustiCL (experimental)</shortdescription>
     <longdescription>RustiCL Mesa OpenCL, still unstable. if you want to use this, you should disable the vendor driver</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="platform" capability="apple" restart="true">
@@ -1331,14 +1325,14 @@
     <type>bool</type>
     <default>true</default>
     <shortdescription>enable disk backend for thumbnail cache</shortdescription>
-    <longdescription>if enabled, write thumbnails to disk (.cache/darktable/) when evicted from the memory cache.\nnote that this can take a lot of memory (several gigabytes for 20k images) and will never delete cached thumbnails again.\nit's safe though to delete these manually, if you want. light table performance will be increased greatly when browsing a lot.\nto generate all thumbnails of your entire collection offline, run 'darktable-generate-cache'.</longdescription>
+    <longdescription>if enabled, write thumbnails to disk (.cache/darktable/) when evicted from the memory cache.\nnote that this can take a lot of memory (several gigabytes for 20k images) and will never delete cached thumbnails again.\nit's safe though to delete these manually, if you want.\nlight table performance will be increased greatly when browsing a lot.\nto generate all thumbnails of your entire collection offline, run 'darktable-generate-cache'.</longdescription>
   </dtconfig>
   <dtconfig prefs="lighttable" section="thumbs">
     <name>cache_disk_backend_full</name>
     <type>bool</type>
     <default>false</default>
     <shortdescription>enable disk backend for full preview cache</shortdescription>
-    <longdescription>if enabled, write full preview to disk (.cache/darktable/) when evicted from the memory cache.\nnote that this can take a lot of memory (several gigabytes for 20k images) and will never delete cached thumbnails again.\nit's safe though to delete these manually, if you want.\nlight table performance will be increased greatly when zooming image in full preview mode.</longdescription>
+    <longdescription>if enabled, write full preview to disk (.cache/darktable/) when evicted from the memory cache.\nnote that this can take a lot of memory (several gigabytes for 20k images) and will never delete cached full previews again.\nit's safe though to delete these manually, if you want.\nlight table performance will be increased greatly when zooming image in full preview mode.</longdescription>
   </dtconfig>
   <dtconfig prefs="lighttable" section="thumbs">
     <name>backthumbs_mipsize</name>
@@ -2852,7 +2846,7 @@
     <shortdescription>XCF bit depth (bpp)</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="security" section="other">
+  <dtconfig prefs="security" section="other" restart="true">
     <name>plugins/pwstorage/pwstorage_backend</name>
     <type>
       <enum>
@@ -2860,12 +2854,12 @@
         <option>none</option>
         <option capability="libsecret">libsecret</option>
         <option capability="kwallet">kwallet</option>
-        <option capability="apple_keychain">Apple keychain</option>
+        <option capability="apple_keychain">apple_keychain</option>
       </enum>
     </type>
     <default>auto</default>
     <shortdescription>password storage backend to use</shortdescription>
-    <longdescription>the storage backend for password storage: auto, none, libsecret, kwallet</longdescription>
+    <longdescription>the storage backend for password storage: auto, none, libsecret, kwallet, apple_keychain</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/export/icctype</name>
@@ -3460,6 +3454,36 @@
     <default>false</default>
     <shortdescription>look for updated XMP files on startup</shortdescription>
     <longdescription>check file modification times of all XMP files on startup to check if any got updated in the meantime</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>colorlabel/red</name>
+    <type>string</type>
+    <default></default>
+    <shortdescription>red color label</shortdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>colorlabel/yellow</name>
+    <type>string</type>
+    <default></default>
+    <shortdescription>yellow color label</shortdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>colorlabel/green</name>
+    <type>string</type>
+    <default></default>
+    <shortdescription>green color label</shortdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>colorlabel/blue</name>
+    <type>string</type>
+    <default></default>
+    <shortdescription>blue color label</shortdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>colorlabel/purple</name>
+    <type>string</type>
+    <default></default>
+    <shortdescription>purple color label</shortdescription>
   </dtconfig>
   <dtconfig prefs="security" section="other">
     <name>plugins/lighttable/audio_player</name>

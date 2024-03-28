@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2013-2023 darktable developers.
+   Copyright (C) 2013-2024 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -62,7 +62,8 @@ static dt_image_t *checkwriteimage(lua_State *L, int index)
 
 static void releasewriteimage(lua_State *L, dt_image_t *image)
 {
-  dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+  dt_image_cache_write_release_info(darktable.image_cache, image,
+    DT_IMAGE_CACHE_SAFE, "lua releasewriteimage");
 }
 
 void dt_lua_image_push(lua_State *L, const dt_imgid_t imgid)
@@ -326,8 +327,9 @@ static int exif_datetime_taken_member(lua_State *L)
   if(lua_gettop(L) != 3)
   {
     const dt_image_t *my_image = checkreadimage(L, 1);
-    int datetime_size = dt_conf_get_bool("lighttable/ui/milliseconds") ? DT_DATETIME_LENGTH
-                                                                       : DT_DATETIME_EXIF_LENGTH;
+    const int datetime_size = dt_conf_get_bool("lighttable/ui/milliseconds")
+      ? DT_DATETIME_LENGTH
+      : DT_DATETIME_EXIF_LENGTH;
     char *sdt = calloc(datetime_size, sizeof(char));
     dt_datetime_img_to_exif(sdt, datetime_size, my_image);
     lua_pushstring(L, sdt);
@@ -387,7 +389,7 @@ static int colorlabel_member(lua_State *L)
 {
   dt_imgid_t imgid;
   luaA_to(L, dt_lua_image_t, &imgid, 1);
-  int colorlabel_index = luaL_checkoption(L, 2, NULL, dt_colorlabels_name);
+  const int colorlabel_index = luaL_checkoption(L, 2, NULL, dt_colorlabels_name);
   if(lua_gettop(L) != 3)
   {
     lua_pushboolean(L, dt_colorlabels_check_label(imgid, colorlabel_index));
@@ -533,13 +535,17 @@ int dt_lua_init_image(lua_State *L)
   luaA_struct_member(L, dt_image_t, p_height, const int32_t);
   luaA_struct_member(L, dt_image_t, aspect_ratio, const float);
 
-  luaA_struct_member_name(L, dt_image_t, geoloc.longitude, protected_double, longitude); // set to NAN if value is not set
-  luaA_struct_member_name(L, dt_image_t, geoloc.latitude, protected_double, latitude); // set to NAN if value is not set
-  luaA_struct_member_name(L, dt_image_t, geoloc.elevation, protected_double, elevation); // set to NAN if value is not set
+  luaA_struct_member_name(L, dt_image_t, geoloc.longitude,
+                          protected_double, longitude); // set to NAN if value is not set
+  luaA_struct_member_name(L, dt_image_t, geoloc.latitude,
+                          protected_double, latitude); // set to NAN if value is not set
+  luaA_struct_member_name(L, dt_image_t, geoloc.elevation,
+                          protected_double, elevation); // set to NAN if value is not set
 
   dt_lua_init_int_type(L, dt_lua_image_t);
 
-  const char *member_name = luaA_struct_next_member_name(L, dt_image_t, LUAA_INVALID_MEMBER_NAME);
+  const char *member_name =
+    luaA_struct_next_member_name(L, dt_image_t, LUAA_INVALID_MEMBER_NAME);
   while(member_name != LUAA_INVALID_MEMBER_NAME)
   {
     lua_pushcfunction(L, image_luaautoc_member);

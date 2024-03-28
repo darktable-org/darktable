@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -223,10 +223,18 @@ exit:
   return r;
 }
 
-static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *buf, uint32_t *width, uint32_t *height, float *iscale,
+static void _init_f(dt_mipmap_buffer_t *mipmap_buf,
+                    float *buf,
+                    uint32_t *width,
+                    uint32_t *height,
+                    float *iscale,
                     const dt_imgid_t imgid);
-static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, float *iscale,
-                    dt_colorspaces_color_profile_type_t *color_space, const dt_imgid_t imgid,
+static void _init_8(uint8_t *buf,
+                    uint32_t *width,
+                    uint32_t *height,
+                    float *iscale,
+                    dt_colorspaces_color_profile_type_t *color_space,
+                    const dt_imgid_t imgid,
                     const dt_mipmap_size_t size);
 
 // callback for the imageio core to allocate memory.
@@ -419,7 +427,9 @@ read_error:
     entry->cost = cache->buffer_size[mip];
 }
 
-static void dt_mipmap_cache_unlink_ondisk_thumbnail(void *data, dt_imgid_t imgid, dt_mipmap_size_t mip)
+static void dt_mipmap_cache_unlink_ondisk_thumbnail(void *data,
+                                                    const dt_imgid_t imgid,
+                                                    dt_mipmap_size_t mip)
 {
   dt_mipmap_cache_t *cache = (dt_mipmap_cache_t *)data;
 
@@ -659,7 +669,8 @@ static gboolean _raise_signal_mipmap_updated(gpointer user_data)
   return FALSE; // only call once
 }
 
-static dt_mipmap_cache_one_t *_get_cache(dt_mipmap_cache_t *cache, const dt_mipmap_size_t mip)
+static dt_mipmap_cache_one_t *_get_cache(dt_mipmap_cache_t *cache,
+                                         const dt_mipmap_size_t mip)
 {
   switch(mip)
   {
@@ -757,7 +768,7 @@ void dt_mipmap_cache_get_with_caller(
       {
         // load the image:
         // make sure we access the r/w lock as shortly as possible!
-        dt_image_t buffered_image;
+        dt_image_t DT_ALIGNED_ARRAY buffered_image;
         const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
         buffered_image = *cimg;
         // dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
@@ -825,13 +836,13 @@ void dt_mipmap_cache_get_with_caller(
     // note that concurrencykit has rw locks that can be demoted from w->r without losing the lock in between.
     if(mode == 'r')
     {
-      entry->_lock_demoting = 1;
+      entry->_lock_demoting = TRUE;
       // drop the write lock
       dt_cache_release(&_get_cache(cache, mip)->cache, entry);
       // get a read lock
       buf->cache_entry = entry = dt_cache_get(&_get_cache(cache, mip)->cache, key, mode);
       ASAN_UNPOISON_MEMORY_REGION(entry->data, dt_mipmap_buffer_dsc_size);
-      entry->_lock_demoting = 0;
+      entry->_lock_demoting = FALSE;
       dsc = (struct dt_mipmap_buffer_dsc *)buf->cache_entry->data;
     }
 
@@ -928,7 +939,9 @@ void dt_mipmap_cache_get_with_caller(
   }
 }
 
-void dt_mipmap_cache_release_with_caller(dt_mipmap_cache_t *cache, dt_mipmap_buffer_t *buf, const char *file,
+void dt_mipmap_cache_release_with_caller(dt_mipmap_cache_t *cache,
+                                         dt_mipmap_buffer_t *buf,
+                                         const char *file,
                                          int line)
 {
   if(buf->size == DT_MIPMAP_NONE) return;
@@ -942,9 +955,10 @@ void dt_mipmap_cache_release_with_caller(dt_mipmap_cache_t *cache, dt_mipmap_buf
 }
 
 
-// return index dt_mipmap_size_t having at least width & height requested instead of minimum combined diff
+// return index dt_mipmap_size_t having at least width and height requested instead of minimum combined diff
 // please note that the requested size is in pixels not dots.
-dt_mipmap_size_t dt_mipmap_cache_get_matching_size(const dt_mipmap_cache_t *cache, const int32_t width,
+dt_mipmap_size_t dt_mipmap_cache_get_matching_size(const dt_mipmap_cache_t *cache,
+                                                   const int32_t width,
                                                    const int32_t height)
 {
   dt_mipmap_size_t best = DT_MIPMAP_NONE;
@@ -970,7 +984,9 @@ dt_mipmap_size_t dt_mipmap_cache_get_min_mip_from_pref(const char *value)
   return DT_MIPMAP_NONE;
 }
 
-void dt_mipmap_cache_remove_at_size(dt_mipmap_cache_t *cache, const dt_imgid_t imgid, const dt_mipmap_size_t mip)
+void dt_mipmap_cache_remove_at_size(dt_mipmap_cache_t *cache,
+                                    const dt_imgid_t imgid,
+                                    const dt_mipmap_size_t mip)
 {
   if(mip > DT_MIPMAP_8 || mip < DT_MIPMAP_0) return;
   // get rid of all ldr thumbnails:
@@ -993,23 +1009,26 @@ void dt_mipmap_cache_remove_at_size(dt_mipmap_cache_t *cache, const dt_imgid_t i
   }
 }
 
-void dt_mipmap_cache_remove(dt_mipmap_cache_t *cache, const dt_imgid_t imgid)
+void dt_mipmap_cache_remove(dt_mipmap_cache_t *cache,
+                            const dt_imgid_t imgid)
 {
-  // get rid of all ldr thumbnails:
-
   for(dt_mipmap_size_t k = DT_MIPMAP_0; k < DT_MIPMAP_F; k++)
   {
     dt_mipmap_cache_remove_at_size(cache, imgid, k);
   }
 }
-void dt_mipmap_cache_evict_at_size(dt_mipmap_cache_t *cache, const dt_imgid_t imgid, const dt_mipmap_size_t mip)
+
+void dt_mipmap_cache_evict_at_size(dt_mipmap_cache_t *cache,
+                                   const dt_imgid_t imgid,
+                                   const dt_mipmap_size_t mip)
 {
   const uint32_t key = get_key(imgid, mip);
   // write thumbnail to disc if not existing there
   dt_cache_remove(&_get_cache(cache, mip)->cache, key);
 }
 
-void dt_mimap_cache_evict(dt_mipmap_cache_t *cache, const dt_imgid_t imgid)
+void dt_mimap_cache_evict(dt_mipmap_cache_t *cache,
+                          const dt_imgid_t imgid)
 {
   for(dt_mipmap_size_t k = DT_MIPMAP_0; k < DT_MIPMAP_F; k++)
   {
@@ -1020,7 +1039,11 @@ void dt_mimap_cache_evict(dt_mipmap_cache_t *cache, const dt_imgid_t imgid)
   }
 }
 
-static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width, uint32_t *height, float *iscale,
+static void _init_f(dt_mipmap_buffer_t *mipmap_buf,
+                    float *out,
+                    uint32_t *width,
+                    uint32_t *height,
+                    float *iscale,
                     const dt_imgid_t imgid)
 {
   const uint32_t wd = *width, ht = *height;
@@ -1135,9 +1158,18 @@ static int _bpp(dt_imageio_module_data_t *data)
   return 8;
 }
 
-static int _write_image(dt_imageio_module_data_t *data, const char *filename, const void *in,
-                        dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                        void *exif, int exif_len, dt_imgid_t imgid, int num, int total, dt_dev_pixelpipe_t *pipe,
+
+static int _write_image(dt_imageio_module_data_t *data,
+                        const char *filename,
+                        const void *in,
+                        dt_colorspaces_color_profile_type_t over_type,
+                        const char *over_filename,
+                        void *exif,
+                        int exif_len,
+                        dt_imgid_t imgid,
+                        int num,
+                        int total,
+                        dt_dev_pixelpipe_t *pipe,
                         const gboolean export_masks)
 {
   _dummy_data_t *d = (_dummy_data_t *)data;
@@ -1145,8 +1177,12 @@ static int _write_image(dt_imageio_module_data_t *data, const char *filename, co
   return 0;
 }
 
-static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, float *iscale,
-                    dt_colorspaces_color_profile_type_t *color_space, const dt_imgid_t imgid,
+static void _init_8(uint8_t *buf,
+                    uint32_t *width,
+                    uint32_t *height,
+                    float *iscale,
+                    dt_colorspaces_color_profile_type_t *color_space,
+                    const dt_imgid_t imgid,
                     const dt_mipmap_size_t size)
 {
   *iscale = 1.0f;
@@ -1165,7 +1201,7 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, float *isca
   }
 
   const gboolean altered = dt_image_altered(imgid);
-  int res = 1;
+  gboolean res = TRUE;
 
   const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   // the orientation for this camera is not read correctly from exiv2, so we need
@@ -1202,7 +1238,7 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, float *isca
           dt_print(DT_DEBUG_CACHE,
                    "[mipmap_cache] generate mip %d for image %d from jpeg\n", size, imgid);
           dt_iop_flip_and_zoom_8(tmp, jpg.width, jpg.height, buf, wd, ht, orientation, width, height);
-          res = 0;
+          res = FALSE;
         }
         free(tmp);
       }
@@ -1221,7 +1257,7 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, float *isca
         dt_image_cache_read_release(darktable.image_cache, img2);
         if(thumb_width < wd && thumb_height < ht && thumb_width < imgwd - 4 && thumb_height < imght - 4)
         {
-          res = 1;
+          res = TRUE;
         }
         else
         {
@@ -1253,7 +1289,7 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, float *isca
       dt_iop_flip_and_zoom_8(tmp.buf, tmp.width, tmp.height, buf, wd, ht, ORIENTATION_NONE, width, height);
 
       dt_mipmap_cache_release(darktable.mipmap_cache, &tmp);
-      res = 0;
+      res = FALSE;
       break;
     }
   }

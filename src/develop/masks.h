@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2023 darktable developers.
+    Copyright (C) 2013-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -514,7 +514,6 @@ void dt_masks_write_masks_history_item(const dt_imgid_t imgid,
                                        const int num,
                                        dt_masks_form_t *form);
 void dt_masks_free_form(dt_masks_form_t *form);
-void dt_masks_update_image(dt_develop_t *dev);
 void dt_masks_cleanup_unused(dt_develop_t *dev);
 
 /** function used to manipulate forms for masks */
@@ -523,30 +522,30 @@ void dt_masks_clear_form_gui(dt_develop_t *dev);
 void dt_masks_reset_form_gui(void);
 void dt_masks_reset_show_masks_icons(void);
 
-int dt_masks_events_mouse_moved(struct dt_iop_module_t *module,
-                                const float x,
-                                const float y,
-                                const double pressure,
-                                const int which,
-                                const float zoom_scale);
-int dt_masks_events_button_released(struct dt_iop_module_t *module,
-                                    const float x,
-                                    const float y,
-                                    const int which,
-                                    const uint32_t state,
-                                    const float zoom_scale);
-int dt_masks_events_button_pressed(struct dt_iop_module_t *module,
-                                   const float x,
-                                   const float y,
-                                   const double pressure,
-                                   const int which,
-                                   const int type,
-                                   const uint32_t state);
-int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module,
-                                   const float x,
-                                   const float y,
-                                   const gboolean up,
-                                   const uint32_t state);
+gboolean dt_masks_events_mouse_moved(struct dt_iop_module_t *module,
+                                     const float x,
+                                     const float y,
+                                     const double pressure,
+                                     const int which,
+                                     const float zoom_scale);
+gboolean dt_masks_events_button_released(struct dt_iop_module_t *module,
+                                         const float x,
+                                         const float y,
+                                         const int which,
+                                         const uint32_t state,
+                                         const float zoom_scale);
+gboolean dt_masks_events_button_pressed(struct dt_iop_module_t *module,
+                                        const float x,
+                                        const float y,
+                                        const double pressure,
+                                        const int which,
+                                        const int type,
+                                        const uint32_t state);
+gboolean dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module,
+                                        const float x,
+                                        const float y,
+                                        const gboolean up,
+                                        const uint32_t state);
 void dt_masks_events_post_expose(struct dt_iop_module_t *module,
                                  cairo_t *cr,
                                  const int32_t width,
@@ -554,8 +553,8 @@ void dt_masks_events_post_expose(struct dt_iop_module_t *module,
                                  const float pointerx,
                                  const float pointery,
                                  const float zoom_scale);
-int dt_masks_events_mouse_leave(struct dt_iop_module_t *module);
-int dt_masks_events_mouse_enter(struct dt_iop_module_t *module);
+gboolean dt_masks_events_mouse_leave(struct dt_iop_module_t *module);
+gboolean dt_masks_events_mouse_enter(struct dt_iop_module_t *module);
 
 /** functions used to manipulate gui data */
 void dt_masks_gui_form_create(dt_masks_form_t *form,
@@ -613,18 +612,18 @@ dt_masks_form_t *dt_masks_dup_masks_form(const dt_masks_form_t *form);
 GList *dt_masks_dup_forms_deep(GList *forms, dt_masks_form_t *form);
 
 /** utils functions */
-int dt_masks_point_in_form_exact(const float x,
-                                 const float y,
-                                 float *points,
-                                 const int points_start,
-                                 const int points_count);
-int dt_masks_point_in_form_near(const float x,
-                                const float y,
-                                float *points,
-                                const int points_start,
-                                const int points_count,
-                                const float distance,
-                                int *near);
+gboolean dt_masks_point_in_form_exact(const float x,
+                                      const float y,
+                                      float *points,
+                                      const int points_start,
+                                      const int points_count);
+gboolean dt_masks_point_in_form_near(const float x,
+                                     const float y,
+                                     float *points,
+                                     const int points_start,
+                                     const int points_count,
+                                     const float distance,
+                                     int *near);
 float dt_masks_drag_factor(dt_masks_form_gui_t *gui,
                            const int index,
                            const int k,
@@ -681,11 +680,11 @@ void dt_masks_blur(float *const src,
                    const float gain,
                    const float clip);
 gboolean dt_masks_calc_scharr_mask(dt_dev_detail_mask_t *details,
-                                      float *const src,
-                                      const dt_aligned_pixel_t wb);
+                                   float *const src,
+                                   const dt_aligned_pixel_t wb);
 float *dt_masks_calc_detail_mask(struct dt_dev_pixelpipe_iop_t *piece,
-                               const float threshold,
-                               const gboolean detail);
+                                 const float threshold,
+                                 const gboolean detail);
 
 /** return the list of possible mouse actions */
 GSList *dt_masks_mouse_actions(dt_masks_form_t *form);
@@ -696,7 +695,8 @@ void dt_group_events_post_expose(cairo_t *cr,
                                  dt_masks_form_gui_t *gui);
 
 /** code for dynamic handling of intermediate buffers */
-static inline gboolean _dt_masks_dynbuf_growto(dt_masks_dynbuf_t *a, const size_t newsize)
+static inline gboolean _dt_masks_dynbuf_growto(dt_masks_dynbuf_t *a,
+                                               const size_t newsize)
 {
   float *newbuf = dt_alloc_align_float(newsize);
   if (!newbuf)

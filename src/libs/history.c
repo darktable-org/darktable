@@ -1169,6 +1169,14 @@ void gui_update(dt_lib_module_t *self)
   gtk_widget_show_all(d->history_box);
   dt_gui_widget_reallocate_now(d->history_box);
 
+  if (num == darktable.develop->history_end)
+  {
+    // history has changed, scroll to the top
+    GtkWidget *sw = gtk_widget_get_ancestor(d->history_box, GTK_TYPE_SCROLLED_WINDOW);
+    GtkAdjustment* adj = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(sw));
+    gtk_adjustment_set_value(adj, 0);
+  }
+
   dt_pthread_mutex_unlock(&darktable.develop->history_mutex);
 }
 
@@ -1211,13 +1219,7 @@ static void _lib_history_truncate(const gboolean compress)
   sqlite3_finalize(stmt);
 
   // select the new history end corresponding to the one before the history compression
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "UPDATE main.images SET history_end=?2 WHERE id=?1",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, darktable.develop->history_end);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
+  dt_image_set_history_end(imgid, darktable.develop->history_end);
 
   dt_dev_reload_history_items(darktable.develop);
   dt_dev_undo_end_record(darktable.develop);
@@ -1297,6 +1299,17 @@ static gboolean _lib_history_button_clicked_callback(GtkWidget *widget,
   dt_dev_reorder_gui_module_list(darktable.develop);
   dt_image_update_final_size(imgid);
 
+  /* FIXME
+    The pixelpipe cache is reflecting parameters and it's related output correctness.
+    Yet - there are modules that require fresh data for internal visualizing.
+    As there is currently no way to know about that we do a brute-force way and simply
+    invalidate cachelines.
+    (we might want an additional iop module flag and keep track of that in pixelpipe cache code ???)
+    For raws we have at least rawprepare and demosaic
+  */
+  const int order = dt_image_is_raw(&darktable.develop->image_storage) ? 2 : 0;
+  dt_dev_pixelpipe_cache_invalidate_later(darktable.develop->preview_pipe, order);
+
   /* signal history changed */
   dt_dev_undo_end_record(darktable.develop);
 
@@ -1327,7 +1340,7 @@ void gui_reset(dt_lib_module_t *self)
   {
     dt_dev_undo_start_record(darktable.develop);
 
-    dt_history_delete_on_image_ext(imgid, FALSE);
+    dt_history_delete_on_image_ext(imgid, FALSE, TRUE);
 
     dt_dev_undo_end_record(darktable.develop);
 

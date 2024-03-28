@@ -745,7 +745,7 @@ void process(struct dt_iop_module_t *self,
   const size_t nthreads = dt_get_num_threads();
   const size_t chunksize = dt_cacheline_chunks(npixels, nthreads);
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none)                             \
+#pragma omp parallel for default(none)                             \
   dt_omp_firstprivate(in, out, mode, npixels, chunksize,                \
                       grey, saturation, saturation_out, lift, lift_sop, \
                       gamma, gamma_inv_lgg, gamma_sop, gain,            \

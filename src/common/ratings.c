@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -73,7 +73,8 @@ static void _ratings_apply_to_image(const dt_imgid_t imgid, const int rating)
         | (DT_VIEW_RATINGS_MASK & new_rating);
     }
     // synch through:
-    dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+    dt_image_cache_write_release_info(darktable.image_cache, image,
+                                      DT_IMAGE_CACHE_SAFE, "_ratings_apply_to_image");
   }
   else
   {
@@ -327,4 +328,3 @@ const dt_action_def_t dt_action_def_rating
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

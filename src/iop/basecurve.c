@@ -444,7 +444,7 @@ static void set_presets(dt_iop_module_so_t *self,
                               presets[k].maker, presets[k].model, "");
     dt_gui_presets_update_iso(_(presets[k].name), self->op, self->version(),
                               presets[k].iso_min, presets[k].iso_max);
-    dt_gui_presets_update_ldr(_(presets[k].name), self->op, self->version(), FOR_RAW);
+    dt_gui_presets_update_format(_(presets[k].name), self->op, self->version(), FOR_RAW);
     // make it auto-apply for matching images:
     dt_gui_presets_update_autoapply(_(presets[k].name), self->op, self->version(), FALSE);
     // hide all non-matching presets in case the model string is set.
@@ -576,8 +576,8 @@ void init_presets(dt_iop_module_so_t *self)
        NULL, 0,
        1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
-    dt_gui_presets_update_ldr(_("display-referred default"), self->op,
-                              self->version(), FOR_RAW);
+    dt_gui_presets_update_format(_("display-referred default"), self->op,
+                                 self->version(), FOR_RAW);
 
     dt_gui_presets_update_autoapply(_("display-referred default"),
                                     self->op, self->version(), TRUE);

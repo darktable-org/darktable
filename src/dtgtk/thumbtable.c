@@ -1047,26 +1047,29 @@ static gboolean _event_scroll_compressed(gpointer user_data)
 {
   if (!user_data) return FALSE;
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
-  if (table->scroll_value == 0) return FALSE;
-  float delta = table->scroll_value;
 
-  // starting from here, all further scroll event will count for the next round
-  table->scroll_value = 0;
+  if (table->scroll_value != 0)
+  {
+    float delta = table->scroll_value;
 
-  // for filemanager and filmstrip, scrolled = move for
-  // filemanager we ensure to fallback to show full row (can be
-  // half shown if scrollbar used)
-  int move = table->thumb_size * delta;
-  // if we scroll up and the thumb is half visible, then realign first
-  if(delta < 0 && table->thumbs_area.y != 0)
-    move += table->thumb_size -table->thumbs_area.y;
+    // starting from here, all further scroll event will count for the next round
+    table->scroll_value = 0;
 
-  _move(table, 0, -move, TRUE);
+    // for filemanager and filmstrip, scrolled = move for
+    // filemanager we ensure to fallback to show full row (can be
+    // half shown if scrollbar used)
+    int move = table->thumb_size * delta;
+    // if we scroll up and the thumb is half visible, then realign first
+    if(delta < 0 && table->thumbs_area.y != 0)
+      move += table->thumb_size -table->thumbs_area.y;
 
-  // ensure the hovered image is the right one
-  dt_thumbnail_t *th = _thumb_get_under_mouse(table);
-  if(th)
-    dt_control_set_mouse_over_id(th->imgid);
+    _move(table, 0, -move, TRUE);
+
+    // ensure the hovered image is the right one
+    dt_thumbnail_t *th = _thumb_get_under_mouse(table);
+    if(th)
+      dt_control_set_mouse_over_id(th->imgid);
+  }
 
   // we reset the id value at the end, to ensure we don't get more
   // than 1 pending scroll
@@ -1973,17 +1976,33 @@ static void _event_dnd_get(GtkWidget *widget,
       const int imgs_nb = g_list_length(table->drag_list);
       if(imgs_nb)
       {
-        dt_imgid_t *imgs = malloc(sizeof(uint32_t) * imgs_nb);
+        dt_imgid_t *imgs = calloc(imgs_nb, sizeof(dt_imgid_t));
         GList *l = table->drag_list;
-        for(int i = 0; i < imgs_nb; i++)
+
+        int idx = 0;
+        // make sure that imgs[0] is the last selected imgid, that is the
+        // one clicked when starting the d&d.
+        if(dt_is_valid_imgid(darktable.control->last_clicked_filmstrip_id))
         {
-          imgs[i] = GPOINTER_TO_INT(l->data);
+          imgs[idx] = darktable.control->last_clicked_filmstrip_id;
+          idx++;
+        }
+
+        while(l)
+        {
+          const dt_imgid_t id = GPOINTER_TO_INT(l->data);
+          if(id != imgs[0])
+          {
+            imgs[idx] = id;
+            idx++;
+            if(idx >= imgs_nb)
+              break;
+          }
           l = g_list_next(l);
         }
         gtk_selection_data_set(selection_data,
                                gtk_selection_data_get_target(selection_data),
-                               _DWORD, (guchar *)imgs, imgs_nb * sizeof(uint32_t));
-        free(imgs);
+                               _DWORD, (guchar *)imgs, imgs_nb * sizeof(dt_imgid_t));
       }
       break;
     }
@@ -2039,6 +2058,8 @@ static void _event_dnd_begin(GtkWidget *widget,
 
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
 
+  darktable.control->last_clicked_filmstrip_id =
+    dt_control_get_mouse_over_id();
   table->drag_list = dt_act_on_get_images(FALSE, TRUE, TRUE);
 
 #ifdef HAVE_MAP

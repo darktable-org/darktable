@@ -25,7 +25,7 @@ How to make a darktable Windows installer (x64 only; Windows 8.1 will need to ha
 
 * Install required libraries and dependencies for darktable:
     ```bash
-    pacman -S --needed mingw-w64-ucrt-x86_64-{libxslt,python-jsonschema,curl,drmingw,exiv2,gettext,gmic,graphicsmagick,gtk3,icu,imath,iso-codes,lcms2,lensfun,libavif,libgphoto2,libheif,libjpeg-turbo,libjxl,libpng,libraw,librsvg,libsecret,libtiff,libwebp,libxml2,lua,openexr,openjpeg2,osm-gps-map,pugixml,sqlite3,zlib}
+    pacman -S --needed mingw-w64-ucrt-x86_64-{libxslt,python-jsonschema,curl,drmingw,exiv2,gettext,gmic,graphicsmagick,gtk3,icu,imath,iso-codes,lcms2,lensfun,libavif,libgphoto2,libheif,libjpeg-turbo,libjxl,libpng,libraw,librsvg,libsecret,libtiff,libwebp,libxml2,lua,openexr,openjpeg2,osm-gps-map,pugixml,sqlite3,webp-pixbuf-loader,zlib}
     ```
 
 * Install optional libraries and dependencies:

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2023 darktable developers.
+    Copyright (C) 2013-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -196,7 +196,6 @@ static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module,
       {
         return 0;
       }
-      dt_masks_update_image(darktable.develop);
     }
     return 1;
   }
@@ -452,9 +451,6 @@ static int _circle_events_button_released(struct dt_iop_module_t *module,
     // we recreate the form points
     dt_masks_gui_form_create(form, gui, index, module);
 
-    // we save the move
-    dt_masks_update_image(darktable.develop);
-
     if(gui->creation_continuous)
     {
       dt_masks_form_t *form_new = dt_masks_create(form->type);
@@ -488,9 +484,6 @@ static int _circle_events_button_released(struct dt_iop_module_t *module,
     // we recreate the form points
     dt_masks_gui_form_create(form, gui, index, module);
 
-    // we save the move
-    dt_masks_update_image(darktable.develop);
-
     if(gui->creation_continuous)
     {
       dt_masks_form_t *form_new = dt_masks_create(form->type);
@@ -512,8 +505,6 @@ static int _circle_events_button_released(struct dt_iop_module_t *module,
     gui->point_dragging = gui->point_border_dragging = -1;
 
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
-    // we save the updated shape
-    dt_masks_update_image(darktable.develop);
   }
 
   return 0;
@@ -708,7 +699,7 @@ static float *_points_to_transform(const float x,
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
     dt_omp_firstprivate(l, points, center_x, center_y, r)      \
-    schedule(static) if(l > 100) aligned(points:64)
+    schedule(simd:static) if(l > 100) aligned(points:64)
 #endif
   for(int i = 1; i < l + 1; i++)
   {

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -54,6 +55,7 @@
 #include "common/points.h"
 #include "common/resource_limits.h"
 #include "common/undo.h"
+#include "common/gimp.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/crawler.h"
@@ -361,28 +363,28 @@ gboolean dt_supported_image(const gchar *filename)
   return supported;
 }
 
-int dt_load_from_string(const gchar *input,
-                        const gboolean open_image_in_dr,
-                        gboolean *single_image)
+dt_imgid_t dt_load_from_string(const gchar *input,
+                               const gboolean open_image_in_dr,
+                               gboolean *single_image)
 {
-  int32_t id = 0;
-  if(input == NULL || input[0] == '\0') return 0;
+  dt_imgid_t id = NO_IMGID;
+  if(input == NULL || input[0] == '\0') return NO_IMGID;
 
   char *filename = dt_util_normalize_path(input);
 
   if(filename == NULL)
   {
     dt_control_log(_("found strange path `%s'"), input);
-    return 0;
+    return NO_IMGID;
   }
 
   if(g_file_test(filename, G_FILE_TEST_IS_DIR))
   {
     // import a directory into a film roll
-    id = dt_film_import(filename);
-    if(id)
+    const dt_filmid_t filmid = dt_film_import(filename);
+    if(dt_is_valid_filmid(filmid))
     {
-      dt_film_open(id);
+      dt_film_open(filmid);
       dt_ctl_switch_mode_to("lighttable");
     }
     else
@@ -396,10 +398,10 @@ int dt_load_from_string(const gchar *input,
     // import a single image
     gchar *directory = g_path_get_dirname((const gchar *)filename);
     dt_film_t film;
-    const int filmid = dt_film_new(&film, directory);
+    const dt_filmid_t filmid = dt_film_new(&film, directory);
     id = dt_image_import(filmid, filename, TRUE, TRUE);
     g_free(directory);
-    if(id)
+    if(dt_is_valid_imgid(id))
     {
       dt_film_open(filmid);
       // make sure buffers are loaded (load full for testing)
@@ -410,7 +412,7 @@ int dt_load_from_string(const gchar *input,
       dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
       if(!loaded)
       {
-        id = 0;
+        id = NO_IMGID;
         dt_control_log(_("file `%s' has unknown format!"), filename);
       }
       else
@@ -1127,6 +1129,51 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
         darktable.pipe_cache = FALSE;
         argv[k] = NULL;
       }
+      else if(!strcmp(argv[k], "--gimp"))
+      {
+        argv[k] = NULL;
+        darktable.gimp.error = TRUE;
+
+        if(argc > k + 1)
+        {
+          darktable.gimp.mode = argv[++k];
+          argv[k-1] = NULL;
+          argv[k] = NULL;
+
+          if(dt_check_gimpmode("version"))
+            darktable.gimp.error = FALSE;
+          else if(dt_check_gimpmode("file") && (argc > k + 1))
+          {
+            darktable.gimp.path = argv[++k];
+            argv[k-1] = NULL;
+            argv[k] = NULL;
+
+            if(g_file_test(darktable.gimp.path, G_FILE_TEST_IS_REGULAR))
+              darktable.gimp.error = FALSE;
+
+          }
+          else if(dt_check_gimpmode("thumb") && (argc > k + 2))
+          {
+            darktable.gimp.path = argv[++k];
+            argv[k-1] = NULL;
+            argv[k] = NULL;
+            if(g_file_test(darktable.gimp.path, G_FILE_TEST_IS_REGULAR))
+            {
+              darktable.gimp.size = atol(argv[k + 1]);
+              k++;
+              argv[k-1] = NULL;
+              argv[k] = NULL;
+              if(darktable.gimp.size > 0)
+                darktable.gimp.error = FALSE;
+            }
+          }
+
+          if(!darktable.gimp.error)
+          {
+            dbfilename_from_command = ":memory:";
+          }
+        }
+      }
       else if(!strcmp(argv[k], "--"))
       {
         // "--" confuses the argument parser of glib/gtk. remove it.
@@ -1439,7 +1486,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   res->total_memory = _get_total_memory() * 1024lu;
 
   char *config_info = calloc(1, DT_PERF_INFOSIZE);
-  if(last_configure_version != DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION)
+  if(last_configure_version != DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION
+    && !darktable.gimp.mode)
     dt_configure_runtime_performance(last_configure_version, config_info);
 
   dt_get_sysresource_level();
@@ -1604,25 +1652,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   if(init_gui)
   {
     const char *mode = "lighttable";
-#ifdef HAVE_GAME
-    // april 1st: you have to earn using dt first! or know that you
-    // can switch views with keyboard shortcuts
-    time_t now;
-    time(&now);
-    struct tm lt;
-    localtime_r(&now, &lt);
-    if(lt.tm_mon == 3 && lt.tm_mday == 1)
-    {
-      const int current_year = lt.tm_year + 1900;
-      const int last_year = dt_conf_get_int("ui_last/april1st");
-      const gboolean kill_april1st = dt_conf_get_bool("ui_last/no_april1st");
-      if(!kill_april1st && last_year < current_year)
-      {
-        dt_conf_set_int("ui_last/april1st", current_year);
-        mode = "knight";
-      }
-    }
-#endif
     // we have to call dt_ctl_switch_mode_to() here already to not run
     // into a lua deadlock.  having another call later is ok
     dt_ctl_switch_mode_to(mode);
@@ -1649,7 +1678,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       not_again = dt_gui_show_standalone_yes_no_dialog
         (_("configuration information"),
          config_info,
-         _("_show this information again"), _("_understood"));
+         _("_show this message again"), _("_dismiss"));
 
     if(not_again || (last_configure_version == 0))
       dt_conf_set_int("performance_configuration_version_completed",
@@ -1684,7 +1713,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   dt_print(DT_DEBUG_CONTROL,
            "[dt_init] startup took %f seconds\n", dt_get_wtime() - start_wtime);
-
   return 0;
 }
 
@@ -1695,7 +1723,7 @@ void dt_get_sysresource_level()
   static int oldtunehead = -999;
 
   dt_sys_resources_t *res = &darktable.dtresources;
-  const gboolean tunehead = dt_conf_get_bool("opencl_tune_headroom");
+  const gboolean tunehead = !darktable.gimp.mode && dt_conf_get_bool("opencl_tune_headroom");
   int level = 1;
   const char *config = dt_conf_get_string_const("resourcelevel");
   /** These levels must correspond with preferences in xml.in
@@ -1706,7 +1734,7 @@ void dt_get_sysresource_level()
         - add a line of fraction in int fractions[] or ref_resources[] above
         - add a line in darktableconfig.xml.in if available via UI
   */
-  if(config)
+  if(config && !darktable.gimp.mode)
   {
          if(!strcmp(config, "default"))      level = 1;
     else if(!strcmp(config, "small"))        level = 0;

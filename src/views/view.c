@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -67,7 +67,8 @@ void dt_view_manager_init(dt_view_manager_t *vm)
                               "DELETE FROM main.selected_images WHERE imgid = ?1",
                               -1, &vm->statements.delete_from_selected, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "INSERT OR IGNORE INTO main.selected_images VALUES (?1)", -1,
+                              "INSERT OR IGNORE INTO main.selected_images (imgid)"
+                              " VALUES (?1)", -1,
                               &vm->statements.make_selected, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT num FROM main.history WHERE imgid = ?1", -1,
@@ -255,6 +256,14 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
 {
   dt_view_t *old_view = vm->current_view;
   dt_view_t *new_view = (dt_view_t *)nv; // views belong to us, we can de-const them :-)
+
+  // possibly avoid switch for as we are gimping
+  if(old_view
+      && new_view
+      && dt_check_gimpmode("file")
+      && !darktable.gimp.error
+      && dt_view_get_current() == DT_VIEW_DARKROOM)
+    return FALSE;
 
   // reset the cursor to the default one
   dt_control_change_cursor(GDK_LEFT_PTR);
@@ -700,8 +709,8 @@ void dt_view_set_scrollbar(dt_view_t *view,
 }
 
 dt_view_surface_value_t dt_view_image_get_surface(const dt_imgid_t imgid,
-                                                  const int width,
-                                                  const int height,
+                                                  const int32_t width,
+                                                  const int32_t height,
                                                   cairo_surface_t **surface,
                                                   const gboolean quality)
 {
@@ -717,15 +726,20 @@ dt_view_surface_value_t dt_view_image_get_surface(const dt_imgid_t imgid,
 
   // get mipmap cache image
   dt_mipmap_cache_t *cache = darktable.mipmap_cache;
-  dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(cache,
-                                                           width * darktable.gui->ppd,
-                                                           height * darktable.gui->ppd);
+  const int32_t mipwidth = width * darktable.gui->ppd;
+  const int32_t mipheight = height * darktable.gui->ppd;
+  dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(cache, mipwidth, mipheight);
 
   // if needed, we load the mimap buffer
   dt_mipmap_buffer_t buf;
   dt_mipmap_cache_get(cache, &buf, imgid, mip, DT_MIPMAP_BEST_EFFORT, 'r');
-  const int buf_wd = buf.width;
-  const int buf_ht = buf.height;
+
+  const int32_t buf_wd = buf.width;
+  const int32_t buf_ht = buf.height;
+
+  dt_print(DT_DEBUG_LIGHTTABLE,
+      "dt_view_image_get_surface  id %i, dots %ix%i -> mip %ix%i, found %ix%i\n",
+      imgid, mipwidth, mipheight, cache->max_width[mip], cache->max_height[mip], buf_wd, buf_ht);
 
   // if we don't get buffer, no image is awailable at the moment
   if(!buf.buf)
@@ -737,8 +751,8 @@ dt_view_surface_value_t dt_view_image_get_surface(const dt_imgid_t imgid,
   // so we create a new image surface to return
   float scale = fminf(width / (float)buf_wd,
                       height / (float)buf_ht) * darktable.gui->ppd_thb;
-  const int img_width = roundf(buf_wd * scale);
-  const int img_height = roundf(buf_ht * scale);
+  const int32_t img_width = roundf(buf_wd * scale);
+  const int32_t img_height = roundf(buf_ht * scale);
   // due to the forced rounding above, we need to recompute scaling
   scale = fmaxf(img_width / (float)buf_wd, img_height / (float)buf_ht);
   *surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24, img_width, img_height);
@@ -774,14 +788,14 @@ dt_view_surface_value_t dt_view_image_get_surface(const dt_imgid_t imgid,
         have_lock = FALSE;
         if(buf.color_space == DT_COLORSPACE_NONE)
         {
-          fprintf(stderr,
+          dt_print(DT_DEBUG_ALWAYS,
                   "oops, there seems to be a code path not setting the"
                   " color space of thumbnails!\n");
         }
         else if(buf.color_space != DT_COLORSPACE_DISPLAY
                 && buf.color_space != DT_COLORSPACE_DISPLAY2)
         {
-          fprintf(stderr,
+          dt_print(DT_DEBUG_ALWAYS,
                   "oops, there seems to be a code path setting an"
                   " unhandled color space of thumbnails (%s)!\n",
                   dt_colorspaces_get_name(buf.color_space, "from file"));
@@ -878,14 +892,11 @@ dt_view_surface_value_t dt_view_image_get_surface(const dt_imgid_t imgid,
   // logs
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_LIGHTTABLE | DT_DEBUG_PERF,
-             "[dt_view_image_get_surface]  id %i, dots %ix%i, mip %ix%i,"
-             " surf %ix%i created in %0.04f sec\n",
-             imgid, width, height, buf_wd, buf_ht,
+             "got surface  %ix%i created in %0.04f sec\n",
              img_width, img_height, dt_get_wtime() - tt);
   else
     dt_print(DT_DEBUG_LIGHTTABLE,
-             "[dt_view_image_get_surface]  id %i, dots %ix%i, mip %ix%i, surf %ix%i\n",
-             imgid, width, height, buf_wd, buf_ht, img_width, img_height);
+             "got surface  %ix%i\n", img_width, img_height);
 
   // we consider skull as ok as the image hasn't to be reload
   return ret;

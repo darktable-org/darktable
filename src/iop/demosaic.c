@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -208,7 +208,7 @@ typedef struct dt_iop_demosaic_data_t
 static gboolean get_thumb_quality(int width, int height)
 {
   // we check if we need ultra-high quality thumbnail for this size
-  const int level = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, width, height);
+  const dt_mipmap_size_t level = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, width, height);
   const char *min = dt_conf_get_string_const("plugins/lighttable/thumbnail_hq_min_level");
   const dt_mipmap_size_t min_s = dt_mipmap_cache_get_min_mip_from_pref(min);
 
@@ -801,10 +801,17 @@ int process_cl(
 
   const gboolean dual = ((demosaicing_method & DT_DEMOSAIC_DUAL) && (qual_flags & DT_DEMOSAIC_FULL_SCALE) && !run_fast);
   const int devid = piece->pipe->devid;
-  int err = DT_OPENCL_DEFAULT_ERROR;
+  int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+
+  if(dev_in  == NULL || dev_out == NULL)
+    goto finish;
 
   if(dual)
+  {
     high_image = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
+    if(high_image == NULL)
+      goto finish;
+  }
 
   if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME ||
      demosaicing_method == DT_IOP_DEMOSAIC_PPG ||
@@ -859,6 +866,7 @@ int process_cl(
 
   if(!dual) goto finish;
 
+  err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   low_image = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
   if(low_image == NULL) goto finish;
 
@@ -1298,11 +1306,12 @@ void gui_init(struct dt_iop_module_t *self)
   g->dual_thrs = dt_bauhaus_slider_from_params(self, "dual_thrs");
   dt_bauhaus_slider_set_digits(g->dual_thrs, 2);
   gtk_widget_set_tooltip_text(g->dual_thrs, _("contrast threshold for dual demosaic.\nset to 0.0 for high frequency content\n"
-                                                "set to 1.0 for flat content\ntoggle to visualize the mask"));
+                                                "set to 1.0 for flat content"));
   dt_bauhaus_widget_set_quad_paint(g->dual_thrs, dtgtk_cairo_paint_showmask, 0, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->dual_thrs, TRUE);
   dt_bauhaus_widget_set_quad_active(g->dual_thrs, FALSE);
   g_signal_connect(G_OBJECT(g->dual_thrs), "quad-pressed", G_CALLBACK(_visualize_callback), self);
+  dt_bauhaus_widget_set_quad_tooltip(g->dual_thrs, _("toggle to visualize the mask"));
 
   g->lmmse_refine = dt_bauhaus_combobox_from_params(self, "lmmse_refine");
   gtk_widget_set_tooltip_text(g->lmmse_refine, _("LMMSE refinement steps. the median steps average the output,\nrefine adds some recalculation of red & blue channels"));

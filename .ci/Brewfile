@@ -1,5 +1,5 @@
 #    This file is part of darktable.
-#    Copyright (C) 2016-2023 darktable developers.
+#    Copyright (C) 2016-2024 darktable developers.
 #
 #    darktable is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -28,13 +28,12 @@ brew 'gphoto2'
 brew 'gtk+3'
 brew 'gtk-mac-integration'
 brew 'icu4c'
-brew 'imagemagick@6'
+brew 'imagemagick'
 brew 'intltool'
 brew 'iso-codes'
 brew 'jpeg-turbo'
 brew 'jpeg-xl'
 brew 'json-glib'
-brew 'jsonschema'
 brew 'lensfun'
 brew 'libavif'
 brew 'libheif'
@@ -51,7 +50,6 @@ brew 'osm-gps-map'
 brew 'portmidi'
 brew 'pugixml'
 brew 'sdl2'
-brew 'cmocka'
 brew 'curl'
 brew 'perl'
 brew 'webp'

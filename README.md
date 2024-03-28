@@ -58,7 +58,7 @@ Requirements
 * Linux (64-bit)
 * FreeBSD (64-bit)
 * Windows (64-bit), 8.1 w/ [UCRT](https://support.microsoft.com/en-us/topic/update-for-universal-c-runtime-in-windows-c0514201-7fe6-95a3-b0a5-287930f3560c) and later
-* macOS 12.5 and later
+* macOS 13.5 and later
 
 *Big-endian platforms are not supported.*
 
@@ -89,11 +89,12 @@ you can build the software yourself following the instructions [below](#building
 
 ### Latest release
 
-4.6.0 (stable)
+4.6.1 (stable)
 
-* [Download executable for Windows](https://github.com/darktable-org/darktable/releases/download/release-4.6.0/darktable-4.6.0-win64.exe)
-* [Download executable for macOS on Intel](https://github.com/darktable-org/darktable/releases/download/release-4.6.0/darktable-4.6.0-x86_64.dmg)
-* [Download executable for macOS on Apple Silicon](https://github.com/darktable-org/darktable/releases/download/release-4.6.0/darktable-4.6.0-arm64.dmg)
+* [Download executable for Windows](https://github.com/darktable-org/darktable/releases/download/release-4.6.1/darktable-4.6.1-win64.exe)
+* [Download executable for macOS on Intel](https://github.com/darktable-org/darktable/releases/download/release-4.6.1/darktable-4.6.1-x86_64.dmg)
+* [Download executable for macOS on Apple Silicon](https://github.com/darktable-org/darktable/releases/download/release-4.6.1/darktable-4.6.1-arm64.dmg)
+* [Download executable for macOS 12.5 on Apple Silicon](https://github.com/darktable-org/darktable/releases/download/release-4.6.1/darktable-4.6.1-arm64-macOS-12.5.dmg)
 * [Install native packages or add a third-party repository for Linux distros](https://software.opensuse.org/download.html?project=graphics:darktable:stable&package=darktable)
 * [Install Flatpak package for Linux](https://flathub.org/apps/details/org.darktable.Darktable)
 * [More information about installing darktable on any system](https://www.darktable.org/install/)
@@ -152,10 +153,10 @@ Building
 ### Dependencies
 
 Compatible compilers/toolchains:
-* Clang: 13 and later
+* Clang: 15 and later
 * GCC: 12 and later
 * MinGW-w64: 10 and later
-* XCode: 14.2 and later
+* XCode: 15.2 and later
 
 Required dependencies (minimum version):
 * CMake 3.18
@@ -264,7 +265,7 @@ See below (in "Using") how to start a test install of the unstable version witho
 
 #### Latest stable release
 
-4.6.0
+4.6.1
 
 The darktable project releases two major versions every year, on Summer and Winter Solstices, tagged with even numbers (e.g. 4.0, 4.2, 4.4, 4.6).
 Minor revisions are tagged with a third digit (e.g. 4.0.1, 4.0.2) and mostly provide bug fixes and camera support.
@@ -274,7 +275,7 @@ You may want to compile these stable releases yourself to get better performance
 git clone --recurse-submodules --depth 1 https://github.com/darktable-org/darktable.git
 cd darktable
 git fetch --tags
-git checkout tags/release-4.6.0
+git checkout tags/release-4.6.1
 ```
 
 ### Get submodules

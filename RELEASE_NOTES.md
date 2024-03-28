@@ -83,9 +83,43 @@ changes (where available).
   cases. It can still be enabled via the resource file if needed.
 
 - Add buttons next to the snapshots to allow restoring it as the new
-  history.
+  history. Also the snapshots are now supporting drawn masks. It is
+  possible to visualize the difference between the main darkroom view
+  and a snapshot with different masking for example.
+
+- Using <kbd>Right-Click</kbd> on color label icons (bottom toolbar of
+  lighttable) it is possible to add a description to color
+  labels. This is an handy way of remembering the color label usage in
+  the workflow.
+
+- Removed the AI options in color calibration module because of
+  mediocre quality.
+
+- It is now possible to import in-place pictures in a gvfs mount on
+  GNU/Linux.
+
+- Add a dashed outline of the current selected area in the print view.
+
+- Added a few more EXIF fields to the image information module: White
+  balance, exposure program, flash and metering mode.  These get
+  filled automatically for new imports. For existing photos please
+  perform a "refresh EXIF" on the selected images.
 
 ## Bug Fixes
+
+- Fix copy of multiple instances to ensure the proper order is applied
+  when pasting to a new image.
+
+- Fixing raw chromatic aberration on clang based systems.
+
+- Fixes backthumb crawler for deleted history. We make sure that the
+  crawler is aware of a deleted history and so will regenerate the
+  thumbs as expected.
+
+- Fix drawn masks visualizing in darkroom after pixelpipe module have
+  changed. The drawn masks will now be properly adjusted if there is
+  new distortion on the pipe for example. This was not the case until
+  one was editing the mask.
 
 ## Lua
 
@@ -207,11 +241,12 @@ changes (where available).
 
 ### Missing Compression Mode Support
 
+- Adobe enhanced DNGs (JPEG XL flavor)
 - Apple ProRAW DNGs
-- CinemaDNG lossless (Blackmagic, DJI, etc.)
+- CinemaDNG lossless (Blackmagic, some DJI, etc.)
 - Fujifilm lossy RAFs
 - Nikon high efficiency NEFs
-- Samsung Expert RAW DNGs
+- Samsung Expert RAW DNGs (JPEG XL flavor)
 - Sony downsized lossless ARWs ("M" for full-frame, "S" for full-frame & APS-C)
 
 ### Suspended Support
@@ -230,7 +265,6 @@ are available on raw.pixls.us:
 - Minolta DiMAGE 5
 - Olympus SP320
 - Panasonic DMC-FX150
-- Pentax Q10
 - Phase One IQ250
 - Sinar Hy6/ Sinarback eXact
 - ST Micro STV680

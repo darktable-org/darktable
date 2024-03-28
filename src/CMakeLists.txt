@@ -40,6 +40,7 @@ FILE(GLOB SOURCE_FILES
   "common/file_location.c"
   "common/film.c"
   "common/gaussian.c"
+  "common/gimp.c"
   "common/gpx.c"
   "common/grouping.c"
   "common/guided_filter.c"
@@ -625,18 +626,6 @@ if(NOT HAVE_TLS)
 endif()
 
 
-if(WIN32)
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc -municode")
-  set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc")
-  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc")
-
-  SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common")
-  SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common")
-
-  list(APPEND LIBS psapi) # Needed for GetProcessMemoryInfo()
-  list(APPEND LIBS exchndl) # Needed for exception handling and backtrace()
-endif(WIN32)
-
 if(NOT CUSTOM_CFLAGS)
   if(BUILD_SSE2_CODEPATHS)
     #we MUST always specify our required instruction set, native might not detect it
@@ -678,6 +667,18 @@ if(NOT CUSTOM_CFLAGS)
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
   endif()
 endif(NOT CUSTOM_CFLAGS)
+
+if(WIN32)
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc -municode")
+  set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc")
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc")
+
+  SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common")
+  SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common")
+
+  list(APPEND LIBS psapi) # Needed for GetProcessMemoryInfo()
+  list(APPEND LIBS exchndl) # Needed for exception handling and backtrace()
+endif(WIN32)
 
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
@@ -859,13 +860,6 @@ if(BUILD_PRINT)
 else(BUILD_PRINT)
   message(STATUS "Print mode: disabled")
 endif(BUILD_PRINT)
-
-if(USE_GAME)
-  add_definitions("-DHAVE_GAME")
-  message(STATUS "Game: the good knight")
-else(USE_GAME)
-  message(STATUS "Game: no")
-endif(USE_GAME)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   if(HAVE_EXECINFO_H)

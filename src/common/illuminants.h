@@ -21,7 +21,6 @@
 #include "common/chromatic_adaptation.h"
 #include "common/image.h"
 
-
 /* Standard CIE illuminants */
 typedef enum dt_illuminant_t
 {
@@ -33,8 +32,8 @@ typedef enum dt_illuminant_t
   DT_ILLUMINANT_LED             = 5, // $DESCRIPTION: "LED (LED light)"
   DT_ILLUMINANT_BB              = 6, // $DESCRIPTION: "Planckian (black body)" general black body radiator - not CIE standard
   DT_ILLUMINANT_CUSTOM          = 7, // $DESCRIPTION: "custom" input x and y directly - bypass search
-  DT_ILLUMINANT_DETECT_SURFACES = 8, // $DESCRIPTION: "(AI) detect from image surfaces..." auto-detection in image from grey world model
-  DT_ILLUMINANT_DETECT_EDGES    = 9, // $DESCRIPTION: "(AI) detect from image edges..."auto-detection in image from grey edges model
+  DT_ILLUMINANT_DETECT_SURFACES = 8,
+  DT_ILLUMINANT_DETECT_EDGES    = 9,
   DT_ILLUMINANT_CAMERA          = 10,// $DESCRIPTION: "as shot in camera" read RAW EXIF for WB
   DT_ILLUMINANT_LAST
 } dt_illuminant_t;
@@ -257,8 +256,8 @@ static inline int illuminant_to_xy(const dt_illuminant_t illuminant, // primary 
     case DT_ILLUMINANT_PIPE:
     {
       // darktable default pipeline D50
-      x = 0.34567f;
-      y = 0.35850f;
+      x = D50xyY.x;
+      y = D50xyY.y;
       break;
     }
     case DT_ILLUMINANT_E:

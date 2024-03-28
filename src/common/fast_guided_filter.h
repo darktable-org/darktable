@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2023 darktable developers.
+    Copyright (C) 2019-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -93,8 +93,12 @@ static inline float fast_clamp(const float value, const float bottom, const floa
 
 
 __DT_CLONE_TARGETS__
-static inline void interpolate_bilinear(const float *const restrict in, const size_t width_in, const size_t height_in,
-                                        float *const restrict out, const size_t width_out, const size_t height_out,
+static inline void interpolate_bilinear(const float *const restrict in,
+                                        const size_t width_in,
+                                        const size_t height_in,
+                                        float *const restrict out,
+                                        const size_t width_out,
+                                        const size_t height_out,
                                         const size_t ch)
 {
   // Fast vectorized bilinear interpolation on ch channels
@@ -158,8 +162,10 @@ __DT_CLONE_TARGETS__
 static inline void variance_analyse(const float *const restrict guide, // I
                                     const float *const restrict mask, //p
                                     float *const restrict ab,
-                                    const size_t width, const size_t height,
-                                    const int radius, const float feathering)
+                                    const size_t width,
+                                    const size_t height,
+                                    const int radius,
+                                    const float feathering)
 {
   // Compute a box average (filter) on a grey image over a window of size 2*radius + 1
   // then get the variance of the guide and covariance with its mask
@@ -235,9 +241,9 @@ static inline void apply_linear_blending_w_geomean(float *const restrict image,
                                                    const size_t num_elem)
 {
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
 dt_omp_firstprivate(image, ab, num_elem) \
-schedule(simd:static) aligned(image, ab:64)
+schedule(static)
 #endif
   for(size_t k = 0; k < num_elem; k++)
   {
@@ -251,7 +257,9 @@ __DT_CLONE_TARGETS__
 static inline void quantize(const float *const restrict image,
                             float *const restrict out,
                             const size_t num_elem,
-                            const float sampling, const float clip_min, const float clip_max)
+                            const float sampling,
+                            const float clip_min,
+                            const float clip_max)
 {
   // Quantize in exposure levels evenly spaced in log by sampling
 
@@ -264,9 +272,9 @@ static inline void quantize(const float *const restrict image,
   {
     // fast track
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
 dt_omp_firstprivate(image, out, num_elem, sampling, clip_min, clip_max) \
-schedule(simd:static) aligned(image, out:64)
+schedule(static)
 #endif
     for(size_t k = 0; k < num_elem; k++)
       out[k] = fast_clamp(exp2f(floorf(log2f(image[k]))), clip_min, clip_max);
@@ -276,9 +284,9 @@ schedule(simd:static) aligned(image, out:64)
   {
     // slow track
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
 dt_omp_firstprivate(image, out, num_elem, sampling, clip_min, clip_max) \
-schedule(simd:static) aligned(image, out:64)
+schedule(static)
 #endif
     for(size_t k = 0; k < num_elem; k++)
       out[k] = fast_clamp(exp2f(floorf(log2f(image[k]) / sampling) * sampling), clip_min, clip_max);
@@ -288,10 +296,16 @@ schedule(simd:static) aligned(image, out:64)
 
 __DT_CLONE_TARGETS__
 static inline void fast_surface_blur(float *const restrict image,
-                                      const size_t width, const size_t height,
-                                      const int radius, float feathering, const int iterations,
-                                      const dt_iop_guided_filter_blending_t filter, const float scale,
-                                      const float quantization, const float quantize_min, const float quantize_max)
+                                      const size_t width,
+                                      const size_t height,
+                                      const int radius,
+                                      float feathering,
+                                      const int iterations,
+                                      const dt_iop_guided_filter_blending_t filter,
+                                      const float scale,
+                                      const float quantization,
+                                      const float quantize_min,
+                                      const float quantize_max)
 {
   // Works in-place on a grey image
 
@@ -313,6 +327,7 @@ static inline void fast_surface_blur(float *const restrict image,
 
   if(!ds_image || !ds_mask || !ds_ab || !ab)
   {
+    dt_print(DT_DEBUG_PIPE, "fast guided filter failed to allocate memory\n");
     dt_control_log(_("fast guided filter failed to allocate memory, check your RAM settings"));
     goto clean;
   }
@@ -350,10 +365,10 @@ static inline void fast_surface_blur(float *const restrict image,
     apply_linear_blending_w_geomean(image, ab, num_elem);
 
 clean:
-  if(ab) dt_free_align(ab);
-  if(ds_ab) dt_free_align(ds_ab);
-  if(ds_mask) dt_free_align(ds_mask);
-  if(ds_image) dt_free_align(ds_image);
+  dt_free_align(ab);
+  dt_free_align(ds_ab);
+  dt_free_align(ds_mask);
+  dt_free_align(ds_image);
 }
 
 // clang-format off

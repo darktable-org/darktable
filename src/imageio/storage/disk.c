@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -198,14 +198,29 @@ static void button_clicked(GtkWidget *widget,
         _("_select as output destination"), _("_cancel"));
 
   gchar *old = g_strdup(gtk_entry_get_text(d->entry));
-  char *c = g_strstr_len(old, -1, "$");
-  if(c) *c = '\0';
-  gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), old);
+  gchar *dirname;
+  gchar *filename;
+  if (g_file_test(old, G_FILE_TEST_IS_DIR))
+  {
+    // only a directory was specified, no filename
+    // so we use the default $(FILE.NAME) for filename.
+    dirname = g_strdup(old);
+    filename = g_strdup("$(FILE.NAME)");
+  }
+  else
+  {
+    dirname = g_path_get_dirname(old);
+    filename = g_path_get_basename(old);
+  }
+
+  gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), dirname);
   g_free(old);
+  g_free(dirname);
+
   if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     gchar *dir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
-    char *composed = g_build_filename(dir, "$(FILE_NAME)", NULL);
+    char *composed = g_build_filename(dir, filename, NULL);
 
     // composed can now contain '\': on Windows it's the path separator,
     // on other platforms it can be part of a regular folder name.
@@ -219,6 +234,7 @@ static void button_clicked(GtkWidget *widget,
     g_free(composed);
     g_free(escaped);
   }
+  g_free(filename);
   g_object_unref(filechooser);
 }
 

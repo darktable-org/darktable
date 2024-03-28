@@ -256,9 +256,9 @@ icc_end:
     }
 
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
   dt_omp_firstprivate(in_tmp, out_image, width, height) \
-  schedule(simd:static) \
+  schedule(static) \
   collapse(2)
 #endif
     for(size_t y = 0; y < height; y++)
@@ -337,9 +337,9 @@ icc_end:
           }
 
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
   dt_omp_firstprivate(raster_mask, out_mask, width, height) \
-  schedule(simd:static) \
+  schedule(static) \
   collapse(2)
 #endif
           for(size_t y = 0; y < height; y++)

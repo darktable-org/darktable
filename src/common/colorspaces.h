@@ -27,8 +27,12 @@
   #define TYPE_XYZA_FLT (FLOAT_SH(1)|COLORSPACE_SH(PT_XYZ)|EXTRA_SH(1)|CHANNELS_SH(3)|BYTES_SH(4))
 #endif
 
+// CIE 1931 2° as used in dt
+//D50 (ProPhoto RGB)
+static const cmsCIExyY D50xyY = {0.34567, 0.35850, 1.0};
+
 //D65 (sRGB, AdobeRGB, Rec2020)
-static const cmsCIExyY D65xyY = {0.312700492, 0.329000939, 1.0};
+static const cmsCIExyY D65xyY = {0.31271, 0.32902, 1.0};
 
 /** colorspace enums, must be in synch with dt_iop_colorspace_type_t
  * in color_conversion.cl */
@@ -288,8 +292,8 @@ static inline void rgb2hsl(const dt_aligned_pixel_t rgb,
                            float *l)
 {
   const float r = rgb[0], g = rgb[1], b = rgb[2];
-  const float pmax = fmaxf(r, fmax(g, b));
-  const float pmin = fminf(r, fmin(g, b));
+  const float pmax = fmaxf(r, fmaxf(g, b));
+  const float pmin = fminf(r, fminf(g, b));
   const float delta = (pmax - pmin);
 
   float hv = 0, sv = 0, lv = (pmin + pmax) / 2.0;

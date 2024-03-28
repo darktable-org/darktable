@@ -237,12 +237,15 @@ void init_presets(dt_iop_module_so_t *self)
 
   if(auto_apply_sigmoid)
   {
-    dt_gui_presets_add_generic(_("scene-referred default"), self->op, self->version(), NULL, 0, 1,
+    dt_gui_presets_add_generic(_("scene-referred default"),
+                               self->op, self->version(), NULL, 0, 1,
                                DEVELOP_BLEND_CS_RGB_SCENE);
 
-    dt_gui_presets_update_ldr(_("scene-referred default"), self->op, self->version(), FOR_RAW | FOR_MATRIX);
+    dt_gui_presets_update_format(_("scene-referred default"),
+                                 self->op, self->version(), FOR_RAW | FOR_MATRIX);
 
-    dt_gui_presets_update_autoapply(_("scene-referred default"), self->op, self->version(), TRUE);
+    dt_gui_presets_update_autoapply(_("scene-referred default"),
+                                    self->op, self->version(), TRUE);
   }
 
   // others
@@ -255,19 +258,22 @@ void init_presets(dt_iop_module_so_t *self)
   p.middle_grey_contrast = 1.22f;
   p.contrast_skewness = 0.65f;
   p.hue_preservation = 100.0f;
-  dt_gui_presets_add_generic(_("neutral gray"), self->op, self->version(), &p, sizeof(p), 1,
+  dt_gui_presets_add_generic(_("neutral gray"), self->op,
+                             self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.middle_grey_contrast = 1.6f;
   p.contrast_skewness = -0.2f;
   p.hue_preservation = 0.0f;
-  dt_gui_presets_add_generic(_("ACES 100-nit like"), self->op, self->version(), &p, sizeof(p), 1,
+  dt_gui_presets_add_generic(_("ACES 100-nit like"), self->op,
+                             self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.middle_grey_contrast = 1.0f;
   p.contrast_skewness = 0.0f;
   p.color_processing = DT_SIGMOID_METHOD_RGB_RATIO;
-  dt_gui_presets_add_generic(_("Reinhard"), self->op, self->version(), &p, sizeof(p), 1,
+  dt_gui_presets_add_generic(_("Reinhard"), self->op,
+                             self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   const float DEG_TO_RAD = DT_M_PI_F / 180.f;
@@ -287,9 +293,11 @@ void init_presets(dt_iop_module_so_t *self)
   p.blue_rotation = -3.f * DEG_TO_RAD;
   // Don't restore purity - try to avoid posterization.
   p.purity = 0.f;
-  // Constant base primaries (not dependent on work profile) to maintain a consistent behavior
+  // Constant base primaries (not dependent on work profile) to
+  // maintain a consistent behavior
   p.base_primaries = DT_SIGMOID_REC2020;
-  dt_gui_presets_add_generic(_("smooth"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+  dt_gui_presets_add_generic(_("smooth"), self->op, self->version(),
+                             &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
 // Declared here as it is used in the commit params function

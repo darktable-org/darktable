@@ -164,14 +164,16 @@ static gboolean _gui_is_set(GList *selops,
                             const unsigned int num)
 {
   /* nothing to filter */
-  if(!selops) return TRUE;
+  if(!selops)
+    return TRUE;
 
   for(GList *l = selops; l; l = g_list_next(l))
   {
     if(l->data)
     {
       const unsigned int lnum = GPOINTER_TO_UINT(l->data);
-      if(lnum == num) return TRUE;
+      if(lnum == num)
+        return TRUE;
     }
   }
   return FALSE;
@@ -311,7 +313,7 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
     dt_draw_paint_to_pixbuf(GTK_WIDGET(dialog), 10, 0, dtgtk_cairo_paint_showmask);
 
   /* fill list with history items */
-  GList *items = dt_history_get_items(imgid, FALSE, TRUE);
+  GList *items = dt_history_get_items(imgid, FALSE, TRUE, TRUE);
   if(items)
   {
     GtkTreeIter iter;

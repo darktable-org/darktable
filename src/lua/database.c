@@ -108,7 +108,7 @@ int dt_lua_copy_image(lua_State *L)
 static int import_images(lua_State *L)
 {
   char *full_name = g_realpath(luaL_checkstring(L, -1));
-  int result;
+  dt_filmid_t result;
 
   if(!full_name || !g_file_test(full_name, G_FILE_TEST_EXISTS))
   {
@@ -118,7 +118,7 @@ static int import_images(lua_State *L)
   else if(g_file_test(full_name, G_FILE_TEST_IS_DIR))
   {
     result = dt_film_import(full_name);
-    if(result == 0)
+    if(!dt_is_valid_filmid(result))
     {
       g_free(full_name);
       return luaL_error(L, "error while importing");
@@ -141,7 +141,7 @@ static int import_images(lua_State *L)
     }
     result = dt_film_new(&new_film, final_path);
     g_free(final_path);
-    if(result == 0)
+    if(!dt_is_valid_filmid(result))
     {
       if(dt_film_is_empty(new_film.id)) dt_film_remove(new_film.id);
       dt_film_cleanup(&new_film);
@@ -152,7 +152,7 @@ static int import_images(lua_State *L)
     result = dt_image_import_lua(new_film.id, full_name, TRUE);
     if(dt_film_is_empty(new_film.id)) dt_film_remove(new_film.id);
     dt_film_cleanup(&new_film);
-    if(result == 0)
+    if(!dt_is_valid_filmid(result))
     {
       g_free(full_name);
       return luaL_error(L, "error while importing");

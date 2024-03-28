@@ -1046,7 +1046,7 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
   const int devid = piece->pipe->devid;
   const int offs[2] = { dx, dy };
 
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   cl_mem dev_blendif_params = NULL;
   cl_mem dev_boost_factors = NULL;
   cl_mem dev_mask_1 = NULL;
@@ -1211,6 +1211,7 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
 
     _refine_with_detail_mask_cl(self, piece, mask, roi_in, roi_out, d->details, devid);
 
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     // write mask from host to device
     dev_mask_2 = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float));
     if(dev_mask_2 == NULL) goto error;
@@ -1263,6 +1264,7 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
     for(int index = 0; index < (int)post_operations_size; index++)
     {
       _develop_mask_post_processing operation = post_operations[index];
+      err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
       if(operation == DEVELOP_MASK_POST_FEATHER_IN)
       {
         if(!rois_equal)
@@ -1277,21 +1279,27 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
             dt_opencl_release_mem_object(dev_guide);
             goto error;
           }
-          guided_filter_cl(devid, dev_guide, dev_mask_1, dev_mask_2, owidth, oheight, ch,
+          err = guided_filter_cl(devid, dev_guide, dev_mask_1, dev_mask_2, owidth, oheight, ch,
                             featherw, sqrt_eps, guide_weight, 0.0f, 1.0f);
           dt_opencl_release_mem_object(dev_guide);
+          if(err != CL_SUCCESS)
+            goto error;
         }
         else
         {
-          guided_filter_cl(devid, dev_in, dev_mask_1, dev_mask_2, owidth, oheight, ch,
+          err = guided_filter_cl(devid, dev_in, dev_mask_1, dev_mask_2, owidth, oheight, ch,
                             featherw, sqrt_eps, guide_weight, 0.0f, 1.0f);
+          if(err != CL_SUCCESS)
+            goto error;
         }
         _blend_process_cl_exchange(&dev_mask_1, &dev_mask_2);
       }
       else if(operation == DEVELOP_MASK_POST_FEATHER_OUT)
       {
-        guided_filter_cl(devid, dev_out, dev_mask_1, dev_mask_2, owidth, oheight, ch,
+        err = guided_filter_cl(devid, dev_out, dev_mask_1, dev_mask_2, owidth, oheight, ch,
                           featherw, sqrt_eps, guide_weight, 0.0f, 1.0f);
+        if(err != CL_SUCCESS)
+          goto error;
         _blend_process_cl_exchange(&dev_mask_1, &dev_mask_2);
       }
       else if(operation == DEVELOP_MASK_POST_BLUR)
@@ -1303,6 +1311,7 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
         dt_gaussian_cl_t *g = dt_gaussian_init_cl(devid,
                                                   owidth, oheight, 1,
                                                   mmax, mmin, sigma, 0);
+        err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
         if(!g) goto error;
         err = dt_gaussian_blur_cl(g, dev_mask_1, dev_mask_2);
         dt_gaussian_free_cl(g);
@@ -1340,8 +1349,11 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
 
   // get temporary buffer for output image to overcome readonly/writeonly limitation
   dev_tmp = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float) * ch);
-  if(dev_tmp == NULL) goto error;
-
+  if(dev_tmp == NULL)
+  {
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    goto error;
+  }
   err = dt_opencl_enqueue_copy_image(devid, dev_out, dev_tmp, origin, origin, region);
   if(err != CL_SUCCESS) goto error;
 
@@ -1351,7 +1363,11 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
     dev_boost_factors =
       dt_opencl_copy_host_to_device_constant(devid, sizeof(d->blendif_boost_factors),
                                              d->blendif_boost_factors);
-    if(dev_blendif_params == NULL) goto error;
+    if(dev_blendif_params == NULL)
+    {
+      err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+      goto error;
+    }
 
     // the display channel of Lab blending is generated in RGB and should be transformed to Lab
     // the transformation in the pipeline is currently always using the work profile

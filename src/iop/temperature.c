@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -46,7 +46,7 @@
 #include "common/colorspaces.h"
 #include "external/cie_colorimetric_tables.c"
 
-DT_MODULE_INTROSPECTION(3, dt_iop_temperature_params_t)
+DT_MODULE_INTROSPECTION(4, dt_iop_temperature_params_t)
 
 #define INITIALBLACKBODYTEMPERATURE 4000
 
@@ -56,7 +56,7 @@ DT_MODULE_INTROSPECTION(3, dt_iop_temperature_params_t)
 #define DT_IOP_LOWEST_TINT 0.135
 #define DT_IOP_HIGHEST_TINT 2.326
 
-#define DT_IOP_NUM_OF_STD_TEMP_PRESETS 4
+#define DT_IOP_NUM_OF_STD_TEMP_PRESETS 5
 
 // If you reorder presets combo, change this consts
 #define DT_IOP_TEMP_UNKNOWN -1
@@ -64,8 +64,9 @@ DT_MODULE_INTROSPECTION(3, dt_iop_temperature_params_t)
 #define DT_IOP_TEMP_SPOT 1
 #define DT_IOP_TEMP_USER 2
 #define DT_IOP_TEMP_D65 3
+#define DT_IOP_TEMP_D65_LATE 4
 
-static void gui_sliders_update(struct dt_iop_module_t *self);
+static void _gui_sliders_update(struct dt_iop_module_t *self);
 
 typedef struct dt_iop_temperature_params_t
 {
@@ -73,6 +74,7 @@ typedef struct dt_iop_temperature_params_t
   float green;   // $MIN: 0.0 $MAX: 8.0
   float blue;    // $MIN: 0.0 $MAX: 8.0
   float various; // $MIN: 0.0 $MAX: 8.0
+  int preset;
 } dt_iop_temperature_params_t;
 
 typedef struct dt_iop_temperature_gui_data_t
@@ -85,6 +87,7 @@ typedef struct dt_iop_temperature_gui_data_t
   GtkWidget *btn_asshot; //As Shot
   GtkWidget *btn_user;
   GtkWidget *btn_d65;
+  GtkWidget *btn_d65_late;
   GtkWidget *temp_label;
   GtkWidget *balance_label;
   int preset_cnt;
@@ -101,6 +104,7 @@ typedef struct dt_iop_temperature_gui_data_t
 typedef struct dt_iop_temperature_data_t
 {
   float coeffs[4];
+  int preset;
 } dt_iop_temperature_data_t;
 
 typedef struct dt_iop_temperature_global_data_t
@@ -132,6 +136,15 @@ int legacy_params(dt_iop_module_t *self,
     float various;
   } dt_iop_temperature_params_v3_t;
 
+  typedef struct dt_iop_temperature_params_v4_t
+  {
+    float red;
+    float green;
+    float blue;
+    float various;
+    int preset;
+  } dt_iop_temperature_params_v4_t;
+
   if(old_version == 2)
   {
     typedef struct dt_iop_temperature_params_v2_t
@@ -152,6 +165,23 @@ int legacy_params(dt_iop_module_t *self,
     *new_params = n;
     *new_params_size = sizeof(dt_iop_temperature_params_v3_t);
     *new_version = 3;
+    return 0;
+  }
+
+  if(old_version == 3)
+  {
+    const dt_iop_temperature_params_v3_t *o = (dt_iop_temperature_params_v3_t *)old_params;
+    dt_iop_temperature_params_v4_t *n =
+      (dt_iop_temperature_params_v4_t *)malloc(sizeof(dt_iop_temperature_params_v4_t));
+
+    n->red = o->red;
+    n->green = o->green;
+    n->blue = o->blue;
+    n->various = NAN;
+    n->preset = DT_IOP_TEMP_UNKNOWN;
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_temperature_params_v4_t);
+    *new_version = 4;
     return 0;
   }
   return 1;
@@ -255,7 +285,7 @@ typedef double((*spd)(unsigned long int wavelength, double TempK));
  * Bruce Lindbloom, "Spectral Power Distribution of a Blackbody Radiator"
  * http://www.brucelindbloom.com/Eqn_Blackbody.html
  */
-static double spd_blackbody(unsigned long int wavelength, double TempK)
+static double _spd_blackbody(unsigned long int wavelength, double TempK)
 {
   // convert wavelength from nm to m
   const long double lambda = (double)wavelength * 1e-9;
@@ -289,9 +319,9 @@ static double spd_blackbody(unsigned long int wavelength, double TempK)
  * http://www.brucelindbloom.com/Eqn_DIlluminant.html
  * and https://en.wikipedia.org/wiki/Standard_illuminant#Illuminant_series_D
  */
-static double spd_daylight(unsigned long int wavelength, double TempK)
+static double _spd_daylight(unsigned long int wavelength, double TempK)
 {
-  cmsCIExyY WhitePoint = { 0.3127, 0.3290, 1.0 };
+  cmsCIExyY WhitePoint = { D65xyY.x, D65xyY.y, 1.0 };
 
   /*
    * Bruce Lindbloom, "TempK to xy"
@@ -316,7 +346,7 @@ static double spd_daylight(unsigned long int wavelength, double TempK)
  * Bruce Lindbloom, "Computing XYZ From Spectral Data (Emissive Case)"
  * http://www.brucelindbloom.com/Eqn_Spect_to_XYZ.html
  */
-static cmsCIEXYZ spectrum_to_XYZ(double TempK, spd I)
+static cmsCIEXYZ _spectrum_to_XYZ(double TempK, spd I)
 {
   cmsCIEXYZ Source = {.X = 0.0, .Y = 0.0, .Z = 0.0 };
 
@@ -347,7 +377,7 @@ static cmsCIEXYZ spectrum_to_XYZ(double TempK, spd I)
 }
 
 // TODO: temperature and tint cannot be disjoined! (here it assumes no tint)
-static cmsCIEXYZ temperature_to_XYZ(double TempK)
+static cmsCIEXYZ _temperature_to_XYZ(double TempK)
 {
   if(TempK < DT_IOP_LOWEST_TEMPERATURE) TempK = DT_IOP_LOWEST_TEMPERATURE;
   if(TempK > DT_IOP_HIGHEST_TEMPERATURE) TempK = DT_IOP_HIGHEST_TEMPERATURE;
@@ -356,17 +386,17 @@ static cmsCIEXYZ temperature_to_XYZ(double TempK)
   {
     // if temperature is less than 4000K we use blackbody,
     // because there will be no Daylight reference below 4000K...
-    return spectrum_to_XYZ(TempK, spd_blackbody);
+    return _spectrum_to_XYZ(TempK, _spd_blackbody);
   }
   else
   {
-    return spectrum_to_XYZ(TempK, spd_daylight);
+    return _spectrum_to_XYZ(TempK, _spd_daylight);
   }
 }
 
-static cmsCIEXYZ temperature_tint_to_XYZ(double TempK, double tint)
+static cmsCIEXYZ _temperature_tint_to_XYZ(double TempK, double tint)
 {
-  cmsCIEXYZ xyz = temperature_to_XYZ(TempK);
+  cmsCIEXYZ xyz = _temperature_to_XYZ(TempK);
 
   xyz.Y /= tint; // TODO: This is baaad!
 
@@ -374,7 +404,7 @@ static cmsCIEXYZ temperature_tint_to_XYZ(double TempK, double tint)
 }
 
 // binary search inversion
-static void XYZ_to_temperature(cmsCIEXYZ XYZ, float *TempK, float *tint)
+static void _XYZ_to_temperature(cmsCIEXYZ XYZ, float *TempK, float *tint)
 {
   double maxtemp = DT_IOP_HIGHEST_TEMPERATURE, mintemp = DT_IOP_LOWEST_TEMPERATURE;
   cmsCIEXYZ _xyz;
@@ -383,7 +413,7 @@ static void XYZ_to_temperature(cmsCIEXYZ XYZ, float *TempK, float *tint)
       (maxtemp - mintemp) > 1.0;
       *TempK = (maxtemp + mintemp) / 2.0)
   {
-    _xyz = temperature_to_XYZ(*TempK);
+    _xyz = _temperature_to_XYZ(*TempK);
     if(_xyz.Z / _xyz.X > XYZ.Z / XYZ.X)
       maxtemp = *TempK;
     else
@@ -400,7 +430,7 @@ static void XYZ_to_temperature(cmsCIEXYZ XYZ, float *TempK, float *tint)
   if(*tint > DT_IOP_HIGHEST_TINT) *tint = DT_IOP_HIGHEST_TINT;
 }
 
-static void xyz2mul(dt_iop_module_t *self,
+static void _xyz2mul(dt_iop_module_t *self,
                     cmsCIEXYZ xyz,
                     double mul[4])
 {
@@ -421,12 +451,12 @@ static void xyz2mul(dt_iop_module_t *self,
   for(int k = 0; k < 4; k++) mul[k] = 1.0 / CAM[k];
 }
 
-static void temp2mul(dt_iop_module_t *self,
+static void _temp2mul(dt_iop_module_t *self,
                      const double TempK,
                      const double tint,
                      double mul[4])
 {
-  cmsCIEXYZ xyz = temperature_to_XYZ(TempK);
+  cmsCIEXYZ xyz = _temperature_to_XYZ(TempK);
 
   xyz.Y /= tint; // TODO: This is baaad!
   /**
@@ -437,10 +467,10 @@ static void temp2mul(dt_iop_module_t *self,
    * to planckian locus. That means it actually changes temperature and thus it lies!
    */
 
-  xyz2mul(self, xyz, mul);
+  _xyz2mul(self, xyz, mul);
 }
 
-static cmsCIEXYZ mul2xyz(dt_iop_module_t *self,
+static cmsCIEXYZ _mul2xyz(dt_iop_module_t *self,
                          const dt_iop_temperature_params_t *p)
 {
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
@@ -464,12 +494,12 @@ static cmsCIEXYZ mul2xyz(dt_iop_module_t *self,
   return (cmsCIEXYZ){ XYZ[0], XYZ[1], XYZ[2] };
 }
 
-static void mul2temp(dt_iop_module_t *self,
+static void _mul2temp(dt_iop_module_t *self,
                      dt_iop_temperature_params_t *p,
                      float *TempK,
                      float *tint)
 {
-  XYZ_to_temperature(mul2xyz(self, p), TempK, tint);
+  _XYZ_to_temperature(_mul2xyz(self, p), TempK, tint);
 }
 
 #ifdef _OPENMP
@@ -483,6 +513,24 @@ static inline void scaled_copy_4wide(float *const outp,
   // at -O2 as well as -O3
   for_four_channels(c, aligned(inp, coeffs, outp))
     outp[c] = inp[c] * coeffs[c];
+}
+
+static inline void _publish_chroma(dt_dev_pixelpipe_iop_t *piece)
+{
+  const dt_iop_temperature_data_t *const d = (dt_iop_temperature_data_t *)piece->data;
+  struct dt_iop_module_t *self = piece->module;
+  dt_dev_chroma_t *chr = &self->dev->chroma;
+
+  piece->pipe->dsc.temperature.enabled = piece->enabled;
+  chr->temperature = self;
+  for_four_channels(k)
+  {
+    piece->pipe->dsc.temperature.coeffs[k] = d->coeffs[k];
+    piece->pipe->dsc.processed_maximum[k] =
+      d->coeffs[k] * piece->pipe->dsc.processed_maximum[k];
+    chr->wb_coeffs[k] = d->coeffs[k];
+  }
+  chr->late_correction = (d->preset == DT_IOP_TEMP_D65_LATE);
 }
 
 void process(struct dt_iop_module_t *self,
@@ -604,15 +652,7 @@ void process(struct dt_iop_module_t *self,
     }
   }
 
-  piece->pipe->dsc.temperature.enabled = TRUE;
-  self->dev->chroma.temperature = self;
-  for_four_channels(k)
-  {
-    piece->pipe->dsc.temperature.coeffs[k] = d->coeffs[k];
-    piece->pipe->dsc.processed_maximum[k] =
-      d->coeffs[k] * piece->pipe->dsc.processed_maximum[k];
-    self->dev->chroma.wb_coeffs[k] = d->coeffs[k];
-  }
+  _publish_chroma(piece);
 }
 
 #ifdef HAVE_OPENCL
@@ -667,15 +707,7 @@ int process_cl(struct dt_iop_module_t *self,
     CLARG(roi_out->x), CLARG(roi_out->y), CLARG(dev_xtrans));
   if(err != CL_SUCCESS) goto error;
 
-  piece->pipe->dsc.temperature.enabled = TRUE;
-  self->dev->chroma.temperature = self;
-  for_four_channels(k)
-  {
-    piece->pipe->dsc.temperature.coeffs[k] = d->coeffs[k];
-    piece->pipe->dsc.processed_maximum[k] =
-      d->coeffs[k] * piece->pipe->dsc.processed_maximum[k];
-    self->dev->chroma.wb_coeffs[k] = d->coeffs[k];
-  }
+  _publish_chroma(piece);
 
 error:
   dt_opencl_release_mem_object(dev_coeffs);
@@ -715,6 +747,8 @@ void commit_params(struct dt_iop_module_t *self,
   if(self->dev->image_storage.flags & DT_IMAGE_4BAYER)
     piece->process_cl_ready = FALSE;
 
+  d->preset = p->preset;
+  chr->late_correction = (p->preset == DT_IOP_TEMP_D65_LATE);
 }
 
 void init_pipe(struct dt_iop_module_t *self,
@@ -732,7 +766,7 @@ void cleanup_pipe(struct dt_iop_module_t *self,
   piece->data = NULL;
 }
 
-int generate_preset_combo(struct dt_iop_module_t *self)
+static int _generate_preset_combo(struct dt_iop_module_t *self)
 {
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   int presets_found = 0;
@@ -800,7 +834,7 @@ int generate_preset_combo(struct dt_iop_module_t *self)
   return presets_found;
 }
 
-void color_finetuning_slider(struct dt_iop_module_t *self)
+static void _color_finetuning_slider(struct dt_iop_module_t *self)
 {
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
 
@@ -886,7 +920,7 @@ void color_finetuning_slider(struct dt_iop_module_t *self)
   }
 }
 
-void color_rgb_sliders(struct dt_iop_module_t *self)
+static void _color_rgb_sliders(struct dt_iop_module_t *self)
 {
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
 
@@ -995,7 +1029,7 @@ void color_rgb_sliders(struct dt_iop_module_t *self)
   }
 }
 
-void color_temptint_sliders(struct dt_iop_module_t *self)
+static void _color_temptint_sliders(struct dt_iop_module_t *self)
 {
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
 
@@ -1023,7 +1057,7 @@ void color_temptint_sliders(struct dt_iop_module_t *self)
   };
 
   double cur_coeffs[4] = {0.0};
-  temp2mul(self, cur_temp, 1.0, cur_coeffs);
+  _temp2mul(self, cur_temp, 1.0, cur_coeffs);
   const double cur_white[3] = {
     1.0 / cur_coeffs[0],
     1.0 / cur_coeffs[1],
@@ -1041,8 +1075,8 @@ void color_temptint_sliders(struct dt_iop_module_t *self)
 
       double coeffs_K[4];
       double coeffs_tint[4];
-      temp2mul(self, K, cur_tint, coeffs_K);
-      temp2mul(self, cur_temp, tint, coeffs_tint);
+      _temp2mul(self, K, cur_tint, coeffs_K);
+      _temp2mul(self, cur_temp, tint, coeffs_tint);
       coeffs_K[0] /= coeffs_K[1];
       coeffs_K[2] /= coeffs_K[1];
       coeffs_K[3] /= coeffs_K[1];
@@ -1093,8 +1127,8 @@ void color_temptint_sliders(struct dt_iop_module_t *self)
       const double K = DT_IOP_LOWEST_TEMPERATURE + i * temp_step;
       const double tint = DT_IOP_LOWEST_TINT + i * tint_step;
 
-      const cmsCIEXYZ cmsXYZ_temp = temperature_tint_to_XYZ(K,cur_tint);
-      const cmsCIEXYZ cmsXYZ_tint = temperature_tint_to_XYZ(cur_temp, tint);
+      const cmsCIEXYZ cmsXYZ_temp = _temperature_tint_to_XYZ(K,cur_tint);
+      const cmsCIEXYZ cmsXYZ_tint = _temperature_tint_to_XYZ(cur_temp, tint);
       dt_aligned_pixel_t XYZ_temp = {cmsXYZ_temp.X, cmsXYZ_temp.Y, cmsXYZ_temp.Z};
       dt_aligned_pixel_t XYZ_tint = {cmsXYZ_tint.X, cmsXYZ_tint.Y, cmsXYZ_tint.Z};
       dt_aligned_pixel_t sRGB_temp;
@@ -1136,10 +1170,35 @@ void color_temptint_sliders(struct dt_iop_module_t *self)
   }
 }
 
+static inline const char *_preset_to_str(const int preset)
+{
+  switch(preset)
+  {
+    case DT_IOP_TEMP_AS_SHOT:   return "as shot";
+    case DT_IOP_TEMP_SPOT:      return "by spot";
+    case DT_IOP_TEMP_USER:      return "user defined";
+    case DT_IOP_TEMP_D65:       return "camera reference";
+    case DT_IOP_TEMP_D65_LATE:  return "as shot to reference";
+    default:                    return "other";
+  }
+}
+
+static void _update_preset(dt_iop_module_t *self, int mode)
+{
+  dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
+  dt_dev_chroma_t *chr = &self->dev->chroma;
+
+  p->preset = mode;
+  chr->late_correction = (mode == DT_IOP_TEMP_D65_LATE);
+}
+
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
+  dt_iop_temperature_params_t *d = self->default_params;
+
+  d->preset = dt_is_scene_referred() ? DT_IOP_TEMP_D65_LATE : DT_IOP_TEMP_AS_SHOT;
 
   const gboolean true_monochrome =
     dt_image_monochrome_flags(&self->dev->image_storage) & DT_IMAGE_MONOCHROME;
@@ -1155,7 +1214,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_color_picker_reset(self, TRUE);
 
   float tempK, tint;
-  mul2temp(self, p, &tempK, &tint);
+  _mul2temp(self, p, &tempK, &tint);
 
   dt_bauhaus_slider_set(g->scale_k, tempK);
   dt_bauhaus_slider_set(g->scale_tint, tint);
@@ -1172,9 +1231,16 @@ void gui_update(struct dt_iop_module_t *self)
   gboolean found = FALSE;
   const dt_dev_chroma_t *chr = &self->dev->chroma;
   // is this a "as shot" white balance?
-  if(dt_dev_equal_chroma((float *)p, chr->as_shot))
+  if(dt_dev_equal_chroma((float *)p, chr->as_shot) && (p->preset == DT_IOP_TEMP_D65_LATE))
+  {
+    dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_D65_LATE);
+    found = TRUE;
+  }
+
+  else if(dt_dev_equal_chroma((float *)p, chr->as_shot))
   {
     dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_AS_SHOT);
+    p->preset = DT_IOP_TEMP_AS_SHOT;
     found = TRUE;
   }
 
@@ -1182,6 +1248,7 @@ void gui_update(struct dt_iop_module_t *self)
   else if(dt_dev_equal_chroma((float *)p, chr->D65coeffs))
   {
     dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_D65);
+    p->preset = DT_IOP_TEMP_D65;
     found = TRUE;
   }
 
@@ -1308,25 +1375,34 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_widget_set_visible(GTK_WIDGET(g->finetune), show_finetune);
   gtk_widget_set_visible(g->buttonbar, g->button_bar_visible);
 
-  const int preset = dt_bauhaus_combobox_get(g->presets);
+  _update_preset(self, p->preset);
 
+  dt_bauhaus_combobox_set(g->presets, p->preset);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_asshot),
-                               preset == DT_IOP_TEMP_AS_SHOT);
+                               p->preset == DT_IOP_TEMP_AS_SHOT);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_user),
-                               preset == DT_IOP_TEMP_USER);
+                               p->preset == DT_IOP_TEMP_USER);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_d65),
-                               preset == DT_IOP_TEMP_D65);
+                               p->preset == DT_IOP_TEMP_D65);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_d65_late),
+                               p->preset == DT_IOP_TEMP_D65_LATE);
 
-  color_temptint_sliders(self);
-  color_rgb_sliders(self);
-  color_finetuning_slider(self);
+  _color_temptint_sliders(self);
+  _color_rgb_sliders(self);
+  _color_finetuning_slider(self);
+
+  dt_print_pipe(DT_DEBUG_PIPE,
+    "used preset", NULL, self, DT_DEVICE_NONE, NULL, NULL,
+    "preset='%s': D65 %.3f %.3f %.3f, AS-SHOT %.3f %.3f %.3f\n",
+    _preset_to_str(p->preset),
+    chr->D65coeffs[0], chr->D65coeffs[1], chr->D65coeffs[2], chr->as_shot[0], chr->as_shot[1], chr->as_shot[2]);
 
   dt_gui_update_collapsible_section(&g->cs);
 
   gtk_widget_queue_draw(self->widget);
 }
 
-static gboolean calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb[4])
+static gboolean _calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb[4])
 {
   if(!dt_image_is_matrix_correction_supported(&module->dev->image_storage))
   {
@@ -1356,7 +1432,7 @@ static gboolean calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb[
   return TRUE;
 }
 
-static void prepare_matrices(dt_iop_module_t *module)
+static void _prepare_matrices(dt_iop_module_t *module)
 {
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)module->gui_data;
 
@@ -1389,7 +1465,7 @@ static void prepare_matrices(dt_iop_module_t *module)
   }
 }
 
-static void find_coeffs(dt_iop_module_t *module, double coeffs[4])
+static void _find_coeffs(dt_iop_module_t *module, double coeffs[4])
 {
   const dt_image_t *img = &module->dev->image_storage;
 
@@ -1409,21 +1485,8 @@ static void find_coeffs(dt_iop_module_t *module, double coeffs[4])
     return;
   }
 
-  if(!_ignore_missing_wb(&(module->dev->image_storage)))
-  {
-    //  only display this if we have a sample, otherwise it is better to keep
-    //  on screen the more important message about missing sample and the way
-    //  to contribute.
-    if(!img->camera_missing_sample)
-      dt_control_log(_("failed to read camera white balance information from `%s'!"),
-                     img->filename);
-    dt_print(DT_DEBUG_ALWAYS,
-             "[temperature] failed to read camera white balance information from `%s'!\n",
-             img->filename);
-  }
-
   double bwb[4];
-  if(!calculate_bogus_daylight_wb(module, bwb))
+  if(!_calculate_bogus_daylight_wb(module, bwb))
   {
     // found camera matrix and used it to calculate bogus daylight wb
     for_four_channels(c)
@@ -1447,6 +1510,19 @@ static void find_coeffs(dt_iop_module_t *module, double coeffs[4])
   }
 
   // did not find preset either?
+  if(!_ignore_missing_wb(&(module->dev->image_storage)))
+  {
+    //  only display this if we have a sample, otherwise it is better to keep
+    //  on screen the more important message about missing sample and the way
+    //  to contribute.
+    if(!img->camera_missing_sample)
+      dt_control_log(_("failed to read camera white balance information from `%s'!"),
+                     img->filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[temperature] failed to read camera white balance information from `%s'!\n",
+             img->filename);
+  }
+
   // final security net: hardcoded default that fits most cams.
   coeffs[0] = 2.0;
   coeffs[1] = 1.0;
@@ -1457,6 +1533,9 @@ static void find_coeffs(dt_iop_module_t *module, double coeffs[4])
 void reload_defaults(dt_iop_module_t *module)
 {
   dt_iop_temperature_params_t *d = module->default_params;
+  dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)module->params;
+
+  d->preset = dt_is_scene_referred() ? DT_IOP_TEMP_D65_LATE : DT_IOP_TEMP_AS_SHOT;
 
   float *dcoeffs = (float *)d;
   for_four_channels(k)
@@ -1472,21 +1551,15 @@ void reload_defaults(dt_iop_module_t *module)
     dt_image_monochrome_flags(&module->dev->image_storage) & DT_IMAGE_MONOCHROME;
 
   gboolean another_cat_defined = FALSE;
-  const gboolean is_workflow_none = dt_conf_is_equal("plugins/darkroom/workflow", "none");
 
-  // check if with workflow set to None we still have another CAT
-  // defined. That is an auto-applied preset for the Color Calibration
-  // module.
-  if(is_workflow_none)
+  if(!dt_is_scene_referred())
   {
     another_cat_defined =
       dt_history_check_module_exists(module->dev->image_storage.id,
                                      "channelmixerrgb", TRUE);
   }
 
-  const gboolean is_modern =
-    dt_is_scene_referred()
-    || (is_workflow_none && another_cat_defined);
+  const gboolean is_modern = dt_is_scene_referred() || another_cat_defined;
 
   module->default_enabled = FALSE;
   module->hide_enable_button = true_monochrome;
@@ -1498,7 +1571,7 @@ void reload_defaults(dt_iop_module_t *module)
   // to have at least something and definitely not crash
   _temp_array_from_params(daylights, d);
 
-  if(!calculate_bogus_daylight_wb(module, daylights))
+  if(!_calculate_bogus_daylight_wb(module, daylights))
   {
     // found camera matrix and used it to calculate bogus daylight wb
   }
@@ -1526,7 +1599,7 @@ void reload_defaults(dt_iop_module_t *module)
   // Store EXIF WB coeffs
   if(is_raw)
   {
-    find_coeffs(module, as_shot);
+    _find_coeffs(module, as_shot);
     as_shot[0] /= as_shot[1];
     as_shot[2] /= as_shot[1];
     as_shot[3] /= as_shot[1];
@@ -1540,11 +1613,18 @@ void reload_defaults(dt_iop_module_t *module)
     chr->D65coeffs[k] = daylights[k];
   }
 
-  dt_print(DT_DEBUG_PARAMS, "[dt_iop_reload_defaults] temperature: D65 %.3f %.3f %.3f, AS-SHOT %.3f %.3f %.3f\n",
+  dt_print(DT_DEBUG_PARAMS,
+    "[dt_iop_reload_defaults] scene=%s, modern=%s, CAT=%s. D65 %.3f %.3f %.3f, AS-SHOT %.3f %.3f %.3f\n",
+    dt_is_scene_referred() ? "YES" : "NO",
+    is_modern ? "YES" : "NO",
+    another_cat_defined ? "YES" : "NO",
     daylights[0], daylights[1], daylights[2], as_shot[0], as_shot[1], as_shot[2]);
 
   // this is a single instance module always exposed to dev->chroma
   chr->temperature = module;
+  chr->late_correction = FALSE;
+
+  d->preset = p->preset = DT_IOP_TEMP_AS_SHOT;
 
   // White balance module doesn't need to be enabled for true_monochrome raws (like
   // for leica monochrom cameras). prepare_matrices is a noop as well, as there
@@ -1552,7 +1632,8 @@ void reload_defaults(dt_iop_module_t *module)
 
   if(!true_monochrome)
   {
-    if(module->gui_data) prepare_matrices(module);
+    if(module->gui_data)
+      _prepare_matrices(module);
 
     /* check if file is raw / hdr */
     if(is_raw)
@@ -1563,17 +1644,17 @@ void reload_defaults(dt_iop_module_t *module)
       // if workflow = modern, only set WB coeffs equivalent to D65 illuminant
       // full chromatic adaptation is deferred to channelmixerrgb
       double coeffs[4] = { 0 };
-      if(is_modern && !calculate_bogus_daylight_wb(module, coeffs))
+      if(is_modern && !_calculate_bogus_daylight_wb(module, coeffs))
       {
-        dcoeffs[0] = coeffs[0]/coeffs[1];
-        dcoeffs[2] = coeffs[2]/coeffs[1];
-        dcoeffs[3] = coeffs[3]/coeffs[1];
-        dcoeffs[1] = 1.0f;
+        for_four_channels(k)
+          dcoeffs[k] = as_shot[k];
+        chr->late_correction = TRUE;
+        d->preset = p->preset = DT_IOP_TEMP_D65_LATE;
       }
       else
       {
         // do best to find starting coeffs
-        find_coeffs(module, coeffs);
+        _find_coeffs(module, coeffs);
         dcoeffs[0] = coeffs[0]/coeffs[1];
         dcoeffs[2] = coeffs[2]/coeffs[1];
         dcoeffs[3] = coeffs[3]/coeffs[1];
@@ -1596,10 +1677,10 @@ void reload_defaults(dt_iop_module_t *module)
     dt_bauhaus_slider_set_default(g->scale_y, dcoeffs[3]);
 
     for_four_channels(k)
-       g->mod_coeff[k] = daylights[k];
+      g->mod_coeff[k] = dcoeffs[k];
 
     float TempK, tint;
-    mul2temp(module, d, &TempK, &tint);
+    _mul2temp(module, d, &TempK, &tint);
 
     dt_bauhaus_slider_set_default(g->scale_k, TempK);
     dt_bauhaus_slider_set_default(g->scale_tint, tint);
@@ -1608,21 +1689,27 @@ void reload_defaults(dt_iop_module_t *module)
 
     // old "camera". reason for change: all other RAW development
     // tools use "As Shot" or "shot"
-    dt_bauhaus_combobox_add(g->presets,
-                            C_("white balance", "as shot"));
+    dt_bauhaus_combobox_add(g->presets, C_("white balance", "as shot"));
 
     // old "spot", reason: describes exactly what'll happen
     dt_bauhaus_combobox_add(g->presets, C_("white balance", "from image area"));
     dt_bauhaus_combobox_add(g->presets, C_("white balance", "user modified"));
     // old "camera neutral", reason: better matches intent
     dt_bauhaus_combobox_add(g->presets, C_("white balance", "camera reference"));
+    dt_bauhaus_combobox_add(g->presets, C_("white balance", "as shot to reference"));
 
     g->preset_cnt = DT_IOP_NUM_OF_STD_TEMP_PRESETS;
     memset(g->preset_num, 0, sizeof(g->preset_num));
 
-    generate_preset_combo(module);
+    _generate_preset_combo(module);
 
-    gui_sliders_update(module);
+    _gui_sliders_update(module);
+
+    dt_bauhaus_combobox_set(g->presets, p->preset);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_d65_late), p->preset == DT_IOP_TEMP_D65_LATE);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_asshot), p->preset == DT_IOP_TEMP_AS_SHOT);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_user), FALSE);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_d65), FALSE);
   }
 }
 
@@ -1648,7 +1735,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
-static void temp_tint_callback(GtkWidget *slider, dt_iop_module_t *self)
+static void _temp_tint_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
 
@@ -1659,7 +1746,7 @@ static void temp_tint_callback(GtkWidget *slider, dt_iop_module_t *self)
   g->mod_temp = dt_bauhaus_slider_get(g->scale_k);
   g->mod_tint = dt_bauhaus_slider_get(g->scale_tint);
 
-  temp2mul(self, g->mod_temp, g->mod_tint, g->mod_coeff);
+  _temp2mul(self, g->mod_temp, g->mod_tint, g->mod_coeff);
 
   // normalize
   g->mod_coeff[0] /= g->mod_coeff[1];
@@ -1668,6 +1755,7 @@ static void temp_tint_callback(GtkWidget *slider, dt_iop_module_t *self)
   g->mod_coeff[1] = 1.0;
 
   dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_USER);
+  _update_preset(self, DT_IOP_TEMP_USER);
 }
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
@@ -1677,12 +1765,13 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
   _temp_array_from_params(g->mod_coeff, p);
 
-  mul2temp(self, p, &g->mod_temp, &g->mod_tint);
+  _mul2temp(self, p, &g->mod_temp, &g->mod_tint);
 
   dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_USER);
+  _update_preset(self, DT_IOP_TEMP_USER);
 }
 
-static gboolean btn_toggled(GtkWidget *togglebutton,
+static gboolean _btn_toggled(GtkWidget *togglebutton,
                             GdkEventButton *event,
                             dt_iop_module_t *self)
 {
@@ -1692,6 +1781,7 @@ static gboolean btn_toggled(GtkWidget *togglebutton,
 
   const int preset = togglebutton == g->btn_asshot ? DT_IOP_TEMP_AS_SHOT :
                      togglebutton == g->btn_d65 ? DT_IOP_TEMP_D65 :
+                     togglebutton == g->btn_d65_late ? DT_IOP_TEMP_D65_LATE :
                      togglebutton == g->btn_user ? DT_IOP_TEMP_USER : 0;
 
   if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(togglebutton)))
@@ -1704,10 +1794,18 @@ static gboolean btn_toggled(GtkWidget *togglebutton,
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(togglebutton), TRUE);
   }
 
+  _update_preset(self, dt_bauhaus_combobox_get(g->presets));
+
+  const dt_dev_chroma_t *chr = &self->dev->chroma;
+  dt_print_pipe(DT_DEBUG_PIPE,
+    "toggled preset", NULL, self, DT_DEVICE_NONE, NULL, NULL,
+    "preset='%s': D65 %.3f %.3f %.3f, AS-SHOT %.3f %.3f %.3f\n",
+    _preset_to_str(preset),
+    chr->D65coeffs[0], chr->D65coeffs[1], chr->D65coeffs[2], chr->as_shot[0], chr->as_shot[1], chr->as_shot[2]);
   return TRUE;
 }
 
-static void preset_tune_callback(GtkWidget *widget, dt_iop_module_t *self)
+static void _preset_tune_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
 
@@ -1726,9 +1824,13 @@ static void preset_tune_callback(GtkWidget *widget, dt_iop_module_t *self)
                                pos == DT_IOP_TEMP_USER);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_d65),
                                pos == DT_IOP_TEMP_D65);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_d65_late),
+                               pos == DT_IOP_TEMP_D65_LATE);
 
   gboolean show_finetune = FALSE;
   dt_dev_chroma_t *chr = &self->dev->chroma;
+
+  _update_preset(self, pos);
 
   switch(pos)
   {
@@ -1752,6 +1854,9 @@ static void preset_tune_callback(GtkWidget *widget, dt_iop_module_t *self)
       break;
     case DT_IOP_TEMP_D65: // camera reference d65
       _temp_params_from_array(p, chr->D65coeffs);
+      break;
+    case DT_IOP_TEMP_D65_LATE: // as shot wb just for now
+        _temp_params_from_array(p, chr->as_shot);
       break;
     default: // camera WB presets
     {
@@ -1843,7 +1948,7 @@ static void preset_tune_callback(GtkWidget *widget, dt_iop_module_t *self)
   }
   else
   {
-    mul2temp(self, p, &TempK, &tint);
+    _mul2temp(self, p, &TempK, &tint);
   }
 
   ++darktable.gui->reset;
@@ -1856,9 +1961,9 @@ static void preset_tune_callback(GtkWidget *widget, dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->scale_y, pcoeffs[3]);
   --darktable.gui->reset;
 
-  color_temptint_sliders(self);
-  color_rgb_sliders(self);
-  color_finetuning_slider(self);
+  _color_temptint_sliders(self);
+  _color_rgb_sliders(self);
+  _color_finetuning_slider(self);
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1883,10 +1988,11 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
   pcoeffs[1] = 1.0f;
 
   dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_SPOT);
+  _update_preset(self, DT_IOP_TEMP_SPOT);
 }
 
 
-static void gui_sliders_update(struct dt_iop_module_t *self)
+static void _gui_sliders_update(struct dt_iop_module_t *self)
 {
   const dt_image_t *img = &self->dev->image_storage;
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
@@ -1957,9 +2063,9 @@ static void temp_label_click(GtkWidget *label,
 
   g_free(old_config);
 
-  color_temptint_sliders(self);
-  color_rgb_sliders(self);
-  color_finetuning_slider(self);
+  _color_temptint_sliders(self);
+  _color_rgb_sliders(self);
+  _color_finetuning_slider(self);
 }
 
 static void _preference_changed(gpointer instance, gpointer user_data)
@@ -1974,9 +2080,9 @@ static void _preference_changed(gpointer instance, gpointer user_data)
   g->button_bar_visible = dt_conf_get_bool("plugins/darkroom/temperature/button_bar");
   gtk_widget_set_visible(g->buttonbar, g->button_bar_visible);
 
-  color_temptint_sliders(self);
-  color_rgb_sliders(self);
-  color_finetuning_slider(self);
+  _color_temptint_sliders(self);
+  _color_rgb_sliders(self);
+  _color_finetuning_slider(self);
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -1995,7 +2101,7 @@ void gui_init(struct dt_iop_module_t *self)
   GtkBox *box_enabled = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
 
   g->btn_asshot = dt_iop_togglebutton_new(self, N_("settings"), N_("as shot"), NULL,
-                                          G_CALLBACK(btn_toggled), FALSE, 0, 0,
+                                          G_CALLBACK(_btn_toggled), FALSE, 0, 0,
                                           dtgtk_cairo_paint_camera, NULL);
   gtk_widget_set_tooltip_text(g->btn_asshot, _("set white balance to as shot"));
 
@@ -2015,21 +2121,31 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->colorpicker, _("set white balance to detected from area"));
 
   g->btn_user = dt_iop_togglebutton_new(self, N_("settings"), N_("user modified"), NULL,
-                                        G_CALLBACK(btn_toggled), FALSE, 0, 0,
+                                        G_CALLBACK(_btn_toggled), FALSE, 0, 0,
                                         dtgtk_cairo_paint_masks_drawn, NULL);
   gtk_widget_set_tooltip_text(g->btn_user, _("set white balance to user modified"));
 
 
   g->btn_d65 = dt_iop_togglebutton_new(self, N_("settings"), N_("camera reference"), NULL,
-                                       G_CALLBACK(btn_toggled), FALSE, 0, 0,
+                                       G_CALLBACK(_btn_toggled), FALSE, 0, 0,
                                        dtgtk_cairo_paint_bulb, NULL);
   gtk_widget_set_tooltip_text
     (g->btn_d65,
      _("set white balance to camera reference point\nin most cases it should be D65"));
 
+  g->btn_d65_late = dt_iop_togglebutton_new(self,
+                                            N_("settings"),
+                                            N_("as shot to reference"), NULL,
+                                            G_CALLBACK(_btn_toggled), FALSE, 0, 0,
+                                            dtgtk_cairo_paint_bulb_mod, NULL);
+  gtk_widget_set_tooltip_text
+    (g->btn_d65_late,
+     _("set white balance to as shot and later correct to camera reference point,\nin most cases it should be D65"));
+
   // put buttons at top. fill later.
   g->buttonbar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   dt_gui_add_class(g->buttonbar, "dt_iop_toggle");
+  gtk_box_pack_end(GTK_BOX(g->buttonbar), g->btn_d65_late, TRUE, TRUE, 0);
   gtk_box_pack_end(GTK_BOX(g->buttonbar), g->btn_d65, TRUE, TRUE, 0);
   gtk_box_pack_end(GTK_BOX(g->buttonbar), g->btn_user, TRUE, TRUE, 0);
   gtk_box_pack_end(GTK_BOX(g->buttonbar), g->colorpicker, TRUE, TRUE, 0);
@@ -2103,14 +2219,14 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_no_show_all(g->scale_y, TRUE);
 
   g_signal_connect(G_OBJECT(g->scale_k), "value-changed",
-                   G_CALLBACK(temp_tint_callback), self);
+                   G_CALLBACK(_temp_tint_callback), self);
   g_signal_connect(G_OBJECT(g->scale_tint), "value-changed",
-                   G_CALLBACK(temp_tint_callback), self);
+                   G_CALLBACK(_temp_tint_callback), self);
 
   g_signal_connect(G_OBJECT(g->presets), "value-changed",
-                   G_CALLBACK(preset_tune_callback), self);
+                   G_CALLBACK(_preset_tune_callback), self);
   g_signal_connect(G_OBJECT(g->finetune), "value-changed",
-                   G_CALLBACK(preset_tune_callback), self);
+                   G_CALLBACK(_preset_tune_callback), self);
 
   // update the gui when the preferences changed (i.e. colored sliders stuff)
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
@@ -2140,8 +2256,9 @@ void gui_cleanup(struct dt_iop_module_t *self)
 void gui_reset(struct dt_iop_module_t *self)
 {
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
+  dt_iop_temperature_params_t *d = self->default_params;
 
-  const int preset = dt_bauhaus_combobox_get(g->presets);
+  const int preset = d->preset = dt_is_scene_referred() ? DT_IOP_TEMP_D65_LATE : DT_IOP_TEMP_AS_SHOT;
   dt_iop_color_picker_reset(self, TRUE);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_asshot),
@@ -2150,10 +2267,13 @@ void gui_reset(struct dt_iop_module_t *self)
                                preset == DT_IOP_TEMP_USER);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_d65),
                                preset == DT_IOP_TEMP_D65);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_d65_late),
+                               preset == DT_IOP_TEMP_D65_LATE);
 
-  color_finetuning_slider(self);
-  color_rgb_sliders(self);
-  color_temptint_sliders(self);
+  _color_finetuning_slider(self);
+  _color_rgb_sliders(self);
+  _color_temptint_sliders(self);
+  _update_preset(self, preset);
 }
 
 // clang-format off

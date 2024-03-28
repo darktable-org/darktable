@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -505,7 +505,7 @@ static void _lib_histogram_vectorscope_bkgd
                                      vs_prof->lutsize,
                                      vs_prof->nonlinearlut);
           dt_aligned_pixel_t xyY;
-          dt_XYZ_to_xyY(XYZ_D50, xyY);
+          dt_D50_XYZ_to_xyY(XYZ_D50, xyY);
           dt_xyY_to_Luv(xyY, chromaticity);
           dt_XYZ_to_Rec709_D50(XYZ_D50, rgb_display);
           break;
@@ -687,7 +687,7 @@ static void _get_chromaticity(const dt_aligned_pixel_t RGB,
       // how does the result change if we adapt to D65 then convert to
       // L*u*v* with a D65 whitepoint?
       dt_aligned_pixel_t xyY_D50;
-      dt_XYZ_to_xyY(XYZ_D50, xyY_D50);
+      dt_D50_XYZ_to_xyY(XYZ_D50, xyY_D50);
       // using D50 correct u*v* (not u'v') to be relative to the
       // whitepoint (important for vectorscope) and as u*v* is more
       // evenly spaced
@@ -2211,7 +2211,9 @@ static void _color_harmony_changed_record(dt_lib_histogram_t *d)
          &d->harmony_guide,
          sizeof(dt_color_harmony_guide_t));
 
-  dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
+  dt_image_cache_write_release_info
+    (darktable.image_cache, img,
+     DT_IMAGE_CACHE_SAFE, "histogram color_harmony_changed_record");
 }
 
 static gboolean _color_harmony_clicked(GtkWidget *button,

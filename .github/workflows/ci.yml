@@ -43,60 +43,106 @@ permissions:
 jobs:
 
   Linux:
-    name: Linux.${{ matrix.os.code }}.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
-    runs-on: ${{ matrix.os.label }}
+    name: Linux.${{ matrix.distro }}.${{ matrix.compiler.compiler }}.${{ matrix.btype }}
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ matrix.distro }}
+      options: --tmpfs /tmp:exec --tmpfs /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}:exec
     strategy:
       fail-fast: true
       matrix:
-        os:
-          - { label: ubuntu-latest, code: latest }
+        distro:
+          - "debian:trixie-slim"
         compiler:
           - { compiler: GNU13,  CC: gcc-13,   CXX: g++-13,     packages: gcc-13 g++-13 }
           - { compiler: LLVM15, CC: clang-15, CXX: clang++-15, packages: clang-15 libomp-15-dev llvm-15-dev libc++-15-dev libc++abi1-15 lld-15 clang-tools-15 mlir-15-tools libmlir-15-dev}
         btype:
           - Release
         target:
-          - build
+          - skiptest
         generator:
-          #- Unix Makefiles
           - Ninja
         include:
           # We want one run in CI to be Debug to make sure the Debug build isn't broken
-          - os: { label: ubuntu-latest, code: latest }
+          - distro: "debian:trixie-slim"
             btype: Debug
-            compiler: { compiler: GNU13,  CC: gcc-13,   CXX: g++-13,     packages: gcc-13 g++-13 }
+            compiler: { compiler: GNU13, CC: gcc-13, CXX: g++-13, packages: gcc-13 g++-13 }
             target: skiptest
             generator: Ninja
     env:
+      DISTRO: ${{ matrix.distro }}
       CC: ${{ matrix.compiler.CC }}
       CXX: ${{ matrix.compiler.CXX }}
       SRC_DIR: ${{ github.workspace }}/src
       BUILD_DIR: ${{ github.workspace }}/build
       INSTALL_PREFIX: ${{ github.workspace }}/install
+      ECO: -DTEMPORAIRLY_ALLOW_OLD_TOOCHAIN=ON
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
       GENERATOR: ${{ matrix.generator }}
       TARGET: ${{ matrix.target }}
       DARKTABLE_CLI: ${{ github.workspace }}/install/bin/darktable-cli
     steps:
+      - name: Configure APT
+        timeout-minutes: 1
+        run: |
+          set -xe
+          tee /etc/dpkg/dpkg.cfg.d/force-unsafe-io > /dev/null <<EOT
+          force-unsafe-io
+          EOT
+          tee /etc/apt/apt.conf.d/tmpfs > /dev/null <<EOT
+          Dir::Cache::Archives "/tmp/apt/archives";
+          APT::ExtractTemplates::TempDir "/tmp/apt/temp";
+          EOT
+          mkdir -p /tmp/apt/archives
+          tee /etc/apt/apt.conf.d/80retry > /dev/null <<EOT
+          Acquire::Retries "10";
+          EOT
+          tee /etc/apt/apt.conf.d/80recommends > /dev/null <<EOT
+          APT::Install-Recommends "false";
+          EOT
+          tee /etc/apt/apt.conf.d/80suggests > /dev/null <<EOT
+          APT::Install-Suggests "false";
+          EOT
+          tee /etc/apt/apt.conf.d/80forceyes > /dev/null <<EOT
+          APT::Get::Assume-Yes "true";
+          EOT
+          tee /etc/apt/apt.conf.d/80fixmissing > /dev/null <<EOT
+          APT::Get::Fix-Missing "true";
+          EOT
+          rm -rf /etc/apt/sources.list*
+          if [ "${DISTRO}" = "debian:trixie-slim" ]; then
+          tee /etc/apt/sources.list > /dev/null <<EOT
+          deb http://debian-archive.trafficmanager.net/debian trixie main
+          deb http://debian-archive.trafficmanager.net/debian trixie-updates main
+          deb http://debian-archive.trafficmanager.net/debian-security trixie-security main
+          deb http://debian-archive.trafficmanager.net/debian trixie-backports main
+          EOT
+          elif [ "${DISTRO}" = "debian:bookworm-slim" ]; then
+          tee /etc/apt/sources.list > /dev/null <<EOT
+          deb http://debian-archive.trafficmanager.net/debian bookworm main
+          deb http://debian-archive.trafficmanager.net/debian bookworm-updates main
+          deb http://debian-archive.trafficmanager.net/debian-security bookworm-security main
+          deb http://debian-archive.trafficmanager.net/debian bookworm-backports main
+          EOT
+          fi
+      - name: Update base packages
+        timeout-minutes: 1
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          set -xe
+          rm -rf /var/lib/apt/lists/*
+          apt-get update
+          apt-get install eatmydata
+          eatmydata apt-get upgrade
       - name: Install compiler ${{ matrix.compiler.compiler }}
         run: |
-          # The libunwind-14* packages are already installed in the CI image, they are part
-          # of the Clang 14 compiler-specific packages. Due to the shortcomings of inter-package
-          # dependencies, their presence prevents the installation of similar packages for Clang 15.
-          # So we have to remove them first.
-          sudo apt remove -y libunwind-14 libunwind-14-dev
-          # Remove azure mirror because it is unreliable and sometimes unpredictably leads to failed CI
-          sudo sed -i 's/azure\.//' /etc/apt/sources.list
-          sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-          sudo add-apt-repository -y universe
-          sudo add-apt-repository -y multiverse
-          sudo apt-get update
-          sudo eatmydata apt-get -y install \
-            ${{ matrix.compiler.packages }}
+          eatmydata apt-get -y install ${{ matrix.compiler.packages }}
       - name: Install Base Dependencies
         run: |
-          sudo eatmydata apt-get -y install \
+          eatmydata apt-get -y install \
             build-essential \
+            cmake \
             appstream-util \
             desktop-file-utils \
             gettext \
@@ -108,7 +154,6 @@ jobs:
             libcairo2-dev \
             libcolord-dev \
             libcolord-gtk-dev \
-            libcmocka-dev \
             libcups2-dev \
             libcurl4-gnutls-dev \
             libexiv2-dev \
@@ -177,7 +222,7 @@ jobs:
           ./run.sh --no-opencl --no-deltae --fast-fail
 
   Windows:
-    name: Windows.${{ matrix.msystem }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
+    name: Windows.${{ matrix.msystem }}.${{ matrix.btype }}
     runs-on: windows-latest
     strategy:
       fail-fast: true
@@ -190,7 +235,6 @@ jobs:
         target:
           - skiptest
         generator:
-          #- MSYS Makefiles
           - Ninja
         eco: [-DDONT_USE_INTERNAL_LIBRAW=ON]
     defaults:
@@ -204,7 +248,6 @@ jobs:
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
       TARGET: ${{ matrix.target }}
       GENERATOR: ${{ matrix.generator }}
-      # todo: use linker which supports --wrap, ld.bfd and ld.gold support it
     steps:
       - uses: msys2/setup-msys2@v2
         with:
@@ -216,7 +259,6 @@ jobs:
           pacboy: >-
             cc:p
             cmake:p
-            cmocka:p
             libxslt:p
             ninja:p
             nsis:p
@@ -286,13 +328,14 @@ jobs:
                  --conf plugins/lighttable/export/iccintent=0
 
   macOS:
-    name: macOS.${{ matrix.compiler.compiler }}.${{ matrix.build.xcode }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
+    name: macOS.${{ matrix.build.os }}.${{ matrix.compiler.compiler }}.${{ matrix.build.xcode }}.${{ matrix.btype }}
     runs-on: ${{ matrix.build.os }}
     strategy:
       fail-fast: true
       matrix:
         build:
-          - { os: macos-12,    xcode: 14.2,   deployment: 12.5 } # LLVM14
+          - { os: macos-13,    xcode: 15.2,   deployment: 13.5 } # LLVM16, x86_64
+          - { os: macos-14,    xcode: 15.2,   deployment: 14.0 } # LLVM16, arm64
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
         btype: [ Release ]
@@ -300,7 +343,7 @@ jobs:
           - skiptest
         generator:
           - Ninja
-        eco: [-DDONT_USE_INTERNAL_LIBRAW=ON]
+        eco: [-DDONT_USE_INTERNAL_LIBRAW=ON -DUSE_GRAPHICSMAGICK=OFF -DUSE_IMAGEMAGICK=ON]
     env:
       DEVELOPER_DIR: /Applications/Xcode_${{ matrix.build.xcode }}.app/Contents/Developer
       CC: ${{ matrix.compiler.CC }}
@@ -330,7 +373,6 @@ jobs:
           brew link --force libomp
           brew link --force libsoup@2
       - name: Build and Install
-          # todo: use linker which supports --wrap, ld.bfd and ld.gold support it
         run: |
           cmake -E make_directory "${BUILD_DIR}";
           cmake -E make_directory "${INSTALL_PREFIX}";

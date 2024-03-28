@@ -61,6 +61,7 @@ void dt_dev_init(dt_develop_t *dev,
   dev->gui_leaving = FALSE;
   dev->gui_synch = FALSE;
   dt_pthread_mutex_init(&dev->history_mutex, NULL);
+  dev->snapshot_id = -1;
   dev->history_end = 0;
   dev->history = NULL; // empty list
   dev->history_postpone_invalidate = FALSE;
@@ -73,6 +74,7 @@ void dt_dev_init(dt_develop_t *dev,
   dt_image_init(&dev->image_storage);
   dev->history_updating = dev->image_force_reload = FALSE;
   dev->autosaving = FALSE;
+  dev->autosave_time = 0.0;
   dev->image_invalid_cnt = 0;
   dev->full.pipe = dev->preview_pipe = dev->preview2.pipe = NULL;
   dev->histogram_pre_tonecurve = NULL;
@@ -272,7 +274,8 @@ void dt_dev_invalidate_preview(dt_develop_t *dev)
 void dt_dev_process_image_job(dt_develop_t *dev,
                               dt_dev_viewport_t *port,
                               dt_dev_pixelpipe_t *pipe,
-                              dt_signal_t signal)
+                              dt_signal_t signal,
+                              const int devid)
 {
   if(dev->full.pipe->loading && pipe != dev->full.pipe)
   {
@@ -429,7 +432,7 @@ restart:
     dt_dev_pixelpipe_module_enabled(port->pipe, mod, FALSE);
   }
 
-  if(dt_dev_pixelpipe_process(pipe, dev, x, y, wd, ht, scale))
+  if(dt_dev_pixelpipe_process(pipe, dev, x, y, wd, ht, scale, devid))
   {
     // interrupted because image changed?
     if(dev->image_force_reload || pipe->loading || pipe->input_changed)
@@ -584,9 +587,8 @@ float dt_dev_get_zoomed_in(void)
   return cur_scale / min_scale;
 }
 
-void dt_dev_load_image_ext(dt_develop_t *dev,
-                           const dt_imgid_t imgid,
-                           const int32_t snapshot_id)
+void dt_dev_load_image(dt_develop_t *dev,
+                       const dt_imgid_t imgid)
 {
   dt_lock_image(imgid);
 
@@ -606,18 +608,12 @@ void dt_dev_load_image_ext(dt_develop_t *dev,
   dt_pthread_mutex_lock(&darktable.dev_threadsafe);
   dev->iop = dt_iop_load_modules(dev);
 
-  dt_dev_read_history_ext(dev, dev->image_storage.id, FALSE, snapshot_id);
+  dt_dev_read_history_ext(dev, dev->image_storage.id, FALSE);
   dt_pthread_mutex_unlock(&darktable.dev_threadsafe);
 
   dev->first_load = FALSE;
 
   dt_unlock_image(imgid);
-}
-
-void dt_dev_load_image(dt_develop_t *dev,
-                       const dt_imgid_t imgid)
-{
-  dt_dev_load_image_ext(dev, imgid, -1);
 }
 
 void dt_dev_configure(dt_dev_viewport_t *port)
@@ -710,40 +706,34 @@ static void _dev_write_history_item(const dt_imgid_t imgid,
 
 static void _dev_auto_save(dt_develop_t *dev)
 {
-  // keep track of last saving time
-  static double last = 0.0;
-
   const double user_delay = (double)dt_conf_get_int("autosave_interval");
-  const double now = dt_get_wtime();
-
   const dt_imgid_t imgid = dev->image_storage.id;
 
   /* We can only autosave database & xmp while we have a valid image id
      and we are not currently loading or changing it in main darkroom
   */
+  const double start = dt_get_wtime();
   const gboolean saving = (user_delay >= 1.0)
-                        && ((now - last) > user_delay)
+                        && ((start - dev->autosave_time) > user_delay)
                         && !dev->full.pipe->loading
                         && dev->requested_id == imgid
                         && dt_is_valid_imgid(imgid);
 
   if(saving)
   {
-    // Ok, lets save status for image
     dt_dev_write_history(dev);
     dt_image_write_sidecar_file(imgid);
-    last = now;
-
-    const double spent = dt_get_wtime() - now;
-    dt_print(DT_DEBUG_DEV, "autosave history took %fsec\n", spent);
-
+    const double after = dt_get_wtime();
+    dev->autosave_time = after;
     // if writing to database and the xmp took too long we disable
-    // autosaving mode for this session
-    if(spent > 0.5)
+    // autosaving mode for this image
+    if((after - start) > 0.5)
     {
       dev->autosaving = FALSE;
-      dt_control_log(_("autosaving history has been disabled"
-                       " for this session because of a slow drive used"));
+      dt_print(DT_DEBUG_DEV, "autosave history disabled, took %.3fs\n", after - start);
+
+      dt_control_log(_("autosaving history has been disabled for this image"
+                       " because of a very large history or a slow drive being used"));
     }
   }
 }
@@ -1118,6 +1108,9 @@ void dt_dev_add_masks_history_item(
   }
 
   // invalidate buffers and force redraw of darkroom
+  dev->full.pipe->changed |= DT_DEV_PIPE_SYNCH;
+  dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
+  dev->preview2.pipe->changed |= DT_DEV_PIPE_SYNCH;
   dt_dev_invalidate_all(dev);
   dt_pthread_mutex_unlock(&dev->history_mutex);
 
@@ -1363,7 +1356,6 @@ static void _cleanup_history(const dt_imgid_t imgid)
 void dt_dev_write_history_ext(dt_develop_t *dev,
                               const dt_imgid_t imgid)
 {
-  sqlite3_stmt *stmt;
   dt_lock_image(imgid);
 
   _cleanup_history(imgid);
@@ -1387,13 +1379,7 @@ void dt_dev_write_history_ext(dt_develop_t *dev,
   }
 
   // update history end
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "UPDATE main.images SET history_end = ?1 WHERE id = ?2", -1,
-                              &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->history_end);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
+  dt_image_set_history_end(imgid, dev->history_end);
 
   // write the current iop-order-list for this image
 
@@ -1886,8 +1872,7 @@ char *_print_validity(const gboolean state)
 
 void dt_dev_read_history_ext(dt_develop_t *dev,
                              const dt_imgid_t imgid,
-                             const gboolean no_image,
-                             const int32_t snapshot_id)
+                             const gboolean no_image)
 {
   if(!dt_is_valid_imgid(imgid)) return;
   if(!dev->iop) return;
@@ -1942,12 +1927,19 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
 
     // if a snapshot move all auto-presets into the history_snapshot table
 
-    if(snapshot_id != -1)
+    if(dev->snapshot_id != -1)
     {
-      DT_DEBUG_SQLITE3_EXEC
+      sqlite3_stmt *stmt;
+
+      DT_DEBUG_SQLITE3_PREPARE_V2
         (dt_database_get(darktable.db),
-         "INSERT INTO memory.history_snapshot SELECT * FROM memory.history",
-         NULL, NULL, NULL);
+         "INSERT INTO memory.snapshot_history"
+         " SELECT ?1, * FROM memory.history",
+         -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->snapshot_id);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+
       DT_DEBUG_SQLITE3_EXEC
         (dt_database_get(darktable.db),
          "DELETE FROM memory.history", NULL, NULL, NULL);
@@ -1971,7 +1963,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
 
   // Load current image history from DB
   // clang-format off
-  if(snapshot_id == -1)
+  if(dev->snapshot_id == -1)
   {
     // not a snapshot, read from main history
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -1993,11 +1985,11 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
                                 "       op_params, enabled, blendop_params,"
                                 "       blendop_version, multi_priority, multi_name,"
                                 "       multi_name_hand_edited"
-                                " FROM memory.history_snapshot"
+                                " FROM memory.snapshot_history"
                                 " WHERE id = ?1"
                                 " ORDER BY num",
                                 -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, snapshot_id);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->snapshot_id);
   }
   // clang-format on
 
@@ -2030,7 +2022,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     const int bl_length = sqlite3_column_bytes(stmt, 6);
 
     // Sanity checks
-    const gboolean is_valid_id = (id == imgid || (snapshot_id != -1));
+    const gboolean is_valid_id = (id == imgid || (dev->snapshot_id != -1));
     const gboolean has_module_name = (module_name != NULL);
 
     if(!(has_module_name && is_valid_id))
@@ -2266,7 +2258,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
 
   dt_ioppr_resync_modules_order(dev);
 
-  if(snapshot_id == -1)
+  if(dev->snapshot_id == -1)
   {
     // find the new history end
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -2297,7 +2289,9 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
   dt_dev_masks_list_change(dev);
 
   // make sure module_dev is in sync with history
-  if(snapshot_id != -1) goto end_rh;
+
+  if(dev->snapshot_id != -1)
+    goto end_rh;
 
   _dev_write_history(dev, imgid);
   dt_ioppr_write_iop_order_list(dev->iop_order_list, imgid);
@@ -2346,7 +2340,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
 
 void dt_dev_read_history(dt_develop_t *dev)
 {
-  dt_dev_read_history_ext(dev, dev->image_storage.id, FALSE, -1);
+  dt_dev_read_history_ext(dev, dev->image_storage.id, FALSE);
 }
 
 void dt_dev_reprocess_all(dt_develop_t *dev)
@@ -3468,18 +3462,22 @@ void dt_dev_image(const dt_imgid_t imgid,
                   size_t *buf_height,
                   float *zoom_x,
                   float *zoom_y,
-                  const int32_t snapshot_id,
-                  GList *module_filter_out)
+                  const int snapshot_id,
+                  GList *module_filter_out,
+                  const int devid,
+                  const gboolean finalscale)
 {
   dt_develop_t dev;
   dt_dev_init(&dev, TRUE);
   dev.gui_attached = FALSE;
   dt_dev_pixelpipe_t *pipe = dev.full.pipe;
 
-  pipe->type |= DT_DEV_PIXELPIPE_IMAGE;
+  pipe->type |= DT_DEV_PIXELPIPE_IMAGE | (finalscale ? DT_DEV_PIXELPIPE_IMAGE_FINAL : 0);
   // load image and set history_end
 
-  dt_dev_load_image_ext(&dev, imgid, snapshot_id);
+  dev.snapshot_id = snapshot_id;
+
+  dt_dev_load_image(&dev, imgid);
 
   if(history_end != -1 && snapshot_id == -1)
     dt_dev_pop_history_items_ext(&dev, history_end);
@@ -3500,7 +3498,7 @@ void dt_dev_image(const dt_imgid_t imgid,
 
   dev.module_filter_out = module_filter_out;
 
-  dt_dev_process_image_job(&dev, &dev.full, pipe, -1);
+  dt_dev_process_image_job(&dev, &dev.full, pipe, -1, devid);
 
   // record resulting image and dimensions
 

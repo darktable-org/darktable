@@ -622,19 +622,20 @@ static inline float4 dt_uvY_to_xyY(const float4 uvY)
   return xyY;
 }
 
-static inline float4 dt_XYZ_to_xyY(const float4 XYZ)
+static inline float4 dt_D65_XYZ_to_xyY(const float4 sXYZ)
 {
   // see cpu implementation for details, use D65_xy as fallback
+  float4 XYZ = fmax(0.0f, sXYZ);
   float4 xyY;
   const float sum = XYZ.x + XYZ.y + XYZ.z;
-  if(XYZ.x == 0.0f && XYZ.y == 0.0f && XYZ.z == 0.0f)
+  if(sum > 0.0f)
   {
-    xyY.x = 0.312700492f;
-    xyY.y = 0.329000939f;
+    xyY.xy = XYZ.xy / sum;
   }
   else
   {
-    xyY.xy = XYZ.xy / sum;
+    xyY.x = (float)0.31271;
+    xyY.y = (float)0.32902;
   }
 
   xyY.z = XYZ.y;
@@ -811,7 +812,8 @@ static inline void xyY_to_dt_UCS_UV(const float4 xyY, float UV_star_prime[2])
   float4 offsets   = {  0.153836578598858f, -0.165478376301988f, 0.291320554395942f, 0.f };
 
   float4 UVD = x_factors * xyY.x + y_factors * xyY.y + offsets;
-  UVD.xy /= UVD.z;
+  const float div = (UVD.z >= 0.0f) ? fmax(FLT_MIN, UVD.z) : fmin(-FLT_MIN, UVD.z);
+  UVD.xy /= div;
 
   float UV_star[2] = { 0.f };
   const float factors[2]     = { 1.39656225667f, 1.4513954287f };
@@ -896,8 +898,9 @@ static inline float4 dt_UCS_JCH_to_xyY(const float4 JCH, const float L_white)
   float4 xyD = U_factors * UV[0] + V_factors * UV[1] + offsets;
 
   float4 xyY;
-  xyY.x = xyD.x / xyD.z;
-  xyY.y = xyD.y / xyD.z;
+  const float div = (xyD.z >= 0.0f) ? fmax(FLT_MIN, xyD.z) : fmin(-FLT_MIN, xyD.z);
+  xyY.x = xyD.x / div;
+  xyY.y = xyD.y / div;
   xyY.z = dt_UCS_L_star_to_Y(L_star);
   return xyY;
 }

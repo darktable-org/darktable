@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -315,7 +315,9 @@ int dt_collection_update(const dt_collection_t *collection)
 
   // get all the sort items
   dt_collection_params_t *params = (dt_collection_params_t *)&collection->params;
-  for(int i = 0; i < DT_COLLECTION_SORT_LAST; i++) params->sorts[i] = FALSE;
+  for(int i = 0; i < DT_COLLECTION_SORT_LAST; i++)
+    params->sorts[i] = FALSE;
+
   const int nb_sort = CLAMP(dt_conf_get_int("plugins/lighttable/filtering/num_sort"),
                             0, DT_COLLECTION_MAX_RULES);
   char confname[200] = { 0 };
@@ -423,7 +425,8 @@ void dt_collection_reset(const dt_collection_t *collection)
 const gchar *dt_collection_get_query(const dt_collection_t *collection)
 {
   /* ensure there is a query string for collection */
-  if(!collection->query) dt_collection_update(collection);
+  if(!collection->query)
+    dt_collection_update(collection);
 
   return collection->query;
 }
@@ -431,7 +434,8 @@ const gchar *dt_collection_get_query(const dt_collection_t *collection)
 const gchar *dt_collection_get_query_no_group(const dt_collection_t *collection)
 {
   /* ensure there is a query string for collection */
-  if(!collection->query_no_group) dt_collection_update(collection);
+  if(!collection->query_no_group)
+    dt_collection_update(collection);
 
   return collection->query_no_group;
 }
@@ -473,7 +477,9 @@ gchar *dt_collection_get_extended_where(const dt_collection_t *collection,
     // we only want collect rules, not filtering ones
     const int nb_rules = CLAMP(dt_conf_get_int("plugins/lighttable/collect/num_rules"),
                                1, 10);
-    for(int i = 0; (i < nb_rules && collection->where_ext[i] != NULL); i++)
+    for(int i = 0;
+        i < nb_rules && collection->where_ext[i] != NULL;
+        i++)
     {
       // exclude the one rule from extended where
       if(i != exclude || mode == 1)
@@ -491,7 +497,9 @@ gchar *dt_collection_get_extended_where(const dt_collection_t *collection,
                                1, 10);
     gchar *rules_txt = g_strdup("");
 
-    for(int i = 0; (i < nb_rules && collection->where_ext[i] != NULL); i++)
+    for(int i = 0;
+        i < nb_rules && collection->where_ext[i] != NULL;
+        i++)
     {
       rules_txt = dt_util_dstrcat(rules_txt, "%s", collection->where_ext[i]);
     }
@@ -505,14 +513,17 @@ gchar *dt_collection_get_extended_where(const dt_collection_t *collection,
     const int nb_filters = CLAMP(dt_conf_get_int("plugins/lighttable/filtering/num_rules"),
                                  0, 10);
 
-    for(int i = 0; (i < nb_filters && collection->where_ext[i + nb_rules] != NULL); i++)
+    for(int i = 0;
+        i < nb_filters && collection->where_ext[i + nb_rules] != NULL;
+        i++)
     {
       rules_txt = dt_util_dstrcat(rules_txt, "%s", collection->where_ext[i + nb_rules]);
     }
 
     if(g_strcmp0(rules_txt, ""))
     {
-      if(g_strcmp0(complete_string, "")) complete_string = dt_util_dstrcat(complete_string, " AND ");
+      if(g_strcmp0(complete_string, ""))
+        complete_string = dt_util_dstrcat(complete_string, " AND ");
       complete_string = dt_util_dstrcat(complete_string, "(%s)", rules_txt);
     }
     g_free(rules_txt);
@@ -575,7 +586,7 @@ static void _collection_update_aspect_ratio(const dt_collection_t *collection)
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
-    double start = dt_get_wtime();
+    const double start = dt_get_wtime();
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
       const dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
@@ -651,7 +662,16 @@ const char *dt_collection_name_untranslated(const dt_collection_properties_t pro
       return N_("rating");
     case DT_COLLECTION_PROP_TEXTSEARCH:
       return N_("search");
-    case DT_COLLECTION_PROP_LAST:             return NULL;
+    case DT_COLLECTION_PROP_WHITEBALANCE:
+      return N_("white balance");
+    case DT_COLLECTION_PROP_FLASH:
+      return N_("flash");
+    case DT_COLLECTION_PROP_EXPOSURE_PROGRAM:
+      return N_("exposure program");
+    case DT_COLLECTION_PROP_METERING_MODE:
+      return N_("metering mode");
+    case DT_COLLECTION_PROP_LAST:
+      return NULL;
     default:
     {
       if(prop >= DT_COLLECTION_PROP_METADATA
@@ -802,9 +822,12 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
     g_free(sq);
 
     // set the "already done" values
-    if(sort == DT_COLLECTION_SORT_FILENAME) filename = TRUE;
-    if(i == 0) first_order = sortorder;
-    if(sort == lastsort) already_last_sort = TRUE;
+    if(sort == DT_COLLECTION_SORT_FILENAME)
+      filename = TRUE;
+    if(i == 0)
+      first_order = sortorder;
+    if(sort == lastsort)
+      already_last_sort = TRUE;
   }
 
   // and last sort order set
@@ -813,12 +836,14 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
     gchar *lsq = _dt_collection_get_sort_text(lastsort, lastsortorder);
     query = dt_util_dstrcat(query, ", %s", lsq);
     g_free(lsq);
-    if(lastsort == DT_COLLECTION_SORT_FILENAME) filename = TRUE;
+    if(lastsort == DT_COLLECTION_SORT_FILENAME)
+      filename = TRUE;
   }
 
   // complete the query with fallback if needed
-  if(!filename) query = dt_util_dstrcat(query, ", filename%s",
-                                        (first_order) ? " DESC" : "");
+  if(!filename)
+    query = dt_util_dstrcat(query, ", filename%s",
+                            (first_order) ? " DESC" : "");
 
   query = dt_util_dstrcat(query, ", version ASC");
 
@@ -1066,7 +1091,8 @@ static char *_dt_collection_compute_datetime(const char *operator,
     res = dt_datetime_entry_to_exif(bound, sizeof(bound), input);
   if(res)
     return g_strdup(bound);
-  else return NULL;
+  else
+    return NULL;
 }
 /* splits an input string into a date-time part and an optional operator part.
    operator can be any of "=", "<", ">", "<=", ">=" and "<>".
@@ -1100,8 +1126,10 @@ void dt_collection_split_operator_datetime(const gchar *input,
     gchar *txt = g_match_info_fetch(match_info, 1);
     gchar *txt2 = g_match_info_fetch(match_info, 2);
 
-    if(!g_str_has_prefix(txt, "-")) *number1 = _dt_collection_compute_datetime(">=", txt);
-    if(!g_str_has_prefix(txt2, "+")) *number2 = _dt_collection_compute_datetime("<=", txt2);
+    if(!g_str_has_prefix(txt, "-"))
+      *number1 = _dt_collection_compute_datetime(">=", txt);
+    if(!g_str_has_prefix(txt2, "+"))
+      *number2 = _dt_collection_compute_datetime("<=", txt2);
 
     // special handle of relative dates
     if(g_str_has_prefix(txt, "-") && *number2)
@@ -1231,17 +1259,101 @@ void dt_collection_split_operator_exposure(const gchar *input,
   g_regex_unref(regex);
 }
 
+// Split a string at the given delimiter, preserving strings in "quotes".
+// So the string "\""ab,cd\",ef,\"ghi\"" with the delimiter "," gives
+// ["ab,cd",ef,"ghi"]
+static gchar **_strsplit_quotes(const gchar *string,
+                                const gchar *delimiter,
+                                gint max_tokens)
+{
+  char *s;
+  const gchar *remainder;
+  GPtrArray *string_list;
+
+  g_return_val_if_fail(string != NULL, NULL);
+  g_return_val_if_fail(delimiter != NULL, NULL);
+  g_return_val_if_fail(delimiter[0] != '\0', NULL);
+
+  if(max_tokens < 1)
+  {
+    max_tokens = G_MAXINT;
+    string_list = g_ptr_array_new();
+  }
+  else
+  {
+    string_list = g_ptr_array_new_full(max_tokens + 1, NULL);
+  }
+
+  const int total_len = g_utf8_strlen(string, -1);
+  const gchar *delim;
+  gint quote_len = 0;
+
+  remainder = string;
+
+  if(g_str_has_prefix(remainder, "\""))
+  {
+    delim = "\"";
+    quote_len = 1;
+  }
+  else
+  {
+    delim = delimiter;
+  }
+  gsize delimiter_len = strlen(delim);
+
+  s = strstr(remainder + quote_len, delim);
+  if(s)
+  {
+    while(--max_tokens && s)
+    {
+      const gsize len = s - remainder + quote_len;
+      g_ptr_array_add(string_list, g_strndup(remainder, len));
+      remainder = s + delimiter_len + quote_len;
+
+      if(remainder > string + total_len)
+      {
+        // we reached the end
+        remainder = string + total_len;
+        break;
+      }
+
+      if(g_str_has_prefix(remainder, "\""))
+      {
+        delim = "\"";
+        quote_len = 1;
+      }
+      else
+      {
+        delim = delimiter;
+        quote_len = 0;
+      }
+      delimiter_len = strlen(delim);
+
+      s = strstr(remainder + quote_len, delim);
+    }
+  }
+
+  if(*remainder)
+  {
+    g_ptr_array_add(string_list, g_strdup(remainder));
+  }
+
+  g_ptr_array_add(string_list, NULL);
+
+  return (char **)g_ptr_array_free(string_list, FALSE);
+}
+
 static gchar *_add_wildcards(const gchar *text)
 {
   gchar *cam1 = NULL;
   gchar *cam2 = NULL;
   if(g_str_has_prefix(text, "\""))
-    cam1 = g_utf8_substring(text, 1, strlen(text));
+    cam1 = g_utf8_substring(text, 1, g_utf8_strlen(text, -1));
   else
     cam1 = g_strdup_printf("%%%s", text);
 
   if(g_str_has_suffix(cam1, "\""))
-    cam2 = g_utf8_substring(cam1, 0, strlen(cam1)-1);
+    cam2 = g_utf8_substring(cam1, 0, g_utf8_strlen(cam1, -1) - 1);
   else
     cam2 = g_strdup_printf("%s%%", cam1);
 
@@ -1276,9 +1388,9 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     case DT_COLLECTION_PROP_FOLDERS: // folders
       {
         // replace * at the end with OR-clause to include subfolders
-        if((escaped_length > 0) && (escaped_text[escaped_length-1] == '*'))
+        if((escaped_length > 0) && (escaped_text[escaped_length - 1] == '*'))
         {
-          escaped_text[escaped_length-1] = '\0';
+          escaped_text[escaped_length - 1] = '\0';
           // clang-format off
           query = g_strdup_printf
             ("(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s' OR folder LIKE '%s"
@@ -1288,9 +1400,9 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         }
         // replace |% at the end with /% to only show subfolders
         else if((escaped_length > 1)
-                && (strcmp(escaped_text+escaped_length-2, "|%") == 0 ))
+                && (strcmp(escaped_text + escaped_length - 2, "|%") == 0 ))
         {
-          escaped_text[escaped_length-2] = '\0';
+          escaped_text[escaped_length - 2] = '\0';
           // clang-format off
           query = g_strdup_printf
             ("(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s"
@@ -1428,9 +1540,9 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         char *name_clause = g_strdup_printf("t.name LIKE \'%s\' || \'%s\'",
             dt_map_location_data_tag_root(), escaped_text2 ? escaped_text2 : "%");
 
-        if(escaped_text2 && (escaped_text2[strlen(escaped_text2)-1] == '*'))
+        if(escaped_text2 && (escaped_text2[strlen(escaped_text2) - 1] == '*'))
         {
-          escaped_text2[strlen(escaped_text2)-1] = '\0';
+          escaped_text2[strlen(escaped_text2) - 1] = '\0';
           name_clause = g_strdup_printf("(t.name LIKE \'%s\' || \'%s\' OR t.name LIKE \'%s\' || \'%s|%%\')",
           dt_map_location_data_tag_root(), escaped_text2 , dt_map_location_data_tag_root(), escaped_text2);
         }
@@ -1500,7 +1612,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     case DT_COLLECTION_PROP_CAMERA: // camera
       query = g_strdup("(");
       // handle the possibility of multiple values
-      elems = g_strsplit(escaped_text, ",", -1);
+      elems = _strsplit_quotes(escaped_text, ",", -1);
       for(int i = 0; i < g_strv_length(elems); i++)
       {
         // if its undefined
@@ -1542,11 +1654,11 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       }
       else if(is_insensitive)
       {
-        if((escaped_length > 0) && (escaped_text[escaped_length-1] == '*'))
+        if((escaped_length > 0) && (escaped_text[escaped_length - 1] == '*'))
         {
           // shift-click adds an asterix * to include items in and under this hierarchy
           // without using a wildcard % which also would include similar named items
-          escaped_text[escaped_length-1] = '\0';
+          escaped_text[escaped_length - 1] = '\0';
           // clang-format off
           query = g_strdup_printf
             ("(mi.id IN (SELECT imgid FROM main.tagged_images"
@@ -1568,12 +1680,12 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       }
       else
       {
-        if((escaped_length > 0) && (escaped_text[escaped_length-1] == '*'))
+        if((escaped_length > 0) && (escaped_text[escaped_length - 1] == '*'))
         {
           // shift-click adds an asterix * to include items in and
           // under this hierarchy without using a wildcard % which
           // also would include similar named items
-          escaped_text[escaped_length-1] = '\0';
+          escaped_text[escaped_length - 1] = '\0';
           // clang-format off
           query = g_strdup_printf
             ("(mi.id IN (SELECT imgid FROM main.tagged_images"
@@ -1583,10 +1695,10 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
              escaped_text, escaped_text, escaped_text);
           // clang-format on
         }
-        else if((escaped_length > 0) && (escaped_text[escaped_length-1] == '%'))
+        else if((escaped_length > 0) && (escaped_text[escaped_length - 1] == '%'))
         {
           // ends with % or |%
-          escaped_text[escaped_length-1] = '\0';
+          escaped_text[escaped_length - 1] = '\0';
           // clang-format off
           query = g_strdup_printf
             ("(mi.id IN (SELECT imgid FROM main.tagged_images"
@@ -1613,7 +1725,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     case DT_COLLECTION_PROP_LENS: // lens
       query = g_strdup("(");
       // handle the possibility of multiple values
-      elems = g_strsplit(escaped_text, ",", -1);
+      elems = _strsplit_quotes(escaped_text, ",", -1);
       for(int i = 0; i < g_strv_length(elems); i++)
       {
         if(!g_strcmp0(elems[i], _("unnamed")))
@@ -1632,6 +1744,111 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
           g_free(lens);
         }
 
+      }
+      g_strfreev(elems);
+      query = dt_util_dstrcat(query, ")");
+      break;
+
+    case DT_COLLECTION_PROP_WHITEBALANCE: // white balance
+      query = g_strdup("(");
+      // handle the possibility of multiple values
+      elems = _strsplit_quotes(escaped_text, ",", -1);
+      for(int i = 0; i < g_strv_length(elems); i++)
+      {
+        if(!g_strcmp0(elems[i], _("unnamed")))
+        {
+          query = dt_util_dstrcat
+            (query,
+             "%swhitebalance_id IN (SELECT id FROM main.whitebalance WHERE name IS NULL OR TRIM(name)='')",
+             i>0?" OR ":"");
+        }
+        else
+        {
+          gchar *whitebalance = _add_wildcards(elems[i]);
+          query = dt_util_dstrcat(query,
+                                  "%swhitebalance_id IN (SELECT id FROM main.whitebalance WHERE name LIKE '%s')",
+                                  i>0?" OR ":"", whitebalance);
+          g_free(whitebalance);
+        }
+
+      }
+      g_strfreev(elems);
+      query = dt_util_dstrcat(query, ")");
+      break;
+
+    case DT_COLLECTION_PROP_FLASH: // flash
+      query = g_strdup("(");
+      // handle the possibility of multiple values
+      elems = _strsplit_quotes(escaped_text, ",", -1);
+      for(int i = 0; i < g_strv_length(elems); i++)
+      {
+        if(!g_strcmp0(elems[i], _("unnamed")))
+        {
+          query = dt_util_dstrcat
+            (query,
+             "%sflash_id IN (SELECT id FROM main.flash WHERE name IS NULL OR TRIM(name)='')",
+             i>0?" OR ":"");
+        }
+        else
+        {
+          gchar *flash = _add_wildcards(elems[i]);
+          query = dt_util_dstrcat(query,
+                                  "%sflash_id IN (SELECT id FROM main.flash WHERE name LIKE '%s')",
+                                  i>0?" OR ":"", flash);
+          g_free(flash);
+        }
+      }
+      g_strfreev(elems);
+      query = dt_util_dstrcat(query, ")");
+      break;
+
+    case DT_COLLECTION_PROP_EXPOSURE_PROGRAM: // exposure program
+      query = g_strdup("(");
+      // handle the possibility of multiple values
+      elems = _strsplit_quotes(escaped_text, ",", -1);
+      for(int i = 0; i < g_strv_length(elems); i++)
+      {
+        if(!g_strcmp0(elems[i], _("unnamed")))
+        {
+          query = dt_util_dstrcat
+            (query,
+             "%sexposure_program_id IN (SELECT id FROM main.exposure_program WHERE name IS NULL OR TRIM(name)='')",
+             i>0?" OR ":"");
+        }
+        else
+        {
+          gchar *exposure_program = _add_wildcards(elems[i]);
+          query = dt_util_dstrcat(query,
+                                  "%sexposure_program_id IN (SELECT id FROM main.exposure_program WHERE name LIKE '%s')",
+                                  i>0?" OR ":"", exposure_program);
+          g_free(exposure_program);
+        }
+      }
+      g_strfreev(elems);
+      query = dt_util_dstrcat(query, ")");
+      break;
+
+    case DT_COLLECTION_PROP_METERING_MODE: // metering mode
+      query = g_strdup("(");
+      // handle the possibility of multiple values
+      elems = _strsplit_quotes(escaped_text, ",", -1);
+      for(int i = 0; i < g_strv_length(elems); i++)
+      {
+        if(!g_strcmp0(elems[i], _("unnamed")))
+        {
+          query = dt_util_dstrcat
+            (query,
+             "%smetering_mode_id IN (SELECT id FROM main.metering_mode WHERE name IS NULL OR TRIM(name)='')",
+             i>0?" OR ":"");
+        }
+        else
+        {
+          gchar *metering_mode = _add_wildcards(elems[i]);
+          query = dt_util_dstrcat(query,
+                                  "%smetering_mode_id IN (SELECT id FROM main.metering_mode WHERE name LIKE '%s')",
+                                  i>0?" OR ":"", metering_mode);
+          g_free(metering_mode);
+        }
       }
       g_strfreev(elems);
       query = dt_util_dstrcat(query, ")");
@@ -2255,8 +2472,12 @@ void dt_collection_deserialize(const char *buf, const gboolean filtering)
         dt_conf_set_int(confname, k);
         break;
       }
-      while(buf[0] != '$' && buf[0] != '\0') buf++;
-      if(buf[0] == '$') buf++;
+
+      while(buf[0] != '$' && buf[0] != '\0')
+        buf++;
+
+      if(buf[0] == '$')
+        buf++;
     }
   }
   dt_collection_update_query(darktable.collection,
@@ -2406,6 +2627,21 @@ void dt_collection_update_query(const dt_collection_t *collection,
     gchar *text = dt_conf_get_string(confname);
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", i);
     const int mode = dt_conf_get_int(confname);
+
+    if(*text
+       && g_strcmp0(text, _("unnamed")) != 0
+       && (property == DT_COLLECTION_PROP_CAMERA
+       || property == DT_COLLECTION_PROP_LENS
+       || property == DT_COLLECTION_PROP_WHITEBALANCE
+       || property == DT_COLLECTION_PROP_FLASH
+       || property == DT_COLLECTION_PROP_EXPOSURE_PROGRAM
+       || property == DT_COLLECTION_PROP_METERING_MODE))
+    {
+      gchar *text_quoted = g_strdup_printf("\"%s\"", text);
+      g_free(text);
+      text = g_strdup(text_quoted);
+      g_free(text_quoted);
+    }
 
     _get_query_part(property, text, mode, FALSE, &nb, &query_parts[i]);
 

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2023 darktable developers.
+    Copyright (C) 2012-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -795,6 +795,40 @@ static void _blendop_masks_combine_callback(GtkWidget *combo,
   dt_dev_add_history_item(darktable.develop, data->module, TRUE);
 }
 
+static void _blendop_blendif_highlight_changed_tabs(dt_iop_module_t *module)
+{
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  dt_develop_blend_params_t *bp = module->blend_params;
+  dt_develop_blend_params_t *dp = module->default_blendop_params;
+
+  for(int tab = 0; bd->channel[tab].label; tab++)
+  {
+    gboolean is_changed = FALSE;
+
+    const dt_iop_gui_blendif_channel_t *channel = &bd->channel[tab];
+
+    for(int in_out = 1; in_out >= 0; in_out--)
+    {
+      const dt_develop_blendif_channels_t ch = channel->param_channels[in_out];
+
+      float *parameters = &(bp->blendif_parameters[4 * ch]);
+      float *defaults = &(dp->blendif_parameters[4 * ch]);
+
+      for(int k = 0; k < 4; k++)
+        is_changed |= parameters[k] != defaults[k];
+
+      // has polarity changed from default?
+      is_changed |= ((bp->blendif ^ dp->blendif) & (1 << (ch + 16)));
+    }
+
+    GtkWidget *label = gtk_notebook_get_tab_label(bd->channel_tabs, gtk_notebook_get_nth_page(bd->channel_tabs, tab));
+    if(is_changed)
+      dt_gui_add_class(label, "changed");
+    else
+      dt_gui_remove_class(label, "changed");
+  }
+}
+
 static void _blendop_blendif_sliders_callback(GtkDarktableGradientSlider *slider,
                                               dt_iop_gui_blend_data_t *data)
 {
@@ -836,6 +870,7 @@ static void _blendop_blendif_sliders_callback(GtkDarktableGradientSlider *slider
     bp->blendif |= (1 << ch);
 
   dt_dev_add_history_item(darktable.develop, data->module, TRUE);
+  _blendop_blendif_highlight_changed_tabs(data->module);
 }
 
 static void _blendop_blendif_sliders_reset_callback(GtkDarktableGradientSlider *slider,
@@ -906,6 +941,7 @@ static void _blendop_blendif_polarity_callback(GtkToggleButton *togglebutton,
 
   dt_dev_add_history_item(darktable.develop, data->module, TRUE);
   dt_control_queue_redraw_widget(GTK_WIDGET(togglebutton));
+  _blendop_blendif_highlight_changed_tabs(data->module);
 }
 
 static float log10_scale_callback(GtkWidget *self,
@@ -1116,7 +1152,6 @@ static void _update_gradient_slider_pickers(GtkWidget *callback_dummy,
   --darktable.gui->reset;
 }
 
-
 static void _blendop_blendif_update_tab(dt_iop_module_t *module,
                                         const int tab)
 {
@@ -1216,6 +1251,8 @@ static void _blendop_blendif_update_tab(dt_iop_module_t *module,
   dt_bauhaus_slider_set(GTK_WIDGET(data->channel_boost_factor_slider), boost_factor);
 
   --darktable.gui->reset;
+
+  _blendop_blendif_highlight_changed_tabs(module);
 }
 
 
@@ -2774,7 +2811,7 @@ void dt_iop_gui_init_masks(GtkWidget *blendw, dt_iop_module_t *module)
     GtkWidget *abox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     bd->masks_edit = dt_iop_togglebutton_new(module, "blend`tools",
                                              N_("show and edit mask elements"),
-                                             N_("show and edit in restricted mode"),
+                                             N_("show and edit in restricted mode (no moving/resizing of shapes)"),
                                              G_CALLBACK(_blendop_masks_show_and_edit),
                                              FALSE, 0, 0,
                                              dtgtk_cairo_paint_masks_eye, abox);
@@ -3627,7 +3664,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
                                 DT_INTROSPECTION_TYPE_FLOAT);
     dt_bauhaus_widget_set_label(bd->feathering_radius_slider,
                                 N_("blend"), N_("feathering radius"));
-    dt_bauhaus_slider_set_format(bd->feathering_radius_slider, " px");
+    dt_bauhaus_slider_set_format(bd->feathering_radius_slider, _(" px"));
     gtk_widget_set_tooltip_text(bd->feathering_radius_slider,
                                 _("spatial radius of feathering"));
     g_signal_connect(G_OBJECT(bd->feathering_radius_slider), "value-changed",
@@ -3639,7 +3676,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
                                 &module->blend_params->blur_radius,
                                 DT_INTROSPECTION_TYPE_FLOAT);
     dt_bauhaus_widget_set_label(bd->blur_radius_slider, N_("blend"), N_("blurring radius"));
-    dt_bauhaus_slider_set_format(bd->blur_radius_slider, " px");
+    dt_bauhaus_slider_set_format(bd->blur_radius_slider, _(" px"));
     gtk_widget_set_tooltip_text(bd->blur_radius_slider,
                                 _("radius for gaussian blur of blend mask"));
     g_signal_connect(G_OBJECT(bd->blur_radius_slider), "value-changed",

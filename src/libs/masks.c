@@ -217,7 +217,6 @@ static void _property_changed(GtkWidget *widget, dt_masks_property_t prop)
 
       // we save the new parameters
       dt_dev_add_masks_history_item(darktable.develop, dev->gui_module, TRUE);
-      dt_masks_update_image(darktable.develop);
     }
 
     if(_masks_properties[prop].relative)
@@ -343,7 +342,6 @@ static void _tree_add_exist(GtkButton *button, dt_masks_form_t *grp)
     dt_dev_add_masks_history_item(darktable.develop, NULL, FALSE);
 
     // and we apply the change
-    dt_masks_update_image(darktable.develop);
     dt_masks_iop_update(module);
     dt_dev_masks_selection_change(darktable.develop, NULL, grp->formid);
   }
@@ -513,11 +511,7 @@ static void _tree_operation(GtkButton *button, gpointer user_data)
   g_list_free_full(items, (GDestroyNotify)gtk_tree_path_free);
 
   if(change)
-  {
     _add_masks_history_item(lm);
-    dt_masks_update_image(darktable.develop);
-    dt_control_queue_redraw_center();
-  }
 }
 
 static void _add_tree_operation(GtkMenuShell *menu,
@@ -631,7 +625,6 @@ static void _tree_moveup(GtkButton *button, dt_lib_module_t *self)
 
   dt_dev_add_masks_history_item(darktable.develop, NULL, TRUE);
   _lib_masks_recreate_list(self);
-  dt_masks_update_image(darktable.develop);
 }
 
 static void _tree_movedown(GtkButton *button, dt_lib_module_t *self)
@@ -677,7 +670,6 @@ static void _tree_movedown(GtkButton *button, dt_lib_module_t *self)
 
   dt_dev_add_masks_history_item(darktable.develop, NULL, TRUE);
   _lib_masks_recreate_list(self);
-  dt_masks_update_image(darktable.develop);
 }
 
 static void _tree_delete_shape(GtkButton *button, dt_lib_module_t *self)
@@ -735,7 +727,6 @@ static void _tree_delete_shape(GtkButton *button, dt_lib_module_t *self)
 
   dt_dev_add_masks_history_item(darktable.develop, NULL, TRUE);
   _lib_masks_recreate_list(self);
-  dt_masks_update_image(darktable.develop);
 }
 
 static void _tree_duplicate_shape(GtkButton *button, dt_lib_module_t *self)
