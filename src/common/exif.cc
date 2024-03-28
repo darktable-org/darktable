@@ -1591,6 +1591,31 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       _strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
     }
 
+    // Check if an "Unknown Lens (xxx)" was returned by using regex,
+    // and retry Exif.Photo.LensModel as last resort
+    GMatchInfo *match_info;
+
+    GRegex *regex = g_regex_new("\\(\\d+\\)$",
+                        (GRegexCompileFlags) 0, 
+                        (GRegexMatchFlags) 0, 
+                        NULL);
+    g_regex_match_full(regex, 
+                       img->exif_lens, 
+                       -1, 
+                       0, 
+                       (GRegexMatchFlags) 0,
+                       &match_info,
+                       NULL);
+    const int match_count = g_match_info_get_match_count(match_info);
+    if(match_count > 0
+        && FIND_EXIF_TAG("Exif.Photo.LensModel"))
+    {
+      _strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
+    }
+
+    g_match_info_free(match_info);
+    g_regex_unref(regex);
+
     /* Use pretty name for Canon RF & RF-S lenses (as exiftool/exiv2/lensfun) */
     if(g_str_has_prefix(img->exif_lens, "RF"))
     {
@@ -1611,30 +1636,16 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         img->exif_lens[i] = g_ascii_tolower(img->exif_lens[i]);
     }
 
-    // finally we check if an "Unknwon Lens (xxx)" was returned by using
-    // a regular expression search.
-    GMatchInfo *match_info;
-
-    GRegex *regex = g_regex_new("\\(\\d+\\)$",
-                        (GRegexCompileFlags) 0, 
-                        (GRegexMatchFlags) 0, 
-                        NULL);
-    g_regex_match_full(regex, 
-                       img->exif_lens, 
-                       -1, 
-                       0, 
-                       (GRegexMatchFlags) 0,
-                       &match_info,
-                       NULL);
-    const int match_count = g_match_info_get_match_count(match_info);
-    if(match_count >0
-        && FIND_EXIF_TAG("Exif.Photo.LensModel"))
+    // Handle Sigma lenses on modern bodies (e.g. Nikon Z) using already clean
+    // Exif.Photo.LensMake and Exif.Photo.LensModel
+    if(g_ascii_strcasecmp(img->exif_lens, "Sigma") && FIND_EXIF_TAG("Exif.Photo.LensMake")
+       && pos->toString() == "SIGMA")
     {
-      _strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
+      char *pretty;
+      pretty = g_strconcat("Sigma ", img->exif_lens, (char *)NULL);
+      g_strlcpy(img->exif_lens, pretty, sizeof(img->exif_lens));
+      g_free(pretty);
     }
-
-    g_match_info_free(match_info);
-    g_regex_unref(regex);
 
     if((pos = Exiv2::whiteBalance(exifData)) != exifData.end() && pos->size())
     {
