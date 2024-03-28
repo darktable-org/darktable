@@ -794,57 +794,45 @@ static gboolean _pixelpipe_picker_box(dt_iop_module_t *module,
      && !sample->pick_output)
     return TRUE;
 
-  float wd, ht;
-  dt_dev_get_preview_size(darktable.develop, &wd, &ht);
+  dt_develop_t *dev = darktable.develop;
+  const float wd = dev->preview_pipe->iwidth;
+  const float ht = dev->preview_pipe->iheight;
+
   const int width = roi->width;
   const int height = roi->height;
-  dt_boundingbox_t fbox = { 0.0f };
+  const gboolean isbox = sample->size == DT_LIB_COLORPICKER_SIZE_BOX;
 
   // get absolute pixel coordinates in final preview image
-  if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
-  {
-    for(int k = 0; k < 4; k += 2)
-      fbox[k] = sample->box[k] * wd;
-    for(int k = 1; k < 4; k += 2)
-      fbox[k] = sample->box[k] * ht;
-  }
-  else if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
-  {
-    fbox[0] = fbox[2] = sample->point[0] * wd;
-    fbox[1] = fbox[3] = sample->point[1] * ht;
-  }
+  dt_boundingbox_t fbox = { isbox ? sample->box[0] * wd : sample->point[0] * wd,
+                            isbox ? sample->box[1] * ht : sample->point[1] * ht,
+                            isbox ? sample->box[2] * wd : sample->point[0] * wd,
+                            isbox ? sample->box[3] * ht : sample->point[1] * ht};
 
   // transform back to current module coordinates
-  dt_dev_distort_backtransform_plus
-    (darktable.develop, darktable.develop->preview_pipe, module->iop_order,
-     ((picker_source == PIXELPIPE_PICKER_INPUT)
-      ? DT_DEV_TRANSFORM_DIR_FORW_INCL
-      : DT_DEV_TRANSFORM_DIR_FORW_EXCL),
+  dt_dev_distort_transform_plus
+    (dev, dev->preview_pipe, module->iop_order,
+     ((picker_source == PIXELPIPE_PICKER_INPUT) ? DT_DEV_TRANSFORM_DIR_BACK_INCL : DT_DEV_TRANSFORM_DIR_BACK_EXCL),
      fbox, 2);
 
-  fbox[0] -= roi->x;
-  fbox[1] -= roi->y;
-  fbox[2] -= roi->x;
-  fbox[3] -= roi->y;
-
   // re-order edges of bounding box
-  box[0] = fminf(fbox[0], fbox[2]);
-  box[1] = fminf(fbox[1], fbox[3]);
-  box[2] = fmaxf(fbox[0], fbox[2]);
-  box[3] = fmaxf(fbox[1], fbox[3]);
+  box[0] = MIN(fbox[0], fbox[2]);
+  box[1] = MIN(fbox[1], fbox[3]);
+  box[2] = MAX(fbox[0], fbox[2]);
+  box[3] = MAX(fbox[1], fbox[3]);
 
   // make sure we sample at least one point
-  box[2] = fmaxf(box[2], box[0] + 1);
-  box[3] = fmaxf(box[3], box[1] + 1);
+  box[2] = MAX(box[2], box[0] + 1);
+  box[3] = MAX(box[3], box[1] + 1);
 
   // do not continue if box is completely outside of roi
   // FIXME: on invalid box, caller should set sample to something like
   // NaN to flag it as invalid
-  if(box[0] >= width
+
+  if(   box[0] >= width
      || box[1] >= height
      || box[2] < 0
      || box[3] < 0)
-    return 1;
+    return TRUE;
 
   // clamp bounding box to roi
   box[0] = CLAMP(box[0], 0, width - 1);
@@ -853,7 +841,7 @@ static gboolean _pixelpipe_picker_box(dt_iop_module_t *module,
   box[3] = CLAMP(box[3], 1, height);
 
   // safety check: area needs to have minimum 1 pixel width and height
-  if(box[2] - box[0] < 1
+  if(   box[2] - box[0] < 1
      || box[3] - box[1] < 1)
     return TRUE;
 
