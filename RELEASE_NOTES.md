@@ -166,7 +166,7 @@ changes (where available).
 
 ### Mandatory
 
-- n/a
+- Bump Exiv2 to 0.27.2
 
 ### Optional
 
