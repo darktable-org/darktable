@@ -176,6 +176,7 @@ changes (where available).
 
 ## RawSpeed changes
 
+- Fujifilm X-Trans 4 based and newer cameras now use the vendor supplied crop
 
 ## Camera support, compared to 4.6
 
@@ -202,13 +203,13 @@ changes (where available).
 - CinemaDNG lossless (Blackmagic, some DJI, etc.)
 - Fujifilm lossy RAFs
 - Nikon high efficiency NEFs
+- OM System 14-bit high resolution ORFs
 - Samsung Expert RAW DNGs (JPEG XL flavor)
 - Sony downsized lossless ARWs ("M" for full-frame, "S" for full-frame & APS-C)
 
 ### Suspended Support
 
-Support for the following cameras is suspended because no samples
-are available on raw.pixls.us:
+Support for the following cameras is suspended because no samples are available on https://raw.pixls.us:
 
 - Creo/Leaf Aptus 22(LF3779)/Hasselblad H1
 - Fujifilm FinePix S9600fd
@@ -220,7 +221,6 @@ are available on raw.pixls.us:
 - Leaf Credo 80
 - Minolta DiMAGE 5
 - Olympus SP320
-- Panasonic DMC-FX150
 - Phase One IQ250
 - Sinar Hy6/ Sinarback eXact
 - ST Micro STV680
