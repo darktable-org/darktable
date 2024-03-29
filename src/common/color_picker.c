@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2023 darktable developers.
+    Copyright (C) 2016-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -271,6 +271,75 @@ static void _color_picker_work_1ch(const float *const pixel,
     pick[DT_PICK_MEAN][c] = weights[c] ? (acc[c] / (float)weights[c]) : 0.0f;
 }
 
+// calculate box in current module's coordinates for the color picker
+gboolean dt_color_picker_box(dt_iop_module_t *module,
+                             const dt_iop_roi_t *roi,
+                             const dt_colorpicker_sample_t *const sample,
+                             dt_pixelpipe_picker_source_t picker_source,
+                             int *box)
+{
+  if(picker_source == PIXELPIPE_PICKER_OUTPUT
+     && !sample->pick_output)
+    return TRUE;
+
+  dt_develop_t *dev = darktable.develop;
+  const float wd = dev->preview_pipe->iwidth;
+  const float ht = dev->preview_pipe->iheight;
+
+  const int width = roi->width;
+  const int height = roi->height;
+  const gboolean isbox = sample->size == DT_LIB_COLORPICKER_SIZE_BOX;
+
+  // get absolute pixel coordinates in final preview image
+  dt_boundingbox_t fbox = { isbox ? sample->box[0] * wd : sample->point[0] * wd,
+                            isbox ? sample->box[1] * ht : sample->point[1] * ht,
+                            isbox ? sample->box[2] * wd : sample->point[0] * wd,
+                            isbox ? sample->box[3] * ht : sample->point[1] * ht};
+
+  // transform back to current module coordinates
+  dt_dev_distort_transform_plus
+    (dev, dev->preview_pipe, module->iop_order,
+     ((picker_source == PIXELPIPE_PICKER_INPUT) ? DT_DEV_TRANSFORM_DIR_BACK_INCL : DT_DEV_TRANSFORM_DIR_BACK_EXCL),
+     fbox, 2);
+
+  fbox[0] -= roi->x;
+  fbox[1] -= roi->y;
+  fbox[2] -= roi->x;
+  fbox[3] -= roi->y;
+  // re-order edges of bounding box
+  box[0] = MIN(fbox[0], fbox[2]);
+  box[1] = MIN(fbox[1], fbox[3]);
+  box[2] = MAX(fbox[0], fbox[2]);
+  box[3] = MAX(fbox[1], fbox[3]);
+
+  // make sure we sample at least one point
+  box[2] = MAX(box[2], box[0] + 1);
+  box[3] = MAX(box[3], box[1] + 1);
+
+  // do not continue if box is completely outside of roi
+  // FIXME: on invalid box, caller should set sample to something like
+  // NaN to flag it as invalid
+
+  if(   box[0] >= width
+     || box[1] >= height
+     || box[2] < 0
+     || box[3] < 0)
+    return TRUE;
+
+  // clamp bounding box to roi
+  box[0] = CLAMP(box[0], 0, width - 1);
+  box[1] = CLAMP(box[1], 0, height - 1);
+  box[2] = CLAMP(box[2], 1, width);
+  box[3] = CLAMP(box[3], 1, height);
+
+  // safety check: area needs to have minimum 1 pixel width and height
+  if(   box[2] - box[0] < 1
+     || box[3] - box[1] < 1)
+    return TRUE;
+
+  return FALSE;
+}
+
 void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc,
                             const float *const pixel,
                             const dt_iop_roi_t *roi,
@@ -283,6 +352,13 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc,
 {
   dt_times_t start_time = { 0 };
   dt_get_perf_times(&start_time);
+
+  for_four_channels(k)
+  {
+    pick[DT_PICK_MEAN][k] = 0.0f;
+    pick[DT_PICK_MIN][k] = FLT_MAX;
+    pick[DT_PICK_MAX][k] = -FLT_MAX;
+  }
 
   if(dsc->channels == 4u)
   {
