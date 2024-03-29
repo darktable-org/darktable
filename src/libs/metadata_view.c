@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -541,6 +541,8 @@ void gui_update(dt_lib_module_t *self)
                                          "COUNT(DISTINCT IFNULL(flash_id, '')), "
                                          "COUNT(DISTINCT IFNULL(metering_mode_id, '')), "
                                          "COUNT(DISTINCT focal_length), "
+                                         "COUNT(DISTINCT focal_length) + COUNT(DISTINCT crop), "
+                                         "COUNT(DISTINCT crop), "
                                          "COUNT(DISTINCT focus_distance), "
                                          "COUNT(DISTINCT iso), "
                                          "COUNT(DISTINCT datetime_taken), "
@@ -581,7 +583,10 @@ void gui_update(dt_lib_module_t *self)
     {
       for(int32_t md = 0; md < md_tag_names; md++)
       {
-        skip[md] = (sqlite3_column_int(stmt, md) > 1);
+        if(md == md_exif_focal_length_ff)
+          skip[md] = (sqlite3_column_int(stmt, md) > 2);
+        else
+          skip[md] = (sqlite3_column_int(stmt, md) > 1);
       }
     }
     sqlite3_finalize(stmt);
