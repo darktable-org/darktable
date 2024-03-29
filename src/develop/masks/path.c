@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2023 darktable developers.
+    Copyright (C) 2013-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -3364,25 +3364,36 @@ static void _path_set_hint_message(const dt_masks_form_gui_t *const gui,
                                    const size_t msgbuf_len)
 {
   if(gui->creation && g_list_length(form->points) < 4)
-    g_strlcat(msgbuf, _("<b>add node</b>: click, <b>add sharp node</b>: ctrl+click\n"
-                        "<b>cancel</b>: right-click"), msgbuf_len);
+    g_strlcat(msgbuf,
+              _("<b>add node</b>: click, <b>add sharp node</b>: ctrl+click\n"
+                "<b>cancel</b>: right-click"),
+              msgbuf_len);
   else if(gui->creation)
-    g_strlcat(msgbuf, _("<b>add node</b>: click, <b>add sharp node</b>: ctrl+click\n"
-                        "<b>finish path</b>: right-click"), msgbuf_len);
+    g_strlcat(msgbuf,
+              _("<b>add node</b>: click, <b>add sharp node</b>: ctrl+click\n"
+                "<b>finish path</b>: right-click"),
+              msgbuf_len);
   else if(gui->point_selected >= 0)
-    g_strlcat(msgbuf, _("<b>move node</b>: drag, <b>remove node</b>: right-click\n"
-                        "<b>switch smooth/sharp mode</b>: ctrl+click"), msgbuf_len);
+    g_strlcat(msgbuf,
+              _("<b>move node</b>: drag, <b>remove node</b>: right-click\n"
+                "<b>switch smooth/sharp mode</b>: ctrl+click"),
+              msgbuf_len);
   else if(gui->feather_selected >= 0)
     g_strlcat(msgbuf,
-              _("<b>node curvature</b>: drag\n<b>reset curvature</b>: right-click"),
+              _("<b>node curvature</b>: drag\n"
+                "<b>reset curvature</b>: right-click"),
               msgbuf_len);
   else if(gui->seg_selected >= 0)
     g_strlcat(msgbuf,
-              _("<b>move segment</b>: drag\n<b>add node</b>: ctrl+click"), msgbuf_len);
+              _("<b>move segment</b>: drag, <b>add node</b>: ctrl+click\n"
+                "<b>remove path</b>: right-click"),
+              msgbuf_len);
   else if(gui->form_selected)
-    g_snprintf(msgbuf, msgbuf_len,
+    g_snprintf(msgbuf,
+               msgbuf_len,
                _("<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
-                 "<b>opacity</b>: ctrl+scroll (%d%%)"), opacity);
+                 "<b>opacity</b>: ctrl+scroll (%d%%)"),
+               opacity);
 }
 
 static void _path_duplicate_points(dt_develop_t *const dev,
