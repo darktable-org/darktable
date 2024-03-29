@@ -32,6 +32,7 @@
 #include "common/styles.h"
 #include "common/tags.h"
 #include "common/undo.h"
+#include "common/color_picker.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -235,54 +236,6 @@ void _display_module_trouble_message_callback(gpointer instance,
   }
 }
 
-static void _backtransform_box(dt_develop_t *dev,
-                              const int num,
-                              const float *in,
-                              float *out)
-{
-  const float wd = dev->preview_pipe->iwidth;
-  const float ht = dev->preview_pipe->iheight;
-  const float wdp = dev->preview_pipe->processed_width;
-  const float htp = dev->preview_pipe->processed_height;
-  const gboolean box = num == 2;
-
-  dt_boundingbox_t fbox = { wdp * in[0],
-                            htp * in[1],
-                            box ? wdp * in[2] : 0.0f,
-                            box ? htp * in[3] : 0.0f };
-  dt_dev_distort_backtransform(dev, fbox, num);
-
-  out[0] = fbox[0] / wd;
-  out[1] = fbox[1] / ht;
-  if(box)
-  {
-    out[2] = fbox[2] / wd;
-    out[3] = fbox[3] / ht;
-  }
-}
-
-static void _transform_box(dt_develop_t *dev,
-                              const int num,
-                              const float *in,
-                              float *out)
-{
-  const float wd = dev->preview_pipe->iwidth;
-  const float ht = dev->preview_pipe->iheight;
-  const gboolean box = num == 2;
-  dt_boundingbox_t fbox = { wd * in[0],
-                            ht * in[1],
-                            box ? wd * in[2] : 0.0f,
-                            box ? ht * in[3] : 0.0f };
-  dt_dev_distort_transform(dev, fbox, num);
-
-  out[0] = fbox[0];
-  out[1] = fbox[1];
-  if(box)
-  {
-    out[2] = fbox[2];
-    out[3] = fbox[3];
-  }
-}
 
 static void _darkroom_pickers_draw(dt_view_t *self,
                                    cairo_t *cri,
@@ -328,7 +281,7 @@ static void _darkroom_pickers_draw(dt_view_t *self,
     if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
     {
       dt_boundingbox_t fbox;
-      _transform_box(dev, 2, sample->box, fbox);
+      dt_color_picker_transform_box(dev, 2, sample->box, fbox);
       x = fbox[0];
       y = fbox[1];
       double w = fbox[2];
@@ -358,7 +311,7 @@ static void _darkroom_pickers_draw(dt_view_t *self,
          but this gets particularly tricky to do with iop pickers with transformations after them in the pipeline
       */
       dt_boundingbox_t fbox;
-      _transform_box(dev, 1, sample->point, fbox);
+      dt_color_picker_transform_box(dev, 1, sample->point, fbox);
       x = fbox[0];
       y = fbox[1];
       cairo_user_to_device(cri, &x, &y);
@@ -3359,7 +3312,7 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
 
     dt_boundingbox_t pbox = { zoom_x, zoom_y };
     dt_boundingbox_t zb;
-    _backtransform_box(dev, 1, pbox, zb);
+    dt_color_picker_backtransform_box(dev, 1, pbox, zb);
 
     if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
     {
@@ -3497,7 +3450,7 @@ int button_pressed(dt_view_t *self,
 
     dt_boundingbox_t pbox = { zoom_x, zoom_y };
     dt_boundingbox_t zb;
-    _backtransform_box(dev, 1, pbox, zb);
+    dt_color_picker_backtransform_box(dev, 1, pbox, zb);
     const float zx = zb[0];
     const float zy = zb[1];
 
@@ -3548,7 +3501,7 @@ int button_pressed(dt_view_t *self,
                                     MAX(0.0, zoom_y - delta_y),
                                     MIN(1.0, zoom_x + delta_x),
                                     MIN(1.0, zoom_y + delta_y) };
-          _backtransform_box(dev, 2, fbox, sample->box);
+         dt_color_picker_backtransform_box(dev, 2, fbox, sample->box);
         }
         dt_control_change_cursor(GDK_FLEUR);
       }
@@ -3600,7 +3553,7 @@ int button_pressed(dt_view_t *self,
         // FIXME: color_pixer_proxy should have an dt_iop_color_picker_clear_area() function for this
         dt_boundingbox_t reset = { 0.01f, 0.01f, 0.99f, 0.99f };
         dt_boundingbox_t box;
-        _backtransform_box(dev, 2, reset, box);
+        dt_color_picker_backtransform_box(dev, 2, reset, box);
         dt_lib_colorpicker_set_box_area(darktable.lib, box);
         dev->preview_pipe->status = DT_DEV_PIXELPIPE_DIRTY;
         dt_control_queue_redraw_center();

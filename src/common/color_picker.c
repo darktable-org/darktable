@@ -271,6 +271,68 @@ static void _color_picker_work_1ch(const float *const pixel,
     pick[DT_PICK_MEAN][c] = weights[c] ? (acc[c] / (float)weights[c]) : 0.0f;
 }
 
+void dt_color_picker_backtransform_box(dt_develop_t *dev,
+                              const int num,
+                              const float *in,
+                              float *out)
+{
+  const float wd = dev->preview_pipe->iwidth;
+  const float ht = dev->preview_pipe->iheight;
+  const float wdp = dev->preview_pipe->processed_width;
+  const float htp = dev->preview_pipe->processed_height;
+  const gboolean box = num == 2;
+  if(wd < 1.0f || ht < 1.0f || wdp < 1.0f || htp < 1.0f)
+  {
+    for(int i = 0; i < num; i++)
+      out[i] = in[i];
+    return;
+  }
+
+  dt_boundingbox_t fbox = { wdp * in[0],
+                            htp * in[1],
+                            box ? wdp * in[2] : 0.0f,
+                            box ? htp * in[3] : 0.0f };
+  dt_dev_distort_backtransform(dev, fbox, num);
+
+  out[0] = fbox[0] / wd;
+  out[1] = fbox[1] / ht;
+  if(box)
+  {
+    out[2] = fbox[2] / wd;
+    out[3] = fbox[3] / ht;
+  }
+}
+
+void dt_color_picker_transform_box(dt_develop_t *dev,
+                              const int num,
+                              const float *in,
+                              float *out)
+{
+  const float wd = dev->preview_pipe->iwidth;
+  const float ht = dev->preview_pipe->iheight;
+  const gboolean box = num == 2;
+  if(wd < 1.0f || ht < 1.0f)
+  {
+    for(int i = 0; i < num; i++)
+      out[i] = in[i];
+    return;
+  }
+
+  dt_boundingbox_t fbox = { wd * in[0],
+                            ht * in[1],
+                            box ? wd * in[2] : 0.0f,
+                            box ? ht * in[3] : 0.0f };
+  dt_dev_distort_transform(dev, fbox, num);
+
+  out[0] = fbox[0];
+  out[1] = fbox[1];
+  if(box)
+  {
+    out[2] = fbox[2];
+    out[3] = fbox[3];
+  }
+}
+
 // calculate box in current module's coordinates for the color picker
 gboolean dt_color_picker_box(dt_iop_module_t *module,
                              const dt_iop_roi_t *roi,
