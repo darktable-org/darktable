@@ -1083,9 +1083,9 @@ static gboolean _event_scroll(GtkWidget *widget,
 {
   GdkEventScroll *e = (GdkEventScroll *)event;
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
-  int delta;
+  int delta_y;
 
-  if(dt_gui_get_scroll_unit_delta(e, &delta))
+  if(dt_gui_get_scroll_unit_deltas(e, NULL, &delta_y))
   {
     // for zoomable, scroll = zoom
     if(table->mode == DT_THUMBTABLE_MODE_ZOOM
@@ -1093,7 +1093,7 @@ static gboolean _event_scroll(GtkWidget *widget,
     {
       if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
       {
-        const int sx = CLAMP(table->view_width / ((table->view_width / table->thumb_size / 2 + delta) * 2 + 1),
+        const int sx = CLAMP(table->view_width / ((table->view_width / table->thumb_size / 2 + delta_y) * 2 + 1),
                              dt_conf_get_int("min_panel_height"),
                              dt_conf_get_int("max_panel_height"));
         dt_ui_panel_set_size(darktable.gui->ui, DT_UI_PANEL_BOTTOM, sx);
@@ -1101,13 +1101,13 @@ static gboolean _event_scroll(GtkWidget *widget,
       else
       {
         const int old = dt_view_lighttable_get_zoom(darktable.view_manager);
-        const int new = CLAMP(old + delta, 1, DT_LIGHTTABLE_MAX_ZOOM);
+        const int new = CLAMP(old + delta_y, 1, DT_LIGHTTABLE_MAX_ZOOM);
         dt_thumbtable_zoom_changed(table, old, new);
       }
     }
     else if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
     {
-      _move(table, -delta * (dt_modifier_is(e->state, GDK_SHIFT_MASK)
+      _move(table, -delta_y * (dt_modifier_is(e->state, GDK_SHIFT_MASK)
                   ? table->view_width - table->thumb_size
                   : table->thumb_size), 0, TRUE);
 
@@ -1124,7 +1124,7 @@ static gboolean _event_scroll(GtkWidget *widget,
       {
         table->scroll_timeout_id = g_timeout_add(10, _event_scroll_compressed, table);
       }
-      table->scroll_value += delta;
+      table->scroll_value += delta_y;
     }
   }
   // we stop here to avoid scrolledwindow to move
