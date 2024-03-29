@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-03-24 18:56+0100\n"
+"POT-Creation-Date: 2024-03-29 08:03+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -835,12 +835,12 @@ msgstr ""
 #: ../build/bin/preferences_gen.h:5029 ../build/bin/preferences_gen.h:5735
 #: ../build/bin/preferences_gen.h:6571 ../build/bin/preferences_gen.h:7062
 #: ../build/bin/preferences_gen.h:7328 ../src/gui/accelerators.c:2997
-#: ../src/gui/gtk.c:2649 ../src/gui/preferences.c:424
+#: ../src/gui/gtk.c:2975 ../src/gui/preferences.c:424
 #: ../src/gui/preferences.c:874 ../src/libs/modulegroups.c:3852
 msgid "?"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:4251 ../src/control/jobs/control_jobs.c:2598
+#: ../build/bin/preferences_gen.h:4251 ../src/control/jobs/control_jobs.c:2601
 #: ../src/libs/import.c:187
 msgid "import"
 msgstr ""
@@ -952,7 +952,7 @@ msgstr ""
 msgid "file naming pattern used for a import session"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:4434 ../src/gui/gtk.c:1266
+#: ../build/bin/preferences_gen.h:4434 ../src/gui/gtk.c:1383
 #: ../src/gui/preferences.c:544 ../src/libs/tools/lighttable.c:66
 #: ../src/views/lighttable.c:91
 msgid "lighttable"
@@ -1150,7 +1150,7 @@ msgstr ""
 msgid "pattern for the thumbnail tooltip (empty to disable)"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:5039 ../src/gui/gtk.c:1267
+#: ../build/bin/preferences_gen.h:5039 ../src/gui/gtk.c:1385
 #: ../src/gui/preferences.c:544 ../src/views/darkroom.c:91
 msgid "darkroom"
 msgstr ""
@@ -1375,8 +1375,8 @@ msgstr ""
 msgid "LUT 3D root folder"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:5876 ../src/control/jobs/control_jobs.c:1860
-#: ../src/control/jobs/control_jobs.c:1917 ../src/gui/preferences.c:1080
+#: ../build/bin/preferences_gen.h:5876 ../src/control/jobs/control_jobs.c:1863
+#: ../src/control/jobs/control_jobs.c:1920 ../src/gui/preferences.c:1080
 #: ../src/gui/presets.c:421 ../src/imageio/storage/disk.c:197
 #: ../src/imageio/storage/disk.c:277 ../src/imageio/storage/gallery.c:149
 #: ../src/imageio/storage/gallery.c:213 ../src/imageio/storage/latex.c:145
@@ -2229,7 +2229,7 @@ msgstr ""
 #: ../src/gui/guides.c:712 ../src/iop/basecurve.c:2215
 #: ../src/iop/channelmixerrgb.c:4748 ../src/iop/clipping.c:1950
 #: ../src/iop/clipping.c:2143 ../src/iop/clipping.c:2158
-#: ../src/iop/retouch.c:507 ../src/libs/collect.c:2119
+#: ../src/iop/retouch.c:507 ../src/libs/collect.c:2135
 #: ../src/libs/colorpicker.c:51 ../src/libs/export.c:1101
 #: ../src/libs/filters/module_order.c:158 ../src/libs/histogram.c:109
 #: ../src/libs/live_view.c:311 ../src/libs/print_settings.c:2852
@@ -2574,11 +2574,11 @@ msgstr ""
 #: ../src/common/collection.c:1486 ../src/common/color_vocabulary.c:232
 #: ../src/common/colorlabels.c:374 ../src/develop/blend_gui.c:2383
 #: ../src/develop/blend_gui.c:2431 ../src/develop/lightroom.c:887
-#: ../src/gui/gtk.c:3192 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:356
+#: ../src/gui/gtk.c:3571 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:356
 #: ../src/iop/channelmixer.c:637 ../src/iop/channelmixer.c:647
 #: ../src/iop/channelmixerrgb.c:4690 ../src/iop/colorzones.c:2499
 #: ../src/iop/enlargecanvas.c:466 ../src/iop/temperature.c:2018
-#: ../src/iop/temperature.c:2210 ../src/libs/collect.c:1928
+#: ../src/iop/temperature.c:2210 ../src/libs/collect.c:1944
 #: ../src/libs/filters/colors.c:260 ../src/libs/histogram.c:2722
 msgid "red"
 msgstr ""
@@ -2594,12 +2594,12 @@ msgstr ""
 #: ../src/common/collection.c:1490 ../src/common/color_vocabulary.c:277
 #: ../src/common/colorlabels.c:376 ../src/develop/blend_gui.c:2389
 #: ../src/develop/blend_gui.c:2437 ../src/develop/lightroom.c:891
-#: ../src/gui/gtk.c:3193 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:361
+#: ../src/gui/gtk.c:3572 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:361
 #: ../src/iop/channelmixer.c:638 ../src/iop/channelmixer.c:653
 #: ../src/iop/channelmixerrgb.c:4691 ../src/iop/colorzones.c:2502
 #: ../src/iop/enlargecanvas.c:465 ../src/iop/temperature.c:2002
 #: ../src/iop/temperature.c:2020 ../src/iop/temperature.c:2211
-#: ../src/libs/collect.c:1928 ../src/libs/filters/colors.c:262
+#: ../src/libs/collect.c:1944 ../src/libs/filters/colors.c:262
 #: ../src/libs/histogram.c:2713
 msgid "green"
 msgstr ""
@@ -2615,11 +2615,11 @@ msgstr ""
 #: ../src/common/collection.c:1492 ../src/common/color_vocabulary.c:324
 #: ../src/common/colorlabels.c:377 ../src/develop/blend_gui.c:2395
 #: ../src/develop/blend_gui.c:2443 ../src/develop/lightroom.c:893
-#: ../src/gui/gtk.c:3194 ../src/iop/bilateral.cc:366
+#: ../src/gui/gtk.c:3573 ../src/iop/bilateral.cc:366
 #: ../src/iop/channelmixer.c:639 ../src/iop/channelmixer.c:659
 #: ../src/iop/channelmixerrgb.c:4692 ../src/iop/colorzones.c:2504
 #: ../src/iop/enlargecanvas.c:467 ../src/iop/temperature.c:2022
-#: ../src/iop/temperature.c:2212 ../src/libs/collect.c:1928
+#: ../src/iop/temperature.c:2212 ../src/libs/collect.c:1944
 #: ../src/libs/filters/colors.c:263 ../src/libs/histogram.c:2704
 msgid "blue"
 msgstr ""
@@ -2855,7 +2855,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_clipping.c:303
 #: ../build/lib/darktable/plugins/introspection_crop.c:61
 #: ../build/lib/darktable/plugins/introspection_crop.c:134
-#: ../src/gui/gtk.c:1234 ../src/iop/atrous.c:1632
+#: ../src/gui/gtk.c:1340 ../src/iop/atrous.c:1632
 msgid "left"
 msgstr ""
 
@@ -2863,7 +2863,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_clipping.c:307
 #: ../build/lib/darktable/plugins/introspection_crop.c:67
 #: ../build/lib/darktable/plugins/introspection_crop.c:138
-#: ../src/gui/accelerators.c:131 ../src/gui/gtk.c:1240
+#: ../src/gui/accelerators.c:131 ../src/gui/gtk.c:1350
 msgid "top"
 msgstr ""
 
@@ -2871,7 +2871,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_clipping.c:311
 #: ../build/lib/darktable/plugins/introspection_crop.c:73
 #: ../build/lib/darktable/plugins/introspection_crop.c:142
-#: ../src/gui/gtk.c:1237 ../src/iop/atrous.c:1631
+#: ../src/gui/gtk.c:1345 ../src/iop/atrous.c:1631
 msgid "right"
 msgstr ""
 
@@ -2879,7 +2879,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_clipping.c:315
 #: ../build/lib/darktable/plugins/introspection_crop.c:79
 #: ../build/lib/darktable/plugins/introspection_crop.c:146
-#: ../src/gui/accelerators.c:132 ../src/gui/gtk.c:1243
+#: ../src/gui/accelerators.c:132 ../src/gui/gtk.c:1354
 msgid "bottom"
 msgstr ""
 
@@ -3199,7 +3199,7 @@ msgstr ""
 #: ../src/common/collection.c:1488 ../src/common/colorlabels.c:375
 #: ../src/develop/lightroom.c:889 ../src/gui/guides.c:732
 #: ../src/iop/colorzones.c:2501 ../src/iop/temperature.c:2008
-#: ../src/libs/collect.c:1928 ../src/libs/filters/colors.c:261
+#: ../src/libs/collect.c:1944 ../src/libs/filters/colors.c:261
 msgid "yellow"
 msgstr ""
 
@@ -3424,7 +3424,7 @@ msgstr ""
 
 #. history
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:232
-#: ../src/common/collection.c:1506 ../src/libs/collect.c:1869
+#: ../src/common/collection.c:1506 ../src/libs/collect.c:1885
 #: ../src/libs/filters/history.c:38
 msgid "basic"
 msgstr ""
@@ -4243,9 +4243,9 @@ msgstr ""
 #. Side-border hide/show
 #: ../build/lib/darktable/plugins/introspection_lens.cc:534
 #: ../src/dtgtk/range.c:1763 ../src/gui/accelerators.c:2593
-#: ../src/gui/accelerators.c:2675 ../src/gui/gtk.c:1282 ../src/gui/gtk.c:3191
+#: ../src/gui/accelerators.c:2675 ../src/gui/gtk.c:1406 ../src/gui/gtk.c:3570
 #: ../src/imageio/format/pdf.c:645 ../src/iop/denoiseprofile.c:3713
-#: ../src/iop/rawdenoise.c:909 ../src/libs/collect.c:3497
+#: ../src/iop/rawdenoise.c:909 ../src/libs/collect.c:3557
 #: ../src/libs/filtering.c:1532 ../src/libs/filters/colors.c:157
 #: ../src/libs/filters/colors.c:265 ../src/libs/filters/rating.c:211
 msgid "all"
@@ -5132,8 +5132,8 @@ msgid "dropdown"
 msgstr ""
 
 #: ../src/chart/main.c:504 ../src/common/database.c:3616
-#: ../src/control/jobs/control_jobs.c:1861
-#: ../src/control/jobs/control_jobs.c:1920 ../src/gui/accelerators.c:2498
+#: ../src/control/jobs/control_jobs.c:1864
+#: ../src/control/jobs/control_jobs.c:1923 ../src/gui/accelerators.c:2498
 #: ../src/gui/accelerators.c:2580 ../src/gui/accelerators.c:2633
 #: ../src/gui/accelerators.c:2662 ../src/gui/accelerators.c:2724
 #: ../src/gui/hist_dialog.c:228 ../src/gui/preferences.c:1042
@@ -5141,7 +5141,7 @@ msgstr ""
 #: ../src/gui/presets.c:565 ../src/gui/styles_dialog.c:555
 #: ../src/imageio/storage/disk.c:198 ../src/imageio/storage/gallery.c:150
 #: ../src/imageio/storage/latex.c:146 ../src/iop/lut3d.c:1567
-#: ../src/libs/collect.c:425 ../src/libs/collect.c:3326
+#: ../src/libs/collect.c:429 ../src/libs/collect.c:3382
 #: ../src/libs/copy_history.c:115 ../src/libs/export_metadata.c:276
 #: ../src/libs/geotagging.c:929 ../src/libs/import.c:1829
 #: ../src/libs/import.c:1942 ../src/libs/import.c:2041
@@ -5157,7 +5157,7 @@ msgid "_cancel"
 msgstr ""
 
 #: ../src/chart/main.c:504 ../src/gui/preferences.c:1081
-#: ../src/gui/styles_dialog.c:556 ../src/libs/collect.c:3327
+#: ../src/gui/styles_dialog.c:556 ../src/libs/collect.c:3383
 #: ../src/libs/export_metadata.c:277 ../src/libs/metadata.c:463
 #: ../src/libs/metadata_view.c:1251 ../src/libs/recentcollect.c:229
 #: ../src/libs/styles.c:433 ../src/libs/tagging.c:1690
@@ -5375,7 +5375,7 @@ msgstr ""
 msgid "print time"
 msgstr ""
 
-#: ../src/common/collection.c:632 ../src/libs/collect.c:3707
+#: ../src/common/collection.c:632 ../src/libs/collect.c:3769
 #: ../src/libs/filtering.c:2252 ../src/libs/filtering.c:2272
 #: ../src/libs/filters/history.c:153 ../src/libs/history.c:92
 msgid "history"
@@ -5466,28 +5466,28 @@ msgstr ""
 
 #: ../src/common/collection.c:1494 ../src/common/color_vocabulary.c:339
 #: ../src/common/colorlabels.c:378 ../src/iop/colorzones.c:2505
-#: ../src/libs/collect.c:1928 ../src/libs/filters/colors.c:264
+#: ../src/libs/collect.c:1944 ../src/libs/filters/colors.c:264
 msgid "purple"
 msgstr ""
 
-#: ../src/common/collection.c:1512 ../src/libs/collect.c:1869
+#: ../src/common/collection.c:1512 ../src/libs/collect.c:1885
 #: ../src/libs/filters/history.c:38
 msgid "auto applied"
 msgstr ""
 
-#: ../src/common/collection.c:1518 ../src/libs/collect.c:1869
+#: ../src/common/collection.c:1518 ../src/libs/collect.c:1885
 #: ../src/libs/filters/history.c:38
 msgid "altered"
 msgstr ""
 
 #: ../src/common/collection.c:1536 ../src/common/collection.c:1647
-#: ../src/libs/collect.c:1242 ../src/libs/collect.c:1424
-#: ../src/libs/collect.c:1450 ../src/libs/collect.c:1594
-#: ../src/libs/collect.c:2742
+#: ../src/libs/collect.c:1251 ../src/libs/collect.c:1439
+#: ../src/libs/collect.c:1465 ../src/libs/collect.c:1609
+#: ../src/libs/collect.c:2789
 msgid "not tagged"
 msgstr ""
 
-#: ../src/common/collection.c:1537 ../src/libs/collect.c:1450
+#: ../src/common/collection.c:1537 ../src/libs/collect.c:1465
 #: ../src/libs/map_locations.c:742
 msgid "tagged"
 msgstr ""
@@ -5497,12 +5497,12 @@ msgid "tagged*"
 msgstr ""
 
 #. local copy
-#: ../src/common/collection.c:1572 ../src/libs/collect.c:1891
+#: ../src/common/collection.c:1572 ../src/libs/collect.c:1907
 #: ../src/libs/filters/local_copy.c:38
 msgid "not copied locally"
 msgstr ""
 
-#: ../src/common/collection.c:1577 ../src/libs/collect.c:1890
+#: ../src/common/collection.c:1577 ../src/libs/collect.c:1906
 #: ../src/libs/filters/local_copy.c:38
 msgid "copied locally"
 msgstr ""
@@ -5511,22 +5511,22 @@ msgstr ""
 #: ../src/common/collection.c:1619 ../src/common/collection.c:1731
 #: ../src/common/collection.c:1758 ../src/common/collection.c:1785
 #: ../src/common/collection.c:1811 ../src/common/collection.c:1837
-#: ../src/common/collection.c:2632 ../src/libs/collect.c:2289
-#: ../src/libs/collect.c:2290
+#: ../src/common/collection.c:2632 ../src/libs/collect.c:2305
+#: ../src/libs/collect.c:2306
 msgid "unnamed"
 msgstr ""
 
-#: ../src/common/collection.c:2122 ../src/libs/collect.c:2086
+#: ../src/common/collection.c:2122 ../src/libs/collect.c:2102
 #: ../src/libs/filters/grouping.c:147 ../src/libs/filters/grouping.c:170
 msgid "group leaders"
 msgstr ""
 
-#: ../src/common/collection.c:2126 ../src/libs/collect.c:2086
+#: ../src/common/collection.c:2126 ../src/libs/collect.c:2102
 #: ../src/libs/filters/grouping.c:150 ../src/libs/filters/grouping.c:170
 msgid "group followers"
 msgstr ""
 
-#: ../src/common/collection.c:2283 ../src/libs/collect.c:2178
+#: ../src/common/collection.c:2283 ../src/libs/collect.c:2194
 msgid "not defined"
 msgstr ""
 
@@ -5990,8 +5990,8 @@ msgstr ""
 msgid "file `%s' has unknown format!"
 msgstr ""
 
-#: ../src/common/darktable.c:429 ../src/control/jobs/control_jobs.c:2338
-#: ../src/control/jobs/control_jobs.c:2405
+#: ../src/common/darktable.c:429 ../src/control/jobs/control_jobs.c:2341
+#: ../src/control/jobs/control_jobs.c:2408
 #, c-format
 msgid "error loading file `%s'"
 msgstr ""
@@ -6145,11 +6145,11 @@ msgid ""
 "do you really want to delete the lock files?\n"
 msgstr ""
 
-#: ../src/common/database.c:3623 ../src/gui/gtk.c:2605
+#: ../src/common/database.c:3623 ../src/gui/gtk.c:2926
 msgid "_no"
 msgstr ""
 
-#: ../src/common/database.c:3623 ../src/gui/gtk.c:2604
+#: ../src/common/database.c:3623 ../src/gui/gtk.c:2925
 msgid "_yes"
 msgstr ""
 
@@ -6300,12 +6300,12 @@ msgid ""
 "your RAM settings"
 msgstr ""
 
-#: ../src/common/exif.cc:5595
+#: ../src/common/exif.cc:5596
 #, c-format
 msgid "cannot read XMP file '%s': '%s'"
 msgstr ""
 
-#: ../src/common/exif.cc:5653
+#: ../src/common/exif.cc:5654
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
 msgstr ""
@@ -6373,73 +6373,73 @@ msgid_plural "date/time re-applied to %d images"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/common/image.c:2317
+#: ../src/common/image.c:2319
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr ""
 
-#: ../src/common/image.c:2324
+#: ../src/common/image.c:2326
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr ""
 
-#: ../src/common/image.c:2331
+#: ../src/common/image.c:2333
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr ""
 
-#: ../src/common/image.c:2348
+#: ../src/common/image.c:2350
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr ""
 
-#: ../src/common/image.c:2358
+#: ../src/common/image.c:2360
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr ""
 
-#: ../src/common/image.c:2362
+#: ../src/common/image.c:2364
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr ""
 
-#: ../src/common/image.c:2693
+#: ../src/common/image.c:2695
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 
-#: ../src/common/image.c:2707
+#: ../src/common/image.c:2709
 msgid "cannot create local copy."
 msgstr ""
 
-#: ../src/common/image.c:2787 ../src/control/jobs/control_jobs.c:862
+#: ../src/common/image.c:2789 ../src/control/jobs/control_jobs.c:862
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 
-#: ../src/common/image.c:2960
+#: ../src/common/image.c:2962
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/common/image.c:3161
+#: ../src/common/image.c:3163
 msgid "<b>WARNING</b>: camera is missing samples!"
 msgstr ""
 
-#: ../src/common/image.c:3162
+#: ../src/common/image.c:3164
 msgid ""
 "You must provide samples in <a href='https://raw.pixls.us/'>https://raw."
 "pixls.us/</a>"
 msgstr ""
 
-#: ../src/common/image.c:3163
+#: ../src/common/image.c:3165
 #, c-format
 msgid ""
 "for `%s' `%s'\n"
 "in as many format/compression/bit depths as possible"
 msgstr ""
 
-#: ../src/common/image.c:3166
+#: ../src/common/image.c:3168
 msgid "or the <b>RAW won't be readable</b> in next version."
 msgstr ""
 
@@ -7447,57 +7447,57 @@ msgid_plural "refreshing info for %d images"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:1545
+#: ../src/control/jobs/control_jobs.c:1548
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:1547
+#: ../src/control/jobs/control_jobs.c:1550
 msgid "no image to export"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:1585
+#: ../src/control/jobs/control_jobs.c:1588
 #, c-format
 msgid "exporting %d / %d to %s"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:1600 ../src/views/darkroom.c:727
+#: ../src/control/jobs/control_jobs.c:1603 ../src/views/darkroom.c:727
 #: ../src/views/print.c:325
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:1709
+#: ../src/control/jobs/control_jobs.c:1712
 msgid "merge HDR image"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:1727
+#: ../src/control/jobs/control_jobs.c:1730
 msgid "duplicate images"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:1737
+#: ../src/control/jobs/control_jobs.c:1740
 msgid "flip images"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:1746
+#: ../src/control/jobs/control_jobs.c:1749
 msgid "set monochrome images"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:1754
+#: ../src/control/jobs/control_jobs.c:1757
 msgid "remove images"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:1767
+#: ../src/control/jobs/control_jobs.c:1770
 msgid "remove image?"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:1767
+#: ../src/control/jobs/control_jobs.c:1770
 msgid "remove images?"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:1768
+#: ../src/control/jobs/control_jobs.c:1771
 #, c-format
 msgid ""
 "do you really want to remove %d image from darktable\n"
@@ -7509,21 +7509,21 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. first get all selected images, to avoid the set changing during ui interaction
-#: ../src/control/jobs/control_jobs.c:1784
-#: ../src/control/jobs/control_jobs.c:1817
+#: ../src/control/jobs/control_jobs.c:1787
+#: ../src/control/jobs/control_jobs.c:1820
 msgid "delete images"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:1800
-#: ../src/control/jobs/control_jobs.c:1830
+#: ../src/control/jobs/control_jobs.c:1803
+#: ../src/control/jobs/control_jobs.c:1833
 msgid "delete image?"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:1800
+#: ../src/control/jobs/control_jobs.c:1803
 msgid "delete images?"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:1801
+#: ../src/control/jobs/control_jobs.c:1804
 #, c-format
 msgid ""
 "do you really want to physically delete %d image\n"
@@ -7534,39 +7534,39 @@ msgid_plural ""
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:1803
+#: ../src/control/jobs/control_jobs.c:1806
 #, c-format
 msgid "do you really want to physically delete %d image from disk?"
 msgid_plural "do you really want to physically delete %d images from disk?"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:1831
+#: ../src/control/jobs/control_jobs.c:1834
 msgid ""
 "do you really want to physically delete selected image (using trash if "
 "possible)?"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:1832
+#: ../src/control/jobs/control_jobs.c:1835
 msgid "do you really want to physically delete selected image from disk?"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:1848
+#: ../src/control/jobs/control_jobs.c:1851
 msgid "move images"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:1861
-#: ../src/control/jobs/control_jobs.c:1919
+#: ../src/control/jobs/control_jobs.c:1864
+#: ../src/control/jobs/control_jobs.c:1922
 msgid "_select as destination"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:1881
+#: ../src/control/jobs/control_jobs.c:1884
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:1882
+#: ../src/control/jobs/control_jobs.c:1885
 #, c-format
 msgid ""
 "do you really want to physically move %d image to %s?\n"
@@ -7577,104 +7577,104 @@ msgid_plural ""
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:1905
+#: ../src/control/jobs/control_jobs.c:1908
 msgid "copy images"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:1942
+#: ../src/control/jobs/control_jobs.c:1945
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:1943
+#: ../src/control/jobs/control_jobs.c:1946
 #, c-format
 msgid "do you really want to physically copy %d image to %s?"
 msgid_plural "do you really want to physically copy %d images to %s?"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:1962
-#: ../src/control/jobs/control_jobs.c:1972
+#: ../src/control/jobs/control_jobs.c:1965
+#: ../src/control/jobs/control_jobs.c:1975
 msgid "local copy images"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:1982 ../src/libs/image.c:675
+#: ../src/control/jobs/control_jobs.c:1985 ../src/libs/image.c:675
 msgid "refresh EXIF"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2058
+#: ../src/control/jobs/control_jobs.c:2061
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2075
+#: ../src/control/jobs/control_jobs.c:2078
 msgid "export images"
-msgstr ""
-
-#: ../src/control/jobs/control_jobs.c:2130
-#, c-format
-msgid "adding time offset to %d image"
-msgstr ""
-
-#: ../src/control/jobs/control_jobs.c:2131
-#, c-format
-msgid "setting date/time of %d image"
 msgstr ""
 
 #: ../src/control/jobs/control_jobs.c:2133
 #, c-format
-msgid "adding time offset to %d images"
+msgid "adding time offset to %d image"
 msgstr ""
 
 #: ../src/control/jobs/control_jobs.c:2134
 #, c-format
+msgid "setting date/time of %d image"
+msgstr ""
+
+#: ../src/control/jobs/control_jobs.c:2136
+#, c-format
+msgid "adding time offset to %d images"
+msgstr ""
+
+#: ../src/control/jobs/control_jobs.c:2137
+#, c-format
 msgid "setting date/time of %d images"
-msgstr ""
-
-#: ../src/control/jobs/control_jobs.c:2180
-#, c-format
-msgid "added time offset to %d image"
-msgstr ""
-
-#: ../src/control/jobs/control_jobs.c:2181
-#, c-format
-msgid "set date/time of %d image"
 msgstr ""
 
 #: ../src/control/jobs/control_jobs.c:2183
 #, c-format
-msgid "added time offset to %d images"
+msgid "added time offset to %d image"
 msgstr ""
 
 #: ../src/control/jobs/control_jobs.c:2184
 #, c-format
+msgid "set date/time of %d image"
+msgstr ""
+
+#: ../src/control/jobs/control_jobs.c:2186
+#, c-format
+msgid "added time offset to %d images"
+msgstr ""
+
+#: ../src/control/jobs/control_jobs.c:2187
+#, c-format
 msgid "set date/time of %d images"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2227
+#: ../src/control/jobs/control_jobs.c:2230
 msgid "time offset"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2258 ../src/libs/copy_history.c:414
+#: ../src/control/jobs/control_jobs.c:2261 ../src/libs/copy_history.c:414
 msgid "write sidecar files"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2485 ../src/control/jobs/film_jobs.c:297
+#: ../src/control/jobs/control_jobs.c:2488 ../src/control/jobs/film_jobs.c:297
 #, c-format
 msgid "importing %d image"
 msgid_plural "importing %d images"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:2538
+#: ../src/control/jobs/control_jobs.c:2541
 #, c-format
 msgid "importing %d/%d image"
 msgid_plural "importing %d/%d images"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:2549
+#: ../src/control/jobs/control_jobs.c:2552
 #, c-format
 msgid "imported %d image"
 msgid_plural "imported %d images"
@@ -8654,7 +8654,7 @@ msgid "instance"
 msgstr ""
 
 #: ../src/develop/imageop.c:3785 ../src/gui/accelerators.c:130
-#: ../src/gui/accelerators.c:140 ../src/gui/gtk.c:3064 ../src/gui/gtk.c:3111
+#: ../src/gui/accelerators.c:140 ../src/gui/gtk.c:3419 ../src/gui/gtk.c:3474
 #: ../src/gui/hist_dialog.c:272 ../src/gui/styles_dialog.c:646
 #: ../src/gui/styles_dialog.c:668 ../src/iop/atrous.c:1626
 #: ../src/libs/lib.c:1427 ../src/libs/modulegroups.c:3848
@@ -8760,7 +8760,7 @@ msgstr ""
 msgid "circle #%d"
 msgstr ""
 
-#: ../src/develop/masks/circle.c:1481 ../src/develop/masks/path.c:3384
+#: ../src/develop/masks/circle.c:1481 ../src/develop/masks/path.c:3394
 #, c-format
 msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
@@ -8950,34 +8950,34 @@ msgstr ""
 msgid "path #%d"
 msgstr ""
 
-#: ../src/develop/masks/path.c:3367
+#: ../src/develop/masks/path.c:3368
 msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>: ctrl+click\n"
 "<b>cancel</b>: right-click"
 msgstr ""
 
-#: ../src/develop/masks/path.c:3370
+#: ../src/develop/masks/path.c:3373
 msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>: ctrl+click\n"
 "<b>finish path</b>: right-click"
 msgstr ""
 
-#: ../src/develop/masks/path.c:3373
+#: ../src/develop/masks/path.c:3378
 msgid ""
 "<b>move node</b>: drag, <b>remove node</b>: right-click\n"
 "<b>switch smooth/sharp mode</b>: ctrl+click"
 msgstr ""
 
-#: ../src/develop/masks/path.c:3377
+#: ../src/develop/masks/path.c:3383
 msgid ""
 "<b>node curvature</b>: drag\n"
 "<b>reset curvature</b>: right-click"
 msgstr ""
 
-#: ../src/develop/masks/path.c:3381
+#: ../src/develop/masks/path.c:3388
 msgid ""
-"<b>move segment</b>: drag\n"
-"<b>add node</b>: ctrl+click"
+"<b>move segment</b>: drag, <b>add node</b>: ctrl+click\n"
+"<b>remove path</b>: right-click"
 msgstr ""
 
 #: ../src/develop/pixelpipe_hb.c:493
@@ -9495,12 +9495,12 @@ msgid "popup"
 msgstr ""
 
 #: ../src/gui/accelerators.c:138 ../src/gui/accelerators.c:171
-#: ../src/gui/gtk.c:3109 ../src/views/lighttable.c:760
+#: ../src/gui/gtk.c:3472 ../src/views/lighttable.c:760
 msgid "next"
 msgstr ""
 
 #: ../src/gui/accelerators.c:139 ../src/gui/accelerators.c:170
-#: ../src/gui/gtk.c:3110 ../src/views/lighttable.c:761
+#: ../src/gui/gtk.c:3473 ../src/views/lighttable.c:761
 msgid "previous"
 msgstr ""
 
@@ -9535,7 +9535,7 @@ msgstr ""
 msgid "right-on"
 msgstr ""
 
-#: ../src/gui/accelerators.c:163 ../src/gui/gtk.c:3108
+#: ../src/gui/accelerators.c:163 ../src/gui/gtk.c:3471
 msgid "activate"
 msgstr ""
 
@@ -10087,210 +10087,209 @@ msgstr ""
 msgid "short key press resets stuck keys"
 msgstr ""
 
-#: ../src/gui/gtk.c:175 ../src/views/darkroom.c:3878
+#: ../src/gui/gtk.c:177 ../src/views/darkroom.c:3878
 msgid "darktable - darkroom preview"
 msgstr ""
 
-#: ../src/gui/gtk.c:186
+#: ../src/gui/gtk.c:188
 msgid "tooltips off"
 msgstr ""
 
-#: ../src/gui/gtk.c:188
+#: ../src/gui/gtk.c:190
 msgid "tooltips on"
 msgstr ""
 
-#: ../src/gui/gtk.c:193
+#: ../src/gui/gtk.c:195
 msgid ""
 "tooltip visibility can only be toggled if compositing is enabled in your "
 "window manager"
 msgstr ""
 
-#: ../src/gui/gtk.c:809
+#: ../src/gui/gtk.c:857
 msgid "closing darktable..."
 msgstr ""
 
-#: ../src/gui/gtk.c:1032
+#: ../src/gui/gtk.c:1118
 msgid "URL opened in web browser"
 msgstr ""
 
-#: ../src/gui/gtk.c:1036
+#: ../src/gui/gtk.c:1122
 msgid "error while opening URL in web browser"
 msgstr ""
 
 #. View menu
-#: ../src/gui/gtk.c:1104
+#: ../src/gui/gtk.c:1198
 msgctxt "menu"
 msgid "Views"
 msgstr ""
 
-#: ../src/gui/gtk.c:1108
+#: ../src/gui/gtk.c:1202
 msgctxt "menu"
 msgid "lighttable"
 msgstr ""
 
-#: ../src/gui/gtk.c:1109
+#: ../src/gui/gtk.c:1203
 msgctxt "menu"
 msgid "darkroom"
 msgstr ""
 
-#: ../src/gui/gtk.c:1115
+#: ../src/gui/gtk.c:1209
 msgctxt "menu"
 msgid "slideshow"
 msgstr ""
 
-#: ../src/gui/gtk.c:1117
+#: ../src/gui/gtk.c:1211
 msgctxt "menu"
 msgid "map"
 msgstr ""
 
-#: ../src/gui/gtk.c:1119
+#: ../src/gui/gtk.c:1213
 msgctxt "menu"
 msgid "print"
 msgstr ""
 
-#: ../src/gui/gtk.c:1121
+#: ../src/gui/gtk.c:1215
 msgctxt "menu"
 msgid "tethering"
 msgstr ""
 
 #. Help menu
-#: ../src/gui/gtk.c:1127
+#: ../src/gui/gtk.c:1221
 msgctxt "menu"
 msgid "Help"
 msgstr ""
 
-#: ../src/gui/gtk.c:1131
+#: ../src/gui/gtk.c:1225
 msgctxt "menu"
 msgid "darktable Manual"
 msgstr ""
 
-#: ../src/gui/gtk.c:1138
+#: ../src/gui/gtk.c:1232
 msgctxt "menu"
 msgid "darktable Homepage"
 msgstr ""
 
-#: ../src/gui/gtk.c:1162
+#: ../src/gui/gtk.c:1256
 msgctxt "menu"
 msgid "Preferences"
 msgstr ""
 
-#: ../src/gui/gtk.c:1232
+#: ../src/gui/gtk.c:1338
 msgid "panels"
 msgstr ""
 
-#: ../src/gui/gtk.c:1264
+#: ../src/gui/gtk.c:1380
 msgid "switch views"
 msgstr ""
 
-#: ../src/gui/gtk.c:1265 ../src/views/tethering.c:102
+#: ../src/gui/gtk.c:1381 ../src/views/tethering.c:102
 msgid "tethering"
 msgstr ""
 
-#: ../src/gui/gtk.c:1268 ../src/views/map.c:197
+#: ../src/gui/gtk.c:1387 ../src/views/map.c:197
 msgid "map"
 msgstr ""
 
-#: ../src/gui/gtk.c:1269 ../src/views/slideshow.c:395
+#: ../src/gui/gtk.c:1389 ../src/views/slideshow.c:395
 msgid "slideshow"
 msgstr ""
 
 #. Print button
-#: ../src/gui/gtk.c:1270 ../src/libs/print_settings.c:2902
+#: ../src/gui/gtk.c:1391 ../src/libs/print_settings.c:2902
 msgid "print"
 msgstr ""
 
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:1276
+#: ../src/gui/gtk.c:1398
 msgid "quit"
 msgstr ""
 
 #. Full-screen accelerator (no ESC handler here to enable quit-slideshow using ESC)
-#: ../src/gui/gtk.c:1279
+#: ../src/gui/gtk.c:1402
 msgid "fullscreen"
 msgstr ""
 
-#: ../src/gui/gtk.c:1283
+#: ../src/gui/gtk.c:1407
 msgid "collapsing controls"
 msgstr ""
 
 #. specific top/bottom toggles
-#: ../src/gui/gtk.c:1285
+#: ../src/gui/gtk.c:1410
 msgid "header"
 msgstr ""
 
-#: ../src/gui/gtk.c:1286
+#: ../src/gui/gtk.c:1412
 msgid "filmstrip and timeline"
 msgstr ""
 
-#: ../src/gui/gtk.c:1287
+#: ../src/gui/gtk.c:1414
 msgid "top toolbar"
 msgstr ""
 
-#: ../src/gui/gtk.c:1288
+#: ../src/gui/gtk.c:1415
 msgid "bottom toolbar"
 msgstr ""
 
-#: ../src/gui/gtk.c:1289
+#: ../src/gui/gtk.c:1416
 msgid "all top"
 msgstr ""
 
-#: ../src/gui/gtk.c:1290
+#: ../src/gui/gtk.c:1417
 msgid "all bottom"
 msgstr ""
 
-#: ../src/gui/gtk.c:1292
+#: ../src/gui/gtk.c:1419
 msgid "toggle tooltip visibility"
 msgstr ""
 
-#: ../src/gui/gtk.c:1293
+#: ../src/gui/gtk.c:1422
 msgid "reinitialise input devices"
 msgstr ""
 
-#: ../src/gui/gtk.c:1331
+#: ../src/gui/gtk.c:1471
 msgid "toggle focus-peaking mode"
 msgstr ""
 
-#. toggle focus peaking everywhere
-#: ../src/gui/gtk.c:1336
+#: ../src/gui/gtk.c:1478
 msgid "toggle focus peaking"
 msgstr ""
 
-#: ../src/gui/gtk.c:1662 ../src/gui/gtk.c:3198 ../src/gui/gtk.c:3203
-#: ../src/gui/gtk.c:3208 ../src/gui/gtk.c:3213
+#: ../src/gui/gtk.c:1836 ../src/gui/gtk.c:3577 ../src/gui/gtk.c:3582
+#: ../src/gui/gtk.c:3587 ../src/gui/gtk.c:3592
 msgid "tabs"
 msgstr ""
 
 #. ask the user if darktable.org may be accessed
-#: ../src/gui/gtk.c:2715
+#: ../src/gui/gtk.c:3042
 msgid "access the online user manual?"
 msgstr ""
 
-#: ../src/gui/gtk.c:2716
+#: ../src/gui/gtk.c:3043
 #, c-format
 msgid "do you want to access `%s'?"
 msgstr ""
 
-#: ../src/gui/gtk.c:2786
+#: ../src/gui/gtk.c:3116
 msgid "there is no help available for this element"
 msgstr ""
 
 #. font name can only use period as decimal separator
 #. but printf format strings use comma for some locales, so replace comma with period
-#: ../src/gui/gtk.c:2806 ../src/libs/metadata_view.c:790
+#: ../src/gui/gtk.c:3136 ../src/libs/metadata_view.c:790
 #, c-format
 msgid "%.1f"
 msgstr ""
 
-#: ../src/gui/gtk.c:2808
+#: ../src/gui/gtk.c:3138
 #, c-format
 msgid "Sans %s"
 msgstr ""
 
-#: ../src/gui/gtk.c:3103
+#: ../src/gui/gtk.c:3466
 msgid "does not contain pages"
 msgstr ""
 
-#: ../src/gui/gtk.c:3322
+#: ../src/gui/gtk.c:3714
 #, c-format
 msgid "never show more than %d lines"
 msgstr ""
@@ -10916,7 +10915,7 @@ msgstr ""
 msgid "select preset(s) to import"
 msgstr ""
 
-#: ../src/gui/preferences.c:1042 ../src/libs/collect.c:425
+#: ../src/gui/preferences.c:1042 ../src/libs/collect.c:429
 #: ../src/libs/copy_history.c:115 ../src/libs/geotagging.c:930
 #: ../src/libs/import.c:1829 ../src/libs/import.c:1942 ../src/libs/styles.c:574
 msgid "_open"
@@ -19617,63 +19616,63 @@ msgstr ""
 msgid "collections"
 msgstr ""
 
-#: ../src/libs/collect.c:424
+#: ../src/libs/collect.c:427
 msgid "search filmroll"
 msgstr ""
 
-#: ../src/libs/collect.c:507
+#: ../src/libs/collect.c:511
 #, c-format
 msgid "problem selecting new path for the filmroll in %s"
 msgstr ""
 
-#: ../src/libs/collect.c:579
+#: ../src/libs/collect.c:583
 msgid "search filmroll..."
 msgstr ""
 
-#: ../src/libs/collect.c:584
+#: ../src/libs/collect.c:588
 msgid "remove..."
 msgstr ""
 
-#: ../src/libs/collect.c:1310
+#: ../src/libs/collect.c:1325
 msgid "uncategorized"
 msgstr ""
 
-#: ../src/libs/collect.c:2252 ../src/libs/filters/rating_range.c:120
+#: ../src/libs/collect.c:2268 ../src/libs/filters/rating_range.c:120
 #: ../src/libs/filters/rating_range.c:146
 #: ../src/libs/filters/rating_range.c:151
 #: ../src/libs/filters/rating_range.c:302
 msgid "rejected"
 msgstr ""
 
-#: ../src/libs/collect.c:2255 ../src/libs/filters/rating_range.c:122
+#: ../src/libs/collect.c:2271 ../src/libs/filters/rating_range.c:122
 #: ../src/libs/filters/rating_range.c:146
 #: ../src/libs/filters/rating_range.c:303
 msgid "not rated"
 msgstr ""
 
-#: ../src/libs/collect.c:2439
+#: ../src/libs/collect.c:2456
 msgid "use <, <=, >, >=, <>, =, [;] as operators"
 msgstr ""
 
-#: ../src/libs/collect.c:2443
+#: ../src/libs/collect.c:2460
 msgid ""
 "use <, <=, >, >=, <>, =, [;] as operators\n"
 "star rating: 0-5\n"
 "rejected images: -1"
 msgstr ""
 
-#: ../src/libs/collect.c:2451
+#: ../src/libs/collect.c:2468
 msgid ""
 "use <, <=, >, >=, <>, =, [;] as operators\n"
 "type dates in the form: YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)"
 msgstr ""
 
-#: ../src/libs/collect.c:2458
+#: ../src/libs/collect.c:2475
 #, no-c-format
 msgid "use `%' as wildcard and `,' to separate values"
 msgstr ""
 
-#: ../src/libs/collect.c:2465
+#: ../src/libs/collect.c:2482
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -19682,7 +19681,7 @@ msgid ""
 "ctrl+click to include only sub-hierarchies (suffix `|%')"
 msgstr ""
 
-#: ../src/libs/collect.c:2478
+#: ../src/libs/collect.c:2495
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -19691,7 +19690,7 @@ msgid ""
 "ctrl+click to include only sub-locations (suffix `|%')"
 msgstr ""
 
-#: ../src/libs/collect.c:2491
+#: ../src/libs/collect.c:2508
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -19700,52 +19699,52 @@ msgid ""
 "ctrl+click to include only sub-folders (suffix `|%')"
 msgstr ""
 
-#: ../src/libs/collect.c:2502
+#: ../src/libs/collect.c:2519
 #, no-c-format
 msgid "use `%' as wildcard"
 msgstr ""
 
-#: ../src/libs/collect.c:2568 ../src/libs/collect.c:2582
-#: ../src/libs/collect.c:3191
+#: ../src/libs/collect.c:2590 ../src/libs/collect.c:2611
+#: ../src/libs/collect.c:3246
 msgid "clear this rule"
 msgstr ""
 
-#: ../src/libs/collect.c:2572
+#: ../src/libs/collect.c:2595
 msgid "clear this rule or add new rules"
 msgstr ""
 
-#: ../src/libs/collect.c:3197
+#: ../src/libs/collect.c:3252
 msgid "narrow down search"
 msgstr ""
 
-#: ../src/libs/collect.c:3204
+#: ../src/libs/collect.c:3259
 msgid "add more images"
 msgstr ""
 
-#: ../src/libs/collect.c:3211
+#: ../src/libs/collect.c:3266
 msgid "exclude images"
 msgstr ""
 
-#: ../src/libs/collect.c:3220
+#: ../src/libs/collect.c:3275
 msgid "change to: and"
 msgstr ""
 
-#: ../src/libs/collect.c:3227
+#: ../src/libs/collect.c:3282
 msgid "change to: or"
 msgstr ""
 
-#: ../src/libs/collect.c:3234
+#: ../src/libs/collect.c:3289
 msgid "change to: except"
 msgstr ""
 
 #. the different categories
-#: ../src/libs/collect.c:3264 ../src/libs/filtering.c:886
+#: ../src/libs/collect.c:3319 ../src/libs/filtering.c:886
 #: ../src/libs/filtering.c:957 ../src/libs/filtering.c:1631
 #: ../src/libs/filtering.c:1979
 msgid "files"
 msgstr ""
 
-#: ../src/libs/collect.c:3269 ../src/libs/export_metadata.c:301
+#: ../src/libs/collect.c:3324 ../src/libs/export_metadata.c:301
 #: ../src/libs/filtering.c:891 ../src/libs/filtering.c:962
 #: ../src/libs/filtering.c:1639 ../src/libs/filtering.c:1983
 #: ../src/libs/image.c:496 ../src/libs/image.c:634 ../src/libs/image.c:646
@@ -19753,50 +19752,50 @@ msgstr ""
 msgid "metadata"
 msgstr ""
 
-#: ../src/libs/collect.c:3288 ../src/libs/filtering.c:912
+#: ../src/libs/collect.c:3344 ../src/libs/filtering.c:912
 #: ../src/libs/filtering.c:983 ../src/libs/filtering.c:1981
 msgid "times"
 msgstr ""
 
-#: ../src/libs/collect.c:3296 ../src/libs/filtering.c:920
+#: ../src/libs/collect.c:3352 ../src/libs/filtering.c:920
 #: ../src/libs/filtering.c:991 ../src/libs/filtering.c:1663
 msgid "capture details"
 msgstr ""
 
-#: ../src/libs/collect.c:3309 ../src/libs/filtering.c:933
+#: ../src/libs/collect.c:3365 ../src/libs/filtering.c:933
 #: ../src/libs/filtering.c:1004 ../src/libs/filtering.c:1679
 #: ../src/libs/filtering.c:1985 ../src/libs/tools/darktable.c:61
 msgid "darktable"
 msgstr ""
 
-#: ../src/libs/collect.c:3324
+#: ../src/libs/collect.c:3380
 msgid "collections settings"
 msgstr ""
 
-#: ../src/libs/collect.c:3351 ../src/libs/export.c:1126
+#: ../src/libs/collect.c:3407 ../src/libs/export.c:1126
 #: ../src/libs/metadata.c:615 ../src/libs/metadata_view.c:1367
 #: ../src/libs/recentcollect.c:295 ../src/libs/tagging.c:3560
 msgid "preferences..."
 msgstr ""
 
-#: ../src/libs/collect.c:3472 ../src/libs/filtering.c:1505
+#: ../src/libs/collect.c:3532 ../src/libs/filtering.c:1505
 msgid "AND"
 msgstr ""
 
-#: ../src/libs/collect.c:3477 ../src/libs/filtering.c:1510
+#: ../src/libs/collect.c:3537 ../src/libs/filtering.c:1510
 msgid "OR"
 msgstr ""
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
-#: ../src/libs/collect.c:3482 ../src/libs/filtering.c:1515
+#: ../src/libs/collect.c:3542 ../src/libs/filtering.c:1515
 msgid "BUT NOT"
 msgstr ""
 
-#: ../src/libs/collect.c:3709 ../src/libs/filtering.c:2253
+#: ../src/libs/collect.c:3771 ../src/libs/filtering.c:2253
 msgid "revert to a previous set of rules"
 msgstr ""
 
-#: ../src/libs/collect.c:3792
+#: ../src/libs/collect.c:3855
 msgid "jump back to previous collection"
 msgstr ""
 
