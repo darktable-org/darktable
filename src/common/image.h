@@ -234,6 +234,13 @@ static const struct
   { N_("QOI"),             'q'}
 };
 
+// flags which can be passed via jobs
+typedef enum dt_image_job_flag_t
+{
+  DT_IMAGE_JOB_NONE        = 0,
+  DT_IMAGE_JOB_NO_METADATA = 1 << 0   // no metadata on exif refresh
+} dt_image_job_flag_t;
+
 typedef struct dt_image_geoloc_t
 {
   double longitude, latitude, elevation;
@@ -335,6 +342,8 @@ typedef struct dt_image_t
   /* convenience pointer back into the image cache, so we can return
    * dt_image_t* there directly. */
   struct dt_cache_entry_t *cache_entry;
+
+  dt_image_job_flag_t job_flags;
 } dt_image_t;
 
 // should be in datetime.h, workaround to solve cross references
