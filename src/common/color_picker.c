@@ -318,18 +318,38 @@ void dt_color_picker_transform_box(dt_develop_t *dev,
     return;
   }
 
-  dt_boundingbox_t fbox = { wd * in[0],
-                            ht * in[1],
-                            box ? wd * in[2] : 0.0f,
-                            box ? ht * in[3] : 0.0f };
-  dt_dev_distort_transform(dev, fbox, num);
+  const float x0 = wd * in[0];
+  const float y0 = ht * in[1];
+  const float x1 = wd * in[2];
+  const float y1 = ht * in[3];
 
-  out[0] = fbox[0];
-  out[1] = fbox[1];
-  if(box)
+  float fbox[8] = { x0,y0,  x0,y1,  x1,y0,  x1,y1 };
+  dt_dev_distort_transform(dev, fbox, box ? 4 : 1);
+
+  if(box) // sort the 4 point coordinates
   {
-    out[2] = fbox[2];
-    out[3] = fbox[3];
+  #define SWAP(a, b) { const float tmp = (a); (a) = (b); (b) = tmp; }
+    if(fbox[0] > fbox[2]) SWAP(fbox[0], fbox[2]);
+    if(fbox[1] > fbox[3]) SWAP(fbox[1], fbox[3]);
+    if(fbox[4] > fbox[6]) SWAP(fbox[4], fbox[6]);
+    if(fbox[5] > fbox[7]) SWAP(fbox[5], fbox[7]);
+    if(fbox[0] > fbox[4]) SWAP(fbox[0], fbox[4]);
+    if(fbox[1] > fbox[5]) SWAP(fbox[1], fbox[5]);
+    if(fbox[2] > fbox[6]) SWAP(fbox[2], fbox[6]);
+    if(fbox[3] > fbox[7]) SWAP(fbox[3], fbox[7]);
+    if(fbox[2] > fbox[4]) SWAP(fbox[2], fbox[4]);
+    if(fbox[3] > fbox[5]) SWAP(fbox[3], fbox[5]);
+  #undef SWAP
+
+    out[0] = 0.5f * (fbox[0] + fbox[2]);
+    out[1] = 0.5f * (fbox[1] + fbox[3]);
+    out[2] = 0.5f * (fbox[4] + fbox[6]);
+    out[3] = 0.5f * (fbox[5] + fbox[7]);
+  }
+  else
+  {
+    out[0] = fbox[0];
+    out[1] = fbox[1];
   }
 }
 
@@ -352,27 +372,46 @@ gboolean dt_color_picker_box(dt_iop_module_t *module,
   const int height = roi->height;
   const gboolean isbox = sample->size == DT_LIB_COLORPICKER_SIZE_BOX;
 
-  // get absolute pixel coordinates in final preview image
-  dt_boundingbox_t fbox = { isbox ? sample->box[0] * wd : sample->point[0] * wd,
-                            isbox ? sample->box[1] * ht : sample->point[1] * ht,
-                            isbox ? sample->box[2] * wd : sample->point[0] * wd,
-                            isbox ? sample->box[3] * ht : sample->point[1] * ht};
+  const float bx0 = wd * sample->box[0];
+  const float by0 = ht * sample->box[1];
+  const float bx1 = wd * sample->box[2];
+  const float by1 = ht * sample->box[3];
 
-  // transform back to current module coordinates
+  const float sx = sample->point[0] * wd;
+  const float sy = sample->point[1] * ht;
+
+  /* get absolute pixel coordinates in final preview image.
+     we transform back all 4 corner locations to current module coordinates,
+     sort the coordinates, and use average of 2 highest and 2 lowest for the
+     resulting rectangle.
+  */
+  float fbox[8] = { isbox ? bx0 : sx,   isbox ? by0 : sy,
+                    isbox ? bx0 : sx,   isbox ? by1 : sy,
+                    isbox ? bx1 : sx,   isbox ? by0 : sy,
+                    isbox ? bx1 : sx,   isbox ? by1 : sy };
+
   dt_dev_distort_transform_plus
     (dev, dev->preview_pipe, module->iop_order,
      ((picker_source == PIXELPIPE_PICKER_INPUT) ? DT_DEV_TRANSFORM_DIR_BACK_INCL : DT_DEV_TRANSFORM_DIR_BACK_EXCL),
-     fbox, 2);
+     fbox, 4);
 
-  fbox[0] -= roi->x;
-  fbox[1] -= roi->y;
-  fbox[2] -= roi->x;
-  fbox[3] -= roi->y;
-  // re-order edges of bounding box
-  box[0] = MIN(fbox[0], fbox[2]);
-  box[1] = MIN(fbox[1], fbox[3]);
-  box[2] = MAX(fbox[0], fbox[2]);
-  box[3] = MAX(fbox[1], fbox[3]);
+  #define SWAP(a, b) { const float tmp = (a); (a) = (b); (b) = tmp; }
+  if(fbox[0] > fbox[2]) SWAP(fbox[0], fbox[2]);
+  if(fbox[1] > fbox[3]) SWAP(fbox[1], fbox[3]);
+  if(fbox[4] > fbox[6]) SWAP(fbox[4], fbox[6]);
+  if(fbox[5] > fbox[7]) SWAP(fbox[5], fbox[7]);
+  if(fbox[0] > fbox[4]) SWAP(fbox[0], fbox[4]);
+  if(fbox[1] > fbox[5]) SWAP(fbox[1], fbox[5]);
+  if(fbox[2] > fbox[6]) SWAP(fbox[2], fbox[6]);
+  if(fbox[3] > fbox[7]) SWAP(fbox[3], fbox[7]);
+  if(fbox[2] > fbox[4]) SWAP(fbox[2], fbox[4]);
+  if(fbox[3] > fbox[5]) SWAP(fbox[3], fbox[5]);
+  #undef SWAP
+
+  box[0] = 0.5f * (fbox[0] + fbox[2]) - roi->x;
+  box[1] = 0.5f * (fbox[1] + fbox[3]) - roi->y;
+  box[2] = 0.5f * (fbox[4] + fbox[6]) - roi->x;
+  box[3] = 0.5f * (fbox[5] + fbox[7]) - roi->y;
 
   // make sure we sample at least one point
   box[2] = MAX(box[2], box[0] + 1);
@@ -381,7 +420,6 @@ gboolean dt_color_picker_box(dt_iop_module_t *module,
   // do not continue if box is completely outside of roi
   // FIXME: on invalid box, caller should set sample to something like
   // NaN to flag it as invalid
-
   if(   box[0] >= width
      || box[1] >= height
      || box[2] < 0
