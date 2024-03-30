@@ -32,6 +32,7 @@
 #include "common/styles.h"
 #include "common/tags.h"
 #include "common/undo.h"
+#include "common/color_picker.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -246,6 +247,8 @@ static void _darkroom_pickers_draw(dt_view_t *self,
 {
   if(!samples) return;
 
+  dt_develop_t *dev = (dt_develop_t *)self->data;
+
   cairo_save(cri);
   const double lw = 1.0 / zoom_scale;
   const double dashes[1] = { lw * 4.0 };
@@ -272,11 +275,17 @@ static void _darkroom_pickers_draw(dt_view_t *self,
     // FIXME: instead of going to all this effort to show how error-prone a preview pipe sample can be, just produce a better point sample
     gboolean show_preview_pixel_scale = TRUE;
 
+    double x = 0.0;
+    double y = 0.0;
     // overlays are aligned with pixels for a clean look
     if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
     {
-      double x = sample->box[0] * wd, y = sample->box[1] * ht,
-        w = sample->box[2] * wd, h = sample->box[3] * ht;
+      dt_boundingbox_t fbox;
+      dt_color_picker_transform_box(dev, 2, sample->box, fbox);
+      x = fbox[0];
+      y = fbox[1];
+      double w = fbox[2];
+      double h = fbox[3];
       cairo_user_to_device(cri, &x, &y);
       cairo_user_to_device(cri, &w, &h);
       x=round(x+0.5)-0.5;
@@ -298,8 +307,13 @@ static void _darkroom_pickers_draw(dt_view_t *self,
     }
     else if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
     {
-      // FIXME: to be really accurate, the colorpicker should render precisely over the nearest pixelpipe pixel, but this gets particularly tricky to do with iop pickers with transformations after them in the pipeline
-      double x = sample->point[0] * wd, y = sample->point[1] * ht;
+      /* FIXME: to be really accurate, the colorpicker should render precisely over the nearest pixelpipe pixel
+         but this gets particularly tricky to do with iop pickers with transformations after them in the pipeline
+      */
+      dt_boundingbox_t fbox;
+      dt_color_picker_transform_box(dev, 1, sample->point, fbox);
+      x = fbox[0];
+      y = fbox[1];
       cairo_user_to_device(cri, &x, &y);
       x=round(x+0.5)-0.5;
       y=round(y+0.5)-0.5;
@@ -352,11 +366,11 @@ static void _darkroom_pickers_draw(dt_view_t *self,
     if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
     {
       if(sample == selected_sample)
-        cairo_arc(cri, sample->point[0] * wd, sample->point[1] * ht, half_px * 2., 0., 2. * M_PI);
+        cairo_arc(cri, x, y, half_px * 2., 0., 2. * M_PI);
       else if(show_preview_pixel_scale)
-        cairo_rectangle(cri, sample->point[0] * wd - half_px, sample->point[1] * ht - half_px, half_px * 2., half_px * 2.);
+        cairo_rectangle(cri, x - half_px, y, half_px * 2., half_px * 2.);
       else
-        cairo_arc(cri, sample->point[0] * wd, sample->point[1] * ht, half_px, 0., 2. * M_PI);
+        cairo_arc(cri, x, y, half_px, 0., 2. * M_PI);
 
       set_color(cri, sample->swatch);
       cairo_fill(cri);
@@ -1478,7 +1492,7 @@ static void _overexposed_quickbutton_clicked(GtkWidget *w, gpointer user_data)
   dt_dev_reprocess_center(d);
 }
 
-static void colorscheme_callback(GtkWidget *combo, gpointer user_data)
+static void _colorscheme_callback(GtkWidget *combo, gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
   d->overexposed.colorscheme = dt_bauhaus_combobox_get(combo);
@@ -1488,7 +1502,7 @@ static void colorscheme_callback(GtkWidget *combo, gpointer user_data)
     dt_dev_reprocess_center(d);
 }
 
-static void lower_callback(GtkWidget *slider, gpointer user_data)
+static void _lower_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
   d->overexposed.lower = dt_bauhaus_slider_get(slider);
@@ -1498,7 +1512,7 @@ static void lower_callback(GtkWidget *slider, gpointer user_data)
     dt_dev_reprocess_center(d);
 }
 
-static void upper_callback(GtkWidget *slider, gpointer user_data)
+static void _upper_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
   d->overexposed.upper = dt_bauhaus_slider_get(slider);
@@ -1508,7 +1522,7 @@ static void upper_callback(GtkWidget *slider, gpointer user_data)
     dt_dev_reprocess_center(d);
 }
 
-static void mode_callback(GtkWidget *slider, gpointer user_data)
+static void _mode_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
   d->overexposed.mode = dt_bauhaus_combobox_get(slider);
@@ -1526,7 +1540,7 @@ static void _rawoverexposed_quickbutton_clicked(GtkWidget *w, gpointer user_data
   dt_dev_reprocess_center(d);
 }
 
-static void rawoverexposed_mode_callback(GtkWidget *combo, gpointer user_data)
+static void _rawoverexposed_mode_callback(GtkWidget *combo, gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
   d->rawoverexposed.mode = dt_bauhaus_combobox_get(combo);
@@ -1536,7 +1550,7 @@ static void rawoverexposed_mode_callback(GtkWidget *combo, gpointer user_data)
     dt_dev_reprocess_center(d);
 }
 
-static void rawoverexposed_colorscheme_callback(GtkWidget *combo, gpointer user_data)
+static void _rawoverexposed_colorscheme_callback(GtkWidget *combo, gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
   d->rawoverexposed.colorscheme = dt_bauhaus_combobox_get(combo);
@@ -1546,7 +1560,7 @@ static void rawoverexposed_colorscheme_callback(GtkWidget *combo, gpointer user_
     dt_dev_reprocess_center(d);
 }
 
-static void rawoverexposed_threshold_callback(GtkWidget *slider, gpointer user_data)
+static void _rawoverexposed_threshold_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
   d->rawoverexposed.threshold = dt_bauhaus_slider_get(slider);
@@ -1599,7 +1613,7 @@ static void _update_softproof_gamut_checking(dt_develop_t *d)
   g_signal_handlers_unblock_by_func(d->profile.gamut_button, _gamut_quickbutton_clicked, d);
 }
 
-static void display_intent_callback(GtkWidget *combo, gpointer user_data)
+static void _display_intent_callback(GtkWidget *combo, gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
   const int pos = dt_bauhaus_combobox_get(combo);
@@ -1630,7 +1644,7 @@ static void display_intent_callback(GtkWidget *combo, gpointer user_data)
   }
 }
 
-static void display2_intent_callback(GtkWidget *combo, gpointer user_data)
+static void _display2_intent_callback(GtkWidget *combo, gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
   const int pos = dt_bauhaus_combobox_get(combo);
@@ -1661,7 +1675,7 @@ static void display2_intent_callback(GtkWidget *combo, gpointer user_data)
   }
 }
 
-static void softproof_profile_callback(GtkWidget *combo, gpointer user_data)
+static void _softproof_profile_callback(GtkWidget *combo, gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
   gboolean profile_changed = FALSE;
@@ -1701,7 +1715,7 @@ end:
   }
 }
 
-static void display_profile_callback(GtkWidget *combo, gpointer user_data)
+static void _display_profile_callback(GtkWidget *combo, gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
   gboolean profile_changed = FALSE;
@@ -1743,7 +1757,7 @@ end:
   }
 }
 
-static void display2_profile_callback(GtkWidget *combo, gpointer user_data)
+static void _display2_profile_callback(GtkWidget *combo, gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
   gboolean profile_changed = FALSE;
@@ -1786,14 +1800,14 @@ end:
   }
 }
 
-static void display2_iso12646_callback(GtkToggleButton *checkbutton, dt_develop_t *dev)
+static void _display2_iso12646_callback(GtkToggleButton *checkbutton, dt_develop_t *dev)
 {
   dev->preview2.iso_12646 = gtk_toggle_button_get_active(checkbutton);
   dt_conf_set_bool("second_window/iso_12646", dev->preview2.iso_12646);
   dt_dev_configure(&dev->preview2);
 }
 
-static void histogram_profile_callback(GtkWidget *combo, gpointer user_data)
+static void _histogram_profile_callback(GtkWidget *combo, gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
   gboolean profile_changed = FALSE;
@@ -2019,7 +2033,7 @@ static void _darkroom_redo_callback(dt_action_t *action)
   dt_undo_do_redo(darktable.undo, DT_UNDO_DEVELOP);
 }
 
-static void change_slider_accel_precision(dt_action_t *action);
+static void _change_slider_accel_precision(dt_action_t *action);
 
 static float _action_process_skip_mouse(gpointer target,
                                         const dt_action_element_t element,
@@ -2262,14 +2276,14 @@ void gui_init(dt_view_t *self)
     /* mode of operation */
     DT_BAUHAUS_COMBOBOX_NEW_FULL(mode, self, N_("raw overexposed"), N_("mode"),
                                  _("select how to mark the clipped pixels"),
-                                 dev->rawoverexposed.mode, rawoverexposed_mode_callback, dev,
+                                 dev->rawoverexposed.mode, _rawoverexposed_mode_callback, dev,
                                  N_("mark with CFA color"), N_("mark with solid color"), N_("false color"));
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(mode), TRUE, TRUE, 0);
 
     DT_BAUHAUS_COMBOBOX_NEW_FULL(colorscheme, self, N_("raw overexposed"), N_("color scheme"),
                                 _("select the solid color to indicate overexposure.\nwill only be used if mode = mark with solid color"),
                                 dev->rawoverexposed.colorscheme,
-                                rawoverexposed_colorscheme_callback, dev,
+                                _rawoverexposed_colorscheme_callback, dev,
                                 NC_("solidcolor", "red"),
                                 NC_("solidcolor", "green"),
                                 NC_("solidcolor", "blue"),
@@ -2282,7 +2296,7 @@ void gui_init(dt_view_t *self)
     dt_bauhaus_widget_set_label(threshold, N_("raw overexposed"), N_("clipping threshold"));
     gtk_widget_set_tooltip_text(
         threshold, _("threshold of what shall be considered overexposed\n1.0 - white level\n0.0 - black level"));
-    g_signal_connect(G_OBJECT(threshold), "value-changed", G_CALLBACK(rawoverexposed_threshold_callback), dev);
+    g_signal_connect(G_OBJECT(threshold), "value-changed", G_CALLBACK(_rawoverexposed_threshold_callback), dev);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(threshold), TRUE, TRUE, 0);
 
     gtk_widget_show_all(vbox);
@@ -2312,14 +2326,14 @@ void gui_init(dt_view_t *self)
     /* preview mode */
     DT_BAUHAUS_COMBOBOX_NEW_FULL(mode, self, N_("overexposed"), N_("clipping preview mode"),
                                  _("select the metric you want to preview\nfull gamut is the combination of all other modes"),
-                                 dev->overexposed.mode, mode_callback, dev,
+                                 dev->overexposed.mode, _mode_callback, dev,
                                  N_("full gamut"), N_("any RGB channel"), N_("luminance only"), N_("saturation only"));
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(mode), TRUE, TRUE, 0);
 
     /* color scheme */
     DT_BAUHAUS_COMBOBOX_NEW_FULL(colorscheme, self, N_("overexposed"), N_("color scheme"),
                                  _("select colors to indicate clipping"),
-                                 dev->overexposed.colorscheme, colorscheme_callback, dev,
+                                 dev->overexposed.colorscheme, _colorscheme_callback, dev,
                                  N_("black & white"), N_("red & blue"), N_("purple & green"));
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(colorscheme), TRUE, TRUE, 0);
 
@@ -2337,7 +2351,7 @@ void gui_init(dt_view_t *self)
                                          "typical color glossy prints produce black at -8.00 EV,\n"
                                          "typical B&W glossy prints produce black at -9.00 EV."
                                          ));
-    g_signal_connect(G_OBJECT(lower), "value-changed", G_CALLBACK(lower_callback), dev);
+    g_signal_connect(G_OBJECT(lower), "value-changed", G_CALLBACK(_lower_callback), dev);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(lower), TRUE, TRUE, 0);
 
     /* upper */
@@ -2348,7 +2362,7 @@ void gui_init(dt_view_t *self)
     /* xgettext:no-c-format */
     gtk_widget_set_tooltip_text(upper, _("clipping threshold for the white point.\n"
                                          "100% is peak medium luminance."));
-    g_signal_connect(G_OBJECT(upper), "value-changed", G_CALLBACK(upper_callback), dev);
+    g_signal_connect(G_OBJECT(upper), "value-changed", G_CALLBACK(_upper_callback), dev);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(upper), TRUE, TRUE, 0);
 
     gtk_widget_show_all(vbox);
@@ -2400,9 +2414,9 @@ void gui_init(dt_view_t *self)
           NULL };
 
     GtkWidget *display_intent = dt_bauhaus_combobox_new_full(DT_ACTION(self), N_("profiles"), N_("intent"),
-                                                             "", 0, display_intent_callback, dev, intents_list);
+                                                             "", 0, _display_intent_callback, dev, intents_list);
     GtkWidget *display2_intent = dt_bauhaus_combobox_new_full(DT_ACTION(self), N_("profiles"), N_("preview intent"),
-                                                              "", 0, display2_intent_callback, dev, intents_list);
+                                                              "", 0, _display2_intent_callback, dev, intents_list);
 
     if(!force_lcms2)
     {
@@ -2502,11 +2516,11 @@ void gui_init(dt_view_t *self)
     gtk_widget_set_tooltip_markup(histogram_profile, tooltip);
     g_free(tooltip);
 
-    g_signal_connect(G_OBJECT(display_profile), "value-changed", G_CALLBACK(display_profile_callback), dev);
-    g_signal_connect(G_OBJECT(display2_profile), "value-changed", G_CALLBACK(display2_profile_callback), dev);
-    g_signal_connect(G_OBJECT(display2_iso12646), "toggled", G_CALLBACK(display2_iso12646_callback), dev);
-    g_signal_connect(G_OBJECT(softproof_profile), "value-changed", G_CALLBACK(softproof_profile_callback), dev);
-    g_signal_connect(G_OBJECT(histogram_profile), "value-changed", G_CALLBACK(histogram_profile_callback), dev);
+    g_signal_connect(G_OBJECT(display_profile), "value-changed", G_CALLBACK(_display_profile_callback), dev);
+    g_signal_connect(G_OBJECT(display2_profile), "value-changed", G_CALLBACK(_display2_profile_callback), dev);
+    g_signal_connect(G_OBJECT(display2_iso12646), "toggled", G_CALLBACK(_display2_iso12646_callback), dev);
+    g_signal_connect(G_OBJECT(softproof_profile), "value-changed", G_CALLBACK(_softproof_profile_callback), dev);
+    g_signal_connect(G_OBJECT(histogram_profile), "value-changed", G_CALLBACK(_histogram_profile_callback), dev);
 
     _update_softproof_gamut_checking(dev);
 
@@ -2597,7 +2611,7 @@ void gui_init(dt_view_t *self)
   dt_action_register(DT_ACTION(self), N_("redo"), _darkroom_redo_callback, GDK_KEY_y, GDK_CONTROL_MASK);
 
   // change the precision for adjusting sliders with keyboard shortcuts
-  dt_action_register(DT_ACTION(self), N_("change keyboard shortcut slider precision"), change_slider_accel_precision, 0, 0);
+  dt_action_register(DT_ACTION(self), N_("change keyboard shortcut slider precision"), _change_slider_accel_precision, 0, 0);
 }
 
 enum
@@ -3293,22 +3307,26 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
     // module requested a color box
     dt_colorpicker_sample_t *const sample = darktable.lib->proxy.colorpicker.primary_sample;
     // Make sure a minimal width/height
-    float delta_x = 1 / (float) dev->full.pipe->processed_width;
-    float delta_y = 1 / (float) dev->full.pipe->processed_height;
+    float delta_x = 1.0f / (float) dev->full.pipe->processed_width;
+    float delta_y = 1.0f / (float) dev->full.pipe->processed_height;
+
+    dt_boundingbox_t pbox = { zoom_x, zoom_y };
+    dt_boundingbox_t zb;
+    dt_color_picker_backtransform_box(dev, 1, pbox, zb);
 
     if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
     {
-      sample->box[0] = fmaxf(0.0, MIN(sample->point[0], zoom_x) - delta_x);
-      sample->box[1] = fmaxf(0.0, MIN(sample->point[1], zoom_y) - delta_y);
-      sample->box[2] = fminf(1.0, MAX(sample->point[0], zoom_x) + delta_x);
-      sample->box[3] = fminf(1.0, MAX(sample->point[1], zoom_y) + delta_y);
+      sample->box[0] = MAX(0.0, MIN(sample->point[0], zb[0]) - delta_x);
+      sample->box[1] = MAX(0.0, MIN(sample->point[1], zb[1]) - delta_y);
+      sample->box[2] = MIN(1.0, MAX(sample->point[0], zb[0]) + delta_x);
+      sample->box[3] = MIN(1.0, MAX(sample->point[1], zb[1]) + delta_y);
     }
     else if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
     {
-      sample->point[0] = zoom_x;
-      sample->point[1] = zoom_y;
-      dev->preview_pipe->status = DT_DEV_PIXELPIPE_DIRTY;
+      sample->point[0] = zb[0];
+      sample->point[1] = zb[1];
     }
+    dev->preview_pipe->status = DT_DEV_PIXELPIPE_DIRTY;
     dt_control_queue_redraw_center();
     handled = TRUE;
   }
@@ -3430,37 +3448,44 @@ int button_pressed(dt_view_t *self,
     const int procw = dev->preview_pipe->backbuf_width;
     const int proch = dev->preview_pipe->backbuf_height;
 
+    dt_boundingbox_t pbox = { zoom_x, zoom_y };
+    dt_boundingbox_t zb;
+    dt_color_picker_backtransform_box(dev, 1, pbox, zb);
+    const float zx = zb[0];
+    const float zy = zb[1];
+
     if(which == 1)
     {
       // The default box will be a square with 1% of the image width
       const float delta_x = 0.01f;
       const float delta_y = delta_x * (float)dev->full.pipe->processed_width / (float)dev->full.pipe->processed_height;
 
-      // FIXME: here and in mouse move use to dt_lib_colorpicker_set_{box_area,point} interface? -- would require a different hack for figuring out base of the drag
+      // FIXME: here and in mouse move use to dt_lib_colorpicker_set_{box_area,point} interface?
+      // -- would require a different hack for figuring out base of the drag
       // hack: for box pickers, these represent the "base" point being dragged
-      sample->point[0] = zoom_x;
-      sample->point[1] = zoom_y;
+      sample->point[0] = zx;
+      sample->point[1] = zy;
 
       if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
       {
         // this is slightly more than as drawn, to give room for slop
-        const float handle_px = 6.0f;
+        const float handle_px = 2.0f;
         float hx = handle_px / (procw * zoom_scale);
         float hy = handle_px / (proch * zoom_scale);
         gboolean on_corner_prev_box = TRUE;
         // initialized to calm gcc-11
         float opposite_x = 0.f, opposite_y = 0.f;
 
-        if(fabsf(zoom_x - sample->box[0]) <= hx)
+        if(fabsf(zx - sample->box[0]) <= hx)
           opposite_x = sample->box[2];
-        else if(fabsf(zoom_x - sample->box[2]) <= hx)
+        else if(fabsf(zx - sample->box[2]) <= hx)
           opposite_x = sample->box[0];
         else
           on_corner_prev_box = FALSE;
 
-        if(fabsf(zoom_y - sample->box[1]) <= hy)
+        if(fabsf(zy - sample->box[1]) <= hy)
           opposite_y = sample->box[3];
-        else if(fabsf(zoom_y - sample->box[3]) <= hy)
+        else if(fabsf(zy - sample->box[3]) <= hy)
           opposite_y = sample->box[1];
         else
           on_corner_prev_box = FALSE;
@@ -3472,18 +3497,16 @@ int button_pressed(dt_view_t *self,
         }
         else
         {
-          sample->box[0] = fmaxf(0.0, zoom_x - delta_x);
-          sample->box[1] = fmaxf(0.0, zoom_y - delta_y);
-          sample->box[2] = fminf(1.0, zoom_x + delta_x);
-          sample->box[3] = fminf(1.0, zoom_y + delta_y);
+          dt_boundingbox_t fbox = { MAX(0.0, zoom_x - delta_x),
+                                    MAX(0.0, zoom_y - delta_y),
+                                    MIN(1.0, zoom_x + delta_x),
+                                    MIN(1.0, zoom_y + delta_y) };
+         dt_color_picker_backtransform_box(dev, 2, fbox, sample->box);
         }
         dt_control_change_cursor(GDK_FLEUR);
       }
-      else if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
-      {
-        dev->preview_pipe->status = DT_DEV_PIXELPIPE_DIRTY;
-      }
 
+      dev->preview_pipe->status = DT_DEV_PIXELPIPE_DIRTY;
       dt_control_queue_redraw_center();
       return 1;
     }
@@ -3494,14 +3517,15 @@ int button_pressed(dt_view_t *self,
       // FIXME: this is a naive implementation, nicer would be to cycle through overlapping samples then reset
       dt_iop_color_picker_t *picker = darktable.lib->proxy.colorpicker.picker_proxy;
       if(darktable.lib->proxy.colorpicker.display_samples)
+      {
         for(GSList *samples = darktable.lib->proxy.colorpicker.live_samples; samples; samples = g_slist_next(samples))
         {
           dt_colorpicker_sample_t *live_sample = samples->data;
           if(live_sample->size == DT_LIB_COLORPICKER_SIZE_BOX
              && (picker->flags & DT_COLOR_PICKER_AREA))
           {
-            if(zoom_x < live_sample->box[0] || zoom_x > live_sample->box[2]
-               || zoom_y < live_sample->box[1] || zoom_y > live_sample->box[3])
+            if(zx < live_sample->box[0] || zx > live_sample->box[2]
+               || zy < live_sample->box[1] || zy > live_sample->box[3])
               continue;
             dt_lib_colorpicker_set_box_area(darktable.lib, live_sample->box);
           }
@@ -3512,7 +3536,7 @@ int button_pressed(dt_view_t *self,
             float slop_px = MAX(26.0f, roundf(3.0f * zoom_scale));
             const float slop_x = slop_px / (procw * zoom_scale);
             const float slop_y = slop_px / (proch * zoom_scale);
-            if(fabsf(zoom_x - live_sample->point[0]) > slop_x || fabsf(zoom_y - live_sample->point[1]) > slop_y)
+            if(fabsf(zx - live_sample->point[0]) > slop_x || fabsf(zy - live_sample->point[1]) > slop_y)
               continue;
             dt_lib_colorpicker_set_point(darktable.lib, live_sample->point);
           }
@@ -3522,13 +3546,15 @@ int button_pressed(dt_view_t *self,
           dt_control_queue_redraw_center();
           return 1;
         }
-
+      }
       if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
       {
         // default is hardcoded this way
         // FIXME: color_pixer_proxy should have an dt_iop_color_picker_clear_area() function for this
         dt_boundingbox_t reset = { 0.01f, 0.01f, 0.99f, 0.99f };
-        dt_lib_colorpicker_set_box_area(darktable.lib, reset);
+        dt_boundingbox_t box;
+        dt_color_picker_backtransform_box(dev, 2, reset, box);
+        dt_lib_colorpicker_set_box_area(darktable.lib, box);
         dev->preview_pipe->status = DT_DEV_PIXELPIPE_DIRTY;
         dt_control_queue_redraw_center();
       }
@@ -3595,7 +3621,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   dt_dev_zoom_move(&dev->full, DT_ZOOM_SCROLL, 0.0f, up, x, y, constrained);
 }
 
-static void change_slider_accel_precision(dt_action_t *action)
+static void _change_slider_accel_precision(dt_action_t *action)
 {
   const int curr_precision = dt_conf_get_int("accel/slider_precision");
   const int new_precision = curr_precision + 1 == 3 ? 0 : curr_precision + 1;
@@ -3657,7 +3683,7 @@ GSList *mouse_actions(const dt_view_t *self)
  * DPI */
 #define DT_PIXEL_APPLY_DPI_2ND_WND(dev, value) ((value) * dev->preview2.dpi_factor)
 
-static void dt_second_window_change_cursor(dt_develop_t *dev, const gchar *curs)
+static void _dt_second_window_change_cursor(dt_develop_t *dev, const gchar *curs)
 {
   GtkWidget *widget = dev->second_wnd;
   GdkCursor *cursor = gdk_cursor_new_from_name(gdk_display_get_default(), curs);
@@ -3665,10 +3691,10 @@ static void dt_second_window_change_cursor(dt_develop_t *dev, const gchar *curs)
   g_object_unref(cursor);
 }
 
-static void second_window_leave(dt_develop_t *dev)
+static void _second_window_leave(dt_develop_t *dev)
 {
   // reset any changes the selected plugin might have made.
-  dt_second_window_change_cursor(dev, "default");
+  _dt_second_window_change_cursor(dev, "default");
 }
 
 static void _second_window_configure_ppd_dpi(dt_develop_t *dev)
@@ -3732,7 +3758,7 @@ static gboolean _second_window_button_pressed_callback(GtkWidget *w,
   {
     darktable.control->button_x = event->x;
     darktable.control->button_y = event->y;
-    dt_second_window_change_cursor(dev, "grabbing");
+    _dt_second_window_change_cursor(dev, "grabbing");
     return TRUE;
   }
   if(event->button == 2)
@@ -3747,7 +3773,7 @@ static gboolean _second_window_button_released_callback(GtkWidget *w,
                                                         GdkEventButton *event,
                                                         dt_develop_t *dev)
 {
-  if(event->button == 1) dt_second_window_change_cursor(dev, "default");
+  if(event->button == 1) _dt_second_window_change_cursor(dev, "default");
 
   gtk_widget_queue_draw(w);
   return TRUE;
@@ -3772,7 +3798,7 @@ static gboolean _second_window_leave_callback(GtkWidget *widget,
                                               GdkEventCrossing *event,
                                               dt_develop_t *dev)
 {
-  second_window_leave(dev);
+  _second_window_leave(dev);
   return TRUE;
 }
 

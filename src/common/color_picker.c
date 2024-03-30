@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2023 darktable developers.
+    Copyright (C) 2016-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -271,6 +271,175 @@ static void _color_picker_work_1ch(const float *const pixel,
     pick[DT_PICK_MEAN][c] = weights[c] ? (acc[c] / (float)weights[c]) : 0.0f;
 }
 
+void dt_color_picker_backtransform_box(dt_develop_t *dev,
+                              const int num,
+                              const float *in,
+                              float *out)
+{
+  const float wd = dev->preview_pipe->iwidth;
+  const float ht = dev->preview_pipe->iheight;
+  const float wdp = dev->preview_pipe->processed_width;
+  const float htp = dev->preview_pipe->processed_height;
+  const gboolean box = num == 2;
+  if(wd < 1.0f || ht < 1.0f || wdp < 1.0f || htp < 1.0f)
+  {
+    for(int i = 0; i < num; i++)
+      out[i] = in[i];
+    return;
+  }
+
+  dt_boundingbox_t fbox = { wdp * in[0],
+                            htp * in[1],
+                            box ? wdp * in[2] : 0.0f,
+                            box ? htp * in[3] : 0.0f };
+  dt_dev_distort_backtransform(dev, fbox, num);
+
+  out[0] = fbox[0] / wd;
+  out[1] = fbox[1] / ht;
+  if(box)
+  {
+    out[2] = fbox[2] / wd;
+    out[3] = fbox[3] / ht;
+  }
+}
+
+void dt_color_picker_transform_box(dt_develop_t *dev,
+                              const int num,
+                              const float *in,
+                              float *out)
+{
+  const float wd = dev->preview_pipe->iwidth;
+  const float ht = dev->preview_pipe->iheight;
+  const gboolean box = num == 2;
+  if(wd < 1.0f || ht < 1.0f)
+  {
+    for(int i = 0; i < num; i++)
+      out[i] = in[i];
+    return;
+  }
+
+  const float x0 = wd * in[0];
+  const float y0 = ht * in[1];
+  const float x1 = wd * in[2];
+  const float y1 = ht * in[3];
+
+  float fbox[8] = { x0,y0,  x0,y1,  x1,y0,  x1,y1 };
+  dt_dev_distort_transform(dev, fbox, box ? 4 : 1);
+
+  if(box) // sort the 4 point coordinates
+  {
+  #define SWAP(a, b) { const float tmp = (a); (a) = (b); (b) = tmp; }
+    if(fbox[0] > fbox[2]) SWAP(fbox[0], fbox[2]);
+    if(fbox[1] > fbox[3]) SWAP(fbox[1], fbox[3]);
+    if(fbox[4] > fbox[6]) SWAP(fbox[4], fbox[6]);
+    if(fbox[5] > fbox[7]) SWAP(fbox[5], fbox[7]);
+    if(fbox[0] > fbox[4]) SWAP(fbox[0], fbox[4]);
+    if(fbox[1] > fbox[5]) SWAP(fbox[1], fbox[5]);
+    if(fbox[2] > fbox[6]) SWAP(fbox[2], fbox[6]);
+    if(fbox[3] > fbox[7]) SWAP(fbox[3], fbox[7]);
+    if(fbox[2] > fbox[4]) SWAP(fbox[2], fbox[4]);
+    if(fbox[3] > fbox[5]) SWAP(fbox[3], fbox[5]);
+  #undef SWAP
+
+    out[0] = 0.5f * (fbox[0] + fbox[2]);
+    out[1] = 0.5f * (fbox[1] + fbox[3]);
+    out[2] = 0.5f * (fbox[4] + fbox[6]);
+    out[3] = 0.5f * (fbox[5] + fbox[7]);
+  }
+  else
+  {
+    out[0] = fbox[0];
+    out[1] = fbox[1];
+  }
+}
+
+// calculate box in current module's coordinates for the color picker
+gboolean dt_color_picker_box(dt_iop_module_t *module,
+                             const dt_iop_roi_t *roi,
+                             const dt_colorpicker_sample_t *const sample,
+                             dt_pixelpipe_picker_source_t picker_source,
+                             int *box)
+{
+  if(picker_source == PIXELPIPE_PICKER_OUTPUT
+     && !sample->pick_output)
+    return TRUE;
+
+  dt_develop_t *dev = darktable.develop;
+  const float wd = dev->preview_pipe->iwidth;
+  const float ht = dev->preview_pipe->iheight;
+
+  const int width = roi->width;
+  const int height = roi->height;
+  const gboolean isbox = sample->size == DT_LIB_COLORPICKER_SIZE_BOX;
+
+  const float bx0 = wd * sample->box[0];
+  const float by0 = ht * sample->box[1];
+  const float bx1 = wd * sample->box[2];
+  const float by1 = ht * sample->box[3];
+
+  const float sx = sample->point[0] * wd;
+  const float sy = sample->point[1] * ht;
+
+  /* get absolute pixel coordinates in final preview image.
+     we transform back all 4 corner locations to current module coordinates,
+     sort the coordinates, and use average of 2 highest and 2 lowest for the
+     resulting rectangle.
+  */
+  float fbox[8] = { isbox ? bx0 : sx,   isbox ? by0 : sy,
+                    isbox ? bx0 : sx,   isbox ? by1 : sy,
+                    isbox ? bx1 : sx,   isbox ? by0 : sy,
+                    isbox ? bx1 : sx,   isbox ? by1 : sy };
+
+  dt_dev_distort_transform_plus
+    (dev, dev->preview_pipe, module->iop_order,
+     ((picker_source == PIXELPIPE_PICKER_INPUT) ? DT_DEV_TRANSFORM_DIR_BACK_INCL : DT_DEV_TRANSFORM_DIR_BACK_EXCL),
+     fbox, 4);
+
+  #define SWAP(a, b) { const float tmp = (a); (a) = (b); (b) = tmp; }
+  if(fbox[0] > fbox[2]) SWAP(fbox[0], fbox[2]);
+  if(fbox[1] > fbox[3]) SWAP(fbox[1], fbox[3]);
+  if(fbox[4] > fbox[6]) SWAP(fbox[4], fbox[6]);
+  if(fbox[5] > fbox[7]) SWAP(fbox[5], fbox[7]);
+  if(fbox[0] > fbox[4]) SWAP(fbox[0], fbox[4]);
+  if(fbox[1] > fbox[5]) SWAP(fbox[1], fbox[5]);
+  if(fbox[2] > fbox[6]) SWAP(fbox[2], fbox[6]);
+  if(fbox[3] > fbox[7]) SWAP(fbox[3], fbox[7]);
+  if(fbox[2] > fbox[4]) SWAP(fbox[2], fbox[4]);
+  if(fbox[3] > fbox[5]) SWAP(fbox[3], fbox[5]);
+  #undef SWAP
+
+  box[0] = 0.5f * (fbox[0] + fbox[2]) - roi->x;
+  box[1] = 0.5f * (fbox[1] + fbox[3]) - roi->y;
+  box[2] = 0.5f * (fbox[4] + fbox[6]) - roi->x;
+  box[3] = 0.5f * (fbox[5] + fbox[7]) - roi->y;
+
+  // make sure we sample at least one point
+  box[2] = MAX(box[2], box[0] + 1);
+  box[3] = MAX(box[3], box[1] + 1);
+
+  // do not continue if box is completely outside of roi
+  // FIXME: on invalid box, caller should set sample to something like
+  // NaN to flag it as invalid
+  if(   box[0] >= width
+     || box[1] >= height
+     || box[2] < 0
+     || box[3] < 0)
+    return TRUE;
+
+  // clamp bounding box to roi
+  box[0] = CLAMP(box[0], 0, width - 1);
+  box[1] = CLAMP(box[1], 0, height - 1);
+  box[2] = CLAMP(box[2], 1, width);
+  box[3] = CLAMP(box[3], 1, height);
+
+  // safety check: area needs to have minimum 1 pixel width and height
+  if(   box[2] - box[0] < 1
+     || box[3] - box[1] < 1)
+    return TRUE;
+
+  return FALSE;
+}
+
 void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc,
                             const float *const pixel,
                             const dt_iop_roi_t *roi,
@@ -283,6 +452,13 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc,
 {
   dt_times_t start_time = { 0 };
   dt_get_perf_times(&start_time);
+
+  for_four_channels(k)
+  {
+    pick[DT_PICK_MEAN][k] = 0.0f;
+    pick[DT_PICK_MIN][k] = FLT_MAX;
+    pick[DT_PICK_MAX][k] = -FLT_MAX;
+  }
 
   if(dsc->channels == 4u)
   {
