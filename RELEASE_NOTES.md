@@ -170,74 +170,27 @@ changes (where available).
 
 ### Optional
 
-- Bump libavif to 0.9.3
+- n/a
 
 ## RawSpeed changes
 
 
-## Camera support, compared to 4.4
+## Camera support, compared to 4.6
 
 ### Base Support
 
-- Canon EOS Kiss F
-- Canon EOS Kiss X50
-- Canon EOS Kiss X90
-- Canon IXY 220F (dng, chdk)
-- Canon PowerShot SX220 HS (chdk)
-- Fujifilm FinePix SL1000
-- Fujifilm X-S20 (compressed)
-- ImBack ImB35mm (chdk)
-- Leica M10-D (dng)
-- Leica M10-P (dng)
-- Leica M10-R (dng)
-- Leica M11-P (dng)
-- Leica Q2 Monochrom (dng)
-- Leica SL2 (dng)
-- Leica SL2-S (dng)
-- Nikon Coolpix A1000 (12bit-uncompressed)
-- Nikon Z f (14bit-compressed)
-- OM System TG-7
-- Panasonic DC-TZ200D (3:2)
-- Panasonic DC-TZ202D (3:2)
-- Panasonic DC-TZ220 (3:2)
-- Panasonic DC-TZ220D (3:2)
-- Panasonic DC-ZS200D (3:2)
-- Panasonic DC-ZS220 (3:2)
-- Panasonic DC-ZS220D (3:2)
-- Panasonic DMC-G10 (3:2, 16:9, 1:1)
-- Panasonic DMC-GM1S (4:3, 3:2, 16:9, 1:1)
-- Pentax K-3 Mark III Monochrome
-- Pentax KF
-- Samsung EK-GN120
-- Samsung G920F (dng)
-- Samsung G935F (dng)
-- Samsung GX10 (dng)
-- Samsung GX20 (dng)
-- Sigma fp (dng)
-- Sigma fp L (dng)
-- Sigma sd Quattro (dng)
-- Sigma sd Quattro H (dng)
-- Sinar eVolution 75
-- Sony ILCE-6700
-- Sony ILCE-7CM2
-- Sony ILCE-7CR
-- Sony ILME-FX3
-- Sony ZV-E1
+- Canon EOS R6 Mark II (requires LibRaw 202403 and later)
+- Canon EOS R8 (requires LibRaw 202403 and later)
+- Canon EOS R50 (requires LibRaw 202403 and later)
+- Canon EOS R100 (requires LibRaw 202403 and later)
 
 ### White Balance Presets
 
-- Leica M (Typ 240)
-- Olympus E-P7
-- Olympus TG-6
-- Sony ILCE-7CM2
+- ???
 
 ### Noise Profiles
 
-- Canon IXY 220F
-- Nikon Z f
-- Olympus E-P7
-- Pentax *ist DS
-- Sony ILCE-6700
+- ???
 
 ### Missing Compression Mode Support
 
