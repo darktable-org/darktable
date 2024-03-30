@@ -179,6 +179,7 @@ changes (where available).
 
 ### Base Support
 
+- Canon EOS Ra (requires LibRaw 202403 and later)
 - Canon EOS R6 Mark II (requires LibRaw 202403 and later)
 - Canon EOS R8 (requires LibRaw 202403 and later)
 - Canon EOS R50 (requires LibRaw 202403 and later)

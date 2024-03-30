@@ -226,6 +226,13 @@ const model_map_t modelMap[] = {
 #if LIBRAW_COMPILE_CHECK_VERSION_NOTLESS(0, 22)
   {
     .exif_make = "Canon",
+    .exif_model = "Canon EOS Ra",
+    .clean_make = "Canon",
+    .clean_model = "EOS Ra",
+    .clean_alias = "EOS Ra"
+  },
+  {
+    .exif_make = "Canon",
     .exif_model = "Canon EOS R6m2",
     .clean_make = "Canon",
     .clean_model = "EOS R6 Mark II",
