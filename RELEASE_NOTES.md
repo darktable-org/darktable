@@ -121,6 +121,8 @@ changes (where available).
   new distortion on the pipe for example. This was not the case until
   one was editing the mask.
 
+- Fixed memleak while importing avif images.
+
 ## Lua
 
 ### API Version
