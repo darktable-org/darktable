@@ -167,9 +167,8 @@ static void _init_picker(dt_iop_color_picker_t *picker,
   // module is NULL if primary colorpicker
   picker->module     = module;
   picker->flags      = flags;
-  picker->picker_cst = module
-    ? module->default_colorspace(module, NULL, NULL)
-    : IOP_CS_NONE;
+  picker->picker_cst = module ? module->default_colorspace(module, NULL, NULL)
+                              : IOP_CS_NONE;
   picker->colorpick  = button;
   picker->changed    = FALSE;
 
@@ -342,8 +341,21 @@ static void _iop_color_picker_pickerdata_ready_callback(gpointer instance,
   if(_record_point_area(picker))
   {
     if(!module->blend_data || !blend_color_picker_apply(module, picker->colorpick, pipe))
+    {
       if(module->color_picker_apply)
+      {
+        dt_print_pipe(DT_DEBUG_PIPE, "color picker apply",
+          pipe, module, DT_DEVICE_NONE, NULL, NULL,
+          "%s%s.%s%s. point=%.3f - %.3f. area=%.3f - %.3f / %.3f - %.3f\n",
+          picker->flags & DT_COLOR_PICKER_POINT ? " point" : "",
+          picker->flags & DT_COLOR_PICKER_AREA  ? " area" : "",
+          picker->flags & DT_COLOR_PICKER_DENOISE ? " denoise" : "",
+          picker->flags & DT_COLOR_PICKER_IO ? " output" : "",
+          picker->pick_pos[0], picker->pick_pos[1], picker->pick_box[0], picker->pick_box[1], picker->pick_box[2], picker->pick_box[3]);
+
         module->color_picker_apply(module, picker->colorpick, pipe);
+      }
+    }
   }
 }
 
@@ -363,6 +375,9 @@ static void _color_picker_proxy_preview_pipe_callback(gpointer instance,
   dt_lib_module_t *module = darktable.lib->proxy.colorpicker.module;
   if(module)
   {
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "picker update callback",
+      NULL, NULL, DT_DEVICE_NONE, NULL, NULL, "\n");
+
     // pixelpipe may have run because sample area changed or an iop,
     // regardless we want to the colorpicker lib, which also can
     // provide swatch color for a point sample overlay
