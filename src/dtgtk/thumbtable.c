@@ -1062,7 +1062,7 @@ static gboolean _event_scroll_compressed(gpointer user_data)
     int move = table->thumb_size * delta;
 
     // if the top thumb row is only partially visible, then realign first
-    int partial_height = table->thumbs_area.y % table->thumb_size;
+    const int partial_height = table->thumbs_area.y % table->thumb_size;
     if(partial_height)
     {
       if(delta < 0)
