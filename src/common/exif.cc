@@ -321,8 +321,8 @@ void dt_exif_set_exiv2_taglist()
   }
   catch (Exiv2::AnyError& e)
   {
-    std::string s(e.what());
-    std::cerr << "[exiv2 taglist] " << s << std::endl;
+    const char *errstring = e.what();
+    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 taglist] %s\n", errstring);
   }
 }
 
@@ -529,8 +529,8 @@ static bool _exif_read_xmp_tag(Exiv2::XmpData &xmpData,
   }
   catch(Exiv2::AnyError &e)
   {
-    std::string s(e.what());
-    std::cerr << "[exiv2 read_xmp_tag] " << s << std::endl;
+    const char *errstring = e.what();
+    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 read_xmp_tag] %s\n", errstring);
     return false;
   }
 }
@@ -690,10 +690,11 @@ static bool _exif_decode_xmp_data(dt_image_t *img,
   {
     if(imgs) g_list_free(imgs);
     imgs = NULL;
-    std::string s(e.what());
-    std::cerr << "[exiv2 _exif_decode_xmp_data] "
-              << img->filename
-              << ": " << s << std::endl;
+    const char *errstring = e.what();
+    dt_print(DT_DEBUG_IMAGEIO,
+             "[exiv2 _exif_decode_xmp_data] %s: %s\n",
+             img->filename,
+             errstring);
     return false;
   }
 }
@@ -709,8 +710,8 @@ static bool _exif_read_iptc_tag(Exiv2::IptcData &iptcData,
   }
   catch(Exiv2::AnyError &e)
   {
-    std::string s(e.what());
-    std::cerr << "[exiv2 read_iptc_tag] " << s << std::endl;
+    const char *errstring = e.what();
+    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 read_iptc_tag] %s\n", errstring);
     return false;
   }
 }
@@ -792,9 +793,11 @@ static bool _exif_decode_iptc_data(dt_image_t *img,
   }
   catch(Exiv2::AnyError &e)
   {
-    std::string s(e.what());
-    std::cerr << "[exiv2 _exif_decode_iptc_data] "
-              << img->filename << ": " << s << std::endl;
+    const char *errstring = e.what();
+    dt_print(DT_DEBUG_IMAGEIO,
+             "[exiv2 _exif_decode_iptc_data] %s: %s\n",
+             img->filename,
+             errstring);
     return false;
   }
 }
@@ -810,8 +813,8 @@ static bool _exif_read_exif_tag(Exiv2::ExifData &exifData,
   }
   catch(Exiv2::AnyError &e)
   {
-    std::string s(e.what());
-    std::cerr << "[exiv2 read_exif_tag] " << s << std::endl;
+    const char *errstring = e.what();
+    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 read_exif_tag] %s\n", errstring);
     return false;
   }
 }
@@ -1066,9 +1069,8 @@ void dt_exif_img_check_additional_tags(dt_image_t *img,
   }
   catch(Exiv2::AnyError &e)
   {
-    std::string s(e.what());
-    std::cerr << "[exiv2 reading DefaultUserCrop] "
-              << filename << ": " << s << std::endl;
+    const char *errstring = e.what();
+    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 reading DefaultUserCrop] %s: %s\n", filename, errstring);
     return;
   }
 }
@@ -2028,9 +2030,8 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
   }
   catch(Exiv2::AnyError &e)
   {
-    std::string s(e.what());
-    std::cerr << "[exiv2 _exif_decode_exif_data] "
-              << img->filename << ": " << s << std::endl;
+    const char *errstring = e.what();
+    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 _exif_decode_exif_data] %s: %s\n", img->filename, errstring);
     return false;
   }
 }
@@ -2110,9 +2111,8 @@ gboolean dt_exif_read_from_blob(dt_image_t *img,
   }
   catch(Exiv2::AnyError &e)
   {
-    std::string s(e.what());
-    std::cerr << "[exiv2 dt_exif_read_from_blob] "
-              << img->filename << ": " << s << std::endl;
+    const char *errstring = e.what();
+    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 dt_exif_read_from_blob] %s: %s\n", img->filename, errstring);
     return TRUE;
   }
 }
@@ -2156,9 +2156,9 @@ gboolean dt_exif_get_thumbnail(const char *path,
     *mime_type = strdup(preview.mimeType().c_str());
     *buffer = (uint8_t *)malloc(_size);
     if(!*buffer) {
-      std::cerr
-        << "[exiv2 dt_exif_get_thumbnail] couldn't allocate memory for thumbnail for "
-        << path << std::endl;
+      dt_print(DT_DEBUG_IMAGEIO,
+               "[exiv2 dt_exif_get_thumbnail] couldn't allocate memory for thumbnail for %s\n",
+               path);
       return TRUE;
     }
 
@@ -2169,7 +2169,9 @@ gboolean dt_exif_get_thumbnail(const char *path,
   catch(Exiv2::AnyError &e)
   {
     dt_print(DT_DEBUG_IMAGEIO,
-             "[exiv2 dt_exif_get_thumbnail] %s: %s\n", path, e.what());
+             "[exiv2 dt_exif_get_thumbnail] %s: %s\n",
+             path,
+             e.what());
     return TRUE;
   }
 }
@@ -2244,7 +2246,10 @@ gboolean dt_exif_read(dt_image_t *img,
   }
   catch(Exiv2::AnyError &e)
   {
-    dt_print(DT_DEBUG_IMAGEIO,"[exiv2 dt_exif_read] %s: %s\n", path, e.what());
+    dt_print(DT_DEBUG_IMAGEIO,
+             "[exiv2 dt_exif_read] %s: %s\n",
+             path,
+             e.what());
     return TRUE;
   }
 }
@@ -2303,8 +2308,10 @@ int dt_exif_write_blob(uint8_t *blob,
   }
   catch(Exiv2::AnyError &e)
   {
-    std::string s(e.what());
-    std::cerr << "[exiv2 dt_exif_write_blob] " << path << ": " << s << std::endl;
+    dt_print(DT_DEBUG_IMAGEIO,
+             "[exiv2 dt_exif_write_blob] %s: %s\n",
+             path,
+             e.what());
     return 0;
   }
   return 1;
@@ -2683,8 +2690,10 @@ int dt_exif_read_blob(uint8_t **buf,
   catch(Exiv2::AnyError &e)
   {
     // std::cerr.rdbuf(savecerr);
-    std::string s(e.what());
-    std::cerr << "[exiv2 dt_exif_read_blob] " << path << ": " << s << std::endl;
+    dt_print(DT_DEBUG_IMAGEIO,
+             "[exiv2 dt_exif_read_blob] %s: %s\n",
+             path,
+             e.what());
     free(*buf);
     *buf = NULL;
     return 0;
@@ -3046,9 +3055,13 @@ static GList *_read_history_v1(const std::string &xmpPacket,
 
   if(!result)
   {
-    std::cerr << "XML '" << filename << "' parsed with errors" << std::endl;
-    std::cerr << "Error description: " << result.description() << std::endl;
-    std::cerr << "Error offset: " << result.offset << std::endl;
+    dt_print(DT_DEBUG_IMAGEIO,
+             "XML '%s' parsed with errors\n"
+             "Error description: %s\n"
+             "Error offset: %td\n",
+             filename,
+             result.description(),
+             result.offset);
     return NULL;
   }
 
@@ -3194,8 +3207,10 @@ static GList *_read_history_v2(Exiv2::XmpData &xmpData,
       unsigned int n = strtol(key_iter, &key_iter, 10);
       if(errno)
       {
-        std::cerr << "error reading history from '"
-                  << key << "' (" << filename << ")" << std::endl;
+        dt_print(DT_DEBUG_IMAGEIO,
+                 "error reading history from '%s' (%s)\n",
+                 key,
+                 filename);
         g_list_free_full(history_entries, _free_history_entry);
         g_free(key);
         return NULL;
@@ -3204,8 +3219,10 @@ static GList *_read_history_v2(Exiv2::XmpData &xmpData,
       // skip everything that isn't part of the actual array
       if(*(key_iter++) != ']')
       {
-        std::cerr << "error reading history from '"
-                  << key << "' (" << filename << ")" << std::endl;
+        dt_print(DT_DEBUG_IMAGEIO,
+                 "error reading history from '%s' (%s)\n",
+                 key,
+                 filename);
         g_list_free_full(history_entries, _free_history_entry);
         g_free(key);
         return NULL;
@@ -3307,8 +3324,9 @@ skip:
     history_entry_t *entry = (history_entry_t *)iter->data;
     if(!(entry->have_operation && entry->have_params && entry->have_modversion))
     {
-      std::cerr << "[exif] error: reading history from '"
-                << filename << "' failed due to missing tags" << std::endl;
+      dt_print(DT_DEBUG_IMAGEIO,
+               "[exif] error: reading history from '%s' failed due to missing tags\n",
+               filename);
       g_list_free_full(history_entries, _free_history_entry);
       history_entries = NULL;
       break;
@@ -3432,8 +3450,10 @@ static GList *_read_masks_v3(Exiv2::XmpData &xmpData,
       unsigned int n = strtol(key_iter, &key_iter, 10);
       if(errno)
       {
-        std::cerr << "error reading masks history from '"
-                  << key << "' (" << filename << ")" << std::endl;
+        dt_print(DT_DEBUG_IMAGEIO,
+                 "error reading masks history from '%s' (%s)\n",
+                 key,
+                 filename);
         g_list_free_full(history_entries, _free_mask_entry);
         g_free(key);
         return NULL;
@@ -3442,8 +3462,10 @@ static GList *_read_masks_v3(Exiv2::XmpData &xmpData,
       // skip everything that isn't part of the actual array
       if(*(key_iter++) != ']')
       {
-        std::cerr << "error reading masks history from '"
-                  << key << "' (" << filename << ")" << std::endl;
+        dt_print(DT_DEBUG_IMAGEIO,
+                 "error reading masks history from '%s' (%s)\n",
+                 key,
+                 filename);
         g_list_free_full(history_entries, _free_mask_entry);
         g_free(key);
         return NULL;
@@ -3826,9 +3848,10 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
     }
     else
     {
-      std::cerr << "error: Xmp schema version "
-                << xmp_version << " in " << filename << " not supported"
-                << std::endl;
+      dt_print(DT_DEBUG_IMAGEIO,
+               "error: XMP schema version %d in '%s' not supported\n",
+               xmp_version,
+               filename);
       g_hash_table_destroy(mask_entries);
       return TRUE;
     }
@@ -4248,8 +4271,9 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
     }
     else
     {
-      std::cerr << "[exif] error reading history from '"
-                << filename << "'" << std::endl;
+      dt_print(DT_DEBUG_IMAGEIO,
+               "[exif] error reading history from '%s'\n",
+               filename);
       dt_database_rollback_transaction(darktable.db);
       return TRUE;
     }
@@ -4818,8 +4842,11 @@ static void _exif_xmp_read_data(Exiv2::XmpData &xmpData,
 
   const double end = dt_get_debug_wtime();
   dt_print(DT_DEBUG_DEV,
-    "exif_xmp_read_data: %s. imgid=%i, hist=%i, took %.3fs\n",
-    info, imgid, history_end, end - start);
+           "exif_xmp_read_data: %s. imgid=%i, hist=%i, took %.3fs\n",
+           info,
+           imgid,
+           history_end,
+           end - start);
 }
 
 // helper to create an xmp data thing. throws exiv2 exceptions if stuff goes wrong.
@@ -5023,7 +5050,9 @@ char *dt_exif_xmp_read_string(const dt_imgid_t imgid)
   }
   catch(Exiv2::AnyError &e)
   {
-    std::cerr << "[xmp_read_blob] caught exiv2 exception '" << e << "'\n";
+    dt_print(DT_DEBUG_IMAGEIO,
+             "[xmp_read_blob] caught exiv2 exception '%s'\n",
+             e.what());
     return NULL;
   }
 }
@@ -5338,8 +5367,10 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid,
     }
     catch(Exiv2::AnyError &e)
     {
-      std::cerr << "[xmp_attach] " << input_filename
-                << ": caught exiv2 exception '" << e << "'\n";
+      dt_print(DT_DEBUG_IMAGEIO,
+               "[xmp_attach] %s: caught exiv2 exception '%s'\n",
+               input_filename,
+               e.what());
     }
 
     Exiv2::XmpData &xmpData = img->xmpData();
@@ -5551,8 +5582,10 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid,
         }
         catch(Exiv2::AnyError &e2)
         {
-          std::cerr << "[dt_exif_xmp_attach_export] without history "
-                    << filename << ": caught exiv2 exception '" << e2 << "'\n";
+          dt_print(DT_DEBUG_IMAGEIO,
+                   "[dt_exif_xmp_attach_export] without history %s: caught exiv2 exception '%s'\n",
+                   filename,
+                   e2.what());
           return TRUE;
         }
       }
@@ -5563,8 +5596,10 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid,
   }
   catch(Exiv2::AnyError &e)
   {
-    std::cerr << "[dt_exif_xmp_attach_export] "
-              << filename << ": caught exiv2 exception '" << e << "'\n";
+    dt_print(DT_DEBUG_IMAGEIO,
+             "[dt_exif_xmp_attach_export] %s: caught exiv2 exception '%s'\n",
+             filename,
+             e.what());
     return TRUE;
   }
 }
@@ -5671,8 +5706,10 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid,
   }
   catch(Exiv2::AnyError &e)
   {
-    std::cerr << "[dt_exif_xmp_write] "
-              << filename << ": caught exiv2 exception '" << e << "'\n";
+    dt_print(DT_DEBUG_IMAGEIO,
+             "[dt_exif_xmp_write] %s: caught exiv2 exception '%s'\n",
+             filename,
+             e.what());
     return TRUE;
   }
 }
@@ -5719,8 +5756,9 @@ dt_colorspaces_color_profile_type_t dt_exif_get_color_space(const uint8_t *data,
   }
   catch(Exiv2::AnyError &e)
   {
-    std::string s(e.what());
-    std::cerr << "[exiv2 dt_exif_get_color_space] " << s << std::endl;
+    dt_print(DT_DEBUG_IMAGEIO,
+             "[exiv2 dt_exif_get_color_space] %s\n",
+             e.what());
     return DT_COLORSPACE_DISPLAY;
   }
 }
@@ -5741,8 +5779,9 @@ void dt_exif_get_basic_data(const uint8_t *data,
   }
   catch(Exiv2::AnyError &e)
   {
-    std::string s(e.what());
-    std::cerr << "[exiv2 dt_exif_get_basic_data] " << s << std::endl;
+    dt_print(DT_DEBUG_IMAGEIO,
+             "[exiv2 dt_exif_get_basic_data] %s\n",
+             e.what());
   }
 }
 
