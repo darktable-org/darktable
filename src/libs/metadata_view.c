@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -124,6 +124,10 @@ enum
   md_size
 };
 
+// We have to maintain the correspondence between the displayed metadata list
+// and the list returned by the SQL query that counts the distinctive values
+// of metadata fields for the selected images. If you make changes to this
+// list, don't forget to make changes to the SQL query as well.
 static const char *_labels[] = {
   /* internal */
   N_("filmroll"),
@@ -517,6 +521,8 @@ void gui_update(dt_lib_module_t *self)
   {
     if(!images) images = dt_act_on_get_query(FALSE);
     sqlite3_stmt *stmt = NULL;
+    // We have to maintain a correspondence between the list of fields in this SQL query
+    // and the list of metadata fields defined by the enum and _labels[] array above.
     // clang-format off
     gchar *query = g_strdup_printf("SELECT COUNT(DISTINCT film_id), "
                                          "2, " //id always different
@@ -541,6 +547,8 @@ void gui_update(dt_lib_module_t *self)
                                          "COUNT(DISTINCT IFNULL(flash_id, '')), "
                                          "COUNT(DISTINCT IFNULL(metering_mode_id, '')), "
                                          "COUNT(DISTINCT focal_length), "
+                                         "COUNT(DISTINCT focal_length) + COUNT(DISTINCT crop), "
+                                         "COUNT(DISTINCT crop), "
                                          "COUNT(DISTINCT focus_distance), "
                                          "COUNT(DISTINCT iso), "
                                          "COUNT(DISTINCT datetime_taken), "
@@ -555,6 +563,7 @@ void gui_update(dt_lib_module_t *self)
                                          "(SELECT COUNT(DISTINCT IFNULL(value,'')) FROM images LEFT JOIN meta_data ON meta_data.id = images.id AND key = 4 WHERE images.id in (%s)), " //rights
                                          "(SELECT COUNT(DISTINCT IFNULL(value,'')) FROM images LEFT JOIN meta_data ON meta_data.id = images.id AND key = 5 WHERE images.id in (%s)), " //notes
                                          "(SELECT COUNT(DISTINCT IFNULL(value,'')) FROM images LEFT JOIN meta_data ON meta_data.id = images.id AND key = 6 WHERE images.id in (%s)), " //version name
+                                         "2, " // can by anything, corresponds to XMP field that is defined but not actually displayed
                                          "COUNT(DISTINCT IFNULL(latitude, '')), "
                                          "COUNT(DISTINCT IFNULL(longitude, '')), "
                                          "COUNT(DISTINCT IFNULL(altitude, '')) "
@@ -581,7 +590,10 @@ void gui_update(dt_lib_module_t *self)
     {
       for(int32_t md = 0; md < md_tag_names; md++)
       {
-        skip[md] = (sqlite3_column_int(stmt, md) > 1);
+        if(md == md_exif_focal_length_ff)
+          skip[md] = (sqlite3_column_int(stmt, md) > 2);
+        else
+          skip[md] = (sqlite3_column_int(stmt, md) > 1);
       }
     }
     sqlite3_finalize(stmt);
