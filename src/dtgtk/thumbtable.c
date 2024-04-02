@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2023 darktable developers.
+    Copyright (C) 2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -469,6 +469,7 @@ static gboolean _thumbtable_update_scrollbars(dt_thumbtable_t *table)
     {
       dt_view_set_scrollbar(darktable.view_manager->current_view,
                             0, 0, 0, 0, lbefore, 0, maxvalue + 1, pagesize);
+      table->code_scrolling = FALSE;
       return TRUE;
     }
   }
@@ -1055,13 +1056,24 @@ static gboolean _event_scroll_compressed(gpointer user_data)
     // starting from here, all further scroll event will count for the next round
     table->scroll_value = 0;
 
-    // for filemanager and filmstrip, scrolled = move for
-    // filemanager we ensure to fallback to show full row (can be
+    // For filemanager and filmstrip, scrolled = move.
+    // For filemanager we ensure to fallback to show full row (can be
     // half shown if scrollbar used)
     int move = table->thumb_size * delta;
-    // if we scroll up and the thumb is half visible, then realign first
-    if(delta < 0 && table->thumbs_area.y != 0)
-      move += table->thumb_size -table->thumbs_area.y;
+
+    // if the top thumb row is only partially visible, then realign first
+    const int partial_height = table->thumbs_area.y % table->thumb_size;
+    if(partial_height)
+    {
+      if(delta < 0)
+      {
+        move = partial_height;
+      }
+      else
+      {
+        move = table->thumb_size + partial_height;
+      }
+    }
 
     _move(table, 0, -move, TRUE);
 
