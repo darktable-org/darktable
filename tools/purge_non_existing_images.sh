@@ -31,7 +31,7 @@ do
     option="$1"
     case "$option" in
     -h | --help)
-        echo "Delete non existing images from darktable's database"
+        echo "Delete nonexistent images from darktable's database"
         echo "Usage:   ${0} [options]"
         echo ""
         echo "Options:"
@@ -39,7 +39,7 @@ do
         echo "                           (default: '${configdir}')"
         echo "  -l|--library <path>      path to the library.db"
         echo "                           (default: '${DBFILE}')"
-        echo "  -p|--purge               actually delete the tags instead of just finding them"
+        echo "  -p|--purge               actually purge the nonexistent images instead of just finding them"
         exit 0
         ;;
     -l | --library)
