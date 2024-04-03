@@ -116,9 +116,9 @@ echo Remove nonexistent images from darktable's database
 echo Usage:   %scriptfilename% [options]
 echo:
 echo Options:
-echo:   -c^|--configdir ^<path^>    path to the darktable config directory
+echo:   -c^|--configdir ^<path^>    path to the darktable config directory in which the library.db file will be used
 echo:                            (default: '%configdir%')
-echo:   -l^|--library ^<path^>      path to the library.db
+echo:   -l^|--library ^<path^>      path to the library database file
 echo:                            (default: '%DBFILE%')
 echo:   -p^|--purge               actually purge the nonexistent images instead of just finding them
 exit 0
