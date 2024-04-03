@@ -2383,7 +2383,8 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_active(g->param_size, FALSE);
   dt_bauhaus_widget_set_quad_active(g->threshold, FALSE);
 
-  gboolean show_sliders = dt_conf_get_bool("plugins/darkroom/colorequal/show_sliders");
+  const gboolean show_sliders =
+    dt_conf_get_bool("plugins/darkroom/colorequal/show_sliders");
   gtk_widget_set_visible(g->cs.expander, !show_sliders);
 
   gtk_widget_set_name(GTK_WIDGET(g->cs.container), show_sliders ? NULL : "collapsible");
