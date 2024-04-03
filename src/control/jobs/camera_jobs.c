@@ -330,12 +330,6 @@ static int32_t dt_camera_import_job_run(dt_job_t *job)
   dt_camera_import_t *params = dt_control_job_get_params(job);
   dt_control_log(_("starting to import images from camera"));
 
-  if(!dt_import_session_ready(params->shared.session))
-  {
-    dt_control_log(_("failed to import images from camera."));
-    return 1;
-  }
-
   guint total = g_list_length(params->images);
   char message[512] = { 0 };
   snprintf(message, sizeof(message),
