@@ -120,5 +120,5 @@ echo:   -c^|--configdir ^<path^>    path to the darktable config directory
 echo:                            (default: '%configdir%')
 echo:   -l^|--library ^<path^>      path to the library.db
 echo:                            (default: '%DBFILE%')
-echo:   -p^|--purge               actually delete the tags instead of just finding them
+echo:   -p^|--purge               actually purge the nonexistent images instead of just finding them
 exit 0
