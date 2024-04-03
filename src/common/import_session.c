@@ -177,11 +177,6 @@ void dt_import_session_destroy(struct dt_import_session_t *self)
   g_free(self);
 }
 
-gboolean dt_import_session_ready(struct dt_import_session_t *self)
-{
-  return (self->film && self->film->id);
-}
-
 void dt_import_session_ref(struct dt_import_session_t *self)
 {
   self->ref++;

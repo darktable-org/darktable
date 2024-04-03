@@ -23,9 +23,6 @@ struct dt_import_session_t;
 struct dt_import_session_t *dt_import_session_new();
 void dt_import_session_destroy(struct dt_import_session_t *self);
 
-/** \brief Verify that we use current film and import images into it */
-gboolean dt_import_session_ready(struct dt_import_session_t *self);
-
 /** \brief add reference to specified import session */
 void dt_import_session_ref(struct dt_import_session_t *self);
 /** \brief remove reference to specified import session */
