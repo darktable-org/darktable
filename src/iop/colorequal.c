@@ -2444,6 +2444,13 @@ void gui_update(dt_iop_module_t *self)
   gtk_widget_queue_draw(GTK_WIDGET(g->notebook));
 }
 
+void gui_reset(struct dt_iop_module_t *self)
+{
+  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
+}
+
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_colorequal_gui_data_t *g = IOP_GUI_ALLOC(colorequal);
