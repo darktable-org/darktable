@@ -83,16 +83,16 @@ msgstr ""
 "Project-Id-Version: darktable 4.6.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-04-03 17:40+0200\n"
-"PO-Revision-Date: 2024-04-03 12:43+0200\n"
+"PO-Revision-Date: 2024-04-04 12:48+0200\n"
 "Last-Translator: Matjaž Jeran <matjaz.jeran@amis.net>\n"
 "Language-Team: Slovenian <lugos-slo@lugos.si>\n"
 "Language: sl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=4; plural=(n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || "
-"n%100==4 ? 2 : 3);\n"
-"X-Generator: Poedit 3.4.2\n"
+"Plural-Forms: nplurals=4; plural=(n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n"
+"%100==4 ? 2 : 3);\n"
+"X-Generator: Lokalize 23.08.5\n"
 
 #: ../build/bin/conf_gen.h:174
 msgctxt "preferences"
@@ -9094,7 +9094,7 @@ msgstr "radij mehčanja s peresom"
 #: ../src/iop/colorequal.c:2673 ../src/iop/diffuse.c:1791
 #: ../src/iop/diffuse.c:1801 ../src/iop/retouch.c:2729
 msgid " px"
-msgstr "px"
+msgstr " px"
 
 #: ../src/develop/blend_gui.c:3669
 msgid "spatial radius of feathering"
@@ -11596,8 +11596,8 @@ msgid ""
 msgstr ""
 "izbrani metapodatki so uvoženi iz slike in preglasijo privzeto vrednost\n"
 "to poganja tudi 'videz posodobljenih datotek XMP' in aktivnosti 'nalaganje "
-"priklopne datoteke'\n"
-"POZOR: Neizbrani metapodatki se očistijo, ko posodobite datoteko XMP"
+"priklopne datoteke'.\n"
+"POZOR: Neizbrani metapodatki se očistijo, ko posodobite datoteko XMP."
 
 #. tags
 #: ../src/gui/import_metadata.c:469
@@ -16319,12 +16319,11 @@ msgid "shift nodes to lower or higher hue"
 msgstr "pomakni vozle na nižjo ali višjo vrednost odtenka"
 
 #: ../src/iop/colorequal.c:2543
-#, fuzzy
 msgid ""
 "pick hue from image and visualize all pickers\n"
 "ctrl+click to select an area"
 msgstr ""
-"izberite barvo grafičnega vmesnika iz slike\n"
+"izberite odtenek iz slike in vizualizirajte vse pobiralnike\n"
 "krmilka+klik to za izbor površine"
 
 #: ../src/iop/colorequal.c:2631
@@ -31362,3 +31361,5 @@ msgstr "aktivnosti miške"
 #~| msgid "moving %d image"
 #~ msgid "loading image"
 #~ msgstr "prenašam sliko"
+
+
