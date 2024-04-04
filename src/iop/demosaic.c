@@ -1311,7 +1311,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_toggle(g->dual_thrs, TRUE);
   dt_bauhaus_widget_set_quad_active(g->dual_thrs, FALSE);
   g_signal_connect(G_OBJECT(g->dual_thrs), "quad-pressed", G_CALLBACK(_visualize_callback), self);
-  dt_bauhaus_widget_set_quad_tooltip(g->dual_thrs, _("toggle to visualize the mask"));
+  dt_bauhaus_widget_set_quad_tooltip(g->dual_thrs, _("toggle mask visualization"));
 
   g->lmmse_refine = dt_bauhaus_combobox_from_params(self, "lmmse_refine");
   gtk_widget_set_tooltip_text(g->lmmse_refine, _("LMMSE refinement steps. the median steps average the output,\nrefine adds some recalculation of red & blue channels"));
