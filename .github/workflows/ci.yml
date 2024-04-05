@@ -205,10 +205,9 @@ jobs:
         run: |
           ${INSTALL_PREFIX}/bin/darktable --version || true
           ${INSTALL_PREFIX}/bin/darktable-cli \
-                 --width 2048 --height 2048 \
+                 --width 1000 --height 1000 \
                  --hq true --apply-custom-presets false \
-                 "${SRC_DIR}/src/tests/integration/images/mire1.cr2" \
-                 "${SRC_DIR}/src/tests/integration/0000-nop/nop.xmp" \
+                 "${SRC_DIR}/data/pixmaps/256x256/darktable.png" \
                  output.png \
                  --core --disable-opencl --conf host_memory_limit=8192 \
                  --conf worker_threads=4 -t 4 \
@@ -316,11 +315,9 @@ jobs:
           $(cygpath ${INSTALL_PREFIX})/bin/darktable-cli.exe --version || true
           echo "Testing RUN!"
           $(cygpath ${INSTALL_PREFIX})/bin/darktable-cli.exe \
-                 --verbose \
-                 --width 2048 --height 2048 \
+                 --width 1000 --height 1000 \
                  --hq true --apply-custom-presets false \
-                 $(cygpath ${SRC_DIR})/src/tests/integration/images/mire1.cr2 \
-                 $(cygpath ${SRC_DIR})/src/tests/integration/0000-nop/nop.xmp \
+                 $(cygpath ${SRC_DIR})/data/pixmaps/256x256/darktable.png \
                  output.png \
                  --core --disable-opencl --conf host_memory_limit=8192 \
                  --conf worker_threads=4 -t 4 \
@@ -381,10 +378,9 @@ jobs:
         run: |
           ${INSTALL_PREFIX}/bin/darktable --version || true
           ${INSTALL_PREFIX}/bin/darktable-cli \
-                 --width 2048 --height 2048 \
+                 --width 1000 --height 1000 \
                  --hq true --apply-custom-presets false \
-                 "${SRC_DIR}/src/tests/integration/images/mire1.cr2" \
-                 "${SRC_DIR}/src/tests/integration/0000-nop/nop.xmp" \
+                 "${SRC_DIR}/data/pixmaps/256x256/darktable.png" \
                  output.png \
                  --core --disable-opencl --conf host_memory_limit=8192 \
                  --conf worker_threads=4 -t 4 \
