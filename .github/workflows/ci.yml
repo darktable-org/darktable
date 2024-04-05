@@ -192,10 +192,15 @@ jobs:
             python3-jsonschema \
             xsltproc \
             zlib1g-dev;
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
-          path: src
+      - name: Checkout darktable master branch
+        run: |
+          # For speed (and saving traffic), we make a shallow clone with a history truncated to 1 commit
+          git clone --depth 1 https://github.com/darktable-org/darktable src
+          cd src
+          git submodule init
+          git config submodule.src/tests/integration.update none
+          git submodule update
+          cd -
       - name: Build and Install
         run: |
           cmake -E make_directory "${BUILD_DIR}";
@@ -300,10 +305,15 @@ jobs:
           update: false
       - run: git config --global core.autocrlf input
         shell: bash
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
-          path: src
+      - name: Checkout darktable master branch
+        run: |
+          # For speed (and saving traffic), we make a shallow clone with a history truncated to 1 commit
+          git clone --depth 1 https://github.com/darktable-org/darktable src
+          pushd src
+          git submodule init
+          git config submodule.src/tests/integration.update none
+          git submodule update
+          popd
       - name: Build and Install
         run: |
           cmake -E make_directory "${BUILD_DIR}"
@@ -354,10 +364,15 @@ jobs:
       GENERATOR: ${{ matrix.generator }}
       TARGET: ${{ matrix.target }}
     steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
-          path: src
+      - name: Checkout darktable master branch
+        run: |
+          # For speed (and saving traffic), we make a shallow clone with a history truncated to 1 commit
+          git clone --depth 1 https://github.com/darktable-org/darktable src
+          pushd src
+          git submodule init
+          git config submodule.src/tests/integration.update none
+          git submodule update
+          popd
       - name: Install Base Dependencies
         run: |
           brew update > /dev/null || true
