@@ -362,9 +362,6 @@ int dt_opencl_enqueue_kernel_ndim_with_local(const int dev, const int kernel, co
 /** check if opencl is enabled */
 gboolean dt_opencl_is_enabled(void);
 
-/** disable opencl */
-void dt_opencl_disable(void);
-
 /** runtime check for cl system running */
 gboolean dt_opencl_running(void);
 
@@ -579,10 +576,6 @@ static inline gboolean dt_opencl_is_enabled(void)
 }
 static inline void dt_opencl_disable(void)
 {
-}
-static inline gboolean dt_opencl_running(void)
-{
-  return FALSE;
 }
 static inline void dt_opencl_update_settings(void)
 {

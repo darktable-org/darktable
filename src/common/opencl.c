@@ -654,6 +654,9 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
                "   DEVICE:                   %d: '%s'%s\n",
                k, device_name, (newdevice) ? ", NEW" : "" );
   dt_print_nts(DT_DEBUG_OPENCL,
+               "   CONF KEY:                 %s%s\n",
+               DT_CLDEVICE_HEAD, cl->dev[dev].cname);
+  dt_print_nts(DT_DEBUG_OPENCL,
                "   PLATFORM, VENDOR & ID:    %s, %s%s, ID=%d\n",
                platform_display_name, is_mesa ? "Mesa:" : "", platform_vendor, vendor_id);
   dt_print_nts(DT_DEBUG_OPENCL,
@@ -702,7 +705,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
                                            sizeof(cl_bool), &unified_memory, NULL);
   cl->dev[dev].unified_memory = unified_memory ? TRUE : FALSE;
 
-  if(!strncasecmp(vendor, "NVIDIA", 6))
+  if(!strncasecmp(platform_display_name, "NVIDIA CUDA", 11))
   {
     // very lame attempt to detect support for atomic float add in global memory.
     // we need compute model sm_20, but let's try for all nvidia devices :(
@@ -1401,7 +1404,7 @@ void dt_opencl_init(
   {
     cl->num_devs = dev;
     cl->inited = TRUE;
-    cl->enabled = dt_conf_get_bool("opencl");
+    cl->enabled = opencl_requested;
     memset(cl->mandatory, 0, sizeof(cl->mandatory));
     cl->dev_priority_image = (int *)malloc(sizeof(int) * (dev + 1));
     cl->dev_priority_preview = (int *)malloc(sizeof(int) * (dev + 1));
@@ -1431,8 +1434,10 @@ void dt_opencl_init(
 
 finally:
   dt_print(DT_DEBUG_OPENCL,
-           "[opencl_init] FINALLY: opencl is %sAVAILABLE and %sENABLED.\n",
-           cl->inited ? "" : "NOT ", cl->enabled ? "" : "NOT ");
+           "[opencl_init] FINALLY: opencl PREFERENCE=%s is %sAVAILABLE and %sENABLED.\n",
+           opencl_requested ? "ON" : "OFF",
+           cl->inited ? "" : "NOT ",
+           cl->enabled ? "" : "NOT ");
   if(cl->inited && cl->enabled)
   {
     // report some global settings if up & running
@@ -3571,14 +3576,6 @@ int dt_opencl_dev_roundup_height(int size, const int devid)
 gboolean dt_opencl_is_enabled(void)
 {
   return darktable.opencl->inited && darktable.opencl->enabled;
-}
-
-/** disable opencl */
-void dt_opencl_disable(void)
-{
-  if(!darktable.opencl->inited) return;
-  darktable.opencl->enabled = FALSE;
-  dt_conf_set_bool("opencl", FALSE);
 }
 
 /** runtime check for cl system running */
