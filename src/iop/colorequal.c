@@ -2062,12 +2062,6 @@ static void _picker_callback(GtkWidget *quad, gpointer user_data)
 
   g->picking = dt_bauhaus_widget_get_quad_active(quad);
 
-  /* FIXME: For some (not understood) reason after applying a preset the picker cst will be RGB.
-     This is ceratinly a hack
-  */
-  if(g->picking)
-    dt_iop_color_picker_set_cst(self, IOP_CS_HSL);
-
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 

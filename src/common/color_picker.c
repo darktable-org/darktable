@@ -35,7 +35,8 @@ static inline size_t _box_size(const int *const box)
 static inline void _update_stats_by_ch(dt_aligned_pixel_t acc,
                                        dt_aligned_pixel_t low,
                                        dt_aligned_pixel_t high,
-                                       const int ch, const float pick)
+                                       const int ch,
+                                       const float pick)
 {
   acc[ch] += pick;
   low[ch] = MIN(low[ch], pick);
@@ -55,7 +56,8 @@ static inline void _update_stats_4ch(dt_aligned_pixel_t acc,
 #ifdef _OPENMP
 #pragma omp declare simd aligned(rgb, JzCzhz: 16) uniform(profile)
 #endif
-static inline void rgb_to_JzCzhz(const dt_aligned_pixel_t rgb, dt_aligned_pixel_t JzCzhz,
+static inline void rgb_to_JzCzhz(const dt_aligned_pixel_t rgb,
+                                 dt_aligned_pixel_t JzCzhz,
                                  const dt_iop_order_iccprofile_info_t *const profile)
 {
   dt_aligned_pixel_t XYZ_D65 = { 0.0f, 0.0f, 0.0f };
@@ -81,7 +83,8 @@ static inline void rgb_to_JzCzhz(const dt_aligned_pixel_t rgb, dt_aligned_pixel_
 typedef void((*picker_worker_4ch)(dt_aligned_pixel_t acc,
                                   dt_aligned_pixel_t low,
                                   dt_aligned_pixel_t high,
-                                  const float *const pixels, const size_t width,
+                                  const float *const pixels,
+                                  const size_t width,
                                   const void *const data));
 typedef void((*picker_worker_1ch)(dt_aligned_pixel_t acc,
                                   dt_aligned_pixel_t low,
@@ -96,7 +99,8 @@ typedef void((*picker_worker_1ch)(dt_aligned_pixel_t acc,
 static inline void _color_picker_rgb_or_lab(dt_aligned_pixel_t acc,
                                             dt_aligned_pixel_t low,
                                             dt_aligned_pixel_t high,
-                                            const float *const pixels, const size_t width,
+                                            const float *const pixels,
+                                            const size_t width,
                                             const void *const data)
 {
   for(size_t i = 0; i < width; i += 4)
@@ -107,7 +111,8 @@ static inline void _color_picker_rgb_or_lab(dt_aligned_pixel_t acc,
 static inline void _color_picker_lch(dt_aligned_pixel_t acc,
                                      dt_aligned_pixel_t low,
                                      dt_aligned_pixel_t high,
-                                     const float *const pixels, const size_t width,
+                                     const float *const pixels,
+                                     const size_t width,
                                      const void *const data)
 {
   for(size_t i = 0; i < width; i += 4)
@@ -124,7 +129,8 @@ static inline void _color_picker_lch(dt_aligned_pixel_t acc,
 static inline void _color_picker_hsl(dt_aligned_pixel_t acc,
                                      dt_aligned_pixel_t low,
                                      dt_aligned_pixel_t high,
-                                     const float *const pixels, const size_t width,
+                                     const float *const pixels,
+                                     const size_t width,
                                      const void *const data)
 {
   for(size_t i = 0; i < width; i += 4)
@@ -141,7 +147,8 @@ static inline void _color_picker_hsl(dt_aligned_pixel_t acc,
 static inline void _color_picker_jzczhz(dt_aligned_pixel_t acc,
                                         dt_aligned_pixel_t low,
                                         dt_aligned_pixel_t high,
-                                        const float *const pixels, const size_t width,
+                                        const float *const pixels,
+                                        const size_t width,
                                         const void *const data)
 {
   const dt_iop_order_iccprofile_info_t *const profile = data;
@@ -195,7 +202,8 @@ static inline void _color_picker_xtrans(dt_aligned_pixel_t acc,
 }
 
 static void _color_picker_work_4ch(const float *const pixel,
-                                   const dt_iop_roi_t *const roi, const int *const box,
+                                   const dt_iop_roi_t *const roi,
+                                   const int *const box,
                                    lib_colorpicker_stats pick,
                                    const void *const data,
                                    const picker_worker_4ch worker,
@@ -236,7 +244,8 @@ static void _color_picker_work_4ch(const float *const pixel,
 }
 
 static void _color_picker_work_1ch(const float *const pixel,
-                                   const dt_iop_roi_t *const roi, const int *const box,
+                                   const dt_iop_roi_t *const roi,
+                                   const int *const box,
                                    lib_colorpicker_stats pick,
                                    const void *const data,
                                    const picker_worker_1ch worker,

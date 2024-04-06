@@ -171,6 +171,7 @@ static void _init_picker(dt_iop_color_picker_t *picker,
                               : IOP_CS_NONE;
   picker->colorpick  = button;
   picker->changed    = FALSE;
+  picker->fixed_cst  = FALSE;
 
   // default values
   picker->pick_box[0] = picker->pick_box[1] = 0.0f;
@@ -303,7 +304,7 @@ void dt_iop_color_picker_set_cst(dt_iop_module_t *module,
   dt_iop_color_picker_t *const picker = darktable.lib->proxy.colorpicker.picker_proxy;
   // this is a bit hacky, because the code was built for when a module
   // "owned" an active pcicker
-  if(picker && picker->module == module && picker->picker_cst != picker_cst)
+  if(picker && picker->module == module && picker->picker_cst != picker_cst && !picker->fixed_cst)
   {
     picker->picker_cst = picker_cst;
     // force applying next picker data
@@ -430,7 +431,10 @@ static GtkWidget *_color_picker_new(dt_iop_module_t *module,
     dt_gui_add_class(button, "dt_transparent_background");
     _init_picker(color_picker, module, flags, button);
     if(init_cst)
+    {
       color_picker->picker_cst = cst;
+      color_picker->fixed_cst = TRUE;
+    }
     g_signal_connect_data(G_OBJECT(button), "button-press-event",
                           G_CALLBACK(_color_picker_callback_button_press),
                           color_picker, (GClosureNotify)g_free, 0);
@@ -445,7 +449,10 @@ static GtkWidget *_color_picker_new(dt_iop_module_t *module,
     dt_bauhaus_widget_set_quad_tooltip(w, _("pick color from image"));
     _init_picker(color_picker, module, flags, w);
     if(init_cst)
+    {
       color_picker->picker_cst = cst;
+      color_picker->fixed_cst = TRUE;
+    }
     g_signal_connect_data(G_OBJECT(w), "quad-pressed",
                           G_CALLBACK(_color_picker_callback),
                           color_picker, (GClosureNotify)g_free, 0);
