@@ -323,8 +323,7 @@ enum _channel_indexes
 
 static void _blendop_blendif_update_tab(dt_iop_module_t *module, const int tab);
 
-static inline dt_iop_colorspace_type_t
-_blendif_colorpicker_cst(dt_iop_gui_blend_data_t *data)
+static inline dt_iop_colorspace_type_t _blendif_colorpicker_cst(dt_iop_gui_blend_data_t *data)
 {
   dt_iop_colorspace_type_t cst = dt_iop_color_picker_get_active_cst(data->module);
   if(cst == IOP_CS_NONE)
@@ -433,7 +432,8 @@ static void _blendif_scale(dt_iop_gui_blend_data_t *data,
 }
 
 static void _blendif_cook(const dt_iop_colorspace_type_t cst,
-                          const float *in, float *out,
+                          const float *in,
+                          float *out,
                           const dt_iop_order_iccprofile_info_t *const work_profile)
 {
   out[0] = out[1] = out[2] = out[3] = out[4] = out[5] = out[6] = out[7] = -1.0f;
@@ -500,7 +500,8 @@ static inline int _blendif_print_digits_ab(float value)
 
 static void _blendif_scale_print_ab(const float value,
                                     const float boost_factor,
-                                    char *string, int n)
+                                    char *string,
+                                    int n)
 {
   const float scaled = (value * 256.0f - 128.0f) * boost_factor;
   snprintf(string, n, "%-5.*f", _blendif_print_digits_ab(scaled), scaled);
@@ -1049,8 +1050,7 @@ static void _blendop_blendif_disp_alternative_reset(GtkWidget *widget,
 }
 
 
-static dt_iop_colorspace_type_t
-_blendop_blendif_get_picker_colorspace(dt_iop_gui_blend_data_t *bd)
+static dt_iop_colorspace_type_t _blendop_blendif_get_picker_colorspace(dt_iop_gui_blend_data_t *bd)
 {
   dt_iop_colorspace_type_t picker_cst = IOP_CS_NONE;
 
@@ -1266,7 +1266,7 @@ static void _blendop_blendif_tab_switch(GtkNotebook *notebook,
      || !data->blendif_inited)
     return;
 
-  const int cst_old = _blendop_blendif_get_picker_colorspace(data);
+  const dt_iop_colorspace_type_t cst_old = _blendop_blendif_get_picker_colorspace(data);
   dt_iop_color_picker_reset(data->module, FALSE);
 
   data->tab = page_num;
@@ -1945,7 +1945,7 @@ static gboolean _blendif_change_blend_colorspace(dt_iop_module_t *module,
     }
 
     dt_iop_gui_blend_data_t *bd = module->blend_data;
-    const int cst_old = _blendop_blendif_get_picker_colorspace(bd);
+    const dt_iop_colorspace_type_t cst_old = _blendop_blendif_get_picker_colorspace(bd);
     dt_dev_add_new_history_item(darktable.develop, module, FALSE);
     dt_iop_gui_update(module);
 
