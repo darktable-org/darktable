@@ -192,10 +192,15 @@ jobs:
             python3-jsonschema \
             xsltproc \
             zlib1g-dev;
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
-          path: src
+      - name: Checkout darktable master branch
+        run: |
+          # For speed (and saving traffic), we make a shallow clone with a history truncated to 1 commit
+          git clone --depth 1 https://github.com/darktable-org/darktable src
+          cd src
+          git submodule init
+          git config submodule.src/tests/integration.update none
+          git submodule update
+          cd -
       - name: Build and Install
         run: |
           cmake -E make_directory "${BUILD_DIR}";
@@ -205,10 +210,9 @@ jobs:
         run: |
           ${INSTALL_PREFIX}/bin/darktable --version || true
           ${INSTALL_PREFIX}/bin/darktable-cli \
-                 --width 2048 --height 2048 \
+                 --width 1000 --height 1000 \
                  --hq true --apply-custom-presets false \
-                 "${SRC_DIR}/src/tests/integration/images/mire1.cr2" \
-                 "${SRC_DIR}/src/tests/integration/0000-nop/nop.xmp" \
+                 "${SRC_DIR}/data/pixmaps/256x256/darktable.png" \
                  output.png \
                  --core --disable-opencl --conf host_memory_limit=8192 \
                  --conf worker_threads=4 -t 4 \
@@ -301,10 +305,15 @@ jobs:
           update: false
       - run: git config --global core.autocrlf input
         shell: bash
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
-          path: src
+      - name: Checkout darktable master branch
+        run: |
+          # For speed (and saving traffic), we make a shallow clone with a history truncated to 1 commit
+          git clone --depth 1 https://github.com/darktable-org/darktable src
+          pushd src
+          git submodule init
+          git config submodule.src/tests/integration.update none
+          git submodule update
+          popd
       - name: Build and Install
         run: |
           cmake -E make_directory "${BUILD_DIR}"
@@ -316,11 +325,9 @@ jobs:
           $(cygpath ${INSTALL_PREFIX})/bin/darktable-cli.exe --version || true
           echo "Testing RUN!"
           $(cygpath ${INSTALL_PREFIX})/bin/darktable-cli.exe \
-                 --verbose \
-                 --width 2048 --height 2048 \
+                 --width 1000 --height 1000 \
                  --hq true --apply-custom-presets false \
-                 $(cygpath ${SRC_DIR})/src/tests/integration/images/mire1.cr2 \
-                 $(cygpath ${SRC_DIR})/src/tests/integration/0000-nop/nop.xmp \
+                 $(cygpath ${SRC_DIR})/data/pixmaps/256x256/darktable.png \
                  output.png \
                  --core --disable-opencl --conf host_memory_limit=8192 \
                  --conf worker_threads=4 -t 4 \
@@ -357,10 +364,15 @@ jobs:
       GENERATOR: ${{ matrix.generator }}
       TARGET: ${{ matrix.target }}
     steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
-          path: src
+      - name: Checkout darktable master branch
+        run: |
+          # For speed (and saving traffic), we make a shallow clone with a history truncated to 1 commit
+          git clone --depth 1 https://github.com/darktable-org/darktable src
+          pushd src
+          git submodule init
+          git config submodule.src/tests/integration.update none
+          git submodule update
+          popd
       - name: Install Base Dependencies
         run: |
           brew update > /dev/null || true
@@ -381,10 +393,9 @@ jobs:
         run: |
           ${INSTALL_PREFIX}/bin/darktable --version || true
           ${INSTALL_PREFIX}/bin/darktable-cli \
-                 --width 2048 --height 2048 \
+                 --width 1000 --height 1000 \
                  --hq true --apply-custom-presets false \
-                 "${SRC_DIR}/src/tests/integration/images/mire1.cr2" \
-                 "${SRC_DIR}/src/tests/integration/0000-nop/nop.xmp" \
+                 "${SRC_DIR}/data/pixmaps/256x256/darktable.png" \
                  output.png \
                  --core --disable-opencl --conf host_memory_limit=8192 \
                  --conf worker_threads=4 -t 4 \
