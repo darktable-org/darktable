@@ -2624,7 +2624,9 @@ void gui_init(dt_lib_module_t *self)
                      _lib_histogram_cycle_mode_callback, 0, 0);
 
   // shows the scope, scale, and has draggable areas
-  d->scope_draw = dt_ui_resize_wrap(NULL, 0, "plugins/darkroom/histogram/aspect_percent");
+  d->scope_draw = dt_ui_resize_wrap(NULL,
+                                    0, 
+                                    "plugins/darkroom/histogram/graphheight");
   ac = dt_action_define(dark, NULL, N_("hide histogram"), d->scope_draw, NULL);
   dt_action_register(ac, NULL, _lib_histogram_collapse_callback,
                      GDK_KEY_H, GDK_CONTROL_MASK | GDK_SHIFT_MASK);

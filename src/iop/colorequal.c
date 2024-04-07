@@ -2455,7 +2455,8 @@ void gui_init(struct dt_iop_module_t *self)
   // graph
   g->area = GTK_DRAWING_AREA
     (dt_ui_resize_wrap(NULL, 0,
-                       "plugins/darkroom/colorequal/aspect_percent"));
+                       "plugins/darkroom/colorequal/graphheight"));
+                       
   g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
   dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(g->area), &_action_def_coloreq);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("double-click to reset the curve\nmiddle click to toggle sliders visibility\nalt+scroll to change page"));

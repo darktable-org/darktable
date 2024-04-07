@@ -2124,7 +2124,9 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "luminance ranges")), FALSE, FALSE, 0);
 
-  g->area = GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL, 0, "plugins/darkroom/colorbalancergb/aspect_percent"));
+  g->area = GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL, 
+                                               0, 
+                                               "plugins/darkroom/colorbalancergb/graphheight"));
   g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
   dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(g->area), NULL);
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(dt_iop_tonecurve_draw), self);
