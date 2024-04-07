@@ -1047,8 +1047,9 @@ void gui_init(dt_iop_module_t *self)
                    G_CALLBACK(_tab_switch_callback), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
 
-  c->area = GTK_DRAWING_AREA(dt_ui_resize_wrap
-                             (NULL, 0, "plugins/darkroom/rgblevels/aspect_percent"));
+  c->area = GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL,
+                                               0,
+                                               "plugins/darkroom/rgblevels/graphheight"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
 
