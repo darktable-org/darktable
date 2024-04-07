@@ -2985,8 +2985,8 @@
     <name>plugins/darkroom/colorequal/graphheight</name>
     <type min="100" max="300">int</type>
     <default>200</default>
-    <shortdescription>height of the scopes module</shortdescription>
-    <longdescription>height of the scopes module in the darkroom and tethering views</longdescription>
+    <shortdescription>height of the colorequal module</shortdescription>
+    <longdescription>height of the colorequal module</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/navigation/graphheight</name>
