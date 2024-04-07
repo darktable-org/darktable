@@ -3788,13 +3788,9 @@ static gboolean _resize_wrap_motion(GtkWidget *widget,
     if(DTGTK_IS_DRAWING_AREA(widget))
     {
       // enforce configuration limits
-      // dt_conf_set_int(config_str,
-      //                 100.0 * event->y / gtk_widget_get_allocated_width(widget));
-      // const float aspect = dt_conf_get_int(config_str);
-      // dtgtk_drawing_area_set_aspect_ratio(widget, aspect / 100.0);
-
       dt_conf_set_int(config_str, event->y);
-      dtgtk_drawing_area_set_height(widget, event->y);
+      const int height = dt_conf_get_int(config_str);
+      dtgtk_drawing_area_set_height(widget, height);
     }
     else
     {
