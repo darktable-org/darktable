@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -457,6 +457,48 @@ static void _develop_blend_process_mask_tone_curve(float *const restrict mask,
   }
 }
 
+#define MININ 1e-5f
+static void _write_highlights_raster(const gboolean israw,
+                                     const float *const input,
+                                     const float *const output,
+                                     const dt_iop_roi_t *const roi_in,
+                                     const dt_iop_roi_t *const roi_out,
+                                     float *mask)
+{
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(output, input, roi_in, roi_out, mask, israw) \
+    schedule(static) collapse(2)
+#endif
+  for(ssize_t row = 0; row < roi_out->height; row++)
+  {
+    for(ssize_t col = 0; col < roi_out->width; col++)
+    {
+      const ssize_t irow = row + roi_out->y - roi_in->y;
+      const ssize_t icol = col + roi_out->x - roi_in->x;
+      const ssize_t ix = irow * roi_in->width + icol;
+      const ssize_t ox = row * roi_out->width + col;
+      if((irow < roi_in->height) && (icol < roi_in->width))
+      {
+        const float r = israw ?     output[ox] / MAX(MININ, input[ix])
+                              : MAX(output[4*ox+0] / MAX(MININ, input[4*ix+0]),
+                                MAX(output[4*ox+1] / MAX(MININ, input[4*ix+1]),
+                                    output[4*ox+2] / MAX(MININ, input[4*ix+2])));
+        mask[ox] *= CLIP(sqrf(r) - 1.0f);
+      }
+    }
+  }
+
+  const float mmax[] = { 1.0f };
+  const float mmin[] = { 0.0f };
+  dt_gaussian_t *g = dt_gaussian_init(roi_out->width, roi_out->height, 1, mmax, mmin, 1.5f, 0);
+  if(!g) return;
+
+  dt_gaussian_blur(g, mask, mask);
+  dt_gaussian_free(g);
+}
+#undef MININ
+
 static const char *_develop_blend_colorspace_to_str(const dt_develop_blend_colorspace_t type)
 {
   switch(type)
@@ -792,6 +834,9 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
   // TODO: should we skip raster masks?
   if(piece->pipe->store_all_raster_masks || dt_iop_is_raster_mask_used(self, BLEND_RASTER_ID))
   {
+    if(dt_iop_module_is(piece->module->so, "highlights"))
+      _write_highlights_raster(ch == 1, ivoid, ovoid, roi_in, roi_out, _mask);
+
     const gboolean new = g_hash_table_replace(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID), _mask);
     dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self->iop_order);
     dt_print_pipe(DT_DEBUG_PIPE,
@@ -1042,6 +1087,7 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
   int kernel_mask_tone_curve = darktable.opencl->blendop->kernel_blendop_mask_tone_curve;
   int kernel_set_mask = darktable.opencl->blendop->kernel_blendop_set_mask;
   int kernel_display_channel = darktable.opencl->blendop->kernel_blendop_display_channel;
+  int kernel_highlights_mask = darktable.opencl->blendop->kernel_blendop_highlights_mask;
 
   const int devid = piece->pipe->devid;
   const int offs[2] = { dx, dy };
@@ -1341,7 +1387,6 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
         _blend_process_cl_exchange(&dev_mask_1, &dev_mask_2);
       }
     }
-
     // get rid of dev_mask_2
     dt_opencl_release_mem_object(dev_mask_2);
     dev_mask_2 = NULL;
@@ -1440,6 +1485,32 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
     //  get back final mask from the device to store it for later use
     if(!(mask_mode & DEVELOP_MASK_RASTER))
     {
+      // the highlight module needs special care
+      if(dt_iop_module_is(piece->module->so, "highlights"))
+      {
+        err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+        dev_mask_2 = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float));
+        if(dev_mask_2 == NULL) goto error;
+
+        const int ch2 = ch;
+        err = dt_opencl_enqueue_kernel_2d_args(devid, kernel_highlights_mask, owidth, oheight,
+                              CLARG(dev_in), CLARG(dev_out), CLARG(dev_mask_1), CLARG(dev_mask_2),
+                              CLARG(owidth), CLARG(oheight), CLARG(roi_in->width), CLARG(roi_in->height),
+                              CLARG(ch2), CLARRAY(2, offs));
+        if(err != CL_SUCCESS) goto error;
+
+        const float mmax[] = { 1.0f };
+        const float mmin[] = { 0.0f };
+        dt_gaussian_cl_t *g = dt_gaussian_init_cl(devid, owidth, oheight, 1, mmax, mmin, 1.5f, 0);
+
+        err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+        if(!g) goto error;
+
+        err = dt_gaussian_blur_cl(g, dev_mask_2, dev_mask_1);
+        dt_gaussian_free_cl(g);
+        if(err != CL_SUCCESS) goto error;
+      }
+
       err = dt_opencl_copy_device_to_host(devid, mask, dev_mask_1,
                                           owidth, oheight, sizeof(float));
       if(err != CL_SUCCESS)
@@ -1467,6 +1538,7 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
   dt_opencl_release_mem_object(dev_blendif_params);
   dt_opencl_release_mem_object(dev_boost_factors);
   dt_opencl_release_mem_object(dev_mask_1);
+  dt_opencl_release_mem_object(dev_mask_2);
   dt_opencl_release_mem_object(dev_tmp);
   dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl,
                                      &dev_profile_info, &dev_profile_lut);
@@ -1522,6 +1594,8 @@ dt_blendop_cl_global_t *dt_develop_blend_init_cl_global(void)
     dt_opencl_create_kernel(program, "blendop_set_mask");
   b->kernel_blendop_display_channel =
     dt_opencl_create_kernel(program, "blendop_display_channel");
+  b->kernel_blendop_highlights_mask =
+    dt_opencl_create_kernel(program, "blendop_highlights_mask");
 
   const int program_rcd = 31;
   b->kernel_calc_Y0_mask =
@@ -1558,6 +1632,7 @@ void dt_develop_blend_free_cl_global(dt_blendop_cl_global_t *b)
   dt_opencl_free_kernel(b->kernel_blendop_mask_tone_curve);
   dt_opencl_free_kernel(b->kernel_blendop_set_mask);
   dt_opencl_free_kernel(b->kernel_blendop_display_channel);
+  dt_opencl_free_kernel(b->kernel_blendop_highlights_mask);
   dt_opencl_free_kernel(b->kernel_calc_Y0_mask);
   dt_opencl_free_kernel(b->kernel_calc_scharr_mask);
   dt_opencl_free_kernel(b->kernel_write_scharr_mask);
