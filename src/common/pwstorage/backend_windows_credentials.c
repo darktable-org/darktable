@@ -90,10 +90,12 @@ gboolean dt_pwstorage_windows_credentials_set(const backend_windows_credentials_
     gchar *password = g_strdup((gchar *) g_hash_table_lookup(v_attributes, "password"));
 
     // delete existing entry
-    CredDeleteW((LPWSTR) target_name, CRED_TYPE_GENERIC, 0);
+    CredDeleteW((LPWSTR) target_name,
+                CRED_TYPE_GENERIC,
+                0);
 
     // create new entry
-    const DWORD cbCreds = 1 + strlen(password);
+    const DWORD cbCreds = strlen(password) + 1;
 
     CREDENTIALW cred = { 0 };
     cred.Type = CRED_TYPE_GENERIC;
@@ -104,7 +106,7 @@ gboolean dt_pwstorage_windows_credentials_set(const backend_windows_credentials_
     cred.Comment = (LPWSTR) server;
     cred.UserName = (LPWSTR) username;
 
-    result = CredWriteW (&cred, 0);
+    result = CredWriteW(&cred, 0);
 
     g_free(server);
     g_free(username);
@@ -122,7 +124,10 @@ GHashTable *dt_pwstorage_windows_credentials_get(const backend_windows_credentia
   gchar *target_name = g_strconcat("darktable - ", slot, NULL);
 
   PCREDENTIALW pcred;
-  gboolean ok = CredReadW((LPWSTR) target_name, CRED_TYPE_GENERIC, 0, &pcred);
+  gboolean ok = CredReadW((LPWSTR) target_name,
+                          CRED_TYPE_GENERIC,
+                          0,
+                          &pcred);
 
   if(ok)
   {
