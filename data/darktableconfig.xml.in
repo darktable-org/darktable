@@ -710,27 +710,6 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/capture/storage/basedirectory</name>
-    <type>string</type>
-    <default>$(PICTURES_FOLDER)/darktable</default>
-    <shortdescription>path of storage for captured images</shortdescription>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/capture/storage/subpath</name>
-    <type>string</type>
-    <default>$(YEAR)$(MONTH)$(DAY)_$(JOBCODE)</default>
-    <shortdescription>subpath pattern in storage for captured images</shortdescription>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/capture/storage/namepattern</name>
-    <type>string</type>
-    <default>$(YEAR)$(MONTH)$(DAY)_$(SEQUENCE).$(FILE_EXTENSION)</default>
-    <shortdescription>rename pattern for captured images</shortdescription>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
     <name>plugins/capture/camera/live_view_fps</name>
     <type>int</type>
     <default>15</default>
