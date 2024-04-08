@@ -1,5 +1,5 @@
 // This file is part of darktable
-// Copyright (c) 2010-2016 Tobias Ellinghaus <me@houz.org>.
+// Copyright (C) 2024 darktable developers.
 
 // darktable is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,36 +16,31 @@
 
 #pragma once
 
-#include "common/darktable.h"
+#include <glib.h>
 
-typedef enum pw_storage_backend_t
+/** windows credentials backend context */
+typedef struct backend_windows_credentials_context_t
 {
-  PW_STORAGE_BACKEND_NONE = 0,
-  PW_STORAGE_BACKEND_KWALLET,
-  PW_STORAGE_BACKEND_LIBSECRET,
-  PW_STORAGE_BACKEND_APPLE_KEYCHAIN,
-  PW_STORAGE_BACKEND_WINDOWS_CREDENTIALS
-} pw_storage_backend_t;
+} backend_windows_credentials_context_t;
 
-/** pwstorage context */
-typedef struct dt_pwstorage_t
-{
-  pw_storage_backend_t pw_storage_backend;
-  void *backend_context;
-} dt_pwstorage_t;
 
-/** Initializes a new pwstorage context. */
-const dt_pwstorage_t *dt_pwstorage_new();
-/** Cleanup and destroy pwstorage context. \remarks After this point pointer at pwstorage is invalid. */
-void dt_pwstorage_destroy(const dt_pwstorage_t *pwstorage);
+/** Initializes a new windows credentials backend context. */
+const backend_windows_credentials_context_t *dt_pwstorage_windows_credentials_new();
+
+/** Cleanup and destroy windows credentials backend context. */
+void dt_pwstorage_windows_credentials_destroy(const backend_windows_credentials_context_t *context);
+
 /** Store (key,value) pairs. */
-gboolean dt_pwstorage_set(const gchar *slot, GHashTable *table);
+gboolean dt_pwstorage_windows_credentials_set(const backend_windows_credentials_context_t *context,
+                                              const gchar *slot,
+                                              GHashTable *table);
+
 /** Load (key,value) pairs. */
-GHashTable *dt_pwstorage_get(const gchar *slot);
+GHashTable *dt_pwstorage_windows_credentials_get(const backend_windows_credentials_context_t *context,
+                                                 const gchar *slot);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
