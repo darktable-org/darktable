@@ -22,9 +22,7 @@
 #include <stdint.h>
 #include "common/image.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+G_BEGIN_DECLS
 
 typedef struct dt_variables_params_t
 {
@@ -79,9 +77,7 @@ char *dt_variables_expand(dt_variables_params_t *params,
 /** reset sequence number */
 void dt_variables_reset_sequence(dt_variables_params_t *params);
 
-#ifdef __cplusplus
-} // extern "C"
-#endif /* __cplusplus */
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

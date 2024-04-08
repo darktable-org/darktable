@@ -21,9 +21,7 @@
 #include "common/opencl.h"
 #include "develop/pixelpipe_hb.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+G_BEGIN_DECLS
 
 /** Available interpolations */
 enum dt_interpolation_type
@@ -188,9 +186,7 @@ void dt_interpolation_resample_roi_1c(const struct dt_interpolation *itor,
                                       float *out, const dt_iop_roi_t *const roi_out,
                                       const float *const in, const dt_iop_roi_t *const roi_in);
 
-#ifdef __cplusplus
-} // extern "C"
-#endif /* __cplusplus */
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

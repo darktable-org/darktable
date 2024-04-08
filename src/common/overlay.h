@@ -23,9 +23,7 @@
 
 #include "common/darktable.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+G_BEGIN_DECLS
 
 /*
   Record overlay_id as being used as overlay in imgid
@@ -58,9 +56,7 @@ GList *dt_overlay_get_used_in_imgs(const dt_imgid_t overlay_id,
 /* Return TRUE is overlay_id is used by imgid */
 gboolean dt_overlay_used_by(const dt_imgid_t imgid, const dt_imgid_t overlay_id);
 
-#ifdef __cplusplus
-} // extern "C"
-#endif /* __cplusplus */
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

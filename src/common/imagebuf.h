@@ -23,9 +23,7 @@
 
 #include "develop/imageop.h" // for dt_iop_roi_t
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+G_BEGIN_DECLS
 
 // Allocate a 64-byte aligned buffer for an image of the given dimensions and channels.
 // The return value must be freed with dt_free_align().
@@ -190,9 +188,7 @@ void dt_iop_image_copy_benchmark();
 // load configurable settings from darktablerc
 void dt_iop_image_copy_configure();
 
-#ifdef __cplusplus
-} // extern "C"
-#endif /* __cplusplus */
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

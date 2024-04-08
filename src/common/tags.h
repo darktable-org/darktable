@@ -24,9 +24,7 @@
 
 #include "common/darktable.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+G_BEGIN_DECLS
 
 typedef struct dt_tag_t
 {
@@ -265,9 +263,7 @@ uint32_t dt_tag_get_tag_id_by_name(const char *const name);
 /** init the darktable tags table */
 void dt_set_darktable_tags();
 
-#ifdef __cplusplus
-} // extern "C"
-#endif /* __cplusplus */
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

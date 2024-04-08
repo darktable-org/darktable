@@ -27,10 +27,7 @@
 #define BAR_WIDTH 4
 
 // define GTypes
-G_DEFINE_TYPE(GtkDarktableRangeSelect, _range_select, GTK_TYPE_EVENT_BOX);
-
-static void _range_select_class_init(GtkDarktableRangeSelectClass *klass);
-static void _range_select_init(GtkDarktableRangeSelect *button);
+G_DEFINE_TYPE(GtkDarktableRangeSelect, dtgtk_range_select, GTK_TYPE_EVENT_BOX);
 
 typedef struct _range_date_popup
 {
@@ -167,10 +164,10 @@ static void _range_select_destroy(GtkWidget *widget)
   if(range->cur_help) g_free(range->cur_help);
   range->cur_help = NULL;
 
-  GTK_WIDGET_CLASS(_range_select_parent_class)->destroy(widget);
+  GTK_WIDGET_CLASS(dtgtk_range_select_parent_class)->destroy(widget);
 }
 
-static void _range_select_class_init(GtkDarktableRangeSelectClass *klass)
+static void dtgtk_range_select_class_init(GtkDarktableRangeSelectClass *klass)
 {
   GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
   widget_class->destroy = _range_select_destroy;
@@ -181,7 +178,7 @@ static void _range_select_class_init(GtkDarktableRangeSelectClass *klass)
                                        g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
 }
 
-static void _range_select_init(GtkDarktableRangeSelect *button)
+static void dtgtk_range_select_init(GtkDarktableRangeSelect *button)
 {
 }
 
@@ -1750,11 +1747,6 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
   gtk_widget_set_name((GtkWidget *)range, "dt-range");
 
   return (GtkWidget *)range;
-}
-
-GType dtgtk_range_select_get_type()
-{
-  return _range_select_get_type();
 }
 
 gchar *dtgtk_range_select_get_bounds_pretty(GtkDarktableRangeSelect *range)
