@@ -190,6 +190,7 @@ typedef struct dt_camctl_t
   const dt_camera_t *active_camera;
 
   gboolean import_ui;
+  gboolean changed_camera;
   int ticker;
   int tickmask;
 } dt_camctl_t;
