@@ -283,7 +283,11 @@ static cmsHPROFILE _create_lcms_profile(const char *desc,
                                         const cmsCIExyY *whitepoint,
                                         const cmsCIExyYTRIPLE *primaries,
                                         cmsToneCurve *trc,
+#if LCMS_VERSION >= 2140
                                         const cmsVideoSignalType *cicp,
+#else
+                                        const void *cicp,
+#endif
                                         const gboolean v2)
 {
   cmsMLU *mlu1 = cmsMLUalloc(NULL, 1);
@@ -298,6 +302,8 @@ static cmsHPROFILE _create_lcms_profile(const char *desc,
 #if LCMS_VERSION >= 2140
   else if(cicp)
     cmsWriteTag(profile, cmsSigcicpTag, cicp);
+#else
+  (void)cicp;
 #endif
 
   cmsSetHeaderFlags(profile, cmsEmbeddedProfileTrue);
