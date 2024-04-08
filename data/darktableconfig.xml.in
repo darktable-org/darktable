@@ -2855,11 +2855,12 @@
         <option capability="libsecret">libsecret</option>
         <option capability="kwallet">kwallet</option>
         <option capability="apple_keychain">apple_keychain</option>
+        <option capability="windows_credentials">windows_credentials</option>
       </enum>
     </type>
     <default>auto</default>
     <shortdescription>password storage backend to use</shortdescription>
-    <longdescription>the storage backend for password storage: auto, none, libsecret, kwallet, apple_keychain</longdescription>
+    <longdescription>the storage backend for password storage: auto, none, libsecret, kwallet, apple_keychain, windows_credentials</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/export/icctype</name>

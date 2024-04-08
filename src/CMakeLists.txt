@@ -198,6 +198,9 @@ if(WIN32)
   list(APPEND SOURCE_FILES "win/scandir.c")
   list(APPEND HEADER_FILES "win/scandir.h")
 
+  list(APPEND SOURCE_FILES "common/pwstorage/backend_windows_credentials.c")
+  list(APPEND HEADER_FILES "common/pwstorage/backend_windows_credentials.h")
+
   # Use mingw's sprintf instead of windows's
   ADD_DEFINITIONS( -D__USE_MINGW_ANSI_STDIO=1 )
 
@@ -522,6 +525,10 @@ endif(USE_KWALLET)
 if(APPLE)
   add_definitions("-DHAVE_APPLE_KEYCHAIN")
 endif(APPLE)
+
+if(WIN32)
+  add_definitions("-DHAVE_WINDOWS_CREDENTIALS")
+endif(WIN32)
 
 if(USE_MAC_INTEGRATION)
   find_package(MacIntegration)
