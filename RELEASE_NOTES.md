@@ -105,6 +105,8 @@ changes (where available).
   filled automatically for new imports. For existing photos please
   perform a "refresh EXIF" on the selected images.
 
+- Added Windows credential manager password storage backend.
+
 ## Bug Fixes
 
 - Fix copy of multiple instances to ensure the proper order is applied
