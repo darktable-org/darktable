@@ -93,7 +93,7 @@ gboolean dt_pwstorage_windows_credentials_set(const backend_windows_credentials_
     CredDeleteW((LPWSTR) target_name, CRED_TYPE_GENERIC, 0);
 
     // create new entry
-    DWORD cbCreds = 1 + strlen(password);
+    const DWORD cbCreds = 1 + strlen(password);
 
     CREDENTIALW cred = { 0 };
     cred.Type = CRED_TYPE_GENERIC;
