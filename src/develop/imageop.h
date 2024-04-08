@@ -29,9 +29,7 @@
 #include "common/action.h"
 #include "control/settings.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+G_BEGIN_DECLS
 
 /** region of interest, needed by pixelpipe.h */
 typedef struct dt_iop_roi_t
@@ -40,9 +38,7 @@ typedef struct dt_iop_roi_t
   float scale;
 } dt_iop_roi_t;
 
-#ifdef __cplusplus
-} // extern "C"
-#endif /* __cplusplus */
+G_END_DECLS
 
 #include "develop/pixelpipe.h"
 #include "dtgtk/togglebutton.h"
@@ -57,9 +53,7 @@ typedef struct dt_iop_roi_t
 #endif
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+G_BEGIN_DECLS
 
 struct dt_develop_t;
 struct dt_dev_pixelpipe_t;
@@ -671,9 +665,7 @@ static inline void dt_mm_restore_flush_zero(const unsigned int mode)
 
 #endif /* __SSE2__ */
 
-#ifdef __cplusplus
-} // extern "C"
-#endif /* __cplusplus */
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

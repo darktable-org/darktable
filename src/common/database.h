@@ -21,9 +21,7 @@
 #include <glib.h>
 #include <stdint.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+G_BEGIN_DECLS
 
 struct dt_database_t;
 
@@ -67,9 +65,7 @@ void dt_database_rollback_transaction(const struct dt_database_t *db);
 
 void dt_upgrade_maker_model(const struct dt_database_t *db);
 
-#ifdef __cplusplus
-} // extern "C"
-#endif /* __cplusplus */
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

@@ -20,9 +20,7 @@
 
 #include <glib-object.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+G_BEGIN_DECLS
 
 /** \brief enum of signals to listen for in darktable.
     \note To add a new signal, first off add a enum and
@@ -335,9 +333,7 @@ void dt_control_signal_unblock_by_func(const struct dt_control_signal_t *ctlsig,
     dt_control_signal_disconnect(ctlsig, cb, user_data);                                                                         \
   } while (0)
 
-#ifdef __cplusplus
-} // extern "C"
-#endif /* __cplusplus */
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

@@ -19,18 +19,17 @@
 #include "gui/gtk.h"
 #include <string.h>
 
-static void _icon_class_init(GtkDarktableIconClass *klass);
-static void _icon_init(GtkDarktableIcon *icon);
+G_DEFINE_TYPE(GtkDarktableIcon, dtgtk_icon, GTK_TYPE_EVENT_BOX);
+
 static gboolean _icon_draw(GtkWidget *widget, cairo_t *cr);
 
-
-static void _icon_class_init(GtkDarktableIconClass *klass)
+static void dtgtk_icon_class_init(GtkDarktableIconClass *klass)
 {
   GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
   widget_class->draw = _icon_draw;
 }
 
-static void _icon_init(GtkDarktableIcon *icon)
+static void dtgtk_icon_init(GtkDarktableIcon *icon)
 {
 }
 
@@ -70,23 +69,6 @@ GtkWidget *dtgtk_icon_new(DTGTKCairoPaintIconFunc paint, gint paintflags, void *
   icon->icon_data = paintdata;
   gtk_widget_set_name(GTK_WIDGET(icon), "dt-icon");
   return (GtkWidget *)icon;
-}
-
-GType dtgtk_icon_get_type()
-{
-  static GType dtgtk_icon_type = 0;
-  if(!dtgtk_icon_type)
-  {
-    static const GTypeInfo dtgtk_icon_info = {
-      sizeof(GtkDarktableIconClass), (GBaseInitFunc)NULL, (GBaseFinalizeFunc)NULL,
-      (GClassInitFunc)_icon_class_init, NULL, /* class_finalize */
-      NULL,                                   /* class_data */
-      sizeof(GtkDarktableIcon), 0,            /* n_preallocs */
-      (GInstanceInitFunc)_icon_init,
-    };
-    dtgtk_icon_type = g_type_register_static(GTK_TYPE_EVENT_BOX, "GtkDarktableIcon", &dtgtk_icon_info, 0);
-  }
-  return dtgtk_icon_type;
 }
 
 void dtgtk_icon_set_paint(GtkWidget *icon, DTGTKCairoPaintIconFunc paint, gint paintflags, void *paintdata)

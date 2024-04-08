@@ -23,14 +23,8 @@
 
 G_BEGIN_DECLS
 
-#define DTGTK_TYPE_EXPANDER (dtgtk_expander_get_type())
-#define DTGTK_EXPANDER(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj), DTGTK_TYPE_EXPANDER, GtkDarktableExpander))
-#define DTGTK_IS_EXPANDER(obj) (G_TYPE_CHECK_INSTANCE_TYPE((obj), DTGTK_TYPE_EXPANDER))
-#define DTGTK_EXPANDER_CLASS(klass)                                                                          \
-  (G_TYPE_CHECK_CLASS_CAST((klass), DTGTK_TYPE_EXPANDER, GtkDarktableExpanderClass))
-#define DTGTK_IS_EXPANDER_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), DTGTK_TYPE_EXPANDER))
-#define DTGTK_EXPANDER_GET_CLASS(obj)                                                                        \
-  (G_TYPE_INSTANCE_GET_CLASS((obj), DTGTK_TYPE_EXPANDER, GtkDarktableExpanderClass))
+#define DTGTK_TYPE_EXPANDER dtgtk_expander_get_type()
+G_DECLARE_FINAL_TYPE(GtkDarktableExpander, dtgtk_expander, DTGTK, EXPANDER, GtkBox)
 
 typedef struct _GtkDarktableExpander
 {
@@ -42,13 +36,6 @@ typedef struct _GtkDarktableExpander
   GtkWidget *body;
   GtkWidget *body_evb;
 } GtkDarktableExpander;
-
-typedef struct _GtkDarktableExpanderClass
-{
-  GtkBoxClass parent_class;
-} GtkDarktableExpanderClass;
-
-GType dtgtk_expander_get_type(void);
 
 GtkWidget *dtgtk_expander_get_frame(GtkDarktableExpander *expander);
 GtkWidget *dtgtk_expander_get_header(GtkDarktableExpander *expander);

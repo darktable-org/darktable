@@ -20,9 +20,7 @@
 #include <glib.h>
 #include "common/image.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+G_BEGIN_DECLS
 
 #define DT_DATETIME_EXIF_LENGTH 20  // exif format string length
 
@@ -153,9 +151,7 @@ gboolean dt_datetime_exif_add_numbers(const gchar *exif,
                                       const gboolean add,
                                       gchar **result);
 
-#ifdef __cplusplus
-} // extern "C"
-#endif /* __cplusplus */
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
