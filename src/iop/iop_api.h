@@ -184,9 +184,6 @@ OPTIONAL(int, scrolled, struct dt_iop_module_t *self,
                         float y,
                         int up,
                         uint32_t state);
-OPTIONAL(void, configure, struct dt_iop_module_t *self,
-                          int width,
-                          int height);
 
 OPTIONAL(void, init, struct dt_iop_module_t *self); // this MUST set params_size!
 DEFAULT(void, cleanup, struct dt_iop_module_t *self);
