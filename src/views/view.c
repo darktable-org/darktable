@@ -1744,7 +1744,7 @@ void dt_view_paint_surface(cairo_t *cr,
 
   if(dev->preview_pipe->output_imgid == dev->image_storage.id
      && (port->pipe->output_imgid != dev->image_storage.id
-         || backbuf_scale != buf_scale
+         || fabsf(backbuf_scale / buf_scale - 1.0f) > .09f
          || floor(maxw / 2 / back_scale) - 1 > MIN(- trans_x, trans_x + buf_width)
          || floor(maxh / 2 / back_scale) - 1 > MIN(- trans_y, trans_y + buf_height))
      && (port == &dev->full || port == &dev->preview2))
