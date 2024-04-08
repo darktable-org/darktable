@@ -386,7 +386,7 @@ typedef struct darktable_t
   struct dt_bauhaus_t *bauhaus;
   const struct dt_database_t *db;
   const struct dt_pwstorage_t *pwstorage;
-  const struct dt_camctl_t *camctl;
+  struct dt_camctl_t *camctl;
   const struct dt_collection_t *collection;
   struct dt_selection_t *selection;
   struct dt_points_t *points;
