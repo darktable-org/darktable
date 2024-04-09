@@ -574,8 +574,9 @@ static inline gboolean dt_opencl_is_enabled(void)
 {
   return FALSE;
 }
-static inline void dt_opencl_disable(void)
+static inline gboolean dt_opencl_running(void)
 {
+  return FALSE;
 }
 static inline void dt_opencl_update_settings(void)
 {
@@ -620,4 +621,3 @@ static inline int dt_opencl_events_flush(const int devid, const gboolean reset)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
