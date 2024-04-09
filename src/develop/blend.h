@@ -231,6 +231,7 @@ typedef struct dt_blendop_cl_global_t
   int kernel_blendop_mask_rgb_jzczhz;
   int kernel_blendop_Lab;
   int kernel_blendop_RAW;
+  int kernel_blendop_RAW4;
   int kernel_blendop_rgb_hsl;
   int kernel_blendop_rgb_jzczhz;
   int kernel_blendop_mask_tone_curve;

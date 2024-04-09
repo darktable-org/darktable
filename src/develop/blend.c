@@ -1064,7 +1064,8 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
   switch(blend_csp)
   {
     case DEVELOP_BLEND_CS_RAW:
-      kernel = darktable.opencl->blendop->kernel_blendop_RAW;
+      kernel = ch == 1  ? darktable.opencl->blendop->kernel_blendop_RAW
+                        : darktable.opencl->blendop->kernel_blendop_RAW4;
       kernel_mask = darktable.opencl->blendop->kernel_blendop_mask_RAW;
       break;
 
@@ -1584,6 +1585,8 @@ dt_blendop_cl_global_t *dt_develop_blend_init_cl_global(void)
     dt_opencl_create_kernel(program, "blendop_Lab");
   b->kernel_blendop_RAW =
     dt_opencl_create_kernel(program, "blendop_RAW");
+  b->kernel_blendop_RAW4 =
+    dt_opencl_create_kernel(program, "blendop_RAW4");
   b->kernel_blendop_rgb_hsl =
     dt_opencl_create_kernel(program, "blendop_rgb_hsl");
   b->kernel_blendop_rgb_jzczhz =
@@ -1627,6 +1630,7 @@ void dt_develop_blend_free_cl_global(dt_blendop_cl_global_t *b)
   dt_opencl_free_kernel(b->kernel_blendop_mask_rgb_jzczhz);
   dt_opencl_free_kernel(b->kernel_blendop_Lab);
   dt_opencl_free_kernel(b->kernel_blendop_RAW);
+  dt_opencl_free_kernel(b->kernel_blendop_RAW4);
   dt_opencl_free_kernel(b->kernel_blendop_rgb_hsl);
   dt_opencl_free_kernel(b->kernel_blendop_rgb_jzczhz);
   dt_opencl_free_kernel(b->kernel_blendop_mask_tone_curve);
