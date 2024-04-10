@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1152,11 +1152,13 @@ gboolean dt_iop_so_is_hidden(dt_iop_module_so_t *module)
   if(!(module->flags() & IOP_FLAGS_HIDDEN))
   {
     if(!module->gui_init)
-      g_debug("Module '%s' is not hidden and lacks implementation of gui_init()...",
-              module->op);
+      dt_print(DT_DEBUG_ALWAYS,
+               "Module '%s' is not hidden and lacks implementation of gui_init()...",
+               module->op);
     else if(!module->gui_cleanup)
-      g_debug("Module '%s' is not hidden and lacks implementation of gui_cleanup()...",
-              module->op);
+      dt_print(DT_DEBUG_ALWAYS,
+               "Module '%s' is not hidden and lacks implementation of gui_cleanup()...",
+               module->op);
     else
       is_hidden = FALSE;
   }
