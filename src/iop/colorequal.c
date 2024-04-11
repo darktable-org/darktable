@@ -1697,7 +1697,12 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   }
 }
 
-#define NPICKERS 16
+static inline float _get_hueval(const float hue)
+{
+  const float b = hue - ANGLE_SHIFT / 360.0f;
+  return b < 0.0f ? b + 1.0f : b;
+}
+#define MINJZ 0.0001f
 static void _draw_color_picker(dt_iop_module_t *self,
                                cairo_t *cr,
                                dt_iop_colorequal_params_t *p,
@@ -1705,96 +1710,27 @@ static void _draw_color_picker(dt_iop_module_t *self,
                                const double width,
                                const double height)
 {
-  gboolean done = 0;
-  float ihue_av[NPICKERS]  = { 0.0f };
-
-  if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
+  if(!(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE))
+    return;
+  if(self->picked_color[0] > MINJZ
+    && self->picked_color[1] > MINJZ)
   {
-    // the global live samples ...
-    GSList *samples = darktable.lib->proxy.colorpicker.live_samples;
-    if(samples)
+    if(  self->picked_color_min[0] > MINJZ
+      && self->picked_color_max[0] > MINJZ)
     {
-      const dt_iop_order_iccprofile_info_t *const histogram_profile
-          = dt_ioppr_get_histogram_profile_info(self->dev);
-      const dt_iop_order_iccprofile_info_t *const work_profile
-          = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
-      dt_aligned_pixel_t pick_mean;
-      int converted_cst;
-
-      if(work_profile && histogram_profile)
-      {
-        dt_colorpicker_sample_t *sample = NULL;
-        for(; samples; samples = g_slist_next(samples))
-        {
-          sample = samples->data;
-
-          // this functions need a 4c image
-          for(int k = 0; k < 3; k++)
-             pick_mean[k] = sample->scope[DT_PICK_MEAN][k];
-          pick_mean[3] = 1.0f;
-
-          dt_ioppr_transform_image_colorspace_rgb(pick_mean, pick_mean,
-                                                  1, 1, histogram_profile, work_profile,
-                                                  "color equalizer");
-
-          dt_ioppr_transform_image_colorspace(self, pick_mean, pick_mean,
-                                              1, 1, IOP_CS_RGB, IOP_CS_LAB,
-                                              &converted_cst, work_profile);
-
-          dt_Lab_2_LCH(pick_mean, pick_mean);
-
-          // leave at least one slot for current picker and only show if relevant
-          if((done < NPICKERS - 2) && (pick_mean[0] > 0.01f))
-          {
-            ihue_av[done] = pick_mean[2];
-            done++;
-          }
-        }
-      }
-    }
-  }
-
-  float hue_min = -1.0f; // mark as unvalid for now
-  float hue_max = -1.0f;
-  if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
-  {
-    if(self->picked_color[2] > 0.01f)
-    {
-      ihue_av[done] = self->picked_color[0];
-      if(  self->picked_color_min[2] > 0.01f
-        && self->picked_color_max[2] > 0.01f)
-      {
-        hue_min = self->picked_color_min[0];
-        hue_max = self->picked_color_max[0];
-      }
-      done++;
-    }
-  }
-
-  if(done)
-  {
-    if(hue_max > 0.0f)
-    {
-      hue_max = hue_max * width;
-      hue_min = hue_min * width;
-
+      const float hue_max = _get_hueval(self->picked_color_max[2]);
+      const float hue_min = _get_hueval(self->picked_color_min[2]);
       cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.25);
-      cairo_rectangle(cr, hue_min, 0.0, fmax(hue_max - hue_min, 0.0), height);
+      cairo_rectangle(cr, width * hue_min, 0.0, width * fmax(hue_max - hue_min, 0.0), height);
       cairo_fill(cr);
     }
-
-    cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
-    cairo_set_operator(cr, CAIRO_OPERATOR_XOR);
-    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
-    for(int i = 0; i < done; i++)
-    {
-      cairo_move_to(cr, ihue_av[i] * width, 0.0);
-      cairo_line_to(cr, ihue_av[i] * width, height);
-      cairo_stroke(cr);
-    }
+    const float hue = _get_hueval(self->picked_color[2]);
+    cairo_move_to(cr, width * hue, 0.0);
+    cairo_line_to(cr, width * hue, height);
+    cairo_stroke(cr);
   }
 }
-#undef NPICKERS
+#undef MINJZ
 
 static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
                                          cairo_t *crf,
@@ -2533,9 +2469,9 @@ void gui_init(struct dt_iop_module_t *self)
                               _("shift nodes to lower or higher hue"));
 
   g->colorpicker = dt_color_picker_new_with_cst(self, DT_COLOR_PICKER_POINT_AREA | DT_COLOR_PICKER_DENOISE,
-                                                g->hue_shift, IOP_CS_HSL);
+                                                g->hue_shift, IOP_CS_JZCZHZ);
   dt_bauhaus_widget_set_quad_tooltip(g->colorpicker,
-     _("pick hue from image and visualize all pickers\nctrl+click to select an area"));
+     _("pick hue from image\nctrl+click to select an area"));
   g_signal_connect(G_OBJECT(g->colorpicker), "quad-pressed", G_CALLBACK(_picker_callback), self);
   gtk_widget_set_name(g->colorpicker, "keep-active");
   g->picking = FALSE;
