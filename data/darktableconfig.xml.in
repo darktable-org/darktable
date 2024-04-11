@@ -215,7 +215,7 @@
     </type>
     <default>default</default>
     <shortdescription>darktable resources</shortdescription>
-    <longdescription>defines how much darktable may take from your system resources:\n - 'default': darktable takes ~50% of your systems resources and gives darktable enough to be still performant.\n - 'small': should be used if you are simultaneously running applications taking large parts of your systems memory or OpenCL/GL applications like games or Hugin.\n - 'large': is the best option if you are mainly using darktable and want it to take most of your systems resources for performance.</longdescription>
+    <longdescription>defines how much darktable may take from your system resources:\n - 'default': darktable takes ~50% of your systems resources, which is enough to be performant.\n - 'small': should be used if you are simultaneously running applications taking large parts of your systems memory or OpenCL/GL applications like games or Hugin.\n - 'large': is the best option if you are mainly using darktable and want it to take most of your systems resources for performance.</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="cpugpu">
     <name>ui/performance</name>
