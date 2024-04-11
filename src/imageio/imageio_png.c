@@ -258,12 +258,7 @@ int dt_imageio_png_read_profile(const char *filename, uint8_t **out, dt_colorspa
   dt_imageio_png_t image;
   png_charp name;
   png_uint_32 proflen = 0;
-
-#if PNG_LIBPNG_VER >= 10500 /* 1.5.0 */
   png_bytep profile;
-#else
-  png_charp profile;
-#endif
 
   if(!(filename && *filename)) return 0;
 
