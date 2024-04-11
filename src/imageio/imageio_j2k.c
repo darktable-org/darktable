@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2023 darktable developers.
+    Copyright (C) 2012-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -178,7 +178,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
     opj_stream_destroy(d_stream);
     opj_destroy_codec(d_codec);
     opj_image_destroy(image);
-    return EXIT_FAILURE;
+    return DT_IMAGEIO_LOAD_FAILED;
   }
 
   /* Get the decoded image */
@@ -206,15 +206,19 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
     color_sycc_to_rgb(image);
   }
 
-  if(image->icc_profile_buf)
+  if(image->color_space != OPJ_CLRSPC_SRGB && image->color_space != OPJ_CLRSPC_GRAY)
   {
-#if defined(HAVE_LIBLCMS1) || defined(HAVE_LIBLCMS2)
-    color_apply_icc_profile(image);
-#endif
+    dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: unsupported color space for image `%s'\n", filename);
+    ret = DT_IMAGEIO_LOAD_FAILED;
+    goto end_of_the_world;
+  }
 
-    free(image->icc_profile_buf);
-    image->icc_profile_buf = NULL;
-    image->icc_profile_len = 0;
+  /* Get the ICC profile if available */
+  if(image->icc_profile_len > 0 && image->icc_profile_buf)
+  {
+    img->profile = (uint8_t *)g_malloc0(image->icc_profile_len);
+    memcpy(img->profile, image->icc_profile_buf, image->icc_profile_len);
+    img->profile_size = image->icc_profile_len;
   }
 
   /* create output image */
@@ -383,21 +387,21 @@ int dt_imageio_j2k_read_profile(const char *filename, uint8_t **out)
   if(!d_codec)
   {
     dt_print(DT_DEBUG_ALWAYS, "[j2k_read_profile] Error: failed to create the decoder\n");
-    return DT_IMAGEIO_LOAD_FAILED;
+    goto another_end_of_the_world;
   }
 
   /* setup the decoder decoding parameters using user parameters */
   if(!opj_setup_decoder(d_codec, &parameters))
   {
     dt_print(DT_DEBUG_ALWAYS, "[j2k_read_profile] Error: failed to setup the decoder %s\n", parameters.infile);
-    return DT_IMAGEIO_LOAD_FAILED;
+    goto another_end_of_the_world;
   }
 
   d_stream = opj_stream_create_default_file_stream(parameters.infile, 1);
   if(!d_stream)
   {
     dt_print(DT_DEBUG_ALWAYS, "[j2k_read_profile] Error: failed to create the stream from the file %s\n", parameters.infile);
-    return DT_IMAGEIO_LOAD_FAILED;
+    goto another_end_of_the_world;
   }
 
   /* Read the main header of the codestream and if necessary the JP2 boxes*/
@@ -405,19 +409,15 @@ int dt_imageio_j2k_read_profile(const char *filename, uint8_t **out)
   {
     dt_print(DT_DEBUG_ALWAYS, "[j2k_read_profile] Error: failed to read the header\n");
     opj_stream_destroy(d_stream);
-    opj_destroy_codec(d_codec);
-    opj_image_destroy(image);
-    return EXIT_FAILURE;
+    goto another_end_of_the_world;
   }
 
   /* Get the decoded image */
   if(!(opj_decode(d_codec, d_stream, image) && opj_end_decompress(d_codec, d_stream)))
   {
     dt_print(DT_DEBUG_ALWAYS, "[j2k_read_profile] Error: failed to decode image!\n");
-    opj_destroy_codec(d_codec);
     opj_stream_destroy(d_stream);
-    opj_image_destroy(image);
-    return DT_IMAGEIO_LOAD_FAILED;
+    goto another_end_of_the_world;
   }
 
   // FIXME: how to do it without fully-decoding the whole image?
