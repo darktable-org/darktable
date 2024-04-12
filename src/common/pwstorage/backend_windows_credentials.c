@@ -21,6 +21,24 @@
 
 #include <wincred.h>
 
+static void _logError(const char* action)
+{
+    int error = GetLastError();
+    char message[1024];
+
+    FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                  NULL,
+                  error,
+                  MAKELANGID(LANG_ENGLISH, SUBLANG_DEFAULT),
+                  (LPTSTR) message,
+                  sizeof(message),
+                  NULL);
+
+    dt_print(DT_DEBUG_PWSTORAGE, "[%s] ERROR: failed to complete windows_credential call: %s\n",
+             action,
+             message);
+}
+
 const backend_windows_credentials_context_t *dt_pwstorage_windows_credentials_new()
 {
   // no context needed for windows credentials manager
@@ -36,7 +54,7 @@ gboolean dt_pwstorage_windows_credentials_set(const backend_windows_credentials_
                                               const gchar *slot,
                                               GHashTable *table)
 {
-  gboolean result = TRUE;
+  gboolean ok = TRUE;
   GHashTableIter iter;
   g_hash_table_iter_init(&iter, table);
   gpointer key, value;
@@ -90,23 +108,27 @@ gboolean dt_pwstorage_windows_credentials_set(const backend_windows_credentials_
     gchar *password = g_strdup((gchar *) g_hash_table_lookup(v_attributes, "password"));
 
     // delete existing entry
-    CredDeleteW((LPWSTR) target_name,
-                CRED_TYPE_GENERIC,
-                0);
+    CredDelete((LPCTSTR) target_name,
+               CRED_TYPE_GENERIC,
+               0);
 
     // create new entry
-    const DWORD cbCreds = strlen(password) + 1;
+    const DWORD cbCreds = g_utf8_strlen(password, -1) + 1;
 
-    CREDENTIALW cred = { 0 };
+    CREDENTIAL cred = { 0 };
     cred.Type = CRED_TYPE_GENERIC;
-    cred.TargetName = (LPWSTR) target_name;
+    cred.TargetName = (LPTSTR) target_name;
     cred.CredentialBlobSize = cbCreds;
     cred.CredentialBlob = (LPBYTE) password;
     cred.Persist = CRED_PERSIST_LOCAL_MACHINE;
-    cred.Comment = (LPWSTR) server;
-    cred.UserName = (LPWSTR) username;
+    cred.Comment = (LPTSTR) server;
+    cred.UserName = (LPTSTR) username;
 
-    result = CredWriteW(&cred, 0);
+    ok = CredWrite(&cred, 0);
+    if(!ok)
+    {
+      _logError("pwstorage_windows_credentials_set");
+    }
 
     g_free(server);
     g_free(username);
@@ -114,7 +136,7 @@ gboolean dt_pwstorage_windows_credentials_set(const backend_windows_credentials_
     g_free(target_name);
   }
 
-  return result;
+  return ok;
 }
 
 GHashTable *dt_pwstorage_windows_credentials_get(const backend_windows_credentials_context_t *context, const gchar *slot)
@@ -123,11 +145,11 @@ GHashTable *dt_pwstorage_windows_credentials_get(const backend_windows_credentia
 
   gchar *target_name = g_strconcat("darktable - ", slot, NULL);
 
-  PCREDENTIALW pcred;
-  gboolean ok = CredReadW((LPWSTR) target_name,
-                          CRED_TYPE_GENERIC,
-                          0,
-                          &pcred);
+  PCREDENTIAL pcred;
+  gboolean ok = CredRead((LPCTSTR) target_name,
+                         CRED_TYPE_GENERIC,
+                         0,
+                         &pcred);
 
   if(ok)
   {
@@ -153,9 +175,14 @@ GHashTable *dt_pwstorage_windows_credentials_get(const backend_windows_credentia
     dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_windows_credentials_get] reading (%s, %s)\n", (gchar*) pcred->Comment, json_data);
 
     g_hash_table_insert(table, g_strdup((gchar*) pcred->Comment), g_strdup(json_data));
+  
+    CredFree(pcred);
   }
-
-  CredFree (pcred);
+  else
+  {
+    _logError("pwstorage_windows_credentials_get");
+  }
+  
   g_free(target_name);
 
   return table;
