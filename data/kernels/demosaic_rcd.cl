@@ -338,32 +338,6 @@ __kernel void calc_scharr_mask(global float *in, global float *out, const int w,
   out[oidx] = gradient_magnitude / 16.0f;
 }
 
-__kernel void write_scharr_mask(global float *in, global float *out, const int w, const int height)
-{
-  const int col = get_global_id(0);
-  const int row = get_global_id(1);
-  if((col >= w) || (row >= height)) return;
-
-  const int oidx = mad24(row, w, col);
-
-  int incol = col < 1 ? 1 : col;
-  incol = col > w - 2 ? w - 2 : incol;
-  int inrow = row < 1 ? 1 : row;
-  inrow = row > height - 2 ? height - 2 : inrow;
-
-  const int idx = mad24(inrow, w, incol);
-
-  // scharr operator
-  const float gx = 47.0f * (in[idx-w-1] - in[idx-w+1])
-                + 162.0f * (in[idx-1]   - in[idx+1])
-                 + 47.0f * (in[idx+w-1] - in[idx+w+1]);
-  const float gy = 47.0f * (in[idx-w-1] - in[idx+w-1])
-                + 162.0f * (in[idx-w]   - in[idx+w])
-                 + 47.0f * (in[idx-w+1] - in[idx+w+1]);
-  const float gradient_magnitude = native_sqrt(sqrf(gx / 256.0f) + sqrf(gy / 256.0f));
-  out[idx] = gradient_magnitude / 16.0f;
-}
-
 __kernel void calc_detail_blend(global float *in, global float *out, const int w, const int height, const float threshold, const int detail)
 {
   const int col = get_global_id(0);

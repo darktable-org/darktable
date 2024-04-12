@@ -3031,7 +3031,7 @@ int dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
   if(err != CL_SUCCESS) goto error;
 
   err = dt_opencl_enqueue_kernel_2d_args
-      (devid, darktable.opencl->blendop->kernel_write_scharr_mask, clwidth, clheight,
+      (devid, darktable.opencl->blendop->kernel_calc_scharr_mask, clwidth, clheight,
        CLARG(tmp), CLARG(out), CLARG(width), CLARG(height));
   if(err != CL_SUCCESS) goto error;
 
