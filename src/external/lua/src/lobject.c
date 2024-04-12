@@ -62,7 +62,7 @@ static lua_Integer intarith (lua_State *L, int op, lua_Integer v1,
     case LUA_OPBOR: return intop(|, v1, v2);
     case LUA_OPBXOR: return intop(^, v1, v2);
     case LUA_OPSHL: return luaV_shiftl(v1, v2);
-    case LUA_OPSHR: return luaV_shiftl(v1, -v2);
+    case LUA_OPSHR: return luaV_shiftr(v1, v2);
     case LUA_OPUNM: return intop(-, 0, v1);
     case LUA_OPBNOT: return intop(^, ~l_castS2U(0), v1);
     default: lua_assert(0); return 0;
@@ -164,7 +164,7 @@ static int isneg (const char **s) {
 */
 static lua_Number lua_strx2number (const char *s, char **endptr) {
   int dot = lua_getlocaledecpoint();
-  lua_Number r = 0.0;  /* result (accumulator) */
+  lua_Number r = l_mathop(0.0);  /* result (accumulator) */
   int sigdig = 0;  /* number of significant digits */
   int nosigdig = 0;  /* number of non-significant digits */
   int e = 0;  /* exponent correction */
@@ -174,7 +174,7 @@ static lua_Number lua_strx2number (const char *s, char **endptr) {
   while (lisspace(cast_uchar(*s))) s++;  /* skip initial spaces */
   neg = isneg(&s);  /* check sign */
   if (!(*s == '0' && (*(s + 1) == 'x' || *(s + 1) == 'X')))  /* check '0x' */
-    return 0.0;  /* invalid format (no '0x') */
+    return l_mathop(0.0);  /* invalid format (no '0x') */
   for (s += 2; ; s++) {  /* skip '0x' and read numeral */
     if (*s == dot) {
       if (hasdot) break;  /* second dot? stop loop */
@@ -184,14 +184,14 @@ static lua_Number lua_strx2number (const char *s, char **endptr) {
       if (sigdig == 0 && *s == '0')  /* non-significant digit (zero)? */
         nosigdig++;
       else if (++sigdig <= MAXSIGDIG)  /* can read it without overflow? */
-          r = (r * cast_num(16.0)) + luaO_hexavalue(*s);
+          r = (r * l_mathop(16.0)) + luaO_hexavalue(*s);
       else e++; /* too many digits; ignore, but still count for exponent */
       if (hasdot) e--;  /* decimal digit? correct exponent */
     }
     else break;  /* neither a dot nor a digit */
   }
   if (nosigdig + sigdig == 0)  /* no digits? */
-    return 0.0;  /* invalid format */
+    return l_mathop(0.0);  /* invalid format */
   *endptr = cast_charp(s);  /* valid up to here */
   e *= 4;  /* each digit multiplies/divides value by 2^4 */
   if (*s == 'p' || *s == 'P') {  /* exponent part? */
@@ -200,7 +200,7 @@ static lua_Number lua_strx2number (const char *s, char **endptr) {
     s++;  /* skip 'p' */
     neg1 = isneg(&s);  /* sign */
     if (!lisdigit(cast_uchar(*s)))
-      return 0.0;  /* invalid; must have at least one digit */
+      return l_mathop(0.0);  /* invalid; must have at least one digit */
     while (lisdigit(cast_uchar(*s)))  /* read exponent */
       exp1 = exp1 * 10 + *(s++) - '0';
     if (neg1) exp1 = -exp1;
@@ -386,29 +386,39 @@ void luaO_tostring (lua_State *L, TValue *obj) {
 ** ===================================================================
 */
 
-/* size for buffer space used by 'luaO_pushvfstring' */
-#define BUFVFS		200
+/*
+** Size for buffer space used by 'luaO_pushvfstring'. It should be
+** (LUA_IDSIZE + MAXNUMBER2STR) + a minimal space for basic messages,
+** so that 'luaG_addinfo' can work directly on the buffer.
+*/
+#define BUFVFS		(LUA_IDSIZE + MAXNUMBER2STR + 95)
 
 /* buffer used by 'luaO_pushvfstring' */
 typedef struct BuffFS {
   lua_State *L;
-  int pushed;  /* number of string pieces already on the stack */
+  int pushed;  /* true if there is a part of the result on the stack */
   int blen;  /* length of partial string in 'space' */
   char space[BUFVFS];  /* holds last part of the result */
 } BuffFS;
 
 
 /*
-** Push given string to the stack, as part of the buffer, and
-** join the partial strings in the stack into one.
+** Push given string to the stack, as part of the result, and
+** join it to previous partial result if there is one.
+** It may call 'luaV_concat' while using one slot from EXTRA_STACK.
+** This call cannot invoke metamethods, as both operands must be
+** strings. It can, however, raise an error if the result is too
+** long. In that case, 'luaV_concat' frees the extra slot before
+** raising the error.
 */
-static void pushstr (BuffFS *buff, const char *str, size_t l) {
+static void pushstr (BuffFS *buff, const char *str, size_t lstr) {
   lua_State *L = buff->L;
-  setsvalue2s(L, L->top, luaS_newlstr(L, str, l));
-  L->top++;  /* may use one extra slot */
-  buff->pushed++;
-  luaV_concat(L, buff->pushed);  /* join partial results into one */
-  buff->pushed = 1;
+  setsvalue2s(L, L->top.p, luaS_newlstr(L, str, lstr));
+  L->top.p++;  /* may use one slot from EXTRA_STACK */
+  if (!buff->pushed)  /* no previous string on the stack? */
+    buff->pushed = 1;  /* now there is one */
+  else  /* join previous string with new one */
+    luaV_concat(L, 2);
 }
 
 
@@ -454,7 +464,7 @@ static void addstr2buff (BuffFS *buff, const char *str, size_t slen) {
 
 
 /*
-** Add a number to the buffer.
+** Add a numeral to the buffer.
 */
 static void addnum2buff (BuffFS *buff, TValue *num) {
   char *numbuff = getbuff(buff, MAXNUMBER2STR);
@@ -532,7 +542,7 @@ const char *luaO_pushvfstring (lua_State *L, const char *fmt, va_list argp) {
   addstr2buff(&buff, fmt, strlen(fmt));  /* rest of 'fmt' */
   clearbuff(&buff);  /* empty buffer into the stack */
   lua_assert(buff.pushed == 1);
-  return svalue(s2v(L->top - 1));
+  return svalue(s2v(L->top.p - 1));
 }
 
 
