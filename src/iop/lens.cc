@@ -1755,9 +1755,9 @@ static void _distort_mask_lf(struct dt_iop_module_t *self,
       // take green channel distortion also for alpha channel
       const float pi0 = bufptr[2] - roi_in->x;
       const float pi1 = bufptr[3] - roi_in->y;
-      *_out = dt_interpolation_compute_sample(interpolation, in, pi0, pi1,
+      *_out = MIN(1.0f, dt_interpolation_compute_sample(interpolation, in, pi0, pi1,
                                               roi_in->width, roi_in->height, 1,
-                                              roi_in->width);
+                                              roi_in->width));
     }
   }
   dt_free_align(buf);
@@ -2833,10 +2833,10 @@ static void _distort_mask_md(struct dt_iop_module_t *self,
       const float xs = dr*cx + w2 - roi_in->x;
       const float ys = dr*cy + h2 - roi_in->y;
       out[y * roi_out->width + x] =
-        dt_interpolation_compute_sample(interpolation, in, xs, ys,
+        MIN(1.0f, dt_interpolation_compute_sample(interpolation, in, xs, ys,
                                         roi_in->width,
                                         roi_in->height,
-                                        1, roi_in->width);
+                                        1, roi_in->width));
     }
   }
 }
