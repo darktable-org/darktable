@@ -306,9 +306,9 @@ __kernel void calc_Y0_mask(global float *mask, __read_only image2d_t in, const i
   const int idx = mad24(row, w, col);
 
   float4 pt = read_imagef(in, sampleri, (int2)(col, row));
-  const float val = ICLAMP(pt.x / red, 0.0f, 1.0f)
-                  + ICLAMP(pt.y / green, 0.0f, 1.0f)
-                  + ICLAMP(pt.z / blue, 0.0f, 1.0f);
+  const float val = fmax(pt.x / red, 0.0f)
+                  + fmax(pt.y / green, 0.0f)
+                  + fmax(pt.z / blue, 0.0f);
   mask[idx] = native_sqrt(val / 3.0f);
 }
 
@@ -326,16 +326,12 @@ __kernel void calc_scharr_mask(global float *in, global float *out, const int w,
   inrow = row > height - 2 ? height - 2 : inrow;
 
   const int idx = mad24(inrow, w, incol);
-
-  // scharr operator
-  const float gx = 47.0f * (in[idx-w-1] - in[idx-w+1])
-                + 162.0f * (in[idx-1]   - in[idx+1])
-                 + 47.0f * (in[idx+w-1] - in[idx+w+1]);
-  const float gy = 47.0f * (in[idx-w-1] - in[idx+w-1])
-                + 162.0f * (in[idx-w]   - in[idx+w])
-                 + 47.0f * (in[idx-w+1] - in[idx+w+1]);
-  const float gradient_magnitude = native_sqrt(sqrf(gx / 256.0f) + sqrf(gy / 256.0f));
-  out[oidx] = gradient_magnitude / 16.0f;
+  const float gx = 47.0f / 255.0f * (in[idx-w-1] - in[idx-w+1] + in[idx+w-1] - in[idx+w+1])
+                + 162.0f / 255.0f * (in[idx-1]   - in[idx+1]);
+  const float gy = 47.0f / 255.0f * (in[idx-w-1] - in[idx+w-1] + in[idx-w+1] - in[idx+w+1])
+                + 162.0f / 255.0f * (in[idx-w]   - in[idx+w]);
+  const float gradient_magnitude = native_sqrt(sqrf(gx) + sqrf(gy));
+  out[oidx] = clamp(gradient_magnitude / 16.0f, 0.0f, 1.0f);
 }
 
 __kernel void calc_detail_blend(global float *in, global float *out, const int w, const int height, const float threshold, const int detail)
@@ -346,7 +342,7 @@ __kernel void calc_detail_blend(global float *in, global float *out, const int w
 
   const int idx = mad24(row, w, col);
 
-  const float blend = ICLAMP(calcBlendFactor(in[idx], threshold), 0.0f, 1.0f);
+  const float blend = clamp(calcBlendFactor(in[idx], threshold), 0.0f, 1.0f);
   out[idx] = detail ? blend : 1.0f - blend;
 }
 
@@ -379,7 +375,7 @@ __kernel void fastblur_mask_9x9(global float *src, global float *out, const int 
                     kern[2] * (src[i -  w - 1] + src[i -  w + 1] + src[i +  w - 1] + src[i +  w + 1]) +
                     kern[1] * (src[i -  w] + src[i - 1] + src[i + 1] + src[i +  w]) +
                     kern[0] * src[i];
-  out[oidx] = ICLAMP(val, 0.0f, 1.0f);
+  out[oidx] = clamp(val, 0.0f, 1.0f);
 }
 
 kernel void rcd_border_green(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
