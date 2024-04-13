@@ -1061,15 +1061,15 @@ static void _apply_global_distortion_map(struct dt_iop_module_t *module,
     {
       if(*row != 0) // point actually warped?
       {
-        if(ch == 1)
-          out_sample[x] = dt_interpolation_compute_sample(interpolation,
+        if(ch == 1) // handle masks
+          out_sample[x] = MIN(1.0f, dt_interpolation_compute_sample(interpolation,
                                                           in,
                                                           x + crealf(*row) - roi_in->x,
                                                           y + cimagf(*row) - roi_in->y,
                                                           roi_in->width,
                                                           roi_in->height,
                                                           ch,
-                                                          ch_width);
+                                                          ch_width));
         else
           dt_interpolation_compute_pixel4c(
             interpolation,
