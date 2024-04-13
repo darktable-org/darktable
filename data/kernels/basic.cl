@@ -2461,7 +2461,9 @@ ashift_bilinear(read_only image2d_t in, write_only image2d_t out, const int widt
   int tx = rx;
   int ty = ry;
 
-  float4 pixel = (tx >= 0 && ty >= 0 && tx < iwidth && ty < iheight) ? read_imagef(in, samplerf, (float2)(rx, ry)) : (float4)0.0f;
+  float4 pixel = (tx >= 0 && ty >= 0 && tx < iwidth && ty < iheight)
+                ? fmax(0.0f, read_imagef(in, samplerf, (float2)(rx, ry)))
+                : (float4)0.0f;
 
   write_imagef (out, (int2)(x, y), pixel);
 }
@@ -2534,7 +2536,9 @@ ashift_bicubic (read_only image2d_t in,
     weight += w;
   }
 
-  pixel = (tx >= 0 && ty >= 0 && tx < iwidth && ty < iheight) ? pixel/weight : (float4)0.0f;
+  pixel = (tx >= 0 && ty >= 0 && tx < iwidth && ty < iheight)
+          ? fmax(0.0f, pixel/weight)
+          : (float4)0.0f;
 
   write_imagef (out, (int2)(x, y), pixel);
 }
@@ -2608,7 +2612,9 @@ ashift_lanczos2(read_only image2d_t in,
     weight += w;
   }
 
-  pixel = (tx >= 0 && ty >= 0 && tx < iwidth && ty < iheight) ? pixel/weight : (float4)0.0f;
+  pixel = (tx >= 0 && ty >= 0 && tx < iwidth && ty < iheight)
+        ? fmax(0.0f, pixel/weight)
+        : (float4)0.0f;
 
   write_imagef (out, (int2)(x, y), pixel);
 }
@@ -2682,8 +2688,9 @@ ashift_lanczos3(read_only image2d_t in,
     weight += w;
   }
 
-  pixel = (tx >= 0 && ty >= 0
-           && tx < iwidth && ty < iheight) ? pixel/weight : (float4)0.0f;
+  pixel = (tx >= 0 && ty >= 0 && tx < iwidth && ty < iheight)
+          ? fmax(0.0f, pixel/weight)
+          : (float4)0.0f;
 
   write_imagef (out, (int2)(x, y), pixel);
 }
