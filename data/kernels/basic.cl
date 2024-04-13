@@ -3,7 +3,7 @@
     copyright (c) 2009-2013 johannes hanika.
     copyright (c) 2014 Ulrich Pegelow.
     copyright (c) 2014 LebedevRI.
-    Copyright (C) 2022-2023 darktable developers.
+    Copyright (C) 2022-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2983,7 +2983,7 @@ static inline float get_image_channel(read_only image2d_t in,
                                       const int y,
                                       const int c)
 {
-  float4 pixel = read_imagef(in, samplerA, (int2)(x, y));
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   if(c == 0)
     return pixel.x;
   else if(c == 1)
@@ -3034,7 +3034,7 @@ float interpolation_compute_sample(read_only image2d_t in,
       }
       s += kernelv[i] * h;
     }
-    return s / (normh * normv);
+    return fmax(0.0f, s / (normh * normv));
   }
   return 0.0f;
 }
