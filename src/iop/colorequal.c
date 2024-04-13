@@ -1697,12 +1697,13 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   }
 }
 
+#define MINJZ 0.0001f
 static inline float _get_hueval(const float hue)
 {
   const float b = hue - ANGLE_SHIFT / 360.0f;
   return b < 0.0f ? b + 1.0f : b;
 }
-#define MINJZ 0.0001f
+// #define CEPICKERDEBUG
 static void _draw_color_picker(dt_iop_module_t *self,
                                cairo_t *cr,
                                dt_iop_colorequal_params_t *p,
@@ -1712,24 +1713,57 @@ static void _draw_color_picker(dt_iop_module_t *self,
 {
   if(!(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE))
     return;
-  if(self->picked_color[0] > MINJZ
-    && self->picked_color[1] > MINJZ)
+
+  // only visualize for decent brightness & saturation
+  if(self->picked_color[0] < MINJZ || self->picked_color[1] < MINJZ)
+    return;
+
+  float mean_alpha = 0.6f;
+
+  float hav  = self->picked_color[2];
+  float hmax = self->picked_color_max[2];
+  float hmin = self->picked_color_min[2];
+
+  const float hava  = self->picked_color[3];
+  const float hmina = self->picked_color_min[3];
+  const float hmaxa = self->picked_color_max[3];
+
+  if(hmax - hmin > hmaxa - hmina)
   {
-    if(  self->picked_color_min[0] > MINJZ
-      && self->picked_color_max[0] > MINJZ)
-    {
-      const float hue_max = _get_hueval(self->picked_color_max[2]);
-      const float hue_min = _get_hueval(self->picked_color_min[2]);
-      cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.25);
-      cairo_rectangle(cr, width * hue_min, 0.0, width * fmax(hue_max - hue_min, 0.0), height);
-      cairo_fill(cr);
-    }
-    const float hue = _get_hueval(self->picked_color[2]);
-    cairo_move_to(cr, width * hue, 0.0);
-    cairo_line_to(cr, width * hue, height);
-    cairo_stroke(cr);
+    hmax = hmaxa < 0.5f ? hmaxa + 0.5f  : hmaxa - 0.5f;
+    hmin = hmina < 0.5f ? hmina + 0.5f  : hmina - 0.5f;
+    hav  = hava < 0.5f  ? hava + 0.5f   : hava - 0.5f;
   }
+
+  const float xmin = width * _get_hueval(hmin);
+  const float xmax = width * _get_hueval(hmax);
+  if(xmax != xmin)
+  {
+    cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.3);
+    mean_alpha -= 0.3f;
+    if(xmax > xmin)
+      cairo_rectangle(cr, xmin, 0.0, xmax - xmin, height);
+    else
+    {
+      cairo_rectangle(cr, 0.0, 0.0, xmax, height);
+      cairo_rectangle(cr, xmin, 0.0, width - xmin, height);
+    }
+    cairo_fill(cr);
+  }
+
+  cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, mean_alpha);
+  const float xav = width * _get_hueval(hav);
+  cairo_move_to(cr, xav, 0.0);
+  cairo_line_to(cr, xav, height);
+  cairo_stroke(cr);
+
+  #ifdef CEPICKERDEBUG
+    fprintf(stderr, "%s picker. av: %f %f %f  min: %f %f %f  max: %f %f %f\n",
+        hmax != self->picked_color_max[2] ? "alternative" : "original",
+        hav, self->picked_color[2], hava, hmin, self->picked_color_min[2], hmina, hmax, self->picked_color_max[2], hmaxa);
+  #endif
 }
+#undef CEPICKERDEBUG
 #undef MINJZ
 
 static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
