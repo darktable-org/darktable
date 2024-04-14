@@ -346,8 +346,8 @@ gboolean dt_imageio_has_mono_preview(const char *filename)
   cleanup:
 
   dt_print(DT_DEBUG_IMAGEIO,
-           "[dt_imageio_has_mono_preview] testing `%s', yes/no %i, %ix%i\n",
-           filename, mono, thumb_width, thumb_height);
+           "[dt_imageio_has_mono_preview] testing `%s', monochrome=%s, %ix%i\n",
+           filename, mono ? "YES" : "FALSE", thumb_width, thumb_height);
   if(tmp)
     dt_free_align(tmp);
   return mono;
@@ -890,30 +890,24 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
 
   if(darktable.unmuted & DT_DEBUG_IMAGEIO)
   {
-    dt_print(DT_DEBUG_ALWAYS,"[dt_imageio_export_with_flags] ");
-    if(use_style)
-    {
-      if(appending)
-        dt_print(DT_DEBUG_ALWAYS,
-                 "appending style `%s'\n", format_params->style);
-      else
-        dt_print(DT_DEBUG_ALWAYS,
-                 "overwrite style `%s'\n", format_params->style);
-    }
-    else
-      dt_print(DT_DEBUG_ALWAYS,"\n");
-
-    int cnt = 0;
+    char mbuf[1024] = { 0 };
     for(GList *nodes = pipe.nodes; nodes; nodes = g_list_next(nodes))
     {
       dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
       if(piece->enabled)
       {
-        cnt++;
-        dt_print(DT_DEBUG_ALWAYS," %s", piece->module->op);
+        const size_t used = strlen(mbuf);
+        snprintf(mbuf + used, sizeof(dev) - used, " %s", piece->module->op);
       }
     }
-    dt_print(DT_DEBUG_ALWAYS," (%i)\n", cnt);
+    dt_print(DT_DEBUG_ALWAYS,"[dt_imageio_export_with_flags] %s%s%s%s%s modules:%s%s\n",
+      use_style && appending  ? "appending style " : "",
+      use_style && !appending ? "appending style " : "",
+      use_style               ? "`" : "",
+      use_style               ? format_params->style : "",
+      use_style               ? "'." : "",
+      mbuf,
+      strlen(mbuf) > 1022 ? " ..." : "");
   }
 
   if(filter)
@@ -1193,7 +1187,7 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
 
     // last param is dng mode, it's false here
     const int length = dt_exif_read_blob(&exif_profile, pathname, imgid, sRGB,
-                                         processed_width, processed_height, 0);
+                                         processed_width, processed_height, FALSE);
 
     res = (format->write_image(format_params, filename, outbuf, icc_type,
                               icc_filename, exif_profile, length, imgid,
