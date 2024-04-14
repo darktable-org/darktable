@@ -1605,8 +1605,6 @@ dt_blendop_cl_global_t *dt_develop_blend_init_cl_global(void)
     dt_opencl_create_kernel(program_rcd, "calc_Y0_mask");
   b->kernel_calc_scharr_mask =
     dt_opencl_create_kernel(program_rcd, "calc_scharr_mask");
-  b->kernel_write_scharr_mask =
-    dt_opencl_create_kernel(program_rcd, "write_scharr_mask");
   b->kernel_calc_blend =
     dt_opencl_create_kernel(program_rcd, "calc_detail_blend");
   b->kernel_mask_blur  =
@@ -1639,7 +1637,6 @@ void dt_develop_blend_free_cl_global(dt_blendop_cl_global_t *b)
   dt_opencl_free_kernel(b->kernel_blendop_highlights_mask);
   dt_opencl_free_kernel(b->kernel_calc_Y0_mask);
   dt_opencl_free_kernel(b->kernel_calc_scharr_mask);
-  dt_opencl_free_kernel(b->kernel_write_scharr_mask);
   dt_opencl_free_kernel(b->kernel_calc_blend);
   dt_opencl_free_kernel(b->kernel_mask_blur);
   free(b);

@@ -1150,10 +1150,10 @@ void distort_mask(struct dt_iop_module_t *self,
       pin[1] -= roi_in->y;
 
       // get output values by interpolation from input image
-      _out[i] = dt_interpolation_compute_sample(interpolation, in,
+      _out[i] = MIN(1.0f, dt_interpolation_compute_sample(interpolation, in,
                                                 pin[0], pin[1],
                                                 roi_in->width, roi_in->height,
-                                                1, roi_in->width);
+                                                1, roi_in->width));
     }
   }
 }

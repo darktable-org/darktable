@@ -239,7 +239,6 @@ typedef struct dt_blendop_cl_global_t
   int kernel_blendop_display_channel;
   int kernel_calc_Y0_mask;
   int kernel_calc_scharr_mask;
-  int kernel_write_scharr_mask;
   int kernel_calc_blend;
   int kernel_mask_blur;
   int kernel_blendop_highlights_mask;
