@@ -2328,7 +2328,7 @@ int process_cl(struct dt_iop_module_t *self,
     }
   }
 
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
   if(piece->colors != 4)
   {
@@ -2339,8 +2339,6 @@ int process_cl(struct dt_iop_module_t *self,
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
-
-  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
   cl_mem input_matrix_cl = dt_opencl_copy_host_to_device_constant
     (devid, 12 * sizeof(float), (float*)work_profile->matrix_in);
@@ -2385,16 +2383,14 @@ int process_cl(struct dt_iop_module_t *self,
     }
   }
 
-  dt_opencl_set_kernel_args
-    (devid, kernel, 0, CLARG(dev_in), CLARG(dev_out),
-     CLARG(width), CLARG(height),
-     CLARG(input_matrix_cl), CLARG(output_matrix_cl),
-     CLARG(MIX_cl), CLARG(d->illuminant), CLARG(d->saturation),
-     CLARG(d->lightness), CLARG(d->grey),
-     CLARG(d->p), CLARG(d->gamut), CLARG(d->clip), CLARG(d->apply_grey),
-     CLARG(d->version));
-
-  err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
+          CLARG(dev_in), CLARG(dev_out),
+          CLARG(width), CLARG(height),
+          CLARG(input_matrix_cl), CLARG(output_matrix_cl),
+          CLARG(MIX_cl), CLARG(d->illuminant), CLARG(d->saturation),
+          CLARG(d->lightness), CLARG(d->grey),
+          CLARG(d->p), CLARG(d->gamut), CLARG(d->clip), CLARG(d->apply_grey),
+          CLARG(d->version));
 
 error:
   dt_opencl_release_mem_object(input_matrix_cl);

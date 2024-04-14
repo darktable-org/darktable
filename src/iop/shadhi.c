@@ -538,8 +538,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int unbound_mask = ((d->shadhi_algo == SHADHI_ALGO_BILATERAL) && (flags & UNBOUND_BILATERAL))
                            || ((d->shadhi_algo == SHADHI_ALGO_GAUSSIAN) && (flags & UNBOUND_GAUSSIAN));
 
-  size_t sizes[3];
-
   dt_gaussian_cl_t *g = NULL;
   dt_bilateral_cl_t *b = NULL;
   cl_mem dev_tmp = NULL;
@@ -590,18 +588,15 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(err != CL_SUCCESS) goto error;
 
   // final mixing step
-  sizes[0] = ROUNDUPDWD(width, devid);
-  sizes[1] = ROUNDUPDHT(height, devid);
-  sizes[2] = 1;
-  dt_opencl_set_kernel_args(devid, gd->kernel_shadows_highlights_mix, 0, CLARG(dev_in), CLARG(dev_tmp),
-    CLARG(dev_out), CLARG(width), CLARG(height), CLARG(shadows), CLARG(highlights), CLARG(compress),
-    CLARG(shadows_ccorrect), CLARG(highlights_ccorrect), CLARG(flags), CLARG(unbound_mask), CLARG(low_approximation),
-    CLARG(whitepoint));
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_shadows_highlights_mix, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_shadows_highlights_mix, width, height,
+          CLARG(dev_in), CLARG(dev_tmp),
+          CLARG(dev_out), CLARG(width), CLARG(height), CLARG(shadows), CLARG(highlights), CLARG(compress),
+          CLARG(shadows_ccorrect), CLARG(highlights_ccorrect), CLARG(flags), CLARG(unbound_mask), CLARG(low_approximation),
+          CLARG(whitepoint));
 
 error:
-  if(g) dt_gaussian_free_cl(g);
-  if(b) dt_bilateral_free_cl(b);
+  dt_gaussian_free_cl(g);
+  dt_bilateral_free_cl(b);
   dt_opencl_release_mem_object(dev_tmp);
   return err;
 }
