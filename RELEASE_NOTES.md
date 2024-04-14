@@ -107,6 +107,16 @@ changes (where available).
 
 - Added Windows credential manager password storage backend.
 
+- Added mask blending to the highlights reconstruction module.
+  The generated raster mask holds the amount of reconstructed data and
+  can be used with all algorithms.
+
+- Color picker positions are defined by image coordinates instead of output.
+  They will stay at the same location whatever distorting modules are used.
+
+- The history autosaving might be disabled because of slow drives, this is
+  now done per image instead globally.
+
 ## Bug Fixes
 
 - Fix copy of multiple instances to ensure the proper order is applied
@@ -124,6 +134,17 @@ changes (where available).
   one was editing the mask.
 
 - Fixed memleak while importing avif images.
+
+- Fixed mask blending for sraw images while in IOP_CS_RAW colorspace.
+
+- Fixed OpenCL device locking for modules calling dt_dev_pixelpipe_process().
+
+- Fixed the UI becoming unresponsive due to very large history.
+
+- Fixed UCS colorspace maths avoiding div-by-zero and out-of-gamut errors.
+
+- Fixed a number of issues with guided filter blending and internal mask
+  distortions.
 
 ## Lua
 
