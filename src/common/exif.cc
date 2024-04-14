@@ -1598,13 +1598,13 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     GMatchInfo *match_info;
 
     GRegex *regex = g_regex_new("\\(\\d+\\)$",
-                        (GRegexCompileFlags) 0, 
-                        (GRegexMatchFlags) 0, 
+                        (GRegexCompileFlags) 0,
+                        (GRegexMatchFlags) 0,
                         NULL);
-    g_regex_match_full(regex, 
-                       img->exif_lens, 
-                       -1, 
-                       0, 
+    g_regex_match_full(regex,
+                       img->exif_lens,
+                       -1,
+                       0,
                        (GRegexMatchFlags) 0,
                        &match_info,
                        NULL);
@@ -1930,8 +1930,8 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       }
     }
 
-    int is_monochrome = FALSE;
-    int is_hdr = dt_image_is_hdr(img);
+    gboolean is_monochrome = FALSE;
+    gboolean is_hdr = dt_image_is_hdr(img);
 
     // Finding out about DNG hdr and monochrome images can be done
     // here while reading exif data.
@@ -2336,10 +2336,10 @@ static void _remove_exif_geotag(Exiv2::ExifData &exifData)
 int dt_exif_read_blob(uint8_t **buf,
                       const char *path,
                       const dt_imgid_t imgid,
-                      const int sRGB,
+                      const gboolean sRGB,
                       const int out_width,
                       const int out_height,
-                      const int dng_mode)
+                      const gboolean dng_mode)
 {
   *buf = NULL;
   try
