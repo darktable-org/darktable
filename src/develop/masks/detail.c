@@ -253,9 +253,9 @@ gboolean dt_masks_calc_scharr_mask(dt_dev_detail_mask_t *details,
 #endif
   for(size_t idx =0; idx < msize; idx++)
   {
-    const float val = CLIP(src[4 * idx] / wb[0])
-                    + CLIP(src[4 * idx + 1] / wb[1])
-                    + CLIP(src[4 * idx + 2] / wb[2]);
+    const float val = fmaxf(0.0f, src[4 * idx] / wb[0])
+                    + fmaxf(0.0f, src[4 * idx + 1] / wb[1])
+                    + fmaxf(0.0f, src[4 * idx + 2] / wb[2]);
     // add a gamma. sqrtf should make noise variance the same for all image
     tmp[idx] = sqrtf(val / 3.0f);
   }
@@ -271,7 +271,7 @@ gboolean dt_masks_calc_scharr_mask(dt_dev_detail_mask_t *details,
     {
       const size_t idx = row * width + col;
       const float gradient_magnitude = scharr_gradient(&tmp[idx], width);
-      mask[idx] = gradient_magnitude / 16.0f;
+      mask[idx] = fminf(1.0f, fmaxf(0.0f, gradient_magnitude / 16.0f));
     }
   }
   dt_masks_extend_border(mask, width, height, 1);
