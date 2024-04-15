@@ -1327,6 +1327,14 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         const float sensor_diagonal = dt_fast_hypotf(x_size_mm, y_size_mm);
         const float fullframe_diagonal = dt_fast_hypotf(36.0f, 24.0f);
         img->exif_crop = fullframe_diagonal / sensor_diagonal;
+
+        // Improve the accuracy of the calculated EFL in the most noticeable cases
+        // by adjusting slightly inaccurate calculated crop factor to the real value.
+        // When the focal length and EFL are slightly different for a crop factor
+        // of 1, it will look odd... So this is really a cosmetic fix to avoid
+        // unexpected numbers rather than correcting really inaccurate values.
+        if(fabsf(1.0f - img->exif_crop) < 0.1f) img->exif_crop = 1.0f;
+        if(fabsf(2.0f - img->exif_crop) < 0.1f) img->exif_crop = 2.0f;
       }
       else
         img->exif_crop = 0.0f; // Will be shown as "no data" in the image information module
