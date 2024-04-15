@@ -1615,13 +1615,13 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     GMatchInfo *match_info;
 
     GRegex *regex = g_regex_new("\\(\\d+\\)$",
-                        (GRegexCompileFlags) 0, 
-                        (GRegexMatchFlags) 0, 
+                        (GRegexCompileFlags) 0,
+                        (GRegexMatchFlags) 0,
                         NULL);
-    g_regex_match_full(regex, 
-                       img->exif_lens, 
-                       -1, 
-                       0, 
+    g_regex_match_full(regex,
+                       img->exif_lens,
+                       -1,
+                       0,
                        (GRegexMatchFlags) 0,
                        &match_info,
                        NULL);
