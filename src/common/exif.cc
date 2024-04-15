@@ -1793,6 +1793,17 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
 
         if(FIND_EXIF_TAG("Exif.Image.CalibrationIlluminant1"))
           illu[0] = (dt_dng_illuminant_t) pos->toLong();
+
+        Exiv2::ExifData::const_iterator cc1_pos =
+          exifData.findKey(Exiv2::ExifKey("Exif.Image.CameraCalibration1"));
+        if((cc1_pos != exifData.end()) && (cc1_pos->count() == 9))
+        {
+          float camera_matrix[12] = { 0.0f };
+          float tmp[12] = { 0.0f };
+          for(int i = 0; i < 9; i++) camera_matrix[i] = cc1_pos->toFloat(i);
+          mat3mul(tmp, camera_matrix, colmatrix[0]);
+          for(int i = 0; i < 9; i++) colmatrix[0][i] = tmp[i];
+        }
       }
 
       Exiv2::ExifData::const_iterator cm2_pos =
@@ -1804,6 +1815,17 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
 
         if(FIND_EXIF_TAG("Exif.Image.CalibrationIlluminant2"))
           illu[1] = (dt_dng_illuminant_t) pos->toLong();
+
+        Exiv2::ExifData::const_iterator cc2_pos =
+          exifData.findKey(Exiv2::ExifKey("Exif.Image.CameraCalibration2"));
+        if((cc2_pos != exifData.end()) && (cc2_pos->count() == 9))
+        {
+          float camera_matrix[12] = { 0.0f };
+          float tmp[12] = { 0.0f };
+          for(int i = 0; i < 9; i++) camera_matrix[i] = cc2_pos->toFloat(i);
+          mat3mul(tmp, camera_matrix, colmatrix[1]);
+          for(int i = 0; i < 9; i++) colmatrix[1][i] = tmp[i];
+        }
       }
 
       // So far the Exif.Image.CalibrationIlluminant3 tag and friends
@@ -1818,6 +1840,17 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
 
         if(FIND_EXIF_TAG("Exif.Image.CalibrationIlluminant3"))
           illu[2] = (dt_dng_illuminant_t) pos->toLong();
+
+        Exiv2::ExifData::const_iterator cc3_pos =
+          exifData.findKey(Exiv2::ExifKey("Exif.Image.CameraCalibration3"));
+        if((cc3_pos != exifData.end()) && (cc3_pos->count() == 9))
+        {
+          float camera_matrix[12] = { 0.0f };
+          float tmp[12] = { 0.0f };
+          for(int i = 0; i < 9; i++) camera_matrix[i] = cc3_pos->toFloat(i);
+          mat3mul(tmp, camera_matrix, colmatrix[2]);
+          for(int i = 0; i < 9; i++) colmatrix[2][i] = tmp[i];
+        }
       }
 #endif
 
@@ -1842,16 +1875,17 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       // without correction, i.e. assume D65 (keep dt < 3.8 behaviour)
       // TODO: "Other" illuminant is currently unsupported
       if(sel_illu == -1)
+      {
         for(int i = 0; i < 3; ++i)
         {
-	  if((illu[i] == DT_LS_Unknown) && dt_is_valid_colormatrix(colmatrix[i][0]))
+          if((illu[i] == DT_LS_Unknown) && dt_is_valid_colormatrix(colmatrix[i][0]))
           {
             sel_illu = i;
             sel_temp = D65temp;
             break;
           }
         }
-
+      }
       if(sel_illu > -1)
         dt_print(DT_DEBUG_IMAGEIO,
                  "[exif] `%s` dng illuminant %i (%iK) selected from"
@@ -1927,6 +1961,10 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
                      illu[sel_illu]);
             break;
         }
+        dt_print(DT_DEBUG_IMAGEIO, "[exif] d65 matrix: %.4f %.4f %.4f | %.4f %.4f %.4f | %.4f %.4f %.4f\n",
+           img->d65_color_matrix[0], img->d65_color_matrix[1], img->d65_color_matrix[2],
+           img->d65_color_matrix[3], img->d65_color_matrix[4], img->d65_color_matrix[5],
+           img->d65_color_matrix[6], img->d65_color_matrix[7], img->d65_color_matrix[8]);
       }
     }
 
