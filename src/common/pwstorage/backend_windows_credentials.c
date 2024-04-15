@@ -23,20 +23,22 @@
 
 static void _logError(const char* action)
 {
-    int error = GetLastError();
-    char message[1024];
+    const int error = GetLastError();
+    LPSTR message = NULL;
 
-    FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-                  NULL,
-                  error,
-                  MAKELANGID(LANG_ENGLISH, SUBLANG_DEFAULT),
-                  (LPTSTR) message,
-                  sizeof(message),
-                  NULL);
+    FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                   NULL,
+                   error,
+                   MAKELANGID(LANG_ENGLISH, SUBLANG_DEFAULT),
+                   (LPSTR) &message,
+                   0,
+                   NULL);
 
     dt_print(DT_DEBUG_PWSTORAGE, "[%s] ERROR: failed to complete windows_credential call: %s\n",
              action,
              message);
+
+    LocalFree(message);
 }
 
 const backend_windows_credentials_context_t *dt_pwstorage_windows_credentials_new()
@@ -107,22 +109,26 @@ gboolean dt_pwstorage_windows_credentials_set(const backend_windows_credentials_
     gchar *username = g_strdup((gchar *) g_hash_table_lookup(v_attributes, "username"));
     gchar *password = g_strdup((gchar *) g_hash_table_lookup(v_attributes, "password"));
 
-    // delete existing entry
-    CredDelete((LPCTSTR) target_name,
-               CRED_TYPE_GENERIC,
-               0);
+    // store the server name in a credential attribute
+    const DWORD cbServer = (wcslen((wchar_t *) server) + 1);
 
-    // create new entry
-    const DWORD cbCreds = g_utf8_strlen(password, -1) + 1;
+    CREDENTIAL_ATTRIBUTE attr = { 0 };
+    attr.Keyword = L"darktable_piwigoserver";
+    attr.ValueSize = cbServer;
+    attr.Value = (LPBYTE) server;
+
+    // create/update entry
+    const DWORD cbPassword = (wcslen((wchar_t*) password) + 1);
 
     CREDENTIAL cred = { 0 };
-    cred.Type = CRED_TYPE_GENERIC;
     cred.TargetName = (LPTSTR) target_name;
-    cred.CredentialBlobSize = cbCreds;
-    cred.CredentialBlob = (LPBYTE) password;
+    cred.Type = CRED_TYPE_GENERIC;
     cred.Persist = CRED_PERSIST_LOCAL_MACHINE;
-    cred.Comment = (LPTSTR) server;
     cred.UserName = (LPTSTR) username;
+    cred.CredentialBlobSize = cbPassword;
+    cred.CredentialBlob = (LPBYTE) password;
+    cred.AttributeCount = 1;
+    cred.Attributes = &attr;
 
     ok = CredWrite(&cred, 0);
     if(!ok)
@@ -153,16 +159,33 @@ GHashTable *dt_pwstorage_windows_credentials_get(const backend_windows_credentia
 
   if(ok)
   {
+    // read the server name from the credential attribute
+    gchar *server = g_strdup("");
+
+    for(DWORD i = 0; i < pcred->AttributeCount; i++)
+    {
+      PCREDENTIAL_ATTRIBUTE attr = &pcred->Attributes[i];
+
+      if(lstrcmp(attr->Keyword, L"darktable_piwigoserver") == 0)
+      {
+        g_free(server);
+        server = g_strdup((char*) attr->Value);
+        break;
+      }
+    }
+
     // build JSON
     JsonBuilder *json_builder = json_builder_new();
     json_builder_begin_object(json_builder);
     json_builder_set_member_name(json_builder, "server");
-    json_builder_add_string_value(json_builder, (gchar*) pcred->Comment);
+    json_builder_add_string_value(json_builder, server);
     json_builder_set_member_name(json_builder, "username");
     json_builder_add_string_value(json_builder, (gchar*) pcred->UserName);
     json_builder_set_member_name(json_builder, "password");
     json_builder_add_string_value(json_builder, (char*) pcred->CredentialBlob);
     json_builder_end_object(json_builder);
+
+    CredFree(pcred);
 
     // generate JSON
     JsonGenerator *json_generator = json_generator_new();
@@ -172,11 +195,11 @@ GHashTable *dt_pwstorage_windows_credentials_get(const backend_windows_credentia
     g_object_unref(json_generator);
     g_object_unref(json_builder);
 
-    dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_windows_credentials_get] reading (%s, %s)\n", (gchar*) pcred->Comment, json_data);
+    dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_windows_credentials_get] reading (%s, %s)\n", (gchar*) server, json_data);
 
-    g_hash_table_insert(table, g_strdup((gchar*) pcred->Comment), g_strdup(json_data));
+    g_hash_table_insert(table, g_strdup((gchar*) server), g_strdup(json_data));
   
-    CredFree(pcred);
+    g_free(server);
   }
   else
   {
