@@ -2584,7 +2584,7 @@ void gui_init(struct dt_iop_module_t *self)
                               _("the white level set manually or via the picker restricts brightness corrections\n"
                                 "to stay below the defined level. the default is fine for most images."));
 
-  g->smoothing_hue = dt_bauhaus_slider_from_params(sect, "smoothing_hue");
+  g->smoothing_hue = dt_bauhaus_slider_from_params(self, "smoothing_hue");
   gtk_widget_set_tooltip_text(g->smoothing_hue,
                               _("change for sharper or softer hue curve"));
 
