@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2021 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -166,12 +166,16 @@ void init_presets(dt_iop_module_so_t *self)
   // dt_gui_presets_add_generic(_("green filter"), self->op, self->version(), &p, sizeof(p), 1);
 }
 
-static float color_filter(const float ai, const float bi, const float a, const float b, const float dbl_size)
+static float _color_filter(const float ai,
+                           const float bi,
+                           const float a,
+                           const float b,
+                           const float dbl_size)
 {
   return dt_fast_expf(-CLAMPS(((ai - a) * (ai - a) + (bi - b) * (bi - b)) / dbl_size, 0.0f, 1.0f));
 }
 
-static float envelope(const float L)
+static float _envelope(const float L)
 {
   const float x = CLAMPS(L / 100.0f, 0.0f, 1.0f);
   // const float alpha = 2.0f;
@@ -191,8 +195,12 @@ static float envelope(const float L)
   }
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(struct dt_iop_module_t *self,
+             dt_dev_pixelpipe_iop_t *piece,
+             const void *const i,
+             void *const o,
+             const dt_iop_roi_t *const roi_in,
+             const dt_iop_roi_t *const roi_out)
 {
   dt_iop_monochrome_data_t *d = (dt_iop_monochrome_data_t *)piece->data;
   const float sigma2 = 2.0f * (d->size * 128.0f) * (d->size * 128.0f);
@@ -209,7 +217,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #endif
   for(int k = 0; k < 4*npixels; k += 4)
   {
-    out[k+0] = 100.0f * color_filter(in[k+1], in[k+2], d_a, d_b, sigma2);
+    out[k+0] = 100.0f * _color_filter(in[k+1], in[k+2], d_a, d_b, sigma2);
     out[k+1] = out[k+2] = 0.0f;
   }
 
@@ -233,20 +241,24 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #endif
   for(int k = 0; k < 4*npixels; k += 4)
   {
-    const float tt = envelope(in[k]);
+    const float tt = _envelope(in[k]);
     const float t = tt + (1.0f - tt) * (1.0f - highlights);
     out[k] = (1.0f - t) * in[k] + t * out[k] * (1.0f / 100.0f) * in[k]; // normalized filter * input brightness
   }
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(struct dt_iop_module_t *self,
+               dt_dev_pixelpipe_iop_t *piece,
+               cl_mem dev_in,
+               cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in,
+               const dt_iop_roi_t *const roi_out)
 {
   dt_iop_monochrome_data_t *d = (dt_iop_monochrome_data_t *)piece->data;
   dt_iop_monochrome_global_data_t *gd = (dt_iop_monochrome_global_data_t *)self->global_data;
 
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   const int devid = piece->pipe->devid;
 
   const int width = roi_out->width;
@@ -259,11 +271,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float sigma_s = 20.0f / scale;
   const float detail = -1.0f; // bilateral base layer
 
-  cl_mem dev_tmp = NULL;
-  dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
+  cl_mem dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
 
   dt_bilateral_cl_t *b = dt_bilateral_init_cl(devid, roi_in->width, roi_in->height, sigma_s, sigma_r);
-  if(!b) goto error;
+  if(!b || dev_tmp == NULL) goto error;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_monochrome_filter, width, height,
     CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(d->a), CLARG(d->b), CLARG(sigma2));
@@ -369,7 +380,7 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
-static gboolean dt_iop_monochrome_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
+static gboolean _monochrome_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   if(darktable.gui->reset) return FALSE;
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -407,7 +418,7 @@ static gboolean dt_iop_monochrome_draw(GtkWidget *widget, cairo_t *crf, gpointer
       // dt_iop_sRGB_to_Lab(rgb, Lab, 0, 0, 1.0, 1, 1); // get grey in Lab
       Lab.a = PANEL_WIDTH * (i / (cells - 1.0) - .5);
       Lab.b = PANEL_WIDTH * (j / (cells - 1.0) - .5);
-      const float f = color_filter(Lab.a, Lab.b, p->a, p->b, 40 * 40 * p->size * p->size);
+      const float f = _color_filter(Lab.a, Lab.b, p->a, p->b, 40 * 40 * p->size * p->size);
       Lab.L *= f * f; // exaggerate filter a little
       cmsDoTransform(g->xform, &Lab, rgb, 1);
       cairo_set_source_rgb(cr, rgb[0], rgb[1], rgb[2]);
@@ -430,8 +441,7 @@ static gboolean dt_iop_monochrome_draw(GtkWidget *widget, cairo_t *crf, gpointer
   return TRUE;
 }
 
-void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
-                        dt_dev_pixelpipe_t *pipe)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_t *pipe)
 {
   dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
 
@@ -452,7 +462,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
   dt_control_queue_redraw_widget(self->widget);
 }
 
-static gboolean dt_iop_monochrome_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
+static gboolean _monochrome_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
@@ -475,7 +485,7 @@ static gboolean dt_iop_monochrome_motion_notify(GtkWidget *widget, GdkEventMotio
   return TRUE;
 }
 
-static gboolean dt_iop_monochrome_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+static gboolean _monochrome_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   if(event->button == 1)
   {
@@ -510,7 +520,7 @@ static gboolean dt_iop_monochrome_button_press(GtkWidget *widget, GdkEventButton
   return FALSE;
 }
 
-static gboolean dt_iop_monochrome_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+static gboolean _monochrome_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   if(event->button == 1)
   {
@@ -525,7 +535,7 @@ static gboolean dt_iop_monochrome_button_release(GtkWidget *widget, GdkEventButt
   return FALSE;
 }
 
-static gboolean dt_iop_monochrome_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+static gboolean _monochrome_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
@@ -534,7 +544,7 @@ static gboolean dt_iop_monochrome_leave_notify(GtkWidget *widget, GdkEventCrossi
   return TRUE;
 }
 
-static gboolean dt_iop_monochrome_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
+static gboolean _monochrome_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
@@ -570,14 +580,14 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK
                                              | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                              | GDK_LEAVE_NOTIFY_MASK | darktable.gui->scroll_mask);
-  g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(dt_iop_monochrome_draw), self);
-  g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(dt_iop_monochrome_button_press), self);
-  g_signal_connect(G_OBJECT(g->area), "button-release-event", G_CALLBACK(dt_iop_monochrome_button_release),
+  g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(_monochrome_draw), self);
+  g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(_monochrome_button_press), self);
+  g_signal_connect(G_OBJECT(g->area), "button-release-event", G_CALLBACK(_monochrome_button_release),
                    self);
-  g_signal_connect(G_OBJECT(g->area), "motion-notify-event", G_CALLBACK(dt_iop_monochrome_motion_notify),
+  g_signal_connect(G_OBJECT(g->area), "motion-notify-event", G_CALLBACK(_monochrome_motion_notify),
                    self);
-  g_signal_connect(G_OBJECT(g->area), "leave-notify-event", G_CALLBACK(dt_iop_monochrome_leave_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(dt_iop_monochrome_scrolled), self);
+  g_signal_connect(G_OBJECT(g->area), "leave-notify-event", G_CALLBACK(_monochrome_leave_notify), self);
+  g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(_monochrome_scrolled), self);
 
   g->highlights
       = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, N_("highlights")));
