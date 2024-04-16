@@ -21,9 +21,7 @@
 #include "common/darktable.h"
 #include "gui/gtk.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+G_BEGIN_DECLS
 
 typedef enum dt_metadata_t
 {
@@ -131,9 +129,7 @@ void dt_metadata_clear(const GList *imgs, const gboolean undo_on); // libs/metad
 /** check if the "Xmp.darktable.image_id" already exists */
 gboolean dt_metadata_already_imported(const char *filename, const char *datetime);
 
-#ifdef __cplusplus
-} // extern "C"
-#endif /* __cplusplus */
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

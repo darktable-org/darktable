@@ -28,9 +28,7 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+G_BEGIN_DECLS
 
 typedef enum dt_confgen_type_t
 {
@@ -138,9 +136,7 @@ gchar* dt_conf_expand_default_dir(const char *dir);
 gchar *dt_conf_read_values(const char *filename,
                            gchar* (*callback)(const gchar *key, const gchar *value));
 
-#ifdef __cplusplus
-} // extern "C"
-#endif /* __cplusplus */
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

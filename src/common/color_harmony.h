@@ -24,9 +24,7 @@
 
 #include "common/darktable.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+G_BEGIN_DECLS
 
 typedef enum _color_harmony_type_t
 {
@@ -75,9 +73,7 @@ dt_harmony_guide_id_t dt_color_harmony_get_id(const dt_imgid_t imgid);
 gboolean dt_color_harmony_get(const dt_imgid_t imgid,
                               dt_color_harmony_guide_t *layout);
 
-#ifdef __cplusplus
-} // extern "C"
-#endif /* __cplusplus */
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

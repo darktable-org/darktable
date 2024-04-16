@@ -34,19 +34,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+G_BEGIN_DECLS
 
 #define DT_BAUHAUS_WIDGET_TYPE dt_bh_get_type()
-#define DT_BAUHAUS_WIDGET(obj) G_TYPE_CHECK_INSTANCE_CAST((obj), DT_BAUHAUS_WIDGET_TYPE, DtBauhausWidget)
-#define DT_BAUHAUS_WIDGET_CLASS(obj) G_TYPE_CHECK_CLASS_CAST((obj), DT_BAUHAUS_WIDGET, DtBauhausWidgetClass)
-#define DT_IS_BAUHAUS_WIDGET(obj) G_TYPE_CHECK_INSTANCE_TYPE((obj), DT_BAUHAUS_WIDGET_TYPE)
-#define DT_IS_BAUHAUS_WIDGET_CLASS(obj) G_TYPE_CHECK_CLASS_TYPE((obj), DT_BAUHAUS_WIDGET_TYPE)
-#define DT_BAUHAUS_WIDGET_GET_CLASS                                                                          \
-  G_TYPE_INSTANCE_GET_CLASS((obj), DT_BAUHAUS_WIDGET_TYPE, DtBauhausWidgetClass)
-
-extern GType DT_BAUHAUS_WIDGET_TYPE;
+G_DECLARE_FINAL_TYPE(DtBauhausWidget, dt_bh, DT, BAUHAUS_WIDGET, GtkDrawingArea)
 
 #define DT_BAUHAUS_SLIDER_MAX_STOPS 20
 #define DT_BAUHAUS_MAX_TEXT 180
@@ -132,14 +123,10 @@ typedef union dt_bauhaus_data_t
   dt_bauhaus_combobox_data_t combobox;
 } dt_bauhaus_data_t;
 
-// gah, caps.
-typedef struct dt_bauhaus_widget_t DtBauhausWidget;
-typedef struct dt_bauhaus_widget_class_t DtBauhausWidgetClass;
-
 typedef DTGTKCairoPaintIconFunc dt_bauhaus_quad_paint_f;
 
 // our new widget and its private members, inheriting from drawing area:
-typedef struct dt_bauhaus_widget_t
+typedef struct _DtBauhausWidget
 {
   // gtk base widget
   GtkDrawingArea parent;
@@ -182,12 +169,6 @@ typedef struct dt_bauhaus_widget_t
   dt_bauhaus_data_t data;
 } dt_bauhaus_widget_t;
 
-// class of our new widget, inheriting from drawing area
-typedef struct dt_bauhaus_widget_class_t
-{
-  GtkDrawingAreaClass parent_class;
-} dt_bauhaus_widget_class_t;
-
 // global static data:
 enum
 {
@@ -209,7 +190,7 @@ typedef struct dt_bauhaus_popup_t
 
 typedef struct dt_bauhaus_t
 {
-  struct dt_bauhaus_widget_t *current;
+  dt_bauhaus_widget_t *current;
   dt_bauhaus_popup_t popup;
 
   // the widget that has the mouse over it
@@ -324,7 +305,7 @@ GtkWidget *dt_bauhaus_slider_new_with_range_and_feedback(dt_iop_module_t *self,
                                                          float defval,
                                                          int digits,
                                                          int feedback);
-GtkWidget *dt_bauhaus_slider_from_widget(struct dt_bauhaus_widget_t* widget,
+GtkWidget *dt_bauhaus_slider_from_widget(dt_bauhaus_widget_t* widget,
                                          dt_iop_module_t *self,
                                          const float min,
                                          const float max,
@@ -386,7 +367,7 @@ void dt_bauhaus_slider_set_curve(GtkWidget *widget,
 void dt_bauhaus_slider_set_log_curve(GtkWidget *widget);
 
 // combobox:
-GtkWidget *dt_bauhaus_combobox_from_widget(struct dt_bauhaus_widget_t* widget,
+GtkWidget *dt_bauhaus_combobox_from_widget(dt_bauhaus_widget_t* widget,
                                            dt_iop_module_t *self);
 GtkWidget *dt_bauhaus_combobox_new(dt_iop_module_t *self);
 GtkWidget *dt_bauhaus_combobox_new_action(dt_action_t *self);
@@ -488,9 +469,7 @@ static inline void set_color(cairo_t *cr, GdkRGBA color)
   cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
 }
 
-#ifdef __cplusplus
-} // extern "C"
-#endif /* __cplusplus */
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

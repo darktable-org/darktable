@@ -39,9 +39,7 @@
 #include <shobjidl.h>
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+G_BEGIN_DECLS
 
 struct dt_lib_backgroundjob_element_t;
 
@@ -253,9 +251,7 @@ gboolean dt_control_running();
 dt_imgid_t dt_control_get_mouse_over_id();
 void dt_control_set_mouse_over_id(const dt_imgid_t value);
 
-#ifdef __cplusplus
-} // extern "C"
-#endif /* __cplusplus */
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

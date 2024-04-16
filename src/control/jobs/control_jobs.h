@@ -26,9 +26,7 @@
 #include "common/cups_print.h"
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+G_BEGIN_DECLS
 
 void dt_control_gpx_apply(const gchar *filename, int32_t filmid, const gchar *tz, GList *imgs);
 
@@ -56,9 +54,7 @@ void dt_control_seed_denoise();
 void dt_control_denoise();
 void dt_control_refresh_exif();
 
-#ifdef __cplusplus
-} // extern "C"
-#endif /* __cplusplus */
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

@@ -1579,6 +1579,9 @@ static gboolean area_scrolled(GtkWidget *widget,
 
   if(dt_gui_ignore_scroll(event)) return FALSE;
 
+  if(dt_modifier_is(event->state, GDK_MOD1_MASK))
+    return gtk_widget_event(GTK_WIDGET(c->channel_tabs), (GdkEvent*)event);
+
   int delta_y;
   if(dt_gui_get_scroll_unit_delta(event, &delta_y))
   {
@@ -1597,7 +1600,7 @@ static void tab_switch(GtkNotebook *notebook,
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
   if(darktable.gui->reset) return;
   c->channel = c->channel2 = (atrous_channel_t)page_num;
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(GTK_WIDGET(c->area));
 }
 
 static void mix_callback(GtkWidget *slider,
