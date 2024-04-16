@@ -26,14 +26,14 @@ G_BEGIN_DECLS
 #define DTGTK_TYPE_THUMBNAIL_BTN dtgtk_thumbnail_btn_get_type()
 G_DECLARE_FINAL_TYPE(GtkDarktableThumbnailBtn, dtgtk_thumbnail_btn, DTGTK, THUMBNAIL_BTN, GtkDrawingArea)
 
-typedef struct _GtkDarktableThumbnailBtn
+struct _GtkDarktableThumbnailBtn
 {
   GtkDrawingArea widget;
   DTGTKCairoPaintIconFunc icon;
   gint icon_flags;
   void *icon_data;
   gboolean hidden;
-} GtkDarktableThumbnailBtn;
+};
 
 /** instantiate a new darktable button control passing paint function as content */
 GtkWidget *dtgtk_thumbnail_btn_new(DTGTKCairoPaintIconFunc paint, gint paintflags, void *paintdata);

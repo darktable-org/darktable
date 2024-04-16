@@ -31,7 +31,7 @@ typedef enum _darktable_button_flags
   DARKTABLE_BUTTON_SHOW_LABEL = 1
 } _darktable_button_flags_t;
 
-typedef struct _GtkDarktableButton
+struct _GtkDarktableButton
 {
   GtkButton widget;
   DTGTKCairoPaintIconFunc icon;
@@ -39,7 +39,7 @@ typedef struct _GtkDarktableButton
   void *icon_data;
   GdkRGBA bg, fg;
   GtkWidget *canvas;
-} GtkDarktableButton;
+};
 
 /** instantiate a new darktable button control passing paint function as content */
 GtkWidget *dtgtk_button_new(DTGTKCairoPaintIconFunc paint, gint paintflags, void *paintdata);

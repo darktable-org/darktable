@@ -26,7 +26,7 @@ G_BEGIN_DECLS
 #define DTGTK_TYPE_TOGGLEBUTTON dtgtk_togglebutton_get_type()
 G_DECLARE_FINAL_TYPE(GtkDarktableToggleButton, dtgtk_togglebutton, DTGTK, TOGGLEBUTTON, GtkToggleButton)
 
-typedef struct _GtkDarktableToggleButton
+struct _GtkDarktableToggleButton
 {
   GtkToggleButton widget;
   DTGTKCairoPaintIconFunc icon;
@@ -34,7 +34,7 @@ typedef struct _GtkDarktableToggleButton
   void *icon_data;
   GdkRGBA bg;
   GtkWidget *canvas;
-} GtkDarktableToggleButton;
+};
 
 /** instantiate a new darktable toggle button */
 GtkWidget *dtgtk_togglebutton_new(DTGTKCairoPaintIconFunc paint, gint paintflag, void *paintdata);

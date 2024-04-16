@@ -26,13 +26,13 @@ G_BEGIN_DECLS
 #define DTGTK_TYPE_ICON dtgtk_icon_get_type()
 G_DECLARE_FINAL_TYPE(GtkDarktableIcon, dtgtk_icon, DTGTK, ICON, GtkEventBox)
 
-typedef struct _GtkDarktableIcon
+struct _GtkDarktableIcon
 {
   GtkEventBox widget;
   DTGTKCairoPaintIconFunc icon;
   gint icon_flags;
   void *icon_data;
-} GtkDarktableIcon;
+};
 
 /** instantiate a new darktable icon control passing paint function as content */
 GtkWidget *dtgtk_icon_new(DTGTKCairoPaintIconFunc paint, gint paintflags, void *paintdata);

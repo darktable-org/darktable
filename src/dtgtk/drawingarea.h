@@ -26,7 +26,7 @@ G_BEGIN_DECLS
 #define DTGTK_TYPE_DRAWING_AREA dtgtk_drawing_area_get_type()
 G_DECLARE_FINAL_TYPE(GtkDarktableDrawingArea, dtgtk_drawing_area, DTGTK, DRAWING_AREA, GtkDrawingArea)
 
-typedef struct _GtkDarktableDrawingArea
+struct _GtkDarktableDrawingArea
 {
   GtkDrawingArea area;
 
@@ -40,7 +40,7 @@ typedef struct _GtkDarktableDrawingArea
    *      2   => height is 2 times bigger than width
    */
   double aspect;
-} GtkDarktableDrawingArea;
+};
 
 GtkWidget *dtgtk_drawing_area_new_with_aspect_ratio(double aspect);
 void dtgtk_drawing_area_set_aspect_ratio(GtkWidget *w, double aspect);
