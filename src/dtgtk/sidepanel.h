@@ -26,10 +26,10 @@ G_BEGIN_DECLS
 #define DTGTK_TYPE_SIDE_PANEL dtgtk_side_panel_get_type()
 G_DECLARE_FINAL_TYPE(GtkDarktableSidePanel, dtgtk_side_panel, DTGTK, SIDE_PANEL, GtkBox)
 
-typedef struct _GtkDarktableSidePanel
+struct _GtkDarktableSidePanel
 {
   GtkBox panel;
-} GtkDarktableSidePanel;
+};
 
 GtkWidget *dtgtk_side_panel_new();
 

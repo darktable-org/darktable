@@ -42,7 +42,6 @@ G_DECLARE_FINAL_TYPE(GtkDarktableRangeSelect, dtgtk_range_select, DTGTK, RANGE_S
 typedef double (*DTGTKTranslateValueFunc)(const double value);
 typedef gchar *(*DTGTKPrintValueFunc)(const double value, const gboolean detailled);
 typedef gboolean (*DTGTKDecodeValueFunc)(const gchar *text, double *value);
-typedef struct _GtkDarktableRangeSelect GtkDarktableRangeSelect;
 typedef gchar *(*DTGTKCurrentTextFunc)(GtkDarktableRangeSelect *range);
 
 typedef enum dt_range_bounds_t

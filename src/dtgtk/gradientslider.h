@@ -88,7 +88,7 @@ enum
   PROPORTIONAL_MARKERS = 2
 };
 
-typedef struct _GtkDarktableGradientSlider
+struct _GtkDarktableGradientSlider
 {
   GtkDrawingArea widget;
   GList *colors;
@@ -111,7 +111,7 @@ typedef struct _GtkDarktableGradientSlider
   gint markers_type;
   guint timeout_handle;
   float (*scale_callback)(GtkWidget*, float, int); // scale callback function
-} GtkDarktableGradientSlider;
+};
 
 typedef struct _gradient_slider_stop_t
 {

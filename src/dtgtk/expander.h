@@ -26,7 +26,7 @@ G_BEGIN_DECLS
 #define DTGTK_TYPE_EXPANDER dtgtk_expander_get_type()
 G_DECLARE_FINAL_TYPE(GtkDarktableExpander, dtgtk_expander, DTGTK, EXPANDER, GtkBox)
 
-typedef struct _GtkDarktableExpander
+struct _GtkDarktableExpander
 {
   GtkBox box;
   gboolean expanded;
@@ -35,7 +35,7 @@ typedef struct _GtkDarktableExpander
   GtkWidget *header_evb;
   GtkWidget *body;
   GtkWidget *body_evb;
-} GtkDarktableExpander;
+};
 
 GtkWidget *dtgtk_expander_get_frame(GtkDarktableExpander *expander);
 GtkWidget *dtgtk_expander_get_header(GtkDarktableExpander *expander);
