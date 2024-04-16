@@ -1879,6 +1879,9 @@ static gboolean _area_scrolled_callback(GtkWidget *widget,
 
   if(dt_gui_ignore_scroll(event)) return FALSE;
 
+  if(dt_modifier_is(event->state, GDK_MOD1_MASK))
+    return gtk_widget_event(GTK_WIDGET(c->channel_tabs), (GdkEvent*)event);
+
   int delta_y;
 
   if(darktable.develop->darkroom_skip_mouse_events)
@@ -2329,7 +2332,7 @@ static void _channel_tabs_switch_callback(GtkNotebook *notebook,
   dt_iop_color_picker_reset(self, TRUE);
   if(c->display_mask)
     dt_iop_refresh_center(self);
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(GTK_WIDGET(c->area));
 }
 
 

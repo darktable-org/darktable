@@ -646,7 +646,7 @@ int process_cl(struct dt_iop_module_t *self,
                               CLARG(col_frame));
     if(err != CL_SUCCESS) goto error;
 
-    err = dt_opencl_set_kernel_args(devid, gd->kernel_borders_fill, width, height,
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_borders_fill, width, height,
                               CLARG(dev_out),
                               CLARG(binfo.frame_tl_in_x), CLARG(binfo.frame_tl_in_y),
                               CLARG(roi_frame_in_width), CLARG(roi_frame_in_height),

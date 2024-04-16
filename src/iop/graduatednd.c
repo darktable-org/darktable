@@ -587,6 +587,7 @@ int mouse_moved(dt_iop_module_t *self,
                 const float zoom_scale)
 {
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
+  gboolean handled = FALSE;
 
   // are we dragging something ?
   if(g->dragging > 0)
@@ -613,6 +614,7 @@ int mouse_moved(dt_iop_module_t *self,
       g->oldx = pzx;
       g->oldy = pzy;
     }
+    handled = TRUE;
   }
   else
   {
@@ -632,7 +634,7 @@ int mouse_moved(dt_iop_module_t *self,
   }
 
   dt_control_queue_redraw_center();
-  return 1;
+  return handled;
 }
 
 int button_pressed(dt_iop_module_t *self,
