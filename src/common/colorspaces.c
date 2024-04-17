@@ -2343,19 +2343,19 @@ int dt_colorspaces_conversion_matrices_rgb(const float adobe_XYZ_to_CAM[4][3],
   for(int i = 0; i < 4; i++)
     for(int j = 0; j < 3; j++)
     {
-      RGB_to_CAM[i][j] = 0.0f;
+      RGB_to_CAM[i][j] = 0.0;
       for(int k = 0; k < 3; k++)
         RGB_to_CAM[i][j] += XYZ_to_CAM[i][k] * RGB_to_XYZ[k][j];
     }
 
   // Normalize cam_rgb so that cam_rgb * (1,1,1) is (1,1,1,1)
   for(int i = 0; i < 4; i++) {
-    double num = 0.0f;
+    double num = 0.0;
     for(int j = 0; j < 3; j++)
       num += RGB_to_CAM[i][j];
     for(int j = 0; j < 3; j++)
        RGB_to_CAM[i][j] /= num;
-    if(mul) mul[i] = 1.0f / num;
+    if(mul) mul[i] = 1.0 / num;
   }
 
   if(out_RGB_to_CAM)
