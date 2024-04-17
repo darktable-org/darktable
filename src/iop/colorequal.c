@@ -2481,7 +2481,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = box;
   g->hue_shift = dt_color_picker_new_with_cst(self, DT_COLOR_PICKER_POINT_AREA | DT_COLOR_PICKER_DENOISE,
-                 dt_bauhaus_slider_from_params(self, "hue_shift"), IOP_CS_HSL);
+                 dt_bauhaus_slider_from_params(self, "hue_shift"), IOP_CS_JZCZHZ);
   dt_bauhaus_slider_set_format(g->hue_shift, "°");
   dt_bauhaus_slider_set_digits(g->hue_shift, 0);
   gtk_widget_set_tooltip_text(g->hue_shift,
