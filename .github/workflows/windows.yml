@@ -1,0 +1,172 @@
+name: Windows Build
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write  # We need this to be able to cancel workflow if job fails
+
+jobs:
+  Windows:
+    if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
+    name: darktable Windows
+    runs-on: windows-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        btype:
+          - Release
+        msystem:
+          - UCRT64
+        target:
+          - skiptest
+        generator:
+          - Ninja
+        eco: [-DBINARY_PACKAGE_BUILD=ON]
+    defaults:
+      run:
+        shell: msys2 {0}
+    env:
+      SRC_DIR: ${{ github.workspace }}/src
+      BUILD_DIR: ${{ github.workspace }}/build
+      INSTALL_PREFIX: ${{ github.workspace }}/install
+      ECO: ${{ matrix.eco }}
+      CMAKE_BUILD_TYPE: ${{ matrix.btype }}
+      TARGET: ${{ matrix.target }}
+      GENERATOR: ${{ matrix.generator }}
+    steps:
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{ matrix.msystem }}
+          install: >-
+            git
+            intltool
+            po4a
+          pacboy: >-
+            cc:p
+            cmake:p
+            libxslt:p
+            ninja:p
+            nsis:p
+            python-jsonschema:p
+            curl:p
+            drmingw:p
+            gcc-libs:p
+            gettext:p
+            gmic:p
+            graphicsmagick:p
+            gtk3:p
+            icu:p
+            imath:p
+            iso-codes:p
+            lcms2:p
+            lensfun:p
+            libavif:p
+            libgphoto2:p
+            libheif:p
+            libjpeg-turbo:p
+            libjxl:p
+            libpng:p
+            librsvg:p
+            libsecret:p
+            libtiff:p
+            libwebp:p
+            libxml2:p
+            lua:p
+            omp:p
+            openexr:p
+            openjpeg2:p
+            osm-gps-map:p
+            portmidi:p
+            pugixml:p
+            SDL2:p
+            sqlite3:p
+            webp-pixbuf-loader:p
+            zlib:p
+          update: false
+      - name: Install the latest not yet broken version of exiv2
+        run: |
+          # It's a temporary fix, to be removed when the issue will be resolved
+          pacman -U --noconfirm https://repo.msys2.org/mingw/ucrt64/mingw-w64-ucrt-x86_64-exiv2-0.27.7-1-any.pkg.tar.zst
+      - name: Install the latest still safe to display cyrillic texts version of pango
+        run: |
+          # It's a temporary fix, to be removed when the issue #13084 will be resolved
+          pacman -U --noconfirm https://repo.msys2.org/mingw/ucrt64/mingw-w64-ucrt-x86_64-pango-1.50.11-1-any.pkg.tar.zst
+      - name: Cancel workflow if job fails
+        if: ${{ failure() }}
+        uses: andymckay/cancel-action@0.4
+      - run: git config --global core.autocrlf input
+        shell: bash
+      - name: Checkout darktable 
+        run: |
+          # Note that we can't make a shallow clone to reduce clone traffic and time, as we have to
+          # fetch the entire history to correctly generate the version for the installation package filename
+          git clone https://github.com/zisoft/darktable.git -b fix-windows-utf src
+          pushd src
+          git submodule init
+          git config submodule.src/tests/integration.update none
+          git submodule update
+          popd
+      - name: Update lensfun data
+        if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
+        continue-on-error: true
+        run: |
+          lensfun-update-data
+      - name: Build and Install
+        run: |
+          cmake -E make_directory "${BUILD_DIR}"
+          cmake -E make_directory "${INSTALL_PREFIX}"
+          $(cygpath ${SRC_DIR})/.ci/ci-script.sh
+      - name: Package
+        if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
+        run: |
+          cd "${BUILD_DIR}"
+          cmake --build "${BUILD_DIR}" --target package
+      - name: Get version info
+        run: |
+          cd ${SRC_DIR}
+          echo "VERSION=$(git describe --tags --match release-* | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')" >> $GITHUB_ENV
+          ([[ ${MSYSTEM_CARCH} == x86_64 ]] && echo "SYSTEM=win64" || echo "SYSTEM=woa64") >> $GITHUB_ENV
+      - name: Package upload
+        if: ${{ success() }}
+        uses: actions/upload-artifact@v4
+        with:
+          path: ${{ env.BUILD_DIR }}/darktable-${{ env.VERSION }}-${{ env.SYSTEM }}.exe
+          name: artifact-windows
+          retention-days: 2
+
+  upload_to_release:
+    permissions:
+      # We need write permission to update the nightly tag
+      contents: write
+    runs-on: ubuntu-latest
+    needs: [Windows]
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+      - name: Update nightly release
+        uses: andelf/nightly-release@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: nightly
+          prerelease: true
+          name: 'Darktable nightly build $$'
+          # Please do not modify the body text by adding line breaks in paragraphs, as this text should display well on screens of different widths
+          body: |
+            This is a nightly build of Darktable.
+
+            You can use this if you want to try new features without waiting for releases. From time to time, in development builds, old difficult-to-reproduce bugs are fixed, but it is also true that in the development process with the introduction of new complex code, the stability of the program may suffer compared to official releases, so **use it with caution**!
+
+            Also, new versions can make changes to the database schema, so it's best to run them with a separate library.
+
+            The AppImage package is compatible with distribution releases that have glibc version 2.35 or higher. For example, if we consider some popular distributions, Ubuntu 22.04, Debian 12, Fedora 36 and newer releases are compatible.
+
+            The `*.AppImage.zsync` file is not intended to be downloaded and used locally. Just ignore it. This file contains technical information required by AppImage auto-updaters such as [AppImageUpdate](https://appimage.github.io/AppImageUpdate/).
+
+            The macOS `*-x86_64.dmg` package requires at least macOS 13.5 (Ventura), the `*-arm64.dmg` package requires at least macOS 14.0 (Sonoma).
+
+            __Please help us improve Darktable by reporting any issues you encounter!__ :wink:
+          files: |
+            artifact-windows/*
