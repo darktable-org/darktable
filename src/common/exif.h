@@ -80,8 +80,8 @@ gboolean dt_exif_read_from_blob(dt_image_t *img, uint8_t *blob, const int size);
 
 /** write exif to blob, return length in bytes. blob will be allocated by the function. sRGB should be true
  * if sRGB colorspace is used as output. */
-int dt_exif_read_blob(uint8_t **blob, const char *path, const dt_imgid_t imgid, const int sRGB, const int out_width,
-                      const int out_height, const int dng_mode);
+int dt_exif_read_blob(uint8_t **blob, const char *path, const dt_imgid_t imgid, const gboolean sRGB, const int out_width,
+                      const int out_height, const gboolean dng_mode);
 
 /** Reads exif tags that are not cached in the database */
 void dt_exif_img_check_additional_tags(dt_image_t *img, const char *filename);
