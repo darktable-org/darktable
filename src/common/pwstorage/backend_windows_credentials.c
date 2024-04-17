@@ -112,25 +112,25 @@ gboolean dt_pwstorage_windows_credentials_set(const backend_windows_credentials_
     // store the server name in a credential attribute
     const DWORD cbServer = (wcslen((wchar_t *) server) + 1);
 
-    CREDENTIAL_ATTRIBUTE attr = { 0 };
-    attr.Keyword = L"darktable_piwigoserver";
+    CREDENTIAL_ATTRIBUTEA attr = { 0 };
+    attr.Keyword = "darktable_piwigoserver";
     attr.ValueSize = cbServer;
     attr.Value = (LPBYTE) server;
 
     // create/update entry
     const DWORD cbPassword = (wcslen((wchar_t*) password) + 1);
 
-    CREDENTIAL cred = { 0 };
-    cred.TargetName = (LPTSTR) target_name;
+    CREDENTIALA cred = { 0 };
+    cred.TargetName = (LPSTR) target_name;
     cred.Type = CRED_TYPE_GENERIC;
     cred.Persist = CRED_PERSIST_LOCAL_MACHINE;
-    cred.UserName = (LPTSTR) username;
+    cred.UserName = (LPSTR) username;
     cred.CredentialBlobSize = cbPassword;
     cred.CredentialBlob = (LPBYTE) password;
     cred.AttributeCount = 1;
     cred.Attributes = &attr;
 
-    ok = CredWrite(&cred, 0);
+    ok = CredWriteA(&cred, 0);
     if(!ok)
     {
       _logError("pwstorage_windows_credentials_set");
@@ -151,11 +151,11 @@ GHashTable *dt_pwstorage_windows_credentials_get(const backend_windows_credentia
 
   gchar *target_name = g_strconcat("darktable - ", slot, NULL);
 
-  PCREDENTIAL pcred;
-  gboolean ok = CredRead((LPCTSTR) target_name,
-                         CRED_TYPE_GENERIC,
-                         0,
-                         &pcred);
+  PCREDENTIALA pcred = NULL;
+  gboolean ok = CredReadA((LPCSTR) target_name,
+                          CRED_TYPE_GENERIC,
+                          0,
+                          &pcred);
 
   if(ok)
   {
@@ -164,12 +164,12 @@ GHashTable *dt_pwstorage_windows_credentials_get(const backend_windows_credentia
 
     for(DWORD i = 0; i < pcred->AttributeCount; i++)
     {
-      PCREDENTIAL_ATTRIBUTE attr = &pcred->Attributes[i];
+      PCREDENTIAL_ATTRIBUTEA attr = &pcred->Attributes[i];
 
-      if(lstrcmp(attr->Keyword, L"darktable_piwigoserver") == 0)
+      if(strcmp(attr->Keyword, "darktable_piwigoserver") == 0)
       {
         g_free(server);
-        server = g_strdup((char*) attr->Value);
+        server = g_strdup((gchar*) attr->Value);
         break;
       }
     }
@@ -182,10 +182,8 @@ GHashTable *dt_pwstorage_windows_credentials_get(const backend_windows_credentia
     json_builder_set_member_name(json_builder, "username");
     json_builder_add_string_value(json_builder, (gchar*) pcred->UserName);
     json_builder_set_member_name(json_builder, "password");
-    json_builder_add_string_value(json_builder, (char*) pcred->CredentialBlob);
+    json_builder_add_string_value(json_builder, (gchar*) pcred->CredentialBlob);
     json_builder_end_object(json_builder);
-
-    CredFree(pcred);
 
     // generate JSON
     JsonGenerator *json_generator = json_generator_new();
@@ -206,6 +204,7 @@ GHashTable *dt_pwstorage_windows_credentials_get(const backend_windows_credentia
     _logError("pwstorage_windows_credentials_get");
   }
   
+  CredFree(pcred);
   g_free(target_name);
 
   return table;
