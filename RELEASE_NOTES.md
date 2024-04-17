@@ -117,6 +117,10 @@ changes (where available).
 - The history autosaving might be disabled because of slow drives, this is
   now done per image instead globally.
 
+- Added support for DNG files requiring the CameraCalibration tags for
+  correct white balancing. (Some google pixel cameras for
+  example). Requires re-reading exif metadata.
+
 ## Bug Fixes
 
 - Fix copy of multiple instances to ensure the proper order is applied
