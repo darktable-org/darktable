@@ -105,7 +105,7 @@ typedef struct dt_iop_colorequal_params_t
   float contrast;           // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "contrast"
 
   float white_level;        // $MIN: -2.0 $MAX: 16.0 $DEFAULT: 1.0 $DESCRIPTION: "white level"
-  float chroma_size;        // $MIN: 1.0 $MAX: 10.0 $DEFAULT: 1.5 $DESCRIPTION: "analysis radius"
+  float chroma_size;        // $MIN: 1.0 $MAX: 10.0 $DEFAULT: 1.5 $DESCRIPTION: "hue analysis radius"
   float param_size;         // $MIN: 1.0 $MAX: 128. $DEFAULT: 1.0 $DESCRIPTION: "effect radius"
   gboolean use_filter;      // $DEFAULT: TRUE $DESCRIPTION: "use guided filter"
 
@@ -2268,6 +2268,7 @@ static gboolean _area_size_callback(GtkWidget *widget,
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
   dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  dt_iop_colorequal_params_t *p = (dt_iop_colorequal_params_t *)self->params;
 
   // Get the current display profile
   struct dt_iop_order_iccprofile_info_t *work_profile =
@@ -2295,6 +2296,17 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     dt_UCS_22_build_gamut_LUT(input_matrix, g->gamut_LUT);
     g->max_saturation = get_minimum_saturation(g->gamut_LUT, 0.2f, 1.f);
   }
+
+  /* as we have the guided filter to be switched on/off we make depending parameters
+     not sensitve and switch off visualizing mode.
+  */
+  const gboolean guiding = p->use_filter;
+  gtk_widget_set_sensitive(GTK_WIDGET(g->threshold), guiding);
+  gtk_widget_set_sensitive(GTK_WIDGET(g->contrast), guiding);
+  gtk_widget_set_sensitive(GTK_WIDGET(g->chroma_size), guiding);
+  gtk_widget_set_sensitive(GTK_WIDGET(g->param_size), guiding);
+  if(w == g->use_filter && !guiding)
+    g->mask_mode = 0;
 
   ++darktable.gui->reset;
   if((work_profile != g->work_profile) || (w == g->hue_shift))
@@ -2476,7 +2488,7 @@ void gui_init(struct dt_iop_module_t *self)
                               _("shift nodes to lower or higher hue"));
 
   dt_bauhaus_widget_set_quad_tooltip(g->hue_shift,
-    _("pick hue from image and visualize all pickers\nctrl+click to select an area"));
+    _("pick hue from image and visualize it\nctrl+click to select an area"));
   g_signal_connect(G_OBJECT(g->hue_shift), "quad-pressed", G_CALLBACK(_picker_callback), self);
   gtk_widget_set_name(g->hue_shift, "keep-active");
   g->picking = FALSE;
@@ -2485,7 +2497,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->stack), TRUE, TRUE, 0);
   dt_action_define_iop(self, NULL, N_("sliders"), GTK_WIDGET(g->stack), NULL);
   gtk_stack_set_homogeneous(g->stack, FALSE);
-  // this should really be set in gui_update depending on whether sliders are 
+  // this should really be set in gui_update depending on whether sliders are
   // shown to prevent the module size changing when changing tabs
   // (as is the custom elsewhere and less confusing)
   // but since graph is hidden anyway under the options tab this is apparently
@@ -2575,12 +2587,14 @@ void gui_init(struct dt_iop_module_t *self)
                               _("change for sharper or softer hue curve"));
 
   g->use_filter = dt_bauhaus_toggle_from_params(self, "use_filter");
+  gtk_widget_set_tooltip_text(g->use_filter,
+                              _("restrict effect by using a guided filter based on hue and saturation"));
 
   g->chroma_size = dt_bauhaus_slider_from_params(self, "chroma_size");
   dt_bauhaus_slider_set_digits(g->chroma_size, 1);
   dt_bauhaus_slider_set_format(g->chroma_size, _(_(" px")));
   gtk_widget_set_tooltip_text(g->chroma_size,
-                              _("blurring radius of chroma prefilter analysis.\n"
+                              _("set radius of the guided filter chroma analysis (hue).\n"
                                 "increase if there is large local variance of hue or strong chroma noise."));
 
   g->threshold = dt_bauhaus_slider_from_params(self, "threshold");
@@ -2610,7 +2624,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->param_size = dt_bauhaus_slider_from_params(self, "param_size");
   dt_bauhaus_slider_set_digits(g->param_size, 1);
   dt_bauhaus_slider_set_format(g->param_size, _(_(" px")));
-  gtk_widget_set_tooltip_text(g->param_size, _("blurring radius of applied parameters"));
+  gtk_widget_set_tooltip_text(g->param_size, _("set radius of applied parameters for the guided filter"));
 
   dt_bauhaus_widget_set_quad_paint(g->param_size, dtgtk_cairo_paint_showmask, 0, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->param_size, TRUE);
