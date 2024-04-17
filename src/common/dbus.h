@@ -23,7 +23,7 @@
 
 typedef struct dt_dbus_t
 {
-  int connected;
+  gboolean connected;
 
   GDBusNodeInfo *introspection_data;
   guint owner_id;
