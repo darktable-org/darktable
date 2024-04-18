@@ -118,6 +118,7 @@ typedef unsigned int u_int;
 #endif /* dt_omp_nontemporal */
 
 #define DT_OMP_STRINGIFY(...) #__VA_ARGS__
+#define DT_OMP_SIMD(...) _Pragma(DT_OMP_STRINGIFY(omp simd __VA_ARGS__))
 #define DT_OMP_DECLARE_SIMD(...) _Pragma(DT_OMP_STRINGIFY(omp declare simd __VA_ARGS__))
 
 #else /* _OPENMP */
@@ -125,6 +126,7 @@ typedef unsigned int u_int;
 # define omp_get_max_threads() 1
 # define omp_get_thread_num() 0
 
+#define DT_OMP_SIMD(...)
 #define DT_OMP_DECLARE_SIMD(...)
 
 #endif /* _OPENMP */

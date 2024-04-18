@@ -323,6 +323,7 @@ static void vng_interpolate(
   dt_free_align(buffer);
 
   if(filters != 9 && !FILTERS_ARE_4BAYER(filters)) // x-trans or CYGM/RGBE
+  {
 // for Bayer mix the two greens to make VNG4
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -331,6 +332,7 @@ static void vng_interpolate(
     schedule(static)
 #endif
     for(int i = 0; i < height * width; i++) out[i * 4 + 1] = (out[i * 4 + 1] + out[i * 4 + 3]) / 2.0f;
+  }
 }
 
 #ifdef HAVE_OPENCL

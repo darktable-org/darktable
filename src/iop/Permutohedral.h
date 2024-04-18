@@ -167,9 +167,7 @@ public:
 
     Key(const Key &origin, int dim, int direction) // construct neighbor in dimension 'dim'
     {
-#ifdef _OPENMP
-#pragma omp simd
-#endif
+      DT_OMP_SIMD()
       for(int i = 0; i < KD; i++)
 	 key[i] = origin.key[i] + direction;
       key[dim] = origin.key[dim] - direction * KD;
@@ -541,9 +539,7 @@ public:
     constexpr float scale = 1.0f / (D + 1);
 
     // greedily search for the closest zero-colored lattice point
-#ifdef _OPENMP
-#pragma omp simd
-#endif
+    DT_OMP_SIMD()
     for(size_t i = 0; i <= D; i++)
     {
       float v = elevated[i] * scale;

@@ -258,9 +258,7 @@ void dt_bilateral_splat(const dt_bilateral_t *b, const float *const in)
           (1.0f - xf) * yf * 100.0f / sigma_s,
           xf * yf * 100.0f / sigma_s
         };
-#ifdef _OPENMP
-#pragma omp simd aligned(buf:64)
-#endif
+        DT_OMP_SIMD(aligned(buf:64))
         for(int k = 0; k < 4; k++)
         {
           buf[grid_index + offsets[k]] += (contrib[k] * (1.0f - zf));

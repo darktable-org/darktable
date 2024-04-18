@@ -235,9 +235,7 @@ static void _store_scaled_4wide(float *const restrict out,
 static void _sub_16wide(float *const restrict accum,
                         const float *const restrict values)
 {
-#ifdef _OPENMP
-#pragma omp simd aligned(accum : 64) aligned(values : 16)
-#endif
+  DT_OMP_SIMD(aligned(accum : 64) aligned(values : 16))
   for(size_t c = 0; c < 16; c++)
     accum[c] -= values[c];
 }
@@ -247,9 +245,7 @@ static void _load_add_16wide(float *const restrict out,
     float *const restrict accum,
     const float *const restrict in)
 {
-#ifdef _OPENMP
-#pragma omp simd aligned(accum, out : 64)
-#endif
+  DT_OMP_SIMD(aligned(accum, out : 64))
   for(size_t c = 0; c < 16; c++)
   {
     const float v = in[c];
@@ -262,9 +258,7 @@ static void _sub_16wide_Kahan(float *const restrict accum,
     const float *const restrict values,
     float *const restrict comp)
 {
-#ifdef _OPENMP
-#pragma omp simd aligned(accum,comp : 64) aligned(values : 16)
-#endif
+  DT_OMP_SIMD(aligned(accum,comp : 64) aligned(values : 16))
   for(size_t c = 0; c < 16; c++)
   {
     const float v = -values[c];
@@ -282,9 +276,7 @@ static void _load_add_16wide_Kahan(float *const restrict out,
     const float *const restrict in,
     float *const restrict comp)
 {
-#ifdef _OPENMP
-#pragma omp simd aligned(accum, comp, out : 64)
-#endif
+  DT_OMP_SIMD(aligned(accum, comp, out : 64))
   for(size_t c = 0; c < 16; c++)
   {
     const float v = in[c];
@@ -301,9 +293,7 @@ static void _load_add_16wide_Kahan(float *const restrict out,
 static void _store_16wide(float *const restrict out,
                          const float *const restrict in)
 {
-#ifdef _OPENMP
-#pragma omp simd aligned(in : 64)
-#endif
+  DT_OMP_SIMD(aligned(in : 64))
   for(size_t c = 0; c < 16; c++)
     out[c] = in[c];
 }
@@ -312,9 +302,7 @@ static void _store_scaled_16wide(float *const restrict out,
     const float *const restrict in,
     const float scale)
 {
-#ifdef _OPENMP
-#pragma omp simd aligned(in : 64)
-#endif
+  DT_OMP_SIMD(aligned(in : 64))
   for(size_t c = 0; c < 16; c++)
     out[c] = in[c] / scale;
 }
@@ -324,9 +312,7 @@ static void _sub_Nwide_Kahan(const size_t N,
     const float *const restrict values,
     float *const restrict comp)
 {
-#ifdef _OPENMP
-#pragma omp simd aligned(accum,comp : 64)
-#endif
+  DT_OMP_SIMD(aligned(accum,comp : 64))
   for(size_t c = 0; c < N; c++)
   {
     const float v = -values[c];
@@ -345,9 +331,7 @@ static void _load_add_Nwide_Kahan(const size_t N,
     const float *const restrict in,
     float *const restrict comp)
 {
-#ifdef _OPENMP
-#pragma omp simd aligned(accum, comp : 64)
-#endif
+  DT_OMP_SIMD(aligned(accum, comp : 64))
   for(size_t c = 0; c < N; c++)
   {
     const float v = in[c];
@@ -365,9 +349,7 @@ static void _store_scaled_Nwide(const size_t N,
     const float *const restrict in,
     const float scale)
 {
-#ifdef _OPENMP
-#pragma omp simd aligned(in : 64)
-#endif
+  DT_OMP_SIMD(aligned(in : 64))
   for(size_t c = 0; c < N; c++)
     out[c] = in[c] / scale;
 }
@@ -1244,9 +1226,7 @@ static inline void box_max_1d(const int N,
 
 static void _set_16wide(float *const restrict out, const float value)
 {
-#ifdef _OPENMP
-#pragma omp simd aligned(out : 64)
-#endif
+  DT_OMP_SIMD(aligned(out : 64))
   for(size_t c = 0; c < 16; c++)
     out[c] = value;
 }
@@ -1254,9 +1234,7 @@ static void _set_16wide(float *const restrict out, const float value)
 static inline void _update_max_16wide(float m[16],
     const float *const restrict base)
 {
-#ifdef _OPENMP
-#pragma omp simd aligned(m, base : 64)
-#endif
+  DT_OMP_SIMD(aligned(m, base : 64))
   for(size_t c = 0; c < 16; c++)
   {
     m[c] = fmaxf(m[c], base[c]);
@@ -1267,9 +1245,7 @@ static inline void _load_update_max_16wide(float *const restrict out,
     float m[16],
     const float *const restrict base)
 {
-#ifdef _OPENMP
-#pragma omp simd aligned(out, m : 64)
-#endif
+  DT_OMP_SIMD(aligned(out, m : 64))
   for(size_t c = 0; c < 16; c++)
   {
     const float v = base[c];
@@ -1409,9 +1385,7 @@ static inline void _box_min_1d(int N, const float *x, float *y, size_t stride_y,
 
 static inline void _update_min_16wide(float m[16], const float *const restrict base)
 {
-#ifdef _OPENMP
-#pragma omp simd aligned(m, base : 64)
-#endif
+  DT_OMP_SIMD(aligned(m, base : 64))
   for(size_t c = 0; c < 16; c++)
   {
     m[c] = fminf(m[c], base[c]);
@@ -1422,9 +1396,7 @@ static inline void _load_update_min_16wide(float *const restrict out,
     float m[16],
     const float *const restrict base)
 {
-#ifdef _OPENMP
-#pragma omp simd aligned(out, m : 64)
-#endif
+  DT_OMP_SIMD(aligned(out, m : 64))
   for(size_t c = 0; c < 16; c++)
   {
     const float v = base[c];

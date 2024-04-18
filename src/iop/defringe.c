@@ -386,9 +386,7 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
       }
       else
       {
-        #ifdef _OPENMP
-        #pragma omp simd aligned(in, out)
-        #endif
+        DT_OMP_SIMD(aligned(in, out))
         // we can't copy the alpha channel here because it contains info needed by neighboring pixels!
         for(int c = 0; c < 3; c++)
         {

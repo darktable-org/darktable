@@ -445,9 +445,7 @@ static void process_floyd_steinberg(
 
   // once the FS dithering gets started, we can copy&clip the downright pixel, as that will be the first time
   // it will be accessed.  But to get the process started, we need to prepare the top row of pixels
-#ifdef _OPENMP
-#pragma omp simd aligned(in, out : 64)
-#endif
+  DT_OMP_SIMD(aligned(in, out : 64))
   for(int j = 0; j < width; j++)
   {
     _clipnan_pixel(out + 4*j, in + 4*j);

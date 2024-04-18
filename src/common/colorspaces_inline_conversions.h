@@ -868,9 +868,7 @@ static inline void dt_XYZ_2_JzAzBz(const dt_aligned_pixel_t XYZ_D65, dt_aligned_
   // X'Y'Z -> L'M'S'
   dt_aligned_pixel_t LMS = { 0.0f, 0.0f, 0.0f, 0.0f };
   dt_apply_transposed_color_matrix(XYZ, M_transposed, LMS);
-#ifdef _OPENMP
-#pragma omp simd aligned(LMS, XYZ:16)
-#endif
+  DT_OMP_SIMD(aligned(LMS, XYZ:16))
   for(int i = 0; i < 3; i++)
   {
     LMS[i] = powf(fmaxf(LMS[i] / 10000.f, 0.0f), n);

@@ -260,9 +260,7 @@ static inline float scalar_product(const dt_aligned_pixel_t v_1,
   // SSE4 _mm_dp_ps() hoping the compiler will get the clue
   float acc = 0.f;
 
-#ifdef _OPENMP
-#pragma omp simd aligned(v_1, v_2:16) reduction(+:acc)
-#endif
+  DT_OMP_SIMD(aligned(v_1, v_2:16) reduction(+:acc))
   for(size_t c = 0; c < 3; c++)
     acc += v_1[c] * v_2[c];
 
@@ -276,9 +274,7 @@ static inline void dot_product(const dt_aligned_pixel_t v_in,
                                dt_aligned_pixel_t v_out)
 {
   // specialized 3×4 dot products of 4×1 RGB-alpha pixels
-  #ifdef _OPENMP
-  #pragma omp simd aligned(M:64) aligned(v_in, v_out:16)
-  #endif
+  DT_OMP_SIMD(aligned(M:64) aligned(v_in, v_out:16))
   for(size_t i = 0; i < 3; ++i)
     v_out[i] = scalar_product(v_in, M[i]);
 }
