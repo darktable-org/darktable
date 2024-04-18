@@ -637,7 +637,9 @@ void gui_init(dt_iop_module_t *self)
   c->mode_stack = gtk_stack_new();
   gtk_stack_set_homogeneous(GTK_STACK(c->mode_stack),FALSE);
 
-  c->area = GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL, 0, "plugins/darkroom/levels/aspect_percent"));
+  c->area = GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL,
+                                               0,
+                                               "plugins/darkroom/levels/graphheight"));
   GtkWidget *vbox_manual = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
   gtk_box_pack_start(GTK_BOX(vbox_manual), GTK_WIDGET(c->area), TRUE, TRUE, 0);
 
