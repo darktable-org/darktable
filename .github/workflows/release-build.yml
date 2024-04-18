@@ -39,21 +39,11 @@ jobs:
       GENERATOR: ${{ matrix.generator }}
       TARGET: ${{ matrix.target }}
     steps:          
-      # - uses: actions/checkout@v4
-      #   with:
-      #     ref: ${{ vars.RELEASE_TAG }}
-      #     submodules: true
-      #     path: src
-      - name: Checkout darktable release branch
-        run: |
-          # Note that we can't make a shallow clone to reduce clone traffic and time, as we have to
-          # fetch the entire history to correctly generate the version for the disk image filename
-          git clone --depth 1 --branch ${{ vars.RELEASE_TAG }} https://github.com/darktable-org/darktable src
-          pushd src
-          git submodule init
-          git config submodule.src/tests/integration.update none
-          git submodule update
-          popd
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ vars.RELEASE_TAG }}
+          submodules: true
+          path: src
       - name: Install Base Dependencies
         run: |
           brew update > /dev/null || true
