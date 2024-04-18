@@ -180,20 +180,13 @@ int write_image(dt_imageio_module_data_t *p_tmp, const char *filename, const voi
   cmsSaveProfileToMem(out_profile, NULL, &len);
   if(len > 0)
   {
-    char *buf = malloc(sizeof(char) * len);
+    png_bytep buf = malloc(sizeof(png_byte) * len);
     if(buf)
     {
       cmsSaveProfileToMem(out_profile, buf, &len);
       char name[512] = { 0 };
       dt_colorspaces_get_profile_name(out_profile, "en", "US", name, sizeof(name));
-
-      png_set_iCCP(png_ptr, info_ptr, *name ? name : "icc", 0,
-#if(PNG_LIBPNG_VER < 10500)
-                    (png_charp)buf,
-#else
-                    (png_const_bytep)buf,
-#endif
-                    len);
+      png_set_iCCP(png_ptr, info_ptr, *name ? name : "icc", 0, buf, len);
       free(buf);
     }
   }
@@ -219,7 +212,6 @@ int write_image(dt_imageio_module_data_t *p_tmp, const char *filename, const voi
 
   png_write_info(png_ptr, info_ptr);
 
-#if(PNG_LIBPNG_VER >= 10500)
   /*
    * If possible, we want libpng to save the color encoding in a new
    * cICP chunk as well (see https://www.w3.org/TR/png-3/#cICP-chunk).
@@ -282,7 +274,6 @@ int write_image(dt_imageio_module_data_t *p_tmp, const char *filename, const voi
     const png_byte chunk_name[5] = "cICP";
     png_write_chunk(png_ptr, chunk_name, data, 4);
   }
-#endif
 
   /*
    * Get rid of filler (OR ALPHA) bytes, pack XRGB/RGBX/ARGB/RGBA into
