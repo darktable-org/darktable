@@ -196,6 +196,7 @@ changes (where available).
 ### Mandatory
 
 - Minimum libpng version 1.5.x is now required
+- Bump Exiv2 requirement to 0.27.2
 
 ### Optional
 

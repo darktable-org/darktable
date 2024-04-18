@@ -374,6 +374,7 @@ static void _exif_import_tags(dt_image_t *img, Exiv2::XmpData::iterator &pos);
 static void _read_xmp_timestamps(Exiv2::XmpData &xmpData,
                                  dt_image_t *img,
                                  const int xmp_version);
+
 static void _read_xmp_harmony_guide(Exiv2::XmpData &xmpData,
                                     dt_image_t *img,
                                     const int xmp_version);
@@ -1467,8 +1468,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     {
       img->exif_focus_distance = pos->toFloat();
     }
-    else if(Exiv2::testVersion(0,27,2)
-            && FIND_EXIF_TAG("Exif.Sony2Fp.FocusPosition2"))
+    else if(FIND_EXIF_TAG("Exif.Sony2Fp.FocusPosition2"))
     {
       const float focus_position = pos->toFloat();
 
@@ -5037,12 +5037,6 @@ static void _exif_xmp_read_data_export(Exiv2::XmpData &xmpData,
   g_free(iop_order_list);
 }
 
-#if EXIV2_TEST_VERSION(0,27,0)
-#define ERROR_CODE(a) (static_cast<Exiv2::ErrorCode>((a)))
-#else
-#define ERROR_CODE(a) (a)
-#endif
-
 char *dt_exif_xmp_read_string(const dt_imgid_t imgid)
 {
   try
@@ -5104,7 +5098,7 @@ char *dt_exif_xmp_read_string(const dt_imgid_t imgid)
                                 Exiv2::XmpParser::useCompactFormat
                                 | Exiv2::XmpParser::omitPacketWrapper) != 0)
     {
-      throw Exiv2::Error(ERROR_CODE(1), "[xmp_write] failed to serialize xmp data");
+      throw Exiv2::Error(Exiv2::ErrorCode::kerErrorMessage, "[xmp_write] failed to serialize xmp data");
     }
     return g_strdup(xmpPacket.c_str());
   }
@@ -5630,11 +5624,7 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid,
     }
     catch(Exiv2::AnyError &e)
     {
-#if EXIV2_TEST_VERSION(0, 27, 0)
       if(e.code() == Exiv2::ErrorCode::kerTooLargeJpegSegment)
-#else
-      if(e.code() == 37)
-#endif
       {
         _remove_xmp_keys(xmpData, "Xmp.darktable.history");
         _remove_xmp_keys(xmpData, "Xmp.darktable.masks_history");
@@ -5726,7 +5716,7 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid,
     if(Exiv2::XmpParser::encode(xmpPacket, xmpData,
        Exiv2::XmpParser::useCompactFormat | Exiv2::XmpParser::omitPacketWrapper) != 0)
     {
-      throw Exiv2::Error(ERROR_CODE(1), "[xmp_write] failed to serialize xmp data");
+      throw Exiv2::Error(Exiv2::ErrorCode::kerErrorMessage, "[xmp_write] failed to serialize xmp data");
     }
 
     // Hash the new data and compare it to the old hash (if applicable).
