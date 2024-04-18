@@ -412,9 +412,7 @@ static void dwt_denoise_vert_1ch(
     const float *const restrict above =  in + abs(row - vscale) * width;
     const float *const restrict below = in + below_row * width;
     float* const restrict outrow = out + rowstart;
-#ifdef _OPENMP
-#pragma omp simd
-#endif
+    DT_OMP_SIMD()
     for(int col= 0; col < width; col++)
     {
       outrow[col] = 2.f * center[col] + above[col] + below[col];
@@ -453,9 +451,7 @@ static void dwt_denoise_horiz_1ch(
     float *const restrict coarse = out + rowindex;
     float *const restrict accum_row = accum + rowindex;
     // handle reflection at left edge
-#ifdef _OPENMP
-#pragma omp simd
-#endif
+    DT_OMP_SIMD()
     for(int col = 0; col < hscale; col++)
     {
       // add up left/center/right, and renormalize by dividing by the total weight of all numbers added together
@@ -469,9 +465,7 @@ static void dwt_denoise_horiz_1ch(
       //const float excess = diff < 0.0 ? MIN(diff + thold, 0.0f) : MAX(diff - thold, 0.0f);
       accum_row[col] += MAX(diff - thold,0.0f) + MIN(diff + thold, 0.0f);
     }
-#ifdef _OPENMP
-#pragma omp simd
-#endif
+    DT_OMP_SIMD()
     for(int col = hscale; col < width - hscale; col++)
     {
       // add up left/center/right, and renormalize by dividing by the total weight of all numbers added together
@@ -486,9 +480,7 @@ static void dwt_denoise_horiz_1ch(
       accum_row[col] += MAX(diff - thold,0.0f) + MIN(diff + thold, 0.0f);
     }
     // handle reflection at right edge
-#ifdef _OPENMP
-#pragma omp simd
-#endif
+    DT_OMP_SIMD()
     for(int col = width - hscale; col < width; col++)
     {
       const float right = coarse[2*width - 2 - (col+hscale)];

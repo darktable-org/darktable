@@ -1267,9 +1267,7 @@ static void _display_channel(const float *const restrict a, float *const restric
 DT_OMP_DECLARE_SIMD(aligned(a, b:16) uniform(stride))
 static inline void _copy_mask(const float *const restrict a, float *const restrict b, const size_t stride)
 {
-#ifdef _OPENMP
-#pragma omp simd aligned(a, b: 16)
-#endif
+  DT_OMP_SIMD(aligned(a, b: 16))
   for(size_t x = DT_BLENDIF_RGB_BCH; x < stride; x += DT_BLENDIF_RGB_CH) b[x] = a[x];
 }
 

@@ -1121,9 +1121,7 @@ static int _circle_get_mask(const dt_iop_module_t *const restrict module,
   {
     float *const restrict p = points + 2 * i * w;
     const float y = i + pos_y;
-#ifdef _OPENMP
-#pragma omp simd aligned(points : 64)
-#endif
+    DT_OMP_SIMD(aligned(points : 64))
     for(int j = 0; j < w; j++)
     {
       p[2*j] = pos_x + j;

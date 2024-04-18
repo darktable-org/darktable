@@ -838,9 +838,7 @@ static inline void apply_toneequalizer(const float *const restrict in,
     // quickely diverge outside
     const float exposure = fast_clamp(log2f(luminance[k]), -8.0f, 0.0f);
 
-#ifdef _OPENMP
-#pragma omp simd aligned(luminance, centers_ops, factors:64) safelen(PIXEL_CHAN) reduction(+:result)
-#endif
+    DT_OMP_SIMD(aligned(luminance, centers_ops, factors:64) safelen(PIXEL_CHAN) reduction(+:result))
     for(int i = 0; i < PIXEL_CHAN; ++i)
       result += gaussian_func(exposure - centers_ops[i], gauss_denom) * factors[i];
 
@@ -866,9 +864,7 @@ static inline float pixel_correction(const float exposure,
   const float gauss_denom = gaussian_denom(sigma);
   const float expo = fast_clamp(exposure, -8.0f, 0.0f);
 
-#ifdef _OPENMP
-#pragma omp simd aligned(centers_ops, factors:64) safelen(PIXEL_CHAN) reduction(+:result)
-#endif
+  DT_OMP_SIMD(aligned(centers_ops, factors:64) safelen(PIXEL_CHAN) reduction(+:result))
   for(int i = 0; i < PIXEL_CHAN; ++i)
     result += gaussian_func(expo - centers_ops[i], gauss_denom) * factors[i];
 
@@ -1292,9 +1288,7 @@ static void get_channels_factors(float factors[CHANNELS],
   get_channels_gains(factors, p);
 
   // Convert from EV offsets to linear factors
-#ifdef _OPENMP
-#pragma omp simd aligned(factors:64)
-#endif
+  DT_OMP_SIMD(aligned(factors:64))
   for(int c = 0; c < CHANNELS; ++c)
     factors[c] = exp2f(factors[c]);
 }
@@ -1418,9 +1412,7 @@ static inline void build_interpolation_matrix(float A[CHANNELS * PIXEL_CHAN],
 
   const float gauss_denom = gaussian_denom(sigma);
 
-#ifdef _OPENMP
-#pragma omp simd aligned(A, centers_ops, centers_params:64) collapse(2)
-#endif
+  DT_OMP_SIMD(aligned(A, centers_ops, centers_params:64) collapse(2))
   for(int i = 0; i < CHANNELS; ++i)
     for(int j = 0; j < PIXEL_CHAN; ++j)
       A[i * PIXEL_CHAN + j] =
