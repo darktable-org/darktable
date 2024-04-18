@@ -41,12 +41,7 @@ struct _GtkDarktableDrawingArea
    */
   double aspect;
   int height;
-} GtkDarktableDrawingArea;
-
-typedef struct _GtkDarktableDrawingAreaClass
-{
-  GtkDrawingAreaClass parent_class;
-} GtkDarktableDrawingAreaClass;
+};
 
 GType dtgtk_drawing_area_get_type(void);
 
@@ -62,4 +57,3 @@ G_END_DECLS
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
