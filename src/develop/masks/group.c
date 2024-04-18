@@ -560,9 +560,7 @@ static void _combine_masks_intersect(float *const restrict dest,
   }
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline int both_positive(const float val1, const float val2)
 {
   // this needs to be a separate inline function to convince the compiler to vectorize

@@ -53,9 +53,7 @@ static inline void _update_stats_4ch(dt_aligned_pixel_t acc,
     _update_stats_by_ch(acc, low, high, k, pick[k]);
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(rgb, JzCzhz: 16) uniform(profile)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(rgb, JzCzhz: 16) uniform(profile))
 static inline void rgb_to_JzCzhz(const dt_aligned_pixel_t rgb,
                                  dt_aligned_pixel_t JzCzhz,
                                  const dt_iop_order_iccprofile_info_t *const profile)

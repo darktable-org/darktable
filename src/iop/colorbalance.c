@@ -328,9 +328,7 @@ void init_presets(dt_iop_module_so_t *self)
 static const dt_aligned_pixel_t zero = { 0.0f, 0.0f, 0.0f, 0.0f };
 static const dt_aligned_pixel_t one = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-#ifdef _OPENMP
-#pragma omp declare simd simdlen(4)
-#endif
+DT_OMP_DECLARE_SIMD(simdlen(4))
 static inline float CDL(float x, float slope, float offset, float power)
 {
   float out;

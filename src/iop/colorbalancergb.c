@@ -558,9 +558,7 @@ void init_presets(dt_iop_module_so_t *self)
 
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(output, output_comp: 16) uniform(shadows_weight, midtones_weight, highlights_weight)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(output, output_comp: 16) uniform(shadows_weight, midtones_weight, highlights_weight))
 static inline void opacity_masks(const float x,
                                  const float shadows_weight, const float highlights_weight,
                                  const float midtones_weight, const float mask_grey_fulcrum,

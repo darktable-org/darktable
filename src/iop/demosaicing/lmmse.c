@@ -118,9 +118,7 @@ static inline float _calc_gamma(float val, float *table)
   return (p1 + p2 * diff);
 }
 
-#ifdef _OPENMP
-  #pragma omp declare simd aligned(in, out)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(in, out))
 static void lmmse_demosaic(
         dt_dev_pixelpipe_iop_t *piece,
         float *const restrict out,

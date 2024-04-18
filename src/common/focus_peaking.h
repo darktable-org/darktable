@@ -27,26 +27,20 @@
  * header (provided the rest of the code complies).
  **/
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline float uint8_to_float(const uint8_t i)
 {
   return (float)i / 255.0f;
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline uint8_t float_to_uint8(const float i)
 {
   return (uint8_t)(i * 255.0f);
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(image, index:64) uniform(image)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(image, index:64) uniform(image))
 static inline float laplacian(const float *const image, const size_t index[8])
 {
   // Compute the magnitude of the gradient over the principal directions,
@@ -62,9 +56,7 @@ static inline float laplacian(const float *const image, const size_t index[8])
   return (l1 + l2) / 2.0f;
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline void get_indices(const size_t i, const size_t j, const size_t width, const size_t height, const size_t delta, size_t index[8])
 {
   const size_t upper_line = (i - delta) * width;

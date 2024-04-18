@@ -434,9 +434,7 @@ static void keystone_get_matrix(const dt_boundingbox_t k_space, float kxa, float
           + kyb * kyb * (kxc * kxd * kxd * kyc - kxc * kxc * kxd * kyd));
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline void keystone_backtransform(float *i, const dt_boundingbox_t k_space, float a, float b, float d,
                                           float e, float g, float h, float kxa, float kya)
 {
@@ -449,9 +447,7 @@ static inline void keystone_backtransform(float *i, const dt_boundingbox_t k_spa
   i[1] = -(d * xx - a * yy) / div + kya;
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline void keystone_transform(float *i, const dt_boundingbox_t k_space, float a, float b, float d,
                                       float e, float g, float h, float kxa, float kya)
 {
@@ -463,9 +459,7 @@ static inline void keystone_transform(float *i, const dt_boundingbox_t k_space, 
   i[1] = (d * xx + e * yy) / div + k_space[1];
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline void backtransform(float *x, float *o, const float *m, const float t_h, const float t_v)
 {
   x[1] /= (1.0f + x[0] * t_h);
@@ -473,9 +467,7 @@ static inline void backtransform(float *x, float *o, const float *m, const float
   mul_mat_vec_2(m, x, o);
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline void inv_matrix(float *m, float *inv_m)
 {
   const float det = (m[0] * m[3]) - (m[1] * m[2]);
@@ -485,9 +477,7 @@ static inline void inv_matrix(float *m, float *inv_m)
   inv_m[3] =  m[0] / det;
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline void transform(float *x, float *o, const float *m, const float t_h, const float t_v)
 {
   mul_mat_vec_2(m, x, o);

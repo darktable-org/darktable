@@ -401,9 +401,7 @@ void init_presets(dt_iop_module_so_t *self)
 }
 
 // thinplate spline kernel \phi(r) = 2 r^2 ln(r)
-#if defined(_OPENMP)
-#pragma omp declare simd aligned(x, y)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(x, y))
 static inline float kernel(const dt_aligned_pixel_t x,
                            const dt_aligned_pixel_t y)
 {

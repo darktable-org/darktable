@@ -747,17 +747,13 @@ int scrolled(
   return 0;
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd simdlen(4)
-#endif
+DT_OMP_DECLARE_SIMD(simdlen(4))
 static inline float _density_times_length(const float dens, const float length)
 {
   return (dens * CLAMP(0.5f + length, 0.0f, 1.0f) / 8.0f);
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd simdlen(4)
-#endif
+DT_OMP_DECLARE_SIMD(simdlen(4))
 static inline float _compute_density(const float dens, const float length)
 {
 #if 1

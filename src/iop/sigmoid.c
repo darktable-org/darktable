@@ -301,9 +301,7 @@ void init_presets(dt_iop_module_so_t *self)
 }
 
 // Declared here as it is used in the commit params function
-#ifdef _OPENMP
-#pragma omp declare simd uniform(magnitude, paper_exp, film_fog, film_power, paper_power)
-#endif
+DT_OMP_DECLARE_SIMD(uniform(magnitude, paper_exp, film_fog, film_power, paper_power))
 static inline float _generalized_loglogistic_sigmoid(const float value,
                                                      const float magnitude,
                                                      const float paper_exp,
@@ -498,9 +496,7 @@ static const dt_iop_order_iccprofile_info_t * _get_base_profile(struct dt_develo
   return dt_ioppr_add_profile_info_to_list(dev, _get_base_profile_type(base_primaries), "", DT_INTENT_RELATIVE_COLORIMETRIC);
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline void _desaturate_negative_values(const dt_aligned_pixel_t pix_in, dt_aligned_pixel_t pix_out)
 {
   const float pixel_average = fmaxf((pix_in[0] + pix_in[1] + pix_in[2]) / 3.0f, 0.0f);

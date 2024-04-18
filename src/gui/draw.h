@@ -165,9 +165,7 @@ static inline void dt_draw_grid_zoomed(cairo_t *cr,
   }
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd uniform(base)
-#endif
+DT_OMP_DECLARE_SIMD(uniform(base))
 static inline float dt_log_scale_axis(const float x,
                                       const float base)
 {
