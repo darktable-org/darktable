@@ -38,7 +38,7 @@
 
 typedef void(_blend_row_func)(const float *const a, const float *const b, const float p,
                               float *const out, const float *const restrict mask, const size_t stride);
-
+#define _BLEND_FUNC _BLEND_FUNC_PROTO((a, b, out: 16), (p, stride))
 
 #ifdef _OPENMP
 #pragma omp declare simd uniform(parameters, invert_mask)
@@ -366,10 +366,7 @@ void dt_develop_blendif_rgb_jzczhz_make_mask(struct dt_dev_pixelpipe_iop_t *piec
 
 
 /* normal blend without any clamping */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(p, stride)
-#endif
-static void _blend_normal(const float *const a,
+_BLEND_FUNC _blend_normal(const float *const a,
                           const float *const b,
                           const float p,
                           float *const out,
@@ -388,10 +385,7 @@ static void _blend_normal(const float *const a,
 }
 
 /* multiply */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(p, stride)
-#endif
-static void _blend_multiply(const float *const a,
+_BLEND_FUNC _blend_multiply(const float *const a,
                             const float *const b,
                             const float p,
                             float *const out,
@@ -410,10 +404,7 @@ static void _blend_multiply(const float *const a,
 }
 
 /* add */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(p, stride)
-#endif
-static void _blend_add(const float *const a,
+_BLEND_FUNC _blend_add(const float *const a,
                        const float *const b,
                        const float p,
                        float *const out,
@@ -432,10 +423,7 @@ static void _blend_add(const float *const a,
 }
 
 /* subtract */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(p, stride)
-#endif
-static void _blend_subtract(const float *const a,
+_BLEND_FUNC _blend_subtract(const float *const a,
                             const float *const b,
                             const float p,
                             float *const out,
@@ -454,10 +442,7 @@ static void _blend_subtract(const float *const a,
 }
 
 /* subtract inverse */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(p, stride)
-#endif
-static void _blend_subtract_inverse(const float *const a,
+_BLEND_FUNC _blend_subtract_inverse(const float *const a,
                                     const float *const b,
                                     const float p,
                                     float *const out,
@@ -476,10 +461,7 @@ static void _blend_subtract_inverse(const float *const a,
 }
 
 /* difference */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(p, stride)
-#endif
-static void _blend_difference(const float *const a,
+_BLEND_FUNC _blend_difference(const float *const a,
                               const float *const b,
                               const float p,
                               float *const out,
@@ -498,10 +480,7 @@ static void _blend_difference(const float *const a,
 }
 
 /* divide */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(p, stride)
-#endif
-static void _blend_divide(const float *const a,
+_BLEND_FUNC _blend_divide(const float *const a,
                           const float *const b,
                           const float p,
                           float *const out,
@@ -520,10 +499,7 @@ static void _blend_divide(const float *const a,
 }
 
 /* divide inverse */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(p, stride)
-#endif
-static void _blend_divide_inverse(const float *const a,
+_BLEND_FUNC _blend_divide_inverse(const float *const a,
                                   const float *const b,
                                   const float p,
                                   float *const out,
@@ -542,10 +518,7 @@ static void _blend_divide_inverse(const float *const a,
 }
 
 /* average */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(p, stride)
-#endif
-static void _blend_average(const float *const a,
+_BLEND_FUNC _blend_average(const float *const a,
                            const float *const b,
                            const float p,
                            float *const out,
@@ -564,10 +537,7 @@ static void _blend_average(const float *const a,
 }
 
 /* geometric mean */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(p, stride)
-#endif
-static void _blend_geometric_mean(const float *const a,
+_BLEND_FUNC _blend_geometric_mean(const float *const a,
                                   const float *const b,
                                   const float p,
                                   float *const out,
@@ -586,10 +556,7 @@ static void _blend_geometric_mean(const float *const a,
 }
 
 /* harmonic mean */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(p, stride)
-#endif
-static void _blend_harmonic_mean(const float *const a,
+_BLEND_FUNC _blend_harmonic_mean(const float *const a,
                                  const float *const b,
                                  const float p,
                                  float *const out,
@@ -610,10 +577,7 @@ static void _blend_harmonic_mean(const float *const a,
 }
 
 /* chromaticity */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(p, stride)
-#endif
-static void _blend_chromaticity(const float *const a,
+_BLEND_FUNC _blend_chromaticity(const float *const a,
                                 const float *const b,
                                 const float p,
                                 float *const out,
@@ -634,10 +598,7 @@ static void _blend_chromaticity(const float *const a,
 }
 
 /* luminance */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(p, stride)
-#endif
-static void _blend_luminance(const float *const a,
+_BLEND_FUNC _blend_luminance(const float *const a,
                              const float *const b,
                              const float p,
                              float *const out,
@@ -658,10 +619,7 @@ static void _blend_luminance(const float *const a,
 }
 
 /* blend only R-channel in RGB color space without any clamping */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(p, stride)
-#endif
-static void _blend_RGB_R(const float *const a,
+_BLEND_FUNC _blend_RGB_R(const float *const a,
                          const float *const b,
                          const float p,
                          float *const out,
@@ -679,10 +637,7 @@ static void _blend_RGB_R(const float *const a,
 }
 
 /* blend only R-channel in RGB color space without any clamping */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(p, stride)
-#endif
-static void _blend_RGB_G(const float *const a,
+_BLEND_FUNC _blend_RGB_G(const float *const a,
                          const float *const b,
                          const float p,
                          float *const out,
@@ -700,10 +655,7 @@ static void _blend_RGB_G(const float *const a,
 }
 
 /* blend only R-channel in RGB color space without any clamping */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(p, stride)
-#endif
-static void _blend_RGB_B(const float *const a,
+_BLEND_FUNC _blend_RGB_B(const float *const a,
                          const float *const b,
                          const float p,
                          float *const out,

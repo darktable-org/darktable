@@ -117,6 +117,8 @@ typedef unsigned int u_int;
 #endif
 #endif /* dt_omp_nontemporal */
 
+#define DT_OMP_STRINGIFY(...) #__VA_ARGS__
+
 #else /* _OPENMP */
 
 # define omp_get_max_threads() 1
