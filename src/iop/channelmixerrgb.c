@@ -628,9 +628,7 @@ static gboolean _get_white_balance_coeff(struct dt_iop_module_t *self,
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(input, output:16) uniform(compression, clip)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(input, output:16) uniform(compression, clip))
 static inline void _gamut_mapping(const dt_aligned_pixel_t input,
                                   const float compression,
                                   const int clip,
@@ -693,10 +691,7 @@ static inline void _gamut_mapping(const dt_aligned_pixel_t input,
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(input, output, saturation, lightness:16) \
-  uniform(saturation, lightness)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(input, output, saturation, lightness:16) uniform(saturation, lightness))
 static inline void _luma_chroma(const dt_aligned_pixel_t input,
                                 const dt_aligned_pixel_t saturation,
                                 const dt_aligned_pixel_t lightness,
@@ -758,9 +753,7 @@ static inline void _luma_chroma(const dt_aligned_pixel_t input,
   }
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(in, out, XYZ_to_RGB, RGB_to_XYZ, MIX : 64) aligned(illuminant, saturation, lightness, grey:16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(in, out, XYZ_to_RGB, RGB_to_XYZ, MIX : 64) aligned(illuminant, saturation, lightness, grey:16))
 static inline void _loop_switch(const float *const restrict in,
                                 float *const restrict out,
                                 const size_t width,

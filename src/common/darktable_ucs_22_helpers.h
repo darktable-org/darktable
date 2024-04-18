@@ -192,9 +192,7 @@ static inline float soft_clip(const float x, const float soft_threshold, const f
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(HSB: 16) uniform(gamut_LUT, L_white)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(HSB: 16) uniform(gamut_LUT, L_white))
 static inline void gamut_map_HSB(dt_aligned_pixel_t HSB, const float gamut_LUT[LUT_ELEM], const float L_white)
 {
   /**

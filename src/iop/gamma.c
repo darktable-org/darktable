@@ -62,9 +62,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(in, out, mask_color: 16) uniform(mask_color, alpha)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(in, out, mask_color: 16) uniform(mask_color, alpha))
 static inline void _write_pixel(const float *const restrict in,
                                 uint8_t *const restrict out,
                                 const float *const restrict mask_color,
@@ -89,9 +87,7 @@ static inline void _write_pixel(const float *const restrict in,
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(pixel: 16) uniform(norm)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(pixel: 16) uniform(norm))
 static void _normalize_color(float *const restrict pixel, const float norm)
 {
   // color may not be black!
@@ -100,9 +96,7 @@ static void _normalize_color(float *const restrict pixel, const float norm)
     pixel[x] *= factor;
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(XYZ, sRGB: 16) uniform(norm)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(XYZ, sRGB: 16) uniform(norm))
 static inline void _XYZ_to_REC_709_normalized(const float *const restrict XYZ,
                                               float *const restrict sRGB,
                                               const float norm)
@@ -111,9 +105,7 @@ static inline void _XYZ_to_REC_709_normalized(const float *const restrict XYZ,
   _normalize_color(sRGB, norm);
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(in, out: 64) uniform(buffsize, alpha)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(in, out: 64) uniform(buffsize, alpha))
 static void _channel_display_monochrome(const float *const restrict in,
                                         uint8_t *const restrict out,
                                         const size_t buffsize,
@@ -134,9 +126,7 @@ static void _channel_display_monochrome(const float *const restrict in,
   }
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(in, out: 64) uniform(buffsize, alpha, channel)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(in, out: 64) uniform(buffsize, alpha, channel))
 static void _channel_display_false_color(const float *const restrict in,
                                          uint8_t *const restrict out,
                                          const size_t buffsize,
@@ -294,9 +284,7 @@ static void _channel_display_false_color(const float *const restrict in,
   }
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(in, out: 64) uniform(buffsize, alpha)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(in, out: 64) uniform(buffsize, alpha))
 static void _mask_display(const float *const restrict in,
                           uint8_t *const restrict out,
                           const size_t buffsize,
@@ -318,9 +306,7 @@ static void _mask_display(const float *const restrict in,
     }
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(in, out: 64) uniform(buffsize)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(in, out: 64) uniform(buffsize))
 static void _copy_output(const float *const restrict in,
                          uint8_t *const restrict out,
                          const size_t buffsize)

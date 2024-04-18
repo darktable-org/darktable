@@ -108,9 +108,7 @@ typedef enum dt_isotropy_t
 } dt_isotropy_t;
 
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline dt_isotropy_t check_isotropy_mode(const float anisotropy)
 {
   // user param is negative, positive or zero. The sign encodes the direction of diffusion, the magnitude encodes the ratio of anisotropy
@@ -814,9 +812,7 @@ void tiling_callback(struct dt_iop_module_t *self,
 #define KAPPA 0.25f // 0.25 if h = 1, 1 if h = 2
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(pixels:64) aligned(xy:16) uniform(pixels)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(pixels:64) aligned(xy:16) uniform(pixels))
 static inline void find_gradients(const dt_aligned_pixel_t pixels[9],
                                   dt_aligned_pixel_t xy[2])
 {
@@ -829,9 +825,7 @@ static inline void find_gradients(const dt_aligned_pixel_t pixels[9],
   }
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, c2, cos_theta_sin_theta, cos_theta2, sin_theta2:16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(a, c2, cos_theta_sin_theta, cos_theta2, sin_theta2:16))
 static inline void rotation_matrix_isophote(const dt_aligned_pixel_t c2,
                                             const dt_aligned_pixel_t cos_theta_sin_theta,
                                             const dt_aligned_pixel_t cos_theta2,
@@ -851,9 +845,7 @@ static inline void rotation_matrix_isophote(const dt_aligned_pixel_t c2,
   }
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, c2, cos_theta_sin_theta, cos_theta2, sin_theta2:16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(a, c2, cos_theta_sin_theta, cos_theta2, sin_theta2:16))
 static inline void rotation_matrix_gradient(const dt_aligned_pixel_t c2,
                                             const dt_aligned_pixel_t cos_theta_sin_theta,
                                             const dt_aligned_pixel_t cos_theta2,
@@ -874,9 +866,7 @@ static inline void rotation_matrix_gradient(const dt_aligned_pixel_t c2,
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, kernel: 64)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(a, kernel: 64))
 static inline void build_matrix(const dt_aligned_pixel_t a[2][2],
                                 dt_aligned_pixel_t kernel[9])
 {
@@ -908,9 +898,7 @@ static inline void build_matrix(const dt_aligned_pixel_t a[2][2],
   }
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(kernel: 64)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(kernel: 64))
 static inline void isotrope_laplacian(dt_aligned_pixel_t kernel[9])
 {
   // see in https://eng.aurelienpierre.com/2021/03/rotation-invariant-laplacian-for-2d-grids/#Second-order-isotropic-finite-differences
@@ -929,9 +917,7 @@ static inline void isotrope_laplacian(dt_aligned_pixel_t kernel[9])
   }
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(kernel, c2: 64) uniform(isotropy_type)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(kernel, c2: 64) uniform(isotropy_type))
 static inline void compute_kernel(const dt_aligned_pixel_t c2,
                                   const dt_aligned_pixel_t cos_theta_sin_theta,
                                   const dt_aligned_pixel_t cos_theta2,

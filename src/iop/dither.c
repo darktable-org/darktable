@@ -155,9 +155,7 @@ void init_presets(dt_iop_module_so_t *self)
   dt_database_release_transaction(darktable.db);
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd simdlen(4)
-#endif
+DT_OMP_DECLARE_SIMD(simdlen(4))
 static inline float _quantize(const float val, const float f, const float rf)
 {
   return rf * ceilf((val * f) - 0.5); // round up only if frac(x) strictly greater than 0.5
@@ -167,17 +165,13 @@ static inline float _quantize(const float val, const float f, const float rf)
   //return rf * (itmp + ((tmp - itmp > 0.5f) ? 1.0f : 0.0f));
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline float _rgb_to_gray(const float *const restrict val)
 {
   return 0.30f * val[0] + 0.59f * val[1] + 0.11f * val[2]; // RGB -> GRAY
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline void _nearest_color(
         float *const restrict val,
         float *const restrict err,
@@ -221,9 +215,7 @@ static inline void _diffuse_error(
   }
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline float _clipnan(const float x)
 {
   // convert NaN to 0.5, otherwise clamp to between 0.0 and 1.0
@@ -375,9 +367,7 @@ static int _get_dither_parameters(
 #define DOWN_WT       (5.0f/16.0f)
 #define DOWNLEFT_WT   (3.0f/16.0f)
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(ivoid, ovoid : 64)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(ivoid, ovoid : 64))
 static void process_floyd_steinberg(
         struct dt_iop_module_t *self,
         dt_dev_pixelpipe_iop_t *piece,

@@ -751,9 +751,7 @@ static float _luminance_from_module_buffer(dt_iop_module_t *self)
  *
  ***/
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 __DT_CLONE_TARGETS__
 static float gaussian_denom(const float sigma)
 {
@@ -764,9 +762,7 @@ static float gaussian_denom(const float sigma)
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 __DT_CLONE_TARGETS__
 static float gaussian_func(const float radius, const float denominator)
 {

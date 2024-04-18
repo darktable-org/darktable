@@ -840,9 +840,7 @@ int legacy_params(dt_iop_module_t *self,
   return 1;
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(pixel:16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(pixel:16))
 static inline float pixel_rgb_norm_power(const dt_aligned_pixel_t pixel)
 {
   // weird norm sort of perceptual. This is black magic really, but it looks good.
@@ -864,9 +862,7 @@ static inline float pixel_rgb_norm_power(const dt_aligned_pixel_t pixel)
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(pixel : 16) uniform(variant, work_profile)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(pixel : 16) uniform(variant, work_profile))
 static inline float get_pixel_norm(const dt_aligned_pixel_t pixel, const dt_iop_filmicrgb_methods_type_t variant,
                                    const dt_iop_order_iccprofile_info_t *const work_profile)
 {
@@ -906,9 +902,7 @@ static inline float get_pixel_norm(const dt_aligned_pixel_t pixel, const dt_iop_
   }
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd uniform(grey, black, dynamic_range)
-#endif
+DT_OMP_DECLARE_SIMD(uniform(grey, black, dynamic_range))
 static inline float log_tonemapping_v1(const float x, const float grey, const float black,
                                        const float dynamic_range)
 {
@@ -925,9 +919,7 @@ static inline float log_tonemapping_v2_1ch(const float x,
   return clamp_simd((log2f(x / grey) - black) / dynamic_range);
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd uniform(grey, black, dynamic_range)
-#endif
+DT_OMP_DECLARE_SIMD(uniform(grey, black, dynamic_range))
 static inline void log_tonemapping_v2(dt_aligned_pixel_t mapped,
                                       const dt_aligned_pixel_t x,
                                       const float grey,
@@ -949,9 +941,7 @@ static inline void log_tonemapping_v2(dt_aligned_pixel_t mapped,
   dt_vector_clip(mapped);
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd uniform(grey, black, dynamic_range)
-#endif
+DT_OMP_DECLARE_SIMD(uniform(grey, black, dynamic_range))
 static inline float exp_tonemapping_v2(const float x, const float grey, const float black,
                                        const float dynamic_range)
 {
@@ -960,9 +950,7 @@ static inline float exp_tonemapping_v2(const float x, const float grey, const fl
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(M1, M2, M3, M4 : 16) uniform(M1, M2, M3, M4, M5, latitude_min, latitude_max)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(M1, M2, M3, M4 : 16) uniform(M1, M2, M3, M4, M5, latitude_min, latitude_max))
 static inline float filmic_spline(const float x, const dt_aligned_pixel_t M1, const dt_aligned_pixel_t M2,
                                   const dt_aligned_pixel_t M3, const dt_aligned_pixel_t M4,
                                   const dt_aligned_pixel_t M5, const float latitude_min,
@@ -1027,9 +1015,7 @@ static inline float filmic_spline(const float x, const dt_aligned_pixel_t M1, co
   return result;
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd uniform(sigma_toe, sigma_shoulder)
-#endif
+DT_OMP_DECLARE_SIMD(uniform(sigma_toe, sigma_shoulder))
 static inline float filmic_desaturate_v1(const float x, const float sigma_toe, const float sigma_shoulder,
                                          const float saturation)
 {
@@ -1042,9 +1028,7 @@ static inline float filmic_desaturate_v1(const float x, const float sigma_toe, c
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd uniform(sigma_toe, sigma_shoulder)
-#endif
+DT_OMP_DECLARE_SIMD(uniform(sigma_toe, sigma_shoulder))
 static inline float filmic_desaturate_v2(const float x, const float sigma_toe, const float sigma_shoulder,
                                          const float saturation)
 {
@@ -1058,9 +1042,7 @@ static inline float filmic_desaturate_v2(const float x, const float sigma_toe, c
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline float linear_saturation(const float x, const float luminance, const float saturation)
 {
   return luminance + saturation * (x - luminance);
@@ -1070,9 +1052,7 @@ static inline float linear_saturation(const float x, const float luminance, cons
 #define MAX_NUM_SCALES 10
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(in, mask : 64) uniform(feathering, normalize, width, height)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(in, mask : 64) uniform(feathering, normalize, width, height))
 static inline gint mask_clipped_pixels(const float *const restrict in, float *const restrict mask,
                                        const float normalize, const float feathering, const size_t width,
                                        const size_t height)
@@ -1110,9 +1090,7 @@ static inline gint mask_clipped_pixels(const float *const restrict in, float *co
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(in, mask, inpainted:64) uniform(width, height, noise_level, noise_distribution, threshold)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(in, mask, inpainted:64) uniform(width, height, noise_level, noise_distribution, threshold))
 inline static void inpaint_noise(const float *const in, const float *const mask,
                                  float *const inpainted, const float noise_level, const float threshold,
                                  const dt_noise_distribution_t noise_distribution,
@@ -1768,12 +1746,10 @@ static inline void gamut_check_RGB(const dt_colormatrix_t matrix_in_trans,
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd \
-  uniform(input_matrix_trans, output_matrix, export_input_matrix_trans, export_output_matrix, use_output_profile) \
-  aligned(Ych_final, Ych_original, pix_out:16) \
-  aligned(input_matrix_trans, output_matrix, export_input_matrix_trans, export_output_matrix:64)
-#endif
+DT_OMP_DECLARE_SIMD(
+  uniform(input_matrix_trans, output_matrix, export_input_matrix_trans, export_output_matrix, use_output_profile)
+  aligned(Ych_final, Ych_original, pix_out:16)
+  aligned(input_matrix_trans, output_matrix, export_input_matrix_trans, export_output_matrix:64))
 static inline void gamut_mapping(dt_aligned_pixel_t Ych_final,
                                  dt_aligned_pixel_t Ych_original,
                                  dt_aligned_pixel_t pix_out,
@@ -1852,11 +1828,9 @@ static int filmic_v4_prepare_matrices(dt_colormatrix_t input_matrix_trans,
   return use_output_profile;
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd \
-  uniform(work_profile, data, spline, norm_min, norm_max, display_black, display_white, type) \
-  aligned(pix_in, pix_out:16)
-#endif
+DT_OMP_DECLARE_SIMD(
+  uniform(work_profile, data, spline, norm_min, norm_max, display_black, display_white, type)
+  aligned(pix_in, pix_out:16))
 static inline void norm_tone_mapping_v4(const dt_aligned_pixel_t pix_in,
                                         dt_aligned_pixel_t pix_out,
                                         const dt_iop_filmicrgb_methods_type_t type,
@@ -1895,10 +1869,7 @@ static inline void norm_tone_mapping_v4(const dt_aligned_pixel_t pix_in,
     pix_out[c] = ratios[c] * norm;
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd uniform(data, spline, display_black, display_white) \
-  aligned(pix_in, pix_out:16)
-#endif
+DT_OMP_DECLARE_SIMD(uniform(data, spline, display_black, display_white) aligned(pix_in, pix_out:16))
 static inline void RGB_tone_mapping_v4(const dt_aligned_pixel_t pix_in,
                                        dt_aligned_pixel_t pix_out,
                                        const dt_iop_filmicrgb_data_t *const data,

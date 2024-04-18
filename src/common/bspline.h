@@ -66,9 +66,7 @@ static inline unsigned int num_steps_to_reach_equivalent_sigma(const float sigma
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(buf, indices, result:64)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(buf, indices, result:64))
 static inline void sparse_scalar_product(const dt_aligned_pixel_t buf, const size_t indices[BSPLINE_FSIZE],
                                          dt_aligned_pixel_t result, const gboolean clip_negatives)
 {
@@ -104,9 +102,7 @@ static inline void sparse_scalar_product(const dt_aligned_pixel_t buf, const siz
   }
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(in, temp)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(in, temp))
 static inline void _bspline_vertical_pass(const float *const restrict in, float *const restrict temp,
                                           size_t row, size_t width, size_t height, int mult, const gboolean clip_negatives)
 {
@@ -125,9 +121,7 @@ static inline void _bspline_vertical_pass(const float *const restrict in, float 
   }
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(temp, out)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(temp, out))
 static inline void _bspline_horizontal(const float *const restrict temp, float *const restrict out,
                                        size_t col, size_t width, int mult, const gboolean clip_negatives)
 {
@@ -144,9 +138,7 @@ static inline void _bspline_horizontal(const float *const restrict temp, float *
   sparse_scalar_product(temp, indices, out, clip_negatives);
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(in, out:64) aligned(tempbuf:16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(in, out:64) aligned(tempbuf:16))
 static inline void blur_2D_Bspline(const float *const restrict in,
                                    float *const restrict out,
                                    float *const restrict tempbuf,
@@ -187,9 +179,7 @@ static inline void blur_2D_Bspline(const float *const restrict in,
 #endif
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(in, HF, LF:64) aligned(tempbuf:16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(in, HF, LF:64) aligned(tempbuf:16))
 inline static void decompose_2D_Bspline(const float *const in,
                                         float *const HF,
                                         float *const restrict LF,

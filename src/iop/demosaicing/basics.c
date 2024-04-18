@@ -23,9 +23,7 @@
     (a) = tmp;                                                                                               \
   }
 
-#ifdef _OPENMP
-  #pragma omp declare simd aligned(in, out)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(in, out))
 static void pre_median_b(
         float *out,
         const float *const in,

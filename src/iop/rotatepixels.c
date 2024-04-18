@@ -102,9 +102,7 @@ const char **description(struct dt_iop_module_t *self)
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static void transform(const dt_dev_pixelpipe_iop_t *const piece,
                       const float scale,
                       const float *const x,
@@ -118,9 +116,7 @@ static void transform(const dt_dev_pixelpipe_iop_t *const piece,
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static void backtransform(const dt_dev_pixelpipe_iop_t *const piece,
                           const float scale,
                           const float *const x,

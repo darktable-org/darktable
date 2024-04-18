@@ -67,9 +67,7 @@ typedef enum dt_iop_luminance_mask_method_t
  * backfire in the exposure computations.
  **/
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 __DT_CLONE_TARGETS__
 static float linear_contrast(const float pixel, const float fulcrum, const float contrast)
 {
@@ -78,9 +76,7 @@ static float linear_contrast(const float pixel, const float fulcrum, const float
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(image, luminance:64) uniform(image, luminance)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(image, luminance:64) uniform(image, luminance))
 __DT_CLONE_TARGETS__
 static void pixel_rgb_mean(const float *const restrict image,
                            float *const restrict luminance,
@@ -102,9 +98,7 @@ static void pixel_rgb_mean(const float *const restrict image,
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(image, luminance:64) uniform(image, luminance)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(image, luminance:64) uniform(image, luminance))
 __DT_CLONE_TARGETS__
 static void pixel_rgb_value(const float *const restrict image,
                             float *const restrict luminance,
@@ -119,9 +113,7 @@ static void pixel_rgb_value(const float *const restrict image,
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(image, luminance:64) uniform(image, luminance)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(image, luminance:64) uniform(image, luminance))
 __DT_CLONE_TARGETS__
 static void pixel_rgb_lightness(const float *const restrict image,
                                 float *const restrict luminance,
@@ -136,9 +128,7 @@ static void pixel_rgb_lightness(const float *const restrict image,
   luminance[k / 4] = linear_contrast(exposure_boost * (max_rgb + min_rgb) / 2.0f, fulcrum, contrast_boost);
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(image, luminance:64) uniform(image, luminance)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(image, luminance:64) uniform(image, luminance))
 __DT_CLONE_TARGETS__
 static void pixel_rgb_norm_1(const float *const restrict image,
                              float *const restrict luminance,
@@ -160,9 +150,7 @@ static void pixel_rgb_norm_1(const float *const restrict image,
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(image, luminance:64) uniform(image, luminance)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(image, luminance:64) uniform(image, luminance))
 __DT_CLONE_TARGETS__
 static void pixel_rgb_norm_2(const float *const restrict image,
                              float *const restrict luminance,
@@ -184,9 +172,7 @@ static void pixel_rgb_norm_2(const float *const restrict image,
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(image, luminance:64) uniform(image, luminance)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(image, luminance:64) uniform(image, luminance))
 __DT_CLONE_TARGETS__
 static void pixel_rgb_norm_power(const float *const restrict image,
                                  float *const restrict luminance,
@@ -214,9 +200,7 @@ static void pixel_rgb_norm_power(const float *const restrict image,
   luminance[k / 4] = linear_contrast(exposure_boost * numerator / denominator, fulcrum, contrast_boost);
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(image, luminance:64) uniform(image, luminance)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(image, luminance:64) uniform(image, luminance))
 __DT_CLONE_TARGETS__
 static void pixel_rgb_geomean(const float *const restrict image,
                               float *const restrict luminance,

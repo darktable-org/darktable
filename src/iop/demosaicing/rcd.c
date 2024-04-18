@@ -279,9 +279,7 @@ static void rcd_ppg_border(
   }
 }
 
-#ifdef _OPENMP
-  #pragma omp declare simd aligned(in, out)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(in, out))
 static void rcd_demosaic(
         dt_dev_pixelpipe_iop_t *piece,
         float *const restrict out,

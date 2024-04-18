@@ -502,9 +502,7 @@ static void _mul2temp(dt_iop_module_t *self,
   _XYZ_to_temperature(_mul2xyz(self, p), TempK, tint);
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(inp,outp)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(inp,outp))
 static inline void scaled_copy_4wide(float *const outp,
                                      const float *const inp,
                                      const float *const coeffs)

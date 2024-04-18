@@ -130,9 +130,7 @@ static inline float interpolatef(const float a,
 }
 
 // Kahan summation algorithm
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline float Kahan_sum(const float m,
                               float *const __restrict__ c,
                               const float add)
@@ -186,9 +184,7 @@ static inline float fastlog(const float x)
 
 // multiply 3x3 matrix with 3x1 vector
 // dest needs to be different from v
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline void mat3mulv(float *const __restrict__ dest,
                             const float *const mat,
                             const float *const __restrict__ v)
@@ -206,9 +202,7 @@ static inline void mat3mulv(float *const __restrict__ dest,
 // multiply two 3x3 matrices
 // dest needs to be different from m1 and m2
 // dest = m1 * m2 in this order
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline void mat3mul(float *const __restrict__ dest,
                            const float *const __restrict__ m1,
                            const float *const __restrict__ m2)
@@ -229,9 +223,7 @@ static inline void mat3mul(float *const __restrict__ dest,
 // multiply two padded 3x3 matrices
 // dest needs to be different from m1 and m2
 // dest = m1 * m2 in this order
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline void mat3SSEmul(dt_colormatrix_t dest,
                               const dt_colormatrix_t m1,
                               const dt_colormatrix_t m2)
@@ -249,9 +241,7 @@ static inline void mat3SSEmul(dt_colormatrix_t dest,
   }
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline void mul_mat_vec_2(const float *m,
                                  const float *p,
                                  float *o)
@@ -260,9 +250,7 @@ static inline void mul_mat_vec_2(const float *m,
   o[1] = p[0] * m[2] + p[1] * m[3];
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd uniform(v_2) aligned(v_1, v_2:16)
-#endif
+DT_OMP_DECLARE_SIMD(uniform(v_2) aligned(v_1, v_2:16))
 static inline float scalar_product(const dt_aligned_pixel_t v_1,
                                    const dt_aligned_pixel_t v_2)
 {
@@ -282,9 +270,7 @@ static inline float scalar_product(const dt_aligned_pixel_t v_1,
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd uniform(M) aligned(M:64) aligned(v_in, v_out:16)
-#endif
+DT_OMP_DECLARE_SIMD(uniform(M) aligned(M:64) aligned(v_in, v_out:16))
 static inline void dot_product(const dt_aligned_pixel_t v_in,
                                const dt_colormatrix_t M,
                                dt_aligned_pixel_t v_out)
@@ -298,18 +284,14 @@ static inline void dot_product(const dt_aligned_pixel_t v_in,
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline float sqf(const float x)
 {
   return x * x;
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(p:16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(p:16))
 static inline float median9f(const float *p)
 {
   float p1 = MIN(p[1], p[2]);
@@ -344,18 +326,14 @@ static inline float median9f(const float *p)
   return MIN(p2,p4);
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(vector:16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(vector:16))
 static inline float euclidean_norm(const dt_aligned_pixel_t vector)
 {
   return fmaxf(sqrtf(sqf(vector[0]) + sqf(vector[1]) + sqf(vector[2])), NORM_MIN);
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(vector:16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(vector:16))
 static inline void downscale_vector(dt_aligned_pixel_t vector,
                                     const float scaling)
 {
@@ -366,9 +344,7 @@ static inline void downscale_vector(dt_aligned_pixel_t vector,
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(vector:16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(vector:16))
 static inline void upscale_vector(dt_aligned_pixel_t vector,
                                   const float scaling)
 {
@@ -379,9 +355,7 @@ static inline void upscale_vector(dt_aligned_pixel_t vector,
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline float dt_log2f(const float f)
 {
 #ifdef __GLIBC__
@@ -398,9 +372,7 @@ union float_int {
 
 // a faster, vectorizable version of hypotf() when we know that there
 // won't be overflow, NaNs, or infinities
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline float dt_fast_hypotf(const float x,
                                    const float y)
 {
@@ -410,9 +382,7 @@ static inline float dt_fast_hypotf(const float x,
 // fast approximation of expf()
 /****** if you change this function, you need to make the same change
  * in data/kernels/{basecurve,basic}.cl ***/
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline float dt_fast_expf(const float x)
 {
   // meant for the range [-100.0f, 0.0f]. largest error ~ -0.06 at 0.0f.

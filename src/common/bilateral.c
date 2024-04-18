@@ -198,9 +198,7 @@ dt_bilateral_t *dt_bilateral_init(const int width,     // width of input image
   return b;
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(in:64)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(in:64))
 void dt_bilateral_splat(const dt_bilateral_t *b, const float *const in)
 {
   const int ox = b->size_z;
@@ -296,9 +294,7 @@ void dt_bilateral_splat(const dt_bilateral_t *b, const float *const in)
   }
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(buf:64)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(buf:64))
 static void blur_line_z(float *buf,
                         const int offset1,
                         const int offset2,
@@ -344,9 +340,7 @@ static void blur_line_z(float *buf,
   }
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(buf:64)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(buf:64))
 static void blur_line(float *buf,
                       const int offset1,
                       const int offset2,
@@ -414,9 +408,7 @@ void dt_bilateral_blur(const dt_bilateral_t *b)
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(out, in :64)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(out, in :64))
 void dt_bilateral_slice(const dt_bilateral_t *const b,
                         const float *const in,
                         float *out,
@@ -462,9 +454,7 @@ void dt_bilateral_slice(const dt_bilateral_t *const b,
   }
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(out, in :64)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(out, in :64))
 void dt_bilateral_slice_to_output(const dt_bilateral_t *const b,
                                   const float *const in,
                                   float *out,
