@@ -442,6 +442,10 @@ foreach(lib ${OUR_LIBS} GIO GThread GModule PangoCairo Rsvg2 LibXml2 CURL PNG JP
   add_definitions(${${lib}_DEFINITIONS})
 endforeach(lib)
 
+if(PNG_VERSION VERSION_LESS 1.5)
+  message(FATAL_ERROR "libpng version 1.5 or newer is required")
+endif()
+
 # Require exiv2 >= 0.25 to make sure everything we need is available
 find_package(Exiv2 0.25 REQUIRED)
 include_directories(SYSTEM ${Exiv2_INCLUDE_DIRS})

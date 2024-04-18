@@ -195,7 +195,7 @@ changes (where available).
 
 ### Mandatory
 
-- n/a
+- Minimum libpng version 1.5.x is now required
 
 ### Optional
 
