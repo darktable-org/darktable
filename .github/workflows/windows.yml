@@ -98,16 +98,10 @@ jobs:
         uses: andymckay/cancel-action@0.4
       - run: git config --global core.autocrlf input
         shell: bash
-      - name: Checkout darktable 
-        run: |
-          # Note that we can't make a shallow clone to reduce clone traffic and time, as we have to
-          # fetch the entire history to correctly generate the version for the installation package filename
-          git clone https://github.com/zisoft/darktable.git -b fix-windows-utf src
-          pushd src
-          git submodule init
-          git config submodule.src/tests/integration.update none
-          git submodule update
-          popd
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          path: src
       - name: Update lensfun data
         if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
         continue-on-error: true
