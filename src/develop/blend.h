@@ -529,6 +529,13 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
                                      const struct dt_iop_roi_t *roi_out);
 #endif
 
+#define DT_OMP_STRINGIFY(...) #__VA_ARGS__
+#ifdef _OPENMP
+#define _BLEND_FUNC_PROTO(align, uni) _Pragma(DT_OMP_STRINGIFY(omp declare simd aligned align uniform uni)) static void
+#else
+#define _BLEND_FUNC_PROTO(align, uni) static void
+#endif
+
 G_END_DECLS
 
 // clang-format off

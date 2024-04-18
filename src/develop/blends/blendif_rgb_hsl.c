@@ -39,7 +39,7 @@
 
 typedef void(_blend_row_func)(const float *const a, const float *const b,
                               float *const out, const float *const restrict mask, const size_t stride);
-
+#define _BLEND_FUNC _BLEND_FUNC_PROTO((a, b, out: 16), (stride))
 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(XYZ: 16)
@@ -381,10 +381,7 @@ void dt_develop_blendif_rgb_hsl_make_mask(struct dt_dev_pixelpipe_iop_t *piece, 
 
 
 /* normal blend with clamping */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(stride)
-#endif
-static void _blend_normal_bounded(const float *const a,
+_BLEND_FUNC _blend_normal_bounded(const float *const a,
                                   const float *const b,
                                   float *const out,
                                   const float *const restrict mask,
@@ -402,10 +399,7 @@ static void _blend_normal_bounded(const float *const a,
 }
 
 /* normal blend without any clamping */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(stride)
-#endif
-static void _blend_normal_unbounded(const float *const a,
+_BLEND_FUNC _blend_normal_unbounded(const float *const a,
                                     const float *const b,
                                     float *const out,
                                     const float *const mask,
@@ -423,10 +417,7 @@ static void _blend_normal_unbounded(const float *const a,
 }
 
 /* lighten */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(stride)
-#endif
-static void _blend_lighten(const float *const a,
+_BLEND_FUNC _blend_lighten(const float *const a,
                            const float *const b,
                            float *const restrict out,
                            const float *const restrict mask,
@@ -444,10 +435,7 @@ static void _blend_lighten(const float *const a,
 }
 
 /* darken */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(stride)
-#endif
-static void _blend_darken(const float *const a,
+_BLEND_FUNC _blend_darken(const float *const a,
                           const float *const b,
                           float *const out,
                           const float *const restrict mask,
@@ -465,10 +453,7 @@ static void _blend_darken(const float *const a,
 }
 
 /* multiply */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(stride)
-#endif
-static void _blend_multiply(const float *const a,
+_BLEND_FUNC _blend_multiply(const float *const a,
                             const float *const b,
                             float *const out,
                             const float *const restrict mask,
@@ -486,10 +471,7 @@ static void _blend_multiply(const float *const a,
 }
 
 /* average */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(stride)
-#endif
-static void _blend_average(const float *const a,
+_BLEND_FUNC _blend_average(const float *const a,
                            const float *const b,
                            float *const out,
                            const float *const restrict mask,
@@ -507,10 +489,7 @@ static void _blend_average(const float *const a,
 }
 
 /* add */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(stride)
-#endif
-static void _blend_add(const float *const a,
+_BLEND_FUNC _blend_add(const float *const a,
                        const float *const b,
                        float *const out,
                        const float *const restrict mask,
@@ -528,10 +507,7 @@ static void _blend_add(const float *const a,
 }
 
 /* subtract */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(stride)
-#endif
-static void _blend_subtract(const float *const a,
+_BLEND_FUNC _blend_subtract(const float *const a,
                             const float *const b,
                             float *const out,
                             const float *const restrict mask,
@@ -549,10 +525,7 @@ static void _blend_subtract(const float *const a,
 }
 
 /* difference */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(stride)
-#endif
-static void _blend_difference(const float *const a,
+_BLEND_FUNC _blend_difference(const float *const a,
                               const float *const b,
                               float *const out,
                               const float *const restrict mask,
@@ -570,10 +543,7 @@ static void _blend_difference(const float *const a,
 }
 
 /* screen */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(stride)
-#endif
-static void _blend_screen(const float *const a,
+_BLEND_FUNC _blend_screen(const float *const a,
                           const float *const b,
                           float *const out,
                           const float *const restrict mask,
@@ -593,10 +563,7 @@ static void _blend_screen(const float *const a,
 }
 
 /* overlay */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(stride)
-#endif
-static void _blend_overlay(const float *const a,
+_BLEND_FUNC _blend_overlay(const float *const a,
                            const float *const b,
                            float *const restrict out,
                            const float *const restrict mask,
@@ -621,10 +588,7 @@ static void _blend_overlay(const float *const a,
 }
 
 /* softlight */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(stride)
-#endif
-static void _blend_softlight(const float *const a,
+_BLEND_FUNC _blend_softlight(const float *const a,
                              const float *const b,
                              float *const out,
                              const float *const restrict mask,
@@ -649,10 +613,7 @@ static void _blend_softlight(const float *const a,
 }
 
 /* hardlight */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(stride)
-#endif
-static void _blend_hardlight(const float *const a,
+_BLEND_FUNC _blend_hardlight(const float *const a,
                              const float *const b,
                              float *const out,
                              const float *const restrict mask,
@@ -677,10 +638,7 @@ static void _blend_hardlight(const float *const a,
 }
 
 /* vividlight */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(stride)
-#endif
-static void _blend_vividlight(const float *const a,
+_BLEND_FUNC _blend_vividlight(const float *const a,
                               const float *const b,
                               float *const out,
                               const float *const restrict mask,
@@ -705,10 +663,7 @@ static void _blend_vividlight(const float *const a,
 }
 
 /* linearlight */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(stride)
-#endif
-static void _blend_linearlight(const float *const a,
+_BLEND_FUNC _blend_linearlight(const float *const a,
                                const float *const b,
                                float *const out,
                                const float *const restrict mask,
@@ -729,10 +684,7 @@ static void _blend_linearlight(const float *const a,
 }
 
 /* pinlight */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(stride)
-#endif
-static void _blend_pinlight(const float *const a,
+_BLEND_FUNC _blend_pinlight(const float *const a,
                             const float *const b,
                             float *const out,
                             const float *const restrict mask,
@@ -757,10 +709,7 @@ static void _blend_pinlight(const float *const a,
 }
 
 /* lightness blend */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(stride)
-#endif
-static void _blend_lightness(const float *const a,
+_BLEND_FUNC _blend_lightness(const float *const a,
                              const float *const b,
                              float *const out,
                              const float *const restrict mask,
@@ -793,10 +742,7 @@ static void _blend_lightness(const float *const a,
 }
 
 /* chromaticity blend */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(stride)
-#endif
-static void _blend_chromaticity(const float *const a,
+_BLEND_FUNC _blend_chromaticity(const float *const a,
                                 const float *const b,
                                 float *const out,
                                 const float *const restrict mask,
@@ -829,10 +775,7 @@ static void _blend_chromaticity(const float *const a,
 }
 
 /* hue blend */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(stride)
-#endif
-static void _blend_hue(const float *const a,
+_BLEND_FUNC _blend_hue(const float *const a,
                        const float *const b,
                        float *const out,
                        const float *const restrict mask,
@@ -868,10 +811,7 @@ static void _blend_hue(const float *const a,
 }
 
 /* color blend; blend hue and chroma, but not lightness */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(stride)
-#endif
-static void _blend_color(const float *const a,
+_BLEND_FUNC _blend_color(const float *const a,
                          const float *const b,
                          float *const out,
                          const float *const restrict mask,
@@ -908,10 +848,7 @@ static void _blend_color(const float *const a,
 }
 
 /* color adjustment; blend hue and chroma; take lightness from module output */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(stride)
-#endif
-static void _blend_coloradjust(const float *const a,
+_BLEND_FUNC _blend_coloradjust(const float *const a,
                                const float *const b,
                                float *const out,
                                const float *const restrict mask,
@@ -948,10 +885,7 @@ static void _blend_coloradjust(const float *const a,
 }
 
 /* blend only lightness in HSV color space without any clamping */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(stride)
-#endif
-static void _blend_HSV_value(const float *const a,
+_BLEND_FUNC _blend_HSV_value(const float *const a,
                              const float *const b,
                              float *const out,
                              const float *const restrict mask,
@@ -978,10 +912,7 @@ static void _blend_HSV_value(const float *const a,
 }
 
 /* blend only color in HSV color space without any clamping */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b:16) uniform(stride)
-#endif
-static void _blend_HSV_color(const float *const a,
+_BLEND_FUNC _blend_HSV_color(const float *const a,
                              const float *const b,
                              float *const out,
                              const float *const restrict mask,
@@ -1018,10 +949,7 @@ static void _blend_HSV_color(const float *const a,
 }
 
 /* blend only R-channel in RGB color space without any clamping */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(stride)
-#endif
-static void _blend_RGB_R(const float *const a,
+_BLEND_FUNC _blend_RGB_R(const float *const a,
                          const float *const b,
                          float *const out,
                          const float *const restrict mask,
@@ -1038,10 +966,7 @@ static void _blend_RGB_R(const float *const a,
 }
 
 /* blend only R-channel in RGB color space without any clamping */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(stride)
-#endif
-static void _blend_RGB_G(const float *const a,
+_BLEND_FUNC _blend_RGB_G(const float *const a,
                          const float *const b,
                          float *const out,
                          const float *const restrict mask,
@@ -1058,10 +983,7 @@ static void _blend_RGB_G(const float *const a,
 }
 
 /* blend only R-channel in RGB color space without any clamping */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, b, out:16) uniform(stride)
-#endif
-static void _blend_RGB_B(const float *const a,
+_BLEND_FUNC _blend_RGB_B(const float *const a,
                          const float *const b,
                          float *const out,
                          const float *const restrict mask,
