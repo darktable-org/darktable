@@ -1914,7 +1914,7 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 0);
 
-  GtkWidget *area = dtgtk_drawing_area_new_with_aspect_ratio(1.0);
+  GtkWidget *area = dtgtk_drawing_area_new_with_height(0);
   gtk_box_pack_start(GTK_BOX(hbox), area, TRUE, TRUE, 0);
 
   //   gtk_widget_add_events(g->area,
@@ -1928,7 +1928,7 @@ void gui_init(dt_iop_module_t *self)
   //   g_signal_connect (G_OBJECT (area), "leave-notify-event",
   //                     G_CALLBACK (dt_iop_colorbalance_leave_notify), self);
 
-  area = dtgtk_drawing_area_new_with_aspect_ratio(1.0);
+  area = dtgtk_drawing_area_new_with_height(0);
   gtk_box_pack_start(GTK_BOX(hbox), area, TRUE, TRUE, 0);
 
   //   gtk_widget_add_events(g->area,
@@ -1942,7 +1942,7 @@ void gui_init(dt_iop_module_t *self)
   //   g_signal_connect (G_OBJECT (area), "leave-notify-event",
   //                     G_CALLBACK (dt_iop_colorbalance_leave_notify), self);
 
-  area = dtgtk_drawing_area_new_with_aspect_ratio(1.0);
+  area = dtgtk_drawing_area_new_with_height(0);
   gtk_box_pack_start(GTK_BOX(hbox), area, TRUE, TRUE, 0);
 
   //   gtk_widget_add_events(g->area,

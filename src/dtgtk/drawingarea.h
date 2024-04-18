@@ -40,10 +40,20 @@ struct _GtkDarktableDrawingArea
    *      2   => height is 2 times bigger than width
    */
   double aspect;
-};
+  int height;
+} GtkDarktableDrawingArea;
+
+typedef struct _GtkDarktableDrawingAreaClass
+{
+  GtkDrawingAreaClass parent_class;
+} GtkDarktableDrawingAreaClass;
+
+GType dtgtk_drawing_area_get_type(void);
 
 GtkWidget *dtgtk_drawing_area_new_with_aspect_ratio(double aspect);
+GtkWidget *dtgtk_drawing_area_new_with_height(int height);
 void dtgtk_drawing_area_set_aspect_ratio(GtkWidget *w, double aspect);
+void dtgtk_drawing_area_set_height(GtkWidget *w, int height);
 
 G_END_DECLS
 
