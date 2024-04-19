@@ -448,10 +448,7 @@ void process_display(struct dt_iop_module_t *self,
 
   dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)                                                           \
-    dt_omp_firstprivate(normalize_C, ch, ivoid, ovoid, roi_out, display_channel) shared(d)
-#endif
+  DT_OMP_FOR_CLAUSE(shared(d), normalize_C, ch, ivoid, ovoid, roi_out, display_channel)
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
     float *in = (float *)ivoid + ch * k;

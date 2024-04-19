@@ -1430,10 +1430,7 @@ void dt_develop_blendif_lab_blend(struct dt_dev_pixelpipe_iop_t *piece,
     const dt_dev_pixelpipe_display_mask_t channel = request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_ANY;
     const dt_iop_order_iccprofile_info_t *const profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
 
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) \
-  dt_omp_firstprivate(a, b, mask, channel, oheight, owidth, iwidth, xoffs, yoffs, boost_factors)
-#endif
+    DT_OMP_FOR(a, b, mask, channel, oheight, owidth, iwidth, xoffs, yoffs, boost_factors)
     for(size_t y = 0; y < oheight; y++)
     {
       const size_t a_start = ((y + yoffs) * iwidth + xoffs) * DT_BLENDIF_LAB_CH;
@@ -1449,10 +1446,7 @@ void dt_develop_blendif_lab_blend(struct dt_dev_pixelpipe_iop_t *piece,
     const size_t buffsize = (size_t)owidth * oheight * DT_BLENDIF_LAB_CH;
     if(profile)
     {
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) \
-  dt_omp_firstprivate(b, buffsize, profile)
-#endif
+      DT_OMP_FOR(b, buffsize, profile)
       for(size_t j = 0; j < buffsize; j += DT_BLENDIF_LAB_CH)
       {
         dt_aligned_pixel_t pixel;
@@ -1489,10 +1483,7 @@ void dt_develop_blendif_lab_blend(struct dt_dev_pixelpipe_iop_t *piece,
 
     if((d->blend_mode & DEVELOP_BLEND_REVERSE) == DEVELOP_BLEND_REVERSE)
     {
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)                 \
-  dt_omp_firstprivate(a, b, mask, blend, oheight, owidth, iwidth, xoffs, yoffs, min, max)
-#endif
+      DT_OMP_FOR(a, b, mask, blend, oheight, owidth, iwidth, xoffs, yoffs, min, max)
       for(size_t y = 0; y < oheight; y++)
       {
         const size_t a_start = ((y + yoffs) * iwidth + xoffs) * DT_BLENDIF_LAB_CH;
@@ -1503,10 +1494,7 @@ void dt_develop_blendif_lab_blend(struct dt_dev_pixelpipe_iop_t *piece,
     }
     else
     {
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)                 \
-  dt_omp_firstprivate(a, b, mask, blend, oheight, owidth, iwidth, xoffs, yoffs, min, max)
-#endif
+      DT_OMP_FOR(a, b, mask, blend, oheight, owidth, iwidth, xoffs, yoffs, min, max)
       for(size_t y = 0; y < oheight; y++)
       {
         const size_t a_start = ((y + yoffs) * iwidth + xoffs) * DT_BLENDIF_LAB_CH;
@@ -1520,10 +1508,7 @@ void dt_develop_blendif_lab_blend(struct dt_dev_pixelpipe_iop_t *piece,
   if(mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
   {
     const size_t stride = owidth * DT_BLENDIF_LAB_CH;
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) \
-  dt_omp_firstprivate(a, b, oheight, stride, iwidth, xoffs, yoffs)
-#endif
+    DT_OMP_FOR(a, b, oheight, stride, iwidth, xoffs, yoffs)
     for(size_t y = 0; y < oheight; y++)
     {
       const size_t a_start = ((y + yoffs) * iwidth + xoffs) * DT_BLENDIF_LAB_CH;

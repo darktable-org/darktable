@@ -1154,11 +1154,7 @@ static float complex *create_global_distortion_map(const cairo_rectangle_int_t *
     // copy map into imap(inverted map).
     // imap [ n + dx(map[n]) , n + dy(map[n]) ] = -map[n]
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(map, map_extent, imap)  \
-  schedule(static)
-#endif
+    DT_OMP_FOR(map, map_extent, imap)
     for(int y = 0; y <  map_extent->height; y++)
     {
       const float complex *const row = map + y * map_extent->width;
@@ -1182,11 +1178,7 @@ static float complex *create_global_distortion_map(const cairo_rectangle_int_t *
     // distortion mask is only used to compute a final displacement of
     // points.
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(imap, map_extent) \
-  schedule(static)
-#endif
+    DT_OMP_FOR(imap, map_extent)
     for(int y = 0; y <  map_extent->height; y++)
     {
       float complex *const row = imap + y * map_extent->width;
@@ -1338,11 +1330,8 @@ static gboolean _distort_xtransform(dt_iop_module_t *self,
 
     // apply distortion to all points (this is a simple displacement
     // given by a vector at this same point in the map)
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(points_count, points, scale, extent, map, map_size, y_last, x_last) \
-    schedule(static) if(points_count > 100)
-#endif
+    DT_OMP_FOR_CLAUSE(if(points_count > 100),
+                      points_count, points, scale, extent, map, map_size, y_last, x_last)
     for(size_t i = 0; i < points_count; i++)
     {
       float *px = &points[i*2];

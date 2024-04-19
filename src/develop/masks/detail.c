@@ -111,12 +111,7 @@ void dt_masks_extend_border(float *const mask,
                             const int border)
 {
   if(border <= 0) return;
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(mask) \
-  dt_omp_sharedconst(width, height, border) \
-  schedule(static)
- #endif
+  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(width, height, border), mask)
   for(size_t row = border; row < height - border; row++)
   {
     const size_t idx = row * width;
@@ -126,12 +121,7 @@ void dt_masks_extend_border(float *const mask,
       mask[idx + width - i - 1] = mask[idx + width - border -1];
     }
   }
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(mask) \
-  dt_omp_sharedconst(width, height, border) \
-  schedule(static)
- #endif
+  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(width, height, border), mask)
   for(size_t col = 0; col < width; col++)
   {
     const float top = mask[border * width + MIN(width - border - 1, MAX(col, border))];
@@ -217,12 +207,8 @@ void dt_masks_blur(float *const restrict src,
   const size_t w2 = 2*width;
   const size_t w3 = 3*width;
   const size_t w4 = 4*width;
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(blurmat, src, out, clip, gain) \
-  dt_omp_sharedconst(width, height, w1, w2, w3, w4) \
-  schedule(static)
- #endif
+  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(width, height, w1, w2, w3, w4),
+                    blurmat, src, out, clip, gain)
   for(size_t row = 4; row < height - 4; row++)
   {
     for(size_t col = 4; col < width - 4; col++)
@@ -260,11 +246,7 @@ gboolean dt_masks_calc_scharr_mask(dt_dev_detail_mask_t *details,
     tmp[idx] = sqrtf(val / 3.0f);
   }
 
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(mask, tmp, width, height) \
-  schedule(static)
- #endif
+  DT_OMP_FOR(mask, tmp, width, height)
   for(size_t row = 1; row < height - 1; row++)
   {
     for(size_t col = 1; col < width - 1; col++)

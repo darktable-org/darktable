@@ -374,10 +374,7 @@ void dt_develop_blendif_raw_blend(struct dt_dev_pixelpipe_iop_t *piece,
       dt_iop_image_copy(tmp_buffer, b, (size_t)owidth * oheight);
       if((d->blend_mode & DEVELOP_BLEND_REVERSE) == DEVELOP_BLEND_REVERSE)
       {
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) \
-  dt_omp_firstprivate(blend, a, b, tmp_buffer, mask, oheight, owidth, iwidth, xoffs, yoffs)
-#endif
+        DT_OMP_FOR(blend, a, b, tmp_buffer, mask, oheight, owidth, iwidth, xoffs, yoffs)
         for(size_t y = 0; y < oheight; y++)
         {
           const size_t a_start = (y + yoffs) * iwidth + xoffs;
@@ -387,10 +384,7 @@ void dt_develop_blendif_raw_blend(struct dt_dev_pixelpipe_iop_t *piece,
       }
       else
       {
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) \
-  dt_omp_firstprivate(blend, a, b, tmp_buffer, mask, oheight, owidth, iwidth, xoffs, yoffs)
-#endif
+        DT_OMP_FOR(blend, a, b, tmp_buffer, mask, oheight, owidth, iwidth, xoffs, yoffs)
         for(size_t y = 0; y < oheight; y++)
         {
           const size_t a_start = (y + yoffs) * iwidth + xoffs;

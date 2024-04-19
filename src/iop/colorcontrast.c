@@ -198,11 +198,7 @@ void process(struct dt_iop_module_t *self,
 
   if(d->unbound)
   {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(in, out, npixels, slope, offset) \
-    schedule(static)
-#endif
+    DT_OMP_FOR(in, out, npixels, slope, offset)
     for(size_t k = 0; k < (size_t)4 * npixels; k += 4)
     {
       dt_aligned_pixel_t res;
@@ -216,11 +212,7 @@ void process(struct dt_iop_module_t *self,
   else
   {
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(in, out, npixels, slope, offset, lowlimit, highlimit) \
-    schedule(static)
-#endif
+    DT_OMP_FOR(in, out, npixels, slope, offset, lowlimit, highlimit)
     for(size_t k = 0; k < npixels; k ++)
     {
       // the inner per-pixel loop needs to be declared in a separate

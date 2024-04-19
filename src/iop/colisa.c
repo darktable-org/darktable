@@ -169,12 +169,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int height = roi_in->height;
   const int ch = piece->colors;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, height, width) \
-  shared(in, out, data) \
-  schedule(static)
-#endif
+  DT_OMP_FOR_CLAUSE(shared(in, out, data), ch, height, width)
   for(size_t k = 0; k < (size_t)width * height; k++)
   {
     float L = (in[k * ch + 0] < 100.0f)
@@ -214,12 +209,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     const float boost = 20.0f;
     const float contrastm1sq = boost * (d->contrast - 1.0f) * (d->contrast - 1.0f);
     const float contrastscale = sqrtf(1.0f + contrastm1sq);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(contrastm1sq, contrastscale) \
-    shared(d) \
-    schedule(static)
-#endif
+    DT_OMP_FOR_CLAUSE(shared(d), contrastm1sq, contrastscale)
     for(int k = 0; k < 0x10000; k++)
     {
       float kx2m1 = 2.0f * (float)k / 0x10000 - 1.0f;
@@ -239,12 +229,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // generate precomputed brightness curve
   const float gamma = (d->brightness >= 0.0f) ? 1.0f / (1.0f + d->brightness) : (1.0f - d->brightness);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(gamma) \
-  shared(d) \
-  schedule(static)
-#endif
+  DT_OMP_FOR_CLAUSE(shared(d), gamma)
   for(int k = 0; k < 0x10000; k++)
   {
     d->ltable[k] = 100.0f * powf((float)k / 0x10000, gamma);

@@ -38,12 +38,7 @@ static void pre_median_b(
   const int lim[5] = { 0, 1, 2, 1, 0 };
   for(int pass = 0; pass < num_passes; pass++)
   {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(filters, in, lim, roi, threshold) \
-    shared(out) \
-    schedule(static)
-#endif
+    DT_OMP_FOR_CLAUSE(shared(out), filters, in, lim, roi, threshold)
     for(int row = 3; row < roi->height - 3; row++)
     {
       float med[9];
@@ -109,12 +104,7 @@ static void color_smoothing(
         for(int j = 0; j < roi_out->height; j++)
           for(int i = 0; i < roi_out->width; i++, outp += 4) outp[3] = outp[c];
       }
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-      dt_omp_firstprivate(roi_out, width4) \
-      shared(out, c) \
-      schedule(static)
-#endif
+      DT_OMP_FOR_CLAUSE(shared(out, c), roi_out, width4)
       for(int j = 1; j < roi_out->height - 1; j++)
       {
         float *outp = out + (size_t)4 * j * roi_out->width + 4;
@@ -174,12 +164,7 @@ static void green_equilibration_lavg(
 
   dt_iop_image_copy_by_size(out, in, width, height, 1);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, in, thr, width, maximum) \
-  shared(out, oi, oj) \
-  schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR_CLAUSE(shared(out, oi, oj) collapse(2), height, in, thr, width, maximum)
   for(size_t j = oj; j < height - 2; j += 2)
   {
     for(size_t i = oi; i < width - 2; i += 2)
@@ -251,12 +236,7 @@ static void green_equilibration_favg(
   else
     return;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(g2_offset, height, in, width) \
-  shared(out, oi, oj, gr_ratio) \
-  schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR_CLAUSE(shared(out, oi, oj, gr_ratio) collapse(2), g2_offset, height, in, width)
   for(int j = oj; j < (height - 1); j += 2)
   {
     for(int i = oi; i < (width - 1 - g2_offset); i += 2)

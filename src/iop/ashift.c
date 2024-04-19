@@ -1117,12 +1117,7 @@ void distort_mask(struct dt_iop_module_t *self,
   const float cx = roi_out->scale * fullwidth * data->cl;
   const float cy = roi_out->scale * fullheight * data->ct;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(cx, cy, in, out, roi_in, roi_out) \
-  shared(ihomograph, interpolation) \
-  schedule(static)
-#endif
+  DT_OMP_FOR_CLAUSE(shared(ihomograph, interpolation), cx, cy, in, out, roi_in, roi_out)
   // go over all pixels of output image
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -1300,12 +1295,7 @@ static void rgb2grey256(const float *const in,
 {
   const size_t npixels = (size_t)width * height;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels) \
-  dt_omp_sharedconst(in, out) \
-  schedule(static)
-#endif
+  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(in, out), npixels)
   for(int index = 0; index < npixels; index++)
   {
     out[index] = (0.3f * in[4*index+0]
@@ -1336,12 +1326,7 @@ static void edge_enhance_1d(const double *in, double *out,
     ? (const double *)hkernel
     : (const double *)vkernel;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, width, khwidth, kwidth) \
-  shared(in, out, kernel) \
-  schedule(static)
-#endif
+  DT_OMP_FOR_CLAUSE(shared(in, out, kernel), height, width, khwidth, kwidth)
   // loop over image pixels and perform sobel convolution
   for(int j = khwidth; j < height - khwidth; j++)
   {
@@ -1363,12 +1348,7 @@ static void edge_enhance_1d(const double *in, double *out,
     }
   }
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, width, khwidth) \
-  shared(out) \
-  schedule(static)
-#endif
+  DT_OMP_FOR_CLAUSE(shared(out), height, width, khwidth)
   // border fill in output buffer, so we don't get pseudo lines at image frame
   for(int j = 0; j < height; j++)
     for(int i = 0; i < width; i++)
@@ -1411,12 +1391,7 @@ static gboolean edge_enhance(const double *in,
   edge_enhance_1d(in, Gy, width, height, ASHIFT_ENHANCE_VERTICAL);
 
 // calculate absolute values
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, width) \
-  shared(Gx, Gy, out) \
-  schedule(static)
-#endif
+  DT_OMP_FOR_CLAUSE(shared(Gx, Gy, out), height, width)
   for(size_t k = 0; k < (size_t)width * height; k++)
   {
     out[k] = sqrt(Gx[k] * Gx[k] + Gy[k] * Gy[k]);
@@ -1449,12 +1424,7 @@ static gboolean detail_enhance(const float *const in,
   // as colors don't matter we are safe to assume data to be sRGB
 
   // convert RGB input to Lab, use output buffer for intermediate storage
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels) \
-  dt_omp_sharedconst(in, out) \
-  schedule(static)
-#endif
+  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(in, out), npixels)
   for(size_t index = 0; index < 4*npixels; index += 4)
   {
     dt_aligned_pixel_t XYZ;
@@ -1476,12 +1446,7 @@ static gboolean detail_enhance(const float *const in,
     success = FALSE;
 
   // convert resulting Lab to RGB output
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels) \
-  dt_omp_sharedconst(out) \
-  schedule(static)
-#endif
+  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(out), npixels)
   for(size_t index = 0; index < 4*npixels; index += 4)
   {
     dt_aligned_pixel_t XYZ;
@@ -1500,12 +1465,7 @@ static void gamma_correct(const float *const in,
                           const int height)
 {
   const size_t npixels = (size_t)width * height;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels) \
-  dt_omp_sharedconst(in, out) \
-  schedule(static)
-#endif
+  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(in, out), npixels)
   for(int index = 0; index < 4*npixels; index += 4)
   {
     for(int c = 0; c < 3; c++)
@@ -3584,12 +3544,8 @@ void process(struct dt_iop_module_t *self,
   const float cx = roi_out->scale * fullwidth * data->cl;
   const float cy = roi_out->scale * fullheight * data->ct;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, ch_width, cx, cy, ivoid, ovoid, roi_in, roi_out) \
-  shared(ihomograph, interpolation) \
-  schedule(static)
-#endif
+  DT_OMP_FOR_CLAUSE(shared(ihomograph, interpolation), 
+                    ch, ch_width, cx, cy, ivoid, ovoid, roi_in, roi_out)
   // go over all pixels of output image
   for(int j = 0; j < roi_out->height; j++)
   {

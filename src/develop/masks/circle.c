@@ -1111,12 +1111,7 @@ static int _circle_get_mask(const dt_iop_module_t *const restrict module,
 
   const float pos_x = *posx;
   const float pos_y = *posy;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(h, w) \
-  dt_omp_sharedconst(points, pos_x, pos_y) \
-  schedule(static) if(h*w > 50000) num_threads(MIN(dt_get_num_threads(), (h*w)/20000))
-#endif
+  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(points, pos_x, pos_y) if(h*w > 50000) num_threads(MIN(dt_get_num_threads(), (h*w)/20000)), h, w)
   for(int i = 0; i < h; i++)
   {
     float *const restrict p = points + 2 * i * w;

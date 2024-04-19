@@ -167,12 +167,7 @@ void dt_gaussian_blur(dt_gaussian_t *g, const float *const in, float *const out)
   float *Labmin = g->min;
 
 // vertical blur column by column
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, width, height, ch) \
-  shared(temp, Labmin, Labmax, a0, a1, a2, a3, b1, b2, coefp, coefn) \
-  schedule(static)
-#endif
+  DT_OMP_FOR_CLAUSE(shared(temp, Labmin, Labmax, a0, a1, a2, a3, b1, b2, coefp, coefn), in, width, height, ch)
   for(int i = 0; i < width; i++)
   {
     dt_aligned_pixel_t xp = {0.0f};
@@ -240,12 +235,7 @@ void dt_gaussian_blur(dt_gaussian_t *g, const float *const in, float *const out)
   }
 
 // horizontal blur line by line
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(out, ch, width, height) \
-  shared(temp, Labmin, Labmax, a0, a1, a2, a3, b1, b2, coefp, coefn) \
-  schedule(static)
-#endif
+  DT_OMP_FOR_CLAUSE(shared(temp, Labmin, Labmax, a0, a1, a2, a3, b1, b2, coefp, coefn), out, ch, width, height)
   for(int j = 0; j < height; j++)
   {
     dt_aligned_pixel_t xp = {0.0f};
@@ -331,11 +321,7 @@ void dt_gaussian_blur_4c(dt_gaussian_t *g, const float *const in, float *const o
   copy_pixel(Labmax, g->max);
 
 // vertical blur column by column
-#ifdef _OPENMP
-#pragma omp parallel for default(none)            \
-  dt_omp_firstprivate(in, width, height, temp, Labmin, Labmax, a0, a1, a2, a3, b1, b2, coefp, coefn) \
-  schedule(static)
-#endif
+  DT_OMP_FOR(in, width, height, temp, Labmin, Labmax, a0, a1, a2, a3, b1, b2, coefp, coefn)
   for(size_t i = 0; i < width; i++)
   {
     // forward filter
@@ -401,11 +387,7 @@ void dt_gaussian_blur_4c(dt_gaussian_t *g, const float *const in, float *const o
   }
 
 // horizontal blur line by line
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(out, width, height, temp, Labmin, Labmax, a0, a1, a2, a3, b1, b2, coefp, coefn) \
-  schedule(static)
-#endif
+  DT_OMP_FOR(out, width, height, temp, Labmin, Labmax, a0, a1, a2, a3, b1, b2, coefp, coefn)
   for(size_t j = 0; j < height; j++)
   {
     // forward filter

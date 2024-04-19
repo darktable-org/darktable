@@ -105,11 +105,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 
 static inline void make_noise(float *const output, const float noise, const size_t width, const size_t height)
 {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(output, width, height, noise) \
-  schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR_CLAUSE(collapse(2), output, width, height, noise)
   for(size_t i = 0; i < height; i++)
     for(size_t j = 0; j < width; j++)
     {

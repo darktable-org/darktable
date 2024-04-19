@@ -1923,12 +1923,8 @@ void process(struct dt_iop_module_t *self,
   const _curve_table_ptr restrict table = d->table;
   const _coeffs_table_ptr restrict unbounded_coeffs = d->unbounded_coeffs;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(autoscale, npixels, work_profile, xm_b, xm_g, xm_L) \
-  dt_omp_sharedconst(in, out, table, unbounded_coeffs, d) \
-  schedule(static)
-#endif
+  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(in, out, table, unbounded_coeffs, d),
+                    autoscale, npixels, work_profile, xm_b, xm_g, xm_L)
   for(int y = 0; y < 4*npixels; y += 4)
   {
     if(autoscale == DT_S_SCALE_MANUAL_RGB)

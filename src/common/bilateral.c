@@ -222,11 +222,7 @@ void dt_bilateral_splat(const dt_bilateral_t *b, const float *const in)
     oz + oy + ox
   };
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, b, oy, sigma_s, buf, offsets)  \
-  schedule(static)
-#endif
+  DT_OMP_FOR(in, b, oy, sigma_s, buf, offsets)  
   for(int slice = 0; slice < b->numslices; slice++)
   {
     const int firstrow = slice * b->sliceheight;
@@ -303,11 +299,7 @@ static void blur_line_z(float *buf,
 {
   const float w1 = 4.f / 16.f;
   const float w2 = 2.f / 16.f;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(size1, size2, size3, offset1, offset2, offset3, w1, w2, buf) \
-  schedule(static)
-#endif
+  DT_OMP_FOR(size1, size2, size3, offset1, offset2, offset3, w1, w2, buf)
   for(int k = 0; k < size1; k++)
   {
     size_t index = (size_t)k * offset1;
@@ -350,11 +342,7 @@ static void blur_line(float *buf,
   const float w0 = 6.f / 16.f;
   const float w1 = 4.f / 16.f;
   const float w2 = 1.f / 16.f;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(size1, size2, size3, offset1, offset2, offset3, w0, w1, w2, buf) \
-  schedule(static)
-#endif
+  DT_OMP_FOR(size1, size2, size3, offset1, offset2, offset3, w0, w1, w2, buf)
   for(int k = 0; k < size1; k++)
   {
     size_t index = (size_t)k * offset1;
@@ -422,11 +410,7 @@ void dt_bilateral_slice(const dt_bilateral_t *const b,
   const int height = b->height;
 
   if(!buf) return;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(b, in, out, norm, ox, oy, oz, height, width, buf)  \
-  schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR_CLAUSE(collapse(2), b, in, out, norm, ox, oy, oz, height, width, buf)
   for(int j = 0; j < height; j++)
   {
     for(int i = 0; i < width; i++)
@@ -468,11 +452,7 @@ void dt_bilateral_slice_to_output(const dt_bilateral_t *const b,
   const int height = b->height;
 
   if(!buf) return;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(b, in, out, norm, oy, oz, ox, buf, width, height)  \
-  schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR_CLAUSE(collapse(2), b, in, out, norm, oy, oz, ox, buf, width, height)
   for(int j = 0; j < height; j++)
   {
     for(int i = 0; i < width; i++)

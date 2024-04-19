@@ -614,11 +614,7 @@ static void process_posterize(
   const float f = levels - 1;
   const float rf = 1.0f / f;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, in, out, f, rf) \
-  schedule(static)
-#endif
+  DT_OMP_FOR(npixels, in, out, f, rf)
   for(int k = 0; k < npixels; k++)
   {
     dt_aligned_pixel_t pixel;

@@ -118,18 +118,22 @@ typedef unsigned int u_int;
 #endif /* dt_omp_nontemporal */
 
 #define DT_OMP_STRINGIFY(...) #__VA_ARGS__
-#define DT_OMP_SIMD(...) _Pragma(DT_OMP_STRINGIFY(omp simd __VA_ARGS__))
-#define DT_OMP_DECLARE_SIMD(...) _Pragma(DT_OMP_STRINGIFY(omp declare simd __VA_ARGS__))
+#define DT_OMP_PRAGMA(...) _Pragma(DT_OMP_STRINGIFY(omp __VA_ARGS__))
 
 #else /* _OPENMP */
 
 # define omp_get_max_threads() 1
 # define omp_get_thread_num() 0
 
-#define DT_OMP_SIMD(...)
-#define DT_OMP_DECLARE_SIMD(...)
+#define DT_OMP_PRAGMA(...)
 
 #endif /* _OPENMP */
+
+#define DT_OMP_SIMD(...) DT_OMP_PRAGMA(simd __VA_ARGS__)
+#define DT_OMP_DECLARE_SIMD(...) DT_OMP_PRAGMA(declare simd __VA_ARGS__)
+#define DT_OMP_FOR(...) DT_OMP_PRAGMA(parallel for default(none) schedule(static) dt_omp_firstprivate( __VA_ARGS__ ))
+#define DT_OMP_FOR_CLAUSE(clause, ...) DT_OMP_PRAGMA(parallel for default(none) schedule(static) clause dt_omp_firstprivate( __VA_ARGS__ ))
+#define DT_OMP_FOR_SIMD(clause, ...) DT_OMP_PRAGMA(parallel for simd default(none) schedule(simd:static) clause dt_omp_firstprivate( __VA_ARGS__ ))
 
 #ifndef _RELEASE
 #include "common/poison.h"

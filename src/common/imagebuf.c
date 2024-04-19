@@ -209,11 +209,7 @@ void dt_iop_copy_image_roi(float *const __restrict__ out,
       && (roi_in->height - dy >= roi_out->height))
   {
     const size_t lwidth = sizeof(float) * roi_out->width * ch;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, in, out, roi_in, roi_out, dx, dy, lwidth) \
-  schedule(static)
-#endif
+    DT_OMP_FOR(ch, in, out, roi_in, roi_out, dx, dy, lwidth)
     for(size_t row = 0; row < roi_out->height; row++)
     {
       float *o = out + (size_t)(ch * row * roi_out->width);
@@ -225,11 +221,7 @@ void dt_iop_copy_image_roi(float *const __restrict__ out,
 
   // the RoI are inconsistant so we do a copy per location and fill by zero if
   // not available in RoI-in
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(out, in, roi_in, roi_out, dx, dy, ch) \
-  schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR_CLAUSE(collapse(2), out, in, roi_in, roi_out, dx, dy, ch)
   for(int row = 0; row < roi_out->height; row++)
   {
     for(int col = 0; col < roi_out->width; col++)

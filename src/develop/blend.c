@@ -465,11 +465,7 @@ static void _write_highlights_raster(const gboolean israw,
                                      const dt_iop_roi_t *const roi_out,
                                      float *mask)
 {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(output, input, roi_in, roi_out, mask, israw) \
-    schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR_CLAUSE(collapse(2), output, input, roi_in, roi_out, mask, israw)
   for(ssize_t row = 0; row < roi_out->height; row++)
   {
     for(ssize_t col = 0; col < roi_out->width; col++)
