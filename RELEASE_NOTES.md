@@ -154,21 +154,30 @@ changes (where available).
 
 ### API Version
 
-- API version is now 9.2.0
+- API version is now 9.3.0
 
 ### Bug Fixes
 
-- Fixed `scripts_installer` to handle user names with spaces on Windows.
-
-- Fixed a wrong behaviour when double-clicking on the navigation menu
-  in the map module.
-
 ### Add action support for Lua
-
 
 ### Other Lua changes
 
-- Allow access to image `change_timestamp`.
+- Upgraded internal Lua to 5.4.6
+
+- Added duplicate_image_with_history function to darktable.database
+
+- button widget - added halign member to horizontally position the label
+
+- button widget - added image member to use an image as the button label
+
+- button widget - added image_align to horizontally position the image
+
+- box widget - added expand member to control cells being expanded to fill the with of the box
+
+- box widget - added fill member to control if the widgets fill the cell
+
+- box widget - added padding member to control padding size of the cells
+
 
 ## Notes
 
