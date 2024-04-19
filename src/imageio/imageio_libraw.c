@@ -262,7 +262,7 @@ const model_map_t modelMap[] = {
 #endif
 };
 
-
+gboolean warning_unsupported_model_seen = FALSE;
 
 /* LibRaw is expected to read only new Canon CR3 files */
 
@@ -301,11 +301,12 @@ static gboolean _supported_image(const gchar *filename)
 void _check_libraw_missing_support(const struct dt_image_t *img)
 {
   char lr_mk[64], lr_md[64], lr_al[64];
-  if(!dt_libraw_lookup_makermodel(img->exif_maker, img->exif_model,
+  if(!warning_unsupported_model_seen && !dt_libraw_lookup_makermodel(img->exif_maker, img->exif_model,
                                   lr_mk, sizeof(lr_mk),
                                   lr_md, sizeof(lr_md),
                                   lr_al, sizeof(lr_al)))
   {
+    warning_unsupported_model_seen = TRUE;
     const char *T1 = _("<span foreground='red'><b>WARNING</b></span>:"
                        " camera is not fully supported!");
     char *T2 = g_strdup_printf(_("colors for `%s' could be misrepresented,\n"
