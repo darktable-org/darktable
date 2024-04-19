@@ -118,11 +118,7 @@ dt_omp_firstprivate(guide, mask, in, Ndim) \
   dt_gaussian_blur_4c(g, in, out);
   dt_gaussian_free(g);
 
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-dt_omp_firstprivate(out, Ndim) \
-  schedule(simd:static) aligned(out:64)
-#endif
+  DT_OMP_FOR_SIMD(aligned(out:64), out, Ndim)
   for(size_t k = 0; k < Ndim; k++)
   {
     out[4 * k + 1] -= out[4 * k] * out[4 * k];
@@ -173,11 +169,7 @@ dt_omp_firstprivate(guide, in, Ndim) \
   dt_gaussian_blur(g, in, out);
   dt_gaussian_free(g);
 
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-dt_omp_firstprivate(out, Ndim) \
-  schedule(simd:static) aligned(out:64)
-#endif
+  DT_OMP_FOR_SIMD(aligned(out:64), out, Ndim)
   for(size_t k = 0; k < Ndim; k++)
   {
     const float avg = out[2 * k];
@@ -225,11 +217,7 @@ void eigf_blending_no_mask(float *const restrict image,
                   const dt_iop_guided_filter_blending_t filter,
                   const float feathering)
 {
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(image, av, Ndim, feathering, filter) \
-  schedule(simd:static) aligned(image, av:64)
-#endif
+  DT_OMP_FOR_SIMD(aligned(image, av:64), image, av, Ndim, feathering, filter)
   for(size_t k = 0; k < Ndim; k++)
   {
     const float avg_g = av[k * 2];

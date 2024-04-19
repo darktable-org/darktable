@@ -1306,10 +1306,8 @@ static inline void build_mask(const float *const restrict input,
                               const size_t width,
                               const size_t height)
 {
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) dt_omp_firstprivate(input, mask, height, width, threshold)        \
-    schedule(simd:static) aligned(mask, input : 64)
-#endif
+  DT_OMP_FOR_SIMD(aligned(mask, input : 64),
+                  input, mask, height, width, threshold)
   for(size_t k = 0; k < height * width * 4; k += 4)
   {
     // TRUE if any channel is above threshold

@@ -1393,12 +1393,7 @@ static inline gboolean reconstruct_highlights(const float *const restrict in,
 
     // Compute wavelets high-frequency scales and save the minimum of texture over the RGB channels in HF
     const size_t pts = roi_out->height * roi_out->width;
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(pts, HF, LF, detail)   \
-  schedule(simd:static) \
-  aligned(HF, LF, detail : 64)
-#endif
+    DT_OMP_FOR_SIMD(aligned(HF, LF, detail : 64), pts, HF, LF, detail)
     for(size_t k = 0; k < pts; k++)
     {
       for_each_channel(c)

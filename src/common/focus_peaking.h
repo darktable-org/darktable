@@ -83,11 +83,7 @@ static inline void dt_focuspeaking(cairo_t *cr, const int buf_width, const int b
 
   const size_t npixels = (size_t)buf_height * buf_width;
   // Create a luma buffer as the euclidian norm of RGB channels
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none)             \
-  dt_omp_firstprivate(image, luma, npixels)             \
-  schedule(simd:static) aligned(image, luma:64)
-#endif
+  DT_OMP_FOR_SIMD(aligned(image, luma:64), image, luma, npixels)
   for(size_t index = 0; index < npixels; index++)
     {
       const size_t index_RGB = index * 4;

@@ -151,12 +151,7 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
   case 10: {
     img->flags |= DT_IMAGE_HDR;
     img->flags &= ~DT_IMAGE_LDR;
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(mipbuf, width, height, in, rowbytes, max_channel_f) \
-  schedule(simd:static) \
-  collapse(2)
-#endif
+    DT_OMP_FOR_SIMD(collapse(2), mipbuf, width, height, in, rowbytes, max_channel_f)
     for(size_t y = 0; y < height; y++)
     {
       for(size_t x = 0; x < width; x++)
@@ -176,12 +171,7 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
   case 8: {
     img->flags |= DT_IMAGE_LDR;
     img->flags &= ~DT_IMAGE_HDR;
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(mipbuf, width, height, in, rowbytes, max_channel_f) \
-  schedule(simd:static) \
-  collapse(2)
-#endif
+    DT_OMP_FOR_SIMD(collapse(2), mipbuf, width, height, in, rowbytes, max_channel_f)
     for(size_t y = 0; y < height; y++)
     {
       for(size_t x = 0; x < width; x++)
