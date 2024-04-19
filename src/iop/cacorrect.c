@@ -378,9 +378,7 @@ void process(
     // A reminder, be very careful if you try to optimize the parallel processing loop
     // for not breaking multipass mode and clang/gcc differences.
     // See darktable file history and related problems before doing so.
-#ifdef _OPENMP
-#pragma omp parallel
-#endif
+    DT_OMP_PRAGMA(parallel)
     {
       // direction of the CA shift in a tile
       int GRBdir[2][3];
@@ -683,9 +681,7 @@ void process(
       }
       // end of diagnostic pass per tile
 
-#ifdef _OPENMP
-#pragma omp critical(cadetectpass2)
-#endif
+      DT_OMP_PRAGMA(critical(cadetectpass2))
       {
         for(int dir = 0; dir < 2; dir++)
           for(int c = 0; c < 2; c++)
@@ -696,13 +692,9 @@ void process(
           }
       }
 
-#ifdef _OPENMP
-#pragma omp barrier
-#endif
+      DT_OMP_PRAGMA(barrier)
 
-#ifdef _OPENMP
-#pragma omp single
-#endif
+      DT_OMP_PRAGMA(single)
       {
         for(int dir = 0; dir < 2; dir++)
         {
@@ -1121,9 +1113,7 @@ void process(
           }
         }
 
-#ifdef _OPENMP
-#pragma omp barrier
-#endif
+DT_OMP_PRAGMA(barrier)
 // copy temporary image matrix back to image matrix
 #ifdef _OPENMP
 #pragma omp for

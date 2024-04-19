@@ -1789,9 +1789,7 @@ static void _modify_roi_in_lf(struct dt_iop_module_t *self,
           (xoff + (width - 1), yoff + j * ystep, 1, 1,
            buf + 6 * (2 * awidth + aheight + j));
 
-#ifdef _OPENMP
-#pragma omp barrier
-#endif
+DT_OMP_PRAGMA(barrier)
 
 #ifdef _OPENMP
 #pragma omp for schedule(static)

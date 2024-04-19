@@ -331,14 +331,10 @@ static void _heal_laplace_loop(float *const restrict red_pixels, float *const re
   size_t nmask_red = 0;
   size_t nmask_black = 0;
 
-#ifdef _OPENMP
-#pragma omp parallel sections
-#endif
+  DT_OMP_PRAGMA(parallel sections)
   {
     collect_runs(1, mask, width, height, subwidth, red_runs, &num_red, &nmask_red);
-    #ifdef _OPENMP
-    #pragma omp section
-    #endif
+    DT_OMP_PRAGMA(section)
     collect_runs(0, mask, width, height, subwidth, black_runs, &num_black, &nmask_black);
   }
   const size_t nmask = nmask_red + nmask_black;

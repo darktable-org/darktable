@@ -254,26 +254,16 @@ static void kmeans(const float *col, const dt_iop_roi_t *const roi, const int n,
         const dt_aligned_pixel_t Lab = { L, col[3 * (roi->width * j + i) + 1], col[3 * (roi->width * j + i) + 2] };
         // determine dist to mean_out
         const int c = get_cluster(Lab, n, mean_out);
-#ifdef _OPENMP
-#pragma omp atomic
-#endif
+        DT_OMP_PRAGMA(atomic)
         cnt[c]++;
 // update mean, var
-#ifdef _OPENMP
-#pragma omp atomic
-#endif
+        DT_OMP_PRAGMA(atomic)
         var[c][0] += Lab[1] * Lab[1];
-#ifdef _OPENMP
-#pragma omp atomic
-#endif
+        DT_OMP_PRAGMA(atomic)
         var[c][1] += Lab[2] * Lab[2];
-#ifdef _OPENMP
-#pragma omp atomic
-#endif
+        DT_OMP_PRAGMA(atomic)
         mean[c][0] += Lab[1];
-#ifdef _OPENMP
-#pragma omp atomic
-#endif
+        DT_OMP_PRAGMA(atomic)
         mean[c][1] += Lab[2];
       }
     }
