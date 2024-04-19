@@ -392,9 +392,9 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d,
 // which compresses mainly the cyan colors (while also reversible)
 // https://danielhaim.com/research/downloads/Computational%20RYB%20Color%20Model%20and%20its%20Applications.pdf
 
-const float x_vtx[7] = {0.0, 0.166667, 0.333333, 0.5, 0.666667, 0.833333, 1.0};
+const float x_vtx[7] =     {0.0, 0.166667, 0.333333, 0.5, 0.666667, 0.833333, 1.0};
 const float rgb_y_vtx[7] = {0.0, 0.083333, 0.166667, 0.383838, 0.586575, 0.833333, 1.0};
-const float ryb_y_vtx[] = {0.0, 0.333333, 0.472217, 0.611105, 0.715271, 0.833333, 1.0};
+const float ryb_y_vtx[7] = {0.0, 0.333333, 0.472217, 0.611105, 0.715271, 0.833333, 1.0};
 
 static void _ryb2rgb(const dt_aligned_pixel_t ryb,
                      dt_aligned_pixel_t rgb,
@@ -747,20 +747,6 @@ static void _lib_histogram_process_vectorscope
   const dt_lib_histogram_vectorscope_type_t vs_type = d->vectorscope_type;
   const dt_lib_histogram_scale_t vs_scale = d->vectorscope_scale;
 
-  if(!vs_prof || !dt_is_valid_colormatrix(vs_prof->matrix_in[0][0]))
-  {
-    dt_print(DT_DEBUG_ALWAYS,
-             "[histogram] unsupported vectorscope profile %i %s,"
-             " it will be replaced with linear Rec2020\n",
-             vs_prof ? vs_prof->type     : 0,
-             vs_prof ? vs_prof->filename : "unsupported");
-    dt_control_log(_("unsupported vectorscope profile selected,"
-                     " it will be replaced with linear Rec2020"));
-    vs_prof = dt_ioppr_add_profile_info_to_list
-      (darktable.develop,
-       DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_RELATIVE_COLORIMETRIC);
-  }
-
   _lib_histogram_vectorscope_bkgd(d, vs_prof);
   // FIXME: particularly for u*v*, center on hue ring bounds rather
   // than plot center, to be able to show a larger plot?
@@ -1033,16 +1019,33 @@ static void dt_lib_histogram_process
   // pixel -- will need logic from _transform_matrix_rgb() -- or
   // better yet a per-pixel callback within
   // _transform_matrix_rgb()-ish code
-  //
-  // FIXME: in case of vectorscope, it needs XYZ data, so skip this
-  // conversion and instead it's enough that it has input &
-  // profile_info_from -- though then we don't see the result of a
-  // relative colorimetric conversion to the histogram profile...
+
   float *img_display = dt_alloc_align_float((size_t)4 * width * height);
   if(!img_display) return;
-  dt_ioppr_transform_image_colorspace_rgb
-    (input, img_display, width, height,
-     profile_info_from, profile_info_to, "final histogram");
+
+  // In case of vectorscope we make sure a valid colorspace transform even
+  // if the to_profile has no matrix and falls back to Rec2020 so we see the
+  // result of a relative colorimetric conversion to the histogram profile...
+  const gboolean replaced = d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE
+                      && (!profile_info_to || !dt_is_valid_colormatrix(profile_info_to->matrix_in[0][0]));
+  if(replaced)
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[histogram] unsupported vectorscope profile %i %s,"
+             " it will be replaced with linear Rec2020\n",
+             profile_info_to ? profile_info_to->type     : 0,
+             profile_info_to ? profile_info_to->filename : "unsupported");
+    dt_control_log(_("unsupported vectorscope profile selected,"
+                     " it will be replaced with linear Rec2020"));
+  }
+
+  const dt_iop_order_iccprofile_info_t *profile_info_out = replaced
+            ? dt_ioppr_add_profile_info_to_list(darktable.develop,
+                                                DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_RELATIVE_COLORIMETRIC)
+            : profile_info_to;
+
+  dt_ioppr_transform_image_colorspace_rgb(input, img_display, width, height,
+                                            profile_info_from, profile_info_out, "final histogram");
   dt_pthread_mutex_lock(&d->lock);
   switch(d->scope_type)
   {
@@ -1054,7 +1057,7 @@ static void dt_lib_histogram_process
       _lib_histogram_process_waveform(d, img_display, &roi);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE:
-      _lib_histogram_process_vectorscope(d, img_display, &roi, profile_info_to);
+      _lib_histogram_process_vectorscope(d, img_display, &roi, profile_info_out);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_N:
       dt_unreachable_codepath();
@@ -2625,7 +2628,7 @@ void gui_init(dt_lib_module_t *self)
 
   // shows the scope, scale, and has draggable areas
   d->scope_draw = dt_ui_resize_wrap(NULL,
-                                    0, 
+                                    0,
                                     "plugins/darkroom/histogram/graphheight");
   ac = dt_action_define(dark, NULL, N_("hide histogram"), d->scope_draw, NULL);
   dt_action_register(ac, NULL, _lib_histogram_collapse_callback,
