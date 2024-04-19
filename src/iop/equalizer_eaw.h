@@ -125,12 +125,7 @@ static void dt_iop_equalizer_iwtf(float *buf, float **weight_a, const int l, con
 
   size_t scratch_size;
   float *const restrict tmp_height_buf = dt_alloc_perthread_float(height, &scratch_size);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, l, st, step, tmp_height_buf, scratch_size, wd, width) \
-  shared(weight_a, buf) \
-  schedule(static)
-#endif
+  DT_OMP_FOR_CLAUSE(shared(weight_a, buf), height, l, st, step, tmp_height_buf, scratch_size, wd, width)
   for(int i = 0; i < width; i++)
   {
     // cols
@@ -157,12 +152,7 @@ static void dt_iop_equalizer_iwtf(float *buf, float **weight_a, const int l, con
   dt_free_align(tmp_height_buf);
 
   float *const restrict tmp_width_buf = dt_alloc_perthread_float(width, &scratch_size);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, l, st, step, tmp_width_buf, scratch_size, wd, width) \
-  shared(weight_a, buf) \
-  schedule(static)
-#endif
+  DT_OMP_FOR_CLAUSE(shared(weight_a, buf), height, l, st, step, tmp_width_buf, scratch_size, wd, width)
   for(int j = 0; j < height; j++)
   {
     // rows

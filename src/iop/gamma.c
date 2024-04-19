@@ -243,10 +243,7 @@ static void _channel_display_false_color(const float *const restrict in,
       }
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_HSL_H:
-#ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) \
-    dt_omp_firstprivate(in, out, buffsize, alpha, mask_color)
-#endif
+      DT_OMP_FOR(in, out, buffsize, alpha, mask_color)
       for(size_t j = 0; j < buffsize; j += 4)
       {
         dt_aligned_pixel_t hsl = { in[j + 1], 0.5f, 0.5f, 0.0f };
@@ -257,10 +254,7 @@ static void _channel_display_false_color(const float *const restrict in,
       }
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_hz:
-#ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) \
-  dt_omp_firstprivate(in, out, buffsize, alpha, mask_color)
-#endif
+      DT_OMP_FOR(in, out, buffsize, alpha, mask_color)
       for(size_t j = 0; j < buffsize; j += 4)
       {
         const dt_aligned_pixel_t JzCzhz = { 0.011f, 0.01f, in[j + 1] };

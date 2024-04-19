@@ -354,11 +354,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
     const dt_aligned_pixel_t color = { d->color[0], d->color[1], d->color[2], 1.0f };
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(in, out, npixels, color)      \
-    schedule(static)
-#endif
+    DT_OMP_FOR(in, out, npixels, color)
     for(size_t k = 0; k < npixels; k++)
     {
       dt_aligned_pixel_t inv;

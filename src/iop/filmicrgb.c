@@ -1065,11 +1065,7 @@ static inline gint mask_clipped_pixels(const float *const restrict in, float *co
   int clipped = 0;
   const unsigned int oldMode = dt_mm_enable_flush_zero();
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, mask, normalize, feathering, width, height) \
-  schedule(static) reduction(+:clipped)
-#endif
+  DT_OMP_FOR_CLAUSE(reduction(+:clipped), in, mask, normalize, feathering, width, height)
   for(size_t k = 0; k < 4 * height * width; k += 4)
   {
     const float pix_max = sqrtf(sqf(in[k]) + sqf(in[k + 1]) + sqf(in[k + 2]));
@@ -2087,11 +2083,7 @@ static inline void display_mask(const float *const restrict mask,
                                 const size_t width,
                                 const size_t height)
 {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(width, height, out, mask) \
-  schedule(static)
-#endif
+  DT_OMP_FOR(width, height, out, mask)
   for(size_t k = 0; k < height * width; k++)
   {
     dt_aligned_pixel_t pix;

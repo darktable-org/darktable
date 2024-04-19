@@ -168,11 +168,7 @@ void process(struct dt_iop_module_t *self,
   const size_t npixels = (size_t)roi_out->height * roi_out->width;
   const dt_aligned_pixel_t color = { 0.0f, a, b, 0.0f };
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(a, b, in, out, Lmlmix, mix, npixels, color)  \
-  schedule(static)
-#endif
+  DT_OMP_FOR(a, b, in, out, Lmlmix, mix, npixels, color)
   for(size_t k = 0; k < npixels; k++)
   {
     const float mixed_L = Lmlmix + in[4*k + 0] * mix;

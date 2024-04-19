@@ -148,12 +148,7 @@ static void _transform_from_to_rgb_lab_lcms2(const float *const image_in,
 
   if(xform)
   {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(image_in, image_out, width, height, ch) \
-    shared(xform) \
-    schedule(static)
-#endif
+    DT_OMP_FOR_CLAUSE(shared(xform), image_in, image_out, width, height, ch)
     for(int y = 0; y < height; y++)
     {
       const float *const in = image_in + y * width * ch;
@@ -266,12 +261,7 @@ static void _transform_rgb_to_rgb_lcms2
 
   if(xform)
   {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(image_in, image_out, width, height, ch) \
-    shared(xform) \
-    schedule(static)
-#endif
+    DT_OMP_FOR_CLAUSE(shared(xform), image_in, image_out, width, height, ch)
     for(int y = 0; y < height; y++)
     {
       const float *const in = image_in + y * width * ch;
@@ -403,11 +393,7 @@ static inline void _apply_tonecurves(const float *const image_in,
      && (lut[1][0] >= 0.0f)
      && (lut[2][0] >= 0.0f))
   {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(stride, image_in, image_out, lut, lutsize, unbounded_coeffs, ch) \
-    schedule(static) collapse(2)
-#endif
+    DT_OMP_FOR_CLAUSE(collapse(2), stride, image_in, image_out, lut, lutsize, unbounded_coeffs, ch)
     for(size_t k = 0; k < stride; k += ch)
     {
       for(int c = 0; c < 3; c++) // for_each_channel doesn't
@@ -424,11 +410,7 @@ static inline void _apply_tonecurves(const float *const image_in,
           || (lut[1][0] >= 0.0f)
           || (lut[2][0] >= 0.0f))
   {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(stride, image_in, image_out, lut, lutsize, unbounded_coeffs, ch) \
-    schedule(static) collapse(2)
-#endif
+    DT_OMP_FOR_CLAUSE(collapse(2), stride, image_in, image_out, lut, lutsize, unbounded_coeffs, ch)
     for(size_t k = 0; k < stride; k += ch)
     {
       for(int c = 0; c < 3; c++) // for_each_channel doesn't
@@ -514,11 +496,7 @@ static inline void _transform_lab_to_rgb_matrix
   const size_t stride = (size_t)width * height * ch;
   const dt_colormatrix_t *matrix_ptr = &profile_info->matrix_out_transposed;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(image_in, image_out, stride, profile_info, ch, matrix_ptr)   \
-  schedule(static)
-#endif
+  DT_OMP_FOR(image_in, image_out, stride, profile_info, ch, matrix_ptr)
   for(size_t y = 0; y < stride; y += ch)
   {
     const float *const restrict in = DT_IS_ALIGNED_PIXEL(image_in + y);
@@ -575,12 +553,7 @@ static inline void _transform_matrix_rgb
                                                   (profile_info_to->lut_out[1][0] >= 0.0f),
                                                   (profile_info_to->lut_out[2][0] >= 0.0f) };
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(stride, image_in, image_out, profile_info_from, profile_info_to, run_lut_in, run_lut_out) \
-    shared(matrix) \
-    schedule(static)
-#endif
+    DT_OMP_FOR_CLAUSE(shared(matrix), stride, image_in, image_out, profile_info_from, profile_info_to, run_lut_in, run_lut_out)
     for(size_t y = 0; y < stride; y += 4)
     {
       const float *const restrict in = DT_IS_ALIGNED_PIXEL(image_in + y);
@@ -632,12 +605,7 @@ static inline void _transform_matrix_rgb
   }
   else
   {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(stride, image_in, image_out, profile_info_from, profile_info_to) \
-    shared(matrix) \
-    schedule(static)
-#endif
+    DT_OMP_FOR_CLAUSE(shared(matrix), stride, image_in, image_out, profile_info_from, profile_info_to)
     for(size_t y = 0; y < stride; y += 4)
     {
       const float *const restrict in = DT_IS_ALIGNED_PIXEL(image_in + y);

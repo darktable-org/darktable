@@ -803,12 +803,7 @@ static void _process_cmatrix_bm(struct dt_iop_module_t *self,
   const size_t npixels = (size_t)roi_out->height * roi_out->width;
   // dt_print(DT_DEBUG_ALWAYS, "Using cmatrix codepath\n");
   // only color matrix. use our optimized fast path!
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, clipping, d, ivoid, ovoid) \
-  shared(cmatrix, nmatrix, lmatrix) \
-  schedule(static)
-#endif
+  DT_OMP_FOR_CLAUSE(shared(cmatrix, nmatrix, lmatrix), npixels, clipping, d, ivoid, ovoid)
   for(int j = 0; j < npixels; j++)
   {
     const float *const restrict in = (const float *)ivoid + 4*j;
@@ -1146,11 +1141,7 @@ static void process_lcms2_bm(struct dt_iop_module_t *self,
   const size_t width = roi_out->width;
 
 // use general lcms2 fallback
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(d, ivoid, ovoid, height, width) \
-  schedule(static)
-#endif
+  DT_OMP_FOR(d, ivoid, ovoid, height, width)
   for(int k = 0; k < height; k++)
   {
     const float *in = (const float *)ivoid + (size_t)4 * k * width;
@@ -1193,11 +1184,7 @@ static void process_lcms2_proper(struct dt_iop_module_t *self,
   float *const restrict scratchlines = dt_alloc_perthread_float(4 * width, &padded_size);
   gboolean correcting = corr[0] != 1.0f || corr[1] != 1.0f || corr[2] != 1.0f;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(d, ivoid, ovoid, height, width, scratchlines, correcting, padded_size, corr) \
-  schedule(static)
-#endif
+  DT_OMP_FOR(d, ivoid, ovoid, height, width, scratchlines, correcting, padded_size, corr)
   for(size_t k = 0; k < height; k++)
   {
     float *in = (float *)ivoid + (size_t)4 * k * width;
@@ -1276,11 +1263,7 @@ void process(struct dt_iop_module_t *self,
       const float *const restrict in = (float*)ivoid;
       float *const restrict  out = (float*)ovoid;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(out, in, coeffs, pix) \
-  schedule(static)
-#endif
+      DT_OMP_FOR(out, in, coeffs, pix)
       for(size_t idx = 0; idx < pix; idx += 4)
         dt_vector_mul(&out[idx], &in[idx], coeffs);
     }

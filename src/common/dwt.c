@@ -114,12 +114,7 @@ static void dwt_decompose_vert(float *const restrict out, const float *const res
                                const size_t height, const size_t width, const size_t lev)
 {
   const size_t vscale = MIN(1 << lev, height-1);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, width, vscale) \
-  dt_omp_sharedconst(in, out) \
-  schedule(static)
-#endif
+  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(in, out), height, width, vscale)
   for(int rowid = 0; rowid < height ; rowid++)
   {
     const size_t row = dwt_interleave_rows(rowid,height,vscale);
@@ -157,11 +152,7 @@ static void dwt_decompose_horiz(
     const size_t lev)
 {
   const int hscale = MIN(1 << lev, width);  //(int because we need a signed difference below)
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, width, hscale, in, out, temp, padded_size)    \
-  schedule(static)
-#endif
+  DT_OMP_FOR(height, width, hscale, in, out, temp, padded_size)
   for(int row = 0; row < height ; row++)
   {
     // perform a weighted sum of the current pixel with the ones 'scale' pixels to the left and right, using
@@ -392,12 +383,7 @@ static void dwt_denoise_vert_1ch(
     const size_t lev)
 {
   const int vscale = MIN(1 << lev, height);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, width, vscale) \
-  dt_omp_sharedconst(in, out) \
-  schedule(static)
-#endif
+  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(in, out), height, width, vscale)
   for(int rowid = 0; rowid < height ; rowid++)
   {
     const int row = dwt_interleave_rows(rowid,height,vscale);
@@ -433,12 +419,7 @@ static void dwt_denoise_horiz_1ch(
     const int last)
 {
   const int hscale = MIN(1 << lev, width);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, width, hscale, thold, last) \
-  dt_omp_sharedconst(in, out, accum) \
-  schedule(static)
-#endif
+  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(in, out, accum), height, width, hscale, thold, last)
   for(int row = 0; row < height ; row++)
   {
     // perform a weighted sum of the current pixel with the ones 'scale' pixels to the left and right, using

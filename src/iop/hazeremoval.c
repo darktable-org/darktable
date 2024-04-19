@@ -450,12 +450,8 @@ static float ambient_light(const const_rgb_image img,
   size_t N_bright_hazy = 0;
   const float *const restrict data = dark_ch.data;
   const float *const restrict in_data = img.data;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(crit_brightness, crit_haze_level, data, in_data, size) \
-  schedule(static) \
-  reduction(vsum : A0) reduction(+ : N_bright_hazy)
-#endif
+  DT_OMP_FOR_CLAUSE(reduction(vsum : A0) reduction(+ : N_bright_hazy), 
+                    crit_brightness, crit_haze_level, data, in_data, size)
   for(size_t i = 0; i < size; i++)
   {
     const float *pixel_in = in_data + 4*i;
@@ -578,11 +574,7 @@ void process(struct dt_iop_module_t *self,
       = fminf(fmaxf(expf(-distance * distance_max), 1.f / 1024), 1.f); // minimum allowed value for transition map
   const dt_aligned_pixel_t c_A0 = { A0[0], A0[1], A0[2], A0[3] };
   const gray_image c_trans_map_filtered = trans_map_filtered;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(c_A0, c_trans_map_filtered, in, out, size, t_min) \
-  schedule(static)
-#endif
+  DT_OMP_FOR(c_A0, c_trans_map_filtered, in, out, size, t_min)
   for(size_t i = 0; i < size; i++)
   {
     float t = MAX(c_trans_map_filtered.data[i], t_min);

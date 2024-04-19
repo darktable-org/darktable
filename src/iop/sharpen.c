@@ -303,11 +303,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
   const float *const restrict in = (float*)ivoid;
   const size_t width = roi_out->width;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, ovoid, mat, rad, width, roi_in, roi_out, tmp, padded_size, data) \
-  schedule(static)
-#endif
+  DT_OMP_FOR(in, ovoid, mat, rad, width, roi_in, roi_out, tmp, padded_size, data)
   for(int j = 0; j < roi_out->height; j++)
   {
     // We skip the top and bottom 'rad' rows because the kernel would extend beyond the edge of the image, resulting

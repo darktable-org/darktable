@@ -143,11 +143,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float a_base = d->a_base;
   const float b_scale = d->b_scale;
   const float b_base = d->b_base;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(roi_out, saturation, a_scale, a_base, b_scale, b_base, in, out) \
-  schedule(static)
-#endif
+  DT_OMP_FOR(roi_out, saturation, a_scale, a_base, b_scale, b_base, in, out)
   for(size_t k = 0; k < (size_t)4 * roi_out->width * roi_out->height; k += 4)
   {
     out[k] = in[k];

@@ -126,12 +126,7 @@ static void rcd_ppg_border(
 
   const float *input = in;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(filters, out, width, height, border) \
-  shared(input) \
-  schedule(static)
-#endif
+  DT_OMP_FOR_CLAUSE(shared(input), filters, out, width, height, border)
   for(int j = 3; j < height - 3; j++)
   {
     float *buf = out + (size_t)4 * width * j + 4 * 3;
@@ -196,11 +191,7 @@ static void rcd_ppg_border(
     }
   }
 // for all pixels: interpolate colors into float array
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(filters, out, width, height, margin) \
-  schedule(static)
-#endif
+  DT_OMP_FOR(filters, out, width, height, margin)
   for(int j = 1; j < height - 1; j++)
   {
     float *buf = out + (size_t)4 * width * j + 4;

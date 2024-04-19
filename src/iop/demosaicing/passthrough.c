@@ -28,12 +28,7 @@ static void passthrough_monochrome(
   assert(roi_in->width >= roi_out->width);
   assert(roi_in->height >= roi_out->height);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, roi_out, roi_in) \
-  shared(out) \
-  schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR_CLAUSE(shared(out) collapse(2), in, roi_out, roi_in)
   for(int j = 0; j < roi_out->height; j++)
   {
     for(int i = 0; i < roi_out->width; i++)

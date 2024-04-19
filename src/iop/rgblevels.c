@@ -1346,11 +1346,7 @@ void process(dt_iop_module_t *self,
       = { d->params.levels[0][0], d->params.levels[1][0], d->params.levels[2][0], 0.0f };
     const dt_aligned_pixel_t max_levels
       = { d->params.levels[0][2], d->params.levels[1][2], d->params.levels[2][2], 1.0f };
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, in, out, work_profile, d, mult, min_levels, max_levels) \
-  schedule(static)
-#endif
+    DT_OMP_FOR(npixels, in, out, work_profile, d, mult, min_levels, max_levels)
     for(int k = 0; k < 4U*npixels; k += 4)
     {
       for(int c = 0; c < 3; c++)

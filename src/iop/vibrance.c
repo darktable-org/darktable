@@ -114,12 +114,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float amount = (d->amount * 0.01);
   const int npixels = roi_out->height * roi_out->width;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(amount, npixels) \
-  dt_omp_sharedconst(in, out) \
-  schedule(static)
-#endif
+  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(in, out), amount, npixels)
   for(int k = 0; k < 4 * npixels; k += 4)
   {
     /* saturation weight 0 - 1 */

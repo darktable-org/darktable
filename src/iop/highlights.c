@@ -653,11 +653,7 @@ static void process_visualize(dt_dev_pixelpipe_iop_t *piece,
   if(filters == 0)
   {
     const size_t npixels = roi_out->width * (size_t)roi_out->height;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(in, out, clips, npixels) \
-    schedule(static)
-#endif
+    DT_OMP_FOR(in, out, clips, npixels)
     for(size_t k = 0; k < 4*npixels; k += 4)
     {
       for_each_channel(c)
@@ -667,11 +663,7 @@ static void process_visualize(dt_dev_pixelpipe_iop_t *piece,
   }
   else
   {
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, out, clips, roi_in, roi_out, filters, xtrans, is_xtrans) \
-  schedule(static)
-#endif
+    DT_OMP_FOR(in, out, clips, roi_in, roi_out, filters, xtrans, is_xtrans)
     for(int row = 0; row < roi_out->height; row++)
     {
       for(int col = 0; col < roi_out->width; col++)
@@ -759,21 +751,13 @@ void process(struct dt_iop_module_t *self,
       if(filters == 9u)
       {
         const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-        dt_omp_firstprivate(clips, filters, ivoid, ovoid, roi_in, roi_out, xtrans) \
-        schedule(static)
-#endif
+        DT_OMP_FOR(clips, filters, ivoid, ovoid, roi_in, roi_out, xtrans)
         for(int j = 0; j < roi_out->height; j++)
         {
           interpolate_color_xtrans(ivoid, ovoid, roi_in, roi_out, 0, 1, j, clips, xtrans, 0);
           interpolate_color_xtrans(ivoid, ovoid, roi_in, roi_out, 0, -1, j, clips, xtrans, 1);
         }
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-        dt_omp_firstprivate(clips, filters, ivoid, ovoid, roi_in, roi_out, xtrans) \
-        schedule(static)
-#endif
+        DT_OMP_FOR(clips, filters, ivoid, ovoid, roi_in, roi_out, xtrans)
         for(int i = 0; i < roi_out->width; i++)
         {
           interpolate_color_xtrans(ivoid, ovoid, roi_in, roi_out, 1, 1, i, clips, xtrans, 2);
@@ -782,12 +766,7 @@ void process(struct dt_iop_module_t *self,
       }
       else
       {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-        dt_omp_firstprivate(clips, filters, ivoid, ovoid, roi_out) \
-        shared(data, piece) \
-        schedule(static)
-#endif
+        DT_OMP_FOR_CLAUSE(shared(data, piece), clips, filters, ivoid, ovoid, roi_out)
         for(int j = 0; j < roi_out->height; j++)
         {
           interpolate_color(ivoid, ovoid, roi_out, 0, 1, j, clips, filters, 0);
@@ -795,12 +774,7 @@ void process(struct dt_iop_module_t *self,
         }
 
 // up/down directions
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-        dt_omp_firstprivate(clips, filters, ivoid, ovoid, roi_out) \
-        shared(data, piece) \
-        schedule(static)
-#endif
+        DT_OMP_FOR_CLAUSE(shared(data, piece), clips, filters, ivoid, ovoid, roi_out)
         for(int i = 0; i < roi_out->width; i++)
         {
           interpolate_color(ivoid, ovoid, roi_out, 1, 1, i, clips, filters, 2);

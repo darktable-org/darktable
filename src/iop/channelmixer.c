@@ -240,11 +240,7 @@ static void process_hsl_v1(dt_dev_pixelpipe_iop_t *piece, const float *const res
   const int ch = piece->colors;
   const size_t pixel_count = (size_t)ch * roi_out->width * roi_out->height;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, pixel_count, hsl_matrix, rgb_matrix, in, out) \
-  schedule(static)
-#endif
+  DT_OMP_FOR(ch, pixel_count, hsl_matrix, rgb_matrix, in, out)
   for(size_t k = 0; k < pixel_count; k += ch)
   {
     float h, s, l, hmix, smix, lmix;
@@ -289,11 +285,7 @@ static void process_hsl_v2(dt_dev_pixelpipe_iop_t *piece, const float *const res
   const int ch = piece->colors;
   const size_t pixel_count = (size_t)ch * roi_out->width * roi_out->height;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, pixel_count, hsl_matrix, rgb_matrix, in, out) \
-  schedule(static)
-#endif
+  DT_OMP_FOR(ch, pixel_count, hsl_matrix, rgb_matrix, in, out)
   for(size_t k = 0; k < pixel_count; k += ch)
   {
     dt_aligned_pixel_t rgb = { in[k], in[k + 1], in[k + 2] };
@@ -342,11 +334,7 @@ static void process_rgb(dt_dev_pixelpipe_iop_t *piece, const float *const restri
   const int ch = piece->colors;
   const size_t pixel_count = (size_t)ch * roi_out->width * roi_out->height;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, pixel_count, rgb_matrix, in, out) \
-  schedule(static)
-#endif
+  DT_OMP_FOR(ch, pixel_count, rgb_matrix, in, out)
   for(size_t k = 0; k < pixel_count; k += ch)
   {
     for(int i = 0, j = 0; i < 3; i++, j += 3)
@@ -366,11 +354,7 @@ static void process_gray(dt_dev_pixelpipe_iop_t *piece, const float *const restr
   const int ch = piece->colors;
   const size_t pixel_count = (size_t)ch * roi_out->width * roi_out->height;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, pixel_count, rgb_matrix, in, out) \
-  schedule(static)
-#endif
+  DT_OMP_FOR(ch, pixel_count, rgb_matrix, in, out)
   for(size_t k = 0; k < pixel_count; k += ch)
   {
     float gray = fmaxf(rgb_matrix[0] * in[k + 0]

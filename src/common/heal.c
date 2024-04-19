@@ -54,11 +54,7 @@ static void _heal_sub(const float *const top_buffer, const float *const bottom_b
   // how many red or black pixels per line?  For consistency, we need the larger of the two, so round up
   const size_t res_stride = 4 * ((width + 1) / 2);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(top_buffer, bottom_buffer, red_buffer, black_buffer, height, width, res_stride) \
-  schedule(static)
-#endif
+  DT_OMP_FOR(top_buffer, bottom_buffer, red_buffer, black_buffer, height, width, res_stride)
   for(size_t row = 0; row < height; row++)
   {
     const int parity = row & 1;
@@ -104,12 +100,7 @@ static void _heal_add(const float *const restrict red_buffer, const float *const
   // add one to ensure a padding pixel on the right
   const size_t res_stride = 4 * ((width + 1) / 2);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(red_buffer, black_buffer, second_buffer, height, width, res_stride) \
-  dt_omp_sharedconst(result_buffer) \
-  schedule(static)
-#endif
+  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(result_buffer), red_buffer, black_buffer, second_buffer, height, width, res_stride)
   for(size_t row = 0; row < height; row++)
   {
     const int parity = row & 1;

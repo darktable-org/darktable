@@ -875,11 +875,7 @@ void process(struct dt_iop_module_t *self,
   const float gradient_amp = 4.0f * sqrtf(d->max_brightness) * sqrf(roi_out->scale);
 
   // STEP 1: convert image from RGB to darktable UCS LUV and calc saturation
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, in, UV, tmp, saturation, input_matrix) \
-  schedule(static)
-#endif
+  DT_OMP_FOR(npixels, in, UV, tmp, saturation, input_matrix)
   for(size_t k = 0; k < npixels; k++)
   {
     const float *const restrict pix_in = DT_IS_ALIGNED_PIXEL(in + k * 4);
@@ -978,11 +974,7 @@ void process(struct dt_iop_module_t *self,
   if(mask_mode == 0)
   {
     // STEP 5: apply the corrections and convert back to RGB
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, out, corrections, b_corrections, output_matrix, white, d)  \
-  schedule(static)
-#endif
+    DT_OMP_FOR(npixels, out, corrections, b_corrections, output_matrix, white, d)
     for(size_t k = 0; k < npixels; k++)
     {
       const float *const restrict corrections_out = corrections + k * 2;
@@ -1009,11 +1001,7 @@ void process(struct dt_iop_module_t *self,
   {
     const int mode = mask_mode - 1;
     B_norm = 1.0f / B_norm;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, out, b_corrections, corrections, saturation, tmp, mode, B_norm, sat_shift, bright_shift, d) \
-  schedule(static)
-#endif
+    DT_OMP_FOR(npixels, out, b_corrections, corrections, saturation, tmp, mode, B_norm, sat_shift, bright_shift, d)
     for(size_t k = 0; k < npixels; k++)
     {
       float *const restrict pix_out = DT_IS_ALIGNED_PIXEL(out + k * 4);
@@ -1452,11 +1440,7 @@ static void _init_graph_backgrounds(dt_iop_colorequal_gui_data_t *g,
     g->b_surface[c] = cairo_image_surface_create_for_data(g->b_data[c], CAIRO_FORMAT_RGB24, gwidth, gheight, stride);
   }
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(gheight, gwidth, stride, g, gamut_LUT, max_saturation, graph_width, graph_height) \
-  schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR_CLAUSE(collapse(2), gheight, gwidth, stride, g, gamut_LUT, max_saturation, graph_width, graph_height)
   for(int i = 0; i < gheight; i++)
   {
     for(int j = 0; j < gwidth; j++)

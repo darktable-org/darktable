@@ -95,12 +95,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // PASS1: Get a luminance map of image...
   float *luminance = (float *)malloc(sizeof(float) * ((size_t)roi_out->width * roi_out->height));
 // double lsmax=0.0,lsmin=1.0;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, ivoid, roi_out) \
-  shared(luminance) \
-  schedule(static)
-#endif
+  DT_OMP_FOR_CLAUSE(shared(luminance), ch, ivoid, roi_out)
   for(int j = 0; j < roi_out->height; j++)
   {
     float *in = (float *)ivoid + (size_t)j * roi_out->width * ch;

@@ -1323,12 +1323,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
       const float h_blue  = atan2f(xyY_blue[1] - D65_xyY[1], xyY_blue[0] - D65_xyY[0]);
 
       // March the gamut boundary in CIE xyY 1931 by angular steps of 0.02°
-      #ifdef _OPENMP
-        #pragma omp parallel for default(none) \
-              dt_omp_firstprivate(input_matrix, xyY_red, xyY_green, xyY_blue, h_red, h_green, h_blue, D65_xyY) \
-              reduction(max : LUT_saturation[:LUT_ELEM]) \
-              schedule(static)
-      #endif
+DT_OMP_FOR_CLAUSE(reduction(max : LUT_saturation[:LUT_ELEM]),
+                  input_matrix, xyY_red, xyY_green, xyY_blue, h_red, h_green, h_blue, D65_xyY)
 
       for(int i = 0; i < 50 * 360; i++)
       {
@@ -1661,11 +1657,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   const size_t checker_1 = DT_PIXEL_APPLY_DPI(6);
   const size_t checker_2 = 2 * checker_1;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(data, graph_height, line_height, checker_1, checker_2) \
-  schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR_CLAUSE(collapse(2), data, graph_height, line_height, checker_1, checker_2)
   for(size_t i = 0; i < (size_t)graph_height; i++)
     for(size_t j = 0; j < (size_t)line_height; j++)
     {

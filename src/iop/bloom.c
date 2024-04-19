@@ -131,13 +131,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const float threshold = data->threshold;
 /* get the thresholded lights into buffer */
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, scale, threshold) \
-  shared(blurlightness) \
-  dt_omp_sharedconst(in) \
-  schedule(static)
-#endif
+  DT_OMP_FOR_CLAUSE(shared(blurlightness) dt_omp_sharedconst(in), npixels, scale, threshold)
   for(size_t k = 0; k < npixels; k++)
   {
     const float L = in[4*k] * scale;
@@ -151,13 +145,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   dt_box_mean(blurlightness, roi_out->height, roi_out->width, 1, hr, BOX_ITERATIONS);
 
 /* screen blend lightness with original */
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels) \
-  shared(blurlightness) \
-  dt_omp_sharedconst(in, out) \
-  schedule(static)
-#endif
+  DT_OMP_FOR_CLAUSE(shared(blurlightness) dt_omp_sharedconst(in, out), npixels)
   for(size_t k = 0; k < npixels; k++)
   {
     out[4*k+0] = 100.0f - (((100.0f - in[4*k]) * (100.0f - blurlightness[k])) / 100.0f); // Screen blend

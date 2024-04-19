@@ -308,12 +308,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
     case PROFILEGAMMA_GAMMA:
     {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-      dt_omp_firstprivate(ch, ivoid, ovoid, roi_out) \
-      shared(data) \
-      schedule(static)
-#endif
+      DT_OMP_FOR_CLAUSE(shared(data), ch, ivoid, ovoid, roi_out)
       for(int k = 0; k < roi_out->height; k++)
       {
         const float *in = ((float *)ivoid) + (size_t)ch * k * roi_out->width;
@@ -513,12 +508,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   {
     if(linear == 0.0)
     {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-      dt_omp_firstprivate(gamma) \
-      shared(d) \
-      schedule(static)
-#endif
+      DT_OMP_FOR_CLAUSE(shared(d), gamma)
       for(int k = 0; k < 0x10000; k++) d->table[k] = powf(1.00 * k / 0x10000, gamma);
     }
     else
@@ -535,12 +525,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
         a = b = g = 0.0;
         c = 1.0;
       }
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-      dt_omp_firstprivate(linear) \
-      shared(d, a, b, c, g) \
-      schedule(static)
-#endif
+      DT_OMP_FOR_CLAUSE(shared(d, a, b, c, g), linear)
       for(int k = 0; k < 0x10000; k++)
       {
         float tmp;

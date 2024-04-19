@@ -329,11 +329,7 @@ void process(
       goto writeout;
     }
     // copy raw values before ca correction
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, width, filters, in, oldraw, h_width)       \
-  schedule(static)
-#endif
+    DT_OMP_FOR(height, width, filters, in, oldraw, h_width)
     for(size_t row = 0; row < height; row++)
     {
       for(size_t col = (FC(row, 0, filters) & 1); col < width; col += 2)
@@ -1218,11 +1214,7 @@ void process(
   }
 
   writeout:
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(output, out, roi_in, roi_out, scaler) \
-  schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR_CLAUSE(collapse(2), output, out, roi_in, roi_out, scaler)
   for(size_t row = 0; row < roi_out->height; row++)
   {
     for(size_t col = 0; col < roi_out->width; col++)

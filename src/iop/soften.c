@@ -123,12 +123,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const size_t npixels = (size_t)roi_out->width * roi_out->height;
 /* create overexpose image and then blur */
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(brightness, npixels, saturation) \
-  dt_omp_sharedconst(in, out) \
-  schedule(static)
-#endif
+  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(in, out), brightness, npixels, saturation)
   for(size_t k = 0; k < 4 * npixels; k += 4)
   {
     float h, s, l;
