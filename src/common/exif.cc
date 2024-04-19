@@ -3107,11 +3107,7 @@ static GList *_read_history_v1(const std::string &xmpPacket,
   GList *history_entries = NULL;
 
   pugi::xml_document doc;
-#if defined(PUGIXML_VERSION) && PUGIXML_VERSION >= 150
   pugi::xml_parse_result result = doc.load_string(xmpPacket.c_str());
-#else
-  pugi::xml_parse_result result = doc.load(xmpPacket.c_str());
-#endif
 
   if(!result)
   {
@@ -3125,9 +3121,6 @@ static GList *_read_history_v1(const std::string &xmpPacket,
     return NULL;
   }
 
-  // Get the old elements select_single_node() is deprecated and just
-  // kept for old versions shipped in some distributions.
-#if defined(PUGIXML_VERSION) && PUGIXML_VERSION >= 150
   pugi::xpath_node modversion      = superold ?
     doc.select_node("//darktable:history_modversion/rdf:Bag"):
     doc.select_node("//darktable:history_modversion/rdf:Seq");
@@ -3152,32 +3145,6 @@ static GList *_read_history_v1(const std::string &xmpPacket,
   pugi::xpath_node multi_name      = superold ?
     doc.select_node("//darktable:multi_name/rdf:Bag"):
     doc.select_node("//darktable:multi_name/rdf:Seq");
-#else
-  pugi::xpath_node modversion      = superold ?
-    doc.select_single_node("//darktable:history_modversion/rdf:Bag"):
-    doc.select_single_node("//darktable:history_modversion/rdf:Seq");
-  pugi::xpath_node enabled         = superold ?
-    doc.select_single_node("//darktable:history_enabled/rdf:Bag"):
-    doc.select_single_node("//darktable:history_enabled/rdf:Seq");
-  pugi::xpath_node operation       = superold ?
-    doc.select_single_node("//darktable:history_operation/rdf:Bag"):
-    doc.select_single_node("//darktable:history_operation/rdf:Seq");
-  pugi::xpath_node params          = superold ?
-    doc.select_single_node("//darktable:history_params/rdf:Bag"):
-    doc.select_single_node("//darktable:history_params/rdf:Seq");
-  pugi::xpath_node blendop_params  = superold ?
-    doc.select_single_node("//darktable:blendop_params/rdf:Bag"):
-    doc.select_single_node("//darktable:blendop_params/rdf:Seq");
-  pugi::xpath_node blendop_version = superold ?
-    doc.select_single_node("//darktable:blendop_version/rdf:Bag"):
-    doc.select_single_node("//darktable:blendop_version/rdf:Seq");
-  pugi::xpath_node multi_priority  = superold ?
-    doc.select_single_node("//darktable:multi_priority/rdf:Bag"):
-    doc.select_single_node("//darktable:multi_priority/rdf:Seq");
-  pugi::xpath_node multi_name      = superold ?
-    doc.select_single_node("//darktable:multi_name/rdf:Bag"):
-    doc.select_single_node("//darktable:multi_name/rdf:Seq");
-#endif
 
   // Fill the list of history entries. We are iterating over
   // history_operation as we know that it's there. The other iters
