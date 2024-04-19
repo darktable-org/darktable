@@ -496,11 +496,8 @@ static void process_fft(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
   const size_t i_reach = offset_i + kernel_width;
   const size_t j_reach = offset_j + kernel_width;
 
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-    dt_omp_firstprivate(padded_width, padded_height, padded_kernel, kernel, offset_i, offset_j, i_reach, j_reach, kernel_width) \
-    schedule(simd: static) aligned(kernel, padded_kernel:64)
-#endif
+  DT_OMP_FOR_SIMD(aligned(kernel, padded_kernel:64),
+                  padded_width, padded_height, padded_kernel, kernel, offset_i, offset_j, i_reach, j_reach, kernel_width)
   for(size_t i = 0; i < padded_width; i++)
     for(size_t j = 0; j < padded_width; j++)
     {

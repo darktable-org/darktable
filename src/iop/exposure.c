@@ -542,11 +542,7 @@ void process(struct dt_iop_module_t *self,
   const float black = d->black;
   const float scale = d->scale;
   const size_t npixels = (size_t)roi_out->width * roi_out->height;
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(ch, npixels, black, scale, in, out)  \
-  schedule(simd:static) aligned(in, out : 64)
-#endif
+  DT_OMP_FOR_SIMD(aligned(in, out : 64), ch, npixels, black, scale, in, out)
   for(size_t k = 0; k < ch * npixels; k++)
   {
     out[k] = (in[k] - black) * scale;

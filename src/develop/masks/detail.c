@@ -232,11 +232,7 @@ gboolean dt_masks_calc_scharr_mask(dt_dev_detail_mask_t *details,
   float *tmp = dt_alloc_align_float(msize);
   if(!tmp) return TRUE;
 
-#ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(tmp, src, msize, wb) \
-  schedule(simd:static) aligned(tmp, src : 64)
-#endif
+  DT_OMP_FOR_SIMD(aligned(tmp, src : 64), tmp, src, msize, wb)
   for(size_t idx =0; idx < msize; idx++)
   {
     const float val = fmaxf(0.0f, src[4 * idx] / wb[0])
@@ -291,11 +287,7 @@ float *dt_masks_calc_detail_mask(struct dt_dev_pixelpipe_iop_t *piece,
 
   const float ithreshold = 16.0f / (fmaxf(1e-7, threshold));
   float *src = details->data;
-#ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(src, tmp, msize, ithreshold, detail) \
-  schedule(simd:static) aligned(src, tmp : 64)
-#endif
+  DT_OMP_FOR_SIMD(aligned(src, tmp : 64), src, tmp, msize, ithreshold, detail)
   for(size_t idx = 0; idx < msize; idx++)
   {
     const float blend = CLIP(_calcBlendFactor(src[idx], ithreshold));
