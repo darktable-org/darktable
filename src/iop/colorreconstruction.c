@@ -428,24 +428,16 @@ static void dt_iop_colorreconstruct_bilateral_splat(dt_iop_colorreconstruct_bila
       const int zi = CLAMPS((int)round(z), 0, b->size_z - 1);
       const size_t grid_index = xi + b->size_x * (yi + b->size_y * zi);
 
-#ifdef _OPENMP
-#pragma omp atomic
-#endif
+      DT_OMP_PRAGMA(atomic)
       b->buf[grid_index].L += Lin * weight;
 
-#ifdef _OPENMP
-#pragma omp atomic
-#endif
+      DT_OMP_PRAGMA(atomic)
       b->buf[grid_index].a += ain * weight;
 
-#ifdef _OPENMP
-#pragma omp atomic
-#endif
+      DT_OMP_PRAGMA(atomic)
       b->buf[grid_index].b += bin * weight;
 
-#ifdef _OPENMP
-#pragma omp atomic
-#endif
+      DT_OMP_PRAGMA(atomic)
       b->buf[grid_index].weight += weight;
     }
   }

@@ -92,29 +92,17 @@ static void _dt_focus_update(dt_focus_cluster_t *f, int frows, int fcols, int i,
     int fx = i / (float)wd * fcols;
     int fy = j / (float)ht * frows;
     int fi = fcols * fy + fx;
-#ifdef _OPENMP
-#pragma omp atomic
-#endif
+    DT_OMP_PRAGMA(atomic)
     f[fi].x += i;
-#ifdef _OPENMP
-#pragma omp atomic
-#endif
+    DT_OMP_PRAGMA(atomic)
     f[fi].y += j;
-#ifdef _OPENMP
-#pragma omp atomic
-#endif
+    DT_OMP_PRAGMA(atomic)
     f[fi].x2 += (float)i * i;
-#ifdef _OPENMP
-#pragma omp atomic
-#endif
+    DT_OMP_PRAGMA(atomic)
     f[fi].y2 += (float)j * j;
-#ifdef _OPENMP
-#pragma omp atomic
-#endif
+    DT_OMP_PRAGMA(atomic)
     f[fi].n++;
-#ifdef _OPENMP
-#pragma omp atomic
-#endif
+    DT_OMP_PRAGMA(atomic)
     f[fi].thrs += diff;
   }
 }

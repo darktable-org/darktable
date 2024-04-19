@@ -409,9 +409,7 @@ static float ambient_light(const const_rgb_image img,
       // two threads by growing outward from the center
       hazy_data[--N_most_hazy_start] = pixel_in[0] + pixel_in[1] + pixel_in[2];
     }
-#ifdef _OPENMP
-#pragma omp section
-#endif
+  DT_OMP_PRAGMA(section)
   for(size_t i = size/2; i < size; i++)
     if(dark_data[i] >= crit_haze_level)
     {
