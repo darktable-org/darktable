@@ -255,11 +255,7 @@ static void dark_channel(const const_rgb_image img1, const gray_image img2, cons
   const size_t size = (size_t)img1.height * img1.width;
   const float *const restrict in_data = img1.data;
   float *const restrict out_data = img2.data;
-#ifdef _OPENMP
-#pragma omp parallel for simd aligned(in_data, out_data: 64) default(none) \
-  dt_omp_firstprivate(in_data, out_data, size) \
-  schedule(simd:static)
-#endif
+  DT_OMP_FOR_SIMD(aligned(in_data, out_data: 64), in_data, out_data, size)
   for(size_t i = 0; i < size; i++)
   {
     const float *pixel = in_data + 4*i;
@@ -278,11 +274,7 @@ static void transition_map(const const_rgb_image img1, const gray_image img2, co
   const float *const restrict in_data = img1.data;
   float *const restrict out_data = img2.data;
   const dt_aligned_pixel_t A0_inv = { 1.0f / A0[0], 1.0f / A0[1], 1.0f / A0[2], 1.0f };
-#ifdef _OPENMP
-#pragma omp parallel for simd aligned(in_data, out_data: 64) default(none) \
-  dt_omp_firstprivate(A0_inv, in_data, out_data, size, strength) \
-  schedule(simd:static)
-#endif
+  DT_OMP_FOR_SIMD(aligned(in_data, out_data: 64), A0_inv, in_data, out_data, size, strength)
   for(size_t i = 0; i < size; i++)
   {
     const float *pixel = in_data + 4*i;

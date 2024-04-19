@@ -55,14 +55,8 @@ static void passthrough_color(
 
   if(filters != 9u)
   {
-    #ifdef _OPENMP
-      #pragma omp parallel for default(none) \
-      dt_omp_firstprivate(in, roi_out, roi_in, filters) \
-      shared(out) \
-      schedule(static) \
-      collapse(2)
-    #endif
-
+    DT_OMP_FOR_CLAUSE(shared(out) collapse(2),
+                      in, roi_out, roi_in, filters)
     for(int row = 0; row < (roi_out->height); row++)
     {
       for(int col = 0; col < (roi_out->width); col++)
@@ -78,14 +72,8 @@ static void passthrough_color(
   }
   else
   {
-    #ifdef _OPENMP
-      #pragma omp parallel for default(none) \
-      dt_omp_firstprivate(in, roi_out, roi_in, xtrans) \
-      shared(out) \
-      schedule(static) \
-      collapse(2)
-    #endif
-
+    DT_OMP_FOR_CLAUSE(shared(out) collapse(2),
+                      in, roi_out, roi_in, xtrans)
     for(int row = 0; row < (roi_out->height); row++)
     {
       for(int col = 0; col < (roi_out->width); col++)

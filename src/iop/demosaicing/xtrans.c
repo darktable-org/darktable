@@ -1136,12 +1136,9 @@ static void xtrans_fdc_interpolate(
     hybrid_fdc[1] = 1.0f;
   }
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none)                                                                            \
-    dt_omp_firstprivate(ndir, all_buffers, dir, directionality, harr, height, in, Minv, modarr, roi_in, width,    \
-                        xtrans, pad_tile, padded_buffer_size)                                                     \
-        shared(sgrow, sgcol, allhex, out, rowoffset, coloffset, hybrid_fdc) schedule(static)
-#endif
+  DT_OMP_FOR_CLAUSE(shared(sgrow, sgcol, allhex, out, rowoffset, coloffset, hybrid_fdc),
+                    ndir, all_buffers, dir, directionality, harr, height, in, Minv, modarr, roi_in, width,
+                    xtrans, pad_tile, padded_buffer_size)
   // step through TSxTS cells of image, each tile overlapping the
   // prior as interpolation needs a substantial border
   for(int top = -pad_tile; top < height - pad_tile; top += TS - (pad_tile * 2))

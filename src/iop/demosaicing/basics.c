@@ -215,13 +215,8 @@ static void green_equilibration_favg(
   if((FC(oj + y, oi + x, filters) & 1) != 1) oi++;
   const int g2_offset = oi ? -1 : 1;
   dt_iop_image_copy_by_size(out, in, width, height, 1);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(g2_offset, height, in, width) \
-  reduction(+ : sum1, sum2) \
-  shared(oi, oj) \
-  schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR_CLAUSE(reduction(+ : sum1, sum2) shared(oi, oj) collapse(2),
+                    g2_offset, height, in, width)
   for(size_t j = oj; j < (height - 1); j += 2)
   {
     for(size_t i = oi; i < (width - 1 - g2_offset); i += 2)

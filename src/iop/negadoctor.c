@@ -354,12 +354,8 @@ void process(struct dt_iop_module_t *const self, dt_dev_pixelpipe_iop_t *const p
   const float *const restrict wb_high = DT_IS_ALIGNED_PIXEL(d->wb_high);
   const float *const restrict offset = DT_IS_ALIGNED_PIXEL(d->offset);
 
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(d, in, out, roi_out, exposure, black, gamma, soft_clip, soft_clip_comp, \
-                        Dmin, wb_high, offset)                                              \
-    schedule(static)
-#endif
+  DT_OMP_FOR(d, in, out, roi_out, exposure, black, gamma, soft_clip, soft_clip_comp,
+             Dmin, wb_high, offset)
   for(size_t k = 0; k < (size_t)roi_out->height * roi_out->width * 4; k += 4)
   {
     const float *const restrict pix_in = in + k;

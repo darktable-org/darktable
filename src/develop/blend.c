@@ -300,11 +300,7 @@ static void _refine_with_detail_mask(struct dt_iop_module_t *self,
   if(warp_mask == NULL) goto error;
 
   const size_t msize = (size_t)roi_out->width * roi_out->height;
-#ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(mask, warp_mask, msize) \
-  schedule(simd:static) aligned(mask, warp_mask : 64)
- #endif
+  DT_OMP_FOR_SIMD(aligned(mask, warp_mask : 64), mask, warp_mask, msize)
   for(size_t idx =0; idx < msize; idx++)
     mask[idx] = mask[idx] * CLIP(warp_mask[idx]);
   dt_free_align(warp_mask);
@@ -932,11 +928,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
   dt_free_align(lum);
 
   const size_t msize = (size_t)roi_out->width * roi_out->height;
-#ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(mask, warp_mask, msize) \
-  schedule(simd:static) aligned(mask, warp_mask : 64)
- #endif
+  DT_OMP_FOR_SIMD(aligned(mask, warp_mask : 64), mask, warp_mask, msize) \
   for(size_t idx = 0; idx < msize; idx++)
     mask[idx] = mask[idx] * CLIP(warp_mask[idx]);
 

@@ -3186,14 +3186,10 @@ static void rt_process_stats(struct dt_iop_module_t *self,
   const dt_iop_order_iccprofile_info_t *const work_profile =
     dt_ioppr_get_pipe_work_profile_info(piece->pipe);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, img_src, size, work_profile) \
-  schedule(static) \
-  reduction(+ : count, l_sum) \
-  reduction(max : l_max) \
-  reduction(min : l_min)
-#endif
+  DT_OMP_FOR_CLAUSE(reduction(+ : count, l_sum)
+                    reduction(max : l_max)
+                    reduction(min : l_min),
+                    ch, img_src, size, work_profile)
   for(int i = 0; i < size; i += ch)
   {
     dt_aligned_pixel_t Lab = { 0 };
@@ -3350,12 +3346,7 @@ static void rt_copy_in_to_out(const float *const in,
   const int yoffs = roi_out->y - roi_in->y - dy;
   const int y_to = MIN(roi_out->height, roi_in->height);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, in, out, roi_in, roi_out, rowsize, xoffs,  yoffs, \
-                      y_to) \
-  schedule(static)
-#endif
+  DT_OMP_FOR(ch, in, out, roi_in, roi_out, rowsize, xoffs,  yoffs, y_to)
   for(int y = 0; y < y_to; y++)
   {
     const size_t iindex = ((size_t)(y + yoffs) * roi_in->width + xoffs) * ch;

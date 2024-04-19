@@ -452,12 +452,8 @@ void process(struct dt_iop_module_t *self,
   const double scale = roi_out->scale;	// is only used in double expressions, so avoid conversion
   const double fib2inv = 1.0 / fib2;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(filter, filtermul, ivoid, ovoid, roi_out, strength, \
-                      scale, wd, zoom, fib2, fib2inv, fib1div2, data, hash) \
-  schedule(static)
-#endif
+  DT_OMP_FOR(filter, filtermul, ivoid, ovoid, roi_out, strength,
+                      scale, wd, zoom, fib2, fib2inv, fib1div2, data, hash)
   for(int j = 0; j < roi_out->height; j++)
   {
     float *in = ((float *)ivoid) + (size_t)4 * roi_out->width * j;

@@ -257,12 +257,8 @@ static float _segment_maxdistance(float *distance,
   const int ymax = MIN(seg->ymax[id]+3, seg->height - seg->border);
   float max_distance = 0.0f;
 
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) \
-  reduction(max : max_distance) \
-  dt_omp_firstprivate(distance, seg, xmin, xmax, ymin, ymax, id) \
-  schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR_CLAUSE(reduction(max : max_distance) collapse(2),
+                    distance, seg, xmin, xmax, ymin, ymax, id) \
   for(int row = ymin; row < ymax; row++)
   {
     for(int col = xmin; col < xmax; col++)
@@ -497,13 +493,8 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
   // populate the segmentation data, planes and refavg ...
   int32_t anyclipped = 0;
   gboolean has_allclipped = FALSE;
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) \
-  reduction( | : has_allclipped) \
-  reduction( + : anyclipped) \
-  dt_omp_firstprivate(tmpout, roi_in, plane, isegments, cube_coeffs, refavg, xtrans, pwidth, filters, xshifter, correction) \
-  schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR_CLAUSE(reduction( | : has_allclipped) reduction( + : anyclipped) collapse(2),
+                    tmpout, roi_in, plane, isegments, cube_coeffs, refavg, xtrans, pwidth, filters, xshifter, correction)
   for(int row = 1; row < roi_in->height-1; row++)
   {
     for(int col = 1; col < roi_in->width - 1; col++)

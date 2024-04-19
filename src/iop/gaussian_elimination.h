@@ -162,21 +162,15 @@ static inline int pseudo_solve_gaussian(double *const restrict A,
   double *const restrict A_square = dt_alloc_align_double(n * n);
   double *const restrict y_square = dt_alloc_align_double(n);
 
-  #ifdef _OPENMP
-  #pragma omp parallel sections
-  #endif
+  DT_OMP_PRAGMA(parallel sections)
   {
-    #ifdef _OPENMP
-    #pragma omp section
-    #endif
+    DT_OMP_PRAGMA(section)
     {
       // Prepare the least squares matrix = A' A
       transpose_dot_matrix(A, A_square, m, n);
     }
 
-    #ifdef _OPENMP
-    #pragma omp section
-    #endif
+    DT_OMP_PRAGMA(section)
     {
       // Prepare the y square vector = A' y
       transpose_dot_vector(A, y, y_square, m, n);

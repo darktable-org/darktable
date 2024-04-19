@@ -159,10 +159,7 @@ inline static void blur_2D_Bspline(const float *const restrict in, float *const 
 static inline void init_kernel(float *const restrict buffer, const size_t width, const size_t height)
 {
   // init an empty kernel with zeros
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) dt_omp_firstprivate(width, height, buffer) \
-    schedule(simd: static) aligned(buffer:64)
-#endif
+  DT_OMP_FOR_SIMD(aligned(buffer:64), width, height, buffer) 
   for(size_t k = 0; k < height * width; k++) buffer[k] = 0.f;
 }
 
@@ -181,10 +178,7 @@ static inline void create_lens_kernel(float *const restrict buffer,
   const float eps = 1.f / (float)width;
   const float radius = (float)(width - 1) / 2.f - 1;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) dt_omp_firstprivate(width, height, buffer, n, m, k, rotation, eps, radius) \
-    schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR_CLAUSE(collapse(2), width, height, buffer, n, m, k, rotation, eps, radius)
   for(size_t i = 0; i < height; i++)
     for(size_t j = 0; j < width; j++)
     {
