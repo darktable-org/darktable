@@ -1104,13 +1104,8 @@ static void _process_lf(dt_iop_module_t *self,
       size_t padded_bufsize;
       float *const buf = dt_alloc_perthread_float(bufsize, &padded_bufsize);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-      dt_omp_firstprivate(padded_bufsize, ch, ch_width, d, interpolation, ivoid, mask_display, ovoid, roi_in, roi_out)	\
-      dt_omp_sharedconst(buf) \
-      shared(modifier) \
-      schedule(static)
-#endif
+      DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(buf) shared(modifier),
+                        padded_bufsize, ch, ch_width, d, interpolation, ivoid, mask_display, ovoid, roi_in, roi_out)
       for(int y = 0; y < roi_out->height; y++)
       {
         float *bufptr = (float*)dt_get_perthread(buf, padded_bufsize);

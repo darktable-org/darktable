@@ -167,12 +167,8 @@ static float _heal_laplace_iteration(float *const restrict active_pixels,
   // left and right neighbors depend on which color the row starts with: if red, they are b(i)(j-1) and b(i)(j);
   // if black, they are b(i)(j) and b(i)(j+1).  All of the above holds when colors are swapped.
 #if !(defined(__apple_build_version__) && __apple_build_version__ < 11030000) //makes Xcode 11.3.1 compiler crash
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(active_pixels, neighbor_pixels, runs, num_runs, width, height, start_parity, w) \
-  schedule(static) \
-  reduction(vsum : err)
-#endif /* _OPENMP */
+    DT_OMP_FOR_CLAUSE(reduction(vsum : err),
+                      active_pixels, neighbor_pixels, runs, num_runs, width, height, start_parity, w)
 #endif
     for(size_t i = 0; i < num_runs; i++)
     {

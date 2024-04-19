@@ -139,11 +139,8 @@ static void _channel_display_false_color(const float *const restrict in,
   switch(channel & DT_DEV_PIXELPIPE_DISPLAY_ANY & ~DT_DEV_PIXELPIPE_DISPLAY_OUTPUT)
   {
     case DT_DEV_PIXELPIPE_DISPLAY_a:
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) schedule(simd:static) \
-  aligned(in, out: 64) aligned(mask_color: 16)                  \
-  dt_omp_firstprivate(in, out, buffsize, alpha, mask_color)
-#endif
+      DT_OMP_FOR_SIMD(aligned(in, out: 64) aligned(mask_color: 16),
+                      in, out, buffsize, alpha, mask_color)
       for(size_t j = 0; j < buffsize; j += 4)
       {
         dt_aligned_pixel_t xyz;

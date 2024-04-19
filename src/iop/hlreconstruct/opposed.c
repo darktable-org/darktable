@@ -123,12 +123,8 @@ static void _process_linear_opposed(
   if(mask)
   {
     gboolean anyclipped = FALSE;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  reduction( | : anyclipped) \
-  dt_omp_firstprivate(clips, input, roi_in, mask, msize, mwidth) \
-  schedule(static)
-#endif
+    DT_OMP_FOR_CLAUSE(reduction( | : anyclipped),
+                      clips, input, roi_in, mask, msize, mwidth) \
     for(size_t row = 1; row < roi_in->height -1; row++)
     {
       for(size_t col = 1; col < roi_in->width -1; col++)
@@ -259,12 +255,8 @@ static float *_process_opposed(
     if(mask)
     {
       gboolean anyclipped = FALSE;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  reduction( | : anyclipped) \
-  dt_omp_firstprivate(clips, input, roi_in, xtrans, mask, filters, msize, mwidth, mheight) \
-  schedule(static) collapse(2)
-#endif
+      DT_OMP_FOR_CLAUSE(reduction( | : anyclipped) collapse(2),
+                        clips, input, roi_in, xtrans, mask, filters, msize, mwidth, mheight)
       for(int mrow = 1; mrow < mheight-1; mrow++)
       {
         for(int mcol = 1; mcol < mwidth-1; mcol++)

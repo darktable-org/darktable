@@ -966,11 +966,8 @@ static void apply_round_stamp(const dt_liquify_warp_t *const restrict warp,
   // circle in quadrants and doing only the inside we have to calculate
   // hypotf only for PI / 16 = 0.196 of the stamp area.
   // We don't do octants to avoid false sharing of cache lines between threads.
-  #ifdef _OPENMP
-  #pragma omp parallel for schedule(static) default(none) \
-    dt_omp_firstprivate(iradius, strength, abs_strength, table_size, global_width) \
-    dt_omp_sharedconst(center, warp, lookup_table, LOOKUP_OVERSAMPLE, global_map_extent)
-  #endif
+  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(center, warp, lookup_table, LOOKUP_OVERSAMPLE, global_map_extent),
+                    iradius, strength, abs_strength, table_size, global_width)
   for(size_t y = 0; y <= iradius; y++)
   {
     const float complex y_i = y * I;
@@ -1045,12 +1042,8 @@ static void _apply_global_distortion_map(struct dt_iop_module_t *module,
   const size_t min_y = MAX(roi_out->y, extent->y);
   const size_t max_y = MIN(roi_out->y + roi_out->height, extent->y + extent->height);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, out, map, ch, ch_width, extent, roi_in, roi_out, \
-                      min_y, max_y, interpolation)                       \
-  schedule(static)
-#endif
+  DT_OMP_FOR(in, out, map, ch, ch_width, extent, roi_in, roi_out,
+             min_y, max_y, interpolation)
   for(size_t y = min_y; y < max_y; y++)
   {
     const size_t min_x = MAX(roi_out->x, extent->x);

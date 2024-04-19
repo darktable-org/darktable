@@ -821,13 +821,9 @@ void process(struct dt_iop_module_t *self,
 
   if(density > 0)
   {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(density, color, color1, zero, filter_hardness, cosv_hh_inv, \
-                        ivoid, ix, iy, offset, ovoid, height, width, sinv, length_inc, \
-                        length_base)  \
-    schedule(static)
-#endif
+    DT_OMP_FOR(density, color, color1, zero, filter_hardness, cosv_hh_inv,
+               ivoid, ix, iy, offset, ovoid, height, width, sinv, length_inc,
+               length_base)
     for(int y = 0; y < height; y++)
     {
       const size_t k = (size_t)4 * width * y;
@@ -879,12 +875,8 @@ void process(struct dt_iop_module_t *self,
   }
   else
   {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(density, color, color1, zero, filter_hardness, cosv_hh_inv,    \
-                        ivoid, ix, iy, offset, ovoid, height, width, sinv, length_inc, length_base) \
-    schedule(static)
-#endif
+    DT_OMP_FOR(density, color, color1, zero, filter_hardness, cosv_hh_inv,
+               ivoid, ix, iy, offset, ovoid, height, width, sinv, length_inc, length_base)
     for(int y = 0; y < height; y++)
     {
       const size_t k = (size_t)4 * width * y;

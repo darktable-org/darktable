@@ -186,13 +186,8 @@ void _hist_worker(dt_dev_histogram_collection_params_t *const histogram_params,
 
   const dt_histogram_roi_t *const roi = histogram_params->roi;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none)                                  \
-  dt_omp_firstprivate(histogram_params, pixel, Worker, profile_info,    \
-                      roi, bins_total)                                  \
-  reduction(+:working_hist[:bins_total])                                \
-  schedule(static)
-#endif
+  DT_OMP_FOR_CLAUSE(reduction(+:working_hist[:bins_total]),
+                    histogram_params, pixel, Worker, profile_info, roi, bins_total)
   for(int j = roi->crop_y; j < roi->height - roi->crop_bottom; j++)
   {
     Worker(histogram_params, pixel, working_hist, j, profile_info);
