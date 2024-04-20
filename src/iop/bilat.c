@@ -77,6 +77,11 @@ const char *name()
   return _("local contrast");
 }
 
+const char *aliases()
+{
+  return _("clarity");
+}
+
 const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("manipulate local and global contrast separately"),
