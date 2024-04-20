@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,6 +28,10 @@
 #include "common/opencl.h"
 #include "common/action.h"
 #include "control/settings.h"
+
+#if defined(__aarch64__)
+#include <arm_neon.h>
+#endif
 
 G_BEGIN_DECLS
 
@@ -589,6 +593,8 @@ static inline void copy_pixel_nontemporal(
 {
 #if defined(__SSE__)
   _mm_stream_ps(out, *((__m128*)in));
+#elif defined(__aarch64__)
+  vst1q_f32(out, *((float32x4_t *)in));
 #elif (__clang__+0 > 7) && (__clang__+0 < 10)
   for_each_channel(k,aligned(in,out:16)) __builtin_nontemporal_store(in[k],out[k]);
 #else
