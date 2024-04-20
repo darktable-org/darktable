@@ -1504,7 +1504,7 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
     AM("ashift/rotation");                                                                                        \
     AM("denoiseprofile");                                                                                         \
     AM("lens");                                                                                                   \
-    AM("bilat");                                                                                                  \
+    AM("bilat/detail");                                                                                           \
   }
 
 // start module group
