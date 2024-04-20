@@ -17,6 +17,7 @@
 */
 
 #ifdef HAVE_LIBRAW
+#include "imageio_libraw.h"
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/exif.h"
@@ -25,7 +26,6 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "imageio_common.h"
-#include "imageio_libraw.h"
 
 #include <libraw/libraw.h>
 
@@ -48,221 +48,172 @@ typedef struct model_map
 
 
 const model_map_t modelMap[] = {
-  {
-    .exif_make = "Canon",
+  { .exif_make = "Canon",
     .exif_model = "Canon EOS R",
     .clean_make = "Canon",
     .clean_model = "EOS R",
-    .clean_alias = "EOS R"
-  },
-  {
-    .exif_make = "Canon",
+    .clean_alias = "EOS R" },
+  { .exif_make = "Canon",
     .exif_model = "Canon EOS RP",
     .clean_make = "Canon",
     .clean_model = "EOS RP",
-    .clean_alias = "EOS RP"
-  },
-  {
-    .exif_make = "Canon",
+    .clean_alias = "EOS RP" },
+  { .exif_make = "Canon",
     .exif_model = "Canon EOS R5",
     .clean_make = "Canon",
     .clean_model = "EOS R5",
-    .clean_alias = "EOS R5"
-  },
-  {
-    .exif_make = "Canon",
+    .clean_alias = "EOS R5" },
+  { .exif_make = "Canon",
     .exif_model = "Canon EOS R6",
     .clean_make = "Canon",
     .clean_model = "EOS R6",
-    .clean_alias = "EOS R6"
-  },
-  {
-    .exif_make = "Canon",
+    .clean_alias = "EOS R6" },
+  { .exif_make = "Canon",
     .exif_model = "Canon EOS R3",
     .clean_make = "Canon",
     .clean_model = "EOS R3",
-    .clean_alias = "EOS R3"
-  },
-  {
-    .exif_make = "Canon",
+    .clean_alias = "EOS R3" },
+  { .exif_make = "Canon",
     .exif_model = "Canon EOS R7",
     .clean_make = "Canon",
     .clean_model = "EOS R7",
-    .clean_alias = "EOS R7"
-  },
-  {
-    .exif_make = "Canon",
+    .clean_alias = "EOS R7" },
+  { .exif_make = "Canon",
     .exif_model = "Canon EOS R10",
     .clean_make = "Canon",
     .clean_model = "EOS R10",
-    .clean_alias = "EOS R10"
-  },
-  {
-    .exif_make = "Canon",
+    .clean_alias = "EOS R10" },
+  { .exif_make = "Canon",
     .exif_model = "Canon EOS M50",
     .clean_make = "Canon",
     .clean_model = "EOS M50",
-    .clean_alias = "EOS M50"
-  },
-  {
-    .exif_make = "Canon",
+    .clean_alias = "EOS M50" },
+  { .exif_make = "Canon",
     .exif_model = "Canon EOS KISS M",
     .clean_make = "Canon",
     .clean_model = "EOS M50",
-    .clean_alias = "EOS KISS M"
-  },
-  {
-    .exif_make = "Canon",
+    .clean_alias = "EOS KISS M" },
+  { .exif_make = "Canon",
     .exif_model = "Canon EOS M50m2",
     .clean_make = "Canon",
     .clean_model = "EOS M50 Mark II",
-    .clean_alias = "EOS M50 Mark II"
-  },
-  {
-    .exif_make = "Canon",
+    .clean_alias = "EOS M50 Mark II" },
+  { .exif_make = "Canon",
     .exif_model = "Canon EOS KISS M2",
     .clean_make = "Canon",
     .clean_model = "EOS M50 Mark II",
-    .clean_alias = "EOS KISS M2"
-  },
-  {
-    .exif_make = "Canon",
+    .clean_alias = "EOS KISS M2" },
+  { .exif_make = "Canon",
     .exif_model = "Canon EOS M6 Mark II",
     .clean_make = "Canon",
     .clean_model = "EOS M6 Mark II",
-    .clean_alias = "EOS M6 Mark II"
-  },
-  {
-    .exif_make = "Canon",
+    .clean_alias = "EOS M6 Mark II" },
+  { .exif_make = "Canon",
     .exif_model = "Canon EOS M200",
     .clean_make = "Canon",
     .clean_model = "EOS M200",
-    .clean_alias = "EOS M200"
-  },
-  {
-    .exif_make = "Canon",
+    .clean_alias = "EOS M200" },
+  { .exif_make = "Canon",
     .exif_model = "Canon EOS 250D",
     .clean_make = "Canon",
     .clean_model = "EOS 250D",
-    .clean_alias = "EOS 250D"
-  },
-  {
-    .exif_make = "Canon",
+    .clean_alias = "EOS 250D" },
+  { .exif_make = "Canon",
     .exif_model = "Canon EOS Kiss X10",
     .clean_make = "Canon",
     .clean_model = "EOS 250D",
-    .clean_alias = "EOS Kiss X10"
-  },
-  {
-    .exif_make = "Canon",
+    .clean_alias = "EOS Kiss X10" },
+  { .exif_make = "Canon",
     .exif_model = "Canon EOS Rebel SL3",
     .clean_make = "Canon",
     .clean_model = "EOS 250D",
-    .clean_alias = "EOS Rebel SL3"
-  },
-  {
-    .exif_make = "Canon",
+    .clean_alias = "EOS Rebel SL3" },
+  { .exif_make = "Canon",
     .exif_model = "Canon EOS 200D II",
     .clean_make = "Canon",
     .clean_model = "EOS 250D",
-    .clean_alias = "EOS 200D Mark II"
-  },
-  {
-    .exif_make = "Canon",
+    .clean_alias = "EOS 200D Mark II" },
+  { .exif_make = "Canon",
     .exif_model = "Canon EOS 850D",
     .clean_make = "Canon",
     .clean_model = "EOS 850D",
-    .clean_alias = "EOS 850D"
-  },
-  {
-    .exif_make = "Canon",
+    .clean_alias = "EOS 850D" },
+  { .exif_make = "Canon",
     .exif_model = "Canon EOS Kiss X10i",
     .clean_make = "Canon",
     .clean_model = "EOS 850D",
-    .clean_alias = "EOS Kiss X10i"
-  },
-  {
-    .exif_make = "Canon",
+    .clean_alias = "EOS Kiss X10i" },
+  { .exif_make = "Canon",
     .exif_model = "Canon EOS Rebel T8i",
     .clean_make = "Canon",
     .clean_model = "EOS 850D",
-    .clean_alias = "EOS Rebel T8i"
-  },
-  {
-    .exif_make = "Canon",
+    .clean_alias = "EOS Rebel T8i" },
+  { .exif_make = "Canon",
     .exif_model = "Canon EOS 90D",
     .clean_make = "Canon",
     .clean_model = "EOS 90D",
-    .clean_alias = "EOS 90D"
-  },
-  {
-    .exif_make = "Canon",
+    .clean_alias = "EOS 90D" },
+  { .exif_make = "Canon",
     .exif_model = "Canon EOS-1D X Mark III",
     .clean_make = "Canon",
     .clean_model = "EOS-1D X Mark III",
-    .clean_alias = "EOS-1D X Mark III"
-  },
-  {
-    .exif_make = "Canon",
+    .clean_alias = "EOS-1D X Mark III" },
+  { .exif_make = "Canon",
     .exif_model = "Canon PowerShot G7 X Mark III",
     .clean_make = "Canon",
     .clean_model = "PowerShot G7 X Mark III",
-    .clean_alias = "PowerShot G7 X Mark III"
-  },
-  {
-    .exif_make = "Canon",
+    .clean_alias = "PowerShot G7 X Mark III" },
+  { .exif_make = "Canon",
     .exif_model = "Canon PowerShot G5 X Mark II",
     .clean_make = "Canon",
     .clean_model = "PowerShot G5 X Mark II",
-    .clean_alias = "PowerShot G5 X Mark II"
-  },
-  {
-    .exif_make = "Canon",
+    .clean_alias = "PowerShot G5 X Mark II" },
+  { .exif_make = "Canon",
     .exif_model = "Canon PowerShot SX70 HS",
     .clean_make = "Canon",
     .clean_model = "PowerShot SX70 HS",
-    .clean_alias = "PowerShot SX70 HS"
-  },
+    .clean_alias = "PowerShot SX70 HS" },
 #if LIBRAW_COMPILE_CHECK_VERSION_NOTLESS(0, 22)
-  {
-    .exif_make = "Canon",
+  { .exif_make = "Canon",
     .exif_model = "Canon EOS Ra",
     .clean_make = "Canon",
     .clean_model = "EOS Ra",
-    .clean_alias = "EOS Ra"
-  },
-  {
-    .exif_make = "Canon",
+    .clean_alias = "EOS Ra" },
+  { .exif_make = "Canon",
     .exif_model = "Canon EOS R6m2",
     .clean_make = "Canon",
     .clean_model = "EOS R6 Mark II",
-    .clean_alias = "EOS R6 Mark II"
-  },
-  {
-    .exif_make = "Canon",
+    .clean_alias = "EOS R6 Mark II" },
+  { .exif_make = "Canon",
     .exif_model = "Canon EOS R8",
     .clean_make = "Canon",
     .clean_model = "EOS R8",
-    .clean_alias = "EOS R8"
-  },
-  {
-    .exif_make = "Canon",
+    .clean_alias = "EOS R8" },
+  { .exif_make = "Canon",
     .exif_model = "Canon EOS R50",
     .clean_make = "Canon",
     .clean_model = "EOS R50",
-    .clean_alias = "EOS R50"
-  },
-  {
-    .exif_make = "Canon",
+    .clean_alias = "EOS R50" },
+  { .exif_make = "Canon",
     .exif_model = "Canon EOS R100",
     .clean_make = "Canon",
     .clean_model = "EOS R100",
-    .clean_alias = "EOS R100"
-  },
+    .clean_alias = "EOS R100" },
 #endif
 };
 
-gboolean warning_unsupported_model_seen = FALSE;
+gboolean is_in_glist(GList *list, const gchar *exif_model)
+{
+  for(GList *l = list; l; l = l->next)
+  {
+    if(!g_strcmp0((char *)l->data, exif_model)) return TRUE;
+  }
+  return FALSE;
+}
+
+GList *warning_missing_support_seen = NULL;
+
+
 
 /* LibRaw is expected to read only new Canon CR3 files */
 
@@ -278,16 +229,14 @@ static gboolean _supported_image(const gchar *filename)
   ext++;
 
   if(dt_conf_key_not_empty("libraw_extensions"))
-    extensions_whitelist = g_strjoin(" ", always_by_libraw,
-                                     dt_conf_get_string_const("libraw_extensions"), NULL);
+    extensions_whitelist = g_strjoin(" ", always_by_libraw, dt_conf_get_string_const("libraw_extensions"), NULL);
   else
     extensions_whitelist = g_strdup(always_by_libraw);
 
-  dt_print(DT_DEBUG_ALWAYS,
-           "[libraw_open] extensions whitelist: `%s'\n", extensions_whitelist);
+  dt_print(DT_DEBUG_ALWAYS, "[libraw_open] extensions whitelist: `%s'\n", extensions_whitelist);
 
-  gchar *ext_lowercased = g_ascii_strdown(ext,-1);
-  if(g_strstr_len(extensions_whitelist,-1,ext_lowercased))
+  gchar *ext_lowercased = g_ascii_strdown(ext, -1);
+  if(g_strstr_len(extensions_whitelist, -1, ext_lowercased))
   {
     g_free(ext_lowercased);
     g_free(extensions_whitelist);
@@ -301,12 +250,13 @@ static gboolean _supported_image(const gchar *filename)
 void _check_libraw_missing_support(const struct dt_image_t *img)
 {
   char lr_mk[64], lr_md[64], lr_al[64];
-  if(!warning_unsupported_model_seen && !dt_libraw_lookup_makermodel(img->exif_maker, img->exif_model,
-                                  lr_mk, sizeof(lr_mk),
-                                  lr_md, sizeof(lr_md),
-                                  lr_al, sizeof(lr_al)))
+  if(!is_in_glist(warning_missing_support_seen, img->exif_model)
+     && !dt_libraw_lookup_makermodel(img->exif_maker, img->exif_model, lr_mk, sizeof(lr_mk), lr_md, sizeof(lr_md),
+                                     lr_al, sizeof(lr_al)))
   {
-    warning_unsupported_model_seen = TRUE;
+    char *model_copy = g_strdup(img->exif_model);
+    warning_missing_support_seen = g_list_append(warning_missing_support_seen, model_copy);
+
     const char *T1 = _("<span foreground='red'><b>WARNING</b></span>:"
                        " camera is not fully supported!");
     char *T2 = g_strdup_printf(_("colors for `%s' could be misrepresented,\n"
@@ -321,16 +271,14 @@ void _check_libraw_missing_support(const struct dt_image_t *img)
   }
 }
 
-gboolean dt_libraw_lookup_makermodel(const char *maker, const char *model,
-                                     char *mk, int mk_len, char *md, int md_len,
-                                     char *al, int al_len)
+gboolean dt_libraw_lookup_makermodel(const char *maker, const char *model, char *mk, int mk_len, char *md,
+                                     int md_len, char *al, int al_len)
 {
   for(int i = 0; i < sizeof(modelMap) / sizeof(modelMap[0]); ++i)
   {
-    if(!g_strcmp0(maker, modelMap[i].exif_make)
-       && !g_strcmp0(model, modelMap[i].exif_model))
+    if(!g_strcmp0(maker, modelMap[i].exif_make) && !g_strcmp0(model, modelMap[i].exif_model))
     {
-      //printf("input model: %s, exif model: %s\n", model, modelMap[i].exif_model);
+      // printf("input model: %s, exif model: %s\n", model, modelMap[i].exif_model);
       g_strlcpy(mk, modelMap[i].clean_make, mk_len);
       g_strlcpy(md, modelMap[i].clean_model, md_len);
       g_strlcpy(al, modelMap[i].clean_alias, al_len);
@@ -341,9 +289,7 @@ gboolean dt_libraw_lookup_makermodel(const char *maker, const char *model,
 }
 
 
-dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
-                                           const char *filename,
-                                           dt_mipmap_buffer_t *mbuf)
+dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
 {
   int err = DT_IMAGEIO_LOAD_FAILED;
   int libraw_err = LIBRAW_SUCCESS;
@@ -369,12 +315,9 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
   // but seems to be the best available. LibRaw crx decoder can actually
   // decode the raw data, but internal metadata like wb_coeffs, crops etc.
   // are not populated into libraw structure, or image is not of CFA type.
-  if(raw->rawdata.color.cam_mul[0] == 0.0f
-     || dt_isnan(raw->rawdata.color.cam_mul[0])
-     || !raw->rawdata.raw_image)
+  if(raw->rawdata.color.cam_mul[0] == 0.0f || dt_isnan(raw->rawdata.color.cam_mul[0]) || !raw->rawdata.raw_image)
   {
-    dt_print(DT_DEBUG_ALWAYS,
-             "[libraw_open] detected unsupported image `%s'\n", img->filename);
+    dt_print(DT_DEBUG_ALWAYS, "[libraw_open] detected unsupported image `%s'\n", img->filename);
     goto error;
   }
 
@@ -388,24 +331,20 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
 
   // Copy white level (all linear_max[] equal single
   // SpecularWhiteLevel for CR3, we can skip min or mean)
-  img->raw_white_point = raw->rawdata.color.linear_max[0]
-    ? raw->rawdata.color.linear_max[0]
-    :raw->rawdata.color.maximum;
+  img->raw_white_point
+      = raw->rawdata.color.linear_max[0] ? raw->rawdata.color.linear_max[0] : raw->rawdata.color.maximum;
 
   // Copy black level
   img->raw_black_level = raw->rawdata.color.black;
   for(size_t c = 0; c < 4; ++c)
-    img->raw_black_level_separate[c] =
-      raw->rawdata.color.black + raw->rawdata.color.cblack[c];
+    img->raw_black_level_separate[c] = raw->rawdata.color.black + raw->rawdata.color.cblack[c];
 
   // AsShot WB coeffs
-  for(size_t c = 0; c < 4; ++c)
-    img->wb_coeffs[c] = raw->rawdata.color.cam_mul[c];
+  for(size_t c = 0; c < 4; ++c) img->wb_coeffs[c] = raw->rawdata.color.cam_mul[c];
 
   // Grab the adobe coeff
   for(int k = 0; k < 4; k++)
-    for(int i = 0; i < 3; i++)
-      img->adobe_XYZ_to_CAM[k][i] = raw->rawdata.color.cam_xyz[k][i];
+    for(int i = 0; i < 3; i++) img->adobe_XYZ_to_CAM[k][i] = raw->rawdata.color.cam_xyz[k][i];
 
   // Raw dimensions. This is the full sensor range.
   img->width = raw->rawdata.sizes.raw_width;
@@ -444,9 +383,7 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
   void *buf = dt_mipmap_cache_alloc(mbuf, img);
   if(!buf)
   {
-    dt_print(DT_DEBUG_ALWAYS,
-             "[libraw_open] could not alloc full buffer for image `%s'\n",
-             img->filename);
+    dt_print(DT_DEBUG_ALWAYS, "[libraw_open] could not alloc full buffer for image `%s'\n", img->filename);
     err = DT_IMAGEIO_CACHE_FULL;
     goto error;
   }
@@ -495,9 +432,7 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
 
 error:
   if(libraw_err != LIBRAW_SUCCESS)
-    dt_print(DT_DEBUG_ALWAYS,
-             "[libraw_open] `%s': %s\n",
-             img->filename, libraw_strerror(libraw_err));
+    dt_print(DT_DEBUG_ALWAYS, "[libraw_open] `%s': %s\n", img->filename, libraw_strerror(libraw_err));
   libraw_close(raw);
   return err;
 }
