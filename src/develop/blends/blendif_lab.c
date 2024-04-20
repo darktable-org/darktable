@@ -247,33 +247,25 @@ void dt_develop_blendif_lab_make_mask(struct dt_dev_pixelpipe_iop_t *piece, cons
       return;
     }
 
-#ifdef _OPENMP
-#pragma omp parallel default(none) \
-  dt_omp_firstprivate(temp_mask, mask, a, b, oheight, owidth, iwidth, yoffs, xoffs, buffsize, \
-                      blendif, parameters, mask_inclusive, mask_inversed, global_opacity)
-#endif
+    DT_OMP_PRAGMA(parallel default(none)
+                  dt_omp_firstprivate(temp_mask, mask, a, b, oheight, owidth, iwidth, yoffs, xoffs, buffsize,
+                                      blendif, parameters, mask_inclusive, mask_inversed, global_opacity))
     {
       // flush denormals to zero to avoid performance penalty if there are a lot of zero values in the mask
       const int oldMode = dt_mm_enable_flush_zero();
 
       // initialize the parametric mask
-#ifdef _OPENMP
-#pragma omp for simd schedule(static) aligned(temp_mask:64)
-#endif
+      DT_OMP_PRAGMA(for simd schedule(static) aligned(temp_mask:64))
       for(size_t x = 0; x < buffsize; x++) temp_mask[x] = 1.0f;
 
       // combine channels
-#ifdef _OPENMP
-#pragma omp for schedule(static)
-#endif
+      DT_OMP_PRAGMA(for schedule(static))
       for(size_t y = 0; y < oheight; y++)
       {
         const size_t start = ((y + yoffs) * iwidth + xoffs) * DT_BLENDIF_LAB_CH;
         _blendif_combine_channels(a + start, temp_mask + (y * owidth), owidth, blendif, parameters);
       }
-#ifdef _OPENMP
-#pragma omp for schedule(static)
-#endif
+      DT_OMP_PRAGMA(for schedule(static))
       for(size_t y = 0; y < oheight; y++)
       {
         const size_t start = (y * owidth) * DT_BLENDIF_LAB_CH;
@@ -286,16 +278,12 @@ void dt_develop_blendif_lab_make_mask(struct dt_dev_pixelpipe_iop_t *piece, cons
       {
         if(mask_inversed)
         {
-#ifdef _OPENMP
-#pragma omp for simd schedule(static) aligned(mask, temp_mask:64)
-#endif
+          DT_OMP_PRAGMA(for simd schedule(static) aligned(mask, temp_mask:64))
           for(size_t x = 0; x < buffsize; x++) mask[x] = global_opacity * (1.0f - mask[x]) * temp_mask[x];
         }
         else
         {
-#ifdef _OPENMP
-#pragma omp for simd schedule(static) aligned(mask, temp_mask:64)
-#endif
+          DT_OMP_PRAGMA(for simd schedule(static) aligned(mask, temp_mask:64))
           for(size_t x = 0; x < buffsize; x++) mask[x] = global_opacity * (1.0f - (1.0f - mask[x]) * temp_mask[x]);
         }
       }
@@ -303,16 +291,12 @@ void dt_develop_blendif_lab_make_mask(struct dt_dev_pixelpipe_iop_t *piece, cons
       {
         if(mask_inversed)
         {
-#ifdef _OPENMP
-#pragma omp for simd schedule(static) aligned(mask, temp_mask:64)
-#endif
+          DT_OMP_PRAGMA(for simd schedule(static) aligned(mask, temp_mask:64))
           for(size_t x = 0; x < buffsize; x++) mask[x] = global_opacity * (1.0f - mask[x] * temp_mask[x]);
         }
         else
         {
-#ifdef _OPENMP
-#pragma omp for simd schedule(static) aligned(mask, temp_mask:64)
-#endif
+          DT_OMP_PRAGMA(for simd schedule(static) aligned(mask, temp_mask:64))
           for(size_t x = 0; x < buffsize; x++) mask[x] = global_opacity * mask[x] * temp_mask[x];
         }
       }

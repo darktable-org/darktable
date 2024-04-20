@@ -323,19 +323,15 @@ static void kmeans(const float *col, const int width, const int height, const in
     float2 *var_perthread = dt_calloc_perthread(n,sizeof(float2),&var_size);
     size_t mean_size;
     float2 *mean_perthread = dt_calloc_perthread(n,sizeof(float2),&mean_size);
-#ifdef _OPENMP
-#pragma omp parallel default(none) \
-  dt_omp_firstprivate(col, npixels, n, mean_perthread, mean_size, \
-                      cnt_perthread, cnt_size, var_perthread, var_size, mean_out)
-#endif
+    DT_OMP_PRAGMA(parallel default(none)
+                  dt_omp_firstprivate(col, npixels, n, mean_perthread, mean_size,
+                                      cnt_perthread, cnt_size, var_perthread, var_size, mean_out))
     {
       const unsigned int threadnum = dt_get_thread_num();
       float2 *t_var = dt_get_bythread(var_perthread,var_size,threadnum);
       float2 *t_mean = dt_get_bythread(mean_perthread,mean_size,threadnum);
       int *t_cnt = dt_get_bythread(cnt_perthread,cnt_size,threadnum);
-#ifdef _OPENMP
-#pragma omp for schedule(static)
-#endif
+      DT_OMP_PRAGMA(for schedule(static))
       for(size_t k = 0; k < npixels; k++)
       {
         dt_aligned_pixel_t Lab;
@@ -523,18 +519,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     size_t allocsize;
     float *const weight_buf = dt_alloc_perthread(data->n, sizeof(float), &allocsize);
 
-#ifdef _OPENMP
-#pragma omp parallel default(none) \
-    dt_omp_firstprivate(npixels, mapio, var_ratio, weight_buf, allocsize) \
-    dt_omp_sharedconst(data, in, out, equalization)
-#endif
+    DT_OMP_PRAGMA(parallel default(none)
+                  dt_omp_firstprivate(npixels, mapio, var_ratio, weight_buf, allocsize)
+                  dt_omp_sharedconst(data, in, out, equalization))
     {
       // get a thread-private scratch buffer; do this before the actual loop so we don't have to look it up for
       // every single pixel
       float *const restrict weight = dt_get_perthread(weight_buf,allocsize);
-#ifdef _OPENMP
-#pragma omp for schedule(static)
-#endif
+      DT_OMP_PRAGMA(for schedule(static))
       for(size_t j = 0; j < 4*npixels; j += 4)
       {
         const float L = in[j];

@@ -116,9 +116,7 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img,
   float floatval;
   const size_t npixels = (size_t)desc.width * desc.height;
 
-#ifdef _OPENMP
-#pragma omp parallel for private(intval, floatval)
-#endif
+  DT_OMP_PRAGMA(parallel for private(intval, floatval))
   for(size_t index = 0; index < npixels * 4; index++)
   {
     intval = *(int_RGBA_buf + index);

@@ -560,17 +560,13 @@ static void process_random(
 
   unsigned int *const tea_states = alloc_tea_states(dt_get_num_threads());
 
-#ifdef _OPENMP
-#pragma omp parallel default(none) \
-  dt_omp_firstprivate(dither, height, width, ivoid, ovoid) \
-  dt_omp_sharedconst(tea_states)
-#endif
+  DT_OMP_PRAGMA(parallel default(none)
+                dt_omp_firstprivate(dither, height, width, ivoid, ovoid)
+                dt_omp_sharedconst(tea_states))
   {
     // get a pointer to each thread's private buffer *outside* the for loop, to avoid a function call per iteration
     unsigned int *const tea_state = get_tea_state(tea_states,dt_get_thread_num());
-#ifdef _OPENMP
-#pragma omp for schedule(static)
-#endif
+    DT_OMP_PRAGMA(for schedule(static))
     for(int j = 0; j < height; j++)
     {
       const size_t k = (size_t)4 * width * j;

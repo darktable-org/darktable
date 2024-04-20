@@ -433,9 +433,7 @@ void process(
       float *gshift = rbhpfv; // there is no overlap in buffer usage => share
 
 // Main algorithm: Tile loop calculating correction parameters per tile
-#ifdef _OPENMP
-#pragma omp for collapse(2) schedule(static) nowait
-#endif
+      DT_OMP_PRAGMA(for collapse(2) schedule(static) nowait)
       for(int top = -border; top < height; top += ts - border2)
       {
         for(int left = -border; left < width; left += ts - border2)
@@ -844,9 +842,7 @@ void process(
       // Main algorithm: Tile loop
       if(processpasstwo)
       {
-#ifdef _OPENMP
-#pragma omp for schedule(static) collapse(2) nowait
-#endif
+        DT_OMP_PRAGMA(for schedule(static) collapse(2) nowait)
         for(int top = -border; top < height; top += ts - border2)
         {
           for(int left = -border; left < width; left += ts - border2)
@@ -1115,9 +1111,7 @@ void process(
 
 DT_OMP_PRAGMA(barrier)
 // copy temporary image matrix back to image matrix
-#ifdef _OPENMP
-#pragma omp for
-#endif
+        DT_OMP_PRAGMA(for)
         for(int row = 0; row < height; row++)
           for(int col = 0 + (FC(row, 0, filters) & 1), indx = (row * width + col) >> 1; col < width; col += 2, indx++)
           {
