@@ -1493,6 +1493,9 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
       AM("temperature/temperature");                                                                              \
       AM("temperature/tint");                                                                                     \
     }                                                                                                             \
+    AM("colorequal/page");	                                             					  \
+    AM("colorequal/graph");                                                 					  \
+    AM("colorequal/node placement");                                           					  \
     AM("exposure/exposure");                                                                                      \
     if(!is_scene_referred) AM("colorbalancergb/contrast"); /* contrast is already in filmic */                    \
     AM("colorbalancergb/global chroma");                                                                          \
