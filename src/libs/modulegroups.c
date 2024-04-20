@@ -1482,6 +1482,8 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
       AM("filmicrgb/white relative exposure");                                                                    \
       AM("filmicrgb/black relative exposure");                                                                    \
       AM("filmicrgb/contrast");                                                                                   \
+      AM("sigmoid/contrast");											  \
+      AM("sigmoid/skew");											  \
       AM("channelmixerrgb/temperature");                                                                          \
       AM("channelmixerrgb/chroma");                                                                               \
       AM("channelmixerrgb/hue");                                                                                  \
