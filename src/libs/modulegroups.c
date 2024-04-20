@@ -1479,11 +1479,14 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
     tx = g_strdup_printf("1|0ꬹ1||");                                                                            \
     if(is_scene_referred)                                                                                         \
     {                                                                                                             \
-      AM("filmicrgb/white relative exposure");                                                                    \
-      AM("filmicrgb/black relative exposure");                                                                    \
-      AM("filmicrgb/contrast");                                                                                   \
-      AM("sigmoid/contrast");											  \
-      AM("sigmoid/skew");											  \
+      if(wf_filmic) {												  \
+        AM("filmicrgb/white relative exposure");                                                                  \
+        AM("filmicrgb/black relative exposure");                                                                  \
+        AM("filmicrgb/contrast");                                                                                 \
+      } else if (wf_sigmoid) {                                           					  \
+        AM("sigmoid/contrast");											  \
+        AM("sigmoid/skew");											  \
+      } 													  \
       AM("channelmixerrgb/temperature");                                                                          \
       AM("channelmixerrgb/chroma");                                                                               \
       AM("channelmixerrgb/hue");                                                                                  \
@@ -1500,10 +1503,11 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
     AM("colorequal/graph");                                                 					  \
     AM("colorequal/node placement");                                           					  \
     AM("exposure/exposure");                                                                                      \
-    if(!is_scene_referred) AM("colorbalancergb/contrast"); /* contrast is already in filmic */                    \
+    if(!is_scene_referred) AM("colorbalancergb/contrast"); /* contrast is already in filmic/sigmoid */            \
     AM("colorbalancergb/global chroma");                                                                          \
     AM("colorbalancergb/global vibrance");                                                                        \
     AM("colorbalancergb/global saturation");                                                                      \
+    AM("colorbalancergb/global brilliance");                                                                      \
     AM("ashift/rotation");                                                                                        \
     AM("denoiseprofile/strength");                                                                                \
     AM("toneequal/graph");                                    						  	  \
@@ -1808,6 +1812,7 @@ static gchar *_presets_get_minimal(dt_lib_module_t *self)
 {
   const gboolean is_scene_referred = dt_is_scene_referred();
   const gboolean wf_filmic = dt_conf_is_equal("plugins/darkroom/workflow", "scene-referred (filmic)");
+  const gboolean wf_sigmoid = dt_conf_is_equal("plugins/darkroom/workflow", "scene-referred (sigmoid)");
 
   // all modules
   gchar *tx = NULL;
