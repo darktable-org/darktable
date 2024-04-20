@@ -113,11 +113,8 @@ float dt_image_distance_transform(float *const src,
 
   const size_t maxdim = MAX(width, height);
   float max_distance = 0.0f;
-#ifdef _OPENMP
-  #pragma omp parallel \
-  reduction(max : max_distance) \
-  dt_omp_firstprivate(out, maxdim, width, height)
-#endif
+  DT_OMP_PRAGMA(parallel reduction(max : max_distance) 
+                dt_omp_firstprivate(out, maxdim, width, height))
   {
     float *f = dt_alloc_align_float(maxdim);
     float *z = dt_alloc_align_float(maxdim + 1);
@@ -125,9 +122,7 @@ float dt_image_distance_transform(float *const src,
     int *v = dt_alloc_align_int(maxdim);
 
     // transform along columns
-#ifdef _OPENMP
-  #pragma omp for schedule (static)
-#endif
+    DT_OMP_PRAGMA(for schedule (static))
     for(size_t x = 0; x < width; x++)
     {
       for(size_t y = 0; y < height; y++)
@@ -138,9 +133,7 @@ float dt_image_distance_transform(float *const src,
     }
     // implicit barrier :-)
     // transform along rows
-#ifdef _OPENMP
-  #pragma omp for schedule (static) nowait
-#endif
+    DT_OMP_PRAGMA(for schedule (static) nowait)
     for(size_t y = 0; y < height; y++)
     {
       _image_distance_transform(&out[y*width], z, d, v, width);

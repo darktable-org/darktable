@@ -1748,37 +1748,27 @@ static void _modify_roi_in_lf(struct dt_iop_module_t *self,
 
     float *const buf = (float *)dt_alloc_align_float(nbpoints * 2 * 3);
 
-#ifdef _OPENMP
-#pragma omp parallel default(none) \
-    dt_omp_firstprivate(aheight, awidth, buf, height, nbpoints, width, xoff, \
-                        xstep, yoff, ystep) \
-    shared(modifier) reduction(min : xm, ym) reduction(max : xM, yM)
-#endif
+    DT_OMP_PRAGMA(parallel default(none)
+                  dt_omp_firstprivate(aheight, awidth, buf, height, nbpoints, width, 
+                                      xoff, xstep, yoff, ystep)
+                  shared(modifier) reduction(min : xm, ym) reduction(max : xM, yM))
     {
-#ifdef _OPENMP
-#pragma omp for schedule(static)
-#endif
+      DT_OMP_PRAGMA(for schedule(static))
       for(int i = 0; i < awidth; i++)
         modifier->ApplySubpixelGeometryDistortion
           (xoff + i * xstep, yoff, 1, 1, buf + 6 * i);
 
-#ifdef _OPENMP
-#pragma omp for schedule(static)
-#endif
+      DT_OMP_PRAGMA(for schedule(static))
       for(int i = 0; i < awidth; i++)
         modifier->ApplySubpixelGeometryDistortion
           (xoff + i * xstep, yoff + (height - 1), 1, 1, buf + 6 * (awidth + i));
 
-#ifdef _OPENMP
-#pragma omp for schedule(static)
-#endif
+      DT_OMP_PRAGMA(for schedule(static))
       for(int j = 0; j < aheight; j++)
         modifier->ApplySubpixelGeometryDistortion
           (xoff, yoff + j * ystep, 1, 1, buf + 6 * (2 * awidth + j));
 
-#ifdef _OPENMP
-#pragma omp for schedule(static)
-#endif
+      DT_OMP_PRAGMA(for schedule(static))
       for(int j = 0; j < aheight; j++)
         modifier->ApplySubpixelGeometryDistortion
           (xoff + (width - 1), yoff + j * ystep, 1, 1,
@@ -1786,9 +1776,7 @@ static void _modify_roi_in_lf(struct dt_iop_module_t *self,
 
 DT_OMP_PRAGMA(barrier)
 
-#ifdef _OPENMP
-#pragma omp for schedule(static)
-#endif
+      DT_OMP_PRAGMA(for schedule(static))
       for(size_t k = 0; k < nbpoints; k++)
       {
         // iterate over RGB channels x and y coordinates
