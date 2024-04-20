@@ -160,9 +160,9 @@ void dt_iop_image_copy(float *const __restrict__ out,
     const int nthreads = MIN(dt_get_num_threads(), parallel_imgop_maxthreads);
     // determine the number of 4-float vectors to be processed by each thread
     const size_t chunksize = (((nfloats + nthreads - 1) / nthreads) + 3) / 4;
-#pragma omp parallel for simd aligned(in, out : 16) default(none) \
+#pragma omp parallel for default(none) \
     dt_omp_firstprivate(in, out, nfloats, chunksize, nthreads) \
-    schedule(simd:static) num_threads(nthreads)
+    schedule(static) num_threads(nthreads)
     for(size_t chunk = 0; chunk < nthreads; chunk++)
     {
       const size_t limit = MIN(4*(chunk+1)*chunksize, nfloats);
