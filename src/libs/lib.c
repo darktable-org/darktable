@@ -445,7 +445,7 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
   menu = darktable.gui->presets_popup_menu;
 
   const gboolean hide_default = dt_conf_get_bool("plugins/lighttable/hide_default_presets");
-  const gboolean default_first = dt_conf_get_bool("modules/default_presets_first");
+  const gboolean default_first = dt_conf_get_bool("plugins/lighttable/default_presets_first");
 
   g_signal_connect(G_OBJECT(menu), "destroy", G_CALLBACK(free_module_info), minfo);
 
