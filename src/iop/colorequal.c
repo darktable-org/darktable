@@ -872,12 +872,9 @@ void process(struct dt_iop_module_t *self,
 
   // STEP 3 : carry-on with conversion from LUV to HSB
   float B_norm = NORM_MIN;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  reduction(max: B_norm) \
-  dt_omp_firstprivate(owidth, oheight, in, out, UV, tmp, corrections, b_corrections, saturation, d, white, gradient_amp)  \
-  schedule(static)
-#endif
+  DT_OMP_FOR_CLAUSE(reduction(max: B_norm),
+                    owidth, oheight, in, out, UV, tmp, corrections, 
+                    b_corrections, saturation, d, white, gradient_amp)
   for(int row = 0; row < oheight; row++)
   {
     for(int col = 0; col < owidth; col++)

@@ -464,12 +464,8 @@ void process(struct dt_iop_module_t *self,
       data->coeff_b[num_patches+2],
       data->coeff_b[num_patches+3], 0.0f };
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, num_patches, patches, sources, polynomial_L, \
-                      polynomial_a, polynomial_b, ivoid, out)         \
-  schedule(static)
-#endif
+  DT_OMP_FOR(npixels, num_patches, patches, sources, polynomial_L,
+             polynomial_a, polynomial_b, ivoid, out)
   for(int k=0; k < npixels; k++)
   {
     dt_aligned_pixel_t inpx;

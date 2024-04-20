@@ -682,11 +682,7 @@ public:
     }
 
     /* Rewrite the offsets in the replay structure from the above generated table. */
-#ifdef _OPENMP
-#pragma omp parallel for default(none) if(nData >= 100000) \
-   dt_omp_firstprivate(nData, replay, offset_remap) \
-   schedule(static)
-#endif
+    DT_OMP_FOR_CLAUSE(if(nData >= 100000), nData, replay, offset_remap)
     for(size_t i = 0; i < nData; i++)
     {
       if(replay[i].table > 0)

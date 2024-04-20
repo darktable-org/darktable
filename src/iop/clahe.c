@@ -122,13 +122,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   float *const restrict dest_buf = dt_alloc_perthread_float(roi_out->width, &destbuf_size);
 
 // CLAHE
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, dest_buf, destbuf_size, ivoid, ovoid, rad, roi_in, \
-                      roi_out, slope) \
-  shared(luminance) \
-  schedule(static)
-#endif
+  DT_OMP_FOR_CLAUSE(shared(luminance),
+                    ch, dest_buf, destbuf_size, ivoid, ovoid, rad, roi_in, roi_out, slope)
   for(int j = 0; j < roi_out->height; j++)
   {
     int yMin = fmax(0, j - rad);
