@@ -196,6 +196,7 @@ changes (where available).
 ### Mandatory
 
 - Minimum libpng version 1.5.x is now required
+- Minimum pugixml version 1.5 is now required
 
 ### Optional
 

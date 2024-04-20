@@ -164,6 +164,7 @@ Required dependencies (minimum version):
 * GLib 2.56
 * SQLite 3.15 *(but 3.24 or newer strongly recommended)*
 * Exiv2 0.25 *(but at least 0.27.4 built with ISO BMFF support needed for Canon CR3 raw import)*
+* pugixml 1.5
 
 Required dependencies (no version requirement):
 * Lensfun *(for automatic lens correction)* (Note: alpha 0.3.95 and git master branch are not supported)

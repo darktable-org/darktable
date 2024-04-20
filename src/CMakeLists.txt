@@ -786,7 +786,7 @@ if(USE_LUA)
   list(APPEND STATIC_LIBS lautoc_static)
 endif(USE_LUA)
 
-find_package(Pugixml 1.2 REQUIRED)
+find_package(Pugixml 1.5 REQUIRED)
 include_directories(SYSTEM ${Pugixml_INCLUDE_DIRS})
 list(APPEND LIBS ${Pugixml_LIBRARIES})
 
