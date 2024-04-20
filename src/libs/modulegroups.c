@@ -1505,7 +1505,7 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
     AM("colorbalancergb/global vibrance");                                                                        \
     AM("colorbalancergb/global saturation");                                                                      \
     AM("ashift/rotation");                                                                                        \
-    AM("denoiseprofile");                                                                                         \
+    AM("denoiseprofile/strength");                                                                                \
     AM("lens");                                                                                                   \
     AM("bilat/detail");                                                                                           \
   }
