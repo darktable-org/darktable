@@ -1506,6 +1506,9 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
     AM("colorbalancergb/global saturation");                                                                      \
     AM("ashift/rotation");                                                                                        \
     AM("denoiseprofile/strength");                                                                                \
+    AM("toneequal/graph");                                    						  	  \
+    AM("toneequal/mask exposure compensation");                       						  \
+    AM("toneequal/mask contrast compensation");                       						  \
     AM("lens");                                                                                                   \
     AM("bilat/detail");                                                                                           \
   }
