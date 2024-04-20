@@ -1182,11 +1182,7 @@ DT_OMP_PRAGMA(barrier)
       dt_gaussian_blur(red, redfactor, redfactor);
       dt_gaussian_blur(blue, bluefactor, bluefactor);
 
-#ifdef _OPENMP
-#pragma omp parallel for \
-  dt_omp_firstprivate(out, height, width, filters, redfactor, bluefactor)  \
-  schedule(static)
-#endif
+      DT_OMP_FOR(out, height, width, h_width, filters, redfactor, bluefactor)
       for(size_t row = 2; row < height - 2; row++)
       {
         const int firstCol = FC(row, 0, filters) & 1;

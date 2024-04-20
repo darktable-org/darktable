@@ -459,12 +459,9 @@ void process(
     const float map_origin_v = d->gainmaps[0]->map_origin_v;
     float *const out = (float *const)ovoid;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(csx, csy, roi_out, out, im_to_rel_x, im_to_rel_y, rel_to_map_x, rel_to_map_y, \
-                        map_w, map_h, map_origin_h, map_origin_v) \
-    dt_omp_sharedconst(d) schedule(static)
-#endif
+    DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(d),
+                      csx, csy, roi_out, out, im_to_rel_x, im_to_rel_y, rel_to_map_x, rel_to_map_y,
+                      map_w, map_h, map_origin_h, map_origin_v)
     for(int j = 0; j < roi_out->height; j++)
     {
       const float y_map = CLAMP(((roi_out->y + csy + j) * im_to_rel_y - map_origin_v) * rel_to_map_y, 0, map_h);

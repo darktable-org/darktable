@@ -168,13 +168,9 @@ static inline void gauss_reduce(
 {
   // blur, store only coarse res
   const size_t cw = (wd-1)/2+1, ch = (ht-1)/2+1;
-#ifdef _OPENMP
   // DON'T parallelize the very smallest levels of the pyramid, as the threading overhead
   // is greater than the time needed to do it sequentially
-#pragma omp parallel for default(none) if(ch*cw>2000)  \
-  dt_omp_firstprivate(coarse, cw, ch, input, wd) \
-  schedule(static)
-#endif
+  DT_OMP_FOR_CLAUSE(if(ch*cw>2000), coarse, cw, ch, input, wd)
   for(size_t j=1;j<ch-1;j++)
   {
     const float *base = input + 2*(j-1)*wd;

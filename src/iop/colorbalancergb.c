@@ -708,15 +708,11 @@ void process(struct dt_iop_module_t *self,
   const size_t npixels = (size_t)roi_out->height * roi_out->width;
   const size_t out_width = roi_out->width;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, out, npixels, out_width, d, g, mask_display, \
-                      input_matrix_trans, output_matrix_trans, gamut_LUT,     \
-                      global, highlights, shadows, midtones, chroma, \
-                      saturation, brilliance, checker_1, checker_2, L_white, \
-                      hue_rotation_matrix)                              \
-  schedule(static)
-#endif
+  DT_OMP_FOR(in, out, npixels, out_width, d, g, mask_display,
+             input_matrix_trans, output_matrix_trans, gamut_LUT,
+             global, highlights, shadows, midtones, chroma,
+             saturation, brilliance, checker_1, checker_2, L_white,
+             hue_rotation_matrix)
   for(size_t k  = 0; k < 4 * npixels; k += 4)
   {
     // clip pipeline RGB
@@ -1265,12 +1261,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     // make RGB values vary between [0; 1] in working space, convert to Ych and get the max(c(h)))
     if(p->saturation_formula == DT_COLORBALANCE_SATURATION_JZAZBZ)
     {
-      #ifdef _OPENMP
-      #pragma omp parallel for default(none) \
-            dt_omp_firstprivate(input_matrix, p) schedule(static) \
-            reduction(max : LUT_saturation[:LUT_ELEM]) \
-            collapse(3)
-      #endif
+      DT_OMP_FOR_CLAUSE(reduction(max : LUT_saturation[:LUT_ELEM]) collapse(3),
+                        input_matrix, p)
       for(size_t r = 0; r < STEPS; r++)
         for(size_t g = 0; g < STEPS; g++)
           for(size_t b = 0; b < STEPS; b++)

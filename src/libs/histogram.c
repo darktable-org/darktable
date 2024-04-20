@@ -302,11 +302,7 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d,
   uint32_t *const restrict partial_binned =
     dt_calloc_perthread(3U * num_bins * num_tones, sizeof(uint32_t), &bin_pad);
 
-#if defined(_OPENMP)
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(input, partial_binned, roi, num_tones, num_bins, bin_pad, samples_per_bin, sample_height, sample_width, orient) \
-  schedule(static)
-#endif
+  DT_OMP_FOR(input, partial_binned, roi, num_tones, num_bins, bin_pad, samples_per_bin, sample_height, sample_width, orient)
   for(size_t y=0; y<sample_height; y++)
   {
     const float *const restrict px = DT_IS_ALIGNED((const float *const restrict)input +
@@ -354,11 +350,8 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d,
                                      : sample_width) * samples_per_bin);
   size_t nthreads = dt_get_num_threads();
 
-#if defined(_OPENMP)
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(d, partial_binned, bin_pad, wf_img_stride, num_bins, num_tones, orient, lut, lutmax, scale, nthreads) \
-  schedule(static) collapse(3)
-#endif
+  DT_OMP_FOR_CLAUSE(collapse(3),
+                    d, partial_binned, bin_pad, wf_img_stride, num_bins, num_tones, orient, lut, lutmax, scale, nthreads) \
   for(size_t ch = 0; ch < 3; ch++)
     for(size_t bin = 0; bin < num_bins; bin++)
       for(size_t tone = 0; tone < num_tones; tone++)
@@ -797,11 +790,9 @@ static void _lib_histogram_process_vectorscope
   // brute-force scan that LUT, or start from position of last pixel
   // and scan, or do an optimized search (1/2, 1/2, 1/2, etc.) --
   // would also find point sample pixel this way
-#if defined(_OPENMP)
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(input, binned, sample_max_x, sample_max_y, roi, rgb2ryb_ypp, diam_px, max_radius, max_diam, vs_prof, vs_type, vs_scale) \
-  schedule(static) collapse(2)
-#endif
+
+  DT_OMP_FOR_CLAUSE(collapse(2),
+                    input, binned, sample_max_x, sample_max_y, roi, rgb2ryb_ypp, diam_px, max_radius, max_diam, vs_prof, vs_type, vs_scale)
   for(size_t y=0; y<sample_max_y; y+=2)
     for(size_t x=0; x<sample_max_x; x+=2)
     {

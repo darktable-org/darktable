@@ -183,11 +183,7 @@ void process(struct dt_iop_module_t *self,
     for(int l = -rad; l <= rad; l++)
       for(int k = -rad; k <= rad; k++) m[l * wd + k] /= weight;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ivoid, ovoid, rad, height, width, wd, m, isig2col)				\
-    schedule(static)
-#endif
+    DT_OMP_FOR(ivoid, ovoid, rad, height, width, wd, m, isig2col)
     for(size_t j = 0; j < height; j++)
     {
       const float *in = ((float *)ivoid) + 4 * (j * width);
@@ -245,13 +241,8 @@ void process(struct dt_iop_module_t *self,
     const size_t grid_points = (height*sigma[0]) * (width*sigma[1]) * sigma[2] * sigma[3] * sigma[4];
     PermutohedralLattice<5, 4> lattice(width * height, dt_get_num_threads(), grid_points);
 
-// splat into the lattice
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ivoid, height, width, sigma)	\
-    shared(lattice)					\
-    schedule(static)
-#endif
+    // splat into the lattice
+    DT_OMP_FOR_CLAUSE(shared(lattice),	ivoid, height, width, sigma)
     for(size_t j = 0; j < height; j++)
     {
       const float *in = (const float *)ivoid + j * width * 4;
@@ -273,12 +264,7 @@ void process(struct dt_iop_module_t *self,
 
     // slice from the lattice
     float *const out = (float*)ovoid;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(out, npixels)	\
-    shared(lattice) \
-    schedule(static)
-#endif
+    DT_OMP_FOR_CLAUSE(shared(lattice), out, npixels)
     for(size_t index = 0; index < npixels; index++)
     {
       dt_aligned_pixel_t val;

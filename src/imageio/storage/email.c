@@ -194,9 +194,7 @@ int store(dt_imageio_module_storage_t *self,
   dt_control_log(ngettext("%d/%d exported to `%s'", "%d/%d exported to `%s'", num),
                  num, total, attachment->file);
 
-#ifdef _OPENMP // store can be called in parallel, so synch access to shared memory
-#pragma omp critical
-#endif
+  DT_OMP_PRAGMA(critical) // store can be called in parallel, so synch access to shared memory
   d->images = g_list_append(d->images, attachment);
 
   g_free(filename);

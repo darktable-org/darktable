@@ -221,10 +221,7 @@ static inline void create_motion_kernel(float *const restrict buffer,
   const float M[2][2] = { { cosf(corr_angle), -sinf(corr_angle) },
                           { sinf(corr_angle), cosf(corr_angle) } };
 
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) dt_omp_firstprivate(width, height, buffer, A, B, C, radius, offset, M, eps) \
-    schedule(simd: static) aligned(buffer:64)
-#endif
+  DT_OMP_FOR_SIMD(aligned(buffer:64), width, height, buffer, A, B, C, radius, offset, M, eps)
   for(size_t i = 0; i < 8 * width; i++)
   {
     // Note : for better smoothness of the polynomial discretization,
@@ -319,10 +316,7 @@ static inline void build_gui_kernel(unsigned char *const buffer, const size_t wi
   }
 
   // Convert to Gtk/Cairo RGBA 8×4 bits
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) dt_omp_firstprivate(width, height, buffer, kernel_2) \
-    schedule(simd: static) aligned(buffer, kernel_2:64)
-#endif
+  DT_OMP_FOR_SIMD(aligned(buffer, kernel_2:64), width, height, buffer, kernel_2) \
   for(size_t k = 0; k < height * width; k++)
   {
     buffer[k * 4] = buffer[k * 4 + 1] = buffer[k * 4 + 2] = buffer[k * 4 + 3] = roundf(255.f * kernel_2[k]);
@@ -337,10 +331,7 @@ static inline float compute_norm(float *const buffer, const size_t width, const 
 {
   float norm = 0.f;
 
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) dt_omp_firstprivate(width, height, buffer) \
-    schedule(simd: static) aligned(buffer:64) reduction(+:norm)
-#endif
+  DT_OMP_FOR_SIMD(aligned(buffer:64) reduction(+:norm), width, height, buffer)
   for(size_t i = 0; i < width * height; i++)
   {
     norm += buffer[i];
@@ -352,10 +343,7 @@ static inline float compute_norm(float *const buffer, const size_t width, const 
 
 static inline void normalize(float *const buffer, const size_t width, const size_t height, const float norm)
 {
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) dt_omp_firstprivate(width, height, buffer, norm) \
-    schedule(simd: static) aligned(buffer:64)
-#endif
+  DT_OMP_FOR_SIMD(aligned(buffer:64), width, height, buffer, norm)
   for(size_t i = 0; i < width * height; i++)
   {
     buffer[i] /= norm;
@@ -435,10 +423,7 @@ static void process_fft(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
   }
 
   // Write the image in the padded buffer
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) dt_omp_firstprivate(padded_width, padded_height, roi_in, in, padded_in) \
-    schedule(simd: static) aligned(in, padded_in:64)
-#endif
+  DT_OMP_FOR_SIMD(aligned(in, padded_in:64), padded_width, padded_height, roi_in, in, padded_in) \
   for(size_t i = 0; i < roi_in->height; i++)
     for(size_t j = 0; j < roi_in->width; j++)
     {
@@ -450,10 +435,7 @@ static void process_fft(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
   // Write the padding if needed
   if(padded_width > roi_in->width)
   {
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) dt_omp_firstprivate(padded_width, padded_height, roi_in, in, padded_in) \
-    schedule(simd: static) aligned(in, padded_in:64)
-#endif
+  DT_OMP_FOR_SIMD(aligned(in, padded_in:64), padded_width, padded_height, roi_in, in, padded_in)
   for(size_t i = 0; i < roi_in->height; i++)
     {
       const size_t index_in = (i * (roi_in->width - 1)) * 4;
@@ -464,10 +446,7 @@ static void process_fft(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
 
   if(padded_height > roi_in->height)
   {
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) dt_omp_firstprivate(padded_width, padded_height, roi_in, in, padded_in) \
-    schedule(simd: static) aligned(in, padded_in:64)
-#endif
+  DT_OMP_FOR_SIMD(aligned(in, padded_in:64), padded_width, padded_height, roi_in, in, padded_in)
   for(size_t j = 0; j < roi_in->width; j++)
     {
       const size_t index_in = ((roi_in->height - 1) * roi_in->width + j) * 4;

@@ -988,12 +988,8 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq,
   const float *const restrict HF = DT_IS_ALIGNED(high_freq);
 
   const float regularization_factor = regularization * current_radius_square / 9.f;
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none)                                                                            \
-    dt_omp_firstprivate(out, mask, HF, LF, height, width, ABCD, has_mask, variance_threshold, anisotropy,         \
-                        regularization_factor, mult, strength, isotropy_type) schedule(static)
-#endif
+  DT_OMP_FOR(out, mask, HF, LF, height, width, ABCD, has_mask, variance_threshold, anisotropy,
+             regularization_factor, mult, strength, isotropy_type)
   for(size_t row = 0; row < height; ++row)
   {
     // interleave the order in which we process the rows so that we minimize cache misses
