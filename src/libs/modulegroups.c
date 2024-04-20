@@ -1487,6 +1487,9 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
       AM("channelmixerrgb/temperature");                                                                          \
       AM("channelmixerrgb/chroma");                                                                               \
       AM("channelmixerrgb/hue");                                                                                  \
+      AM("channelmixerrgb/illuminant");                                                                           \
+      AM("channelmixerrgb/F source");                                                                             \
+      AM("channelmixerrgb/LED source");                                                                           \
     }                                                                                                             \
     else                                                                                                          \
     {                                                                                                             \
