@@ -37,6 +37,9 @@
 
 extern void dt_presets_popup_callback(GtkButton *button,
                                       dt_iop_module_t *module);
+extern void dt_iop_reset_callback(GtkButton *button,
+                                  GdkEventButton *event,
+                                  dt_iop_module_t *module);
 
 DT_MODULE(1)
 
@@ -416,6 +419,13 @@ static gboolean _basics_goto_module(GtkWidget *w, GdkEventButton *e, gpointer us
   return TRUE;
 }
 
+static gboolean _basics_reset_module(GtkWidget *w, GdkEventButton *e, gpointer user_data)
+{
+  dt_iop_module_t *module = (dt_iop_module_t *)(user_data);
+  dt_iop_reset_callback((GtkButton*)w, e, module);
+  return TRUE;
+}
+
 static gboolean _basics_apply_preset(GtkWidget *w, GdkEventButton *e, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)(user_data);
@@ -636,10 +646,18 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     gtk_box_pack_start(GTK_BOX(hbox_basic), d->mod_vbox_basic, TRUE, TRUE, 0);
     gtk_widget_show_all(hbox_basic);
 
+    // we create a button to reset the module
+    GtkWidget *rbt = dtgtk_button_new(dtgtk_cairo_paint_reset, 0, NULL);
+    gtk_widget_show(rbt);
+    gtk_widget_set_tooltip_text(rbt,_("reset parameters\nctrl+click to reapply any automatic presets"));
+    gtk_widget_set_name(rbt, "quick-reset");
+    gtk_widget_set_valign(rbt, GTK_ALIGN_CENTER);
+    g_signal_connect(G_OBJECT(rbt), "button-press-event", G_CALLBACK(_basics_reset_module), item->module);
+
     // we create a button to open the presets menu
     GtkWidget *pbt = dtgtk_button_new(dtgtk_cairo_paint_presets, 0, NULL);
     gtk_widget_show(pbt);
-    gtk_widget_set_tooltip_text(pbt, "presets");
+    gtk_widget_set_tooltip_text(pbt, _("presets"));
     gtk_widget_set_name(pbt, "quick-presets");
     gtk_widget_set_valign(pbt, GTK_ALIGN_CENTER);
     g_signal_connect(G_OBJECT(pbt), "button-press-event", G_CALLBACK(_basics_apply_preset), item->module);
@@ -674,12 +692,14 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
 
       gtk_box_pack_end(GTK_BOX(header_box), wbt, FALSE, FALSE, 0);
       gtk_box_pack_end(GTK_BOX(header_box), pbt, FALSE, FALSE, 0);
+      gtk_box_pack_end(GTK_BOX(header_box), rbt, FALSE, FALSE, 0);
     }
     else
     {
       // if there is no section label, we add the presets menu and link to the module hbox
       gtk_box_pack_end(GTK_BOX(hbox_basic), wbt, FALSE, FALSE, 0);
       gtk_box_pack_end(GTK_BOX(hbox_basic), pbt, FALSE, FALSE, 0);
+      gtk_box_pack_end(GTK_BOX(hbox_basic), rbt, FALSE, FALSE, 0);
 
       // if there is no label, we handle separately in css the first module header
       if(item_pos == FIRST_MODULE) gtk_widget_set_name(header_box, "basics-header-box-first");
