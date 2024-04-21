@@ -251,7 +251,7 @@ static int usage(const char *argv0)
          "    act_on, cache, camctl, camsupport, control, dev, expose,\n"
          "    imageio, input, ioporder, lighttable, lua, masks, memory,\n"
          "    nan, opencl, params, perf, pipe, print, pwstorage, signal,\n"
-         "    sql, tiling, undo\n"
+         "    sql, tiling, picker, undo\n"
          "\n"
          "    all     -> to debug all signals\n"
          "    common  -> to debug dev, imageio, masks, opencl, params, pipe\n"
@@ -971,6 +971,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
           !strcmp(darg, "verbose") ? DT_DEBUG_VERBOSE :
           !strcmp(darg, "pipe") ? DT_DEBUG_PIPE :
           !strcmp(darg, "expose") ? DT_DEBUG_EXPOSE :
+          !strcmp(darg, "picker") ? DT_DEBUG_PICKER :
           0;
         if(dadd)
           darktable.unmuted |= dadd;
