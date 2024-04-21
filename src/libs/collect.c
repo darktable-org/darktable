@@ -4074,6 +4074,11 @@ void init(struct dt_lib_module_t *self)
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_HISTORY);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_RATING);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_COLORLABEL);
+  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_WHITEBALANCE);
+  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_FLASH);
+  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_EXPOSURE_PROGRAM);
+  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_METERING_MODE);
+  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_GROUP_ID);
 
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
