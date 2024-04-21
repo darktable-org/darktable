@@ -2188,6 +2188,11 @@ static void _gui_reset_callback(GtkButton *button,
   dt_iop_connect_accels_multi(module->so);
 }
 
+void dt_iop_reset_callback(GtkButton *button, GdkEventButton *event, dt_iop_module_t *module)
+{
+  _gui_reset_callback(button, event, module);
+}
+
 void dt_presets_popup_callback(GtkButton *button, dt_iop_module_t *module)
 {
   const gboolean disabled = !module->default_enabled && module->hide_enable_button;
