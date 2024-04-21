@@ -115,7 +115,9 @@ typedef enum dt_collection_properties_t
   DT_COLLECTION_PROP_WHITEBALANCE,
   DT_COLLECTION_PROP_FLASH,
   DT_COLLECTION_PROP_EXPOSURE_PROGRAM,
-  DT_COLLECTION_PROP_METERING_MODE
+  DT_COLLECTION_PROP_METERING_MODE,
+
+  DT_COLLECTION_PROP_GROUP_ID
 } dt_collection_properties_t;
 
 typedef enum dt_collection_change_t
