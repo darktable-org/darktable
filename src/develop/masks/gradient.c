@@ -1158,15 +1158,8 @@ static int _gradient_get_mask(const dt_iop_module_t *const module,
   float *points = dt_alloc_align_float((size_t)2 * gw * gh);
   if(points == NULL) return 0;
 
-#ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(grid, gh, gw, px, py) \
-  shared(points) schedule(static) collapse(2)
-#else
-#pragma omp parallel for shared(points)
-#endif
-#endif
+  DT_OMP_FOR_CLAUSE(shared(points) collapse(2),
+                    grid, gh, gw, px, py)
   for(int j = 0; j < gh; j++)
     for(int i = 0; i < gw; i++)
     {
@@ -1216,15 +1209,8 @@ static int _gradient_get_mask(const dt_iop_module_t *const module,
     return 0;
   }
 
-#ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(lutsize, lutmax, hwscale, state, normf, compression) \
-  shared(lut) schedule(static)
-#else
-#pragma omp parallel for shared(points)
-#endif
-#endif
+  DT_OMP_FOR_CLAUSE(shared(lut),
+                    lutsize, lutmax, hwscale, state, normf, compression)
   for(int n = 0; n < lutsize; n++)
   {
     const float distance = (n - lutmax) * hwscale;
@@ -1239,15 +1225,8 @@ static int _gradient_get_mask(const dt_iop_module_t *const module,
   float *clut = lut + lutmax;
 
 
-#ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(gh, gw, sinv, cosv, xoffset, yoffset, hwscale, ihwscale, curvature, compression) \
-  shared(points, clut) schedule(static) collapse(2)
-#else
-#pragma omp parallel for shared(points)
-#endif
-#endif
+  DT_OMP_FOR_CLAUSE(shared(points, clut) collapse(2),
+                    gh, gw, sinv, cosv, xoffset, yoffset, hwscale, ihwscale, curvature, compression)
   for(int j = 0; j < gh; j++)
   {
     for(int i = 0; i < gw; i++)
@@ -1279,13 +1258,9 @@ static int _gradient_get_mask(const dt_iop_module_t *const module,
 
 // we fill the mask buffer by interpolation
 #ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(h, w, gw, grid, bufptr) \
   shared(points) schedule(simd:static)
-#else
-#pragma omp parallel for shared(points, buffer)
-#endif
 #endif
   for(int j = 0; j < h; j++)
   {
@@ -1341,15 +1316,8 @@ static int _gradient_get_mask_roi(const dt_iop_module_t *const module,
   float *points = dt_alloc_align_float((size_t)2 * gw * gh);
   if(points == NULL) return 0;
 
-#ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(iscale, gh, gw, py, px, grid) \
-  shared(points) schedule(static) collapse(2)
-#else
-#pragma omp parallel for shared(points)
-#endif
-#endif
+  DT_OMP_FOR_CLAUSE(shared(points) collapse(2),
+                    iscale, gh, gw, py, px, grid)
   for(int j = 0; j < gh; j++)
     for(int i = 0; i < gw; i++)
     {
@@ -1401,15 +1369,8 @@ static int _gradient_get_mask_roi(const dt_iop_module_t *const module,
     return 0;
   }
 
-#ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(lutsize, lutmax, hwscale, state, normf, compression) \
-  shared(lut) schedule(static)
-#else
-#pragma omp parallel for shared(points)
-#endif
-#endif
+  DT_OMP_FOR_CLAUSE(shared(lut),
+                    lutsize, lutmax, hwscale, state, normf, compression)
   for(int n = 0; n < lutsize; n++)
   {
     const float distance = (n - lutmax) * hwscale;
@@ -1423,15 +1384,8 @@ static int _gradient_get_mask_roi(const dt_iop_module_t *const module,
   // center lut around zero
   float *clut = lut + lutmax;
 
-#ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(gh, gw, sinv, cosv, xoffset, yoffset, hwscale, ihwscale, curvature, compression) \
-  shared(points, clut) schedule(static) collapse(2)
-#else
-#pragma omp parallel for shared(points)
-#endif
-#endif
+  DT_OMP_FOR_CLAUSE(shared(points, clut) collapse(2),
+                    gh, gw, sinv, cosv, xoffset, yoffset, hwscale, ihwscale, curvature, compression)
   for(int j = 0; j < gh; j++)
   {
     for(int i = 0; i < gw; i++)
@@ -1457,13 +1411,9 @@ static int _gradient_get_mask_roi(const dt_iop_module_t *const module,
 
 // we fill the mask buffer by interpolation
 #ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(h, w, grid, gw) \
   shared(buffer, points) schedule(simd:static)
-#else
-#pragma omp parallel for shared(points, buffer)
-#endif
 #endif
   for(int j = 0; j < h; j++)
   {

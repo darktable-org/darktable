@@ -1229,15 +1229,8 @@ static int _circle_get_mask_roi(const dt_iop_module_t *const restrict module,
   float *const restrict circ = dt_alloc_align_float(circpts * 2);
   if(circ == NULL) return 0;
 
-#ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(circpts, centerx, centery, total) \
-  dt_omp_sharedconst(circ) schedule(static) if(circpts/8 > 1000)
-#else
-#pragma omp parallel for shared(points) schedule(static)
-#endif
-#endif
+  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(circ) if(circpts/8 > 1000),
+                    circpts, centerx, centery, total)
   for(int n = 0; n < circpts / 8; n++)
   {
     const float phi = (2.0f * M_PI * n) / circpts;
@@ -1327,16 +1320,8 @@ static int _circle_get_mask_roi(const dt_iop_module_t *const restrict module,
   if(points == NULL) return 0;
 
   // we populate the grid points in module coordinates
-#ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(iscale, bbxm, bbym, bbXM, bbYM, bbw, px, py, grid) \
-  dt_omp_sharedconst(points) \
-  schedule(static) collapse(2) if(bbw*bbh > 50000)
-#else
-#pragma omp parallel for shared(points)
-#endif
-#endif
+  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(points) collapse(2) if(bbw*bbh > 50000),
+                    iscale, bbxm, bbym, bbXM, bbYM, bbw, px, py, grid)
   for(int j = bbym; j <= bbYM; j++)
     for(int i = bbxm; i <= bbXM; i++)
     {
@@ -1363,16 +1348,8 @@ static int _circle_get_mask_roi(const dt_iop_module_t *const restrict module,
 
   // we calculate the mask values at the transformed points;
   // for results: re-use the points array
-#ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(bbh, bbw, centerx, centery, border2, total2) \
-  dt_omp_sharedconst(points) \
-  schedule(static) collapse(2) if(bbh*bbw > 50000) num_threads(MIN(dt_get_num_threads(), (h*w)/20000))
-#else
-#pragma omp parallel for shared(points)
-#endif
-#endif
+  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(points) collapse(2) if(bbh*bbw > 50000) num_threads(MIN(dt_get_num_threads(), (h*w)/20000)),
+                    bbh, bbw, centerx, centery, border2, total2)
   for(int j = 0; j < bbh; j++)
     for(int i = 0; i < bbw; i++)
     {
@@ -1396,15 +1373,8 @@ static int _circle_get_mask_roi(const dt_iop_module_t *const restrict module,
   // we only need to take the contents of our bounding box into account
   const int endx = MIN(w, bbXM * grid);
   const int endy = MIN(h, bbYM * grid);
-#ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(grid, bbxm, bbym, bbw, endx, endy, w) \
-  dt_omp_sharedconst(buffer, points) schedule(static)
-#else
-#pragma omp parallel for shared(buffer)
-#endif
-#endif
+  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(buffer, points),
+                    grid, bbxm, bbym, bbw, endx, endy, w)
   for(int j = bbym * grid; j < endy; j++)
   {
     const int jj = j % grid;

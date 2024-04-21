@@ -3200,15 +3200,8 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module,
       const int yymin = MAX(ymin, 0);
       const int yymax = MIN(ymax, height - 1);
 
-#ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(xxmin, xxmax, yymin, yymax, width) \
-  shared(buffer) schedule(static) num_threads(MIN(8, dt_get_num_threads()))
-#else
-#pragma omp parallel for shared(buffer)
-#endif
-#endif
+      DT_OMP_FOR_CLAUSE(shared(buffer) num_threads(MIN(8, dt_get_num_threads())),
+                        xxmin, xxmax, yymin, yymax, width)
       for(int yy = yymin; yy <= yymax; yy++)
       {
         int state = 0;
@@ -3291,15 +3284,8 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module,
       }
     }
 
-#ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(width, height, dindex) \
-  shared(buffer, dpoints)
-#else
-#pragma omp parallel for shared(buffer)
-#endif
-#endif
+    DT_OMP_FOR_CLAUSE(shared(buffer, dpoints),
+                      width, height, dindex)
     for(int n = 0; n < dindex; n += 4)
       _path_falloff_roi(buffer, dpoints + n, dpoints + n + 2, width, height);
 

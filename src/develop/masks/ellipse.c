@@ -1463,15 +1463,7 @@ static void _fill_mask(const size_t numpoints,
   // rotated, but we can compensate for that by applying a rotation
   // matrix for the same rotation in the opposite direction before
   // projecting the vector.
-#ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(numpoints, bufptr, points, center, alpha, a2, b2, ta2, tb2, cos_alpha, sin_alpha, out_scale) \
-  schedule(static)
-#else
-#pragma omp parallel for shared(points)
-#endif
-#endif
+  DT_OMP_FOR(numpoints, bufptr, points, center, alpha, a2, b2, ta2, tb2, cos_alpha, sin_alpha, out_scale)
   for(size_t i = 0; i < numpoints; i++)
     {
       const float x = points[2 * i] - center[0];
@@ -1819,15 +1811,8 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module,
   float *ell = dt_alloc_align_float(ellpts * 2);
   if(ell == NULL) return 0;
 
-#ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ellpts, center, ta, tb, cosa, sina) \
-  shared(ell)
-#else
-#pragma omp parallel for shared(points)
-#endif
-#endif
+  DT_OMP_FOR_CLAUSE(shared(ell),
+                    ellpts, center, ta, tb, cosa, sina)
   for(int n = 0; n < ellpts; n++)
   {
     const float phi = (2.0f * M_PI * n) / ellpts;
@@ -1902,15 +1887,8 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module,
   if(points == NULL) return 0;
 
   // we populate the grid points in module coordinates
-#ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(grid, bbxm, bbym, bbXM, bbYM, bbw, iscale, px, py) \
-  shared(points) schedule(static) collapse(2)
-#else
-#pragma omp parallel for shared(points)
-#endif
-#endif
+  DT_OMP_FOR_CLAUSE(shared(points) collapse(2),
+                    grid, bbxm, bbym, bbXM, bbYM, bbw, iscale, px, py)
   for(int j = bbym; j <= bbYM; j++)
     for(int i = bbxm; i <= bbXM; i++)
     {
@@ -1949,15 +1927,8 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module,
   // we only need to take the contents of our bounding box into account
   const int endx = MIN(w, bbXM * grid);
   const int endy = MIN(h, bbYM * grid);
-#ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(grid, bbxm, bbym, bbw, endx, endy, w) \
-  shared(buffer, points)
-#else
-#pragma omp parallel for shared(buffer)
-#endif
-#endif
+  DT_OMP_FOR_CLAUSE(shared(buffer, points),
+                    grid, bbxm, bbym, bbw, endx, endy, w)
   for(int j = bbym * grid; j < endy; j++)
   {
     const int jj = j % grid;
