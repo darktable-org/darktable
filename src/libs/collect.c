@@ -2105,6 +2105,19 @@ static void _list_view(dt_lib_collect_rule_t *dr)
         // clang-format on
         break;
 
+      case DT_COLLECTION_PROP_GROUP_ID: // group_id
+        // clang-format off
+        g_snprintf(query, sizeof(query),
+                   "SELECT mi.group_id, 1, COUNT(*) AS count"
+                   "  FROM main.images AS mi"
+                   "  WHERE %s"
+                   "  GROUP BY group_id"
+                   "  HAVING COUNT(*) > 1"
+                   "  ORDER BY group_id %s", where_ext,
+                   sort_descending ? "DESC" : "ASC");
+        // clang-format on
+        break;
+
       case DT_COLLECTION_PROP_MODULE: // module
         // clang-format off
         snprintf(query, sizeof(query),
@@ -3364,6 +3377,7 @@ static void _populate_collect_combo(GtkWidget *w)
 
     dt_bauhaus_combobox_add_section(w, _("darktable"));
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GROUPING);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GROUP_ID);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_LOCAL_COPY);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_HISTORY);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_MODULE);
