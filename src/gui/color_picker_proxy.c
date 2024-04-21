@@ -345,7 +345,7 @@ static void _iop_color_picker_pickerdata_ready_callback(gpointer instance,
     {
       if(module->color_picker_apply)
       {
-        dt_print_pipe(DT_DEBUG_PIPE, "color picker apply",
+        dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_PICKER, "color picker apply",
           pipe, module, DT_DEVICE_NONE, NULL, NULL,
           "%s%s.%s%s. point=%.3f - %.3f. area=%.3f - %.3f / %.3f - %.3f\n",
           picker->flags & DT_COLOR_PICKER_POINT ? " point" : "",
@@ -376,7 +376,7 @@ static void _color_picker_proxy_preview_pipe_callback(gpointer instance,
   dt_lib_module_t *module = darktable.lib->proxy.colorpicker.module;
   if(module)
   {
-    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "picker update callback",
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_PICKER | DT_DEBUG_VERBOSE, "picker update callback",
       NULL, NULL, DT_DEVICE_NONE, NULL, NULL, "\n");
 
     // pixelpipe may have run because sample area changed or an iop,

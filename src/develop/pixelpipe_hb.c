@@ -801,7 +801,7 @@ static void _pixelpipe_picker(dt_iop_module_t *module,
     const dt_iop_order_iccprofile_info_t *const profile =
       dt_ioppr_get_pipe_current_profile_info(module, piece->pipe);
 
-    dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe picker",
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_PICKER, "pixelpipe picker",
       piece->pipe, module, DT_DEVICE_CPU, roi, NULL, " %s -> %s, %sbox %i/%i -- %i/%i\n",
       dt_iop_colorspace_to_name(image_cst),
       dt_iop_colorspace_to_name(dt_iop_color_picker_get_active_cst(module)),
@@ -887,6 +887,13 @@ static void _pixelpipe_picker_cl(const int devid,
 
   if(err != CL_SUCCESS) goto error;
 
+  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_PICKER, "pixelpipe picker CL",
+    piece->pipe, module, devid, roi, NULL, " %s -> %s, %sbox %i/%i -- %i/%i\n",
+    dt_iop_colorspace_to_name(image_cst),
+    dt_iop_colorspace_to_name(dt_iop_color_picker_get_active_cst(module)),
+    darktable.lib->proxy.colorpicker.primary_sample->denoise ? "denoised " : "",
+    box[0], box[1], box[2], box[3]);
+
   dt_iop_roi_t roi_copy = (dt_iop_roi_t)
     {.x      = roi->x + box[0],
      .y      = roi->y + box[1],
@@ -902,13 +909,6 @@ static void _pixelpipe_picker_cl(const int devid,
 
   const dt_iop_order_iccprofile_info_t *const profile =
     dt_ioppr_get_pipe_current_profile_info(module, piece->pipe);
-
-  dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe picker",
-    piece->pipe, module, devid, roi, NULL, " %s -> %s, %sbox %i/%i -- %i/%i\n",
-    dt_iop_colorspace_to_name(image_cst),
-    dt_iop_colorspace_to_name(dt_iop_color_picker_get_active_cst(module)),
-    darktable.lib->proxy.colorpicker.primary_sample->denoise ? "denoised " : "",
-    box[0], box[1], box[2], box[3]);
 
   dt_color_picker_helper(dsc, pixel, &roi_copy, box,
                          darktable.lib->proxy.colorpicker.primary_sample->denoise,
@@ -960,7 +960,7 @@ static void _pixelpipe_pick_samples(dt_develop_t *dev,
        !dt_color_picker_box(module, roi_in, sample, PIXELPIPE_PICKER_INPUT, box))
     {
       // pixel input is in display profile, hence the sample output will be as well
-      dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe pick samples",
+      dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_PICKER, "pixelpipe pick samples",
         NULL, module, DT_DEVICE_NONE, roi_in, NULL, " %sbox %i/%i -- %i/%i\n",
         darktable.lib->proxy.colorpicker.primary_sample->denoise ? "denoised " : "",
         box[0], box[1], box[2], box[3]);
