@@ -151,14 +151,15 @@ static void _backtransform_box(const int num,
                             box ? htp * in[3] : 0.0f };
   dt_dev_distort_backtransform(dev, fbox, num);
 
-  out[0] = fbox[0] / wd;
-  out[1] = fbox[1] / ht;
+  out[0] = CLIP(fbox[0] / wd);
+  out[1] = CLIP(fbox[1] / ht);
   if(box)
   {
-    out[2] = fbox[2] / wd;
-    out[3] = fbox[3] / ht;
+    out[2] = CLIP(fbox[2] / wd);
+    out[3] = CLIP(fbox[3] / ht);
   }
 }
+
 static void _init_picker(dt_iop_color_picker_t *picker,
                          dt_iop_module_t *module,
                          const dt_iop_color_picker_flags_t flags,
@@ -227,9 +228,8 @@ static gboolean _color_picker_callback_button_press(GtkWidget *button,
       if(   self->pick_box[0] == 0.0f && self->pick_box[1] == 0.0f
          && self->pick_box[2] == 1.0f && self->pick_box[3] == 1.0f)
       {
-        dt_boundingbox_t area = { 0.01f, 0.01f, 0.99f, 0.99f };
-        _backtransform_box(2, area, self->pick_box);
-
+        dt_boundingbox_t reset = { 0.02f, 0.02f, 0.98f, 0.98f };
+        _backtransform_box(2, reset, self->pick_box);
       }
       dt_lib_colorpicker_set_box_area(darktable.lib, self->pick_box);
     }
