@@ -121,6 +121,9 @@ changes (where available).
   correct white balancing. (Some google pixel cameras for
   example). Requires re-reading exif metadata.
 
+- Improved efficiency of the quick access panel by allowing modules to
+  be reset and presets to be applied without opening the full module.
+
 ## Bug Fixes
 
 - Fix copy of multiple instances to ensure the proper order is applied
