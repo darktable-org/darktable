@@ -646,7 +646,7 @@ static void _dump_pipe_pfm_diff(
   const float *in = indata;
   const float *out = outdata;
 
-  DT_OMP_FOR_CLAUSE(collapse(2), roi_in, roi_out, mixed, in, out, fchannels)
+  DT_OMP_FOR(collapse(2))
   for(int row = 0; row < roi_out->height; row++)
   {
     for(int col = 0; col < roi_out->width; col++)
@@ -1395,7 +1395,7 @@ static gboolean _dev_pixelpipe_process_rec(
           pipe, module, DT_DEVICE_NONE, &roi_in, roi_out, "bpp=%lu\n", bpp);
         if(cp_width > 0)
         {
-          DT_OMP_FOR_CLAUSE(shared(pipe, roi_out, roi_in, output), bpp, cp_height, cp_width, in_x, in_y)
+          DT_OMP_FOR(shared(pipe, roi_out, roi_in, output))
           for(int j = 0; j < cp_height; j++)
             memcpy(((char *)*output) + (size_t)bpp * j * roi_out->width,
                    ((char *)pipe->input) + (size_t)bpp * (in_x + (in_y + j) * pipe->iwidth),

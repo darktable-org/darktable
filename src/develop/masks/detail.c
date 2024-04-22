@@ -111,7 +111,7 @@ void dt_masks_extend_border(float *const mask,
                             const int border)
 {
   if(border <= 0) return;
-  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(width, height, border), mask)
+  DT_OMP_FOR(dt_omp_sharedconst(width, height, border))
   for(size_t row = border; row < height - border; row++)
   {
     const size_t idx = row * width;
@@ -121,7 +121,7 @@ void dt_masks_extend_border(float *const mask,
       mask[idx + width - i - 1] = mask[idx + width - border -1];
     }
   }
-  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(width, height, border), mask)
+  DT_OMP_FOR(dt_omp_sharedconst(width, height, border))
   for(size_t col = 0; col < width; col++)
   {
     const float top = mask[border * width + MIN(width - border - 1, MAX(col, border))];
@@ -207,8 +207,7 @@ void dt_masks_blur(float *const restrict src,
   const size_t w2 = 2*width;
   const size_t w3 = 3*width;
   const size_t w4 = 4*width;
-  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(width, height, w1, w2, w3, w4),
-                    blurmat, src, out, clip, gain)
+  DT_OMP_FOR(dt_omp_sharedconst(width, height, w1, w2, w3, w4))
   for(size_t row = 4; row < height - 4; row++)
   {
     for(size_t col = 4; col < width - 4; col++)

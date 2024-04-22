@@ -179,7 +179,7 @@ static inline void process_reinhard(struct dt_iop_module_t *self, dt_dev_pixelpi
   float *out = (float *)ovoid;
   const int ch = piece->colors;
 
-  DT_OMP_FOR_CLAUSE(shared(in, out, data), ch, roi_out)
+  DT_OMP_FOR(shared(in, out, data))
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
     float *inp = in + ch * k;
@@ -230,7 +230,7 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   if(tmp_lwmax == -FLT_MAX)
   {
     lwmax = eps;
-    DT_OMP_FOR_CLAUSE(reduction(max : lwmax), roi_out, in, ch)
+    DT_OMP_FOR(reduction(max : lwmax))
     for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
     {
       const float *inp = in + ch * k;
@@ -255,7 +255,7 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   const float ldc = data->drago.max_light * 0.01 / log10f(lwmax + 1);
   const float bl = logf(fmaxf(eps, data->drago.bias)) / logf(0.5);
 
-  DT_OMP_FOR_CLAUSE(shared(in, out, lwmax), ch, bl, ldc, roi_out, eps)
+  DT_OMP_FOR(shared(in, out, lwmax))
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
     float *inp = in + ch * k;
@@ -277,7 +277,7 @@ static inline void process_filmic(struct dt_iop_module_t *self, dt_dev_pixelpipe
   float *out = (float *)ovoid;
   const int ch = piece->colors;
 
-  DT_OMP_FOR_CLAUSE(shared(in, out, data), ch, roi_out)
+  DT_OMP_FOR(shared(in, out, data))
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
     float *inp = in + ch * k;

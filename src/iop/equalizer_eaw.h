@@ -47,8 +47,7 @@ static void dt_iop_equalizer_wtf(float *const buf, float **weight_a, const int l
 
   size_t scratch_size;
   float *const restrict tmp_width_buf = dt_alloc_perthread_float(width, &scratch_size);
-  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(buf) shared(weight_a) private(ch),
-                    height, l, st, step, tmp_width_buf, scratch_size, wd, width)
+  DT_OMP_FOR(dt_omp_sharedconst(buf) shared(weight_a) private(ch))
   for(int j = 0; j < height; j++)
   {
     // rows
@@ -76,8 +75,7 @@ static void dt_iop_equalizer_wtf(float *const buf, float **weight_a, const int l
   dt_free_align(tmp_width_buf);
 
   float *const restrict tmp_height_buf = dt_alloc_perthread_float(height, &scratch_size);
-  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(buf) shared(weight_a) private(ch),
-                    height, l, st, step, tmp_height_buf, scratch_size, wd, width)
+  DT_OMP_FOR(dt_omp_sharedconst(buf) shared(weight_a) private(ch))
   for(int i = 0; i < width; i++)
   {
     // cols
@@ -113,7 +111,7 @@ static void dt_iop_equalizer_iwtf(float *buf, float **weight_a, const int l, con
 
   size_t scratch_size;
   float *const restrict tmp_height_buf = dt_alloc_perthread_float(height, &scratch_size);
-  DT_OMP_FOR_CLAUSE(shared(weight_a, buf), height, l, st, step, tmp_height_buf, scratch_size, wd, width)
+  DT_OMP_FOR(shared(weight_a, buf))
   for(int i = 0; i < width; i++)
   {
     // cols
@@ -140,7 +138,7 @@ static void dt_iop_equalizer_iwtf(float *buf, float **weight_a, const int l, con
   dt_free_align(tmp_height_buf);
 
   float *const restrict tmp_width_buf = dt_alloc_perthread_float(width, &scratch_size);
-  DT_OMP_FOR_CLAUSE(shared(weight_a, buf), height, l, st, step, tmp_width_buf, scratch_size, wd, width)
+  DT_OMP_FOR(shared(weight_a, buf))
   for(int j = 0; j < height; j++)
   {
     // rows

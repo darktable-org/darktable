@@ -255,7 +255,7 @@ icc_end:
       return 1;
     }
 
-    DT_OMP_FOR_CLAUSE(collapse(2), in_tmp, out_image, width, height)
+    DT_OMP_FOR(collapse(2))
     for(size_t y = 0; y < height; y++)
     {
       for(size_t x = 0; x < width; x++)
@@ -331,7 +331,7 @@ icc_end:
             return 1;
           }
 
-          DT_OMP_FOR_CLAUSE(collapse(2), raster_mask, out_mask, width, height)
+          DT_OMP_FOR(collapse(2))
           for(size_t y = 0; y < height; y++)
           {
             for(size_t x = 0; x < width; x++)

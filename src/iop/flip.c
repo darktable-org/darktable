@@ -224,7 +224,7 @@ gboolean distort_transform(dt_iop_module_t *self,
   // nothing to be done if parameters are set to neutral values (no flip or swap)
   if(d->orientation == 0) return TRUE;
 
-  DT_OMP_FOR_CLAUSE(if(points_count > 500), points_count, points, d, piece)
+  DT_OMP_FOR(if(points_count > 500))
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
     float x = points[i];
@@ -259,7 +259,7 @@ gboolean distort_backtransform(dt_iop_module_t *self,
   // nothing to be done if parameters are set to neutral values (no flip or swap)
   if(d->orientation == 0) return TRUE;
 
-  DT_OMP_FOR_CLAUSE(if(points_count > 500), points_count, points, d, piece)
+  DT_OMP_FOR(if(points_count > 500))
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
     float x, y;

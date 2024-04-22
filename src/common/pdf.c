@@ -797,7 +797,7 @@ float * read_ppm(const char * filename, int * wd, int * ht)
       return NULL;
     }
     // and transform it into 0..1 range
-    DT_OMP_FOR_CLAUSE(shared(image, tmp, width, height, max))
+    DT_OMP_FOR(shared(image, tmp, width, height, max))
     for(int i = 0; i < width * height * 3; i++)
       image[i] = (float)tmp[i] / max;
     free(tmp);
@@ -816,11 +816,11 @@ float * read_ppm(const char * filename, int * wd, int * ht)
       return NULL;
     }
     // swap byte order
-    DT_OMP_FOR_CLAUSE(shared(tmp, width, height))
+    DT_OMP_FOR(shared(tmp, width, height))
     for(int k = 0; k < 3 * width * height; k++)
       tmp[k] = ((tmp[k] & 0xff) << 8) | (tmp[k] >> 8);
     // and transform it into 0..1 range
-    DT_OMP_FOR_CLAUSE(shared(image, tmp, max, width, height))
+    DT_OMP_FOR(shared(image, tmp, max, width, height))
     for(int i = 0; i < width * height * 3; i++)
       image[i] = (float)tmp[i] / max;
     free(tmp);
@@ -874,7 +874,7 @@ int main(int argc, char *argv[])
       exit(1);
     }
 
-    DT_OMP_FOR_CLAUSE(shared(image, data, width, height))
+    DT_OMP_FOR(shared(image, data, width, height))
     for(int i = 0; i < width * height * 3; i++)
       data[i] = CLIP(image[i]) * 65535;
 

@@ -1104,8 +1104,7 @@ static void _process_lf(dt_iop_module_t *self,
       size_t padded_bufsize;
       float *const buf = dt_alloc_perthread_float(bufsize, &padded_bufsize);
 
-      DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(buf) shared(modifier),
-                        padded_bufsize, ch, ch_width, d, interpolation, ivoid, mask_display, ovoid, roi_in, roi_out)
+      DT_OMP_FOR(dt_omp_sharedconst(buf) shared(modifier))
       for(int y = 0; y < roi_out->height; y++)
       {
         float *bufptr = (float*)dt_get_perthread(buf, padded_bufsize);
@@ -1171,7 +1170,7 @@ static void _process_lf(dt_iop_module_t *self,
 
     if(modflags & LF_MODIFY_VIGNETTING)
     {
-      DT_OMP_FOR_CLAUSE(shared(modifier), ch, pixelformat, roi_out, ovoid)
+      DT_OMP_FOR(shared(modifier))
       for(int y = 0; y < roi_out->height; y++)
       {
         /* Colour correction: vignetting */
@@ -1193,7 +1192,7 @@ static void _process_lf(dt_iop_module_t *self,
 
     if(modflags & LF_MODIFY_VIGNETTING)
     {
-      DT_OMP_FOR_CLAUSE(shared(buf, modifier), ch, pixelformat, roi_in)
+      DT_OMP_FOR(shared(buf, modifier))
       for(int y = 0; y < roi_in->height; y++)
       {
         /* Colour correction: vignetting */
@@ -1215,8 +1214,7 @@ static void _process_lf(dt_iop_module_t *self,
       size_t padded_buf2size;
       float *const buf2 = dt_alloc_perthread_float(buf2size, &padded_buf2size);
 
-      DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(buf2) shared(buf, modifier), 
-                        padded_buf2size, ch, ch_width, d, interpolation, mask_display, ovoid, roi_in, roi_out)
+      DT_OMP_FOR(dt_omp_sharedconst(buf2) shared(buf, modifier))
       for(int y = 0; y < roi_out->height; y++)
       {
         float *buf2ptr = (float*)dt_get_perthread(buf2, padded_buf2size);
@@ -1386,8 +1384,7 @@ static int _process_cl_lf(struct dt_iop_module_t *self,
                    | LF_MODIFY_GEOMETRY
                    | LF_MODIFY_SCALE))
     {
-      DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(raw_monochrome) shared(tmpbuf, d, modifier),
-                        tmpbufwidth, roi_out)
+      DT_OMP_FOR(dt_omp_sharedconst(raw_monochrome) shared(tmpbuf, d, modifier))
       for(int y = 0; y < roi_out->height; y++)
       {
         float *pi = tmpbuf + (size_t)y * tmpbufwidth;
@@ -1419,7 +1416,7 @@ static int _process_cl_lf(struct dt_iop_module_t *self,
 
     if(modflags & LF_MODIFY_VIGNETTING)
     {
-      DT_OMP_FOR_CLAUSE(shared(tmpbuf, modifier, d), ch, pixelformat, roi_out)
+      DT_OMP_FOR(shared(tmpbuf, modifier, d))
       for(int y = 0; y < roi_out->height; y++)
       {
         /* Colour correction: vignetting */
@@ -1459,7 +1456,7 @@ static int _process_cl_lf(struct dt_iop_module_t *self,
 
     if(modflags & LF_MODIFY_VIGNETTING)
     {
-      DT_OMP_FOR_CLAUSE(shared(tmpbuf, modifier, d), ch, pixelformat, roi_in)
+      DT_OMP_FOR(shared(tmpbuf, modifier, d))
       for(int y = 0; y < roi_in->height; y++)
       {
         /* Colour correction: vignetting */
@@ -1500,8 +1497,7 @@ static int _process_cl_lf(struct dt_iop_module_t *self,
                    | LF_MODIFY_GEOMETRY
                    | LF_MODIFY_SCALE))
     {
-      DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(raw_monochrome) shared(tmpbuf, d, modifier),
-                        tmpbufwidth, roi_out)
+      DT_OMP_FOR(dt_omp_sharedconst(raw_monochrome) shared(tmpbuf, d, modifier))
       for(int y = 0; y < roi_out->height; y++)
       {
         float *pi = tmpbuf + (size_t)y * tmpbufwidth;
@@ -1580,7 +1576,7 @@ static gboolean _distort_transform_lf(dt_iop_module_t *self,
                  | LF_MODIFY_SCALE))
   {
 
-    DT_OMP_FOR_CLAUSE(if(points_count > 100), points_count, points, modifier)
+    DT_OMP_FOR(if(points_count > 100))
     for(size_t i = 0; i < points_count * 2; i += 2)
     {
       float DT_ALIGNED_ARRAY buf[6];
@@ -1621,7 +1617,7 @@ static gboolean _distort_backtransform_lf(dt_iop_module_t *self,
                  | LF_MODIFY_SCALE))
   {
 
-    DT_OMP_FOR_CLAUSE(if(points_count > 100), points_count, points, modifier)
+    DT_OMP_FOR(if(points_count > 100))
     for(size_t i = 0; i < points_count * 2; i += 2)
     {
       float DT_ALIGNED_ARRAY buf[6];
@@ -1681,8 +1677,7 @@ static void _distort_mask_lf(struct dt_iop_module_t *self,
   size_t padded_bufsize;
   float *const buf = dt_alloc_perthread_float(bufsize, &padded_bufsize);
 
-  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(buf) shared(modifier),
-                    padded_bufsize, d, in, interpolation, out, roi_in, roi_out)
+  DT_OMP_FOR(dt_omp_sharedconst(buf) shared(modifier))
   for(int y = 0; y < roi_out->height; y++)
   {
     float *bufptr = (float*)dt_get_perthread(buf, padded_bufsize);
@@ -2744,8 +2739,7 @@ static void _distort_mask_md(struct dt_iop_module_t *self,
   const struct dt_interpolation *interpolation =
     dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
 
-  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(inv_scale_md, w2, h2, r) collapse(2),
-                    roi_in, roi_out, d, in, out, interpolation)
+  DT_OMP_FOR(dt_omp_sharedconst(inv_scale_md, w2, h2, r) collapse(2))
   for(int y = 0; y < roi_out->height; y++)
   {
     for(int x = 0; x < roi_out->width; x++)
@@ -2799,7 +2793,7 @@ static void _process_md(struct dt_iop_module_t *self,
   // Correct vignetting
   if(d->modify_flags & DT_IOP_LENS_MODIFY_FLAG_VIGNETTING)
   {
-    DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(w2, h2, r) collapse(2), roi_in, buf, d)
+    DT_OMP_FOR(dt_omp_sharedconst(w2, h2, r) collapse(2))
     for(int y = 0; y < roi_in->height; y++)
     {
       for(int x = 0; x < roi_in->width; x++)
@@ -2820,8 +2814,7 @@ static void _process_md(struct dt_iop_module_t *self,
   float *out = ((float *) ovoid);
   // Correct distortion and/or chromatic aberration
 
-  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(inv_scale_md, w2, h2, r) collapse(2),
-                    roi_in, roi_out, buf, d, out, interpolation)
+  DT_OMP_FOR(dt_omp_sharedconst(inv_scale_md, w2, h2, r) collapse(2))
   for(int y = 0; y < roi_out->height; y++)
   {
     for(int x = 0; x < roi_out->width; x++)

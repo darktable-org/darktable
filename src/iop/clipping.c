@@ -513,8 +513,7 @@ gboolean distort_transform(dt_iop_module_t *self,
   if(d->k_apply == 1)
     keystone_get_matrix(k_space, kxa, kxb, kxc, kxd, kya, kyb, kyc, kyd, &ma, &mb, &md, &me, &mg, &mh);
 
-  DT_OMP_FOR_CLAUSE(if(points_count > 100), 
-                    points_count, points, d, factor, k_space, ma, mb, md, me, mg, mh, kxa, kya)
+  DT_OMP_FOR(if(points_count > 100))
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
     float pi[2], po[2];
@@ -653,8 +652,7 @@ void distort_mask(struct dt_iop_module_t *self,
     if(d->k_apply == 1)
       keystone_get_matrix(k_space, kxa, kxb, kxc, kxd, kya, kyb, kyc, kyd, &ma, &mb, &md, &me, &mg, &mh);
 
-    DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(k_space) shared(d, interpolation, ma, mb, md, me, mg, mh), 
-                      in, kxa, kya, out, roi_in, roi_out)
+    DT_OMP_FOR(dt_omp_sharedconst(k_space) shared(d, interpolation, ma, mb, md, me, mg, mh))
     // (slow) point-by-point transformation.
     // TODO: optimize with scanlines and linear steps between?
     for(int j = 0; j < roi_out->height; j++)
@@ -1026,8 +1024,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     if(d->k_apply == 1)
       keystone_get_matrix(k_space, kxa, kxb, kxc, kxd, kya, kyb, kyc, kyd, &ma, &mb, &md, &me, &mg, &mh);
 
-    DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(k_space) shared(d, interpolation, ma, mb, md, me, mg, mh), 
-                      ch, ch_width, ivoid, kxa, kya, ovoid, roi_in, roi_out)
+    DT_OMP_FOR(dt_omp_sharedconst(k_space) shared(d, interpolation, ma, mb, md, me, mg, mh))
     // (slow) point-by-point transformation.
     // TODO: optimize with scanlines and linear steps between?
     for(int j = 0; j < roi_out->height; j++)

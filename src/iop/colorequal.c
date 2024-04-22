@@ -872,9 +872,7 @@ void process(struct dt_iop_module_t *self,
 
   // STEP 3 : carry-on with conversion from LUV to HSB
   float B_norm = NORM_MIN;
-  DT_OMP_FOR_CLAUSE(reduction(max: B_norm),
-                    owidth, oheight, in, out, UV, tmp, corrections, 
-                    b_corrections, saturation, d, white, gradient_amp)
+  DT_OMP_FOR(reduction(max: B_norm))
   for(int row = 0; row < oheight; row++)
   {
     for(int col = 0; col < owidth; col++)
@@ -1402,7 +1400,7 @@ static void _init_graph_backgrounds(dt_iop_colorequal_gui_data_t *g,
     g->b_surface[c] = cairo_image_surface_create_for_data(g->b_data[c], CAIRO_FORMAT_RGB24, gwidth, gheight, stride);
   }
 
-  DT_OMP_FOR_CLAUSE(collapse(2), gheight, gwidth, stride, g, gamut_LUT, max_saturation, graph_width, graph_height)
+  DT_OMP_FOR(collapse(2))
   for(int i = 0; i < gheight; i++)
   {
     for(int j = 0; j < gwidth; j++)

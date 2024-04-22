@@ -627,7 +627,7 @@ void process(struct dt_iop_module_t *self,
   { // non-mosaiced
     const size_t npixels = roi_out->width * (size_t)roi_out->height;
 
-    DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(d_coeffs), in, out, npixels)
+    DT_OMP_FOR(dt_omp_sharedconst(d_coeffs))
     for(size_t k = 0; k < 4*npixels; k += 4)
     {
       for_each_channel(c,aligned(in,out))

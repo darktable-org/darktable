@@ -440,8 +440,7 @@ static float ambient_light(const const_rgb_image img,
   size_t N_bright_hazy = 0;
   const float *const restrict data = dark_ch.data;
   const float *const restrict in_data = img.data;
-  DT_OMP_FOR_CLAUSE(reduction(vsum : A0) reduction(+ : N_bright_hazy), 
-                    crit_brightness, crit_haze_level, data, in_data, size)
+  DT_OMP_FOR(reduction(vsum : A0) reduction(+ : N_bright_hazy))
   for(size_t i = 0; i < size; i++)
   {
     const float *pixel_in = in_data + 4*i;

@@ -358,9 +358,7 @@ void nlmeans_denoise(
   float *const restrict scratch_buf = dt_alloc_perthread_float(scratch_size, &padded_scratch_size);
   const int chk_height = compute_slice_height(roi_out->height);
   const int chk_width = compute_slice_width(roi_out->width);
-  DT_OMP_FOR_CLAUSE(collapse(2),
-                    patches, num_patches, scratch_buf, padded_scratch_size, chk_height, chk_width, radius,
-                    params, roi_out, outbuf, inbuf, stride, center_norm, skip_blend, weight, invert)
+  DT_OMP_FOR(collapse(2))
   for(int chunk_top = 0 ; chunk_top < roi_out->height; chunk_top += chk_height)
   {
     for(int chunk_left = 0; chunk_left < roi_out->width; chunk_left += chk_width)

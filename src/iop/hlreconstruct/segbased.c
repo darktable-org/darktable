@@ -233,7 +233,7 @@ static void _initial_gradients(const size_t w,
                                float *distance,
                                float *gradient)
 {
-  DT_OMP_FOR_CLAUSE(collapse(2), luminance, gradient, distance, w, height)
+  DT_OMP_FOR(collapse(2))
   for(int row = HL_BORDER + 2; row < height - HL_BORDER - 2; row++)
   {
     for(int col = HL_BORDER + 2; col < w - HL_BORDER - 2; col++)
@@ -257,8 +257,7 @@ static float _segment_maxdistance(float *distance,
   const int ymax = MIN(seg->ymax[id]+3, seg->height - seg->border);
   float max_distance = 0.0f;
 
-  DT_OMP_FOR_CLAUSE(reduction(max : max_distance) collapse(2),
-                    distance, seg, xmin, xmax, ymin, ymax, id) \
+  DT_OMP_FOR(reduction(max : max_distance) collapse(2))
   for(int row = ymin; row < ymax; row++)
   {
     for(int col = xmin; col < xmax; col++)
@@ -303,7 +302,7 @@ static void _calc_distance_ring(const int xmin,
                                 dt_iop_segmentation_t *seg,
                                 const uint32_t id)
 {
-  DT_OMP_FOR_CLAUSE(collapse(2), distance, gradient, seg, xmin, xmax, ymin, ymax, dist, id, attenuate)
+  DT_OMP_FOR(collapse(2))
   for(int row = ymin; row < ymax; row++)
   {
     for(int col = xmin; col < xmax; col++)
@@ -378,7 +377,7 @@ static void _segment_gradients(float *distance,
       }
     }
   }
-  DT_OMP_FOR_CLAUSE(collapse(2), gradient, tmp, seg, xmin, xmax, ymin, ymax, id, strength)
+  DT_OMP_FOR(collapse(2))
   for(int row = ymin; row < ymax; row++)
   {
     for(int col = xmin; col < xmax; col++)
@@ -493,8 +492,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
   // populate the segmentation data, planes and refavg ...
   int32_t anyclipped = 0;
   gboolean has_allclipped = FALSE;
-  DT_OMP_FOR_CLAUSE(reduction( | : has_allclipped) reduction( + : anyclipped) collapse(2),
-                    tmpout, roi_in, plane, isegments, cube_coeffs, refavg, xtrans, pwidth, filters, xshifter, correction)
+  DT_OMP_FOR(reduction( | : has_allclipped) reduction( + : anyclipped) collapse(2))
   for(int row = 1; row < roi_in->height-1; row++)
   {
     for(int col = 1; col < roi_in->width - 1; col++)
@@ -570,7 +568,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
   for(int p = 0; p < HL_RGB_PLANES; p++)
     _calc_plane_candidates(plane[p], refavg[p], &isegments[p], cube_coeffs[p], data->candidating);
 
-  DT_OMP_FOR_CLAUSE(collapse(2), clips, input, tmpout, roi_in, xtrans, isegments, plane, filters, pwidth, correction)
+  DT_OMP_FOR(collapse(2))
   for(int row = 1; row < roi_in->height-1; row++)
   {
     for(int col = 1; col < roi_in->width-1; col++)
@@ -613,7 +611,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
     dt_segments_combine(segall, recovery_close);
     dt_iop_image_fill(gradient, fminf(1.0f, 5.0f * strength), pwidth, pheight, 1);
     dt_iop_image_fill(distance, 0.0f, pwidth, pheight, 1);
-    DT_OMP_FOR_CLAUSE(collapse(2), tmp, plane, distance, segall, icoeffs, pheight, pwidth)
+    DT_OMP_FOR(collapse(2))
     for(int row = segall->border; row < pheight - segall->border; row++)
     {
       for(int col = segall->border; col < pwidth - segall->border; col++)
@@ -661,7 +659,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
 
       const float dshift = 2.0f + (float)recovery_closing[recovery_mode];
 
-      DT_OMP_FOR_CLAUSE(collapse(2), clips, input, tmpout, roi_in, xtrans, gradient, distance, filters, pwidth, dshift, strength)
+      DT_OMP_FOR(collapse(2))
       for(int row = 1; row < roi_in->height - 1; row++)
       {
         for(int col = 1; col < roi_in->width - 1; col++)
@@ -680,7 +678,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
     }
   }
 
-  DT_OMP_FOR_CLAUSE(collapse(2), luminance, output, tmpout, roi_in, roi_out, xtrans, isegments, segall, gradient, filters, pwidth, vmode, strength, do_masking)
+  DT_OMP_FOR(collapse(2))
   for(int row = 0; row < roi_out->height; row++)
   {
     for(int col = 0; col < roi_out->width; col++)

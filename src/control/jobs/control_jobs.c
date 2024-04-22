@@ -448,7 +448,7 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai,
   const float photoncnt = 100.0f * aperture * exp / iso;
   float saturation = 1.0f;
   d->whitelevel = fmaxf(d->whitelevel, saturation * cal);
-  DT_OMP_FOR_CLAUSE(shared(d, saturation) collapse(2), ivoid, cal, photoncnt)
+  DT_OMP_FOR(shared(d, saturation) collapse(2))
   for(int y = 0; y < d->ht; y++)
     for(int x = 0; x < d->wd; x++)
     {

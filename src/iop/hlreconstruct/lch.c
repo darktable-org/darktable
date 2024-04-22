@@ -38,7 +38,7 @@ static void process_lch_bayer(dt_iop_module_t *self,
 {
   const uint32_t filters = piece->pipe->dsc.filters;
 
-  DT_OMP_FOR_CLAUSE(collapse(2), clip, filters, ivoid, ovoid, roi_out)
+  DT_OMP_FOR(collapse(2))
   for(int j = 0; j < roi_out->height; j++)
   {
     for(int i = 0; i < roi_out->width; i++)

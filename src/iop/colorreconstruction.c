@@ -384,7 +384,7 @@ static void dt_iop_colorreconstruct_bilateral_splat(dt_iop_colorreconstruct_bila
   if(!b) return;
 
   // splat into downsampled grid
-  DT_OMP_FOR_CLAUSE(shared(b, precedence, params), in, threshold)
+  DT_OMP_FOR(shared(b, precedence, params))
   for(int j = 0; j < b->height; j++)
   {
     size_t index = (size_t)4 * j * b->width;
@@ -448,7 +448,7 @@ static void blur_line(dt_iop_colorreconstruct_Lab_t *buf, const int offset1, con
   const float w0 = 6.f / 16.f;
   const float w1 = 4.f / 16.f;
   const float w2 = 1.f / 16.f;
-  DT_OMP_FOR_CLAUSE(shared(buf), offset1, offset2, offset3, size1, size2, size3, w0, w1, w2)
+  DT_OMP_FOR(shared(buf))
   for(int k = 0; k < size1; k++)
   {
     size_t index = (size_t)k * offset1;

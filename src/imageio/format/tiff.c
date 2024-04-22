@@ -172,7 +172,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
     layers = 1;    // let's now assume a grayscale
     if(d->bpp == 32 || (d->bpp == 16 && d->pixelformat))
     {
-      DT_OMP_FOR_CLAUSE(shared(layers) collapse(2), in_void, d)
+      DT_OMP_FOR(shared(layers) collapse(2))
       for(int y = 1; y < d->global.height - 1; ++y)
       {
         for(int x = 1; x < d->global.width - 1; ++x)
@@ -190,7 +190,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
     }
     else if(d->bpp == 16 && !d->pixelformat)
     {
-      DT_OMP_FOR_CLAUSE(shared(layers) collapse(2), in_void, d)
+      DT_OMP_FOR(shared(layers) collapse(2))
       for(int y = 1; y < d->global.height - 1; ++y)
       {
         for(int x = 1; x < d->global.width - 1; ++x)
@@ -207,7 +207,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
     }
     else // 8bpp
     {
-      DT_OMP_FOR_CLAUSE(shared(layers) collapse(2), in_void, d)
+      DT_OMP_FOR(shared(layers) collapse(2))
       for(int y = 1; y < d->global.height - 1; ++y)
       {
         for(int x = 1; x < d->global.width - 1; ++x)

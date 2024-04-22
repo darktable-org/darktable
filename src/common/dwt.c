@@ -114,7 +114,7 @@ static void dwt_decompose_vert(float *const restrict out, const float *const res
                                const size_t height, const size_t width, const size_t lev)
 {
   const size_t vscale = MIN(1 << lev, height-1);
-  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(in, out), height, width, vscale)
+  DT_OMP_FOR(dt_omp_sharedconst(in, out))
   for(int rowid = 0; rowid < height ; rowid++)
   {
     const size_t row = dwt_interleave_rows(rowid,height,vscale);
@@ -383,7 +383,7 @@ static void dwt_denoise_vert_1ch(
     const size_t lev)
 {
   const int vscale = MIN(1 << lev, height);
-  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(in, out), height, width, vscale)
+  DT_OMP_FOR(dt_omp_sharedconst(in, out))
   for(int rowid = 0; rowid < height ; rowid++)
   {
     const int row = dwt_interleave_rows(rowid,height,vscale);
@@ -419,7 +419,7 @@ static void dwt_denoise_horiz_1ch(
     const int last)
 {
   const int hscale = MIN(1 << lev, width);
-  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(in, out, accum), height, width, hscale, thold, last)
+  DT_OMP_FOR(dt_omp_sharedconst(in, out, accum))
   for(int row = 0; row < height ; row++)
   {
     // perform a weighted sum of the current pixel with the ones 'scale' pixels to the left and right, using

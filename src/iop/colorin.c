@@ -803,7 +803,7 @@ static void _process_cmatrix_bm(struct dt_iop_module_t *self,
   const size_t npixels = (size_t)roi_out->height * roi_out->width;
   // dt_print(DT_DEBUG_ALWAYS, "Using cmatrix codepath\n");
   // only color matrix. use our optimized fast path!
-  DT_OMP_FOR_CLAUSE(shared(cmatrix, nmatrix, lmatrix), npixels, clipping, d, ivoid, ovoid)
+  DT_OMP_FOR(shared(cmatrix, nmatrix, lmatrix))
   for(int j = 0; j < npixels; j++)
   {
     const float *const restrict in = (const float *)ivoid + 4*j;

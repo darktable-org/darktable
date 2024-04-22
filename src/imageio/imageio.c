@@ -365,7 +365,7 @@ void dt_imageio_flip_buffers(char *out,
 {
   if(!orientation)
   {
-    DT_OMP_FOR_CLAUSE(shared(in, out), ht, wd, bpp, stride)
+    DT_OMP_FOR(shared(in, out))
     for(int j = 0; j < ht; j++)
       memcpy(out + (size_t)j * bpp * wd, in + (size_t)j * stride, bpp * wd);
     return;
@@ -389,7 +389,7 @@ void dt_imageio_flip_buffers(char *out,
     ii = (int)fwd - ii - 1;
     si = -si;
   }
-  DT_OMP_FOR_CLAUSE(shared(in, out, jj, ii, sj, si), wd, bpp, ht, stride)
+  DT_OMP_FOR(shared(in, out, jj, ii, sj, si))
   for(int j = 0; j < ht; j++)
   {
     char *out2 = out + (size_t)labs(sj) * jj + (size_t)labs(si) * ii + (size_t)sj * j;
@@ -418,7 +418,7 @@ void dt_imageio_flip_buffers_ui8_to_float(float *out,
   const float scale = 1.0f / (white - black);
   if(!orientation)
   {
-    DT_OMP_FOR_CLAUSE(shared(in, out), wd, scale, black, ht, ch, stride)
+    DT_OMP_FOR(shared(in, out))
     for(int j = 0; j < ht; j++)
       for(int i = 0; i < wd; i++)
         for(int k = 0; k < ch; k++)
@@ -445,7 +445,7 @@ void dt_imageio_flip_buffers_ui8_to_float(float *out,
     ii = (int)fwd - ii - 1;
     si = -si;
   }
-  DT_OMP_FOR_CLAUSE(shared(in, out, jj, ii, sj, si), wd, ch, scale, black, stride, ht)
+  DT_OMP_FOR(shared(in, out, jj, ii, sj, si))
   for(int j = 0; j < ht; j++)
   {
     float *out2 = out + (size_t)labs(sj) * jj + (size_t)labs(si) * ii + sj * j;

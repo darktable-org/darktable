@@ -970,7 +970,7 @@ static inline void display_luminance_mask(const float *const restrict in,
     ? roi_out->height
     : roi_in->height;
 
-  DT_OMP_FOR_CLAUSE(collapse(2), luminance, out, in, in_width, out_width, out_height, offset_x, offset_y, ch)
+  DT_OMP_FOR(collapse(2))
   for(size_t i = 0 ; i < out_height; ++i)
     for(size_t j = 0; j < out_width; ++j)
     {

@@ -29,7 +29,7 @@ static void lin_interpolate(
   const int colors = (filters == 9) ? 3 : 4;
 
 // border interpolate
-  DT_OMP_FOR_CLAUSE(shared(out), colors, filters, in, roi_in, roi_out, xtrans)
+  DT_OMP_FOR(shared(out))
   for(int row = 0; row < roi_out->height; row++)
     for(int col = 0; col < roi_out->width; col++)
     {
@@ -101,7 +101,7 @@ static void lin_interpolate(
       *ip = f;
     }
 
-  DT_OMP_FOR_CLAUSE(shared(out), colors, in, lookup, roi_in, roi_out, size)
+  DT_OMP_FOR(shared(out))
   for(int row = 1; row < roi_out->height - 1; row++)
   {
     float *buf = out + 4 * roi_out->width * row + 4;
@@ -244,8 +244,7 @@ static void vng_interpolate(
 
   for(int row = 2; row < height - 2; row++) /* Do VNG interpolation */
   {
-    DT_OMP_FOR_CLAUSE(shared(row, code, brow, out, filters4) private(ip),
-                      colors, pcol, prow, roi_in, width, xtrans)
+    DT_OMP_FOR(shared(row, code, brow, out, filters4) private(ip))
     for(int col = 2; col < width - 2; col++)
     {
       int g;
@@ -310,7 +309,7 @@ static void vng_interpolate(
   if(filters != 9 && !FILTERS_ARE_4BAYER(filters)) // x-trans or CYGM/RGBE
   {
 // for Bayer mix the two greens to make VNG4
-    DT_OMP_FOR_CLAUSE(shared(out), height, width)
+    DT_OMP_FOR(shared(out))
     for(int i = 0; i < height * width; i++) out[i * 4 + 1] = (out[i * 4 + 1] + out[i * 4 + 3]) / 2.0f;
   }
 }

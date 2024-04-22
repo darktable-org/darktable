@@ -296,7 +296,7 @@ static void kmeans(const float *col, const int width, const int height, const in
 
   const size_t npixels = (size_t)height * width;
   // find the extremes of a/b color channels
-  DT_OMP_FOR_CLAUSE(reduction(min: a_min, b_min) reduction(max: a_max, b_max), col, npixels)
+  DT_OMP_FOR(reduction(min: a_min, b_min) reduction(max: a_max, b_max))
   for(size_t k = 0; k < npixels; k++)
   {
     const float a = col[4 * k + 1];
@@ -490,7 +490,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
     const size_t npixels = (size_t)height * width;
 // first get delta L of equalized L minus original image L, scaled to fit into [0 .. 100]
-    DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(in, out, data, equalization), npixels)
+    DT_OMP_FOR(dt_omp_sharedconst(in, out, data, equalization))
     for(size_t k = 0; k < npixels * 4; k += 4)
     {
       const float L = in[k];

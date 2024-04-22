@@ -131,8 +131,7 @@ typedef unsigned int u_int;
 
 #define DT_OMP_SIMD(clauses) DT_OMP_PRAGMA(simd clauses)
 #define DT_OMP_DECLARE_SIMD(clauses) DT_OMP_PRAGMA(declare simd clauses)
-#define DT_OMP_FOR(...) DT_OMP_PRAGMA(parallel for default(firstprivate) schedule(static))
-#define DT_OMP_FOR_CLAUSE(clauses, ...) DT_OMP_PRAGMA(parallel for default(firstprivate) schedule(static) clauses)
+#define DT_OMP_FOR(clauses) DT_OMP_PRAGMA(parallel for default(firstprivate) schedule(static) clauses)
 #define DT_OMP_FOR_SIMD(clauses, ...) DT_OMP_PRAGMA(parallel for simd default(firstprivate) schedule(simd:static) clauses)
 
 #ifndef _RELEASE

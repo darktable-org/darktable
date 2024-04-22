@@ -38,7 +38,7 @@ static void pre_median_b(
   const int lim[5] = { 0, 1, 2, 1, 0 };
   for(int pass = 0; pass < num_passes; pass++)
   {
-    DT_OMP_FOR_CLAUSE(shared(out), filters, in, lim, roi, threshold)
+    DT_OMP_FOR(shared(out))
     for(int row = 3; row < roi->height - 3; row++)
     {
       float med[9];
@@ -104,7 +104,7 @@ static void color_smoothing(
         for(int j = 0; j < roi_out->height; j++)
           for(int i = 0; i < roi_out->width; i++, outp += 4) outp[3] = outp[c];
       }
-      DT_OMP_FOR_CLAUSE(shared(out, c), roi_out, width4)
+      DT_OMP_FOR(shared(out, c))
       for(int j = 1; j < roi_out->height - 1; j++)
       {
         float *outp = out + (size_t)4 * j * roi_out->width + 4;
@@ -164,7 +164,7 @@ static void green_equilibration_lavg(
 
   dt_iop_image_copy_by_size(out, in, width, height, 1);
 
-  DT_OMP_FOR_CLAUSE(shared(out, oi, oj) collapse(2), height, in, thr, width, maximum)
+  DT_OMP_FOR(shared(out, oi, oj) collapse(2))
   for(size_t j = oj; j < height - 2; j += 2)
   {
     for(size_t i = oi; i < width - 2; i += 2)
@@ -215,8 +215,7 @@ static void green_equilibration_favg(
   if((FC(oj + y, oi + x, filters) & 1) != 1) oi++;
   const int g2_offset = oi ? -1 : 1;
   dt_iop_image_copy_by_size(out, in, width, height, 1);
-  DT_OMP_FOR_CLAUSE(reduction(+ : sum1, sum2) shared(oi, oj) collapse(2),
-                    g2_offset, height, in, width)
+  DT_OMP_FOR(reduction(+ : sum1, sum2) shared(oi, oj) collapse(2))
   for(size_t j = oj; j < (height - 1); j += 2)
   {
     for(size_t i = oi; i < (width - 1 - g2_offset); i += 2)
@@ -231,7 +230,7 @@ static void green_equilibration_favg(
   else
     return;
 
-  DT_OMP_FOR_CLAUSE(shared(out, oi, oj, gr_ratio) collapse(2), g2_offset, height, in, width)
+  DT_OMP_FOR(shared(out, oi, oj, gr_ratio) collapse(2))
   for(int j = oj; j < (height - 1); j += 2)
   {
     for(int i = oi; i < (width - 1 - g2_offset); i += 2)

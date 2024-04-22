@@ -1194,7 +1194,7 @@ DT_OMP_PRAGMA(barrier)
   }
 
   writeout:
-  DT_OMP_FOR_CLAUSE(collapse(2), output, out, roi_in, roi_out, scaler)
+  DT_OMP_FOR(collapse(2))
   for(size_t row = 0; row < roi_out->height; row++)
   {
     for(size_t col = 0; col < roi_out->width; col++)

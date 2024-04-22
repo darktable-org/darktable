@@ -185,7 +185,7 @@ cairo_surface_t *cairo_surface_create_from_xyz_data(const float *const image, co
 {
   unsigned char *rgbbuf = (unsigned char *)malloc(sizeof(unsigned char) * height * width * 4);
 
-  DT_OMP_FOR_CLAUSE(shared(rgbbuf), height, image, width)
+  DT_OMP_FOR(shared(rgbbuf))
   for(int y = 0; y < height; y++)
   {
     const float *iter = image + y * width * 3;

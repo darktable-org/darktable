@@ -966,8 +966,7 @@ static void apply_round_stamp(const dt_liquify_warp_t *const restrict warp,
   // circle in quadrants and doing only the inside we have to calculate
   // hypotf only for PI / 16 = 0.196 of the stamp area.
   // We don't do octants to avoid false sharing of cache lines between threads.
-  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(center, warp, lookup_table, LOOKUP_OVERSAMPLE, global_map_extent),
-                    iradius, strength, abs_strength, table_size, global_width)
+  DT_OMP_FOR(dt_omp_sharedconst(center, warp, lookup_table, LOOKUP_OVERSAMPLE, global_map_extent))
   for(size_t y = 0; y <= iradius; y++)
   {
     const float complex y_i = y * I;
@@ -1322,8 +1321,7 @@ static gboolean _distort_xtransform(dt_iop_module_t *self,
 
     // apply distortion to all points (this is a simple displacement
     // given by a vector at this same point in the map)
-    DT_OMP_FOR_CLAUSE(if(points_count > 100),
-                      points_count, points, scale, extent, map, map_size, y_last, x_last)
+    DT_OMP_FOR(if(points_count > 100))
     for(size_t i = 0; i < points_count; i++)
     {
       float *px = &points[i*2];

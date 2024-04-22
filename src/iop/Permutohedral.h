@@ -682,7 +682,7 @@ public:
     }
 
     /* Rewrite the offsets in the replay structure from the above generated table. */
-    DT_OMP_FOR_CLAUSE(if(nData >= 100000), nData, replay, offset_remap)
+    DT_OMP_FOR(if(nData >= 100000))
     for(size_t i = 0; i < nData; i++)
     {
       if(replay[i].table > 0)

@@ -162,7 +162,7 @@ void dt_iop_image_copy(float *const __restrict__ out,
     const int nthreads = MIN(dt_get_num_threads(), parallel_imgop_maxthreads);
     // determine the number of 4-float vectors to be processed by each thread
     const size_t chunksize = (((nfloats + nthreads - 1) / nthreads) + 3) / 4;
-    DT_OMP_FOR_CLAUSE(num_threads(nthreads), inv, outv, nfloats, chunksize, nthreads)
+    DT_OMP_FOR(num_threads(nthreads))
     for(size_t chunk = 0; chunk < nthreads; chunk++)
     {
       const size_t limit = MIN(4*(chunk+1)*chunksize, nfloats);
@@ -219,7 +219,7 @@ void dt_iop_copy_image_roi(float *const __restrict__ out,
 
   // the RoI are inconsistant so we do a copy per location and fill by zero if
   // not available in RoI-in
-  DT_OMP_FOR_CLAUSE(collapse(2), out, in, roi_in, roi_out, dx, dy, ch)
+  DT_OMP_FOR(collapse(2))
   for(int row = 0; row < roi_out->height; row++)
   {
     for(int col = 0; col < roi_out->width; col++)
@@ -282,8 +282,7 @@ void dt_iop_image_fill(float *const buf,
     const size_t nthreads = MIN(16, dt_get_num_threads());
     // determine the number of 4-float vectors to be processed by each thread
     const size_t chunksize = (((nfloats + nthreads - 1) / nthreads) + 3) / 4;
-    DT_OMP_FOR_CLAUSE(num_threads(nthreads),
-                      buf, fill_value, nfloats, nthreads, chunksize)
+    DT_OMP_FOR(num_threads(nthreads))
     for(size_t chunk = 0; chunk < nthreads; chunk++)
     {
       size_t limit = MIN(4*(chunk+1)*chunksize, nfloats);

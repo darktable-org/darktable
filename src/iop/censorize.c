@@ -105,7 +105,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 
 static inline void make_noise(float *const output, const float noise, const size_t width, const size_t height)
 {
-  DT_OMP_FOR_CLAUSE(collapse(2), output, width, height, noise)
+  DT_OMP_FOR(collapse(2))
   for(size_t i = 0; i < height; i++)
     for(size_t j = 0; j < width; j++)
     {
