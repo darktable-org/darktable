@@ -1369,9 +1369,7 @@ void process_fusion(struct dt_iop_module_t *self,
     }
 
     // normalise both gaussian base and laplacians:
-#ifdef _OPENMP
-#pragma omp parallel for default(none) shared(comb, w, h, k) schedule(static)
-#endif
+    DT_OMP_FOR(shared(comb, w, h, k))
     for(size_t i = 0; i < (size_t)4 * w * h; i += 4)
       if(comb[k][i + 3] > 1e-8f)
         for(int c = 0; c < 3; c++) comb[k][i + c] /= comb[k][i + 3];
