@@ -50,8 +50,7 @@ static void _interpolate_and_mask(const float *const restrict input,
                                   const size_t height)
 {
   // Bilinear interpolation
-  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(input, interpolated, clipping_mask),
-                    width, height, clips, filters, wb)
+  DT_OMP_FOR(dt_omp_sharedconst(input, interpolated, clipping_mask))
   for(size_t i = 0; i < height; i++)
     for(size_t j = 0; j < width; j++)
     {
@@ -187,8 +186,7 @@ static void _remosaic_and_replace(const float *const restrict input,
                                   const size_t height)
 {
   // Take RGB ratios and norm, reconstruct RGB and remosaic the image
-  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(output, interpolated, input, clipping_mask),
-                    width, height, filters, wb)
+  DT_OMP_FOR(dt_omp_sharedconst(output, interpolated, input, clipping_mask))
   for(size_t i = 0; i < height; i++)
     for(size_t j = 0; j < width; j++)
     {

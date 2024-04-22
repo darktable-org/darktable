@@ -119,8 +119,7 @@ static void _guided_filter_tiling(color_image imgg,
   const size_t img_dimen = dt_round_size(mean.width, 16);
   size_t img_bak_sz;
   float *img_bak = dt_alloc_perthread_float(9*img_dimen, &img_bak_sz);
-  DT_OMP_FOR_CLAUSE(shared(img, imgg, mean, variance, img_bak) dt_omp_sharedconst(source),
-                    img_bak_sz, img_dimen, w, guide_weight)
+  DT_OMP_FOR(shared(img, imgg, mean, variance, img_bak) dt_omp_sharedconst(source))
   for(int j_imgg = source.lower; j_imgg < source.upper; j_imgg++)
   {
     int j = j_imgg - source.lower;
@@ -161,7 +160,7 @@ static void _guided_filter_tiling(color_image imgg,
   #define A_GREEN 1
   #define A_BLUE 2
   #define B 3
-  DT_OMP_FOR_CLAUSE(shared(mean, variance, a_b), size, eps)
+  DT_OMP_FOR(shared(mean, variance, a_b))
   for(size_t i = 0; i < size; i++)
   {
     const float *meanpx = _get_color_pixel(mean, i);
@@ -219,8 +218,7 @@ static void _guided_filter_tiling(color_image imgg,
 
   dt_box_mean(a_b.data, a_b.height, a_b.width, a_b.stride|BOXFILTER_KAHAN_SUM, w, 1);
 
-  DT_OMP_FOR_CLAUSE(shared(target, imgg, a_b, img_out) dt_omp_sharedconst(source),
-                    min, max, width, guide_weight)
+  DT_OMP_FOR(shared(target, imgg, a_b, img_out) dt_omp_sharedconst(source))
   for(int j_imgg = target.lower; j_imgg < target.upper; j_imgg++)
   {
     // index of the left most target pixel in the current row

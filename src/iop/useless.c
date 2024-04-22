@@ -396,7 +396,7 @@ void process(struct dt_iop_module_t *self,
     g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(mask_id));
 
 // iterate over all output pixels (same coordinates as input)
-  DT_OMP_FOR_CLAUSE(shared(d), scale, ivoid, ovoid, roi_in, roi_out, ch, mask)
+  DT_OMP_FOR(shared(d))
   for(int j = 0; j < roi_out->height; j++)
   {
     float *in = ((float *)ivoid)

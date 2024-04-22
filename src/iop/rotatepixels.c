@@ -297,8 +297,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
   const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
 
-  DT_OMP_FOR_CLAUSE(shared(piece, interpolation),
-                    ch, ch_width, ivoid, ovoid, roi_in, roi_out, scale)
+  DT_OMP_FOR(shared(piece, interpolation))
   // (slow) point-by-point transformation.
   // TODO: optimize with scanlines and linear steps between?
   for(int j = 0; j < roi_out->height; j++)

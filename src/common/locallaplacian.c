@@ -129,7 +129,7 @@ static inline void gauss_expand(
     const int wd,             // fine res
     const int ht)
 {
-  DT_OMP_FOR_CLAUSE(collapse(2), fine, input, wd, ht)
+  DT_OMP_FOR(collapse(2))
   for(int j=1;j<((ht-1)&~1);j++)  // even ht: two px boundary. odd ht: one px.
     for(int i=1;i<((wd-1)&~1);i++)
       fine[j*wd+i] = ll_expand_gaussian(input, i, j, wd, ht);
@@ -170,7 +170,7 @@ static inline void gauss_reduce(
   const size_t cw = (wd-1)/2+1, ch = (ht-1)/2+1;
   // DON'T parallelize the very smallest levels of the pyramid, as the threading overhead
   // is greater than the time needed to do it sequentially
-  DT_OMP_FOR_CLAUSE(if(ch*cw>2000), coarse, cw, ch, input, wd)
+  DT_OMP_FOR(if(ch*cw>2000))
   for(size_t j=1;j<ch-1;j++)
   {
     const float *base = input + 2*(j-1)*wd;
@@ -230,7 +230,7 @@ static inline float *ll_pad_input(
   if(b && b->mode == 2)
   { // pad by preview buffer
     // fill regular pixels:
-    DT_OMP_FOR_CLAUSE(shared(wd2, ht2) collapse(2), ht, input, max_supp, out, wd, stride)
+    DT_OMP_FOR(shared(wd2, ht2) collapse(2))
     for(int j=0;j<ht;j++) for(int i=0;i<wd;i++)
       out[(j+max_supp)**wd2+i+max_supp] = input[stride*(wd*j+i)] * 0.01f; // L -> [0,1]
 
@@ -254,26 +254,26 @@ static inline float *ll_pad_input(
       out[*wd2*j+i] = b->pad0[b->pwd*py+px];\
     } } while(0)
     // left border
-    DT_OMP_FOR_CLAUSE(shared(wd2, ht2, b) collapse(2), input, max_supp, out, wd, stride)
+    DT_OMP_FOR(shared(wd2, ht2, b) collapse(2))
     for(int j=max_supp;j<*ht2-max_supp;j++) for(int i=0;i<max_supp;i++)
       LL_FILL(input[stride*wd*(j-max_supp)]* 0.01f);
     // right border
-    DT_OMP_FOR_CLAUSE(shared(wd2, ht2, b) collapse(2), input, max_supp, out, stride, wd)
+    DT_OMP_FOR(shared(wd2, ht2, b) collapse(2))
     for(int j=max_supp;j<*ht2-max_supp;j++) for(int i=wd+max_supp;i<*wd2;i++)
       LL_FILL(input[stride*((j-max_supp)*wd+wd-1)] * 0.01f);
     // top border
-    DT_OMP_FOR_CLAUSE(shared(wd2, ht2, b) collapse(2), max_supp, out)
+    DT_OMP_FOR(shared(wd2, ht2, b) collapse(2))
     for(int j=0;j<max_supp;j++) for(int i=0;i<*wd2;i++)
       LL_FILL(out[*wd2*max_supp+i]);
     // bottom border
-    DT_OMP_FOR_CLAUSE(shared(wd2, ht2, b) collapse(2), ht, max_supp, out)
+    DT_OMP_FOR(shared(wd2, ht2, b) collapse(2))
     for(int j=max_supp+ht;j<*ht2;j++) for(int i=0;i<*wd2;i++)
       LL_FILL(out[*wd2*(max_supp+ht-1)+i]);
 #undef LL_FILL
   }
   else
   { // pad by replication:
-    DT_OMP_FOR_CLAUSE(shared(wd2, ht2), input, ht, max_supp, out, wd, stride)
+    DT_OMP_FOR(shared(wd2, ht2))
     for(int j=0;j<ht;j++)
     {
       for(int i=0;i<max_supp;i++)
@@ -538,7 +538,7 @@ void local_laplacian_internal(
 
     gauss_expand(output[l+1], output[l], pw, ph);
     // go through all coefficients in the upsampled gauss buffer:
-    DT_OMP_FOR_CLAUSE(shared(w,h,buf,output,l,gamma,padded) collapse(2), ph, pw)
+    DT_OMP_FOR(shared(w,h,buf,output,l,gamma,padded) collapse(2))
     for(int j=0;j<ph;j++) for(int i=0;i<pw;i++)
     {
       const float v = padded[l][j*pw+i];
@@ -556,7 +556,7 @@ void local_laplacian_internal(
       //   output[l][j*pw+i] += ll_laplacian(padded[l+1], padded[l], i, j, pw, ph);
     }
   }
-  DT_OMP_FOR_CLAUSE(shared(w,output,buf) collapse(2), ht, input, max_supp, out, wd)
+  DT_OMP_FOR(shared(w,output,buf) collapse(2))
   for(int j=0;j<ht;j++) for(int i=0;i<wd;i++)
   {
     out[4*(j*wd+i)+0] = 100.0f * output[0][(j+max_supp)*w+max_supp+i]; // [0,1] -> L

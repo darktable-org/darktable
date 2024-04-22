@@ -28,7 +28,7 @@ static void passthrough_monochrome(
   assert(roi_in->width >= roi_out->width);
   assert(roi_in->height >= roi_out->height);
 
-  DT_OMP_FOR_CLAUSE(shared(out) collapse(2), in, roi_out, roi_in)
+  DT_OMP_FOR(shared(out) collapse(2))
   for(int j = 0; j < roi_out->height; j++)
   {
     for(int i = 0; i < roi_out->width; i++)
@@ -55,8 +55,7 @@ static void passthrough_color(
 
   if(filters != 9u)
   {
-    DT_OMP_FOR_CLAUSE(shared(out) collapse(2),
-                      in, roi_out, roi_in, filters)
+    DT_OMP_FOR(shared(out) collapse(2))
     for(int row = 0; row < (roi_out->height); row++)
     {
       for(int col = 0; col < (roi_out->width); col++)
@@ -72,8 +71,7 @@ static void passthrough_color(
   }
   else
   {
-    DT_OMP_FOR_CLAUSE(shared(out) collapse(2),
-                      in, roi_out, roi_in, xtrans)
+    DT_OMP_FOR(shared(out) collapse(2))
     for(int row = 0; row < (roi_out->height); row++)
     {
       for(int col = 0; col < (roi_out->width); col++)

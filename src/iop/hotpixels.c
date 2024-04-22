@@ -116,9 +116,7 @@ static int process_bayer(const dt_iop_hotpixels_data_t *data,
   const int widthx2 = width * 2;
   int fixed = 0;
 
-  DT_OMP_FOR_CLAUSE(reduction(+ : fixed),
-                    ivoid, markfixed, min_neighbours, multiplier, 
-                    ovoid, roi_out, threshold, width, widthx2)
+  DT_OMP_FOR(reduction(+ : fixed))
   for(int row = 2; row < roi_out->height - 2; row++)
   {
     const float *in = (float *)ivoid + (size_t)width * row + 2;
@@ -174,9 +172,7 @@ static int process_monochrome(const dt_iop_hotpixels_data_t *data,
   const int width = roi_out->width;
   int fixed = 0;
 
-  DT_OMP_FOR_CLAUSE(reduction(+ : fixed),
-                    ivoid, markfixed, min_neighbours, multiplier,
-                    ovoid, roi_out, threshold, width, planes)
+  DT_OMP_FOR(reduction(+ : fixed))
   for(int row = 1; row < roi_out->height - 1; row++)
   {
     const float *in = (float *)ivoid + (size_t)planes * (width * row + 1);
@@ -273,9 +269,7 @@ static int process_xtrans(const dt_iop_hotpixels_data_t *data,
   const int width = roi_out->width;
   int fixed = 0;
 
-  DT_OMP_FOR_CLAUSE(shared(offsets) reduction(+ : fixed),
-                    ivoid, markfixed, min_neighbours, multiplier,
-                    ovoid, roi_out, threshold, xtrans, width)
+  DT_OMP_FOR(shared(offsets) reduction(+ : fixed))
   for(int row = 2; row < roi_out->height - 2; row++)
   {
     const float *in = (float *)ivoid + (size_t)width * row + 2;

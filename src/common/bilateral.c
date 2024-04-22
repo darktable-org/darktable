@@ -410,7 +410,7 @@ void dt_bilateral_slice(const dt_bilateral_t *const b,
   const int height = b->height;
 
   if(!buf) return;
-  DT_OMP_FOR_CLAUSE(collapse(2), b, in, out, norm, ox, oy, oz, height, width, buf)
+  DT_OMP_FOR(collapse(2))
   for(int j = 0; j < height; j++)
   {
     for(int i = 0; i < width; i++)
@@ -452,7 +452,7 @@ void dt_bilateral_slice_to_output(const dt_bilateral_t *const b,
   const int height = b->height;
 
   if(!buf) return;
-  DT_OMP_FOR_CLAUSE(collapse(2), b, in, out, norm, oy, oz, ox, buf, width, height)
+  DT_OMP_FOR(collapse(2))
   for(int j = 0; j < height; j++)
   {
     for(int i = 0; i < width; i++)

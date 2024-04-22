@@ -1158,8 +1158,7 @@ static int _gradient_get_mask(const dt_iop_module_t *const module,
   float *points = dt_alloc_align_float((size_t)2 * gw * gh);
   if(points == NULL) return 0;
 
-  DT_OMP_FOR_CLAUSE(shared(points) collapse(2),
-                    grid, gh, gw, px, py)
+  DT_OMP_FOR(shared(points) collapse(2))
   for(int j = 0; j < gh; j++)
     for(int i = 0; i < gw; i++)
     {
@@ -1209,8 +1208,7 @@ static int _gradient_get_mask(const dt_iop_module_t *const module,
     return 0;
   }
 
-  DT_OMP_FOR_CLAUSE(shared(lut),
-                    lutsize, lutmax, hwscale, state, normf, compression)
+  DT_OMP_FOR(shared(lut))
   for(int n = 0; n < lutsize; n++)
   {
     const float distance = (n - lutmax) * hwscale;
@@ -1225,8 +1223,7 @@ static int _gradient_get_mask(const dt_iop_module_t *const module,
   float *clut = lut + lutmax;
 
 
-  DT_OMP_FOR_CLAUSE(shared(points, clut) collapse(2),
-                    gh, gw, sinv, cosv, xoffset, yoffset, hwscale, ihwscale, curvature, compression)
+  DT_OMP_FOR(shared(points, clut) collapse(2))
   for(int j = 0; j < gh; j++)
   {
     for(int i = 0; i < gw; i++)
@@ -1316,8 +1313,7 @@ static int _gradient_get_mask_roi(const dt_iop_module_t *const module,
   float *points = dt_alloc_align_float((size_t)2 * gw * gh);
   if(points == NULL) return 0;
 
-  DT_OMP_FOR_CLAUSE(shared(points) collapse(2),
-                    iscale, gh, gw, py, px, grid)
+  DT_OMP_FOR(shared(points) collapse(2))
   for(int j = 0; j < gh; j++)
     for(int i = 0; i < gw; i++)
     {
@@ -1369,8 +1365,7 @@ static int _gradient_get_mask_roi(const dt_iop_module_t *const module,
     return 0;
   }
 
-  DT_OMP_FOR_CLAUSE(shared(lut),
-                    lutsize, lutmax, hwscale, state, normf, compression)
+  DT_OMP_FOR(shared(lut))
   for(int n = 0; n < lutsize; n++)
   {
     const float distance = (n - lutmax) * hwscale;
@@ -1384,8 +1379,7 @@ static int _gradient_get_mask_roi(const dt_iop_module_t *const module,
   // center lut around zero
   float *clut = lut + lutmax;
 
-  DT_OMP_FOR_CLAUSE(shared(points, clut) collapse(2),
-                    gh, gw, sinv, cosv, xoffset, yoffset, hwscale, ihwscale, curvature, compression)
+  DT_OMP_FOR(shared(points, clut) collapse(2))
   for(int j = 0; j < gh; j++)
   {
     for(int i = 0; i < gw; i++)

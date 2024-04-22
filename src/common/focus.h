@@ -45,7 +45,7 @@ static inline void _dt_focus_cdf22_wtf(uint8_t *buf, const int l, const int widt
   const int step = 1 << l;
   const int st = step / 2;
 
-  DT_OMP_FOR_CLAUSE(shared(buf), height, st, step, width, ch)
+  DT_OMP_FOR(shared(buf))
   for(int j = 0; j < height; j++)
   {
     // rows
@@ -63,7 +63,7 @@ static inline void _dt_focus_cdf22_wtf(uint8_t *buf, const int l, const int widt
     if(i < width) /*for(ch=0; ch<3; ch++)*/
       gbuf(buf, i, j) += _from_uint8(gbuf(buf, i - st, j)) / 2;
   }
-  DT_OMP_FOR_CLAUSE(shared(buf), height, st, step, width, ch)
+  DT_OMP_FOR(shared(buf))
   for(int i = 0; i < width; i++)
   {
     // cols

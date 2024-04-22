@@ -299,7 +299,7 @@ void eaw_dn_decompose(float *const restrict out, const float *const restrict in,
   _aligned_pixel sum_sq = { .v = { 0.0f } };
 
 #if !(defined(__apple_build_version__) && __apple_build_version__ < 11030000) //makes Xcode 11.3.1 compiler crash
-DT_OMP_FOR_CLAUSE(reduction(vsum: sum_sq), detail, filter, height, in, inv_sigma2, mult, boundary, out, width)
+DT_OMP_FOR(reduction(vsum: sum_sq))
 #endif
   for(int rowid = 0; rowid < height; rowid++)
   {

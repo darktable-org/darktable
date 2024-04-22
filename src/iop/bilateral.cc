@@ -242,7 +242,7 @@ void process(struct dt_iop_module_t *self,
     PermutohedralLattice<5, 4> lattice(width * height, dt_get_num_threads(), grid_points);
 
     // splat into the lattice
-    DT_OMP_FOR_CLAUSE(shared(lattice),	ivoid, height, width, sigma)
+    DT_OMP_FOR(shared(lattice))
     for(size_t j = 0; j < height; j++)
     {
       const float *in = (const float *)ivoid + j * width * 4;
@@ -264,7 +264,7 @@ void process(struct dt_iop_module_t *self,
 
     // slice from the lattice
     float *const out = (float*)ovoid;
-    DT_OMP_FOR_CLAUSE(shared(lattice), out, npixels)
+    DT_OMP_FOR(shared(lattice))
     for(size_t index = 0; index < npixels; index++)
     {
       dt_aligned_pixel_t val;

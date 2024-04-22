@@ -222,7 +222,7 @@ static void wavelet_denoise(const float *const restrict in, float *const restric
 
     // collect one of the R/G1/G2/B channels into a monochrome image, applying sqrt() to the values as a
     // variance-stabilizing transform
-    DT_OMP_FOR_CLAUSE(shared(c), in, fimg, roi, halfwidth)
+    DT_OMP_FOR(shared(c))
     for(int row = c & 1; row < roi->height; row += 2)
     {
       float *const restrict fimgp = fimg + (size_t)row / 2 * halfwidth;
@@ -238,7 +238,7 @@ static void wavelet_denoise(const float *const restrict in, float *const restric
 
     // distribute the denoised data back out to the original R/G1/G2/B channel, squaring the resulting values to
     // undo the original transform
-    DT_OMP_FOR_CLAUSE(shared(c), fimg, halfwidth, out, roi, size)
+    DT_OMP_FOR(shared(c))
     for(int row = c & 1; row < roi->height; row += 2)
     {
       const float *const restrict fimgp = fimg + (size_t)row / 2 * halfwidth;
@@ -338,8 +338,7 @@ static void wavelet_denoise_xtrans(const float *const restrict in, float *const 
     }
     const size_t nthreads = dt_get_num_threads();
     const size_t chunksize = (height + nthreads - 1) / nthreads;
-    DT_OMP_FOR_CLAUSE(shared(c) num_threads(nthreads),
-                      fimg, height, in, roi, size, width, xtrans, nthreads, chunksize)
+    DT_OMP_FOR(shared(c) num_threads(nthreads))
     for(size_t chunk = 0; chunk < nthreads; chunk++)
     {
       const size_t start = chunk * chunksize;
@@ -454,7 +453,7 @@ static void wavelet_denoise_xtrans(const float *const restrict in, float *const 
 
     // distribute the denoised data back out to the original R/G/B channel, squaring the resulting values to
     // undo the original transform
-    DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(out), height, fimg, roi, width, xtrans, c)
+    DT_OMP_FOR(dt_omp_sharedconst(out))
     for(int row = 0; row < height; row++)
     {
       const float *const restrict fimgp = fimg + (size_t)row * width;

@@ -64,7 +64,7 @@ void dt_iop_flip_and_zoom_8(const uint8_t *in,
   const int32_t half_pixel = .5f * scale;
   const int32_t offm = half_pixel * bpp * MIN(MIN(0, si), MIN(sj, si + sj));
   const int32_t offM = half_pixel * bpp * MAX(MAX(0, si), MAX(sj, si + sj));
-  DT_OMP_FOR_CLAUSE(shared(in, out, jj, ii, sj, si, iw, ih), bpp, half_pixel, ht, offM, offm, scale, wd)
+  DT_OMP_FOR(shared(in, out, jj, ii, sj, si, iw, ih))
   for(uint32_t j = 0; j < ht; j++)
   {
     uint8_t *out2 = out + bpp * wd * j;
@@ -258,7 +258,7 @@ void dt_iop_clip_and_zoom_mosaic_half_size(uint16_t *const out,
       clut[c][++clut[c][0]] = x + y * in_stride;
     }
 
-  DT_OMP_FOR_CLAUSE(shared(clut), filters, in, in_stride, out, out_stride, px_footprint, rggbx, rggby, roi_in, roi_out)
+  DT_OMP_FOR(shared(clut))
   for(int y = 0; y < roi_out->height; y++)
   {
     uint16_t *outc = out + out_stride * y;
@@ -579,7 +579,7 @@ void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f
   // how many pixels can be sampled inside that area
   const int samples = round(px_footprint);
 
-  DT_OMP_FOR_CLAUSE(shared(out), in, in_stride, out_stride, px_footprint, roi_in, roi_out, samples)
+  DT_OMP_FOR(shared(out))
   for(int y = 0; y < roi_out->height; y++)
   {
     float *outc = out + 4 * (out_stride * y);
@@ -729,7 +729,7 @@ void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in
   }
   const int rggbx = trggbx, rggby = trggby;
 
-  DT_OMP_FOR_CLAUSE(shared(out), in, in_stride, out_stride, px_footprint, rggbx, rggby, roi_in, roi_out, samples)
+  DT_OMP_FOR(shared(out))
   for(int y = 0; y < roi_out->height; y++)
   {
     float *outc = out + 4 * (out_stride * y);
@@ -901,7 +901,7 @@ void dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(float *out, const float *
   // fractional pixel offset of top/left of pattern nor oversampling
   // by non-integer number of samples.
 
-  DT_OMP_FOR_CLAUSE(shared(out), in, in_stride, out_stride, px_footprint, roi_in, roi_out, samples, xtrans)
+  DT_OMP_FOR(shared(out))
   for(int y = 0; y < roi_out->height; y++)
   {
     float *outc = out + 4 * (out_stride * y);

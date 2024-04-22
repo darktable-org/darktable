@@ -95,7 +95,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // PASS1: Get a luminance map of image...
   float *luminance = (float *)malloc(sizeof(float) * ((size_t)roi_out->width * roi_out->height));
 // double lsmax=0.0,lsmin=1.0;
-  DT_OMP_FOR_CLAUSE(shared(luminance), ch, ivoid, roi_out)
+  DT_OMP_FOR(shared(luminance))
   for(int j = 0; j < roi_out->height; j++)
   {
     float *in = (float *)ivoid + (size_t)j * roi_out->width * ch;
@@ -122,8 +122,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   float *const restrict dest_buf = dt_alloc_perthread_float(roi_out->width, &destbuf_size);
 
 // CLAHE
-  DT_OMP_FOR_CLAUSE(shared(luminance),
-                    ch, dest_buf, destbuf_size, ivoid, ovoid, rad, roi_in, roi_out, slope)
+  DT_OMP_FOR(shared(luminance))
   for(int j = 0; j < roi_out->height; j++)
   {
     int yMin = fmax(0, j - rad);

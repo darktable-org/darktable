@@ -123,8 +123,7 @@ static void _process_linear_opposed(
   if(mask)
   {
     gboolean anyclipped = FALSE;
-    DT_OMP_FOR_CLAUSE(reduction( | : anyclipped),
-                      clips, input, roi_in, mask, msize, mwidth) \
+    DT_OMP_FOR(reduction( | : anyclipped))
     for(size_t row = 1; row < roi_in->height -1; row++)
     {
       for(size_t col = 1; col < roi_in->width -1; col++)
@@ -151,7 +150,7 @@ static void _process_linear_opposed(
 
     if(anyclipped)
     {
-      DT_OMP_FOR_CLAUSE(collapse(2), mask, mwidth, mheight, msize)
+      DT_OMP_FOR(collapse(2))
       for(size_t row = 3; row < mheight - 3; row++)
       {
         for(size_t col = 3; col < mwidth - 3; col++)
@@ -163,7 +162,7 @@ static void _process_linear_opposed(
         }
       }
 
-      DT_OMP_FOR_CLAUSE(reduction(+ : sums, cnts), input, roi_in, clips, mask, msize, mwidth)
+      DT_OMP_FOR(reduction(+ : sums, cnts))
       for(size_t row = 3; row < roi_in->height - 3; row++)
       {
         for(size_t col = 3; col < roi_in->width - 3; col++)
@@ -185,7 +184,7 @@ static void _process_linear_opposed(
     }
     dt_free_align(mask);
   }
-  DT_OMP_FOR_CLAUSE(collapse(2), output, input, roi_in, roi_out, chrominance, clips)
+  DT_OMP_FOR(collapse(2))
   for(ssize_t row = 0; row < roi_out->height; row++)
   {
     for(ssize_t col = 0; col < roi_out->width; col++)
@@ -255,8 +254,7 @@ static float *_process_opposed(
     if(mask)
     {
       gboolean anyclipped = FALSE;
-      DT_OMP_FOR_CLAUSE(reduction( | : anyclipped) collapse(2),
-                        clips, input, roi_in, xtrans, mask, filters, msize, mwidth, mheight)
+      DT_OMP_FOR(reduction( | : anyclipped) collapse(2))
       for(int mrow = 1; mrow < mheight-1; mrow++)
       {
         for(int mcol = 1; mcol < mwidth-1; mcol++)
@@ -291,7 +289,7 @@ static float *_process_opposed(
          to get those locations.
          If there are no clipped locations we keep the chrominance correction at 0 but make it valid
         */
-        DT_OMP_FOR_CLAUSE(collapse(2), mask, mwidth, mheight, msize)
+        DT_OMP_FOR(collapse(2))
         for(size_t row = 3; row < mheight - 3; row++)
         {
           for(size_t col = 3; col < mwidth - 3; col++)
@@ -305,8 +303,7 @@ static float *_process_opposed(
 
         const dt_aligned_pixel_t lo_clips = { 0.2f * clips[0], 0.2f * clips[1], 0.2f * clips[2], 1.0f };
        /* After having the surrounding mask for each color channel we can calculate the chrominance corrections. */
-        DT_OMP_FOR_CLAUSE(reduction(+ : sums, cnts) collapse(2),
-                          input, roi_in, xtrans, clips, lo_clips, mask, filters, msize, mwidth, correction)
+        DT_OMP_FOR(reduction(+ : sums, cnts) collapse(2))
         for(size_t row = 3; row < roi_in->height - 3; row++)
         {
           for(size_t col = 3; col < roi_in->width - 3; col++)
@@ -350,7 +347,7 @@ static float *_process_opposed(
   float *tmpout = (keep) ? dt_alloc_align_float(roi_in->width * roi_in->height) : NULL;
   if(tmpout)
   {
-    DT_OMP_FOR_CLAUSE(collapse(2), clips, input, tmpout, roi_in, xtrans, chrominance, filters, correction)
+    DT_OMP_FOR(collapse(2))
     for(size_t row = 0; row < roi_in->height; row++)
     {
       for(size_t col = 0; col < roi_in->width; col++)
@@ -369,7 +366,7 @@ static float *_process_opposed(
     }
   }
 
-  DT_OMP_FOR_CLAUSE(collapse(2), output, input, tmpout, chrominance, clips, xtrans, roi_in, roi_out, filters, correction)
+  DT_OMP_FOR(collapse(2))
   for(size_t row = 0; row < roi_out->height; row++)
   {
     for(size_t col = 0; col < roi_out->width; col++)

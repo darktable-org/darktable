@@ -178,7 +178,7 @@ static inline void create_lens_kernel(float *const restrict buffer,
   const float eps = 1.f / (float)width;
   const float radius = (float)(width - 1) / 2.f - 1;
 
-  DT_OMP_FOR_CLAUSE(collapse(2), width, height, buffer, n, m, k, rotation, eps, radius)
+  DT_OMP_FOR(collapse(2))
   for(size_t i = 0; i < height; i++)
     for(size_t j = 0; j < width; j++)
     {

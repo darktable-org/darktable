@@ -461,7 +461,7 @@ static void _write_highlights_raster(const gboolean israw,
                                      const dt_iop_roi_t *const roi_out,
                                      float *mask)
 {
-  DT_OMP_FOR_CLAUSE(collapse(2), output, input, roi_in, roi_out, mask, israw)
+  DT_OMP_FOR(collapse(2))
   for(ssize_t row = 0; row < roi_out->height; row++)
   {
     for(ssize_t col = 0; col < roi_out->width; col++)

@@ -3200,8 +3200,7 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module,
       const int yymin = MAX(ymin, 0);
       const int yymax = MIN(ymax, height - 1);
 
-      DT_OMP_FOR_CLAUSE(shared(buffer) num_threads(MIN(8, dt_get_num_threads())),
-                        xxmin, xxmax, yymin, yymax, width)
+      DT_OMP_FOR(shared(buffer) num_threads(MIN(8, dt_get_num_threads())))
       for(int yy = yymin; yy <= yymax; yy++)
       {
         int state = 0;
@@ -3284,8 +3283,7 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module,
       }
     }
 
-    DT_OMP_FOR_CLAUSE(shared(buffer, dpoints),
-                      width, height, dindex)
+    DT_OMP_FOR(shared(buffer, dpoints))
     for(int n = 0; n < dindex; n += 4)
       _path_falloff_roi(buffer, dpoints + n, dpoints + n + 2, width, height);
 

@@ -1107,7 +1107,7 @@ static int _circle_get_mask(const dt_iop_module_t *const restrict module,
 
   const float pos_x = *posx;
   const float pos_y = *posy;
-  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(points, pos_x, pos_y) if(h*w > 50000) num_threads(MIN(dt_get_num_threads(), (h*w)/20000)), h, w)
+  DT_OMP_FOR(dt_omp_sharedconst(points, pos_x, pos_y) if(h*w > 50000) num_threads(MIN(dt_get_num_threads(), (h*w)/20000)))
   for(int i = 0; i < h; i++)
   {
     float *const restrict p = points + 2 * i * w;
@@ -1229,8 +1229,7 @@ static int _circle_get_mask_roi(const dt_iop_module_t *const restrict module,
   float *const restrict circ = dt_alloc_align_float(circpts * 2);
   if(circ == NULL) return 0;
 
-  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(circ) if(circpts/8 > 1000),
-                    circpts, centerx, centery, total)
+  DT_OMP_FOR(dt_omp_sharedconst(circ) if(circpts/8 > 1000))
   for(int n = 0; n < circpts / 8; n++)
   {
     const float phi = (2.0f * M_PI * n) / circpts;
@@ -1320,8 +1319,7 @@ static int _circle_get_mask_roi(const dt_iop_module_t *const restrict module,
   if(points == NULL) return 0;
 
   // we populate the grid points in module coordinates
-  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(points) collapse(2) if(bbw*bbh > 50000),
-                    iscale, bbxm, bbym, bbXM, bbYM, bbw, px, py, grid)
+  DT_OMP_FOR(dt_omp_sharedconst(points) collapse(2) if(bbw*bbh > 50000))
   for(int j = bbym; j <= bbYM; j++)
     for(int i = bbxm; i <= bbXM; i++)
     {
@@ -1348,8 +1346,7 @@ static int _circle_get_mask_roi(const dt_iop_module_t *const restrict module,
 
   // we calculate the mask values at the transformed points;
   // for results: re-use the points array
-  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(points) collapse(2) if(bbh*bbw > 50000) num_threads(MIN(dt_get_num_threads(), (h*w)/20000)),
-                    bbh, bbw, centerx, centery, border2, total2)
+  DT_OMP_FOR(dt_omp_sharedconst(points) collapse(2) if(bbh*bbw > 50000) num_threads(MIN(dt_get_num_threads(), (h*w)/20000)))
   for(int j = 0; j < bbh; j++)
     for(int i = 0; i < bbw; i++)
     {
@@ -1373,8 +1370,7 @@ static int _circle_get_mask_roi(const dt_iop_module_t *const restrict module,
   // we only need to take the contents of our bounding box into account
   const int endx = MIN(w, bbXM * grid);
   const int endy = MIN(h, bbYM * grid);
-  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(buffer, points),
-                    grid, bbxm, bbym, bbw, endx, endy, w)
+  DT_OMP_FOR(dt_omp_sharedconst(buffer, points))
   for(int j = bbym * grid; j < endy; j++)
   {
     const int jj = j % grid;

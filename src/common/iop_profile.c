@@ -148,7 +148,7 @@ static void _transform_from_to_rgb_lab_lcms2(const float *const image_in,
 
   if(xform)
   {
-    DT_OMP_FOR_CLAUSE(shared(xform), image_in, image_out, width, height, ch)
+    DT_OMP_FOR(shared(xform))
     for(int y = 0; y < height; y++)
     {
       const float *const in = image_in + y * width * ch;
@@ -261,7 +261,7 @@ static void _transform_rgb_to_rgb_lcms2
 
   if(xform)
   {
-    DT_OMP_FOR_CLAUSE(shared(xform), image_in, image_out, width, height, ch)
+    DT_OMP_FOR(shared(xform))
     for(int y = 0; y < height; y++)
     {
       const float *const in = image_in + y * width * ch;
@@ -393,7 +393,7 @@ static inline void _apply_tonecurves(const float *const image_in,
      && (lut[1][0] >= 0.0f)
      && (lut[2][0] >= 0.0f))
   {
-    DT_OMP_FOR_CLAUSE(collapse(2), stride, image_in, image_out, lut, lutsize, unbounded_coeffs, ch)
+    DT_OMP_FOR(collapse(2))
     for(size_t k = 0; k < stride; k += ch)
     {
       for(int c = 0; c < 3; c++) // for_each_channel doesn't
@@ -410,7 +410,7 @@ static inline void _apply_tonecurves(const float *const image_in,
           || (lut[1][0] >= 0.0f)
           || (lut[2][0] >= 0.0f))
   {
-    DT_OMP_FOR_CLAUSE(collapse(2), stride, image_in, image_out, lut, lutsize, unbounded_coeffs, ch)
+    DT_OMP_FOR(collapse(2))
     for(size_t k = 0; k < stride; k += ch)
     {
       for(int c = 0; c < 3; c++) // for_each_channel doesn't
@@ -553,7 +553,7 @@ static inline void _transform_matrix_rgb
                                                   (profile_info_to->lut_out[1][0] >= 0.0f),
                                                   (profile_info_to->lut_out[2][0] >= 0.0f) };
 
-    DT_OMP_FOR_CLAUSE(shared(matrix), stride, image_in, image_out, profile_info_from, profile_info_to, run_lut_in, run_lut_out)
+    DT_OMP_FOR(shared(matrix))
     for(size_t y = 0; y < stride; y += 4)
     {
       const float *const restrict in = DT_IS_ALIGNED_PIXEL(image_in + y);
@@ -605,7 +605,7 @@ static inline void _transform_matrix_rgb
   }
   else
   {
-    DT_OMP_FOR_CLAUSE(shared(matrix), stride, image_in, image_out, profile_info_from, profile_info_to)
+    DT_OMP_FOR(shared(matrix))
     for(size_t y = 0; y < stride; y += 4)
     {
       const float *const restrict in = DT_IS_ALIGNED_PIXEL(image_in + y);

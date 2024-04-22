@@ -101,7 +101,7 @@ static inline void dt_focuspeaking(cairo_t *cr, const int buf_width, const int b
 
   // Compute the gradients magnitudes
   float *const restrict luma_ds =  dt_alloc_align_float((size_t)buf_width * buf_height);
-  DT_OMP_FOR_CLAUSE(collapse(2), luma, luma_ds, buf_height, buf_width)
+  DT_OMP_FOR(collapse(2))
   for(size_t i = 0; i < buf_height; ++i)
     for(size_t j = 0; j < buf_width; ++j)
     {
@@ -168,7 +168,7 @@ schedule(static) collapse(2) aligned(focus_peaking, luma_ds:64) reduction(+:sigm
   fast_surface_blur(luma_ds, buf_width, buf_height, 12, 0.00001f, 4, DT_GF_BLENDING_LINEAR, 1, 0.0f, exp2f(-8.0f), 1.0f);
 
   // Prepare the focus-peaking image overlay
-  DT_OMP_FOR_CLAUSE(collapse(2), focus_peaking, luma_ds, buf_height, buf_width, six_sigma, four_sigma, two_sigma)
+  DT_OMP_FOR(collapse(2))
   for(size_t i = 0; i < buf_height; ++i)
     for(size_t j = 0; j < buf_width; ++j)
     {

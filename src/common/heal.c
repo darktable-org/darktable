@@ -100,7 +100,7 @@ static void _heal_add(const float *const restrict red_buffer, const float *const
   // add one to ensure a padding pixel on the right
   const size_t res_stride = 4 * ((width + 1) / 2);
 
-  DT_OMP_FOR_CLAUSE(dt_omp_sharedconst(result_buffer), red_buffer, black_buffer, second_buffer, height, width, res_stride)
+  DT_OMP_FOR(dt_omp_sharedconst(result_buffer))
   for(size_t row = 0; row < height; row++)
   {
     const int parity = row & 1;
@@ -167,8 +167,7 @@ static float _heal_laplace_iteration(float *const restrict active_pixels,
   // left and right neighbors depend on which color the row starts with: if red, they are b(i)(j-1) and b(i)(j);
   // if black, they are b(i)(j) and b(i)(j+1).  All of the above holds when colors are swapped.
 #if !(defined(__apple_build_version__) && __apple_build_version__ < 11030000) //makes Xcode 11.3.1 compiler crash
-    DT_OMP_FOR_CLAUSE(reduction(vsum : err),
-                      active_pixels, neighbor_pixels, runs, num_runs, width, height, start_parity, w)
+    DT_OMP_FOR(reduction(vsum : err))
 #endif
     for(size_t i = 0; i < num_runs; i++)
     {

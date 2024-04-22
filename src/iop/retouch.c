@@ -3186,10 +3186,7 @@ static void rt_process_stats(struct dt_iop_module_t *self,
   const dt_iop_order_iccprofile_info_t *const work_profile =
     dt_ioppr_get_pipe_work_profile_info(piece->pipe);
 
-  DT_OMP_FOR_CLAUSE(reduction(+ : count, l_sum)
-                    reduction(max : l_max)
-                    reduction(min : l_min),
-                    ch, img_src, size, work_profile)
+  DT_OMP_FOR(reduction(+ : count, l_sum) reduction(max : l_max) reduction(min : l_min))
   for(int i = 0; i < size; i += ch)
   {
     dt_aligned_pixel_t Lab = { 0 };
@@ -3242,7 +3239,7 @@ static void rt_adjust_levels(dt_iop_module_t *self,
   const float tmp = (middle - mid) / delta;
   const float in_inv_gamma = powf(10, tmp);
 
-  DT_OMP_FOR_CLAUSE(shared(img_src), ch, in_inv_gamma, left, right, size, work_profile)
+  DT_OMP_FOR(shared(img_src))
   for(int i = 0; i < size; i += ch)
   {
     if(work_profile)
@@ -3394,7 +3391,7 @@ static void rt_build_scaled_mask(float *const mask,
   }
   dt_iop_image_fill(mask_tmp, 0.0f, roi_mask_scaled->width, roi_mask_scaled->height, 1);
 
-  DT_OMP_FOR_CLAUSE(shared(mask_tmp, roi_mask_scaled), mask, roi_in, roi_mask, x_to, y_to)
+  DT_OMP_FOR(shared(mask_tmp, roi_mask_scaled))
   for(int yy = roi_mask_scaled->y; yy < y_to; yy++)
   {
     const int mask_index = ((int)(yy / roi_in->scale)) - roi_mask->y;
@@ -3426,7 +3423,7 @@ static void rt_copy_image_masked(float *const img_src,
                                  dt_iop_roi_t *const roi_mask_scaled,
                                  const float opacity)
 {
-  DT_OMP_FOR_CLAUSE(shared(img_dest), img_src, mask_scaled, opacity, roi_dest, roi_mask_scaled)
+  DT_OMP_FOR(shared(img_dest))
   for(int yy = 0; yy < roi_mask_scaled->height; yy++)
   {
     const int mask_index = yy * roi_mask_scaled->width;

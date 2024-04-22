@@ -448,7 +448,7 @@ void process_display(struct dt_iop_module_t *self,
 
   dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
 
-  DT_OMP_FOR_CLAUSE(shared(d), normalize_C, ch, ivoid, ovoid, roi_out, display_channel)
+  DT_OMP_FOR(shared(d))
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
     float *in = (float *)ivoid + ch * k;
@@ -494,7 +494,7 @@ void process_v1(struct dt_iop_module_t *self,
   const int ch = piece->colors;
   const float normalize_C = 1.f / (128.0f * sqrtf(2.f));
 
-  DT_OMP_FOR_CLAUSE(shared(d), normalize_C, ch, ivoid, ovoid, roi_out)
+  DT_OMP_FOR(shared(d))
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
     float *in = (float *)ivoid + ch * k;
@@ -539,7 +539,7 @@ void process_v3(struct dt_iop_module_t *self,
 {
   dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
   const int ch = piece->colors;
-  DT_OMP_FOR_CLAUSE(shared(d), ch, ivoid, ovoid, roi_out)
+  DT_OMP_FOR(shared(d))
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
     float *in = (float *)ivoid + ch * k;
