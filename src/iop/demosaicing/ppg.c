@@ -132,7 +132,7 @@ static void demosaic_ppg(
 
 // for all pixels except the outermost row/column:
 // interpolate colors using out as input into float out array
-  DT_OMP_FOR(filters, out, roi_out)
+  DT_OMP_FOR()
   for(int j = 1; j < roi_out->height - 1; j++)
   {
     float *buf = out + (size_t)4 * roi_out->width * j + 4;

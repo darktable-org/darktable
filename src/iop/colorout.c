@@ -383,7 +383,7 @@ static void process_fastpath_apply_tonecurves(struct dt_iop_module_t *self,
     // do we have any lut to apply, or is this a linear profile?
     if((d->lut[0][0] >= 0.0f) && (d->lut[1][0] >= 0.0f) && (d->lut[2][0] >= 0.0f))
     { // apply profile
-      DT_OMP_FOR(d, out, npixels)
+      DT_OMP_FOR()
       for(size_t k = 0; k < 4 * npixels; k += 4)
       {
         for(int c = 0; c < 3; c++)
@@ -395,7 +395,7 @@ static void process_fastpath_apply_tonecurves(struct dt_iop_module_t *self,
     }
     else if((d->lut[0][0] >= 0.0f) || (d->lut[1][0] >= 0.0f) || (d->lut[2][0] >= 0.0f))
     { // apply profile
-      DT_OMP_FOR(d, out, npixels)
+      DT_OMP_FOR()
       for(size_t k = 0; k < 4 * npixels; k += 4)
       {
         for(int c = 0; c < 3; c++)
@@ -511,7 +511,7 @@ static void _transform_lcms(const dt_iop_colorout_data_t *const d,
   // rounded up to a multiple of the CPU's cache line size
   const size_t nthreads = dt_get_num_threads();
   const size_t chunksize = dt_cacheline_chunks(npixels, nthreads);
-  DT_OMP_FOR(in, out, npixels, chunksize, d, gamutcheck)
+  DT_OMP_FOR()
   for(size_t chunkstart = 0; chunkstart < npixels; chunkstart += chunksize)
   {
     size_t count = MIN(chunkstart + chunksize, npixels) - chunkstart;

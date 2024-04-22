@@ -445,7 +445,7 @@ void process(struct dt_iop_module_t *self,
   const size_t npixels = width * height;
   const float saturation = data->saturation;
 
-  DT_OMP_FOR(npixels, Labmax, Labmin, in, out, data, saturation)
+  DT_OMP_FOR()
   for(size_t k = 0; k < 4*npixels; k += 4)
   {
     // apply contrast and brightness curves to L channel
@@ -498,7 +498,7 @@ void commit_params(struct dt_iop_module_t *self,
     const float contrastm1sq = boost * (fabs(d->contrast) - 1.0f) * (fabs(d->contrast) - 1.0f);
     const float contrastscale = copysign(sqrtf(1.0f + contrastm1sq), d->contrast);
     float *const ctable = d->ctable;
-    DT_OMP_FOR(contrastm1sq, contrastscale, ctable)
+    DT_OMP_FOR()
     for(size_t k = 0; k < 0x10000; k++)
     {
       const float kx2m1 = 2.0f * (float)k / 0x10000 - 1.0f;
@@ -519,7 +519,7 @@ void commit_params(struct dt_iop_module_t *self,
   const float gamma = (d->brightness >= 0.0f) ? 1.0f / (1.0f + d->brightness) : (1.0f - d->brightness);
 
   float *const ltable = d->ltable;
-  DT_OMP_FOR(gamma, ltable)
+  DT_OMP_FOR()
   for(size_t k = 0; k < 0x10000; k++)
   {
     ltable[k] = 100.0f * powf((float)k / 0x10000, gamma);

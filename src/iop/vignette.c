@@ -779,8 +779,7 @@ void process(struct dt_iop_module_t *self,
   const float brightness = data->brightness;
   const float saturation = data->saturation;
 
-  DT_OMP_FOR(dscale, exp1, exp2, fscale, xscale, yscale, dither, ivoid, ovoid,
-             roi_center_scaled, roi_out, tea_states, brightness, saturation, unbound)
+  DT_OMP_FOR()
   for(int j = 0; j < roi_out->height; j++)
   {
     const size_t k = (size_t)4 * roi_out->width * j;

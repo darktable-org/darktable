@@ -242,7 +242,7 @@ gboolean dt_masks_calc_scharr_mask(dt_dev_detail_mask_t *details,
     tmp[idx] = sqrtf(val / 3.0f);
   }
 
-  DT_OMP_FOR(mask, tmp, width, height)
+  DT_OMP_FOR()
   for(size_t row = 1; row < height - 1; row++)
   {
     for(size_t col = 1; col < width - 1; col++)

@@ -1346,7 +1346,7 @@ void process(dt_iop_module_t *self,
       = { d->params.levels[0][0], d->params.levels[1][0], d->params.levels[2][0], 0.0f };
     const dt_aligned_pixel_t max_levels
       = { d->params.levels[0][2], d->params.levels[1][2], d->params.levels[2][2], 1.0f };
-    DT_OMP_FOR(npixels, in, out, work_profile, d, mult, min_levels, max_levels)
+    DT_OMP_FOR()
     for(int k = 0; k < 4U*npixels; k += 4)
     {
       for(int c = 0; c < 3; c++)
@@ -1381,7 +1381,7 @@ void process(dt_iop_module_t *self,
     const float min_level = levels[0];
     const float max_level = levels[2];
     static const dt_aligned_pixel_t zero = { 0.0f, 0.0f, 0.0f, 0.0f };
-    DT_OMP_FOR(npixels, in, out, work_profile, d, min_level, max_level, mult_ch, ch_levels, zero)
+    DT_OMP_FOR()
     for(int k = 0; k < 4U*npixels; k += 4)
     {
       const float lum = dt_rgb_norm(in+k, d->params.preserve_colors, work_profile);

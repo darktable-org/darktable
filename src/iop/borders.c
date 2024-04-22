@@ -428,7 +428,7 @@ void distort_mask(struct dt_iop_module_t *self,
   dt_iop_image_fill(out, 0.0f, roi_out->width, roi_out->height, 1);
 
   // blit image inside border and fill the output with previous processed out
-  DT_OMP_FOR(roi_in, roi_out, border_in_x, border_in_y, in, out)
+  DT_OMP_FOR()
   for(int j = 0; j < roi_in->height; j++)
   {
     float *outb = out + (size_t)(j + border_in_y) * roi_out->width + border_in_x;

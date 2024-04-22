@@ -729,7 +729,7 @@ public:
     // For each of d+1 axes,
     for(int j = 0; j <= D; j++)
     {
-      DT_OMP_FOR(j, oldValue, newValue, hashTableBase, hashTables, keyBase, zeroPtr)
+      DT_OMP_FOR()
       // For each vertex in the lattice,
       for(size_t i = 0; i < hashTables[0].size(); i++) // blur point i in dimension j
       {

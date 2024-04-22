@@ -708,11 +708,7 @@ void process(struct dt_iop_module_t *self,
   const size_t npixels = (size_t)roi_out->height * roi_out->width;
   const size_t out_width = roi_out->width;
 
-  DT_OMP_FOR(in, out, npixels, out_width, d, g, mask_display,
-             input_matrix_trans, output_matrix_trans, gamut_LUT,
-             global, highlights, shadows, midtones, chroma,
-             saturation, brilliance, checker_1, checker_2, L_white,
-             hue_rotation_matrix)
+  DT_OMP_FOR()
   for(size_t k  = 0; k < 4 * npixels; k += 4)
   {
     // clip pipeline RGB

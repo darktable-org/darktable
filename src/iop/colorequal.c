@@ -840,7 +840,7 @@ void process(struct dt_iop_module_t *self,
   const float gradient_amp = 4.0f * sqrtf(d->max_brightness) * sqrf(roi_out->scale);
 
   // STEP 1: convert image from RGB to darktable UCS LUV and calc saturation
-  DT_OMP_FOR(npixels, in, UV, tmp, saturation, input_matrix)
+  DT_OMP_FOR()
   for(size_t k = 0; k < npixels; k++)
   {
     const float *const restrict pix_in = DT_IS_ALIGNED_PIXEL(in + k * 4);
@@ -936,7 +936,7 @@ void process(struct dt_iop_module_t *self,
   if(mask_mode == 0)
   {
     // STEP 5: apply the corrections and convert back to RGB
-    DT_OMP_FOR(npixels, out, corrections, b_corrections, output_matrix, white, d)
+    DT_OMP_FOR()
     for(size_t k = 0; k < npixels; k++)
     {
       const float *const restrict corrections_out = corrections + k * 2;
@@ -963,7 +963,7 @@ void process(struct dt_iop_module_t *self,
   {
     const int mode = mask_mode - 1;
     B_norm = 1.0f / B_norm;
-    DT_OMP_FOR(npixels, out, b_corrections, corrections, saturation, tmp, mode, B_norm, sat_shift, bright_shift, d)
+    DT_OMP_FOR()
     for(size_t k = 0; k < npixels; k++)
     {
       float *const restrict pix_out = DT_IS_ALIGNED_PIXEL(out + k * 4);

@@ -666,7 +666,7 @@ void process(struct dt_iop_module_t *self,
   /* render surface on output */
   const float opacity = data->opacity / 100.0f;
 
-  DT_OMP_FOR(roi_out, in, out, image, opacity, ch)
+  DT_OMP_FOR()
   for(int j = 0; j < roi_out->height * roi_out->width; j++)
   {
     float *const i = in + ch*j;

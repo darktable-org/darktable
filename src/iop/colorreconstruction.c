@@ -522,7 +522,7 @@ static void dt_iop_colorreconstruct_bilateral_slice(const dt_iop_colorreconstruc
   const int ox = 1;
   const int oy = b->size_x;
   const int oz = b->size_y * b->size_x;
-  DT_OMP_FOR(b, in, out, oy, oz, rescale, roi, threshold, ox)
+  DT_OMP_FOR()
   for(int j = 0; j < roi->height; j++)
   {
     size_t index = (size_t)4 * j * roi->width;

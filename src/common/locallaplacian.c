@@ -115,7 +115,7 @@ static void pad_by_replication(
     const uint32_t h,		// total height, including top and bottom padding
     const uint32_t padding)	// number of lines of padding on each side
 {
-  DT_OMP_FOR(buf, padding, h, w)
+  DT_OMP_FOR()
   for(int j=0;j<padding;j++)
   {
     memcpy(buf + w*j, buf+padding*w, sizeof(float)*w);
@@ -350,7 +350,7 @@ void apply_curve(
     const float highlights,
     const float clarity)
 {
-  DT_OMP_FOR(clarity, g, h, highlights, in, out, padding, sigma, shadows, w)
+  DT_OMP_FOR()
   for(uint32_t j=padding;j<h-padding;j++)
   {
     const float *in2  = in  + j*w + padding;

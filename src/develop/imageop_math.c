@@ -318,7 +318,7 @@ void dt_iop_clip_and_zoom_mosaic_half_size_f(float *const out, const float *cons
   }
   const int rggbx = trggbx, rggby = trggby;
 
-  DT_OMP_FOR(in, in_stride, out, out_stride, px_footprint, rggbx, rggby, roi_in, roi_out, samples)
+  DT_OMP_FOR()
   for(int y = 0; y < roi_out->height; y++)
   {
     float *outc = out + out_stride * y;
@@ -494,7 +494,7 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans(uint16_t *const out, const ui
   // Use box filter of width px_footprint*2+1 centered on the current
   // sample (rounded to nearest input pixel) to anti-alias. Higher MP
   // images need larger filters to avoid artifacts.
-  DT_OMP_FOR(in, in_stride, out, out_stride, px_footprint, roi_in, roi_out, xtrans)
+  DT_OMP_FOR()
   for(int y = 0; y < roi_out->height; y++)
   {
     uint16_t *outc = out + out_stride * y;
@@ -534,7 +534,7 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans_f(float *const out,
                                                      const uint8_t (*const xtrans)[6])
 {
   const float px_footprint = 1.f / roi_out->scale;
-  DT_OMP_FOR(in, in_stride, out, out_stride, px_footprint, roi_in, roi_out, xtrans)
+  DT_OMP_FOR()
   for(int y = 0; y < roi_out->height; y++)
   {
     float *outc = out + out_stride * y;

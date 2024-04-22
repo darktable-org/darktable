@@ -171,8 +171,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float highlight_saturation = data->highlight_saturation;
   const float balance = data->balance;
 
-  DT_OMP_FOR(in, out, npixels, shadow_hue, shadow_saturation,
-             highlight_hue, highlight_saturation, balance, compress)
+  DT_OMP_FOR()
   for(int k = 0; k < 4 * npixels; k += 4)
   {
     float h, s, l;

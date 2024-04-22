@@ -48,7 +48,7 @@ void dt_iop_copy_image_with_border(float *out,
                                    const dt_iop_border_positions_t *binfo)
 {
   const int image_width = binfo->image_right - binfo->image_left;
-  DT_OMP_FOR(in, out, binfo, image_width)
+  DT_OMP_FOR()
   for(size_t row = 0; row < binfo->height; row++)
   {
     float *outrow = out + 4 * row * binfo->width;

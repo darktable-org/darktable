@@ -610,7 +610,7 @@ static void process_posterize(
   const float f = levels - 1;
   const float rf = 1.0f / f;
 
-  DT_OMP_FOR(npixels, in, out, f, rf)
+  DT_OMP_FOR()
   for(int k = 0; k < npixels; k++)
   {
     dt_aligned_pixel_t pixel;

@@ -329,7 +329,7 @@ void process(
       goto writeout;
     }
     // copy raw values before ca correction
-    DT_OMP_FOR(height, width, filters, in, oldraw, h_width)
+    DT_OMP_FOR()
     for(size_t row = 0; row < height; row++)
     {
       for(size_t col = (FC(row, 0, filters) & 1); col < width; col += 2)
@@ -1176,7 +1176,7 @@ DT_OMP_PRAGMA(barrier)
       dt_gaussian_blur(red, redfactor, redfactor);
       dt_gaussian_blur(blue, bluefactor, bluefactor);
 
-      DT_OMP_FOR(out, height, width, h_width, filters, redfactor, bluefactor)
+      DT_OMP_FOR()
       for(size_t row = 2; row < height - 2; row++)
       {
         const int firstCol = FC(row, 0, filters) & 1;

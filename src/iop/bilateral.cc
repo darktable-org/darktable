@@ -183,7 +183,7 @@ void process(struct dt_iop_module_t *self,
     for(int l = -rad; l <= rad; l++)
       for(int k = -rad; k <= rad; k++) m[l * wd + k] /= weight;
 
-    DT_OMP_FOR(ivoid, ovoid, rad, height, width, wd, m, isig2col)
+    DT_OMP_FOR()
     for(size_t j = 0; j < height; j++)
     {
       const float *in = ((float *)ivoid) + 4 * (j * width);

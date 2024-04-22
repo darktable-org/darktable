@@ -217,7 +217,7 @@ static inline void guide_laplacians(const float *const restrict high_freq,
   const float *const restrict LF = DT_IS_ALIGNED(low_freq);
   const float *const restrict HF = DT_IS_ALIGNED(high_freq);
 
-  DT_OMP_FOR(out, clipping_mask, HF, LF, height, width, mult, noise_level, salt, scale, radius_sq)
+  DT_OMP_FOR()
   for(size_t row = 0; row < height; ++row)
   {
     // interleave the order in which we process the rows so that we minimize cache misses
@@ -401,7 +401,7 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq,
   const float *const restrict LF = DT_IS_ALIGNED(low_freq);
   const float *const restrict HF = DT_IS_ALIGNED(high_freq);
 
-  DT_OMP_FOR(out, clipping_mask, HF, LF, height, width, mult, scale, first_order_factor)
+  DT_OMP_FOR()
   for(size_t row = 0; row < height; ++row)
   {
     // interleave the order in which we process the rows so that we minimize cache misses

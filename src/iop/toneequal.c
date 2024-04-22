@@ -791,7 +791,7 @@ static inline void apply_toneequalizer(const float *const restrict in,
   const int max_ev = 0;
   const float* restrict lut = d->correction_lut;
 
-  DT_OMP_FOR(in, out, num_elem, luminance, lut, min_ev, max_ev)
+  DT_OMP_FOR()
   for(size_t k = 0; k < num_elem; ++k)
   {
     // The radial-basis interpolation is valid in [-8; 0] EV and can
@@ -821,7 +821,7 @@ static inline void apply_toneequalizer(const float *const restrict in,
   const float sigma = d->smoothing;
   const float gauss_denom = gaussian_denom(sigma);
 
-  DT_OMP_FOR(in, out, num_elem, luminance, factors, centers_ops, gauss_denom)
+  DT_OMP_FOR()
   for(size_t k = 0; k < num_elem; ++k)
   {
     // build the correction for the current pixel

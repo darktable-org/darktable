@@ -821,9 +821,7 @@ void process(struct dt_iop_module_t *self,
 
   if(density > 0)
   {
-    DT_OMP_FOR(density, color, color1, zero, filter_hardness, cosv_hh_inv,
-               ivoid, ix, iy, offset, ovoid, height, width, sinv, length_inc,
-               length_base)
+    DT_OMP_FOR()
     for(int y = 0; y < height; y++)
     {
       const size_t k = (size_t)4 * width * y;
@@ -875,8 +873,7 @@ void process(struct dt_iop_module_t *self,
   }
   else
   {
-    DT_OMP_FOR(density, color, color1, zero, filter_hardness, cosv_hh_inv,
-               ivoid, ix, iy, offset, ovoid, height, width, sinv, length_inc, length_base)
+    DT_OMP_FOR()
     for(int y = 0; y < height; y++)
     {
       const size_t k = (size_t)4 * width * y;

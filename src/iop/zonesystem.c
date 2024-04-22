@@ -280,7 +280,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   float *const restrict out = (float *const)ovoid;
   const size_t npixels = (size_t)roi_out->width * roi_out->height;
 
-  DT_OMP_FOR(d, in, out, npixels, size)
+  DT_OMP_FOR()
   for(size_t k = 0; k < (size_t)4 * npixels; k += 4)
   {
     /* remap lightness into zonemap and apply lightness */

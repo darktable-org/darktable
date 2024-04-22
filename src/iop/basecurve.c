@@ -1112,7 +1112,7 @@ static inline void compute_features(
   // 2) saturation
   // 3) local contrast (handled in laplacian form later)
   const size_t npixels = (size_t)wd * ht;
-  DT_OMP_FOR(col, npixels)
+  DT_OMP_FOR()
   for(size_t x = 0; x < 4*npixels; x += 4)
   {
     const float max = MAX(col[x], MAX(col[x+1], col[x+2]));

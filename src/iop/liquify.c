@@ -1042,8 +1042,7 @@ static void _apply_global_distortion_map(struct dt_iop_module_t *module,
   const size_t min_y = MAX(roi_out->y, extent->y);
   const size_t max_y = MIN(roi_out->y + roi_out->height, extent->y + extent->height);
 
-  DT_OMP_FOR(in, out, map, ch, ch_width, extent, roi_in, roi_out,
-             min_y, max_y, interpolation)
+  DT_OMP_FOR()
   for(size_t y = min_y; y < max_y; y++)
   {
     const size_t min_x = MAX(roi_out->x, extent->x);
@@ -1147,7 +1146,7 @@ static float complex *create_global_distortion_map(const cairo_rectangle_int_t *
     // copy map into imap(inverted map).
     // imap [ n + dx(map[n]) , n + dy(map[n]) ] = -map[n]
 
-    DT_OMP_FOR(map, map_extent, imap)
+    DT_OMP_FOR()
     for(int y = 0; y <  map_extent->height; y++)
     {
       const float complex *const row = map + y * map_extent->width;
@@ -1171,7 +1170,7 @@ static float complex *create_global_distortion_map(const cairo_rectangle_int_t *
     // distortion mask is only used to compute a final displacement of
     // points.
 
-    DT_OMP_FOR(imap, map_extent)
+    DT_OMP_FOR()
     for(int y = 0; y <  map_extent->height; y++)
     {
       float complex *const row = imap + y * map_extent->width;

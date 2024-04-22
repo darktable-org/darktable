@@ -809,10 +809,7 @@ static inline void _loop_switch(const float *const restrict in,
   dt_colormatrix_t XYZ_to_RGB_trans;
   dt_colormatrix_transpose(XYZ_to_RGB_trans, XYZ_to_RGB);
 
-  DT_OMP_FOR(width, height, min_value, in, out, XYZ_to_RGB_trans,
-             RGB_to_XYZ_trans, RGB_to_LMS_trans, MIX_to_XYZ_trans,
-             illuminant, saturation, lightness, grey, p, gamut, clip,
-             apply_grey, kind, version)
+  DT_OMP_FOR()
   for(size_t k = 0; k < height * width * 4; k += 4)
   {
     // intermediate temp buffers

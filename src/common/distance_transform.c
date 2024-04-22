@@ -101,7 +101,7 @@ float dt_image_distance_transform(float *const src,
     case DT_DISTANCE_TRANSFORM_NONE:
       break;
     case DT_DISTANCE_TRANSFORM_MASK:
-      DT_OMP_FOR(src, out, clip, width, height)
+      DT_OMP_FOR()
       for(size_t i = 0; i < width * height; i++)
         out[i] = (src[i] < clip) ? 0.0f : DT_DISTANCE_TRANSFORM_MAX;
       break;

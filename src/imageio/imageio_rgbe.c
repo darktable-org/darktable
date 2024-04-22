@@ -477,7 +477,7 @@ dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img,
   fclose(f);
 
   // repair nan/inf etc
-  DT_OMP_FOR(npixels, mipbuf, rgbe_buf)
+  DT_OMP_FOR()
   for(size_t i = 0; i < npixels; i++)
   {
     dt_aligned_pixel_t pix = {0.0f, 0.0f, 0.0f, 0.0f};

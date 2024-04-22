@@ -358,7 +358,7 @@ static void _segment_gradients(float *distance,
 
   if(maxdist > 4.0f)
   {
-    DT_OMP_FOR(gradient, seg, tmp, xmin, xmax, ymin, ymax)
+    DT_OMP_FOR()
     for(size_t row = ymin; row < ymax; row++)
     {
       for(size_t col = xmin, s = (size_t)row*seg->width + col, d = (size_t)(row-ymin)*(xmax-xmin);
@@ -367,7 +367,7 @@ static void _segment_gradients(float *distance,
     }
 
     dt_box_mean(tmp, ymax-ymin, xmax-xmin, 1, MIN((int)maxdist, 15), 2);
-    DT_OMP_FOR(gradient, tmp, seg, xmin, xmax, ymin, ymax, id)
+    DT_OMP_FOR()
     for(size_t row = ymin; row < ymax; row++)
     {
       for(size_t col = xmin, v = row * seg->width + col, s = (row-ymin)*(xmax-xmin);
