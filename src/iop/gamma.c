@@ -139,8 +139,7 @@ static void _channel_display_false_color(const float *const restrict in,
   switch(channel & DT_DEV_PIXELPIPE_DISPLAY_ANY & ~DT_DEV_PIXELPIPE_DISPLAY_OUTPUT)
   {
     case DT_DEV_PIXELPIPE_DISPLAY_a:
-      DT_OMP_FOR_SIMD(aligned(in, out: 64) aligned(mask_color: 16),
-                      in, out, buffsize, alpha, mask_color)
+      DT_OMP_FOR_SIMD(aligned(in, out: 64) aligned(mask_color: 16))
       for(size_t j = 0; j < buffsize; j += 4)
       {
         dt_aligned_pixel_t xyz;

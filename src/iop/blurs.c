@@ -159,7 +159,7 @@ inline static void blur_2D_Bspline(const float *const restrict in, float *const 
 static inline void init_kernel(float *const restrict buffer, const size_t width, const size_t height)
 {
   // init an empty kernel with zeros
-  DT_OMP_FOR_SIMD(aligned(buffer:64), width, height, buffer) 
+  DT_OMP_FOR_SIMD(aligned(buffer:64))
   for(size_t k = 0; k < height * width; k++) buffer[k] = 0.f;
 }
 
@@ -221,7 +221,7 @@ static inline void create_motion_kernel(float *const restrict buffer,
   const float M[2][2] = { { cosf(corr_angle), -sinf(corr_angle) },
                           { sinf(corr_angle), cosf(corr_angle) } };
 
-  DT_OMP_FOR_SIMD(aligned(buffer:64), width, height, buffer, A, B, C, radius, offset, M, eps)
+  DT_OMP_FOR_SIMD(aligned(buffer:64))
   for(size_t i = 0; i < 8 * width; i++)
   {
     // Note : for better smoothness of the polynomial discretization,
@@ -316,7 +316,7 @@ static inline void build_gui_kernel(unsigned char *const buffer, const size_t wi
   }
 
   // Convert to Gtk/Cairo RGBA 8×4 bits
-  DT_OMP_FOR_SIMD(aligned(buffer, kernel_2:64), width, height, buffer, kernel_2) \
+  DT_OMP_FOR_SIMD(aligned(buffer, kernel_2:64))
   for(size_t k = 0; k < height * width; k++)
   {
     buffer[k * 4] = buffer[k * 4 + 1] = buffer[k * 4 + 2] = buffer[k * 4 + 3] = roundf(255.f * kernel_2[k]);
@@ -331,7 +331,7 @@ static inline float compute_norm(float *const buffer, const size_t width, const 
 {
   float norm = 0.f;
 
-  DT_OMP_FOR_SIMD(aligned(buffer:64) reduction(+:norm), width, height, buffer)
+  DT_OMP_FOR_SIMD(aligned(buffer:64) reduction(+:norm))
   for(size_t i = 0; i < width * height; i++)
   {
     norm += buffer[i];
@@ -343,7 +343,7 @@ static inline float compute_norm(float *const buffer, const size_t width, const 
 
 static inline void normalize(float *const buffer, const size_t width, const size_t height, const float norm)
 {
-  DT_OMP_FOR_SIMD(aligned(buffer:64), width, height, buffer, norm)
+  DT_OMP_FOR_SIMD(aligned(buffer:64))
   for(size_t i = 0; i < width * height; i++)
   {
     buffer[i] /= norm;
@@ -423,7 +423,7 @@ static void process_fft(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
   }
 
   // Write the image in the padded buffer
-  DT_OMP_FOR_SIMD(aligned(in, padded_in:64), padded_width, padded_height, roi_in, in, padded_in) \
+  DT_OMP_FOR_SIMD(aligned(in, padded_in:64))
   for(size_t i = 0; i < roi_in->height; i++)
     for(size_t j = 0; j < roi_in->width; j++)
     {
@@ -435,7 +435,7 @@ static void process_fft(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
   // Write the padding if needed
   if(padded_width > roi_in->width)
   {
-  DT_OMP_FOR_SIMD(aligned(in, padded_in:64), padded_width, padded_height, roi_in, in, padded_in)
+  DT_OMP_FOR_SIMD(aligned(in, padded_in:64))
   for(size_t i = 0; i < roi_in->height; i++)
     {
       const size_t index_in = (i * (roi_in->width - 1)) * 4;
@@ -446,7 +446,7 @@ static void process_fft(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
 
   if(padded_height > roi_in->height)
   {
-  DT_OMP_FOR_SIMD(aligned(in, padded_in:64), padded_width, padded_height, roi_in, in, padded_in)
+  DT_OMP_FOR_SIMD(aligned(in, padded_in:64))
   for(size_t j = 0; j < roi_in->width; j++)
     {
       const size_t index_in = ((roi_in->height - 1) * roi_in->width + j) * 4;
@@ -469,8 +469,7 @@ static void process_fft(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
   const size_t i_reach = offset_i + kernel_width;
   const size_t j_reach = offset_j + kernel_width;
 
-  DT_OMP_FOR_SIMD(aligned(kernel, padded_kernel:64),
-                  padded_width, padded_height, padded_kernel, kernel, offset_i, offset_j, i_reach, j_reach, kernel_width)
+  DT_OMP_FOR_SIMD(aligned(kernel, padded_kernel:64))
   for(size_t i = 0; i < padded_width; i++)
     for(size_t j = 0; j < padded_width; j++)
     {

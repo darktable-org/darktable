@@ -151,7 +151,7 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
   case 10: {
     img->flags |= DT_IMAGE_HDR;
     img->flags &= ~DT_IMAGE_LDR;
-    DT_OMP_FOR_SIMD(collapse(2), mipbuf, width, height, in, rowbytes, max_channel_f)
+    DT_OMP_FOR_SIMD(collapse(2))
     for(size_t y = 0; y < height; y++)
     {
       for(size_t x = 0; x < width; x++)
@@ -171,7 +171,7 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
   case 8: {
     img->flags |= DT_IMAGE_LDR;
     img->flags &= ~DT_IMAGE_HDR;
-    DT_OMP_FOR_SIMD(collapse(2), mipbuf, width, height, in, rowbytes, max_channel_f)
+    DT_OMP_FOR_SIMD(collapse(2))
     for(size_t y = 0; y < height; y++)
     {
       for(size_t x = 0; x < width; x++)

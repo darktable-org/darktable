@@ -395,7 +395,7 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
 //        }
 //        break;
       case 12:
-        DT_OMP_FOR_SIMD(collapse(2), in, w, h, image, numcomps)
+        DT_OMP_FOR_SIMD(collapse(2))
         for(int i = 0; i < w * h; ++i)
         {
           for(int k = 0; k < numcomps; ++k)

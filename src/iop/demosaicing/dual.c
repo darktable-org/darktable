@@ -54,7 +54,7 @@ static void dual_demosaic(
 
   if(dual_mask)
   {
-    DT_OMP_FOR_SIMD(aligned(mask, high_data : 64), mask, high_data, msize)
+    DT_OMP_FOR_SIMD(aligned(mask, high_data : 64))
     for(int idx = 0; idx < msize; idx++)
       high_data[idx * 4 + 3] = mask[idx];
   }
@@ -66,7 +66,7 @@ static void dual_demosaic(
     vng_interpolate(vng_image, raw_data, roi_out, roi_in, filters, xtrans, FALSE);
     color_smoothing(vng_image, roi_out, 2);
 
-    DT_OMP_FOR_SIMD(aligned(mask, vng_image, high_data : 64), mask, high_data, vng_image, msize)
+    DT_OMP_FOR_SIMD(aligned(mask, vng_image, high_data : 64))
     for(int idx = 0; idx < msize; idx++)
     {
       const int oidx = 4 * idx;

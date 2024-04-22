@@ -1301,8 +1301,7 @@ static inline void build_mask(const float *const restrict input,
                               const size_t width,
                               const size_t height)
 {
-  DT_OMP_FOR_SIMD(aligned(mask, input : 64),
-                  input, mask, height, width, threshold)
+  DT_OMP_FOR_SIMD(aligned(mask, input : 64))
   for(size_t k = 0; k < height * width * 4; k += 4)
   {
     // TRUE if any channel is above threshold

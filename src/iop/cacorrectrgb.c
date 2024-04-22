@@ -490,8 +490,7 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, heig
   dt_free_align(manifold_higher);
 
   // store all manifolds in the same structure to make upscaling faster
-  DT_OMP_FOR_SIMD(aligned(manifolds, blurred_manifold_lower, blurred_manifold_higher:64),
-                  manifolds, blurred_manifold_lower, blurred_manifold_higher, width, height, guide)
+  DT_OMP_FOR_SIMD(aligned(manifolds, blurred_manifold_lower, blurred_manifold_higher:64))
   for(size_t k = 0; k < width * height; k++)
   {
     for(size_t c = 0; c < 3; c++)

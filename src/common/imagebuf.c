@@ -254,8 +254,7 @@ void dt_iop_image_scaled_copy(float *const restrict buf,
     // system with quad-channel memory won't be able to take advantage
     // of more than four cores).
     const int nthreads = MIN(dt_get_num_threads(), parallel_imgop_maxthreads);
-    DT_OMP_FOR_SIMD(num_threads(nthreads) aligned(buf, src : 16),
-                    buf, src, scale, nfloats)
+    DT_OMP_FOR_SIMD(num_threads(nthreads) aligned(buf, src : 16))
     for(size_t k = 0; k < nfloats; k++)
       buf[k] = scale * src[k];
     return;
@@ -329,7 +328,7 @@ void dt_iop_image_add_const(float *const buf,
     // system with quad-channel memory won't be able to take advantage
     // of more than four cores).
     const int nthreads = MIN(dt_get_num_threads(), parallel_imgop_maxthreads);
-    DT_OMP_FOR_SIMD(num_threads(nthreads), buf, add_value, nfloats)
+    DT_OMP_FOR_SIMD(num_threads(nthreads))
     for(size_t k = 0; k < nfloats; k++)
       buf[k] += add_value;
     return;
@@ -359,7 +358,7 @@ void dt_iop_image_add_image(float *const buf,
     // system with quad-channel memory won't be able to take advantage
     // of more than four cores).
     const int nthreads = MIN(dt_get_num_threads(), parallel_imgop_maxthreads);
-    DT_OMP_FOR_SIMD(num_threads(nthreads) aligned(buf, other_image : 16), buf, other_image, nfloats)
+    DT_OMP_FOR_SIMD(num_threads(nthreads) aligned(buf, other_image : 16))
     for(size_t k = 0; k < nfloats; k++)
       buf[k] += other_image[k];
     return;
@@ -389,7 +388,7 @@ void dt_iop_image_sub_image(float *const buf,
     // system with quad-channel memory won't be able to take advantage
     // of more than four cores).
     const int nthreads = MIN(dt_get_num_threads(), parallel_imgop_maxthreads);
-    DT_OMP_FOR_SIMD(num_threads(nthreads) aligned(buf, other_image : 16), buf, other_image, nfloats)
+    DT_OMP_FOR_SIMD(num_threads(nthreads) aligned(buf, other_image : 16))
     for(size_t k = 0; k < nfloats; k++)
       buf[k] -= other_image[k];
     return;
@@ -419,7 +418,7 @@ void dt_iop_image_invert(float *const buf,
     // system with quad-channel memory won't be able to take advantage
     // of more than four cores).
     const int nthreads = MIN(dt_get_num_threads(), parallel_imgop_maxthreads);
-    DT_OMP_FOR_SIMD(num_threads(nthreads) aligned(buf:16), buf, max_value, nfloats)
+    DT_OMP_FOR_SIMD(num_threads(nthreads) aligned(buf:16))
     for(size_t k = 0; k < nfloats; k++)
       buf[k] = max_value - buf[k];
     return;
@@ -449,7 +448,7 @@ void dt_iop_image_mul_const(float *const buf,
     // system with quad-channel memory won't be able to take advantage
     // of more than four cores).
     const int nthreads = MIN(dt_get_num_threads(), parallel_imgop_maxthreads);
-    DT_OMP_FOR_SIMD(num_threads(nthreads) aligned(buf:16), buf, mul_value, nfloats)
+    DT_OMP_FOR_SIMD(num_threads(nthreads) aligned(buf:16))
     for(size_t k = 0; k < nfloats; k++)
       buf[k] *= mul_value;
     return;
@@ -479,7 +478,7 @@ void dt_iop_image_div_const(float *const buf,
     // system with quad-channel memory won't be able to take advantage
     // of more than four cores).
     const int nthreads = MIN(darktable.num_openmp_threads,parallel_imgop_maxthreads);
-    DT_OMP_FOR_SIMD(num_threads(nthreads) aligned(buf:16), buf, div_value, nfloats)
+    DT_OMP_FOR_SIMD(num_threads(nthreads) aligned(buf:16))
     for(size_t k = 0; k < nfloats; k++)
       buf[k] /= div_value;
     return;
@@ -512,7 +511,7 @@ void dt_iop_image_linear_blend(float *const restrict buf,
     // system with quad-channel memory won't be able to take advantage
     // of more than four cores).
     const int nthreads = MIN(dt_get_num_threads(), parallel_imgop_maxthreads);
-    DT_OMP_FOR_SIMD(num_threads(nthreads) dt_omp_sharedconst(other) aligned(buf:16), buf, lambda, lambda_1,  nfloats)
+    DT_OMP_FOR_SIMD(num_threads(nthreads) dt_omp_sharedconst(other) aligned(buf:16))
     for(size_t k = 0; k < nfloats; k++)
       buf[k] = lambda*buf[k] + lambda_1*other[k];
     return;

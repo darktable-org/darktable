@@ -268,8 +268,7 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
   }
 
   const float use_global_average = MODE_GLOBAL_AVERAGE == d->op_mode;
-  DT_OMP_FOR_SIMD(dt_omp_sharedconst(width, height) reduction(+ : avg_edge_chroma),
-                  in, out, use_global_average)
+  DT_OMP_FOR_SIMD(dt_omp_sharedconst(width, height) reduction(+ : avg_edge_chroma))
   for(size_t j = 0; j < (size_t)height * width * 4; j += 4)
   {
     // edge-detect on color channels
