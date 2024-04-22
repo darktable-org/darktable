@@ -235,13 +235,12 @@ changes (where available).
 
 ### Missing Compression Mode Support
 
-- Adobe enhanced DNGs (JPEG XL flavor)
 - Apple ProRAW DNGs
-- CinemaDNG lossless (Blackmagic, some DJI, etc.)
+- CinemaDNG lossless (Blackmagic, some DJI, etc.) and lossy (Blackmagic)
+- DNG 1.7 using JPEG XL (Adobe enhanced, Samsung Expert RAW)
 - Fujifilm lossy RAFs
 - Nikon high efficiency NEFs
 - OM System 14-bit high resolution ORFs
-- Samsung Expert RAW DNGs (JPEG XL flavor)
 - Sony downsized lossless ARWs ("M" for full-frame, "S" for full-frame & APS-C)
 
 ### Suspended Support
@@ -251,7 +250,6 @@ Support for the following cameras is suspended because no samples are available 
 - Creo/Leaf Aptus 22(LF3779)/Hasselblad H1
 - Fujifilm FinePix S9600fd
 - Fujifilm IS-1
-- GoPro FUSION
 - Kodak EasyShare Z980
 - Leaf Aptus-II 5(LI300059)/Mamiya 645 AFD
 - Leaf Credo 60
