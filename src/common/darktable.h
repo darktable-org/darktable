@@ -129,11 +129,11 @@ typedef unsigned int u_int;
 
 #endif /* _OPENMP */
 
-#define DT_OMP_SIMD(...) DT_OMP_PRAGMA(simd __VA_ARGS__)
-#define DT_OMP_DECLARE_SIMD(...) DT_OMP_PRAGMA(declare simd __VA_ARGS__)
-#define DT_OMP_FOR(...) DT_OMP_PRAGMA(parallel for default(none) schedule(static) dt_omp_firstprivate( __VA_ARGS__ ))
-#define DT_OMP_FOR_CLAUSE(clause, ...) DT_OMP_PRAGMA(parallel for default(none) schedule(static) clause dt_omp_firstprivate( __VA_ARGS__ ))
-#define DT_OMP_FOR_SIMD(clause, ...) DT_OMP_PRAGMA(parallel for simd default(none) schedule(simd:static) clause dt_omp_firstprivate( __VA_ARGS__ ))
+#define DT_OMP_SIMD(clauses) DT_OMP_PRAGMA(simd clauses)
+#define DT_OMP_DECLARE_SIMD(clauses) DT_OMP_PRAGMA(declare simd clauses)
+#define DT_OMP_FOR(...) DT_OMP_PRAGMA(parallel for default(firstprivate) schedule(static))
+#define DT_OMP_FOR_CLAUSE(clauses, ...) DT_OMP_PRAGMA(parallel for default(firstprivate) schedule(static) clauses)
+#define DT_OMP_FOR_SIMD(clauses, ...) DT_OMP_PRAGMA(parallel for simd default(firstprivate) schedule(simd:static) clauses)
 
 #ifndef _RELEASE
 #include "common/poison.h"
