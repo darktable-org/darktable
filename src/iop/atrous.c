@@ -339,8 +339,7 @@ static void process_wavelets(struct dt_iop_module_t *self,
   }
 
   // add in the final residue
-  DT_OMP_FOR_SIMD(aligned(buf1, out : 64) num_threads(MIN(dt_get_num_threads(),16)),
-                  width, height, buf1, out)
+  DT_OMP_FOR_SIMD(aligned(buf1, out : 64) num_threads(MIN(dt_get_num_threads(),16)))
   for(size_t k = 0; k < (size_t)4 * width * height; k++)
     out[k] += buf1[k];
 

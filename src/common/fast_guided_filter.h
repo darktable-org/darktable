@@ -216,7 +216,7 @@ static inline void apply_linear_blending(float *const restrict image,
                                          const float *const restrict ab,
                                          const size_t num_elem)
 {
-  DT_OMP_FOR_SIMD(aligned(image, ab:64), image, ab, num_elem)
+  DT_OMP_FOR_SIMD(aligned(image, ab:64))
   for(size_t k = 0; k < num_elem; k++)
   {
     // Note : image[k] is positive at the outside of the luminance mask

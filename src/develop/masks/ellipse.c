@@ -277,7 +277,7 @@ static float *_points_to_transform(const float xx,
   points[9] = y - b * sinf(v - M_PI / 2.0f);
 
 
-  DT_OMP_FOR_SIMD(if(l > 100) aligned(points:64), l, points, x, y, a, b, cosv, sinv)
+  DT_OMP_FOR_SIMD(if(l > 100) aligned(points:64))
   for(int i = 5; i < l + 5; i++)
   {
     const float alpha = (i - 5) * 2.0 * M_PI / (float)l;

@@ -210,7 +210,7 @@ void process(struct dt_iop_module_t *self,
   float *const restrict out = (float *)o;
   const float d_a = d->a;
   const float d_b = d->b;
-  DT_OMP_FOR_SIMD(aligned(in, out:64), in, out, npixels, sigma2, d_a, d_b)
+  DT_OMP_FOR_SIMD(aligned(in, out:64))
   for(int k = 0; k < 4*npixels; k += 4)
   {
     out[k+0] = 100.0f * _color_filter(in[k+1], in[k+2], d_a, d_b, sigma2);
@@ -230,7 +230,7 @@ void process(struct dt_iop_module_t *self,
   dt_bilateral_free(b);
 
   const float highlights = d->highlights;
-  DT_OMP_FOR_SIMD(aligned(in, out:64), in, out, npixels, highlights)
+  DT_OMP_FOR_SIMD(aligned(in, out:64))
   for(int k = 0; k < 4*npixels; k += 4)
   {
     const float tt = _envelope(in[k]);

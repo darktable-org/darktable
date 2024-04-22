@@ -83,7 +83,7 @@ static inline void dt_focuspeaking(cairo_t *cr, const int buf_width, const int b
 
   const size_t npixels = (size_t)buf_height * buf_width;
   // Create a luma buffer as the euclidian norm of RGB channels
-  DT_OMP_FOR_SIMD(aligned(image, luma:64), image, luma, npixels)
+  DT_OMP_FOR_SIMD(aligned(image, luma:64))
   for(size_t index = 0; index < npixels; index++)
     {
       const size_t index_RGB = index * 4;

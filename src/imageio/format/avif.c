@@ -417,7 +417,7 @@ int write_image(struct dt_imageio_module_data_t *data,
     case 12:
     case 10:
     {
-    DT_OMP_FOR_SIMD(collapse(2), in_data, width, height, out, rowbytes, max_channel_f)
+    DT_OMP_FOR_SIMD(collapse(2))
     for(size_t y = 0; y < height; y++)
     {
       for(size_t x = 0; x < width; x++)
@@ -434,7 +434,7 @@ int write_image(struct dt_imageio_module_data_t *data,
     }
     case 8:
     {
-    DT_OMP_FOR_SIMD(collapse(2), in_data, width, height, out, rowbytes, max_channel_f)
+    DT_OMP_FOR_SIMD(collapse(2))
     for(size_t y = 0; y < height; y++)
     {
       for(size_t x = 0; x < width; x++)
