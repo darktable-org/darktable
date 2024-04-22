@@ -2417,9 +2417,7 @@ void dt_colorspaces_cygm_apply_coeffs_to_rgb(float *out,
         RGB_to_RGB_WB[a][b] += CAM_to_RGB_WB[a][c] * RGB_to_CAM[c][b];
     }
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) shared(in, out, num, RGB_to_RGB_WB) schedule(static)
-#endif
+  DT_OMP_FOR(shared(in, out, num, RGB_to_RGB_WB))
   for(int i = 0; i < num; i++)
   {
     const float *inpos = &in[i*4];
@@ -2435,9 +2433,7 @@ void dt_colorspaces_cygm_to_rgb(float *out,
                                 const int num,
                                 const double CAM_to_RGB[3][4])
 {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) shared(out, num, CAM_to_RGB) schedule(static)
-#endif
+  DT_OMP_FOR(shared(out, num, CAM_to_RGB))
   for(int i = 0; i < num; i++)
   {
     float *in = &out[i*4];
@@ -2454,9 +2450,7 @@ void dt_colorspaces_rgb_to_cygm(float *out,
                                 const int num,
                                 const double RGB_to_CAM[4][3])
 {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) shared(out, num, RGB_to_CAM) schedule(static)
-#endif
+  DT_OMP_FOR(shared(out, num, RGB_to_CAM))
   for(int i = 0; i < num; i++)
   {
     float *in = &out[i*3];

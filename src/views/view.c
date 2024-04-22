@@ -803,9 +803,7 @@ dt_view_surface_value_t dt_view_image_get_surface(const dt_imgid_t imgid,
       }
     }
 
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(buf, rgbbuf, transform)
-#endif
+    DT_OMP_FOR(shared(buf, rgbbuf, transform))
     for(int i = 0; i < buf.height; i++)
     {
       const uint8_t *in = buf.buf + i * buf.width * 4;
