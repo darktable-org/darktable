@@ -149,7 +149,7 @@ static inline void blur_2D_Bspline(const float *const restrict in,
                                    const gboolean clip_negatives)
 {
   // À-trous B-spline interpolation/blur shifted by mult
-  DT_OMP_FOR(in, out, tempbuf, width, height, mult, clip_negatives, padded_size)
+  DT_OMP_FOR()
   for(size_t row = 0; row < height; row++)
   {
     // get a thread-private one-row temporary buffer
@@ -186,7 +186,7 @@ inline static void decompose_2D_Bspline(const float *const in,
                                         const size_t padded_size)
 {
   // Blur and compute the decimated wavelet at once
-  DT_OMP_FOR(width, height, mult, padded_size, in, HF, LF, tempbuf)
+  DT_OMP_FOR()
   for(size_t row = 0; row < height; row++)
   {
     // get a thread-private one-row temporary buffer

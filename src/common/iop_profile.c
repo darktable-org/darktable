@@ -496,7 +496,7 @@ static inline void _transform_lab_to_rgb_matrix
   const size_t stride = (size_t)width * height * ch;
   const dt_colormatrix_t *matrix_ptr = &profile_info->matrix_out_transposed;
 
-  DT_OMP_FOR(image_in, image_out, stride, profile_info, ch, matrix_ptr)
+  DT_OMP_FOR()
   for(size_t y = 0; y < stride; y += ch)
   {
     const float *const restrict in = DT_IS_ALIGNED_PIXEL(image_in + y);

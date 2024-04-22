@@ -130,7 +130,7 @@ void eaw_decompose_and_synthesize(float *const restrict out,
   const int boundary = 2 * mult;
   const dt_aligned_pixel_t vsharpen = { -0.5f * sharpen, -sharpen, -sharpen, 0.0f };
 
-  DT_OMP_FOR(accum, filter, height, in, vsharpen, threshold, boost, mult, boundary, out, width)
+  DT_OMP_FOR()
   for(size_t rowid = 0; rowid < height; rowid++)
   {
     const size_t j = dwt_interleave_rows(rowid, height, mult);
@@ -211,7 +211,7 @@ void eaw_synthesize(float *const out, const float *const in, const float *const 
   const dt_aligned_pixel_t boostval = { boost[0], boost[1], boost[2], boost[3] };
   const size_t npixels = (size_t)width * height;
 
-  DT_OMP_FOR(in, out, detail, npixels, thresh, boostval)
+  DT_OMP_FOR()
   for(size_t k = 0; k < npixels; k++)
   {
     accumulate(out + 4*k, detail + 4*k, thresh, boostval);

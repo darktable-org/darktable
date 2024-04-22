@@ -40,7 +40,7 @@ static void _blur_horizontal_1ch(float *const restrict buf,
     float *const restrict scanlines,
     const size_t padded_size)
 {
-  DT_OMP_FOR(radius, height, width, padded_size, buf, scanlines)
+  DT_OMP_FOR()
   for(int y = 0; y < height; y++)
   {
     float L = 0;
@@ -99,7 +99,7 @@ static void _blur_horizontal_2ch(float *const restrict buf,
     float *const restrict scanlines,
     const size_t padded_size)
 {
-  DT_OMP_FOR(radius, height, width, padded_size, buf, scanlines)
+  DT_OMP_FOR()
   for(int y = 0; y < height; y++)
   {
     float *const restrict scanline = dt_get_perthread(scanlines, padded_size);
@@ -354,7 +354,7 @@ static void _blur_horizontal_4ch(float *const restrict buf,
     float *const restrict scanlines,
     const size_t padded_size)
 {
-  DT_OMP_FOR(radius, height, width, padded_size, buf, scanlines)
+  DT_OMP_FOR()
   for(int y = 0; y < height; y++)
   {
     float *const restrict scratch = dt_get_perthread(scanlines,padded_size);
@@ -893,7 +893,7 @@ static void _blur_vertical_1ch(float *const restrict buf,
                                float *const restrict scanlines,
                                const size_t padded_size)
 {
-  DT_OMP_FOR(radius, height, width, padded_size, buf, scanlines)
+  DT_OMP_FOR()
   for(int x = 0; x < width; x += 16)
   {
     float *const restrict scratch = dt_get_perthread(scanlines,padded_size);
@@ -984,7 +984,7 @@ static void _box_mean_vert_1ch_Kahan(float *const buf,
   float *const restrict scratch_buf = dt_alloc_perthread_float(size,&padded_size);
   if(scratch_buf == NULL) return;
 
-  DT_OMP_FOR(width, height, radius, padded_size, buf, scratch_buf)
+  DT_OMP_FOR()
   for(size_t col = 0; col < width; col += 16)
   {
     float *const restrict scratch = dt_get_perthread(scratch_buf,padded_size);
@@ -1020,7 +1020,7 @@ static void _box_mean_4ch_Kahan(float *const buf,
 
   for(uint32_t iteration = 0; iteration < iterations; iteration++)
   {
-    DT_OMP_FOR(width, height, radius, padded_size, buf, scanlines)
+    DT_OMP_FOR()
     for(size_t row = 0; row < height; row++)
     {
       float *const restrict scratch = dt_get_perthread(scanlines,padded_size);
@@ -1046,7 +1046,7 @@ static void _box_mean_2ch_Kahan(float *const buf,
 
   for(uint32_t iteration = 0; iteration < iterations; iteration++)
   {
-    DT_OMP_FOR(width, height, radius, padded_size, buf, scanlines)
+    DT_OMP_FOR()
     for(size_t row = 0; row < height; row++)
     {
       float *const restrict scratch = dt_get_perthread(scanlines,padded_size);
@@ -1281,14 +1281,14 @@ static void _box_max_1ch(float *const buf,
   size_t allocsize;
   float *const restrict scratch_buffers = dt_alloc_perthread_float(scratch_size,&allocsize);
   if(scratch_buffers == NULL) return;
-  DT_OMP_FOR(w, width, height, buf, allocsize, scratch_buffers)
+  DT_OMP_FOR()
   for(size_t row = 0; row < height; row++)
   {
     float *const restrict scratch = dt_get_perthread(scratch_buffers,allocsize);
     memcpy(scratch, buf + row * width, sizeof(float) * width);
     box_max_1d(width, scratch, buf + row * width, 1, w);
   }
-  DT_OMP_FOR(w, width, height, buf, allocsize, eff_height, scratch_buffers)
+  DT_OMP_FOR()
   for(int col = 0; col < (width & ~15); col += 16)
   {
     float *const restrict scratch = dt_get_perthread(scratch_buffers,allocsize);
@@ -1426,14 +1426,14 @@ static void _box_min_1ch(float *const buf,
   float *const restrict scratch_buffers = dt_alloc_perthread_float(scratch_size,&allocsize);
   if(scratch_buffers == NULL) return;
 
-  DT_OMP_FOR(w, width, height, buf, allocsize, scratch_buffers)
+  DT_OMP_FOR()
   for(size_t row = 0; row < height; row++)
   {
     float *const restrict scratch = dt_get_perthread(scratch_buffers,allocsize);
     memcpy(scratch, buf + row * width, sizeof(float) * width);
     _box_min_1d(width, scratch, buf + row * width, 1, w);
   }
-  DT_OMP_FOR(w, width, height, buf,allocsize, eff_height, scratch_buffers)
+  DT_OMP_FOR()
   for(size_t col = 0; col < (width & ~15); col += 16)
   {
     float *const restrict scratch = dt_get_perthread(scratch_buffers,allocsize);

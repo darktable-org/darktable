@@ -257,7 +257,7 @@ static void _blend(const float *const restrict in,
   /* reverse order */
   /* We can only do the final 3/4 in parallel here, because updating the first quarter in one thread */
   /* would clobber values still needed by other threads. */
-  DT_OMP_FOR(contrast_scale, npixels, in, out)
+  DT_OMP_FOR()
   for(size_t k = npixels - 1; k >= npixels/4; k--)
   {
     dt_aligned_pixel_t hipass = { 0.0f, 0.0f, 0.0f, 0.0f };  // a=b=0 to desaturate, alpha doesn't matter

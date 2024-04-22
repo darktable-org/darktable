@@ -302,7 +302,7 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d,
   uint32_t *const restrict partial_binned =
     dt_calloc_perthread(3U * num_bins * num_tones, sizeof(uint32_t), &bin_pad);
 
-  DT_OMP_FOR(input, partial_binned, roi, num_tones, num_bins, bin_pad, samples_per_bin, sample_height, sample_width, orient)
+  DT_OMP_FOR()
   for(size_t y=0; y<sample_height; y++)
   {
     const float *const restrict px = DT_IS_ALIGNED((const float *const restrict)input +

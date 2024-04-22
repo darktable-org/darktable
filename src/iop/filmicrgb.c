@@ -1276,7 +1276,7 @@ static inline void init_reconstruct(const float *const restrict in,
 {
 // init the reconstructed buffer with non-clipped and partially clipped pixels
 // Note : it's a simple multiplied alpha blending where mask = alpha weight
-  DT_OMP_FOR(in, mask, reconstructed, width, height) \
+  DT_OMP_FOR() \
   for(size_t k = 0; k < height * width; k++)
   {
     dt_aligned_pixel_t re;
@@ -2075,7 +2075,7 @@ static inline void display_mask(const float *const restrict mask,
                                 const size_t width,
                                 const size_t height)
 {
-  DT_OMP_FOR(width, height, out, mask)
+  DT_OMP_FOR()
   for(size_t k = 0; k < height * width; k++)
   {
     dt_aligned_pixel_t pix;
@@ -2095,7 +2095,7 @@ static inline void compute_ratios(const float *const restrict in,
                                   const size_t width,
                                   const size_t height)
 {
-  DT_OMP_FOR(width, height, norms, ratios, in, work_profile, variant)
+  DT_OMP_FOR()
   for(size_t k = 0; k < height * width * 4; k += 4)
   {
     const float norm = MAX(get_pixel_norm(in + k, variant, work_profile), NORM_MIN);

@@ -321,7 +321,7 @@ void dt_gaussian_blur_4c(dt_gaussian_t *g, const float *const in, float *const o
   copy_pixel(Labmax, g->max);
 
 // vertical blur column by column
-  DT_OMP_FOR(in, width, height, temp, Labmin, Labmax, a0, a1, a2, a3, b1, b2, coefp, coefn)
+  DT_OMP_FOR()
   for(size_t i = 0; i < width; i++)
   {
     // forward filter
@@ -387,7 +387,7 @@ void dt_gaussian_blur_4c(dt_gaussian_t *g, const float *const in, float *const o
   }
 
 // horizontal blur line by line
-  DT_OMP_FOR(out, width, height, temp, Labmin, Labmax, a0, a1, a2, a3, b1, b2, coefp, coefn)
+  DT_OMP_FOR()
   for(size_t j = 0; j < height; j++)
   {
     // forward filter

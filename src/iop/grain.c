@@ -452,8 +452,7 @@ void process(struct dt_iop_module_t *self,
   const double scale = roi_out->scale;	// is only used in double expressions, so avoid conversion
   const double fib2inv = 1.0 / fib2;
 
-  DT_OMP_FOR(filter, filtermul, ivoid, ovoid, roi_out, strength,
-                      scale, wd, zoom, fib2, fib2inv, fib1div2, data, hash)
+  DT_OMP_FOR()
   for(int j = 0; j < roi_out->height; j++)
   {
     float *in = ((float *)ivoid) + (size_t)4 * roi_out->width * j;

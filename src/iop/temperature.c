@@ -548,7 +548,7 @@ void process(struct dt_iop_module_t *self,
 
   if(filters == 9u)
   { // xtrans float mosaiced
-    DT_OMP_FOR(d_coeffs, in, out, roi_out, xtrans)
+    DT_OMP_FOR()
     for(int j = 0; j < roi_out->height; j++)
     {
       const float DT_ALIGNED_PIXEL coeffs[3][4] =
@@ -587,7 +587,7 @@ void process(struct dt_iop_module_t *self,
   else if(filters)
   { // bayer float mosaiced
     const int width = roi_out->width;
-    DT_OMP_FOR(d_coeffs, filters, in, out, roi_out, width)
+    DT_OMP_FOR()
     for(int j = 0; j < roi_out->height; j++)
     {
       int i = 0;

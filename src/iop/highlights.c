@@ -653,7 +653,7 @@ static void process_visualize(dt_dev_pixelpipe_iop_t *piece,
   if(filters == 0)
   {
     const size_t npixels = roi_out->width * (size_t)roi_out->height;
-    DT_OMP_FOR(in, out, clips, npixels)
+    DT_OMP_FOR()
     for(size_t k = 0; k < 4*npixels; k += 4)
     {
       for_each_channel(c)
@@ -663,7 +663,7 @@ static void process_visualize(dt_dev_pixelpipe_iop_t *piece,
   }
   else
   {
-    DT_OMP_FOR(in, out, clips, roi_in, roi_out, filters, xtrans, is_xtrans)
+    DT_OMP_FOR()
     for(int row = 0; row < roi_out->height; row++)
     {
       for(int col = 0; col < roi_out->width; col++)
@@ -751,13 +751,13 @@ void process(struct dt_iop_module_t *self,
       if(filters == 9u)
       {
         const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
-        DT_OMP_FOR(clips, filters, ivoid, ovoid, roi_in, roi_out, xtrans)
+        DT_OMP_FOR()
         for(int j = 0; j < roi_out->height; j++)
         {
           interpolate_color_xtrans(ivoid, ovoid, roi_in, roi_out, 0, 1, j, clips, xtrans, 0);
           interpolate_color_xtrans(ivoid, ovoid, roi_in, roi_out, 0, -1, j, clips, xtrans, 1);
         }
-        DT_OMP_FOR(clips, filters, ivoid, ovoid, roi_in, roi_out, xtrans)
+        DT_OMP_FOR()
         for(int i = 0; i < roi_out->width; i++)
         {
           interpolate_color_xtrans(ivoid, ovoid, roi_in, roi_out, 1, 1, i, clips, xtrans, 2);

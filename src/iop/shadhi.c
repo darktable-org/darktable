@@ -414,9 +414,7 @@ void process(struct dt_iop_module_t *self,
 #define doublemax (2.0f * lmax)
   const size_t npixels = (size_t)width * height;
 
-  DT_OMP_FOR(npixels, in, out, compress, flags, highlights,
-             highlights_ccorrect, low_approximation, shadows,
-             shadows_ccorrect, unbound_mask, whitepoint)
+  DT_OMP_FOR()
   for(size_t j = 0; j < 4 * npixels; j += 4)
   {
     dt_aligned_pixel_t ta, tb;

@@ -1105,7 +1105,7 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
       else
       { // !display_byteorder, need to swap:
         uint8_t *const buf8 = pipe.backbuf;
-        DT_OMP_FOR(processed_width, processed_height, buf8)
+        DT_OMP_FOR()
         // just flip byte order
         for(size_t k = 0; k < (size_t)processed_width * processed_height; k++)
         {

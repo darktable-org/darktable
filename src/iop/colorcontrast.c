@@ -198,7 +198,7 @@ void process(struct dt_iop_module_t *self,
 
   if(d->unbound)
   {
-    DT_OMP_FOR(in, out, npixels, slope, offset)
+    DT_OMP_FOR()
     for(size_t k = 0; k < (size_t)4 * npixels; k += 4)
     {
       dt_aligned_pixel_t res;
@@ -212,7 +212,7 @@ void process(struct dt_iop_module_t *self,
   else
   {
 
-    DT_OMP_FOR(in, out, npixels, slope, offset, lowlimit, highlimit)
+    DT_OMP_FOR()
     for(size_t k = 0; k < npixels; k ++)
     {
       // the inner per-pixel loop needs to be declared in a separate

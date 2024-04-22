@@ -464,8 +464,7 @@ void process(struct dt_iop_module_t *self,
       data->coeff_b[num_patches+2],
       data->coeff_b[num_patches+3], 0.0f };
 
-  DT_OMP_FOR(npixels, num_patches, patches, sources, polynomial_L,
-             polynomial_a, polynomial_b, ivoid, out)
+  DT_OMP_FOR()
   for(int k=0; k < npixels; k++)
   {
     dt_aligned_pixel_t inpx;

@@ -1285,7 +1285,7 @@ void dt_develop_blendif_rgb_hsl_blend(struct dt_dev_pixelpipe_iop_t *piece,
     const float *const restrict boost_factors = d->blendif_boost_factors;
     const dt_dev_pixelpipe_display_mask_t channel = request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_ANY;
 
-    DT_OMP_FOR(a, b, mask, channel, oheight, owidth, iwidth, xoffs, yoffs, boost_factors, profile)
+    DT_OMP_FOR()
     for(size_t y = 0; y < oheight; y++)
     {
       const size_t a_start = ((y + yoffs) * iwidth + xoffs) * DT_BLENDIF_RGB_CH;
@@ -1300,7 +1300,7 @@ void dt_develop_blendif_rgb_hsl_blend(struct dt_dev_pixelpipe_iop_t *piece,
 
     if((d->blend_mode & DEVELOP_BLEND_REVERSE) == DEVELOP_BLEND_REVERSE)
     {
-      DT_OMP_FOR(a, b, mask, blend, oheight, owidth, iwidth, xoffs, yoffs)
+      DT_OMP_FOR()
       for(size_t y = 0; y < oheight; y++)
       {
         const size_t a_start = ((y + yoffs) * iwidth + xoffs) * DT_BLENDIF_RGB_CH;
@@ -1311,7 +1311,7 @@ void dt_develop_blendif_rgb_hsl_blend(struct dt_dev_pixelpipe_iop_t *piece,
     }
     else
     {
-      DT_OMP_FOR(a, b, mask, blend, oheight, owidth, iwidth, xoffs, yoffs)
+      DT_OMP_FOR()
       for(size_t y = 0; y < oheight; y++)
       {
         const size_t a_start = ((y + yoffs) * iwidth + xoffs) * DT_BLENDIF_RGB_CH;
@@ -1325,7 +1325,7 @@ void dt_develop_blendif_rgb_hsl_blend(struct dt_dev_pixelpipe_iop_t *piece,
   if(mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
   {
     const size_t stride = owidth * DT_BLENDIF_RGB_CH;
-    DT_OMP_FOR(a, b, oheight, stride, iwidth, xoffs, yoffs)
+    DT_OMP_FOR()
     for(size_t y = 0; y < oheight; y++)
     {
       const size_t a_start = ((y + yoffs) * iwidth + xoffs) * DT_BLENDIF_RGB_CH;

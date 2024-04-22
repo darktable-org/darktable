@@ -1463,7 +1463,7 @@ static void _fill_mask(const size_t numpoints,
   // rotated, but we can compensate for that by applying a rotation
   // matrix for the same rotation in the opposite direction before
   // projecting the vector.
-  DT_OMP_FOR(numpoints, bufptr, points, center, alpha, a2, b2, ta2, tb2, cos_alpha, sin_alpha, out_scale)
+  DT_OMP_FOR()
   for(size_t i = 0; i < numpoints; i++)
     {
       const float x = points[2 * i] - center[0];

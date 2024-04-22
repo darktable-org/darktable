@@ -139,7 +139,7 @@ static void process_lch_xtrans(dt_iop_module_t *self,
 {
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
 
-  DT_OMP_FOR(clip, ivoid, ovoid, roi_in, roi_out, xtrans)
+  DT_OMP_FOR()
   for(int j = 0; j < roi_out->height; j++)
   {
     float *out = (float *)ovoid + (size_t)roi_out->width * j;

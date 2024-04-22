@@ -152,7 +152,7 @@ static void dwt_decompose_horiz(
     const size_t lev)
 {
   const int hscale = MIN(1 << lev, width);  //(int because we need a signed difference below)
-  DT_OMP_FOR(height, width, hscale, in, out, temp, padded_size)
+  DT_OMP_FOR()
   for(int row = 0; row < height ; row++)
   {
     // perform a weighted sum of the current pixel with the ones 'scale' pixels to the left and right, using

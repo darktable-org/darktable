@@ -184,7 +184,7 @@ void eigf_blending(float *const restrict image, const float *const restrict mask
                   const dt_iop_guided_filter_blending_t filter,
                   const float feathering)
 {
-  DT_OMP_FOR(image, mask, av, Ndim, feathering, filter)
+  DT_OMP_FOR()
   for(size_t k = 0; k < Ndim; k++)
   {
     const float avg_g = av[k * 4];

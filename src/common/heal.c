@@ -54,7 +54,7 @@ static void _heal_sub(const float *const top_buffer, const float *const bottom_b
   // how many red or black pixels per line?  For consistency, we need the larger of the two, so round up
   const size_t res_stride = 4 * ((width + 1) / 2);
 
-  DT_OMP_FOR(top_buffer, bottom_buffer, red_buffer, black_buffer, height, width, res_stride)
+  DT_OMP_FOR()
   for(size_t row = 0; row < height; row++)
   {
     const int parity = row & 1;

@@ -191,7 +191,7 @@ static void rcd_ppg_border(
     }
   }
 // for all pixels: interpolate colors into float array
-  DT_OMP_FOR(filters, out, width, height, margin)
+  DT_OMP_FOR()
   for(int j = 1; j < height - 1; j++)
   {
     float *buf = out + (size_t)4 * width * j + 4;

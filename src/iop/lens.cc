@@ -1957,7 +1957,7 @@ static void _init_vignette_spline(dt_iop_lens_data_t *d)
   d->vighash = vhash;
 
   /* basic math idea from rawtherapee code */
-  DT_OMP_FOR(d)
+  DT_OMP_FOR()
   for(int i = 0; i < VIGSPLINES; i++)
   {
     const double radius = (double)i / (double)(VIGSPLINES - 1);

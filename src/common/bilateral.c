@@ -222,7 +222,7 @@ void dt_bilateral_splat(const dt_bilateral_t *b, const float *const in)
     oz + oy + ox
   };
 
-  DT_OMP_FOR(in, b, oy, sigma_s, buf, offsets)  
+  DT_OMP_FOR()  
   for(int slice = 0; slice < b->numslices; slice++)
   {
     const int firstrow = slice * b->sliceheight;
@@ -299,7 +299,7 @@ static void blur_line_z(float *buf,
 {
   const float w1 = 4.f / 16.f;
   const float w2 = 2.f / 16.f;
-  DT_OMP_FOR(size1, size2, size3, offset1, offset2, offset3, w1, w2, buf)
+  DT_OMP_FOR()
   for(int k = 0; k < size1; k++)
   {
     size_t index = (size_t)k * offset1;
@@ -342,7 +342,7 @@ static void blur_line(float *buf,
   const float w0 = 6.f / 16.f;
   const float w1 = 4.f / 16.f;
   const float w2 = 1.f / 16.f;
-  DT_OMP_FOR(size1, size2, size3, offset1, offset2, offset3, w0, w1, w2, buf)
+  DT_OMP_FOR()
   for(int k = 0; k < size1; k++)
   {
     size_t index = (size_t)k * offset1;

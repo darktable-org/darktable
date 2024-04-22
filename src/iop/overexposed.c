@@ -155,8 +155,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if(dev->overexposed.mode == DT_CLIPPING_PREVIEW_ANYRGB)
   {
     // Any of the RGB channels is out of bounds
-    DT_OMP_FOR(ch, img_tmp, in, lower, lower_color, out, roi_out,
-               upper, upper_color)
+    DT_OMP_FOR()
     for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
     {
       if(img_tmp[k + 0] >= upper || img_tmp[k + 1] >= upper || img_tmp[k + 2] >= upper)
@@ -177,8 +176,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   else if(dev->overexposed.mode == DT_CLIPPING_PREVIEW_GAMUT && work_profile)
   {
     // Gamut is out of bounds
-    DT_OMP_FOR(ch, img_tmp, in, lower, lower_color, out, roi_out,
-              upper, upper_color, work_profile)
+    DT_OMP_FOR()
     for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
     {
       const float luminance = dt_ioppr_get_rgb_matrix_luminance(img_tmp + k,
@@ -231,8 +229,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   else if(dev->overexposed.mode == DT_CLIPPING_PREVIEW_LUMINANCE && work_profile)
   {
     // Luminance channel is out of bounds
-    DT_OMP_FOR(ch, img_tmp, in, lower, lower_color, out, roi_out,
-               upper, upper_color, work_profile)
+    DT_OMP_FOR()
     for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
     {
       const float luminance = dt_ioppr_get_rgb_matrix_luminance(img_tmp + k,
@@ -259,8 +256,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   else if(dev->overexposed.mode == DT_CLIPPING_PREVIEW_SATURATION && work_profile)
   {
     // Show saturation out of bounds where luminance is valid
-    DT_OMP_FOR(ch, img_tmp, in, lower, lower_color, out, roi_out,
-               upper, upper_color, work_profile)
+    DT_OMP_FOR()
     for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
     {
       const float luminance = dt_ioppr_get_rgb_matrix_luminance(img_tmp + k,

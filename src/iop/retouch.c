@@ -3146,7 +3146,7 @@ static void image_rgb2lab(float *img_src,
 {
   const size_t npixels = (size_t)width * height;
 
-  DT_OMP_FOR(npixels,img_src)
+  DT_OMP_FOR()
   for(size_t i = 0; i < npixels; i++)
   {
     dt_aligned_pixel_t XYZ;
@@ -3161,7 +3161,7 @@ static void image_lab2rgb(float *img_src,
 {
   const size_t npixels = (size_t)width * height;
 
-  DT_OMP_FOR(npixels, img_src)
+  DT_OMP_FOR()
   for(size_t i = 0; i < npixels; i++)
   {
     dt_aligned_pixel_t XYZ;
@@ -3346,7 +3346,7 @@ static void rt_copy_in_to_out(const float *const in,
   const int yoffs = roi_out->y - roi_in->y - dy;
   const int y_to = MIN(roi_out->height, roi_in->height);
 
-  DT_OMP_FOR(ch, in, out, roi_in, roi_out, rowsize, xoffs,  yoffs, y_to)
+  DT_OMP_FOR()
   for(int y = 0; y < y_to; y++)
   {
     const size_t iindex = ((size_t)(y + yoffs) * roi_in->width + xoffs) * ch;
@@ -3459,7 +3459,7 @@ static void rt_copy_mask_to_alpha(float *const img,
                                   dt_iop_roi_t *const roi_mask_scaled,
                                   const float opacity)
 {
-  DT_OMP_FOR(ch, img, mask_scaled, opacity, roi_img, roi_mask_scaled)
+  DT_OMP_FOR()
   for(int yy = 0; yy < roi_mask_scaled->height; yy++)
   {
     const int mask_index = yy * roi_mask_scaled->width;
@@ -3485,7 +3485,7 @@ static void _retouch_fill(float *const in,
                           const float opacity,
                           const float *const fill_color)
 {
-  DT_OMP_FOR(fill_color, in, mask_scaled, opacity, roi_in, roi_mask_scaled)
+  DT_OMP_FOR()
   for(int yy = 0; yy < roi_mask_scaled->height; yy++)
   {
     const int mask_index = yy * roi_mask_scaled->width;

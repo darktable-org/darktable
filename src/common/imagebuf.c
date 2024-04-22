@@ -207,7 +207,7 @@ void dt_iop_copy_image_roi(float *const __restrict__ out,
       && (roi_in->height - dy >= roi_out->height))
   {
     const size_t lwidth = sizeof(float) * roi_out->width * ch;
-    DT_OMP_FOR(ch, in, out, roi_in, roi_out, dx, dy, lwidth)
+    DT_OMP_FOR()
     for(size_t row = 0; row < roi_out->height; row++)
     {
       float *o = out + (size_t)(ch * row * roi_out->width);
