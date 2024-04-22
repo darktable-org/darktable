@@ -135,8 +135,8 @@ void dt_iop_color_picker_reset(dt_iop_module_t *module,
 }
 
 static void _backtransform_box(const int num,
-                              const float *in,
-                              float *out)
+                               const float *in,
+                               float *out)
 {
   dt_develop_t *dev = darktable.develop;
   const float wd = MAX(1, dev->preview_pipe->iwidth);
@@ -345,14 +345,17 @@ static void _iop_color_picker_pickerdata_ready_callback(gpointer instance,
     {
       if(module->color_picker_apply)
       {
-        dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_PICKER, "color picker apply",
-          pipe, module, DT_DEVICE_NONE, NULL, NULL,
-          "%s%s.%s%s. point=%.3f - %.3f. area=%.3f - %.3f / %.3f - %.3f\n",
-          picker->flags & DT_COLOR_PICKER_POINT ? " point" : "",
-          picker->flags & DT_COLOR_PICKER_AREA  ? " area" : "",
-          picker->flags & DT_COLOR_PICKER_DENOISE ? " denoise" : "",
-          picker->flags & DT_COLOR_PICKER_IO ? " output" : "",
-          picker->pick_pos[0], picker->pick_pos[1], picker->pick_box[0], picker->pick_box[1], picker->pick_box[2], picker->pick_box[3]);
+        dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_PICKER,
+                      "color picker apply",
+                      pipe, module, DT_DEVICE_NONE, NULL, NULL,
+                      "%s%s.%s%s. point=%.3f - %.3f. area=%.3f - %.3f / %.3f - %.3f\n",
+                      picker->flags & DT_COLOR_PICKER_POINT ? " point" : "",
+                      picker->flags & DT_COLOR_PICKER_AREA  ? " area" : "",
+                      picker->flags & DT_COLOR_PICKER_DENOISE ? " denoise" : "",
+                      picker->flags & DT_COLOR_PICKER_IO ? " output" : "",
+                      picker->pick_pos[0], picker->pick_pos[1],
+                      picker->pick_box[0], picker->pick_box[1],
+                      picker->pick_box[2], picker->pick_box[3]);
 
         module->color_picker_apply(module, picker->colorpick, pipe);
       }
@@ -376,8 +379,9 @@ static void _color_picker_proxy_preview_pipe_callback(gpointer instance,
   dt_lib_module_t *module = darktable.lib->proxy.colorpicker.module;
   if(module)
   {
-    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_PICKER | DT_DEBUG_VERBOSE, "picker update callback",
-      NULL, NULL, DT_DEVICE_NONE, NULL, NULL, "\n");
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_PICKER | DT_DEBUG_VERBOSE,
+                  "picker update callback",
+                  NULL, NULL, DT_DEVICE_NONE, NULL, NULL, "\n");
 
     // pixelpipe may have run because sample area changed or an iop,
     // regardless we want to the colorpicker lib, which also can

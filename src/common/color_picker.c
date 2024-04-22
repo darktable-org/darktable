@@ -86,6 +86,7 @@ typedef void((*picker_worker_4ch)(dt_aligned_pixel_t acc,
                                   const float *const pixels,
                                   const size_t width,
                                   const void *const data));
+
 typedef void((*picker_worker_1ch)(dt_aligned_pixel_t acc,
                                   dt_aligned_pixel_t low,
                                   dt_aligned_pixel_t high,
@@ -281,9 +282,9 @@ static void _color_picker_work_1ch(const float *const pixel,
 }
 
 void dt_color_picker_backtransform_box(dt_develop_t *dev,
-                              const int num,
-                              const float *in,
-                              float *out)
+                                       const int num,
+                                       const float *in,
+                                       float *out)
 {
   const float wd = dev->preview_pipe->iwidth;
   const float ht = dev->preview_pipe->iheight;
@@ -331,9 +332,9 @@ static void _sort_coordinates(float *fbox)
 
 // Use by darkroom visualizing
 void dt_color_picker_transform_box(dt_develop_t *dev,
-                              const int num,
-                              const float *in,
-                              float *out)
+                                   const int num,
+                                   const float *in,
+                                   float *out)
 {
   const float wd = dev->preview_pipe->iwidth;
   const float ht = dev->preview_pipe->iheight;
@@ -407,7 +408,9 @@ gboolean dt_color_picker_box(dt_iop_module_t *module,
 
   dt_dev_distort_transform_plus
     (dev, dev->preview_pipe, module->iop_order,
-     ((picker_source == PIXELPIPE_PICKER_INPUT) ? DT_DEV_TRANSFORM_DIR_BACK_INCL : DT_DEV_TRANSFORM_DIR_BACK_EXCL),
+     ((picker_source == PIXELPIPE_PICKER_INPUT)
+      ? DT_DEV_TRANSFORM_DIR_BACK_INCL
+      : DT_DEV_TRANSFORM_DIR_BACK_EXCL),
      fbox, 4);
 
   _sort_coordinates(fbox);
@@ -466,18 +469,21 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc,
       denoised = dt_alloc_align_float(4 * roi->width * roi->height);
       if(denoised)
       {
-        float *const tempbuf = dt_alloc_perthread_float(4 * roi->width, &padded_size); //TODO: alloc in caller
+        float *const tempbuf =
+          dt_alloc_perthread_float(4 * roi->width, &padded_size); //TODO: alloc in caller
 
         // blur without clipping negatives because Lab a and b channels can be
         // legitimately negative
         // FIXME: this blurs whole image even when just a bit is sampled in the
         // case of CPU path
-        blur_2D_Bspline(pixel, denoised, tempbuf, padded_size, roi->width, roi->height, 1, FALSE);
+        blur_2D_Bspline(pixel, denoised, tempbuf, padded_size,
+                        roi->width, roi->height, 1, FALSE);
         dt_free_align(tempbuf);
         source = denoised;
       }
       else
-        dt_print(DT_DEBUG_ALWAYS,"[color picker] unable to alloc working memory, denoising skipped\n");
+        dt_print(DT_DEBUG_ALWAYS,
+                 "[color picker] unable to alloc working memory, denoising skipped\n");
     }
 
     // 4-channel raw images are monochrome, can be read as RGB
