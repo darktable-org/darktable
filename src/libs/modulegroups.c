@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2022 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1032,7 +1032,8 @@ static void _lib_modulegroups_toggle(GtkWidget *button, gpointer user_data)
   {
     const GtkWidget *bt = _buttons_get_from_pos(self, k);
     /* store toggled modulegroup */
-    if(bt == button) gid = k;
+    if(bt == button)
+      gid = k;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bt), FALSE);
   }
   if(button == d->basic_btn) gid = DT_MODULEGROUP_BASICS;
@@ -1041,7 +1042,7 @@ static void _lib_modulegroups_toggle(GtkWidget *button, gpointer user_data)
   if(d->current == DT_MODULEGROUP_BASICS) dt_iop_request_focus(NULL);
 
   /* only deselect button if not currently searching else re-enable module */
-  if(d->current == gid && !(text_entered && text_entered[0] != '\0'))
+  if(d->current == gid && gid != DT_MODULEGROUP_BASICS && !(text_entered && text_entered[0] != '\0'))
     d->current = DT_MODULEGROUP_NONE;
   else
   {
