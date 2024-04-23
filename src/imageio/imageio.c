@@ -828,8 +828,16 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
     GList *style_items = dt_styles_get_item_list(format_params->style, FALSE, -1, TRUE);
     if(!style_items)
     {
-      dt_control_log(_("cannot find the style '%s' to apply during export."),
-                     format_params->style);
+      dt_print(DT_DEBUG_ALWAYS,
+               "[imageio] cannot find the style '%s' to apply during export\n",
+               format_params->style);
+      if(darktable.gui)
+        dt_control_log(_("cannot find the style '%s' to apply during export"),
+                       format_params->style);
+      else
+        dt_print(DT_DEBUG_ALWAYS,
+                 "[imageio] please check that you have imported this style into darktable"
+                 " and specified it in the command line without the .dtstyle extension\n");
       goto error;
     }
 
