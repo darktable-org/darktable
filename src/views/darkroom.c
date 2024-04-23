@@ -3454,9 +3454,6 @@ int button_pressed(dt_view_t *self,
 
     if(which == 1)
     {
-      // FIXME: here and in mouse move use to dt_lib_colorpicker_set_{box_area,point} interface?
-      // -- would require a different hack for figuring out base of the drag
-      // hack: for box pickers, these represent the "base" point being dragged
       sample->point[0] = zb[0];
       sample->point[1] = zb[1];
 
@@ -3465,22 +3462,25 @@ int button_pressed(dt_view_t *self,
         const float eps = 0.05f / MAX(0.1f, zoom_scale);
 
         gboolean on_corner_prev_box = TRUE;
-        // initialized to calm gcc-11
         float opposite_x = 0.f, opposite_y = 0.f;
 
-        if(feqf(zb[0], sample->box[0], eps))
-          opposite_x = sample->box[2];
-        else if(feqf(zb[0], sample->box[2], eps))
-          opposite_x = sample->box[0];
-        else
-          on_corner_prev_box = FALSE;
+        const float dx0 = fabsf(zb[0] - sample->box[0]);
+        const float dx1 = fabsf(zb[0] - sample->box[2]);
+        const float dy0 = fabsf(zb[1] - sample->box[1]);
+        const float dy1 = fabsf(zb[1] - sample->box[3]);
 
-        if(feqf(zb[1], sample->box[1], eps))
-          opposite_y = sample->box[3];
-        else if(feqf(zb[1], sample->box[3], eps))
-          opposite_y = sample->box[1];
-        else
-          on_corner_prev_box = FALSE;
+        const gboolean px0 = dx0 < eps && dx0 < dx1;
+        const gboolean px1 = dx1 < eps && dx0 > dx1;
+        const gboolean py0 = dy0 < eps && dy0 < dy1;
+        const gboolean py1 = dy1 < eps && dy0 > dy1;
+
+        if(px0)       opposite_x = sample->box[2];
+        else if(px1)  opposite_x = sample->box[0];
+        else          on_corner_prev_box = FALSE;
+
+        if(py0)       opposite_y = sample->box[3];
+        else if(py1)  opposite_y = sample->box[1];
+        else          on_corner_prev_box = FALSE;
 
         if(on_corner_prev_box)
         {
