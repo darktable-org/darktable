@@ -1063,7 +1063,8 @@ static gboolean _event_grouping_release(GtkWidget *widget,
     else // expand the group
       darktable.gui->expanded_group_id = thumb->groupid;
     dt_collection_update_query(darktable.collection,
-                               DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_GROUPING,
+                               DT_COLLECTION_CHANGE_RELOAD,
+                               DT_COLLECTION_PROP_UNDEF,
                                NULL);
   }
   return FALSE;

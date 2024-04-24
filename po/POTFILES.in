@@ -308,7 +308,6 @@ src/libs/filters/date.c
 src/libs/filters/exposure.c
 src/libs/filters/filename.c
 src/libs/filters/focal.c
-src/libs/filters/grouping.c
 src/libs/filters/history.c
 src/libs/filters/iso.c
 src/libs/filters/local_copy.c

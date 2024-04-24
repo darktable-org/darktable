@@ -111,7 +111,8 @@ static void _group_helper_function(void)
     darktable.gui->expanded_group_id = NO_IMGID;
   dt_collection_update_query(darktable.collection,
                              DT_COLLECTION_CHANGE_RELOAD,
-                             DT_COLLECTION_PROP_GROUPING, imgs);
+                             DT_COLLECTION_PROP_UNDEF,
+                             imgs);
   dt_control_queue_redraw_center();
 }
 
@@ -139,7 +140,8 @@ static void _ungroup_helper_function(void)
   {
     darktable.gui->expanded_group_id = NO_IMGID;
     dt_collection_update_query(darktable.collection,
-                               DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_GROUPING,
+                               DT_COLLECTION_CHANGE_RELOAD,
+                               DT_COLLECTION_PROP_UNDEF,
                                g_list_reverse(imgs));
     dt_control_queue_redraw_center();
   }
