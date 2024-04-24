@@ -90,6 +90,10 @@ void _misc_tree_update(_widgets_misc_t *misc)
   {
     tooltip = g_strdup(_("no lens defined"));
   }
+  else if(misc->prop == DT_COLLECTION_PROP_GROUP_ID)
+  {
+    tooltip = g_strdup(_("no group id defined"));
+  }
   else if(misc->prop == DT_COLLECTION_PROP_WHITEBALANCE)
   {
     table = g_strdup("whitebalance");
@@ -111,6 +115,7 @@ void _misc_tree_update(_widgets_misc_t *misc)
     tooltip = g_strdup(_("no metering mode defined"));
   }
 
+  // SQL
   if(misc->prop == DT_COLLECTION_PROP_CAMERA)
   {
     // clang-format off
@@ -121,6 +126,7 @@ void _misc_tree_update(_widgets_misc_t *misc)
                " GROUP BY camera"
                " ORDER BY camera",
                d->last_where_ext);
+    // clang-format on
   }
   else if(misc->prop == DT_COLLECTION_PROP_LENS)
   {
@@ -135,6 +141,20 @@ void _misc_tree_update(_widgets_misc_t *misc)
                " GROUP BY lens"
                " ORDER BY lens",
                d->last_where_ext);
+    // clang-format on
+  }
+  else if(misc->prop == DT_COLLECTION_PROP_GROUP_ID)
+  {
+    // clang-format off
+    g_snprintf(query, sizeof(query),
+               "SELECT mi.group_id, COUNT(*) AS count"
+               " FROM main.images AS mi"
+               " WHERE %s"
+               " GROUP BY group_id"
+               " HAVING COUNT(*) > 1"
+               " ORDER BY group_id",
+               d->last_where_ext);
+    // clang-format on
   }
   else // white balance, flash, exposure program, metering mode
   {
@@ -149,6 +169,7 @@ void _misc_tree_update(_widgets_misc_t *misc)
                " ORDER BY name",
                table, table,
                d->last_where_ext);
+    // clang-format on
   }
 
   g_free(table);
@@ -425,6 +446,13 @@ static void _misc_widget_init(dt_lib_filtering_rule_t *rule,
                          "multiple values can be separated by ','\n"
                          "\nright-click to get existing metering modes"));
   }
+  else if(prop == DT_COLLECTION_PROP_GROUP_ID)
+  {
+    name = g_strdup(_("group id"));
+    tooltip = g_strdup(_("enter group id to search.\n"
+                         "multiple values can be separated by ','\n"
+                         "\nright-click to get existing group ids"));
+  }
 
   gtk_entry_set_placeholder_text(GTK_ENTRY(misc->name), name);
   gtk_widget_set_tooltip_text(misc->name, tooltip);
@@ -456,7 +484,7 @@ static void _misc_widget_init(dt_lib_filtering_rule_t *rule,
       = GTK_TREE_MODEL(gtk_list_store_new(TREE_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT));
   misc->name_tree = gtk_tree_view_new_with_model(model);
   gtk_widget_show(misc->name_tree);
-  gtk_widget_set_tooltip_text(misc->name_tree, _("click to select misc\n"
+  gtk_widget_set_tooltip_text(misc->name_tree, _("click to select\n"
                                                  "ctrl+click to select multiple values"));
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(misc->name_tree), FALSE);
   GtkTreeSelection *sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(misc->name_tree));
