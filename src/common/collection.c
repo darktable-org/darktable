@@ -651,7 +651,7 @@ const char *dt_collection_name_untranslated(const dt_collection_properties_t pro
     case DT_COLLECTION_PROP_GROUPING:
       return N_("grouping");
     case DT_COLLECTION_PROP_GROUP_ID:
-      return N_("group id");
+      return N_("group");
     case DT_COLLECTION_PROP_LOCAL_COPY:
       return N_("local copy");
     case DT_COLLECTION_PROP_MODULE:
