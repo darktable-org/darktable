@@ -648,8 +648,6 @@ const char *dt_collection_name_untranslated(const dt_collection_properties_t pro
       return N_("filename");
     case DT_COLLECTION_PROP_GEOTAGGING:
       return N_("geotagging");
-    case DT_COLLECTION_PROP_GROUPING:
-      return N_("grouping");
     case DT_COLLECTION_PROP_GROUP_ID:
       return N_("group");
     case DT_COLLECTION_PROP_LOCAL_COPY:
@@ -2111,45 +2109,6 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       g_free(number2);
       break;
     }
-
-    case DT_COLLECTION_PROP_GROUPING: // grouping
-      if(!g_strcmp0(escaped_text, "$NO_GROUP"))
-      {
-        query = g_strdup("(mi.id = group_id AND "
-                         "NOT EXISTS(SELECT 1 AS group_count"
-                         "           FROM main.images AS gc"
-                         "           WHERE gc.group_id = mi.group_id AND gc.id != mi.id))");
-      }
-      else if(!g_strcmp0(escaped_text, "$GROUP"))
-      {
-        query = g_strdup(
-            "(EXISTS(SELECT 1 FROM main.images AS gc"
-            "        WHERE gc.group_id = mi.group_id AND gc.id != mi.id))");
-      }
-      else if(!g_strcmp0(escaped_text, "$LEADER"))
-      {
-        query = g_strdup(
-            "(mi.id = mi.group_id AND "
-            "EXISTS(SELECT 1 FROM main.images AS gc"
-            "       WHERE gc.group_id = mi.group_id AND gc.id != mi.id))");
-      }
-      else if(!g_strcmp0(escaped_text, "$FOLLOWER"))
-      {
-        query = g_strdup("(mi.id != group_id)");
-      }
-      else if(!g_strcmp0(escaped_text, _("group leaders"))) // used in collect.c
-      {
-        query = g_strdup("(mi.id = group_id)");
-      }
-      else if(!g_strcmp0(escaped_text, _("group followers"))) // used in collect.c
-      {
-        query = g_strdup("(mi.id != group_id)");
-      }
-      else // by default, we select all the images
-      {
-        query = g_strdup("1 = 1");
-      }
-      break;
 
     case DT_COLLECTION_PROP_MODULE: // dev module
       {

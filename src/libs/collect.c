@@ -2084,27 +2084,6 @@ static void _list_view(dt_lib_collect_rule_t *dr)
         // clang-format on
         break;
 
-      case DT_COLLECTION_PROP_GROUPING: // Grouping, 2 hardcoded alternatives
-        // clang-format off
-        g_snprintf(query, sizeof(query),
-                   "SELECT CASE"
-                   "         WHEN id = group_id THEN '%s'"
-                   "         ELSE '%s'"
-                   "       END as group_leader, 1, COUNT(*) AS count,"
-                   "       CASE"
-                   "         WHEN id = group_id THEN '0'"
-                   "         ELSE '1'"
-                   "       END AS force_order"
-                   " FROM main.images AS mi"
-                   " WHERE %s"
-                   " GROUP BY force_order"
-                   " ORDER BY force_order %s",
-                   _("group leaders"),  _("group followers"),
-                   where_ext,
-                   sort_descending ? "DESC" : "ASC");
-        // clang-format on
-        break;
-
       case DT_COLLECTION_PROP_GROUP_ID: // group_id
         // clang-format off
         g_snprintf(query, sizeof(query),
@@ -2827,8 +2806,7 @@ static void row_activated_with_event(GtkTreeView *view,
      || item == DT_COLLECTION_PROP_COLORLABEL
      || item == DT_COLLECTION_PROP_GEOTAGGING
      || item == DT_COLLECTION_PROP_HISTORY
-     || item == DT_COLLECTION_PROP_LOCAL_COPY
-     || item == DT_COLLECTION_PROP_GROUPING)
+     || item == DT_COLLECTION_PROP_LOCAL_COPY)
   {
     set_properties(d->rule + active); // we just have to set the selection
   }
@@ -3376,7 +3354,6 @@ static void _populate_collect_combo(GtkWidget *w)
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METERING_MODE);
 
     dt_bauhaus_combobox_add_section(w, _("darktable"));
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GROUPING);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GROUP_ID);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_LOCAL_COPY);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_HISTORY);
@@ -4103,7 +4080,6 @@ void init(struct dt_lib_module_t *self)
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_FILENAME);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_GEOTAGGING);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_LOCAL_COPY);
-  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_GROUPING);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_MODULE);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_ORDER);
 }
