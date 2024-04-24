@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2021-2023 darktable developers.
+    Copyright (C) 2021-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1109,10 +1109,11 @@ void gui_init(struct dt_iop_module_t *self)
     { _("golden cut"), 16180340, 10000000 },
     { _("16:9, HDTV"), 16, 9 },
     { _("widescreen"), 185, 100 },
-    { _("2:1, univisium"), 2, 1 },
-    { _("cinemascope"), 235, 100 },
+    { _("2:1, Univisium"), 2, 1 },
+    { _("CinemaScope"), 235, 100 },
     { _("21:9"), 237, 100 },
     { _("anamorphic"), 239, 100 },
+    { _("65:24, XPan"), 65, 24 },
     { _("3:1, panorama"), 300, 100 },
   };
 
