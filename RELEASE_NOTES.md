@@ -124,6 +124,12 @@ changes (where available).
 - Improved efficiency of the quick access panel by allowing modules to
   be reset and presets to be applied without opening the full module.
 
+- Added more collection types and filters for flash, white balance,
+  exposure program, metering mode and image grouping.
+
+  Removed the old image grouping collection type and filter which gave
+  confusing results.
+
 ## Bug Fixes
 
 - Fix copy of multiple instances to ensure the proper order is applied
