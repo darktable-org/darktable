@@ -648,8 +648,8 @@ const char *dt_collection_name_untranslated(const dt_collection_properties_t pro
       return N_("filename");
     case DT_COLLECTION_PROP_GEOTAGGING:
       return N_("geotagging");
-    case DT_COLLECTION_PROP_GROUPING:
-      return N_("grouping");
+    case DT_COLLECTION_PROP_GROUP_ID:
+      return N_("group");
     case DT_COLLECTION_PROP_LOCAL_COPY:
       return N_("local copy");
     case DT_COLLECTION_PROP_MODULE:
@@ -1854,6 +1854,22 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       query = dt_util_dstrcat(query, ")");
       break;
 
+    case DT_COLLECTION_PROP_GROUP_ID: // group id
+      query = g_strdup("(");
+      // handle the possibility of multiple values
+      elems = _strsplit_quotes(escaped_text, ",", -1);
+      for(int i = 0; i < g_strv_length(elems); i++)
+      {
+        gchar *group_ids = _add_wildcards(elems[i]);
+        query = dt_util_dstrcat(query,
+                                "%sgroup_id LIKE '%s'",
+                                i>0?" OR ":"", group_ids);
+        g_free(group_ids);
+      }
+      g_strfreev(elems);
+      query = dt_util_dstrcat(query, ")");
+      break;
+
     case DT_COLLECTION_PROP_FOCAL_LENGTH: // focal length
     {
       gchar *operator, *number1, *number2;
@@ -2093,45 +2109,6 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       g_free(number2);
       break;
     }
-
-    case DT_COLLECTION_PROP_GROUPING: // grouping
-      if(!g_strcmp0(escaped_text, "$NO_GROUP"))
-      {
-        query = g_strdup("(mi.id = group_id AND "
-                         "NOT EXISTS(SELECT 1 AS group_count"
-                         "           FROM main.images AS gc"
-                         "           WHERE gc.group_id = mi.group_id AND gc.id != mi.id))");
-      }
-      else if(!g_strcmp0(escaped_text, "$GROUP"))
-      {
-        query = g_strdup(
-            "(EXISTS(SELECT 1 FROM main.images AS gc"
-            "        WHERE gc.group_id = mi.group_id AND gc.id != mi.id))");
-      }
-      else if(!g_strcmp0(escaped_text, "$LEADER"))
-      {
-        query = g_strdup(
-            "(mi.id = mi.group_id AND "
-            "EXISTS(SELECT 1 FROM main.images AS gc"
-            "       WHERE gc.group_id = mi.group_id AND gc.id != mi.id))");
-      }
-      else if(!g_strcmp0(escaped_text, "$FOLLOWER"))
-      {
-        query = g_strdup("(mi.id != group_id)");
-      }
-      else if(!g_strcmp0(escaped_text, _("group leaders"))) // used in collect.c
-      {
-        query = g_strdup("(mi.id = group_id)");
-      }
-      else if(!g_strcmp0(escaped_text, _("group followers"))) // used in collect.c
-      {
-        query = g_strdup("(mi.id != group_id)");
-      }
-      else // by default, we select all the images
-      {
-        query = g_strdup("1 = 1");
-      }
-      break;
 
     case DT_COLLECTION_PROP_MODULE: // dev module
       {
@@ -2635,7 +2612,8 @@ void dt_collection_update_query(const dt_collection_t *collection,
        || property == DT_COLLECTION_PROP_WHITEBALANCE
        || property == DT_COLLECTION_PROP_FLASH
        || property == DT_COLLECTION_PROP_EXPOSURE_PROGRAM
-       || property == DT_COLLECTION_PROP_METERING_MODE))
+       || property == DT_COLLECTION_PROP_METERING_MODE
+       || property == DT_COLLECTION_PROP_GROUP_ID))
     {
       gchar *text_quoted = g_strdup_printf("\"%s\"", text);
       g_free(text);
