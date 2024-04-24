@@ -33,13 +33,6 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-typedef enum dt_action_element_lib_t
-{
-  DT_ACTION_ELEMENT_SHOW = 0,
-  DT_ACTION_ELEMENT_RESET = 1,
-  DT_ACTION_ELEMENT_PRESETS = 2,
-} dt_action_element_lib_t;
-
 typedef struct dt_lib_module_info_t
 {
   char *plugin_name;
