@@ -64,8 +64,10 @@ Requirements
 
 *32-bit platforms are not officially supported - they might or might not work.*
 
-*Windows support is still young and suffers from bugs that do not affect Linux. If possible,
-prefer using darktable on Linux.*
+*Both darktable and the libraries it uses are developed on the Linux platform.
+Therefore, other platforms MAY have additional bugs that are not present in the Linux version.
+In addition, for example, on the Windows platform, printing support is not currently implemented.
+So we recommend, if you have a choice of platform, to use darktable on Linux.*
 
 ### Hardware
 
