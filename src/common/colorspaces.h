@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -266,6 +266,9 @@ int dt_colorspaces_get_matrix_from_output_profile(cmsHPROFILE prof,
                                                   float *lutg,
                                                   float *lutb,
                                                   const int lutsize);
+
+/** create a temporary profile to be removed by dt_colorspaces_cleanup_profile */
+cmsHPROFILE dt_colorspaces_make_temporary_profile(cmsHPROFILE profile);
 
 /** wrapper to get the name from a color profile. this tries to handle character encodings. */
 void dt_colorspaces_get_profile_name(cmsHPROFILE p,
