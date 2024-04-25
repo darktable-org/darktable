@@ -101,13 +101,13 @@ static const dt_colorspaces_color_profile_t *_get_profile
    const char *filename,
    dt_colorspaces_profile_direction_t direction);
 
-static int dt_colorspaces_get_matrix_from_profile(cmsHPROFILE prof,
-                                                  dt_colormatrix_t matrix,
-                                                  float *lutr,
-                                                  float *lutg,
-                                                  float *lutb,
-                                                  const int lutsize,
-                                                  const int input)
+static int _colorspaces_get_matrix_from_profile(cmsHPROFILE prof,
+                                                dt_colormatrix_t matrix,
+                                                float *lutr,
+                                                float *lutg,
+                                                float *lutb,
+                                                const int lutsize,
+                                                const int input)
 {
   // create an OpenCL processable matrix + tone curves from an cmsHPROFILE:
   // NOTE: may be invoked with matrix and LUT pointers set to null to find
@@ -235,7 +235,7 @@ int dt_colorspaces_get_matrix_from_input_profile(cmsHPROFILE prof,
                                                  float *lutb,
                                                  const int lutsize)
 {
-  return dt_colorspaces_get_matrix_from_profile(prof, matrix, lutr, lutg, lutb, lutsize, 1);
+  return _colorspaces_get_matrix_from_profile(prof, matrix, lutr, lutg, lutb, lutsize, 1);
 }
 
 int dt_colorspaces_get_matrix_from_output_profile(cmsHPROFILE prof,
@@ -245,10 +245,10 @@ int dt_colorspaces_get_matrix_from_output_profile(cmsHPROFILE prof,
                                                   float *lutb,
                                                   const int lutsize)
 {
-  return dt_colorspaces_get_matrix_from_profile(prof, matrix, lutr, lutg, lutb, lutsize, 0);
+  return _colorspaces_get_matrix_from_profile(prof, matrix, lutr, lutg, lutb, lutsize, 0);
 }
 
-static cmsHPROFILE dt_colorspaces_create_lab_profile()
+static cmsHPROFILE _colorspaces_create_lab_profile()
 {
   return cmsCreateLab4Profile(cmsD50_xyY());
 }
@@ -431,7 +431,7 @@ static cmsHPROFILE dt_colorspaces_create_srgb_profile_v4()
   return _colorspaces_create_srgb_profile(FALSE);
 }
 
-static cmsHPROFILE dt_colorspaces_create_brg_profile()
+static cmsHPROFILE _colorspaces_create_brg_profile()
 {
   cmsFloat64Number srgb_parameters[5] =
     { 2.4, 1.0 / 1.055,  0.055 / 1.055, 1.0 / 12.92, 0.04045 };
@@ -449,7 +449,7 @@ static cmsHPROFILE dt_colorspaces_create_brg_profile()
   return profile;
 }
 
-static cmsHPROFILE dt_colorspaces_create_gamma_rec709_rgb_profile(void)
+static cmsHPROFILE _colorspaces_create_gamma_rec709_rgb_profile(void)
 {
   cmsFloat64Number srgb_parameters[5] =
     { 1/0.45, 1.0 / 1.099,  0.099 / 1.099, 1.0 / 4.5, 0.081 };
@@ -631,7 +631,7 @@ cmsHPROFILE dt_colorspaces_create_darktable_profile(const char *makermodel)
   return hp;
 }
 
-static cmsHPROFILE dt_colorspaces_create_xyz_profile(void)
+static cmsHPROFILE _colorspaces_create_xyz_profile(void)
 {
   cmsHPROFILE hXYZ = cmsCreateXYZProfile();
   cmsSetPCS(hXYZ, cmsSigXYZData);
@@ -670,7 +670,7 @@ static cmsHPROFILE dt_colorspaces_create_linear_rec709_rgb_profile(void)
   return profile;
 }
 
-static cmsHPROFILE dt_colorspaces_create_linear_rec2020_rgb_profile(void)
+static cmsHPROFILE _colorspaces_create_linear_rec2020_rgb_profile(void)
 {
   cmsToneCurve *transferFunction = cmsBuildGamma(NULL, 1.0);
 
@@ -683,7 +683,7 @@ static cmsHPROFILE dt_colorspaces_create_linear_rec2020_rgb_profile(void)
   return profile;
 }
 
-static cmsHPROFILE dt_colorspaces_create_pq_rec2020_rgb_profile(void)
+static cmsHPROFILE _colorspaces_create_pq_rec2020_rgb_profile(void)
 {
   cmsToneCurve *transferFunction = _colorspaces_create_transfer(4096, _PQ_fct);
 
@@ -696,7 +696,7 @@ static cmsHPROFILE dt_colorspaces_create_pq_rec2020_rgb_profile(void)
   return profile;
 }
 
-static cmsHPROFILE dt_colorspaces_create_hlg_rec2020_rgb_profile(void)
+static cmsHPROFILE _colorspaces_create_hlg_rec2020_rgb_profile(void)
 {
   cmsToneCurve *transferFunction = _colorspaces_create_transfer(4096, _HLG_fct);
 
@@ -709,7 +709,7 @@ static cmsHPROFILE dt_colorspaces_create_hlg_rec2020_rgb_profile(void)
   return profile;
 }
 
-static cmsHPROFILE dt_colorspaces_create_pq_p3_rgb_profile(void)
+static cmsHPROFILE _colorspaces_create_pq_p3_rgb_profile(void)
 {
   cmsToneCurve *transferFunction = _colorspaces_create_transfer(4096, _PQ_fct);
 
@@ -722,7 +722,7 @@ static cmsHPROFILE dt_colorspaces_create_pq_p3_rgb_profile(void)
   return profile;
 }
 
-static cmsHPROFILE dt_colorspaces_create_hlg_p3_rgb_profile(void)
+static cmsHPROFILE _colorspaces_create_hlg_p3_rgb_profile(void)
 {
   cmsToneCurve *transferFunction = _colorspaces_create_transfer(4096, _HLG_fct);
 
@@ -735,7 +735,7 @@ static cmsHPROFILE dt_colorspaces_create_hlg_p3_rgb_profile(void)
   return profile;
 }
 
-static cmsHPROFILE dt_colorspaces_create_display_p3_rgb_profile(void)
+static cmsHPROFILE _colorspaces_create_display_p3_rgb_profile(void)
 {
   cmsFloat64Number srgb_parameters[5] =
     { 2.4, 1.0 / 1.055,  0.055 / 1.055, 1.0 / 12.92, 0.04045 };
@@ -750,7 +750,7 @@ static cmsHPROFILE dt_colorspaces_create_display_p3_rgb_profile(void)
   return profile;
 }
 
-static cmsHPROFILE dt_colorspaces_create_linear_prophoto_rgb_profile(void)
+static cmsHPROFILE _colorspaces_create_linear_prophoto_rgb_profile(void)
 {
   cmsToneCurve *transferFunction = cmsBuildGamma(NULL, 1.0);
 
@@ -763,7 +763,7 @@ static cmsHPROFILE dt_colorspaces_create_linear_prophoto_rgb_profile(void)
   return profile;
 }
 
-static cmsHPROFILE dt_colorspaces_create_linear_infrared_profile(void)
+static cmsHPROFILE _colorspaces_create_linear_infrared_profile(void)
 {
   cmsToneCurve *transferFunction = cmsBuildGamma(NULL, 1.0);
 
@@ -1044,6 +1044,25 @@ void dt_colorspaces_cleanup_profile(cmsHPROFILE p)
 {
   if(!p) return;
   cmsCloseProfile(p);
+}
+
+cmsHPROFILE dt_colorspaces_make_temporary_profile(cmsHPROFILE profile)
+{
+  cmsUInt32Number size;
+  cmsHPROFILE old_profile = profile;
+  profile = NULL;
+
+  if(old_profile && cmsSaveProfileToMem(old_profile, NULL, &size))
+  {
+    char *data = malloc(size);
+
+    if(cmsSaveProfileToMem(old_profile, data, &size))
+      profile = cmsOpenProfileFromMem(data, size);
+
+    free(data);
+  }
+
+  return profile;
 }
 
 void dt_colorspaces_get_profile_name(cmsHPROFILE p,
@@ -1446,14 +1465,14 @@ dt_colorspaces_t *dt_colorspaces_init()
 
   res->profiles = g_list_append
     (res->profiles,
-     _create_profile(DT_COLORSPACE_REC709, dt_colorspaces_create_gamma_rec709_rgb_profile(),
+     _create_profile(DT_COLORSPACE_REC709, _colorspaces_create_gamma_rec709_rgb_profile(),
                      _("Rec709 RGB"), ++in_pos, ++out_pos, -1, -1,
                      ++work_pos, -1));
 
   res->profiles = g_list_append
     (res->profiles,
      _create_profile(DT_COLORSPACE_LIN_REC2020,
-                     dt_colorspaces_create_linear_rec2020_rgb_profile(),
+                     _colorspaces_create_linear_rec2020_rgb_profile(),
                      _("linear Rec2020 RGB"), ++in_pos, ++out_pos,
                      ++display_pos, ++category_pos,
                      ++work_pos, ++display2_pos));
@@ -1461,7 +1480,7 @@ dt_colorspaces_t *dt_colorspaces_init()
   res->profiles = g_list_append
     (res->profiles,
      _create_profile(DT_COLORSPACE_PQ_REC2020,
-                     dt_colorspaces_create_pq_rec2020_rgb_profile(),
+                     _colorspaces_create_pq_rec2020_rgb_profile(),
                      _("PQ Rec2020 RGB"), ++in_pos, ++out_pos,
                      ++display_pos, ++category_pos,
                      ++work_pos, ++display2_pos));
@@ -1469,27 +1488,27 @@ dt_colorspaces_t *dt_colorspaces_init()
   res->profiles = g_list_append
     (res->profiles,
      _create_profile(DT_COLORSPACE_HLG_REC2020,
-                     dt_colorspaces_create_hlg_rec2020_rgb_profile(),
+                     _colorspaces_create_hlg_rec2020_rgb_profile(),
                      _("HLG Rec2020 RGB"), ++in_pos, ++out_pos,
                      ++display_pos, ++category_pos,
                      ++work_pos, ++display2_pos));
 
   res->profiles = g_list_append
     (res->profiles,
-     _create_profile(DT_COLORSPACE_PQ_P3, dt_colorspaces_create_pq_p3_rgb_profile(),
+     _create_profile(DT_COLORSPACE_PQ_P3, _colorspaces_create_pq_p3_rgb_profile(),
                      _("PQ P3 RGB"), ++in_pos, ++out_pos, ++display_pos, ++category_pos,
                      ++work_pos, ++display2_pos));
 
   res->profiles = g_list_append
     (res->profiles,
-     _create_profile(DT_COLORSPACE_HLG_P3, dt_colorspaces_create_hlg_p3_rgb_profile(),
+     _create_profile(DT_COLORSPACE_HLG_P3, _colorspaces_create_hlg_p3_rgb_profile(),
                      _("HLG P3 RGB"), ++in_pos, ++out_pos, ++display_pos, ++category_pos,
                      ++work_pos, ++display2_pos));
 
   res->profiles = g_list_append
     (res->profiles,
      _create_profile(DT_COLORSPACE_DISPLAY_P3,
-                     dt_colorspaces_create_display_p3_rgb_profile(),
+                     _colorspaces_create_display_p3_rgb_profile(),
                      _("Display P3 RGB"), ++in_pos, ++out_pos,
                      ++display_pos, ++category_pos,
                      ++work_pos, ++display2_pos));
@@ -1497,7 +1516,7 @@ dt_colorspaces_t *dt_colorspaces_init()
   res->profiles = g_list_append
     (res->profiles,
      _create_profile(DT_COLORSPACE_PROPHOTO_RGB,
-                     dt_colorspaces_create_linear_prophoto_rgb_profile(),
+                     _colorspaces_create_linear_prophoto_rgb_profile(),
                      _("linear ProPhoto RGB"), ++in_pos, ++out_pos,
                      ++display_pos, ++category_pos,
                      ++work_pos, ++display2_pos));
@@ -1505,26 +1524,26 @@ dt_colorspaces_t *dt_colorspaces_init()
   res->profiles = g_list_append
     (res->profiles,
      _create_profile(DT_COLORSPACE_XYZ,
-                     dt_colorspaces_create_xyz_profile(), _("linear XYZ"), ++in_pos,
+                     _colorspaces_create_xyz_profile(), _("linear XYZ"), ++in_pos,
                      dt_conf_get_bool("allow_lab_output") ? ++out_pos : -1,
                      -1, -1, -1, -1));
 
   res->profiles = g_list_append
     (res->profiles,
      _create_profile(DT_COLORSPACE_LAB,
-                     dt_colorspaces_create_lab_profile(), _("Lab"), ++in_pos,
+                     _colorspaces_create_lab_profile(), _("Lab"), ++in_pos,
                      dt_conf_get_bool("allow_lab_output") ? ++out_pos : -1,
                      -1, -1, -1, -1));
 
   res->profiles = g_list_append
     (res->profiles,
      _create_profile(DT_COLORSPACE_INFRARED,
-                     dt_colorspaces_create_linear_infrared_profile(),
+                     _colorspaces_create_linear_infrared_profile(),
                      _("linear infrared BGR"), ++in_pos, -1, -1, -1, -1, -1));
 
   res->profiles = g_list_append
     (res->profiles,
-     _create_profile(DT_COLORSPACE_BRG, dt_colorspaces_create_brg_profile(),
+     _create_profile(DT_COLORSPACE_BRG, _colorspaces_create_brg_profile(),
                      _("BRG (for testing)"), ++in_pos, ++out_pos, ++display_pos,
                      -1, -1, ++display2_pos));
 
