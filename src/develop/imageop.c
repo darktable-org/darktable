@@ -42,6 +42,7 @@
 #include "dtgtk/icon.h"
 #include "gui/accelerators.h"
 #include "gui/color_picker_proxy.h"
+#include "gui/drag_and_drop.h"
 #include "gui/gtk.h"
 #include "gui/guides.h"
 #include "gui/presets.h"
@@ -2504,12 +2505,7 @@ static gboolean _iop_plugin_header_button_press(GtkWidget *w,
   if(e->button == 1)
   {
     if(dt_modifier_is(e->state, GDK_SHIFT_MASK | GDK_CONTROL_MASK))
-    {
-      GtkBox *container =
-        dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER);
-      g_object_set_data(G_OBJECT(container), "source_data", user_data);
-      return FALSE;
-    }
+      ; // do nothing (for easier dragging)
     else if(dt_modifier_is(e->state, GDK_CONTROL_MASK))
     {
       dt_iop_gui_rename_module(module);
@@ -2961,6 +2957,71 @@ GtkWidget *dt_iop_gui_header_button(dt_iop_module_t *module,
   return button;
 }
 
+static gboolean _on_drag_motion(GtkWidget *widget, GdkDragContext *dc, gint x, gint y, guint time, dt_iop_module_t *dest)
+{
+  GtkWidget *src_widget = gtk_widget_get_ancestor(gtk_drag_get_source_widget(dc),
+                                                  DTGTK_TYPE_EXPANDER);
+
+  dt_iop_module_t *src = NULL;
+  for(GList *iop = darktable.develop->iop; iop; iop = iop->next)
+    if(((dt_iop_module_t *)iop->data)->expander == src_widget)
+      src = iop->data;
+
+  const gboolean above = y < gtk_widget_get_allocated_height(dest->header);
+
+  GList *iop_order = g_list_find(darktable.develop->iop, dest);
+  dest = above ^ (src && dest->iop_order < src->iop_order)
+       ? dest : above ? iop_order->next->data : iop_order->prev->data;
+
+  if(!src || !dest || dest == src) return FALSE;
+
+  if(x != DND_DROP)
+  {
+    if(!(src->iop_order < dest->iop_order
+         ? dt_ioppr_check_can_move_after_iop(darktable.develop->iop, src, dest)
+         : dt_ioppr_check_can_move_before_iop(darktable.develop->iop, src, dest)))
+      return FALSE;
+
+    dtgtk_expander_set_drag_hover(DTGTK_EXPANDER(widget), TRUE, !above);
+
+    gdk_drag_status(dc, GDK_ACTION_COPY, time);
+  }
+  else
+  {
+    gtk_drag_finish(dc, TRUE, FALSE, time);
+
+    if(!(src->iop_order < dest->iop_order
+         ? dt_ioppr_move_iop_after(darktable.develop, src, dest)
+         : dt_ioppr_move_iop_before(darktable.develop, src, dest)))
+      return FALSE;
+
+    // we move the headers
+    int position = 0;
+    GtkBox *panel = dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER);
+    gtk_container_child_get(GTK_CONTAINER(panel), dest->expander,
+                            "position", &position, NULL);
+    gtk_box_reorder_child(panel, src->expander, position);
+
+    dt_dev_add_history_item(src->dev, src, TRUE);
+
+    dt_ioppr_check_iop_order(src->dev, 0, "_on_drag_drop end");
+
+    // rebuild the accelerators
+    dt_iop_connect_accels_multi(src->so);
+
+    dt_dev_pixelpipe_rebuild(src->dev);
+
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_MOVED);
+  }
+
+  return TRUE;
+}
+
+static gboolean _on_drag_drop(GtkWidget *widget, GdkDragContext *dc, gint x, gint y, guint time, dt_iop_module_t *module)
+{
+  return _on_drag_motion(widget, dc, DND_DROP, y, time, module);
+}
+
 void dt_iop_gui_set_expander(dt_iop_module_t *module)
 {
   GtkWidget *header = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -2975,6 +3036,13 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   GtkWidget *pluginui_frame = dtgtk_expander_get_frame(DTGTK_EXPANDER(expander));
 
   dt_gui_add_class(pluginui_frame, "dt_plugin_ui");
+
+  static const GtkTargetEntry target_list[] = { { "iop", GTK_TARGET_SAME_APP, DND_TARGET_IOP } };
+
+  gtk_drag_source_set(header_evb, GDK_BUTTON1_MASK, target_list, 1, GDK_ACTION_COPY);
+  gtk_drag_dest_set(expander, GTK_DEST_DEFAULT_DROP | GTK_DEST_DEFAULT_HIGHLIGHT, target_list, 1, GDK_ACTION_COPY);
+  g_signal_connect(expander, "drag-motion", G_CALLBACK(_on_drag_motion), module);
+  g_signal_connect(expander, "drag-drop", G_CALLBACK(_on_drag_drop), module);
 
   module->header = header;
 

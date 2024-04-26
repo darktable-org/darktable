@@ -410,6 +410,14 @@ static inline GtkWidget *dt_ui_label_new(const gchar *str)
   return label;
 };
 
+static inline GtkWidget *dt_ui_entry_new(gint width_chars)
+{
+  GtkWidget *entry = gtk_entry_new();
+  gtk_drag_dest_unset(entry);
+  gtk_entry_set_width_chars(GTK_ENTRY(entry), width_chars);
+  return entry;
+};
+
 extern const struct dt_action_def_t dt_action_def_tabs_all_rgb;
 extern const struct dt_action_def_t dt_action_def_tabs_rgb;
 extern const struct dt_action_def_t dt_action_def_tabs_none;

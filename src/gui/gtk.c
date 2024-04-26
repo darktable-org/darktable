@@ -2218,6 +2218,36 @@ static gboolean _ui_init_panel_container_center_scroll_event(GtkWidget *widget,
           != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default"));
 }
 
+static gboolean _on_drag_motion_drop(GtkWidget *widget, GdkDragContext *dc, gint x, gint y, guint time, gboolean drop)
+{
+  if(drop) gtk_widget_set_opacity(gtk_drag_get_source_widget(dc), 1.0);
+
+  gboolean ret = TRUE;
+  gpointer last = NULL;
+  for(GList *m = gtk_container_get_children(GTK_CONTAINER(widget)); m; m = g_list_delete_link(m, m))
+    if(gtk_widget_get_visible(GTK_WIDGET(m->data))) last = m->data;
+  if(last)
+    g_signal_emit_by_name(last, "drag-motion", dc, drop ? -1 : x, y, time, &ret);
+  else if(drop)
+  {
+    // drop in empty panel; dragged expander handles its own move; pass destination panel in dc
+    GtkWidget *src_expander = gtk_widget_get_ancestor
+      (gtk_drag_get_source_widget(dc), DTGTK_TYPE_EXPANDER);
+    if(src_expander)
+      g_signal_emit_by_name(src_expander, "drag-motion", widget, x, y, time, &ret);
+  }
+  else
+    gdk_drag_status(dc, GDK_ACTION_COPY, time);
+
+  return ret;
+}
+
+static void _on_drag_leave(GtkDarktableExpander *widget, GdkDragContext *dc, guint time, gpointer user_data)
+{
+  for(GList *m = gtk_container_get_children(GTK_CONTAINER(widget)); m; m = g_list_delete_link(m, m))
+    dtgtk_expander_set_drag_hover(m->data, FALSE, FALSE);
+}
+
 static GtkWidget *_ui_init_panel_container_center(GtkWidget *container,
                                                   const gboolean left)
 {
@@ -2264,6 +2294,10 @@ static GtkWidget *_ui_init_panel_container_center(GtkWidget *container,
   widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_widget_set_name(widget, "plugins_vbox_left");
   gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_drag_dest_set(widget, 0, NULL, 0, GDK_ACTION_COPY);
+  g_signal_connect(widget, "drag-motion", G_CALLBACK(_on_drag_motion_drop), GINT_TO_POINTER(FALSE));
+  g_signal_connect(widget, "drag-drop", G_CALLBACK(_on_drag_motion_drop), GINT_TO_POINTER(TRUE));
+  g_signal_connect(widget, "drag-leave", G_CALLBACK(_on_drag_leave), NULL);
   g_signal_connect_swapped(widget, "draw", G_CALLBACK(gtk_widget_queue_draw), darktable.gui->ui->center);
 
   return widget;
@@ -3500,6 +3534,7 @@ GtkNotebook *dt_ui_notebook_new(dt_action_def_t *def)
     def->process = _action_process_tabs;
   }
 
+  gtk_drag_dest_unset(GTK_WIDGET(_current_notebook));
   return _current_notebook;
 }
 

@@ -21,13 +21,16 @@
 #define _BYTE 8
 #define _WORD 16
 #define _DWORD 32
+#define DND_DROP -1
 
 /* common for all the drag&drop sources/destinations */
 enum
 {
   DND_TARGET_IMGID,
   DND_TARGET_URI,
-  DND_TARGET_TAG
+  DND_TARGET_TAG,
+  DND_TARGET_IOP,
+  DND_TARGET_LIB,
 };
 
 /* drag & drop for internal image ids */
@@ -40,14 +43,16 @@ static const guint n_targets_external = G_N_ELEMENTS(target_list_external);
 
 /* drag & drop for both internal image ids and global uris */
 static const GtkTargetEntry target_list_all[]
-    = { { "image-id", GTK_TARGET_SAME_APP, DND_TARGET_IMGID }, { "text/uri-list", GTK_TARGET_OTHER_APP, DND_TARGET_URI } };
+    = { { "image-id", GTK_TARGET_SAME_APP, DND_TARGET_IMGID },
+        { "text/uri-list", GTK_TARGET_OTHER_APP, DND_TARGET_URI } };
 static const guint n_targets_all = G_N_ELEMENTS(target_list_all);
 
 static const GtkTargetEntry target_list_tags[] = { { "tags-dnd", GTK_TARGET_SAME_WIDGET, DND_TARGET_TAG } };
 static const guint n_targets_tags = G_N_ELEMENTS(target_list_tags);
 
 static const GtkTargetEntry target_list_tags_dest[]
-    = { { "image-id", GTK_TARGET_SAME_APP, DND_TARGET_IMGID }, { "tags-dnd", GTK_TARGET_SAME_WIDGET, DND_TARGET_TAG } };
+    = { { "image-id", GTK_TARGET_SAME_APP, DND_TARGET_IMGID },
+        { "tags-dnd", GTK_TARGET_SAME_WIDGET, DND_TARGET_TAG } };
 static const guint n_targets_tags_dest = G_N_ELEMENTS(target_list_tags_dest);
 
 // clang-format off

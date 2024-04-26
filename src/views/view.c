@@ -217,8 +217,8 @@ static void _remove_child(GtkWidget *child,
   if(DTGTK_IS_EXPANDER(child))
   {
     GtkWidget * evb = dtgtk_expander_get_body_event_box(DTGTK_EXPANDER(child));
-    gtk_container_remove(GTK_CONTAINER(evb),
-                         dtgtk_expander_get_body(DTGTK_EXPANDER(child)));
+    GtkWidget *body = dtgtk_expander_get_body(DTGTK_EXPANDER(child));
+    if(body) gtk_container_remove(GTK_CONTAINER(evb), body);
     gtk_widget_destroy(child);
   }
   else
@@ -366,6 +366,10 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
   /* lets add plugins related to new view into panels.  this has to be
    * done in reverse order to have the lowest position at the
    * bottom! */
+
+  // adjust order per view in case user made changes
+  darktable.lib->plugins = g_list_sort(darktable.lib->plugins, dt_lib_sort_plugins);
+
   for(GList *iter = g_list_last(darktable.lib->plugins);
       iter;
       iter = g_list_previous(iter))
@@ -416,7 +420,7 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
         plugin->view_enter(plugin, old_view, new_view);
 
       /* add module to its container */
-      dt_ui_container_add_widget(darktable.gui->ui, plugin->container(plugin), w);
+      dt_ui_container_add_widget(darktable.gui->ui, dt_lib_get_container(plugin), w);
     }
   }
 

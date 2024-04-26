@@ -363,8 +363,7 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
     gtk_box_pack_start(GTK_BOX(rule->w_special_box_top), hb, TRUE, TRUE, 0);
   else
     gtk_box_pack_start(GTK_BOX(rule->w_special_box), hb, TRUE, TRUE, 0);
-  filename->name = gtk_entry_new();
-  gtk_entry_set_width_chars(GTK_ENTRY(filename->name), (top) ? 10 : 0);
+  filename->name = dt_ui_entry_new(top ? 10 : 0);
   gtk_widget_set_can_default(filename->name, TRUE);
   gtk_entry_set_placeholder_text(GTK_ENTRY(filename->name), _("filename"));
   gtk_widget_set_tooltip_text(filename->name, _("enter filename to search.\n"
@@ -375,8 +374,7 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
   g_signal_connect(G_OBJECT(filename->name), "focus-out-event", G_CALLBACK(_filename_focus_out), filename);
   g_signal_connect(G_OBJECT(filename->name), "button-press-event", G_CALLBACK(_filename_press), filename);
 
-  filename->ext = gtk_entry_new();
-  gtk_entry_set_width_chars(GTK_ENTRY(filename->ext), (top) ? 5 : 0);
+  filename->ext = dt_ui_entry_new(top ? 5 : 0);
   gtk_widget_set_can_default(filename->ext, TRUE);
   gtk_entry_set_placeholder_text(GTK_ENTRY(filename->ext), _("extension"));
   gtk_widget_set_tooltip_text(filename->ext, _("enter extension to search with starting dot\n"

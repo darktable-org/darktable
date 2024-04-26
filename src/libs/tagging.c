@@ -3218,9 +3218,8 @@ void gui_init(dt_lib_module_t *self)
   hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
   // text entry
-  w = gtk_entry_new();
+  w = dt_ui_entry_new(0);
   gtk_entry_set_text(GTK_ENTRY(w), "");
-  gtk_entry_set_width_chars(GTK_ENTRY(w), 0);
   gtk_widget_set_tooltip_text(w, _("enter tag name"
                                    "\npress Enter to create a new tag and attach it on selected images"
                                    "\npress Tab or Down key to go to the first matching tag"
