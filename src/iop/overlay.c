@@ -961,8 +961,8 @@ static void _drag_and_drop_received(GtkWidget *widget,
       if(dt_overlay_used_by(imgid, self->dev->image_storage.id))
       {
         dt_control_log
-          (_("cannot use image %d as overlay"
-             " as it is using itself the current image as overlay"),
+          (_("cannot use image %d as an overlay"
+             " as it is using the current image as an overlay itself"),
            imgid);
       }
       else
