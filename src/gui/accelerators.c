@@ -5172,8 +5172,7 @@ GtkWidget *dt_action_entry_new(dt_action_t *ac,
                                const gchar *tooltip,
                                const gchar *text)
 {
-  GtkWidget *entry = gtk_entry_new();
-  gtk_entry_set_width_chars(GTK_ENTRY(entry), 5);
+  GtkWidget *entry = dt_ui_entry_new(5);
   if(text)
     gtk_entry_set_text (GTK_ENTRY(entry), text);
   if(tooltip)

@@ -140,7 +140,7 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   /* add search box */
-  lib->search = GTK_ENTRY(gtk_entry_new());
+  lib->search = GTK_ENTRY(dt_ui_entry_new(0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(lib->search), FALSE, FALSE, 0);
 
   g_signal_connect(G_OBJECT(lib->search), "activate",

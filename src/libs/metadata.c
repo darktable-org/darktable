@@ -694,6 +694,7 @@ void gui_init(dt_lib_module_t *self)
     gtk_grid_attach(grid, labelev, 0, i, 1, 1);
 
     GtkWidget *textview = gtk_text_view_new();
+    gtk_drag_dest_unset(textview);
     dt_action_define(DT_ACTION(self), NULL, name, textview, &dt_action_def_entry);
     gtk_widget_set_tooltip_text(textview,
               _("metadata text"

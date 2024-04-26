@@ -1506,8 +1506,7 @@ static GtkWidget *_gui_init_datetime(gchar *text, dt_lib_datetime_t *dt, const i
     }
     if(i >= 2 || type != 2)
     {
-      dt->widget[i] = gtk_entry_new();
-      gtk_entry_set_width_chars(GTK_ENTRY(dt->widget[i]), i == 0 ? 4 : i == 6 ? 3 : 2);
+      dt->widget[i] = dt_ui_entry_new(i == 0 ? 4 : i == 6 ? 3 : 2);
       gtk_entry_set_alignment(GTK_ENTRY(dt->widget[i]), 0.5);
       gtk_box_pack_start(box, dt->widget[i], FALSE, FALSE, 0);
       if(type == 0)
@@ -1782,10 +1781,9 @@ void gui_init(dt_lib_module_t *self)
 
   gtk_grid_attach(grid, label, 0, line, 2, 1);
 
-  d->timezone = gtk_entry_new();
+  d->timezone = dt_ui_entry_new(0);
   gtk_widget_set_tooltip_text(d->timezone, _("start typing to show a list of permitted values and select your timezone.\npress enter to confirm, so that the asterisk * disappears"));
   d->timezone_changed = dt_ui_label_new("");
-  gtk_entry_set_width_chars(GTK_ENTRY(d->timezone), 0);
 
   GtkWidget *timezone_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(timezone_box), d->timezone, TRUE, TRUE, 0);

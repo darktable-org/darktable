@@ -3704,8 +3704,7 @@ void gui_init(dt_lib_module_t *self)
                      G_CALLBACK(combo_changed), d->rule + i);
     gtk_box_pack_start(box, d->rule[i].combo, FALSE, TRUE, 0);
 
-    w = gtk_entry_new();
-    gtk_entry_set_max_width_chars(GTK_ENTRY(w), 10);
+    w = dt_ui_entry_new(10);
     d->rule[i].text = w;
     gtk_widget_add_events(w, GDK_FOCUS_CHANGE_MASK);
     g_signal_connect(G_OBJECT(w), "focus-in-event",

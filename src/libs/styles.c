@@ -837,11 +837,10 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_tree_selection_changed), self);
 
   /* filter entry */
-  w = gtk_entry_new();
+  w = dt_ui_entry_new(0);
   d->entry = GTK_ENTRY(w);
   gtk_entry_set_placeholder_text(GTK_ENTRY(d->entry), _("filter style names"));
   gtk_widget_set_tooltip_text(w, _("filter style names"));
-  gtk_entry_set_width_chars(GTK_ENTRY(w), 0);
   g_signal_connect(d->entry, "changed", G_CALLBACK(_entry_callback), d);
   g_signal_connect(d->entry, "activate", G_CALLBACK(_entry_activated), d);
 

@@ -25,6 +25,7 @@
 #include "dtgtk/expander.h"
 #include "dtgtk/icon.h"
 #include "gui/accelerators.h"
+#include "gui/drag_and_drop.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #ifdef GDK_WINDOWING_QUARTZ
@@ -44,6 +45,9 @@ typedef struct dt_lib_presets_edit_dialog_t
   dt_lib_module_t *module;
   gint old_id;
 } dt_lib_presets_edit_dialog_t;
+
+static gchar *_get_lib_view_path(const dt_lib_module_t *module,
+                                 char *suffix);
 
 gboolean dt_lib_is_visible_in_view(dt_lib_module_t *module,
                                    const dt_view_t *view)
@@ -582,13 +586,32 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
   }
 }
 
+static int _lib_position(const dt_lib_module_t *module)
+{
+  int pos = module->position ? module->position(module) + 1 : 0;
+  
+  gchar *key = _get_lib_view_path(module, "_position");
+  if(key && dt_conf_key_exists(key))
+    pos = dt_conf_get_int(key);
+  g_free(key);
+
+  return pos;
+}
+
 gint dt_lib_sort_plugins(gconstpointer a, gconstpointer b)
 {
-  const dt_lib_module_t *am = (const dt_lib_module_t *)a;
-  const dt_lib_module_t *bm = (const dt_lib_module_t *)b;
-  const int apos = am->position ? am->position(am) : 0;
-  const int bpos = bm->position ? bm->position(bm) : 0;
-  return apos - bpos;
+  return ABS(_lib_position(a)) - ABS(_lib_position(b));
+}
+
+uint32_t dt_lib_get_container(dt_lib_module_t *module)
+{
+  uint32_t container = module->container(module);
+  if(_lib_position(module) < 0)
+    container = container == DT_UI_CONTAINER_PANEL_LEFT_CENTER
+              ? DT_UI_CONTAINER_PANEL_RIGHT_CENTER
+              : DT_UI_CONTAINER_PANEL_LEFT_CENTER;
+
+  return container;
 }
 
 /* default expandable implementation */
@@ -939,9 +962,11 @@ static gboolean _lib_plugin_header_button_press(GtkWidget *w,
     /* bail out if module is static */
     if(!module->expandable(module)) return FALSE;
 
+    if(dt_modifier_is(e->state, GDK_SHIFT_MASK | GDK_CONTROL_MASK))
+      ; // do nothing (for easier dragging)
     /* handle shiftclick on expander, hide all except this */
-    if(!dt_conf_get_bool("lighttable/ui/single_module") !=
-       !dt_modifier_is(e->state, GDK_SHIFT_MASK))
+    else if(!dt_conf_get_bool("lighttable/ui/single_module") !=
+            !dt_modifier_is(e->state, GDK_SHIFT_MASK))
     {
       const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
       gboolean all_other_closed = TRUE;
@@ -1044,6 +1069,114 @@ static gboolean _body_enter_leave_callback(GtkWidget *widget,
   return FALSE;
 }
 
+static gboolean _on_drag_motion(GtkWidget *widget,
+                                GdkDragContext *dc,
+                                gint x, gint y, guint time,
+                                dt_lib_module_t *dest)
+{
+  dt_lib_module_t *src = NULL;
+  GtkContainer *src_panel = NULL, *dest_panel = NULL;
+  gboolean below = TRUE;
+  int dest_pos = 0;
+
+  if(GTK_IS_BOX(dc))
+  {
+    // propagated from empty panel handler in gtk.c
+    src = dest;
+    src_panel = GTK_CONTAINER(gtk_widget_get_parent(src->expander));
+    dest_panel = GTK_CONTAINER(dc);
+  }
+  else
+  {
+    dtgtk_expander_set_drag_hover(DTGTK_EXPANDER(widget), FALSE, FALSE);
+    gdk_drag_status(dc, 0, time);
+
+    GtkWidget *src_widget = gtk_widget_get_ancestor(gtk_drag_get_source_widget(dc),
+                                                    DTGTK_TYPE_EXPANDER);
+
+    for(GList *lib = darktable.lib->plugins; lib; lib = lib->next)
+      if(((dt_lib_module_t *)lib->data)->expander == src_widget)
+        src = lib->data;
+
+    if(!src_widget || !src || dest == src ) return TRUE;
+
+    src_panel = GTK_CONTAINER(gtk_widget_get_parent(src->expander));
+    dest_panel = GTK_CONTAINER(gtk_widget_get_parent(dest->expander));
+
+    int src_pos = G_MAXINT;
+    if(dest_panel == src_panel)
+      gtk_container_child_get(src_panel, src->expander, "position", &src_pos, NULL);
+    gtk_container_child_get(dest_panel, dest->expander, "position", &dest_pos, NULL);
+
+    GtkDarktableExpander *exp = DTGTK_EXPANDER(dest->expander);
+    int header_height = gtk_widget_get_allocated_height(dtgtk_expander_get_header(exp));
+    below = y > (ABS(dest_pos - src_pos) == 1 && !dtgtk_expander_get_expanded(exp)
+                 ? header_height / 2
+                 : dest_pos < src_pos
+                 ? gtk_widget_get_allocated_height(widget) - header_height
+                 : header_height);
+
+    if(below) dest_pos++;
+    if(dest_pos > src_pos) dest_pos--;
+    if(dest_pos == src_pos) return TRUE;
+
+    if(x != DND_DROP)
+    {
+      dtgtk_expander_set_drag_hover(DTGTK_EXPANDER(widget), TRUE, below);
+      gdk_drag_status(dc, GDK_ACTION_COPY, time);
+
+      return TRUE;
+    }
+  }
+
+  GtkBox *dest_box = GTK_BOX(dest_panel);
+  if(dest_panel != src_panel)
+  {
+    g_object_ref(src->expander);
+    gtk_container_remove(src_panel, src->expander);
+    gtk_box_pack_start(dest_box, src->expander, FALSE, FALSE, 0);
+  }
+  gtk_box_reorder_child(dest_box, src->expander, dest_pos);
+
+  GList **list = &darktable.lib->plugins;
+  *list = g_list_remove(*list, src);
+
+  GList *dest_list = g_list_find(*list, dest);
+  if(below)
+    dest = dest_list && dest_list->prev ? dest_list->prev->data : NULL;
+  else
+    dest_list = dest_list->next;
+
+  int new_pos = dest ? ABS(_lib_position(dest)) + 1 : 1;
+  int old_pos = dest_box != dt_ui_get_container(darktable.gui->ui, src->container(src)) ? -1 : +1;
+  dt_lib_module_t *cur = src;
+  while(new_pos >= ABS(old_pos))
+  {
+    gchar *key = _get_lib_view_path(cur, "_position");
+    dt_conf_set_int(key, old_pos < 0 ? -new_pos : new_pos);
+    g_free(key);
+
+    if(!dest_list) break;
+
+    new_pos++;
+    cur = dest_list->data;
+    old_pos = _lib_position(cur);
+    dest_list = dest_list->next;
+  }
+
+  *list = g_list_insert_sorted(*list, src, dt_lib_sort_plugins);
+
+  return TRUE;
+}
+
+static gboolean _on_drag_drop(GtkWidget *widget,
+                              GdkDragContext *dc,
+                              gint x, gint y, guint time,
+                              dt_lib_module_t *dest)
+{
+  return _on_drag_motion(widget, dc, DND_DROP, y, time, dest);
+}
+
 GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
 {
   /* check if module is expandable */
@@ -1068,6 +1201,17 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   GtkWidget *header_evb = dtgtk_expander_get_header_event_box(DTGTK_EXPANDER(expander));
   GtkWidget *body_evb = dtgtk_expander_get_body_event_box(DTGTK_EXPANDER(expander));
   GtkWidget *pluginui_frame = dtgtk_expander_get_frame(DTGTK_EXPANDER(expander));
+
+  dt_ui_container_t container = module->container(module);
+  if(container == DT_UI_CONTAINER_PANEL_LEFT_CENTER || container == DT_UI_CONTAINER_PANEL_RIGHT_CENTER)
+  {
+    static const GtkTargetEntry target_list[] = { { "lib", GTK_TARGET_SAME_APP, DND_TARGET_LIB } };
+
+    gtk_drag_source_set(header_evb, GDK_BUTTON1_MASK, target_list, 1, GDK_ACTION_COPY);
+    gtk_drag_dest_set(expander, GTK_DEST_DEFAULT_DROP | GTK_DEST_DEFAULT_HIGHLIGHT, target_list, 1, GDK_ACTION_COPY);
+    g_signal_connect(expander, "drag-motion", G_CALLBACK(_on_drag_motion), module);
+    g_signal_connect(expander, "drag-drop", G_CALLBACK(_on_drag_drop), module);
+  }
 
   /* setup the header box */
   g_signal_connect(G_OBJECT(header_evb), "button-press-event",
@@ -1149,12 +1293,16 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
     gtk_box_pack_end(GTK_BOX(header), module->gui_tool_box(module), FALSE, FALSE, 0);
 
   gtk_widget_show_all(expander);
-  dt_gui_add_class(module->widget, "dt_plugin_ui_main");
+
+  if(module->widget)
+  {
+    dt_gui_add_class(module->widget, "dt_plugin_ui_main");
+    gtk_widget_set_hexpand(module->widget, FALSE);
+    gtk_widget_set_vexpand(module->widget, FALSE);
+  }
   dt_gui_add_class(pluginui_frame, "dt_plugin_ui");
   module->expander = expander;
 
-  gtk_widget_set_hexpand(module->widget, FALSE);
-  gtk_widget_set_vexpand(module->widget, FALSE);
 
   return module->expander;
 }
@@ -1260,7 +1408,7 @@ void dt_lib_presets_add(const char *name,
   sqlite3_finalize(stmt);
 }
 
-static gchar *_get_lib_view_path(dt_lib_module_t *module,
+static gchar *_get_lib_view_path(const dt_lib_module_t *module,
                                  char *suffix)
 {
   if(!darktable.view_manager) return NULL;

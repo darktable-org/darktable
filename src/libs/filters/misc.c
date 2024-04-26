@@ -398,8 +398,7 @@ static void _misc_widget_init(dt_lib_filtering_rule_t *rule,
     gtk_box_pack_start(GTK_BOX(rule->w_special_box_top), hb, TRUE, TRUE, 0);
   else
     gtk_box_pack_start(GTK_BOX(rule->w_special_box), hb, TRUE, TRUE, 0);
-  misc->name = gtk_entry_new();
-  gtk_entry_set_width_chars(GTK_ENTRY(misc->name), (top) ? 10 : 0);
+  misc->name = dt_ui_entry_new(top ? 10 : 0);
   gtk_widget_set_can_default(misc->name, TRUE);
 
   gchar *name = NULL;
