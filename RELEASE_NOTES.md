@@ -24,7 +24,7 @@ You are strongly advised to take a backup first.
 
 #### Important note: to make sure that darktable can keep on supporting the raw file format for your camera, *please* read [this post](https://discuss.pixls.us/t/raw-samples-wanted/5420?u=lebedevri) on how/what raw samples you can contribute to ensure that we have the *full* raw sample set for your camera under CC0 license!
 
-Since darktable 4.4:
+Since darktable 4.6:
 
 - ??? commits to darktable+rawspeed
 - ??? pull requests handled
@@ -42,7 +42,11 @@ The following is a summary of the main features added to darktable
 4.8. Please see the user manual for more details of the individual
 changes (where available).
 
-- Two new modules have been introduced to support images composition.
+- Introduced the color equalizer module to control
+  hue/lightness/saturation based on colors.  This is a (partial)
+  scene-referred replacement for the legacy color zones module.
+
+- Two new modules have been introduced to support image composition.
 
   - Enlarge Canvas : As the name imply this module can be used to add
     areas on the left, right, top or bottom of the image. The new area
@@ -123,6 +127,8 @@ changes (where available).
 
 - Improved efficiency of the quick access panel by allowing modules to
   be reset and presets to be applied without opening the full module.
+  Added more controls by default to further reduce the need to leave
+  the panel while editing.
 
 - Added more collection types and filters for flash, white balance,
   exposure program, metering mode and image grouping.
