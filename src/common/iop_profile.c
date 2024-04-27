@@ -477,7 +477,7 @@ static inline void _transform_rgb_to_lab_matrix
 #endif
     for(size_t y = 0; y < stride; y += ch)
     {
-      float *const restrict in = __builtin_assume_aligned(image_out + y, 16);
+      float *const restrict in = DT_IS_ALIGNED_PIXEL(image_out + y);
       dt_aligned_pixel_t xyz; // inited in _ioppr_linear_rgb_matrix_to_xyz()
       dt_apply_transposed_color_matrix(in, *matrix_ptr, xyz);
       dt_XYZ_to_Lab(xyz, in);
@@ -492,8 +492,8 @@ static inline void _transform_rgb_to_lab_matrix
 #endif
     for(size_t y = 0; y < stride; y += ch)
     {
-      const float *const restrict in = __builtin_assume_aligned(image_in + y, 16);
-      float *const restrict out = __builtin_assume_aligned(image_out + y, 16);
+      const float *const restrict in = DT_IS_ALIGNED_PIXEL(image_in + y);
+      float *const restrict out = DT_IS_ALIGNED_PIXEL(image_out + y);
 
       dt_aligned_pixel_t xyz; // inited in _ioppr_linear_rgb_matrix_to_xyz()
       dt_apply_transposed_color_matrix(in, *matrix_ptr, xyz);
@@ -521,8 +521,8 @@ static inline void _transform_lab_to_rgb_matrix
 #endif
   for(size_t y = 0; y < stride; y += ch)
   {
-    const float *const restrict in = __builtin_assume_aligned(image_in + y, 16);
-    float *const restrict out = __builtin_assume_aligned(image_out + y, 16);
+    const float *const restrict in = DT_IS_ALIGNED_PIXEL(image_in + y);
+    float *const restrict out = DT_IS_ALIGNED_PIXEL(image_out + y);
 
     dt_aligned_pixel_t xyz;
     const float alpha = in[3];
@@ -583,8 +583,8 @@ static inline void _transform_matrix_rgb
 #endif
     for(size_t y = 0; y < stride; y += 4)
     {
-      const float *const restrict in = __builtin_assume_aligned(image_in + y, 16);
-      float *const restrict out = __builtin_assume_aligned(image_out + y, 16);
+      const float *const restrict in = DT_IS_ALIGNED_PIXEL(image_in + y);
+      float *const restrict out = DT_IS_ALIGNED_PIXEL(image_out + y);
       dt_aligned_pixel_t rgb;
 
       // linearize if non-linear input
@@ -640,8 +640,8 @@ static inline void _transform_matrix_rgb
 #endif
     for(size_t y = 0; y < stride; y += 4)
     {
-      const float *const restrict in = __builtin_assume_aligned(image_in + y, 16);
-      float *const restrict out = __builtin_assume_aligned(image_out + y, 16);
+      const float *const restrict in = DT_IS_ALIGNED_PIXEL(image_in + y);
+      float *const restrict out = DT_IS_ALIGNED_PIXEL(image_out + y);
 
       dt_apply_transposed_color_matrix(in, matrix, out);
     }

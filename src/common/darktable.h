@@ -179,6 +179,9 @@ typedef int32_t dt_mask_id_t;
 /* Helper to force stack vectors to be aligned on DT_CACHELINE_BYTES blocks to enable AVX2 */
 #define DT_IS_ALIGNED(x) __builtin_assume_aligned(x, DT_CACHELINE_BYTES)
 
+/* Helper for 4-float pixel vectors */
+#define DT_IS_ALIGNED_PIXEL(x) __builtin_assume_aligned(x, 16)
+
 #define DT_MODULE_VERSION 25 // version of dt's module interface
 
 // version of current performance configuration version

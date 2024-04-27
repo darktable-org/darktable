@@ -121,7 +121,7 @@ static inline void make_noise(float *const output, const float noise, const size
       xoshiro128plus(state);
 
       const size_t index = (i * width + j) * 4;
-      float *const restrict pix_out = __builtin_assume_aligned(output + index, 16);
+      float *const restrict pix_out = DT_IS_ALIGNED_PIXEL(output + index);
       const float norm = pix_out[1];
 
       // create statistical noise
@@ -218,7 +218,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         dt_aligned_pixel_t RGB = { 0.f };
         for(size_t k = 0; k < 5; k++)
         {
-          const float *const restrict pix_in = __builtin_assume_aligned(input + (width * box[k].y + box[k].x) * 4, 16);
+          const float *const restrict pix_in = DT_IS_ALIGNED_PIXEL(input + (width * box[k].y + box[k].x) * 4);
           for_four_channels(c)
             RGB[c] += pix_in[c] / 5.f;
         }
@@ -227,7 +227,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         for(size_t jj = tl.y; jj < br.y; jj++)
           for(size_t ii = tl.x; ii < br.x; ii++)
           {
-            float *const restrict pix_out = __builtin_assume_aligned(output + (jj * width + ii) * 4, 16);
+            float *const restrict pix_out = DT_IS_ALIGNED_PIXEL(output + (jj * width + ii) * 4);
             for_four_channels(c)
               pix_out[c] = RGB[c];
           }
