@@ -1013,33 +1013,36 @@ static void dt_lib_histogram_process
   // Convert pixelpipe output in display RGB to histogram profile. If
   // in tether view, then the image is already converted by the
   // caller.
-  //
-  // FIXME: do conversion in-place in the processing to save an extra
-  // buffer? -- at least for waveform, which already has to touch each
-  // pixel -- will need logic from _transform_matrix_rgb() -- or
-  // better yet a per-pixel callback within
-  // _transform_matrix_rgb()-ish code
 
   float *img_display = dt_alloc_align_float((size_t)4 * width * height);
   if(!img_display) return;
 
-  // In case of vectorscope we make sure a valid colorspace transform even
-  // if the to_profile has no matrix and falls back to Rec2020 so we see the
-  // result of a relative colorimetric conversion to the histogram profile...
-  const gboolean replaced = d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE
-                      && (!profile_info_to || !dt_is_valid_colormatrix(profile_info_to->matrix_in[0][0]));
-  if(replaced)
+  // FIXME: we might get called with profile_info_to == NULL due to caller errors
+  // like having a non cmsSigRgbData colorspace used in softproofing.
+  // As dt_ioppr_transform_image_colorspace_rgb will fail to provide data in img_display
+  // we currently do a fallback to Rec2020.
+  // For correct softproofing support we would have to convert data as we do in colorout.
+  const gboolean fallback = !profile_info_to || !dt_is_valid_colormatrix(profile_info_to->matrix_in[0][0]);
+  static gboolean noted = FALSE;
+  if(fallback)
   {
-    dt_print(DT_DEBUG_ALWAYS,
-             "[histogram] unsupported vectorscope profile %i %s,"
+    if(!noted)
+    {
+      dt_print(DT_DEBUG_ALWAYS,
+             "[histogram] %s profile %i %s,"
              " it will be replaced with linear Rec2020\n",
+             profile_info_to ? "undefined" : "invalid",
              profile_info_to ? profile_info_to->type     : 0,
-             profile_info_to ? profile_info_to->filename : "unsupported");
-    dt_control_log(_("unsupported vectorscope profile selected,"
+             profile_info_to ? profile_info_to->filename : "");
+      dt_control_log(_("unsupported profile selected for histogram,"
                      " it will be replaced with linear Rec2020"));
+      noted = TRUE;
+    }
   }
+  else
+    noted = FALSE;
 
-  const dt_iop_order_iccprofile_info_t *profile_info_out = replaced
+  const dt_iop_order_iccprofile_info_t *profile_info_out = fallback
             ? dt_ioppr_add_profile_info_to_list(darktable.develop,
                                                 DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_RELATIVE_COLORIMETRIC)
             : profile_info_to;
