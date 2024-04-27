@@ -679,18 +679,18 @@ void process(struct dt_iop_module_t *self,
   dt_colormatrix_t output_matrix_trans;
   dt_colormatrix_transpose(output_matrix_trans, output_matrix);
 
-  const float *const restrict in = __builtin_assume_aligned(((const float *const restrict)ivoid), 64);
-  float *const restrict out = __builtin_assume_aligned(((float *const restrict)ovoid), 64);
-  const float *const restrict gamut_LUT = __builtin_assume_aligned(((const float *const restrict)d->gamut_LUT), 64);
+  const float *const restrict in = DT_IS_ALIGNED(((const float *const restrict)ivoid));
+  float *const restrict out = DT_IS_ALIGNED(((float *const restrict)ovoid));
+  const float *const restrict gamut_LUT = DT_IS_ALIGNED(((const float *const restrict)d->gamut_LUT));
 
-  const float *const restrict global = __builtin_assume_aligned((const float *const restrict)d->global, 16);
-  const float *const restrict highlights = __builtin_assume_aligned((const float *const restrict)d->highlights, 16);
-  const float *const restrict shadows = __builtin_assume_aligned((const float *const restrict)d->shadows, 16);
-  const float *const restrict midtones = __builtin_assume_aligned((const float *const restrict)d->midtones, 16);
+  const float *const restrict global = DT_IS_ALIGNED_PIXEL((const float *const restrict)d->global);
+  const float *const restrict highlights = DT_IS_ALIGNED_PIXEL((const float *const restrict)d->highlights);
+  const float *const restrict shadows = DT_IS_ALIGNED_PIXEL((const float *const restrict)d->shadows);
+  const float *const restrict midtones = DT_IS_ALIGNED_PIXEL((const float *const restrict)d->midtones);
 
-  const float *const restrict chroma = __builtin_assume_aligned((const float *const restrict)d->chroma, 16);
-  const float *const restrict saturation = __builtin_assume_aligned((const float *const restrict)d->saturation, 16);
-  const float *const restrict brilliance = __builtin_assume_aligned((const float *const restrict)d->brilliance, 16);
+  const float *const restrict chroma = DT_IS_ALIGNED_PIXEL((const float *const restrict)d->chroma);
+  const float *const restrict saturation = DT_IS_ALIGNED_PIXEL((const float *const restrict)d->saturation);
+  const float *const restrict brilliance = DT_IS_ALIGNED_PIXEL((const float *const restrict)d->brilliance);
 
   const gint mask_display
       = ((piece->pipe->type & DT_DEV_PIXELPIPE_FULL) && self->dev->gui_attached
@@ -2124,8 +2124,8 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "luminance ranges")), FALSE, FALSE, 0);
 
-  g->area = GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL, 
-                                               0, 
+  g->area = GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL,
+                                               0,
                                                "plugins/darkroom/colorbalancergb/graphheight"));
   g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
   dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(g->area), NULL);

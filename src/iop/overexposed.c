@@ -131,8 +131,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float *const upper_color = dt_iop_overexposed_colors[colorscheme][0];
   const float *const lower_color = dt_iop_overexposed_colors[colorscheme][1];
 
-  const float *const restrict in = __builtin_assume_aligned((const float *const restrict)ivoid, 64);
-  float *const restrict out = __builtin_assume_aligned((float *const restrict)ovoid, 64);
+  const float *const restrict in = DT_IS_ALIGNED((const float *const restrict)ivoid);
+  float *const restrict out = DT_IS_ALIGNED((float *const restrict)ovoid);
 
   const dt_iop_order_iccprofile_info_t *const current_profile = dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_histogram_profile_info(dev);
