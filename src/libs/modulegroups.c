@@ -1473,17 +1473,20 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
   }
 
 // start quick access
-#define SQA(is_scene_referred)                                                                         \
+#define SQA(is_scene_referred)                                                                                    \
   {                                                                                                               \
     g_free(tx);                                                                                                   \
-    tx = g_strdup_printf("1|0ꬹ1||");                                                                            \
+    tx = g_strdup_printf("1|0ꬹ1||");                                                                              \
     if(is_scene_referred)                                                                                         \
     {                                                                                                             \
-      if(wf_filmic) {												  \
+      if(wf_filmic)												  \
+      {												  		  \
         AM("filmicrgb/white relative exposure");                                                                  \
         AM("filmicrgb/black relative exposure");                                                                  \
         AM("filmicrgb/contrast");                                                                                 \
-      } else if (wf_sigmoid) {                                           					  \
+      }														  \
+      else if (wf_sigmoid)											  \
+      {                                                                 					  \
         AM("sigmoid/contrast");											  \
         AM("sigmoid/skew");											  \
       } 													  \
