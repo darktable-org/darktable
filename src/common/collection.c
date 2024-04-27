@@ -1996,7 +1996,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
           g_free(name); // free the original filename
         }
 
-        if(g_list_length(list) > 0) subquery = dt_util_glist_to_str(" OR ", list);
+        if(list) subquery = dt_util_glist_to_str(" OR ", list);
         g_list_free_full(list, g_free); // free the SQL clauses as well as the list
       }
       if(g_strv_length(elems) > 1)
@@ -2031,7 +2031,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
           g_free(name); // free the original filename
         }
 
-        if(g_list_length(list) > 0)
+        if(list)
         {
           if(subquery)
           {
