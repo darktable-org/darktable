@@ -82,16 +82,6 @@ static void _insert_in_list(GList **list,
   }
 }
 
-static gboolean _slist_length_equal(GSList *l1, GSList *l2)
-{
-  while (l1 && l2)
-  {
-    l1 = g_slist_next(l1);
-    l2 = g_slist_next(l2);
-  }
-  return !l1 && !l2;
-}
-
 // test if the cache is still valid
 static gboolean _test_cache(dt_act_on_cache_t *cache)
 {
@@ -100,7 +90,7 @@ static gboolean _test_cache(dt_act_on_cache_t *cache)
   if(cache->ok
      && cache->image_over == mouseover
      && cache->inside_table == dt_ui_thumbtable(darktable.gui->ui)->mouse_inside
-     && _slist_length_equal(cache->active_imgs, darktable.view_manager->active_images))
+     && dt_slist_length_equal(cache->active_imgs, darktable.view_manager->active_images))
   {
     // we test active images if mouse outside table
     gboolean ok = TRUE;
