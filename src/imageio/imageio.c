@@ -977,17 +977,16 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
                             && ((width > 0 || height > 0) || is_scaling))
                                  ? max_possible_scale : 1.00;
 
-  const double scalex = width > 0
-    ? fmin((double)width / (double)pipe.processed_width, max_scale)
-    : max_scale;
-  const double scaley = height > 0
-    ? fmin((double)height / (double)pipe.processed_height, max_scale)
-    : max_scale;
-  double scale = fmin(scalex, scaley);
+  double scale = fmin(width > 0
+                        ? fmin((double)width / (double)pipe.processed_width, max_scale)
+                        : max_scale,
+                      height > 0
+                        ? fmin((double)height / (double)pipe.processed_height, max_scale)
+                        : max_scale);
 
   float origin[] = { 0.0f, 0.0f };
 
-  if(dt_dev_distort_backtransform_plus(&dev, &pipe, 0.f,
+  if(dt_dev_distort_backtransform_plus(&dev, &pipe, 0.0,
                                        DT_DEV_TRANSFORM_DIR_ALL, origin, 1))
   {
     if(width == 0) width = pipe.processed_width;
@@ -1012,18 +1011,31 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
     }
   }
 
-  const int processed_width = floor(scale * pipe.processed_width);
-  const int processed_height = floor(scale * pipe.processed_height);
+  /* getting the "best" processed width & height is a bit tricky as we have to make
+     sure we don't access data out-of-bounds in processing modules.
+     Simple flooring avoids this but possibly reduces size.
+     Here we round to get at least one dimension correct. To overcome the out-of-bounds
+     problem we correct the scale for the pipe.
+     See #3646 #3757 #3808
+  */
+  const int processed_width =  floor(0.5 + scale * pipe.processed_width);
+  const int processed_height = floor(0.5 + scale * pipe.processed_height);
+  const double safescale =
+            fmin(max_scale,
+            fmin((double)processed_width / (double)pipe.processed_width,
+                 (double)processed_height / (double)pipe.processed_height));
 
   dt_print(DT_DEBUG_IMAGEIO,
-           "[dt_imageio_export] [%s] imgid %d, %ix%i --> %ix%i (scale %7f)."
+           "[dt_imageio_export] [%s] imgid %d, %ix%i --> %ix%i (scale %.7f %s%.7f)."
            " upscale=%s, hq=%s\n",
            thumbnail_export ? "thumbnail" : "export", imgid,
            pipe.processed_width, pipe.processed_height,
-           processed_width, processed_height, scale,
+           processed_width, processed_height,
+           safescale, safescale != scale ? "was " : "", scale,
            upscale ? "yes" : "no",
            high_quality_processing ? "yes" : "no");
 
+  scale = safescale;
   const int bpp = format->bpp(format_params);
 
   dt_get_perf_times(&start);
