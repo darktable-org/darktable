@@ -682,7 +682,7 @@ static void _import_clicked(GtkWidget *w, gpointer user_data)
             gtk_widget_show_all(dialog_overwrite_import);
 
             // disable check button and skip button when dealing with one style
-            if(g_slist_length(filenames) == 1)
+            if(g_list_is_singleton(filenames))
             {
               gtk_widget_set_sensitive(overwrite_dialog_check_button, FALSE);
               gtk_dialog_set_response_sensitive(GTK_DIALOG(dialog_overwrite_import), GTK_RESPONSE_NONE, FALSE);

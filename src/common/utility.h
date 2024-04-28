@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -127,6 +127,29 @@ gboolean dt_is_scene_referred(void);
 
 // returns true if current settings is display-referred
 gboolean dt_is_display_referred(void);
+
+// returns true if the two GLists have the same length
+static inline gboolean dt_list_length_equal(GList *l1, GList *l2)
+{
+  while (l1 && l2)
+  {
+    l1 = g_list_next(l1);
+    l2 = g_list_next(l2);
+  }
+  return !l1 && !l2;
+}
+
+// returns true if the two GSLists have the same length
+static inline gboolean dt_slist_length_equal(GSList *l1, GSList *l2)
+{
+  while (l1 && l2)
+  {
+    l1 = g_slist_next(l1);
+    l2 = g_slist_next(l2);
+  }
+  return !l1 && !l2;
+}
+
 
 G_END_DECLS
 
