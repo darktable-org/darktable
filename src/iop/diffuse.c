@@ -1894,6 +1894,8 @@ void gui_init(struct dt_iop_module_t *self)
                      FALSE, FALSE, 0);
 
   g->sharpness = dt_bauhaus_slider_from_params(self, "sharpness");
+  dt_bauhaus_slider_set_digits(g->sharpness, 3);
+  dt_bauhaus_slider_set_soft_range(g->sharpness, -0.25, 0.25);
   dt_bauhaus_slider_set_format(g->sharpness, "%");
   gtk_widget_set_tooltip_text
     (g->sharpness,
