@@ -90,7 +90,7 @@ static gboolean _test_cache(dt_act_on_cache_t *cache)
   if(cache->ok
      && cache->image_over == mouseover
      && cache->inside_table == dt_ui_thumbtable(darktable.gui->ui)->mouse_inside
-     && g_slist_length(cache->active_imgs) == g_slist_length(darktable.view_manager->active_images))
+     && dt_slist_length_equal(cache->active_imgs, darktable.view_manager->active_images))
   {
     // we test active images if mouse outside table
     gboolean ok = TRUE;

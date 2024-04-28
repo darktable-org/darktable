@@ -3531,7 +3531,7 @@ static void _manage_editor_basics_toggle(GtkWidget *button,
   if(d->editor_reset) return;
   const gboolean state = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
   // we don't allow that to be false if there's no group or search
-  if(!state && g_list_length(d->edit_groups) == 0 && !d->edit_show_search)
+  if(!state && !d->edit_groups && !d->edit_show_search)
   {
     d->editor_reset = TRUE;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
@@ -3548,7 +3548,7 @@ static void _manage_editor_search_toggle(GtkWidget *button,
   if(d->editor_reset) return;
   const gboolean state = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
   // we don't allow that to be false if there's no group or quick access
-  if(!state && g_list_length(d->edit_groups) == 0 && !d->edit_basics_show)
+  if(!state && !d->edit_groups && !d->edit_basics_show)
   {
     d->editor_reset = TRUE;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
