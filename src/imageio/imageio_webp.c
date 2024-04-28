@@ -74,7 +74,8 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
     return DT_IMAGEIO_CACHE_FULL;
   }
 
-  uint8_t *int_RGBA_buf = WebPDecodeRGBA(read_buffer, filesize, &w, &h);
+  uint8_t *int_RGBA_buf = dt_alloc_align_uint8(w * h * 4);
+  int_RGBA_buf = WebPDecodeRGBAInto(read_buffer, filesize, int_RGBA_buf, w * h * 4, w * 4);
   if(!int_RGBA_buf)
   {
     g_free(read_buffer);
@@ -82,20 +83,20 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
     return DT_IMAGEIO_LOAD_FAILED;
   }
 
-  uint8_t intval;
-  float floatval;
-
 #ifdef _OPENMP
-#pragma omp parallel for private(intval, floatval)
+#pragma omp parallel for default(none) \
+  schedule(static) \
+  dt_omp_firstprivate(w, h, int_RGBA_buf, mipbuf)
 #endif
-  for(int i=0; i < w*h*4; i++)
+  for(int i = 0; i < w * h; i++)
   {
-    intval = *(int_RGBA_buf+i);
-    floatval = intval / 255.f;
-    *(mipbuf+i) = floatval;
+    dt_aligned_pixel_t pix = {0.0f, 0.0f, 0.0f, 0.0f};
+    for_three_channels(c)
+      pix[c] = *(int_RGBA_buf + i * 4 + c) / 255.f;
+    copy_pixel_nontemporal(&mipbuf[i * 4], pix);
   }
 
-  WebPFree(int_RGBA_buf);
+  dt_free_align(int_RGBA_buf);
 
   wp_data.bytes = (uint8_t *)read_buffer;
   wp_data.size = filesize;
