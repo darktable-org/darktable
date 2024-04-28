@@ -442,7 +442,12 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
   else if(_has_prefix(variable, "EXIF.ISO") || _has_prefix(variable, "EXIF_ISO"))
     result = g_strdup_printf("%d", params->data->exif_iso);
   else if(_has_prefix(variable, "NL") && g_strcmp0(params->jobcode, "infos") == 0)
-    result = g_strdup_printf("\n");
+  {
+    if (params->use_html_newline)
+      result = g_strdup_printf("&#13;");
+    else
+      result = g_strdup_printf("\n");
+  }
   else if(_has_prefix(variable, "EXIF.EXPOSURE.BIAS")
           || _has_prefix(variable, "EXIF_EXPOSURE_BIAS"))
   {
@@ -1300,6 +1305,7 @@ char *dt_variables_expand(dt_variables_params_t *params,
 
   _cleanup_expansion(params);
 
+  fprintf(stderr,"varexp: %s\n",result);
   return result;
 }
 

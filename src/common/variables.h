@@ -44,6 +44,9 @@ typedef struct dt_variables_params_t
   /** do we need to escape variables text for markup ? */
   gboolean escape_markup;
 
+  /** do we need to use an HTML entity for new lines instead of a newline character? */
+  gboolean use_html_newline;
+
   /** img cache already controlled */
   void *img;
 
