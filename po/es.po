@@ -120,7 +120,7 @@ msgstr "GPU muy rápido"
 #: ../build/bin/conf_gen.h:755 ../build/bin/preferences_gen.h:8293
 msgctxt "preferences"
 msgid "import time"
-msgstr "Fecha de importación"
+msgstr "Hora de importación"
 
 #: ../build/bin/conf_gen.h:756
 msgctxt "preferences"
@@ -5537,19 +5537,19 @@ msgstr "fecha de captura"
 
 #: ../src/common/collection.c:611 ../src/libs/filtering.c:61
 msgid "capture time"
-msgstr "fecha de captura"
+msgstr "hora de captura"
 
 #: ../src/common/collection.c:613 ../src/libs/filtering.c:62
 msgid "import time"
-msgstr "fecha de importación"
+msgstr "hora de importación"
 
 #: ../src/common/collection.c:615 ../src/libs/filtering.c:63
 msgid "modification time"
-msgstr "fecha de modificación"
+msgstr "hora de modificación"
 
 #: ../src/common/collection.c:617 ../src/libs/filtering.c:64
 msgid "export time"
-msgstr "fecha de exportación"
+msgstr "hora de exportación"
 
 #: ../src/common/collection.c:619 ../src/libs/filtering.c:65
 msgid "print time"
