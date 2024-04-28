@@ -1304,8 +1304,6 @@ char *dt_variables_expand(dt_variables_params_t *params,
   char *result = _expand_source(params, &source, '\0');
 
   _cleanup_expansion(params);
-
-  fprintf(stderr,"varexp: %s\n",result);
   return result;
 }
 
