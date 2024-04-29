@@ -3027,8 +3027,11 @@ static void _buttons_update(dt_lib_module_t *self)
   // first, we destroy all existing buttons except active one an preset one
   GList *children = gtk_container_get_children(GTK_CONTAINER(d->hbox_groups));
   GList *l = children;
-  if(l) l = g_list_next(l); // skip basics group
-  if(l) l = g_list_next(l); // skip active group
+  if(!g_list_is_empty(l))
+    l = g_list_next(l); // skip basics group
+  if(!g_list_is_empty(l))
+    l = g_list_next(l); // skip active group
+
   for(; l; l = g_list_next(l))
   {
     GtkWidget *bt = (GtkWidget *)l->data;
@@ -3163,7 +3166,9 @@ static void _manage_editor_group_remove(GtkWidget *widget,
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
   // we don't allow to remove the last group if no quick access or searchbox
-  if(g_list_length(d->edit_groups) == 1 && !d->edit_basics_show && !d->edit_show_search)
+  if(g_list_is_singleton(d->edit_groups)
+     && !d->edit_basics_show
+     && !d->edit_show_search)
   {
     return;
   }
@@ -3531,7 +3536,9 @@ static void _manage_editor_basics_toggle(GtkWidget *button,
   if(d->editor_reset) return;
   const gboolean state = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
   // we don't allow that to be false if there's no group or search
-  if(!state && !d->edit_groups && !d->edit_show_search)
+  if(!state
+     && g_list_is_empty(d->edit_groups)
+     && !d->edit_show_search)
   {
     d->editor_reset = TRUE;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
@@ -3548,7 +3555,9 @@ static void _manage_editor_search_toggle(GtkWidget *button,
   if(d->editor_reset) return;
   const gboolean state = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
   // we don't allow that to be false if there's no group or quick access
-  if(!state && !d->edit_groups && !d->edit_basics_show)
+  if(!state
+     && g_list_is_empty(d->edit_groups)
+     && !d->edit_basics_show)
   {
     d->editor_reset = TRUE;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);

@@ -328,7 +328,8 @@ static void _brush_catmull_to_bezier(const float x1,
 static void _brush_init_ctrl_points(dt_masks_form_t *form)
 {
   // if we have less than 2 points, what to do ??
-  if(g_list_shorter_than(form->points, 2)) return;
+  if(g_list_shorter_than(form->points, 2))
+    return;
 
   // we need extra points to deal with curve ends
   dt_masks_point_brush_t start_point[2], end_point[2];

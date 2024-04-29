@@ -103,7 +103,10 @@ static void _ratings_undo_data_free(gpointer data)
 }
 
 // wrapper that does some precalculation to deal with toggle effects and rating increase/decrease
-static void _ratings_apply(const GList *imgs, const int rating, GList **undo, const gboolean undo_on)
+static void _ratings_apply(const GList *imgs,
+                           const int rating,
+                           GList **undo,
+                           const gboolean undo_on)
 {
   // REJECTION and SINGLE_STAR rating can have a toggle effect
   // but we only toggle off if ALL images have that rating
@@ -177,9 +180,11 @@ static void _ratings_apply(const GList *imgs, const int rating, GList **undo, co
   }
 }
 
-void dt_ratings_apply_on_list(const GList *img, const int rating, const gboolean undo_on)
+void dt_ratings_apply_on_list(const GList *img,
+                              const int rating,
+                              const gboolean undo_on)
 {
-  if(img)
+  if(!g_list_is_empty(img))
   {
     GList *undo = NULL;
     if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_RATINGS);
@@ -195,15 +200,19 @@ void dt_ratings_apply_on_list(const GList *img, const int rating, const gboolean
   }
 }
 
-void dt_ratings_apply_on_image(const dt_imgid_t imgid, const int rating, const gboolean single_star_toggle,
-                               const gboolean undo_on, const gboolean group_on)
+void dt_ratings_apply_on_image(const dt_imgid_t imgid,
+                               const int rating,
+                               const gboolean single_star_toggle,
+                               const gboolean undo_on,
+                               const gboolean group_on)
 {
   GList *imgs = NULL;
   int new_rating = rating;
 
-  if(dt_is_valid_imgid(imgid)) imgs = g_list_prepend(imgs, GINT_TO_POINTER(imgid));
+  if(dt_is_valid_imgid(imgid))
+    imgs = g_list_prepend(imgs, GINT_TO_POINTER(imgid));
 
-  if(imgs)
+  if(!g_list_is_empty(imgs))
   {
     GList *undo = NULL;
     if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_RATINGS);
@@ -213,7 +222,8 @@ void dt_ratings_apply_on_image(const dt_imgid_t imgid, const int rating, const g
 
     if(undo_on)
     {
-      dt_undo_record(darktable.undo, NULL, DT_UNDO_RATINGS, undo, _pop_undo, _ratings_undo_data_free);
+      dt_undo_record(darktable.undo, NULL,
+                     DT_UNDO_RATINGS, undo, _pop_undo, _ratings_undo_data_free);
       dt_undo_end_group(darktable.undo);
     }
     g_list_free(imgs);
@@ -229,7 +239,10 @@ enum
   DT_ACTION_EFFECT_DOWNGRADE = DT_ACTION_EFFECT_DEFAULT_DOWN,
 };
 
-static float _action_process_rating(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
+static float _action_process_rating(gpointer target,
+                                    dt_action_element_t element,
+                                    dt_action_effect_t effect,
+                                    float move_size)
 {
   float return_value = DT_ACTION_NOT_VALID;
 

@@ -224,10 +224,11 @@ void dt_colorlabels_set_labels(const GList *img,
                                const gboolean clear_on,
                                const gboolean undo_on)
 {
-  if(img)
+  if(!g_list_is_empty(img))
   {
     GList *undo = NULL;
-    if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_COLORLABELS);
+    if(undo_on)
+      dt_undo_start_group(darktable.undo, DT_UNDO_COLORLABELS);
 
     _colorlabels_execute(img, labels, &undo, undo_on, clear_on ? DT_CA_SET : DT_CA_ADD);
 
