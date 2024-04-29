@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -560,6 +560,7 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
     dt_image_full_path(image->id, image_path, sizeof(image_path), &from_cache);
     params->filename = image_path;
     params->jobcode = "infos";
+    params->use_html_newline = TRUE;
     params->sequence = 0;
     params->imgid = image->id;
     dt_variables_set_tags_flags(params, flags);
