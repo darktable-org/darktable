@@ -345,6 +345,32 @@ void init_presets(dt_iop_module_so_t *self)
                              sizeof(dt_iop_diffuse_params_t), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
+  dt_gui_presets_add_generic(_("dehaze: extra contrast"), self->op, self->version(),
+                             &(dt_iop_diffuse_params_t)
+                               { .iterations = 10,
+                                 .radius_center = 0,
+                                 .radius = 512,
+
+                                 .first = -0.20f,
+                                 .second = +0.10f,
+                                 .third = -0.20f,
+                                 .fourth = +0.10f,
+
+                                 .anisotropy_first = 2.f,
+                                 .anisotropy_second = 0.f,
+                                 .anisotropy_third = 2.f,
+                                 .anisotropy_fourth = 0.f,
+
+                                 .sharpness = 0.007f,
+                                 .regularization = 1.0f,
+                                 .variance_threshold = 0.25f,
+
+                                 .threshold = 0.0f
+                               },
+
+                             sizeof(dt_iop_diffuse_params_t), 1,
+                             DEVELOP_BLEND_CS_RGB_SCENE);
+
   dt_gui_presets_add_generic(_("denoise: fine"), self->op, self->version(),
                              &(dt_iop_diffuse_params_t)
                                { .iterations = 32,
@@ -1894,6 +1920,8 @@ void gui_init(struct dt_iop_module_t *self)
                      FALSE, FALSE, 0);
 
   g->sharpness = dt_bauhaus_slider_from_params(self, "sharpness");
+  dt_bauhaus_slider_set_digits(g->sharpness, 3);
+  dt_bauhaus_slider_set_soft_range(g->sharpness, -0.25, 0.25);
   dt_bauhaus_slider_set_format(g->sharpness, "%");
   gtk_widget_set_tooltip_text
     (g->sharpness,
