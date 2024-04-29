@@ -2608,12 +2608,12 @@ void dt_collection_update_query(const dt_collection_t *collection,
     if(*text
        && g_strcmp0(text, _("unnamed")) != 0
        && (property == DT_COLLECTION_PROP_CAMERA
-       || property == DT_COLLECTION_PROP_LENS
-       || property == DT_COLLECTION_PROP_WHITEBALANCE
-       || property == DT_COLLECTION_PROP_FLASH
-       || property == DT_COLLECTION_PROP_EXPOSURE_PROGRAM
-       || property == DT_COLLECTION_PROP_METERING_MODE
-       || property == DT_COLLECTION_PROP_GROUP_ID))
+           || property == DT_COLLECTION_PROP_LENS
+           || property == DT_COLLECTION_PROP_WHITEBALANCE
+           || property == DT_COLLECTION_PROP_FLASH
+           || property == DT_COLLECTION_PROP_EXPOSURE_PROGRAM
+           || property == DT_COLLECTION_PROP_METERING_MODE
+           || property == DT_COLLECTION_PROP_GROUP_ID))
     {
       gchar *text_quoted = g_strdup_printf("\"%s\"", text);
       g_free(text);
