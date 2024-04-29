@@ -1996,7 +1996,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
           g_free(name); // free the original filename
         }
 
-        if(list) subquery = dt_util_glist_to_str(" OR ", list);
+        if(!g_list_is_empty(list)) subquery = dt_util_glist_to_str(" OR ", list);
         g_list_free_full(list, g_free); // free the SQL clauses as well as the list
       }
       if(g_strv_length(elems) > 1)
@@ -2031,7 +2031,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
           g_free(name); // free the original filename
         }
 
-        if(list)
+        if(!g_list_is_empty(list))
         {
           if(subquery)
           {
@@ -2518,7 +2518,7 @@ void dt_collection_update_query(const dt_collection_t *collection,
 
   if(!collection->clone)
   {
-    if(list)
+    if(!g_list_is_empty(list))
     {
       // for changing offsets, thumbtable needs to know the first
       // untouched imageid after the list we do this here
