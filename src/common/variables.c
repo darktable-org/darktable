@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -442,7 +442,12 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
   else if(_has_prefix(variable, "EXIF.ISO") || _has_prefix(variable, "EXIF_ISO"))
     result = g_strdup_printf("%d", params->data->exif_iso);
   else if(_has_prefix(variable, "NL") && g_strcmp0(params->jobcode, "infos") == 0)
-    result = g_strdup_printf("\n");
+  {
+    if (params->use_html_newline)
+      result = g_strdup_printf("&#13;");
+    else
+      result = g_strdup_printf("\n");
+  }
   else if(_has_prefix(variable, "EXIF.EXPOSURE.BIAS")
           || _has_prefix(variable, "EXIF_EXPOSURE_BIAS"))
   {
@@ -1299,7 +1304,6 @@ char *dt_variables_expand(dt_variables_params_t *params,
   char *result = _expand_source(params, &source, '\0');
 
   _cleanup_expansion(params);
-
   return result;
 }
 
