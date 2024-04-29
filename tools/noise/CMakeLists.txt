@@ -1,5 +1,5 @@
-# Only build on real unix system (excludes MingW, MSYS, etc.)
-if (UNIX AND NOT WIN32)
+# Only build on real *nix system or MSYS2 installation
+if ((NOT WIN32) OR BUILD_MSYS2_INSTALL)
     add_executable(darktable-noiseprofile noiseprofile.c)
     target_link_libraries(darktable-noiseprofile m)
 
