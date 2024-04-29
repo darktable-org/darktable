@@ -703,17 +703,17 @@ void dt_multiple_styles_apply_to_list(GList *styles,
   if(dt_view_get_current() == DT_VIEW_DARKROOM)
     dt_dev_write_history(darktable.develop);
 
-  if(!styles && !list)
+  if(g_list_is_empty(styles) && g_list_is_empty(list))
   {
     dt_control_log(_("no images nor styles selected!"));
     return;
   }
-  else if(!styles)
+  else if(g_list_is_empty(styles))
   {
     dt_control_log(_("no styles selected!"));
     return;
   }
-  else if(!list)
+  else if(g_list_is_empty(list))
   {
     dt_control_log(_("no image selected!"));
     return;

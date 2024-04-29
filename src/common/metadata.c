@@ -594,7 +594,10 @@ static void _metadata_execute(const GList *imgs, const GList *metadata, GList **
   }
 }
 
-void dt_metadata_set(const dt_imgid_t imgid, const char *key, const char *value, const gboolean undo_on)
+void dt_metadata_set(const dt_imgid_t imgid,
+                     const char *key,
+                     const char *value,
+                     const gboolean undo_on)
 {
   if(!key || !imgid) return;
 
@@ -606,7 +609,7 @@ void dt_metadata_set(const dt_imgid_t imgid, const char *key, const char *value,
       imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
     else
       imgs = g_list_prepend(imgs, GINT_TO_POINTER(imgid));
-    if(imgs)
+    if(!g_list_is_empty(imgs))
     {
       GList *undo = NULL;
       if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_METADATA);
@@ -650,7 +653,7 @@ void dt_metadata_set_import(const dt_imgid_t imgid, const char *key, const char 
     {
       GList *imgs = NULL;
       imgs = g_list_prepend(imgs, GINT_TO_POINTER(imgid));
-      if(imgs)
+      if(!g_list_is_empty(imgs))
       {
         GList *undo = NULL;
 
@@ -705,7 +708,8 @@ void dt_metadata_set_list(const GList *imgs, GList *key_value, const gboolean un
 
     if(undo_on)
     {
-      dt_undo_record(darktable.undo, NULL, DT_UNDO_METADATA, undo, _pop_undo, _metadata_undo_data_free);
+      dt_undo_record(darktable.undo, NULL,
+                     DT_UNDO_METADATA, undo, _pop_undo, _metadata_undo_data_free);
       dt_undo_end_group(darktable.undo);
     }
 
@@ -751,10 +755,12 @@ void dt_metadata_clear(const GList *imgs, const gboolean undo_on)
   }
 }
 
-void dt_metadata_set_list_id(const GList *img, const GList *metadata, const gboolean clear_on,
+void dt_metadata_set_list_id(const GList *img,
+                             const GList *metadata,
+                             const gboolean clear_on,
                              const gboolean undo_on)
 {
-  if(img)
+  if(!g_list_is_empty(img))
   {
     GList *undo = NULL;
     if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_METADATA);

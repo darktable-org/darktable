@@ -470,12 +470,13 @@ gboolean dt_tag_attach_images(const guint tagid,
                               const GList *img,
                               const gboolean undo_on)
 {
-  if(!img) return FALSE;
+  if(g_list_is_empty(img)) return FALSE;
   GList *undo = NULL;
   GList *tags = NULL;
 
   tags = g_list_prepend(tags, GINT_TO_POINTER(tagid));
-  if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_TAGS);
+  if(undo_on)
+    dt_undo_start_group(darktable.undo, DT_UNDO_TAGS);
 
   const gboolean res = _tag_execute(tags, img, &undo, undo_on, DT_TA_ATTACH);
 
@@ -518,10 +519,11 @@ gboolean dt_tag_set_tags(const GList *tags,
                          const gboolean clear_on,
                          const gboolean undo_on)
 {
-  if(img)
+  if(!g_list_is_empty(img))
   {
     GList *undo = NULL;
-    if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_TAGS);
+    if(undo_on)
+      dt_undo_start_group(darktable.undo, DT_UNDO_TAGS);
 
     const gboolean res = _tag_execute
       (tags, img, &undo, undo_on,
@@ -563,7 +565,7 @@ gboolean dt_tag_attach_string_list(const gchar *tags,
     }
 
     // attach newly created tags
-    if(img)
+    if(!g_list_is_empty(img))
     {
       GList *undo = NULL;
       if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_TAGS);
@@ -587,7 +589,7 @@ gboolean dt_tag_detach_images(const guint tagid,
                               const GList *img,
                               const gboolean undo_on)
 {
-  if(img)
+  if(!g_list_is_empty(img))
   {
     GList *tags = NULL;
     tags = g_list_prepend(tags, GINT_TO_POINTER(tagid));
