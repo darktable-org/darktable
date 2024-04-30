@@ -64,6 +64,15 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
   // so the number of pixels will never overflow int
   const int npixels = width * height;
 
+  uint8_t *int_RGBA_buf = dt_alloc_align_uint8(npixels * 4);
+  int_RGBA_buf = WebPDecodeRGBAInto(read_buffer, filesize, int_RGBA_buf, npixels * 4, width * 4);
+  if(!int_RGBA_buf)
+  {
+    g_free(read_buffer);
+    dt_print(DT_DEBUG_ALWAYS,"[webp_open] failed to decode file: %s\n", filename);
+    return DT_IMAGEIO_LOAD_FAILED;
+  }
+
   img->width = width;
   img->height = height;
   img->buf_dsc.channels = 4;
@@ -73,17 +82,9 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
   if(!mipbuf)
   {
     g_free(read_buffer);
+    dt_free_align(int_RGBA_buf);
     dt_print(DT_DEBUG_ALWAYS, "[webp_open] could not alloc full buffer for image: %s\n", img->filename);
     return DT_IMAGEIO_CACHE_FULL;
-  }
-
-  uint8_t *int_RGBA_buf = dt_alloc_align_uint8(npixels * 4);
-  int_RGBA_buf = WebPDecodeRGBAInto(read_buffer, filesize, int_RGBA_buf, npixels * 4, width * 4);
-  if(!int_RGBA_buf)
-  {
-    g_free(read_buffer);
-    dt_print(DT_DEBUG_ALWAYS,"[webp_open] failed to decode file: %s\n", filename);
-    return DT_IMAGEIO_LOAD_FAILED;
   }
 
 #ifdef _OPENMP
