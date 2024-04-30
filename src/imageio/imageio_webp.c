@@ -25,9 +25,7 @@
 
 dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
 {
-  int w, h;
-  WebPMux *mux;
-  WebPData wp_data;
+  int width, height;
   WebPData icc_profile;
 
   FILE *f = g_fopen(filename, "rb");
@@ -53,7 +51,7 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
   fclose(f);
 
   // WebPGetInfo should tell us the image dimensions needed for darktable image buffer allocation
-  if(!WebPGetInfo(read_buffer, filesize, &w, &h))
+  if(!WebPGetInfo(read_buffer, filesize, &width, &height))
   {
     // If we couldn't get the webp metadata, then the file we're trying to read is most likely in
     // a different format (darktable just trying different loaders until it finds the right one).
@@ -61,8 +59,13 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
     g_free(read_buffer);
     return DT_IMAGEIO_LOAD_FAILED;
   }
-  img->width = w;
-  img->height = h;
+
+  // The maximum pixel dimensions of a WebP image is 16383 x 16383,
+  // so the number of pixels will never overflow int
+  const int npixels = width * height;
+
+  img->width = width;
+  img->height = height;
   img->buf_dsc.channels = 4;
   img->buf_dsc.datatype = TYPE_FLOAT;
 
@@ -74,8 +77,8 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
     return DT_IMAGEIO_CACHE_FULL;
   }
 
-  uint8_t *int_RGBA_buf = dt_alloc_align_uint8(w * h * 4);
-  int_RGBA_buf = WebPDecodeRGBAInto(read_buffer, filesize, int_RGBA_buf, w * h * 4, w * 4);
+  uint8_t *int_RGBA_buf = dt_alloc_align_uint8(npixels * 4);
+  int_RGBA_buf = WebPDecodeRGBAInto(read_buffer, filesize, int_RGBA_buf, npixels * 4, width * 4);
   if(!int_RGBA_buf)
   {
     g_free(read_buffer);
@@ -86,9 +89,9 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   schedule(static) \
-  dt_omp_firstprivate(w, h, int_RGBA_buf, mipbuf)
+  dt_omp_firstprivate(npixels, int_RGBA_buf, mipbuf)
 #endif
-  for(int i = 0; i < w * h; i++)
+  for(int i = 0; i < npixels; i++)
   {
     dt_aligned_pixel_t pix = {0.0f, 0.0f, 0.0f, 0.0f};
     for_three_channels(c)
@@ -98,9 +101,10 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
 
   dt_free_align(int_RGBA_buf);
 
+  WebPData wp_data;
   wp_data.bytes = (uint8_t *)read_buffer;
   wp_data.size = filesize;
-  mux = WebPMuxCreate(&wp_data, 0); // 0 = data will NOT be copied to the mux object
+  WebPMux *mux = WebPMuxCreate(&wp_data, 0); // 0 = data will NOT be copied to the mux object
 
   if(mux)
   {
