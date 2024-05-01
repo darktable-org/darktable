@@ -40,6 +40,7 @@ typedef enum dt_action_element_lib_t
   DT_ACTION_ELEMENT_PRESETS = 2,
 } dt_action_element_lib_t;
 
+/*
 typedef struct dt_lib_module_info_t
 {
   char *plugin_name;
@@ -48,6 +49,8 @@ typedef struct dt_lib_module_info_t
   int params_size;
   dt_lib_module_t *module;
 } dt_lib_module_info_t;
+
+*/
 
 typedef struct dt_lib_presets_edit_dialog_t
 {
@@ -78,7 +81,7 @@ gboolean dt_lib_is_visible_in_view(dt_lib_module_t *module,
 /** calls module->cleanup and closes the dl connection. */
 static void dt_lib_unload_module(dt_lib_module_t *module);
 
-static gchar *get_active_preset_name(dt_lib_module_info_t *minfo)
+gchar *dt_lib_get_active_preset_name(dt_lib_module_info_t *minfo)
 {
   sqlite3_stmt *stmt;
   // clang-format off
@@ -115,7 +118,7 @@ static void edit_preset(const char *name_in,
   gchar *name = NULL;
   if(name_in == NULL)
   {
-    name = get_active_preset_name(minfo);
+    name = dt_lib_get_active_preset_name(minfo);
     if(name == NULL) return;
   }
   else
@@ -231,7 +234,7 @@ static void menuitem_manage_presets(GtkMenuItem *menuitem,
 static void menuitem_delete_preset(GtkMenuItem *menuitem,
                                    dt_lib_module_info_t *minfo)
 {
-  gchar *name = get_active_preset_name(minfo);
+  gchar *name = dt_lib_get_active_preset_name(minfo);
   if(name == NULL) return;
 
   if(!dt_conf_get_bool("plugins/lighttable/preset/ask_before_delete_preset")
