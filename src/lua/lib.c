@@ -144,6 +144,7 @@ static int active_preset_member(lua_State *L)
 
   preset_name = dt_lib_get_active_preset_name(mi);
   lua_pushstring(L, preset_name);
+  free(mi);
   return 1;
 }
 
