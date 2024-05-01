@@ -1538,7 +1538,8 @@ GList *dt_history_duplicate(GList *hist)
 }
 
 // if the image has no history return 0
-static gsize _history_hash_compute_from_db(const dt_imgid_t imgid, guint8 **hash)
+static gsize _history_hash_compute_from_db(const dt_imgid_t imgid,
+                                           guint8 **hash)
 {
   if(!dt_is_valid_imgid(imgid)) return 0;
 
@@ -1918,7 +1919,8 @@ gboolean dt_history_copy_parts(const dt_imgid_t imgid)
     return FALSE;
 }
 
-gboolean dt_history_paste_on_list(const GList *list, const gboolean undo)
+gboolean dt_history_paste_on_list(const GList *list,
+                                  const gboolean undo)
 {
   if(!dt_is_valid_imgid(darktable.view_manager->copy_paste.copied_imageid))
     return FALSE;
@@ -1929,7 +1931,9 @@ gboolean dt_history_paste_on_list(const GList *list, const gboolean undo)
   const int mode = dt_conf_get_int("plugins/lighttable/copy_history/pastemode");
   const gboolean merge = (mode == 0) ? TRUE : FALSE;
 
-  if(undo) dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
+  if(undo)
+    dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
+
   for(GList *l = (GList *)list; l; l = g_list_next(l))
   {
     const int dest = GPOINTER_TO_INT(l->data);
@@ -1939,7 +1943,9 @@ gboolean dt_history_paste_on_list(const GList *list, const gboolean undo)
                                        darktable.view_manager->copy_paste.copy_iop_order,
                                        darktable.view_manager->copy_paste.full_copy);
   }
-  if(undo) dt_undo_end_group(darktable.undo);
+
+  if(undo)
+    dt_undo_end_group(darktable.undo);
 
   // In darkroom and if there is a copy of the iop-order we need to rebuild the pipe
   // to take into account the possible new order of modules.
@@ -1951,7 +1957,8 @@ gboolean dt_history_paste_on_list(const GList *list, const gboolean undo)
   return TRUE;
 }
 
-gboolean dt_history_paste_parts_on_list(const GList *list, gboolean undo)
+gboolean dt_history_paste_parts_on_list(const GList *list,
+                                        const gboolean undo)
 {
   if(!dt_is_valid_imgid(darktable.view_manager->copy_paste.copied_imageid))
     return FALSE;
@@ -2007,7 +2014,8 @@ gboolean dt_history_paste_parts_on_list(const GList *list, gboolean undo)
   return TRUE;
 }
 
-gboolean dt_history_delete_on_list(const GList *list, const gboolean undo)
+gboolean dt_history_delete_on_list(const GList *list,
+                                   const gboolean undo)
 {
   if(!list)  // do we have any images on which to operate?
     return FALSE;
