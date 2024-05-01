@@ -3428,10 +3428,20 @@ void dt_opencl_memory_statistics(int devid,
         darktable.opencl->dev[devid].memory_in_use);
 
   if(darktable.unmuted & DT_DEBUG_MEMORY)
-    dt_print(DT_DEBUG_OPENCL,
-             "[opencl memory] device %d: %zu bytes (%.1f MB) in use\n",
-             devid, darktable.opencl->dev[devid].memory_in_use,
-             (float)darktable.opencl->dev[devid].memory_in_use/(1024*1024));
+  {
+    dt_print(DT_DEBUG_OPENCL,"[opencl memory] device %d: %zu bytes (%.1f MB) in use, %.1f MB available GPU memory, %.1f MB global GPU mem size\n",
+             devid,
+             darktable.opencl->dev[devid].memory_in_use,
+             (float)darktable.opencl->dev[devid].memory_in_use/(1024*1024),
+             (float)darktable.opencl->dev[devid].used_available/(1024*1024),
+             (float)darktable.opencl->dev[devid].max_global_mem/(1024*1024));
+      if(darktable.opencl->dev[devid].memory_in_use > darktable.opencl->dev[devid].used_available)
+      {
+        dt_print(DT_DEBUG_OPENCL,
+                 "[opencl memory] Warning, device %d used more GPU memory than available\n",
+                 devid);
+      }
+  }
 }
 
 /* amount of graphics memory declared as available depends on max_global_mem and
@@ -3493,7 +3503,8 @@ void dt_opencl_check_tuning(const int devid)
   else
   {
     // calculate data from fractions
-    const size_t disposable = allmem - DT_OPENCL_DEFAULT_HEADROOM * 1024ul * 1024ul;
+    const size_t default_headroom = DT_OPENCL_DEFAULT_HEADROOM * 1024ul * 1024ul;
+    const size_t disposable = allmem > default_headroom ? allmem - default_headroom : 0;
     const int fraction = MIN(1024lu, MAX(0, res->fractions[res->group + 3]));
     cl->dev[devid].used_available =
       MAX(256ul * 1024ul * 1024ul, disposable / 1024ul * fraction);
