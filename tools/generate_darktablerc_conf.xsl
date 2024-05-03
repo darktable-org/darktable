@@ -24,9 +24,9 @@ typedef struct {
    const char *name;		// configuration variable's name (path)
    const char *type;		// variable's type (int, string, enum, etc.)
    const char *def;		// default value
+   const char *enum_values;	// listing of possible values for an enum, in format "[A][B][C]...[Z]"
    const char *min;		// minimum value (optional, may be NULL or empty string)
    const char *max;		// maximum value (optional, may be NULL or empty string)
-   const char *enum_values;	// listing of possible values for an enum, in format "[A][B][C]...[Z]"
    const char *shortdesc;	// short one-line description
    const char *longdesc;	// long, potentially multi-line description (optional)
 } _default_config_t;
@@ -52,6 +52,11 @@ static void _free_confgen_value(void *value)
   dt_confgen_value_t *s = (dt_confgen_value_t *)value;
   _clear_confgen_value(value);
   g_free(s);
+}
+
+static char *_copy_string(const char *s)
+{
+  return s && *s ? g_strdup(s) : NULL;
 }
 
 static _default_config_t _config_variables[] =
@@ -92,15 +97,6 @@ void dt_confgen_init()
        item = (dt_confgen_value_t *)g_malloc0(sizeof(dt_confgen_value_t));
        g_hash_table_insert(darktable.conf->x_confgen, g_strdup(var->name), item);
      }
-     if(!strcmp(var->type,"dir"))
-       item->def = dt_conf_expand_default_dir(var->def);
-     else
-       item->def = g_strdup(var->def);
-     item->min = g_strdup(var->min);
-     item->max = g_strdup(var->max);
-     item->enum_values = g_strdup(var->enum_values);
-     item->shortdesc = g_strdup(var->shortdesc);
-     item->longdesc = g_strdup(var->longdesc);
      if      (!strcmp(var->type, "int"))   item->type = DT_INT;
      else if (!strcmp(var->type, "int64")) item->type = DT_INT64;
      else if (!strcmp(var->type, "bool"))  item->type = DT_BOOL;
@@ -108,6 +104,15 @@ void dt_confgen_init()
      else if (!strcmp(var->type, "enum"))  item->type = DT_ENUM;
      else if (!strcmp(var->type, "dir"))   item->type = DT_PATH;
      else                                  item->type = DT_STRING;
+     if(item->type == DT_PATH)
+       item->def = dt_conf_expand_default_dir(var->def);
+     else
+       item->def = g_strdup(var->def);
+     item->min = _copy_string(var->min);
+     item->max = _copy_string(var->max);
+     item->enum_values = _copy_string(var->enum_values);
+     item->shortdesc = _copy_string(var->shortdesc);
+     item->longdesc = _copy_string(var->longdesc);
    }
 }
 
