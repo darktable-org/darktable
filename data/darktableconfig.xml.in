@@ -522,7 +522,7 @@
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/filtering/num_rules</name>
-    <type>int</type>
+    <type min="1" max="12">int</type>
     <default>3</default>
     <shortdescription>nb of rules by default</shortdescription>
     <longdescription></longdescription>
@@ -1645,7 +1645,7 @@
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/collect/num_rules</name>
-    <type>int</type>
+    <type min="1" max="10">int</type>
     <default>1</default>
     <shortdescription/>
     <longdescription/>
