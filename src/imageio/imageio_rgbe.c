@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -81,17 +81,17 @@ static int rgbe_error(int rgbe_error_code, char *msg)
   switch(rgbe_error_code)
   {
     case rgbe_read_error:
-      perror("RGBE read error");
+      dt_print(DT_DEBUG_ALWAYS, "[rgbe_open] RGBE read error: %s\n", strerror(errno));
       break;
     case rgbe_write_error:
-      perror("RGBE write error");
+      dt_print(DT_DEBUG_ALWAYS, "[rgbe_open] RGBE write error: %s\n", strerror(errno));
       break;
     case rgbe_format_error:
-      dt_print(DT_DEBUG_ALWAYS, "RGBE bad file format: %s\n", msg);
+      dt_print(DT_DEBUG_ALWAYS, "[rgbe_open] RGBE bad file format: %s\n", msg);
       break;
     default:
     case rgbe_memory_error:
-      dt_print(DT_DEBUG_ALWAYS, "RGBE error: %s\n", msg);
+      dt_print(DT_DEBUG_ALWAYS, "[rgbe_open] RGBE error: %s\n", msg);
   }
   return RGBE_RETURN_FAILURE;
 }
@@ -122,10 +122,14 @@ int RGBE_ReadHeader(FILE *fp, int *width, int *height, rgbe_header_info *info)
     info->valid = 0;
     info->programtype[0] = 0;
     info->gamma = info->exposure = 1.0;
-    static const float default_primaries[] = { 0.640, 0.330, 0.290, 0.600, 0.150, 0.060, 0.333, 0.333 };
+    static const float default_primaries[] =
+      { 0.640, 0.330, 0.290, 0.600, 0.150, 0.060, 0.333, 0.333 };
     memcpy(info->primaries, default_primaries, sizeof(info->primaries));
   }
-  if(fgets(buf, sizeof(buf) / sizeof(buf[0]), fp) == NULL) return rgbe_error(rgbe_read_error, NULL);
+
+  if(fgets(buf, sizeof(buf) / sizeof(buf[0]), fp) == NULL)
+    return rgbe_error(rgbe_read_error, NULL);
+
   if((buf[0] != '#') || (buf[1] != '?'))
   {
     /* if you want to require the magic token then uncomment the next line */
@@ -135,15 +139,20 @@ int RGBE_ReadHeader(FILE *fp, int *width, int *height, rgbe_header_info *info)
   {
     info->valid |= RGBE_VALID_PROGRAMTYPE;
     size_t i;
+
     for(i = 0; i < sizeof(info->programtype) - 1; i++)
     {
       if((buf[i + 2] == 0) || isspace(buf[i + 2])) break;
       info->programtype[i] = buf[i + 2];
     }
+
     info->programtype[i] = 0;
-    if(fgets(buf, sizeof(buf) / sizeof(buf[0]), fp) == 0) return rgbe_error(rgbe_read_error, NULL);
+
+    if(fgets(buf, sizeof(buf) / sizeof(buf[0]), fp) == 0)
+      return rgbe_error(rgbe_read_error, NULL);
   }
   gboolean format_is_rgbe = FALSE;
+
   for(;;)
   {
     if((buf[0] == 0) || (buf[0] == '\n'))
@@ -156,6 +165,7 @@ int RGBE_ReadHeader(FILE *fp, int *width, int *height, rgbe_header_info *info)
       {
         char *startptr = buf + strlen("GAMMA="), *endptr;
         float tmp = g_ascii_strtod(startptr, &endptr);
+
         if(startptr != endptr)
         {
           info->gamma = tmp;
@@ -166,6 +176,7 @@ int RGBE_ReadHeader(FILE *fp, int *width, int *height, rgbe_header_info *info)
       {
         char *startptr = buf + strlen("EXPOSURE="), *endptr;
         float tmp = g_ascii_strtod(startptr, &endptr);
+
         if(startptr != endptr)
         {
           info->exposure = tmp;
@@ -177,9 +188,11 @@ int RGBE_ReadHeader(FILE *fp, int *width, int *height, rgbe_header_info *info)
         float tmp[8];
         gboolean all_ok = TRUE;
         char *startptr = buf + strlen("PRIMARIES="), *endptr;
+
         for(int i = 0; i < 8; i++)
         {
           tmp[i] = g_ascii_strtod(startptr, &endptr);
+
           if(startptr == endptr)
           {
             all_ok = FALSE;
@@ -187,18 +200,27 @@ int RGBE_ReadHeader(FILE *fp, int *width, int *height, rgbe_header_info *info)
           }
           startptr = endptr;
         }
-        if(all_ok) memcpy(info->primaries, tmp, sizeof(info->primaries));
+
+        if(all_ok)
+          memcpy(info->primaries, tmp, sizeof(info->primaries));
       }
     }
 
-    if(fgets(buf, sizeof(buf) / sizeof(buf[0]), fp) == 0) return rgbe_error(rgbe_read_error, NULL);
+    if(fgets(buf, sizeof(buf) / sizeof(buf[0]), fp) == 0)
+      return rgbe_error(rgbe_read_error, NULL);
   }
+
   if(!format_is_rgbe)
-    return rgbe_error(rgbe_format_error, "no FORMAT specifier found or it's not 32-bit_rle_rgbe");
+    return rgbe_error(rgbe_format_error,
+                      "no FORMAT specifier found or it's not 32-bit_rle_rgbe");
+
   while(!strcmp(buf, "\n")) // be nice and accept more than one blank line
-    if(fgets(buf, sizeof(buf) / sizeof(buf[0]), fp) == 0) return rgbe_error(rgbe_read_error, NULL);
+    if(fgets(buf, sizeof(buf) / sizeof(buf[0]), fp) == 0)
+      return rgbe_error(rgbe_read_error, NULL);
+
   if(sscanf(buf, "-Y %d +X %d", height, width) < 2)
     return rgbe_error(rgbe_format_error, "missing image size specifier");
+
   return RGBE_RETURN_SUCCESS;
 }
 
@@ -209,7 +231,9 @@ int RGBE_ReadPixels(FILE *fp, float *data, int numpixels)
 
   while(numpixels-- > 0)
   {
-    if(fread(rgbe, sizeof(rgbe), 1, fp) < 1) return rgbe_error(rgbe_read_error, NULL);
+    if(fread(rgbe, sizeof(rgbe), 1, fp) < 1)
+      return rgbe_error(rgbe_read_error, NULL);
+
     rgbe2float(&data[RGBE_DATA_RED], &data[RGBE_DATA_GREEN], &data[RGBE_DATA_BLUE], rgbe);
     data += RGBE_DATA_SIZE;
   }
@@ -233,6 +257,7 @@ int RGBE_ReadPixels_RLE(FILE *fp, float *data, int scanline_width, int num_scanl
       free(scanline_buffer);
       return rgbe_error(rgbe_read_error, NULL);
     }
+
     if((rgbe[0] != 2) || (rgbe[1] != 2) || (rgbe[2] & 0x80))
     {
       /* this file is not run length encoded */
@@ -241,14 +266,18 @@ int RGBE_ReadPixels_RLE(FILE *fp, float *data, int scanline_width, int num_scanl
       free(scanline_buffer);
       return RGBE_ReadPixels(fp, data, scanline_width * num_scanlines - 1);
     }
+
     if((((int)rgbe[2]) << 8 | rgbe[3]) != scanline_width)
     {
       free(scanline_buffer);
       return rgbe_error(rgbe_format_error, "wrong scanline width");
     }
+
     if(scanline_buffer == NULL)
       scanline_buffer = (unsigned char *)malloc(sizeof(unsigned char) * 4 * scanline_width);
-    if(scanline_buffer == NULL) return rgbe_error(rgbe_memory_error, "unable to allocate buffer space");
+
+    if(scanline_buffer == NULL)
+      return rgbe_error(rgbe_memory_error, "unable to allocate buffer space");
 
     unsigned char *ptr = &scanline_buffer[0];
     /* read each of the four channels for the scanline into the buffer */
@@ -262,6 +291,7 @@ int RGBE_ReadPixels_RLE(FILE *fp, float *data, int scanline_width, int num_scanl
           free(scanline_buffer);
           return rgbe_error(rgbe_read_error, NULL);
         }
+
         if(buf[0] > 128)
         {
           /* a run of the same value */
@@ -282,7 +312,9 @@ int RGBE_ReadPixels_RLE(FILE *fp, float *data, int scanline_width, int num_scanl
             free(scanline_buffer);
             return rgbe_error(rgbe_format_error, "bad scanline data");
           }
+
           *ptr++ = buf[1];
+
           if(--count > 0)
           {
             if(fread(ptr, sizeof(*ptr) * count, 1, fp) < 1)
@@ -356,8 +388,12 @@ int RGBE_ReadPixels_RLE(FILE *fp, float *data, int scanline_width, int num_scanl
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 ///////////////////////////////////////////////////////////////////////////
-static void _xy2matrix(const float r[2], const float g[2], const float b[2],
-                       const float w[2], const float Y, float M[4][4])
+static void _xy2matrix(const float r[2],
+                       const float g[2],
+                       const float b[2],
+                       const float w[2],
+                       const float Y,
+                       float M[4][4])
 {
   float X = w[0] * Y / w[1];
   float Z = (1 - w[0] - w[1]) * Y / w[1];
@@ -400,15 +436,19 @@ static void _xy2matrix(const float r[2], const float g[2], const float b[2],
   M[2][2] = Sb * (1 - b[0] - b[1]);
 }
 
-dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
+dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img,
+                                         const char *filename,
+                                         dt_mipmap_buffer_t *mbuf)
 {
-  const char *ext = filename + strlen(filename);
-  while(*ext != '.' && ext > filename) ext--;
-  if(strncmp(ext, ".hdr", 4) && strncmp(ext, ".HDR", 4) && strncmp(ext, ".Hdr", 4))
+  const char *ext = g_strrstr(filename, ".");
+  if(!ext)
+    return DT_IMAGEIO_LOAD_FAILED;
+  if(g_ascii_strcasecmp(ext, ".hdr") != 0)
     return DT_IMAGEIO_LOAD_FAILED;
 
   FILE *f = g_fopen(filename, "rb");
-  if(!f) return DT_IMAGEIO_LOAD_FAILED;
+  if(!f)
+    return DT_IMAGEIO_LOAD_FAILED;
 
   float *rgbe_buf = NULL;
   rgbe_header_info info;
@@ -418,10 +458,12 @@ dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img, const char *filename, 
   img->buf_dsc.channels = 4;
   img->buf_dsc.datatype = TYPE_FLOAT;
   float *buf = (float *)dt_mipmap_cache_alloc(mbuf, img);
-  if(!buf) goto error_cache_full;
+  if(!buf)
+    goto error_cache_full;
 
   rgbe_buf = dt_alloc_align_float((size_t) img->width * img->height * 4);
-  if(!rgbe_buf) goto rgbe_failed;
+  if(!rgbe_buf)
+    goto rgbe_failed;
 
   if(RGBE_ReadPixels_RLE(f, rgbe_buf, img->width, img->height) != RGBE_RETURN_SUCCESS)
     goto rgbe_failed;
@@ -447,7 +489,12 @@ dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img, const char *filename, 
 
   // set the color matrix
   float m[4][4];
-  _xy2matrix(&info.primaries[0], &info.primaries[2], &info.primaries[4], &info.primaries[6], 1.0, m);
+  _xy2matrix(&info.primaries[0],
+             &info.primaries[2],
+             &info.primaries[4],
+             &info.primaries[6],
+             1.0,
+             m);
 
   float mat[3][3];
 
@@ -472,6 +519,7 @@ rgbe_failed:
   fclose(f);
   dt_free_align(rgbe_buf);
   return DT_IMAGEIO_LOAD_FAILED;
+
 error_cache_full:
   fclose(f);
   return DT_IMAGEIO_CACHE_FULL;
