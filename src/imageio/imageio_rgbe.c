@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -81,17 +81,17 @@ static int rgbe_error(int rgbe_error_code, char *msg)
   switch(rgbe_error_code)
   {
     case rgbe_read_error:
-      perror("RGBE read error");
+      dt_print(DT_DEBUG_ALWAYS, "[rgbe_open] RGBE read error: %s\n", strerror(errno));
       break;
     case rgbe_write_error:
-      perror("RGBE write error");
+      dt_print(DT_DEBUG_ALWAYS, "[rgbe_open] RGBE write error: %s\n", strerror(errno));
       break;
     case rgbe_format_error:
-      dt_print(DT_DEBUG_ALWAYS, "RGBE bad file format: %s\n", msg);
+      dt_print(DT_DEBUG_ALWAYS, "[rgbe_open] RGBE bad file format: %s\n", msg);
       break;
     default:
     case rgbe_memory_error:
-      dt_print(DT_DEBUG_ALWAYS, "RGBE error: %s\n", msg);
+      dt_print(DT_DEBUG_ALWAYS, "[rgbe_open] RGBE error: %s\n", msg);
   }
   return RGBE_RETURN_FAILURE;
 }
