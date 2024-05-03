@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -37,11 +37,15 @@
 
 #include <osm-gps-map.h>
 
+#define NEW 1
+
 DT_MODULE(1)
 
 typedef struct dt_geo_position_t
 {
   double x, y;
+  unsigned int x_bin, y_bin;
+  unsigned int next;
   int cluster_id;
   dt_imgid_t imgid;
 } dt_geo_position_t;
@@ -98,6 +102,10 @@ typedef struct dt_map_t
 
 #define CORE_POINT 1
 #define NOT_CORE_POINT 0
+
+#define NO_NEXT_POINT (~((unsigned int)0))
+
+#define EXPAND_LIMIT 250
 
 static const int thumb_size = 128, thumb_border = 2, image_pin_size = 13, place_pin_size = 72;
 static const int cross_size = 16, max_size = 1024;
@@ -176,8 +184,8 @@ static void _view_map_dnd_remove_callback(GtkWidget *widget, GdkDragContext *con
                                           GtkSelectionData *selection_data, guint target_type, guint time,
                                           gpointer data);
 // find the images clusters on the map
-static void _dbscan(dt_geo_position_t *points, unsigned int num_points, double epsilon,
-                    unsigned int minpts);
+static int _dbscan(const dt_map_t *lib, dt_geo_position_t *points, unsigned int num_points, double epsilon,
+                   unsigned int minpts);
 static gboolean _view_map_prefs_changed(dt_map_t *lib);
 static void _view_map_build_main_query(dt_map_t *lib);
 
@@ -1360,10 +1368,11 @@ static void _view_map_changed_callback_delayed(gpointer user_data)
 
       dt_times_t start;
       dt_get_perf_times(&start);
-      _dbscan(p, img_count, epsilon, min_images);
+      int num_clusters = _dbscan(lib, p, img_count, epsilon, min_images);
       dt_show_times(&start, "[map] dbscan calculation");
 
       // set the clusters
+      gboolean *processed = calloc(num_clusters+1,sizeof(gboolean));
       GList *sel_imgs = dt_act_on_get_images(FALSE, FALSE, FALSE);
       int group = -1;
       for(i = 0; i< img_count; i++)
@@ -1383,8 +1392,9 @@ static void _view_map_changed_callback_delayed(gpointer user_data)
                                        ? TRUE : FALSE;
           lib->images = g_slist_prepend(lib->images, entry);
         }
-        else if(p[i].cluster_id > group)
+        else if(!processed[p[i].cluster_id])
         {
+          processed[p[i].cluster_id] = TRUE;
           group = p[i].cluster_id;
           dt_map_image_t *entry = (dt_map_image_t *)calloc(1, sizeof(dt_map_image_t));
           entry->imgid = p[i].imgid;
@@ -1417,6 +1427,7 @@ static void _view_map_changed_callback_delayed(gpointer user_data)
           lib->images = g_slist_prepend(lib->images, entry);
         }
       }
+      free(processed);
       g_list_free(sel_imgs);
     }
 
@@ -1465,7 +1476,7 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
   {
     g_timeout_add(100, _view_map_changed_callback_wait, self);
   }
-  lib->time_out = 2;
+  lib->time_out = 1; // how many 100ms ticks to wait until the actual update
 
   // activate this callback late in the process as we need the filmstrip proxy to be setup. This is not the
   // case in the initialization phase.
@@ -1859,7 +1870,7 @@ static gboolean _view_map_scroll_event(GtkWidget *w, GdkEventScroll *event, dt_v
       }
       _view_map_draw_main_location(lib, &lib->loc.main);
       _view_map_update_location_geotag(self);
-      _view_map_signal_change_wait(self, 5);  // wait 5/10 sec after last scroll
+      _view_map_signal_change_wait(self, 3);  // wait 3/10 sec after last scroll
       return TRUE;
     }
     else  // scroll on the map. try to keep the map where it is
@@ -2842,135 +2853,259 @@ GSList *mouse_actions(const dt_view_t *self)
 // starting point taken from https://github.com/gyaikhom/dbscan
 // Copyright 2015 Gagarine Yaikhom (MIT License)
 
-typedef struct epsilon_neighbours_t
+typedef struct geo_bin_t
 {
-  unsigned int num_members;
-  unsigned int index[];
-} epsilon_neighbours_t;
+  unsigned int points;
+  unsigned int num_points;
+} geo_bin_t;
 
 typedef struct dt_dbscan_t
 {
   dt_geo_position_t *points;
+  geo_bin_t **geo_bins;
   unsigned int num_points;
+  unsigned int num_lon_bins;
+  unsigned int num_lat_bins;
   double epsilon;
   unsigned int minpts;
-  epsilon_neighbours_t *seeds;
-  epsilon_neighbours_t *spreads;
   unsigned int index;
   unsigned int cluster_id;
 } dt_dbscan_t;
 
 static dt_dbscan_t db;
 
-static void _get_epsilon_neighbours(epsilon_neighbours_t *en, unsigned int index)
+static void _bin_points(const dt_map_t *lib)
 {
-  // points are ordered by longitude
-  // limit the exploration to epsilon east and west
-  const double x = db.points[index].x;
-  const double min_x = x - db.epsilon;
-  const double max_x = x + db.epsilon;
-  const double y = db.points[index].y;
-  // west
-  for(int i = index+1; i < db.num_points; ++i)
+  const double lat_north = lib->bbox.lat1 * M_PI / 180.0 ; // UI uses degrees, we compute in radians
+  const double lat_south = lib->bbox.lat2 * M_PI / 180.0 ;
+  const double lon_west = lib->bbox.lon1 * M_PI / 180.0 ;
+  const double lon_east = lib->bbox.lon2 * M_PI / 180.0 ;
+  const double lat_range = lat_north - lat_south;
+  const double lon_range = lon_east - lon_west;
+  const unsigned int num_lat_bins = ceil(lat_range / db.epsilon) + 1;
+  const unsigned int num_lon_bins = ceil(lon_range / db.epsilon) + 1;
+  for(unsigned int i = 0; i < db.num_points; i++)
+    db.points[i].next = NO_NEXT_POINT;
+  db.geo_bins = (geo_bin_t**)calloc(num_lon_bins, sizeof(geo_bin_t*));
+  db.num_lat_bins = num_lat_bins;
+  db.num_lon_bins = num_lon_bins;
+  if(!db.geo_bins)
+    return;
+  // bin the coordinates for the points, making a linked list of points in each bin
+  for(unsigned int i = 0; i < db.num_points; i++)
   {
-    if(db.points[i].x > max_x)
-      break;
-    if(db.points[i].cluster_id >= 0)	// skip points which have already been assigned to a cluster
-      continue;
-    if(fabs(db.points[i].y - y) > db.epsilon)
-      continue;
-    else
+    unsigned int lon_bin = (CLAMP(db.points[i].x,lon_west,lon_east) - lon_west) / db.epsilon ;
+    unsigned int lat_bin = (CLAMP(db.points[i].y,lat_south,lat_north) - lat_south) / db.epsilon ;
+    db.points[i].x_bin = lon_bin;
+    db.points[i].y_bin = lat_bin;
+    if(!db.geo_bins[lon_bin])
     {
-      en->index[en->num_members] = i;
-      en->num_members++;
+      // we haven't yet seen any points in this longitude bin, so allocate pointers for all
+      // of the latitude bins at this longitude
+      db.geo_bins[lon_bin] = (geo_bin_t*)calloc(num_lat_bins,sizeof(geo_bin_t));
+      for(int l = 0; l < num_lat_bins; l++)
+        db.geo_bins[lon_bin][l].points = NO_NEXT_POINT;
+    }
+    // push the point on the front of the linked list for its bin
+    db.points[i].next = db.geo_bins[lon_bin][lat_bin].points;
+    db.geo_bins[lon_bin][lat_bin].points = i;
+    // and update the count of points in the bin
+    db.geo_bins[lon_bin][lat_bin].num_points++;
+  }
+}
+
+static gboolean _not_clustered(unsigned int lon, unsigned int lat)
+{
+  if(!db.geo_bins[lon] || db.geo_bins[lon][lat].num_points == 0)
+    return FALSE;
+  return db.points[db.geo_bins[lon][lat].points].cluster_id < 0;
+}
+
+static void _add_expand_cluster(unsigned int lon, unsigned int lat, int id, int iter)
+{
+  // add the current bin to the cluster
+  if(iter >= 0)
+  {
+    for(unsigned int pt = db.geo_bins[lon][lat].points; pt != NO_NEXT_POINT; pt = db.points[pt].next)
+    {
+      db.points[pt].cluster_id = id;
     }
   }
-  // east
-  for(int i = index-1; i >= 0; --i)
+  if(iter == 0)
+    return;
+  if(iter == -1)
+    iter = 1;
+  // now look at the adjacent bins in all eight directions and add them if not already in a cluster
+  if(lon > 0 && db.geo_bins[lon-1])
   {
-    if(db.points[i].x < min_x)
-      break;
-    if(db.points[i].cluster_id >= 0)	// skip points which have already been assigned to a cluster
-      continue;
-    if(fabs(y - db.points[i].y) > db.epsilon)
-      continue;
-    else
+    for(int lat2 = lat > 0 ? lat-1 : lat; lat2+1 < MIN(db.num_lat_bins,lat+2); lat2++)
     {
-      en->index[en->num_members] = i;
-      en->num_members++;
+      if(_not_clustered(lon-1,lat2))
+      {
+        _add_expand_cluster(lon-1, lat2, id, iter-1);
+      }
+    }
+  }
+  if(lat > 0 && _not_clustered(lon,lat-1))
+  {
+    _add_expand_cluster(lon, lat-1, id, iter-1);
+  }
+  if(lat+1 < db.num_lat_bins && _not_clustered(lon,lat+1))
+  {
+    _add_expand_cluster(lon, lat+1, id, iter-1);
+  }
+  if(lon+1 < db.num_lon_bins && db.geo_bins[lon+1])
+  {
+    for(int lat2 = lat > 0 ? lat-1 : lat; lat2+1 < MIN(db.num_lat_bins,lat+2); lat2++)
+    {
+      if(_not_clustered(lon+1,lat2))
+      {
+        _add_expand_cluster(lon+1, lat2, id, iter-1);
+      }
     }
   }
 }
 
-static void _dbscan_spread(unsigned int index)
+static gboolean _identical_positions(unsigned int lon, unsigned int lat)
 {
-  db.spreads->num_members = 0;
-  _get_epsilon_neighbours(db.spreads, index);
-
-  for(unsigned int i = 0; i < db.spreads->num_members; i++)
+  if(db.geo_bins[lon][lat].num_points < 2)
+    return FALSE;
+  unsigned int pt = db.geo_bins[lon][lat].points;
+  double x = db.points[pt].x;
+  double y = db.points[pt].y;
+  for(pt = db.points[pt].next; pt != NO_NEXT_POINT; pt = db.points[pt].next)
   {
-    dt_geo_position_t *d = &db.points[db.spreads->index[i]];
-    db.seeds->index[db.seeds->num_members] = db.spreads->index[i];
-    db.seeds->num_members++;
-    d->cluster_id = db.cluster_id; // only NOISE/UNCLASSIFIED are in the list
+    if(db.points[pt].x != x || db.points[pt].y != y)
+      return FALSE;
   }
+  return TRUE;
 }
 
-static int _dbscan_expand(unsigned int index)
+static gboolean _can_form_cluster(unsigned int lon, unsigned int lat)
 {
-  int return_value = NOT_CORE_POINT;
-  db.seeds->num_members = 0;
-  _get_epsilon_neighbours(db.seeds, index);
-
-  if(db.seeds->num_members < db.minpts)
-    db.points[index].cluster_id = NOISE;
-  else
+  // look at the current bin, plus the adjacent ones in all eight directions which do not yet belong
+  // to a cluster
+  unsigned int points = db.geo_bins[lon][lat].num_points;
+  if(lat > 0 && _not_clustered(lon, lat-1))
+    points += db.geo_bins[lon][lat-1].num_points;
+  if(lat+1 < db.num_lat_bins && _not_clustered(lon, lat+1))
+    points += db.geo_bins[lon][lat+1].num_points;
+  if(lon > 0 && db.geo_bins[lon-1])
   {
-    db.points[index].cluster_id = db.cluster_id;
-    for(int i = 0; i < db.seeds->num_members; i++)
-    {
-      db.points[db.seeds->index[i]].cluster_id = db.cluster_id;
-    }
-
-    for(int i = 0; i < db.seeds->num_members; i++)
-    {
-      _dbscan_spread(db.seeds->index[i]);
-    }
-    return_value = CORE_POINT;
+    if(lat > 0 && _not_clustered(lon-1, lat-1))
+      points += db.geo_bins[lon-1][lat-1].num_points;
+    if(_not_clustered(lon-1, lat))
+      points += db.geo_bins[lon-1][lat].num_points;
+    if(lat+1 < db.num_lat_bins && _not_clustered(lon-1, lat+1))
+      points += db.geo_bins[lon-1][lat+1].num_points;
   }
-  return return_value;
+  if(lon+1 < db.num_lon_bins && db.geo_bins[lon+1])
+  {
+    if(lat > 0 && _not_clustered(lon+1, lat-1))
+      points += db.geo_bins[lon+1][lat-1].num_points;
+    if(_not_clustered(lon+1, lat))
+      points += db.geo_bins[lon+1][lat].num_points;
+    if(lat+1 < db.num_lat_bins && _not_clustered(lon+1, lat+1))
+      points += db.geo_bins[lon+1][lat+1].num_points;
+  }
+  return points >= db.minpts;
 }
 
-static void _dbscan(dt_geo_position_t *points, unsigned int num_points,
-                    double epsilon, unsigned int minpts)
+static int _dbscan(const dt_map_t *lib,
+                   dt_geo_position_t *points,
+                   unsigned int num_points,
+                   double epsilon,
+                   unsigned int minpts)
 {
   db.points = points;
   db.num_points = num_points;
-  db.epsilon = epsilon;
+  db.epsilon = epsilon * 0.66;
   // remove the pivot from target
   db.minpts = minpts > 1 ? minpts - 1 : minpts;
   db.cluster_id = 0;
-  db.seeds = (epsilon_neighbours_t *)malloc(sizeof(db.seeds->num_members)
-      + num_points * sizeof(db.seeds->index[0]));
-  db.spreads = (epsilon_neighbours_t *)malloc(sizeof(db.spreads->num_members)
-      + num_points * sizeof(db.spreads->index[0]));
 
-  if(db.seeds && db.spreads)
+  // quantize the location coordinates and collect points into bins
+  _bin_points(lib);
+  // now that we've binned the points, process by bins instead of individual points
+  // first, check if individual bins have enough points to form a cluster
+  for(unsigned int lon = 0; lon < db.num_lon_bins; lon++)
   {
-    for(unsigned int i = 0; i < db.num_points; ++i)
+    if(!db.geo_bins[lon])
+      continue;
+    for(unsigned int lat = 0; lat < db.num_lat_bins; lat++)
     {
-      if(db.points[i].cluster_id == UNCLASSIFIED)
+      if(db.geo_bins[lon][lat].num_points >= db.minpts)
       {
-        if(_dbscan_expand(i) == CORE_POINT)
-        {
-          ++db.cluster_id;
-        }
+        _add_expand_cluster(lon, lat, db.cluster_id, EXPAND_LIMIT);
+        ++db.cluster_id;
       }
     }
-  g_free(db.seeds);
-  g_free(db.spreads);
   }
+  // next, check if groups of adjacent bins can form a cluster
+  for(unsigned int lon = 0; lon < db.num_lon_bins; lon++)
+  {
+    if(!db.geo_bins[lon])
+      continue;
+    for(unsigned int lat = 0; lat < db.num_lat_bins; lat++)
+    {
+      if(_can_form_cluster(lon, lat))
+      {
+        _add_expand_cluster(lon, lat, db.cluster_id, EXPAND_LIMIT);
+        ++db.cluster_id;
+      }
+    }
+  }
+  // now that we've found the cluster cores, expand all of the clusters
+  // into neighboring bins where possible
+  for(unsigned int iter = 0; iter < 20; iter++)
+  {
+    for(unsigned int lon = 0; lon < db.num_lon_bins; lon++)
+    {
+      if(!db.geo_bins[lon])
+        continue;
+      for(unsigned int lat = 0; lat < db.num_lat_bins; lat++)
+      {
+        int id ;
+        if(db.geo_bins[lon][lat].num_points > 0 &&
+           (id = db.points[db.geo_bins[lon][lat].points].cluster_id) >= 0) // already in cluster?
+        {
+          _add_expand_cluster(lon, lat, id, -1);
+        }
+      }      
+    }
+  }
+  // if we still have any unclustered images, treat them  as a cluster if they are at identical
+  // positions, otherwise flag them as "noise"
+  for(unsigned int lon = 0; lon < db.num_lon_bins; lon++)
+  {
+    if(!db.geo_bins[lon])
+      continue;
+    for(unsigned int lat = 0; lat < db.num_lat_bins; lat++)
+    {
+      if(db.geo_bins[lon][lat].num_points > 1 &&
+         db.points[db.geo_bins[lon][lat].points].cluster_id == UNCLASSIFIED &&
+         _identical_positions(lon,lat))
+      {
+        _add_expand_cluster(lon,lat, db.cluster_id++, 0);
+      }
+      else if(db.geo_bins[lon][lat].num_points > 0 &&
+              db.points[db.geo_bins[lon][lat].points].cluster_id == UNCLASSIFIED)
+      {
+        _add_expand_cluster(lon, lat, NOISE, 0);
+      }
+    }
+  }
+  // free allocated memory
+  for(unsigned int  lon = 0; lon < db.num_lon_bins; lon++)
+  {
+    if(db.geo_bins[lon])
+      free(db.geo_bins[lon]);
+  }
+  free(db.geo_bins);
+  db.geo_bins = NULL;
+  return db.cluster_id;
 }
+
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
