@@ -1346,6 +1346,8 @@ static void _view_map_changed_callback_delayed(gpointer user_data)
     {
       DT_DEBUG_SQLITE3_RESET(lib->main_query);
       /* make the image list */
+      dt_times_t start;
+      dt_get_perf_times(&start);
       int i = 0;
       while(sqlite3_step(lib->main_query) == SQLITE_ROW && all_good && i < img_count)
       {
@@ -1355,6 +1357,7 @@ static void _view_map_changed_callback_delayed(gpointer user_data)
         p[i].cluster_id = UNCLASSIFIED;
         i++;
       }
+      dt_show_times(&start, "[map] retrieve image geolocations");
 
       const float epsilon_factor = dt_conf_get_int("plugins/map/epsilon_factor");
       const int min_images = dt_conf_get_int("plugins/map/min_images_per_group");
@@ -1366,7 +1369,6 @@ static void _view_map_changed_callback_delayed(gpointer user_data)
       double epsilon = thumb_size * (((unsigned int)(156412000 >> zoom))
                                   * epsilon_factor * 0.01 * 0.000001 / R);
 
-      dt_times_t start;
       dt_get_perf_times(&start);
       int num_clusters = _dbscan(lib, p, img_count, epsilon, min_images);
       dt_show_times(&start, "[map] dbscan calculation");
@@ -2828,8 +2830,7 @@ static void _view_map_build_main_query(dt_map_t *lib)
                               " (SELECT id, longitude, latitude "
                               "   FROM %s WHERE longitude >= ?1 AND longitude <= ?2"
                               "           AND latitude <= ?3 AND latitude >= ?4 "
-                              "           AND longitude NOT NULL AND latitude NOT NULL)"
-                              "   ORDER BY longitude ASC",  // critical to make dbscan work
+                              "           AND longitude NOT NULL AND latitude NOT NULL)",
                               lib->filter_images_drawn
                               ? "main.images i INNER JOIN memory.collected_images c ON i.id = c.imgid"
                               : "main.images");
