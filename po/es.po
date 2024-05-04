@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 4.7\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-05-03 00:18-0600\n"
-"PO-Revision-Date: 2024-05-03 00:42-0600\n"
+"PO-Revision-Date: 2024-05-03 20:48-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -7099,7 +7099,6 @@ msgid "no working OpenCL library found"
 msgstr "No se ha encontrado ninguna librería OpenCL que funcione."
 
 #: ../src/common/opencl.c:1192
-#, fuzzy
 msgid ""
 "platform detection failed. some possible causes:\n"
 "  - OpenCL ICD (ocl-icd) missing,\n"
@@ -7114,7 +7113,8 @@ msgstr ""
 "  • Errores previos de OpenCL que terminan en dispositivos bloqueados\n"
 "  • Problemas con la gestión de energía\n"
 "  • Controladores con errores\n"
-"  • Falta de algún controlador instalado de OpenCL"
+"  • Varios controladores instalados por plataforma\n"
+"  • Falta de algún controlador instalado de OpenCL\n"
 
 #: ../src/common/opencl.c:1306
 msgid "no devices found for unknown platform"
@@ -9067,13 +9067,13 @@ msgid "mask refinement"
 msgstr "afinar máscara"
 
 #: ../src/develop/develop.c:735
-#, fuzzy
 msgid ""
 "autosaving history has been disabled for this image because of a very large "
 "history or a slow drive being used"
 msgstr ""
-"Se ha desactivado el guardado automático del historial de esta sesión a "
-"causa de la lentitud de la unidad utilizada"
+"Se ha desactivado el guardado automático del historial de acciones para esta "
+"imagen debido al gran tamaño del historial o a que se está utilizando una "
+"unidad lenta"
 
 #: ../src/develop/develop.c:2207
 #, c-format
@@ -9575,13 +9575,12 @@ msgstr ""
 "<b>Reiniciar curvatura</b>: Clic secundario"
 
 #: ../src/develop/masks/path.c:3388
-#, fuzzy
 msgid ""
 "<b>move segment</b>: drag, <b>add node</b>: ctrl+click\n"
 "<b>remove path</b>: right-click"
 msgstr ""
-"<b>Añadir nodo</b>: Pulsar, <b>Añadir nodo angulado</b>: Ctrl+Clic\n"
-"<b>Finalizar ruta</b>: Clic secundario"
+"<b>Mover segmento</b>: Arrastrar, <b>Añadir nodo</b>: Ctrl+Clic\n"
+"<b>Eliminar ruta</b>: Clic secundario"
 
 #: ../src/develop/pixelpipe_hb.c:487
 msgid "enabled as required"
@@ -12627,10 +12626,10 @@ msgid "export"
 msgstr "exportar"
 
 #: ../src/imageio/imageio.c:835
-#, fuzzy, c-format
+#, c-format
 msgid "cannot find the style '%s' to apply during export"
 msgstr ""
-"No se pudo encontrar el estilo «%s» para aplicarlo durante la exportación."
+"No pudo encontrarse el estilo «%s» para aplicarlo durante la exportación."
 
 #: ../src/imageio/imageio_libraw.c:309
 msgid ""
@@ -16306,22 +16305,20 @@ msgid "quasi-linear, RGB, scene-referred"
 msgstr "Cuasilineal, RGB, basado en la escena"
 
 #: ../src/iop/colorequal.c:1543
-#, fuzzy
 msgid "bleach bypass"
-msgstr "ninguno (ignorar)"
+msgstr "efecto retención de plata"
 
 #: ../src/iop/colorequal.c:1587
 msgid "Kodachrome 64 like"
-msgstr ""
+msgstr "similar a Kodachrome 64"
 
 #: ../src/iop/colorequal.c:1631
 msgid "Kodak Portra 400 like"
-msgstr ""
+msgstr "similar a Kodak Portra 400"
 
 #: ../src/iop/colorequal.c:1675
-#, fuzzy
 msgid "teal & orange"
-msgstr "fijar rango"
+msgstr "azul verde y naranja"
 
 #. Page OPTIONS
 #: ../src/iop/colorequal.c:2364 ../src/iop/colorequal.c:2574
@@ -17000,9 +16997,8 @@ msgid "simulate line drawing"
 msgstr "imitar al dibujo con líneas"
 
 #: ../src/iop/diffuse.c:629
-#, fuzzy
 msgid "local contrast: fine"
-msgstr "contraste local: acelerado"
+msgstr "contraste local: refinado"
 
 #: ../src/iop/diffuse.c:654
 msgid "inpaint highlights"
@@ -17318,7 +17314,7 @@ msgstr "Nivel de atenuación del tramado aleatorio"
 #: ../src/iop/enlargecanvas.c:75
 #, fuzzy
 msgid "canvas enlargement"
-msgstr "afinar máscara"
+msgstr "ampliación del lienzo"
 
 #: ../src/iop/enlargecanvas.c:82
 #, fuzzy
