@@ -461,7 +461,8 @@ dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img,
   if(!buf)
     goto error_cache_full;
 
-  rgbe_buf = dt_alloc_align_float((size_t) img->width * img->height * 4);
+  // The decoder writes three RGB channels to rgbe_buf, so size = number of pixels * 3
+  rgbe_buf = dt_alloc_align_float((size_t) img->width * img->height * 3);
   if(!rgbe_buf)
     goto rgbe_failed;
 
