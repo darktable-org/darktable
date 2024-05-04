@@ -2462,7 +2462,7 @@ dt_imgid_t dt_image_copy_rename(const dt_imgid_t imgid,
          "   raw_black, raw_maximum, orientation,"
          "   longitude, latitude, altitude, color_matrix, colorspace, version, max_version,"
          "   position, aspect_ratio, exposure_bias,"
-         "   whitebalance, flash, exposure_program, metering_mode)"
+         "   whitebalance_id, flash_id, exposure_program_id, metering_mode_id)"
          " SELECT NULL, group_id, ?1 as film_id, width, height, ?2 as filename,"
          "        maker_id, model_id, lens_id,"
          "        exposure, aperture, iso, focal_length, focus_distance, datetime_taken,"
@@ -2470,7 +2470,7 @@ dt_imgid_t dt_image_copy_rename(const dt_imgid_t imgid,
          "        orientation, longitude, latitude, altitude,"
          "        color_matrix, colorspace, -1, -1,"
          "        ?3, aspect_ratio, exposure_bias,"
-         "        whitebalance, flash, exposure_program, metering_mode"
+         "        whitebalance_id, flash_id, exposure_program_id, metering_mode_id"
          " FROM main.images"
          " WHERE id = ?4",
         -1, &stmt, NULL);
