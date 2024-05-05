@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-04 19:00-0300\n"
-"PO-Revision-Date: 2024-05-04 19:04-0300\n"
+"POT-Creation-Date: 2024-05-06 14:27-0300\n"
+"PO-Revision-Date: 2024-05-06 14:26-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -1957,7 +1957,6 @@ msgid "create XMP files"
 msgstr "criar arquivos XMP"
 
 #: ../build/bin/preferences_gen.h:7195
-#, fuzzy
 msgid ""
 "XMP sidecar files hold information about all your development steps to allow "
 "flawless re-importing of image files.\n"
@@ -1968,12 +1967,16 @@ msgid ""
 " - 'on import': immediately after importing the image\n"
 " - 'after edit': after any user change on the image or adding tags."
 msgstr ""
-"os arquivos XMP associados mantém informações sobre todos os seus passos de desenvolvimento para permitir a re-importação de arquivos de imagem sem problemas.\n"
+"os arquivos XMP associados mantém informações sobre todos os seus passos de "
+"desenvolvimento para permitir a re-importação de arquivos de imagem sem "
+"problemas.\n"
 "\n"
 "dependendo do modo selecionado, os arquivos associados serão escritos:\n"
-" - 'nunca': toda a informação de desenvolvimento será gravada apenas na base de dados da biblioteca\n"
+" - 'nunca': toda a informação de desenvolvimento será gravada apenas na base "
+"de dados da biblioteca\n"
 " - 'ao importar': imediatamente após importar a imagem\n"
-" - 'após edição': depois de qualquer mudança feita na imagem ou após adicionar etiquetas."
+" - 'após edição': depois de qualquer mudança feita na imagem ou após "
+"adicionar etiquetas."
 
 #: ../build/bin/preferences_gen.h:7216
 msgid "store XMP tags in compressed format"
@@ -10853,7 +10856,7 @@ msgstr "alternar vistas"
 msgid "tethering"
 msgstr "acesso remoto"
 
-#: ../src/gui/gtk.c:1387 ../src/views/map.c:197
+#: ../src/gui/gtk.c:1387 ../src/views/map.c:274
 msgid "map"
 msgstr "mapa"
 
@@ -19456,7 +19459,7 @@ msgstr ""
 
 #: ../src/iop/overlay.c:328
 #, c-format
-msgid "image %d does not exists"
+msgid "image %d does not exist"
 msgstr "imagem %d não existe"
 
 #. TRANSLATORS: This text must be very narrow, check in the GUI that it is not truncated
@@ -23516,7 +23519,7 @@ msgstr "divide linha"
 msgid "only draw part of the overlay"
 msgstr "desenha apenas parte da sobreposição"
 
-#: ../src/libs/location.c:100
+#: ../src/libs/location.c:106
 msgid "find location"
 msgstr "encontrar localização"
 
@@ -26034,12 +26037,12 @@ msgstr "diminuir opacidade do pincel"
 
 #. undo/redo
 #: ../src/views/darkroom.c:2610 ../src/views/lighttable.c:1275
-#: ../src/views/map.c:2141
+#: ../src/views/map.c:2395
 msgid "undo"
 msgstr "desfazer"
 
 #: ../src/views/darkroom.c:2611 ../src/views/lighttable.c:1276
-#: ../src/views/map.c:2142
+#: ../src/views/map.c:2397
 msgid "redo"
 msgstr "refazer"
 
@@ -26216,15 +26219,15 @@ msgstr "zoom máximo"
 msgid "zoom min"
 msgstr "zoom mínimo"
 
-#: ../src/views/map.c:2836
+#: ../src/views/map.c:3178
 msgid "[on image] open in darkroom"
 msgstr "abrir imagem na sala escura"
 
-#: ../src/views/map.c:2837
+#: ../src/views/map.c:3180
 msgid "[on map] zoom map"
 msgstr "zoom no mapa"
 
-#: ../src/views/map.c:2838
+#: ../src/views/map.c:3182
 msgid "move image location"
 msgstr "mover localização da imagem"
 
