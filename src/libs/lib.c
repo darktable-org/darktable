@@ -40,18 +40,6 @@ typedef enum dt_action_element_lib_t
   DT_ACTION_ELEMENT_PRESETS = 2,
 } dt_action_element_lib_t;
 
-/*
-typedef struct dt_lib_module_info_t
-{
-  char *plugin_name;
-  int32_t version;
-  char *params;
-  int params_size;
-  dt_lib_module_t *module;
-} dt_lib_module_info_t;
-
-*/
-
 typedef struct dt_lib_presets_edit_dialog_t
 {
   GtkEntry *name, *description;
