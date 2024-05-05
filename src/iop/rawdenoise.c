@@ -584,7 +584,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(dt_iop_module_t *self)
 {
-  gtk_widget_queue_draw(self->widget);
+  dt_iop_rawdenoise_gui_data_t *c = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
+  gtk_widget_queue_draw(GTK_WIDGET(c->area));
 }
 
 static void dt_iop_rawdenoise_get_params(dt_iop_rawdenoise_params_t *p, const int ch, const double mouse_x,
@@ -832,7 +833,7 @@ static gboolean rawdenoise_button_press(GtkWidget *widget, GdkEventButton *event
       p->y[ch][k] = d->y[ch][k];
     }
     dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
-    gtk_widget_queue_draw(self->widget);
+    gtk_widget_queue_draw(GTK_WIDGET(c->area));
   }
   else if(event->button == 1)
   {

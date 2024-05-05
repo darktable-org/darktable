@@ -3599,7 +3599,7 @@ static gboolean denoiseprofile_button_press(GtkWidget *widget,
       p->y[ch][k] = d->y[ch][k];
     }
     dt_dev_add_history_item(darktable.develop, self, TRUE);
-    gtk_widget_queue_draw(self->widget);
+    gtk_widget_queue_draw(GTK_WIDGET(c->area));
   }
   else if(event->button == 1)
   {

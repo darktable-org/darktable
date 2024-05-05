@@ -909,7 +909,7 @@ void gui_reset(struct dt_iop_module_t *self)
   g->semilog = 0;
 
   g->channel = (tonecurve_channel_t)ch_L;
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
 void gui_update(struct dt_iop_module_t *self)
@@ -922,7 +922,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->interpolator, p->tonecurve_type[ch_L]);
   g->loglogscale = eval_grey(dt_bauhaus_slider_get(g->logbase));
   // that's all, gui curve is read directly from params during expose event.
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
 void init(dt_iop_module_t *module)
@@ -994,7 +994,7 @@ void gui_changed(dt_iop_module_t *self,
     gtk_widget_set_visible(g->preserve_colors,
                            p->tonecurve_autoscale_ab == DT_S_SCALE_AUTOMATIC_RGB);
 
-    gtk_widget_queue_draw(self->widget);
+    gtk_widget_queue_draw(GTK_WIDGET(g->area));
   }
 }
 
@@ -1027,7 +1027,7 @@ static void tab_switch(GtkNotebook *notebook,
   if(darktable.gui->reset) return;
 
   c->channel = (tonecurve_channel_t)page_num;
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(GTK_WIDGET(c->area));
 }
 
 static float to_log(const float x,
@@ -1934,7 +1934,7 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget,
           }
 
           dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
-          gtk_widget_queue_draw(self->widget);
+          gtk_widget_queue_draw(GTK_WIDGET(c->area));
         }
       }
       return TRUE;
@@ -1955,7 +1955,7 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget,
         c->selected = -2; // avoid motion notify re-inserting immediately.
         dt_bauhaus_combobox_set(c->interpolator, p->tonecurve_type[ch_L]);
         dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
-        gtk_widget_queue_draw(self->widget);
+        gtk_widget_queue_draw(GTK_WIDGET(c->area));
       }
       else
       {
@@ -1965,7 +1965,7 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget,
           c->selected = -2; // avoid motion notify re-inserting immediately.
           dt_bauhaus_combobox_set(c->autoscale_ab, 1);
           dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
-          gtk_widget_queue_draw(self->widget);
+          gtk_widget_queue_draw(GTK_WIDGET(c->area));
         }
       }
       return TRUE;
@@ -1977,7 +1977,7 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget,
     {
       float reset_value = c->selected == 0 ? 0 : 1;
       tonecurve[c->selected].y = tonecurve[c->selected].x = reset_value;
-      gtk_widget_queue_draw(self->widget);
+      gtk_widget_queue_draw(GTK_WIDGET(c->area));
       dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
       return TRUE;
     }
@@ -1990,7 +1990,7 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget,
     tonecurve[nodes - 1].x = tonecurve[nodes - 1].y = 0;
     c->selected = -2; // avoid re-insertion of that point immediately after this
     p->tonecurve_nodes[ch]--;
-    gtk_widget_queue_draw(self->widget);
+    gtk_widget_queue_draw(GTK_WIDGET(c->area));
     dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
     return TRUE;
   }

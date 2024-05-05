@@ -1575,7 +1575,7 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_widget_set_visible(g->exposure_bias, p->exposure_fusion != 0);
 
   // gui curve is read directly from params during expose event.
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
 static float eval_grey(float x)
@@ -2024,7 +2024,7 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget,
           }
 
           dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
-          gtk_widget_queue_draw(self->widget);
+          gtk_widget_queue_draw(GTK_WIDGET(c->area));
         }
       }
       return TRUE;
@@ -2041,7 +2041,7 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget,
       }
       c->selected = -2; // avoid motion notify re-inserting immediately.
       dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
-      gtk_widget_queue_draw(self->widget);
+      gtk_widget_queue_draw(GTK_WIDGET(c->area));
       return TRUE;
     }
   }
@@ -2051,7 +2051,7 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget,
     {
       float reset_value = c->selected == 0 ? 0 : 1;
       basecurve[c->selected].y = basecurve[c->selected].x = reset_value;
-      gtk_widget_queue_draw(self->widget);
+      gtk_widget_queue_draw(GTK_WIDGET(c->area));
       dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
       return TRUE;
     }
@@ -2064,7 +2064,7 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget,
     basecurve[nodes - 1].x = basecurve[nodes - 1].y = 0;
     c->selected = -2; // avoid re-insertion of that point immediately after this
     p->basecurve_nodes[ch]--;
-    gtk_widget_queue_draw(self->widget);
+    gtk_widget_queue_draw(GTK_WIDGET(c->area));
     dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
     return TRUE;
   }
