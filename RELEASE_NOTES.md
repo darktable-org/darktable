@@ -72,6 +72,10 @@ changes (where available).
 
 ## Performance Improvements
 
+- Rewrote the clustering code in map view for dramatically faster
+  performance on large collections (mapping should now be usable with
+  more than one million geotagged images selected).
+
 ## Other Changes
 
 - Changed the sort order of tags to a natural and case insensitive order.
