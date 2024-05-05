@@ -450,39 +450,43 @@ dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img,
   if(!f)
     return DT_IMAGEIO_LOAD_FAILED;
 
-  float *rgbe_buf = NULL;
   rgbe_header_info info;
   if(RGBE_ReadHeader(f, &img->width, &img->height, &info) != RGBE_RETURN_SUCCESS)
     goto rgbe_failed;
 
-  img->buf_dsc.channels = 4;
-  img->buf_dsc.datatype = TYPE_FLOAT;
-  float *buf = (float *)dt_mipmap_cache_alloc(mbuf, img);
-  if(!buf)
-    goto error_cache_full;
+  const size_t npixels = (size_t)img->width * img->height;
 
-  rgbe_buf = dt_alloc_align_float((size_t) img->width * img->height * 4);
+  // The decoder writes three RGB channels to rgbe_buf, so size = number of pixels * 3
+  float *rgbe_buf = dt_alloc_align_float(npixels * 3);
   if(!rgbe_buf)
     goto rgbe_failed;
 
+  img->buf_dsc.channels = 4;
+  img->buf_dsc.datatype = TYPE_FLOAT;
+  float *mipbuf = (float *)dt_mipmap_cache_alloc(mbuf, img);
+  if(!mipbuf)
+    goto error_cache_full;
+
+
   if(RGBE_ReadPixels_RLE(f, rgbe_buf, img->width, img->height) != RGBE_RETURN_SUCCESS)
+  {
+    dt_free_align(rgbe_buf);
     goto rgbe_failed;
+  }
 
   fclose(f);
 
-  // repair nan/inf etc
-  const size_t npixels = (size_t)img->width * img->height;
-
+  // Repair NaN/Inf
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, buf, rgbe_buf)
+  dt_omp_firstprivate(npixels, mipbuf, rgbe_buf)
 #endif
   for(size_t i = 0; i < npixels; i++)
   {
     dt_aligned_pixel_t pix = {0.0f, 0.0f, 0.0f, 0.0f};
     for_three_channels(c)
       pix[c] = fmaxf(0.0f, fminf(10000.0f, rgbe_buf[3 * i + c]));
-    copy_pixel_nontemporal(&buf[4*i], pix);
+    copy_pixel_nontemporal(&mipbuf[4*i], pix);
   }
 
   dt_free_align(rgbe_buf);
@@ -517,7 +521,6 @@ dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img,
 
 rgbe_failed:
   fclose(f);
-  dt_free_align(rgbe_buf);
   return DT_IMAGEIO_LOAD_FAILED;
 
 error_cache_full:
