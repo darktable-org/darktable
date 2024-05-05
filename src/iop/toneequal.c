@@ -3137,7 +3137,7 @@ static gboolean area_button_press(GtkWidget *widget,
     update_exposure_sliders(g, p);
 
     // Redraw graph
-    gtk_widget_queue_draw(self->widget);
+    gtk_widget_queue_draw(GTK_WIDGET(g->area));
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     return TRUE;
   }
@@ -3357,7 +3357,7 @@ void gui_reset(struct dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 
   // Redraw graph
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
 

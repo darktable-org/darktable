@@ -627,7 +627,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
       // as drag_start_percentage is only updated when the mouse is moved.
       c->drag_start_percentage = 0.5;
       dt_dev_add_history_item(darktable.develop, self, TRUE);
-      gtk_widget_queue_draw(self->widget);
+      gtk_widget_queue_draw(GTK_WIDGET(c->area));
     }
     else
     {
@@ -768,7 +768,7 @@ static void _tab_switch_callback(GtkNotebook *notebook,
 
   g->channel = (dt_iop_rgblevels_channel_t)page_num;
 
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
 static void _color_picker_callback(GtkWidget *button, dt_iop_module_t *self)
@@ -900,7 +900,7 @@ void gui_update(dt_iop_module_t *self)
                                g->draw_selected_region);
   _rgblevels_show_hide_controls(p, g);
 
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
@@ -916,7 +916,7 @@ void gui_reset(struct dt_iop_module_t *self)
 
   g->channel = DT_IOP_RGBLEVELS_R;
 
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
 void init(dt_iop_module_t *self)

@@ -467,7 +467,7 @@ static void tab_switch_callback(GtkNotebook *notebook,
 
   g->channel = (rgbcurve_channel_t)page_num;
 
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
 static inline int _add_node(dt_iop_rgbcurve_node_t *curve_nodes,
@@ -680,7 +680,7 @@ static gboolean _area_scrolled_callback(GtkWidget *widget,
       g->offset_x = CLAMP(g->offset_x, 0.f, (g->zoom_factor - 1.f) / g->zoom_factor);
       g->offset_y = CLAMP(g->offset_y, 0.f, (g->zoom_factor - 1.f) / g->zoom_factor);
 
-      gtk_widget_queue_draw(self->widget);
+      gtk_widget_queue_draw(GTK_WIDGET(g->area));
     }
 
     return TRUE;
@@ -1204,7 +1204,7 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget,
       g->offset_x = CLAMP(g->offset_x, 0.f, (g->zoom_factor - 1.f) / g->zoom_factor);
       g->offset_y = CLAMP(g->offset_y, 0.f, (g->zoom_factor - 1.f) / g->zoom_factor);
 
-      gtk_widget_queue_draw(self->widget);
+      gtk_widget_queue_draw(GTK_WIDGET(g->area));
     }
     return TRUE;
   }
@@ -1373,7 +1373,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
 
           dt_iop_color_picker_reset(self, TRUE);
           dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
-          gtk_widget_queue_draw(self->widget);
+          gtk_widget_queue_draw(GTK_WIDGET(g->area));
         }
 
       return TRUE;
@@ -1395,7 +1395,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
         dt_bauhaus_combobox_set(g->interpolator, p->curve_type[DT_IOP_RGBCURVE_R]);
         dt_iop_color_picker_reset(self, TRUE);
         dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
-        gtk_widget_queue_draw(self->widget);
+        gtk_widget_queue_draw(GTK_WIDGET(g->area));
       }
       else
       {
@@ -1406,7 +1406,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
           dt_bauhaus_combobox_set(g->autoscale, 1);
           dt_iop_color_picker_reset(self, TRUE);
           dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
-          gtk_widget_queue_draw(self->widget);
+          gtk_widget_queue_draw(GTK_WIDGET(g->area));
         }
       }
       return TRUE;
@@ -1420,7 +1420,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
       curve_nodes[g->selected].y = curve_nodes[g->selected].x = reset_value;
       dt_iop_color_picker_reset(self, TRUE);
       dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
-      gtk_widget_queue_draw(self->widget);
+      gtk_widget_queue_draw(GTK_WIDGET(g->area));
       return TRUE;
     }
 
@@ -1434,7 +1434,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
     p->curve_num_nodes[ch]--;
     dt_iop_color_picker_reset(self, TRUE);
     dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
-    gtk_widget_queue_draw(self->widget);
+    gtk_widget_queue_draw(GTK_WIDGET(g->area));
     return TRUE;
   }
   return FALSE;
@@ -1452,7 +1452,7 @@ void gui_reset(struct dt_iop_module_t *self)
 
   dt_bauhaus_combobox_set(g->interpolator, p->curve_type[DT_IOP_RGBCURVE_R]);
 
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
 void change_image(struct dt_iop_module_t *self)
@@ -1607,7 +1607,7 @@ void gui_update(struct dt_iop_module_t *self)
   _rgbcurve_show_hide_controls(p, g);
 
   // that's all, gui curve is read directly from params during expose event.
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
