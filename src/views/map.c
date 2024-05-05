@@ -2875,12 +2875,18 @@ typedef struct dt_dbscan_t
 
 static dt_dbscan_t db;
 
-static void _bin_points(const dt_map_t *lib)
+static double round_down(double x, double binsize)
+{
+  double scaled = floor(x / binsize);
+  return scaled * binsize;
+}
+
+static void _bin_points(const dt_map_t *lib, double epsilon)
 {
   const double lat_north = lib->bbox.lat1 * M_PI / 180.0 ; // UI uses degrees, we compute in radians
-  const double lat_south = lib->bbox.lat2 * M_PI / 180.0 ;
-  const double lon_west = lib->bbox.lon1 * M_PI / 180.0 ;
+  const double lat_south = round_down(lib->bbox.lat2 * M_PI / 180.0, epsilon) ;
   const double lon_east = lib->bbox.lon2 * M_PI / 180.0 ;
+  const double lon_west = round_down(lib->bbox.lon1 * M_PI / 180.0, epsilon) ;
   const double lat_range = lat_north - lat_south;
   const double lon_range = lon_east - lon_west;
   const unsigned int num_lat_bins = ceil(lat_range / db.epsilon) + 1;
@@ -3026,7 +3032,7 @@ static int _dbscan(const dt_map_t *lib,
   db.cluster_id = 0;
 
   // quantize the location coordinates and collect points into bins
-  _bin_points(lib);
+  _bin_points(lib, db.epsilon);
   // now that we've binned the points, process by bins instead of individual points
   // first, check if individual bins have enough points to form a cluster
   for(unsigned int lon = 0; lon < db.num_lon_bins; lon++)
