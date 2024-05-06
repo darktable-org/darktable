@@ -596,6 +596,10 @@ static GdkPixbuf *_draw_ellipse(const float dlongitude,
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
   cairo_t *cr = cairo_create(cst);
 
+  // clear background
+  cairo_set_source_rgba(cr, 0, 0, 0, 0.0);
+  cairo_paint(cr);
+
   cairo_set_line_width(cr, d);
   const int color_hi = dlon == max_size || dlon == cross_size
                                 ? main ? DT_GUI_COLOR_MAP_LOC_SHAPE_DEF
@@ -658,6 +662,10 @@ static GdkPixbuf *_draw_rectangle(const float dlongitude,
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
   cairo_t *cr = cairo_create(cst);
 
+  // clear background
+  cairo_set_source_rgba(cr, 0, 0, 0, 0.0);
+  cairo_paint(cr);
+
   cairo_set_line_width(cr, d);
   dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_MAP_LOC_SHAPE_LOW);
   cairo_move_to(cr, d + d, d + d);
@@ -692,6 +700,7 @@ static GdkPixbuf *_draw_rectangle(const float dlongitude,
 
   GdkPixbuf *pixbuf = _cairo_surface_to_pixbuf(cst, w, h);
   cairo_surface_destroy(cst);
+
   return pixbuf;
 }
 
@@ -1911,6 +1920,7 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *widget,
     if(location)
     {
       GtkWidget *image = gtk_image_new_from_pixbuf(location);
+      dt_gui_add_class(image, "dt_transparent_background");
       gtk_widget_set_name(image, "map-drag-icon");
       gtk_widget_show(image);
       gtk_drag_set_icon_widget(context, image,
