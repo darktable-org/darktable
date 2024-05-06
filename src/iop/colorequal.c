@@ -184,7 +184,7 @@ const char *name()
 
 const char *aliases()
 {
-  return _("color zones");
+  return _("color zones|hsl");
 }
 
 const char **description(struct dt_iop_module_t *self)

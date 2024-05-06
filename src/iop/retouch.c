@@ -199,7 +199,7 @@ const char *name()
 
 const char *aliases()
 {
-  return _("split-frequency|healing|cloning|stamp");
+  return _("split-frequency|healing|cloning|stamp|blur|fill|wavelets|spot removal");
 }
 
 
