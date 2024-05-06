@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-04 23:02+0200\n"
-"PO-Revision-Date: 2024-05-04 23:08+0200\n"
+"POT-Creation-Date: 2024-05-06 19:09+0200\n"
+"PO-Revision-Date: 2024-05-06 19:10+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -10959,7 +10959,7 @@ msgstr "Changer de vue/carte"
 msgid "tethering"
 msgstr "Capture"
 
-#: ../src/gui/gtk.c:1387 ../src/views/map.c:197
+#: ../src/gui/gtk.c:1387 ../src/views/map.c:274
 msgid "map"
 msgstr "Carte"
 
@@ -19647,8 +19647,8 @@ msgstr ""
 
 #: ../src/iop/overlay.c:328
 #, c-format
-msgid "image %d does not exists"
-msgstr "Image %d n'existe pas"
+msgid "image %d does not exist"
+msgstr "L'image %d n'existe pas"
 
 #. TRANSLATORS: This text must be very narrow, check in the GUI that it is not truncated
 #: ../src/iop/overlay.c:756
@@ -23767,7 +23767,7 @@ msgstr "Ligne de séparation"
 msgid "only draw part of the overlay"
 msgstr "Montrer en partie la superposition"
 
-#: ../src/libs/location.c:100
+#: ../src/libs/location.c:106
 msgid "find location"
 msgstr "Trouver un lieu"
 
@@ -26302,12 +26302,12 @@ msgstr "Diminuer la luminosité du pinceau"
 
 #. undo/redo
 #: ../src/views/darkroom.c:2610 ../src/views/lighttable.c:1275
-#: ../src/views/map.c:2141
+#: ../src/views/map.c:2395
 msgid "undo"
 msgstr "Défaire"
 
 #: ../src/views/darkroom.c:2611 ../src/views/lighttable.c:1276
-#: ../src/views/map.c:2142
+#: ../src/views/map.c:2397
 msgid "redo"
 msgstr "Refaire"
 
@@ -26484,15 +26484,15 @@ msgstr "Zoom maxi"
 msgid "zoom min"
 msgstr "Zoom mini"
 
-#: ../src/views/map.c:2836
+#: ../src/views/map.c:3178
 msgid "[on image] open in darkroom"
 msgstr "[sur image] Ouvre dans la chambre noire"
 
-#: ../src/views/map.c:2837
+#: ../src/views/map.c:3180
 msgid "[on map] zoom map"
 msgstr "[sur carte] Agrandir la carte"
 
-#: ../src/views/map.c:2838
+#: ../src/views/map.c:3182
 msgid "move image location"
 msgstr "Déplacer la position des images"
 
