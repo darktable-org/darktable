@@ -129,7 +129,7 @@ const char *name()
 
 const char *aliases()
 {
-  return _("diffusion|deconvolution|blur|sharpening");
+  return _("diffusion|deconvolution|blur|sharpening|bloom|clarity|dehaze|inpaint|watercolor");
 }
 
 const char **description(struct dt_iop_module_t *self)
