@@ -462,6 +462,20 @@ static void _toast_log_lat_lon(const float lat,
   g_free(longitude);
 }
 
+static GdkPixbuf *_cairo_surface_to_pixbuf(cairo_surface_t *cst,
+                                           const int w,
+                                           const int h)
+{
+  uint8_t *data = cairo_image_surface_get_data(cst);
+  dt_draw_cairo_to_gdk_pixbuf(data, w, h);
+  const size_t size = (size_t)w * h * 4;
+  uint8_t *buf = (uint8_t *)malloc(size);
+  memcpy(buf, data, size);
+  return gdk_pixbuf_new_from_data(buf, GDK_COLORSPACE_RGB, TRUE,
+                                  8, w, h, w * 4,
+                                  (GdkPixbufDestroyNotify)free, NULL);
+}
+
 static GdkPixbuf *_view_map_images_count(const int nb_images,
                                          const gboolean same_loc,
                                          double *count_width,
@@ -490,16 +504,22 @@ static GdkPixbuf *_view_map_images_count(const int nb_images,
 
   cairo_show_text(cr, text);
   cairo_destroy(cr);
-  uint8_t *data = cairo_image_surface_get_data(cst);
-  dt_draw_cairo_to_gdk_pixbuf(data, w, h);
-  const size_t size = (size_t)w * h * 4;
-  uint8_t *buf = (uint8_t *)malloc(size);
-  memcpy(buf, data, size);
-  GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(buf, GDK_COLORSPACE_RGB, TRUE,
-                                               8, w, h, w * 4,
-                                               (GdkPixbufDestroyNotify)free, NULL);
+
+  GdkPixbuf *pixbuf = _cairo_surface_to_pixbuf(cst, w, h);
   cairo_surface_destroy(cst);
   return pixbuf;
+}
+
+static void _rgba_from_color(const uint32_t color,
+                             float *r,
+                             float *g,
+                             float *b,
+                             float *a)
+{
+  *r = ((color & 0xff000000) >> 24) / 255.0;
+  *g = ((color & 0x00ff0000) >> 16) / 255.0;
+  *b = ((color & 0x0000ff00) >> 8) / 255.0;
+  *a = ((color & 0x000000ff) >> 0) / 255.0;
 }
 
 static GdkPixbuf *_init_image_pin()
@@ -509,24 +529,15 @@ static GdkPixbuf *_init_image_pin()
   g_return_val_if_fail(w > 0 && h > 0, NULL);
 
   float r, g, b, a;
-  r = ((thumb_frame_color & 0xff000000) >> 24) / 255.0;
-  g = ((thumb_frame_color & 0x00ff0000) >> 16) / 255.0;
-  b = ((thumb_frame_color & 0x0000ff00) >> 8) / 255.0;
-  a = ((thumb_frame_color & 0x000000ff) >> 0) / 255.0;
+  _rgba_from_color(thumb_frame_color, &r, &g, &b, &a);
 
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
   cairo_t *cr = cairo_create(cst);
   cairo_set_source_rgba(cr, r, g, b, a);
   dtgtk_cairo_paint_map_pin(cr, (h-w)/2, 0, w, h, 0, NULL); // keep the pin on left
   cairo_destroy(cr);
-  uint8_t *data = cairo_image_surface_get_data(cst);
-  dt_draw_cairo_to_gdk_pixbuf(data, w, h);
-  const size_t size = (size_t)w * h * 4;
-  uint8_t *buf = (uint8_t *)malloc(size);
-  memcpy(buf, data, size);
-  GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(buf, GDK_COLORSPACE_RGB, TRUE,
-                                               8, w, h, w * 4,
-                                               (GdkPixbufDestroyNotify)free, NULL);
+
+  GdkPixbuf *pixbuf = _cairo_surface_to_pixbuf(cst, w, h);
   cairo_surface_destroy(cst);
   return pixbuf;
 }
@@ -543,42 +554,27 @@ static GdkPixbuf *_init_place_pin()
   cairo_t *cr = cairo_create(cst);
 
   // outer shape
-  r = ((pin_outer_color & 0xff000000) >> 24) / 255.0;
-  g = ((pin_outer_color & 0x00ff0000) >> 16) / 255.0;
-  b = ((pin_outer_color & 0x0000ff00) >> 8) / 255.0;
-  a = ((pin_outer_color & 0x000000ff) >> 0) / 255.0;
+  _rgba_from_color(pin_outer_color, &r, &g, &b, &a);
   cairo_set_source_rgba(cr, r, g, b, a);
   cairo_arc(cr, 0.5 * w, 0.333 * h, 0.333 * h - 2, 150.0 * (M_PI / 180.0), 30.0 * (M_PI / 180.0));
   cairo_line_to(cr, 0.5 * w, h - 2);
   cairo_close_path(cr);
   cairo_fill_preserve(cr);
 
-  r = ((pin_line_color & 0xff000000) >> 24) / 255.0;
-  g = ((pin_line_color & 0x00ff0000) >> 16) / 255.0;
-  b = ((pin_line_color & 0x0000ff00) >> 8) / 255.0;
-  a = ((pin_line_color & 0x000000ff) >> 0) / 255.0;
+  _rgba_from_color(pin_line_color, &r, &g, &b, &a);
   cairo_set_source_rgba(cr, r, g, b, a);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1));
   cairo_stroke(cr);
 
   // inner circle
-  r = ((pin_inner_color & 0xff000000) >> 24) / 255.0;
-  g = ((pin_inner_color & 0x00ff0000) >> 16) / 255.0;
-  b = ((pin_inner_color & 0x0000ff00) >> 8) / 255.0;
-  a = ((pin_inner_color & 0x000000ff) >> 0) / 255.0;
+  _rgba_from_color(pin_inner_color, &r, &g, &b, &a);
   cairo_set_source_rgba(cr, r, g, b, a);
   cairo_arc(cr, 0.5 * w, 0.333 * h, 0.17 * h, 0, 2.0 * M_PI);
   cairo_fill(cr);
 
   cairo_destroy(cr);
-  uint8_t *data = cairo_image_surface_get_data(cst);
-  dt_draw_cairo_to_gdk_pixbuf(data, w, h);
-  size_t size = (size_t)w * h * 4;
-  uint8_t *buf = (uint8_t *)malloc(size);
-  memcpy(buf, data, size);
-  GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(buf, GDK_COLORSPACE_RGB, TRUE,
-                                               8, w, h, w * 4,
-                                               (GdkPixbufDestroyNotify)free, NULL);
+
+  GdkPixbuf *pixbuf = _cairo_surface_to_pixbuf(cst, w, h);
   cairo_surface_destroy(cst);
   return pixbuf;
 }
@@ -599,6 +595,10 @@ static GdkPixbuf *_draw_ellipse(const float dlongitude,
   const int cross = DT_PIXEL_APPLY_DPI(cross_size);
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
   cairo_t *cr = cairo_create(cst);
+
+  // clear background
+  cairo_set_source_rgba(cr, 0, 0, 0, 0.0);
+  cairo_paint(cr);
 
   cairo_set_line_width(cr, d);
   const int color_hi = dlon == max_size || dlon == cross_size
@@ -641,14 +641,8 @@ static GdkPixbuf *_draw_ellipse(const float dlongitude,
   cairo_stroke(cr);
 
   cairo_destroy(cr);
-  uint8_t *data = cairo_image_surface_get_data(cst);
-  dt_draw_cairo_to_gdk_pixbuf(data, w, h);
-  size_t size = (size_t)w * h * 4;
-  uint8_t *buf = (uint8_t *)malloc(size);
-  memcpy(buf, data, size);
-  GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(buf, GDK_COLORSPACE_RGB,
-                                               TRUE, 8, w, h, w * 4,
-                                               (GdkPixbufDestroyNotify)free, NULL);
+
+  GdkPixbuf *pixbuf = _cairo_surface_to_pixbuf(cst, w, h);
   cairo_surface_destroy(cst);
   return pixbuf;
 }
@@ -667,6 +661,10 @@ static GdkPixbuf *_draw_rectangle(const float dlongitude,
   const int cross = DT_PIXEL_APPLY_DPI(cross_size);
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
   cairo_t *cr = cairo_create(cst);
+
+  // clear background
+  cairo_set_source_rgba(cr, 0, 0, 0, 0.0);
+  cairo_paint(cr);
 
   cairo_set_line_width(cr, d);
   dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_MAP_LOC_SHAPE_LOW);
@@ -699,15 +697,10 @@ static GdkPixbuf *_draw_rectangle(const float dlongitude,
   cairo_stroke(cr);
 
   cairo_destroy(cr);
-  uint8_t *data = cairo_image_surface_get_data(cst);
-  dt_draw_cairo_to_gdk_pixbuf(data, w, h);
-  size_t size = (size_t)w * h * 4;
-  uint8_t *buf = (uint8_t *)malloc(size);
-  memcpy(buf, data, size);
-  GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(buf, GDK_COLORSPACE_RGB, TRUE,
-                                               8, w, h, w * 4,
-                                               (GdkPixbufDestroyNotify)free, NULL);
+
+  GdkPixbuf *pixbuf = _cairo_surface_to_pixbuf(cst, w, h);
   cairo_surface_destroy(cst);
+
   return pixbuf;
 }
 
@@ -1354,22 +1347,31 @@ static GdkPixbuf *_draw_image(const dt_imgid_t imgid,
     double count_height, count_width;
     count = _view_map_images_count(group_count, group_same_loc,
                                    &count_width, &count_height);
-    if(!count) goto map_changed_failure;
+    if(!count)
+      goto map_changed_failure;
+
     const int w = count_width + 2 * _thumb_border;
     const int h = count_height + 2 * _thumb_border + _pin_size;
     thumb = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8, w, h);
-    if(!thumb) goto map_changed_failure;
+
+    if(!thumb)
+      goto map_changed_failure;
+
     gdk_pixbuf_fill(thumb, frame);
     gdk_pixbuf_copy_area(count, 0, 0, count_width, count_height, thumb,
                        _thumb_border, _thumb_border);
     gdk_pixbuf_copy_area(lib->image_pin, 0, 0, w, _pin_size, thumb,
                        0, count_height + 2 * _thumb_border);
-    if(width) *width = count_width;
-    if(height) *height = count_height;
+    if(width)
+      *width = count_width;
+    if(height)
+      *height = count_height;
   }
 map_changed_failure:
-  if(source) g_object_unref(source);
-  if(count) g_object_unref(count);
+  if(source)
+    g_object_unref(source);
+  if(count)
+    g_object_unref(count);
   return thumb;
 }
 
@@ -1615,10 +1617,11 @@ static void _view_map_changed_callback_delayed(gpointer user_data)
   }
 
   // not exactly thread safe, but should be good enough for updating the display
-  if(needs_redraw && lib->timeout_event_source == 0)
+  if(needs_redraw
+     && lib->timeout_event_source == 0)
   {
-    lib->timeout_event_source = g_timeout_add(100,
-                                              _view_map_draw_images, self); // try again later on
+    lib->timeout_event_source =
+      g_timeout_add(100, _view_map_draw_images, self); // try again later on
   }
 }
 
@@ -1917,6 +1920,7 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *widget,
     if(location)
     {
       GtkWidget *image = gtk_image_new_from_pixbuf(location);
+      dt_gui_add_class(image, "dt_transparent_background");
       gtk_widget_set_name(image, "map-drag-icon");
       gtk_widget_show(image);
       gtk_drag_set_icon_widget(context, image,
@@ -2144,8 +2148,9 @@ static gboolean _view_map_button_press_callback(GtkWidget *w,
   if(e->button == 1)
   {
     // check if the click was in a location form - crtl gives priority to images
-    if(lib->loc.main.id > 0 && (lib->loc.main.data.shape != MAP_LOCATION_SHAPE_POLYGONS)
-                            && !dt_modifier_is(e->state, GDK_CONTROL_MASK))
+    if(lib->loc.main.id > 0
+       && (lib->loc.main.data.shape != MAP_LOCATION_SHAPE_POLYGONS)
+       && !dt_modifier_is(e->state, GDK_CONTROL_MASK))
     {
 
       OsmGpsMapPoint *p = osm_gps_map_get_event_location(lib->map, e);
