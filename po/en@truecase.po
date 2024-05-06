@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-04 23:02+0200\n"
-"PO-Revision-Date: 2024-05-05 09:04+0300\n"
+"POT-Creation-Date: 2024-05-06 19:09+0200\n"
+"PO-Revision-Date: 2024-05-06 22:05+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: en\n"
@@ -10769,7 +10769,7 @@ msgstr "Switch views"
 msgid "tethering"
 msgstr "Tethering"
 
-#: ../src/gui/gtk.c:1387 ../src/views/map.c:197
+#: ../src/gui/gtk.c:1387 ../src/views/map.c:274
 msgid "map"
 msgstr "Map"
 
@@ -19296,8 +19296,8 @@ msgstr ""
 
 #: ../src/iop/overlay.c:328
 #, c-format
-msgid "image %d does not exists"
-msgstr "Image %d does not exists"
+msgid "image %d does not exist"
+msgstr "Image %d does not exist"
 
 #. TRANSLATORS: This text must be very narrow, check in the GUI that it is not truncated
 #: ../src/iop/overlay.c:756
@@ -23313,7 +23313,7 @@ msgstr "Split line"
 msgid "only draw part of the overlay"
 msgstr "Only draw part of the overlay"
 
-#: ../src/libs/location.c:100
+#: ../src/libs/location.c:106
 msgid "find location"
 msgstr "Find location"
 
@@ -25818,12 +25818,12 @@ msgstr "Decrease brush opacity"
 
 #. undo/redo
 #: ../src/views/darkroom.c:2610 ../src/views/lighttable.c:1275
-#: ../src/views/map.c:2141
+#: ../src/views/map.c:2395
 msgid "undo"
 msgstr "Undo"
 
 #: ../src/views/darkroom.c:2611 ../src/views/lighttable.c:1276
-#: ../src/views/map.c:2142
+#: ../src/views/map.c:2397
 msgid "redo"
 msgstr "Redo"
 
@@ -26000,15 +26000,15 @@ msgstr "Zoom max"
 msgid "zoom min"
 msgstr "Zoom min"
 
-#: ../src/views/map.c:2836
+#: ../src/views/map.c:3178
 msgid "[on image] open in darkroom"
 msgstr "[on image] open in Darkroom"
 
-#: ../src/views/map.c:2837
+#: ../src/views/map.c:3180
 msgid "[on map] zoom map"
 msgstr "[on map] zoom map"
 
-#: ../src/views/map.c:2838
+#: ../src/views/map.c:3182
 msgid "move image location"
 msgstr "Move image location"
 
