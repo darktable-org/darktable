@@ -325,7 +325,7 @@ static void _setup_overlay(dt_iop_module_t *self,
   }
   else
   {
-    dt_control_log(_("image %d does not exists"), imgid);
+    dt_control_log(_("image %d does not exist"), imgid);
   }
 }
 
