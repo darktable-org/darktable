@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-04-29 18:42+0200\n"
-"PO-Revision-Date: 2024-05-01 08:38+0200\n"
+"POT-Creation-Date: 2024-05-06 19:09+0200\n"
+"PO-Revision-Date: 2024-05-06 19:21+0200\n"
 "Last-Translator: Martin Straeten <martin.straeten@gmail.com>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -17,173 +17,173 @@ msgstr ""
 "X-Generator: Poedit 3.4.2\n"
 "X-Poedit-Bookmarks: 3066,376,-1,-1,-1,-1,-1,-1,-1,-1\n"
 
-#: ../build/bin/conf_gen.h:174
+#: ../build/bin/conf_gen.h:90
 msgctxt "preferences"
 msgid "first instance"
 msgstr "erste Instanz"
 
-#: ../build/bin/conf_gen.h:175 ../build/bin/preferences_gen.h:7890
+#: ../build/bin/conf_gen.h:91 ../build/bin/preferences_gen.h:7890
 msgctxt "preferences"
 msgid "last instance"
 msgstr "letzte Instanz"
 
-#: ../build/bin/conf_gen.h:252 ../build/bin/conf_gen.h:346
-#: ../build/bin/conf_gen.h:356 ../build/bin/conf_gen.h:1209
-#: ../build/bin/conf_gen.h:1225 ../build/bin/conf_gen.h:1245
+#: ../build/bin/conf_gen.h:183 ../build/bin/conf_gen.h:289
+#: ../build/bin/conf_gen.h:299 ../build/bin/conf_gen.h:1264
+#: ../build/bin/conf_gen.h:1280 ../build/bin/conf_gen.h:1302
 #: ../build/bin/preferences_gen.h:4711 ../build/bin/preferences_gen.h:4849
 msgctxt "preferences"
 msgid "never"
 msgstr "nie"
 
-#: ../build/bin/conf_gen.h:253
+#: ../build/bin/conf_gen.h:184
 msgctxt "preferences"
 msgid "once a month"
 msgstr "monatlich"
 
-#: ../build/bin/conf_gen.h:254 ../build/bin/preferences_gen.h:7106
+#: ../build/bin/conf_gen.h:185 ../build/bin/preferences_gen.h:7106
 msgctxt "preferences"
 msgid "once a week"
 msgstr "wöchentlich"
 
-#: ../build/bin/conf_gen.h:255
+#: ../build/bin/conf_gen.h:186
 msgctxt "preferences"
 msgid "once a day"
 msgstr "täglich"
 
-#: ../build/bin/conf_gen.h:256
+#: ../build/bin/conf_gen.h:187
 msgctxt "preferences"
 msgid "on close"
 msgstr "beim Beenden"
 
-#: ../build/bin/conf_gen.h:287 ../build/bin/conf_gen.h:1202
-#: ../build/bin/conf_gen.h:1218 ../build/bin/conf_gen.h:1246
+#: ../build/bin/conf_gen.h:223 ../build/bin/conf_gen.h:1257
+#: ../build/bin/conf_gen.h:1273 ../build/bin/conf_gen.h:1303
 msgctxt "preferences"
 msgid "small"
 msgstr "klein"
 
-#: ../build/bin/conf_gen.h:288 ../build/bin/conf_gen.h:399
+#: ../build/bin/conf_gen.h:224 ../build/bin/conf_gen.h:346
 #: ../build/bin/preferences_gen.h:6066 ../build/bin/preferences_gen.h:6187
 msgctxt "preferences"
 msgid "default"
 msgstr "Standard"
 
-#: ../build/bin/conf_gen.h:289 ../build/bin/conf_gen.h:2884
+#: ../build/bin/conf_gen.h:225 ../build/bin/conf_gen.h:3096
 msgctxt "preferences"
 msgid "large"
 msgstr "groß"
 
-#: ../build/bin/conf_gen.h:347
+#: ../build/bin/conf_gen.h:290
 msgctxt "preferences"
 msgid "after edit"
 msgstr "nach Bearbeitung"
 
-#: ../build/bin/conf_gen.h:348 ../build/bin/preferences_gen.h:7192
+#: ../build/bin/conf_gen.h:291 ../build/bin/preferences_gen.h:7192
 msgctxt "preferences"
 msgid "on import"
 msgstr "beim Import"
 
-#: ../build/bin/conf_gen.h:357 ../build/bin/conf_gen.h:1201
-#: ../build/bin/conf_gen.h:1217 ../build/bin/conf_gen.h:3305
+#: ../build/bin/conf_gen.h:300 ../build/bin/conf_gen.h:1256
+#: ../build/bin/conf_gen.h:1272 ../build/bin/conf_gen.h:3563
 #: ../build/bin/preferences_gen.h:5608
 msgctxt "preferences"
 msgid "always"
 msgstr "immer"
 
-#: ../build/bin/conf_gen.h:358 ../build/bin/preferences_gen.h:7227
+#: ../build/bin/conf_gen.h:301 ../build/bin/preferences_gen.h:7227
 msgctxt "preferences"
 msgid "only large entries"
 msgstr "nur große Daten"
 
-#: ../build/bin/conf_gen.h:384
+#: ../build/bin/conf_gen.h:330
 msgctxt "preferences"
 msgid "sensitive"
 msgstr "Groß- und Kleinschreibung beachten"
 
-#: ../build/bin/conf_gen.h:385 ../build/bin/preferences_gen.h:8101
+#: ../build/bin/conf_gen.h:331 ../build/bin/preferences_gen.h:8101
 msgctxt "preferences"
 msgid "insensitive"
 msgstr "Groß- und Kleinschreibung ignorieren"
 
-#: ../build/bin/conf_gen.h:400
+#: ../build/bin/conf_gen.h:347
 msgctxt "preferences"
 msgid "multiple GPUs"
 msgstr "mehrere GPUs"
 
-#: ../build/bin/conf_gen.h:401
+#: ../build/bin/conf_gen.h:348
 msgctxt "preferences"
 msgid "very fast GPU"
 msgstr "sehr schnelle GPU"
 
-#: ../build/bin/conf_gen.h:731 ../build/bin/preferences_gen.h:8260
+#: ../build/bin/conf_gen.h:720 ../build/bin/preferences_gen.h:8260
 msgctxt "preferences"
 msgid "import time"
 msgstr "Importzeit"
 
-#: ../build/bin/conf_gen.h:732
+#: ../build/bin/conf_gen.h:721
 msgctxt "preferences"
 msgid "folder name"
 msgstr "Verzeichnisname"
 
-#: ../build/bin/conf_gen.h:740
+#: ../build/bin/conf_gen.h:729
 msgctxt "preferences"
 msgid "RGB"
 msgstr "RGB"
 
-#: ../build/bin/conf_gen.h:741
+#: ../build/bin/conf_gen.h:730
 msgctxt "preferences"
 msgid "Lab"
 msgstr "Lab"
 
-#: ../build/bin/conf_gen.h:742
+#: ../build/bin/conf_gen.h:731
 msgctxt "preferences"
 msgid "LCh"
 msgstr "LCh"
 
-#: ../build/bin/conf_gen.h:743
+#: ../build/bin/conf_gen.h:732
 msgctxt "preferences"
 msgid "HSL"
 msgstr "HSL"
 
-#: ../build/bin/conf_gen.h:744
+#: ../build/bin/conf_gen.h:733
 msgctxt "preferences"
 msgid "Hex"
 msgstr "Hex"
 
-#: ../build/bin/conf_gen.h:745 ../build/bin/conf_gen.h:1886
-#: ../build/bin/conf_gen.h:2548 ../build/bin/conf_gen.h:2860
-#: ../build/bin/conf_gen.h:3141
+#: ../build/bin/conf_gen.h:734 ../build/bin/conf_gen.h:2028
+#: ../build/bin/conf_gen.h:2748 ../build/bin/conf_gen.h:3071
+#: ../build/bin/conf_gen.h:3374
 msgctxt "preferences"
 msgid "none"
 msgstr "keines"
 
-#: ../build/bin/conf_gen.h:753
+#: ../build/bin/conf_gen.h:742
 msgctxt "preferences"
 msgid "mean"
 msgstr "Mittel"
 
-#: ../build/bin/conf_gen.h:754
+#: ../build/bin/conf_gen.h:743
 msgctxt "preferences"
 msgid "min"
 msgstr "min"
 
-#: ../build/bin/conf_gen.h:755
+#: ../build/bin/conf_gen.h:744
 msgctxt "preferences"
 msgid "max"
 msgstr "max"
 
-#: ../build/bin/conf_gen.h:943
+#: ../build/bin/conf_gen.h:963
 msgid "select only new pictures"
 msgstr "nur neue Bilder auswählen"
 
-#: ../build/bin/conf_gen.h:944
+#: ../build/bin/conf_gen.h:964
 msgid "only select images that have not already been imported"
 msgstr "Nur noch nicht importierte Bilder auswählen"
 
-#: ../build/bin/conf_gen.h:949
+#: ../build/bin/conf_gen.h:970
 msgid "ignore non-raw images"
 msgstr "Nicht-RAW Dateien ignorieren"
 
-#: ../build/bin/conf_gen.h:950
+#: ../build/bin/conf_gen.h:971
 msgid ""
 "if enabled, only raw files will be allowed to import. non-raw files will not "
 "be visible in the dialog and will not be imported."
@@ -192,57 +192,57 @@ msgstr ""
 "Nicht-RAW Dateien werden im Dialogfeld nicht angezeigt und können nicht "
 "importiert werden."
 
-#: ../build/bin/conf_gen.h:955
+#: ../build/bin/conf_gen.h:977
 msgid "apply metadata"
 msgstr "Metadaten übernehmen"
 
-#: ../build/bin/conf_gen.h:956
+#: ../build/bin/conf_gen.h:978
 msgid "apply some metadata to all newly imported images."
 msgstr "Metadaten zu allen neu importierten Bildern hinzufügen."
 
-#: ../build/bin/conf_gen.h:961
+#: ../build/bin/conf_gen.h:984
 msgid "recursive directory"
 msgstr "inkl. Unterverzeichnisse"
 
-#: ../build/bin/conf_gen.h:962
+#: ../build/bin/conf_gen.h:985
 msgid "recursive directory traversal when importing filmrolls"
 msgstr "rekursiver Import von Verzeichnissen"
 
-#: ../build/bin/conf_gen.h:967
+#: ../build/bin/conf_gen.h:991
 msgid "creator to be applied when importing"
 msgstr "Urheber, der beim Import hinzugefügt werden soll"
 
-#: ../build/bin/conf_gen.h:973
+#: ../build/bin/conf_gen.h:998
 msgid "publisher to be applied when importing"
 msgstr "Herausgeber, der beim Import hinzugefügt werden soll"
 
-#: ../build/bin/conf_gen.h:979
+#: ../build/bin/conf_gen.h:1005
 msgid "rights to be applied when importing"
 msgstr "Rechte, die beim Import hinzugefügt werden sollen"
 
-#: ../build/bin/conf_gen.h:985
+#: ../build/bin/conf_gen.h:1012
 msgid "comma separated tags to be applied when importing"
 msgstr "Komma-separierte Tags, die beim Import hinzugefügt werden sollen"
 
-#: ../build/bin/conf_gen.h:991
+#: ../build/bin/conf_gen.h:1019
 msgid "import tags from XMP"
 msgstr "Tags aus XMP Datei importieren"
 
-#: ../build/bin/conf_gen.h:1021
+#: ../build/bin/conf_gen.h:1047
 msgid "initial rating"
 msgstr "Bewertung beim Import"
 
-#: ../build/bin/conf_gen.h:1022
+#: ../build/bin/conf_gen.h:1048
 msgid "initial star rating for all images when importing a filmroll"
 msgstr ""
 "initiale Bewertung (Anzahl Sterne) aller Bilder in einer neu importierten "
 "Filmrolle"
 
-#: ../build/bin/conf_gen.h:1027
+#: ../build/bin/conf_gen.h:1054
 msgid "ignore EXIF rating"
 msgstr "Ignoriere Bewertung aus EXIF Daten"
 
-#: ../build/bin/conf_gen.h:1028
+#: ../build/bin/conf_gen.h:1055
 msgid ""
 "ignore EXIF rating. if not set and EXIF rating is found, it overrides "
 "'initial rating'"
@@ -250,19 +250,19 @@ msgstr ""
 "Ignoriere Bewertung aus EXIF Daten. Falls dieses Flag nicht gesetzt ist wird "
 "die Bewertung aus den EXIF Daten übernommen, sofern es dort gesetzt ist."
 
-#: ../build/bin/conf_gen.h:1033
+#: ../build/bin/conf_gen.h:1061
 msgid "import job"
 msgstr "Importauftrag"
 
-#: ../build/bin/conf_gen.h:1034
+#: ../build/bin/conf_gen.h:1062
 msgid "name of the import job"
 msgstr "Name des Importauftrags"
 
-#: ../build/bin/conf_gen.h:1039
+#: ../build/bin/conf_gen.h:1068
 msgid "override today's date"
 msgstr "Heutiges Datum überschreiben"
 
-#: ../build/bin/conf_gen.h:1040
+#: ../build/bin/conf_gen.h:1069
 msgid ""
 "type a date in the form: YYYY:MM:DD[ hh:mm:ss[.sss]] if you want to override "
 "the current date/time used when expanding variables:\n"
@@ -275,161 +275,161 @@ msgstr ""
 "überschrieben werden soll:\n"
 "sonst das Feld leer lassen"
 
-#: ../build/bin/conf_gen.h:1045
+#: ../build/bin/conf_gen.h:1075
 msgid "keep this window open"
 msgstr "Dialog geöffnet lassen"
 
-#: ../build/bin/conf_gen.h:1046
+#: ../build/bin/conf_gen.h:1076
 msgid "keep this window open to run several imports"
 msgstr "Dialog für weitere Importe geöffnet halten"
 
-#: ../build/bin/conf_gen.h:1203 ../build/bin/conf_gen.h:1219
-#: ../build/bin/conf_gen.h:1247
+#: ../build/bin/conf_gen.h:1258 ../build/bin/conf_gen.h:1274
+#: ../build/bin/conf_gen.h:1304
 msgctxt "preferences"
 msgid "VGA"
 msgstr "VGA"
 
-#: ../build/bin/conf_gen.h:1204 ../build/bin/conf_gen.h:1220
-#: ../build/bin/conf_gen.h:1248 ../build/bin/preferences_gen.h:4746
+#: ../build/bin/conf_gen.h:1259 ../build/bin/conf_gen.h:1275
+#: ../build/bin/conf_gen.h:1305 ../build/bin/preferences_gen.h:4746
 msgctxt "preferences"
 msgid "720p"
 msgstr "720p"
 
-#: ../build/bin/conf_gen.h:1205 ../build/bin/conf_gen.h:1221
-#: ../build/bin/conf_gen.h:1249
+#: ../build/bin/conf_gen.h:1260 ../build/bin/conf_gen.h:1276
+#: ../build/bin/conf_gen.h:1306
 msgctxt "preferences"
 msgid "1080p"
 msgstr "1080p"
 
-#: ../build/bin/conf_gen.h:1206 ../build/bin/conf_gen.h:1222
-#: ../build/bin/conf_gen.h:1250
+#: ../build/bin/conf_gen.h:1261 ../build/bin/conf_gen.h:1277
+#: ../build/bin/conf_gen.h:1307
 msgctxt "preferences"
 msgid "WQXGA"
 msgstr "WQXGA"
 
-#: ../build/bin/conf_gen.h:1207 ../build/bin/conf_gen.h:1223
-#: ../build/bin/conf_gen.h:1251
+#: ../build/bin/conf_gen.h:1262 ../build/bin/conf_gen.h:1278
+#: ../build/bin/conf_gen.h:1308
 msgctxt "preferences"
 msgid "4K"
 msgstr "4K"
 
-#: ../build/bin/conf_gen.h:1208 ../build/bin/conf_gen.h:1224
-#: ../build/bin/conf_gen.h:1252
+#: ../build/bin/conf_gen.h:1263 ../build/bin/conf_gen.h:1279
+#: ../build/bin/conf_gen.h:1309
 msgctxt "preferences"
 msgid "5K"
 msgstr "5K"
 
-#: ../build/bin/conf_gen.h:1284
+#: ../build/bin/conf_gen.h:1345
 msgctxt "preferences"
 msgid "off"
 msgstr "aus"
 
-#: ../build/bin/conf_gen.h:1285
+#: ../build/bin/conf_gen.h:1346
 msgctxt "preferences"
 msgid "hardness (relative)"
 msgstr "Härte (relativ)"
 
-#: ../build/bin/conf_gen.h:1286
+#: ../build/bin/conf_gen.h:1347
 msgctxt "preferences"
 msgid "hardness (absolute)"
 msgstr "Härte (absolut)"
 
-#: ../build/bin/conf_gen.h:1287
+#: ../build/bin/conf_gen.h:1348
 msgctxt "preferences"
 msgid "opacity (relative)"
 msgstr "Deckkraft (relativ)"
 
-#: ../build/bin/conf_gen.h:1288
+#: ../build/bin/conf_gen.h:1349
 msgctxt "preferences"
 msgid "opacity (absolute)"
 msgstr "Deckkraft (absolut)"
 
-#: ../build/bin/conf_gen.h:1289
+#: ../build/bin/conf_gen.h:1350
 msgctxt "preferences"
 msgid "brush size (relative)"
 msgstr "Pinselgröße (relativ)"
 
-#: ../build/bin/conf_gen.h:1297
+#: ../build/bin/conf_gen.h:1358
 msgctxt "preferences"
 msgid "low"
 msgstr "gering"
 
-#: ../build/bin/conf_gen.h:1298
+#: ../build/bin/conf_gen.h:1359
 msgctxt "preferences"
 msgid "medium"
 msgstr "mittel"
 
-#: ../build/bin/conf_gen.h:1299
+#: ../build/bin/conf_gen.h:1360
 msgctxt "preferences"
 msgid "high"
 msgstr "hoch"
 
-#: ../build/bin/conf_gen.h:1319 ../build/bin/preferences_gen.h:5369
+#: ../build/bin/conf_gen.h:1382 ../build/bin/preferences_gen.h:5369
 msgctxt "preferences"
 msgid "false color"
 msgstr "Falschfarben"
 
-#: ../build/bin/conf_gen.h:1320
+#: ../build/bin/conf_gen.h:1383
 msgctxt "preferences"
 msgid "grayscale"
 msgstr "Graustufen"
 
-#: ../build/bin/conf_gen.h:1334
+#: ../build/bin/conf_gen.h:1398
 msgctxt "preferences"
 msgid "top left"
 msgstr "oben links"
 
-#: ../build/bin/conf_gen.h:1335
+#: ../build/bin/conf_gen.h:1399
 msgctxt "preferences"
 msgid "top right"
 msgstr "oben rechts"
 
-#: ../build/bin/conf_gen.h:1336
+#: ../build/bin/conf_gen.h:1400
 msgctxt "preferences"
 msgid "top center"
 msgstr "oben mittig"
 
-#: ../build/bin/conf_gen.h:1337 ../build/bin/preferences_gen.h:5181
+#: ../build/bin/conf_gen.h:1401 ../build/bin/preferences_gen.h:5181
 msgctxt "preferences"
 msgid "bottom"
 msgstr "unten"
 
-#: ../build/bin/conf_gen.h:1338
+#: ../build/bin/conf_gen.h:1402
 msgctxt "preferences"
 msgid "hidden"
 msgstr "verborgen"
 
-#: ../build/bin/conf_gen.h:1848
+#: ../build/bin/conf_gen.h:1992
 msgid "show OSD"
 msgstr "OSD anzeigen"
 
-#: ../build/bin/conf_gen.h:1849
+#: ../build/bin/conf_gen.h:1993
 msgid "toggle the visibility of the map overlays"
 msgstr "Sichtbarkeit der Karten-Überlagerungen umschalten"
 
-#: ../build/bin/conf_gen.h:1854 ../src/libs/map_settings.c:119
+#: ../build/bin/conf_gen.h:1999 ../src/libs/map_settings.c:119
 msgid "filtered images"
 msgstr "nur aktuelle Sammlung"
 
-#: ../build/bin/conf_gen.h:1855
+#: ../build/bin/conf_gen.h:2000
 msgid "when set limit the images drawn to the current filmstrip"
 msgstr ""
 "Zeige nur Bilder auf der Karte an, die Bestandteil der aktuellen Sammlung "
 "sind."
 
-#: ../build/bin/conf_gen.h:1862
+#: ../build/bin/conf_gen.h:2006
 msgid "max images"
 msgstr "Maximale Anzahl Bilder"
 
-#: ../build/bin/conf_gen.h:1863
+#: ../build/bin/conf_gen.h:2007
 msgid "the maximum number of image thumbnails drawn on the map"
 msgstr "maximale Anzahl Bilder, die auf der Karte gezeigt werden"
 
-#: ../build/bin/conf_gen.h:1870
+#: ../build/bin/conf_gen.h:2013
 msgid "group size factor"
 msgstr "Faktor Gruppengröße"
 
-#: ../build/bin/conf_gen.h:1871
+#: ../build/bin/conf_gen.h:2014
 msgid ""
 "increase or decrease the spatial size of images groups on the map. can "
 "influence the calculation time"
@@ -437,11 +437,11 @@ msgstr ""
 "vergrößern oder verkleinern der räumlichen Ausdehnung der Bildgruppen auf "
 "der Karte. Kann die Berechnungszeit beeinflussen"
 
-#: ../build/bin/conf_gen.h:1878
+#: ../build/bin/conf_gen.h:2020
 msgid "min images per group"
 msgstr "minimale Zahl Bilder je Gruppe"
 
-#: ../build/bin/conf_gen.h:1879
+#: ../build/bin/conf_gen.h:2021
 msgid ""
 "the minimum number of images to set up an images group. can influence the "
 "calculation time."
@@ -449,21 +449,21 @@ msgstr ""
 "minimale Anzahl von Bildern, um eine Bildgruppe einzurichten. Kann die "
 "Berechnungszeit beeinflussen."
 
-#: ../build/bin/conf_gen.h:1884
+#: ../build/bin/conf_gen.h:2026
 msgctxt "preferences"
 msgid "thumbnail"
 msgstr "Vorschaubild"
 
-#: ../build/bin/conf_gen.h:1885
+#: ../build/bin/conf_gen.h:2027
 msgctxt "preferences"
 msgid "count"
 msgstr "Anzahl"
 
-#: ../build/bin/conf_gen.h:1888
+#: ../build/bin/conf_gen.h:2030
 msgid "thumbnail display"
 msgstr "Vorschaubild Anzeige"
 
-#: ../build/bin/conf_gen.h:1889
+#: ../build/bin/conf_gen.h:2031
 msgid ""
 "three options are available: images thumbnails, only the count of images of "
 "the group or nothing"
@@ -471,269 +471,269 @@ msgstr ""
 "Es stehen drei Optionen zur Verfügung: Bilder-Miniaturansichten, nur Anzahl "
 "der Bilder der Gruppe oder nichts"
 
-#: ../build/bin/conf_gen.h:1900
+#: ../build/bin/conf_gen.h:2044
 msgid "max polygon points"
 msgstr "max Polygonpunkte"
 
-#: ../build/bin/conf_gen.h:1901
+#: ../build/bin/conf_gen.h:2045
 msgid ""
 "limit the number of points imported with polygon in find location module"
 msgstr ""
 "Begrenzung der Anzahl der importierten Punkte für ein Polygon im Modul "
 "„Position finden“"
 
-#: ../build/bin/conf_gen.h:2191 ../build/bin/preferences_gen.h:5293
+#: ../build/bin/conf_gen.h:2379 ../build/bin/preferences_gen.h:5293
 msgctxt "preferences"
 msgid "original"
 msgstr "Originalgröße"
 
-#: ../build/bin/conf_gen.h:2192
+#: ../build/bin/conf_gen.h:2380
 msgctxt "preferences"
 msgid "to 1/2"
 msgstr "auf die Hälfte"
 
-#: ../build/bin/conf_gen.h:2193
+#: ../build/bin/conf_gen.h:2381
 msgctxt "preferences"
 msgid "to 1/3"
 msgstr "auf ein Drittel"
 
-#: ../build/bin/conf_gen.h:2194
+#: ../build/bin/conf_gen.h:2382
 msgctxt "preferences"
 msgid "to 1/4"
 msgstr "auf ein Viertel"
 
-#: ../build/bin/conf_gen.h:2214 ../build/bin/conf_gen.h:2224
+#: ../build/bin/conf_gen.h:2404 ../build/bin/conf_gen.h:2414
 msgctxt "preferences"
 msgid "bilinear"
 msgstr "bilinear"
 
-#: ../build/bin/conf_gen.h:2215 ../build/bin/conf_gen.h:2225
+#: ../build/bin/conf_gen.h:2405 ../build/bin/conf_gen.h:2415
 #: ../build/bin/preferences_gen.h:5811
 msgctxt "preferences"
 msgid "bicubic"
 msgstr "bikubisch"
 
-#: ../build/bin/conf_gen.h:2216 ../build/bin/conf_gen.h:2226
+#: ../build/bin/conf_gen.h:2406 ../build/bin/conf_gen.h:2416
 msgctxt "preferences"
 msgid "lanczos2"
 msgstr "Lanczos2"
 
-#: ../build/bin/conf_gen.h:2227 ../build/bin/preferences_gen.h:5846
+#: ../build/bin/conf_gen.h:2417 ../build/bin/preferences_gen.h:5846
 msgctxt "preferences"
 msgid "lanczos3"
 msgstr "Lanczos3"
 
-#: ../build/bin/conf_gen.h:2547 ../build/bin/conf_gen.h:3308
+#: ../build/bin/conf_gen.h:2747 ../build/bin/conf_gen.h:3566
 #: ../build/bin/preferences_gen.h:7000
 msgctxt "preferences"
 msgid "auto"
 msgstr "automatisch"
 
-#: ../build/bin/conf_gen.h:2549
+#: ../build/bin/conf_gen.h:2749
 msgctxt "preferences"
 msgid "libsecret"
 msgstr "libsecret"
 
-#: ../build/bin/conf_gen.h:2550
+#: ../build/bin/conf_gen.h:2750
 msgctxt "preferences"
 msgid "kwallet"
 msgstr "KWallet"
 
-#: ../build/bin/conf_gen.h:2551
+#: ../build/bin/conf_gen.h:2751
 msgctxt "preferences"
 msgid "apple_keychain"
 msgstr "Apple Schlüsselbund"
 
-#: ../build/bin/conf_gen.h:2552
+#: ../build/bin/conf_gen.h:2752
 msgctxt "preferences"
 msgid "windows_credentials"
 msgstr "Windows-Anmeldeinformationen"
 
-#: ../build/bin/conf_gen.h:2770
+#: ../build/bin/conf_gen.h:2977
 msgctxt "preferences"
 msgid "vectorscope"
 msgstr "Vectorscope"
 
-#: ../build/bin/conf_gen.h:2771
+#: ../build/bin/conf_gen.h:2978
 msgctxt "preferences"
 msgid "waveform"
 msgstr "Waveform"
 
-#: ../build/bin/conf_gen.h:2772
+#: ../build/bin/conf_gen.h:2979
 msgctxt "preferences"
 msgid "RGB parade"
 msgstr "RGB Parade"
 
-#: ../build/bin/conf_gen.h:2773
+#: ../build/bin/conf_gen.h:2980
 msgctxt "preferences"
 msgid "histogram"
 msgstr "Histogramm"
 
-#: ../build/bin/conf_gen.h:2781
+#: ../build/bin/conf_gen.h:2988
 msgctxt "preferences"
 msgid "left"
 msgstr "links"
 
-#: ../build/bin/conf_gen.h:2782 ../build/bin/preferences_gen.h:7587
+#: ../build/bin/conf_gen.h:2989 ../build/bin/preferences_gen.h:7587
 msgctxt "preferences"
 msgid "right"
 msgstr "rechts"
 
-#: ../build/bin/conf_gen.h:2790 ../build/bin/conf_gen.h:2827
+#: ../build/bin/conf_gen.h:2997 ../build/bin/conf_gen.h:3034
 msgctxt "preferences"
 msgid "logarithmic"
 msgstr "logarithmisch"
 
-#: ../build/bin/conf_gen.h:2791 ../build/bin/conf_gen.h:2828
+#: ../build/bin/conf_gen.h:2998 ../build/bin/conf_gen.h:3035
 msgctxt "preferences"
 msgid "linear"
 msgstr "linear"
 
-#: ../build/bin/conf_gen.h:2799
+#: ../build/bin/conf_gen.h:3006
 msgctxt "preferences"
 msgid "horizontal"
 msgstr "horizontal"
 
-#: ../build/bin/conf_gen.h:2800
+#: ../build/bin/conf_gen.h:3007
 msgctxt "preferences"
 msgid "vertical"
 msgstr "vertikal"
 
-#: ../build/bin/conf_gen.h:2808
+#: ../build/bin/conf_gen.h:3015
 msgctxt "preferences"
 msgid "overlaid"
 msgstr "Überlagern"
 
-#: ../build/bin/conf_gen.h:2809
+#: ../build/bin/conf_gen.h:3016
 msgctxt "preferences"
 msgid "parade"
 msgstr "Parade"
 
-#: ../build/bin/conf_gen.h:2817
+#: ../build/bin/conf_gen.h:3024
 msgctxt "preferences"
 msgid "u*v*"
 msgstr "u*v*"
 
-#: ../build/bin/conf_gen.h:2818
+#: ../build/bin/conf_gen.h:3025
 msgctxt "preferences"
 msgid "AzBz"
 msgstr "AzBz"
 
-#: ../build/bin/conf_gen.h:2819
+#: ../build/bin/conf_gen.h:3026
 msgctxt "preferences"
 msgid "RYB"
 msgstr "RYB"
 
-#: ../build/bin/conf_gen.h:2861
+#: ../build/bin/conf_gen.h:3072
 msgctxt "preferences"
 msgid "monochromatic"
 msgstr "monochromatisch"
 
-#: ../build/bin/conf_gen.h:2862
+#: ../build/bin/conf_gen.h:3073
 msgctxt "preferences"
 msgid "analogous"
 msgstr "analog"
 
-#: ../build/bin/conf_gen.h:2863
+#: ../build/bin/conf_gen.h:3074
 msgctxt "preferences"
 msgid "analogous complementary"
 msgstr "analog komplementär"
 
-#: ../build/bin/conf_gen.h:2864
+#: ../build/bin/conf_gen.h:3075
 msgctxt "preferences"
 msgid "complementary"
 msgstr "komplementär"
 
-#: ../build/bin/conf_gen.h:2865
+#: ../build/bin/conf_gen.h:3076
 msgctxt "preferences"
 msgid "split complementary"
 msgstr "teilkomplementär"
 
-#: ../build/bin/conf_gen.h:2866
+#: ../build/bin/conf_gen.h:3077
 msgctxt "preferences"
 msgid "dyad"
 msgstr "Radisch"
 
-#: ../build/bin/conf_gen.h:2867
+#: ../build/bin/conf_gen.h:3078
 msgctxt "preferences"
 msgid "triad"
 msgstr "triadisch"
 
-#: ../build/bin/conf_gen.h:2868
+#: ../build/bin/conf_gen.h:3079
 msgctxt "preferences"
 msgid "tetrad"
 msgstr "tetradisch"
 
-#: ../build/bin/conf_gen.h:2869
+#: ../build/bin/conf_gen.h:3080
 msgctxt "preferences"
 msgid "square"
 msgstr "quadratisch"
 
-#: ../build/bin/conf_gen.h:2883
+#: ../build/bin/conf_gen.h:3095
 msgctxt "preferences"
 msgid "normal"
 msgstr "normal"
 
-#: ../build/bin/conf_gen.h:2885
+#: ../build/bin/conf_gen.h:3097
 msgctxt "preferences"
 msgid "narrow"
 msgstr "eng"
 
-#: ../build/bin/conf_gen.h:2886
+#: ../build/bin/conf_gen.h:3098
 msgctxt "preferences"
 msgid "line"
 msgstr "Linie"
 
-#: ../build/bin/conf_gen.h:3026
+#: ../build/bin/conf_gen.h:3253
 msgctxt "preferences"
 msgid "mm"
 msgstr "mm"
 
-#: ../build/bin/conf_gen.h:3027
+#: ../build/bin/conf_gen.h:3254
 msgctxt "preferences"
 msgid "cm"
 msgstr "cm"
 
-#: ../build/bin/conf_gen.h:3028
+#: ../build/bin/conf_gen.h:3255
 msgctxt "preferences"
 msgid "inch"
 msgstr "inch"
 
-#: ../build/bin/conf_gen.h:3073 ../build/bin/preferences_gen.h:7622
+#: ../build/bin/conf_gen.h:3298 ../build/bin/preferences_gen.h:7622
 msgctxt "preferences"
 msgid "all"
 msgstr "alle"
 
-#: ../build/bin/conf_gen.h:3074
+#: ../build/bin/conf_gen.h:3299
 msgctxt "preferences"
 msgid "xatom"
 msgstr "XAtom"
 
-#: ../build/bin/conf_gen.h:3075
+#: ../build/bin/conf_gen.h:3300
 msgctxt "preferences"
 msgid "colord"
 msgstr "Colord"
 
-#: ../build/bin/conf_gen.h:3138 ../build/bin/preferences_gen.h:5922
+#: ../build/bin/conf_gen.h:3371 ../build/bin/preferences_gen.h:5922
 msgctxt "preferences"
 msgid "scene-referred (filmic)"
 msgstr "szenenbezogen (Filmic)"
 
-#: ../build/bin/conf_gen.h:3139
+#: ../build/bin/conf_gen.h:3372
 msgctxt "preferences"
 msgid "scene-referred (sigmoid)"
 msgstr "szenenbezogen (Sigmoid)"
 
-#: ../build/bin/conf_gen.h:3140
+#: ../build/bin/conf_gen.h:3373
 msgctxt "preferences"
 msgid "display-referred (legacy)"
 msgstr "anzeigebezogene (Legacy)"
 
-#: ../build/bin/conf_gen.h:3235
+#: ../build/bin/conf_gen.h:3488
 msgid "camera time zone"
 msgstr "Zeitzone der Kamera"
 
-#: ../build/bin/conf_gen.h:3236
+#: ../build/bin/conf_gen.h:3489
 msgid ""
 "most cameras don't store the time zone in EXIF. give the correct time zone "
 "so the GPX data can be correctly matched"
@@ -742,63 +742,63 @@ msgstr ""
 "die korrekte Zeitzone angegeben werden, damit die GPX-Daten richtig "
 "zugeordnet werden können"
 
-#: ../build/bin/conf_gen.h:3247
+#: ../build/bin/conf_gen.h:3501
 msgctxt "preferences"
 msgid "no color"
 msgstr "keine Farbe"
 
-#: ../build/bin/conf_gen.h:3248
+#: ../build/bin/conf_gen.h:3502
 msgctxt "preferences"
 msgid "illuminant color"
 msgstr "Farbe der Lichtquelle"
 
-#: ../build/bin/conf_gen.h:3249
+#: ../build/bin/conf_gen.h:3503
 msgctxt "preferences"
 msgid "effect emulation"
 msgstr "Emulation der Farbänderung"
 
-#: ../build/bin/conf_gen.h:3295
+#: ../build/bin/conf_gen.h:3553
 msgctxt "preferences"
 msgid "list"
 msgstr "Liste"
 
-#: ../build/bin/conf_gen.h:3296
+#: ../build/bin/conf_gen.h:3554
 msgctxt "preferences"
 msgid "tabs"
 msgstr "Tabs"
 
-#: ../build/bin/conf_gen.h:3297
+#: ../build/bin/conf_gen.h:3555
 msgctxt "preferences"
 msgid "columns"
 msgstr "Spalten"
 
-#: ../build/bin/conf_gen.h:3306
+#: ../build/bin/conf_gen.h:3564
 msgctxt "preferences"
 msgid "active"
 msgstr "aktive"
 
-#: ../build/bin/conf_gen.h:3307
+#: ../build/bin/conf_gen.h:3565
 msgctxt "preferences"
 msgid "dim"
 msgstr "dunkel"
 
-#: ../build/bin/conf_gen.h:3309
+#: ../build/bin/conf_gen.h:3567
 msgctxt "preferences"
 msgid "fade"
 msgstr "ausblenden"
 
-#: ../build/bin/conf_gen.h:3310
+#: ../build/bin/conf_gen.h:3568
 msgctxt "preferences"
 msgid "fit"
 msgstr "einpassen"
 
 # ist das eine passende Übersetzung?
-#: ../build/bin/conf_gen.h:3311
+#: ../build/bin/conf_gen.h:3569
 msgctxt "preferences"
 msgid "smooth"
 msgstr "einpassen & ausblenden"
 
-#: ../build/bin/conf_gen.h:3312
+#: ../build/bin/conf_gen.h:3570
 msgctxt "preferences"
 msgid "glide"
 msgstr "einpassen & gleitend ausblenden"
@@ -866,7 +866,7 @@ msgstr "Diese Voreinstellung wurde angepasst"
 #: ../build/bin/preferences_gen.h:6571 ../build/bin/preferences_gen.h:7064
 #: ../build/bin/preferences_gen.h:7330 ../src/gui/accelerators.c:2997
 #: ../src/gui/gtk.c:2975 ../src/gui/preferences.c:424
-#: ../src/gui/preferences.c:874 ../src/libs/modulegroups.c:4131
+#: ../src/gui/preferences.c:874 ../src/libs/modulegroups.c:4140
 msgid "?"
 msgstr "?"
 
@@ -1982,7 +1982,8 @@ msgid ""
 "flawless re-importing of image files.\n"
 "\n"
 "depending on the selected mode sidecar files will be created:\n"
-" - 'never'\n"
+" - 'never': all development information will be stored only in the library "
+"database\n"
 " - 'on import': immediately after importing the image\n"
 " - 'after edit': after any user change on the image or adding tags."
 msgstr ""
@@ -1990,7 +1991,7 @@ msgstr ""
 "problemlosen Re-Import von Bilddateien zu ermöglichen.\n"
 "\n"
 "Abhängig vom gewählten Modus werden XMP Dateien geschrieben:\n"
-" - „nie“\n"
+" - „nie“: ausschließlich in die library.db Datenbank\n"
 " - „beim Import“: sofort nach dem Importieren des Bildes\n"
 " - „nach Bearbeitung“: nach jeder Benutzeränderung am Bild oder Tagging"
 
@@ -2877,7 +2878,7 @@ msgstr "sehr starke Chromatische Aberration"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:539
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:159
 #: ../src/common/collection.c:1486 ../src/common/color_vocabulary.c:232
-#: ../src/common/colorlabels.c:374 ../src/develop/blend_gui.c:2383
+#: ../src/common/colorlabels.c:375 ../src/develop/blend_gui.c:2383
 #: ../src/develop/blend_gui.c:2431 ../src/develop/lightroom.c:887
 #: ../src/gui/gtk.c:3571 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:356
 #: ../src/iop/channelmixer.c:637 ../src/iop/channelmixer.c:647
@@ -2898,7 +2899,7 @@ msgstr "Rot"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:551
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:158
 #: ../src/common/collection.c:1490 ../src/common/color_vocabulary.c:277
-#: ../src/common/colorlabels.c:376 ../src/develop/blend_gui.c:2389
+#: ../src/common/colorlabels.c:377 ../src/develop/blend_gui.c:2389
 #: ../src/develop/blend_gui.c:2437 ../src/develop/lightroom.c:891
 #: ../src/gui/gtk.c:3572 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:361
 #: ../src/iop/channelmixer.c:638 ../src/iop/channelmixer.c:653
@@ -2919,7 +2920,7 @@ msgstr "Grün"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:559
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:160
 #: ../src/common/collection.c:1492 ../src/common/color_vocabulary.c:324
-#: ../src/common/colorlabels.c:377 ../src/develop/blend_gui.c:2395
+#: ../src/common/colorlabels.c:378 ../src/develop/blend_gui.c:2395
 #: ../src/develop/blend_gui.c:2443 ../src/develop/lightroom.c:893
 #: ../src/gui/gtk.c:3573 ../src/iop/bilateral.cc:366
 #: ../src/iop/channelmixer.c:639 ../src/iop/channelmixer.c:659
@@ -3503,7 +3504,7 @@ msgstr "Orange"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:483
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:515
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:547
-#: ../src/common/collection.c:1488 ../src/common/colorlabels.c:375
+#: ../src/common/collection.c:1488 ../src/common/colorlabels.c:376
 #: ../src/develop/lightroom.c:889 ../src/gui/guides.c:732
 #: ../src/iop/colorequal.c:2400 ../src/iop/colorzones.c:2504
 #: ../src/iop/temperature.c:2008 ../src/libs/collect.c:1944
@@ -4560,7 +4561,7 @@ msgstr "nur manuelle Vignettierung"
 #. get nice text for bounds
 #. Side-border hide/show
 #: ../build/lib/darktable/plugins/introspection_lens.cc:534
-#: ../src/dtgtk/range.c:1755 ../src/gui/accelerators.c:2593
+#: ../src/dtgtk/range.c:1762 ../src/gui/accelerators.c:2593
 #: ../src/gui/accelerators.c:2675 ../src/gui/gtk.c:1406 ../src/gui/gtk.c:3570
 #: ../src/imageio/format/pdf.c:645 ../src/iop/denoiseprofile.c:3716
 #: ../src/iop/rawdenoise.c:912 ../src/libs/collect.c:3548
@@ -5478,7 +5479,7 @@ msgstr "Dropdown"
 #: ../src/libs/geotagging.c:929 ../src/libs/import.c:1829
 #: ../src/libs/import.c:1942 ../src/libs/import.c:2041
 #: ../src/libs/metadata.c:462 ../src/libs/metadata_view.c:1262
-#: ../src/libs/modulegroups.c:3669 ../src/libs/recentcollect.c:228
+#: ../src/libs/modulegroups.c:3678 ../src/libs/recentcollect.c:228
 #: ../src/libs/styles.c:433 ../src/libs/styles.c:481 ../src/libs/styles.c:574
 #: ../src/libs/styles.c:669 ../src/libs/tagging.c:1507
 #: ../src/libs/tagging.c:1598 ../src/libs/tagging.c:1689
@@ -5738,7 +5739,7 @@ msgstr "letzter Druck"
 msgid "history"
 msgstr "Verlauf"
 
-#: ../src/common/collection.c:634 ../src/common/colorlabels.c:382
+#: ../src/common/collection.c:634 ../src/common/colorlabels.c:383
 #: ../src/develop/lightroom.c:1607 ../src/dtgtk/thumbnail.c:1584
 #: ../src/libs/filtering.c:68 ../src/libs/filters/colors.c:301
 #: ../src/libs/filters/colors.c:312 ../src/libs/tools/colorlabels.c:145
@@ -5793,7 +5794,7 @@ msgstr "Modulsortierung"
 msgid "range rating"
 msgstr "Bewertungsintervall"
 
-#: ../src/common/collection.c:662 ../src/common/ratings.c:322
+#: ../src/common/collection.c:662 ../src/common/ratings.c:335
 #: ../src/develop/lightroom.c:1582 ../src/libs/filtering.c:67
 #: ../src/libs/tools/ratings.c:110
 msgid "rating"
@@ -5821,7 +5822,7 @@ msgid "metering mode"
 msgstr "Messmethode"
 
 #: ../src/common/collection.c:1494 ../src/common/color_vocabulary.c:339
-#: ../src/common/colorlabels.c:378 ../src/iop/colorzones.c:2508
+#: ../src/common/colorlabels.c:379 ../src/iop/colorzones.c:2508
 #: ../src/libs/collect.c:1944 ../src/libs/filters/colors.c:264
 msgid "purple"
 msgstr "Violett"
@@ -6174,16 +6175,16 @@ msgstr "Dunkles Magenta"
 msgid "color not found"
 msgstr "Farbe nicht gefunden"
 
-#: ../src/common/colorlabels.c:349
+#: ../src/common/colorlabels.c:350
 #, c-format
 msgid "colorlabels set to %s"
 msgstr "Farbmarkierungen auf %s"
 
-#: ../src/common/colorlabels.c:351
+#: ../src/common/colorlabels.c:352
 msgid "all colorlabels removed"
 msgstr "alle Farbmarkierungen entfernt"
 
-#: ../src/common/colorlabels.c:373 ../src/gui/accelerators.c:188
+#: ../src/common/colorlabels.c:374 ../src/gui/accelerators.c:188
 #: ../src/libs/image.c:663
 msgid "clear"
 msgstr "löschen"
@@ -6908,7 +6909,7 @@ msgid "or the <b>RAW won't be readable</b> in next version."
 msgstr ""
 "sonst ist das <b>RAW </b> in der nächsten Version <b>nicht mehr lesbar </b>."
 
-#: ../src/common/image.h:217 ../src/common/ratings.c:284
+#: ../src/common/image.h:217 ../src/common/ratings.c:297
 #: ../src/imageio/format/avif.c:114 ../src/libs/history.c:846
 #: ../src/libs/snapshots.c:858
 msgid "unknown"
@@ -7189,74 +7190,74 @@ msgstr ""
 "Das GNOME Keyring-Backend wird nicht mehr unterstützt. Bitte ein anderes "
 "auswählen"
 
-#: ../src/common/ratings.c:173
+#: ../src/common/ratings.c:176
 #, c-format
 msgid "rejecting %d image"
 msgid_plural "rejecting %d images"
 msgstr[0] "%d Bild abgelehnt"
 msgstr[1] "%d Bilder abgelehnt"
 
-#: ../src/common/ratings.c:175
+#: ../src/common/ratings.c:178
 #, c-format
 msgid "applying rating %d to %d image"
 msgid_plural "applying rating %d to %d images"
 msgstr[0] "wende Bewertung %d auf %d Bild an"
 msgstr[1] "wende Bewertung %d auf %d Bilder an"
 
-#: ../src/common/ratings.c:222
+#: ../src/common/ratings.c:232
 msgid "no images selected to apply rating"
 msgstr "kein Bild ausgewählt, um Bewertung anzuwenden"
 
-#: ../src/common/ratings.c:275 ../src/libs/metadata_view.c:367
+#: ../src/common/ratings.c:288 ../src/libs/metadata_view.c:367
 msgid "image rejected"
 msgstr "Bild abgelehnt"
 
-#: ../src/common/ratings.c:277
+#: ../src/common/ratings.c:290
 msgid "image rated to 0 star"
 msgstr "Bildbewertung kein Stern"
 
-#: ../src/common/ratings.c:279
+#: ../src/common/ratings.c:292
 #, c-format
 msgid "image rated to %s"
 msgstr "Bildbewertung %s"
 
-#: ../src/common/ratings.c:306 ../src/views/lighttable.c:766
+#: ../src/common/ratings.c:319 ../src/views/lighttable.c:766
 msgid "select"
 msgstr "auswählen"
 
-#: ../src/common/ratings.c:307
+#: ../src/common/ratings.c:320
 msgid "upgrade"
 msgstr "höherstufen"
 
-#: ../src/common/ratings.c:308
+#: ../src/common/ratings.c:321
 msgid "downgrade"
 msgstr "herunterstufen"
 
-#: ../src/common/ratings.c:312
+#: ../src/common/ratings.c:325
 msgid "zero"
 msgstr "Null"
 
-#: ../src/common/ratings.c:313 ../src/libs/filters/rating_range.c:304
+#: ../src/common/ratings.c:326 ../src/libs/filters/rating_range.c:304
 msgid "one"
 msgstr "eins"
 
-#: ../src/common/ratings.c:314 ../src/libs/filters/rating_range.c:305
+#: ../src/common/ratings.c:327 ../src/libs/filters/rating_range.c:305
 msgid "two"
 msgstr "zwei"
 
-#: ../src/common/ratings.c:315 ../src/libs/filters/rating_range.c:306
+#: ../src/common/ratings.c:328 ../src/libs/filters/rating_range.c:306
 msgid "three"
 msgstr "drei"
 
-#: ../src/common/ratings.c:316 ../src/libs/filters/rating_range.c:307
+#: ../src/common/ratings.c:329 ../src/libs/filters/rating_range.c:307
 msgid "four"
 msgstr "Vier"
 
-#: ../src/common/ratings.c:317 ../src/libs/filters/rating_range.c:308
+#: ../src/common/ratings.c:330 ../src/libs/filters/rating_range.c:308
 msgid "five"
 msgstr "Fünf"
 
-#: ../src/common/ratings.c:318
+#: ../src/common/ratings.c:331
 msgid "reject"
 msgstr "verwerfen"
 
@@ -9118,7 +9119,7 @@ msgid "delete"
 msgstr "löschen"
 
 #: ../src/develop/imageop.c:1062 ../src/develop/imageop.c:3784
-#: ../src/libs/modulegroups.c:4046
+#: ../src/libs/modulegroups.c:4055
 msgid "rename"
 msgstr "umbenennen"
 
@@ -9209,14 +9210,14 @@ msgstr ""
 msgid "show"
 msgstr "anzeigen"
 
-#: ../src/develop/imageop.c:3782 ../src/libs/modulegroups.c:3514
-#: ../src/libs/modulegroups.c:3641 ../src/libs/modulegroups.c:4050
+#: ../src/develop/imageop.c:3782 ../src/libs/modulegroups.c:3519
+#: ../src/libs/modulegroups.c:3650 ../src/libs/modulegroups.c:4059
 #: ../src/libs/tagging.c:3313
 msgid "new"
 msgstr "neu"
 
 #: ../src/develop/imageop.c:3785 ../src/libs/duplicate.c:411
-#: ../src/libs/image.c:537 ../src/libs/modulegroups.c:4042
+#: ../src/libs/image.c:537 ../src/libs/modulegroups.c:4051
 msgid "duplicate"
 msgstr "duplizieren"
 
@@ -9237,7 +9238,7 @@ msgstr "Instanz"
 #: ../src/gui/accelerators.c:140 ../src/gui/gtk.c:3419 ../src/gui/gtk.c:3474
 #: ../src/gui/hist_dialog.c:272 ../src/gui/styles_dialog.c:646
 #: ../src/gui/styles_dialog.c:668 ../src/iop/atrous.c:1629
-#: ../src/libs/lib.c:1427 ../src/libs/modulegroups.c:4126
+#: ../src/libs/lib.c:1427 ../src/libs/modulegroups.c:4135
 msgid "reset"
 msgstr "zurücksetzen"
 
@@ -9278,12 +9279,12 @@ msgid_plural "%s have been imported"
 msgstr[0] "%s wurde importiert"
 msgstr[1] "%s wurden importiert"
 
-#: ../src/develop/masks/brush.c:1346 ../src/develop/masks/brush.c:1400
+#: ../src/develop/masks/brush.c:1347 ../src/develop/masks/brush.c:1401
 #, c-format
 msgid "hardness: %3.2f%%"
 msgstr "Härte: %3.2f%%"
 
-#: ../src/develop/masks/brush.c:1362 ../src/develop/masks/brush.c:1460
+#: ../src/develop/masks/brush.c:1363 ../src/develop/masks/brush.c:1461
 #: ../src/develop/masks/circle.c:148 ../src/develop/masks/circle.c:193
 #: ../src/develop/masks/ellipse.c:484 ../src/develop/masks/ellipse.c:546
 #: ../src/develop/masks/path.c:1255
@@ -9291,24 +9292,24 @@ msgstr "Härte: %3.2f%%"
 msgid "size: %3.2f%%"
 msgstr "Größe: %3.2f%%"
 
-#: ../src/develop/masks/brush.c:3169
+#: ../src/develop/masks/brush.c:3170
 msgid "[BRUSH] change size"
 msgstr "[BRUSH] Größe ändern"
 
-#: ../src/develop/masks/brush.c:3171
+#: ../src/develop/masks/brush.c:3172
 msgid "[BRUSH] change hardness"
 msgstr "[BRUSH] Härte ändern"
 
-#: ../src/develop/masks/brush.c:3173
+#: ../src/develop/masks/brush.c:3174
 msgid "[BRUSH] change opacity"
 msgstr "[BRUSH] Deckkraft ändern"
 
-#: ../src/develop/masks/brush.c:3185
+#: ../src/develop/masks/brush.c:3186
 #, c-format
 msgid "brush #%d"
 msgstr "Pinsel #%d"
 
-#: ../src/develop/masks/brush.c:3198
+#: ../src/develop/masks/brush.c:3199
 #, c-format
 msgid ""
 "<b>size</b>: scroll, <b>hardness</b>: shift+scroll\n"
@@ -9317,7 +9318,7 @@ msgstr ""
 "<b>Größe</b>: Scrollen, <b>Härte</b>: Shift+Scrollen\n"
 "<b>Deckkraft</b>: Strg+Scrollen (%d%%)"
 
-#: ../src/develop/masks/brush.c:3201
+#: ../src/develop/masks/brush.c:3202
 msgid "<b>size</b>: scroll"
 msgstr "<b>Größe</b>: Scrollen"
 
@@ -9678,16 +9679,16 @@ msgstr "Ende der Sammlung erreicht"
 msgid "zooming is limited to %d images"
 msgstr "Zoom ist auf %d Bilder beschränkt"
 
-#: ../src/dtgtk/range.c:211 ../src/dtgtk/range.c:216
+#: ../src/dtgtk/range.c:218 ../src/dtgtk/range.c:223
 msgid "invalid"
 msgstr "ungültig"
 
-#: ../src/dtgtk/range.c:324
+#: ../src/dtgtk/range.c:331
 #, c-format
 msgid "year %s"
 msgstr "Jahr %s"
 
-#: ../src/dtgtk/range.c:402
+#: ../src/dtgtk/range.c:409
 msgid ""
 "enter the minimal value\n"
 "use 'min' if no bound\n"
@@ -9697,7 +9698,7 @@ msgstr ""
 "„min“ verwenden, sofern keine Begrenzung\n"
 "Rechtsklick zur Auswahl aus vorhandenen Werten"
 
-#: ../src/dtgtk/range.c:408
+#: ../src/dtgtk/range.c:415
 msgid ""
 "enter the maximal value\n"
 "use 'max' if no bound\n"
@@ -9707,7 +9708,7 @@ msgstr ""
 "„max“ verwenden, sofern keine Begrenzung\n"
 "Rechtsklick zur Auswahl aus vorhandenen Werten"
 
-#: ../src/dtgtk/range.c:414
+#: ../src/dtgtk/range.c:421
 msgid ""
 "enter the value\n"
 "right-click to select from existing values"
@@ -9715,7 +9716,7 @@ msgstr ""
 "den Wert eingeben\n"
 "Rechtsklick zur Auswahl aus vorhandenen Werten"
 
-#: ../src/dtgtk/range.c:419
+#: ../src/dtgtk/range.c:426
 msgid ""
 "enter the minimal date\n"
 "in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
@@ -9729,7 +9730,7 @@ msgstr ""
 "Präfix „-“ für relatives Datum verwenden\n"
 "Rechtsklick zur Auswahl aus dem Kalender oder vorhandenen Werten"
 
-#: ../src/dtgtk/range.c:427
+#: ../src/dtgtk/range.c:434
 msgid ""
 "enter the maximal date\n"
 "in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
@@ -9745,7 +9746,7 @@ msgstr ""
 "Präfix „-“ für relatives Datum verwenden\n"
 "Rechtsklick zur Auswahl aus dem Kalender oder vorhandenen Werten"
 
-#: ../src/dtgtk/range.c:436
+#: ../src/dtgtk/range.c:443
 msgid ""
 "enter the date\n"
 "in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
@@ -9755,46 +9756,46 @@ msgstr ""
 "in der Form JJJJ:MM:TT hh:mm:ss.sss (nur das Jahr ist obligatorisch)\n"
 "Rechtsklick zur Auswahl aus dem Kalender oder vorhandenen Werten"
 
-#: ../src/dtgtk/range.c:458
+#: ../src/dtgtk/range.c:465
 msgid "date-time interval to subtract from the max value"
 msgstr "Vom max Wert abzuziehendes Intervall"
 
-#: ../src/dtgtk/range.c:462
+#: ../src/dtgtk/range.c:469
 msgid "date-time interval to add to the min value"
 msgstr "zum min Wert zu addierendes Intervall "
 
-#: ../src/dtgtk/range.c:483
+#: ../src/dtgtk/range.c:490
 msgid "fixed"
 msgstr "absolut"
 
-#: ../src/dtgtk/range.c:484 ../src/iop/colorchecker.c:1496
+#: ../src/dtgtk/range.c:491 ../src/iop/colorchecker.c:1496
 msgid "relative"
 msgstr "relativ"
 
-#: ../src/dtgtk/range.c:574
+#: ../src/dtgtk/range.c:581
 msgid "selected"
 msgstr "ausgewählt"
 
-#: ../src/dtgtk/range.c:621 ../src/dtgtk/range.c:1760 ../src/dtgtk/range.c:1811
+#: ../src/dtgtk/range.c:628 ../src/dtgtk/range.c:1767 ../src/dtgtk/range.c:1818
 #: ../src/libs/colorpicker.c:53
 msgid "min"
 msgstr "Minimum"
 
-#: ../src/dtgtk/range.c:627 ../src/dtgtk/range.c:1772 ../src/dtgtk/range.c:1823
+#: ../src/dtgtk/range.c:634 ../src/dtgtk/range.c:1779 ../src/dtgtk/range.c:1830
 #: ../src/libs/colorpicker.c:53 ../src/libs/filters/rating_range.c:309
 msgid "max"
 msgstr "Maximum"
 
-#: ../src/dtgtk/range.c:941
+#: ../src/dtgtk/range.c:948
 msgid "date type"
 msgstr "Datumsbereich"
 
 #. the date section
-#: ../src/dtgtk/range.c:952 ../src/libs/geotagging.c:1505
+#: ../src/dtgtk/range.c:959 ../src/libs/geotagging.c:1505
 msgid "date"
 msgstr "Datum"
 
-#: ../src/dtgtk/range.c:959 ../src/dtgtk/range.c:1025
+#: ../src/dtgtk/range.c:966 ../src/dtgtk/range.c:1032
 msgid ""
 "click to select date\n"
 "double-click to use the date directly"
@@ -9802,44 +9803,44 @@ msgstr ""
 "Mausklick zur Datumsauswahl\n"
 "Doppelklick zur direkten Verwendung des Datums"
 
-#: ../src/dtgtk/range.c:970
+#: ../src/dtgtk/range.c:977
 msgid "years: "
 msgstr "Jahre: "
 
-#: ../src/dtgtk/range.c:978
+#: ../src/dtgtk/range.c:985
 msgid "months: "
 msgstr "Monate: "
 
-#: ../src/dtgtk/range.c:986
+#: ../src/dtgtk/range.c:993
 msgid "days: "
 msgstr "Tage: "
 
 #. the time section
-#: ../src/dtgtk/range.c:998 ../src/libs/geotagging.c:1505
+#: ../src/dtgtk/range.c:1005 ../src/libs/geotagging.c:1505
 msgid "time"
 msgstr "Datum/Uhrzeit"
 
-#: ../src/dtgtk/range.c:1046
+#: ../src/dtgtk/range.c:1053
 msgid "current date: "
 msgstr "aktuell:"
 
-#: ../src/dtgtk/range.c:1050 ../src/dtgtk/range.c:1779
-#: ../src/dtgtk/range.c:1830
+#: ../src/dtgtk/range.c:1057 ../src/dtgtk/range.c:1786
+#: ../src/dtgtk/range.c:1837
 msgid "now"
 msgstr "jetzt"
 
-#: ../src/dtgtk/range.c:1052
+#: ../src/dtgtk/range.c:1059
 msgid "set the value to always match current datetime"
 msgstr ""
 "den Wert so einstellen, dass er immer mit dem aktuellen Datum übereinstimmt"
 
 #. apply button
-#: ../src/dtgtk/range.c:1055 ../src/gui/accelerators.c:180
+#: ../src/dtgtk/range.c:1062 ../src/gui/accelerators.c:180
 #: ../src/libs/metadata.c:735 ../src/libs/styles.c:946
 msgid "apply"
 msgstr "anwenden"
 
-#: ../src/dtgtk/range.c:1056
+#: ../src/dtgtk/range.c:1063
 msgid "set the range bound with this value"
 msgstr "Bereich mit diesem Wert festlegen"
 
@@ -10928,11 +10929,11 @@ msgstr "Panel"
 msgid "switch views"
 msgstr "Ansicht wechseln"
 
-#: ../src/gui/gtk.c:1381 ../src/views/tethering.c:102
+#: ../src/gui/gtk.c:1381 ../src/views/tethering.c:104
 msgid "tethering"
 msgstr "Tethering"
 
-#: ../src/gui/gtk.c:1387 ../src/views/map.c:197
+#: ../src/gui/gtk.c:1387 ../src/views/map.c:274
 msgid "map"
 msgstr "Karte"
 
@@ -11734,12 +11735,12 @@ msgstr ""
 "Voreinstellung „%s” ist schreibgeschützt und kann nicht gelöscht werden"
 
 #: ../src/gui/presets.c:159 ../src/gui/presets.c:463 ../src/libs/lib.c:238
-#: ../src/libs/modulegroups.c:3920
+#: ../src/libs/modulegroups.c:3929
 msgid "delete preset?"
 msgstr "Voreinstellung löschen?"
 
 #: ../src/gui/presets.c:160 ../src/gui/presets.c:464 ../src/libs/lib.c:239
-#: ../src/libs/modulegroups.c:3921
+#: ../src/libs/modulegroups.c:3930
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
 msgstr "Soll die Voreinstellung „%s” wirklich gelöscht werden?"
@@ -11961,8 +11962,8 @@ msgstr "anzeigebezogene Vorgabe"
 msgid "scene-referred default"
 msgstr "szenenbezogene Vorgabe"
 
-#: ../src/gui/presets.c:1405 ../src/libs/modulegroups.c:4005
-#: ../src/libs/modulegroups.c:4015
+#: ../src/gui/presets.c:1405 ../src/libs/modulegroups.c:4014
+#: ../src/libs/modulegroups.c:4024
 msgid "manage module layouts"
 msgstr "Modullayouts verwalten"
 
@@ -19616,7 +19617,7 @@ msgstr ""
 
 #: ../src/iop/overlay.c:328
 #, c-format
-msgid "image %d does not exists"
+msgid "image %d does not exist"
 msgstr "Bild %d ist nicht vorhanden"
 
 #. TRANSLATORS: This text must be very narrow, check in the GUI that it is not truncated
@@ -23201,7 +23202,7 @@ msgstr ""
 msgid "physically delete from disk immediately"
 msgstr "physisch sofort von der Festplatte löschen"
 
-#: ../src/libs/image.c:509 ../src/libs/modulegroups.c:4038
+#: ../src/libs/image.c:509 ../src/libs/modulegroups.c:4047
 #: ../src/libs/styles.c:925
 msgid "remove"
 msgstr "entfernen"
@@ -23701,7 +23702,7 @@ msgstr "Trennlinie"
 msgid "only draw part of the overlay"
 msgstr "zeige nur einen Teil der Überlagerung"
 
-#: ../src/libs/location.c:100
+#: ../src/libs/location.c:106
 msgid "find location"
 msgstr "Position finden"
 
@@ -24355,7 +24356,7 @@ msgstr "Widget entfernen"
 msgid "show all history modules"
 msgstr "alle im Verlauf enthaltene Module anzeigen"
 
-#: ../src/libs/modulegroups.c:2768 ../src/libs/modulegroups.c:4072
+#: ../src/libs/modulegroups.c:2768 ../src/libs/modulegroups.c:4081
 msgid ""
 "show modules that are present in the history stack, regardless of whether or "
 "not they are currently enabled"
@@ -24405,135 +24406,135 @@ msgstr "Modul nach Namen oder Stichwort suchen"
 msgid "clear text"
 msgstr "Text löschen"
 
-#: ../src/libs/modulegroups.c:3229
+#: ../src/libs/modulegroups.c:3234
 msgid "basic icon"
 msgstr "Symbol „Basisbearbeitung”"
 
-#: ../src/libs/modulegroups.c:3240
+#: ../src/libs/modulegroups.c:3245
 msgid "active icon"
 msgstr "Symbol „aktiv”"
 
-#: ../src/libs/modulegroups.c:3251
+#: ../src/libs/modulegroups.c:3256
 msgid "color icon"
 msgstr "Symbol „Farbe”"
 
-#: ../src/libs/modulegroups.c:3262
+#: ../src/libs/modulegroups.c:3267
 msgid "correct icon"
 msgstr "Symbol „Korrekturen”"
 
-#: ../src/libs/modulegroups.c:3273
+#: ../src/libs/modulegroups.c:3278
 msgid "effect icon"
 msgstr "Symbol „Effekte”"
 
-#: ../src/libs/modulegroups.c:3284
+#: ../src/libs/modulegroups.c:3289
 msgid "favorites icon"
 msgstr "Symbol „Favoriten”"
 
-#: ../src/libs/modulegroups.c:3295
+#: ../src/libs/modulegroups.c:3300
 msgid "tone icon"
 msgstr "Symbol „Tonwerte”"
 
-#: ../src/libs/modulegroups.c:3306
+#: ../src/libs/modulegroups.c:3311
 msgid "grading icon"
 msgstr "Symbol „Farbkorrektur”"
 
-#: ../src/libs/modulegroups.c:3317
+#: ../src/libs/modulegroups.c:3322
 msgid "technical icon"
 msgstr "Symbol „Technisch”"
 
-#: ../src/libs/modulegroups.c:3351
+#: ../src/libs/modulegroups.c:3356
 msgid "quick access panel widgets"
 msgstr "Schnellzugriff Widgets"
 
-#: ../src/libs/modulegroups.c:3353
+#: ../src/libs/modulegroups.c:3358
 msgid "quick access"
 msgstr "Schnellzugriff"
 
-#: ../src/libs/modulegroups.c:3375
+#: ../src/libs/modulegroups.c:3380
 msgid "add widget to the quick access panel"
 msgstr "Widget zur Schnellzugriffsgruppe hinzufügen"
 
-#: ../src/libs/modulegroups.c:3409
+#: ../src/libs/modulegroups.c:3414
 msgid "group icon"
 msgstr "Gruppensymbol"
 
-#: ../src/libs/modulegroups.c:3419
+#: ../src/libs/modulegroups.c:3424
 msgid "group name"
 msgstr "Gruppenname"
 
-#: ../src/libs/modulegroups.c:3431
+#: ../src/libs/modulegroups.c:3436
 msgid "remove group"
 msgstr "Gruppe entfernen"
 
-#: ../src/libs/modulegroups.c:3459
+#: ../src/libs/modulegroups.c:3464
 msgid "move group to the left"
 msgstr "Gruppe nach links verschieben"
 
-#: ../src/libs/modulegroups.c:3469
+#: ../src/libs/modulegroups.c:3474
 msgid "add module to the group"
 msgstr "Modul zur Gruppe hinzufügen"
 
-#: ../src/libs/modulegroups.c:3481
+#: ../src/libs/modulegroups.c:3486
 msgid "move group to the right"
 msgstr "Gruppe nach rechts verschieben"
 
-#: ../src/libs/modulegroups.c:3667
+#: ../src/libs/modulegroups.c:3676
 msgid "rename preset"
 msgstr "Modullayout umbenennen"
 
-#: ../src/libs/modulegroups.c:3670
+#: ../src/libs/modulegroups.c:3679
 msgid "_rename"
 msgstr "_umbenennen"
 
-#: ../src/libs/modulegroups.c:3677
+#: ../src/libs/modulegroups.c:3686
 msgid "new preset name:"
 msgstr "neuer Name des Modullayouts:"
 
-#: ../src/libs/modulegroups.c:3678
+#: ../src/libs/modulegroups.c:3687
 msgid "a preset with this name already exists!"
 msgstr "Ein Modullayout mit diesem Namen existiert bereits!"
 
-#: ../src/libs/modulegroups.c:4030
+#: ../src/libs/modulegroups.c:4039
 msgid "preset: "
 msgstr "Modullayout:"
 
-#: ../src/libs/modulegroups.c:4040
+#: ../src/libs/modulegroups.c:4049
 msgid "remove the preset"
 msgstr "Modullayout entfernen"
 
-#: ../src/libs/modulegroups.c:4044
+#: ../src/libs/modulegroups.c:4053
 msgid "duplicate the preset"
 msgstr "Modullayout duplizieren"
 
-#: ../src/libs/modulegroups.c:4048
+#: ../src/libs/modulegroups.c:4057
 msgid "rename the preset"
 msgstr "Modullayout umbenennen"
 
-#: ../src/libs/modulegroups.c:4052
+#: ../src/libs/modulegroups.c:4061
 msgid "create a new empty preset"
 msgstr "neues leeres Modullayout erstellen"
 
-#: ../src/libs/modulegroups.c:4060
+#: ../src/libs/modulegroups.c:4069
 msgid "show search line"
 msgstr "zeige Suchfeld"
 
-#: ../src/libs/modulegroups.c:4064
+#: ../src/libs/modulegroups.c:4073
 msgid "show quick access panel"
 msgstr "Schnellzugriffsgruppe anzeigen"
 
-#: ../src/libs/modulegroups.c:4069
+#: ../src/libs/modulegroups.c:4078
 msgid "show all history modules in active group"
 msgstr "alle Verlaufsmodule in Gruppe der aktiven Module anzeigen"
 
-#: ../src/libs/modulegroups.c:4083
+#: ../src/libs/modulegroups.c:4092
 msgid "auto-apply this preset"
 msgstr "Modullayout automatisch anwenden"
 
-#: ../src/libs/modulegroups.c:4099
+#: ../src/libs/modulegroups.c:4108
 msgid "module groups"
 msgstr "Modulgruppen"
 
-#: ../src/libs/modulegroups.c:4118
+#: ../src/libs/modulegroups.c:4127
 msgid ""
 "this is a built-in read-only preset. duplicate it if you want to make changes"
 msgstr ""
@@ -26247,12 +26248,12 @@ msgstr "Deckkraft des Pinsels verringern"
 
 #. undo/redo
 #: ../src/views/darkroom.c:2610 ../src/views/lighttable.c:1275
-#: ../src/views/map.c:2141
+#: ../src/views/map.c:2395
 msgid "undo"
 msgstr "rückgängig"
 
 #: ../src/views/darkroom.c:2611 ../src/views/lighttable.c:1276
-#: ../src/views/map.c:2142
+#: ../src/views/map.c:2397
 msgid "redo"
 msgstr "wiederherstellen"
 
@@ -26429,15 +26430,15 @@ msgstr "maximaler Zoom"
 msgid "zoom min"
 msgstr "minimaler Zoom"
 
-#: ../src/views/map.c:2836
+#: ../src/views/map.c:3178
 msgid "[on image] open in darkroom"
 msgstr "in der Dunkelkammer öffnen"
 
-#: ../src/views/map.c:2837
+#: ../src/views/map.c:3180
 msgid "[on map] zoom map"
 msgstr "Karte skalieren"
 
-#: ../src/views/map.c:2838
+#: ../src/views/map.c:3182
 msgid "move image location"
 msgstr "Bild verschieben"
 
@@ -26504,12 +26505,12 @@ msgstr "zum nächsten Bild gehen"
 msgid "go to previous image"
 msgstr "zum vorherigen Bild gehen"
 
-#: ../src/views/tethering.c:157
+#: ../src/views/tethering.c:163
 #, c-format
 msgid "new session initiated '%s'"
 msgstr "neue Sitzung „%s” gestartet"
 
-#: ../src/views/tethering.c:448
+#: ../src/views/tethering.c:495
 msgid "no camera with tethering support available for use..."
 msgstr "keine Kamera mit Tethering-Unterstützung verfügbar…"
 
