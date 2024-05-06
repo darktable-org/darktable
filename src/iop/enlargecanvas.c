@@ -88,7 +88,7 @@ const char** description(struct dt_iop_module_t *self)
 
 const char *aliases()
 {
-  return _("composition");
+  return _("composition|expand|extend");
 }
 
 int flags()
