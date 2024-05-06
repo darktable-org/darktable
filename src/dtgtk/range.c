@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2022 darktable developers.
+    Copyright (C) 2022-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -151,17 +151,24 @@ static void _range_select_destroy(GtkWidget *widget)
 
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_dt_pref_changed), range);
 
-  if(range->markers) g_list_free_full(range->markers, g_free);
+  if(!g_list_is_empty(range->markers))
+    g_list_free_full(range->markers, g_free);
   range->markers = NULL;
-  if(range->blocks) g_list_free_full(range->blocks, g_free);
+
+  if(!g_list_is_empty(range->blocks))
+    g_list_free_full(range->blocks, g_free);
   range->blocks = NULL;
-  if(range->icons) g_list_free_full(range->icons, g_free);
+
+  if(!g_list_is_empty(range->icons))
+    g_list_free_full(range->icons, g_free);
   range->icons = NULL;
 
-  if(range->surface) cairo_surface_destroy(range->surface);
+  if(range->surface)
+    cairo_surface_destroy(range->surface);
   range->surface = NULL;
 
-  if(range->cur_help) g_free(range->cur_help);
+  if(range->cur_help)
+    g_free(range->cur_help);
   range->cur_help = NULL;
 
   GTK_WIDGET_CLASS(dtgtk_range_select_parent_class)->destroy(widget);
@@ -1420,7 +1427,7 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
   }
 
   // draw the icons
-  if(g_list_length(range->icons) > 0)
+  if(range->icons)
   {
     // we do a first pass to determine the max icon width
     int last = 0;

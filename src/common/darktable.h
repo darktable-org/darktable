@@ -179,6 +179,9 @@ typedef int32_t dt_mask_id_t;
 /* Helper to force stack vectors to be aligned on DT_CACHELINE_BYTES blocks to enable AVX2 */
 #define DT_IS_ALIGNED(x) __builtin_assume_aligned(x, DT_CACHELINE_BYTES)
 
+/* Helper for 4-float pixel vectors */
+#define DT_IS_ALIGNED_PIXEL(x) __builtin_assume_aligned(x, 16)
+
 #define DT_MODULE_VERSION 25 // version of dt's module interface
 
 // version of current performance configuration version
@@ -302,6 +305,7 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_VERBOSE        = 1 << 24,
   DT_DEBUG_PIPE           = 1 << 25,
   DT_DEBUG_EXPOSE         = 1 << 26,
+  DT_DEBUG_PICKER         = 1 << 27,
   DT_DEBUG_ALL            = 0xffffffff & ~DT_DEBUG_VERBOSE,
   DT_DEBUG_COMMON         = DT_DEBUG_OPENCL | DT_DEBUG_DEV | DT_DEBUG_MASKS | DT_DEBUG_PARAMS | DT_DEBUG_IMAGEIO | DT_DEBUG_PIPE,
   DT_DEBUG_RESTRICT       = DT_DEBUG_VERBOSE | DT_DEBUG_PERF,
@@ -794,6 +798,7 @@ static inline void copy_pixel(float *const __restrict__ out,
 
 // a few macros and helper functions to speed up certain frequently-used GLib operations
 #define g_list_is_singleton(list) ((list) && (!(list)->next))
+#define g_list_is_empty(list) (!list)
 
 static inline gboolean g_list_shorter_than(const GList *list,
                                            unsigned len)
@@ -827,6 +832,28 @@ static inline const GList *g_list_prev_wraparound(const GList *list)
   // return the prior element of the list, unless already on the first
   // element; in that case, return the last element of the list.
   return g_list_previous(list) ? g_list_previous(list) : g_list_last((GList*)list);
+}
+
+// returns true if the two GLists have the same length
+static inline gboolean dt_list_length_equal(GList *l1, GList *l2)
+{
+  while (l1 && l2)
+  {
+    l1 = g_list_next(l1);
+    l2 = g_list_next(l2);
+  }
+  return !l1 && !l2;
+}
+
+// returns true if the two GSLists have the same length
+static inline gboolean dt_slist_length_equal(GSList *l1, GSList *l2)
+{
+  while (l1 && l2)
+  {
+    l1 = g_slist_next(l1);
+    l2 = g_slist_next(l2);
+  }
+  return !l1 && !l2;
 }
 
 // checks internally for DT_DEBUG_MEMORY

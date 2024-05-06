@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -138,7 +138,7 @@ void gui_update(dt_lib_module_t *self)
 
   // first we want to make sure the list of images to act on has changed
   // this is not the case if mouse hover change but still stay in selection for ex.
-  if(imgs && d->last_act_on && g_list_length(imgs) == g_list_length(d->last_act_on))
+  if(imgs && d->last_act_on && dt_list_length_equal(imgs, d->last_act_on))
   {
     gboolean changed = FALSE;
     GList *l = d->last_act_on;

@@ -882,7 +882,7 @@ void process(struct dt_iop_module_t *self,
 #endif
   for(size_t k = 0; k < npixels; k++)
   {
-    const float *const restrict pix_in = __builtin_assume_aligned(in + k * 4, 16);
+    const float *const restrict pix_in = DT_IS_ALIGNED_PIXEL(in + k * 4);
     float *const restrict uv = UV + k * 2;
 
     // Convert to XYZ D65
@@ -923,8 +923,8 @@ void process(struct dt_iop_module_t *self,
     {
       const size_t k = (size_t)row * owidth + col;
 
-      const float *const restrict pix_in = __builtin_assume_aligned(in + k * 4, 16);
-      float *const restrict pix_out = __builtin_assume_aligned(out + k * 4, 16);
+      const float *const restrict pix_in = DT_IS_ALIGNED_PIXEL(in + k * 4);
+      float *const restrict pix_out = DT_IS_ALIGNED_PIXEL(out + k * 4);
       float *const restrict corrections_out = corrections + k * 2;
 
       float *const restrict uv = UV + k * 2;
@@ -986,7 +986,7 @@ void process(struct dt_iop_module_t *self,
     for(size_t k = 0; k < npixels; k++)
     {
       const float *const restrict corrections_out = corrections + k * 2;
-      float *const restrict pix_out = __builtin_assume_aligned(out + k * 4, 16);
+      float *const restrict pix_out = DT_IS_ALIGNED_PIXEL(out + k * 4);
 
       // Apply the corrections
       pix_out[0] += corrections_out[0]; // WARNING: hue is an offset
@@ -1016,7 +1016,7 @@ void process(struct dt_iop_module_t *self,
 #endif
     for(size_t k = 0; k < npixels; k++)
     {
-      float *const restrict pix_out = __builtin_assume_aligned(out + k * 4, 16);
+      float *const restrict pix_out = DT_IS_ALIGNED_PIXEL(out + k * 4);
       const float *const restrict corrections_out = corrections + k * 2;
 
       const float val = pix_out[2] * B_norm;
@@ -2457,7 +2457,7 @@ void gui_init(struct dt_iop_module_t *self)
     (dt_ui_resize_wrap(NULL,
                        0,
                        "plugins/darkroom/colorequal/graphheight"));
-                       
+
   g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
   dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(g->area), &_action_def_coloreq);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("double-click to reset the curve\nmiddle click to toggle sliders visibility\nalt+scroll to change page"));

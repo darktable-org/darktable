@@ -284,7 +284,7 @@
     </type>
     <default>on import</default>
     <shortdescription>create XMP files</shortdescription>
-    <longdescription>XMP sidecar files hold information about all your development steps to allow flawless re-importing of image files.\n\ndepending on the selected mode sidecar files will be created:\n - 'never'\n - 'on import': immediately after importing the image\n - 'after edit': after any user change on the image or adding tags.</longdescription>
+    <longdescription>XMP sidecar files hold information about all your development steps to allow flawless re-importing of image files.\n\ndepending on the selected mode sidecar files will be created:\n - 'never': all development information will be stored only in the library database\n - 'on import': immediately after importing the image\n - 'after edit': after any user change on the image or adding tags.</longdescription>
   </dtconfig>
   <dtconfig prefs="storage" section="XMP">
     <name>compress_xmp_tags</name>
@@ -522,7 +522,7 @@
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/filtering/num_rules</name>
-    <type>int</type>
+    <type min="1" max="12">int</type>
     <default>3</default>
     <shortdescription>nb of rules by default</shortdescription>
     <longdescription></longdescription>
@@ -1645,7 +1645,7 @@
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/collect/num_rules</name>
-    <type>int</type>
+    <type min="1" max="10">int</type>
     <default>1</default>
     <shortdescription/>
     <longdescription/>

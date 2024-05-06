@@ -152,6 +152,8 @@ void dt_iop_image_copy(float *const __restrict__ out,
 #ifdef _OPENMP
   if(nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
   {
+    float *const outv __attribute__((aligned(16))) = out;
+    const float *const inv __attribute__((aligned(16))) = in;
     // we can gain a little by using a small number of threads in
     // parallel, but not much since the memory bus quickly saturates
     // (basically, each core can saturate a memory channel, so a
@@ -160,18 +162,18 @@ void dt_iop_image_copy(float *const __restrict__ out,
     const int nthreads = MIN(dt_get_num_threads(), parallel_imgop_maxthreads);
     // determine the number of 4-float vectors to be processed by each thread
     const size_t chunksize = (((nfloats + nthreads - 1) / nthreads) + 3) / 4;
-#pragma omp parallel for simd aligned(in, out : 16) default(none) \
-    dt_omp_firstprivate(in, out, nfloats, chunksize, nthreads) \
-    schedule(simd:static) num_threads(nthreads)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(inv, outv, nfloats, chunksize, nthreads) \
+    schedule(static) num_threads(nthreads)
     for(size_t chunk = 0; chunk < nthreads; chunk++)
     {
       const size_t limit = MIN(4*(chunk+1)*chunksize, nfloats);
       const size_t limit4 = limit & ~3;
       for(size_t k = 4 * chunk * chunksize; k < limit4; k += 4)
-        copy_pixel_nontemporal(out + k, in + k);
+        copy_pixel_nontemporal(outv + k, inv + k);
       // handle any leftover pixels in the final slice
       for(size_t k = 0; k < (limit & 3); k++)
-        out[k + limit4] = in[k + limit4];
+        outv[k + limit4] = inv[k + limit4];
     }
     return;
   }

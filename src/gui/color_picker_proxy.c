@@ -135,8 +135,8 @@ void dt_iop_color_picker_reset(dt_iop_module_t *module,
 }
 
 static void _backtransform_box(const int num,
-                              const float *in,
-                              float *out)
+                               const float *in,
+                               float *out)
 {
   dt_develop_t *dev = darktable.develop;
   const float wd = MAX(1, dev->preview_pipe->iwidth);
@@ -151,14 +151,15 @@ static void _backtransform_box(const int num,
                             box ? htp * in[3] : 0.0f };
   dt_dev_distort_backtransform(dev, fbox, num);
 
-  out[0] = fbox[0] / wd;
-  out[1] = fbox[1] / ht;
+  out[0] = CLIP(fbox[0] / wd);
+  out[1] = CLIP(fbox[1] / ht);
   if(box)
   {
-    out[2] = fbox[2] / wd;
-    out[3] = fbox[3] / ht;
+    out[2] = CLIP(fbox[2] / wd);
+    out[3] = CLIP(fbox[3] / ht);
   }
 }
+
 static void _init_picker(dt_iop_color_picker_t *picker,
                          dt_iop_module_t *module,
                          const dt_iop_color_picker_flags_t flags,
@@ -227,9 +228,8 @@ static gboolean _color_picker_callback_button_press(GtkWidget *button,
       if(   self->pick_box[0] == 0.0f && self->pick_box[1] == 0.0f
          && self->pick_box[2] == 1.0f && self->pick_box[3] == 1.0f)
       {
-        dt_boundingbox_t area = { 0.01f, 0.01f, 0.99f, 0.99f };
-        _backtransform_box(2, area, self->pick_box);
-
+        dt_boundingbox_t reset = { 0.02f, 0.02f, 0.98f, 0.98f };
+        _backtransform_box(2, reset, self->pick_box);
       }
       dt_lib_colorpicker_set_box_area(darktable.lib, self->pick_box);
     }
@@ -345,14 +345,17 @@ static void _iop_color_picker_pickerdata_ready_callback(gpointer instance,
     {
       if(module->color_picker_apply)
       {
-        dt_print_pipe(DT_DEBUG_PIPE, "color picker apply",
-          pipe, module, DT_DEVICE_NONE, NULL, NULL,
-          "%s%s.%s%s. point=%.3f - %.3f. area=%.3f - %.3f / %.3f - %.3f\n",
-          picker->flags & DT_COLOR_PICKER_POINT ? " point" : "",
-          picker->flags & DT_COLOR_PICKER_AREA  ? " area" : "",
-          picker->flags & DT_COLOR_PICKER_DENOISE ? " denoise" : "",
-          picker->flags & DT_COLOR_PICKER_IO ? " output" : "",
-          picker->pick_pos[0], picker->pick_pos[1], picker->pick_box[0], picker->pick_box[1], picker->pick_box[2], picker->pick_box[3]);
+        dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_PICKER,
+                      "color picker apply",
+                      pipe, module, DT_DEVICE_NONE, NULL, NULL,
+                      "%s%s.%s%s. point=%.3f - %.3f. area=%.3f - %.3f / %.3f - %.3f\n",
+                      picker->flags & DT_COLOR_PICKER_POINT ? " point" : "",
+                      picker->flags & DT_COLOR_PICKER_AREA  ? " area" : "",
+                      picker->flags & DT_COLOR_PICKER_DENOISE ? " denoise" : "",
+                      picker->flags & DT_COLOR_PICKER_IO ? " output" : "",
+                      picker->pick_pos[0], picker->pick_pos[1],
+                      picker->pick_box[0], picker->pick_box[1],
+                      picker->pick_box[2], picker->pick_box[3]);
 
         module->color_picker_apply(module, picker->colorpick, pipe);
       }
@@ -376,8 +379,9 @@ static void _color_picker_proxy_preview_pipe_callback(gpointer instance,
   dt_lib_module_t *module = darktable.lib->proxy.colorpicker.module;
   if(module)
   {
-    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "picker update callback",
-      NULL, NULL, DT_DEVICE_NONE, NULL, NULL, "\n");
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_PICKER | DT_DEBUG_VERBOSE,
+                  "picker update callback",
+                  NULL, NULL, DT_DEVICE_NONE, NULL, NULL, "\n");
 
     // pixelpipe may have run because sample area changed or an iop,
     // regardless we want to the colorpicker lib, which also can

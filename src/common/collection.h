@@ -96,6 +96,9 @@ typedef enum dt_collection_properties_t
   DT_COLLECTION_PROP_TAG,
   DT_COLLECTION_PROP_COLORLABEL,
   DT_COLLECTION_PROP_METADATA,
+
+  //  keep DT_COLLECTION_PROP_GROUPING to avoid breaking all presets based on
+  //  filters defined after GROUPING here.
   DT_COLLECTION_PROP_GROUPING = DT_COLLECTION_PROP_METADATA + DT_METADATA_NUMBER,
   DT_COLLECTION_PROP_LOCAL_COPY,
 
@@ -115,7 +118,9 @@ typedef enum dt_collection_properties_t
   DT_COLLECTION_PROP_WHITEBALANCE,
   DT_COLLECTION_PROP_FLASH,
   DT_COLLECTION_PROP_EXPOSURE_PROGRAM,
-  DT_COLLECTION_PROP_METERING_MODE
+  DT_COLLECTION_PROP_METERING_MODE,
+
+  DT_COLLECTION_PROP_GROUP_ID
 } dt_collection_properties_t;
 
 typedef enum dt_collection_change_t

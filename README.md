@@ -64,8 +64,10 @@ Requirements
 
 *32-bit platforms are not officially supported - they might or might not work.*
 
-*Windows support is still young and suffers from bugs that do not affect Linux. If possible,
-prefer using darktable on Linux.*
+*Both darktable and the libraries it uses are developed on the Linux platform.
+Therefore, other platforms MAY have additional bugs that are not present in the Linux version.
+In addition, for example, on the Windows platform, printing support is not currently implemented.
+So we recommend, if you have a choice of platform, to use darktable on Linux.*
 
 ### Hardware
 
@@ -164,6 +166,7 @@ Required dependencies (minimum version):
 * GLib 2.56
 * SQLite 3.15 *(but 3.24 or newer strongly recommended)*
 * Exiv2 0.27.2 *(but at least 0.27.4 built with ISO BMFF support needed for Canon CR3 raw import)*
+* pugixml 1.5
 
 Required dependencies (no version requirement):
 * Lensfun *(for automatic lens correction)* (Note: alpha 0.3.95 and git master branch are not supported)

@@ -24,7 +24,7 @@ You are strongly advised to take a backup first.
 
 #### Important note: to make sure that darktable can keep on supporting the raw file format for your camera, *please* read [this post](https://discuss.pixls.us/t/raw-samples-wanted/5420?u=lebedevri) on how/what raw samples you can contribute to ensure that we have the *full* raw sample set for your camera under CC0 license!
 
-Since darktable 4.4:
+Since darktable 4.6:
 
 - ??? commits to darktable+rawspeed
 - ??? pull requests handled
@@ -42,7 +42,11 @@ The following is a summary of the main features added to darktable
 4.8. Please see the user manual for more details of the individual
 changes (where available).
 
-- Two new modules have been introduced to support images composition.
+- Introduced the color equalizer module to control
+  hue/lightness/saturation based on colors.  This is a (partial)
+  scene-referred replacement for the legacy color zones module.
+
+- Two new modules have been introduced to support image composition.
 
   - Enlarge Canvas : As the name imply this module can be used to add
     areas on the left, right, top or bottom of the image. The new area
@@ -67,6 +71,10 @@ changes (where available).
   get by exporting in "high quality resampling" mode.
 
 ## Performance Improvements
+
+- Rewrote the clustering code in map view for dramatically faster
+  performance on large collections (mapping should now be usable with
+  more than one million geotagged images selected).
 
 ## Other Changes
 
@@ -121,6 +129,17 @@ changes (where available).
   correct white balancing. (Some google pixel cameras for
   example). Requires re-reading exif metadata.
 
+- Improved efficiency of the quick access panel by allowing modules to
+  be reset and presets to be applied without opening the full module.
+  Added more controls by default to further reduce the need to leave
+  the panel while editing.
+
+- Added more collection types and filters for flash, white balance,
+  exposure program, metering mode and image grouping.
+
+  Removed the old image grouping collection type and filter which gave
+  confusing results.
+
 ## Bug Fixes
 
 - Fix copy of multiple instances to ensure the proper order is applied
@@ -154,21 +173,30 @@ changes (where available).
 
 ### API Version
 
-- API version is now 9.2.0
+- API version is now 9.3.0
 
 ### Bug Fixes
 
-- Fixed `scripts_installer` to handle user names with spaces on Windows.
-
-- Fixed a wrong behaviour when double-clicking on the navigation menu
-  in the map module.
-
 ### Add action support for Lua
-
 
 ### Other Lua changes
 
-- Allow access to image `change_timestamp`.
+- Upgraded internal Lua to 5.4.6
+
+- Added duplicate_image_with_history function to darktable.database
+
+- button widget - added halign member to horizontally position the label
+
+- button widget - added image member to use an image as the button label
+
+- button widget - added image_align to horizontally position the image
+
+- box widget - added expand member to control cells being expanded to fill the with of the box
+
+- box widget - added fill member to control if the widgets fill the cell
+
+- box widget - added padding member to control padding size of the cells
+
 
 ## Notes
 
@@ -197,6 +225,7 @@ changes (where available).
 
 - Minimum libpng version 1.5.x is now required
 - Bump Exiv2 requirement to 0.27.2
+- Minimum pugixml version 1.5 is now required
 
 ### Optional
 
@@ -226,13 +255,12 @@ changes (where available).
 
 ### Missing Compression Mode Support
 
-- Adobe enhanced DNGs (JPEG XL flavor)
 - Apple ProRAW DNGs
-- CinemaDNG lossless (Blackmagic, some DJI, etc.)
+- CinemaDNG lossless (Blackmagic, some DJI, etc.) and lossy (Blackmagic)
+- DNG 1.7 using JPEG XL (Adobe enhanced, Samsung Expert RAW)
 - Fujifilm lossy RAFs
 - Nikon high efficiency NEFs
 - OM System 14-bit high resolution ORFs
-- Samsung Expert RAW DNGs (JPEG XL flavor)
 - Sony downsized lossless ARWs ("M" for full-frame, "S" for full-frame & APS-C)
 
 ### Suspended Support
@@ -242,7 +270,6 @@ Support for the following cameras is suspended because no samples are available 
 - Creo/Leaf Aptus 22(LF3779)/Hasselblad H1
 - Fujifilm FinePix S9600fd
 - Fujifilm IS-1
-- GoPro FUSION
 - Kodak EasyShare Z980
 - Leaf Aptus-II 5(LI300059)/Mamiya 645 AFD
 - Leaf Credo 60

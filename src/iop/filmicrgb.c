@@ -1142,7 +1142,7 @@ inline static void inpaint_noise(const float *const in, const float *const mask,
       const size_t idx = i * width + j;
       const size_t index = idx * 4;
       const float weight = mask[idx];
-      const float *const restrict pix_in = __builtin_assume_aligned(in + index, 16);
+      const float *const restrict pix_in = DT_IS_ALIGNED_PIXEL(in + index);
       dt_aligned_pixel_t noise = { 0.f };
       dt_aligned_pixel_t sigma = { 0.f };
       const int DT_ALIGNED_ARRAY flip[4] = { TRUE, FALSE, TRUE, FALSE };
@@ -1179,9 +1179,9 @@ inline static void wavelets_reconstruct_RGB(const float *const restrict HF, cons
     const float alpha = mask[k / 4];
 
     // cache RGB wavelets scales just to be sure the compiler doesn't reload them
-    const float *const restrict HF_c = __builtin_assume_aligned(HF + k, 16);
-    const float *const restrict LF_c = __builtin_assume_aligned(LF + k, 16);
-    const float *const restrict TT_c = __builtin_assume_aligned(texture + k, 16);
+    const float *const restrict HF_c = DT_IS_ALIGNED_PIXEL(HF + k);
+    const float *const restrict LF_c = DT_IS_ALIGNED_PIXEL(LF + k);
+    const float *const restrict TT_c = DT_IS_ALIGNED_PIXEL(texture + k);
 
     // synthesize the max of all RGB channels texture as a flat texture term for the whole pixel
     // this is useful if only 1 or 2 channels are clipped, so we transfer the valid/sharpest texture on the other
@@ -1257,9 +1257,9 @@ static inline void wavelets_reconstruct_ratios(const float *const restrict HF,
     const float alpha = mask[k / 4];
 
     // cache RGB wavelets scales just to be sure the compiler doesn't reload them
-    const float *const restrict HF_c = __builtin_assume_aligned(HF + k, 16);
-    const float *const restrict LF_c = __builtin_assume_aligned(LF + k, 16);
-    const float *const restrict TT_c = __builtin_assume_aligned(texture + k, 16);
+    const float *const restrict HF_c = DT_IS_ALIGNED_PIXEL(HF + k);
+    const float *const restrict LF_c = DT_IS_ALIGNED_PIXEL(LF + k);
+    const float *const restrict TT_c = DT_IS_ALIGNED_PIXEL(texture + k);
 
     // synthesize the max of all RGB channels texture as a flat texture term for the whole pixel
     // this is useful if only 1 or 2 channels are clipped, so we transfer the valid/sharpest texture on the other

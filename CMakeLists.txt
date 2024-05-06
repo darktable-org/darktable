@@ -392,15 +392,6 @@ if(USE_XMLLINT)
   endif(${Xmllint_BIN} STREQUAL "Xmllint_BIN-NOTFOUND")
 endif(USE_XMLLINT)
 
-find_program(exiftool_BIN exiftool)
-if(${exiftool_BIN} STREQUAL "exiftool_BIN-NOTFOUND")
-  message(STATUS "Missing exiftool")
-  set(HAVE_EXIFTOOL 0)
-else()
-  message(STATUS "Found exiftool")
-  set(HAVE_EXIFTOOL 1)
-endif()
-
 # done with looking for programs
 message(STATUS "All external programs found")
 

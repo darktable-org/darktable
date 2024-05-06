@@ -574,8 +574,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   if(!dt_iop_have_required_input_format(4, self, piece->colors, ivoid, ovoid, roi_in, roi_out))
     return;
 
-  const float *const restrict in = __builtin_assume_aligned(ivoid, 64);
-  float *const restrict out = __builtin_assume_aligned(ovoid, 64);
+  const float *const restrict in = DT_IS_ALIGNED(ivoid);
+  float *const restrict out = DT_IS_ALIGNED(ovoid);
 
   // Init the blur kernel
   const int radius = MAX(roundf(p->radius / scale), 2);

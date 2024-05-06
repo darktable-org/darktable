@@ -1489,17 +1489,17 @@ __kernel void blendop_highlights_mask
   if(ch == 1)
   {
     const float a = fmax(MININ, read_imagef(in, sampleri, (int2)(icol, irow)).x);
-    const float b = read_imagef(out, sampleri, (int2)(x, y)).x;
-    r = b / a;
+    const float b = read_imagef(out, sampleri, (int2)(x, y)).x / a;
+    r = 10.0f * (b - 1.0f);
   }
   else
   {
     const float4 a = fmax(MININ, read_imagef(in, sampleri, (int2)(icol, irow)));
     const float4 b = read_imagef(out, sampleri, (int2)(x, y)) / a;
-    r = fmax(b.w, fmax(b.x, b.y));
+    r = 10.0f * (fmax(b.w, fmax(b.x, b.y)) - 1.0f);
   }
 
-  write_imagef(mask_out, (int2)(x, y), m * clamp(r * r - 1.0f, 0.0f, 1.0f));
+  write_imagef(mask_out, (int2)(x, y), m * clamp(r*r, 0.0f, 2.0f));
 }
 #undef MININ
 
