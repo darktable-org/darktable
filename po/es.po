@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 4.7\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-03 00:18-0600\n"
-"PO-Revision-Date: 2024-05-03 20:48-0600\n"
+"POT-Creation-Date: 2024-05-05 22:55-0600\n"
+"PO-Revision-Date: 2024-05-06 00:30-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -14,174 +14,174 @@ msgstr ""
 "X-Poedit-Bookmarks: -1,1170,-1,-1,-1,-1,-1,-1,-1,-1\n"
 "X-Generator: Poedit 3.2.2\n"
 
-#: ../build/bin/conf_gen.h:174
+#: ../build/bin/conf_gen.h:90
 msgctxt "preferences"
 msgid "first instance"
 msgstr "Primera instancia"
 
-#: ../build/bin/conf_gen.h:175 ../build/bin/preferences_gen.h:7890
+#: ../build/bin/conf_gen.h:91 ../build/bin/preferences_gen.h:7890
 msgctxt "preferences"
 msgid "last instance"
 msgstr "Última instancia"
 
-#: ../build/bin/conf_gen.h:252 ../build/bin/conf_gen.h:346
-#: ../build/bin/conf_gen.h:356 ../build/bin/conf_gen.h:1209
-#: ../build/bin/conf_gen.h:1225 ../build/bin/conf_gen.h:1245
+#: ../build/bin/conf_gen.h:183 ../build/bin/conf_gen.h:289
+#: ../build/bin/conf_gen.h:299 ../build/bin/conf_gen.h:1264
+#: ../build/bin/conf_gen.h:1280 ../build/bin/conf_gen.h:1302
 #: ../build/bin/preferences_gen.h:4711 ../build/bin/preferences_gen.h:4849
 msgctxt "preferences"
 msgid "never"
 msgstr "Nunca"
 
-#: ../build/bin/conf_gen.h:253
+#: ../build/bin/conf_gen.h:184
 msgctxt "preferences"
 msgid "once a month"
 msgstr "Una vez por mes"
 
-#: ../build/bin/conf_gen.h:254 ../build/bin/preferences_gen.h:7106
+#: ../build/bin/conf_gen.h:185 ../build/bin/preferences_gen.h:7106
 msgctxt "preferences"
 msgid "once a week"
 msgstr "Una vez por semana"
 
-#: ../build/bin/conf_gen.h:255
+#: ../build/bin/conf_gen.h:186
 msgctxt "preferences"
 msgid "once a day"
 msgstr "Una vez al día"
 
-#: ../build/bin/conf_gen.h:256
+#: ../build/bin/conf_gen.h:187
 msgctxt "preferences"
 msgid "on close"
 msgstr "Al cerrar"
 
-#: ../build/bin/conf_gen.h:287 ../build/bin/conf_gen.h:1202
-#: ../build/bin/conf_gen.h:1218 ../build/bin/conf_gen.h:1246
+#: ../build/bin/conf_gen.h:223 ../build/bin/conf_gen.h:1257
+#: ../build/bin/conf_gen.h:1273 ../build/bin/conf_gen.h:1303
 msgctxt "preferences"
 msgid "small"
 msgstr "Reducido"
 
-#: ../build/bin/conf_gen.h:288 ../build/bin/conf_gen.h:399
+#: ../build/bin/conf_gen.h:224 ../build/bin/conf_gen.h:346
 #: ../build/bin/preferences_gen.h:6066 ../build/bin/preferences_gen.h:6187
 msgctxt "preferences"
 msgid "default"
 msgstr "Preestablecido"
 
-#: ../build/bin/conf_gen.h:289 ../build/bin/conf_gen.h:2884
+#: ../build/bin/conf_gen.h:225 ../build/bin/conf_gen.h:3096
 msgctxt "preferences"
 msgid "large"
 msgstr "Extenso"
 
-#: ../build/bin/conf_gen.h:347
+#: ../build/bin/conf_gen.h:290
 msgctxt "preferences"
 msgid "after edit"
 msgstr "Después de editar"
 
-#: ../build/bin/conf_gen.h:348 ../build/bin/preferences_gen.h:7192
+#: ../build/bin/conf_gen.h:291 ../build/bin/preferences_gen.h:7192
 msgctxt "preferences"
 msgid "on import"
 msgstr "Al importar"
 
-#: ../build/bin/conf_gen.h:357 ../build/bin/conf_gen.h:1201
-#: ../build/bin/conf_gen.h:1217 ../build/bin/conf_gen.h:3305
+#: ../build/bin/conf_gen.h:300 ../build/bin/conf_gen.h:1256
+#: ../build/bin/conf_gen.h:1272 ../build/bin/conf_gen.h:3563
 #: ../build/bin/preferences_gen.h:5608
 msgctxt "preferences"
 msgid "always"
 msgstr "Siempre"
 
-#: ../build/bin/conf_gen.h:358 ../build/bin/preferences_gen.h:7227
+#: ../build/bin/conf_gen.h:301 ../build/bin/preferences_gen.h:7227
 msgctxt "preferences"
 msgid "only large entries"
 msgstr "Solo entradas extensas"
 
-#: ../build/bin/conf_gen.h:384
+#: ../build/bin/conf_gen.h:330
 msgctxt "preferences"
 msgid "sensitive"
 msgstr "diferenciar"
 
-#: ../build/bin/conf_gen.h:385 ../build/bin/preferences_gen.h:8101
+#: ../build/bin/conf_gen.h:331 ../build/bin/preferences_gen.h:8101
 msgctxt "preferences"
 msgid "insensitive"
 msgstr "indistinto"
 
-#: ../build/bin/conf_gen.h:400
+#: ../build/bin/conf_gen.h:347
 msgctxt "preferences"
 msgid "multiple GPUs"
 msgstr "Múltiples GPU"
 
 # Ignorar advertencia: en el texto original GPU va en mayúsculas.
-#: ../build/bin/conf_gen.h:401
+#: ../build/bin/conf_gen.h:348
 msgctxt "preferences"
 msgid "very fast GPU"
 msgstr "GPU muy rápido"
 
-#: ../build/bin/conf_gen.h:731 ../build/bin/preferences_gen.h:8260
+#: ../build/bin/conf_gen.h:720 ../build/bin/preferences_gen.h:8260
 msgctxt "preferences"
 msgid "import time"
 msgstr "Fecha de importación"
 
-#: ../build/bin/conf_gen.h:732
+#: ../build/bin/conf_gen.h:721
 msgctxt "preferences"
 msgid "folder name"
 msgstr "Nombre de carpeta"
 
-#: ../build/bin/conf_gen.h:740
+#: ../build/bin/conf_gen.h:729
 msgctxt "preferences"
 msgid "RGB"
 msgstr "RGB"
 
-#: ../build/bin/conf_gen.h:741
+#: ../build/bin/conf_gen.h:730
 msgctxt "preferences"
 msgid "Lab"
 msgstr "Lab"
 
-#: ../build/bin/conf_gen.h:742
+#: ../build/bin/conf_gen.h:731
 msgctxt "preferences"
 msgid "LCh"
 msgstr "LCh"
 
-#: ../build/bin/conf_gen.h:743
+#: ../build/bin/conf_gen.h:732
 msgctxt "preferences"
 msgid "HSL"
 msgstr "HSL"
 
-#: ../build/bin/conf_gen.h:744
+#: ../build/bin/conf_gen.h:733
 msgctxt "preferences"
 msgid "Hex"
 msgstr "Hex"
 
-#: ../build/bin/conf_gen.h:745 ../build/bin/conf_gen.h:1886
-#: ../build/bin/conf_gen.h:2548 ../build/bin/conf_gen.h:2860
-#: ../build/bin/conf_gen.h:3141
+#: ../build/bin/conf_gen.h:734 ../build/bin/conf_gen.h:2028
+#: ../build/bin/conf_gen.h:2748 ../build/bin/conf_gen.h:3071
+#: ../build/bin/conf_gen.h:3374
 msgctxt "preferences"
 msgid "none"
 msgstr "Ninguno"
 
-#: ../build/bin/conf_gen.h:753
+#: ../build/bin/conf_gen.h:742
 msgctxt "preferences"
 msgid "mean"
 msgstr "promedio"
 
-#: ../build/bin/conf_gen.h:754
+#: ../build/bin/conf_gen.h:743
 msgctxt "preferences"
 msgid "min"
 msgstr "mín."
 
-#: ../build/bin/conf_gen.h:755
+#: ../build/bin/conf_gen.h:744
 msgctxt "preferences"
 msgid "max"
 msgstr "máx."
 
-#: ../build/bin/conf_gen.h:943
+#: ../build/bin/conf_gen.h:963
 msgid "select only new pictures"
 msgstr "seleccionar sólo imágenes nuevas"
 
-#: ../build/bin/conf_gen.h:944
+#: ../build/bin/conf_gen.h:964
 msgid "only select images that have not already been imported"
 msgstr "Sólo se seleccionan las imágenes que aún no han sido importadas"
 
-#: ../build/bin/conf_gen.h:949
+#: ../build/bin/conf_gen.h:970
 msgid "ignore non-raw images"
 msgstr "únicamente imágenes en bruto"
 
-#: ../build/bin/conf_gen.h:950
+#: ../build/bin/conf_gen.h:971
 msgid ""
 "if enabled, only raw files will be allowed to import. non-raw files will not "
 "be visible in the dialog and will not be imported."
@@ -189,55 +189,55 @@ msgstr ""
 "Si se habilita, se mostrarán sólo las imágenes en bruto. Cualquier otro "
 "formato de imagen se ocultará para omitir su importación."
 
-#: ../build/bin/conf_gen.h:955
+#: ../build/bin/conf_gen.h:977
 msgid "apply metadata"
 msgstr "establecer metadatos"
 
-#: ../build/bin/conf_gen.h:956
+#: ../build/bin/conf_gen.h:978
 msgid "apply some metadata to all newly imported images."
 msgstr "Establecer ciertos metadatos a todas las imágenes importadas."
 
-#: ../build/bin/conf_gen.h:961
+#: ../build/bin/conf_gen.h:984
 msgid "recursive directory"
 msgstr "recursivo"
 
-#: ../build/bin/conf_gen.h:962
+#: ../build/bin/conf_gen.h:985
 msgid "recursive directory traversal when importing filmrolls"
 msgstr "Hacer un recorrido recursivo de los directorios al importar carretes"
 
-#: ../build/bin/conf_gen.h:967
+#: ../build/bin/conf_gen.h:991
 msgid "creator to be applied when importing"
 msgstr "Establecer autor al importar"
 
-#: ../build/bin/conf_gen.h:973
+#: ../build/bin/conf_gen.h:998
 msgid "publisher to be applied when importing"
 msgstr "Establecer editor al importar"
 
-#: ../build/bin/conf_gen.h:979
+#: ../build/bin/conf_gen.h:1005
 msgid "rights to be applied when importing"
 msgstr "Establecer derechos al importar"
 
-#: ../build/bin/conf_gen.h:985
+#: ../build/bin/conf_gen.h:1012
 msgid "comma separated tags to be applied when importing"
 msgstr "Establecer etiquetas separadas por comas al importar"
 
-#: ../build/bin/conf_gen.h:991
+#: ../build/bin/conf_gen.h:1019
 msgid "import tags from XMP"
 msgstr "importar etiquetas desde el XMP"
 
-#: ../build/bin/conf_gen.h:1021
+#: ../build/bin/conf_gen.h:1047
 msgid "initial rating"
 msgstr "puntuación inicial"
 
-#: ../build/bin/conf_gen.h:1022
+#: ../build/bin/conf_gen.h:1048
 msgid "initial star rating for all images when importing a filmroll"
 msgstr "Puntuación inicial para todas las imágenes al importar carretes"
 
-#: ../build/bin/conf_gen.h:1027
+#: ../build/bin/conf_gen.h:1054
 msgid "ignore EXIF rating"
 msgstr "ignorar la puntuación Exif"
 
-#: ../build/bin/conf_gen.h:1028
+#: ../build/bin/conf_gen.h:1055
 msgid ""
 "ignore EXIF rating. if not set and EXIF rating is found, it overrides "
 "'initial rating'"
@@ -245,19 +245,19 @@ msgstr ""
 "Si existe una puntuación en los datos Exif y la casilla está desmarcada, se "
 "anulará el valor indicado en «Puntuación inicial»"
 
-#: ../build/bin/conf_gen.h:1033
+#: ../build/bin/conf_gen.h:1061
 msgid "import job"
 msgstr "importar código de trabajo"
 
-#: ../build/bin/conf_gen.h:1034
+#: ../build/bin/conf_gen.h:1062
 msgid "name of the import job"
 msgstr "Nombre del código de trabajo"
 
-#: ../build/bin/conf_gen.h:1039
+#: ../build/bin/conf_gen.h:1068
 msgid "override today's date"
 msgstr "Anular la fecha de hoy"
 
-#: ../build/bin/conf_gen.h:1040
+#: ../build/bin/conf_gen.h:1069
 msgid ""
 "type a date in the form: YYYY:MM:DD[ hh:mm:ss[.sss]] if you want to override "
 "the current date/time used when expanding variables:\n"
@@ -269,160 +269,160 @@ msgstr ""
 "$(YEAR), $(MONTH), $(DAY), $(HOUR), $(MINUTE), $(SECONDS) $(MSEC).\n"
 "En caso contrario, dejar el campo vacío."
 
-#: ../build/bin/conf_gen.h:1045
+#: ../build/bin/conf_gen.h:1075
 msgid "keep this window open"
 msgstr "Mantener esta ventana abierta"
 
-#: ../build/bin/conf_gen.h:1046
+#: ../build/bin/conf_gen.h:1076
 msgid "keep this window open to run several imports"
 msgstr "Mantenga esta ventana abierta para realizar varias importaciones"
 
-#: ../build/bin/conf_gen.h:1203 ../build/bin/conf_gen.h:1219
-#: ../build/bin/conf_gen.h:1247
+#: ../build/bin/conf_gen.h:1258 ../build/bin/conf_gen.h:1274
+#: ../build/bin/conf_gen.h:1304
 msgctxt "preferences"
 msgid "VGA"
 msgstr "VGA"
 
-#: ../build/bin/conf_gen.h:1204 ../build/bin/conf_gen.h:1220
-#: ../build/bin/conf_gen.h:1248 ../build/bin/preferences_gen.h:4746
+#: ../build/bin/conf_gen.h:1259 ../build/bin/conf_gen.h:1275
+#: ../build/bin/conf_gen.h:1305 ../build/bin/preferences_gen.h:4746
 msgctxt "preferences"
 msgid "720p"
 msgstr "720p"
 
-#: ../build/bin/conf_gen.h:1205 ../build/bin/conf_gen.h:1221
-#: ../build/bin/conf_gen.h:1249
+#: ../build/bin/conf_gen.h:1260 ../build/bin/conf_gen.h:1276
+#: ../build/bin/conf_gen.h:1306
 msgctxt "preferences"
 msgid "1080p"
 msgstr "1080p"
 
-#: ../build/bin/conf_gen.h:1206 ../build/bin/conf_gen.h:1222
-#: ../build/bin/conf_gen.h:1250
+#: ../build/bin/conf_gen.h:1261 ../build/bin/conf_gen.h:1277
+#: ../build/bin/conf_gen.h:1307
 msgctxt "preferences"
 msgid "WQXGA"
 msgstr "WQXGA"
 
-#: ../build/bin/conf_gen.h:1207 ../build/bin/conf_gen.h:1223
-#: ../build/bin/conf_gen.h:1251
+#: ../build/bin/conf_gen.h:1262 ../build/bin/conf_gen.h:1278
+#: ../build/bin/conf_gen.h:1308
 msgctxt "preferences"
 msgid "4K"
 msgstr "4K"
 
-#: ../build/bin/conf_gen.h:1208 ../build/bin/conf_gen.h:1224
-#: ../build/bin/conf_gen.h:1252
+#: ../build/bin/conf_gen.h:1263 ../build/bin/conf_gen.h:1279
+#: ../build/bin/conf_gen.h:1309
 msgctxt "preferences"
 msgid "5K"
 msgstr "5K"
 
-#: ../build/bin/conf_gen.h:1284
+#: ../build/bin/conf_gen.h:1345
 msgctxt "preferences"
 msgid "off"
 msgstr "Apagado"
 
-#: ../build/bin/conf_gen.h:1285
+#: ../build/bin/conf_gen.h:1346
 msgctxt "preferences"
 msgid "hardness (relative)"
 msgstr "Dureza (relativa)"
 
-#: ../build/bin/conf_gen.h:1286
+#: ../build/bin/conf_gen.h:1347
 msgctxt "preferences"
 msgid "hardness (absolute)"
 msgstr "Dureza (absoluta)"
 
-#: ../build/bin/conf_gen.h:1287
+#: ../build/bin/conf_gen.h:1348
 msgctxt "preferences"
 msgid "opacity (relative)"
 msgstr "Opacidad (relativa)"
 
-#: ../build/bin/conf_gen.h:1288
+#: ../build/bin/conf_gen.h:1349
 msgctxt "preferences"
 msgid "opacity (absolute)"
 msgstr "Opacidad (absoluta)"
 
-#: ../build/bin/conf_gen.h:1289
+#: ../build/bin/conf_gen.h:1350
 msgctxt "preferences"
 msgid "brush size (relative)"
 msgstr "Tamaño del pincel (relativo)"
 
-#: ../build/bin/conf_gen.h:1297
+#: ../build/bin/conf_gen.h:1358
 msgctxt "preferences"
 msgid "low"
 msgstr "Bajo"
 
-#: ../build/bin/conf_gen.h:1298
+#: ../build/bin/conf_gen.h:1359
 msgctxt "preferences"
 msgid "medium"
 msgstr "Medio"
 
-#: ../build/bin/conf_gen.h:1299
+#: ../build/bin/conf_gen.h:1360
 msgctxt "preferences"
 msgid "high"
 msgstr "Alto"
 
-#: ../build/bin/conf_gen.h:1319 ../build/bin/preferences_gen.h:5369
+#: ../build/bin/conf_gen.h:1382 ../build/bin/preferences_gen.h:5369
 msgctxt "preferences"
 msgid "false color"
 msgstr "Color falso"
 
-#: ../build/bin/conf_gen.h:1320
+#: ../build/bin/conf_gen.h:1383
 msgctxt "preferences"
 msgid "grayscale"
 msgstr "escala de grises"
 
-#: ../build/bin/conf_gen.h:1334
+#: ../build/bin/conf_gen.h:1398
 msgctxt "preferences"
 msgid "top left"
 msgstr "Parte superior izquierda"
 
-#: ../build/bin/conf_gen.h:1335
+#: ../build/bin/conf_gen.h:1399
 msgctxt "preferences"
 msgid "top right"
 msgstr "Parte superior derecha"
 
-#: ../build/bin/conf_gen.h:1336
+#: ../build/bin/conf_gen.h:1400
 msgctxt "preferences"
 msgid "top center"
 msgstr "Parte superior central"
 
-#: ../build/bin/conf_gen.h:1337 ../build/bin/preferences_gen.h:5181
+#: ../build/bin/conf_gen.h:1401 ../build/bin/preferences_gen.h:5181
 msgctxt "preferences"
 msgid "bottom"
 msgstr "Parte inferior"
 
-#: ../build/bin/conf_gen.h:1338
+#: ../build/bin/conf_gen.h:1402
 msgctxt "preferences"
 msgid "hidden"
 msgstr "Oculto"
 
-#: ../build/bin/conf_gen.h:1848
+#: ../build/bin/conf_gen.h:1992
 msgid "show OSD"
 msgstr "mostrar OSD"
 
-#: ../build/bin/conf_gen.h:1849
+#: ../build/bin/conf_gen.h:1993
 msgid "toggle the visibility of the map overlays"
 msgstr "Cambiar la visibilidad del mapa superpuesto"
 
-#: ../build/bin/conf_gen.h:1854 ../src/libs/map_settings.c:119
+#: ../build/bin/conf_gen.h:1999 ../src/libs/map_settings.c:119
 msgid "filtered images"
 msgstr "imágenes filtradas"
 
-#: ../build/bin/conf_gen.h:1855
+#: ../build/bin/conf_gen.h:2000
 msgid "when set limit the images drawn to the current filmstrip"
 msgstr ""
 "Cuando está activada, limita las imágenes mostradas en la tira de imágenes"
 
-#: ../build/bin/conf_gen.h:1862
+#: ../build/bin/conf_gen.h:2006
 msgid "max images"
 msgstr "límite máximo"
 
-#: ../build/bin/conf_gen.h:1863
+#: ../build/bin/conf_gen.h:2007
 msgid "the maximum number of image thumbnails drawn on the map"
 msgstr "Cantidad máxima de miniaturas mostradas en el mapa"
 
-#: ../build/bin/conf_gen.h:1870
+#: ../build/bin/conf_gen.h:2013
 msgid "group size factor"
 msgstr "factor del tamaño de grupo"
 
-#: ../build/bin/conf_gen.h:1871
+#: ../build/bin/conf_gen.h:2014
 msgid ""
 "increase or decrease the spatial size of images groups on the map. can "
 "influence the calculation time"
@@ -430,11 +430,11 @@ msgstr ""
 "Aumentar o disminuir el tamaño espacial de los grupos de imágenes en el "
 "mapa. El valor podría afectar el tiempo de cálculo."
 
-#: ../build/bin/conf_gen.h:1878
+#: ../build/bin/conf_gen.h:2020
 msgid "min images per group"
 msgstr "cantidad mínima por grupo"
 
-#: ../build/bin/conf_gen.h:1879
+#: ../build/bin/conf_gen.h:2021
 msgid ""
 "the minimum number of images to set up an images group. can influence the "
 "calculation time."
@@ -442,21 +442,21 @@ msgstr ""
 "La cantidad mínima de imágenes que conformarán un grupo. Repercute en la "
 "velocidad de cálculo."
 
-#: ../build/bin/conf_gen.h:1884
+#: ../build/bin/conf_gen.h:2026
 msgctxt "preferences"
 msgid "thumbnail"
 msgstr "Miniatura"
 
-#: ../build/bin/conf_gen.h:1885
+#: ../build/bin/conf_gen.h:2027
 msgctxt "preferences"
 msgid "count"
 msgstr "Contador"
 
-#: ../build/bin/conf_gen.h:1888
+#: ../build/bin/conf_gen.h:2030
 msgid "thumbnail display"
 msgstr "visualización de miniaturas"
 
-#: ../build/bin/conf_gen.h:1889
+#: ../build/bin/conf_gen.h:2031
 msgid ""
 "three options are available: images thumbnails, only the count of images of "
 "the group or nothing"
@@ -464,269 +464,269 @@ msgstr ""
 "Existen tres opciones disponibles: miniaturas, sólo el recuento de imágenes "
 "del grupo o ninguno"
 
-#: ../build/bin/conf_gen.h:1900
+#: ../build/bin/conf_gen.h:2044
 msgid "max polygon points"
 msgstr "máximo de puntos de polígono"
 
-#: ../build/bin/conf_gen.h:1901
+#: ../build/bin/conf_gen.h:2045
 msgid ""
 "limit the number of points imported with polygon in find location module"
 msgstr ""
 "Limita el número de puntos del polígono importado en el módulo de «buscar "
 "ubicación»"
 
-#: ../build/bin/conf_gen.h:2191 ../build/bin/preferences_gen.h:5293
+#: ../build/bin/conf_gen.h:2379 ../build/bin/preferences_gen.h:5293
 msgctxt "preferences"
 msgid "original"
 msgstr "Original"
 
-#: ../build/bin/conf_gen.h:2192
+#: ../build/bin/conf_gen.h:2380
 msgctxt "preferences"
 msgid "to 1/2"
 msgstr "Reducir a 1/2"
 
-#: ../build/bin/conf_gen.h:2193
+#: ../build/bin/conf_gen.h:2381
 msgctxt "preferences"
 msgid "to 1/3"
 msgstr "Reducir a 1/3"
 
-#: ../build/bin/conf_gen.h:2194
+#: ../build/bin/conf_gen.h:2382
 msgctxt "preferences"
 msgid "to 1/4"
 msgstr "Reducir a 1/4"
 
-#: ../build/bin/conf_gen.h:2214 ../build/bin/conf_gen.h:2224
+#: ../build/bin/conf_gen.h:2404 ../build/bin/conf_gen.h:2414
 msgctxt "preferences"
 msgid "bilinear"
 msgstr "Bilineal"
 
-#: ../build/bin/conf_gen.h:2215 ../build/bin/conf_gen.h:2225
+#: ../build/bin/conf_gen.h:2405 ../build/bin/conf_gen.h:2415
 #: ../build/bin/preferences_gen.h:5811
 msgctxt "preferences"
 msgid "bicubic"
 msgstr "Bicúbico"
 
-#: ../build/bin/conf_gen.h:2216 ../build/bin/conf_gen.h:2226
+#: ../build/bin/conf_gen.h:2406 ../build/bin/conf_gen.h:2416
 msgctxt "preferences"
 msgid "lanczos2"
 msgstr "Lanczos2"
 
-#: ../build/bin/conf_gen.h:2227 ../build/bin/preferences_gen.h:5846
+#: ../build/bin/conf_gen.h:2417 ../build/bin/preferences_gen.h:5846
 msgctxt "preferences"
 msgid "lanczos3"
 msgstr "Lanczos3"
 
-#: ../build/bin/conf_gen.h:2547 ../build/bin/conf_gen.h:3308
+#: ../build/bin/conf_gen.h:2747 ../build/bin/conf_gen.h:3566
 #: ../build/bin/preferences_gen.h:7000
 msgctxt "preferences"
 msgid "auto"
 msgstr "Automático"
 
-#: ../build/bin/conf_gen.h:2549
+#: ../build/bin/conf_gen.h:2749
 msgctxt "preferences"
 msgid "libsecret"
 msgstr "Libsecret"
 
-#: ../build/bin/conf_gen.h:2550
+#: ../build/bin/conf_gen.h:2750
 msgctxt "preferences"
 msgid "kwallet"
 msgstr "Kwallet"
 
-#: ../build/bin/conf_gen.h:2551
+#: ../build/bin/conf_gen.h:2751
 msgctxt "preferences"
 msgid "apple_keychain"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:2552
+#: ../build/bin/conf_gen.h:2752
 msgctxt "preferences"
 msgid "windows_credentials"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:2770
+#: ../build/bin/conf_gen.h:2977
 msgctxt "preferences"
 msgid "vectorscope"
 msgstr "vectorscopio"
 
-#: ../build/bin/conf_gen.h:2771
+#: ../build/bin/conf_gen.h:2978
 msgctxt "preferences"
 msgid "waveform"
 msgstr "Oscilograma"
 
-#: ../build/bin/conf_gen.h:2772
+#: ../build/bin/conf_gen.h:2979
 msgctxt "preferences"
 msgid "RGB parade"
 msgstr "Canales paralelos RGB"
 
-#: ../build/bin/conf_gen.h:2773
+#: ../build/bin/conf_gen.h:2980
 msgctxt "preferences"
 msgid "histogram"
 msgstr "Histograma"
 
-#: ../build/bin/conf_gen.h:2781
+#: ../build/bin/conf_gen.h:2988
 msgctxt "preferences"
 msgid "left"
 msgstr "izquierdo"
 
-#: ../build/bin/conf_gen.h:2782 ../build/bin/preferences_gen.h:7587
+#: ../build/bin/conf_gen.h:2989 ../build/bin/preferences_gen.h:7587
 msgctxt "preferences"
 msgid "right"
 msgstr "derecho"
 
-#: ../build/bin/conf_gen.h:2790 ../build/bin/conf_gen.h:2827
+#: ../build/bin/conf_gen.h:2997 ../build/bin/conf_gen.h:3034
 msgctxt "preferences"
 msgid "logarithmic"
 msgstr "Logarítmico"
 
-#: ../build/bin/conf_gen.h:2791 ../build/bin/conf_gen.h:2828
+#: ../build/bin/conf_gen.h:2998 ../build/bin/conf_gen.h:3035
 msgctxt "preferences"
 msgid "linear"
 msgstr "Lineal"
 
-#: ../build/bin/conf_gen.h:2799
+#: ../build/bin/conf_gen.h:3006
 msgctxt "preferences"
 msgid "horizontal"
 msgstr "horizontal"
 
-#: ../build/bin/conf_gen.h:2800
+#: ../build/bin/conf_gen.h:3007
 msgctxt "preferences"
 msgid "vertical"
 msgstr "vertical"
 
-#: ../build/bin/conf_gen.h:2808
+#: ../build/bin/conf_gen.h:3015
 msgctxt "preferences"
 msgid "overlaid"
 msgstr "Superpuesto"
 
-#: ../build/bin/conf_gen.h:2809
+#: ../build/bin/conf_gen.h:3016
 msgctxt "preferences"
 msgid "parade"
 msgstr "Canales paralelos"
 
-#: ../build/bin/conf_gen.h:2817
+#: ../build/bin/conf_gen.h:3024
 msgctxt "preferences"
 msgid "u*v*"
 msgstr "u*v*"
 
-#: ../build/bin/conf_gen.h:2818
+#: ../build/bin/conf_gen.h:3025
 msgctxt "preferences"
 msgid "AzBz"
 msgstr "AzBz"
 
-#: ../build/bin/conf_gen.h:2819
+#: ../build/bin/conf_gen.h:3026
 msgctxt "preferences"
 msgid "RYB"
 msgstr "RYB"
 
-#: ../build/bin/conf_gen.h:2861
+#: ../build/bin/conf_gen.h:3072
 msgctxt "preferences"
 msgid "monochromatic"
 msgstr "monocromático"
 
-#: ../build/bin/conf_gen.h:2862
+#: ../build/bin/conf_gen.h:3073
 msgctxt "preferences"
 msgid "analogous"
 msgstr "análogo"
 
-#: ../build/bin/conf_gen.h:2863
+#: ../build/bin/conf_gen.h:3074
 msgctxt "preferences"
 msgid "analogous complementary"
 msgstr "complementario análogo"
 
-#: ../build/bin/conf_gen.h:2864
+#: ../build/bin/conf_gen.h:3075
 msgctxt "preferences"
 msgid "complementary"
 msgstr "complementario"
 
-#: ../build/bin/conf_gen.h:2865
+#: ../build/bin/conf_gen.h:3076
 msgctxt "preferences"
 msgid "split complementary"
 msgstr "complementario adyacente"
 
-#: ../build/bin/conf_gen.h:2866
+#: ../build/bin/conf_gen.h:3077
 msgctxt "preferences"
 msgid "dyad"
 msgstr "diada"
 
-#: ../build/bin/conf_gen.h:2867
+#: ../build/bin/conf_gen.h:3078
 msgctxt "preferences"
 msgid "triad"
 msgstr "triada"
 
-#: ../build/bin/conf_gen.h:2868
+#: ../build/bin/conf_gen.h:3079
 msgctxt "preferences"
 msgid "tetrad"
 msgstr "tétrada"
 
-#: ../build/bin/conf_gen.h:2869
+#: ../build/bin/conf_gen.h:3080
 msgctxt "preferences"
 msgid "square"
 msgstr "cuadrado"
 
-#: ../build/bin/conf_gen.h:2883
+#: ../build/bin/conf_gen.h:3095
 msgctxt "preferences"
 msgid "normal"
 msgstr "normal"
 
-#: ../build/bin/conf_gen.h:2885
+#: ../build/bin/conf_gen.h:3097
 msgctxt "preferences"
 msgid "narrow"
 msgstr "Estrecho"
 
-#: ../build/bin/conf_gen.h:2886
+#: ../build/bin/conf_gen.h:3098
 msgctxt "preferences"
 msgid "line"
 msgstr "lineal"
 
-#: ../build/bin/conf_gen.h:3026
+#: ../build/bin/conf_gen.h:3253
 msgctxt "preferences"
 msgid "mm"
 msgstr "mm"
 
-#: ../build/bin/conf_gen.h:3027
+#: ../build/bin/conf_gen.h:3254
 msgctxt "preferences"
 msgid "cm"
 msgstr "cm"
 
-#: ../build/bin/conf_gen.h:3028
+#: ../build/bin/conf_gen.h:3255
 msgctxt "preferences"
 msgid "inch"
 msgstr "pulgada"
 
-#: ../build/bin/conf_gen.h:3073 ../build/bin/preferences_gen.h:7622
+#: ../build/bin/conf_gen.h:3298 ../build/bin/preferences_gen.h:7622
 msgctxt "preferences"
 msgid "all"
 msgstr "Todas"
 
-#: ../build/bin/conf_gen.h:3074
+#: ../build/bin/conf_gen.h:3299
 msgctxt "preferences"
 msgid "xatom"
 msgstr "XAtom"
 
-#: ../build/bin/conf_gen.h:3075
+#: ../build/bin/conf_gen.h:3300
 msgctxt "preferences"
 msgid "colord"
 msgstr "colord"
 
-#: ../build/bin/conf_gen.h:3138 ../build/bin/preferences_gen.h:5922
+#: ../build/bin/conf_gen.h:3371 ../build/bin/preferences_gen.h:5922
 msgctxt "preferences"
 msgid "scene-referred (filmic)"
 msgstr "Basado en la escena (película rgb)"
 
-#: ../build/bin/conf_gen.h:3139
+#: ../build/bin/conf_gen.h:3372
 msgctxt "preferences"
 msgid "scene-referred (sigmoid)"
 msgstr "Basado en la escena (sigmoidal)"
 
-#: ../build/bin/conf_gen.h:3140
+#: ../build/bin/conf_gen.h:3373
 msgctxt "preferences"
 msgid "display-referred (legacy)"
 msgstr "Basado en la pantalla (heredado)"
 
-#: ../build/bin/conf_gen.h:3235
+#: ../build/bin/conf_gen.h:3488
 msgid "camera time zone"
 msgstr "zona horaria en la cámara"
 
-#: ../build/bin/conf_gen.h:3236
+#: ../build/bin/conf_gen.h:3489
 msgid ""
 "most cameras don't store the time zone in EXIF. give the correct time zone "
 "so the GPX data can be correctly matched"
@@ -734,62 +734,62 @@ msgstr ""
 "La mayoría de las cámaras no almacenan la zona horaria en los datos Exif. "
 "Indique la zona horaria correcta para que coincida con los datos GPX."
 
-#: ../build/bin/conf_gen.h:3247
+#: ../build/bin/conf_gen.h:3501
 msgctxt "preferences"
 msgid "no color"
 msgstr "Sin color"
 
-#: ../build/bin/conf_gen.h:3248
+#: ../build/bin/conf_gen.h:3502
 msgctxt "preferences"
 msgid "illuminant color"
 msgstr "Color del iluminante"
 
-#: ../build/bin/conf_gen.h:3249
+#: ../build/bin/conf_gen.h:3503
 msgctxt "preferences"
 msgid "effect emulation"
 msgstr "Emulación de efecto"
 
-#: ../build/bin/conf_gen.h:3295
+#: ../build/bin/conf_gen.h:3553
 msgctxt "preferences"
 msgid "list"
 msgstr "Lista"
 
-#: ../build/bin/conf_gen.h:3296
+#: ../build/bin/conf_gen.h:3554
 msgctxt "preferences"
 msgid "tabs"
 msgstr "Pestañas"
 
-#: ../build/bin/conf_gen.h:3297
+#: ../build/bin/conf_gen.h:3555
 msgctxt "preferences"
 msgid "columns"
 msgstr "Columnas"
 
-#: ../build/bin/conf_gen.h:3306
+#: ../build/bin/conf_gen.h:3564
 msgctxt "preferences"
 msgid "active"
 msgstr "Dinámico"
 
-#: ../build/bin/conf_gen.h:3307
+#: ../build/bin/conf_gen.h:3565
 msgctxt "preferences"
 msgid "dim"
 msgstr "Atenuado"
 
-#: ../build/bin/conf_gen.h:3309
+#: ../build/bin/conf_gen.h:3567
 msgctxt "preferences"
 msgid "fade"
 msgstr "Desvanecido"
 
-#: ../build/bin/conf_gen.h:3310
+#: ../build/bin/conf_gen.h:3568
 msgctxt "preferences"
 msgid "fit"
 msgstr "Ajustado"
 
-#: ../build/bin/conf_gen.h:3311
+#: ../build/bin/conf_gen.h:3569
 msgctxt "preferences"
 msgid "smooth"
 msgstr "Fluido"
 
-#: ../build/bin/conf_gen.h:3312
+#: ../build/bin/conf_gen.h:3570
 msgctxt "preferences"
 msgid "glide"
 msgstr "Adaptado"
@@ -1979,12 +1979,14 @@ msgid "create XMP files"
 msgstr "Crear archivos XMP"
 
 #: ../build/bin/preferences_gen.h:7195
+#, fuzzy
 msgid ""
 "XMP sidecar files hold information about all your development steps to allow "
 "flawless re-importing of image files.\n"
 "\n"
 "depending on the selected mode sidecar files will be created:\n"
-" - 'never'\n"
+" - 'never': all development information will be stored only in the library "
+"database\n"
 " - 'on import': immediately after importing the image\n"
 " - 'after edit': after any user change on the image or adding tags."
 msgstr ""
@@ -2384,7 +2386,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:8463
 msgid "number of recently attached tags"
-msgstr "número de etiquetas recién añadidas"
+msgstr "Número de etiquetas recién añadidas"
 
 #: ../build/bin/preferences_gen.h:8487
 msgid ""
@@ -3459,9 +3461,8 @@ msgstr "colores saturados"
 
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:218
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:447
-#, fuzzy
 msgid "saturation threshold"
-msgstr "Sólo saturación"
+msgstr "umbral de saturación"
 
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:224
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:451
@@ -10937,7 +10938,7 @@ msgstr "cambiar vistas"
 msgid "tethering"
 msgstr "captura"
 
-#: ../src/gui/gtk.c:1387 ../src/views/map.c:197
+#: ../src/gui/gtk.c:1387 ../src/views/map.c:205
 msgid "map"
 msgstr "mapa"
 
@@ -16538,7 +16539,7 @@ msgstr "Cinemascopio"
 
 #: ../src/iop/crop.c:1116
 msgid "65:24, XPan"
-msgstr ""
+msgstr "65:24, XPan"
 
 #: ../src/iop/crop.c:1649
 msgid "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"
@@ -16652,7 +16653,6 @@ msgstr ""
 "Poner en 1.0 para ignorar bordes."
 
 #: ../src/iop/demosaic.c:1308
-#, fuzzy
 msgid ""
 "contrast threshold for dual demosaic.\n"
 "set to 0.0 for high frequency content\n"
@@ -16660,8 +16660,7 @@ msgid ""
 msgstr ""
 "Umbral de contraste para la doble interpolación cromática.\n"
 "El ajuste a 0.0 favorece las frecuencias altas (detalles).\n"
-"El ajuste a 1.0 favorece las frecuencias bajas (planas).\n"
-"Para visualizar la máscara, pulse el control correspondiente."
+"El ajuste a 1.0 favorece las frecuencias bajas (planas)."
 
 #: ../src/iop/demosaic.c:1314
 #, fuzzy
@@ -19679,9 +19678,9 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/overlay.c:328
-#, fuzzy, c-format
+#, c-format
 msgid "image %d does not exists"
-msgstr "la imagen ya no existe"
+msgstr "La imagen «%d» no existe"
 
 #. TRANSLATORS: This text must be very narrow, check in the GUI that it is not truncated
 #: ../src/iop/overlay.c:756
@@ -20755,13 +20754,12 @@ msgstr "ajuste manual"
 #: ../src/iop/temperature.c:1698
 msgctxt "white balance"
 msgid "camera reference"
-msgstr "neutral"
+msgstr "referencia de la cámara"
 
 #: ../src/iop/temperature.c:1699
-#, fuzzy
 msgctxt "white balance"
 msgid "as shot to reference"
-msgstr "Mostrar preferencias generales"
+msgstr "conforme al disparo y cámara"
 
 #: ../src/iop/temperature.c:2003 ../src/iop/temperature.c:2021
 msgid "green channel coefficient"
@@ -20842,12 +20840,12 @@ msgid "as shot to reference"
 msgstr "Mostrar preferencias generales"
 
 #: ../src/iop/temperature.c:2143
-#, fuzzy
 msgid ""
 "set white balance to as shot and later correct to camera reference point,\n"
 "in most cases it should be D65"
 msgstr ""
-"Ajusta el balance de blancos al punto de referencia de la cámara.\n"
+"Ajusta el balance de blancos acorde al disparo y posteriormente al punto de "
+"referencia de la cámara.\n"
 "Normalmente debería ser D65."
 
 #: ../src/iop/temperature.c:2159
@@ -25138,9 +25136,8 @@ msgid "detach tag"
 msgstr "disociar etiqueta"
 
 #: ../src/libs/tagging.c:1285
-#, fuzzy
 msgid "find tag"
-msgstr "etiqueta redefinida"
+msgstr "buscar etiqueta"
 
 #: ../src/libs/tagging.c:1505
 msgid "delete tag?"
@@ -25830,9 +25827,8 @@ msgid "click to enter culling layout in dynamic mode."
 msgstr "Pulse para activar el modo dinámico de selección"
 
 #: ../src/libs/tools/lighttable.c:326
-#, fuzzy
 msgid "focus detection"
-msgstr "vista previa rápida con detección de enfoque"
+msgstr "detección de enfoque"
 
 #: ../src/libs/tools/lighttable.c:365
 msgid "toggle filemanager layout"
@@ -26341,12 +26337,12 @@ msgstr "reducir opacidad del pincel"
 
 #. undo/redo
 #: ../src/views/darkroom.c:2610 ../src/views/lighttable.c:1275
-#: ../src/views/map.c:2141
+#: ../src/views/map.c:2154
 msgid "undo"
 msgstr "deshacer"
 
 #: ../src/views/darkroom.c:2611 ../src/views/lighttable.c:1276
-#: ../src/views/map.c:2142
+#: ../src/views/map.c:2155
 msgid "redo"
 msgstr "rehacer"
 
@@ -26523,15 +26519,15 @@ msgstr "ampliación máxima"
 msgid "zoom min"
 msgstr "reducción mínima"
 
-#: ../src/views/map.c:2836
+#: ../src/views/map.c:2848
 msgid "[on image] open in darkroom"
 msgstr "[en la imagen] abrir en el cuarto oscuro"
 
-#: ../src/views/map.c:2837
+#: ../src/views/map.c:2849
 msgid "[on map] zoom map"
 msgstr "[en el mapa] mapa de zoom"
 
-#: ../src/views/map.c:2838
+#: ../src/views/map.c:2850
 msgid "move image location"
 msgstr "cambiar la ubicación de la imagen"
 
