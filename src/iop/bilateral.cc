@@ -237,7 +237,7 @@ void process(struct dt_iop_module_t *self,
   else
   {
     for(int k = 0; k < 5; k++) sigma[k] = 1.0f / sigma[k];
-    
+
     const size_t grid_points = (height*sigma[0]) * (width*sigma[1]) * sigma[2] * sigma[3] * sigma[4];
     PermutohedralLattice<5, 4> lattice(width * height, dt_get_num_threads(), grid_points);
 
@@ -328,6 +328,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   tiling->overlap = rad;
   tiling->xalign = 1;
   tiling->yalign = 1;
+  tiling->maxbuf = 1.0f,
   return;
 }
 
