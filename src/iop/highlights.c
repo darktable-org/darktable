@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2010-2023 darktable developers.
+   Copyright (C) 2010-2024 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -766,7 +766,7 @@ void process(struct dt_iop_module_t *self,
       }
       else
       {
-        DT_OMP_FOR(shared(data, piece))
+        DT_OMP_FOR()
         for(int j = 0; j < roi_out->height; j++)
         {
           interpolate_color(ivoid, ovoid, roi_out, 0, 1, j, clips, filters, 0);
@@ -774,7 +774,7 @@ void process(struct dt_iop_module_t *self,
         }
 
 // up/down directions
-        DT_OMP_FOR(shared(data, piece))
+        DT_OMP_FOR()
         for(int i = 0; i < roi_out->width; i++)
         {
           interpolate_color(ivoid, ovoid, roi_out, 1, 1, i, clips, filters, 2);

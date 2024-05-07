@@ -542,7 +542,7 @@ void local_laplacian_internal(
 
     gauss_expand(output[l+1], output[l], pw, ph);
     // go through all coefficients in the upsampled gauss buffer:
-    DT_OMP_FOR(shared(w,h,buf,output,l,gamma,padded) collapse(2))
+    DT_OMP_FOR(collapse(2))
     for(int j=0;j<ph;j++) for(int i=0;i<pw;i++)
     {
       const float v = padded[l][j*pw+i];

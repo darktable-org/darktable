@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -633,7 +633,7 @@ void distort_mask(struct dt_iop_module_t *self,
                   const dt_iop_roi_t *const roi_in,
                   const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
+  const dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
 
   // only crop, no rot fast and sharp path:
   if(!d->flags && d->angle == 0.0 && d->all_off && roi_in->width == roi_out->width && roi_in->height == roi_out->height)
@@ -652,7 +652,7 @@ void distort_mask(struct dt_iop_module_t *self,
     if(d->k_apply == 1)
       keystone_get_matrix(k_space, kxa, kxb, kxc, kxd, kya, kyb, kyc, kyd, &ma, &mb, &md, &me, &mg, &mh);
 
-    DT_OMP_FOR(dt_omp_sharedconst(k_space) shared(d, interpolation, ma, mb, md, me, mg, mh))
+    DT_OMP_FOR(dt_omp_sharedconst(k_space))
     // (slow) point-by-point transformation.
     // TODO: optimize with scanlines and linear steps between?
     for(int j = 0; j < roi_out->height; j++)
@@ -1001,7 +1001,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                          ivoid, ovoid, roi_in, roi_out))
     return; // unsupported format, image has been copied to output and module's trouble flag set
 
-  dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
+  const dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
 
   const int ch = 4;
   const int ch_width = ch * roi_in->width;
@@ -1024,7 +1024,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     if(d->k_apply == 1)
       keystone_get_matrix(k_space, kxa, kxb, kxc, kxd, kya, kyb, kyc, kyd, &ma, &mb, &md, &me, &mg, &mh);
 
-    DT_OMP_FOR(dt_omp_sharedconst(k_space) shared(d, interpolation, ma, mb, md, me, mg, mh))
+    DT_OMP_FOR(dt_omp_sharedconst(k_space))
     // (slow) point-by-point transformation.
     // TODO: optimize with scanlines and linear steps between?
     for(int j = 0; j < roi_out->height; j++)
