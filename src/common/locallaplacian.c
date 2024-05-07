@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2023 darktable developers.
+    Copyright (C) 2016-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -230,7 +230,7 @@ static inline float *ll_pad_input(
   if(b && b->mode == 2)
   { // pad by preview buffer
     // fill regular pixels:
-    DT_OMP_FOR(shared(wd2, ht2) collapse(2))
+    DT_OMP_FOR(collapse(2))
     for(int j=0;j<ht;j++) for(int i=0;i<wd;i++)
       out[(j+max_supp)**wd2+i+max_supp] = input[stride*(wd*j+i)] * 0.01f; // L -> [0,1]
 
@@ -254,26 +254,30 @@ static inline float *ll_pad_input(
       out[*wd2*j+i] = b->pad0[b->pwd*py+px];\
     } } while(0)
     // left border
-    DT_OMP_FOR(shared(wd2, ht2, b) collapse(2))
-    for(int j=max_supp;j<*ht2-max_supp;j++) for(int i=0;i<max_supp;i++)
-      LL_FILL(input[stride*wd*(j-max_supp)]* 0.01f);
+    DT_OMP_FOR(collapse(2))
+    for(int j=max_supp;j<*ht2-max_supp;j++)
+      for(int i=0;i<max_supp;i++)
+        LL_FILL(input[stride*wd*(j-max_supp)]* 0.01f);
     // right border
-    DT_OMP_FOR(shared(wd2, ht2, b) collapse(2))
-    for(int j=max_supp;j<*ht2-max_supp;j++) for(int i=wd+max_supp;i<*wd2;i++)
-      LL_FILL(input[stride*((j-max_supp)*wd+wd-1)] * 0.01f);
+    DT_OMP_FOR(collapse(2))
+    for(int j=max_supp;j<*ht2-max_supp;j++)
+      for(int i=wd+max_supp;i<*wd2;i++)
+        LL_FILL(input[stride*((j-max_supp)*wd+wd-1)] * 0.01f);
     // top border
-    DT_OMP_FOR(shared(wd2, ht2, b) collapse(2))
-    for(int j=0;j<max_supp;j++) for(int i=0;i<*wd2;i++)
-      LL_FILL(out[*wd2*max_supp+i]);
+    DT_OMP_FOR(collapse(2))
+    for(int j=0;j<max_supp;j++)
+      for(int i=0;i<*wd2;i++)
+        LL_FILL(out[*wd2*max_supp+i]);
     // bottom border
-    DT_OMP_FOR(shared(wd2, ht2, b) collapse(2))
-    for(int j=max_supp+ht;j<*ht2;j++) for(int i=0;i<*wd2;i++)
-      LL_FILL(out[*wd2*(max_supp+ht-1)+i]);
+    DT_OMP_FOR(collapse(2))
+    for(int j=max_supp+ht;j<*ht2;j++)
+      for(int i=0;i<*wd2;i++)
+        LL_FILL(out[*wd2*(max_supp+ht-1)+i]);
 #undef LL_FILL
   }
   else
   { // pad by replication:
-    DT_OMP_FOR(shared(wd2, ht2))
+    DT_OMP_FOR()
     for(int j=0;j<ht;j++)
     {
       for(int i=0;i<max_supp;i++)
@@ -556,7 +560,7 @@ void local_laplacian_internal(
       //   output[l][j*pw+i] += ll_laplacian(padded[l+1], padded[l], i, j, pw, ph);
     }
   }
-  DT_OMP_FOR(shared(w,output,buf) collapse(2))
+  DT_OMP_FOR(collapse(2))
   for(int j=0;j<ht;j++) for(int i=0;i<wd;i++)
   {
     out[4*(j*wd+i)+0] = 100.0f * output[0][(j+max_supp)*w+max_supp+i]; // [0,1] -> L

@@ -1,6 +1,6 @@
 /*
  *    This file is part of darktable,
- *    Copyright (C) 2019-2021 darktable developers.
+ *    Copyright (C) 2019-2024 darktable developers.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -185,7 +185,7 @@ cairo_surface_t *cairo_surface_create_from_xyz_data(const float *const image, co
 {
   unsigned char *rgbbuf = (unsigned char *)malloc(sizeof(unsigned char) * height * width * 4);
 
-  DT_OMP_FOR(shared(rgbbuf))
+  DT_OMP_FOR()
   for(int y = 0; y < height; y++)
   {
     const float *iter = image + y * width * 3;
