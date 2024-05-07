@@ -1127,9 +1127,7 @@ DT_OMP_PRAGMA(barrier)
     // to avoid or at least reduce the colour shift caused by raw ca correction we compute the per pixel difference factors
     // of red and blue channel and apply a gaussian blur to them.
     // Then we apply the resulting factors per pixel on the result of raw ca correction
-#ifdef _OPENMP
-#pragma omp parallel for
-#endif
+    DT_OMP_FOR()
     for(int row = 0; row < height; row++)
     {
       const int firstCol = FC(row, 0, filters) & 1;

@@ -1029,18 +1029,16 @@ gboolean distort_transform(dt_iop_module_t *self,
   const float cx = fullwidth * data->cl;
   const float cy = fullheight * data->ct;
 
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(cx, cy, points_count, points, homograph) \
-  schedule(static) if(points_count > 100) aligned(points, homograph:64)
-#endif
+  float *const pts = DT_IS_ALIGNED(points);
+
+  DT_OMP_FOR(if(points_count > 100))
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
-    float DT_ALIGNED_PIXEL pi[3] = { points[i], points[i + 1], 1.0f };
+    float DT_ALIGNED_PIXEL pi[3] = { pts[i], pts[i + 1], 1.0f };
     float DT_ALIGNED_PIXEL po[3];
     mat3mulv(po, (float *)homograph, pi);
-    points[i] = po[0] / po[2] - cx;
-    points[i + 1] = po[1] / po[2] - cy;
+    pts[i] = po[0] / po[2] - cx;
+    pts[i + 1] = po[1] / po[2] - cy;
   }
 
   return TRUE;
@@ -1069,18 +1067,16 @@ gboolean distort_backtransform(dt_iop_module_t *self,
   const float cx = fullwidth * data->cl;
   const float cy = fullheight * data->ct;
 
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(cx, cy, points, points_count, ihomograph) \
-  schedule(static) if(points_count > 100) aligned(ihomograph, points:64)
-#endif
+  float *const pts = DT_IS_ALIGNED(points);
+
+  DT_OMP_FOR(if(points_count > 100))
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
-    float DT_ALIGNED_PIXEL pi[3] = { points[i] + cx, points[i + 1] + cy, 1.0f };
+    float DT_ALIGNED_PIXEL pi[3] = { pts[i] + cx, pts[i + 1] + cy, 1.0f };
     float DT_ALIGNED_PIXEL po[3];
     mat3mulv(po, (float *)ihomograph, pi);
-    points[i] = po[0] / po[2];
-    points[i + 1] = po[1] / po[2];
+    pts[i] = po[0] / po[2];
+    pts[i + 1] = po[1] / po[2];
   }
 
   return TRUE;

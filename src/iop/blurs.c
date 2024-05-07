@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2021-2023 darktable developers.
+    Copyright (C) 2021-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -265,10 +265,7 @@ static inline void create_gauss_kernel(float *const restrict buffer,
   // 2 × 1D convolutions.
   const float radius = (width - 1) / 2.f - 1;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) dt_omp_firstprivate(width, height, buffer, radius) \
-    schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR(collapse(2))
   for(size_t i = 0; i < height; i++)
     for(size_t j = 0; j < width; j++)
     {
@@ -553,11 +550,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   float *const restrict kernel = dt_alloc_align_float(kernel_width * kernel_width);
   build_pixel_kernel(kernel, kernel_width, kernel_width, p);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(roi_out, in, out, kernel, kernel_width, radius) \
-    schedule(simd: static) collapse(2)
-#endif
+  DT_OMP_FOR(collapse(2))
   for(int i = 0; i < roi_out->height; i++)
     for(int j = 0; j < roi_out->width; j++)
     {

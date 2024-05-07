@@ -744,15 +744,12 @@ static int _circle_get_points_source(dt_develop_t *dev,
     {
       const float dx = pts[0] - (*points)[0];
       const float dy = pts[1] - (*points)[1];
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-    dt_omp_firstprivate(points_count, points, dx, dy)              \
-    schedule(static) if(*points_count > 100) aligned(points:64)
-#endif
+      float *const ptsbuf = DT_IS_ALIGNED(*points);
+      DT_OMP_FOR(if(*points_count > 100))
       for(int i = 0; i < *points_count; i++)
       {
-        (*points)[i * 2] += dx;
-        (*points)[i * 2 + 1] += dy;
+        ptsbuf[i * 2] += dx;
+        ptsbuf[i * 2 + 1] += dy;
       }
 
       // we apply the rest of the distortions (those after the module)
@@ -1154,12 +1151,7 @@ static int _circle_get_mask(const dt_iop_module_t *const restrict module,
     * (circle->radius + circle->border) * mindim;
   const float border2 = total2 - radius2;
   const float *const points_y = points + 1;
-#ifdef _OPENMP
-#pragma omp parallel for default(none)  \
-  dt_omp_firstprivate(h, w) \
-  dt_omp_sharedconst(border2, total2, centerx, centery, points, points_y, ptbuffer) \
-  schedule(simd:static) if(h*w > 50000) num_threads(MIN(dt_get_num_threads(), (h*w)/20000))
-#endif
+  DT_OMP_FOR(if(h*w > 50000) num_threads(MIN(dt_get_num_threads(), (h*w)/20000)))
   for(int i = 0 ; i < h*w; i++)
   {
     // find the square of the distance from the center

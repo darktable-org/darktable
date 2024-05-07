@@ -324,17 +324,15 @@ static int _ellipse_get_points_source(dt_develop_t *dev,
     {
       const float dx = pts[0] - (*points)[0];
       const float dy = pts[1] - (*points)[1];
-      (*points)[0] = pts[0];
-      (*points)[1] = pts[1];
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-    dt_omp_firstprivate(points_count, points, dx, dy)              \
-    schedule(static) if(*points_count > 100) aligned(points:64)
-#endif
+      float *const ptsbuf = DT_IS_ALIGNED(*points);
+      ptsbuf[0] = pts[0];
+      ptsbuf[1] = pts[1];
+
+      DT_OMP_FOR(if(*points_count > 100))
       for(int i = 5; i < *points_count; i++)
       {
-        (*points)[i * 2] += dx;
-        (*points)[i * 2 + 1] += dy;
+        ptsbuf[i * 2] += dx;
+        ptsbuf[i * 2 + 1] += dy;
       }
 
       // we apply the rest of the distortions (those after the module)

@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     Copyright (C) 2013-2024 darktable developers.
+
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -122,9 +123,7 @@ static void dt_focus_create_clusters(dt_focus_cluster_t *focus, int frows, int f
   _dt_focus_cdf22_wtf(buffer, 2, wd, ht);
   // go through HH1 and detect sharp clusters:
   memset(focus, 0, sizeof(dt_focus_cluster_t) * fcols * frows);
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(shared)
-#endif
+  DT_OMP_FOR()
   for(int j = 0; j < ht - 1; j += 4)
     for(int i = 0; i < wd - 1; i += 4)
     {
@@ -142,9 +141,7 @@ static void dt_focus_create_clusters(dt_focus_cluster_t *focus, int frows, int f
   {
     memset(focus, 0, sizeof(dt_focus_cluster_t) * fs);
     _dt_focus_cdf22_wtf(buffer, 3, wd, ht);
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(shared)
-#endif
+    DT_OMP_FOR()
     for(int j = 0; j < ht - 1; j += 8)
     {
       for(int i = 0; i < wd - 1; i += 8)
@@ -170,9 +167,7 @@ static void dt_focus_create_clusters(dt_focus_cluster_t *focus, int frows, int f
 
 #if 0 // simple high pass filter, doesn't work on slightly unsharp/high iso images
   memset(focus, 0, sizeof(dt_focus_cluster_t)*fs);
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(shared)
-#endif
+  DT_OMP_FOR()
   for(int j=1;j<ht-1;j++)
   {
     int index = 4*j*wd+4;
