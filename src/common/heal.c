@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2017-2023 darktable developers.
+    Copyright (C) 2017-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -100,7 +100,7 @@ static void _heal_add(const float *const restrict red_buffer, const float *const
   // add one to ensure a padding pixel on the right
   const size_t res_stride = 4 * ((width + 1) / 2);
 
-  DT_OMP_FOR(dt_omp_sharedconst(result_buffer))
+  DT_OMP_FOR()
   for(size_t row = 0; row < height; row++)
   {
     const int parity = row & 1;

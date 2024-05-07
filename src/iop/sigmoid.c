@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020-2023 darktable developers.
+    Copyright (C) 2020-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -586,7 +586,7 @@ void process_loglogistic_rgb_ratio(dt_dev_pixelpipe_iop_t *piece,
   const float contrast_power = module_data->film_power;
   const float skew_power = module_data->paper_power;
 
-  DT_OMP_FOR(dt_omp_sharedconst(in, out))
+  DT_OMP_FOR()
   for(size_t k = 0; k < 4 * npixels; k += 4)
   {
     const float *const restrict pix_in = in + k;
@@ -729,7 +729,7 @@ void process_loglogistic_per_channel(struct dt_develop_t *dev,
   dt_colormatrix_t pipe_to_base, base_to_rendering, rendering_to_pipe;
   _calculate_adjusted_primaries(module_data, pipe_work_profile, base_profile, pipe_to_base, base_to_rendering, rendering_to_pipe);
 
-  DT_OMP_FOR(dt_omp_sharedconst(in, out))
+  DT_OMP_FOR()
   for(size_t k = 0; k < 4 * npixels; k += 4)
   {
     const float *const restrict pix_in = in + k;

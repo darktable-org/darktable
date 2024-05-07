@@ -1050,7 +1050,7 @@ static inline void apply_legacy_curve(
     const float *const unbounded_coeffs)
 {
   const size_t npixels = (size_t)width * height;
-  DT_OMP_FOR(dt_omp_sharedconst(in, out, mul, table, unbounded_coeffs))
+  DT_OMP_FOR()
   for(size_t k = 0; k < 4*npixels; k += 4)
   {
     for(int i = 0; i < 3; i++)
@@ -1079,7 +1079,7 @@ static inline void apply_curve(
     const dt_iop_order_iccprofile_info_t *const work_profile)
 {
   const size_t npixels = (size_t)width * height;
-  DT_OMP_FOR(dt_omp_sharedconst(in, out, mul, table, unbounded_coeffs))
+  DT_OMP_FOR()
   for(size_t k = 0; k < 4*npixels; k += 4)
   {
     float ratio = 1.f;

@@ -453,7 +453,7 @@ static void wavelet_denoise_xtrans(const float *const restrict in, float *const 
 
     // distribute the denoised data back out to the original R/G/B channel, squaring the resulting values to
     // undo the original transform
-    DT_OMP_FOR(dt_omp_sharedconst(out))
+    DT_OMP_FOR()
     for(int row = 0; row < height; row++)
     {
       const float *const restrict fimgp = fimg + (size_t)row * width;

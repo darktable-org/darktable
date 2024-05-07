@@ -445,7 +445,7 @@ void process(
     const float map_origin_v = d->gainmaps[0]->map_origin_v;
     float *const out = (float *const)ovoid;
 
-    DT_OMP_FOR(dt_omp_sharedconst(d))
+    DT_OMP_FOR()
     for(int j = 0; j < roi_out->height; j++)
     {
       const float y_map = CLAMP(((roi_out->y + csy + j) * im_to_rel_y - map_origin_v) * rel_to_map_y, 0, map_h);

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2023 darktable developers.
+    Copyright (C) 2013-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -490,7 +490,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
     const size_t npixels = (size_t)height * width;
 // first get delta L of equalized L minus original image L, scaled to fit into [0 .. 100]
-    DT_OMP_FOR(dt_omp_sharedconst(in, out, data, equalization))
+    DT_OMP_FOR()
     for(size_t k = 0; k < npixels * 4; k += 4)
     {
       const float L = in[k];
@@ -519,9 +519,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     size_t allocsize;
     float *const weight_buf = dt_alloc_perthread(data->n, sizeof(float), &allocsize);
 
-    DT_OMP_PRAGMA(parallel default(none)
-                  dt_omp_firstprivate(npixels, mapio, var_ratio, weight_buf, allocsize)
-                  dt_omp_sharedconst(data, in, out, equalization))
+    DT_OMP_PRAGMA(parallel default(firstprivate))
     {
       // get a thread-private scratch buffer; do this before the actual loop so we don't have to look it up for
       // every single pixel

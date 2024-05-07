@@ -966,7 +966,7 @@ static void apply_round_stamp(const dt_liquify_warp_t *const restrict warp,
   // circle in quadrants and doing only the inside we have to calculate
   // hypotf only for PI / 16 = 0.196 of the stamp area.
   // We don't do octants to avoid false sharing of cache lines between threads.
-  DT_OMP_FOR(dt_omp_sharedconst(center, warp, lookup_table, LOOKUP_OVERSAMPLE, global_map_extent))
+  DT_OMP_FOR(dt_omp_sharedconst(LOOKUP_OVERSAMPLE))
   for(size_t y = 0; y <= iradius; y++)
   {
     const float complex y_i = y * I;

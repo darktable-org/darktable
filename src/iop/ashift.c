@@ -1291,7 +1291,7 @@ static void rgb2grey256(const float *const in,
 {
   const size_t npixels = (size_t)width * height;
 
-  DT_OMP_FOR(dt_omp_sharedconst(in, out))
+  DT_OMP_FOR()
   for(int index = 0; index < npixels; index++)
   {
     out[index] = (0.3f * in[4*index+0]
@@ -1420,7 +1420,7 @@ static gboolean detail_enhance(const float *const in,
   // as colors don't matter we are safe to assume data to be sRGB
 
   // convert RGB input to Lab, use output buffer for intermediate storage
-  DT_OMP_FOR(dt_omp_sharedconst(in, out))
+  DT_OMP_FOR()
   for(size_t index = 0; index < 4*npixels; index += 4)
   {
     dt_aligned_pixel_t XYZ;
@@ -1442,7 +1442,7 @@ static gboolean detail_enhance(const float *const in,
     success = FALSE;
 
   // convert resulting Lab to RGB output
-  DT_OMP_FOR(dt_omp_sharedconst(out))
+  DT_OMP_FOR()
   for(size_t index = 0; index < 4*npixels; index += 4)
   {
     dt_aligned_pixel_t XYZ;
@@ -1461,7 +1461,7 @@ static void gamma_correct(const float *const in,
                           const int height)
 {
   const size_t npixels = (size_t)width * height;
-  DT_OMP_FOR(dt_omp_sharedconst(in, out))
+  DT_OMP_FOR()
   for(int index = 0; index < 4*npixels; index += 4)
   {
     for(int c = 0; c < 3; c++)
