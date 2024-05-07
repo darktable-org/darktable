@@ -87,11 +87,7 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
     return DT_IMAGEIO_CACHE_FULL;
   }
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  schedule(static) \
-  dt_omp_firstprivate(npixels, int_RGBA_buf, mipbuf)
-#endif
+  DT_OMP_PRAGMA(parallel for private(intval, floatval) firstprivate(npixels, int_RGBA_buf, mipbuf))
   for(int i = 0; i < npixels; i++)
   {
     dt_aligned_pixel_t pix = {0.0f, 0.0f, 0.0f, 0.0f};
