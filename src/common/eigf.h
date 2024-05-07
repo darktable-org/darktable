@@ -84,9 +84,7 @@ static inline void eigf_variance_analysis(const float *const restrict guide, // 
   float maxg2 = 0.0f;
   float minmg = 10000000.0f;
   float maxmg = 0.0f;
-  DT_OMP_PRAGMA(parallel for default(firstprivate) schedule(simd:static) \
-                reduction(max:maxg, maxm, maxg2, maxmg)                 \
-                reduction(min:ming, minm, ming2, minmg))
+  DT_OMP_FOR_SIMD(reduction(max:maxg, maxm, maxg2, maxmg) reduction(min:ming, minm, ming2, minmg))
   for(size_t k = 0; k < Ndim; k++)
   {
     const float pixelg = guide[k];
@@ -139,8 +137,7 @@ static inline void eigf_variance_analysis_no_mask(const float *const restrict gu
   float maxg = 0.0f;
   float ming2 = 10000000.0f;
   float maxg2 = 0.0f;
-  DT_OMP_PRAGMA(parallel for default(firstprivate) schedule(simd:static) \
-                reduction(max:maxg, maxg2) reduction(min:ming, ming2))
+  DT_OMP_FOR_SIMD(reduction(max:maxg, maxg2) reduction(min:ming, ming2))
   for(size_t k = 0; k < Ndim; k++)
   {
     const float pixelg = guide[k];

@@ -114,9 +114,7 @@ static void _channel_display_monochrome(const float *const restrict in,
   // yellow; "unused" element enables vectorization
   const dt_aligned_pixel_t mask_color = { 1.0f, 1.0f, 0.0f };
 
-  DT_OMP_PRAGMA(parallel for simd default(none) schedule(static)        \
-                aligned(in, out: 64) aligned(mask_color: 16)            \
-                dt_omp_firstprivate(in,out, buffsize, alpha, mask_color))
+  DT_OMP_FOR_SIMD(aligned(in, out: 64) aligned(mask_color: 16))
   for(size_t j = 0; j < buffsize; j += 4)
   {
     dt_aligned_pixel_t pixel = { in[j + 1], in[j + 1], in[j + 1], in[j + 1] };
@@ -152,8 +150,7 @@ static void _channel_display_false_color(const float *const restrict in,
       }
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_b:
-      DT_OMP_PRAGMA(parallel for simd default(firstprivate) schedule(static)    \
-                    aligned(in, out: 64) aligned(mask_color: 16))
+      DT_OMP_FOR_SIMD(aligned(in, out: 64) aligned(mask_color: 16))
       for(size_t j = 0; j < buffsize; j += 4)
       {
         dt_aligned_pixel_t xyz, pixel;
@@ -167,8 +164,7 @@ static void _channel_display_false_color(const float *const restrict in,
       }
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_R:
-      DT_OMP_PRAGMA(parallel for simd default(firstprivate) schedule(static)    \
-                    aligned(in, out: 64) aligned(mask_color: 16))
+      DT_OMP_FOR_SIMD(aligned(in, out: 64) aligned(mask_color: 16))
       for(size_t j = 0; j < buffsize; j += 4)
       {
         const dt_aligned_pixel_t pixel = { in[j + 1], 0.0f, 0.0f, 0.0f };
@@ -176,8 +172,7 @@ static void _channel_display_false_color(const float *const restrict in,
       }
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_G:
-      DT_OMP_PRAGMA(parallel for simd default(firstprivate) schedule(static)    \
-                    aligned(in, out: 64) aligned(mask_color: 16))
+      DT_OMP_FOR_SIMD(aligned(in, out: 64) aligned(mask_color: 16))
       for(size_t j = 0; j < buffsize; j += 4)
       {
         const dt_aligned_pixel_t pixel = { 0.0f, in[j + 1], 0.0f, 0.0f };
@@ -185,8 +180,7 @@ static void _channel_display_false_color(const float *const restrict in,
       }
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_B:
-      DT_OMP_PRAGMA(parallel for simd default(firstprivate) schedule(static)    \
-                    aligned(in, out: 64) aligned(mask_color: 16))
+      DT_OMP_FOR_SIMD(aligned(in, out: 64) aligned(mask_color: 16))
       for(size_t j = 0; j < buffsize; j += 4)
       {
         const dt_aligned_pixel_t pixel = { 0.0f, 0.0f, in[j + 1], 0.0f };
@@ -196,8 +190,7 @@ static void _channel_display_false_color(const float *const restrict in,
     case DT_DEV_PIXELPIPE_DISPLAY_LCH_C:
     case DT_DEV_PIXELPIPE_DISPLAY_HSL_S:
     case DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_Cz:
-      DT_OMP_PRAGMA(parallel for simd default(firstprivate) schedule(static)    \
-                    aligned(in, out: 64) aligned(mask_color: 16))
+      DT_OMP_FOR_SIMD(aligned(in, out: 64) aligned(mask_color: 16))
       for(size_t j = 0; j < buffsize; j += 4)
       {
         const dt_aligned_pixel_t pixel = { 0.5f, 0.5f * (1.0f - in[j + 1]), 0.5f, 0.0f };
@@ -205,8 +198,7 @@ static void _channel_display_false_color(const float *const restrict in,
       }
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_LCH_h:
-      DT_OMP_PRAGMA(parallel for simd default(firstprivate) schedule(static)    \
-                    aligned(in, out: 64) aligned(mask_color: 16))
+      DT_OMP_FOR_SIMD(aligned(in, out: 64) aligned(mask_color: 16))
       for(size_t j = 0; j < buffsize; j += 4)
       {
         dt_aligned_pixel_t lch = { 65.0f, 37.0f, in[j + 1], 0.0f };
@@ -263,8 +255,7 @@ static void _mask_display(const float *const restrict in,
   // yellow, "unused" element aids vectorization
   const dt_aligned_pixel_t mask_color = { 1.0f, 1.0f, 0.0f };
   const gboolean devel = dt_conf_get_bool("darkroom/ui/develop_mask");
-  DT_OMP_PRAGMA(parallel for simd default(firstprivate) schedule(static) \
-                aligned(in, out: 64) aligned(mask_color: 16))
+  DT_OMP_FOR_SIMD(aligned(in, out: 64) aligned(mask_color: 16))
   for(size_t j = 0; j < buffsize; j+= 4)
   {
     const float gray = devel ? in[j + 3] : (0.3f * in[j + 0] + 0.59f * in[j + 1] + 0.11f * in[j + 2]);
@@ -278,7 +269,7 @@ static void _copy_output(const float *const restrict in,
                          uint8_t *const restrict out,
                          const size_t buffsize)
 {
-  DT_OMP_PRAGMA(parallel for simd default(firstprivate) schedule(static) aligned(in, out: 64))
+  DT_OMP_FOR_SIMD(aligned(in, out: 64))
   for(size_t j = 0; j < buffsize; j += 4)
   {
     // the output of this module is BGR(A) instead of RGBA, so we can't use for_each_channel

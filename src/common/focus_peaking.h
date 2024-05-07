@@ -133,8 +133,7 @@ static inline void dt_focuspeaking(cairo_t *cr, const int buf_width, const int b
   // Compute the gradient mean over the picture
   float TV_sum = 0.0f;
 
-  DT_OMP_PRAGMA(parallel for simd default(firstprivate) schedule(static) \
-                collapse(2) aligned(luma_ds:64) reduction(+:TV_sum))
+  DT_OMP_FOR_SIMD(collapse(2) aligned(luma_ds:64) reduction(+:TV_sum))
   for(size_t i = 2; i < buf_height - 2; ++i)
     for(size_t j = 2; j < buf_width - 2; ++j)
       TV_sum += luma_ds[i * buf_width + j];
@@ -145,8 +144,7 @@ static inline void dt_focuspeaking(cairo_t *cr, const int buf_width, const int b
   // (similar to the standard deviation if we had a gaussian distribution)
   float sigma = 0.0f;
 
-  DT_OMP_PRAGMA(parallel for simd default(firstprivate) schedule(static) \
-                collapse(2) aligned(focus_peaking, luma_ds:64) reduction(+:sigma))
+  DT_OMP_FOR_SIMD(collapse(2) aligned(focus_peaking, luma_ds:64) reduction(+:sigma))
   for(size_t i = 2; i < buf_height - 2; ++i)
     for(size_t j = 2; j < buf_width - 2; ++j)
        sigma += fabsf(luma_ds[i * buf_width + j] - TV_sum);

@@ -1096,7 +1096,7 @@ inline static void inpaint_noise(const float *const in, const float *const mask,
   // this creates "particules" in highlights, that will help the implicit partial derivative equation
   // solver used in wavelets reconstruction to generate texture
 
-  DT_OMP_PRAGMA(parallel for default(firstprivate) schedule(simd:static) collapse(2))
+  DT_OMP_FOR_SIMD(collapse(2))
   for(size_t i = 0; i < height; i++)
     for(size_t j = 0; j < width; j++)
     {
@@ -1139,7 +1139,7 @@ inline static void wavelets_reconstruct_RGB(const float *const restrict HF, cons
                                             const float gamma_comp, const float beta, const float beta_comp,
                                             const float delta, const size_t s, const size_t scales)
 {
-  DT_OMP_PRAGMA(parallel for default(firstprivate) schedule(simd:static))
+  DT_OMP_FOR_SIMD()
   for(size_t k = 0; k < 4 * height * width; k += 4)
   {
     const float alpha = mask[k / 4];
@@ -1212,7 +1212,7 @@ static inline void wavelets_reconstruct_ratios(const float *const restrict HF,
  * Note : ratios close to 1 mean higher spectral purity (more white). Ratios close to 0 mean lower spectral purity
  * (more colorful)
  */
-  DT_OMP_PRAGMA(parallel for default(firstprivate) schedule(simd:static))
+  DT_OMP_FOR_SIMD()
   for(size_t k = 0; k < 4 * height * width; k += 4)
   {
     const float alpha = mask[k / 4];
@@ -1417,7 +1417,7 @@ static inline void filmic_split_v1(const float *const restrict in,
   const dt_aligned_pixel_t output_power
     = { data->output_power, data->output_power, data->output_power, data->output_power };
 
-  DT_OMP_PRAGMA(parallel for default(firstprivate) schedule(simd:static))
+  DT_OMP_FOR_SIMD()
   for(size_t k = 0; k < height * width * 4; k += 4)
   {
     const float *const restrict pix_in = in + k;
@@ -1462,7 +1462,7 @@ static inline void filmic_split_v2_v3(const float *const restrict in,
   const dt_aligned_pixel_t output_power
     = { data->output_power, data->output_power, data->output_power, data->output_power };
 
-  DT_OMP_PRAGMA(parallel for default(firstprivate) schedule(simd:static))
+  DT_OMP_FOR_SIMD()
   for(size_t k = 0; k < height * width * 4; k += 4)
   {
     const float *const restrict pix_in = in + k;
@@ -1504,7 +1504,7 @@ static inline void filmic_chroma_v1(const float *const restrict in, float *const
                                     const dt_iop_filmic_rgb_spline_t spline, const int variant, const size_t width,
                                     const size_t height)
 {
-  DT_OMP_PRAGMA(parallel for default(firstprivate) schedule(simd:static))
+  DT_OMP_FOR_SIMD()
   for(size_t k = 0; k < height * width * 4; k += 4)
   {
     const float *const restrict pix_in = in + k;
@@ -1564,7 +1564,7 @@ static inline void filmic_chroma_v2_v3(const float *const restrict in,
                                        const size_t height,
                                        const dt_iop_filmicrgb_colorscience_type_t colorscience_version)
 {
-  DT_OMP_PRAGMA(parallel for default(firstprivate) schedule(simd:static))
+  DT_OMP_FOR_SIMD()
   for(size_t k = 0; k < 4 * height * width; k += 4)
   {
     const float *const restrict pix_in = in + k;
@@ -1882,7 +1882,7 @@ static inline void filmic_chroma_v4(const float *const restrict in,
   const float norm_min = exp_tonemapping_v2(0.f, data->grey_source, data->black_source, data->dynamic_range);
   const float norm_max = exp_tonemapping_v2(1.f, data->grey_source, data->black_source, data->dynamic_range);
 
-  DT_OMP_PRAGMA(parallel for default(firstprivate) schedule(simd:static))
+  DT_OMP_FOR_SIMD()
   for(size_t k = 0; k < 4 * height * width; k += 4)
   {
     const float *const restrict pix_in = in + k;
@@ -1933,7 +1933,7 @@ static inline void filmic_split_v4(const float *const restrict in,
                                  export_input_matrix_trans, export_output_matrix, export_output_matrix_trans,
                                  work_profile, export_profile);
 
-  DT_OMP_PRAGMA(parallel for default(firstprivate) schedule(simd:static))
+  DT_OMP_FOR_SIMD()
   for(size_t k = 0; k < 4 * height * width; k += 4)
   {
     const float *const restrict pix_in = in + k;
@@ -1985,7 +1985,7 @@ static inline void filmic_v5(const float *const restrict in, float *const restri
   const float norm_min = exp_tonemapping_v2(0.f, data->grey_source, data->black_source, data->dynamic_range);
   const float norm_max = exp_tonemapping_v2(1.f, data->grey_source, data->black_source, data->dynamic_range);
 
-  DT_OMP_PRAGMA(parallel for default(firstprivate) schedule(simd:static))
+  DT_OMP_FOR_SIMD()
   for(size_t k = 0; k < height * width * 4; k += 4)
   {
     const float *const restrict pix_in = in + k;
