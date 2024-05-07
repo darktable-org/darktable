@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2021-2023 darktable developers.
+    Copyright (C) 2021-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -86,9 +86,7 @@ static void _init_lmmse_gamma()
     dt_print(DT_DEBUG_ALWAYS, "[demosaic lmmse] Can't allocate gamma memory\n");
     return;
   }
-#ifdef _OPENMP
-    #pragma omp for
-#endif
+  DT_OMP_PRAGMA(for)
   for(int j = 0; j < 65536; j++)
   {
     const double x = (double)j / 65535.0;
@@ -159,10 +157,7 @@ static void lmmse_demosaic(
 
   const int num_vertical =   1 + (height - 2 * LMMSE_OVERLAP -1) / LMMSE_TILEVALID;
   const int num_horizontal = 1 + (width  - 2 * LMMSE_OVERLAP -1) / LMMSE_TILEVALID;
-#ifdef _OPENMP
-  #pragma omp parallel \
-  dt_omp_firstprivate(width, height, out, in, scaler, revscaler, filters)
-#endif
+  DT_OMP_PRAGMA(parallel firstprivate(width, height, out, in, scaler, revscaler, filters))
   {
     float *qix[6];
     float *buffer = dt_alloc_align_float(DT_LMMSE_TILESIZE * DT_LMMSE_TILESIZE * 6);
@@ -174,9 +169,7 @@ static void lmmse_demosaic(
     }
     memset(buffer, 0, sizeof(float) * DT_LMMSE_TILESIZE * DT_LMMSE_TILESIZE * 6);
 
-#ifdef _OPENMP
-  #pragma omp for schedule(simd:static) collapse(2)
-#endif
+    DT_OMP_PRAGMA(for schedule(simd:static) collapse(2))
     for(int tile_vertical = 0; tile_vertical < num_vertical; tile_vertical++)
     {
       for(int tile_horizontal = 0; tile_horizontal < num_horizontal; tile_horizontal++)
