@@ -533,10 +533,8 @@ struct pair pair_min(struct pair r, struct pair n)
 }
 
 // Define a new reduction operation
-#ifdef _OPENMP
-#pragma omp declare reduction(pairmin:struct pair:omp_out=pair_min(omp_out,omp_in))    \
-  initializer(omp_priv = { FLT_MAX, 0.0f })
-#endif
+DT_OMP_PRAGMA(declare reduction(pairmin:struct pair:omp_out=pair_min(omp_out,omp_in)) \
+              initializer(omp_priv = { FLT_MAX, 0.0f }))
 
 static inline float CCT_reverse_lookup(const float x, const float y)
 {

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2023 darktable developers.
+    Copyright (C) 2019-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -133,11 +133,8 @@ static inline void dt_focuspeaking(cairo_t *cr, const int buf_width, const int b
   // Compute the gradient mean over the picture
   float TV_sum = 0.0f;
 
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-dt_omp_firstprivate(luma_ds, buf_height, buf_width) \
-schedule(static) collapse(2) aligned(luma_ds:64) reduction(+:TV_sum)
-#endif
+  DT_OMP_PRAGMA(parallel for simd default(firstprivate) schedule(static) \
+                collapse(2) aligned(luma_ds:64) reduction(+:TV_sum))
   for(size_t i = 2; i < buf_height - 2; ++i)
     for(size_t j = 2; j < buf_width - 2; ++j)
       TV_sum += luma_ds[i * buf_width + j];
@@ -148,11 +145,8 @@ schedule(static) collapse(2) aligned(luma_ds:64) reduction(+:TV_sum)
   // (similar to the standard deviation if we had a gaussian distribution)
   float sigma = 0.0f;
 
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-dt_omp_firstprivate(focus_peaking, luma_ds, buf_height, buf_width, TV_sum) \
-schedule(static) collapse(2) aligned(focus_peaking, luma_ds:64) reduction(+:sigma)
-#endif
+  DT_OMP_PRAGMA(parallel for simd default(firstprivate) schedule(static) \
+                collapse(2) aligned(focus_peaking, luma_ds:64) reduction(+:sigma))
   for(size_t i = 2; i < buf_height - 2; ++i)
     for(size_t j = 2; j < buf_width - 2; ++j)
        sigma += fabsf(luma_ds[i * buf_width + j] - TV_sum);

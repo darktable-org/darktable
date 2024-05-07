@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -55,11 +55,10 @@ void dt_develop_blendif_raw_make_mask(struct dt_dev_pixelpipe_iop_t *piece, cons
   // get parametric mask (if any) and apply global opacity
   if(d->mask_combine & DEVELOP_COMBINE_INV)
   {
-#ifdef _OPENMP
-#pragma omp parallel for simd schedule(static) default(none) aligned(mask: 64) \
-    dt_omp_firstprivate(mask, buffsize, global_opacity)
-#endif
-    for(size_t x = 0; x < buffsize; x++) mask[x] = global_opacity * (1.0f - mask[x]);
+    DT_OMP_PRAGMA(parallel for simd schedule(static) default(none) aligned(mask: 64) \
+                  dt_omp_firstprivate(mask, buffsize, global_opacity))
+    for(size_t x = 0; x < buffsize; x++)
+      mask[x] = global_opacity * (1.0f - mask[x]);
   }
   else
   {

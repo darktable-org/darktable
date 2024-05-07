@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2018-2023 darktable developers.
+    Copyright (C) 2018-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1295,10 +1295,8 @@ static int compute_channels_factors(const float factors[PIXEL_CHAN],
   // approximation for x = { CHANNELS }
   assert(PIXEL_CHAN == 8);
 
-  #ifdef _OPENMP
-  #pragma omp parallel for simd default(none) schedule(static) \
-    aligned(factors, out, centers_params:64) dt_omp_firstprivate(factors, out, sigma, centers_params)
-  #endif
+  DT_OMP_PRAGMA(parallel for simd default(firstprivate) schedule(static)       \
+                aligned(factors, out, centers_params:64) firstprivate(centers_params))
   for(int i = 0; i < CHANNELS; ++i)
   {
     // Compute the new channels factors; pixel_correction clamps the factors, so we don't
@@ -1427,11 +1425,9 @@ static inline void compute_log_histogram_and_stats(const float *const restrict l
   memset(temp_hist, 0, sizeof(int) * TEMP_SAMPLES);
 
   // Split exposure in bins
-#ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(simd:static) \
-  dt_omp_firstprivate(luminance, num_elem) \
-  reduction(+:temp_hist[:TEMP_SAMPLES])
-#endif
+  DT_OMP_PRAGMA(parallel for default(none) schedule(simd:static)        \
+                dt_omp_firstprivate(luminance, num_elem)                \
+                reduction(+:temp_hist[:TEMP_SAMPLES]))
   for(size_t k = 0; k < num_elem; k++)
   {
     // extended histogram bins between [-10; +6] EV remapped between [0 ; 2 * UI_SAMPLES]
@@ -1522,11 +1518,9 @@ static inline void compute_lut_correction(struct dt_iop_toneequalizer_gui_data_t
   const float *const restrict factors = g->factors;
   const float sigma = g->sigma;
 
-#ifdef _OPENMP
-#pragma omp parallel for simd schedule(static) default(none) \
-  dt_omp_firstprivate(factors, sigma, offset, scaling, LUT) \
-  aligned(LUT, factors:64)
-#endif
+  DT_OMP_PRAGMA(parallel for simd schedule(static) default(none)        \
+                dt_omp_firstprivate(factors, sigma, offset, scaling, LUT) \
+                aligned(LUT, factors:64))
   for(int k = 0; k < UI_SAMPLES; k++)
   {
     // build the inset graph curve LUT

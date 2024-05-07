@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2017-2023 darktable developers.
+    Copyright (C) 2017-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -386,12 +386,9 @@ static float ambient_light(const const_rgb_image img,
   const float *const restrict dark_data = dark_ch.data;
   size_t N_most_hazy_start = size/2;
   size_t N_most_hazy_end = size/2;
-#ifdef _OPENMP
-#pragma omp parallel num_threads(2) default(none)  \
-  dt_omp_firstprivate(size, crit_haze_level, img_data, dark_data, hazy_data) \
-  shared(N_most_hazy_start, N_most_hazy_end)
-#pragma omp sections
-#endif
+  DT_OMP_PRAGMA(parallel num_threads(2) default(firstprivate) \
+                shared(N_most_hazy_start, N_most_hazy_end))
+  DT_OMP_PRAGMA(sections)
   {
   for(size_t i = 0; i < size/2; i++)
     if(dark_data[i] >= crit_haze_level)

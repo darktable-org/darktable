@@ -581,11 +581,8 @@ gboolean distort_backtransform(dt_iop_module_t *self,
   if(d->k_apply == 1)
     keystone_get_matrix(k_space, kxa, kxb, kxc, kxd, kya, kyb, kyc, kyd, &ma, &mb, &md, &me, &mg, &mh);
 
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-    dt_omp_firstprivate(points_count, points, d, factor, k_space, ma, mb, md, me, mg, mh, kxa, kya) \
-    schedule(static) if(points_count > 100) aligned(points:64) aligned(k_space:16)
-#endif
+  DT_OMP_PRAGMA(parallel for simd default(firstprivate)                 \
+                schedule(static) if(points_count > 100) aligned(points:64) aligned(k_space:16))
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
     float pi[2], po[2];

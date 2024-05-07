@@ -427,10 +427,8 @@ static void _develop_blend_process_mask_tone_curve(float *const restrict mask,
   // empirical mask threshold for fully transparent masks
   const float mask_epsilon = 16.0f * FLT_EPSILON;
   const float e = expf(3.f * contrast);
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) schedule(static) aligned(mask:64) \
-    dt_omp_firstprivate(brightness, buffsize, e, mask, mask_epsilon, opacity)
-#endif
+
+  DT_OMP_PRAGMA(parallel for simd default(firstprivate) schedule(static) aligned(mask:64))
   for(size_t k = 0; k < buffsize; k++)
   {
     float x = mask[k] / opacity;
@@ -628,11 +626,8 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
       // invert if required
       if(d->raster_mask_invert)
       {
-#ifdef _OPENMP
-  #pragma omp parallel for simd default(none) aligned(mask, raster_mask:64)\
-        dt_omp_firstprivate(obuffsize, opacity, mask, raster_mask) \
-        schedule(static)
-#endif
+        DT_OMP_PRAGMA(parallel for simd default(firstprivate) aligned(mask, raster_mask:64) \
+                      schedule(static))
         for(size_t i = 0; i < obuffsize; i++)
           mask[i] = (1.0f - raster_mask[i]) * opacity;
       }
@@ -1170,10 +1165,8 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
       // invert if required
       if(d->raster_mask_invert)
       {
-#ifdef _OPENMP
-  #pragma omp parallel for simd default(none) aligned(mask, raster_mask:64)\
-        dt_omp_firstprivate(obuffsize, opacity, mask, raster_mask)
-#endif
+        DT_OMP_PRAGMA(parallel for simd default(firstprivate) aligned(mask, raster_mask:64) \
+                      schedule(static))
         for(size_t i = 0; i < obuffsize; i++)
           mask[i] = (1.0f - raster_mask[i]) * opacity;
       }

@@ -1096,10 +1096,7 @@ inline static void inpaint_noise(const float *const in, const float *const mask,
   // this creates "particules" in highlights, that will help the implicit partial derivative equation
   // solver used in wavelets reconstruction to generate texture
 
-#ifdef _OPENMP
-#pragma omp parallel for default(firstprivate) \
-  schedule(simd:static) collapse(2)
-#endif
+  DT_OMP_PRAGMA(parallel for default(firstprivate) schedule(simd:static) collapse(2))
   for(size_t i = 0; i < height; i++)
     for(size_t j = 0; j < width; j++)
     {

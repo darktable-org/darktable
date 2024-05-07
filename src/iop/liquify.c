@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2023 darktable developers.
+    Copyright (C) 2014-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1277,12 +1277,7 @@ static gboolean _distort_xtransform(dt_iop_module_t *self,
   // compute the extent of all points (all computations are done in RAW coordinate)
   float xmin = FLT_MAX, xmax = FLT_MIN, ymin = FLT_MAX, ymax = FLT_MIN;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(points_count, points, scale) \
-    schedule(simd:static) if(points_count > 100)          \
-    reduction(min:xmin, ymin) reduction(max:xmax, ymax)
-#endif
+  DT_OMP_FOR(if(points_count > 100) reduction(min:xmin, ymin) reduction(max:xmax, ymax))
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
     const float x = points[i] * scale;
