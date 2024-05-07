@@ -7609,7 +7609,7 @@ msgstr[0] "移除 %d 張影像"
 #, c-format
 msgid "not removing image '%s' used as overlay in %d image"
 msgid_plural "not removing image '%s' used as overlay in %d images"
-msgstr[0] "不移除在影像 %d 中作為疊加層的影像 %s"
+msgstr[0] "不移除在影像 %s 中作為疊加層的影像 %d"
 
 #: ../src/control/jobs/control_jobs.c:962
 #, c-format
@@ -7679,7 +7679,7 @@ msgstr[0] "刪除 %d 張影像"
 #, c-format
 msgid "not deleting image '%s' used as overlay in %d image"
 msgid_plural "not deleting image '%s' used as overlay in %d images"
-msgstr[0] "不刪除在影像 %d 中作為疊加層的影像 %s"
+msgstr[0] "不刪除在影像 %s 中作為疊加層的影像 %d"
 
 #: ../src/control/jobs/control_jobs.c:1308
 msgid "failed to parse GPX file"
