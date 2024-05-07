@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -123,7 +123,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const size_t npixels = (size_t)roi_out->width * roi_out->height;
 /* create overexpose image and then blur */
-  DT_OMP_FOR(dt_omp_sharedconst(in, out))
+  DT_OMP_FOR()
   for(size_t k = 0; k < 4 * npixels; k += 4)
   {
     float h, s, l;

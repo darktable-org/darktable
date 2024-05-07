@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2023 darktable developers.
+    Copyright (C) 2019-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1910,7 +1910,7 @@ void process(struct dt_iop_module_t *self,
             // trouble flag has been updated
 
   dt_iop_rgbcurve_data_t *const restrict d = (dt_iop_rgbcurve_data_t *)(piece->data);
- _generate_curve_lut(piece->pipe, d);
+  _generate_curve_lut(piece->pipe, d);
 
   const float xm_L = 1.0f / d->unbounded_coeffs[DT_IOP_RGBCURVE_R][0];
   const float xm_g = 1.0f / d->unbounded_coeffs[DT_IOP_RGBCURVE_G][0];
@@ -1923,7 +1923,7 @@ void process(struct dt_iop_module_t *self,
   const _curve_table_ptr restrict table = d->table;
   const _coeffs_table_ptr restrict unbounded_coeffs = d->unbounded_coeffs;
 
-  DT_OMP_FOR(dt_omp_sharedconst(in, out, table, unbounded_coeffs, d))
+  DT_OMP_FOR()
   for(int y = 0; y < 4*npixels; y += 4)
   {
     if(autoscale == DT_S_SCALE_MANUAL_RGB)

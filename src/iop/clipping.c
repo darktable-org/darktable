@@ -633,7 +633,8 @@ void distort_mask(struct dt_iop_module_t *self,
   const dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
 
   // only crop, no rot fast and sharp path:
-  if(!d->flags && d->angle == 0.0 && d->all_off && roi_in->width == roi_out->width && roi_in->height == roi_out->height)
+  if(!d->flags && d->angle == 0.0 && d->all_off && roi_in->width == roi_out->width &&
+     roi_in->height == roi_out->height)
   {
     dt_iop_image_copy_by_size(out, in, roi_out->width, roi_out->height, 1);
   }
@@ -642,7 +643,8 @@ void distort_mask(struct dt_iop_module_t *self,
     const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
     const float rx = piece->buf_in.width * roi_in->scale;
     const float ry = piece->buf_in.height * roi_in->scale;
-    const dt_boundingbox_t k_space = { d->k_space[0] * rx, d->k_space[1] * ry, d->k_space[2] * rx, d->k_space[3] * ry };
+    const dt_boundingbox_t k_space =
+      { d->k_space[0] * rx, d->k_space[1] * ry, d->k_space[2] * rx, d->k_space[3] * ry };
     const float kxa = d->kxa * rx, kxb = d->kxb * rx, kxc = d->kxc * rx, kxd = d->kxd * rx;
     const float kya = d->kya * ry, kyb = d->kyb * ry, kyc = d->kyc * ry, kyd = d->kyd * ry;
     float ma, mb, md, me, mg, mh;
@@ -1014,7 +1016,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
     const float rx = piece->buf_in.width * roi_in->scale;
     const float ry = piece->buf_in.height * roi_in->scale;
-    const dt_boundingbox_t k_space = { d->k_space[0] * rx, d->k_space[1] * ry, d->k_space[2] * rx, d->k_space[3] * ry };
+    const dt_boundingbox_t k_space =
+      { d->k_space[0] * rx, d->k_space[1] * ry, d->k_space[2] * rx, d->k_space[3] * ry };
     const float kxa = d->kxa * rx, kxb = d->kxb * rx, kxc = d->kxc * rx, kxd = d->kxd * rx;
     const float kya = d->kya * ry, kyb = d->kyb * ry, kyc = d->kyc * ry, kyd = d->kyd * ry;
     float ma, mb, md, me, mg, mh;

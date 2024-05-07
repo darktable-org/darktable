@@ -414,7 +414,7 @@ void process(struct dt_iop_module_t *self,
   const float *const restrict in = (float*)i;
   float *const restrict out = (float*)o;
 
-  DT_OMP_FOR(dt_omp_sharedconst(d, in, out))
+  DT_OMP_FOR()
   for(int k = 0; k < 4*npixels; k += 4)
   {
     const float L_in = in[k] / 100.0f;

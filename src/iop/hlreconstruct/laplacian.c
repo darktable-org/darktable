@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2010-2023 darktable developers.
+   Copyright (C) 2010-2024 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -50,7 +50,7 @@ static void _interpolate_and_mask(const float *const restrict input,
                                   const size_t height)
 {
   // Bilinear interpolation
-  DT_OMP_FOR(dt_omp_sharedconst(input, interpolated, clipping_mask))
+  DT_OMP_FOR()
   for(size_t i = 0; i < height; i++)
     for(size_t j = 0; j < width; j++)
     {
@@ -186,7 +186,7 @@ static void _remosaic_and_replace(const float *const restrict input,
                                   const size_t height)
 {
   // Take RGB ratios and norm, reconstruct RGB and remosaic the image
-  DT_OMP_FOR(dt_omp_sharedconst(output, interpolated, input, clipping_mask))
+  DT_OMP_FOR()
   for(size_t i = 0; i < height; i++)
     for(size_t j = 0; j < width; j++)
     {

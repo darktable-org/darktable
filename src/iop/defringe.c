@@ -171,7 +171,7 @@ static inline void fib_latt(int *const x, int *const y, float radius, int step, 
 void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, const void *const i,
              void *const o, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_defringe_data_t *const d = (dt_iop_defringe_data_t *)piece->data;
+  const dt_iop_defringe_data_t *const d = (dt_iop_defringe_data_t *)piece->data;
   if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, module, piece->colors,
                                          i, o, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
@@ -268,7 +268,7 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
   }
 
   const float use_global_average = MODE_GLOBAL_AVERAGE == d->op_mode;
-  DT_OMP_FOR_SIMD(dt_omp_sharedconst(width, height) reduction(+ : avg_edge_chroma))
+  DT_OMP_FOR_SIMD(reduction(+ : avg_edge_chroma))
   for(size_t j = 0; j < (size_t)height * width * 4; j += 4)
   {
     // edge-detect on color channels
@@ -298,12 +298,7 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
 
   // dynamically/guided scheduled due to possible uneven edge-chroma
   // distribution (thanks to rawtherapee code for this hint!)
-  DT_OMP_PRAGMA(parallel for default(none)                     \
-                dt_omp_firstprivate(ch, in, out, samples_avg, samples_small) \
-                dt_omp_sharedconst(d, width, height)                    \
-                shared(xy_small, xy_avg)                                \
-                firstprivate(thresh, avg_edge_chroma)                   \
-                schedule(dynamic,3))
+  DT_OMP_PRAGMA(parallel for default(firstprivate) schedule(dynamic,3))
   for(int v = 0; v < height; v++)
   {
     const size_t row_above = (size_t)MAX(0, (v-1)) * width * ch;

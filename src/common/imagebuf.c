@@ -495,7 +495,7 @@ void dt_iop_image_linear_blend(float *const restrict buf,
     // system with quad-channel memory won't be able to take advantage
     // of more than four cores).
     const int nthreads = MIN(dt_get_num_threads(), parallel_imgop_maxthreads);
-    DT_OMP_FOR_SIMD(num_threads(nthreads) dt_omp_sharedconst(other) aligned(buf:16))
+    DT_OMP_FOR_SIMD(num_threads(nthreads) aligned(buf:16))
     for(size_t k = 0; k < nfloats; k++)
       buf[k] = lambda*buf[k] + lambda_1*other[k];
     return;

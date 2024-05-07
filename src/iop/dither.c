@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2023 darktable developers.
+    Copyright (C) 2012-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -560,9 +560,7 @@ static void process_random(
 
   unsigned int *const tea_states = alloc_tea_states(dt_get_num_threads());
 
-  DT_OMP_PRAGMA(parallel default(none)
-                dt_omp_firstprivate(dither, height, width, ivoid, ovoid)
-                dt_omp_sharedconst(tea_states))
+  DT_OMP_PRAGMA(parallel default(firstprivate))
   {
     // get a pointer to each thread's private buffer *outside* the for loop, to avoid a function call per iteration
     unsigned int *const tea_state = get_tea_state(tea_states,dt_get_thread_num());

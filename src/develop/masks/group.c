@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2023 darktable developers.
+    Copyright (C) 2013-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -489,7 +489,7 @@ static void _combine_masks_union(float *const restrict dest,
   }
   else
   {
-    DT_OMP_FOR_SIMD(dt_omp_sharedconst(dest, newmask) aligned(dest, newmask : 64))
+    DT_OMP_FOR_SIMD(aligned(dest, newmask : 64))
     for(int index = 0; index < npixels; index++)
     {
       const float mask = opacity * newmask[index];
@@ -506,7 +506,7 @@ static void _combine_masks_intersect(float *const restrict dest,
 {
   if(inverted)
   {
-    DT_OMP_FOR_SIMD(dt_omp_sharedconst(dest, newmask) aligned(dest, newmask : 64))
+    DT_OMP_FOR_SIMD(aligned(dest, newmask : 64))
     for(int index = 0; index < npixels; index++)
     {
       const float mask = opacity * (1.0f - newmask[index]);
@@ -515,7 +515,7 @@ static void _combine_masks_intersect(float *const restrict dest,
   }
   else
   {
-    DT_OMP_FOR_SIMD(dt_omp_sharedconst(dest, newmask) aligned(dest, newmask : 64))
+    DT_OMP_FOR_SIMD(aligned(dest, newmask : 64))
     for(int index = 0; index < npixels; index++)
     {
       const float mask = opacity * newmask[index];
@@ -539,7 +539,7 @@ static void _combine_masks_difference(float *const restrict dest,
 {
   if(inverted)
   {
-    DT_OMP_FOR_SIMD(dt_omp_sharedconst(dest, newmask) aligned(dest, newmask : 64))
+    DT_OMP_FOR_SIMD(aligned(dest, newmask : 64))
     for(int index = 0; index < npixels; index++)
     {
       const float mask = opacity * (1.0f - newmask[index]);
@@ -548,7 +548,7 @@ static void _combine_masks_difference(float *const restrict dest,
   }
   else
   {
-    DT_OMP_FOR_SIMD(dt_omp_sharedconst(dest, newmask) aligned(dest, newmask : 64))
+    DT_OMP_FOR_SIMD(aligned(dest, newmask : 64))
     for(int index = 0; index < npixels; index++)
     {
       const float mask = opacity * newmask[index];
@@ -565,7 +565,7 @@ static void _combine_masks_sum(float *const restrict dest,
 {
   if(inverted)
   {
-    DT_OMP_FOR_SIMD(dt_omp_sharedconst(dest, newmask) aligned(dest, newmask : 64))
+    DT_OMP_FOR_SIMD(aligned(dest, newmask : 64))
     for(int index = 0; index < npixels; index++)
     {
       const float mask = opacity * (1.0f - newmask[index]);
@@ -574,7 +574,7 @@ static void _combine_masks_sum(float *const restrict dest,
   }
   else
   {
-    DT_OMP_FOR_SIMD(dt_omp_sharedconst(dest, newmask) aligned(dest, newmask : 64))
+    DT_OMP_FOR_SIMD(aligned(dest, newmask : 64))
     for(int index = 0; index < npixels; index++)
     {
       const float mask = opacity * newmask[index];
@@ -591,7 +591,7 @@ static void _combine_masks_exclusion(float *const restrict dest,
 {
   if(inverted)
   {
-    DT_OMP_FOR_SIMD(dt_omp_sharedconst(dest, newmask) aligned(dest, newmask : 64))
+    DT_OMP_FOR_SIMD(aligned(dest, newmask : 64))
     for(int index = 0; index < npixels; index++)
     {
       const float mask = opacity * (1.0f - newmask[index]);
@@ -604,7 +604,7 @@ static void _combine_masks_exclusion(float *const restrict dest,
   }
   else
   {
-    DT_OMP_FOR_SIMD(dt_omp_sharedconst(dest, newmask) aligned(dest, newmask : 64))
+    DT_OMP_FOR_SIMD(aligned(dest, newmask : 64))
     for(int index = 0; index < npixels; index++)
     {
       const float mask = opacity * newmask[index];
@@ -690,7 +690,7 @@ static int _group_get_mask_roi(const dt_iop_module_t *const restrict module,
         else // if we are here, this mean that we just have to copy
              // the shape and null other parts
         {
-          DT_OMP_FOR_SIMD(dt_omp_sharedconst(buffer, bufs) aligned(buffer, bufs : 64))
+          DT_OMP_FOR_SIMD(aligned(buffer, bufs : 64))
           for(int index = 0; index < npixels; index++)
           {
             buffer[index] = op * (inverted ? (1.0f - bufs[index]) : bufs[index]);

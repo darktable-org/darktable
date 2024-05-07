@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2021 darktable developers.
+    Copyright (C) 2016-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1530,11 +1530,7 @@ static void get_xyz_sample_from_image(const image_t *const image, float shrink, 
 
   double sample_x = 0.0, sample_y = 0.0, sample_z = 0.0;
   size_t n_samples = 0;
-  DT_OMP_FOR(
-    shared(corners, x_start, y_start, x_end, y_end)
-    dt_omp_sharedconst(delta_x_top, delta_y_top, delta_x_bottom, delta_y_bottom,
-                       delta_x_left, delta_y_left, delta_x_right, delta_y_right)
-    reduction(+ : n_samples, sample_x, sample_y, sample_z))
+  DT_OMP_FOR(shared(corners) reduction(+ : n_samples, sample_x, sample_y, sample_z))
   for(int y = y_start; y < y_end; y++)
     for(int x = x_start; x < x_end; x++)
     {
