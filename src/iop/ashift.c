@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  Copyright (C) 2016-2023 darktable developers.
+  Copyright (C) 2016-2024 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -1117,7 +1117,7 @@ void distort_mask(struct dt_iop_module_t *self,
   const float cx = roi_out->scale * fullwidth * data->cl;
   const float cy = roi_out->scale * fullheight * data->ct;
 
-  DT_OMP_FOR(shared(ihomograph, interpolation))
+  DT_OMP_FOR(shared(ihomograph))
   // go over all pixels of output image
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -1326,7 +1326,7 @@ static void edge_enhance_1d(const double *in, double *out,
     ? (const double *)hkernel
     : (const double *)vkernel;
 
-  DT_OMP_FOR(shared(in, out, kernel))
+  DT_OMP_FOR()
   // loop over image pixels and perform sobel convolution
   for(int j = khwidth; j < height - khwidth; j++)
   {
@@ -1348,7 +1348,7 @@ static void edge_enhance_1d(const double *in, double *out,
     }
   }
 
-  DT_OMP_FOR(shared(out))
+  DT_OMP_FOR()
   // border fill in output buffer, so we don't get pseudo lines at image frame
   for(int j = 0; j < height; j++)
     for(int i = 0; i < width; i++)
@@ -1391,7 +1391,7 @@ static gboolean edge_enhance(const double *in,
   edge_enhance_1d(in, Gy, width, height, ASHIFT_ENHANCE_VERTICAL);
 
 // calculate absolute values
-  DT_OMP_FOR(shared(Gx, Gy, out))
+  DT_OMP_FOR()
   for(size_t k = 0; k < (size_t)width * height; k++)
   {
     out[k] = sqrt(Gx[k] * Gx[k] + Gy[k] * Gy[k]);
@@ -3544,7 +3544,7 @@ void process(struct dt_iop_module_t *self,
   const float cx = roi_out->scale * fullwidth * data->cl;
   const float cy = roi_out->scale * fullheight * data->ct;
 
-  DT_OMP_FOR(shared(ihomograph, interpolation))
+  DT_OMP_FOR(shared(ihomograph))
   // go over all pixels of output image
   for(int j = 0; j < roi_out->height; j++)
   {
