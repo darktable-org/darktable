@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2010-2023 darktable developers.
+   Copyright (C) 2010-2024 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -282,12 +282,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       */
       const float noise = powf(2.0f, -16.0f);
 
-#ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-      dt_omp_firstprivate(ch, grey, ivoid, ovoid, roi_out, noise) \
-      shared(data) \
-      schedule(static)
-#endif
+      DT_OMP_FOR()
       for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k++)
       {
         float tmp = ((const float *)ivoid)[k] / grey;
@@ -308,7 +303,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
     case PROFILEGAMMA_GAMMA:
     {
-      DT_OMP_FOR(shared(data))
+      DT_OMP_FOR()
       for(int k = 0; k < roi_out->height; k++)
       {
         const float *in = ((float *)ivoid) + (size_t)ch * k * roi_out->width;
@@ -499,14 +494,14 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   float a, b, c, g;
   if(gamma == 1.0)
   {
-    DT_OMP_FOR(shared(d))
+    DT_OMP_FOR()
     for(int k = 0; k < 0x10000; k++) d->table[k] = 1.0 * k / 0x10000;
   }
   else
   {
     if(linear == 0.0)
     {
-      DT_OMP_FOR(shared(d))
+      DT_OMP_FOR()
       for(int k = 0; k < 0x10000; k++) d->table[k] = powf(1.00 * k / 0x10000, gamma);
     }
     else
@@ -523,7 +518,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
         a = b = g = 0.0;
         c = 1.0;
       }
-      DT_OMP_FOR(shared(d, a, b, c, g))
+      DT_OMP_FOR()
       for(int k = 0; k < 0x10000; k++)
       {
         float tmp;

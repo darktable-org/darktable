@@ -126,7 +126,7 @@ static void rcd_ppg_border(
 
   const float *input = in;
 
-  DT_OMP_FOR(shared(input))
+  DT_OMP_FOR()
   for(int j = 3; j < height - 3; j++)
   {
     float *buf = out + (size_t)4 * width * j + 4 * 3;

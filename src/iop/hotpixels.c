@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2022 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -269,7 +269,7 @@ static int process_xtrans(const dt_iop_hotpixels_data_t *data,
   const int width = roi_out->width;
   int fixed = 0;
 
-  DT_OMP_FOR(shared(offsets) reduction(+ : fixed))
+  DT_OMP_FOR(reduction(+ : fixed))
   for(int row = 2; row < roi_out->height - 2; row++)
   {
     const float *in = (float *)ivoid + (size_t)width * row + 2;

@@ -69,7 +69,7 @@ static void demosaic_ppg(
   }
 // for all pixels except those in the 3 pixel border:
 // interpolate green from input into out float array, or copy color.
-  DT_OMP_FOR(shared(input))
+  DT_OMP_FOR()
   for(int j = 3; j < roi_out->height - 3; j++)
   {
     float *buf = out + (size_t)4 * roi_out->width * j + 4 * 3;

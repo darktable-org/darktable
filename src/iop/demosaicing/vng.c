@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ static void lin_interpolate(
   const int colors = (filters == 9) ? 3 : 4;
 
 // border interpolate
-  DT_OMP_FOR(shared(out))
+  DT_OMP_FOR()
   for(int row = 0; row < roi_out->height; row++)
     for(int col = 0; col < roi_out->width; col++)
     {
@@ -101,7 +101,7 @@ static void lin_interpolate(
       *ip = f;
     }
 
-  DT_OMP_FOR(shared(out))
+  DT_OMP_FOR()
   for(int row = 1; row < roi_out->height - 1; row++)
   {
     float *buf = out + 4 * roi_out->width * row + 4;
@@ -244,7 +244,7 @@ static void vng_interpolate(
 
   for(int row = 2; row < height - 2; row++) /* Do VNG interpolation */
   {
-    DT_OMP_FOR(shared(row, code, brow, out, filters4) private(ip))
+    DT_OMP_FOR(private(ip))
     for(int col = 2; col < width - 2; col++)
     {
       int g;
@@ -309,8 +309,9 @@ static void vng_interpolate(
   if(filters != 9 && !FILTERS_ARE_4BAYER(filters)) // x-trans or CYGM/RGBE
   {
 // for Bayer mix the two greens to make VNG4
-    DT_OMP_FOR(shared(out))
-    for(int i = 0; i < height * width; i++) out[i * 4 + 1] = (out[i * 4 + 1] + out[i * 4 + 3]) / 2.0f;
+    DT_OMP_FOR()
+    for(int i = 0; i < height * width; i++)
+      out[i * 4 + 1] = (out[i * 4 + 1] + out[i * 4 + 3]) / 2.0f;
   }
 }
 

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2021 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@ static void dt_iop_equalizer_wtf(float *const buf, float **weight_a, const int l
 
   size_t scratch_size;
   float *const restrict tmp_width_buf = dt_alloc_perthread_float(width, &scratch_size);
-  DT_OMP_FOR(dt_omp_sharedconst(buf) shared(weight_a) private(ch))
+  DT_OMP_FOR(private(ch))
   for(int j = 0; j < height; j++)
   {
     // rows
@@ -75,7 +75,7 @@ static void dt_iop_equalizer_wtf(float *const buf, float **weight_a, const int l
   dt_free_align(tmp_width_buf);
 
   float *const restrict tmp_height_buf = dt_alloc_perthread_float(height, &scratch_size);
-  DT_OMP_FOR(dt_omp_sharedconst(buf) shared(weight_a) private(ch))
+  DT_OMP_FOR(private(ch))
   for(int i = 0; i < width; i++)
   {
     // cols
@@ -111,7 +111,7 @@ static void dt_iop_equalizer_iwtf(float *buf, float **weight_a, const int l, con
 
   size_t scratch_size;
   float *const restrict tmp_height_buf = dt_alloc_perthread_float(height, &scratch_size);
-  DT_OMP_FOR(shared(weight_a, buf))
+  DT_OMP_FOR()
   for(int i = 0; i < width; i++)
   {
     // cols
@@ -138,7 +138,7 @@ static void dt_iop_equalizer_iwtf(float *buf, float **weight_a, const int l, con
   dt_free_align(tmp_height_buf);
 
   float *const restrict tmp_width_buf = dt_alloc_perthread_float(width, &scratch_size);
-  DT_OMP_FOR(shared(weight_a, buf))
+  DT_OMP_FOR()
   for(int j = 0; j < height; j++)
   {
     // rows
