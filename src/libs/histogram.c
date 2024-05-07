@@ -1007,31 +1007,15 @@ static void dt_lib_histogram_process
   if(!img_display) return;
 
   // FIXME: we might get called with profile_info_to == NULL due to caller errors
-  // like having a non cmsSigRgbData colorspace used in softproofing.
-  // As dt_ioppr_transform_image_colorspace_rgb will fail to provide data in img_display
-  // we currently do a fallback to Rec2020.
-  // For correct softproofing support we would have to convert data as we do in colorout.
-  const gboolean fallback = !profile_info_to || !dt_is_valid_colormatrix(profile_info_to->matrix_in[0][0]);
-  static gboolean noted = FALSE;
-  if(fallback)
+  if(!profile_info_to)
   {
-    if(!noted)
-    {
-      dt_print(DT_DEBUG_ALWAYS,
-             "[histogram] %s profile %i %s,"
-             " it will be replaced with linear Rec2020\n",
-             profile_info_to ? "undefined" : "invalid",
-             profile_info_to ? profile_info_to->type     : 0,
-             profile_info_to ? profile_info_to->filename : "");
-      dt_control_log(_("unsupported profile selected for histogram,"
+    dt_print(DT_DEBUG_ALWAYS,
+       "[histogram] no histogram profile, replaced with linear Rec2020\n");
+    dt_control_log(_("unsupported profile selected for histogram,"
                      " it will be replaced with linear Rec2020"));
-      noted = TRUE;
-    }
   }
-  else
-    noted = FALSE;
 
-  const dt_iop_order_iccprofile_info_t *profile_info_out = fallback
+  const dt_iop_order_iccprofile_info_t *profile_info_out = !profile_info_to
             ? dt_ioppr_add_profile_info_to_list(darktable.develop,
                                                 DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_RELATIVE_COLORIMETRIC)
             : profile_info_to;
