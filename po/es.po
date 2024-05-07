@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 4.7\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-05 22:55-0600\n"
-"PO-Revision-Date: 2024-05-06 00:30-0600\n"
+"POT-Creation-Date: 2024-05-06 15:16-0600\n"
+"PO-Revision-Date: 2024-05-07 01:48-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -1979,7 +1979,6 @@ msgid "create XMP files"
 msgstr "Crear archivos XMP"
 
 #: ../build/bin/preferences_gen.h:7195
-#, fuzzy
 msgid ""
 "XMP sidecar files hold information about all your development steps to allow "
 "flawless re-importing of image files.\n"
@@ -1996,7 +1995,8 @@ msgstr ""
 "información se conservaría.\n"
 "\n"
 "Los archivos asociados se generarán de acuerdo a las siguientes opciones:\n"
-"• «Nunca»\n"
+"• «Nunca»: todos los datos de los revelados se almacenarán únicamente en el "
+"archivo de la base de datos.\n"
 "• «Al importar»: al instante de importar la imagen.\n"
 "• «Después de editar»: después de cualquier modificación hecha a la imagen o "
 "al añadir cualquier etiqueta."
@@ -6753,12 +6753,12 @@ msgstr ""
 "El filtro guiado rápido independiente de la exposición no pudo reservar "
 "memoria. Verifique la configuración de la RAM."
 
-#: ../src/common/exif.cc:5673
+#: ../src/common/exif.cc:5663
 #, c-format
 msgid "cannot read XMP file '%s': '%s'"
 msgstr "No se puede leer el archivo XMP «%s»: «%s»"
 
-#: ../src/common/exif.cc:5732
+#: ../src/common/exif.cc:5722
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
 msgstr "No se puede escribir en el archivo XMP «%s»: «%s»"
@@ -10938,7 +10938,7 @@ msgstr "cambiar vistas"
 msgid "tethering"
 msgstr "captura"
 
-#: ../src/gui/gtk.c:1387 ../src/views/map.c:205
+#: ../src/gui/gtk.c:1387 ../src/views/map.c:274
 msgid "map"
 msgstr "mapa"
 
@@ -19657,9 +19657,8 @@ msgstr ""
 "Ocurrió un fallo en la conversión de color del módulo «sobreexposición»."
 
 #: ../src/iop/overlay.c:147
-#, fuzzy
 msgid "composite"
-msgstr "recalcular"
+msgstr "fotografía compuesta"
 
 #: ../src/iop/overlay.c:154
 msgid "combine with elements from a processed image"
@@ -19678,8 +19677,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/overlay.c:328
-#, c-format
-msgid "image %d does not exists"
+#, fuzzy, c-format
+msgid "image %d does not exist"
 msgstr "La imagen «%d» no existe"
 
 #. TRANSLATORS: This text must be very narrow, check in the GUI that it is not truncated
@@ -19690,6 +19689,10 @@ msgid ""
 "from filmstrip\n"
 "here"
 msgstr ""
+"arrastre la imagen\n"
+"hasta aquí\n"
+"desde\n"
+"la tira de imágenes"
 
 #: ../src/iop/overlay.c:964
 #, c-format
@@ -23791,7 +23794,7 @@ msgstr "línea divisoria"
 msgid "only draw part of the overlay"
 msgstr "Sólo mostrar parte de la superposición"
 
-#: ../src/libs/location.c:100
+#: ../src/libs/location.c:106
 msgid "find location"
 msgstr "buscar ubicación"
 
@@ -26337,12 +26340,12 @@ msgstr "reducir opacidad del pincel"
 
 #. undo/redo
 #: ../src/views/darkroom.c:2610 ../src/views/lighttable.c:1275
-#: ../src/views/map.c:2154
+#: ../src/views/map.c:2400
 msgid "undo"
 msgstr "deshacer"
 
 #: ../src/views/darkroom.c:2611 ../src/views/lighttable.c:1276
-#: ../src/views/map.c:2155
+#: ../src/views/map.c:2402
 msgid "redo"
 msgstr "rehacer"
 
@@ -26519,15 +26522,15 @@ msgstr "ampliación máxima"
 msgid "zoom min"
 msgstr "reducción mínima"
 
-#: ../src/views/map.c:2848
+#: ../src/views/map.c:3183
 msgid "[on image] open in darkroom"
 msgstr "[en la imagen] abrir en el cuarto oscuro"
 
-#: ../src/views/map.c:2849
+#: ../src/views/map.c:3185
 msgid "[on map] zoom map"
 msgstr "[en el mapa] mapa de zoom"
 
-#: ../src/views/map.c:2850
+#: ../src/views/map.c:3187
 msgid "move image location"
 msgstr "cambiar la ubicación de la imagen"
 
