@@ -452,11 +452,7 @@ static inline void _transform_rgb_to_lab_matrix
                       profile_info->unbounded_coeffs_in[2],
                       profile_info->lutsize);
 
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-    dt_omp_firstprivate(image_out, profile_info, stride, ch, matrix_ptr) \
-    schedule(static) aligned(image_out:64)
-#endif
+    DT_OMP_FOR()
     for(size_t y = 0; y < stride; y += ch)
     {
       float *const restrict in = DT_IS_ALIGNED_PIXEL(image_out + y);
@@ -467,11 +463,7 @@ static inline void _transform_rgb_to_lab_matrix
   }
   else
   {
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-    dt_omp_firstprivate(image_in, image_out, profile_info, stride, ch, matrix_ptr) \
-    schedule(static) aligned(image_in, image_out:64)
-#endif
+    DT_OMP_FOR()
     for(size_t y = 0; y < stride; y += ch)
     {
       const float *const restrict in = DT_IS_ALIGNED_PIXEL(image_in + y);

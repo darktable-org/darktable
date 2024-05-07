@@ -1001,11 +1001,7 @@ static inline void _auto_detect_WB(const float *const restrict in,
       https://hal.inria.fr/inria-00548686/document
     */
 // Convert RGB to xy
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(width, height, ch, in, temp, RGB_to_XYZ, D50xyY) \
-  collapse(2) schedule(simd:static)
-#endif
+  DT_OMP_FOR(collapse(2))
   for(size_t i = 0; i < height; i++)
     for(size_t j = 0; j < width; j++)
     {
@@ -1040,11 +1036,7 @@ static inline void _auto_detect_WB(const float *const restrict in,
 
   if(illuminant == DT_ILLUMINANT_DETECT_SURFACES)
   {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) reduction(+:xyY, elements) \
-  dt_omp_firstprivate(width, height, temp, ch) \
-  schedule(simd:static)
-#endif
+    DT_OMP_FOR(reduction(+:xyY, elements))
     for(size_t i = 2 * OFF; i < height - 4 * OFF; i += OFF)
       for(size_t j = 2 * OFF; j < width - 4 * OFF; j += OFF)
       {
@@ -1113,11 +1105,7 @@ static inline void _auto_detect_WB(const float *const restrict in,
   }
   else if(illuminant == DT_ILLUMINANT_DETECT_EDGES)
   {
-    #ifdef _OPENMP
-#pragma omp parallel for default(none) reduction(+:xyY, elements) \
-  dt_omp_firstprivate(width, height, temp, ch) \
-  schedule(simd:static)
-#endif
+    DT_OMP_FOR(reduction(+:xyY, elements))
     for(size_t i = 2 * OFF; i < height - 4 * OFF; i += OFF)
       for(size_t j = 2 * OFF; j < width - 4 * OFF; j += OFF)
       {

@@ -1250,11 +1250,7 @@ static int _gradient_get_mask(const dt_iop_module_t *const module,
   }
 
 // we fill the mask buffer by interpolation
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(h, w, gw, grid, bufptr, points)  \
-  schedule(simd:static)
-#endif
+  DT_OMP_FOR()
   for(int j = 0; j < h; j++)
   {
     const int jj = j % grid;
@@ -1400,11 +1396,7 @@ static int _gradient_get_mask_roi(const dt_iop_module_t *const module,
   dt_free_align(lut);
 
 // we fill the mask buffer by interpolation
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(h, w, grid, gw, buffer, points)  \
-  schedule(simd:static)
-#endif
+  DT_OMP_FOR()
   for(int j = 0; j < h; j++)
   {
     const int jj = j % grid;

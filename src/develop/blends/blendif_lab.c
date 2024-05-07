@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -208,10 +208,9 @@ void dt_develop_blendif_lab_make_mask(struct dt_dev_pixelpipe_iop_t *piece, cons
     // mask is not conditional, invert the mask if required
     if(mask_inversed)
     {
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) dt_omp_firstprivate(mask, buffsize, global_opacity) schedule(static)
-#endif
-      for(size_t x = 0; x < buffsize; x++) mask[x] = global_opacity * (1.0f - mask[x]);
+      DT_OMP_FOR()
+      for(size_t x = 0; x < buffsize; x++)
+        mask[x] = global_opacity * (1.0f - mask[x]);
     }
     else
     {

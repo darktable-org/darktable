@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020-2023 darktable developers.
+    Copyright (C) 2020-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -552,11 +552,7 @@ static inline float CCT_reverse_lookup(const float x, const float y)
   struct pair min_radius = { FLT_MAX, 0.0f };
 
 #if !(defined(__apple_build_version__) && __apple_build_version__ < 11030000) //makes Xcode 11.3.1 compiler crash
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(x, y, T_min, T_range, LUT_samples) reduction(pairmin:min_radius)\
-  schedule(simd:static)
-#endif
+  DT_OMP_FOR(reduction(pairmin:min_radius))
 #endif
   for(size_t i = 0; i < LUT_samples; i++)
   {
