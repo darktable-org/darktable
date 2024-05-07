@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@ static void passthrough_monochrome(
   assert(roi_in->width >= roi_out->width);
   assert(roi_in->height >= roi_out->height);
 
-  DT_OMP_FOR(shared(out) collapse(2))
+  DT_OMP_FOR(collapse(2))
   for(int j = 0; j < roi_out->height; j++)
   {
     for(int i = 0; i < roi_out->width; i++)
@@ -55,7 +55,7 @@ static void passthrough_color(
 
   if(filters != 9u)
   {
-    DT_OMP_FOR(shared(out) collapse(2))
+    DT_OMP_FOR(collapse(2))
     for(int row = 0; row < (roi_out->height); row++)
     {
       for(int col = 0; col < (roi_out->width); col++)
@@ -71,7 +71,7 @@ static void passthrough_color(
   }
   else
   {
-    DT_OMP_FOR(shared(out) collapse(2))
+    DT_OMP_FOR(collapse(2))
     for(int row = 0; row < (roi_out->height); row++)
     {
       for(int col = 0; col < (roi_out->width); col++)
