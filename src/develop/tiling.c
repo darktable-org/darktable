@@ -588,7 +588,10 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self,
 
   /* get tiling requirements of module */
   dt_develop_tiling_t tiling = { 0 };
+  tiling.factor_cl = tiling.maxbuf_cl = -1;
   self->tiling_callback(self, piece, roi_in, roi_out, &tiling);
+  if(tiling.factor_cl < 0) tiling.factor_cl = tiling.factor;
+  if(tiling.maxbuf_cl < 0) tiling.maxbuf_cl = tiling.maxbuf;
 
   /* tiling really does not make sense in these cases. standard process() is not better or worse than we are
    */
@@ -860,7 +863,10 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self,
 
   /* get tiling requirements of module */
   dt_develop_tiling_t tiling = { 0 };
+  tiling.factor_cl = tiling.maxbuf_cl = -1;
   self->tiling_callback(self, piece, roi_in, roi_out, &tiling);
+  if(tiling.factor_cl < 0) tiling.factor_cl = tiling.factor;
+  if(tiling.maxbuf_cl < 0) tiling.maxbuf_cl = tiling.maxbuf;
 
   /* tiling really does not make sense in these cases. standard process() is not better or worse than we are
    */
@@ -1340,7 +1346,10 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self,
 
   /* get tiling requirements of module */
   dt_develop_tiling_t tiling = { 0 };
+  tiling.factor_cl = tiling.maxbuf_cl = -1;
   self->tiling_callback(self, piece, roi_in, roi_out, &tiling);
+  if(tiling.factor_cl < 0) tiling.factor_cl = tiling.factor;
+  if(tiling.maxbuf_cl < 0) tiling.maxbuf_cl = tiling.maxbuf;
 
   /* shall we use pinned memory transfers? */
   gboolean use_pinned_memory = dt_opencl_use_pinned_memory(devid);
@@ -1726,7 +1735,10 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self,
 
   /* get tiling requirements of module */
   dt_develop_tiling_t tiling = { 0 };
+  tiling.factor_cl = tiling.maxbuf_cl = -1;
   self->tiling_callback(self, piece, roi_in, roi_out, &tiling);
+  if(tiling.factor_cl < 0) tiling.factor_cl = tiling.factor;
+  if(tiling.maxbuf_cl < 0) tiling.maxbuf_cl = tiling.maxbuf;
 
   /* shall we use pinned memory transfers? */
   gboolean use_pinned_memory = dt_opencl_use_pinned_memory(devid);
