@@ -628,9 +628,7 @@ static gboolean _get_white_balance_coeff(struct dt_iop_module_t *self,
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(input, output:16) uniform(compression, clip)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(input, output:16) uniform(compression, clip))
 static inline void _gamut_mapping(const dt_aligned_pixel_t input,
                                   const float compression,
                                   const int clip,
@@ -693,10 +691,7 @@ static inline void _gamut_mapping(const dt_aligned_pixel_t input,
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(input, output, saturation, lightness:16) \
-  uniform(saturation, lightness)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(input, output, saturation, lightness:16) uniform(saturation, lightness))
 static inline void _luma_chroma(const dt_aligned_pixel_t input,
                                 const dt_aligned_pixel_t saturation,
                                 const dt_aligned_pixel_t lightness,
@@ -758,9 +753,7 @@ static inline void _luma_chroma(const dt_aligned_pixel_t input,
   }
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(in, out, XYZ_to_RGB, RGB_to_XYZ, MIX : 64) aligned(illuminant, saturation, lightness, grey:16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(in, out, XYZ_to_RGB, RGB_to_XYZ, MIX : 64) aligned(illuminant, saturation, lightness, grey:16))
 static inline void _loop_switch(const float *const restrict in,
                                 float *const restrict out,
                                 const size_t width,
@@ -816,14 +809,7 @@ static inline void _loop_switch(const float *const restrict in,
   dt_colormatrix_t XYZ_to_RGB_trans;
   dt_colormatrix_transpose(XYZ_to_RGB_trans, XYZ_to_RGB);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(width, height, min_value, in, out, XYZ_to_RGB_trans, \
-                      RGB_to_XYZ_trans, RGB_to_LMS_trans, MIX_to_XYZ_trans, \
-                      illuminant, saturation, lightness, grey, p, gamut, clip, \
-                      apply_grey, kind, version)                   \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < height * width * 4; k += 4)
   {
     // intermediate temp buffers
@@ -1015,11 +1001,7 @@ static inline void _auto_detect_WB(const float *const restrict in,
       https://hal.inria.fr/inria-00548686/document
     */
 // Convert RGB to xy
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(width, height, ch, in, temp, RGB_to_XYZ, D50xyY) \
-  collapse(2) schedule(simd:static)
-#endif
+  DT_OMP_FOR(collapse(2))
   for(size_t i = 0; i < height; i++)
     for(size_t j = 0; j < width; j++)
     {
@@ -1054,11 +1036,7 @@ static inline void _auto_detect_WB(const float *const restrict in,
 
   if(illuminant == DT_ILLUMINANT_DETECT_SURFACES)
   {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) reduction(+:xyY, elements) \
-  dt_omp_firstprivate(width, height, temp, ch) \
-  schedule(simd:static)
-#endif
+    DT_OMP_FOR(reduction(+:xyY, elements))
     for(size_t i = 2 * OFF; i < height - 4 * OFF; i += OFF)
       for(size_t j = 2 * OFF; j < width - 4 * OFF; j += OFF)
       {
@@ -1127,11 +1105,7 @@ static inline void _auto_detect_WB(const float *const restrict in,
   }
   else if(illuminant == DT_ILLUMINANT_DETECT_EDGES)
   {
-    #ifdef _OPENMP
-#pragma omp parallel for default(none) reduction(+:xyY, elements) \
-  dt_omp_firstprivate(width, height, temp, ch) \
-  schedule(simd:static)
-#endif
+    DT_OMP_FOR(reduction(+:xyY, elements))
     for(size_t i = 2 * OFF; i < height - 4 * OFF; i += OFF)
       for(size_t j = 2 * OFF; j < width - 4 * OFF; j += OFF)
       {

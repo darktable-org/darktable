@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -438,7 +438,7 @@ void process_display(struct dt_iop_module_t *self,
                      const dt_iop_roi_t *const roi_in,
                      const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
+  const dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
   dt_iop_colorzones_gui_data_t *g = (dt_iop_colorzones_gui_data_t *)self->gui_data;
 
   const int ch = piece->colors;
@@ -448,10 +448,7 @@ void process_display(struct dt_iop_module_t *self,
 
   dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)                                                           \
-    dt_omp_firstprivate(normalize_C, ch, ivoid, ovoid, roi_out, display_channel) shared(d)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
     float *in = (float *)ivoid + ch * k;
@@ -492,15 +489,12 @@ void process_v1(struct dt_iop_module_t *self,
                 const dt_iop_roi_t *const roi_in,
                 const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
+  const dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
 
   const int ch = piece->colors;
   const float normalize_C = 1.f / (128.0f * sqrtf(2.f));
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) dt_omp_firstprivate(normalize_C, ch, ivoid, ovoid, roi_out) shared(d)      \
-    schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
     float *in = (float *)ivoid + ch * k;
@@ -543,11 +537,9 @@ void process_v3(struct dt_iop_module_t *self,
                 const dt_iop_roi_t *const roi_in,
                 const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
+  const dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
   const int ch = piece->colors;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) dt_omp_firstprivate(ch, ivoid, ovoid, roi_out) shared(d) schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
     float *in = (float *)ivoid + ch * k;

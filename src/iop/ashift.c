@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  Copyright (C) 2016-2023 darktable developers.
+  Copyright (C) 2016-2024 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -1029,18 +1029,16 @@ gboolean distort_transform(dt_iop_module_t *self,
   const float cx = fullwidth * data->cl;
   const float cy = fullheight * data->ct;
 
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(cx, cy, points_count, points, homograph) \
-  schedule(static) if(points_count > 100) aligned(points, homograph:64)
-#endif
+  float *const pts = DT_IS_ALIGNED(points);
+
+  DT_OMP_FOR(if(points_count > 100))
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
-    float DT_ALIGNED_PIXEL pi[3] = { points[i], points[i + 1], 1.0f };
+    float DT_ALIGNED_PIXEL pi[3] = { pts[i], pts[i + 1], 1.0f };
     float DT_ALIGNED_PIXEL po[3];
     mat3mulv(po, (float *)homograph, pi);
-    points[i] = po[0] / po[2] - cx;
-    points[i + 1] = po[1] / po[2] - cy;
+    pts[i] = po[0] / po[2] - cx;
+    pts[i + 1] = po[1] / po[2] - cy;
   }
 
   return TRUE;
@@ -1069,18 +1067,16 @@ gboolean distort_backtransform(dt_iop_module_t *self,
   const float cx = fullwidth * data->cl;
   const float cy = fullheight * data->ct;
 
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(cx, cy, points, points_count, ihomograph) \
-  schedule(static) if(points_count > 100) aligned(ihomograph, points:64)
-#endif
+  float *const pts = DT_IS_ALIGNED(points);
+
+  DT_OMP_FOR(if(points_count > 100))
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
-    float DT_ALIGNED_PIXEL pi[3] = { points[i] + cx, points[i + 1] + cy, 1.0f };
+    float DT_ALIGNED_PIXEL pi[3] = { pts[i] + cx, pts[i + 1] + cy, 1.0f };
     float DT_ALIGNED_PIXEL po[3];
     mat3mulv(po, (float *)ihomograph, pi);
-    points[i] = po[0] / po[2];
-    points[i + 1] = po[1] / po[2];
+    pts[i] = po[0] / po[2];
+    pts[i + 1] = po[1] / po[2];
   }
 
   return TRUE;
@@ -1117,12 +1113,7 @@ void distort_mask(struct dt_iop_module_t *self,
   const float cx = roi_out->scale * fullwidth * data->cl;
   const float cy = roi_out->scale * fullheight * data->ct;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(cx, cy, in, out, roi_in, roi_out) \
-  shared(ihomograph, interpolation) \
-  schedule(static)
-#endif
+  DT_OMP_FOR(shared(ihomograph))
   // go over all pixels of output image
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -1300,12 +1291,7 @@ static void rgb2grey256(const float *const in,
 {
   const size_t npixels = (size_t)width * height;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels) \
-  dt_omp_sharedconst(in, out) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(int index = 0; index < npixels; index++)
   {
     out[index] = (0.3f * in[4*index+0]
@@ -1336,12 +1322,7 @@ static void edge_enhance_1d(const double *in, double *out,
     ? (const double *)hkernel
     : (const double *)vkernel;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, width, khwidth, kwidth) \
-  shared(in, out, kernel) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   // loop over image pixels and perform sobel convolution
   for(int j = khwidth; j < height - khwidth; j++)
   {
@@ -1363,12 +1344,7 @@ static void edge_enhance_1d(const double *in, double *out,
     }
   }
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, width, khwidth) \
-  shared(out) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   // border fill in output buffer, so we don't get pseudo lines at image frame
   for(int j = 0; j < height; j++)
     for(int i = 0; i < width; i++)
@@ -1411,12 +1387,7 @@ static gboolean edge_enhance(const double *in,
   edge_enhance_1d(in, Gy, width, height, ASHIFT_ENHANCE_VERTICAL);
 
 // calculate absolute values
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, width) \
-  shared(Gx, Gy, out) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < (size_t)width * height; k++)
   {
     out[k] = sqrt(Gx[k] * Gx[k] + Gy[k] * Gy[k]);
@@ -1449,12 +1420,7 @@ static gboolean detail_enhance(const float *const in,
   // as colors don't matter we are safe to assume data to be sRGB
 
   // convert RGB input to Lab, use output buffer for intermediate storage
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels) \
-  dt_omp_sharedconst(in, out) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t index = 0; index < 4*npixels; index += 4)
   {
     dt_aligned_pixel_t XYZ;
@@ -1476,12 +1442,7 @@ static gboolean detail_enhance(const float *const in,
     success = FALSE;
 
   // convert resulting Lab to RGB output
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels) \
-  dt_omp_sharedconst(out) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t index = 0; index < 4*npixels; index += 4)
   {
     dt_aligned_pixel_t XYZ;
@@ -1500,12 +1461,7 @@ static void gamma_correct(const float *const in,
                           const int height)
 {
   const size_t npixels = (size_t)width * height;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels) \
-  dt_omp_sharedconst(in, out) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(int index = 0; index < 4*npixels; index += 4)
   {
     for(int c = 0; c < 3; c++)
@@ -3584,12 +3540,7 @@ void process(struct dt_iop_module_t *self,
   const float cx = roi_out->scale * fullwidth * data->cl;
   const float cy = roi_out->scale * fullheight * data->ct;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, ch_width, cx, cy, ivoid, ovoid, roi_in, roi_out) \
-  shared(ihomograph, interpolation) \
-  schedule(static)
-#endif
+  DT_OMP_FOR(shared(ihomograph))
   // go over all pixels of output image
   for(int j = 0; j < roi_out->height; j++)
   {

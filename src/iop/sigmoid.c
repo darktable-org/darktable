@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020-2023 darktable developers.
+    Copyright (C) 2020-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -301,9 +301,7 @@ void init_presets(dt_iop_module_so_t *self)
 }
 
 // Declared here as it is used in the commit params function
-#ifdef _OPENMP
-#pragma omp declare simd uniform(magnitude, paper_exp, film_fog, film_power, paper_power)
-#endif
+DT_OMP_DECLARE_SIMD(uniform(magnitude, paper_exp, film_fog, film_power, paper_power))
 static inline float _generalized_loglogistic_sigmoid(const float value,
                                                      const float magnitude,
                                                      const float paper_exp,
@@ -498,9 +496,7 @@ static const dt_iop_order_iccprofile_info_t * _get_base_profile(struct dt_develo
   return dt_ioppr_add_profile_info_to_list(dev, _get_base_profile_type(base_primaries), "", DT_INTENT_RELATIVE_COLORIMETRIC);
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline void _desaturate_negative_values(const dt_aligned_pixel_t pix_in, dt_aligned_pixel_t pix_out)
 {
   const float pixel_average = fmaxf((pix_in[0] + pix_in[1] + pix_in[2]) / 3.0f, 0.0f);
@@ -590,11 +586,7 @@ void process_loglogistic_rgb_ratio(dt_dev_pixelpipe_iop_t *piece,
   const float contrast_power = module_data->film_power;
   const float skew_power = module_data->paper_power;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none)                                                                            \
-    dt_omp_firstprivate(npixels, white_target, black_target, paper_exp, film_fog, contrast_power, skew_power)     \
-    dt_omp_sharedconst(in, out) schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < 4 * npixels; k += 4)
   {
     const float *const restrict pix_in = in + k;
@@ -737,11 +729,7 @@ void process_loglogistic_per_channel(struct dt_develop_t *dev,
   dt_colormatrix_t pipe_to_base, base_to_rendering, rendering_to_pipe;
   _calculate_adjusted_primaries(module_data, pipe_work_profile, base_profile, pipe_to_base, base_to_rendering, rendering_to_pipe);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none)                                                                            \
-    dt_omp_firstprivate(npixels, white_target, paper_exp, film_fog, contrast_power, skew_power, hue_preservation, \
-                        pipe_to_base, base_to_rendering, rendering_to_pipe) dt_omp_sharedconst(in, out) schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < 4 * npixels; k += 4)
   {
     const float *const restrict pix_in = in + k;

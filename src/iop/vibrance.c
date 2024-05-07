@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -114,12 +114,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float amount = (d->amount * 0.01);
   const int npixels = roi_out->height * roi_out->width;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(amount, npixels) \
-  dt_omp_sharedconst(in, out) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(int k = 0; k < 4 * npixels; k += 4)
   {
     /* saturation weight 0 - 1 */
@@ -127,9 +122,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const float ls = 1.0f - ((amount * sw) * .25f);
     const float ss = 1.0f + (amount * sw);
     const dt_aligned_pixel_t weights = { ls, ss, ss, 1.0f };
-#ifdef _OPENMP
-#pragma omp simd aligned(in, out : 16)
-#endif
+    DT_OMP_SIMD(aligned(in, out : 16))
     for(int c = 0; c < 4; c++)
     {
       out[k + c] = in[k + c] * weights[c];

@@ -300,11 +300,7 @@ static void _refine_with_detail_mask(struct dt_iop_module_t *self,
   if(warp_mask == NULL) goto error;
 
   const size_t msize = (size_t)roi_out->width * roi_out->height;
-#ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(mask, warp_mask, msize) \
-  schedule(simd:static) aligned(mask, warp_mask : 64)
- #endif
+  DT_OMP_FOR_SIMD(aligned(mask, warp_mask : 64))
   for(size_t idx =0; idx < msize; idx++)
     mask[idx] = mask[idx] * CLIP(warp_mask[idx]);
   dt_free_align(warp_mask);
@@ -431,10 +427,8 @@ static void _develop_blend_process_mask_tone_curve(float *const restrict mask,
   // empirical mask threshold for fully transparent masks
   const float mask_epsilon = 16.0f * FLT_EPSILON;
   const float e = expf(3.f * contrast);
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) schedule(static) aligned(mask:64) \
-    dt_omp_firstprivate(brightness, buffsize, e, mask, mask_epsilon, opacity)
-#endif
+
+  DT_OMP_FOR_SIMD(aligned(mask:64))
   for(size_t k = 0; k < buffsize; k++)
   {
     float x = mask[k] / opacity;
@@ -465,11 +459,7 @@ static void _write_highlights_raster(const gboolean israw,
                                      const dt_iop_roi_t *const roi_out,
                                      float *mask)
 {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(output, input, roi_in, roi_out, mask, israw) \
-    schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR(collapse(2))
   for(ssize_t row = 0; row < roi_out->height; row++)
   {
     for(ssize_t col = 0; col < roi_out->width; col++)
@@ -636,11 +626,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
       // invert if required
       if(d->raster_mask_invert)
       {
-#ifdef _OPENMP
-  #pragma omp parallel for simd default(none) aligned(mask, raster_mask:64)\
-        dt_omp_firstprivate(obuffsize, opacity, mask, raster_mask) \
-        schedule(static)
-#endif
+        DT_OMP_FOR_SIMD(aligned(mask, raster_mask:64))
         for(size_t i = 0; i < obuffsize; i++)
           mask[i] = (1.0f - raster_mask[i]) * opacity;
       }
@@ -936,11 +922,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
   dt_free_align(lum);
 
   const size_t msize = (size_t)roi_out->width * roi_out->height;
-#ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(mask, warp_mask, msize) \
-  schedule(simd:static) aligned(mask, warp_mask : 64)
- #endif
+  DT_OMP_FOR_SIMD(aligned(mask, warp_mask : 64))
   for(size_t idx = 0; idx < msize; idx++)
     mask[idx] = mask[idx] * CLIP(warp_mask[idx]);
 
@@ -1182,10 +1164,7 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
       // invert if required
       if(d->raster_mask_invert)
       {
-#ifdef _OPENMP
-  #pragma omp parallel for simd default(none) aligned(mask, raster_mask:64)\
-        dt_omp_firstprivate(obuffsize, opacity, mask, raster_mask)
-#endif
+        DT_OMP_FOR_SIMD(aligned(mask, raster_mask:64))
         for(size_t i = 0; i < obuffsize; i++)
           mask[i] = (1.0f - raster_mask[i]) * opacity;
       }

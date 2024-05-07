@@ -54,11 +54,7 @@ static void dual_demosaic(
 
   if(dual_mask)
   {
-#ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(mask, high_data, msize) \
-  schedule(simd:static) aligned(mask, high_data : 64)
-#endif
+    DT_OMP_FOR_SIMD(aligned(mask, high_data : 64))
     for(int idx = 0; idx < msize; idx++)
       high_data[idx * 4 + 3] = mask[idx];
   }
@@ -70,11 +66,7 @@ static void dual_demosaic(
     vng_interpolate(vng_image, raw_data, roi_out, roi_in, filters, xtrans, FALSE);
     color_smoothing(vng_image, roi_out, 2);
 
-#ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(mask, high_data, vng_image, msize) \
-  schedule(simd:static) aligned(mask, vng_image, high_data : 64)
-#endif
+    DT_OMP_FOR_SIMD(aligned(mask, vng_image, high_data : 64))
     for(int idx = 0; idx < msize; idx++)
     {
       const int oidx = 4 * idx;

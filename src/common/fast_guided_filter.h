@@ -81,9 +81,7 @@ typedef enum dt_iop_guided_filter_blending_t
  **/
 
 
- #ifdef _OPENMP
-#pragma omp declare simd
-#endif
+ DT_OMP_DECLARE_SIMD()
 __DT_CLONE_TARGETS__
 static inline float fast_clamp(const float value, const float bottom, const float top)
 {
@@ -102,11 +100,7 @@ static inline void interpolate_bilinear(const float *const restrict in,
                                         const size_t ch)
 {
   // Fast vectorized bilinear interpolation on ch channels
-#ifdef _OPENMP
-#pragma omp parallel for collapse(2) default(none) \
-  dt_omp_firstprivate(in, out, width_out, height_out, width_in, height_in, ch) \
-  schedule(simd:static)
-#endif
+  DT_OMP_FOR_SIMD(collapse(2))
   for(size_t i = 0; i < height_out; i++)
   {
     for(size_t j = 0; j < width_out; j++)
@@ -181,11 +175,7 @@ static inline void variance_analyse(const float *const restrict guide, // I
   float *const restrict input = dt_alloc_align_float(Ndimch);
 
   // Pre-multiply guide and mask and pack all inputs into an array of 4×1 SIMD struct
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(guide, mask, Ndim, radius, input) \
-  schedule(simd:static)
-#endif
+  DT_OMP_FOR_SIMD()
   for(size_t k = 0; k < Ndim; k++)
   {
     const size_t index = k * 4;
@@ -199,11 +189,7 @@ static inline void variance_analyse(const float *const restrict guide, // I
   dt_box_mean(input, height, width, 4, radius, 1);
 
   // blend the result and store in output buffer
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ab, input, width, height, feathering) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t idx = 0; idx < width*height; idx++)
   {
     const float d = fmaxf((input[4*idx+2] - input[4*idx+0] * input[4*idx+0]) + feathering, 1e-15f); // avoid division by 0.
@@ -222,11 +208,7 @@ static inline void apply_linear_blending(float *const restrict image,
                                          const float *const restrict ab,
                                          const size_t num_elem)
 {
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-dt_omp_firstprivate(image, ab, num_elem) \
-schedule(simd:static) aligned(image, ab:64)
-#endif
+  DT_OMP_FOR_SIMD(aligned(image, ab:64))
   for(size_t k = 0; k < num_elem; k++)
   {
     // Note : image[k] is positive at the outside of the luminance mask
@@ -240,11 +222,7 @@ static inline void apply_linear_blending_w_geomean(float *const restrict image,
                                                    const float *const restrict ab,
                                                    const size_t num_elem)
 {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-dt_omp_firstprivate(image, ab, num_elem) \
-schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < num_elem; k++)
   {
     // Note : image[k] is positive at the outside of the luminance mask
@@ -271,11 +249,7 @@ static inline void quantize(const float *const restrict image,
   else if(sampling == 1.0f)
   {
     // fast track
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-dt_omp_firstprivate(image, out, num_elem, sampling, clip_min, clip_max) \
-schedule(static)
-#endif
+    DT_OMP_FOR()
     for(size_t k = 0; k < num_elem; k++)
       out[k] = fast_clamp(exp2f(floorf(log2f(image[k]))), clip_min, clip_max);
   }
@@ -283,11 +257,7 @@ schedule(static)
   else
   {
     // slow track
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-dt_omp_firstprivate(image, out, num_elem, sampling, clip_min, clip_max) \
-schedule(static)
-#endif
+    DT_OMP_FOR()
     for(size_t k = 0; k < num_elem; k++)
       out[k] = fast_clamp(exp2f(floorf(log2f(image[k]) / sampling) * sampling), clip_min, clip_max);
   }

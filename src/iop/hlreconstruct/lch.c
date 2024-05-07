@@ -38,11 +38,7 @@ static void process_lch_bayer(dt_iop_module_t *self,
 {
   const uint32_t filters = piece->pipe->dsc.filters;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(clip, filters, ivoid, ovoid, roi_out) \
-  schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR(collapse(2))
   for(int j = 0; j < roi_out->height; j++)
   {
     for(int i = 0; i < roi_out->width; i++)
@@ -143,11 +139,7 @@ static void process_lch_xtrans(dt_iop_module_t *self,
 {
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(clip, ivoid, ovoid, roi_in, roi_out, xtrans) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(int j = 0; j < roi_out->height; j++)
   {
     float *out = (float *)ovoid + (size_t)roi_out->width * j;

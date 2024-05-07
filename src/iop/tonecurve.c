@@ -414,12 +414,7 @@ void process(struct dt_iop_module_t *self,
   const float *const restrict in = (float*)i;
   float *const restrict out = (float*)o;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, autoscale_ab, low_approximation, xm_al, xm_ar, xm_bl, xm_br, xm_L, unbound_ab, work_profile) \
-  dt_omp_sharedconst(d, in, out) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(int k = 0; k < 4*npixels; k += 4)
   {
     const float L_in = in[k] / 100.0f;

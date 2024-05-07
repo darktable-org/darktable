@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2023 darktable developers.
+    Copyright (C) 2014-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -966,11 +966,7 @@ static void apply_round_stamp(const dt_liquify_warp_t *const restrict warp,
   // circle in quadrants and doing only the inside we have to calculate
   // hypotf only for PI / 16 = 0.196 of the stamp area.
   // We don't do octants to avoid false sharing of cache lines between threads.
-  #ifdef _OPENMP
-  #pragma omp parallel for schedule(static) default(none) \
-    dt_omp_firstprivate(iradius, strength, abs_strength, table_size, global_width) \
-    dt_omp_sharedconst(center, warp, lookup_table, LOOKUP_OVERSAMPLE, global_map_extent)
-  #endif
+  DT_OMP_FOR(dt_omp_sharedconst(LOOKUP_OVERSAMPLE))
   for(size_t y = 0; y <= iradius; y++)
   {
     const float complex y_i = y * I;
@@ -1045,12 +1041,7 @@ static void _apply_global_distortion_map(struct dt_iop_module_t *module,
   const size_t min_y = MAX(roi_out->y, extent->y);
   const size_t max_y = MIN(roi_out->y + roi_out->height, extent->y + extent->height);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, out, map, ch, ch_width, extent, roi_in, roi_out, \
-                      min_y, max_y, interpolation)                       \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t y = min_y; y < max_y; y++)
   {
     const size_t min_x = MAX(roi_out->x, extent->x);
@@ -1154,11 +1145,7 @@ static float complex *create_global_distortion_map(const cairo_rectangle_int_t *
     // copy map into imap(inverted map).
     // imap [ n + dx(map[n]) , n + dy(map[n]) ] = -map[n]
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(map, map_extent, imap)  \
-  schedule(static)
-#endif
+    DT_OMP_FOR()
     for(int y = 0; y <  map_extent->height; y++)
     {
       const float complex *const row = map + y * map_extent->width;
@@ -1182,11 +1169,7 @@ static float complex *create_global_distortion_map(const cairo_rectangle_int_t *
     // distortion mask is only used to compute a final displacement of
     // points.
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(imap, map_extent) \
-  schedule(static)
-#endif
+    DT_OMP_FOR()
     for(int y = 0; y <  map_extent->height; y++)
     {
       float complex *const row = imap + y * map_extent->width;
@@ -1294,12 +1277,7 @@ static gboolean _distort_xtransform(dt_iop_module_t *self,
   // compute the extent of all points (all computations are done in RAW coordinate)
   float xmin = FLT_MAX, xmax = FLT_MIN, ymin = FLT_MAX, ymax = FLT_MIN;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(points_count, points, scale) \
-    schedule(simd:static) if(points_count > 100)          \
-    reduction(min:xmin, ymin) reduction(max:xmax, ymax)
-#endif
+  DT_OMP_FOR(if(points_count > 100) reduction(min:xmin, ymin) reduction(max:xmax, ymax))
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
     const float x = points[i] * scale;
@@ -1338,11 +1316,7 @@ static gboolean _distort_xtransform(dt_iop_module_t *self,
 
     // apply distortion to all points (this is a simple displacement
     // given by a vector at this same point in the map)
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(points_count, points, scale, extent, map, map_size, y_last, x_last) \
-    schedule(static) if(points_count > 100)
-#endif
+    DT_OMP_FOR(if(points_count > 100))
     for(size_t i = 0; i < points_count; i++)
     {
       float *px = &points[i*2];

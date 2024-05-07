@@ -144,9 +144,7 @@ void process(struct dt_iop_module_t *self,
   dt_colormatrix_t matrix;
   _calculate_adjustment_matrix(params, pipe_work_profile, matrix);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(matrix) dt_omp_firstprivate(ivoid, ovoid, roi_out)
-#endif
+  DT_OMP_FOR(shared(matrix))
   for(size_t k = 0; k < 4 * roi_out->width * roi_out->height; k += 4)
   {
     const float *const restrict in = ((const float *)ivoid) + k;

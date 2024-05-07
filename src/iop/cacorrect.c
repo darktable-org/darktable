@@ -329,11 +329,7 @@ void process(
       goto writeout;
     }
     // copy raw values before ca correction
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, width, filters, in, oldraw, h_width)       \
-  schedule(static)
-#endif
+    DT_OMP_FOR()
     for(size_t row = 0; row < height; row++)
     {
       for(size_t col = (FC(row, 0, filters) & 1); col < width; col += 2)
@@ -382,9 +378,7 @@ void process(
     // A reminder, be very careful if you try to optimize the parallel processing loop
     // for not breaking multipass mode and clang/gcc differences.
     // See darktable file history and related problems before doing so.
-#ifdef _OPENMP
-#pragma omp parallel
-#endif
+    DT_OMP_PRAGMA(parallel)
     {
       // direction of the CA shift in a tile
       int GRBdir[2][3];
@@ -439,9 +433,7 @@ void process(
       float *gshift = rbhpfv; // there is no overlap in buffer usage => share
 
 // Main algorithm: Tile loop calculating correction parameters per tile
-#ifdef _OPENMP
-#pragma omp for collapse(2) schedule(static) nowait
-#endif
+      DT_OMP_PRAGMA(for collapse(2) schedule(static) nowait)
       for(int top = -border; top < height; top += ts - border2)
       {
         for(int left = -border; left < width; left += ts - border2)
@@ -687,9 +679,7 @@ void process(
       }
       // end of diagnostic pass per tile
 
-#ifdef _OPENMP
-#pragma omp critical(cadetectpass2)
-#endif
+      DT_OMP_PRAGMA(critical(cadetectpass2))
       {
         for(int dir = 0; dir < 2; dir++)
           for(int c = 0; c < 2; c++)
@@ -700,13 +690,9 @@ void process(
           }
       }
 
-#ifdef _OPENMP
-#pragma omp barrier
-#endif
+      DT_OMP_PRAGMA(barrier)
 
-#ifdef _OPENMP
-#pragma omp single
-#endif
+      DT_OMP_PRAGMA(single)
       {
         for(int dir = 0; dir < 2; dir++)
         {
@@ -856,9 +842,7 @@ void process(
       // Main algorithm: Tile loop
       if(processpasstwo)
       {
-#ifdef _OPENMP
-#pragma omp for schedule(static) collapse(2) nowait
-#endif
+        DT_OMP_PRAGMA(for schedule(static) collapse(2) nowait)
         for(int top = -border; top < height; top += ts - border2)
         {
           for(int left = -border; left < width; left += ts - border2)
@@ -1125,13 +1109,9 @@ void process(
           }
         }
 
-#ifdef _OPENMP
-#pragma omp barrier
-#endif
+DT_OMP_PRAGMA(barrier)
 // copy temporary image matrix back to image matrix
-#ifdef _OPENMP
-#pragma omp for
-#endif
+        DT_OMP_PRAGMA(for)
         for(int row = 0; row < height; row++)
           for(int col = 0 + (FC(row, 0, filters) & 1), indx = (row * width + col) >> 1; col < width; col += 2, indx++)
           {
@@ -1147,9 +1127,7 @@ void process(
     // to avoid or at least reduce the colour shift caused by raw ca correction we compute the per pixel difference factors
     // of red and blue channel and apply a gaussian blur to them.
     // Then we apply the resulting factors per pixel on the result of raw ca correction
-#ifdef _OPENMP
-#pragma omp parallel for
-#endif
+    DT_OMP_FOR()
     for(int row = 0; row < height; row++)
     {
       const int firstCol = FC(row, 0, filters) & 1;
@@ -1196,11 +1174,7 @@ void process(
       dt_gaussian_blur(red, redfactor, redfactor);
       dt_gaussian_blur(blue, bluefactor, bluefactor);
 
-#ifdef _OPENMP
-#pragma omp parallel for \
-  dt_omp_firstprivate(out, height, width, filters, redfactor, bluefactor)  \
-  schedule(static)
-#endif
+      DT_OMP_FOR()
       for(size_t row = 2; row < height - 2; row++)
       {
         const int firstCol = FC(row, 0, filters) & 1;
@@ -1218,11 +1192,7 @@ void process(
   }
 
   writeout:
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(output, out, roi_in, roi_out, scaler) \
-  schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR(collapse(2))
   for(size_t row = 0; row < roi_out->height; row++)
   {
     for(size_t col = 0; col < roi_out->width; col++)

@@ -145,11 +145,7 @@ void process(struct dt_iop_module_t *self,
   const float *lut = d->lut;
   const size_t npixels = (size_t)roi_out->height * roi_out->width;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(i, o, npixels, threshold, coeff, lut, XYZ_sw)        \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < (size_t)npixels; k++)
   {
     const float *const in = (float *)i + 4 * k;

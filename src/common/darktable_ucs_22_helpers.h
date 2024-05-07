@@ -57,12 +57,7 @@ static inline void dt_UCS_22_build_gamut_LUT(dt_colormatrix_t input_matrix, floa
   float *const restrict lut_sampler = dt_calloc_align_float(LUT_ELEM);
 
   // March the gamut boundary in CIE xyY 1931 by angular steps of 0.02°
-  #ifdef _OPENMP
-    #pragma omp parallel for default(none) \
-          dt_omp_firstprivate(input_matrix, xyY_red, xyY_green, xyY_blue, h_red, h_green, h_blue, D65_xyY) \
-          reduction(max : lut_sampler[:LUT_ELEM]) \
-        schedule(static)
-  #endif
+  DT_OMP_FOR(reduction(max : lut_sampler[:LUT_ELEM]))
   for(int i = 0; i < 50 * 360; i++)
   {
     const float angle = -M_PI_F + ((float)i) / (50.f * 360.f) * 2.f * M_PI_F;
@@ -192,9 +187,7 @@ static inline float soft_clip(const float x, const float soft_threshold, const f
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(HSB: 16) uniform(gamut_LUT, L_white)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(HSB: 16) uniform(gamut_LUT, L_white))
 static inline void gamut_map_HSB(dt_aligned_pixel_t HSB, const float gamut_LUT[LUT_ELEM], const float L_white)
 {
   /**

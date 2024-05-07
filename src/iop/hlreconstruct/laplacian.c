@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2010-2023 darktable developers.
+   Copyright (C) 2010-2024 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -50,12 +50,7 @@ static void _interpolate_and_mask(const float *const restrict input,
                                   const size_t height)
 {
   // Bilinear interpolation
-  #ifdef _OPENMP
-  #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(width, height, clips, filters, wb)  \
-    dt_omp_sharedconst(input, interpolated, clipping_mask) \
-    schedule(static)
-  #endif
+  DT_OMP_FOR()
   for(size_t i = 0; i < height; i++)
     for(size_t j = 0; j < width; j++)
     {
@@ -191,12 +186,7 @@ static void _remosaic_and_replace(const float *const restrict input,
                                   const size_t height)
 {
   // Take RGB ratios and norm, reconstruct RGB and remosaic the image
-  #ifdef _OPENMP
-  #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(width, height, filters, wb)  \
-    dt_omp_sharedconst(output, interpolated, input, clipping_mask) \
-    schedule(static)
-  #endif
+  DT_OMP_FOR()
   for(size_t i = 0; i < height; i++)
     for(size_t j = 0; j < width; j++)
     {
@@ -225,11 +215,7 @@ static inline void guide_laplacians(const float *const restrict high_freq,
   const float *const restrict LF = DT_IS_ALIGNED(low_freq);
   const float *const restrict HF = DT_IS_ALIGNED(high_freq);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none)                                                                            \
-    dt_omp_firstprivate(out, clipping_mask, HF, LF, height, width, mult, noise_level, salt, scale, radius_sq) \
-    schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t row = 0; row < height; ++row)
   {
     // interleave the order in which we process the rows so that we minimize cache misses
@@ -413,11 +399,7 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq,
   const float *const restrict LF = DT_IS_ALIGNED(low_freq);
   const float *const restrict HF = DT_IS_ALIGNED(high_freq);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none)                                                                            \
-    dt_omp_firstprivate(out, clipping_mask, HF, LF, height, width, mult, scale, first_order_factor) \
-    schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t row = 0; row < height; ++row)
   {
     // interleave the order in which we process the rows so that we minimize cache misses

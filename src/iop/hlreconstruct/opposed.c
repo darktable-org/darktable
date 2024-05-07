@@ -123,12 +123,7 @@ static void _process_linear_opposed(
   if(mask)
   {
     gboolean anyclipped = FALSE;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  reduction( | : anyclipped) \
-  dt_omp_firstprivate(clips, input, roi_in, mask, msize, mwidth) \
-  schedule(static)
-#endif
+    DT_OMP_FOR(reduction( | : anyclipped))
     for(size_t row = 1; row < roi_in->height -1; row++)
     {
       for(size_t col = 1; col < roi_in->width -1; col++)
@@ -155,11 +150,7 @@ static void _process_linear_opposed(
 
     if(anyclipped)
     {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(mask, mwidth, mheight, msize) \
-  schedule(static) collapse(2)
-#endif
+      DT_OMP_FOR(collapse(2))
       for(size_t row = 3; row < mheight - 3; row++)
       {
         for(size_t col = 3; col < mwidth - 3; col++)
@@ -171,12 +162,7 @@ static void _process_linear_opposed(
         }
       }
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(input, roi_in, clips, mask, msize, mwidth) \
-  reduction(+ : sums, cnts) \
-  schedule(static)
-#endif
+      DT_OMP_FOR(reduction(+ : sums, cnts))
       for(size_t row = 3; row < roi_in->height - 3; row++)
       {
         for(size_t col = 3; col < roi_in->width - 3; col++)
@@ -198,11 +184,7 @@ static void _process_linear_opposed(
     }
     dt_free_align(mask);
   }
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(output, input, roi_in, roi_out, chrominance, clips) \
-  schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR(collapse(2))
   for(ssize_t row = 0; row < roi_out->height; row++)
   {
     for(ssize_t col = 0; col < roi_out->width; col++)
@@ -272,12 +254,7 @@ static float *_process_opposed(
     if(mask)
     {
       gboolean anyclipped = FALSE;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  reduction( | : anyclipped) \
-  dt_omp_firstprivate(clips, input, roi_in, xtrans, mask, filters, msize, mwidth, mheight) \
-  schedule(static) collapse(2)
-#endif
+      DT_OMP_FOR(reduction( | : anyclipped) collapse(2))
       for(int mrow = 1; mrow < mheight-1; mrow++)
       {
         for(int mcol = 1; mcol < mwidth-1; mcol++)
@@ -312,11 +289,7 @@ static float *_process_opposed(
          to get those locations.
          If there are no clipped locations we keep the chrominance correction at 0 but make it valid
         */
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(mask, mwidth, mheight, msize) \
-  schedule(static) collapse(2)
-#endif
+        DT_OMP_FOR(collapse(2))
         for(size_t row = 3; row < mheight - 3; row++)
         {
           for(size_t col = 3; col < mwidth - 3; col++)
@@ -330,12 +303,7 @@ static float *_process_opposed(
 
         const dt_aligned_pixel_t lo_clips = { 0.2f * clips[0], 0.2f * clips[1], 0.2f * clips[2], 1.0f };
        /* After having the surrounding mask for each color channel we can calculate the chrominance corrections. */
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(input, roi_in, xtrans, clips, lo_clips, mask, filters, msize, mwidth, correction) \
-  reduction(+ : sums, cnts) \
-  schedule(static) collapse(2)
-#endif
+        DT_OMP_FOR(reduction(+ : sums, cnts) collapse(2))
         for(size_t row = 3; row < roi_in->height - 3; row++)
         {
           for(size_t col = 3; col < roi_in->width - 3; col++)
@@ -379,11 +347,7 @@ static float *_process_opposed(
   float *tmpout = (keep) ? dt_alloc_align_float(roi_in->width * roi_in->height) : NULL;
   if(tmpout)
   {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(clips, input, tmpout, roi_in, xtrans, chrominance, filters, correction) \
-  schedule(static) collapse(2)
-#endif
+    DT_OMP_FOR(collapse(2))
     for(size_t row = 0; row < roi_in->height; row++)
     {
       for(size_t col = 0; col < roi_in->width; col++)
@@ -402,11 +366,7 @@ static float *_process_opposed(
     }
   }
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(output, input, tmpout, chrominance, clips, xtrans, roi_in, roi_out, filters, correction) \
-  schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR(collapse(2))
   for(size_t row = 0; row < roi_out->height; row++)
   {
     for(size_t col = 0; col < roi_out->width; col++)

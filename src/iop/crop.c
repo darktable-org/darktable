@@ -284,14 +284,13 @@ gboolean distort_transform(dt_iop_module_t *self,
   // nothing to be done if parameters are set to neutral values (no top/left border)
   if(crop_top == 0 && crop_left == 0) return TRUE;
 
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) dt_omp_firstprivate(points, points_count, crop_left, crop_top)        \
-    schedule(static) if(points_count > 100) aligned(points : 64)
-#endif
+  float *const pts = DT_IS_ALIGNED(points);
+
+  DT_OMP_FOR(if(points_count > 100))
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
-    points[i] -= crop_left;
-    points[i + 1] -= crop_top;
+    pts[i] -= crop_left;
+    pts[i + 1] -= crop_top;
   }
 
   return TRUE;
@@ -310,14 +309,13 @@ gboolean distort_backtransform(dt_iop_module_t *self,
   // nothing to be done if parameters are set to neutral values (no top/left border)
   if(crop_top == 0 && crop_left == 0) return TRUE;
 
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) dt_omp_firstprivate(points, points_count, crop_left, crop_top)        \
-    schedule(static) if(points_count > 100) aligned(points : 64)
-#endif
+  float *const pts = DT_IS_ALIGNED(points);
+
+  DT_OMP_FOR(if(points_count > 100))
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
-    points[i] += crop_left;
-    points[i + 1] += crop_top;
+    pts[i] += crop_left;
+    pts[i + 1] += crop_top;
   }
 
   return TRUE;
