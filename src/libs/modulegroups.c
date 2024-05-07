@@ -35,12 +35,6 @@
 #include "osx/osx.h"
 #endif
 
-extern void dt_presets_popup_callback(GtkButton *button,
-                                      dt_iop_module_t *module);
-extern void dt_iop_reset_callback(GtkButton *button,
-                                  GdkEventButton *event,
-                                  dt_iop_module_t *module);
-
 DT_MODULE(1)
 
 // the T_ macros are for the translation engine to take them into account
@@ -419,38 +413,9 @@ static gboolean _basics_goto_module(GtkWidget *w, GdkEventButton *e, gpointer us
   return TRUE;
 }
 
-static gboolean _basics_reset_module(GtkWidget *w, GdkEventButton *e, gpointer user_data)
+static void _basics_on_off_label_callback(GtkWidget *widget, GdkEventButton *e, GtkToggleButton *btn)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)(user_data);
-  dt_iop_reset_callback((GtkButton*)w, e, module);
-  return TRUE;
-}
-
-static gboolean _basics_apply_preset(GtkWidget *w, GdkEventButton *e, gpointer user_data)
-{
-  dt_iop_module_t *module = (dt_iop_module_t *)(user_data);
-  dt_presets_popup_callback(NULL,module);
-  return TRUE;
-}
-
-static void _basics_on_off_callback(GtkWidget *btn, dt_lib_modulegroups_basic_item_t *item)
-{
-  // we switch the "real" button accordingly
-  if(darktable.gui->reset) return;
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(item->module->off),
-                               gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn)));
-}
-static void _basics_on_off_callback2(GtkWidget *widget, GdkEventButton *e, dt_lib_modulegroups_basic_item_t *item)
-{
-  // we get the button and change its state
-  GtkToggleButton *btn = (GtkToggleButton *)dt_gui_container_first_child(GTK_CONTAINER(item->box));
-  if(btn)
-  {
-    darktable.gui->reset++;
-    gtk_toggle_button_set_active(btn, !gtk_toggle_button_get_active(btn));
-    darktable.gui->reset--;
-    gtk_toggle_button_toggled(btn);
-  }
+  gtk_toggle_button_set_active(btn, !gtk_toggle_button_get_active(btn));
 }
 
 static void _sync_visibility(GtkWidget *widget,
@@ -498,18 +463,16 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
 
       // we create a new button linked with the real one
       // because it create too much pb to remove the button from the expander
-      GtkWidget *btn = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, 0, item->module);
-
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(btn),
-                                   gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(item->widget)));
-      g_signal_connect(G_OBJECT(btn), "toggled", G_CALLBACK(_basics_on_off_callback), item);
-      gtk_box_pack_start(GTK_BOX(item->box), btn, FALSE, FALSE, 0);
+      GtkWidget *btn = dt_iop_gui_header_button(item->module,
+                                                dtgtk_cairo_paint_switch,
+                                                DT_ACTION_ELEMENT_ENABLE,
+                                                item->box);
       GtkWidget *evb = gtk_event_box_new();
       GtkWidget *lb = gtk_label_new(item->module->name());
       gtk_label_set_xalign(GTK_LABEL(lb), 0.0);
       gtk_widget_set_name(lb, "basics-iop_name");
       gtk_container_add(GTK_CONTAINER(evb), lb);
-      g_signal_connect(G_OBJECT(evb), "button-press-event", G_CALLBACK(_basics_on_off_callback2), item);
+      g_signal_connect(G_OBJECT(evb), "button-press-event", G_CALLBACK(_basics_on_off_label_callback), btn);
       gtk_box_pack_start(GTK_BOX(item->box), evb, FALSE, TRUE, 0);
 
       // disable widget if needed (multiinstance)
@@ -526,7 +489,7 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
       }
       else
       {
-        GtkWidget *orig_label = dt_gui_container_nth_child(GTK_CONTAINER(item->module->header), IOP_MODULE_LABEL);
+        GtkWidget *orig_label = gtk_widget_get_parent(item->module->label);
         gchar *tooltip = gtk_widget_get_tooltip_text(orig_label);
         gtk_widget_set_tooltip_text(lb, tooltip);
         gtk_widget_set_tooltip_text(btn, tooltip);
@@ -646,22 +609,6 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     gtk_box_pack_start(GTK_BOX(hbox_basic), d->mod_vbox_basic, TRUE, TRUE, 0);
     gtk_widget_show_all(hbox_basic);
 
-    // we create a button to reset the module
-    GtkWidget *rbt = dtgtk_button_new(dtgtk_cairo_paint_reset, 0, NULL);
-    gtk_widget_show(rbt);
-    gtk_widget_set_tooltip_text(rbt,_("reset parameters\nctrl+click to reapply any automatic presets"));
-    gtk_widget_set_name(rbt, "quick-reset");
-    gtk_widget_set_valign(rbt, GTK_ALIGN_CENTER);
-    g_signal_connect(G_OBJECT(rbt), "button-press-event", G_CALLBACK(_basics_reset_module), item->module);
-
-    // we create a button to open the presets menu
-    GtkWidget *pbt = dtgtk_button_new(dtgtk_cairo_paint_presets, 0, NULL);
-    gtk_widget_show(pbt);
-    gtk_widget_set_tooltip_text(pbt, _("presets"));
-    gtk_widget_set_name(pbt, "quick-presets");
-    gtk_widget_set_valign(pbt, GTK_ALIGN_CENTER);
-    g_signal_connect(G_OBJECT(pbt), "button-press-event", G_CALLBACK(_basics_apply_preset), item->module);
-
     // we create the link to the full iop
     GtkWidget *wbt = dtgtk_button_new(dtgtk_cairo_paint_link, 0, NULL);
     gtk_widget_show(wbt);
@@ -671,39 +618,43 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     gtk_widget_set_valign(wbt, GTK_ALIGN_CENTER);
     g_free(tt);
     g_signal_connect(G_OBJECT(wbt), "button-press-event", G_CALLBACK(_basics_goto_module), item->module);
+    gtk_box_pack_end(GTK_BOX(compact_ui ? hbox_basic : header_box), wbt, FALSE, FALSE, 0);
+
+    // we create a button to open the presets menu
+    GtkWidget *pbt = dt_iop_gui_header_button(item->module,
+                                              dtgtk_cairo_paint_presets,
+                                              DT_ACTION_ELEMENT_PRESETS,
+                                              compact_ui ? hbox_basic : header_box);
+    gtk_widget_set_name(pbt, "quick-presets");
+    gtk_widget_set_valign(pbt, GTK_ALIGN_CENTER);
+
+    // we create a button to reset the module
+    GtkWidget *rbt = dt_iop_gui_header_button(item->module,
+                                              dtgtk_cairo_paint_reset,
+                                              DT_ACTION_ELEMENT_RESET,
+                                              compact_ui ? hbox_basic : header_box);
+    gtk_widget_set_name(rbt, "quick-reset");
+    gtk_widget_set_valign(rbt, GTK_ALIGN_CENTER);
 
     if(!compact_ui)
     {
       // we add the on-off button
-      GtkWidget *btn = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, 0, item->module);
+      GtkWidget *btn = dt_iop_gui_header_button(item->module,
+                                                dtgtk_cairo_paint_switch,
+                                                DT_ACTION_ELEMENT_ENABLE,
+                                                header_box);
 
       gtk_widget_set_valign(btn, GTK_ALIGN_CENTER);
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(btn),
-                                   gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(item->module->off)));
-      g_signal_connect(G_OBJECT(btn), "toggled", G_CALLBACK(_basics_on_off_callback), item);
-      gtk_widget_show(btn);
       dt_gui_add_class(btn, "dt_transparent_background");
-      gtk_box_pack_start(GTK_BOX(header_box), btn, FALSE, FALSE, 0);
       // we add to the module header the section label and the link to the full iop
       GtkWidget *sect = dt_ui_section_label_new(item->module->name());
       gtk_label_set_xalign(GTK_LABEL(sect), 0.5); // we center the module name
       gtk_widget_show(sect);
       gtk_box_pack_start(GTK_BOX(header_box), sect, TRUE, TRUE, 0);
-
-      gtk_box_pack_end(GTK_BOX(header_box), wbt, FALSE, FALSE, 0);
-      gtk_box_pack_end(GTK_BOX(header_box), pbt, FALSE, FALSE, 0);
-      gtk_box_pack_end(GTK_BOX(header_box), rbt, FALSE, FALSE, 0);
     }
-    else
-    {
-      // if there is no section label, we add the presets menu and link to the module hbox
-      gtk_box_pack_end(GTK_BOX(hbox_basic), wbt, FALSE, FALSE, 0);
-      gtk_box_pack_end(GTK_BOX(hbox_basic), pbt, FALSE, FALSE, 0);
-      gtk_box_pack_end(GTK_BOX(hbox_basic), rbt, FALSE, FALSE, 0);
-
+    else if(item_pos == FIRST_MODULE)
       // if there is no label, we handle separately in css the first module header
-      if(item_pos == FIRST_MODULE) gtk_widget_set_name(header_box, "basics-header-box-first");
-    }
+      gtk_widget_set_name(header_box, "basics-header-box-first");
   }
 
   if(item->box) gtk_box_pack_start(GTK_BOX(d->mod_vbox_basic), item->box, FALSE, FALSE, 0);

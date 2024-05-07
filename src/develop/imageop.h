@@ -66,18 +66,6 @@ struct dt_develop_blend_params_t;
 struct dt_develop_tiling_t;
 struct dt_iop_color_picker_t;
 
-typedef enum dt_iop_module_header_icons_t
-{
-  IOP_MODULE_SWITCH = 0,
-  IOP_MODULE_ICON,
-  IOP_MODULE_LABEL,
-  IOP_MODULE_INSTANCE_NAME,
-  IOP_MODULE_INSTANCE,
-  IOP_MODULE_RESET,
-  IOP_MODULE_PRESETS,
-  IOP_MODULE_LAST
-} dt_iop_module_header_icons_t;
-
 /** module group */
 typedef enum dt_iop_group_t
 {
@@ -160,6 +148,13 @@ typedef enum dt_dev_request_colorpick_flags_t
   DT_REQUEST_COLORPICK_OFF = 0,   // off
   DT_REQUEST_COLORPICK_MODULE = 1 // requested by module (should take precedence)
 } dt_dev_request_colorpick_flags_t;
+
+enum
+{
+  DT_ACTION_ELEMENT_ENABLE = 3,
+  DT_ACTION_ELEMENT_FOCUS = 4,
+  DT_ACTION_ELEMENT_INSTANCE = 5,
+};
 
 /** part of the module which only contains the cached dlopen stuff. */
 typedef struct dt_iop_module_so_t
@@ -274,7 +269,7 @@ typedef struct dt_iop_module_t
   /** child widget which is added to the GtkExpander. copied from module_so_t. */
   GtkWidget *widget;
   /** off button, somewhere in header, common to all plug-ins. */
-  GtkDarktableToggleButton *off;
+  GtkWidget *off;
   /** this is the module header, contains label and buttons */
   GtkWidget *header;
   GtkWidget *label;
@@ -416,6 +411,11 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module);
 GtkWidget *dt_iop_gui_get_widget(dt_iop_module_t *module);
 /** get the eventbox of plugin ui in expander */
 GtkWidget *dt_iop_gui_get_pluginui(dt_iop_module_t *module);
+/** create one of the header buttons */
+GtkWidget *dt_iop_gui_header_button(dt_iop_module_t *module,
+                                    DTGTKCairoPaintIconFunc paint,
+                                    dt_action_element_t element,
+                                    GtkWidget *header);
 
 /** requests the focus for this plugin (to draw overlays over the center image) */
 void dt_iop_request_focus(dt_iop_module_t *module);
