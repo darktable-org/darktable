@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -131,7 +131,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const float threshold = data->threshold;
 /* get the thresholded lights into buffer */
-  DT_OMP_FOR(shared(blurlightness) dt_omp_sharedconst(in))
+  DT_OMP_FOR()
   for(size_t k = 0; k < npixels; k++)
   {
     const float L = in[4*k] * scale;
@@ -145,7 +145,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   dt_box_mean(blurlightness, roi_out->height, roi_out->width, 1, hr, BOX_ITERATIONS);
 
 /* screen blend lightness with original */
-  DT_OMP_FOR(shared(blurlightness) dt_omp_sharedconst(in, out))
+  DT_OMP_FOR()
   for(size_t k = 0; k < npixels; k++)
   {
     out[4*k+0] = 100.0f - (((100.0f - in[4*k]) * (100.0f - blurlightness[k])) / 100.0f); // Screen blend

@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  Copyright (C) 2015-2023 darktable developers.
+  Copyright (C) 2015-2024 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -378,13 +378,17 @@ static dt_iop_colorreconstruct_bilateral_t *dt_iop_colorreconstruct_bilateral_th
 }
 
 
-static void dt_iop_colorreconstruct_bilateral_splat(dt_iop_colorreconstruct_bilateral_t *b, const float *const in, const float threshold,
-                                                    dt_iop_colorreconstruct_precedence_t precedence, const float *params)
+static void dt_iop_colorreconstruct_bilateral_splat(
+        dt_iop_colorreconstruct_bilateral_t *b,
+        const float *const in,
+        const float threshold,
+        dt_iop_colorreconstruct_precedence_t precedence,
+        const float *params)
 {
   if(!b) return;
 
   // splat into downsampled grid
-  DT_OMP_FOR(shared(b, precedence, params))
+  DT_OMP_FOR()
   for(int j = 0; j < b->height; j++)
   {
     size_t index = (size_t)4 * j * b->width;
@@ -440,15 +444,20 @@ static void dt_iop_colorreconstruct_bilateral_splat(dt_iop_colorreconstruct_bila
 }
 
 
-static void blur_line(dt_iop_colorreconstruct_Lab_t *buf, const int offset1, const int offset2, const int offset3, const int size1,
-                      const int size2, const int size3)
+static void blur_line(dt_iop_colorreconstruct_Lab_t *buf,
+                      const int offset1,
+                      const int offset2,
+                      const int offset3,
+                      const int size1,
+                      const int size2,
+                      const int size3)
 {
   if(!buf) return;
 
   const float w0 = 6.f / 16.f;
   const float w1 = 4.f / 16.f;
   const float w2 = 1.f / 16.f;
-  DT_OMP_FOR(shared(buf))
+  DT_OMP_FOR()
   for(int k = 0; k < size1; k++)
   {
     size_t index = (size_t)k * offset1;
