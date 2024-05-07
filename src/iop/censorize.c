@@ -48,7 +48,7 @@ DT_MODULE_INTROSPECTION(1, dt_iop_censorize_params_t)
 typedef struct dt_iop_censorize_params_t
 {
   float radius_1;              // $MIN: 0.0 $MAX: 500.0 $DEFAULT: 0.0  $DESCRIPTION: "input blur radius"
-  float pixelate;              // $MIN: 0.0 $MAX: 500.0 $DEFAULT: 0.0 $DESCRIPTION: "pixellation radius"
+  float pixelate;              // $MIN: 0.0 $MAX: 500.0 $DEFAULT: 0.0 $DESCRIPTION: "pixelization radius"
   float radius_2;              // $MIN: 0.0 $MAX: 500.0 $DEFAULT: 0.0  $DESCRIPTION: "output blur radius"
   float noise;                 // $MIN: 0.0 $MAX: 1.0   $DEFAULT: 0.0   $DESCRIPTION: "noise level"
 } dt_iop_censorize_params_t;
@@ -402,9 +402,9 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->noise = dt_bauhaus_slider_from_params(self, N_("noise"));
 
-  gtk_widget_set_tooltip_text(g->radius_1, _("radius of gaussian blur before pixellation"));
-  gtk_widget_set_tooltip_text(g->radius_2, _("radius of gaussian blur after pixellation"));
-  gtk_widget_set_tooltip_text(g->pixelate, _("radius of the intermediate pixellation"));
+  gtk_widget_set_tooltip_text(g->radius_1, _("radius of gaussian blur before pixelization"));
+  gtk_widget_set_tooltip_text(g->radius_2, _("radius of gaussian blur after pixelization"));
+  gtk_widget_set_tooltip_text(g->pixelate, _("radius of the intermediate pixelization"));
   gtk_widget_set_tooltip_text(g->noise, _("amount of noise to add at the end"));
 }
 
@@ -413,4 +413,3 @@ void gui_init(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
