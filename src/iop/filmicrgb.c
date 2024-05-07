@@ -2617,7 +2617,7 @@ static void apply_auto_grey(dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->output_power, p->output_power);
   --darktable.gui->reset;
 
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2644,7 +2644,7 @@ static void apply_auto_black(dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->output_power, p->output_power);
   --darktable.gui->reset;
 
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2672,7 +2672,7 @@ static void apply_auto_white_point_source(dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->output_power, p->output_power);
   --darktable.gui->reset;
 
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2712,7 +2712,7 @@ static void apply_autotune(dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->output_power, p->output_power);
   --darktable.gui->reset;
 
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
