@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2023 darktable developers.
+    Copyright (C) 2016-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -261,9 +261,7 @@ void dt_iop_image_scaled_copy(float *const restrict buf,
   }
 #endif // _OPENMP
   // no OpenMP, or image too small to bother parallelizing
-#ifdef _OPENMP
-#pragma simd aligned(buf, src : 16)
-#endif
+  DT_OMP_SIMD(aligned(buf, src : 16))
   for(size_t k = 0; k < nfloats; k++)
     buf[k] = scale * src[k];
 }
@@ -304,9 +302,7 @@ void dt_iop_image_fill(float *const buf,
   }
   else
   {
-#ifdef _OPENMP
-#pragma simd aligned(buf:16)
-#endif
+    DT_OMP_SIMD(aligned(buf:16))
     for(size_t k = 0; k < nfloats; k++)
       buf[k] = fill_value;
   }
@@ -335,9 +331,7 @@ void dt_iop_image_add_const(float *const buf,
   }
 #endif // _OPENMP
   // no OpenMP, or image too small to bother parallelizing
-#ifdef _OPENMP
-#pragma simd aligned(buf:16)
-#endif
+  DT_OMP_SIMD(aligned(buf:16))
   for(size_t k = 0; k < nfloats; k++)
     buf[k] += add_value;
 }
@@ -365,9 +359,7 @@ void dt_iop_image_add_image(float *const buf,
   }
 #endif // _OPENMP
   // no OpenMP, or image too small to bother parallelizing
-#ifdef _OPENMP
-#pragma simd aligned(buf, other_image : 16)
-#endif
+  DT_OMP_SIMD(aligned(buf, other_image : 16))
   for(size_t k = 0; k < nfloats; k++)
     buf[k] += other_image[k];
 }
@@ -395,9 +387,7 @@ void dt_iop_image_sub_image(float *const buf,
   }
 #endif // _OPENMP
   // no OpenMP, or image too small to bother parallelizing
-#ifdef _OPENMP
-#pragma simd aligned(buf, other_image : 16)
-#endif
+  DT_OMP_SIMD(aligned(buf, other_image : 16))
   for(size_t k = 0; k < nfloats; k++)
     buf[k] -= other_image[k];
 }
@@ -425,9 +415,7 @@ void dt_iop_image_invert(float *const buf,
   }
 #endif // _OPENMP
   // no OpenMP, or image too small to bother parallelizing
-#ifdef _OPENMP
-#pragma simd aligned(buf:16)
-#endif
+  DT_OMP_SIMD(aligned(buf:16))
   for(size_t k = 0; k < nfloats; k++)
     buf[k] = max_value - buf[k];
 }
@@ -455,9 +443,7 @@ void dt_iop_image_mul_const(float *const buf,
   }
 #endif // _OPENMP
   // no OpenMP, or image too small to bother parallelizing
-#ifdef _OPENMP
-#pragma simd aligned(buf:16)
-#endif
+  DT_OMP_SIMD(aligned(buf:16))
   for(size_t k = 0; k < nfloats; k++)
     buf[k] *= mul_value;
 }
@@ -485,9 +471,7 @@ void dt_iop_image_div_const(float *const buf,
   }
 #endif // _OPENMP
   // no OpenMP, or image too small to bother parallelizing
-#ifdef _OPENMP
-#pragma simd aligned(buf:16)
-#endif
+  DT_OMP_SIMD(aligned(buf:16))
   for(size_t k = 0; k < nfloats; k++)
     buf[k] /= div_value;
 }
@@ -518,9 +502,7 @@ void dt_iop_image_linear_blend(float *const restrict buf,
   }
 #endif // _OPENMP
   // no OpenMP, or image too small to bother parallelizing
-#ifdef _OPENMP
-#pragma simd aligned(buf:16)
-#endif
+  DT_OMP_SIMD(aligned(buf:16))
   for(size_t k = 0; k < nfloats; k++)
     buf[k] = lambda*buf[k] + lambda_1*other[k];
 }
