@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020-2023 darktable developers.
+    Copyright (C) 2020-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -148,7 +148,7 @@ static void _transform_from_to_rgb_lab_lcms2(const float *const image_in,
 
   if(xform)
   {
-    DT_OMP_FOR(shared(xform))
+    DT_OMP_FOR()
     for(int y = 0; y < height; y++)
     {
       const float *const in = image_in + y * width * ch;
@@ -261,7 +261,7 @@ static void _transform_rgb_to_rgb_lcms2
 
   if(xform)
   {
-    DT_OMP_FOR(shared(xform))
+    DT_OMP_FOR()
     for(int y = 0; y < height; y++)
     {
       const float *const in = image_in + y * width * ch;

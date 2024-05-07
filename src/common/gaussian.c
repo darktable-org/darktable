@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2020 darktable developers.
+    Copyright (C) 2012-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -167,7 +167,7 @@ void dt_gaussian_blur(dt_gaussian_t *g, const float *const in, float *const out)
   float *Labmin = g->min;
 
 // vertical blur column by column
-  DT_OMP_FOR(shared(temp, Labmin, Labmax, a0, a1, a2, a3, b1, b2, coefp, coefn))
+  DT_OMP_FOR()
   for(int i = 0; i < width; i++)
   {
     dt_aligned_pixel_t xp = {0.0f};
@@ -235,7 +235,7 @@ void dt_gaussian_blur(dt_gaussian_t *g, const float *const in, float *const out)
   }
 
 // horizontal blur line by line
-  DT_OMP_FOR(shared(temp, Labmin, Labmax, a0, a1, a2, a3, b1, b2, coefp, coefn))
+  DT_OMP_FOR()
   for(int j = 0; j < height; j++)
   {
     dt_aligned_pixel_t xp = {0.0f};
