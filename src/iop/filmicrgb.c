@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2019-2023 darktable developers.
+   Copyright (C) 2019-2024 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -1097,8 +1097,7 @@ inline static void inpaint_noise(const float *const in, const float *const mask,
   // solver used in wavelets reconstruction to generate texture
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, mask, inpainted, width, height, noise_level, noise_distribution, threshold) \
+#pragma omp parallel for default(firstprivate) \
   schedule(simd:static) collapse(2)
 #endif
   for(size_t i = 0; i < height; i++)
@@ -1143,11 +1142,7 @@ inline static void wavelets_reconstruct_RGB(const float *const restrict HF, cons
                                             const float gamma_comp, const float beta, const float beta_comp,
                                             const float delta, const size_t s, const size_t scales)
 {
-#ifdef _OPENMP
-#pragma omp parallel for default(none)                                                                       \
-    dt_omp_firstprivate(width, height, HF, LF, texture, mask, reconstructed, gamma, gamma_comp, beta,         \
-                        beta_comp, delta, s, scales) schedule(simd : static)
-#endif
+  DT_OMP_PRAGMA(parallel for default(firstprivate) schedule(simd:static))
   for(size_t k = 0; k < 4 * height * width; k += 4)
   {
     const float alpha = mask[k / 4];
@@ -1220,12 +1215,7 @@ static inline void wavelets_reconstruct_ratios(const float *const restrict HF,
  * Note : ratios close to 1 mean higher spectral purity (more white). Ratios close to 0 mean lower spectral purity
  * (more colorful)
  */
-#ifdef _OPENMP
-#pragma omp parallel for default(none)                                  \
-  dt_omp_firstprivate(width, height, HF, LF, texture, mask, reconstructed, \
-                      gamma, gamma_comp, beta, beta_comp, delta, s, scales) \
-  schedule(simd:static)
-#endif
+  DT_OMP_PRAGMA(parallel for default(firstprivate) schedule(simd:static))
   for(size_t k = 0; k < 4 * height * width; k += 4)
   {
     const float alpha = mask[k / 4];
@@ -1430,11 +1420,7 @@ static inline void filmic_split_v1(const float *const restrict in,
   const dt_aligned_pixel_t output_power
     = { data->output_power, data->output_power, data->output_power, data->output_power };
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(width, height, data, in, out, work_profile, spline, output_power) \
-  schedule(simd : static)
-#endif
+  DT_OMP_PRAGMA(parallel for default(firstprivate) schedule(simd:static))
   for(size_t k = 0; k < height * width * 4; k += 4)
   {
     const float *const restrict pix_in = in + k;
@@ -1479,11 +1465,7 @@ static inline void filmic_split_v2_v3(const float *const restrict in,
   const dt_aligned_pixel_t output_power
     = { data->output_power, data->output_power, data->output_power, data->output_power };
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(width, height, data, in, out, work_profile, spline, output_power) \
-  schedule(simd : static)
-#endif
+  DT_OMP_PRAGMA(parallel for default(firstprivate) schedule(simd:static))
   for(size_t k = 0; k < height * width * 4; k += 4)
   {
     const float *const restrict pix_in = in + k;
@@ -1525,10 +1507,7 @@ static inline void filmic_chroma_v1(const float *const restrict in, float *const
                                     const dt_iop_filmic_rgb_spline_t spline, const int variant, const size_t width,
                                     const size_t height)
 {
-#ifdef _OPENMP
-#pragma omp parallel for default(none)                                                                       \
-    dt_omp_firstprivate(width, height, data, in, out, work_profile, variant, spline) schedule(simd : static)
-#endif
+  DT_OMP_PRAGMA(parallel for default(firstprivate) schedule(simd:static))
   for(size_t k = 0; k < height * width * 4; k += 4)
   {
     const float *const restrict pix_in = in + k;
@@ -1588,11 +1567,7 @@ static inline void filmic_chroma_v2_v3(const float *const restrict in,
                                        const size_t height,
                                        const dt_iop_filmicrgb_colorscience_type_t colorscience_version)
 {
-#ifdef _OPENMP
-#pragma omp parallel for default(none)                                                                       \
-    dt_omp_firstprivate(width, height, data, in, out, work_profile, variant, spline, colorscience_version)    \
-    schedule(simd :static)
-#endif
+  DT_OMP_PRAGMA(parallel for default(firstprivate) schedule(simd:static))
   for(size_t k = 0; k < 4 * height * width; k += 4)
   {
     const float *const restrict pix_in = in + k;
@@ -1910,14 +1885,7 @@ static inline void filmic_chroma_v4(const float *const restrict in,
   const float norm_min = exp_tonemapping_v2(0.f, data->grey_source, data->black_source, data->dynamic_range);
   const float norm_max = exp_tonemapping_v2(1.f, data->grey_source, data->black_source, data->dynamic_range);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none)                                                                       \
-    dt_omp_firstprivate(width, height, data, in, out, work_profile, input_matrix_trans, output_matrix, \
-                        output_matrix_trans, variant, spline, display_white, display_black, \
-                        export_input_matrix_trans, export_output_matrix, export_output_matrix_trans, \
-                        use_output_profile, norm_min, norm_max)         \
-    schedule(simd :static)
-#endif
+  DT_OMP_PRAGMA(parallel for default(firstprivate) schedule(simd:static))
   for(size_t k = 0; k < 4 * height * width; k += 4)
   {
     const float *const restrict pix_in = in + k;
@@ -1968,14 +1936,7 @@ static inline void filmic_split_v4(const float *const restrict in,
                                  export_input_matrix_trans, export_output_matrix, export_output_matrix_trans,
                                  work_profile, export_profile);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none)                                                                       \
-    dt_omp_firstprivate(width, height, data, in, out, work_profile, input_matrix_trans, output_matrix, \
-                        output_matrix_trans, variant, spline, display_white, display_black, \
-                        export_input_matrix_trans, export_output_matrix, export_output_matrix_trans, \
-                        use_output_profile)                             \
-    schedule(simd :static)
-#endif
+  DT_OMP_PRAGMA(parallel for default(firstprivate) schedule(simd:static))
   for(size_t k = 0; k < 4 * height * width; k += 4)
   {
     const float *const restrict pix_in = in + k;
@@ -2027,14 +1988,7 @@ static inline void filmic_v5(const float *const restrict in, float *const restri
   const float norm_min = exp_tonemapping_v2(0.f, data->grey_source, data->black_source, data->dynamic_range);
   const float norm_max = exp_tonemapping_v2(1.f, data->grey_source, data->black_source, data->dynamic_range);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none)                                                                       \
-    dt_omp_firstprivate(width, height, data, in, out, work_profile, input_matrix_trans, output_matrix, \
-                        output_matrix_trans, spline, display_white, display_black, norm_min, norm_max, \
-                        export_input_matrix_trans, export_output_matrix, export_output_matrix_trans, \
-                        use_output_profile)                             \
-    schedule(simd :static)
-#endif
+  DT_OMP_PRAGMA(parallel for default(firstprivate) schedule(simd:static))
   for(size_t k = 0; k < height * width * 4; k += 4)
   {
     const float *const restrict pix_in = in + k;
@@ -2114,11 +2068,7 @@ static inline void restore_ratios(float *const restrict ratios,
                                   const size_t width,
                                   const size_t height)
 {
-  #ifdef _OPENMP
-  #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(width, height, norms, ratios) \
-    schedule(simd:static)
-  #endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < height * width; k++)
   {
     for_each_channel(c,aligned(norms,ratios))

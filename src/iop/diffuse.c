@@ -1316,10 +1316,7 @@ static inline void inpaint_mask(float *const restrict inpainted,
                                 const size_t height)
 {
   // init the reconstruction with noise inside the masked areas
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(inpainted, original, mask, width, height) schedule(simd:static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < height * width * 4; k += 4)
   {
     if(mask[k / 4])

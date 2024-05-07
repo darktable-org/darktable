@@ -296,10 +296,7 @@ static void rcd_demosaic(
   const int num_vertical = 1 + (height - 2 * RCD_BORDER -1) / RCD_TILEVALID;
   const int num_horizontal = 1 + (width - 2 * RCD_BORDER -1) / RCD_TILEVALID;
 
-#ifdef _OPENMP
-  #pragma omp parallel \
-  dt_omp_firstprivate(width, height, filters, out, in, scaler, revscaler)
-#endif
+  DT_OMP_PRAGMA(parallel firstprivate(width, height, filters, out, in, scaler, revscaler))
   {
     float *const VH_Dir = dt_alloc_align_float((size_t) DT_RCD_TILESIZE * DT_RCD_TILESIZE);
     // ensure that border elements which are read but never actually set below are zeroed out
@@ -314,9 +311,7 @@ static void rcd_demosaic(
     // No overlapping use so re-use same buffer
     float *const lpf = PQ_Dir;
 
-#ifdef _OPENMP
-  #pragma omp for schedule(simd:static) collapse(2)
-#endif
+    DT_OMP_PRAGMA(for schedule(simd:static) collapse(2))
     for(int tile_vertical = 0; tile_vertical < num_vertical; tile_vertical++)
     {
       for(int tile_horizontal = 0; tile_horizontal < num_horizontal; tile_horizontal++)

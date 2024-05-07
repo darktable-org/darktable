@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -160,11 +160,7 @@ void process(struct dt_iop_module_t *self,
     const size_t npixels = (size_t)roi_out->width * roi_out->height;
     const float bias = data->bias;
 
-#ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-    dt_omp_firstprivate(ivoid, ovoid, npixels, strength, bias)      \
-    schedule(static)
-#endif
+    DT_OMP_FOR()
     for(size_t k = 0; k < npixels; k++)
     {
       const float *const in = (const float *const)ivoid + 4 * k;

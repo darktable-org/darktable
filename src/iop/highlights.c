@@ -621,11 +621,7 @@ static void process_clip(dt_dev_pixelpipe_iop_t *piece,
 
   const int ch = piece->pipe->dsc.filters ? 1 : 4;
   const size_t msize = (size_t)roi_out->width * roi_out->height * ch;
-#ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-    dt_omp_firstprivate(clip, in, out, msize) \
-    schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < msize; k++)
     out[k] = fminf(clip, in[k]);
 }

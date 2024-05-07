@@ -126,11 +126,7 @@ static void _calc_plane_candidates(const float *plane,
                                    const float clipval,
                                    const float badlevel)
 {
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(plane, refavg, seg, clipval, badlevel) \
-  schedule(dynamic)
-#endif
+  DT_OMP_PRAGMA(parallel for default(firstprivate) schedule(dynamic))
   for(uint32_t id = 2; id < seg->nr; id++)
   {
     seg->val1[id] = 0.0f;
@@ -552,9 +548,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
 
   if(dt_get_num_threads() >= HL_RGB_PLANES)
   {
-#ifdef _OPENMP
-  #pragma omp parallel num_threads(HL_RGB_PLANES)
-#endif
+    DT_OMP_PRAGMA(parallel num_threads(HL_RGB_PLANES))
     {
       dt_segmentize_plane(&isegments[dt_get_thread_num()]);
     }
