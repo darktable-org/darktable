@@ -219,9 +219,7 @@ gboolean distort_transform(dt_iop_module_t *self,
   const float x = (float)d->left * scale;
   const float y = (float)d->top * scale;
 
-  DT_OMP_PRAGMA(parallel for simd default(none)                 \
-                dt_omp_firstprivate(points_count, points, y, x) \
-                schedule(static) aligned(points:64) if(points_count > 100))
+  DT_OMP_FOR_SIMD(aligned(points:64) if(points_count > 100))
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
     points[i] -= x;
@@ -246,9 +244,7 @@ gboolean distort_backtransform(dt_iop_module_t *self,
   const float x = (float)d->left * scale;
   const float y = (float)d->top * scale;
 
-  DT_OMP_PRAGMA(parallel for simd default(none)     \
-                dt_omp_firstprivate(points_count, points, y, x) \
-                schedule(static) aligned(points:64) if(points_count > 100))
+  DT_OMP_FOR_SIMD(aligned(points:64) if(points_count > 100))
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
     points[i] += x;
@@ -362,9 +358,7 @@ void process(
     const uint16_t *const in = (const uint16_t *const)ivoid;
     float *const out = (float *const)ovoid;
 
-    DT_OMP_PRAGMA(parallel for SIMD() default(none)                     \
-                  dt_omp_firstprivate(csx, csy, d, in, out, roi_in, roi_out) \
-                  schedule(static) collapse(2))
+    DT_OMP_FOR_SIMD(collapse(2))
     for(int j = 0; j < roi_out->height; j++)
     {
       for(int i = 0; i < roi_out->width; i++)
@@ -388,9 +382,7 @@ void process(
     const float *const in = (const float *const)ivoid;
     float *const out = (float *const)ovoid;
 
-    DT_OMP_PRAGMA(parallel for SIMD() default(none)            \
-                  dt_omp_firstprivate(csx, csy, d, in, out, roi_in, roi_out) \
-                  schedule(static) collapse(2))
+    DT_OMP_FOR_SIMD(collapse(2))
     for(int j = 0; j < roi_out->height; j++)
     {
       for(int i = 0; i < roi_out->width; i++)
@@ -415,9 +407,7 @@ void process(
 
     const int ch = piece->colors;
 
-    DT_OMP_PRAGMA(parallel for SIMD() default(none)                     \
-                  dt_omp_firstprivate(ch, csx, csy, d, in, out, roi_in, roi_out) \
-                  schedule(static) collapse(3))
+    DT_OMP_FOR_SIMD(collapse(3))
     for(int j = 0; j < roi_out->height; j++)
     {
       for(int i = 0; i < roi_out->width; i++)

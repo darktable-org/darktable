@@ -428,7 +428,7 @@ static void _develop_blend_process_mask_tone_curve(float *const restrict mask,
   const float mask_epsilon = 16.0f * FLT_EPSILON;
   const float e = expf(3.f * contrast);
 
-  DT_OMP_PRAGMA(parallel for simd default(firstprivate) schedule(static) aligned(mask:64))
+  DT_OMP_FOR_SIMD(aligned(mask:64))
   for(size_t k = 0; k < buffsize; k++)
   {
     float x = mask[k] / opacity;
@@ -626,8 +626,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
       // invert if required
       if(d->raster_mask_invert)
       {
-        DT_OMP_PRAGMA(parallel for simd default(firstprivate) aligned(mask, raster_mask:64) \
-                      schedule(static))
+        DT_OMP_FOR_SIMD(aligned(mask, raster_mask:64))
         for(size_t i = 0; i < obuffsize; i++)
           mask[i] = (1.0f - raster_mask[i]) * opacity;
       }
@@ -1165,8 +1164,7 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
       // invert if required
       if(d->raster_mask_invert)
       {
-        DT_OMP_PRAGMA(parallel for simd default(firstprivate) aligned(mask, raster_mask:64) \
-                      schedule(static))
+        DT_OMP_FOR_SIMD(aligned(mask, raster_mask:64))
         for(size_t i = 0; i < obuffsize; i++)
           mask[i] = (1.0f - raster_mask[i]) * opacity;
       }

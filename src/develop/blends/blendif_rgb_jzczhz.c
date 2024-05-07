@@ -232,8 +232,9 @@ void dt_develop_blendif_rgb_jzczhz_make_mask(struct dt_dev_pixelpipe_iop_t *piec
     // mask is not conditional, invert the mask if required
     if(mask_inversed)
     {
-      DT_OMP_PRAGMA(parallel for simd default(none) dt_omp_firstprivate(mask, buffsize, global_opacity) schedule(static))
-      for(size_t x = 0; x < buffsize; x++) mask[x] = global_opacity * (1.0f - mask[x]);
+      DT_OMP_FOR_SIMD()
+      for(size_t x = 0; x < buffsize; x++)
+        mask[x] = global_opacity * (1.0f - mask[x]);
     }
     else
     {

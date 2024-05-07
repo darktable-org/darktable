@@ -55,8 +55,7 @@ void dt_develop_blendif_raw_make_mask(struct dt_dev_pixelpipe_iop_t *piece, cons
   // get parametric mask (if any) and apply global opacity
   if(d->mask_combine & DEVELOP_COMBINE_INV)
   {
-    DT_OMP_PRAGMA(parallel for simd schedule(static) default(none) aligned(mask: 64) \
-                  dt_omp_firstprivate(mask, buffsize, global_opacity))
+    DT_OMP_FOR_SIMD(aligned(mask: 64))
     for(size_t x = 0; x < buffsize; x++)
       mask[x] = global_opacity * (1.0f - mask[x]);
   }
