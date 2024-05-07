@@ -1443,10 +1443,8 @@ void dt_develop_blendif_lab_blend(struct dt_dev_pixelpipe_iop_t *piece,
     }
     else
     {
-#ifdef _OPENMP
-#pragma omp parallel for simd schedule(static) default(none) aligned(b:64) \
-  dt_omp_firstprivate(b, buffsize, profile)
-#endif
+      DT_OMP_PRAGMA(parallel for simd schedule(static) default(none) aligned(b:64) \
+                    dt_omp_firstprivate(b, buffsize, profile))
       for(size_t j = 0; j < buffsize; j += DT_BLENDIF_LAB_CH)
       {
         dt_aligned_pixel_t XYZ;

@@ -125,11 +125,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 inline static void blur_2D_Bspline(const float *const restrict in, float *const restrict out,
                                    const size_t width, const size_t height)
 {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) dt_omp_firstprivate(width, height, in, out) \
-    schedule(simd: static)    \
-    collapse(2)
-#endif
+  DT_OMP_FOR(collapse(2))
   for(size_t i = 0; i < height; i++)
   {
     for(size_t j = 0; j < width; j++)

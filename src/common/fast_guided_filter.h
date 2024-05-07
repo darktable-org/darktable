@@ -100,11 +100,7 @@ static inline void interpolate_bilinear(const float *const restrict in,
                                         const size_t ch)
 {
   // Fast vectorized bilinear interpolation on ch channels
-#ifdef _OPENMP
-#pragma omp parallel for collapse(2) default(none) \
-  dt_omp_firstprivate(in, out, width_out, height_out, width_in, height_in, ch) \
-  schedule(simd:static)
-#endif
+  DT_OMP_PRAGMA(parallel for collapse(2) default(firstprivate) schedule(simd:static))
   for(size_t i = 0; i < height_out; i++)
   {
     for(size_t j = 0; j < width_out; j++)
@@ -179,11 +175,7 @@ static inline void variance_analyse(const float *const restrict guide, // I
   float *const restrict input = dt_alloc_align_float(Ndimch);
 
   // Pre-multiply guide and mask and pack all inputs into an array of 4×1 SIMD struct
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(guide, mask, Ndim, radius, input) \
-  schedule(simd:static)
-#endif
+  DT_OMP_PRAGMA(parallel for default(firstprivate) schedule(simd:static))
   for(size_t k = 0; k < Ndim; k++)
   {
     const size_t index = k * 4;

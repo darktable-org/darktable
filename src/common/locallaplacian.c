@@ -494,9 +494,7 @@ void local_laplacian_internal(
       dt_dump_pfm("coarse", b->output[pl0], pw0, ph0,  4 * sizeof(float), "locallaplacian");
       dt_dump_pfm("oldcoarse", output[last_level], pw, ph,  4 * sizeof(float), "locallaplacian");
     }
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) collapse(2) default(shared)
-#endif
+    DT_OMP_FOR(collapse(2))
     for(int j=0;j<ph;j++) for(int i=0;i<pw;i++)
     {
       // image coordinates in full buffer

@@ -138,11 +138,9 @@ gboolean distort_transform(dt_iop_module_t *self,
 {
   const float scale = piece->buf_in.scale / piece->iscale;
 
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-    dt_omp_firstprivate(points_count, points, scale, piece) \
-    schedule(static) if(points_count > 100) aligned(points:64)
-#endif
+  DT_OMP_PRAGMA(parallel for simd default(none)                         \
+                dt_omp_firstprivate(points_count, points, scale, piece) \
+                schedule(static) if(points_count > 100) aligned(points:64))
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
     float pi[2], po[2];
@@ -166,11 +164,9 @@ gboolean distort_backtransform(dt_iop_module_t *self,
 {
   const float scale = piece->buf_in.scale / piece->iscale;
 
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-    dt_omp_firstprivate(points_count, points, scale, piece) \
-    schedule(static) if(points_count > 100) aligned(points:64)
-#endif
+  DT_OMP_PRAGMA(parallel for simd default(none)                         \
+                dt_omp_firstprivate(points_count, points, scale, piece) \
+                schedule(static) if(points_count > 100) aligned(points:64))
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
     float pi[2], po[2];

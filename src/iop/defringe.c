@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2023 darktable developers.
+    Copyright (C) 2013-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -296,16 +296,14 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
     thresh = fmax(0.1f, d->thresh);
   }
 
-#ifdef _OPENMP
-// dynamically/guided scheduled due to possible uneven edge-chroma distribution (thanks to rawtherapee code
-// for this hint!)
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, in, out, samples_avg, samples_small) \
-  dt_omp_sharedconst(d, width, height) \
-  shared(xy_small, xy_avg) \
-  firstprivate(thresh, avg_edge_chroma) \
-  schedule(dynamic,3)
-#endif
+  // dynamically/guided scheduled due to possible uneven edge-chroma
+  // distribution (thanks to rawtherapee code for this hint!)
+  DT_OMP_PRAGMA(parallel for default(none)                     \
+                dt_omp_firstprivate(ch, in, out, samples_avg, samples_small) \
+                dt_omp_sharedconst(d, width, height)                    \
+                shared(xy_small, xy_avg)                                \
+                firstprivate(thresh, avg_edge_chroma)                   \
+                schedule(dynamic,3))
   for(int v = 0; v < height; v++)
   {
     const size_t row_above = (size_t)MAX(0, (v-1)) * width * ch;
