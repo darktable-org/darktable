@@ -175,7 +175,6 @@ static void _transform_rgb_to_rgb_lcms2
    const char *filename_to,
    const int intent)
 {
-  const int ch = 4;
   cmsHTRANSFORM *xform = NULL;
   cmsHPROFILE *from_rgb_profile = NULL;
   cmsHPROFILE *to_rgb_profile = NULL;
@@ -194,7 +193,7 @@ static void _transform_rgb_to_rgb_lcms2
   }
   else
   {
-    dt_print(DT_DEBUG_ALWAYS, "[_transform_rgb_to_rgb_lcms2] invalid from profile `%s`\n",
+    dt_print(DT_DEBUG_ALWAYS, "[_transform_rgb_to_rgb_lcms2] invalid *from profile* `%s`\n",
        dt_colorspaces_get_name(type_from, NULL));
   }
 
@@ -207,51 +206,55 @@ static void _transform_rgb_to_rgb_lcms2
   else
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[_transform_rgb_to_rgb_lcms2] invalid to profile `%s`\n",
+             "[_transform_rgb_to_rgb_lcms2] invalid *to profile* `%s`\n",
        dt_colorspaces_get_name(type_to, NULL));
   }
 
-  if(from_rgb_profile)
+  const cmsColorSpaceSignature rgb_to_color_space = to_rgb_profile ? cmsGetColorSpace(to_rgb_profile) : 0;
+  const cmsColorSpaceSignature rgb_from_color_space = from_rgb_profile ? cmsGetColorSpace(from_rgb_profile) : 0;
+  const gboolean to_is_rgb  = rgb_to_color_space == cmsSigRgbData;
+  const gboolean to_is_cmyk = rgb_to_color_space == cmsSigCmykData;
+  const gboolean from_is_rgb  = rgb_from_color_space == cmsSigRgbData;
+
+  if(!from_is_rgb)
   {
-    cmsColorSpaceSignature rgb_color_space = cmsGetColorSpace(from_rgb_profile);
-    if(rgb_color_space != cmsSigRgbData)
-    {
-      dt_print(DT_DEBUG_ALWAYS,
-               "[_transform_rgb_to_rgb_lcms2] profile color space `%c%c%c%c' not supported\n",
-               (char)(rgb_color_space >> 24),
-               (char)(rgb_color_space >> 16),
-               (char)(rgb_color_space >> 8),
-               (char)(rgb_color_space));
-      from_rgb_profile = NULL;
-    }
-  }
-  if(to_rgb_profile)
-  {
-    cmsColorSpaceSignature rgb_color_space = cmsGetColorSpace(to_rgb_profile);
-    if(rgb_color_space != cmsSigRgbData)
-    {
-      dt_print(DT_DEBUG_ALWAYS,
-               "[_transform_rgb_to_rgb_lcms2] profile color space `%c%c%c%c' not supported\n",
-               (char)(rgb_color_space >> 24),
-               (char)(rgb_color_space >> 16),
-               (char)(rgb_color_space >> 8),
-               (char)(rgb_color_space));
-      to_rgb_profile = NULL;
-    }
+    dt_print(DT_DEBUG_ALWAYS,
+             "[_transform_rgb_to_rgb_lcms2] *from profile* color space `%c%c%c%c' not supported\n",
+             (char)(rgb_from_color_space >> 24),
+             (char)(rgb_from_color_space >> 16),
+             (char)(rgb_from_color_space >> 8),
+             (char)(rgb_from_color_space));
+    from_rgb_profile = NULL;
   }
 
-  cmsHPROFILE *input_profile = NULL;
-  cmsHPROFILE *output_profile = NULL;
-  cmsUInt32Number input_format = TYPE_RGBA_FLT;
-  cmsUInt32Number output_format = TYPE_RGBA_FLT;
+  if(!to_is_rgb && !to_is_cmyk)
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+      "[_transform_rgb_to_rgb_lcms2] *to profile* color space `%c%c%c%c' not supported\n",
+      (char)(rgb_to_color_space >> 24),
+      (char)(rgb_to_color_space >> 16),
+      (char)(rgb_to_color_space >> 8),
+      (char)(rgb_to_color_space));
+    to_rgb_profile = NULL;
+  }
 
-  input_profile = from_rgb_profile;
-  input_format = TYPE_RGBA_FLT;
-  output_profile = to_rgb_profile;
-  output_format = TYPE_RGBA_FLT;
+  if(from_rgb_profile && to_rgb_profile && to_is_cmyk)  // softproofing cmyk profile
+  {
+    dt_print(DT_DEBUG_PIPE, "[transform_rgb_to_rgb_lcms2] softproof with profile `%s'\n", filename_to);
 
-  if(input_profile && output_profile)
-    xform = cmsCreateTransform(input_profile, input_format, output_profile, output_format, intent, 0);
+    cmsHPROFILE tmp_rgb_profile = dt_colorspaces_get_profile(DT_COLORSPACE_LIN_REC2020, "", DT_PROFILE_DIRECTION_ANY)->profile;
+
+    uint32_t transformFlags = cmsFLAGS_SOFTPROOFING | cmsFLAGS_BLACKPOINTCOMPENSATION | cmsFLAGS_COPY_ALPHA;
+    xform = cmsCreateProofingTransform(
+        from_rgb_profile, TYPE_RGBA_FLT,
+        tmp_rgb_profile, TYPE_RGBA_FLT,
+        to_rgb_profile,
+        intent, intent, transformFlags);
+  }
+  else if(from_rgb_profile && to_rgb_profile)
+  {
+    xform = cmsCreateTransform(from_rgb_profile, TYPE_RGBA_FLT, to_rgb_profile, TYPE_RGBA_FLT, intent, 0);
+  }
 
   if(type_from == DT_COLORSPACE_DISPLAY
      || type_to == DT_COLORSPACE_DISPLAY
@@ -264,10 +267,8 @@ static void _transform_rgb_to_rgb_lcms2
     DT_OMP_FOR()
     for(int y = 0; y < height; y++)
     {
-      const float *const in = image_in + y * width * ch;
-      float *const out = image_out + y * width * ch;
-
-      cmsDoTransform(xform, in, out, width);
+      const size_t offset = 4 * y * width;
+      cmsDoTransform(xform, image_in + offset, image_out + offset, width);
     }
   }
   else
@@ -714,23 +715,14 @@ static gboolean _ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *pro
   if(type == DT_COLORSPACE_DISPLAY || type == DT_COLORSPACE_DISPLAY2)
     pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
 
-  // we only allow rgb profiles
-  if(rgb_profile)
-  {
-    cmsColorSpaceSignature rgb_color_space = cmsGetColorSpace(rgb_profile);
-    if(rgb_color_space != cmsSigRgbData)
-    {
-      dt_print(DT_DEBUG_PIPE,
-               "[_ioppr_generate_profile_info] working profile color space"
-               " `%c%c%c%c' not supported\n",
-               (char)(rgb_color_space>>24),
-               (char)(rgb_color_space>>16),
-               (char)(rgb_color_space>>8),
-               (char)(rgb_color_space));
-      rgb_profile = NULL;
-      error = TRUE;
-    }
-  }
+  cmsColorSpaceSignature rgb_profile_color_space = rgb_profile ? cmsGetColorSpace(rgb_profile) : 0;
+
+  dt_print(DT_DEBUG_PIPE, "[generate_profile_info] profile `%s': color space `%c%c%c%c'\n",
+    filename[0] ? filename : "<internal>",
+    (char)(rgb_profile_color_space>>24),
+    (char)(rgb_profile_color_space>>16),
+    (char)(rgb_profile_color_space>>8),
+    (char)(rgb_profile_color_space));
 
   // get the matrix
   if(rgb_profile)
@@ -781,7 +773,6 @@ static gboolean _ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *pro
                            profile_info->unbounded_coeffs_out[1],
                            profile_info->unbounded_coeffs_out[2],
                            profile_info->lutsize);
-    error = FALSE;
   }
 
   if(dt_is_valid_colormatrix(profile_info->matrix_in[0][0])
@@ -794,7 +785,6 @@ static gboolean _ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *pro
                                                            profile_info->unbounded_coeffs_in,
                                                            profile_info->lutsize,
                                                            profile_info->nonlinearlut);
-    error = FALSE;
   }
 
   return error;
@@ -832,9 +822,7 @@ dt_ioppr_add_profile_info_to_list(struct dt_develop_t *dev,
   {
     profile_info = dt_alloc1_align_type(dt_iop_order_iccprofile_info_t);
     dt_ioppr_init_profile_info(profile_info, 0);
-    const gboolean err =
-      _ioppr_generate_profile_info(profile_info, profile_type, profile_filename, intent);
-    if(!err)
+    if(!_ioppr_generate_profile_info(profile_info, profile_type, profile_filename, intent))
     {
       dev->allprofile_info = g_list_append(dev->allprofile_info, profile_info);
     }
@@ -1251,13 +1239,16 @@ void dt_ioppr_transform_image_colorspace_rgb
    const dt_iop_order_iccprofile_info_t *const profile_info_to,
    const char *message)
 {
-  if(profile_info_from == NULL || profile_info_to == NULL)
-    return;
-  if(profile_info_from->type == DT_COLORSPACE_NONE
-     || profile_info_to->type == DT_COLORSPACE_NONE)
+  if(!profile_info_from
+      || !profile_info_to
+      || profile_info_from->type == DT_COLORSPACE_NONE
+      || profile_info_to->type == DT_COLORSPACE_NONE)
   {
+    if(image_in != image_out)
+      dt_iop_image_copy_by_size(image_out, image_in, width, height, 4);
     return;
   }
+
   if(profile_info_from->type == profile_info_to->type
      && strcmp(profile_info_from->filename, profile_info_to->filename) == 0)
   {
