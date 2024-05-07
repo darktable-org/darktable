@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2017-2023 darktable developers.
+    Copyright (C) 2017-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -255,11 +255,7 @@ static void dark_channel(const const_rgb_image img1, const gray_image img2, cons
   const size_t size = (size_t)img1.height * img1.width;
   const float *const restrict in_data = img1.data;
   float *const restrict out_data = img2.data;
-#ifdef _OPENMP
-#pragma omp parallel for simd aligned(in_data, out_data: 64) default(none) \
-  dt_omp_firstprivate(in_data, out_data, size) \
-  schedule(simd:static)
-#endif
+  DT_OMP_FOR_SIMD(aligned(in_data, out_data: 64))
   for(size_t i = 0; i < size; i++)
   {
     const float *pixel = in_data + 4*i;
@@ -278,11 +274,7 @@ static void transition_map(const const_rgb_image img1, const gray_image img2, co
   const float *const restrict in_data = img1.data;
   float *const restrict out_data = img2.data;
   const dt_aligned_pixel_t A0_inv = { 1.0f / A0[0], 1.0f / A0[1], 1.0f / A0[2], 1.0f };
-#ifdef _OPENMP
-#pragma omp parallel for simd aligned(in_data, out_data: 64) default(none) \
-  dt_omp_firstprivate(A0_inv, in_data, out_data, size, strength) \
-  schedule(simd:static)
-#endif
+  DT_OMP_FOR_SIMD(aligned(in_data, out_data: 64))
   for(size_t i = 0; i < size; i++)
   {
     const float *pixel = in_data + 4*i;
@@ -394,12 +386,9 @@ static float ambient_light(const const_rgb_image img,
   const float *const restrict dark_data = dark_ch.data;
   size_t N_most_hazy_start = size/2;
   size_t N_most_hazy_end = size/2;
-#ifdef _OPENMP
-#pragma omp parallel num_threads(2) default(none)  \
-  dt_omp_firstprivate(size, crit_haze_level, img_data, dark_data, hazy_data) \
-  shared(N_most_hazy_start, N_most_hazy_end)
-#pragma omp sections
-#endif
+  DT_OMP_PRAGMA(parallel num_threads(2) default(firstprivate) \
+                shared(N_most_hazy_start, N_most_hazy_end))
+  DT_OMP_PRAGMA(sections)
   {
   for(size_t i = 0; i < size/2; i++)
     if(dark_data[i] >= crit_haze_level)
@@ -409,9 +398,7 @@ static float ambient_light(const const_rgb_image img,
       // two threads by growing outward from the center
       hazy_data[--N_most_hazy_start] = pixel_in[0] + pixel_in[1] + pixel_in[2];
     }
-#ifdef _OPENMP
-#pragma omp section
-#endif
+  DT_OMP_PRAGMA(section)
   for(size_t i = size/2; i < size; i++)
     if(dark_data[i] >= crit_haze_level)
     {
@@ -450,12 +437,7 @@ static float ambient_light(const const_rgb_image img,
   size_t N_bright_hazy = 0;
   const float *const restrict data = dark_ch.data;
   const float *const restrict in_data = img.data;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(crit_brightness, crit_haze_level, data, in_data, size) \
-  schedule(static) \
-  reduction(vsum : A0) reduction(+ : N_bright_hazy)
-#endif
+  DT_OMP_FOR(reduction(vsum : A0) reduction(+ : N_bright_hazy))
   for(size_t i = 0; i < size; i++)
   {
     const float *pixel_in = in_data + 4*i;
@@ -578,11 +560,7 @@ void process(struct dt_iop_module_t *self,
       = fminf(fmaxf(expf(-distance * distance_max), 1.f / 1024), 1.f); // minimum allowed value for transition map
   const dt_aligned_pixel_t c_A0 = { A0[0], A0[1], A0[2], A0[3] };
   const gray_image c_trans_map_filtered = trans_map_filtered;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(c_A0, c_trans_map_filtered, in, out, size, t_min) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t i = 0; i < size; i++)
   {
     float t = MAX(c_trans_map_filtered.data[i], t_min);

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1050,12 +1050,7 @@ static inline void apply_legacy_curve(
     const float *const unbounded_coeffs)
 {
   const size_t npixels = (size_t)width * height;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels) \
-  dt_omp_sharedconst(in, out, mul, table, unbounded_coeffs) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < 4*npixels; k += 4)
   {
     for(int i = 0; i < 3; i++)
@@ -1084,12 +1079,7 @@ static inline void apply_curve(
     const dt_iop_order_iccprofile_info_t *const work_profile)
 {
   const size_t npixels = (size_t)width * height;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, preserve_colors, work_profile) \
-  dt_omp_sharedconst(in, out, mul, table, unbounded_coeffs) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < 4*npixels; k += 4)
   {
     float ratio = 1.f;
@@ -1121,11 +1111,7 @@ static inline void compute_features(
   // 2) saturation
   // 3) local contrast (handled in laplacian form later)
   const size_t npixels = (size_t)wd * ht;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(col, npixels) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t x = 0; x < 4*npixels; x += 4)
   {
     const float max = MAX(col[x], MAX(col[x+1], col[x+2]));
@@ -1151,12 +1137,7 @@ static inline void gauss_blur(
   const float w[5] = { 1.f / 16.f, 4.f / 16.f, 6.f / 16.f, 4.f / 16.f, 1.f / 16.f };
   float *tmp = dt_alloc_align_float((size_t)4 * wd * ht);
   dt_iop_image_fill(tmp, 0.0f, wd, ht, 4);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ht, input, w, wd) \
-  shared(tmp) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(int j=0;j<ht;j++)
   { // horizontal pass
     // left borders
@@ -1176,12 +1157,7 @@ static inline void gauss_blur(
           tmp[4*(j*wd+i)+c] += input[4*(j*wd+MIN(i+ii, wd-(i+ii-wd+1) ))+c] * w[ii+2];
   }
   dt_iop_image_fill(output, 0.0f, wd, ht, 4);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ht, output, w, wd) \
-  shared(tmp) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(int i=0;i<wd;i++)
   { // vertical pass
     for(int j=0;j<2;j++)
@@ -1209,12 +1185,7 @@ static inline void gauss_expand(
   const size_t cw = (wd-1)/2+1;
   // fill numbers in even pixels, zero odd ones
   dt_iop_image_fill(fine, 0.0f, wd, ht, 4);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(cw, fine, ht, input, wd) \
-  schedule(static) \
-  collapse(2)
-#endif
+  DT_OMP_FOR(collapse(2))
   for(int j=0;j<ht;j+=2)
     for(int i=0;i<wd;i+=2)
       for_four_channels(c)
@@ -1327,12 +1298,7 @@ void process_fusion(struct dt_iop_module_t *self,
     w = wd;
     h = ht;
     gauss_reduce(col[0], col[1], out, w, h);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ht, out, wd) \
-    shared(col) \
-    schedule(static)
-#endif
+    DT_OMP_FOR()
     for(size_t k = 0; k < 4ul * wd * ht; k += 4)
       col[0][k + 3] *= .1f + sqrtf(out[k] * out[k] + out[k + 1] * out[k + 1] + out[k + 2] * out[k + 2]);
 
@@ -1367,13 +1333,9 @@ void process_fusion(struct dt_iop_module_t *self,
       // abuse output buffer as temporary memory:
       if(k != num_levels - 1)
         gauss_expand(col[k + 1], out, w, h);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-      dt_omp_firstprivate(out) \
-      shared(col, comb, w, h, num_levels, k) \
-      schedule(static)
-#endif
-      for(size_t x = 0; x < (size_t)4 * h * w; x += 4)
+      const size_t npixels = (size_t)w * h;
+      DT_OMP_FOR()
+      for(size_t x = 0; x < 4 * npixels; x += 4)
       {
         // blend images into output pyramid
         if(k == num_levels - 1) // blend gaussian base
@@ -1408,9 +1370,7 @@ void process_fusion(struct dt_iop_module_t *self,
     }
 
     // normalise both gaussian base and laplacians:
-#ifdef _OPENMP
-#pragma omp parallel for default(none) shared(comb, w, h, k) schedule(static)
-#endif
+    DT_OMP_FOR()
     for(size_t i = 0; i < (size_t)4 * w * h; i += 4)
       if(comb[k][i + 3] > 1e-8f)
         for(int c = 0; c < 3; c++) comb[k][i + c] /= comb[k][i + 3];
@@ -1418,12 +1378,7 @@ void process_fusion(struct dt_iop_module_t *self,
     if(k < num_levels - 1)
     { // reconstruct output image
       gauss_expand(comb[k + 1], out, w, h);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-      dt_omp_firstprivate(out, w, h, k) \
-      shared(comb) \
-      schedule(static)
-#endif
+      DT_OMP_FOR()
       for(size_t x = 0; x < (size_t)4 * h * w; x += 4)
         {
         for(int c = 0; c < 3; c++)
@@ -1433,12 +1388,7 @@ void process_fusion(struct dt_iop_module_t *self,
   }
 #endif
   // copy output buffer
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(col, in, ht, out, wd) \
-  shared(comb) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < (size_t)4 * wd * ht; k += 4)
   {
     out[k + 0] = fmaxf(comb[0][k + 0], 0.f);

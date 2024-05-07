@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -257,11 +257,7 @@ static void _blend(const float *const restrict in,
   /* reverse order */
   /* We can only do the final 3/4 in parallel here, because updating the first quarter in one thread */
   /* would clobber values still needed by other threads. */
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(contrast_scale, npixels, in, out)  \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = npixels - 1; k >= npixels/4; k--)
   {
     dt_aligned_pixel_t hipass = { 0.0f, 0.0f, 0.0f, 0.0f };  // a=b=0 to desaturate, alpha doesn't matter
@@ -290,11 +286,8 @@ void process(struct dt_iop_module_t *self,
 /* since we use only the L channel, pack the values together instead of every fourth float */
 /* to reduce cache pressure and memory bandwidth during the blur operation */
   const size_t npixels = (size_t)roi_out->height * roi_out->width;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels,in,out)  \
-  schedule(simd:static)
-#endif
+
+  DT_OMP_FOR()
   for(size_t k = 0; k < (size_t)npixels; k++)
     out[k] = 100.0f - LCLIP(in[4 * k]); // only L in Lab space
 

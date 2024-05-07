@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2023 darktable developers.
+    Copyright (C) 2013-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1067,15 +1067,12 @@ static int _brush_get_pts_border(dt_develop_t *dev,
       // get the offset of first "corner" point in the brush stroke
       dx = pts[0] - (*points)[2];
       dy = pts[1] - (*points)[3];
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-    dt_omp_firstprivate(points_count, points, dx, dy)              \
-    schedule(static) if(*points_count > 100) aligned(points:64)
-#endif
+      float *const ptsbuf = DT_IS_ALIGNED(*points);
+      DT_OMP_FOR(if(*points_count > 100))
       for(int i = 0; i < *points_count; i++)
       {
-        (*points)[i * 2] += dx;
-        (*points)[i * 2 + 1] += dy;
+        ptsbuf[i * 2] += dx;
+        ptsbuf[i * 2 + 1] += dy;
       }
 
       // we apply the rest of the distortions (those after the module)
@@ -2782,10 +2779,7 @@ static void _brush_bounding_box_raw(const float *const points,
 {
   // now we want to find the area, so we search min/max points
   float xmin = FLT_MAX, xmax = FLT_MIN, ymin = FLT_MAX, ymax = FLT_MIN;
-#ifdef _OPENMP
-#pragma omp parallel for reduction(min : xmin, ymin) reduction(max : xmax, ymax) \
-  schedule(static) if(num_points > 1000)
-#endif
+  DT_OMP_FOR(reduction(min : xmin, ymin) reduction(max : xmax, ymax) if(num_points > 1000))
   for(int i = _nb_ctrl_point(nb_corner); i < num_points; i++)
   {
     if(border)
@@ -3128,15 +3122,7 @@ static int _brush_get_mask_roi(const dt_iop_module_t *const module,
   }
 
   // now we fill the falloff
-#ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(nb_corner, border_count, width, height) \
-  shared(buffer, points, border, payload) schedule(static)
-#else
-#pragma omp parallel for shared(buffer)
-#endif
-#endif
+  DT_OMP_FOR()
   for(int i = _nb_ctrl_point(nb_corner); i < border_count; i++)
   {
     const int p0[] = { points[i * 2], points[i * 2 + 1] };

@@ -71,11 +71,7 @@ static inline void dt_simd_memcpy(const float *const __restrict__ in,
   // Perform a parallel vectorized memcpy on 64-bits aligned
   // contiguous buffers. This is several times faster than the original memcpy
 
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-dt_omp_firstprivate(in, out, num_elem) \
-schedule(simd:static) aligned(in, out:64)
-#endif
+  DT_OMP_FOR_SIMD(aligned(in, out:64))
   for(size_t k = 0; k < num_elem; k++)
     out[k] = in[k];
 }

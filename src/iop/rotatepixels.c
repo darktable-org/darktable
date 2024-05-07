@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2023 darktable developers.
+    Copyright (C) 2014-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -102,9 +102,7 @@ const char **description(struct dt_iop_module_t *self)
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static void transform(const dt_dev_pixelpipe_iop_t *const piece,
                       const float scale,
                       const float *const x,
@@ -118,9 +116,7 @@ static void transform(const dt_dev_pixelpipe_iop_t *const piece,
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static void backtransform(const dt_dev_pixelpipe_iop_t *const piece,
                           const float scale,
                           const float *const x,
@@ -142,11 +138,7 @@ gboolean distort_transform(dt_iop_module_t *self,
 {
   const float scale = piece->buf_in.scale / piece->iscale;
 
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-    dt_omp_firstprivate(points_count, points, scale, piece) \
-    schedule(static) if(points_count > 100) aligned(points:64)
-#endif
+  DT_OMP_FOR_SIMD(if(points_count > 100) aligned(points:64))
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
     float pi[2], po[2];
@@ -170,11 +162,7 @@ gboolean distort_backtransform(dt_iop_module_t *self,
 {
   const float scale = piece->buf_in.scale / piece->iscale;
 
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-    dt_omp_firstprivate(points_count, points, scale, piece) \
-    schedule(static) if(points_count > 100) aligned(points:64)
-#endif
+  DT_OMP_FOR_SIMD(if(points_count > 100) aligned(points:64))
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
     float pi[2], po[2];
@@ -301,12 +289,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
   const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, ch_width, ivoid, ovoid, roi_in, roi_out, scale) \
-  shared(piece, interpolation) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   // (slow) point-by-point transformation.
   // TODO: optimize with scanlines and linear steps between?
   for(int j = 0; j < roi_out->height; j++)

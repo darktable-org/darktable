@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -228,24 +228,15 @@ static void process_common_cleanup(struct dt_iop_module_t *self, dt_dev_pixelpip
 
     if(gauss && tmp)
     {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-      dt_omp_firstprivate(ch, height, width, ivoid) \
-      shared(tmp) \
-      schedule(static)
-#endif
-      for(size_t k = 0; k < (size_t)width * height; k++) tmp[k] = ((float *)ivoid)[ch * k];
+      DT_OMP_FOR()
+      for(size_t k = 0; k < (size_t)width * height; k++)
+        tmp[k] = ((float *)ivoid)[ch * k];
 
       dt_gaussian_blur(gauss, tmp, tmp);
 
       /* create zonemap preview for input */
       dt_iop_gui_enter_critical_section(self);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-      dt_omp_firstprivate(height, size, width) \
-      shared(tmp, g) \
-      schedule(static)
-#endif
+      DT_OMP_FOR()
       for(size_t k = 0; k < (size_t)width * height; k++)
       {
         g->in_preview_buffer[k] = CLAMPS(tmp[k] * (size - 1) / 100.0f, 0, size - 2);
@@ -253,25 +244,16 @@ static void process_common_cleanup(struct dt_iop_module_t *self, dt_dev_pixelpip
       dt_iop_gui_leave_critical_section(self);
 
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-      dt_omp_firstprivate(ch, height, ovoid, width) \
-      shared(tmp) \
-      schedule(static)
-#endif
-      for(size_t k = 0; k < (size_t)width * height; k++) tmp[k] = ((float *)ovoid)[ch * k];
+      DT_OMP_FOR()
+      for(size_t k = 0; k < (size_t)width * height; k++)
+        tmp[k] = ((float *)ovoid)[ch * k];
 
       dt_gaussian_blur(gauss, tmp, tmp);
 
 
       /* create zonemap preview for output */
       dt_iop_gui_enter_critical_section(self);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-      dt_omp_firstprivate(height, size, width) \
-      shared(tmp, g) \
-      schedule(static)
-#endif
+      DT_OMP_FOR()
       for(size_t k = 0; k < (size_t)width * height; k++)
       {
         g->out_preview_buffer[k] = CLAMPS(tmp[k] * (size - 1) / 100.0f, 0, size - 2);
@@ -300,11 +282,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   float *const restrict out = (float *const)ovoid;
   const size_t npixels = (size_t)roi_out->width * roi_out->height;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(d, in, out, npixels, size) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < (size_t)4 * npixels; k += 4)
   {
     /* remap lightness into zonemap and apply lightness */

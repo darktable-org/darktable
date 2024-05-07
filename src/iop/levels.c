@@ -412,11 +412,7 @@ void process(dt_iop_module_t *self,
   const float inv_gamma = d->in_inv_gamma;
   const float *lut = d->lut;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, in, out, level_black, level_range, inv_gamma, lut) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(int i = 0; i < 4 * npixels; i += 4)
   {
     const float L_in = in[i] / 100.0f;

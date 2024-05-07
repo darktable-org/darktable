@@ -255,12 +255,7 @@ icc_end:
       return 1;
     }
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in_tmp, out_image, width, height) \
-  schedule(static) \
-  collapse(2)
-#endif
+    DT_OMP_FOR(collapse(2))
     for(size_t y = 0; y < height; y++)
     {
       for(size_t x = 0; x < width; x++)
@@ -336,12 +331,7 @@ icc_end:
             return 1;
           }
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(raster_mask, out_mask, width, height) \
-  schedule(static) \
-  collapse(2)
-#endif
+          DT_OMP_FOR(collapse(2))
           for(size_t y = 0; y < height; y++)
           {
             for(size_t x = 0; x < width; x++)

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -434,9 +434,7 @@ static void keystone_get_matrix(const dt_boundingbox_t k_space, float kxa, float
           + kyb * kyb * (kxc * kxd * kxd * kyc - kxc * kxc * kxd * kyd));
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline void keystone_backtransform(float *i, const dt_boundingbox_t k_space, float a, float b, float d,
                                           float e, float g, float h, float kxa, float kya)
 {
@@ -449,9 +447,7 @@ static inline void keystone_backtransform(float *i, const dt_boundingbox_t k_spa
   i[1] = -(d * xx - a * yy) / div + kya;
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline void keystone_transform(float *i, const dt_boundingbox_t k_space, float a, float b, float d,
                                       float e, float g, float h, float kxa, float kya)
 {
@@ -463,9 +459,7 @@ static inline void keystone_transform(float *i, const dt_boundingbox_t k_space, 
   i[1] = (d * xx + e * yy) / div + k_space[1];
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline void backtransform(float *x, float *o, const float *m, const float t_h, const float t_v)
 {
   x[1] /= (1.0f + x[0] * t_h);
@@ -473,9 +467,7 @@ static inline void backtransform(float *x, float *o, const float *m, const float
   mul_mat_vec_2(m, x, o);
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline void inv_matrix(float *m, float *inv_m)
 {
   const float det = (m[0] * m[3]) - (m[1] * m[2]);
@@ -485,9 +477,7 @@ static inline void inv_matrix(float *m, float *inv_m)
   inv_m[3] =  m[0] / det;
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline void transform(float *x, float *o, const float *m, const float t_h, const float t_v)
 {
   mul_mat_vec_2(m, x, o);
@@ -523,11 +513,7 @@ gboolean distort_transform(dt_iop_module_t *self,
   if(d->k_apply == 1)
     keystone_get_matrix(k_space, kxa, kxb, kxc, kxd, kya, kyb, kyc, kyd, &ma, &mb, &md, &me, &mg, &mh);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(points_count, points, d, factor, k_space, ma, mb, md, me, mg, mh, kxa, kya) \
-    schedule(static) if(points_count > 100)
-#endif
+  DT_OMP_FOR(if(points_count > 100))
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
     float pi[2], po[2];
@@ -595,11 +581,7 @@ gboolean distort_backtransform(dt_iop_module_t *self,
   if(d->k_apply == 1)
     keystone_get_matrix(k_space, kxa, kxb, kxc, kxd, kya, kyb, kyc, kyd, &ma, &mb, &md, &me, &mg, &mh);
 
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-    dt_omp_firstprivate(points_count, points, d, factor, k_space, ma, mb, md, me, mg, mh, kxa, kya) \
-    schedule(static) if(points_count > 100) aligned(points:64) aligned(k_space:16)
-#endif
+  DT_OMP_FOR_SIMD(if(points_count > 100) aligned(points:64) aligned(k_space:16))
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
     float pi[2], po[2];
@@ -647,10 +629,11 @@ void distort_mask(struct dt_iop_module_t *self,
                   const dt_iop_roi_t *const roi_in,
                   const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
+  const dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
 
   // only crop, no rot fast and sharp path:
-  if(!d->flags && d->angle == 0.0 && d->all_off && roi_in->width == roi_out->width && roi_in->height == roi_out->height)
+  if(!d->flags && d->angle == 0.0 && d->all_off && roi_in->width == roi_out->width &&
+     roi_in->height == roi_out->height)
   {
     dt_iop_image_copy_by_size(out, in, roi_out->width, roi_out->height, 1);
   }
@@ -659,20 +642,15 @@ void distort_mask(struct dt_iop_module_t *self,
     const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
     const float rx = piece->buf_in.width * roi_in->scale;
     const float ry = piece->buf_in.height * roi_in->scale;
-    const dt_boundingbox_t k_space = { d->k_space[0] * rx, d->k_space[1] * ry, d->k_space[2] * rx, d->k_space[3] * ry };
+    const dt_boundingbox_t k_space =
+      { d->k_space[0] * rx, d->k_space[1] * ry, d->k_space[2] * rx, d->k_space[3] * ry };
     const float kxa = d->kxa * rx, kxb = d->kxb * rx, kxc = d->kxc * rx, kxd = d->kxd * rx;
     const float kya = d->kya * ry, kyb = d->kyb * ry, kyc = d->kyc * ry, kyd = d->kyd * ry;
     float ma, mb, md, me, mg, mh;
     if(d->k_apply == 1)
       keystone_get_matrix(k_space, kxa, kxb, kxc, kxd, kya, kyb, kyc, kyd, &ma, &mb, &md, &me, &mg, &mh);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(in, kxa, kya, out, roi_in, roi_out) \
-    dt_omp_sharedconst(k_space)                             \
-    shared(d, interpolation, ma, mb, md, me, mg, mh) \
-    schedule(static)
-#endif
+    DT_OMP_FOR(dt_omp_sharedconst(k_space))
     // (slow) point-by-point transformation.
     // TODO: optimize with scanlines and linear steps between?
     for(int j = 0; j < roi_out->height; j++)
@@ -1021,7 +999,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                          ivoid, ovoid, roi_in, roi_out))
     return; // unsupported format, image has been copied to output and module's trouble flag set
 
-  dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
+  const dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
 
   const int ch = 4;
   const int ch_width = ch * roi_in->width;
@@ -1037,20 +1015,15 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
     const float rx = piece->buf_in.width * roi_in->scale;
     const float ry = piece->buf_in.height * roi_in->scale;
-    const dt_boundingbox_t k_space = { d->k_space[0] * rx, d->k_space[1] * ry, d->k_space[2] * rx, d->k_space[3] * ry };
+    const dt_boundingbox_t k_space =
+      { d->k_space[0] * rx, d->k_space[1] * ry, d->k_space[2] * rx, d->k_space[3] * ry };
     const float kxa = d->kxa * rx, kxb = d->kxb * rx, kxc = d->kxc * rx, kxd = d->kxd * rx;
     const float kya = d->kya * ry, kyb = d->kyb * ry, kyc = d->kyc * ry, kyd = d->kyd * ry;
     float ma, mb, md, me, mg, mh;
     if(d->k_apply == 1)
       keystone_get_matrix(k_space, kxa, kxb, kxc, kxd, kya, kyb, kyc, kyd, &ma, &mb, &md, &me, &mg, &mh);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ch, ch_width, ivoid, kxa, kya, ovoid, roi_in, roi_out) \
-    dt_omp_sharedconst(k_space) \
-    shared(d, interpolation, ma, mb, md, me, mg, mh) \
-    schedule(static)
-#endif
+    DT_OMP_FOR(dt_omp_sharedconst(k_space))
     // (slow) point-by-point transformation.
     // TODO: optimize with scanlines and linear steps between?
     for(int j = 0; j < roi_out->height; j++)

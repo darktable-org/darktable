@@ -219,15 +219,13 @@ int distort_transform(dt_iop_module_t *self,
   if(border_size_l > 0 || border_size_t > 0)
   {
     // apply the coordinate adjustment to each provided point
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(points, points_count, border_size_l, border_size_t)  \
-  schedule(static) if(points_count > 100) aligned(points:64)
-#endif
+    float *const pts = DT_IS_ALIGNED(points);
+
+    DT_OMP_FOR(if(points_count > 100))
     for(size_t i = 0; i < points_count * 2; i += 2)
     {
-      points[i] += border_size_l;
-      points[i + 1] += border_size_t;
+      pts[i] += border_size_l;
+      pts[i + 1] += border_size_t;
     }
   }
 
@@ -257,15 +255,13 @@ int distort_backtransform(dt_iop_module_t *self,
 
   if (border_size_l > 0 || border_size_t > 0)
   {
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(points, points_count, border_size_l, border_size_t)  \
-  schedule(static) if(points_count > 100) aligned(points:64)
-#endif
+    float *const pts = DT_IS_ALIGNED(points);
+
+    DT_OMP_FOR(if(points_count > 100))
     for(size_t i = 0; i < points_count * 2; i += 2)
     {
-      points[i] -= border_size_l;
-      points[i + 1] -= border_size_t;
+      pts[i] -= border_size_l;
+      pts[i + 1] -= border_size_t;
     }
   }
 
@@ -323,11 +319,7 @@ void distort_mask(struct dt_iop_module_t *self,
   dt_iop_image_fill(out, 0.0f, roi_out->width, roi_out->height, 1);
 
   // blit image inside border and fill the output with previous processed out
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(roi_in, roi_out, border_in_x, border_in_y, in, out)   \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(int j = 0; j < roi_in->height; j++)
   {
     float *outb = out + (size_t)(j + border_in_y) * roi_out->width + border_in_x;

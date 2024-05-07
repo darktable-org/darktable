@@ -1,6 +1,6 @@
 /* --------------------------------------------------------------------------
     This file is part of darktable,
-    Copyright (C) 2012-2023 darktable developers.
+    Copyright (C) 2012-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1034,11 +1034,7 @@ static void _interpolation_resample_plain(const struct dt_interpolation *itor,
   {
     const int x0 = roi_out->x * 4 * sizeof(float);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(in, in_stride_floats, out_stride_floats, roi_out, x0) \
-    shared(out)
-#endif
+    DT_OMP_FOR()
     for(int y = 0; y < roi_out->height; y++)
     {
       memcpy((char *)out + (size_t)out_stride_floats * sizeof(float) * y,
@@ -1071,12 +1067,7 @@ static void _interpolation_resample_plain(const struct dt_interpolation *itor,
   const size_t width = roi_out->width;
 
   // Process each output line
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, in_stride_floats, out, out_stride_floats, height, width, \
-                      hlength, hindex, hkernel, vlength, vindex, vkernel)       \
-  shared(vmeta)
-#endif
+  DT_OMP_FOR()
   for(size_t oy = 0; oy < height; oy++)
   {
     // Initialize column resampling indexes
@@ -1457,11 +1448,7 @@ static void _interpolation_resample_1c_plain(const struct dt_interpolation *itor
   if(roi_out->scale == 1.f)
   {
     const int x0 = roi_out->x * sizeof(float);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(in, in_stride, out_stride, roi_out, x0) \
-    shared(out)
-#endif
+    DT_OMP_FOR()
     for(int y = 0; y < roi_out->height; y++)
     {
       float *i = (float *)((char *)in + in_stride * (y + roi_out->y) + x0);
@@ -1490,11 +1477,7 @@ static void _interpolation_resample_1c_plain(const struct dt_interpolation *itor
   dt_get_perf_times(&mid);
 
   // Process each output line
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, in_stride, out_stride, roi_out) \
-  shared(out, hindex, hlength, hkernel, vindex, vlength, vkernel, vmeta)
-#endif
+  DT_OMP_FOR()
   for(int oy = 0; oy < roi_out->height; oy++)
   {
     // Initialize column resampling indexes

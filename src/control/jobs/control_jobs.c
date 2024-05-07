@@ -369,7 +369,7 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai,
                                         dt_dev_pixelpipe_t *pipe,
                                         const gboolean export_masks)
 {
-  dt_control_merge_hdr_format_t *data = (dt_control_merge_hdr_format_t *)datai;
+  const dt_control_merge_hdr_format_t *data = (dt_control_merge_hdr_format_t *)datai;
   dt_control_merge_hdr_t *d = data->d;
 
   // just take a copy. also do it after blocking read, so filters will make sense.
@@ -448,12 +448,7 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai,
   const float photoncnt = 100.0f * aperture * exp / iso;
   float saturation = 1.0f;
   d->whitelevel = fmaxf(d->whitelevel, saturation * cal);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ivoid, cal, photoncnt) \
-  shared(d, saturation) \
-  schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR(collapse(2))
   for(int y = 0; y < d->ht; y++)
     for(int x = 0; x < d->wd; x++)
     {
@@ -569,9 +564,7 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
 
 // normalize by white level to make clipping at 1.0 work as expected
 
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(d)
-#endif
+  DT_OMP_FOR(shared(d))
   for(size_t k = 0; k < (size_t)d.wd * d.ht; k++)
   {
     if(d.weight[k] > 0.0)

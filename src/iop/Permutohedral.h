@@ -167,9 +167,7 @@ public:
 
     Key(const Key &origin, int dim, int direction) // construct neighbor in dimension 'dim'
     {
-#ifdef _OPENMP
-#pragma omp simd
-#endif
+      DT_OMP_SIMD()
       for(int i = 0; i < KD; i++)
 	 key[i] = origin.key[i] + direction;
       key[dim] = origin.key[dim] - direction * KD;
@@ -541,9 +539,7 @@ public:
     constexpr float scale = 1.0f / (D + 1);
 
     // greedily search for the closest zero-colored lattice point
-#ifdef _OPENMP
-#pragma omp simd
-#endif
+    DT_OMP_SIMD()
     for(size_t i = 0; i <= D; i++)
     {
       float v = elevated[i] * scale;
@@ -686,11 +682,7 @@ public:
     }
 
     /* Rewrite the offsets in the replay structure from the above generated table. */
-#ifdef _OPENMP
-#pragma omp parallel for default(none) if(nData >= 100000) \
-   dt_omp_firstprivate(nData, replay, offset_remap) \
-   schedule(static)
-#endif
+    DT_OMP_FOR(if(nData >= 100000))
     for(size_t i = 0; i < nData; i++)
     {
       if(replay[i].table > 0)
@@ -737,11 +729,7 @@ public:
     // For each of d+1 axes,
     for(int j = 0; j <= D; j++)
     {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(j, oldValue, newValue, hashTableBase, hashTables, keyBase, zeroPtr) \
-    schedule(static)
-#endif
+      DT_OMP_FOR()
       // For each vertex in the lattice,
       for(size_t i = 0; i < hashTables[0].size(); i++) // blur point i in dimension j
       {

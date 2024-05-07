@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -254,11 +254,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   if(filters == 9u)
   { // xtrans float mosaiced
-#ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-    dt_omp_firstprivate(film_rgb_f, in, out, roi_out, height, width, xtrans) \
-    schedule(static)
-#endif
+    DT_OMP_FOR()
     for(size_t j = 0; j < height; j++)
     {
       const size_t p = j * width;
@@ -309,11 +305,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const size_t x = roi_out->x;
     const size_t y = roi_out->y;
 
-#ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-    dt_omp_firstprivate(film_rgb_f, filters, in, out, roi_out, height, width, x, y) \
-    schedule(static)
-#endif
+    DT_OMP_FOR()
     for(int j = 0; j < height; j++)
     {
       const size_t p = (size_t)j * width;
@@ -354,11 +346,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
     const dt_aligned_pixel_t color = { d->color[0], d->color[1], d->color[2], 1.0f };
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(in, out, npixels, color)      \
-    schedule(static)
-#endif
+    DT_OMP_FOR()
     for(size_t k = 0; k < npixels; k++)
     {
       dt_aligned_pixel_t inv;

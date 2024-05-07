@@ -210,11 +210,7 @@ void process(struct dt_iop_module_t *self,
   float *const restrict out = (float *)o;
   const float d_a = d->a;
   const float d_b = d->b;
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(in, out, npixels, sigma2, d_a, d_b) \
-  schedule(simd:static) aligned(in, out:64)
-#endif
+  DT_OMP_FOR_SIMD(aligned(in, out:64))
   for(int k = 0; k < 4*npixels; k += 4)
   {
     out[k+0] = 100.0f * _color_filter(in[k+1], in[k+2], d_a, d_b, sigma2);
@@ -234,11 +230,7 @@ void process(struct dt_iop_module_t *self,
   dt_bilateral_free(b);
 
   const float highlights = d->highlights;
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(in, out, npixels, highlights) \
-  schedule(simd:static) aligned(in, out:64)
-#endif
+  DT_OMP_FOR_SIMD(aligned(in, out:64))
   for(int k = 0; k < 4*npixels; k += 4)
   {
     const float tt = _envelope(in[k]);
