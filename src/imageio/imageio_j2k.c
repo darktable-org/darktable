@@ -284,14 +284,14 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
 
   if(image->numcomps < 3) // 1, 2 => grayscale
   {
-    DT_OMP_FOR(shared(buf))
+    DT_OMP_FOR()
     for(size_t index = 0; index < npixels; index++)
       buf[index * 4] = buf[index * 4 + 1] = buf[index * 4 + 2] =
       (float)(image->comps[0].data[index] + signed_offsets[0]) / float_divs[0];
   }
   else // 3, 4 => rgb
   {
-    DT_OMP_FOR(shared(buf))
+    DT_OMP_FOR()
     for(size_t index = 0; index < npixels; index++)
     {
       buf[index * 4]     = (float)(image->comps[0].data[index] + signed_offsets[0]) / float_divs[0];

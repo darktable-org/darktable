@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -748,7 +748,7 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self,
                dt_dev_pixelpipe_type_to_str(piece->pipe->type), tx, ty, wd, ht, tx * tile_wd, ty * tile_ht);
 
 /* prepare input tile buffer */
-      DT_OMP_FOR(dt_omp_sharedconst(ioffs) shared(input, width))
+      DT_OMP_FOR()
       for(size_t j = 0; j < ht; j++)
         memcpy((char *)input + j * wd * in_bpp, (char *)ivoid + ioffs + j * ipitch, (size_t)wd * in_bpp);
 
@@ -787,7 +787,7 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self,
       }
 
 /* copy "good" part of tile to output buffer */
-      DT_OMP_FOR(shared(ooffs, output, width, origin, region))
+      DT_OMP_FOR(shared(origin, region))
       for(size_t j = 0; j < region[1]; j++)
         memcpy((char *)ovoid + ooffs + j * opitch,
                (char *)output + ((j + origin[1]) * wd + origin[0]) * out_bpp, (size_t)region[0] * out_bpp);
@@ -1103,7 +1103,7 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self,
         goto error;
       }
 
-      DT_OMP_FOR(dt_omp_sharedconst(ioffs) shared(input, iroi_full))
+      DT_OMP_FOR(shared(iroi_full))
       for(size_t j = 0; j < iroi_full.height; j++)
         memcpy((char *)input + j * iroi_full.width * in_bpp, (char *)ivoid + ioffs + j * ipitch,
                (size_t)iroi_full.width * in_bpp);
@@ -1129,7 +1129,7 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self,
       /* copy "good" part of tile to output buffer */
       const int origin_x = oroi_good.x - oroi_full.x;
       const int origin_y = oroi_good.y - oroi_full.y;
-      DT_OMP_FOR(shared(ooffs, output, oroi_good, oroi_full))
+      DT_OMP_FOR(shared(oroi_good, oroi_full))
       for(size_t j = 0; j < oroi_good.height; j++)
         memcpy((char *)ovoid + ooffs + j * opitch,
                (char *)output + ((j + origin_y) * oroi_full.width + origin_x) * out_bpp,
@@ -1550,7 +1550,7 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self,
       if(use_pinned_memory)
       {
 /* prepare pinned input tile buffer: copy part of input image */
-        DT_OMP_FOR(dt_omp_sharedconst(ioffs, wd, ht) shared(input_buffer, width))
+        DT_OMP_FOR()
         for(size_t j = 0; j < ht; j++)
           memcpy((char *)input_buffer + j * wd * in_bpp, (char *)ivoid + ioffs + j * ipitch,
                  (size_t)wd * in_bpp);
@@ -1622,10 +1622,7 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self,
       if(use_pinned_memory)
       {
 /* copy "good" part of tile from pinned output buffer to output image */
-#if 0 // def _OPENMP
-#pragma omp parallel for default(none) shared(ovoid, ooffs, output_buffer, width, origin, region,            \
-                                              wd) schedule(static)
-#endif
+//        DT_OMP_FOR(shared(origin, region))
         for(size_t j = 0; j < region[1]; j++)
           memcpy((char *)ovoid + ooffs + j * opitch,
                  (char *)output_buffer + ((j + origin[1]) * wd + origin[0]) * out_bpp,
@@ -2033,7 +2030,7 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self,
       if(use_pinned_memory)
       {
 /* prepare pinned input tile buffer: copy part of input image */
-        DT_OMP_FOR(dt_omp_sharedconst(ioffs) shared(input_buffer, width, iroi_full))
+        DT_OMP_FOR(shared(iroi_full))
         for(size_t j = 0; j < iroi_full.height; j++)
           memcpy((char *)input_buffer + j * iroi_full.width * in_bpp, (char *)ivoid + ioffs + j * ipitch,
                  (size_t)iroi_full.width * in_bpp);
@@ -2087,7 +2084,7 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self,
           goto error;
         }
 /* copy "good" part of tile from pinned output buffer to output image */
-        DT_OMP_FOR(dt_omp_sharedconst(ooffs) shared(output_buffer, oroi_full, oorigin, oregion))
+        DT_OMP_FOR(shared(oroi_full, oorigin, oregion))
         for(size_t j = 0; j < oregion[1]; j++)
           memcpy((char *)ovoid + ooffs + j * opitch,
                  (char *)output_buffer + ((j + oorigin[1]) * oroi_full.width + oorigin[0]) * out_bpp,

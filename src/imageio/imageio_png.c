@@ -205,7 +205,7 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
   {
     const float normalizer = 1.0f / 255.0f;
 
-    DT_OMP_FOR(shared(mipbuf))
+    DT_OMP_FOR()
     for(size_t index = 0; index < npixels; index++)
     {
       mipbuf[4 * index]     = buf[3 * index]     * normalizer;
@@ -217,7 +217,7 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
   {
     const float normalizer = 1.0f / 65535.0f;
 
-    DT_OMP_FOR(shared(mipbuf))
+    DT_OMP_FOR()
     for(size_t index = 0; index < npixels; index++)
     {
       mipbuf[4 * index]     = (buf[2 * (3 * index)]     * 256.0f + buf[2 * (3 * index)     + 1]) * normalizer;

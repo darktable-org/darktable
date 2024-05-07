@@ -1395,7 +1395,7 @@ static gboolean _dev_pixelpipe_process_rec(
           pipe, module, DT_DEVICE_NONE, &roi_in, roi_out, "bpp=%lu\n", bpp);
         if(cp_width > 0)
         {
-          DT_OMP_FOR(shared(pipe, roi_out, roi_in, output))
+          DT_OMP_FOR()
           for(int j = 0; j < cp_height; j++)
             memcpy(((char *)*output) + (size_t)bpp * j * roi_out->width,
                    ((char *)pipe->input) + (size_t)bpp * (in_x + (in_y + j) * pipe->iwidth),
