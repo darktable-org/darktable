@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2023 darktable developers.
+    Copyright (C) 2013-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1154,7 +1154,7 @@ static int _gradient_get_mask(const dt_iop_module_t *const module,
   float *points = dt_alloc_align_float((size_t)2 * gw * gh);
   if(points == NULL) return 0;
 
-  DT_OMP_FOR(shared(points) collapse(2))
+  DT_OMP_FOR(collapse(2))
   for(int j = 0; j < gh; j++)
     for(int i = 0; i < gw; i++)
     {
@@ -1204,7 +1204,7 @@ static int _gradient_get_mask(const dt_iop_module_t *const module,
     return 0;
   }
 
-  DT_OMP_FOR(shared(lut))
+  DT_OMP_FOR()
   for(int n = 0; n < lutsize; n++)
   {
     const float distance = (n - lutmax) * hwscale;
@@ -1219,7 +1219,7 @@ static int _gradient_get_mask(const dt_iop_module_t *const module,
   float *clut = lut + lutmax;
 
 
-  DT_OMP_FOR(shared(points, clut) collapse(2))
+  DT_OMP_FOR(collapse(2))
   for(int j = 0; j < gh; j++)
   {
     for(int i = 0; i < gw; i++)
@@ -1252,8 +1252,8 @@ static int _gradient_get_mask(const dt_iop_module_t *const module,
 // we fill the mask buffer by interpolation
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(h, w, gw, grid, bufptr) \
-  shared(points) schedule(simd:static)
+  dt_omp_firstprivate(h, w, gw, grid, bufptr, points)  \
+  schedule(simd:static)
 #endif
   for(int j = 0; j < h; j++)
   {
@@ -1309,7 +1309,7 @@ static int _gradient_get_mask_roi(const dt_iop_module_t *const module,
   float *points = dt_alloc_align_float((size_t)2 * gw * gh);
   if(points == NULL) return 0;
 
-  DT_OMP_FOR(shared(points) collapse(2))
+  DT_OMP_FOR(collapse(2))
   for(int j = 0; j < gh; j++)
     for(int i = 0; i < gw; i++)
     {
@@ -1361,7 +1361,7 @@ static int _gradient_get_mask_roi(const dt_iop_module_t *const module,
     return 0;
   }
 
-  DT_OMP_FOR(shared(lut))
+  DT_OMP_FOR()
   for(int n = 0; n < lutsize; n++)
   {
     const float distance = (n - lutmax) * hwscale;
@@ -1375,7 +1375,7 @@ static int _gradient_get_mask_roi(const dt_iop_module_t *const module,
   // center lut around zero
   float *clut = lut + lutmax;
 
-  DT_OMP_FOR(shared(points, clut) collapse(2))
+  DT_OMP_FOR(collapse(2))
   for(int j = 0; j < gh; j++)
   {
     for(int i = 0; i < gw; i++)
@@ -1402,8 +1402,8 @@ static int _gradient_get_mask_roi(const dt_iop_module_t *const module,
 // we fill the mask buffer by interpolation
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(h, w, grid, gw) \
-  shared(buffer, points) schedule(simd:static)
+  dt_omp_firstprivate(h, w, grid, gw, buffer, points)  \
+  schedule(simd:static)
 #endif
   for(int j = 0; j < h; j++)
   {

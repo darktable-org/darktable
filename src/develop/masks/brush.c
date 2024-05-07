@@ -3128,7 +3128,7 @@ static int _brush_get_mask_roi(const dt_iop_module_t *const module,
   }
 
   // now we fill the falloff
-  DT_OMP_FOR(shared(buffer, points, border, payload))
+  DT_OMP_FOR()
   for(int i = _nb_ctrl_point(nb_corner); i < border_count; i++)
   {
     const int p0[] = { points[i * 2], points[i * 2 + 1] };

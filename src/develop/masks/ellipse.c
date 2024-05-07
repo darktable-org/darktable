@@ -1811,7 +1811,7 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module,
   float *ell = dt_alloc_align_float(ellpts * 2);
   if(ell == NULL) return 0;
 
-  DT_OMP_FOR(shared(ell))
+  DT_OMP_FOR()
   for(int n = 0; n < ellpts; n++)
   {
     const float phi = (2.0f * M_PI * n) / ellpts;
@@ -1886,7 +1886,7 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module,
   if(points == NULL) return 0;
 
   // we populate the grid points in module coordinates
-  DT_OMP_FOR(shared(points) collapse(2))
+  DT_OMP_FOR(collapse(2))
   for(int j = bbym; j <= bbYM; j++)
     for(int i = bbxm; i <= bbXM; i++)
     {
@@ -1925,7 +1925,7 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module,
   // we only need to take the contents of our bounding box into account
   const int endx = MIN(w, bbXM * grid);
   const int endy = MIN(h, bbYM * grid);
-  DT_OMP_FOR(shared(buffer, points))
+  DT_OMP_FOR()
   for(int j = bbym * grid; j < endy; j++)
   {
     const int jj = j % grid;
