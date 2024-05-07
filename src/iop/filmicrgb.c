@@ -1462,7 +1462,8 @@ static inline void filmic_split_v2_v3(const float *const restrict in,
   const dt_aligned_pixel_t output_power
     = { data->output_power, data->output_power, data->output_power, data->output_power };
 
-  DT_OMP_FOR_SIMD()
+  // DO NOT REPLACE THE FOLLOWING BY "DT_OMP_FOR_SIMD" - doing so causes a small but measurable change in results
+  DT_OMP_FOR()
   for(size_t k = 0; k < height * width * 4; k += 4)
   {
     const float *const restrict pix_in = in + k;
