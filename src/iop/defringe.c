@@ -27,6 +27,7 @@
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "develop/imageop_gui.h"
+#include "develop/tiling.h"
 #include "gui/gtk.h"
 #include "gui/accelerators.h"
 #include "iop/iop_api.h"
@@ -108,17 +109,18 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_LAB;
 }
 
-// Verify before actually using this
-/*
-void tiling_callback  (dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in,
-const dt_iop_roi_t *roi_out, dt_develop_tiling_t *tiling)
+void tiling_callback(dt_iop_module_t *module,
+                     dt_dev_pixelpipe_iop_t *piece,
+                     const dt_iop_roi_t *roi_in,
+                     const dt_iop_roi_t *roi_out,
+                     dt_develop_tiling_t *tiling)
 {
   dt_iop_defringe_data_t *p = (dt_iop_defringe_data_t *)piece->data;
 
   const int width = roi_in->width;
   const int height = roi_in->height;
   const int channels = piece->colors;
-  const size_t basebuffer = width*height*channels*sizeof(float);
+  const size_t basebuffer = width * height * channels * sizeof(float);
 
   tiling->factor = 2.0f + (float)dt_gaussian_memory_use(width, height, channels)/basebuffer;
 #ifdef HAVE_OPENCL
@@ -126,18 +128,16 @@ const dt_iop_roi_t *roi_out, dt_develop_tiling_t *tiling)
 #endif
   tiling->maxbuf = fmax(1.0f, (float)dt_gaussian_singlebuffer_size(width, height, channels)/basebuffer);
   tiling->overhead = 0;
-  tiling->overlap = p->window;
+  tiling->overlap = 2 * p->radius;
   tiling->xalign = 1;
   tiling->yalign = 1;
-  return;
 }
-*/
 
 // fibonacci lattice to select surrounding pixels for different cases
 static const float fib[] = { 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233 };
 // 0,1,2,3,4,5,6, 7, 8, 9,10,11, 12, 13
 
-static inline void fib_latt(int *const x, int *const y, float radius, int step, int idx)
+static inline void _fib_latt(int *const x, int *const y, float radius, int step, int idx)
 {
   // idx < 1 because division by zero is also a problem in the following line
   if(idx >= sizeof(fib) / sizeof(float) - 1 || idx < 1)
@@ -168,8 +168,12 @@ static inline void fib_latt(int *const x, int *const y, float radius, int step, 
 // most are chosen arbitrarily and/or by experiment/trial+error ... I am sorry ;-)
 // and having everything user-defineable would be just too much
 // -----------------------------------------------------------------------------------------
-void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, const void *const i,
-             void *const o, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(struct dt_iop_module_t *module,
+             dt_dev_pixelpipe_iop_t *piece,
+             const void *const i,
+             void *const o,
+             const dt_iop_roi_t *const roi_in,
+             const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_defringe_data_t *const d = (dt_iop_defringe_data_t *)piece->data;
   if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, module, piece->colors,
@@ -189,7 +193,7 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
 
   if(roi_out->width < 2 * radius + 1 || roi_out->height < 2 * radius + 1) goto ERROR_EXIT;
 
-  float avg_edge_chroma = 0.0;
+  float avg_edge_chroma = 0.0f;
 
   const float *const restrict in = (float *const)i;
   float *const restrict out = (float *const)o;
@@ -255,14 +259,14 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
   for(int u = 0; u < samples_avg; u++)
   {
     int dx, dy;
-    fib_latt(&dx, &dy, avg_radius, u, sampleidx_avg);
+    _fib_latt(&dx, &dy, avg_radius, u, sampleidx_avg);
     xy_avg[2*u] = dx;
     xy_avg[2*u+1] = dy;
   }
   for(int u = 0; u < samples_small; u++)
   {
     int dx, dy;
-    fib_latt(&dx, &dy, small_radius, u, sampleidx_small);
+    _fib_latt(&dx, &dy, small_radius, u, sampleidx_small);
     xy_small[2*u] = dx;
     xy_small[2*u+1] = dy;
   }
