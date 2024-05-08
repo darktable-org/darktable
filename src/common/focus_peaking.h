@@ -75,15 +75,13 @@ static inline void get_indices(const size_t i, const size_t j, const size_t widt
   index[7] = lower_line + right_row;      // south east
 }
 
-// static inline void dt_focuspeaking(cairo_t *cr, const int buf_width, const int buf_height,
-//                                   uint8_t *const restrict image)
-
-static inline void dt_focuspeaking(cairo_t *cr, int width, int height,
-                                   uint8_t *const restrict image,
-                                   const int buf_width, const int buf_height)
+static inline void dt_focuspeaking(cairo_t *cr,
+                                   int buf_width,
+                                   int buf_height,
+                                   uint8_t *const restrict image)
 {
   float *const restrict luma = dt_alloc_align_float((size_t)buf_width * buf_height);
-  uint8_t *const restrict focus_peaking = dt_alloc_align(64, sizeof(uint8_t) * buf_width * buf_height * 4);
+  uint8_t *const restrict focus_peaking = dt_alloc_aligned(sizeof(uint8_t) * buf_width * buf_height * 4);
 
   const size_t npixels = (size_t)buf_height * buf_width;
   // Create a luma buffer as the euclidian norm of RGB channels
@@ -109,7 +107,7 @@ static inline void dt_focuspeaking(cairo_t *cr, int width, int height,
   for(size_t i = 0; i < buf_height; ++i)
     for(size_t j = 0; j < buf_width; ++j)
     {
-      size_t index = i * buf_width + j;
+      const size_t index = i * buf_width + j;
       if(i < 8 || i >= buf_height - 8 || j < 8 || j > buf_width - 8)
       {
         // ensure defined value for borders
@@ -170,15 +168,11 @@ static inline void dt_focuspeaking(cairo_t *cr, int width, int height,
     }
 
   // Dilate the mask to improve connectivity
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-dt_omp_firstprivate(luma, luma_ds, buf_height, buf_width) \
-schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR(collapse(2))
   for(size_t i = 0; i < buf_height; ++i)
     for(size_t j = 0; j < buf_width; ++j)
     {
-      size_t index = i * buf_width + j;
+      const size_t index = i * buf_width + j;
       if(i < 8 || i >= buf_height - 8 || j < 8 || j > buf_width - 8)
       {
         // ensure defined value for borders
