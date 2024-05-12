@@ -2897,9 +2897,11 @@ float *dt_dev_get_raster_mask(struct dt_dev_pixelpipe_iop_t *piece,
                 // As we might have multiple modules doing a transformation we want to
                 // de-allocate all intermediate buffers and only leave the last one
                 // to be used and deallocated by the caller.
-                if(*free_mask) dt_free_align(raster_mask);
-
-                *free_mask = TRUE;
+                if(provided_raster_mask != raster_mask)
+                {
+                  dt_free_align(raster_mask);
+                  *free_mask = TRUE;
+                }
                 raster_mask = transformed_mask;
                 final_roi = &it_piece->processed_roi_out;
               }
@@ -2950,7 +2952,15 @@ float *dt_dev_get_raster_mask(struct dt_dev_pixelpipe_iop_t *piece,
                 provided_raster_mask != raster_mask ? "" : "NOT ",
                 raster_mask,
                 final_roi->width, final_roi->height);
-
+  if(!correct)
+  {
+    if(*free_mask)
+    {
+      dt_free_align(raster_mask);
+      raster_mask = NULL;
+      free_mask = FALSE;
+    }
+  }
   return raster_mask;
 }
 
@@ -3077,10 +3087,11 @@ int dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
 
 // this expects a mask prepared by rawprepare or demosaic and distorts it
 // through all pipeline modules until target
-float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_t *pipe,
+float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_iop_t *piece,
                                   float *src,
                                   const dt_iop_module_t *target_module)
 {
+  dt_dev_pixelpipe_t *pipe = piece->pipe;
   gboolean valid = FALSE;
   const gboolean raw_img = dt_image_is_raw(&pipe->image);
 
@@ -3150,12 +3161,21 @@ float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_t *pipe,
       }
     }
   }
+  const gboolean correct =  piece->processed_roi_out.width == final_roi->width
+                        &&  piece->processed_roi_out.height == final_roi->height;
+
   dt_print_pipe(DT_DEBUG_MASKS | DT_DEBUG_PIPE,
-    "got detail mask",
+    correct ? "got detail mask" : "DETAIL SIZE MISMATCH",
     pipe, target_module, DT_DEVICE_NONE, NULL, NULL,
     "from %p (%ix%i) distorted to %p (%ix%i)\n",
     pipe->scharr.data, pipe->scharr.roi.width, pipe->scharr.roi.height,
     resmask, final_roi->width, final_roi->height);
+
+  if(!correct)
+  {
+    dt_free_align(resmask);
+    resmask = NULL;
+  }
 
   return resmask;
 }

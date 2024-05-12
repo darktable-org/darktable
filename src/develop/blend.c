@@ -283,7 +283,7 @@ static void _refine_with_detail_mask(struct dt_iop_module_t *self,
   if(!lum) goto error;
 
   // here we have the slightly blurred full detail mask available
-  warp_mask = dt_dev_distort_detail_mask(p, lum, self);
+  warp_mask = dt_dev_distort_detail_mask(piece, lum, self);
   dt_free_align(lum);
   lum = NULL;
 
@@ -906,7 +906,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
   blur = NULL;
 
   // here we have the slightly blurred full detail mask available
-  float *warp_mask = dt_dev_distort_detail_mask(p, lum, self);
+  float *warp_mask = dt_dev_distort_detail_mask(piece, lum, self);
   if(warp_mask == NULL)
   {
     err = DT_OPENCL_PROCESS_CL;

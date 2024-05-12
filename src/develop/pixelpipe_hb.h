@@ -326,7 +326,7 @@ void dt_print_pipe_ext(const char *title,
   __attribute__((format(printf, 7, 8)));
 
 // helper function writing the pipe-processed ctmask data to dest
-float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_t *pipe,
+float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_iop_t *piece,
                                   float *src,
                                   const struct dt_iop_module_t *target_module);
 
