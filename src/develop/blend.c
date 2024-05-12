@@ -1521,6 +1521,14 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
   return TRUE;
 
 error:
+  // As we have not written the mask we must remove an existing one.
+  if(g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID)))
+  {
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS,
+      "delete raster mask", piece->pipe, self, piece->pipe->devid, roi_in, roi_out,
+      "OpenCL error: %s\n", cl_errstr(err));
+    dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self->iop_order);
+  }
   dt_free_align(_mask);
   dt_opencl_release_mem_object(dev_blendif_params);
   dt_opencl_release_mem_object(dev_boost_factors);
