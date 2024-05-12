@@ -373,7 +373,7 @@ void process(struct dt_iop_module_t *self,
       case DT_IOP_CANVAS_COLOR_BLUE:
         bcolor[0] = 0.f;
         bcolor[1] = 0.f;
-        bcolor[2] = 2.f;
+        bcolor[2] = 1.f;
         break;
       case DT_IOP_CANVAS_COLOR_COUNT:
         // should never happen
