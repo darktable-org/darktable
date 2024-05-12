@@ -343,7 +343,7 @@ public:
     values = new Value[maxFill()];
     init_alloc = total_alloc = capacity * sizeof(Entry) + maxFill() * sizeof(Key) + maxFill() * sizeof(Value);
   }
-   
+
   /* grow the size of the hash table so that it can hold exactly num_entries
    * without requiring resizing.  The actual index array will be rounded up
    * to the next higher power of two.
@@ -387,7 +387,7 @@ public:
     entries = newEntries;
     total_alloc = capacity * sizeof(Entry) + maxFill() * sizeof(Key) + maxFill() * sizeof(Value);
   }
-   
+
 private:
   // Private struct for the hash table entries.
   struct Entry
@@ -670,16 +670,11 @@ public:
         offset_remap[i][j] = val - hashTables[0].getValues();
       }
     }
-    if(darktable.unmuted & DT_DEBUG_MEMORY)
-    {
-       float fill_factor = 100.0f * total_entries / alloc_entries;
-       std::cerr << "[permutohedral] hash tables " << total_bytes << " bytes (" << init_bytes
-		 << " initially), " << total_entries << " entries" << std::endl
-		 << "[permutohedral] tables grew " << total_grows << " times, replay using "
-		 << (sizeof(ReplayEntry)*nData) << " bytes for " << nData << " pixels" << std::endl
-		 << "[permutohedral] fill factor " << fill_factor << "%, remap using "
-		 << remap_bytes << " bytes," << std::endl;
-    }
+    dt_print(DT_DEBUG_MEMORY,
+      "[permutohedral] hash tables %lu bytes (%lu initially), %lu entries, [permutohedral] tables grew %lu times, "
+      "replay using %lu bytes for %lu pixels, [permutohedral] fill factor %f%%, remap using %lu bytes\n",
+      total_bytes, init_bytes, total_entries, total_grows,
+      (sizeof(ReplayEntry)*nData), nData, (float)100.0f * total_entries / alloc_entries, remap_bytes);
 
     /* Rewrite the offsets in the replay structure from the above generated table. */
     DT_OMP_FOR(if(nData >= 100000))
@@ -722,9 +717,9 @@ public:
     const Value zero{ 0 };
     const Value *const zeroPtr = &zero;
 
-    if (darktable.unmuted & DT_DEBUG_MEMORY)
-       std::cerr << "[permutohedral] blur using " << (sizeof(Value)*hashTables[0].size())
-		 << " bytes for newValue"<<std::endl;
+    dt_print(DT_DEBUG_MEMORY,
+      "[permutohedral] blur using %lu bytes for newValue\n",
+      (sizeof(Value)*hashTables[0].size()));
 
     // For each of d+1 axes,
     for(int j = 0; j <= D; j++)

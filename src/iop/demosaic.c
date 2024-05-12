@@ -492,6 +492,9 @@ void tiling_callback(
   tiling->xalign = is_xtrans ? DT_XTRANS_SNAPPER : DT_BAYER_SNAPPER;
   tiling->yalign = is_xtrans ? DT_XTRANS_SNAPPER : DT_BAYER_SNAPPER;
 
+  tiling->maxbuf = 1.0f;
+  tiling->overhead = 0;
+
   if((demosaicing_method == DT_IOP_DEMOSAIC_PPG) ||
       (demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME) ||
       (demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR) ||
@@ -501,13 +504,12 @@ void tiling_callback(
     tiling->factor = 1.0f + ioratio;         // in + out
 
     if(full_scale && unscaled)
-      tiling->factor += fmax(1.0f + greeneq, smooth);  // + tmp + geeneq | + smooth
+      tiling->factor += MAX(1.0f + greeneq, smooth);  // + tmp + geeneq | + smooth
     else if(full_scale)
-      tiling->factor += fmax(2.0f + greeneq, smooth);  // + tmp + aux + greeneq | + smooth
+      tiling->factor += MAX(2.0f + greeneq, smooth);  // + tmp + aux + greeneq | + smooth
     else
       tiling->factor += smooth;                        // + smooth
 
-    tiling->maxbuf = 1.0f;
     tiling->overhead = 0;
     tiling->overlap = 5; // take care of border handling
   }
@@ -526,26 +528,24 @@ void tiling_callback(
                       + 1.0f;          // aux
 
     if(full_scale && unscaled)
-      tiling->factor += fmax(1.0f + greeneq, smooth);
+      tiling->factor += MAX(1.0f + greeneq, smooth);
     else if(full_scale)
-      tiling->factor += fmax(2.0f + greeneq, smooth);
+      tiling->factor += MAX(2.0f + greeneq, smooth);
     else
       tiling->factor += smooth;
 
-    tiling->maxbuf = 1.0f;
-    tiling->overhead = 0;
     tiling->overlap = overlap;
   }
   else if(demosaicing_method == DT_IOP_DEMOSAIC_RCD)
   {
     tiling->factor = 1.0f + ioratio;
     if(full_scale && unscaled)
-      tiling->factor += fmax(1.0f + greeneq, smooth);  // + tmp + geeneq | + smooth
+      tiling->factor += MAX(1.0f + greeneq, smooth);  // + tmp + geeneq | + smooth
     else if(full_scale)
-      tiling->factor += fmax(2.0f + greeneq, smooth);  // + tmp + aux + greeneq | + smooth
+      tiling->factor += MAX(2.0f + greeneq, smooth);  // + tmp + aux + greeneq | + smooth
     else
       tiling->factor += smooth;                        // + smooth
-    tiling->maxbuf = 1.0f;
+
     tiling->overhead = sizeof(float) * DT_RCD_TILESIZE * DT_RCD_TILESIZE * 8 * dt_get_num_threads();
     tiling->overlap = 10;
     tiling->factor_cl = tiling->factor + 3.0f;
@@ -554,12 +554,11 @@ void tiling_callback(
   {
     tiling->factor = 1.0f + ioratio;
     if(full_scale && unscaled)
-      tiling->factor += fmax(1.0f + greeneq, smooth);  // + tmp + geeneq | + smooth
+      tiling->factor += MAX(1.0f + greeneq, smooth);  // + tmp + geeneq | + smooth
     else if(full_scale)
-      tiling->factor += fmax(2.0f + greeneq, smooth);  // + tmp + aux + greeneq | + smooth
+      tiling->factor += MAX(2.0f + greeneq, smooth);  // + tmp + aux + greeneq | + smooth
     else
       tiling->factor += smooth;                        // + smooth
-    tiling->maxbuf = 1.0f;
     tiling->overhead = sizeof(float) * DT_LMMSE_TILESIZE * DT_LMMSE_TILESIZE * 6 * dt_get_num_threads();
     tiling->overlap = 10;
   }
@@ -569,14 +568,12 @@ void tiling_callback(
     tiling->factor = 1.0f + ioratio;
 
     if(full_scale && unscaled)
-      tiling->factor += fmax(1.0f + greeneq, smooth);
+      tiling->factor += MAX(1.0f + greeneq, smooth);
     else if(full_scale)
-      tiling->factor += fmax(2.0f + greeneq, smooth);
+      tiling->factor += MAX(2.0f + greeneq, smooth);
     else
       tiling->factor += smooth;
 
-    tiling->maxbuf = 1.0f;
-    tiling->overhead = 0;
     tiling->overlap = 6;
   }
   if(data->demosaicing_method & DT_DEMOSAIC_DUAL)
