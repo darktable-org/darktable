@@ -49,7 +49,7 @@ typedef struct dt_iop_enlargecanvas_params_t
   float percent_right;  // $MIN: 0 $MAX: 100.0 $DEFAULT: 0 $DESCRIPTION: "percent right"
   float percent_top;    // $MIN: 0 $MAX: 100.0 $DEFAULT: 0 $DESCRIPTION: "percent top"
   float percent_bottom; // $MIN: 0 $MAX: 100.0 $DEFAULT: 0 $DESCRIPTION: "percent bottom"
-  dt_iop_canvas_color_t color;
+  dt_iop_canvas_color_t color;  // $DESCRIPTION: "color"
 } dt_iop_enlargecanvas_params_t;
 
 typedef struct dt_iop_enlargecanvas_data_t
@@ -415,24 +415,6 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->color, p->color);
 }
 
-static void _color_changed(GtkWidget *combo, dt_iop_module_t *self)
-{
-  dt_iop_enlargecanvas_gui_data_t *g = (dt_iop_enlargecanvas_gui_data_t *)self->gui_data;
-  dt_iop_enlargecanvas_params_t *p = (dt_iop_enlargecanvas_params_t *)self->params;
-
-  const int which = dt_bauhaus_combobox_get(combo);
-
-  if(which < DT_IOP_CANVAS_COLOR_COUNT)
-  {
-    p->color = which;
-    ++darktable.gui->reset;
-    dt_bauhaus_slider_set(g->color, p->color);
-    --darktable.gui->reset;
-  }
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_enlargecanvas_gui_data_t *g = IOP_GUI_ALLOC(enlargecanvas);
@@ -451,14 +433,9 @@ void gui_init(dt_iop_module_t *self)
   g->percent_bottom = dt_bauhaus_slider_from_params(self, "percent_bottom");
   dt_bauhaus_slider_set_format(g->percent_bottom, "%");
 
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(g->color, self, NULL, N_("color"),
-                               _("select the color of the enlarged canvas"),
-                               0, _color_changed, self,
-                               N_("green"),
-                               N_("red"),
-                               N_("blue"),
-                               N_("black"),
-                               N_("white"));
+  g->color = dt_bauhaus_combobox_from_params(self, "color");
+  gtk_widget_set_tooltip_text(g->color, _("select the color of the enlarged canvas"));
+
   gtk_box_pack_start(GTK_BOX(self->widget), g->color, TRUE, TRUE, 0);
 }
 
