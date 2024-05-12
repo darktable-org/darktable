@@ -140,6 +140,8 @@ changes (where available).
   Removed the old image grouping collection type and filter which gave
   confusing results.
 
+- Added support for CMYK profiled histogram.
+
 ## Bug Fixes
 
 - Fix copy of multiple instances to ensure the proper order is applied
@@ -168,6 +170,9 @@ changes (where available).
 
 - Fixed a number of issues with guided filter blending and internal mask
   distortions.
+
+- Fixed some issues related to cropping module and output/export
+  dimensions.
 
 ## Lua
 
