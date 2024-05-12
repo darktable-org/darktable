@@ -248,9 +248,6 @@ typedef struct const_rgb_image
   int width, height, stride;
 } const_rgb_image;
 
-
-
-
 // swap the two floats that the pointers point to
 static inline void _pointer_swap_f(float *a, float *b)
 {
@@ -258,7 +255,6 @@ static inline void _pointer_swap_f(float *a, float *b)
   *a = *b;
   *b = t;
 }
-
 
 // calculate the dark channel (minimal color component over a box of
 // size (2*w+1) x (2*w+1) )
@@ -297,7 +293,7 @@ static void _transition_map(const const_rgb_image img1,
   {
     const float *pixel = in_data + 4*i;
     const float m = MIN(MIN(pixel[0] * A0_inv[0], pixel[1] * A0_inv[1]),
-                  pixel[2] * A0_inv[2]);
+                        pixel[2] * A0_inv[2]);
     out_data[i] = 1.f - m * strength;
   }
   dt_box_max(img2.data, img2.height, img2.width, 1, w);
@@ -458,9 +454,9 @@ static float _ambient_light(const const_rgb_image img,
   size_t N_most_hazy = N_most_hazy_end - N_most_hazy_start;
   p = (size_t)(N_most_hazy * bright_quantil) + N_most_hazy_start;
   _quick_select(hazy_data + N_most_hazy_start,
-               hazy_data + p,
-               hazy_data + N_most_hazy_end,
-               compatibility_mode);
+                hazy_data + p,
+                hazy_data + N_most_hazy_end,
+                compatibility_mode);
   const float crit_brightness = hazy_data[p];
   free_gray_image(&bright_hazy);
   // average over the brightest pixels among the most hazy pixels to
@@ -496,7 +492,9 @@ static float _ambient_light(const const_rgb_image img,
   // the critical haze level is at dark_channel_quantil (not 100%) to be insensitive
   // to extreme outliners, compensate for that by some factor slightly larger than
   // unity when calculating the maximal image depth
-  return crit_haze_level > 0 ? -1.125f * logf(crit_haze_level) : logf(FLT_MAX) / 2; // return the maximal depth
+  return crit_haze_level > 0
+    ? -1.125f * logf(crit_haze_level)
+    : logf(FLT_MAX) / 2; // return the maximal depth
 }
 
 
@@ -627,9 +625,9 @@ void process(struct dt_iop_module_t *self,
 // some parts of the calculation are not suitable for a parallel implementation,
 // thus we copy data to host memory fall back to a cpu routine
 static float _ambient_light_cl(struct dt_iop_module_t *self,
-                               int devid,
+                               const int devid,
                                cl_mem img,
-                               int w1,
+                               const int w1,
                                rgb_pixel *pA0,
                                const gboolean compatibility_mode)
 {
@@ -734,8 +732,9 @@ static int _transition_map_cl(struct dt_iop_module_t *self,
 
   const int kernel = gd->kernel_hazeremoval_transision_map;
   cl_int err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
-    CLARG(width), CLARG(height), CLARG(img1), CLARG(img2), CLARG(strength),
-    CLARG(A0[0]), CLARG(A0[1]), CLARG(A0[2]));
+                                                CLARG(width), CLARG(height),
+                                                CLARG(img1), CLARG(img2), CLARG(strength),
+                                                CLARG(A0[0]), CLARG(A0[1]), CLARG(A0[2]));
   if(err != CL_SUCCESS)
     return err;
 
@@ -815,7 +814,9 @@ int process_cl(struct dt_iop_module_t *self,
   // only see part of the image (region of interest).  Therefore, we
   // try to get A0 and distance_max from the PREVIEW pixelpipe which
   // luckily stores it for us.
-  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
+  if(self->dev->gui_attached
+     && g
+     && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
   {
     dt_iop_gui_enter_critical_section(self);
     const dt_hash_t hash = g->hash;
@@ -830,7 +831,10 @@ int process_cl(struct dt_iop_module_t *self,
        && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe,
                                       self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL,
                                       &self->gui_lock, &g->hash))
+    {
       dt_control_log(_("inconsistent output"));
+    }
+
     dt_iop_gui_enter_critical_section(self);
     A0[0] = g->A0[0];
     A0[1] = g->A0[1];
@@ -842,7 +846,9 @@ int process_cl(struct dt_iop_module_t *self,
   if(dt_isnan(distance_max))
     distance_max = _ambient_light_cl(self, devid, img_in, w1, &A0, compatibility_mode);
   // PREVIEW pixelpipe stores values.
-  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
+  if(self->dev->gui_attached
+     && g
+     && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
   {
     dt_hash_t hash = dt_dev_hash_plus(self->dev, piece->pipe,
                                       self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
@@ -875,7 +881,7 @@ int process_cl(struct dt_iop_module_t *self,
   // apply guided filter with no clipping
   err = guided_filter_cl(devid, img_in, trans_map, trans_map_filtered,
                          width, height, ch, w2, eps, 1.f, -CL_FLT_MAX,
-                   CL_FLT_MAX);
+                         CL_FLT_MAX);
   if(err != CL_SUCCESS) goto error;
 
   // finally, calculate the haze-free image
