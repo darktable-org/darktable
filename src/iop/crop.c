@@ -216,59 +216,52 @@ static void _commit_box(dt_iop_module_t *self,
       p->ch = CLAMPF(p->ch, 0.1f, 1.0f);
     }
   }
-  const gboolean changed = fabs(p->cx - old[0]) > eps
-    || fabs(p->cy - old[1]) > eps
-    || fabs(p->cw - old[2]) > eps
-    || fabs(p->ch - old[3]) > eps;
+  const gboolean changed = fabsf(p->cx - old[0]) > eps
+    || fabsf(p->cy - old[1]) > eps
+    || fabsf(p->cw - old[2]) > eps
+    || fabsf(p->ch - old[3]) > eps;
 
-  // dt_print(DT_DEBUG_ALWAYS, "[crop commit box] %i:  %e %e %e %e\n", changed, p->cx - old[0], p->cy - old[1], p->cw - old[2], p->ch - old[3]);
+//  dt_print(DT_DEBUG_ALWAYS, "[crop commit box] %i:  %e %e %e %e\n", changed, p->cx - old[0], p->cy - old[1], p->cw - old[2], p->ch - old[3]);
 
   if(changed)
     dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static int _set_max_clip(struct dt_iop_module_t *self)
+static gboolean _set_max_clip(struct dt_iop_module_t *self)
 {
   dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
   dt_iop_crop_params_t *p = (dt_iop_crop_params_t *)self->params;
 
-  if(g->clip_max_pipe_hash == self->dev->preview_pipe->backbuf_hash) return 1;
-  if(self->dev->preview_pipe->status != DT_DEV_PIXELPIPE_VALID) return 1;
+  if(g->clip_max_pipe_hash == self->dev->preview_pipe->backbuf_hash) return TRUE;
+  if(self->dev->preview_pipe->status != DT_DEV_PIXELPIPE_VALID) return TRUE;
 
   // we want to know the size of the actual buffer
   dt_dev_pixelpipe_iop_t *piece =
     dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
-  if(!piece) return 0;
+  if(!piece) return FALSE;
 
-  float wp = piece->buf_out.width, hp = piece->buf_out.height;
+  const float wp = piece->buf_out.width;
+  const float hp = piece->buf_out.height;
   float points[8] = { 0.0f, 0.0f, wp, hp, p->cx * wp, p->cy * hp, p->cw * wp, p->ch * hp };
   if(!dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
                                     DT_DEV_TRANSFORM_DIR_FORW_EXCL, points, 4))
-    return 0;
+    return FALSE;
 
   float wd, ht;
   dt_dev_get_preview_size(self->dev, &wd, &ht);
-  g->clip_max_x =
-    fmaxf(points[0] / wd, 0.0f);
-  g->clip_max_y =
-    fmaxf(points[1] / ht, 0.0f);
-  g->clip_max_w =
-    fminf((points[2] - points[0]) / wd, 1.0f);
-  g->clip_max_h =
-    fminf((points[3] - points[1]) / ht, 1.0f);
+  g->clip_max_x = MAX(points[0] / wd, 0.0f);
+  g->clip_max_y = MAX(points[1] / ht, 0.0f);
+  g->clip_max_w = MIN((points[2] - points[0]) / wd, 1.0f);
+  g->clip_max_h = MIN((points[3] - points[1]) / ht, 1.0f);
 
   // if clipping values are not null, this is undistorted values...
-  g->clip_x =
-    fmaxf(points[4] / wd, g->clip_max_x);
-  g->clip_y =
-    fmaxf(points[5] / ht, g->clip_max_y);
-  g->clip_w =
-    fminf((points[6] - points[4]) / wd, g->clip_max_w);
-  g->clip_h =
-    fminf((points[7] - points[5]) / ht, g->clip_max_h);
+  g->clip_x = MAX(points[4] / wd, g->clip_max_x);
+  g->clip_y = MAX(points[5] / ht, g->clip_max_y);
+  g->clip_w = MIN((points[6] - points[4]) / wd, g->clip_max_w);
+  g->clip_h = MIN((points[7] - points[5]) / ht, g->clip_max_h);
 
   g->clip_max_pipe_hash = self->dev->preview_pipe->backbuf_hash;
-  return 1;
+  return TRUE;
 }
 
 gboolean distort_transform(dt_iop_module_t *self,
@@ -331,6 +324,7 @@ void distort_mask(struct dt_iop_module_t *self,
   dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out);
 }
 
+#define ORIGINALMAGIC 1000000.0f
 void modify_roi_out(struct dt_iop_module_t *self,
                     struct dt_dev_pixelpipe_iop_t *piece,
                     dt_iop_roi_t *roi_out,
@@ -339,14 +333,52 @@ void modify_roi_out(struct dt_iop_module_t *self,
   *roi_out = *roi_in;
   dt_iop_crop_data_t *d = (dt_iop_crop_data_t *)piece->data;
 
-  roi_out->width = roi_in->width * (d->cw - d->cx);
-  roi_out->height = roi_in->height * (d->ch - d->cy);
-  roi_out->x = roi_in->width * d->cx;
-  roi_out->y = roi_in->height * d->cy;
+  const float px = MAX(0.0f, floorf(roi_in->width * d->cx));
+  const float py = MAX(0.0f, floorf(roi_in->height * d->cy));
+  const float odx = roi_in->width * d->cw - px;
+  const float ody = roi_in->height * d->ch -py;
+
+  // we use the rawprepare cropped dimension for original dimension and safety
+  const dt_image_t *img = &(self->dev->image_storage);
+  const float pwidth = dt_image_raw_width(img);
+  const float pheight = dt_image_raw_height(img);
+
+  // if the aspect has been toggled it's presented here as negative
+  const float negative = d->aspect < 0.0f;
+
+  float aspect = d->aspect;
+
+  if(fabsf(aspect) == ORIGINALMAGIC)
+    aspect = pwidth / pheight;
+
+  if(negative)
+    aspect = fabsf(1.0f / aspect);
+
+  float dx = odx;
+  float dy = ody;
+
+  // so lets possibly enforce the ratio using the larger side as reference
+  if(d->aspect != 0.0f)
+  {
+    if(odx > ody)
+      dy = dx / aspect;
+    else
+      dx = dy * aspect;
+  }
+
+  roi_out->width = MIN(dx, pwidth - px);
+  roi_out->height = MIN(dy, pheight - py);
+  roi_out->x = px;
+  roi_out->y = py;
+
+  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
+    "crop aspects", piece->pipe, self, DT_DEVICE_NONE, NULL, NULL,
+    "%s%sAspect=%.5f. odx: %.4f ody: %.4f --> dx: %.4f dy: %.4f\n",
+    negative ? "toggled " : "",
+    d->aspect != 0.0f ? "fixed " : "",
+    aspect, odx, ody, dx, dy);
 
   // sanity check.
-  if(roi_out->x < 0) roi_out->x = 0;
-  if(roi_out->y < 0) roi_out->y = 0;
   if(roi_out->width < 5) roi_out->width = 5;
   if(roi_out->height < 5) roi_out->height = 5;
 }
@@ -408,6 +440,7 @@ void commit_params(struct dt_iop_module_t *self,
     d->cy = 0.0f;
     d->cw = 1.0f;
     d->ch = 1.0f;
+    d->aspect = 0.0f;
   }
   else
   {
@@ -415,8 +448,19 @@ void commit_params(struct dt_iop_module_t *self,
     d->cy = CLAMPF(p->cy, 0.0f, 0.9f);
     d->cw = CLAMPF(p->cw, 0.1f, 1.0f);
     d->ch = CLAMPF(p->ch, 0.1f, 1.0f);
+
+    const int rd = p->ratio_d;
+    const int rn = p->ratio_n;
+    const float aspect = rn > 0
+                        ? fabsf((float)rd / (float)rn)
+    // note: we pass a magic here as calculating the exact ratio is better
+    // handled in modify_roi_out
+                        : (rn == 0 && abs(rd) == 1) ? ORIGINALMAGIC
+                                                    : 0.0f;
+    d->aspect = rd > 0 ? aspect : -aspect;
   }
 }
+#undef ORIGINALMAGIC
 
 static void _event_preview_updated_callback(gpointer instance, dt_iop_module_t *self)
 {
@@ -516,7 +560,7 @@ static float _aspect_ratio_get(dt_iop_module_t *self, GtkWidget *combo)
   // if we do not have yet computed the aspect ratio, let's do it now
   if(p->ratio_d == -2 && p->ratio_n == -2)
   {
-    if(p->cw == 1.0 && p->cx == 0.0 && p->ch == 1.0 && p->cy == 0.0)
+    if(p->cw == 1.0f && p->cx == 0.0f && p->ch == 1.0f && p->cy == 0.0f)
     {
       p->ratio_d = -1;
       p->ratio_n = -1;
@@ -722,10 +766,10 @@ static void _aspect_apply(dt_iop_module_t *self, _grab_region_t grab)
       clip_h = g->clip_max_y + g->clip_max_h - clip_y;
       if(grab & GRAB_LEFT) clip_x += prev_clip_w - clip_w;
     }
-    g->clip_x = fmaxf(clip_x, 0.0f);
-    g->clip_y = fmaxf(clip_y, 0.0f);
-    g->clip_w = fminf(clip_w, 1.0f);
-    g->clip_h = fminf(clip_h, 1.0f);
+    g->clip_x = MAX(clip_x, 0.0f);
+    g->clip_y = MAX(clip_y, 0.0f);
+    g->clip_w = MIN(clip_w, 1.0f);
+    g->clip_h = MIN(clip_h, 1.0f);
   }
 }
 
@@ -739,6 +783,7 @@ void reload_defaults(dt_iop_module_t *self)
   d->cy = img->usercrop[0];
   d->cw = img->usercrop[3];
   d->ch = img->usercrop[2];
+  d->ratio_n = d->ratio_d = -1;
 }
 
 static void _float_to_fract(const char *num, int *n, int *d)
@@ -1388,7 +1433,7 @@ void gui_post_expose(dt_iop_module_t *self,
     int procw, proch;
     dt_dev_get_processed_size(&dev->full, &procw, &proch);
     snprintf(dimensions, sizeof(dimensions),
-             "%i x %i", (int)(procw * g->clip_w), (int)(proch * g->clip_h));
+             "%i x %i", (int)(0.5f + procw * g->clip_w), (int)(0.5f + proch * g->clip_h));
 
     pango_layout_set_text(layout, dimensions, -1);
     pango_layout_get_pixel_extents(layout, NULL, &ext);
@@ -1549,13 +1594,13 @@ int mouse_moved(dt_iop_module_t *self,
         float nh = g->prev_clip_h * ratio;
 
         // move crop area to the right if needed
-        nx = fmaxf(nx, g->clip_max_x);
+        nx = MAX(nx, g->clip_max_x);
         // move crop area to the left if needed
-        nx = fminf(nx, g->clip_max_w + g->clip_max_x - nw);
+        nx = MIN(nx, g->clip_max_w + g->clip_max_x - nw);
         // move crop area to the bottom if needed
-        ny = fmaxf(ny, g->clip_max_y);
+        ny = MAX(ny, g->clip_max_y);
         // move crop area to the top if needed
-        ny = fminf(ny, g->clip_max_h + g->clip_max_y - nh);
+        ny = MIN(ny, g->clip_max_h + g->clip_max_y - nh);
 
         g->clip_x = nx;
         g->clip_y = ny;
@@ -1567,22 +1612,22 @@ int mouse_moved(dt_iop_module_t *self,
         if(g->cropping & GRAB_LEFT)
         {
           const float old_clip_x = g->clip_x;
-          g->clip_x = fminf(fmaxf(g->clip_max_x, pzx - g->handle_x),
+          g->clip_x = MIN(MAX(g->clip_max_x, pzx - g->handle_x),
                             g->clip_x + g->clip_w - 0.1f);
           g->clip_w = old_clip_x + g->clip_w - g->clip_x;
         }
         if(g->cropping & GRAB_TOP)
         {
           const float old_clip_y = g->clip_y;
-          g->clip_y = fminf(fmaxf(g->clip_max_y, pzy - g->handle_y),
+          g->clip_y = MIN(MAX(g->clip_max_y, pzy - g->handle_y),
                             g->clip_y + g->clip_h - 0.1f);
           g->clip_h = old_clip_y + g->clip_h - g->clip_y;
         }
         if(g->cropping & GRAB_RIGHT)
-          g->clip_w = fmaxf(0.1f, fminf(g->clip_max_w + g->clip_max_x,
+          g->clip_w = MAX(0.1f, MIN(g->clip_max_w + g->clip_max_x,
                                         pzx - g->clip_x - g->handle_x));
         if(g->cropping & GRAB_BOTTOM)
-          g->clip_h = fmaxf(0.1f, fminf(g->clip_max_h + g->clip_max_y,
+          g->clip_h = MAX(0.1f, MIN(g->clip_max_h + g->clip_max_y,
                                         pzy - g->clip_y - g->handle_y));
       }
 
