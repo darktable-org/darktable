@@ -435,8 +435,6 @@ void gui_init(dt_iop_module_t *self)
 
   g->color = dt_bauhaus_combobox_from_params(self, "color");
   gtk_widget_set_tooltip_text(g->color, _("select the color of the enlarged canvas"));
-
-  gtk_box_pack_start(GTK_BOX(self->widget), g->color, TRUE, TRUE, 0);
 }
 
 void gui_cleanup(dt_iop_module_t *self)
