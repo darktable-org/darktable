@@ -1358,7 +1358,11 @@ static gchar *_mouse_action_get_string(dt_mouse_action_t *ma)
   if(ma->mods & GDK_CONTROL_MASK)
     atxt = dt_util_dstrcat(atxt, "%s+", _("ctrl"));
   if(ma->mods & GDK_MOD1_MASK   )
+#ifdef __APPLE__
+    atxt = dt_util_dstrcat(atxt, "%s+", _("option"));
+#else
     atxt = dt_util_dstrcat(atxt, "%s+", _("alt"));
+#endif
 
   switch(ma->action)
   {
