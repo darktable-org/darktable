@@ -2841,14 +2841,25 @@ float *dt_dev_get_raster_mask(struct dt_dev_pixelpipe_iop_t *piece,
       (dt_dev_pixelpipe_iop_t *)source_iter->data;
 
     const gboolean source_enabled = source_piece && source_piece->enabled;
-    /* there might be stale masks from disabled modules left over.
+    const int maskmode = source_enabled ? source_piece->module->blend_params->mask_mode : 0;
+    const gboolean source_writing = maskmode != 0 && (maskmode & DEVELOP_MASK_RASTER) == 0;
+    /* there might be stale masks from disabled modules or modules that don't write masks.
        don't use those!
+       FIXME: we should try to fix this elsewhere. Or can we safely remove these masks here?
     */
     if(!source_enabled)
     {
       dt_print_pipe(DT_DEBUG_PIPE,
-         "no raster found", piece->pipe, piece->module, DT_DEVICE_NONE, NULL, NULL,
-         "source module `%s%s' is disabled\n",
+         "no raster mask", piece->pipe, piece->module, DT_DEVICE_NONE, NULL, NULL,
+         "as source module `%s%s' is disabled\n",
+         raster_mask_source->op, dt_iop_get_instance_id(raster_mask_source));
+      return NULL;
+    }
+    else if(!source_writing)
+    {
+      dt_print_pipe(DT_DEBUG_PIPE,
+         "no raster mask", piece->pipe, piece->module, DT_DEVICE_NONE, NULL, NULL,
+         "as source module `%s%s' does not write raster masks\n",
          raster_mask_source->op, dt_iop_get_instance_id(raster_mask_source));
       return NULL;
     }
