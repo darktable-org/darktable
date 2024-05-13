@@ -111,7 +111,11 @@ const struct _modifier_name
 } modifier_string[]
   = { { GDK_SHIFT_MASK  , N_("shift") },
       { GDK_CONTROL_MASK, N_("ctrl" ) },
+#ifdef __APPLE__
+      { GDK_MOD1_MASK   , N_("option") },
+#else
       { GDK_MOD1_MASK   , N_("alt"  ) },
+#endif
       { GDK_MOD2_MASK   , N_("cmd"  ) },
       { GDK_MOD5_MASK   , N_("altgr") },
       { 0, NULL } };
