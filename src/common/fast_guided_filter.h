@@ -100,7 +100,7 @@ static inline void interpolate_bilinear(const float *const restrict in,
                                         const size_t ch)
 {
   // Fast vectorized bilinear interpolation on ch channels
-  DT_OMP_FOR_SIMD(collapse(2))
+  DT_OMP_FOR(collapse(2))
   for(size_t i = 0; i < height_out; i++)
   {
     for(size_t j = 0; j < width_out; j++)
