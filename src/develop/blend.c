@@ -471,7 +471,7 @@ static void _write_highlights_raster(const gboolean israw,
                               : MAX(output[4*ox+0] / MAX(MININ, input[4*ix+0]),
                                 MAX(output[4*ox+1] / MAX(MININ, input[4*ix+1]),
                                     output[4*ox+2] / MAX(MININ, input[4*ix+2])));
-        mask[ox] *= CLAMP(sqrf(10.0f * (r - 1.0f)), 0.0f, 2.0f);
+        mask[ox] *= CLAMPF(sqrf(10.0f * MAX(0.0f, r - 1.0f)), 0.0f, 2.0f);
       }
     }
   }
