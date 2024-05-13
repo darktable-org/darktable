@@ -296,7 +296,7 @@ void dt_dev_pixelpipe_disable_before(dt_dev_pixelpipe_t *pipe, const char *op);
 void dt_dev_pixelpipe_module_enabled(dt_dev_pixelpipe_t *pipe, const char *op, const gboolean enable);
 
 // helper function to pass a raster mask through a (so far) processed pipe
-float *dt_dev_get_raster_mask(const struct dt_dev_pixelpipe_iop_t *piece,
+float *dt_dev_get_raster_mask(struct dt_dev_pixelpipe_iop_t *piece,
                               const struct dt_iop_module_t *raster_mask_source,
                               const dt_mask_id_t raster_mask_id,
                               const struct dt_iop_module_t *target_module,
@@ -326,7 +326,7 @@ void dt_print_pipe_ext(const char *title,
   __attribute__((format(printf, 7, 8)));
 
 // helper function writing the pipe-processed ctmask data to dest
-float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_t *pipe,
+float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_iop_t *piece,
                                   float *src,
                                   const struct dt_iop_module_t *target_module);
 

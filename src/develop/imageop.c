@@ -1805,16 +1805,23 @@ void dt_iop_unload_modules_so()
 void dt_iop_advertise_rastermask(dt_iop_module_t *module, const int mask_mode)
 {
   static const int key = BLEND_RASTER_ID;
-  // showing raster masks doesn't make sense, one can use the original
-  // source instead. or does it?
+  // we don't advertise raster masks but should use the original source instead
   if(mask_mode & DEVELOP_MASK_ENABLED && !(mask_mode & DEVELOP_MASK_RASTER))
   {
-    char *modulename = dt_history_item_get_name(module);
-    g_hash_table_insert(module->raster_mask.source.masks, GINT_TO_POINTER(key), modulename);
+    gchar *modulename = dt_history_item_get_name(module);
+    if(g_hash_table_insert(module->raster_mask.source.masks, GINT_TO_POINTER(key), modulename))
+    {
+      dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS | DT_DEBUG_VERBOSE,
+        "raster mask advertised", NULL, module, DT_DEVICE_NONE, NULL, NULL, "\n");
+    }
   }
   else
   {
-    g_hash_table_remove(module->raster_mask.source.masks, GINT_TO_POINTER(key));
+    if(g_hash_table_remove(module->raster_mask.source.masks, GINT_TO_POINTER(key)))
+    {
+      dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS | DT_DEBUG_VERBOSE,
+        "NO raster mask support", NULL, module, DT_DEVICE_NONE, NULL, NULL, "\n");
+    }
   }
 }
 
@@ -1859,11 +1866,11 @@ dt_iop_module_t *dt_iop_commit_blend_params(dt_iop_module_t *module,
                             GINT_TO_POINTER(blendop_params->raster_mask_id));
         module->raster_mask.sink.source = candidate;
         module->raster_mask.sink.id = blendop_params->raster_mask_id;
-        dt_print_pipe(DT_DEBUG_PIPE,
-                      "commit_blend_params",
-                      NULL, module, DT_DEVICE_NONE, NULL, NULL, "raster mask from '%s%s' %s\n",
+        dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS,
+                      "request raster mask",
+                      NULL, module, DT_DEVICE_NONE, NULL, NULL, "from '%s%s' %s\n",
                       candidate->op, dt_iop_get_instance_id(candidate),
-                      new ? "new" : "existing");
+                      new ? "new" : "replaced");
 
         return candidate;
       }
@@ -1877,11 +1884,11 @@ dt_iop_module_t *dt_iop_commit_blend_params(dt_iop_module_t *module,
   dt_iop_module_t *sink_source = module->raster_mask.sink.source;
   if(sink_source)
   {
-    dt_print_pipe(DT_DEBUG_PIPE,
-                  "commit_blend_params",
-                  NULL, module, DT_DEVICE_NONE, NULL, NULL, "clear raster mask source '%s%s'\n",
+    if(g_hash_table_remove(module->raster_mask.sink.source->raster_mask.source.users, module))
+      dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS,
+                  "clear as raster user",
+                  NULL, module, DT_DEVICE_NONE, NULL, NULL, "from '%s%s'\n",
                   sink_source->op, dt_iop_get_instance_id(sink_source));
-    g_hash_table_remove(module->raster_mask.sink.source->raster_mask.source.users, module);
   }
   module->raster_mask.sink.source = NULL;
   module->raster_mask.sink.id = INVALID_MASKID;
@@ -2986,7 +2993,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   dt_gui_add_help_link(lab, module->op);
   dt_gui_add_help_link(expander, module->op);
   dt_gui_add_help_link(header, "module_header");
- 
+
   // show deprecated message if any
   if(module->deprecated_msg())
   {

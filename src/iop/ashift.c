@@ -1206,6 +1206,21 @@ void modify_roi_out(struct dt_iop_module_t *self,
 
   roi_out->width = floorf(width);
   roi_out->height = floorf(height);
+
+  if(roi_out->width < 4 || roi_out->height < 4)
+  {
+    dt_print_pipe(DT_DEBUG_PIPE,
+      "safety check", piece->pipe, self, DT_DEVICE_NONE, roi_in, roi_out, "\n");
+
+    roi_out->width = roi_in->width;
+    roi_out->height = roi_in->height;
+
+    if((piece->pipe->type & DT_DEV_PIXELPIPE_FULL) && piece->enabled)
+      dt_control_log
+        (_("module '%s' has insane data so it is bypassed for now. You should disable it or change parameters\n"),
+         self->name());
+    piece->enabled = FALSE;
+  }
 }
 
 void modify_roi_in(struct dt_iop_module_t *self,
