@@ -324,7 +324,6 @@ void distort_mask(struct dt_iop_module_t *self,
   dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out);
 }
 
-#define ORIGINALMAGIC 1000000.0f
 void modify_roi_out(struct dt_iop_module_t *self,
                     struct dt_dev_pixelpipe_iop_t *piece,
                     dt_iop_roi_t *roi_out,
@@ -338,44 +337,32 @@ void modify_roi_out(struct dt_iop_module_t *self,
   const float odx = roi_in->width * d->cw - px;
   const float ody = roi_in->height * d->ch -py;
 
-  // we use the rawprepare cropped dimension for original dimension and safety
-  const dt_image_t *img = &(self->dev->image_storage);
-  const float pwidth = dt_image_raw_width(img);
-  const float pheight = dt_image_raw_height(img);
-
   // if the aspect has been toggled it's presented here as negative
-  const float negative = d->aspect < 0.0f;
-
-  float aspect = d->aspect;
-
-  if(fabsf(aspect) == ORIGINALMAGIC)
-    aspect = pwidth / pheight;
-
-  if(negative)
-    aspect = fabsf(1.0f / aspect);
+  const float aspect = d->aspect < 0.0f ? fabsf(1.0f / d->aspect) : d->aspect;
+  const gboolean keep_aspect = aspect > 1e-5;
+  const gboolean landscape = roi_in->width > roi_in->height;
 
   float dx = odx;
   float dy = ody;
 
   // so lets possibly enforce the ratio using the larger side as reference
-  if(d->aspect != 0.0f)
+  if(keep_aspect)
   {
-    if(odx > ody)
-      dy = dx / aspect;
-    else
-      dx = dy * aspect;
+    if(odx > ody) dy = landscape ? dx / aspect : dx * aspect;
+    else          dx = landscape ? dy * aspect : dy / aspect;
   }
 
-  roi_out->width = MIN(dx, pwidth - px);
-  roi_out->height = MIN(dy, pheight - py);
+  roi_out->width = MIN(dx, (float)roi_in->width - px);
+  roi_out->height = MIN(dy, (float)roi_in->height - py);
   roi_out->x = px;
   roi_out->y = py;
 
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
-    "crop aspects", piece->pipe, self, DT_DEVICE_NONE, NULL, NULL,
-    "%s%sAspect=%.5f. odx: %.4f ody: %.4f --> dx: %.4f dy: %.4f\n",
-    negative ? "toggled " : "",
-    d->aspect != 0.0f ? "fixed " : "",
+    "crop aspects", piece->pipe, self, DT_DEVICE_NONE, roi_in, NULL,
+    " %s%s%sAspect=%.5f. odx: %.4f ody: %.4f --> dx: %.4f dy: %.4f\n",
+    d->aspect < 0.0f ? "toggled " : "",
+    keep_aspect ? "fixed " : "",
+    landscape ? "landscape " : "portrait ",
     aspect, odx, ody, dx, dy);
 
   // sanity check.
@@ -451,16 +438,20 @@ void commit_params(struct dt_iop_module_t *self,
 
     const int rd = p->ratio_d;
     const int rn = p->ratio_n;
-    const float aspect = rn > 0
-                        ? fabsf((float)rd / (float)rn)
-    // note: we pass a magic here as calculating the exact ratio is better
-    // handled in modify_roi_out
-                        : (rn == 0 && abs(rd) == 1) ? ORIGINALMAGIC
-                                                    : 0.0f;
-    d->aspect = rd > 0 ? aspect : -aspect;
+
+    d->aspect = 0.0f;           // freehand
+    if(rn == 0 && abs(rd) == 1) // original image ratio
+    {
+      // we use the rawprepare cropped dimension for original
+      const dt_image_t *img = &(self->dev->image_storage);
+      const float pratio = (float)dt_image_raw_width(img) / (float)dt_image_raw_height(img);
+      d->aspect = rd > 0 ? pratio : -pratio;
+    }
+    else if(rn == 0) { }
+    else                        // defined ratio
+      d->aspect = (float)rd / (float)rn;
   }
 }
-#undef ORIGINALMAGIC
 
 static void _event_preview_updated_callback(gpointer instance, dt_iop_module_t *self)
 {
