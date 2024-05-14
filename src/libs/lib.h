@@ -124,6 +124,15 @@ typedef struct dt_lib_module_t
   gboolean no_control_widgets;
 } dt_lib_module_t;
 
+typedef struct dt_lib_module_info_t
+{
+  char *plugin_name;
+  int32_t version;
+  char *params;
+  int params_size;
+  dt_lib_module_t *module;
+} dt_lib_module_info_t;
+
 void dt_lib_init(dt_lib_t *lib);
 void dt_lib_cleanup(dt_lib_t *lib);
 
@@ -160,6 +169,9 @@ void dt_lib_gui_set_label(dt_lib_module_t *module,
 gchar *dt_lib_get_localized_name(const gchar *plugin_name);
 
 /** preset stuff for lib */
+
+/** return active preset name */
+gchar *dt_lib_get_active_preset_name(dt_lib_module_info_t *minfo);
 
 /** add or replace a preset for this operation. */
 void dt_lib_presets_add(const char *name,

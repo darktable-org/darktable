@@ -202,6 +202,7 @@ changes (where available).
 
 - box widget - added padding member to control padding size of the cells
 
+- added active_preset member to darktable.gui.libs to get the lib's active preset name
 
 ## Notes
 
