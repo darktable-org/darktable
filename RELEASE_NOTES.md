@@ -142,6 +142,10 @@ changes (where available).
 
 - Added support for CMYK profiled histogram.
 
+- The map view can now be scrolled with the arrow keys
+  (left/right/up/down) in small steps and in combination with
+  <kbd>Ctrl</kbd> in bigger steps.
+
 ## Bug Fixes
 
 - Fix copy of multiple instances to ensure the proper order is applied
