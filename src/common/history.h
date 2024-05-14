@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -128,8 +128,6 @@ void dt_history_truncate_on_image(const dt_imgid_t imgid,
 /* duplicate an history list */
 GList *dt_history_duplicate(GList *hist);
 
-
-
 typedef struct dt_history_item_t
 {
   guint num;
@@ -180,10 +178,12 @@ gboolean dt_history_hash_is_mipmap_synced(const dt_imgid_t imgid);
 void dt_history_hash_set_mipmap(const dt_imgid_t imgid);
 
 /** write hash values to db */
-void dt_history_hash_write(const dt_imgid_t imgid, const dt_history_hash_values_t *const hash);
+void dt_history_hash_write(const dt_imgid_t imgid,
+                           const dt_history_hash_values_t *const hash);
 
 /** read hash values from db */
-void dt_history_hash_read(const dt_imgid_t imgid, dt_history_hash_values_t *hash);
+void dt_history_hash_read(const dt_imgid_t imgid,
+                          dt_history_hash_values_t *hash);
 
 /** release memory for hash values */
 void dt_history_hash_free(dt_history_hash_values_t *hash);

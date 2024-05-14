@@ -53,9 +53,7 @@ static inline void _update_stats_4ch(dt_aligned_pixel_t acc,
     _update_stats_by_ch(acc, low, high, k, pick[k]);
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(rgb, JzCzhz: 16) uniform(profile)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(rgb, JzCzhz: 16) uniform(profile))
 static inline void rgb_to_JzCzhz(const dt_aligned_pixel_t rgb,
                                  dt_aligned_pixel_t JzCzhz,
                                  const dt_iop_order_iccprofile_info_t *const profile)
@@ -222,12 +220,7 @@ static void _color_picker_work_4ch(const float *const pixel,
 
   // min_for_threads depends on # of samples and complexity of the
   // colorspace conversion
-#if defined(_OPENMP)
-#pragma omp parallel for default(none) if (size > min_for_threads)          \
-  dt_omp_firstprivate(worker, pixel, stride, off_mul, off_add, box, data)   \
-  reduction(+ : acc[:4]) reduction(min : low[:4]) reduction(max : high[:4]) \
-  schedule(static)
-#endif
+  DT_OMP_FOR(if (size > min_for_threads) reduction(+ : acc[:4]) reduction(min : low[:4]) reduction(max : high[:4]))
   for(size_t j = box[1]; j < box[3]; j++)
   {
     const size_t offset = j * off_mul + off_add;
@@ -260,14 +253,7 @@ static void _color_picker_work_1ch(const float *const pixel,
 
   // worker logic is slightly different from 4-channel as we need to
   // keep track of position in the mosiac
-#if defined(_OPENMP)
-#pragma omp parallel for default(none)                                  \
-  if (_box_size(box) > min_for_threads)                                 \
-  dt_omp_firstprivate(worker, pixel, width, roi, box, data)             \
-  reduction(+ : acc[:4], weights[:4])                                   \
-  reduction(min : low[:4]) reduction(max : high[:4])                    \
-  schedule(static)
-#endif
+  DT_OMP_FOR(if (_box_size(box) > min_for_threads) reduction(+ : acc[:4], weights[:4]) reduction(min : low[:4]) reduction(max : high[:4]))
   for(size_t j = box[1]; j < box[3]; j++)
   {
     worker(acc, low, high, weights, pixel + width * j, j, roi, box, data);

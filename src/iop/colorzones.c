@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -438,7 +438,7 @@ void process_display(struct dt_iop_module_t *self,
                      const dt_iop_roi_t *const roi_in,
                      const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
+  const dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
   dt_iop_colorzones_gui_data_t *g = (dt_iop_colorzones_gui_data_t *)self->gui_data;
 
   const int ch = piece->colors;
@@ -448,10 +448,7 @@ void process_display(struct dt_iop_module_t *self,
 
   dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)                                                           \
-    dt_omp_firstprivate(normalize_C, ch, ivoid, ovoid, roi_out, display_channel) shared(d)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
     float *in = (float *)ivoid + ch * k;
@@ -492,15 +489,12 @@ void process_v1(struct dt_iop_module_t *self,
                 const dt_iop_roi_t *const roi_in,
                 const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
+  const dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
 
   const int ch = piece->colors;
   const float normalize_C = 1.f / (128.0f * sqrtf(2.f));
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) dt_omp_firstprivate(normalize_C, ch, ivoid, ovoid, roi_out) shared(d)      \
-    schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
     float *in = (float *)ivoid + ch * k;
@@ -543,11 +537,9 @@ void process_v3(struct dt_iop_module_t *self,
                 const dt_iop_roi_t *const roi_in,
                 const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
+  const dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
   const int ch = piece->colors;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) dt_omp_firstprivate(ch, ivoid, ovoid, roi_out) shared(d) schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
     float *in = (float *)ivoid + ch * k;
@@ -1684,7 +1676,7 @@ static gboolean _bottom_area_button_press_callback(GtkWidget *widget,
     c->zoom_factor = 1.f;
     c->offset_x = c->offset_y = 0.f;
 
-    gtk_widget_queue_draw(self->widget);
+    gtk_widget_queue_draw(GTK_WIDGET(c->area));
 
     return TRUE;
   }
@@ -1799,6 +1791,8 @@ static void _delete_node(dt_iop_module_t *self,
                          const int node,
                          const gboolean zero)
 {
+  dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
+
   if(zero)
   {
     curve[node].y = 0.5f;
@@ -1824,7 +1818,7 @@ static void _delete_node(dt_iop_module_t *self,
   }
 
   dt_iop_color_picker_reset(self, TRUE);
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(GTK_WIDGET(c->area));
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -1905,7 +1899,7 @@ static gboolean _area_scrolled_callback(GtkWidget *widget,
       c->offset_x = CLAMP(c->offset_x, 0.f, (c->zoom_factor - 1.f) / c->zoom_factor);
       c->offset_y = CLAMP(c->offset_y, 0.f, (c->zoom_factor - 1.f) / c->zoom_factor);
 
-      gtk_widget_queue_draw(self->widget);
+      gtk_widget_queue_draw(GTK_WIDGET(c->area));
     }
 
     return TRUE;
@@ -1965,7 +1959,7 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget,
       c->offset_x = CLAMP(c->offset_x, 0.f, (c->zoom_factor - 1.f) / c->zoom_factor);
       c->offset_y = CLAMP(c->offset_y, 0.f, (c->zoom_factor - 1.f) / c->zoom_factor);
 
-      gtk_widget_queue_draw(self->widget);
+      gtk_widget_queue_draw(GTK_WIDGET(c->area));
     }
     return TRUE;
   }
@@ -2182,7 +2176,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
 
         dt_iop_color_picker_reset(self, TRUE);
         dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
-        gtk_widget_queue_draw(self->widget);
+        gtk_widget_queue_draw(GTK_WIDGET(c->area));
       }
 
       return TRUE;
@@ -2201,7 +2195,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
 
       dt_iop_color_picker_reset(self, TRUE);
       dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
-      gtk_widget_queue_draw(self->widget);
+      gtk_widget_queue_draw(GTK_WIDGET(c->area));
 
       return TRUE;
     }
@@ -2226,7 +2220,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
       }
 
       dt_iop_color_picker_reset(self, TRUE);
-      gtk_widget_queue_draw(self->widget);
+      gtk_widget_queue_draw(GTK_WIDGET(c->area));
       dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
       return TRUE;
     }
@@ -2784,7 +2778,7 @@ void gui_update(struct dt_iop_module_t *self)
 
   dt_bauhaus_combobox_set(g->interpolator, p->curve_type[g->channel]);
 
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

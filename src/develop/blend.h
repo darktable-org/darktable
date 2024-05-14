@@ -529,6 +529,8 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
                                      const struct dt_iop_roi_t *roi_out);
 #endif
 
+#define _BLEND_FUNC_PROTO(align, uni) DT_OMP_DECLARE_SIMD(aligned align uniform uni) static void
+
 G_END_DECLS
 
 // clang-format off

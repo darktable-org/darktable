@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020-2023 darktable developers.
+    Copyright (C) 2020-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -114,9 +114,7 @@ static float led[DT_ILLUMINANT_LED_LAST][2] = { { 0.4560f, 0.4078f },  // DT_ILL
                                                 { 0.4560f, 0.4548f },  // DT_ILLUMINANT_LED_V1
                                                 { 0.3781f, 0.3775f }}; // DT_ILLUMINANT_LED_V2
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline float xy_to_CCT(const float x, const float y)
 {
   // Try to find correlated color temperature from chromaticity
@@ -135,9 +133,7 @@ static inline float xy_to_CCT(const float x, const float y)
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline void CCT_to_xy_daylight(const float t, float *x, float *y)
 {
   // Take correlated color temperature in K and find the closest daylight illuminant in 4000 K - 250000 K
@@ -156,9 +152,7 @@ static inline void CCT_to_xy_daylight(const float t, float *x, float *y)
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline void CCT_to_xy_blackbody(const float t, float *x, float *y)
 {
   // Take correlated color temperature in K and find the closest blackbody illuminant in 1667 K - 250000 K
@@ -182,9 +176,7 @@ static inline void CCT_to_xy_blackbody(const float t, float *x, float *y)
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline void illuminant_xy_to_XYZ(const float x, const float y, dt_aligned_pixel_t XYZ)
 {
   XYZ[0] = x / y;             // X
@@ -193,9 +185,7 @@ static inline void illuminant_xy_to_XYZ(const float x, const float y, dt_aligned
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline void illuminant_xy_to_RGB(const float x, const float y, dt_aligned_pixel_t RGB)
 {
   // Get an sRGB preview of current illuminant
@@ -212,9 +202,7 @@ static inline void illuminant_xy_to_RGB(const float x, const float y, dt_aligned
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline void illuminant_CCT_to_RGB(const float t, dt_aligned_pixel_t RGB)
 {
   float x, y;
@@ -465,9 +453,7 @@ static gboolean find_temperature_from_raw_coeffs(const dt_image_t *img, const dt
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline float planckian_normal(const float x, const float t)
 {
   float n = 0.f;
@@ -484,9 +470,7 @@ static inline float planckian_normal(const float x, const float t)
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline void blackbody_xy_to_tinted_xy(const float x, const float y, const float t, const float tint,
                                              float *x_out, float *y_out)
 {
@@ -498,9 +482,7 @@ static inline void blackbody_xy_to_tinted_xy(const float x, const float y, const
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline float get_tint_from_tinted_xy(const float x, const float y, const float t)
 {
   // Find the distance between planckian locus and arbitrary x y chromaticity in the orthogonal direction
@@ -513,9 +495,7 @@ static inline float get_tint_from_tinted_xy(const float x, const float y, const 
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline void xy_to_uv(const float xy[2], float uv[2])
 {
   // Convert to CIE1960 Yuv color space, useful to compute CCT
@@ -553,10 +533,8 @@ struct pair pair_min(struct pair r, struct pair n)
 }
 
 // Define a new reduction operation
-#ifdef _OPENMP
-#pragma omp declare reduction(pairmin:struct pair:omp_out=pair_min(omp_out,omp_in))    \
-  initializer(omp_priv = { FLT_MAX, 0.0f })
-#endif
+DT_OMP_PRAGMA(declare reduction(pairmin:struct pair:omp_out=pair_min(omp_out,omp_in)) \
+              initializer(omp_priv = { FLT_MAX, 0.0f }))
 
 static inline float CCT_reverse_lookup(const float x, const float y)
 {
@@ -572,11 +550,7 @@ static inline float CCT_reverse_lookup(const float x, const float y)
   struct pair min_radius = { FLT_MAX, 0.0f };
 
 #if !(defined(__apple_build_version__) && __apple_build_version__ < 11030000) //makes Xcode 11.3.1 compiler crash
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(x, y, T_min, T_range, LUT_samples) reduction(pairmin:min_radius)\
-  schedule(simd:static)
-#endif
+  DT_OMP_FOR(reduction(pairmin:min_radius))
 #endif
   for(size_t i = 0; i < LUT_samples; i++)
   {

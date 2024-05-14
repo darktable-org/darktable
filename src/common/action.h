@@ -64,6 +64,10 @@ typedef struct dt_action_t
 enum
 {
   DT_ACTION_ELEMENT_DEFAULT = 0,
+
+  DT_ACTION_ELEMENT_SHOW = DT_ACTION_ELEMENT_DEFAULT,
+  DT_ACTION_ELEMENT_RESET = 1,
+  DT_ACTION_ELEMENT_PRESETS = 2,
 };
 typedef gint dt_action_element_t;
 

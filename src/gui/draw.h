@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -165,9 +165,7 @@ static inline void dt_draw_grid_zoomed(cairo_t *cr,
   }
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd uniform(base)
-#endif
+DT_OMP_DECLARE_SIMD(uniform(base))
 static inline float dt_log_scale_axis(const float x,
                                       const float base)
 {
@@ -400,19 +398,13 @@ static inline void dt_draw_curve_smaple_values(dt_draw_curve_t *c,
 {
   if(x)
   {
-#ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-  dt_omp_firstprivate(res) shared(x) schedule(static)
-#endif
+    DT_OMP_FOR()
     for(int k = 0; k < res; k++)
       x[k] = k * (1.0f / res);
   }
   if(y)
   {
-#ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-  dt_omp_firstprivate(min, max, res) shared(y, c) schedule(static)
-#endif
+    DT_OMP_FOR()
     for(int k = 0; k < res; k++)
       y[k] = min + (max - min) * c->csample.m_Samples[k] * (1.0f / 0x10000);
   }

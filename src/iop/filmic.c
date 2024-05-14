@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2018-2023 darktable developers.
+   Copyright (C) 2018-2024 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -544,12 +544,7 @@ void process(dt_iop_module_t *self,
     data->output_power, data->output_power
   };
 
-#ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-  dt_omp_firstprivate(data, desaturate, in, out, npixels, grey_source, black_source, \
-                      inv_dynamic_range, output_power, preserve_color, saturation, EPS) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < (size_t)4 * npixels; k += 4)
   {
     _process_pixel(in + k, out +k, grey_source, black_source, inv_dynamic_range, output_power,
@@ -1194,9 +1189,7 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
     dt_draw_curve_destroy(curve);
 
     // Average both LUT
-#ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) shared(table, table_temp, res) schedule(static)
-#endif
+    DT_OMP_FOR()
     for(int k = 0; k < res; k++) table[k] = (table[k] + table_temp[k]) / 2.0f;
   }
 
@@ -1253,12 +1246,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   const float saturation = d->saturation / 100.0f;
   const float sigma = saturation * saturation * latitude * latitude;
 
-#ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-  dt_omp_firstprivate(center, sigma) \
-  shared(d) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(int k = 0; k < 65536; k++)
   {
     const float x = ((float)k) / 65536.0f;

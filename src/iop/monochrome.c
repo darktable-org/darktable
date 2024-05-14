@@ -210,11 +210,7 @@ void process(struct dt_iop_module_t *self,
   float *const restrict out = (float *)o;
   const float d_a = d->a;
   const float d_b = d->b;
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(in, out, npixels, sigma2, d_a, d_b) \
-  schedule(simd:static) aligned(in, out:64)
-#endif
+  DT_OMP_FOR_SIMD(aligned(in, out:64))
   for(int k = 0; k < 4*npixels; k += 4)
   {
     out[k+0] = 100.0f * _color_filter(in[k+1], in[k+2], d_a, d_b, sigma2);
@@ -234,11 +230,7 @@ void process(struct dt_iop_module_t *self,
   dt_bilateral_free(b);
 
   const float highlights = d->highlights;
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(in, out, npixels, highlights) \
-  schedule(simd:static) aligned(in, out:64)
-#endif
+  DT_OMP_FOR_SIMD(aligned(in, out:64))
   for(int k = 0; k < 4*npixels; k += 4)
   {
     const float tt = _envelope(in[k]);
@@ -480,7 +472,7 @@ static gboolean _monochrome_motion_notify(GtkWidget *widget, GdkEventMotion *eve
     p->b = PANEL_WIDTH * (mouse_y - height * 0.5f) / (float)height;
 
     if(old_a != p->a || old_b != p->b) dt_dev_add_history_item(darktable.develop, self, TRUE);
-    gtk_widget_queue_draw(self->widget);
+    gtk_widget_queue_draw(GTK_WIDGET(g->area));
   }
   return TRUE;
 }
@@ -514,7 +506,7 @@ static gboolean _monochrome_button_press(GtkWidget *widget, GdkEventButton *even
       g->dragging = 1;
       g_object_set(G_OBJECT(widget), "has-tooltip", FALSE, (gchar *)0);
     }
-    gtk_widget_queue_draw(self->widget);
+    gtk_widget_queue_draw(GTK_WIDGET(g->area));
     return TRUE;
   }
   return FALSE;
@@ -540,7 +532,7 @@ static gboolean _monochrome_leave_notify(GtkWidget *widget, GdkEventCrossing *ev
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
   g->dragging = 0;
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
   return TRUE;
 }
 
@@ -576,6 +568,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_height(0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("drag and scroll mouse wheel to adjust the virtual color filter"));
+  dt_action_define_iop(self, NULL, N_("grid"), GTK_WIDGET(g->area), NULL);
 
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK
                                              | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK

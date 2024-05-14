@@ -215,9 +215,7 @@ void amaze_demosaic(dt_dev_pixelpipe_iop_t *piece,
     float v;
   } s_hv;
 
-#ifdef _OPENMP
-#pragma omp parallel
-#endif
+  DT_OMP_PRAGMA(parallel)
   {
     constexpr int cldf = 2; // factor to multiply cache line distance. 1 = 64 bytes, 2 = 128 bytes ...
     // assign working space
@@ -277,9 +275,7 @@ void amaze_demosaic(dt_dev_pixelpipe_iop_t *piece,
 
 // Main algorithm: Tile loop
 // use collapse(2) to collapse the 2 loops to one large loop, so there is better scaling
-#ifdef _OPENMP
-#pragma omp for SIMD() schedule(static) collapse(2) nowait
-#endif
+    DT_OMP_PRAGMA(for SIMD() schedule(static) collapse(2) nowait)
 
     for(int top = winy - 16; top < winy + height; top += ts - 32)
     {

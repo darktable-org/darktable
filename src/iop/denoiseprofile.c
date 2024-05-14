@@ -884,11 +884,7 @@ static inline void precondition(const float *const in,
           0.0f };
   const size_t npixels = (size_t)wd * ht;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(buf, npixels, in, sigma2_plus_3_8, a)       \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t j = 0; j < 4U * npixels; j += 4)
   {
     for_each_channel(c,aligned(in,buf,a,sigma2_plus_3_8))
@@ -913,11 +909,7 @@ static inline void backtransform(float *const buf,
   const size_t npixels = (size_t)wd * ht;
   const float sqrt_3_2 = sqrtf(3.0f / 2.0f);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(buf, npixels, sigma2_plus_1_8, sqrt_3_2, a) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t j = 0; j < 4U * npixels; j += 4)
   {
     for_each_channel(c,aligned(buf,sigma2_plus_1_8))
@@ -973,11 +965,7 @@ static inline void precondition_v2(const float *const in,
   const dt_aligned_pixel_t denom = { (-p[0] + 2) * sqrtf(a), (-p[1] + 2) * sqrtf(a),
                                      (-p[2] + 2) * sqrtf(a), 1.0f };
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, buf, in, b, wb, expon, denom) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t j = 0; j < 4U * npixels; j += 4)
   {
     dt_aligned_pixel_t scaled;
@@ -1075,11 +1063,7 @@ static inline void backtransform_v2(float *const buf,
                                      4.0f / (sqrtf(a) * (2.0f - p[1])),
                                      4.0f / (sqrtf(a) * (2.0f - p[2])),
                                      1.0f };
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, buf, b, bias, wb, expon, denom)        \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t j = 0; j < 4U * npixels; j += 4)
   {
     dt_aligned_pixel_t z1;
@@ -1115,11 +1099,7 @@ static inline void precondition_Y0U0V0(const float *const in,
                                      2.0f / ((-p[1] + 2) * sqrtf(a)),
                                      2.0f / ((-p[2] + 2) * sqrtf(a)),
                                      1.0f };
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(buf, ht, in, wd, b, toY0U0V0_trans, expon, scale)      \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t j = 0; j < (size_t)4 * ht * wd; j += 4)
   {
     dt_aligned_pixel_t tmp; // "unused" fourth element enables vectorization
@@ -1162,11 +1142,7 @@ static inline void backtransform_Y0U0V0(float *const buf,
                                      (sqrtf(a) * (2.0f - p[1])) / 4.0f,
                                      (sqrtf(a) * (2.0f - p[2])) / 4.0f,
                                      1.0f };
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(buf, ht, wd, b, bias_wb, toRGB_trans, expon, scale)  \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t j = 0; j < (size_t)4 * ht * wd; j += 4)
   {
     dt_aligned_pixel_t rgb = { 0.0f }; // "unused" fourth element enables vectorization
@@ -1565,9 +1541,7 @@ static void process_wavelets(struct dt_iop_module_t *self,
   }
 
   // add in the final residue
-#ifdef _OPENMP
-#pragma omp simd aligned(buf1, out : 64)
-#endif
+  DT_OMP_SIMD(aligned(buf1, out : 64))
   for(size_t k = 0; k < 4U * npixels; k++)
     out[k] += buf1[k];
 
@@ -3599,7 +3573,7 @@ static gboolean denoiseprofile_button_press(GtkWidget *widget,
       p->y[ch][k] = d->y[ch][k];
     }
     dt_dev_add_history_item(darktable.develop, self, TRUE);
-    gtk_widget_queue_draw(self->widget);
+    gtk_widget_queue_draw(GTK_WIDGET(c->area));
   }
   else if(event->button == 1)
   {

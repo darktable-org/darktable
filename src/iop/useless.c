@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -396,10 +396,7 @@ void process(struct dt_iop_module_t *self,
     g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(mask_id));
 
 // iterate over all output pixels (same coordinates as input)
-#ifdef _OPENMP
-// optional: parallelize it!
-#pragma omp parallel for default(none) schedule(static) shared(d) dt_omp_firstprivate(scale, ivoid, ovoid, roi_in, roi_out, ch, mask)
-#endif
+  DT_OMP_FOR()
   for(int j = 0; j < roi_out->height; j++)
   {
     float *in = ((float *)ivoid)

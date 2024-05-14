@@ -320,11 +320,7 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
   const size_t pixels_size = width * height * 3 * sizeof(float);
   pixels = g_malloc(pixels_size);
   if(!pixels) JXL_FAIL("could not allocate output pixel buffer of size %zu", pixels_size);
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) dt_omp_firstprivate(in_tmp, pixels, width, height) schedule(simd      \
-                                                                                                        : static) \
-    collapse(2)
-#endif
+  DT_OMP_FOR_SIMD(collapse(2))
   for(uint32_t y = 0; y < height; ++y)
   {
     for(uint32_t x = 0; x < width; ++x)

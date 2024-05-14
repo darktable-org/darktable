@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2017-2023 darktable developers.
+    Copyright (C) 2017-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -135,13 +135,17 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 }
 
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(struct dt_iop_module_t *self,
+               dt_dev_pixelpipe_t *pipe,
+               dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_hazeremoval_data_t));
 }
 
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(struct dt_iop_module_t *self,
+                  dt_dev_pixelpipe_t *pipe,
+                  dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
@@ -152,12 +156,18 @@ void init_global(dt_iop_module_so_t *self)
 {
   dt_iop_hazeremoval_global_data_t *gd = malloc(sizeof(*gd));
   const int program = 27; // hazeremoval.cl, from programs.conf
-  gd->kernel_hazeremoval_transision_map = dt_opencl_create_kernel(program, "hazeremoval_transision_map");
-  gd->kernel_hazeremoval_box_min_x = dt_opencl_create_kernel(program, "hazeremoval_box_min_x");
-  gd->kernel_hazeremoval_box_min_y = dt_opencl_create_kernel(program, "hazeremoval_box_min_y");
-  gd->kernel_hazeremoval_box_max_x = dt_opencl_create_kernel(program, "hazeremoval_box_max_x");
-  gd->kernel_hazeremoval_box_max_y = dt_opencl_create_kernel(program, "hazeremoval_box_max_y");
-  gd->kernel_hazeremoval_dehaze = dt_opencl_create_kernel(program, "hazeremoval_dehaze");
+  gd->kernel_hazeremoval_transision_map =
+    dt_opencl_create_kernel(program, "hazeremoval_transision_map");
+  gd->kernel_hazeremoval_box_min_x =
+    dt_opencl_create_kernel(program, "hazeremoval_box_min_x");
+  gd->kernel_hazeremoval_box_min_y =
+    dt_opencl_create_kernel(program, "hazeremoval_box_min_y");
+  gd->kernel_hazeremoval_box_max_x =
+    dt_opencl_create_kernel(program, "hazeremoval_box_max_x");
+  gd->kernel_hazeremoval_box_max_y =
+    dt_opencl_create_kernel(program, "hazeremoval_box_max_y");
+  gd->kernel_hazeremoval_dehaze =
+    dt_opencl_create_kernel(program, "hazeremoval_dehaze");
   self->data = gd;
 }
 
@@ -205,7 +215,8 @@ void gui_init(dt_iop_module_t *self)
 
   g->distance = dt_bauhaus_slider_from_params(self, N_("distance"));
   dt_bauhaus_slider_set_digits(g->distance, 3);
-  gtk_widget_set_tooltip_text(g->distance, _("limit haze removal up to a specific spatial depth"));
+  gtk_widget_set_tooltip_text(g->distance,
+                              _("limit haze removal up to a specific spatial depth"));
 }
 
 
@@ -237,29 +248,24 @@ typedef struct const_rgb_image
   int width, height, stride;
 } const_rgb_image;
 
-
-
-
 // swap the two floats that the pointers point to
-static inline void pointer_swap_f(float *a, float *b)
+static inline void _pointer_swap_f(float *a, float *b)
 {
   float t = *a;
   *a = *b;
   *b = t;
 }
 
-
-// calculate the dark channel (minimal color component over a box of size (2*w+1) x (2*w+1) )
-static void dark_channel(const const_rgb_image img1, const gray_image img2, const int w)
+// calculate the dark channel (minimal color component over a box of
+// size (2*w+1) x (2*w+1) )
+static void _dark_channel(const const_rgb_image img1,
+                          const gray_image img2,
+                          const int w)
 {
   const size_t size = (size_t)img1.height * img1.width;
   const float *const restrict in_data = img1.data;
   float *const restrict out_data = img2.data;
-#ifdef _OPENMP
-#pragma omp parallel for simd aligned(in_data, out_data: 64) default(none) \
-  dt_omp_firstprivate(in_data, out_data, size) \
-  schedule(simd:static)
-#endif
+  DT_OMP_FOR_SIMD(aligned(in_data, out_data: 64))
   for(size_t i = 0; i < size; i++)
   {
     const float *pixel = in_data + 4*i;
@@ -271,23 +277,23 @@ static void dark_channel(const const_rgb_image img1, const gray_image img2, cons
 
 
 // calculate the transition map
-static void transition_map(const const_rgb_image img1, const gray_image img2, const int w, const float *const A0,
-                           const float strength)
+static void _transition_map(const const_rgb_image img1,
+                            const gray_image img2,
+                            const int w,
+                            const float *const A0,
+                            const float strength)
 {
   const size_t size = (size_t)img1.height * img1.width;
   const float *const restrict in_data = img1.data;
   float *const restrict out_data = img2.data;
   const dt_aligned_pixel_t A0_inv = { 1.0f / A0[0], 1.0f / A0[1], 1.0f / A0[2], 1.0f };
-#ifdef _OPENMP
-#pragma omp parallel for simd aligned(in_data, out_data: 64) default(none) \
-  dt_omp_firstprivate(A0_inv, in_data, out_data, size, strength) \
-  schedule(simd:static)
-#endif
+  DT_OMP_FOR_SIMD(aligned(in_data, out_data: 64))
+
   for(size_t i = 0; i < size; i++)
   {
     const float *pixel = in_data + 4*i;
-    float m = MIN(MIN(pixel[0] * A0_inv[0], pixel[1] * A0_inv[1]),
-                  pixel[2] * A0_inv[2]);
+    const float m = MIN(MIN(pixel[0] * A0_inv[0], pixel[1] * A0_inv[1]),
+                        pixel[2] * A0_inv[2]);
     out_data[i] = 1.f - m * strength;
   }
   dt_box_max(img2.data, img2.height, img2.width, 1, w);
@@ -298,7 +304,9 @@ static void transition_map(const const_rgb_image img1, const gray_image img2, co
 // reorder the elements in the range [first, last) in such a way that
 // all elements that are less than the pivot precede the elements
 // which are larger or equal the pivot
-static float *partition(float *first, float *last, float val)
+static float *_partition(float *first,
+                         float *last,
+                         const float val)
 {
   for(; first != last; ++first)
   {
@@ -309,7 +317,7 @@ static float *partition(float *first, float *last, float val)
   {
     if((*i) < val)
     {
-      pointer_swap_f(i, first);
+      _pointer_swap_f(i, first);
       ++first;
     }
   }
@@ -321,7 +329,10 @@ static float *partition(float *first, float *last, float val)
 // be in that position if the entire range [first, last) had been
 // sorted, additionally, none of the elements in the range [nth, last)
 // is less than any of the elements in the range [first, nth)
-void quick_select(float *first, float *nth, float *last, const gboolean compatibility_mode)
+void _quick_select(float *first,
+                   float *nth,
+                   float *last,
+                   const gboolean compatibility_mode)
 {
   if(first == last) return;
   for(;;)
@@ -330,15 +341,21 @@ void quick_select(float *first, float *nth, float *last, const gboolean compatib
     float *p1 = first;
     float *p3 = first + (last - first) / 2;
     float *pivot = last - 1; // put median in last to avoid additional swap
-    if(!(*p1 < *pivot)) pointer_swap_f(p1, pivot);
-    if(!(*p1 < *p3)) pointer_swap_f(p1, p3);
-    if(!(*pivot < *p3)) pointer_swap_f(pivot, p3);
-    float *new_pivot = partition(first, last - 1, *(last - 1));
+
+    if(!(*p1 < *pivot))
+      _pointer_swap_f(p1, pivot);
+    if(!(*p1 < *p3))
+      _pointer_swap_f(p1, p3);
+    if(!(*pivot < *p3))
+      _pointer_swap_f(pivot, p3);
+
+    float *new_pivot = _partition(first, last - 1, *(last - 1));
     if(compatibility_mode)
       pivot = p3; // old code simply assumed pivot would end up in middle
     else
       pivot = new_pivot;
-    pointer_swap_f(last - 1, pivot); // move pivot to its final place
+
+    _pointer_swap_f(last - 1, pivot); // move pivot to its final place
     if(nth == pivot)
       break;
     else if(nth < pivot)
@@ -356,7 +373,8 @@ typedef struct _aligned_pixel {
   };
 } _aligned_pixel;
 #ifdef _OPENMP
-static inline _aligned_pixel add_float4(_aligned_pixel acc, _aligned_pixel newval)
+static inline _aligned_pixel add_float4(_aligned_pixel acc,
+                                        _aligned_pixel newval)
 {
   for_four_channels(c) acc.v[c] += newval.v[c];
   return acc;
@@ -369,37 +387,36 @@ static inline _aligned_pixel add_float4(_aligned_pixel acc, _aligned_pixel newva
 // depth is estimated by the local amount of haze and given in units of the
 // characteristic haze depth, i.e., the distance over which object light is
 // reduced by the factor exp(-1)
-static float ambient_light(const const_rgb_image img,
-                           const int w1,
-                           rgb_pixel *pA0,
-                           const gboolean compatibility_mode)
+static float _ambient_light(const const_rgb_image img,
+                            const int w1,
+                            rgb_pixel *pA0,
+                            const gboolean compatibility_mode)
 {
   const float dark_channel_quantil = 0.95f; // quantil for determining the most hazy pixels
-  const float bright_quantil = 0.95f; // quantil for determining the brightest pixels among the most hazy pixels
+  const float bright_quantil = 0.95f; // quantil for determining the
+                                      // brightest pixels among the
+                                      // most hazy pixels
   const int width = img.width;
   const int height = img.height;
   const size_t size = (size_t)width * height;
   // calculate dark channel, which is an estimate for local amount of haze
   gray_image dark_ch = new_gray_image(width, height);
-  dark_channel(img, dark_ch, w1);
+  _dark_channel(img, dark_ch, w1);
   // determine the brightest pixels among the most hazy pixels
   gray_image bright_hazy = new_gray_image(width, height);
   // first determine the most hazy pixels
   copy_gray_image(dark_ch, bright_hazy);
   float *const restrict hazy_data = bright_hazy.data;
   size_t p = (size_t)(size * dark_channel_quantil);
-  quick_select(hazy_data, hazy_data + p, hazy_data + size, compatibility_mode);
+  _quick_select(hazy_data, hazy_data + p, hazy_data + size, compatibility_mode);
   const float crit_haze_level = hazy_data[p];
   const float *const restrict img_data = img.data;
   const float *const restrict dark_data = dark_ch.data;
   size_t N_most_hazy_start = size/2;
   size_t N_most_hazy_end = size/2;
-#ifdef _OPENMP
-#pragma omp parallel num_threads(2) default(none)  \
-  dt_omp_firstprivate(size, crit_haze_level, img_data, dark_data, hazy_data) \
-  shared(N_most_hazy_start, N_most_hazy_end)
-#pragma omp sections
-#endif
+  DT_OMP_PRAGMA(parallel num_threads(2) default(firstprivate) \
+                shared(N_most_hazy_start, N_most_hazy_end))
+  DT_OMP_PRAGMA(sections)
   {
   for(size_t i = 0; i < size/2; i++)
     if(dark_data[i] >= crit_haze_level)
@@ -409,9 +426,7 @@ static float ambient_light(const const_rgb_image img,
       // two threads by growing outward from the center
       hazy_data[--N_most_hazy_start] = pixel_in[0] + pixel_in[1] + pixel_in[2];
     }
-#ifdef _OPENMP
-#pragma omp section
-#endif
+  DT_OMP_PRAGMA(section)
   for(size_t i = size/2; i < size; i++)
     if(dark_data[i] >= crit_haze_level)
     {
@@ -438,10 +453,10 @@ static float ambient_light(const const_rgb_image img,
   }
   size_t N_most_hazy = N_most_hazy_end - N_most_hazy_start;
   p = (size_t)(N_most_hazy * bright_quantil) + N_most_hazy_start;
-  quick_select(hazy_data + N_most_hazy_start,
-               hazy_data + p,
-               hazy_data + N_most_hazy_end,
-               compatibility_mode);
+  _quick_select(hazy_data + N_most_hazy_start,
+                hazy_data + p,
+                hazy_data + N_most_hazy_end,
+                compatibility_mode);
   const float crit_brightness = hazy_data[p];
   free_gray_image(&bright_hazy);
   // average over the brightest pixels among the most hazy pixels to
@@ -450,16 +465,12 @@ static float ambient_light(const const_rgb_image img,
   size_t N_bright_hazy = 0;
   const float *const restrict data = dark_ch.data;
   const float *const restrict in_data = img.data;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(crit_brightness, crit_haze_level, data, in_data, size) \
-  schedule(static) \
-  reduction(vsum : A0) reduction(+ : N_bright_hazy)
-#endif
+  DT_OMP_FOR(reduction(vsum : A0) reduction(+ : N_bright_hazy))
   for(size_t i = 0; i < size; i++)
   {
     const float *pixel_in = in_data + 4*i;
-    if((data[i] >= crit_haze_level) && (pixel_in[0] + pixel_in[1] + pixel_in[2] >= crit_brightness))
+    if((data[i] >= crit_haze_level)
+       && (pixel_in[0] + pixel_in[1] + pixel_in[2] >= crit_brightness))
     {
       for_each_channel(c,aligned(pixel_in))
         A0.v[c] += pixel_in[c];
@@ -481,7 +492,9 @@ static float ambient_light(const const_rgb_image img,
   // the critical haze level is at dark_channel_quantil (not 100%) to be insensitive
   // to extreme outliners, compensate for that by some factor slightly larger than
   // unity when calculating the maximal image depth
-  return crit_haze_level > 0 ? -1.125f * logf(crit_haze_level) : logf(FLT_MAX) / 2; // return the maximal depth
+  return crit_haze_level > 0
+    ? -1.125f * logf(crit_haze_level)
+    : logf(FLT_MAX) / 2; // return the maximal depth
 }
 
 
@@ -492,7 +505,8 @@ void process(struct dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/,
+                                        self, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
     return;
   dt_iop_hazeremoval_gui_data_t *const g = (dt_iop_hazeremoval_gui_data_t*)self->gui_data;
@@ -501,14 +515,17 @@ void process(struct dt_iop_module_t *self,
   const int width = roi_in->width;
   const int height = roi_in->height;
   const size_t size = (size_t)width * height;
-  const int w1 = 6; // window size (positive integer) for determining the dark channel and the transition map
+  const int w1 = 6; // window size (positive integer) for determining
+                    // the dark channel and the transition map
   const int w2 = 9; // window size (positive integer) for the guided filter
 
   // module parameters
   const float strength = d->strength; // strength of haze removal
   const float distance = d->distance; // maximal distance from camera to remove haze
   const float eps = sqrtf(0.025f);    // regularization parameter for guided filter
-  const gboolean compatibility_mode = TRUE; //TODO: read from updated params in 'd' after version bump
+  const gboolean compatibility_mode = TRUE; //TODO: read from updated
+                                            //params in 'd' after
+                                            //version bump
 
   const float *const restrict in = (float*)ivoid;
   float *const restrict out = (float*)ovoid;
@@ -536,7 +553,8 @@ void process(struct dt_iop_module_t *self,
     // proper readings for distance_max and A0.  If data are not yet
     // there we need to wait (with timeout).
     if(hash != 0
-       && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL,
+       && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order,
+                                      DT_DEV_TRANSFORM_DIR_BACK_INCL,
                                       &self->gui_lock, &g->hash))
       dt_control_log(_("inconsistent output"));
     dt_iop_gui_enter_critical_section(self);
@@ -548,11 +566,12 @@ void process(struct dt_iop_module_t *self,
   }
   // In all other cases we calculate distance_max and A0 here.
   if(dt_isnan(distance_max))
-    distance_max = ambient_light(img_in, w1, &A0, compatibility_mode);
+    distance_max = _ambient_light(img_in, w1, &A0, compatibility_mode);
   // PREVIEW pixelpipe stores values.
   if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
   {
-    dt_hash_t hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
+    dt_hash_t hash = dt_dev_hash_plus(self->dev, piece->pipe,
+                                      self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
     dt_iop_gui_enter_critical_section(self);
     g->A0[0] = A0[0];
     g->A0[1] = A0[1];
@@ -564,25 +583,25 @@ void process(struct dt_iop_module_t *self,
 
   // calculate the transition map
   gray_image trans_map = new_gray_image(width, height);
-  transition_map(img_in, trans_map, w1, A0, strength);
+  _transition_map(img_in, trans_map, w1, A0, strength);
 
   // refine the transition map
   dt_box_min(trans_map.data, trans_map.height, trans_map.width, 1, w1);
   gray_image trans_map_filtered = new_gray_image(width, height);
   // apply guided filter with no clipping
-  guided_filter(img_in.data, trans_map.data, trans_map_filtered.data, width, height, 4, w2, eps, 1.f, -FLT_MAX,
+  guided_filter(img_in.data, trans_map.data, trans_map_filtered.data,
+                width, height, 4, w2, eps, 1.f, -FLT_MAX,
                 FLT_MAX);
 
   // finally, calculate the haze-free image
   const float t_min
-      = fminf(fmaxf(expf(-distance * distance_max), 1.f / 1024), 1.f); // minimum allowed value for transition map
+      = fminf(fmaxf(expf(-distance * distance_max),
+                    1.f / 1024),
+              1.f); // minimum allowed value for transition map
+
   const dt_aligned_pixel_t c_A0 = { A0[0], A0[1], A0[2], A0[3] };
   const gray_image c_trans_map_filtered = trans_map_filtered;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(c_A0, c_trans_map_filtered, in, out, size, t_min) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t i = 0; i < size; i++)
   {
     float t = MAX(c_trans_map_filtered.data[i], t_min);
@@ -605,17 +624,23 @@ void process(struct dt_iop_module_t *self,
 // reduced by the factor exp(-1)
 // some parts of the calculation are not suitable for a parallel implementation,
 // thus we copy data to host memory fall back to a cpu routine
-static float ambient_light_cl(struct dt_iop_module_t *self, int devid, cl_mem img, int w1, rgb_pixel *pA0,
-                              const gboolean compatibility_mode)
+static float _ambient_light_cl(struct dt_iop_module_t *self,
+                               const int devid,
+                               cl_mem img,
+                               const int w1,
+                               rgb_pixel *pA0,
+                               const gboolean compatibility_mode)
 {
   const int width = dt_opencl_get_image_width(img);
   const int height = dt_opencl_get_image_height(img);
   const int element_size = dt_opencl_get_image_element_size(img);
   float *in = dt_alloc_aligned((size_t)width * height * element_size);
-  int err = dt_opencl_read_host_from_device(devid, in, img, width, height, element_size);
+  cl_int err = dt_opencl_read_host_from_device(devid, in, img, width, height, element_size);
   if(err != CL_SUCCESS) goto error;
-  const const_rgb_image img_in = (const_rgb_image){ in, width, height, element_size / sizeof(float) };
-  const float max_depth = ambient_light(img_in, w1, pA0, compatibility_mode);
+  const const_rgb_image img_in = (const_rgb_image)
+    { in, width, height, element_size / sizeof(float) };
+
+  const float max_depth = _ambient_light(img_in, w1, pA0, compatibility_mode);
   dt_free_align(in);
   return max_depth;
 error:
@@ -624,100 +649,123 @@ error:
   return 0.f;
 }
 
-
-static int box_min_cl(struct dt_iop_module_t *self, int devid, cl_mem in, cl_mem out, const int w)
+static int _box_min_cl(struct dt_iop_module_t *self,
+                       int devid,
+                       cl_mem in,
+                       cl_mem out,
+                       const int w)
 {
   dt_iop_hazeremoval_global_data_t *gd = self->global_data;
   const int width = dt_opencl_get_image_width(in);
   const int height = dt_opencl_get_image_height(in);
-  void *temp = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+
+  cl_mem temp = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
+  if(temp == NULL) goto error;
 
   const int kernel_x = gd->kernel_hazeremoval_box_min_x;
-  dt_opencl_set_kernel_args(devid, kernel_x, 0, CLARG(width), CLARG(height), CLARG(in), CLARG(temp),
-    CLARG(w));
+
+  dt_opencl_set_kernel_args(devid, kernel_x, 0,
+                            CLARG(width), CLARG(height), CLARG(in), CLARG(temp),
+                            CLARG(w));
   const size_t sizes_x[] = { 1, ROUNDUPDHT(height, devid) };
-  int err = dt_opencl_enqueue_kernel_2d(devid, kernel_x, sizes_x);
+  err = dt_opencl_enqueue_kernel_2d(devid, kernel_x, sizes_x);
   if(err != CL_SUCCESS) goto error;
 
   const int kernel_y = gd->kernel_hazeremoval_box_min_y;
-  dt_opencl_set_kernel_args(devid, kernel_y, 0, CLARG(width), CLARG(height), CLARG(temp), CLARG(out),
-    CLARG(w));
+  dt_opencl_set_kernel_args(devid, kernel_y, 0,
+                            CLARG(width), CLARG(height), CLARG(temp), CLARG(out),
+                            CLARG(w));
   const size_t sizes_y[] = { ROUNDUPDWD(width, devid), 1 };
   err = dt_opencl_enqueue_kernel_2d(devid, kernel_y, sizes_y);
 
 error:
-  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[hazeremoval, box_min_cl] unknown error: %d\n", err);
   dt_opencl_release_mem_object(temp);
   return err;
 }
 
-
-static int box_max_cl(struct dt_iop_module_t *self, int devid, cl_mem in, cl_mem out, const int w)
+static int _box_max_cl(struct dt_iop_module_t *self,
+                       int devid,
+                       cl_mem in,
+                       cl_mem out,
+                       const int w)
 {
   dt_iop_hazeremoval_global_data_t *gd = self->global_data;
   const int width = dt_opencl_get_image_width(in);
   const int height = dt_opencl_get_image_height(in);
-  void *temp = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+  cl_mem temp = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
+  if(temp == NULL) goto error;
 
   const int kernel_x = gd->kernel_hazeremoval_box_max_x;
-  dt_opencl_set_kernel_args(devid, kernel_x, 0, CLARG(width), CLARG(height), CLARG(in), CLARG(temp),
-    CLARG(w));
+  dt_opencl_set_kernel_args(devid, kernel_x, 0, CLARG(width),
+                            CLARG(height), CLARG(in), CLARG(temp),
+                            CLARG(w));
   const size_t sizes_x[] = { 1, ROUNDUPDHT(height, devid) };
-  int err = dt_opencl_enqueue_kernel_2d(devid, kernel_x, sizes_x);
+  err = dt_opencl_enqueue_kernel_2d(devid, kernel_x, sizes_x);
   if(err != CL_SUCCESS) goto error;
 
   const int kernel_y = gd->kernel_hazeremoval_box_max_y;
-  dt_opencl_set_kernel_args(devid, kernel_y, 0, CLARG(width), CLARG(height), CLARG(temp), CLARG(out),
-    CLARG(w));
+  dt_opencl_set_kernel_args(devid, kernel_y, 0,
+                            CLARG(width), CLARG(height), CLARG(temp), CLARG(out),
+                            CLARG(w));
   const size_t sizes_y[] = { ROUNDUPDWD(width, devid), 1 };
   err = dt_opencl_enqueue_kernel_2d(devid, kernel_y, sizes_y);
 
 error:
-  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[hazeremoval, box_max_cl] unknown error: %d\n", err);
   dt_opencl_release_mem_object(temp);
   return err;
 }
 
 
-static int transition_map_cl(struct dt_iop_module_t *self, int devid, cl_mem img1, cl_mem img2, const int w1,
-                             const float strength, const float *const A0)
+static int _transition_map_cl(struct dt_iop_module_t *self,
+                              int devid,
+                              cl_mem img1,
+                              cl_mem img2,
+                              const int w1,
+                              const float strength,
+                              const float *const A0)
 {
   dt_iop_hazeremoval_global_data_t *gd = self->global_data;
   const int width = dt_opencl_get_image_width(img1);
   const int height = dt_opencl_get_image_height(img1);
 
   const int kernel = gd->kernel_hazeremoval_transision_map;
-  int err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
-    CLARG(width), CLARG(height), CLARG(img1), CLARG(img2), CLARG(strength), CLARG(A0[0]), CLARG(A0[1]),
-    CLARG(A0[2]));
+  cl_int err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
+                                                CLARG(width), CLARG(height),
+                                                CLARG(img1), CLARG(img2), CLARG(strength),
+                                                CLARG(A0[0]), CLARG(A0[1]), CLARG(A0[2]));
   if(err != CL_SUCCESS)
-  {
-    dt_print(DT_DEBUG_OPENCL, "[hazeremoval, transition_map_cl] unknown error: %d\n", err);
     return err;
-  }
-  err = box_max_cl(self, devid, img2, img2, w1);
 
-  return err;
+  return _box_max_cl(self, devid, img2, img2, w1);
 }
 
 
-static int dehaze_cl(struct dt_iop_module_t *self, int devid, cl_mem img_in, cl_mem trans_map, cl_mem img_out,
-                     const float t_min, const float *const A0)
+static int _dehaze_cl(struct dt_iop_module_t *self,
+                      int devid,
+                      cl_mem img_in,
+                      cl_mem trans_map,
+                      cl_mem img_out,
+                      const float t_min,
+                      const float *const A0)
 {
   dt_iop_hazeremoval_global_data_t *gd = self->global_data;
   const int width = dt_opencl_get_image_width(img_in);
   const int height = dt_opencl_get_image_height(img_in);
 
   const int kernel = gd->kernel_hazeremoval_dehaze;
-  int err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
-    CLARG(width), CLARG(height), CLARG(img_in), CLARG(trans_map), CLARG(img_out), CLARG(t_min), CLARG(A0[0]),
-    CLARG(A0[1]), CLARG(A0[2]));
-  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[hazeremoval, dehaze_cl] unknown error: %d\n", err);
-  return err;
+  return dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
+                                          CLARG(width), CLARG(height),
+                                          CLARG(img_in), CLARG(trans_map),
+                                          CLARG(img_out), CLARG(t_min),
+                                          CLARG(A0[0]), CLARG(A0[1]), CLARG(A0[2]));
 }
 
-void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                     const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
+void tiling_callback(struct dt_iop_module_t *self,
+                     struct dt_dev_pixelpipe_iop_t *piece,
+                     const dt_iop_roi_t *roi_in,
+                     const dt_iop_roi_t *roi_out,
                      struct dt_develop_tiling_t *tiling)
 {
   tiling->factor = 2.5f;  // in + out + two single-channel temp buffers
@@ -730,8 +778,12 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   tiling->yalign = 1;
 }
 
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem img_in, cl_mem img_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(struct dt_iop_module_t *self,
+               dt_dev_pixelpipe_iop_t *piece,
+               cl_mem img_in,
+               cl_mem img_out,
+               const dt_iop_roi_t *const roi_in,
+               const dt_iop_roi_t *const roi_out)
 {
   dt_iop_hazeremoval_gui_data_t *const g = (dt_iop_hazeremoval_gui_data_t*)self->gui_data;
   dt_iop_hazeremoval_params_t *d = piece->data;
@@ -740,14 +792,17 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
-  const int w1 = 6; // window size (positive integer) for determining the dark channel and the transition map
+  const int w1 = 6; // window size (positive integer) for determining
+                    // the dark channel and the transition map
   const int w2 = 9; // window size (positive integer) for the guided filter
 
   // module parameters
   const float strength = d->strength; // strength of haze removal
   const float distance = d->distance; // maximal distance from camera to remove haze
   const float eps = sqrtf(0.025f);    // regularization parameter for guided filter
-  const gboolean compatibility_mode = TRUE; //TODO: read from updated params in 'd' after version bump
+  const gboolean compatibility_mode = TRUE; //TODO: read from updated
+                                            //params in 'd' after
+                                            //version bump
 
   // estimate diffusive ambient light and image depth
   rgb_pixel A0 = { NAN, NAN, NAN, 0.0f };
@@ -759,7 +814,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   // only see part of the image (region of interest).  Therefore, we
   // try to get A0 and distance_max from the PREVIEW pixelpipe which
   // luckily stores it for us.
-  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
+  if(self->dev->gui_attached
+     && g
+     && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
   {
     dt_iop_gui_enter_critical_section(self);
     const dt_hash_t hash = g->hash;
@@ -771,9 +828,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     // proper readings for distance_max and A0.  If data are not yet
     // there we need to wait (with timeout).
     if(hash != 0
-       && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL,
+       && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe,
+                                      self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL,
                                       &self->gui_lock, &g->hash))
+    {
       dt_control_log(_("inconsistent output"));
+    }
+
     dt_iop_gui_enter_critical_section(self);
     A0[0] = g->A0[0];
     A0[1] = g->A0[1];
@@ -783,12 +844,14 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   }
   // In all other cases we calculate distance_max and A0 here.
   if(dt_isnan(distance_max))
-    distance_max = ambient_light_cl(self, devid, img_in, w1, &A0,
-                                    compatibility_mode);
+    distance_max = _ambient_light_cl(self, devid, img_in, w1, &A0, compatibility_mode);
   // PREVIEW pixelpipe stores values.
-  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
+  if(self->dev->gui_attached
+     && g
+     && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
   {
-    dt_hash_t hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
+    dt_hash_t hash = dt_dev_hash_plus(self->dev, piece->pipe,
+                                      self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
     dt_iop_gui_enter_critical_section(self);
     g->A0[0] = A0[0];
     g->A0[1] = A0[1];
@@ -797,26 +860,41 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     g->hash = hash;
     dt_iop_gui_leave_critical_section(self);
   }
+  cl_mem trans_map = NULL;
+  cl_mem trans_map_filtered = NULL;
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
   // calculate the transition map
-  void *trans_map = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
-  transition_map_cl(self, devid, img_in, trans_map, w1, strength, A0);
+  trans_map = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
+  if(trans_map == NULL) goto error;
+
+  err = _transition_map_cl(self, devid, img_in, trans_map, w1, strength, A0);
+  if(err != CL_SUCCESS) goto error;
+
   // refine the transition map
-  box_min_cl(self, devid, trans_map, trans_map, w1);
-  void *trans_map_filtered = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
+  err = _box_min_cl(self, devid, trans_map, trans_map, w1);
+  if(err != CL_SUCCESS) goto error;
+
+  trans_map_filtered = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
+  if(trans_map_filtered == NULL) goto error;
+
   // apply guided filter with no clipping
-  guided_filter_cl(devid, img_in, trans_map, trans_map_filtered, width, height, ch, w2, eps, 1.f, -CL_FLT_MAX,
-                   CL_FLT_MAX);
+  err = guided_filter_cl(devid, img_in, trans_map, trans_map_filtered,
+                         width, height, ch, w2, eps, 1.f, -CL_FLT_MAX,
+                         CL_FLT_MAX);
+  if(err != CL_SUCCESS) goto error;
 
   // finally, calculate the haze-free image
   const float t_min
-      = fminf(fmaxf(expf(-distance * distance_max), 1.f / 1024), 1.f); // minimum allowed value for transition map
-  dehaze_cl(self, devid, img_in, trans_map_filtered, img_out, t_min, A0);
+      = fminf(fmaxf(expf(-distance * distance_max),
+                    1.f / 1024),
+              1.f); // minimum allowed value for transition map
+  err = _dehaze_cl(self, devid, img_in, trans_map_filtered, img_out, t_min, A0);
 
+error:
   dt_opencl_release_mem_object(trans_map);
   dt_opencl_release_mem_object(trans_map_filtered);
-
-  return CL_SUCCESS;
+  return err;
 }
 #endif
 

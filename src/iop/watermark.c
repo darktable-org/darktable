@@ -975,11 +975,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   /* render surface on output */
   guint8 *sd = image;
   const float opacity = data->opacity / 100.0f;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(roi_out, in, out, sd, opacity, ch)   \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(int j = 0; j < roi_out->height * roi_out->width; j++)
   {
     float *const i = in + ch*j;

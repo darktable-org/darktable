@@ -27,9 +27,7 @@ typedef enum dt_noise_distribution_t
 } dt_noise_distribution_t;
 
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline uint32_t splitmix32(const uint64_t seed)
 {
   // fast random number generator
@@ -40,18 +38,14 @@ static inline uint32_t splitmix32(const uint64_t seed)
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd uniform(k)
-#endif
+DT_OMP_DECLARE_SIMD(uniform(k))
 static inline uint32_t rol32(const uint32_t x, const int k)
 {
   return (x << k) | (x >> (32 - k));
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(state:64)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(state:64))
 static inline float xoshiro128plus(uint32_t state[4])
 {
   // fast random number generator
@@ -72,18 +66,14 @@ static inline float xoshiro128plus(uint32_t state[4])
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd uniform(sigma) aligned(state:64)
-#endif
+DT_OMP_DECLARE_SIMD(uniform(sigma) aligned(state:64))
 static inline float uniform_noise(const float mu, const float sigma, uint32_t state[4])
 {
   return mu + 2.0f * (xoshiro128plus(state) - 0.5f) * sigma;
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd uniform(sigma) aligned(state:64)
-#endif
+DT_OMP_DECLARE_SIMD(uniform(sigma) aligned(state:64))
 static inline float gaussian_noise(const float mu,
                                    const float sigma,
                                    const int flip,
@@ -102,9 +92,7 @@ static inline float gaussian_noise(const float mu,
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd uniform(sigma) aligned(state:64)
-#endif
+DT_OMP_DECLARE_SIMD(uniform(sigma) aligned(state:64))
 static inline float poisson_noise(const float mu,
                                   const float sigma,
                                   const int flip,
@@ -120,9 +108,7 @@ static inline float poisson_noise(const float mu,
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd uniform(distribution, param) aligned(state:64)
-#endif
+DT_OMP_DECLARE_SIMD(uniform(distribution, param) aligned(state:64))
 static inline float dt_noise_generator(const dt_noise_distribution_t distribution,
                                        const float mu,
                                        const float param,
@@ -146,12 +132,10 @@ static inline float dt_noise_generator(const dt_noise_distribution_t distributio
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd \
-  uniform(sigma) \
-  aligned(state:64) \
-  aligned(mu, sigma, out:16)
-#endif
+DT_OMP_DECLARE_SIMD(
+  uniform(sigma)
+  aligned(state:64)
+  aligned(mu, sigma, out:16))
 static inline void uniform_noise_simd(const dt_aligned_pixel_t mu,
                                       const dt_aligned_pixel_t sigma,
                                       uint32_t state[4],
@@ -166,12 +150,10 @@ static inline void uniform_noise_simd(const dt_aligned_pixel_t mu,
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd \
-  uniform(sigma) \
-  aligned(state:64) \
-  aligned(mu, sigma, flip, out:16)
-#endif
+DT_OMP_DECLARE_SIMD(
+  uniform(sigma)
+  aligned(state:64)
+  aligned(mu, sigma, flip, out:16))
 static inline void gaussian_noise_simd(const dt_aligned_pixel_t mu,
                                        const dt_aligned_pixel_t sigma,
                                        const int flip[4],
@@ -207,12 +189,10 @@ static inline void gaussian_noise_simd(const dt_aligned_pixel_t mu,
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd \
-  uniform(sigma) \
-  aligned(state:64) \
-  aligned(mu, sigma, flip, out:16)
-#endif
+DT_OMP_DECLARE_SIMD(
+  uniform(sigma)
+  aligned(state:64)
+  aligned(mu, sigma, flip, out:16))
 static inline void poisson_noise_simd(const dt_aligned_pixel_t mu,
                                       const dt_aligned_pixel_t sigma,
                                       const int flip[4],
@@ -250,12 +230,10 @@ static inline void poisson_noise_simd(const dt_aligned_pixel_t mu,
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd \
-  uniform(distribution, param) \
-  aligned(state:64) \
-  aligned(mu, param, flip, out:16)
-#endif
+DT_OMP_DECLARE_SIMD(
+  uniform(distribution, param)
+  aligned(state:64)
+  aligned(mu, param, flip, out:16))
 static inline void dt_noise_generator_simd(const dt_noise_distribution_t distribution,
                                            const dt_aligned_pixel_t mu,
                                            const dt_aligned_pixel_t param,

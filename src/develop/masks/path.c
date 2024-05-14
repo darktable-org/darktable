@@ -875,16 +875,13 @@ static int _path_get_pts_border(dt_develop_t *dev,
 
       dx = pts[0] - (*points)[2];
       dy = pts[1] - (*points)[3];
+      float *const ptsbuf = DT_IS_ALIGNED(*points);
 
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-    dt_omp_firstprivate(points_count, points, dx, dy) \
-    schedule(static) if(*points_count > 100) aligned(points:64)
-#endif
+      DT_OMP_FOR(if(*points_count > 100))
       for(int i = 0; i < *points_count; i++)
       {
-        (*points)[i * 2]     += dx;
-        (*points)[i * 2 + 1] += dy;
+        ptsbuf[i * 2]     += dx;
+        ptsbuf[i * 2 + 1] += dy;
       }
 
       // we apply the rest of the distortions (those after the module)
@@ -2688,11 +2685,7 @@ static int _path_get_mask(const dt_iop_module_t *const module,
            "[masks %s] path_fill draw path took %0.04f sec\n", form->name,
            dt_get_lap_time(&start2));
 
-#ifdef _OPENMP
-#pragma omp parallel for \
-  dt_omp_firstprivate(hb, wb, bufptr) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(int yy = 0; yy < hb; yy++)
   {
     int state = 0;
@@ -3200,15 +3193,7 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module,
       const int yymin = MAX(ymin, 0);
       const int yymax = MIN(ymax, height - 1);
 
-#ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(xxmin, xxmax, yymin, yymax, width) \
-  shared(buffer) schedule(static) num_threads(MIN(8, dt_get_num_threads()))
-#else
-#pragma omp parallel for shared(buffer)
-#endif
-#endif
+      DT_OMP_FOR(num_threads(MIN(8, dt_get_num_threads())))
       for(int yy = yymin; yy <= yymax; yy++)
       {
         int state = 0;
@@ -3291,15 +3276,7 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module,
       }
     }
 
-#ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(width, height, dindex) \
-  shared(buffer, dpoints)
-#else
-#pragma omp parallel for shared(buffer)
-#endif
-#endif
+    DT_OMP_FOR()
     for(int n = 0; n < dindex; n += 4)
       _path_falloff_roi(buffer, dpoints + n, dpoints + n + 2, width, height);
 

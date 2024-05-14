@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2015-2023 darktable developers.
+    Copyright (C) 2015-2024 darktable developers.
 
     (based on code by johannes hanika)
 
@@ -219,12 +219,7 @@ gboolean distort_transform(dt_iop_module_t *self,
   const float x = (float)d->left * scale;
   const float y = (float)d->top * scale;
 
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-    dt_omp_firstprivate(points_count, points, y, x) \
-    schedule(static) \
-    aligned(points:64) if(points_count > 100)
-#endif
+  DT_OMP_FOR_SIMD(aligned(points:64) if(points_count > 100))
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
     points[i] -= x;
@@ -249,12 +244,7 @@ gboolean distort_backtransform(dt_iop_module_t *self,
   const float x = (float)d->left * scale;
   const float y = (float)d->top * scale;
 
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-    dt_omp_firstprivate(points_count, points, y, x) \
-    schedule(static) \
-    aligned(points:64) if(points_count > 100)
-#endif
+  DT_OMP_FOR_SIMD(aligned(points:64) if(points_count > 100))
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
     points[i] += x;
@@ -368,12 +358,7 @@ void process(
     const uint16_t *const in = (const uint16_t *const)ivoid;
     float *const out = (float *const)ovoid;
 
-#ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-    dt_omp_firstprivate(csx, csy, d, in, out, roi_in, roi_out) \
-    schedule(static) \
-    collapse(2)
-#endif
+    DT_OMP_FOR_SIMD(collapse(2))
     for(int j = 0; j < roi_out->height; j++)
     {
       for(int i = 0; i < roi_out->width; i++)
@@ -397,12 +382,7 @@ void process(
     const float *const in = (const float *const)ivoid;
     float *const out = (float *const)ovoid;
 
-#ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-    dt_omp_firstprivate(csx, csy, d, in, out, roi_in, roi_out) \
-    schedule(static) \
-    collapse(2)
-#endif
+    DT_OMP_FOR_SIMD(collapse(2))
     for(int j = 0; j < roi_out->height; j++)
     {
       for(int i = 0; i < roi_out->width; i++)
@@ -427,11 +407,7 @@ void process(
 
     const int ch = piece->colors;
 
-#ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-    dt_omp_firstprivate(ch, csx, csy, d, in, out, roi_in, roi_out) \
-    schedule(static) collapse(3)
-#endif
+    DT_OMP_FOR_SIMD(collapse(3))
     for(int j = 0; j < roi_out->height; j++)
     {
       for(int i = 0; i < roi_out->width; i++)
@@ -459,12 +435,7 @@ void process(
     const float map_origin_v = d->gainmaps[0]->map_origin_v;
     float *const out = (float *const)ovoid;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(csx, csy, roi_out, out, im_to_rel_x, im_to_rel_y, rel_to_map_x, rel_to_map_y, \
-                        map_w, map_h, map_origin_h, map_origin_v) \
-    dt_omp_sharedconst(d) schedule(static)
-#endif
+    DT_OMP_FOR()
     for(int j = 0; j < roi_out->height; j++)
     {
       const float y_map = CLAMP(((roi_out->y + csy + j) * im_to_rel_y - map_origin_v) * rel_to_map_y, 0, map_h);

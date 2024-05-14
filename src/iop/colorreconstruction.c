@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  Copyright (C) 2015-2023 darktable developers.
+  Copyright (C) 2015-2024 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -378,17 +378,17 @@ static dt_iop_colorreconstruct_bilateral_t *dt_iop_colorreconstruct_bilateral_th
 }
 
 
-static void dt_iop_colorreconstruct_bilateral_splat(dt_iop_colorreconstruct_bilateral_t *b, const float *const in, const float threshold,
-                                                    dt_iop_colorreconstruct_precedence_t precedence, const float *params)
+static void dt_iop_colorreconstruct_bilateral_splat(
+        dt_iop_colorreconstruct_bilateral_t *b,
+        const float *const in,
+        const float threshold,
+        dt_iop_colorreconstruct_precedence_t precedence,
+        const float *params)
 {
   if(!b) return;
 
   // splat into downsampled grid
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, threshold) \
-  shared(b, precedence, params)
-#endif
+  DT_OMP_FOR()
   for(int j = 0; j < b->height; j++)
   {
     size_t index = (size_t)4 * j * b->width;
@@ -428,43 +428,36 @@ static void dt_iop_colorreconstruct_bilateral_splat(dt_iop_colorreconstruct_bila
       const int zi = CLAMPS((int)round(z), 0, b->size_z - 1);
       const size_t grid_index = xi + b->size_x * (yi + b->size_y * zi);
 
-#ifdef _OPENMP
-#pragma omp atomic
-#endif
+      DT_OMP_PRAGMA(atomic)
       b->buf[grid_index].L += Lin * weight;
 
-#ifdef _OPENMP
-#pragma omp atomic
-#endif
+      DT_OMP_PRAGMA(atomic)
       b->buf[grid_index].a += ain * weight;
 
-#ifdef _OPENMP
-#pragma omp atomic
-#endif
+      DT_OMP_PRAGMA(atomic)
       b->buf[grid_index].b += bin * weight;
 
-#ifdef _OPENMP
-#pragma omp atomic
-#endif
+      DT_OMP_PRAGMA(atomic)
       b->buf[grid_index].weight += weight;
     }
   }
 }
 
 
-static void blur_line(dt_iop_colorreconstruct_Lab_t *buf, const int offset1, const int offset2, const int offset3, const int size1,
-                      const int size2, const int size3)
+static void blur_line(dt_iop_colorreconstruct_Lab_t *buf,
+                      const int offset1,
+                      const int offset2,
+                      const int offset3,
+                      const int size1,
+                      const int size2,
+                      const int size3)
 {
   if(!buf) return;
 
   const float w0 = 6.f / 16.f;
   const float w1 = 4.f / 16.f;
   const float w2 = 1.f / 16.f;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(offset1, offset2, offset3, size1, size2, size3, w0, w1, w2) \
-  shared(buf)
-#endif
+  DT_OMP_FOR()
   for(int k = 0; k < size1; k++)
   {
     size_t index = (size_t)k * offset1;
@@ -538,10 +531,7 @@ static void dt_iop_colorreconstruct_bilateral_slice(const dt_iop_colorreconstruc
   const int ox = 1;
   const int oy = b->size_x;
   const int oz = b->size_y * b->size_x;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(b, in, out, oy, oz, rescale, roi, threshold, ox)
-#endif
+  DT_OMP_FOR()
   for(int j = 0; j < roi->height; j++)
   {
     size_t index = (size_t)4 * j * roi->width;

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2023 darktable developers.
+    Copyright (C) 2019-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -234,11 +234,8 @@ void correct_pixel_trilinear(const float *const in, float *const out,
                              const size_t pixel_nb, const float *const restrict clut, const uint16_t level)
 {
   const int level2 = level * level;
-#ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-  dt_omp_firstprivate(clut, in, level, level2, out, pixel_nb) \
-  schedule(static)
-#endif
+
+  DT_OMP_FOR()
   for(size_t k = 0; k < (size_t)(pixel_nb * 4); k+=4)
   {
     const float *const input = in + k;
@@ -309,11 +306,8 @@ void correct_pixel_tetrahedral(const float *const in, float *const out,
                                const size_t pixel_nb, const float *const restrict clut, const uint16_t level)
 {
   const int level2 = level * level;
-#ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-  dt_omp_firstprivate(clut, in, level, level2, out, pixel_nb) \
-  schedule(static)
-#endif
+
+  DT_OMP_FOR()
   for(size_t k = 0; k < (size_t)(pixel_nb * 4); k+=4)
   {
     const float *const input = in + k;
@@ -394,11 +388,8 @@ void correct_pixel_pyramid(const float *const in, float *const out,
                            const size_t pixel_nb, const float *const restrict clut, const uint16_t level)
 {
   const int level2 = level * level;
-#ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-  dt_omp_firstprivate(clut, in, level, level2, out, pixel_nb) \
-  schedule(static)
-#endif
+
+  DT_OMP_FOR()
   for(size_t k = 0; k < (size_t)(pixel_nb * 4); k+=4)
   {
     const float *const input = in + k;

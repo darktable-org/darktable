@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2023 darktable developers.
+    Copyright (C) 2012-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -155,9 +155,7 @@ void init_presets(dt_iop_module_so_t *self)
   dt_database_release_transaction(darktable.db);
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd simdlen(4)
-#endif
+DT_OMP_DECLARE_SIMD(simdlen(4))
 static inline float _quantize(const float val, const float f, const float rf)
 {
   return rf * ceilf((val * f) - 0.5); // round up only if frac(x) strictly greater than 0.5
@@ -167,17 +165,13 @@ static inline float _quantize(const float val, const float f, const float rf)
   //return rf * (itmp + ((tmp - itmp > 0.5f) ? 1.0f : 0.0f));
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline float _rgb_to_gray(const float *const restrict val)
 {
   return 0.30f * val[0] + 0.59f * val[1] + 0.11f * val[2]; // RGB -> GRAY
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline void _nearest_color(
         float *const restrict val,
         float *const restrict err,
@@ -221,9 +215,7 @@ static inline void _diffuse_error(
   }
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline float _clipnan(const float x)
 {
   // convert NaN to 0.5, otherwise clamp to between 0.0 and 1.0
@@ -375,9 +367,7 @@ static int _get_dither_parameters(
 #define DOWN_WT       (5.0f/16.0f)
 #define DOWNLEFT_WT   (3.0f/16.0f)
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(ivoid, ovoid : 64)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(ivoid, ovoid : 64))
 static void process_floyd_steinberg(
         struct dt_iop_module_t *self,
         dt_dev_pixelpipe_iop_t *piece,
@@ -455,9 +445,7 @@ static void process_floyd_steinberg(
 
   // once the FS dithering gets started, we can copy&clip the downright pixel, as that will be the first time
   // it will be accessed.  But to get the process started, we need to prepare the top row of pixels
-#ifdef _OPENMP
-#pragma omp simd aligned(in, out : 64)
-#endif
+  DT_OMP_SIMD(aligned(in, out : 64))
   for(int j = 0; j < width; j++)
   {
     _clipnan_pixel(out + 4*j, in + 4*j);
@@ -572,17 +560,11 @@ static void process_random(
 
   unsigned int *const tea_states = alloc_tea_states(dt_get_num_threads());
 
-#ifdef _OPENMP
-#pragma omp parallel default(none) \
-  dt_omp_firstprivate(dither, height, width, ivoid, ovoid) \
-  dt_omp_sharedconst(tea_states)
-#endif
+  DT_OMP_PRAGMA(parallel default(firstprivate))
   {
     // get a pointer to each thread's private buffer *outside* the for loop, to avoid a function call per iteration
     unsigned int *const tea_state = get_tea_state(tea_states,dt_get_thread_num());
-#ifdef _OPENMP
-#pragma omp for schedule(static)
-#endif
+    DT_OMP_PRAGMA(for schedule(static))
     for(int j = 0; j < height; j++)
     {
       const size_t k = (size_t)4 * width * j;
@@ -626,11 +608,7 @@ static void process_posterize(
   const float f = levels - 1;
   const float rf = 1.0f / f;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, in, out, f, rf) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(int k = 0; k < npixels; k++)
   {
     dt_aligned_pixel_t pixel;

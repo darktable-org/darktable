@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2018-2023 darktable developers.
+    Copyright (C) 2018-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -751,9 +751,7 @@ static float _luminance_from_module_buffer(dt_iop_module_t *self)
  *
  ***/
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 __DT_CLONE_TARGETS__
 static float gaussian_denom(const float sigma)
 {
@@ -764,9 +762,7 @@ static float gaussian_denom(const float sigma)
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 __DT_CLONE_TARGETS__
 static float gaussian_func(const float radius, const float denominator)
 {
@@ -795,10 +791,7 @@ static inline void apply_toneequalizer(const float *const restrict in,
   const int max_ev = 0;
   const float* restrict lut = d->correction_lut;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) \
-  dt_omp_firstprivate(in, out, num_elem, luminance, lut, min_ev, max_ev)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < num_elem; ++k)
   {
     // The radial-basis interpolation is valid in [-8; 0] EV and can
@@ -828,10 +821,7 @@ static inline void apply_toneequalizer(const float *const restrict in,
   const float sigma = d->smoothing;
   const float gauss_denom = gaussian_denom(sigma);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) \
-  dt_omp_firstprivate(in, out, num_elem, luminance, factors, centers_ops, gauss_denom)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < num_elem; ++k)
   {
     // build the correction for the current pixel
@@ -842,9 +832,7 @@ static inline void apply_toneequalizer(const float *const restrict in,
     // quickely diverge outside
     const float exposure = fast_clamp(log2f(luminance[k]), -8.0f, 0.0f);
 
-#ifdef _OPENMP
-#pragma omp simd aligned(luminance, centers_ops, factors:64) safelen(PIXEL_CHAN) reduction(+:result)
-#endif
+    DT_OMP_SIMD(aligned(luminance, centers_ops, factors:64) safelen(PIXEL_CHAN) reduction(+:result))
     for(int i = 0; i < PIXEL_CHAN; ++i)
       result += gaussian_func(exposure - centers_ops[i], gauss_denom) * factors[i];
 
@@ -870,9 +858,7 @@ static inline float pixel_correction(const float exposure,
   const float gauss_denom = gaussian_denom(sigma);
   const float expo = fast_clamp(exposure, -8.0f, 0.0f);
 
-#ifdef _OPENMP
-#pragma omp simd aligned(centers_ops, factors:64) safelen(PIXEL_CHAN) reduction(+:result)
-#endif
+  DT_OMP_SIMD(aligned(centers_ops, factors:64) safelen(PIXEL_CHAN) reduction(+:result))
   for(int i = 0; i < PIXEL_CHAN; ++i)
     result += gaussian_func(expo - centers_ops[i], gauss_denom) * factors[i];
 
@@ -984,11 +970,7 @@ static inline void display_luminance_mask(const float *const restrict in,
     ? roi_out->height
     : roi_in->height;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(luminance, out, in, in_width, out_width, out_height, offset_x, offset_y, ch) \
-  schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR(collapse(2))
   for(size_t i = 0 ; i < out_height; ++i)
     for(size_t j = 0; j < out_width; ++j)
     {
@@ -1296,9 +1278,7 @@ static void get_channels_factors(float factors[CHANNELS],
   get_channels_gains(factors, p);
 
   // Convert from EV offsets to linear factors
-#ifdef _OPENMP
-#pragma omp simd aligned(factors:64)
-#endif
+  DT_OMP_SIMD(aligned(factors:64))
   for(int c = 0; c < CHANNELS; ++c)
     factors[c] = exp2f(factors[c]);
 }
@@ -1315,10 +1295,7 @@ static int compute_channels_factors(const float factors[PIXEL_CHAN],
   // approximation for x = { CHANNELS }
   assert(PIXEL_CHAN == 8);
 
-  #ifdef _OPENMP
-  #pragma omp parallel for simd default(none) schedule(static) \
-    aligned(factors, out, centers_params:64) dt_omp_firstprivate(factors, out, sigma, centers_params)
-  #endif
+  DT_OMP_FOR_SIMD(aligned(factors, out, centers_params:64) firstprivate(centers_params))
   for(int i = 0; i < CHANNELS; ++i)
   {
     // Compute the new channels factors; pixel_correction clamps the factors, so we don't
@@ -1422,9 +1399,7 @@ static inline void build_interpolation_matrix(float A[CHANNELS * PIXEL_CHAN],
 
   const float gauss_denom = gaussian_denom(sigma);
 
-#ifdef _OPENMP
-#pragma omp simd aligned(A, centers_ops, centers_params:64) collapse(2)
-#endif
+  DT_OMP_SIMD(aligned(A, centers_ops, centers_params:64) collapse(2))
   for(int i = 0; i < CHANNELS; ++i)
     for(int j = 0; j < PIXEL_CHAN; ++j)
       A[i * PIXEL_CHAN + j] =
@@ -1449,11 +1424,7 @@ static inline void compute_log_histogram_and_stats(const float *const restrict l
   memset(temp_hist, 0, sizeof(int) * TEMP_SAMPLES);
 
   // Split exposure in bins
-#ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(simd:static) \
-  dt_omp_firstprivate(luminance, num_elem) \
-  reduction(+:temp_hist[:TEMP_SAMPLES])
-#endif
+  DT_OMP_FOR_SIMD(reduction(+:temp_hist[:TEMP_SAMPLES]))
   for(size_t k = 0; k < num_elem; k++)
   {
     // extended histogram bins between [-10; +6] EV remapped between [0 ; 2 * UI_SAMPLES]
@@ -1544,11 +1515,7 @@ static inline void compute_lut_correction(struct dt_iop_toneequalizer_gui_data_t
   const float *const restrict factors = g->factors;
   const float sigma = g->sigma;
 
-#ifdef _OPENMP
-#pragma omp parallel for simd schedule(static) default(none) \
-  dt_omp_firstprivate(factors, sigma, offset, scaling, LUT) \
-  aligned(LUT, factors:64)
-#endif
+  DT_OMP_FOR_SIMD(aligned(LUT, factors:64))
   for(int k = 0; k < UI_SAMPLES; k++)
   {
     // build the inset graph curve LUT
@@ -3137,7 +3104,7 @@ static gboolean area_button_press(GtkWidget *widget,
     update_exposure_sliders(g, p);
 
     // Redraw graph
-    gtk_widget_queue_draw(self->widget);
+    gtk_widget_queue_draw(GTK_WIDGET(g->area));
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     return TRUE;
   }
@@ -3357,7 +3324,7 @@ void gui_reset(struct dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 
   // Redraw graph
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
 

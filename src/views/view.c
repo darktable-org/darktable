@@ -803,9 +803,7 @@ dt_view_surface_value_t dt_view_image_get_surface(const dt_imgid_t imgid,
       }
     }
 
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(buf, rgbbuf, transform)
-#endif
+    DT_OMP_FOR()
     for(int i = 0; i < buf.height; i++)
     {
       const uint8_t *in = buf.buf + i * buf.width * 4;
@@ -1360,7 +1358,11 @@ static gchar *_mouse_action_get_string(dt_mouse_action_t *ma)
   if(ma->mods & GDK_CONTROL_MASK)
     atxt = dt_util_dstrcat(atxt, "%s+", _("ctrl"));
   if(ma->mods & GDK_MOD1_MASK   )
+#ifdef __APPLE__
+    atxt = dt_util_dstrcat(atxt, "%s+", _("option"));
+#else
     atxt = dt_util_dstrcat(atxt, "%s+", _("alt"));
+#endif
 
   switch(ma->action)
   {
