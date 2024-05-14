@@ -117,12 +117,22 @@ typedef unsigned int u_int;
 #endif
 #endif /* dt_omp_nontemporal */
 
+#define DT_OMP_STRINGIFY(...) #__VA_ARGS__
+#define DT_OMP_PRAGMA(...) _Pragma(DT_OMP_STRINGIFY(omp __VA_ARGS__))
+
 #else /* _OPENMP */
 
 # define omp_get_max_threads() 1
 # define omp_get_thread_num() 0
 
+#define DT_OMP_PRAGMA(...)
+
 #endif /* _OPENMP */
+
+#define DT_OMP_SIMD(clauses) DT_OMP_PRAGMA(simd clauses)
+#define DT_OMP_DECLARE_SIMD(clauses) DT_OMP_PRAGMA(declare simd clauses)
+#define DT_OMP_FOR(clauses) DT_OMP_PRAGMA(parallel for default(firstprivate) schedule(static) clauses)
+#define DT_OMP_FOR_SIMD(clauses) DT_OMP_PRAGMA(parallel for simd default(firstprivate) schedule(simd:static) clauses)
 
 #ifndef _RELEASE
 #include "common/poison.h"

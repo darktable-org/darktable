@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
 
     darktable is free software: you can redistribute it and/or modify
@@ -222,12 +222,7 @@ static void wavelet_denoise(const float *const restrict in, float *const restric
 
     // collect one of the R/G1/G2/B channels into a monochrome image, applying sqrt() to the values as a
     // variance-stabilizing transform
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(in, fimg, roi, halfwidth) \
-    shared(c) \
-    schedule(static)
-#endif
+    DT_OMP_FOR()
     for(int row = c & 1; row < roi->height; row += 2)
     {
       float *const restrict fimgp = fimg + (size_t)row / 2 * halfwidth;
@@ -243,12 +238,7 @@ static void wavelet_denoise(const float *const restrict in, float *const restric
 
     // distribute the denoised data back out to the original R/G1/G2/B channel, squaring the resulting values to
     // undo the original transform
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(fimg, halfwidth, out, roi, size) \
-    shared(c) \
-    schedule(static)
-#endif
+    DT_OMP_FOR()
     for(int row = c & 1; row < roi->height; row += 2)
     {
       const float *const restrict fimgp = fimg + (size_t)row / 2 * halfwidth;
@@ -348,12 +338,7 @@ static void wavelet_denoise_xtrans(const float *const restrict in, float *const 
     }
     const size_t nthreads = dt_get_num_threads();
     const size_t chunksize = (height + nthreads - 1) / nthreads;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(fimg, height, in, roi, size, width, xtrans, nthreads, chunksize) \
-    shared(c) num_threads(nthreads) \
-    schedule(static)
-#endif
+    DT_OMP_FOR(num_threads(nthreads))
     for(size_t chunk = 0; chunk < nthreads; chunk++)
     {
       const size_t start = chunk * chunksize;
@@ -468,12 +453,7 @@ static void wavelet_denoise_xtrans(const float *const restrict in, float *const 
 
     // distribute the denoised data back out to the original R/G/B channel, squaring the resulting values to
     // undo the original transform
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(height, fimg, roi, width, xtrans, c) \
-    dt_omp_sharedconst(out) \
-    schedule(static)
-#endif
+    DT_OMP_FOR()
     for(int row = 0; row < height; row++)
     {
       const float *const restrict fimgp = fimg + (size_t)row * width;
@@ -584,7 +564,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(dt_iop_module_t *self)
 {
-  gtk_widget_queue_draw(self->widget);
+  dt_iop_rawdenoise_gui_data_t *c = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
+  gtk_widget_queue_draw(GTK_WIDGET(c->area));
 }
 
 static void dt_iop_rawdenoise_get_params(dt_iop_rawdenoise_params_t *p, const int ch, const double mouse_x,
@@ -832,7 +813,7 @@ static gboolean rawdenoise_button_press(GtkWidget *widget, GdkEventButton *event
       p->y[ch][k] = d->y[ch][k];
     }
     dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
-    gtk_widget_queue_draw(self->widget);
+    gtk_widget_queue_draw(GTK_WIDGET(c->area));
   }
   else if(event->button == 1)
   {

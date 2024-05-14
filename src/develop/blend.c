@@ -277,34 +277,24 @@ static void _refine_with_detail_mask(struct dt_iop_module_t *self,
   float *warp_mask = NULL;
 
   dt_dev_pixelpipe_t *p = piece->pipe;
-  if(p->scharr.data == NULL)
-  {
-    dt_print_pipe(DT_DEBUG_PIPE,
-       "refine detail mask",
-       piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out, "no mask data available\n");
-    return;
-  }
-
-  dt_print_pipe(DT_DEBUG_PIPE,
-       "refine detail mask",
-       piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out, "\n");
+  if(p->scharr.data == NULL) goto error;
 
   lum = dt_masks_calc_detail_mask(piece, threshold, detail);
   if(!lum) goto error;
 
   // here we have the slightly blurred full detail mask available
-  warp_mask = dt_dev_distort_detail_mask(p, lum, self);
+  warp_mask = dt_dev_distort_detail_mask(piece, lum, self);
   dt_free_align(lum);
   lum = NULL;
 
   if(warp_mask == NULL) goto error;
 
+  dt_print_pipe(DT_DEBUG_PIPE,
+       "refine with detail mask",
+       piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out, "\n");
+
   const size_t msize = (size_t)roi_out->width * roi_out->height;
-#ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(mask, warp_mask, msize) \
-  schedule(simd:static) aligned(mask, warp_mask : 64)
- #endif
+  DT_OMP_FOR_SIMD(aligned(mask, warp_mask : 64))
   for(size_t idx =0; idx < msize; idx++)
     mask[idx] = mask[idx] * CLIP(warp_mask[idx]);
   dt_free_align(warp_mask);
@@ -312,6 +302,9 @@ static void _refine_with_detail_mask(struct dt_iop_module_t *self,
   return;
 
   error:
+  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS,
+       "refine with detail mask",
+       piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out, "no mask data available\n");
   dt_control_log(_("detail mask blending error"));
   dt_free_align(warp_mask);
   dt_free_align(lum);
@@ -431,10 +424,8 @@ static void _develop_blend_process_mask_tone_curve(float *const restrict mask,
   // empirical mask threshold for fully transparent masks
   const float mask_epsilon = 16.0f * FLT_EPSILON;
   const float e = expf(3.f * contrast);
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) schedule(static) aligned(mask:64) \
-    dt_omp_firstprivate(brightness, buffsize, e, mask, mask_epsilon, opacity)
-#endif
+
+  DT_OMP_FOR_SIMD(aligned(mask:64))
   for(size_t k = 0; k < buffsize; k++)
   {
     float x = mask[k] / opacity;
@@ -465,11 +456,7 @@ static void _write_highlights_raster(const gboolean israw,
                                      const dt_iop_roi_t *const roi_out,
                                      float *mask)
 {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(output, input, roi_in, roi_out, mask, israw) \
-    schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR(collapse(2))
   for(ssize_t row = 0; row < roi_out->height; row++)
   {
     for(ssize_t col = 0; col < roi_out->width; col++)
@@ -484,7 +471,7 @@ static void _write_highlights_raster(const gboolean israw,
                               : MAX(output[4*ox+0] / MAX(MININ, input[4*ix+0]),
                                 MAX(output[4*ox+1] / MAX(MININ, input[4*ix+1]),
                                     output[4*ox+2] / MAX(MININ, input[4*ix+2])));
-        mask[ox] *= CLAMP(sqrf(10.0f * (r - 1.0f)), 0.0f, 2.0f);
+        mask[ox] *= CLAMPF(sqrf(10.0f * MAX(0.0f, r - 1.0f)), 0.0f, 2.0f);
       }
     }
   }
@@ -636,11 +623,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
       // invert if required
       if(d->raster_mask_invert)
       {
-#ifdef _OPENMP
-  #pragma omp parallel for simd default(none) aligned(mask, raster_mask:64)\
-        dt_omp_firstprivate(obuffsize, opacity, mask, raster_mask) \
-        schedule(static)
-#endif
+        DT_OMP_FOR_SIMD(aligned(mask, raster_mask:64))
         for(size_t i = 0; i < obuffsize; i++)
           mask[i] = (1.0f - raster_mask[i]) * opacity;
       }
@@ -839,17 +822,17 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
 
     const gboolean new = g_hash_table_replace(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID), _mask);
     dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self->iop_order);
-    dt_print_pipe(DT_DEBUG_PIPE,
-       "write raster mask", piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out, "%s at %p\n",
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS,
+       "write raster mask", piece->pipe, self, DT_DEVICE_CPU, NULL, NULL, "%s at %p (%ix%i)\n",
        new ? "new" : "replaced",
-       _mask);
+       _mask, roi_out->width, roi_out->height);
   }
   else
   {
-    g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID));
     dt_free_align(_mask);
-    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
-       "clear raster mask", piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out, "\n");
+    if(g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID)))
+      dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS,
+        "delete raster mask", piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out, " not requested\n");
   }
 }
 
@@ -876,16 +859,12 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
   if(p->scharr.data == NULL)
   {
     dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_OPENCL,
-       "refine detail mask",
+       "refine with detail mask",
        piece->pipe, self, piece->pipe->devid, roi_in, roi_out, "no detail data available\n");
     return;
   }
   const int iwidth  = p->scharr.roi.width;
   const int iheight = p->scharr.roi.height;
-
-  dt_print_pipe(DT_DEBUG_PIPE,
-       "refine detail mask",
-       piece->pipe, self, piece->pipe->devid, roi_in, roi_out, "scharr %ix%i\n", iwidth, iheight);
 
   lum = dt_alloc_align_float((size_t)iwidth * iheight);
   out = dt_opencl_alloc_device_buffer(devid, sizeof(float) * iwidth * iheight);
@@ -927,7 +906,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
   blur = NULL;
 
   // here we have the slightly blurred full detail mask available
-  float *warp_mask = dt_dev_distort_detail_mask(p, lum, self);
+  float *warp_mask = dt_dev_distort_detail_mask(piece, lum, self);
   if(warp_mask == NULL)
   {
     err = DT_OPENCL_PROCESS_CL;
@@ -935,12 +914,12 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
   }
   dt_free_align(lum);
 
+  dt_print_pipe(DT_DEBUG_PIPE,
+       "refine with detail mask",
+       piece->pipe, self, piece->pipe->devid, roi_in, roi_out, "\n");
+
   const size_t msize = (size_t)roi_out->width * roi_out->height;
-#ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(mask, warp_mask, msize) \
-  schedule(simd:static) aligned(mask, warp_mask : 64)
- #endif
+  DT_OMP_FOR_SIMD(aligned(mask, warp_mask : 64))
   for(size_t idx = 0; idx < msize; idx++)
     mask[idx] = mask[idx] * CLIP(warp_mask[idx]);
 
@@ -1182,10 +1161,7 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
       // invert if required
       if(d->raster_mask_invert)
       {
-#ifdef _OPENMP
-  #pragma omp parallel for simd default(none) aligned(mask, raster_mask:64)\
-        dt_omp_firstprivate(obuffsize, opacity, mask, raster_mask)
-#endif
+        DT_OMP_FOR_SIMD(aligned(mask, raster_mask:64))
         for(size_t i = 0; i < obuffsize; i++)
           mask[i] = (1.0f - raster_mask[i]) * opacity;
       }
@@ -1514,26 +1490,22 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
 
       err = dt_opencl_copy_device_to_host(devid, mask, dev_mask_1,
                                           owidth, oheight, sizeof(float));
-      if(err != CL_SUCCESS)
-      {
-        // As we have not written the mask we must remove an existing one.
-        g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID));
-        goto error;
-      }
+      if(err != CL_SUCCESS) goto error;
     }
+
     const gboolean new = g_hash_table_replace(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID), _mask);
     dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self->iop_order);
-    dt_print_pipe(DT_DEBUG_PIPE,
-       "write raster mask", piece->pipe, self, piece->pipe->devid, roi_in, roi_out, "%s at %p\n",
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS,
+       "write raster mask", piece->pipe, self, piece->pipe->devid, NULL, NULL, "%s at %p (%ix%i)\n",
        new ? "new" : "replaced",
-       _mask);
+       _mask, roi_out->width, roi_out->height);
   }
   else
   {
-    g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID));
     dt_free_align(_mask);
-    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
-       "clear raster mask", piece->pipe, self, piece->pipe->devid, roi_in, roi_out, "\n");
+    if(g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID)))
+      dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS,
+        "delete raster mask", piece->pipe, self, piece->pipe->devid, roi_in, roi_out, " not requested\n");
   }
 
   dt_opencl_release_mem_object(dev_blendif_params);
@@ -1549,6 +1521,14 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
   return TRUE;
 
 error:
+  // As we have not written the mask we must remove an existing one.
+  if(g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID)))
+  {
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS,
+      "delete raster mask", piece->pipe, self, piece->pipe->devid, roi_in, roi_out,
+      "OpenCL error: %s\n", cl_errstr(err));
+    dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self->iop_order);
+  }
   dt_free_align(_mask);
   dt_opencl_release_mem_object(dev_blendif_params);
   dt_opencl_release_mem_object(dev_boost_factors);

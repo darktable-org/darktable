@@ -627,7 +627,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
       // as drag_start_percentage is only updated when the mouse is moved.
       c->drag_start_percentage = 0.5;
       dt_dev_add_history_item(darktable.develop, self, TRUE);
-      gtk_widget_queue_draw(self->widget);
+      gtk_widget_queue_draw(GTK_WIDGET(c->area));
     }
     else
     {
@@ -768,7 +768,7 @@ static void _tab_switch_callback(GtkNotebook *notebook,
 
   g->channel = (dt_iop_rgblevels_channel_t)page_num;
 
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
 static void _color_picker_callback(GtkWidget *button, dt_iop_module_t *self)
@@ -900,7 +900,7 @@ void gui_update(dt_iop_module_t *self)
                                g->draw_selected_region);
   _rgblevels_show_hide_controls(p, g);
 
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
@@ -916,7 +916,7 @@ void gui_reset(struct dt_iop_module_t *self)
 
   g->channel = DT_IOP_RGBLEVELS_R;
 
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
 void init(dt_iop_module_t *self)
@@ -1346,11 +1346,7 @@ void process(dt_iop_module_t *self,
       = { d->params.levels[0][0], d->params.levels[1][0], d->params.levels[2][0], 0.0f };
     const dt_aligned_pixel_t max_levels
       = { d->params.levels[0][2], d->params.levels[1][2], d->params.levels[2][2], 1.0f };
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, in, out, work_profile, d, mult, min_levels, max_levels) \
-  schedule(static)
-#endif
+    DT_OMP_FOR()
     for(int k = 0; k < 4U*npixels; k += 4)
     {
       for(int c = 0; c < 3; c++)
@@ -1385,12 +1381,7 @@ void process(dt_iop_module_t *self,
     const float min_level = levels[0];
     const float max_level = levels[2];
     static const dt_aligned_pixel_t zero = { 0.0f, 0.0f, 0.0f, 0.0f };
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, in, out, work_profile, d, min_level, max_level, \
-                      mult_ch, ch_levels, zero)                         \
-  schedule(static)
-#endif
+    DT_OMP_FOR()
     for(int k = 0; k < 4U*npixels; k += 4)
     {
       const float lum = dt_rgb_norm(in+k, d->params.preserve_colors, work_profile);

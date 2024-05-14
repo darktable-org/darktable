@@ -339,11 +339,7 @@ static void process_wavelets(struct dt_iop_module_t *self,
   }
 
   // add in the final residue
-#ifdef _OPENMP
-#pragma omp parallel for simd aligned(buf1, out : 64) \
-  dt_omp_firstprivate(width, height, buf1, out) \
-  schedule(simd:static) num_threads(MIN(dt_get_num_threads(),16))
-#endif
+  DT_OMP_FOR_SIMD(aligned(buf1, out : 64) num_threads(MIN(dt_get_num_threads(),16)))
   for(size_t k = 0; k < (size_t)4 * width * height; k++)
     out[k] += buf1[k];
 
@@ -1072,12 +1068,12 @@ static void reset_mix(dt_iop_module_t *self)
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(c->mix, p->mix);
   --darktable.gui->reset;
+  gtk_widget_queue_draw(GTK_WIDGET(c->area));
 }
 
 void gui_update(struct dt_iop_module_t *self)
 {
   reset_mix(self);
-  gtk_widget_queue_draw(self->widget);
 }
 
 
@@ -1532,7 +1528,6 @@ static gboolean area_button_press(GtkWidget *widget,
       p->x[c->channel2][k] = d->x[c->channel2][k];
       p->y[c->channel2][k] = d->y[c->channel2][k];
     }
-    gtk_widget_queue_draw(self->widget);
     dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + c->channel2);
   }
   else if(event->button == 1)
@@ -1609,8 +1604,9 @@ static void mix_callback(GtkWidget *slider,
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
   dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
+  dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
   p->mix = dt_bauhaus_slider_get(slider);
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(GTK_WIDGET(c->area));
   dt_dev_add_history_item_target(darktable.develop, self, TRUE, slider);
 }
 
@@ -1753,7 +1749,7 @@ static float _action_process_equalizer(gpointer target,
     dt_action_widget_toast(DT_ACTION(self), target, toast);
     g_free(toast);
 
-    gtk_widget_queue_draw(self->widget);
+    gtk_widget_queue_draw(GTK_WIDGET(c->area));
   }
 
   return element

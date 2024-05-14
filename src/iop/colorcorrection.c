@@ -143,11 +143,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float a_base = d->a_base;
   const float b_scale = d->b_scale;
   const float b_base = d->b_base;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(roi_out, saturation, a_scale, a_base, b_scale, b_base, in, out) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < (size_t)4 * roi_out->width * roi_out->height; k += 4)
   {
     out[k] = in[k];
@@ -222,7 +218,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
   dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)self->params;
   dt_bauhaus_slider_set(g->slider, p->saturation);
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
 static gboolean dt_iop_colorcorrection_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data);
@@ -398,7 +394,7 @@ static gboolean dt_iop_colorcorrection_motion_notify(GtkWidget *widget, GdkEvent
       g->selected = 2;
   }
   if(g->selected > 0) gtk_widget_grab_focus(widget);
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
   return TRUE;
 }
 
@@ -438,7 +434,8 @@ static gboolean dt_iop_colorcorrection_leave_notify(GtkWidget *widget, GdkEventC
                                                     gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  gtk_widget_queue_draw(self->widget);
+  dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
   return TRUE;
 }
 

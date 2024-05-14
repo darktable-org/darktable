@@ -172,12 +172,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
     layers = 1;    // let's now assume a grayscale
     if(d->bpp == 32 || (d->bpp == 16 && d->pixelformat))
     {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in_void, d) \
-  shared(layers) \
-  schedule(static) collapse(2)
-#endif
+      DT_OMP_FOR(shared(layers) collapse(2))
       for(int y = 1; y < d->global.height - 1; ++y)
       {
         for(int x = 1; x < d->global.width - 1; ++x)
@@ -195,12 +190,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
     }
     else if(d->bpp == 16 && !d->pixelformat)
     {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in_void, d) \
-  shared(layers) \
-  schedule(static) collapse(2)
-#endif
+      DT_OMP_FOR(shared(layers) collapse(2))
       for(int y = 1; y < d->global.height - 1; ++y)
       {
         for(int x = 1; x < d->global.width - 1; ++x)
@@ -217,12 +207,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
     }
     else // 8bpp
     {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in_void, d) \
-  shared(layers) \
-  schedule(static) collapse(2)
-#endif
+      DT_OMP_FOR(shared(layers) collapse(2))
       for(int y = 1; y < d->global.height - 1; ++y)
       {
         for(int x = 1; x < d->global.width - 1; ++x)

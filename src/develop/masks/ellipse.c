@@ -277,11 +277,7 @@ static float *_points_to_transform(const float xx,
   points[9] = y - b * sinf(v - M_PI / 2.0f);
 
 
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-    dt_omp_firstprivate(l, points, x, y, a, b, cosv, sinv)  \
-    schedule(simd:static) if(l > 100) aligned(points:64)
-#endif
+  DT_OMP_FOR_SIMD(if(l > 100) aligned(points:64))
   for(int i = 5; i < l + 5; i++)
   {
     const float alpha = (i - 5) * 2.0 * M_PI / (float)l;
@@ -328,17 +324,15 @@ static int _ellipse_get_points_source(dt_develop_t *dev,
     {
       const float dx = pts[0] - (*points)[0];
       const float dy = pts[1] - (*points)[1];
-      (*points)[0] = pts[0];
-      (*points)[1] = pts[1];
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-    dt_omp_firstprivate(points_count, points, dx, dy)              \
-    schedule(static) if(*points_count > 100) aligned(points:64)
-#endif
+      float *const ptsbuf = DT_IS_ALIGNED(*points);
+      ptsbuf[0] = pts[0];
+      ptsbuf[1] = pts[1];
+
+      DT_OMP_FOR(if(*points_count > 100))
       for(int i = 5; i < *points_count; i++)
       {
-        (*points)[i * 2] += dx;
-        (*points)[i * 2 + 1] += dy;
+        ptsbuf[i * 2] += dx;
+        ptsbuf[i * 2 + 1] += dy;
       }
 
       // we apply the rest of the distortions (those after the module)
@@ -1467,15 +1461,7 @@ static void _fill_mask(const size_t numpoints,
   // rotated, but we can compensate for that by applying a rotation
   // matrix for the same rotation in the opposite direction before
   // projecting the vector.
-#ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(numpoints, bufptr, points, center, alpha, a2, b2, ta2, tb2, cos_alpha, sin_alpha, out_scale) \
-  schedule(static)
-#else
-#pragma omp parallel for shared(points)
-#endif
-#endif
+  DT_OMP_FOR()
   for(size_t i = 0; i < numpoints; i++)
     {
       const float x = points[2 * i] - center[0];
@@ -1823,15 +1809,7 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module,
   float *ell = dt_alloc_align_float(ellpts * 2);
   if(ell == NULL) return 0;
 
-#ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ellpts, center, ta, tb, cosa, sina) \
-  shared(ell)
-#else
-#pragma omp parallel for shared(points)
-#endif
-#endif
+  DT_OMP_FOR()
   for(int n = 0; n < ellpts; n++)
   {
     const float phi = (2.0f * M_PI * n) / ellpts;
@@ -1906,15 +1884,7 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module,
   if(points == NULL) return 0;
 
   // we populate the grid points in module coordinates
-#ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(grid, bbxm, bbym, bbXM, bbYM, bbw, iscale, px, py) \
-  shared(points) schedule(static) collapse(2)
-#else
-#pragma omp parallel for shared(points)
-#endif
-#endif
+  DT_OMP_FOR(collapse(2))
   for(int j = bbym; j <= bbYM; j++)
     for(int i = bbxm; i <= bbXM; i++)
     {
@@ -1953,15 +1923,7 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module,
   // we only need to take the contents of our bounding box into account
   const int endx = MIN(w, bbXM * grid);
   const int endy = MIN(h, bbYM * grid);
-#ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(grid, bbxm, bbym, bbw, endx, endy, w) \
-  shared(buffer, points)
-#else
-#pragma omp parallel for shared(buffer)
-#endif
-#endif
+  DT_OMP_FOR()
   for(int j = bbym * grid; j < endy; j++)
   {
     const int jj = j % grid;

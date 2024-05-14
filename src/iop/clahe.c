@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -95,12 +95,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // PASS1: Get a luminance map of image...
   float *luminance = (float *)malloc(sizeof(float) * ((size_t)roi_out->width * roi_out->height));
 // double lsmax=0.0,lsmin=1.0;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, ivoid, roi_out) \
-  shared(luminance) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(int j = 0; j < roi_out->height; j++)
   {
     float *in = (float *)ivoid + (size_t)j * roi_out->width * ch;
@@ -127,13 +122,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   float *const restrict dest_buf = dt_alloc_perthread_float(roi_out->width, &destbuf_size);
 
 // CLAHE
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, dest_buf, destbuf_size, ivoid, ovoid, rad, roi_in, \
-                      roi_out, slope) \
-  shared(luminance) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(int j = 0; j < roi_out->height; j++)
   {
     int yMin = fmax(0, j - rad);

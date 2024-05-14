@@ -16,9 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef _OPENMP
-  #pragma omp declare simd aligned(in, out)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(in, out))
 static void demosaic_ppg(
         float *const out,
         const float *const in,
@@ -71,12 +69,7 @@ static void demosaic_ppg(
   }
 // for all pixels except those in the 3 pixel border:
 // interpolate green from input into out float array, or copy color.
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(filters, out, roi_in, roi_out) \
-  shared(input) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(int j = 3; j < roi_out->height - 3; j++)
   {
     float *buf = out + (size_t)4 * roi_out->width * j + 4 * 3;
@@ -139,11 +132,7 @@ static void demosaic_ppg(
 
 // for all pixels except the outermost row/column:
 // interpolate colors using out as input into float out array
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(filters, out, roi_out) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(int j = 1; j < roi_out->height - 1; j++)
   {
     float *buf = out + (size_t)4 * roi_out->width * j + 4;

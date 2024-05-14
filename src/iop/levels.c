@@ -412,11 +412,7 @@ void process(dt_iop_module_t *self,
   const float inv_gamma = d->in_inv_gamma;
   const float *lut = d->lut;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, in, out, level_black, level_range, inv_gamma, lut) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(int i = 0; i < 4 * npixels; i += 4)
   {
     const float L_in = in[i] / 100.0f;
@@ -583,7 +579,7 @@ void gui_update(dt_iop_module_t *self)
   g->hash = 0;
   dt_iop_gui_leave_critical_section(self);
 
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
 void init(dt_iop_module_t *module)
@@ -945,7 +941,7 @@ static gboolean dt_iop_levels_button_press(GtkWidget *widget, GdkEventButton *ev
       // as drag_start_percentage is only updated when the mouse is moved.
       c->drag_start_percentage = 0.5;
       dt_dev_add_history_item(darktable.develop, self, TRUE);
-      gtk_widget_queue_draw(self->widget);
+      gtk_widget_queue_draw(GTK_WIDGET(c->area));
     }
     else
     {

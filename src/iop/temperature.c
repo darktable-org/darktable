@@ -502,9 +502,7 @@ static void _mul2temp(dt_iop_module_t *self,
   _XYZ_to_temperature(_mul2xyz(self, p), TempK, tint);
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(inp,outp)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(inp,outp))
 static inline void scaled_copy_4wide(float *const outp,
                                      const float *const inp,
                                      const float *const coeffs)
@@ -550,11 +548,7 @@ void process(struct dt_iop_module_t *self,
 
   if(filters == 9u)
   { // xtrans float mosaiced
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(d_coeffs, in, out, roi_out, xtrans) \
-    schedule(static)
-#endif
+    DT_OMP_FOR()
     for(int j = 0; j < roi_out->height; j++)
     {
       const float DT_ALIGNED_PIXEL coeffs[3][4] =
@@ -593,11 +587,7 @@ void process(struct dt_iop_module_t *self,
   else if(filters)
   { // bayer float mosaiced
     const int width = roi_out->width;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(d_coeffs, filters, in, out, roi_out, width)       \
-    schedule(static)
-#endif
+    DT_OMP_FOR()
     for(int j = 0; j < roi_out->height; j++)
     {
       int i = 0;
@@ -637,12 +627,7 @@ void process(struct dt_iop_module_t *self,
   { // non-mosaiced
     const size_t npixels = roi_out->width * (size_t)roi_out->height;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(in, out, npixels)     \
-    dt_omp_sharedconst(d_coeffs)              \
-    schedule(static)
-#endif
+    DT_OMP_FOR()
     for(size_t k = 0; k < 4*npixels; k += 4)
     {
       for_each_channel(c,aligned(in,out))

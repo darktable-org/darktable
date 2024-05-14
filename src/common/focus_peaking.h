@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2023 darktable developers.
+    Copyright (C) 2019-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,26 +27,20 @@
  * header (provided the rest of the code complies).
  **/
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline float uint8_to_float(const uint8_t i)
 {
   return (float)i / 255.0f;
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline uint8_t float_to_uint8(const float i)
 {
   return (uint8_t)(i * 255.0f);
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(image, index:64) uniform(image)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(image, index:64) uniform(image))
 static inline float laplacian(const float *const image, const size_t index[8])
 {
   // Compute the magnitude of the gradient over the principal directions,
@@ -62,9 +56,7 @@ static inline float laplacian(const float *const image, const size_t index[8])
   return (l1 + l2) / 2.0f;
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline void get_indices(const size_t i, const size_t j, const size_t width, const size_t height, const size_t delta, size_t index[8])
 {
   const size_t upper_line = (i - delta) * width;
@@ -91,11 +83,7 @@ static inline void dt_focuspeaking(cairo_t *cr, const int buf_width, const int b
 
   const size_t npixels = (size_t)buf_height * buf_width;
   // Create a luma buffer as the euclidian norm of RGB channels
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none)             \
-  dt_omp_firstprivate(image, luma, npixels)             \
-  schedule(simd:static) aligned(image, luma:64)
-#endif
+  DT_OMP_FOR_SIMD(aligned(image, luma:64))
   for(size_t index = 0; index < npixels; index++)
     {
       const size_t index_RGB = index * 4;
@@ -113,11 +101,7 @@ static inline void dt_focuspeaking(cairo_t *cr, const int buf_width, const int b
 
   // Compute the gradients magnitudes
   float *const restrict luma_ds =  dt_alloc_align_float((size_t)buf_width * buf_height);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-dt_omp_firstprivate(luma, luma_ds, buf_height, buf_width) \
-schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR(collapse(2))
   for(size_t i = 0; i < buf_height; ++i)
     for(size_t j = 0; j < buf_width; ++j)
     {
@@ -149,11 +133,7 @@ schedule(static) collapse(2)
   // Compute the gradient mean over the picture
   float TV_sum = 0.0f;
 
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-dt_omp_firstprivate(luma_ds, buf_height, buf_width) \
-schedule(static) collapse(2) aligned(luma_ds:64) reduction(+:TV_sum)
-#endif
+  DT_OMP_FOR_SIMD(collapse(2) aligned(luma_ds:64) reduction(+:TV_sum))
   for(size_t i = 2; i < buf_height - 2; ++i)
     for(size_t j = 2; j < buf_width - 2; ++j)
       TV_sum += luma_ds[i * buf_width + j];
@@ -164,11 +144,7 @@ schedule(static) collapse(2) aligned(luma_ds:64) reduction(+:TV_sum)
   // (similar to the standard deviation if we had a gaussian distribution)
   float sigma = 0.0f;
 
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-dt_omp_firstprivate(focus_peaking, luma_ds, buf_height, buf_width, TV_sum) \
-schedule(static) collapse(2) aligned(focus_peaking, luma_ds:64) reduction(+:sigma)
-#endif
+  DT_OMP_FOR_SIMD(collapse(2) aligned(focus_peaking, luma_ds:64) reduction(+:sigma))
   for(size_t i = 2; i < buf_height - 2; ++i)
     for(size_t j = 2; j < buf_width - 2; ++j)
        sigma += fabsf(luma_ds[i * buf_width + j] - TV_sum);
@@ -184,11 +160,7 @@ schedule(static) collapse(2) aligned(focus_peaking, luma_ds:64) reduction(+:sigm
   fast_surface_blur(luma_ds, buf_width, buf_height, 12, 0.00001f, 4, DT_GF_BLENDING_LINEAR, 1, 0.0f, exp2f(-8.0f), 1.0f);
 
   // Prepare the focus-peaking image overlay
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(focus_peaking, luma_ds, buf_height, buf_width, six_sigma, four_sigma, two_sigma) \
-  schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR(collapse(2))
   for(size_t i = 0; i < buf_height; ++i)
     for(size_t j = 0; j < buf_width; ++j)
     {

@@ -383,11 +383,7 @@ static void process_fastpath_apply_tonecurves(struct dt_iop_module_t *self,
     // do we have any lut to apply, or is this a linear profile?
     if((d->lut[0][0] >= 0.0f) && (d->lut[1][0] >= 0.0f) && (d->lut[2][0] >= 0.0f))
     { // apply profile
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-      dt_omp_firstprivate(d, out, npixels) \
-      schedule(static)
-#endif
+      DT_OMP_FOR()
       for(size_t k = 0; k < 4 * npixels; k += 4)
       {
         for(int c = 0; c < 3; c++)
@@ -399,11 +395,7 @@ static void process_fastpath_apply_tonecurves(struct dt_iop_module_t *self,
     }
     else if((d->lut[0][0] >= 0.0f) || (d->lut[1][0] >= 0.0f) || (d->lut[2][0] >= 0.0f))
     { // apply profile
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-      dt_omp_firstprivate(d, out, npixels) \
-      schedule(static)
-#endif
+      DT_OMP_FOR()
       for(size_t k = 0; k < 4 * npixels; k += 4)
       {
         for(int c = 0; c < 3; c++)
@@ -430,9 +422,7 @@ static void _transform_cmatrix_linear(const dt_iop_colorout_data_t *const d,
   copy_pixel(cmatrix_0,cmatrix[0]);
   copy_pixel(cmatrix_1,cmatrix[1]);
   copy_pixel(cmatrix_2,cmatrix[2]);
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, out, npixels, cmatrix_0, cmatrix_1, cmatrix_2, d)       \
-  schedule(simd:static)
+  DT_OMP_FOR()
   for(size_t k = 0; k < npixels; k++)
   {
     // oddly, calling dt_Lab_to_linearRGB instead of doing the
@@ -462,11 +452,7 @@ static void _transform_cmatrix_tonecurve(const dt_iop_colorout_data_t *const d,
   copy_pixel(cmatrix_2,cmatrix[2]);
   const float *const lut = &d->lut[0][0];
   const float *coeffs = &d->unbounded_coeffs[0][0];
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, out, npixels, cmatrix_0, cmatrix_1, cmatrix_2, lut, coeffs) \
-  schedule(simd:static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < npixels; k++)
   {
     dt_aligned_pixel_t rgb; // using an aligned temporary variable lets the compiler optimize away interm. writes
@@ -519,11 +505,7 @@ static void _transform_lcms(const dt_iop_colorout_data_t *const d,
   // rounded up to a multiple of the CPU's cache line size
   const size_t nthreads = dt_get_num_threads();
   const size_t chunksize = dt_cacheline_chunks(npixels, nthreads);
-#ifdef _OPENMP
-#pragma omp parallel for default(none)                                  \
-    dt_omp_firstprivate(in, out, npixels, chunksize, d, gamutcheck) \
-    schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t chunkstart = 0; chunkstart < npixels; chunkstart += chunksize)
   {
     size_t count = MIN(chunkstart + chunksize, npixels) - chunkstart;

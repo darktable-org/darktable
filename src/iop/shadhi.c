@@ -339,9 +339,7 @@ static inline float sign(float x)
   return (x < 0 ? -1.0f : 1.0f);
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(ivoid, ovoid : 64)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(ivoid, ovoid : 64))
 void process(struct dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
@@ -416,13 +414,7 @@ void process(struct dt_iop_module_t *self,
 #define doublemax (2.0f * lmax)
   const size_t npixels = (size_t)width * height;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, in, out, compress, flags, highlights, \
-                      highlights_ccorrect, low_approximation, shadows, \
-                      shadows_ccorrect, unbound_mask, whitepoint) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t j = 0; j < 4 * npixels; j += 4)
   {
     dt_aligned_pixel_t ta, tb;

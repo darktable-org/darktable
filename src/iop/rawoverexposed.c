@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2016-2023 darktable developers.
+   Copyright (C) 2016-2024 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -159,15 +159,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   size_t coordbufsize;
   float *const restrict coordbuf = dt_alloc_perthread_float(2*roi_out->width, &coordbufsize);
 
-#ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-  dt_omp_firstprivate(ch, color, coordbufsize, d, \
-                      dt_iop_rawoverexposed_colors, filters, iop_order, mode, \
-                      out, raw, roi_in, roi_out, xtrans) \
-  dt_omp_sharedconst(coordbuf) \
-  shared(self, buf) \
-  schedule(static)
-#endif
+  DT_OMP_FOR(firstprivate(dt_iop_rawoverexposed_colors))
   for(int j = 0; j < roi_out->height; j++)
   {
     float *const restrict bufptr = dt_get_perthread(coordbuf, coordbufsize);
@@ -289,12 +281,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   coordbuf = dt_alloc_aligned(coordbufsize);
   if(coordbuf == NULL) goto error;
 
-#ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-  dt_omp_firstprivate(height, roi_in, roi_out, width) \
-  shared(self, coordbuf, buf) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(int j = 0; j < height; j++)
   {
     float *bufptr = ((float *)coordbuf) + (size_t)2 * j * width;

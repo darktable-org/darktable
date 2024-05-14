@@ -49,7 +49,7 @@ typedef struct dt_iop_enlargecanvas_params_t
   float percent_right;  // $MIN: 0 $MAX: 100.0 $DEFAULT: 0 $DESCRIPTION: "percent right"
   float percent_top;    // $MIN: 0 $MAX: 100.0 $DEFAULT: 0 $DESCRIPTION: "percent top"
   float percent_bottom; // $MIN: 0 $MAX: 100.0 $DEFAULT: 0 $DESCRIPTION: "percent bottom"
-  dt_iop_canvas_color_t color;
+  dt_iop_canvas_color_t color;  // $DESCRIPTION: "color"
 } dt_iop_enlargecanvas_params_t;
 
 typedef struct dt_iop_enlargecanvas_data_t
@@ -219,15 +219,13 @@ int distort_transform(dt_iop_module_t *self,
   if(border_size_l > 0 || border_size_t > 0)
   {
     // apply the coordinate adjustment to each provided point
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(points, points_count, border_size_l, border_size_t)  \
-  schedule(static) if(points_count > 100) aligned(points:64)
-#endif
+    float *const pts = DT_IS_ALIGNED(points);
+
+    DT_OMP_FOR(if(points_count > 100))
     for(size_t i = 0; i < points_count * 2; i += 2)
     {
-      points[i] += border_size_l;
-      points[i + 1] += border_size_t;
+      pts[i] += border_size_l;
+      pts[i + 1] += border_size_t;
     }
   }
 
@@ -257,15 +255,13 @@ int distort_backtransform(dt_iop_module_t *self,
 
   if (border_size_l > 0 || border_size_t > 0)
   {
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(points, points_count, border_size_l, border_size_t)  \
-  schedule(static) if(points_count > 100) aligned(points:64)
-#endif
+    float *const pts = DT_IS_ALIGNED(points);
+
+    DT_OMP_FOR(if(points_count > 100))
     for(size_t i = 0; i < points_count * 2; i += 2)
     {
-      points[i] -= border_size_l;
-      points[i + 1] -= border_size_t;
+      pts[i] -= border_size_l;
+      pts[i + 1] -= border_size_t;
     }
   }
 
@@ -323,11 +319,7 @@ void distort_mask(struct dt_iop_module_t *self,
   dt_iop_image_fill(out, 0.0f, roi_out->width, roi_out->height, 1);
 
   // blit image inside border and fill the output with previous processed out
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(roi_in, roi_out, border_in_x, border_in_y, in, out)   \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(int j = 0; j < roi_in->height; j++)
   {
     float *outb = out + (size_t)(j + border_in_y) * roi_out->width + border_in_x;
@@ -381,7 +373,7 @@ void process(struct dt_iop_module_t *self,
       case DT_IOP_CANVAS_COLOR_BLUE:
         bcolor[0] = 0.f;
         bcolor[1] = 0.f;
-        bcolor[2] = 2.f;
+        bcolor[2] = 1.f;
         break;
       case DT_IOP_CANVAS_COLOR_COUNT:
         // should never happen
@@ -423,24 +415,6 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->color, p->color);
 }
 
-static void _color_changed(GtkWidget *combo, dt_iop_module_t *self)
-{
-  dt_iop_enlargecanvas_gui_data_t *g = (dt_iop_enlargecanvas_gui_data_t *)self->gui_data;
-  dt_iop_enlargecanvas_params_t *p = (dt_iop_enlargecanvas_params_t *)self->params;
-
-  const int which = dt_bauhaus_combobox_get(combo);
-
-  if(which < DT_IOP_CANVAS_COLOR_COUNT)
-  {
-    p->color = which;
-    ++darktable.gui->reset;
-    dt_bauhaus_slider_set(g->color, p->color);
-    --darktable.gui->reset;
-  }
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_enlargecanvas_gui_data_t *g = IOP_GUI_ALLOC(enlargecanvas);
@@ -459,15 +433,8 @@ void gui_init(dt_iop_module_t *self)
   g->percent_bottom = dt_bauhaus_slider_from_params(self, "percent_bottom");
   dt_bauhaus_slider_set_format(g->percent_bottom, "%");
 
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(g->color, self, NULL, N_("color"),
-                               _("select the color of the enlarged canvas"),
-                               0, _color_changed, self,
-                               N_("green"),
-                               N_("red"),
-                               N_("blue"),
-                               N_("black"),
-                               N_("white"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->color, TRUE, TRUE, 0);
+  g->color = dt_bauhaus_combobox_from_params(self, "color");
+  gtk_widget_set_tooltip_text(g->color, _("select the color of the enlarged canvas"));
 }
 
 void gui_cleanup(dt_iop_module_t *self)

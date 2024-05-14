@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2019-2023 darktable developers.
+   Copyright (C) 2019-2024 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -840,9 +840,7 @@ int legacy_params(dt_iop_module_t *self,
   return 1;
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(pixel:16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(pixel:16))
 static inline float pixel_rgb_norm_power(const dt_aligned_pixel_t pixel)
 {
   // weird norm sort of perceptual. This is black magic really, but it looks good.
@@ -864,9 +862,7 @@ static inline float pixel_rgb_norm_power(const dt_aligned_pixel_t pixel)
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(pixel : 16) uniform(variant, work_profile)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(pixel : 16) uniform(variant, work_profile))
 static inline float get_pixel_norm(const dt_aligned_pixel_t pixel, const dt_iop_filmicrgb_methods_type_t variant,
                                    const dt_iop_order_iccprofile_info_t *const work_profile)
 {
@@ -906,9 +902,7 @@ static inline float get_pixel_norm(const dt_aligned_pixel_t pixel, const dt_iop_
   }
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd uniform(grey, black, dynamic_range)
-#endif
+DT_OMP_DECLARE_SIMD(uniform(grey, black, dynamic_range))
 static inline float log_tonemapping_v1(const float x, const float grey, const float black,
                                        const float dynamic_range)
 {
@@ -925,9 +919,7 @@ static inline float log_tonemapping_v2_1ch(const float x,
   return clamp_simd((log2f(x / grey) - black) / dynamic_range);
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd uniform(grey, black, dynamic_range)
-#endif
+DT_OMP_DECLARE_SIMD(uniform(grey, black, dynamic_range))
 static inline void log_tonemapping_v2(dt_aligned_pixel_t mapped,
                                       const dt_aligned_pixel_t x,
                                       const float grey,
@@ -949,9 +941,7 @@ static inline void log_tonemapping_v2(dt_aligned_pixel_t mapped,
   dt_vector_clip(mapped);
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd uniform(grey, black, dynamic_range)
-#endif
+DT_OMP_DECLARE_SIMD(uniform(grey, black, dynamic_range))
 static inline float exp_tonemapping_v2(const float x, const float grey, const float black,
                                        const float dynamic_range)
 {
@@ -960,9 +950,7 @@ static inline float exp_tonemapping_v2(const float x, const float grey, const fl
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(M1, M2, M3, M4 : 16) uniform(M1, M2, M3, M4, M5, latitude_min, latitude_max)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(M1, M2, M3, M4 : 16) uniform(M1, M2, M3, M4, M5, latitude_min, latitude_max))
 static inline float filmic_spline(const float x, const dt_aligned_pixel_t M1, const dt_aligned_pixel_t M2,
                                   const dt_aligned_pixel_t M3, const dt_aligned_pixel_t M4,
                                   const dt_aligned_pixel_t M5, const float latitude_min,
@@ -1027,9 +1015,7 @@ static inline float filmic_spline(const float x, const dt_aligned_pixel_t M1, co
   return result;
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd uniform(sigma_toe, sigma_shoulder)
-#endif
+DT_OMP_DECLARE_SIMD(uniform(sigma_toe, sigma_shoulder))
 static inline float filmic_desaturate_v1(const float x, const float sigma_toe, const float sigma_shoulder,
                                          const float saturation)
 {
@@ -1042,9 +1028,7 @@ static inline float filmic_desaturate_v1(const float x, const float sigma_toe, c
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd uniform(sigma_toe, sigma_shoulder)
-#endif
+DT_OMP_DECLARE_SIMD(uniform(sigma_toe, sigma_shoulder))
 static inline float filmic_desaturate_v2(const float x, const float sigma_toe, const float sigma_shoulder,
                                          const float saturation)
 {
@@ -1058,9 +1042,7 @@ static inline float filmic_desaturate_v2(const float x, const float sigma_toe, c
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline float linear_saturation(const float x, const float luminance, const float saturation)
 {
   return luminance + saturation * (x - luminance);
@@ -1070,9 +1052,7 @@ static inline float linear_saturation(const float x, const float luminance, cons
 #define MAX_NUM_SCALES 10
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(in, mask : 64) uniform(feathering, normalize, width, height)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(in, mask : 64) uniform(feathering, normalize, width, height))
 static inline gint mask_clipped_pixels(const float *const restrict in, float *const restrict mask,
                                        const float normalize, const float feathering, const size_t width,
                                        const size_t height)
@@ -1085,11 +1065,7 @@ static inline gint mask_clipped_pixels(const float *const restrict in, float *co
   int clipped = 0;
   const unsigned int oldMode = dt_mm_enable_flush_zero();
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, mask, normalize, feathering, width, height) \
-  schedule(static) reduction(+:clipped)
-#endif
+  DT_OMP_FOR(reduction(+:clipped))
   for(size_t k = 0; k < 4 * height * width; k += 4)
   {
     const float pix_max = sqrtf(sqf(in[k]) + sqf(in[k + 1]) + sqf(in[k + 2]));
@@ -1110,9 +1086,7 @@ static inline gint mask_clipped_pixels(const float *const restrict in, float *co
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(in, mask, inpainted:64) uniform(width, height, noise_level, noise_distribution, threshold)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(in, mask, inpainted:64) uniform(width, height, noise_level, noise_distribution, threshold))
 inline static void inpaint_noise(const float *const in, const float *const mask,
                                  float *const inpainted, const float noise_level, const float threshold,
                                  const dt_noise_distribution_t noise_distribution,
@@ -1122,11 +1096,7 @@ inline static void inpaint_noise(const float *const in, const float *const mask,
   // this creates "particules" in highlights, that will help the implicit partial derivative equation
   // solver used in wavelets reconstruction to generate texture
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, mask, inpainted, width, height, noise_level, noise_distribution, threshold) \
-  schedule(simd:static) collapse(2)
-#endif
+  DT_OMP_FOR(collapse(2))
   for(size_t i = 0; i < height; i++)
     for(size_t j = 0; j < width; j++)
     {
@@ -1169,11 +1139,7 @@ inline static void wavelets_reconstruct_RGB(const float *const restrict HF, cons
                                             const float gamma_comp, const float beta, const float beta_comp,
                                             const float delta, const size_t s, const size_t scales)
 {
-#ifdef _OPENMP
-#pragma omp parallel for default(none)                                                                       \
-    dt_omp_firstprivate(width, height, HF, LF, texture, mask, reconstructed, gamma, gamma_comp, beta,         \
-                        beta_comp, delta, s, scales) schedule(simd : static)
-#endif
+  DT_OMP_FOR_SIMD()
   for(size_t k = 0; k < 4 * height * width; k += 4)
   {
     const float alpha = mask[k / 4];
@@ -1246,12 +1212,7 @@ static inline void wavelets_reconstruct_ratios(const float *const restrict HF,
  * Note : ratios close to 1 mean higher spectral purity (more white). Ratios close to 0 mean lower spectral purity
  * (more colorful)
  */
-#ifdef _OPENMP
-#pragma omp parallel for default(none)                                  \
-  dt_omp_firstprivate(width, height, HF, LF, texture, mask, reconstructed, \
-                      gamma, gamma_comp, beta, beta_comp, delta, s, scales) \
-  schedule(simd:static)
-#endif
+  DT_OMP_FOR_SIMD()
   for(size_t k = 0; k < 4 * height * width; k += 4)
   {
     const float alpha = mask[k / 4];
@@ -1302,10 +1263,7 @@ static inline void init_reconstruct(const float *const restrict in,
 {
 // init the reconstructed buffer with non-clipped and partially clipped pixels
 // Note : it's a simple multiplied alpha blending where mask = alpha weight
-#ifdef _OPENMP
-#pragma omp parallel for default(none) dt_omp_firstprivate(in, mask, reconstructed, width, height) \
-  schedule(static)
-#endif
+  DT_OMP_FOR() \
   for(size_t k = 0; k < height * width; k++)
   {
     dt_aligned_pixel_t re;
@@ -1419,12 +1377,7 @@ static inline gboolean reconstruct_highlights(const float *const restrict in,
 
     // Compute wavelets high-frequency scales and save the minimum of texture over the RGB channels in HF
     const size_t pts = roi_out->height * roi_out->width;
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(pts, HF, LF, detail)   \
-  schedule(simd:static) \
-  aligned(HF, LF, detail : 64)
-#endif
+    DT_OMP_FOR_SIMD(aligned(HF, LF, detail : 64))
     for(size_t k = 0; k < pts; k++)
     {
       for_each_channel(c)
@@ -1464,11 +1417,7 @@ static inline void filmic_split_v1(const float *const restrict in,
   const dt_aligned_pixel_t output_power
     = { data->output_power, data->output_power, data->output_power, data->output_power };
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(width, height, data, in, out, work_profile, spline, output_power) \
-  schedule(simd : static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < height * width * 4; k += 4)
   {
     const float *const restrict pix_in = in + k;
@@ -1513,11 +1462,8 @@ static inline void filmic_split_v2_v3(const float *const restrict in,
   const dt_aligned_pixel_t output_power
     = { data->output_power, data->output_power, data->output_power, data->output_power };
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(width, height, data, in, out, work_profile, spline, output_power) \
-  schedule(simd : static)
-#endif
+  // DO NOT REPLACE THE FOLLOWING BY "DT_OMP_FOR_SIMD" - doing so causes a small but measurable change in results
+  DT_OMP_FOR()
   for(size_t k = 0; k < height * width * 4; k += 4)
   {
     const float *const restrict pix_in = in + k;
@@ -1559,10 +1505,7 @@ static inline void filmic_chroma_v1(const float *const restrict in, float *const
                                     const dt_iop_filmic_rgb_spline_t spline, const int variant, const size_t width,
                                     const size_t height)
 {
-#ifdef _OPENMP
-#pragma omp parallel for default(none)                                                                       \
-    dt_omp_firstprivate(width, height, data, in, out, work_profile, variant, spline) schedule(simd : static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < height * width * 4; k += 4)
   {
     const float *const restrict pix_in = in + k;
@@ -1622,11 +1565,7 @@ static inline void filmic_chroma_v2_v3(const float *const restrict in,
                                        const size_t height,
                                        const dt_iop_filmicrgb_colorscience_type_t colorscience_version)
 {
-#ifdef _OPENMP
-#pragma omp parallel for default(none)                                                                       \
-    dt_omp_firstprivate(width, height, data, in, out, work_profile, variant, spline, colorscience_version)    \
-    schedule(simd :static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < 4 * height * width; k += 4)
   {
     const float *const restrict pix_in = in + k;
@@ -1768,12 +1707,10 @@ static inline void gamut_check_RGB(const dt_colormatrix_t matrix_in_trans,
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd \
-  uniform(input_matrix_trans, output_matrix, export_input_matrix_trans, export_output_matrix, use_output_profile) \
-  aligned(Ych_final, Ych_original, pix_out:16) \
-  aligned(input_matrix_trans, output_matrix, export_input_matrix_trans, export_output_matrix:64)
-#endif
+DT_OMP_DECLARE_SIMD(
+  uniform(input_matrix_trans, output_matrix, export_input_matrix_trans, export_output_matrix, use_output_profile)
+  aligned(Ych_final, Ych_original, pix_out:16)
+  aligned(input_matrix_trans, output_matrix, export_input_matrix_trans, export_output_matrix:64))
 static inline void gamut_mapping(dt_aligned_pixel_t Ych_final,
                                  dt_aligned_pixel_t Ych_original,
                                  dt_aligned_pixel_t pix_out,
@@ -1852,11 +1789,9 @@ static int filmic_v4_prepare_matrices(dt_colormatrix_t input_matrix_trans,
   return use_output_profile;
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd \
-  uniform(work_profile, data, spline, norm_min, norm_max, display_black, display_white, type) \
-  aligned(pix_in, pix_out:16)
-#endif
+DT_OMP_DECLARE_SIMD(
+  uniform(work_profile, data, spline, norm_min, norm_max, display_black, display_white, type)
+  aligned(pix_in, pix_out:16))
 static inline void norm_tone_mapping_v4(const dt_aligned_pixel_t pix_in,
                                         dt_aligned_pixel_t pix_out,
                                         const dt_iop_filmicrgb_methods_type_t type,
@@ -1895,10 +1830,7 @@ static inline void norm_tone_mapping_v4(const dt_aligned_pixel_t pix_in,
     pix_out[c] = ratios[c] * norm;
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd uniform(data, spline, display_black, display_white) \
-  aligned(pix_in, pix_out:16)
-#endif
+DT_OMP_DECLARE_SIMD(uniform(data, spline, display_black, display_white) aligned(pix_in, pix_out:16))
 static inline void RGB_tone_mapping_v4(const dt_aligned_pixel_t pix_in,
                                        dt_aligned_pixel_t pix_out,
                                        const dt_iop_filmicrgb_data_t *const data,
@@ -1951,14 +1883,7 @@ static inline void filmic_chroma_v4(const float *const restrict in,
   const float norm_min = exp_tonemapping_v2(0.f, data->grey_source, data->black_source, data->dynamic_range);
   const float norm_max = exp_tonemapping_v2(1.f, data->grey_source, data->black_source, data->dynamic_range);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none)                                                                       \
-    dt_omp_firstprivate(width, height, data, in, out, work_profile, input_matrix_trans, output_matrix, \
-                        output_matrix_trans, variant, spline, display_white, display_black, \
-                        export_input_matrix_trans, export_output_matrix, export_output_matrix_trans, \
-                        use_output_profile, norm_min, norm_max)         \
-    schedule(simd :static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < 4 * height * width; k += 4)
   {
     const float *const restrict pix_in = in + k;
@@ -2009,14 +1934,7 @@ static inline void filmic_split_v4(const float *const restrict in,
                                  export_input_matrix_trans, export_output_matrix, export_output_matrix_trans,
                                  work_profile, export_profile);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none)                                                                       \
-    dt_omp_firstprivate(width, height, data, in, out, work_profile, input_matrix_trans, output_matrix, \
-                        output_matrix_trans, variant, spline, display_white, display_black, \
-                        export_input_matrix_trans, export_output_matrix, export_output_matrix_trans, \
-                        use_output_profile)                             \
-    schedule(simd :static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < 4 * height * width; k += 4)
   {
     const float *const restrict pix_in = in + k;
@@ -2068,14 +1986,7 @@ static inline void filmic_v5(const float *const restrict in, float *const restri
   const float norm_min = exp_tonemapping_v2(0.f, data->grey_source, data->black_source, data->dynamic_range);
   const float norm_max = exp_tonemapping_v2(1.f, data->grey_source, data->black_source, data->dynamic_range);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none)                                                                       \
-    dt_omp_firstprivate(width, height, data, in, out, work_profile, input_matrix_trans, output_matrix, \
-                        output_matrix_trans, spline, display_white, display_black, norm_min, norm_max, \
-                        export_input_matrix_trans, export_output_matrix, export_output_matrix_trans, \
-                        use_output_profile)                             \
-    schedule(simd :static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < height * width * 4; k += 4)
   {
     const float *const restrict pix_in = in + k;
@@ -2116,11 +2027,7 @@ static inline void display_mask(const float *const restrict mask,
                                 const size_t width,
                                 const size_t height)
 {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(width, height, out, mask) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < height * width; k++)
   {
     dt_aligned_pixel_t pix;
@@ -2140,10 +2047,7 @@ static inline void compute_ratios(const float *const restrict in,
                                   const size_t width,
                                   const size_t height)
 {
-#ifdef _OPENMP
-#pragma omp parallel for default(none)                                  \
-  dt_omp_firstprivate(width, height, norms, ratios, in, work_profile, variant) schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < height * width * 4; k += 4)
   {
     const float norm = MAX(get_pixel_norm(in + k, variant, work_profile), NORM_MIN);
@@ -2162,11 +2066,7 @@ static inline void restore_ratios(float *const restrict ratios,
                                   const size_t width,
                                   const size_t height)
 {
-  #ifdef _OPENMP
-  #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(width, height, norms, ratios) \
-    schedule(simd:static)
-  #endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < height * width; k++)
   {
     for_each_channel(c,aligned(norms,ratios))
@@ -2717,7 +2617,7 @@ static void apply_auto_grey(dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->output_power, p->output_power);
   --darktable.gui->reset;
 
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2744,7 +2644,7 @@ static void apply_auto_black(dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->output_power, p->output_power);
   --darktable.gui->reset;
 
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2772,7 +2672,7 @@ static void apply_auto_white_point_source(dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->output_power, p->output_power);
   --darktable.gui->reset;
 
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2812,7 +2712,7 @@ static void apply_autotune(dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->output_power, p->output_power);
   --darktable.gui->reset;
 
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 

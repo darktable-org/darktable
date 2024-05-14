@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2017-2023 darktable developers.
+    Copyright (C) 2017-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -54,11 +54,7 @@ static void _heal_sub(const float *const top_buffer, const float *const bottom_b
   // how many red or black pixels per line?  For consistency, we need the larger of the two, so round up
   const size_t res_stride = 4 * ((width + 1) / 2);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(top_buffer, bottom_buffer, red_buffer, black_buffer, height, width, res_stride) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t row = 0; row < height; row++)
   {
     const int parity = row & 1;
@@ -104,12 +100,7 @@ static void _heal_add(const float *const restrict red_buffer, const float *const
   // add one to ensure a padding pixel on the right
   const size_t res_stride = 4 * ((width + 1) / 2);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(red_buffer, black_buffer, second_buffer, height, width, res_stride) \
-  dt_omp_sharedconst(result_buffer) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t row = 0; row < height; row++)
   {
     const int parity = row & 1;
@@ -176,12 +167,7 @@ static float _heal_laplace_iteration(float *const restrict active_pixels,
   // left and right neighbors depend on which color the row starts with: if red, they are b(i)(j-1) and b(i)(j);
   // if black, they are b(i)(j) and b(i)(j+1).  All of the above holds when colors are swapped.
 #if !(defined(__apple_build_version__) && __apple_build_version__ < 11030000) //makes Xcode 11.3.1 compiler crash
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(active_pixels, neighbor_pixels, runs, num_runs, width, height, start_parity, w) \
-  schedule(static) \
-  reduction(vsum : err)
-#endif /* _OPENMP */
+    DT_OMP_FOR(reduction(vsum : err))
 #endif
     for(size_t i = 0; i < num_runs; i++)
     {
@@ -340,14 +326,10 @@ static void _heal_laplace_loop(float *const restrict red_pixels, float *const re
   size_t nmask_red = 0;
   size_t nmask_black = 0;
 
-#ifdef _OPENMP
-#pragma omp parallel sections
-#endif
+  DT_OMP_PRAGMA(parallel sections)
   {
     collect_runs(1, mask, width, height, subwidth, red_runs, &num_red, &nmask_red);
-    #ifdef _OPENMP
-    #pragma omp section
-    #endif
+    DT_OMP_PRAGMA(section)
     collect_runs(0, mask, width, height, subwidth, black_runs, &num_black, &nmask_black);
   }
   const size_t nmask = nmask_red + nmask_black;

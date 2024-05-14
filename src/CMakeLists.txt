@@ -446,8 +446,8 @@ if(PNG_VERSION_STRING VERSION_LESS 1.5)
   message(FATAL_ERROR "libpng version 1.5 or newer is required")
 endif()
 
-# Require exiv2 >= 0.25 to make sure everything we need is available
-find_package(Exiv2 0.25 REQUIRED)
+# Require exiv2 >= 0.27.2 to make sure everything we need is available
+find_package(Exiv2 0.27.2 REQUIRED)
 include_directories(SYSTEM ${Exiv2_INCLUDE_DIRS})
 list(APPEND LIBS ${Exiv2_LIBRARIES})
 add_definitions(${Exiv2_DEFINITIONS})
@@ -482,13 +482,12 @@ if(USE_PORTMIDI)
 endif(USE_PORTMIDI)
 
 if(USE_OPENJPEG)
-  find_package(OpenJPEG)
+  find_package(OpenJPEG CONFIG)
   if(OpenJPEG_FOUND)
     add_definitions("-DHAVE_OPENJPEG")
     list(APPEND SOURCES "imageio/imageio_j2k.c")
-
-    include_directories(SYSTEM ${OpenJPEG_INCLUDE_DIRS})
-    list(APPEND LIBS ${OpenJPEG_LIBRARIES})
+    include_directories(SYSTEM ${OPENJPEG_INCLUDE_DIRS})
+    list(APPEND LIBS ${OPENJPEG_LIBRARIES})
     set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} j2c j2k jp2 jpc CACHE INTERNAL "")
   endif(OpenJPEG_FOUND)
 endif(USE_OPENJPEG)

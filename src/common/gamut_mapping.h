@@ -116,9 +116,7 @@ static inline float Ych_max_chroma_without_negatives(const dt_colormatrix_t matr
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd uniform(matrix_trans) aligned(in, out:16) aligned(matrix_trans:64)
-#endif
+DT_OMP_DECLARE_SIMD(uniform(matrix_trans) aligned(in, out:16) aligned(matrix_trans:64))
 static inline void RGB_to_Ych(const dt_aligned_pixel_t in,
                               const dt_colormatrix_t matrix_trans,
                               dt_aligned_pixel_t out)
@@ -137,9 +135,7 @@ static inline void RGB_to_Ych(const dt_aligned_pixel_t in,
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd uniform(matrix_trans) aligned(in, out:16) aligned(matrix_trans:64)
-#endif
+DT_OMP_DECLARE_SIMD(uniform(matrix_trans) aligned(in, out:16) aligned(matrix_trans:64))
 static inline void Ych_to_RGB(const dt_aligned_pixel_t in,
                               const dt_colormatrix_t matrix_trans,
                               dt_aligned_pixel_t out)

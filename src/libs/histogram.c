@@ -302,11 +302,7 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d,
   uint32_t *const restrict partial_binned =
     dt_calloc_perthread(3U * num_bins * num_tones, sizeof(uint32_t), &bin_pad);
 
-#if defined(_OPENMP)
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(input, partial_binned, roi, num_tones, num_bins, bin_pad, samples_per_bin, sample_height, sample_width, orient) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t y=0; y<sample_height; y++)
   {
     const float *const restrict px = DT_IS_ALIGNED((const float *const restrict)input +
@@ -354,11 +350,7 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d,
                                      : sample_width) * samples_per_bin);
   size_t nthreads = dt_get_num_threads();
 
-#if defined(_OPENMP)
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(d, partial_binned, bin_pad, wf_img_stride, num_bins, num_tones, orient, lut, lutmax, scale, nthreads) \
-  schedule(static) collapse(3)
-#endif
+  DT_OMP_FOR(collapse(3))
   for(size_t ch = 0; ch < 3; ch++)
     for(size_t bin = 0; bin < num_bins; bin++)
       for(size_t tone = 0; tone < num_tones; tone++)
@@ -797,11 +789,8 @@ static void _lib_histogram_process_vectorscope
   // brute-force scan that LUT, or start from position of last pixel
   // and scan, or do an optimized search (1/2, 1/2, 1/2, etc.) --
   // would also find point sample pixel this way
-#if defined(_OPENMP)
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(input, binned, sample_max_x, sample_max_y, roi, rgb2ryb_ypp, diam_px, max_radius, max_diam, vs_prof, vs_type, vs_scale) \
-  schedule(static) collapse(2)
-#endif
+
+  DT_OMP_FOR(collapse(2))
   for(size_t y=0; y<sample_max_y; y+=2)
     for(size_t x=0; x<sample_max_x; x+=2)
     {
@@ -1018,31 +1007,15 @@ static void dt_lib_histogram_process
   if(!img_display) return;
 
   // FIXME: we might get called with profile_info_to == NULL due to caller errors
-  // like having a non cmsSigRgbData colorspace used in softproofing.
-  // As dt_ioppr_transform_image_colorspace_rgb will fail to provide data in img_display
-  // we currently do a fallback to Rec2020.
-  // For correct softproofing support we would have to convert data as we do in colorout.
-  const gboolean fallback = !profile_info_to || !dt_is_valid_colormatrix(profile_info_to->matrix_in[0][0]);
-  static gboolean noted = FALSE;
-  if(fallback)
+  if(!profile_info_to)
   {
-    if(!noted)
-    {
-      dt_print(DT_DEBUG_ALWAYS,
-             "[histogram] %s profile %i %s,"
-             " it will be replaced with linear Rec2020\n",
-             profile_info_to ? "undefined" : "invalid",
-             profile_info_to ? profile_info_to->type     : 0,
-             profile_info_to ? profile_info_to->filename : "");
-      dt_control_log(_("unsupported profile selected for histogram,"
+    dt_print(DT_DEBUG_ALWAYS,
+       "[histogram] no histogram profile, replaced with linear Rec2020\n");
+    dt_control_log(_("unsupported profile selected for histogram,"
                      " it will be replaced with linear Rec2020"));
-      noted = TRUE;
-    }
   }
-  else
-    noted = FALSE;
 
-  const dt_iop_order_iccprofile_info_t *profile_info_out = fallback
+  const dt_iop_order_iccprofile_info_t *profile_info_out = !profile_info_to
             ? dt_ioppr_add_profile_info_to_list(darktable.develop,
                                                 DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_RELATIVE_COLORIMETRIC)
             : profile_info_to;

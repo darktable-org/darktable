@@ -325,7 +325,7 @@ static void _setup_overlay(dt_iop_module_t *self,
   }
   else
   {
-    dt_control_log(_("image %d does not exists"), imgid);
+    dt_control_log(_("image %d does not exist"), imgid);
   }
 }
 
@@ -666,11 +666,7 @@ void process(struct dt_iop_module_t *self,
   /* render surface on output */
   const float opacity = data->opacity / 100.0f;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(roi_out, in, out, image, opacity, ch)   \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(int j = 0; j < roi_out->height * roi_out->width; j++)
   {
     float *const i = in + ch*j;
