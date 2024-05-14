@@ -2395,12 +2395,77 @@ static void _view_map_redo_callback(dt_action_t *action)
   g_signal_emit_by_name(lib->map, "changed");
 }
 
+static void _view_map_scroll(dt_action_t *action, const int scroll_x, const int scroll_y)
+{
+  dt_view_t *self = dt_action_view(action);
+  dt_map_t *lib = (dt_map_t *)self->data;
+
+  osm_gps_map_scroll(lib->map, scroll_x, scroll_y);
+}
+
+static void _view_map_scroll_right_callback(dt_action_t *action)
+{
+  _view_map_scroll(action, 10, 0);
+}
+
+static void _view_map_scroll_right_wide_callback(dt_action_t *action)
+{
+  _view_map_scroll(action, 100, 0);
+}
+
+static void _view_map_scroll_left_callback(dt_action_t *action)
+{
+  _view_map_scroll(action, -10, 0);
+}
+
+static void _view_map_scroll_left_wide_callback(dt_action_t *action)
+{
+  _view_map_scroll(action, -100, 0);
+}
+
+static void _view_map_scroll_up_callback(dt_action_t *action)
+{
+  _view_map_scroll(action, 0, -10);
+}
+
+static void _view_map_scroll_up_wide_callback(dt_action_t *action)
+{
+  _view_map_scroll(action, 0, -100);
+}
+
+static void _view_map_scroll_down_callback(dt_action_t *action)
+{
+  _view_map_scroll(action, 0, 10);
+}
+
+static void _view_map_scroll_down_wide_callback(dt_action_t *action)
+{
+  _view_map_scroll(action, 0, 100);
+}
+
 void gui_init(dt_view_t *self)
 {
   dt_action_register(DT_ACTION(self), N_("undo"),
                      _view_map_undo_callback, GDK_KEY_z, GDK_CONTROL_MASK);
   dt_action_register(DT_ACTION(self), N_("redo"),
                      _view_map_redo_callback, GDK_KEY_y, GDK_CONTROL_MASK);
+
+  dt_action_register(DT_ACTION(self), N_("scroll right"),
+                     _view_map_scroll_right_callback, GDK_KEY_Right, 0);
+  dt_action_register(DT_ACTION(self), N_("scroll right wide"),
+                     _view_map_scroll_right_wide_callback, GDK_KEY_Right, GDK_CONTROL_MASK);
+  dt_action_register(DT_ACTION(self), N_("scroll left"),
+                     _view_map_scroll_left_callback, GDK_KEY_Left, 0);
+  dt_action_register(DT_ACTION(self), N_("scroll left wide"),
+                     _view_map_scroll_left_wide_callback, GDK_KEY_Left, GDK_CONTROL_MASK);
+  dt_action_register(DT_ACTION(self), N_("scroll up"),
+                     _view_map_scroll_up_callback, GDK_KEY_Up, 0);
+  dt_action_register(DT_ACTION(self), N_("scroll up wide"),
+                     _view_map_scroll_up_wide_callback, GDK_KEY_Up, GDK_CONTROL_MASK);
+  dt_action_register(DT_ACTION(self), N_("scroll down"),
+                     _view_map_scroll_down_callback, GDK_KEY_Down, 0);
+  dt_action_register(DT_ACTION(self), N_("scroll down wide"),
+                     _view_map_scroll_down_wide_callback, GDK_KEY_Down, GDK_CONTROL_MASK);
 }
 
 static void _view_map_center_on_location(const dt_view_t *view,
