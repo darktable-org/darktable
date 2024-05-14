@@ -2320,16 +2320,16 @@ Details :
   margin: 0.07em 0.28em;
 }
 
-/* script_manager power button */
-button#pb_off 
-{ 
-  opacity: 0.5; 
+/* ??? TO BE REMOVED ON DT 5.0 : script_manager power button */
+button#pb_off
+{
+  opacity: 0.5;
 }
-button#pb_on 
-{ 
-  opacity: 1.0; 
+button#pb_on
+{
+  opacity: 1.0;
 }
-label#pb_label 
-{ 
-  padding-left: .5em; 
+label#pb_label
+{
+  padding-left: .5em;
 }
