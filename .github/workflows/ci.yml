@@ -62,6 +62,7 @@ jobs:
           - skiptest
         generator:
           - Ninja
+        eco: [-DDONT_USE_INTERNAL_LIBRAW=ON]
         include:
           # We want one run in CI to be Debug to make sure the Debug build isn't broken
           - distro: "debian:trixie-slim"
@@ -69,6 +70,7 @@ jobs:
             compiler: { compiler: GNU13, CC: gcc-13, CXX: g++-13, packages: gcc-13 g++-13 }
             target: skiptest
             generator: Ninja
+            eco: -DDONT_USE_INTERNAL_LIBRAW=OFF
     env:
       DISTRO: ${{ matrix.distro }}
       CC: ${{ matrix.compiler.CC }}
@@ -76,7 +78,7 @@ jobs:
       SRC_DIR: ${{ github.workspace }}/src
       BUILD_DIR: ${{ github.workspace }}/build
       INSTALL_PREFIX: ${{ github.workspace }}/install
-      ECO: -DTEMPORAIRLY_ALLOW_OLD_TOOCHAIN=OFF
+      ECO: ${{ matrix.eco }}
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
       GENERATOR: ${{ matrix.generator }}
       TARGET: ${{ matrix.target }}
@@ -176,6 +178,7 @@ jobs:
             libpng-dev \
             libportmidi-dev \
             libpugixml-dev \
+            libraw-dev \
             librsvg2-dev \
             libsaxon-java \
             libsdl2-dev \
@@ -332,7 +335,7 @@ jobs:
       matrix:
         build:
           - { os: macos-13,    xcode: 15.2,   deployment: 13.5 } # LLVM16, x86_64
-          - { os: macos-14,    xcode: 15.3,   deployment: 14.0 } # LLVM16, arm64
+          - { os: macos-14,    xcode: 15.4,   deployment: 14.0 } # LLVM16, arm64
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
         btype: [ Release ]
