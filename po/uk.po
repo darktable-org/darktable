@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-13 08:20+0200\n"
-"PO-Revision-Date: 2024-05-13 11:36+0300\n"
+"POT-Creation-Date: 2024-05-13 19:12+0200\n"
+"PO-Revision-Date: 2024-05-14 11:28+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -858,7 +858,7 @@ msgstr "Цей параметр було змінено."
 #: ../build/bin/preferences_gen.h:4241 ../build/bin/preferences_gen.h:4424
 #: ../build/bin/preferences_gen.h:5029 ../build/bin/preferences_gen.h:5735
 #: ../build/bin/preferences_gen.h:6571 ../build/bin/preferences_gen.h:7064
-#: ../build/bin/preferences_gen.h:7330 ../src/gui/accelerators.c:2997
+#: ../build/bin/preferences_gen.h:7330 ../src/gui/accelerators.c:3001
 #: ../src/gui/gtk.c:2975 ../src/gui/preferences.c:424
 #: ../src/gui/preferences.c:874 ../src/libs/modulegroups.c:4091
 msgid "?"
@@ -2463,8 +2463,8 @@ msgstr "Уточнена"
 #: ../build/lib/darktable/plugins/introspection_highlights.c:310
 #: ../build/lib/darktable/plugins/introspection_vignette.c:264
 #: ../src/develop/blend_gui.c:153 ../src/develop/blend_gui.c:182
-#: ../src/develop/blend_gui.c:3466 ../src/gui/accelerators.c:148
-#: ../src/gui/accelerators.c:158 ../src/gui/accelerators.c:245
+#: ../src/develop/blend_gui.c:3466 ../src/gui/accelerators.c:152
+#: ../src/gui/accelerators.c:162 ../src/gui/accelerators.c:249
 #: ../src/imageio/format/avif.c:827 ../src/imageio/format/j2k.c:681
 #: ../src/libs/live_view.c:361
 msgid "off"
@@ -2835,7 +2835,7 @@ msgstr "Радіус"
 #: ../build/lib/darktable/plugins/introspection_highlights.c:240
 #: ../build/lib/darktable/plugins/introspection_lens.cc:334
 #: ../build/lib/darktable/plugins/introspection_lens.cc:497
-#: ../src/iop/bloom.c:360 ../src/iop/denoiseprofile.c:3799
+#: ../src/iop/bloom.c:426 ../src/iop/denoiseprofile.c:3799
 #: ../src/iop/grain.c:539 ../src/iop/hazeremoval.c:213
 #: ../src/iop/hotpixels.c:448 ../src/iop/nlmeans.c:463 ../src/iop/velvia.c:284
 msgid "strength"
@@ -3151,7 +3151,7 @@ msgstr "зліва"
 #: ../build/lib/darktable/plugins/introspection_clipping.c:307
 #: ../build/lib/darktable/plugins/introspection_crop.c:67
 #: ../build/lib/darktable/plugins/introspection_crop.c:138
-#: ../src/gui/accelerators.c:131 ../src/gui/gtk.c:1350
+#: ../src/gui/accelerators.c:135 ../src/gui/gtk.c:1350
 msgid "top"
 msgstr "зверху"
 
@@ -3167,7 +3167,7 @@ msgstr "справа"
 #: ../build/lib/darktable/plugins/introspection_clipping.c:315
 #: ../build/lib/darktable/plugins/introspection_crop.c:79
 #: ../build/lib/darktable/plugins/introspection_crop.c:146
-#: ../src/gui/accelerators.c:132 ../src/gui/gtk.c:1354
+#: ../src/gui/accelerators.c:136 ../src/gui/gtk.c:1354
 msgid "bottom"
 msgstr "знизу"
 
@@ -3575,7 +3575,7 @@ msgstr "Радіус виявлення контурів"
 #: ../build/lib/darktable/plugins/introspection_defringe.c:106
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:230
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:435
-#: ../src/iop/atrous.c:1694 ../src/iop/bloom.c:356
+#: ../src/iop/atrous.c:1694 ../src/iop/bloom.c:422
 #: ../src/iop/colorreconstruction.c:1235 ../src/iop/hotpixels.c:444
 #: ../src/iop/sharpen.c:440
 msgid "threshold"
@@ -4539,8 +4539,8 @@ msgstr "Лише ручна корекція віньєтування"
 #. get nice text for bounds
 #. Side-border hide/show
 #: ../build/lib/darktable/plugins/introspection_lens.cc:534
-#: ../src/dtgtk/range.c:1762 ../src/gui/accelerators.c:2593
-#: ../src/gui/accelerators.c:2675 ../src/gui/gtk.c:1406 ../src/gui/gtk.c:3570
+#: ../src/dtgtk/range.c:1762 ../src/gui/accelerators.c:2597
+#: ../src/gui/accelerators.c:2679 ../src/gui/gtk.c:1406 ../src/gui/gtk.c:3570
 #: ../src/imageio/format/pdf.c:645 ../src/iop/denoiseprofile.c:3690
 #: ../src/iop/rawdenoise.c:893 ../src/libs/collect.c:3548
 #: ../src/libs/filtering.c:1531 ../src/libs/filters/colors.c:157
@@ -5399,12 +5399,12 @@ msgstr "немає стільки спадних меню"
 msgid "not that many buttons"
 msgstr "немає стільки кнопок"
 
-#: ../src/bauhaus/bauhaus.c:3914 ../src/gui/accelerators.c:389
+#: ../src/bauhaus/bauhaus.c:3914 ../src/gui/accelerators.c:393
 msgid "value"
 msgstr "Значення"
 
 #: ../src/bauhaus/bauhaus.c:3915 ../src/bauhaus/bauhaus.c:3921
-#: ../src/gui/accelerators.c:368
+#: ../src/gui/accelerators.c:372
 msgid "button"
 msgstr "Кнопка"
 
@@ -5431,9 +5431,9 @@ msgstr "Спадне меню"
 
 #: ../src/chart/main.c:504 ../src/common/database.c:3616
 #: ../src/control/jobs/control_jobs.c:1857
-#: ../src/control/jobs/control_jobs.c:1916 ../src/gui/accelerators.c:2498
-#: ../src/gui/accelerators.c:2580 ../src/gui/accelerators.c:2633
-#: ../src/gui/accelerators.c:2662 ../src/gui/accelerators.c:2724
+#: ../src/control/jobs/control_jobs.c:1916 ../src/gui/accelerators.c:2502
+#: ../src/gui/accelerators.c:2584 ../src/gui/accelerators.c:2637
+#: ../src/gui/accelerators.c:2666 ../src/gui/accelerators.c:2728
 #: ../src/gui/hist_dialog.c:228 ../src/gui/preferences.c:1042
 #: ../src/gui/preferences.c:1081 ../src/gui/presets.c:422
 #: ../src/gui/presets.c:565 ../src/gui/styles_dialog.c:555
@@ -5697,7 +5697,7 @@ msgid "history"
 msgstr "Історія"
 
 #: ../src/common/collection.c:634 ../src/common/colorlabels.c:383
-#: ../src/develop/lightroom.c:1607 ../src/dtgtk/thumbnail.c:1584
+#: ../src/develop/lightroom.c:1607 ../src/dtgtk/thumbnail.c:1585
 #: ../src/libs/filtering.c:68 ../src/libs/filters/colors.c:301
 #: ../src/libs/filters/colors.c:312 ../src/libs/tools/colorlabels.c:145
 msgid "color label"
@@ -5731,7 +5731,7 @@ msgstr "Геотегування"
 msgid "group"
 msgstr "Групування"
 
-#: ../src/common/collection.c:654 ../src/dtgtk/thumbnail.c:1599
+#: ../src/common/collection.c:654 ../src/dtgtk/thumbnail.c:1600
 #: ../src/libs/filters/local_copy.c:142 ../src/libs/metadata_view.c:139
 #: ../src/libs/metadata_view.c:352
 msgid "local copy"
@@ -6137,7 +6137,7 @@ msgstr "кольорові позначки встановлено в %s"
 msgid "all colorlabels removed"
 msgstr "всі кольорові позначки видалено"
 
-#: ../src/common/colorlabels.c:374 ../src/gui/accelerators.c:188
+#: ../src/common/colorlabels.c:374 ../src/gui/accelerators.c:192
 #: ../src/libs/image.c:663
 msgid "clear"
 msgstr "Очистити"
@@ -6530,7 +6530,7 @@ msgstr ""
 "Тепер ви можете перезапустити Darktable\n"
 
 #: ../src/common/database.c:3641 ../src/common/database.c:3648
-#: ../src/gui/accelerators.c:2581 ../src/gui/accelerators.c:2663
+#: ../src/gui/accelerators.c:2585 ../src/gui/accelerators.c:2667
 #: ../src/gui/hist_dialog.c:229 ../src/gui/presets.c:566
 msgid "_ok"
 msgstr "_OK"
@@ -7432,7 +7432,7 @@ msgstr "ББ камери"
 msgid "auto WB"
 msgstr "Автоматичний ББ"
 
-#: ../src/control/control.c:69 ../src/gui/accelerators.c:156
+#: ../src/control/control.c:69 ../src/gui/accelerators.c:160
 #: ../src/views/darkroom.c:2066
 msgid "hold"
 msgstr "Утримання"
@@ -8489,8 +8489,8 @@ msgstr "Вихід після розмиття"
 msgid "input after blur"
 msgstr "Вхід після розмиття"
 
-#: ../src/develop/blend_gui.c:183 ../src/gui/accelerators.c:147
-#: ../src/gui/accelerators.c:157 ../src/gui/accelerators.c:245
+#: ../src/develop/blend_gui.c:183 ../src/gui/accelerators.c:151
+#: ../src/gui/accelerators.c:161 ../src/gui/accelerators.c:249
 #: ../src/imageio/format/avif.c:827 ../src/libs/live_view.c:362
 msgid "on"
 msgstr "Увімкнено"
@@ -9098,7 +9098,7 @@ msgstr "Опустити"
 
 #. delete button label and tooltip will be updated based on trash pref
 #: ../src/develop/imageop.c:1042 ../src/develop/imageop.c:3781
-#: ../src/gui/accelerators.c:173 ../src/libs/image.c:305
+#: ../src/gui/accelerators.c:177 ../src/libs/image.c:305
 #: ../src/libs/image.c:516
 msgid "delete"
 msgstr "Видалити"
@@ -9193,7 +9193,7 @@ msgstr ""
 "вимогам модуля."
 
 #: ../src/develop/imageop.c:3777 ../src/develop/imageop.c:3787
-#: ../src/gui/accelerators.c:169 ../src/libs/lib.c:1419
+#: ../src/gui/accelerators.c:173 ../src/libs/lib.c:1419
 msgid "show"
 msgstr "Показати"
 
@@ -9208,8 +9208,8 @@ msgstr "Новий"
 msgid "duplicate"
 msgstr "Зняти копію"
 
-#: ../src/develop/imageop.c:3788 ../src/gui/accelerators.c:130
-#: ../src/gui/accelerators.c:140 ../src/gui/gtk.c:3419 ../src/gui/gtk.c:3474
+#: ../src/develop/imageop.c:3788 ../src/gui/accelerators.c:134
+#: ../src/gui/accelerators.c:144 ../src/gui/gtk.c:3419 ../src/gui/gtk.c:3474
 #: ../src/gui/hist_dialog.c:272 ../src/gui/styles_dialog.c:646
 #: ../src/gui/styles_dialog.c:668 ../src/iop/atrous.c:1625
 #: ../src/libs/lib.c:1420 ../src/libs/modulegroups.c:4086
@@ -9226,11 +9226,11 @@ msgstr "Пресети"
 msgid "enable"
 msgstr "Вмикаючий елемент"
 
-#: ../src/develop/imageop.c:3791 ../src/gui/accelerators.c:185
+#: ../src/develop/imageop.c:3791 ../src/gui/accelerators.c:189
 msgid "focus"
 msgstr "Фокус"
 
-#: ../src/develop/imageop.c:3792 ../src/gui/accelerators.c:2875
+#: ../src/develop/imageop.c:3792 ../src/gui/accelerators.c:2879
 msgid "instance"
 msgstr "Екземпляр"
 
@@ -9817,7 +9817,7 @@ msgstr ""
 "Встановити значення так, щоб воно завжди відповідало поточній даті й часу"
 
 #. apply button
-#: ../src/dtgtk/range.c:1062 ../src/gui/accelerators.c:180
+#: ../src/dtgtk/range.c:1062 ../src/gui/accelerators.c:184
 #: ../src/libs/metadata.c:735 ../src/libs/styles.c:946
 msgid "apply"
 msgstr "Застосувати"
@@ -9851,7 +9851,7 @@ msgstr ""
 msgid "grouped images"
 msgstr "Згруповані зображення"
 
-#: ../src/dtgtk/thumbnail.c:833 ../src/dtgtk/thumbnail.c:1659
+#: ../src/dtgtk/thumbnail.c:833 ../src/dtgtk/thumbnail.c:1660
 #: ../src/iop/ashift.c:6089 ../src/iop/ashift.c:6178 ../src/iop/ashift.c:6180
 #: ../src/iop/ashift.c:6182 ../src/libs/navigation.c:111
 #: ../src/libs/navigation.c:194
@@ -10072,7 +10072,7 @@ msgstr "Регулювання швидкості"
 msgid "disabled defaults"
 msgstr "Вимкнені замовчування"
 
-#: ../src/gui/accelerators.c:96 ../src/views/view.c:1375
+#: ../src/gui/accelerators.c:96 ../src/views/view.c:1379
 msgid "scroll"
 msgstr "Прокрутка"
 
@@ -10120,207 +10120,211 @@ msgstr "Shift"
 msgid "ctrl"
 msgstr "Ctrl"
 
-#: ../src/gui/accelerators.c:114 ../src/views/view.c:1361
+#: ../src/gui/accelerators.c:115 ../src/views/view.c:1362
+msgid "option"
+msgstr "Option"
+
+#: ../src/gui/accelerators.c:117 ../src/views/view.c:1364
 msgid "alt"
 msgstr "Alt"
 
-#: ../src/gui/accelerators.c:115
+#: ../src/gui/accelerators.c:119
 msgid "cmd"
 msgstr "Cmd"
 
-#: ../src/gui/accelerators.c:116
+#: ../src/gui/accelerators.c:120
 msgid "altgr"
 msgstr "Права Alt"
 
-#: ../src/gui/accelerators.c:127 ../src/gui/accelerators.c:174
+#: ../src/gui/accelerators.c:131 ../src/gui/accelerators.c:178
 #: ../src/libs/tagging.c:1823
 msgid "edit"
 msgstr "Редагувати"
 
-#: ../src/gui/accelerators.c:128 ../src/gui/accelerators.c:737
-#: ../src/gui/accelerators.c:1456
+#: ../src/gui/accelerators.c:132 ../src/gui/accelerators.c:741
+#: ../src/gui/accelerators.c:1460
 msgid "up"
 msgstr "Підняти"
 
-#: ../src/gui/accelerators.c:129 ../src/gui/accelerators.c:737
-#: ../src/gui/accelerators.c:1456
+#: ../src/gui/accelerators.c:133 ../src/gui/accelerators.c:741
+#: ../src/gui/accelerators.c:1460
 msgid "down"
 msgstr "Опустити"
 
-#: ../src/gui/accelerators.c:133
+#: ../src/gui/accelerators.c:137
 msgid "set"
 msgstr "Встановити"
 
-#: ../src/gui/accelerators.c:137
+#: ../src/gui/accelerators.c:141
 msgid "popup"
 msgstr "popup"
 
-#: ../src/gui/accelerators.c:138 ../src/gui/accelerators.c:171
+#: ../src/gui/accelerators.c:142 ../src/gui/accelerators.c:175
 #: ../src/gui/gtk.c:3472 ../src/views/lighttable.c:760
 msgid "next"
 msgstr "Вперед"
 
-#: ../src/gui/accelerators.c:139 ../src/gui/accelerators.c:170
+#: ../src/gui/accelerators.c:143 ../src/gui/accelerators.c:174
 #: ../src/gui/gtk.c:3473 ../src/views/lighttable.c:761
 msgid "previous"
 msgstr "Назад"
 
-#: ../src/gui/accelerators.c:141 ../src/gui/accelerators.c:1599
+#: ../src/gui/accelerators.c:145 ../src/gui/accelerators.c:1603
 msgid "last"
 msgstr "Останній"
 
-#: ../src/gui/accelerators.c:142 ../src/gui/accelerators.c:1598
+#: ../src/gui/accelerators.c:146 ../src/gui/accelerators.c:1602
 msgid "first"
 msgstr "Перший"
 
-#: ../src/gui/accelerators.c:146 ../src/gui/accelerators.c:159
-#: ../src/gui/accelerators.c:356 ../src/libs/filters/rating_range.c:295
+#: ../src/gui/accelerators.c:150 ../src/gui/accelerators.c:163
+#: ../src/gui/accelerators.c:360 ../src/libs/filters/rating_range.c:295
 #: ../src/libs/tagging.c:3184 ../src/views/darkroom.c:2259
 #: ../src/views/darkroom.c:2309 ../src/views/darkroom.c:2545
 msgid "toggle"
 msgstr "Перемикач"
 
-#: ../src/gui/accelerators.c:149
+#: ../src/gui/accelerators.c:153
 msgid "ctrl-toggle"
 msgstr "Ctrl-перемикач"
 
-#: ../src/gui/accelerators.c:150
+#: ../src/gui/accelerators.c:154
 msgid "ctrl-on"
 msgstr "Ctrl-вмикання"
 
-#: ../src/gui/accelerators.c:151
+#: ../src/gui/accelerators.c:155
 msgid "right-toggle"
 msgstr "Права-перемикання"
 
-#: ../src/gui/accelerators.c:152
+#: ../src/gui/accelerators.c:156
 msgid "right-on"
 msgstr "Права-вмикання"
 
-#: ../src/gui/accelerators.c:163 ../src/gui/gtk.c:3471
+#: ../src/gui/accelerators.c:167 ../src/gui/gtk.c:3471
 msgid "activate"
 msgstr "Активація"
 
-#: ../src/gui/accelerators.c:164
+#: ../src/gui/accelerators.c:168
 msgid "ctrl-activate"
 msgstr "Ctrl-активація"
 
-#: ../src/gui/accelerators.c:165
+#: ../src/gui/accelerators.c:169
 msgid "right-activate"
 msgstr "Права-активація"
 
-#: ../src/gui/accelerators.c:172
+#: ../src/gui/accelerators.c:176
 msgid "store"
 msgstr "Зберегти"
 
-#: ../src/gui/accelerators.c:175 ../src/gui/styles_dialog.c:682
+#: ../src/gui/accelerators.c:179 ../src/gui/styles_dialog.c:682
 msgid "update"
 msgstr "Оновити"
 
-#: ../src/gui/accelerators.c:176 ../src/libs/tools/global_toolbox.c:60
+#: ../src/gui/accelerators.c:180 ../src/libs/tools/global_toolbox.c:60
 #: ../src/libs/tools/global_toolbox.c:510
 msgid "preferences"
 msgstr "Уподобання"
 
-#: ../src/gui/accelerators.c:181
+#: ../src/gui/accelerators.c:185
 msgid "apply on new instance"
 msgstr "Застосувати на новому екземплярі"
 
-#: ../src/gui/accelerators.c:186
+#: ../src/gui/accelerators.c:190
 msgid "start"
 msgstr "Початок"
 
-#: ../src/gui/accelerators.c:187
+#: ../src/gui/accelerators.c:191
 msgid "end"
 msgstr "Кінець"
 
-#: ../src/gui/accelerators.c:374
+#: ../src/gui/accelerators.c:378
 msgid "entry"
 msgstr "Вхідний текст"
 
-#: ../src/gui/accelerators.c:450
+#: ../src/gui/accelerators.c:454
 msgid "combo effect not found"
 msgstr "Дію для меню не знайдено"
 
-#: ../src/gui/accelerators.c:627
+#: ../src/gui/accelerators.c:631
 msgid "(keypad)"
 msgstr "(цифровий блок)"
 
-#: ../src/gui/accelerators.c:636
+#: ../src/gui/accelerators.c:640
 msgid "tablet button"
 msgstr "Кнопка планшета"
 
-#: ../src/gui/accelerators.c:645
+#: ../src/gui/accelerators.c:649
 msgid "unknown driver"
 msgstr "Невідомий драйвер"
 
-#: ../src/gui/accelerators.c:718
+#: ../src/gui/accelerators.c:722
 msgid "long"
 msgstr "Довге"
 
-#: ../src/gui/accelerators.c:719
+#: ../src/gui/accelerators.c:723
 msgid "double-press"
 msgstr "Подвійне натискання"
 
-#: ../src/gui/accelerators.c:720
+#: ../src/gui/accelerators.c:724
 msgid "triple-press"
 msgstr "Потрійне натискання"
 
-#: ../src/gui/accelerators.c:721
+#: ../src/gui/accelerators.c:725
 msgid "press"
 msgstr "Натискання"
 
-#: ../src/gui/accelerators.c:725
+#: ../src/gui/accelerators.c:729
 msgctxt "accel"
 msgid "left"
 msgstr "Лівий"
 
-#: ../src/gui/accelerators.c:726
+#: ../src/gui/accelerators.c:730
 msgctxt "accel"
 msgid "right"
 msgstr "Правий"
 
-#: ../src/gui/accelerators.c:727
+#: ../src/gui/accelerators.c:731
 msgctxt "accel"
 msgid "middle"
 msgstr "Середній"
 
-#: ../src/gui/accelerators.c:728
+#: ../src/gui/accelerators.c:732
 msgctxt "accel"
 msgid "long"
 msgstr "Довгий"
 
-#: ../src/gui/accelerators.c:729
+#: ../src/gui/accelerators.c:733
 msgctxt "accel"
 msgid "double-click"
 msgstr "Подвійний клік"
 
-#: ../src/gui/accelerators.c:730
+#: ../src/gui/accelerators.c:734
 msgctxt "accel"
 msgid "triple-click"
 msgstr "Потрійний клік"
 
-#: ../src/gui/accelerators.c:731
+#: ../src/gui/accelerators.c:735
 msgid "click"
 msgstr "Клік"
 
-#: ../src/gui/accelerators.c:759
+#: ../src/gui/accelerators.c:763
 msgid "first instance"
 msgstr "Перший екземпляр"
 
-#: ../src/gui/accelerators.c:761
+#: ../src/gui/accelerators.c:765
 msgid "last instance"
 msgstr "Останній екземпляр"
 
-#: ../src/gui/accelerators.c:763
+#: ../src/gui/accelerators.c:767
 msgid "relative instance"
 msgstr "Відносний екземпляр"
 
-#: ../src/gui/accelerators.c:780 ../src/gui/accelerators.c:2865
-#: ../src/gui/accelerators.c:3812
+#: ../src/gui/accelerators.c:784 ../src/gui/accelerators.c:2869
+#: ../src/gui/accelerators.c:3816
 msgid "speed"
 msgstr "Швидкість"
 
-#: ../src/gui/accelerators.c:923
+#: ../src/gui/accelerators.c:927
 #, c-format
 msgid ""
 "Lua script command copied to clipboard:\n"
@@ -10331,11 +10335,11 @@ msgstr ""
 "\n"
 "<tt>%s</tt>"
 
-#: ../src/gui/accelerators.c:1026 ../src/gui/accelerators.c:1045
+#: ../src/gui/accelerators.c:1030 ../src/gui/accelerators.c:1049
 msgid "start typing for incremental search"
 msgstr "Почніть вводити для поступального пошуку"
 
-#: ../src/gui/accelerators.c:1029
+#: ../src/gui/accelerators.c:1033
 msgid ""
 "\n"
 "press Delete to delete selected shortcut"
@@ -10343,7 +10347,7 @@ msgstr ""
 "\n"
 "Натисність Delete, щоб видалити вибраний прискорювач"
 
-#: ../src/gui/accelerators.c:1031
+#: ../src/gui/accelerators.c:1035
 msgid ""
 "\n"
 "press Delete to disable selected default shortcut"
@@ -10351,7 +10355,7 @@ msgstr ""
 "\n"
 "Натисність Delete, щоб вимкнути вибраний прискорювач за замовчуванням"
 
-#: ../src/gui/accelerators.c:1032
+#: ../src/gui/accelerators.c:1036
 msgid ""
 "\n"
 "press Delete to restore selected default shortcut"
@@ -10359,7 +10363,7 @@ msgstr ""
 "\n"
 "Натисність Delete, щоб відновити вибраний прискорювач за замовчуванням"
 
-#: ../src/gui/accelerators.c:1034
+#: ../src/gui/accelerators.c:1038
 msgid ""
 "\n"
 "double-click to add new shortcut"
@@ -10367,11 +10371,11 @@ msgstr ""
 "\n"
 "Подвійний клік, щоб додати новий прискорювач"
 
-#: ../src/gui/accelerators.c:1046
+#: ../src/gui/accelerators.c:1050
 msgid "click to filter shortcuts list"
 msgstr "Клікніть для фільтрації списку прискорювачів"
 
-#: ../src/gui/accelerators.c:1048
+#: ../src/gui/accelerators.c:1052
 msgid ""
 "\n"
 "right click to show action of selected shortcut"
@@ -10379,7 +10383,7 @@ msgstr ""
 "\n"
 "Клікніть правою кнопкою миші, щоб показати дію вибраного прискорювача"
 
-#: ../src/gui/accelerators.c:1051
+#: ../src/gui/accelerators.c:1055
 msgid ""
 "\n"
 "double-click to define new shortcut"
@@ -10387,11 +10391,11 @@ msgstr ""
 "\n"
 "Подвійний клік, щоб визначити новий прискорювач"
 
-#: ../src/gui/accelerators.c:1082
+#: ../src/gui/accelerators.c:1086
 msgid "shift+alt+scroll to change height"
 msgstr "Shift+Alt+прокрутка для зміни висоти"
 
-#: ../src/gui/accelerators.c:1102
+#: ../src/gui/accelerators.c:1106
 msgid ""
 "press keys with mouse click and scroll or move combinations to create a "
 "shortcut"
@@ -10399,27 +10403,27 @@ msgstr ""
 "Натискайте клавіші в комбінації з кліком або прокручуванням або рухом миші "
 "для створення прискорювача"
 
-#: ../src/gui/accelerators.c:1103
+#: ../src/gui/accelerators.c:1107
 msgid "click to open shortcut configuration"
 msgstr "Натисніть, щоб відкрити конфігурацію прискорювачів"
 
-#: ../src/gui/accelerators.c:1104
+#: ../src/gui/accelerators.c:1108
 msgid "ctrl+click to add to quick access panel\n"
 msgstr "Ctrl+клік, щоб додати до панелі швидкого доступу\n"
 
-#: ../src/gui/accelerators.c:1105
+#: ../src/gui/accelerators.c:1109
 msgid "ctrl+click to remove from quick access panel\n"
 msgstr "Ctrl+клік, щоб видалити з панелі швидкого доступу\n"
 
-#: ../src/gui/accelerators.c:1106
+#: ../src/gui/accelerators.c:1110
 msgid "scroll to change default speed"
 msgstr "Прокрутіть, щоб змінити швидкість за замовчуванням"
 
-#: ../src/gui/accelerators.c:1107
+#: ../src/gui/accelerators.c:1111
 msgid "right click to exit mapping mode"
 msgstr "Правий клік, щоб вийти з режиму зіставлення"
 
-#: ../src/gui/accelerators.c:1120
+#: ../src/gui/accelerators.c:1124
 #, c-format
 msgid ""
 "%sright-click to type a specific value between <b>%s</b> and <b>%s</b>\n"
@@ -10429,23 +10433,23 @@ msgstr ""
 "<b>%s</b>, або утримуйте Ctrl+Shift під час перетягування, щоб ігнорувати "
 "м’які обмеження."
 
-#: ../src/gui/accelerators.c:1184
+#: ../src/gui/accelerators.c:1188
 msgid "ctrl+v"
 msgstr "Ctrl+v"
 
-#: ../src/gui/accelerators.c:1184
+#: ../src/gui/accelerators.c:1188
 msgid "right long click"
 msgstr "Правий довгий клік"
 
-#: ../src/gui/accelerators.c:1184
+#: ../src/gui/accelerators.c:1188
 msgid "to copy Lua command"
 msgstr "для копіювання команди Lua"
 
-#: ../src/gui/accelerators.c:1452
+#: ../src/gui/accelerators.c:1456
 msgid "shortcut for move exists with single effect"
 msgstr "Прискорювач для переміщення існує з єдиною дією"
 
-#: ../src/gui/accelerators.c:1453
+#: ../src/gui/accelerators.c:1457
 #, c-format
 msgid ""
 "%s\n"
@@ -10456,62 +10460,62 @@ msgstr ""
 "\n"
 "(призначення %s на %s)"
 
-#: ../src/gui/accelerators.c:1454
+#: ../src/gui/accelerators.c:1458
 msgid "create separate shortcuts for up and down move?"
 msgstr "Сворити окремі прискорювачі для переміщення вгору та вниз?"
 
-#: ../src/gui/accelerators.c:1480
+#: ../src/gui/accelerators.c:1484
 #, c-format
 msgid "%s, speed reset"
 msgstr "%s, скидання швидкості"
 
-#: ../src/gui/accelerators.c:1498
+#: ../src/gui/accelerators.c:1502
 msgid "shortcut exists with different settings"
 msgstr "Прискорювач існує з іншими налаштуваннями"
 
-#: ../src/gui/accelerators.c:1499
+#: ../src/gui/accelerators.c:1503
 msgid "reset the settings of the shortcut?"
 msgstr "Скинути налаштування прискорювача?"
 
-#: ../src/gui/accelerators.c:1508
+#: ../src/gui/accelerators.c:1512
 msgid "shortcut already exists"
 msgstr "Прискорювач вже існує"
 
-#: ../src/gui/accelerators.c:1510
+#: ../src/gui/accelerators.c:1514
 msgid "disable this default shortcut?"
 msgstr "Вимкнути цей прискорювач за замовчуванням?"
 
-#: ../src/gui/accelerators.c:1511
+#: ../src/gui/accelerators.c:1515
 msgid "remove the shortcut?"
 msgstr "Видалити прискорювач?"
 
-#: ../src/gui/accelerators.c:1551
+#: ../src/gui/accelerators.c:1555
 msgid "clashing shortcuts exist"
 msgstr "Існують конфліктуючі прискорювачі"
 
-#: ../src/gui/accelerators.c:1552
+#: ../src/gui/accelerators.c:1556
 msgid "remove these existing shortcuts?"
 msgstr "Видалити ці наявні прискорювачі?"
 
 #. or 3, but change char relative[] = "-2" to "-1"
 #. NUM_INSTANCES
-#: ../src/gui/accelerators.c:1597
+#: ../src/gui/accelerators.c:1601
 msgid "preferred"
 msgstr "Пріоритетний"
 
-#: ../src/gui/accelerators.c:1600
+#: ../src/gui/accelerators.c:1604
 msgid "second"
 msgstr "Другий"
 
-#: ../src/gui/accelerators.c:1601
+#: ../src/gui/accelerators.c:1605
 msgid "last but one"
 msgstr "Передостанній"
 
-#: ../src/gui/accelerators.c:1762 ../src/gui/accelerators.c:1827
+#: ../src/gui/accelerators.c:1766 ../src/gui/accelerators.c:1831
 msgid "(unchanged)"
 msgstr "(не змінено)"
 
-#: ../src/gui/accelerators.c:1942
+#: ../src/gui/accelerators.c:1946
 msgid ""
 "define a shortcut by pressing a key, optionally combined with modifier keys "
 "(ctrl/shift/alt)\n"
@@ -10536,47 +10540,47 @@ msgstr ""
 "\n"
 "Клікніть правою кнопкою миші, щоб скасувати"
 
-#: ../src/gui/accelerators.c:2015
+#: ../src/gui/accelerators.c:2019
 msgid "removing shortcut"
 msgstr "Видалення прискорювача"
 
-#: ../src/gui/accelerators.c:2017
+#: ../src/gui/accelerators.c:2021
 msgid "disable the selected default shortcut?"
 msgstr "Вимкнути вибраний прискорювач за замовчуванням?"
 
-#: ../src/gui/accelerators.c:2018
+#: ../src/gui/accelerators.c:2022
 msgid "restore the selected default shortcut?"
 msgstr "Відновити вибраний прискорювач за замовчуванням?"
 
-#: ../src/gui/accelerators.c:2019
+#: ../src/gui/accelerators.c:2023
 msgid "remove the selected shortcut?"
 msgstr "Видалити вибраний прискорювач?"
 
-#: ../src/gui/accelerators.c:2108
+#: ../src/gui/accelerators.c:2112
 msgid "command"
 msgstr "Команда"
 
-#: ../src/gui/accelerators.c:2109
+#: ../src/gui/accelerators.c:2113
 msgid "preset"
 msgstr "пресет"
 
-#: ../src/gui/accelerators.c:2492
+#: ../src/gui/accelerators.c:2496
 msgid "restore shortcuts"
 msgstr "Відновити прискорювачі"
 
-#: ../src/gui/accelerators.c:2495
+#: ../src/gui/accelerators.c:2499
 msgid "_defaults"
 msgstr "Замовчування"
 
-#: ../src/gui/accelerators.c:2496
+#: ../src/gui/accelerators.c:2500
 msgid "_startup"
 msgstr "Як при запуску"
 
-#: ../src/gui/accelerators.c:2497
+#: ../src/gui/accelerators.c:2501
 msgid "_edits"
 msgstr "Редагування"
 
-#: ../src/gui/accelerators.c:2504
+#: ../src/gui/accelerators.c:2508
 msgid ""
 "restore shortcuts from one of these states:\n"
 "  - default\n"
@@ -10588,7 +10592,7 @@ msgstr ""
 "  - як при запуску\n"
 "  - як під час відкриття цього діалогового вікна\n"
 
-#: ../src/gui/accelerators.c:2511
+#: ../src/gui/accelerators.c:2515
 msgid ""
 "clear all newer shortcuts\n"
 "(instead of just restoring changed ones)"
@@ -10596,17 +10600,17 @@ msgstr ""
 "Очистити всі нові прискорювачі\n"
 "(замість того, щоб просто відновити змінені)"
 
-#: ../src/gui/accelerators.c:2568 ../src/gui/preferences.c:905
+#: ../src/gui/accelerators.c:2572 ../src/gui/preferences.c:905
 #: ../src/libs/tools/global_toolbox.c:494
 #: ../src/libs/tools/global_toolbox.c:655
 msgid "shortcuts"
 msgstr "Клавіатурні прискорювачі"
 
-#: ../src/gui/accelerators.c:2578
+#: ../src/gui/accelerators.c:2582
 msgid "export shortcuts"
 msgstr "Експортувати прискорювачі"
 
-#: ../src/gui/accelerators.c:2587
+#: ../src/gui/accelerators.c:2591
 msgid ""
 "export all shortcuts to a file\n"
 "or just for one selected device\n"
@@ -10614,27 +10618,27 @@ msgstr ""
 "Експортувати всі клавіатурні прискорювачі в файл\n"
 "або лише для одного вибраного пристрою\n"
 
-#: ../src/gui/accelerators.c:2594 ../src/gui/accelerators.c:2676
+#: ../src/gui/accelerators.c:2598 ../src/gui/accelerators.c:2680
 msgid "keyboard"
 msgstr "Клавіатура"
 
-#: ../src/gui/accelerators.c:2606
+#: ../src/gui/accelerators.c:2610
 msgid "device id"
 msgstr "Id пристрою"
 
-#: ../src/gui/accelerators.c:2632
+#: ../src/gui/accelerators.c:2636
 msgid "select file to export"
 msgstr "Виберіть файл для експорту"
 
-#: ../src/gui/accelerators.c:2633 ../src/libs/tagging.c:2575
+#: ../src/gui/accelerators.c:2637 ../src/libs/tagging.c:2575
 msgid "_export"
 msgstr "_Експортувати"
 
-#: ../src/gui/accelerators.c:2660
+#: ../src/gui/accelerators.c:2664
 msgid "import shortcuts"
 msgstr "Імпортувати прискорювачі"
 
-#: ../src/gui/accelerators.c:2669
+#: ../src/gui/accelerators.c:2673
 msgid ""
 "import all shortcuts from a file\n"
 "or just for one selected device\n"
@@ -10642,31 +10646,31 @@ msgstr ""
 "Імпортувати всі клавіатурні прискорювачі з файлу\n"
 "або лише для одного вибраного пристрою\n"
 
-#: ../src/gui/accelerators.c:2688
+#: ../src/gui/accelerators.c:2692
 msgid "id in file"
 msgstr "Id у файлі"
 
-#: ../src/gui/accelerators.c:2694
+#: ../src/gui/accelerators.c:2698
 msgid "id when loaded"
 msgstr "Id при завантаженні"
 
-#: ../src/gui/accelerators.c:2698
+#: ../src/gui/accelerators.c:2702
 msgid "clear device first"
 msgstr "Спочатку очистити пристрій"
 
-#: ../src/gui/accelerators.c:2723
+#: ../src/gui/accelerators.c:2727
 msgid "select file to import"
 msgstr "Виберіть файл для імпорту"
 
-#: ../src/gui/accelerators.c:2724 ../src/libs/tagging.c:2539
+#: ../src/gui/accelerators.c:2728 ../src/libs/tagging.c:2539
 msgid "_import"
 msgstr "_Імпорт"
 
-#: ../src/gui/accelerators.c:2816
+#: ../src/gui/accelerators.c:2820
 msgid "search shortcuts list"
 msgstr "Пошук у списку прискорювачів"
 
-#: ../src/gui/accelerators.c:2818
+#: ../src/gui/accelerators.c:2822
 msgid ""
 "incrementally search the list of shortcuts\n"
 "press up or down keys to cycle through matches"
@@ -10674,28 +10678,28 @@ msgstr ""
 "Інкрементний пошук у списку прискорювачів\n"
 "Натискайте клавіші вгору або вниз, щоб переключатися між збігами"
 
-#: ../src/gui/accelerators.c:2838 ../src/views/view.c:1568
+#: ../src/gui/accelerators.c:2842 ../src/views/view.c:1572
 msgid "shortcut"
 msgstr "Прискорювач"
 
-#: ../src/gui/accelerators.c:2841 ../src/gui/accelerators.c:2943
-#: ../src/views/view.c:1570
+#: ../src/gui/accelerators.c:2845 ../src/gui/accelerators.c:2947
+#: ../src/views/view.c:1574
 msgid "action"
 msgstr "Дія"
 
-#: ../src/gui/accelerators.c:2851
+#: ../src/gui/accelerators.c:2855
 msgid "element"
 msgstr "Елемент"
 
-#: ../src/gui/accelerators.c:2859
+#: ../src/gui/accelerators.c:2863
 msgid "effect"
 msgstr "Тип дії"
 
-#: ../src/gui/accelerators.c:2919
+#: ../src/gui/accelerators.c:2923
 msgid "search actions list"
 msgstr "Пошук у списку дій"
 
-#: ../src/gui/accelerators.c:2921
+#: ../src/gui/accelerators.c:2925
 msgid ""
 "incrementally search the list of actions\n"
 "press up or down keys to cycle through matches"
@@ -10703,16 +10707,16 @@ msgstr ""
 "Інкрементний пошук у списку дій\n"
 "Натискайте клавіші вгору або вниз, щоб переключатися між збігами"
 
-#: ../src/gui/accelerators.c:2951 ../src/gui/guides.c:719
+#: ../src/gui/accelerators.c:2955 ../src/gui/guides.c:719
 #: ../src/libs/export_metadata.c:179
 msgid "type"
 msgstr "Тип"
 
-#: ../src/gui/accelerators.c:2989
+#: ../src/gui/accelerators.c:2993
 msgid "enable fallbacks"
 msgstr "Дозволити резервні дії"
 
-#: ../src/gui/accelerators.c:2990
+#: ../src/gui/accelerators.c:2994
 msgid ""
 "enables default meanings for additional buttons, modifiers or moves\n"
 "when used in combination with a base shortcut"
@@ -10721,37 +10725,37 @@ msgstr ""
 "переміщень\n"
 "при використанні в поєднанні з базовим клавіатурним прискорювачем"
 
-#: ../src/gui/accelerators.c:2998
+#: ../src/gui/accelerators.c:3002
 msgid "open help page for shortcuts"
 msgstr "Відкрити довідкову сторінку для прискорювачів"
 
-#: ../src/gui/accelerators.c:3003
+#: ../src/gui/accelerators.c:3007
 msgid "restore..."
 msgstr "Відновити..."
 
-#: ../src/gui/accelerators.c:3004
+#: ../src/gui/accelerators.c:3008
 msgid "restore default shortcuts or previous state"
 msgstr "Відновити прискорювачі за замовчуванням або попередній стан"
 
-#: ../src/gui/accelerators.c:3008 ../src/libs/styles.c:932
+#: ../src/gui/accelerators.c:3012 ../src/libs/styles.c:932
 #: ../src/libs/tagging.c:3316
 msgid "import..."
 msgstr "Імпортувати..."
 
-#: ../src/gui/accelerators.c:3009
+#: ../src/gui/accelerators.c:3013
 msgid "fully or partially import shortcuts from file"
 msgstr "Повністю або частково імпортувати клавіатурні прискорювачі з файлу"
 
-#: ../src/gui/accelerators.c:3013 ../src/libs/styles.c:939
+#: ../src/gui/accelerators.c:3017 ../src/libs/styles.c:939
 #: ../src/libs/tagging.c:3319
 msgid "export..."
 msgstr "Експортувати..."
 
-#: ../src/gui/accelerators.c:3014
+#: ../src/gui/accelerators.c:3018
 msgid "fully or partially export shortcuts to file"
 msgstr "Повністю або частково експортувати клавіатурні прискорювачі в файл"
 
-#: ../src/gui/accelerators.c:3022
+#: ../src/gui/accelerators.c:3026
 msgid ""
 "the recommended way to assign shortcuts to visual elements is the <b>visual "
 "shortcut mapping</b> mode.\n"
@@ -10783,33 +10787,33 @@ msgstr ""
 "\n"
 "<i>Клікніть <b> тричі </b>, щоб назавжди закрити це сповіщення</i>"
 
-#: ../src/gui/accelerators.c:3453
+#: ../src/gui/accelerators.c:3457
 msgid "reinitialising input devices"
 msgstr "Повторно ініціалізувати пристрої введення"
 
-#: ../src/gui/accelerators.c:3595
+#: ../src/gui/accelerators.c:3599
 msgid "down move"
 msgstr "Переміщення вниз"
 
-#: ../src/gui/accelerators.c:3595
+#: ../src/gui/accelerators.c:3599
 msgid "flip top/bottom first/last"
 msgstr "Перевернути верх/низ перший/останній"
 
-#: ../src/gui/accelerators.c:3680
+#: ../src/gui/accelerators.c:3684
 msgid "fallback to move"
 msgstr "Резервна дія з рухом"
 
-#: ../src/gui/accelerators.c:3922
+#: ../src/gui/accelerators.c:3926
 #, c-format
 msgid "%s not assigned"
 msgstr "%s не призначено"
 
-#: ../src/gui/accelerators.c:4103
+#: ../src/gui/accelerators.c:4107
 #, c-format
 msgid "%s assigned to %s"
 msgstr "%s призначено на %s"
 
-#: ../src/gui/accelerators.c:4322
+#: ../src/gui/accelerators.c:4326
 msgid "short key press resets stuck keys"
 msgstr "Коротке натискання клавіші скидає застряглі клавіші"
 
@@ -13196,7 +13200,7 @@ msgstr "Знешумлення кольорового шуму"
 msgid "denoise"
 msgstr "Знешумлення"
 
-#: ../src/iop/atrous.c:876 ../src/iop/bloom.c:75 ../src/iop/diffuse.c:472
+#: ../src/iop/atrous.c:876 ../src/iop/bloom.c:78 ../src/iop/diffuse.c:472
 msgid "bloom"
 msgstr "Світіння"
 
@@ -13525,7 +13529,7 @@ msgstr "Основні коригування"
 msgid "apply usual image adjustments"
 msgstr "Застосування звичайних коригувань зображення"
 
-#: ../src/iop/basicadj.c:173 ../src/iop/bilat.c:88 ../src/iop/bloom.c:81
+#: ../src/iop/basicadj.c:173 ../src/iop/bilat.c:88 ../src/iop/bloom.c:84
 #: ../src/iop/blurs.c:93 ../src/iop/borders.c:323 ../src/iop/censorize.c:83
 #: ../src/iop/colisa.c:90 ../src/iop/colorcontrast.c:89
 #: ../src/iop/colorize.c:98 ../src/iop/colormapping.c:153
@@ -13615,8 +13619,8 @@ msgstr "Локальний контраст"
 msgid "manipulate local and global contrast separately"
 msgstr "Маніпулювати локальним та глобальним контрастом окремо"
 
-#: ../src/iop/bilat.c:89 ../src/iop/bilat.c:91 ../src/iop/bloom.c:82
-#: ../src/iop/bloom.c:84 ../src/iop/colisa.c:91 ../src/iop/colisa.c:93
+#: ../src/iop/bilat.c:89 ../src/iop/bilat.c:91 ../src/iop/bloom.c:85
+#: ../src/iop/bloom.c:87 ../src/iop/colisa.c:91 ../src/iop/colisa.c:93
 #: ../src/iop/colorcontrast.c:90 ../src/iop/colorcontrast.c:92
 #: ../src/iop/colorcorrection.c:78 ../src/iop/colorcorrection.c:80
 #: ../src/iop/colorize.c:101 ../src/iop/colormapping.c:156
@@ -13628,7 +13632,7 @@ msgstr "Маніпулювати локальним та глобальним к
 msgid "non-linear, Lab, display-referred"
 msgstr "нелінійний простір, Lab, на основі відображення"
 
-#: ../src/iop/bilat.c:90 ../src/iop/bloom.c:83 ../src/iop/colisa.c:92
+#: ../src/iop/bilat.c:90 ../src/iop/bloom.c:86 ../src/iop/colisa.c:92
 #: ../src/iop/colorcontrast.c:91 ../src/iop/colorcorrection.c:79
 #: ../src/iop/colorize.c:100 ../src/iop/colormapping.c:155
 #: ../src/iop/colorreconstruction.c:122 ../src/iop/colorzones.c:148
@@ -13738,24 +13742,24 @@ msgstr "Наскільки розмивати зелений"
 msgid "how much to blur blue"
 msgstr "Наскільки розмивати синій"
 
-#: ../src/iop/bloom.c:80
-msgid "apply Orton effect for a dreamy aetherical look"
+#: ../src/iop/bloom.c:83
+msgid "apply Orton effect for a dreamy ethereal look"
 msgstr "Застосувати ефект Ортона для мрійливого ефірного вигляду"
 
-#: ../src/iop/bloom.c:352 ../src/iop/soften.c:351 ../src/libs/camera.c:567
+#: ../src/iop/bloom.c:418 ../src/iop/soften.c:351 ../src/libs/camera.c:567
 #: ../src/libs/masks.c:106
 msgid "size"
 msgstr "Розмір"
 
-#: ../src/iop/bloom.c:354
+#: ../src/iop/bloom.c:420
 msgid "the size of bloom"
 msgstr "Розмір світіння"
 
-#: ../src/iop/bloom.c:358
+#: ../src/iop/bloom.c:424
 msgid "the threshold of light"
 msgstr "Поріг світла"
 
-#: ../src/iop/bloom.c:362
+#: ../src/iop/bloom.c:428
 msgid "the strength of bloom"
 msgstr "Інтенсивність світіння"
 
@@ -26452,50 +26456,50 @@ msgstr "Розпочато новий сеанс '%s'"
 msgid "no camera with tethering support available for use..."
 msgstr "Камер з підтримкою віддаленого керування не знайдено..."
 
-#: ../src/views/view.c:1366
+#: ../src/views/view.c:1370
 msgid "left click"
 msgstr "Лівий клік"
 
-#: ../src/views/view.c:1369
+#: ../src/views/view.c:1373
 msgid "right click"
 msgstr "Правий клік"
 
-#: ../src/views/view.c:1372
+#: ../src/views/view.c:1376
 msgid "middle click"
 msgstr "Середній клік"
 
-#: ../src/views/view.c:1378
+#: ../src/views/view.c:1382
 msgid "left double-click"
 msgstr "Лівий подвійний клік"
 
-#: ../src/views/view.c:1381
+#: ../src/views/view.c:1385
 msgid "right double-click"
 msgstr "Правий подвійний клік"
 
-#: ../src/views/view.c:1384
+#: ../src/views/view.c:1388
 msgid "drag and drop"
 msgstr "Перетягнути"
 
-#: ../src/views/view.c:1387
+#: ../src/views/view.c:1391
 msgid "left click+drag"
 msgstr "Лівий клік+перетягування"
 
-#: ../src/views/view.c:1390
+#: ../src/views/view.c:1394
 msgid "right click+drag"
 msgstr "Правий клік+перетягування"
 
-#: ../src/views/view.c:1412
+#: ../src/views/view.c:1416
 msgid "darktable - accels window"
 msgstr "Darktable - вікно прискорювачів"
 
-#: ../src/views/view.c:1461
+#: ../src/views/view.c:1465
 msgid "switch to a classic window which will stay open after key release"
 msgstr ""
 "Перейти на класичне вікно, яке залишатиметься відкритим після відпускання "
 "клавіші"
 
 #. we add the mouse actions too
-#: ../src/views/view.c:1528
+#: ../src/views/view.c:1532
 msgid "mouse actions"
 msgstr "Дії за допомогою миші"
 
