@@ -39,6 +39,7 @@
 #include "imageio/imageio_common.h"
 #include "imageio/imageio_dng.h"
 #include "imageio/imageio_module.h"
+#include "imageio/imageio_rawspeed.h"
 
 #include "gui/gtk.h"
 
@@ -380,7 +381,7 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai,
   if(!d->pixels)
   {
     d->first_imgid = imgid;
-    d->first_filter = image.buf_dsc.filters;
+    d->first_filter = dt_rawspeed_crop_dcraw_filters(image.buf_dsc.filters, image.crop_x, image.crop_y);
     // sensor layout is just passed on to be written to dng.
     // we offset it to the crop of the image here, so we don't
     // need to load in the FCxtrans dependency into the dng writer.
@@ -427,7 +428,6 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai,
   }
   else if(datai->width != d->wd
           || datai->height != d->ht
-          || d->first_filter != image.buf_dsc.filters
           || d->orientation != image.orientation)
   {
     dt_control_log(_("images have to be of same size and orientation!"));
