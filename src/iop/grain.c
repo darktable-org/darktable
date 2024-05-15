@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -35,8 +36,10 @@
 #include <inttypes.h>
 
 #define GRAIN_LIGHTNESS_STRENGTH_SCALE 0.15f
+
 // (m_pi/2)/4 = half hue colorspan
 #define GRAIN_HUE_COLORRANGE 0.392699082
+
 #define GRAIN_HUE_STRENGTH_SCALE 0.25
 #define GRAIN_SATURATION_STRENGTH_SCALE 0.25
 #define GRAIN_RGB_STRENGTH_SCALE 0.25
@@ -412,13 +415,20 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_LAB;
 }
 
-// see: http://eternallyconfuzzled.com/tuts/algorithms/jsw_tut_hashing.aspx
-// this is the modified bernstein
-static unsigned int _hash_string(char *s)
+// This is a modified Bernstein hash known as DJBX33X (hash x 33 with bitwise XOR).
+// However, we calculate the hash from the end of the string to the beginning. Why?
+// We hash the image filename. This allows us to get rid of static grain when
+// creating a video from a sequence of images, the names of which will usually
+// differ by the last characters. Therefore, we start hashing from the changed
+// characters so that these changes have a greater impact on the resulting hash.
+static unsigned int _hash_string(char *str)
 {
-  unsigned int h = 0;
-  while(*s) h = 33 * h ^ *s++;
-  return h;
+  unsigned int hash = 5381;
+
+  for(int i = strlen(str) - 1; i >= 0; i--)
+    hash = ((hash << 5) + hash) ^ str[i];
+
+  return hash;
 }
 
 void process(struct dt_iop_module_t *self,
