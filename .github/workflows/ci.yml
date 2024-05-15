@@ -199,6 +199,7 @@ jobs:
         with:
           submodules: false
           path: src
+          fetch-depth: 1
       - name: Get only those submodules that are needed for build
         run: |
           cd src
@@ -314,6 +315,7 @@ jobs:
         with:
           submodules: false
           path: src
+          fetch-depth: 1
       - name: Get only those submodules that are needed for build
         run: |
           cd src
@@ -375,6 +377,7 @@ jobs:
         with:
           submodules: false
           path: src
+          fetch-depth: 1
       - name: Get only those submodules that are needed for build
         run: |
           cd src
