@@ -301,16 +301,11 @@ void dt_dev_pixelpipe_set_icc(dt_dev_pixelpipe_t *pipe,
 void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
 {
   dt_pthread_mutex_lock(&pipe->backbuf_mutex);
-  pipe->backbuf = NULL;
   // blocks while busy and sets shutdown bit:
   dt_dev_pixelpipe_cleanup_nodes(pipe);
   // so now it's safe to clean up cache:
   dt_dev_pixelpipe_cache_cleanup(pipe);
-  dt_pthread_mutex_unlock(&pipe->backbuf_mutex);
 
-  dt_pthread_mutex_destroy(&(pipe->backbuf_mutex));
-  dt_pthread_mutex_destroy(&(pipe->busy_mutex));
-  dt_pthread_mutex_destroy(&(pipe->mutex));
   pipe->icc_type = DT_COLORSPACE_NONE;
   g_free(pipe->icc_filename);
   pipe->icc_filename = NULL;
@@ -319,6 +314,10 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
   pipe->backbuf = NULL;
   pipe->backbuf_width = 0;
   pipe->backbuf_height = 0;
+
+  dt_pthread_mutex_unlock(&pipe->backbuf_mutex);
+  dt_pthread_mutex_destroy(&(pipe->backbuf_mutex));
+
   pipe->output_imgid = NO_IMGID;
 
   if(pipe->forms)
@@ -326,6 +325,8 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
     g_list_free_full(pipe->forms, (void (*)(void *))dt_masks_free_form);
     pipe->forms = NULL;
   }
+  dt_pthread_mutex_destroy(&(pipe->busy_mutex));
+  dt_pthread_mutex_destroy(&(pipe->mutex));
 }
 
 void dt_dev_pixelpipe_cleanup_nodes(dt_dev_pixelpipe_t *pipe)
