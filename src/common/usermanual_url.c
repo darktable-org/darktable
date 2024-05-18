@@ -121,6 +121,7 @@ dt_help_url urls_db[] =
   {"colorchecker",               "module-reference/processing-modules/color-look-up-table/"},
   {"colorcontrast",              "module-reference/processing-modules/color-contrast/"},
   {"colorcorrection",            "module-reference/processing-modules/color-correction/"},
+  {"colorequal",                 "module-reference/processing-modules/color-equalizer/"},
   {"colorin",                    "module-reference/processing-modules/input-color-profile/"},
   {"colorize",                   "module-reference/processing-modules/colorize/"},
   {"colormapping",               "module-reference/processing-modules/color-mapping/"},
@@ -133,6 +134,7 @@ dt_help_url urls_db[] =
   {"demosaic",                   "module-reference/processing-modules/demosaic/"},
   {"denoiseprofile",             "module-reference/processing-modules/denoise-profiled/"},
   {"dither",                     "module-reference/processing-modules/dithering/"},
+  {"enlargecanvas",              "module-reference/processing-modules/enlarge-canvas/"},
   {"equalizer",                  NULL}, // deprecated, replaced by atrous
   {"exposure",                   "module-reference/processing-modules/exposure/"},
   {"filmic",                     "module-reference/processing-modules/filmic-rgb/"},
@@ -156,6 +158,7 @@ dt_help_url urls_db[] =
   {"monochrome",                 "module-reference/processing-modules/monochrome/"},
   {"negadoctor",                 "module-reference/processing-modules/negadoctor/"},
   {"nlmeans",                    "module-reference/processing-modules/astrophoto-denoise/"},
+  {"overlay",                    "module-reference/processing-modules/composite/"},
   {"profile_gamma",              "module-reference/processing-modules/unbreak-input-profile/"},
   {"rawdenoise",                 "module-reference/processing-modules/raw-denoise/"},
   {"rawprepare",                 "module-reference/processing-modules/raw-black-white-point/"},
