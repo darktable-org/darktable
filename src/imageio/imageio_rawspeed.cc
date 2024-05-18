@@ -208,7 +208,10 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img,
     img->raw_black_level = r->blackLevel;
     img->raw_white_point = r->whitePoint.value_or((1U << 16)-1);
 
-    if(!r->blackAreas.empty() || !r->blackLevelSeparate)
+    // NOTE: while it makes sense to always sample black areas when they exist,
+    // black area handling is broken in rawspeed, so don't do that for now.
+    // https://github.com/darktable-org/rawspeed/issues/389
+    if(!r->blackLevelSeparate)
     {
       r->calculateBlackAreas();
     }
