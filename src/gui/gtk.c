@@ -4124,6 +4124,7 @@ void dt_gui_new_collapsible_section(dt_gui_collapsible_section_t *cs,
   GtkWidget *destdisp_head = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
   GtkWidget *header_evb = gtk_event_box_new();
   GtkWidget *destdisp = dt_ui_section_label_new(label);
+  cs->label = destdisp;
   dt_gui_add_class(destdisp_head, "dt_section_expander");
   gtk_container_add(GTK_CONTAINER(header_evb), destdisp);
 
@@ -4151,6 +4152,16 @@ void dt_gui_new_collapsible_section(dt_gui_collapsible_section_t *cs,
 
   g_signal_connect(G_OBJECT(header_evb), "button-press-event",
                    G_CALLBACK(_collapse_expander_click), cs);
+}
+
+void dt_gui_collapsible_section_set_label(dt_gui_collapsible_section_t *cs,
+                                          const char *label)
+{
+  if (!cs || !cs->label || !label)
+    return;
+  gtk_label_set_text(GTK_LABEL(cs->label), label);
+//  dt_control_queue_redraw_widget(cs->label);
+  dt_control_queue_redraw();
 }
 
 gboolean dt_gui_long_click(const int second,
