@@ -32,7 +32,6 @@ dt_help_url urls_db[] =
   {"layout_zoomable",            "lighttable/lighttable-modes/zoomable-lighttable/"},
   {"layout_culling",             "lighttable/lighttable-modes/culling/"},
   {"layout_preview",             "lighttable/lighttable-modes/full-preview/"},
-  {"filter",                     NULL},
   {"colorlabels",                "lighttable/digital-asset-management/star-color/#color-labels"},
   {"import",                     "module-reference/utility-modules/lighttable/import/"},
   {"import_dialog",              "module-reference/utility-modules/lighttable/import/#import-dialog"},
