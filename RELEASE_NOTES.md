@@ -257,11 +257,11 @@ changes (where available).
 
 ### White Balance Presets
 
-- ???
+- Canon EOS R6 Mark II (requires LibRaw 202403 and later)
 
 ### Noise Profiles
 
-- ???
+- Canon EOS R6 Mark II (requires LibRaw 202403 and later)
 
 ### Missing Compression Mode Support
 
