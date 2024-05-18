@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2018-2022 darktable developers.
+    Copyright (C) 2018-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -184,13 +184,16 @@ dt_help_url urls_db[] =
 
 char *dt_get_help_url(const char *name)
 {
-  if(name==NULL) return NULL;
+  if(name == NULL)
+    return NULL;
 
-  for(int k=0; k< sizeof(urls_db)/2/sizeof(char *); k++)
-    if(!strcmp(urls_db[k].name, name)) return urls_db[k].url;
+  for(int k = 0; k < sizeof(urls_db)/2/sizeof(char *); k++)
+    if(!strcmp(urls_db[k].name, name))
+      return urls_db[k].url;
 
   return NULL;
 }
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
