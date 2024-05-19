@@ -423,15 +423,27 @@ void gui_init(dt_iop_module_t *self)
 
   g->percent_left = dt_bauhaus_slider_from_params(self, "percent_left");
   dt_bauhaus_slider_set_format(g->percent_left, "%");
+  gtk_widget_set_tooltip_text(g->percent_left,
+                              _("how much to enlarge the canvas to the left "
+                              "as a percentage of the original image width"));
 
   g->percent_right = dt_bauhaus_slider_from_params(self, "percent_right");
   dt_bauhaus_slider_set_format(g->percent_right, "%");
+  gtk_widget_set_tooltip_text(g->percent_right,
+                              _("how much to enlarge the canvas to the right "
+                              "as a percentage of the original image width"));
 
   g->percent_top = dt_bauhaus_slider_from_params(self, "percent_top");
   dt_bauhaus_slider_set_format(g->percent_top, "%");
+  gtk_widget_set_tooltip_text(g->percent_top,
+                              _("how much to enlarge the canvas to the top "
+                              "as a percentage of the original image height"));
 
   g->percent_bottom = dt_bauhaus_slider_from_params(self, "percent_bottom");
   dt_bauhaus_slider_set_format(g->percent_bottom, "%");
+  gtk_widget_set_tooltip_text(g->percent_bottom,
+                              _("how much to enlarge the canvas to the bottom "
+                              "as a percentage of the original image height"));
 
   g->color = dt_bauhaus_combobox_from_params(self, "color");
   gtk_widget_set_tooltip_text(g->color, _("select the color of the enlarged canvas"));
