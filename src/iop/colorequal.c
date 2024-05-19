@@ -379,7 +379,7 @@ static void _init_satweights(const float contrast)
 
 static inline float _get_satweight(const float sat)
 {
-  const float isat = (float)SATSIZE * (1.0f + CLAMP(sat, -0.5f, 0.5f));
+  const float isat = (float)SATSIZE * (1.0f + CLAMP(sat, -1.0f, 1.0f - (1.0f/SATSIZE)));
   const float base = floorf(isat);
   const int i = base;
   return satweights[i] + (isat - base) * (satweights[i+1] - satweights[i]);
@@ -540,14 +540,15 @@ void _prefilter_chromaticity(float *const restrict UV,
   for(size_t k = 0; k < pixels; k++)
   {
     // For each correction factor, we re-express it as a[0] * U + a[1] * V + b
-    const float uv[2] = { UV[2 * k + 0], UV[2 * k + 1] };
-    const float cv[2] = { a_full[4 * k + 0] * uv[0] + a_full[4 * k + 1] * uv[1] + b_full[2 * k + 0],
-                          a_full[4 * k + 2] * uv[0] + a_full[4 * k + 3] * uv[1] + b_full[2 * k + 1] };
+    const float uv0 = UV[2 * k + 0];
+    const float uv1 = UV[2 * k + 1];
+    const float cv0 = a_full[4 * k + 0] * uv0 + a_full[4 * k + 1] * uv1 + b_full[2 * k + 0];
+    const float cv1 = a_full[4 * k + 2] * uv0 + a_full[4 * k + 3] * uv1 + b_full[2 * k + 1];
 
-    // we avoid chroma blurring into achromatic areas by interpolating
+    // we avoid chroma blurring into achromatic areas by interpolating with satweight
     // input UV vs corrected UV
-    UV[2 * k + 0] = interpolatef(_get_satweight(saturation[k] - sat_shift), cv[0], uv[0]);
-    UV[2 * k + 1] = interpolatef(_get_satweight(saturation[k] - sat_shift), cv[1], uv[1]);
+    UV[2 * k + 0] = interpolatef(_get_satweight(saturation[k] - sat_shift), cv0, uv0);
+    UV[2 * k + 1] = interpolatef(_get_satweight(saturation[k] - sat_shift), cv1, uv1);
   }
 
   dt_free_align(a_full);
@@ -758,11 +759,13 @@ void _guide_with_chromaticity(float *const restrict UV,
   for(size_t k = 0; k < pixels; k++)
   {
     // For each correction factor, we re-express it as a[0] * U + a[1] * V + b
-    const float uv[2] = { UV[2 * k + 0], UV[2 * k + 1] };
-    const float cv[2] = { a_full[4 * k + 0] * uv[0] + a_full[4 * k + 1] * uv[1] + b_full[2 * k + 0],
-                          a_full[4 * k + 2] * uv[0] + a_full[4 * k + 3] * uv[1] + b_full[2 * k + 1] };
-    corrections[2 * k + 1] = interpolatef(_get_satweight(saturation[k] - sat_shift), cv[0], 1.0f);
-    b_corrections[k] = interpolatef(gradients[k] * _get_satweight(saturation[k] - bright_shift), cv[1], 0.0f);
+    // we avoid chroma blurring into achromatic areas by interpolating with satweight
+    const float uv0 = UV[2 * k + 0];
+    const float uv1 = UV[2 * k + 1];
+    const float cv_saturation = a_full[4 * k + 0] * uv0 + a_full[4 * k + 1] * uv1 + b_full[2 * k + 0];
+    const float cv_brightness = a_full[4 * k + 2] * uv0 + a_full[4 * k + 3] * uv1 + b_full[2 * k + 1];
+    corrections[2 * k + 1] = interpolatef(_get_satweight(saturation[k] - sat_shift), cv_saturation, 1.0f);
+    b_corrections[k] = interpolatef(gradients[k] * _get_satweight(saturation[k] - bright_shift), cv_brightness, 0.0f);
   }
 
   dt_free_align(a_full);
@@ -998,16 +1001,18 @@ void process(struct dt_iop_module_t *self,
       }
     }
 
+    // show the weighing function
     if((mode == BRIGHTNESS_GRAD) || (mode == SATURATION_GRAD))
     {
-      for(int col = 0; col < 8 * roi_out->width; col++)
+      const float scaler = (float)roi_out->width * 16.0f;
+      const float eps = 0.5f / (float)roi_out->height;
+      for(int col = 0; col < 16 * roi_out->width; col++)
       {
-        const float sat = (float)col / (float)roi_out->width / 8.0f;
-        const float weight = _get_satweight(sat - (mode == SATURATION_GRAD ? sat_shift : bright_shift));
-        if(weight > 0.001f && weight < 0.999f)
+        const float weight = _get_satweight((float)col / scaler - (mode == SATURATION_GRAD ? sat_shift : bright_shift));
+        if(weight > eps && weight < 1.0f - eps)
         {
           const int row = (int)((1.0f - weight) * (float)(roi_out->height-1));
-          const size_t k = row * roi_out->width + col / 8;
+          const size_t k = row * roi_out->width + col / 16;
           out[4*k] = out[4*k+2] = 0.0f;
           out[4*k+1] = 1.0f;
         }
