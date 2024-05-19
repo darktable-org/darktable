@@ -4160,8 +4160,7 @@ void dt_gui_collapsible_section_set_label(dt_gui_collapsible_section_t *cs,
   if (!cs || !cs->label || !label)
     return;
   gtk_label_set_text(GTK_LABEL(cs->label), label);
-//  dt_control_queue_redraw_widget(cs->label);
-  dt_control_queue_redraw();
+  dt_control_queue_redraw_widget(cs->label);
 }
 
 gboolean dt_gui_long_click(const int second,

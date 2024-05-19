@@ -598,7 +598,6 @@ static gboolean _area_mapping_active(const dt_iop_channelmixer_rgb_gui_data_t *g
 {
   return g && g->spot_mode && dt_bauhaus_combobox_get(g->spot_mode) != DT_SPOT_MODE_MEASURE &&
     ((g->lightness_spot && dt_bauhaus_slider_get_val(g->lightness_spot) != 50.0f) ||
-     (g->hue_spot && dt_bauhaus_slider_get_val(g->hue_spot) != 0.0f) ||
      (g->chroma_spot && dt_bauhaus_slider_get_val(g->chroma_spot) != 0.0f));
 }
 
@@ -3995,6 +3994,9 @@ static void _spot_settings_changed_callback(GtkWidget *slider,
   dt_conf_set_float("darkroom/modules/channelmixerrgb/chroma", Lch_target[1]);
   dt_conf_set_float("darkroom/modules/channelmixerrgb/hue", Lch_target[2] * 360.f);
   dt_conf_set_bool("darkroom/modules/channelmixerrgb/use_mixing", use_mixing);
+
+  // update the "active" flag in the GUI
+  dt_gui_collapsible_section_set_label(&g->csspot, _area_mapping_section_text(g));
 
   ++darktable.gui->reset;
   _paint_hue(self);
