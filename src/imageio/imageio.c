@@ -905,8 +905,8 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
       }
     }
     dt_print(DT_DEBUG_ALWAYS,"[dt_imageio_export_with_flags] %s%s%s%s%s modules:%s%s\n",
-      use_style && appending  ? "appending style " : "",
-      use_style && !appending ? "appending style " : "",
+      use_style && appending  ? "append style history " : "",
+      use_style && !appending ? "replace style history " : "",
       use_style               ? "`" : "",
       use_style               ? format_params->style : "",
       use_style               ? "'." : "",
@@ -963,11 +963,11 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
 
   // note: not perfect but a reasonable good guess looking at overall pixelpipe requirements
   // and specific stuff in finalscale.
-  const double max_possible_scale =
-      dt_get_available_mem() / (64 * sizeof(float) * pipe.processed_width * pipe.processed_height);
+  const double max_possible_scale = fmin(100.0, fmax(1.0, // keep maximum allowed scale as we had in 4.6
+      (double)dt_get_available_mem() / (double)(1 + 64 * sizeof(float) * pipe.processed_width * pipe.processed_height)));
 
   const gboolean doscale = upscale && ((width > 0 || height > 0) || is_scaling);
-  double max_scale = doscale ? max_possible_scale : 1.00;
+  const double max_scale = doscale ? max_possible_scale : 1.00;
 
   double scale = _get_pipescale(&pipe, width, height, max_scale);
   float origin[2] = { 0.0f, 0.0f };
@@ -994,10 +994,11 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
 
   const int processed_width = floor(scale * pipe.processed_width);
   const int processed_height = floor(scale * pipe.processed_height);
-
+  const gboolean size_warning = processed_width < 1 || processed_height < 1;
   dt_print(DT_DEBUG_IMAGEIO,
-           "[dt_imageio_export] [%s] imgid %d, %ix%i --> %ix%i (scale=%.4f, maxscale=%.4f)."
+           "[dt_imageio_export] %s%s imgid %d, %ix%i --> %ix%i (scale=%.4f, maxscale=%.4f)."
            " upscale=%s, hq=%s\n",
+           size_warning ? "**missing size** " : "",
            thumbnail_export ? "thumbnail" : "export", imgid,
            pipe.processed_width, pipe.processed_height,
            processed_width, processed_height, scale, max_scale,
