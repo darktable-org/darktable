@@ -379,49 +379,15 @@ static void _init_satweights(const float contrast)
 
 static inline float _get_satweight(const float sat)
 {
-  const float isat = (float)SATSIZE * (1.0f + CLAMP(sat, -0.5f, 0.5f));
+  const float isat = (float)SATSIZE * (1.0f + CLAMP(sat, -1.0f, 1.0f-(1.0f/SATSIZE)));
   const float base = floorf(isat);
   const int i = base;
   return satweights[i] + (isat - base) * (satweights[i+1] - satweights[i]);
 }
 
-void _prefilter_chromaticity(float *const restrict UV,
-                             float *const restrict saturation,
-                             const dt_iop_roi_t *const roi,
-                             const float csigma,
-                             const float epsilon,
-                             const float sat_shift)
+DT_OMP_DECLARE_SIMD(aligned(ds_UV))
+static float *const _init_covariance(const size_t ds_pixels, const float *const restrict ds_UV)
 {
-  // We guide the 3-channels corrections with the 2-channels
-  // chromaticity coordinates UV aka we express corrections = a * UV +
-  // b where a is a 2×2 matrix and b a constant Therefore the guided
-  // filter computation is a bit more complicated than the typical
-  // 1-channel case.  We use by-the-book 3-channels fast guided filter
-  // as in http://kaiminghe.com/eccv10/ but obviously reduced to 2.
-  // We know that it tends to oversmooth the input where its intensity
-  // is close to 0, but this is actually desirable here since
-  // chromaticity -> 0 means neutral greys and we want to discard them
-  // as much as possible from any color equalization.
-
-  const float sigma = csigma * roi->scale;
-  const size_t width = roi->width;
-  const size_t height = roi->height;
-  // possibly downsample for speed-up
-  const size_t pixels = width * height;
-  const float scaling = _get_scaling(sigma);
-  const float gsigma = MAX(0.2f, 0.5f * sigma / scaling);
-  const size_t ds_height = height / scaling;
-  const size_t ds_width = width / scaling;
-  const size_t ds_pixels = ds_width * ds_height;
-  const gboolean resized = width != ds_width || height != ds_height;
-
-  float *ds_UV = UV;
-  if(resized)
-  {
-    ds_UV = dt_alloc_align_float(ds_pixels * 2);
-    interpolate_bilinear(UV, width, height, ds_UV, ds_width, ds_height, 2);
-  }
-
   // Init the symmetric covariance matrix of the guide (4 elements by pixel) :
   // covar = [[ covar(U, U), covar(U, V)],
   //          [ covar(V, U), covar(V, V)]]
@@ -429,47 +395,50 @@ void _prefilter_chromaticity(float *const restrict UV,
   // so here, we init it with x * y, compute all the avg() at the next step
   // and subtract avg(x) * avg(y) later
   float *const restrict covariance = dt_alloc_align_float(ds_pixels * 4);
+  if(!covariance)
+    return covariance;
 
-  DT_OMP_FOR_SIMD(aligned(ds_UV, covariance: 64))
+  DT_OMP_FOR()
   for(size_t k = 0; k < ds_pixels; k++)
   {
     // corr(U, U)
-    covariance[4 * k + 0] = ds_UV[2 * k] * ds_UV[2 * k];
+    covariance[4 * k + 0] = ds_UV[2 * k + 0] * ds_UV[2 * k + 0];
     // corr(U, V)
     covariance[4 * k + 1] = covariance[4 * k + 2] = ds_UV[2 * k] * ds_UV[2 * k + 1];
     // corr(V, V)
     covariance[4 * k + 3] = ds_UV[2 * k + 1] * ds_UV[2 * k + 1];
   }
+  return covariance;
+}
 
-  // Compute the local averages of everything over the window size We
-  // use a gaussian blur as a weighted local average because it's a
-  // radial function so it will not favour vertical and horizontal
-  // edges over diagonal ones as the by-the-book box blur (unweighted
-  // local average) would.
-
-  // We use unbounded signals, so don't care for the internal value clipping
-  _mean_gaussian(ds_UV, ds_width, ds_height, 2, gsigma);
-  _mean_gaussian(covariance, ds_width, ds_height, 4, gsigma);
-
+DT_OMP_DECLARE_SIMD(aligned(ds_UV, covariance: 64))
+static void _finish_covariance(const size_t ds_pixels,
+                               const float *const restrict ds_UV,
+                               float *const restrict covariance)
+{
   // Finish the UV covariance matrix computation by subtracting avg(x) * avg(y)
   // to avg(x * y) already computed
-  DT_OMP_FOR_SIMD(aligned(ds_UV, covariance: 64))
+  DT_OMP_FOR()
   for(size_t k = 0; k < ds_pixels; k++)
   {
     // covar(U, U) = var(U)
-    covariance[4 * k + 0] -= ds_UV[2 * k] * ds_UV[2 * k];
+    covariance[4 * k + 0] -= ds_UV[2 * k + 0] * ds_UV[2 * k + 0];
     // covar(U, V)
-    covariance[4 * k + 1] -= ds_UV[2 * k] * ds_UV[2 * k + 1];
-    covariance[4 * k + 2] -= ds_UV[2 * k] * ds_UV[2 * k + 1];
+    covariance[4 * k + 1] -= ds_UV[2 * k + 0] * ds_UV[2 * k + 1];
+    covariance[4 * k + 2] -= ds_UV[2 * k + 0] * ds_UV[2 * k + 1];
     // covar(V, V) = var(V)
     covariance[4 * k + 3] -= ds_UV[2 * k + 1] * ds_UV[2 * k + 1];
   }
+}
 
-  // Compute a and b the params of the guided filters
-  float *const restrict a = dt_alloc_align_float(4 * ds_pixels);
-  float *const restrict b = dt_alloc_align_float(2 * ds_pixels);
-
-  DT_OMP_FOR_SIMD(aligned(ds_UV, covariance, a, b: 64))
+DT_OMP_DECLARE_SIMD(aligned(ds_UV, covariance, a, b: 64))
+static void _prepare_prefilter(const size_t ds_pixels, const float epsilon,
+                               const float *const restrict ds_UV,
+                               const float *const restrict covariance,
+                               float *const restrict a,
+                               float *const restrict b)
+{
+  DT_OMP_FOR()
   for(size_t k = 0; k < ds_pixels; k++)
   {
     // Extract the 2×2 covariance matrix sigma = cov(U, V) at current pixel
@@ -514,30 +483,17 @@ void _prefilter_chromaticity(float *const restrict UV,
       - a[4 * k + 2] * ds_UV[2 * k + 0]
       - a[4 * k + 3] * ds_UV[2 * k + 1];
   }
+}
 
-  dt_free_align(covariance);
-  if(ds_UV != UV) dt_free_align(ds_UV);
-
-  // Compute the averages of a and b for each filter
-  _mean_gaussian(a, ds_width, ds_height, 4, gsigma);
-  _mean_gaussian(b, ds_width, ds_height, 2, gsigma);
-
-  // Upsample a and b to real-size image
-  float *a_full = a;
-  float *b_full = b;
-  if(resized)
-  {
-    a_full = dt_alloc_align_float(pixels * 4);
-    b_full = dt_alloc_align_float(pixels * 2);
-    interpolate_bilinear(a, ds_width, ds_height, a_full, width, height, 4);
-    interpolate_bilinear(b, ds_width, ds_height, b_full, width, height, 2);
-    dt_free_align(a);
-    dt_free_align(b);
-  }
-
-  // Apply the guided filter
-  DT_OMP_FOR_SIMD(aligned(a_full, b_full, saturation, UV: 64))
-  for(size_t k = 0; k < pixels; k++)
+DT_OMP_DECLARE_SIMD(aligned(a_full, b_full, saturation, UV: 64))
+static void _apply_prefilter(size_t npixels, float sat_shift,
+                             float *const restrict  UV,
+                             const float *const restrict saturation,
+                             const float *const restrict a_full,
+                             const float *const restrict b_full)
+{
+  DT_OMP_FOR_SIMD()
+  for(size_t k = 0; k < npixels; k++)
   {
     // For each correction factor, we re-express it as a[0] * U + a[1] * V + b
     const float uv[2] = { UV[2 * k + 0], UV[2 * k + 1] };
@@ -546,15 +502,121 @@ void _prefilter_chromaticity(float *const restrict UV,
 
     // we avoid chroma blurring into achromatic areas by interpolating
     // input UV vs corrected UV
-    UV[2 * k + 0] = interpolatef(_get_satweight(saturation[k] - sat_shift), cv[0], uv[0]);
-    UV[2 * k + 1] = interpolatef(_get_satweight(saturation[k] - sat_shift), cv[1], uv[1]);
+    const float satweight = _get_satweight(saturation[k] - sat_shift);
+    UV[2 * k + 0] = interpolatef(satweight, cv[0], uv[0]);
+    UV[2 * k + 1] = interpolatef(satweight, cv[1], uv[1]);
   }
+}
+
+static void _prefilter_chromaticity(float *const restrict UV,
+                             float *const restrict saturation,
+                             const dt_iop_roi_t *const roi,
+                             const float csigma,
+                             const float epsilon,
+                             const float sat_shift)
+{
+  // We guide the 3-channels corrections with the 2-channels
+  // chromaticity coordinates UV aka we express corrections = a * UV +
+  // b where a is a 2×2 matrix and b a constant Therefore the guided
+  // filter computation is a bit more complicated than the typical
+  // 1-channel case.  We use by-the-book 3-channels fast guided filter
+  // as in http://kaiminghe.com/eccv10/ but obviously reduced to 2.
+  // We know that it tends to oversmooth the input where its intensity
+  // is close to 0, but this is actually desirable here since
+  // chromaticity -> 0 means neutral greys and we want to discard them
+  // as much as possible from any color equalization.
+
+  const float sigma = csigma * roi->scale;
+  const size_t width = roi->width;
+  const size_t height = roi->height;
+  // possibly downsample for speed-up
+  const size_t pixels = width * height;
+  const float scaling = _get_scaling(sigma);
+  const float gsigma = MAX(0.2f, 0.5f * sigma / scaling);
+  const size_t ds_height = height / scaling;
+  const size_t ds_width = width / scaling;
+  const size_t ds_pixels = ds_width * ds_height;
+  const gboolean resized = width != ds_width || height != ds_height;
+
+  float *ds_UV = UV;
+  if(resized)
+  {
+    ds_UV = dt_alloc_align_float(ds_pixels * 2);
+    if(!ds_UV)
+      return;	//out of memory, can't run the prefilter
+    interpolate_bilinear(UV, width, height, ds_UV, ds_width, ds_height, 2);
+  }
+  
+  float *const restrict covariance = _init_covariance(ds_pixels,ds_UV);
+  if(!covariance)
+  {
+    if(ds_UV != UV) dt_free_align(ds_UV);
+    return;
+  }
+
+  // Compute the local averages of everything over the window size We
+  // use a gaussian blur as a weighted local average because it's a
+  // radial function so it will not favour vertical and horizontal
+  // edges over diagonal ones as the by-the-book box blur (unweighted
+  // local average) would.
+
+  // We use unbounded signals, so don't care for the internal value clipping
+  _mean_gaussian(ds_UV, ds_width, ds_height, 2, gsigma);
+  _mean_gaussian(covariance, ds_width, ds_height, 4, gsigma);
+
+  _finish_covariance(ds_pixels, ds_UV, covariance);
+
+  // Compute a and b the params of the guided filters
+  float *const restrict a = dt_alloc_align_float(4 * ds_pixels);
+  float *const restrict b = dt_alloc_align_float(2 * ds_pixels);
+
+  if(a && b)
+    _prepare_prefilter(ds_pixels, epsilon, ds_UV, covariance, a, b);
+
+  dt_free_align(covariance);
+  if(ds_UV != UV) dt_free_align(ds_UV);
+  if(!a || !b)
+  {
+    dt_free_align(a);
+    dt_free_align(b);
+    return;
+  }
+
+  // Compute the averages of a and b for each filter
+  _mean_gaussian(a, ds_width, ds_height, 4, gsigma);
+  _mean_gaussian(b, ds_width, ds_height, 2, gsigma);
+
+  // Upsample a and b to real-size image
+  float *a_full = a;
+  float *b_full = b;
+
+  if(resized)
+  {
+    a_full = dt_alloc_align_float(pixels * 4);
+    b_full = dt_alloc_align_float(pixels * 2);
+    if(a_full && b_full)
+    {
+      interpolate_bilinear(a, ds_width, ds_height, a_full, width, height, 4);
+      interpolate_bilinear(b, ds_width, ds_height, b_full, width, height, 2);
+      dt_free_align(a);
+      dt_free_align(b);
+    }
+    else
+    {
+      dt_free_align(a);
+      dt_free_align(b);
+      return;
+    }
+  }
+
+  // Apply the guided filter
+  _apply_prefilter(pixels, sat_shift, UV, saturation, a_full, b_full);
 
   dt_free_align(a_full);
   dt_free_align(b_full);
 }
 
-void _guide_with_chromaticity(float *const restrict UV,
+static void _guide_with_chromaticity(float *const restrict UV,
                               float *const restrict corrections,
                               float *const restrict saturation,
                               float *const restrict b_corrections,
@@ -595,34 +657,40 @@ void _guide_with_chromaticity(float *const restrict UV,
   if(resized)
   {
     ds_UV = dt_alloc_align_float(ds_pixels * 2);
-    interpolate_bilinear(UV, width, height, ds_UV, ds_width, ds_height, 2);
     ds_corrections = dt_alloc_align_float(ds_pixels * 2);
-    interpolate_bilinear(corrections, width, height, ds_corrections, ds_width, ds_height, 2);
     ds_b_corrections = dt_alloc_align_float(ds_pixels);
-    interpolate_bilinear(b_corrections, width, height, ds_b_corrections, ds_width, ds_height, 1);
+    if(ds_UV && ds_corrections && ds_b_corrections)
+    {
+      interpolate_bilinear(UV, width, height, ds_UV, ds_width, ds_height, 2);
+      interpolate_bilinear(corrections, width, height, ds_corrections, ds_width, ds_height, 2);
+      interpolate_bilinear(b_corrections, width, height, ds_b_corrections, ds_width, ds_height, 1);
+    }
+    else
+    {
+      dt_free_align(ds_UV);
+      dt_free_align(ds_corrections);
+      dt_free_align(ds_b_corrections);
+      return;
+    }
   }
 
-  // Init the symmetric covariance matrix of the guide (4 elements by pixel) :
-  // covar = [[ covar(U, U), covar(U, V)],
-  //          [ covar(V, U), covar(V, V)]]
-  // with covar(x, y) = avg(x * y) - avg(x) * avg(y), corr(x, y) = x * y
-  // so here, we init it with x * y, compute all the avg() at the next step
-  // and subtract avg(x) * avg(y) later
-  float *const restrict covariance = dt_alloc_align_float(ds_pixels * 4);
-
-  DT_OMP_FOR_SIMD(aligned(ds_UV, covariance: 64))
-  for(size_t k = 0; k < ds_pixels; k++)
-  {
-    // corr(U, U)
-    covariance[4 * k + 0] = ds_UV[2 * k + 0] * ds_UV[2 * k + 0];
-    // corr(U, V)
-    covariance[4 * k + 1] = covariance[4 * k + 2] = ds_UV[2 * k] * ds_UV[2 * k + 1];
-    // corr(V, V)
-    covariance[4 * k + 3] = ds_UV[2 * k + 1] * ds_UV[2 * k + 1];
-  }
-
+  float *const restrict covariance = _init_covariance(ds_pixels, ds_UV);
   // Get the correlations between corrections and UV
   float *const restrict correlations = dt_alloc_align_float(ds_pixels * 4);
+  if(!covariance || !correlations)
+  {
+    // ran out of memory, so we won't be able to apply the guided filter.
+    // clean up and return now
+    if(resized)
+    {
+      dt_free_align(ds_UV);
+      dt_free_align(ds_corrections);
+      dt_free_align(ds_b_corrections);
+    }
+    dt_free_align(covariance);
+    dt_free_align(correlations);
+    return;
+  }
 
   DT_OMP_FOR_SIMD(aligned(ds_UV, ds_corrections, ds_b_corrections, correlations: 64))
   for(size_t k = 0; k < ds_pixels; k++)
@@ -650,19 +718,7 @@ void _guide_with_chromaticity(float *const restrict UV,
   _mean_gaussian(ds_b_corrections, ds_width, ds_height, 1, 0.1f * gsigma);
   _mean_gaussian(correlations, ds_width, ds_height, 4, gsigma);
 
-  // Finish the UV covariance matrix computation by subtracting avg(x) * avg(y)
-  // to avg(x * y) already computed
-  DT_OMP_FOR_SIMD(aligned(ds_UV, covariance: 64))
-  for(size_t k = 0; k < ds_pixels; k++)
-  {
-    // covar(U, U) = var(U)
-    covariance[4 * k + 0] -= ds_UV[2 * k + 0] * ds_UV[2 * k + 0];
-    // covar(U, V)
-    covariance[4 * k + 1] -= ds_UV[2 * k + 0] * ds_UV[2 * k + 1];
-    covariance[4 * k + 2] -= ds_UV[2 * k + 0] * ds_UV[2 * k + 1];
-    // covar(V, V) = var(V)
-    covariance[4 * k + 3] -= ds_UV[2 * k + 1] * ds_UV[2 * k + 1];
-  }
+  _finish_covariance(ds_pixels, ds_UV, covariance);
 
   // Finish the guide * guided correlation computation
   DT_OMP_FOR_SIMD(aligned(ds_UV, ds_corrections, correlations: 64))
@@ -678,6 +734,20 @@ void _guide_with_chromaticity(float *const restrict UV,
   // Compute a and b the params of the guided filters
   float *const restrict a = dt_alloc_align_float(4 * ds_pixels);
   float *const restrict b = dt_alloc_align_float(2 * ds_pixels);
+  if (!a || !b)
+  {
+    dt_free_align(a);
+    dt_free_align(b);
+    dt_free_align(correlations);
+    dt_free_align(covariance);
+    if(resized)
+    {
+      dt_free_align(ds_corrections);
+      dt_free_align(ds_b_corrections);
+      dt_free_align(ds_UV);
+    }
+    return;
+  }
 
   DT_OMP_FOR_SIMD(aligned(ds_UV, covariance, correlations, ds_corrections, ds_b_corrections, a, b: 64))
   for(size_t k = 0; k < ds_pixels; k++)
@@ -747,10 +817,19 @@ void _guide_with_chromaticity(float *const restrict UV,
   {
     a_full = dt_alloc_align_float(pixels * 4);
     b_full = dt_alloc_align_float(pixels * 2);
-    interpolate_bilinear(a, ds_width, ds_height, a_full, width, height, 4);
-    interpolate_bilinear(b, ds_width, ds_height, b_full, width, height, 2);
-    dt_free_align(a);
-    dt_free_align(b);
+    if(a_full && b_full)
+    {
+      interpolate_bilinear(a, ds_width, ds_height, a_full, width, height, 4);
+      interpolate_bilinear(b, ds_width, ds_height, b_full, width, height, 2);
+      dt_free_align(a);
+      dt_free_align(b);
+    }
+    else
+    {
+      dt_free_align(a);
+      dt_free_align(b);
+      return;
+    }
   }
 
   // Apply the guided filter
@@ -776,10 +855,35 @@ void process(struct dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/,
+                                        self, piece->colors, i, o, roi_in, roi_out))
+    return;
+
+  const int owidth = roi_out->width;
+  const int oheight = roi_out->height;
+  const size_t npixels = (size_t)owidth * oheight;
+  float *restrict UV = NULL;
+  float *restrict corrections = NULL;
+  float *restrict b_corrections = NULL;
+  float *restrict tmp = NULL;
+  float *restrict saturation = NULL;
+  if(!dt_iop_alloc_image_buffers(self, roi_in, roi_out,
+                                 2/*ch per pix*/ | DT_IMGSZ_OUTPUT | DT_IMGSZ_FULL, &UV,
+                                 2               | DT_IMGSZ_OUTPUT | DT_IMGSZ_FULL, &corrections,
+                                 1               | DT_IMGSZ_OUTPUT | DT_IMGSZ_FULL, &b_corrections,
+                                 1               | DT_IMGSZ_OUTPUT | DT_IMGSZ_FULL, &tmp,
+                                 1               | DT_IMGSZ_OUTPUT | DT_IMGSZ_FULL, &saturation,
+                                 0/*end of list*/))
+  {
+    // Uh oh, we didn't have enough memory!  Any buffers that had
+    // already been allocated have been freed, and the module's
+    // trouble flag has been set.  We can simply pass through the
+    // input image and return now, since there isn't anything else we
+    // need to clean up at this point.
+    dt_iop_copy_image_roi(o, i, piece->colors, roi_in, roi_out);
+    return;
+  }
   dt_iop_colorequal_data_t *d = (dt_iop_colorequal_data_t *)piece->data;
-
-  if(piece->colors != 4) return;
-
   dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
   const int mask_mode = g && fullpipe ? g->mask_mode : 0;
@@ -787,9 +891,6 @@ void process(struct dt_iop_module_t *self,
   const float *const restrict in = (float*)i;
   float *const restrict out = (float*)o;
 
-  const int owidth = roi_out->width;
-  const int oheight = roi_out->height;
-  const size_t npixels = (size_t)owidth * oheight;
 
   _init_satweights(d->contrast);
 
@@ -803,12 +904,6 @@ void process(struct dt_iop_module_t *self,
   dt_colormatrix_t output_matrix;
   dt_colormatrix_mul(input_matrix, XYZ_D50_to_D65_CAT16, work_profile->matrix_in);
   dt_colormatrix_mul(output_matrix, work_profile->matrix_out, XYZ_D65_to_D50_CAT16);
-
-  float *const restrict UV = dt_alloc_align_float(npixels * 2);
-  float *const restrict corrections = dt_alloc_align_float(npixels * 2);
-  float *const restrict b_corrections = dt_alloc_align_float(npixels);
-  float *const restrict tmp = dt_alloc_align_float(npixels);
-  float *const restrict saturation = dt_alloc_align_float(npixels);
 
   const float white = Y_to_dt_UCS_L_star(d->white_level);
 
