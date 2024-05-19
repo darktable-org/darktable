@@ -159,6 +159,7 @@ dt_help_url urls_db[] =
   {"negadoctor",                 "module-reference/processing-modules/negadoctor/"},
   {"nlmeans",                    "module-reference/processing-modules/astrophoto-denoise/"},
   {"overlay",                    "module-reference/processing-modules/composite/"},
+  {"primaries",                  "module-reference/processing-modules/rgb-primaries/"},
   {"profile_gamma",              "module-reference/processing-modules/unbreak-input-profile/"},
   {"rawdenoise",                 "module-reference/processing-modules/raw-denoise/"},
   {"rawprepare",                 "module-reference/processing-modules/raw-black-white-point/"},
