@@ -1031,14 +1031,15 @@ void process(struct dt_iop_module_t *self,
 
     if((mode == BRIGHTNESS_GRAD) || (mode == SATURATION_GRAD))
     {
-      for(int col = 0; col < 8 * roi_out->width; col++)
+      const float scaler = (float)roi_out->width * 16.0f;
+      const float eps = 0.5f / (float)roi_out->height;
+      for(int col = 0; col < 16 * roi_out->width; col++)
       {
-        const float sat = (float)col / (float)roi_out->width / 8.0f;
-        const float weight = _get_satweight(sat - (mode == SATURATION_GRAD ? sat_shift : bright_shift));
-        if(weight > 0.001f && weight < 0.999f)
+        const float weight = _get_satweight((float)col / scaler - (mode == SATURATION_GRAD ? sat_shift : bright_shift));
+        if(weight > eps && weight < 1.0f - eps)
         {
           const int row = (int)((1.0f - weight) * (float)(roi_out->height-1));
-          const size_t k = row * roi_out->width + col / 8;
+          const size_t k = row * roi_out->width + col / 16;
           out[4*k] = out[4*k+2] = 0.0f;
           out[4*k+1] = 1.0f;
         }
