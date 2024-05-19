@@ -73,6 +73,7 @@ None;midi:CC24=iop/colorequal/brightness/magenta
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "develop/imageop_gui.h"
+#include "develop/tiling.h"
 #include "dtgtk/drawingarea.h"
 #include "dtgtk/expander.h"
 #include "gui/accelerators.h"
@@ -204,7 +205,7 @@ int default_group()
 
 int flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
+  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
 dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
@@ -262,6 +263,40 @@ typedef struct dt_iop_colorequal_gui_data_t
   int selected;
   float points[NODES+1][2];
 } dt_iop_colorequal_gui_data_t;
+
+static inline float _get_scaling(const float sigma)
+{
+  return MAX(1.0f, MIN(4.0f, floorf(sigma - 1.5f)));
+}
+
+
+void tiling_callback(
+        struct dt_iop_module_t *self,
+        struct dt_dev_pixelpipe_iop_t *piece,
+        const dt_iop_roi_t *roi_in,
+        const dt_iop_roi_t *roi_out,
+        struct dt_develop_tiling_t *tiling)
+{
+  dt_iop_colorequal_data_t *data = (dt_iop_colorequal_data_t *)piece->data;
+
+  tiling->maxbuf = 1.0f;
+  tiling->xalign = 1;
+  tiling->yalign = 1;
+  tiling->overhead = (2 * SATSIZE + 4 * LUT_ELEM) * sizeof(float);
+  const int maxradius = MAX(data->chroma_size, data->param_size);
+  tiling->overlap = 16 + maxradius; // safe feathering
+
+  tiling->factor = 4.0f;  // in/out buffers plus mainloop incl gaussian
+  if(data->use_filter)
+  {
+    const float sigma = (float)maxradius * roi_in->scale;  // calculate relative size of downsampled buffers
+    const float scaling = _get_scaling(sigma);
+    tiling->factor += scaling == 1.0f
+                      ? 3.5f
+                      : (1.5f + 4.0f / sqrf(scaling));
+  }
+}
+
 
 int legacy_params(dt_iop_module_t *self,
                   const void *const old_params,
@@ -350,10 +385,6 @@ void _mean_gaussian(float *const buf,
   dt_gaussian_free(g);
 }
 
-static inline float _get_scaling(const float sigma)
-{
-  return MAX(1.0f, MIN(4.0f, floorf(sigma - 1.5f)));
-}
 
 // sRGB primary red records at 20° of hue in darktable UCS 22, so we offset the whole hue range
 // such that red is the origin hues in the GUI. This is consistent with HSV/HSL color wheels UI.
