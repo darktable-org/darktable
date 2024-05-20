@@ -79,7 +79,7 @@ const char** description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description
     (self,
-     _("enlarge canvas"),
+     _("add empty space to the left, top, right or bottom"),
      _("corrective and creative"),
      _("linear, RGB, scene-referred"),
      _("linear, RGB"),
