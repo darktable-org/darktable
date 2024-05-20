@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-19 07:23+0200\n"
+"POT-Creation-Date: 2024-05-20 18:29+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2582,7 +2582,7 @@ msgstr ""
 #: ../src/develop/blend_gui.c:2431 ../src/develop/lightroom.c:887
 #: ../src/gui/gtk.c:3571 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:372
 #: ../src/iop/channelmixer.c:621 ../src/iop/channelmixer.c:631
-#: ../src/iop/channelmixerrgb.c:4660 ../src/iop/colorequal.c:2337
+#: ../src/iop/channelmixerrgb.c:4660 ../src/iop/colorequal.c:2464
 #: ../src/iop/colorzones.c:2496 ../src/iop/temperature.c:2003
 #: ../src/iop/temperature.c:2195 ../src/libs/collect.c:1944
 #: ../src/libs/filters/colors.c:260 ../src/libs/histogram.c:2703
@@ -2602,7 +2602,7 @@ msgstr ""
 #: ../src/develop/blend_gui.c:2437 ../src/develop/lightroom.c:891
 #: ../src/gui/gtk.c:3572 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:377
 #: ../src/iop/channelmixer.c:622 ../src/iop/channelmixer.c:637
-#: ../src/iop/channelmixerrgb.c:4661 ../src/iop/colorequal.c:2340
+#: ../src/iop/channelmixerrgb.c:4661 ../src/iop/colorequal.c:2467
 #: ../src/iop/colorzones.c:2499 ../src/iop/temperature.c:1987
 #: ../src/iop/temperature.c:2005 ../src/iop/temperature.c:2196
 #: ../src/libs/collect.c:1944 ../src/libs/filters/colors.c:262
@@ -2623,7 +2623,7 @@ msgstr ""
 #: ../src/develop/blend_gui.c:2443 ../src/develop/lightroom.c:893
 #: ../src/gui/gtk.c:3573 ../src/iop/bilateral.cc:382
 #: ../src/iop/channelmixer.c:623 ../src/iop/channelmixer.c:643
-#: ../src/iop/channelmixerrgb.c:4662 ../src/iop/colorequal.c:2342
+#: ../src/iop/channelmixerrgb.c:4662 ../src/iop/colorequal.c:2469
 #: ../src/iop/colorzones.c:2501 ../src/iop/temperature.c:2007
 #: ../src/iop/temperature.c:2197 ../src/libs/collect.c:1944
 #: ../src/libs/filters/colors.c:263 ../src/libs/histogram.c:2685
@@ -2952,7 +2952,7 @@ msgstr ""
 #: ../src/develop/blend_gui.c:2464 ../src/iop/channelmixer.c:618
 #: ../src/iop/channelmixerrgb.c:4501 ../src/iop/channelmixerrgb.c:4616
 #: ../src/iop/colorbalance.c:1991 ../src/iop/colorize.c:339
-#: ../src/iop/colorreconstruction.c:1239 ../src/iop/colorequal.c:2454
+#: ../src/iop/colorreconstruction.c:1239 ../src/iop/colorequal.c:2581
 #: ../src/iop/colorzones.c:2643
 msgid "hue"
 msgstr ""
@@ -3190,7 +3190,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:479
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:511
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:543
-#: ../src/iop/colorequal.c:2338 ../src/iop/colorzones.c:2497
+#: ../src/iop/colorequal.c:2465 ../src/iop/colorzones.c:2497
 msgid "orange"
 msgstr ""
 
@@ -3202,7 +3202,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:547
 #: ../src/common/collection.c:1488 ../src/common/colorlabels.c:376
 #: ../src/develop/lightroom.c:889 ../src/gui/guides.c:732
-#: ../src/iop/colorequal.c:2339 ../src/iop/colorzones.c:2498
+#: ../src/iop/colorequal.c:2466 ../src/iop/colorzones.c:2498
 #: ../src/iop/temperature.c:1993 ../src/libs/collect.c:1944
 #: ../src/libs/filters/colors.c:261
 msgid "yellow"
@@ -3215,7 +3215,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:523
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:555
 #: ../src/common/color_vocabulary.c:298 ../src/gui/guides.c:733
-#: ../src/iop/colorequal.c:2341 ../src/iop/temperature.c:1991
+#: ../src/iop/colorequal.c:2468 ../src/iop/temperature.c:1991
 msgid "cyan"
 msgstr ""
 
@@ -3225,7 +3225,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:499
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:531
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:563
-#: ../src/common/color_vocabulary.c:343 ../src/iop/colorequal.c:2343
+#: ../src/common/color_vocabulary.c:343 ../src/iop/colorequal.c:2470
 msgid "lavender"
 msgstr ""
 
@@ -3236,7 +3236,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:535
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:567
 #: ../src/common/color_vocabulary.c:341 ../src/gui/guides.c:734
-#: ../src/iop/colorequal.c:2344 ../src/iop/colorzones.c:2503
+#: ../src/iop/colorequal.c:2471 ../src/iop/colorzones.c:2503
 #: ../src/iop/temperature.c:1989
 msgid "magenta"
 msgstr ""
@@ -4005,7 +4005,7 @@ msgstr ""
 #: ../src/iop/colorbalance.c:2008 ../src/iop/colorbalancergb.c:1961
 #: ../src/iop/colorchecker.c:1479 ../src/iop/colorcontrast.c:82
 #: ../src/iop/colorcorrection.c:264 ../src/iop/colorize.c:352
-#: ../src/iop/colorequal.c:2472 ../src/iop/lowpass.c:590
+#: ../src/iop/colorequal.c:2599 ../src/iop/lowpass.c:590
 #: ../src/iop/soften.c:355 ../src/iop/velvia.c:75 ../src/iop/vibrance.c:72
 #: ../src/iop/vignette.c:1053
 msgid "saturation"
@@ -4676,7 +4676,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_retouch.c:285
 #: ../build/lib/darktable/plugins/introspection_retouch.c:426
 #: ../src/iop/basicadj.c:650 ../src/iop/channelmixerrgb.c:4668
-#: ../src/iop/colisa.c:282 ../src/iop/colorequal.c:2490
+#: ../src/iop/colisa.c:282 ../src/iop/colorequal.c:2617
 #: ../src/iop/lowpass.c:589 ../src/iop/soften.c:359 ../src/iop/vignette.c:1052
 #: ../src/libs/history.c:966
 msgid "brightness"
@@ -5074,7 +5074,7 @@ msgid "Print your images"
 msgstr ""
 
 #: ../src/bauhaus/bauhaus.c:879 ../src/bauhaus/bauhaus.c:3971
-#: ../src/iop/colorequal.c:2439
+#: ../src/iop/colorequal.c:2566
 msgid "sliders"
 msgstr ""
 
@@ -8207,7 +8207,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:2693 ../src/develop/blend_gui.c:3614
 #: ../src/iop/basicadj.c:630 ../src/iop/colorbalancergb.c:2134
-#: ../src/iop/colorequal.c:2521 ../src/iop/exposure.c:1134
+#: ../src/iop/colorequal.c:2648 ../src/iop/exposure.c:1134
 #: ../src/iop/exposure.c:1149 ../src/iop/filmic.c:1516 ../src/iop/filmic.c:1529
 #: ../src/iop/filmic.c:1571 ../src/iop/filmicrgb.c:4406
 #: ../src/iop/filmicrgb.c:4417 ../src/iop/filmicrgb.c:4451
@@ -8458,8 +8458,8 @@ msgid "feathering radius"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:3667 ../src/develop/blend_gui.c:3679
-#: ../src/iop/colorbalancergb.c:2164 ../src/iop/colorequal.c:2536
-#: ../src/iop/colorequal.c:2567 ../src/iop/diffuse.c:1792
+#: ../src/iop/colorbalancergb.c:2164 ../src/iop/colorequal.c:2663
+#: ../src/iop/colorequal.c:2694 ../src/iop/diffuse.c:1792
 #: ../src/iop/diffuse.c:1802 ../src/iop/retouch.c:2729
 msgid " px"
 msgstr ""
@@ -12053,7 +12053,7 @@ msgstr ""
 #: ../src/iop/blurs.c:93 ../src/iop/blurs.c:94 ../src/iop/channelmixerrgb.c:239
 #: ../src/iop/channelmixerrgb.c:241 ../src/iop/clipping.c:364
 #: ../src/iop/clipping.c:366 ../src/iop/colorbalancergb.c:185
-#: ../src/iop/colorin.c:137 ../src/iop/colorequal.c:195 ../src/iop/crop.c:135
+#: ../src/iop/colorin.c:137 ../src/iop/colorequal.c:196 ../src/iop/crop.c:135
 #: ../src/iop/crop.c:137 ../src/iop/demosaic.c:296
 #: ../src/iop/denoiseprofile.c:780 ../src/iop/denoiseprofile.c:782
 #: ../src/iop/diffuse.c:144 ../src/iop/diffuse.c:146
@@ -12262,7 +12262,7 @@ msgid "contrast equalizer"
 msgstr ""
 
 #: ../src/iop/atrous.c:127
-msgid "sharpness|acutance|local contrast"
+msgid "sharpness|acutance|local contrast|clarity"
 msgstr ""
 
 #: ../src/iop/atrous.c:132
@@ -12270,7 +12270,7 @@ msgid "add or remove local contrast, sharpness, acutance"
 msgstr ""
 
 #: ../src/iop/atrous.c:133 ../src/iop/bilateral.cc:104
-#: ../src/iop/colorequal.c:194 ../src/iop/diffuse.c:143
+#: ../src/iop/colorequal.c:195 ../src/iop/diffuse.c:143
 #: ../src/iop/enlargecanvas.c:83 ../src/iop/exposure.c:131
 #: ../src/iop/filmicrgb.c:352 ../src/iop/graduatednd.c:146
 #: ../src/iop/negadoctor.c:146 ../src/iop/overlay.c:155
@@ -12285,7 +12285,7 @@ msgstr ""
 msgid "linear, Lab, scene-referred"
 msgstr ""
 
-#: ../src/iop/atrous.c:135 ../src/iop/censorize.c:85
+#: ../src/iop/atrous.c:135 ../src/iop/censorize.c:88
 #: ../src/iop/hazeremoval.c:114
 msgid "frequential, RGB"
 msgstr ""
@@ -12443,7 +12443,7 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/atrous.c:1819 ../src/iop/colorbalancergb.c:2102
-#: ../src/iop/colorequal.c:2401 ../src/iop/colorzones.c:2730
+#: ../src/iop/colorequal.c:2528 ../src/iop/colorzones.c:2730
 #: ../src/iop/denoiseprofile.c:3724 ../src/iop/filmicrgb.c:4373
 #: ../src/iop/lowlight.c:819 ../src/iop/rawdenoise.c:921
 #: ../src/iop/toneequal.c:3391
@@ -12630,7 +12630,7 @@ msgid "apply usual image adjustments"
 msgstr ""
 
 #: ../src/iop/basicadj.c:173 ../src/iop/bilat.c:88 ../src/iop/bloom.c:84
-#: ../src/iop/blurs.c:93 ../src/iop/borders.c:323 ../src/iop/censorize.c:83
+#: ../src/iop/blurs.c:93 ../src/iop/borders.c:323 ../src/iop/censorize.c:86
 #: ../src/iop/colisa.c:90 ../src/iop/colorcontrast.c:89
 #: ../src/iop/colorize.c:98 ../src/iop/colormapping.c:153
 #: ../src/iop/colorzones.c:146 ../src/iop/grain.c:395 ../src/iop/highpass.c:78
@@ -12886,7 +12886,7 @@ msgstr ""
 msgid "size of the border in percent of the chosen basis"
 msgstr ""
 
-#: ../src/iop/borders.c:940 ../src/iop/clipping.c:2241 ../src/iop/crop.c:1240
+#: ../src/iop/borders.c:940 ../src/iop/clipping.c:2241 ../src/iop/crop.c:1246
 msgid "aspect"
 msgstr ""
 
@@ -12924,7 +12924,7 @@ msgstr ""
 msgid "US Legal 8.5x14"
 msgstr ""
 
-#: ../src/iop/borders.c:952 ../src/iop/clipping.c:2154 ../src/iop/crop.c:1143
+#: ../src/iop/borders.c:952 ../src/iop/clipping.c:2154 ../src/iop/crop.c:1148
 msgid "golden cut"
 msgstr ""
 
@@ -12960,7 +12960,7 @@ msgstr ""
 msgid "5:4 (8x10)"
 msgstr ""
 
-#: ../src/iop/borders.c:962 ../src/iop/clipping.c:2144 ../src/iop/crop.c:1133
+#: ../src/iop/borders.c:962 ../src/iop/clipping.c:2144 ../src/iop/crop.c:1138
 #: ../src/libs/filtering.c:309 ../src/libs/filters/ratio.c:124
 #: ../src/libs/histogram.c:118
 msgid "square"
@@ -13171,52 +13171,36 @@ msgid ""
 "images."
 msgstr ""
 
-#: ../src/iop/censorize.c:77
+#: ../src/iop/censorize.c:80
 msgid "censorize"
 msgstr ""
 
-#: ../src/iop/censorize.c:82
+#: ../src/iop/censorize.c:85
 msgid "censorize license plates and body parts for privacy"
 msgstr ""
 
-#: ../src/iop/censorize.c:84 ../src/iop/colorin.c:135
+#: ../src/iop/censorize.c:87 ../src/iop/colorin.c:135
 #: ../src/iop/filmicrgb.c:353 ../src/iop/graduatednd.c:147
 msgid "linear or non-linear, RGB, scene-referred"
 msgstr ""
 
-#: ../src/iop/censorize.c:86
+#: ../src/iop/censorize.c:89
 msgid "special, RGB, scene-referred"
 msgstr ""
 
-#: ../src/iop/censorize.c:397
-msgid "radius_1"
-msgstr ""
-
-#: ../src/iop/censorize.c:399
-msgid "pixelate"
-msgstr ""
-
-#: ../src/iop/censorize.c:401
-msgid "radius_2"
-msgstr ""
-
-#: ../src/iop/censorize.c:403
-msgid "noise"
-msgstr ""
-
-#: ../src/iop/censorize.c:405
+#: ../src/iop/censorize.c:434
 msgid "radius of gaussian blur before pixelization"
 msgstr ""
 
-#: ../src/iop/censorize.c:406
+#: ../src/iop/censorize.c:435
 msgid "radius of gaussian blur after pixelization"
 msgstr ""
 
-#: ../src/iop/censorize.c:407
+#: ../src/iop/censorize.c:436
 msgid "radius of the intermediate pixelization"
 msgstr ""
 
-#: ../src/iop/censorize.c:408
+#: ../src/iop/censorize.c:437
 msgid "amount of noise to add at the end"
 msgstr ""
 
@@ -13568,7 +13552,7 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/channelmixerrgb.c:4445 ../src/iop/clipping.c:2110
-#: ../src/iop/colorbalancergb.c:1915 ../src/iop/colorequal.c:2389
+#: ../src/iop/colorbalancergb.c:1915 ../src/iop/colorequal.c:2516
 #: ../src/iop/filmicrgb.c:4385 ../src/iop/negadoctor.c:843
 #: ../src/iop/toneequal.c:3339 ../src/libs/image.c:493
 #: ../src/views/lighttable.c:1258
@@ -13908,7 +13892,7 @@ msgid "change the framing and correct the perspective"
 msgstr ""
 
 #: ../src/iop/clipping.c:1417 ../src/iop/clipping.c:2143 ../src/iop/crop.c:531
-#: ../src/iop/crop.c:1132
+#: ../src/iop/crop.c:1137
 msgid "original image"
 msgstr ""
 
@@ -13956,51 +13940,51 @@ msgstr ""
 msgid "set perspective correction for your image"
 msgstr ""
 
-#: ../src/iop/clipping.c:2142 ../src/iop/crop.c:1131
+#: ../src/iop/clipping.c:2142 ../src/iop/crop.c:1136
 msgid "freehand"
 msgstr ""
 
-#: ../src/iop/clipping.c:2145 ../src/iop/crop.c:1134
+#: ../src/iop/clipping.c:2145 ../src/iop/crop.c:1139
 msgid "10:8 in print"
 msgstr ""
 
-#: ../src/iop/clipping.c:2146 ../src/iop/crop.c:1135
+#: ../src/iop/clipping.c:2146 ../src/iop/crop.c:1140
 msgid "5:4, 4x5, 8x10"
 msgstr ""
 
-#: ../src/iop/clipping.c:2147 ../src/iop/crop.c:1136
+#: ../src/iop/clipping.c:2147 ../src/iop/crop.c:1141
 msgid "11x14"
 msgstr ""
 
-#: ../src/iop/clipping.c:2148 ../src/iop/crop.c:1137
+#: ../src/iop/clipping.c:2148 ../src/iop/crop.c:1142
 msgid "8.5x11, letter"
 msgstr ""
 
-#: ../src/iop/clipping.c:2149 ../src/iop/crop.c:1138
+#: ../src/iop/clipping.c:2149 ../src/iop/crop.c:1143
 msgid "4:3, VGA, TV"
 msgstr ""
 
-#: ../src/iop/clipping.c:2150 ../src/iop/crop.c:1139
+#: ../src/iop/clipping.c:2150 ../src/iop/crop.c:1144
 msgid "5x7"
 msgstr ""
 
-#: ../src/iop/clipping.c:2151 ../src/iop/crop.c:1140
+#: ../src/iop/clipping.c:2151 ../src/iop/crop.c:1145
 msgid "ISO 216, DIN 476, A4"
 msgstr ""
 
-#: ../src/iop/clipping.c:2152 ../src/iop/crop.c:1141
+#: ../src/iop/clipping.c:2152 ../src/iop/crop.c:1146
 msgid "3:2, 4x6, 35mm"
 msgstr ""
 
-#: ../src/iop/clipping.c:2153 ../src/iop/crop.c:1142
+#: ../src/iop/clipping.c:2153 ../src/iop/crop.c:1147
 msgid "16:10, 8x5"
 msgstr ""
 
-#: ../src/iop/clipping.c:2155 ../src/iop/crop.c:1144
+#: ../src/iop/clipping.c:2155 ../src/iop/crop.c:1149
 msgid "16:9, HDTV"
 msgstr ""
 
-#: ../src/iop/clipping.c:2156 ../src/iop/crop.c:1145
+#: ../src/iop/clipping.c:2156 ../src/iop/crop.c:1150
 msgid "widescreen"
 msgstr ""
 
@@ -14012,25 +13996,25 @@ msgstr ""
 msgid "cinemascope"
 msgstr ""
 
-#: ../src/iop/clipping.c:2159 ../src/iop/crop.c:1148
+#: ../src/iop/clipping.c:2159 ../src/iop/crop.c:1153
 msgid "21:9"
 msgstr ""
 
-#: ../src/iop/clipping.c:2160 ../src/iop/crop.c:1149
+#: ../src/iop/clipping.c:2160 ../src/iop/crop.c:1154
 msgid "anamorphic"
 msgstr ""
 
-#: ../src/iop/clipping.c:2161 ../src/iop/crop.c:1151
+#: ../src/iop/clipping.c:2161 ../src/iop/crop.c:1156
 msgid "3:1, panorama"
 msgstr ""
 
-#: ../src/iop/clipping.c:2193 ../src/iop/clipping.c:2205 ../src/iop/crop.c:1187
-#: ../src/iop/crop.c:1203
+#: ../src/iop/clipping.c:2193 ../src/iop/clipping.c:2205 ../src/iop/crop.c:1192
+#: ../src/iop/crop.c:1209
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
 msgstr ""
 
-#: ../src/iop/clipping.c:2252 ../src/iop/crop.c:1254
+#: ../src/iop/clipping.c:2252 ../src/iop/crop.c:1260
 msgid ""
 "set the aspect ratio\n"
 "the list is sorted: from most square to least square\n"
@@ -14038,23 +14022,23 @@ msgid ""
 "decimal format"
 msgstr ""
 
-#: ../src/iop/clipping.c:2259 ../src/iop/crop.c:1268
+#: ../src/iop/clipping.c:2259 ../src/iop/crop.c:1274
 msgid "margins"
 msgstr ""
 
-#: ../src/iop/clipping.c:2264 ../src/iop/crop.c:1278
+#: ../src/iop/clipping.c:2264 ../src/iop/crop.c:1284
 msgid "the left margin cannot overlap with the right margin"
 msgstr ""
 
-#: ../src/iop/clipping.c:2271 ../src/iop/crop.c:1286
+#: ../src/iop/clipping.c:2271 ../src/iop/crop.c:1292
 msgid "the right margin cannot overlap with the left margin"
 msgstr ""
 
-#: ../src/iop/clipping.c:2276 ../src/iop/crop.c:1292
+#: ../src/iop/clipping.c:2276 ../src/iop/crop.c:1298
 msgid "the top margin cannot overlap with the bottom margin"
 msgstr ""
 
-#: ../src/iop/clipping.c:2283 ../src/iop/crop.c:1300
+#: ../src/iop/clipping.c:2283 ../src/iop/crop.c:1306
 msgid "the bottom margin cannot overlap with the top margin"
 msgstr ""
 
@@ -14089,12 +14073,12 @@ msgid ""
 "<b>straighten</b>: right-drag, <b>commit</b>: double-click"
 msgstr ""
 
-#: ../src/iop/clipping.c:3350 ../src/iop/crop.c:1802
+#: ../src/iop/clipping.c:3350 ../src/iop/crop.c:1808
 #, c-format
 msgid "[%s on borders] crop"
 msgstr ""
 
-#: ../src/iop/clipping.c:3352 ../src/iop/crop.c:1804
+#: ../src/iop/clipping.c:3352 ../src/iop/crop.c:1810
 #, c-format
 msgid "[%s on borders] crop keeping ratio"
 msgstr ""
@@ -15066,106 +15050,105 @@ msgid ""
 "and move to the new color mapping module."
 msgstr ""
 
-#: ../src/iop/colorequal.c:182 ../src/iop/colorequal.c:2348
+#: ../src/iop/colorequal.c:183 ../src/iop/colorequal.c:2475
 msgid "color equalizer"
 msgstr ""
 
-#: ../src/iop/colorequal.c:187 ../src/iop/colorzones.c:139
-#: ../src/iop/colorzones.c:2570
-msgid "color zones"
+#: ../src/iop/colorequal.c:188
+msgid "color zones|hsl"
 msgstr ""
 
-#: ../src/iop/colorequal.c:193
+#: ../src/iop/colorequal.c:194
 msgid "change saturation, hue and brightness depending on local hue"
 msgstr ""
 
-#: ../src/iop/colorequal.c:196 ../src/iop/toneequal.c:334
+#: ../src/iop/colorequal.c:197 ../src/iop/toneequal.c:334
 msgid "quasi-linear, RGB"
 msgstr ""
 
-#: ../src/iop/colorequal.c:197 ../src/iop/toneequal.c:335
+#: ../src/iop/colorequal.c:198 ../src/iop/toneequal.c:335
 msgid "quasi-linear, RGB, scene-referred"
 msgstr ""
 
-#: ../src/iop/colorequal.c:1482
+#: ../src/iop/colorequal.c:1609
 msgid "bleach bypass"
 msgstr ""
 
-#: ../src/iop/colorequal.c:1526
+#: ../src/iop/colorequal.c:1653
 msgid "Kodachrome 64 like"
 msgstr ""
 
-#: ../src/iop/colorequal.c:1570
+#: ../src/iop/colorequal.c:1697
 msgid "Kodak Portra 400 like"
 msgstr ""
 
-#: ../src/iop/colorequal.c:1614
+#: ../src/iop/colorequal.c:1741
 msgid "teal & orange"
 msgstr ""
 
 #. Page OPTIONS
-#: ../src/iop/colorequal.c:2303 ../src/iop/colorequal.c:2513
+#: ../src/iop/colorequal.c:2430 ../src/iop/colorequal.c:2640
 #: ../src/iop/filmicrgb.c:4577
 msgid "options"
 msgstr ""
 
-#: ../src/iop/colorequal.c:2402
+#: ../src/iop/colorequal.c:2529
 msgid ""
 "double-click to reset the curve\n"
 "middle click to toggle sliders visibility\n"
 "alt+scroll to change page"
 msgstr ""
 
-#: ../src/iop/colorequal.c:2429
+#: ../src/iop/colorequal.c:2556
 msgid "shift nodes to lower or higher hue"
 msgstr ""
 
-#: ../src/iop/colorequal.c:2432
+#: ../src/iop/colorequal.c:2559
 msgid ""
 "pick hue from image and visualize it\n"
 "ctrl+click to select an area"
 msgstr ""
 
-#: ../src/iop/colorequal.c:2454
+#: ../src/iop/colorequal.c:2581
 msgid "change hue hue-wise"
 msgstr ""
 
-#: ../src/iop/colorequal.c:2472
+#: ../src/iop/colorequal.c:2599
 msgid "change saturation hue-wise"
 msgstr ""
 
-#: ../src/iop/colorequal.c:2490
+#: ../src/iop/colorequal.c:2617
 msgid "change brightness hue-wise"
 msgstr ""
 
-#: ../src/iop/colorequal.c:2523
+#: ../src/iop/colorequal.c:2650
 msgid ""
 "the white level set manually or via the picker restricts brightness "
 "corrections\n"
 "to stay below the defined level. the default is fine for most images."
 msgstr ""
 
-#: ../src/iop/colorequal.c:2528
+#: ../src/iop/colorequal.c:2655
 msgid "change for sharper or softer hue curve"
 msgstr ""
 
-#: ../src/iop/colorequal.c:2532
+#: ../src/iop/colorequal.c:2659
 msgid "restrict effect by using a guided filter based on hue and saturation"
 msgstr ""
 
-#: ../src/iop/colorequal.c:2538
+#: ../src/iop/colorequal.c:2665
 msgid ""
 "set radius of the guided filter chroma analysis (hue).\n"
 "increase if there is large local variance of hue or strong chroma noise."
 msgstr ""
 
-#: ../src/iop/colorequal.c:2549
+#: ../src/iop/colorequal.c:2676
 msgid ""
 "visualize weighting function on changed output and view weighting curve.\n"
 "red shows possibly changed data, blueish parts will not be changed."
 msgstr ""
 
-#: ../src/iop/colorequal.c:2553
+#: ../src/iop/colorequal.c:2680
 msgid ""
 "set saturation threshold for the guided filter.\n"
 " - decrease to allow changes in areas with low chromaticity\n"
@@ -15173,7 +15156,7 @@ msgid ""
 "   increases contrast and avoids brightness changes in low chromaticity areas"
 msgstr ""
 
-#: ../src/iop/colorequal.c:2561
+#: ../src/iop/colorequal.c:2688
 msgid ""
 "set saturation contrast for the guided filter.\n"
 " - increase to favor sharp transitions between saturations leading to higher "
@@ -15181,14 +15164,18 @@ msgid ""
 " - decrease for smoother transitions"
 msgstr ""
 
-#: ../src/iop/colorequal.c:2568
+#: ../src/iop/colorequal.c:2695
 msgid "set radius of applied parameters for the guided filter"
 msgstr ""
 
-#: ../src/iop/colorequal.c:2575
+#: ../src/iop/colorequal.c:2702
 msgid ""
 "visualize changed output for the selected tab.\n"
 "red shows increased data, blue decreased."
+msgstr ""
+
+#: ../src/iop/colorzones.c:139 ../src/iop/colorzones.c:2570
+msgid "color zones"
 msgstr ""
 
 #: ../src/iop/colorzones.c:145
@@ -15291,23 +15278,23 @@ msgstr ""
 msgid "change the framing"
 msgstr ""
 
-#: ../src/iop/crop.c:1146
+#: ../src/iop/crop.c:1151
 msgid "2:1, Univisium"
 msgstr ""
 
-#: ../src/iop/crop.c:1147
+#: ../src/iop/crop.c:1152
 msgid "CinemaScope"
 msgstr ""
 
-#: ../src/iop/crop.c:1150
+#: ../src/iop/crop.c:1155
 msgid "65:24, XPan"
 msgstr ""
 
-#: ../src/iop/crop.c:1683
+#: ../src/iop/crop.c:1689
 msgid "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"
 msgstr ""
 
-#: ../src/iop/crop.c:1692
+#: ../src/iop/crop.c:1698
 msgid ""
 "<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</"
 "b>: ctrl+drag"
@@ -15593,7 +15580,9 @@ msgid "diffuse or sharpen"
 msgstr ""
 
 #: ../src/iop/diffuse.c:132
-msgid "diffusion|deconvolution|blur|sharpening"
+msgid ""
+"diffusion|deconvolution|blur|sharpening|bloom|clarity|dehaze|inpaint|"
+"watercolor"
 msgstr ""
 
 #: ../src/iop/diffuse.c:139
@@ -15878,15 +15867,43 @@ msgstr ""
 msgid "damping level of random dither"
 msgstr ""
 
-#: ../src/iop/enlargecanvas.c:75 ../src/iop/enlargecanvas.c:82
+#: ../src/iop/enlargecanvas.c:75
 msgid "enlarge canvas"
 msgstr ""
 
-#: ../src/iop/enlargecanvas.c:91
-msgid "composition"
+#: ../src/iop/enlargecanvas.c:82
+msgid "add empty space to the left, top, right or bottom"
 msgstr ""
 
-#: ../src/iop/enlargecanvas.c:437
+#: ../src/iop/enlargecanvas.c:91
+msgid "composition|expand|extend"
+msgstr ""
+
+#: ../src/iop/enlargecanvas.c:427
+msgid ""
+"how much to enlarge the canvas to the left as a percentage of the original "
+"image width"
+msgstr ""
+
+#: ../src/iop/enlargecanvas.c:433
+msgid ""
+"how much to enlarge the canvas to the right as a percentage of the original "
+"image width"
+msgstr ""
+
+#: ../src/iop/enlargecanvas.c:439
+msgid ""
+"how much to enlarge the canvas to the top as a percentage of the original "
+"image height"
+msgstr ""
+
+#: ../src/iop/enlargecanvas.c:445
+msgid ""
+"how much to enlarge the canvas to the bottom as a percentage of the original "
+"image height"
+msgstr ""
+
+#: ../src/iop/enlargecanvas.c:449
 msgid "select the color of the enlarged canvas"
 msgstr ""
 
@@ -16533,7 +16550,7 @@ msgid "scale into final size"
 msgstr ""
 
 #: ../src/iop/flip.c:80
-msgid "rotation|flip"
+msgid "rotation|flip|mirror"
 msgstr ""
 
 #: ../src/iop/flip.c:110
@@ -18180,7 +18197,7 @@ msgid "retouch"
 msgstr ""
 
 #: ../src/iop/retouch.c:202
-msgid "split-frequency|healing|cloning|stamp"
+msgid "split-frequency|healing|cloning|stamp|blur|fill|wavelets|spot removal"
 msgstr ""
 
 #: ../src/iop/retouch.c:208
