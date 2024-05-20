@@ -270,12 +270,11 @@ static inline float _get_scaling(const float sigma)
 }
 
 
-void tiling_callback(
-        struct dt_iop_module_t *self,
-        struct dt_dev_pixelpipe_iop_t *piece,
-        const dt_iop_roi_t *roi_in,
-        const dt_iop_roi_t *roi_out,
-        struct dt_develop_tiling_t *tiling)
+void tiling_callback(struct dt_iop_module_t *self,
+                     struct dt_dev_pixelpipe_iop_t *piece,
+                     const dt_iop_roi_t *roi_in,
+                     const dt_iop_roi_t *roi_out,
+                     struct dt_develop_tiling_t *tiling)
 {
   dt_iop_colorequal_data_t *data = (dt_iop_colorequal_data_t *)piece->data;
 
@@ -289,7 +288,8 @@ void tiling_callback(
   tiling->factor = 4.0f;  // in/out buffers plus mainloop incl gaussian
   if(data->use_filter)
   {
-    const float sigma = (float)maxradius * roi_in->scale;  // calculate relative size of downsampled buffers
+    // calculate relative size of downsampled buffers
+    const float sigma = (float)maxradius * roi_in->scale;
     const float scaling = _get_scaling(sigma);
     tiling->factor += scaling == 1.0f
                       ? 3.5f
