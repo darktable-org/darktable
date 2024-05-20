@@ -1003,12 +1003,12 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
            pipe.processed_width, pipe.processed_height,
            processed_width, processed_height, scale, max_scale,
            upscale ? "yes" : "no",
-           high_quality_processing ? "yes" : "no");
+           high_quality_processing || scale > 1.0f ? "yes" : "no");
 
   const int bpp = format->bpp(format_params);
 
   dt_get_perf_times(&start);
-  if(high_quality_processing)
+  if(high_quality_processing || scale > 1.0f)
   {
     /*
      * if high quality processing was requested, downsampling will be done
