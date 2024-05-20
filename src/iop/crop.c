@@ -1068,7 +1068,12 @@ static void _event_key_swap(dt_iop_module_t *self)
 {
   dt_iop_crop_params_t *p = (dt_iop_crop_params_t *)self->params;
   p->ratio_d = -p->ratio_d;
-  _aspect_apply(self, GRAB_HORIZONTAL);
+
+  int iwd, iht;
+  dt_dev_get_processed_size(&darktable.develop->full, &iwd, &iht);
+  const gboolean horizontal = (iwd > iht) == (p->ratio_d < 0.0f);
+
+  _aspect_apply(self, horizontal ? GRAB_HORIZONTAL : GRAB_VERTICAL);
   dt_control_queue_redraw_center();
 }
 
@@ -1189,9 +1194,10 @@ void gui_init(struct dt_iop_module_t *self)
         continue;
       }
       dt_iop_crop_aspect_t *aspect = g_malloc(sizeof(dt_iop_crop_aspect_t));
-      aspect->name = _aspect_format(nv->key, d, n);
-      aspect->d = d;
-      aspect->n = n;
+      // aspects d/n must always be d>=n to be correctly applied
+      aspect->d = d > n ? d : n;
+      aspect->n = d > n ? n : d;
+      aspect->name = _aspect_format(nv->key, aspect->d, aspect->n);
       g->aspect_list = g_list_append(g->aspect_list, aspect);
     }
     else
