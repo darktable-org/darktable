@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2009-2023 darktable developers.
+   Copyright (C) 2009-2024 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -90,20 +90,49 @@ void dt_film_set_query(const dt_filmid_t id)
                              DT_COLLECTION_PROP_UNDEF, NULL);
 }
 
+//TODO: move somewhere more appropriate
+char *dt_sqlite3_escape_wildcards(const char *s)
+{
+  if(!s)
+    return NULL;
+  size_t count = 0;
+  for(const char *t = s; *t; t++)
+  {
+    count++;
+    if (*t == '%' || *t == '_' || *t == '~')
+      count++;
+  }
+  char *result = (char*)malloc(count+1);
+  if(!result)
+    return result;
+  char *dest = result;
+  for(; *s ; s++)
+  {
+    if(*s == '%' || *s == '_' || *s == '~')
+      *dest++ = '~';
+    *dest++ = *s;
+  }
+  *dest = '\0';
+  return result;
+}
+
 dt_filmid_t dt_film_get_id(const char *folder)
 {
   dt_filmid_t filmroll_id = NO_FILMID;
   sqlite3_stmt *stmt;
 #ifdef _WIN32
+  char *quoted = dt_sqlite3_escape_wildcards(folder);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT id FROM main.film_rolls WHERE folder LIKE ?1",
+                              "SELECT id FROM main.film_rolls WHERE folder LIKE ?1 ESCAPE '~'",
                               -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, quoted, -1, SQLITE_TRANSIENT);
+  free(quoted);
 #else
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT id FROM main.film_rolls WHERE folder = ?1",
                               -1, &stmt, NULL);
-#endif
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, folder, -1, SQLITE_STATIC);
+#endif
   if(sqlite3_step(stmt) == SQLITE_ROW) filmroll_id = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
   return filmroll_id;
