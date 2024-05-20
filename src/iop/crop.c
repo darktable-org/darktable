@@ -1194,9 +1194,10 @@ void gui_init(struct dt_iop_module_t *self)
         continue;
       }
       dt_iop_crop_aspect_t *aspect = g_malloc(sizeof(dt_iop_crop_aspect_t));
-      aspect->name = _aspect_format(nv->key, d, n);
-      aspect->d = d;
-      aspect->n = n;
+      // aspects d/n must always be d>=n to be correctly applied
+      aspect->d = d > n ? d : n;
+      aspect->n = d > n ? n : d;
+      aspect->name = _aspect_format(nv->key, aspect->d, aspect->n);
       g->aspect_list = g_list_append(g->aspect_list, aspect);
     }
     else
