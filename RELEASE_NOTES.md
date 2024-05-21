@@ -178,6 +178,9 @@ changes (where available).
 - Fixed some issues related to cropping module and output/export
   dimensions.
 
+- Fixed export processing when high quality is disabled and upscale is
+  set.
+
 ## Lua
 
 ### API Version
