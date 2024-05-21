@@ -25,13 +25,15 @@
 
 #if defined(_OPENMP) && !defined(_WIN32) && (!defined(__GNUC__) || __GNUC__ >= 12)
 
-#ifndef __GNUC__  // GCC 12 crashes if we declare both fminf and fmaxf to be SIMD....
+#ifndef __GNUC__  // GCC 12 compiles but fails at runtime due to missing library function
 DT_OMP_DECLARE_SIMD()
 extern float fmaxf(const float x, const float y);
 #endif
 
+#ifndef __GNUC__  // GCC 12 compiles but fails at runtime due to missing library function
 DT_OMP_DECLARE_SIMD()
 extern float fminf(const float x, const float y);
+#endif
 
 DT_OMP_DECLARE_SIMD()
 extern float fabsf(const float x);
