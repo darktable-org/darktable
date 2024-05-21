@@ -774,7 +774,6 @@ static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid)
 {
   // Pipe reset needed when changing image
   // FIXME: synch with dev_init() and dev_cleanup() instead of redoing it
-  dt_dev_reset_chroma(dev);
 
   // change active image
   g_slist_free(darktable.view_manager->active_images);
@@ -854,6 +853,7 @@ static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid)
   // possible enable autosaving due to conf setting but wait for some seconds for first save
   darktable.develop->autosaving = (double)dt_conf_get_int("autosave_interval") > 1.0;
   darktable.develop->autosave_time = dt_get_wtime() + 10.0;
+  dt_dev_reset_chroma(dev);
 
   g_idle_add(_dev_load_requested_image, dev);
 }
