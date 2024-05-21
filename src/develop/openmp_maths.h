@@ -23,39 +23,41 @@
 #pragma once
 
 
-#if defined(_OPENMP) && !defined(_WIN32) && !defined(__GNUC__)
+#if defined(_OPENMP) && !defined(_WIN32) && (!defined(__GNUC__) || __GNUC__ >= 12)
 
-#pragma omp declare simd
+#ifndef __GNUC__  // GCC 12 crashes if we declare both fminf and fmaxf to be SIMD....
+DT_OMP_DECLARE_SIMD()
 extern float fmaxf(const float x, const float y);
+#endif
 
-#pragma omp declare simd
+DT_OMP_DECLARE_SIMD()
 extern float fminf(const float x, const float y);
 
-#pragma omp declare simd
+DT_OMP_DECLARE_SIMD()
 extern float fabsf(const float x);
 
-#pragma omp declare simd
+DT_OMP_DECLARE_SIMD()
 extern float powf(const float x, const float y);
 
-#pragma omp declare simd
+DT_OMP_DECLARE_SIMD()
 extern float sqrtf(const float x);
 
-#pragma omp declare simd
+DT_OMP_DECLARE_SIMD()
 extern float cbrtf(const float x);
 
-#pragma omp declare simd
+DT_OMP_DECLARE_SIMD()
 extern float log2f(const float x);
 
-#pragma omp declare simd
+DT_OMP_DECLARE_SIMD()
 extern float exp2f(const float x);
 
-#pragma omp declare simd
+DT_OMP_DECLARE_SIMD()
 extern float log10f(const float x);
 
-#pragma omp declare simd
+DT_OMP_DECLARE_SIMD()
 extern float expf(const float x);
 
-#pragma omp declare simd
+DT_OMP_DECLARE_SIMD()
 extern float logf(const float x);
 
 #endif
