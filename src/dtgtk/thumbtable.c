@@ -1207,6 +1207,20 @@ static void _lighttable_expose_empty(cairo_t *cr,
     cairo_rel_line_to(cr, -offx + 10.0f, 0.0f);
     dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_LIGHTTABLE_FONT, at);
     cairo_stroke(cr);
+
+    pango_layout_set_text(layout,
+       _("try the 'no-click' workflow: hover on an image and use"), -1);
+    pango_layout_get_pixel_extents(layout, &ink, NULL);
+    cairo_move_to(cr, offx, offy + 9 * ls - ink.height - ink.x);
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_FONT);
+    pango_cairo_show_layout(cr, layout);
+    pango_layout_set_text(layout,
+       _("keyboard shortcuts to apply ratings, colors, styles, etc."), -1);
+    pango_layout_get_pixel_extents(layout, &ink, NULL);
+    cairo_move_to(cr, offx, offy + 10 * ls - ink.height - ink.x);
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_FONT);
+    pango_cairo_show_layout(cr, layout);
+    cairo_stroke(cr);
   }
 
   pango_font_description_free(desc);
