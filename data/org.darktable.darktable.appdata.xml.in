@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Copyright (C) 2009-2021 darktable developers.
+<!-- Copyright (C) 2009-2024 darktable developers.
 -->
 <component type="desktop">
   <id>org.darktable.darktable</id>
@@ -11,9 +11,8 @@
   <translation type="gettext">darktable</translation>
   <description>
     <_p>
-      darktable manages your digital negatives in a database and lets you
-      view them through a lighttable. It also enables you to develop raw
-      images and enhance them in a darkroom.
+      darktable manages your camera raw files and images in a database, lets you
+      view them through lighttable mode and develop/enhance them in darkroom mode.
     </_p>
     <_p>
       Other modes besides lighttable and darkroom are a map for geotagging,
