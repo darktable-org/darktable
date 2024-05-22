@@ -821,11 +821,17 @@ void dt_camctl_unregister_listener(const dt_camctl_t *c,
   dt_pthread_mutex_unlock(&camctl->listeners_lock);
 }
 
-static gint _compare_camera_by_camera(gconstpointer a, gconstpointer b)
+static gboolean _have_camera_on_port(const dt_camera_unused_t *const testcam,
+                                     const GList *const cameras)
 {
-  dt_camera_unused_t *ca = (dt_camera_unused_t *)a;
-  dt_camera_unused_t *cb = (dt_camera_unused_t *)b;
-  return g_strcmp0(ca->model, cb->model);
+  for(const GList *camera = cameras; camera; camera = g_list_next(camera))
+  {
+    const dt_camera_unused_t *caminfo = (dt_camera_unused_t*)camera->data;
+    if(g_strcmp0(testcam->model, caminfo->model) == 0 &&
+       g_strcmp0(testcam->port, caminfo->port) == 0)
+      return TRUE;
+  }
+  return FALSE;
 }
 
 static int cameras_cnt = -1;
@@ -881,26 +887,18 @@ static gboolean dt_camctl_update_cameras(const dt_camctl_t *c)
       continue;
     }
 
-    GList *citem;
-    // look for freshly connected cameras;
-    if(((citem = g_list_find_custom(c->cameras,
-                                    testcam, _compare_camera_by_camera)) == NULL)
-       || g_strcmp0(((dt_camera_unused_t *)citem->data)->port, testcam->port) != 0)
+    // look for freshly connected cameras -- neither in mounted-cameras list nor unmounted-cameras list
+    if(!_have_camera_on_port(testcam, c->cameras) &&
+       !_have_camera_on_port(testcam, c->unused_cameras))
     {
-      GList *c2item;
-      if(((c2item = g_list_find_custom(c->unused_cameras,
-                                       testcam, _compare_camera_by_camera)) == NULL)
-         || g_strcmp0(((dt_camera_unused_t *)c2item->data)->port, testcam->port) != 0)
-      {
-        dt_camera_unused_t *unused_camera = g_malloc0(sizeof(dt_camera_unused_t));
-        unused_camera->model = g_strdup(testcam->model);
-        unused_camera->port = g_strdup(testcam->port);
-        camctl->unused_cameras = g_list_append(camctl->unused_cameras, unused_camera);
-        dt_print(DT_DEBUG_CAMCTL,
-                 "[camera_control] found new %s on port %s\n",
-                 testcam->model, testcam->port);
-        changed_camera = TRUE;
-      }
+      dt_camera_unused_t *unused_camera = g_malloc0(sizeof(dt_camera_unused_t));
+      unused_camera->model = g_strdup(testcam->model);
+      unused_camera->port = g_strdup(testcam->port);
+      camctl->unused_cameras = g_list_append(camctl->unused_cameras, unused_camera);
+      dt_print(DT_DEBUG_CAMCTL,
+               "[camera_control] found new %s on port %s\n",
+               testcam->model, testcam->port);
+      changed_camera = TRUE;
     }
     g_free(testcam);
   }
