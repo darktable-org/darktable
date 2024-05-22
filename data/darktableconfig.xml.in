@@ -1462,7 +1462,7 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>hide built-in presets for processing modules</shortdescription>
-    <longdescription>hides built-in presets of processing modules in both presets and favourites menu.</longdescription>
+    <longdescription>hide built-in presets of processing modules in presets menu.</longdescription>
   </dtconfig>
     <dtconfig prefs="darkroom" section="modules">
     <name>plugins/darkroom/show_guides_in_ui</name>
@@ -1476,7 +1476,7 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>hide built-in presets for utility modules</shortdescription>
-    <longdescription>hides built-in presets of utility modules in presets menu.</longdescription>
+    <longdescription>hide built-in presets of utility modules in presets menu.</longdescription>
   </dtconfig>
   <dtconfig prefs="import" section="session">
     <name>session/base_directory_pattern</name>
