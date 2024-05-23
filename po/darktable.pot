@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-20 18:29+0200\n"
+"POT-Creation-Date: 2024-05-23 21:05+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -5036,9 +5036,8 @@ msgstr ""
 
 #: ../data/org.darktable.darktable.appdata.xml.in.h:2
 msgid ""
-"darktable manages your digital negatives in a database and lets you view "
-"them through a lighttable. It also enables you to develop raw images and "
-"enhance them in a darkroom."
+"darktable manages your camera raw files and images in a database, lets you "
+"view them through lighttable mode and develop/enhance them in darkroom mode."
 msgstr ""
 
 #: ../data/org.darktable.darktable.appdata.xml.in.h:3
@@ -5313,26 +5312,26 @@ msgid ""
 "make sure your camera allows access and is not mounted otherwise"
 msgstr ""
 
-#: ../src/common/camera_control.c:952
+#: ../src/common/camera_control.c:950
 #, c-format
 msgid ""
 "failed to initialize `%s' on port `%s', likely causes are: locked by another "
 "application, no access to devices etc"
 msgstr ""
 
-#: ../src/common/camera_control.c:965
+#: ../src/common/camera_control.c:963
 #, c-format
 msgid ""
 "`%s' on port `%s' is not interesting because it supports neither tethering "
 "nor import"
 msgstr ""
 
-#: ../src/common/camera_control.c:1025
+#: ../src/common/camera_control.c:1023
 #, c-format
 msgid "camera `%s' on port `%s' disconnected while mounted"
 msgstr ""
 
-#: ../src/common/camera_control.c:1033
+#: ../src/common/camera_control.c:1031
 #, c-format
 msgid ""
 "camera `%s' on port `%s' needs to be remounted\n"
@@ -6312,25 +6311,25 @@ msgstr ""
 msgid "fast guided filter failed to allocate memory, check your RAM settings"
 msgstr ""
 
-#: ../src/common/film.c:312
+#: ../src/common/film.c:341
 msgid "do you want to remove this empty directory?"
 msgid_plural "do you want to remove these empty directories?"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/common/film.c:319
+#: ../src/common/film.c:348
 msgid "remove empty directory?"
 msgid_plural "remove empty directories?"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/common/film.c:339 ../src/gui/preferences.c:814
+#: ../src/common/film.c:368 ../src/gui/preferences.c:814
 #: ../src/gui/styles_dialog.c:586 ../src/libs/geotagging.c:830
 #: ../src/libs/import.c:1878
 msgid "name"
 msgstr ""
 
-#: ../src/common/film.c:448
+#: ../src/common/film.c:477
 msgid ""
 "cannot remove film roll having local copies with non accessible originals"
 msgstr ""
@@ -7180,17 +7179,17 @@ msgstr ""
 
 #. setup selection accelerators
 #. action-box
-#: ../src/control/crawler.c:786 ../src/dtgtk/thumbtable.c:2801
+#: ../src/control/crawler.c:786 ../src/dtgtk/thumbtable.c:2815
 #: ../src/libs/import.c:2064 ../src/libs/select.c:136
 msgid "select all"
 msgstr ""
 
-#: ../src/control/crawler.c:787 ../src/dtgtk/thumbtable.c:2803
+#: ../src/control/crawler.c:787 ../src/dtgtk/thumbtable.c:2817
 #: ../src/libs/import.c:2068 ../src/libs/select.c:140
 msgid "select none"
 msgstr ""
 
-#: ../src/control/crawler.c:788 ../src/dtgtk/thumbtable.c:2805
+#: ../src/control/crawler.c:788 ../src/dtgtk/thumbtable.c:2819
 #: ../src/libs/select.c:144
 msgid "invert selection"
 msgstr ""
@@ -9232,80 +9231,88 @@ msgstr ""
 msgid "or add images in the collections module in the left panel"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:1483
+#: ../src/dtgtk/thumbtable.c:1212
+msgid "try the 'no-click' workflow: hover on an image and use"
+msgstr ""
+
+#: ../src/dtgtk/thumbtable.c:1218
+msgid "keyboard shortcuts to apply ratings, colors, styles, etc."
+msgstr ""
+
+#: ../src/dtgtk/thumbtable.c:1497
 msgid ""
 "you have changed the settings related to how thumbnails are generated.\n"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:1486
+#: ../src/dtgtk/thumbtable.c:1500
 msgid ""
 "all cached thumbnails need to be invalidated.\n"
 "\n"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:1490
+#: ../src/dtgtk/thumbtable.c:1504
 #, c-format
 msgid ""
 "cached thumbnails starting from level %d need to be invalidated.\n"
 "\n"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:1495
+#: ../src/dtgtk/thumbtable.c:1509
 #, c-format
 msgid ""
 "cached thumbnails below level %d need to be invalidated.\n"
 "\n"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:1500
+#: ../src/dtgtk/thumbtable.c:1514
 #, c-format
 msgid ""
 "cached thumbnails between level %d and %d need to be invalidated.\n"
 "\n"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:1503
+#: ../src/dtgtk/thumbtable.c:1517
 msgid "do you want to do that now?"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:1505
+#: ../src/dtgtk/thumbtable.c:1519
 msgid "cached thumbnails invalidation"
 msgstr ""
 
 #. setup history key accelerators
-#: ../src/dtgtk/thumbtable.c:2784
+#: ../src/dtgtk/thumbtable.c:2798
 msgid "copy history"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2786
+#: ../src/dtgtk/thumbtable.c:2800
 msgid "copy history parts"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2788
+#: ../src/dtgtk/thumbtable.c:2802
 msgid "paste history"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2790
+#: ../src/dtgtk/thumbtable.c:2804
 msgid "paste history parts"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2792 ../src/libs/copy_history.c:394
+#: ../src/dtgtk/thumbtable.c:2806 ../src/libs/copy_history.c:394
 msgid "discard history"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2795
+#: ../src/dtgtk/thumbtable.c:2809
 msgid "duplicate image"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2797
+#: ../src/dtgtk/thumbtable.c:2811
 msgid "duplicate image virgin"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2807 ../src/libs/select.c:148
+#: ../src/dtgtk/thumbtable.c:2821 ../src/libs/select.c:148
 msgid "select film roll"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2809 ../src/libs/select.c:152
+#: ../src/dtgtk/thumbtable.c:2823 ../src/libs/select.c:152
 msgid "select untouched"
 msgstr ""
 
