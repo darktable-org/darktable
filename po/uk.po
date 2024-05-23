@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-20 18:29+0200\n"
-"PO-Revision-Date: 2024-05-20 21:53+0300\n"
+"POT-Creation-Date: 2024-05-23 21:05+0200\n"
+"PO-Revision-Date: 2024-05-23 23:08+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -5318,13 +5318,12 @@ msgstr "graphics;photography;raw;"
 
 #: ../data/org.darktable.darktable.appdata.xml.in.h:2
 msgid ""
-"darktable manages your digital negatives in a database and lets you view "
-"them through a lighttable. It also enables you to develop raw images and "
-"enhance them in a darkroom."
+"darktable manages your camera raw files and images in a database, lets you "
+"view them through lighttable mode and develop/enhance them in darkroom mode."
 msgstr ""
-"Darktable керує вашими цифровими негативами в базі даних і дозволяє "
-"переглядати їх через світлий стіл, обробляти raw зображення та покращувати "
-"їх у темній кімнаті."
+"Darktable керує вашими raw файлами та зображеннями в базі даних, дає змогу "
+"переглядати їх у режимі Світлого стола й обробляти/покращувати їх у режимі "
+"Темної кімнати."
 
 #: ../data/org.darktable.darktable.appdata.xml.in.h:3
 msgid ""
@@ -5613,7 +5612,7 @@ msgstr ""
 "\n"
 "Переконайтеся, що ваша камера дозволяє доступ і не змонтована іншою програмою"
 
-#: ../src/common/camera_control.c:952
+#: ../src/common/camera_control.c:950
 #, c-format
 msgid ""
 "failed to initialize `%s' on port `%s', likely causes are: locked by another "
@@ -5622,7 +5621,7 @@ msgstr ""
 "Не вдалося ініціалізувати `%s' на порту `%s', ймовірні причини: заблокований "
 "іншою програмою, відсутність доступу до пристроїв тощо"
 
-#: ../src/common/camera_control.c:965
+#: ../src/common/camera_control.c:963
 #, c-format
 msgid ""
 "`%s' on port `%s' is not interesting because it supports neither tethering "
@@ -5631,12 +5630,12 @@ msgstr ""
 "Пристрій `%s' на порту `%s' нецікавий, оскільки не підтримує ні дистанційне "
 "керування, ні імпорт"
 
-#: ../src/common/camera_control.c:1025
+#: ../src/common/camera_control.c:1023
 #, c-format
 msgid "camera `%s' on port `%s' disconnected while mounted"
 msgstr "Камера `%s' на порту `%s' відключилась, в той час як була змонтована"
 
-#: ../src/common/camera_control.c:1033
+#: ../src/common/camera_control.c:1031
 #, c-format
 msgid ""
 "camera `%s' on port `%s' needs to be remounted\n"
@@ -6718,27 +6717,27 @@ msgstr ""
 "Швидкий керований фільтр не зміг виділити пам'ять, перевірте налаштування "
 "оперативної пам'яті"
 
-#: ../src/common/film.c:312
+#: ../src/common/film.c:341
 msgid "do you want to remove this empty directory?"
 msgid_plural "do you want to remove these empty directories?"
 msgstr[0] "Ви хочете видалити цей порожній каталог?"
 msgstr[1] "Ви хочете видалити ці порожні каталоги?"
 msgstr[2] "Ви хочете видалити ці порожні каталоги?"
 
-#: ../src/common/film.c:319
+#: ../src/common/film.c:348
 msgid "remove empty directory?"
 msgid_plural "remove empty directories?"
 msgstr[0] "Видалити порожній каталог?"
 msgstr[1] "Видалити порожній каталог?"
 msgstr[2] "Видалити порожній каталог?"
 
-#: ../src/common/film.c:339 ../src/gui/preferences.c:814
+#: ../src/common/film.c:368 ../src/gui/preferences.c:814
 #: ../src/gui/styles_dialog.c:586 ../src/libs/geotagging.c:830
 #: ../src/libs/import.c:1878
 msgid "name"
 msgstr "Ім'я"
 
-#: ../src/common/film.c:448
+#: ../src/common/film.c:477
 msgid ""
 "cannot remove film roll having local copies with non accessible originals"
 msgstr ""
@@ -7630,17 +7629,17 @@ msgstr "_Закрити"
 
 #. setup selection accelerators
 #. action-box
-#: ../src/control/crawler.c:786 ../src/dtgtk/thumbtable.c:2801
+#: ../src/control/crawler.c:786 ../src/dtgtk/thumbtable.c:2815
 #: ../src/libs/import.c:2064 ../src/libs/select.c:136
 msgid "select all"
 msgstr "Вибрати всі"
 
-#: ../src/control/crawler.c:787 ../src/dtgtk/thumbtable.c:2803
+#: ../src/control/crawler.c:787 ../src/dtgtk/thumbtable.c:2817
 #: ../src/libs/import.c:2068 ../src/libs/select.c:140
 msgid "select none"
 msgstr "Скасувати вибір"
 
-#: ../src/control/crawler.c:788 ../src/dtgtk/thumbtable.c:2805
+#: ../src/control/crawler.c:788 ../src/dtgtk/thumbtable.c:2819
 #: ../src/libs/select.c:144
 msgid "invert selection"
 msgstr "Інвертувати вибір"
@@ -9878,12 +9877,24 @@ msgstr "Спробуйте послабити налаштування філь�
 msgid "or add images in the collections module in the left panel"
 msgstr "або додати зображення в модулі колекції на лівій панелі"
 
-#: ../src/dtgtk/thumbtable.c:1483
+#: ../src/dtgtk/thumbtable.c:1212
+msgid "try the 'no-click' workflow: hover on an image and use"
+msgstr ""
+"Спробуйте робочий процес без кліків: наведіть курсор на зображення та "
+"використовуйте"
+
+#: ../src/dtgtk/thumbtable.c:1218
+msgid "keyboard shortcuts to apply ratings, colors, styles, etc."
+msgstr ""
+"клавіатурні прискорювачі для застосування рейтингів, кольорових позначок, "
+"стилів тощо."
+
+#: ../src/dtgtk/thumbtable.c:1497
 msgid ""
 "you have changed the settings related to how thumbnails are generated.\n"
 msgstr "Ви змінили налаштування, пов’язані з тим, як генеруються мініатюри.\n"
 
-#: ../src/dtgtk/thumbtable.c:1486
+#: ../src/dtgtk/thumbtable.c:1500
 msgid ""
 "all cached thumbnails need to be invalidated.\n"
 "\n"
@@ -9891,7 +9902,7 @@ msgstr ""
 "Усі кешовані мініатюри потрібно визнати недійсними.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1490
+#: ../src/dtgtk/thumbtable.c:1504
 #, c-format
 msgid ""
 "cached thumbnails starting from level %d need to be invalidated.\n"
@@ -9900,7 +9911,7 @@ msgstr ""
 "Кешовані мініатюри, починаючи з рівня %d, потрібно визнати недійсними.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1495
+#: ../src/dtgtk/thumbtable.c:1509
 #, c-format
 msgid ""
 "cached thumbnails below level %d need to be invalidated.\n"
@@ -9909,7 +9920,7 @@ msgstr ""
 "Кешовані мініатюри нижче рівня %d потрібно визнати недійсними.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1500
+#: ../src/dtgtk/thumbtable.c:1514
 #, c-format
 msgid ""
 "cached thumbnails between level %d and %d need to be invalidated.\n"
@@ -9918,48 +9929,48 @@ msgstr ""
 "Кешовані мініатюри між рівнями %d і %d потрібно визнати недійсними.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1503
+#: ../src/dtgtk/thumbtable.c:1517
 msgid "do you want to do that now?"
 msgstr "Хочете зробити це зараз?"
 
-#: ../src/dtgtk/thumbtable.c:1505
+#: ../src/dtgtk/thumbtable.c:1519
 msgid "cached thumbnails invalidation"
 msgstr "Анулювання кешованих мініатюр"
 
 #. setup history key accelerators
-#: ../src/dtgtk/thumbtable.c:2784
+#: ../src/dtgtk/thumbtable.c:2798
 msgid "copy history"
 msgstr "Копіювати історію"
 
-#: ../src/dtgtk/thumbtable.c:2786
+#: ../src/dtgtk/thumbtable.c:2800
 msgid "copy history parts"
 msgstr "Копіювати частини історії"
 
-#: ../src/dtgtk/thumbtable.c:2788
+#: ../src/dtgtk/thumbtable.c:2802
 msgid "paste history"
 msgstr "Вставити історію"
 
-#: ../src/dtgtk/thumbtable.c:2790
+#: ../src/dtgtk/thumbtable.c:2804
 msgid "paste history parts"
 msgstr "Вставити частини історії"
 
-#: ../src/dtgtk/thumbtable.c:2792 ../src/libs/copy_history.c:394
+#: ../src/dtgtk/thumbtable.c:2806 ../src/libs/copy_history.c:394
 msgid "discard history"
 msgstr "Видалити історію"
 
-#: ../src/dtgtk/thumbtable.c:2795
+#: ../src/dtgtk/thumbtable.c:2809
 msgid "duplicate image"
 msgstr "Створити дублікат зображення"
 
-#: ../src/dtgtk/thumbtable.c:2797
+#: ../src/dtgtk/thumbtable.c:2811
 msgid "duplicate image virgin"
 msgstr "Створити дублікат нередагованого зображення"
 
-#: ../src/dtgtk/thumbtable.c:2807 ../src/libs/select.c:148
+#: ../src/dtgtk/thumbtable.c:2821 ../src/libs/select.c:148
 msgid "select film roll"
 msgstr "Вибрати плівку"
 
-#: ../src/dtgtk/thumbtable.c:2809 ../src/libs/select.c:152
+#: ../src/dtgtk/thumbtable.c:2823 ../src/libs/select.c:152
 msgid "select untouched"
 msgstr "Вибрати необроблені"
 
