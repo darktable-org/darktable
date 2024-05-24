@@ -1607,7 +1607,6 @@ void reload_defaults(dt_iop_module_t *module)
 
   // this is a single instance module always exposed to dev->chroma
   chr->temperature = module;
-  chr->late_correction = FALSE;
 
   d->preset = p->preset = DT_IOP_TEMP_AS_SHOT;
 
@@ -1633,7 +1632,6 @@ void reload_defaults(dt_iop_module_t *module)
       {
         for_four_channels(k)
           dcoeffs[k] = as_shot[k];
-        chr->late_correction = TRUE;
         d->preset = p->preset = DT_IOP_TEMP_D65_LATE;
       }
       else
