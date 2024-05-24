@@ -3535,24 +3535,35 @@ gboolean dt_dev_is_D65_chroma(const dt_develop_t *dev)
     : dt_dev_equal_chroma(wb_coeffs, chr->D65coeffs);
 }
 
+void dt_dev_clear_chroma_troubles(dt_develop_t *dev)
+{
+  if(!dev->gui_attached)
+    return;
+
+  dt_dev_chroma_t *chr = &dev->chroma;
+  if(chr->temperature)
+    dt_iop_set_module_trouble_message(chr->temperature, NULL, NULL, NULL);
+  if(chr->adaptation)
+    dt_iop_set_module_trouble_message(chr->adaptation, NULL, NULL, NULL);
+}
+
 void dt_dev_reset_chroma(dt_develop_t *dev)
 {
+  dt_dev_clear_chroma_troubles(dev);
   dt_dev_chroma_t *chr = &dev->chroma;
   chr->adaptation = NULL;
-  chr->late_correction = FALSE;
+  chr->temperature = NULL;
   for_four_channels(c)
     chr->wb_coeffs[c] = 1.0;
 }
 
 void dt_dev_init_chroma(dt_develop_t *dev)
 {
+  dt_dev_reset_chroma(dev);
   dt_dev_chroma_t *chr = &dev->chroma;
-  chr->adaptation = NULL;
-  chr->temperature = NULL;
   chr->late_correction = FALSE;
   for_four_channels(c)
   {
-    chr->wb_coeffs[c] = 1.0;
     chr->D65coeffs[c] = 1.0;
     chr->as_shot[c] = 1.0;
   }
