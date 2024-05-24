@@ -72,6 +72,7 @@ typedef struct dt_thumbtable_t
   int prefs_size;              // size value to determine overlays mode and css class
   int view_width, view_height; // last main widget size
   GdkRectangle thumbs_area;    // coordinate of all the currently loaded thumbs area
+  PangoRectangle manual_button;// coordinates of the click "here" text
 
   int center_offset; // in filemanager, we can have a gap, esp. for zoom==1, we need to center everything
 
