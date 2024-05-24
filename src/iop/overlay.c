@@ -1045,8 +1045,7 @@ static void _drag_and_drop_received(GtkWidget *widget,
 
         dt_overlay_record(self->dev->image_storage.id, p->imgid);
 
-        gboolean from_cache = FALSE;
-        dt_image_full_path(p->imgid, p->filename, sizeof(p->filename), &from_cache);
+        dt_image_full_path(p->imgid, p->filename, sizeof(p->filename), NULL);
 
         dt_dev_add_history_item(darktable.develop, self, TRUE);
 

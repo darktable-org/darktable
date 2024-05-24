@@ -277,11 +277,10 @@ static int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
   size_t count = 0;
   for(GList *t = params->index ; t ; t = g_list_next(t))
   {
-    gboolean from_cache = FALSE;
     const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
     const dt_image_t *img = dt_image_cache_get(darktable.image_cache, (int32_t)imgid, 'r');
     char dtfilename[PATH_MAX] = { 0 };
-    dt_image_full_path(img->id, dtfilename, sizeof(dtfilename), &from_cache);
+    dt_image_full_path(img->id, dtfilename, sizeof(dtfilename), NULL);
     dt_image_path_append_version(img->id, dtfilename, sizeof(dtfilename));
     g_strlcat(dtfilename, ".xmp", sizeof(dtfilename));
     if(!dt_exif_xmp_write(imgid, dtfilename))
@@ -1197,8 +1196,7 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
     }
 
     char filename[PATH_MAX] = { 0 };
-    gboolean from_cache = FALSE;
-    dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
+    dt_image_full_path(imgid, filename, sizeof(filename), NULL);
 
     int duplicates = 0;
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);

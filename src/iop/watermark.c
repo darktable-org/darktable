@@ -555,9 +555,8 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
     const int32_t flags = dt_lib_export_metadata_get_conf_flags();
     dt_variables_params_t *params;
     dt_variables_params_init(&params);
-    gboolean from_cache = FALSE;
     char image_path[PATH_MAX] = { 0 };
-    dt_image_full_path(image->id, image_path, sizeof(image_path), &from_cache);
+    dt_image_full_path(image->id, image_path, sizeof(image_path), NULL);
     params->filename = image_path;
     params->jobcode = "infos";
     params->use_html_newline = TRUE;
