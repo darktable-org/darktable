@@ -1979,7 +1979,13 @@ static void _set_trouble_messages(struct dt_iop_module_t *self)
   const dt_develop_t *dev = self->dev;
   const dt_dev_chroma_t *chr = &dev->chroma;
 
-  if(!chr->temperature || !g) return;
+  if(!chr->temperature)
+  {
+    if(chr->adaptation)
+      dt_iop_set_module_trouble_message(chr->adaptation, NULL, NULL, NULL);
+    return;
+  }
+
   if(!chr->adaptation)
   {
     dt_iop_set_module_trouble_message(chr->temperature, NULL, NULL, NULL);
@@ -1997,18 +2003,49 @@ static void _set_trouble_messages(struct dt_iop_module_t *self)
     && !(p->illuminant == DT_ILLUMINANT_PIPE || p->adaptation == DT_ADAPTATION_RGB)
     && !dt_image_is_monochrome(&dev->image_storage);
 
-  dt_print_pipe(DT_DEBUG_PARAMS, "chroma trouble data",
-      NULL, self, DT_DEVICE_NONE, NULL, NULL,
-      "D65=%s.  NOW %.3f %.3f %.3f, D65 %.3f %.3f %.3f, AS-SHOT %.3f %.3f %.3f\n",
-    dt_dev_is_D65_chroma(dev) ? "YES" : "NO",
-    chr->wb_coeffs[0], chr->wb_coeffs[1], chr->wb_coeffs[2],
-    chr->D65coeffs[0], chr->D65coeffs[1], chr->D65coeffs[2],
-    chr->as_shot[0], chr->as_shot[1], chr->as_shot[2]);
+  // our first and biggest problem : white balance module is being
+  // clever with WB coeffs
+  const gboolean problem1 = valid
+                            && chr->adaptation == self
+                            && temp_enabled
+                            && !dt_dev_is_D65_chroma(dev);
 
-  if(valid && chr->adaptation != self && temp_enabled && !g->is_blending)
+  // our second biggest problem : another channelmixerrgb instance is doing CAT
+  // earlier in the pipe and we don't use masking here.
+  const gboolean problem2 = valid
+                            && chr->adaptation != self
+                            && temp_enabled
+                            && !g->is_blending;
+
+  // our third and minor problem: white balance module is not active but default_enabled
+  // and we do chromatic adaptation in color calibration
+  const gboolean problem3 = valid
+                            && chr->adaptation
+                            && !temp_enabled
+                            && chr->temperature->default_enabled;
+  const gboolean anyproblem = problem1 || problem2 || problem3;
+
+  if(anyproblem && (darktable.unmuted & (DT_DEBUG_PARAMS | DT_DEBUG_PIPE)))
   {
-    // our second biggest problem : another channelmixerrgb instance is doing CAT
-    // earlier in the pipe and we don't use masking here.
+    const dt_image_t *img = &dev->image_storage;
+
+    dt_print_pipe(DT_DEBUG_ALWAYS, anyproblem ? "chroma trouble" : "chroma data",
+      NULL, self, DT_DEVICE_NONE, NULL, NULL,
+      "%s (%i) %s%s%s%sD65=%s.  NOW %.3f %.3f %.3f, D65 %.3f %.3f %.3f, AS-SHOT %.3f %.3f %.3f\n",
+      img->filename,
+      img->id,
+      anyproblem ? "" : "NO problem, ",
+      problem1 ? "white balance applied twice, " : "",
+      problem2 ? "double CAT applied, " : "",
+      problem3 ? "white balance missing, " : "",
+      dt_dev_is_D65_chroma(dev) ? "YES" : "NO",
+      chr->wb_coeffs[0], chr->wb_coeffs[1], chr->wb_coeffs[2],
+      chr->D65coeffs[0], chr->D65coeffs[1], chr->D65coeffs[2],
+      chr->as_shot[0], chr->as_shot[1], chr->as_shot[2]);
+  }
+
+  if(problem2)
+  {
     dt_iop_set_module_trouble_message
       (self,
         _("double CAT applied"),
@@ -2016,16 +2053,12 @@ static void _set_trouble_messages(struct dt_iop_module_t *self)
           "all providing chromatic adaptation.\n"
           "this can lead to inconsistencies unless you\n"
           "use them with masks or know what you are doing."),
-        "double CAT applied");
+        NULL);
     return;
   }
 
-  if(valid && chr->adaptation == self
-     && temp_enabled
-     && !dt_dev_is_D65_chroma(dev))
+  if(problem1)
   {
-    // our first and biggest problem : white balance module is being
-    // clever with WB coeffs
     dt_iop_set_module_trouble_message
       (chr->temperature,
         _("white balance applied twice"),
@@ -2033,7 +2066,7 @@ static void _set_trouble_messages(struct dt_iop_module_t *self)
           "chromatic adaptation.\n"
           "set the white balance here to camera reference (D65)\n"
           "or disable chromatic adaptation in color calibration."),
-        "double application of white balance");
+        NULL);
 
     dt_iop_set_module_trouble_message
       (self,
@@ -2042,14 +2075,12 @@ static void _set_trouble_messages(struct dt_iop_module_t *self)
           "reference illuminant, which will cause issues here\n"
           "with chromatic adaptation. either set it to reference\n"
           "or disable chromatic adaptation here."),
-        "white balance is not using reference illuminant");
+        NULL);
     return;
   }
 
-  if(valid && chr->adaptation && !temp_enabled && chr->temperature->default_enabled)
+  if(problem3)
   {
-    // our third and minor prooblem: white balance module is not active but default_enabled
-    // and we do chromatic adaptation in color calibration
     dt_iop_set_module_trouble_message
       (chr->temperature,
         _("white balance missing"),
@@ -2057,7 +2088,7 @@ static void _set_trouble_messages(struct dt_iop_module_t *self)
           "causing chromatic adaptation issues in color calibration.\n"
           "enable this module and either set it to reference\n"
           "or disable chromatic adaptation in color calibration."),
-        "white balance disabled but required");
+        NULL);
 
     dt_iop_set_module_trouble_message
       (self,
@@ -2066,7 +2097,7 @@ static void _set_trouble_messages(struct dt_iop_module_t *self)
           "illuminant causing issues with chromatic adaptation here.\n"
           "enable white balance and either set it to reference\n"
           "or disable chromatic adaptation here."),
-        "white balance missing for color calibration");
+        NULL);
     return;
   }
 

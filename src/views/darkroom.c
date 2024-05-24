@@ -849,11 +849,11 @@ static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid)
   dt_dev_write_history(dev);
 
   dev->requested_id = imgid;
+  dt_dev_clear_chroma_troubles(dev);
 
   // possible enable autosaving due to conf setting but wait for some seconds for first save
   darktable.develop->autosaving = (double)dt_conf_get_int("autosave_interval") > 1.0;
   darktable.develop->autosave_time = dt_get_wtime() + 10.0;
-  dt_dev_reset_chroma(dev);
 
   g_idle_add(_dev_load_requested_image, dev);
 }
@@ -957,6 +957,9 @@ static gboolean _dev_load_requested_image(gpointer user_data)
   dt_dev_pixelpipe_cleanup_nodes(dev->full.pipe);
   dt_dev_pixelpipe_cleanup_nodes(dev->preview_pipe);
   dt_dev_pixelpipe_cleanup_nodes(dev->preview2.pipe);
+
+  // chroma data will be fixed by reading whitebalance data from history
+  dt_dev_reset_chroma(dev);
 
   const guint nb_iop = g_list_length(dev->iop);
   for(int i = nb_iop - 1; i >= 0; i--)
