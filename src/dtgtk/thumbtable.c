@@ -1143,111 +1143,111 @@ static gboolean _event_scroll(GtkWidget *widget,
   return TRUE;
 }
 
-static void _show_text_line(cairo_t *cr,
-                            PangoLayout *layout,
-                            const char *text,
-                            const float offx,
-                            const float offy,
-                            const float lineto_x,
-                            const float lineto_y,
-                            const float at)
-{
-  pango_layout_set_markup(layout, text, -1);
-  PangoRectangle ink;
-  pango_layout_get_pixel_extents(layout, &ink, NULL);
-  cairo_move_to(cr, offx, offy - ink.height - ink.x);
-  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_FONT);
-  pango_cairo_show_layout(cr, layout);
-  if(lineto_x >= 0.0f && lineto_y >= 0.0f)
-  {
-    dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_LIGHTTABLE_FONT, at);
-    if(lineto_x > offx)
-    {
-      cairo_rel_move_to(cr, 10.0f + ink.width, ink.height * 0.5f);
-    }
-    else
-    {
-      cairo_move_to(cr, offx - DT_PIXEL_APPLY_DPI(10.0f), offy - (ink.height + ink.x) * 0.5f);
-    }
-    cairo_line_to(cr, lineto_x, lineto_y);
-  }
-  cairo_stroke(cr);
-}
-
 // display help text in the center view if there's no image to show
 static void _lighttable_expose_empty(cairo_t *cr,
                                     int32_t width,
                                     int32_t height,
-                                    const gboolean lighttable)
+                                    dt_thumbtable_t *lighttable)
 {
-  const float fs = DT_PIXEL_APPLY_DPI(15.0f);
-  const float ls = 1.5f * fs;
-  const float offy = height * 0.2f;
-  const float offx = DT_PIXEL_APPLY_DPI(60);
-  const float at = 0.3f;
   dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_BG);
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_fill(cr);
 
-  PangoAttrList *bold = pango_attr_list_from_string("0 -1 weight bold");
-  PangoAttrList *normal = pango_attr_list_from_string("0 -1 weight normal");
-  PangoLayout *layout;
+  const float offy = height * 0.2f;
+  const float offx = width * 0.05f;
+  PangoLayout *layout = pango_cairo_create_layout(cr);
   PangoFontDescription *desc =
     pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
-  pango_font_description_set_absolute_size(desc, fs * PANGO_SCALE);
-  layout = pango_cairo_create_layout(cr);
+  pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(20.0f) * PANGO_SCALE);
   pango_layout_set_font_description(layout, desc);
-  cairo_set_font_size(cr, fs);
-  _show_text_line(cr, layout, _("<b>there are no images in this collection</b>"),
-                  offx, offy, -1, -1, at);
+  pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_MIDDLE);
+  pango_layout_set_width(layout, PANGO_SCALE * (width - 2*offx));
+  PangoTabArray *tabs = pango_tab_array_new_with_positions (1, TRUE, PANGO_TAB_RIGHT, width - 2*offx);
+  pango_layout_set_tabs(layout, tabs);
+  pango_tab_array_free(tabs);
+
+#define RGHT "\t   ",
+  gchar *here = _("here"), *text = g_strjoin(NULL,
+    "<b>", _("there are no images in this collection"), "</b>",
+    !lighttable ? NULL : "\n",
+    "<b>"RGHT _("need help?"), "</b>",
+    "\n" , _("if you have not imported any images yet"),
+         RGHT _("click on <b>?</b> then an on-screen item to open manual page"),
+    "\n" , _("you can do so in the import module"),
+         RGHT _("press and hold '<b>h</b>' to show all active keyboard shortcuts"),
+    "\n" RGHT _("to open the online manual click "), "<u>", here, "</u>",
+    "\n" , _("try to relax the filter settings in the top panel"),
+    "\n" , _("or add images in the collections module"),
+    "<b>"RGHT _("personalize darktable"), "</b>",
+    "\n" RGHT _("click on the gear icon for global preferences"),
+    "\n" ,
+    "<b>", _("try the 'no-click' workflow"), "</b>",
+         RGHT _("click on the keyboard icon to define shortcuts"),
+    "\n" , _("hover over an image and use keyboard shortcuts"),
+    "\n" , _("to apply ratings, colors, styles, etc."),
+         RGHT _("make default raw development look more like your"),
+    "\n" , _("hover over any button to see a description and shortcut"),
+         RGHT _("camera's JPEG by applying a camera-specific style"),
+    NULL);
+
+  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_FONT);
+  cairo_move_to(cr, offx, offy);
+  pango_layout_set_markup(layout, text, -1);
+  pango_cairo_show_layout(cr, layout);
+  g_free(text);
 
   if(lighttable)
   {
-    _show_text_line(cr, layout, _("if you have not imported any images yet"),
-                    offx, offy + 2 * ls, -1, -1, at);
-    _show_text_line(cr, layout, _("you can do so in the import module"),
-                    offx, offy + 3 * ls, 0.0f, 10.0f, at);
-    _show_text_line(cr, layout, _("try to relax the filter settings in the top panel"),
-                    offx, offy + 5 * ls, width * 0.45f, 0.0f, at);
-    _show_text_line(cr, layout, _("or add images in the collections module in the left panel"),
-                    offx, offy + 6 * ls, 0.0f, offy + 5 * ls, at);
+    dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_LIGHTTABLE_FONT, 0.3f);
+    const float offx2 = offx - DT_PIXEL_APPLY_DPI(10);
+    PangoRectangle ink;
+    PangoLayoutLine* line = pango_layout_get_line_readonly(layout, 5);
+    pango_layout_line_get_pixel_extents(line, NULL, &ink);
 
-    _show_text_line(cr, layout, _("try the 'no-click' workflow:"),
-                    offx, offy + 9 * ls, -1, -1, at);
-    _show_text_line(cr, layout, _("hover on an image and use keyboard shortcuts"),
-                    offx, offy + 10 * ls, -1, -1, at);
-    _show_text_line(cr, layout, _("to apply ratings, colors, styles, etc."),
-                    offx, offy + 11 * ls, -1, -1, at);
+    int button_width =
+      gtk_widget_get_allocated_width(darktable.gui->focus_peaking_button);
 
-    const float offx2 = offx + DT_PIXEL_APPLY_DPI(500);
+    void line_to(double n, double h, double x, double y)
+    {
+      double radius = DT_PIXEL_APPLY_DPI(3);
+      cairo_new_path(cr);
+      cairo_arc(cr, h, offy + (n + .5) * ink.height, radius, 0, 2 * M_PI);
+      cairo_rel_move_to(cr, -radius, 0);
+      cairo_line_to(cr, x, y);
+      cairo_arc(cr, x, y, radius, 0, 2 * M_PI);
+      cairo_stroke(cr);
+    }
+    void line_to_module(double n, double h, char *name)
+    {
+      dt_lib_module_t *lib = dt_lib_get_module(name);
+      if(!lib || !lib->expander || !gtk_widget_get_mapped(lib->expander)) return;
 
-    _show_text_line(cr, layout, _("<b>need help?</b>"),
-                    offx2, offy + 0 * ls, width * 0.90f, 0.0f, at);
-    _show_text_line(cr, layout, _("click on <span size='110%'><b>?</b></span> then an on-screen item to open manual page."),
-                    offx2, offy + 0.9 * ls, -1, -1, at);
-    _show_text_line(cr, layout, _("hover over any button to see a description and shortcut."),
-                    offx2, offy + 2 * ls, -1, -1, at);
-    _show_text_line(cr, layout, _("click <u>here</u> to open the online manual."),
-                    offx2, offy + 3 * ls, -1, -1, at);
-    //TODO: add a button or link to "howto" chapter in online manual
+      GtkAllocation allocation;
+      gtk_widget_get_allocation(lib->expander, &allocation);
+      gtk_widget_translate_coordinates(gtk_widget_get_parent(lib->expander),
+                                       dt_ui_center(darktable.gui->ui),
+                                       allocation.x, allocation.y,
+                                       &allocation.x, &allocation.y);
+      line_to(n, h, allocation.x > 0 ? width : 0,
+                    allocation.y + allocation.height / 2);
+    }
 
-    _show_text_line(cr, layout, _("<b>personalize darktable</b>"),
-                    offx2, offy + 6 * ls, width * 0.97f, 0.0f, at);
-    _show_text_line(cr, layout, _("click on the gear icon for global preferences."),
-                    offx2, offy + 7 * ls, -1, -1, at);
-    _show_text_line(cr, layout, _("click on the keyboard icon to define shortcuts."),
-                    offx2, offy + 8 * ls, -1, -1, at);
-    _show_text_line(cr, layout, _("press and hold '<b>h</b>' to show all active shortcuts."),
-                    offx2, offy + 9 * ls, -1, -1, at);
+    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(3));
+    cairo_new_path(cr);
+    line_to_module(3, offx2, "import");
+    line_to(5, offx + ink.width + DT_PIXEL_APPLY_DPI(10), width * 0.45f, 0);
+    line_to_module(6, offx2, "collect");
+    line_to(11.8, 4 * button_width, 4 * button_width, height);
 
-    _show_text_line(cr, layout, _("make default raw development look more like your"),
-                    offx2, offy + 11 * ls, width, height * 0.5f, at);
-    _show_text_line(cr, layout, _("camera's JPEG by applying a camera-specific style"),
-                    offx2, offy + 12 * ls, -1, -1, at);
+    line_to(1.3, width - offx2 - ink.width/2, width - 2.5 * button_width, 0);
+    line_to(8, width - offx2, width - button_width, 0);
+    line_to_module(11, width - offx2, "styles");
+
+    pango_layout_set_text(layout, here, -1);
+    pango_layout_get_pixel_extents(layout, NULL, &lighttable->manual_button);
+    lighttable->manual_button.x = width - offx;
+    lighttable->manual_button.y = offy + 5 * lighttable->manual_button.height;
   }
-
-  pango_attr_list_unref(bold);
-  pango_attr_list_unref(normal);
   pango_font_description_free(desc);
   g_object_unref(layout);
 }
@@ -1267,13 +1267,14 @@ static gboolean _event_draw(GtkWidget *widget,
   // but we don't really want to draw something, this is just to know
   // when the widget is really ready
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
+  table->manual_button.width = -1;
   if(!darktable.collection
      || (dt_collection_get_count(darktable.collection) == 0))
   {
     GtkAllocation allocation;
     gtk_widget_get_allocation(table->widget, &allocation);
     _lighttable_expose_empty(cr, allocation.width, allocation.height,
-                             table->mode != DT_THUMBTABLE_MODE_FILMSTRIP);
+                             table->mode != DT_THUMBTABLE_MODE_FILMSTRIP ? table : NULL);
     return TRUE;
   }
   else
@@ -1352,7 +1353,9 @@ static gboolean _event_button_press(GtkWidget *widget,
   {
     // we click in an empty area, let's deselect all images
     dt_selection_clear(darktable.selection);
-    if(!darktable.collection || dt_collection_get_count(darktable.collection) == 0)
+    PangoRectangle *button = &table->manual_button;
+    if(event->x < button->x && event->x > button->x - button->width &&
+       event->y < button->y && event->y > button->y - button->height)
       dt_gui_show_help(NULL);
     return TRUE;
   }
