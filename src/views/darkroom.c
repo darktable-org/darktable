@@ -3462,7 +3462,7 @@ int button_pressed(dt_view_t *self,
 
       if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
       {
-        const float eps = 0.05f / MAX(0.1f, zoom_scale);
+        const float eps = 0.1f / MAX(0.1f, zoom_scale);
 
         gboolean on_corner_prev_box = TRUE;
         float opposite_x = 0.f, opposite_y = 0.f;
