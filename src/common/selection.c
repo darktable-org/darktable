@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -315,18 +315,22 @@ void dt_selection_select_range(dt_selection_t *selection,
                                const dt_imgid_t imgid)
 {
   if(!selection->collection) return;
+  if(!dt_is_valid_imgid(imgid)) return;
 
   // if no selection is made, add the selected image to the selection and return
-  if(!dt_collection_get_selected_count())
+  const int oldcnt = dt_collection_get_selected_count();
+  if(oldcnt < 1)
   {
     dt_selection_select(selection, imgid);
     return;
   }
 
-  /* get start and end rows for range selection */
+  /* get start and end row ids for range selection */
   sqlite3_stmt *stmt;
-  int rc = 0;
-  int sr = -1, er = -1;
+  int rowid = 0;
+  int oldrow = -1;  // reports rowid for last_single_id
+  int newrow = -1;  // reports rowid for imgid
+
   DT_DEBUG_SQLITE3_PREPARE_V2
     (dt_database_get(darktable.db),
      dt_collection_get_query_no_group(selection->collection),
@@ -335,74 +339,72 @@ void dt_selection_select_range(dt_selection_t *selection,
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const dt_imgid_t id = sqlite3_column_int(stmt, 0);
-    if(id == selection->last_single_id) sr = rc;
+    if(id == selection->last_single_id) oldrow = rowid;
+    if(id == imgid)                     newrow = rowid;
 
-    if(id == imgid) er = rc;
+    if(oldrow != -1 && newrow != -1) break;
 
-    if(sr != -1 && er != -1) break;
-
-    rc++;
+    rowid++;
   }
   sqlite3_finalize(stmt);
 
   // if imgid not in collection, nothing to do
-  if(er < 0) return;
+  if(newrow < 0) return;
 
   // if last_single_id not in collection, we either use last selected
   // image or first collected one
-  dt_imgid_t srid = selection->last_single_id;
-  if(sr < 0)
+  if(oldrow < 0)
   {
-    sr = 0;
-    srid = NO_IMGID;
+    oldrow = 0;
     // clang-format off
     DT_DEBUG_SQLITE3_PREPARE_V2(
         dt_database_get(darktable.db),
-        "SELECT m.rowid, m.imgid"
+        "SELECT m.rowid"
         " FROM memory.collected_images AS m, main.selected_images AS s"
         " WHERE m.imgid=s.imgid"
         " ORDER BY m.rowid DESC"
         " LIMIT 1",
         -1, &stmt, NULL);
-    // clang-format on
     if(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      sr = sqlite3_column_int(stmt, 0);
-      srid = sqlite3_column_int(stmt, 1);
-    }
+      oldrow = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
   }
 
-  /* select the images in range from start to end */
-  const uint32_t old_flags = dt_collection_get_query_flags(selection->collection);
+  // fprintf(stderr, "cnt=%i, range=%i->%i.", oldcnt, MIN(oldrow, newrow), MAX(oldrow, newrow));
+  for(int row_id = MIN(oldrow, newrow); row_id <= MAX(oldrow, newrow); row_id++)
+  {
+    DT_DEBUG_SQLITE3_PREPARE_V2(
+        dt_database_get(darktable.db),
+        "SELECT imgid"
+        " FROM memory.collected_images"
+        " WHERE rowid = ?1",
+        -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, row_id+1);
 
-  /* use the limit to select range of images */
-  dt_collection_set_query_flags(selection->collection, (old_flags | COLLECTION_QUERY_USE_LIMIT));
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      const dt_imgid_t id = sqlite3_column_int(stmt, 0);
+      sqlite3_stmt *stmt2;
+      gboolean exists = FALSE;
+      if(dt_is_valid_imgid(id))
+      {
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT imgid"
+                              " FROM main.selected_images"
+                              " WHERE imgid=?1", -1, &stmt2, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, id);
+        if(sqlite3_step(stmt2) == SQLITE_ROW) exists = TRUE;
+        sqlite3_finalize(stmt2);
 
-  dt_collection_update(selection->collection);
-
-  gchar *fullq = g_strdup_printf
-    ("INSERT OR IGNORE INTO main.selected_images (imgid) %s",
-     dt_collection_get_query_no_group(selection->collection));
-
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), fullq, -1, &stmt, NULL);
-
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, MIN(sr, er));
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, (MAX(sr, er) - MIN(sr, er)) + 1);
-
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-
-  /* reset filter */
-  dt_collection_set_query_flags(selection->collection, old_flags);
-  dt_collection_update(selection->collection);
-
-  // The logic above doesn't handle groups, so explicitly select the
-  // beginning and end to make sure those are selected properly
-  dt_selection_select(selection, srid);
-  dt_selection_select(selection, imgid);
-
-  g_free(fullq);
+        if(!exists)
+          dt_selection_select(selection, id);
+      }
+      // fprintf(stderr, " imgid=%s%i", exists ? "." : "+", id);
+    }
+    sqlite3_finalize(stmt);
+  }
+  // fprintf(stderr, ". resulting cnt=%i\n", dt_collection_get_selected_count());
+  selection->last_single_id = imgid;
 }
 
 void dt_selection_select_filmroll(dt_selection_t *selection)
