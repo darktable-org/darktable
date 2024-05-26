@@ -2683,30 +2683,30 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     TRY_EXEC("CREATE TABLE whitebalance"
              " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
              "  name VARCHAR)",
-              "[init] can't create table whitebalance\n"); 
+              "[init] can't create table whitebalance\n");
     TRY_EXEC("CREATE UNIQUE INDEX whitebalance_name ON whitebalance (name)",
-             "[init] can't create index `whitebalance_name' on table `whitebalance'\n"); 
+             "[init] can't create index `whitebalance_name' on table `whitebalance'\n");
 
     TRY_EXEC("CREATE TABLE flash"
              " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
              "  name VARCHAR)",
-              "[init] can't create table flash\n"); 
+              "[init] can't create table flash\n");
     TRY_EXEC("CREATE UNIQUE INDEX flash_name ON flash (name)",
-             "[init] can't create index `flash_name' on table `flash'\n"); 
+             "[init] can't create index `flash_name' on table `flash'\n");
 
     TRY_EXEC("CREATE TABLE exposure_program"
              " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
              "  name VARCHAR)",
-              "[init] can't create table exposure_program\n"); 
+              "[init] can't create table exposure_program\n");
     TRY_EXEC("CREATE UNIQUE INDEX exposure_program_name ON exposure_program (name)",
-             "[init] can't create index `exposure_program_name' on table `exposure_program'\n"); 
+             "[init] can't create index `exposure_program_name' on table `exposure_program'\n");
 
     TRY_EXEC("CREATE TABLE metering_mode"
              " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
              "  name VARCHAR)",
-              "[init] can't create table metering_mode\n"); 
+              "[init] can't create table metering_mode\n");
     TRY_EXEC("CREATE UNIQUE INDEX metering_mode_name ON metering_mode (name)",
-             "[init] can't create index `metering_mode_name' on table `metering_mode'\n"); 
+             "[init] can't create index `metering_mode_name' on table `metering_mode'\n");
 
     TRY_EXEC("CREATE TABLE images_new"
              " (id INTEGER PRIMARY KEY AUTOINCREMENT, group_id INTEGER, film_id INTEGER,"
@@ -2736,7 +2736,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
              "FOREIGN KEY(exposure_program_id) REFERENCES exposure_program(id) ON DELETE CASCADE ON UPDATE CASCADE, "
              "FOREIGN KEY(metering_mode_id) REFERENCES metering_mode(id) ON DELETE CASCADE ON UPDATE CASCADE)",
              "[init] can't create new table images");
-    
+
     TRY_EXEC("INSERT INTO images_new"
              " SELECT id, group_id, film_id, width, height, filename,"
              "        maker_id, model_id, lens_id, camera_id,"
