@@ -2809,7 +2809,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     // As the selected_images table might have non-unique data the UNIQUE INDEX could fail,
     // we avoid this by recreating both the table & index.
     // minor downside: selection is lost while updating database sheme.
-    TRY_EXEC("DROP INDEX selected_images_ni",
+    TRY_EXEC("DROP INDEX IF EXISTS selected_images_ni",
              "[init] can't drop index selected_images_ni\n");
 
     TRY_EXEC("DROP TABLE selected_images",
