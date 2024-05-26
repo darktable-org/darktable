@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -48,7 +48,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 51
+#define CURRENT_DATABASE_VERSION_LIBRARY 52
 #define CURRENT_DATABASE_VERSION_DATA    10
 
 // #define USE_NESTED_TRANSACTIONS
@@ -2802,6 +2802,29 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     new_version = 51;
   }
+  else if(version == 51)
+  {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    // As the selected_images table might have non-unique data the UNIQUE INDEX could fail,
+    // we avoid this by recreating both the table & index.
+    // minor downside: selection is lost while updating database sheme.
+    TRY_EXEC("DROP INDEX selected_images_ni",
+             "[init] can't drop index selected_images_ni\n");
+
+    TRY_EXEC("DROP TABLE selected_images",
+             "[init] can't drop selected_images\n");
+
+    TRY_EXEC("CREATE TABLE selected_images (num INTEGER PRIMARY KEY AUTOINCREMENT, imgid INTEGER)",
+             "[init] can't create selected_images\n");
+
+    TRY_EXEC("CREATE UNIQUE INDEX selected_images_ni"
+             " ON selected_images (imgid)",
+             "[init] can't create index selected_images_ni\n");
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 52;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -3246,7 +3269,7 @@ static void _create_library_schema(dt_database_t *db)
 
   sqlite3_exec(db->handle,
                "CREATE UNIQUE INDEX main.selected_images_ni"
-               " ON main.selected_images (num, imgid)",
+               " ON selected_images (num, imgid)",
                NULL, NULL, NULL);
   ////////////////////////////// history
   sqlite3_exec(
