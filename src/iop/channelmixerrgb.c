@@ -2031,7 +2031,7 @@ static void _set_trouble_messages(struct dt_iop_module_t *self)
 
     dt_print_pipe(DT_DEBUG_ALWAYS, anyproblem ? "chroma trouble" : "chroma data",
       NULL, self, DT_DEVICE_NONE, NULL, NULL,
-      "%s (%i) %s%s%s%sD65=%s.  NOW %.3f %.3f %.3f, D65 %.3f %.3f %.3f, AS-SHOT %.3f %.3f %.3f\n",
+      "%s ID=%i %s%s%s%sD65=%s.  NOW %.3f %.3f %.3f, D65 %.3f %.3f %.3f, AS-SHOT %.3f %.3f %.3f\n",
       img->filename,
       img->id,
       anyproblem ? "" : "NO problem, ",
