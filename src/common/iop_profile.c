@@ -1192,40 +1192,37 @@ void dt_ioppr_transform_image_colorspace
   dt_get_perf_times(&start_time);
 
   // matrix should never be invalid, this is only to test it against lcms2!
-  if(dt_is_valid_colormatrix(profile_info->matrix_in[0][0])
-     && dt_is_valid_colormatrix(profile_info->matrix_out[0][0]))
-  {
+  const gboolean no_lcms = dt_is_valid_colormatrix(profile_info->matrix_in[0][0])
+                        && dt_is_valid_colormatrix(profile_info->matrix_out[0][0]);
+
+  if(no_lcms)
     _transform_matrix(self, image_in, image_out, width, height,
                       cst_from, cst_to, converted_cst, profile_info);
-
-    dt_print(DT_DEBUG_PERF,
-             "[dt_ioppr_transform_image_colorspace] %s-->%s took %.3f secs (%.3f CPU) [%s%s]\n",
-             dt_iop_colorspace_to_name(cst_from), dt_iop_colorspace_to_name(cst_to),
-             dt_get_lap_time(&start_time.clock),
-             dt_get_lap_utime(&start_time.user),
-             self->op, dt_iop_get_instance_id(self));
-  }
   else
-  {
     _transform_lcms2(self, image_in, image_out, width, height,
                      cst_from, cst_to, converted_cst, profile_info);
 
-    dt_print(DT_DEBUG_PERF,
-             "[dt_ioppr_transform_image_colorspace] %s-->%s took %.3f secs (%.3f lcms2) [%s%s]\n",
+  dt_print(DT_DEBUG_PERF,
+             "[dt_ioppr_transform_image_colorspace%s] %s-->%s took %.3f secs (%.3f CPU) [%s%s]\n",
+             no_lcms ? "" : "_lcms2",
              dt_iop_colorspace_to_name(cst_from), dt_iop_colorspace_to_name(cst_to),
              dt_get_lap_time(&start_time.clock),
              dt_get_lap_utime(&start_time.user),
              self->op, dt_iop_get_instance_id(self));
-  }
 
   if(*converted_cst == cst_from)
+  {
     dt_print(DT_DEBUG_ALWAYS,
-             "[dt_ioppr_transform_image_colorspace] in `%s%s', profile `%s',"
+             "[dt_ioppr_transform_image_colorspace%s] in `%s%s', profile `%s',"
              " invalid conversion from %s to %s\n",
+             no_lcms ? "" : "_lcms2",
              self->op, dt_iop_get_instance_id(self),
              dt_colorspaces_get_name(profile_info->type, profile_info->filename),
              dt_iop_colorspace_to_name(cst_from),
              dt_iop_colorspace_to_name(cst_to));
+    if(image_in != image_out)
+      dt_iop_image_copy_by_size(image_out, image_in, width, height, cst_to == IOP_CS_RAW ? 1 : 4);
+  }
 }
 
 
@@ -1260,30 +1257,22 @@ void dt_ioppr_transform_image_colorspace_rgb
   dt_times_t start_time = { 0 };
   dt_get_perf_times(&start_time);
 
-  if(dt_is_valid_colormatrix(profile_info_from->matrix_in[0][0])
-     && dt_is_valid_colormatrix(profile_info_from->matrix_out[0][0])
-     && dt_is_valid_colormatrix(profile_info_to->matrix_in[0][0])
-     && dt_is_valid_colormatrix(profile_info_to->matrix_out[0][0]))
-  {
-    _transform_matrix_rgb(image_in, image_out, width, height, profile_info_from, profile_info_to);
+  const gboolean no_lcms = dt_is_valid_colormatrix(profile_info_from->matrix_in[0][0])
+                        && dt_is_valid_colormatrix(profile_info_from->matrix_out[0][0])
+                        && dt_is_valid_colormatrix(profile_info_to->matrix_in[0][0])
+                        && dt_is_valid_colormatrix(profile_info_to->matrix_out[0][0]);
 
-    dt_print(DT_DEBUG_PERF,
-             "[dt_ioppr_transform_image_colorspace_rgb] RGB-->RGB took %.3f secs (%.3f CPU) [%s]\n",
-             dt_get_lap_time(&start_time.clock),
-             dt_get_lap_utime(&start_time.user),
-             (message) ? message : "");
-  }
+  if(no_lcms)
+    _transform_matrix_rgb(image_in, image_out, width, height, profile_info_from, profile_info_to);
   else
-  {
     _transform_lcms2_rgb(image_in, image_out, width, height, profile_info_from, profile_info_to);
 
-    dt_print(DT_DEBUG_PERF,
-             "[dt_ioppr_transform_image_colorspace_rgb] RGB-->RGB"
-             " took %.3f secs (%.3f lcms2) [%s]\n",
+  dt_print(DT_DEBUG_PERF,
+             "[dt_ioppr_transform_image_colorspace_rgb%s] RGB-->RGB took %.3f secs (%.3f CPU) [%s]\n",
+             no_lcms ? "" : "_lcms2",
              dt_get_lap_time(&start_time.clock),
              dt_get_lap_utime(&start_time.user),
              (message) ? message : "");
-  }
 }
 
 #ifdef HAVE_OPENCL
@@ -1496,7 +1485,7 @@ gboolean dt_ioppr_transform_image_colorspace_cl
       *converted_cst = cst_from;
       dt_print(DT_DEBUG_ALWAYS,
                "[dt_ioppr_transform_image_colorspace_cl] in `%s%s', profile `%s',"
-               " invalid conversion from %s to %s\n",
+               " non supported conversion from %s to %s\n",
                self->op, dt_iop_get_instance_id(self),
                dt_colorspaces_get_name(profile_info->type, profile_info->filename),
                dt_iop_colorspace_to_name(cst_from),
