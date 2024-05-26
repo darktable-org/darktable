@@ -28,20 +28,13 @@
  **/
 
 DT_OMP_DECLARE_SIMD()
-static inline float uint8_to_float(const uint8_t i)
+static inline float _uint8_to_float(const uint8_t i)
 {
   return (float)i / 255.0f;
 }
 
-DT_OMP_DECLARE_SIMD()
-static inline uint8_t float_to_uint8(const float i)
-{
-  return (uint8_t)(i * 255.0f);
-}
-
-
 DT_OMP_DECLARE_SIMD(aligned(image, index:64) uniform(image))
-static inline float laplacian(const float *const image, const size_t index[8])
+static inline float _laplacian(const float *const image, const size_t index[8])
 {
   // Compute the magnitude of the gradient over the principal directions,
   // then again over the diagonal directions, and average both.
@@ -57,7 +50,12 @@ static inline float laplacian(const float *const image, const size_t index[8])
 }
 
 DT_OMP_DECLARE_SIMD()
-static inline void get_indices(const size_t i, const size_t j, const size_t width, const size_t height, const size_t delta, size_t index[8])
+static inline void _get_indices(const size_t i,
+                               const size_t j,
+                               const size_t width,
+                               const size_t height,
+                               const size_t delta,
+                               size_t index[8])
 {
   const size_t upper_line = (i - delta) * width;
   const size_t center_line = i * width;
@@ -75,7 +73,9 @@ static inline void get_indices(const size_t i, const size_t j, const size_t widt
   index[7] = lower_line + right_row;      // south east
 }
 
-static inline void dt_focuspeaking(cairo_t *cr, const int buf_width, const int buf_height,
+static inline void dt_focuspeaking(cairo_t *cr,
+                                   const int buf_width,
+                                   const int buf_height,
                                    uint8_t *const restrict image)
 {
   float *const restrict luma = dt_alloc_align_float((size_t)buf_width * buf_height);
@@ -91,9 +91,9 @@ static inline void dt_focuspeaking(cairo_t *cr, const int buf_width, const int b
       // remove gamma 2.2 and take the square is equivalent to this:
       const float exponent = 2.0f * 2.2f;
 
-      luma[index] = sqrtf( powf(uint8_to_float(image[index_RGB]), exponent) +
-                           powf(uint8_to_float(image[index_RGB + 1]), exponent) +
-                           powf(uint8_to_float(image[index_RGB + 2]), exponent) );
+      luma[index] = sqrtf( powf(_uint8_to_float(image[index_RGB]), exponent) +
+                           powf(_uint8_to_float(image[index_RGB + 1]), exponent) +
+                           powf(_uint8_to_float(image[index_RGB + 2]), exponent) );
     }
 
   // Prefilter noise
@@ -112,10 +112,10 @@ static inline void dt_focuspeaking(cairo_t *cr, const int buf_width, const int b
       else
       {
         size_t DT_ALIGNED_ARRAY index_close[8];
-        get_indices(i, j, buf_width, buf_height, 1, index_close);
+        _get_indices(i, j, buf_width, buf_height, 1, index_close);
 
         size_t DT_ALIGNED_ARRAY index_far[8];
-        get_indices(i, j, buf_width, buf_height, 2, index_far);
+        _get_indices(i, j, buf_width, buf_height, 2, index_far);
 
         // Computing the gradient on the closest neighbours gives us the rate of variation, but doesn't say if we are
         // looking at local contrast or optical sharpness.
@@ -123,7 +123,7 @@ static inline void dt_focuspeaking(cairo_t *cr, const int buf_width, const int b
         // if both gradients have the same magnitude, it means we have no sharpness but just a big step in intensity,
         // aka local contrast. If the closest is higher than the farthest, is means we have indeed a sharp something,
         // either noise or edge. To mitigate that, we just subtract half the farthest gradient but add a noise threshold
-        luma_ds[index] = laplacian(luma, index_close) - 0.67f * (laplacian(luma, index_far) - 0.00390625f);
+        luma_ds[index] = _laplacian(luma, index_close) - 0.67f * (_laplacian(luma, index_far) - 0.00390625f);
       }
     }
 
