@@ -1469,7 +1469,26 @@ static void _latescaling_quickbutton_clicked(GtkWidget *w, gpointer user_data)
   if(!dev->gui_attached) return;
 
   dev->late_scaling.enabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w));
-  dt_dev_reprocess_center(dev);
+
+  // we just toggled off and had one of HQ pipelines running
+  if(!dev->late_scaling.enabled
+      && (dev->full.pipe->processing || (dev->second_wnd && dev->preview2.pipe->processing)))
+  {
+    if(dev->full.pipe->processing)
+      dt_atomic_set_int(&dev->full.pipe->shutdown, TRUE);
+    if(dev->second_wnd && dev->preview2.pipe->processing)
+      dt_atomic_set_int(&dev->preview2.pipe->shutdown, TRUE);
+
+    // do it the hard way for safety
+    dt_dev_pixelpipe_rebuild(dev);
+  }
+  else
+  {
+    if(dev->second_wnd)
+      dt_dev_reprocess_all(dev);
+    else
+      dt_dev_reprocess_center(dev);
+  }
 }
 
 /* overlay color */
