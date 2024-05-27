@@ -3269,7 +3269,7 @@ static void _create_library_schema(dt_database_t *db)
 
   sqlite3_exec(db->handle,
                "CREATE UNIQUE INDEX main.selected_images_ni"
-               " ON selected_images (num, imgid)",
+               " ON selected_images (imgid)",
                NULL, NULL, NULL);
   ////////////////////////////// history
   sqlite3_exec(
