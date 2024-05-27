@@ -2806,7 +2806,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
   {
     /* the code to create the DB schema from scratch had a temporary version that set the version number as 52
        but did not create the index correctly (only this migration code was updated at the time), so
-       let's repeat the migration steps if we are on that potentially broken interim version 52 */
+       let's repeat the migration steps if we are potentially on that broken interim version 52 */
 
     sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
 
