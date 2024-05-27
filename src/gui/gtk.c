@@ -2350,12 +2350,16 @@ static gboolean _panel_handle_motion_callback(GtkWidget *w,
 
     if(strcmp(gtk_widget_get_name(w), "panel-handle-right") == 0)
     {
-      sx += darktable.gui->widgets.panel_handle_x - e->x;
+      sx = CLAMP((sx + darktable.gui->widgets.panel_handle_x - e->x),
+                 dt_conf_get_int("min_panel_width"),
+                 dt_conf_get_int("max_panel_width"));
       dt_ui_panel_set_size(darktable.gui->ui, DT_UI_PANEL_RIGHT, sx);
     }
     else if(strcmp(gtk_widget_get_name(w), "panel-handle-left") == 0)
     {
-      sx -= darktable.gui->widgets.panel_handle_x - e->x;
+      sx = CLAMP((sx - darktable.gui->widgets.panel_handle_x + e->x),
+                 dt_conf_get_int("min_panel_width"),
+                 dt_conf_get_int("max_panel_width"));
       dt_ui_panel_set_size(darktable.gui->ui, DT_UI_PANEL_LEFT, sx);
     }
     else if(strcmp(gtk_widget_get_name(w), "panel-handle-bottom") == 0)
