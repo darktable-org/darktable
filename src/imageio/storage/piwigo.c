@@ -154,14 +154,16 @@ void *legacy_params(dt_imageio_module_storage_t *self, const void *const old_par
 
   if(old_version == 1)
   {
+    // version 1 did not save any piwigo settings in the preset,
+    // so we only need to initialize the data struct here
     dt_storage_piwigo_preset_data_v2_t *n =
-      (dt_storage_piwigo_preset_data_v2_t *)malloc(sizeof(dt_storage_piwigo_preset_data_v2_t));
+      (dt_storage_piwigo_preset_data_v2_t *)g_malloc0(sizeof(dt_storage_piwigo_preset_data_v2_t));
 
     n->filename_pattern[0] = '\0';
     n->privacy = DT_PIWIGO_PERMISSION_EVERYONE;
     n->conflict_action = DT_PIWIGO_CONFLICT_SKIP;
 
-    *new_size = sizeof(dt_storage_piwigo_preset_data_v2_t) - sizeof(void *);
+    *new_size = sizeof(dt_storage_piwigo_preset_data_v2_t);
     *new_version = 2;
 
     return n;
@@ -1421,7 +1423,8 @@ cleanup:
 
 size_t params_size(dt_imageio_module_storage_t *self)
 {
-  return sizeof(dt_storage_piwigo_preset_data_t) - sizeof(void *);
+  // only nonsensitive data is stored in the preset
+  return sizeof(dt_storage_piwigo_preset_data_t);
 }
 
 void init(dt_imageio_module_storage_t *self)
@@ -1463,6 +1466,7 @@ void *get_params(dt_imageio_module_storage_t *self)
       break;
     default: // you / admin
       p->preset_data.privacy = DT_PIWIGO_PERMISSION_ADMIN;
+      break;
   }
 
   p->vp = NULL;
@@ -1532,14 +1536,31 @@ int set_params(dt_imageio_module_storage_t *self,
   if(size != self->params_size(self))
     return 1;
 
-  // sensitive user data is not stored in the preset.
   dt_storage_piwigo_gui_data_t *g = self->gui_data;
   dt_storage_piwigo_params_t *d = (dt_storage_piwigo_params_t *)params;
 
   gtk_entry_set_text(GTK_ENTRY(g->filename_pattern_entry), d->preset_data.filename_pattern);
   dt_bauhaus_combobox_set(g->conflict_action, d->preset_data.conflict_action);
-  dt_bauhaus_combobox_set(g->permission_list, d->preset_data.privacy);
-  
+
+  switch(d->preset_data.privacy)
+  {
+    case DT_PIWIGO_PERMISSION_EVERYONE: // everyone
+      dt_bauhaus_combobox_set(g->permission_list, 0);
+      break;
+    case DT_PIWIGO_PERMISSION_CONTACTS: // contacts
+      dt_bauhaus_combobox_set(g->permission_list, 1);
+      break;
+    case DT_PIWIGO_PERMISSION_FRIENDS: // friends
+      dt_bauhaus_combobox_set(g->permission_list, 2);
+      break;
+    case DT_PIWIGO_PERMISSION_FAMILY: // family
+      dt_bauhaus_combobox_set(g->permission_list, 3);
+      break;
+    default: // you / admin
+      dt_bauhaus_combobox_set(g->permission_list, 4);
+      break;
+  }
+
   return 0;
 }
 
