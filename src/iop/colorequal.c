@@ -577,7 +577,7 @@ static void _prefilter_chromaticity(float *const restrict UV,
       return;	//out of memory, can't run the prefilter
     interpolate_bilinear(UV, width, height, ds_UV, ds_width, ds_height, 2);
   }
-  
+
   float *const restrict covariance = _init_covariance(ds_pixels,ds_UV);
   if(!covariance)
   {
@@ -918,6 +918,7 @@ void process(struct dt_iop_module_t *self,
   dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
   const int mask_mode = g && fullpipe ? g->mask_mode : 0;
+  const gboolean run_fast = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
 
   const float *const restrict in = (float*)i;
   float *const restrict out = (float*)o;
@@ -988,7 +989,7 @@ void process(struct dt_iop_module_t *self,
   _mean_gaussian(saturation, roi_out->width, roi_out->height, 1, roi_out->scale);
 
   // STEP 2 : smoothen UV to avoid discontinuities in hue
-  if(d->use_filter)
+  if(d->use_filter && !run_fast)
     _prefilter_chromaticity(UV, saturation, roi_out, d->chroma_size, d->chroma_feathering, sat_shift);
 
   // STEP 3 : carry-on with conversion from LUV to HSB
@@ -1042,7 +1043,7 @@ void process(struct dt_iop_module_t *self,
     }
   }
 
-  if(d->use_filter)
+  if(d->use_filter && !run_fast)
   {
     // blur the saturation gradients
     _mean_gaussian(tmp, roi_out->width, roi_out->height, 1, roi_out->scale);
