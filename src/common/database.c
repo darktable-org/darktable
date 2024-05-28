@@ -48,7 +48,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 52
+#define CURRENT_DATABASE_VERSION_LIBRARY 53
 #define CURRENT_DATABASE_VERSION_DATA    10
 
 // #define USE_NESTED_TRANSACTIONS
@@ -2666,7 +2666,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
 
     TRY_EXEC("DROP INDEX selected_images_ni",
-             "[init] can't create index selected_images_ni\n");
+             "[init] can't drop index selected_images_ni\n");
 
     TRY_EXEC("CREATE UNIQUE INDEX selected_images_ni"
              " ON selected_images (imgid)",
@@ -2802,16 +2802,17 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     new_version = 51;
   }
-  else if(version == 51)
+  else if(version == 51 || version == 52)
   {
+    /* the code to create the DB schema from scratch had a temporary version that set the version number as 52
+       but did not create the index correctly (only this migration code was updated at the time), so
+       let's repeat the migration steps if we are potentially on that broken interim version 52 */
+
     sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
 
     // As the selected_images table might have non-unique data the UNIQUE INDEX could fail,
     // we avoid this by recreating both the table & index.
     // minor downside: selection is lost while updating database sheme.
-    TRY_EXEC("DROP INDEX IF EXISTS selected_images_ni",
-             "[init] can't drop index selected_images_ni\n");
-
     TRY_EXEC("DROP TABLE selected_images",
              "[init] can't drop selected_images\n");
 
@@ -2823,7 +2824,8 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
              "[init] can't create index selected_images_ni\n");
 
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
-    new_version = 52;
+    /* even if we were at version 51, the step is the same for 51 -> 52 and 52 -> 53 (see above), so jump straight to 53 */
+    new_version = 53;
   }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
