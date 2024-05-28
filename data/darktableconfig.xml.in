@@ -187,14 +187,14 @@
     <name>min_panel_height</name>
     <type>int</type>
     <default>64</default>
-    <shortdescription>minimum width of the side panels in pixels</shortdescription>
+    <shortdescription>minimum height of the bottom panel in pixels</shortdescription>
     <longdescription>(restart required)</longdescription>
   </dtconfig>
   <dtconfig>
     <name>max_panel_height</name>
     <type>int</type>
     <default>400</default>
-    <shortdescription>maximum width of the side panels in pixels</shortdescription>
+    <shortdescription>maximum height of the bottom panel in pixels</shortdescription>
     <longdescription>(restart required)</longdescription>
   </dtconfig>
   <dtconfig>
