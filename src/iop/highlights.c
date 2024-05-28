@@ -694,6 +694,7 @@ void process(struct dt_iop_module_t *self,
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
 
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
+  const gboolean fastmode = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
   if(g && fullpipe)
   {
     if(g->hlr_mask_mode != DT_HIGHLIGHTS_MASK_OFF)
@@ -735,7 +736,9 @@ void process(struct dt_iop_module_t *self,
     return;
   }
 
-  switch(data->mode)
+  const dt_iop_highlights_mode_t dmode = fastmode && (data->mode == DT_IOP_HIGHLIGHTS_SEGMENTS)
+                                          ? DT_IOP_HIGHLIGHTS_OPPOSED : data->mode;
+  switch(dmode)
   {
     case DT_IOP_HIGHLIGHTS_INPAINT: // a1ex's (magiclantern) idea of color inpainting:
     {
