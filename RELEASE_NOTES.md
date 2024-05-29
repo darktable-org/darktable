@@ -181,6 +181,9 @@ changes (where available).
 - Fixed export processing when high quality is disabled and upscale is
   set.
 
+- Fixed camera mounting when GPhoto2 internally reports a single
+  attached camera multiple times.
+
 ## Lua
 
 ### API Version
