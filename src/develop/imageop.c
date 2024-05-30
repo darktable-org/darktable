@@ -3630,26 +3630,32 @@ gboolean dt_iop_have_required_input_format(const int req_ch,
 {
   if(ch == req_ch)
   {
-    if(module)
-      dt_iop_set_module_trouble_message(module, NULL, NULL, NULL);
+    // don't fiddle with module's trouble information here
     return TRUE;
   }
   else
   {
-    // copy the input buffer to the output
-    dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out);
+    /* copy the input buffer to the output, take care about available channels
+       as we don't know the size of available in/out buffers as the roi has no information
+       about channels.
+    */
+    dt_iop_copy_image_roi(ovoid, ivoid, MIN(ch, req_ch) , roi_in, roi_out);
     // and set the module's trouble message
     if(module)
+    {
       dt_iop_set_module_trouble_message
         (module, _("unsupported input"),
          _("you have placed this module at\n"
            "a position in the pipeline where\n"
            "the data format does not match\n"
-           "its requirements."),
-         "unsupported data format at current pipeline position");
+           "it's requirements."), NULL);
+      dt_print_pipe(DT_DEBUG_ALWAYS,
+        "unsupported data format", NULL, module, DT_DEVICE_NONE, roi_in, roi_out, "\n");
+    }
     else
     {
-      //TODO: pop up a toast message?
+      dt_print_pipe(DT_DEBUG_ALWAYS,
+        "unsupported data format", NULL, NULL, DT_DEVICE_NONE, roi_in, roi_out, "no module given\n");
     }
     return FALSE;
   }
