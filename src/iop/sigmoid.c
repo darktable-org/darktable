@@ -49,7 +49,7 @@ typedef enum dt_iop_sigmoid_methods_type_t
 
 typedef enum dt_iop_sigmoid_base_primaries_t
 {
-  DT_SIGMOID_WORK_PROFILE = 0, // $DESCRIPTION: "work profile"
+  DT_SIGMOID_WORK_PROFILE = 0, // $DESCRIPTION: "working profile"
   DT_SIGMOID_REC2020 = 1, // $DESCRIPTION: "Rec2020"
   DT_SIGMOID_DISPLAY_P3 = 2, // $DESCRIPTION: "Display P3"
   DT_SIGMOID_ADOBE_RGB = 3, // $DESCRIPTION: "Adobe RGB (compatible)"
@@ -936,7 +936,8 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_module_t *sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("primaries"));
 
   GtkWidget *base_primaries = dt_bauhaus_combobox_from_params(self, "base_primaries");
-  gtk_widget_set_tooltip_text(base_primaries, _("primaries to use as the base for below adjustments"));
+  gtk_widget_set_tooltip_text(base_primaries, _("primaries to use as the base for below adjustments\n"
+                                                "'working profile' uses the profile set in 'input color profile'"));
 
 #define SETUP_COLOR_COMBO(color, r, g, b, inset_tooltip, rotation_tooltip)                                        \
   slider = dt_bauhaus_slider_from_params(sect, #color "_inset");                                                  \
