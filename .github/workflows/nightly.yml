@@ -230,10 +230,6 @@ jobs:
         run: |
           # It's a temporary fix, to be removed when the issue will be resolved
           pacman -U --noconfirm https://repo.msys2.org/mingw/ucrt64/mingw-w64-ucrt-x86_64-exiv2-0.27.7-1-any.pkg.tar.zst
-      - name: Install the latest still safe to display cyrillic texts version of pango
-        run: |
-          # It's a temporary fix, to be removed when the issue #13084 will be resolved
-          pacman -U --noconfirm https://repo.msys2.org/mingw/ucrt64/mingw-w64-ucrt-x86_64-pango-1.50.11-1-any.pkg.tar.zst
       - name: Cancel workflow if job fails
         if: ${{ failure() }}
         uses: andymckay/cancel-action@0.4
