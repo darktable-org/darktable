@@ -468,7 +468,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(d->layout_box), d->layout_zoomable, TRUE, TRUE, 0);
 
   d->layout_culling_fix = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_culling_fixed, 0, NULL);
-  ac = dt_action_define(ltv, NULL, N_("toggle culling mode"), d->layout_culling_fix, NULL);
+  ac = dt_action_define(ltv, NULL, N_("toggle culling unrestricted mode"), d->layout_culling_fix, NULL);
   dt_action_register(ac, NULL, _lib_lighttable_key_accel_toggle_culling_mode, GDK_KEY_c, 0);
   dt_gui_add_help_link(d->layout_culling_fix, "layout_culling");
   g_signal_connect(G_OBJECT(d->layout_culling_fix), "button-release-event",
@@ -525,7 +525,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_sensitive(d->zoom, (d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC && !d->fullpreview));
 
   d->layout_culling_restricted = dtgtk_togglebutton_new(dtgtk_cairo_paint_lock, 0, NULL);
-  ac = dt_action_define(ltv, NULL, N_("toggle restricted culling mode"), d->layout_culling_restricted, NULL);
+  ac = dt_action_define(ltv, NULL, N_("toggle culling restricted mode"), d->layout_culling_restricted, NULL);
   dt_action_register(ac, NULL, _lib_lighttable_key_accel_toggle_culling_restricted_mode, GDK_KEY_x, 0);
   dt_gui_add_help_link(d->layout_culling_restricted, dt_get_help_url("layout_culling"));
   g_signal_connect(G_OBJECT(d->layout_culling_restricted), "button-release-event",
