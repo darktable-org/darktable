@@ -145,7 +145,7 @@ static void _lib_lighttable_update_btn(dt_lib_module_t *self)
   if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING)
     gtk_widget_set_tooltip_text(d->layout_culling_restricted, _("restrict movement to selected images."));
   if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING_RESTRICTED)
-    gtk_widget_set_tooltip_text(d->layout_culling_restricted, _("allow movement to deselected images."));
+    gtk_widget_set_tooltip_text(d->layout_culling_restricted, _("lift movement restriction."));
 
   if(d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC || fullpreview)
     gtk_widget_set_tooltip_text(d->layout_culling_dynamic, _("click to enter culling layout in dynamic mode."));
@@ -300,14 +300,15 @@ static void _lib_lighttable_key_accel_toggle_culling_dynamic_mode(dt_action_t *a
   dt_control_queue_redraw_center();
 }
 
-static void _lib_lighttable_key_accel_toggle_culling_mode(dt_action_t *action)
+static void _lib_lighttable_key_accel_toggle_culling_movement_restriction(dt_action_t *action)
 {
   dt_lib_module_t *self = darktable.view_manager->proxy.lighttable.module;
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
 
-  // if we are already in unrestricted culling mode, return to base mode
+  // if we are already in unrestricted culling mode, restrict movement
+  // otherwise enter unrestricted mode first
   if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING)
-    _lib_lighttable_set_layout(self, d->base_layout);
+    _lib_lighttable_set_layout(self, DT_LIGHTTABLE_LAYOUT_CULLING_RESTRICTED);
   else
     _lib_lighttable_set_layout(self, DT_LIGHTTABLE_LAYOUT_CULLING);
   dt_control_queue_redraw_center();
@@ -319,7 +320,7 @@ static void _lib_lighttable_key_accel_toggle_culling_restricted_mode(dt_action_t
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
 
   // if we are already in restricted culling mode, leave the mode
-  if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING_RESTRICTED)
+  if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING || d->layout == DT_LIGHTTABLE_LAYOUT_CULLING_RESTRICTED)
     _lib_lighttable_set_layout(self, d->base_layout);
   else // otherwise first check, what the selection count is
   {
@@ -468,8 +469,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(d->layout_box), d->layout_zoomable, TRUE, TRUE, 0);
 
   d->layout_culling_fix = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_culling_fixed, 0, NULL);
-  ac = dt_action_define(ltv, NULL, N_("toggle culling unrestricted mode"), d->layout_culling_fix, NULL);
-  dt_action_register(ac, NULL, _lib_lighttable_key_accel_toggle_culling_mode, GDK_KEY_c, 0);
+  ac = dt_action_define(ltv, NULL, N_("toggle culling mode"), d->layout_culling_fix, NULL);
+  dt_action_register(ac, NULL, _lib_lighttable_key_accel_toggle_culling_restricted_mode, GDK_KEY_x, 0);
   dt_gui_add_help_link(d->layout_culling_fix, "layout_culling");
   g_signal_connect(G_OBJECT(d->layout_culling_fix), "button-release-event",
                    G_CALLBACK(_lib_lighttable_layout_btn_release), self);
@@ -525,8 +526,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_sensitive(d->zoom, (d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC && !d->fullpreview));
 
   d->layout_culling_restricted = dtgtk_togglebutton_new(dtgtk_cairo_paint_lock, 0, NULL);
-  ac = dt_action_define(ltv, NULL, N_("toggle culling restricted mode"), d->layout_culling_restricted, NULL);
-  dt_action_register(ac, NULL, _lib_lighttable_key_accel_toggle_culling_restricted_mode, GDK_KEY_x, 0);
+  ac = dt_action_define(ltv, NULL, N_("toggle culling movement restriction"), d->layout_culling_restricted, NULL);
+  dt_action_register(ac, NULL, _lib_lighttable_key_accel_toggle_culling_movement_restriction, GDK_KEY_c, 0);
   dt_gui_add_help_link(d->layout_culling_restricted, dt_get_help_url("layout_culling"));
   g_signal_connect(G_OBJECT(d->layout_culling_restricted), "button-release-event",
                    G_CALLBACK(_lib_lighttable_layout_btn_release), self);

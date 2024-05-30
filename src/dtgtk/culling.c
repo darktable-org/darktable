@@ -1082,7 +1082,7 @@ void dt_culling_init(dt_culling_t *table, const int fallback_offset)
   //    - if it is not, movement in this mode is free
   //    - if it is, movement is restricted to the selection
   //        (additionally, if selection count == 1, the selection will follow the movement)
-  
+
   if(table->mode == DT_CULLING_MODE_PREVIEW)
   {
     gboolean inside = FALSE;
@@ -2030,4 +2030,3 @@ void dt_culling_force_overlay(dt_culling_t *table, const gboolean force)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
