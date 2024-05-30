@@ -137,10 +137,15 @@ static void _lib_lighttable_update_btn(dt_lib_module_t *self)
   else
     gtk_widget_set_tooltip_text(d->layout_preview, _("click to enter full preview layout."));
 
-  if(d->layout != DT_LIGHTTABLE_LAYOUT_CULLING || fullpreview)
-    gtk_widget_set_tooltip_text(d->layout_culling_fix, _("click to enter culling layout in fixed mode."));
-  else
+  if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING || d->layout == DT_LIGHTTABLE_LAYOUT_CULLING_RESTRICTED)
     gtk_widget_set_tooltip_text(d->layout_culling_fix, _("click to exit culling layout."));
+  else
+    gtk_widget_set_tooltip_text(d->layout_culling_fix, _("click to enter culling layout in fixed mode."));
+
+  if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+    gtk_widget_set_tooltip_text(d->layout_culling_restricted, _("restrict movement to selected images."));
+  if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING_RESTRICTED)
+    gtk_widget_set_tooltip_text(d->layout_culling_restricted, _("allow movement to deselected images."));
 
   if(d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC || fullpreview)
     gtk_widget_set_tooltip_text(d->layout_culling_dynamic, _("click to enter culling layout in dynamic mode."));
@@ -519,10 +524,10 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_sensitive(d->zoom_entry, (d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC && !d->fullpreview));
   gtk_widget_set_sensitive(d->zoom, (d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC && !d->fullpreview));
 
-  d->layout_culling_restricted = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_culling_restricted, 0, NULL);
+  d->layout_culling_restricted = dtgtk_togglebutton_new(dtgtk_cairo_paint_lock, 0, NULL);
   ac = dt_action_define(ltv, NULL, N_("toggle restricted culling mode"), d->layout_culling_restricted, NULL);
   dt_action_register(ac, NULL, _lib_lighttable_key_accel_toggle_culling_restricted_mode, GDK_KEY_x, 0);
-  dt_gui_add_help_link(d->layout_culling_restricted, dt_get_help_url("layout_filemanager"));
+  dt_gui_add_help_link(d->layout_culling_restricted, dt_get_help_url("layout_culling"));
   g_signal_connect(G_OBJECT(d->layout_culling_restricted), "button-release-event",
                    G_CALLBACK(_lib_lighttable_layout_btn_release), self);
   gtk_grid_attach(GTK_GRID(d->zoom_grid), d->layout_culling_restricted, 3, 1, 1, 1);
