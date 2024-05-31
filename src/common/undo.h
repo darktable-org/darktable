@@ -60,7 +60,6 @@ typedef struct dt_undo_t
   dt_undo_type_t group;
   int group_indent;
   dt_pthread_mutex_t mutex;
-  gboolean locked;
   gboolean disable_next;
 } dt_undo_t;
 
@@ -93,13 +92,6 @@ void dt_undo_do_redo(dt_undo_t *self, const uint32_t filter);
 
 //  removes all items which correspond to filter in the undo/redo lists
 void dt_undo_clear(dt_undo_t *self, const uint32_t filter);
-
-void dt_undo_iterate_internal(dt_undo_t *self,
-                              const uint32_t filter,
-                              gpointer user_data,
-                              void (*apply)(gpointer user_data,
-                                            const dt_undo_type_t type,
-                                            const dt_undo_data_t item));
 
 void dt_undo_iterate(dt_undo_t *self,
                      const uint32_t filter,
