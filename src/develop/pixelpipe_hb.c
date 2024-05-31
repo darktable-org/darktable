@@ -103,6 +103,9 @@ void dt_print_pipe_ext(const char *title,
 
   snprintf(vtit, sizeof(vtit), "%s", title);
 
+  if(module && module->iop_order == INT_MAX)
+    snprintf(vtit, sizeof(vtit), "%s", "INVALID IOP ORDER");
+
   snprintf(vmod, sizeof(vmod), "%s%s",
     module ? module->op : "",
     module ? dt_iop_get_instance_id(module) : "");
