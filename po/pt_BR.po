@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-27 08:15-0300\n"
-"PO-Revision-Date: 2024-05-27 08:15-0300\n"
+"POT-Creation-Date: 2024-06-01 15:05-0300\n"
+"PO-Revision-Date: 2024-06-01 15:05-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -28,9 +28,9 @@ msgctxt "preferences"
 msgid "last instance"
 msgstr "última instância"
 
-#: ../build/bin/conf_gen.h:183 ../build/bin/conf_gen.h:289
-#: ../build/bin/conf_gen.h:299 ../build/bin/conf_gen.h:1264
-#: ../build/bin/conf_gen.h:1280 ../build/bin/conf_gen.h:1302
+#: ../build/bin/conf_gen.h:183 ../build/bin/conf_gen.h:303
+#: ../build/bin/conf_gen.h:313 ../build/bin/conf_gen.h:1278
+#: ../build/bin/conf_gen.h:1294 ../build/bin/conf_gen.h:1316
 #: ../build/bin/preferences_gen.h:4711 ../build/bin/preferences_gen.h:4849
 msgctxt "preferences"
 msgid "never"
@@ -56,135 +56,135 @@ msgctxt "preferences"
 msgid "on close"
 msgstr "ao fechar"
 
-#: ../build/bin/conf_gen.h:223 ../build/bin/conf_gen.h:1257
-#: ../build/bin/conf_gen.h:1273 ../build/bin/conf_gen.h:1303
+#: ../build/bin/conf_gen.h:237 ../build/bin/conf_gen.h:1271
+#: ../build/bin/conf_gen.h:1287 ../build/bin/conf_gen.h:1317
 msgctxt "preferences"
 msgid "small"
 msgstr "pequeno"
 
-#: ../build/bin/conf_gen.h:224 ../build/bin/conf_gen.h:346
+#: ../build/bin/conf_gen.h:238 ../build/bin/conf_gen.h:360
 #: ../build/bin/preferences_gen.h:6066 ../build/bin/preferences_gen.h:6187
 msgctxt "preferences"
 msgid "default"
 msgstr "padrão"
 
-#: ../build/bin/conf_gen.h:225 ../build/bin/conf_gen.h:3096
+#: ../build/bin/conf_gen.h:239 ../build/bin/conf_gen.h:3110
 msgctxt "preferences"
 msgid "large"
 msgstr "grande"
 
-#: ../build/bin/conf_gen.h:290
+#: ../build/bin/conf_gen.h:304
 msgctxt "preferences"
 msgid "after edit"
 msgstr "após edição"
 
-#: ../build/bin/conf_gen.h:291 ../build/bin/preferences_gen.h:7192
+#: ../build/bin/conf_gen.h:305 ../build/bin/preferences_gen.h:7192
 msgctxt "preferences"
 msgid "on import"
 msgstr "ao importar"
 
-#: ../build/bin/conf_gen.h:300 ../build/bin/conf_gen.h:1256
-#: ../build/bin/conf_gen.h:1272 ../build/bin/conf_gen.h:3563
+#: ../build/bin/conf_gen.h:314 ../build/bin/conf_gen.h:1270
+#: ../build/bin/conf_gen.h:1286 ../build/bin/conf_gen.h:3577
 #: ../build/bin/preferences_gen.h:5608
 msgctxt "preferences"
 msgid "always"
 msgstr "sempre"
 
-#: ../build/bin/conf_gen.h:301 ../build/bin/preferences_gen.h:7227
+#: ../build/bin/conf_gen.h:315 ../build/bin/preferences_gen.h:7227
 msgctxt "preferences"
 msgid "only large entries"
 msgstr "apenas entradas grandes"
 
-#: ../build/bin/conf_gen.h:330
+#: ../build/bin/conf_gen.h:344
 msgctxt "preferences"
 msgid "sensitive"
 msgstr "sensível"
 
-#: ../build/bin/conf_gen.h:331 ../build/bin/preferences_gen.h:8101
+#: ../build/bin/conf_gen.h:345 ../build/bin/preferences_gen.h:8101
 msgctxt "preferences"
 msgid "insensitive"
 msgstr "não sensível"
 
-#: ../build/bin/conf_gen.h:347
+#: ../build/bin/conf_gen.h:361
 msgctxt "preferences"
 msgid "multiple GPUs"
 msgstr "múltiplas GPUs"
 
-#: ../build/bin/conf_gen.h:348
+#: ../build/bin/conf_gen.h:362
 msgctxt "preferences"
 msgid "very fast GPU"
 msgstr "GPU muito rápida"
 
-#: ../build/bin/conf_gen.h:720 ../build/bin/preferences_gen.h:8260
+#: ../build/bin/conf_gen.h:734 ../build/bin/preferences_gen.h:8260
 msgctxt "preferences"
 msgid "import time"
 msgstr "data/hora de importação"
 
-#: ../build/bin/conf_gen.h:721
+#: ../build/bin/conf_gen.h:735
 msgctxt "preferences"
 msgid "folder name"
 msgstr "nome da pasta"
 
-#: ../build/bin/conf_gen.h:729
+#: ../build/bin/conf_gen.h:743
 msgctxt "preferences"
 msgid "RGB"
 msgstr "RGB"
 
-#: ../build/bin/conf_gen.h:730
+#: ../build/bin/conf_gen.h:744
 msgctxt "preferences"
 msgid "Lab"
 msgstr "Lab"
 
-#: ../build/bin/conf_gen.h:731
+#: ../build/bin/conf_gen.h:745
 msgctxt "preferences"
 msgid "LCh"
 msgstr "LCh"
 
-#: ../build/bin/conf_gen.h:732
+#: ../build/bin/conf_gen.h:746
 msgctxt "preferences"
 msgid "HSL"
 msgstr "HSL"
 
-#: ../build/bin/conf_gen.h:733
+#: ../build/bin/conf_gen.h:747
 msgctxt "preferences"
 msgid "Hex"
 msgstr "Hex"
 
-#: ../build/bin/conf_gen.h:734 ../build/bin/conf_gen.h:2028
-#: ../build/bin/conf_gen.h:2748 ../build/bin/conf_gen.h:3071
-#: ../build/bin/conf_gen.h:3374
+#: ../build/bin/conf_gen.h:748 ../build/bin/conf_gen.h:2042
+#: ../build/bin/conf_gen.h:2762 ../build/bin/conf_gen.h:3085
+#: ../build/bin/conf_gen.h:3388
 msgctxt "preferences"
 msgid "none"
 msgstr "nenhum"
 
-#: ../build/bin/conf_gen.h:742
+#: ../build/bin/conf_gen.h:756
 msgctxt "preferences"
 msgid "mean"
 msgstr "média"
 
-#: ../build/bin/conf_gen.h:743
+#: ../build/bin/conf_gen.h:757
 msgctxt "preferences"
 msgid "min"
 msgstr "mín"
 
-#: ../build/bin/conf_gen.h:744
+#: ../build/bin/conf_gen.h:758
 msgctxt "preferences"
 msgid "max"
 msgstr "máx"
 
-#: ../build/bin/conf_gen.h:963
+#: ../build/bin/conf_gen.h:977
 msgid "select only new pictures"
 msgstr "selecionar apenas imagens novas"
 
-#: ../build/bin/conf_gen.h:964
+#: ../build/bin/conf_gen.h:978
 msgid "only select images that have not already been imported"
 msgstr "apenas selecionar imagens que ainda não tenham sido importadas"
 
-#: ../build/bin/conf_gen.h:970
+#: ../build/bin/conf_gen.h:984
 msgid "ignore non-raw images"
 msgstr "ignorar imagens não-raw"
 
-#: ../build/bin/conf_gen.h:971
+#: ../build/bin/conf_gen.h:985
 msgid ""
 "if enabled, only raw files will be allowed to import. non-raw files will not "
 "be visible in the dialog and will not be imported."
@@ -192,56 +192,56 @@ msgstr ""
 "se habilitado, somente arquivos raw poderão ser importados. arquivos não-raw "
 "não serão visíveis no diálogo de importação."
 
-#: ../build/bin/conf_gen.h:977
+#: ../build/bin/conf_gen.h:991
 msgid "apply metadata"
 msgstr "aplicar metadados"
 
-#: ../build/bin/conf_gen.h:978
+#: ../build/bin/conf_gen.h:992
 msgid "apply some metadata to all newly imported images."
 msgstr "aplicar alguns metadados a todas imagens importadas recentemente."
 
-#: ../build/bin/conf_gen.h:984
+#: ../build/bin/conf_gen.h:998
 msgid "recursive directory"
 msgstr "pasta recursiva"
 
-#: ../build/bin/conf_gen.h:985
+#: ../build/bin/conf_gen.h:999
 msgid "recursive directory traversal when importing filmrolls"
 msgstr "pesquisa pastas recursivamente ao importar rolos de filme"
 
-#: ../build/bin/conf_gen.h:991
+#: ../build/bin/conf_gen.h:1005
 msgid "creator to be applied when importing"
 msgstr "criador a ser aplicado ao importar"
 
-#: ../build/bin/conf_gen.h:998
+#: ../build/bin/conf_gen.h:1012
 msgid "publisher to be applied when importing"
 msgstr "editor a ser aplicado ao importar"
 
-#: ../build/bin/conf_gen.h:1005
+#: ../build/bin/conf_gen.h:1019
 msgid "rights to be applied when importing"
 msgstr "direitos a ser aplicado ao importar"
 
-#: ../build/bin/conf_gen.h:1012
+#: ../build/bin/conf_gen.h:1026
 msgid "comma separated tags to be applied when importing"
 msgstr "etiquetas separadas por vírgulas a serem aplicadas ao importar"
 
-#: ../build/bin/conf_gen.h:1019
+#: ../build/bin/conf_gen.h:1033
 msgid "import tags from XMP"
 msgstr "importar etiquetas do XMP"
 
-#: ../build/bin/conf_gen.h:1047
+#: ../build/bin/conf_gen.h:1061
 msgid "initial rating"
 msgstr "classificação inicial"
 
-#: ../build/bin/conf_gen.h:1048
+#: ../build/bin/conf_gen.h:1062
 msgid "initial star rating for all images when importing a filmroll"
 msgstr ""
 "valor inicial em estrelas para todas imagens ao importar um rolo de filme"
 
-#: ../build/bin/conf_gen.h:1054
+#: ../build/bin/conf_gen.h:1068
 msgid "ignore EXIF rating"
 msgstr "ignorar classificação EXIF"
 
-#: ../build/bin/conf_gen.h:1055
+#: ../build/bin/conf_gen.h:1069
 msgid ""
 "ignore EXIF rating. if not set and EXIF rating is found, it overrides "
 "'initial rating'"
@@ -249,19 +249,19 @@ msgstr ""
 "ignorar classificação em EXIF. se desligado e uma classificação for "
 "encontrada nos dados EXIF, ela sobrescreverá a classificação inicial"
 
-#: ../build/bin/conf_gen.h:1061
+#: ../build/bin/conf_gen.h:1075
 msgid "import job"
 msgstr "trabalho de importação"
 
-#: ../build/bin/conf_gen.h:1062
+#: ../build/bin/conf_gen.h:1076
 msgid "name of the import job"
 msgstr "nome do trabalho de importação"
 
-#: ../build/bin/conf_gen.h:1068
+#: ../build/bin/conf_gen.h:1082
 msgid "override today's date"
 msgstr "sobrescrever data de hoje"
 
-#: ../build/bin/conf_gen.h:1069
+#: ../build/bin/conf_gen.h:1083
 msgid ""
 "type a date in the form: YYYY:MM:DD[ hh:mm:ss[.sss]] if you want to override "
 "the current date/time used when expanding variables:\n"
@@ -273,159 +273,159 @@ msgstr ""
 "$(YEAR), $(MONTH), $(DAY), $(HOUR), $(MINUTE), $(SECONDS), $(MSEC).\n"
 "deixe o campo vazio se não quiser modificá-las"
 
-#: ../build/bin/conf_gen.h:1075
+#: ../build/bin/conf_gen.h:1089
 msgid "keep this window open"
 msgstr "manter esta janela aberta"
 
-#: ../build/bin/conf_gen.h:1076
+#: ../build/bin/conf_gen.h:1090
 msgid "keep this window open to run several imports"
 msgstr "manter esta janela aberta para rodar várias importações"
 
-#: ../build/bin/conf_gen.h:1258 ../build/bin/conf_gen.h:1274
-#: ../build/bin/conf_gen.h:1304
+#: ../build/bin/conf_gen.h:1272 ../build/bin/conf_gen.h:1288
+#: ../build/bin/conf_gen.h:1318
 msgctxt "preferences"
 msgid "VGA"
 msgstr "VGA"
 
-#: ../build/bin/conf_gen.h:1259 ../build/bin/conf_gen.h:1275
-#: ../build/bin/conf_gen.h:1305 ../build/bin/preferences_gen.h:4746
+#: ../build/bin/conf_gen.h:1273 ../build/bin/conf_gen.h:1289
+#: ../build/bin/conf_gen.h:1319 ../build/bin/preferences_gen.h:4746
 msgctxt "preferences"
 msgid "720p"
 msgstr "720p"
 
-#: ../build/bin/conf_gen.h:1260 ../build/bin/conf_gen.h:1276
-#: ../build/bin/conf_gen.h:1306
+#: ../build/bin/conf_gen.h:1274 ../build/bin/conf_gen.h:1290
+#: ../build/bin/conf_gen.h:1320
 msgctxt "preferences"
 msgid "1080p"
 msgstr "2080p"
 
-#: ../build/bin/conf_gen.h:1261 ../build/bin/conf_gen.h:1277
-#: ../build/bin/conf_gen.h:1307
+#: ../build/bin/conf_gen.h:1275 ../build/bin/conf_gen.h:1291
+#: ../build/bin/conf_gen.h:1321
 msgctxt "preferences"
 msgid "WQXGA"
 msgstr "WQXGA"
 
-#: ../build/bin/conf_gen.h:1262 ../build/bin/conf_gen.h:1278
-#: ../build/bin/conf_gen.h:1308
+#: ../build/bin/conf_gen.h:1276 ../build/bin/conf_gen.h:1292
+#: ../build/bin/conf_gen.h:1322
 msgctxt "preferences"
 msgid "4K"
 msgstr "4K"
 
-#: ../build/bin/conf_gen.h:1263 ../build/bin/conf_gen.h:1279
-#: ../build/bin/conf_gen.h:1309
+#: ../build/bin/conf_gen.h:1277 ../build/bin/conf_gen.h:1293
+#: ../build/bin/conf_gen.h:1323
 msgctxt "preferences"
 msgid "5K"
 msgstr "5K"
 
-#: ../build/bin/conf_gen.h:1345
+#: ../build/bin/conf_gen.h:1359
 msgctxt "preferences"
 msgid "off"
 msgstr "desligado"
 
-#: ../build/bin/conf_gen.h:1346
+#: ../build/bin/conf_gen.h:1360
 msgctxt "preferences"
 msgid "hardness (relative)"
 msgstr "dureza (relativa)"
 
-#: ../build/bin/conf_gen.h:1347
+#: ../build/bin/conf_gen.h:1361
 msgctxt "preferences"
 msgid "hardness (absolute)"
 msgstr "dureza (absoluta)"
 
-#: ../build/bin/conf_gen.h:1348
+#: ../build/bin/conf_gen.h:1362
 msgctxt "preferences"
 msgid "opacity (relative)"
 msgstr "opacidade (relativa)"
 
-#: ../build/bin/conf_gen.h:1349
+#: ../build/bin/conf_gen.h:1363
 msgctxt "preferences"
 msgid "opacity (absolute)"
 msgstr "opacidade (absoluta)"
 
-#: ../build/bin/conf_gen.h:1350
+#: ../build/bin/conf_gen.h:1364
 msgctxt "preferences"
 msgid "brush size (relative)"
 msgstr "tamanho do pincel (relativo)"
 
-#: ../build/bin/conf_gen.h:1358
+#: ../build/bin/conf_gen.h:1372
 msgctxt "preferences"
 msgid "low"
 msgstr "baixa"
 
-#: ../build/bin/conf_gen.h:1359
+#: ../build/bin/conf_gen.h:1373
 msgctxt "preferences"
 msgid "medium"
 msgstr "média"
 
-#: ../build/bin/conf_gen.h:1360
+#: ../build/bin/conf_gen.h:1374
 msgctxt "preferences"
 msgid "high"
 msgstr "alta"
 
-#: ../build/bin/conf_gen.h:1382 ../build/bin/preferences_gen.h:5369
+#: ../build/bin/conf_gen.h:1396 ../build/bin/preferences_gen.h:5369
 msgctxt "preferences"
 msgid "false color"
 msgstr "falsa cor"
 
-#: ../build/bin/conf_gen.h:1383
+#: ../build/bin/conf_gen.h:1397
 msgctxt "preferences"
 msgid "grayscale"
 msgstr "tons de cinza"
 
-#: ../build/bin/conf_gen.h:1398
+#: ../build/bin/conf_gen.h:1412
 msgctxt "preferences"
 msgid "top left"
 msgstr "acima, à esquerda"
 
-#: ../build/bin/conf_gen.h:1399
+#: ../build/bin/conf_gen.h:1413
 msgctxt "preferences"
 msgid "top right"
 msgstr "acima, à direita"
 
-#: ../build/bin/conf_gen.h:1400
+#: ../build/bin/conf_gen.h:1414
 msgctxt "preferences"
 msgid "top center"
 msgstr "acima, no centro"
 
-#: ../build/bin/conf_gen.h:1401 ../build/bin/preferences_gen.h:5181
+#: ../build/bin/conf_gen.h:1415 ../build/bin/preferences_gen.h:5181
 msgctxt "preferences"
 msgid "bottom"
 msgstr "inferior"
 
-#: ../build/bin/conf_gen.h:1402
+#: ../build/bin/conf_gen.h:1416
 msgctxt "preferences"
 msgid "hidden"
 msgstr "oculto"
 
-#: ../build/bin/conf_gen.h:1992
+#: ../build/bin/conf_gen.h:2006
 msgid "show OSD"
 msgstr "mostrar controles na tela"
 
-#: ../build/bin/conf_gen.h:1993
+#: ../build/bin/conf_gen.h:2007
 msgid "toggle the visibility of the map overlays"
 msgstr "alterna a visibilidade das sobreposições do mapa"
 
-#: ../build/bin/conf_gen.h:1999 ../src/libs/map_settings.c:119
+#: ../build/bin/conf_gen.h:2013 ../src/libs/map_settings.c:119
 msgid "filtered images"
 msgstr "imagens filtradas"
 
-#: ../build/bin/conf_gen.h:2000
+#: ../build/bin/conf_gen.h:2014
 msgid "when set limit the images drawn to the current filmstrip"
 msgstr "quando definido, limita as imagens ao rolo de filme atual"
 
-#: ../build/bin/conf_gen.h:2006
+#: ../build/bin/conf_gen.h:2020
 msgid "max images"
 msgstr "máximo de imagens"
 
-#: ../build/bin/conf_gen.h:2007
+#: ../build/bin/conf_gen.h:2021
 msgid "the maximum number of image thumbnails drawn on the map"
 msgstr "número máximo de miniaturas de imagens desenhadas no mapa"
 
-#: ../build/bin/conf_gen.h:2013
+#: ../build/bin/conf_gen.h:2027
 msgid "group size factor"
 msgstr "fator de tamanho de grupo"
 
-#: ../build/bin/conf_gen.h:2014
+#: ../build/bin/conf_gen.h:2028
 msgid ""
 "increase or decrease the spatial size of images groups on the map. can "
 "influence the calculation time"
@@ -433,11 +433,11 @@ msgstr ""
 "aumenta ou diminui o tamanho espacial dos grupos de imagens no mapa. pode "
 "influenciar o tempo de cálculo"
 
-#: ../build/bin/conf_gen.h:2020
+#: ../build/bin/conf_gen.h:2034
 msgid "min images per group"
 msgstr "mínimo de imagens por grupo"
 
-#: ../build/bin/conf_gen.h:2021
+#: ../build/bin/conf_gen.h:2035
 msgid ""
 "the minimum number of images to set up an images group. can influence the "
 "calculation time."
@@ -445,21 +445,21 @@ msgstr ""
 "o número mínimo de imagens para constituir um grupo de imagens. pode "
 "influenciar o tempo de cálculo."
 
-#: ../build/bin/conf_gen.h:2026
+#: ../build/bin/conf_gen.h:2040
 msgctxt "preferences"
 msgid "thumbnail"
 msgstr "miniatura"
 
-#: ../build/bin/conf_gen.h:2027
+#: ../build/bin/conf_gen.h:2041
 msgctxt "preferences"
 msgid "count"
 msgstr "contagem"
 
-#: ../build/bin/conf_gen.h:2030
+#: ../build/bin/conf_gen.h:2044
 msgid "thumbnail display"
 msgstr "mostrar nas miniaturas"
 
-#: ../build/bin/conf_gen.h:2031
+#: ../build/bin/conf_gen.h:2045
 msgid ""
 "three options are available: images thumbnails, only the count of images of "
 "the group or nothing"
@@ -467,269 +467,269 @@ msgstr ""
 "há três opções disponíveis: miniaturas de imagens, somente a contagem de "
 "imagens do grupo ou nada"
 
-#: ../build/bin/conf_gen.h:2044
+#: ../build/bin/conf_gen.h:2058
 msgid "max polygon points"
 msgstr "máximo de pontos de polígono"
 
-#: ../build/bin/conf_gen.h:2045
+#: ../build/bin/conf_gen.h:2059
 msgid ""
 "limit the number of points imported with polygon in find location module"
 msgstr ""
 "limita o número de pontos importados com polígono no módulo encontrar "
 "localização"
 
-#: ../build/bin/conf_gen.h:2379 ../build/bin/preferences_gen.h:5293
+#: ../build/bin/conf_gen.h:2393 ../build/bin/preferences_gen.h:5293
 msgctxt "preferences"
 msgid "original"
 msgstr "original"
 
-#: ../build/bin/conf_gen.h:2380
+#: ../build/bin/conf_gen.h:2394
 msgctxt "preferences"
 msgid "to 1/2"
 msgstr "para 1/2"
 
-#: ../build/bin/conf_gen.h:2381
+#: ../build/bin/conf_gen.h:2395
 msgctxt "preferences"
 msgid "to 1/3"
 msgstr "para 1/3"
 
-#: ../build/bin/conf_gen.h:2382
+#: ../build/bin/conf_gen.h:2396
 msgctxt "preferences"
 msgid "to 1/4"
 msgstr "para 1/4"
 
-#: ../build/bin/conf_gen.h:2404 ../build/bin/conf_gen.h:2414
+#: ../build/bin/conf_gen.h:2418 ../build/bin/conf_gen.h:2428
 msgctxt "preferences"
 msgid "bilinear"
 msgstr "bilinear"
 
-#: ../build/bin/conf_gen.h:2405 ../build/bin/conf_gen.h:2415
+#: ../build/bin/conf_gen.h:2419 ../build/bin/conf_gen.h:2429
 #: ../build/bin/preferences_gen.h:5811
 msgctxt "preferences"
 msgid "bicubic"
 msgstr "bicúbico"
 
-#: ../build/bin/conf_gen.h:2406 ../build/bin/conf_gen.h:2416
+#: ../build/bin/conf_gen.h:2420 ../build/bin/conf_gen.h:2430
 msgctxt "preferences"
 msgid "lanczos2"
 msgstr "lanczos2"
 
-#: ../build/bin/conf_gen.h:2417 ../build/bin/preferences_gen.h:5846
+#: ../build/bin/conf_gen.h:2431 ../build/bin/preferences_gen.h:5846
 msgctxt "preferences"
 msgid "lanczos3"
 msgstr "lanczos3"
 
-#: ../build/bin/conf_gen.h:2747 ../build/bin/conf_gen.h:3566
+#: ../build/bin/conf_gen.h:2761 ../build/bin/conf_gen.h:3580
 #: ../build/bin/preferences_gen.h:7000
 msgctxt "preferences"
 msgid "auto"
 msgstr "automático"
 
-#: ../build/bin/conf_gen.h:2749
+#: ../build/bin/conf_gen.h:2763
 msgctxt "preferences"
 msgid "libsecret"
 msgstr "libsecret"
 
-#: ../build/bin/conf_gen.h:2750
+#: ../build/bin/conf_gen.h:2764
 msgctxt "preferences"
 msgid "kwallet"
 msgstr "kwallet"
 
-#: ../build/bin/conf_gen.h:2751
+#: ../build/bin/conf_gen.h:2765
 msgctxt "preferences"
 msgid "apple_keychain"
 msgstr "apple_keychain"
 
-#: ../build/bin/conf_gen.h:2752
+#: ../build/bin/conf_gen.h:2766
 msgctxt "preferences"
 msgid "windows_credentials"
 msgstr "credenciais_windows"
 
-#: ../build/bin/conf_gen.h:2977
+#: ../build/bin/conf_gen.h:2991
 msgctxt "preferences"
 msgid "vectorscope"
 msgstr "vetorscópio"
 
-#: ../build/bin/conf_gen.h:2978
+#: ../build/bin/conf_gen.h:2992
 msgctxt "preferences"
 msgid "waveform"
 msgstr "forma de onda"
 
-#: ../build/bin/conf_gen.h:2979
+#: ../build/bin/conf_gen.h:2993
 msgctxt "preferences"
 msgid "RGB parade"
 msgstr "parada RGB"
 
-#: ../build/bin/conf_gen.h:2980
+#: ../build/bin/conf_gen.h:2994
 msgctxt "preferences"
 msgid "histogram"
 msgstr "histograma"
 
-#: ../build/bin/conf_gen.h:2988
+#: ../build/bin/conf_gen.h:3002
 msgctxt "preferences"
 msgid "left"
 msgstr "esquerda"
 
-#: ../build/bin/conf_gen.h:2989 ../build/bin/preferences_gen.h:7587
+#: ../build/bin/conf_gen.h:3003 ../build/bin/preferences_gen.h:7587
 msgctxt "preferences"
 msgid "right"
 msgstr "direita"
 
-#: ../build/bin/conf_gen.h:2997 ../build/bin/conf_gen.h:3034
+#: ../build/bin/conf_gen.h:3011 ../build/bin/conf_gen.h:3048
 msgctxt "preferences"
 msgid "logarithmic"
 msgstr "logarítmico"
 
-#: ../build/bin/conf_gen.h:2998 ../build/bin/conf_gen.h:3035
+#: ../build/bin/conf_gen.h:3012 ../build/bin/conf_gen.h:3049
 msgctxt "preferences"
 msgid "linear"
 msgstr "linear"
 
-#: ../build/bin/conf_gen.h:3006
+#: ../build/bin/conf_gen.h:3020
 msgctxt "preferences"
 msgid "horizontal"
 msgstr "horizontal"
 
-#: ../build/bin/conf_gen.h:3007
+#: ../build/bin/conf_gen.h:3021
 msgctxt "preferences"
 msgid "vertical"
 msgstr "vertical"
 
-#: ../build/bin/conf_gen.h:3015
+#: ../build/bin/conf_gen.h:3029
 msgctxt "preferences"
 msgid "overlaid"
 msgstr "sobreposto"
 
-#: ../build/bin/conf_gen.h:3016
+#: ../build/bin/conf_gen.h:3030
 msgctxt "preferences"
 msgid "parade"
 msgstr "parada (canais lado a lado)"
 
-#: ../build/bin/conf_gen.h:3024
+#: ../build/bin/conf_gen.h:3038
 msgctxt "preferences"
 msgid "u*v*"
 msgstr "u*v*"
 
-#: ../build/bin/conf_gen.h:3025
+#: ../build/bin/conf_gen.h:3039
 msgctxt "preferences"
 msgid "AzBz"
 msgstr "AzBz"
 
-#: ../build/bin/conf_gen.h:3026
+#: ../build/bin/conf_gen.h:3040
 msgctxt "preferences"
 msgid "RYB"
 msgstr "RYB"
 
-#: ../build/bin/conf_gen.h:3072
+#: ../build/bin/conf_gen.h:3086
 msgctxt "preferences"
 msgid "monochromatic"
 msgstr "monocromático"
 
-#: ../build/bin/conf_gen.h:3073
+#: ../build/bin/conf_gen.h:3087
 msgctxt "preferences"
 msgid "analogous"
 msgstr "análogo"
 
-#: ../build/bin/conf_gen.h:3074
+#: ../build/bin/conf_gen.h:3088
 msgctxt "preferences"
 msgid "analogous complementary"
 msgstr "complementar análogo"
 
-#: ../build/bin/conf_gen.h:3075
+#: ../build/bin/conf_gen.h:3089
 msgctxt "preferences"
 msgid "complementary"
 msgstr "complementar"
 
-#: ../build/bin/conf_gen.h:3076
+#: ../build/bin/conf_gen.h:3090
 msgctxt "preferences"
 msgid "split complementary"
 msgstr "complementar dividido"
 
-#: ../build/bin/conf_gen.h:3077
+#: ../build/bin/conf_gen.h:3091
 msgctxt "preferences"
 msgid "dyad"
 msgstr "díade"
 
-#: ../build/bin/conf_gen.h:3078
+#: ../build/bin/conf_gen.h:3092
 msgctxt "preferences"
 msgid "triad"
 msgstr "tríade"
 
-#: ../build/bin/conf_gen.h:3079
+#: ../build/bin/conf_gen.h:3093
 msgctxt "preferences"
 msgid "tetrad"
 msgstr "térade"
 
-#: ../build/bin/conf_gen.h:3080
+#: ../build/bin/conf_gen.h:3094
 msgctxt "preferences"
 msgid "square"
 msgstr "quadrado"
 
-#: ../build/bin/conf_gen.h:3095
+#: ../build/bin/conf_gen.h:3109
 msgctxt "preferences"
 msgid "normal"
 msgstr "normal"
 
-#: ../build/bin/conf_gen.h:3097
+#: ../build/bin/conf_gen.h:3111
 msgctxt "preferences"
 msgid "narrow"
 msgstr "estreito"
 
-#: ../build/bin/conf_gen.h:3098
+#: ../build/bin/conf_gen.h:3112
 msgctxt "preferences"
 msgid "line"
 msgstr "linha"
 
-#: ../build/bin/conf_gen.h:3253
+#: ../build/bin/conf_gen.h:3267
 msgctxt "preferences"
 msgid "mm"
 msgstr "mm"
 
-#: ../build/bin/conf_gen.h:3254
+#: ../build/bin/conf_gen.h:3268
 msgctxt "preferences"
 msgid "cm"
 msgstr "cm"
 
-#: ../build/bin/conf_gen.h:3255
+#: ../build/bin/conf_gen.h:3269
 msgctxt "preferences"
 msgid "inch"
 msgstr "polegada"
 
-#: ../build/bin/conf_gen.h:3298 ../build/bin/preferences_gen.h:7622
+#: ../build/bin/conf_gen.h:3312 ../build/bin/preferences_gen.h:7622
 msgctxt "preferences"
 msgid "all"
 msgstr "todos"
 
-#: ../build/bin/conf_gen.h:3299
+#: ../build/bin/conf_gen.h:3313
 msgctxt "preferences"
 msgid "xatom"
 msgstr "xatom"
 
-#: ../build/bin/conf_gen.h:3300
+#: ../build/bin/conf_gen.h:3314
 msgctxt "preferences"
 msgid "colord"
 msgstr "colord"
 
-#: ../build/bin/conf_gen.h:3371 ../build/bin/preferences_gen.h:5922
+#: ../build/bin/conf_gen.h:3385 ../build/bin/preferences_gen.h:5922
 msgctxt "preferences"
 msgid "scene-referred (filmic)"
 msgstr "relativo à cena (fílmico)"
 
-#: ../build/bin/conf_gen.h:3372
+#: ../build/bin/conf_gen.h:3386
 msgctxt "preferences"
 msgid "scene-referred (sigmoid)"
 msgstr "relativo à cena (sigmóide)"
 
-#: ../build/bin/conf_gen.h:3373
+#: ../build/bin/conf_gen.h:3387
 msgctxt "preferences"
 msgid "display-referred (legacy)"
 msgstr "relativo à exibição (legado)"
 
-#: ../build/bin/conf_gen.h:3488
+#: ../build/bin/conf_gen.h:3502
 msgid "camera time zone"
 msgstr "fuso horário da câmera"
 
-#: ../build/bin/conf_gen.h:3489
+#: ../build/bin/conf_gen.h:3503
 msgid ""
 "most cameras don't store the time zone in EXIF. give the correct time zone "
 "so the GPX data can be correctly matched"
@@ -737,62 +737,62 @@ msgstr ""
 "a maioria das câmeras não armazena a fuso horário no EXIF. indique o fuso "
 "horário correto para que os dados GPX possam ser processados corretamente"
 
-#: ../build/bin/conf_gen.h:3501
+#: ../build/bin/conf_gen.h:3515
 msgctxt "preferences"
 msgid "no color"
 msgstr "sem cor"
 
-#: ../build/bin/conf_gen.h:3502
+#: ../build/bin/conf_gen.h:3516
 msgctxt "preferences"
 msgid "illuminant color"
 msgstr "cor do iluminante"
 
-#: ../build/bin/conf_gen.h:3503
+#: ../build/bin/conf_gen.h:3517
 msgctxt "preferences"
 msgid "effect emulation"
 msgstr "emulação do efeito"
 
-#: ../build/bin/conf_gen.h:3553
+#: ../build/bin/conf_gen.h:3567
 msgctxt "preferences"
 msgid "list"
 msgstr "lista"
 
-#: ../build/bin/conf_gen.h:3554
+#: ../build/bin/conf_gen.h:3568
 msgctxt "preferences"
 msgid "tabs"
 msgstr "abas"
 
-#: ../build/bin/conf_gen.h:3555
+#: ../build/bin/conf_gen.h:3569
 msgctxt "preferences"
 msgid "columns"
 msgstr "colunas"
 
-#: ../build/bin/conf_gen.h:3564
+#: ../build/bin/conf_gen.h:3578
 msgctxt "preferences"
 msgid "active"
 msgstr "ativo"
 
-#: ../build/bin/conf_gen.h:3565
+#: ../build/bin/conf_gen.h:3579
 msgctxt "preferences"
 msgid "dim"
 msgstr "atenuar"
 
-#: ../build/bin/conf_gen.h:3567
+#: ../build/bin/conf_gen.h:3581
 msgctxt "preferences"
 msgid "fade"
 msgstr "esmaecer"
 
-#: ../build/bin/conf_gen.h:3568
+#: ../build/bin/conf_gen.h:3582
 msgctxt "preferences"
 msgid "fit"
 msgstr "ajustar"
 
-#: ../build/bin/conf_gen.h:3569
+#: ../build/bin/conf_gen.h:3583
 msgctxt "preferences"
 msgid "smooth"
 msgstr "suavizar"
 
-#: ../build/bin/conf_gen.h:3570
+#: ../build/bin/conf_gen.h:3584
 msgctxt "preferences"
 msgid "glide"
 msgstr "deslizar"
@@ -859,7 +859,7 @@ msgstr "esta predefinição foi modificada"
 #: ../build/bin/preferences_gen.h:5029 ../build/bin/preferences_gen.h:5735
 #: ../build/bin/preferences_gen.h:6571 ../build/bin/preferences_gen.h:7064
 #: ../build/bin/preferences_gen.h:7330 ../src/gui/accelerators.c:3001
-#: ../src/gui/gtk.c:2975 ../src/gui/preferences.c:424
+#: ../src/gui/gtk.c:2979 ../src/gui/preferences.c:424
 #: ../src/gui/preferences.c:874 ../src/libs/modulegroups.c:4091
 msgid "?"
 msgstr "?"
@@ -2506,7 +2506,7 @@ msgstr "preservar cores"
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:153
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:270
 #: ../src/gui/guides.c:712 ../src/iop/basecurve.c:2165
-#: ../src/iop/channelmixerrgb.c:4749 ../src/iop/clipping.c:1923
+#: ../src/iop/channelmixerrgb.c:4743 ../src/iop/clipping.c:1923
 #: ../src/iop/clipping.c:2116 ../src/iop/clipping.c:2131
 #: ../src/iop/retouch.c:507 ../src/libs/collect.c:2127
 #: ../src/libs/colorpicker.c:51 ../src/libs/export.c:1101
@@ -2853,11 +2853,11 @@ msgstr "aberração cromática muito grande"
 #: ../src/common/collection.c:1486 ../src/common/color_vocabulary.c:232
 #: ../src/common/colorlabels.c:375 ../src/develop/blend_gui.c:2383
 #: ../src/develop/blend_gui.c:2431 ../src/develop/lightroom.c:887
-#: ../src/gui/gtk.c:3571 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:372
+#: ../src/gui/gtk.c:3575 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:372
 #: ../src/iop/channelmixer.c:621 ../src/iop/channelmixer.c:631
-#: ../src/iop/channelmixerrgb.c:4691 ../src/iop/colorequal.c:2464
-#: ../src/iop/colorzones.c:2496 ../src/iop/temperature.c:2001
-#: ../src/iop/temperature.c:2193 ../src/libs/collect.c:1944
+#: ../src/iop/channelmixerrgb.c:4685 ../src/iop/colorequal.c:2465
+#: ../src/iop/colorzones.c:2496 ../src/iop/temperature.c:2006
+#: ../src/iop/temperature.c:2198 ../src/libs/collect.c:1944
 #: ../src/libs/filters/colors.c:260 ../src/libs/histogram.c:2703
 msgid "red"
 msgstr "vermelho"
@@ -2873,11 +2873,11 @@ msgstr "vermelho"
 #: ../src/common/collection.c:1490 ../src/common/color_vocabulary.c:277
 #: ../src/common/colorlabels.c:377 ../src/develop/blend_gui.c:2389
 #: ../src/develop/blend_gui.c:2437 ../src/develop/lightroom.c:891
-#: ../src/gui/gtk.c:3572 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:377
+#: ../src/gui/gtk.c:3576 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:377
 #: ../src/iop/channelmixer.c:622 ../src/iop/channelmixer.c:637
-#: ../src/iop/channelmixerrgb.c:4692 ../src/iop/colorequal.c:2467
-#: ../src/iop/colorzones.c:2499 ../src/iop/temperature.c:1985
-#: ../src/iop/temperature.c:2003 ../src/iop/temperature.c:2194
+#: ../src/iop/channelmixerrgb.c:4686 ../src/iop/colorequal.c:2468
+#: ../src/iop/colorzones.c:2499 ../src/iop/temperature.c:1990
+#: ../src/iop/temperature.c:2008 ../src/iop/temperature.c:2199
 #: ../src/libs/collect.c:1944 ../src/libs/filters/colors.c:262
 #: ../src/libs/histogram.c:2694
 msgid "green"
@@ -2894,11 +2894,11 @@ msgstr "verde"
 #: ../src/common/collection.c:1492 ../src/common/color_vocabulary.c:324
 #: ../src/common/colorlabels.c:378 ../src/develop/blend_gui.c:2395
 #: ../src/develop/blend_gui.c:2443 ../src/develop/lightroom.c:893
-#: ../src/gui/gtk.c:3573 ../src/iop/bilateral.cc:382
+#: ../src/gui/gtk.c:3577 ../src/iop/bilateral.cc:382
 #: ../src/iop/channelmixer.c:623 ../src/iop/channelmixer.c:643
-#: ../src/iop/channelmixerrgb.c:4693 ../src/iop/colorequal.c:2469
-#: ../src/iop/colorzones.c:2501 ../src/iop/temperature.c:2005
-#: ../src/iop/temperature.c:2195 ../src/libs/collect.c:1944
+#: ../src/iop/channelmixerrgb.c:4687 ../src/iop/colorequal.c:2470
+#: ../src/iop/colorzones.c:2501 ../src/iop/temperature.c:2010
+#: ../src/iop/temperature.c:2200 ../src/libs/collect.c:1944
 #: ../src/libs/filters/colors.c:263 ../src/libs/histogram.c:2685
 msgid "blue"
 msgstr "azul"
@@ -3199,8 +3199,8 @@ msgstr "elevação, gama, ganho (sRGB)"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:501
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:256
 #: ../src/develop/blend_gui.c:2409 ../src/develop/blend_gui.c:2457
-#: ../src/iop/atrous.c:1800 ../src/iop/channelmixerrgb.c:4539
-#: ../src/iop/channelmixerrgb.c:4655 ../src/iop/colorbalancergb.c:1937
+#: ../src/iop/atrous.c:1800 ../src/iop/channelmixerrgb.c:4533
+#: ../src/iop/channelmixerrgb.c:4649 ../src/iop/colorbalancergb.c:1937
 #: ../src/iop/colorzones.c:2642 ../src/iop/nlmeans.c:471
 msgid "chroma"
 msgstr "croma"
@@ -3223,9 +3223,9 @@ msgstr "croma"
 #: ../build/lib/darktable/plugins/introspection_splittoning.c:142
 #: ../src/develop/blend_gui.c:2368 ../src/develop/blend_gui.c:2402
 #: ../src/develop/blend_gui.c:2464 ../src/iop/channelmixer.c:618
-#: ../src/iop/channelmixerrgb.c:4532 ../src/iop/channelmixerrgb.c:4647
+#: ../src/iop/channelmixerrgb.c:4526 ../src/iop/channelmixerrgb.c:4641
 #: ../src/iop/colorbalance.c:1991 ../src/iop/colorize.c:339
-#: ../src/iop/colorreconstruction.c:1239 ../src/iop/colorequal.c:2581
+#: ../src/iop/colorreconstruction.c:1239 ../src/iop/colorequal.c:2582
 #: ../src/iop/colorzones.c:2643
 msgid "hue"
 msgstr "matiz"
@@ -3423,7 +3423,7 @@ msgid "range extent"
 msgstr "extensão da faixa"
 
 #: ../build/lib/darktable/plugins/introspection_colorreconstruction.c:154
-#: ../src/iop/channelmixerrgb.c:4751
+#: ../src/iop/channelmixerrgb.c:4745
 msgid "saturated colors"
 msgstr "cores saturadas"
 
@@ -3463,7 +3463,7 @@ msgstr "usar filtro guiado"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:479
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:511
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:543
-#: ../src/iop/colorequal.c:2465 ../src/iop/colorzones.c:2497
+#: ../src/iop/colorequal.c:2466 ../src/iop/colorzones.c:2497
 msgid "orange"
 msgstr "laranja"
 
@@ -3475,8 +3475,8 @@ msgstr "laranja"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:547
 #: ../src/common/collection.c:1488 ../src/common/colorlabels.c:376
 #: ../src/develop/lightroom.c:889 ../src/gui/guides.c:732
-#: ../src/iop/colorequal.c:2466 ../src/iop/colorzones.c:2498
-#: ../src/iop/temperature.c:1991 ../src/libs/collect.c:1944
+#: ../src/iop/colorequal.c:2467 ../src/iop/colorzones.c:2498
+#: ../src/iop/temperature.c:1996 ../src/libs/collect.c:1944
 #: ../src/libs/filters/colors.c:261
 msgid "yellow"
 msgstr "amarelo"
@@ -3488,7 +3488,7 @@ msgstr "amarelo"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:523
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:555
 #: ../src/common/color_vocabulary.c:298 ../src/gui/guides.c:733
-#: ../src/iop/colorequal.c:2468 ../src/iop/temperature.c:1989
+#: ../src/iop/colorequal.c:2469 ../src/iop/temperature.c:1994
 msgid "cyan"
 msgstr "ciano"
 
@@ -3498,7 +3498,7 @@ msgstr "ciano"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:499
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:531
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:563
-#: ../src/common/color_vocabulary.c:343 ../src/iop/colorequal.c:2470
+#: ../src/common/color_vocabulary.c:343 ../src/iop/colorequal.c:2471
 msgid "lavender"
 msgstr "lavanda"
 
@@ -3509,8 +3509,8 @@ msgstr "lavanda"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:535
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:567
 #: ../src/common/color_vocabulary.c:341 ../src/gui/guides.c:734
-#: ../src/iop/colorequal.c:2471 ../src/iop/colorzones.c:2503
-#: ../src/iop/temperature.c:1987
+#: ../src/iop/colorequal.c:2472 ../src/iop/colorzones.c:2503
+#: ../src/iop/temperature.c:1992
 msgid "magenta"
 msgstr "magenta"
 
@@ -3540,7 +3540,7 @@ msgstr "modo de processamento"
 
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:255
 #: ../src/develop/blend_gui.c:2347 ../src/iop/channelmixer.c:620
-#: ../src/iop/channelmixerrgb.c:4638 ../src/iop/colorchecker.c:1444
+#: ../src/iop/channelmixerrgb.c:4632 ../src/iop/colorchecker.c:1444
 #: ../src/iop/colorize.c:358 ../src/iop/colorzones.c:2641
 #: ../src/iop/exposure.c:1253
 msgid "lightness"
@@ -4278,7 +4278,7 @@ msgstr "densidade"
 #: ../src/iop/colorbalance.c:2008 ../src/iop/colorbalancergb.c:1961
 #: ../src/iop/colorchecker.c:1479 ../src/iop/colorcontrast.c:82
 #: ../src/iop/colorcorrection.c:264 ../src/iop/colorize.c:352
-#: ../src/iop/colorequal.c:2599 ../src/iop/lowpass.c:590
+#: ../src/iop/colorequal.c:2600 ../src/iop/lowpass.c:590
 #: ../src/iop/soften.c:355 ../src/iop/velvia.c:75 ../src/iop/vibrance.c:72
 #: ../src/iop/vignette.c:1053
 msgid "saturation"
@@ -4531,7 +4531,7 @@ msgstr "apenas vinheta manual"
 #. Side-border hide/show
 #: ../build/lib/darktable/plugins/introspection_lens.cc:534
 #: ../src/dtgtk/range.c:1762 ../src/gui/accelerators.c:2597
-#: ../src/gui/accelerators.c:2679 ../src/gui/gtk.c:1406 ../src/gui/gtk.c:3570
+#: ../src/gui/accelerators.c:2679 ../src/gui/gtk.c:1406 ../src/gui/gtk.c:3574
 #: ../src/imageio/format/pdf.c:645 ../src/iop/denoiseprofile.c:3690
 #: ../src/iop/rawdenoise.c:893 ../src/libs/collect.c:3548
 #: ../src/libs/filtering.c:1531 ../src/libs/filters/colors.c:157
@@ -4948,8 +4948,8 @@ msgstr "modo de preenchimento"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:285
 #: ../build/lib/darktable/plugins/introspection_retouch.c:426
-#: ../src/iop/basicadj.c:650 ../src/iop/channelmixerrgb.c:4699
-#: ../src/iop/colisa.c:282 ../src/iop/colorequal.c:2617
+#: ../src/iop/basicadj.c:650 ../src/iop/channelmixerrgb.c:4693
+#: ../src/iop/colisa.c:282 ../src/iop/colorequal.c:2618
 #: ../src/iop/lowpass.c:589 ../src/iop/soften.c:359 ../src/iop/vignette.c:1052
 #: ../src/libs/history.c:966
 msgid "brightness"
@@ -5103,8 +5103,8 @@ msgid "RGB ratio"
 msgstr "porporção RGB"
 
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:308
-#: ../src/common/colorspaces.c:1411 ../src/common/colorspaces.c:1768
-msgid "work profile"
+#: ../src/iop/colorin.c:2086
+msgid "working profile"
 msgstr "perfil de trabalho"
 
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:309
@@ -5353,7 +5353,7 @@ msgid "Print your images"
 msgstr "Imprimir suas imagens"
 
 #: ../src/bauhaus/bauhaus.c:879 ../src/bauhaus/bauhaus.c:3971
-#: ../src/iop/colorequal.c:2566
+#: ../src/iop/colorequal.c:2567
 msgid "sliders"
 msgstr "controles deslizantes"
 
@@ -5419,7 +5419,7 @@ msgstr "controle deslizante"
 msgid "dropdown"
 msgstr "menu flutuante"
 
-#: ../src/chart/main.c:504 ../src/common/database.c:3639
+#: ../src/chart/main.c:504 ../src/common/database.c:3641
 #: ../src/control/jobs/control_jobs.c:1867
 #: ../src/control/jobs/control_jobs.c:1926 ../src/gui/accelerators.c:2502
 #: ../src/gui/accelerators.c:2584 ../src/gui/accelerators.c:2637
@@ -5841,7 +5841,7 @@ msgstr[1] "<b>%d</b> imagens selecionadas de <b>%d</b>"
 
 #: ../src/common/color_vocabulary.c:38 ../src/develop/blend_gui.c:2377
 #: ../src/develop/blend_gui.c:2425 ../src/gui/guides.c:729
-#: ../src/iop/channelmixerrgb.c:4702 ../src/iop/levels.c:685
+#: ../src/iop/channelmixerrgb.c:4696 ../src/iop/levels.c:685
 #: ../src/iop/rgblevels.c:969 ../src/iop/rgblevels.c:1084
 msgid "gray"
 msgstr "cinza"
@@ -6134,6 +6134,10 @@ msgstr "todas as etiquetas coloridas foram removidas"
 msgid "clear"
 msgstr "limpar"
 
+#: ../src/common/colorspaces.c:1411 ../src/common/colorspaces.c:1768
+msgid "work profile"
+msgstr "perfil de trabalho"
+
 #: ../src/common/colorspaces.c:1416 ../src/common/colorspaces.c:1764
 #: ../src/iop/colorout.c:864
 msgid "export profile"
@@ -6418,7 +6422,7 @@ msgstr ""
 "As configurações OpenCL 'por dispositivo' podem ter sido atualizadas.\n"
 "\n"
 
-#: ../src/common/database.c:3617
+#: ../src/common/database.c:3619
 #, c-format
 msgid ""
 "\n"
@@ -6477,19 +6481,19 @@ msgstr ""
 "sua base de dados.</i>\n"
 
 #. clang-format on
-#: ../src/common/database.c:3638
+#: ../src/common/database.c:3640
 msgid "error starting darktable"
 msgstr "erro ao iniciar o darktable"
 
-#: ../src/common/database.c:3639
+#: ../src/common/database.c:3641
 msgid "_delete database lock files"
 msgstr "_apagar arquivos de travas (locks) da base de dados"
 
-#: ../src/common/database.c:3645
+#: ../src/common/database.c:3647
 msgid "are you sure?"
 msgstr "tem certeza?"
 
-#: ../src/common/database.c:3646
+#: ../src/common/database.c:3648
 msgid ""
 "\n"
 "do you really want to delete the lock files?\n"
@@ -6497,19 +6501,19 @@ msgstr ""
 "\n"
 "você realmente deseja excluir os arquivos de trava?\n"
 
-#: ../src/common/database.c:3646 ../src/gui/gtk.c:2926
+#: ../src/common/database.c:3648 ../src/gui/gtk.c:2930
 msgid "_no"
 msgstr "_não"
 
-#: ../src/common/database.c:3646 ../src/gui/gtk.c:2925
+#: ../src/common/database.c:3648 ../src/gui/gtk.c:2929
 msgid "_yes"
 msgstr "_sim"
 
-#: ../src/common/database.c:3662
+#: ../src/common/database.c:3664
 msgid "done"
 msgstr "feito"
 
-#: ../src/common/database.c:3663
+#: ../src/common/database.c:3665
 msgid ""
 "\n"
 "successfully deleted the lock files.\n"
@@ -6519,17 +6523,17 @@ msgstr ""
 "arquivos de trava removidos com sucesso.\n"
 "você agora pode reiniciar o darktable\n"
 
-#: ../src/common/database.c:3664 ../src/common/database.c:3671
+#: ../src/common/database.c:3666 ../src/common/database.c:3673
 #: ../src/gui/accelerators.c:2585 ../src/gui/accelerators.c:2667
 #: ../src/gui/hist_dialog.c:229 ../src/gui/presets.c:566
 msgid "_ok"
 msgstr "_ok"
 
-#: ../src/common/database.c:3667
+#: ../src/common/database.c:3669
 msgid "error"
 msgstr "erro"
 
-#: ../src/common/database.c:3668
+#: ../src/common/database.c:3670
 #, c-format
 msgid ""
 "\n"
@@ -6544,7 +6548,7 @@ msgstr ""
 "<i>library.db.lock</i>\n"
 "na pasta <a href=\"file:///%s\">%s</a>\n"
 
-#: ../src/common/database.c:3785
+#: ../src/common/database.c:3787
 #, c-format
 msgid ""
 "the database lock file contains a pid that seems to be alive in your system: "
@@ -6553,17 +6557,17 @@ msgstr ""
 "o arquivo de lock da base de dados contém um pid que parece estar vivo no "
 "seu sistema: %d"
 
-#: ../src/common/database.c:3792
+#: ../src/common/database.c:3794
 #, c-format
 msgid "the database lock file seems to be empty"
 msgstr "o lock da base de dados parece estar vazio"
 
-#: ../src/common/database.c:3802
+#: ../src/common/database.c:3804
 #, c-format
 msgid "error opening the database lock file for reading: %s"
 msgstr "erro ao abrir a base de dados para leitura: %s"
 
-#: ../src/common/database.c:3872
+#: ../src/common/database.c:3874
 #, c-format
 msgid ""
 "the database schema version of\n"
@@ -6581,16 +6585,16 @@ msgstr ""
 "dados foi criada ou passou por upgrade por uma versão mais nova do "
 "darktable)\n"
 
-#: ../src/common/database.c:3879
+#: ../src/common/database.c:3881
 msgid "darktable - too new db version"
 msgstr "darktable - versão de bd muito nova"
 
-#: ../src/common/database.c:3880
+#: ../src/common/database.c:3882
 msgid "_quit darktable"
 msgstr "_terminar o darktable"
 
 #. the database has to be upgraded, let's ask user
-#: ../src/common/database.c:3895
+#: ../src/common/database.c:3897
 #, c-format
 msgid ""
 "the database schema has to be upgraded for\n"
@@ -6609,21 +6613,21 @@ msgstr ""
 "\n"
 "você quer continuar ou parar agora para fazer um backup\n"
 
-#: ../src/common/database.c:3903
+#: ../src/common/database.c:3905
 msgid "darktable - schema migration"
 msgstr "darktable - migrar esquema"
 
-#: ../src/common/database.c:3904 ../src/common/database.c:4226
-#: ../src/common/database.c:4241 ../src/common/database.c:4409
-#: ../src/common/database.c:4424
+#: ../src/common/database.c:3906 ../src/common/database.c:4228
+#: ../src/common/database.c:4243 ../src/common/database.c:4411
+#: ../src/common/database.c:4426
 msgid "_close darktable"
 msgstr "_fechar o darktable"
 
-#: ../src/common/database.c:3904
+#: ../src/common/database.c:3906
 msgid "_upgrade database"
 msgstr "_atualizar base de dados"
 
-#: ../src/common/database.c:4206 ../src/common/database.c:4389
+#: ../src/common/database.c:4208 ../src/common/database.c:4391
 #, c-format
 msgid ""
 "quick_check said:\n"
@@ -6632,21 +6636,21 @@ msgstr ""
 "quick_check disse:\n"
 "%s \n"
 
-#: ../src/common/database.c:4223 ../src/common/database.c:4238
-#: ../src/common/database.c:4406 ../src/common/database.c:4421
+#: ../src/common/database.c:4225 ../src/common/database.c:4240
+#: ../src/common/database.c:4408 ../src/common/database.c:4423
 msgid "darktable - error opening database"
 msgstr "darktable - erro ao abrir a base de dados"
 
-#: ../src/common/database.c:4227 ../src/common/database.c:4410
+#: ../src/common/database.c:4229 ../src/common/database.c:4412
 msgid "_attempt restore"
 msgstr "_tentar recuperar"
 
-#: ../src/common/database.c:4228 ../src/common/database.c:4242
-#: ../src/common/database.c:4411 ../src/common/database.c:4425
+#: ../src/common/database.c:4230 ../src/common/database.c:4244
+#: ../src/common/database.c:4413 ../src/common/database.c:4427
 msgid "_delete database"
 msgstr "_apagar base de dados"
 
-#: ../src/common/database.c:4231 ../src/common/database.c:4414
+#: ../src/common/database.c:4233 ../src/common/database.c:4416
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup, attempt an automatic restore\n"
@@ -6658,7 +6662,7 @@ msgstr ""
 "do snapshot mais recente ou remover a base de dados corrompida\n"
 "e iniciar com uma nova?"
 
-#: ../src/common/database.c:4245 ../src/common/database.c:4428
+#: ../src/common/database.c:4247 ../src/common/database.c:4430
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup or delete the corrupted database\n"
@@ -6668,7 +6672,7 @@ msgstr ""
 "a base de dados de um backup ou remover a base de dados corrompida\n"
 "e iniciar com uma nova?"
 
-#: ../src/common/database.c:4252 ../src/common/database.c:4433
+#: ../src/common/database.c:4254 ../src/common/database.c:4435
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -8376,17 +8380,17 @@ msgid "uniformly"
 msgstr "uniforme"
 
 #: ../src/develop/blend_gui.c:157 ../src/develop/blend_gui.c:2793
-#: ../src/develop/blend_gui.c:3485 ../src/develop/imageop.c:2667
+#: ../src/develop/blend_gui.c:3485 ../src/develop/imageop.c:2663
 msgid "drawn mask"
 msgstr " máscara desenhada"
 
 #: ../src/develop/blend_gui.c:159 ../src/develop/blend_gui.c:2565
-#: ../src/develop/blend_gui.c:3496 ../src/develop/imageop.c:2669
+#: ../src/develop/blend_gui.c:3496 ../src/develop/imageop.c:2665
 msgid "parametric mask"
 msgstr "máscara paramétrica"
 
 #: ../src/develop/blend_gui.c:161 ../src/develop/blend_gui.c:3003
-#: ../src/develop/blend_gui.c:3523 ../src/develop/imageop.c:2671
+#: ../src/develop/blend_gui.c:3523 ../src/develop/imageop.c:2667
 msgid "raster mask"
 msgstr "máscara rasterizada"
 
@@ -8433,12 +8437,12 @@ msgid "on"
 msgstr "ligado"
 
 #: ../src/develop/blend_gui.c:1021 ../src/develop/blend_gui.c:2643
-#: ../src/develop/imageop.c:2795
+#: ../src/develop/imageop.c:2791
 msgid "input"
 msgstr "entrada"
 
 #: ../src/develop/blend_gui.c:1021 ../src/develop/blend_gui.c:2643
-#: ../src/develop/imageop.c:2795
+#: ../src/develop/imageop.c:2791
 msgid "output"
 msgstr "saída"
 
@@ -8520,7 +8524,7 @@ msgid "sliders for gray value"
 msgstr "deslizante para valor cinza"
 
 #: ../src/develop/blend_gui.c:2378 ../src/develop/blend_gui.c:2426
-#: ../src/iop/channelmixerrgb.c:4691 ../src/iop/denoiseprofile.c:3691
+#: ../src/iop/channelmixerrgb.c:4685 ../src/iop/denoiseprofile.c:3691
 #: ../src/iop/rawdenoise.c:894 ../src/iop/rgbcurve.c:1501
 #: ../src/iop/rgblevels.c:1043 ../src/libs/filters/colors.c:137
 msgid "R"
@@ -8531,7 +8535,7 @@ msgid "sliders for red channel"
 msgstr "deslizante para canal vermelho"
 
 #: ../src/develop/blend_gui.c:2384 ../src/develop/blend_gui.c:2432
-#: ../src/iop/channelmixerrgb.c:4692 ../src/iop/denoiseprofile.c:3692
+#: ../src/iop/channelmixerrgb.c:4686 ../src/iop/denoiseprofile.c:3692
 #: ../src/iop/rawdenoise.c:895 ../src/iop/rgbcurve.c:1502
 #: ../src/iop/rgblevels.c:1044 ../src/libs/filters/colors.c:143
 msgid "G"
@@ -8542,7 +8546,7 @@ msgid "sliders for green channel"
 msgstr "deslizante para canal verde"
 
 #: ../src/develop/blend_gui.c:2390 ../src/develop/blend_gui.c:2438
-#: ../src/iop/channelmixerrgb.c:4693 ../src/iop/denoiseprofile.c:3693
+#: ../src/iop/channelmixerrgb.c:4687 ../src/iop/denoiseprofile.c:3693
 #: ../src/iop/rawdenoise.c:896 ../src/iop/rgbcurve.c:1503
 #: ../src/iop/rgblevels.c:1045 ../src/libs/filters/colors.c:146
 msgid "B"
@@ -8683,7 +8687,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:2693 ../src/develop/blend_gui.c:3614
 #: ../src/iop/basicadj.c:630 ../src/iop/colorbalancergb.c:2134
-#: ../src/iop/colorequal.c:2648 ../src/iop/exposure.c:1134
+#: ../src/iop/colorequal.c:2649 ../src/iop/exposure.c:1134
 #: ../src/iop/exposure.c:1149 ../src/iop/filmic.c:1516 ../src/iop/filmic.c:1529
 #: ../src/iop/filmic.c:1571 ../src/iop/filmicrgb.c:4406
 #: ../src/iop/filmicrgb.c:4417 ../src/iop/filmicrgb.c:4451
@@ -8951,8 +8955,8 @@ msgid "feathering radius"
 msgstr "raio de enevoamento"
 
 #: ../src/develop/blend_gui.c:3667 ../src/develop/blend_gui.c:3679
-#: ../src/iop/colorbalancergb.c:2164 ../src/iop/colorequal.c:2663
-#: ../src/iop/colorequal.c:2694 ../src/iop/diffuse.c:1792
+#: ../src/iop/colorbalancergb.c:2164 ../src/iop/colorequal.c:2664
+#: ../src/iop/colorequal.c:2695 ../src/iop/diffuse.c:1792
 #: ../src/iop/diffuse.c:1802 ../src/iop/retouch.c:2729
 msgid " px"
 msgstr " px"
@@ -9025,69 +9029,69 @@ msgstr "nova instância"
 msgid "duplicate instance"
 msgstr "duplicar instância"
 
-#: ../src/develop/imageop.c:1030 ../src/develop/imageop.c:3778
+#: ../src/develop/imageop.c:1030 ../src/develop/imageop.c:3780
 #: ../src/libs/masks.c:1137
 msgid "move up"
 msgstr "mover para cima"
 
-#: ../src/develop/imageop.c:1036 ../src/develop/imageop.c:3779
+#: ../src/develop/imageop.c:1036 ../src/develop/imageop.c:3781
 #: ../src/libs/masks.c:1142
 msgid "move down"
 msgstr "mover para baixo"
 
 #. delete button label and tooltip will be updated based on trash pref
-#: ../src/develop/imageop.c:1042 ../src/develop/imageop.c:3781
+#: ../src/develop/imageop.c:1042 ../src/develop/imageop.c:3783
 #: ../src/gui/accelerators.c:177 ../src/libs/image.c:305
 #: ../src/libs/image.c:516
 msgid "delete"
 msgstr "excluir"
 
-#: ../src/develop/imageop.c:1049 ../src/develop/imageop.c:3782
+#: ../src/develop/imageop.c:1049 ../src/develop/imageop.c:3784
 #: ../src/libs/modulegroups.c:4006
 msgid "rename"
 msgstr "renomear"
 
-#: ../src/develop/imageop.c:1119 ../src/develop/imageop.c:2843
+#: ../src/develop/imageop.c:1115 ../src/develop/imageop.c:2839
 #, c-format
 msgid "'%s' is switched on"
 msgstr "'%s' está ativado"
 
-#: ../src/develop/imageop.c:1119 ../src/develop/imageop.c:2843
+#: ../src/develop/imageop.c:1115 ../src/develop/imageop.c:2839
 #, c-format
 msgid "'%s' is switched off"
 msgstr "'%s' está desativado"
 
-#: ../src/develop/imageop.c:2661
+#: ../src/develop/imageop.c:2657
 msgid "unknown mask"
 msgstr "máscara desconhecida"
 
-#: ../src/develop/imageop.c:2665
+#: ../src/develop/imageop.c:2661
 msgid "drawn + parametric mask"
 msgstr "máscara desenhada + paramétrica"
 
-#: ../src/develop/imageop.c:2674
+#: ../src/develop/imageop.c:2670
 #, c-format
 msgid "this module has a `%s'"
 msgstr "este módulo tem uma `%s'"
 
-#: ../src/develop/imageop.c:2679
+#: ../src/develop/imageop.c:2675
 #, c-format
 msgid "taken from module %s"
 msgstr "tomada do módulo %s"
 
-#: ../src/develop/imageop.c:2684
+#: ../src/develop/imageop.c:2680
 msgid "click to display (module must be activated first)"
 msgstr "clique para mostrar (o módulo deve ser ativado antes)"
 
-#: ../src/develop/imageop.c:2795
+#: ../src/develop/imageop.c:2791
 msgid "purpose"
 msgstr "propósito"
 
-#: ../src/develop/imageop.c:2795
+#: ../src/develop/imageop.c:2791
 msgid "process"
 msgstr "processamento"
 
-#: ../src/develop/imageop.c:2859
+#: ../src/develop/imageop.c:2855
 msgid ""
 "reset parameters\n"
 "ctrl+click to reapply any automatic presets"
@@ -9095,7 +9099,7 @@ msgstr ""
 "redefinir parâmetros\n"
 "ctrl+clique para reaplicar quaisquer predefinições automáticas"
 
-#: ../src/develop/imageop.c:2974
+#: ../src/develop/imageop.c:2970
 msgid ""
 "multiple instance actions\n"
 "right-click creates new instance"
@@ -9103,7 +9107,7 @@ msgstr ""
 "ações em múltiplas instâncias\n"
 "clique-direito cria nova instância"
 
-#: ../src/develop/imageop.c:2978
+#: ../src/develop/imageop.c:2974
 msgid ""
 "presets\n"
 "right-click to apply on new instance"
@@ -9111,44 +9115,44 @@ msgstr ""
 "predefinições\n"
 "clique-direito para aplicar em nova instância"
 
-#: ../src/develop/imageop.c:3216 ../src/develop/imageop.c:3238
+#: ../src/develop/imageop.c:3212 ../src/develop/imageop.c:3234
 msgid "ERROR"
 msgstr "ERRO"
 
-#: ../src/develop/imageop.c:3644
+#: ../src/develop/imageop.c:3643
 msgid "unsupported input"
 msgstr "entrada não suportada"
 
-#: ../src/develop/imageop.c:3645
+#: ../src/develop/imageop.c:3644
 msgid ""
 "you have placed this module at\n"
 "a position in the pipeline where\n"
 "the data format does not match\n"
-"its requirements."
+"it's requirements."
 msgstr ""
 "você posicionou este módulo\n"
 "no pipeline onde o\n"
 "formato de dados não combina\n"
 "com os requisitos."
 
-#: ../src/develop/imageop.c:3777 ../src/develop/imageop.c:3787
+#: ../src/develop/imageop.c:3779 ../src/develop/imageop.c:3789
 #: ../src/gui/accelerators.c:173 ../src/libs/lib.c:1410
 msgid "show"
 msgstr "mostrar"
 
-#: ../src/develop/imageop.c:3780 ../src/libs/modulegroups.c:3470
+#: ../src/develop/imageop.c:3782 ../src/libs/modulegroups.c:3470
 #: ../src/libs/modulegroups.c:3601 ../src/libs/modulegroups.c:4010
 #: ../src/libs/tagging.c:3313
 msgid "new"
 msgstr "novo"
 
-#: ../src/develop/imageop.c:3783 ../src/libs/duplicate.c:411
+#: ../src/develop/imageop.c:3785 ../src/libs/duplicate.c:411
 #: ../src/libs/image.c:537 ../src/libs/modulegroups.c:4002
 msgid "duplicate"
 msgstr "duplicar"
 
-#: ../src/develop/imageop.c:3788 ../src/gui/accelerators.c:134
-#: ../src/gui/accelerators.c:144 ../src/gui/gtk.c:3419 ../src/gui/gtk.c:3474
+#: ../src/develop/imageop.c:3790 ../src/gui/accelerators.c:134
+#: ../src/gui/accelerators.c:144 ../src/gui/gtk.c:3423 ../src/gui/gtk.c:3478
 #: ../src/gui/hist_dialog.c:272 ../src/gui/styles_dialog.c:646
 #: ../src/gui/styles_dialog.c:668 ../src/iop/atrous.c:1625
 #: ../src/libs/lib.c:1411 ../src/libs/modulegroups.c:4086
@@ -9156,24 +9160,24 @@ msgid "reset"
 msgstr "redefinir"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:3789 ../src/gui/preferences.c:796
+#: ../src/develop/imageop.c:3791 ../src/gui/preferences.c:796
 #: ../src/libs/lib.c:1412
 msgid "presets"
 msgstr "predefinições"
 
-#: ../src/develop/imageop.c:3790
+#: ../src/develop/imageop.c:3792
 msgid "enable"
 msgstr "ativar"
 
-#: ../src/develop/imageop.c:3791 ../src/gui/accelerators.c:189
+#: ../src/develop/imageop.c:3793 ../src/gui/accelerators.c:189
 msgid "focus"
 msgstr "foco"
 
-#: ../src/develop/imageop.c:3792 ../src/gui/accelerators.c:2879
+#: ../src/develop/imageop.c:3794 ../src/gui/accelerators.c:2879
 msgid "instance"
 msgstr "instância"
 
-#: ../src/develop/imageop.c:3812
+#: ../src/develop/imageop.c:3814
 msgid "processing module"
 msgstr "módulo de processamento"
 
@@ -9511,11 +9515,11 @@ msgstr ""
 "<b>mover segmento</b>: arrastar, <b>adicionar nó</b>:ctrl+clique\n"
 "<b>remover caminho</b>: clique-direito"
 
-#: ../src/develop/pixelpipe_hb.c:488
+#: ../src/develop/pixelpipe_hb.c:491
 msgid "enabled as required"
 msgstr "habilitado porque necessário"
 
-#: ../src/develop/pixelpipe_hb.c:489
+#: ../src/develop/pixelpipe_hb.c:492
 msgid ""
 "history had module disabled but it is required for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
@@ -9525,11 +9529,11 @@ msgstr ""
 "provavelmente foi introduzido ao aplicar uma predefinição, estilo ou "
 "copiar&colar de histórico"
 
-#: ../src/develop/pixelpipe_hb.c:496
+#: ../src/develop/pixelpipe_hb.c:499
 msgid "disabled as not appropriate"
 msgstr "desabilitado porque não é apropriado"
 
-#: ../src/develop/pixelpipe_hb.c:497
+#: ../src/develop/pixelpipe_hb.c:500
 msgid ""
 "history had module enabled but it is not allowed for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
@@ -9539,7 +9543,7 @@ msgstr ""
 "provavelmente foi introduzido ao aplicar uma predefinição, estilo ou "
 "copiar&colar de histórico"
 
-#: ../src/develop/pixelpipe_hb.c:2657
+#: ../src/develop/pixelpipe_hb.c:2660
 msgid ""
 "OpenCL errors encountered; disabling OpenCL for this session! some possible "
 "causes:\n"
@@ -9560,7 +9564,7 @@ msgstr ""
 "  - configuração de espaço muito pequeno com 'use toda a memória do "
 "dispositivo'."
 
-#: ../src/develop/pixelpipe_hb.c:2823
+#: ../src/develop/pixelpipe_hb.c:2826
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -10105,12 +10109,12 @@ msgid "popup"
 msgstr "popup"
 
 #: ../src/gui/accelerators.c:142 ../src/gui/accelerators.c:175
-#: ../src/gui/gtk.c:3472 ../src/views/lighttable.c:760
+#: ../src/gui/gtk.c:3476 ../src/views/lighttable.c:760
 msgid "next"
 msgstr "próxima"
 
 #: ../src/gui/accelerators.c:143 ../src/gui/accelerators.c:174
-#: ../src/gui/gtk.c:3473 ../src/views/lighttable.c:761
+#: ../src/gui/gtk.c:3477 ../src/views/lighttable.c:761
 msgid "previous"
 msgstr "anterior"
 
@@ -10145,7 +10149,7 @@ msgstr "alternar-direita"
 msgid "right-on"
 msgstr "à direita"
 
-#: ../src/gui/accelerators.c:167 ../src/gui/gtk.c:3471
+#: ../src/gui/accelerators.c:167 ../src/gui/gtk.c:3475
 msgid "activate"
 msgstr "ativar"
 
@@ -10934,42 +10938,42 @@ msgstr "alterna foco máximo"
 msgid "toggle focus peaking"
 msgstr "alternar foco máximo"
 
-#: ../src/gui/gtk.c:1836 ../src/gui/gtk.c:3577 ../src/gui/gtk.c:3582
-#: ../src/gui/gtk.c:3587 ../src/gui/gtk.c:3592
+#: ../src/gui/gtk.c:1836 ../src/gui/gtk.c:3581 ../src/gui/gtk.c:3586
+#: ../src/gui/gtk.c:3591 ../src/gui/gtk.c:3596
 msgid "tabs"
 msgstr "abas"
 
 #. ask the user if darktable.org may be accessed
-#: ../src/gui/gtk.c:3042
+#: ../src/gui/gtk.c:3046
 msgid "access the online user manual?"
 msgstr "acessar o manual do usuário online?"
 
-#: ../src/gui/gtk.c:3043
+#: ../src/gui/gtk.c:3047
 #, c-format
 msgid "do you want to access `%s'?"
 msgstr "você deseja acessar `%s'?"
 
-#: ../src/gui/gtk.c:3116
+#: ../src/gui/gtk.c:3120
 msgid "there is no help available for this element"
 msgstr "não há ajuda disponível para este elemento"
 
 #. font name can only use period as decimal separator
 #. but printf format strings use comma for some locales, so replace comma with period
-#: ../src/gui/gtk.c:3136 ../src/libs/metadata_view.c:802
+#: ../src/gui/gtk.c:3140 ../src/libs/metadata_view.c:802
 #, c-format
 msgid "%.1f"
 msgstr "%.1f"
 
-#: ../src/gui/gtk.c:3138
+#: ../src/gui/gtk.c:3142
 #, c-format
 msgid "Sans %s"
 msgstr "Sans %s"
 
-#: ../src/gui/gtk.c:3466
+#: ../src/gui/gtk.c:3470
 msgid "does not contain pages"
 msgstr "não contém páginas"
 
-#: ../src/gui/gtk.c:3714
+#: ../src/gui/gtk.c:3718
 #, c-format
 msgid "never show more than %d lines"
 msgstr "nunca mostrar mais que %d linhas"
@@ -13280,7 +13284,7 @@ msgstr ""
 "só muda resultado das abas de luma e croma"
 
 #: ../src/iop/atrous.c:1819 ../src/iop/colorbalancergb.c:2102
-#: ../src/iop/colorequal.c:2528 ../src/iop/colorzones.c:2730
+#: ../src/iop/colorequal.c:2529 ../src/iop/colorzones.c:2730
 #: ../src/iop/denoiseprofile.c:3724 ../src/iop/filmicrgb.c:4373
 #: ../src/iop/lowlight.c:819 ../src/iop/rawdenoise.c:921
 #: ../src/iop/toneequal.c:3391
@@ -14253,35 +14257,35 @@ msgstr "misturador de canais básico"
 msgid "swap G and R"
 msgstr "trocar G e R"
 
-#: ../src/iop/channelmixerrgb.c:1884
+#: ../src/iop/channelmixerrgb.c:1879
 msgid "(daylight)"
 msgstr "(luz diurna)"
 
-#: ../src/iop/channelmixerrgb.c:1886
+#: ../src/iop/channelmixerrgb.c:1881
 msgid "(black body)"
 msgstr "(corpo negro)"
 
-#: ../src/iop/channelmixerrgb.c:1888
+#: ../src/iop/channelmixerrgb.c:1883
 msgid "(invalid)"
 msgstr "(inválido)"
 
-#: ../src/iop/channelmixerrgb.c:1892 ../src/iop/channelmixerrgb.c:1950
+#: ../src/iop/channelmixerrgb.c:1887 ../src/iop/channelmixerrgb.c:1945
 msgid "very good"
 msgstr "muito bom"
 
-#: ../src/iop/channelmixerrgb.c:1894 ../src/iop/channelmixerrgb.c:1952
+#: ../src/iop/channelmixerrgb.c:1889 ../src/iop/channelmixerrgb.c:1947
 msgid "good"
 msgstr "bom"
 
-#: ../src/iop/channelmixerrgb.c:1896 ../src/iop/channelmixerrgb.c:1954
+#: ../src/iop/channelmixerrgb.c:1891 ../src/iop/channelmixerrgb.c:1949
 msgid "passable"
 msgstr "passável"
 
-#: ../src/iop/channelmixerrgb.c:1898 ../src/iop/channelmixerrgb.c:1956
+#: ../src/iop/channelmixerrgb.c:1893 ../src/iop/channelmixerrgb.c:1951
 msgid "bad"
 msgstr "ruim"
 
-#: ../src/iop/channelmixerrgb.c:1905
+#: ../src/iop/channelmixerrgb.c:1900
 #, c-format
 msgid ""
 "\n"
@@ -14318,7 +14322,7 @@ msgstr ""
 "compensação de exposição: \t%+.2f EV\n"
 "desvio de preto: \t%+.4f"
 
-#: ../src/iop/channelmixerrgb.c:1961
+#: ../src/iop/channelmixerrgb.c:1956
 #, c-format
 msgid ""
 "\n"
@@ -14337,11 +14341,11 @@ msgstr ""
 "compensação de exposição: \t%+.2f EV\n"
 "desvio de preto: \t%+.4f"
 
-#: ../src/iop/channelmixerrgb.c:2051
+#: ../src/iop/channelmixerrgb.c:2045
 msgid "double CAT applied"
 msgstr "TAC duplo aplicado"
 
-#: ../src/iop/channelmixerrgb.c:2052
+#: ../src/iop/channelmixerrgb.c:2046
 msgid ""
 "you have 2 instances or more of color calibration,\n"
 "all providing chromatic adaptation.\n"
@@ -14353,11 +14357,11 @@ msgstr ""
 "isto pode levar a inconsistências, a não ser que você\n"
 "as use com máscaras ou saiba o que está fazendo."
 
-#: ../src/iop/channelmixerrgb.c:2064
+#: ../src/iop/channelmixerrgb.c:2058
 msgid "white balance applied twice"
 msgstr "balanço de branco aplicado duas vezes"
 
-#: ../src/iop/channelmixerrgb.c:2065
+#: ../src/iop/channelmixerrgb.c:2059
 msgid ""
 "the color calibration module is enabled and already provides\n"
 "chromatic adaptation.\n"
@@ -14369,11 +14373,11 @@ msgstr ""
 "defina o balanço de branco aqui para a referência da câmera (D65)\n"
 "ou desabilite a adaptação cromática na calibração de cor."
 
-#: ../src/iop/channelmixerrgb.c:2073
+#: ../src/iop/channelmixerrgb.c:2067
 msgid "white balance module error"
 msgstr "erro no módulo balanço de branco"
 
-#: ../src/iop/channelmixerrgb.c:2074
+#: ../src/iop/channelmixerrgb.c:2068
 msgid ""
 "the white balance module is not using the camera\n"
 "reference illuminant, which will cause issues here\n"
@@ -14385,11 +14389,11 @@ msgstr ""
 "com a adaptação cromática. defina para referência ou\n"
 "desabilite a adaptação cromática aqui."
 
-#: ../src/iop/channelmixerrgb.c:2086 ../src/iop/channelmixerrgb.c:2095
+#: ../src/iop/channelmixerrgb.c:2080 ../src/iop/channelmixerrgb.c:2089
 msgid "white balance missing"
 msgstr "balanço de branco faltando"
 
-#: ../src/iop/channelmixerrgb.c:2087
+#: ../src/iop/channelmixerrgb.c:2081
 msgid ""
 "this module is not providing a valid reference illuminant\n"
 "causing chromatic adaptation issues in color calibration.\n"
@@ -14401,7 +14405,7 @@ msgstr ""
 "habilite este módulo e o defina para referência, ou desabilite\n"
 "adaptação cromática em calibração de cores."
 
-#: ../src/iop/channelmixerrgb.c:2096
+#: ../src/iop/channelmixerrgb.c:2090
 msgid ""
 "the white balance module is not providing a valid reference\n"
 "illuminant causing issues with chromatic adaptation here.\n"
@@ -14413,20 +14417,20 @@ msgstr ""
 "cromática. habilite o balanço de branco e o defina para referência\n"
 "ou desabilite a adaptação cromática aqui."
 
-#: ../src/iop/channelmixerrgb.c:2189
+#: ../src/iop/channelmixerrgb.c:2183
 msgid "auto-detection of white balance completed"
 msgstr "auto-detecção de balanço de branco completada"
 
-#: ../src/iop/channelmixerrgb.c:2340
+#: ../src/iop/channelmixerrgb.c:2334
 msgid "channelmixerrgb works only on RGB input"
 msgstr "O misturador de canais RGB funciona somente com entrada RGB"
 
-#: ../src/iop/channelmixerrgb.c:3697
+#: ../src/iop/channelmixerrgb.c:3691
 #, c-format
 msgid "CCT: %.0f K (daylight)"
 msgstr "TCC: %.0f K (luz do dia)"
 
-#: ../src/iop/channelmixerrgb.c:3700
+#: ../src/iop/channelmixerrgb.c:3694
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant can be accurately modeled by a daylight spectrum,\n"
@@ -14437,12 +14441,12 @@ msgstr ""
 "de luz diurna, então sua temperatura é relevante e faz sentido com\n"
 "um iluminante D."
 
-#: ../src/iop/channelmixerrgb.c:3706
+#: ../src/iop/channelmixerrgb.c:3700
 #, c-format
 msgid "CCT: %.0f K (black body)"
 msgstr "TCC: %.0f K (corpo negro)"
 
-#: ../src/iop/channelmixerrgb.c:3709
+#: ../src/iop/channelmixerrgb.c:3703
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant can be accurately modeled by a black body spectrum,\n"
@@ -14453,12 +14457,12 @@ msgstr ""
 "de corpo negro, então sua temperatura é relevante e faz sentido\n"
 "com um iluminante Planckiano."
 
-#: ../src/iop/channelmixerrgb.c:3715
+#: ../src/iop/channelmixerrgb.c:3709
 #, c-format
 msgid "CCT: %.0f K (invalid)"
 msgstr "TCC: %.0f K (inválido)"
 
-#: ../src/iop/channelmixerrgb.c:3718
+#: ../src/iop/channelmixerrgb.c:3712
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant cannot be accurately modeled by a daylight or black body "
@@ -14471,12 +14475,12 @@ msgstr ""
 "espectro de luz diurna ou de corpo negro, então sua temperatura\n"
 "não é relevante e você precisa usar um iluminante customizado."
 
-#: ../src/iop/channelmixerrgb.c:3727
+#: ../src/iop/channelmixerrgb.c:3721
 #, c-format
 msgid "CCT: undefined"
 msgstr "TCC: não definido"
 
-#: ../src/iop/channelmixerrgb.c:3730
+#: ../src/iop/channelmixerrgb.c:3724
 msgid ""
 "the approximated correlated color temperature\n"
 "cannot be computed at all so you need to use a custom illuminant."
@@ -14484,16 +14488,16 @@ msgstr ""
 "a temperatura de cor correlacionada aproximada não pôde\n"
 "ser calculada então você precisa usar um iluminante customizado."
 
-#: ../src/iop/channelmixerrgb.c:4046
+#: ../src/iop/channelmixerrgb.c:4040
 msgid "white balance successfully extracted from raw image"
 msgstr "balanço de branco extraído com sucesso da imagem RAW"
 
 #. We need to recompute only the full preview
-#: ../src/iop/channelmixerrgb.c:4053
+#: ../src/iop/channelmixerrgb.c:4047
 msgid "auto-detection of white balance started…"
 msgstr "auto-detecção de balanço de branco iniciada..."
 
-#: ../src/iop/channelmixerrgb.c:4159
+#: ../src/iop/channelmixerrgb.c:4153
 msgid ""
 "color calibration: the sum of the gray channel parameters is zero, "
 "normalization will be disabled."
@@ -14502,7 +14506,7 @@ msgstr ""
 "normalização será desabilitada."
 
 #. Write report in GUI
-#: ../src/iop/channelmixerrgb.c:4205
+#: ../src/iop/channelmixerrgb.c:4199
 #, c-format
 msgid ""
 "L: \t%.1f %%\n"
@@ -14513,8 +14517,8 @@ msgstr ""
 "h: \t%.1f °\n"
 "c: \t%.1f"
 
-#: ../src/iop/channelmixerrgb.c:4476 ../src/iop/clipping.c:2110
-#: ../src/iop/colorbalancergb.c:1915 ../src/iop/colorequal.c:2516
+#: ../src/iop/channelmixerrgb.c:4470 ../src/iop/clipping.c:2110
+#: ../src/iop/colorbalancergb.c:1915 ../src/iop/colorequal.c:2517
 #: ../src/iop/filmicrgb.c:4385 ../src/iop/negadoctor.c:843
 #: ../src/iop/toneequal.c:3339 ../src/libs/image.c:493
 #: ../src/views/lighttable.c:1258
@@ -14522,19 +14526,19 @@ msgid "page"
 msgstr "página"
 
 #. Page CAT
-#: ../src/iop/channelmixerrgb.c:4479
+#: ../src/iop/channelmixerrgb.c:4473
 msgid "CAT"
 msgstr "TAC"
 
-#: ../src/iop/channelmixerrgb.c:4480
+#: ../src/iop/channelmixerrgb.c:4474
 msgid "chromatic adaptation transform"
 msgstr "transformação de adaptação cromática"
 
-#: ../src/iop/channelmixerrgb.c:4482
+#: ../src/iop/channelmixerrgb.c:4476
 msgid "adaptation"
 msgstr "adaptação"
 
-#: ../src/iop/channelmixerrgb.c:4485
+#: ../src/iop/channelmixerrgb.c:4479
 msgid ""
 "choose the method to adapt the illuminant\n"
 "and the colorspace in which the module works: \n"
@@ -14555,7 +14559,7 @@ msgstr ""
 "De maneira geral, não é recomendado.\n"
 "• nenhuma desabilita qualquer adaptação e usa o RGB do pipeline."
 
-#: ../src/iop/channelmixerrgb.c:4505
+#: ../src/iop/channelmixerrgb.c:4499
 msgid ""
 "this is the color of the scene illuminant before chromatic adaptation\n"
 "this color will be turned into pure white by the adaptation."
@@ -14563,27 +14567,27 @@ msgstr ""
 "esta é a cor do iluminante da cena antes da adaptação cromática\n"
 "esta cor será transformada em branco puro pela adaptação."
 
-#: ../src/iop/channelmixerrgb.c:4513
+#: ../src/iop/channelmixerrgb.c:4507
 msgid "picker"
 msgstr "seletor"
 
-#: ../src/iop/channelmixerrgb.c:4515 ../src/iop/temperature.c:2104
+#: ../src/iop/channelmixerrgb.c:4509 ../src/iop/temperature.c:2109
 msgid "set white balance to detected from area"
 msgstr "define o balanço de branco para o detectado em uma área"
 
-#: ../src/iop/channelmixerrgb.c:4519 ../src/iop/negadoctor.c:967
+#: ../src/iop/channelmixerrgb.c:4513 ../src/iop/negadoctor.c:967
 msgid "illuminant"
 msgstr "iluminante"
 
-#: ../src/iop/channelmixerrgb.c:4525 ../src/iop/temperature.c:2171
+#: ../src/iop/channelmixerrgb.c:4519 ../src/iop/temperature.c:2176
 msgid "temperature"
 msgstr "temperatura"
 
-#: ../src/iop/channelmixerrgb.c:4556
+#: ../src/iop/channelmixerrgb.c:4550
 msgid "area color mapping"
 msgstr "mapeamento de cor por área"
 
-#: ../src/iop/channelmixerrgb.c:4562
+#: ../src/iop/channelmixerrgb.c:4556
 msgid ""
 "define a target chromaticity (hue and chroma) for a particular region of the "
 "image (the control sample), which you then match against the same target "
@@ -14597,17 +14601,17 @@ msgstr ""
 "crítica de seu objeto ou uma superfície que permameça estática (nos mesmos "
 "locais) e consistentemente iluminada em sua série de imagens"
 
-#: ../src/iop/channelmixerrgb.c:4569 ../src/iop/channelmixerrgb.c:4584
-#: ../src/iop/channelmixerrgb.c:4638 ../src/iop/channelmixerrgb.c:4647
-#: ../src/iop/channelmixerrgb.c:4655
+#: ../src/iop/channelmixerrgb.c:4563 ../src/iop/channelmixerrgb.c:4578
+#: ../src/iop/channelmixerrgb.c:4632 ../src/iop/channelmixerrgb.c:4641
+#: ../src/iop/channelmixerrgb.c:4649
 msgid "mapping"
 msgstr "mapeamento"
 
-#: ../src/iop/channelmixerrgb.c:4569 ../src/iop/exposure.c:1202
+#: ../src/iop/channelmixerrgb.c:4563 ../src/iop/exposure.c:1202
 msgid "area mode"
 msgstr "mode de área"
 
-#: ../src/iop/channelmixerrgb.c:4570
+#: ../src/iop/channelmixerrgb.c:4564
 msgid ""
 "\"correction\" automatically adjust the illuminant\n"
 "such that the input color is mapped to the target.\n"
@@ -14619,19 +14623,19 @@ msgstr ""
 "\"medida\" simplesmente mostra como uma cor de entrada é mapeada pelo CAT\n"
 "e pode ser usada para amostrar um alvo."
 
-#: ../src/iop/channelmixerrgb.c:4575 ../src/iop/exposure.c:1208
+#: ../src/iop/channelmixerrgb.c:4569 ../src/iop/exposure.c:1208
 msgid "correction"
 msgstr "correção"
 
-#: ../src/iop/channelmixerrgb.c:4576 ../src/iop/exposure.c:1209
+#: ../src/iop/channelmixerrgb.c:4570 ../src/iop/exposure.c:1209
 msgid "measure"
 msgstr "medição"
 
-#: ../src/iop/channelmixerrgb.c:4582
+#: ../src/iop/channelmixerrgb.c:4576
 msgid "take channel mixing into account"
 msgstr "levar mistura de canais em consideração"
 
-#: ../src/iop/channelmixerrgb.c:4589
+#: ../src/iop/channelmixerrgb.c:4583
 msgid ""
 "compute the target by taking the channel mixing into account.\n"
 "if disabled, only the CAT is considered."
@@ -14639,16 +14643,16 @@ msgstr ""
 "calcular o alvo levando em conta a mistura de canais.\n"
 "se desabilitado, somente o CAT é considerado."
 
-#: ../src/iop/channelmixerrgb.c:4601 ../src/iop/exposure.c:1216
+#: ../src/iop/channelmixerrgb.c:4595 ../src/iop/exposure.c:1216
 msgctxt "section"
 msgid "input"
 msgstr "entrada"
 
-#: ../src/iop/channelmixerrgb.c:4608 ../src/iop/exposure.c:1224
+#: ../src/iop/channelmixerrgb.c:4602 ../src/iop/exposure.c:1224
 msgid "the input color that should be mapped to the target"
 msgstr "a cor de entrada que deveria ser mapeada no alvo"
 
-#: ../src/iop/channelmixerrgb.c:4614
+#: ../src/iop/channelmixerrgb.c:4608
 msgid ""
 "L: \tN/A\n"
 "h: \tN/A\n"
@@ -14658,115 +14662,115 @@ msgstr ""
 "h: \tN/A\n"
 "c: \tN/A"
 
-#: ../src/iop/channelmixerrgb.c:4617 ../src/iop/exposure.c:1232
+#: ../src/iop/channelmixerrgb.c:4611 ../src/iop/exposure.c:1232
 msgid "these LCh coordinates are computed from CIE Lab 1976 coordinates"
 msgstr ""
 "estas coordeanaas LCh são computadas a partir de coordenadas CIE Lab 1976"
 
-#: ../src/iop/channelmixerrgb.c:4625 ../src/iop/exposure.c:1239
+#: ../src/iop/channelmixerrgb.c:4619 ../src/iop/exposure.c:1239
 msgctxt "section"
 msgid "target"
 msgstr "alvo"
 
-#: ../src/iop/channelmixerrgb.c:4632
+#: ../src/iop/channelmixerrgb.c:4626
 msgid "the desired target color after mapping"
 msgstr "a cor alvo desejada após o mapeamento"
 
-#: ../src/iop/channelmixerrgb.c:4671
+#: ../src/iop/channelmixerrgb.c:4665
 msgid "input R"
 msgstr "entrada R"
 
-#: ../src/iop/channelmixerrgb.c:4676
+#: ../src/iop/channelmixerrgb.c:4670
 msgid "input G"
 msgstr "entrada G"
 
-#: ../src/iop/channelmixerrgb.c:4681
+#: ../src/iop/channelmixerrgb.c:4675
 msgid "input B"
 msgstr "entrada B"
 
-#: ../src/iop/channelmixerrgb.c:4691
+#: ../src/iop/channelmixerrgb.c:4685
 msgid "output R"
 msgstr "saída R"
 
-#: ../src/iop/channelmixerrgb.c:4692
+#: ../src/iop/channelmixerrgb.c:4686
 msgid "output G"
 msgstr "saída G"
 
-#: ../src/iop/channelmixerrgb.c:4693
+#: ../src/iop/channelmixerrgb.c:4687
 msgid "output B"
 msgstr "saída B"
 
-#: ../src/iop/channelmixerrgb.c:4695
+#: ../src/iop/channelmixerrgb.c:4689
 msgid "colorfulness"
 msgstr "saturação"
 
-#: ../src/iop/channelmixerrgb.c:4695
+#: ../src/iop/channelmixerrgb.c:4689
 msgid "output colorfulness"
 msgstr "saturação de saída"
 
-#: ../src/iop/channelmixerrgb.c:4699
+#: ../src/iop/channelmixerrgb.c:4693
 msgid "output brightness"
 msgstr "brilho de saída"
 
-#: ../src/iop/channelmixerrgb.c:4702
+#: ../src/iop/channelmixerrgb.c:4696
 msgid "output gray"
 msgstr "cinza de saída"
 
-#: ../src/iop/channelmixerrgb.c:4717
+#: ../src/iop/channelmixerrgb.c:4711
 msgid "calibrate with a color checker"
 msgstr "calibrar com um cartão de cores"
 
-#: ../src/iop/channelmixerrgb.c:4722
+#: ../src/iop/channelmixerrgb.c:4716
 msgid "use a color checker target to autoset CAT and channels"
 msgstr "usa uma tabela de cores para autodefinir TAC e canais"
 
-#: ../src/iop/channelmixerrgb.c:4729 ../src/iop/channelmixerrgb.c:4742
-#: ../src/iop/channelmixerrgb.c:4760 ../src/iop/channelmixerrgb.c:4778
-#: ../src/iop/channelmixerrgb.c:4787 ../src/iop/channelmixerrgb.c:4795
+#: ../src/iop/channelmixerrgb.c:4723 ../src/iop/channelmixerrgb.c:4736
+#: ../src/iop/channelmixerrgb.c:4754 ../src/iop/channelmixerrgb.c:4772
+#: ../src/iop/channelmixerrgb.c:4781 ../src/iop/channelmixerrgb.c:4789
 msgid "calibrate"
 msgstr "calibrar"
 
-#: ../src/iop/channelmixerrgb.c:4729
+#: ../src/iop/channelmixerrgb.c:4723
 msgid "chart"
 msgstr "cartão (tabela)"
 
-#: ../src/iop/channelmixerrgb.c:4730
+#: ../src/iop/channelmixerrgb.c:4724
 msgid "choose the vendor and the type of your chart"
 msgstr "seleciona a marca e o tipo da sua tabela"
 
-#: ../src/iop/channelmixerrgb.c:4732
+#: ../src/iop/channelmixerrgb.c:4726
 msgid "Xrite ColorChecker 24 pre-2014"
 msgstr "Xrite ColorChecker 24 pre-2014"
 
-#: ../src/iop/channelmixerrgb.c:4733
+#: ../src/iop/channelmixerrgb.c:4727
 msgid "Xrite ColorChecker 24 post-2014"
 msgstr "Xrite ColorChecker 24 post-2014"
 
-#: ../src/iop/channelmixerrgb.c:4734
+#: ../src/iop/channelmixerrgb.c:4728
 msgid "Datacolor SpyderCheckr 24 pre-2018"
 msgstr "Datacolor SpyderCheckr 24 pre-2018"
 
-#: ../src/iop/channelmixerrgb.c:4735
+#: ../src/iop/channelmixerrgb.c:4729
 msgid "Datacolor SpyderCheckr 24 post-2018"
 msgstr "Datacolor SpyderCheckr 24 pós-2018"
 
-#: ../src/iop/channelmixerrgb.c:4736
+#: ../src/iop/channelmixerrgb.c:4730
 msgid "Datacolor SpyderCheckr 48 pre-2018"
 msgstr "Datacolor SpyderCheckr 48 pre-2018"
 
-#: ../src/iop/channelmixerrgb.c:4737
+#: ../src/iop/channelmixerrgb.c:4731
 msgid "Datacolor SpyderCheckr 48 post-2018"
 msgstr "Datacolor SpyderCheckr 48 pós-2018"
 
-#: ../src/iop/channelmixerrgb.c:4738
+#: ../src/iop/channelmixerrgb.c:4732
 msgid "Datacolor SpyderCheckr Photo"
 msgstr "Datacolor SpyderCheckr Photo"
 
-#: ../src/iop/channelmixerrgb.c:4742
+#: ../src/iop/channelmixerrgb.c:4736
 msgid "optimize for"
 msgstr "otimizar para"
 
-#: ../src/iop/channelmixerrgb.c:4743
+#: ../src/iop/channelmixerrgb.c:4737
 msgid ""
 "choose the colors that will be optimized with higher priority.\n"
 "neutral colors gives the lowest average delta E but a high maximum delta E\n"
@@ -14783,35 +14787,35 @@ msgstr ""
 "nenhum é um meio-termo entre os dois\n"
 "os outros são comportamentos especiais para proteger algumas matizes"
 
-#: ../src/iop/channelmixerrgb.c:4750
+#: ../src/iop/channelmixerrgb.c:4744
 msgid "neutral colors"
 msgstr "cores neutras"
 
-#: ../src/iop/channelmixerrgb.c:4752
+#: ../src/iop/channelmixerrgb.c:4746
 msgid "skin and soil colors"
 msgstr "cores de pele e solo"
 
-#: ../src/iop/channelmixerrgb.c:4753
+#: ../src/iop/channelmixerrgb.c:4747
 msgid "foliage colors"
 msgstr "cores de folhagem"
 
-#: ../src/iop/channelmixerrgb.c:4754
+#: ../src/iop/channelmixerrgb.c:4748
 msgid "sky and water colors"
 msgstr "cores de céu e água"
 
-#: ../src/iop/channelmixerrgb.c:4755
+#: ../src/iop/channelmixerrgb.c:4749
 msgid "average delta E"
 msgstr "delta E médio"
 
-#: ../src/iop/channelmixerrgb.c:4756
+#: ../src/iop/channelmixerrgb.c:4750
 msgid "maximum delta E"
 msgstr "delta E máximo"
 
-#: ../src/iop/channelmixerrgb.c:4760
+#: ../src/iop/channelmixerrgb.c:4754
 msgid "patch scale"
 msgstr "escala do patch"
 
-#: ../src/iop/channelmixerrgb.c:4763
+#: ../src/iop/channelmixerrgb.c:4757
 msgid ""
 "reduce the radius of the patches to select the more or less central part.\n"
 "useful when the perspective correction is sloppy or\n"
@@ -14821,31 +14825,31 @@ msgstr ""
 "útil quando a correção de perspectiva não é boa ou\n"
 "a moldura fazem sombra sobre as bordas do patch."
 
-#: ../src/iop/channelmixerrgb.c:4773
+#: ../src/iop/channelmixerrgb.c:4767
 msgid "the delta E is using the CIE 2000 formula"
 msgstr "o delta E está usando a fórmula CIE 2000"
 
-#: ../src/iop/channelmixerrgb.c:4778
+#: ../src/iop/channelmixerrgb.c:4772
 msgid "accept"
 msgstr "aceitar"
 
-#: ../src/iop/channelmixerrgb.c:4784
+#: ../src/iop/channelmixerrgb.c:4778
 msgid "accept the computed profile and set it in the module"
 msgstr "aceitar o perfil calculado e defini-lo no módulo"
 
-#: ../src/iop/channelmixerrgb.c:4787
+#: ../src/iop/channelmixerrgb.c:4781
 msgid "recompute"
 msgstr "recalcular"
 
-#: ../src/iop/channelmixerrgb.c:4791
+#: ../src/iop/channelmixerrgb.c:4785
 msgid "recompute the profile"
 msgstr "recalcular o perfil"
 
-#: ../src/iop/channelmixerrgb.c:4795
+#: ../src/iop/channelmixerrgb.c:4789
 msgid "validate"
 msgstr "validar"
 
-#: ../src/iop/channelmixerrgb.c:4799
+#: ../src/iop/channelmixerrgb.c:4793
 msgid "check the output delta E"
 msgstr "verificar a saída delta E"
 
@@ -15904,10 +15908,6 @@ msgstr ""
 msgid "input profile"
 msgstr "perfil de entrada"
 
-#: ../src/iop/colorin.c:2086
-msgid "working profile"
-msgstr "perfil de trabalho"
-
 #: ../src/iop/colorin.c:2095
 msgid "working ICC profiles"
 msgstr "perfil de trabalho ICC"
@@ -16109,7 +16109,7 @@ msgstr ""
 "tom de matiz ao qual deve ser dada precedência sobre outros tons de matiz"
 
 #: ../src/iop/colorreconstruction.c:1260 ../src/iop/demosaic.c:1326
-#: ../src/iop/highlights.c:1227
+#: ../src/iop/highlights.c:1230
 msgid "not applicable"
 msgstr "não aplicável"
 
@@ -16136,7 +16136,7 @@ msgstr ""
 "e está aqui apenas para que você o desative\n"
 "e use o novo mapeamento de cor."
 
-#: ../src/iop/colorequal.c:183 ../src/iop/colorequal.c:2475
+#: ../src/iop/colorequal.c:183 ../src/iop/colorequal.c:2476
 msgid "color equalizer"
 msgstr "equalizador de cores"
 
@@ -16156,29 +16156,29 @@ msgstr "quase-linear, RGB"
 msgid "quasi-linear, RGB, scene-referred"
 msgstr "quase-linear, RGB, relativo à cena"
 
-#: ../src/iop/colorequal.c:1609
+#: ../src/iop/colorequal.c:1610
 msgid "bleach bypass"
 msgstr "ignorar branqueamento"
 
-#: ../src/iop/colorequal.c:1653
+#: ../src/iop/colorequal.c:1654
 msgid "Kodachrome 64 like"
 msgstr "Similar a Kodachrome 64"
 
-#: ../src/iop/colorequal.c:1697
+#: ../src/iop/colorequal.c:1698
 msgid "Kodak Portra 400 like"
 msgstr "Similar a Kodachrome Portra 400"
 
-#: ../src/iop/colorequal.c:1741
+#: ../src/iop/colorequal.c:1742
 msgid "teal & orange"
 msgstr "verde-azulado e laranja"
 
 #. Page OPTIONS
-#: ../src/iop/colorequal.c:2430 ../src/iop/colorequal.c:2640
+#: ../src/iop/colorequal.c:2431 ../src/iop/colorequal.c:2641
 #: ../src/iop/filmicrgb.c:4577
 msgid "options"
 msgstr "opções"
 
-#: ../src/iop/colorequal.c:2529
+#: ../src/iop/colorequal.c:2530
 msgid ""
 "double-click to reset the curve\n"
 "middle click to toggle sliders visibility\n"
@@ -16188,11 +16188,11 @@ msgstr ""
 "clique do meio para alternar a visibilidade dos deslizadores\n"
 "alt+scroll para mudar a página"
 
-#: ../src/iop/colorequal.c:2556
+#: ../src/iop/colorequal.c:2557
 msgid "shift nodes to lower or higher hue"
 msgstr "deslocar nós para matiz mais baixa ou mais alta"
 
-#: ../src/iop/colorequal.c:2559
+#: ../src/iop/colorequal.c:2560
 msgid ""
 "pick hue from image and visualize it\n"
 "ctrl+click to select an area"
@@ -16200,19 +16200,19 @@ msgstr ""
 "obter matiz da imagem e a vizualizar\n"
 "ctrl+clique para selecionar uma área"
 
-#: ../src/iop/colorequal.c:2581
+#: ../src/iop/colorequal.c:2582
 msgid "change hue hue-wise"
 msgstr "muda a matiz de uma cor"
 
-#: ../src/iop/colorequal.c:2599
+#: ../src/iop/colorequal.c:2600
 msgid "change saturation hue-wise"
 msgstr "muda saturação de uma matiz de cor"
 
-#: ../src/iop/colorequal.c:2617
+#: ../src/iop/colorequal.c:2618
 msgid "change brightness hue-wise"
 msgstr "muda luminosidade de uma matiz de cor"
 
-#: ../src/iop/colorequal.c:2650
+#: ../src/iop/colorequal.c:2651
 msgid ""
 "the white level set manually or via the picker restricts brightness "
 "corrections\n"
@@ -16223,16 +16223,16 @@ msgstr ""
 "para ficarem abaixo do nível definido. o default é bom para a maioria das "
 "imagens"
 
-#: ../src/iop/colorequal.c:2655
+#: ../src/iop/colorequal.c:2656
 msgid "change for sharper or softer hue curve"
 msgstr "mudar para curva de matiz mais suave ou mais acentuada"
 
-#: ../src/iop/colorequal.c:2659
+#: ../src/iop/colorequal.c:2660
 msgid "restrict effect by using a guided filter based on hue and saturation"
 msgstr ""
 "restringir o efeito usando um filtro guiado baseado em matiz e saturação"
 
-#: ../src/iop/colorequal.c:2665
+#: ../src/iop/colorequal.c:2666
 msgid ""
 "set radius of the guided filter chroma analysis (hue).\n"
 "increase if there is large local variance of hue or strong chroma noise."
@@ -16240,7 +16240,7 @@ msgstr ""
 "definir raio da análise de croma por filtro guiado (matiz).\n"
 "aumente se há grande variância local de matiz ou forte ruído de croma."
 
-#: ../src/iop/colorequal.c:2676
+#: ../src/iop/colorequal.c:2677
 msgid ""
 "visualize weighting function on changed output and view weighting curve.\n"
 "red shows possibly changed data, blueish parts will not be changed."
@@ -16249,7 +16249,7 @@ msgstr ""
 "vermelho mostra dados possivelmente modificados, partes azuladas não serão "
 "modificadas."
 
-#: ../src/iop/colorequal.c:2680
+#: ../src/iop/colorequal.c:2681
 msgid ""
 "set saturation threshold for the guided filter.\n"
 " - decrease to allow changes in areas with low chromaticity\n"
@@ -16262,7 +16262,7 @@ msgstr ""
 "   aumenta contraste e evita mudanças de brilho em áreas com baixa "
 "cromaticidade."
 
-#: ../src/iop/colorequal.c:2688
+#: ../src/iop/colorequal.c:2689
 msgid ""
 "set saturation contrast for the guided filter.\n"
 " - increase to favor sharp transitions between saturations leading to higher "
@@ -16274,11 +16274,11 @@ msgstr ""
 "maior contraste\n"
 " - diminua para transições mais suaves"
 
-#: ../src/iop/colorequal.c:2695
+#: ../src/iop/colorequal.c:2696
 msgid "set radius of applied parameters for the guided filter"
 msgstr "definir o raio de parâmetros aplicados para o filtro guiado"
 
-#: ../src/iop/colorequal.c:2702
+#: ../src/iop/colorequal.c:2703
 msgid ""
 "visualize changed output for the selected tab.\n"
 "red shows increased data, blue decreased."
@@ -18258,7 +18258,7 @@ msgstr "evita realces magenta e tenta recuperar as cores dos realces"
 msgid "reconstruction, raw"
 msgstr "reconstrução, raw"
 
-#: ../src/iop/highlights.c:973
+#: ../src/iop/highlights.c:976
 msgid ""
 "highlights: mode not available for this type of image. falling back to "
 "inpaint opposed."
@@ -18266,11 +18266,11 @@ msgstr ""
 "realces: modo não está disponível para este tipo de imagem. revertendo para "
 "inpaint opposed."
 
-#: ../src/iop/highlights.c:1153
+#: ../src/iop/highlights.c:1156
 msgid "highlight reconstruction method"
 msgstr "método de reconstrução de realce"
 
-#: ../src/iop/highlights.c:1158
+#: ../src/iop/highlights.c:1161
 msgid ""
 "manually adjust the clipping threshold mostly used against magenta "
 "highlights.\n"
@@ -18283,7 +18283,7 @@ msgstr ""
 "segmentação',\n"
 "especialmente se o ponto branco da câmera estiver incorreto."
 
-#: ../src/iop/highlights.c:1162
+#: ../src/iop/highlights.c:1165
 msgid ""
 "visualize clipped highlights in a false color representation.\n"
 "the effective clipping level also depends on the reconstruction method."
@@ -18291,7 +18291,7 @@ msgstr ""
 "visualizar realces recortados em uma representação de cor falsa.\n"
 "o nível efetivo de recorte também depende do método de reconstrução."
 
-#: ../src/iop/highlights.c:1172
+#: ../src/iop/highlights.c:1175
 msgid ""
 "combine closely related clipped segments by morphological operations.\n"
 "this often leads to improved color reconstruction for tiny segments before "
@@ -18302,11 +18302,11 @@ msgstr ""
 "isto frequentemente leva a melhoria da reconstrução de cor para segmentos "
 "muito pequenos contra fundo escuro."
 
-#: ../src/iop/highlights.c:1175
+#: ../src/iop/highlights.c:1178
 msgid "visualize the combined segments in a false color representation."
 msgstr "visualizar os segmentos combinados em uma representação com cor falsa."
 
-#: ../src/iop/highlights.c:1182
+#: ../src/iop/highlights.c:1185
 msgid ""
 "select inpainting after segmentation analysis.\n"
 "increase to favor candidates found in segmentation analysis, decrease for "
@@ -18316,7 +18316,7 @@ msgstr ""
 "aumente para favorecer candidatos encontrados na análise de segmentação, "
 "diminua para reconstrução por média oposta."
 
-#: ../src/iop/highlights.c:1185
+#: ../src/iop/highlights.c:1188
 msgid ""
 "visualize segments that are considered to have a good candidate in a false "
 "color representation."
@@ -18324,7 +18324,7 @@ msgstr ""
 "visualizar os segmentos considerados como tendo bom candidato em uma "
 "representação com cor falsa."
 
-#: ../src/iop/highlights.c:1194
+#: ../src/iop/highlights.c:1197
 msgid ""
 "approximate lost data in regions with all photosites clipped, the effect "
 "depends on segment size and border gradients.\n"
@@ -18344,16 +18344,16 @@ msgstr ""
 "o modo uniforme ignora estruturas truncadas estreitas para manter realces "
 "reconstruidos e evitar gradientes."
 
-#: ../src/iop/highlights.c:1200
+#: ../src/iop/highlights.c:1203
 msgid "set strength of rebuilding in regions with all photosites clipped."
 msgstr ""
 "dfine a força da reconstrução em regiões com todos os canais truncados."
 
-#: ../src/iop/highlights.c:1202
+#: ../src/iop/highlights.c:1205
 msgid "show the effect that is added to already reconstructed data."
 msgstr "mostrar o efeito que é adicionado aos dados já reconstruídos."
 
-#: ../src/iop/highlights.c:1211
+#: ../src/iop/highlights.c:1214
 msgid ""
 "add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. useful at high ISO."
@@ -18361,7 +18361,7 @@ msgstr ""
 "adiciona ruído para mesclar visualmente as áreas reconstruídas no resto da "
 "imagem ruidosa. útil com ISO alto."
 
-#: ../src/iop/highlights.c:1215
+#: ../src/iop/highlights.c:1218
 msgid ""
 "increase if magenta highlights don't get fully corrected\n"
 "each new iteration brings a performance penalty."
@@ -18369,7 +18369,7 @@ msgstr ""
 "aumente se os realces magenta não forem corretamente corrigidos.\n"
 "cada nova iteração tem uma nova penalidade de desempenho."
 
-#: ../src/iop/highlights.c:1220
+#: ../src/iop/highlights.c:1223
 msgid ""
 "increase if magenta highlights don't get fully corrected.\n"
 "this may produce non-smooth boundaries between valid and clipped regions."
@@ -18377,7 +18377,7 @@ msgstr ""
 "aumente se os realces magenta não forem completamente corrigidos.\n"
 "isto pode produzir fronteiras não suaves entre regiões válidas e recortadas."
 
-#: ../src/iop/highlights.c:1224
+#: ../src/iop/highlights.c:1227
 msgid ""
 "increase to correct larger clipped areas.\n"
 "large values bring huge performance penalties"
@@ -18385,7 +18385,7 @@ msgstr ""
 "aumente para corrigir áreas recortadas maiores.\n"
 "valores altos trazem grandes penalidades de desempenho"
 
-#: ../src/iop/highlights.c:1228
+#: ../src/iop/highlights.c:1231
 msgid "this module does not work with monochrome RAW files"
 msgstr "este módulo não funciona com arquivos RAW monocromáticos"
 
@@ -20343,46 +20343,50 @@ msgid "set custom primaries"
 msgstr "define primárias customizadas"
 
 #: ../src/iop/sigmoid.c:939
-msgid "primaries to use as the base for below adjustments"
-msgstr "primárias para usar como base para os ajustes abaixo"
+msgid ""
+"primaries to use as the base for below adjustments\n"
+"'working profile' uses the profile set in 'input color profile'"
+msgstr ""
+"primárias para usar como base para os ajustes abaixo\n"
+"'perfil de trabalho' usa o perfil definido em 'perfil de cor de entrada'"
 
-#: ../src/iop/sigmoid.c:958
+#: ../src/iop/sigmoid.c:959
 msgid "attenuate the purity of the red primary"
 msgstr "atenuar a pureza do vermelho primário"
 
-#: ../src/iop/sigmoid.c:959
+#: ../src/iop/sigmoid.c:960
 msgid "rotate the red primary"
 msgstr "rotacionar o vermelho primário"
 
-#: ../src/iop/sigmoid.c:960
+#: ../src/iop/sigmoid.c:961
 msgid "attenuate the purity of the green primary"
 msgstr "atenuar a pureza do verde primário"
 
-#: ../src/iop/sigmoid.c:961
+#: ../src/iop/sigmoid.c:962
 msgid "rotate the green primary"
 msgstr "rotacionar o verde primário"
 
-#: ../src/iop/sigmoid.c:962
+#: ../src/iop/sigmoid.c:963
 msgid "attenuate the purity of the blue primary"
 msgstr "atenuar a pureza do azul primário"
 
-#: ../src/iop/sigmoid.c:963
+#: ../src/iop/sigmoid.c:964
 msgid "rotate the blue primary"
 msgstr "rotacionar o azul primário"
 
-#: ../src/iop/sigmoid.c:970
+#: ../src/iop/sigmoid.c:971
 msgid "recover some of the original purity after the inset"
 msgstr "recuperar um pouco da pureza original depois da sobreposição"
 
-#: ../src/iop/sigmoid.c:974
+#: ../src/iop/sigmoid.c:975
 msgid "display luminance"
 msgstr "isolar luminância de exibição"
 
-#: ../src/iop/sigmoid.c:975
+#: ../src/iop/sigmoid.c:976
 msgid "set display black/white targets"
 msgstr "determina alvos de preto/branco para o display"
 
-#: ../src/iop/sigmoid.c:983
+#: ../src/iop/sigmoid.c:984
 msgid ""
 "the black luminance of the target display or print.\n"
 "can be used creatively for a faded look."
@@ -20390,7 +20394,7 @@ msgstr ""
 "a luminância de preto na exibição ou impressão alvo.\n"
 "pode ser usado criativamente para um visual apagado."
 
-#: ../src/iop/sigmoid.c:988
+#: ../src/iop/sigmoid.c:989
 msgid ""
 "the white luminance of the target display or print.\n"
 "can be used creatively for a faded look or blowing out whites earlier."
@@ -20536,110 +20540,110 @@ msgstr ""
 "escalona os canais de RGB raw para balancear o branco\n"
 "e ajudar na interpolação cromática"
 
-#: ../src/iop/temperature.c:1449
+#: ../src/iop/temperature.c:1457
 #, c-format
 msgid "`%s' color matrix not found for image"
 msgstr "matriz de cores `%s' não encontrada para imagem"
 
-#: ../src/iop/temperature.c:1504
+#: ../src/iop/temperature.c:1512
 #, c-format
 msgid "failed to read camera white balance information from `%s'!"
 msgstr "falha ao ler informação de balanço de branco de `%s' da câmera!"
 
 #. old "camera". reason for change: all other RAW development
 #. tools use "As Shot" or "shot"
-#: ../src/iop/temperature.c:1675
+#: ../src/iop/temperature.c:1680
 msgctxt "white balance"
 msgid "as shot"
 msgstr "como ao tirar a foto"
 
 #. old "spot", reason: describes exactly what'll happen
-#: ../src/iop/temperature.c:1678
+#: ../src/iop/temperature.c:1683
 msgctxt "white balance"
 msgid "from image area"
 msgstr "de área na imagem"
 
-#: ../src/iop/temperature.c:1679
+#: ../src/iop/temperature.c:1684
 msgctxt "white balance"
 msgid "user modified"
 msgstr "modificado pelo usuário"
 
 #. old "camera neutral", reason: better matches intent
-#: ../src/iop/temperature.c:1681
+#: ../src/iop/temperature.c:1686
 msgctxt "white balance"
 msgid "camera reference"
 msgstr "referência da câmera"
 
-#: ../src/iop/temperature.c:1682
+#: ../src/iop/temperature.c:1687
 msgctxt "white balance"
 msgid "as shot to reference"
 msgstr "como capturado para referência"
 
-#: ../src/iop/temperature.c:1986 ../src/iop/temperature.c:2004
+#: ../src/iop/temperature.c:1991 ../src/iop/temperature.c:2009
 msgid "green channel coefficient"
 msgstr "coeficiente para canal verde"
 
-#: ../src/iop/temperature.c:1988
+#: ../src/iop/temperature.c:1993
 msgid "magenta channel coefficient"
 msgstr "coeficiente para canal magenta"
 
-#: ../src/iop/temperature.c:1990
+#: ../src/iop/temperature.c:1995
 msgid "cyan channel coefficient"
 msgstr "coeficiente para canal ciano"
 
-#: ../src/iop/temperature.c:1992
+#: ../src/iop/temperature.c:1997
 msgid "yellow channel coefficient"
 msgstr "coeficiente para canal amarelo"
 
-#: ../src/iop/temperature.c:2002
+#: ../src/iop/temperature.c:2007
 msgid "red channel coefficient"
 msgstr "coeficiente para canal vermelho"
 
-#: ../src/iop/temperature.c:2006
+#: ../src/iop/temperature.c:2011
 msgid "blue channel coefficient"
 msgstr "coeficiente para canal azul"
 
-#: ../src/iop/temperature.c:2007
+#: ../src/iop/temperature.c:2012
 msgid "emerald"
 msgstr "esmeralda"
 
-#: ../src/iop/temperature.c:2008
+#: ../src/iop/temperature.c:2013
 msgid "emerald channel coefficient"
 msgstr "coeficiente para canal esmeralda"
 
 #. relabel to settings to remove confusion between module presets
 #. and white balance settings
-#: ../src/iop/temperature.c:2086 ../src/iop/temperature.c:2099
-#: ../src/iop/temperature.c:2106 ../src/iop/temperature.c:2112
-#: ../src/iop/temperature.c:2120 ../src/iop/temperature.c:2141
+#: ../src/iop/temperature.c:2091 ../src/iop/temperature.c:2104
+#: ../src/iop/temperature.c:2111 ../src/iop/temperature.c:2117
+#: ../src/iop/temperature.c:2125 ../src/iop/temperature.c:2146
 msgid "settings"
 msgstr "configurações"
 
-#: ../src/iop/temperature.c:2086
+#: ../src/iop/temperature.c:2091
 msgid "as shot"
 msgstr "como ao tirar a foto"
 
-#: ../src/iop/temperature.c:2089
+#: ../src/iop/temperature.c:2094
 msgid "set white balance to as shot"
 msgstr "define balanço de branco para como ao tirar a foto"
 
-#: ../src/iop/temperature.c:2099
+#: ../src/iop/temperature.c:2104
 msgid "from image area"
 msgstr "de área na imagem"
 
-#: ../src/iop/temperature.c:2106
+#: ../src/iop/temperature.c:2111
 msgid "user modified"
 msgstr "modificado pelo usuário"
 
-#: ../src/iop/temperature.c:2109
+#: ../src/iop/temperature.c:2114
 msgid "set white balance to user modified"
 msgstr "define balanço de branco para modificado pelo usuário"
 
-#: ../src/iop/temperature.c:2112
+#: ../src/iop/temperature.c:2117
 msgid "camera reference"
 msgstr "referência da câmera"
 
-#: ../src/iop/temperature.c:2117
+#: ../src/iop/temperature.c:2122
 msgid ""
 "set white balance to camera reference point\n"
 "in most cases it should be D65"
@@ -20647,11 +20651,11 @@ msgstr ""
 "define balanço de branco para ponto de referência da câmera\n"
 "na maioria dos casos deveria ser D65"
 
-#: ../src/iop/temperature.c:2121
+#: ../src/iop/temperature.c:2126
 msgid "as shot to reference"
 msgstr "como caputrado para referência"
 
-#: ../src/iop/temperature.c:2126
+#: ../src/iop/temperature.c:2131
 msgid ""
 "set white balance to as shot and later correct to camera reference point,\n"
 "in most cases it should be D65"
@@ -20660,49 +20664,49 @@ msgstr ""
 "referência da câmera,\n"
 "na maioria dos casos deveria ser D65"
 
-#: ../src/iop/temperature.c:2142
+#: ../src/iop/temperature.c:2147
 msgid "choose white balance setting"
 msgstr "seleciona configuração de balanço de branco"
 
-#: ../src/iop/temperature.c:2147
+#: ../src/iop/temperature.c:2152
 msgid "finetune"
 msgstr "ajuste fino"
 
-#: ../src/iop/temperature.c:2149
+#: ../src/iop/temperature.c:2154
 msgid "fine tune camera's white balance setting"
 msgstr "ajuste fino do balanço de branco da câmera"
 
-#: ../src/iop/temperature.c:2157
+#: ../src/iop/temperature.c:2162
 msgctxt "section"
 msgid "scene illuminant temp"
 msgstr "temperatura do iluminante da cena"
 
-#: ../src/iop/temperature.c:2158
+#: ../src/iop/temperature.c:2163
 msgid "click to cycle color mode on sliders"
 msgstr "clique para alternar o modo de cor nos deslizadores"
 
-#: ../src/iop/temperature.c:2172
+#: ../src/iop/temperature.c:2177
 msgid "color temperature (in Kelvin)"
 msgstr "temperatura da cor (em Kelvin)"
 
-#: ../src/iop/temperature.c:2178
+#: ../src/iop/temperature.c:2183
 msgid "tint"
 msgstr "tonalidade"
 
-#: ../src/iop/temperature.c:2181
+#: ../src/iop/temperature.c:2186
 msgid "color tint of the image, from magenta (value < 1) to green (value > 1)"
 msgstr ""
 "tonalidade de cor da imagem, de magenta (valor < 1) à verde (valor > 1)"
 
-#: ../src/iop/temperature.c:2187
+#: ../src/iop/temperature.c:2192
 msgid "channel coefficients"
 msgstr "coeficientes de canais"
 
-#: ../src/iop/temperature.c:2196
+#: ../src/iop/temperature.c:2201
 msgid "various"
 msgstr "vários"
 
-#: ../src/iop/temperature.c:2222
+#: ../src/iop/temperature.c:2227
 msgid "white balance disabled for camera"
 msgstr "balanço de branco desabilitado para câmera"
 
