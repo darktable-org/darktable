@@ -427,7 +427,7 @@ static gboolean _check_deleted_instances(dt_develop_t *dev,
       iop_list = g_list_remove_link(iop_list, modules);
 
       // remove it from all snapshots
-      dt_undo_iterate_internal(darktable.undo, DT_UNDO_HISTORY,
+      dt_undo_iterate(darktable.undo, DT_UNDO_HISTORY,
                                mod, &_history_invalidate_cb);
 
       // we cleanup the module
@@ -555,7 +555,7 @@ static gboolean _create_deleted_modules(GList **_iop_list, GList *history_list)
 
         // and do that also in the undo/redo lists
         struct _cb_data udata = { module, hitem->multi_priority };
-        dt_undo_iterate_internal(darktable.undo, DT_UNDO_HISTORY,
+        dt_undo_iterate(darktable.undo, DT_UNDO_HISTORY,
                                  &udata, &_undo_items_cb);
         done = TRUE;
       }
