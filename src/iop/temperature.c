@@ -520,7 +520,6 @@ static inline void _publish_chroma(dt_dev_pixelpipe_iop_t *piece)
   dt_dev_chroma_t *chr = &self->dev->chroma;
 
   piece->pipe->dsc.temperature.enabled = piece->enabled;
-  chr->temperature = self;
   for_four_channels(k)
   {
     piece->pipe->dsc.temperature.coeffs[k] = d->coeffs[k];
@@ -733,7 +732,15 @@ void commit_params(struct dt_iop_module_t *self,
     piece->process_cl_ready = FALSE;
 
   d->preset = p->preset;
+
+  /* Make sure the chroma information stuff is valid
+     If piece is disabled we always clear the trouble message and
+     make sure chroma does know there is no temperature module.
+  */
   chr->late_correction = (p->preset == DT_IOP_TEMP_D65_LATE);
+  chr->temperature = piece->enabled ? self : NULL;
+  if(pipe->type & DT_DEV_PIXELPIPE_PREVIEW && !piece->enabled)
+    dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
 }
 
 void init_pipe(struct dt_iop_module_t *self,
@@ -1347,6 +1354,7 @@ void gui_update(struct dt_iop_module_t *self)
     if(!found) //since we haven't got a match - it's user-set
     {
       dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_USER);
+      p->preset = DT_IOP_TEMP_USER;
     }
   }
 
@@ -1604,9 +1612,6 @@ void reload_defaults(dt_iop_module_t *module)
     is_modern ? "YES" : "NO",
     another_cat_defined ? "YES" : "NO",
     daylights[0], daylights[1], daylights[2], as_shot[0], as_shot[1], as_shot[2]);
-
-  // this is a single instance module always exposed to dev->chroma
-  chr->temperature = module;
 
   d->preset = p->preset = DT_IOP_TEMP_AS_SHOT;
 
