@@ -48,6 +48,10 @@ void dtgtk_button_set_paint(GtkDarktableButton *button, DTGTKCairoPaintIconFunc 
 /** set the active state of the button icon */
 void dtgtk_button_set_active(GtkDarktableButton *button, gboolean active);
 
+/** create a button handler */
+GtkGesture *dtgtk_button_default_handler_new(
+    GtkWidget *widget, guint button, void *func_press, void *func_release, gpointer data);
+
 G_END_DECLS
 
 // clang-format off

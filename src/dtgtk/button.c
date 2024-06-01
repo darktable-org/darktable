@@ -147,6 +147,29 @@ void dtgtk_button_set_active(GtkDarktableButton *button, gboolean active)
     button->icon_flags &= ~CPF_ACTIVE;
 }
 
+GtkGesture *dtgtk_button_default_handler_new(GtkWidget *widget,
+                                             guint button,
+                                             void *func_press,
+                                             void *func_release,
+                                             gpointer data)
+{
+  GtkGesture *gesture = gtk_gesture_multi_press_new(GTK_WIDGET(widget));
+
+  gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(gesture), button);
+
+  if (func_press != NULL)
+  {
+    g_signal_connect(G_OBJECT(gesture), "pressed", G_CALLBACK(func_press), data);
+  }
+
+  if (func_release != NULL)
+  {
+    g_signal_connect(G_OBJECT(gesture), "released", G_CALLBACK(func_release), data);
+  }
+
+  return gesture;
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

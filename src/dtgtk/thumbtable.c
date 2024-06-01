@@ -2232,13 +2232,9 @@ dt_thumbtable_t *dt_thumbtable_new()
   g_signal_connect(G_OBJECT(table->widget), "enter-notify-event",
                    G_CALLBACK(_event_enter_notify), table);
 
-  table->gesture_button_primary = gtk_gesture_multi_press_new(GTK_WIDGET(table->widget));
-  gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(table->gesture_button_primary),
-                                GDK_BUTTON_PRIMARY);
-  g_signal_connect(G_OBJECT(table->gesture_button_primary), "pressed",
-                   G_CALLBACK(_event_button_press_primary), table);
-  g_signal_connect(G_OBJECT(table->gesture_button_primary), "released",
-                   G_CALLBACK(_event_button_release_primary), table);
+  table->gesture_button_primary = dtgtk_button_default_handler_new(
+      table->widget, GDK_BUTTON_PRIMARY, _event_button_press_primary,
+      _event_button_release_primary, table);
 
   g_signal_connect(G_OBJECT(table->widget), "motion-notify-event",
                    G_CALLBACK(_event_motion_notify), table);
