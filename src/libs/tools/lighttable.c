@@ -358,10 +358,10 @@ static void _lib_lighttable_key_accel_toggle_culling_zoom_mode(dt_action_t *acti
   dt_lib_module_t *self = darktable.view_manager->proxy.lighttable.module;
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
 
-  if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING || d->layout == DT_LIGHTTABLE_LAYOUT_CULLING_RESTRICTED)
     _lib_lighttable_set_layout(self, DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC);
   else if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
-    _lib_lighttable_set_layout(self, DT_LIGHTTABLE_LAYOUT_CULLING);
+    _lib_lighttable_set_layout(self, DT_LIGHTTABLE_LAYOUT_CULLING_RESTRICTED);
 }
 
 static void _lib_lighttable_key_accel_exit_layout(dt_action_t *action)
