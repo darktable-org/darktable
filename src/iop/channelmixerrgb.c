@@ -1163,11 +1163,12 @@ static void _declare_cat_on_pipe(struct dt_iop_module_t *self, const gboolean pr
   if(!g) return;
 
   dt_dev_chroma_t *chr = &self->dev->chroma;
+  const dt_iop_module_t *origcat = chr->adaptation;
 
-  if((self->enabled
-      && !g->is_blending
-      && !(p->adaptation == DT_ADAPTATION_RGB
-           || p->illuminant == DT_ILLUMINANT_PIPE)) || preset)
+  if(preset
+    || (self->enabled
+        && !g->is_blending
+        && !(p->adaptation == DT_ADAPTATION_RGB || p->illuminant == DT_ILLUMINANT_PIPE)))
   {
     // We do CAT here so we need to register this instance as CAT-handler.
     if(chr->adaptation == NULL)
@@ -1186,16 +1187,10 @@ static void _declare_cat_on_pipe(struct dt_iop_module_t *self, const gboolean pr
         chr->adaptation = self;
     }
   }
-  else
-  {
-    if(chr->adaptation != NULL)
-    {
-      // We do NOT do CAT here.
-      // Deregister this instance as CAT-handler if it previously registered
-      if(chr->adaptation == self)
-        chr->adaptation = NULL;
-    }
-  }
+
+  if(origcat != chr->adaptation)
+    dt_print(DT_DEBUG_PIPE, "changed CAT for %s%s from %p to %p\n",
+      self->op, dt_iop_get_instance_id(self), origcat, chr->adaptation);
 }
 
 static void _update_illuminants(struct dt_iop_module_t *self);
@@ -1979,6 +1974,10 @@ static void _set_trouble_messages(struct dt_iop_module_t *self)
   const dt_develop_t *dev = self->dev;
   const dt_dev_chroma_t *chr = &dev->chroma;
 
+  dt_print(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "trouble message for %s%s : temp=%p adapt=%p\n",
+    self->op, dt_iop_get_instance_id(self), chr->temperature, chr->adaptation);
+
+  // in temperature module we make sure this is only presented if temperature is enabled
   if(!chr->temperature)
   {
     if(chr->adaptation)
@@ -1993,56 +1992,51 @@ static void _set_trouble_messages(struct dt_iop_module_t *self)
     return;
   }
 
-  const gboolean temp_enabled =
-    chr->wb_coeffs[0] > 1.0
-    || chr->wb_coeffs[1] > 1.0
-    || chr->wb_coeffs[2] > 1.0;
-
   const gboolean valid =
     self->enabled
     && !(p->illuminant == DT_ILLUMINANT_PIPE || p->adaptation == DT_ADAPTATION_RGB)
     && !dt_image_is_monochrome(&dev->image_storage);
 
+  const gboolean temperature_enabled = chr->temperature && chr->temperature->enabled;
+  const gboolean adaptation_enabled = chr->adaptation && chr->adaptation->enabled;
+
   // our first and biggest problem : white balance module is being
   // clever with WB coeffs
   const gboolean problem1 = valid
                             && chr->adaptation == self
-                            && temp_enabled
+                            && temperature_enabled
                             && !dt_dev_is_D65_chroma(dev);
 
   // our second biggest problem : another channelmixerrgb instance is doing CAT
   // earlier in the pipe and we don't use masking here.
   const gboolean problem2 = valid
+                            && adaptation_enabled
+                            && temperature_enabled
                             && chr->adaptation != self
-                            && temp_enabled
                             && !g->is_blending;
 
   // our third and minor problem: white balance module is not active but default_enabled
   // and we do chromatic adaptation in color calibration
   const gboolean problem3 = valid
-                            && chr->adaptation
-                            && !temp_enabled
+                            && adaptation_enabled
+                            && !temperature_enabled
                             && chr->temperature->default_enabled;
+
   const gboolean anyproblem = problem1 || problem2 || problem3;
 
-  if(anyproblem && (darktable.unmuted & (DT_DEBUG_PARAMS | DT_DEBUG_PIPE)))
-  {
-    const dt_image_t *img = &dev->image_storage;
-
-    dt_print_pipe(DT_DEBUG_ALWAYS, anyproblem ? "chroma trouble" : "chroma data",
+  const dt_image_t *img = &dev->image_storage;
+  dt_print_pipe(DT_DEBUG_PIPE, anyproblem ? "chroma trouble" : "chroma data",
       NULL, self, DT_DEVICE_NONE, NULL, NULL,
-      "%s ID=%i %s%s%s%sD65=%s.  NOW %.3f %.3f %.3f, D65 %.3f %.3f %.3f, AS-SHOT %.3f %.3f %.3f\n",
-      img->filename,
-      img->id,
-      anyproblem ? "" : "NO problem, ",
+      "%s%s%sD65=%s.  NOW %.3f %.3f %.3f, D65 %.3f %.3f %.3f, AS-SHOT %.3f %.3f %.3f File `%s' ID=%i\n",
       problem1 ? "white balance applied twice, " : "",
       problem2 ? "double CAT applied, " : "",
       problem3 ? "white balance missing, " : "",
       dt_dev_is_D65_chroma(dev) ? "YES" : "NO",
       chr->wb_coeffs[0], chr->wb_coeffs[1], chr->wb_coeffs[2],
       chr->D65coeffs[0], chr->D65coeffs[1], chr->D65coeffs[2],
-      chr->as_shot[0], chr->as_shot[1], chr->as_shot[2]);
-  }
+      chr->as_shot[0], chr->as_shot[1], chr->as_shot[2],
+      img->filename,
+      img->id);
 
   if(problem2)
   {
