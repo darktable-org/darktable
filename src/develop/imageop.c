@@ -1098,10 +1098,6 @@ static void _gui_off_callback(GtkToggleButton *togglebutton, dt_iop_module_t *mo
     {
       module->enabled = FALSE;
 
-      //  if current module is set as the CAT instance, remove that setting
-      if(module->dev->chroma.adaptation == module)
-        module->dev->chroma.adaptation = NULL;
-
       dt_dev_add_history_item(module->dev, module, FALSE);
 
       if(!basics && dt_conf_get_bool("darkroom/ui/activate_expand") && module->expanded)
