@@ -3684,7 +3684,7 @@ gboolean dt_iop_have_required_input_format(const int req_ch,
          _("you have placed this module at\n"
            "a position in the pipeline where\n"
            "the data format does not match\n"
-           "it's requirements."), NULL);
+           "its requirements."), NULL);
       dt_print_pipe(DT_DEBUG_ALWAYS,
         "unsupported data format", NULL, module, DT_DEVICE_NONE, roi_in, roi_out, "\n");
     }
