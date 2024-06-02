@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
 
-# This script builds darktable and then package it as an AppImage.
-# You are expected to call this script from the darktable root folder.
+# This script builds darktable and then packages it as an AppImage.
+# You are expected to call it from the darktable root folder.
+
+# This script contains the launch of the AppImage program, linuxdeploy.
+# By default, FUSE, which is required for the standard technology of
+# launching programs in AppImage format, does not work in Docker containers.
+# So if this script is running in a Docker container, the environment
+# variable APPIMAGE_EXTRACT_AND_RUN=1 must be set before calling it.
 
 # desktop-file-validate is an optional dependency for darktable build, but is required by linuxdeploy.
 if ! [ -x "$(command -v desktop-file-validate)" ]; then
