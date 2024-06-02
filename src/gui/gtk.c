@@ -1359,7 +1359,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   dt_gui_presets_init();
 
   widget = dt_ui_center(darktable.gui->ui);
-  gtk_widget_set_app_paintable(widget, TRUE);
 
   // TODO: make this work as: libgnomeui testgnome.c
   /*  GtkContainer *box = GTK_CONTAINER(darktable.gui->widgets.plugins_vbox);
@@ -1621,7 +1620,6 @@ static GtkWidget *_init_outer_border(const gint width,
 {
   GtkWidget *widget = gtk_drawing_area_new();
   gtk_widget_set_size_request(widget, width, height);
-  gtk_widget_set_app_paintable(widget, TRUE);
   gtk_widget_set_events(widget,
                         GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                         | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK
@@ -1744,7 +1742,6 @@ static void _init_main_table(GtkWidget *container)
   gtk_widget_set_size_request(cda, DT_PIXEL_APPLY_DPI(50), DT_PIXEL_APPLY_DPI(200));
   gtk_widget_set_hexpand(ocda, TRUE);
   gtk_widget_set_vexpand(ocda, TRUE);
-  gtk_widget_set_app_paintable(cda, TRUE);
   gtk_widget_set_events(cda,
                         GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK
                         | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK
