@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,6 +19,8 @@
 #pragma once
 
 #include "develop/imageop.h"
+#include "dtgtk/button.h"
+
 #include <gtk/gtk.h>
 
 G_BEGIN_DECLS
@@ -31,9 +33,11 @@ struct _GtkDarktableResetLabel
   GtkEventBox widget;
   GtkLabel *lb;
   dt_iop_module_t *module;
-  int offset;                // offset in params to reset
-  int size;                  // size of param to reset
-  GCallback reset_callback;  // pointer to callback function
+  int offset; // offset in params to reset
+  int size;   // size of param to reset
+
+  // different controller for event processing
+  GtkGesture *gesture_button_primary;
 };
 
 /** instantiate a new darktable reset label for the given module and param. */
