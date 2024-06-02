@@ -74,6 +74,10 @@ typedef struct dt_culling_t
   dt_thumbnail_overlay_t overlays; // overlays type
   int overlays_block_timeout;      // overlay block visibility duration
   gboolean show_tooltips;          // are tooltips visible ?
+
+  // different controller for event processing
+  GtkGesture *gesture_button_all;
+
 } dt_culling_t;
 
 dt_culling_t *dt_culling_new(dt_culling_mode_t mode);
