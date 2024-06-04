@@ -5,15 +5,7 @@ include(manage-symbol-visibility)
 add_definitions(-include common/module_api.h)
 add_definitions(-include imageio/storage/imageio_storage_api.h)
 
-set(MODULES disk email gallery latex)
-
-find_package(CURL 7.56)
-if(CURL_FOUND)
-  message(STATUS "Found recent CURL version to build piwigo.")
-  list(APPEND MODULES piwigo)
-else(CURL_FOUND)
-  message(STATUS "Cannot found recent CURL version (>= 7.56) to build piwigo.")
-endif(CURL_FOUND)
+set(MODULES disk email gallery latex piwigo)
 
 foreach(module ${MODULES})
 	add_library(${module} MODULE "${module}.c")
