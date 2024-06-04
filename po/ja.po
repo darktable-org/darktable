@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-06-02 18:53+0200\n"
-"PO-Revision-Date: 2024-06-04 17:23+0900\n"
+"PO-Revision-Date: 2024-06-04 17:32+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -16161,11 +16161,11 @@ msgstr "銀残し"
 
 #: ../src/iop/colorequal.c:1654
 msgid "Kodachrome 64 like"
-msgstr "Kodachrome 64風"
+msgstr "Kodachrome 64"
 
 #: ../src/iop/colorequal.c:1698
 msgid "Kodak Portra 400 like"
-msgstr "Kodak Portra 400風"
+msgstr "Kodak Portra 400"
 
 #: ../src/iop/colorequal.c:1742
 msgid "teal & orange"
@@ -17162,10 +17162,8 @@ msgid "add empty space to the left, top, right or bottom"
 msgstr "画像の上下左右に無地のスペースを加えます"
 
 #: ../src/iop/enlargecanvas.c:91
-#, fuzzy
-#| msgid "composition|layering|stacked"
 msgid "composition|expand|extend"
-msgstr "構図|レイヤー|積み重ね"
+msgstr "構図|拡張|延長"
 
 #: ../src/iop/enlargecanvas.c:427
 msgid ""
@@ -18038,7 +18036,7 @@ msgstr "最終的なサイズに拡大縮小します"
 
 #: ../src/iop/flip.c:80
 msgid "rotation|flip|mirror"
-msgstr "回転|反転|"
+msgstr "回転|反転|鏡像"
 
 #: ../src/iop/flip.c:110
 msgid "flip or rotate image by step of 90 degrees"
@@ -19855,10 +19853,10 @@ msgid "retouch"
 msgstr "レタッチ"
 
 #: ../src/iop/retouch.c:202
-#, fuzzy
-#| msgid "split-frequency|healing|cloning|stamp"
 msgid "split-frequency|healing|cloning|stamp|blur|fill|wavelets|spot removal"
-msgstr "周波数分離|修復|クローン|スタンプ"
+msgstr ""
+"周波数分離|修復|クローン|スタンプ|ぼかし|塗りつぶし|ウェーブレット|スポット除"
+"去"
 
 #: ../src/iop/retouch.c:208
 msgid "remove and clone spots, perform split-frequency skin editing"
@@ -20216,11 +20214,8 @@ msgstr ""
 "特定の種類のセンサーやアナモルフィックデスクイーズに有用です"
 
 #: ../src/iop/scalepixels.c:261
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "swap the aspect ratio"
 msgid "adjust pixel aspect ratio"
-msgstr "アスペクト比を入れ替える"
+msgstr "ピクセルのアスペクト比を調整します"
 
 #: ../src/iop/shadhi.c:120
 msgid "shadows and highlights"
@@ -20331,7 +20326,7 @@ msgstr "ニュートラルグレー"
 
 #: ../src/iop/sigmoid.c:268
 msgid "ACES 100-nit like"
-msgstr "ACES100ニット風"
+msgstr "ACES100ニット"
 
 #: ../src/iop/sigmoid.c:275
 msgid "Reinhard"
@@ -20372,12 +20367,13 @@ msgid "set custom primaries"
 msgstr "プライマリをカスタム設定します"
 
 #: ../src/iop/sigmoid.c:939
-#, fuzzy
-#| msgid "primaries to use as the base for below adjustments"
 msgid ""
 "primaries to use as the base for below adjustments\n"
 "'working profile' uses the profile set in 'input color profile'"
-msgstr "以下の調整のためのベースとして使用するプライマリ"
+msgstr ""
+"以下の調整のためのベースとして使用するプライマリ\n"
+"'作業プロファイル'は'入力カラープロファイル'で設定されたプロファイルを使用し"
+"ます"
 
 #: ../src/iop/sigmoid.c:959
 msgid "attenuate the purity of the red primary"
