@@ -507,9 +507,18 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
           "piece enabling mismatch for image %i, piece hash=%" PRIx64 ", \n",
           imgid, piece->hash);
       }
+
+      if(active && hist->iop_order == INT_MAX)
+      {
+        piece->enabled = FALSE;
+        dt_print_pipe(DT_DEBUG_PARAMS | DT_DEBUG_PIPE, "dt_dev_pixelpipe_synch",
+          pipe, piece->module, DT_DEVICE_NONE, NULL, NULL,
+          "enabled module with iop_order of INT_MAX is disabled\n");
+      }
+
       dt_iop_commit_params(hist->module, hist->params, hist->blend_params, pipe, piece);
 
-      dt_print_pipe(DT_DEBUG_PARAMS, "commit params",
+      dt_print_pipe(DT_DEBUG_PARAMS, "dt_dev_pixelpipe_synch",
           pipe, piece->module, DT_DEVICE_NONE, NULL, NULL,
           "piece hash=%" PRIx64 ", \n", piece->hash);
 
@@ -557,7 +566,7 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
     dt_dev_pixelpipe_synch(pipe, dev, history);
     history = g_list_next(history);
   }
-  dt_print_pipe(DT_DEBUG_PIPE,
+  dt_print_pipe(DT_DEBUG_PARAMS,
            "synch all modules done",
            pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
            "defaults %.4fs, history %.4fs\n",
@@ -588,8 +597,12 @@ void dt_dev_pixelpipe_change(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev)
 {
   dt_pthread_mutex_lock(&dev->history_mutex);
 
-  dt_print_pipe(DT_DEBUG_PARAMS, "pipe state changing",
-      pipe, NULL, DT_DEVICE_NONE, NULL, NULL, "flag = %d\n", pipe->changed);
+  dt_print_pipe(DT_DEBUG_PIPE, "pipe state changing",
+      pipe, NULL, DT_DEVICE_NONE, NULL, NULL, "%s%s%s%s\n",
+      pipe->changed & DT_DEV_PIPE_ZOOMED      ? "zoomed, " : "",
+      pipe->changed & DT_DEV_PIPE_TOP_CHANGED ? "top changed, " : "",
+      pipe->changed & DT_DEV_PIPE_SYNCH       ? "synch all, " : "",
+      pipe->changed & DT_DEV_PIPE_REMOVE      ? "pipe remove" : "");
   // case DT_DEV_PIPE_UNCHANGED: case DT_DEV_PIPE_ZOOMED:
   if(pipe->changed & DT_DEV_PIPE_TOP_CHANGED)
   {
@@ -1140,7 +1153,8 @@ static gboolean _pixelpipe_process_on_CPU(
   {
     dt_print_pipe(DT_DEBUG_PIPE,
        "process",
-       piece->pipe, module, DT_DEVICE_CPU, roi_in, roi_out, "%s%s%s%s\n",
+       piece->pipe, module, DT_DEVICE_CPU, roi_in, roi_out, "%3i %s%s%s%s\n",
+       piece->module->iop_order,
        dt_iop_colorspace_to_name(cst_to),
        cst_to != cst_out ? " -> " : "",
        cst_to != cst_out ? dt_iop_colorspace_to_name(cst_out) : "",
@@ -1260,7 +1274,7 @@ static inline gboolean _opencl_pipe_isok(dt_dev_pixelpipe_t *pipe)
 
 static inline gboolean _skip_piece_on_tags(const dt_dev_pixelpipe_iop_t *piece)
 {
-  if(!piece->enabled)
+  if(!piece->enabled || piece->module->iop_order == INT_MAX)
     return TRUE;
 
   return dt_iop_module_is_skipped(piece->module->dev, piece->module)
@@ -1750,7 +1764,8 @@ static gboolean _dev_pixelpipe_process_rec(
         {
           dt_print_pipe(DT_DEBUG_PIPE,
                         "process",
-                        piece->pipe, module, pipe->devid, &roi_in, roi_out, "%s%s%s\n",
+                        piece->pipe, module, pipe->devid, &roi_in, roi_out, "%3i %s%s%s\n",
+                        module->iop_order,
                         dt_iop_colorspace_to_name(cst_to),
                         cst_to != cst_out ? " -> " : "",
                         cst_to != cst_out ? dt_iop_colorspace_to_name(cst_out) : "");
@@ -1960,7 +1975,8 @@ static gboolean _dev_pixelpipe_process_rec(
         {
           dt_print_pipe(DT_DEBUG_PIPE,
                         "process tiled",
-                        piece->pipe, module, pipe->devid, &roi_in, roi_out, "%s%s%s\n",
+                        piece->pipe, module, pipe->devid, &roi_in, roi_out, "%3i %s%s%s\n",
+                        module->iop_order,
                         dt_iop_colorspace_to_name(cst_to),
                         cst_to != cst_out ? " -> " : "",
                         cst_to != cst_out ? dt_iop_colorspace_to_name(cst_out) : "");
