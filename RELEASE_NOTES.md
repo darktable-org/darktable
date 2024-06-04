@@ -242,6 +242,7 @@ changes (where available).
 - Minimum libpng version 1.5.x is now required
 - Bump Exiv2 requirement to 0.27.2
 - Minimum pugixml version 1.5 is now required
+- Minimum libcurl version 7.56 is now required
 
 ### Optional
 
