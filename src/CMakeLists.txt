@@ -435,7 +435,7 @@ include_directories(SYSTEM ${Sqlite3_INCLUDE_DIR})
 list(APPEND LIBS ${Sqlite3_LIBRARIES})
 add_definitions(${Sqlite3_DEFINITIONS})
 
-foreach(lib ${OUR_LIBS} GIO GThread GModule PangoCairo Rsvg2 LibXml2 CURL PNG JPEG TIFF LCMS2 JsonGlib)
+foreach(lib ${OUR_LIBS} GIO GThread GModule PangoCairo Rsvg2 LibXml2 PNG JPEG TIFF LCMS2 JsonGlib)
   find_package(${lib} REQUIRED)
   include_directories(SYSTEM ${${lib}_INCLUDE_DIRS})
   list(APPEND LIBS ${${lib}_LIBRARIES})
@@ -445,6 +445,10 @@ endforeach(lib)
 if(PNG_VERSION_STRING VERSION_LESS 1.5)
   message(FATAL_ERROR "libpng version 1.5 or newer is required")
 endif()
+
+# Use imported target for curl
+find_package(CURL 7.56 REQUIRED)
+list(APPEND LIBS CURL::libcurl)
 
 # Require exiv2 >= 0.27.2 to make sure everything we need is available
 find_package(Exiv2 0.27.2 REQUIRED)
