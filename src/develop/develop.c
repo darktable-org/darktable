@@ -2036,6 +2036,14 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
 
     const int iop_order =
       dt_ioppr_get_iop_order(dev->iop_order_list, module_name, multi_priority);
+    if(iop_order == INT_MAX)
+    {
+      dt_print(DT_DEBUG_PIPE | DT_DEBUG_UNDO,
+               "[dev_read_history_ext] illegal iop_order for module `%s.%i' in history for image"
+               " id=%d `%s'!\n",
+               module_name, multi_priority, imgid, dev->image_storage.filename);
+      continue;
+    }
 
     dt_dev_history_item_t *hist =
       (dt_dev_history_item_t *)calloc(1, sizeof(dt_dev_history_item_t));
