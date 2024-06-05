@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-20 18:29+0200\n"
-"PO-Revision-Date: 2024-05-22 09:27+0300\n"
+"POT-Creation-Date: 2024-06-02 18:53+0200\n"
+"PO-Revision-Date: 2024-06-05 18:11+0300\n"
 "Last-Translator: Marko Vertainen <marko.vertainen@iki.fi>\n"
 "Language-Team: Finnish (Finland)\n"
 "Language: fi_FI\n"
@@ -25,9 +25,9 @@ msgctxt "preferences"
 msgid "last instance"
 msgstr "Viimeinen instanssi"
 
-#: ../build/bin/conf_gen.h:183 ../build/bin/conf_gen.h:289
-#: ../build/bin/conf_gen.h:299 ../build/bin/conf_gen.h:1264
-#: ../build/bin/conf_gen.h:1280 ../build/bin/conf_gen.h:1302
+#: ../build/bin/conf_gen.h:183 ../build/bin/conf_gen.h:303
+#: ../build/bin/conf_gen.h:313 ../build/bin/conf_gen.h:1278
+#: ../build/bin/conf_gen.h:1294 ../build/bin/conf_gen.h:1316
 #: ../build/bin/preferences_gen.h:4711 ../build/bin/preferences_gen.h:4849
 msgctxt "preferences"
 msgid "never"
@@ -53,135 +53,135 @@ msgctxt "preferences"
 msgid "on close"
 msgstr "Suljettaessa"
 
-#: ../build/bin/conf_gen.h:223 ../build/bin/conf_gen.h:1257
-#: ../build/bin/conf_gen.h:1273 ../build/bin/conf_gen.h:1303
+#: ../build/bin/conf_gen.h:237 ../build/bin/conf_gen.h:1271
+#: ../build/bin/conf_gen.h:1287 ../build/bin/conf_gen.h:1317
 msgctxt "preferences"
 msgid "small"
 msgstr "Pieni"
 
-#: ../build/bin/conf_gen.h:224 ../build/bin/conf_gen.h:346
+#: ../build/bin/conf_gen.h:238 ../build/bin/conf_gen.h:360
 #: ../build/bin/preferences_gen.h:6066 ../build/bin/preferences_gen.h:6187
 msgctxt "preferences"
 msgid "default"
 msgstr "Oletus"
 
-#: ../build/bin/conf_gen.h:225 ../build/bin/conf_gen.h:3096
+#: ../build/bin/conf_gen.h:239 ../build/bin/conf_gen.h:3110
 msgctxt "preferences"
 msgid "large"
 msgstr "Suuri"
 
-#: ../build/bin/conf_gen.h:290
+#: ../build/bin/conf_gen.h:304
 msgctxt "preferences"
 msgid "after edit"
 msgstr "Muokkauksen jälkeen"
 
-#: ../build/bin/conf_gen.h:291 ../build/bin/preferences_gen.h:7192
+#: ../build/bin/conf_gen.h:305 ../build/bin/preferences_gen.h:7192
 msgctxt "preferences"
 msgid "on import"
 msgstr "Tuonnin yhteydessä"
 
-#: ../build/bin/conf_gen.h:300 ../build/bin/conf_gen.h:1256
-#: ../build/bin/conf_gen.h:1272 ../build/bin/conf_gen.h:3563
+#: ../build/bin/conf_gen.h:314 ../build/bin/conf_gen.h:1270
+#: ../build/bin/conf_gen.h:1286 ../build/bin/conf_gen.h:3577
 #: ../build/bin/preferences_gen.h:5608
 msgctxt "preferences"
 msgid "always"
 msgstr "Aina"
 
-#: ../build/bin/conf_gen.h:301 ../build/bin/preferences_gen.h:7227
+#: ../build/bin/conf_gen.h:315 ../build/bin/preferences_gen.h:7227
 msgctxt "preferences"
 msgid "only large entries"
 msgstr "Vain suuret tunnisteet"
 
-#: ../build/bin/conf_gen.h:330
+#: ../build/bin/conf_gen.h:344
 msgctxt "preferences"
 msgid "sensitive"
 msgstr "Herkkyys"
 
-#: ../build/bin/conf_gen.h:331 ../build/bin/preferences_gen.h:8101
+#: ../build/bin/conf_gen.h:345 ../build/bin/preferences_gen.h:8101
 msgctxt "preferences"
 msgid "insensitive"
 msgstr "Ei merkitse"
 
-#: ../build/bin/conf_gen.h:347
+#: ../build/bin/conf_gen.h:361
 msgctxt "preferences"
 msgid "multiple GPUs"
 msgstr "Useita näytönohjaimia"
 
-#: ../build/bin/conf_gen.h:348
+#: ../build/bin/conf_gen.h:362
 msgctxt "preferences"
 msgid "very fast GPU"
 msgstr "Erittäin nopea näytönohjain"
 
-#: ../build/bin/conf_gen.h:720 ../build/bin/preferences_gen.h:8260
+#: ../build/bin/conf_gen.h:734 ../build/bin/preferences_gen.h:8260
 msgctxt "preferences"
 msgid "import time"
 msgstr "Tuonnin aika"
 
-#: ../build/bin/conf_gen.h:721
+#: ../build/bin/conf_gen.h:735
 msgctxt "preferences"
 msgid "folder name"
 msgstr "Hakemiston nimi"
 
-#: ../build/bin/conf_gen.h:729
+#: ../build/bin/conf_gen.h:743
 msgctxt "preferences"
 msgid "RGB"
 msgstr "RGB"
 
-#: ../build/bin/conf_gen.h:730
+#: ../build/bin/conf_gen.h:744
 msgctxt "preferences"
 msgid "Lab"
 msgstr "Lab"
 
-#: ../build/bin/conf_gen.h:731
+#: ../build/bin/conf_gen.h:745
 msgctxt "preferences"
 msgid "LCh"
 msgstr "LCh"
 
-#: ../build/bin/conf_gen.h:732
+#: ../build/bin/conf_gen.h:746
 msgctxt "preferences"
 msgid "HSL"
 msgstr "HSL"
 
-#: ../build/bin/conf_gen.h:733
+#: ../build/bin/conf_gen.h:747
 msgctxt "preferences"
 msgid "Hex"
 msgstr "Hex"
 
-#: ../build/bin/conf_gen.h:734 ../build/bin/conf_gen.h:2028
-#: ../build/bin/conf_gen.h:2748 ../build/bin/conf_gen.h:3071
-#: ../build/bin/conf_gen.h:3374
+#: ../build/bin/conf_gen.h:748 ../build/bin/conf_gen.h:2042
+#: ../build/bin/conf_gen.h:2762 ../build/bin/conf_gen.h:3085
+#: ../build/bin/conf_gen.h:3388
 msgctxt "preferences"
 msgid "none"
 msgstr "Ei mitään"
 
-#: ../build/bin/conf_gen.h:742
+#: ../build/bin/conf_gen.h:756
 msgctxt "preferences"
 msgid "mean"
 msgstr "keskiarvo"
 
-#: ../build/bin/conf_gen.h:743
+#: ../build/bin/conf_gen.h:757
 msgctxt "preferences"
 msgid "min"
 msgstr "minimi"
 
-#: ../build/bin/conf_gen.h:744
+#: ../build/bin/conf_gen.h:758
 msgctxt "preferences"
 msgid "max"
 msgstr "maksimi"
 
-#: ../build/bin/conf_gen.h:963
+#: ../build/bin/conf_gen.h:977
 msgid "select only new pictures"
 msgstr "Valitse vain uudet kuvat"
 
-#: ../build/bin/conf_gen.h:964
+#: ../build/bin/conf_gen.h:978
 msgid "only select images that have not already been imported"
 msgstr "Valitse ainoastaan kuvat joita ei ole aiemmin tuotu."
 
-#: ../build/bin/conf_gen.h:970
+#: ../build/bin/conf_gen.h:984
 msgid "ignore non-raw images"
 msgstr "Ohita muut kuin RAW-tiedostot"
 
-#: ../build/bin/conf_gen.h:971
+#: ../build/bin/conf_gen.h:985
 msgid ""
 "if enabled, only raw files will be allowed to import. non-raw files will not "
 "be visible in the dialog and will not be imported."
@@ -189,55 +189,55 @@ msgstr ""
 "Jos valittu, vain raakakuvatiedostojen tuonti on mahdollista. Muut kuin RAW-"
 "tiedostot eivät näy valinnassa ja niitä ei tuoda."
 
-#: ../build/bin/conf_gen.h:977
+#: ../build/bin/conf_gen.h:991
 msgid "apply metadata"
 msgstr "Lisää metatiedot"
 
-#: ../build/bin/conf_gen.h:978
+#: ../build/bin/conf_gen.h:992
 msgid "apply some metadata to all newly imported images."
 msgstr "Lisää joitain metatietoja tuonnissa kaikkiin uusiin kuviin."
 
-#: ../build/bin/conf_gen.h:984
+#: ../build/bin/conf_gen.h:998
 msgid "recursive directory"
 msgstr "Hae alihakemistoista"
 
-#: ../build/bin/conf_gen.h:985
+#: ../build/bin/conf_gen.h:999
 msgid "recursive directory traversal when importing filmrolls"
 msgstr "Hae uusia kuvia myös alihakemistoista tuonnin yhteydessä."
 
-#: ../build/bin/conf_gen.h:991
+#: ../build/bin/conf_gen.h:1005
 msgid "creator to be applied when importing"
 msgstr "Tuonnissa lisättävä tekijän nimi"
 
-#: ../build/bin/conf_gen.h:998
+#: ../build/bin/conf_gen.h:1012
 msgid "publisher to be applied when importing"
 msgstr "Tuonnissa lisättävä julkaisijan nimi"
 
-#: ../build/bin/conf_gen.h:1005
+#: ../build/bin/conf_gen.h:1019
 msgid "rights to be applied when importing"
 msgstr "Tuonnissa lisättävä tekijänoikeuden huomautus"
 
-#: ../build/bin/conf_gen.h:1012
+#: ../build/bin/conf_gen.h:1026
 msgid "comma separated tags to be applied when importing"
 msgstr "Tuonnissa lisättävät tunnisteet pilkulla eroteltuna"
 
-#: ../build/bin/conf_gen.h:1019
+#: ../build/bin/conf_gen.h:1033
 msgid "import tags from XMP"
 msgstr "Tuo tunnisteet XMP-tiedostosta"
 
-#: ../build/bin/conf_gen.h:1047
+#: ../build/bin/conf_gen.h:1061
 msgid "initial rating"
 msgstr "Lisättävä luokitus"
 
-#: ../build/bin/conf_gen.h:1048
+#: ../build/bin/conf_gen.h:1062
 msgid "initial star rating for all images when importing a filmroll"
 msgstr "Filmirullaan tuonnissa oletuksena lisättävä luokitus kaikille kuville."
 
-#: ../build/bin/conf_gen.h:1054
+#: ../build/bin/conf_gen.h:1068
 msgid "ignore EXIF rating"
 msgstr "Ohita EXIF-luokittelu"
 
-#: ../build/bin/conf_gen.h:1055
+#: ../build/bin/conf_gen.h:1069
 msgid ""
 "ignore EXIF rating. if not set and EXIF rating is found, it overrides "
 "'initial rating'"
@@ -245,19 +245,19 @@ msgstr ""
 "Ohita EXIF-luokittelu. Jos kuvassa on EXIF-luokittelu ja tätä ei ole "
 "valittuna, ohitetaan 'Lisättävä luokitus' valinnan asetus."
 
-#: ../build/bin/conf_gen.h:1061
+#: ../build/bin/conf_gen.h:1075
 msgid "import job"
 msgstr "Tuonnin työ"
 
-#: ../build/bin/conf_gen.h:1062
+#: ../build/bin/conf_gen.h:1076
 msgid "name of the import job"
 msgstr "Tuotavan työn nimi."
 
-#: ../build/bin/conf_gen.h:1068
+#: ../build/bin/conf_gen.h:1082
 msgid "override today's date"
 msgstr "Ohita nykyinen päivämäärä"
 
-#: ../build/bin/conf_gen.h:1069
+#: ../build/bin/conf_gen.h:1083
 msgid ""
 "type a date in the form: YYYY:MM:DD[ hh:mm:ss[.sss]] if you want to override "
 "the current date/time used when expanding variables:\n"
@@ -269,159 +269,159 @@ msgstr ""
 "$(YEAR), $(MONTH), $(DAY), $(HOUR), $(MINUTE), $(SECONDS), $(MSEC).\n"
 "Muussa tapauksessa jätä tämä kenttä tyhjäksi."
 
-#: ../build/bin/conf_gen.h:1075
+#: ../build/bin/conf_gen.h:1089
 msgid "keep this window open"
 msgstr "Pidä tämä ikkuna avoinna"
 
-#: ../build/bin/conf_gen.h:1076
+#: ../build/bin/conf_gen.h:1090
 msgid "keep this window open to run several imports"
 msgstr "Pidä ikkuna avoinna useiden tuontien ajamiseksi."
 
-#: ../build/bin/conf_gen.h:1258 ../build/bin/conf_gen.h:1274
-#: ../build/bin/conf_gen.h:1304
+#: ../build/bin/conf_gen.h:1272 ../build/bin/conf_gen.h:1288
+#: ../build/bin/conf_gen.h:1318
 msgctxt "preferences"
 msgid "VGA"
 msgstr "VGA"
 
-#: ../build/bin/conf_gen.h:1259 ../build/bin/conf_gen.h:1275
-#: ../build/bin/conf_gen.h:1305 ../build/bin/preferences_gen.h:4746
+#: ../build/bin/conf_gen.h:1273 ../build/bin/conf_gen.h:1289
+#: ../build/bin/conf_gen.h:1319 ../build/bin/preferences_gen.h:4746
 msgctxt "preferences"
 msgid "720p"
 msgstr "720p"
 
-#: ../build/bin/conf_gen.h:1260 ../build/bin/conf_gen.h:1276
-#: ../build/bin/conf_gen.h:1306
+#: ../build/bin/conf_gen.h:1274 ../build/bin/conf_gen.h:1290
+#: ../build/bin/conf_gen.h:1320
 msgctxt "preferences"
 msgid "1080p"
 msgstr "1080p"
 
-#: ../build/bin/conf_gen.h:1261 ../build/bin/conf_gen.h:1277
-#: ../build/bin/conf_gen.h:1307
+#: ../build/bin/conf_gen.h:1275 ../build/bin/conf_gen.h:1291
+#: ../build/bin/conf_gen.h:1321
 msgctxt "preferences"
 msgid "WQXGA"
 msgstr "WQXGA"
 
-#: ../build/bin/conf_gen.h:1262 ../build/bin/conf_gen.h:1278
-#: ../build/bin/conf_gen.h:1308
+#: ../build/bin/conf_gen.h:1276 ../build/bin/conf_gen.h:1292
+#: ../build/bin/conf_gen.h:1322
 msgctxt "preferences"
 msgid "4K"
 msgstr "4K"
 
-#: ../build/bin/conf_gen.h:1263 ../build/bin/conf_gen.h:1279
-#: ../build/bin/conf_gen.h:1309
+#: ../build/bin/conf_gen.h:1277 ../build/bin/conf_gen.h:1293
+#: ../build/bin/conf_gen.h:1323
 msgctxt "preferences"
 msgid "5K"
 msgstr "5K"
 
-#: ../build/bin/conf_gen.h:1345
+#: ../build/bin/conf_gen.h:1359
 msgctxt "preferences"
 msgid "off"
 msgstr "Pois käytöstä"
 
-#: ../build/bin/conf_gen.h:1346
+#: ../build/bin/conf_gen.h:1360
 msgctxt "preferences"
 msgid "hardness (relative)"
 msgstr "Kovuus (suhteellinen)"
 
-#: ../build/bin/conf_gen.h:1347
+#: ../build/bin/conf_gen.h:1361
 msgctxt "preferences"
 msgid "hardness (absolute)"
 msgstr "Kovuus (absoluuttinen)"
 
-#: ../build/bin/conf_gen.h:1348
+#: ../build/bin/conf_gen.h:1362
 msgctxt "preferences"
 msgid "opacity (relative)"
 msgstr "Läpinäkyvyys (suhteellinen)"
 
-#: ../build/bin/conf_gen.h:1349
+#: ../build/bin/conf_gen.h:1363
 msgctxt "preferences"
 msgid "opacity (absolute)"
 msgstr "Läpinäkyvyys (absoluuttinen)"
 
-#: ../build/bin/conf_gen.h:1350
+#: ../build/bin/conf_gen.h:1364
 msgctxt "preferences"
 msgid "brush size (relative)"
 msgstr "Siveltimen koko (suhteellinen)"
 
-#: ../build/bin/conf_gen.h:1358
+#: ../build/bin/conf_gen.h:1372
 msgctxt "preferences"
 msgid "low"
 msgstr "Matala"
 
-#: ../build/bin/conf_gen.h:1359
+#: ../build/bin/conf_gen.h:1373
 msgctxt "preferences"
 msgid "medium"
 msgstr "Keskimääräinen"
 
-#: ../build/bin/conf_gen.h:1360
+#: ../build/bin/conf_gen.h:1374
 msgctxt "preferences"
 msgid "high"
 msgstr "Korkea"
 
-#: ../build/bin/conf_gen.h:1382 ../build/bin/preferences_gen.h:5369
+#: ../build/bin/conf_gen.h:1396 ../build/bin/preferences_gen.h:5369
 msgctxt "preferences"
 msgid "false color"
 msgstr "Vääräväri"
 
-#: ../build/bin/conf_gen.h:1383
+#: ../build/bin/conf_gen.h:1397
 msgctxt "preferences"
 msgid "grayscale"
 msgstr "Harmaasävy"
 
-#: ../build/bin/conf_gen.h:1398
+#: ../build/bin/conf_gen.h:1412
 msgctxt "preferences"
 msgid "top left"
 msgstr "Vasen yläkulma"
 
-#: ../build/bin/conf_gen.h:1399
+#: ../build/bin/conf_gen.h:1413
 msgctxt "preferences"
 msgid "top right"
 msgstr "Oikea yläkulma"
 
-#: ../build/bin/conf_gen.h:1400
+#: ../build/bin/conf_gen.h:1414
 msgctxt "preferences"
 msgid "top center"
 msgstr "Ylhäällä"
 
-#: ../build/bin/conf_gen.h:1401 ../build/bin/preferences_gen.h:5181
+#: ../build/bin/conf_gen.h:1415 ../build/bin/preferences_gen.h:5181
 msgctxt "preferences"
 msgid "bottom"
 msgstr "Alhaalla"
 
-#: ../build/bin/conf_gen.h:1402
+#: ../build/bin/conf_gen.h:1416
 msgctxt "preferences"
 msgid "hidden"
 msgstr "Piilotettu"
 
-#: ../build/bin/conf_gen.h:1992
+#: ../build/bin/conf_gen.h:2006
 msgid "show OSD"
 msgstr "Näytä ohjaimet"
 
-#: ../build/bin/conf_gen.h:1993
+#: ../build/bin/conf_gen.h:2007
 msgid "toggle the visibility of the map overlays"
 msgstr "Vaihda kartan ohjainten näkyvyys"
 
-#: ../build/bin/conf_gen.h:1999 ../src/libs/map_settings.c:119
+#: ../build/bin/conf_gen.h:2013 ../src/libs/map_settings.c:119
 msgid "filtered images"
 msgstr "Suodatetut kuvat"
 
-#: ../build/bin/conf_gen.h:2000
+#: ../build/bin/conf_gen.h:2014
 msgid "when set limit the images drawn to the current filmstrip"
 msgstr "Asetettuna, rajaa kartalle piirrettävät kuvat valittuun filminauhaan"
 
-#: ../build/bin/conf_gen.h:2006
+#: ../build/bin/conf_gen.h:2020
 msgid "max images"
 msgstr "Kuvia max"
 
-#: ../build/bin/conf_gen.h:2007
+#: ../build/bin/conf_gen.h:2021
 msgid "the maximum number of image thumbnails drawn on the map"
 msgstr "Maksimimäärä kartalle piirrettäviä esikatselukuvia"
 
-#: ../build/bin/conf_gen.h:2013
+#: ../build/bin/conf_gen.h:2027
 msgid "group size factor"
 msgstr "Ryhmän koon kerroin"
 
-#: ../build/bin/conf_gen.h:2014
+#: ../build/bin/conf_gen.h:2028
 msgid ""
 "increase or decrease the spatial size of images groups on the map. can "
 "influence the calculation time"
@@ -429,31 +429,31 @@ msgstr ""
 "Lisää tai vähennä kuvaryhmien alueellista kokoa kartalla. Saattaa vaikuttaa "
 "käsittelyaikaan."
 
-#: ../build/bin/conf_gen.h:2020
+#: ../build/bin/conf_gen.h:2034
 msgid "min images per group"
 msgstr "Minimimäärä kuvia per ryhmä"
 
-#: ../build/bin/conf_gen.h:2021
+#: ../build/bin/conf_gen.h:2035
 msgid ""
 "the minimum number of images to set up an images group. can influence the "
 "calculation time."
 msgstr "Kuvaryhmän kuvien minimimäärä. Saattaa vaikuttaa käsittelyaikaan."
 
-#: ../build/bin/conf_gen.h:2026
+#: ../build/bin/conf_gen.h:2040
 msgctxt "preferences"
 msgid "thumbnail"
 msgstr "Esikatselukuva"
 
-#: ../build/bin/conf_gen.h:2027
+#: ../build/bin/conf_gen.h:2041
 msgctxt "preferences"
 msgid "count"
 msgstr "Määrä"
 
-#: ../build/bin/conf_gen.h:2030
+#: ../build/bin/conf_gen.h:2044
 msgid "thumbnail display"
 msgstr "Näytettävä esikatselukuva"
 
-#: ../build/bin/conf_gen.h:2031
+#: ../build/bin/conf_gen.h:2045
 msgid ""
 "three options are available: images thumbnails, only the count of images of "
 "the group or nothing"
@@ -461,268 +461,268 @@ msgstr ""
 "Kolme vaihtoehtoa saatavilla: Kuvien esikatselukuvat, vain kuvien määrä tai "
 "ei mitään."
 
-#: ../build/bin/conf_gen.h:2044
+#: ../build/bin/conf_gen.h:2058
 msgid "max polygon points"
 msgstr "Monikulmiopisteet max"
 
-#: ../build/bin/conf_gen.h:2045
+#: ../build/bin/conf_gen.h:2059
 msgid ""
 "limit the number of points imported with polygon in find location module"
 msgstr ""
 "Rajoita monikulmioina tuotavien pisteiden määrää hae sijainti moduulissa"
 
-#: ../build/bin/conf_gen.h:2379 ../build/bin/preferences_gen.h:5293
+#: ../build/bin/conf_gen.h:2393 ../build/bin/preferences_gen.h:5293
 msgctxt "preferences"
 msgid "original"
 msgstr "Alkuperäinen"
 
-#: ../build/bin/conf_gen.h:2380
+#: ../build/bin/conf_gen.h:2394
 msgctxt "preferences"
 msgid "to 1/2"
 msgstr "Puoleen"
 
-#: ../build/bin/conf_gen.h:2381
+#: ../build/bin/conf_gen.h:2395
 msgctxt "preferences"
 msgid "to 1/3"
 msgstr "Kolmasosaan"
 
-#: ../build/bin/conf_gen.h:2382
+#: ../build/bin/conf_gen.h:2396
 msgctxt "preferences"
 msgid "to 1/4"
 msgstr "Neljäsosaan"
 
-#: ../build/bin/conf_gen.h:2404 ../build/bin/conf_gen.h:2414
+#: ../build/bin/conf_gen.h:2418 ../build/bin/conf_gen.h:2428
 msgctxt "preferences"
 msgid "bilinear"
 msgstr "bilineaarinen"
 
-#: ../build/bin/conf_gen.h:2405 ../build/bin/conf_gen.h:2415
+#: ../build/bin/conf_gen.h:2419 ../build/bin/conf_gen.h:2429
 #: ../build/bin/preferences_gen.h:5811
 msgctxt "preferences"
 msgid "bicubic"
 msgstr "bicubic"
 
-#: ../build/bin/conf_gen.h:2406 ../build/bin/conf_gen.h:2416
+#: ../build/bin/conf_gen.h:2420 ../build/bin/conf_gen.h:2430
 msgctxt "preferences"
 msgid "lanczos2"
 msgstr "lanczos2"
 
-#: ../build/bin/conf_gen.h:2417 ../build/bin/preferences_gen.h:5846
+#: ../build/bin/conf_gen.h:2431 ../build/bin/preferences_gen.h:5846
 msgctxt "preferences"
 msgid "lanczos3"
 msgstr "lanczos3"
 
-#: ../build/bin/conf_gen.h:2747 ../build/bin/conf_gen.h:3566
+#: ../build/bin/conf_gen.h:2761 ../build/bin/conf_gen.h:3580
 #: ../build/bin/preferences_gen.h:7000
 msgctxt "preferences"
 msgid "auto"
 msgstr "Automaattinen"
 
-#: ../build/bin/conf_gen.h:2749
+#: ../build/bin/conf_gen.h:2763
 msgctxt "preferences"
 msgid "libsecret"
 msgstr "libsecret"
 
-#: ../build/bin/conf_gen.h:2750
+#: ../build/bin/conf_gen.h:2764
 msgctxt "preferences"
 msgid "kwallet"
 msgstr "kwallet"
 
-#: ../build/bin/conf_gen.h:2751
+#: ../build/bin/conf_gen.h:2765
 msgctxt "preferences"
 msgid "apple_keychain"
 msgstr "Apple_avainnippu"
 
-#: ../build/bin/conf_gen.h:2752
+#: ../build/bin/conf_gen.h:2766
 msgctxt "preferences"
 msgid "windows_credentials"
 msgstr "Windows_todentamisavaimet"
 
-#: ../build/bin/conf_gen.h:2977
+#: ../build/bin/conf_gen.h:2991
 msgctxt "preferences"
 msgid "vectorscope"
 msgstr "Vektorialue"
 
-#: ../build/bin/conf_gen.h:2978
+#: ../build/bin/conf_gen.h:2992
 msgctxt "preferences"
 msgid "waveform"
 msgstr "Aaltomuoto"
 
-#: ../build/bin/conf_gen.h:2979
+#: ../build/bin/conf_gen.h:2993
 msgctxt "preferences"
 msgid "RGB parade"
 msgstr "RGB-paraati"
 
-#: ../build/bin/conf_gen.h:2980
+#: ../build/bin/conf_gen.h:2994
 msgctxt "preferences"
 msgid "histogram"
 msgstr "Histogrammi"
 
-#: ../build/bin/conf_gen.h:2988
+#: ../build/bin/conf_gen.h:3002
 msgctxt "preferences"
 msgid "left"
 msgstr "Vasen"
 
-#: ../build/bin/conf_gen.h:2989 ../build/bin/preferences_gen.h:7587
+#: ../build/bin/conf_gen.h:3003 ../build/bin/preferences_gen.h:7587
 msgctxt "preferences"
 msgid "right"
 msgstr "Oikea"
 
-#: ../build/bin/conf_gen.h:2997 ../build/bin/conf_gen.h:3034
+#: ../build/bin/conf_gen.h:3011 ../build/bin/conf_gen.h:3048
 msgctxt "preferences"
 msgid "logarithmic"
 msgstr "Logaritminen"
 
-#: ../build/bin/conf_gen.h:2998 ../build/bin/conf_gen.h:3035
+#: ../build/bin/conf_gen.h:3012 ../build/bin/conf_gen.h:3049
 msgctxt "preferences"
 msgid "linear"
 msgstr "Lineaarinen"
 
-#: ../build/bin/conf_gen.h:3006
+#: ../build/bin/conf_gen.h:3020
 msgctxt "preferences"
 msgid "horizontal"
 msgstr "Vaakasuunta"
 
-#: ../build/bin/conf_gen.h:3007
+#: ../build/bin/conf_gen.h:3021
 msgctxt "preferences"
 msgid "vertical"
 msgstr "Pystysuunta"
 
-#: ../build/bin/conf_gen.h:3015
+#: ../build/bin/conf_gen.h:3029
 msgctxt "preferences"
 msgid "overlaid"
 msgstr "Peitekuva"
 
-#: ../build/bin/conf_gen.h:3016
+#: ../build/bin/conf_gen.h:3030
 msgctxt "preferences"
 msgid "parade"
 msgstr "Paraati"
 
-#: ../build/bin/conf_gen.h:3024
+#: ../build/bin/conf_gen.h:3038
 msgctxt "preferences"
 msgid "u*v*"
 msgstr "u*v*"
 
-#: ../build/bin/conf_gen.h:3025
+#: ../build/bin/conf_gen.h:3039
 msgctxt "preferences"
 msgid "AzBz"
 msgstr "AzBz"
 
-#: ../build/bin/conf_gen.h:3026
+#: ../build/bin/conf_gen.h:3040
 msgctxt "preferences"
 msgid "RYB"
 msgstr "RYB"
 
-#: ../build/bin/conf_gen.h:3072
+#: ../build/bin/conf_gen.h:3086
 msgctxt "preferences"
 msgid "monochromatic"
 msgstr "Monokromaattinen"
 
-#: ../build/bin/conf_gen.h:3073
+#: ../build/bin/conf_gen.h:3087
 msgctxt "preferences"
 msgid "analogous"
 msgstr "Analoginen"
 
-#: ../build/bin/conf_gen.h:3074
+#: ../build/bin/conf_gen.h:3088
 msgctxt "preferences"
 msgid "analogous complementary"
 msgstr "Analoginen täydentävä"
 
-#: ../build/bin/conf_gen.h:3075
+#: ../build/bin/conf_gen.h:3089
 msgctxt "preferences"
 msgid "complementary"
 msgstr "Täydentävä"
 
-#: ../build/bin/conf_gen.h:3076
+#: ../build/bin/conf_gen.h:3090
 msgctxt "preferences"
 msgid "split complementary"
 msgstr "Halkaistu täydentävä"
 
-#: ../build/bin/conf_gen.h:3077
+#: ../build/bin/conf_gen.h:3091
 msgctxt "preferences"
 msgid "dyad"
 msgstr "Dyadi"
 
-#: ../build/bin/conf_gen.h:3078
+#: ../build/bin/conf_gen.h:3092
 msgctxt "preferences"
 msgid "triad"
 msgstr "Triadi"
 
-#: ../build/bin/conf_gen.h:3079
+#: ../build/bin/conf_gen.h:3093
 msgctxt "preferences"
 msgid "tetrad"
 msgstr "Tetradi"
 
-#: ../build/bin/conf_gen.h:3080
+#: ../build/bin/conf_gen.h:3094
 msgctxt "preferences"
 msgid "square"
 msgstr "Neliö"
 
-#: ../build/bin/conf_gen.h:3095
+#: ../build/bin/conf_gen.h:3109
 msgctxt "preferences"
 msgid "normal"
 msgstr "Normaali"
 
-#: ../build/bin/conf_gen.h:3097
+#: ../build/bin/conf_gen.h:3111
 msgctxt "preferences"
 msgid "narrow"
 msgstr "Kapea"
 
-#: ../build/bin/conf_gen.h:3098
+#: ../build/bin/conf_gen.h:3112
 msgctxt "preferences"
 msgid "line"
 msgstr "Viiva"
 
-#: ../build/bin/conf_gen.h:3253
+#: ../build/bin/conf_gen.h:3267
 msgctxt "preferences"
 msgid "mm"
 msgstr "mm"
 
-#: ../build/bin/conf_gen.h:3254
+#: ../build/bin/conf_gen.h:3268
 msgctxt "preferences"
 msgid "cm"
 msgstr "cm"
 
-#: ../build/bin/conf_gen.h:3255
+#: ../build/bin/conf_gen.h:3269
 msgctxt "preferences"
 msgid "inch"
 msgstr "tuumaa"
 
-#: ../build/bin/conf_gen.h:3298 ../build/bin/preferences_gen.h:7622
+#: ../build/bin/conf_gen.h:3312 ../build/bin/preferences_gen.h:7622
 msgctxt "preferences"
 msgid "all"
 msgstr "Kaikki"
 
-#: ../build/bin/conf_gen.h:3299
+#: ../build/bin/conf_gen.h:3313
 msgctxt "preferences"
 msgid "xatom"
 msgstr "xatom"
 
-#: ../build/bin/conf_gen.h:3300
+#: ../build/bin/conf_gen.h:3314
 msgctxt "preferences"
 msgid "colord"
 msgstr "colord"
 
-#: ../build/bin/conf_gen.h:3371 ../build/bin/preferences_gen.h:5922
+#: ../build/bin/conf_gen.h:3385 ../build/bin/preferences_gen.h:5922
 msgctxt "preferences"
 msgid "scene-referred (filmic)"
 msgstr "Näkymä-viitattu (Elävä kuva)"
 
-#: ../build/bin/conf_gen.h:3372
+#: ../build/bin/conf_gen.h:3386
 msgctxt "preferences"
 msgid "scene-referred (sigmoid)"
 msgstr "Näkymä-viitattu (Sigmoid)"
 
-#: ../build/bin/conf_gen.h:3373
+#: ../build/bin/conf_gen.h:3387
 msgctxt "preferences"
 msgid "display-referred (legacy)"
 msgstr "Näyttö-viitattu (vanha)"
 
-#: ../build/bin/conf_gen.h:3488
+#: ../build/bin/conf_gen.h:3502
 msgid "camera time zone"
 msgstr "Kameran aikavyöhyke"
 
-#: ../build/bin/conf_gen.h:3489
+#: ../build/bin/conf_gen.h:3503
 msgid ""
 "most cameras don't store the time zone in EXIF. give the correct time zone "
 "so the GPX data can be correctly matched"
@@ -730,62 +730,62 @@ msgstr ""
 "Suurinosa kameroista ei tallenna aikavyöhykettä EXIF-tietoihin. Syötä oikea "
 "aikavyöhyke, jotta GPX-tiedot voidaan yhdistää oikein."
 
-#: ../build/bin/conf_gen.h:3501
+#: ../build/bin/conf_gen.h:3515
 msgctxt "preferences"
 msgid "no color"
 msgstr "Ei väriä"
 
-#: ../build/bin/conf_gen.h:3502
+#: ../build/bin/conf_gen.h:3516
 msgctxt "preferences"
 msgid "illuminant color"
 msgstr "Valaisun väri"
 
-#: ../build/bin/conf_gen.h:3503
+#: ../build/bin/conf_gen.h:3517
 msgctxt "preferences"
 msgid "effect emulation"
 msgstr "Asetuksen emulointi"
 
-#: ../build/bin/conf_gen.h:3553
+#: ../build/bin/conf_gen.h:3567
 msgctxt "preferences"
 msgid "list"
 msgstr "Lista"
 
-#: ../build/bin/conf_gen.h:3554
+#: ../build/bin/conf_gen.h:3568
 msgctxt "preferences"
 msgid "tabs"
 msgstr "Välilehti"
 
-#: ../build/bin/conf_gen.h:3555
+#: ../build/bin/conf_gen.h:3569
 msgctxt "preferences"
 msgid "columns"
 msgstr "Sarake"
 
-#: ../build/bin/conf_gen.h:3564
+#: ../build/bin/conf_gen.h:3578
 msgctxt "preferences"
 msgid "active"
 msgstr "Aktiivinen"
 
-#: ../build/bin/conf_gen.h:3565
+#: ../build/bin/conf_gen.h:3579
 msgctxt "preferences"
 msgid "dim"
 msgstr "Himmeä"
 
-#: ../build/bin/conf_gen.h:3567
+#: ../build/bin/conf_gen.h:3581
 msgctxt "preferences"
 msgid "fade"
 msgstr "Häipyvät"
 
-#: ../build/bin/conf_gen.h:3568
+#: ../build/bin/conf_gen.h:3582
 msgctxt "preferences"
 msgid "fit"
 msgstr "Sovita"
 
-#: ../build/bin/conf_gen.h:3569
+#: ../build/bin/conf_gen.h:3583
 msgctxt "preferences"
 msgid "smooth"
 msgstr "Tasainen"
 
-#: ../build/bin/conf_gen.h:3570
+#: ../build/bin/conf_gen.h:3584
 msgctxt "preferences"
 msgid "glide"
 msgstr "Liukuva"
@@ -852,7 +852,7 @@ msgstr "Tätä asetusta on muokattu"
 #: ../build/bin/preferences_gen.h:5029 ../build/bin/preferences_gen.h:5735
 #: ../build/bin/preferences_gen.h:6571 ../build/bin/preferences_gen.h:7064
 #: ../build/bin/preferences_gen.h:7330 ../src/gui/accelerators.c:3001
-#: ../src/gui/gtk.c:2975 ../src/gui/preferences.c:424
+#: ../src/gui/gtk.c:2979 ../src/gui/preferences.c:424
 #: ../src/gui/preferences.c:874 ../src/libs/modulegroups.c:4091
 msgid "?"
 msgstr "?"
@@ -987,9 +987,8 @@ msgid "hide built-in presets for utility modules"
 msgstr "Piilota valopöydän moduulien sisäänrakennetut esiasetukset"
 
 #: ../build/bin/preferences_gen.h:4468
-msgid "hides built-in presets of utility modules in presets menu."
-msgstr ""
-"Piilottaa valopöydän moduulien sisäänrakennetut esiasetukset valikoista."
+msgid "hide built-in presets of utility modules in presets menu."
+msgstr "Piiota valopöydän moduulien sisäänrakennetut esiasetukset valikoista."
 
 #: ../build/bin/preferences_gen.h:4489
 msgid "use single-click in the collections module"
@@ -1328,12 +1327,8 @@ msgid "hide built-in presets for processing modules"
 msgstr "Piilota käsittelymoduulien sisäänrakennetut esiasetukset"
 
 #: ../build/bin/preferences_gen.h:5406
-msgid ""
-"hides built-in presets of processing modules in both presets and favourites "
-"menu."
-msgstr ""
-"Piilottaa käsittelymoduulien sisäänrakennetut esiasetukset valikoista ja "
-"suosikeista."
+msgid "hide built-in presets of processing modules in presets menu."
+msgstr "Piilota valopöydän moduulien sisäänrakennetut esiasetukset valikoista."
 
 #: ../build/bin/preferences_gen.h:5427 ../build/bin/preferences_gen.h:5440
 msgid "show the guides widget in modules UI"
@@ -1501,10 +1496,10 @@ msgstr "Valitse hakemisto"
 #: ../build/bin/preferences_gen.h:5890
 msgid ""
 "this folder (and sub-folders) contains LUT files used by LUT 3D module. "
-"(need a restart)."
+"(restart required)"
 msgstr ""
-"Tämä hakemisto (ja alihakemistot) sisältävät LUT 3D-moduulin käyttämät LUT-"
-"tiedostot. (Vaatii uudelleenkäynnistyksen)."
+"Tämä hakemisto (ja alihakemistot) sisältää LUT 3D-moduulin käyttämät LUT-"
+"tiedostot. (Uudelleenkäynnistys vaaditaan)."
 
 #: ../build/bin/preferences_gen.h:5911
 msgid "auto-apply pixel workflow defaults"
@@ -1531,15 +1526,15 @@ msgstr "Ota oletuksena käyttöön kamerakohtainen perussävykäyräesiasetus"
 #: ../build/bin/preferences_gen.h:5959
 msgid ""
 "use the per-camera basecurve by default instead of the generic manufacturer "
-"one if there is one available (needs a restart).\n"
+"one if there is one available. (restart required)\n"
 "this option is taken into account when the \"auto-apply pixel workflow "
 "defaults\" is set to \"display-referred\".\n"
 "to prevent auto-apply basecurve presets \"auto-apply pixel workflow "
 "defaults\" should be set to \"none\""
 msgstr ""
 "Käytä kamerakohtaista perussävykäyräesiasetusta yleisten "
-"valmistajakohtaisten asetusten sijaan (jos saatavilla, vaatii "
-"uudelleenkäynnistyksen).\n"
+"valmistajakohtaisten asetusten sijaan, jos saatavilla. (Uudelleenkäynnistys "
+"vaaditaan).\n"
 "Tämä asetus huomioidaan, kun \"Pikselityöskentelyn oletukset\" on asetettu "
 "\"Näyttö-viitattu\" valintaan.\n"
 "Estääksesi automaattisen perussävykäyräesiasetuksen asettamisen "
@@ -2067,10 +2062,10 @@ msgstr "Näytä aina paneelin vierityspalkki"
 #: ../build/bin/preferences_gen.h:7510
 msgid ""
 "defines whether the panel scrollbars should be always visible or activated "
-"only depending on the content.  (need a restart)"
+"only depending on the content. (restart required)"
 msgstr ""
 "Määrittää näytetäänkö paneelin vierityspalkki aina vai ainoastaan sisällöstä "
-"riippuen. (Vaatii uudelleenkäynnistyksen)."
+"riippuen. (Uudelleenkäynnistys vaaditaan)."
 
 #: ../build/bin/preferences_gen.h:7531
 msgid "duration of the UI transitions in ms"
@@ -2496,7 +2491,7 @@ msgstr "Värin säilytys"
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:153
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:270
 #: ../src/gui/guides.c:712 ../src/iop/basecurve.c:2165
-#: ../src/iop/channelmixerrgb.c:4718 ../src/iop/clipping.c:1923
+#: ../src/iop/channelmixerrgb.c:4743 ../src/iop/clipping.c:1923
 #: ../src/iop/clipping.c:2116 ../src/iop/clipping.c:2131
 #: ../src/iop/retouch.c:507 ../src/libs/collect.c:2127
 #: ../src/libs/colorpicker.c:51 ../src/libs/export.c:1101
@@ -2843,11 +2838,11 @@ msgstr "Erittäin suuri värivirhe"
 #: ../src/common/collection.c:1486 ../src/common/color_vocabulary.c:232
 #: ../src/common/colorlabels.c:375 ../src/develop/blend_gui.c:2383
 #: ../src/develop/blend_gui.c:2431 ../src/develop/lightroom.c:887
-#: ../src/gui/gtk.c:3571 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:372
+#: ../src/gui/gtk.c:3575 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:372
 #: ../src/iop/channelmixer.c:621 ../src/iop/channelmixer.c:631
-#: ../src/iop/channelmixerrgb.c:4660 ../src/iop/colorequal.c:2464
-#: ../src/iop/colorzones.c:2496 ../src/iop/temperature.c:2003
-#: ../src/iop/temperature.c:2195 ../src/libs/collect.c:1944
+#: ../src/iop/channelmixerrgb.c:4685 ../src/iop/colorequal.c:2465
+#: ../src/iop/colorzones.c:2496 ../src/iop/temperature.c:2006
+#: ../src/iop/temperature.c:2198 ../src/libs/collect.c:1944
 #: ../src/libs/filters/colors.c:260 ../src/libs/histogram.c:2703
 msgid "red"
 msgstr "Punainen"
@@ -2863,11 +2858,11 @@ msgstr "Punainen"
 #: ../src/common/collection.c:1490 ../src/common/color_vocabulary.c:277
 #: ../src/common/colorlabels.c:377 ../src/develop/blend_gui.c:2389
 #: ../src/develop/blend_gui.c:2437 ../src/develop/lightroom.c:891
-#: ../src/gui/gtk.c:3572 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:377
+#: ../src/gui/gtk.c:3576 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:377
 #: ../src/iop/channelmixer.c:622 ../src/iop/channelmixer.c:637
-#: ../src/iop/channelmixerrgb.c:4661 ../src/iop/colorequal.c:2467
-#: ../src/iop/colorzones.c:2499 ../src/iop/temperature.c:1987
-#: ../src/iop/temperature.c:2005 ../src/iop/temperature.c:2196
+#: ../src/iop/channelmixerrgb.c:4686 ../src/iop/colorequal.c:2468
+#: ../src/iop/colorzones.c:2499 ../src/iop/temperature.c:1990
+#: ../src/iop/temperature.c:2008 ../src/iop/temperature.c:2199
 #: ../src/libs/collect.c:1944 ../src/libs/filters/colors.c:262
 #: ../src/libs/histogram.c:2694
 msgid "green"
@@ -2884,11 +2879,11 @@ msgstr "Vihreä"
 #: ../src/common/collection.c:1492 ../src/common/color_vocabulary.c:324
 #: ../src/common/colorlabels.c:378 ../src/develop/blend_gui.c:2395
 #: ../src/develop/blend_gui.c:2443 ../src/develop/lightroom.c:893
-#: ../src/gui/gtk.c:3573 ../src/iop/bilateral.cc:382
+#: ../src/gui/gtk.c:3577 ../src/iop/bilateral.cc:382
 #: ../src/iop/channelmixer.c:623 ../src/iop/channelmixer.c:643
-#: ../src/iop/channelmixerrgb.c:4662 ../src/iop/colorequal.c:2469
-#: ../src/iop/colorzones.c:2501 ../src/iop/temperature.c:2007
-#: ../src/iop/temperature.c:2197 ../src/libs/collect.c:1944
+#: ../src/iop/channelmixerrgb.c:4687 ../src/iop/colorequal.c:2470
+#: ../src/iop/colorzones.c:2501 ../src/iop/temperature.c:2010
+#: ../src/iop/temperature.c:2200 ../src/libs/collect.c:1944
 #: ../src/libs/filters/colors.c:263 ../src/libs/histogram.c:2685
 msgid "blue"
 msgstr "Sininen"
@@ -3189,8 +3184,8 @@ msgstr "Nosto, gamma, vahvistus (sRGB)"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:501
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:256
 #: ../src/develop/blend_gui.c:2409 ../src/develop/blend_gui.c:2457
-#: ../src/iop/atrous.c:1800 ../src/iop/channelmixerrgb.c:4508
-#: ../src/iop/channelmixerrgb.c:4624 ../src/iop/colorbalancergb.c:1937
+#: ../src/iop/atrous.c:1800 ../src/iop/channelmixerrgb.c:4533
+#: ../src/iop/channelmixerrgb.c:4649 ../src/iop/colorbalancergb.c:1937
 #: ../src/iop/colorzones.c:2642 ../src/iop/nlmeans.c:471
 msgid "chroma"
 msgstr "Kroma"
@@ -3213,9 +3208,9 @@ msgstr "Kroma"
 #: ../build/lib/darktable/plugins/introspection_splittoning.c:142
 #: ../src/develop/blend_gui.c:2368 ../src/develop/blend_gui.c:2402
 #: ../src/develop/blend_gui.c:2464 ../src/iop/channelmixer.c:618
-#: ../src/iop/channelmixerrgb.c:4501 ../src/iop/channelmixerrgb.c:4616
+#: ../src/iop/channelmixerrgb.c:4526 ../src/iop/channelmixerrgb.c:4641
 #: ../src/iop/colorbalance.c:1991 ../src/iop/colorize.c:339
-#: ../src/iop/colorreconstruction.c:1239 ../src/iop/colorequal.c:2581
+#: ../src/iop/colorreconstruction.c:1239 ../src/iop/colorequal.c:2582
 #: ../src/iop/colorzones.c:2643
 msgid "hue"
 msgstr "Sävy"
@@ -3413,7 +3408,7 @@ msgid "range extent"
 msgstr "Etäisyys"
 
 #: ../build/lib/darktable/plugins/introspection_colorreconstruction.c:154
-#: ../src/iop/channelmixerrgb.c:4720
+#: ../src/iop/channelmixerrgb.c:4745
 msgid "saturated colors"
 msgstr "Kylläiset värit"
 
@@ -3453,7 +3448,7 @@ msgstr "Käytä ohjattua suodinta"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:479
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:511
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:543
-#: ../src/iop/colorequal.c:2465 ../src/iop/colorzones.c:2497
+#: ../src/iop/colorequal.c:2466 ../src/iop/colorzones.c:2497
 msgid "orange"
 msgstr "Oranssi"
 
@@ -3465,8 +3460,8 @@ msgstr "Oranssi"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:547
 #: ../src/common/collection.c:1488 ../src/common/colorlabels.c:376
 #: ../src/develop/lightroom.c:889 ../src/gui/guides.c:732
-#: ../src/iop/colorequal.c:2466 ../src/iop/colorzones.c:2498
-#: ../src/iop/temperature.c:1993 ../src/libs/collect.c:1944
+#: ../src/iop/colorequal.c:2467 ../src/iop/colorzones.c:2498
+#: ../src/iop/temperature.c:1996 ../src/libs/collect.c:1944
 #: ../src/libs/filters/colors.c:261
 msgid "yellow"
 msgstr "Keltainen"
@@ -3478,7 +3473,7 @@ msgstr "Keltainen"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:523
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:555
 #: ../src/common/color_vocabulary.c:298 ../src/gui/guides.c:733
-#: ../src/iop/colorequal.c:2468 ../src/iop/temperature.c:1991
+#: ../src/iop/colorequal.c:2469 ../src/iop/temperature.c:1994
 msgid "cyan"
 msgstr "Syaani"
 
@@ -3488,7 +3483,7 @@ msgstr "Syaani"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:499
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:531
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:563
-#: ../src/common/color_vocabulary.c:343 ../src/iop/colorequal.c:2470
+#: ../src/common/color_vocabulary.c:343 ../src/iop/colorequal.c:2471
 msgid "lavender"
 msgstr "Laventeli"
 
@@ -3499,8 +3494,8 @@ msgstr "Laventeli"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:535
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:567
 #: ../src/common/color_vocabulary.c:341 ../src/gui/guides.c:734
-#: ../src/iop/colorequal.c:2471 ../src/iop/colorzones.c:2503
-#: ../src/iop/temperature.c:1989
+#: ../src/iop/colorequal.c:2472 ../src/iop/colorzones.c:2503
+#: ../src/iop/temperature.c:1992
 msgid "magenta"
 msgstr "Magenta"
 
@@ -3530,7 +3525,7 @@ msgstr "Toimintatapa"
 
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:255
 #: ../src/develop/blend_gui.c:2347 ../src/iop/channelmixer.c:620
-#: ../src/iop/channelmixerrgb.c:4607 ../src/iop/colorchecker.c:1444
+#: ../src/iop/channelmixerrgb.c:4632 ../src/iop/colorchecker.c:1444
 #: ../src/iop/colorize.c:358 ../src/iop/colorzones.c:2641
 #: ../src/iop/exposure.c:1253
 msgid "lightness"
@@ -4268,7 +4263,7 @@ msgstr "Tiheys"
 #: ../src/iop/colorbalance.c:2008 ../src/iop/colorbalancergb.c:1961
 #: ../src/iop/colorchecker.c:1479 ../src/iop/colorcontrast.c:82
 #: ../src/iop/colorcorrection.c:264 ../src/iop/colorize.c:352
-#: ../src/iop/colorequal.c:2599 ../src/iop/lowpass.c:590
+#: ../src/iop/colorequal.c:2600 ../src/iop/lowpass.c:590
 #: ../src/iop/soften.c:355 ../src/iop/velvia.c:75 ../src/iop/vibrance.c:72
 #: ../src/iop/vignette.c:1053
 msgid "saturation"
@@ -4289,7 +4284,7 @@ msgstr "Keskisävyjen vinouma"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:143
 #: ../build/lib/darktable/plugins/introspection_highlights.c:244
-#: ../src/views/darkroom.c:2296
+#: ../src/views/darkroom.c:2318
 msgid "clipping threshold"
 msgstr "Leikkauksen kynnysarvo"
 
@@ -4450,7 +4445,7 @@ msgstr "Korjaukset"
 #: ../src/iop/profile_gamma.c:660 ../src/libs/copy_history.c:399
 #: ../src/libs/export.c:1376 ../src/libs/image.c:669
 #: ../src/libs/print_settings.c:2892 ../src/libs/styles.c:895
-#: ../src/views/darkroom.c:2277
+#: ../src/views/darkroom.c:2299
 msgid "mode"
 msgstr "Tila"
 
@@ -4521,7 +4516,7 @@ msgstr "Vain käsin asetettu vinjetointi"
 #. Side-border hide/show
 #: ../build/lib/darktable/plugins/introspection_lens.cc:534
 #: ../src/dtgtk/range.c:1762 ../src/gui/accelerators.c:2597
-#: ../src/gui/accelerators.c:2679 ../src/gui/gtk.c:1406 ../src/gui/gtk.c:3570
+#: ../src/gui/accelerators.c:2679 ../src/gui/gtk.c:1406 ../src/gui/gtk.c:3574
 #: ../src/imageio/format/pdf.c:645 ../src/iop/denoiseprofile.c:3690
 #: ../src/iop/rawdenoise.c:893 ../src/libs/collect.c:3548
 #: ../src/libs/filtering.c:1531 ../src/libs/filters/colors.c:157
@@ -4600,8 +4595,8 @@ msgstr "Mitätätöity"
 
 #. move left/right/up/down
 #: ../build/lib/darktable/plugins/introspection_liquify.c:429
-#: ../src/views/darkroom.c:2158 ../src/views/darkroom.c:2573
-#: ../src/views/darkroom.c:2576 ../src/views/lighttable.c:765
+#: ../src/views/darkroom.c:2180 ../src/views/darkroom.c:2595
+#: ../src/views/darkroom.c:2598 ../src/views/lighttable.c:765
 #: ../src/views/lighttable.c:774 ../src/views/lighttable.c:1246
 #: ../src/views/lighttable.c:1250 ../src/views/lighttable.c:1254
 #: ../src/views/lighttable.c:1258 ../src/views/lighttable.c:1262
@@ -4938,8 +4933,8 @@ msgstr "Täyttötila"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:285
 #: ../build/lib/darktable/plugins/introspection_retouch.c:426
-#: ../src/iop/basicadj.c:650 ../src/iop/channelmixerrgb.c:4668
-#: ../src/iop/colisa.c:282 ../src/iop/colorequal.c:2617
+#: ../src/iop/basicadj.c:650 ../src/iop/channelmixerrgb.c:4693
+#: ../src/iop/colisa.c:282 ../src/iop/colorequal.c:2618
 #: ../src/iop/lowpass.c:589 ../src/iop/soften.c:359 ../src/iop/vignette.c:1052
 #: ../src/libs/history.c:966
 msgid "brightness"
@@ -5093,8 +5088,8 @@ msgid "RGB ratio"
 msgstr "RGB suhde"
 
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:308
-#: ../src/common/colorspaces.c:1411 ../src/common/colorspaces.c:1768
-msgid "work profile"
+#: ../src/iop/colorin.c:2086
+msgid "working profile"
 msgstr "Työskentelytilan väriprofiili"
 
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:309
@@ -5299,12 +5294,11 @@ msgstr "Grafiikka;Valokuvaus;RAW;"
 
 #: ../data/org.darktable.darktable.appdata.xml.in.h:2
 msgid ""
-"darktable manages your digital negatives in a database and lets you view "
-"them through a lighttable. It also enables you to develop raw images and "
-"enhance them in a darkroom."
+"darktable manages your camera raw files and images in a database, lets you "
+"view them through lighttable mode and develop/enhance them in darkroom mode."
 msgstr ""
-"Darktable hallitsee digitaalisia negatiivejasi tietokannan avulla ja esittää "
-"ne sinulle valopöydällä. Se myös kehittää raakakuvasi ja muokkaa ne "
+"Darktable hallitsee digitaalisia negatiivejasi tietokannan avulla, esittää "
+"ne sinulle valopöydällä ja mahdollistaa kuvien muokkauksen/parantamisen "
 "pimiötilassa."
 
 #: ../data/org.darktable.darktable.appdata.xml.in.h:3
@@ -5345,7 +5339,7 @@ msgid "Print your images"
 msgstr "Tulosta valokuvasi."
 
 #: ../src/bauhaus/bauhaus.c:879 ../src/bauhaus/bauhaus.c:3971
-#: ../src/iop/colorequal.c:2566
+#: ../src/iop/colorequal.c:2567
 msgid "sliders"
 msgstr "Liukusäätimet"
 
@@ -5411,7 +5405,7 @@ msgstr "Liukusäädin"
 msgid "dropdown"
 msgstr "Alasveto"
 
-#: ../src/chart/main.c:504 ../src/common/database.c:3616
+#: ../src/chart/main.c:504 ../src/common/database.c:3641
 #: ../src/control/jobs/control_jobs.c:1867
 #: ../src/control/jobs/control_jobs.c:1926 ../src/gui/accelerators.c:2502
 #: ../src/gui/accelerators.c:2584 ../src/gui/accelerators.c:2637
@@ -5599,7 +5593,7 @@ msgstr ""
 "\n"
 "Varmista, että kamera sallii ohjauksen eikä se ole muussa käytössä."
 
-#: ../src/common/camera_control.c:952
+#: ../src/common/camera_control.c:950
 #, c-format
 msgid ""
 "failed to initialize `%s' on port `%s', likely causes are: locked by another "
@@ -5608,7 +5602,7 @@ msgstr ""
 "Liitännän `%s' alustus epäonnistui `%s', mahdolliset syyt ovat: toinen "
 "sovellus, ei yhteyttä laitteeseen jne."
 
-#: ../src/common/camera_control.c:965
+#: ../src/common/camera_control.c:963
 #, c-format
 msgid ""
 "`%s' on port `%s' is not interesting because it supports neither tethering "
@@ -5617,12 +5611,12 @@ msgstr ""
 "`%s' liitännässä `%s' ei ole kiinnostava koska se ei tue liitettyä kuvausta "
 "tai tuontia."
 
-#: ../src/common/camera_control.c:1025
+#: ../src/common/camera_control.c:1023
 #, c-format
 msgid "camera `%s' on port `%s' disconnected while mounted"
 msgstr "Kamera `%s' liitännässä `%s' irrotettiin liitännän aikana"
 
-#: ../src/common/camera_control.c:1033
+#: ../src/common/camera_control.c:1031
 #, c-format
 msgid ""
 "camera `%s' on port `%s' needs to be remounted\n"
@@ -5834,7 +5828,7 @@ msgstr[1] "<b>%d</b> / <b>%d</b> kuvaa valittu"
 
 #: ../src/common/color_vocabulary.c:38 ../src/develop/blend_gui.c:2377
 #: ../src/develop/blend_gui.c:2425 ../src/gui/guides.c:729
-#: ../src/iop/channelmixerrgb.c:4671 ../src/iop/levels.c:685
+#: ../src/iop/channelmixerrgb.c:4696 ../src/iop/levels.c:685
 #: ../src/iop/rgblevels.c:969 ../src/iop/rgblevels.c:1084
 msgid "gray"
 msgstr "Harmaa"
@@ -6127,13 +6121,17 @@ msgstr "Kaikki värileimat poistettu"
 msgid "clear"
 msgstr "Poista"
 
+#: ../src/common/colorspaces.c:1411 ../src/common/colorspaces.c:1768
+msgid "work profile"
+msgstr "Työskentelytilan väriprofiili"
+
 #: ../src/common/colorspaces.c:1416 ../src/common/colorspaces.c:1764
 #: ../src/iop/colorout.c:864
 msgid "export profile"
 msgstr "Viennin väriprofiili"
 
 #: ../src/common/colorspaces.c:1421 ../src/common/colorspaces.c:1766
-#: ../src/views/darkroom.c:2434
+#: ../src/views/darkroom.c:2456
 msgid "softproof profile"
 msgstr "Vedoksen esikatselun profiili"
 
@@ -6411,7 +6409,7 @@ msgstr ""
 "OpenCL:n 'laitekohtaiset' kääntäjän asetukset on saatettu muuttaa.\n"
 "\n"
 
-#: ../src/common/database.c:3594
+#: ../src/common/database.c:3619
 #, c-format
 msgid ""
 "\n"
@@ -6469,19 +6467,19 @@ msgstr ""
 "      Saatat aiheuttaa merkittäviä epämääräisyyksiä kuvatietokantaasi.</i>\n"
 
 #. clang-format on
-#: ../src/common/database.c:3615
+#: ../src/common/database.c:3640
 msgid "error starting darktable"
 msgstr "Virhe Darktablen käynnistyksessä"
 
-#: ../src/common/database.c:3616
+#: ../src/common/database.c:3641
 msgid "_delete database lock files"
 msgstr "_Poista tietokannan lukkotiedostot"
 
-#: ../src/common/database.c:3622
+#: ../src/common/database.c:3647
 msgid "are you sure?"
 msgstr "Oletko varma?"
 
-#: ../src/common/database.c:3623
+#: ../src/common/database.c:3648
 msgid ""
 "\n"
 "do you really want to delete the lock files?\n"
@@ -6489,19 +6487,19 @@ msgstr ""
 "\n"
 "Haluatko varmasti poistaa lukko-tiedostot?\n"
 
-#: ../src/common/database.c:3623 ../src/gui/gtk.c:2926
+#: ../src/common/database.c:3648 ../src/gui/gtk.c:2930
 msgid "_no"
 msgstr "_en"
 
-#: ../src/common/database.c:3623 ../src/gui/gtk.c:2925
+#: ../src/common/database.c:3648 ../src/gui/gtk.c:2929
 msgid "_yes"
 msgstr "_kyllä"
 
-#: ../src/common/database.c:3639
+#: ../src/common/database.c:3664
 msgid "done"
 msgstr "Valmis"
 
-#: ../src/common/database.c:3640
+#: ../src/common/database.c:3665
 msgid ""
 "\n"
 "successfully deleted the lock files.\n"
@@ -6511,17 +6509,17 @@ msgstr ""
 "Poistettiin lukkotiedostot onnistuneesti\n"
 "Voit nyt käynnistää Darktablen uudestaan.\n"
 
-#: ../src/common/database.c:3641 ../src/common/database.c:3648
+#: ../src/common/database.c:3666 ../src/common/database.c:3673
 #: ../src/gui/accelerators.c:2585 ../src/gui/accelerators.c:2667
 #: ../src/gui/hist_dialog.c:229 ../src/gui/presets.c:566
 msgid "_ok"
 msgstr "_Ok"
 
-#: ../src/common/database.c:3644
+#: ../src/common/database.c:3669
 msgid "error"
 msgstr "Virhe"
 
-#: ../src/common/database.c:3645
+#: ../src/common/database.c:3670
 #, c-format
 msgid ""
 "\n"
@@ -6535,7 +6533,7 @@ msgstr ""
 "Voit yrittää poistaa ne käsin <i>data.db.lock</i> ja <i>library.db.lock</i>\n"
 "hakemistosta <a href=\"file:///%s\">%s</a>.\n"
 
-#: ../src/common/database.c:3762
+#: ../src/common/database.c:3787
 #, c-format
 msgid ""
 "the database lock file contains a pid that seems to be alive in your system: "
@@ -6544,17 +6542,17 @@ msgstr ""
 "Tietokannan lukkotiedosto sisältää prosessitunnisteen joka on käytössä "
 "järjestelmässäsi: %d"
 
-#: ../src/common/database.c:3769
+#: ../src/common/database.c:3794
 #, c-format
 msgid "the database lock file seems to be empty"
 msgstr "Tietokannan lukkotiedosto näyttäisi olevan tyhjä."
 
-#: ../src/common/database.c:3779
+#: ../src/common/database.c:3804
 #, c-format
 msgid "error opening the database lock file for reading: %s"
 msgstr "Virhe avattaessa tietokannan lukkotiedostoa: %s"
 
-#: ../src/common/database.c:3849
+#: ../src/common/database.c:3874
 #, c-format
 msgid ""
 "the database schema version of\n"
@@ -6572,16 +6570,16 @@ msgstr ""
 "tietokanta on luotu tai päivitetty uudemmalla Darktablen versiolla)\n"
 "\n"
 
-#: ../src/common/database.c:3856
+#: ../src/common/database.c:3881
 msgid "darktable - too new db version"
 msgstr "Darktable - liian uusi versio tietokannasta"
 
-#: ../src/common/database.c:3857
+#: ../src/common/database.c:3882
 msgid "_quit darktable"
 msgstr "_Lopeta Darktable"
 
 #. the database has to be upgraded, let's ask user
-#: ../src/common/database.c:3872
+#: ../src/common/database.c:3897
 #, c-format
 msgid ""
 "the database schema has to be upgraded for\n"
@@ -6600,21 +6598,21 @@ msgstr ""
 "\n"
 "Haluatko jatkaa vai lopettaa ja ottaa varmuuskopion?\n"
 
-#: ../src/common/database.c:3880
+#: ../src/common/database.c:3905
 msgid "darktable - schema migration"
 msgstr "Darktable - rakenteen migraatio"
 
-#: ../src/common/database.c:3881 ../src/common/database.c:4203
-#: ../src/common/database.c:4218 ../src/common/database.c:4386
-#: ../src/common/database.c:4401
+#: ../src/common/database.c:3906 ../src/common/database.c:4228
+#: ../src/common/database.c:4243 ../src/common/database.c:4411
+#: ../src/common/database.c:4426
 msgid "_close darktable"
 msgstr "_Sulje Darktable"
 
-#: ../src/common/database.c:3881
+#: ../src/common/database.c:3906
 msgid "_upgrade database"
 msgstr "_Päivitä tietokanta"
 
-#: ../src/common/database.c:4183 ../src/common/database.c:4366
+#: ../src/common/database.c:4208 ../src/common/database.c:4391
 #, c-format
 msgid ""
 "quick_check said:\n"
@@ -6623,21 +6621,21 @@ msgstr ""
 "pika_tarkastus sanoi:\n"
 "%s \n"
 
-#: ../src/common/database.c:4200 ../src/common/database.c:4215
-#: ../src/common/database.c:4383 ../src/common/database.c:4398
+#: ../src/common/database.c:4225 ../src/common/database.c:4240
+#: ../src/common/database.c:4408 ../src/common/database.c:4423
 msgid "darktable - error opening database"
 msgstr "Darktable - virhe tietokannan avaamisessa"
 
-#: ../src/common/database.c:4204 ../src/common/database.c:4387
+#: ../src/common/database.c:4229 ../src/common/database.c:4412
 msgid "_attempt restore"
 msgstr "_Yritä palautusta"
 
-#: ../src/common/database.c:4205 ../src/common/database.c:4219
-#: ../src/common/database.c:4388 ../src/common/database.c:4402
+#: ../src/common/database.c:4230 ../src/common/database.c:4244
+#: ../src/common/database.c:4413 ../src/common/database.c:4427
 msgid "_delete database"
 msgstr "_Poista tietokanta"
 
-#: ../src/common/database.c:4208 ../src/common/database.c:4391
+#: ../src/common/database.c:4233 ../src/common/database.c:4416
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup, attempt an automatic restore\n"
@@ -6649,7 +6647,7 @@ msgstr ""
 "viimeisimmästä tietokannan vedoksesta tai poistaaksesi\n"
 "korruptoituneen tietokannan luoden tyhjän tietokannan."
 
-#: ../src/common/database.c:4222 ../src/common/database.c:4405
+#: ../src/common/database.c:4247 ../src/common/database.c:4430
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup or delete the corrupted database\n"
@@ -6659,7 +6657,7 @@ msgstr ""
 "varmuuskopioista tai poistaaksesi korruptoituneen tietokannan\n"
 "luoden tyhjän tietokannan."
 
-#: ../src/common/database.c:4229 ../src/common/database.c:4410
+#: ../src/common/database.c:4254 ../src/common/database.c:4435
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -6700,25 +6698,25 @@ msgstr ""
 "Nopea ohjattu suodin ei saanut varattua muistia, tarkista RAM-muistin "
 "asetukset."
 
-#: ../src/common/film.c:312
+#: ../src/common/film.c:341
 msgid "do you want to remove this empty directory?"
 msgid_plural "do you want to remove these empty directories?"
 msgstr[0] "Haluatko poistaa tämän tyhjän hakemiston?"
 msgstr[1] "Haluatko poistaa nämä tyhjät hakemistot?"
 
-#: ../src/common/film.c:319
+#: ../src/common/film.c:348
 msgid "remove empty directory?"
 msgid_plural "remove empty directories?"
 msgstr[0] "Poista tyhjä hakemisto?"
 msgstr[1] "Poista tyhjät hakemistot?"
 
-#: ../src/common/film.c:339 ../src/gui/preferences.c:814
+#: ../src/common/film.c:368 ../src/gui/preferences.c:814
 #: ../src/gui/styles_dialog.c:586 ../src/libs/geotagging.c:830
 #: ../src/libs/import.c:1878
 msgid "name"
 msgstr "Nimi"
 
-#: ../src/common/film.c:448
+#: ../src/common/film.c:477
 msgid ""
 "cannot remove film roll having local copies with non accessible originals"
 msgstr ""
@@ -7389,7 +7387,7 @@ msgstr "Ilta-aurinko"
 msgid "underwater"
 msgstr "Vedenalainen"
 
-#: ../src/common/wb_presets.c:74 ../src/views/darkroom.c:2337
+#: ../src/common/wb_presets.c:74 ../src/views/darkroom.c:2359
 msgid "black & white"
 msgstr "Mustavalkoinen"
 
@@ -7410,7 +7408,7 @@ msgid "auto WB"
 msgstr "Automaattinen valkotasapaino"
 
 #: ../src/control/control.c:69 ../src/gui/accelerators.c:160
-#: ../src/views/darkroom.c:2066
+#: ../src/views/darkroom.c:2088
 msgid "hold"
 msgstr "Pidä"
 
@@ -7606,17 +7604,17 @@ msgstr "_Sulje"
 
 #. setup selection accelerators
 #. action-box
-#: ../src/control/crawler.c:786 ../src/dtgtk/thumbtable.c:2801
+#: ../src/control/crawler.c:786 ../src/dtgtk/thumbtable.c:2815
 #: ../src/libs/import.c:2064 ../src/libs/select.c:136
 msgid "select all"
 msgstr "Valitse kaikki"
 
-#: ../src/control/crawler.c:787 ../src/dtgtk/thumbtable.c:2803
+#: ../src/control/crawler.c:787 ../src/dtgtk/thumbtable.c:2817
 #: ../src/libs/import.c:2068 ../src/libs/select.c:140
 msgid "select none"
 msgstr "Tyhjennä valinta"
 
-#: ../src/control/crawler.c:788 ../src/dtgtk/thumbtable.c:2805
+#: ../src/control/crawler.c:788 ../src/dtgtk/thumbtable.c:2819
 #: ../src/libs/select.c:144
 msgid "invert selection"
 msgstr "Käänteinen valinta"
@@ -8366,17 +8364,17 @@ msgid "uniformly"
 msgstr "Yhtenäinen maski"
 
 #: ../src/develop/blend_gui.c:157 ../src/develop/blend_gui.c:2793
-#: ../src/develop/blend_gui.c:3485 ../src/develop/imageop.c:2667
+#: ../src/develop/blend_gui.c:3485 ../src/develop/imageop.c:2663
 msgid "drawn mask"
 msgstr "Piirretty maski"
 
 #: ../src/develop/blend_gui.c:159 ../src/develop/blend_gui.c:2565
-#: ../src/develop/blend_gui.c:3496 ../src/develop/imageop.c:2669
+#: ../src/develop/blend_gui.c:3496 ../src/develop/imageop.c:2665
 msgid "parametric mask"
 msgstr "Laskennallinen maski"
 
 #: ../src/develop/blend_gui.c:161 ../src/develop/blend_gui.c:3003
-#: ../src/develop/blend_gui.c:3523 ../src/develop/imageop.c:2671
+#: ../src/develop/blend_gui.c:3523 ../src/develop/imageop.c:2667
 msgid "raster mask"
 msgstr "Rasterimaski"
 
@@ -8423,12 +8421,12 @@ msgid "on"
 msgstr "Päällä"
 
 #: ../src/develop/blend_gui.c:1021 ../src/develop/blend_gui.c:2643
-#: ../src/develop/imageop.c:2795
+#: ../src/develop/imageop.c:2791
 msgid "input"
 msgstr "tulo"
 
 #: ../src/develop/blend_gui.c:1021 ../src/develop/blend_gui.c:2643
-#: ../src/develop/imageop.c:2795
+#: ../src/develop/imageop.c:2791
 msgid "output"
 msgstr "lähtö"
 
@@ -8510,7 +8508,7 @@ msgid "sliders for gray value"
 msgstr "Harmaan arvon liukusäätimet"
 
 #: ../src/develop/blend_gui.c:2378 ../src/develop/blend_gui.c:2426
-#: ../src/iop/channelmixerrgb.c:4660 ../src/iop/denoiseprofile.c:3691
+#: ../src/iop/channelmixerrgb.c:4685 ../src/iop/denoiseprofile.c:3691
 #: ../src/iop/rawdenoise.c:894 ../src/iop/rgbcurve.c:1501
 #: ../src/iop/rgblevels.c:1043 ../src/libs/filters/colors.c:137
 msgid "R"
@@ -8521,7 +8519,7 @@ msgid "sliders for red channel"
 msgstr "Punaisen kanavan liukusäätimet"
 
 #: ../src/develop/blend_gui.c:2384 ../src/develop/blend_gui.c:2432
-#: ../src/iop/channelmixerrgb.c:4661 ../src/iop/denoiseprofile.c:3692
+#: ../src/iop/channelmixerrgb.c:4686 ../src/iop/denoiseprofile.c:3692
 #: ../src/iop/rawdenoise.c:895 ../src/iop/rgbcurve.c:1502
 #: ../src/iop/rgblevels.c:1044 ../src/libs/filters/colors.c:143
 msgid "G"
@@ -8532,7 +8530,7 @@ msgid "sliders for green channel"
 msgstr "Vihreän kanavan liukusäätimet"
 
 #: ../src/develop/blend_gui.c:2390 ../src/develop/blend_gui.c:2438
-#: ../src/iop/channelmixerrgb.c:4662 ../src/iop/denoiseprofile.c:3693
+#: ../src/iop/channelmixerrgb.c:4687 ../src/iop/denoiseprofile.c:3693
 #: ../src/iop/rawdenoise.c:896 ../src/iop/rgbcurve.c:1503
 #: ../src/iop/rgblevels.c:1045 ../src/libs/filters/colors.c:146
 msgid "B"
@@ -8673,7 +8671,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:2693 ../src/develop/blend_gui.c:3614
 #: ../src/iop/basicadj.c:630 ../src/iop/colorbalancergb.c:2134
-#: ../src/iop/colorequal.c:2648 ../src/iop/exposure.c:1134
+#: ../src/iop/colorequal.c:2649 ../src/iop/exposure.c:1134
 #: ../src/iop/exposure.c:1149 ../src/iop/filmic.c:1516 ../src/iop/filmic.c:1529
 #: ../src/iop/filmic.c:1571 ../src/iop/filmicrgb.c:4406
 #: ../src/iop/filmicrgb.c:4417 ../src/iop/filmicrgb.c:4451
@@ -8686,7 +8684,7 @@ msgstr ""
 #: ../src/iop/toneequal.c:3361 ../src/iop/toneequal.c:3364
 #: ../src/iop/toneequal.c:3367 ../src/iop/toneequal.c:3370
 #: ../src/iop/toneequal.c:3492 ../src/iop/toneequal.c:3501
-#: ../src/iop/toneequal.c:3514 ../src/views/darkroom.c:2343
+#: ../src/iop/toneequal.c:3514 ../src/views/darkroom.c:2365
 msgid " EV"
 msgstr " EV"
 
@@ -8940,8 +8938,8 @@ msgid "feathering radius"
 msgstr "Häivytyksen säde"
 
 #: ../src/develop/blend_gui.c:3667 ../src/develop/blend_gui.c:3679
-#: ../src/iop/colorbalancergb.c:2164 ../src/iop/colorequal.c:2663
-#: ../src/iop/colorequal.c:2694 ../src/iop/diffuse.c:1792
+#: ../src/iop/colorbalancergb.c:2164 ../src/iop/colorequal.c:2664
+#: ../src/iop/colorequal.c:2695 ../src/iop/diffuse.c:1792
 #: ../src/iop/diffuse.c:1802 ../src/iop/retouch.c:2729
 msgid " px"
 msgstr " px"
@@ -9013,69 +9011,69 @@ msgstr "Uusi instanssi"
 msgid "duplicate instance"
 msgstr "Kahdenna instanssi"
 
-#: ../src/develop/imageop.c:1030 ../src/develop/imageop.c:3778
+#: ../src/develop/imageop.c:1030 ../src/develop/imageop.c:3780
 #: ../src/libs/masks.c:1137
 msgid "move up"
 msgstr "Siirrä ylös"
 
-#: ../src/develop/imageop.c:1036 ../src/develop/imageop.c:3779
+#: ../src/develop/imageop.c:1036 ../src/develop/imageop.c:3781
 #: ../src/libs/masks.c:1142
 msgid "move down"
 msgstr "Siirrä alas"
 
 #. delete button label and tooltip will be updated based on trash pref
-#: ../src/develop/imageop.c:1042 ../src/develop/imageop.c:3781
+#: ../src/develop/imageop.c:1042 ../src/develop/imageop.c:3783
 #: ../src/gui/accelerators.c:177 ../src/libs/image.c:305
 #: ../src/libs/image.c:516
 msgid "delete"
 msgstr "Poista"
 
-#: ../src/develop/imageop.c:1049 ../src/develop/imageop.c:3782
+#: ../src/develop/imageop.c:1049 ../src/develop/imageop.c:3784
 #: ../src/libs/modulegroups.c:4006
 msgid "rename"
 msgstr "Nimeä uudelleen"
 
-#: ../src/develop/imageop.c:1119 ../src/develop/imageop.c:2843
+#: ../src/develop/imageop.c:1115 ../src/develop/imageop.c:2839
 #, c-format
 msgid "'%s' is switched on"
 msgstr "'%s' on käytössä."
 
-#: ../src/develop/imageop.c:1119 ../src/develop/imageop.c:2843
+#: ../src/develop/imageop.c:1115 ../src/develop/imageop.c:2839
 #, c-format
 msgid "'%s' is switched off"
 msgstr "'%s' on pois käytöstä."
 
-#: ../src/develop/imageop.c:2661
+#: ../src/develop/imageop.c:2657
 msgid "unknown mask"
 msgstr "tuntematon maski"
 
-#: ../src/develop/imageop.c:2665
+#: ../src/develop/imageop.c:2661
 msgid "drawn + parametric mask"
 msgstr "Piirretty + laskennallinen maski"
 
-#: ../src/develop/imageop.c:2674
+#: ../src/develop/imageop.c:2670
 #, c-format
 msgid "this module has a `%s'"
 msgstr "Tässä moduulissa on `%s'"
 
-#: ../src/develop/imageop.c:2679
+#: ../src/develop/imageop.c:2675
 #, c-format
 msgid "taken from module %s"
 msgstr "Otettu moduulista %s"
 
-#: ../src/develop/imageop.c:2684
+#: ../src/develop/imageop.c:2680
 msgid "click to display (module must be activated first)"
 msgstr "Napsauta näyttääksesi (moduulin pitää olla ensin aktiivinen)."
 
-#: ../src/develop/imageop.c:2795
+#: ../src/develop/imageop.c:2791
 msgid "purpose"
 msgstr "tarkoitus"
 
-#: ../src/develop/imageop.c:2795
+#: ../src/develop/imageop.c:2791
 msgid "process"
 msgstr "toiminta"
 
-#: ../src/develop/imageop.c:2859
+#: ../src/develop/imageop.c:2855
 msgid ""
 "reset parameters\n"
 "ctrl+click to reapply any automatic presets"
@@ -9083,7 +9081,7 @@ msgstr ""
 "Palauta oletukset.\n"
 "CTRL+napsaus ottaa käyttöön automaattiset esiasetukset."
 
-#: ../src/develop/imageop.c:2974
+#: ../src/develop/imageop.c:2970
 msgid ""
 "multiple instance actions\n"
 "right-click creates new instance"
@@ -9091,7 +9089,7 @@ msgstr ""
 "Useiden instanssien toiminnot.\n"
 "Oikea napsaus luo uuden instanssin."
 
-#: ../src/develop/imageop.c:2978
+#: ../src/develop/imageop.c:2974
 msgid ""
 "presets\n"
 "right-click to apply on new instance"
@@ -9099,43 +9097,43 @@ msgstr ""
 "Esiasetukset.\n"
 "Oikea napsaus asettaa uuteen instanssin."
 
-#: ../src/develop/imageop.c:3216 ../src/develop/imageop.c:3238
+#: ../src/develop/imageop.c:3212 ../src/develop/imageop.c:3234
 msgid "ERROR"
 msgstr "VIRHE"
 
-#: ../src/develop/imageop.c:3644
+#: ../src/develop/imageop.c:3643
 msgid "unsupported input"
 msgstr "Tukematon tulo"
 
-#: ../src/develop/imageop.c:3645
+#: ../src/develop/imageop.c:3644
 msgid ""
 "you have placed this module at\n"
 "a position in the pipeline where\n"
 "the data format does not match\n"
-"its requirements."
+"it's requirements."
 msgstr ""
 "Olet asettanut tämän moduulin\n"
 "työskentelyputkessa sijaintiin jossa\n"
 "tiedon muoto ei vastaa vaatimuksia."
 
-#: ../src/develop/imageop.c:3777 ../src/develop/imageop.c:3787
+#: ../src/develop/imageop.c:3779 ../src/develop/imageop.c:3789
 #: ../src/gui/accelerators.c:173 ../src/libs/lib.c:1410
 msgid "show"
 msgstr "Näytä"
 
-#: ../src/develop/imageop.c:3780 ../src/libs/modulegroups.c:3470
+#: ../src/develop/imageop.c:3782 ../src/libs/modulegroups.c:3470
 #: ../src/libs/modulegroups.c:3601 ../src/libs/modulegroups.c:4010
 #: ../src/libs/tagging.c:3313
 msgid "new"
 msgstr "Uusi"
 
-#: ../src/develop/imageop.c:3783 ../src/libs/duplicate.c:411
+#: ../src/develop/imageop.c:3785 ../src/libs/duplicate.c:411
 #: ../src/libs/image.c:537 ../src/libs/modulegroups.c:4002
 msgid "duplicate"
 msgstr "Kahdenna"
 
-#: ../src/develop/imageop.c:3788 ../src/gui/accelerators.c:134
-#: ../src/gui/accelerators.c:144 ../src/gui/gtk.c:3419 ../src/gui/gtk.c:3474
+#: ../src/develop/imageop.c:3790 ../src/gui/accelerators.c:134
+#: ../src/gui/accelerators.c:144 ../src/gui/gtk.c:3423 ../src/gui/gtk.c:3478
 #: ../src/gui/hist_dialog.c:272 ../src/gui/styles_dialog.c:646
 #: ../src/gui/styles_dialog.c:668 ../src/iop/atrous.c:1625
 #: ../src/libs/lib.c:1411 ../src/libs/modulegroups.c:4086
@@ -9143,24 +9141,24 @@ msgid "reset"
 msgstr "Palauta"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:3789 ../src/gui/preferences.c:796
+#: ../src/develop/imageop.c:3791 ../src/gui/preferences.c:796
 #: ../src/libs/lib.c:1412
 msgid "presets"
 msgstr "Esiasetukset"
 
-#: ../src/develop/imageop.c:3790
+#: ../src/develop/imageop.c:3792
 msgid "enable"
 msgstr "Aktivoi"
 
-#: ../src/develop/imageop.c:3791 ../src/gui/accelerators.c:189
+#: ../src/develop/imageop.c:3793 ../src/gui/accelerators.c:189
 msgid "focus"
 msgstr "Tarkennus"
 
-#: ../src/develop/imageop.c:3792 ../src/gui/accelerators.c:2879
+#: ../src/develop/imageop.c:3794 ../src/gui/accelerators.c:2879
 msgid "instance"
 msgstr "Instanssi"
 
-#: ../src/develop/imageop.c:3812
+#: ../src/develop/imageop.c:3814
 msgid "processing module"
 msgstr "Käsittelymoduuli"
 
@@ -9498,11 +9496,11 @@ msgstr ""
 "<b>Siirrä lohko</b>: raahaa, <b>Lisää solmu</b>: CTRL+napsaus\n"
 "<b>Poista polku</b>: oikea napsaus"
 
-#: ../src/develop/pixelpipe_hb.c:488
+#: ../src/develop/pixelpipe_hb.c:491
 msgid "enabled as required"
 msgstr "Käytössä kuten vaadittu"
 
-#: ../src/develop/pixelpipe_hb.c:489
+#: ../src/develop/pixelpipe_hb.c:492
 msgid ""
 "history had module disabled but it is required for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
@@ -9512,11 +9510,11 @@ msgstr ""
 "Tämän on aiheuttanut luultavasti esiasetus, tyyli tai historian "
 "kopiointi&liittäminen."
 
-#: ../src/develop/pixelpipe_hb.c:496
+#: ../src/develop/pixelpipe_hb.c:499
 msgid "disabled as not appropriate"
 msgstr "Pois käytöstä, koska ei ole tarpeen"
 
-#: ../src/develop/pixelpipe_hb.c:497
+#: ../src/develop/pixelpipe_hb.c:500
 msgid ""
 "history had module enabled but it is not allowed for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
@@ -9526,7 +9524,7 @@ msgstr ""
 "Tämän on aiheuttanut luultavasti esiasetus, tyyli tai historian "
 "kopiointi&liittäminen."
 
-#: ../src/develop/pixelpipe_hb.c:2656
+#: ../src/develop/pixelpipe_hb.c:2660
 msgid ""
 "OpenCL errors encountered; disabling OpenCL for this session! some possible "
 "causes:\n"
@@ -9547,7 +9545,7 @@ msgstr ""
 "  - liian pieni vapaan tilan asetus, kun käytetään 'Käytä kaikki laitteen "
 "muisti' asetusta."
 
-#: ../src/develop/pixelpipe_hb.c:2819
+#: ../src/develop/pixelpipe_hb.c:2826
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -9804,12 +9802,22 @@ msgstr "Väljennä yläpaneelista suodatusta"
 msgid "or add images in the collections module in the left panel"
 msgstr "tai lisää kuvia vasemman paneelin Kokoelmat-moduulissa."
 
-#: ../src/dtgtk/thumbtable.c:1483
+#: ../src/dtgtk/thumbtable.c:1212
+msgid "try the 'no-click' workflow: hover on an image and use"
+msgstr ""
+"Kokeile 'ilman napsautusta' tapaa: Pidä hiiren kursoria kuvan päällä ja käytä"
+
+#: ../src/dtgtk/thumbtable.c:1218
+msgid "keyboard shortcuts to apply ratings, colors, styles, etc."
+msgstr ""
+"Näppäimistön pikavalinnat luokitusten, värien, tyylien, yms. asettamiseen."
+
+#: ../src/dtgtk/thumbtable.c:1497
 msgid ""
 "you have changed the settings related to how thumbnails are generated.\n"
 msgstr "Olet muuttanut esikatselukuvien generointiin liittyviä asetuksia.\n"
 
-#: ../src/dtgtk/thumbtable.c:1486
+#: ../src/dtgtk/thumbtable.c:1500
 msgid ""
 "all cached thumbnails need to be invalidated.\n"
 "\n"
@@ -9817,7 +9825,7 @@ msgstr ""
 "Kaikki välimuistissa olevat esikatselukuvat tulee hylätä.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1490
+#: ../src/dtgtk/thumbtable.c:1504
 #, c-format
 msgid ""
 "cached thumbnails starting from level %d need to be invalidated.\n"
@@ -9826,7 +9834,7 @@ msgstr ""
 "Välimuistissa olevat esikatselukuvat alkaen tasolta %d tulee hylätä.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1495
+#: ../src/dtgtk/thumbtable.c:1509
 #, c-format
 msgid ""
 "cached thumbnails below level %d need to be invalidated.\n"
@@ -9835,7 +9843,7 @@ msgstr ""
 "Välimuistissa tason %d alle olevat esikatselukuvat tulee hylätä.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1500
+#: ../src/dtgtk/thumbtable.c:1514
 #, c-format
 msgid ""
 "cached thumbnails between level %d and %d need to be invalidated.\n"
@@ -9845,48 +9853,48 @@ msgstr ""
 "hylätä.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1503
+#: ../src/dtgtk/thumbtable.c:1517
 msgid "do you want to do that now?"
 msgstr "Haluatko tehdä sen nyt?"
 
-#: ../src/dtgtk/thumbtable.c:1505
+#: ../src/dtgtk/thumbtable.c:1519
 msgid "cached thumbnails invalidation"
 msgstr "Välimuistissa olleet esikatselukuvat hylätty."
 
 #. setup history key accelerators
-#: ../src/dtgtk/thumbtable.c:2784
+#: ../src/dtgtk/thumbtable.c:2798
 msgid "copy history"
 msgstr "Kopioi muokkaushistoria"
 
-#: ../src/dtgtk/thumbtable.c:2786
+#: ../src/dtgtk/thumbtable.c:2800
 msgid "copy history parts"
 msgstr "Kopioi muokkaushistorian osa"
 
-#: ../src/dtgtk/thumbtable.c:2788
+#: ../src/dtgtk/thumbtable.c:2802
 msgid "paste history"
 msgstr "Liitä muokkaushistoria"
 
-#: ../src/dtgtk/thumbtable.c:2790
+#: ../src/dtgtk/thumbtable.c:2804
 msgid "paste history parts"
 msgstr "Liitä muokkaushistorian osa"
 
-#: ../src/dtgtk/thumbtable.c:2792 ../src/libs/copy_history.c:394
+#: ../src/dtgtk/thumbtable.c:2806 ../src/libs/copy_history.c:394
 msgid "discard history"
 msgstr "Poista muokkaushistoria"
 
-#: ../src/dtgtk/thumbtable.c:2795
+#: ../src/dtgtk/thumbtable.c:2809
 msgid "duplicate image"
 msgstr "Kahdenna kuva"
 
-#: ../src/dtgtk/thumbtable.c:2797
+#: ../src/dtgtk/thumbtable.c:2811
 msgid "duplicate image virgin"
 msgstr "Kahdenna alkuperäinen kuva"
 
-#: ../src/dtgtk/thumbtable.c:2807 ../src/libs/select.c:148
+#: ../src/dtgtk/thumbtable.c:2821 ../src/libs/select.c:148
 msgid "select film roll"
 msgstr "Valitse filmirulla"
 
-#: ../src/dtgtk/thumbtable.c:2809 ../src/libs/select.c:152
+#: ../src/dtgtk/thumbtable.c:2823 ../src/libs/select.c:152
 msgid "select untouched"
 msgstr "Valitse käsittelemättömät"
 
@@ -10010,7 +10018,7 @@ msgstr "Panoroi"
 #: ../src/iop/ashift.c:5750 ../src/iop/ashift.c:5855 ../src/iop/ashift.c:5857
 #: ../src/iop/ashift.c:6181 ../src/iop/clipping.c:1925
 #: ../src/iop/clipping.c:2117 ../src/iop/clipping.c:2133
-#: ../src/views/darkroom.c:2573 ../src/views/lighttable.c:1250
+#: ../src/views/darkroom.c:2595 ../src/views/lighttable.c:1250
 msgid "horizontal"
 msgstr "Vaakasuunta"
 
@@ -10018,7 +10026,7 @@ msgstr "Vaakasuunta"
 #: ../src/iop/ashift.c:5750 ../src/iop/ashift.c:5855 ../src/iop/ashift.c:5857
 #: ../src/iop/ashift.c:6179 ../src/iop/clipping.c:1924
 #: ../src/iop/clipping.c:2118 ../src/iop/clipping.c:2132
-#: ../src/views/darkroom.c:2576 ../src/views/lighttable.c:1254
+#: ../src/views/darkroom.c:2598 ../src/views/lighttable.c:1254
 msgid "vertical"
 msgstr "Pystysuunta"
 
@@ -10086,12 +10094,12 @@ msgid "popup"
 msgstr "Ponnahdusikkuna"
 
 #: ../src/gui/accelerators.c:142 ../src/gui/accelerators.c:175
-#: ../src/gui/gtk.c:3472 ../src/views/lighttable.c:760
+#: ../src/gui/gtk.c:3476 ../src/views/lighttable.c:760
 msgid "next"
 msgstr "Seuraava"
 
 #: ../src/gui/accelerators.c:143 ../src/gui/accelerators.c:174
-#: ../src/gui/gtk.c:3473 ../src/views/lighttable.c:761
+#: ../src/gui/gtk.c:3477 ../src/views/lighttable.c:761
 msgid "previous"
 msgstr "Edellinen"
 
@@ -10105,8 +10113,8 @@ msgstr "ensimmäinen"
 
 #: ../src/gui/accelerators.c:150 ../src/gui/accelerators.c:163
 #: ../src/gui/accelerators.c:360 ../src/libs/filters/rating_range.c:295
-#: ../src/libs/tagging.c:3184 ../src/views/darkroom.c:2259
-#: ../src/views/darkroom.c:2309 ../src/views/darkroom.c:2545
+#: ../src/libs/tagging.c:3184 ../src/views/darkroom.c:2281
+#: ../src/views/darkroom.c:2331 ../src/views/darkroom.c:2567
 msgid "toggle"
 msgstr "Vaihda"
 
@@ -10126,7 +10134,7 @@ msgstr "Oikea-Vaihda"
 msgid "right-on"
 msgstr "Oikea-Päälle"
 
-#: ../src/gui/accelerators.c:167 ../src/gui/gtk.c:3471
+#: ../src/gui/accelerators.c:167 ../src/gui/gtk.c:3475
 msgid "activate"
 msgstr "Aktivoi"
 
@@ -10743,7 +10751,7 @@ msgstr "%s asetettu arvoon %s"
 msgid "short key press resets stuck keys"
 msgstr "Lyhyt näppäimen painallus palauttaa kiinnitetyt näppäimet"
 
-#: ../src/gui/gtk.c:177 ../src/views/darkroom.c:3895
+#: ../src/gui/gtk.c:177 ../src/views/darkroom.c:3917
 msgid "darktable - darkroom preview"
 msgstr "Darktable - Pimiön esikatselu"
 
@@ -10912,42 +10920,42 @@ msgstr "Vaihda tarkennuksen avustuksen tilaa."
 msgid "toggle focus peaking"
 msgstr "Tarkennuksen avustustila"
 
-#: ../src/gui/gtk.c:1836 ../src/gui/gtk.c:3577 ../src/gui/gtk.c:3582
-#: ../src/gui/gtk.c:3587 ../src/gui/gtk.c:3592
+#: ../src/gui/gtk.c:1836 ../src/gui/gtk.c:3581 ../src/gui/gtk.c:3586
+#: ../src/gui/gtk.c:3591 ../src/gui/gtk.c:3596
 msgid "tabs"
 msgstr "Välilehdet"
 
 #. ask the user if darktable.org may be accessed
-#: ../src/gui/gtk.c:3042
+#: ../src/gui/gtk.c:3046
 msgid "access the online user manual?"
 msgstr "Käytä verkossa olevaa käyttöohjetta?"
 
-#: ../src/gui/gtk.c:3043
+#: ../src/gui/gtk.c:3047
 #, c-format
 msgid "do you want to access `%s'?"
 msgstr "Haluatko varmasti avata `%s'?"
 
-#: ../src/gui/gtk.c:3116
+#: ../src/gui/gtk.c:3120
 msgid "there is no help available for this element"
 msgstr "Ohjetta ei ole saatavissa tälle elementille."
 
 #. font name can only use period as decimal separator
 #. but printf format strings use comma for some locales, so replace comma with period
-#: ../src/gui/gtk.c:3136 ../src/libs/metadata_view.c:802
+#: ../src/gui/gtk.c:3140 ../src/libs/metadata_view.c:802
 #, c-format
 msgid "%.1f"
 msgstr "%.1f"
 
-#: ../src/gui/gtk.c:3138
+#: ../src/gui/gtk.c:3142
 #, c-format
 msgid "Sans %s"
 msgstr "Sans %s"
 
-#: ../src/gui/gtk.c:3466
+#: ../src/gui/gtk.c:3470
 msgid "does not contain pages"
 msgstr "Ei sisällä sivuja"
 
-#: ../src/gui/gtk.c:3714
+#: ../src/gui/gtk.c:3718
 #, c-format
 msgid "never show more than %d lines"
 msgstr "Älä näytä enempää kuin %d viivaa"
@@ -11334,7 +11342,7 @@ msgid "global guide overlay settings"
 msgstr "Yleiset apulinjojen asetukset"
 
 #: ../src/gui/guides.c:710 ../src/gui/guides.c:719 ../src/gui/guides.c:727
-#: ../src/gui/guides.c:740 ../src/views/darkroom.c:2545
+#: ../src/gui/guides.c:740 ../src/views/darkroom.c:2567
 msgid "guide lines"
 msgstr "Apulinjat"
 
@@ -11483,10 +11491,11 @@ msgstr "Kaksoisnapsauta palauttaaksesi käyttöjärjestelmän oletuskieli"
 #: ../src/gui/preferences.c:292
 msgid ""
 "set the language of the user interface. the system default is marked with an "
-"* (needs a restart)"
+"* \n"
+"(restart required)"
 msgstr ""
 "Asettaa käyttöliittymän kielen. Käyttöjärjestelmän oletuskieli on\n"
-"merkitty *-merkillä (vaatii uudelleenkäynnistyksen)."
+"merkitty *-merkillä (Uudelleenkäynnistys vaaditaan)."
 
 #: ../src/gui/preferences.c:301
 msgid "theme"
@@ -11514,14 +11523,14 @@ msgid ""
 "increase for a magnified GUI, decrease to fit more content in window.\n"
 "set to -1 to use the system-defined global resolution.\n"
 "default is 96 DPI on most systems.\n"
-"(needs a restart)."
+"(restart required)"
 msgstr ""
 "Säädä käyttöliittymän globaalia resoluutiota valitsimien, nappien, jne.\n"
 "koon muuttamiseksi. Suurenna arvoa koon suurentamiseksi tai pienennä\n"
 "arvoa mahduttaaksesi enemmän sisältöä ikkunaan. Aseta arvo -1 käyttääksesi\n"
 "käyttöjärjestelmän oletusasetusta. Useimmissa järjestelmissä oletus on 96 "
 "DPI.\n"
-"(vaatii uudelleenkäynnistyksen)."
+"(Uudelleenkäynnistys vaaditaan)."
 
 #. checkbox to allow user to modify theme with user.css
 #: ../src/gui/preferences.c:388
@@ -13253,7 +13262,7 @@ msgstr ""
 "Vaikuttaa ainoastaan luma- ja kroma-välilehtien tuloksiin."
 
 #: ../src/iop/atrous.c:1819 ../src/iop/colorbalancergb.c:2102
-#: ../src/iop/colorequal.c:2528 ../src/iop/colorzones.c:2730
+#: ../src/iop/colorequal.c:2529 ../src/iop/colorzones.c:2730
 #: ../src/iop/denoiseprofile.c:3724 ../src/iop/filmicrgb.c:4373
 #: ../src/iop/lowlight.c:819 ../src/iop/rawdenoise.c:921
 #: ../src/iop/toneequal.c:3391
@@ -14232,35 +14241,35 @@ msgstr "Normaali värikanavien sekoitin"
 msgid "swap G and R"
 msgstr "Vaihda vihreä ja punainen värikanava"
 
-#: ../src/iop/channelmixerrgb.c:1884
+#: ../src/iop/channelmixerrgb.c:1879
 msgid "(daylight)"
 msgstr "(päivänvalo)"
 
-#: ../src/iop/channelmixerrgb.c:1886
+#: ../src/iop/channelmixerrgb.c:1881
 msgid "(black body)"
 msgstr "(musta kappale)"
 
-#: ../src/iop/channelmixerrgb.c:1888
+#: ../src/iop/channelmixerrgb.c:1883
 msgid "(invalid)"
 msgstr "(epäkelpo)"
 
-#: ../src/iop/channelmixerrgb.c:1892 ../src/iop/channelmixerrgb.c:1950
+#: ../src/iop/channelmixerrgb.c:1887 ../src/iop/channelmixerrgb.c:1945
 msgid "very good"
 msgstr "Erittäin hyvä"
 
-#: ../src/iop/channelmixerrgb.c:1894 ../src/iop/channelmixerrgb.c:1952
+#: ../src/iop/channelmixerrgb.c:1889 ../src/iop/channelmixerrgb.c:1947
 msgid "good"
 msgstr "Hyvä"
 
-#: ../src/iop/channelmixerrgb.c:1896 ../src/iop/channelmixerrgb.c:1954
+#: ../src/iop/channelmixerrgb.c:1891 ../src/iop/channelmixerrgb.c:1949
 msgid "passable"
 msgstr "kelvollinen"
 
-#: ../src/iop/channelmixerrgb.c:1898 ../src/iop/channelmixerrgb.c:1956
+#: ../src/iop/channelmixerrgb.c:1893 ../src/iop/channelmixerrgb.c:1951
 msgid "bad"
 msgstr "huono"
 
-#: ../src/iop/channelmixerrgb.c:1905
+#: ../src/iop/channelmixerrgb.c:1900
 #, c-format
 msgid ""
 "\n"
@@ -14297,7 +14306,7 @@ msgstr ""
 "valotuksen korjaus: \t%+.2f EV\n"
 "mustan poikkeama: \t%+.4f"
 
-#: ../src/iop/channelmixerrgb.c:1961
+#: ../src/iop/channelmixerrgb.c:1956
 #, c-format
 msgid ""
 "\n"
@@ -14316,11 +14325,11 @@ msgstr ""
 "valotuksen korjaus: \t%+.2f EV\n"
 "mustan poikkeama: \t%+.4f"
 
-#: ../src/iop/channelmixerrgb.c:2014
+#: ../src/iop/channelmixerrgb.c:2045
 msgid "double CAT applied"
 msgstr "Kaksinkertainen CAT käytössä"
 
-#: ../src/iop/channelmixerrgb.c:2015
+#: ../src/iop/channelmixerrgb.c:2046
 msgid ""
 "you have 2 instances or more of color calibration,\n"
 "all providing chromatic adaptation.\n"
@@ -14332,11 +14341,11 @@ msgstr ""
 "Tämä saattaa johtaa epäjohdonmukaiseen lopputulokseen,\n"
 "ellet käytä niitä maskien kanssa tai tiedä mitä olet tekemässä."
 
-#: ../src/iop/channelmixerrgb.c:2031
+#: ../src/iop/channelmixerrgb.c:2058
 msgid "white balance applied twice"
 msgstr "Valkotasapaino asetettu kahteen kertaan"
 
-#: ../src/iop/channelmixerrgb.c:2032
+#: ../src/iop/channelmixerrgb.c:2059
 msgid ""
 "the color calibration module is enabled and already provides\n"
 "chromatic adaptation.\n"
@@ -14348,11 +14357,11 @@ msgstr ""
 "Aseta tässä valkotasapaino kameran viittaamaksi (D65)\n"
 "tai poista värien sovitus käytöstä värikalibrointi-moduulissa."
 
-#: ../src/iop/channelmixerrgb.c:2040
+#: ../src/iop/channelmixerrgb.c:2067
 msgid "white balance module error"
 msgstr "Valkotasapaino-moduulin virhe"
 
-#: ../src/iop/channelmixerrgb.c:2041
+#: ../src/iop/channelmixerrgb.c:2068
 msgid ""
 "the white balance module is not using the camera\n"
 "reference illuminant, which will cause issues here\n"
@@ -14364,11 +14373,11 @@ msgstr ""
 "Muuta asetus viitearvoon tai ota värien sovitus pois\n"
 "käytöstä tässä."
 
-#: ../src/iop/channelmixerrgb.c:2055 ../src/iop/channelmixerrgb.c:2064
+#: ../src/iop/channelmixerrgb.c:2080 ../src/iop/channelmixerrgb.c:2089
 msgid "white balance missing"
 msgstr "Valkotasapaino puuttuu"
 
-#: ../src/iop/channelmixerrgb.c:2056
+#: ../src/iop/channelmixerrgb.c:2081
 msgid ""
 "this module is not providing a valid reference illuminant\n"
 "causing chromatic adaptation issues in color calibration.\n"
@@ -14380,7 +14389,7 @@ msgstr ""
 "Ota tämä moduuli käyttöön ja aseta se joko oletukselle\n"
 "tai poista värien sovitus käytöstä värinkalibrointi-moduulissa."
 
-#: ../src/iop/channelmixerrgb.c:2065
+#: ../src/iop/channelmixerrgb.c:2090
 msgid ""
 "the white balance module is not providing a valid reference\n"
 "illuminant causing issues with chromatic adaptation here.\n"
@@ -14392,20 +14401,20 @@ msgstr ""
 "Ota valkotasapaino-moduuli käyttöön ja aseta se oletukselle\n"
 "tai poista värien sovitus käytöstä täällä."
 
-#: ../src/iop/channelmixerrgb.c:2158
+#: ../src/iop/channelmixerrgb.c:2183
 msgid "auto-detection of white balance completed"
 msgstr "Valkotasapainon automaattinen tunnistus valmis."
 
-#: ../src/iop/channelmixerrgb.c:2309
+#: ../src/iop/channelmixerrgb.c:2334
 msgid "channelmixerrgb works only on RGB input"
 msgstr "RGB-kanavasekoitin toimii ainoastaan RGB-tulolla."
 
-#: ../src/iop/channelmixerrgb.c:3666
+#: ../src/iop/channelmixerrgb.c:3691
 #, c-format
 msgid "CCT: %.0f K (daylight)"
 msgstr "CCT: %.0f K (päivänvalo)"
 
-#: ../src/iop/channelmixerrgb.c:3669
+#: ../src/iop/channelmixerrgb.c:3694
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant can be accurately modeled by a daylight spectrum,\n"
@@ -14415,12 +14424,12 @@ msgstr ""
 "Tämä valaisu voidaan mallintaa tarkasti päivänvalon osalta,\n"
 "joten sen lämpötila on merkitsevää ja mielekästä D valaisulla."
 
-#: ../src/iop/channelmixerrgb.c:3675
+#: ../src/iop/channelmixerrgb.c:3700
 #, c-format
 msgid "CCT: %.0f K (black body)"
 msgstr "CCT: %.0f K (musta kohde)"
 
-#: ../src/iop/channelmixerrgb.c:3678
+#: ../src/iop/channelmixerrgb.c:3703
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant can be accurately modeled by a black body spectrum,\n"
@@ -14430,12 +14439,12 @@ msgstr ""
 "Tämä valaisu voidaan mallintaa tarkasti mustan kappaleen osalta,\n"
 "joten sen lämpötila on merkitsevää ja mielekästä Planckian valaisulla."
 
-#: ../src/iop/channelmixerrgb.c:3684
+#: ../src/iop/channelmixerrgb.c:3709
 #, c-format
 msgid "CCT: %.0f K (invalid)"
 msgstr "CCT: %.0f K (epäkelpo)"
 
-#: ../src/iop/channelmixerrgb.c:3687
+#: ../src/iop/channelmixerrgb.c:3712
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant cannot be accurately modeled by a daylight or black body "
@@ -14449,12 +14458,12 @@ msgstr ""
 "joten sen lämpötila ei ole merkitsevää tai mielekästä ja sinun tulee käyttää "
 "mukautettua valaisua."
 
-#: ../src/iop/channelmixerrgb.c:3696
+#: ../src/iop/channelmixerrgb.c:3721
 #, c-format
 msgid "CCT: undefined"
 msgstr "CCT: määrittämätön"
 
-#: ../src/iop/channelmixerrgb.c:3699
+#: ../src/iop/channelmixerrgb.c:3724
 msgid ""
 "the approximated correlated color temperature\n"
 "cannot be computed at all so you need to use a custom illuminant."
@@ -14462,16 +14471,16 @@ msgstr ""
 "Arvioitua ja korreloitua värin lämpötilaa\n"
 "ei voida laskea lainkaan, joten sinun täytyy käyttää mukautettua valaisua."
 
-#: ../src/iop/channelmixerrgb.c:4015
+#: ../src/iop/channelmixerrgb.c:4040
 msgid "white balance successfully extracted from raw image"
 msgstr "Valkotasapaino poimittiin onnistuneesti RAW-kuvasta."
 
 #. We need to recompute only the full preview
-#: ../src/iop/channelmixerrgb.c:4022
+#: ../src/iop/channelmixerrgb.c:4047
 msgid "auto-detection of white balance started…"
 msgstr "Valkotasapainon automaattinen tunnistus aloitettu..."
 
-#: ../src/iop/channelmixerrgb.c:4128
+#: ../src/iop/channelmixerrgb.c:4153
 msgid ""
 "color calibration: the sum of the gray channel parameters is zero, "
 "normalization will be disabled."
@@ -14480,7 +14489,7 @@ msgstr ""
 "poistettu käytöstä."
 
 #. Write report in GUI
-#: ../src/iop/channelmixerrgb.c:4174
+#: ../src/iop/channelmixerrgb.c:4199
 #, c-format
 msgid ""
 "L: \t%.1f %%\n"
@@ -14491,8 +14500,8 @@ msgstr ""
 "h: \t%.1f °\n"
 "c: \t%.1f"
 
-#: ../src/iop/channelmixerrgb.c:4445 ../src/iop/clipping.c:2110
-#: ../src/iop/colorbalancergb.c:1915 ../src/iop/colorequal.c:2516
+#: ../src/iop/channelmixerrgb.c:4470 ../src/iop/clipping.c:2110
+#: ../src/iop/colorbalancergb.c:1915 ../src/iop/colorequal.c:2517
 #: ../src/iop/filmicrgb.c:4385 ../src/iop/negadoctor.c:843
 #: ../src/iop/toneequal.c:3339 ../src/libs/image.c:493
 #: ../src/views/lighttable.c:1258
@@ -14500,19 +14509,19 @@ msgid "page"
 msgstr "Sivu"
 
 #. Page CAT
-#: ../src/iop/channelmixerrgb.c:4448
+#: ../src/iop/channelmixerrgb.c:4473
 msgid "CAT"
 msgstr "CAT"
 
-#: ../src/iop/channelmixerrgb.c:4449
+#: ../src/iop/channelmixerrgb.c:4474
 msgid "chromatic adaptation transform"
 msgstr "Värien sovituksen muunnos"
 
-#: ../src/iop/channelmixerrgb.c:4451
+#: ../src/iop/channelmixerrgb.c:4476
 msgid "adaptation"
 msgstr "Sovitus"
 
-#: ../src/iop/channelmixerrgb.c:4454
+#: ../src/iop/channelmixerrgb.c:4479
 msgid ""
 "choose the method to adapt the illuminant\n"
 "and the colorspace in which the module works: \n"
@@ -14533,7 +14542,7 @@ msgstr ""
 "• Ei mitään - poistaa käytöstä kaikki sovitukset ja käyttää "
 "työskentelyputken RGB-avaruutta."
 
-#: ../src/iop/channelmixerrgb.c:4474
+#: ../src/iop/channelmixerrgb.c:4499
 msgid ""
 "this is the color of the scene illuminant before chromatic adaptation\n"
 "this color will be turned into pure white by the adaptation."
@@ -14541,27 +14550,27 @@ msgstr ""
 "Tämä on näkymän valaisun väri ennen värien sovitusta.\n"
 "Sovitus muuttaa tämän värin puhtaan valkoiseksi."
 
-#: ../src/iop/channelmixerrgb.c:4482
+#: ../src/iop/channelmixerrgb.c:4507
 msgid "picker"
 msgstr "Valitsin"
 
-#: ../src/iop/channelmixerrgb.c:4484 ../src/iop/temperature.c:2106
+#: ../src/iop/channelmixerrgb.c:4509 ../src/iop/temperature.c:2109
 msgid "set white balance to detected from area"
 msgstr "Valitse alueesta tunnistettu valkotasapaino."
 
-#: ../src/iop/channelmixerrgb.c:4488 ../src/iop/negadoctor.c:967
+#: ../src/iop/channelmixerrgb.c:4513 ../src/iop/negadoctor.c:967
 msgid "illuminant"
 msgstr "Valaisu"
 
-#: ../src/iop/channelmixerrgb.c:4494 ../src/iop/temperature.c:2173
+#: ../src/iop/channelmixerrgb.c:4519 ../src/iop/temperature.c:2176
 msgid "temperature"
 msgstr "Värilämpötila"
 
-#: ../src/iop/channelmixerrgb.c:4525
+#: ../src/iop/channelmixerrgb.c:4550
 msgid "area color mapping"
 msgstr "Alueen värin kartoitus"
 
-#: ../src/iop/channelmixerrgb.c:4531
+#: ../src/iop/channelmixerrgb.c:4556
 msgid ""
 "define a target chromaticity (hue and chroma) for a particular region of the "
 "image (the control sample), which you then match against the same target "
@@ -14575,17 +14584,17 @@ msgstr ""
 "kuvan aihetta tai joku liikkumaton ja tasaisesti valaistu pinta sarjassa "
 "kuvia."
 
-#: ../src/iop/channelmixerrgb.c:4538 ../src/iop/channelmixerrgb.c:4553
-#: ../src/iop/channelmixerrgb.c:4607 ../src/iop/channelmixerrgb.c:4616
-#: ../src/iop/channelmixerrgb.c:4624
+#: ../src/iop/channelmixerrgb.c:4563 ../src/iop/channelmixerrgb.c:4578
+#: ../src/iop/channelmixerrgb.c:4632 ../src/iop/channelmixerrgb.c:4641
+#: ../src/iop/channelmixerrgb.c:4649
 msgid "mapping"
 msgstr "Kartoitus"
 
-#: ../src/iop/channelmixerrgb.c:4538 ../src/iop/exposure.c:1202
+#: ../src/iop/channelmixerrgb.c:4563 ../src/iop/exposure.c:1202
 msgid "area mode"
 msgstr "Alueen tila"
 
-#: ../src/iop/channelmixerrgb.c:4539
+#: ../src/iop/channelmixerrgb.c:4564
 msgid ""
 "\"correction\" automatically adjust the illuminant\n"
 "such that the input color is mapped to the target.\n"
@@ -14597,19 +14606,19 @@ msgstr ""
 "\"Mittaus\" näyttää kuinka CAT kartoittaa tulon värin\n"
 "ja sitä voidaan käyttää kohteen näytteenä."
 
-#: ../src/iop/channelmixerrgb.c:4544 ../src/iop/exposure.c:1208
+#: ../src/iop/channelmixerrgb.c:4569 ../src/iop/exposure.c:1208
 msgid "correction"
 msgstr "Korjaus"
 
-#: ../src/iop/channelmixerrgb.c:4545 ../src/iop/exposure.c:1209
+#: ../src/iop/channelmixerrgb.c:4570 ../src/iop/exposure.c:1209
 msgid "measure"
 msgstr "Mittaus"
 
-#: ../src/iop/channelmixerrgb.c:4551
+#: ../src/iop/channelmixerrgb.c:4576
 msgid "take channel mixing into account"
 msgstr "Ota kanavan sekoitus huomioon"
 
-#: ../src/iop/channelmixerrgb.c:4558
+#: ../src/iop/channelmixerrgb.c:4583
 msgid ""
 "compute the target by taking the channel mixing into account.\n"
 "if disabled, only the CAT is considered."
@@ -14617,16 +14626,16 @@ msgstr ""
 "Laske kohde ottamalla kanavan sekoitus huomioon.\n"
 "Jos poistettu käytöstä, huomioidaan ainoastaan CAT."
 
-#: ../src/iop/channelmixerrgb.c:4570 ../src/iop/exposure.c:1216
+#: ../src/iop/channelmixerrgb.c:4595 ../src/iop/exposure.c:1216
 msgctxt "section"
 msgid "input"
 msgstr "tulo"
 
-#: ../src/iop/channelmixerrgb.c:4577 ../src/iop/exposure.c:1224
+#: ../src/iop/channelmixerrgb.c:4602 ../src/iop/exposure.c:1224
 msgid "the input color that should be mapped to the target"
 msgstr "Tulon väri joka tulisi kartoittaa kohteeseen"
 
-#: ../src/iop/channelmixerrgb.c:4583
+#: ../src/iop/channelmixerrgb.c:4608
 msgid ""
 "L: \tN/A\n"
 "h: \tN/A\n"
@@ -14636,114 +14645,114 @@ msgstr ""
 "h: \tN/A\n"
 "c: \tN/A"
 
-#: ../src/iop/channelmixerrgb.c:4586 ../src/iop/exposure.c:1232
+#: ../src/iop/channelmixerrgb.c:4611 ../src/iop/exposure.c:1232
 msgid "these LCh coordinates are computed from CIE Lab 1976 coordinates"
 msgstr "Nämä LCh koordinaatit on laskettu CIE Lab 1976 koordinaateista"
 
-#: ../src/iop/channelmixerrgb.c:4594 ../src/iop/exposure.c:1239
+#: ../src/iop/channelmixerrgb.c:4619 ../src/iop/exposure.c:1239
 msgctxt "section"
 msgid "target"
 msgstr "kohde"
 
-#: ../src/iop/channelmixerrgb.c:4601
+#: ../src/iop/channelmixerrgb.c:4626
 msgid "the desired target color after mapping"
 msgstr "Kartoituksen jälkeen haluttu kohdeväri"
 
-#: ../src/iop/channelmixerrgb.c:4640
+#: ../src/iop/channelmixerrgb.c:4665
 msgid "input R"
 msgstr "Punaisen tulo"
 
-#: ../src/iop/channelmixerrgb.c:4645
+#: ../src/iop/channelmixerrgb.c:4670
 msgid "input G"
 msgstr "Vihreän tulo"
 
-#: ../src/iop/channelmixerrgb.c:4650
+#: ../src/iop/channelmixerrgb.c:4675
 msgid "input B"
 msgstr "Sinisen tulo"
 
-#: ../src/iop/channelmixerrgb.c:4660
+#: ../src/iop/channelmixerrgb.c:4685
 msgid "output R"
 msgstr "Punaisen lähtö"
 
-#: ../src/iop/channelmixerrgb.c:4661
+#: ../src/iop/channelmixerrgb.c:4686
 msgid "output G"
 msgstr "Vihreän lähtö"
 
-#: ../src/iop/channelmixerrgb.c:4662
+#: ../src/iop/channelmixerrgb.c:4687
 msgid "output B"
 msgstr "Sinisen lähtö"
 
-#: ../src/iop/channelmixerrgb.c:4664
+#: ../src/iop/channelmixerrgb.c:4689
 msgid "colorfulness"
 msgstr "Värikkyys"
 
-#: ../src/iop/channelmixerrgb.c:4664
+#: ../src/iop/channelmixerrgb.c:4689
 msgid "output colorfulness"
 msgstr "Lähdön värikkyys"
 
-#: ../src/iop/channelmixerrgb.c:4668
+#: ../src/iop/channelmixerrgb.c:4693
 msgid "output brightness"
 msgstr "Lähdön kirkkaus"
 
-#: ../src/iop/channelmixerrgb.c:4671
+#: ../src/iop/channelmixerrgb.c:4696
 msgid "output gray"
 msgstr "Lähdön harmaus"
 
-#: ../src/iop/channelmixerrgb.c:4686
+#: ../src/iop/channelmixerrgb.c:4711
 msgid "calibrate with a color checker"
 msgstr "Kalibroi värikortilla"
 
-#: ../src/iop/channelmixerrgb.c:4691
+#: ../src/iop/channelmixerrgb.c:4716
 msgid "use a color checker target to autoset CAT and channels"
 msgstr "Käytä värikorttia CAT:n ja kanavien automaattiseen asettamiseen."
 
-#: ../src/iop/channelmixerrgb.c:4698 ../src/iop/channelmixerrgb.c:4711
-#: ../src/iop/channelmixerrgb.c:4729 ../src/iop/channelmixerrgb.c:4747
-#: ../src/iop/channelmixerrgb.c:4756 ../src/iop/channelmixerrgb.c:4764
+#: ../src/iop/channelmixerrgb.c:4723 ../src/iop/channelmixerrgb.c:4736
+#: ../src/iop/channelmixerrgb.c:4754 ../src/iop/channelmixerrgb.c:4772
+#: ../src/iop/channelmixerrgb.c:4781 ../src/iop/channelmixerrgb.c:4789
 msgid "calibrate"
 msgstr "Kalibroi"
 
-#: ../src/iop/channelmixerrgb.c:4698
+#: ../src/iop/channelmixerrgb.c:4723
 msgid "chart"
 msgstr "Värikortti"
 
-#: ../src/iop/channelmixerrgb.c:4699
+#: ../src/iop/channelmixerrgb.c:4724
 msgid "choose the vendor and the type of your chart"
 msgstr "Valitse valistaja ja värikortin tyyppi"
 
-#: ../src/iop/channelmixerrgb.c:4701
+#: ../src/iop/channelmixerrgb.c:4726
 msgid "Xrite ColorChecker 24 pre-2014"
 msgstr "Xrite ColorChecker 24 ennen-2014"
 
-#: ../src/iop/channelmixerrgb.c:4702
+#: ../src/iop/channelmixerrgb.c:4727
 msgid "Xrite ColorChecker 24 post-2014"
 msgstr "Xrite ColorChecker 24 jälkeen-2014"
 
-#: ../src/iop/channelmixerrgb.c:4703
+#: ../src/iop/channelmixerrgb.c:4728
 msgid "Datacolor SpyderCheckr 24 pre-2018"
 msgstr "Datacolor SpyderCheckr 24 ennen-2018"
 
-#: ../src/iop/channelmixerrgb.c:4704
+#: ../src/iop/channelmixerrgb.c:4729
 msgid "Datacolor SpyderCheckr 24 post-2018"
 msgstr "Datacolor SpyderCheckr 24 jälkeen-2018"
 
-#: ../src/iop/channelmixerrgb.c:4705
+#: ../src/iop/channelmixerrgb.c:4730
 msgid "Datacolor SpyderCheckr 48 pre-2018"
 msgstr "Datacolor SpyderCheckr 48 ennen-2018"
 
-#: ../src/iop/channelmixerrgb.c:4706
+#: ../src/iop/channelmixerrgb.c:4731
 msgid "Datacolor SpyderCheckr 48 post-2018"
 msgstr "Datacolor SpyderCheckr 48 jälkeen-2018"
 
-#: ../src/iop/channelmixerrgb.c:4707
+#: ../src/iop/channelmixerrgb.c:4732
 msgid "Datacolor SpyderCheckr Photo"
 msgstr "Datacolor SpyderCheckr Photo"
 
-#: ../src/iop/channelmixerrgb.c:4711
+#: ../src/iop/channelmixerrgb.c:4736
 msgid "optimize for"
 msgstr "Optimoitu"
 
-#: ../src/iop/channelmixerrgb.c:4712
+#: ../src/iop/channelmixerrgb.c:4737
 msgid ""
 "choose the colors that will be optimized with higher priority.\n"
 "neutral colors gives the lowest average delta E but a high maximum delta E\n"
@@ -14760,35 +14769,35 @@ msgstr ""
 "Ei mitään on kompromissi molempien väliltä.\n"
 "Muut ovat erityisiä tapoja joidenkin sävyjen suojelemiseen."
 
-#: ../src/iop/channelmixerrgb.c:4719
+#: ../src/iop/channelmixerrgb.c:4744
 msgid "neutral colors"
 msgstr "Neutraalit värit"
 
-#: ../src/iop/channelmixerrgb.c:4721
+#: ../src/iop/channelmixerrgb.c:4746
 msgid "skin and soil colors"
 msgstr "Ihon ja näppyjen värit"
 
-#: ../src/iop/channelmixerrgb.c:4722
+#: ../src/iop/channelmixerrgb.c:4747
 msgid "foliage colors"
 msgstr "Kasvillisuuden värit"
 
-#: ../src/iop/channelmixerrgb.c:4723
+#: ../src/iop/channelmixerrgb.c:4748
 msgid "sky and water colors"
 msgstr "Taivaan ja veden värit"
 
-#: ../src/iop/channelmixerrgb.c:4724
+#: ../src/iop/channelmixerrgb.c:4749
 msgid "average delta E"
 msgstr "Keskiarvo delta E"
 
-#: ../src/iop/channelmixerrgb.c:4725
+#: ../src/iop/channelmixerrgb.c:4750
 msgid "maximum delta E"
 msgstr "Maksimi delta E"
 
-#: ../src/iop/channelmixerrgb.c:4729
+#: ../src/iop/channelmixerrgb.c:4754
 msgid "patch scale"
 msgstr "Paikan asteikko"
 
-#: ../src/iop/channelmixerrgb.c:4732
+#: ../src/iop/channelmixerrgb.c:4757
 msgid ""
 "reduce the radius of the patches to select the more or less central part.\n"
 "useful when the perspective correction is sloppy or\n"
@@ -14798,31 +14807,31 @@ msgstr ""
 "Hyödyllinen kun perspektiivin korjaus on heikko tai\n"
 "paikkojen kehys aiheuttaa varjon paikkojen reunalle."
 
-#: ../src/iop/channelmixerrgb.c:4742
+#: ../src/iop/channelmixerrgb.c:4767
 msgid "the delta E is using the CIE 2000 formula"
 msgstr "Delta E käyttää CIE 2000 kaavaa."
 
-#: ../src/iop/channelmixerrgb.c:4747
+#: ../src/iop/channelmixerrgb.c:4772
 msgid "accept"
 msgstr "Hyväksy"
 
-#: ../src/iop/channelmixerrgb.c:4753
+#: ../src/iop/channelmixerrgb.c:4778
 msgid "accept the computed profile and set it in the module"
 msgstr "Hyväksy laskettu profiili ja aseta se moduuliin."
 
-#: ../src/iop/channelmixerrgb.c:4756
+#: ../src/iop/channelmixerrgb.c:4781
 msgid "recompute"
 msgstr "Laske uudelleen"
 
-#: ../src/iop/channelmixerrgb.c:4760
+#: ../src/iop/channelmixerrgb.c:4785
 msgid "recompute the profile"
 msgstr "Laske profiili uudestaan"
 
-#: ../src/iop/channelmixerrgb.c:4764
+#: ../src/iop/channelmixerrgb.c:4789
 msgid "validate"
 msgstr "Vahvista"
 
-#: ../src/iop/channelmixerrgb.c:4768
+#: ../src/iop/channelmixerrgb.c:4793
 msgid "check the output delta E"
 msgstr "Tarkista delta E ulostulo"
 
@@ -15875,10 +15884,6 @@ msgstr ""
 msgid "input profile"
 msgstr "Tuonnin väriprofiili"
 
-#: ../src/iop/colorin.c:2086
-msgid "working profile"
-msgstr "Työskentelytilan väriprofiili"
-
 #: ../src/iop/colorin.c:2095
 msgid "working ICC profiles"
 msgstr "työskentelytilan ICC-väriprofiilit"
@@ -15999,26 +16004,26 @@ msgstr "Muodostusmenetelmä"
 
 #: ../src/iop/colorout.c:851 ../src/libs/export.c:1358
 #: ../src/libs/print_settings.c:2492 ../src/libs/print_settings.c:2841
-#: ../src/views/darkroom.c:2410 ../src/views/lighttable.c:1176
+#: ../src/views/darkroom.c:2432 ../src/views/lighttable.c:1176
 msgid "perceptual"
 msgstr "Aistiperustainen"
 
 #: ../src/iop/colorout.c:852 ../src/libs/export.c:1359
 #: ../src/libs/print_settings.c:2493 ../src/libs/print_settings.c:2842
-#: ../src/views/darkroom.c:2411 ../src/views/lighttable.c:1177
+#: ../src/views/darkroom.c:2433 ../src/views/lighttable.c:1177
 msgid "relative colorimetric"
 msgstr "Suhteellinen kolorimetrinen"
 
 #: ../src/iop/colorout.c:853 ../src/libs/export.c:1360
 #: ../src/libs/print_settings.c:2494 ../src/libs/print_settings.c:2843
-#: ../src/views/darkroom.c:2412 ../src/views/lighttable.c:1178
+#: ../src/views/darkroom.c:2434 ../src/views/lighttable.c:1178
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "Värikylläisyyteen perustuva"
 
 #: ../src/iop/colorout.c:854 ../src/libs/export.c:1361
 #: ../src/libs/print_settings.c:2495 ../src/libs/print_settings.c:2844
-#: ../src/views/darkroom.c:2413 ../src/views/lighttable.c:1179
+#: ../src/views/darkroom.c:2435 ../src/views/lighttable.c:1179
 msgid "absolute colorimetric"
 msgstr "Absoluuttinen kolorimetrinen"
 
@@ -16080,7 +16085,7 @@ msgstr ""
 "verrattuna."
 
 #: ../src/iop/colorreconstruction.c:1260 ../src/iop/demosaic.c:1326
-#: ../src/iop/highlights.c:1227
+#: ../src/iop/highlights.c:1230
 msgid "not applicable"
 msgstr "Ei sovelleta"
 
@@ -16108,7 +16113,7 @@ msgstr ""
 "ja se on näkyvissä ainoastaan, jotta voit kytkeä sen pois päältä\n"
 "ja siirtyä käyttämään uutta värinkartoitusmoduulia."
 
-#: ../src/iop/colorequal.c:183 ../src/iop/colorequal.c:2475
+#: ../src/iop/colorequal.c:183 ../src/iop/colorequal.c:2476
 msgid "color equalizer"
 msgstr "Värin taajuuskorjain"
 
@@ -16129,29 +16134,29 @@ msgstr "Näennäislineaarinen, RGB"
 msgid "quasi-linear, RGB, scene-referred"
 msgstr "Näennäislineaarinen, RGB, Näkymä-viitattu"
 
-#: ../src/iop/colorequal.c:1609
+#: ../src/iop/colorequal.c:1610
 msgid "bleach bypass"
 msgstr "Valkaisun ohitus"
 
-#: ../src/iop/colorequal.c:1653
+#: ../src/iop/colorequal.c:1654
 msgid "Kodachrome 64 like"
 msgstr "Kodachrome 64 kaltainan"
 
-#: ../src/iop/colorequal.c:1697
+#: ../src/iop/colorequal.c:1698
 msgid "Kodak Portra 400 like"
 msgstr "Kodak Portra 400 kaltainan"
 
-#: ../src/iop/colorequal.c:1741
+#: ../src/iop/colorequal.c:1742
 msgid "teal & orange"
 msgstr "Sinivihreä (teal) & Oranssi"
 
 #. Page OPTIONS
-#: ../src/iop/colorequal.c:2430 ../src/iop/colorequal.c:2640
+#: ../src/iop/colorequal.c:2431 ../src/iop/colorequal.c:2641
 #: ../src/iop/filmicrgb.c:4577
 msgid "options"
 msgstr "Asetukset"
 
-#: ../src/iop/colorequal.c:2529
+#: ../src/iop/colorequal.c:2530
 msgid ""
 "double-click to reset the curve\n"
 "middle click to toggle sliders visibility\n"
@@ -16161,11 +16166,11 @@ msgstr ""
 "Hiiren keskinappi vaihtaa liukusäätimien näkyvyyden.\n"
 "ALT+hiiren rulla vaihtaa sivua."
 
-#: ../src/iop/colorequal.c:2556
+#: ../src/iop/colorequal.c:2557
 msgid "shift nodes to lower or higher hue"
 msgstr "Siirrä solmuja alemmalle tai ylemmälle sävylle."
 
-#: ../src/iop/colorequal.c:2559
+#: ../src/iop/colorequal.c:2560
 msgid ""
 "pick hue from image and visualize it\n"
 "ctrl+click to select an area"
@@ -16173,19 +16178,19 @@ msgstr ""
 "Valitse sävy kuvasta ja visualisoi se.\n"
 "CTRL+napsaus valitsee alueen."
 
-#: ../src/iop/colorequal.c:2581
+#: ../src/iop/colorequal.c:2582
 msgid "change hue hue-wise"
 msgstr "Muuta sävyä sävyn mukaan"
 
-#: ../src/iop/colorequal.c:2599
+#: ../src/iop/colorequal.c:2600
 msgid "change saturation hue-wise"
 msgstr "Muuta värikylläisyyttä sävyn mukaan"
 
-#: ../src/iop/colorequal.c:2617
+#: ../src/iop/colorequal.c:2618
 msgid "change brightness hue-wise"
 msgstr "Muuta kirkkautta sävyn mukaan"
 
-#: ../src/iop/colorequal.c:2650
+#: ../src/iop/colorequal.c:2651
 msgid ""
 "the white level set manually or via the picker restricts brightness "
 "corrections\n"
@@ -16194,17 +16199,17 @@ msgstr ""
 "Valkoisen tason asettaminen käsin tai värivalitsimella rajoittaa kirkkauden\n"
 "korjaukset määritetyn tason alle. Oletusarvo on hyvä suurimalle osalle kuvia."
 
-#: ../src/iop/colorequal.c:2655
+#: ../src/iop/colorequal.c:2656
 msgid "change for sharper or softer hue curve"
 msgstr "Muuta terävämpään tai pehmeämpään sävykäyrään."
 
-#: ../src/iop/colorequal.c:2659
+#: ../src/iop/colorequal.c:2660
 msgid "restrict effect by using a guided filter based on hue and saturation"
 msgstr ""
 "Rajoita vaikutusta käyttämällä sävyyn ja värikylläisyyteen perustuvaa "
 "ohjattua suodinta."
 
-#: ../src/iop/colorequal.c:2665
+#: ../src/iop/colorequal.c:2666
 msgid ""
 "set radius of the guided filter chroma analysis (hue).\n"
 "increase if there is large local variance of hue or strong chroma noise."
@@ -16212,7 +16217,7 @@ msgstr ""
 "Kroma-esisuodattimen (sävyn) analyysin häivytyksen säde.\n"
 "Lisää arvoa, jos värisävyn paikallinen varianssi tai värikohina on suuri."
 
-#: ../src/iop/colorequal.c:2676
+#: ../src/iop/colorequal.c:2677
 msgid ""
 "visualize weighting function on changed output and view weighting curve.\n"
 "red shows possibly changed data, blueish parts will not be changed."
@@ -16222,7 +16227,7 @@ msgstr ""
 "Punainen näyttää mahdollisesti muuttuneet tiedot, sinertäviä osia ei ole "
 "muutettu."
 
-#: ../src/iop/colorequal.c:2680
+#: ../src/iop/colorequal.c:2681
 msgid ""
 "set saturation threshold for the guided filter.\n"
 " - decrease to allow changes in areas with low chromaticity\n"
@@ -16235,7 +16240,7 @@ msgstr ""
 "   lisää kontrastia ja välttää kirkkauden muutoksia matalan kromaattisuuden "
 "alueilla."
 
-#: ../src/iop/colorequal.c:2688
+#: ../src/iop/colorequal.c:2689
 msgid ""
 "set saturation contrast for the guided filter.\n"
 " - increase to favor sharp transitions between saturations leading to higher "
@@ -16247,11 +16252,11 @@ msgstr ""
 "tuottamaan suuremman kontrastin\n"
 "- vähennä arvoa saadaksesi tasaisemmat siirtymät"
 
-#: ../src/iop/colorequal.c:2695
+#: ../src/iop/colorequal.c:2696
 msgid "set radius of applied parameters for the guided filter"
 msgstr "Ohjatun suotimen säteen asetus valituille asetuksille."
 
-#: ../src/iop/colorequal.c:2702
+#: ../src/iop/colorequal.c:2703
 msgid ""
 "visualize changed output for the selected tab.\n"
 "red shows increased data, blue decreased."
@@ -17175,7 +17180,7 @@ msgstr ""
 
 #: ../src/iop/enlargecanvas.c:449
 msgid "select the color of the enlarged canvas"
-msgstr "Valitse kanvaasin laajennuksen väri"
+msgstr "Valitse kanvaasin laajennuksen väri."
 
 #: ../src/iop/equalizer.c:89
 msgid "legacy equalizer"
@@ -17491,7 +17496,7 @@ msgstr ""
 #. Add export intent combo
 #: ../src/iop/filmic.c:1613 ../src/libs/export.c:1339
 #: ../src/libs/print_settings.c:2490 ../src/libs/print_settings.c:2837
-#: ../src/views/darkroom.c:2416 ../src/views/lighttable.c:1182
+#: ../src/views/darkroom.c:2438 ../src/views/lighttable.c:1182
 msgid "intent"
 msgstr "Menetelmä"
 
@@ -18244,7 +18249,7 @@ msgstr ""
 msgid "reconstruction, raw"
 msgstr "Korjaava, RAW"
 
-#: ../src/iop/highlights.c:973
+#: ../src/iop/highlights.c:976
 msgid ""
 "highlights: mode not available for this type of image. falling back to "
 "inpaint opposed."
@@ -18252,11 +18257,11 @@ msgstr ""
 "Huippuvalot: Tila ei ole saatavilla tämän tyyppiselle kuvalle. Käytetään "
 "vastakohtien maalausta sen sijaan."
 
-#: ../src/iop/highlights.c:1153
+#: ../src/iop/highlights.c:1156
 msgid "highlight reconstruction method"
 msgstr "Huippuvalojen palautuksen menetelmä."
 
-#: ../src/iop/highlights.c:1158
+#: ../src/iop/highlights.c:1161
 msgid ""
 "manually adjust the clipping threshold mostly used against magenta "
 "highlights.\n"
@@ -18270,7 +18275,7 @@ msgstr ""
 "'Segmentaatio' tiloja,\n"
 "erityisesti silloin, kun kameran valkoinen piste on asetettu väärin."
 
-#: ../src/iop/highlights.c:1162
+#: ../src/iop/highlights.c:1165
 msgid ""
 "visualize clipped highlights in a false color representation.\n"
 "the effective clipping level also depends on the reconstruction method."
@@ -18278,7 +18283,7 @@ msgstr ""
 "Visualisoi leikaantuneet huippuvalot vääräväriä käyttävällä esitystavalla.\n"
 "Tehokas leikkauksen taso riippuu myös palautuksen menetelmästä."
 
-#: ../src/iop/highlights.c:1172
+#: ../src/iop/highlights.c:1175
 msgid ""
 "combine closely related clipped segments by morphological operations.\n"
 "this often leads to improved color reconstruction for tiny segments before "
@@ -18289,11 +18294,11 @@ msgstr ""
 "Tämä johtaa usein pimeän taustan edessä olevien pienten lohkojen parempaan "
 "värien palautukseen."
 
-#: ../src/iop/highlights.c:1175
+#: ../src/iop/highlights.c:1178
 msgid "visualize the combined segments in a false color representation."
 msgstr "Visualisoi yhdistetyt lohkot vääräväriä käyttävällä esitystavalla."
 
-#: ../src/iop/highlights.c:1182
+#: ../src/iop/highlights.c:1185
 msgid ""
 "select inpainting after segmentation analysis.\n"
 "increase to favor candidates found in segmentation analysis, decrease for "
@@ -18303,7 +18308,7 @@ msgstr ""
 "Lisää arvoa suosiaksesi segmentaatioanalyysissä löydettyjä ehdokkaita, "
 "vähennä keskimääräisten vastakohtien maalaamiseksi."
 
-#: ../src/iop/highlights.c:1185
+#: ../src/iop/highlights.c:1188
 msgid ""
 "visualize segments that are considered to have a good candidate in a false "
 "color representation."
@@ -18311,7 +18316,7 @@ msgstr ""
 "Visualisoi lohkot joita pidetään hyvinä ehdokkaina vääräväriä käyttävälle "
 "esitystavalle."
 
-#: ../src/iop/highlights.c:1194
+#: ../src/iop/highlights.c:1197
 msgid ""
 "approximate lost data in regions with all photosites clipped, the effect "
 "depends on segment size and border gradients.\n"
@@ -18331,17 +18336,17 @@ msgstr ""
 "Tasaiset tilat ohittavat kapeat leikkaantumattomat rakenteet (kuten "
 "sähkölinjat), säilyttää palautetut huippuvalot ja välttää liukuvärejä."
 
-#: ../src/iop/highlights.c:1200
+#: ../src/iop/highlights.c:1203
 msgid "set strength of rebuilding in regions with all photosites clipped."
 msgstr ""
 "Aseta uudelleenrakennuksen voimakkuus kaikille alueille joilla jokainen "
 "senseli on leikkautunut."
 
-#: ../src/iop/highlights.c:1202
+#: ../src/iop/highlights.c:1205
 msgid "show the effect that is added to already reconstructed data."
 msgstr "Näytä vaikutus joka on lisätty aiemmin palautetulle tiedolle."
 
-#: ../src/iop/highlights.c:1211
+#: ../src/iop/highlights.c:1214
 msgid ""
 "add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. useful at high ISO."
@@ -18349,7 +18354,7 @@ msgstr ""
 "Lisää kohinaa palautettujen alueiden visuaaliseen yhdistämiseen\n"
 "muuhun kuvan kohinaan. Käyttökelpoinen suuren ISO-herkkyyden kuville."
 
-#: ../src/iop/highlights.c:1215
+#: ../src/iop/highlights.c:1218
 msgid ""
 "increase if magenta highlights don't get fully corrected\n"
 "each new iteration brings a performance penalty."
@@ -18357,7 +18362,7 @@ msgstr ""
 "Lisää, jos magentat huippuvalot eivät korjaannu täysin.\n"
 "Jokainen uusi iteraatio vaatii lisää laskentatehoa."
 
-#: ../src/iop/highlights.c:1220
+#: ../src/iop/highlights.c:1223
 msgid ""
 "increase if magenta highlights don't get fully corrected.\n"
 "this may produce non-smooth boundaries between valid and clipped regions."
@@ -18365,7 +18370,7 @@ msgstr ""
 "Lisää, jos magentat huippuvalot eivät korjaannu täysin.\n"
 "Tämä saattaa lisätä epätasaisia rajoja leikkautuvan alueen reunoille."
 
-#: ../src/iop/highlights.c:1224
+#: ../src/iop/highlights.c:1227
 msgid ""
 "increase to correct larger clipped areas.\n"
 "large values bring huge performance penalties"
@@ -18373,7 +18378,7 @@ msgstr ""
 "Lisää korjataksesi laajoja leikkautuneita alueita.\n"
 "Suuret arvot vaativat erittäin paljon laskentatehoa."
 
-#: ../src/iop/highlights.c:1228
+#: ../src/iop/highlights.c:1231
 msgid "this module does not work with monochrome RAW files"
 msgstr "Tämä moduuli ei toimi mustavalkoisilla RAW-tiedostoilla."
 
@@ -19449,9 +19454,9 @@ msgstr "Värien tasoituksen voimakkuus."
 #. * let's fill the encapsulating widgets
 #. preview mode
 #. color scheme
-#: ../src/iop/overexposed.c:71 ../src/views/darkroom.c:2309
-#: ../src/views/darkroom.c:2327 ../src/views/darkroom.c:2334
-#: ../src/views/darkroom.c:2344 ../src/views/darkroom.c:2361
+#: ../src/iop/overexposed.c:71 ../src/views/darkroom.c:2331
+#: ../src/views/darkroom.c:2349 ../src/views/darkroom.c:2356
+#: ../src/views/darkroom.c:2366 ../src/views/darkroom.c:2383
 msgid "overexposed"
 msgstr "Ylivalottunut"
 
@@ -19693,9 +19698,9 @@ msgstr ""
 
 #. * let's fill the encapsulating widgets
 #. mode of operation
-#: ../src/iop/rawoverexposed.c:69 ../src/views/darkroom.c:2259
-#: ../src/views/darkroom.c:2277 ../src/views/darkroom.c:2283
-#: ../src/views/darkroom.c:2296
+#: ../src/iop/rawoverexposed.c:69 ../src/views/darkroom.c:2281
+#: ../src/views/darkroom.c:2299 ../src/views/darkroom.c:2305
+#: ../src/views/darkroom.c:2318
 msgid "raw overexposed"
 msgstr "Ylivalottunut raakakuva"
 
@@ -20330,46 +20335,51 @@ msgid "set custom primaries"
 msgstr "Aseta mukautetut ensisijaiset värit."
 
 #: ../src/iop/sigmoid.c:939
-msgid "primaries to use as the base for below adjustments"
-msgstr "Perustana käytettävät päävärit alla oleville säädöille."
+msgid ""
+"primaries to use as the base for below adjustments\n"
+"'working profile' uses the profile set in 'input color profile'"
+msgstr ""
+"Perustana käytettävät päävärit alla oleville säädöille.\n"
+"'Työskentelytilan väriprofiili' käyttää 'Tuonnin väriprofiili' asetuksen "
+"profiilia."
 
-#: ../src/iop/sigmoid.c:958
+#: ../src/iop/sigmoid.c:959
 msgid "attenuate the purity of the red primary"
 msgstr "Vaimenna punaisen päävärin puhtautta."
 
-#: ../src/iop/sigmoid.c:959
+#: ../src/iop/sigmoid.c:960
 msgid "rotate the red primary"
 msgstr "Kierrä punainen pääväri."
 
-#: ../src/iop/sigmoid.c:960
+#: ../src/iop/sigmoid.c:961
 msgid "attenuate the purity of the green primary"
 msgstr "Vaimenna vihreän päävärin puhtautta."
 
-#: ../src/iop/sigmoid.c:961
+#: ../src/iop/sigmoid.c:962
 msgid "rotate the green primary"
 msgstr "Kierrä vihreä pääväri."
 
-#: ../src/iop/sigmoid.c:962
+#: ../src/iop/sigmoid.c:963
 msgid "attenuate the purity of the blue primary"
 msgstr "Vaimenna sinisen päävärin puhtautta."
 
-#: ../src/iop/sigmoid.c:963
+#: ../src/iop/sigmoid.c:964
 msgid "rotate the blue primary"
 msgstr "Kierrä sininen pääväri."
 
-#: ../src/iop/sigmoid.c:970
+#: ../src/iop/sigmoid.c:971
 msgid "recover some of the original purity after the inset"
 msgstr "Palauta jotain alkuperäisestä puhtaudesta liitteen jälkeen."
 
-#: ../src/iop/sigmoid.c:974
+#: ../src/iop/sigmoid.c:975
 msgid "display luminance"
 msgstr "Näytön kirkkaus"
 
-#: ../src/iop/sigmoid.c:975
+#: ../src/iop/sigmoid.c:976
 msgid "set display black/white targets"
 msgstr "Aseta näytön mustan/valkoisen kohteet"
 
-#: ../src/iop/sigmoid.c:983
+#: ../src/iop/sigmoid.c:984
 msgid ""
 "the black luminance of the target display or print.\n"
 "can be used creatively for a faded look."
@@ -20377,7 +20387,7 @@ msgstr ""
 "Kohdenäytön tai tulosteen mustan kirkkaus.\n"
 "Voidaan käyttää luovasti haalistuneen kuvan saamiseksi."
 
-#: ../src/iop/sigmoid.c:988
+#: ../src/iop/sigmoid.c:989
 msgid ""
 "the white luminance of the target display or print.\n"
 "can be used creatively for a faded look or blowing out whites earlier."
@@ -20525,110 +20535,110 @@ msgstr ""
 "Skaalaa RAW-kuvan RGB-kanavat valkoisen tasapainottamiseksi ja mosaiikin "
 "palautuksen helpottamiseksi"
 
-#: ../src/iop/temperature.c:1449
+#: ../src/iop/temperature.c:1457
 #, c-format
 msgid "`%s' color matrix not found for image"
 msgstr "`%s' värimatriisia ei löytynyt kuvalle."
 
-#: ../src/iop/temperature.c:1504
+#: ../src/iop/temperature.c:1512
 #, c-format
 msgid "failed to read camera white balance information from `%s'!"
 msgstr "Kameran valkotasapainon lukeminen lähteestä `%s' epäonnistui!"
 
 #. old "camera". reason for change: all other RAW development
 #. tools use "As Shot" or "shot"
-#: ../src/iop/temperature.c:1677
+#: ../src/iop/temperature.c:1680
 msgctxt "white balance"
 msgid "as shot"
 msgstr "Kuvausasetus"
 
 #. old "spot", reason: describes exactly what'll happen
-#: ../src/iop/temperature.c:1680
+#: ../src/iop/temperature.c:1683
 msgctxt "white balance"
 msgid "from image area"
 msgstr "Kuvan alue"
 
-#: ../src/iop/temperature.c:1681
+#: ../src/iop/temperature.c:1684
 msgctxt "white balance"
 msgid "user modified"
 msgstr "Käyttäjän muokkaama"
 
 #. old "camera neutral", reason: better matches intent
-#: ../src/iop/temperature.c:1683
+#: ../src/iop/temperature.c:1686
 msgctxt "white balance"
 msgid "camera reference"
 msgstr "Kameran viitearvo"
 
-#: ../src/iop/temperature.c:1684
+#: ../src/iop/temperature.c:1687
 msgctxt "white balance"
 msgid "as shot to reference"
 msgstr "Kuvausasetus viitearvoksi"
 
-#: ../src/iop/temperature.c:1988 ../src/iop/temperature.c:2006
+#: ../src/iop/temperature.c:1991 ../src/iop/temperature.c:2009
 msgid "green channel coefficient"
 msgstr "Vihreän kanavan kerroin"
 
-#: ../src/iop/temperature.c:1990
+#: ../src/iop/temperature.c:1993
 msgid "magenta channel coefficient"
 msgstr "Magentan kanavan kerroin"
 
-#: ../src/iop/temperature.c:1992
+#: ../src/iop/temperature.c:1995
 msgid "cyan channel coefficient"
 msgstr "Syaanin kanavan kerroin"
 
-#: ../src/iop/temperature.c:1994
+#: ../src/iop/temperature.c:1997
 msgid "yellow channel coefficient"
 msgstr "Keltaisen kanavan kerroin"
 
-#: ../src/iop/temperature.c:2004
+#: ../src/iop/temperature.c:2007
 msgid "red channel coefficient"
 msgstr "Punaisen kanavan kerroin"
 
-#: ../src/iop/temperature.c:2008
+#: ../src/iop/temperature.c:2011
 msgid "blue channel coefficient"
 msgstr "Sinisen kanavan kerroin"
 
-#: ../src/iop/temperature.c:2009
+#: ../src/iop/temperature.c:2012
 msgid "emerald"
 msgstr "Smaragdinvihreä"
 
-#: ../src/iop/temperature.c:2010
+#: ../src/iop/temperature.c:2013
 msgid "emerald channel coefficient"
 msgstr "Smaragdin kanavan kerroin"
 
 #. relabel to settings to remove confusion between module presets
 #. and white balance settings
-#: ../src/iop/temperature.c:2088 ../src/iop/temperature.c:2101
-#: ../src/iop/temperature.c:2108 ../src/iop/temperature.c:2114
-#: ../src/iop/temperature.c:2122 ../src/iop/temperature.c:2143
+#: ../src/iop/temperature.c:2091 ../src/iop/temperature.c:2104
+#: ../src/iop/temperature.c:2111 ../src/iop/temperature.c:2117
+#: ../src/iop/temperature.c:2125 ../src/iop/temperature.c:2146
 msgid "settings"
 msgstr "Asetukset"
 
-#: ../src/iop/temperature.c:2088
+#: ../src/iop/temperature.c:2091
 msgid "as shot"
 msgstr "Kuvausasetus"
 
-#: ../src/iop/temperature.c:2091
+#: ../src/iop/temperature.c:2094
 msgid "set white balance to as shot"
 msgstr "Aseta valkotasapaino kuvausasetukseen."
 
-#: ../src/iop/temperature.c:2101
+#: ../src/iop/temperature.c:2104
 msgid "from image area"
 msgstr "Kuvan alueesta"
 
-#: ../src/iop/temperature.c:2108
+#: ../src/iop/temperature.c:2111
 msgid "user modified"
 msgstr "Käyttäjän muokkaama"
 
-#: ../src/iop/temperature.c:2111
+#: ../src/iop/temperature.c:2114
 msgid "set white balance to user modified"
 msgstr "Aseta valkotasapaino käyttäjän muokkaamaan asetukseen."
 
-#: ../src/iop/temperature.c:2114
+#: ../src/iop/temperature.c:2117
 msgid "camera reference"
 msgstr "Kameran viitearvo"
 
-#: ../src/iop/temperature.c:2119
+#: ../src/iop/temperature.c:2122
 msgid ""
 "set white balance to camera reference point\n"
 "in most cases it should be D65"
@@ -20636,11 +20646,11 @@ msgstr ""
 "Aseta valkotasapaino kameran viitearvoon.\n"
 "Yleensä sen pitäisi olla D65."
 
-#: ../src/iop/temperature.c:2123
+#: ../src/iop/temperature.c:2126
 msgid "as shot to reference"
 msgstr "Kuvausasetus viitearvoksi"
 
-#: ../src/iop/temperature.c:2128
+#: ../src/iop/temperature.c:2131
 msgid ""
 "set white balance to as shot and later correct to camera reference point,\n"
 "in most cases it should be D65"
@@ -20649,48 +20659,48 @@ msgstr ""
 "myöhemmin.\n"
 "Yleensä sen pitäisi olla D65."
 
-#: ../src/iop/temperature.c:2144
+#: ../src/iop/temperature.c:2147
 msgid "choose white balance setting"
 msgstr "Valitse valkotasapainon asetus."
 
-#: ../src/iop/temperature.c:2149
+#: ../src/iop/temperature.c:2152
 msgid "finetune"
 msgstr "Hienosäätö"
 
-#: ../src/iop/temperature.c:2151
+#: ../src/iop/temperature.c:2154
 msgid "fine tune camera's white balance setting"
 msgstr "Hienosäädä kameran valkotasapainon asetusta."
 
-#: ../src/iop/temperature.c:2159
+#: ../src/iop/temperature.c:2162
 msgctxt "section"
 msgid "scene illuminant temp"
 msgstr "Näkymän valaisun lämpötila"
 
-#: ../src/iop/temperature.c:2160
+#: ../src/iop/temperature.c:2163
 msgid "click to cycle color mode on sliders"
 msgstr "Napsauta vaihtaaksesi liukusäätimien väritilaa."
 
-#: ../src/iop/temperature.c:2174
+#: ../src/iop/temperature.c:2177
 msgid "color temperature (in Kelvin)"
 msgstr "Värilämpötila (Kelvin-asteikolla)"
 
-#: ../src/iop/temperature.c:2180
+#: ../src/iop/temperature.c:2183
 msgid "tint"
 msgstr "Sävy"
 
-#: ../src/iop/temperature.c:2183
+#: ../src/iop/temperature.c:2186
 msgid "color tint of the image, from magenta (value < 1) to green (value > 1)"
 msgstr "Kuvan värien sävy, magentasta (arvo <1) vihreään (arvo > 1)."
 
-#: ../src/iop/temperature.c:2189
+#: ../src/iop/temperature.c:2192
 msgid "channel coefficients"
 msgstr "Kanavien kertoimet"
 
-#: ../src/iop/temperature.c:2198
+#: ../src/iop/temperature.c:2201
 msgid "various"
 msgstr "Monta"
 
-#: ../src/iop/temperature.c:2224
+#: ../src/iop/temperature.c:2227
 msgid "white balance disabled for camera"
 msgstr "Kameran valkotasapaino otettu pois käytöstä"
 
@@ -22664,7 +22674,7 @@ msgid "open GPX file"
 msgstr "Avaa GPX-tiedosto"
 
 #: ../src/libs/geotagging.c:928 ../src/libs/tools/lighttable.c:330
-#: ../src/libs/tools/lighttable.c:399 ../src/views/darkroom.c:2128
+#: ../src/libs/tools/lighttable.c:399 ../src/views/darkroom.c:2150
 msgid "preview"
 msgstr "Esikatselu"
 
@@ -25710,7 +25720,7 @@ msgctxt "darkroom"
 msgid "loading `%s' ..."
 msgstr "Ladataan `%s' ..."
 
-#: ../src/views/darkroom.c:688 ../src/views/darkroom.c:2386
+#: ../src/views/darkroom.c:688 ../src/views/darkroom.c:2408
 msgid "gamut check"
 msgstr "Sävyasteikon tarkastus"
 
@@ -25723,47 +25733,47 @@ msgstr "Vedoksen esikatselu"
 msgid "no image to open!"
 msgstr "Avattavaa kuvaa ei ole valittu!"
 
-#: ../src/views/darkroom.c:1260
+#: ../src/views/darkroom.c:1263
 msgid "no user-defined presets for favorite modules were found"
 msgstr "Käyttäjän määrittämiä suosikkimoduuleiden esiasetuksia ei löytynyt."
 
-#: ../src/views/darkroom.c:1405
+#: ../src/views/darkroom.c:1408
 msgid "no styles have been created yet"
 msgstr "Tyylejä ei ole vielä luotu."
 
-#: ../src/views/darkroom.c:2207 ../src/views/darkroom.c:2208
+#: ../src/views/darkroom.c:2229 ../src/views/darkroom.c:2230
 msgid "quick access to presets"
 msgstr "Pikavalinta esiasetuksiin."
 
-#: ../src/views/darkroom.c:2216
+#: ../src/views/darkroom.c:2238
 msgid "quick access to styles"
 msgstr "Pikavalinta tyyleihin."
 
-#: ../src/views/darkroom.c:2218
+#: ../src/views/darkroom.c:2240
 msgid "quick access for applying any of your styles"
 msgstr "Pikavalinta tyylien käyttöönottoon."
 
-#: ../src/views/darkroom.c:2224
+#: ../src/views/darkroom.c:2246
 msgid "second window"
 msgstr "Toinen ikkuna"
 
-#: ../src/views/darkroom.c:2227
+#: ../src/views/darkroom.c:2249
 msgid "display a second darkroom image window"
 msgstr "Näytä toinen pimiön kuva-ikkuna."
 
-#: ../src/views/darkroom.c:2232
+#: ../src/views/darkroom.c:2254
 msgid "color assessment"
 msgstr "Värin arviointi"
 
-#: ../src/views/darkroom.c:2235
+#: ../src/views/darkroom.c:2257
 msgid "toggle ISO 12646 color assessment conditions"
 msgstr "Vaihda ISO 12646 värien arvioinnin tilaa."
 
-#: ../src/views/darkroom.c:2242
+#: ../src/views/darkroom.c:2264
 msgid "high quality processing"
 msgstr "Korkealaatuinen käsittely"
 
-#: ../src/views/darkroom.c:2246
+#: ../src/views/darkroom.c:2268
 msgid ""
 "toggle high quality processing, if activated darktable processes image data "
 "as it does while exporting"
@@ -25771,7 +25781,7 @@ msgstr ""
 "Valitse korkean laadun prosessointi, jos aktivoitu Darktable käsittelee "
 "kuvan kuten kuvien viennissä."
 
-#: ../src/views/darkroom.c:2262
+#: ../src/views/darkroom.c:2284
 msgid ""
 "toggle indication of raw overexposure\n"
 "right click for options"
@@ -25779,27 +25789,27 @@ msgstr ""
 "Raakakuvan ylivalotuksen ilmaisu päälle tai pois.\n"
 "Asetukset valittavissa hiiren oikealla napilla."
 
-#: ../src/views/darkroom.c:2278
+#: ../src/views/darkroom.c:2300
 msgid "select how to mark the clipped pixels"
 msgstr "Valitse kuinka leikkaantuneet pikselit ilmaistaan."
 
-#: ../src/views/darkroom.c:2280
+#: ../src/views/darkroom.c:2302
 msgid "mark with CFA color"
 msgstr "Kennon pikseliverkon väri"
 
-#: ../src/views/darkroom.c:2280
+#: ../src/views/darkroom.c:2302
 msgid "mark with solid color"
 msgstr "Kiinteä väri"
 
-#: ../src/views/darkroom.c:2280
+#: ../src/views/darkroom.c:2302
 msgid "false color"
 msgstr "Vääräväri"
 
-#: ../src/views/darkroom.c:2283 ../src/views/darkroom.c:2334
+#: ../src/views/darkroom.c:2305 ../src/views/darkroom.c:2356
 msgid "color scheme"
 msgstr "Ilmaisun väri"
 
-#: ../src/views/darkroom.c:2284
+#: ../src/views/darkroom.c:2306
 msgid ""
 "select the solid color to indicate overexposure.\n"
 "will only be used if mode = mark with solid color"
@@ -25807,27 +25817,27 @@ msgstr ""
 "Valitse ylivalotuksen ilmaisuun käytettävä väri.\n"
 "Käytetään kun tila = Kiinteä väri."
 
-#: ../src/views/darkroom.c:2287
+#: ../src/views/darkroom.c:2309
 msgctxt "solidcolor"
 msgid "red"
 msgstr "Punainen"
 
-#: ../src/views/darkroom.c:2288
+#: ../src/views/darkroom.c:2310
 msgctxt "solidcolor"
 msgid "green"
 msgstr "Vihreä"
 
-#: ../src/views/darkroom.c:2289
+#: ../src/views/darkroom.c:2311
 msgctxt "solidcolor"
 msgid "blue"
 msgstr "Sininen"
 
-#: ../src/views/darkroom.c:2290
+#: ../src/views/darkroom.c:2312
 msgctxt "solidcolor"
 msgid "black"
 msgstr "Musta"
 
-#: ../src/views/darkroom.c:2298
+#: ../src/views/darkroom.c:2320
 msgid ""
 "threshold of what shall be considered overexposed\n"
 "1.0 - white level\n"
@@ -25837,7 +25847,7 @@ msgstr ""
 "1.0 - valkoisen taso\n"
 "0.0 - mustan taso"
 
-#: ../src/views/darkroom.c:2312
+#: ../src/views/darkroom.c:2334
 msgid ""
 "toggle clipping indication\n"
 "right click for options"
@@ -25845,11 +25855,11 @@ msgstr ""
 "Ylivalotuksen ilmaisu päälle tai pois.\n"
 "Asetukset valittavissa hiiren oikealla napilla."
 
-#: ../src/views/darkroom.c:2327
+#: ../src/views/darkroom.c:2349
 msgid "clipping preview mode"
 msgstr "Leikkauksen tila"
 
-#: ../src/views/darkroom.c:2328
+#: ../src/views/darkroom.c:2350
 msgid ""
 "select the metric you want to preview\n"
 "full gamut is the combination of all other modes"
@@ -25857,39 +25867,39 @@ msgstr ""
 "Valitse esikatseltava metriikka.\n"
 "Täysi sävyasteikko on kaikkien tilojen yhdistelmä."
 
-#: ../src/views/darkroom.c:2330
+#: ../src/views/darkroom.c:2352
 msgid "full gamut"
 msgstr "Täysi sävyasteikko"
 
-#: ../src/views/darkroom.c:2330
+#: ../src/views/darkroom.c:2352
 msgid "any RGB channel"
 msgstr "Mikä tahansa RGB-kanava"
 
-#: ../src/views/darkroom.c:2330
+#: ../src/views/darkroom.c:2352
 msgid "luminance only"
 msgstr "Vain kirkkaus"
 
-#: ../src/views/darkroom.c:2330
+#: ../src/views/darkroom.c:2352
 msgid "saturation only"
 msgstr "Vain värikylläisyys"
 
-#: ../src/views/darkroom.c:2335
+#: ../src/views/darkroom.c:2357
 msgid "select colors to indicate clipping"
 msgstr "Valitse ylivalotuksen ja alivalotuksen ilmaisuun käytettävät värit."
 
-#: ../src/views/darkroom.c:2337
+#: ../src/views/darkroom.c:2359
 msgid "red & blue"
 msgstr "Punainen ja sininen"
 
-#: ../src/views/darkroom.c:2337
+#: ../src/views/darkroom.c:2359
 msgid "purple & green"
 msgstr "Purppura ja vihreä"
 
-#: ../src/views/darkroom.c:2344
+#: ../src/views/darkroom.c:2366
 msgid "lower threshold"
 msgstr "Alempi kynnysarvo"
 
-#: ../src/views/darkroom.c:2345
+#: ../src/views/darkroom.c:2367
 msgid ""
 "clipping threshold for the black point,\n"
 "in EV, relatively to white (0 EV).\n"
@@ -25911,11 +25921,11 @@ msgstr ""
 "Tyypillinen mustavalkotuloste kiiltävälle paperille tuottaa mustat -9.00 "
 "aukolla."
 
-#: ../src/views/darkroom.c:2361
+#: ../src/views/darkroom.c:2383
 msgid "upper threshold"
 msgstr "Ylempi kynnysarvo"
 
-#: ../src/views/darkroom.c:2363
+#: ../src/views/darkroom.c:2385
 #, no-c-format
 msgid ""
 "clipping threshold for the white point.\n"
@@ -25924,11 +25934,11 @@ msgstr ""
 "Valkoisen pisteen leikkauksen kynnysarvo.\n"
 "100% on huipun kirkkaus."
 
-#: ../src/views/darkroom.c:2375
+#: ../src/views/darkroom.c:2397
 msgid "softproof"
 msgstr "Vedoksen esikatselu"
 
-#: ../src/views/darkroom.c:2378
+#: ../src/views/darkroom.c:2400
 msgid ""
 "toggle softproofing\n"
 "right click for profile options"
@@ -25936,7 +25946,7 @@ msgstr ""
 "Vedoksen esikatselu päälle tai pois.\n"
 "Profiili valittavissa hiiren oikealla napilla."
 
-#: ../src/views/darkroom.c:2389
+#: ../src/views/darkroom.c:2411
 msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
@@ -25944,54 +25954,54 @@ msgstr ""
 "Sävyasteikon tarkastus päälle tai pois.\n"
 "Profiili valittavissa hiiren oikealla napilla."
 
-#: ../src/views/darkroom.c:2416 ../src/views/darkroom.c:2418
-#: ../src/views/darkroom.c:2432 ../src/views/darkroom.c:2433
-#: ../src/views/darkroom.c:2434 ../src/views/darkroom.c:2435
+#: ../src/views/darkroom.c:2438 ../src/views/darkroom.c:2440
+#: ../src/views/darkroom.c:2454 ../src/views/darkroom.c:2455
+#: ../src/views/darkroom.c:2456 ../src/views/darkroom.c:2457
 #: ../src/views/lighttable.c:1182 ../src/views/lighttable.c:1184
 msgid "profiles"
 msgstr "Profiilit"
 
-#: ../src/views/darkroom.c:2418 ../src/views/lighttable.c:1184
+#: ../src/views/darkroom.c:2440 ../src/views/lighttable.c:1184
 msgid "preview intent"
 msgstr "Esikatselun menetelmä"
 
-#: ../src/views/darkroom.c:2432 ../src/views/lighttable.c:1188
+#: ../src/views/darkroom.c:2454 ../src/views/lighttable.c:1188
 msgid "display profile"
 msgstr "Näytön profiili"
 
-#: ../src/views/darkroom.c:2433 ../src/views/lighttable.c:1191
+#: ../src/views/darkroom.c:2455 ../src/views/lighttable.c:1191
 msgid "preview display profile"
 msgstr "Esikatselunäytön profiili"
 
-#: ../src/views/darkroom.c:2435
+#: ../src/views/darkroom.c:2457
 msgid "histogram profile"
 msgstr "Histogrammin profiili"
 
-#: ../src/views/darkroom.c:2442
+#: ../src/views/darkroom.c:2464
 msgid "second preview window ISO 12646 color assessment"
 msgstr "Toisen esikatseluikkunan ISO 12646 värien arvioinnin tila."
 
-#: ../src/views/darkroom.c:2444
+#: ../src/views/darkroom.c:2466
 msgid "color assessment second preview"
 msgstr "Toisen esikatselun värin arviointi"
 
-#: ../src/views/darkroom.c:2503 ../src/views/lighttable.c:1225
+#: ../src/views/darkroom.c:2525 ../src/views/lighttable.c:1225
 msgid "display ICC profiles"
 msgstr "näytön ICC-väriprofiilit"
 
-#: ../src/views/darkroom.c:2507 ../src/views/lighttable.c:1229
+#: ../src/views/darkroom.c:2529 ../src/views/lighttable.c:1229
 msgid "preview display ICC profiles"
 msgstr "esikatselunäytön ICC-väriprofiilit"
 
-#: ../src/views/darkroom.c:2511
+#: ../src/views/darkroom.c:2533
 msgid "softproof ICC profiles"
 msgstr "vedoksen esikatselun ICC-väriprofiilit"
 
-#: ../src/views/darkroom.c:2515
+#: ../src/views/darkroom.c:2537
 msgid "histogram and color picker ICC profiles"
 msgstr "histogrammin ja värivalitsimen ICC-väriprofiilit"
 
-#: ../src/views/darkroom.c:2548
+#: ../src/views/darkroom.c:2570
 msgid ""
 "toggle guide lines\n"
 "right click for guides options"
@@ -26000,137 +26010,137 @@ msgstr ""
 "Apulinjojen asetukset valittavissa hiiren oikealla napilla."
 
 #. Fullscreen preview key
-#: ../src/views/darkroom.c:2565
+#: ../src/views/darkroom.c:2587
 msgid "full preview"
 msgstr "Koko ruudun esikatselu"
 
 #. add an option to allow skip mouse events while other overlays are consuming mouse actions
-#: ../src/views/darkroom.c:2569
+#: ../src/views/darkroom.c:2591
 msgid "force pan/zoom/rotate with mouse"
 msgstr "Pakota kuvan panorointi, zoomaus ja kierto hiirellä"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:2581
+#: ../src/views/darkroom.c:2603
 msgid "zoom close-up"
 msgstr "Suurenna"
 
 #. zoom in/out
 #. zoom in/out/min/max
-#: ../src/views/darkroom.c:2584 ../src/views/lighttable.c:1283
+#: ../src/views/darkroom.c:2606 ../src/views/lighttable.c:1283
 msgid "zoom in"
 msgstr "Suurenna"
 
-#: ../src/views/darkroom.c:2585 ../src/views/lighttable.c:1285
+#: ../src/views/darkroom.c:2607 ../src/views/lighttable.c:1285
 msgid "zoom out"
 msgstr "Pienennä"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:2588
+#: ../src/views/darkroom.c:2610
 msgid "image forward"
 msgstr "Seuraava kuva"
 
-#: ../src/views/darkroom.c:2589
+#: ../src/views/darkroom.c:2611
 msgid "image back"
 msgstr "Edellinen kuva"
 
 #. cycle overlay colors
-#: ../src/views/darkroom.c:2592
+#: ../src/views/darkroom.c:2614
 msgid "cycle overlay colors"
 msgstr "Valitse kuvapeitteen väri"
 
 #. toggle visibility of drawn masks for current gui module
-#: ../src/views/darkroom.c:2595
+#: ../src/views/darkroom.c:2617
 msgid "show drawn masks"
 msgstr "Näytä piirretty maski"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:2598
+#: ../src/views/darkroom.c:2620
 msgid "increase brush size"
 msgstr "Suurenna siveltimen kokoa"
 
-#: ../src/views/darkroom.c:2599
+#: ../src/views/darkroom.c:2621
 msgid "decrease brush size"
 msgstr "Pienennä siveltimen kokoa"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:2602
+#: ../src/views/darkroom.c:2624
 msgid "increase brush hardness"
 msgstr "Lisää siveltimen kovuutta"
 
-#: ../src/views/darkroom.c:2603
+#: ../src/views/darkroom.c:2625
 msgid "decrease brush hardness"
 msgstr "Vähennä siveltimen kovuutta"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:2606
+#: ../src/views/darkroom.c:2628
 msgid "increase brush opacity"
 msgstr "Lisää siveltimen läpinäkyvyyttä"
 
-#: ../src/views/darkroom.c:2607
+#: ../src/views/darkroom.c:2629
 msgid "decrease brush opacity"
 msgstr "Vähennä siveltimen läpinäkyvyyttä"
 
 #. undo/redo
-#: ../src/views/darkroom.c:2610 ../src/views/lighttable.c:1275
+#: ../src/views/darkroom.c:2632 ../src/views/lighttable.c:1275
 #: ../src/views/map.c:2448
 msgid "undo"
 msgstr "Kumoa"
 
-#: ../src/views/darkroom.c:2611 ../src/views/lighttable.c:1276
+#: ../src/views/darkroom.c:2633 ../src/views/lighttable.c:1276
 #: ../src/views/map.c:2450
 msgid "redo"
 msgstr "Tee uudelleen"
 
 #. change the precision for adjusting sliders with keyboard shortcuts
-#: ../src/views/darkroom.c:2614
+#: ../src/views/darkroom.c:2636
 msgid "change keyboard shortcut slider precision"
 msgstr "Muuta näppäimistön pikavalintojen liukukytkimen tarkkuutta"
 
-#: ../src/views/darkroom.c:3622
+#: ../src/views/darkroom.c:3644
 msgid "keyboard shortcut slider precision: fine"
 msgstr "Näppäimistön pikavalintakytkimen tarkkuus: hieno"
 
-#: ../src/views/darkroom.c:3624
+#: ../src/views/darkroom.c:3646
 msgid "keyboard shortcut slider precision: normal"
 msgstr "Näppäimistön pikavalintakytkimen tarkkuus: normaali"
 
-#: ../src/views/darkroom.c:3626
+#: ../src/views/darkroom.c:3648
 msgid "keyboard shortcut slider precision: coarse"
 msgstr "Näppäimistön pikavalintakytkimen tarkkuus: karkea"
 
-#: ../src/views/darkroom.c:3641
+#: ../src/views/darkroom.c:3663
 msgid "switch to lighttable"
 msgstr "Vaihda valopöytään"
 
-#: ../src/views/darkroom.c:3642 ../src/views/lighttable.c:882
+#: ../src/views/darkroom.c:3664 ../src/views/lighttable.c:882
 msgid "zoom in the image"
 msgstr "Suurenna kuvaa"
 
-#: ../src/views/darkroom.c:3643
+#: ../src/views/darkroom.c:3665
 msgid "unbounded zoom in the image"
 msgstr "Rajaton zoomaus kuvassa"
 
-#: ../src/views/darkroom.c:3644
+#: ../src/views/darkroom.c:3666
 msgid "zoom to 100% 200% and back"
 msgstr "Lähennä 100% / 200% ja takaisin"
 
-#: ../src/views/darkroom.c:3645 ../src/views/lighttable.c:885
+#: ../src/views/darkroom.c:3667 ../src/views/lighttable.c:885
 msgid "pan a zoomed image"
 msgstr "Panoroi lähennetyn kuvan sisällä"
 
-#: ../src/views/darkroom.c:3647 ../src/views/lighttable.c:927
+#: ../src/views/darkroom.c:3669 ../src/views/lighttable.c:927
 msgid "[modules] expand module without closing others"
 msgstr "[Moduulit] Laajenna moduuli pienentämättä muita"
 
-#: ../src/views/darkroom.c:3648 ../src/views/lighttable.c:928
+#: ../src/views/darkroom.c:3670 ../src/views/lighttable.c:928
 msgid "[modules] expand module and close others"
 msgstr "[Moduulit] Laajenna moduuli ja sulje muut"
 
-#: ../src/views/darkroom.c:3650
+#: ../src/views/darkroom.c:3672
 msgid "[modules] rename module"
 msgstr "[Moduulit] Muuta moduulin nimeä"
 
-#: ../src/views/darkroom.c:3652
+#: ../src/views/darkroom.c:3674
 msgid "[modules] change module position in pipe"
 msgstr "[Moduulit] Muuta moduulin sijaintia työskentelyputkessa"
 
@@ -26413,6 +26423,13 @@ msgstr ""
 #: ../src/views/view.c:1532
 msgid "mouse actions"
 msgstr "Hiiren toiminnat"
+
+#~ msgid ""
+#~ "hides built-in presets of processing modules in both presets and "
+#~ "favourites menu."
+#~ msgstr ""
+#~ "Piilottaa käsittelymoduulien sisäänrakennetut esiasetukset valikoista ja "
+#~ "suosikeista."
 
 #~ msgid "radius_1"
 #~ msgstr "Säde_1"
