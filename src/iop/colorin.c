@@ -1670,7 +1670,7 @@ void gui_update(struct dt_iop_module_t *self)
   {
     idx = 0;
     dt_print(DT_DEBUG_ALWAYS,
-             "[colorin] could not find requested working profile `%s'!\n",
+             "[gui colorin] could not find requested working profile `%s'!\n",
              dt_colorspaces_get_name(p->type_work, p->filename_work));
   }
   dt_bauhaus_combobox_set(g->work_combobox, idx);
@@ -1705,8 +1705,7 @@ void gui_update(struct dt_iop_module_t *self)
   }
   dt_bauhaus_combobox_set(g->profile_combobox, 0);
 
-  if(p->type != DT_COLORSPACE_ENHANCED_MATRIX)
-    dt_print(DT_DEBUG_ALWAYS, "[colorin] could not find requested profile `%s'!\n",
+  dt_print(DT_DEBUG_PIPE, "[gui colorin] using default instead of `%s'\n",
              dt_colorspaces_get_name(p->type, p->filename));
 }
 
