@@ -8,7 +8,7 @@ To build darktable for the Windows operating system you have two basic options.
 Native build using MSYS2
 ------------------------
 
-How to make a darktable Windows installer (x64 only; Windows 8.1 will need to have [UCRT installed](https://support.microsoft.com/en-us/topic/update-for-universal-c-runtime-in-windows-c0514201-7fe6-95a3-b0a5-287930f3560c)):
+How to build darktable on Windows (Windows 8.1 will need to have [UCRT installed](https://support.microsoft.com/en-us/topic/update-for-universal-c-runtime-in-windows-c0514201-7fe6-95a3-b0a5-287930f3560c)):
 
 * Install MSYS2 (instructions and prerequisites can be found on the official website: https://www.msys2.org)
 
@@ -17,15 +17,20 @@ How to make a darktable Windows installer (x64 only; Windows 8.1 will need to ha
     pacman -Syu
     ```
 
-* From the MSYS terminal, install x64 developer tools, x86_64 toolchain and git:
+* From the MSYS terminal, install the toolchain (assuming x64), developer tools and git:
     ```bash
     pacman -S --needed base-devel git intltool po4a
-    pacman -S --needed mingw-w64-ucrt-x86_64-{cc,cmake,gcc-libs,ninja,nsis,omp}
+    pacman -S --needed mingw-w64-ucrt-x86_64-{cc,cmake,gcc-libs,ninja,omp}
     ```
 
 * Install required libraries and dependencies for darktable:
     ```bash
     pacman -S --needed mingw-w64-ucrt-x86_64-{libxslt,python-jsonschema,curl,drmingw,exiv2,gettext,gmic,graphicsmagick,gtk3,icu,imath,iso-codes,lcms2,lensfun,libavif,libgphoto2,libheif,libjpeg-turbo,libjxl,libpng,libraw,librsvg,libsecret,libtiff,libwebp,libxml2,lua,openexr,openjpeg2,osm-gps-map,pugixml,sqlite3,webp-pixbuf-loader,zlib}
+    ```
+
+* Install the optional tool for building an installer image (currently x64 only):
+    ```bash
+    pacman -S --needed mingw-w64-ucrt-x86_64-nsis
     ```
 
 * Install optional libraries and dependencies:
@@ -95,7 +100,7 @@ How to make a darktable Windows installer (x64 only; Windows 8.1 will need to ha
     The Lua scripts check the operating system and see Windows and expect a Windows shell when executing system commands.
     Running darktable from the UCRT64 terminal gives a bash shell and therefore the commands will not work.*
 
-* For building the installer image, which will create darktable-<VERSION>.exe installer in the current build directory, use:
+* For building the installer image (currently x64 only), which will create darktable-<VERSION>-win64.exe installer in the current build directory, use:
     ```bash
     cmake --build build --target package
     ```
@@ -120,9 +125,11 @@ cmake --build build
 
 Feel free to adjust the number of parallel jobs according to your needs: Ninja will use all available CPU cores by default, while Makefiles will assume no parallel jobs if not explicitly specified.
 
-If you are in a hurry you can now run darktable by executing the `darktable.exe` found in the `build/bin` folder, install in `/opt/darktable` as described earlier, or create an install image.
+If you are in a hurry you can now run darktable by executing the `darktable.exe` found in the `build/bin` folder, install in `/opt/darktable` as described earlier, or create an installer image.
 
 If you like experimenting you could also install `mingw-w64-ucrt-x86_64-{clang,llvm-openmp}` and use clang/clang++ instead of gcc/g++ by setting the `CC=clang` and `CXX=clang++` variables. Alternatively, you can use the CLANG64 environment instead of UCRT64 and try building darktable with its default toolchain (note that the prefix for installation of all the packages above then becomes `mingw-w64-clang-x86_64-`).
+
+Windows on Arm (WoA) users should use the `mingw-w64-clang-aarch64-` prefix when installing packages above and build within the CLANGARM64 environment instead (note that it is not currently possible to build the installer image because of missing `nsis`).
 
 
 Cross-platform compile on Linux
