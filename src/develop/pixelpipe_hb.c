@@ -753,7 +753,7 @@ static void _histogram_collect_cl(const int devid,
                                                    sizeof(float) * 4);
   if(err != CL_SUCCESS)
   {
-    if(tmpbuf) dt_free_align(tmpbuf);
+    dt_free_align(tmpbuf);
     return;
   }
 
@@ -785,7 +785,7 @@ static void _histogram_collect_cl(const int devid,
                       piece->module->histogram_middle_grey,
                       dt_ioppr_get_pipe_work_profile_info(piece->pipe));
 
-  if(tmpbuf) dt_free_align(tmpbuf);
+  dt_free_align(tmpbuf);
 }
 #endif
 
@@ -1042,7 +1042,7 @@ static void _collect_histogram_on_CPU(dt_dev_pixelpipe_t *pipe,
                                       dt_dev_pixelpipe_iop_t *piece,
                                       dt_pixelpipe_flow_t *pixelpipe_flow)
 {
-  // histogram collection for module
+  // histogram collect for iop_module
   if((dev->gui_attached || !(piece->request_histogram & DT_REQUEST_ONLY_IN_GUI))
      && (piece->request_histogram & DT_REQUEST_ON))
   {
@@ -1741,7 +1741,7 @@ static gboolean _dev_pixelpipe_process_rec(
 
           if(piece->histogram
              && (module->request_histogram & DT_REQUEST_ON)
-             && (pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
+             && (pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
           {
             const size_t buf_size =
               sizeof(uint32_t) * 4 * piece->histogram_stats.bins_count;
