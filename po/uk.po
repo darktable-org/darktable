@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-06-02 18:53+0200\n"
-"PO-Revision-Date: 2024-06-03 20:20+0300\n"
+"PO-Revision-Date: 2024-06-07 15:05+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -3143,7 +3143,7 @@ msgstr "Версія 3 (квітень 2021)"
 #: ../build/lib/darktable/plugins/introspection_crop.c:134
 #: ../src/gui/gtk.c:1340 ../src/iop/atrous.c:1631
 msgid "left"
-msgstr "зліва"
+msgstr "Зліва"
 
 #: ../build/lib/darktable/plugins/introspection_clipping.c:148
 #: ../build/lib/darktable/plugins/introspection_clipping.c:307
@@ -3151,7 +3151,7 @@ msgstr "зліва"
 #: ../build/lib/darktable/plugins/introspection_crop.c:138
 #: ../src/gui/accelerators.c:135 ../src/gui/gtk.c:1350
 msgid "top"
-msgstr "зверху"
+msgstr "Зверху"
 
 #: ../build/lib/darktable/plugins/introspection_clipping.c:154
 #: ../build/lib/darktable/plugins/introspection_clipping.c:311
@@ -3159,7 +3159,7 @@ msgstr "зверху"
 #: ../build/lib/darktable/plugins/introspection_crop.c:142
 #: ../src/gui/gtk.c:1345 ../src/iop/atrous.c:1630
 msgid "right"
-msgstr "справа"
+msgstr "Справа"
 
 #: ../build/lib/darktable/plugins/introspection_clipping.c:160
 #: ../build/lib/darktable/plugins/introspection_clipping.c:315
@@ -3167,7 +3167,7 @@ msgstr "справа"
 #: ../build/lib/darktable/plugins/introspection_crop.c:146
 #: ../src/gui/accelerators.c:136 ../src/gui/gtk.c:1354
 msgid "bottom"
-msgstr "знизу"
+msgstr "Знизу"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalance.c:114
 #: ../build/lib/darktable/plugins/introspection_colorbalance.c:203
@@ -11477,7 +11477,7 @@ msgid ""
 "that shows guide overlays"
 msgstr ""
 "Змінити глобальні налаштування напрямних ліній\n"
-"зауважте, що ці налаштування застосовуються глобально і впливатимуть на будь-"
+"Зауважте, що ці налаштування застосовуються глобально і впливатимуть на будь-"
 "який модуль, який показує накладення напрямних"
 
 #: ../src/gui/hist_dialog.c:224
@@ -18741,7 +18741,7 @@ msgstr "Тонке регулювання"
 
 #: ../src/iop/lens.cc:4592
 msgid "tune the warp and chromatic aberration correction"
-msgstr "Підкоригувати викривлення та корекцію хроматичної аберації"
+msgstr "Підкоригувати виправлення викривлення та хроматичної аберації"
 
 #: ../src/iop/lens.cc:4597
 msgid "tune the vignette correction"
@@ -23573,7 +23573,7 @@ msgstr "Live view в масштабі 100%"
 
 #: ../src/libs/live_view.c:295
 msgid "flip live view horizontally"
-msgstr "Віддзеркалити Live view за горизонталлю"
+msgstr "Віддзеркалити live view за горизонталлю"
 
 #: ../src/libs/live_view.c:301
 msgid "move focus point in (big steps)"
