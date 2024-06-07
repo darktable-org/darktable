@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-06-02 18:53+0200\n"
-"PO-Revision-Date: 2024-06-07 14:52+0300\n"
+"PO-Revision-Date: 2024-06-07 15:05+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -18741,7 +18741,7 @@ msgstr "Тонке регулювання"
 
 #: ../src/iop/lens.cc:4592
 msgid "tune the warp and chromatic aberration correction"
-msgstr "Підкоригувати викривлення та корекцію хроматичної аберації"
+msgstr "Підкоригувати виправлення викривлення та хроматичної аберації"
 
 #: ../src/iop/lens.cc:4597
 msgid "tune the vignette correction"
