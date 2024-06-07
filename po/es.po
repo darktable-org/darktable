@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 4.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-06-05 22:32-0600\n"
-"PO-Revision-Date: 2024-06-06 00:05-0600\n"
+"POT-Creation-Date: 2024-06-06 15:20-0600\n"
+"PO-Revision-Date: 2024-06-06 22:32-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -4783,7 +4783,7 @@ msgstr "desplazamiento y"
 #: ../build/lib/darktable/plugins/introspection_watermark.c:142
 #: ../build/lib/darktable/plugins/introspection_watermark.c:269
 msgid "scale on"
-msgstr "proporcional a"
+msgstr "referencia de proporción"
 
 #: ../build/lib/darktable/plugins/introspection_overlay.c:147
 #: ../build/lib/darktable/plugins/introspection_overlay.c:260
@@ -4797,7 +4797,7 @@ msgstr "referencia de escala"
 #: ../build/lib/darktable/plugins/introspection_watermark.c:154
 #: ../build/lib/darktable/plugins/introspection_watermark.c:277
 msgid "scale marker reference"
-msgstr "referente de la marca"
+msgstr "referente de la capa"
 
 #: ../build/lib/darktable/plugins/introspection_overlay.c:302
 #: ../build/lib/darktable/plugins/introspection_watermark.c:323
@@ -5136,7 +5136,7 @@ msgid "RGB ratio"
 msgstr "relación RGB"
 
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:308
-#: ../src/iop/colorin.c:2086
+#: ../src/iop/colorin.c:2085
 msgid "working profile"
 msgstr "definir un perfil"
 
@@ -8754,13 +8754,13 @@ msgstr ""
 #: ../src/iop/filmicrgb.c:4461 ../src/iop/graduatednd.c:1069
 #: ../src/iop/negadoctor.c:1025 ../src/iop/profile_gamma.c:635
 #: ../src/iop/profile_gamma.c:641 ../src/iop/relight.c:254
-#: ../src/iop/soften.c:360 ../src/iop/toneequal.c:3346
-#: ../src/iop/toneequal.c:3349 ../src/iop/toneequal.c:3352
-#: ../src/iop/toneequal.c:3355 ../src/iop/toneequal.c:3358
-#: ../src/iop/toneequal.c:3361 ../src/iop/toneequal.c:3364
-#: ../src/iop/toneequal.c:3367 ../src/iop/toneequal.c:3370
-#: ../src/iop/toneequal.c:3492 ../src/iop/toneequal.c:3501
-#: ../src/iop/toneequal.c:3514 ../src/views/darkroom.c:2365
+#: ../src/iop/soften.c:360 ../src/iop/toneequal.c:3347
+#: ../src/iop/toneequal.c:3350 ../src/iop/toneequal.c:3353
+#: ../src/iop/toneequal.c:3356 ../src/iop/toneequal.c:3359
+#: ../src/iop/toneequal.c:3362 ../src/iop/toneequal.c:3365
+#: ../src/iop/toneequal.c:3368 ../src/iop/toneequal.c:3371
+#: ../src/iop/toneequal.c:3493 ../src/iop/toneequal.c:3502
+#: ../src/iop/toneequal.c:3515 ../src/views/darkroom.c:2365
 msgid " EV"
 msgstr " EV"
 
@@ -13386,7 +13386,7 @@ msgstr ""
 #: ../src/iop/colorequal.c:2529 ../src/iop/colorzones.c:2730
 #: ../src/iop/denoiseprofile.c:3724 ../src/iop/filmicrgb.c:4373
 #: ../src/iop/lowlight.c:819 ../src/iop/rawdenoise.c:921
-#: ../src/iop/toneequal.c:3391
+#: ../src/iop/toneequal.c:3392
 msgid "graph"
 msgstr "gráfico"
 
@@ -14640,7 +14640,7 @@ msgstr ""
 #: ../src/iop/channelmixerrgb.c:4468 ../src/iop/clipping.c:2110
 #: ../src/iop/colorbalancergb.c:1915 ../src/iop/colorequal.c:2517
 #: ../src/iop/filmicrgb.c:4385 ../src/iop/negadoctor.c:843
-#: ../src/iop/toneequal.c:3339 ../src/libs/image.c:493
+#: ../src/iop/toneequal.c:3340 ../src/libs/image.c:493
 #: ../src/views/lighttable.c:1258
 msgid "page"
 msgstr "página"
@@ -15515,7 +15515,7 @@ msgid "colorbalance works only on RGB input"
 msgstr "Balance de color sólo trabaja con una entrada RGB"
 
 #: ../src/iop/colorbalancergb.c:1556 ../src/iop/colorzones.c:2391
-#: ../src/iop/retouch.c:2065 ../src/iop/toneequal.c:1963
+#: ../src/iop/retouch.c:2065 ../src/iop/toneequal.c:1964
 msgid "cannot display masks when the blending mask is displayed"
 msgstr ""
 "No es posible activar esta opción mientras se estén mostrando las máscaras "
@@ -16025,11 +16025,11 @@ msgstr ""
 "El perfil de entrada está sin soporte y ha sido reemplazado por RGB Rec. 709 "
 "lineal"
 
-#: ../src/iop/colorin.c:1842
+#: ../src/iop/colorin.c:1841
 msgid "external ICC profiles"
 msgstr "Perfiles ICC externos"
 
-#: ../src/iop/colorin.c:1887
+#: ../src/iop/colorin.c:1886
 #, c-format
 msgid ""
 "embedded ICC profile properties:\n"
@@ -16052,15 +16052,15 @@ msgstr ""
 "Derechos de autor: <b>%s</b>\n"
 "\n"
 
-#: ../src/iop/colorin.c:2082
+#: ../src/iop/colorin.c:2081
 msgid "input profile"
 msgstr "perfil de entrada"
 
-#: ../src/iop/colorin.c:2095
+#: ../src/iop/colorin.c:2094
 msgid "working ICC profiles"
 msgstr "perfiles ICC de trabajo"
 
-#: ../src/iop/colorin.c:2107
+#: ../src/iop/colorin.c:2106
 msgid "confine Lab values to gamut of RGB color space"
 msgstr "Limitar los valores Lab a la gama del espacio de color RGB"
 
@@ -16377,7 +16377,7 @@ msgstr ""
 
 #: ../src/iop/colorequal.c:2656
 msgid "change for sharper or softer hue curve"
-msgstr ""
+msgstr "Determina la forma de la curva, si es suave o aguda."
 
 #: ../src/iop/colorequal.c:2660
 msgid "restrict effect by using a guided filter based on hue and saturation"
@@ -17341,9 +17341,8 @@ msgstr ""
 "derecha"
 
 #: ../src/iop/enlargecanvas.c:91
-#, fuzzy
 msgid "composition|expand|extend"
-msgstr "compresión"
+msgstr "composición|expansión|extensión"
 
 #: ../src/iop/enlargecanvas.c:427
 msgid ""
@@ -17376,9 +17375,8 @@ msgstr ""
 "Ampliación del lienzo a lo alto en proporción a la imagen original por debajo"
 
 #: ../src/iop/enlargecanvas.c:449
-#, fuzzy
 msgid "select the color of the enlarged canvas"
-msgstr "Selecciona el color de la cuadrícula a partir de una muestra"
+msgstr "Selecciona el color del lienzo expandido"
 
 #: ../src/iop/equalizer.c:89
 msgid "legacy equalizer"
@@ -18215,9 +18213,8 @@ msgid "scale into final size"
 msgstr "redimensionar al tamaño final"
 
 #: ../src/iop/flip.c:80
-#, fuzzy
 msgid "rotation|flip|mirror"
-msgstr "rotación|espejar"
+msgstr "rotación|voltear|espejar"
 
 #: ../src/iop/flip.c:110
 msgid "flip or rotate image by step of 90 degrees"
@@ -19713,7 +19710,7 @@ msgstr "fotografía compuesta"
 
 #: ../src/iop/overlay.c:154
 msgid "combine with elements from a processed image"
-msgstr ""
+msgstr "Combina dos elementos visuales para integrarlos como una sola imagen"
 
 #: ../src/iop/overlay.c:163
 msgid "layer|stack|overlay"
@@ -19787,11 +19784,10 @@ msgstr ""
 "la marca de agua"
 
 #: ../src/iop/overlay.c:1093
-#, fuzzy
 msgid "overlay dimension to scale"
 msgstr ""
-"Referente de la dimensión de la marca de agua con respecto a la cual se va a "
-"escalar"
+"Referente de la dimensión de la capa de imagen con respecto a la cual se va "
+"a escalar"
 
 #: ../src/iop/overlay.c:1097 ../src/iop/watermark.c:1392
 #: ../src/libs/print_settings.c:2692
@@ -19800,19 +19796,16 @@ msgstr "alineación"
 
 #. Let's add some tooltips and hook up some signals...
 #: ../src/iop/overlay.c:1121
-#, fuzzy
 msgid "the opacity of the overlay"
-msgstr "Transparencia de la marca de agua"
+msgstr "Transparencia de la capa imagen"
 
 #: ../src/iop/overlay.c:1122
-#, fuzzy
 msgid "the scale of the overlay"
-msgstr "Dimensión de la marca de agua"
+msgstr "Dimensión de la capa de imagen"
 
 #: ../src/iop/overlay.c:1123
-#, fuzzy
 msgid "the rotation of the overlay"
-msgstr "Grados de rotación de la marca de agua"
+msgstr "Grados de rotación de la capa de imagen"
 
 #: ../src/iop/primaries.c:74
 msgid "rgb primaries"
@@ -21063,15 +21056,15 @@ msgstr ""
 "El ecualizador de tono no pudo reservar memoria, verifique la configuración "
 "de la RAM"
 
-#: ../src/iop/toneequal.c:1792 ../src/iop/toneequal.c:2163
+#: ../src/iop/toneequal.c:1793 ../src/iop/toneequal.c:2164
 msgid "the interpolation is unstable, decrease the curve smoothing"
 msgstr "La interpolación es inestable, disminuya el suavizado de la curva"
 
-#: ../src/iop/toneequal.c:1827 ../src/iop/toneequal.c:1894
+#: ../src/iop/toneequal.c:1828 ../src/iop/toneequal.c:1895
 msgid "wait for the preview to finish recomputing"
 msgstr "Espere a que la vista previa termine de recalcular"
 
-#: ../src/iop/toneequal.c:2036 ../src/iop/toneequal.c:2595
+#: ../src/iop/toneequal.c:2037 ../src/iop/toneequal.c:2596
 msgid ""
 "scroll over image to change tone exposure\n"
 "shift+scroll for large steps; ctrl+scroll for small steps"
@@ -21080,91 +21073,91 @@ msgstr ""
 "Para incrementos grandes use Mayús+Desplazamiento; para incrementos pequeños "
 "Ctrl+Desplazamiento"
 
-#: ../src/iop/toneequal.c:2168
+#: ../src/iop/toneequal.c:2169
 msgid "some parameters are out-of-bounds"
 msgstr "Algunos parámetros están fuera de los límites"
 
-#: ../src/iop/toneequal.c:2485
+#: ../src/iop/toneequal.c:2486
 #, c-format
 msgid "%+.1f EV"
 msgstr "%+.1f EV"
 
-#: ../src/iop/toneequal.c:3250
+#: ../src/iop/toneequal.c:3251
 #, c-format
 msgid "[%s over image] change tone exposure"
 msgstr "[%s sobre la imagen] cambiar la exposición tonal"
 
-#: ../src/iop/toneequal.c:3253
+#: ../src/iop/toneequal.c:3254
 #, c-format
 msgid "[%s over image] change tone exposure in large steps"
 msgstr ""
 "[%s sobre la imagen] cambiar la exposición tonal en incrementos grandes"
 
-#: ../src/iop/toneequal.c:3256
+#: ../src/iop/toneequal.c:3257
 #, c-format
 msgid "[%s over image] change tone exposure in small steps"
 msgstr ""
 "[%s sobre la imagen] cambiar la exposición tonal en incrementos pequeños"
 
 #. Simple view
-#: ../src/iop/toneequal.c:3343 ../src/iop/toneequal.c:3372
-#: ../src/iop/toneequal.c:3373 ../src/iop/toneequal.c:3374
-#: ../src/iop/toneequal.c:3375 ../src/iop/toneequal.c:3376
-#: ../src/iop/toneequal.c:3377 ../src/iop/toneequal.c:3378
-#: ../src/iop/toneequal.c:3379 ../src/iop/toneequal.c:3380
+#: ../src/iop/toneequal.c:3344 ../src/iop/toneequal.c:3373
+#: ../src/iop/toneequal.c:3374 ../src/iop/toneequal.c:3375
+#: ../src/iop/toneequal.c:3376 ../src/iop/toneequal.c:3377
+#: ../src/iop/toneequal.c:3378 ../src/iop/toneequal.c:3379
+#: ../src/iop/toneequal.c:3380 ../src/iop/toneequal.c:3381
 msgid "simple"
 msgstr "sencillo"
 
-#: ../src/iop/toneequal.c:3372
+#: ../src/iop/toneequal.c:3373
 msgid "-8 EV"
 msgstr "-8 EV"
 
-#: ../src/iop/toneequal.c:3373
+#: ../src/iop/toneequal.c:3374
 msgid "-7 EV"
 msgstr "-7 EV"
 
-#: ../src/iop/toneequal.c:3374
+#: ../src/iop/toneequal.c:3375
 msgid "-6 EV"
 msgstr "-6 EV"
 
-#: ../src/iop/toneequal.c:3375
+#: ../src/iop/toneequal.c:3376
 msgid "-5 EV"
 msgstr "-5 EV"
 
-#: ../src/iop/toneequal.c:3376
+#: ../src/iop/toneequal.c:3377
 msgid "-4 EV"
 msgstr "-4 EV"
 
-#: ../src/iop/toneequal.c:3377
+#: ../src/iop/toneequal.c:3378
 msgid "-3 EV"
 msgstr "-3 EV"
 
-#: ../src/iop/toneequal.c:3378
+#: ../src/iop/toneequal.c:3379
 msgid "-2 EV"
 msgstr "-2 EV"
 
-#: ../src/iop/toneequal.c:3379
+#: ../src/iop/toneequal.c:3380
 msgid "-1 EV"
 msgstr "-1 EV"
 
-#: ../src/iop/toneequal.c:3380
+#: ../src/iop/toneequal.c:3381
 msgid "+0 EV"
 msgstr "+0 EV"
 
 #. Advanced view
-#: ../src/iop/toneequal.c:3384
+#: ../src/iop/toneequal.c:3385
 msgid "advanced"
 msgstr "avanzado"
 
-#: ../src/iop/toneequal.c:3411
+#: ../src/iop/toneequal.c:3412
 msgid "double-click to reset the curve"
 msgstr "Doble clic para restablecer la curva"
 
-#: ../src/iop/toneequal.c:3415
+#: ../src/iop/toneequal.c:3416
 msgid "curve smoothing"
 msgstr "suavizado de curva"
 
-#: ../src/iop/toneequal.c:3418
+#: ../src/iop/toneequal.c:3419
 msgid ""
 "positive values will produce more progressive tone transitions\n"
 "but the curve might become oscillatory in some settings.\n"
@@ -21179,11 +21172,11 @@ msgstr ""
 "local."
 
 #. Masking options
-#: ../src/iop/toneequal.c:3428
+#: ../src/iop/toneequal.c:3429
 msgid "masking"
 msgstr "máscaras"
 
-#: ../src/iop/toneequal.c:3433
+#: ../src/iop/toneequal.c:3434
 msgid ""
 "preview the mask and chose the estimator that gives you the\n"
 "higher contrast between areas to dodge and areas to burn"
@@ -21191,15 +21184,15 @@ msgstr ""
 "Previsualice la máscara y elija el estimador que le proporcione\n"
 "mayor contraste entre las áreas a aclarar y las áreas a oscurecer"
 
-#: ../src/iop/toneequal.c:3436
+#: ../src/iop/toneequal.c:3437
 msgid "details"
 msgstr "detalle"
 
-#: ../src/iop/toneequal.c:3437
+#: ../src/iop/toneequal.c:3438
 msgid "preserve details"
 msgstr "preservar los detalles"
 
-#: ../src/iop/toneequal.c:3440
+#: ../src/iop/toneequal.c:3441
 msgid ""
 "'no' affects global and local contrast (safe if you only add contrast)\n"
 "'guided filter' only affects global contrast and tries to preserve local "
@@ -21223,7 +21216,7 @@ msgstr ""
 "a diferencia del filtro guiado, que suaviza menos las luces.\n"
 "«FGIE promediado»: es una media geométrica de los métodos «No» y «FGIE»."
 
-#: ../src/iop/toneequal.c:3453
+#: ../src/iop/toneequal.c:3454
 msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
@@ -21231,7 +21224,7 @@ msgstr ""
 "Número de pasadas del filtro guiado para aplicar\n"
 "Ayuda a difuminar los bordes del filtro a expensas de la velocidad"
 
-#: ../src/iop/toneequal.c:3461
+#: ../src/iop/toneequal.c:3462
 msgid ""
 "diameter of the blur in percent of the largest image size\n"
 "warning: big values of this parameter can make the darkroom\n"
@@ -21243,7 +21236,7 @@ msgstr ""
 "oscuro \n"
 "sea mucho más lenta si se usa la reducción de ruido perfilado."
 
-#: ../src/iop/toneequal.c:3469
+#: ../src/iop/toneequal.c:3470
 msgid ""
 "precision of the feathering:\n"
 "higher values force the mask to follow edges more closely\n"
@@ -21258,12 +21251,12 @@ msgstr ""
 "Con valores inferiores, se dan gradientes más lisos y un mejor suavizado,\n"
 "pero pueden surgir halos y darse bordes imprecisos."
 
-#: ../src/iop/toneequal.c:3476
+#: ../src/iop/toneequal.c:3477
 msgctxt "section"
 msgid "mask post-processing"
 msgstr "postprocesado de máscara"
 
-#: ../src/iop/toneequal.c:3487
+#: ../src/iop/toneequal.c:3488
 msgid ""
 "mask histogram span between the first and last deciles.\n"
 "the central line shows the average. orange bars appear at extrema if "
@@ -21273,7 +21266,7 @@ msgstr ""
 "La línea central muestra el promedio. Aparecerán barras naranjas en los "
 "extremos si se produce un recorte."
 
-#: ../src/iop/toneequal.c:3495
+#: ../src/iop/toneequal.c:3496
 msgid ""
 "0 disables the quantization.\n"
 "higher values posterize the luminance mask to help the guiding\n"
@@ -21285,7 +21278,7 @@ msgstr ""
 "Cuando se usan valores de difuminado altos, produce áreas lisas por "
 "segmentos "
 
-#: ../src/iop/toneequal.c:3504
+#: ../src/iop/toneequal.c:3505
 msgid ""
 "use this to slide the mask average exposure along channels\n"
 "for a better control of the exposure correction with the available nodes.\n"
@@ -21297,7 +21290,7 @@ msgstr ""
 "disponibles.\n"
 "La varita mágica ajustará automáticamente la exposición promedio."
 
-#: ../src/iop/toneequal.c:3517
+#: ../src/iop/toneequal.c:3518
 msgid ""
 "use this to counter the averaging effect of the guided filter\n"
 "and dilate the mask contrast around -4EV\n"
@@ -21311,7 +21304,7 @@ msgstr ""
 "Ofrece un mejor control sobre la corrección de exposición.\n"
 "La varita mágica ajustará automáticamente el contraste."
 
-#: ../src/iop/toneequal.c:3540 ../src/iop/toneequal.c:3543
+#: ../src/iop/toneequal.c:3541 ../src/iop/toneequal.c:3544
 msgid "display exposure mask"
 msgstr "mostrar la máscara de exposición"
 
@@ -26120,13 +26113,12 @@ msgid "color scheme"
 msgstr "esquema de color"
 
 #: ../src/views/darkroom.c:2306
-#, fuzzy
 msgid ""
 "select the solid color to indicate overexposure.\n"
 "will only be used if mode = mark with solid color"
 msgstr ""
 "Seleccione el color sólido para indicar sobreexposición.\n"
-"Solo será utilizado si el modo = esta marcado con un color sólido"
+"Solo será utilizado si el modo = esta marcado con un color sólido."
 
 #: ../src/views/darkroom.c:2309
 msgctxt "solidcolor"
@@ -26582,36 +26574,32 @@ msgid "scroll right"
 msgstr "desplazarse a la derecha"
 
 #: ../src/views/map.c:2455
-#, fuzzy
 msgid "scroll right wide"
-msgstr "deplazarse a la derecha"
+msgstr "desplazamiento amplio a la derecha"
 
 #: ../src/views/map.c:2457
 msgid "scroll left"
 msgstr "desplazarse a la izquierda"
 
 #: ../src/views/map.c:2459
-#, fuzzy
 msgid "scroll left wide"
-msgstr "desplazarse a la izquierda"
+msgstr "desplazamiento amplio a la izquierda"
 
 #: ../src/views/map.c:2461
 msgid "scroll up"
 msgstr "desplazarse hacia arriba"
 
 #: ../src/views/map.c:2463
-#, fuzzy
 msgid "scroll up wide"
-msgstr "desplazarse hacia arriba"
+msgstr "desplazamiento amplio hacia arriba"
 
 #: ../src/views/map.c:2465
 msgid "scroll down"
 msgstr "desplazarse hacia abajo"
 
 #: ../src/views/map.c:2467
-#, fuzzy
 msgid "scroll down wide"
-msgstr "desplazar adelante"
+msgstr "desplazamiento amplio hacia abajo"
 
 #: ../src/views/map.c:3248
 msgid "[on image] open in darkroom"
