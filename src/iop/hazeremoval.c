@@ -564,6 +564,12 @@ void process(struct dt_iop_module_t *self,
     distance_max = g->distance_max;
     dt_iop_gui_leave_critical_section(self);
   }
+
+  // FIXME in pipe->type |= DT_DEV_PIXELPIPE_IMAGE mode we currently can't receive data from preview
+  // so we at least leave a note to the user
+  if(piece->pipe->type & DT_DEV_PIXELPIPE_IMAGE)
+    dt_control_log(_("inconsistent output"));
+
   // In all other cases we calculate distance_max and A0 here.
   if(dt_isnan(distance_max))
     distance_max = _ambient_light(img_in, w1, &A0, compatibility_mode);
@@ -842,6 +848,12 @@ int process_cl(struct dt_iop_module_t *self,
     distance_max = g->distance_max;
     dt_iop_gui_leave_critical_section(self);
   }
+
+  // FIXME in pipe->type |= DT_DEV_PIXELPIPE_IMAGE mode we currently can't receive data from preview
+  // so we at least leave a note to the user
+  if(piece->pipe->type & DT_DEV_PIXELPIPE_IMAGE)
+    dt_control_log(_("inconsistent output"));
+
   // In all other cases we calculate distance_max and A0 here.
   if(dt_isnan(distance_max))
     distance_max = _ambient_light_cl(self, devid, img_in, w1, &A0, compatibility_mode);
