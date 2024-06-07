@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-06-02 18:53+0200\n"
-"PO-Revision-Date: 2024-06-07 14:49+0300\n"
+"PO-Revision-Date: 2024-06-07 14:52+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -23573,7 +23573,7 @@ msgstr "Live view в масштабі 100%"
 
 #: ../src/libs/live_view.c:295
 msgid "flip live view horizontally"
-msgstr "Віддзеркалити Live view за горизонталлю"
+msgstr "Віддзеркалити live view за горизонталлю"
 
 #: ../src/libs/live_view.c:301
 msgid "move focus point in (big steps)"
