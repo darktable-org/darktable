@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 4.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-06-06 15:20-0600\n"
-"PO-Revision-Date: 2024-06-06 22:32-0600\n"
+"POT-Creation-Date: 2024-06-07 21:41-0600\n"
+"PO-Revision-Date: 2024-06-07 22:29-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -1520,7 +1520,6 @@ msgid "select directory"
 msgstr "Seleccionar directorio"
 
 #: ../build/bin/preferences_gen.h:5890
-#, fuzzy
 msgid ""
 "this folder (and sub-folders) contains LUT files used by LUT 3D module. "
 "(restart required)"
@@ -5827,7 +5826,7 @@ msgstr "aplicado automático"
 #: ../src/common/collection.c:1518 ../src/libs/collect.c:1885
 #: ../src/libs/filters/history.c:38
 msgid "altered"
-msgstr "revelado"
+msgstr "modificado"
 
 #: ../src/common/collection.c:1536 ../src/common/collection.c:1647
 #: ../src/libs/collect.c:1251 ../src/libs/collect.c:1439
@@ -9188,7 +9187,6 @@ msgid "unsupported input"
 msgstr "Entrada incompatible"
 
 #: ../src/develop/imageop.c:3644
-#, fuzzy
 msgid ""
 "you have placed this module at\n"
 "a position in the pipeline where\n"
@@ -9897,7 +9895,6 @@ msgid "try the 'no-click' workflow: hover on an image and use"
 msgstr ""
 
 #: ../src/dtgtk/thumbtable.c:1218
-#, fuzzy
 msgid "keyboard shortcuts to apply ratings, colors, styles, etc."
 msgstr ""
 "Atajos de teclado que se asignaran a funciones de valoración, colores, "
@@ -10149,9 +10146,8 @@ msgid "ctrl"
 msgstr "Ctrl"
 
 #: ../src/gui/accelerators.c:115 ../src/views/view.c:1362
-#, fuzzy
 msgid "option"
-msgstr "opciones"
+msgstr "opción"
 
 #: ../src/gui/accelerators.c:117 ../src/views/view.c:1364
 msgid "alt"
@@ -11589,14 +11585,14 @@ msgid "double-click to reset to the system language"
 msgstr "Doble clic para restablecer al idioma del sistema"
 
 #: ../src/gui/preferences.c:292
-#, fuzzy
 msgid ""
 "set the language of the user interface. the system default is marked with an "
 "* \n"
 "(restart required)"
 msgstr ""
-"Configurar el idioma de la interfaz de usuario. El predeterminado está "
-"marcado con un * (necesita reiniciarse)"
+"Selección de idioma de la interfaz de usuario. El valor predeterminado está "
+"señalado con un *\n"
+"(necesita reiniciarse)."
 
 #: ../src/gui/preferences.c:301
 msgid "theme"
@@ -13198,9 +13194,8 @@ msgid "contrast equalizer"
 msgstr "ecualizador de contraste"
 
 #: ../src/iop/atrous.c:127
-#, fuzzy
 msgid "sharpness|acutance|local contrast|clarity"
-msgstr "enfoque|acutancia|contraste local"
+msgstr "enfoque|acutancia|contraste local|claridad"
 
 #: ../src/iop/atrous.c:132
 msgid "add or remove local contrast, sharpness, acutance"
@@ -16216,7 +16211,8 @@ msgstr "Recupera las luces recortadas esparciendo colores adyacentes"
 
 #: ../src/iop/colorreconstruction.c:637 ../src/iop/colorreconstruction.c:1043
 #: ../src/iop/globaltonemap.c:222 ../src/iop/globaltonemap.c:377
-#: ../src/iop/hazeremoval.c:559 ../src/iop/hazeremoval.c:835
+#: ../src/iop/hazeremoval.c:559 ../src/iop/hazeremoval.c:571
+#: ../src/iop/hazeremoval.c:841 ../src/iop/hazeremoval.c:855
 #: ../src/iop/levels.c:358
 msgid "inconsistent output"
 msgstr "Salida inconsistente"
@@ -16299,7 +16295,7 @@ msgstr "zonas de color|hsl"
 
 #: ../src/iop/colorequal.c:194
 msgid "change saturation, hue and brightness depending on local hue"
-msgstr ""
+msgstr "Cambia el tono, la saturación y el brillo en función del tono nativo"
 
 #: ../src/iop/colorequal.c:197 ../src/iop/toneequal.c:334
 msgid "quasi-linear, RGB"
@@ -16337,36 +16333,33 @@ msgid ""
 "middle click to toggle sliders visibility\n"
 "alt+scroll to change page"
 msgstr ""
-"Para reestablecer la curva: pulsación doble\n"
-"Para mostrar/ocultar los controles deslizantes: pbotón medio\n"
-"Para cambiar de pestaña: Alt+Desplazamiento"
+"Pulsado Doble para reestablecer la curva.\n"
+"Pulse Botón Medio para mostrar/ocultar los controles deslizantes.\n"
+"Use Alt+Desplazamiento para cambiar de pestaña."
 
 #: ../src/iop/colorequal.c:2557
 msgid "shift nodes to lower or higher hue"
 msgstr "Desplaza los nodos a un tono más bajo o más alto"
 
 #: ../src/iop/colorequal.c:2560
-#, fuzzy
 msgid ""
 "pick hue from image and visualize it\n"
 "ctrl+click to select an area"
 msgstr ""
-"Elige el color de la interfaz gráfica de usuario desde la imagen\n"
-"Use Ctrl+clic para seleccionar un área"
+"Elija el color desde la imagen para visualizarlo.\n"
+"Use Ctrl+clic para seleccionar un área."
 
 #: ../src/iop/colorequal.c:2582
 msgid "change hue hue-wise"
-msgstr ""
+msgstr "Cambia el tono de un color"
 
 #: ../src/iop/colorequal.c:2600
-#, fuzzy
 msgid "change saturation hue-wise"
-msgstr "Cambia la saturación de color en cada parte"
+msgstr "Cambia la saturación de un tono de color"
 
 #: ../src/iop/colorequal.c:2618
-#, fuzzy
 msgid "change brightness hue-wise"
-msgstr "Cambia la luminosidad en cada parte"
+msgstr "Cambia el brillo de un tono de color"
 
 #: ../src/iop/colorequal.c:2651
 msgid ""
@@ -16374,6 +16367,10 @@ msgid ""
 "corrections\n"
 "to stay below the defined level. the default is fine for most images."
 msgstr ""
+"El nivel de blanco se establece manualmente o mediante el selector, \n"
+"para limitar las correcciones de y que se mantengan por debajo del nivel "
+"establecido.\n"
+"El valor predeterminado funciona bien para la mayoría de las imágenes."
 
 #: ../src/iop/colorequal.c:2656
 msgid "change for sharper or softer hue curve"
@@ -16382,6 +16379,8 @@ msgstr "Determina la forma de la curva, si es suave o aguda."
 #: ../src/iop/colorequal.c:2660
 msgid "restrict effect by using a guided filter based on hue and saturation"
 msgstr ""
+"Delimita el efecto basado en el tono y la saturación mediante un filtro "
+"guiado"
 
 #: ../src/iop/colorequal.c:2666
 msgid ""
@@ -19714,7 +19713,7 @@ msgstr "Combina dos elementos visuales para integrarlos como una sola imagen"
 
 #: ../src/iop/overlay.c:163
 msgid "layer|stack|overlay"
-msgstr ""
+msgstr "capa|pila|superposición"
 
 #: ../src/iop/overlay.c:287
 #, c-format
@@ -20063,9 +20062,10 @@ msgid "retouch"
 msgstr "retoque"
 
 #: ../src/iop/retouch.c:202
-#, fuzzy
 msgid "split-frequency|healing|cloning|stamp|blur|fill|wavelets|spot removal"
-msgstr "separación de frecuencias|saneado|clonado|tampón de clonar"
+msgstr ""
+"separación de frecuencias|saneado|clonado|tampón de clonar|desenfoque|"
+"rellenar|ondículas|eliminación de manchas"
 
 #: ../src/iop/retouch.c:208
 msgid "remove and clone spots, perform split-frequency skin editing"
@@ -20415,11 +20415,13 @@ msgid ""
 "\n"
 "useful for certain sensor types and anamorphic desqueeze"
 msgstr ""
+"Módulo para reajustar la relación de aspecto de los pixeles.\n"
+"\n"
+"Es conveniente para determinados tipos de sensores y la reducción anamórfica."
 
 #: ../src/iop/scalepixels.c:261
-#, fuzzy
 msgid "adjust pixel aspect ratio"
-msgstr "relación de aspecto fijo"
+msgstr "Cambia la relación de aspecto del pixel"
 
 #: ../src/iop/shadhi.c:120
 msgid "shadows and highlights"
@@ -25528,20 +25530,21 @@ msgid "colorlabels"
 msgstr "marcas de color"
 
 #: ../src/libs/tools/colorlabels.c:104
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "toggle color label of selected images\n"
 "<i>%s</i>"
-msgstr "Poner/quitar marcas de color de las imágenes seleccionadas"
+msgstr ""
+"Poner/quitar marcas de color de las imágenes seleccionadas\n"
+"<i>%s</i>"
 
 #: ../src/libs/tools/colorlabels.c:107
 msgid "toggle color label of selected images"
 msgstr "Poner/quitar marcas de color de las imágenes seleccionadas"
 
 #: ../src/libs/tools/colorlabels.c:134
-#, fuzzy
 msgid "clear color labels of selected images"
-msgstr "Quitar todas las marcas de las imágenes seleccionadas"
+msgstr "Quitar todas las marcas de color de las imágenes seleccionadas"
 
 #: ../src/libs/tools/colorlabels.c:245
 #, fuzzy
