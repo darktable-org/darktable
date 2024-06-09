@@ -2640,6 +2640,7 @@ static void _ui_widget_redraw_callback(gpointer instance,
    gtk_widget_queue_draw(widget);
 }
 
+#define ALLMESSSIZE (DT_CTL_LOG_SIZE * DT_CTL_LOG_MSG_SIZE)
 static void _ui_log_redraw_callback(gpointer instance,
                                     GtkWidget *widget)
 {
@@ -2647,10 +2648,22 @@ static void _ui_log_redraw_callback(gpointer instance,
   dt_pthread_mutex_lock(&darktable.control->log_mutex);
   if(darktable.control->log_ack != darktable.control->log_pos)
   {
-    if(strcmp(darktable.control->log_message[darktable.control->log_ack],
-              gtk_label_get_text(GTK_LABEL(widget))))
-      gtk_label_set_markup
-        (GTK_LABEL(widget), darktable.control->log_message[darktable.control->log_ack]);
+    const uint32_t first_message = MAX(darktable.control->log_ack,
+                                       darktable.control->log_pos - DT_CTL_LOG_SIZE + 1);
+    gchar *message = g_malloc(ALLMESSSIZE);
+    if(message)
+    {
+      message[0] = 0;
+      for(uint32_t idx = first_message; idx < darktable.control->log_pos; idx++)
+      {
+        g_strlcat(message, darktable.control->log_message[idx % DT_CTL_LOG_SIZE], ALLMESSSIZE);
+        if(idx != darktable.control->log_pos -1)
+          g_strlcat(message, "\n", ALLMESSSIZE);
+      }
+      gtk_label_set_markup(GTK_LABEL(widget), message);
+      g_free(message);
+    }
+
     if(!gtk_widget_get_visible(widget))
     {
       const int h = gtk_widget_get_allocated_height(dt_ui_center_base(darktable.gui->ui));
@@ -2673,10 +2686,22 @@ static void _ui_toast_redraw_callback(gpointer instance,
   dt_pthread_mutex_lock(&darktable.control->toast_mutex);
   if(darktable.control->toast_ack != darktable.control->toast_pos)
   {
-    if(strcmp(darktable.control->toast_message[darktable.control->toast_ack],
-              gtk_label_get_text(GTK_LABEL(widget))))
-      gtk_label_set_markup(GTK_LABEL(widget),
-                           darktable.control->toast_message[darktable.control->toast_ack]);
+    const uint32_t first_message = MAX(darktable.control->toast_ack,
+                                       darktable.control->toast_pos - DT_CTL_TOAST_SIZE + 1);
+    gchar *message = g_malloc(ALLMESSSIZE);
+    if(message)
+    {
+      message[0] = 0;
+      for(uint32_t idx = first_message; idx < darktable.control->toast_pos; idx++)
+      {
+        g_strlcat(message, darktable.control->toast_message[idx % DT_CTL_TOAST_SIZE], ALLMESSSIZE);
+        if(idx != darktable.control->toast_pos -1)
+          g_strlcat(message, "\n", ALLMESSSIZE);
+      }
+      gtk_label_set_markup(GTK_LABEL(widget), message);
+      g_free(message);
+    }
+
     if(!gtk_widget_get_visible(widget))
     {
       const int h = gtk_widget_get_allocated_height(dt_ui_center_base(darktable.gui->ui));
@@ -2691,6 +2716,7 @@ static void _ui_toast_redraw_callback(gpointer instance,
   }
   dt_pthread_mutex_unlock(&darktable.control->toast_mutex);
 }
+#undef ALLMESSSIZE
 
 void dt_ellipsize_combo(GtkComboBox *cbox)
 {
@@ -3871,7 +3897,7 @@ GtkWidget *dt_ui_resize_wrap(GtkWidget *w,
     const float height = dt_conf_get_int(config_str);
     dtgtk_drawing_area_set_height(w, height);
     g_signal_connect(G_OBJECT(w),
-                              "scroll-event", 
+                              "scroll-event",
                               G_CALLBACK(_scroll_wrap_height),
                               config_str);
   }
