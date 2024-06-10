@@ -49,7 +49,7 @@ dt_help_url urls_db[] =
   {"metadata_view",              "module-reference/utility-modules/shared/image-information/"},
   {"export",                     "module-reference/utility-modules/shared/export/"},
   {"export_dialog",              "module-reference/utility-modules/shared/export/#metadata-preferences"},
-  {"histogram",                  "module-reference/utility-modules/shared/histogram/"},
+  {"histogram",                  "module-reference/utility-modules/shared/scopes/"},
   {"navigation",                 "module-reference/utility-modules/darkroom/navigation/"},
   {"snapshots",                  "module-reference/utility-modules/darkroom/snapshots/"},
   {"history",                    "module-reference/utility-modules/darkroom/history-stack/"},
