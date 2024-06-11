@@ -20,7 +20,6 @@
  * or full preview.  */
 
 #include "dtgtk/culling.h"
-#include "common/collection.h"
 #include "common/debug.h"
 #include "common/selection.h"
 #include "control/control.h"
@@ -1008,6 +1007,32 @@ void dt_culling_init(dt_culling_t *table, const int fallback_offset)
 
   // ... we start at mouseover (if available)
   first_id = dt_control_get_mouse_over_id();
+
+  // if we enter culling dynamic or restricted and we DO have a mouseover
+  // make sure that the mouseover is one of the selected images.
+  // Otherwise, discard mouseover.
+  if(dt_is_valid_imgid(first_id) && (culling_dynamic || culling_restricted))
+  {
+    // clang-format off
+    query = g_strdup_printf(
+      "SELECT col.imgid"
+       " FROM memory.collected_images AS col, main.selected_images as sel"
+       " WHERE col.imgid='%i' AND"
+       " col.imgid=sel.imgid"
+       " ORDER BY col.rowid"
+       " LIMIT 1",
+           first_id);
+    DT_DEBUG_SQLITE3_PREPARE_V2
+      (dt_database_get(darktable.db),
+       query,
+       -1, &stmt, NULL);
+    // clang-format on
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+      first_id = sqlite3_column_int(stmt, 0);
+    else
+      first_id = NO_IMGID;
+    sqlite3_finalize(stmt);
+  }
 
   // ... otherwise we try active images (if available)
   if(!dt_is_valid_imgid(first_id) && darktable.view_manager->active_images)
