@@ -668,7 +668,7 @@ static void _aspect_apply(dt_iop_module_t *self, _grab_region_t grab)
 
   // since one rarely changes between portrait and landscape by cropping,
   // long side of the crop box should match the long side of the image.
-  if(iwd < iht)
+  if(iwd < iht && aspect != 0.0f)
     aspect = 1.0f / aspect;
 
   if(aspect > 0)
@@ -757,10 +757,10 @@ static void _aspect_apply(dt_iop_module_t *self, _grab_region_t grab)
       clip_h = g->clip_max_y + g->clip_max_h - clip_y;
       if(grab & GRAB_LEFT) clip_x += prev_clip_w - clip_w;
     }
-    g->clip_x = MAX(clip_x, 0.0f);
-    g->clip_y = MAX(clip_y, 0.0f);
-    g->clip_w = MIN(clip_w, 1.0f);
-    g->clip_h = MIN(clip_h, 1.0f);
+    g->clip_x = fmin(1.0, fmax(clip_x, 0.0));
+    g->clip_y = fmin(1.0, fmax(clip_y, 0.0));
+    g->clip_w = fmax(0.0, fmin(clip_w, 1.0 - clip_x));
+    g->clip_h = fmax(0.0, fmin(clip_h, 1.0 - clip_y));
   }
 }
 
@@ -1383,7 +1383,7 @@ void gui_post_expose(dt_iop_module_t *self,
       || self->dev->preview_pipe->loading)
      && !external) return;
 
-  _aspect_apply(self, GRAB_HORIZONTAL);
+  _aspect_apply(self, GRAB_HORIZONTAL | GRAB_VERTICAL);
 
   // draw cropping window
   const double fillc = dimmed ? 0.9 : 0.2;
