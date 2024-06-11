@@ -178,6 +178,7 @@ Optional dependencies (minimum version):
 * LLVM 7 *(for OpenCL checks at compilation time)*
 * OpenCL 1.2 *(for GPU-accelerated computing)*
 * Lua 5.4 *(for plugins and extension scripting)*
+* G'MIC 2.7.0 *(for .gmz compressed LUT files support)*
 * libgphoto2 2.5 *(for camera tethering)*
 * Imath 3.1.0 *(for 16-bit "half" float TIFF export and faster import)*
 * libavif 0.9.3 *(for AVIF import & export)*
@@ -187,7 +188,6 @@ Optional dependencies (minimum version):
 
 Optional dependencies (no version requirement):
 * colord, Xatom *(for fetching the system display color profile)*
-* G'MIC *(for .gmz compressed LUT support)*
 * PortMidi *(for MIDI input support)*
 * SDL2 *(for gamepad input support)*
 * CUPS *(for print mode support)*
