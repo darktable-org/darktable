@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-06-02 18:53+0200\n"
-"PO-Revision-Date: 2024-06-07 15:05+0300\n"
+"PO-Revision-Date: 2024-06-11 18:43+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -13823,7 +13823,7 @@ msgstr "Розмір облямівки в процентах від вибра�
 
 #: ../src/iop/borders.c:940 ../src/iop/clipping.c:2241 ../src/iop/crop.c:1246
 msgid "aspect"
-msgstr "Співвідношення сторін"
+msgstr "Вибір співвідношення"
 
 #: ../src/iop/borders.c:941
 msgid ""
