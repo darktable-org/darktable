@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 4.8\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-06-07 21:41-0600\n"
-"PO-Revision-Date: 2024-06-07 22:29-0600\n"
+"PO-Revision-Date: 2024-06-11 01:53-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -992,11 +992,10 @@ msgid "hide built-in presets for utility modules"
 msgstr "Ocultar los preajustes integrados para los módulos de funcionalidad"
 
 #: ../build/bin/preferences_gen.h:4468
-#, fuzzy
 msgid "hide built-in presets of utility modules in presets menu."
 msgstr ""
-"Ocultar los preajustes integrados para los módulos de funcionalidad del menú "
-"de preajustes."
+"Ocultar en el menú de preajustes de los módulos de funcionalidad los "
+"preajustes integrados."
 
 #: ../build/bin/preferences_gen.h:4489
 msgid "use single-click in the collections module"
@@ -1249,9 +1248,9 @@ msgid ""
 "by default scrolling up increases these parameters"
 msgstr ""
 "Si se activa, al utilizar el panel táctil o la rueda del ratón para cambiar "
-"los parámetros de la máscara, desplazarse hacia abajo incrementa el tamaño, "
-"el difuminado, la opacidad, la dureza del pincel y la curvatura del "
-"gradiente.\n"
+"los parámetros de la máscara,\n"
+"desplazarse hacia abajo incrementa el tamaño, el difuminado, la opacidad, la "
+"dureza del pincel y la curvatura del gradiente.\n"
 "De manera predefinida, los parámetros se incrementan con desplazamiento "
 "hacia arriba."
 
@@ -1348,11 +1347,10 @@ msgid "hide built-in presets for processing modules"
 msgstr "Ocultar los preajustes integrados para los módulos de revelado"
 
 #: ../build/bin/preferences_gen.h:5406
-#, fuzzy
 msgid "hide built-in presets of processing modules in presets menu."
 msgstr ""
-"Ocultar los preajustes integrados para los módulos de funcionalidad del menú "
-"de preajustes."
+"Ocultar en el menú de preajustes de los módulos de revelado los preajustes "
+"integrados."
 
 #: ../build/bin/preferences_gen.h:5427 ../build/bin/preferences_gen.h:5440
 msgid "show the guides widget in modules UI"
@@ -1551,7 +1549,6 @@ msgstr ""
 "Establecer automáticamente los preajustes de la curva base de la cámara"
 
 #: ../build/bin/preferences_gen.h:5959
-#, fuzzy
 msgid ""
 "use the per-camera basecurve by default instead of the generic manufacturer "
 "one if there is one available. (restart required)\n"
@@ -1560,8 +1557,9 @@ msgid ""
 "to prevent auto-apply basecurve presets \"auto-apply pixel workflow "
 "defaults\" should be set to \"none\""
 msgstr ""
-"Por defecto, utilizar la curva base de la cámara correspondiente (si hay una "
-"disponible), en lugar de la genérica del fabricante (necesita reiniciarse).\n"
+"Predeterminadamente y si está disponible, se emplea la curva base de la "
+"cámara correspondiente, en lugar de la genérica del fabricante (necesita "
+"reiniciarse).\n"
 "Esta opción se incluye cuando en \"Flujo de trabajo por defecto\" se elige "
 "\"basado en la pantalla\".\n"
 "Para evitar la aplicación automática de la curva base, la opción de \"Flujo "
@@ -1607,7 +1605,7 @@ msgid "darktable resources"
 msgstr "Recursos de darktable"
 
 #: ../build/bin/preferences_gen.h:6070
-#, fuzzy, no-c-format
+#, no-c-format
 msgid ""
 "defines how much darktable may take from your system resources:\n"
 " - 'default': darktable takes ~50% of your systems resources, which is "
@@ -1627,12 +1625,7 @@ msgstr ""
 "o que utilicen OpenCL/GL tales como juegos o Hugin.\n"
 " • Extenso: es la mejor opción si principalmente se emplea darktable y se "
 "desea priorizar el uso de la mayoría de los recursos del sistema para su "
-"rendimiento.\n"
-" • Irresctricto: opción únicamente recomendada para revelar imágenes "
-"extremadamente grandes. darktable empleará todos los recursos disponibles, "
-"lo que podría conducir al uso intensivo de memoria de intercambio, causando "
-"caídas inesperadas de rendimiento y excesiva lentitud del sistema. Use esta "
-"opción con prudencia (no se recomienda para uso en general)."
+"rendimiento."
 
 #: ../build/bin/preferences_gen.h:6091
 msgid "prefer performance over quality"
@@ -2075,13 +2068,13 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:7429
 msgid "sort built-in presets first"
-msgstr "Listar primero los preajustes incorporados"
+msgstr "Listar primero los preajustes integrados"
 
 #: ../build/bin/preferences_gen.h:7442
 msgid ""
 "whether to show built-in presets first before user's presets in presets menu."
 msgstr ""
-"Mostrar primero los preajustes incorporados antes que los personalizados en "
+"Mostrar primero los preajustes integrados antes que los personalizados en "
 "el menú de preajustes."
 
 #: ../build/bin/preferences_gen.h:7463
@@ -9893,6 +9886,8 @@ msgstr "o añada imágenes con el módulo de colección en el panel izquierdo."
 #: ../src/dtgtk/thumbtable.c:1212
 msgid "try the 'no-click' workflow: hover on an image and use"
 msgstr ""
+"Flujo de trabajo sin pulsar: pase el ratón por encima de una imagen para "
+"trabajarla"
 
 #: ../src/dtgtk/thumbtable.c:1218
 msgid "keyboard shortcuts to apply ratings, colors, styles, etc."
@@ -16368,8 +16363,8 @@ msgid ""
 "to stay below the defined level. the default is fine for most images."
 msgstr ""
 "El nivel de blanco se establece manualmente o mediante el selector, \n"
-"para limitar las correcciones de y que se mantengan por debajo del nivel "
-"establecido.\n"
+"para limitar las correcciones de brillo y que se mantengan por debajo del "
+"nivel establecido.\n"
 "El valor predeterminado funciona bien para la mayoría de las imágenes."
 
 #: ../src/iop/colorequal.c:2656
@@ -16387,6 +16382,9 @@ msgid ""
 "set radius of the guided filter chroma analysis (hue).\n"
 "increase if there is large local variance of hue or strong chroma noise."
 msgstr ""
+"Fija el radio de análisis cromático del filtro guiado (tono).\n"
+"Incremente el valor si existen variaciones locales de tono significativas o "
+"ruido cromático acentuado."
 
 #: ../src/iop/colorequal.c:2677
 msgid ""
@@ -16419,9 +16417,10 @@ msgstr ""
 "• Aumentar para transiciones más drásticas que deriven en un mayor contraste."
 
 #: ../src/iop/colorequal.c:2696
-#, fuzzy
 msgid "set radius of applied parameters for the guided filter"
-msgstr "Reinicializar los valores de todos los parámetros del módulo"
+msgstr ""
+"Fija el radio en el que tendrán efecto los parámetros configurados para el "
+"filtro guiado"
 
 #: ../src/iop/colorequal.c:2703
 msgid ""
