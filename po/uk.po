@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-06-02 18:53+0200\n"
-"PO-Revision-Date: 2024-06-11 18:43+0300\n"
+"PO-Revision-Date: 2024-06-12 19:51+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -19225,7 +19225,7 @@ msgstr "Вибрати LUT файл"
 
 #: ../src/iop/lut3d.c:1558
 msgid "_select"
-msgstr "_вибрати"
+msgstr "_Вибрати"
 
 #: ../src/iop/lut3d.c:1578
 msgid "hald CLUT (png), 3D LUT (cube or 3dl) or gmic compressed LUT (gmz)"
