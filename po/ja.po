@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-06-02 18:53+0200\n"
-"PO-Revision-Date: 2024-06-04 17:32+0900\n"
+"PO-Revision-Date: 2024-06-14 01:23+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -1499,7 +1499,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:5911
 msgid "auto-apply pixel workflow defaults"
-msgstr "ピクセルワークフローのデフォルト設定の自動適用"
+msgstr "自動適用するピクセルワークフローのデフォルト設定"
 
 #: ../build/bin/preferences_gen.h:5925
 msgid ""
@@ -1849,7 +1849,7 @@ msgstr "その他"
 
 #: ../build/bin/preferences_gen.h:6981
 msgid "password storage backend to use"
-msgstr "パスワードのためのストレージバックエンドの使用"
+msgstr "パスワードのために使用するストレージバックエンド"
 
 #: ../build/bin/preferences_gen.h:7003
 msgid ""
