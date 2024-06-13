@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable master NL\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-06-02 18:53+0200\n"
-"PO-Revision-Date: 2024-06-09 14:17+0200\n"
+"PO-Revision-Date: 2024-06-13 09:11+0200\n"
 "Last-Translator: Reinder Mulder <r.i.m@hccnet.nl>\n"
 "Language-Team: \n"
 "Language: nl_NL\n"
@@ -1231,7 +1231,7 @@ msgid ""
 "by default scrolling up increases these parameters"
 msgstr ""
 "wanneer je het muiswiel gebruikt om de maskerparameters te wijzigen, scroll "
-"je omlaag om de maskergrootte, veergrootte, dekking, penseelhardheid en "
+"je omlaag om de maskergrootte, doezelaargrootte, dekking, penseelhardheid en "
 "verloopkromming te vergroten\n"
 "standaard naar boven scrollen verhoogt deze parameters"
 
@@ -2600,14 +2600,14 @@ msgstr "lokaal laplace filter"
 #: ../build/lib/darktable/plugins/introspection_retouch.c:255
 #: ../build/lib/darktable/plugins/introspection_retouch.c:406
 msgid "blur type"
-msgstr "type verdoezeling"
+msgstr "type vervaging"
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:89
 #: ../build/lib/darktable/plugins/introspection_blurs.c:178
 #: ../build/lib/darktable/plugins/introspection_retouch.c:261
 #: ../build/lib/darktable/plugins/introspection_retouch.c:410
 msgid "blur radius"
-msgstr "radius verdoezeling"
+msgstr "radius vervaging"
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:95
 #: ../build/lib/darktable/plugins/introspection_blurs.c:182
@@ -2912,24 +2912,24 @@ msgstr "enkel verhelderen"
 #: ../build/lib/darktable/plugins/introspection_censorize.c:51
 #: ../build/lib/darktable/plugins/introspection_censorize.c:112
 msgid "input blur radius"
-msgstr "invoer radius vervaging"
+msgstr "invoer vervagingsradius"
 
 #: ../build/lib/darktable/plugins/introspection_censorize.c:57
 #: ../build/lib/darktable/plugins/introspection_censorize.c:116
 msgid "pixelization radius"
-msgstr "radius pixelisatie"
+msgstr "pixelisatie radius"
 
 #: ../build/lib/darktable/plugins/introspection_censorize.c:63
 #: ../build/lib/darktable/plugins/introspection_censorize.c:120
 msgid "output blur radius"
-msgstr "uitgaande vervagingsradius"
+msgstr "uitvoer vervagingsradius"
 
 #: ../build/lib/darktable/plugins/introspection_censorize.c:69
 #: ../build/lib/darktable/plugins/introspection_censorize.c:124
 #: ../build/lib/darktable/plugins/introspection_highlights.c:149
 #: ../build/lib/darktable/plugins/introspection_highlights.c:248
 msgid "noise level"
-msgstr "ruislevel"
+msgstr "ruisniveau"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:252
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:258
@@ -3815,7 +3815,7 @@ msgstr "scherpte"
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:129
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:252
 msgid "radius span"
-msgstr "radius span"
+msgstr "straal spreiding"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:135
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:256
@@ -3870,7 +3870,7 @@ msgstr "4e orde snelheid"
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:201
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:300
 msgid "central radius"
-msgstr "centrale radius"
+msgstr "gemiddelde straal"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:103
 #: ../build/lib/darktable/plugins/introspection_dither.c:172
@@ -8962,15 +8962,15 @@ msgstr " px"
 
 #: ../src/develop/blend_gui.c:3669
 msgid "spatial radius of feathering"
-msgstr "omvang van doezelaar"
+msgstr "grootte van doezelaar"
 
 #: ../src/develop/blend_gui.c:3678
 msgid "blurring radius"
-msgstr "radius verdoezeling"
+msgstr "vervagingsradius"
 
 #: ../src/develop/blend_gui.c:3681
 msgid "radius for gaussian blur of blend mask"
-msgstr "straal voor Gauss verdoezeling van het masker"
+msgstr "straal voor Gauss vervaging van het masker"
 
 #: ../src/develop/blend_gui.c:3689 ../src/iop/retouch.c:2734
 #: ../src/libs/history.c:957
@@ -13276,7 +13276,7 @@ msgstr ""
 #: ../src/iop/lowlight.c:819 ../src/iop/rawdenoise.c:921
 #: ../src/iop/toneequal.c:3391
 msgid "graph"
-msgstr "kaart"
+msgstr "grafiek"
 
 #: ../src/iop/atrous.c:1837 ../src/iop/colorzones.c:2727
 msgid "make effect stronger or weaker"
@@ -13629,7 +13629,7 @@ msgstr ""
 
 #: ../src/iop/bilateral.cc:75 ../src/iop/diffuse.c:447
 msgid "surface blur"
-msgstr "oppervlakteonscherpte"
+msgstr "oppervlaktevervaging"
 
 #: ../src/iop/bilateral.cc:80
 msgid "denoise (bilateral filter)"
@@ -13638,8 +13638,8 @@ msgstr "ruisreductie (bilateral)"
 #: ../src/iop/bilateral.cc:103
 msgid "apply edge-aware surface blur to denoise or smoothen textures"
 msgstr ""
-"pas randbewuste oppervlakonscherpte toe om texturen te verzachten of glad te "
-"strijken"
+"pas randbewuste oppervlaktevervaging toe om texturen te verzachten of glad "
+"te strijken"
 
 #: ../src/iop/bilateral.cc:106 ../src/iop/blurs.c:93
 #: ../src/iop/channelmixer.c:141 ../src/iop/denoiseprofile.c:781
@@ -13670,15 +13670,15 @@ msgstr "bereik van de Gauss"
 
 #: ../src/iop/bilateral.cc:373
 msgid "how much to blur red"
-msgstr "rood verdoezeling"
+msgstr "rood vervaging"
 
 #: ../src/iop/bilateral.cc:378
 msgid "how much to blur green"
-msgstr "groen verdoezeling"
+msgstr "groen vervaging"
 
 #: ../src/iop/bilateral.cc:383
 msgid "how much to blur blue"
-msgstr "blauw verdoezeling"
+msgstr "blauw vervaging"
 
 #: ../src/iop/bloom.c:83
 msgid "apply Orton effect for a dreamy ethereal look"
@@ -13703,11 +13703,11 @@ msgstr "glanssterkte"
 
 #: ../src/iop/blurs.c:81
 msgid "blurs"
-msgstr "vervagen"
+msgstr "vervaging"
 
 #: ../src/iop/blurs.c:86
 msgid "blur|lens|motion"
-msgstr "vervaag|lens|beweging"
+msgstr "vervagen|lens|beweging"
 
 #: ../src/iop/blurs.c:92
 msgid "simulate physically-accurate lens and motion blurs"
@@ -16770,7 +16770,7 @@ msgstr ""
 
 #: ../src/iop/diffuse.c:127
 msgid "diffuse or sharpen"
-msgstr "diffuus of verscherpen"
+msgstr "diffusie of verscherping"
 
 #: ../src/iop/diffuse.c:132
 msgid ""
@@ -16787,10 +16787,9 @@ msgid ""
 "inpaint damaged parts of the image, or to remove blur with blind "
 "deconvolution."
 msgstr ""
-"simuleer directionele diffusie van licht met warmteoverdrachtsmodel\n"
-"om een iteratieve randgerichte vervaging toe te passen,\n"
-"inpaint beschadigde delen van de afbeelding, of om onscherpte te verwijderen "
-"met blinde deconvolutie."
+"simuleer directionele diffusie van licht met een model voor\n"
+"warmteoverdracht voor een iteratieve randgerichte vervaging,\n"
+"'inpainten' van beschadigde delen, of verscherping met blinde deconvolutie."
 
 #. deblurring presets
 #: ../src/iop/diffuse.c:244
@@ -16835,7 +16834,7 @@ msgstr "verscherpen demozaïek (AA-filter)"
 
 #: ../src/iop/diffuse.c:550
 msgid "simulate watercolor"
-msgstr "simuleer waterkleur"
+msgstr "simuleer waterverf"
 
 #: ../src/iop/diffuse.c:575
 msgid "simulate line drawing"
@@ -16865,7 +16864,7 @@ msgstr "lokaal contrast: snel"
 #: ../src/iop/diffuse.c:1407
 msgid "diffuse/sharpen failed to allocate memory, check your RAM settings"
 msgstr ""
-"diffuus/verscherpen kon geen geheugen toewijzen, controleer uw RAM-"
+"diffusie of verscherping kon geen geheugen toewijzen, controleer uw RAM-"
 "instellingen"
 
 #. Additional parameters
@@ -16885,8 +16884,8 @@ msgid ""
 msgstr ""
 "meer iteraties maken het effect sterker, maar de module langzamer.\n"
 "dit is analoog aan het geven van meer tijd aan de diffusie reactie.\n"
-"als je van plan bent te verscherpen of te schilderen, \n"
-"helpen meer iteraties bij de wederopbouw."
+"als je wilt verscherpen of 'inpainten' van beschadigingen, \n"
+"helpen meer iteraties bij de reconstructie."
 
 #: ../src/iop/diffuse.c:1794
 msgid ""
@@ -16896,11 +16895,11 @@ msgid ""
 "for deblurring and denoising, set to zero.\n"
 "increase to act on local contrast instead."
 msgstr ""
-"hoofdschaal van de diffusie.\n"
+"schaal van de diffusie.\n"
 "nul zorgt ervoor dat diffusie sterker inwerkt op de fijnste details.\n"
-"niet-nul definieert de grootte van de details om sterk te diffunderen.\n"
-"voor onscherpte en ruisonderdrukking, ingesteld op nul.\n"
-"verhogen om in plaats daarvan op lokaal contrast in te werken."
+"niet-nul definieert de grootte van de details voor sterke diffusie.\n"
+"stel dit in op nul voor verscherpen en ruisreductie.\n"
+"verhoog om in plaats daarvan op lokaal contrast te werken."
 
 #: ../src/iop/diffuse.c:1804
 msgid ""
@@ -16910,16 +16909,16 @@ msgid ""
 "if you plan on deblurring, \n"
 "the radius should be around the width of your lens blur."
 msgstr ""
-"breedte van de diffusie rond de centrale radius.\n"
-"hoge waarden diffuseren over een grote band van straal.\n"
-"lage waarden diffuseren dichter bij de centrale radius.\n"
-"als je van plan bent om onscherpte te verwijderen, \n"
-"moet de radius rond de breedte van de lens onscherpte liggen."
+"spreiding van de diffusie rond het gemiddelde.\n"
+"hoge waarden werken over een breder bereik.\n"
+"lage waarden werken dichter rond het gemiddelde.\n"
+"als je lensonscherpte wilt verwijderen, moet het\n"
+"gemiddelde rond de grootte van de lensonscherpte liggen."
 
 #: ../src/iop/diffuse.c:1811
 msgctxt "section"
 msgid "speed (sharpen ↔ diffuse)"
-msgstr "snelheid (verscherpen ↔ diffuus)"
+msgstr "snelheid (verscherping ↔ diffusie)"
 
 #: ../src/iop/diffuse.c:1818
 msgid ""
@@ -16930,11 +16929,11 @@ msgid ""
 "positive values diffuse and blur, \n"
 "zero does nothing."
 msgstr ""
-"diffusie snelheid van lage frequentie  wavelet lagen\n"
-"in de richting van 1e order anisotropie (zet omlaag).\n"
+"diffusie snelheid van laagfrequente wavelet lagen\n"
+"in de richting van 1e orde anisotropie (zie onder).\n"
 "\n"
 "negatieve waarden verscherpen,\n"
-"positieve waarden diffuseren en vervagen,\n"
+"positieve waarden vervagen,\n"
 "nul doet niets."
 
 #: ../src/iop/diffuse.c:1828
@@ -16946,11 +16945,11 @@ msgid ""
 "positive values diffuse and blur, \n"
 "zero does nothing."
 msgstr ""
-"diffusie snelheid van lage frequentie  wavelet lagen\n"
-"in de richting van 2e order anisotropie (zet omlaag).\n"
+"diffusie snelheid van laagfrequente wavelet lagen\n"
+"in de richting van 2e orde anisotropie (zie onder).\n"
 "\n"
 "negatieve waarden verscherpen,\n"
-"positieve waarden diffuseren en vervagen,\n"
+"positieve waarden vervagen,\n"
 "nul doet niets."
 
 #: ../src/iop/diffuse.c:1838
@@ -16962,11 +16961,11 @@ msgid ""
 "positive values diffuse and blur, \n"
 "zero does nothing."
 msgstr ""
-"diffusie snelheid van lage frequentie  wavelet lagen\n"
-"in de richting van 3e order anisotropie (zet omlaag).\n"
+"diffusie snelheid van hoogfrequente wavelet lagen\n"
+"in de richting van 3e orde anisotropie (zie onder).\n"
 "\n"
 "negatieve waarden verscherpen,\n"
-"positieve waarden diffuseren en vervagen,\n"
+"positieve waarden vervagen,\n"
 "nul doet niets."
 
 #: ../src/iop/diffuse.c:1848
@@ -16978,11 +16977,11 @@ msgid ""
 "positive values diffuse and blur, \n"
 "zero does nothing."
 msgstr ""
-"diffusie snelheid van lage frequentie  wavelet lagen\n"
-"in de richting van 4e order anisotropie (zet omlaag).\n"
+"diffusie snelheid van hoogfrequente wavelet lagen\n"
+"in de richting van 4e orde anisotropie (zie onder).\n"
 "\n"
 "negatieve waarden verscherpen,\n"
-"positieve waarden diffuseren en vervagen,\n"
+"positieve waarden vervagen,\n"
 "nul doet niets."
 
 #: ../src/iop/diffuse.c:1854
@@ -16998,7 +16997,7 @@ msgid ""
 "positive values rather avoid edges (isophotes), \n"
 "zero affects both equally (isotropic)."
 msgstr ""
-"richting van 1e orde snelheid (zet omlaag).\n"
+"richting van 1e orde snelheid (zie boven).\n"
 "\n"
 "negatieve waarden volgen gradiënten meer,\n"
 "positieve waarden vermijden randen (isofoten),\n"
@@ -17012,7 +17011,7 @@ msgid ""
 "positive values rather avoid edges (isophotes), \n"
 "zero affects both equally (isotropic)."
 msgstr ""
-"richting van 2e orde snelheid (zet omlaag).\n"
+"richting van 2e orde snelheid (zie boven).\n"
 "\n"
 "negatieve waarden volgen gradiënten meer,\n"
 "positieve waarden vermijden randen (isofoten),\n"
@@ -17026,7 +17025,7 @@ msgid ""
 "positive values rather avoid edges (isophotes), \n"
 "zero affects both equally (isotropic)."
 msgstr ""
-"richting van 3e orde snelheid (zet omlaag).\n"
+"richting van 3e orde snelheid (zie boven).\n"
 "\n"
 "negatieve waarden volgen gradiënten meer,\n"
 "positieve waarden vermijden randen (isofoten),\n"
@@ -17040,7 +17039,7 @@ msgid ""
 "positive values rather avoid edges (isophotes), \n"
 "zero affects both equally (isotropic)."
 msgstr ""
-"richting van 4e orde snelheid (zet omlaag).\n"
+"richting van 4e orde snelheid (zie boven).\n"
 "\n"
 "negatieve waarden volgen gradiënten meer,\n"
 "positieve waarden vermijden randen (isofoten),\n"
@@ -17067,9 +17066,9 @@ msgid ""
 "increase to exclude more edges from diffusion,\n"
 "if fringes or halos appear."
 msgstr ""
-"definieer de gevoeligheid van het variantienadeel voor randen.\n"
-"verhogen om meer randen van diffusie uit te sluiten,\n"
-"als er franjes of halo's verschijnen."
+"definieer de ongevoeligheid voor randen.\n"
+"verhoog om meer randen van diffusie uit te sluiten,\n"
+"als er kleurschifting of halo's verschijnen."
 
 #: ../src/iop/diffuse.c:1917
 msgid ""
@@ -17078,11 +17077,10 @@ msgid ""
 "increase if you see noise appear on smooth surfaces or\n"
 "if dark areas seem oversharpened compared to bright areas."
 msgstr ""
-"definieer de variantiedrempel tussen randversterking en het nadeel.\n"
-"verminderen als je wilt dat pixels op gladde oppervlakken een boost "
-"krijgen,\n"
-"verhogen als u ruis ziet verschijnen op gladde oppervlakken of\n"
-"als donkere gebieden te scherp lijken in vergelijking met heldere gebieden."
+"definieer de drempelwaarde van randdetectie.\n"
+"verlaag om details op gladde oppervlakken te benadrukken,\n"
+"verhoog als er ruis verschijnt op gladde oppervlakken of als\n"
+"donkere gebieden te scherp lijken in vergelijking met heldere gebieden."
 
 #: ../src/iop/diffuse.c:1923
 msgctxt "section"
@@ -17130,7 +17128,7 @@ msgstr "dither"
 
 #: ../src/iop/dither.c:739
 msgid "radius for blurring step"
-msgstr "radius voor verdoezel stap"
+msgstr "radius voor vervaging stap"
 
 #: ../src/iop/dither.c:751
 msgid "the gradient range where to apply random dither"
@@ -17814,11 +17812,11 @@ msgid ""
 "decrease if you want more blur."
 msgstr ""
 "beslis welke herstelstrategie de voorkeur geniet:\n"
-"vervagen van hooglichten (zoals film),\n"
-"of proberen om scherpe details te herstellen.\n"
+"overstralen van hooglichten zoals film,\n"
+"of proberen scherpe details te herstellen.\n"
 "0% is een gelijke mix van beide.\n"
 "verhoog als u meer details wilt.\n"
-"verminder als u meer vervaging wilt."
+"verlaag als u meer vervaging wilt."
 
 #: ../src/iop/filmicrgb.c:4507
 #, no-c-format
@@ -18961,7 +18959,7 @@ msgstr "masker lokaal contrast"
 
 #: ../src/iop/lowpass.c:592
 msgid "radius of gaussian/bilateral blur"
-msgstr "radius voor Gauss/bilateraal verdoezelen"
+msgstr "radius voor Gauss/bilateraal vervagen"
 
 #: ../src/iop/lowpass.c:593
 msgid "contrast of lowpass filter"
@@ -18977,7 +18975,7 @@ msgstr "kleurverzadiging voor lowpass filter"
 
 #: ../src/iop/lowpass.c:596
 msgid "which filter to use for blurring"
-msgstr "bepaal filter voor verdoezelen"
+msgstr "bepaal filter voor vervaging"
 
 #: ../src/iop/lut3d.c:136
 msgid "LUT 3D"
@@ -20020,7 +20018,7 @@ msgstr "algoritme voor het type verdoezeling"
 
 #: ../src/iop/retouch.c:2730
 msgid "radius of the selected blur type"
-msgstr "radius van geselecteerd type verdoezeling"
+msgstr "radius van geselecteerd type vervaging"
 
 #: ../src/iop/retouch.c:2737
 msgid "set the opacity on the selected shape"
@@ -20254,7 +20252,7 @@ msgstr "verscherpen"
 
 #: ../src/iop/sharpen.c:434
 msgid "spatial extent of the unblurring"
-msgstr "omvang van verscherping"
+msgstr "radius van de verscherping"
 
 #: ../src/iop/sharpen.c:438
 msgid "strength of the sharpen"
@@ -20401,15 +20399,15 @@ msgstr "maak een verzacht beeld met het Orton-effect"
 
 #: ../src/iop/soften.c:353
 msgid "the size of blur"
-msgstr "mate van verdoezelen"
+msgstr "omvang van vervaging"
 
 #: ../src/iop/soften.c:357
 msgid "the saturation of blur"
-msgstr "de verzadiging m.b.t. verdoezeling"
+msgstr "verzadiging van vervaging"
 
 #: ../src/iop/soften.c:361
 msgid "the brightness of blur"
-msgstr "de helderheid van verdoezeling"
+msgstr "helderheid van vervaging"
 
 #: ../src/iop/soften.c:365
 msgid "the mix of effect"
@@ -22998,7 +22996,7 @@ msgstr "mengdraaipunt"
 
 #: ../src/libs/history.c:964
 msgid "mask blur"
-msgstr "masker verdoezelen"
+msgstr "masker vervaging"
 
 #: ../src/libs/history.c:967
 msgid "raster mask instance"
@@ -26432,90 +26430,3 @@ msgstr ""
 #: ../src/views/view.c:1532
 msgid "mouse actions"
 msgstr "muisacties"
-
-#~ msgctxt "preferences"
-#~ msgid "unrestricted"
-#~ msgstr "onbeperkt"
-
-#~ msgid ""
-#~ "hides built-in presets of processing modules in both presets and "
-#~ "favourites menu."
-#~ msgstr ""
-#~ "verbergt de ingebouwde voorkeuren van de verwerkingsmodules in de "
-#~ "voorkeuren en het favorietenmenu."
-
-#~ msgid "RustiCL"
-#~ msgstr "RustiCL"
-
-#~ msgctxt "preferences"
-#~ msgid "chronological"
-#~ msgstr "chronologisch"
-
-#~ msgid "sort collection descending"
-#~ msgstr "sorteer collectie aflopend"
-
-#~ msgid ""
-#~ "sort the following collections in descending order: 'film roll' by "
-#~ "folder, 'folder', 'times' (e.g. 'capture date')"
-#~ msgstr ""
-#~ "sorteer de volgende collecties in aflopende volgorde: ‘filmrol’ op map, "
-#~ "‘map’, ‘tijden’ (bijv. ‘opname datum’)"
-
-#~ msgid "(AI) detect from image surfaces..."
-#~ msgstr "(AI) detecteren van beeldoppervlakken..."
-
-#~ msgid "(AI) detect from image edges..."
-#~ msgstr "(AI) detecteren van afbeeldingsranden..."
-
-#~ msgid "group leaders"
-#~ msgstr "groepsleiders"
-
-#~ msgid "group followers"
-#~ msgstr "groep volgers"
-
-#~ msgid "_understood"
-#~ msgstr "begrepen"
-
-#~ msgid "failed to import images from camera."
-#~ msgstr "importeren vanuit camera mislukt."
-
-#~ msgid ""
-#~ "<b>move segment</b>: drag\n"
-#~ "<b>add node</b>: ctrl+click"
-#~ msgstr ""
-#~ "<b>verplaats segment</b>: slepen\n"
-#~ "<b>voeg knooppunt toe</b>: ctrl+klik"
-
-#~ msgid "$(SEQUENCE) - sequence number"
-#~ msgstr "$(SEQUENCE) - volgnummer"
-
-#~ msgid "radius_1"
-#~ msgstr "radius_1"
-
-#~ msgid "pixelate"
-#~ msgstr "pixelate"
-
-#~ msgid "radius_2"
-#~ msgstr "radius_2"
-
-#~ msgid "noise"
-#~ msgstr "ruis"
-
-#~ msgid "automatic pixel scaling"
-#~ msgstr "pixels automatisch schalen"
-
-#~ msgid ""
-#~ "automatic pixel scaling\n"
-#~ "only works for the sensors that need it."
-#~ msgstr ""
-#~ "automatisch pixels schalen\n"
-#~ "werkt alleen voor sensors die dat nodig hebben."
-
-#~ msgid "ungrouped images"
-#~ msgstr "gedegroepeerde afbeeldingen"
-
-#~ msgid "select the type of grouped image to filter"
-#~ msgstr "selecteer de type van afbeelding groepering om te filteren"
-
-#~ msgid "good knight"
-#~ msgstr "goedenacht"
