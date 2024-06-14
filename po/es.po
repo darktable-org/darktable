@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 4.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-06-07 21:41-0600\n"
-"PO-Revision-Date: 2024-06-11 01:53-0600\n"
+"POT-Creation-Date: 2024-06-13 00:42-0600\n"
+"PO-Revision-Date: 2024-06-14 01:03-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -1128,7 +1128,6 @@ msgid "enable disk backend for thumbnail cache"
 msgstr "Almacenar en disco una 2ª caché de miniaturas"
 
 #: ../build/bin/preferences_gen.h:4783
-#, fuzzy
 msgid ""
 "if enabled, write thumbnails to disk (.cache/darktable/) when evicted from "
 "the memory cache.\n"
@@ -1144,8 +1143,9 @@ msgstr ""
 "Tome en cuenta que esto puede consumir mucha memoria (varios gigabytes por "
 "imágenes de 20k), pero no tendrá que eliminar las miniaturas almacenadas en "
 "caché.\n"
-"Sin embargo, es seguro eliminarlas manualmente si lo desea. El desempeño de "
-"la mesa de luz mejorará en gran medida cuando se navega mucho.\n"
+"Sin embargo, es seguro eliminarlas manualmente si lo desea. \n"
+"El desempeño de la mesa de luz mejorará en gran medida cuando se navega "
+"mucho.\n"
 "Para generar todas las miniaturas de su colección fuera de línea, ejecute "
 "\"darktable-generate-cache\"."
 
@@ -1154,7 +1154,6 @@ msgid "enable disk backend for full preview cache"
 msgstr "Almacenar en disco una caché de las vistas previas completas"
 
 #: ../build/bin/preferences_gen.h:4817
-#, fuzzy
 msgid ""
 "if enabled, write full preview to disk (.cache/darktable/) when evicted from "
 "the memory cache.\n"
@@ -1169,9 +1168,9 @@ msgstr ""
 "Tome en cuenta que esto puede consumir mucha memoria (varios gigabytes por "
 "imágenes de 20k), pero no tendrá que eliminar las miniaturas almacenadas en "
 "caché.\n"
-"Sin embargo, es seguro eliminarlas manualmente. El rendimiento de la mesa de "
-"luz aumentará en gran medida al hacer zoom en la imagen en modo de vista "
-"previa completa."
+"Sin embargo, es seguro eliminarlas manualmente.\n"
+"El rendimiento de la mesa de luz aumentará en gran medida al hacer zoom en "
+"la imagen en modo de vista previa completa."
 
 #: ../build/bin/preferences_gen.h:4838
 msgid "generate thumbnails in background"
@@ -1895,13 +1894,12 @@ msgid "password storage backend to use"
 msgstr "Respaldo de almacenamiento de contraseñas"
 
 #: ../build/bin/preferences_gen.h:7003
-#, fuzzy
 msgid ""
 "the storage backend for password storage: auto, none, libsecret, kwallet, "
 "apple_keychain, windows_credentials"
 msgstr ""
 "Interfaz para almacenamiento de claves: automático, ninguno, Libsecret, "
-"Kwallet"
+"Kwallet, Llaveros de Apple y Credenciales de Windows"
 
 #: ../build/bin/preferences_gen.h:7024
 msgid "executable for playing audio files"
@@ -2074,8 +2072,8 @@ msgstr "Listar primero los preajustes integrados"
 msgid ""
 "whether to show built-in presets first before user's presets in presets menu."
 msgstr ""
-"Mostrar primero los preajustes integrados antes que los personalizados en "
-"el menú de preajustes."
+"Mostrar primero los preajustes integrados antes que los personalizados en el "
+"menú de preajustes."
 
 #: ../build/bin/preferences_gen.h:7463
 msgid "mouse wheel scrolls modules side panel by default"
@@ -2096,7 +2094,6 @@ msgid "always show panels' scrollbars"
 msgstr "Mostrar siempre las barras de desplazamiento de los paneles"
 
 #: ../build/bin/preferences_gen.h:7510
-#, fuzzy
 msgid ""
 "defines whether the panel scrollbars should be always visible or activated "
 "only depending on the content. (restart required)"
@@ -6343,9 +6340,8 @@ msgid "_show this message again"
 msgstr "_Mostrar de nuevo este mensaje"
 
 #: ../src/common/darktable.c:1682
-#, fuzzy
 msgid "_dismiss"
-msgstr "Descartar"
+msgstr "Ignorar"
 
 #: ../src/common/darktable.c:2136
 msgid ""
@@ -11610,7 +11606,6 @@ msgid "GUI controls and text DPI"
 msgstr "PPP de los controles y texto de la Interfaz Gráfica"
 
 #: ../src/gui/preferences.c:379
-#, fuzzy
 msgid ""
 "adjust the global GUI resolution to rescale controls, buttons, labels, etc.\n"
 "increase for a magnified GUI, decrease to fit more content in window.\n"
@@ -16945,11 +16940,12 @@ msgid "diffuse or sharpen"
 msgstr "difuso / nítido"
 
 #: ../src/iop/diffuse.c:132
-#, fuzzy
 msgid ""
 "diffusion|deconvolution|blur|sharpening|bloom|clarity|dehaze|inpaint|"
 "watercolor"
-msgstr "difusión|deconvolución|desenfoque|nitidez"
+msgstr ""
+"difusión|deconvolución|desenfoque|nitidez|resplandor|claridad|reconstrucción|"
+"acuarela"
 
 #: ../src/iop/diffuse.c:139
 msgid ""
