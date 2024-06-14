@@ -9,15 +9,16 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-06-02 18:53+0200\n"
-"PO-Revision-Date: 2024-06-12 22:06+0200\n"
-"Last-Translator: Fabio Sirna <fabio@fabiosirna.com>\n"
-"Language-Team: Italian <kde-i18n-doc@kde.org>\n"
+"PO-Revision-Date: 2024-06-14 23:58+0200\n"
+"Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
+"\n"
+"Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Lokalize 24.05.0\n"
+"X-Generator: Lokalize 22.12.3\n"
 
 #: ../build/bin/conf_gen.h:90
 msgctxt "preferences"
@@ -1257,7 +1258,6 @@ msgid "scroll down to increase mask parameters"
 msgstr "Scorri giù per aumentare i parametri della maschera"
 
 #: ../build/bin/preferences_gen.h:5073
-#, fuzzy
 msgid ""
 "when using the mouse scroll wheel to change mask parameters, scroll down to "
 "increase the mask size, feather size, opacity, brush hardness and gradient "
@@ -2132,14 +2132,14 @@ msgstr ""
 " laterali "
 
 #: ../build/bin/preferences_gen.h:7476
-#, fuzzy
 msgid ""
 "when enabled, use mouse wheel to scroll modules side panel.  use ctrl+alt to "
 "use mouse wheel for data entry.  when disabled, this behavior is reversed"
 msgstr ""
-"Se abilitato permette di utilizzare lo scorrimento per scorrere i "
-"moduli nel pannello laterale. Usa Crtl+Alt per utilizzare la funzione Scorri "
-"per immettere i dati. Se disabilitato, si comporta al contrario."
+"Se abilitato, usa lo scorrimento del mouse per muoverti nel pannello laterale"
+" dei moduli. "
+"Usa Crtl+Alt per utilizzare la funzione Scorri per immettere i dati. Se"
+" disabilitato, si comporta al contrario."
 
 #: ../build/bin/preferences_gen.h:7497
 msgid "always show panels' scrollbars"
@@ -9383,7 +9383,7 @@ msgid "brush #%d"
 msgstr "Pennello #%d"
 
 #: ../src/develop/masks/brush.c:3185
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "<b>size</b>: scroll, <b>hardness</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
@@ -9392,7 +9392,6 @@ msgstr ""
 "<b>opacità</b>: Ctrl+scorri(%d%%)"
 
 #: ../src/develop/masks/brush.c:3188
-#, fuzzy
 msgid "<b>size</b>: scroll"
 msgstr "<b>dimensione</b>: scorri"
 
@@ -9421,7 +9420,7 @@ msgid "circle #%d"
 msgstr "Cerchio #%d"
 
 #: ../src/develop/masks/circle.c:1428 ../src/develop/masks/path.c:3371
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
@@ -9461,7 +9460,7 @@ msgid "ellipse #%d"
 msgstr "Ellisse #%d"
 
 #: ../src/develop/masks/ellipse.c:2022
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
 "<b>rotation</b>: ctrl+shift+scroll, <b>opacity</b>: ctrl+scroll (%d%%)"
@@ -9475,7 +9474,7 @@ msgid "<b>rotate</b>: ctrl+drag"
 msgstr "<b>Ruota</b>: Ctrl+trascina"
 
 #: ../src/develop/masks/ellipse.c:2029
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "<b>feather mode</b>: shift+click, <b>rotate</b>: ctrl+drag\n"
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>: "
@@ -9521,7 +9520,7 @@ msgid "gradient #%d"
 msgstr "Gradiente #%d"
 
 #: ../src/develop/masks/gradient.c:1465
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "<b>curvature</b>: scroll, <b>compression</b>: shift+scroll\n"
 "<b>rotation</b>: click+drag, <b>opacity</b>: ctrl+scroll (%d%%)"
@@ -9530,7 +9529,7 @@ msgstr ""
 "<b>rotazione</b>: clic+trascina, <b>opacità</b>: Ctrl+scorri (%d%%)"
 
 #: ../src/develop/masks/gradient.c:1470
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "<b>curvature</b>: scroll, <b>compression</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
@@ -10509,7 +10508,6 @@ msgstr ""
 "doppio clic per definire una nuova scorciatoia"
 
 #: ../src/gui/accelerators.c:1086
-#, fuzzy
 msgid "shift+alt+scroll to change height"
 msgstr "Maiusc+Alt+scorri per modificare l'altezza"
 
@@ -10534,7 +10532,6 @@ msgid "ctrl+click to remove from quick access panel\n"
 msgstr "Ctrl+clic per rimuovere dal pannello di accesso rapido\n"
 
 #: ../src/gui/accelerators.c:1110
-#, fuzzy
 msgid "scroll to change default speed"
 msgstr "Ctrl+scorri per modificare la velocità predefinita"
 
@@ -10637,7 +10634,6 @@ msgid "(unchanged)"
 msgstr "(non cambiato)"
 
 #: ../src/gui/accelerators.c:1946
-#, fuzzy
 msgid ""
 "define a shortcut by pressing a key, optionally combined with modifier keys "
 "(ctrl/shift/alt)\n"
@@ -10652,7 +10648,7 @@ msgid ""
 msgstr ""
 "Definisce una scorciatoia premendo un tasto, in opzione combinato con tasti "
 "modificatori (Ctrl/Maiusc/Alt)\n"
-"Un tasto può esser premuto duo o tre volte, con una ultima pressione lunga\n"
+"Un tasto può esser premuto due o tre volte, con una ultima pressione lunga\n"
 "Mentre il tasto è premuto, una combinazione di tasti del mouse possono (due/ "
 "tre volte /a lungo) esser premuti\n"
 "Sempre tenendo premuto il tasto (e modificatori e/o pulsanti) può esser "
@@ -16415,13 +16411,12 @@ msgid "options"
 msgstr "Opzioni"
 
 #: ../src/iop/colorequal.c:2530
-#, fuzzy
 msgid ""
 "double-click to reset the curve\n"
 "middle click to toggle sliders visibility\n"
 "alt+scroll to change page"
 msgstr ""
-"Doppio-clic per resettare la  curva\n"
+"Doppio-clic per resettare la curva\n"
 "Click pulsante centrale per alternare la visibilità dei cursori\n"
 "Alt+scorri per cambiare pagina"
 
@@ -19061,7 +19056,6 @@ msgid "click to edit nodes"
 msgstr "Clic per modificare i nodi"
 
 #: ../src/iop/liquify.c:3572
-#, fuzzy
 msgid ""
 "<b>add point</b>: click and drag\n"
 "<b>size</b>: scroll - <b>strength</b>: shift+scroll - <b>direction</b>: "
@@ -19072,7 +19066,6 @@ msgstr ""
 "<b>direzione</b>: Ctrl+scorri"
 
 #: ../src/iop/liquify.c:3575
-#, fuzzy
 msgid ""
 "<b>add line</b>: click\n"
 "<b>size</b>: scroll - <b>strength</b>: shift+scroll - <b>direction</b>: "
@@ -19083,7 +19076,6 @@ msgstr ""
 "<b>direzione</b>: Ctrl+scorri"
 
 #: ../src/iop/liquify.c:3578
-#, fuzzy
 msgid ""
 "<b>add curve</b>: click\n"
 "<b>size</b>: scroll - <b>strength</b>: shift+scroll - <b>direction</b>: "
@@ -19500,7 +19492,6 @@ msgid "red filter"
 msgstr "Filtro rosso"
 
 #: ../src/iop/monochrome.c:570
-#, fuzzy
 msgid "drag and scroll mouse wheel to adjust the virtual color filter"
 msgstr "Trascina e scorri per regolare il filtro colore virtuale"
 
@@ -21161,7 +21152,6 @@ msgstr ""
 "Devo attendere che sia terminata l'anteprima per terminare l'elaborazione"
 
 #: ../src/iop/toneequal.c:2036 ../src/iop/toneequal.c:2595
-#, fuzzy
 msgid ""
 "scroll over image to change tone exposure\n"
 "shift+scroll for large steps; ctrl+scroll for small steps"
@@ -21647,7 +21637,6 @@ msgid "zone system"
 msgstr "Sistema zonale"
 
 #: ../src/iop/zonesystem.c:464
-#, fuzzy
 msgid ""
 "lightness zones\n"
 "use mouse scrollwheel to change the number of zones\n"
@@ -23043,7 +23032,6 @@ msgid "date/time"
 msgstr "Data/ora"
 
 #: ../src/libs/geotagging.c:1744
-#, fuzzy
 msgid ""
 "enter the new date/time (YYYY:MM:DD hh:mm:ss[.sss])\n"
 "key in the new numbers or scroll over the cell"
@@ -23214,22 +23202,18 @@ msgstr ""
 "Rec2020"
 
 #: ../src/libs/histogram.c:1693
-#, fuzzy
 msgid "scroll to coarse-rotate"
 msgstr "Scorri per ruotare grossolanamente"
 
 #: ../src/libs/histogram.c:1694
-#, fuzzy
 msgid "ctrl+scroll to fine rotate"
 msgstr "Ctrl+scorri per ruotare accuratamente"
 
 #: ../src/libs/histogram.c:1695
-#, fuzzy
 msgid "shift+scroll to change width"
 msgstr "Maiusc+scorri per modificare la larghezza"
 
 #: ../src/libs/histogram.c:1696
-#, fuzzy
 msgid "alt+scroll to cycle"
 msgstr "Alt+scorri per ciclare"
 
@@ -23977,7 +23961,6 @@ msgstr ""
 "località"
 
 #: ../src/libs/map_locations.c:931
-#, fuzzy
 msgid ""
 "list of user locations,\n"
 "click to show or hide a location on the map:\n"
@@ -23991,18 +23974,18 @@ msgid ""
 " - press enter to validate the new name, escape to cancel the edit\n"
 "right-click for other actions: delete location and go to collection"
 msgstr ""
-"Lista dei luoghi utente,\n"
+"Lista dei luoghi dell'utente,\n"
 "clicca per mostrare o nascondere un luogo sulla mappa:\n"
 " - scorri dentro la forma per ridimensionarla\n"
 " - Maiusc o Ctrl  + scorri per modificare la larghezza o l'altezza\n"
-" - Clicca e trascina la forma per modificare la sua posizione\n"
+" - clicca e trascina la forma per modificare la sua posizione\n"
 " - Ctrl+clicca per spostare un'immagine da dentro un luogo\n"
 "Ctrl+clicca per modificare il nome del luogo\n"
 " - la barra verticale '|' spezza il nome in più livelli\n"
 " - pulire il nome di un gruppo di luoghi per rimuoverlo\n"
-" - premi invio per validare il nuovo nome, Esc per annullare la modifica\no"
-"clicca con il tasto destro per altre azioni: elimina il luogo e vai alla"
-" collezione"
+" - premi invio per validare il nuovo nome, Esc per annullare la modifica\n"
+"o clicca con il tasto destro per altre azioni: elimina il luogo e vai alla"
+" raccolta"
 
 #: ../src/libs/map_locations.c:957
 msgid ""
@@ -25914,7 +25897,6 @@ msgstr ""
 "visualizzare l'aiuto in linea"
 
 #: ../src/libs/tools/global_toolbox.c:496
-#, fuzzy
 msgid ""
 "define shortcuts\n"
 "ctrl+click to switch off overwrite confirmations\n"
@@ -25929,8 +25911,7 @@ msgstr ""
 "Ctrl+clic per disattivare la conferma di sovrascrittura\n"
 "\n"
 "passa il mouse su un widget e premi i tasti con il clic del mouse per"
-" scorrere o spostare "
-"combinazioni\n"
+" scorrere o spostare combinazioni\n"
 "effettua di nuovo la stessa combinazione per eliminare la mappatura\n"
 "fai clic su un elemento, un modulo o un'area dello schermo per aprire una "
 "finestra di dialogo per ulteriori configurazioni"
@@ -27173,5 +27154,4 @@ msgstr "Azioni mouse"
 #, c-format
 #~ msgid "%.1f mm (%.1f mm FF equiv, crop %.1f)"
 #~ msgstr "%.1f mm (%.1f mm FF equivalente, crop %.1f)"
-
 
