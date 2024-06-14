@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-06-02 18:53+0200\n"
-"PO-Revision-Date: 2024-06-12 19:51+0300\n"
+"PO-Revision-Date: 2024-06-14 19:48+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -454,7 +454,7 @@ msgstr "мініатюри"
 #: ../build/bin/conf_gen.h:2041
 msgctxt "preferences"
 msgid "count"
-msgstr "Кількість зображень"
+msgstr "кількість зображень"
 
 #: ../build/bin/conf_gen.h:2044
 msgid "thumbnail display"
