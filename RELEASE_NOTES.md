@@ -285,7 +285,6 @@ changes (where available).
 Support for the following cameras is suspended because no samples are available on https://raw.pixls.us:
 
 - Creo/Leaf Aptus 22(LF3779)/Hasselblad H1
-- Fujifilm FinePix S9600fd
 - Fujifilm IS-1
 - Kodak EasyShare Z980
 - Leaf Aptus-II 5(LI300059)/Mamiya 645 AFD
