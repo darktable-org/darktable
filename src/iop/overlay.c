@@ -83,9 +83,10 @@ typedef struct dt_iop_overlay_params_t
   dt_iop_overlay_svg_scale_t scale_svg; // $DEFAULT: DT_SCALE_SVG_WIDTH $DESCRIPTION: "scale marker reference"
   dt_imgid_t imgid; // overlay image id
   char filename[1024]; // full overlay's filename
-  size_t buf_width;
-  size_t buf_height;
-  int64_t hash;
+  // keep parameter struct to avoid a version bump
+  size_t dummy0;
+  size_t dummy1;
+  int64_t dummy2;
 } dt_iop_overlay_params_t;
 
 typedef struct dt_iop_overlay_data_t
@@ -100,11 +101,7 @@ typedef struct dt_iop_overlay_data_t
   dt_iop_overlay_svg_scale_t scale_svg;
   dt_iop_overlay_img_scale_t scale_img;
   dt_imgid_t imgid;
-  int index;
   char filename[1024];
-  size_t buf_width;
-  size_t buf_height;
-  uint8_t *buf;
 } dt_iop_overlay_data_t;
 
 #define MAX_OVERLAY 50
@@ -112,6 +109,9 @@ typedef struct dt_iop_overlay_data_t
 typedef struct dt_iop_overlay_global_data_t
 {
   uint8_t *cache[MAX_OVERLAY];
+  size_t cwidth[MAX_OVERLAY];
+  size_t cheight[MAX_OVERLAY];
+  dt_pthread_mutex_t overlay_threadsafe;
 } dt_iop_overlay_global_data_t;
 
 typedef struct dt_iop_overlay_gui_data_t
@@ -132,14 +132,12 @@ typedef struct dt_iop_overlay_gui_data_t
    The creation of the overlay image use a standard pipe run. This is
    not fast so a cache is used.
 
-   - The cached overlay buffers are stored into the global data. One slot is
-     allocated for each instances (index is the multi_priority).
+   - The cached overlay buffers are stored into the global data.
+     One slot is allocated for each instance (index is the multi_priority)
+     and holds buffer address and dimensions.
 
-   - In parameters we have the width x height of the cached image buffer.
-
-   - A hash is added in parameter to ensure the parameters are changed
-     when the cache is changed too and so ensure that the proper
-     buffer is displayed. This hash is the buffer pointer casted as uint64_t.
+   - To make the internal cache working safely we use a mutex encapsulating cache
+     buffer changes making process() re-entry safe for concurrent pixelpipe runs.
  */
 
 const char *name()
@@ -234,6 +232,7 @@ static GList *_get_disabled_modules(const dt_iop_module_t *self,
 static void _clear_cache_entry(dt_iop_module_t *self, const int index)
 {
   dt_iop_overlay_global_data_t *gd = (dt_iop_overlay_global_data_t *)self->global_data;
+  if(!gd) return;
 
   dt_free_align(gd->cache[index]);
   gd->cache[index] = NULL;
@@ -251,7 +250,9 @@ static void _module_remove_callback(gpointer instance,
 
 static void _setup_overlay(dt_iop_module_t *self,
                            dt_dev_pixelpipe_iop_t *piece,
-                           uint8_t **pbuf)
+                           uint8_t **pbuf,
+                           size_t *pwidth,
+                           size_t *pheight)
 {
   dt_iop_overlay_params_t *p = (dt_iop_overlay_params_t *)self->params;
   dt_iop_overlay_gui_data_t *g = (dt_iop_overlay_gui_data_t *)self->gui_data;
@@ -260,9 +261,7 @@ static void _setup_overlay(dt_iop_module_t *self,
   const dt_imgid_t imgid = data->imgid;
 
   if(!p || !dt_is_valid_imgid(imgid))
-  {
     return;
-  }
 
   dt_develop_t *dev = self->dev;
 
@@ -312,14 +311,8 @@ static void _setup_overlay(dt_iop_module_t *self,
 
     uint8_t *old_buf = *pbuf;
 
-    p->hash          = (int64_t)buf;
-    p->buf_width     = bw;
-    p->buf_height    = bh;
-    data->buf_width  = bw;
-    data->buf_height = bh;
-
-    dt_dev_add_history_item(dev, self, TRUE);
-
+    *pwidth = bw;
+    *pheight = bh;
     *pbuf = buf;
     dt_free_align(old_buf);
   }
@@ -339,32 +332,66 @@ void process(struct dt_iop_module_t *self,
   dt_iop_overlay_data_t *data = (dt_iop_overlay_data_t *)piece->data;
   dt_iop_overlay_global_data_t *gd = (dt_iop_overlay_global_data_t *)self->global_data;
 
+  /* We have several pixelpipes that might want to save the processed overlay in
+     the internal cache (both previews and full).
+     By using a mutex here we ensure
+     a) safe data pointer and dimension
+     b) only the first darkroom pipe being here has the hard work via _setup_overlay().
+  */
+  dt_pthread_mutex_lock(&gd->overlay_threadsafe);
+
   float *in = (float *)ivoid;
   float *out = (float *)ovoid;
   const int ch = piece->colors;
   const float angle = (M_PI / 180) * (-data->rotate);
   const int index   = self->multi_priority;
 
-  uint8_t *cbuf = NULL;
+  if(!dt_is_valid_imgid(data->imgid))
+    _clear_cache_entry(self, index);
 
-  // if called from darkroom so edited image the is one in
-  // darktable->develop then we use the cache, otherwise we just use a
+  // scratch buffer data and dimension
+  uint8_t *cbuf = NULL;
+  size_t cwidth = 0;
+  size_t cheight = 0;
+
+  uint8_t **pbuf;
+  size_t *pwidth;
+  size_t *pheight;
+
+  // if called from darkroom (the edited image is the one in
+  // darktable->develop) we use the cache, otherwise we just use a
   // scratch buffer local to process for rendering.
-  uint8_t **pbuf = self->dev->image_storage.id == darktable.develop->image_storage.id
-    ? &gd->cache[index]
-    : &cbuf;
+  if(self->dev->image_storage.id == darktable.develop->image_storage.id)
+  {
+    pbuf = &gd->cache[index];
+    pwidth = &gd->cwidth[index];
+    pheight = &gd->cheight[index];
+  }
+  else
+  {
+    pbuf = &cbuf;
+    pwidth = &cwidth;
+    pheight = &cheight;
+  }
 
   if(!*pbuf)
   {
-    // need the overlay, create the buffer now
-    _setup_overlay(self, piece, pbuf);
+    // need the overlay - either because we use the scratch buffer or the cacheline
+    // is still empty - create the buffer now and leave address dimension
+    _setup_overlay(self, piece, pbuf, pwidth, pheight);
+  }
 
-    if(!*pbuf)
-    {
-      // image does not exist / not rendered -> copy in to out
-      dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
-      return;
-    }
+  dt_pthread_mutex_unlock(&gd->overlay_threadsafe);
+
+  /*
+     From here on we check every processing step for success, if there is a problem
+     we return after plain copy input -> output and possible leave a log note.
+  */
+
+  if(!*pbuf)
+  {
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
+    return;
   }
 
   /* setup stride for performance */
@@ -404,8 +431,8 @@ void process(struct dt_iop_module_t *self,
 
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
 
-  const size_t bw = data->buf_width;
-  const size_t bh = data->buf_height;
+  const size_t bw = *pwidth;
+  const size_t bh = *pheight;
 
   const size_t size_buf = bw * bh * sizeof(uint32_t);
   uint8_t *buf = (uint8_t *)dt_alloc_aligned(size_buf);
@@ -801,9 +828,6 @@ void commit_params(struct dt_iop_module_t *self,
 {
   dt_iop_overlay_params_t *p = (dt_iop_overlay_params_t *)p1;
   dt_iop_overlay_data_t *d = (dt_iop_overlay_data_t *)piece->data;
-  dt_iop_overlay_global_data_t *gd = (dt_iop_overlay_global_data_t *)self->global_data;
-
-  const int index   = self->multi_priority;
 
   d->opacity    = p->opacity;
   d->scale      = p->scale;
@@ -815,9 +839,6 @@ void commit_params(struct dt_iop_module_t *self,
   d->scale_img  = p->scale_img;
   d->scale_svg  = p->scale_svg;
   d->imgid      = p->imgid;
-  d->buf        = gd->cache[index];
-  d->buf_width  = p->buf_width;
-  d->buf_height = p->buf_height;
   g_strlcpy(d->filename, p->filename, sizeof(p->filename));
 }
 
@@ -858,9 +879,6 @@ void gui_update(struct dt_iop_module_t *self)
     gtk_widget_set_visible(GTK_WIDGET(g->scale_svg), FALSE);
   }
 
-  // enterring from darkroom, clear cache
-  for(int k=0; k<MAX_OVERLAY; k++)
-    _clear_cache_entry(self, k);
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
@@ -877,6 +895,11 @@ void reload_defaults(dt_iop_module_t *self)
 void gui_reset(dt_iop_module_t *self)
 {
   dt_iop_overlay_gui_data_t *g = (dt_iop_overlay_gui_data_t *)self->gui_data;
+  dt_iop_overlay_params_t *p = (dt_iop_overlay_params_t *)self->params;
+  if(dt_is_valid_imgid(p->imgid))
+    dt_overlay_remove(self->dev->image_storage.id, p->imgid);
+
+  p->imgid = NO_IMGID;
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
@@ -910,18 +933,30 @@ void init_global(dt_iop_module_so_t *module)
 {
   dt_iop_overlay_global_data_t *gd =
     (dt_iop_overlay_global_data_t *)calloc(1, sizeof(dt_iop_overlay_global_data_t));
+
+  pthread_mutexattr_t recursive_locking;
+  pthread_mutexattr_init(&recursive_locking);
+  pthread_mutexattr_settype(&recursive_locking, PTHREAD_MUTEX_RECURSIVE);
+  dt_pthread_mutex_init(&gd->overlay_threadsafe, &recursive_locking);
   module->data = gd;
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  free(module->data);
+  dt_iop_overlay_global_data_t *gd = module->data;
+
+  for(int k=0; k<MAX_OVERLAY; k++)
+    dt_free_align(gd->cache[k]);
+
+  dt_pthread_mutex_destroy(&gd->overlay_threadsafe);
+  free(gd);
   module->data = NULL;
 }
 
 static void _signal_image_changed(gpointer instance, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(!self) return;
 
   for(int k=0; k<MAX_OVERLAY; k++)
     _clear_cache_entry(self, k);
@@ -969,9 +1004,6 @@ static void _drag_and_drop_received(GtkWidget *widget,
 
         // and record the new one
         p->imgid         = imgid;
-        p->hash          = 0;
-        p->buf_width     = 0;
-        p->buf_height    = 0;
         _clear_cache_entry(self, index);
 
         dt_overlay_record(self->dev->image_storage.id, p->imgid);
