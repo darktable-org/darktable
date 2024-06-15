@@ -520,7 +520,10 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
 
       dt_print_pipe(DT_DEBUG_PARAMS, "dt_dev_pixelpipe_synch",
           pipe, piece->module, DT_DEVICE_NONE, NULL, NULL,
-          "piece hash=%" PRIx64 ", \n", piece->hash);
+          "%s, order=%i, piece hash=%" PRIx64 ", \n",
+          piece->enabled ? "enabled" : "disabled",
+          piece->module->iop_order,
+          piece->hash);
 
       if(piece->blendop_data)
       {
