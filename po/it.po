@@ -9,9 +9,8 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-06-02 18:53+0200\n"
-"PO-Revision-Date: 2024-06-14 23:58+0200\n"
-"Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
-"\n"
+"PO-Revision-Date: 2024-06-16 21:47+0200\n"
+"Last-Translator: Fabio Sirna <fabio@fabiosirna.com>\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
@@ -204,11 +203,12 @@ msgstr "Applica alcuni metadati a tutte le immagini appena importate."
 
 #: ../build/bin/conf_gen.h:998
 msgid "recursive directory"
-msgstr "Cartelle ricorsive"
+msgstr "Cartella ricorsiva"
 
 #: ../build/bin/conf_gen.h:999
 msgid "recursive directory traversal when importing filmrolls"
-msgstr "Cartelle ricorsive trasversali quanto importi i rullini"
+msgstr ""
+"Attraversamento ricorsivo delle cartelle durante l'importazione dei rullini"
 
 #: ../build/bin/conf_gen.h:1005
 msgid "creator to be applied when importing"
@@ -708,7 +708,7 @@ msgstr "Xatom"
 #: ../build/bin/conf_gen.h:3314
 msgctxt "preferences"
 msgid "colord"
-msgstr "Colord"
+msgstr "colord"
 
 #: ../build/bin/conf_gen.h:3385 ../build/bin/preferences_gen.h:5922
 msgctxt "preferences"
@@ -875,7 +875,7 @@ msgstr "Opzioni sessione"
 
 #: ../build/bin/preferences_gen.h:4272
 msgid "base directory naming pattern"
-msgstr "Modello base nominazione cartella"
+msgstr "Schema di denominazione della cartella di base"
 
 #: ../build/bin/preferences_gen.h:4287 ../build/bin/preferences_gen.h:4326
 #: ../build/bin/preferences_gen.h:4360 ../build/bin/preferences_gen.h:4399
@@ -936,7 +936,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:4311
 msgid "sub directory naming pattern"
-msgstr "Modello nominazione sottocartella"
+msgstr "Schema di denominazione della sotto cartella"
 
 #: ../build/bin/preferences_gen.h:4350
 msgid "keep original filename"
@@ -973,11 +973,12 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:4384
 msgid "file naming pattern"
-msgstr "Modello nominazione file"
+msgstr "Schema di denominazione dei file"
 
 #: ../build/bin/preferences_gen.h:4402
 msgid "file naming pattern used for a import session"
-msgstr "Modello nominazione file usato per una sessione di importazione"
+msgstr ""
+"Schema di denominazione dei file utilizzato per una sessione di importazione"
 
 #: ../build/bin/preferences_gen.h:4434 ../src/gui/gtk.c:1383
 #: ../src/gui/preferences.c:544 ../src/libs/tools/lighttable.c:66
@@ -1039,8 +1040,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:4591
 msgid "rating an image one star twice will not zero out the rating"
-msgstr ""
-"Valutare un'immagine con una stella per due volte non azzera la valutazione"
+msgstr "Assegnare una stella a un'immagine due volte non azzererà il voto"
 
 #: ../build/bin/preferences_gen.h:4604
 msgid ""
@@ -1110,7 +1110,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:4735
 msgid "high quality processing from size"
-msgstr "Elaborazione in alta qualità a partire dalle dimensioni"
+msgstr "Elaborazione in alta qualità a partire dalla dimensione"
 
 #: ../build/bin/preferences_gen.h:4749
 msgid ""
@@ -1237,7 +1237,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:4946
 msgid "pattern for the thumbnail extended overlay text"
-msgstr "Modello per il testo esteso sulle anteprime"
+msgstr "Schema per il testo esteso sovrapposto alle miniature"
 
 #: ../build/bin/preferences_gen.h:4966 ../build/bin/preferences_gen.h:5007
 msgid "see manual to know all the tags you can use."
@@ -1245,8 +1245,7 @@ msgstr "Consulta il manuale per conoscere tutte le etichette che puoi usare."
 
 #: ../build/bin/preferences_gen.h:4987
 msgid "pattern for the thumbnail tooltip (empty to disable)"
-msgstr ""
-"Modello dei suggerimenti sui provini (lasciare vuoto per disabilitarlo)"
+msgstr "Schema per il tooltip della miniatura (vuoto per disabilitare)"
 
 #: ../build/bin/preferences_gen.h:5039 ../src/gui/gtk.c:1385
 #: ../src/gui/preferences.c:544 ../src/views/darkroom.c:92
@@ -1288,7 +1287,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:5129
 msgid "pattern for the image information line"
-msgstr "Modello del testo informativo dell'immagine"
+msgstr "Schema per la riga delle informazioni sull'immagine"
 
 #: ../build/bin/preferences_gen.h:5149
 msgid "see manual for a list of the tags you can use."
@@ -1427,7 +1426,7 @@ msgid ""
 " - 'smooth': fade out all buttons in one header simultaneously,\n"
 " - 'glide': gradually hide individual buttons as needed"
 msgstr ""
-"Quando il mouse non è sopra ad un modulo, i pulsanti di instanza multipla, "
+"Quando il mouse non è sopra ad un modulo, i pulsanti di istanza multipla, "
 "ripristina e preimposta possono essere nascosti:\n"
 "sempre - mostra sempre tutti i pulsanti,\n"
 "attiva - mostra i pulsanti solo quando il mouse è sopra al modulo,\n"
@@ -1452,7 +1451,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:5666
 msgid "prompt for name on addition of new instance"
-msgstr "Pronto per un nome in aggiunta della nuova istanza"
+msgstr "Richiedi il nome del modulo durante l'aggiunta di una nuova istanza"
 
 #: ../build/bin/preferences_gen.h:5679
 msgid ""
@@ -1493,20 +1492,21 @@ msgstr "Più lento dell'opzione di default."
 
 #: ../build/bin/preferences_gen.h:5800
 msgid "pixel interpolator (warp)"
-msgstr "Intepolatore pixel (distorce)"
+msgstr "Interpolatore pixel (distorce)"
 
 #: ../build/bin/preferences_gen.h:5814
 msgid ""
 "pixel interpolator used in modules for rotation, lens correction, liquify, "
 "cropping and final scaling (bilinear, bicubic, lanczos2)."
 msgstr ""
-"L'intepolatore di pixel viene usato nei moduli per la rotazione, nella "
-"correzione obiettivo, fluidifica, ritaglia e riscala finale (bilineare, "
+"L'interpolatore di pixel viene usato nei moduli per la rotazione, nella "
+"correzione dell'obiettivo, fluidifica, ritaglia e ridimensionamento finale"
+" (bilineare, "
 "bicubica, lanczos2)."
 
 #: ../build/bin/preferences_gen.h:5835
 msgid "pixel interpolator (scaling)"
-msgstr "Intepolatore pixel (ridimensionamento)"
+msgstr "Interpolatore pixel (ridimensionamento)"
 
 #: ../build/bin/preferences_gen.h:5849
 msgid ""
@@ -1517,7 +1517,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:5870
 msgid "LUT 3D root folder"
-msgstr "Cartella radice LUT 3D"
+msgstr "Cartella principale LUT 3D"
 
 #: ../build/bin/preferences_gen.h:5876 ../src/control/jobs/control_jobs.c:1866
 #: ../src/control/jobs/control_jobs.c:1923 ../src/gui/preferences.c:1080
@@ -1538,7 +1538,8 @@ msgid ""
 "this folder (and sub-folders) contains LUT files used by LUT 3D module. "
 "(restart required)"
 msgstr ""
-"questa cartella (e sotto-cartelle) contiene i files LUT utilizzati dal modulo"
+"Questa cartella (e le sotto cartelle) contiene i files LUT utilizzati dal"
+" modulo"
 " LUT 3D."
 "(necessario il riavvio)"
 
@@ -1783,7 +1784,7 @@ msgstr "AMD Accelerated Parallel Processing (fornito dal produttore)"
 #: ../build/bin/preferences_gen.h:6404
 #| msgid "BRG (experimental)"
 msgid "RustiCL (experimental)"
-msgstr "RustiCL (experimental)"
+msgstr "RustiCL (in fase di sperimentazione)"
 
 #: ../build/bin/preferences_gen.h:6417
 msgid ""
@@ -1831,7 +1832,7 @@ msgstr "Sicurezza"
 
 #: ../build/bin/preferences_gen.h:6602
 msgid "ask before removing images from the library"
-msgstr "Chiedi prima di rimuovere immagini dalla libreria"
+msgstr "Chiedi prima di rimuovere le immagini dalla libreria"
 
 #: ../build/bin/preferences_gen.h:6615
 msgid "always ask the user before removing image information from the library"
@@ -1871,7 +1872,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:6738
 msgid "ask before moving images from film roll folder"
-msgstr "Chiedi prima di rimuovere immagini dalla cartella del rullino"
+msgstr "Chiedi prima di rimuovere le immagini dalla cartella del rullino"
 
 #: ../build/bin/preferences_gen.h:6751
 msgid "always ask the user before any image file is moved."
@@ -1908,7 +1909,7 @@ msgstr "Chiedi prima di eliminare uno stile"
 
 #: ../build/bin/preferences_gen.h:6906
 msgid "ask before deleting a preset"
-msgstr "Chiedi prima di eliminare una preimpostazione"
+msgstr "Chiedi prima di eliminare una impostazione predefinita"
 
 #: ../build/bin/preferences_gen.h:6919
 msgid "will ask for confirmation before deleting or overwriting a preset"
@@ -2116,7 +2117,7 @@ msgstr "Modifica il passo del selettore scorrevole con un intervallo min/max"
 
 #: ../build/bin/preferences_gen.h:7429
 msgid "sort built-in presets first"
-msgstr "Ordina prima le preimpostazioni integrate"
+msgstr "Mostra prima le impostazioni predefinite"
 
 #: ../build/bin/preferences_gen.h:7442
 msgid ""
@@ -2171,12 +2172,12 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:7576
 msgid "position of the scopes module"
-msgstr "Posizione del modulo ambiti"
+msgstr "Posizione del modulo Istogramma e colore"
 
 #: ../build/bin/preferences_gen.h:7590
 msgid "position the scopes at the top-left or top-right of the screen"
 msgstr ""
-"Posizionare gli ambiti in alto a sinistra o in alto a destra dello schermo"
+"Posizionare l'istogramma in alto a sinistra o in alto a destra dello schermo"
 
 #: ../build/bin/preferences_gen.h:7611
 msgid "method to use for getting the display profile"
@@ -2242,7 +2243,7 @@ msgstr "Scorciatoie con istanze multiple"
 
 #: ../build/bin/preferences_gen.h:7743
 msgid "prefer focused instance"
-msgstr "Prediligi instanza a fuoco"
+msgstr "Preferisci l'istanza attualmente selezionata"
 
 #: ../build/bin/preferences_gen.h:7756
 msgid ""
@@ -2255,21 +2256,21 @@ msgstr ""
 "Dove sono presenti istanze multiple di un modulo, applica le scorciatoie da "
 "tastiera all'istanza a fuoco\n"
 "Se nessun istanza è a fuoco, questa opzione controlla le regole che "
-"vengonoseguite (in ordine) per stabilire a quale istanza del modulo devono "
+"vengono seguite (in ordine) per stabilire a quale istanza del modulo devono "
 "essere applicate le scorciatoie.\n"
 "Nota: le scorciatoie di fusione vengono sempre applicate all'istanza a fuoco"
 
 #: ../build/bin/preferences_gen.h:7777
 msgid "prefer expanded instances"
-msgstr "Precedenza alle istanze espanse"
+msgstr "Priorità alle istanze attualmente aperte"
 
 #: ../build/bin/preferences_gen.h:7790
 msgid "if instances of the module are expanded, ignore collapsed instances"
-msgstr "Se le istanze del modulo sono espanse, ignora quelle compresse."
+msgstr "Se le istanze del modulo sono aperte, ignora quelle chiuse"
 
 #: ../build/bin/preferences_gen.h:7811
 msgid "prefer enabled instances"
-msgstr "Precedenza alle istanze abilitate"
+msgstr "Priorità alle istanze abilitate"
 
 #: ../build/bin/preferences_gen.h:7824
 msgid ""
@@ -2281,7 +2282,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:7845
 msgid "prefer unmasked instances"
-msgstr "Precedenza alle istanze senza maschere"
+msgstr "Priorità alle istanze non mascherate"
 
 #: ../build/bin/preferences_gen.h:7858
 msgid ""
@@ -2313,7 +2314,7 @@ msgid ""
 "visually assigned to those specific instances\n"
 "otherwise shortcuts will always be assigned to the preferred instance"
 msgstr ""
-"Quanto sono presenti istanze multiple sull'immagine questo consente che le "
+"Quando sono presenti istanze multiple sull'immagine questo consente che le "
 "scorciatoie vengano assegnate visivamente a queste specifiche istanze\n"
 "Altrimenti le scorciatoie saranno sempre assegnate all'istanza preferita"
 
@@ -6763,7 +6764,7 @@ msgid ""
 "from the most recent snapshot or delete the corrupted database\n"
 "and start with a new one?"
 msgstr ""
-"vuoi chiudere Darktable ora per ripristinare manualmente\n"
+"Vuoi chiudere Darktable ora per ripristinare manualmente\n"
 "il database da un backup, tentare un ripristino automatico\n"
 "dall'istantanea più recente o cancellare il database corrotto\n"
 "e partire con uno nuovo?"
@@ -6822,7 +6823,7 @@ msgstr ""
 #: ../src/common/film.c:341
 msgid "do you want to remove this empty directory?"
 msgid_plural "do you want to remove these empty directories?"
-msgstr[0] "vuoi rimuovere questa cartella vuota?"
+msgstr[0] "Vuoi rimuovere questa cartella vuota?"
 msgstr[1] "vuoi rimuovere queste cartelle vuote?"
 
 #: ../src/common/film.c:348
@@ -7087,7 +7088,7 @@ msgid ""
 msgstr ""
 "darktable carica %s da\n"
 "<b>%s</b>\n"
-"oppure, se la directory non esiste, da\n"
+"oppure, se la cartella non esiste, da\n"
 "<b>%s</b>"
 
 #. clang-format off
@@ -7592,7 +7593,7 @@ msgstr "<blending>"
 #: ../src/control/control.c:173
 msgctxt "accel"
 msgid "Lua scripts"
-msgstr "Scripts LUA"
+msgstr "Scripts Lua"
 
 #: ../src/control/control.c:180
 msgctxt "accel"
@@ -7816,8 +7817,8 @@ msgstr "Importa immagini dalla fotocamera"
 #: ../src/control/jobs/control_jobs.c:156
 msgid "failed to create film roll for destination directory, aborting move.."
 msgstr ""
-"Impossibile creare il rullino nella cartella di destinazione, spostamento "
-"annullato..."
+"Impossibile creare il rullino nella cartella di destinazione, spostamento"
+" annullato..."
 
 #: ../src/control/jobs/control_jobs.c:425
 msgid "exposure bracketing only works on raw images."
@@ -9244,7 +9245,7 @@ msgid ""
 "multiple instance actions\n"
 "right-click creates new instance"
 msgstr ""
-"azioni con istanze multiple\n"
+"Azioni con istanze multiple\n"
 "clic con il pulsante destro crea una nuova istanza"
 
 #: ../src/develop/imageop.c:2974
@@ -10080,12 +10081,12 @@ msgstr "Creazione cache delle cartelle\n"
 #: ../src/generate-cache/main.c:56
 #, c-format
 msgid "creating cache directory '%s'\n"
-msgstr "Creazione cache della cartella '%s'\n"
+msgstr "Creazione della cartella utilizzata per la cache '%s'\n"
 
 #: ../src/generate-cache/main.c:59
 #, c-format
 msgid "could not create directory '%s'!\n"
-msgstr "Impossibile creare cartella '%s'!\n"
+msgstr "Impossibile creare la cartella '%s'!\n"
 
 #: ../src/generate-cache/main.c:83
 #, c-format
@@ -10901,7 +10902,7 @@ msgstr ""
 "particolarmente utile quando si hanno molti <i>elementi</i>, tipo i pulsanti "
 "dei moduli o il selettore colore collegato ad un selettore scorrevole. "
 "Tuttavia, con le <i>alternative</i> abilitate, si può semplicemente usare le "
-"stesse semplici scorciatoie e cambiare i loro <i>elementi</i> o<i>effetti</"
+"stesse semplici scorciatoie e cambiare i loro <i>elementi</i> o <i>effetti</"
 "i> aggiungendo click di mouse.\n"
 "\n"
 "<i>Cliccare<b> tre volte</b> per rimuovere questo messaggio permanentemente.</"
@@ -11673,7 +11674,7 @@ msgstr "Lista delle etichette separate da virgola"
 #. language
 #: ../src/gui/preferences.c:274
 msgid "interface language"
-msgstr "Lingua interfaccia"
+msgstr "Lingua dell'interfaccia"
 
 #: ../src/gui/preferences.c:290
 msgid "double-click to reset to the system language"
@@ -11705,11 +11706,11 @@ msgstr "Usa la dimensione del carattere di sistema"
 
 #: ../src/gui/preferences.c:360 ../src/gui/preferences.c:367
 msgid "font size in points"
-msgstr "Dimensione carattere in punti"
+msgstr "Dimensione del carattere in punti"
 
 #: ../src/gui/preferences.c:372
 msgid "GUI controls and text DPI"
-msgstr "DPI dei controlli della GUI e del testo"
+msgstr "DPI dei controlli dell'interfaccia grafica (GUI) e del testo"
 
 #: ../src/gui/preferences.c:379
 #| msgid ""
@@ -11737,7 +11738,7 @@ msgstr ""
 #. checkbox to allow user to modify theme with user.css
 #: ../src/gui/preferences.c:388
 msgid "modify selected theme with CSS tweaks below"
-msgstr "Modifica il tema selezionato con le modifiche al CSS sotto"
+msgstr "Modifica il tema selezionato con le regolazioni CSS seguenti"
 
 #: ../src/gui/preferences.c:396
 msgid "modify theme with CSS keyed below (saved to user.css)"
@@ -12798,12 +12799,12 @@ msgstr "Salta"
 #: ../src/imageio/storage/latex.c:289
 #, c-format
 msgid "could not create directory `%s'!"
-msgstr "Impossibile creare la directory '%s'!"
+msgstr "Impossibile creare la cartella  '%s'!"
 
 #: ../src/imageio/storage/disk.c:398
 #, c-format
 msgid "could not write to directory `%s'!"
-msgstr "Impossibile scrivere nella directory '%s'!"
+msgstr "Impossibile scrivere nella cartella '%s'!"
 
 #: ../src/imageio/storage/disk.c:435
 #, c-format
@@ -12871,7 +12872,7 @@ msgstr "Inserisci il titolo del sito web"
 
 #: ../src/imageio/storage/latex.c:72
 msgid "LaTeX book template"
-msgstr "Modello libro LaTeX"
+msgstr "Modello del libro LaTeX"
 
 #: ../src/imageio/storage/latex.c:209
 msgid "enter the title of the book"
@@ -13164,7 +13165,7 @@ msgid ""
 "lens model of the perspective correction: generic or according to the focal "
 "length"
 msgstr ""
-"Modello della lente della correzione prospettica: generica od in base alla "
+"Modello della lente della correzione prospettica: generica o in base alla "
 "lunghezza focale"
 
 #: ../src/iop/ashift.c:6122
@@ -16117,14 +16118,14 @@ msgid ""
 "copyright: <b>%s</b>\n"
 "\n"
 msgstr ""
-"proprietà del profili ICC incorporato:\n"
+"Proprietà del profilo ICC incorporato:\n"
 "\n"
-"nome: <b>%s</b>\n"
-"versione: <b>%d.%d</b>\n"
-"tipo: <b>%s</b>\n"
-"produttore: <b>%s</b>\n"
-"modello: <b>%s</b>\n"
-"copyright: <b>%s</b>\n"
+"Nome: <b>%s</b>\n"
+"Versione: <b>%d.%d</b>\n"
+"Tipo: <b>%s</b>\n"
+"Produttore: <b>%s</b>\n"
+"Modello: <b>%s</b>\n"
+"Copyright: <b>%s</b>\n"
 "\n"
 
 #: ../src/iop/colorin.c:2082
@@ -16366,7 +16367,7 @@ msgstr ""
 #: ../src/iop/colorequal.c:183 ../src/iop/colorequal.c:2476
 #| msgid "contrast equalizer"
 msgid "color equalizer"
-msgstr "Equalizzatore contrasto"
+msgstr "Equalizzatore colore"
 
 #: ../src/iop/colorequal.c:188
 #| msgid "color zones"
@@ -17053,11 +17054,10 @@ msgid ""
 "inpaint damaged parts of the image, or to remove blur with blind "
 "deconvolution."
 msgstr ""
-"Simula la diffusione direzionale della luce in base ad un modello di "
+"Simula la diffusione direzionale della luce in base ad un modello di\n"
 "trasferimento del calore per applicare una sfumatura interattiva orientata,\n"
-"Ricostruzione delle aree danneggiate dell'immagine o per rimuovere le"
-" sfocature con una "
-"deconvoluzione cieca."
+"Ricostruzione delle aree danneggiate dell'immagine o per rimuovere le "
+"sfocature con una deconvoluzione cieca."
 
 #. deblurring presets
 #: ../src/iop/diffuse.c:244
@@ -18802,8 +18802,8 @@ msgid ""
 msgstr ""
 "Costruttore:\t\t%s\n"
 "Modello:\t\t%s%s\n"
-"Attacco:\t\t%s\n"
-"Fattore ritaglio:\t%.1f"
+"Innesto:\t\t%s\n"
+"Fattore di ritaglio:\t%.1f"
 
 #: ../src/iop/lens.cc:4050
 #, c-format
@@ -18820,9 +18820,9 @@ msgstr ""
 "Modello:\t\t%s\n"
 "Gamma focale:\t%s\n"
 "Diaframma:\t\t%s\n"
-"Fattore ritaglio:\t%.1f\n"
+"Fattore di ritaglio:\t%.1f\n"
 "Tipo:\t\t\t%s\n"
-"Montature:\t\t%s"
+"Tipi di innesto:\t\t%s"
 
 #: ../src/iop/lens.cc:4103
 msgid "focal length (mm)"
@@ -19399,7 +19399,7 @@ msgstr ""
 
 #: ../src/iop/lut3d.c:1551
 msgid "LUT root folder not defined"
-msgstr "Non è definita la cartella radice dei lut"
+msgstr "Non è definita la cartella principale delle LUT"
 
 #: ../src/iop/lut3d.c:1557
 msgid "select LUT file"
@@ -19420,7 +19420,7 @@ msgstr "CLUT dimezzato (png) o 3D LUT (cubo o 3dl)"
 #: ../src/iop/lut3d.c:1604
 msgid "select file outside LUT root folder is not allowed"
 msgstr ""
-"Non è permesso selezionare un file esterno alla cartella radice dei LUT"
+"Non è permesso selezionare un file esterno alla cartella principale delle LUT"
 
 #: ../src/iop/lut3d.c:1675
 msgid ""
@@ -23187,7 +23187,7 @@ msgstr "Istogramma"
 
 #: ../src/libs/histogram.c:218
 msgid "scopes"
-msgstr "Ambiti"
+msgstr "Istogramma e colore"
 
 #: ../src/libs/histogram.c:1014
 #| msgid ""
@@ -23618,7 +23618,7 @@ msgstr "Non puoi cancellare il luogo selezionato"
 
 #: ../src/libs/import.c:1441
 msgid "choose the root of the folder tree below"
-msgstr "Prendi la radice dell'albero delle cartelle sotto"
+msgstr "Scegli la cartella principale"
 
 #: ../src/libs/import.c:1444
 msgid "places"
@@ -23679,7 +23679,7 @@ msgstr "Mostra/nascondi miniature"
 
 #: ../src/libs/import.c:1982
 msgid "naming rules"
-msgstr "Modelli nominazione"
+msgstr "Regole di denominazione"
 
 #: ../src/libs/import.c:2028
 msgid "add to library"
@@ -23703,7 +23703,7 @@ msgstr "Formato data/ora di sovrascrittura invalido"
 
 #: ../src/libs/import.c:2341
 msgid "import base directory"
-msgstr "Importa la directory di base"
+msgstr "Importa la cartella di base"
 
 #: ../src/libs/import.c:2342
 msgid ""
@@ -23714,12 +23714,13 @@ msgid ""
 "inspect darktable preferences -> import.\n"
 "check and possibly correct the 'base directory naming pattern'"
 msgstr ""
-"prima di copare le immagini nella directory di base di darktable, "
-"assicurarsi che sia definita come si preferise.\n"
+"Prima di copiare le immagini nella cartella di base di darktable, "
+"assicurarsi che sia stata definita come si preferisce.\n"
 "Informazioni aggiuntive possono essere trovate nel manuale di darktable.\n"
 "\n"
 "Ispezionare le preferenze di darktable -> import.\n"
-"Controlla ed eventualmente correggere 'Modello base nominazione cartella'"
+"Controlla ed eventualmente correggere 'Schema di denominazione della cartella"
+" di base'"
 
 #: ../src/libs/import.c:2346
 msgid "_come back & check"
@@ -24274,11 +24275,11 @@ msgstr "Data e ora"
 
 #: ../src/libs/metadata_view.c:165
 msgid "export width"
-msgstr "Esporta larghezza"
+msgstr "Larghezza di esportazione"
 
 #: ../src/libs/metadata_view.c:166
 msgid "export height"
-msgstr "Esporta altezza"
+msgstr "Altezza di esportazione"
 
 #: ../src/libs/metadata_view.c:174
 msgid "longitude"
@@ -24409,7 +24410,7 @@ msgid ""
 "this quick access widget is disabled as there are multiple instances of this "
 "module present. Please use the full module to access this widget..."
 msgstr ""
-"questo widget di accesso rapido è disattivato in quanto sono presenti più "
+"Questo widget di accesso rapido è disattivato in quanto sono presenti più "
 "istanze di questo modulo. Usa il modulo completo per accedere a questo "
 "widget..."
 
@@ -25126,7 +25127,7 @@ msgstr "Ripristina snapshot nell'attuale coda di sviluppo"
 
 #: ../src/libs/snapshots.c:671
 msgid "snapshots for removed image have been deleted"
-msgstr "l'istantanea per l'immagine rimossa è stata eliminata"
+msgstr "L'istantanea per l'immagine rimossa è stata eliminata"
 
 #: ../src/libs/snapshots.c:712
 #, c-format
@@ -25139,19 +25140,19 @@ msgstr "Questa istantanea è stata effettuata da"
 
 #: ../src/libs/snapshots.c:751
 msgid "take snapshot"
-msgstr "Scatta un'istantanea"
+msgstr "Creare un'istantanea"
 
 #: ../src/libs/snapshots.c:753
 msgid ""
 "take snapshot to compare with another image or the same image at another "
 "stage of development"
 msgstr ""
-"Prende un'istantanea da confrontare con un'altra immagine o la stessa in un "
+"Crea un'istantanea da confrontare con un'altra immagine o la stessa in un "
 "altro punto dello sviluppo "
 
 #: ../src/libs/snapshots.c:806
 msgid "toggle last snapshot"
-msgstr "Torna all'ultima istantanea"
+msgstr "Attiva/disattiva l'ultima istantanea"
 
 #: ../src/libs/styles.c:366
 msgid "remove style?"
@@ -25363,8 +25364,8 @@ msgid ""
 "to modify the hierarchy use rename path instead. Aborting."
 msgstr ""
 "Il carattere '|' non è permesso per rinominare l'etichetta.\n"
-"Per modificare la gerarchia rinomina il percorso piuttosto. Operazione "
-"annullata."
+"Per modificare la gerarchia rinomina il percorso piuttosto. "
+"Operazione annullata."
 
 #: ../src/libs/tagging.c:1942 ../src/libs/tagging.c:2050
 #, c-format
