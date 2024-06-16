@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 4.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-06-13 00:42-0600\n"
+"POT-Creation-Date: 2024-06-16 02:00-0600\n"
 "PO-Revision-Date: 2024-06-16 01:24-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
@@ -5127,7 +5127,7 @@ msgstr "relación RGB"
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:308
 #: ../src/iop/colorin.c:2085
 msgid "working profile"
-msgstr "definir un perfil"
+msgstr "perfil de trabajo"
 
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:309
 msgid "Rec2020"
@@ -5330,15 +5330,14 @@ msgid "graphics;photography;raw;"
 msgstr "gráficos;fotografía;raw;"
 
 #: ../data/org.darktable.darktable.appdata.xml.in.h:2
-#, fuzzy
 msgid ""
 "darktable manages your camera raw files and images in a database, lets you "
 "view them through lighttable mode and develop/enhance them in darkroom mode."
 msgstr ""
-"darktable gestiona negativos digitales y otro tipo de imágenes mediante una "
-"base de datos y permite visualizarlos en la mesa de luz. También posee "
-"herramientas para revelar y mejorar las imágenes en bruto a través del "
-"cuarto oscuro."
+"darktable posee herramientas para revelar imágenes en bruto y mejorarlas a "
+"través del cuarto oscuro. Además, gestiona los negativos digitales y otro "
+"tipo de imágenes mediante una base de datos los cuales pueden visualizarse "
+"en la mesa de luz."
 
 #: ../data/org.darktable.darktable.appdata.xml.in.h:3
 msgid ""
@@ -8961,7 +8960,7 @@ msgid "adjust the fulcrum used by some blending operations"
 msgstr "Adecúa el punto de referencia para algunas operaciones de fusión"
 
 #. Add opacity/scale sliders to table
-#: ../src/develop/blend_gui.c:3625 ../src/iop/overlay.c:1059
+#: ../src/develop/blend_gui.c:3625 ../src/iop/overlay.c:1091
 #: ../src/iop/watermark.c:1359 ../src/libs/masks.c:105
 msgid "opacity"
 msgstr "opacidad"
@@ -9604,7 +9603,7 @@ msgstr ""
 "Probablemente ocurrió por aplicar un preajuste o estilo, o al copiar y pegar "
 "un historial."
 
-#: ../src/develop/pixelpipe_hb.c:2676
+#: ../src/develop/pixelpipe_hb.c:2679
 msgid ""
 "OpenCL errors encountered; disabling OpenCL for this session! some possible "
 "causes:\n"
@@ -9626,7 +9625,7 @@ msgstr ""
 "  • Muy poco margen de espacio libre debido a la opción elegida «Utilizar "
 "toda la memoria del dispositivo»."
 
-#: ../src/develop/pixelpipe_hb.c:2842
+#: ../src/develop/pixelpipe_hb.c:2845
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -12960,8 +12959,8 @@ msgstr "Correctivo o creativo"
 #: ../src/iop/exposure.c:132 ../src/iop/exposure.c:134 ../src/iop/flip.c:111
 #: ../src/iop/flip.c:112 ../src/iop/hazeremoval.c:113
 #: ../src/iop/hazeremoval.c:115 ../src/iop/lens.cc:269 ../src/iop/lens.cc:271
-#: ../src/iop/liquify.c:298 ../src/iop/liquify.c:300 ../src/iop/overlay.c:156
-#: ../src/iop/overlay.c:158 ../src/iop/primaries.c:81 ../src/iop/primaries.c:83
+#: ../src/iop/liquify.c:298 ../src/iop/liquify.c:300 ../src/iop/overlay.c:154
+#: ../src/iop/overlay.c:156 ../src/iop/primaries.c:81 ../src/iop/primaries.c:83
 #: ../src/iop/retouch.c:210 ../src/iop/retouch.c:212
 #: ../src/iop/scalepixels.c:88 ../src/iop/scalepixels.c:90
 #: ../src/iop/sigmoid.c:209 ../src/iop/splittoning.c:106
@@ -13206,7 +13205,7 @@ msgstr "Añade o disminuye contraste local, enfoque y acutancia"
 #: ../src/iop/colorequal.c:195 ../src/iop/diffuse.c:143
 #: ../src/iop/enlargecanvas.c:83 ../src/iop/exposure.c:131
 #: ../src/iop/filmicrgb.c:352 ../src/iop/graduatednd.c:146
-#: ../src/iop/negadoctor.c:146 ../src/iop/overlay.c:155
+#: ../src/iop/negadoctor.c:146 ../src/iop/overlay.c:153
 #: ../src/iop/rgbcurve.c:146 ../src/iop/rgblevels.c:125 ../src/iop/shadhi.c:144
 #: ../src/iop/sigmoid.c:209 ../src/iop/tonecurve.c:183
 #: ../src/iop/toneequal.c:332
@@ -13751,7 +13750,7 @@ msgstr ""
 #: ../src/iop/bilateral.cc:106 ../src/iop/blurs.c:93
 #: ../src/iop/channelmixer.c:141 ../src/iop/denoiseprofile.c:781
 #: ../src/iop/diffuse.c:145 ../src/iop/enlargecanvas.c:85
-#: ../src/iop/exposure.c:133 ../src/iop/overlay.c:157 ../src/iop/primaries.c:82
+#: ../src/iop/exposure.c:133 ../src/iop/overlay.c:155 ../src/iop/primaries.c:82
 #: ../src/iop/scalepixels.c:89 ../src/iop/soften.c:105
 #: ../src/iop/splittoning.c:107 ../src/iop/velvia.c:100
 msgid "linear, RGB"
@@ -18808,7 +18807,7 @@ msgid "find lens"
 msgstr "Buscar lente"
 
 #. scale
-#: ../src/iop/lens.cc:4527 ../src/iop/overlay.c:1070 ../src/iop/vignette.c:1050
+#: ../src/iop/lens.cc:4527 ../src/iop/overlay.c:1102 ../src/iop/vignette.c:1050
 #: ../src/iop/watermark.c:1369 ../src/libs/export.c:1264
 msgid "scale"
 msgstr "escala"
@@ -19715,19 +19714,19 @@ msgid "module overexposed failed in color conversion"
 msgstr ""
 "Ocurrió un fallo en la conversión de color del módulo «sobreexposición»."
 
-#: ../src/iop/overlay.c:147
+#: ../src/iop/overlay.c:145
 msgid "composite"
 msgstr "fotografía compuesta"
 
-#: ../src/iop/overlay.c:154
+#: ../src/iop/overlay.c:152
 msgid "combine with elements from a processed image"
 msgstr "Combina dos elementos visuales para integrarlos como una sola imagen"
 
-#: ../src/iop/overlay.c:163
+#: ../src/iop/overlay.c:161
 msgid "layer|stack|overlay"
 msgstr "capa|pila|superposición"
 
-#: ../src/iop/overlay.c:287
+#: ../src/iop/overlay.c:286
 #, c-format
 msgid ""
 "overlay image missing from database\n"
@@ -19738,13 +19737,13 @@ msgstr ""
 "\n"
 "«%s»"
 
-#: ../src/iop/overlay.c:328
+#: ../src/iop/overlay.c:321
 #, c-format
 msgid "image %d does not exist"
 msgstr "No existe la imagen «%d»"
 
 #. TRANSLATORS: This text must be very narrow, check in the GUI that it is not truncated
-#: ../src/iop/overlay.c:752
+#: ../src/iop/overlay.c:779
 msgid ""
 "drop\n"
 "image\n"
@@ -19756,20 +19755,19 @@ msgstr ""
 "desde\n"
 "la tira de imágenes"
 
-#: ../src/iop/overlay.c:960
+#: ../src/iop/overlay.c:995
 #, c-format
 msgid ""
 "cannot use image %d as an overlay as it is using the current image as an "
 "overlay itself"
 msgstr "No es posible utilizar la misma imagen «%d» como capa superpuesta."
 
-#: ../src/iop/overlay.c:1063 ../src/iop/watermark.c:1362
+#: ../src/iop/overlay.c:1095 ../src/iop/watermark.c:1362
 msgctxt "section"
 msgid "placement"
 msgstr "colocación"
 
-#: ../src/iop/overlay.c:1078
-#, fuzzy
+#: ../src/iop/overlay.c:1110
 msgid ""
 "choose how to scale the overlay\n"
 "• image: scale overlay relative to whole image\n"
@@ -19780,44 +19778,43 @@ msgid ""
 "• height: scale overlay height to image height\n"
 "• advanced options: choose overlay and image dimensions independently"
 msgstr ""
-"Opciones para redimensionar la marca de agua:\n"
+"Opciones para redimensionar la capa de imagen:\n"
 "• imagen: toma como referencia toda la imagen para redimensionar\n"
-"• borde más grande: ajusta el borde más grande del marcador al borde más "
-"grande de la imagen\n"
-"• borde más pequeño: ajusta el borde más grande del marcador al borde más "
-"pequeño de la imagen\n"
-"• altura: ajusta la altura del marcador a la altura de la imagen\n"
-"• opciones avanzadas: elija independientemente las dimensiones de la marca "
-"de agua y de la imagen"
+"• borde largo: ajusta el borde más grande de la capa al borde más grande de "
+"la imagen\n"
+"• borde corto: ajusta el borde más grande de la capa al borde más pequeño de "
+"la imagen\n"
+"• altura: ajusta la altura de la capa a la altura de la imagen\n"
+"• opciones avanzadas: elija las dimensiones de la capa de manera "
+"independiente"
 
-#: ../src/iop/overlay.c:1089
-#, fuzzy
+#: ../src/iop/overlay.c:1121
 msgid "reference image dimension against which to scale the overlay"
 msgstr ""
 "Dimensión de la imagen de referencia con respecto a la cual se va a escalar "
-"la marca de agua"
+"la capa de imagen"
 
-#: ../src/iop/overlay.c:1093
+#: ../src/iop/overlay.c:1125
 msgid "overlay dimension to scale"
 msgstr ""
 "Referente de la dimensión de la capa de imagen con respecto a la cual se va "
 "a escalar"
 
-#: ../src/iop/overlay.c:1097 ../src/iop/watermark.c:1392
+#: ../src/iop/overlay.c:1129 ../src/iop/watermark.c:1392
 #: ../src/libs/print_settings.c:2692
 msgid "alignment"
 msgstr "alineación"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/overlay.c:1121
+#: ../src/iop/overlay.c:1153
 msgid "the opacity of the overlay"
 msgstr "Transparencia de la capa imagen"
 
-#: ../src/iop/overlay.c:1122
+#: ../src/iop/overlay.c:1154
 msgid "the scale of the overlay"
 msgstr "Dimensión de la capa de imagen"
 
-#: ../src/iop/overlay.c:1123
+#: ../src/iop/overlay.c:1155
 msgid "the rotation of the overlay"
 msgstr "Grados de rotación de la capa de imagen"
 
@@ -20590,11 +20587,13 @@ msgid "set custom primaries"
 msgstr "Configuraciones personalizadas de los colores primarios"
 
 #: ../src/iop/sigmoid.c:939
-#, fuzzy
 msgid ""
 "primaries to use as the base for below adjustments\n"
 "'working profile' uses the profile set in 'input color profile'"
-msgstr "Colores primarios que se utilizarán como base para los ajustes debajo"
+msgstr ""
+"Base para los colores primarios que se utilizará para los ajustes debajo.\n"
+"La opción «perfil de trabajo» utiliza el perfil configurado en «perfil de "
+"color de entrada»."
 
 #: ../src/iop/sigmoid.c:959
 msgid "attenuate the purity of the red primary"
@@ -20903,9 +20902,8 @@ msgstr ""
 "Normalmente debería ser D65."
 
 #: ../src/iop/temperature.c:2126
-#, fuzzy
 msgid "as shot to reference"
-msgstr "Mostrar preferencias generales"
+msgstr "conforme al disparo y cámara"
 
 #: ../src/iop/temperature.c:2131
 msgid ""
@@ -23136,13 +23134,12 @@ msgid "scopes"
 msgstr "monitor de gráficos"
 
 #: ../src/libs/histogram.c:1014
-#, fuzzy
 msgid ""
 "unsupported profile selected for histogram, it will be replaced with linear "
 "Rec2020"
 msgstr ""
-"Perfil de vectorscopio incompatible. Se reemplazará por el perfil RGB Rec. "
-"2020 lineal."
+"Perfil incompatible para el histograma elegido. Se reemplazará por el perfil "
+"RGB Rec. 2020 lineal."
 
 #: ../src/libs/histogram.c:1693
 msgid "scroll to coarse-rotate"
@@ -25059,9 +25056,8 @@ msgid "S"
 msgstr "S"
 
 #: ../src/libs/snapshots.c:554
-#, fuzzy
 msgid "restore snapshot into current history"
-msgstr "Crear un estilo a partir del historial de acciones"
+msgstr "Recupera la instantánea en el historial de acciones actual"
 
 #: ../src/libs/snapshots.c:671
 msgid "snapshots for removed image have been deleted"
@@ -25562,11 +25558,8 @@ msgid "clear color labels of selected images"
 msgstr "Quitar todas las marcas de color de las imágenes seleccionadas"
 
 #: ../src/libs/tools/colorlabels.c:245
-#, fuzzy
 msgid "enter a description of how you use this color label"
-msgstr ""
-"Introduzca una descripción para el nuevo estilo. Esta descripción es "
-"localizable mediante una búsqueda."
+msgstr "Introduzca una descripción del propósito para la marca de color."
 
 #: ../src/libs/tools/filmstrip.c:45
 msgid "filmstrip"
@@ -26104,13 +26097,12 @@ msgstr ""
 "parámetros tales como cuando se va a exportar."
 
 #: ../src/views/darkroom.c:2284
-#, fuzzy
 msgid ""
 "toggle indication of raw overexposure\n"
 "right click for options"
 msgstr ""
-"Activar el indicador de sobreexposición de la imagen virgen\n"
-"Pulse botón secundario para ver más opciones"
+"Activa el indicador de sobreexposición de la imagen virgen.\n"
+"Pulse botón secundario para ver más opciones."
 
 #: ../src/views/darkroom.c:2300
 msgid "select how to mark the clipped pixels"
