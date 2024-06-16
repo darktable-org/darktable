@@ -672,12 +672,14 @@ static void _piwigo_refresh_albums(dt_storage_piwigo_gui_data_t *ui,
       json_node_get_object(json_object_get_member(ui->api->response, "result"));
     JsonArray *albums = json_object_get_array_member(result, "categories");
 
-    if(json_array_get_length(albums)>0 && index==0)
+    const int album_len = json_array_get_length(albums);
+    
+    if(album_len > 0 && index == 0)
       index = 1;
-    if(index > json_array_get_length(albums) - 1)
-      index = json_array_get_length(albums) - 1;
+    if(index > album_len - 1)
+      index = album_len - 1;
 
-    for(int i = 0; i < json_array_get_length(albums); i++)
+    for(int i = 0; i < album_len; i++)
     {
       char data[MAX_ALBUM_NAME_SIZE] = { 0 };
       JsonObject *album = json_array_get_object_element(albums, i);
