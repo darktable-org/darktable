@@ -184,46 +184,57 @@ static GList *_get_disabled_modules(const dt_iop_module_t *self,
   const dt_develop_t *dev = self->dev;
   const int multi_priority = self->multi_priority;
 
-  // we want the list of all modules in imgid that are after the current
-  // overlay module iop-order. And also colorin and colorout. Note that we
-  // need to keep gamma at the very end of the pipe.
-
-  const gboolean is_current = dt_dev_is_current_image(dev, imgid);
+  /* we want a list of all modules that are after the current
+     overlay module iop-order to ensure they are not processed via dt_dev_image().
+     There are some exceptions:
+       - gamma and finalscale are required
+       - crop and &ashift make sense
+       - colorin is good to keep too
+     The list order does not matter
+  */
 
   const dt_iop_module_t *self_module = dt_iop_get_module_by_op_priority
     (dev->iop, "overlay", multi_priority);
+  const gboolean is_current = dt_dev_is_current_image(dev, imgid);
 
   GList *result = NULL;
-  gboolean disable = FALSE;
+  gboolean after = FALSE;
 
   for(GList *l = dev->iop; l; l = g_list_next(l))
   {
     dt_iop_module_t *mod = (dt_iop_module_t *)(l->data);
-
-    // if disable is actif
-    // - disable module except if gamma / finalscale
-    // - disable overlay, enlargecanvas if overlay is working on
-    //   the current image. This is needed to avoid recursive
-    //   image references. Also disable crop, ashift which are not
-    //   wanted here (double crop / shift).
-    if((disable
-        && !dt_iop_module_is(mod->so, "gamma")
-        && !dt_iop_module_is(mod->so, "finalscale"))
-       || (is_current
-           && (dt_iop_module_is(mod->so, "enlargecanvas")
-               || dt_iop_module_is(mod->so, "overlay")
-               || dt_iop_module_is(mod->so, "crop")
-               || dt_iop_module_is(mod->so, "ashift"))))
+    if((after
+          && !dt_iop_module_is(mod->so, "gamma")
+          && !dt_iop_module_is(mod->so, "finalscale")
+          && !dt_iop_module_is(mod->so, "crop")
+          && !dt_iop_module_is(mod->so, "colorin")
+          && !dt_iop_module_is(mod->so, "ashift"))
+    || (is_current
+         && ( dt_iop_module_is(mod->so, "overlay")
+           || dt_iop_module_is(mod->so, "enlargecanvas"))))
     {
       result = g_list_prepend(result, mod->op);
     }
 
     // look for ourself, disable all modules after this point
     if(dt_iop_module_is(mod->so, self_module->op)
-       && mod->multi_priority == multi_priority)
+         && mod->multi_priority == multi_priority)
+      after = TRUE;
+  }
+
+  if(darktable.unmuted & (DT_DEBUG_PARAMS | DT_DEBUG_PIPE))
+  {
+    char *buf = g_malloc0(PATH_MAX);
+    for(GList *m = result; m; m = g_list_next(m))
     {
-      disable = TRUE;
+      char *mod = (char *)(m->data);
+      g_strlcat(buf, mod, PATH_MAX);
+      g_strlcat(buf, " ", PATH_MAX);
     }
+    dt_print_pipe(DT_DEBUG_PARAMS | DT_DEBUG_PIPE, "module_filter_out",
+          NULL, self, DT_DEVICE_NONE, NULL, NULL,
+          "%s\n", buf);
+    g_free(buf);
   }
 
   return result;
