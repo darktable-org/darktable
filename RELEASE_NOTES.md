@@ -186,6 +186,8 @@ changes (where available).
 
 - Fixed a issue preventing export to recent Piwigo's version.
 
+- Fixes many stability issues for better overall robusteness.
+
 ## Lua
 
 ### API Version
