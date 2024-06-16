@@ -184,6 +184,8 @@ changes (where available).
 - Fixed camera mounting when GPhoto2 internally reports a single
   attached camera multiple times.
 
+- Fixed a issue preventing export to recent Piwigo's version.
+
 ## Lua
 
 ### API Version
