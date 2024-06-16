@@ -1336,7 +1336,7 @@ gchar *dt_lib_get_localized_name(const gchar *plugin_name)
 }
 
 void dt_lib_colorpicker_set_box_area(dt_lib_t *lib,
-                                     const dt_boundingbox_t box)
+                                     const dt_pickerbox_t box)
 {
   if(!lib->proxy.colorpicker.module || !lib->proxy.colorpicker.set_sample_box_area) return;
   lib->proxy.colorpicker.set_sample_box_area(lib->proxy.colorpicker.module, box);

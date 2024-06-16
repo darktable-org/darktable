@@ -38,7 +38,8 @@ void dt_color_picker_backtransform_box(dt_develop_t *dev,
 void dt_color_picker_transform_box(dt_develop_t *dev,
                               const int num,
                               const float *in,
-                              float *out);
+                              float *out,
+                              gboolean scale);
 gboolean dt_color_picker_box(dt_iop_module_t *module,
                              const dt_iop_roi_t *roi,
                              const dt_colorpicker_sample_t *const sample,

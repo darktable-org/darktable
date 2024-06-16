@@ -272,30 +272,23 @@ void dt_color_picker_backtransform_box(dt_develop_t *dev,
                                        const float *in,
                                        float *out)
 {
-  const float wd = dev->preview_pipe->iwidth;
-  const float ht = dev->preview_pipe->iheight;
-  const float wdp = dev->preview_pipe->processed_width;
-  const float htp = dev->preview_pipe->processed_height;
-  const gboolean box = num == 2;
-  if(wd < 1.0f || ht < 1.0f || wdp < 1.0f || htp < 1.0f)
+  const float wd  = MAX(1, dev->preview_pipe->iwidth);
+  const float ht  = MAX(1, dev->preview_pipe->iheight);
+  const float wdp = MAX(1, dev->preview_pipe->processed_width);
+  const float htp = MAX(1, dev->preview_pipe->processed_height);
+
+  int out_num = num == 2 ? 4 : 1;
+
+  for(int i = 0; i < out_num; i++)
   {
-    for(int i = 0; i < num; i++)
-      out[i] = in[i];
-    return;
+    out[i * 2    ] = wdp * in[(i % 3 > 0) * 2];
+    out[i * 2 + 1] = htp * in[(i % 2) * 2 + 1];
   }
-
-  dt_boundingbox_t fbox = { wdp * in[0],
-                            htp * in[1],
-                            box ? wdp * in[2] : 0.0f,
-                            box ? htp * in[3] : 0.0f };
-  dt_dev_distort_backtransform(dev, fbox, num);
-
-  out[0] = fbox[0] / wd;
-  out[1] = fbox[1] / ht;
-  if(box)
+  dt_dev_distort_backtransform(dev, out, out_num);
+  for(int i = 0; i < out_num; i++)
   {
-    out[2] = fbox[2] / wd;
-    out[3] = fbox[3] / ht;
+    out[i * 2    ] = CLIP(out[i * 2    ] / wd);
+    out[i * 2 + 1] = CLIP(out[i * 2 + 1] / ht);
   }
 }
 
@@ -320,10 +313,14 @@ static void _sort_coordinates(float *fbox)
 void dt_color_picker_transform_box(dt_develop_t *dev,
                                    const int num,
                                    const float *in,
-                                   float *out)
+                                   float *out,
+                                   gboolean scale)
 {
   const float wd = dev->preview_pipe->iwidth;
   const float ht = dev->preview_pipe->iheight;
+  const float wdp = scale ? dev->preview_pipe->processed_width : 1.0f;
+  const float htp = scale ? dev->preview_pipe->processed_height : 1.0f;
+
   const gboolean box = num == 2;
   if(wd < 1.0f || ht < 1.0f)
   {
@@ -332,26 +329,27 @@ void dt_color_picker_transform_box(dt_develop_t *dev,
     return;
   }
 
-  const float x0 = wd * in[0];
-  const float y0 = ht * in[1];
-  const float x1 = wd * in[2];
-  const float y1 = ht * in[3];
+  dt_pickerbox_t fbox;
+  for(int i = 0; i < 8; i += 2)
+  {
+    fbox[i    ] = wd * in[i    ];
+    fbox[i + 1] = ht * in[i + 1];
+  }
 
-  float fbox[8] = { x0,y0,  x0,y1,  x1,y0,  x1,y1 };
   dt_dev_distort_transform(dev, fbox, box ? 4 : 1);
 
   if(box) // sort the 4 point coordinates
   {
     _sort_coordinates(fbox);
-    out[0] = 0.5f * (fbox[0] + fbox[2]);
-    out[1] = 0.5f * (fbox[1] + fbox[3]);
-    out[2] = 0.5f * (fbox[4] + fbox[6]);
-    out[3] = 0.5f * (fbox[5] + fbox[7]);
+    out[0] = 0.5f * (fbox[0] + fbox[2]) / wdp;
+    out[1] = 0.5f * (fbox[1] + fbox[3]) / htp;
+    out[2] = 0.5f * (fbox[4] + fbox[6]) / wdp;
+    out[3] = 0.5f * (fbox[5] + fbox[7]) / htp;
   }
   else
   {
-    out[0] = fbox[0];
-    out[1] = fbox[1];
+    out[0] = fbox[0] / wdp;
+    out[1] = fbox[1] / htp;
   }
 }
 
@@ -374,23 +372,17 @@ gboolean dt_color_picker_box(dt_iop_module_t *module,
   const int height = roi->height;
   const gboolean isbox = sample->size == DT_LIB_COLORPICKER_SIZE_BOX;
 
-  const float bx0 = wd * sample->box[0];
-  const float by0 = ht * sample->box[1];
-  const float bx1 = wd * sample->box[2];
-  const float by1 = ht * sample->box[3];
-
-  const float sx = sample->point[0] * wd;
-  const float sy = sample->point[1] * ht;
-
   /* get absolute pixel coordinates in final preview image.
      we transform back all 4 corner locations to current module coordinates,
      sort the coordinates, and use average of 2 highest and 2 lowest for the
      resulting rectangle.
   */
-  float fbox[8] = { isbox ? bx0 : sx,   isbox ? by0 : sy,
-                    isbox ? bx0 : sx,   isbox ? by1 : sy,
-                    isbox ? bx1 : sx,   isbox ? by0 : sy,
-                    isbox ? bx1 : sx,   isbox ? by1 : sy };
+  dt_pickerbox_t fbox;
+  for(int i = 0; i < 8; i += 2)
+  {
+    fbox[i    ] = wd * (isbox ? sample->box[i    ] : sample->point[0]);
+    fbox[i + 1] = ht * (isbox ? sample->box[i + 1] : sample->point[1]);
+  }
 
   dt_dev_distort_transform_plus
     (dev, dev->preview_pipe, module->iop_order,

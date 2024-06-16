@@ -17,7 +17,7 @@
 */
 
 #include "gui/color_picker_proxy.h"
-#include "libs/colorpicker.h"
+#include "common/color_picker.h"
 #include "bauhaus/bauhaus.h"
 #include "libs/lib.h"
 #include "control/control.h"
@@ -90,7 +90,7 @@ static gboolean _record_point_area(dt_iop_color_picker_t *self)
         }
       }
     else if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
-      for(int k = 0; k < 4; k++)
+      for(int k = 0; k < 8; k++)
       {
         if(self->pick_box[k] != sample->box[k])
         {
@@ -131,32 +131,6 @@ void dt_iop_color_picker_reset(dt_iop_module_t *module,
       if(module)
         module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
     }
-  }
-}
-
-static void _backtransform_box(const int num,
-                               const float *in,
-                               float *out)
-{
-  dt_develop_t *dev = darktable.develop;
-  const float wd = MAX(1, dev->preview_pipe->iwidth);
-  const float ht = MAX(1, dev->preview_pipe->iheight);
-  const float wdp = dev->preview_pipe->processed_width;
-  const float htp = dev->preview_pipe->processed_height;
-  const gboolean box = num == 2;
-
-  dt_boundingbox_t fbox = { wdp * in[0],
-                            htp * in[1],
-                            box ? wdp * in[2] : 0.0f,
-                            box ? htp * in[3] : 0.0f };
-  dt_dev_distort_backtransform(dev, fbox, num);
-
-  out[0] = CLIP(fbox[0] / wd);
-  out[1] = CLIP(fbox[1] / ht);
-  if(box)
-  {
-    out[2] = CLIP(fbox[2] / wd);
-    out[3] = CLIP(fbox[3] / ht);
   }
 }
 
@@ -229,7 +203,7 @@ static gboolean _color_picker_callback_button_press(GtkWidget *button,
          && self->pick_box[2] == 1.0f && self->pick_box[3] == 1.0f)
       {
         dt_boundingbox_t reset = { 0.02f, 0.02f, 0.98f, 0.98f };
-        _backtransform_box(2, reset, self->pick_box);
+        dt_color_picker_backtransform_box(darktable.develop, 2, reset, self->pick_box);
       }
       dt_lib_colorpicker_set_box_area(darktable.lib, self->pick_box);
     }
@@ -238,7 +212,7 @@ static gboolean _color_picker_callback_button_press(GtkWidget *button,
       if(self->pick_pos[0] == 0.0f && self->pick_pos[1] == 0.0f)
       {
         dt_boundingbox_t middle = { 0.5f, 0.5f };
-        _backtransform_box(1, middle, self->pick_pos);
+        dt_color_picker_backtransform_box(darktable.develop, 1, middle, self->pick_pos);
       }
       dt_lib_colorpicker_set_point(darktable.lib, self->pick_pos);
     }
