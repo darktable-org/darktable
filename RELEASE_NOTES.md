@@ -48,14 +48,14 @@ changes (where available).
 
 - Two new modules have been introduced to support image composition.
 
-  - Enlarge Canvas : As the name imply this module can be used to add
+  - Enlarge Canvas: As the name implies this module can be used to add
     areas on the left, right, top or bottom of the image. The new area
     can be assigned different color to help masking if necessary. The
     new areas can the be filled with the Retouch module by copying
     some other part of the image, using Liquify if the area is small
     or the new module overlay.
 
-  - Overlay : This module can be used to add new content on the image
+  - Overlay: This module can be used to add new content on the image
     by overlaying pixels from the current image or another image. The
     overlay content is defined by a drag-and-drop from the filmstrip
     to the Overlay module. This new content can be scaled, rotated and
@@ -186,7 +186,7 @@ changes (where available).
 
 - Fixed a issue preventing export to recent Piwigo's version.
 
-- Fixes many stability issues for better overall robusteness.
+- Fixes many stability issues for better overall robustness.
 
 ## Lua
 
