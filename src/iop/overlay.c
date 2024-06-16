@@ -226,6 +226,21 @@ static GList *_get_disabled_modules(const dt_iop_module_t *self,
     }
   }
 
+  if(darktable.unmuted & (DT_DEBUG_PARAMS | DT_DEBUG_PIPE))
+  {
+    char *buf = g_malloc0(PATH_MAX);
+    for(GList *m = result; m; m = g_list_next(m))
+    {
+      char *mod = (char *)(m->data);
+      g_strlcat(buf, mod, PATH_MAX);
+      g_strlcat(buf, " ", PATH_MAX);
+    }
+    dt_print_pipe(DT_DEBUG_PARAMS | DT_DEBUG_PIPE, "module_filter_out",
+          NULL, self, DT_DEVICE_NONE, NULL, NULL,
+          "%s\n", buf);
+    g_free(buf);
+  }
+
   return result;
 }
 
