@@ -26,9 +26,9 @@ You are strongly advised to take a backup first.
 
 Since darktable 4.6:
 
-- ??? commits to darktable+rawspeed
-- ??? pull requests handled
-- ??? issues closed
+- 1484 commits to darktable+rawspeed
+- 513 pull requests handled
+- 60 issues closed
 
 
 _Please note that the darktable documentation is not currently complete for release 4.8
@@ -260,19 +260,42 @@ changes (where available).
 
 ### Base Support
 
-- Canon EOS Ra (requires LibRaw 202403 and later)
+- Canon EOS R100 (requires LibRaw 202403 and later)
+- Canon EOS R50 (requires LibRaw 202403 and later)
 - Canon EOS R6 Mark II (requires LibRaw 202403 and later)
 - Canon EOS R8 (requires LibRaw 202403 and later)
-- Canon EOS R50 (requires LibRaw 202403 and later)
-- Canon EOS R100 (requires LibRaw 202403 and later)
+- Canon EOS Ra (requires LibRaw 202403 and later)
+- Fujifilm FinePix S9600fd
+- Fujifilm X100VI (compressed)
+- GoPro FUSION (DNG)
+- Leica SL3 (DNG)
+- OM System OM-1 Mark II
+- Panasonic DC-TZ95D (4:3)
+- Panasonic DMC-FX150 (4:3, 3:2, 16:9)
+- Panasonic DMC-FZ28 (3:2)
+- Phase One P25+
+- Phase One P45+
+- Ricoh GR III HDF (DNG)
+- Ricoh GR IIIx HDF (DNG)
+- Sony ILCE-9M3
+- Sony UMC-R10C
 
 ### White Balance Presets
 
 - Canon EOS R6 Mark II (requires LibRaw 202403 and later)
+- Fujifilm X-H2
+- OM System OM-1 Mark II
+- OM System OM-5
 
 ### Noise Profiles
 
 - Canon EOS R6 Mark II (requires LibRaw 202403 and later)
+- Fujifilm GFX 50R
+- OM System OM-1 Mark II
+- OM System OM-5
+- Phase One IQ180
+- Sony ILCE-9M3
+- Sony ZV-1
 
 ### Missing Compression Mode Support
 

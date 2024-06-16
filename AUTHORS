@@ -1,67 +1,56 @@
 * developers:
 Pascal Obry
-Aldric Renaudin
 Roman Lebedev
+Aldric Renaudin
 
 * translators:
 Victor Forsiuk
 Pascal Obry
 Jeronimo Pellegrini
-Martin Straeten
 EdgarLux
-Marko Vertainen
-Kang-Wei Hsu
-Mario Zimmermann
-Matteo Mardegan
-RIM
-Fabio Sirna
-Nicolas Auffray
-Petr Stasiak
-Яна Тунгушпаева
-Besmir Godolja
-Báthory Péter
-Kofa
+Martin Straeten
 Matjaž Jeran
-Nicolas
+Kang-Wei Hsu
+Marko Vertainen
+Michel Leblond
 Ryo Shinozaki
 Serkan ÖNDER
-Tianhao Chai
+Besmir Godolja
+RIM
 bajdero
+Báthory Péter
+Fabio Sirna
+Mario Zimmermann
+Petr Stasiak
+Tianhao Chai
+luca
+mmardegan
+shinoryo
+Яна Тунгушпаева
 
 * contributors (at least 4 commits):
-Victor Forsiuk
 Hanno Schwalm
-Diederik ter Rahe
+Victor Forsiuk
 Mario Zimmermann
-Jeronimo Pellegrini
-Sakari Kapanen
-Martin Straeten
 Ralf Brown
 Miloš Komarčević
-solarer
-Paolo DePetrillo
-Bill Ferguson
-Chris Elston
-gi-man
+Diederik ter Rahe
+Jeronimo Pellegrini
 EdgarLux
-Marko Vertainen
+Bill Ferguson
+Martin Straeten
+dependabot[bot]
 Kang-Wei Hsu
-Nicolas Auffray
+Matjaž Jeran
+wpferguson
 
 * Sub-module rawspeed contributors (at least 1 commit):
 Roman Lebedev
 Miloš Komarčević
-Georg Lukas
-Yattaro
-Jan Šmucr
-Jorge Nerín
-Massimo Paladin
-Michael Allman
-Omari Stephens
 Victor Forsiuk
+Georg Lukas
 
 * Sub-module integration contributors (at least 1 commit):
 Pascal Obry
-Sakari Kapanen
 
 And all those of you that made previous releases possible
