@@ -211,7 +211,7 @@ gboolean dt_lib_presets_can_autoapply(dt_lib_module_t *mod);
 
 /** set the colorpicker area selection tool and size, box[k] 0.0 - 1.0 */
 void dt_lib_colorpicker_set_box_area(dt_lib_t *lib,
-                                     const dt_boundingbox_t box);
+                                     const dt_pickerbox_t box);
 
 /** set the colorpicker point selection tool and position */
 void dt_lib_colorpicker_set_point(dt_lib_t *lib,

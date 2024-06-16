@@ -45,7 +45,7 @@ typedef struct dt_colorpicker_sample_t
   // whether from colorpicker lib or an iop. They are used for showing
   // the sample in the center view, and sampling in the pixelpipe.
   float point[2];
-  dt_boundingbox_t box;
+  dt_pickerbox_t box;
   dt_lib_colorpicker_size_t size;
   gboolean denoise;
   gboolean pick_output;

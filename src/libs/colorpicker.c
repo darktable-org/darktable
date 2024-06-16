@@ -245,12 +245,12 @@ static void _update_samples_output(dt_lib_module_t *self)
 /* set sample area proxy impl */
 
 static void _set_sample_box_area(dt_lib_module_t *self,
-                                 const dt_boundingbox_t box)
+                                 const dt_pickerbox_t box)
 {
   dt_lib_colorpicker_t *data = self->data;
 
   // primary sample always follows/represents current picker
-  for(int k = 0; k < 4; k++)
+  for(int k = 0; k < 8; k++)
     data->primary_sample.box[k] = box[k];
 
   _update_size(self, DT_LIB_COLORPICKER_SIZE_BOX);
