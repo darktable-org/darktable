@@ -1112,6 +1112,23 @@ void gui_reset(dt_imageio_module_storage_t *self)
 {
 }
 
+static uint64_t _piwigo_album_id(const gchar *name, GList *albums)
+{
+  uint64_t id = 0;
+
+  for(const GList *a = albums; a; a = g_list_next(a))
+  {
+    _piwigo_album_t *album = (_piwigo_album_t *)a->data;
+    if(!strcmp(name, album->label))
+    {
+      id = album->id;
+      break;
+    }
+  }
+
+  return id;
+}
+
 static gboolean _finalize_store(gpointer user_data)
 {
   dt_storage_piwigo_gui_data_t *g = (dt_storage_piwigo_gui_data_t *)user_data;
@@ -1122,8 +1139,14 @@ static gboolean _finalize_store(gpointer user_data)
   {
     GList *args = NULL;
 
+    char category_id[10];
+    const char* album = dt_bauhaus_combobox_get_text(g->album_list);
+    const uint64_t album_id = _piwigo_album_id(album, g->albums);
+    snprintf(category_id, sizeof(category_id), "%d", (int)album_id);
+
     args = _piwigo_query_add_arguments(args, "method", "pwg.images.uploadCompleted");
     args = _piwigo_query_add_arguments(args, "pwg_token", g->api->pwg_token);
+    args = _piwigo_query_add_arguments(args, "category_id", category_id);
 
     _piwigo_api_post(g->api, args, NULL, FALSE);
 
@@ -1320,24 +1343,6 @@ size_t params_size(dt_imageio_module_storage_t *self)
 
 void init(dt_imageio_module_storage_t *self)
 {
-}
-
-static uint64_t _piwigo_album_id(const gchar *name,
-                                 GList *albums)
-{
-  uint64_t id = 0;
-
-  for(const GList *a = albums; a; a = g_list_next(a))
-  {
-    _piwigo_album_t *album = (_piwigo_album_t *)a->data;
-    if(!strcmp(name, album->label))
-    {
-      id = album->id;
-      break;
-    }
-  }
-
-  return id;
 }
 
 void *get_params(dt_imageio_module_storage_t *self)
