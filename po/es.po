@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 4.8\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-06-13 00:42-0600\n"
-"PO-Revision-Date: 2024-06-14 01:03-0600\n"
+"PO-Revision-Date: 2024-06-16 01:24-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -7807,7 +7807,10 @@ msgstr[1] "Eliminando %d imágenes"
 msgid "not removing image '%s' used as overlay in %d image"
 msgid_plural "not removing image '%s' used as overlay in %d images"
 msgstr[0] ""
+"La imagen «%s» no quitó ya que se utiliza como capa superpuesta en %d imagen."
 msgstr[1] ""
+"La imagen «%s» no se quitó ya que se utiliza como capa superpuesta en %d "
+"imágenes."
 
 #: ../src/control/jobs/control_jobs.c:955
 #, c-format
@@ -7880,7 +7883,11 @@ msgstr[1] "Borrando %d imágenes"
 msgid "not deleting image '%s' used as overlay in %d image"
 msgid_plural "not deleting image '%s' used as overlay in %d images"
 msgstr[0] ""
+"La imagen «%s» no fue eliminada ya que se utiliza como capa superpuesta en "
+"%d imagen."
 msgstr[1] ""
+"La imagen «%s» no fue eliminada ya que se utiliza como capa superpuesta en "
+"%d imágenes."
 
 #: ../src/control/jobs/control_jobs.c:1301
 msgid "failed to parse GPX file"
@@ -11088,6 +11095,8 @@ msgstr "$(JOBCODE) → código de trabajo que se importa"
 msgid ""
 "$(SEQUENCE[n,m]) - sequence number, n: number of digits, m: start number"
 msgstr ""
+"$(SEQUENCE[n,m]) → número de secuencia, n: cantidad de dígitos, m: número "
+"inicial"
 
 #: ../src/gui/gtkentry.c:182
 msgid "$(WIDTH.MAX) - maximum image export width"
@@ -12972,6 +12981,8 @@ msgid ""
 "module '%s' has insane data so it is bypassed for now. you should disable it "
 "or change parameters\n"
 msgstr ""
+"El módulo «%s» parece tener parámetros incongruentes y, por lo tanto, está "
+"desactivado por el momento. Desactive el módulo o cambie los parámetros.\n"
 
 #: ../src/iop/ashift.c:2824
 msgid "automatic cropping failed"
@@ -16386,6 +16397,10 @@ msgid ""
 "visualize weighting function on changed output and view weighting curve.\n"
 "red shows possibly changed data, blueish parts will not be changed."
 msgstr ""
+"Hace visible la función de ponderación en la salida y la curva "
+"correspondiente.\n"
+"Los datos que pueden cambiarse se muestran en rojo, los datos que no "
+"cambiarán, se muestran en azul."
 
 #: ../src/iop/colorequal.c:2681
 msgid ""
@@ -16422,6 +16437,8 @@ msgid ""
 "visualize changed output for the selected tab.\n"
 "red shows increased data, blue decreased."
 msgstr ""
+"Hace visible los cambios realizados en la pestaña seleccionada.\n"
+"Los datos incrementados se muestran en rojo, los decrementados en azul."
 
 #: ../src/iop/colorzones.c:139 ../src/iop/colorzones.c:2570
 msgid "color zones"
@@ -19717,6 +19734,9 @@ msgid ""
 "\n"
 "'%s'"
 msgstr ""
+"La imagen como capa superpuesta no se encuentra en la base de datos\n"
+"\n"
+"«%s»"
 
 #: ../src/iop/overlay.c:328
 #, c-format
@@ -19741,7 +19761,7 @@ msgstr ""
 msgid ""
 "cannot use image %d as an overlay as it is using the current image as an "
 "overlay itself"
-msgstr ""
+msgstr "No es posible utilizar la misma imagen «%d» como capa superpuesta."
 
 #: ../src/iop/overlay.c:1063 ../src/iop/watermark.c:1362
 msgctxt "section"
@@ -26080,6 +26100,8 @@ msgid ""
 "toggle high quality processing, if activated darktable processes image data "
 "as it does while exporting"
 msgstr ""
+"Activa el procesamiento de alta calidad. darktable revela la imagen con los "
+"parámetros tales como cuando se va a exportar."
 
 #: ../src/views/darkroom.c:2284
 #, fuzzy
