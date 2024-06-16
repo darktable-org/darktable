@@ -423,15 +423,6 @@ restart:
 
   dt_get_times(&start);
 
-  // disable some modules if needed
-  for(GList *m = dev->module_filter_out;
-      m;
-      m = g_list_next(m))
-  {
-    char *mod = (char *)(m->data);
-    dt_dev_pixelpipe_module_enabled(port->pipe, mod, FALSE);
-  }
-
   if(dt_dev_pixelpipe_process(pipe, dev, x, y, wd, ht, scale, devid))
   {
     // interrupted because image changed?

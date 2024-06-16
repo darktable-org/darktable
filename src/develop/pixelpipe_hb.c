@@ -516,6 +516,22 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
           "enabled module with iop_order of INT_MAX is disabled\n");
       }
 
+      // disable pieces if included in list
+      if(piece->enabled && dev->module_filter_out)
+      {
+        for(GList *m = dev->module_filter_out; m; m = g_list_next(m))
+        {
+          char *mod = (char *)(m->data);
+          if(dt_iop_module_is(piece->module->so, mod))
+          {
+            piece->enabled = FALSE;
+            dt_print_pipe(DT_DEBUG_PARAMS | DT_DEBUG_PIPE, "dt_dev_pixelpipe_synch",
+              pipe, piece->module, DT_DEVICE_NONE, NULL, NULL,
+              "module is disabled because it's included in module_filter_out\n");
+          }
+        }
+      }
+
       dt_iop_commit_params(hist->module, hist->params, hist->blend_params, pipe, piece);
 
       dt_print_pipe(DT_DEBUG_PARAMS, "dt_dev_pixelpipe_synch",
@@ -2494,21 +2510,6 @@ void dt_dev_pixelpipe_disable_before(dt_dev_pixelpipe_t *pipe, const char *op)
     nodes = g_list_next(nodes);
     if(!nodes) break;
     piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
-  }
-}
-
-void dt_dev_pixelpipe_module_enabled(dt_dev_pixelpipe_t *pipe, const char *op, const gboolean enable)
-{
-  for(GList *nodes = pipe->nodes;
-      nodes;
-      nodes = g_list_next(nodes))
-  {
-    dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
-    if(dt_iop_module_is(piece->module->so, op))
-    {
-      piece->enabled = enable;
-      break;
-    }
   }
 }
 
