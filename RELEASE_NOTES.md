@@ -51,7 +51,7 @@ changes (where available).
   - Enlarge Canvas: As the name implies this module can be used to add
     areas on the left, right, top or bottom of the image. The new area
     can be assigned different color to help masking if necessary. The
-    new areas can the be filled with the Retouch module by copying
+    new areas can then be filled with the Retouch module by copying
     some other part of the image, using Liquify if the area is small
     or the new module overlay.
 
@@ -97,7 +97,7 @@ changes (where available).
 
 - Using <kbd>Right-Click</kbd> on color label icons (bottom toolbar of
   lighttable) it is possible to add a description to color
-  labels. This is an handy way of remembering the color label usage in
+  labels. This is a handy way of remembering the color label usage in
   the workflow.
 
 - Removed the AI options in color calibration module because of
@@ -184,7 +184,7 @@ changes (where available).
 - Fixed camera mounting when GPhoto2 internally reports a single
   attached camera multiple times.
 
-- Fixed a issue preventing export to recent Piwigo's version.
+- Fixed the issue preventing export to recent Piwigo's version.
 
 - Fixes many stability issues for better overall robustness.
 
