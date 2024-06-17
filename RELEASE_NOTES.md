@@ -108,7 +108,7 @@ changes (where available).
 
 - Add a dashed outline of the current selected area in the print view.
 
-- Added a few more EXIF fields to the image information module: White
+- Added a few more EXIF fields to the image information module: white
   balance, exposure program, flash and metering mode.  These get
   filled automatically for new imports. For existing photos please
   perform a "refresh EXIF" on the selected images.
@@ -126,8 +126,8 @@ changes (where available).
   now done per image instead globally.
 
 - Added support for DNG files requiring the CameraCalibration tags for
-  correct white balancing. (Some google pixel cameras for
-  example). Requires re-reading exif metadata.
+  correct white balancing (for example, some Google Pixel cameras).
+  Requires re-reading EXIF metadata.
 
 - Improved efficiency of the quick access panel by allowing modules to
   be reset and presets to be applied without opening the full module.
@@ -151,7 +151,7 @@ changes (where available).
 - Fix copy of multiple instances to ensure the proper order is applied
   when pasting to a new image.
 
-- Fixing raw chromatic aberration on clang based systems.
+- Fixing raw chromatic aberration on Clang based systems.
 
 - Fixes backthumb crawler for deleted history. We make sure that the
   crawler is aware of a deleted history and so will regenerate the
@@ -162,9 +162,9 @@ changes (where available).
   new distortion on the pipe for example. This was not the case until
   one was editing the mask.
 
-- Fixed memleak while importing avif images.
+- Fixed memleak while importing AVIF images.
 
-- Fixed mask blending for sraw images while in IOP_CS_RAW colorspace.
+- Fixed mask blending for sRAW images while in IOP_CS_RAW colorspace.
 
 - Fixed OpenCL device locking for modules calling dt_dev_pixelpipe_process().
 
@@ -227,7 +227,7 @@ changes (where available).
   export module's preference options.
 
 - In order to support the correct display of numbers in darktable, the
-  minimum supported Gtk version has had to be increased to
+  minimum supported GTK version has had to be increased to
   3.24.15. For people who need to build darktable with an older
   version, this can be achieved by removing line 241 of the
   `darktable.css` file on your system. See
