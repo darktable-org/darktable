@@ -49,7 +49,11 @@ ALL_DEVELOPERS=("Aldric Renaudin"
                 "Tobias Ellinghaus"
                 "Ulrich Pegelow"
                 "johannes hanika"
-                "parafin")
+                "parafin"
+                "Hanno Schwalm"
+                "Victor Forsiuk"
+                "Mario Zimmermann"
+                "Ralf Brown")
 
 function short-log()
 {
@@ -111,28 +115,29 @@ if [ ! -z $BASE ]; then
     RANGE=$BASE..$HEAD
 fi
 
-echo "* developers:"
-short-log $RANGE $SHORTLOG_THRESHOLD |
-    while read name; do
-        is-developer "$name"
-        if [ $? == 1 ]; then
-            echo $name
-        fi
-    done
+echo "* Developers:"
+
+{
+    short-log $RANGE $SHORTLOG_THRESHOLD |
+        while read name; do
+            is-developer "$name"
+            if [ $? == 1 ]; then
+                echo $name
+            fi
+        done
+
+    short-log $RANGE $CONTRIBUTOR_THRESHOLD |
+        while read name; do
+            is-developer "$name"
+            if [ $? == 0 ]; then
+                echo $name
+            fi
+        done
+} | grep -v "dependabot"
 
 echo
-echo "* translators:"
+echo "* Translators:"
 short-log $RANGE $TRANSLATOR_THRESHOLD "./po/*.po ./doc/man/po/*.po ./doc/usermanual/po/*.po"
-
-echo
-echo "* contributors (at least $CONTRIBUTOR_THRESHOLD commits):"
-short-log $RANGE $CONTRIBUTOR_THRESHOLD |
-    while read name; do
-        is-developer "$name"
-        if [ $? == 0 ]; then
-            echo $name
-        fi
-    done
 
 # handle sub-modules if any
 
@@ -140,6 +145,12 @@ if [ -f .gitmodules ]; then
     cat .gitmodules | grep path |
         while read x c module; do
             MODULE_NAME=$(basename $module)
+
+            [[ ${MODULE_NAME} == "OpenCL" ]] ||
+                [[ ${MODULE_NAME} == "libxcf" ]] ||
+                [[ ${MODULE_NAME} == "whereami" ]] ||
+                [[ ${MODULE_NAME} == "LibRaw" ]] && continue
+
             echo
             echo "* Sub-module $MODULE_NAME contributors (at least 1 commit):"
             for-submodule $module $SHORTLOG_THRESHOLD
