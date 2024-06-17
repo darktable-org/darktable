@@ -86,7 +86,7 @@ changes (where available).
   instead of a preference. All collections can now be sorted easily by
   a single click on the sort button.
 
-- Removed "unrestricted" mode from darktable's preferences resources
+- Removed "unrestricted" mode from darktable preferences resources
   for safety. This setting has been proved to be unsafe in many
   cases. It can still be enabled via the resource file if needed.
 
@@ -184,7 +184,7 @@ changes (where available).
 - Fixed camera mounting when GPhoto2 internally reports a single
   attached camera multiple times.
 
-- Fixed the issue preventing export to recent Piwigo's version.
+- Fixed the issue preventing export to recent Piwigo version.
 
 - Fixes many stability issues for better overall robustness.
 
