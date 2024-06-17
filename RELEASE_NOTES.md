@@ -148,16 +148,16 @@ changes (where available).
 
 ## Bug Fixes
 
-- Fix copy of multiple instances to ensure the proper order is applied
+- Fixed copy of multiple instances to ensure the proper order is applied
   when pasting to a new image.
 
-- Fixing raw chromatic aberration on Clang based systems.
+- Fixed raw chromatic aberration on Clang based systems.
 
-- Fixes backthumb crawler for deleted history. We make sure that the
+- Fixed backthumb crawler for deleted history. We make sure that the
   crawler is aware of a deleted history and so will regenerate the
   thumbs as expected.
 
-- Fix drawn masks visualizing in darkroom after pixelpipe module have
+- Fixed drawn masks visualizing in darkroom after pixelpipe module have
   changed. The drawn masks will now be properly adjusted if there is
   new distortion on the pipe for example. This was not the case until
   one was editing the mask.
@@ -186,7 +186,7 @@ changes (where available).
 
 - Fixed the issue preventing export to recent Piwigo version.
 
-- Fixes many stability issues for better overall robustness.
+- Fixed many stability issues for better overall robustness.
 
 ## Lua
 
