@@ -1008,7 +1008,8 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
   const int bpp = format->bpp(format_params);
 
   dt_get_perf_times(&start);
-  if(high_quality_processing || scale > 1.0f)
+  const gboolean hq_process = high_quality_processing || scale > 1.0f;
+  if(hq_process)
   {
     /*
      * if high quality processing was requested, downsampling will be done
@@ -1070,7 +1071,7 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
   {
     if(display_byteorder)
     {
-      if(high_quality_processing)
+      if(hq_process)
       {
         const float *const inbuf = (float *)outbuf;
         for(size_t k = 0; k < (size_t)processed_width * processed_height; k++)
@@ -1089,7 +1090,7 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
     else // need to flip
     {
       // ldr output: char
-      if(high_quality_processing)
+      if(hq_process)
       {
         const float *const inbuf = (float *)outbuf;
         for(size_t k = 0; k < (size_t)processed_width * processed_height; k++)
