@@ -197,8 +197,16 @@ jobs:
             zlib1g-dev;
       - uses: actions/checkout@v4
         with:
-          submodules: true
+          submodules: false
           path: src
+          fetch-depth: 1
+      - name: Get only those submodules that are needed for build
+        run: |
+          cd src
+          git submodule init
+          git config submodule.src/tests/integration.update none
+          git submodule update
+          cd -
       - name: Build and Install
         run: |
           cmake -E make_directory "${BUILD_DIR}";
@@ -305,8 +313,16 @@ jobs:
         shell: bash
       - uses: actions/checkout@v4
         with:
-          submodules: true
+          submodules: false
           path: src
+          fetch-depth: 1
+      - name: Get only those submodules that are needed for build
+        run: |
+          cd src
+          git submodule init
+          git config submodule.src/tests/integration.update none
+          git submodule update
+          cd -
       - name: Build and Install
         run: |
           cmake -E make_directory "${BUILD_DIR}"
@@ -359,8 +375,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: true
+          submodules: false
           path: src
+          fetch-depth: 1
+      - name: Get only those submodules that are needed for build
+        run: |
+          cd src
+          git submodule init
+          git config submodule.src/tests/integration.update none
+          git submodule update
+          cd -
       - name: Install Base Dependencies
         run: |
           brew update > /dev/null || true
