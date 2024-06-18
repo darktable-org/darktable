@@ -122,7 +122,7 @@ jobs:
           cd ..
       - name: Cancel workflow if job fails
         if: ${{ failure() }}
-        uses: andymckay/cancel-action@0.4
+        uses: andymckay/cancel-action@0.5
       - name: Checkout darktable master branch
         run: |
           # Note that we can't make a shallow clone to reduce clone traffic and time, as we have to
@@ -232,7 +232,7 @@ jobs:
           pacman -U --noconfirm https://repo.msys2.org/mingw/ucrt64/mingw-w64-ucrt-x86_64-exiv2-0.27.7-1-any.pkg.tar.zst
       - name: Cancel workflow if job fails
         if: ${{ failure() }}
-        uses: andymckay/cancel-action@0.4
+        uses: andymckay/cancel-action@0.5
       - run: git config --global core.autocrlf input
         shell: bash
       - name: Checkout darktable master branch
@@ -328,7 +328,7 @@ jobs:
           brew link --force libsoup@2
       - name: Cancel workflow if job fails
         if: ${{ failure() }}
-        uses: andymckay/cancel-action@0.4
+        uses: andymckay/cancel-action@0.5
       - name: Build and Install
         run: |
           cmake -E make_directory "${BUILD_DIR}";
