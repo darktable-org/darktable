@@ -7,13 +7,13 @@ github, but only our tar.xz file. The checksums are:
 
 ```
 $ sha256sum darktable-4.8.0.tar.xz
-??? darktable-4.8.0.tar.xz
-$ sha256sum darktable-4.8.0-x86_64.dmg
-??? darktable-4.8.0-x86_64.dmg
-$ sha256sum darktable-4.8.0-arm64.dmg
-??? darktable-4.8.0-arm64.dmg
+419849e9015270e4075f2341c6b5532d3d1cccccfa8f19592cb2ea3ad17f9255  darktable-4.8.0.tar.xz
+$ sha256sum darktable-4.8.0-x86_64.dmg (macOS 13.5)
+bded6986f72af8901f0fa28686d6d06e6b766d831c29abe8a0163b5a503a50e6  darktable-4.8.0-x86_64.dmg
+$ sha256sum darktable-4.8.0-arm64.dmg (macOS 14.0)
+628442bf336e4f51fdf39f8b144372cbd855fe7b17812e359b5f8f3e6b6d99fb  darktable-4.8.0-arm64.dmg
 $ sha256sum darktable-4.8.0-win64.exe
-??? darktable-4.8.0.exe
+a1396ca8640df4b25ae41ef0dec1649e2c9f33018e955090e770737abf9d2160  darktable-4.8.0-win64.exe
 ```
 
 When updating from the stable 4.6 series, please bear in
