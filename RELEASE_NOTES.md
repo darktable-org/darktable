@@ -13,7 +13,7 @@ $ sha256sum darktable-4.8.0-x86_64.dmg
 $ sha256sum darktable-4.8.0-arm64.dmg
 ??? darktable-4.8.0-arm64.dmg
 $ sha256sum darktable-4.8.0-win64.exe
-??? darktable-4.8.0.exe
+??? darktable-4.8.0-win64.exe
 ```
 
 When updating from the stable 4.6 series, please bear in
