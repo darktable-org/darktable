@@ -80,9 +80,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
 
   gboolean free_mask = FALSE;
   float *raster_mask = NULL;
-#ifdef _WIN32
-  wchar_t *wfilename = g_utf8_to_utf16(filename, -1, NULL, NULL, NULL);
-#endif
+
   int rc = 1; // default to error
 
   cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid, over_type, over_filename)->profile;
@@ -107,11 +105,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
   }
 
   // Create little endian tiff image
-#ifdef _WIN32
-  tif = TIFFOpenW(wfilename, "wl");
-#else
   tif = TIFFOpen(filename, "wl");
-#endif
 
   if(!tif)
   {
@@ -352,11 +346,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
 
   if(rc == 0 && n_pages > 1)
   {
-#ifdef _WIN32
-    tif = TIFFOpenW(wfilename, "al");
-#else
     tif = TIFFOpen(filename, "al");
-#endif
 
     if(!tif)
     {
@@ -576,9 +566,6 @@ exit:
   profile = NULL;
   free(rowdata);
   rowdata = NULL;
-#ifdef _WIN32
-  g_free(wfilename);
-#endif
   if(free_mask)
     dt_free_align(raster_mask);
 

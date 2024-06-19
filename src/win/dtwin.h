@@ -21,7 +21,7 @@
 #include <gtk/gtk.h>
 #include <windows.h>
 
-const wchar_t *dtwin_get_locale();
+const char *dtwin_get_locale();
 void dtwin_set_thread_name(DWORD dwThreadID, const char *threadName);
 boolean dt_win_file_trash(GFile *file, GCancellable *cancellable, GError **error);
 

@@ -25,7 +25,6 @@
 
 #ifdef _WIN32
 #include <conio.h>
-#include "win/main_wrapper.h"
 #endif
 
 int main(int argc, char *arg[])
@@ -65,4 +64,3 @@ end:
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
