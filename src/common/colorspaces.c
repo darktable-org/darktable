@@ -1638,7 +1638,7 @@ dt_colorspaces_t *dt_colorspaces_init()
     {
       dt_print(DT_DEBUG_DEV,
                "output profile `%s' color space `%c%c%c%c'"
-               " not supported for work or histogram profile\n",
+               " not supported for work profile\n",
                prof->name, (char)(color_space >> 24),
                (char)(color_space >> 16),
                (char)(color_space >> 8),
