@@ -133,8 +133,13 @@ darktable automatically backs up the library database when a new version causes 
 you can revert to the previous release by restoring this backup if needed
 (simply rename it to `library.db`).
 
-If you try to open a newer database with an older version of the software, any portions of your edits that were
-undertaken with new features will be discarded and you will lose them. This also applies to the sidecar XMP files.
+You will not be able to open the newer version of the database with a version of darktable
+that only supports the older version of the database. This is impossible because the older
+application does not know how the database schema has changed, so its code will not be able
+to work with it.
+
+You will be able to import images with an XMP sidecar file that contains newer versions of processing
+modules or new modules, but those image editing parts will be discarded and you will lose them.
 
 If you plan to move regularly between two versions (new/unstable and old/stable) see [below](#testunstable-version)
 for details of how to do it safely.
