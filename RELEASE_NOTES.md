@@ -233,11 +233,7 @@ changes (where available).
   `darktable.css` file on your system. See
   https://github.com/darktable-org/darktable/issues/13166.
 
-- Starting with release 4.4 a new support policy regarding macOS
-  versions has been put in place – darktable releases will now only
-  support those macOS versions that are also supported by Apple.
-  Release 4.8 therefore drops support for macOS versions older than
-  13.5.
+- Release 4.8 drops support for macOS versions older than 13.5.
 
 ## Changed Dependencies
 
