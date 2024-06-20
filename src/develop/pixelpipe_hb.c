@@ -1122,9 +1122,10 @@ static gboolean _pixelpipe_process_on_CPU(
   if(cst_from != cst_to)
     dt_print_pipe(DT_DEBUG_PIPE,
            "transform colorspace",
-           piece->pipe, module, DT_DEVICE_CPU, roi_in, NULL, " %s -> %s\n",
+           piece->pipe, module, DT_DEVICE_CPU, roi_in, NULL, " %s -> %s `%s'\n",
            dt_iop_colorspace_to_name(cst_from),
-           dt_iop_colorspace_to_name(cst_to));
+           dt_iop_colorspace_to_name(cst_to),
+           dt_colorspaces_get_name(work_profile->type, work_profile->filename));
 
   // transform to module input colorspace
   dt_ioppr_transform_image_colorspace
@@ -1728,9 +1729,10 @@ static gboolean _dev_pixelpipe_process_rec(
         {
           if(cst_from != cst_to)
             dt_print_pipe(DT_DEBUG_PIPE,
-               "transform colorspace", piece->pipe, module, pipe->devid, &roi_in, NULL, " %s -> %s\n",
+               "transform colorspace", piece->pipe, module, pipe->devid, &roi_in, NULL, " %s -> %s `%s'\n",
                dt_iop_colorspace_to_name(cst_from),
-               dt_iop_colorspace_to_name(cst_to));
+               dt_iop_colorspace_to_name(cst_to),
+               dt_colorspaces_get_name(work_profile->type, work_profile->filename));
           success_opencl = dt_ioppr_transform_image_colorspace_cl
             (module, piece->pipe->devid,
              cl_mem_input, cl_mem_input,
