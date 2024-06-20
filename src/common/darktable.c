@@ -363,6 +363,7 @@ gboolean dt_supported_image(const gchar *filename)
   return supported;
 }
 
+#ifndef MAC_INTEGRATION
 static void _switch_to_new_filmroll(const gchar *input)
 {
   char *filename = dt_util_normalize_path(input);
@@ -388,6 +389,7 @@ static void _switch_to_new_filmroll(const gchar *input)
     free(filename);
   }
 }
+#endif
 
 dt_imgid_t dt_load_from_string(const gchar *input,
                                const gboolean open_image_in_dr,
