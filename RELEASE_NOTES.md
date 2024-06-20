@@ -48,9 +48,9 @@ changes (where available).
 
 - Two new modules have been introduced to support image composition.
 
-  - Enlarge Canvas: As the name implies this module can be used to add
+  - Enlarge Canvas: As the name implies, this module can be used to add
     areas on the left, right, top or bottom of the image. The new area
-    can be assigned different color to help masking if necessary. The
+    can be assigned a different color to help masking if necessary. The
     new areas can the be filled with the Retouch module by copying
     some other part of the image, using Liquify if the area is small
     or the new module overlay.
@@ -59,15 +59,15 @@ changes (where available).
     by overlaying pixels from the current image or another image. The
     overlay content is defined by a drag-and-drop from the filmstrip
     to the Overlay module. This new content can be scaled, rotated and
-    shifted horizontally or vertically. Using a mask it can be used to
+    shifted horizontally or vertically. Using a mask, it can be used to
     fill an area created by the Enlarge Canvas or to add some new part
     into the image using masking. A common example is to overlay
     multiply pictures of a firework to create a bigger one.
 
-- Implemented a toggle switch for the darkroom mode forcing the
+- Implemented a toggle switch for the darkroom mode, forcing the
   pixel-pipe processing to use the whole image data instead of just the
   area displayed. This allows the user to inspect processed data
-  without errors introduced via internal scaling and equals what we
+  without errors introduced via internal scaling, and equals what we
   get by exporting in "high quality resampling" mode.
 
 ## Performance Improvements
@@ -78,7 +78,7 @@ changes (where available).
 
 ## Other Changes
 
-- Changed the sort order of tags to a natural and case insensitive order.
+- Changed the sort order of tags to a natural and case-insensitive order.
 
 - Added Apple Keychain password storage backend for macOS devices.
 
@@ -91,7 +91,7 @@ changes (where available).
   cases. It can still be enabled via the resource file if needed.
 
 - Add buttons next to the snapshots to allow restoring it as the new
-  history. Also the snapshots are now supporting drawn masks. It is
+  history. Also, the snapshots are now supporting drawn masks. It is
   possible to visualize the difference between the main darkroom view
   and a snapshot with different masking for example.
 
@@ -109,8 +109,8 @@ changes (where available).
 - Add a dashed outline of the current selected area in the print view.
 
 - Added a few more EXIF fields to the image information module: White
-  balance, exposure program, flash and metering mode.  These get
-  filled automatically for new imports. For existing photos please
+  balance, exposure program, flash and metering mode. These get
+  filled automatically for new imports. For existing photos, please
   perform a "refresh EXIF" on the selected images.
 
 - Added Windows credential manager password storage backend.
@@ -120,7 +120,7 @@ changes (where available).
   can be used with all algorithms.
 
 - Color picker positions are defined by image coordinates instead of output.
-  They will stay at the same location whatever distorting modules are used.
+  They will stay at the same location, whatever distorting modules are used.
 
 - The history autosaving might be disabled because of slow drives, this is
   now done per image instead globally.
@@ -137,7 +137,7 @@ changes (where available).
 - Added more collection types and filters for flash, white balance,
   exposure program, metering mode and image grouping.
 
-  Removed the old image grouping collection type and filter which gave
+  Removed the old image grouping collection type and filter, which gave
   confusing results.
 
 - Added support for CMYK profiled histogram.
@@ -159,7 +159,7 @@ changes (where available).
 
 - Fixed drawn masks visualizing in darkroom after pixelpipe module have
   changed. The drawn masks will now be properly adjusted if there is
-  new distortion on the pipe for example. This was not the case until
+  new distortion on the pipe, for example. This was not the case until
   one was editing the mask.
 
 - Fixed memleak while importing avif images.
@@ -170,7 +170,7 @@ changes (where available).
 
 - Fixed the UI becoming unresponsive due to very large history.
 
-- Fixed UCS colorspace maths avoiding div-by-zero and out-of-gamut errors.
+- Fixed UCS colorspace maths, avoiding div-by-zero and out-of-gamut errors.
 
 - Fixed a number of issues with guided filter blending and internal mask
   distortions.
@@ -210,7 +210,7 @@ changes (where available).
 
 - button widget - added image_align to horizontally position the image
 
-- box widget - added expand member to control cells being expanded to fill the with of the box
+- box widget - added expand member to control cells being expanded to fill the width of the box
 
 - box widget - added fill member to control if the widgets fill the cell
 
