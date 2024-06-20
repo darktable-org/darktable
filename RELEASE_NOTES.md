@@ -220,6 +220,9 @@ changes (where available).
 
 ## Notes
 
+- Exporting with up-scaling and whithout using the high quality option
+  will result in corrupt images.
+
 - When exporting to AVIF, EXR, JPEG XL, or XCF, selecting specific
   metadata (e.g. geo-tag or creator) is not currently possible. For
   AVIF, EXR, JPEG XL, and XCF formats, darktable will not include any
