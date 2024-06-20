@@ -363,6 +363,32 @@ gboolean dt_supported_image(const gchar *filename)
   return supported;
 }
 
+static void _switch_to_new_filmroll(const gchar *input)
+{
+  char *filename = dt_util_normalize_path(input);
+  if(filename)
+  {
+    gchar *dirname;
+    if(g_file_test(filename, G_FILE_TEST_IS_DIR))
+      dirname = g_strdup(filename);
+    else
+      dirname = g_path_get_dirname((const gchar*)filename);
+    dt_filmid_t filmid = NO_FILMID;
+    /* initialize a film object*/
+    dt_film_t *film = (dt_film_t *)malloc(sizeof(dt_film_t));
+    dt_film_init(film);
+    dt_film_new(film, dirname);
+    if(dt_is_valid_filmid(film->id))
+    {
+      dt_film_open(film->id);
+      dt_ctl_switch_mode_to("lighttable");
+    }
+    free(film);
+    g_free(dirname);
+    free(filename);
+  }
+}
+
 dt_imgid_t dt_load_from_string(const gchar *input,
                                const gboolean open_image_in_dr,
                                gboolean *single_image)
@@ -1667,7 +1693,10 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     }
     else if(argc > 2)
     {
-      // when multiple names are given, fire up a background job to import them
+      // when multiple names are given, fire up a background job to
+      // import them after switching to lighttable showing the
+      // filmroll for the first one
+      _switch_to_new_filmroll(argv[1]);
       dt_control_add_job(darktable.control,
                          DT_JOB_QUEUE_USER_BG, dt_pathlist_import_create(argc,argv));
     }
