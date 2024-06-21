@@ -635,14 +635,14 @@ static void _pop_undo(gpointer user_data,
     // topology has changed
     dt_dev_pixelpipe_rebuild(dev);
 
-    dt_pthread_mutex_unlock(&dev->history_mutex);
-
     // if dev->iop has changed reflect that on module list
     if(pipe_remove) _reorder_gui_module_list(dev);
 
     // write new history and reload
     dt_dev_write_history(dev);
     dt_dev_reload_history_items(dev);
+
+    dt_pthread_mutex_unlock(&dev->history_mutex);
 
     dt_ioppr_resync_modules_order(dev);
 
