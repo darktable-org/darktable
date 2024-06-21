@@ -10,7 +10,7 @@
   </dttab>
   <dttab name="darkroom" title="darkroom">
     <section title="general"/>
-    <section name="modules" title="modules"/>
+    <section name="modules" title="processing modules"/>
   </dttab>
   <dttab name="processing" title="processing">
     <section name="general" title="image processing"/>
@@ -27,6 +27,7 @@
     <section name="XMP" title="XMP sidecar files"/>
   </dttab>
   <dttab name="misc" title="miscellaneous">
+    <section name="utilities" title="utility modules"/>
     <section name="interface" title="interface"/>
     <section name="tags" title="tags"/>
     <section name="accel" title="shortcuts with multiple instances"/>
@@ -1464,8 +1465,8 @@
     <shortdescription>draw borders around grouped images</shortdescription>
     <longdescription>draw borders around grouped images when grouping is turned off and the mouse hovers over one of the images of the group</longdescription>
   </dtconfig>
-  <dtconfig prefs="misc" section="interface">
-    <name>modules/default_presets_first</name>
+  <dtconfig prefs="darkroom" section="modules">
+    <name>plugins/darkroom/default_presets_first</name>
     <type>bool</type>
     <default>true</default>
     <shortdescription>sort built-in presets first</shortdescription>
@@ -1478,19 +1479,26 @@
     <shortdescription>hide built-in presets for processing modules</shortdescription>
     <longdescription>hide built-in presets of processing modules in presets menu.</longdescription>
   </dtconfig>
-    <dtconfig prefs="darkroom" section="modules">
+  <dtconfig prefs="darkroom" section="modules">
     <name>plugins/darkroom/show_guides_in_ui</name>
     <type>bool</type>
     <default>true</default>
     <shortdescription>show the guides widget in modules UI</shortdescription>
     <longdescription>show the guides widget in modules UI</longdescription>
   </dtconfig>
-  <dtconfig prefs="lighttable" section="general">
+  <dtconfig prefs="misc" section="utilities">
     <name>plugins/lighttable/hide_default_presets</name>
     <type>bool</type>
     <default>false</default>
     <shortdescription>hide built-in presets for utility modules</shortdescription>
     <longdescription>hide built-in presets of utility modules in presets menu.</longdescription>
+  </dtconfig>
+  <dtconfig prefs="misc" section="utilities">
+    <name>plugins/lighttable/default_presets_first</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>sort built-in presets first</shortdescription>
+    <longdescription>whether to show built-in presets first before user's presets in presets menu.</longdescription>
   </dtconfig>
   <dtconfig prefs="import" section="session">
     <name>session/base_directory_pattern</name>
@@ -2104,11 +2112,11 @@
     <shortdescription>pretty print the image location</shortdescription>
     <longdescription>show a more readable representation of the location in the image information module</longdescription>
   </dtconfig>
-  <dtconfig prefs="lighttable" section="general">
+  <dtconfig prefs="misc" section="utilities">
     <name>lighttable/ui/single_module</name>
     <type>bool</type>
     <default>false</default>
-    <shortdescription>expand a single utility module at a time</shortdescription>
+    <shortdescription>expand a single module at a time</shortdescription>
     <longdescription>this option toggles the behavior of shift clicking in lighttable mode</longdescription>
   </dtconfig>
   <dtconfig>
@@ -2122,7 +2130,7 @@
     <name>darkroom/ui/single_module</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>expand a single processing module at a time</shortdescription>
+    <shortdescription>expand a single module at a time</shortdescription>
     <longdescription>this option toggles the behavior of shift clicking in darkroom mode</longdescription>
   </dtconfig>
   <dtconfig prefs="darkroom" section="modules">
@@ -2145,11 +2153,11 @@
     <default>0.5</default>
     <shortdescription>contrast to use in darkroom overlays</shortdescription>
   </dtconfig>
-  <dtconfig prefs="lighttable" section="general">
+  <dtconfig prefs="misc" section="utilities">
     <name>lighttable/ui/scroll_to_module</name>
     <type>bool</type>
     <default>false</default>
-    <shortdescription>scroll utility modules to the top when expanded</shortdescription>
+    <shortdescription>scroll modules to the top when expanded</shortdescription>
     <longdescription>when this option is enabled then darktable will try to scroll the module to the top of the visible list</longdescription>
   </dtconfig>
   <dtconfig>
@@ -2226,7 +2234,7 @@
     <name>darkroom/ui/scroll_to_module</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>scroll processing modules to the top when expanded</shortdescription>
+    <shortdescription>scroll modules to the top when expanded</shortdescription>
     <longdescription>when this option is enabled then darktable will try to scroll the module to the top of the visible list</longdescription>
   </dtconfig>
   <dtconfig prefs="misc" section="interface">
@@ -3705,7 +3713,7 @@
       </enum>
     </type>
     <default>always</default>
-    <shortdescription>show right-side buttons in processing module headers</shortdescription>
+    <shortdescription>show right-side buttons in module headers</shortdescription>
     <longdescription>when the mouse is not over a module, the multi-instance, reset and preset buttons can be hidden:\n - 'always': always show all buttons,\n - 'active': only show the buttons when the mouse is over the module,\n - 'dim': buttons are dimmed when mouse is away,\n - 'auto': hide the buttons when the panel is narrow,\n - 'fade': fade out all buttons when panel narrows,\n - 'fit': hide all the buttons if the module name doesn't fit,\n - 'smooth': fade out all buttons in one header simultaneously,\n - 'glide': gradually hide individual buttons as needed</longdescription>
   </dtconfig>
   <dtconfig prefs="darkroom" section="modules">
