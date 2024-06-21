@@ -226,13 +226,6 @@ changes (where available).
   metadata fields unless the user selects all of the checkboxes in the
   export module's preference options.
 
-- In order to support the correct display of numbers in darktable, the
-  minimum supported GTK version has had to be increased to
-  3.24.15. For people who need to build darktable with an older
-  version, this can be achieved by removing line 241 of the
-  `darktable.css` file on your system. See
-  https://github.com/darktable-org/darktable/issues/13166.
-
 - Release 4.8 drops support for macOS versions older than 13.5.
 
 ## Changed Dependencies
