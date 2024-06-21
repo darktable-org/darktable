@@ -60,7 +60,12 @@ void dt_dev_init(dt_develop_t *dev,
   dev->timestamp = 0;
   dev->gui_leaving = FALSE;
   dev->gui_synch = FALSE;
-  dt_pthread_mutex_init(&dev->history_mutex, NULL);
+
+  pthread_mutexattr_t recursive_locking;
+  pthread_mutexattr_init(&recursive_locking);
+  pthread_mutexattr_settype(&recursive_locking, PTHREAD_MUTEX_RECURSIVE);
+  dt_pthread_mutex_init(&dev->history_mutex, &recursive_locking);
+
   dev->snapshot_id = -1;
   dev->history_end = 0;
   dev->history = NULL; // empty list
@@ -978,12 +983,11 @@ static void _dev_add_history_item(dt_develop_t *dev,
 
   const gboolean multi_name_changed = strcmp(saved_name, module->multi_name) != 0;
 
+  dt_pthread_mutex_lock(&dev->history_mutex);
   const gboolean need_end_record =
     _dev_undo_start_record_target(dev, multi_name_changed ? NULL : target);
 
   g_free(saved_name);
-
-  dt_pthread_mutex_lock(&dev->history_mutex);
 
   if(dev->gui_attached)
   {
@@ -1004,10 +1008,10 @@ static void _dev_add_history_item(dt_develop_t *dev,
      || module != dev->gui_module)
     dt_dev_invalidate_all(dev);
 
-  dt_pthread_mutex_unlock(&dev->history_mutex);
-
   if(need_end_record)
     dt_dev_undo_end_record(dev);
+
+  dt_pthread_mutex_unlock(&dev->history_mutex);
 
   if(dev->gui_attached)
   {
@@ -1088,10 +1092,10 @@ void dt_dev_add_masks_history_item(
     if(fpt) target = GINT_TO_POINTER(fpt->formid);
   }
 
+  dt_pthread_mutex_lock(&dev->history_mutex);
+
   const gboolean need_end_record =
     _dev_undo_start_record_target(dev, target);
-
-  dt_pthread_mutex_lock(&dev->history_mutex);
 
   if(dev->gui_attached)
   {
@@ -1103,10 +1107,11 @@ void dt_dev_add_masks_history_item(
   dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
   dev->preview2.pipe->changed |= DT_DEV_PIPE_SYNCH;
   dt_dev_invalidate_all(dev);
-  dt_pthread_mutex_unlock(&dev->history_mutex);
 
   if(need_end_record)
     dt_dev_undo_end_record(dev);
+
+  dt_pthread_mutex_unlock(&dev->history_mutex);
 
   if(dev->gui_attached)
   {
@@ -3072,8 +3077,6 @@ void dt_dev_module_remove(dt_develop_t *dev,
     }
   }
 
-  dt_pthread_mutex_unlock(&dev->history_mutex);
-
   // and we remove it from the list
   for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
   {
@@ -3084,6 +3087,7 @@ void dt_dev_module_remove(dt_develop_t *dev,
       break;
     }
   }
+  dt_pthread_mutex_unlock(&dev->history_mutex);
 
   if(dev->gui_attached && del)
   {
