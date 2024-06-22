@@ -1341,7 +1341,8 @@ void gui_init(struct dt_iop_module_t *self)
   // Simple text
   label = dt_ui_label_new(_("text"));
   g->text = dt_action_entry_new(DT_ACTION(self), N_("text"), G_CALLBACK(_text_callback), self,
-                                _("text string, tag:\n$(WATERMARK_TEXT)"),
+                                _("text string, tag: $(WATERMARK_TEXT)\n"
+                                  "use $(NL) to insert a line break"),
                                 dt_conf_get_string_const("plugins/darkroom/watermark/text"));
   gtk_entry_set_placeholder_text(GTK_ENTRY(g->text), _("content"));
   gtk_grid_attach(grid, label, 0, line++, 1, 1);
