@@ -1018,7 +1018,6 @@ static gboolean _dev_load_requested_image(gpointer user_data)
   dt_dev_pixelpipe_create_nodes(dev->preview_pipe, dev);
   if(dev->preview2.widget && GTK_IS_WIDGET(dev->preview2.widget))
     dt_dev_pixelpipe_create_nodes(dev->preview2.pipe, dev);
-  dt_pthread_mutex_unlock(&dev->history_mutex);
   dt_dev_read_history(dev);
 
   // we have to init all module instances other than "base" instance
@@ -1052,6 +1051,7 @@ static gboolean _dev_load_requested_image(gpointer user_data)
   }
 
   dt_dev_pop_history_items(dev, dev->history_end);
+  dt_pthread_mutex_unlock(&dev->history_mutex);
 
   // set the module list order
   dt_dev_reorder_gui_module_list(dev);
