@@ -32,8 +32,8 @@ static void _path_bounding_box_raw(const float *const points, const float *borde
                                    const int num_points, const int num_borders, float *x_min, float *x_max,
                                    float *y_min, float *y_max);
 
-static void _update_bezier_ctrl_points(dt_masks_point_path_t *point, float iwidth, float iheight, dt_masks_path_ctrl_t ctrl_select,
-                               float pts[2], bool ctrl_single);
+static void _update_bezier_ctrl_points(dt_masks_point_path_t *point, float iwidth, float iheight,
+                               float pts[2], dt_masks_path_ctrl_t ctrl_select, bool ctrl_single);
 
 static void _path_bounding_box(const float *const points,
                                const float *border,
@@ -119,8 +119,8 @@ static void _path_border_get_XY(const float p0x,
   *yb = (*yc) - rad * dx * l;
 }
 
-void _update_bezier_ctrl_points(dt_masks_point_path_t *point, float iwidth, float iheight, dt_masks_path_ctrl_t ctrl_select,
-                        float new_ctrl[2], bool ctrl_single)
+void _update_bezier_ctrl_points(dt_masks_point_path_t *point, float iwidth, float iheight,
+                        float new_ctrl[2], dt_masks_path_ctrl_t ctrl_select, bool ctrl_single)
 {
   float icorner[2] = { point->corner[0] * iwidth, point->corner[1] * iheight };
   if(ctrl_select == DT_MASKS_PATH_CTRL1)
@@ -1795,9 +1795,8 @@ static int _path_events_button_released(struct dt_iop_module_t *module,
     float pts[2] = { pzx * wd, pzy * ht };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
-    _update_bezier_ctrl_points(point, iwidth, iheight, gui->feather_bezier_ctrl, pts, gui->feather_bezier_single);
+    _update_bezier_ctrl_points(point, iwidth, iheight, pts, gui->feather_bezier_ctrl, gui->feather_bezier_single);
     gui->feather_bezier_single = FALSE;
-
     point->state = DT_MASKS_POINT_STATE_USER;
 
     _path_init_ctrl_points(form);
@@ -1947,7 +1946,8 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module,
         = (dt_masks_point_path_t *)g_list_nth_data(form->points, gui->feather_dragging);
 
     // TODO: No access to the current state of the shift key in mouse_moved?
-    _update_bezier_ctrl_points(point, iwidth, iheight, gui->feather_bezier_ctrl, pts, gui->feather_bezier_single);
+    _update_bezier_ctrl_points(point, iwidth, iheight, pts, gui->feather_bezier_ctrl, gui->feather_bezier_single);
+    point->state = DT_MASKS_POINT_STATE_USER;
 
     _path_init_ctrl_points(form);
     // we recreate the form points
