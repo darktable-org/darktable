@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -70,7 +70,7 @@ dt_job_t *dt_film_import1_create(dt_film_t *film)
     dt_control_job_dispose(job);
     return NULL;
   }
-  dt_control_job_add_progress(job, _("import images"), FALSE);
+  dt_control_job_add_progress(job, _("import images"), TRUE);
   dt_control_job_set_params(job, params, dt_film_import1_cleanup);
   params->film = film;
   dt_pthread_mutex_lock(&film->images_mutex);
@@ -106,7 +106,7 @@ dt_job_t *dt_pathlist_import_create(int argc, char *argv[])
     dt_control_job_dispose(job);
     return NULL;
   }
-  dt_control_job_add_progress(job, _("import images"), FALSE);
+  dt_control_job_add_progress(job, _("import images"), TRUE);
   dt_control_job_set_params(job, params, _pathlist_import_cleanup);
   params->film = NULL;
   // now collect all of the images to be imported
@@ -354,6 +354,8 @@ static void _film_import1(dt_job_t *job, dt_film_t *film, GList *images)
       pending = 0;
       last_update = curr_time;
     }
+    if(dt_control_job_get_state(job) == DT_JOB_STATE_CANCELLED)
+      break;
   }
 
   g_list_free_full(images, g_free);
