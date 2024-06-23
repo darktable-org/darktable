@@ -3739,19 +3739,38 @@ static gboolean _resize_wrap_scroll(GtkScrolledWindow *sw,
   return TRUE;
 }
 
-static gboolean _scroll_wrap_height(GtkWidget *w,
-                                    GdkEventScroll *event,
-                                    const char *config_str)
+gboolean _config_uses_height(const char *config_str)
 {
+  // Determine whether to use height or aspect ratio based on config_str
+  if(g_str_has_suffix(config_str, "graphheight")) {
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+static gboolean _scroll_wrap(GtkWidget *w,
+                             GdkEventScroll *event,
+                             const char *config_str)
+{
+  const gboolean use_height = _config_uses_height(config_str);
+
   if(dt_modifier_is(event->state, GDK_SHIFT_MASK | GDK_MOD1_MASK))
   {
     int delta_y;
     if(dt_gui_get_scroll_unit_delta(event, &delta_y))
     {
-      //adjust height
-      const int height = dt_conf_get_int(config_str) + delta_y;
-      dt_conf_set_int(config_str, height);
-      dtgtk_drawing_area_set_height(w, height);
+      if(use_height) {
+        //adjust height
+        const int height = dt_conf_get_int(config_str) + delta_y;
+        dt_conf_set_int(config_str, height);
+        dtgtk_drawing_area_set_height(w, height);
+      } else {
+        //adjust aspect
+        const int aspect = dt_conf_get_int(config_str);
+        dt_conf_set_int(config_str, aspect + delta_y);
+        dtgtk_drawing_area_set_aspect_ratio(w, aspect / 100.0);
+      }
     }
     return TRUE;
   }
@@ -3787,14 +3806,22 @@ static gboolean _resize_wrap_motion(GtkWidget *widget,
                                     GdkEventMotion *event,
                                     const char *config_str)
 {
+  const gboolean use_height = _config_uses_height(config_str);
+
   if(_resize_wrap_dragging)
   {
     if(DTGTK_IS_DRAWING_AREA(widget))
     {
       // enforce configuration limits
-      dt_conf_set_int(config_str, event->y);
-      const int height = dt_conf_get_int(config_str);
-      dtgtk_drawing_area_set_height(widget, height);
+      if(use_height) {
+        dt_conf_set_int(config_str, event->y);
+        dtgtk_drawing_area_set_height(widget, event->y);
+      } else {
+        dt_conf_set_int(config_str,
+                        100.0 * event->y / gtk_widget_get_allocated_width(widget));
+        const float aspect = dt_conf_get_int(config_str);
+        dtgtk_drawing_area_set_aspect_ratio(widget, aspect / 100.0);
+      }
     }
     else
     {
@@ -3860,20 +3887,31 @@ GtkWidget *dt_ui_resize_wrap(GtkWidget *w,
                              const gint min_size,
                              char *config_str)
 {
-  if(!w)
-    w = dtgtk_drawing_area_new_with_height(min_size);
+  const gboolean use_height = _config_uses_height(config_str);
+
+  if(!w) {
+    if(use_height)
+      w = dtgtk_drawing_area_new_with_height(min_size);
+    else
+      w = dtgtk_drawing_area_new_with_aspect_ratio(1.0);
+  }
 
   gtk_widget_set_has_tooltip(w, TRUE);
   g_object_set_data(G_OBJECT(w), "scroll-resize-tooltip", GINT_TO_POINTER(TRUE));
 
   if(DTGTK_IS_DRAWING_AREA(w))
   {
-    const float height = dt_conf_get_int(config_str);
-    dtgtk_drawing_area_set_height(w, height);
+    if(use_height) {
+      const int height = dt_conf_get_int(config_str);
+      dtgtk_drawing_area_set_height(w, height);
+    } else {
+      const float aspect = dt_conf_get_int(config_str);
+      dtgtk_drawing_area_set_aspect_ratio(w, aspect / 100.0);
+    }
     g_signal_connect(G_OBJECT(w),
-                              "scroll-event", 
-                              G_CALLBACK(_scroll_wrap_height),
-                              config_str);
+                     "scroll-event", 
+                     G_CALLBACK(_scroll_wrap),
+                      config_str);
   }
   else
   {

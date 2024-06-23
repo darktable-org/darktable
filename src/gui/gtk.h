@@ -461,6 +461,9 @@ guint dt_gui_translated_key_state(GdkEventKey *event);
 // return modifier keys currently pressed, independent of any key event
 GdkModifierType dt_key_modifier_state();
 
+// check if the given config_str is asking for height or aspect ratio configuration
+gboolean _config_uses_height(const char *config_str);
+
 GtkWidget *dt_ui_resize_wrap(GtkWidget *w,
                              const gint min_size,
                              char *config_str);
