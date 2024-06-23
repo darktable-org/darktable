@@ -91,12 +91,13 @@ you can build the software yourself following the instructions [below](#building
 
 ### Latest release
 
-4.6.1 (stable)
+4.8.0 (stable)
 
-* [Download executable for Windows](https://github.com/darktable-org/darktable/releases/download/release-4.6.1/darktable-4.6.1-win64.exe)
-* [Download executable for macOS on Intel](https://github.com/darktable-org/darktable/releases/download/release-4.6.1/darktable-4.6.1-x86_64.dmg)
-* [Download executable for macOS on Apple Silicon](https://github.com/darktable-org/darktable/releases/download/release-4.6.1/darktable-4.6.1-arm64.dmg)
-* [Download executable for macOS 12.5 on Apple Silicon](https://github.com/darktable-org/darktable/releases/download/release-4.6.1/darktable-4.6.1-arm64-macOS-12.5.dmg)
+* [Download executable for Windows](https://github.com/darktable-org/darktable/releases/download/release-4.8.0/darktable-4.8.0-win64.exe)
+* [Download executable for macOS on Intel](https://github.com/darktable-org/darktable/releases/download/release-4.8.0/darktable-4.8.0-x86_64.dmg)
+* [Download executable for macOS on Apple Silicon](https://github.com/darktable-org/darktable/releases/download/release-4.8.0/darktable-4.8.0-arm64.dmg)
+* [Download executable for macOS 13.5 on Apple Silicon](https://github.com/darktable-org/darktable/releases/download/release-4.8.0/darktable-4.8.0-arm64-macOS-13.5.dmg)
+* [Download AppImage for Linux](https://github.com/darktable-org/darktable/releases/download/release-4.8.0/darktable-4.8.0-x86_64.AppImage)
 * [Install native packages or add a third-party repository for Linux distros](https://software.opensuse.org/download.html?project=graphics:darktable:stable&package=darktable)
 * [Install Flatpak package for Linux](https://flathub.org/apps/details/org.darktable.Darktable)
 * [More information about installing darktable on any system](https://www.darktable.org/install/)
@@ -133,8 +134,13 @@ darktable automatically backs up the library database when a new version causes 
 you can revert to the previous release by restoring this backup if needed
 (simply rename it to `library.db`).
 
-If you try to open a newer database with an older version of the software, any portions of your edits that were
-undertaken with new features will be discarded and you will lose them. This also applies to the sidecar XMP files.
+You will not be able to open the newer version of the database with a version of darktable
+that only supports the older version of the database. This is impossible because the older
+application does not know how the database schema has changed, so its code will not be able
+to work with it.
+
+You will be able to import images with an XMP sidecar file that contains newer versions of processing
+modules or new modules, but those image editing parts will be discarded and you will lose them.
 
 If you plan to move regularly between two versions (new/unstable and old/stable) see [below](#testunstable-version)
 for details of how to do it safely.
@@ -269,17 +275,17 @@ See below (in "Using") how to start a test install of the unstable version witho
 
 #### Latest stable release
 
-4.6.1
+4.8.0
 
-The darktable project releases two major versions every year, on Summer and Winter Solstices, tagged with even numbers (e.g. 4.0, 4.2, 4.4, 4.6).
-Minor revisions are tagged with a third digit (e.g. 4.0.1, 4.0.2) and mostly provide bug fixes and camera support.
+The darktable project releases two major versions every year, on Summer and Winter Solstices, tagged with even numbers (e.g. 4.2, 4.4, 4.6, 4.8).
+Minor revisions are tagged with a third digit (e.g. 4.4.1, 4.4.2) and mostly provide bug fixes and camera support.
 You may want to compile these stable releases yourself to get better performance for your particular computer:
 
 ```bash
 git clone --recurse-submodules --depth 1 https://github.com/darktable-org/darktable.git
 cd darktable
 git fetch --tags
-git checkout tags/release-4.6.1
+git checkout tags/release-4.8.0
 ```
 
 ### Get submodules

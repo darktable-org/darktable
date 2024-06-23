@@ -650,6 +650,7 @@ void dt_styles_apply_to_list(const char *name, const GList *list, gboolean dupli
   const gboolean is_overwrite = (mode == DT_STYLE_HISTORY_OVERWRITE);
 
   /* for each selected image apply style */
+  dt_pthread_mutex_lock(&darktable.undo->mutex);
   dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
 
   dt_undo_lt_history_t *hist = NULL;
@@ -680,6 +681,7 @@ void dt_styles_apply_to_list(const char *name, const GList *list, gboolean dupli
   }
 
   dt_undo_end_group(darktable.undo);
+  dt_pthread_mutex_unlock(&darktable.undo->mutex);
 
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 

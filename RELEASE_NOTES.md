@@ -90,7 +90,7 @@ changes (where available).
   for safety. This setting has been proved to be unsafe in many
   cases. It can still be enabled via the resource file if needed.
 
-- Add buttons next to the snapshots to allow restoring it as the new
+- Added buttons next to the snapshots to allow restoring it as the new
   history. Also the snapshots are now supporting drawn masks. It is
   possible to visualize the difference between the main darkroom view
   and a snapshot with different masking for example.
@@ -103,10 +103,10 @@ changes (where available).
 - Removed the AI options in color calibration module because of
   mediocre quality.
 
-- It is now possible to import in-place pictures in a gvfs mount on
+- It is now possible to import images in-place in a GVfs mount on
   GNU/Linux.
 
-- Add a dashed outline of the current selected area in the print view.
+- Added a dashed outline of the currently selected area in the print view.
 
 - Added a few more EXIF fields to the image information module: white
   balance, exposure program, flash and metering mode.  These get
@@ -123,7 +123,7 @@ changes (where available).
   They will stay at the same location whatever distorting modules are used.
 
 - The history autosaving might be disabled because of slow drives, this is
-  now done per image instead globally.
+  now done per image instead of globally.
 
 - Added support for DNG files requiring the CameraCalibration tags for
   correct white balancing (for example, some Google Pixel cameras).
@@ -148,7 +148,7 @@ changes (where available).
 
 ## Bug Fixes
 
-- Fixed copy of multiple instances to ensure the proper order is applied
+- Fixed copying of multiple instances to ensure the proper order is applied
   when pasting to a new image.
 
 - Fixed raw chromatic aberration on Clang based systems.
@@ -226,18 +226,7 @@ changes (where available).
   metadata fields unless the user selects all of the checkboxes in the
   export module's preference options.
 
-- In order to support the correct display of numbers in darktable, the
-  minimum supported GTK version has had to be increased to
-  3.24.15. For people who need to build darktable with an older
-  version, this can be achieved by removing line 241 of the
-  `darktable.css` file on your system. See
-  https://github.com/darktable-org/darktable/issues/13166.
-
-- Starting with release 4.4 a new support policy regarding macOS
-  versions has been put in place – darktable releases will now only
-  support those macOS versions that are also supported by Apple.
-  Release 4.8 therefore drops support for macOS versions older than
-  13.5.
+- Release 4.8 drops support for macOS versions older than 13.5.
 
 ## Changed Dependencies
 

@@ -240,8 +240,6 @@ static void _transform_rgb_to_rgb_lcms2
 
   if(from_rgb_profile && to_rgb_profile && to_is_cmyk)  // softproofing cmyk profile
   {
-    dt_print(DT_DEBUG_PIPE, "[transform_rgb_to_rgb_lcms2] softproof with profile `%s'\n", filename_to);
-
     cmsHPROFILE tmp_rgb_profile = dt_colorspaces_get_profile(DT_COLORSPACE_LIN_REC2020, "", DT_PROFILE_DIRECTION_ANY)->profile;
 
     uint32_t transformFlags = cmsFLAGS_SOFTPROOFING | cmsFLAGS_BLACKPOINTCOMPENSATION | cmsFLAGS_COPY_ALPHA;
@@ -717,12 +715,13 @@ static gboolean _ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *pro
 
   cmsColorSpaceSignature rgb_profile_color_space = rgb_profile ? cmsGetColorSpace(rgb_profile) : 0;
 
-  dt_print(DT_DEBUG_PIPE, "[generate_profile_info] profile `%s': color space `%c%c%c%c'\n",
-    filename[0] ? filename : "<internal>",
-    (char)(rgb_profile_color_space>>24),
-    (char)(rgb_profile_color_space>>16),
-    (char)(rgb_profile_color_space>>8),
-    (char)(rgb_profile_color_space));
+  if(filename[0])
+    dt_print(DT_DEBUG_PIPE, "[generate_profile_info] profile `%s': color space `%c%c%c%c'\n",
+      filename,
+      (char)(rgb_profile_color_space>>24),
+      (char)(rgb_profile_color_space>>16),
+      (char)(rgb_profile_color_space>>8),
+      (char)(rgb_profile_color_space));
 
   // get the matrix
   if(rgb_profile)
@@ -1267,12 +1266,21 @@ void dt_ioppr_transform_image_colorspace_rgb
   else
     _transform_lcms2_rgb(image_in, image_out, width, height, profile_info_from, profile_info_to);
 
-  dt_print(DT_DEBUG_PERF,
-             "[dt_ioppr_transform_image_colorspace_rgb%s] RGB-->RGB took %.3f secs (%.3f CPU) [%s]\n",
+  dt_print(DT_DEBUG_PIPE,
+    "dt_ioppr_transform_image_colorspace_rgb%s `%s' -> `%s' [%s]\n",
              no_lcms ? "" : "_lcms2",
+             dt_colorspaces_get_name(profile_info_from->type, profile_info_from->filename),
+             dt_colorspaces_get_name(profile_info_to->type, profile_info_to->filename),
+             message ? message : "");
+
+  dt_print(DT_DEBUG_PERF,
+             "[dt_ioppr_transform_image_colorspace_rgb%s] `%s' -> `%s' took %.3f secs (%.3f CPU) [%s]\n",
+             no_lcms ? "" : "_lcms2",
+             dt_colorspaces_get_name(profile_info_from->type, profile_info_from->filename),
+             dt_colorspaces_get_name(profile_info_to->type, profile_info_to->filename),
              dt_get_lap_time(&start_time.clock),
              dt_get_lap_utime(&start_time.user),
-             (message) ? message : "");
+             message ? message : "");
 }
 
 #ifdef HAVE_OPENCL
@@ -1732,11 +1740,19 @@ gboolean dt_ioppr_transform_image_colorspace_rgb_cl
     if(err != CL_SUCCESS)
       goto cleanup;
 
+  dt_print(DT_DEBUG_PIPE,
+    "dt_ioppr_transform_image_colorspace_rgb_CL `%s' -> `%s' [%s]\n",
+             dt_colorspaces_get_name(profile_info_from->type, profile_info_from->filename),
+             dt_colorspaces_get_name(profile_info_to->type, profile_info_to->filename),
+            message ? message : "");
+
     dt_print(DT_DEBUG_PERF,
-             "image colorspace transform RGB-->RGB CL took %.3f secs (%.3f GPU) [%s]\n",
+             "image colorspace transform_rgb_CL  `%s' -> `%s' took %.3f secs (%.3f GPU) [%s]\n",
+             dt_colorspaces_get_name(profile_info_from->type, profile_info_from->filename),
+             dt_colorspaces_get_name(profile_info_to->type, profile_info_to->filename),
              dt_get_lap_time(&start_time.clock),
              dt_get_lap_utime(&start_time.user),
-             (message) ? message : "");
+             message ? message : "");
   }
   else
   {

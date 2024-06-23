@@ -427,7 +427,7 @@ static gboolean _check_deleted_instances(dt_develop_t *dev,
       iop_list = g_list_remove_link(iop_list, modules);
 
       // remove it from all snapshots
-      dt_undo_iterate_internal(darktable.undo, DT_UNDO_HISTORY,
+      dt_undo_iterate(darktable.undo, DT_UNDO_HISTORY,
                                mod, &_history_invalidate_cb);
 
       // we cleanup the module
@@ -555,7 +555,7 @@ static gboolean _create_deleted_modules(GList **_iop_list, GList *history_list)
 
         // and do that also in the undo/redo lists
         struct _cb_data udata = { module, hitem->multi_priority };
-        dt_undo_iterate_internal(darktable.undo, DT_UNDO_HISTORY,
+        dt_undo_iterate(darktable.undo, DT_UNDO_HISTORY,
                                  &udata, &_undo_items_cb);
         done = TRUE;
       }
@@ -635,14 +635,14 @@ static void _pop_undo(gpointer user_data,
     // topology has changed
     dt_dev_pixelpipe_rebuild(dev);
 
-    dt_pthread_mutex_unlock(&dev->history_mutex);
-
     // if dev->iop has changed reflect that on module list
     if(pipe_remove) _reorder_gui_module_list(dev);
 
     // write new history and reload
     dt_dev_write_history(dev);
     dt_dev_reload_history_items(dev);
+
+    dt_pthread_mutex_unlock(&dev->history_mutex);
 
     dt_ioppr_resync_modules_order(dev);
 

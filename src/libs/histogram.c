@@ -1015,10 +1015,11 @@ static void dt_lib_histogram_process
                      " it will be replaced with linear Rec2020"));
   }
 
-  const dt_iop_order_iccprofile_info_t *profile_info_out = !profile_info_to
-            ? dt_ioppr_add_profile_info_to_list(darktable.develop,
-                                                DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_RELATIVE_COLORIMETRIC)
-            : profile_info_to;
+  const dt_iop_order_iccprofile_info_t *fallback =
+    dt_ioppr_add_profile_info_to_list(darktable.develop,
+      DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_RELATIVE_COLORIMETRIC);
+
+  const dt_iop_order_iccprofile_info_t *profile_info_out = !profile_info_to ? fallback : profile_info_to;
 
   dt_ioppr_transform_image_colorspace_rgb(input, img_display, width, height,
                                             profile_info_from, profile_info_out, "final histogram");
@@ -1033,7 +1034,9 @@ static void dt_lib_histogram_process
       _lib_histogram_process_waveform(d, img_display, &roi);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE:
-      _lib_histogram_process_vectorscope(d, img_display, &roi, profile_info_out);
+      // if using a non-rgb profile_info_out as in cmyk softproofing we pass DT_COLORSPACE_LIN_REC2020
+      //   for calculating the vertex_rgb data.
+      _lib_histogram_process_vectorscope(d, img_display, &roi, profile_info_out->type ? profile_info_out : fallback);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_N:
       dt_unreachable_codepath();
