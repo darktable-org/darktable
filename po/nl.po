@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable master NL\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-06-02 18:53+0200\n"
-"PO-Revision-Date: 2024-06-13 09:11+0200\n"
+"PO-Revision-Date: 2024-06-23 11:33+0200\n"
 "Last-Translator: Reinder Mulder <r.i.m@hccnet.nl>\n"
 "Language-Team: \n"
 "Language: nl_NL\n"
@@ -994,7 +994,7 @@ msgstr "verberg ingebouwde voorkeuren van modules in het menu."
 
 #: ../build/bin/preferences_gen.h:4489
 msgid "use single-click in the collections module"
-msgstr "gebruik enkele klik in de verzamelmodule"
+msgstr "gebruik enkele klik in de collecties module"
 
 #: ../build/bin/preferences_gen.h:4502
 msgid ""
@@ -1002,9 +1002,9 @@ msgid ""
 "module. this will allow you to do range selections for date-time and numeric "
 "values."
 msgstr ""
-"vink deze optie aan om items te selecteren met één klik in de "
-"verzamelmodule. Hiermee kun je selecties uitvoeren voor datum-, tijd- en "
-"numerieke waarden."
+"vink deze optie aan om items te selecteren met één klik in de collecties "
+"module. Hiermee kun je selecties uitvoeren voor datum-tijd- en numerieke "
+"waarden."
 
 #: ../build/bin/preferences_gen.h:4523
 msgid "expand a single utility module at a time"
@@ -2284,15 +2284,11 @@ msgstr "aantal recente collecties om op te slaan en in de lijst te tonen"
 
 #: ../build/bin/preferences_gen.h:8170
 msgid "hide the history button and show a specific module instead"
-msgstr ""
-"verberg de historie knop en laat hiervoor in de plaats een specifieke module "
-"zien"
+msgstr "vervang de historie knop door een specifieke module"
 
 #: ../build/bin/preferences_gen.h:8183
 msgid "hide the history button and show the recent collections module instead"
-msgstr ""
-"verberg de historie knop en laat hiervoor in de plaats een recente collectie "
-"module zien"
+msgstr "vervang de historie knop door de recente collecties module"
 
 #: ../build/bin/preferences_gen.h:8204
 msgid "number of folder levels to show in lists"
@@ -2312,19 +2308,19 @@ msgstr "sorteer filmrollen op"
 
 #: ../build/bin/preferences_gen.h:8263
 msgid "sets the collections-list order for film rolls"
-msgstr "stelt de volgorde van de collectielijsten voor filmrollen in"
+msgstr "stelt de volgorde van de collecties voor filmrollen in"
 
 #: ../build/bin/preferences_gen.h:8347
 msgid "prefer a history button in the collections module"
-msgstr "voorkeur aan historie knop in de collectie module"
+msgstr "toon bij voorkeur een historie knop in de collecties module"
 
 #: ../build/bin/preferences_gen.h:8360
 msgid ""
 "hide this module and instead access collections history with a button in the "
 "collections module"
 msgstr ""
-"verberg deze module en geef in plaats daarvan toegang tot collectie historie "
-"met een knop in de collectie module"
+"verberg deze module en open in plaats daarvan de historie met een knop in de "
+"collecties module"
 
 #: ../build/bin/preferences_gen.h:8417
 msgid "suggested tags level of confidence"
@@ -6598,7 +6594,7 @@ msgid ""
 msgstr ""
 "het databaseschema moet worden geüpgraded voor\n"
 "\n"
-"<span style=‘italic’>%s</span>\n"
+"<span style='italic'>%s</span>\n"
 "\n"
 "dit kan lang duren in het geval van een grote database\n"
 "\n"
@@ -20207,7 +20203,7 @@ msgstr "verschuif witpunt"
 
 #: ../src/iop/shadhi.c:710
 msgid "filter to use for softening. bilateral avoids halos"
-msgstr "te gebruiken filter voor softening, bilateral voorkomt halos"
+msgstr "te gebruiken filter voor softening, bilateraal voorkomt halos"
 
 #: ../src/iop/shadhi.c:711
 msgid ""
@@ -20219,11 +20215,11 @@ msgstr ""
 
 #: ../src/iop/shadhi.c:712
 msgid "adjust saturation of shadows"
-msgstr "aanpassen verzadiging schaduwkleuren"
+msgstr "aanpassen verzadiging in schaduwen"
 
 #: ../src/iop/shadhi.c:713
 msgid "adjust saturation of highlights"
-msgstr "aanpassen verzadiging hooglichten"
+msgstr "aanpassen verzadiging in hooglichten"
 
 #: ../src/iop/sharpen.c:73
 msgctxt "modulename"
@@ -20238,11 +20234,11 @@ msgstr ""
 
 #: ../src/iop/sharpen.c:97
 msgid "linear or non-linear, Lab, display or scene-referred"
-msgstr "lineair of niet-lineair, Lab, scherm of scène-gerefereerd"
+msgstr "lineair of niet-lineair, Lab, scherm- of scène-gerefereerd"
 
 #: ../src/iop/sharpen.c:99
 msgid "quasi-linear, Lab, display or scene-referred"
-msgstr "quasi-lineair, Lab, scherm of scène-gerefereerd"
+msgstr "quasi-lineair, Lab, scherm- of scène-gerefereerd"
 
 #. add the preset.
 #. restrict to raw images
@@ -20256,11 +20252,11 @@ msgstr "radius van de verscherping"
 
 #: ../src/iop/sharpen.c:438
 msgid "strength of the sharpen"
-msgstr "mate waarmee wordt verscherpt"
+msgstr "mate van de verscherping"
 
 #: ../src/iop/sharpen.c:442
 msgid "threshold to activate sharpen"
-msgstr "drempelwaarde voordat verscherpen wordt geactiveerd"
+msgstr "drempelwaarde voor activeren verscherping"
 
 #: ../src/iop/sigmoid.c:195
 msgid "sigmoid"
@@ -20268,7 +20264,7 @@ msgstr "sigmoïde"
 
 #: ../src/iop/sigmoid.c:200
 msgid "tone mapping|view transform|display transform"
-msgstr "tonemapping|weergave transformatie|scherm transformatie"
+msgstr "tonemapping|weergavetransformatie|schermtransformatie"
 
 #: ../src/iop/sigmoid.c:206
 msgid ""
@@ -20286,7 +20282,7 @@ msgstr "neutraal grijs"
 
 #: ../src/iop/sigmoid.c:268
 msgid "ACES 100-nit like"
-msgstr "ACES 100-nit zoals"
+msgstr "als ACES 100-nit"
 
 #: ../src/iop/sigmoid.c:275
 msgid "Reinhard"
@@ -20461,19 +20457,19 @@ msgstr "hooglichten"
 
 #: ../src/iop/splittoning.c:530
 msgid "balance"
-msgstr "witbalans"
+msgstr "balans"
 
 #: ../src/iop/splittoning.c:537
 msgid "the balance of center of split-toning"
-msgstr "het evenwicht van het centrum van split-toning"
+msgstr "stel het centrum in van de split-toning"
 
 #: ../src/iop/splittoning.c:541
 msgid ""
 "compress the effect on highlights/shadows and\n"
 "preserve mid-tones"
 msgstr ""
-"comprimeer het effect op hooglichten/schaduwen en\n"
-"middentonen behouden"
+"beperk het effect op hooglichten/schaduwen en\n"
+"behoud middentonen"
 
 #: ../src/iop/spots.c:58
 msgid "spot removal"
@@ -22455,7 +22451,7 @@ msgstr ""
 "filter op afbeelding kleuren label\n"
 "klik om de kleuren label selectie te wisselen\n"
 "Ctrl+klik om de kleuren label uit te sluiten\n"
-"de grijs knop heeft invloed op alle kleuren labels"
+"de grijze knop heeft invloed op alle kleuren labels"
 
 #. create the filter combobox
 #: ../src/libs/filters/colors.c:301 ../src/libs/filters/colors.c:312
@@ -24686,7 +24682,7 @@ msgstr "met huidige instellingen afdrukken"
 
 #: ../src/libs/recentcollect.c:68
 msgid "recently used collections"
-msgstr "snelle verzamelingen"
+msgstr "recente collecties"
 
 #: ../src/libs/recentcollect.c:109
 msgid " and "
