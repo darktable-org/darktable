@@ -54,11 +54,15 @@ changes (where available).
 
 ## Bug Fixes
 
-- Fixed export without hight quality sampling but with up-scaling
+- Fixed export without high quality sampling but with up-scaling
   activated.
 
 - Fixed support for all vectorscope modes when using CMYK profiles as
   for softproofing.
+
+- Fixed empty lighttable when importing from command-line. Now
+  darktable opens lighttable on first filmroll when importing from
+  command-line.
 
 ## Lua
 
