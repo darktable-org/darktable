@@ -1661,7 +1661,6 @@ void dt_history_hash_write_from_history(const dt_imgid_t imgid,
     if(fields)
     {
       sqlite3_stmt *stmt;
-#ifdef HAVE_SQLITE_324_OR_NEWER
       // clang-format off
       char *query = g_strdup_printf("INSERT INTO main.history_hash"
                                     " (imgid, %s) VALUES (?1, %s)"
@@ -1669,35 +1668,6 @@ void dt_history_hash_write_from_history(const dt_imgid_t imgid,
                                     " DO UPDATE SET %s",
                                     fields, values, conflict);
       // clang-format on
-#else
-      char *query = NULL;
-      // clang-format off
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "SELECT imgid FROM main.history_hash"
-                                  " WHERE imgid = ?1",
-                                   -1, &stmt, NULL);
-      // clang-format on
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-      if(sqlite3_step(stmt) == SQLITE_ROW)
-      {
-        sqlite3_finalize(stmt);
-        // clang-format off
-        query = g_strdup_printf("UPDATE main.history_hash"
-                                " SET %s"
-                                " WHERE imgid = ?1",
-                                conflict);
-        // clang-format on
-      }
-      else
-      {
-        sqlite3_finalize(stmt);
-        // clang-format off
-        query = g_strdup_printf("INSERT INTO main.history_hash"
-                                " (imgid, %s) VALUES (?1, %s)",
-                                fields, values);
-        // clang-format on
-      }
-#endif
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
       DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 2, hash, hash_len, SQLITE_TRANSIENT);

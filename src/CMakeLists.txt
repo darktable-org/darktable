@@ -426,12 +426,7 @@ find_package(LensFun REQUIRED)
 include_directories(SYSTEM ${LensFun_INCLUDE_DIRS})
 list(APPEND LIBS ${LensFun_LIBRARIES})
 
-find_package(SQLite3 3.15 REQUIRED)
-if(NOT SQLite3_VERSION VERSION_LESS 3.24)
-  add_definitions("-DHAVE_SQLITE_324_OR_NEWER")
-else()
-  message(STATUS "SQLite3 version older than 3.24, some features may be downgraded")
-endif()
+find_package(SQLite3 3.24 REQUIRED)
 list(APPEND LIBS SQLite::SQLite3)
 
 foreach(lib ${OUR_LIBS} GIO GThread GModule PangoCairo Rsvg2 PNG JPEG TIFF LCMS2 JsonGlib)
