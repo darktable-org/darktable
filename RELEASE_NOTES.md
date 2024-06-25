@@ -64,6 +64,9 @@ changes (where available).
   darktable opens lighttable on first filmroll when importing from
   command-line.
 
+- Fixed color picker area resizing using corners when heavy distorting
+  is applied into image.
+
 ## Lua
 
 ### API Version
