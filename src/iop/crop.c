@@ -216,12 +216,10 @@ static void _commit_box(dt_iop_module_t *self,
       p->ch = CLAMPF(p->ch, 0.1f, 1.0f);
     }
   }
-  const gboolean changed = fabsf(p->cx - old[0]) > eps
-    || fabsf(p->cy - old[1]) > eps
-    || fabsf(p->cw - old[2]) > eps
-    || fabsf(p->ch - old[3]) > eps;
-
-//  dt_print(DT_DEBUG_ALWAYS, "[crop commit box] %i:  %e %e %e %e\n", changed, p->cx - old[0], p->cy - old[1], p->cw - old[2], p->ch - old[3]);
+  const gboolean changed =  !feqf(p->cx, old[0], eps)
+                        ||  !feqf(p->cy, old[1], eps)
+                        ||  !feqf(p->cw, old[2], eps)
+                        ||  !feqf(p->ch, old[3], eps);
 
   if(changed)
     dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -530,15 +528,16 @@ static float _aspect_ratio_get(dt_iop_module_t *self, GtkWidget *combo)
   const char *text = dt_bauhaus_combobox_get_text(combo);
   if(text && !g_strcmp0(text, _("original image")))
   {
-    int proc_iwd = 0, proc_iht = 0;
-    dt_dev_get_processed_size(&darktable.develop->full, &proc_iwd, &proc_iht);
+    const dt_image_t *img = &(self->dev->image_storage);
+    int wd = dt_image_raw_width(img);
+    int ht = dt_image_raw_height(img);
 
-    if(!(proc_iwd > 0 && proc_iht > 0)) return 0.0f;
+    if(!(wd > 0 && ht > 0)) return 0.0f;
 
-    if((p->ratio_d > 0 && proc_iwd > proc_iht) || (p->ratio_d < 0 && proc_iwd < proc_iht))
-      return (float)proc_iwd / (float)proc_iht;
+    if((p->ratio_d > 0 && wd > ht) || (p->ratio_d < 0 && wd < ht))
+      return (float)wd / (float)ht;
     else
-      return (float)proc_iht / (float)proc_iwd;
+      return (float)ht / (float)wd;
   }
 
   // we want to know the size of the actual buffer
