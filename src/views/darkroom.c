@@ -51,7 +51,6 @@
 #include "imageio/imageio_common.h"
 #include "imageio/imageio_module.h"
 #include "libs/colorpicker.h"
-#include "libs/modulegroups.h"
 #include "views/view.h"
 #include "views/view_api.h"
 
@@ -623,7 +622,7 @@ void expose(
   const gboolean display_masks =
     (dev->gui_module
       && dev->gui_module->enabled
-      && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS)
+      && dt_dev_modulegroups_test_activated(darktable.develop))
     || dt_lib_gui_get_expanded(dt_lib_get_module("masks"));
 
   if(dev->form_visible && display_masks)
@@ -663,7 +662,7 @@ void expose(
       }
 
       // gui active module
-      if(dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS)
+      if(dt_dev_modulegroups_test_activated(darktable.develop))
       {
         dt_print_pipe(DT_DEBUG_EXPOSE,
                       "expose module",
@@ -3367,7 +3366,7 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
      && !handled
      && !darktable.develop->darkroom_skip_mouse_events
      && !dt_iop_color_picker_is_visible(dev)
-     && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS)
+     && dt_dev_modulegroups_test_activated(darktable.develop))
     handled = dev->gui_module->mouse_moved(dev->gui_module, zoom_x, zoom_y, pressure, which, zoom_scale);
 
   if(ctl->button_down && ctl->button_down_which == 1)
@@ -3431,7 +3430,7 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
   if(handled) return handled;
   // module
   if(dev->gui_module && dev->gui_module->button_released
-     && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS)
+     && dt_dev_modulegroups_test_activated(darktable.develop))
     handled = dev->gui_module->button_released(dev->gui_module, zoom_x, zoom_y, which, state, zoom_scale);
   if(handled) return handled;
   if(which == 1) dt_control_change_cursor(GDK_LEFT_PTR);
@@ -3584,7 +3583,7 @@ int button_pressed(dt_view_t *self,
   if(handled) return handled;
   // module
   if(dev->gui_module && dev->gui_module->button_pressed
-     && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS)
+     && dt_dev_modulegroups_test_activated(darktable.develop))
     handled = dev->gui_module->button_pressed(dev->gui_module, zoom_x, zoom_y, pressure, which, type, state, zoom_scale);
   if(handled) return handled;
 
@@ -3627,7 +3626,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   if(dev->gui_module && dev->gui_module->scrolled
      && !darktable.develop->darkroom_skip_mouse_events
      && !dt_iop_color_picker_is_visible(dev)
-     && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS)
+     && dt_dev_modulegroups_test_activated(darktable.develop))
     handled = dev->gui_module->scrolled(dev->gui_module, zoom_x, zoom_y, up, state);
   if(handled) return;
 

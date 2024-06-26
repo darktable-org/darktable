@@ -34,7 +34,6 @@
 #include "imageio/imageio_common.h"
 #include "libs/colorpicker.h"
 #include "libs/lib.h"
-#include "libs/modulegroups.h"
 #include "gui/color_picker_proxy.h"
 
 #include <assert.h>
@@ -1331,7 +1330,7 @@ static gboolean _dev_pixelpipe_process_rec(
   if(gui_module
      && gui_module->flags() & IOP_FLAGS_ALLOW_FAST_PIPE
      && pipe->type & DT_DEV_PIXELPIPE_BASIC
-     && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS)
+     && dt_dev_modulegroups_test_activated(darktable.develop))
     pipe->type |= DT_DEV_PIXELPIPE_FAST;
   else
     pipe->type &= ~DT_DEV_PIXELPIPE_FAST;
