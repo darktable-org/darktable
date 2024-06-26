@@ -41,7 +41,6 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
-#include "libs/modulegroups.h"
 #include "gui/guides.h"
 
 #include <assert.h>
@@ -4075,7 +4074,7 @@ error:
 static gboolean _gui_has_focus(struct dt_iop_module_t *self)
 {
   return (self->dev->gui_module == self
-          && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS);
+          && dt_dev_modulegroups_test_activated(darktable.develop));
 }
 
 /* this function replaces this sentence, it calls distort_transform()
@@ -5867,7 +5866,7 @@ static gboolean _event_draw(GtkWidget *widget,
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
 {
   darktable.develop->history_postpone_invalidate = in
-    && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS;
+    && dt_dev_modulegroups_test_activated(darktable.develop);
 
   if(self->enabled)
   {

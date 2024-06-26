@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -490,6 +490,8 @@ void dt_dev_modulegroups_set(dt_develop_t *dev, uint32_t group);
 uint32_t dt_dev_modulegroups_get(dt_develop_t *dev);
 /** get the activated modulegroup */
 uint32_t dt_dev_modulegroups_get_activated(dt_develop_t *dev);
+/** tests for a proper modulgroup being activated */
+gboolean dt_dev_modulegroups_test_activated(dt_develop_t *dev);
 /** test if iop group flags matches modulegroup */
 gboolean dt_dev_modulegroups_test(dt_develop_t *dev,
                                   const uint32_t group,
