@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -41,6 +41,7 @@
 #include "develop/imageop.h"
 #include "develop/lightroom.h"
 #include "develop/masks.h"
+#include "libs/modulegroups.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "imageio/imageio_common.h"
@@ -2871,6 +2872,12 @@ uint32_t dt_dev_modulegroups_get(dt_develop_t *dev)
     return dev->proxy.modulegroups.get(dev->proxy.modulegroups.module);
 
   return 0;
+}
+
+gboolean dt_dev_modulegroups_test_activated(dt_develop_t *dev)
+{
+  const uint32_t activated = dt_dev_modulegroups_get_activated(dev);
+  return activated != DT_MODULEGROUP_BASICS;
 }
 
 gboolean dt_dev_modulegroups_test(dt_develop_t *dev,

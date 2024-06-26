@@ -36,7 +36,6 @@
 #include "gui/guides.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
-#include "libs/modulegroups.h"
 
 #include <assert.h>
 #include <gdk/gdkkeysyms.h>
@@ -170,7 +169,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 static int _gui_has_focus(struct dt_iop_module_t *self)
 {
   return (self->dev->gui_module == self
-          && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS);
+          && dt_dev_modulegroups_test_activated(darktable.develop));
 }
 
 static void _commit_box(dt_iop_module_t *self,
@@ -466,7 +465,7 @@ static void _event_preview_updated_callback(gpointer instance, dt_iop_module_t *
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
 {
   darktable.develop->history_postpone_invalidate =
-    in && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS;
+    in && dt_dev_modulegroups_test_activated(darktable.develop);
 
   dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
   dt_iop_crop_params_t *p = (dt_iop_crop_params_t *)self->params;
