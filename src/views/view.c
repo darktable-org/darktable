@@ -1061,6 +1061,13 @@ void dt_view_filtering_show_pref_menu(const dt_view_manager_t *vm,
     vm->proxy.module_filtering.show_pref_menu(vm->proxy.module_filtering.module, bt);
 }
 
+GtkWidget *dt_view_filter_get_stack(const dt_view_manager_t *vm)
+{
+  if(vm->proxy.filter.module && vm->proxy.filter.get_stack)
+    return vm->proxy.filter.get_stack(vm->proxy.filter.module);
+  return NULL;
+}
+
 GtkWidget *dt_view_filter_get_filters_box(const dt_view_manager_t *vm)
 {
   if(vm->proxy.filter.module && vm->proxy.filter.get_filter_box)
