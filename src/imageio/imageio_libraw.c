@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2021-2023 darktable developers.
+    Copyright (C) 2021-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -266,6 +266,8 @@ const model_map_t modelMap[] = {
 
 /* LibRaw is expected to read only new Canon CR3 files */
 
+// Let's deactivate self-restriction in order to be able to act as a fallback loader:
+#if 0
 static gboolean _supported_image(const gchar *filename)
 {
   // At the moment of writing this code CR3 files are not supported by RawSpeed,
@@ -297,6 +299,7 @@ static gboolean _supported_image(const gchar *filename)
   g_free(extensions_whitelist);
   return FALSE;
 }
+#endif
 
 void _check_libraw_missing_support(const struct dt_image_t *img)
 {
@@ -346,7 +349,10 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
 {
   int err = DT_IMAGEIO_LOAD_FAILED;
   int libraw_err = LIBRAW_SUCCESS;
-  if(!_supported_image(filename)) return DT_IMAGEIO_LOAD_FAILED;
+
+  // Let's deactivate self-restriction in order to be able to act as a fallback loader:
+  // if(!_supported_image(filename)) return DT_IMAGEIO_LOAD_FAILED;
+
   if(!img->exif_inited) (void)dt_exif_read(img, filename);
 
   libraw_data_t *raw = libraw_init(0);
