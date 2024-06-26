@@ -789,6 +789,18 @@ void gui_init(dt_iop_module_t *self)
   g->curvature = dt_bauhaus_slider_from_params(self, "curvature");
   g->offset = dt_bauhaus_slider_from_params(self, "offset");
 
+  // add the tooltips
+  gtk_widget_set_tooltip_markup(g->radius, _("size of the blur in pixels\n"
+                                             "<b>caution</b>: doubling the radius quadruples the run-time!"));
+  gtk_widget_set_tooltip_text(g->concavity, _("shifts towards a star shape as value approaches blades-1"));
+  gtk_widget_set_tooltip_text(g->linearity,
+                              _("adjust straightness of edges from 0=perfect circle\nto 1=completely straight"));
+  gtk_widget_set_tooltip_text(g->rotation, _("set amount by which to rotate shape around its center"));
+
+  gtk_widget_set_tooltip_text(g->angle, _("orientation of the motion's path"));
+  gtk_widget_set_tooltip_text(g->curvature, _("amount to curve the motion relative\nto its overall orientation"));
+  gtk_widget_set_tooltip_text(g->offset, _("select which portion of the path to use,\n"
+                                           "allowing the path to become asymmetric"));
 }
 
 void gui_cleanup(dt_iop_module_t *self)
