@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -493,11 +493,16 @@ void gui_init(dt_lib_module_t *self)
   d->keymap_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_shortcut, 0, NULL);
   dt_action_define(&darktable.control->actions_global, NULL, N_("shortcuts"), d->keymap_button, &dt_action_def_toggle);
   gtk_box_pack_start(GTK_BOX(self->widget), d->keymap_button, FALSE, FALSE, 0);
-  gtk_widget_set_tooltip_text(d->keymap_button, _("define shortcuts\n"
+  gtk_widget_set_tooltip_text(d->keymap_button, _("define keyboard shortcuts for on-screen controls\n"
                                                   "ctrl+click to switch off overwrite confirmations\n\n"
-                                                  "hover over a widget and press keys with mouse click and scroll or move combinations\n"
-                                                  "repeat same combination again to delete mapping\n"
-                                                  "click on a widget, module or screen area to open the dialog for further configuration"));
+                                                  "after activating, hover over a widget (button, slider, etc.)\n"
+                                                  "and press a keystroke combination (optionally with mouse\n"
+                                                  "click, move, or scroll while holding down the keys) to define\n"
+                                                  "a shortcut for the widget\n"
+                                                  "type an existing combination to delete that mapping\n\n"
+                                                  "click on a widget, module or screen area to open the dialog\n"
+                                                  "for more detailed configuration\n\n"
+                                                  "right-click to exit mapping mode"));
   g_signal_connect(G_OBJECT(d->keymap_button), "clicked", G_CALLBACK(_lib_keymap_button_clicked), d);
   g_signal_connect(G_OBJECT(d->keymap_button), "button-press-event", G_CALLBACK(_lib_keymap_button_press_release), d);
   g_signal_connect(G_OBJECT(d->keymap_button), "button-release-event", G_CALLBACK(_lib_keymap_button_press_release), d);
