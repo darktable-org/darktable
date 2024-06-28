@@ -1248,9 +1248,12 @@ static void
 _gui_preferences_enum_callback(GtkWidget *widget, gpointer data)
 {
   const gchar *index = dt_bauhaus_combobox_get_data(widget);
-  gchar *s = g_strndup(index, strchr(index, ']') - index);
-  dt_conf_set_string(data, s);
-  g_free(s);
+  if(index)
+  {
+    gchar *s = g_strndup(index, strchr(index, ']') - index);
+    dt_conf_set_string(data, s);
+    g_free(s);
+  }
 }
 
 GtkWidget *dt_gui_preferences_enum(dt_action_t *action, const char *key)
