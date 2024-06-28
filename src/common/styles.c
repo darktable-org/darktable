@@ -1818,6 +1818,80 @@ dt_style_t *dt_styles_get_by_name(const char *name)
   }
 }
 
+gchar *dt_get_style_name(const char *filename)
+{
+  gchar *bname = NULL;
+  xmlDoc *document = xmlReadFile(filename, NULL, XML_PARSE_NOBLANKS);
+  xmlNode *root = NULL;
+  if(document != NULL)
+    root = xmlDocGetRootElement(document);
+
+  if(document == NULL || root == NULL || xmlStrcmp(root->name, BAD_CAST "darktable_style"))
+  {
+    dt_print(DT_DEBUG_CONTROL,
+             "[styles] file %s is not a style file\n", filename);
+    if(document)
+      xmlFreeDoc(document);
+    return bname;
+  }
+
+  for(xmlNode *node = root->children->children; node; node = node->next)
+  {
+    if(node->type == XML_ELEMENT_NODE)
+    {
+      if(strcmp((char*)node->name, "name") == 0)
+      {
+        bname = g_strdup((char*)xmlNodeGetContent(node));
+        break;
+      }
+    }
+  }
+
+  // xml doc is not necessary after this point
+  xmlFreeDoc(document);
+
+  if(!bname){
+    dt_print(DT_DEBUG_CONTROL,
+             "[styles] file %s is a malformed style file\n", filename);
+  }
+  return bname;
+}
+
+static int _check_extension(const struct dirent *namestruct)
+{
+  const char *filename = namestruct->d_name;
+  if(!filename || !filename[0])
+    return 0;
+  const char *dot = g_strrstr(filename, ".");
+  if(!dot)
+    return 0;
+  char *ext = g_ascii_strdown(g_strdup(dot), -1);
+  int include = g_strcmp0(ext, ".dtstyle") == 0;
+  g_free(ext);
+  return include;
+}
+
+void dt_import_default_styles(const char *folder)
+{
+  struct dirent **entries;
+  const int numentries = scandir(folder, &entries, _check_extension, alphasort);
+  for(int i = 0; i < numentries; i++)
+  {
+    char *filename = g_build_filename(folder, entries[i]->d_name, NULL);
+    gchar *bname = dt_get_style_name(filename);
+    if(bname && !dt_styles_exists(bname))
+    {
+      dt_print(DT_DEBUG_ALWAYS,"[styles] importing default style '%s'\n", filename);
+      dt_styles_import_from_file(filename);
+    }
+    g_free(bname);
+    g_free(filename);
+    free(entries[i]);
+  }
+  if(numentries != -1)
+    free(entries);
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
