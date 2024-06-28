@@ -3472,12 +3472,6 @@ void process(struct dt_iop_module_t *self,
   {
     // we want to find out if the final output image is flipped in relation to this iop
     // so we can adjust the gui labels accordingly
-    const int width = roi_in->width;
-    const int height = roi_in->height;
-    const int x_off = roi_in->x;
-    const int y_off = roi_in->y;
-    const float scale = roi_in->scale;
-
     // origin of image and opposite corner as reference points
     dt_boundingbox_t points = { 0.0f,
                                 0.0f,
@@ -3510,27 +3504,29 @@ void process(struct dt_iop_module_t *self,
     dt_iop_gui_enter_critical_section(self);
     g->isflipped = isflipped;
 
+    const size_t requested_size = piece->buf_in.width * piece->buf_in.height;
+
     // save a copy of preview input buffer for parameter fitting
     if(g->buf == NULL
-       || (size_t)g->buf_width * g->buf_height < (size_t)width * height)
+       || (size_t)g->buf_width * g->buf_height < requested_size)
     {
       // if needed allocate buffer
       dt_free_align(g->buf);
       // only get new buffer if no old buffer available or old buffer
       // does not fit in terms of size
-      g->buf = dt_alloc_align_float(4 * width * height);
+      g->buf = dt_alloc_align_float(4 * requested_size);
     }
 
     if(g->buf /* && hash != g->buf_hash */)
     {
-      // copy data
-      dt_iop_image_copy_by_size(g->buf, ivoid, width, height, ch);
+      // copy data; seems to be safe we don't care aboit roi_in here
+      dt_iop_image_copy_by_size(g->buf, ivoid, roi_in->width, roi_in->height, ch);
 
-      g->buf_width = width;
-      g->buf_height = height;
-      g->buf_x_off = x_off;
-      g->buf_y_off = y_off;
-      g->buf_scale = scale;
+      g->buf_width = piece->buf_in.width;
+      g->buf_height = piece->buf_in.height;
+      g->buf_x_off = roi_in->x;
+      g->buf_y_off = roi_in->y;
+      g->buf_scale = roi_in->scale;
       g->buf_hash = hash;
     }
 
@@ -3607,10 +3603,6 @@ int process_cl(struct dt_iop_module_t *self,
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
   const int devid = piece->pipe->devid;
-  const int iwidth = roi_in->width;
-  const int iheight = roi_in->height;
-  const int width = roi_out->width;
-  const int height = roi_out->height;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   cl_mem dev_homo = NULL;
@@ -3620,10 +3612,6 @@ int process_cl(struct dt_iop_module_t *self,
   {
     // we want to find out if the final output image is flipped in relation to this iop
     // so we can adjust the gui labels accordingly
-    const int x_off = roi_in->x;
-    const int y_off = roi_in->y;
-    const float scale = roi_in->scale;
-
     // origin of image and opposite corner as reference points
     dt_boundingbox_t points = { 0.0f,
                                 0.0f,
@@ -3656,26 +3644,28 @@ int process_cl(struct dt_iop_module_t *self,
     dt_iop_gui_enter_critical_section(self);
     g->isflipped = isflipped;
 
+    const size_t requested_size = piece->buf_in.width * piece->buf_in.height;
+
     // save a copy of preview input buffer for parameter fitting
-    if(g->buf == NULL || (size_t)g->buf_width * g->buf_height < (size_t)iwidth * iheight)
+    if(g->buf == NULL || (size_t)g->buf_width * g->buf_height < requested_size)
     {
       // if needed allocate buffer
       dt_free_align(g->buf);
       // only get new buffer if no old buffer or old buffer does not fit in terms of size
-      g->buf = dt_alloc_align_float(4 * iwidth * iheight);
+      g->buf = dt_alloc_align_float(4 * requested_size);
     }
 
     if(g->buf /* && hash != g->buf_hash */)
     {
       // copy data
       err = dt_opencl_copy_device_to_host(devid, g->buf, dev_in,
-                                          iwidth, iheight, sizeof(float) * 4);
+                                          roi_in->width, roi_in->height, sizeof(float) * 4);
 
-      g->buf_width = iwidth;
-      g->buf_height = iheight;
-      g->buf_x_off = x_off;
-      g->buf_y_off = y_off;
-      g->buf_scale = scale;
+      g->buf_width = piece->buf_in.width;
+      g->buf_height = piece->buf_in.height;
+      g->buf_x_off = roi_in->x;
+      g->buf_y_off = roi_in->y;
+      g->buf_scale = roi_in->scale;
       g->buf_hash = hash;
     }
     dt_iop_gui_leave_critical_section(self);
@@ -3686,7 +3676,7 @@ int process_cl(struct dt_iop_module_t *self,
   if(isneutral(d))
   {
     size_t origin[] = { 0, 0, 0 };
-    size_t region[] = { width, height, 1 };
+    size_t region[] = { roi_out->width, roi_out->height, 1 };
     err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
     if(err != CL_SUCCESS) goto error;
     return CL_SUCCESS;
@@ -3710,8 +3700,6 @@ int process_cl(struct dt_iop_module_t *self,
 
   const int iroi[2] = { roi_in->x, roi_in->y };
   const int oroi[2] = { roi_out->x, roi_out->y };
-  const float in_scale = roi_in->scale;
-  const float out_scale = roi_out->scale;
   const float clip[2] = { cx, cy };
 
 
@@ -3740,11 +3728,11 @@ int process_cl(struct dt_iop_module_t *self,
   }
 
   err = dt_opencl_enqueue_kernel_2d_args
-    (devid, ldkernel, width, height,
-     CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height),
-     CLARG(iwidth), CLARG(iheight), CLARRAY(2, iroi),
+    (devid, ldkernel, roi_out->width, roi_out->height,
+     CLARG(dev_in), CLARG(dev_out), CLARG(roi_out->width), CLARG(roi_out->height),
+     CLARG(roi_in->width), CLARG(roi_in->height), CLARRAY(2, iroi),
      CLARRAY(2, oroi),
-     CLARG(in_scale), CLARG(out_scale), CLARRAY(2, clip), CLARG(dev_homo));
+     CLARG(roi_in->scale), CLARG(roi_out->scale), CLARRAY(2, clip), CLARG(dev_homo));
 
 error:
   dt_opencl_release_mem_object(dev_homo);
