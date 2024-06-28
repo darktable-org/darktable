@@ -28,6 +28,7 @@
 #include "common/imagebuf.h"
 #include "common/image_cache.h"
 #include "common/math.h"
+#include "common/color_picker.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -982,19 +983,19 @@ static void dt_lib_histogram_process
       // primary_picker->scope_mean as red/green/blue dots (or short
       // lines) at appropriate position at the horizontal/vertical
       // position of sample
-      if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
+      dt_boundingbox_t pos;
+      const gboolean isbox = sample->size == DT_LIB_COLORPICKER_SIZE_BOX;
+      const gboolean ispoint = sample->size == DT_LIB_COLORPICKER_SIZE_POINT;
+      if(ispoint || isbox)
       {
-        roi.crop_x = MIN(width, MAX(0, sample->box[0] * width));
-        roi.crop_y = MIN(height, MAX(0, sample->box[1] * height));
-        roi.crop_right = width - MIN(width, MAX(0, sample->box[2] * width));
-        roi.crop_bottom = height - MIN(height, MAX(0, sample->box[3] * height));
-      }
-      else if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
-      {
-        roi.crop_x = MIN(width, MAX(0, sample->point[0] * width));
-        roi.crop_y = MIN(height, MAX(0, sample->point[1] * height));
-        roi.crop_right = width - MIN(width, MAX(0, sample->point[0] * width));
-        roi.crop_bottom = height - MIN(height, MAX(0, sample->point[1] * height));
+        dt_color_picker_transform_box(darktable.develop,
+                                     isbox ? 2 : 1,
+                                     isbox ? sample->box : sample->point,
+                                     pos, TRUE);
+        roi.crop_x = MIN(width, MAX(0, pos[0] * width));
+        roi.crop_y = MIN(height, MAX(0, pos[1] * height));
+        roi.crop_right = width -    MIN(width,  MAX(0, (isbox ? pos[2] : pos[0]) * width));
+        roi.crop_bottom = height -  MIN(height, MAX(0, (isbox ? pos[3] : pos[1]) * height));
       }
     }
   }
