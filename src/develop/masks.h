@@ -120,6 +120,14 @@ typedef enum dt_masks_source_pos_type_t
   DT_MASKS_SOURCE_POS_ABSOLUTE = 2
 } dt_masks_source_pos_type_t;
 
+typedef enum dt_masks_path_ctrl_t
+{
+  DT_MASKS_PATH_CRTL_NONE = -1,
+  DT_MASKS_PATH_CTRL1 = 1,
+  DT_MASKS_PATH_CTRL2 = 2
+
+} dt_masks_path_ctrl_t;
+
 /** structure used to store 1 point for a circle */
 typedef struct dt_masks_point_circle_t
 {
@@ -367,6 +375,7 @@ typedef struct dt_masks_form_gui_t
   int point_selected;
   int point_edited;
   int feather_selected;
+  dt_masks_path_ctrl_t feather_bezier_ctrl; // For paths, feather is used to control the bezier curve. This selects a control point.
   int seg_selected;
   int point_border_selected;
   int source_pos_type;
@@ -378,6 +387,7 @@ typedef struct dt_masks_form_gui_t
   gboolean gradient_toggling;
   int point_dragging;
   int feather_dragging;
+  gboolean feather_bezier_single;  // User shift-drags to move a single control point.
   int seg_dragging;
   int point_border_dragging;
 

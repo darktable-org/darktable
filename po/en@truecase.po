@@ -9421,12 +9421,12 @@ msgstr ""
 "<b>Move node</b>: drag, <b>Remove node</b>: right-click\n"
 "<b>Switch smooth/sharp mode</b>: Ctrl+click"
 
-#: ../src/develop/masks/path.c:3360
+#: ../src/develop/masks/path.c:3360#: ../src/develop/masks/path.c:3360
 msgid ""
-"<b>node curvature</b>: drag\n"
+"<b>node curvature</b>: drag, <b>move single handle</b>: shift+drag\n"
 "<b>reset curvature</b>: right-click"
 msgstr ""
-"<b>Node curvature</b>: drag\n"
+"<b>Node Curvature</b>: drag, <b>Move single handle</b>: shift+drag\n"
 "<b>Reset curvature</b>: right-click"
 
 #: ../src/develop/masks/path.c:3365

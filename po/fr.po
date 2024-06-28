@@ -9575,10 +9575,11 @@ msgstr ""
 
 #: ../src/develop/masks/path.c:3360
 msgid ""
-"<b>node curvature</b>: drag\n"
+"<b>node curvature</b>: drag, <b>move single handle</b>: shift+drag\n"
 "<b>reset curvature</b>: right-click"
 msgstr ""
-"<b>Courbe du nœud</b> : déplacer\n"
+"<b>Courbe du nœud</b> : glisser, <b>Déplacer un seul point de contrôle</b> : "
+"Maj+glisser\n"
 "<b>Réinitialiser la courbe</b> : clic droit"
 
 #: ../src/develop/masks/path.c:3365
