@@ -1560,7 +1560,7 @@ void dt_bauhaus_combobox_add_full(GtkWidget *widget,
   g_ptr_array_add(d->entries, entry);
   if(d->active < 0)
     d->active = 0;
-  if(d->defpos < 0 && sensitive)
+  if(d->defpos == -1 && sensitive)
     d->defpos = GPOINTER_TO_INT(data);
 }
 
