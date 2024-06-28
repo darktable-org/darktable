@@ -396,15 +396,12 @@ endif(USE_XMLLINT)
 message(STATUS "All external programs found")
 
 # The path can be modified by setting CMAKE_INSTALL_LOCALEDIR
-if(USE_NLS)
-    find_package(Gettext)
-    if(GETTEXT_MSGFMT_EXECUTABLE)
-        message(STATUS "Found msgfmt to convert .po file. Translation enabled")
-        add_subdirectory(po)
-    else()
-        message(STATUS "Cannot find msgfmt to convert .po file. Translation won't be enabled")
-    endif()
-endif(USE_NLS)
+find_package(Gettext REQUIRED)
+if(GETTEXT_MSGFMT_EXECUTABLE)
+    add_subdirectory(po)
+else()
+    message(FATAL_ERROR "ERROR: Cannot find msgfmt to convert .po file")
+endif()
 
 # needed to generate file "preferences_gen.h" accordingly
 if(USE_OPENCL)
