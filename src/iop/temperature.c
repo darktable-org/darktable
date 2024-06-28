@@ -1850,22 +1850,25 @@ static void _preset_tune_callback(GtkWidget *widget, dt_iop_module_t *self)
     {
       gboolean found = FALSE;
       dt_iop_temperature_preset_data_t *preset = dt_bauhaus_combobox_get_data(g->presets);
-      // look through all variants of this preset, with different tuning
-      for(int i = preset->min_ft_pos;
-          (i < (preset->max_ft_pos + 1)) // we can limit search spread
-                                         // thanks to knowing where to
-                                         // look!
-            && !strcmp(dt_wb_preset(i)->make, self->dev->image_storage.camera_maker)
-            && !strcmp(dt_wb_preset(i)->model, self->dev->image_storage.camera_model)
-            && !strcmp(dt_wb_preset(i)->name, dt_wb_preset(preset->no_ft_pos)->name);
-          i++)
+      if(preset)
       {
-        if(dt_wb_preset(i)->tuning == tune)
+        // look through all variants of this preset, with different tuning
+        for(int i = preset->min_ft_pos;
+            (i < (preset->max_ft_pos + 1)) // we can limit search spread
+              // thanks to knowing where to
+              // look!
+              && !strcmp(dt_wb_preset(i)->make, self->dev->image_storage.camera_maker)
+              && !strcmp(dt_wb_preset(i)->model, self->dev->image_storage.camera_model)
+              && !strcmp(dt_wb_preset(i)->name, dt_wb_preset(preset->no_ft_pos)->name);
+            i++)
         {
-          // got exact match!
-          _temp_params_from_array(p, dt_wb_preset(i)->channels);
-          found = TRUE;
-          break;
+          if(dt_wb_preset(i)->tuning == tune)
+          {
+            // got exact match!
+            _temp_params_from_array(p, dt_wb_preset(i)->channels);
+            found = TRUE;
+            break;
+          }
         }
       }
 
