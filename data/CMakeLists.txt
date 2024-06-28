@@ -1,4 +1,5 @@
 add_subdirectory(pixmaps ${DARKTABLE_DATADIR}/pixmaps)
+add_subdirectory(styles ${DARKTABLE_DATADIR}/styles)
 
 if(USE_OPENCL)
 	add_subdirectory(kernels ${DARKTABLE_DATADIR}/kernels)

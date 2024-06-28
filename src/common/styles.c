@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -33,11 +33,18 @@
 #include "imageio/imageio_common.h"
 
 #include <libxml/encoding.h>
+#include <libxml/parser.h>
 #include <libxml/xmlwriter.h>
 
+#include <dirent.h>
 #include <glib.h>
 #include <stdio.h>
 #include <string.h>
+
+#if defined (_WIN32)
+#include "win/getdelim.h"
+#include "win/scandir.h"
+#endif // defined (_WIN32)
 
 typedef struct
 {
