@@ -33,11 +33,18 @@
 #include "imageio/imageio_common.h"
 
 #include <libxml/encoding.h>
+#include <libxml/parser.h>
 #include <libxml/xmlwriter.h>
 
+#include <dirent.h>
 #include <glib.h>
 #include <stdio.h>
 #include <string.h>
+
+#if defined (_WIN32)
+#include "win/getdelim.h"
+#include "win/scandir.h"
+#endif // defined (_WIN32)
 
 typedef struct
 {
