@@ -1,5 +1,4 @@
 option(USE_CAMERA_SUPPORT "Detect and use camera support if available." ON)
-option(USE_NLS "Build Native Language Support (using gettext)" ON)
 option(USE_COLORD "Enable colord support" ON)
 option(USE_MAP "Build Map View parts" ON)
 option(USE_LUA "Build lua scripting support" ON)
