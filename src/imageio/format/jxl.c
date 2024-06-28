@@ -158,8 +158,7 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
   // For 16-bit we can choose half, but 32-bit is always float
   if(params->bpp == 16 && params->pixel_type) basic_info.exponent_bits_per_sample = 5;
   if(params->bpp == 32) basic_info.exponent_bits_per_sample = 8;
-  // Lossless only makes sense for integer modes
-  if(basic_info.exponent_bits_per_sample == 0 && params->quality == 100)
+  if(params->quality == 100)
   {
     // Must preserve original profile for lossless mode
     basic_info.uses_original_profile = JXL_TRUE;
@@ -502,23 +501,13 @@ static void bpp_changed(GtkWidget *widget, dt_imageio_jxl_gui_data_t *gui)
   }
   dt_conf_set_int("plugins/imageio/format/jxl/bpp", bpp);
 
-  const int pixel_type = bpp_enum == 3 ? dt_bauhaus_combobox_get(gui->pixel_type) : bpp_enum == 4 ? 1 : 0;
-  const int quality = (int)dt_bauhaus_slider_get(gui->quality);
-  const gboolean lossless = bpp_enum <= 3 && !pixel_type && quality == 100;
-
   gtk_widget_set_visible(gui->pixel_type, bpp_enum == 3);
-  gtk_widget_set_visible(gui->original, !lossless);
 }
 
 static void pixel_type_changed(GtkWidget *widget, dt_imageio_jxl_gui_data_t *gui)
 {
   const int pixel_type = dt_bauhaus_combobox_get(widget);
   dt_conf_set_bool("plugins/imageio/format/jxl/pixel_type", pixel_type);
-
-  const int bpp_enum = dt_bauhaus_combobox_get(gui->bpp);
-  const int quality = (int)dt_bauhaus_slider_get(gui->quality);
-  const gboolean lossless = bpp_enum <= 3 && !pixel_type && quality == 100;
-  gtk_widget_set_visible(gui->original, !lossless);
 }
 
 static void quality_changed(GtkWidget *widget, dt_imageio_jxl_gui_data_t *gui)
@@ -526,9 +515,7 @@ static void quality_changed(GtkWidget *widget, dt_imageio_jxl_gui_data_t *gui)
   const int quality = (int)dt_bauhaus_slider_get(widget);
   dt_conf_set_int("plugins/imageio/format/jxl/quality", quality);
 
-  const int bpp_enum = dt_bauhaus_combobox_get(gui->bpp);
-  const int pixel_type = bpp_enum == 3 ? dt_bauhaus_combobox_get(gui->pixel_type) : bpp_enum == 4 ? 1 : 0;
-  const gboolean lossless = bpp_enum <= 3 && !pixel_type && quality == 100;
+  const gboolean lossless = quality == 100;
   gtk_widget_set_visible(gui->original, !lossless);
 }
 
@@ -585,7 +572,7 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_bauhaus_slider_set(gui->quality, quality);
   dt_bauhaus_widget_set_label(gui->quality, NULL, N_("quality"));
   gtk_widget_set_tooltip_text(gui->quality, _("the quality of the output image\n0-29 = very lossy\n30-99 = JPEG "
-                                              "quality comparable\n100 = lossless (integer bit depth only)"));
+                                              "quality comparable\n100 = lossless"));
   g_signal_connect(G_OBJECT(gui->quality), "value-changed", G_CALLBACK(quality_changed), gui);
   gtk_box_pack_start(GTK_BOX(box), gui->quality, TRUE, TRUE, 0);
 
@@ -602,7 +589,7 @@ void gui_init(dt_imageio_module_format_t *self)
                                   dt_confgen_get_bool("plugins/imageio/format/jxl/original", DT_DEFAULT) & 1);
   gtk_box_pack_start(GTK_BOX(box), gui->original, TRUE, TRUE, 0);
 
-  gtk_widget_set_visible(gui->original, bpp_enum == 4 || (bpp_enum == 3 && pixel_type) || quality < 100);
+  gtk_widget_set_visible(gui->original, quality < 100);
   gtk_widget_set_no_show_all(gui->original, TRUE);
 
   // encoding effort slider
