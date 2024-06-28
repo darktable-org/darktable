@@ -1143,6 +1143,32 @@ static gboolean _event_scroll(GtkWidget *widget,
   return TRUE;
 }
 
+static void _show_text_line(cairo_t *cr, PangoLayout *layout, const char *text,
+                            const float offx, const float offy,
+                            const float lineto_x, const float lineto_y, const float at)
+{
+  pango_layout_set_text(layout, text, -1);
+  PangoRectangle ink;
+  pango_layout_get_pixel_extents(layout, &ink, NULL);
+  cairo_move_to(cr, offx, offy - ink.height - ink.x);
+  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_FONT);
+  pango_cairo_show_layout(cr, layout);
+  if(lineto_x >= 0.0f && lineto_y >= 0.0f)
+  {
+    dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_LIGHTTABLE_FONT, at);
+    if(lineto_x > offx)
+    {
+      cairo_rel_move_to(cr, 10.0f + ink.width, ink.height * 0.5f);
+    }
+    else
+    {
+      cairo_move_to(cr, offx - DT_PIXEL_APPLY_DPI(10.0f), offy - (ink.height + ink.x) * 0.5f);
+    }
+    cairo_line_to(cr, lineto_x, lineto_y);
+  }
+  cairo_stroke(cr);
+}
+
 // display help text in the center view if there's no image to show
 static void _lighttable_expose_empty(cairo_t *cr,
                                     int32_t width,
@@ -1158,71 +1184,60 @@ static void _lighttable_expose_empty(cairo_t *cr,
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_fill(cr);
 
+  PangoAttrList *bold = pango_attr_list_from_string("0 -1 weight bold");
+  PangoAttrList *normal = pango_attr_list_from_string("0 -1 weight normal");
   PangoLayout *layout;
-  PangoRectangle ink;
   PangoFontDescription *desc =
     pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
   pango_font_description_set_absolute_size(desc, fs * PANGO_SCALE);
   layout = pango_cairo_create_layout(cr);
   pango_layout_set_font_description(layout, desc);
   cairo_set_font_size(cr, fs);
-  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_FONT);
-  pango_layout_set_text(layout, _("there are no images in this collection"), -1);
-  pango_layout_get_pixel_extents(layout, &ink, NULL);
-  cairo_move_to(cr, offx, offy - ink.height - ink.x);
-  pango_cairo_show_layout(cr, layout);
+  pango_layout_set_attributes(layout, bold);
+  _show_text_line(cr, layout, _("there are no images in this collection"),
+                  offx, offy, -1, -1, at);
+  pango_layout_set_attributes(layout, normal);
 
   if(lighttable)
   {
-    pango_layout_set_text(layout, _("if you have not imported any images yet"), -1);
-    pango_layout_get_pixel_extents(layout, &ink, NULL);
-    cairo_move_to(cr, offx, offy + 2 * ls - ink.height - ink.x);
-    pango_cairo_show_layout(cr, layout);
-    pango_layout_set_text(layout, _("you can do so in the import module"), -1);
-    pango_layout_get_pixel_extents(layout, &ink, NULL);
-    cairo_move_to(cr, offx, offy + 3 * ls - ink.height - ink.x);
-    pango_cairo_show_layout(cr, layout);
-    cairo_move_to(cr, offx - DT_PIXEL_APPLY_DPI(10.0f), offy + 3 * ls - ls * .25f);
-    cairo_line_to(cr, 0.0f, 10.0f);
-    dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_LIGHTTABLE_FONT, at);
-    cairo_stroke(cr);
-    pango_layout_set_text(layout,
-                          _("try to relax the filter settings in the top panel"), -1);
-    pango_layout_get_pixel_extents(layout, &ink, NULL);
-    cairo_move_to(cr, offx, offy + 5 * ls - ink.height - ink.x);
-    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_FONT);
-    pango_cairo_show_layout(cr, layout);
-    cairo_rel_move_to(cr, 10.0f + ink.width, ink.height * 0.5f);
-    cairo_line_to(cr, width * 0.5f, 0.0f);
-    dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_LIGHTTABLE_FONT, at);
-    cairo_stroke(cr);
-    pango_layout_set_text
-      (layout,
-       _("or add images in the collections module in the left panel"), -1);
-    pango_layout_get_pixel_extents(layout, &ink, NULL);
-    cairo_move_to(cr, offx, offy + 6 * ls - ink.height - ink.x);
-    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_FONT);
-    pango_cairo_show_layout(cr, layout);
-    cairo_move_to(cr, offx - DT_PIXEL_APPLY_DPI(10.0f), offy + 6 * ls - ls * 0.25f);
-    cairo_rel_line_to(cr, -offx + 10.0f, 0.0f);
-    dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_LIGHTTABLE_FONT, at);
-    cairo_stroke(cr);
+    _show_text_line(cr, layout, _("if you have not imported any images yet"),
+                    offx, offy + 2 * ls, -1, -1, at);
+    _show_text_line(cr, layout, _("you can do so in the import module"),
+                    offx, offy + 3 * ls, 0.0f, 10.0f, at);
+    _show_text_line(cr, layout, _("try to relax the filter settings in the top panel"),
+                    offx, offy + 5 * ls, width * 0.45f, 0.0f, at);
+    _show_text_line(cr, layout, _("or add images in the collections module in the left panel"),
+                    offx, offy + 6 * ls, 0.0f, offy + 5 * ls, at);
 
-    pango_layout_set_text(layout,
-       _("try the 'no-click' workflow: hover on an image and use"), -1);
-    pango_layout_get_pixel_extents(layout, &ink, NULL);
-    cairo_move_to(cr, offx, offy + 9 * ls - ink.height - ink.x);
-    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_FONT);
-    pango_cairo_show_layout(cr, layout);
-    pango_layout_set_text(layout,
-       _("keyboard shortcuts to apply ratings, colors, styles, etc."), -1);
-    pango_layout_get_pixel_extents(layout, &ink, NULL);
-    cairo_move_to(cr, offx, offy + 10 * ls - ink.height - ink.x);
-    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_FONT);
-    pango_cairo_show_layout(cr, layout);
-    cairo_stroke(cr);
+    _show_text_line(cr, layout, _("try the 'no-click' workflow: hover on an image and use"),
+                    offx, offy + 9 * ls, -1, -1, at);
+    _show_text_line(cr, layout, _("keyboard shortcuts to apply ratings, colors, styles, etc."),
+                    offx, offy + 10 * ls, -1, -1, at);
+
+    const float offx2 = offx + DT_PIXEL_APPLY_DPI(500);
+
+    pango_layout_set_attributes(layout, bold);
+    _show_text_line(cr, layout, _("need help?"),
+                    offx2, offy + 2 * ls, width * 0.90f, 0.0f, at);
+    pango_layout_set_attributes(layout, normal);
+    _show_text_line(cr, layout, _("click on ？ then an on-screen item to open manual page"),
+                    offx2, offy + 3 * ls, -1, -1, at);
+    //TODO: add a button or link to "howto" chapter in online manual
+
+    pango_layout_set_attributes(layout, bold);
+    _show_text_line(cr, layout, _("personalize darktable"),
+                    offx2, offy + 7 * ls, width * 0.97f, 0.0f, at);
+    pango_layout_set_attributes(layout, normal);
+    _show_text_line(cr, layout, _("click on the gear icon for global preferences"),
+                    offx2, offy + 8 * ls, -1, -1, at);
+    _show_text_line(cr, layout, _("click on the keyboard icon to define shortcuts"),
+                    offx2, offy + 9 * ls, -1, -1, at);
+    _show_text_line(cr, layout, _("press and hold 'h' to show all active shortcuts"),
+                    offx2, offy + 10 * ls, -1, -1, at);
   }
 
+  pango_attr_list_unref(bold);
+  pango_attr_list_unref(normal);
   pango_font_description_free(desc);
   g_object_unref(layout);
 }
