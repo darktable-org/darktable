@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -596,41 +596,9 @@ static void _import_clicked(GtkWidget *w, gpointer user_data)
     for(const GSList *filename = filenames; filename; filename = g_slist_next(filename))
     {
       /* extract name from xml file */
-      gchar *bname = NULL;
-      xmlDoc *document = xmlReadFile((char*)filename->data, NULL, XML_PARSE_NOBLANKS);
-      xmlNode *root = NULL;
-      if(document != NULL)
-        root = xmlDocGetRootElement(document);
-
-      if(document == NULL || root == NULL || xmlStrcmp(root->name, BAD_CAST "darktable_style"))
-      {
-        dt_print(DT_DEBUG_CONTROL,
-                 "[styles] file %s is not a style file\n", (char*)filename->data);
-        if(document)
-          xmlFreeDoc(document);
+      gchar *bname = dt_get_style_name(filename->data);
+      if (!bname)
         continue;
-      }
-
-      for(xmlNode *node = root->children->children; node; node = node->next)
-      {
-        if(node->type == XML_ELEMENT_NODE)
-        {
-          if(strcmp((char*)node->name, "name") == 0)
-          {
-            bname = g_strdup((char*)xmlNodeGetContent(node));
-            break;
-          }
-        }
-      }
-
-      // xml doc is not necessary after this point
-      xmlFreeDoc(document);
-
-      if(!bname){
-        dt_print(DT_DEBUG_CONTROL,
-                 "[styles] file %s is malformed style file\n", (char*)filename->data);
-        continue;
-      }
 
       // check if style exists
       if(dt_styles_exists(bname))

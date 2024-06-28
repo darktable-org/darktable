@@ -69,6 +69,7 @@
 #include "gui/gtk.h"
 #include "gui/guides.h"
 #include "gui/presets.h"
+#include "gui/styles.h"
 #include "imageio/imageio_module.h"
 #include "libs/lib.h"
 #include "lua/init.h"
@@ -1449,6 +1450,12 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   // init darktable tags table
   dt_set_darktable_tags();
+
+  // import default styles from shared directory
+  gchar *styledir = g_build_filename(sharedir, "darktable/styles", NULL);
+  if(styledir)
+    dt_import_default_styles(styledir);
+  g_free(styledir);
 
   // Initialize the signal system
   darktable.signals = dt_control_signal_init();
