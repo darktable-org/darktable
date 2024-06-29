@@ -940,14 +940,19 @@ static gboolean _event_main_motion(GtkWidget *widget,
   return FALSE;
 }
 
-static gboolean _event_main_press(GtkWidget *widget,
-                                  GdkEventButton *event,
-                                  gpointer user_data)
+static gboolean _event_main_press(
+    GtkGestureMultiPress *gesture,
+    int n_press,
+    double x,
+    double y,
+    gpointer user_data)
 {
+  GdkEventButton *event = (GdkEventButton *)gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
+
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
   if(event->button == 1
-     && ((event->type == GDK_2BUTTON_PRESS && !thumb->single_click)
-         || (event->type == GDK_BUTTON_PRESS
+     && ((n_press == 2 && !thumb->single_click)
+         || (n_press == 1
              && dt_modifier_is(event->state, 0) && thumb->single_click)))
   {
     dt_control_set_mouse_over_id(thumb->imgid);
@@ -955,10 +960,14 @@ static gboolean _event_main_press(GtkWidget *widget,
   }
   return FALSE;
 }
-static gboolean _event_main_release(GtkWidget *widget,
-                                    GdkEventButton *event,
-                                    gpointer user_data)
+static gboolean _event_main_release(
+    GtkGestureMultiPress *gesture,
+    int n_press,
+    double x,
+    double y,
+    gpointer user_data)
 {
+  GdkEventButton *event = (GdkEventButton *)gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
 
   if(event->button == 1
@@ -979,17 +988,26 @@ static gboolean _event_main_release(GtkWidget *widget,
   return FALSE;
 }
 
-static gboolean _event_rating_press(GtkWidget *widget,
-                                    GdkEventButton *event,
-                                    gpointer user_data)
+static gboolean _event_rating_press(
+    GtkGestureMultiPress *gesture,
+    int n_press,
+    double x,
+    double y,
+    gpointer user_data)
 {
   return TRUE;
 }
-static gboolean _event_rating_release(GtkWidget *widget,
-                                      GdkEventButton *event,
-                                      gpointer user_data)
+static gboolean _event_rating_release(
+    GtkGestureMultiPress *gesture,
+    int n_press,
+    double x,
+    double y,
+    gpointer user_data)
 {
+  GdkEventButton *event = (GdkEventButton *)gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
+  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+
   if(thumb->disable_actions)
     return FALSE;
   if(dtgtk_thumbnail_btn_is_hidden(widget))
@@ -1401,10 +1419,12 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb,
     g_signal_connect(G_OBJECT(thumb->w_main), "drag-motion",
                      G_CALLBACK(_event_main_drag_motion), thumb);
 
-    g_signal_connect(G_OBJECT(thumb->w_main), "button-press-event",
-                     G_CALLBACK(_event_main_press), thumb);
-    g_signal_connect(G_OBJECT(thumb->w_main), "button-release-event",
-                     G_CALLBACK(_event_main_release), thumb);
+    thumb->gesture_button_all_main = dtgtk_button_default_handler_new(
+        GTK_WIDGET(thumb->w_main),
+        0,
+        G_CALLBACK(_event_main_press),
+        G_CALLBACK(_event_main_release),
+        thumb);
 
     g_object_set_data(G_OBJECT(thumb->w_main), "thumb", thumb);
     DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE,
@@ -1549,10 +1569,14 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb,
     gtk_widget_set_valign(thumb->w_reject, GTK_ALIGN_END);
     gtk_widget_set_halign(thumb->w_reject, GTK_ALIGN_START);
     gtk_widget_show(thumb->w_reject);
-    g_signal_connect(G_OBJECT(thumb->w_reject), "button-press-event",
-                     G_CALLBACK(_event_rating_press), thumb);
-    g_signal_connect(G_OBJECT(thumb->w_reject), "button-release-event",
-                     G_CALLBACK(_event_rating_release), thumb);
+
+    thumb->gesture_button_all_reject = dtgtk_button_default_handler_new(
+        GTK_WIDGET(thumb->w_reject),
+        0,
+        G_CALLBACK(_event_rating_press),
+        G_CALLBACK(_event_rating_release),
+        thumb);
+
     g_signal_connect(G_OBJECT(thumb->w_reject), "enter-notify-event",
                      G_CALLBACK(_event_btn_enter_leave), thumb);
     g_signal_connect(G_OBJECT(thumb->w_reject), "leave-notify-event",
@@ -1567,11 +1591,14 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb,
                        G_CALLBACK(_event_star_enter), thumb);
       g_signal_connect(G_OBJECT(thumb->w_stars[i]), "leave-notify-event",
                        G_CALLBACK(_event_star_leave), thumb);
-      g_signal_connect(G_OBJECT(thumb->w_stars[i]), "button-press-event",
-                       G_CALLBACK(_event_rating_press), thumb);
-      g_signal_connect(G_OBJECT(thumb->w_stars[i]), "button-release-event",
-                       G_CALLBACK(_event_rating_release),
-                       thumb);
+
+      thumb->gesture_button_all_stars[i] = dtgtk_button_default_handler_new(
+          GTK_WIDGET(thumb->w_stars[i]),
+          0,
+          G_CALLBACK(_event_rating_press),
+          G_CALLBACK(_event_rating_release),
+          thumb);
+
       gtk_widget_set_name(thumb->w_stars[i], "thumb-star");
       dt_action_define(&darktable.control->actions_thumb, NULL, "rating",
                        thumb->w_stars[i], &dt_action_def_rating);

@@ -48,6 +48,22 @@ void dtgtk_button_set_paint(GtkDarktableButton *button, DTGTKCairoPaintIconFunc 
 /** set the active state of the button icon */
 void dtgtk_button_set_active(GtkDarktableButton *button, gboolean active);
 
+/**
+ * Create default handler for primary button.
+ * @param widget widget to create the gesture object for
+ * @param button type of button
+ * @param func_press gets called when button will be pressed
+ * @param func_release gets called when button will be released
+ * @param data user data send to function
+ * @return new gesture object; receiver is responsible for deletion
+ */
+GtkGesture *dtgtk_button_default_handler_new(
+    GtkWidget *widget,
+    guint button,
+    GCallback func_press,
+    GCallback func_release,
+    gpointer data);
+
 G_END_DECLS
 
 // clang-format off
