@@ -41,6 +41,11 @@
 #include <stdio.h>
 #include <string.h>
 
+#if defined (_WIN32)
+#include "win/getdelim.h"
+#include "win/scandir.h"
+#endif // defined (_WIN32)
+
 typedef struct
 {
   GString *name;
