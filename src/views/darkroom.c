@@ -32,6 +32,7 @@
 #include "common/styles.h"
 #include "common/tags.h"
 #include "common/undo.h"
+#include "common/utility.h"
 #include "common/color_picker.h"
 #include "control/conf.h"
 #include "control/control.h"
@@ -1320,23 +1321,25 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
       // if sub-menu, do not put leading group in final name
 
       gchar *mi_name = NULL;
+      const char *split0 = dt_util_localize_string(split[0]);
 
       if(split[1])
       {
-        gsize mi_len = 1 + strlen(split[1]);
+        const char *split1 = dt_util_localize_string(split[1]);
+        gsize mi_len = 1 + strlen(split1);
         for(int i=2; split[i]; i++)
-          mi_len += strlen(split[i]) + strlen(" | ");
+          mi_len += strlen(dt_util_localize_string(split[i])) + strlen(" | ");
 
         mi_name = g_new0(gchar, mi_len);
-        gchar* tmp_ptr = g_stpcpy(mi_name, split[1]);
+        gchar* tmp_ptr = g_stpcpy(mi_name, split1);
         for(int i=2; split[i]; i++)
         {
           tmp_ptr = g_stpcpy(tmp_ptr, " | ");
-          tmp_ptr = g_stpcpy(tmp_ptr, split[i]);
+          tmp_ptr = g_stpcpy(tmp_ptr, dt_util_localize_string(split[i]));
         }
       }
       else
-        mi_name = g_strdup(split[0]);
+        mi_name = g_strdup(split0);
 
       GtkWidget *mi = gtk_menu_item_new_with_label(mi_name);
       // need a tooltip for the signal below to be raised
@@ -1354,7 +1357,7 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
       for(const GList *child = children; child; child = g_list_next(child))
       {
         GtkMenuItem *smi = (GtkMenuItem *)child->data;
-        if(!g_strcmp0(split[0],gtk_menu_item_get_label(smi)))
+        if(!g_strcmp0(split0,gtk_menu_item_get_label(smi)))
         {
           sm = (GtkMenu *)gtk_menu_item_get_submenu(smi);
           break;
@@ -1367,7 +1370,7 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
       // no sub-menu, but we need one
       if(!sm && split[1])
       {
-        smi = (GtkMenuItem *)gtk_menu_item_new_with_label(split[0]);
+        smi = (GtkMenuItem *)gtk_menu_item_new_with_label(split0);
         sm = (GtkMenu *)gtk_menu_new();
         gtk_menu_item_set_submenu(smi, GTK_WIDGET(sm));
       }
