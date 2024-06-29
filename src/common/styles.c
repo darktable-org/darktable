@@ -36,6 +36,7 @@
 #include <libxml/parser.h>
 #include <libxml/xmlwriter.h>
 
+#include <dirent.h>
 #include <glib.h>
 #include <stdio.h>
 #include <string.h>
