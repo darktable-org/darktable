@@ -23,6 +23,7 @@
 #include "common/debug.h"
 #include "common/history.h"
 #include "common/styles.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "gui/gtk.h"
@@ -965,7 +966,9 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const dt_imgid_t imgid)
 #define STYLE_TOOLTIP_MAX_WIDTH 30
 
   // Style name
-  gchar *esc_name = g_markup_printf_escaped("<b>%s</b>", name);
+  char *localized_name = dt_util_localize_segmented_name(name);
+  gchar *esc_name = g_markup_printf_escaped("<b>%s</b>", localized_name);
+  free(localized_name);
   label = gtk_label_new(NULL);
   gtk_label_set_markup(GTK_LABEL(label), esc_name);
   gtk_label_set_max_width_chars(GTK_LABEL(label), STYLE_TOOLTIP_MAX_WIDTH);
@@ -976,7 +979,7 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const dt_imgid_t imgid)
   // Style description, it can be empty
   char *des = dt_styles_get_description(name);
 
-  if(strlen(des) > 0)
+  if(des && strlen(des) > 0)
   {
     // If the name and/or description are long and become multi-line, it will look
     // hard to understand what is what, so we add a horizontal separator between them.
