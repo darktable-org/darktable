@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -55,6 +55,38 @@
 #ifndef RSVG_CAIRO_H
 #include <librsvg/rsvg-cairo.h>
 #endif
+
+const char *dt_util_localize_string(const char *s)
+{
+  // check whether the string starts with the magic tag to request localization
+  static const char prefix[] = "_l10n_";
+  static const int prefix_len = sizeof(prefix)-1;
+
+  if(s && strncmp(s, prefix, prefix_len) == 0)
+    return _(s+prefix_len);
+  else
+    return s;
+}
+
+gchar *dt_util_localize_segmented_name(const char *s)
+{
+  gchar **split = g_strsplit(s, "|", 0);
+  gchar *localized = NULL;
+  if (split && split[0])
+  {
+    gsize loc_len = 1 + strlen(dt_util_localize_string(split[0]));
+    for(int i = 1; split[i] != NULL; i++)
+      loc_len += strlen(dt_util_localize_string(split[i])) + strlen(" | ");
+    localized = g_new0(gchar, loc_len);
+    gchar *end = g_stpcpy(localized, dt_util_localize_string(split[0]));
+    for(int i = 1; split[i] != NULL; i++)
+    {
+      end = g_stpcpy(end, " | ");
+      end = g_stpcpy(end, dt_util_localize_string(split[i]));
+    }
+  }
+  return localized;
+}
 
 gchar *dt_util_dstrcat(gchar *str, const gchar *format, ...)
 {
