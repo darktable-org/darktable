@@ -20,6 +20,7 @@
 #include "common/collection.h"
 #include "common/styles.h"
 #include "common/darktable.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -182,7 +183,7 @@ static void _gui_styles_update_view(dt_lib_styles_t *d)
 
       while(split[k])
       {
-        const gchar *s = split[k];
+        const gchar *s = dt_util_localize_string(split[k]);
         const gboolean node_found = _get_node_for_name(model, k==0, &iter, s);
 
         if(!node_found)
