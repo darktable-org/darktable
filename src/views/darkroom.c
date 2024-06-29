@@ -2218,6 +2218,9 @@ void gui_init(dt_view_t *self)
   gtk_widget_set_tooltip_text(styles, _("quick access for applying any of your styles"));
   dt_gui_add_help_link(styles, "bottom_panel_styles");
   dt_view_manager_view_toolbox_add(darktable.view_manager, styles, DT_VIEW_DARKROOM);
+  /* ensure that we get strings from the style files shipped with darktable localized */
+  (void)_("darktable camera styles");
+  (void)_("generic");
 
   /* create second window display button */
   dev->second_wnd_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_display2, 0, NULL);
