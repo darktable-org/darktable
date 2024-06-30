@@ -1453,12 +1453,10 @@ static gboolean _toolbar_show_popup(gpointer user_data)
   return FALSE;
 }
 
-static void _iso_12646_quickbutton_clicked(GtkWidget *w, gpointer user_data)
+static void _full_iso12646_callback(GtkToggleButton *checkbutton, dt_develop_t *dev)
 {
-  dt_develop_t *dev = (dt_develop_t *)user_data;
-  if(!dev->gui_attached) return;
-
-  dev->full.iso_12646 = !dev->full.iso_12646;
+  dev->full.iso_12646 = gtk_toggle_button_get_active(checkbutton);
+  dt_conf_set_bool("full_window/iso_12646", dev->full.iso_12646);
   dt_dev_configure(&dev->full);
 }
 
@@ -2243,19 +2241,20 @@ void gui_init(dt_view_t *self)
   /* create second window display button */
   dev->second_wnd_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_display2, 0, NULL);
   dt_action_define(sa, NULL, N_("second window"), dev->second_wnd_button, &dt_action_def_toggle);
-  g_signal_connect(G_OBJECT(dev->second_wnd_button), "clicked", G_CALLBACK(_second_window_quickbutton_clicked),
-                   dev);
+  g_signal_connect(G_OBJECT(dev->second_wnd_button), "clicked", G_CALLBACK(_second_window_quickbutton_clicked),dev);
   gtk_widget_set_tooltip_text(dev->second_wnd_button, _("display a second darkroom image window"));
   dt_view_manager_view_toolbox_add(darktable.view_manager, dev->second_wnd_button, DT_VIEW_DARKROOM);
 
   /* Enable ISO 12646-compliant colour assessment conditions */
-  dev->iso_12646.button = dtgtk_togglebutton_new(dtgtk_cairo_paint_bulb, 0, NULL);
-  ac = dt_action_define(sa, NULL, N_("color assessment"), dev->iso_12646.button, &dt_action_def_toggle);
-  dt_shortcut_register(ac, 0, 0, GDK_KEY_b, GDK_CONTROL_MASK);
-  gtk_widget_set_tooltip_text(dev->iso_12646.button,
+  GtkWidget *full_iso12646 = dtgtk_togglebutton_new(dtgtk_cairo_paint_bulb, 0, NULL);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(full_iso12646), dev->full.iso_12646);
+  ac = dt_action_define(DT_ACTION(self), NULL, N_("color assessment"), full_iso12646, &dt_action_def_toggle);
+  gtk_widget_set_tooltip_text(full_iso12646,
                               _("toggle ISO 12646 color assessment conditions"));
-  g_signal_connect(G_OBJECT(dev->iso_12646.button), "clicked", G_CALLBACK(_iso_12646_quickbutton_clicked), dev);
-  dt_view_manager_module_toolbox_add(darktable.view_manager, dev->iso_12646.button, DT_VIEW_DARKROOM);
+  dt_shortcut_register(ac, 0, 0, GDK_KEY_b, GDK_CONTROL_MASK);
+  g_signal_connect(G_OBJECT(full_iso12646), "toggled", G_CALLBACK(_full_iso12646_callback), dev);
+
+  dt_view_manager_module_toolbox_add(darktable.view_manager, full_iso12646, DT_VIEW_DARKROOM);
 
   /* Enable late-scaling button */
   dev->late_scaling.button =
@@ -3152,8 +3151,6 @@ void leave(dt_view_t *self)
   // reset color assessment mode
   if(dev->full.iso_12646)
   {
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dev->iso_12646.button), FALSE);
-    dev->full.iso_12646 = FALSE;
     dev->full.width = dev->full.orig_width;
     dev->full.height = dev->full.orig_height;
     dev->preview2.width = dev->preview2.orig_width;
