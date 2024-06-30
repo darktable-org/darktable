@@ -2875,23 +2875,26 @@ float *dt_dev_get_raster_mask(struct dt_dev_pixelpipe_iop_t *piece,
     const int maskmode = source_enabled ? source_piece->module->blend_params->mask_mode : 0;
     const gboolean source_writing = maskmode != 0 && (maskmode & DEVELOP_MASK_RASTER) == 0;
     /* there might be stale masks from disabled modules or modules that don't write masks.
-       don't use those!
-       FIXME: we should try to fix this elsewhere. Or can we safely remove these masks here?
+       don't use those but delete them to avoid mem leaks.
     */
     if(!source_enabled)
     {
+      const gboolean deleted = g_hash_table_remove(source_piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID));
       dt_print_pipe(DT_DEBUG_PIPE,
          "no raster mask", piece->pipe, piece->module, DT_DEVICE_NONE, NULL, NULL,
-         "as source module `%s%s' is disabled\n",
-         raster_mask_source->op, dt_iop_get_instance_id(raster_mask_source));
+         "as source module `%s%s' is disabled%s\n",
+         raster_mask_source->op, dt_iop_get_instance_id(raster_mask_source),
+         deleted ? ", stale mask deleted" : "");
       return NULL;
     }
     else if(!source_writing)
     {
+      const gboolean deleted = g_hash_table_remove(source_piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID));
       dt_print_pipe(DT_DEBUG_PIPE,
          "no raster mask", piece->pipe, piece->module, DT_DEVICE_NONE, NULL, NULL,
-         "as source module `%s%s' does not write raster masks\n",
-         raster_mask_source->op, dt_iop_get_instance_id(raster_mask_source));
+         "as source module `%s%s' does not write raster masks%s\n",
+         raster_mask_source->op, dt_iop_get_instance_id(raster_mask_source),
+         deleted ? ", stale mask deleted" : "");
       return NULL;
     }
     else
