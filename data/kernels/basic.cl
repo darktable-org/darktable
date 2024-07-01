@@ -2776,7 +2776,7 @@ kernel void lens_man_vignette(read_only image2d_t in,
   const float dx = ((float)(roix + x) - w2);
   const float dy = ((float)(roiy + y) - h2);
   const float radius = sqrt(dx*dx + dy*dy) * inv_maxr;
-  const float4 val = intensity * _calc_vignette_spline(radius, spline, splinesize);
+  const float4 val = max(0.0f, intensity * _calc_vignette_spline(radius, spline, splinesize));
 
   float4 pixel  = read_imagef(in, samplerA, (int2)(x, y));
   pixel *= (1.0f + val);
@@ -3076,15 +3076,16 @@ kernel void md_lens_correction(read_only image2d_t in,
   const float cx = ((float)(roox + x) - w2) / scale;
   const float cy = ((float)(rooy + y) - h2) / scale;
   const float radius = r * sqrt(cx*cx + cy*cy);
-
+  const float limw = (float)iwidth - 1.0f;
+  const float limh = (float)iheight - 1.0f;
   float output[4];
   for(int c = 0; c < 4; c++)
   {
     const int plane = (c == 3) ? 1 : c;
     const float dr =
       _interpolate_linear_spline(knots_dist, &cor_rgb[plane * MAXKNOTS], knots, radius);
-    const float xs = dr*cx + w2 - roix;
-    const float ys = dr*cy + h2 - roiy;
+    const float xs = clamp(dr*cx + w2 - roix, 0.0f, limw);
+    const float ys = clamp(dr*cy + h2 - roiy, 0.0f, limh);
     output[c] = fmax(0.0f, interpolation_compute_sample(in, itor_mode, itor_width,
                                              xs, ys, iwidth, iheight, c));
   }
