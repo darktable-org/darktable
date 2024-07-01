@@ -1744,7 +1744,7 @@ static void _modify_roi_in_lf(struct dt_iop_module_t *self,
     float *const buf = (float *)dt_alloc_align_float(nbpoints * 2 * 3);
 
     DT_OMP_PRAGMA(parallel default(none)
-                  dt_omp_firstprivate(aheight, awidth, buf, height, nbpoints, width, 
+                  dt_omp_firstprivate(aheight, awidth, buf, height, nbpoints, width,
                                       xoff, xstep, yoff, ystep)
                   shared(modifier) reduction(min : xm, ym) reduction(max : xM, yM))
     {
@@ -1801,16 +1801,16 @@ DT_OMP_PRAGMA(barrier)
 
     const struct dt_interpolation *interpolation =
       dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
-    roi_in->x = fmaxf(0.0f, xm - interpolation->width);
-    roi_in->y = fmaxf(0.0f, ym - interpolation->width);
-    roi_in->width = fminf(orig_w - roi_in->x,
+    roi_in->x = MAX(0.0f, xm - interpolation->width);
+    roi_in->y = MAX(0.0f, ym - interpolation->width);
+    roi_in->width = MIN(orig_w - roi_in->x,
                           xM - roi_in->x + interpolation->width);
-    roi_in->height = fminf(orig_h - roi_in->y,
+    roi_in->height = MIN(orig_h - roi_in->y,
                            yM - roi_in->y + interpolation->width);
 
     // sanity check.
-    roi_in->x = CLAMP(roi_in->x, 0, (int)floorf(orig_w));
-    roi_in->y = CLAMP(roi_in->y, 0, (int)floorf(orig_h));
+    roi_in->x = CLAMP(roi_in->x, 0, (int)floorf(orig_w - 2.0f));
+    roi_in->y = CLAMP(roi_in->y, 0, (int)floorf(orig_h - 2.0f));
     roi_in->width = CLAMP(roi_in->width, 1, (int)ceilf(orig_w) - roi_in->x);
     roi_in->height = CLAMP(roi_in->height, 1, (int)ceilf(orig_h) - roi_in->y);
   }
@@ -1993,12 +1993,7 @@ static void _preprocess_vignette(struct dt_iop_module_t *self,
   const float strength = 2.0f * d->v_strength;
   const float *spline = d->vigspline;
 
-#ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-    dt_omp_firstprivate(data, vig, roi, w2, h2, mask, inv_maxr, strength, spline) \
-    schedule(static) \
-    collapse(2)
-#endif
+  DT_OMP_FOR(collapse(2))
   for(int row = 0; row < roi->height; row++)
   {
     for(int col = 0; col < roi->width; col++)
@@ -2007,12 +2002,12 @@ static void _preprocess_vignette(struct dt_iop_module_t *self,
       const float dx = ((float)(roi->x + col) - w2);
       const float dy = ((float)(roi->y + row) - h2);
       const float radius = sqrtf(dx*dx + dy*dy) * inv_maxr;
-      const float val = strength * _calc_vignette_spline(radius, spline);
+      const float val = MAX(0.0f, strength * _calc_vignette_spline(radius, spline));
 
       for_three_channels(c)
         vig[idx + c] = (1.0f + val) * data[idx+c];
 
-      vig[idx + 3] = (mask) ? val : vig[idx + 1];
+      vig[idx + 3] = mask ? val : vig[idx + 1];
     }
   }
 }
@@ -2195,7 +2190,7 @@ static float _get_autoscale_md_v1(dt_iop_module_t *self,
   for(float i = 0.0f; i < tested; i++)
   {
     for(int j = 0; j < 3; j++)
-      scale = fmaxf(scale,
+      scale = MAX(scale,
                     _interpolate_linear_spline(knots_dist, cor_rgb[j],
                                                nc,
                                                0.5f + 0.5f * i / (tested - 1.0f)));
@@ -2421,7 +2416,7 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
         cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = (p->cor_dist_ft * (r_cor - 1) + 1);
       }
       else if(cor_rgb)
-        cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = 1;
+        cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = 1.0f;
 
       if(cor_rgb && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_TCA)
       {
@@ -2454,7 +2449,7 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
   const float iht2 = 0.5f * dt_image_raw_height(img);
 
   const float r = sqrtf(iwd2 * iwd2 + iht2 * iht2);
-  const float sr = fminf(iwd2, iht2);
+  const float sr = MIN(iwd2, iht2);
   const float srr = sr / r;
 
   const float tested = 200.0f;
@@ -2467,7 +2462,7 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
       const float x = srr + (1.0f - srr) * i / (tested - 1.0f);
       float cur_scale = _interpolate_linear_spline(knots_dist, cor_rgb[j],
                                                    nc, x);
-      scale = fmaxf(scale,cur_scale);
+      scale = MAX(scale, cur_scale);
     }
   }
 
@@ -2736,10 +2731,13 @@ static void _distort_mask_md(struct dt_iop_module_t *self,
   const float h2 = 0.5f * roi_in->scale * piece->buf_in.height;
   const float r = 1.0f / sqrtf(w2*w2 + h2*h2);
 
+  const float limw = roi_in->width - 1;
+  const float limh = roi_in->height - 1;
+
   const struct dt_interpolation *interpolation =
     dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
 
-  DT_OMP_FOR(dt_omp_sharedconst(inv_scale_md, w2, h2, r) collapse(2))
+  DT_OMP_FOR(collapse(2))
   for(int y = 0; y < roi_out->height; y++)
   {
     for(int x = 0; x < roi_out->width; x++)
@@ -2749,8 +2747,8 @@ static void _distort_mask_md(struct dt_iop_module_t *self,
       const float dr =
         _interpolate_linear_spline(d->knots_dist, d->cor_rgb[1],
                                    d->nc, r*sqrtf(cx*cx + cy*cy));
-      const float xs = dr*cx + w2 - roi_in->x;
-      const float ys = dr*cy + h2 - roi_in->y;
+      const float xs = CLAMP(dr*cx + w2 - roi_in->x, 0.0f, limw);
+      const float ys = CLAMP(dr*cy + h2 - roi_in->y, 0.0f, limh);
       out[y * roi_out->width + x] =
         MIN(1.0f, dt_interpolation_compute_sample(interpolation, in, xs, ys,
                                         roi_in->width,
@@ -2793,7 +2791,7 @@ static void _process_md(struct dt_iop_module_t *self,
   // Correct vignetting
   if(d->modify_flags & DT_IOP_LENS_MODIFY_FLAG_VIGNETTING)
   {
-    DT_OMP_FOR(dt_omp_sharedconst(w2, h2, r) collapse(2))
+    DT_OMP_FOR(collapse(2))
     for(int y = 0; y < roi_in->height; y++)
     {
       for(int x = 0; x < roi_in->width; x++)
@@ -2806,7 +2804,7 @@ static void _process_md(struct dt_iop_module_t *self,
                                      d->nc, r*sqrtf(cx*cx + cy*cy));
 
         for_each_channel(c)
-          buf[idx + c] /= fmaxf(1e-4, sf);
+          buf[idx + c] /= MAX(1e-4, sf);
       }
     }
   }
@@ -2814,7 +2812,9 @@ static void _process_md(struct dt_iop_module_t *self,
   float *out = ((float *) ovoid);
   // Correct distortion and/or chromatic aberration
 
-  DT_OMP_FOR(dt_omp_sharedconst(inv_scale_md, w2, h2, r) collapse(2))
+  const float limw = roi_in->width - 1;
+  const float limh = roi_in->height - 1;
+  DT_OMP_FOR(collapse(2))
   for(int y = 0; y < roi_out->height; y++)
   {
     for(int x = 0; x < roi_out->width; x++)
@@ -2832,8 +2832,8 @@ static void _process_md(struct dt_iop_module_t *self,
         const float dr =
           _interpolate_linear_spline(d->knots_dist, d->cor_rgb[plane],
                                      d->nc, radius);
-        const float xs = dr*cx + w2 - roi_in->x;
-        const float ys = dr*cy + h2 - roi_in->y;
+        const float xs = CLAMP(dr*cx + w2 - roi_in->x, 0.0f, limw);
+        const float ys = CLAMP(dr*cy + h2 - roi_in->y, 0.0f, limh);
         out[odx+c] = dt_interpolation_compute_sample
           (interpolation, buf + c, xs, ys, roi_in->width,
            roi_in->height, 4, 4*roi_in->width);
@@ -2974,10 +2974,10 @@ static void _modify_roi_in_md(struct dt_iop_module_t *self,
                                                     r*sqrtf(cx*cx + cy*cy));
         const float xs = dr*cx + w2;
         const float ys = dr*cy + h2;
-        xm = fminf(xm, xs);
-        xM = fmaxf(xM, xs);
-        ym = fminf(ym, ys);
-        yM = fmaxf(yM, ys);
+        xm = MIN(xm, xs);
+        xM = MAX(xM, xs);
+        ym = MIN(ym, ys);
+        yM = MAX(yM, ys);
       }
     }
   }
@@ -2996,10 +2996,10 @@ static void _modify_roi_in_md(struct dt_iop_module_t *self,
                                                     r*sqrtf(cx*cx + cy*cy));
         const float xs = dr*cx + w2;
         const float ys = dr*cy + h2;
-        xm = fminf(xm, xs);
-        xM = fmaxf(xM, xs);
-        ym = fminf(ym, ys);
-        yM = fmaxf(yM, ys);
+        xm = MIN(xm, xs);
+        xM = MAX(xM, xs);
+        ym = MIN(ym, ys);
+        yM = MAX(yM, ys);
       }
     }
   }
@@ -3007,12 +3007,18 @@ static void _modify_roi_in_md(struct dt_iop_module_t *self,
   const struct dt_interpolation *interpolation =
     dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
 
-  roi_in->x = (int)fmaxf(0.0f, xm - interpolation->width);
-  roi_in->y = (int)fmaxf(0.0f, ym - interpolation->width);
-  roi_in->width = (int)fminf(orig_w - roi_in->x,
-                             xM - roi_in->x + interpolation->width);
-  roi_in->height = (int)fminf(orig_h - roi_in->y,
-                              yM - roi_in->y + interpolation->width);
+  const float iw1 = interpolation->width;
+  const float iw2 = 2.0f * iw1;
+  roi_in->x       = xm - iw1;
+  roi_in->y       = ym - iw1;
+  roi_in->width   = xM + iw2 - xm + 1.0f;
+  roi_in->height  = yM + iw2 - ym + 1.0f;
+
+  // sanity check.
+  roi_in->x = CLAMP(roi_in->x, 0, (int)floorf(orig_w - 2.0f));
+  roi_in->y = CLAMP(roi_in->y, 0, (int)floorf(orig_h - 2.0f));
+  roi_in->width = CLAMP(roi_in->width, 1, (int)floorf(orig_w) - roi_in->x);
+  roi_in->height = CLAMP(roi_in->height, 1, (int)floorf(orig_h) - roi_in->y);
 }
 
 static void _modify_roi_in_vg(struct dt_iop_module_t *self,
