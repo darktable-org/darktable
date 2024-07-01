@@ -130,7 +130,7 @@ static gboolean _get_node_for_name(GtkTreeModel *model,
   return FALSE;
 }
 
-gboolean _styles_tooltip_callback(GtkWidget* self,
+gboolean _styles_tooltip_callback(GtkWidget* widget,
                                   gint x,
                                   gint y,
                                   gboolean keyboard_mode,
@@ -142,13 +142,17 @@ gboolean _styles_tooltip_callback(GtkWidget* self,
   GtkTreeIter iter;
   dt_imgid_t imgid = NO_IMGID;
 
-  if(gtk_tree_view_get_tooltip_context(GTK_TREE_VIEW(self), &x, &y, FALSE, &model, &path, &iter))
+  if(gtk_tree_view_get_tooltip_context(GTK_TREE_VIEW(widget), &x, &y, FALSE, &model, &path, &iter))
   {
     gchar *name = NULL;
     gtk_tree_model_get(model, &iter, DT_STYLES_COL_FULLNAME, &name, -1);
 
-    // only on leaf node
-    if(!name) return FALSE;
+    // on non-leaf node open styles section when clicked in shortcut mapping mode
+    if(!name)
+    {
+      dt_action_define(&darktable.control->actions_global, NULL, "styles", widget, NULL);
+      return FALSE;
+    }
 
     GList *selected_image = dt_collection_get_selected(darktable.collection, 1);
 
@@ -159,10 +163,9 @@ gboolean _styles_tooltip_callback(GtkWidget* self,
     }
 
     GtkWidget *ht = dt_gui_style_content_dialog(name, imgid);
-    gtk_widget_show_all(ht);
+    dt_action_define(&darktable.control->actions_global, "styles", name, widget, NULL);
 
-    gtk_tooltip_set_custom(tooltip, ht);
-    return TRUE;
+    return dt_shortcut_tooltip_callback(widget, x, y, keyboard_mode, tooltip, ht);
   }
 
   return FALSE;

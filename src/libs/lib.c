@@ -507,6 +507,7 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo,
     }
     g_object_set_data_full(G_OBJECT(mi), "dt-preset-name", g_strdup(name), g_free);
     g_object_set_data(G_OBJECT(mi), "dt-preset-module", minfo->module);
+    dt_action_define(&minfo->module->actions, "preset", name, mi, NULL);
 
     g_signal_connect(G_OBJECT(mi), "activate",
                      G_CALLBACK(_menuitem_activate_preset), minfo);
