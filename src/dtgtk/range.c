@@ -1737,7 +1737,7 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
     range->entry_max = dt_ui_entry_new(0);
     gtk_widget_set_can_default(range->entry_max, TRUE);
     gtk_entry_set_alignment(GTK_ENTRY(range->entry_max), 1.0);
-    _entry_set_tooltip(range->entry_min, BOUND_MAX, range->type);
+    _entry_set_tooltip(range->entry_max, BOUND_MAX, range->type);
     g_signal_connect(G_OBJECT(range->entry_max), "activate", G_CALLBACK(_event_entry_activated), range);
     g_signal_connect(G_OBJECT(range->entry_max), "focus-out-event", G_CALLBACK(_event_entry_focus_out), range);
     g_signal_connect(G_OBJECT(range->entry_max), "button-press-event", G_CALLBACK(_event_entry_press), range);
