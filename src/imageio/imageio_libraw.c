@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2021-2023 darktable developers.
+    Copyright (C) 2021-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -263,6 +263,17 @@ const model_map_t modelMap[] = {
 };
 
 
+static gboolean is_in_glist(GList *list, const gchar *exif_model)
+{
+  for(GList *l = list; l; l = l->next)
+  {
+    if(!g_strcmp0((char *)l->data, exif_model))
+      return TRUE;
+  }
+  return FALSE;
+}
+
+GList *warning_missing_support_seen = NULL;
 
 /* LibRaw is expected to read only new Canon CR3 files */
 
@@ -301,11 +312,15 @@ static gboolean _supported_image(const gchar *filename)
 void _check_libraw_missing_support(const struct dt_image_t *img)
 {
   char lr_mk[64], lr_md[64], lr_al[64];
-  if(!dt_libraw_lookup_makermodel(img->exif_maker, img->exif_model,
+  if(!is_in_glist(warning_missing_support_seen, img->exif_model) &&
+     !dt_libraw_lookup_makermodel(img->exif_maker, img->exif_model,
                                   lr_mk, sizeof(lr_mk),
                                   lr_md, sizeof(lr_md),
                                   lr_al, sizeof(lr_al)))
   {
+    gchar *model_copy = g_strdup(img->exif_model);
+    warning_missing_support_seen = g_list_append(warning_missing_support_seen, model_copy);
+
     const char *T1 = _("<span foreground='red'><b>WARNING</b></span>:"
                        " camera is not fully supported!");
     char *T2 = g_strdup_printf(_("colors for `%s' could be misrepresented,\n"
