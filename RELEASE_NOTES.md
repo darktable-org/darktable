@@ -67,6 +67,15 @@ changes (where available).
 - Fixed color picker area resizing using corners when heavy distorting
   is applied into image.
 
+- Fixed wrong cropping in rotate and perspective module with strong
+  rotation and automatic cropping set to "original format".
+
+- Fixed possible color shift (pink) when using the Retouch module with
+  the embedded lens correction module.
+
+- Fixed histogram display when using a color picker area on a rotated
+  or flipped image.
+
 ## Lua
 
 ### API Version
