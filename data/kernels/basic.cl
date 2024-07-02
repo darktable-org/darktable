@@ -2779,8 +2779,9 @@ kernel void lens_man_vignette(read_only image2d_t in,
   const float4 val = max(0.0f, intensity * _calc_vignette_spline(radius, spline, splinesize));
 
   float4 pixel  = read_imagef(in, samplerA, (int2)(x, y));
+  const float mask = pixel.w;
   pixel *= (1.0f + val);
-  pixel.w = (vigmask) ? val.w : pixel.y;
+  pixel.w = (vigmask) ? val.w : mask;
 
   write_imagef (out, (int2)(x, y), pixel);
 }
