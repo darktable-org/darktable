@@ -2007,7 +2007,7 @@ static void _preprocess_vignette(struct dt_iop_module_t *self,
       for_three_channels(c)
         vig[idx + c] = (1.0f + val) * data[idx+c];
 
-      vig[idx + 3] = mask ? val : vig[idx + 1];
+      vig[idx + 3] = mask ? val : data[idx+3];
     }
   }
 }
