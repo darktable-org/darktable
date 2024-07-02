@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2022 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -155,6 +155,7 @@ typedef struct _gui_collapsible_section_t
   gchar *confname;      // configuration name for the toggle status
   GtkWidget *toggle;    // toggle button
   GtkWidget *expander;  // the expanded
+  GtkWidget *label;	// the label containing the section's title text
   GtkBox *container;    // the container for all widgets into the section
   struct dt_action_t *module; // the lib or iop module that contains this section
 } dt_gui_collapsible_section_t;
@@ -514,6 +515,9 @@ void dt_gui_new_collapsible_section(dt_gui_collapsible_section_t *cs,
                                     const char *label,
                                     GtkBox *parent,
                                     struct dt_action_t *module);
+// update the collapsible section's label text
+void dt_gui_collapsible_section_set_label(dt_gui_collapsible_section_t *cs,
+                                          const char *label);
 // routine to be called from gui_update
 void dt_gui_update_collapsible_section(dt_gui_collapsible_section_t *cs);
 
