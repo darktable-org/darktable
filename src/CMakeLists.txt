@@ -435,7 +435,7 @@ include_directories(SYSTEM ${Sqlite3_INCLUDE_DIR})
 list(APPEND LIBS ${Sqlite3_LIBRARIES})
 add_definitions(${Sqlite3_DEFINITIONS})
 
-foreach(lib ${OUR_LIBS} GIO GThread GModule PangoCairo Rsvg2 LibXml2 PNG JPEG TIFF LCMS2 JsonGlib)
+foreach(lib ${OUR_LIBS} GIO GThread GModule PangoCairo Rsvg2 PNG JPEG TIFF LCMS2 JsonGlib)
   find_package(${lib} REQUIRED)
   include_directories(SYSTEM ${${lib}_INCLUDE_DIRS})
   list(APPEND LIBS ${${lib}_LIBRARIES})
