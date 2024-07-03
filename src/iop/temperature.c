@@ -838,7 +838,7 @@ static void _color_finetuning_slider(struct dt_iop_module_t *self)
   if(!g->colored_sliders) return;
 
   dt_iop_temperature_preset_data_t *preset = dt_bauhaus_combobox_get_data(g->presets);
-  if(preset != NULL)
+  if(GPOINTER_TO_UINT(preset) >= DT_IOP_NUM_OF_STD_TEMP_PRESETS)
   {
     //we can do realistic/exaggerated.
 
@@ -1267,7 +1267,7 @@ void gui_update(struct dt_iop_module_t *self)
           dt_bauhaus_combobox_set(g->presets, j);
           dt_iop_temperature_preset_data_t *preset =
             dt_bauhaus_combobox_get_data(g->presets);
-          if(preset != NULL)
+          if(GPOINTER_TO_UINT(preset) >= DT_IOP_NUM_OF_STD_TEMP_PRESETS)
           {
             show_finetune = preset->min_ft_pos != preset->max_ft_pos;
             if(show_finetune)
@@ -1330,7 +1330,7 @@ void gui_update(struct dt_iop_module_t *self)
               dt_bauhaus_combobox_set(g->presets, j);
               dt_iop_temperature_preset_data_t *preset =
                 dt_bauhaus_combobox_get_data(g->presets);
-              if(preset != NULL)
+              if(GPOINTER_TO_UINT(preset) >= DT_IOP_NUM_OF_STD_TEMP_PRESETS)
               {
                 show_finetune = preset->min_ft_pos != preset->max_ft_pos;
                 if(show_finetune)
