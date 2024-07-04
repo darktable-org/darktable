@@ -1132,7 +1132,7 @@ static void _gui_off_callback(GtkToggleButton *togglebutton, dt_iop_module_t *mo
   // rebuild the accelerators
   dt_iop_connect_accels_multi(module->so);
 
-  if(module->enabled && !gtk_widget_is_visible(module->header))
+  if(!gtk_widget_is_visible(module->header))
     dt_dev_modulegroups_update_visibility(darktable.develop);
 }
 
