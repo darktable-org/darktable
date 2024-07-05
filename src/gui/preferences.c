@@ -1248,9 +1248,12 @@ static void
 _gui_preferences_enum_callback(GtkWidget *widget, gpointer data)
 {
   const gchar *index = dt_bauhaus_combobox_get_data(widget);
-  gchar *s = g_strndup(index, strchr(index, ']') - index);
-  dt_conf_set_string(data, s);
-  g_free(s);
+  if(index)
+  {
+    gchar *s = g_strndup(index, strchr(index, ']') - index);
+    dt_conf_set_string(data, s);
+    g_free(s);
+  }
 }
 
 GtkWidget *dt_gui_preferences_enum(dt_action_t *action, const char *key)
@@ -1259,7 +1262,8 @@ GtkWidget *dt_gui_preferences_enum(dt_action_t *action, const char *key)
   dt_bauhaus_combobox_alignment_t align = action ? DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT
                                                  : DT_BAUHAUS_COMBOBOX_ALIGN_LEFT;
   dt_bauhaus_combobox_set_selected_text_align(w, align);
-  if(action) gtk_widget_set_tooltip_text(w, dt_confgen_get_tooltip(key));
+  if(action)
+    gtk_widget_set_tooltip_text(w, _(dt_confgen_get_tooltip(key)));
 
   const char *values = dt_confgen_get(key, DT_VALUES);
   const char *defstr = dt_confgen_get(key, DT_DEFAULT);

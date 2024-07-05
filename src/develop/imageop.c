@@ -1100,8 +1100,19 @@ static void _gui_off_callback(GtkToggleButton *togglebutton, dt_iop_module_t *mo
 
       dt_dev_add_history_item(module->dev, module, FALSE);
 
-      if(!basics && dt_conf_get_bool("darkroom/ui/activate_expand") && module->expanded)
-        dt_iop_gui_set_expanded(module, FALSE, FALSE);
+      if(!basics && module->expanded)
+      {
+        // respect the conf setting to collapse if disabled
+        if(dt_conf_get_bool("darkroom/ui/activate_expand"))
+          dt_iop_gui_set_expanded(module, FALSE, FALSE);
+        /* modules with IOP_FLAGS_GUIDES_SPECIAL_DRAW flag like crop & ashift
+            want special care. In case we disable the dev->gui_module module
+            we unfocus it to let it's gui_focus() handle this gracefully.
+        */
+        else if(module->flags() & IOP_FLAGS_GUIDES_SPECIAL_DRAW
+                && module->dev->gui_module == module)
+          dt_iop_request_focus(NULL);
+      }
     }
 
     // set mask indicator sensitive according to module activation and raster mask
@@ -1121,7 +1132,7 @@ static void _gui_off_callback(GtkToggleButton *togglebutton, dt_iop_module_t *mo
   // rebuild the accelerators
   dt_iop_connect_accels_multi(module->so);
 
-  if(module->enabled && !gtk_widget_is_visible(module->header))
+  if(!gtk_widget_is_visible(module->header))
     dt_dev_modulegroups_update_visibility(darktable.develop);
 }
 

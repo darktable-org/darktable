@@ -363,6 +363,44 @@ gboolean dt_supported_image(const gchar *filename)
   return supported;
 }
 
+static gboolean _is_directory(const gchar *input)
+{
+  gboolean is_dir = FALSE;
+  char *filename = dt_util_normalize_path(input);
+  if(filename)
+  {
+    is_dir = g_file_test(filename, G_FILE_TEST_IS_DIR);
+    free(filename);
+  }
+  return is_dir;
+}
+
+static void _switch_to_new_filmroll(const gchar *input)
+{
+  char *filename = dt_util_normalize_path(input);
+  if(filename)
+  {
+    gchar *dirname;
+    if(g_file_test(filename, G_FILE_TEST_IS_DIR))
+      dirname = g_strdup(filename);
+    else
+      dirname = g_path_get_dirname((const gchar*)filename);
+    dt_filmid_t filmid = NO_FILMID;
+    /* initialize a film object*/
+    dt_film_t *film = (dt_film_t *)malloc(sizeof(dt_film_t));
+    dt_film_init(film);
+    dt_film_new(film, dirname);
+    if(dt_is_valid_filmid(film->id))
+    {
+      dt_film_open(film->id);
+      dt_ctl_switch_mode_to("lighttable");
+    }
+    free(film);
+    g_free(dirname);
+    free(filename);
+  }
+}
+
 dt_imgid_t dt_load_from_string(const gchar *input,
                                const gboolean open_image_in_dr,
                                gboolean *single_image)
@@ -1657,21 +1695,22 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     // into a lua deadlock.  having another call later is ok
     dt_ctl_switch_mode_to(mode);
 
-#ifndef MAC_INTEGRATION
     // load image(s) specified on cmdline.  this has to happen after
     // lua is initialized as image import can run lua code
-    if(argc == 2)
+    if(argc == 2 && !_is_directory(argv[1]))
     {
       // If only one image is listed, attempt to load it in darkroom
       (void)dt_load_from_string(argv[1], TRUE, NULL);
     }
-    else if(argc > 2)
+    else if(argc >= 2)
     {
-      // when multiple names are given, fire up a background job to import them
+      // when multiple names are given, or we are given a directory,
+      // fire up a background job to import them after switching to
+      // lighttable showing the filmroll for the first one
+      _switch_to_new_filmroll(argv[1]);
       dt_control_add_job(darktable.control,
                          DT_JOB_QUEUE_USER_BG, dt_pathlist_import_create(argc,argv));
     }
-#endif
 
     // there might be some info created in dt_configure_runtime_performance() for feedback
     gboolean not_again = TRUE;

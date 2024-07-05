@@ -72,6 +72,9 @@
     <release date="2019-03-07" version="2.6.1"/>
     <release date="2018-12-24" version="2.6.0"/>
   </releases>
+  <developer id="org.darktable">
+    <name>darktable developers</name>
+  </developer>
   <url type="homepage">https://www.darktable.org/</url>
   <url type="bugtracker">https://github.com/darktable-org/darktable/issues</url>
   <url type="help">https://www.darktable.org/resources/</url>

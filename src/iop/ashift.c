@@ -41,7 +41,6 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
-#include "libs/modulegroups.h"
 #include "gui/guides.h"
 
 #include <assert.h>
@@ -947,8 +946,8 @@ static void _homography(float *homograph,
       pi[2] = 1.0f;
       // moutput expects input in (x:y:1) format and gives output as (x:y:1)
       mat3mulv(po, (float *)moutput, pi);
-      umin = fmin(umin, po[0] / po[2]);
-      vmin = fmin(vmin, po[1] / po[2]);
+      umin = MIN(umin, po[0] / po[2]);
+      vmin = MIN(vmin, po[1] / po[2]);
     }
 
   memset(mwork, 0, sizeof(float) * 9);
@@ -1286,18 +1285,20 @@ void modify_roi_in(struct dt_iop_module_t *self,
 
   const struct dt_interpolation *interpolation =
     dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
-  roi_in->x = fmaxf(0.0f, xm - interpolation->width);
-  roi_in->y = fmaxf(0.0f, ym - interpolation->width);
-  roi_in->width = fminf(ceilf(orig_w) - roi_in->x,
-                        xM - roi_in->x + 1 + interpolation->width);
-  roi_in->height = fminf(ceilf(orig_h) - roi_in->y,
-                         yM - roi_in->y + 1 + interpolation->width);
+
+  const float iw1 = interpolation->width;
+  const float iw2 = 2.0f * iw1;
+  roi_in->x       = xm - iw1;
+  roi_in->y       = ym - iw1;
+  roi_in->width   = xM + iw2 - xm + 1.0f;
+  roi_in->height  = yM + iw2 - ym + 1.0f;
+
 
   // sanity check.
-  roi_in->x = CLAMP(roi_in->x, 0, (int)floorf(orig_w));
-  roi_in->y = CLAMP(roi_in->y, 0, (int)floorf(orig_h));
-  roi_in->width = CLAMP(roi_in->width, 1, (int)floorf(orig_w) - roi_in->x);
-  roi_in->height = CLAMP(roi_in->height, 1, (int)floorf(orig_h) - roi_in->y);
+  roi_in->x       = CLAMP(roi_in->x, 0, (int)floorf(orig_w));
+  roi_in->y       = CLAMP(roi_in->y, 0, (int)floorf(orig_h));
+  roi_in->width   = CLAMP(roi_in->width, 1, (int)floorf(orig_w) - roi_in->x);
+  roi_in->height  = CLAMP(roi_in->height, 1, (int)floorf(orig_h) - roi_in->y);
 }
 
 // simple conversion of rgb image into greyscale variant suitable for
@@ -2454,10 +2455,10 @@ static dt_iop_ashift_nmsresult_t nmsfit(dt_iop_module_t *module,
       mat3mulv(po, (float *)homograph, pi);
       po[0] /= po[2];
       po[1] /= po[2];
-      xm = fmin(xm, po[0]);
-      ym = fmin(ym, po[1]);
-      xM = fmax(xM, po[0]);
-      yM = fmax(yM, po[1]);
+      xm = MIN(xm, po[0]);
+      ym = MIN(ym, po[1]);
+      xM = MAX(xM, po[0]);
+      yM = MAX(yM, po[1]);
     }
 
   if((xM - xm) * (yM - ym) > 4.0f * fit.width * fit.height)
@@ -2805,11 +2806,11 @@ static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
 
   g->fitting = 0;
 
-#ifdef ASHIFT_DEBUG
-  printf("margins after crop fitting: iter %d, x %f, y %f, angle %f,"
-         " crop area (%f %f %f %f), width %f, height %f\n",
-         iter, cropfit.x, cropfit.y, cropfit.alpha, g->cl, g->cr, g->ct, g->cb, wd, ht);
-#endif
+  dt_print(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
+    "margins after crop fitting: iter=%d x=%.4f y=%.4f angle=%.4f"
+    " crop area (%.4f %.4f %.4f %.4f) wd=%i ht=%i\n",
+    iter, cropfit.x, cropfit.y, cropfit.alpha,
+    g->cl, g->cr, g->ct, g->cb, cropfit.width, cropfit.height);
   dt_control_queue_redraw_center();
   return;
 
@@ -2950,12 +2951,11 @@ static void crop_adjust(dt_iop_module_t *module,
   g->ct = CLAMP((P[1] - d * sinf(alpha)) / oht, 0.0f, 1.0f);
   g->cb = CLAMP((P[1] + d * sinf(alpha)) / oht, 0.0f, 1.0f);
 
-#ifdef ASHIFT_DEBUG
-  printf("margins after crop adjustment: x %f, y %f, angle %f,"
-         " crop area (%f %f %f %f), width %f, height %f\n",
-         0.5f * (g->cl + g->cr), 0.5f * (g->ct + g->cb), alpha,
-         g->cl, g->cr, g->ct, g->cb, wd, ht);
-#endif
+  dt_print(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
+    "margins after crop adjustment: x=%.3f y=%.3f angle=%.3f"
+    " crop area (%.3f %.3f %.3f %.3f) width=%i height=%i\n",
+    0.5f * (g->cl + g->cr), 0.5f * (g->ct + g->cb), alpha,
+    g->cl, g->cr, g->ct, g->cb, (int)wd, (int)ht);
   return;
 }
 
@@ -3472,12 +3472,6 @@ void process(struct dt_iop_module_t *self,
   {
     // we want to find out if the final output image is flipped in relation to this iop
     // so we can adjust the gui labels accordingly
-    const int width = roi_in->width;
-    const int height = roi_in->height;
-    const int x_off = roi_in->x;
-    const int y_off = roi_in->y;
-    const float scale = roi_in->scale;
-
     // origin of image and opposite corner as reference points
     dt_boundingbox_t points = { 0.0f,
                                 0.0f,
@@ -3510,27 +3504,29 @@ void process(struct dt_iop_module_t *self,
     dt_iop_gui_enter_critical_section(self);
     g->isflipped = isflipped;
 
+    const size_t requested_size = piece->buf_in.width * piece->buf_in.height;
+
     // save a copy of preview input buffer for parameter fitting
     if(g->buf == NULL
-       || (size_t)g->buf_width * g->buf_height < (size_t)width * height)
+       || (size_t)g->buf_width * g->buf_height < requested_size)
     {
       // if needed allocate buffer
       dt_free_align(g->buf);
       // only get new buffer if no old buffer available or old buffer
       // does not fit in terms of size
-      g->buf = dt_alloc_align_float(4 * width * height);
+      g->buf = dt_alloc_align_float(4 * requested_size);
     }
 
     if(g->buf /* && hash != g->buf_hash */)
     {
-      // copy data
-      dt_iop_image_copy_by_size(g->buf, ivoid, width, height, ch);
+      // copy data; seems to be safe we don't care aboit roi_in here
+      dt_iop_image_copy_by_size(g->buf, ivoid, roi_in->width, roi_in->height, ch);
 
-      g->buf_width = width;
-      g->buf_height = height;
-      g->buf_x_off = x_off;
-      g->buf_y_off = y_off;
-      g->buf_scale = scale;
+      g->buf_width = piece->buf_in.width;
+      g->buf_height = piece->buf_in.height;
+      g->buf_x_off = roi_in->x;
+      g->buf_y_off = roi_in->y;
+      g->buf_scale = roi_in->scale;
       g->buf_hash = hash;
     }
 
@@ -3607,10 +3603,6 @@ int process_cl(struct dt_iop_module_t *self,
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
   const int devid = piece->pipe->devid;
-  const int iwidth = roi_in->width;
-  const int iheight = roi_in->height;
-  const int width = roi_out->width;
-  const int height = roi_out->height;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   cl_mem dev_homo = NULL;
@@ -3620,10 +3612,6 @@ int process_cl(struct dt_iop_module_t *self,
   {
     // we want to find out if the final output image is flipped in relation to this iop
     // so we can adjust the gui labels accordingly
-    const int x_off = roi_in->x;
-    const int y_off = roi_in->y;
-    const float scale = roi_in->scale;
-
     // origin of image and opposite corner as reference points
     dt_boundingbox_t points = { 0.0f,
                                 0.0f,
@@ -3656,26 +3644,28 @@ int process_cl(struct dt_iop_module_t *self,
     dt_iop_gui_enter_critical_section(self);
     g->isflipped = isflipped;
 
+    const size_t requested_size = piece->buf_in.width * piece->buf_in.height;
+
     // save a copy of preview input buffer for parameter fitting
-    if(g->buf == NULL || (size_t)g->buf_width * g->buf_height < (size_t)iwidth * iheight)
+    if(g->buf == NULL || (size_t)g->buf_width * g->buf_height < requested_size)
     {
       // if needed allocate buffer
       dt_free_align(g->buf);
       // only get new buffer if no old buffer or old buffer does not fit in terms of size
-      g->buf = dt_alloc_align_float(4 * iwidth * iheight);
+      g->buf = dt_alloc_align_float(4 * requested_size);
     }
 
     if(g->buf /* && hash != g->buf_hash */)
     {
       // copy data
       err = dt_opencl_copy_device_to_host(devid, g->buf, dev_in,
-                                          iwidth, iheight, sizeof(float) * 4);
+                                          roi_in->width, roi_in->height, sizeof(float) * 4);
 
-      g->buf_width = iwidth;
-      g->buf_height = iheight;
-      g->buf_x_off = x_off;
-      g->buf_y_off = y_off;
-      g->buf_scale = scale;
+      g->buf_width = piece->buf_in.width;
+      g->buf_height = piece->buf_in.height;
+      g->buf_x_off = roi_in->x;
+      g->buf_y_off = roi_in->y;
+      g->buf_scale = roi_in->scale;
       g->buf_hash = hash;
     }
     dt_iop_gui_leave_critical_section(self);
@@ -3686,7 +3676,7 @@ int process_cl(struct dt_iop_module_t *self,
   if(isneutral(d))
   {
     size_t origin[] = { 0, 0, 0 };
-    size_t region[] = { width, height, 1 };
+    size_t region[] = { roi_out->width, roi_out->height, 1 };
     err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
     if(err != CL_SUCCESS) goto error;
     return CL_SUCCESS;
@@ -3710,8 +3700,6 @@ int process_cl(struct dt_iop_module_t *self,
 
   const int iroi[2] = { roi_in->x, roi_in->y };
   const int oroi[2] = { roi_out->x, roi_out->y };
-  const float in_scale = roi_in->scale;
-  const float out_scale = roi_out->scale;
   const float clip[2] = { cx, cy };
 
 
@@ -3740,11 +3728,11 @@ int process_cl(struct dt_iop_module_t *self,
   }
 
   err = dt_opencl_enqueue_kernel_2d_args
-    (devid, ldkernel, width, height,
-     CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height),
-     CLARG(iwidth), CLARG(iheight), CLARRAY(2, iroi),
+    (devid, ldkernel, roi_out->width, roi_out->height,
+     CLARG(dev_in), CLARG(dev_out), CLARG(roi_out->width), CLARG(roi_out->height),
+     CLARG(roi_in->width), CLARG(roi_in->height), CLARRAY(2, iroi),
      CLARRAY(2, oroi),
-     CLARG(in_scale), CLARG(out_scale), CLARRAY(2, clip), CLARG(dev_homo));
+     CLARG(roi_in->scale), CLARG(roi_out->scale), CLARRAY(2, clip), CLARG(dev_homo));
 
 error:
   dt_opencl_release_mem_object(dev_homo);
@@ -4040,10 +4028,10 @@ static gboolean _get_points(struct dt_iop_module_t *self,
 
     for(int l = 0; l < length; l++)
     {
-      xmin = fmin(xmin, my_points[2 * offset]);
-      xmax = fmax(xmax, my_points[2 * offset]);
-      ymin = fmin(ymin, my_points[2 * offset + 1]);
-      ymax = fmax(ymax, my_points[2 * offset + 1]);
+      xmin = MIN(xmin, my_points[2 * offset]);
+      xmax = MAX(xmax, my_points[2 * offset]);
+      ymin = MIN(ymin, my_points[2 * offset + 1]);
+      ymax = MAX(ymax, my_points[2 * offset + 1]);
     }
 
     my_points_idx[n].bbx = xmin;
@@ -4075,7 +4063,7 @@ error:
 static gboolean _gui_has_focus(struct dt_iop_module_t *self)
 {
   return (self->dev->gui_module == self
-          && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS);
+          && dt_dev_modulegroups_test_activated(darktable.develop));
 }
 
 /* this function replaces this sentence, it calls distort_transform()
@@ -5867,7 +5855,7 @@ static gboolean _event_draw(GtkWidget *widget,
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
 {
   darktable.develop->history_postpone_invalidate = in
-    && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS;
+    && dt_dev_modulegroups_test_activated(darktable.develop);
 
   if(self->enabled)
   {

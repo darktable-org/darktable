@@ -1124,7 +1124,7 @@ static gboolean _pixelpipe_process_on_CPU(
            piece->pipe, module, DT_DEVICE_CPU, roi_in, NULL, " %s -> %s `%s'\n",
            dt_iop_colorspace_to_name(cst_from),
            dt_iop_colorspace_to_name(cst_to),
-           dt_colorspaces_get_name(work_profile->type, work_profile->filename));
+           work_profile ? dt_colorspaces_get_name(work_profile->type, work_profile->filename) : "no work profile");
 
   // transform to module input colorspace
   dt_ioppr_transform_image_colorspace
@@ -1321,13 +1321,21 @@ static gboolean _dev_pixelpipe_process_rec(
   dt_iop_module_t *module = NULL;
   dt_dev_pixelpipe_iop_t *piece = NULL;
 
+  const dt_dev_pixelpipe_type_t old_pipetype = pipe->type;
   const dt_iop_module_t *gui_module = dt_dev_gui_module();
   // if a module is active, check if this module allow a fast pipe run
   if(gui_module
-     && gui_module->flags() & IOP_FLAGS_ALLOW_FAST_PIPE)
+     && gui_module->flags() & IOP_FLAGS_ALLOW_FAST_PIPE
+     && pipe->type & DT_DEV_PIXELPIPE_BASIC
+     && dt_dev_modulegroups_test_activated(darktable.develop))
     pipe->type |= DT_DEV_PIXELPIPE_FAST;
   else
     pipe->type &= ~DT_DEV_PIXELPIPE_FAST;
+
+  if(old_pipetype != pipe->type)
+    dt_print_pipe(DT_DEBUG_PIPE,
+      pipe->type & DT_DEV_PIXELPIPE_FAST ? "enable fast pipe" : "disable fast pipe",
+      pipe, gui_module, DT_DEVICE_NONE, NULL, NULL, "\n");
 
   if(modules)
   {
@@ -1469,7 +1477,7 @@ static gboolean _dev_pixelpipe_process_rec(
   module->modify_roi_in(module, piece, roi_out, &roi_in);
   if((darktable.unmuted & DT_DEBUG_PIPE) && memcmp(roi_out, &roi_in, sizeof(dt_iop_roi_t)))
     dt_print_pipe(DT_DEBUG_PIPE,
-                  "modify roi IN", piece->pipe, module, DT_DEVICE_NONE, &roi_in, roi_out, "ID=%i\n",
+                  "modify roi IN", piece->pipe, module, DT_DEVICE_NONE, roi_out, &roi_in, "ID=%i\n",
                   pipe->image.id);
   // recurse to get actual data of input buffer
 
@@ -1728,7 +1736,7 @@ static gboolean _dev_pixelpipe_process_rec(
                "transform colorspace", piece->pipe, module, pipe->devid, &roi_in, NULL, " %s -> %s `%s'\n",
                dt_iop_colorspace_to_name(cst_from),
                dt_iop_colorspace_to_name(cst_to),
-               dt_colorspaces_get_name(work_profile->type, work_profile->filename));
+               work_profile ? dt_colorspaces_get_name(work_profile->type, work_profile->filename) : "no work profile");
           success_opencl = dt_ioppr_transform_image_colorspace_cl
             (module, piece->pipe->devid,
              cl_mem_input, cl_mem_input,
