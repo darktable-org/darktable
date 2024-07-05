@@ -2032,17 +2032,17 @@ void dt_colorspaces_set_display_profile
   int profile_changed = 0;
   if(profile_type == DT_COLORSPACE_DISPLAY2)
   {
-    profile_changed
-        = buffer_size > 0
-      && (darktable.color_profiles->xprofile_size2 != buffer_size
-          || memcmp(darktable.color_profiles->xprofile_data2, buffer, buffer_size) != 0);
+      profile_changed
+          = buffer_size > 0
+        && (darktable.color_profiles->xprofile_size2 != buffer_size
+            || (buffer != NULL && memcmp(darktable.color_profiles->xprofile_data2, buffer, buffer_size) != 0));
   }
   else
   {
-    profile_changed
-        = buffer_size > 0
-      && (darktable.color_profiles->xprofile_size != buffer_size
-          || memcmp(darktable.color_profiles->xprofile_data, buffer, buffer_size) != 0);
+      profile_changed
+          = buffer_size > 0
+        && (darktable.color_profiles->xprofile_size != buffer_size
+            || (buffer != NULL && memcmp(darktable.color_profiles->xprofile_data, buffer, buffer_size) != 0));
   }
   if(profile_changed)
   {
