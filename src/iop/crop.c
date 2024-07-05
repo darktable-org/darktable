@@ -331,8 +331,8 @@ void modify_roi_out(struct dt_iop_module_t *self,
 
   const float px = MAX(0.0f, floorf(roi_in->width * d->cx));
   const float py = MAX(0.0f, floorf(roi_in->height * d->cy));
-  const float odx = roi_in->width * d->cw - px;
-  const float ody = roi_in->height * d->ch -py;
+  const float odx = floorf(roi_in->width * (d->cw - d->cx));
+  const float ody = floorf(roi_in->height * (d->ch - d->cy));
 
   // if the aspect has been toggled it's presented here as negative
   const float aspect = d->aspect < 0.0f ? fabsf(1.0f / d->aspect) : d->aspect;
@@ -755,10 +755,10 @@ static void _aspect_apply(dt_iop_module_t *self, _grab_region_t grab)
       clip_h = g->clip_max_y + g->clip_max_h - clip_y;
       if(grab & GRAB_LEFT) clip_x += prev_clip_w - clip_w;
     }
-    g->clip_x = fmin(1.0, fmax(clip_x, 0.0));
-    g->clip_y = fmin(1.0, fmax(clip_y, 0.0));
-    g->clip_w = fmax(0.0, fmin(clip_w, 1.0 - clip_x));
-    g->clip_h = fmax(0.0, fmin(clip_h, 1.0 - clip_y));
+    g->clip_x = CLIP(clip_x);
+    g->clip_y = CLIP(clip_y);
+    g->clip_w = CLAMP(clip_w, 0.0, 1.0f - clip_x);
+    g->clip_h = CLAMP(clip_h, 0.0, 1.0f - clip_y);
   }
 }
 
