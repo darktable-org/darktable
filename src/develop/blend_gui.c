@@ -1663,6 +1663,9 @@ static gboolean _blendop_masks_show_and_edit(GtkWidget *widget,
 {
   if(darktable.gui->reset) return FALSE;
 
+  darktable.develop->form_gui->creation_continuous = FALSE;
+  darktable.develop->form_gui->creation_continuous_module = NULL;
+
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)self->blend_data;
 
   if(event->button == 1)

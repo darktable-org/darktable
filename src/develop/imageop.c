@@ -1081,39 +1081,47 @@ static void _gui_off_callback(GtkToggleButton *togglebutton, dt_iop_module_t *mo
 {
   const gboolean basics =
     (dt_dev_modulegroups_get_activated(module->dev) == DT_MODULEGROUP_BASICS);
+  const gboolean special = module->flags() & IOP_FLAGS_GUIDES_SPECIAL_DRAW;
 
   if(!darktable.gui->reset)
   {
+    /* modules with IOP_FLAGS_GUIDES_SPECIAL_DRAW flag like crop & ashift need special care.
+        If in expanded state we request focus to let it's gui_focus() callback
+        handle this gracefully.
+       Otherwise respect the "darkroom/ui/activate_expand" conf to expand or collapse
+    */
+    const gboolean activate_expand = dt_conf_get_bool("darkroom/ui/activate_expand");
     if(gtk_toggle_button_get_active(togglebutton))
     {
       module->enabled = TRUE;
-
-      if(!basics && dt_conf_get_bool("darkroom/ui/activate_expand") && !module->expanded)
-        dt_iop_gui_set_expanded(module, TRUE,
+      if(!basics)
+      {
+        if(activate_expand && !module->expanded)
+          dt_iop_gui_set_expanded(module, TRUE,
                                 dt_conf_get_bool("darkroom/ui/single_module"));
-
-      dt_dev_add_history_item(module->dev, module, FALSE);
+        else if(special && module->expanded)
+        {
+          // we want to unfocus / refocus to ensure valid data in all cases
+          // as dt_iop_request_focus() does not handle this case.
+          if(module->dev->gui_module == module)
+            dt_iop_request_focus(NULL);
+          dt_iop_request_focus(module);
+        }
+      }
     }
     else
     {
       module->enabled = FALSE;
-
-      dt_dev_add_history_item(module->dev, module, FALSE);
-
       if(!basics && module->expanded)
       {
-        // respect the conf setting to collapse if disabled
-        if(dt_conf_get_bool("darkroom/ui/activate_expand"))
+        if(activate_expand)
           dt_iop_gui_set_expanded(module, FALSE, FALSE);
-        /* modules with IOP_FLAGS_GUIDES_SPECIAL_DRAW flag like crop & ashift
-            want special care. In case we disable the dev->gui_module module
-            we unfocus it to let it's gui_focus() handle this gracefully.
-        */
-        else if(module->flags() & IOP_FLAGS_GUIDES_SPECIAL_DRAW
-                && module->dev->gui_module == module)
+        else if(special)
           dt_iop_request_focus(NULL);
       }
     }
+
+    dt_dev_add_history_item(module->dev, module, FALSE);
 
     // set mask indicator sensitive according to module activation and raster mask
     if(module->mask_indicator)
