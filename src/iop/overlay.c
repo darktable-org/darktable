@@ -189,7 +189,6 @@ static GList *_get_disabled_modules(const dt_iop_module_t *self,
      There are some exceptions:
        - gamma and finalscale are required
        - crop and &ashift make sense
-       - colorin is good to keep too
      The list order does not matter
   */
 
@@ -207,7 +206,6 @@ static GList *_get_disabled_modules(const dt_iop_module_t *self,
           && !dt_iop_module_is(mod->so, "gamma")
           && !dt_iop_module_is(mod->so, "finalscale")
           && !dt_iop_module_is(mod->so, "crop")
-          && !dt_iop_module_is(mod->so, "colorin")
           && !dt_iop_module_is(mod->so, "ashift"))
     || (is_current
          && ( dt_iop_module_is(mod->so, "overlay")
