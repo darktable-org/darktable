@@ -908,8 +908,22 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
   // sanity check.
   if(roi_out->x < 0) roi_out->x = 0;
   if(roi_out->y < 0) roi_out->y = 0;
-  if(roi_out->width < 1) roi_out->width = 1;
-  if(roi_out->height < 1) roi_out->height = 1;
+  if(roi_out->width < 4 || roi_out->height < 4)
+  {
+    dt_print_pipe(DT_DEBUG_PIPE,
+      "safety check", piece->pipe, self, DT_DEVICE_NONE, roi_in, roi_out, "\n");
+
+    roi_out->x = roi_in->x;
+    roi_out->y = roi_in->y;
+    roi_out->width = roi_in->width;
+    roi_out->height = roi_in->height;
+    piece->enabled = FALSE;
+
+    if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
+      dt_control_log
+        (_("module '%s' has insane data so it is bypassed for now. you should disable it or change parameters\n"),
+         self->name());
+  }
 
   // save rotation crop on output buffer in world scale:
   d->cix = roi_out->x;
