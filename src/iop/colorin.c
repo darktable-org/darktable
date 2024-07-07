@@ -1351,7 +1351,8 @@ void commit_params(struct dt_iop_module_t *self,
     piece->enabled = FALSE;
     return;
   }
-  piece->enabled = TRUE;
+  if(!(piece->pipe->type & DT_DEV_PIXELPIPE_IMAGE_FINAL))
+    piece->enabled = TRUE;
 
   if(type == DT_COLORSPACE_ENHANCED_MATRIX)
   {
