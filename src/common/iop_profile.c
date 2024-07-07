@@ -634,6 +634,10 @@ static inline void _transform_matrix(struct dt_iop_module_t *self,
   {
     _transform_lab_to_rgb_matrix(image_in, image_out, width, height, profile_info);
   }
+  else if(cst_from == IOP_CS_RGB && cst_to == IOP_CS_RAW)
+  {
+    *converted_cst = cst_from;
+  }
   else
   {
     *converted_cst = cst_from;
@@ -1186,6 +1190,11 @@ void dt_ioppr_transform_image_colorspace
     *converted_cst = cst_from;
     return;
   }
+  if(cst_from == IOP_CS_RGB && cst_to == IOP_CS_RAW)
+  {
+    *converted_cst = cst_from;
+    return ;
+  }
 
   dt_times_t start_time = { 0 };
   dt_get_perf_times(&start_time);
@@ -1449,6 +1458,11 @@ gboolean dt_ioppr_transform_image_colorspace_cl
     return TRUE;
   }
   if(profile_info->type == DT_COLORSPACE_NONE)
+  {
+    *converted_cst = cst_from;
+    return TRUE;
+  }
+  if(cst_from == IOP_CS_RGB && cst_to == IOP_CS_RAW)
   {
     *converted_cst = cst_from;
     return TRUE;
