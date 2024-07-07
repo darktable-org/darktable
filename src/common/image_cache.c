@@ -69,8 +69,8 @@ static void _image_cache_allocate(void *data,
     img->id = sqlite3_column_int(stmt, 0);
     img->group_id = sqlite3_column_int(stmt, 1);
     img->film_id = sqlite3_column_int(stmt, 2);
-    img->width = sqlite3_column_int(stmt, 3);
-    img->height = sqlite3_column_int(stmt, 4);
+    img->p_width = img->width = sqlite3_column_int(stmt, 3);
+    img->p_height = img->height = sqlite3_column_int(stmt, 4);
     img->crop_x = img->crop_y = img->crop_right = img->crop_bottom = 0;
     img->filename[0] = img->exif_maker[0] = img->exif_model[0] = img->exif_lens[0] = '\0';
     dt_datetime_exif_to_img(img, "");

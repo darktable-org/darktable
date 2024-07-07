@@ -285,7 +285,10 @@ typedef struct dt_image_t
   // common stuff
 
   // to understand this, look at comment for dt_histogram_roi_t
-  int32_t width, height, final_width, final_height, p_width, p_height;
+  int32_t width, height, final_width, final_height;
+  // p_width and p_height are updated by rawprepare
+  int32_t p_width, p_height;
+  // written by the image loader, data come from rawspeed; **not** changed by rawprepare
   int32_t crop_x, crop_y;
   int32_t crop_right, crop_bottom;
   float aspect_ratio;
@@ -494,16 +497,6 @@ gboolean dt_image_set_history_end(const dt_imgid_t imgid,
                                   const int history_end);
 /** get the ratio of cropped raw sensor data */
 float dt_image_get_sensor_ratio(const dt_image_t *img);
-
-/** get dimensions of image after cropping in rawprepare */
-static inline int dt_image_raw_width(const dt_image_t *img)
-{
-  return img->width - img->crop_x - img->crop_right;
-}
-static inline int dt_image_raw_height(const dt_image_t *img)
-{
-  return img->height - img->crop_y - img->crop_bottom;
-}
 
 /** returns the orientation bits of the image from exif. */
 static inline dt_image_orientation_t dt_image_orientation(const dt_image_t *img)
