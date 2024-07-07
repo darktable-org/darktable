@@ -607,7 +607,7 @@ static gboolean _image_set_rawcrops(
         const int top,
         const int bottom)
 {
-  dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+  dt_image_t *img = &self->dev->image_storage;
 
   const gboolean cropvalid = (left >= 0) && (right >= 0) && (top >= 0) && (bottom >= 0)
     && (left+right < img->width / 2) && (top + bottom < img->height /2);
@@ -616,7 +616,6 @@ static gboolean _image_set_rawcrops(
       (img->p_width == img->width - left - right)
    && (img->p_height == img->height - top - bottom);
 
-  dt_image_cache_read_release(darktable.image_cache, img);
   if(testdim && cropvalid) return FALSE;
 
   if(!cropvalid)
@@ -633,10 +632,12 @@ static gboolean _image_set_rawcrops(
   else
     dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
 
-  img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
-  img->p_width = img->width - (cropvalid ? left + right : 0);
-  img->p_height = img->height - (cropvalid ? top + bottom : 0);
-  dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+  // we update p_width & height both in the image_storage for fast access withing the pipeline
+  // and the database so we can access that also via dt_image_cache_get()
+  dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+  image->p_width = img->p_width = img->width - (cropvalid ? left + right : 0);
+  image->p_height = img->p_height = img->height - (cropvalid ? top + bottom : 0);
+  dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_RELAXED);
 
   return TRUE;
 }
@@ -749,7 +750,7 @@ void commit_params(
   else
     d->apply_gainmaps = FALSE;
 
-   if(_image_set_rawcrops(self, pipe->image.id, d->left, d->right, d->top, d->bottom))
+  if(_image_set_rawcrops(self, pipe->image.id, d->left, d->right, d->top, d->bottom))
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_METADATA_UPDATE);
 
   if(!(dt_image_is_rawprepare_supported(&piece->pipe->image))
