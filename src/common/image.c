@@ -1073,10 +1073,7 @@ void dt_image_flip(const dt_imgid_t imgid, const int32_t cw)
 */
 float dt_image_get_sensor_ratio(const struct dt_image_t *img)
 {
-  if(img->p_height >0)
-    return (double)img->p_width / (double)img->p_height;
-
-  return (double)img->width / (double)img->height;
+  return (float)img->p_width / (float)img->p_height;
 }
 
 void dt_image_set_raw_aspect_ratio(const dt_imgid_t imgid)
@@ -1086,9 +1083,9 @@ void dt_image_set_raw_aspect_ratio(const dt_imgid_t imgid)
 
   /* set image aspect ratio */
   if(image->orientation < ORIENTATION_SWAP_XY)
-    image->aspect_ratio = (float )image->width / (float )image->height;
+    image->aspect_ratio = (float )image->p_width / (float )image->p_height;
   else
-    image->aspect_ratio = (float )image->height / (float )image->width;
+    image->aspect_ratio = (float )image->p_height / (float )image->p_width;
 
   /* store */
   dt_image_cache_write_release_info(darktable.image_cache, image,

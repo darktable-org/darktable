@@ -292,6 +292,8 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img,
     const iPoint2D cropBR = dimUncropped - dimCropped - cropTL;
     img->crop_right = cropBR.x;
     img->crop_bottom = cropBR.y;
+    img->p_width = img->width - img->crop_x - img->crop_right;
+    img->p_height = img->height - img->crop_y - img->crop_bottom;
 
     img->fuji_rotation_pos = r->metadata.fujiRotationPos;
     img->pixel_aspect_ratio = (float)r->metadata.pixelAspectRatio;

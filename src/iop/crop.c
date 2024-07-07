@@ -439,9 +439,7 @@ void commit_params(struct dt_iop_module_t *self,
     d->aspect = 0.0f;           // freehand
     if(rn == 0 && abs(rd) == 1) // original image ratio
     {
-      // we use the rawprepare cropped dimension for original
-      const dt_image_t *img = &(self->dev->image_storage);
-      const float pratio = (float)dt_image_raw_width(img) / (float)dt_image_raw_height(img);
+      const float pratio = dt_image_get_sensor_ratio(&self->dev->image_storage);
       d->aspect = rd > 0 ? pratio : -pratio;
     }
     else if(rn == 0) { }
@@ -528,8 +526,8 @@ static float _aspect_ratio_get(dt_iop_module_t *self, GtkWidget *combo)
   if(text && !g_strcmp0(text, _("original image")))
   {
     const dt_image_t *img = &(self->dev->image_storage);
-    int wd = dt_image_raw_width(img);
-    int ht = dt_image_raw_height(img);
+    int wd = img->p_width;
+    int ht = img->p_height;
 
     if(!(wd > 0 && ht > 0)) return 0.0f;
 

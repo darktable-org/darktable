@@ -416,6 +416,8 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
   img->crop_right = raw->rawdata.sizes.raw_width - raw->rawdata.sizes.width - raw->rawdata.sizes.left_margin;
   img->crop_bottom = raw->rawdata.sizes.raw_height - raw->rawdata.sizes.height - raw->rawdata.sizes.top_margin;
 
+  img->p_width = img->width - img->crop_x - img->crop_right;
+  img->p_height = img->height - img->crop_y - img->crop_bottom;
   // We can reuse the libraw filters property, it's already well-handled in dt.
   // It contains (for CR3) the Bayer pattern, but we have to undo some LibRaw logic.
   if(raw->rawdata.iparams.colors == 3)
