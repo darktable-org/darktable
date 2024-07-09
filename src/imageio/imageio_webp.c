@@ -73,6 +73,27 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
     return DT_IMAGEIO_LOAD_FAILED;
   }
 
+  WebPData wp_data;
+  wp_data.bytes = (uint8_t *)read_buffer;
+  wp_data.size = filesize;
+  WebPMux *mux = WebPMuxCreate(&wp_data, 0); // 0 = data will NOT be copied to the mux object
+
+  if(mux)
+  {
+    WebPMuxGetChunk(mux, "ICCP", &icc_profile);
+    if(icc_profile.size)
+    {
+      img->profile_size = icc_profile.size;
+      img->profile = (uint8_t *)g_malloc0(icc_profile.size);
+      memcpy(img->profile, icc_profile.bytes, icc_profile.size);
+    }
+    WebPMuxDelete(mux);
+  }
+
+  // We've finished decoding and retrieving the ICC profile, the file read buffer can be freed
+  g_free(read_buffer);
+
+
   img->width = width;
   img->height = height;
   img->buf_dsc.channels = 4;
@@ -98,24 +119,6 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
 
   dt_free_align(int_RGBA_buf);
 
-  WebPData wp_data;
-  wp_data.bytes = (uint8_t *)read_buffer;
-  wp_data.size = filesize;
-  WebPMux *mux = WebPMuxCreate(&wp_data, 0); // 0 = data will NOT be copied to the mux object
-
-  if(mux)
-  {
-    WebPMuxGetChunk(mux, "ICCP", &icc_profile);
-    if(icc_profile.size)
-    {
-      img->profile_size = icc_profile.size;
-      img->profile = (uint8_t *)g_malloc0(icc_profile.size);
-      memcpy(img->profile, icc_profile.bytes, icc_profile.size);
-    }
-    WebPMuxDelete(mux);
-  }
-
-  g_free(read_buffer);
 
   img->buf_dsc.cst = IOP_CS_RGB;
   img->buf_dsc.filters = 0u;
