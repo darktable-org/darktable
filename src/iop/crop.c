@@ -163,7 +163,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
                                             dt_dev_pixelpipe_t *pipe,
                                             dt_dev_pixelpipe_iop_t *piece)
 {
-  return IOP_CS_RGB;
+  return (pipe && pipe->dsc.cst == IOP_CS_LAB) ? IOP_CS_LAB : IOP_CS_RGB;
 }
 
 static int _gui_has_focus(struct dt_iop_module_t *self)

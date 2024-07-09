@@ -198,7 +198,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 {
   // This module might possible work in RAW or RGB (e.g. for TIFF files) color space
   // depending on the input but will not change it.
-  return (piece && piece->dsc_in.cst != IOP_CS_RAW) ? IOP_CS_RGB : IOP_CS_RAW;
+  return (pipe && pipe->dsc.cst == IOP_CS_RGB) ? IOP_CS_RGB : IOP_CS_RAW;
 }
 
 int legacy_params(dt_iop_module_t *self,
