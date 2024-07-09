@@ -469,7 +469,6 @@ if (USE_ISOBMFF)
       "${Exiv2_INCLUDE_DIRS}/exiv2/exv_conf.h"
       HAVE_EXV_ENABLE_BMFF)
     if(HAVE_EXV_ENABLE_BMFF)
-      add_definitions(-DHAVE_LIBEXIV2_WITH_ISOBMFF=1)
       set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} cr3 CACHE INTERNAL "")
       message(STATUS "Exiv2 >= 0.27.4 found with ISOBMFF support (CR3, AVIF, HEIF)")
     else()

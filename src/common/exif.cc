@@ -5823,7 +5823,7 @@ void dt_exif_init()
   // Preface the Exiv2 messages with "[exiv2] "
   Exiv2::LogMsg::setHandler(&_exif_log_handler);
 
-  #ifdef HAVE_LIBEXIV2_WITH_ISOBMFF
+  #if EXIV2_TEST_VERSION(0,27,4) && !EXIV2_TEST_VERSION(0,28,3)
   Exiv2::enableBMFF();
   #endif
 
