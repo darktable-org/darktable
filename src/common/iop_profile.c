@@ -634,12 +634,13 @@ static inline void _transform_matrix(struct dt_iop_module_t *self,
   {
     _transform_lab_to_rgb_matrix(image_in, image_out, width, height, profile_info);
   }
-  else if(cst_from == IOP_CS_RGB && cst_to == IOP_CS_RAW)
-  {
-    *converted_cst = cst_from;
-  }
   else
   {
+    const size_t ch = cst_from == IOP_CS_RAW ? 1 : 4;
+    const size_t nfloats = width * height * ch;
+    if(image_in != image_out)
+      dt_iop_image_copy(image_out, image_in, nfloats);
+
     *converted_cst = cst_from;
     dt_print(DT_DEBUG_ALWAYS,
              "[_transform_matrix] invalid conversion from %s to %s\n",
@@ -1175,25 +1176,32 @@ void dt_ioppr_transform_image_colorspace
    int *converted_cst,
    const dt_iop_order_iccprofile_info_t *const profile_info)
 {
+  gboolean quick = FALSE;
+  const gboolean inplace = image_in == image_out;
+
+  const size_t ch = cst_to == IOP_CS_RAW ? 1 : 4;
+  const size_t nfloats = width * height * ch;
   if(cst_from == cst_to)
   {
+    quick = TRUE;
     *converted_cst = cst_to;
-    return;
   }
-  if(profile_info == NULL)
+  else if(profile_info == NULL)
   {
+    quick = TRUE;
     *converted_cst = cst_from;
-    return;
   }
-  if(profile_info->type == DT_COLORSPACE_NONE)
+  else if(profile_info->type == DT_COLORSPACE_NONE)
   {
+    quick = TRUE;
     *converted_cst = cst_from;
-    return;
   }
-  if(cst_from == IOP_CS_RGB && cst_to == IOP_CS_RAW)
+
+  if(quick)
   {
-    *converted_cst = cst_from;
-    return ;
+    if(!inplace)
+      dt_iop_image_copy(image_out, image_in, nfloats);
+    return;
   }
 
   dt_times_t start_time = { 0 };
@@ -1228,8 +1236,8 @@ void dt_ioppr_transform_image_colorspace
              dt_colorspaces_get_name(profile_info->type, profile_info->filename),
              dt_iop_colorspace_to_name(cst_from),
              dt_iop_colorspace_to_name(cst_to));
-    if(image_in != image_out)
-      dt_iop_image_copy_by_size(image_out, image_in, width, height, cst_to == IOP_CS_RAW ? 1 : 4);
+    if(!inplace)
+      dt_iop_image_copy(image_out, image_in, nfloats);
   }
 }
 
@@ -1447,30 +1455,37 @@ gboolean dt_ioppr_transform_image_colorspace_cl
 {
   cl_int err = CL_SUCCESS;
 
+  gboolean quick = FALSE;
+  const gboolean inplace = dev_img_in == dev_img_out;
+
   if(cst_from == cst_to)
   {
+    quick = TRUE;
     *converted_cst = cst_to;
-    return TRUE;
   }
-  if(profile_info == NULL)
+  else if(profile_info == NULL)
   {
+    quick = TRUE;
     *converted_cst = cst_from;
-    return TRUE;
   }
-  if(profile_info->type == DT_COLORSPACE_NONE)
+  else if(profile_info->type == DT_COLORSPACE_NONE)
   {
+    quick = TRUE;
     *converted_cst = cst_from;
-    return TRUE;
   }
-  if(cst_from == IOP_CS_RGB && cst_to == IOP_CS_RAW)
+
+  size_t origin[] = { 0, 0, 0 };
+  size_t region[] = { width, height, 1 };
+
+  if(quick)
   {
-    *converted_cst = cst_from;
-    return TRUE;
+    if(!inplace)
+      err = dt_opencl_enqueue_copy_image(devid, dev_img_in, dev_img_out, origin, origin, region);
+    return err == CL_SUCCESS;
   }
 
   const size_t ch = 4;
   float *src_buffer = NULL;
-  const gboolean in_place = (dev_img_in == dev_img_out);
 
   int kernel_transform = 0;
   cl_mem dev_tmp = NULL;
@@ -1488,8 +1503,6 @@ gboolean dt_ioppr_transform_image_colorspace_cl
     dt_times_t start_time = { 0 };
     dt_get_perf_times(&start_time);
 
-    size_t origin[] = { 0, 0, 0 };
-    size_t region[] = { width, height, 1 };
 
     if(cst_from == IOP_CS_RGB && cst_to == IOP_CS_LAB)
     {
@@ -1518,7 +1531,7 @@ gboolean dt_ioppr_transform_image_colorspace_cl
     dt_ioppr_get_profile_info_cl(profile_info, &profile_info_cl);
     lut_cl = dt_ioppr_get_trc_cl(profile_info);
 
-    if(in_place)
+    if(inplace)
     {
       dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
       if(dev_tmp == NULL)
@@ -1596,7 +1609,7 @@ cleanup:
              "[dt_ioppr_transform_image_colorspace_cl] had error: %s\n", cl_errstr(err));
 
   dt_free_align(src_buffer);
-  if(dev_tmp && in_place)
+  if(dev_tmp && inplace)
     dt_opencl_release_mem_object(dev_tmp);
   dt_opencl_release_mem_object(dev_profile_info);
   dt_opencl_release_mem_object(dev_lut);
