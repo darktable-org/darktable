@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -140,7 +140,7 @@ static dt_hash_t _dev_pixelpipe_cache_basichash(
       {
         if(darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
         {
-          hash = dt_hash(hash, darktable.lib->proxy.colorpicker.primary_sample->box, 4 * sizeof(float));
+          hash = dt_hash(hash, darktable.lib->proxy.colorpicker.primary_sample->box, sizeof(dt_pickerbox_t));
         }
         else if(darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
         {
