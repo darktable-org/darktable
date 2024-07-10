@@ -360,6 +360,7 @@ void dt_dev_pixelpipe_cleanup_nodes(dt_dev_pixelpipe_t *pipe)
   pipe->nodes = NULL;
 
   dt_dev_clear_scharr_mask(pipe);
+  pipe->want_detail_mask = FALSE;
 
   // also cleanup iop here
   if(pipe->iop)
@@ -540,11 +541,14 @@ static void _dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
           piece->module->iop_order,
           piece->hash);
 
-      if(piece->blendop_data)
+      if(piece->enabled && piece->blendop_data)
       {
         const dt_develop_blend_params_t *const bp =
           (const dt_develop_blend_params_t *)piece->blendop_data;
-        if(!feqf(bp->details, 0.0f, 1e-6))
+        const gboolean valid_mask = bp->mask_mode > DEVELOP_MASK_ENABLED
+                                &&  bp->mask_mode != DEVELOP_MASK_RASTER;
+
+        if((!feqf(bp->details, 0.0f, 1e-6)) && valid_mask)
           dt_dev_pixelpipe_usedetails(pipe);
       }
     }
@@ -576,6 +580,9 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
 
   dt_print_pipe(DT_DEBUG_PARAMS, "synch all module history",
     pipe, NULL, DT_DEVICE_NONE, NULL, NULL, "\n");
+
+  dt_dev_clear_scharr_mask(pipe);
+  pipe->want_detail_mask = FALSE;
 
   // go through all history items and adjust params
   GList *history = dev->history;
