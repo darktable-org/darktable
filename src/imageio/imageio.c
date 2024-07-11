@@ -894,24 +894,26 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
 
   if(darktable.unmuted & DT_DEBUG_IMAGEIO)
   {
-    char mbuf[1024] = { 0 };
+    char mbuf[2048] = { 0 };
     for(GList *nodes = pipe.nodes; nodes; nodes = g_list_next(nodes))
     {
       dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
       if(piece->enabled)
       {
-        const size_t used = strlen(mbuf);
-        snprintf(mbuf + used, sizeof(dev) - used, " %s", piece->module->op);
+        g_strlcat(mbuf, " ", sizeof(mbuf));
+        g_strlcat(mbuf, piece->module->op, sizeof(mbuf));
+        g_strlcat(mbuf, dt_iop_get_instance_id(piece->module), sizeof(mbuf));
       }
     }
-    dt_print(DT_DEBUG_ALWAYS,"[dt_imageio_export_with_flags] %s%s%s%s%s modules:%s%s\n",
-      use_style && appending  ? "append style history " : "",
-      use_style && !appending ? "replace style history " : "",
-      use_style               ? "`" : "",
-      use_style               ? format_params->style : "",
-      use_style               ? "'." : "",
-      mbuf,
-      strlen(mbuf) > 1022 ? " ..." : "");
+
+    dt_print(DT_DEBUG_ALWAYS,
+      "[dt_imageio_export_with_flags] %s%s%s%s%s modules:%s\n",
+      use_style && appending      ? "append style history " : "",
+      use_style && !appending     ? "replace style history " : "",
+      use_style                   ? "`" : "",
+      use_style && format_params  ? format_params->style : "",
+      use_style                   ? "'." : "",
+      mbuf);
   }
 
   if(filter)
