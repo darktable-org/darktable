@@ -76,6 +76,8 @@ changes (where available).
 - Fixed histogram display when using a color picker area on a rotated
   or flipped image.
 
+- Fixed a crash while using the -d imageio option.
+
 ## Lua
 
 ### API Version
