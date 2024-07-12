@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2015-2023 darktable developers.
+    Copyright (C) 2015-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -136,11 +136,15 @@ int process_cl(struct dt_iop_module_t *self,
   }
 
   const int devid = piece->pipe->devid;
+  const gboolean exporting = piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT;
 
   dt_print_pipe(DT_DEBUG_IMAGEIO,
-                "clip_and_zoom_roi",
+                exporting ? "clip_and_zoom_roi" : "clip_and_zoom",
                 piece->pipe, self, piece->pipe->devid, roi_in, roi_out, "device=%i\n", devid);
-  return dt_iop_clip_and_zoom_cl(devid, dev_out, dev_in, roi_out, roi_in);
+  if(exporting)
+    return dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_in, roi_out, roi_in);
+  else
+    return dt_iop_clip_and_zoom_cl(devid, dev_out, dev_in, roi_out, roi_in);
 }
 #endif
 
@@ -151,10 +155,15 @@ void process(dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
+  const gboolean exporting = piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT;
   dt_print_pipe(DT_DEBUG_IMAGEIO,
-                "clip_and_zoom_roi", piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out, "\n");
+                exporting ? "clip_and_zoom_roi" : "clip_and_zoom",
+                piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out, "\n");
 
-  dt_iop_clip_and_zoom((float *)ovoid, (float *)ivoid, roi_out, roi_in);
+  if(exporting)
+    dt_iop_clip_and_zoom_roi((float *)ovoid, (float *)ivoid, roi_out, roi_in);
+  else
+    dt_iop_clip_and_zoom((float *)ovoid, (float *)ivoid, roi_out, roi_in);
 }
 
 void commit_params(dt_iop_module_t *self,
