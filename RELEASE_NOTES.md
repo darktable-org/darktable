@@ -78,6 +78,8 @@ changes (where available).
 
 - Fixed a crash while using the -d imageio option.
 
+- Fixed large image exports due to a bug in finalscale module.
+
 ## Lua
 
 ### API Version
