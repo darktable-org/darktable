@@ -98,6 +98,12 @@ void modify_roi_in(dt_iop_module_t *self,
                                piece->buf_in.width));
   roi_in->height = MAX(16, MIN(ceilf(roi_out->height / roi_out->scale),
                                piece->buf_in.height));
+
+  // FIXME As long as we don't support upscaling via OpenCL we can & should disable OpenCL
+  // here to avoid the costly later fallback to CPU upscaling
+  if(roi_in->scale > 1.0f)
+    piece->process_cl_ready = FALSE;
+
   roi_in->scale = 1.0f;
 
   if(_gui_fullpipe(piece))
@@ -107,6 +113,27 @@ void modify_roi_in(dt_iop_module_t *self,
     roi_in->width = piece->buf_in.width;
     roi_in->height = piece->buf_in.height;
   }
+}
+
+void tiling_callback(struct dt_iop_module_t *self,
+                     struct dt_dev_pixelpipe_iop_t *piece,
+                     const dt_iop_roi_t *roi_in,
+                     const dt_iop_roi_t *roi_out,
+                     struct dt_develop_tiling_t *tiling)
+{
+  const float ioratio
+      = (float)(roi_out->width * roi_out->height) / (float)(roi_in->width * roi_in->height);
+
+  tiling->factor = 1.0f + ioratio;
+  tiling->factor += ioratio != 1.0f ? 0.5f : 0.0f; // approximate extra requirements for interpolation
+  tiling->factor_cl = tiling->factor;
+  tiling->maxbuf = 1.0f;
+  tiling->maxbuf_cl = tiling->maxbuf;
+  tiling->overhead = 0;
+
+  tiling->overlap = 4;
+  tiling->xalign = 1;
+  tiling->yalign = 1;
 }
 
 void distort_mask(struct dt_iop_module_t *self,
