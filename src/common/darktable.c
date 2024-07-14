@@ -288,16 +288,18 @@ static int usage(const char *argv0)
 #endif
          "\n"
          "    If -d signal or -d all is specified, specify the signal action\n"
-         "    to debug using this option.\n");
+         "    to debug using this option.\n"
+         "\n");
 #ifdef _WIN32
-  printf("\n\n");
-  printf("Debug log and output will be written to this file:\n");
+  printf("\n");
+  printf("Debug log and output will be written to this file (unless running in \n"
+         "Windows Terminal):\n\n");
   printf("    %s\n", logfile);
 #else
-  printf("\n");
 #endif
 
-  printf("See %s for more detailed documentation.\n"
+  printf("\n"
+         "See %s for more detailed documentation.\n"
          "See %s to report bugs.\n",
          PACKAGE_DOCS,
          PACKAGE_BUGREPORT);
