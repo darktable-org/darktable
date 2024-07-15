@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -225,7 +225,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
   }
 
   if(d->shortfile && layers == 3)
-    dt_control_log(_("not a B&W image, will not export as grayscale"));
+    dt_control_log(_("not a B&amp;W image, will not export as grayscale"));
 
   TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, layers);
   TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, (uint16_t)d->bpp);
