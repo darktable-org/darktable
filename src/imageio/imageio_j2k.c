@@ -206,13 +206,6 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
     color_sycc_to_rgb(image);
   }
 
-  if(image->color_space != OPJ_CLRSPC_SRGB && image->color_space != OPJ_CLRSPC_GRAY)
-  {
-    dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: unsupported color space for image `%s'\n", filename);
-    ret = DT_IMAGEIO_LOAD_FAILED;
-    goto end_of_the_world;
-  }
-
   /* Get the ICC profile if available */
   if(image->icc_profile_len > 0 && image->icc_profile_buf)
   {
