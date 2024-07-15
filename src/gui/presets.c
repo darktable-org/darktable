@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -37,6 +37,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
+#define MAX_FOCAL_LEN 2000
 
 const int dt_gui_presets_exposure_value_cnt = 22;
 const float dt_gui_presets_exposure_value[]
@@ -731,9 +732,9 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
   // focal length
   label = gtk_label_new(_("focal length"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  g->focal_length_min = gtk_spin_button_new_with_range(0, 1000, 10);
+  g->focal_length_min = gtk_spin_button_new_with_range(0, MAX_FOCAL_LEN, 10);
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(g->focal_length_min), 0);
-  g->focal_length_max = gtk_spin_button_new_with_range(0, 1000, 10);
+  g->focal_length_max = gtk_spin_button_new_with_range(0, MAX_FOCAL_LEN, 10);
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(g->focal_length_max), 0);
   gtk_widget_set_tooltip_text(g->focal_length_min, _("minimum focal length"));
   gtk_widget_set_tooltip_text(g->focal_length_max, _("maximum focal length"));
@@ -866,7 +867,7 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
     dt_bauhaus_combobox_set(g->aperture_max, dt_gui_presets_aperture_value_cnt-1);
 
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->focal_length_min), 0);
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->focal_length_max), 1000);
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->focal_length_max), MAX_FOCAL_LEN);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoapply), FALSE);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->filter), FALSE);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoinit), FALSE);
