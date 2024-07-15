@@ -316,7 +316,7 @@ static float *_process_opposed(
             if((inval < clips[color]) && (inval > lo_clips[color])
                && (mask[(color+3) * msize + _raw_to_cmap(mwidth, row, col)]))
             {
-              sums[color] += inval - _calc_refavg(&input[idx], xtrans, filters, row, col, roi_in, correction, TRUE);
+              sums[color] += inval - _calc_refavg(input, xtrans, filters, row, col, roi_in, correction, TRUE);
               cnts[color] += 1.0f;
             }
           }
@@ -357,7 +357,7 @@ static float *_process_opposed(
         const float inval = MAX(0.0f, input[idx]);
         if(inval >= clips[color])
         {
-          const float ref = _calc_refavg(&input[idx], xtrans, filters, row, col, roi_in, correction, TRUE);
+          const float ref = _calc_refavg(input, xtrans, filters, row, col, roi_in, correction, TRUE);
           tmpout[idx] = MAX(inval, ref + chrominance[color]);
         }
         else
@@ -386,7 +386,7 @@ static float *_process_opposed(
           oval = MAX(0.0f, input[ix]);
           if(oval >= clips[color])
           {
-            const float ref = _calc_refavg(&input[ix], xtrans, filters, irow, icol, roi_in, correction, TRUE);
+            const float ref = _calc_refavg(input, xtrans, filters, irow, icol, roi_in, correction, TRUE);
             oval = MAX(oval, ref + chrominance[color]);
           }
         }

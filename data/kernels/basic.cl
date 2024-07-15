@@ -331,17 +331,17 @@ static float _calc_refavg(
   float sum[3] =  { 0.0f, 0.0f, 0.0f };
   float cnt[3]  = { 0.0f, 0.0f, 0.0f };
 
-  const int dymin = (row > 0) ? -1 : 0;
-  const int dxmin = (col > 0) ? -1 : 0;
-  const int dymax = (row < maxrow -1) ? 2 : 1;
-  const int dxmax = (col < maxcol -1) ? 2 : 1;
+  const int dymin = max(0, row - 1);
+  const int dxmin = max(0, col - 1);
+  const int dymax = min(maxrow - 1, row + 2);
+  const int dxmax = min(maxcol - 1, col + 2);
 
   for(int dy = dymin; dy < dymax; dy++)
   {
     for(int dx = dxmin; dx < dxmax; dx++)
     {
-      const float val = fmax(0.0f, read_imagef(in, samplerA, (int2)(col+dx, row+dy)).x);
-      const int c = (filters == 9u) ? FCxtrans(row + dy, col + dx, xtrans) : FC(row + dy, col + dx, filters);
+      const float val = fmax(0.0f, read_imagef(in, samplerA, (int2)(dx, dy)).x);
+      const int c = (filters == 9u) ? FCxtrans(dy, dx, xtrans) : FC(dy, dx, filters);
       sum[c] += val;
       cnt[c] += 1.0f;
     }
