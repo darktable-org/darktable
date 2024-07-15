@@ -425,10 +425,10 @@ void modify_roi_in(
 {
   *roi_in = *roi_out;
   // need 1:1, demosaic and then sub-sample. or directly sample half-size
-  roi_in->x /= roi_out->scale;
-  roi_in->y /= roi_out->scale;
-  roi_in->width /= roi_out->scale;
-  roi_in->height /= roi_out->scale;
+  roi_in->x = floorf(roi_in->x / roi_out->scale);
+  roi_in->y = floorf(roi_in->y / roi_out->scale);
+  roi_in->width = ceilf(roi_in->width / roi_out->scale);
+  roi_in->height = ceilf(roi_in->height / roi_out->scale);
   roi_in->scale = 1.0f;
 
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
