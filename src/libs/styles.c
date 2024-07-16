@@ -786,9 +786,8 @@ void gui_update(dt_lib_module_t *self)
   gtk_widget_set_sensitive(GTK_WIDGET(d->apply_button), has_act_on && sel_styles_cnt > 0);
 }
 
-static void _styles_changed_callback(gpointer instance, gpointer user_data)
+static void _styles_changed_callback(gpointer instance, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_styles_t *d = (dt_lib_styles_t *)self->data;
   _gui_styles_update_view(d);
   dt_lib_gui_queue_update(self);

@@ -86,7 +86,7 @@ typedef struct _callback_param_t
 
 /* entry value committed, perform a search */
 static void _lib_location_entry_activated(GtkButton *button,
-                                          gpointer user_data);
+                                          dt_lib_module_t *self);
 
 static gboolean _lib_location_result_item_activated(GtkButton *button,
                                                     GdkEventButton *ev,
@@ -338,9 +338,8 @@ static void _show_location(dt_lib_location_t *lib,
 
 /* called when search job has been processed and
    result has been parsed */
-static void _lib_location_search_finish(gpointer user_data)
+static void _lib_location_search_finish(dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_location_t *lib = (dt_lib_location_t *)self->data;
 
   /* check if search gave us some result */
@@ -366,14 +365,13 @@ static void _lib_location_search_finish(gpointer user_data)
   }
 }
 
-static gboolean _lib_location_search(gpointer user_data)
+static gboolean _lib_location_search(dt_lib_module_t *self)
 {
   GMarkupParseContext *ctx = NULL;
   CURL *curl = NULL;
   CURLcode res;
   GError *err = NULL;
 
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_location_t *lib = (dt_lib_location_t *)self->data;
   gchar *query = NULL, *text = NULL;
 
@@ -461,9 +459,8 @@ gboolean _lib_location_result_item_activated(GtkButton *button,
 }
 
 void _lib_location_entry_activated(GtkButton *button,
-                                   gpointer user_data)
+                                   dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_location_t *lib = (dt_lib_location_t *)self->data;
   const gchar *text = gtk_entry_get_text(lib->search);
   if(!text || text[0] == '\0') return;
@@ -473,8 +470,8 @@ void _lib_location_entry_activated(GtkButton *button,
   // gtk_widget_set_sensitive(lib->result, FALSE);
 
   /* start a bg job for fetching results of a search */
-  g_idle_add_full(G_PRIORITY_DEFAULT_IDLE,
-                  _lib_location_search, user_data, _lib_location_search_finish);
+  g_idle_add_full(G_PRIORITY_DEFAULT_IDLE, (GSourceFunc)_lib_location_search, 
+                  self, (GDestroyNotify)_lib_location_search_finish);
 }
 
 

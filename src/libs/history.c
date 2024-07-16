@@ -74,14 +74,14 @@ static gboolean _lib_history_compress_pressed_callback(GtkWidget *widget,
 
 static gboolean _lib_history_button_clicked_callback(GtkWidget *widget,
                                                      GdkEventButton *e,
-                                                     gpointer user_data);
+                                                     dt_lib_module_t *self);
 
 static void _lib_history_create_style_button_clicked_callback(GtkWidget *widget,
                                                               gpointer user_data);
 /* signal callback for history change */
-static void _lib_history_will_change_callback(gpointer instance, gpointer user_data);
+static void _lib_history_will_change_callback(gpointer instance, dt_lib_module_t *self);
 
-static void _lib_history_change_callback(gpointer instance, gpointer user_data);
+static void _lib_history_change_callback(gpointer instance, dt_lib_module_t *self);
 
 static void _lib_history_module_remove_callback(gpointer instance,
                                                 dt_iop_module_t *module,
@@ -686,9 +686,8 @@ static void _lib_history_module_remove_callback(gpointer instance,
   dt_undo_iterate(darktable.undo, DT_UNDO_HISTORY, module, &_history_invalidate_cb);
 }
 
-static void _lib_history_will_change_callback(gpointer instance, gpointer user_data)
+static void _lib_history_will_change_callback(gpointer instance, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_history_t *lib = (dt_lib_history_t *)self->data;
 
   gtk_container_foreach(GTK_CONTAINER(lib->history_box),
@@ -1115,9 +1114,8 @@ static gchar *_lib_history_button_label(const dt_dev_history_item_t *item)
   return label;
 }
 
-static void _lib_history_change_callback(gpointer instance, gpointer user_data)
+static void _lib_history_change_callback(gpointer instance, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_history_t *d = (dt_lib_history_t *)self->data;
 
   d->record_history_level--;
@@ -1253,7 +1251,7 @@ static gboolean _lib_history_compress_pressed_callback(GtkWidget *widget,
 
 static gboolean _lib_history_button_clicked_callback(GtkWidget *widget,
                                                      GdkEventButton *e,
-                                                     gpointer user_data)
+                                                     dt_lib_module_t *self)
 {
   const dt_imgid_t imgid = darktable.develop->image_storage.id;
   if(!dt_is_valid_imgid(imgid)) return FALSE;
@@ -1278,7 +1276,6 @@ static gboolean _lib_history_button_clicked_callback(GtkWidget *widget,
     return TRUE;
   }
 
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_history_t *d = (dt_lib_history_t *)self->data;
   reset = TRUE;
 

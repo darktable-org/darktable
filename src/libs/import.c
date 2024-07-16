@@ -70,7 +70,7 @@ static void _do_select_all(dt_lib_module_t* self);
 static void _do_select_none(dt_lib_module_t* self);
 static uint32_t _do_select_new(dt_lib_module_t* self);
 static void _update_places_list(dt_lib_module_t* self);
-static gboolean _update_files_list(gpointer user_data);
+static gboolean _update_files_list(dt_lib_module_t* self);
 static void _update_folders_list(dt_lib_module_t* self);
 static void _update_images_number(dt_lib_module_t* self,
                                   const guint nb_sel);
@@ -634,9 +634,8 @@ static gboolean _files_button_press(GtkWidget *view,
   return FALSE;
 }
 
-static gboolean _thumb_set(gpointer user_data)
+static gboolean _thumb_set(dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
 
   if(d->from.event)
@@ -679,7 +678,7 @@ static void _all_thumb_toggled(GtkTreeViewColumn *column,
     // if the display is not yet started, start it
     GtkTreeModel *model = GTK_TREE_MODEL(d->from.store);
     if(gtk_tree_model_get_iter_first(model, &d->from.iter))
-      d->from.event = g_timeout_add_full(G_PRIORITY_LOW, 100, _thumb_set, self, NULL);
+      d->from.event = g_timeout_add_full(G_PRIORITY_LOW, 100, (GSourceFunc)_thumb_set, self, NULL);
   }
 }
 
@@ -693,7 +692,7 @@ static void _show_all_thumbs(dt_lib_module_t* self)
     // if the display is not yet started, start it
     GtkTreeModel *model = GTK_TREE_MODEL(d->from.store);
     if(gtk_tree_model_get_iter_first(model, &d->from.iter))
-      d->from.event = g_timeout_add_full(G_PRIORITY_LOW, 100, _thumb_set, self, NULL);
+      d->from.event = g_timeout_add_full(G_PRIORITY_LOW, 100, (GSourceFunc)_thumb_set, self, NULL);
   }
 }
 
@@ -1029,9 +1028,8 @@ static void _usefn_toggled(GtkWidget *widget,
   _update_layout(self);
 }
 
-static gboolean _update_files_list(gpointer user_data)
+static gboolean _update_files_list(dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   // clear parallel thumb refresh
   d->from.event = 0;
@@ -1265,11 +1263,10 @@ static void _get_folders_list(GtkTreeStore *store,
 
 // workaround to erase parasitic selection when click on expander or
 // empty part of the view
-static gboolean _clear_parasitic_selection(gpointer user_data)
+static gboolean _clear_parasitic_selection(dt_lib_module_t *self)
 {
   if(dt_conf_is_equal("ui_last/import_last_directory", ""))
   {
-    dt_lib_module_t *self = (dt_lib_module_t *)user_data;
     dt_lib_import_t *d = (dt_lib_import_t *)self->data;
     GtkTreeSelection *selection = gtk_tree_view_get_selection(d->from.folderview);
     if(gtk_tree_selection_count_selected_rows(selection))
@@ -1393,7 +1390,7 @@ static gboolean _folders_button_press(GtkWidget *view,
     gtk_tree_path_free(path);
   }
 
-  g_timeout_add_full(G_PRIORITY_DEFAULT_IDLE, 100, _clear_parasitic_selection, self, NULL);
+  g_timeout_add_full(G_PRIORITY_DEFAULT_IDLE, 100, (GSourceFunc)_clear_parasitic_selection, self, NULL);
   return res;
 }
 
@@ -2145,7 +2142,7 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
 
   // files list
   _set_files_list(rbox, self);
-  g_timeout_add_full(G_PRIORITY_LOW, 100, _update_files_list, self, NULL);
+  g_timeout_add_full(G_PRIORITY_LOW, 100, (GSourceFunc)_update_files_list, self, NULL);
 
 #ifdef HAVE_GPHOTO2
   if(d->import_case == DT_IMPORT_CAMERA)

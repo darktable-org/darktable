@@ -1581,9 +1581,8 @@ static void _event_history_apply(GtkWidget *widget, dt_lib_module_t *self)
   g_free(line);
 }
 
-static void _event_history_show(GtkWidget *widget, gpointer user_data)
+static void _event_history_show(GtkWidget *widget, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   // we show a popup with all the history entries
   GtkMenuShell *pop = GTK_MENU_SHELL(gtk_menu_new());
   gtk_widget_set_size_request(GTK_WIDGET(pop), 200, -1);
@@ -2110,9 +2109,8 @@ static void _sort_append_sort(GtkWidget *widget, dt_lib_module_t *self)
   }
 }
 
-static void _sort_show_add_popup(GtkWidget *widget, gpointer user_data)
+static void _sort_show_add_popup(GtkWidget *widget, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   // we show a popup with all the possible sort
   GtkMenuShell *spop = GTK_MENU_SHELL(gtk_menu_new());
   gtk_widget_set_size_request(GTK_WIDGET(spop), 200, -1);
@@ -2183,9 +2181,8 @@ static void _dt_images_order_change(gpointer instance, gpointer order, gpointer 
   }
 }
 
-static void _sort_history_show(GtkWidget *widget, gpointer user_data)
+static void _sort_history_show(GtkWidget *widget, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   // we show a popup with all the history entries
   GtkMenuShell *pop = GTK_MENU_SHELL(gtk_menu_new());
   gtk_widget_set_size_request(GTK_WIDGET(pop), 200, -1);

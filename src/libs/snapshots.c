@@ -85,13 +85,13 @@ typedef struct dt_lib_snapshots_t
 
 /* callback for take snapshot */
 static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget,
-                                                       gpointer user_data);
+                                                       dt_lib_module_t *self);
 
 static void _lib_snapshots_toggled_callback(GtkToggleButton *widget,
-                                            gpointer user_data);
+                                            dt_lib_module_t *self);
 
 static void _lib_snapshots_restore_callback(GtkButton *widget,
-                                            gpointer user_data);
+                                            dt_lib_module_t *self);
 
 const char *name(dt_lib_module_t *self)
 {
@@ -492,9 +492,8 @@ static int _look_for_widget(dt_lib_module_t *self, GtkWidget *widget, gboolean e
   return 0;
 }
 
-static void _entry_activated_callback(GtkEntry *entry, gpointer *user_data)
+static void _entry_activated_callback(GtkEntry *entry, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
 
   const int index = _look_for_widget(self, (GtkWidget *)entry, TRUE);
@@ -512,9 +511,8 @@ static void _entry_activated_callback(GtkEntry *entry, gpointer *user_data)
 
 static gboolean _lib_button_button_pressed_callback(GtkWidget *widget,
                                                     GdkEventButton *event,
-                                                    gpointer user_data)
+                                                    dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
 
   const int index = _look_for_widget(self, widget, FALSE);
@@ -618,12 +616,11 @@ void gui_reset(dt_lib_module_t *self)
 
 static void _signal_profile_changed(gpointer instance,
                                     const uint8_t profile_type,
-                                    gpointer user_data)
+                                    dt_lib_module_t *self)
 {
   // when the display profile is changed, make sure we recreate the snapshot
   if(profile_type == DT_COLORSPACES_PROFILE_TYPE_DISPLAY)
   {
-    dt_lib_module_t *self = (dt_lib_module_t *)user_data;
     dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
 
     if(d->selected >= 0)
@@ -661,9 +658,8 @@ static void _remove_snapshot_entry(dt_lib_module_t *self, const uint32_t index)
 
 static void _signal_image_removed(gpointer instance,
                                   const dt_imgid_t imgid,
-                                  gpointer user_data)
+                                  dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
 
   uint32_t k = 0;
@@ -682,9 +678,8 @@ static void _signal_image_removed(gpointer instance,
   }
 }
 
-static void _signal_image_changed(gpointer instance, gpointer user_data)
+static void _signal_image_changed(gpointer instance, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
 
   const dt_imgid_t imgid = darktable.develop->image_storage.id;
@@ -830,9 +825,8 @@ void gui_cleanup(dt_lib_module_t *self)
 }
 
 static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget,
-                                                       gpointer user_data)
+                                                       dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
 
   // first make sure the current history is properly written
@@ -922,9 +916,8 @@ static int _lib_snapshots_get_activated(dt_lib_module_t *self, GtkWidget *widget
   return -1;
 }
 
-static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, gpointer user_data)
+static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
 
   if(darktable.gui->reset) return;
@@ -951,9 +944,8 @@ static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, gpointer us
   dt_control_queue_redraw_center();
 }
 
-static void _lib_snapshots_restore_callback(GtkButton *widget, gpointer user_data)
+static void _lib_snapshots_restore_callback(GtkButton *widget, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
 
   const int restore_idx = _lib_snapshots_get_activated(self, GTK_WIDGET(widget));

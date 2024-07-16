@@ -80,9 +80,8 @@ int position(const dt_lib_module_t *self)
   return 1001;
 }
 
-static void _overlays_toggle_button(GtkWidget *w, gpointer user_data)
+static void _overlays_toggle_button(GtkWidget *w, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)self->data;
 
   if(d->disable_over_events) return;
@@ -116,9 +115,8 @@ static void _overlays_toggle_button(GtkWidget *w, gpointer user_data)
 #endif // USE_LUA
 }
 
-static void _overlays_toggle_culling_button(GtkWidget *w, gpointer user_data)
+static void _overlays_toggle_culling_button(GtkWidget *w, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)self->data;
 
   if(d->disable_over_events) return;
@@ -153,9 +151,8 @@ static void _overlays_toggle_culling_button(GtkWidget *w, gpointer user_data)
 #endif // USE_LUA
 }
 
-static void _overlays_timeout_changed(GtkWidget *w, gpointer user_data)
+static void _overlays_timeout_changed(GtkWidget *w, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)self->data;
 
   const int val = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(w));
