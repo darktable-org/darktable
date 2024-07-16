@@ -1192,7 +1192,7 @@ static void dt_dev_jump_image(dt_develop_t *dev, int diff, gboolean by_key)
   g_free(query);
   sqlite3_finalize(stmt);
 
-  if(new_id < 0 || new_id == imgid) return;
+  if(!dt_is_valid_imgid(new_id) || new_id == imgid) return;
 
   // if id seems valid, we change the image and move filmstrip
   _dev_change_image(dev, new_id);
@@ -1231,7 +1231,7 @@ static void skip_f_key_accel_callback(dt_action_t *action)
 
 static void skip_b_key_accel_callback(dt_action_t *action)
 {
-  dt_dev_jump_image(dt_action_view(action)->data, -1, TRUE);
+  dt_dev_jump_image(dt_action_view(action)->data, NO_IMGID, TRUE);
 }
 
 static void _darkroom_ui_pipe_finish_signal_callback(gpointer instance, gpointer data)
