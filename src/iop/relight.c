@@ -187,9 +187,8 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
-static void center_callback(GtkDarktableGradientSlider *slider, gpointer user_data)
+static void center_callback(GtkDarktableGradientSlider *slider, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
   dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)self->params;
   dt_iop_color_picker_reset(self, TRUE);

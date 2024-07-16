@@ -459,10 +459,9 @@ static void interpolator_callback(GtkWidget *widget,
 static void tab_switch_callback(GtkNotebook *notebook,
                                 GtkWidget *page,
                                 guint page_num,
-                                gpointer user_data)
+                                dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_rgbcurve_gui_data_t *g = (dt_iop_rgbcurve_gui_data_t *)self->gui_data;
 
   g->channel = (rgbcurve_channel_t)page_num;

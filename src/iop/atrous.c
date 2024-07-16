@@ -1108,9 +1108,8 @@ static void get_params(dt_iop_atrous_params_t *p,
 
 static gboolean area_draw(GtkWidget *widget,
                           cairo_t *crf,
-                          gpointer user_data)
+                          dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
   dt_iop_atrous_params_t p = *(dt_iop_atrous_params_t *)self->params;
 
@@ -1429,9 +1428,8 @@ static gboolean area_draw(GtkWidget *widget,
 
 static gboolean area_motion_notify(GtkWidget *widget,
                                    GdkEventMotion *event,
-                                   gpointer user_data)
+                                   dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
   dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
   const int inset = INSET;
@@ -1513,9 +1511,8 @@ static gboolean area_motion_notify(GtkWidget *widget,
 
 static gboolean area_button_press(GtkWidget *widget,
                                   GdkEventButton *event,
-                                  gpointer user_data)
+                                  dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
   {
     // reset current curve
@@ -1552,11 +1549,10 @@ static gboolean area_button_press(GtkWidget *widget,
 
 static gboolean area_button_release(GtkWidget *widget,
                                     GdkEventButton *event,
-                                    gpointer user_data)
+                                    dt_iop_module_t *self)
 {
   if(event->button == 1)
   {
-    dt_iop_module_t *self = (dt_iop_module_t *)user_data;
     dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
     g->dragging = 0;
     reset_mix(self);
@@ -1567,9 +1563,8 @@ static gboolean area_button_release(GtkWidget *widget,
 
 static gboolean area_scrolled(GtkWidget *widget,
                               GdkEventScroll *event,
-                              gpointer user_data)
+                              dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
 
   if(dt_gui_ignore_scroll(event)) return FALSE;
@@ -1589,9 +1584,8 @@ static gboolean area_scrolled(GtkWidget *widget,
 static void tab_switch(GtkNotebook *notebook,
                        GtkWidget *page,
                        const guint page_num,
-                       gpointer user_data)
+                       dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
   if(darktable.gui->reset) return;
   g->channel = g->channel2 = (atrous_channel_t)page_num;
@@ -1599,9 +1593,8 @@ static void tab_switch(GtkNotebook *notebook,
 }
 
 static void mix_callback(GtkWidget *slider,
-                         gpointer user_data)
+                         dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
   dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
   dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;

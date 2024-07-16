@@ -3253,11 +3253,9 @@ static void dt_iop_denoiseprofile_get_params(dt_iop_denoiseprofile_params_t *p,
 
 static gboolean denoiseprofile_draw_variance(GtkWidget *widget,
                                              cairo_t *crf,
-                                             gpointer user_data)
+                                             dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return FALSE;
-
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
 
   if(!dt_isnan(g->variance_R))
@@ -3289,9 +3287,8 @@ static gboolean denoiseprofile_draw_variance(GtkWidget *widget,
 
 static gboolean denoiseprofile_draw(GtkWidget *widget,
                                     cairo_t *crf,
-                                    gpointer user_data)
+                                    dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
   dt_iop_denoiseprofile_params_t p = *(dt_iop_denoiseprofile_params_t *)self->params;
 
@@ -3523,9 +3520,8 @@ static gboolean denoiseprofile_draw(GtkWidget *widget,
 
 static gboolean denoiseprofile_motion_notify(GtkWidget *widget,
                                              GdkEventMotion *event,
-                                             gpointer user_data)
+                                             dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
   dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
   const int inset = DT_IOP_DENOISE_PROFILE_INSET;
@@ -3555,9 +3551,8 @@ static gboolean denoiseprofile_motion_notify(GtkWidget *widget,
 
 static gboolean denoiseprofile_button_press(GtkWidget *widget,
                                             GdkEventButton *event,
-                                            gpointer user_data)
+                                            dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
   const int ch = g->channel;
   if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
@@ -3594,11 +3589,10 @@ static gboolean denoiseprofile_button_press(GtkWidget *widget,
 
 static gboolean denoiseprofile_button_release(GtkWidget *widget,
                                               GdkEventButton *event,
-                                              gpointer user_data)
+                                              dt_iop_module_t *self)
 {
   if(event->button == 1)
   {
-    dt_iop_module_t *self = (dt_iop_module_t *)user_data;
     dt_iop_denoiseprofile_gui_data_t *g =
       (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
     g->dragging = 0;
@@ -3609,9 +3603,8 @@ static gboolean denoiseprofile_button_release(GtkWidget *widget,
 
 static gboolean denoiseprofile_leave_notify(GtkWidget *widget,
                                             GdkEventCrossing *event,
-                                            gpointer user_data)
+                                            dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
   if(!g->dragging) g->mouse_y = -1.0;
   gtk_widget_queue_draw(widget);
@@ -3620,9 +3613,8 @@ static gboolean denoiseprofile_leave_notify(GtkWidget *widget,
 
 static gboolean denoiseprofile_scrolled(GtkWidget *widget,
                                         GdkEventScroll *event,
-                                        gpointer user_data)
+                                        dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
 
   if(dt_gui_ignore_scroll(event)) return FALSE;
@@ -3644,9 +3636,8 @@ static gboolean denoiseprofile_scrolled(GtkWidget *widget,
 static void denoiseprofile_tab_switch(GtkNotebook *notebook,
                                       GtkWidget *page,
                                       const guint page_num,
-                                      gpointer user_data)
+                                      dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
   if(darktable.gui->reset) return;
   dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;

@@ -2238,13 +2238,12 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
 
 static gboolean _area_button_release_callback(GtkWidget *widget,
                                               GdkEventButton *event,
-                                              gpointer user_data)
+                                              dt_iop_module_t *self)
 {
   if(darktable.develop->darkroom_skip_mouse_events) return TRUE;
 
   if(event->button == 1)
   {
-    dt_iop_module_t *self = (dt_iop_module_t *)user_data;
     dt_iop_colorzones_gui_data_t *g = (dt_iop_colorzones_gui_data_t *)self->gui_data;
     g->dragging = 0;
     return TRUE;

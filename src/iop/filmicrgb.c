@@ -2731,9 +2731,8 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
     apply_autotune(self);
 }
 
-static void show_mask_callback(GtkToggleButton *button, GdkEventButton *event, gpointer user_data)
+static void show_mask_callback(GtkToggleButton *button, GdkEventButton *event, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
   dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
   ++darktable.gui->reset;
@@ -3337,9 +3336,8 @@ void filmic_gui_draw_icon(cairo_t *cr, struct dt_iop_filmicrgb_gui_button_data_t
 }
 
 
-static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
+static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)self->params;
   dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
   gboolean contrast_clamped = dt_iop_filmic_rgb_compute_spline(p, &g->spline);
@@ -4187,9 +4185,8 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   return FALSE;
 }
 
-static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return TRUE;
 
   dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
@@ -4282,9 +4279,8 @@ static gboolean area_enter_leave_notify(GtkWidget *widget, GdkEventCrossing *eve
   return FALSE;
 }
 
-static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
+static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return 1;
 
   dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;

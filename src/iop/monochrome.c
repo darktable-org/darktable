@@ -372,10 +372,9 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
-static gboolean _monochrome_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
+static gboolean _monochrome_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return FALSE;
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
   dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
 
@@ -454,9 +453,8 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   dt_control_queue_redraw_widget(self->widget);
 }
 
-static gboolean _monochrome_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
+static gboolean _monochrome_motion_notify(GtkWidget *widget, GdkEventMotion *event, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
   dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
   if(g->dragging)
@@ -477,11 +475,10 @@ static gboolean _monochrome_motion_notify(GtkWidget *widget, GdkEventMotion *eve
   return TRUE;
 }
 
-static gboolean _monochrome_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+static gboolean _monochrome_button_press(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
 {
   if(event->button == 1)
   {
-    dt_iop_module_t *self = (dt_iop_module_t *)user_data;
     dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
     dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
     dt_iop_color_picker_reset(self, TRUE);
@@ -512,11 +509,10 @@ static gboolean _monochrome_button_press(GtkWidget *widget, GdkEventButton *even
   return FALSE;
 }
 
-static gboolean _monochrome_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+static gboolean _monochrome_button_release(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
 {
   if(event->button == 1)
   {
-    dt_iop_module_t *self = (dt_iop_module_t *)user_data;
     dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
     dt_iop_color_picker_reset(self, TRUE);
     g->dragging = 0;
@@ -527,18 +523,16 @@ static gboolean _monochrome_button_release(GtkWidget *widget, GdkEventButton *ev
   return FALSE;
 }
 
-static gboolean _monochrome_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+static gboolean _monochrome_leave_notify(GtkWidget *widget, GdkEventCrossing *event, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
   g->dragging = 0;
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
   return TRUE;
 }
 
-static gboolean _monochrome_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
+static gboolean _monochrome_scrolled(GtkWidget *widget, GdkEventScroll *event, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
 
   if(dt_gui_ignore_scroll(event)) return FALSE;

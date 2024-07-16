@@ -247,18 +247,16 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
-static void intent_changed(GtkWidget *widget, gpointer user_data)
+static void intent_changed(GtkWidget *widget, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
   dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
   p->intent = (dt_iop_color_intent_t)dt_bauhaus_combobox_get(widget);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void output_profile_changed(GtkWidget *widget, gpointer user_data)
+static void output_profile_changed(GtkWidget *widget, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
   dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
   int pos = dt_bauhaus_combobox_get(widget);
@@ -819,9 +817,8 @@ void init(dt_iop_module_t *module)
   module->default_enabled = TRUE;
 }
 
-static void _preference_changed(gpointer instance, gpointer user_data)
+static void _preference_changed(gpointer instance, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
 
   const gboolean force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");

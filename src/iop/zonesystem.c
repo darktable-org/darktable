@@ -400,11 +400,12 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_widget_queue_draw(GTK_WIDGET(g->zones));
 }
 
-static void _iop_zonesystem_redraw_preview_callback(gpointer instance, gpointer user_data);
-
-static gboolean dt_iop_zonesystem_preview_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self);
-
-static gboolean dt_iop_zonesystem_bar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self);
+static void _iop_zonesystem_redraw_preview_callback(gpointer instance, 
+                                                    dt_iop_module_t *self);
+static gboolean dt_iop_zonesystem_preview_draw(GtkWidget *widget, cairo_t *crf, 
+                                               dt_iop_module_t *self);
+static gboolean dt_iop_zonesystem_bar_draw(GtkWidget *widget, cairo_t *crf, 
+                                           dt_iop_module_t *self);
 static gboolean dt_iop_zonesystem_bar_motion_notify(GtkWidget *widget, GdkEventMotion *event,
                                                     dt_iop_module_t *self);
 static gboolean dt_iop_zonesystem_bar_leave_notify(GtkWidget *widget, GdkEventCrossing *event,
@@ -417,9 +418,8 @@ static gboolean dt_iop_zonesystem_bar_scrolled(GtkWidget *widget, GdkEventScroll
                                                dt_iop_module_t *self);
 
 
-static void size_allocate_callback(GtkWidget *widget, GtkAllocation *allocation, gpointer user_data)
+static void size_allocate_callback(GtkWidget *widget, GtkAllocation *allocation, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_zonesystem_gui_data_t *g = (dt_iop_zonesystem_gui_data_t *)self->gui_data;
 
   if(g->image) cairo_surface_destroy(g->image);
@@ -831,9 +831,8 @@ static gboolean dt_iop_zonesystem_preview_draw(GtkWidget *widget, cairo_t *crf, 
   return TRUE;
 }
 
-void _iop_zonesystem_redraw_preview_callback(gpointer instance, gpointer user_data)
+void _iop_zonesystem_redraw_preview_callback(gpointer instance, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_zonesystem_gui_data_t *g = (dt_iop_zonesystem_gui_data_t *)self->gui_data;
 
   dt_control_queue_redraw_widget(g->preview);

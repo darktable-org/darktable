@@ -250,8 +250,7 @@ static void _clear_cache_entry(dt_iop_module_t *self, const int index)
 }
 
 static void _module_remove_callback(gpointer instance,
-                                    dt_iop_module_t *self,
-                                    gpointer user_data)
+                                    dt_iop_module_t *self)
 {
   dt_iop_overlay_params_t *p = (dt_iop_overlay_params_t *)self->params;
 
@@ -728,9 +727,8 @@ void process(struct dt_iop_module_t *self,
 
 static void _draw_thumb(GtkWidget *area,
                         cairo_t *crf,
-                        gpointer user_data)
+                        dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_overlay_gui_data_t *g = (dt_iop_overlay_gui_data_t *)self->gui_data;
   dt_iop_overlay_params_t *p = (dt_iop_overlay_params_t *)self->params;
 
@@ -802,9 +800,8 @@ static void _draw_thumb(GtkWidget *area,
   }
 }
 
-static void _alignment_callback(GtkWidget *tb, gpointer user_data)
+static void _alignment_callback(GtkWidget *tb, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_overlay_gui_data_t *g = (dt_iop_overlay_gui_data_t *)self->gui_data;
 
   if(darktable.gui->reset) return;
@@ -815,7 +812,7 @@ static void _alignment_callback(GtkWidget *tb, gpointer user_data)
   for(int i = 0; i < 9; i++)
   {
     /* block signal handler */
-    g_signal_handlers_block_by_func(g->align[i], _alignment_callback, user_data);
+    g_signal_handlers_block_by_func(g->align[i], _alignment_callback, self);
 
     if(GTK_WIDGET(g->align[i]) == tb)
     {
@@ -826,7 +823,7 @@ static void _alignment_callback(GtkWidget *tb, gpointer user_data)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->align[i]), FALSE);
 
     /* unblock signal handler */
-    g_signal_handlers_unblock_by_func(g->align[i], _alignment_callback, user_data);
+    g_signal_handlers_unblock_by_func(g->align[i], _alignment_callback, self);
   }
   p->alignment = index;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -964,9 +961,8 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
-static void _signal_image_changed(gpointer instance, gpointer user_data)
+static void _signal_image_changed(gpointer instance, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(!self) return;
 
   for(int k=0; k<MAX_OVERLAY; k++)
@@ -980,9 +976,8 @@ static void _drag_and_drop_received(GtkWidget *widget,
                                     GtkSelectionData *selection_data,
                                     guint target_type,
                                     guint time,
-                                    gpointer data)
+                                    dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)data;
   dt_iop_overlay_gui_data_t *g = (dt_iop_overlay_gui_data_t *)self->gui_data;
   dt_iop_overlay_params_t *p = (dt_iop_overlay_params_t *)self->params;
 
@@ -1039,9 +1034,8 @@ static gboolean _on_drag_motion(GtkWidget *widget,
                                 gint x,
                                 gint y,
                                 guint time,
-                                gpointer user_data)
+                                dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_overlay_gui_data_t *g = (dt_iop_overlay_gui_data_t *)self->gui_data;
 
   g->drop_inside = TRUE;
@@ -1052,9 +1046,8 @@ static gboolean _on_drag_motion(GtkWidget *widget,
 static void _on_drag_leave(GtkWidget *widget,
                            GdkDragContext *dc,
                            guint time,
-                           gpointer user_data)
+                           dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_overlay_gui_data_t *g = (dt_iop_overlay_gui_data_t *)self->gui_data;
 
   g->drop_inside = FALSE;

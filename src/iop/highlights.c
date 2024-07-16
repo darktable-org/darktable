@@ -1129,10 +1129,9 @@ void reload_defaults(dt_iop_module_t *self)
   }
 }
 
-static void _visualize_callback(GtkWidget *quad, gpointer user_data)
+static void _visualize_callback(GtkWidget *quad, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
   dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
@@ -1141,10 +1140,9 @@ static void _visualize_callback(GtkWidget *quad, gpointer user_data)
   dt_dev_reprocess_center(self->dev);
 }
 
-static void _candidating_callback(GtkWidget *quad, gpointer user_data)
+static void _candidating_callback(GtkWidget *quad, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   g->hlr_mask_mode = (dt_bauhaus_widget_get_quad_active(quad)) ? DT_HIGHLIGHTS_MASK_CANDIDATING : DT_HIGHLIGHTS_MASK_OFF;
   dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
@@ -1153,10 +1151,9 @@ static void _candidating_callback(GtkWidget *quad, gpointer user_data)
   dt_dev_reprocess_center(self->dev);
 }
 
-static void _combine_callback(GtkWidget *quad, gpointer user_data)
+static void _combine_callback(GtkWidget *quad, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   g->hlr_mask_mode = (dt_bauhaus_widget_get_quad_active(quad)) ? DT_HIGHLIGHTS_MASK_COMBINE : DT_HIGHLIGHTS_MASK_OFF;
   dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
@@ -1165,10 +1162,9 @@ static void _combine_callback(GtkWidget *quad, gpointer user_data)
   dt_dev_reprocess_center(self->dev);
 }
 
-static void _strength_callback(GtkWidget *quad, gpointer user_data)
+static void _strength_callback(GtkWidget *quad, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   g->hlr_mask_mode = (dt_bauhaus_widget_get_quad_active(quad)) ? DT_HIGHLIGHTS_MASK_STRENGTH : DT_HIGHLIGHTS_MASK_OFF;
   dt_bauhaus_widget_set_quad_active(g->clip, FALSE);

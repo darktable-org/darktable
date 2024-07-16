@@ -52,19 +52,19 @@ DT_MODULE_INTROSPECTION(5, dt_iop_tonecurve_params_t)
 
 static gboolean dt_iop_tonecurve_draw(GtkWidget *widget,
                                       cairo_t *crf,
-                                      gpointer user_data);
+                                      dt_iop_module_t *self);
 static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget,
                                                GdkEventMotion *event,
-                                               gpointer user_data);
+                                               dt_iop_module_t *self);
 static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget,
                                               GdkEventButton *event,
-                                              gpointer user_data);
+                                              dt_iop_module_t *self);
 static gboolean dt_iop_tonecurve_leave_notify(GtkWidget *widget,
                                               GdkEventCrossing *event,
                                               dt_iop_module_t *self);
 static gboolean dt_iop_tonecurve_key_press(GtkWidget *widget,
                                            GdkEventKey *event,
-                                           gpointer user_data);
+                                           dt_iop_module_t *self);
 
 
 typedef enum tonecurve_channel_t
@@ -1015,9 +1015,8 @@ static void interpolator_callback(GtkWidget *widget, dt_iop_module_t *self)
 static void tab_switch(GtkNotebook *notebook,
                        GtkWidget *page,
                        const guint page_num,
-                       gpointer user_data)
+                       dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   if(darktable.gui->reset) return;
 
@@ -1169,9 +1168,8 @@ static gboolean _move_point_internal(dt_iop_module_t *self,
 
 static gboolean _scrolled(GtkWidget *widget,
                           GdkEventScroll *event,
-                          gpointer user_data)
+                          dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
   dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
 
@@ -1200,9 +1198,8 @@ static gboolean _scrolled(GtkWidget *widget,
 
 static gboolean dt_iop_tonecurve_key_press(GtkWidget *widget,
                                            GdkEventKey *event,
-                                           gpointer user_data)
+                                           dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
   dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
 
@@ -1389,9 +1386,8 @@ static void picker_scale(const float *in, float *out)
 
 static gboolean dt_iop_tonecurve_draw(GtkWidget *widget,
                                       cairo_t *crf,
-                                      gpointer user_data)
+                                      dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
   dt_iop_tonecurve_global_data_t *gd = (dt_iop_tonecurve_global_data_t *)self->global_data;
@@ -1780,9 +1776,8 @@ static inline int _add_node(dt_iop_tonecurve_node_t *tonecurve,
 
 static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget,
                                                GdkEventMotion *event,
-                                               gpointer user_data)
+                                               dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
 
@@ -1858,9 +1853,8 @@ finally:
 
 static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget,
                                               GdkEventButton *event,
-                                              gpointer user_data)
+                                              dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
   const dt_iop_tonecurve_params_t *const d = (dt_iop_tonecurve_params_t *)self->default_params;
   dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;

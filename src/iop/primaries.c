@@ -346,16 +346,14 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
 static void _signal_profile_user_changed(gpointer instance,
                                          const uint8_t profile_type,
-                                         gpointer user_data)
+                                         dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   gui_changed(self, NULL, NULL);
 }
 
 static void _signal_profile_changed(gpointer instance,
-                                    gpointer user_data)
+                                    dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   gui_changed(self, NULL, NULL);
 }
 

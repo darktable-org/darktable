@@ -5337,11 +5337,9 @@ void gui_reset(struct dt_iop_module_t *self)
   dt_dev_pixelpipe_cache_flush(self->dev->preview_pipe);
 }
 
-static void cropmode_callback(GtkWidget *widget, gpointer user_data)
+static void cropmode_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
@@ -5354,9 +5352,8 @@ static void cropmode_callback(GtkWidget *widget, gpointer user_data)
 
 static int _event_fit_v_button_clicked(GtkWidget *widget,
                                        GdkEventButton *event,
-                                       gpointer user_data)
+                                       dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return FALSE;
 
   if(event->button == 1)
@@ -5403,9 +5400,8 @@ static int _event_fit_v_button_clicked(GtkWidget *widget,
 
 static int _event_fit_h_button_clicked(GtkWidget *widget,
                                        GdkEventButton *event,
-                                       gpointer user_data)
+                                       dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return FALSE;
 
   if(event->button == 1)
@@ -5452,9 +5448,8 @@ static int _event_fit_h_button_clicked(GtkWidget *widget,
 
 static int _event_fit_both_button_clicked(GtkWidget *widget,
                                           GdkEventButton *event,
-                                          gpointer user_data)
+                                          dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return FALSE;
 
   if(event->button == 1)
@@ -5503,9 +5498,8 @@ static int _event_fit_both_button_clicked(GtkWidget *widget,
 
 static int _event_structure_auto_clicked(GtkWidget *widget,
                                          GdkEventButton *event,
-                                         gpointer user_data)
+                                         dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return FALSE;
 
   if(event->button == 1)
@@ -5572,9 +5566,8 @@ static int _event_structure_auto_clicked(GtkWidget *widget,
 // routine that is called after preview image has been processed. we
 // use it to perform structure collection or fitting in case those
 // have been triggered while the module had not yet been enabled
-static void _event_process_after_preview_callback(gpointer instance, gpointer user_data)
+static void _event_process_after_preview_callback(gpointer instance, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
@@ -5895,9 +5888,8 @@ static float log2_curve(float inval, dt_bauhaus_curve_t dir)
 
 static int _event_structure_quad_clicked(GtkWidget *widget,
                                          GdkEventButton *event,
-                                         gpointer user_data)
+                                         dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   if(darktable.gui->reset) return FALSE;
 
@@ -5924,9 +5916,8 @@ static int _event_structure_quad_clicked(GtkWidget *widget,
 
 static int _event_structure_lines_clicked(GtkWidget *widget,
                                           GdkEventButton *event,
-                                          gpointer user_data)
+                                          dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   if(darktable.gui->reset) return FALSE;
 

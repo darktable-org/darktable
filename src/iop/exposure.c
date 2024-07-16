@@ -971,9 +971,8 @@ static gboolean _show_computed(gpointer user_data)
 
 static gboolean _target_color_draw(GtkWidget *widget,
                                    cairo_t *crf,
-                                   gpointer user_data)
+                                   dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
   // Init
@@ -1017,9 +1016,8 @@ static gboolean _target_color_draw(GtkWidget *widget,
 
 static gboolean _origin_color_draw(GtkWidget *widget,
                                    cairo_t *crf,
-                                   gpointer user_data)
+                                   dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
   // Init

@@ -1615,9 +1615,8 @@ static float to_lin(const float x, const float base)
     return x;
 }
 
-static gboolean dt_iop_basecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
+static gboolean dt_iop_basecurve_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
 
@@ -1836,9 +1835,8 @@ static gboolean _move_point_internal(dt_iop_module_t *self,
 
 static gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget,
                                                GdkEventMotion *event,
-                                               gpointer user_data)
+                                               dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
   int ch = 0;
@@ -1907,9 +1905,8 @@ static gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget,
 
 static gboolean dt_iop_basecurve_button_press(GtkWidget *widget,
                                               GdkEventButton *event,
-                                              gpointer user_data)
+                                              dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
   const dt_iop_basecurve_params_t *const d = (dt_iop_basecurve_params_t *)self->default_params;
   dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
@@ -2049,9 +2046,8 @@ static gboolean _move_point_internal(dt_iop_module_t *self,
 
 #define BASECURVE_DEFAULT_STEP (0.001f)
 
-static gboolean _scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
+static gboolean _scrolled(GtkWidget *widget, GdkEventScroll *event, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
 
   if(dt_gui_ignore_scroll(event)) return FALSE;
@@ -2070,9 +2066,8 @@ static gboolean _scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer use
 
 static gboolean dt_iop_basecurve_key_press(GtkWidget *widget,
                                            GdkEventKey *event,
-                                           gpointer user_data)
+                                           dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
 
   if(g->selected < 0) return TRUE;
@@ -2128,9 +2123,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   }
 }
 
-static void logbase_callback(GtkWidget *slider, gpointer user_data)
+static void logbase_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
   g->loglogscale = eval_grey(dt_bauhaus_slider_get(g->logbase));
   gtk_widget_queue_draw(GTK_WIDGET(g->area));

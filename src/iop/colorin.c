@@ -502,9 +502,8 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
-static void _profile_changed(GtkWidget *widget, gpointer user_data)
+static void _profile_changed(GtkWidget *widget, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
   dt_iop_request_focus(self);
   dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->params;
@@ -539,9 +538,8 @@ static void _profile_changed(GtkWidget *widget, gpointer user_data)
            dt_colorspaces_get_name(p->type, p->filename));
 }
 
-static void _workicc_changed(GtkWidget *widget, gpointer user_data)
+static void _workicc_changed(GtkWidget *widget, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->params;
   if(darktable.gui->reset) return;
 

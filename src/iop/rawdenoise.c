@@ -578,9 +578,8 @@ static void dt_iop_rawdenoise_get_params(dt_iop_rawdenoise_params_t *p, const in
   }
 }
 
-static gboolean rawdenoise_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
+static gboolean rawdenoise_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
   dt_iop_rawdenoise_params_t p = *(dt_iop_rawdenoise_params_t *)self->params;
 
@@ -768,9 +767,8 @@ static gboolean rawdenoise_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
   return FALSE;
 }
 
-static gboolean rawdenoise_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
+static gboolean rawdenoise_motion_notify(GtkWidget *widget, GdkEventMotion *event, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
   dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)self->params;
   const int inset = DT_IOP_RAWDENOISE_INSET;
@@ -797,9 +795,8 @@ static gboolean rawdenoise_motion_notify(GtkWidget *widget, GdkEventMotion *even
   return TRUE;
 }
 
-static gboolean rawdenoise_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+static gboolean rawdenoise_button_press(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
   const int ch = g->channel;
   if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
@@ -831,11 +828,10 @@ static gboolean rawdenoise_button_press(GtkWidget *widget, GdkEventButton *event
   return FALSE;
 }
 
-static gboolean rawdenoise_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+static gboolean rawdenoise_button_release(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
 {
   if(event->button == 1)
   {
-    dt_iop_module_t *self = (dt_iop_module_t *)user_data;
     dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
     g->dragging = 0;
     return TRUE;
@@ -843,18 +839,16 @@ static gboolean rawdenoise_button_release(GtkWidget *widget, GdkEventButton *eve
   return FALSE;
 }
 
-static gboolean rawdenoise_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+static gboolean rawdenoise_leave_notify(GtkWidget *widget, GdkEventCrossing *event, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
   if(!g->dragging) g->mouse_y = -1.0;
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
 
-static gboolean rawdenoise_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
+static gboolean rawdenoise_scrolled(GtkWidget *widget, GdkEventScroll *event, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
 
   if(dt_gui_ignore_scroll(event)) return FALSE;
@@ -872,9 +866,8 @@ static gboolean rawdenoise_scrolled(GtkWidget *widget, GdkEventScroll *event, gp
   return TRUE;
 }
 
-static void rawdenoise_tab_switch(GtkNotebook *notebook, GtkWidget *page, guint page_num, gpointer user_data)
+static void rawdenoise_tab_switch(GtkNotebook *notebook, GtkWidget *page, guint page_num, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
   dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
   g->channel = (dt_iop_rawdenoise_channel_t)page_num;
