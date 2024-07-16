@@ -1192,7 +1192,7 @@ static void dt_dev_jump_image(dt_develop_t *dev, int diff, gboolean by_key)
   g_free(query);
   sqlite3_finalize(stmt);
 
-  if(new_id < 0 || new_id == imgid) return;
+  if(!dt_is_valid_imgid(new_id) || new_id == imgid) return;
 
   // if id seems valid, we change the image and move filmstrip
   _dev_change_image(dev, new_id);
