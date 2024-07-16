@@ -83,6 +83,8 @@ changes (where available).
 - Fixed failure to load valid JPEG2000 files with unspecified color
   space.
 
+- Fixed image jump if collection is empty.
+
 ## Lua
 
 ### API Version
