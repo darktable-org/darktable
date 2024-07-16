@@ -272,9 +272,8 @@ static void _select_region_toggled_callback(GtkToggleButton *togglebutton, dt_io
   dt_iop_gui_leave_critical_section(self);
 }
 
-static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_data)
+static void _develop_ui_pipe_finished_callback(gpointer instance, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)self->params;
   dt_iop_basicadj_gui_data_t *g = (dt_iop_basicadj_gui_data_t *)self->gui_data;
 
@@ -308,11 +307,10 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_
   }
 }
 
-static void _signal_profile_user_changed(gpointer instance, uint8_t profile_type, gpointer user_data)
+static void _signal_profile_user_changed(gpointer instance, uint8_t profile_type, dt_iop_module_t *self)
 {
   if(profile_type == DT_COLORSPACES_PROFILE_TYPE_WORK)
   {
-    dt_iop_module_t *self = (dt_iop_module_t *)user_data;
     if(!self->enabled) return;
 
     dt_iop_basicadj_params_t *def = (dt_iop_basicadj_params_t *)self->default_params;

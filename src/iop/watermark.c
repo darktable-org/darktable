@@ -1001,9 +1001,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 }
 
-static void _watermark_callback(GtkWidget *tb, gpointer user_data)
+static void _watermark_callback(GtkWidget *tb, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
 
   if(darktable.gui->reset) return;
@@ -1107,16 +1106,14 @@ static void _refresh_watermarks(dt_iop_module_t *self)
   g_signal_handlers_unblock_by_func(g->watermarks, _watermark_callback, self);
 }
 
-static void _refresh_callback(GtkWidget *tb, gpointer user_data)
+static void _refresh_callback(GtkWidget *tb, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   _refresh_watermarks(self);
 }
 
-static void _alignment_callback(GtkWidget *tb, gpointer user_data)
+static void _alignment_callback(GtkWidget *tb, dt_iop_module_t *self)
 {
   int index = -1;
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
 
   if(darktable.gui->reset) return;
@@ -1126,7 +1123,7 @@ static void _alignment_callback(GtkWidget *tb, gpointer user_data)
   for(int i = 0; i < 9; i++)
   {
     /* block signal handler */
-    g_signal_handlers_block_by_func(g->align[i], _alignment_callback, user_data);
+    g_signal_handlers_block_by_func(g->align[i], _alignment_callback, self);
 
     if(GTK_WIDGET(g->align[i]) == tb)
     {
@@ -1137,15 +1134,14 @@ static void _alignment_callback(GtkWidget *tb, gpointer user_data)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->align[i]), FALSE);
 
     /* unblock signal handler */
-    g_signal_handlers_unblock_by_func(g->align[i], _alignment_callback, user_data);
+    g_signal_handlers_unblock_by_func(g->align[i], _alignment_callback, self);
   }
   p->alignment = index;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void _text_callback(GtkWidget *entry, gpointer user_data)
+static void _text_callback(GtkWidget *entry, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
   g_strlcpy(p->text, gtk_entry_get_text(GTK_ENTRY(entry)), sizeof(p->text));
@@ -1153,9 +1149,8 @@ static void _text_callback(GtkWidget *entry, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void _colorpick_color_set(GtkColorButton *widget, gpointer user_data)
+static void _colorpick_color_set(GtkColorButton *widget, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
 
@@ -1171,9 +1166,8 @@ static void _colorpick_color_set(GtkColorButton *widget, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void _fontsel_callback(GtkWidget *button, gpointer user_data)
+static void _fontsel_callback(GtkWidget *button, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
 

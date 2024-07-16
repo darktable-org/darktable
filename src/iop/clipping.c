@@ -2049,23 +2049,12 @@ static void hvflip_callback(GtkWidget *widget, dt_iop_module_t *self)
   commit_box(self, g, p);
 }
 
-static void key_swap_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                              GdkModifierType modifier, gpointer d)
+static void aspect_flip(GtkWidget *button, dt_iop_module_t *self)
 {
-  (void)accel_group;
-  (void)acceleratable;
-  (void)keyval;
-  (void)modifier;
-  dt_iop_module_t *self = (dt_iop_module_t *)d;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
   p->ratio_d = -p->ratio_d;
   apply_box_aspect(self, GRAB_HORIZONTAL);
   dt_control_queue_redraw_center();
-}
-
-static void aspect_flip(GtkWidget *button, dt_iop_module_t *self)
-{
-  key_swap_callback(NULL, NULL, 0, 0, self);
 }
 
 static gint _aspect_ratio_cmp(const dt_iop_clipping_aspect_t *a, const dt_iop_clipping_aspect_t *b)

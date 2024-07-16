@@ -1773,9 +1773,8 @@ void gui_changed(dt_iop_module_t *self,
   }
 }
 
-static void smoothing_callback(GtkWidget *slider, gpointer user_data)
+static void smoothing_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
   dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)self->params;
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
@@ -1801,9 +1800,8 @@ static void smoothing_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_color_picker_reset(self, TRUE);
 }
 
-static void auto_adjust_exposure_boost(GtkWidget *quad, gpointer user_data)
+static void auto_adjust_exposure_boost(GtkWidget *quad, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)self->params;
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
 
@@ -1868,9 +1866,8 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, gpointer user_data)
 }
 
 
-static void auto_adjust_contrast_boost(GtkWidget *quad, gpointer user_data)
+static void auto_adjust_contrast_boost(GtkWidget *quad, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)self->params;
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
 
@@ -2527,9 +2524,8 @@ void gui_post_expose(dt_iop_module_t *self,
 }
 
 static void _develop_distort_callback(gpointer instance,
-                                      gpointer user_data)
+                                      dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
   if(g == NULL) return;
   if(!g->distort_signal_actif) return;
@@ -2775,10 +2771,9 @@ static inline void init_nodes_y(dt_iop_toneequalizer_gui_data_t *g)
 
 static gboolean area_draw(GtkWidget *widget,
                           cairo_t *cr,
-                          gpointer user_data)
+                          dt_iop_module_t *self)
 {
   // Draw the widget equalizer view
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
   if(g == NULL) return FALSE;
 
@@ -2969,10 +2964,9 @@ static gboolean area_draw(GtkWidget *widget,
 
 static gboolean dt_iop_toneequalizer_bar_draw(GtkWidget *widget,
                                               cairo_t *crf,
-                                              gpointer user_data)
+                                              dt_iop_module_t *self)
 {
   // Draw the widget equalizer view
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
 
   update_histogram(self);
@@ -3073,9 +3067,8 @@ static gboolean area_enter_leave_notify(GtkWidget *widget,
 
 static gboolean area_button_press(GtkWidget *widget,
                                   GdkEventButton *event,
-                                  gpointer user_data)
+                                  dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
 
   if(darktable.gui->reset) return TRUE;
 
@@ -3132,9 +3125,8 @@ static gboolean area_button_press(GtkWidget *widget,
 
 static gboolean area_motion_notify(GtkWidget *widget,
                                    GdkEventMotion *event,
-                                   gpointer user_data)
+                                   dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return TRUE;
   if(!self->enabled) return FALSE;
 
@@ -3187,9 +3179,8 @@ static gboolean area_motion_notify(GtkWidget *widget,
 
 static gboolean area_button_release(GtkWidget *widget,
                                     GdkEventButton *event,
-                                    gpointer user_data)
+                                    dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return TRUE;
   if(!self->enabled) return FALSE;
 
@@ -3229,9 +3220,8 @@ static gboolean area_scroll(GtkWidget *widget,
 
 static gboolean notebook_button_press(GtkWidget *widget,
                                       GdkEventButton *event,
-                                      gpointer user_data)
+                                      dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return TRUE;
 
   // Give focus to module
@@ -3263,9 +3253,8 @@ GSList *mouse_actions(struct dt_iop_module_t *self)
  **/
 
 static void _develop_ui_pipe_started_callback(gpointer instance,
-                                              gpointer user_data)
+                                              dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
   if(g == NULL) return;
   switch_cursors(self);
@@ -3288,9 +3277,8 @@ static void _develop_ui_pipe_started_callback(gpointer instance,
 
 
 static void _develop_preview_pipe_finished_callback(gpointer instance,
-                                                    gpointer user_data)
+                                                    dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
   if(g == NULL) return;
 
@@ -3307,9 +3295,8 @@ static void _develop_preview_pipe_finished_callback(gpointer instance,
 
 
 static void _develop_ui_pipe_finished_callback(gpointer instance,
-                                               gpointer user_data)
+                                               dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
   if(g == NULL) return;
   switch_cursors(self);

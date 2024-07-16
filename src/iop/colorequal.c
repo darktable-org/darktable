@@ -2355,9 +2355,8 @@ static void _draw_color_picker(dt_iop_module_t *self,
 
 static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
                                          cairo_t *crf,
-                                         gpointer user_data)
+                                         dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
   dt_iop_colorequal_params_t *p = (dt_iop_colorequal_params_t *)self->params;
 
@@ -2610,10 +2609,9 @@ void color_picker_apply(dt_iop_module_t *self,
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
-static void _picker_callback(GtkWidget *quad, gpointer user_data)
+static void _picker_callback(GtkWidget *quad, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
 
   g->picking = dt_bauhaus_widget_get_quad_active(quad);
@@ -2621,20 +2619,18 @@ static void _picker_callback(GtkWidget *quad, gpointer user_data)
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
-static void _masking_callback_p(GtkWidget *quad, gpointer user_data)
+static void _masking_callback_p(GtkWidget *quad, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
   dt_bauhaus_widget_set_quad_active(g->threshold, FALSE);
   g->mask_mode = (dt_bauhaus_widget_get_quad_active(quad)) ? g->channel + 1 : 0;
   dt_dev_reprocess_center(self->dev);
 }
 
-static void _masking_callback_t(GtkWidget *quad, gpointer user_data)
+static void _masking_callback_t(GtkWidget *quad, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
   dt_bauhaus_widget_set_quad_active(g->param_size, FALSE);
   g->mask_mode = (dt_bauhaus_widget_get_quad_active(quad)) ? GRAD_SWITCH + g->channel + 1 : 0;
@@ -2759,9 +2755,8 @@ static void _area_reset_nodes(dt_iop_colorequal_gui_data_t *g)
 
 static gboolean _area_scrolled_callback(GtkWidget *widget,
                                         GdkEventScroll *event,
-                                        gpointer user_data)
+                                        dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
 
   GtkWidget *w = dt_modifier_is(event->state, GDK_MOD1_MASK)
@@ -2772,9 +2767,8 @@ static gboolean _area_scrolled_callback(GtkWidget *widget,
 
 static gboolean _area_motion_notify_callback(GtkWidget *widget,
                                              GdkEventMotion *event,
-                                             gpointer user_data)
+                                             dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
 
   if(g->dragging && g->on_node)
@@ -2798,9 +2792,8 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget,
 
 static gboolean _area_button_press_callback(GtkWidget *widget,
                                             GdkEventButton *event,
-                                            gpointer user_data)
+                                            dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
 
   if(event->button == 2
@@ -2831,9 +2824,8 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
 
 static gboolean _area_button_release_callback(GtkWidget *widget,
                                               GdkEventButton *event,
-                                              gpointer user_data)
+                                              dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
 
   if(event->button == 1)
@@ -2847,9 +2839,8 @@ static gboolean _area_button_release_callback(GtkWidget *widget,
 
 static gboolean _area_size_callback(GtkWidget *widget,
                                     GdkEventButton *event,
-                                    gpointer user_data)
+                                    dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
   g->gradients_cached = FALSE;
   return FALSE;

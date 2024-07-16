@@ -899,9 +899,8 @@ static gboolean cluster_preview_draw(GtkWidget *widget, cairo_t *crf, dt_iop_mod
 }
 
 
-static void process_clusters(gpointer instance, gpointer user_data)
+static void process_clusters(gpointer instance, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colormapping_params_t *p = (dt_iop_colormapping_params_t *)self->params;
   dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)self->gui_data;
   int new_source_clusters = 0;

@@ -974,9 +974,8 @@ void color_picker_apply(dt_iop_module_t *self,
   }
 }
 
-static void target_L_callback(GtkWidget *slider, gpointer user_data)
+static void target_L_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorchecker_params_t *p =
     (dt_iop_colorchecker_params_t *)self->params;
   dt_iop_colorchecker_gui_data_t *g =
@@ -993,9 +992,8 @@ static void target_L_callback(GtkWidget *slider, gpointer user_data)
 }
 
 static void target_a_callback(GtkWidget *slider,
-                              gpointer user_data)
+                              dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorchecker_params_t *p =
     (dt_iop_colorchecker_params_t *)self->params;
   dt_iop_colorchecker_gui_data_t *g =
@@ -1034,9 +1032,8 @@ static void target_a_callback(GtkWidget *slider,
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void target_b_callback(GtkWidget *slider, gpointer user_data)
+static void target_b_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorchecker_params_t *p =
     (dt_iop_colorchecker_params_t *)self->params;
   dt_iop_colorchecker_gui_data_t *g =
@@ -1073,9 +1070,8 @@ static void target_b_callback(GtkWidget *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void target_C_callback(GtkWidget *slider, gpointer user_data)
+static void target_C_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorchecker_params_t *p =
     (dt_iop_colorchecker_params_t *)self->params;
   dt_iop_colorchecker_gui_data_t *g =
@@ -1123,9 +1119,8 @@ static void target_C_callback(GtkWidget *slider, gpointer user_data)
 }
 
 static void target_callback(GtkWidget *combo,
-                            gpointer user_data)
+                            dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorchecker_gui_data_t *g =
     (dt_iop_colorchecker_gui_data_t *)self->gui_data;
   g->absolute_target = dt_bauhaus_combobox_get(combo);
@@ -1138,9 +1133,8 @@ static void target_callback(GtkWidget *combo,
   gtk_widget_queue_draw(g->area);
 }
 
-static void patch_callback(GtkWidget *combo, gpointer user_data)
+static void patch_callback(GtkWidget *combo, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorchecker_gui_data_t *g =
     (dt_iop_colorchecker_gui_data_t *)self->gui_data;
   g->drawn_patch = g->patch = dt_bauhaus_combobox_get(combo);
@@ -1155,9 +1149,8 @@ static void patch_callback(GtkWidget *combo, gpointer user_data)
 
 static gboolean checker_draw(GtkWidget *widget,
                              cairo_t *crf,
-                             gpointer user_data)
+                             dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorchecker_gui_data_t *g =
     (dt_iop_colorchecker_gui_data_t *)self->gui_data;
   dt_iop_colorchecker_params_t *p =
@@ -1248,10 +1241,9 @@ static gboolean checker_draw(GtkWidget *widget,
 static gboolean checker_motion_notify(
     GtkWidget *widget,
     GdkEventMotion *event,
-    gpointer user_data)
+    dt_iop_module_t *self)
 {
   // highlight?
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorchecker_gui_data_t *g =
     (dt_iop_colorchecker_gui_data_t *)self->gui_data;
   dt_iop_colorchecker_params_t *p =
@@ -1289,9 +1281,8 @@ static gboolean checker_motion_notify(
 
 static gboolean checker_button_press(
     GtkWidget *widget, GdkEventButton *event,
-    gpointer user_data)
+    dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorchecker_gui_data_t *g =
     (dt_iop_colorchecker_gui_data_t *)self->gui_data;
   dt_iop_colorchecker_params_t *p =

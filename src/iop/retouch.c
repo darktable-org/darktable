@@ -1723,9 +1723,8 @@ static gboolean rt_display_wavelet_scale_callback(GtkToggleButton *togglebutton,
 }
 
 static void rt_develop_ui_pipe_finished_callback(gpointer instance,
-                                                 gpointer user_data)
+                                                 dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
 

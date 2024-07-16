@@ -1457,9 +1457,8 @@ static void mask_callback(GtkWidget *togglebutton, dt_iop_module_t *self)
 }
 
 
-static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
+static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorbalancergb_params_t *p = (dt_iop_colorbalancergb_params_t *)self->params;
   const float shadows_weight = 2.f + p->shadows_weight * 2.f;
   const float highlights_weight = 2.f + p->highlights_weight * 2.f;
