@@ -154,7 +154,7 @@ typedef enum dt_lib_modulegroup_iop_visibility_type_t
 } dt_lib_modulegroup_iop_visibility_type_t;
 
 /* toggle button callback */
-static void _lib_modulegroups_toggle(GtkWidget *button, gpointer data);
+static void _lib_modulegroups_toggle(GtkWidget *button, dt_lib_module_t *self);
 /* helper function to update iop module view depending on group */
 static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self);
 
@@ -965,10 +965,9 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
   if(d->current == DT_MODULEGROUP_BASICS && !(text_entered && text_entered[0] != '\0')) _basics_show(self);
 }
 
-static void _lib_modulegroups_toggle(GtkWidget *button, gpointer user_data)
+static void _lib_modulegroups_toggle(GtkWidget *button, dt_lib_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
   const gchar *text_entered = (gtk_widget_is_visible(GTK_WIDGET(d->hbox_search_box)))
                                   ? gtk_entry_get_text(GTK_ENTRY(d->text_entry))

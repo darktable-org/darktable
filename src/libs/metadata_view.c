@@ -1100,9 +1100,8 @@ static void _jump_to_accel(dt_action_t *data)
 }
 
 /* callback for the mouse over image change signal */
-static void _mouse_over_image_callback(gpointer instance, gpointer user_data)
+static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   if(dt_control_running()) dt_lib_gui_queue_update(self);
 }
 

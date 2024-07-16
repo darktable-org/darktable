@@ -809,9 +809,8 @@ static void _pop_menu_view(GtkWidget *view, GdkEventButton *event, dt_lib_module
   gtk_menu_popup_at_pointer(GTK_MENU(menu), (GdkEvent *)event);
 }
 
-static gboolean _force_selection_changed(gpointer user_data)
+static gboolean _force_selection_changed(dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_map_locations_t *d = (dt_lib_map_locations_t *)self->data;
   gtk_tree_selection_unselect_all(d->selection);
   return FALSE;
@@ -869,7 +868,7 @@ static gboolean _click_on_view(GtkWidget *view, GdkEventButton *event, dt_lib_mo
       else if(button_pressed == 1 && !ctrl_pressed)
       {
         if(gtk_tree_selection_path_is_selected(selection, path))
-          g_timeout_add(100, _force_selection_changed, self);
+          g_timeout_add(100, (GSourceFunc)_force_selection_changed, self);
         gtk_tree_path_free(path);
         return FALSE;
       }
@@ -885,7 +884,7 @@ static gboolean _click_on_view(GtkWidget *view, GdkEventButton *event, dt_lib_mo
     }
     else
     {
-      g_timeout_add(10, _force_selection_changed, self);
+      g_timeout_add(10, (GSourceFunc)_force_selection_changed, self);
       return FALSE;
     }
   }

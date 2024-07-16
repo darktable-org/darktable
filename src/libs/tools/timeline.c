@@ -905,9 +905,8 @@ static void _selection_collect(dt_lib_timeline_t *strip, dt_lib_timeline_mode_t 
   }
 }
 
-static gboolean _lib_timeline_draw_callback(GtkWidget *widget, cairo_t *wcr, gpointer user_data)
+static gboolean _lib_timeline_draw_callback(GtkWidget *widget, cairo_t *wcr, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_timeline_t *strip = (dt_lib_timeline_t *)self->data;
 
   GtkAllocation allocation;
@@ -1077,9 +1076,8 @@ static gboolean _lib_timeline_draw_callback(GtkWidget *widget, cairo_t *wcr, gpo
   return TRUE;
 }
 
-static gboolean _lib_timeline_button_press_callback(GtkWidget *w, GdkEventButton *e, gpointer user_data)
+static gboolean _lib_timeline_button_press_callback(GtkWidget *w, GdkEventButton *e, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_timeline_t *strip = (dt_lib_timeline_t *)self->data;
 
   if(e->button == 1)
@@ -1137,9 +1135,8 @@ static gboolean _lib_timeline_button_press_callback(GtkWidget *w, GdkEventButton
   return FALSE;
 }
 
-static gboolean _lib_timeline_button_release_callback(GtkWidget *w, GdkEventButton *e, gpointer user_data)
+static gboolean _lib_timeline_button_release_callback(GtkWidget *w, GdkEventButton *e, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_timeline_t *strip = (dt_lib_timeline_t *)self->data;
 
   if(strip->selecting)
@@ -1225,10 +1222,9 @@ static void _selection_stop(dt_action_t *action)
   gtk_widget_queue_draw(strip->timeline);
 }
 
-static gboolean _block_autoscroll(gpointer user_data)
+static gboolean _block_autoscroll(dt_lib_module_t *self)
 {
   // this function is called repetidly until the pointer is not more in the autoscoll zone
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_timeline_t *strip = (dt_lib_timeline_t *)self->data;
 
   if(!strip->in)
@@ -1266,9 +1262,8 @@ static gboolean _block_autoscroll(gpointer user_data)
   return TRUE;
 }
 
-static gboolean _lib_timeline_motion_notify_callback(GtkWidget *w, GdkEventMotion *e, gpointer user_data)
+static gboolean _lib_timeline_motion_notify_callback(GtkWidget *w, GdkEventMotion *e, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_timeline_t *strip = (dt_lib_timeline_t *)self->data;
 
   strip->in = TRUE;
@@ -1277,10 +1272,10 @@ static gboolean _lib_timeline_motion_notify_callback(GtkWidget *w, GdkEventMotio
   if((e->x < 10 || e->x > strip->panel_width - 10) && !strip->autoscroll)
   {
     // first scroll immediately and then every 400ms until cursor quit the "auto-zone"
-    if(_block_autoscroll(user_data))
+    if(_block_autoscroll(self))
     {
       strip->autoscroll = TRUE;
-      g_timeout_add(400, _block_autoscroll, user_data);
+      g_timeout_add(400, (GSourceFunc)_block_autoscroll, self);
     }
   }
 
@@ -1312,9 +1307,8 @@ static gboolean _lib_timeline_motion_notify_callback(GtkWidget *w, GdkEventMotio
   return TRUE;
 }
 
-static gboolean _lib_timeline_scroll_callback(GtkWidget *w, GdkEventScroll *e, gpointer user_data)
+static gboolean _lib_timeline_scroll_callback(GtkWidget *w, GdkEventScroll *e, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_timeline_t *strip = (dt_lib_timeline_t *)self->data;
 
   // zoom change (with Ctrl key)
@@ -1370,9 +1364,8 @@ static gboolean _lib_timeline_scroll_callback(GtkWidget *w, GdkEventScroll *e, g
   return FALSE;
 }
 
-static gboolean _lib_timeline_mouse_leave_callback(GtkWidget *w, GdkEventCrossing *e, gpointer user_data)
+static gboolean _lib_timeline_mouse_leave_callback(GtkWidget *w, GdkEventCrossing *e, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_timeline_t *strip = (dt_lib_timeline_t *)self->data;
 
   strip->in = FALSE;

@@ -48,19 +48,19 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget,
 /* motion notify callback handler*/
 static gboolean _lib_navigation_motion_notify_callback(GtkWidget *widget,
                                                        GdkEventMotion *event,
-                                                       gpointer user_data);
+                                                       dt_lib_module_t *self);
 /* button press callback */
 static gboolean _lib_navigation_button_press_callback(GtkWidget *widget,
                                                       GdkEvent *event,
-                                                      gpointer user_data);
+                                                      dt_lib_module_t *self);
 /* button release callback */
 static gboolean _lib_navigation_button_release_callback(GtkWidget *widget,
                                                         GdkEventButton *event,
-                                                        gpointer user_data);
+                                                        dt_lib_module_t *self);
 /* leave notify callback */
 static gboolean _lib_navigation_leave_notify_callback(GtkWidget *widget,
                                                       GdkEventCrossing *event,
-                                                      gpointer user_data);
+                                                      dt_lib_module_t *self);
 
 /* helper function for position set */
 static void _lib_navigation_set_position(struct dt_lib_module_t *self,
@@ -96,9 +96,8 @@ int position(const dt_lib_module_t *self)
 
 
 static void _lib_navigation_control_redraw_callback(gpointer instance,
-                                                    gpointer user_data)
+                                                    dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_navigation_t *d = (dt_lib_navigation_t *)self->data;
 
   dt_dev_viewport_t *port = &darktable.develop->full;
@@ -349,9 +348,8 @@ void _lib_navigation_set_position(dt_lib_module_t *self,
 
 static gboolean _lib_navigation_motion_notify_callback(GtkWidget *widget,
                                                        GdkEventMotion *event,
-                                                       gpointer user_data)
+                                                       dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   _lib_navigation_set_position(self, event->x, event->y,
@@ -399,9 +397,8 @@ static void _zoom_changed(GtkWidget *widget, gpointer user_data)
 
 static gboolean _lib_navigation_button_press_callback(GtkWidget *widget,
                                                       GdkEvent *event,
-                                                      gpointer user_data)
+                                                      dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_navigation_t *d = (dt_lib_navigation_t *)self->data;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -427,9 +424,8 @@ static gboolean _lib_navigation_button_press_callback(GtkWidget *widget,
 
 static gboolean _lib_navigation_button_release_callback(GtkWidget *widget,
                                                         GdkEventButton *event,
-                                                        gpointer user_data)
+                                                        dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_navigation_t *d = (dt_lib_navigation_t *)self->data;
   d->dragging = 0;
 
@@ -438,7 +434,7 @@ static gboolean _lib_navigation_button_release_callback(GtkWidget *widget,
 
 static gboolean _lib_navigation_leave_notify_callback(GtkWidget *widget,
                                                       GdkEventCrossing *event,
-                                                      gpointer user_data)
+                                                      dt_lib_module_t *self)
 {
   return TRUE;
 }

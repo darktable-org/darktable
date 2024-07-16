@@ -141,9 +141,8 @@ static void pretty_print(const char *buf, char *out, size_t outsize)
   }
 }
 
-static void _button_pressed(GtkButton *button, gpointer user_data)
+static void _button_pressed(GtkButton *button, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_recentcollect_t *d = (dt_lib_recentcollect_t *)self->data;
 
   // deserialize this button's preset
@@ -181,9 +180,8 @@ static void _button_pressed(GtkButton *button, gpointer user_data)
 
 static void _lib_recentcollection_updated(gpointer instance, dt_collection_change_t query_change,
                                           dt_collection_properties_t changed_property, gpointer imgs, int next,
-                                          gpointer user_data)
+                                          dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_recentcollect_t *d = (dt_lib_recentcollect_t *)self->data;
 
   // update button descriptions:

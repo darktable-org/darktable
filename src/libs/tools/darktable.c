@@ -51,10 +51,10 @@ typedef struct dt_lib_darktable_t
 
 
 /* expose function for darktable module */
-static gboolean _lib_darktable_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer user_data);
+static gboolean _lib_darktable_draw_callback(GtkWidget *widget, cairo_t *cr, dt_lib_module_t *self);
 /* button press callback */
 static gboolean _lib_darktable_button_press_callback(GtkWidget *widget, GdkEventButton *event,
-                                                     gpointer user_data);
+                                                     dt_lib_module_t *self);
 
 const char *name(dt_lib_module_t *self)
 {
@@ -188,9 +188,8 @@ void gui_cleanup(dt_lib_module_t *self)
 
 
 
-static gboolean _lib_darktable_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer user_data)
+static gboolean _lib_darktable_draw_callback(GtkWidget *widget, cairo_t *cr, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_darktable_t *d = (dt_lib_darktable_t *)self->data;
 
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
@@ -261,7 +260,7 @@ static gboolean _lib_darktable_draw_callback(GtkWidget *widget, cairo_t *cr, gpo
 }
 
 static gboolean _lib_darktable_button_press_callback(GtkWidget *widget, GdkEventButton *event,
-                                                     gpointer user_data)
+                                                     dt_lib_module_t *self)
 {
   /* show about box */
   darktable_show_about_dialog();

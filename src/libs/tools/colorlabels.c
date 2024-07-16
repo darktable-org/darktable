@@ -43,7 +43,7 @@ typedef struct dt_lib_colorlabels_t
 /* callback when a colorlabel button is clicked */
 static void _lib_colorlabels_button_clicked_callback(GtkWidget *w,
                                                      GdkEventButton *event,
-                                                     gpointer user_data);
+                                                     dt_lib_module_t *self);
 
 gint _get_colorlabel(dt_lib_module_t *self, GtkWidget *w)
 {
@@ -83,9 +83,8 @@ int position(const dt_lib_module_t *self)
 
 static gboolean _lib_colorlabels_enter_notify_callback(GtkWidget *widget,
                                                        GdkEventCrossing *event,
-                                                       gpointer user_data)
+                                                       dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   const gint colorlabel = _get_colorlabel(self, widget);
 
   darktable.control->element = (colorlabel + 1) % 6;
@@ -164,9 +163,8 @@ void gui_cleanup(dt_lib_module_t *self)
 
 static gboolean _lib_colorlabels_key_press(GtkWidget *entry,
                                            GdkEventKey *event,
-                                           gpointer user_data)
+                                           dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_colorlabels_t *d = (dt_lib_colorlabels_t *)self->data;
 
   switch(event->keyval)
@@ -200,9 +198,8 @@ static gboolean _lib_colorlabels_key_press(GtkWidget *entry,
 
 static gboolean _lib_colorlabels_destroy(GtkWidget *widget,
                                          GdkEvent *event,
-                                         gpointer user_data)
+                                         dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_colorlabels_t *d = (dt_lib_colorlabels_t *)self->data;
 
   gtk_widget_destroy(d->floating_window);
@@ -251,9 +248,8 @@ static void _lib_colorlabels_edit(dt_lib_module_t *self,
 
 static void _lib_colorlabels_button_clicked_callback(GtkWidget *w,
                                                      GdkEventButton *event,
-                                                     gpointer user_data)
+                                                     dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_colorlabels_t *d = (dt_lib_colorlabels_t *)self->data;
 
   const gint colorlabel = _get_colorlabel(self, w);

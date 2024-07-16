@@ -54,7 +54,7 @@ static gint _lib_lighttable_get_zoom(dt_lib_module_t *self);
 static dt_lighttable_layout_t _lib_lighttable_get_layout(dt_lib_module_t *self);
 
 /* zoom slider change callback */
-static void _lib_lighttable_zoom_slider_changed(GtkRange *range, gpointer user_data);
+static void _lib_lighttable_zoom_slider_changed(GtkRange *range, dt_lib_module_t *self);
 /* zoom entry change callback */
 static gboolean _lib_lighttable_zoom_entry_changed(GtkWidget *entry, GdkEventKey *event,
                                                    dt_lib_module_t *self);
@@ -462,9 +462,8 @@ static void _set_zoom(dt_lib_module_t *self, int zoom)
   }
 }
 
-static void _lib_lighttable_zoom_slider_changed(GtkRange *range, gpointer user_data)
+static void _lib_lighttable_zoom_slider_changed(GtkRange *range, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
 
   const int i = gtk_range_get_value(range);

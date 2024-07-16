@@ -45,14 +45,14 @@ typedef struct dt_lib_viewswitcher_t
 } dt_lib_viewswitcher_t;
 
 /* callback when a view label is pressed */
-static gboolean _lib_viewswitcher_button_press_callback(GtkWidget *w, GdkEventButton *ev, gpointer user_data);
+static gboolean _lib_viewswitcher_button_press_callback(GtkWidget *w, GdkEventButton *ev, const dt_view_t *view);
 /* helper function to create a label */
 static GtkWidget *_lib_viewswitcher_create_label(dt_view_t *view);
 /* callback when view changed signal happens */
 static void _lib_viewswitcher_view_changed_callback(gpointer instance, dt_view_t *old_view,
-                                                    dt_view_t *new_view, gpointer user_data);
+                                                    dt_view_t *new_view, dt_lib_module_t *self);
 static void _lib_viewswitcher_view_cannot_change_callback(gpointer instance, dt_view_t *old_view,
-                                                          dt_view_t *new_view, gpointer user_data);
+                                                          dt_view_t *new_view, dt_lib_module_t *self);
 static void _switch_view(const dt_view_t *view);
 
 const char *name(dt_lib_module_t *self)
@@ -186,9 +186,8 @@ static void _lib_viewswitcher_enter_leave_notify_callback(GtkWidget *w, GdkEvent
 }
 
 static void _lib_viewswitcher_view_cannot_change_callback(gpointer instance, dt_view_t *old_view,
-                                                          dt_view_t *new_view, gpointer user_data)
+                                                          dt_view_t *new_view, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_viewswitcher_t *d = (dt_lib_viewswitcher_t *)self->data;
 
   g_signal_handlers_block_by_func(d->dropdown, _dropdown_changed, d);
@@ -198,9 +197,8 @@ static void _lib_viewswitcher_view_cannot_change_callback(gpointer instance, dt_
 }
 
 static void _lib_viewswitcher_view_changed_callback(gpointer instance, dt_view_t *old_view,
-                                                    dt_view_t *new_view, gpointer user_data)
+                                                    dt_view_t *new_view, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_viewswitcher_t *d = (dt_lib_viewswitcher_t *)self->data;
 
   const char *name = dt_view_manager_name(darktable.view_manager);
@@ -277,11 +275,10 @@ static void _switch_view(const dt_view_t *view)
   dt_ctl_switch_mode_to_by_view(view);
 }
 
-static gboolean _lib_viewswitcher_button_press_callback(GtkWidget *w, GdkEventButton *ev, gpointer user_data)
+static gboolean _lib_viewswitcher_button_press_callback(GtkWidget *w, GdkEventButton *ev, const dt_view_t *view)
 {
   if(ev->button == 1)
   {
-    const dt_view_t *view = (const dt_view_t *)user_data;
     _switch_view(view);
     return TRUE;
   }
