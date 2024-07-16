@@ -80,6 +80,9 @@ changes (where available).
 
 - Fixed large image exports due to a bug in finalscale module.
 
+- Fixed failure to load valid JPEG2000 files with unspecified color
+  space.
+
 ## Lua
 
 ### API Version
