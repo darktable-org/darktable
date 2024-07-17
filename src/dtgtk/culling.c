@@ -1363,8 +1363,6 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table,
 static gboolean _thumbs_compute_positions(dt_culling_t *table)
 {
   // This code computes sizes and positions of thumbnails in culling view mode
-
-  if(!gtk_widget_get_visible(table->widget)) return FALSE;
   if(!table->list) return FALSE;
 
   // if we have only 1 image, it should take the entire screen
@@ -1770,7 +1768,7 @@ void dt_culling_update_active_images_list(dt_culling_t *table)
 // recreate the list of thumb if needed and recomputes sizes and positions if needed
 void dt_culling_full_redraw(dt_culling_t *table, const gboolean force)
 {
-  if(!gtk_widget_get_visible(table->widget)) return;
+  if(!gtk_widget_get_visible(table->widget) && !force) return;
   // first, we see if we need to do something
   if(!_compute_sizes(table, force)) return;
   const double start = dt_get_debug_wtime();
