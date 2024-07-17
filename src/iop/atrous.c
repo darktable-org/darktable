@@ -1062,13 +1062,13 @@ void init_presets(dt_iop_module_so_t *self)
 
 static void reset_mix(dt_iop_module_t *self)
 {
-  dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
+  dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
   dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
-  c->drag_params = *p;
+  g->drag_params = *p;
   ++darktable.gui->reset;
-  dt_bauhaus_slider_set(c->mix, p->mix);
+  dt_bauhaus_slider_set(g->mix, p->mix);
   --darktable.gui->reset;
-  gtk_widget_queue_draw(GTK_WIDGET(c->area));
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
 void gui_update(struct dt_iop_module_t *self)
@@ -1083,10 +1083,10 @@ static gboolean area_enter_leave_notify(GtkWidget *widget,
                                         GdkEventCrossing *event,
                                         dt_iop_module_t *self)
 {
-  dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
-  c->in_curve = event->type == GDK_ENTER_NOTIFY;
-  if(!c->dragging)
-    c->x_move = -1;
+  dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
+  g->in_curve = event->type == GDK_ENTER_NOTIFY;
+  if(!g->dragging)
+    g->x_move = -1;
 
   gtk_widget_queue_draw(widget);
   return FALSE;
@@ -1111,17 +1111,17 @@ static gboolean area_draw(GtkWidget *widget,
                           gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
+  dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
   dt_iop_atrous_params_t p = *(dt_iop_atrous_params_t *)self->params;
 
-  const float mix = c->in_curve ? 1.0f : p.mix;
+  const float mix = g->in_curve ? 1.0f : p.mix;
 
   for(int k = 0; k < BANDS; k++)
   {
-    const int ch2 = (int)c->channel2;
+    const int ch2 = (int)g->channel2;
     float x, y;
     _apply_mix(self, ch2, k, mix, p.x[ch2][k], p.y[ch2][k], &x, &y);
-    dt_draw_curve_set_point(c->minmax_curve, k, x, y);
+    dt_draw_curve_set_point(g->minmax_curve, k, x, y);
   }
 
   const int inset = INSET;
@@ -1169,23 +1169,23 @@ static gboolean area_draw(GtkWidget *widget,
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_fill(cr);
 
-  if(c->mouse_y > 0 || c->dragging)
+  if(g->mouse_y > 0 || g->dragging)
   {
-    const int ch2 = (int)c->channel2;
+    const int ch2 = (int)g->channel2;
 
     // draw min/max curves:
-    get_params(&p, ch2, c->mouse_x, 1., c->mouse_radius);
+    get_params(&p, ch2, g->mouse_x, 1., g->mouse_radius);
     for(int k = 0; k < BANDS; k++)
-      dt_draw_curve_set_point(c->minmax_curve, k, p.x[ch2][k], p.y[ch2][k]);
-    dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, RES,
-                              c->draw_min_xs, c->draw_min_ys);
+      dt_draw_curve_set_point(g->minmax_curve, k, p.x[ch2][k], p.y[ch2][k]);
+    dt_draw_curve_calc_values(g->minmax_curve, 0.0, 1.0, RES,
+                              g->draw_min_xs, g->draw_min_ys);
 
     p = *(dt_iop_atrous_params_t *)self->params;
-    get_params(&p, ch2, c->mouse_x, .0, c->mouse_radius);
+    get_params(&p, ch2, g->mouse_x, .0, g->mouse_radius);
     for(int k = 0; k < BANDS; k++)
-      dt_draw_curve_set_point(c->minmax_curve, k, p.x[ch2][k], p.y[ch2][k]);
-    dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, RES,
-                              c->draw_max_xs, c->draw_max_ys);
+      dt_draw_curve_set_point(g->minmax_curve, k, p.x[ch2][k], p.y[ch2][k]);
+    dt_draw_curve_calc_values(g->minmax_curve, 0.0, 1.0, RES,
+                              g->draw_max_xs, g->draw_max_ys);
   }
 
   // draw grid
@@ -1201,36 +1201,36 @@ static gboolean area_draw(GtkWidget *widget,
 
 // draw frequency histogram in bg.
 #if 1
-  if(c->num_samples > 0)
+  if(g->num_samples > 0)
   {
     cairo_save(cr);
-    for(int k = 1; k < c->num_samples; k += 2)
+    for(int k = 1; k < g->num_samples; k += 2)
     {
       cairo_set_source_rgba(cr, graph_bg.red, graph_bg.green, graph_bg.blue, .3);
-      cairo_move_to(cr, width * c->sample[k - 1], 0.0f);
-      cairo_line_to(cr, width * c->sample[k - 1], -height);
-      cairo_line_to(cr, width * c->sample[k], -height);
-      cairo_line_to(cr, width * c->sample[k], 0.0f);
+      cairo_move_to(cr, width * g->sample[k - 1], 0.0f);
+      cairo_line_to(cr, width * g->sample[k - 1], -height);
+      cairo_line_to(cr, width * g->sample[k], -height);
+      cairo_line_to(cr, width * g->sample[k], 0.0f);
       cairo_fill(cr);
     }
-    if(c->num_samples & 1)
+    if(g->num_samples & 1)
     {
-      cairo_move_to(cr, width * c->sample[c->num_samples - 1], 0.0f);
-      cairo_line_to(cr, width * c->sample[c->num_samples - 1], -height);
+      cairo_move_to(cr, width * g->sample[g->num_samples - 1], 0.0f);
+      cairo_line_to(cr, width * g->sample[g->num_samples - 1], -height);
       cairo_line_to(cr, 0.0f, -height);
       cairo_line_to(cr, 0.0f, 0.0f);
       cairo_fill(cr);
     }
     cairo_restore(cr);
   }
-  if(c->band_max > 0)
+  if(g->band_max > 0)
   {
     cairo_save(cr);
     cairo_scale(cr, width / (BANDS - 1.0),
-                -(height - DT_PIXEL_APPLY_DPI(5)) / c->band_max);
+                -(height - DT_PIXEL_APPLY_DPI(5)) / g->band_max);
     cairo_set_source_rgba(cr, graph_bg.red, graph_bg.green, graph_bg.blue, .3);
     cairo_move_to(cr, 0, 0);
-    for(int k = 0; k < BANDS; k++) cairo_line_to(cr, k, c->band_hist[k]);
+    for(int k = 0; k < BANDS; k++) cairo_line_to(cr, k, g->band_hist[k]);
     cairo_line_to(cr, BANDS - 1.0, 0.);
     cairo_close_path(cr);
     cairo_fill(cr);
@@ -1244,7 +1244,7 @@ static gboolean area_draw(GtkWidget *widget,
   for(int i = 0; i <= atrous_s; i++)
   {
     // draw curves, selected last.
-    int ch = ((int)c->channel + i + 1) % (atrous_s + 1);
+    int ch = ((int)g->channel + i + 1) % (atrous_s + 1);
     int ch2 = -1;
     const float bgmul = i < atrous_s ? 0.5f : 1.0f;
     switch(ch)
@@ -1265,10 +1265,10 @@ static gboolean area_draw(GtkWidget *widget,
 
     // reverse order if bottom is active (to end up with correct
     // values in minmax_curve):
-    if(c->channel2 == ch2)
+    if(g->channel2 == ch2)
     {
       ch2 = ch;
-      ch = c->channel2;
+      ch = g->channel2;
     }
 
     if(ch2 >= 0)
@@ -1277,12 +1277,12 @@ static gboolean area_draw(GtkWidget *widget,
       {
         float x, y;
         _apply_mix(self, ch2, k, mix, p.x[ch2][k], p.y[ch2][k], &x, &y);
-        dt_draw_curve_set_point(c->minmax_curve, k, x, y);
+        dt_draw_curve_set_point(g->minmax_curve, k, x, y);
       }
-      dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, RES, c->draw_xs, c->draw_ys);
+      dt_draw_curve_calc_values(g->minmax_curve, 0.0, 1.0, RES, g->draw_xs, g->draw_ys);
       cairo_move_to(cr, width, -height * p.y[ch2][BANDS - 1]);
       for(int k = RES - 2; k >= 0; k--)
-        cairo_line_to(cr, k * width / (float)(RES - 1), -height * c->draw_ys[k]);
+        cairo_line_to(cr, k * width / (float)(RES - 1), -height * g->draw_ys[k]);
     }
     else
       cairo_move_to(cr, 0, 0);
@@ -1290,11 +1290,11 @@ static gboolean area_draw(GtkWidget *widget,
     {
       float x, y;
       _apply_mix(self, ch, k, mix, p.x[ch][k], p.y[ch][k], &x, &y);
-      dt_draw_curve_set_point(c->minmax_curve, k, x, y);
+      dt_draw_curve_set_point(g->minmax_curve, k, x, y);
     }
-    dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, RES, c->draw_xs, c->draw_ys);
+    dt_draw_curve_calc_values(g->minmax_curve, 0.0, 1.0, RES, g->draw_xs, g->draw_ys);
     for(int k = 0; k < RES; k++)
-      cairo_line_to(cr, k * width / (float)(RES - 1), -height * c->draw_ys[k]);
+      cairo_line_to(cr, k * width / (float)(RES - 1), -height * g->draw_ys[k]);
     if(ch2 < 0)
       cairo_line_to(cr, width, 0);
     cairo_close_path(cr);
@@ -1302,10 +1302,10 @@ static gboolean area_draw(GtkWidget *widget,
     cairo_fill(cr);
   }
 
-  if(c->mouse_y > 0 || c->dragging)
+  if(g->mouse_y > 0 || g->dragging)
   {
-    const int ch = (int)c->channel;
-    const int ch2 = (int)c->channel2;
+    const int ch = (int)g->channel;
+    const int ch2 = (int)g->channel2;
 
     // draw dots on knots
     cairo_save(cr);
@@ -1319,7 +1319,7 @@ static gboolean area_draw(GtkWidget *widget,
       float x, y;
       _apply_mix(self, ch, k, mix, p.x[ch2][k], p.y[ch2][k], &x, &y);
       cairo_arc(cr, width * x, -height * y, DT_PIXEL_APPLY_DPI(3.0), 0.0, 2.0 * M_PI);
-      if(c->x_move == k)
+      if(g->x_move == k)
         cairo_fill(cr);
       else
         cairo_stroke(cr);
@@ -1327,25 +1327,25 @@ static gboolean area_draw(GtkWidget *widget,
     cairo_restore(cr);
   }
 
-  if(c->mouse_y > 0 || c->dragging)
+  if(g->mouse_y > 0 || g->dragging)
   {
     // draw min/max, if selected
     // cairo_set_source_rgba(cr, .6, .6, .6, .5);
-    cairo_move_to(cr, 0, -height * c->draw_min_ys[0]);
+    cairo_move_to(cr, 0, -height * g->draw_min_ys[0]);
     for(int k = 1; k < RES; k++)
-      cairo_line_to(cr, k * width / (float)(RES - 1), -height * c->draw_min_ys[k]);
+      cairo_line_to(cr, k * width / (float)(RES - 1), -height * g->draw_min_ys[k]);
     for(int k = RES - 1; k >= 0; k--)
-      cairo_line_to(cr, k * width / (float)(RES - 1), -height * c->draw_max_ys[k]);
+      cairo_line_to(cr, k * width / (float)(RES - 1), -height * g->draw_max_ys[k]);
     cairo_close_path(cr);
     cairo_fill(cr);
     // draw mouse focus circle
     cairo_set_source_rgba(cr, .9, .9, .9, .5);
-    const float pos = RES * c->mouse_x;
+    const float pos = RES * g->mouse_x;
     int k = (int)pos;
     const float f = k - pos;
     if(k >= RES - 1) k = RES - 2;
-    const float ht = -height * (f * c->draw_ys[k] + (1 - f) * c->draw_ys[k + 1]);
-    cairo_arc(cr, c->mouse_x * width, ht, c->mouse_radius * width, 0, 2. * M_PI);
+    const float ht = -height * (f * g->draw_ys[k] + (1 - f) * g->draw_ys[k + 1]);
+    cairo_arc(cr, g->mouse_x * width, ht, g->mouse_radius * width, 0, 2. * M_PI);
     cairo_stroke(cr);
   }
 
@@ -1357,12 +1357,12 @@ static gboolean area_draw(GtkWidget *widget,
   const float arrw = DT_PIXEL_APPLY_DPI(7.0f);
   for(int k = 1; k < BANDS - 1; k++)
   {
-    cairo_move_to(cr, width * p.x[(int)c->channel][k], inset - DT_PIXEL_APPLY_DPI(1));
+    cairo_move_to(cr, width * p.x[(int)g->channel][k], inset - DT_PIXEL_APPLY_DPI(1));
     cairo_rel_line_to(cr, -arrw * .5f, 0);
     cairo_rel_line_to(cr, arrw * .5f, -arrw);
     cairo_rel_line_to(cr, arrw * .5f, arrw);
     cairo_close_path(cr);
-    if(c->x_move == k)
+    if(g->x_move == k)
       cairo_fill(cr);
     else
       cairo_stroke(cr);
@@ -1370,7 +1370,7 @@ static gboolean area_draw(GtkWidget *widget,
 
   cairo_restore(cr);
 
-  if(c->mouse_y > 0 || c->dragging)
+  if(g->mouse_y > 0 || g->dragging)
   {
     // draw labels:
     PangoLayout *layout;
@@ -1398,7 +1398,7 @@ static gboolean area_draw(GtkWidget *widget,
     pango_cairo_show_layout(cr, layout);
     cairo_restore(cr);
 
-    switch(c->channel2)
+    switch(g->channel2)
     {
       case atrous_L:
       case atrous_c:
@@ -1432,80 +1432,80 @@ static gboolean area_motion_notify(GtkWidget *widget,
                                    gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
+  dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
   dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
   const int inset = INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   const int height = allocation.height - 2 * inset - DT_RESIZE_HANDLE_SIZE;
   const int width = allocation.width - 2 * inset;
-  if(!c->dragging) c->mouse_x = CLAMP(event->x - inset, 0, width) / (float)width;
-  c->mouse_y = 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;
+  if(!g->dragging) g->mouse_x = CLAMP(event->x - inset, 0, width) / (float)width;
+  g->mouse_y = 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;
 
   darktable.control->element = 0;
 
-  int ch2 = c->channel;
-  if(c->channel == atrous_L) ch2 = atrous_Lt;
-  if(c->channel == atrous_c) ch2 = atrous_ct;
+  int ch2 = g->channel;
+  if(g->channel == atrous_L) ch2 = atrous_Lt;
+  if(g->channel == atrous_c) ch2 = atrous_ct;
 
-  if(c->dragging)
+  if(g->dragging)
   {
     // drag y-positions
-    *p = c->drag_params;
-    if(c->x_move >= 0)
+    *p = g->drag_params;
+    if(g->x_move >= 0)
     {
       const float mx = CLAMP(event->x - inset, 0, width) / (float)width;
-      if(c->x_move > 0 && c->x_move < BANDS - 1)
+      if(g->x_move > 0 && g->x_move < BANDS - 1)
       {
-        const float minx = p->x[c->channel][c->x_move - 1] + 0.001f;
-        const float maxx = p->x[c->channel][c->x_move + 1] - 0.001f;
-        p->x[ch2][c->x_move] = p->x[c->channel][c->x_move] = fminf(maxx, fmaxf(minx, mx));
+        const float minx = p->x[g->channel][g->x_move - 1] + 0.001f;
+        const float maxx = p->x[g->channel][g->x_move + 1] - 0.001f;
+        p->x[ch2][g->x_move] = p->x[g->channel][g->x_move] = fminf(maxx, fmaxf(minx, mx));
       }
     }
     else
     {
-      get_params(p, c->channel2, c->mouse_x, c->mouse_y + c->mouse_pick, c->mouse_radius);
+      get_params(p, g->channel2, g->mouse_x, g->mouse_y + g->mouse_pick, g->mouse_radius);
     }
     gtk_widget_queue_draw(widget);
-    dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + c->channel);
+    dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + g->channel);
   }
   else if(event->y > height)
   {
     // move x-positions
-    c->x_move = 0;
-    float dist = fabs(p->x[c->channel][0] - c->mouse_x);
+    g->x_move = 0;
+    float dist = fabs(p->x[g->channel][0] - g->mouse_x);
     for(int k = 1; k < BANDS; k++)
     {
-      const float d2 = fabs(p->x[c->channel][k] - c->mouse_x);
+      const float d2 = fabs(p->x[g->channel][k] - g->mouse_x);
       if(d2 < dist)
       {
-        c->x_move = k;
+        g->x_move = k;
         dist = d2;
       }
     }
-    darktable.control->element = c->x_move + 1;
+    darktable.control->element = g->x_move + 1;
 
     gtk_widget_queue_draw(widget);
   }
   else
   {
     // choose between bottom and top curve:
-    const int ch = c->channel;
+    const int ch = g->channel;
     float dist = 1000000.0f;
     for(int k = 0; k < BANDS; k++)
     {
-      float d2 = fabs(p->x[c->channel][k] - c->mouse_x);
+      float d2 = fabs(p->x[g->channel][k] - g->mouse_x);
       if(d2 < dist)
       {
-        if(fabs(c->mouse_y - p->y[ch][k]) < fabs(c->mouse_y - p->y[ch2][k]))
-          c->channel2 = ch;
+        if(fabs(g->mouse_y - p->y[ch][k]) < fabs(g->mouse_y - p->y[ch2][k]))
+          g->channel2 = ch;
         else
-          c->channel2 = ch2;
+          g->channel2 = ch2;
         dist = d2;
       }
     }
     // don't move x-positions:
-    c->x_move = -1;
+    g->x_move = -1;
     gtk_widget_queue_draw(widget);
   }
   return TRUE;
@@ -1521,30 +1521,30 @@ static gboolean area_button_press(GtkWidget *widget,
     // reset current curve
     dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
     const dt_iop_atrous_params_t *const d = (dt_iop_atrous_params_t *)self->default_params;
-    dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
+    dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
     reset_mix(self);
     for(int k = 0; k < BANDS; k++)
     {
-      p->x[c->channel2][k] = d->x[c->channel2][k];
-      p->y[c->channel2][k] = d->y[c->channel2][k];
+      p->x[g->channel2][k] = d->x[g->channel2][k];
+      p->y[g->channel2][k] = d->y[g->channel2][k];
     }
-    dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + c->channel2);
+    dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + g->channel2);
   }
   else if(event->button == 1)
   {
     // set active point
-    dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
+    dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
     reset_mix(self);
     const int inset = INSET;
     GtkAllocation allocation;
     gtk_widget_get_allocation(widget, &allocation);
     const int height = allocation.height - 2 * inset - DT_RESIZE_HANDLE_SIZE;
     const int width = allocation.width - 2 * inset;
-    c->mouse_pick
-        = dt_draw_curve_calc_value(c->minmax_curve,
+    g->mouse_pick
+        = dt_draw_curve_calc_value(g->minmax_curve,
                                    CLAMP(event->x - inset, 0, width) / (float)width);
-    c->mouse_pick -= 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;
-    c->dragging = 1;
+    g->mouse_pick -= 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;
+    g->dragging = 1;
     return TRUE;
   }
   return FALSE;
@@ -1557,8 +1557,8 @@ static gboolean area_button_release(GtkWidget *widget,
   if(event->button == 1)
   {
     dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-    dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
-    c->dragging = 0;
+    dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
+    g->dragging = 0;
     reset_mix(self);
     return TRUE;
   }
@@ -1570,17 +1570,17 @@ static gboolean area_scrolled(GtkWidget *widget,
                               gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
+  dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
 
   if(dt_gui_ignore_scroll(event)) return FALSE;
 
   if(dt_modifier_is(event->state, GDK_MOD1_MASK))
-    return gtk_widget_event(GTK_WIDGET(c->channel_tabs), (GdkEvent*)event);
+    return gtk_widget_event(GTK_WIDGET(g->channel_tabs), (GdkEvent*)event);
 
   int delta_y;
   if(dt_gui_get_scroll_unit_delta(event, &delta_y))
   {
-    c->mouse_radius = CLAMP(c->mouse_radius * (1.0 + 0.1 * delta_y), 0.25 / BANDS, 1.0);
+    g->mouse_radius = CLAMP(g->mouse_radius * (1.0 + 0.1 * delta_y), 0.25 / BANDS, 1.0);
     gtk_widget_queue_draw(widget);
   }
   return TRUE;
@@ -1592,10 +1592,10 @@ static void tab_switch(GtkNotebook *notebook,
                        gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
+  dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
   if(darktable.gui->reset) return;
-  c->channel = c->channel2 = (atrous_channel_t)page_num;
-  gtk_widget_queue_draw(GTK_WIDGET(c->area));
+  g->channel = g->channel2 = (atrous_channel_t)page_num;
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
 static void mix_callback(GtkWidget *slider,
@@ -1604,9 +1604,9 @@ static void mix_callback(GtkWidget *slider,
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
   dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
-  dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
+  dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
   p->mix = dt_bauhaus_slider_get(slider);
-  gtk_widget_queue_draw(GTK_WIDGET(c->area));
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
   dt_dev_add_history_item_target(darktable.develop, self, TRUE, slider);
 }
 
@@ -1647,12 +1647,12 @@ static float _action_process_equalizer(gpointer target,
                                        float move_size)
 {
   dt_iop_module_t *self = g_object_get_data(G_OBJECT(target), "iop-instance");
-  dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
+  dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
   dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
   const dt_iop_atrous_params_t *const d = (dt_iop_atrous_params_t *)self->default_params;
 
   const int node = element - 1;
-  const int ch1 = c->channel;
+  const int ch1 = g->channel;
   const int ch2 = ch1 == atrous_L ? atrous_Lt
                 : ch1 == atrous_c ? atrous_ct
                 : ch1;
@@ -1676,7 +1676,7 @@ static float _action_process_equalizer(gpointer target,
         move_size *= -1;
       case DT_ACTION_EFFECT_BOOST:
         get_params(p, ch1, p->x[ch1][node],
-                   p->y[ch1][node] + move_size / 100, c->mouse_radius);
+                   p->y[ch1][node] + move_size / 100, g->mouse_radius);
 
         toast = g_strdup_printf
           ("%s, %s %+.2f",
@@ -1687,7 +1687,7 @@ static float _action_process_equalizer(gpointer target,
         move_size *= -1;
       case DT_ACTION_EFFECT_RAISE:
         get_params(p, ch2, p->x[ch2][node],
-                   p->y[ch2][node] + move_size / 100, c->mouse_radius);
+                   p->y[ch2][node] + move_size / 100, g->mouse_radius);
 
         toast = g_strdup_printf("%s, %s %.2f",
                                 _action_elements_equalizer[element].name,
@@ -1724,7 +1724,7 @@ static float _action_process_equalizer(gpointer target,
       switch(effect)
       {
       case DT_ACTION_EFFECT_RESET:
-        c->mouse_radius = 1.0 / BANDS;
+        g->mouse_radius = 1.0 / BANDS;
         break;
       case DT_ACTION_EFFECT_BOTTOM:
         bottop *= -1;
@@ -1733,7 +1733,7 @@ static float _action_process_equalizer(gpointer target,
       case DT_ACTION_EFFECT_DOWN:
         move_size *= -1;
       case DT_ACTION_EFFECT_UP:
-        c->mouse_radius = CLAMP(c->mouse_radius * (1.0 + 0.1 * move_size),
+        g->mouse_radius = CLAMP(g->mouse_radius * (1.0 + 0.1 * move_size),
                                 0.25 / BANDS, 1.0);
         break;
       default:
@@ -1744,12 +1744,12 @@ static float _action_process_equalizer(gpointer target,
       }
 
       toast = g_strdup_printf("%s %+.2f",
-                              _action_elements_equalizer[element].name, c->mouse_radius);
+                              _action_elements_equalizer[element].name, g->mouse_radius);
     }
     dt_action_widget_toast(DT_ACTION(self), target, toast);
     g_free(toast);
 
-    gtk_widget_queue_draw(GTK_WIDGET(c->area));
+    gtk_widget_queue_draw(GTK_WIDGET(g->area));
   }
 
   return element
@@ -1757,7 +1757,7 @@ static float _action_process_equalizer(gpointer target,
     : effect >= DT_ACTION_EFFECT_RAISE ? p->y[ch2][node] + DT_VALUE_PATTERN_PERCENTAGE
     : effect >= DT_ACTION_EFFECT_BOOST ? p->y[ch1][node] + DT_VALUE_PATTERN_PLUS_MINUS
     : p->y[ch1][node] != d->y[ch1][node] || p->y[ch2][node] != d->y[ch2][node]
-    : c->mouse_radius + DT_VALUE_PATTERN_PERCENTAGE;
+    : g->mouse_radius + DT_VALUE_PATTERN_PERCENTAGE;
 }
 
 static const dt_shortcut_fallback_t _action_fallbacks_equalizer[]
@@ -1773,76 +1773,76 @@ const dt_action_def_t _action_def_equalizer
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  dt_iop_atrous_gui_data_t *c = IOP_GUI_ALLOC(atrous);
+  dt_iop_atrous_gui_data_t *g = IOP_GUI_ALLOC(atrous);
   const dt_iop_atrous_params_t *const p = (dt_iop_atrous_params_t *)self->default_params;
 
-  c->num_samples = 0;
-  c->band_max = 0;
-  c->channel = c->channel2 = dt_conf_get_int("plugins/darkroom/atrous/gui_channel");
-  int ch = (int)c->channel;
-  c->minmax_curve = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
+  g->num_samples = 0;
+  g->band_max = 0;
+  g->channel = g->channel2 = dt_conf_get_int("plugins/darkroom/atrous/gui_channel");
+  int ch = (int)g->channel;
+  g->minmax_curve = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
   for(int k = 0; k < BANDS; k++)
-    (void)dt_draw_curve_add_point(c->minmax_curve, p->x[ch][k], p->y[ch][k]);
-  c->mouse_x = c->mouse_y = c->mouse_pick = -1.0;
-  c->dragging = 0;
-  c->x_move = -1;
-  c->mouse_radius = 1.0 / BANDS;
-  c->in_curve = FALSE;
+    (void)dt_draw_curve_add_point(g->minmax_curve, p->x[ch][k], p->y[ch][k]);
+  g->mouse_x = g->mouse_y = g->mouse_pick = -1.0;
+  g->dragging = 0;
+  g->x_move = -1;
+  g->mouse_radius = 1.0 / BANDS;
+  g->in_curve = FALSE;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   static struct dt_action_def_t notebook_def = { };
-  c->channel_tabs = dt_ui_notebook_new(&notebook_def);
+  g->channel_tabs = dt_ui_notebook_new(&notebook_def);
   dt_action_define_iop(self, NULL, N_("channel"),
-                       GTK_WIDGET(c->channel_tabs), &notebook_def);
-  dt_ui_notebook_page(c->channel_tabs, N_("luma"),
+                       GTK_WIDGET(g->channel_tabs), &notebook_def);
+  dt_ui_notebook_page(g->channel_tabs, N_("luma"),
                       _("change lightness at each feature size"));
-  dt_ui_notebook_page(c->channel_tabs, N_("chroma"),
+  dt_ui_notebook_page(g->channel_tabs, N_("chroma"),
                       _("change color saturation at each feature size"));
   dt_ui_notebook_page
-    (c->channel_tabs, N_("edges"),
+    (g->channel_tabs, N_("edges"),
      _("change edge halos at each feature size\nonly changes results of luma"
        " and chroma tabs"));
-  gtk_widget_show(gtk_notebook_get_nth_page(c->channel_tabs, c->channel));
-  gtk_notebook_set_current_page(c->channel_tabs, c->channel);
-  g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page", G_CALLBACK(tab_switch), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
+  gtk_widget_show(gtk_notebook_get_nth_page(g->channel_tabs, g->channel));
+  gtk_notebook_set_current_page(g->channel_tabs, g->channel);
+  g_signal_connect(G_OBJECT(g->channel_tabs), "switch_page", G_CALLBACK(tab_switch), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->channel_tabs), FALSE, FALSE, 0);
 
   // graph
-  c->area = GTK_DRAWING_AREA(dt_ui_resize_wrap
+  g->area = GTK_DRAWING_AREA(dt_ui_resize_wrap
                              (NULL, 
                               0, 
                               "plugins/darkroom/atrous/graphheight"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
 
-  g_object_set_data(G_OBJECT(c->area), "iop-instance", self);
+  g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
   dt_action_define_iop(self, NULL, N_("graph"),
-                       GTK_WIDGET(c->area), &_action_def_equalizer);
-  g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(area_draw), self);
-  g_signal_connect(G_OBJECT(c->area), "button-press-event",
+                       GTK_WIDGET(g->area), &_action_def_equalizer);
+  g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(area_draw), self);
+  g_signal_connect(G_OBJECT(g->area), "button-press-event",
                    G_CALLBACK(area_button_press), self);
-  g_signal_connect(G_OBJECT(c->area), "button-release-event",
+  g_signal_connect(G_OBJECT(g->area), "button-release-event",
                    G_CALLBACK(area_button_release), self);
-  g_signal_connect(G_OBJECT(c->area), "motion-notify-event",
+  g_signal_connect(G_OBJECT(g->area), "motion-notify-event",
                    G_CALLBACK(area_motion_notify), self);
-  g_signal_connect(G_OBJECT(c->area), "leave-notify-event",
+  g_signal_connect(G_OBJECT(g->area), "leave-notify-event",
                    G_CALLBACK(area_enter_leave_notify), self);
-  g_signal_connect(G_OBJECT(c->area), "enter-notify-event",
+  g_signal_connect(G_OBJECT(g->area), "enter-notify-event",
                    G_CALLBACK(area_enter_leave_notify), self);
-  g_signal_connect(G_OBJECT(c->area), "scroll-event",
+  g_signal_connect(G_OBJECT(g->area), "scroll-event",
                    G_CALLBACK(area_scrolled), self);
 
   // mix slider
-  c->mix = dt_bauhaus_slider_from_params(self, N_("mix"));
-  gtk_widget_set_tooltip_text(c->mix, _("make effect stronger or weaker"));
-  g_signal_connect(G_OBJECT(c->mix), "value-changed", G_CALLBACK(mix_callback), self);
+  g->mix = dt_bauhaus_slider_from_params(self, N_("mix"));
+  gtk_widget_set_tooltip_text(g->mix, _("make effect stronger or weaker"));
+  g_signal_connect(G_OBJECT(g->mix), "value-changed", G_CALLBACK(mix_callback), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
-  dt_conf_set_int("plugins/darkroom/atrous/gui_channel", c->channel);
-  dt_draw_curve_destroy(c->minmax_curve);
+  dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
+  dt_conf_set_int("plugins/darkroom/atrous/gui_channel", g->channel);
+  dt_draw_curve_destroy(g->minmax_curve);
 
   IOP_GUI_FREE;
 }

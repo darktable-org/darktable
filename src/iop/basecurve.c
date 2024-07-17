@@ -1592,9 +1592,9 @@ static gboolean dt_iop_basecurve_leave_notify(GtkWidget *widget,
                                               GdkEventCrossing *event,
                                               dt_iop_module_t *self)
 {
-  dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
+  dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
   if(!(event->state & GDK_BUTTON1_MASK))
-    c->selected = -1;
+    g->selected = -1;
   gtk_widget_queue_draw(widget);
   return FALSE;
 }
@@ -1618,36 +1618,36 @@ static float to_lin(const float x, const float base)
 static gboolean dt_iop_basecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
+  dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
 
   int nodes = p->basecurve_nodes[0];
   dt_iop_basecurve_node_t *basecurve = p->basecurve[0];
-  if(c->minmax_curve_type != p->basecurve_type[0] || c->minmax_curve_nodes != p->basecurve_nodes[0])
+  if(g->minmax_curve_type != p->basecurve_type[0] || g->minmax_curve_nodes != p->basecurve_nodes[0])
   {
-    dt_draw_curve_destroy(c->minmax_curve);
-    c->minmax_curve = dt_draw_curve_new(0.0, 1.0, p->basecurve_type[0]);
-    c->minmax_curve_nodes = p->basecurve_nodes[0];
-    c->minmax_curve_type = p->basecurve_type[0];
+    dt_draw_curve_destroy(g->minmax_curve);
+    g->minmax_curve = dt_draw_curve_new(0.0, 1.0, p->basecurve_type[0]);
+    g->minmax_curve_nodes = p->basecurve_nodes[0];
+    g->minmax_curve_type = p->basecurve_type[0];
     for(int k = 0; k < p->basecurve_nodes[0]; k++)
-      (void)dt_draw_curve_add_point(c->minmax_curve, p->basecurve[0][k].x, p->basecurve[0][k].y);
+      (void)dt_draw_curve_add_point(g->minmax_curve, p->basecurve[0][k].x, p->basecurve[0][k].y);
   }
   else
   {
     for(int k = 0; k < p->basecurve_nodes[0]; k++)
-      dt_draw_curve_set_point(c->minmax_curve, k, p->basecurve[0][k].x, p->basecurve[0][k].y);
+      dt_draw_curve_set_point(g->minmax_curve, k, p->basecurve[0][k].x, p->basecurve[0][k].y);
   }
-  dt_draw_curve_t *minmax_curve = c->minmax_curve;
-  dt_draw_curve_calc_values(minmax_curve, 0.0, 1.0, DT_IOP_TONECURVE_RES, c->draw_xs, c->draw_ys);
+  dt_draw_curve_t *minmax_curve = g->minmax_curve;
+  dt_draw_curve_calc_values(minmax_curve, 0.0, 1.0, DT_IOP_TONECURVE_RES, g->draw_xs, g->draw_ys);
 
   float unbounded_coeffs[3];
   const float xm = basecurve[nodes - 1].x;
   {
     const float x[4] = { 0.7f * xm, 0.8f * xm, 0.9f * xm, 1.0f * xm };
-    const float y[4] = { c->draw_ys[CLAMP((int)(x[0] * DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES - 1)],
-                         c->draw_ys[CLAMP((int)(x[1] * DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES - 1)],
-                         c->draw_ys[CLAMP((int)(x[2] * DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES - 1)],
-                         c->draw_ys[CLAMP((int)(x[3] * DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES - 1)] };
+    const float y[4] = { g->draw_ys[CLAMP((int)(x[0] * DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES - 1)],
+                         g->draw_ys[CLAMP((int)(x[1] * DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES - 1)],
+                         g->draw_ys[CLAMP((int)(x[2] * DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES - 1)],
+                         g->draw_ys[CLAMP((int)(x[3] * DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES - 1)] };
     dt_iop_estimate_exp(x, y, 4, unbounded_coeffs);
   }
 
@@ -1675,7 +1675,7 @@ static gboolean dt_iop_basecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   cairo_fill(cr);
 
   cairo_translate(cr, 0, height);
-  if(c->selected >= 0)
+  if(g->selected >= 0)
   {
     char text[30];
     // draw information about current selected node
@@ -1687,8 +1687,8 @@ static gboolean dt_iop_basecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     layout = pango_cairo_create_layout(cr);
     pango_layout_set_font_description(layout, desc);
 
-    const float x_node_value = basecurve[c->selected].x * 100;
-    const float y_node_value = basecurve[c->selected].y * 100;
+    const float x_node_value = basecurve[g->selected].x * 100;
+    const float y_node_value = basecurve[g->selected].y * 100;
     const float d_node_value = y_node_value - x_node_value;
     // scale conservatively to 100% of width:
     snprintf(text, sizeof(text), "100.00 / 100.00 ( +100.00)");
@@ -1713,8 +1713,8 @@ static gboolean dt_iop_basecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   // draw grid
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(.4));
   cairo_set_source_rgb(cr, .1, .1, .1);
-  if(c->loglogscale)
-    dt_draw_loglog_grid(cr, 4, 0, 0, width, height, c->loglogscale + 1.0f);
+  if(g->loglogscale)
+    dt_draw_loglog_grid(cr, 4, 0, 0, width, height, g->loglogscale + 1.0f);
   else
     dt_draw_grid(cr, 4, 0, 0, width, height);
 
@@ -1723,7 +1723,7 @@ static gboolean dt_iop_basecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
   for(int k = 0; k < nodes; k++)
   {
-    const float x = to_log(basecurve[k].x, c->loglogscale), y = to_log(basecurve[k].y, c->loglogscale);
+    const float x = to_log(basecurve[k].x, g->loglogscale), y = to_log(basecurve[k].y, g->loglogscale);
     cairo_arc(cr, x * width, y * height, DT_PIXEL_APPLY_DPI(3), 0, 2. * M_PI);
     cairo_stroke(cr);
   }
@@ -1731,11 +1731,11 @@ static gboolean dt_iop_basecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   // draw selected cursor
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
 
-  if(c->selected >= 0)
+  if(g->selected >= 0)
   {
     cairo_set_source_rgb(cr, .9, .9, .9);
-    const float x = to_log(basecurve[c->selected].x, c->loglogscale),
-                y = to_log(basecurve[c->selected].y, c->loglogscale);
+    const float x = to_log(basecurve[g->selected].x, g->loglogscale),
+                y = to_log(basecurve[g->selected].y, g->loglogscale);
     cairo_arc(cr, x * width, y * height, DT_PIXEL_APPLY_DPI(4), 0, 2. * M_PI);
     cairo_stroke(cr);
   }
@@ -1744,20 +1744,20 @@ static gboolean dt_iop_basecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
   cairo_set_source_rgb(cr, .9, .9, .9);
   // cairo_set_line_cap  (cr, CAIRO_LINE_CAP_SQUARE);
-  cairo_move_to(cr, 0, height * to_log(c->draw_ys[0], c->loglogscale));
+  cairo_move_to(cr, 0, height * to_log(g->draw_ys[0], g->loglogscale));
   for(int k = 1; k < DT_IOP_TONECURVE_RES; k++)
   {
     const float xx = k / (DT_IOP_TONECURVE_RES - 1.0f);
     if(xx > xm)
     {
       const float yy = dt_iop_eval_exp(unbounded_coeffs, xx);
-      const float x = to_log(xx, c->loglogscale), y = to_log(yy, c->loglogscale);
+      const float x = to_log(xx, g->loglogscale), y = to_log(yy, g->loglogscale);
       cairo_line_to(cr, x * width, height * y);
     }
     else
     {
-      const float yy = c->draw_ys[k];
-      const float x = to_log(xx, c->loglogscale), y = to_log(yy, c->loglogscale);
+      const float yy = g->draw_ys[k];
+      const float x = to_log(xx, g->loglogscale), y = to_log(yy, g->loglogscale);
       cairo_line_to(cr, x * width, height * y);
     }
   }
@@ -1801,7 +1801,7 @@ static inline int _add_node(dt_iop_basecurve_node_t *basecurve, int *nodes, floa
 
 static void dt_iop_basecurve_sanity_check(dt_iop_module_t *self, GtkWidget *widget)
 {
-  dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
+  dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
 
   int ch = 0;
@@ -1810,20 +1810,20 @@ static void dt_iop_basecurve_sanity_check(dt_iop_module_t *self, GtkWidget *widg
 
   if(nodes <= 2) return;
 
-  const float mx = basecurve[c->selected].x;
+  const float mx = basecurve[g->selected].x;
 
   // delete vertex if order has changed
   // for all points, x coordinate of point must be strictly larger than
   // the x coordinate of the previous point
-  if((c->selected > 0 && (basecurve[c->selected - 1].x >= mx))
-     || (c->selected < nodes - 1 && (basecurve[c->selected + 1].x <= mx)))
+  if((g->selected > 0 && (basecurve[g->selected - 1].x >= mx))
+     || (g->selected < nodes - 1 && (basecurve[g->selected + 1].x <= mx)))
   {
-    for(int k = c->selected; k < nodes - 1; k++)
+    for(int k = g->selected; k < nodes - 1; k++)
     {
       basecurve[k].x = basecurve[k + 1].x;
       basecurve[k].y = basecurve[k + 1].y;
     }
-    c->selected = -2; // avoid re-insertion of that point immediately after this
+    g->selected = -2; // avoid re-insertion of that point immediately after this
     p->basecurve_nodes[ch]--;
   }
 }
@@ -1839,7 +1839,7 @@ static gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget,
                                                gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
+  dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
   int ch = 0;
   int nodes = p->basecurve_nodes[ch];
@@ -1849,35 +1849,35 @@ static gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget,
   gtk_widget_get_allocation(widget, &allocation);
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   int height = allocation.height - 2 * inset, width = allocation.width - 2 * inset;
-  const double old_m_x = c->mouse_x;
-  const double old_m_y = c->mouse_y;
-  c->mouse_x = event->x - inset;
-  c->mouse_y = event->y - inset;
+  const double old_m_x = g->mouse_x;
+  const double old_m_y = g->mouse_y;
+  g->mouse_x = event->x - inset;
+  g->mouse_y = event->y - inset;
 
-  const float mx = CLAMP(c->mouse_x, 0, width) / (float)width;
-  const float my = 1.0f - CLAMP(c->mouse_y, 0, height) / (float)height;
-  const float linx = to_lin(mx, c->loglogscale), liny = to_lin(my, c->loglogscale);
+  const float mx = CLAMP(g->mouse_x, 0, width) / (float)width;
+  const float my = 1.0f - CLAMP(g->mouse_y, 0, height) / (float)height;
+  const float linx = to_lin(mx, g->loglogscale), liny = to_lin(my, g->loglogscale);
 
   if(event->state & GDK_BUTTON1_MASK)
   {
     // got a vertex selected:
-    if(c->selected >= 0)
+    if(g->selected >= 0)
     {
       // this is used to translate mause position in loglogscale to make this behavior unified with linear scale.
-      const float translate_mouse_x = old_m_x / width - to_log(basecurve[c->selected].x, c->loglogscale);
-      const float translate_mouse_y = 1 - old_m_y / height - to_log(basecurve[c->selected].y, c->loglogscale);
+      const float translate_mouse_x = old_m_x / width - to_log(basecurve[g->selected].x, g->loglogscale);
+      const float translate_mouse_y = 1 - old_m_y / height - to_log(basecurve[g->selected].y, g->loglogscale);
       // dx & dy are in linear coordinates
-      const float dx = to_lin(c->mouse_x / width - translate_mouse_x, c->loglogscale)
-                       - to_lin(old_m_x / width - translate_mouse_x, c->loglogscale);
-      const float dy = to_lin(1 - c->mouse_y / height - translate_mouse_y, c->loglogscale)
-                       - to_lin(1 - old_m_y / height - translate_mouse_y, c->loglogscale);
+      const float dx = to_lin(g->mouse_x / width - translate_mouse_x, g->loglogscale)
+                       - to_lin(old_m_x / width - translate_mouse_x, g->loglogscale);
+      const float dy = to_lin(1 - g->mouse_y / height - translate_mouse_y, g->loglogscale)
+                       - to_lin(1 - old_m_y / height - translate_mouse_y, g->loglogscale);
 
       return _move_point_internal(self, widget, dx, dy, event->state);
     }
-    else if(nodes < MAXNODES && c->selected >= -1)
+    else if(nodes < MAXNODES && g->selected >= -1)
     {
       // no vertex was close, create a new one!
-      c->selected = _add_node(basecurve, &p->basecurve_nodes[ch], linx, liny);
+      g->selected = _add_node(basecurve, &p->basecurve_nodes[ch], linx, liny);
       dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
     }
   }
@@ -1890,17 +1890,17 @@ static gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget,
     for(int k = 0; k < nodes; k++)
     {
       float dist
-          = (my - to_log(basecurve[k].y, c->loglogscale)) * (my - to_log(basecurve[k].y, c->loglogscale))
-            + (mx - to_log(basecurve[k].x, c->loglogscale)) * (mx - to_log(basecurve[k].x, c->loglogscale));
+          = (my - to_log(basecurve[k].y, g->loglogscale)) * (my - to_log(basecurve[k].y, g->loglogscale))
+            + (mx - to_log(basecurve[k].x, g->loglogscale)) * (mx - to_log(basecurve[k].x, g->loglogscale));
       if(dist < min)
       {
         min = dist;
         nearest = k;
       }
     }
-    c->selected = nearest;
+    g->selected = nearest;
   }
-  if(c->selected >= 0) gtk_widget_grab_focus(widget);
+  if(g->selected >= 0) gtk_widget_grab_focus(widget);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
@@ -1912,7 +1912,7 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget,
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
   const dt_iop_basecurve_params_t *const d = (dt_iop_basecurve_params_t *)self->default_params;
-  dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
+  dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
 
   int ch = 0;
   int nodes = p->basecurve_nodes[ch];
@@ -1921,18 +1921,18 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget,
   if(event->button == 1)
   {
     if(event->type == GDK_BUTTON_PRESS && dt_modifier_is(event->state, GDK_CONTROL_MASK)
-      && nodes < MAXNODES && c->selected == -1)
+      && nodes < MAXNODES && g->selected == -1)
     {
       // if we are not on a node -> add a new node at the current x of the pointer and y of the curve at that x
       const int inset = DT_GUI_CURVE_EDITOR_INSET;
       GtkAllocation allocation;
       gtk_widget_get_allocation(widget, &allocation);
       int width = allocation.width - 2 * inset;
-      c->mouse_x = event->x - inset;
-      c->mouse_y = event->y - inset;
+      g->mouse_x = event->x - inset;
+      g->mouse_y = event->y - inset;
 
-      const float mx = CLAMP(c->mouse_x, 0, width) / (float)width;
-      const float linx = to_lin(mx, c->loglogscale);
+      const float mx = CLAMP(g->mouse_x, 0, width) / (float)width;
+      const float linx = to_lin(mx, g->loglogscale);
 
       // don't add a node too close to others in x direction, it can crash dt
       int selected = -1;
@@ -1956,7 +1956,7 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget,
            (selected < nodes && basecurve[selected].x - linx <= 0.025)))
       {
         // evaluate the curve at the current x position
-        const float y = dt_draw_curve_calc_value(c->minmax_curve, linx);
+        const float y = dt_draw_curve_calc_value(g->minmax_curve, linx);
 
         if(y >= 0.0 && y <= 1.0) // never add something outside the viewport, you couldn't change it afterwards
         {
@@ -1968,13 +1968,13 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget,
           min *= min; // comparing against square
           for(int k = 0; k < nodes; k++)
           {
-            float other_y = to_log(basecurve[k].y, c->loglogscale);
+            float other_y = to_log(basecurve[k].y, g->loglogscale);
             float dist = (y - other_y) * (y - other_y);
-            if(dist < min) c->selected = selected;
+            if(dist < min) g->selected = selected;
           }
 
           dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
-          gtk_widget_queue_draw(GTK_WIDGET(c->area));
+          gtk_widget_queue_draw(GTK_WIDGET(g->area));
         }
       }
       return TRUE;
@@ -1989,32 +1989,32 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget,
         p->basecurve[ch][k].x = d->basecurve[ch][k].x;
         p->basecurve[ch][k].y = d->basecurve[ch][k].y;
       }
-      c->selected = -2; // avoid motion notify re-inserting immediately.
+      g->selected = -2; // avoid motion notify re-inserting immediately.
       dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
-      gtk_widget_queue_draw(GTK_WIDGET(c->area));
+      gtk_widget_queue_draw(GTK_WIDGET(g->area));
       return TRUE;
     }
   }
-  else if(event->button == 3 && c->selected >= 0)
+  else if(event->button == 3 && g->selected >= 0)
   {
-    if(c->selected == 0 || c->selected == nodes - 1)
+    if(g->selected == 0 || g->selected == nodes - 1)
     {
-      float reset_value = c->selected == 0 ? 0 : 1;
-      basecurve[c->selected].y = basecurve[c->selected].x = reset_value;
-      gtk_widget_queue_draw(GTK_WIDGET(c->area));
+      float reset_value = g->selected == 0 ? 0 : 1;
+      basecurve[g->selected].y = basecurve[g->selected].x = reset_value;
+      gtk_widget_queue_draw(GTK_WIDGET(g->area));
       dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
       return TRUE;
     }
 
-    for(int k = c->selected; k < nodes - 1; k++)
+    for(int k = g->selected; k < nodes - 1; k++)
     {
       basecurve[k].x = basecurve[k + 1].x;
       basecurve[k].y = basecurve[k + 1].y;
     }
     basecurve[nodes - 1].x = basecurve[nodes - 1].y = 0;
-    c->selected = -2; // avoid re-insertion of that point immediately after this
+    g->selected = -2; // avoid re-insertion of that point immediately after this
     p->basecurve_nodes[ch]--;
-    gtk_widget_queue_draw(GTK_WIDGET(c->area));
+    gtk_widget_queue_draw(GTK_WIDGET(g->area));
     dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
     return TRUE;
   }
@@ -2028,7 +2028,7 @@ static gboolean _move_point_internal(dt_iop_module_t *self,
                                      const guint state)
 {
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
-  dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
+  dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
 
   const int ch = 0;
   dt_iop_basecurve_node_t *basecurve = p->basecurve[ch];
@@ -2037,8 +2037,8 @@ static gboolean _move_point_internal(dt_iop_module_t *self,
   dx *= multiplier;
   dy *= multiplier;
 
-  basecurve[c->selected].x = CLAMP(basecurve[c->selected].x + dx, 0.0f, 1.0f);
-  basecurve[c->selected].y = CLAMP(basecurve[c->selected].y + dy, 0.0f, 1.0f);
+  basecurve[g->selected].x = CLAMP(basecurve[g->selected].x + dx, 0.0f, 1.0f);
+  basecurve[g->selected].y = CLAMP(basecurve[g->selected].y + dy, 0.0f, 1.0f);
 
   dt_iop_basecurve_sanity_check(self, widget);
 
@@ -2052,11 +2052,11 @@ static gboolean _move_point_internal(dt_iop_module_t *self,
 static gboolean _scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
+  dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
 
   if(dt_gui_ignore_scroll(event)) return FALSE;
 
-  if(c->selected < 0) return TRUE;
+  if(g->selected < 0) return TRUE;
 
   gdouble delta_y;
   if(dt_gui_get_scroll_delta(event, &delta_y))
@@ -2073,9 +2073,9 @@ static gboolean dt_iop_basecurve_key_press(GtkWidget *widget,
                                            gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
+  dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
 
-  if(c->selected < 0) return TRUE;
+  if(g->selected < 0) return TRUE;
 
   int handled = 0;
   float dx = 0.0f, dy = 0.0f;
@@ -2138,71 +2138,71 @@ static void logbase_callback(GtkWidget *slider, gpointer user_data)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  dt_iop_basecurve_gui_data_t *c = IOP_GUI_ALLOC(basecurve);
+  dt_iop_basecurve_gui_data_t *g = IOP_GUI_ALLOC(basecurve);
   const dt_iop_basecurve_params_t *const p = (dt_iop_basecurve_params_t *)self->default_params;
 
-  c->minmax_curve = dt_draw_curve_new(0.0, 1.0, p->basecurve_type[0]);
-  c->minmax_curve_type = p->basecurve_type[0];
-  c->minmax_curve_nodes = p->basecurve_nodes[0];
+  g->minmax_curve = dt_draw_curve_new(0.0, 1.0, p->basecurve_type[0]);
+  g->minmax_curve_type = p->basecurve_type[0];
+  g->minmax_curve_nodes = p->basecurve_nodes[0];
   for(int k = 0; k < p->basecurve_nodes[0]; k++)
-    (void)dt_draw_curve_add_point(c->minmax_curve, p->basecurve[0][k].x, p->basecurve[0][k].y);
-  c->mouse_x = c->mouse_y = -1.0;
-  c->selected = -1;
-  c->loglogscale = 0;
+    (void)dt_draw_curve_add_point(g->minmax_curve, p->basecurve[0][k].x, p->basecurve[0][k].y);
+  g->mouse_x = g->mouse_y = -1.0;
+  g->selected = -1;
+  g->loglogscale = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_height(0));
-  gtk_widget_set_tooltip_text(GTK_WIDGET(c->area), _("abscissa: input, ordinate: output. works on RGB channels"));
-  g_object_set_data(G_OBJECT(c->area), "iop-instance", self);
-  dt_action_define_iop(self, NULL, N_("curve"), GTK_WIDGET(c->area), NULL);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
+  g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_height(0));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("abscissa: input, ordinate: output. works on RGB channels"));
+  g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
+  dt_action_define_iop(self, NULL, N_("curve"), GTK_WIDGET(g->area), NULL);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
 
-  c->cmb_preserve_colors = dt_bauhaus_combobox_from_params(self, "preserve_colors");
-  gtk_widget_set_tooltip_text(c->cmb_preserve_colors, _("method to preserve colors when applying contrast"));
+  g->cmb_preserve_colors = dt_bauhaus_combobox_from_params(self, "preserve_colors");
+  gtk_widget_set_tooltip_text(g->cmb_preserve_colors, _("method to preserve colors when applying contrast"));
 
-  c->fusion = dt_bauhaus_combobox_from_params(self, "exposure_fusion");
-  dt_bauhaus_combobox_add(c->fusion, _("none"));
-  dt_bauhaus_combobox_add(c->fusion, _("two exposures"));
-  dt_bauhaus_combobox_add(c->fusion, _("three exposures"));
-  gtk_widget_set_tooltip_text(c->fusion, _("fuse this image stopped up/down a couple of times with itself, to "
+  g->fusion = dt_bauhaus_combobox_from_params(self, "exposure_fusion");
+  dt_bauhaus_combobox_add(g->fusion, _("none"));
+  dt_bauhaus_combobox_add(g->fusion, _("two exposures"));
+  dt_bauhaus_combobox_add(g->fusion, _("three exposures"));
+  gtk_widget_set_tooltip_text(g->fusion, _("fuse this image stopped up/down a couple of times with itself, to "
                                            "compress high dynamic range. expose for the highlights before use."));
 
-  c->exposure_step = dt_bauhaus_slider_from_params(self, "exposure_stops");
-  dt_bauhaus_slider_set_digits(c->exposure_step, 3);
-  gtk_widget_set_tooltip_text(c->exposure_step, _("how many stops to shift the individual exposures apart"));
-  gtk_widget_set_no_show_all(c->exposure_step, TRUE);
-  gtk_widget_set_visible(c->exposure_step, p->exposure_fusion != 0 ? TRUE : FALSE);
+  g->exposure_step = dt_bauhaus_slider_from_params(self, "exposure_stops");
+  dt_bauhaus_slider_set_digits(g->exposure_step, 3);
+  gtk_widget_set_tooltip_text(g->exposure_step, _("how many stops to shift the individual exposures apart"));
+  gtk_widget_set_no_show_all(g->exposure_step, TRUE);
+  gtk_widget_set_visible(g->exposure_step, p->exposure_fusion != 0 ? TRUE : FALSE);
 
   // initially set to 1 (consistency with previous versions), but double-click resets to 0
   // to get a quick way to reach 0 with the mouse.
-  c->exposure_bias = dt_bauhaus_slider_from_params(self, "exposure_bias");
-  dt_bauhaus_slider_set_default(c->exposure_bias, 0.0f);
-  dt_bauhaus_slider_set_digits(c->exposure_bias, 3);
-  gtk_widget_set_tooltip_text(c->exposure_bias, _("whether to shift exposure up or down "
+  g->exposure_bias = dt_bauhaus_slider_from_params(self, "exposure_bias");
+  dt_bauhaus_slider_set_default(g->exposure_bias, 0.0f);
+  dt_bauhaus_slider_set_digits(g->exposure_bias, 3);
+  gtk_widget_set_tooltip_text(g->exposure_bias, _("whether to shift exposure up or down "
                                                   "(-1: reduce highlight, +1: reduce shadows)"));
-  gtk_widget_set_no_show_all(c->exposure_bias, TRUE);
-  gtk_widget_set_visible(c->exposure_bias, p->exposure_fusion != 0 ? TRUE : FALSE);
-  c->logbase = dt_bauhaus_slider_new_with_range(self, 0.0f, 40.0f, 0, 0.0f, 2);
-  dt_bauhaus_widget_set_label(c->logbase, NULL, N_("scale for graph"));
-  gtk_box_pack_start(GTK_BOX(self->widget), c->logbase , TRUE, TRUE, 0);  g_signal_connect(G_OBJECT(c->logbase), "value-changed", G_CALLBACK(logbase_callback), self);
+  gtk_widget_set_no_show_all(g->exposure_bias, TRUE);
+  gtk_widget_set_visible(g->exposure_bias, p->exposure_fusion != 0 ? TRUE : FALSE);
+  g->logbase = dt_bauhaus_slider_new_with_range(self, 0.0f, 40.0f, 0, 0.0f, 2);
+  dt_bauhaus_widget_set_label(g->logbase, NULL, N_("scale for graph"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->logbase , TRUE, TRUE, 0);  g_signal_connect(G_OBJECT(g->logbase), "value-changed", G_CALLBACK(logbase_callback), self);
 
-  gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | darktable.gui->scroll_mask
+  gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | darktable.gui->scroll_mask
                                            | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                            | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
-  gtk_widget_set_can_focus(GTK_WIDGET(c->area), TRUE);
-  g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(dt_iop_basecurve_draw), self);
-  g_signal_connect(G_OBJECT(c->area), "button-press-event", G_CALLBACK(dt_iop_basecurve_button_press), self);
-  g_signal_connect(G_OBJECT(c->area), "motion-notify-event", G_CALLBACK(dt_iop_basecurve_motion_notify), self);
-  g_signal_connect(G_OBJECT(c->area), "leave-notify-event", G_CALLBACK(dt_iop_basecurve_leave_notify), self);
-  g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(_scrolled), self);
-  g_signal_connect(G_OBJECT(c->area), "key-press-event", G_CALLBACK(dt_iop_basecurve_key_press), self);
+  gtk_widget_set_can_focus(GTK_WIDGET(g->area), TRUE);
+  g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(dt_iop_basecurve_draw), self);
+  g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(dt_iop_basecurve_button_press), self);
+  g_signal_connect(G_OBJECT(g->area), "motion-notify-event", G_CALLBACK(dt_iop_basecurve_motion_notify), self);
+  g_signal_connect(G_OBJECT(g->area), "leave-notify-event", G_CALLBACK(dt_iop_basecurve_leave_notify), self);
+  g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(_scrolled), self);
+  g_signal_connect(G_OBJECT(g->area), "key-press-event", G_CALLBACK(dt_iop_basecurve_key_press), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
-  dt_draw_curve_destroy(c->minmax_curve);
+  dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
+  dt_draw_curve_destroy(g->minmax_curve);
 
   IOP_GUI_FREE;
 }
