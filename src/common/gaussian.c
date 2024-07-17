@@ -473,6 +473,8 @@ dt_gaussian_cl_global_t *dt_gaussian_init_cl_global()
   const int program = 6; // gaussian.cl, from programs.conf
   g->kernel_gaussian_column_1c = dt_opencl_create_kernel(program, "gaussian_column_1c");
   g->kernel_gaussian_transpose_1c = dt_opencl_create_kernel(program, "gaussian_transpose_1c");
+  g->kernel_gaussian_column_2c = dt_opencl_create_kernel(program, "gaussian_column_2c");
+  g->kernel_gaussian_transpose_2c = dt_opencl_create_kernel(program, "gaussian_transpose_2c");
   g->kernel_gaussian_column_4c = dt_opencl_create_kernel(program, "gaussian_column_4c");
   g->kernel_gaussian_transpose_4c = dt_opencl_create_kernel(program, "gaussian_transpose_4c");
   return g;
@@ -501,9 +503,9 @@ dt_gaussian_cl_t *dt_gaussian_init_cl(const int devid,
                                       const float sigma,  // gaussian sigma
                                       const int order)    // order of gaussian blur
 {
-  assert(channels == 1 || channels == 4);
+  assert(channels == 1 || channels == 2 || channels == 4);
 
-  if(!(channels == 1 || channels == 4)) return NULL;
+  if(!(channels == 1 || channels == 2 || channels == 4)) return NULL;
 
   dt_gaussian_cl_t *g = (dt_gaussian_cl_t *)malloc(sizeof(dt_gaussian_cl_t));
   if(!g) return NULL;
@@ -529,7 +531,8 @@ dt_gaussian_cl_t *dt_gaussian_init_cl(const int devid,
   }
 
   int kernel_gaussian_transpose = (channels == 1) ? g->global->kernel_gaussian_transpose_1c
-                                                  : g->global->kernel_gaussian_transpose_4c;
+                               : ((channels == 2) ? g->global->kernel_gaussian_transpose_2c
+                                                  : g->global->kernel_gaussian_transpose_4c);
   int blocksize;
 
   dt_opencl_local_buffer_t locopt
@@ -601,6 +604,11 @@ cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
   {
     kernel_gaussian_column = g->global->kernel_gaussian_column_1c;
     kernel_gaussian_transpose = g->global->kernel_gaussian_transpose_1c;
+  }
+  else if(channels == 2)
+  {
+    kernel_gaussian_column = g->global->kernel_gaussian_column_2c;
+    kernel_gaussian_transpose = g->global->kernel_gaussian_transpose_2c;
   }
   else if(channels == 4)
   {
@@ -689,6 +697,8 @@ void dt_gaussian_free_cl_global(dt_gaussian_cl_global_t *g)
   // destroy kernels
   dt_opencl_free_kernel(g->kernel_gaussian_column_1c);
   dt_opencl_free_kernel(g->kernel_gaussian_transpose_1c);
+  dt_opencl_free_kernel(g->kernel_gaussian_column_2c);
+  dt_opencl_free_kernel(g->kernel_gaussian_transpose_2c);
   dt_opencl_free_kernel(g->kernel_gaussian_column_4c);
   dt_opencl_free_kernel(g->kernel_gaussian_transpose_4c);
   free(g);
