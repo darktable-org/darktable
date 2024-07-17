@@ -564,8 +564,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_rawdenoise_gui_data_t *c = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
-  gtk_widget_queue_draw(GTK_WIDGET(c->area));
+  dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
 static void dt_iop_rawdenoise_get_params(dt_iop_rawdenoise_params_t *p, const int ch, const double mouse_x,
@@ -581,14 +581,14 @@ static void dt_iop_rawdenoise_get_params(dt_iop_rawdenoise_params_t *p, const in
 static gboolean rawdenoise_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_rawdenoise_gui_data_t *c = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
+  dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
   dt_iop_rawdenoise_params_t p = *(dt_iop_rawdenoise_params_t *)self->params;
 
-  int ch = (int)c->channel;
-  dt_draw_curve_set_point(c->transition_curve, 0, p.x[ch][DT_IOP_RAWDENOISE_BANDS - 2] - 1.0, p.y[ch][0]);
+  int ch = (int)g->channel;
+  dt_draw_curve_set_point(g->transition_curve, 0, p.x[ch][DT_IOP_RAWDENOISE_BANDS - 2] - 1.0, p.y[ch][0]);
   for(int k = 0; k < DT_IOP_RAWDENOISE_BANDS; k++)
-    dt_draw_curve_set_point(c->transition_curve, k + 1, p.x[ch][k], p.y[ch][k]);
-  dt_draw_curve_set_point(c->transition_curve, DT_IOP_RAWDENOISE_BANDS + 1, p.x[ch][1] + 1.0,
+    dt_draw_curve_set_point(g->transition_curve, k + 1, p.x[ch][k], p.y[ch][k]);
+  dt_draw_curve_set_point(g->transition_curve, DT_IOP_RAWDENOISE_BANDS + 1, p.x[ch][1] + 1.0,
                           p.y[ch][DT_IOP_RAWDENOISE_BANDS - 1]);
 
   const int inset = DT_IOP_RAWDENOISE_INSET;
@@ -619,25 +619,25 @@ static gboolean rawdenoise_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
   cairo_set_source_rgb(cr, .1, .1, .1);
   dt_draw_grid(cr, 8, 0, 0, width, height);
 
-  if(c->mouse_y > 0 || c->dragging)
+  if(g->mouse_y > 0 || g->dragging)
   {
     // draw min/max curves:
-    dt_iop_rawdenoise_get_params(&p, c->channel, c->mouse_x, 1., c->mouse_radius);
-    dt_draw_curve_set_point(c->transition_curve, 0, p.x[ch][DT_IOP_RAWDENOISE_BANDS - 2] - 1.0, p.y[ch][0]);
+    dt_iop_rawdenoise_get_params(&p, g->channel, g->mouse_x, 1., g->mouse_radius);
+    dt_draw_curve_set_point(g->transition_curve, 0, p.x[ch][DT_IOP_RAWDENOISE_BANDS - 2] - 1.0, p.y[ch][0]);
     for(int k = 0; k < DT_IOP_RAWDENOISE_BANDS; k++)
-      dt_draw_curve_set_point(c->transition_curve, k + 1, p.x[ch][k], p.y[ch][k]);
-    dt_draw_curve_set_point(c->transition_curve, DT_IOP_RAWDENOISE_BANDS + 1, p.x[ch][1] + 1.0,
+      dt_draw_curve_set_point(g->transition_curve, k + 1, p.x[ch][k], p.y[ch][k]);
+    dt_draw_curve_set_point(g->transition_curve, DT_IOP_RAWDENOISE_BANDS + 1, p.x[ch][1] + 1.0,
                             p.y[ch][DT_IOP_RAWDENOISE_BANDS - 1]);
-    dt_draw_curve_calc_values(c->transition_curve, 0.0, 1.0, DT_IOP_RAWDENOISE_RES, c->draw_min_xs, c->draw_min_ys);
+    dt_draw_curve_calc_values(g->transition_curve, 0.0, 1.0, DT_IOP_RAWDENOISE_RES, g->draw_min_xs, g->draw_min_ys);
 
     p = *(dt_iop_rawdenoise_params_t *)self->params;
-    dt_iop_rawdenoise_get_params(&p, c->channel, c->mouse_x, .0, c->mouse_radius);
-    dt_draw_curve_set_point(c->transition_curve, 0, p.x[ch][DT_IOP_RAWDENOISE_BANDS - 2] - 1.0, p.y[ch][0]);
+    dt_iop_rawdenoise_get_params(&p, g->channel, g->mouse_x, .0, g->mouse_radius);
+    dt_draw_curve_set_point(g->transition_curve, 0, p.x[ch][DT_IOP_RAWDENOISE_BANDS - 2] - 1.0, p.y[ch][0]);
     for(int k = 0; k < DT_IOP_RAWDENOISE_BANDS; k++)
-      dt_draw_curve_set_point(c->transition_curve, k + 1, p.x[ch][k], p.y[ch][k]);
-    dt_draw_curve_set_point(c->transition_curve, DT_IOP_RAWDENOISE_BANDS + 1, p.x[ch][1] + 1.0,
+      dt_draw_curve_set_point(g->transition_curve, k + 1, p.x[ch][k], p.y[ch][k]);
+    dt_draw_curve_set_point(g->transition_curve, DT_IOP_RAWDENOISE_BANDS + 1, p.x[ch][1] + 1.0,
                             p.y[ch][DT_IOP_RAWDENOISE_BANDS - 1]);
-    dt_draw_curve_calc_values(c->transition_curve, 0.0, 1.0, DT_IOP_RAWDENOISE_RES, c->draw_max_xs, c->draw_max_ys);
+    dt_draw_curve_calc_values(g->transition_curve, 0.0, 1.0, DT_IOP_RAWDENOISE_RES, g->draw_max_xs, g->draw_max_ys);
   }
 
   cairo_save(cr);
@@ -651,7 +651,7 @@ static gboolean rawdenoise_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
   for(int i = 0; i < DT_RAWDENOISE_NONE; i++)
   {
     // draw curves, selected last
-    ch = ((int)c->channel + i + 1) % DT_RAWDENOISE_NONE;
+    ch = ((int)g->channel + i + 1) % DT_RAWDENOISE_NONE;
     float alpha = 0.3;
     if(i == DT_RAWDENOISE_NONE - 1) alpha = 1.0;
     switch(ch)
@@ -671,50 +671,50 @@ static gboolean rawdenoise_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
     }
 
     p = *(dt_iop_rawdenoise_params_t *)self->params;
-    dt_draw_curve_set_point(c->transition_curve, 0, p.x[ch][DT_IOP_RAWDENOISE_BANDS - 2] - 1.0, p.y[ch][0]);
+    dt_draw_curve_set_point(g->transition_curve, 0, p.x[ch][DT_IOP_RAWDENOISE_BANDS - 2] - 1.0, p.y[ch][0]);
     for(int k = 0; k < DT_IOP_RAWDENOISE_BANDS; k++)
-      dt_draw_curve_set_point(c->transition_curve, k + 1, p.x[ch][k], p.y[ch][k]);
-    dt_draw_curve_set_point(c->transition_curve, DT_IOP_RAWDENOISE_BANDS + 1, p.x[ch][1] + 1.0,
+      dt_draw_curve_set_point(g->transition_curve, k + 1, p.x[ch][k], p.y[ch][k]);
+    dt_draw_curve_set_point(g->transition_curve, DT_IOP_RAWDENOISE_BANDS + 1, p.x[ch][1] + 1.0,
                             p.y[ch][DT_IOP_RAWDENOISE_BANDS - 1]);
-    dt_draw_curve_calc_values(c->transition_curve, 0.0, 1.0, DT_IOP_RAWDENOISE_RES, c->draw_xs, c->draw_ys);
-    cairo_move_to(cr, 0 * width / (float)(DT_IOP_RAWDENOISE_RES - 1), -height * c->draw_ys[0]);
+    dt_draw_curve_calc_values(g->transition_curve, 0.0, 1.0, DT_IOP_RAWDENOISE_RES, g->draw_xs, g->draw_ys);
+    cairo_move_to(cr, 0 * width / (float)(DT_IOP_RAWDENOISE_RES - 1), -height * g->draw_ys[0]);
     for(int k = 1; k < DT_IOP_RAWDENOISE_RES; k++)
-      cairo_line_to(cr, k * width / (float)(DT_IOP_RAWDENOISE_RES - 1), -height * c->draw_ys[k]);
+      cairo_line_to(cr, k * width / (float)(DT_IOP_RAWDENOISE_RES - 1), -height * g->draw_ys[k]);
     cairo_stroke(cr);
   }
 
-  ch = c->channel;
+  ch = g->channel;
   // draw dots on knots
   cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
   for(int k = 0; k < DT_IOP_RAWDENOISE_BANDS; k++)
   {
     cairo_arc(cr, width * p.x[ch][k], -height * p.y[ch][k], DT_PIXEL_APPLY_DPI(3.0), 0.0, 2.0 * M_PI);
-    if(c->x_move == k)
+    if(g->x_move == k)
       cairo_fill(cr);
     else
       cairo_stroke(cr);
   }
 
-  if(c->mouse_y > 0 || c->dragging)
+  if(g->mouse_y > 0 || g->dragging)
   {
     // draw min/max, if selected
     cairo_set_source_rgba(cr, .7, .7, .7, .6);
-    cairo_move_to(cr, 0, -height * c->draw_min_ys[0]);
+    cairo_move_to(cr, 0, -height * g->draw_min_ys[0]);
     for(int k = 1; k < DT_IOP_RAWDENOISE_RES; k++)
-      cairo_line_to(cr, k * width / (float)(DT_IOP_RAWDENOISE_RES - 1), -height * c->draw_min_ys[k]);
+      cairo_line_to(cr, k * width / (float)(DT_IOP_RAWDENOISE_RES - 1), -height * g->draw_min_ys[k]);
     for(int k = DT_IOP_RAWDENOISE_RES - 1; k >= 0; k--)
-      cairo_line_to(cr, k * width / (float)(DT_IOP_RAWDENOISE_RES - 1), -height * c->draw_max_ys[k]);
+      cairo_line_to(cr, k * width / (float)(DT_IOP_RAWDENOISE_RES - 1), -height * g->draw_max_ys[k]);
     cairo_close_path(cr);
     cairo_fill(cr);
     // draw mouse focus circle
     cairo_set_source_rgba(cr, .9, .9, .9, .5);
-    const float pos = DT_IOP_RAWDENOISE_RES * c->mouse_x;
+    const float pos = DT_IOP_RAWDENOISE_RES * g->mouse_x;
     int k = (int)pos;
     const float f = k - pos;
     if(k >= DT_IOP_RAWDENOISE_RES - 1) k = DT_IOP_RAWDENOISE_RES - 2;
-    float ht = -height * (f * c->draw_ys[k] + (1 - f) * c->draw_ys[k + 1]);
-    cairo_arc(cr, c->mouse_x * width, ht, c->mouse_radius * width, 0, 2. * M_PI);
+    float ht = -height * (f * g->draw_ys[k] + (1 - f) * g->draw_ys[k + 1]);
+    cairo_arc(cr, g->mouse_x * width, ht, g->mouse_radius * width, 0, 2. * M_PI);
     cairo_stroke(cr);
   }
 
@@ -771,27 +771,27 @@ static gboolean rawdenoise_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
 static gboolean rawdenoise_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_rawdenoise_gui_data_t *c = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
+  dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
   dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)self->params;
   const int inset = DT_IOP_RAWDENOISE_INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   int height = allocation.height - 2 * inset, width = allocation.width - 2 * inset;
-  if(!c->dragging) c->mouse_x = CLAMP(event->x - inset, 0, width) / (float)width;
-  c->mouse_y = 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;
-  if(c->dragging)
+  if(!g->dragging) g->mouse_x = CLAMP(event->x - inset, 0, width) / (float)width;
+  g->mouse_y = 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;
+  if(g->dragging)
   {
-    *p = c->drag_params;
-    if(c->x_move < 0)
+    *p = g->drag_params;
+    if(g->x_move < 0)
     {
-      dt_iop_rawdenoise_get_params(p, c->channel, c->mouse_x, c->mouse_y + c->mouse_pick, c->mouse_radius);
+      dt_iop_rawdenoise_get_params(p, g->channel, g->mouse_x, g->mouse_y + g->mouse_pick, g->mouse_radius);
     }
     gtk_widget_queue_draw(widget);
-    dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + c->channel);
+    dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + g->channel);
   }
   else
   {
-    c->x_move = -1;
+    g->x_move = -1;
     gtk_widget_queue_draw(widget);
   }
   return TRUE;
@@ -800,8 +800,8 @@ static gboolean rawdenoise_motion_notify(GtkWidget *widget, GdkEventMotion *even
 static gboolean rawdenoise_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_rawdenoise_gui_data_t *c = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
-  const int ch = c->channel;
+  dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
+  const int ch = g->channel;
   if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
   {
     // reset current curve
@@ -813,19 +813,19 @@ static gboolean rawdenoise_button_press(GtkWidget *widget, GdkEventButton *event
       p->y[ch][k] = d->y[ch][k];
     }
     dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
-    gtk_widget_queue_draw(GTK_WIDGET(c->area));
+    gtk_widget_queue_draw(GTK_WIDGET(g->area));
   }
   else if(event->button == 1)
   {
-    c->drag_params = *(dt_iop_rawdenoise_params_t *)self->params;
+    g->drag_params = *(dt_iop_rawdenoise_params_t *)self->params;
     const int inset = DT_IOP_RAWDENOISE_INSET;
     GtkAllocation allocation;
     gtk_widget_get_allocation(widget, &allocation);
     int height = allocation.height - 2 * inset, width = allocation.width - 2 * inset;
-    c->mouse_pick
-        = dt_draw_curve_calc_value(c->transition_curve, CLAMP(event->x - inset, 0, width) / (float)width);
-    c->mouse_pick -= 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;
-    c->dragging = 1;
+    g->mouse_pick
+        = dt_draw_curve_calc_value(g->transition_curve, CLAMP(event->x - inset, 0, width) / (float)width);
+    g->mouse_pick -= 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;
+    g->dragging = 1;
     return TRUE;
   }
   return FALSE;
@@ -836,8 +836,8 @@ static gboolean rawdenoise_button_release(GtkWidget *widget, GdkEventButton *eve
   if(event->button == 1)
   {
     dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-    dt_iop_rawdenoise_gui_data_t *c = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
-    c->dragging = 0;
+    dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
+    g->dragging = 0;
     return TRUE;
   }
   return FALSE;
@@ -846,8 +846,8 @@ static gboolean rawdenoise_button_release(GtkWidget *widget, GdkEventButton *eve
 static gboolean rawdenoise_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_rawdenoise_gui_data_t *c = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
-  if(!c->dragging) c->mouse_y = -1.0;
+  dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
+  if(!g->dragging) g->mouse_y = -1.0;
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
@@ -855,17 +855,17 @@ static gboolean rawdenoise_leave_notify(GtkWidget *widget, GdkEventCrossing *eve
 static gboolean rawdenoise_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_rawdenoise_gui_data_t *c = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
+  dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
 
   if(dt_gui_ignore_scroll(event)) return FALSE;
 
   if(dt_modifier_is(event->state, GDK_MOD1_MASK))
-    return gtk_widget_event(GTK_WIDGET(c->channel_tabs), (GdkEvent*)event);
+    return gtk_widget_event(GTK_WIDGET(g->channel_tabs), (GdkEvent*)event);
 
   int delta_y;
   if(dt_gui_get_scroll_unit_delta(event, &delta_y))
   {
-    c->mouse_radius = CLAMP(c->mouse_radius * (1.0 + 0.1 * delta_y), 0.2 / DT_IOP_RAWDENOISE_BANDS, 1.0);
+    g->mouse_radius = CLAMP(g->mouse_radius * (1.0 + 0.1 * delta_y), 0.2 / DT_IOP_RAWDENOISE_BANDS, 1.0);
     gtk_widget_queue_draw(widget);
   }
 
@@ -876,63 +876,63 @@ static void rawdenoise_tab_switch(GtkNotebook *notebook, GtkWidget *page, guint 
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
-  dt_iop_rawdenoise_gui_data_t *c = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
-  c->channel = (dt_iop_rawdenoise_channel_t)page_num;
-  gtk_widget_queue_draw(GTK_WIDGET(c->area));
+  dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
+  g->channel = (dt_iop_rawdenoise_channel_t)page_num;
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
 void gui_init(dt_iop_module_t *self)
 {
-  dt_iop_rawdenoise_gui_data_t *c = IOP_GUI_ALLOC(rawdenoise);
+  dt_iop_rawdenoise_gui_data_t *g = IOP_GUI_ALLOC(rawdenoise);
   const dt_iop_rawdenoise_params_t *const p = (dt_iop_rawdenoise_params_t *)self->default_params;
 
-  c->channel = dt_conf_get_int("plugins/darkroom/rawdenoise/gui_channel");
-  c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
-  dt_action_define_iop(self, NULL, N_("channel"), GTK_WIDGET(c->channel_tabs), &dt_action_def_tabs_all_rgb);
+  g->channel = dt_conf_get_int("plugins/darkroom/rawdenoise/gui_channel");
+  g->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
+  dt_action_define_iop(self, NULL, N_("channel"), GTK_WIDGET(g->channel_tabs), &dt_action_def_tabs_all_rgb);
 
-  dt_ui_notebook_page(c->channel_tabs, N_("all"), NULL);
-  dt_ui_notebook_page(c->channel_tabs, N_("R"), NULL);
-  dt_ui_notebook_page(c->channel_tabs, N_("G"), NULL);
-  dt_ui_notebook_page(c->channel_tabs, N_("B"), NULL);
+  dt_ui_notebook_page(g->channel_tabs, N_("all"), NULL);
+  dt_ui_notebook_page(g->channel_tabs, N_("R"), NULL);
+  dt_ui_notebook_page(g->channel_tabs, N_("G"), NULL);
+  dt_ui_notebook_page(g->channel_tabs, N_("B"), NULL);
 
-  gtk_widget_show(gtk_notebook_get_nth_page(c->channel_tabs, c->channel));
-  gtk_notebook_set_current_page(c->channel_tabs, c->channel);
-  g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page", G_CALLBACK(rawdenoise_tab_switch), self);
+  gtk_widget_show(gtk_notebook_get_nth_page(g->channel_tabs, g->channel));
+  gtk_notebook_set_current_page(g->channel_tabs, g->channel);
+  g_signal_connect(G_OBJECT(g->channel_tabs), "switch_page", G_CALLBACK(rawdenoise_tab_switch), self);
 
-  const int ch = (int)c->channel;
-  c->transition_curve = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
-  (void)dt_draw_curve_add_point(c->transition_curve, p->x[ch][DT_IOP_RAWDENOISE_BANDS - 2] - 1.0,
+  const int ch = (int)g->channel;
+  g->transition_curve = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
+  (void)dt_draw_curve_add_point(g->transition_curve, p->x[ch][DT_IOP_RAWDENOISE_BANDS - 2] - 1.0,
                                 p->y[ch][DT_IOP_RAWDENOISE_BANDS - 2]);
   for(int k = 0; k < DT_IOP_RAWDENOISE_BANDS; k++)
-    (void)dt_draw_curve_add_point(c->transition_curve, p->x[ch][k], p->y[ch][k]);
-  (void)dt_draw_curve_add_point(c->transition_curve, p->x[ch][1] + 1.0, p->y[ch][1]);
+    (void)dt_draw_curve_add_point(g->transition_curve, p->x[ch][k], p->y[ch][k]);
+  (void)dt_draw_curve_add_point(g->transition_curve, p->x[ch][1] + 1.0, p->y[ch][1]);
 
-  c->mouse_x = c->mouse_y = c->mouse_pick = -1.0;
-  c->dragging = 0;
-  c->x_move = -1;
-  c->mouse_radius = 1.0 / (DT_IOP_RAWDENOISE_BANDS * 2);
+  g->mouse_x = g->mouse_y = g->mouse_pick = -1.0;
+  g->dragging = 0;
+  g->x_move = -1;
+  g->mouse_radius = 1.0 / (DT_IOP_RAWDENOISE_BANDS * 2);
 
   GtkWidget *box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  c->area = GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL,
+  g->area = GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL,
                                                0,
                                                "plugins/darkroom/rawdenoise/graphheight"));
-  g_object_set_data(G_OBJECT(c->area), "iop-instance", self);
-  dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(c->area), NULL);
+  g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
+  dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(g->area), NULL);
 
-  gtk_box_pack_start(GTK_BOX(box_raw), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(box_raw), GTK_WIDGET(c->area), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box_raw), GTK_WIDGET(g->channel_tabs), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box_raw), GTK_WIDGET(g->area), FALSE, FALSE, 0);
 
-  g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(rawdenoise_draw), self);
-  g_signal_connect(G_OBJECT(c->area), "button-press-event", G_CALLBACK(rawdenoise_button_press), self);
-  g_signal_connect(G_OBJECT(c->area), "button-release-event", G_CALLBACK(rawdenoise_button_release), self);
-  g_signal_connect(G_OBJECT(c->area), "motion-notify-event", G_CALLBACK(rawdenoise_motion_notify), self);
-  g_signal_connect(G_OBJECT(c->area), "leave-notify-event", G_CALLBACK(rawdenoise_leave_notify), self);
-  g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(rawdenoise_scrolled), self);
+  g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(rawdenoise_draw), self);
+  g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(rawdenoise_button_press), self);
+  g_signal_connect(G_OBJECT(g->area), "button-release-event", G_CALLBACK(rawdenoise_button_release), self);
+  g_signal_connect(G_OBJECT(g->area), "motion-notify-event", G_CALLBACK(rawdenoise_motion_notify), self);
+  g_signal_connect(G_OBJECT(g->area), "leave-notify-event", G_CALLBACK(rawdenoise_leave_notify), self);
+  g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(rawdenoise_scrolled), self);
 
-  c->threshold = dt_bauhaus_slider_from_params(self, "threshold");
-  dt_bauhaus_slider_set_soft_max(c->threshold, 0.1);
-  dt_bauhaus_slider_set_digits(c->threshold, 3);
+  g->threshold = dt_bauhaus_slider_from_params(self, "threshold");
+  dt_bauhaus_slider_set_soft_max(g->threshold, 0.1);
+  dt_bauhaus_slider_set_digits(g->threshold, 3);
 
   // start building top level widget
   self->widget = gtk_stack_new();
@@ -946,9 +946,9 @@ void gui_init(dt_iop_module_t *self)
 
 void gui_cleanup(dt_iop_module_t *self)
 {
-  dt_iop_rawdenoise_gui_data_t *c = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
-  dt_conf_set_int("plugins/darkroom/rawdenoise/gui_channel", c->channel);
-  dt_draw_curve_destroy(c->transition_curve);
+  dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
+  dt_conf_set_int("plugins/darkroom/rawdenoise/gui_channel", g->channel);
+  dt_draw_curve_destroy(g->transition_curve);
 
   IOP_GUI_FREE;
 }

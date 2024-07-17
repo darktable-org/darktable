@@ -1372,10 +1372,10 @@ void gui_reset(dt_iop_module_t *self)
 static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_filmic_gui_data_t *c = (dt_iop_filmic_gui_data_t *)self->gui_data;
+  dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
   dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
   dt_iop_filmic_nodes_t *nodes_data = (dt_iop_filmic_nodes_t *)malloc(sizeof(dt_iop_filmic_nodes_t));
-  compute_curve_lut(p, c->table, c->table_temp, 256, NULL, nodes_data);
+  compute_curve_lut(p, g->table, g->table_temp, 256, NULL, nodes_data);
 
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   GtkAllocation allocation;
@@ -1451,7 +1451,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   // draw curve
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
   cairo_set_source_rgb(cr, .9, .9, .9);
-  cairo_move_to(cr, 0, height * (1.0 - c->table[0]));
+  cairo_move_to(cr, 0, height * (1.0 - g->table[0]));
 
   for(int k = 1; k < 256; k++)
   {
@@ -1460,7 +1460,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
      * the "+ d" operation.
      */
     const float x = (rescale) ? powf(2.0f, (double)a * k / 255.0f + b) + d : k / 255.0f;
-    const float y = powf(c->table[k], 1.0f / gamma);
+    const float y = powf(g->table[k], 1.0f / gamma);
     cairo_line_to(cr, x * width, (double)height * (1.0 - y));
   }
   cairo_stroke(cr);
