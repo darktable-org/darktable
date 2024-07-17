@@ -56,7 +56,7 @@ int position(const dt_lib_module_t *self)
 
 static void _update(dt_lib_module_t *self)
 {
-  dt_lib_ioporder_t *d = (dt_lib_ioporder_t *)self->data;
+  dt_lib_ioporder_t *d = self->data;
 
   if(self->arrow) gtk_widget_destroy(self->arrow);
   self->arrow = NULL;
@@ -159,7 +159,7 @@ void gui_cleanup(dt_lib_module_t *self)
 
 void gui_reset(dt_lib_module_t *self)
 {
-  dt_lib_ioporder_t *d = (dt_lib_ioporder_t *)self->data;
+  dt_lib_ioporder_t *d = self->data;
 
   // the module reset is use to select the v3.0 iop-order
 

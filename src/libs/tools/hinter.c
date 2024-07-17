@@ -88,7 +88,7 @@ void gui_cleanup(dt_lib_module_t *self)
 
 void _lib_hinter_set_message(dt_lib_module_t *self, const char *message)
 {
-  dt_lib_hinter_t *d = (dt_lib_hinter_t *)self->data;
+  dt_lib_hinter_t *d = self->data;
 
   if(message && !*message && !dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP))
   {

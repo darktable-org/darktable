@@ -655,8 +655,8 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_blurs_params_t *p = (dt_iop_blurs_params_t *)self->params;
-  dt_iop_blurs_gui_data_t *g = (dt_iop_blurs_gui_data_t *)self->gui_data;
+  dt_iop_blurs_params_t *p = self->params;
+  dt_iop_blurs_gui_data_t *g = self->gui_data;
 
   if(!w || w == g->type)
   {
@@ -705,8 +705,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
 static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
 {
-  dt_iop_blurs_gui_data_t *g = (dt_iop_blurs_gui_data_t *)self->gui_data;
-  dt_iop_blurs_params_t *p = (dt_iop_blurs_params_t *)self->params;
+  dt_iop_blurs_gui_data_t *g = self->gui_data;
+  dt_iop_blurs_params_t *p = self->params;
 
   GtkAllocation allocation;
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
@@ -804,7 +804,7 @@ void gui_init(dt_iop_module_t *self)
 
 void gui_cleanup(dt_iop_module_t *self)
 {
-  dt_iop_blurs_gui_data_t *g = (dt_iop_blurs_gui_data_t *)self->gui_data;
+  dt_iop_blurs_gui_data_t *g = self->gui_data;
   if(g->img) dt_free_align(g->img);
   IOP_GUI_FREE;
 }

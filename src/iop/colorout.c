@@ -129,7 +129,7 @@ dt_iop_colorspace_type_t output_colorspace(dt_iop_module_t *self,
   }
   else
   {
-    dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
+    dt_iop_colorout_params_t *p = self->params;
     if(p->type == DT_COLORSPACE_LAB) cst = IOP_CS_LAB;
   }
   return cst;
@@ -250,7 +250,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 static void intent_changed(GtkWidget *widget, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
+  dt_iop_colorout_params_t *p = self->params;
   p->intent = (dt_iop_color_intent_t)dt_bauhaus_combobox_get(widget);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -258,7 +258,7 @@ static void intent_changed(GtkWidget *widget, dt_iop_module_t *self)
 static void output_profile_changed(GtkWidget *widget, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
+  dt_iop_colorout_params_t *p = self->params;
   int pos = dt_bauhaus_combobox_get(widget);
 
   for(GList *profiles = darktable.color_profiles->profiles; profiles; profiles = g_list_next(profiles))
@@ -787,8 +787,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
-  dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
+  dt_iop_colorout_gui_data_t *g = self->gui_data;
+  dt_iop_colorout_params_t *p = self->params;
 
   dt_bauhaus_combobox_set(g->output_intent, (int)p->intent);
 
@@ -819,7 +819,7 @@ void init(dt_iop_module_t *module)
 
 static void _preference_changed(gpointer instance, dt_iop_module_t *self)
 {
-  dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
+  dt_iop_colorout_gui_data_t *g = self->gui_data;
 
   const gboolean force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
   if(force_lcms2)

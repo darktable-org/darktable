@@ -311,7 +311,7 @@ static void _toggle_capture_mode_clicked(GtkWidget *widget, gpointer user_data)
 static void _expose_info_bar(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t height,
                              int32_t pointerx, int32_t pointery)
 {
-  dt_lib_camera_t *lib = (dt_lib_camera_t *)self->data;
+  dt_lib_camera_t *lib = self->data;
 
   // Draw infobar background at top
   cairo_set_source_rgb(cr, .0, .0, .0);

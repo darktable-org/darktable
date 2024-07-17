@@ -1290,8 +1290,8 @@ static void get_selected_lutname(dt_iop_lut3d_gui_data_t *g, char *const lutname
 
 static void get_compressed_clut(dt_iop_module_t *self, gboolean newlutname)
 {
-  dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
-  dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
+  dt_iop_lut3d_gui_data_t *g = self->gui_data;
+  dt_iop_lut3d_params_t *p = self->params;
   int nb_lut = 0;
   char *lutfolder = dt_conf_get_string("plugins/darkroom/lut3d/def_path");
   if(p->filepath[0] && lutfolder[0])
@@ -1328,7 +1328,7 @@ static void get_compressed_clut(dt_iop_module_t *self, gboolean newlutname)
 
 static void show_hide_controls(dt_iop_module_t *self)
 {
-  dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
+  dt_iop_lut3d_gui_data_t *g = self->gui_data;
   GtkTreeModel *model = gtk_tree_view_get_model((GtkTreeView *)g->lutname);
   const int nb_luts = gtk_tree_model_iter_n_children(model, NULL);
   if((nb_luts > 1) || ((nb_luts > 0) &&
@@ -1393,14 +1393,14 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 static void filepath_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
+  dt_iop_lut3d_params_t *p = self->params;
   char filepath[DT_IOP_LUT3D_MAX_PATHNAME];
   g_strlcpy(filepath, dt_bauhaus_combobox_get_text(widget), sizeof(filepath));
   if(!g_str_has_prefix(filepath, invalid_filepath_prefix))
   {
     filepath_set_unix_separator(filepath);
 #ifdef HAVE_GMIC
-    dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
+    dt_iop_lut3d_gui_data_t *g = self->gui_data;
     if(strcmp(filepath, p->filepath) != 0 && !(g_str_has_suffix(filepath, ".gmz") || g_str_has_suffix(filepath, ".GMZ")))
     {
       // if new file is gmz we try to keep the same lut
@@ -1422,14 +1422,14 @@ static void filepath_callback(GtkWidget *widget, dt_iop_module_t *self)
 #ifdef HAVE_GMIC
 static void entry_callback(GtkEntry *entry, dt_iop_module_t *self)
 {
-  dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
+  dt_iop_lut3d_gui_data_t *g = self->gui_data;
   apply_filter_lutname_list(g);
 }
 
 static void lutname_callback(GtkTreeSelection *selection, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
+  dt_iop_lut3d_params_t *p = self->params;
   GtkTreeIter iter;
   GtkTreeModel *model;
   gchar *lutname;
@@ -1542,8 +1542,8 @@ static void update_filepath_combobox(dt_iop_lut3d_gui_data_t *g, char *filepath,
 
 static void button_clicked(GtkWidget *widget, dt_iop_module_t *self)
 {
-  dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
-  dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
+  dt_iop_lut3d_gui_data_t *g = self->gui_data;
+  dt_iop_lut3d_params_t *p = self->params;
   gchar* lutfolder = dt_conf_get_string("plugins/darkroom/lut3d/def_path");
   if(strlen(lutfolder) == 0)
   {
@@ -1612,7 +1612,7 @@ static void button_clicked(GtkWidget *widget, dt_iop_module_t *self)
 
 static void _show_hide_colorspace(dt_iop_module_t *self)
 {
-  dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
+  dt_iop_lut3d_gui_data_t *g = self->gui_data;
   GList *iop_order_list = self->dev->iop_order_list;
   const int order_lut3d = dt_ioppr_get_iop_order(iop_order_list, self->op, self->multi_priority);
   const int order_colorin = dt_ioppr_get_iop_order(iop_order_list, "colorin", -1);
@@ -1629,8 +1629,8 @@ static void _show_hide_colorspace(dt_iop_module_t *self)
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
-  dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
+  dt_iop_lut3d_gui_data_t *g = self->gui_data;
+  dt_iop_lut3d_params_t *p = self->params;
   gchar *lutfolder = dt_conf_get_string("plugins/darkroom/lut3d/def_path");
   if(!lutfolder[0])
   {

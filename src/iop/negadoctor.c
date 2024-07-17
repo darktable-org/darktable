@@ -468,7 +468,7 @@ static void setup_color_variables(dt_iop_negadoctor_gui_data_t *const g, const g
 
 static void toggle_stock_controls(dt_iop_module_t *const self)
 {
-  dt_iop_negadoctor_gui_data_t *const g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
+  dt_iop_negadoctor_gui_data_t *const g = self->gui_data;
   const dt_iop_negadoctor_params_t *const p = (dt_iop_negadoctor_params_t *)self->params;
 
   if(p->film_stock == DT_FILMSTOCK_NB)
@@ -493,7 +493,7 @@ static void toggle_stock_controls(dt_iop_module_t *const self)
 
 static void Dmin_picker_update(dt_iop_module_t *self)
 {
-  dt_iop_negadoctor_gui_data_t *const g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
+  dt_iop_negadoctor_gui_data_t *const g = self->gui_data;
   const dt_iop_negadoctor_params_t *const p = (dt_iop_negadoctor_params_t *)self->params;
 
   GdkRGBA color;
@@ -516,8 +516,8 @@ static void Dmin_picker_update(dt_iop_module_t *self)
 static void Dmin_picker_callback(GtkColorButton *widget, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
-  dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
+  dt_iop_negadoctor_gui_data_t *g = self->gui_data;
+  dt_iop_negadoctor_params_t *p = self->params;
 
   dt_iop_color_picker_reset(self, TRUE);
 
@@ -540,7 +540,7 @@ static void Dmin_picker_callback(GtkColorButton *widget, dt_iop_module_t *self)
 
 static void WB_low_picker_update(dt_iop_module_t *self)
 {
-  dt_iop_negadoctor_gui_data_t *const g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
+  dt_iop_negadoctor_gui_data_t *const g = self->gui_data;
   const dt_iop_negadoctor_params_t *const p = (dt_iop_negadoctor_params_t *)self->params;
 
   GdkRGBA color;
@@ -561,8 +561,8 @@ static void WB_low_picker_update(dt_iop_module_t *self)
 static void WB_low_picker_callback(GtkColorButton *widget, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
-  dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
+  dt_iop_negadoctor_gui_data_t *g = self->gui_data;
+  dt_iop_negadoctor_params_t *p = self->params;
 
   dt_iop_color_picker_reset(self, TRUE);
 
@@ -589,7 +589,7 @@ static void WB_low_picker_callback(GtkColorButton *widget, dt_iop_module_t *self
 
 static void WB_high_picker_update(dt_iop_module_t *self)
 {
-  dt_iop_negadoctor_gui_data_t *const g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
+  dt_iop_negadoctor_gui_data_t *const g = self->gui_data;
   const dt_iop_negadoctor_params_t *const p = (dt_iop_negadoctor_params_t *)self->params;
 
   GdkRGBA color;
@@ -610,8 +610,8 @@ static void WB_high_picker_update(dt_iop_module_t *self)
 static void WB_high_picker_callback(GtkColorButton *widget, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
-  dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
+  dt_iop_negadoctor_gui_data_t *g = self->gui_data;
+  dt_iop_negadoctor_params_t *p = self->params;
 
   dt_iop_color_picker_reset(self, TRUE);
 
@@ -641,8 +641,8 @@ static void WB_high_picker_callback(GtkColorButton *widget, dt_iop_module_t *sel
 static void apply_auto_Dmin(dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
-  dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
+  dt_iop_negadoctor_gui_data_t *g = self->gui_data;
+  dt_iop_negadoctor_params_t *p = self->params;
 
   for(int k = 0; k < 4; k++) p->Dmin[k] = self->picked_color[k];
 
@@ -661,8 +661,8 @@ static void apply_auto_Dmin(dt_iop_module_t *self)
 static void apply_auto_Dmax(dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
-  dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
+  dt_iop_negadoctor_gui_data_t *g = self->gui_data;
+  dt_iop_negadoctor_params_t *p = self->params;
 
   dt_aligned_pixel_t RGB;
   for(int c = 0; c < 3; c++)
@@ -685,8 +685,8 @@ static void apply_auto_Dmax(dt_iop_module_t *self)
 static void apply_auto_offset(dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
-  dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
+  dt_iop_negadoctor_gui_data_t *g = self->gui_data;
+  dt_iop_negadoctor_params_t *p = self->params;
 
   dt_aligned_pixel_t RGB;
   for(int c = 0; c < 3; c++)
@@ -708,8 +708,8 @@ static void apply_auto_offset(dt_iop_module_t *self)
 static void apply_auto_WB_low(dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
-  dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
+  dt_iop_negadoctor_gui_data_t *g = self->gui_data;
+  dt_iop_negadoctor_params_t *p = self->params;
 
   dt_aligned_pixel_t RGB_min;
   for(int c = 0; c < 3; c++)
@@ -735,8 +735,8 @@ static void apply_auto_WB_low(dt_iop_module_t *self)
 static void apply_auto_WB_high(dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
-  dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
+  dt_iop_negadoctor_gui_data_t *g = self->gui_data;
+  dt_iop_negadoctor_params_t *p = self->params;
 
   dt_aligned_pixel_t RGB_min;
   for(int c = 0; c < 3; c++)
@@ -762,8 +762,8 @@ static void apply_auto_WB_high(dt_iop_module_t *self)
 static void apply_auto_black(dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
-  dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
+  dt_iop_negadoctor_gui_data_t *g = self->gui_data;
+  dt_iop_negadoctor_params_t *p = self->params;
 
   dt_aligned_pixel_t RGB;
   for(int c = 0; c < 3; c++)
@@ -788,8 +788,8 @@ static void apply_auto_black(dt_iop_module_t *self)
 static void apply_auto_exposure(dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
-  dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
+  dt_iop_negadoctor_gui_data_t *g = self->gui_data;
+  dt_iop_negadoctor_params_t *p = self->params;
 
   dt_aligned_pixel_t RGB;
   for(int c = 0; c < 3; c++)
@@ -814,7 +814,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
   if(darktable.gui->reset) return;
-  dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
+  dt_iop_negadoctor_gui_data_t *g = self->gui_data;
 
   if     (picker == g->Dmin_sampler)
     apply_auto_Dmin(self);
@@ -1039,8 +1039,8 @@ void gui_init(dt_iop_module_t *self)
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
-  dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
+  dt_iop_negadoctor_params_t *p = self->params;
+  dt_iop_negadoctor_gui_data_t *g = self->gui_data;
   if(!w || w == g->film_stock)
   {
     toggle_stock_controls(self);
@@ -1075,7 +1075,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 void gui_update(dt_iop_module_t *const self)
 {
   // let gui slider match current parameters:
-  dt_iop_negadoctor_gui_data_t *const g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
+  dt_iop_negadoctor_gui_data_t *const g = self->gui_data;
   const dt_iop_negadoctor_params_t *const p = (dt_iop_negadoctor_params_t *)self->params;
 
   dt_iop_color_picker_reset(self, TRUE);

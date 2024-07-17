@@ -1518,8 +1518,8 @@ void cleanup_pipe(struct dt_iop_module_t *self,
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
-  dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
+  dt_iop_basecurve_params_t *p = self->params;
+  dt_iop_basecurve_gui_data_t *g = self->gui_data;
 
   gtk_widget_set_visible(g->exposure_step, p->exposure_fusion != 0);
   gtk_widget_set_visible(g->exposure_bias, p->exposure_fusion != 0);
@@ -1592,7 +1592,7 @@ static gboolean dt_iop_basecurve_leave_notify(GtkWidget *widget,
                                               GdkEventCrossing *event,
                                               dt_iop_module_t *self)
 {
-  dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
+  dt_iop_basecurve_gui_data_t *g = self->gui_data;
   if(!(event->state & GDK_BUTTON1_MASK))
     g->selected = -1;
   gtk_widget_queue_draw(widget);
@@ -1617,8 +1617,8 @@ static float to_lin(const float x, const float base)
 
 static gboolean dt_iop_basecurve_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
 {
-  dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
-  dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
+  dt_iop_basecurve_gui_data_t *g = self->gui_data;
+  dt_iop_basecurve_params_t *p = self->params;
 
   int nodes = p->basecurve_nodes[0];
   dt_iop_basecurve_node_t *basecurve = p->basecurve[0];
@@ -1800,8 +1800,8 @@ static inline int _add_node(dt_iop_basecurve_node_t *basecurve, int *nodes, floa
 
 static void dt_iop_basecurve_sanity_check(dt_iop_module_t *self, GtkWidget *widget)
 {
-  dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
-  dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
+  dt_iop_basecurve_gui_data_t *g = self->gui_data;
+  dt_iop_basecurve_params_t *p = self->params;
 
   int ch = 0;
   int nodes = p->basecurve_nodes[ch];
@@ -1837,8 +1837,8 @@ static gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget,
                                                GdkEventMotion *event,
                                                dt_iop_module_t *self)
 {
-  dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
-  dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
+  dt_iop_basecurve_gui_data_t *g = self->gui_data;
+  dt_iop_basecurve_params_t *p = self->params;
   int ch = 0;
   int nodes = p->basecurve_nodes[ch];
   dt_iop_basecurve_node_t *basecurve = p->basecurve[ch];
@@ -1907,9 +1907,9 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget,
                                               GdkEventButton *event,
                                               dt_iop_module_t *self)
 {
-  dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
+  dt_iop_basecurve_params_t *p = self->params;
   const dt_iop_basecurve_params_t *const d = (dt_iop_basecurve_params_t *)self->default_params;
-  dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
+  dt_iop_basecurve_gui_data_t *g = self->gui_data;
 
   int ch = 0;
   int nodes = p->basecurve_nodes[ch];
@@ -2024,8 +2024,8 @@ static gboolean _move_point_internal(dt_iop_module_t *self,
                                      float dy,
                                      const guint state)
 {
-  dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
-  dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
+  dt_iop_basecurve_params_t *p = self->params;
+  dt_iop_basecurve_gui_data_t *g = self->gui_data;
 
   const int ch = 0;
   dt_iop_basecurve_node_t *basecurve = p->basecurve[ch];
@@ -2048,7 +2048,7 @@ static gboolean _move_point_internal(dt_iop_module_t *self,
 
 static gboolean _scrolled(GtkWidget *widget, GdkEventScroll *event, dt_iop_module_t *self)
 {
-  dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
+  dt_iop_basecurve_gui_data_t *g = self->gui_data;
 
   if(dt_gui_ignore_scroll(event)) return FALSE;
 
@@ -2068,7 +2068,7 @@ static gboolean dt_iop_basecurve_key_press(GtkWidget *widget,
                                            GdkEventKey *event,
                                            dt_iop_module_t *self)
 {
-  dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
+  dt_iop_basecurve_gui_data_t *g = self->gui_data;
 
   if(g->selected < 0) return TRUE;
 
@@ -2104,8 +2104,8 @@ static gboolean dt_iop_basecurve_key_press(GtkWidget *widget,
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
-  dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
+  dt_iop_basecurve_params_t *p = self->params;
+  dt_iop_basecurve_gui_data_t *g = self->gui_data;
 
   if(w == g->fusion)
   {
@@ -2125,7 +2125,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
 static void logbase_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
-  dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
+  dt_iop_basecurve_gui_data_t *g = self->gui_data;
   g->loglogscale = eval_grey(dt_bauhaus_slider_get(g->logbase));
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
@@ -2195,7 +2195,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
+  dt_iop_basecurve_gui_data_t *g = self->gui_data;
   dt_draw_curve_destroy(g->minmax_curve);
 
   IOP_GUI_FREE;

@@ -543,7 +543,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_rawdenoise_data_t *d = (dt_iop_rawdenoise_data_t *)malloc(sizeof(dt_iop_rawdenoise_data_t));
-  const dt_iop_rawdenoise_params_t *const default_params = (dt_iop_rawdenoise_params_t *)self->default_params;
+  const dt_iop_rawdenoise_params_t *const default_params = self->default_params;
 
   piece->data = (void *)d;
   for(int ch = 0; ch < DT_RAWDENOISE_NONE; ch++)
@@ -564,7 +564,7 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
+  dt_iop_rawdenoise_gui_data_t *g = self->gui_data;
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
@@ -580,7 +580,7 @@ static void dt_iop_rawdenoise_get_params(dt_iop_rawdenoise_params_t *p, const in
 
 static gboolean rawdenoise_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
 {
-  dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
+  dt_iop_rawdenoise_gui_data_t *g = self->gui_data;
   dt_iop_rawdenoise_params_t p = *(dt_iop_rawdenoise_params_t *)self->params;
 
   int ch = (int)g->channel;
@@ -769,8 +769,8 @@ static gboolean rawdenoise_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t
 
 static gboolean rawdenoise_motion_notify(GtkWidget *widget, GdkEventMotion *event, dt_iop_module_t *self)
 {
-  dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
-  dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)self->params;
+  dt_iop_rawdenoise_gui_data_t *g = self->gui_data;
+  dt_iop_rawdenoise_params_t *p = self->params;
   const int inset = DT_IOP_RAWDENOISE_INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -797,13 +797,13 @@ static gboolean rawdenoise_motion_notify(GtkWidget *widget, GdkEventMotion *even
 
 static gboolean rawdenoise_button_press(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
 {
-  dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
+  dt_iop_rawdenoise_gui_data_t *g = self->gui_data;
   const int ch = g->channel;
   if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
   {
     // reset current curve
-    dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)self->params;
-    const dt_iop_rawdenoise_params_t *const d = (dt_iop_rawdenoise_params_t *)self->default_params;
+    dt_iop_rawdenoise_params_t *p = self->params;
+    const dt_iop_rawdenoise_params_t *const d = self->default_params;
     for(int k = 0; k < DT_IOP_RAWDENOISE_BANDS; k++)
     {
       p->x[ch][k] = d->x[ch][k];
@@ -832,7 +832,7 @@ static gboolean rawdenoise_button_release(GtkWidget *widget, GdkEventButton *eve
 {
   if(event->button == 1)
   {
-    dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
+    dt_iop_rawdenoise_gui_data_t *g = self->gui_data;
     g->dragging = 0;
     return TRUE;
   }
@@ -841,7 +841,7 @@ static gboolean rawdenoise_button_release(GtkWidget *widget, GdkEventButton *eve
 
 static gboolean rawdenoise_leave_notify(GtkWidget *widget, GdkEventCrossing *event, dt_iop_module_t *self)
 {
-  dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
+  dt_iop_rawdenoise_gui_data_t *g = self->gui_data;
   if(!g->dragging) g->mouse_y = -1.0;
   gtk_widget_queue_draw(widget);
   return TRUE;
@@ -849,7 +849,7 @@ static gboolean rawdenoise_leave_notify(GtkWidget *widget, GdkEventCrossing *eve
 
 static gboolean rawdenoise_scrolled(GtkWidget *widget, GdkEventScroll *event, dt_iop_module_t *self)
 {
-  dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
+  dt_iop_rawdenoise_gui_data_t *g = self->gui_data;
 
   if(dt_gui_ignore_scroll(event)) return FALSE;
 
@@ -869,7 +869,7 @@ static gboolean rawdenoise_scrolled(GtkWidget *widget, GdkEventScroll *event, dt
 static void rawdenoise_tab_switch(GtkNotebook *notebook, GtkWidget *page, guint page_num, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
+  dt_iop_rawdenoise_gui_data_t *g = self->gui_data;
   g->channel = (dt_iop_rawdenoise_channel_t)page_num;
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
@@ -877,7 +877,7 @@ static void rawdenoise_tab_switch(GtkNotebook *notebook, GtkWidget *page, guint 
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_rawdenoise_gui_data_t *g = IOP_GUI_ALLOC(rawdenoise);
-  const dt_iop_rawdenoise_params_t *const p = (dt_iop_rawdenoise_params_t *)self->default_params;
+  const dt_iop_rawdenoise_params_t *const p = self->default_params;
 
   g->channel = dt_conf_get_int("plugins/darkroom/rawdenoise/gui_channel");
   g->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
@@ -939,7 +939,7 @@ void gui_init(dt_iop_module_t *self)
 
 void gui_cleanup(dt_iop_module_t *self)
 {
-  dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
+  dt_iop_rawdenoise_gui_data_t *g = self->gui_data;
   dt_conf_set_int("plugins/darkroom/rawdenoise/gui_channel", g->channel);
   dt_draw_curve_destroy(g->transition_curve);
 

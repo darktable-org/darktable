@@ -506,8 +506,8 @@ static void _profile_changed(GtkWidget *widget, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_request_focus(self);
-  dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->params;
-  dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *)self->gui_data;
+  dt_iop_colorin_params_t *p = self->params;
+  dt_iop_colorin_gui_data_t *g = self->gui_data;
   int pos = dt_bauhaus_combobox_get(widget);
   GList *prof;
   if(pos < g->n_image_profiles)
@@ -540,7 +540,7 @@ static void _profile_changed(GtkWidget *widget, dt_iop_module_t *self)
 
 static void _workicc_changed(GtkWidget *widget, dt_iop_module_t *self)
 {
-  dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->params;
+  dt_iop_colorin_params_t *p = self->params;
   if(darktable.gui->reset) return;
 
   dt_iop_request_focus(self);
@@ -1639,8 +1639,8 @@ void cleanup_pipe(struct dt_iop_module_t *self,
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *)self->gui_data;
-  dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->params;
+  dt_iop_colorin_gui_data_t *g = self->gui_data;
+  dt_iop_colorin_params_t *p = self->params;
 
   dt_bauhaus_combobox_set(g->clipping_combobox, p->normalize);
 
@@ -1813,7 +1813,7 @@ void reload_defaults(dt_iop_module_t *module)
   // change.
 
   // We need gui_data to access widget in order to change tooltip.
-  dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *) module->gui_data;
+  dt_iop_colorin_gui_data_t *g = module->gui_data;
 
   // reload_defaults() can be called with unavailable (i.e., NULL) gui_data.
   // In this case, we have nothing to do with tooltips.
@@ -1924,7 +1924,7 @@ void reload_defaults(dt_iop_module_t *module)
 
 static void update_profile_list(dt_iop_module_t *self)
 {
-  dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *)self->gui_data;
+  dt_iop_colorin_gui_data_t *g = self->gui_data;
 
   if(!g) return;
 
@@ -2090,7 +2090,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *)self->gui_data;
+  dt_iop_colorin_gui_data_t *g = self->gui_data;
   while(g->image_profiles)
   {
     g_free(g->image_profiles->data);

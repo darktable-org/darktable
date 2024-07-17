@@ -278,7 +278,7 @@ static void _lib_masks_get_values(GtkTreeModel *model,
 
 static void _lib_masks_inactivate_icons(dt_lib_module_t *self)
 {
-  dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
+  dt_lib_masks_t *lm = self->data;
 
   // we set the add shape icons inactive
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lm->bt_circle), FALSE);
@@ -355,7 +355,7 @@ static void _tree_add_exist(GtkButton *button, dt_masks_form_t *grp)
 
 static void _tree_group(GtkButton *button, dt_lib_module_t *self)
 {
-  dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
+  dt_lib_masks_t *lm = self->data;
   // we create the new group
   dt_masks_form_t *grp = dt_masks_create(DT_MASKS_GROUP);
   snprintf(grp->name, sizeof(grp->name), _("group #%d"),
@@ -469,7 +469,7 @@ static void _tree_operation(GtkButton *button, gpointer user_data)
 {
   dt_masks_state_t change_state = GPOINTER_TO_INT(user_data);
   dt_lib_module_t *self = darktable.develop->proxy.masks.module;
-  dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
+  dt_lib_masks_t *lm = self->data;
 
   // now we go through all selected nodes
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
@@ -593,7 +593,7 @@ static gboolean _is_last_tree_item(GtkTreeModel *model, GtkTreeIter *iter)
 
 static void _tree_moveup(GtkButton *button, dt_lib_module_t *self)
 {
-  dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
+  dt_lib_masks_t *lm = self->data;
 
   dt_masks_clear_form_gui(darktable.develop);
 
@@ -638,7 +638,7 @@ static void _tree_moveup(GtkButton *button, dt_lib_module_t *self)
 
 static void _tree_movedown(GtkButton *button, dt_lib_module_t *self)
 {
-  dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
+  dt_lib_masks_t *lm = self->data;
 
   dt_masks_clear_form_gui(darktable.develop);
 
@@ -683,7 +683,7 @@ static void _tree_movedown(GtkButton *button, dt_lib_module_t *self)
 
 static void _tree_delete_shape(GtkButton *button, dt_lib_module_t *self)
 {
-  dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
+  dt_lib_masks_t *lm = self->data;
 
   dt_masks_clear_form_gui(darktable.develop);
 
@@ -740,7 +740,7 @@ static void _tree_delete_shape(GtkButton *button, dt_lib_module_t *self)
 
 static void _tree_duplicate_shape(GtkButton *button, dt_lib_module_t *self)
 {
-  dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
+  dt_lib_masks_t *lm = self->data;
 
   // we get the selected node
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
@@ -769,7 +769,7 @@ static void _tree_cell_edited(GtkCellRendererText *cell,
                               gchar *new_text,
                               dt_lib_module_t *self)
 {
-  dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
+  dt_lib_masks_t *lm = self->data;
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
   GtkTreeIter iter;
   if(!gtk_tree_model_get_iter_from_string(model, &iter, path_string)) return;
@@ -1460,7 +1460,7 @@ gboolean _find_mask_iter_by_values(GtkTreeModel *model,
 GList *_lib_masks_get_selected(dt_lib_module_t *self)
 {
   GList *res = NULL;
-  dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
+  dt_lib_masks_t *lm = self->data;
 
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
 
@@ -1493,7 +1493,7 @@ GList *_lib_masks_get_selected(dt_lib_module_t *self)
 void gui_update(dt_lib_module_t *self)
 {
   /* first destroy all buttons in list */
-  dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
+  dt_lib_masks_t *lm = self->data;
   if(!lm) return;
   if(darktable.gui->reset) return;
 
@@ -1638,7 +1638,7 @@ static gboolean _update_foreach(GtkTreeModel *model,
 
 static void _lib_masks_update_list(dt_lib_module_t *self)
 {
-  dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
+  dt_lib_masks_t *lm = self->data;
   // for each node , we refresh the string
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
   gtk_tree_model_foreach(model, _update_foreach, lm);
@@ -1668,7 +1668,7 @@ static gboolean _remove_foreach(GtkTreeModel *model,
 
 static void _lib_masks_remove_item(dt_lib_module_t *self, dt_mask_id_t formid, dt_mask_id_t parentid)
 {
-  dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
+  dt_lib_masks_t *lm = self->data;
   // for each node , we refresh the string
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
   GList *rl = NULL;
@@ -1738,7 +1738,7 @@ static void _lib_masks_selection_change(dt_lib_module_t *self,
                                         struct dt_iop_module_t *module,
                                         const dt_mask_id_t selectid)
 {
-  dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
+  dt_lib_masks_t *lm = self->data;
   if(!lm->treeview) return;
 
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));

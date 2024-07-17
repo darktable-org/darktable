@@ -117,7 +117,7 @@ static gboolean _find_tag_iter_id(GtkTreeModel *model, GtkTreeIter *iter,
 
 static void _locations_tree_update(dt_lib_module_t *self, const guint locid)
 {
-  dt_lib_map_locations_t *d = (dt_lib_map_locations_t *)self->data;
+  dt_lib_map_locations_t *d = self->data;
   GList *tags = dt_map_location_get_locations_by_path("", TRUE);
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->view));
 
@@ -225,7 +225,7 @@ static void _locations_tree_update(dt_lib_module_t *self, const guint locid)
 
 static void _display_buttons(dt_lib_module_t *self)
 {
-  dt_lib_map_locations_t *d = (dt_lib_map_locations_t *)self->data;
+  dt_lib_map_locations_t *d = self->data;
   GtkTreeIter iter;
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->view));
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->view));
@@ -269,7 +269,7 @@ static void _tree_name_show(GtkTreeViewColumn *col, GtkCellRenderer *renderer,
 
 static void _new_button_clicked(GtkButton *button, dt_lib_module_t *self)
 {
-  dt_lib_map_locations_t *d = (dt_lib_map_locations_t *)self->data;
+  dt_lib_map_locations_t *d = self->data;
   GtkTreeIter iter, parent;
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->view));
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->view));
@@ -315,7 +315,7 @@ static void _new_button_clicked(GtkButton *button, dt_lib_module_t *self)
 
 static void _shape_button_clicked(GtkButton *button, dt_lib_module_t *self)
 {
-  dt_lib_map_locations_t *d = (dt_lib_map_locations_t *)self->data;
+  dt_lib_map_locations_t *d = self->data;
   int shape = dt_conf_get_int("plugins/map/locationshape");
   shape++;
   if((shape > G_N_ELEMENTS(location_shapes) - 1) ||
@@ -331,7 +331,7 @@ static void _shape_button_clicked(GtkButton *button, dt_lib_module_t *self)
 
 static void _show_all_button_clicked(GtkButton *button, dt_lib_module_t *self)
 {
-  dt_lib_map_locations_t *d = (dt_lib_map_locations_t *)self->data;
+  dt_lib_map_locations_t *d = self->data;
   dt_conf_set_bool("plugins/map/showalllocations",
                   gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->show_all_button)));
   dt_view_map_location_action(darktable.view_manager, MAP_LOCATION_ACTION_UPDATE_OTHERS);
@@ -387,7 +387,7 @@ static gboolean _update_tag_name_per_name(GtkTreeModel *model, GtkTreePath *path
 
 static void _view_map_geotag_changed(gpointer instance, GList *imgs, const int newlocid, dt_lib_module_t *self)
 {
-  dt_lib_map_locations_t *d = (dt_lib_map_locations_t *)self->data;
+  dt_lib_map_locations_t *d = self->data;
 
   // one of the other location has been clicked on the map
   if(newlocid)
@@ -444,7 +444,7 @@ static void _view_map_geotag_changed(gpointer instance, GList *imgs, const int n
 
 static void _view_map_location_changed(gpointer instance, GList *polygons, dt_lib_module_t *self)
 {
-  dt_lib_map_locations_t *d = (dt_lib_map_locations_t *)self->data;
+  dt_lib_map_locations_t *d = self->data;
   const int shape = dt_conf_get_int("plugins/map/locationshape");
   if((shape == MAP_LOCATION_SHAPE_POLYGONS) && !polygons)
   {
@@ -466,7 +466,7 @@ static void _signal_location_change(dt_lib_module_t *self)
 
 static void _name_editing_done(GtkCellEditable *editable, dt_lib_module_t *self)
 {
-  dt_lib_map_locations_t *d = (dt_lib_map_locations_t *)self->data;
+  dt_lib_map_locations_t *d = self->data;
   gboolean canceled = TRUE;
   g_object_get(editable, "editing-canceled", &canceled, NULL);
   const gchar *name = gtk_entry_get_text(GTK_ENTRY(editable));
@@ -608,7 +608,7 @@ static void _name_editing_done(GtkCellEditable *editable, dt_lib_module_t *self)
 static void _name_start_editing(GtkCellRenderer *renderer, GtkCellEditable *editable,
                           char *path, dt_lib_module_t *self)
 {
-  dt_lib_map_locations_t *d = (dt_lib_map_locations_t *)self->data;
+  dt_lib_map_locations_t *d = self->data;
   if(GTK_IS_ENTRY(editable))
   {
     // set up the editable with name (without number)
@@ -646,7 +646,7 @@ static gint _sort_position_names_func(GtkTreeModel *model,
 
 static void _pop_menu_edit_location(GtkWidget *menuitem, dt_lib_module_t *self)
 {
-  dt_lib_map_locations_t *d = (dt_lib_map_locations_t *)self->data;
+  dt_lib_map_locations_t *d = self->data;
   GtkTreeIter iter;
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->view));
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->view));
@@ -662,7 +662,7 @@ static void _pop_menu_edit_location(GtkWidget *menuitem, dt_lib_module_t *self)
 
 static void _pop_menu_delete_location(GtkWidget *menuitem, dt_lib_module_t *self)
 {
-  dt_lib_map_locations_t *d = (dt_lib_map_locations_t *)self->data;
+  dt_lib_map_locations_t *d = self->data;
   GtkTreeIter iter;
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->view));
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->view));
@@ -704,7 +704,7 @@ static void _pop_menu_delete_location(GtkWidget *menuitem, dt_lib_module_t *self
 
 static void _show_location(dt_lib_module_t *self)
 {
-  dt_lib_map_locations_t *d = (dt_lib_map_locations_t *)self->data;
+  dt_lib_map_locations_t *d = self->data;
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->view));
   GtkTreeIter iter;
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->view));
@@ -729,7 +729,7 @@ static void _show_location(dt_lib_module_t *self)
 
 static gboolean _set_location_collection(dt_lib_module_t *self)
 {
-  dt_lib_map_locations_t *d = (dt_lib_map_locations_t *)self->data;
+  dt_lib_map_locations_t *d = self->data;
   GtkTreeIter iter;
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->view));
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->view));
@@ -811,14 +811,14 @@ static void _pop_menu_view(GtkWidget *view, GdkEventButton *event, dt_lib_module
 
 static gboolean _force_selection_changed(dt_lib_module_t *self)
 {
-  dt_lib_map_locations_t *d = (dt_lib_map_locations_t *)self->data;
+  dt_lib_map_locations_t *d = self->data;
   gtk_tree_selection_unselect_all(d->selection);
   return FALSE;
 }
 
 static void _selection_changed(GtkTreeSelection *selection, dt_lib_module_t *self)
 {
-  dt_lib_map_locations_t *d = (dt_lib_map_locations_t *)self->data;
+  dt_lib_map_locations_t *d = self->data;
   GtkTreeIter iter;
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->view));
   if(gtk_tree_selection_get_selected(selection, &model, &iter))
@@ -834,7 +834,7 @@ static void _selection_changed(GtkTreeSelection *selection, dt_lib_module_t *sel
 
 static gboolean _click_on_view(GtkWidget *view, GdkEventButton *event, dt_lib_module_t *self)
 {
-  dt_lib_map_locations_t *d = (dt_lib_map_locations_t *)self->data;
+  dt_lib_map_locations_t *d = self->data;
 
   gboolean editing;
   g_object_get(G_OBJECT(d->renderer), "editing", &editing, NULL);

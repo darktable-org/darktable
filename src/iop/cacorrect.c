@@ -1285,8 +1285,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_cacorrect_gui_data_t *g = (dt_iop_cacorrect_gui_data_t *)self->gui_data;
-  dt_iop_cacorrect_params_t *p = (dt_iop_cacorrect_params_t *)self->params;
+  dt_iop_cacorrect_gui_data_t *g = self->gui_data;
+  dt_iop_cacorrect_params_t *p = self->params;
 
   const gboolean supported = dt_image_is_bayerRGB(&self->dev->image_storage);
   self->hide_enable_button = !supported;

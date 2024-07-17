@@ -247,7 +247,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 static void radius_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_rlce_params_t *p = (dt_iop_rlce_params_t *)self->params;
+  dt_iop_rlce_params_t *p = self->params;
   p->radius = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -255,7 +255,7 @@ static void radius_callback(GtkWidget *slider, dt_iop_module_t *self)
 static void slope_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_rlce_params_t *p = (dt_iop_rlce_params_t *)self->params;
+  dt_iop_rlce_params_t *p = self->params;
   p->slope = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -285,8 +285,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_rlce_gui_data_t *g = (dt_iop_rlce_gui_data_t *)self->gui_data;
-  dt_iop_rlce_params_t *p = (dt_iop_rlce_params_t *)self->params;
+  dt_iop_rlce_gui_data_t *g = self->gui_data;
+  dt_iop_rlce_params_t *p = self->params;
   dt_bauhaus_slider_set(g->scale1, p->radius);
   dt_bauhaus_slider_set(g->scale2, p->slope);
 }
@@ -312,7 +312,7 @@ void cleanup(dt_iop_module_t *module)
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_rlce_gui_data_t *g = IOP_GUI_ALLOC(rlce);
-  dt_iop_rlce_params_t *p = (dt_iop_rlce_params_t *)self->default_params;
+  dt_iop_rlce_params_t *p = self->default_params;
 
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 

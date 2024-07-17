@@ -730,8 +730,8 @@ void init_presets(dt_iop_module_so_t *self)
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
-  dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
-  dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
+  dt_iop_borders_gui_data_t *g = self->gui_data;
+  dt_iop_borders_params_t *p = self->params;
 
   if(fabsf(p->color[0] - self->picked_color[0]) < 0.0001f
      && fabsf(p->color[1] - self->picked_color[1]) < 0.0001f
@@ -775,8 +775,8 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
 static void _aspect_changed(GtkWidget *combo,
                             dt_iop_module_t *self)
 {
-  dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
-  dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
+  dt_iop_borders_gui_data_t *g = self->gui_data;
+  dt_iop_borders_params_t *p = self->params;
   const int which = dt_bauhaus_combobox_get(combo);
   if(which < DT_IOP_BORDERS_ASPECT_COUNT)
   {
@@ -792,8 +792,8 @@ static void _aspect_changed(GtkWidget *combo,
 static void _position_h_changed(GtkWidget *combo,
                                 dt_iop_module_t *self)
 {
-  dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
-  dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
+  dt_iop_borders_gui_data_t *g = self->gui_data;
+  dt_iop_borders_params_t *p = self->params;
   const int which = dt_bauhaus_combobox_get(combo);
   if(which < DT_IOP_BORDERS_POSITION_H_COUNT)
   {
@@ -809,8 +809,8 @@ static void _position_h_changed(GtkWidget *combo,
 static void _position_v_changed(GtkWidget *combo,
                                 dt_iop_module_t *self)
 {
-  dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
-  dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
+  dt_iop_borders_gui_data_t *g = self->gui_data;
+  dt_iop_borders_params_t *p = self->params;
   const int which = dt_bauhaus_combobox_get(combo);
   if(which < DT_IOP_BORDERS_POSITION_V_COUNT)
   {
@@ -827,8 +827,8 @@ void gui_changed(dt_iop_module_t *self,
                  GtkWidget *w,
                  void *previous)
 {
-  dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
-  dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
+  dt_iop_borders_gui_data_t *g = self->gui_data;
+  dt_iop_borders_params_t *p = self->params;
 
   int k;
   if(!w || w == g->aspect_slider)
@@ -864,7 +864,7 @@ static void _colorpick_color_set(GtkColorButton *widget,
                                 dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
+  dt_iop_borders_params_t *p = self->params;
 
   // turn off the other color picker so that this tool actually works ...
   dt_iop_color_picker_reset(self, TRUE);
@@ -881,7 +881,7 @@ static void _colorpick_color_set(GtkColorButton *widget,
 static void _frame_colorpick_color_set(GtkColorButton *widget, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
+  dt_iop_borders_params_t *p = self->params;
 
   // turn off the other color picker so that this tool actually works ...
   dt_iop_color_picker_reset(self, TRUE);
@@ -897,8 +897,8 @@ static void _frame_colorpick_color_set(GtkColorButton *widget, dt_iop_module_t *
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
-  dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
+  dt_iop_borders_gui_data_t *g = self->gui_data;
+  dt_iop_borders_params_t *p = self->params;
 
   gui_changed(self, NULL, NULL);
 
@@ -923,8 +923,8 @@ void gui_update(struct dt_iop_module_t *self)
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_borders_gui_data_t *g = IOP_GUI_ALLOC(borders);
-  dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
-  dt_iop_borders_params_t *dp = (dt_iop_borders_params_t *)self->default_params;
+  dt_iop_borders_params_t *p = self->params;
+  dt_iop_borders_params_t *dp = self->default_params;
 
   g->basis = dt_bauhaus_combobox_from_params(self, "basis");
   gtk_widget_set_tooltip_text(g->basis,

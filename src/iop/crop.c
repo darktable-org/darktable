@@ -228,8 +228,8 @@ static void _commit_box(dt_iop_module_t *self,
 
 static gboolean _set_max_clip(struct dt_iop_module_t *self)
 {
-  dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
-  dt_iop_crop_params_t *p = (dt_iop_crop_params_t *)self->params;
+  dt_iop_crop_gui_data_t *g = self->gui_data;
+  dt_iop_crop_params_t *p = self->params;
 
   if(g->clip_max_pipe_hash == self->dev->preview_pipe->backbuf_hash) return TRUE;
   if(self->dev->preview_pipe->status != DT_DEV_PIXELPIPE_VALID) return TRUE;
@@ -453,7 +453,7 @@ void commit_params(struct dt_iop_module_t *self,
 
 static void _event_preview_updated_callback(gpointer instance, dt_iop_module_t *self)
 {
-  dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
+  dt_iop_crop_gui_data_t *g = self->gui_data;
   if(!g) return; // seems that sometimes, g can be undefined for some reason...
   g->preview_ready = TRUE;
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
@@ -468,8 +468,8 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   darktable.develop->history_postpone_invalidate =
     in && dt_dev_modulegroups_test_activated(darktable.develop);
 
-  dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
-  dt_iop_crop_params_t *p = (dt_iop_crop_params_t *)self->params;
+  dt_iop_crop_gui_data_t *g = self->gui_data;
+  dt_iop_crop_params_t *p = self->params;
   if(self->enabled)
   {
     // once the pipe is recomputed, we want to update final sizes
@@ -521,7 +521,7 @@ void cleanup_pipe(struct dt_iop_module_t *self,
 
 static float _aspect_ratio_get(dt_iop_module_t *self, GtkWidget *combo)
 {
-  dt_iop_crop_params_t *p = (dt_iop_crop_params_t *)self->params;
+  dt_iop_crop_params_t *p = self->params;
 
   // retrieve full image dimensions to calculate aspect ratio if
   // "original image" specified
@@ -655,7 +655,7 @@ static float _aspect_ratio_get(dt_iop_module_t *self, GtkWidget *combo)
 
 static void _aspect_apply(dt_iop_module_t *self, _grab_region_t grab)
 {
-  dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
+  dt_iop_crop_gui_data_t *g = self->gui_data;
 
   int piwd, piht;
   dt_dev_get_processed_size(&darktable.develop->full, &piwd, &piht);
@@ -767,7 +767,7 @@ void reload_defaults(dt_iop_module_t *self)
 {
   const dt_image_t *img = &self->dev->image_storage;
 
-  dt_iop_crop_params_t *d = (dt_iop_crop_params_t *)self->default_params;
+  dt_iop_crop_params_t *d = self->default_params;
 
   d->cx = img->usercrop[1];
   d->cy = img->usercrop[0];
@@ -814,8 +814,8 @@ static void _float_to_fract(const char *num, int *n, int *d)
 
 static void _event_aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
 {
-  dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
-  dt_iop_crop_params_t *p = (dt_iop_crop_params_t *)self->params;
+  dt_iop_crop_gui_data_t *g = self->gui_data;
+  dt_iop_crop_params_t *p = self->params;
   const int which = dt_bauhaus_combobox_get(combo);
   int d = abs(p->ratio_d), n = p->ratio_n;
   const char *text = dt_bauhaus_combobox_get_text(combo);
@@ -957,8 +957,8 @@ static void _event_aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *sel
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
-  dt_iop_crop_params_t *p = (dt_iop_crop_params_t *)self->params;
+  dt_iop_crop_gui_data_t *g = self->gui_data;
+  dt_iop_crop_params_t *p = self->params;
 
   ++darktable.gui->reset;
 
@@ -1009,8 +1009,8 @@ void gui_reset(struct dt_iop_module_t *self)
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
-  dt_iop_crop_params_t *p = (dt_iop_crop_params_t *)self->params;
+  dt_iop_crop_gui_data_t *g = self->gui_data;
+  dt_iop_crop_params_t *p = self->params;
 
   //  set aspect ratio based on the current image, if not found let's default
   //  to free aspect.
@@ -1065,7 +1065,7 @@ void gui_update(struct dt_iop_module_t *self)
 
 static void _event_key_swap(dt_iop_module_t *self)
 {
-  dt_iop_crop_params_t *p = (dt_iop_crop_params_t *)self->params;
+  dt_iop_crop_params_t *p = self->params;
   p->ratio_d = -p->ratio_d;
 
   int iwd, iht;
@@ -1317,7 +1317,7 @@ static void _aspect_free(gpointer data)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
+  dt_iop_crop_gui_data_t *g = self->gui_data;
   g_list_free_full(g->aspect_list, _aspect_free);
   g->aspect_list = NULL;
 
@@ -1370,7 +1370,7 @@ void gui_post_expose(dt_iop_module_t *self,
                      const float zoom_scale)
 {
   dt_develop_t *dev = self->dev;
-  dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
+  dt_iop_crop_gui_data_t *g = self->gui_data;
 
   // is this expose enforced by another module in focus?
   const gboolean external = dev->gui_module != self;
@@ -1518,7 +1518,7 @@ int mouse_moved(dt_iop_module_t *self,
                 const int which,
                 const float zoom_scale)
 {
-  dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
+  dt_iop_crop_gui_data_t *g = self->gui_data;
 
   // we don't do anything if the image is not ready
   if(!g->preview_ready || self->dev->preview_pipe->loading) return 0;
@@ -1709,8 +1709,8 @@ int button_released(dt_iop_module_t *self,
                     const uint32_t state,
                     const float zoom_scale)
 {
-  dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
-  dt_iop_crop_params_t *p = (dt_iop_crop_params_t *)self->params;
+  dt_iop_crop_gui_data_t *g = self->gui_data;
+  dt_iop_crop_params_t *p = self->params;
   // we don't do anything if the image is not ready
   if(!g->preview_ready) return 0;
 
@@ -1735,7 +1735,7 @@ int button_pressed(dt_iop_module_t *self,
                    const uint32_t state,
                    const float zoom_scale)
 {
-  dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
+  dt_iop_crop_gui_data_t *g = self->gui_data;
   // we don't do anything if the image is not ready
 
   if(!g->preview_ready) return 0;

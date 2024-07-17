@@ -438,7 +438,7 @@ static void _xyz2mul(dt_iop_module_t *self,
                     cmsCIEXYZ xyz,
                     double mul[4])
 {
-  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
+  dt_iop_temperature_gui_data_t *g = self->gui_data;
 
   double XYZ[3] = { xyz.X, xyz.Y, xyz.Z };
 
@@ -477,7 +477,7 @@ static void _temp2mul(dt_iop_module_t *self,
 static cmsCIEXYZ _mul2xyz(dt_iop_module_t *self,
                          const dt_iop_temperature_params_t *p)
 {
-  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
+  dt_iop_temperature_gui_data_t *g = self->gui_data;
 
   double CAM[4];
   _temp_array_from_params(CAM, p);
@@ -764,7 +764,7 @@ void cleanup_pipe(struct dt_iop_module_t *self,
 
 static int _generate_preset_combo(struct dt_iop_module_t *self)
 {
-  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
+  dt_iop_temperature_gui_data_t *g = self->gui_data;
   int presets_found = 0;
 
   const char *wb_name = NULL;
@@ -832,7 +832,7 @@ static int _generate_preset_combo(struct dt_iop_module_t *self)
 
 static void _color_finetuning_slider(struct dt_iop_module_t *self)
 {
-  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
+  dt_iop_temperature_gui_data_t *g = self->gui_data;
 
   dt_bauhaus_slider_clear_stops(g->finetune);
   dt_bauhaus_slider_set_feedback(g->finetune, !g->colored_sliders);
@@ -918,7 +918,7 @@ static void _color_finetuning_slider(struct dt_iop_module_t *self)
 
 static void _color_rgb_sliders(struct dt_iop_module_t *self)
 {
-  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
+  dt_iop_temperature_gui_data_t *g = self->gui_data;
 
   const gboolean color_rgb = g->colored_sliders &&
                              !(self->dev->image_storage.flags & DT_IMAGE_4BAYER);
@@ -1027,7 +1027,7 @@ static void _color_rgb_sliders(struct dt_iop_module_t *self)
 
 static void _color_temptint_sliders(struct dt_iop_module_t *self)
 {
-  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
+  dt_iop_temperature_gui_data_t *g = self->gui_data;
 
   dt_bauhaus_slider_clear_stops(g->scale_k);
   dt_bauhaus_slider_clear_stops(g->scale_tint);
@@ -1181,7 +1181,7 @@ static inline const char *_preset_to_str(const int preset)
 
 static void _update_preset(dt_iop_module_t *self, int mode)
 {
-  dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
+  dt_iop_temperature_params_t *p = self->params;
   dt_dev_chroma_t *chr = &self->dev->chroma;
 
   p->preset = mode;
@@ -1190,8 +1190,8 @@ static void _update_preset(dt_iop_module_t *self, int mode)
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
-  dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
+  dt_iop_temperature_gui_data_t *g = self->gui_data;
+  dt_iop_temperature_params_t *p = self->params;
   dt_iop_temperature_params_t *d = self->default_params;
 
   d->preset = dt_is_scene_referred() ? DT_IOP_TEMP_D65_LATE : DT_IOP_TEMP_AS_SHOT;
@@ -1431,7 +1431,7 @@ static gboolean _calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb
 
 static void _prepare_matrices(dt_iop_module_t *module)
 {
-  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)module->gui_data;
+  dt_iop_temperature_gui_data_t *g = module->gui_data;
 
   // sRGB D65
   const double RGB_to_XYZ[3][4] = { { 0.4124564, 0.3575761, 0.1804375, 0 },
@@ -1533,7 +1533,7 @@ static void _find_coeffs(dt_iop_module_t *module, double coeffs[4])
 void reload_defaults(dt_iop_module_t *module)
 {
   dt_iop_temperature_params_t *d = module->default_params;
-  dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)module->params;
+  dt_iop_temperature_params_t *p = module->params;
 
   d->preset = dt_is_scene_referred() ? DT_IOP_TEMP_D65_LATE : DT_IOP_TEMP_AS_SHOT;
 
@@ -1660,7 +1660,7 @@ void reload_defaults(dt_iop_module_t *module)
 
   // remember daylight wb used for temperature/tint conversion,
   // assuming it corresponds to CIE daylight (D65)
-  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)module->gui_data;
+  dt_iop_temperature_gui_data_t *g = module->gui_data;
   if(g)
   {
     gtk_stack_set_visible_child_name(GTK_STACK(module->widget),
@@ -1734,7 +1734,7 @@ static void _temp_tint_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
 
-  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
+  dt_iop_temperature_gui_data_t *g = self->gui_data;
 
   dt_iop_color_picker_reset(self, TRUE);
 
@@ -1755,8 +1755,8 @@ static void _temp_tint_callback(GtkWidget *slider, dt_iop_module_t *self)
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
-  dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
+  dt_iop_temperature_gui_data_t *g = self->gui_data;
+  dt_iop_temperature_params_t *p = self->params;
 
   _temp_array_from_params(g->mod_coeff, p);
 
@@ -1804,8 +1804,8 @@ static void _preset_tune_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
 
-  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
-  dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
+  dt_iop_temperature_gui_data_t *g = self->gui_data;
+  dt_iop_temperature_params_t *p = self->params;
 
   const int pos = dt_bauhaus_combobox_get(g->presets);
   const int tune = dt_bauhaus_slider_get(g->finetune);
@@ -1971,8 +1971,8 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
 {
   if(darktable.gui->reset) return;
 
-  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
-  dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
+  dt_iop_temperature_gui_data_t *g = self->gui_data;
+  dt_iop_temperature_params_t *p = self->params;
   float *pcoeffs = (float *)p;
 
   // capture gui color picked event.
@@ -1993,7 +1993,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
 static void _gui_sliders_update(struct dt_iop_module_t *self)
 {
   const dt_image_t *img = &self->dev->image_storage;
-  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
+  dt_iop_temperature_gui_data_t *g = self->gui_data;
 
   if(FILTERS_ARE_CYGM(img->buf_dsc.filters))
   {
@@ -2035,7 +2035,7 @@ static void temp_label_click(GtkWidget *label,
                              GdkEventButton *event,
                              dt_iop_module_t *self)
 {
-  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
+  dt_iop_temperature_gui_data_t *g = self->gui_data;
 
   gchar *old_config = dt_conf_get_string("plugins/darkroom/temperature/colored_sliders");
 
@@ -2067,7 +2067,7 @@ static void temp_label_click(GtkWidget *label,
 
 static void _preference_changed(gpointer instance, dt_iop_module_t *self)
 {
-  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
+  dt_iop_temperature_gui_data_t *g = self->gui_data;
 
   const char *config = dt_conf_get_string_const("plugins/darkroom/temperature/colored_sliders");
   g->colored_sliders = g_strcmp0(config, "no color") ? TRUE : FALSE;
@@ -2251,7 +2251,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
 void gui_reset(struct dt_iop_module_t *self)
 {
-  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
+  dt_iop_temperature_gui_data_t *g = self->gui_data;
   dt_iop_temperature_params_t *d = self->default_params;
 
   const int preset = d->preset = dt_is_scene_referred() ? DT_IOP_TEMP_D65_LATE : DT_IOP_TEMP_AS_SHOT;

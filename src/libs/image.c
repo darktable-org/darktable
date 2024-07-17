@@ -188,7 +188,7 @@ static void button_clicked(GtkWidget *widget, gpointer user_data)
 
 void gui_update(dt_lib_module_t *self)
 {
-  dt_lib_image_t *d = (dt_lib_image_t *)self->data;
+  dt_lib_image_t *d = self->data;
   const int nbimgs = dt_act_on_get_images_nb(FALSE, FALSE);
 
   const gboolean act_on_any = (nbimgs > 0);
@@ -298,7 +298,7 @@ static void _image_preference_changed(gpointer instance,
                                       gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t*)user_data;
-  dt_lib_image_t *d = (dt_lib_image_t *)self->data;
+  dt_lib_image_t *d = self->data;
   gboolean trash = dt_conf_get_bool("send_to_trash");
   gtk_label_set_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->delete_button))),
                      trash ? _("delete (trash)")
@@ -323,7 +323,7 @@ typedef enum dt_metadata_actions_t
 
 static void _execute_metadata(dt_lib_module_t *self, const int action)
 {
-  dt_lib_image_t *d = (dt_lib_image_t *)self->data;
+  dt_lib_image_t *d = self->data;
   const gboolean rating_flag = dt_conf_get_bool("plugins/lighttable/copy_metadata/rating");
   const gboolean colors_flag = dt_conf_get_bool("plugins/lighttable/copy_metadata/colors");
   const gboolean dtmetadata_flag = dt_conf_get_bool("plugins/lighttable/copy_metadata/metadata");
@@ -406,7 +406,7 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
 static void copy_metadata_callback(GtkWidget *widget,
                                    dt_lib_module_t *self)
 {
-  dt_lib_image_t *d = (dt_lib_image_t *)self->data;
+  dt_lib_image_t *d = self->data;
 
   d->imageid = dt_act_on_get_main_image();
 
@@ -442,7 +442,7 @@ static void set_color_callback(GtkWidget *widget,
 static void ratings_flag_callback(GtkWidget *widget,
                                   dt_lib_module_t *self)
 {
-  dt_lib_image_t *d = (dt_lib_image_t *)self->data;
+  dt_lib_image_t *d = self->data;
   const gboolean flag = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->ratings_flag));
   dt_conf_set_bool("plugins/lighttable/copy_metadata/rating", flag);
 }
@@ -450,7 +450,7 @@ static void ratings_flag_callback(GtkWidget *widget,
 static void colors_flag_callback(GtkWidget *widget,
                                  dt_lib_module_t *self)
 {
-  dt_lib_image_t *d = (dt_lib_image_t *)self->data;
+  dt_lib_image_t *d = self->data;
   const gboolean flag = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->colors_flag));
   dt_conf_set_bool("plugins/lighttable/copy_metadata/colors", flag);
 }
@@ -458,7 +458,7 @@ static void colors_flag_callback(GtkWidget *widget,
 static void metadata_flag_callback(GtkWidget *widget,
                                    dt_lib_module_t *self)
 {
-  dt_lib_image_t *d = (dt_lib_image_t *)self->data;
+  dt_lib_image_t *d = self->data;
   const gboolean flag = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->metadata_flag));
   dt_conf_set_bool("plugins/lighttable/copy_metadata/metadata", flag);
 }
@@ -466,7 +466,7 @@ static void metadata_flag_callback(GtkWidget *widget,
 static void geotags_flag_callback(GtkWidget *widget,
                                   dt_lib_module_t *self)
 {
-  dt_lib_image_t *d = (dt_lib_image_t *)self->data;
+  dt_lib_image_t *d = self->data;
   const gboolean flag = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->geotags_flag));
   dt_conf_set_bool("plugins/lighttable/copy_metadata/geotags", flag);
 }
@@ -474,7 +474,7 @@ static void geotags_flag_callback(GtkWidget *widget,
 static void tags_flag_callback(GtkWidget *widget,
                                dt_lib_module_t *self)
 {
-  dt_lib_image_t *d = (dt_lib_image_t *)self->data;
+  dt_lib_image_t *d = self->data;
   const gboolean flag = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->tags_flag));
   dt_conf_set_bool("plugins/lighttable/copy_metadata/tags", flag);
 }
@@ -713,7 +713,7 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_reset(dt_lib_module_t *self)
 {
-  dt_lib_image_t *d = (dt_lib_image_t *)self->data;
+  dt_lib_image_t *d = self->data;
   d->imageid = 0;
   dt_lib_gui_queue_update(self);
 }

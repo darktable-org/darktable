@@ -475,7 +475,7 @@ int process_cl(struct dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_out)
 {
   dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
-  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
+  dt_iop_highlights_gui_data_t *g = self->gui_data;
   dt_iop_highlights_global_data_t *gd = (dt_iop_highlights_global_data_t *)self->global_data;
 
   const uint32_t filters = piece->pipe->dsc.filters;
@@ -736,7 +736,7 @@ void process(struct dt_iop_module_t *self,
 {
   const uint32_t filters = piece->pipe->dsc.filters;
   dt_iop_highlights_data_t *data = (dt_iop_highlights_data_t *)piece->data;
-  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
+  dt_iop_highlights_gui_data_t *g = self->gui_data;
 
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
   const gboolean fastmode = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
@@ -914,7 +914,7 @@ void commit_params(struct dt_iop_module_t *self,
 
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
 
-  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
+  dt_iop_highlights_gui_data_t *g = self->gui_data;
   if(g && (g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED) && linear && fullpipe)
     piece->process_cl_ready = FALSE;
 }
@@ -992,8 +992,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
-  dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
+  dt_iop_highlights_gui_data_t *g = self->gui_data;
+  dt_iop_highlights_params_t *p = self->params;
 
   const dt_image_t *img = &self->dev->image_storage;
   const uint32_t filters = img->buf_dsc.filters;
@@ -1055,7 +1055,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
+  dt_iop_highlights_gui_data_t *g = self->gui_data;
   const dt_image_t *img = &self->dev->image_storage;
   const gboolean monochrome = dt_image_is_monochrome(img);
   // enable this per default if raw or sraw if not real monochrome
@@ -1091,7 +1091,7 @@ void reload_defaults(dt_iop_module_t *self)
     gtk_stack_set_visible_child_name(GTK_STACK(self->widget), !monochrome ? "default" : "notapplicable");
 
   dt_iop_highlights_params_t *d = (dt_iop_highlights_params_t *)self->default_params;
-  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
+  dt_iop_highlights_gui_data_t *g = self->gui_data;
   if(g)
   {
     // rebuild the complete menu depending on sensor type and possibly active but obsolete mode
@@ -1132,7 +1132,7 @@ void reload_defaults(dt_iop_module_t *self)
 static void _visualize_callback(GtkWidget *quad, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
+  dt_iop_highlights_gui_data_t *g = self->gui_data;
   dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
   dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
   dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
@@ -1143,7 +1143,7 @@ static void _visualize_callback(GtkWidget *quad, dt_iop_module_t *self)
 static void _candidating_callback(GtkWidget *quad, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
+  dt_iop_highlights_gui_data_t *g = self->gui_data;
   g->hlr_mask_mode = (dt_bauhaus_widget_get_quad_active(quad)) ? DT_HIGHLIGHTS_MASK_CANDIDATING : DT_HIGHLIGHTS_MASK_OFF;
   dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
   dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
@@ -1154,7 +1154,7 @@ static void _candidating_callback(GtkWidget *quad, dt_iop_module_t *self)
 static void _combine_callback(GtkWidget *quad, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
+  dt_iop_highlights_gui_data_t *g = self->gui_data;
   g->hlr_mask_mode = (dt_bauhaus_widget_get_quad_active(quad)) ? DT_HIGHLIGHTS_MASK_COMBINE : DT_HIGHLIGHTS_MASK_OFF;
   dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
   dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
@@ -1165,7 +1165,7 @@ static void _combine_callback(GtkWidget *quad, dt_iop_module_t *self)
 static void _strength_callback(GtkWidget *quad, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
+  dt_iop_highlights_gui_data_t *g = self->gui_data;
   g->hlr_mask_mode = (dt_bauhaus_widget_get_quad_active(quad)) ? DT_HIGHLIGHTS_MASK_STRENGTH : DT_HIGHLIGHTS_MASK_OFF;
   dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
   dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
@@ -1175,7 +1175,7 @@ static void _strength_callback(GtkWidget *quad, dt_iop_module_t *self)
 
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
 {
-  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
+  dt_iop_highlights_gui_data_t *g = self->gui_data;
   if(!in)
   {
     const gboolean was_visualize = (g->hlr_mask_mode != DT_HIGHLIGHTS_MASK_OFF);

@@ -119,7 +119,7 @@ uint32_t container(dt_lib_module_t *self)
 
 void gui_reset(dt_lib_module_t *self)
 {
-  dt_lib_location_t *lib = (dt_lib_location_t *)self->data;
+  dt_lib_location_t *lib = self->data;
   gtk_entry_set_text(lib->search, "");
   clear_search(lib);
 }
@@ -340,7 +340,7 @@ static void _show_location(dt_lib_location_t *lib,
    result has been parsed */
 static void _lib_location_search_finish(dt_lib_module_t *self)
 {
-  dt_lib_location_t *lib = (dt_lib_location_t *)self->data;
+  dt_lib_location_t *lib = self->data;
 
   /* check if search gave us some result */
   if(!lib->places) return;
@@ -372,7 +372,7 @@ static gboolean _lib_location_search(dt_lib_module_t *self)
   CURLcode res;
   GError *err = NULL;
 
-  dt_lib_location_t *lib = (dt_lib_location_t *)self->data;
+  dt_lib_location_t *lib = self->data;
   gchar *query = NULL, *text = NULL;
 
   /* get escaped search text */
@@ -461,7 +461,7 @@ gboolean _lib_location_result_item_activated(GtkButton *button,
 void _lib_location_entry_activated(GtkButton *button,
                                    dt_lib_module_t *self)
 {
-  dt_lib_location_t *lib = (dt_lib_location_t *)self->data;
+  dt_lib_location_t *lib = self->data;
   const gchar *text = gtk_entry_get_text(lib->search);
   if(!text || text[0] == '\0') return;
 
@@ -715,7 +715,7 @@ struct params_fixed_t
 void *get_params(dt_lib_module_t *self,
                  int *size)
 {
-  dt_lib_location_t *lib = (dt_lib_location_t *)self->data;
+  dt_lib_location_t *lib = self->data;
   _lib_location_result_t *location = lib->selected_location;
 
   // we have nothing to store when the user hasn't picked a search result
@@ -762,7 +762,7 @@ int set_params(dt_lib_module_t *self,
                const void *params,
                int size)
 {
-  dt_lib_location_t *lib = (dt_lib_location_t *)self->data;
+  dt_lib_location_t *lib = self->data;
 
   const size_t size_fixed = sizeof(struct params_fixed_t);
 

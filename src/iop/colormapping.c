@@ -568,7 +568,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 {
   dt_iop_colormapping_data_t *data = (dt_iop_colormapping_data_t *)piece->data;
   dt_iop_colormapping_global_data_t *gd = (dt_iop_colormapping_global_data_t *)self->global_data;
-  dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)self->gui_data;
+  dt_iop_colormapping_gui_data_t *g = self->gui_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
@@ -745,8 +745,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_colormapping_params_t *p = (dt_iop_colormapping_params_t *)self->params;
-  dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)self->gui_data;
+  dt_iop_colormapping_params_t *p = self->params;
+  dt_iop_colormapping_gui_data_t *g = self->gui_data;
 
   if(w == g->clusters)
   {
@@ -768,7 +768,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 static void acquire_source_button_pressed(GtkButton *button, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_colormapping_params_t *p = (dt_iop_colormapping_params_t *)self->params;
+  dt_iop_colormapping_params_t *p = self->params;
   p->flag |= ACQUIRE;
   p->flag |= GET_SOURCE;
   p->flag &= ~HAS_SOURCE;
@@ -779,7 +779,7 @@ static void acquire_source_button_pressed(GtkButton *button, dt_iop_module_t *se
 static void acquire_target_button_pressed(GtkButton *button, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_colormapping_params_t *p = (dt_iop_colormapping_params_t *)self->params;
+  dt_iop_colormapping_params_t *p = self->params;
   p->flag |= ACQUIRE;
   p->flag |= GET_TARGET;
   p->flag &= ~HAS_TARGET;
@@ -820,8 +820,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 void reload_defaults(dt_iop_module_t *module)
 {
   dt_iop_colormapping_params_t *d = module->default_params;
-
-  dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)module->gui_data;
+  dt_iop_colormapping_gui_data_t *g = module->gui_data;
   if(module->dev->gui_attached && g && g->flowback_set)
   {
     memcpy(d->source_ihist, g->flowback.hist, sizeof(float) * HISTN);
@@ -836,8 +835,8 @@ void reload_defaults(dt_iop_module_t *module)
 
 static gboolean cluster_preview_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
 {
-  dt_iop_colormapping_params_t *p = (dt_iop_colormapping_params_t *)self->params;
-  dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)self->gui_data;
+  dt_iop_colormapping_params_t *p = self->params;
+  dt_iop_colormapping_gui_data_t *g = self->gui_data;
 
   float2 *mean;
   float2 *var;
@@ -901,8 +900,8 @@ static gboolean cluster_preview_draw(GtkWidget *widget, cairo_t *crf, dt_iop_mod
 
 static void process_clusters(gpointer instance, dt_iop_module_t *self)
 {
-  dt_iop_colormapping_params_t *p = (dt_iop_colormapping_params_t *)self->params;
-  dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)self->gui_data;
+  dt_iop_colormapping_params_t *p = self->params;
+  dt_iop_colormapping_gui_data_t *g = self->gui_data;
   int new_source_clusters = 0;
 
   if(!g || !g->buffer) return;
@@ -1049,7 +1048,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)self->gui_data;
+  dt_iop_colormapping_gui_data_t *g = self->gui_data;
 
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(process_clusters), self);
 

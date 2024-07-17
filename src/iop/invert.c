@@ -159,8 +159,8 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 
 static void gui_update_from_coeffs(dt_iop_module_t *self)
 {
-  dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t *)self->gui_data;
-  dt_iop_invert_params_t *p = (dt_iop_invert_params_t *)self->params;
+  dt_iop_invert_gui_data_t *g = self->gui_data;
+  dt_iop_invert_params_t *p = self->params;
 
   GdkRGBA color = (GdkRGBA){.red = p->color[0], .green = p->color[1], .blue = p->color[2], .alpha = 1.0 };
 
@@ -205,8 +205,8 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
 static void colorpicker_callback(GtkColorButton *widget, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t *)self->gui_data;
-  dt_iop_invert_params_t *p = (dt_iop_invert_params_t *)self->params;
+  dt_iop_invert_gui_data_t *g = self->gui_data;
+  dt_iop_invert_params_t *p = self->params;
 
   dt_iop_color_picker_reset(self, TRUE);
 
@@ -489,7 +489,7 @@ void gui_update(dt_iop_module_t *self)
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_invert_gui_data_t *g = IOP_GUI_ALLOC(invert);
-  dt_iop_invert_params_t *p = (dt_iop_invert_params_t *)self->params;
+  dt_iop_invert_params_t *p = self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   g->label = DTGTK_RESET_LABEL(dtgtk_reset_label_new("", self, &p->color, sizeof(float) * 4));

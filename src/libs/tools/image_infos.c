@@ -78,7 +78,7 @@ int position(const dt_lib_module_t *self)
 
 void _lib_imageinfo_update_message(gpointer instance, dt_lib_module_t *self)
 {
-  dt_lib_imageinfo_t *d = (dt_lib_imageinfo_t *)self->data;
+  dt_lib_imageinfo_t *d = self->data;
 
   // we grab the image
   const dt_imgid_t imgid = darktable.develop->image_storage.id;

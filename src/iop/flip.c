@@ -522,7 +522,7 @@ void reload_defaults(dt_iop_module_t *self)
 
 static void do_rotate(dt_iop_module_t *self, uint32_t cw)
 {
-  dt_iop_flip_params_t *p = (dt_iop_flip_params_t *)self->params;
+  dt_iop_flip_params_t *p = self->params;
   dt_image_orientation_t orientation = p->orientation;
 
   if(orientation == ORIENTATION_NULL)
@@ -560,7 +560,7 @@ static void rotate_ccw(GtkWidget *widget, dt_iop_module_t *self)
 
 static void _flip_h(GtkWidget *widget, dt_iop_module_t *self)
 {
-  dt_iop_flip_params_t *p = (dt_iop_flip_params_t *)self->params;
+  dt_iop_flip_params_t *p = self->params;
   dt_image_orientation_t orientation = p->orientation;
 
   if(orientation == ORIENTATION_NULL)
@@ -576,7 +576,8 @@ static void _flip_h(GtkWidget *widget, dt_iop_module_t *self)
 
 static void _flip_v(GtkWidget *widget, dt_iop_module_t *self)
 {
-  dt_iop_flip_params_t *p = (dt_iop_flip_params_t *)self->params;
+  dt_iop_flip_params_t *p = self->params;
+
   dt_image_orientation_t orientation = p->orientation;
 
   if(orientation == ORIENTATION_NULL)
@@ -593,7 +594,7 @@ static void _flip_v(GtkWidget *widget, dt_iop_module_t *self)
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = NULL;
-  dt_iop_flip_params_t *p = (dt_iop_flip_params_t *)self->params;
+  dt_iop_flip_params_t *p = self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 

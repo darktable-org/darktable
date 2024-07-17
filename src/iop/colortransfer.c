@@ -317,7 +317,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
       // notify gui that commit_params should let stuff flow back!
       data->flag = ACQUIRED;
-      dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
+      dt_iop_colortransfer_params_t *p = self->params;
       p->flag = ACQUIRE2;
     }
     dt_iop_image_copy_by_size(out, in, roi_out->width, roi_out->height, ch);
