@@ -880,8 +880,8 @@ void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_sigmoid_gui_data_t *g = (dt_iop_sigmoid_gui_data_t *)self->gui_data;
-  dt_iop_sigmoid_params_t *p = (dt_iop_sigmoid_params_t *)self->params;
+  dt_iop_sigmoid_gui_data_t *g = self->gui_data;
+  dt_iop_sigmoid_params_t *p = self->params;
 
   if(!w || w == g->color_processing_list)
   {
@@ -893,7 +893,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_sigmoid_gui_data_t *g = (dt_iop_sigmoid_gui_data_t *)self->gui_data;
+  dt_iop_sigmoid_gui_data_t *g = self->gui_data;
 
   dt_gui_update_collapsible_section(&g->display_luminance_section);
   dt_gui_update_collapsible_section(&g->primaries_section);

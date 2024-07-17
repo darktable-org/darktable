@@ -2538,21 +2538,21 @@ static void _set_tooltip(dt_lib_collect_rule_t *d)
 
 void view_enter(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct dt_view_t *new_view)
 {
-  dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
+  dt_lib_collect_t *d = self->data;
   const gboolean hide = dt_lib_is_visible(darktable.view_manager->proxy.module_recentcollect.module);
   gtk_widget_set_visible(d->history_box, !hide);
 }
 
 void gui_update(dt_lib_module_t *self)
 {
-  dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
+  dt_lib_collect_t *d = self->data;
   update_view(d->rule + d->active_rule);
   dt_gui_widget_reallocate_now(GTK_WIDGET(d->view));
 }
 
 static void _lib_collect_gui_update(dt_lib_module_t *self)
 {
-  dt_lib_collect_t *const d = (dt_lib_collect_t *)self->data;
+  dt_lib_collect_t *const d = self->data;
 
   // we check if something has changed since last call
   if(d->view_rule != -1) return;
@@ -2637,7 +2637,7 @@ void gui_reset(dt_lib_module_t *self)
   dt_conf_set_int("plugins/lighttable/collect/item0", DT_COLLECTION_PROP_FILMROLL);
   dt_conf_set_int("plugins/lighttable/collect/mode0", 0);
   dt_conf_set_string("plugins/lighttable/collect/string0", "");
-  dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
+  dt_lib_collect_t *d = self->data;
   d->active_rule = 0;
   d->view_rule = -1;
   dt_collection_set_query_flags(darktable.collection, COLLECTION_QUERY_FULL);
@@ -3314,7 +3314,7 @@ static gboolean popup_button_callback(GtkWidget *widget,
 static void view_set_click(gpointer instance,
                            dt_lib_module_t *self)
 {
-  dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
+  dt_lib_collect_t *d = self->data;
   d->singleclick = dt_conf_get_bool("plugins/lighttable/collect/single-click");
 }
 
@@ -3434,7 +3434,7 @@ void _mount_changed(GUnixMountMonitor *monitor,
                     dt_lib_module_t *self)
 #endif
 {
-  dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
+  dt_lib_collect_t *d = self->data;
   dt_film_set_folder_status();
   // very rough update (rebuild the view). As these events are not too
   // many that remains acceptable adding film_id to treeview and
@@ -3859,7 +3859,7 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
+  dt_lib_collect_t *d = self->data;
 
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
                                      G_CALLBACK(collection_updated), self);

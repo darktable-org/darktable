@@ -216,7 +216,7 @@ int position(const dt_lib_module_t *self)
 
 static GtkWidget *_buttons_get_from_pos(dt_lib_module_t *self, const int pos)
 {
-  const dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  const dt_lib_modulegroups_t *d = self->data;
   if(pos == DT_MODULEGROUP_ACTIVE_PIPE) return d->active_btn;
   if(pos == DT_MODULEGROUP_BASICS) return d->basic_btn;
   dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)g_list_nth_data(d->groups, pos - 1);
@@ -259,7 +259,7 @@ static gint _iop_compare(gconstpointer a, gconstpointer b)
 static gboolean _lib_modulegroups_test_internal(dt_lib_module_t *self, uint32_t group, dt_iop_module_t *module)
 {
   if(group == DT_MODULEGROUP_ACTIVE_PIPE) return module->enabled;
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
   dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)g_list_nth_data(d->groups, group - 1);
   if(gr)
   {
@@ -275,7 +275,7 @@ static gboolean _lib_modulegroups_test(dt_lib_module_t *self, uint32_t group, dt
 
 static gboolean _lib_modulegroups_test_visible(dt_lib_module_t *self, gchar *module)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
   for(const GList *l = d->groups; l; l = g_list_next(l))
   {
     dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)l->data;
@@ -391,7 +391,7 @@ static void _basics_remove_widget(dt_lib_modulegroups_basic_item_t *item)
 
 static void _basics_hide(dt_lib_module_t *self)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
   if(!d->vbox_basic) return;
   gtk_widget_hide(d->vbox_basic);
 
@@ -435,7 +435,7 @@ static gboolean _manage_direct_module_popup(GtkWidget *widget, GdkEventButton *e
 static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_item_t *item, GtkWidget *w,
                                dt_lib_modulegroups_basic_item_position_t item_pos)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
 
   // if widget already exists, let's remove it and read it correctly
   if(item->widget)
@@ -678,7 +678,7 @@ _basics_add_items_from_module_widget(dt_lib_module_t *self, dt_iop_module_t *mod
                                      dt_lib_modulegroups_basic_item_position_t item_pos)
 {
   if(!w) return item_pos;
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
 
   // search for a corresponding basic item
   dt_action_t *ac = module->so->actions.target;
@@ -731,7 +731,7 @@ _basics_add_items_from_module_widget(dt_lib_module_t *self, dt_iop_module_t *mod
 
 static void _basics_show(dt_lib_module_t *self)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
 
   if(d->vbox_basic && gtk_widget_get_visible(d->vbox_basic)) return;
 
@@ -781,7 +781,7 @@ static void _basics_show(dt_lib_module_t *self)
 
 static uint32_t _lib_modulegroups_get_activated(dt_lib_module_t *self)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
 
   // we get the current group and verify that it is effectively activated
   // this can not be the case if we are in search mode
@@ -802,7 +802,7 @@ static gboolean _is_module_in_history(dt_iop_module_t *module)
 
 static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
 
   // we hide eventual basic panel
   if(d->current == DT_MODULEGROUP_BASICS && !d->basics_show) d->current = DT_MODULEGROUP_ACTIVE_PIPE;
@@ -968,7 +968,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
 static void _lib_modulegroups_toggle(GtkWidget *button, dt_lib_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
   const gchar *text_entered = (gtk_widget_is_visible(GTK_WIDGET(d->hbox_search_box)))
                                   ? gtk_entry_get_text(GTK_ENTRY(d->text_entry))
                                   : NULL;
@@ -1062,7 +1062,7 @@ static void _lib_modulegroups_update_visibility_proxy(dt_lib_module_t *self)
 static void _lib_modulegroups_switch_group(dt_lib_module_t *self, dt_iop_module_t *module)
 {
   /* lets find the group which is not active pipe */
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
   const int ngroups = g_list_length(d->groups);
   for(int k = 1; k <= ngroups; k++)
   {
@@ -1082,7 +1082,7 @@ static void _lib_modulegroups_switch_group(dt_lib_module_t *self, dt_iop_module_
 
 static uint32_t _lib_modulegroups_get(dt_lib_module_t *self)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
   return d->current;
 }
 
@@ -1330,7 +1330,7 @@ static void _preset_retrieve_old_presets(dt_lib_module_t *self)
 
 static gchar *_preset_to_string(dt_lib_module_t *self, gboolean edition)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
   gchar *res = NULL;
   const gboolean show_search = edition ? d->edit_show_search : d->show_search;
   const gboolean full_active = edition ? d->edit_full_active : d->full_active;
@@ -1365,7 +1365,7 @@ static gchar *_preset_to_string(dt_lib_module_t *self, gboolean edition)
 static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edition)
 {
   if(!txt) return;
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
 
   gboolean show_search = TRUE;
   gboolean full_active = FALSE;
@@ -1401,8 +1401,6 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
       {
         dt_lib_modulegroups_basic_item_t *item
             = (dt_lib_modulegroups_basic_item_t *)g_malloc0(sizeof(dt_lib_modulegroups_basic_item_t));
-        if(!item)
-          continue;
         item->id = g_strdup(gr2[j]);
         _basics_init_item(item);
 
@@ -1426,18 +1424,16 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
       const int nb = g_strv_length(gr2);
       if(nb > 2)
       {
-        dt_lib_modulegroups_group_t *group = g_malloc0(sizeof(dt_lib_modulegroups_group_t));
-        if(group)
+        dt_lib_modulegroups_group_t *group
+            = (dt_lib_modulegroups_group_t *)g_malloc0(sizeof(dt_lib_modulegroups_group_t));
+        group->name = g_strdup(gr2[0]);
+        group->icon = g_strdup(gr2[1]);
+        // gr2[2] is reserved for eventual future use
+        for(int j = 3; j < nb; j++)
         {
-          group->name = g_strdup(gr2[0]);
-          group->icon = g_strdup(gr2[1]);
-          // gr2[2] is reserved for eventual future use
-          for(int j = 3; j < nb; j++)
-          {
-            group->modules = g_list_append(group->modules, g_strdup(gr2[j]));
-          }
-          res = g_list_prepend(res, group);
+          group->modules = g_list_append(group->modules, g_strdup(gr2[j]));
         }
+        res = g_list_prepend(res, group);
       }
       g_strfreev(gr2);
     }
@@ -1870,7 +1866,7 @@ void *get_params(dt_lib_module_t *self, int *size)
 static void _manage_editor_groups_cleanup(dt_lib_module_t *self,
                                           const gboolean edition)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
 
   GList *l = edition ? d->edit_groups : d->groups;
 
@@ -1916,7 +1912,7 @@ static void _manage_editor_basics_remove(GtkWidget *widget,
                                          GdkEventButton *event,
                                          dt_lib_module_t *self)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
 
   const char *id = (char *)g_object_get_data(G_OBJECT(widget), "widget_id");
   for(GList *l = d->edit_basics; l; l = g_list_next(l))
@@ -1944,7 +1940,7 @@ static int _manage_editor_module_find_multi(gconstpointer a, gconstpointer b)
 
 static void _manage_editor_basics_update_list(dt_lib_module_t *self)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
 
   // first, we remove all existing modules
   dt_gui_container_destroy_children(GTK_CONTAINER(d->edit_basics_box));
@@ -2017,7 +2013,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
 static void _manage_editor_save(dt_lib_module_t *self)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
   if(!d->edit_preset) return;
 
   // get all the values
@@ -2073,7 +2069,7 @@ static void _manage_editor_module_remove(GtkWidget *widget,
 static void _manage_editor_module_update_list(dt_lib_module_t *self,
                                               dt_lib_modulegroups_group_t *gr)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
 
   // first, we remove all existing modules
   dt_gui_container_destroy_children(GTK_CONTAINER(gr->iop_box));
@@ -2194,7 +2190,7 @@ static int _lib_modulegroups_basics_module_toggle_action(dt_lib_module_t *self,
                                                          dt_action_t *action,
                                                          const gboolean doit)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
 
   gchar *action_id = _action_id(action);
   GList *found_item = g_list_find_custom(d->basics, action_id, _basics_item_find);
@@ -2207,13 +2203,12 @@ static int _lib_modulegroups_basics_module_toggle_action(dt_lib_module_t *self,
 
     if(!found_item)
     {
-      dt_lib_modulegroups_basic_item_t *item = g_malloc0(sizeof(dt_lib_modulegroups_basic_item_t));
-      if(item)
-      {
-        item->id = action_id;
-        _basics_init_item(item);
-        d->basics = g_list_append(d->basics, item);
-      }
+      dt_lib_modulegroups_basic_item_t *item
+          = (dt_lib_modulegroups_basic_item_t *)g_malloc0(sizeof(dt_lib_modulegroups_basic_item_t));
+      item->id = action_id;
+      _basics_init_item(item);
+
+      d->basics = g_list_append(d->basics, item);
     }
     else
     {
@@ -2259,7 +2254,7 @@ static void _manage_direct_basics_module_toggle(GtkWidget *widget,
 static void _manage_editor_basics_add(GtkWidget *widget,
                                       dt_lib_module_t *self)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
 
   dt_action_t *action = g_object_get_data(G_OBJECT(widget), "widget_id");
   gchar *action_id = _action_id(action);
@@ -2268,13 +2263,12 @@ static void _manage_editor_basics_add(GtkWidget *widget,
     g_free(action_id);
   else
   {
-    dt_lib_modulegroups_basic_item_t *item = g_malloc0(sizeof(dt_lib_modulegroups_basic_item_t));
-    if(item)
-    {
-      item->id = action_id;
-      _basics_init_item(item);
-      d->edit_basics = g_list_append(d->edit_basics, item);
-    }
+    dt_lib_modulegroups_basic_item_t *item
+        = (dt_lib_modulegroups_basic_item_t *)g_malloc0(sizeof(dt_lib_modulegroups_basic_item_t));
+    item->id = action_id;
+    _basics_init_item(item);
+
+    d->edit_basics = g_list_append(d->edit_basics, item);
     _manage_editor_basics_update_list(self);
   }
 }
@@ -2497,7 +2491,7 @@ static GtkWidget *_build_menu_from_actions(dt_action_t *actions,
         gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), new_sub);
       else
       {
-        dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+        dt_lib_modulegroups_t *d = self->data;
 
         GtkWidget *item_top = NULL;
 
@@ -2700,7 +2694,7 @@ static gboolean _manage_direct_module_popup(GtkWidget *widget,
 static void _manage_direct_full_active_toggled(GtkWidget *widget,
                                                dt_lib_module_t *self)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
   d->full_active = gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget));
   const int cur = d->current;
   _manage_direct_save(self);
@@ -2714,7 +2708,7 @@ static gboolean _manage_direct_active_popup(GtkWidget *widget,
 {
   if(event->type == GDK_BUTTON_PRESS && event->button == 3)
   {
-    dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+    dt_lib_modulegroups_t *d = self->data;
     GtkWidget *pop = gtk_menu_new();
     gtk_widget_set_name(pop, "modulegroups-popup");
 
@@ -2738,7 +2732,7 @@ static gboolean _manage_direct_active_popup(GtkWidget *widget,
 static void _dt_dev_image_changed_callback(gpointer instance,
                                            dt_lib_module_t *self)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
   dt_develop_t *dev = darktable.develop;
   if(!dev || dev->image_storage.id <= 0) return;
 
@@ -2976,7 +2970,7 @@ void gui_cleanup(dt_lib_module_t *self)
 
 static void _buttons_update(dt_lib_module_t *self)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
 
   // ensure we have no remaining force shown modules
   d->force_show_module = NULL;
@@ -3081,7 +3075,7 @@ static void _manage_editor_group_move_right(GtkWidget *widget,
                                             GdkEventButton *event,
                                             dt_lib_module_t *self)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
   dt_lib_modulegroups_group_t *gr =
     (dt_lib_modulegroups_group_t *)g_object_get_data(G_OBJECT(widget), "group");
   GtkWidget *vb = gtk_widget_get_parent(gtk_widget_get_parent(widget));
@@ -3102,7 +3096,7 @@ static void _manage_editor_group_move_left(GtkWidget *widget,
                                            GdkEventButton *event,
                                            dt_lib_module_t *self)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
   dt_lib_modulegroups_group_t *gr =
     (dt_lib_modulegroups_group_t *)g_object_get_data(G_OBJECT(widget), "group");
   GtkWidget *vb = gtk_widget_get_parent(gtk_widget_get_parent(widget));
@@ -3123,7 +3117,7 @@ static void _manage_editor_group_remove(GtkWidget *widget,
                                         GdkEventButton *event,
                                         dt_lib_module_t *self)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
   // we don't allow to remove the last group if no quick access or searchbox
   if(g_list_is_singleton(d->edit_groups)
      && !d->edit_basics_show
@@ -3291,7 +3285,7 @@ static void _manage_editor_group_icon_popup(GtkWidget *btn,
 
 static GtkWidget *_manage_editor_group_init_basics_box(dt_lib_module_t *self)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
 
   GtkWidget *vb2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_widget_set_name(vb2, "modulegroups-groupbox");
@@ -3354,7 +3348,7 @@ static GtkWidget *_manage_editor_group_init_basics_box(dt_lib_module_t *self)
 static GtkWidget *_manage_editor_group_init_modules_box(dt_lib_module_t *self,
                                                         dt_lib_modulegroups_group_t *gr)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
 
   GtkWidget *vb2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_widget_set_name(vb2, "modulegroups-groupbox");
@@ -3461,7 +3455,7 @@ static void _manage_editor_reset(GtkWidget *widget,
                                  GdkEventButton *event,
                                  dt_lib_module_t *self)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
 
   gchar *txt = g_strdup(d->edit_preset);
   _manage_editor_load(txt, self);
@@ -3472,19 +3466,17 @@ static void _manage_editor_group_add(GtkWidget *widget,
                                      GdkEventButton *event,
                                      dt_lib_module_t *self)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
-  dt_lib_modulegroups_group_t *gr = g_malloc0(sizeof(dt_lib_modulegroups_group_t));
-  if(gr)
-  {
-    gr->name = g_strdup(_("new"));
-    gr->icon = g_strdup("basic");
-    d->edit_groups = g_list_append(d->edit_groups, gr);
+  dt_lib_modulegroups_t *d = self->data;
+  dt_lib_modulegroups_group_t *gr =
+    (dt_lib_modulegroups_group_t *)g_malloc0(sizeof(dt_lib_modulegroups_group_t));
+  gr->name = g_strdup(_("new"));
+  gr->icon = g_strdup("basic");
+  d->edit_groups = g_list_append(d->edit_groups, gr);
 
-    // we update the group list
-    GtkWidget *vb2 = _manage_editor_group_init_modules_box(self, gr);
-    gtk_box_pack_start(GTK_BOX(d->preset_groups_box), vb2, FALSE, TRUE, 0);
-    gtk_widget_show_all(vb2);
-  }
+  // we update the group list
+  GtkWidget *vb2 = _manage_editor_group_init_modules_box(self, gr);
+  gtk_box_pack_start(GTK_BOX(d->preset_groups_box), vb2, FALSE, TRUE, 0);
+  gtk_widget_show_all(vb2);
 
   // and we update arrows
   _manage_editor_group_update_arrows(d->preset_groups_box);
@@ -3493,7 +3485,7 @@ static void _manage_editor_group_add(GtkWidget *widget,
 static void _manage_editor_basics_toggle(GtkWidget *button,
                                          dt_lib_module_t *self)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
   if(d->editor_reset) return;
   const gboolean state = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
   // we don't allow that to be false if there's no group or search
@@ -3512,7 +3504,7 @@ static void _manage_editor_basics_toggle(GtkWidget *button,
 static void _manage_editor_search_toggle(GtkWidget *button,
                                          dt_lib_module_t *self)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
   if(d->editor_reset) return;
   const gboolean state = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
   // we don't allow that to be false if there's no group or quick access
@@ -3530,7 +3522,7 @@ static void _manage_editor_search_toggle(GtkWidget *button,
 static void _manage_editor_full_active_toggle(GtkWidget *button,
                                               dt_lib_module_t *self)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
   if(d->editor_reset) return;
 
   d->edit_full_active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
@@ -3539,7 +3531,7 @@ static void _manage_editor_full_active_toggle(GtkWidget *button,
 static void _preset_autoapply_changed(dt_gui_presets_edit_dialog_t *g)
 {
   dt_lib_module_t *self = g->data;
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
 
   // we reread the presets autoapply values from the database
   sqlite3_stmt *stmt;
@@ -3601,7 +3593,7 @@ static void _manage_editor_preset_name_verify(GtkWidget *tb,
 static void _manage_editor_preset_action(GtkWidget *btn,
                                          dt_lib_module_t *self)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
 
   // we get the default name
   gchar *new_name = NULL;
@@ -3728,7 +3720,7 @@ static void _manage_editor_preset_action(GtkWidget *btn,
 static void _preset_autoapply_edit(GtkButton *button,
                                    dt_lib_module_t *self)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
   if(d->editor_reset) return;
   sqlite3_stmt *stmt;
   // clang-format off
@@ -3757,7 +3749,7 @@ static void _preset_autoapply_edit(GtkButton *button,
 static void _manage_editor_load(const char *preset,
                                 dt_lib_module_t *self)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
 
   // if we have a currently edited preset, we save it
   if(d->edit_preset && g_strcmp0(preset, d->edit_preset) != 0)
@@ -3875,7 +3867,7 @@ static void _manage_editor_load(const char *preset,
 static void _manage_preset_change(GtkWidget *widget,
                                   dt_lib_module_t *self)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
   if(d->editor_reset) return;
   const char *preset = gtk_combo_box_get_active_id(GTK_COMBO_BOX(d->presets_combo));
   _manage_editor_load(preset, self);
@@ -3884,7 +3876,7 @@ static void _manage_preset_change(GtkWidget *widget,
 static void _manage_preset_delete(GtkWidget *widget,
                                   dt_lib_module_t *self)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
 
   if(!dt_conf_get_bool("plugins/lighttable/preset/ask_before_delete_preset")
      || dt_gui_show_yes_no_dialog(_("delete preset?"),
@@ -3915,7 +3907,7 @@ static void _manage_preset_delete(GtkWidget *widget,
 
 static void _manage_preset_update_list(dt_lib_module_t *self)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
 
   // we first remove all existing entries from the combobox
   gtk_combo_box_text_remove_all(GTK_COMBO_BOX_TEXT(d->presets_combo));
@@ -3945,7 +3937,7 @@ static void _manage_preset_update_list(dt_lib_module_t *self)
 static void _manage_editor_destroy(GtkWidget *widget,
                                    dt_lib_module_t *self)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
 
   // we save the last edited preset
   _manage_editor_save(self);
@@ -3968,7 +3960,7 @@ static void _manage_editor_resize_dialog(GtkWidget *widget,
 
 static void _manage_show_window(dt_lib_module_t *self)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_t *d = self->data;
 
   GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
   d->dialog = gtk_dialog_new_with_buttons
@@ -4146,7 +4138,7 @@ void view_enter(dt_lib_module_t *self,
 {
   if(!strcmp(new_view->module_name, "darkroom"))
   {
-    dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+    dt_lib_modulegroups_t *d = self->data;
 
     // and we initialize the buttons too
     char *preset = dt_conf_get_string("plugins/darkroom/modulegroups_preset");

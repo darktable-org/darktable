@@ -357,7 +357,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
+  dt_iop_monochrome_gui_data_t *g = self->gui_data;
   g->dragging = FALSE;
 }
 
@@ -375,8 +375,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 static gboolean _monochrome_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return FALSE;
-  dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
-  dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
+  dt_iop_monochrome_gui_data_t *g = self->gui_data;
+  dt_iop_monochrome_params_t *p = self->params;
 
   const int inset = DT_COLORCORRECTION_INSET;
   GtkAllocation allocation;
@@ -434,7 +434,7 @@ static gboolean _monochrome_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_
 
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_t *pipe)
 {
-  dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
+  dt_iop_monochrome_params_t *p = self->params;
 
   if(fabsf(p->a - self->picked_color[1]) < 0.0001f
      && fabsf(p->b - self->picked_color[2]) < 0.0001f)
@@ -455,8 +455,8 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
 
 static gboolean _monochrome_motion_notify(GtkWidget *widget, GdkEventMotion *event, dt_iop_module_t *self)
 {
-  dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
-  dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
+  dt_iop_monochrome_gui_data_t *g = self->gui_data;
+  dt_iop_monochrome_params_t *p = self->params;
   if(g->dragging)
   {
     const float old_a = p->a, old_b = p->b;
@@ -479,13 +479,13 @@ static gboolean _monochrome_button_press(GtkWidget *widget, GdkEventButton *even
 {
   if(event->button == 1)
   {
-    dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
-    dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
+    dt_iop_monochrome_gui_data_t *g = self->gui_data;
+    dt_iop_monochrome_params_t *p = self->params;
     dt_iop_color_picker_reset(self, TRUE);
     if(event->type == GDK_2BUTTON_PRESS)
     {
       // reset
-      const dt_iop_monochrome_params_t *const p0 = (dt_iop_monochrome_params_t *)self->default_params;
+      const dt_iop_monochrome_params_t *const p0 = self->default_params;
       p->a = p0->a;
       p->b = p0->b;
       p->size = p0->size;
@@ -513,7 +513,7 @@ static gboolean _monochrome_button_release(GtkWidget *widget, GdkEventButton *ev
 {
   if(event->button == 1)
   {
-    dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
+    dt_iop_monochrome_gui_data_t *g = self->gui_data;
     dt_iop_color_picker_reset(self, TRUE);
     g->dragging = 0;
     dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -525,7 +525,7 @@ static gboolean _monochrome_button_release(GtkWidget *widget, GdkEventButton *ev
 
 static gboolean _monochrome_leave_notify(GtkWidget *widget, GdkEventCrossing *event, dt_iop_module_t *self)
 {
-  dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
+  dt_iop_monochrome_gui_data_t *g = self->gui_data;
   g->dragging = 0;
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
   return TRUE;
@@ -533,7 +533,7 @@ static gboolean _monochrome_leave_notify(GtkWidget *widget, GdkEventCrossing *ev
 
 static gboolean _monochrome_scrolled(GtkWidget *widget, GdkEventScroll *event, dt_iop_module_t *self)
 {
-  dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
+  dt_iop_monochrome_params_t *p = self->params;
 
   if(dt_gui_ignore_scroll(event)) return FALSE;
 
@@ -588,7 +588,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
+  dt_iop_monochrome_gui_data_t *g = self->gui_data;
   cmsDeleteTransform(g->xform);
 
   IOP_GUI_FREE;

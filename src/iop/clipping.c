@@ -693,8 +693,8 @@ void distort_mask(struct dt_iop_module_t *self,
 
 static int _iop_clipping_set_max_clip(struct dt_iop_module_t *self)
 {
-  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
-  dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
+  dt_iop_clipping_gui_data_t *g = self->gui_data;
+  dt_iop_clipping_params_t *p = self->params;
 
   if(g->clip_max_pipe_hash == self->dev->preview_pipe->backbuf_hash) return 1;
 
@@ -1357,7 +1357,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
 static void _event_preview_updated_callback(gpointer instance, dt_iop_module_t *self)
 {
-  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
+  dt_iop_clipping_gui_data_t *g = self->gui_data;
   g->preview_ready = TRUE;
 
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_event_preview_updated_callback), self);
@@ -1367,8 +1367,8 @@ static void _event_preview_updated_callback(gpointer instance, dt_iop_module_t *
 
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
 {
-  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
-  dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
+  dt_iop_clipping_gui_data_t *g = self->gui_data;
+  dt_iop_clipping_params_t *p = self->params;
 
   if(self->enabled)
   {
@@ -1423,7 +1423,7 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 static float _ratio_get_aspect(dt_iop_module_t *self, GtkWidget *combo)
 {
-  dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
+  dt_iop_clipping_params_t *p = self->params;
 
   //retrieve full image dimensions to calculate aspect ratio if "original image" specified
   const char *text = dt_bauhaus_combobox_get_text(combo);
@@ -1555,7 +1555,7 @@ static float _ratio_get_aspect(dt_iop_module_t *self, GtkWidget *combo)
 
 static void apply_box_aspect(dt_iop_module_t *self, _grab_region_t grab)
 {
-  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
+  dt_iop_clipping_gui_data_t *g = self->gui_data;
 
   int iwd, iht;
   dt_dev_get_processed_size(&darktable.develop->full, &iwd, &iht);
@@ -1664,7 +1664,7 @@ void reload_defaults(dt_iop_module_t *self)
 {
   const dt_image_t *img = &self->dev->image_storage;
 
-  dt_iop_clipping_params_t *d = (dt_iop_clipping_params_t *)self->default_params;
+  dt_iop_clipping_params_t *d = self->default_params;
 
   d->cx = img->usercrop[1];
   d->cy = img->usercrop[0];
@@ -1710,8 +1710,8 @@ static void _float_to_fract(const char *num, int *n, int *d)
 
 static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
 {
-  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
-  dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
+  dt_iop_clipping_gui_data_t *g = self->gui_data;
+  dt_iop_clipping_params_t *p = self->params;
   const int which = dt_bauhaus_combobox_get(combo);
   int d = abs(p->ratio_d), n = p->ratio_n;
   const char *text = dt_bauhaus_combobox_get_text(combo);
@@ -1846,8 +1846,8 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
-  dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
+  dt_iop_clipping_gui_data_t *g = self->gui_data;
+  dt_iop_clipping_params_t *p = self->params;
 
   ++darktable.gui->reset;
 
@@ -1883,7 +1883,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
 void gui_reset(struct dt_iop_module_t *self)
 {
-  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
+  dt_iop_clipping_gui_data_t *g = self->gui_data;
   /* reset aspect preset to default */
   dt_conf_set_int("plugins/darkroom/clipping/ratio_d", 0);
   dt_conf_set_int("plugins/darkroom/clipping/ratio_n", 0);
@@ -1892,8 +1892,8 @@ void gui_reset(struct dt_iop_module_t *self)
 
 static void keystone_type_changed(GtkWidget *combo, dt_iop_module_t *self)
 {
-  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
-  dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
+  dt_iop_clipping_gui_data_t *g = self->gui_data;
+  dt_iop_clipping_params_t *p = self->params;
   const int which = dt_bauhaus_combobox_get(combo);
   if((which == 5) || (which == 4 && p->k_h == 0 && p->k_v == 0))
   {
@@ -1930,8 +1930,8 @@ static void keystone_type_changed(GtkWidget *combo, dt_iop_module_t *self)
 
 static void keystone_type_populate(struct dt_iop_module_t *self, gboolean with_applied, int select)
 {
-  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
-  dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
+  dt_iop_clipping_gui_data_t *g = self->gui_data;
+  dt_iop_clipping_params_t *p = self->params;
   dt_bauhaus_combobox_clear(g->keystone_type);
   dt_bauhaus_combobox_add(g->keystone_type, _("none"));
   dt_bauhaus_combobox_add(g->keystone_type, _("vertical"));
@@ -1956,8 +1956,8 @@ static void keystone_type_populate(struct dt_iop_module_t *self, gboolean with_a
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
-  dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
+  dt_iop_clipping_gui_data_t *g = self->gui_data;
+  dt_iop_clipping_params_t *p = self->params;
 
   int hvflip = 0;
   if(p->cw < 0)
@@ -2041,8 +2041,8 @@ void gui_update(struct dt_iop_module_t *self)
 static void hvflip_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
-  dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
+  dt_iop_clipping_gui_data_t *g = self->gui_data;
+  dt_iop_clipping_params_t *p = self->params;
   const int flip = dt_bauhaus_combobox_get(widget);
   p->cw = copysignf(p->cw, (flip & 1) ? -1.0 : 1.0);
   p->ch = copysignf(p->ch, (flip & 2) ? -1.0 : 1.0);
@@ -2051,7 +2051,7 @@ static void hvflip_callback(GtkWidget *widget, dt_iop_module_t *self)
 
 static void aspect_flip(GtkWidget *button, dt_iop_module_t *self)
 {
-  dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
+  dt_iop_clipping_params_t *p = self->params;
   p->ratio_d = -p->ratio_d;
   apply_box_aspect(self, GRAB_HORIZONTAL);
   dt_control_queue_redraw_center();
@@ -2297,7 +2297,7 @@ static void free_aspect(gpointer data)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
+  dt_iop_clipping_gui_data_t *g = self->gui_data;
   g_list_free_full(g->aspect_list, free_aspect);
   g->aspect_list = NULL;
 
@@ -2358,8 +2358,8 @@ void gui_post_expose(dt_iop_module_t *self,
                      const float zoom_scale)
 {
   dt_develop_t *dev = self->dev;
-  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
-  dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
+  dt_iop_clipping_gui_data_t *g = self->gui_data;
+  dt_iop_clipping_params_t *p = self->params;
 
   // we don't do anything if the image is not ready
   if(!g->preview_ready) return;
@@ -2749,8 +2749,8 @@ int mouse_moved(dt_iop_module_t *self,
                 const int which,
                 const float zoom_scale)
 {
-  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
-  dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
+  dt_iop_clipping_gui_data_t *g = self->gui_data;
+  dt_iop_clipping_params_t *p = self->params;
 
   // we don't do anything if the image is not ready
   if(!g->preview_ready) return 0;
@@ -3140,7 +3140,7 @@ int button_released(dt_iop_module_t *self,
                     const uint32_t state,
                     const float zoom_scale)
 {
-  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
+  dt_iop_clipping_gui_data_t *g = self->gui_data;
   // we don't do anything if the image is not ready
   if(!g->preview_ready) return 0;
 
@@ -3194,8 +3194,8 @@ int button_pressed(dt_iop_module_t *self,
                    const float zoom_scale)
 {
 
-  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
-  dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
+  dt_iop_clipping_gui_data_t *g = self->gui_data;
+  dt_iop_clipping_params_t *p = self->params;
   // we don't do anything if the image is not ready
   if(!g->preview_ready) return 0;
 

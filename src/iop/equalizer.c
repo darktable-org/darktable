@@ -121,7 +121,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float scale = roi_in->scale;
   dt_iop_image_copy_by_size(ovoid, ivoid, width, height, chs);
   dt_iop_equalizer_data_t *d = (dt_iop_equalizer_data_t *)(piece->data);
-  // dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;
 
   // 1 pixel in this buffer represents 1.0/scale pixels in original image:
   const float l1 = 1.0f + dt_log2f(piece->iscale / scale); // finest level

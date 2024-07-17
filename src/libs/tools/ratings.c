@@ -126,7 +126,7 @@ void gui_cleanup(dt_lib_module_t *self)
 
 static gboolean _lib_ratings_draw_callback(GtkWidget *widget, cairo_t *crf, dt_lib_module_t *self)
 {
-  dt_lib_ratings_t *d = (dt_lib_ratings_t *)self->data;
+  dt_lib_ratings_t *d = self->data;
 
   if(!darktable.control->running) return TRUE;
 
@@ -182,7 +182,7 @@ static gboolean _lib_ratings_draw_callback(GtkWidget *widget, cairo_t *crf, dt_l
 static gboolean _lib_ratings_motion_notify_callback(GtkWidget *widget, GdkEventMotion *event,
                                                     dt_lib_module_t *self)
 {
-  dt_lib_ratings_t *d = (dt_lib_ratings_t *)self->data;
+  dt_lib_ratings_t *d = self->data;
 
   d->pointerx = event->x;
   d->pointery = event->y;
@@ -193,7 +193,7 @@ static gboolean _lib_ratings_motion_notify_callback(GtkWidget *widget, GdkEventM
 static gboolean _lib_ratings_button_press_callback(GtkWidget *widget, GdkEventButton *event,
                                                    dt_lib_module_t *self)
 {
-  dt_lib_ratings_t *d = (dt_lib_ratings_t *)self->data;
+  dt_lib_ratings_t *d = self->data;
   if(d->current > 0)
   {
     GList *imgs = dt_act_on_get_images(FALSE, TRUE, FALSE);
@@ -214,7 +214,7 @@ static gboolean _lib_ratings_button_release_callback(GtkWidget *widget, GdkEvent
 static gboolean _lib_ratings_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
                                                    dt_lib_module_t *self)
 {
-  dt_lib_ratings_t *d = (dt_lib_ratings_t *)self->data;
+  dt_lib_ratings_t *d = self->data;
   d->pointery = d->pointerx = 0;
   gtk_widget_queue_draw(self->widget);
   return TRUE;

@@ -819,10 +819,8 @@ void gui_reset(struct dt_iop_module_t *self)
 
 void _colorchecker_rebuild_patch_list(struct dt_iop_module_t *self)
 {
-  dt_iop_colorchecker_gui_data_t *g =
-    (dt_iop_colorchecker_gui_data_t *)self->gui_data;
-  dt_iop_colorchecker_params_t *p =
-    (dt_iop_colorchecker_params_t *)self->params;
+  dt_iop_colorchecker_params_t *p = self->params;
+  dt_iop_colorchecker_gui_data_t *g = self->gui_data;
 
   if(g->patch >= p->num_patches
      || g->patch < 0)
@@ -848,10 +846,8 @@ void _colorchecker_rebuild_patch_list(struct dt_iop_module_t *self)
 
 void _colorchecker_update_sliders(struct dt_iop_module_t *self)
 {
-  dt_iop_colorchecker_gui_data_t *g =
-    (dt_iop_colorchecker_gui_data_t *)self->gui_data;
-  dt_iop_colorchecker_params_t *p =
-    (dt_iop_colorchecker_params_t *)self->params;
+  dt_iop_colorchecker_params_t *p = self->params;
+  dt_iop_colorchecker_gui_data_t *g = self->gui_data;
 
   if(g->patch >= p->num_patches
      || g->patch < 0)
@@ -887,8 +883,7 @@ void _colorchecker_update_sliders(struct dt_iop_module_t *self)
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_colorchecker_gui_data_t *g =
-    (dt_iop_colorchecker_gui_data_t *)self->gui_data;
+  dt_iop_colorchecker_gui_data_t *g = self->gui_data;
 
   _colorchecker_rebuild_patch_list(self);
   _colorchecker_update_sliders(self);
@@ -937,10 +932,8 @@ void color_picker_apply(dt_iop_module_t *self,
                         GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
-  dt_iop_colorchecker_gui_data_t *g =
-    (dt_iop_colorchecker_gui_data_t *)self->gui_data;
-  dt_iop_colorchecker_params_t *p =
-    (dt_iop_colorchecker_params_t *)self->params;
+  dt_iop_colorchecker_params_t *p = self->params;
+  dt_iop_colorchecker_gui_data_t *g = self->gui_data;
   if(p->num_patches <= 0) return;
 
   // determine patch based on color picker result
@@ -976,10 +969,8 @@ void color_picker_apply(dt_iop_module_t *self,
 
 static void target_L_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
-  dt_iop_colorchecker_params_t *p =
-    (dt_iop_colorchecker_params_t *)self->params;
-  dt_iop_colorchecker_gui_data_t *g =
-    (dt_iop_colorchecker_gui_data_t *)self->gui_data;
+  dt_iop_colorchecker_params_t *p = self->params;
+  dt_iop_colorchecker_gui_data_t *g = self->gui_data;
 
   if(g->patch >= p->num_patches || g->patch < 0)
     return;
@@ -994,10 +985,8 @@ static void target_L_callback(GtkWidget *slider, dt_iop_module_t *self)
 static void target_a_callback(GtkWidget *slider,
                               dt_iop_module_t *self)
 {
-  dt_iop_colorchecker_params_t *p =
-    (dt_iop_colorchecker_params_t *)self->params;
-  dt_iop_colorchecker_gui_data_t *g =
-    (dt_iop_colorchecker_gui_data_t *)self->gui_data;
+  dt_iop_colorchecker_params_t *p = self->params;
+  dt_iop_colorchecker_gui_data_t *g = self->gui_data;
 
   if(g->patch >= p->num_patches
      || g->patch < 0)
@@ -1034,10 +1023,8 @@ static void target_a_callback(GtkWidget *slider,
 
 static void target_b_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
-  dt_iop_colorchecker_params_t *p =
-    (dt_iop_colorchecker_params_t *)self->params;
-  dt_iop_colorchecker_gui_data_t *g =
-    (dt_iop_colorchecker_gui_data_t *)self->gui_data;
+  dt_iop_colorchecker_params_t *p = self->params;
+  dt_iop_colorchecker_gui_data_t *g = self->gui_data;
 
   if(g->patch >= p->num_patches
      || g->patch < 0)
@@ -1072,10 +1059,8 @@ static void target_b_callback(GtkWidget *slider, dt_iop_module_t *self)
 
 static void target_C_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
-  dt_iop_colorchecker_params_t *p =
-    (dt_iop_colorchecker_params_t *)self->params;
-  dt_iop_colorchecker_gui_data_t *g =
-    (dt_iop_colorchecker_gui_data_t *)self->gui_data;
+  dt_iop_colorchecker_params_t *p = self->params;
+  dt_iop_colorchecker_gui_data_t *g = self->gui_data;
 
   if(g->patch >= p->num_patches
      || g->patch < 0)
@@ -1121,8 +1106,7 @@ static void target_C_callback(GtkWidget *slider, dt_iop_module_t *self)
 static void target_callback(GtkWidget *combo,
                             dt_iop_module_t *self)
 {
-  dt_iop_colorchecker_gui_data_t *g =
-    (dt_iop_colorchecker_gui_data_t *)self->gui_data;
+  dt_iop_colorchecker_gui_data_t *g = self->gui_data;
   g->absolute_target = dt_bauhaus_combobox_get(combo);
   ++darktable.gui->reset;
   _colorchecker_update_sliders(self);
@@ -1135,8 +1119,7 @@ static void target_callback(GtkWidget *combo,
 
 static void patch_callback(GtkWidget *combo, dt_iop_module_t *self)
 {
-  dt_iop_colorchecker_gui_data_t *g =
-    (dt_iop_colorchecker_gui_data_t *)self->gui_data;
+  dt_iop_colorchecker_gui_data_t *g = self->gui_data;
   g->drawn_patch = g->patch = dt_bauhaus_combobox_get(combo);
   ++darktable.gui->reset;
   _colorchecker_update_sliders(self);
@@ -1151,10 +1134,8 @@ static gboolean checker_draw(GtkWidget *widget,
                              cairo_t *crf,
                              dt_iop_module_t *self)
 {
-  dt_iop_colorchecker_gui_data_t *g =
-    (dt_iop_colorchecker_gui_data_t *)self->gui_data;
-  dt_iop_colorchecker_params_t *p =
-    (dt_iop_colorchecker_params_t *)self->params;
+  dt_iop_colorchecker_params_t *p = self->params;
+  dt_iop_colorchecker_gui_data_t *g = self->gui_data;
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -1244,10 +1225,8 @@ static gboolean checker_motion_notify(
     dt_iop_module_t *self)
 {
   // highlight?
-  dt_iop_colorchecker_gui_data_t *g =
-    (dt_iop_colorchecker_gui_data_t *)self->gui_data;
-  dt_iop_colorchecker_params_t *p =
-    (dt_iop_colorchecker_params_t *)self->params;
+  dt_iop_colorchecker_params_t *p = self->params;
+  dt_iop_colorchecker_gui_data_t *g = self->gui_data;
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -1283,10 +1262,8 @@ static gboolean checker_button_press(
     GtkWidget *widget, GdkEventButton *event,
     dt_iop_module_t *self)
 {
-  dt_iop_colorchecker_gui_data_t *g =
-    (dt_iop_colorchecker_gui_data_t *)self->gui_data;
-  dt_iop_colorchecker_params_t *p =
-    (dt_iop_colorchecker_params_t *)self->params;
+  dt_iop_colorchecker_params_t *p = self->params;
+  dt_iop_colorchecker_gui_data_t *g = self->gui_data;
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -1392,8 +1369,7 @@ static gboolean checker_button_press(
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_colorchecker_gui_data_t *g = IOP_GUI_ALLOC(colorchecker);
-  const dt_iop_colorchecker_params_t *const p =
-    (dt_iop_colorchecker_params_t *)self->default_params;
+  const dt_iop_colorchecker_params_t *const p = self->default_params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 

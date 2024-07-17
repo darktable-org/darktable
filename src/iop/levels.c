@@ -272,8 +272,8 @@ static void compute_lut(dt_dev_pixelpipe_iop_t *piece)
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
-  dt_iop_levels_gui_data_t *g = (dt_iop_levels_gui_data_t *)self->gui_data;
-  dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
+  dt_iop_levels_gui_data_t *g = self->gui_data;
+  dt_iop_levels_params_t *p = self->params;
 
   /* we need to save the last picked color to prevent flickering when
    * changing from one picker to another, as the picked_color value does not
@@ -340,7 +340,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
 static void commit_params_late(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_levels_data_t *d = (dt_iop_levels_data_t *)piece->data;
-  dt_iop_levels_gui_data_t *g = (dt_iop_levels_gui_data_t *)self->gui_data;
+  dt_iop_levels_gui_data_t *g = self->gui_data;
 
   if(d->mode == LEVELS_MODE_AUTOMATIC)
   {
@@ -551,8 +551,8 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_levels_gui_data_t *g = (dt_iop_levels_gui_data_t *)self->gui_data;
-  dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
+  dt_iop_levels_gui_data_t *g = self->gui_data;
+  dt_iop_levels_params_t *p = self->params;
 
   if(w == g->mode)
   {
@@ -565,8 +565,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_levels_gui_data_t *g = (dt_iop_levels_gui_data_t *)self->gui_data;
-  dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
+  dt_iop_levels_gui_data_t *g = self->gui_data;
+  dt_iop_levels_params_t *p = self->params;
 
   dt_bauhaus_combobox_set(g->mode, p->mode);
 
@@ -702,7 +702,7 @@ void gui_init(dt_iop_module_t *self)
 
 void gui_cleanup(dt_iop_module_t *self)
 {
-  dt_iop_levels_gui_data_t *g = (dt_iop_levels_gui_data_t *)self->gui_data;
+  dt_iop_levels_gui_data_t *g = self->gui_data;
   g_list_free(g->modes);
 
   IOP_GUI_FREE;
@@ -710,7 +710,7 @@ void gui_cleanup(dt_iop_module_t *self)
 
 static gboolean dt_iop_levels_leave_notify(GtkWidget *widget, GdkEventCrossing *event, dt_iop_module_t *self)
 {
-  dt_iop_levels_gui_data_t *g = (dt_iop_levels_gui_data_t *)self->gui_data;
+  dt_iop_levels_gui_data_t *g = self->gui_data;
   g->mouse_x = g->mouse_y = -1.0;
   gtk_widget_queue_draw(widget);
   return TRUE;
@@ -718,8 +718,8 @@ static gboolean dt_iop_levels_leave_notify(GtkWidget *widget, GdkEventCrossing *
 
 static gboolean dt_iop_levels_area_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
 {
-  dt_iop_levels_gui_data_t *g = (dt_iop_levels_gui_data_t *)self->gui_data;
-  dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
+  dt_iop_levels_gui_data_t *g = self->gui_data;
+  dt_iop_levels_params_t *p = self->params;
 
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   GtkAllocation allocation;
@@ -839,7 +839,7 @@ static gboolean dt_iop_levels_area_draw(GtkWidget *widget, cairo_t *crf, dt_iop_
 static void dt_iop_levels_move_handle(dt_iop_module_t *self, int handle_move, float new_pos, float *levels,
                                       float drag_start_percentage)
 {
-  dt_iop_levels_gui_data_t *g = (dt_iop_levels_gui_data_t *)self->gui_data;
+  dt_iop_levels_gui_data_t *g = self->gui_data;
   float min_x = 0;
   float max_x = 1;
 
@@ -876,8 +876,8 @@ static void dt_iop_levels_move_handle(dt_iop_module_t *self, int handle_move, fl
 
 static gboolean dt_iop_levels_motion_notify(GtkWidget *widget, GdkEventMotion *event, dt_iop_module_t *self)
 {
-  dt_iop_levels_gui_data_t *g = (dt_iop_levels_gui_data_t *)self->gui_data;
-  dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
+  dt_iop_levels_gui_data_t *g = self->gui_data;
+  dt_iop_levels_params_t *p = self->params;
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -929,7 +929,7 @@ static gboolean dt_iop_levels_button_press(GtkWidget *widget, GdkEventButton *ev
     if(event->type == GDK_2BUTTON_PRESS)
     {
       // Reset
-      dt_iop_levels_gui_data_t *g = (dt_iop_levels_gui_data_t *)self->gui_data;
+      dt_iop_levels_gui_data_t *g = self->gui_data;
       memcpy(self->params, self->default_params, self->params_size);
 
       // Needed in case the user scrolls or drags immediately after a reset,
@@ -940,7 +940,7 @@ static gboolean dt_iop_levels_button_press(GtkWidget *widget, GdkEventButton *ev
     }
     else
     {
-      dt_iop_levels_gui_data_t *g = (dt_iop_levels_gui_data_t *)self->gui_data;
+      dt_iop_levels_gui_data_t *g = self->gui_data;
       g->dragging = 1;
     }
     return TRUE;
@@ -952,7 +952,7 @@ static gboolean dt_iop_levels_button_release(GtkWidget *widget, GdkEventButton *
 {
   if(event->button == 1)
   {
-    dt_iop_levels_gui_data_t *g = (dt_iop_levels_gui_data_t *)self->gui_data;
+    dt_iop_levels_gui_data_t *g = self->gui_data;
     g->dragging = 0;
     return TRUE;
   }
@@ -961,8 +961,8 @@ static gboolean dt_iop_levels_button_release(GtkWidget *widget, GdkEventButton *
 
 static gboolean dt_iop_levels_scroll(GtkWidget *widget, GdkEventScroll *event, dt_iop_module_t *self)
 {
-  dt_iop_levels_gui_data_t *g = (dt_iop_levels_gui_data_t *)self->gui_data;
-  dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
+  dt_iop_levels_gui_data_t *g = self->gui_data;
+  dt_iop_levels_params_t *p = self->params;
 
   if(dt_gui_ignore_scroll(event)) return FALSE;
 
@@ -991,8 +991,8 @@ static gboolean dt_iop_levels_scroll(GtkWidget *widget, GdkEventScroll *event, d
 static void dt_iop_levels_autoadjust_callback(GtkRange *range, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
-  dt_iop_levels_gui_data_t *g = (dt_iop_levels_gui_data_t *)self->gui_data;
+  dt_iop_levels_params_t *p = self->params;
+  dt_iop_levels_gui_data_t *g = self->gui_data;
 
   dt_iop_color_picker_reset(self, TRUE);
 

@@ -594,7 +594,7 @@ void process(struct dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_out)
 {
   dt_iop_colorbalancergb_data_t *d = (dt_iop_colorbalancergb_data_t *)piece->data;
-  dt_iop_colorbalancergb_gui_data_t *g = (dt_iop_colorbalancergb_gui_data_t *)self->gui_data;
+  dt_iop_colorbalancergb_gui_data_t *g = self->gui_data;
   const struct dt_iop_order_iccprofile_info_t *const work_profile
       = dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
   if(work_profile == NULL) return; // no point
@@ -963,7 +963,7 @@ int process_cl(struct dt_iop_module_t *self,
 {
   const dt_iop_colorbalancergb_data_t *const d = (dt_iop_colorbalancergb_data_t *)piece->data;
   dt_iop_colorbalancergb_global_data_t *const gd = (dt_iop_colorbalancergb_global_data_t *)self->global_data;
-  dt_iop_colorbalancergb_gui_data_t *g = (dt_iop_colorbalancergb_gui_data_t *)self->gui_data;
+  dt_iop_colorbalancergb_gui_data_t *g = self->gui_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
@@ -1289,8 +1289,8 @@ void pipe_RGB_to_Ych(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, const dt_a
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
-  dt_iop_colorbalancergb_gui_data_t *g = (dt_iop_colorbalancergb_gui_data_t *)self->gui_data;
-  dt_iop_colorbalancergb_params_t *p = (dt_iop_colorbalancergb_params_t *)self->params;
+  dt_iop_colorbalancergb_gui_data_t *g = self->gui_data;
+  dt_iop_colorbalancergb_params_t *p = self->params;
 
   dt_aligned_pixel_t Ych = { 0.f };
   dt_aligned_pixel_t max_Ych = { 0.f };
@@ -1425,7 +1425,7 @@ static void mask_callback(GtkWidget *togglebutton, dt_iop_module_t *self)
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), TRUE);
 
-  dt_iop_colorbalancergb_gui_data_t *g = (dt_iop_colorbalancergb_gui_data_t *)self->gui_data;
+  dt_iop_colorbalancergb_gui_data_t *g = self->gui_data;
 
   // if blend module is displaying mask do not display it here
   if(self->request_mask_display)
@@ -1459,7 +1459,7 @@ static void mask_callback(GtkWidget *togglebutton, dt_iop_module_t *self)
 
 static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
 {
-  dt_iop_colorbalancergb_params_t *p = (dt_iop_colorbalancergb_params_t *)self->params;
+  dt_iop_colorbalancergb_params_t *p = self->params;
   const float shadows_weight = 2.f + p->shadows_weight * 2.f;
   const float highlights_weight = 2.f + p->highlights_weight * 2.f;
 
@@ -1647,8 +1647,8 @@ static void checker_size_callback(GtkWidget *widget, dt_iop_module_t *self)
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_colorbalancergb_gui_data_t *g = (dt_iop_colorbalancergb_gui_data_t *)self->gui_data;
-  dt_iop_colorbalancergb_params_t *p = (dt_iop_colorbalancergb_params_t *)self->params;
+  dt_iop_colorbalancergb_gui_data_t *g = self->gui_data;
+  dt_iop_colorbalancergb_params_t *p = self->params;
 
   // Prepare data for gamut mapping slider backgrounds
   // Make our best effort to find display profile. If not found
@@ -1700,8 +1700,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_colorbalancergb_gui_data_t *g = (dt_iop_colorbalancergb_gui_data_t *)self->gui_data;
-  dt_iop_colorbalancergb_params_t *p = (dt_iop_colorbalancergb_params_t *)self->params;
+  dt_iop_colorbalancergb_gui_data_t *g = self->gui_data;
+  dt_iop_colorbalancergb_params_t *p = self->params;
 
   dt_bauhaus_slider_set(g->hue_angle, p->hue_angle);
   dt_bauhaus_slider_set(g->vibrance, p->vibrance);
@@ -1775,7 +1775,7 @@ void gui_update(dt_iop_module_t *self)
 
 void gui_reset(dt_iop_module_t *self)
 {
-  //dt_iop_colorbalancergb_gui_data_t *g = (dt_iop_colorbalancergb_gui_data_t *)self->gui_data;
+  //dt_iop_colorbalancergb_gui_data_t *g = self->gui_data;
   dt_iop_color_picker_reset(self, TRUE);
 }
 

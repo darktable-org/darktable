@@ -227,7 +227,7 @@ static const char *_get_label(const int i)
 // initialize the metadata queue
 static void _lib_metadata_init_queue(dt_lib_module_t *self)
 {
-  dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)self->data;
+  dt_lib_metadata_view_t *d = self->data;
   d->metadata = NULL;
   for(int i = md_size - 1; i >= 0; i--)
   {
@@ -264,7 +264,7 @@ static void _filter_non_printable(char *string, size_t length)
 
 static dt_lib_metadata_info_t *_get_metadata_per_index(const int index, dt_lib_module_t *self)
 {
-  dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)self->data;
+  dt_lib_metadata_view_t *d = self->data;
   for(GList *meta = d->metadata; meta; meta = g_list_next(meta))
   {
     dt_lib_metadata_info_t *m = (dt_lib_metadata_info_t *)meta->data;
@@ -279,7 +279,7 @@ static dt_lib_metadata_info_t *_get_metadata_per_index(const int index, dt_lib_m
 static void _metadata_update_markup(const gint32 i, const char *const format, dt_lib_module_t *self)
 {
   dt_lib_metadata_info_t *m = _get_metadata_per_index(i, self);
-  dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)self->data;
+  dt_lib_metadata_view_t *d = self->data;
 
   GtkLabel *label = GTK_LABEL(gtk_grid_get_child_at(GTK_GRID(d->grid), 1, m->order));
   char *markup = g_markup_printf_escaped(format, gtk_label_get_text(label));
@@ -290,7 +290,7 @@ static void _metadata_update_markup(const gint32 i, const char *const format, dt
 /* helper function for updating a metadata value */
 static void _metadata_update_value(const int i, const char *value, dt_lib_module_t *self)
 {
-  dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)self->data;
+  dt_lib_metadata_view_t *d = self->data;
   gboolean validated = g_utf8_validate(value, -1, NULL);
   const gchar *str = validated ? value : NODATA_STRING;
   dt_lib_metadata_info_t *m = _get_metadata_per_index(i, self);
@@ -1107,7 +1107,7 @@ static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
 
 static char *_get_current_configuration(dt_lib_module_t *self)
 {
-  dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)self->data;
+  dt_lib_metadata_view_t *d = self->data;
   char *pref = NULL;
 
   d->metadata = g_list_sort(d->metadata, _lib_metadata_sort_order);
@@ -1126,7 +1126,7 @@ static char *_get_current_configuration(dt_lib_module_t *self)
 
 static void _lib_metadata_refill_grid(dt_lib_module_t *self)
 {
-  dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)self->data;
+  dt_lib_metadata_view_t *d = self->data;
   d->metadata = g_list_sort(d->metadata, _lib_metadata_sort_order);
 
   int j = 0;
@@ -1164,7 +1164,7 @@ static void _lib_metadata_refill_grid(dt_lib_module_t *self)
 
 static void _lib_metadata_setup_grid(dt_lib_module_t *self)
 {
-  dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)self->data;
+  dt_lib_metadata_view_t *d = self->data;
 
   int j = 0;
   // initialize the grid with metadata queue content
@@ -1192,7 +1192,7 @@ static void _lib_metadata_setup_grid(dt_lib_module_t *self)
 static void _apply_preferences(const char *prefs_list, dt_lib_module_t *self)
 {
   if(!prefs_list || !prefs_list[0]) return;
-  dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)self->data;
+  dt_lib_metadata_view_t *d = self->data;
 
   GList *prefs = dt_util_str_to_glist(",", prefs_list);
   int k = 0;
@@ -1254,7 +1254,7 @@ static void _drag_data_inserted(GtkTreeModel *tree_model, GtkTreePath *path, Gtk
 
 void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
 {
-  dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)self->data;
+  dt_lib_metadata_view_t *d = self->data;
 
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *dialog = gtk_dialog_new_with_buttons(_("metadata settings"), GTK_WINDOW(win),
@@ -1402,7 +1402,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
 static void _display_default(dt_lib_module_t *self)
 {
-  dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)self->data;
+  dt_lib_metadata_view_t *d = self->data;
 
   for(GList *meta = d->metadata; meta; meta= g_list_next(meta))
   {
@@ -1482,7 +1482,7 @@ void gui_cleanup(dt_lib_module_t *self)
 
 void gui_reset(dt_lib_module_t *self)
 {
-  dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)self->data;
+  dt_lib_metadata_view_t *d = self->data;
 
   for(GList *meta = d->metadata; meta; meta= g_list_next(meta))
   {
@@ -1572,7 +1572,7 @@ static int lua_register_info(lua_State *L)
     lua_pop(L, 1);
   }
   {
-    dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)self->data;
+    dt_lib_metadata_view_t *d = self->data;
     dt_lib_metadata_info_t *m = g_malloc0(sizeof(dt_lib_metadata_info_t));
     m->name = (char *)key;
     m->value = g_strdup(NODATA_STRING);
@@ -1659,7 +1659,7 @@ static int lua_destroy_info(lua_State *L)
   }
 
   {
-    dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)self->data;
+    dt_lib_metadata_view_t *d = self->data;
     // find metadata key in the list and remove it
     GList *tbr = NULL;
     for(GList *meta = d->metadata; meta; meta = g_list_next(meta))

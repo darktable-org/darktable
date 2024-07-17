@@ -586,7 +586,7 @@ static void _pop_undo(gpointer user_data,
 
   if(type == DT_UNDO_HISTORY)
   {
-    dt_lib_history_t *d = (dt_lib_history_t *)self->data;
+    dt_lib_history_t *d = self->data;
     dt_undo_history_t *hist = (dt_undo_history_t *)data;
     dt_develop_t *dev = darktable.develop;
 
@@ -688,7 +688,7 @@ static void _lib_history_module_remove_callback(gpointer instance,
 
 static void _lib_history_will_change_callback(gpointer instance, dt_lib_module_t *self)
 {
-  dt_lib_history_t *lib = (dt_lib_history_t *)self->data;
+  dt_lib_history_t *lib = self->data;
 
   gtk_container_foreach(GTK_CONTAINER(lib->history_box),
                         (GtkCallback)gtk_widget_set_has_tooltip, NULL);
@@ -1116,7 +1116,7 @@ static gchar *_lib_history_button_label(const dt_dev_history_item_t *item)
 
 static void _lib_history_change_callback(gpointer instance, dt_lib_module_t *self)
 {
-  dt_lib_history_t *d = (dt_lib_history_t *)self->data;
+  dt_lib_history_t *d = self->data;
 
   d->record_history_level--;
   d->record_undo = TRUE;
@@ -1126,7 +1126,7 @@ static void _lib_history_change_callback(gpointer instance, dt_lib_module_t *sel
 
 void gui_update(dt_lib_module_t *self)
 {
-  dt_lib_history_t *d = (dt_lib_history_t *)self->data;
+  dt_lib_history_t *d = self->data;
 
   /* lock history mutex */
   dt_pthread_mutex_lock(&darktable.develop->history_mutex);
@@ -1276,7 +1276,7 @@ static gboolean _lib_history_button_clicked_callback(GtkWidget *widget,
     return TRUE;
   }
 
-  dt_lib_history_t *d = (dt_lib_history_t *)self->data;
+  dt_lib_history_t *d = self->data;
   reset = TRUE;
 
   /* deactivate all toggle buttons */

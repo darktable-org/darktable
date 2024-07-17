@@ -376,8 +376,8 @@ void process(struct dt_iop_module_t *self,
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_bilat_gui_data_t *g = (dt_iop_bilat_gui_data_t *)self->gui_data;
-  dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)self->params;
+  dt_iop_bilat_gui_data_t *g = self->gui_data;
+  dt_iop_bilat_params_t *p = self->params;
   if(w == g->highlights || w == g->shadows || w == g->midtone)
   {
     dt_bauhaus_combobox_set(g->mode, s_mode_local_laplacian);
@@ -412,8 +412,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_bilat_gui_data_t *g = (dt_iop_bilat_gui_data_t *)self->gui_data;
-  dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)self->params;
+  dt_iop_bilat_gui_data_t *g = self->gui_data;
+  dt_iop_bilat_params_t *p = self->params;
 
   if(p->mode == s_mode_local_laplacian)
   {

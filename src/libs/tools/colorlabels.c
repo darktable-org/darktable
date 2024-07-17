@@ -47,7 +47,7 @@ static void _lib_colorlabels_button_clicked_callback(GtkWidget *w,
 
 gint _get_colorlabel(dt_lib_module_t *self, GtkWidget *w)
 {
-  dt_lib_colorlabels_t *d = (dt_lib_colorlabels_t *)self->data;
+  dt_lib_colorlabels_t *d = self->data;
   for(int k = 0; k < 6; k++)
   {
     if(d->buttons[k] == w)
@@ -165,7 +165,7 @@ static gboolean _lib_colorlabels_key_press(GtkWidget *entry,
                                            GdkEventKey *event,
                                            dt_lib_module_t *self)
 {
-  dt_lib_colorlabels_t *d = (dt_lib_colorlabels_t *)self->data;
+  dt_lib_colorlabels_t *d = self->data;
 
   switch(event->keyval)
   {
@@ -200,7 +200,7 @@ static gboolean _lib_colorlabels_destroy(GtkWidget *widget,
                                          GdkEvent *event,
                                          dt_lib_module_t *self)
 {
-  dt_lib_colorlabels_t *d = (dt_lib_colorlabels_t *)self->data;
+  dt_lib_colorlabels_t *d = self->data;
 
   gtk_widget_destroy(d->floating_window);
   return FALSE;
@@ -209,7 +209,7 @@ static gboolean _lib_colorlabels_destroy(GtkWidget *widget,
 static void _lib_colorlabels_edit(dt_lib_module_t *self,
                                   GdkEventButton *event)
 {
-  dt_lib_colorlabels_t *d = (dt_lib_colorlabels_t *)self->data;
+  dt_lib_colorlabels_t *d = self->data;
 
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
 
@@ -250,7 +250,7 @@ static void _lib_colorlabels_button_clicked_callback(GtkWidget *w,
                                                      GdkEventButton *event,
                                                      dt_lib_module_t *self)
 {
-  dt_lib_colorlabels_t *d = (dt_lib_colorlabels_t *)self->data;
+  dt_lib_colorlabels_t *d = self->data;
 
   const gint colorlabel = _get_colorlabel(self, w);
 

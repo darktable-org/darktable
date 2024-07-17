@@ -184,7 +184,7 @@ uint32_t container(dt_lib_module_t *self)
 
 void gui_update(dt_lib_module_t *self)
 {
-  const dt_lib_export_t *d = (dt_lib_export_t *)self->data;
+  const dt_lib_export_t *d = self->data;
 
   const gboolean has_act_on = (dt_act_on_get_images_nb(TRUE, FALSE) > 0);
 
@@ -589,7 +589,7 @@ void gui_reset(dt_lib_module_t *self)
 {
   // make sure we don't do anything useless:
   if(!dt_control_running()) return;
-  dt_lib_export_t *d = (dt_lib_export_t *)self->data;
+  dt_lib_export_t *d = self->data;
   gtk_entry_set_text(GTK_ENTRY(d->width),
                      dt_confgen_get(CONFIG_PREFIX "width", DT_DEFAULT));
   gtk_entry_set_text(GTK_ENTRY(d->height),
@@ -1175,7 +1175,7 @@ static void _on_storage_list_changed(gpointer instance,
 
 void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
 {
-  dt_lib_export_t *d = (dt_lib_export_t *)self->data;
+  dt_lib_export_t *d = self->data;
   const gchar *name = dt_bauhaus_combobox_get_text(d->storage);
   const gboolean ondisk = name
     && !g_strcmp0(name, _("file on disk")); // FIXME: NO!!!!!one!
@@ -1562,7 +1562,7 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  dt_lib_export_t *d = (dt_lib_export_t *)self->data;
+  dt_lib_export_t *d = self->data;
 
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
                                      G_CALLBACK(_on_storage_list_changed), self);
@@ -2066,7 +2066,7 @@ void *legacy_params(dt_lib_module_t *self,
 
 void *get_params(dt_lib_module_t *self, int *size)
 {
-  dt_lib_export_t *d = (dt_lib_export_t *)self->data;
+  dt_lib_export_t *d = self->data;
   // concat storage and format, size is max + header
   dt_imageio_module_format_t *mformat = dt_imageio_get_format();
   dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage();
@@ -2207,7 +2207,7 @@ int set_params(dt_lib_module_t *self,
                const void *params,
                const int size)
 {
-  dt_lib_export_t *d = (dt_lib_export_t *)self->data;
+  dt_lib_export_t *d = self->data;
   // apply these stored presets again (parse blob)
   const char *buf = (const char *)params;
 

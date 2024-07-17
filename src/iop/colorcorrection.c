@@ -215,8 +215,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
-  dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)self->params;
+  dt_iop_colorcorrection_gui_data_t *g = self->gui_data;
+  dt_iop_colorcorrection_params_t *p = self->params;
   dt_bauhaus_slider_set(g->slider, p->saturation);
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
@@ -274,7 +274,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
+  dt_iop_colorcorrection_gui_data_t *g = self->gui_data;
   cmsDeleteTransform(g->xform);
 
   IOP_GUI_FREE;
@@ -282,8 +282,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
 static gboolean dt_iop_colorcorrection_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
 {
-  dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
-  dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)self->params;
+  dt_iop_colorcorrection_gui_data_t *g = self->gui_data;
+  dt_iop_colorcorrection_params_t *p = self->params;
 
   const int inset = DT_COLORCORRECTION_INSET;
   GtkAllocation allocation;
@@ -358,8 +358,8 @@ static gboolean dt_iop_colorcorrection_draw(GtkWidget *widget, cairo_t *crf, dt_
 static gboolean dt_iop_colorcorrection_motion_notify(GtkWidget *widget, GdkEventMotion *event,
                                                      dt_iop_module_t *self)
 {
-  dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
-  dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)self->params;
+  dt_iop_colorcorrection_gui_data_t *g = self->gui_data;
+  dt_iop_colorcorrection_params_t *p = self->params;
   const int inset = DT_COLORCORRECTION_INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -405,8 +405,8 @@ static gboolean dt_iop_colorcorrection_button_press(GtkWidget *widget, GdkEventB
   if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
   {
     // double click resets:
-    dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
-    dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)self->params;
+    dt_iop_colorcorrection_gui_data_t *g = self->gui_data;
+    dt_iop_colorcorrection_params_t *p = self->params;
     switch(g->selected)
     {
       case 1: // only reset lo
@@ -433,15 +433,15 @@ static gboolean dt_iop_colorcorrection_button_press(GtkWidget *widget, GdkEventB
 static gboolean dt_iop_colorcorrection_leave_notify(GtkWidget *widget, GdkEventCrossing *event,
                                                     dt_iop_module_t *self)
 {
-  dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
+  dt_iop_colorcorrection_gui_data_t *g = self->gui_data;
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
   return TRUE;
 }
 
 static gboolean dt_iop_colorcorrection_scrolled(GtkWidget *widget, GdkEventScroll *event, dt_iop_module_t *self)
 {
-  dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
-  dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)self->params;
+  dt_iop_colorcorrection_gui_data_t *g = self->gui_data;
+  dt_iop_colorcorrection_params_t *p = self->params;
 
   if(dt_gui_ignore_scroll(event)) return FALSE;
 
@@ -460,8 +460,8 @@ static gboolean dt_iop_colorcorrection_scrolled(GtkWidget *widget, GdkEventScrol
 
 static gboolean dt_iop_colorcorrection_key_press(GtkWidget *widget, GdkEventKey *event, dt_iop_module_t *self)
 {
-  dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
-  dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)self->params;
+  dt_iop_colorcorrection_gui_data_t *g = self->gui_data;
+  dt_iop_colorcorrection_params_t *p = self->params;
   if(g->selected < 1) return FALSE;
 
   int handled = 0;

@@ -190,8 +190,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_vibrance_gui_data_t *g = (dt_iop_vibrance_gui_data_t *)self->gui_data;
-  dt_iop_vibrance_params_t *p = (dt_iop_vibrance_params_t *)self->params;
+  dt_iop_vibrance_gui_data_t *g = self->gui_data;
+  dt_iop_vibrance_params_t *p = self->params;
   dt_bauhaus_slider_set(g->amount_scale, p->amount);
 }
 

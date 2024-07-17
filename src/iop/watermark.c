@@ -1003,10 +1003,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 static void _watermark_callback(GtkWidget *tb, dt_iop_module_t *self)
 {
-  dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
+  dt_iop_watermark_gui_data_t *g = self->gui_data;
 
   if(darktable.gui->reset) return;
-  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
+  dt_iop_watermark_params_t *p = self->params;
   memset(p->filename, 0, sizeof(p->filename));
   int n = dt_bauhaus_combobox_get(g->watermarks);
   g_strlcpy(p->filename, (char *)g_list_nth_data(g->watermarks_filenames, n), sizeof(p->filename));
@@ -1017,8 +1017,8 @@ static void _watermark_callback(GtkWidget *tb, dt_iop_module_t *self)
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
-  dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
-  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
+  dt_iop_watermark_gui_data_t *g = self->gui_data;
+  dt_iop_watermark_params_t *p = self->params;
 
   if(fabsf(p->color[0] - self->picked_color[0]) < 0.0001f
      && fabsf(p->color[1] - self->picked_color[1]) < 0.0001f
@@ -1082,8 +1082,8 @@ static void _load_watermarks(const char *basedir, dt_iop_watermark_gui_data_t *g
 
 static void _refresh_watermarks(dt_iop_module_t *self)
 {
-  dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
-  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
+  dt_iop_watermark_gui_data_t *g = self->gui_data;
+  dt_iop_watermark_params_t *p = self->params;
 
   g_signal_handlers_block_by_func(g->watermarks, _watermark_callback, self);
 
@@ -1114,10 +1114,10 @@ static void _refresh_callback(GtkWidget *tb, dt_iop_module_t *self)
 static void _alignment_callback(GtkWidget *tb, dt_iop_module_t *self)
 {
   int index = -1;
-  dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
+  dt_iop_watermark_gui_data_t *g = self->gui_data;
 
   if(darktable.gui->reset) return;
-  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
+  dt_iop_watermark_params_t *p = self->params;
 
 
   for(int i = 0; i < 9; i++)
@@ -1143,7 +1143,7 @@ static void _alignment_callback(GtkWidget *tb, dt_iop_module_t *self)
 static void _text_callback(GtkWidget *entry, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
+  dt_iop_watermark_params_t *p = self->params;
   g_strlcpy(p->text, gtk_entry_get_text(GTK_ENTRY(entry)), sizeof(p->text));
   dt_conf_set_string("plugins/darkroom/watermark/text", p->text);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -1152,7 +1152,7 @@ static void _text_callback(GtkWidget *entry, dt_iop_module_t *self)
 static void _colorpick_color_set(GtkColorButton *widget, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
+  dt_iop_watermark_params_t *p = self->params;
 
   GdkRGBA c;
   gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(widget), &c);
@@ -1169,7 +1169,7 @@ static void _colorpick_color_set(GtkColorButton *widget, dt_iop_module_t *self)
 static void _fontsel_callback(GtkWidget *button, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
+  dt_iop_watermark_params_t *p = self->params;
 
   gchar *fontname = gtk_font_chooser_get_font(GTK_FONT_CHOOSER(button));
   g_strlcpy(p->font, fontname, sizeof(p->font));
@@ -1219,8 +1219,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
-  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
+  dt_iop_watermark_gui_data_t *g = self->gui_data;
+  dt_iop_watermark_params_t *p = self->params;
   for(int i = 0; i < 9; i++)
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->align[i]), FALSE);
@@ -1248,8 +1248,8 @@ void gui_changed(dt_iop_module_t *self,
                  GtkWidget *w,
                  void *previous)
 {
-  dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
-  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
+  dt_iop_watermark_gui_data_t *g = self->gui_data;
+  dt_iop_watermark_params_t *p = self->params;
 
   if(w == g->scale_base)
   {
@@ -1279,7 +1279,7 @@ void init(dt_iop_module_t *module)
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_watermark_gui_data_t *g = IOP_GUI_ALLOC(watermark);
-  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
+  dt_iop_watermark_params_t *p = self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
@@ -1420,7 +1420,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
+  dt_iop_watermark_gui_data_t *g = self->gui_data;
   g_list_free_full(g->watermarks_filenames, g_free);
   g->watermarks_filenames = NULL;
 

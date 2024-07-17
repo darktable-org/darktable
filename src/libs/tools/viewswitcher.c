@@ -188,7 +188,7 @@ static void _lib_viewswitcher_enter_leave_notify_callback(GtkWidget *w, GdkEvent
 static void _lib_viewswitcher_view_cannot_change_callback(gpointer instance, dt_view_t *old_view,
                                                           dt_view_t *new_view, dt_lib_module_t *self)
 {
-  dt_lib_viewswitcher_t *d = (dt_lib_viewswitcher_t *)self->data;
+  dt_lib_viewswitcher_t *d = self->data;
 
   g_signal_handlers_block_by_func(d->dropdown, _dropdown_changed, d);
   gtk_combo_box_set_active(GTK_COMBO_BOX(d->dropdown), 0);
@@ -199,7 +199,7 @@ static void _lib_viewswitcher_view_cannot_change_callback(gpointer instance, dt_
 static void _lib_viewswitcher_view_changed_callback(gpointer instance, dt_view_t *old_view,
                                                     dt_view_t *new_view, dt_lib_module_t *self)
 {
-  dt_lib_viewswitcher_t *d = (dt_lib_viewswitcher_t *)self->data;
+  dt_lib_viewswitcher_t *d = self->data;
 
   const char *name = dt_view_manager_name(darktable.view_manager);
   gboolean found = FALSE;

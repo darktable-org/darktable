@@ -824,7 +824,7 @@ static void _event_rule_change_type(GtkWidget *widget, dt_lib_module_t *self)
 static void _event_append_rule(GtkWidget *widget, dt_lib_module_t *self)
 {
   // add new rule
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+  dt_lib_filtering_t *d = self->data;
   const int mode = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "collect_id"));
   const int top = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "topbar"));
   char confname[200] = { 0 };
@@ -1067,7 +1067,7 @@ static gboolean _topbar_reset_press(GtkWidget *w,
   //reset the filters
   _topbar_reset(self);
   //close the popup
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+  dt_lib_filtering_t *d = self->data;
   gtk_widget_destroy(d->topbar_popup);
 
   return FALSE;
@@ -1085,7 +1085,7 @@ static gboolean _topbar_label_press(GtkWidget *w,
 
 static void _topbar_update(dt_lib_module_t *self)
 {
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+  dt_lib_filtering_t *d = self->data;
 
   // first, we cleanup the filter box
   GtkWidget *fbox = dt_view_filter_get_filters_box(darktable.view_manager);
@@ -1380,7 +1380,7 @@ static void _widget_special_destroy(dt_lib_filtering_rule_t *rule)
 
 static void _filters_gui_update(dt_lib_module_t *self)
 {
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+  dt_lib_filtering_t *d = self->data;
 
   ++darktable.gui->reset;
   d->nb_rules = CLAMP(dt_conf_get_int("plugins/lighttable/filtering/num_rules"), 0, DT_COLLECTION_MAX_RULES);
@@ -1705,7 +1705,7 @@ static gboolean _topbar_rule_remove(GtkWidget *widget, GdkEventButton *event, dt
 {
   dt_lib_filtering_rule_t *rule = (dt_lib_filtering_rule_t *)g_object_get_data(G_OBJECT(widget), "rule");
   if(rule->manual_widget_set) return TRUE;
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+  dt_lib_filtering_t *d = self->data;
 
   // unpin the rule
   rule->topbar = FALSE;
@@ -1741,7 +1741,7 @@ static GtkWidget *_topbar_menu_new_rule(dt_lib_filtering_rule_t *rule, dt_lib_mo
 
 static void _topbar_rule_add(GtkWidget *widget, dt_lib_module_t *self)
 {
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+  dt_lib_filtering_t *d = self->data;
 
   const int prop = GPOINTER_TO_INT(dt_bauhaus_combobox_get_data(widget));
   if(prop < 0) return;
@@ -1772,7 +1772,7 @@ static void _topbar_rule_add(GtkWidget *widget, dt_lib_module_t *self)
 
 static void _topbar_show_pref_menu(dt_lib_module_t *self, GtkWidget *bt)
 {
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+  dt_lib_filtering_t *d = self->data;
 
   // initialize the popover
   d->topbar_popup = gtk_popover_new(bt);
@@ -1916,7 +1916,7 @@ static void _sort_combobox_changed(GtkWidget *widget, gpointer user_data)
 // this proxy function is primary called when the sort part of the filter bar is changed
 static void _proxy_reset_filter(dt_lib_module_t *self, gboolean smart_filter)
 {
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+  dt_lib_filtering_t *d = self->data;
 
   // reset each rule. we only throw the signal for the last one
   for(int i = 0; i < d->nb_rules; i++)
@@ -1963,7 +1963,7 @@ static gboolean _sort_close(GtkWidget *widget, GdkEventButton *event, dt_lib_mod
 static gboolean _sort_init(_widgets_sort_t *sort, const dt_collection_sort_t sortid, const int sortorder,
                            const int num, dt_lib_module_t *self)
 {
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+  dt_lib_filtering_t *d = self->data;
   d->manual_sort_set++;
   sort->num = num;
   sort->sortid = sortid;
@@ -2027,7 +2027,7 @@ static gboolean _sort_init(_widgets_sort_t *sort, const dt_collection_sort_t sor
 
 static void _sort_gui_update(dt_lib_module_t *self)
 {
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+  dt_lib_filtering_t *d = self->data;
 
   ++darktable.gui->reset;
   d->nb_sort = CLAMP(dt_conf_get_int("plugins/lighttable/filtering/num_sort"), 0, DT_COLLECTION_MAX_RULES);
@@ -2084,7 +2084,7 @@ static void _sort_gui_update(dt_lib_module_t *self)
 static void _sort_append_sort(GtkWidget *widget, dt_lib_module_t *self)
 {
   // add new rule
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+  dt_lib_filtering_t *d = self->data;
   const int sortid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "collect_id"));
   char confname[200] = { 0 };
 
@@ -2304,7 +2304,7 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+  dt_lib_filtering_t *d = self->data;
 
   for(int i = 0; i < DT_COLLECTION_MAX_RULES; i++)
   {
@@ -2323,7 +2323,7 @@ void gui_cleanup(dt_lib_module_t *self)
 
 void view_enter(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct dt_view_t *new_view)
 {
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+  dt_lib_filtering_t *d = self->data;
   d->leaving = FALSE;
   // if we enter lighttable view, then we need to populate the filter topbar
   // we do it here because we are sure that both libs are loaded at this point
@@ -2338,7 +2338,7 @@ void view_leave(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct
   if(!new_view)
   {
     // we are leaving dt, so we want to avoid pb with focus and such
-    dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+    dt_lib_filtering_t *d = self->data;
     d->leaving = TRUE;
   }
 }

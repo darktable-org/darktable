@@ -769,7 +769,7 @@ static void _applymode_combobox_changed(GtkWidget *widget, gpointer user_data)
 
 void gui_update(dt_lib_module_t *self)
 {
-  dt_lib_styles_t *d = (dt_lib_styles_t *)self->data;
+  dt_lib_styles_t *d = self->data;
 
   const gboolean has_act_on = (dt_act_on_get_images_nb(TRUE, FALSE) > 0);
 
@@ -788,7 +788,7 @@ void gui_update(dt_lib_module_t *self)
 
 static void _styles_changed_callback(gpointer instance, dt_lib_module_t *self)
 {
-  dt_lib_styles_t *d = (dt_lib_styles_t *)self->data;
+  dt_lib_styles_t *d = self->data;
   _gui_styles_update_view(d);
   dt_lib_gui_queue_update(self);
 }

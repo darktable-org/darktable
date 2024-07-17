@@ -187,7 +187,7 @@ int legacy_params(dt_iop_module_t *self,
 
 static void _resynch_params(struct dt_iop_module_t *self)
 {
-  dt_iop_spots_params_t *p = (dt_iop_spots_params_t *)self->params;
+  dt_iop_spots_params_t *p = self->params;
   dt_develop_blend_params_t *bp = self->blend_params;
 
   // we create 2 new buffers
@@ -225,7 +225,7 @@ static void _resynch_params(struct dt_iop_module_t *self)
 
 static gboolean _reset_form_creation(GtkWidget *widget, dt_iop_module_t *self)
 {
-  dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
+  dt_iop_spots_gui_data_t *g = self->gui_data;
 
   // we check the nb of shapes limit
   dt_masks_form_t *grp = dt_masks_get_from_id(self->dev, self->blend_params->mask_id);
@@ -301,7 +301,7 @@ static gboolean _add_shape(GtkWidget *widget,
   if(!_reset_form_creation(widget, self)) return TRUE;
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) return FALSE;
 
-  dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
+  dt_iop_spots_gui_data_t *g = self->gui_data;
   // we want to be sure that the iop has focus
   dt_iop_request_focus(self);
   // we create the new form
@@ -339,7 +339,7 @@ static gboolean _add_shape_callback(GtkWidget *widget,
 {
   if(darktable.gui->reset) return FALSE;
 
-  const dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *) self->gui_data;
+  const dt_iop_spots_gui_data_t *g = self->gui_data;
 
   const gboolean creation_continuous = dt_modifier_is(e->state, GDK_CONTROL_MASK);
 
@@ -369,7 +369,7 @@ static gboolean _edit_masks(GtkWidget *widget,
   }
 
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)self->blend_data;
-  dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
+  dt_iop_spots_gui_data_t *g = self->gui_data;
 
   //hide all shapes and free if some are in creation
   if(darktable.develop->form_gui->creation
@@ -768,7 +768,7 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
 {
   if(self->enabled && !darktable.develop->full.pipe->loading)
   {
-    dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
+    dt_iop_spots_gui_data_t *g = self->gui_data;
 
     if(in)
     {
@@ -827,7 +827,7 @@ void cleanup_pipe(struct dt_iop_module_t *self,
 void gui_update(dt_iop_module_t *self)
 {
   _resynch_params(self);
-  dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
+  dt_iop_spots_gui_data_t *g = self->gui_data;
   // update clones count
   dt_masks_form_t *grp = dt_masks_get_from_id(self->dev, self->blend_params->mask_id);
   guint nb = 0;

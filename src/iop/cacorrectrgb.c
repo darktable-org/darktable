@@ -686,15 +686,15 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_cacorrectrgb_gui_data_t *g = (dt_iop_cacorrectrgb_gui_data_t *)self->gui_data;
-  dt_iop_cacorrectrgb_params_t *p = (dt_iop_cacorrectrgb_params_t *)self->params;
+  dt_iop_cacorrectrgb_gui_data_t *g = self->gui_data;
+  dt_iop_cacorrectrgb_params_t *p = self->params;
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->refine_manifolds), p->refine_manifolds);
 }
 
 void reload_defaults(dt_iop_module_t *module)
 {
-  dt_iop_cacorrectrgb_params_t *d = (dt_iop_cacorrectrgb_params_t *)module->default_params;
+  dt_iop_cacorrectrgb_params_t *d = module->default_params;
 
   d->guide_channel = DT_CACORRECT_RGB_G;
   d->radius = 5.0f;
@@ -702,7 +702,7 @@ void reload_defaults(dt_iop_module_t *module)
   d->mode = DT_CACORRECT_MODE_STANDARD;
   d->refine_manifolds = FALSE;
 
-  dt_iop_cacorrectrgb_gui_data_t *g = (dt_iop_cacorrectrgb_gui_data_t *)module->gui_data;
+  dt_iop_cacorrectrgb_gui_data_t *g = module->gui_data;
   if(g)
   {
     dt_bauhaus_combobox_set_default(g->guide_channel, d->guide_channel);

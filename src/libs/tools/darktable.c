@@ -172,7 +172,7 @@ done:
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  dt_lib_darktable_t *d = (dt_lib_darktable_t *)self->data;
+  dt_lib_darktable_t *d = self->data;
   cairo_surface_destroy(d->image);
   free(d->image_buffer);
 
@@ -190,7 +190,7 @@ void gui_cleanup(dt_lib_module_t *self)
 
 static gboolean _lib_darktable_draw_callback(GtkWidget *widget, cairo_t *cr, dt_lib_module_t *self)
 {
-  dt_lib_darktable_t *d = (dt_lib_darktable_t *)self->data;
+  dt_lib_darktable_t *d = self->data;
 
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
 

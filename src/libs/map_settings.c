@@ -143,7 +143,7 @@ void gui_cleanup(dt_lib_module_t *self)
 
 void gui_reset(dt_lib_module_t *self)
 {
-  dt_lib_map_settings_t *d = (dt_lib_map_settings_t *)self->data;
+  dt_lib_map_settings_t *d = self->data;
   dt_gui_preferences_bool_reset(d->show_osd_checkbutton);
   dt_gui_preferences_bool_reset(d->filtered_images_checkbutton);
   dt_gui_preferences_int_reset(d->max_outline_nodes);

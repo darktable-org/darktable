@@ -2783,8 +2783,7 @@ void init(dt_iop_module_t *module)
  * from film strip mode. */
 void reload_defaults(dt_iop_module_t *module)
 {
-  dt_iop_denoiseprofile_gui_data_t *g =
-    (dt_iop_denoiseprofile_gui_data_t *)module->gui_data;
+  dt_iop_denoiseprofile_gui_data_t *g = module->gui_data;
   dt_iop_denoiseprofile_params_t *d = module->default_params;
 
   d->radius = 1.0f;
@@ -3043,8 +3042,7 @@ void init_pipe(struct dt_iop_module_t *self,
 {
   dt_iop_denoiseprofile_data_t *d =
     (dt_iop_denoiseprofile_data_t *)malloc(sizeof(dt_iop_denoiseprofile_data_t));
-  dt_iop_denoiseprofile_params_t *default_params =
-    (dt_iop_denoiseprofile_params_t *)self->default_params;
+  dt_iop_denoiseprofile_params_t *default_params = self->default_params;
 
   piece->data = (void *)d;
   for(int ch = 0; ch < DT_DENOISE_PROFILE_NONE; ch++)
@@ -3069,8 +3067,8 @@ void cleanup_pipe(struct dt_iop_module_t *self,
 static void profile_callback(GtkWidget *w, dt_iop_module_t *self)
 {
   int i = dt_bauhaus_combobox_get(w);
-  dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
-  dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
+  dt_iop_denoiseprofile_params_t *p = self->params;
+  dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
   const dt_noiseprofile_t *profile = &(g->interpolated);
   if(i > 0) profile = (dt_noiseprofile_t *)g_list_nth_data(g->profiles, i - 1);
   for(int k = 0; k < 3; k++)
@@ -3083,9 +3081,8 @@ static void profile_callback(GtkWidget *w, dt_iop_module_t *self)
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
-  dt_iop_denoiseprofile_gui_data_t *g =
-    (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
+  dt_iop_denoiseprofile_params_t *p = self->params;
+  dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
 
   if(!w || w == g->mode)
   {
@@ -3179,8 +3176,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
-  dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
+  dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
+  dt_iop_denoiseprofile_params_t *p = self->params;
 
   dt_bauhaus_combobox_set(g->profile, -1);
   int i = 1;
@@ -3220,8 +3217,8 @@ void gui_update(dt_iop_module_t *self)
 
 void gui_reset(dt_iop_module_t *self)
 {
-  dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
-  dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
+  dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
+  dt_iop_denoiseprofile_params_t *p = self->params;
   if(p->wavelet_color_mode == MODE_Y0U0V0)
   {
     g->channel = DT_DENOISE_PROFILE_Y0;
@@ -3256,7 +3253,7 @@ static gboolean denoiseprofile_draw_variance(GtkWidget *widget,
                                              dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return FALSE;
-  dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
+  dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
 
   if(!dt_isnan(g->variance_R))
   {
@@ -3289,7 +3286,7 @@ static gboolean denoiseprofile_draw(GtkWidget *widget,
                                     cairo_t *crf,
                                     dt_iop_module_t *self)
 {
-  dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
+  dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
   dt_iop_denoiseprofile_params_t p = *(dt_iop_denoiseprofile_params_t *)self->params;
 
   int ch = (int)g->channel;
@@ -3522,8 +3519,8 @@ static gboolean denoiseprofile_motion_notify(GtkWidget *widget,
                                              GdkEventMotion *event,
                                              dt_iop_module_t *self)
 {
-  dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
-  dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
+  dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
+  dt_iop_denoiseprofile_params_t *p = self->params;
   const int inset = DT_IOP_DENOISE_PROFILE_INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -3553,14 +3550,13 @@ static gboolean denoiseprofile_button_press(GtkWidget *widget,
                                             GdkEventButton *event,
                                             dt_iop_module_t *self)
 {
-  dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
+  dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
   const int ch = g->channel;
   if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
   {
     // reset current curve
-    dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
-    const dt_iop_denoiseprofile_params_t *const d =
-      (dt_iop_denoiseprofile_params_t *)self->default_params;
+    dt_iop_denoiseprofile_params_t *p = self->params;
+    const dt_iop_denoiseprofile_params_t *const d = self->default_params;
 
     for(int k = 0; k < DT_IOP_DENOISE_PROFILE_BANDS; k++)
     {
@@ -3593,8 +3589,7 @@ static gboolean denoiseprofile_button_release(GtkWidget *widget,
 {
   if(event->button == 1)
   {
-    dt_iop_denoiseprofile_gui_data_t *g =
-      (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
+    dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
     g->dragging = 0;
     return TRUE;
   }
@@ -3605,7 +3600,7 @@ static gboolean denoiseprofile_leave_notify(GtkWidget *widget,
                                             GdkEventCrossing *event,
                                             dt_iop_module_t *self)
 {
-  dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
+  dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
   if(!g->dragging) g->mouse_y = -1.0;
   gtk_widget_queue_draw(widget);
   return TRUE;
@@ -3615,7 +3610,7 @@ static gboolean denoiseprofile_scrolled(GtkWidget *widget,
                                         GdkEventScroll *event,
                                         dt_iop_module_t *self)
 {
-  dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
+  dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
 
   if(dt_gui_ignore_scroll(event)) return FALSE;
 
@@ -3638,9 +3633,9 @@ static void denoiseprofile_tab_switch(GtkNotebook *notebook,
                                       const guint page_num,
                                       dt_iop_module_t *self)
 {
-  dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
+  dt_iop_denoiseprofile_params_t *p = self->params;
   if(darktable.gui->reset) return;
-  dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
+  dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
   if(p->wavelet_color_mode == MODE_Y0U0V0)
     g->channel = (dt_iop_denoiseprofile_channel_t)page_num + DT_DENOISE_PROFILE_Y0;
   else
@@ -3651,8 +3646,7 @@ static void denoiseprofile_tab_switch(GtkNotebook *notebook,
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_denoiseprofile_gui_data_t *g = IOP_GUI_ALLOC(denoiseprofile);
-  const dt_iop_denoiseprofile_params_t *const p =
-    (dt_iop_denoiseprofile_params_t *)self->default_params;
+  const dt_iop_denoiseprofile_params_t *const p = self->default_params;
 
   g->profiles = NULL;
 
@@ -3874,7 +3868,7 @@ void gui_init(dt_iop_module_t *self)
 
 void gui_cleanup(dt_iop_module_t *self)
 {
-  dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
+  dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
   g_list_free_full(g->profiles, dt_noiseprofile_free);
   dt_draw_curve_destroy(g->transition_curve);
   // nothing else necessary, gtk will clean up the slider.

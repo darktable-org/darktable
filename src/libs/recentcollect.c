@@ -143,7 +143,7 @@ static void pretty_print(const char *buf, char *out, size_t outsize)
 
 static void _button_pressed(GtkButton *button, dt_lib_module_t *self)
 {
-  dt_lib_recentcollect_t *d = (dt_lib_recentcollect_t *)self->data;
+  dt_lib_recentcollect_t *d = self->data;
 
   // deserialize this button's preset
   int linenumber = 0;
@@ -182,7 +182,7 @@ static void _lib_recentcollection_updated(gpointer instance, dt_collection_chang
                                           dt_collection_properties_t changed_property, gpointer imgs, int next,
                                           dt_lib_module_t *self)
 {
-  dt_lib_recentcollect_t *d = (dt_lib_recentcollect_t *)self->data;
+  dt_lib_recentcollect_t *d = self->data;
 
   // update button descriptions:
   char confname[200] = { 0 };

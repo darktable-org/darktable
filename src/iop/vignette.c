@@ -392,8 +392,8 @@ void gui_post_expose(dt_iop_module_t *self,
                      const float pzy,
                      const float zoom_scale)
 {
-  //   dt_iop_vignette_gui_data_t *g = (dt_iop_vignette_gui_data_t *)self->gui_data;
-  dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
+  //   dt_iop_vignette_gui_data_t *g = self->gui_data;
+  dt_iop_vignette_params_t *p = self->params;
 
   float bigger_side, smaller_side;
   if(wd >= ht)
@@ -479,8 +479,8 @@ int mouse_moved(dt_iop_module_t *self,
                 const int which,
                 const float zoom_scale)
 {
-  dt_iop_vignette_gui_data_t *g = (dt_iop_vignette_gui_data_t *)self->gui_data;
-  dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
+  dt_iop_vignette_gui_data_t *g = self->gui_data;
+  dt_iop_vignette_params_t *p = self->params;
   float wd, ht;
   dt_dev_get_preview_size(self->dev, &wd, &ht);
   float bigger_side, smaller_side;
@@ -974,8 +974,8 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_vignette_gui_data_t *g = (dt_iop_vignette_gui_data_t *)self->gui_data;
-  dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
+  dt_iop_vignette_gui_data_t *g = self->gui_data;
+  dt_iop_vignette_params_t *p = self->params;
 
   gtk_widget_set_sensitive(GTK_WIDGET(g->whratio), !p->autoratio);
 }
@@ -1037,8 +1037,8 @@ void cleanup_pipe(struct dt_iop_module_t *self,
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_vignette_gui_data_t *g = (dt_iop_vignette_gui_data_t *)self->gui_data;
-  dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
+  dt_iop_vignette_gui_data_t *g = self->gui_data;
+  dt_iop_vignette_params_t *p = self->params;
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoratio), p->autoratio);
   gtk_widget_set_sensitive(GTK_WIDGET(g->whratio), !p->autoratio);
 }

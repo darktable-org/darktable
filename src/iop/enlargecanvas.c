@@ -405,8 +405,8 @@ void cleanup_global(dt_iop_module_so_t *module)
 /** gui setup and update, these are needed. */
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_enlargecanvas_gui_data_t *g = (dt_iop_enlargecanvas_gui_data_t *)self->gui_data;
-  dt_iop_enlargecanvas_params_t *p = (dt_iop_enlargecanvas_params_t *)self->params;
+  dt_iop_enlargecanvas_gui_data_t *g = self->gui_data;
+  dt_iop_enlargecanvas_params_t *p = self->params;
 
   dt_bauhaus_slider_set(g->percent_left, p->percent_left);
   dt_bauhaus_slider_set(g->percent_right, p->percent_right);

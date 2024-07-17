@@ -98,7 +98,7 @@ int position(const dt_lib_module_t *self)
 static void _lib_navigation_control_redraw_callback(gpointer instance,
                                                     dt_lib_module_t *self)
 {
-  dt_lib_navigation_t *d = (dt_lib_navigation_t *)self->data;
+  dt_lib_navigation_t *d = self->data;
 
   dt_dev_viewport_t *port = &darktable.develop->full;
 
@@ -321,7 +321,7 @@ void _lib_navigation_set_position(dt_lib_module_t *self,
                                   const int wd,
                                   const int ht)
 {
-  dt_lib_navigation_t *d = (dt_lib_navigation_t *)self->data;
+  dt_lib_navigation_t *d = self->data;
 
   if(d->dragging)
   {
@@ -399,7 +399,7 @@ static gboolean _lib_navigation_button_press_callback(GtkWidget *widget,
                                                       GdkEvent *event,
                                                       dt_lib_module_t *self)
 {
-  dt_lib_navigation_t *d = (dt_lib_navigation_t *)self->data;
+  dt_lib_navigation_t *d = self->data;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   if(event->type == GDK_BUTTON_PRESS && event->button.button != 2)
@@ -426,7 +426,7 @@ static gboolean _lib_navigation_button_release_callback(GtkWidget *widget,
                                                         GdkEventButton *event,
                                                         dt_lib_module_t *self)
 {
-  dt_lib_navigation_t *d = (dt_lib_navigation_t *)self->data;
+  dt_lib_navigation_t *d = self->data;
   d->dragging = 0;
 
   return TRUE;

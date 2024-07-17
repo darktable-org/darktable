@@ -297,7 +297,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
   if(!self->dev || !self->dev->full.pipe) return;
 
-  dt_iop_primaries_gui_data_t *g = (dt_iop_primaries_gui_data_t *)self->gui_data;
+  dt_iop_primaries_gui_data_t *g = self->gui_data;
 
   const dt_iop_order_iccprofile_info_t *work_profile =
     dt_ioppr_get_pipe_current_profile_info(self, self->dev->full.pipe);

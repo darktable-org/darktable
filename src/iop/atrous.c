@@ -292,7 +292,7 @@ static void process_wavelets(struct dt_iop_module_t *self,
 
   if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
   {
-    dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
+    dt_iop_atrous_gui_data_t *g = self->gui_data;
     g->num_samples = get_samples(g->sample, d, roi_in, piece);
     // tries to acquire gdk lock and this prone to deadlock:
     // dt_control_queue_draw(GTK_WIDGET(g->area));
@@ -374,7 +374,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
   {
-    dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
+    dt_iop_atrous_gui_data_t *g = self->gui_data;
     g->num_samples = get_samples(g->sample, d, roi_in, piece);
     // dt_control_queue_redraw_widget(GTK_WIDGET(g->area));
     // tries to acquire gdk lock and this prone to deadlock:
@@ -500,7 +500,7 @@ int process_cl(struct dt_iop_module_t *self,
 
   if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
   {
-    dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
+    dt_iop_atrous_gui_data_t *g = self->gui_data;
     g->num_samples = get_samples(g->sample, d, roi_in, piece);
     // dt_control_queue_redraw_widget(GTK_WIDGET(g->area));
     // tries to acquire gdk lock and this prone to deadlock:
@@ -694,7 +694,7 @@ static inline void _apply_mix(dt_iop_module_t *self,
                               float *x,
                               float *y)
 {
-  const dt_iop_atrous_params_t *const dp = (dt_iop_atrous_params_t *)self->default_params;
+  const dt_iop_atrous_params_t *const dp = self->default_params;
   *x = fminf(1.0f, fmaxf(0.0f, px + (mix - 1.0f) * (px - dp->x[ch][k])));
   *y = fminf(1.0f, fmaxf(0.0f, py + (mix - 1.0f) * (py - dp->y[ch][k])));
 }
@@ -740,8 +740,7 @@ void init_pipe(struct dt_iop_module_t *self,
 {
   dt_iop_atrous_data_t *d =
     (dt_iop_atrous_data_t *)malloc(sizeof(dt_iop_atrous_data_t));
-  const dt_iop_atrous_params_t *const default_params =
-    (dt_iop_atrous_params_t *)self->default_params;
+  const dt_iop_atrous_params_t *const default_params = self->default_params;
   piece->data = (void *)d;
   for(int ch = 0; ch < atrous_none; ch++)
   {
@@ -1062,8 +1061,8 @@ void init_presets(dt_iop_module_so_t *self)
 
 static void reset_mix(dt_iop_module_t *self)
 {
-  dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
-  dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
+  dt_iop_atrous_gui_data_t *g = self->gui_data;
+  dt_iop_atrous_params_t *p = self->params;
   g->drag_params = *p;
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->mix, p->mix);
@@ -1083,7 +1082,7 @@ static gboolean area_enter_leave_notify(GtkWidget *widget,
                                         GdkEventCrossing *event,
                                         dt_iop_module_t *self)
 {
-  dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
+  dt_iop_atrous_gui_data_t *g = self->gui_data;
   g->in_curve = event->type == GDK_ENTER_NOTIFY;
   if(!g->dragging)
     g->x_move = -1;
@@ -1110,7 +1109,7 @@ static gboolean area_draw(GtkWidget *widget,
                           cairo_t *crf,
                           dt_iop_module_t *self)
 {
-  dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
+  dt_iop_atrous_gui_data_t *g = self->gui_data;
   dt_iop_atrous_params_t p = *(dt_iop_atrous_params_t *)self->params;
 
   const float mix = g->in_curve ? 1.0f : p.mix;
@@ -1430,8 +1429,8 @@ static gboolean area_motion_notify(GtkWidget *widget,
                                    GdkEventMotion *event,
                                    dt_iop_module_t *self)
 {
-  dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
-  dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
+  dt_iop_atrous_gui_data_t *g = self->gui_data;
+  dt_iop_atrous_params_t *p = self->params;
   const int inset = INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -1516,9 +1515,9 @@ static gboolean area_button_press(GtkWidget *widget,
   if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
   {
     // reset current curve
-    dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
-    const dt_iop_atrous_params_t *const d = (dt_iop_atrous_params_t *)self->default_params;
-    dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
+    dt_iop_atrous_params_t *p = self->params;
+    const dt_iop_atrous_params_t *const d = self->default_params;
+    dt_iop_atrous_gui_data_t *g = self->gui_data;
     reset_mix(self);
     for(int k = 0; k < BANDS; k++)
     {
@@ -1530,7 +1529,7 @@ static gboolean area_button_press(GtkWidget *widget,
   else if(event->button == 1)
   {
     // set active point
-    dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
+    dt_iop_atrous_gui_data_t *g = self->gui_data;
     reset_mix(self);
     const int inset = INSET;
     GtkAllocation allocation;
@@ -1553,7 +1552,7 @@ static gboolean area_button_release(GtkWidget *widget,
 {
   if(event->button == 1)
   {
-    dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
+    dt_iop_atrous_gui_data_t *g = self->gui_data;
     g->dragging = 0;
     reset_mix(self);
     return TRUE;
@@ -1565,7 +1564,7 @@ static gboolean area_scrolled(GtkWidget *widget,
                               GdkEventScroll *event,
                               dt_iop_module_t *self)
 {
-  dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
+  dt_iop_atrous_gui_data_t *g = self->gui_data;
 
   if(dt_gui_ignore_scroll(event)) return FALSE;
 
@@ -1586,7 +1585,7 @@ static void tab_switch(GtkNotebook *notebook,
                        const guint page_num,
                        dt_iop_module_t *self)
 {
-  dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
+  dt_iop_atrous_gui_data_t *g = self->gui_data;
   if(darktable.gui->reset) return;
   g->channel = g->channel2 = (atrous_channel_t)page_num;
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
@@ -1596,8 +1595,8 @@ static void mix_callback(GtkWidget *slider,
                          dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
-  dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
+  dt_iop_atrous_params_t *p = self->params;
+  dt_iop_atrous_gui_data_t *g = self->gui_data;
   p->mix = dt_bauhaus_slider_get(slider);
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
   dt_dev_add_history_item_target(darktable.develop, self, TRUE, slider);
@@ -1640,9 +1639,9 @@ static float _action_process_equalizer(gpointer target,
                                        float move_size)
 {
   dt_iop_module_t *self = g_object_get_data(G_OBJECT(target), "iop-instance");
-  dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
-  dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
-  const dt_iop_atrous_params_t *const d = (dt_iop_atrous_params_t *)self->default_params;
+  dt_iop_atrous_gui_data_t *g = self->gui_data;
+  dt_iop_atrous_params_t *p = self->params;
+  const dt_iop_atrous_params_t *const d = self->default_params;
 
   const int node = element - 1;
   const int ch1 = g->channel;
@@ -1767,7 +1766,7 @@ const dt_action_def_t _action_def_equalizer
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_atrous_gui_data_t *g = IOP_GUI_ALLOC(atrous);
-  const dt_iop_atrous_params_t *const p = (dt_iop_atrous_params_t *)self->default_params;
+  const dt_iop_atrous_params_t *const p = self->default_params;
 
   g->num_samples = 0;
   g->band_max = 0;
@@ -1833,7 +1832,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
+  dt_iop_atrous_gui_data_t *g = self->gui_data;
   dt_conf_set_int("plugins/darkroom/atrous/gui_channel", g->channel);
   dt_draw_curve_destroy(g->minmax_curve);
 

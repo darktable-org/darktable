@@ -858,8 +858,7 @@ void init_pipe(struct dt_iop_module_t *self,
   // create part of the pixelpipe
   dt_iop_tonecurve_data_t *d =
     (dt_iop_tonecurve_data_t *)malloc(sizeof(dt_iop_tonecurve_data_t));
-  const dt_iop_tonecurve_params_t *const default_params =
-    (dt_iop_tonecurve_params_t *)self->default_params;
+  const dt_iop_tonecurve_params_t *const default_params = self->default_params;
   piece->data = (void *)d;
   d->autoscale_ab = DT_S_SCALE_AUTOMATIC;
   d->unbound_ab = 1;
@@ -895,8 +894,8 @@ void cleanup_pipe(struct dt_iop_module_t *self,
 
 void gui_reset(struct dt_iop_module_t *self)
 {
-  dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
-  dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
+  dt_iop_tonecurve_gui_data_t *g = self->gui_data;
+  dt_iop_tonecurve_params_t *p = self->params;
   dt_bauhaus_combobox_set(g->interpolator, p->tonecurve_type[ch_L]);
   dt_bauhaus_combobox_set(g->preserve_colors, p->preserve_colors);
   dt_bauhaus_slider_set(g->logbase, 0);
@@ -909,8 +908,8 @@ void gui_reset(struct dt_iop_module_t *self)
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
-  dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
+  dt_iop_tonecurve_gui_data_t *g = self->gui_data;
+  dt_iop_tonecurve_params_t *p = self->params;
 
   gui_changed(self, g->autoscale_ab, 0);
 
@@ -967,7 +966,7 @@ static void logbase_callback(GtkWidget *slider,
                              dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
+  dt_iop_tonecurve_gui_data_t *g = self->gui_data;
   g->loglogscale = eval_grey(dt_bauhaus_slider_get(g->logbase));
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
@@ -976,8 +975,8 @@ void gui_changed(dt_iop_module_t *self,
                  GtkWidget *w,
                  void *previous)
 {
-  dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
-  dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
+  dt_iop_tonecurve_gui_data_t *g = self->gui_data;
+  dt_iop_tonecurve_params_t *p = self->params;
 
   if(w == g->autoscale_ab)
   {
@@ -996,8 +995,8 @@ void gui_changed(dt_iop_module_t *self,
 static void interpolator_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
-  dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
+  dt_iop_tonecurve_params_t *p = self->params;
+  dt_iop_tonecurve_gui_data_t *g = self->gui_data;
   const int combo = dt_bauhaus_combobox_get(widget);
   if(combo == 0)
     p->tonecurve_type[ch_L] = p->tonecurve_type[ch_a] =
@@ -1017,7 +1016,7 @@ static void tab_switch(GtkNotebook *notebook,
                        const guint page_num,
                        dt_iop_module_t *self)
 {
-  dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
+  dt_iop_tonecurve_gui_data_t *g = self->gui_data;
   if(darktable.gui->reset) return;
 
   g->channel = (tonecurve_channel_t)page_num;
@@ -1104,8 +1103,8 @@ void color_picker_apply(dt_iop_module_t *self,
 static void dt_iop_tonecurve_sanity_check(dt_iop_module_t *self,
                                           GtkWidget *widget)
 {
-  dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
-  dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
+  dt_iop_tonecurve_gui_data_t *g = self->gui_data;
+  dt_iop_tonecurve_params_t *p = self->params;
 
   int ch = g->channel;
   int nodes = p->tonecurve_nodes[ch];
@@ -1143,8 +1142,8 @@ static gboolean _move_point_internal(dt_iop_module_t *self,
                                      float dy,
                                      guint state)
 {
-  dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
-  dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
+  dt_iop_tonecurve_params_t *p = self->params;
+  dt_iop_tonecurve_gui_data_t *g = self->gui_data;
 
   const int ch = g->channel;
   dt_iop_tonecurve_node_t *tonecurve = p->tonecurve[ch];
@@ -1170,8 +1169,8 @@ static gboolean _scrolled(GtkWidget *widget,
                           GdkEventScroll *event,
                           dt_iop_module_t *self)
 {
-  dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
-  dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
+  dt_iop_tonecurve_params_t *p = self->params;
+  dt_iop_tonecurve_gui_data_t *g = self->gui_data;
 
   if(dt_gui_ignore_scroll(event))
     return FALSE;
@@ -1200,8 +1199,8 @@ static gboolean dt_iop_tonecurve_key_press(GtkWidget *widget,
                                            GdkEventKey *event,
                                            dt_iop_module_t *self)
 {
-  dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
-  dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
+  dt_iop_tonecurve_params_t *p = self->params;
+  dt_iop_tonecurve_gui_data_t *g = self->gui_data;
 
   const int ch = g->channel;
   const int autoscale_ab = p->tonecurve_autoscale_ab;
@@ -1246,8 +1245,7 @@ static gboolean dt_iop_tonecurve_key_press(GtkWidget *widget,
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_tonecurve_gui_data_t *g = IOP_GUI_ALLOC(tonecurve);
-  const dt_iop_tonecurve_params_t *const p =
-    (dt_iop_tonecurve_params_t *)self->default_params;
+  const dt_iop_tonecurve_params_t *const p = self->default_params;
 
   for(int ch = 0; ch < ch_max; ch++)
   {
@@ -1356,7 +1354,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
+  dt_iop_tonecurve_gui_data_t *g = self->gui_data;
   // this one we need to unref manually. not so the initially unowned widgets.
   g_object_unref(g->sizegroup);
   dt_draw_curve_destroy(g->minmax_curve[ch_L]);
@@ -1370,7 +1368,7 @@ static gboolean dt_iop_tonecurve_leave_notify(GtkWidget *widget,
                                               GdkEventCrossing *event,
                                               dt_iop_module_t *self)
 {
-  dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
+  dt_iop_tonecurve_gui_data_t *g = self->gui_data;
   if(!(event->state & GDK_BUTTON1_MASK))
     g->selected = -1;
   gtk_widget_queue_draw(widget);
@@ -1388,8 +1386,8 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget,
                                       cairo_t *crf,
                                       dt_iop_module_t *self)
 {
-  dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
-  dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
+  dt_iop_tonecurve_gui_data_t *g = self->gui_data;
+  dt_iop_tonecurve_params_t *p = self->params;
   dt_iop_tonecurve_global_data_t *gd = (dt_iop_tonecurve_global_data_t *)self->global_data;
 
   const int ch = g->channel;
@@ -1778,8 +1776,8 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget,
                                                GdkEventMotion *event,
                                                dt_iop_module_t *self)
 {
-  dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
-  dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
+  dt_iop_tonecurve_gui_data_t *g = self->gui_data;
+  dt_iop_tonecurve_params_t *p = self->params;
 
   int ch = g->channel;
   int nodes = p->tonecurve_nodes[ch];
@@ -1855,9 +1853,9 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget,
                                               GdkEventButton *event,
                                               dt_iop_module_t *self)
 {
-  dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
-  const dt_iop_tonecurve_params_t *const d = (dt_iop_tonecurve_params_t *)self->default_params;
-  dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
+  dt_iop_tonecurve_params_t *p = self->params;
+  const dt_iop_tonecurve_params_t *const d = self->default_params;
+  dt_iop_tonecurve_gui_data_t *g = self->gui_data;
 
   int ch = g->channel;
   int autoscale_ab = p->tonecurve_autoscale_ab;
