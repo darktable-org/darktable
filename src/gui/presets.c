@@ -1457,7 +1457,7 @@ static void _menuitem_manage_quick_presets(GtkMenuItem *menuitem,
 
   for(const GList *modules = m2; modules; modules = g_list_next(modules))
   {
-    dt_iop_module_so_t *iop = (dt_iop_module_so_t *)modules->data;
+    dt_iop_module_so_t *iop = modules->data;
     GtkTreeIter toplevel, child;
 
     /* check if module is visible in current layout */
@@ -1549,7 +1549,7 @@ void dt_gui_favorite_presets_menu_show(GtkWidget *w)
       modules;
       modules = g_list_previous(modules))
   {
-    dt_iop_module_t *iop = (dt_iop_module_t *)modules->data;
+    dt_iop_module_t *iop = modules->data;
 
     // check if module is visible in current layout
     if(dt_dev_modulegroups_is_visible(darktable.develop, iop->so->op))

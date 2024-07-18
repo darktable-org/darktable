@@ -111,8 +111,7 @@ static char *_get_tooltip_for(const int coloridx)
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_colorlabels_t *d =
-    (dt_lib_colorlabels_t *)g_malloc0(sizeof(dt_lib_colorlabels_t));
+  dt_lib_colorlabels_t *d = g_malloc0(sizeof(dt_lib_colorlabels_t));
   self->data = (void *)d;
 
   /* create buttons box */

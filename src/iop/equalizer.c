@@ -120,7 +120,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int width = roi_in->width, height = roi_in->height;
   const float scale = roi_in->scale;
   dt_iop_image_copy_by_size(ovoid, ivoid, width, height, chs);
-  dt_iop_equalizer_data_t *d = (dt_iop_equalizer_data_t *)(piece->data);
+  dt_iop_equalizer_data_t *d = piece->data;
 
   // 1 pixel in this buffer represents 1.0/scale pixels in original image:
   const float l1 = 1.0f + dt_log2f(piece->iscale / scale); // finest level
@@ -172,7 +172,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
                    dt_dev_pixelpipe_iop_t *piece)
 {
   // pull in new params to pipe
-  dt_iop_equalizer_data_t *d = (dt_iop_equalizer_data_t *)(piece->data);
+  dt_iop_equalizer_data_t *d = piece->data;
   dt_iop_equalizer_params_t *p = (dt_iop_equalizer_params_t *)p1;
 
   for(int ch = 0; ch < 3; ch++)
@@ -187,7 +187,7 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
 {
   // create part of the pixelpipe
   dt_iop_equalizer_data_t *d = (dt_iop_equalizer_data_t *)malloc(sizeof(dt_iop_equalizer_data_t));
-  const dt_iop_equalizer_params_t *const default_params = (dt_iop_equalizer_params_t *)self->default_params;
+  const dt_iop_equalizer_params_t *const default_params = self->default_params;
   piece->data = (void *)d;
   for(int ch = 0; ch < 3; ch++)
   {
@@ -204,7 +204,7 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
 // clean up everything again.
-  dt_iop_equalizer_data_t *d = (dt_iop_equalizer_data_t *)(piece->data);
+  dt_iop_equalizer_data_t *d = piece->data;
   for(int ch = 0; ch < 3; ch++) dt_draw_curve_destroy(d->curve[ch]);
   free(piece->data);
   piece->data = NULL;

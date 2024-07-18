@@ -486,7 +486,7 @@ static int register_storage(lua_State *L)
     for(GList *it = darktable.imageio->plugins_format; it; it = g_list_next(it))
     {
       lua_pushvalue(L, 5);
-      dt_imageio_module_format_t *format = (dt_imageio_module_format_t *)it->data;
+      dt_imageio_module_format_t *format = it->data;
       dt_imageio_module_data_t *sdata = storage->get_params(storage);
       dt_imageio_module_data_t *fdata = format->get_params(format);
       luaA_push_type(L, storage->parameter_lua_type, sdata);
@@ -507,7 +507,7 @@ static int register_storage(lua_State *L)
     // all formats are supported
     for(GList *it = darktable.imageio->plugins_format; it; it = g_list_next(it))
     {
-      dt_imageio_module_format_t *format = (dt_imageio_module_format_t *)it->data;
+      dt_imageio_module_format_t *format = it->data;
       data->supported_formats = g_list_prepend(data->supported_formats, format);
     }
   }

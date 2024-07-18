@@ -127,8 +127,7 @@ static int active_preset_member(lua_State *L)
   lua_newtable(L);
   gchar *preset_name;
 
-  dt_lib_module_info_t *mi =
-    (dt_lib_module_info_t *)calloc(1, sizeof(dt_lib_module_info_t));
+  dt_lib_module_info_t *mi = calloc(1, sizeof(dt_lib_module_info_t));
 
   mi->plugin_name = g_strdup(module->plugin_name);
   mi->version = module->version();

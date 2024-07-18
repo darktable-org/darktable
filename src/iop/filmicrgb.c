@@ -505,8 +505,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_filmicrgb_params_v1_t;
 
     const dt_iop_filmicrgb_params_v1_t *o = (dt_iop_filmicrgb_params_v1_t *)old_params;
-    dt_iop_filmicrgb_params_v6_t *n =
-      (dt_iop_filmicrgb_params_v6_t *)malloc(sizeof(dt_iop_filmicrgb_params_v6_t));
+    dt_iop_filmicrgb_params_v6_t *n = malloc(sizeof(dt_iop_filmicrgb_params_v6_t));
 
     n->grey_point_source = o->grey_point_source;
     n->white_point_source = o->white_point_source;
@@ -577,8 +576,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_filmicrgb_params_v2_t;
 
     const dt_iop_filmicrgb_params_v2_t *o = (dt_iop_filmicrgb_params_v2_t *)old_params;
-    dt_iop_filmicrgb_params_v6_t *n =
-      (dt_iop_filmicrgb_params_v6_t *)malloc(sizeof(dt_iop_filmicrgb_params_v6_t));
+    dt_iop_filmicrgb_params_v6_t *n = malloc(sizeof(dt_iop_filmicrgb_params_v6_t));
 
     n->grey_point_source = o->grey_point_source;
     n->white_point_source = o->white_point_source;
@@ -658,8 +656,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_filmicrgb_params_v3_t;
 
     const dt_iop_filmicrgb_params_v3_t *o = (dt_iop_filmicrgb_params_v3_t *)old_params;
-    dt_iop_filmicrgb_params_v6_t *n =
-      (dt_iop_filmicrgb_params_v6_t *)malloc(sizeof(dt_iop_filmicrgb_params_v6_t));
+    dt_iop_filmicrgb_params_v6_t *n = malloc(sizeof(dt_iop_filmicrgb_params_v6_t));
 
     n->grey_point_source = o->grey_point_source;
     n->white_point_source = o->white_point_source;
@@ -732,8 +729,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_filmicrgb_params_v4_t;
 
     const dt_iop_filmicrgb_params_v4_t *o = (dt_iop_filmicrgb_params_v4_t *)old_params;
-    dt_iop_filmicrgb_params_v6_t *n =
-      (dt_iop_filmicrgb_params_v6_t *)malloc(sizeof(dt_iop_filmicrgb_params_v6_t));
+    dt_iop_filmicrgb_params_v6_t *n = malloc(sizeof(dt_iop_filmicrgb_params_v6_t));
 
     memcpy(n, o, sizeof(dt_iop_filmicrgb_params_v4_t));
     // structure didn't change except the enum instead of gint for internal_version
@@ -796,8 +792,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_filmicrgb_params_v5_t;
 
     const dt_iop_filmicrgb_params_v5_t *o = (dt_iop_filmicrgb_params_v5_t *)old_params;
-    dt_iop_filmicrgb_params_v6_t *n =
-      (dt_iop_filmicrgb_params_v6_t *)malloc(sizeof(dt_iop_filmicrgb_params_v6_t));
+    dt_iop_filmicrgb_params_v6_t *n = malloc(sizeof(dt_iop_filmicrgb_params_v6_t));
 
     // Copy over the old parameters
     n->grey_point_source = o->grey_point_source;
@@ -2080,7 +2075,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 {
   const int scales = get_scales(roi_in, piece);
   const int max_filter_radius = (1 << scales);
-  const dt_iop_filmicrgb_data_t *const data = (dt_iop_filmicrgb_data_t *)piece->data;
+  const dt_iop_filmicrgb_data_t *const data = piece->data;
   const gboolean run_fast = !data->enable_highlight_reconstruction || piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
 
   // without reconstruction: in + out + 1ch_mask
@@ -2110,7 +2105,7 @@ void process(dt_iop_module_t *self,
                                         ivoid, ovoid, roi_in, roi_out))
     return;
 
-  const dt_iop_filmicrgb_data_t *const data = (dt_iop_filmicrgb_data_t *)piece->data;
+  const dt_iop_filmicrgb_data_t *const data = piece->data;
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
   const dt_iop_order_iccprofile_info_t *const export_profile = dt_ioppr_get_pipe_output_profile_info(piece->pipe);
 
@@ -2377,8 +2372,8 @@ int process_cl(struct dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_filmicrgb_data_t *const d = (dt_iop_filmicrgb_data_t *)piece->data;
-  dt_iop_filmicrgb_global_data_t *const gd = (dt_iop_filmicrgb_global_data_t *)self->global_data;
+  const dt_iop_filmicrgb_data_t *const d = piece->data;
+  dt_iop_filmicrgb_global_data_t *const gd = self->global_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
@@ -3050,7 +3045,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)p1;
-  dt_iop_filmicrgb_data_t *d = (dt_iop_filmicrgb_data_t *)piece->data;
+  dt_iop_filmicrgb_data_t *d = piece->data;
 
   // source and display greys
   float grey_source = 0.1845f, grey_display = 0.4638f;
@@ -3244,7 +3239,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_filmicrgb_global_data_t *gd = (dt_iop_filmicrgb_global_data_t *)module->data;
+  dt_iop_filmicrgb_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_filmic_rgb_split);
   dt_opencl_free_kernel(gd->kernel_filmic_rgb_chroma);
   dt_opencl_free_kernel(gd->kernel_filmic_mask);

@@ -611,7 +611,7 @@ int set_params(dt_imageio_module_format_t *self, const void *params, const int s
 {
   if(size != self->params_size(self)) return 1;
   dt_imageio_j2k_t *d = (dt_imageio_j2k_t *)params;
-  dt_imageio_j2k_gui_t *g = (dt_imageio_j2k_gui_t *)self->gui_data;
+  dt_imageio_j2k_gui_t *g = self->gui_data;
   dt_bauhaus_combobox_set(g->preset, d->preset);
   dt_bauhaus_slider_set(g->quality, d->quality);
   return 0;
@@ -696,7 +696,7 @@ void gui_reset(dt_imageio_module_format_t *self)
 {
   const int preset_def = dt_confgen_get_int("plugins/imageio/format/j2k/preset", DT_DEFAULT);
   const int quality_def = dt_confgen_get_int("plugins/imageio/format/j2k/quality", DT_DEFAULT);
-  dt_imageio_j2k_gui_t *gui = (dt_imageio_j2k_gui_t *)self->gui_data;
+  dt_imageio_j2k_gui_t *gui = self->gui_data;
   dt_bauhaus_combobox_set(gui->preset, preset_def);
   dt_bauhaus_combobox_set(gui->quality, quality_def);
 }

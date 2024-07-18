@@ -168,7 +168,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
   if(n_channels > 0)
     for(GList *iter = pipe->nodes; iter; iter = g_list_next(iter))
     {
-      dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)iter->data;
+      dt_dev_pixelpipe_iop_t *piece = iter->data;
 
       GHashTableIter rm_iter;
       gpointer key, value;
@@ -268,7 +268,7 @@ int set_params(dt_imageio_module_format_t *self, const void *params, int size)
 {
   if(size != params_size(self)) return 1;
   const dt_imageio_xcf_t *d = (dt_imageio_xcf_t *)params;
-  const dt_imageio_xcf_gui_t *g = (dt_imageio_xcf_gui_t *)self->gui_data;
+  const dt_imageio_xcf_gui_t *g = self->gui_data;
 
   if(d->bpp == 16)
     dt_bauhaus_combobox_set(g->bpp, 1);
@@ -371,7 +371,7 @@ void gui_cleanup(dt_imageio_module_format_t *self)
 
 void gui_reset(dt_imageio_module_format_t *self)
 {
-  dt_imageio_xcf_gui_t *gui = (dt_imageio_xcf_gui_t *)self->gui_data;
+  dt_imageio_xcf_gui_t *gui = self->gui_data;
   dt_bauhaus_combobox_set(gui->bpp, 2); // bpp = 32
 }
 

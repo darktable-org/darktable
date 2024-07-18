@@ -128,8 +128,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_monochrome_params_v1_t;
 
     const dt_iop_monochrome_params_v1_t *o = (dt_iop_monochrome_params_v1_t *)old_params;
-    dt_iop_monochrome_params_v2_t *n =
-      (dt_iop_monochrome_params_v2_t *)malloc(sizeof(dt_iop_monochrome_params_v2_t));
+    dt_iop_monochrome_params_v2_t *n = malloc(sizeof(dt_iop_monochrome_params_v2_t));
     memcpy(n, o, sizeof(dt_iop_monochrome_params_v1_t));
     n->highlights = 0.0f;
 
@@ -202,7 +201,7 @@ void process(struct dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_monochrome_data_t *d = (dt_iop_monochrome_data_t *)piece->data;
+  dt_iop_monochrome_data_t *d = piece->data;
   const float sigma2 = 2.0f * (d->size * 128.0f) * (d->size * 128.0f);
 // first pass: evaluate color filter:
   const size_t npixels = (size_t)roi_out->height * roi_out->width;
@@ -247,8 +246,8 @@ int process_cl(struct dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_monochrome_data_t *d = (dt_iop_monochrome_data_t *)piece->data;
-  dt_iop_monochrome_global_data_t *gd = (dt_iop_monochrome_global_data_t *)self->global_data;
+  dt_iop_monochrome_data_t *d = piece->data;
+  dt_iop_monochrome_global_data_t *gd = self->global_data;
 
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   const int devid = piece->pipe->devid;
@@ -323,7 +322,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)p1;
-  dt_iop_monochrome_data_t *d = (dt_iop_monochrome_data_t *)piece->data;
+  dt_iop_monochrome_data_t *d = piece->data;
   d->a = p->a;
   d->b = p->b;
   d->size = p->size;
@@ -348,7 +347,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_monochrome_global_data_t *gd = (dt_iop_monochrome_global_data_t *)module->data;
+  dt_iop_monochrome_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_monochrome_filter);
   dt_opencl_free_kernel(gd->kernel_monochrome);
   free(module->data);

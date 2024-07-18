@@ -124,7 +124,7 @@ dt_iop_colorspace_type_t output_colorspace(dt_iop_module_t *self,
   int cst = IOP_CS_RGB;
   if(piece)
   {
-    const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
+    const dt_iop_colorout_data_t *const d = piece->data;
     if(d->type == DT_COLORSPACE_LAB) cst = IOP_CS_LAB;
   }
   else
@@ -173,8 +173,7 @@ int legacy_params(dt_iop_module_t *self,
 
 
     const dt_iop_colorout_params_v3_t *o = (dt_iop_colorout_params_v3_t *)old_params;
-    dt_iop_colorout_params_v5_t *n =
-      (dt_iop_colorout_params_v5_t *)malloc(sizeof(dt_iop_colorout_params_v5_t));
+    dt_iop_colorout_params_v5_t *n = malloc(sizeof(dt_iop_colorout_params_v5_t));
     memset(n, 0, sizeof(dt_iop_colorout_params_v5_t));
 
     if(!strcmp(o->iccprofile, "sRGB"))
@@ -212,8 +211,7 @@ int legacy_params(dt_iop_module_t *self,
 
 
     const dt_iop_colorout_params_v4_t *o = (dt_iop_colorout_params_v4_t *)old_params;
-    dt_iop_colorout_params_v5_t *n =
-      (dt_iop_colorout_params_v5_t *)malloc(sizeof(dt_iop_colorout_params_v5_t));
+    dt_iop_colorout_params_v5_t *n = malloc(sizeof(dt_iop_colorout_params_v5_t));
     memset(n, 0, sizeof(dt_iop_colorout_params_v5_t));
 
     n->type = o->type;
@@ -241,7 +239,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_colorout_global_data_t *gd = (dt_iop_colorout_global_data_t *)module->data;
+  dt_iop_colorout_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_colorout);
   free(module->data);
   module->data = NULL;
@@ -263,7 +261,7 @@ static void output_profile_changed(GtkWidget *widget, dt_iop_module_t *self)
 
   for(GList *profiles = darktable.color_profiles->profiles; profiles; profiles = g_list_next(profiles))
   {
-    dt_colorspaces_color_profile_t *pp = (dt_colorspaces_color_profile_t *)profiles->data;
+    dt_colorspaces_color_profile_t *pp = profiles->data;
     if(pp->out_pos == pos)
     {
       p->type = pp->type;
@@ -319,8 +317,8 @@ static float _lerp_lut(const float *const lut, const float v)
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
-  dt_iop_colorout_global_data_t *gd = (dt_iop_colorout_global_data_t *)self->global_data;
+  dt_iop_colorout_data_t *d = piece->data;
+  dt_iop_colorout_global_data_t *gd = self->global_data;
   cl_mem dev_m = NULL, dev_r = NULL, dev_g = NULL, dev_b = NULL, dev_coeffs = NULL;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
@@ -370,7 +368,7 @@ static void process_fastpath_apply_tonecurves(struct dt_iop_module_t *self,
                                               void *const ovoid,
                                               const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
+  const dt_iop_colorout_data_t *const d = piece->data;
 
   if(dt_is_valid_colormatrix(d->cmatrix[0][0]))
   {
@@ -532,7 +530,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
     return;
-  const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
+  const dt_iop_colorout_data_t *const d = piece->data;
   const size_t width = roi_out->width;
   const size_t height = roi_out->height;
   const size_t npixels = width * height;
@@ -557,7 +555,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)p1;
-  dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
+  dt_iop_colorout_data_t *d = piece->data;
 
   d->type = p->type;
 
@@ -768,13 +766,13 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_colorout_data_t));
-  dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
+  dt_iop_colorout_data_t *d = piece->data;
   d->xform = NULL;
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
+  dt_iop_colorout_data_t *d = piece->data;
   if(d->xform)
   {
     cmsDeleteTransform(d->xform);
@@ -794,7 +792,7 @@ void gui_update(struct dt_iop_module_t *self)
 
   for(GList *iter = darktable.color_profiles->profiles; iter; iter = g_list_next(iter))
   {
-    dt_colorspaces_color_profile_t *pp = (dt_colorspaces_color_profile_t *)iter->data;
+    dt_colorspaces_color_profile_t *pp = iter->data;
     if(pp->out_pos > -1 &&
        p->type == pp->type && (p->type != DT_COLORSPACE_FILE || !strcmp(p->filename, pp->filename)))
     {
@@ -862,7 +860,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->output_profile, TRUE, TRUE, 0);
   for(GList *l = darktable.color_profiles->profiles; l; l = g_list_next(l))
   {
-    dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)l->data;
+    dt_colorspaces_color_profile_t *prof = l->data;
     if(prof->out_pos > -1) dt_bauhaus_combobox_add(g->output_profile, prof->name);
   }
 

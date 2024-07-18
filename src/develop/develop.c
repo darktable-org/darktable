@@ -504,7 +504,7 @@ static inline void _dt_dev_load_pipeline_defaults(dt_develop_t *dev)
       modules;
       modules = g_list_previous(modules))
   {
-    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+    dt_iop_module_t *module = modules->data;
     dt_iop_reload_defaults(module);
   }
 }
@@ -707,7 +707,7 @@ static void _dev_write_history_item(const dt_imgid_t imgid,
   // write masks (if any)
   for(GList *forms = h->forms; forms; forms = g_list_next(forms))
   {
-    dt_masks_form_t *form = (dt_masks_form_t *)forms->data;
+    dt_masks_form_t *form = forms->data;
     if(form)
       dt_masks_write_masks_history_item(imgid, num, form);
   }
@@ -804,7 +804,7 @@ static void _dev_add_history_item_ext(dt_develop_t *dev,
   while(history)
   {
     GList *next = g_list_next(history);
-    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
+    dt_dev_history_item_t *hist = history->data;
     // printf("removing obsoleted history item: %s\n", hist->module->op);
 
     //check if an earlier instance of the module exists
@@ -812,7 +812,7 @@ static void _dev_add_history_item_ext(dt_develop_t *dev,
     GList *prior_history = g_list_nth(dev->history, dev->history_end - 1);
     while(prior_history)
     {
-      dt_dev_history_item_t *prior_hist = (dt_dev_history_item_t *)(prior_history->data);
+      dt_dev_history_item_t *prior_hist = prior_history->data;
       if(prior_hist->module->so == hist->module->so)
       {
         earlier_entry = TRUE;
@@ -938,7 +938,7 @@ const dt_dev_history_item_t *dt_dev_get_history_item(dt_develop_t *dev, const ch
 {
   for(GList *l = g_list_last(dev->history); l; l = g_list_previous(l))
   {
-    dt_dev_history_item_t *item = (dt_dev_history_item_t *)l->data;
+    dt_dev_history_item_t *item = l->data;
     if(!g_strcmp0(item->op_name, op))
     {
       return item;
@@ -1072,7 +1072,7 @@ void dt_dev_add_masks_history_item_ext(dt_develop_t *dev,
   {
     for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
-      dt_iop_module_t *mod = (dt_iop_module_t *)(modules->data);
+      dt_iop_module_t *mod = modules->data;
       if(dt_iop_module_is(mod->so, "mask_manager"))
       {
         module = mod;
@@ -1159,7 +1159,7 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
   while(history)
   {
     GList *next = g_list_next(history);
-    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
+    dt_dev_history_item_t *hist = history->data;
     hist->module->multi_name_hand_edited = FALSE;
     g_strlcpy(hist->module->multi_name, "", sizeof(hist->module->multi_name));
     dt_dev_free_history_item(hist);
@@ -1171,7 +1171,7 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
   // we have to add new module instances first
   for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
   {
-    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+    dt_iop_module_t *module = modules->data;
     if(module->multi_priority > 0)
     {
       if(!dt_iop_is_hidden(module) && !module->expander)
@@ -1218,7 +1218,7 @@ void dt_dev_pop_history_items_ext(dt_develop_t *dev, const int32_t cnt)
   // reset gui params for all modules
   for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
   {
-    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+    dt_iop_module_t *module = modules->data;
     memcpy(module->params, module->default_params, module->params_size);
     dt_iop_commit_blend_params(module, module->default_blendop_params);
     module->enabled = module->default_enabled;
@@ -1237,7 +1237,7 @@ void dt_dev_pop_history_items_ext(dt_develop_t *dev, const int32_t cnt)
   GList *history = dev->history;
   for(int i = 0; i < cnt && history; i++)
   {
-    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
+    dt_dev_history_item_t *hist = history->data;
     if(hist->module->params_size == 0)
       memcpy(hist->module->params, hist->module->default_params, hist->module->params_size);
     else
@@ -1269,7 +1269,7 @@ void dt_dev_pop_history_items_ext(dt_develop_t *dev, const int32_t cnt)
     history = NULL;
   for(int i = MIN(cnt, end_prev); i < MAX(cnt, end_prev) && history && !masks_changed; i++)
   {
-    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
+    dt_dev_history_item_t *hist = history->data;
 
     if(hist->forms != NULL)
       masks_changed = TRUE;
@@ -1294,7 +1294,7 @@ void dt_dev_pop_history_items(dt_develop_t *dev, const int32_t cnt)
   GList *modules = dev->iop;
   while(modules)
   {
-    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+    dt_iop_module_t *module = modules->data;
     dt_iop_gui_update(module);
     modules = g_list_next(modules);
   }
@@ -1309,8 +1309,8 @@ void dt_dev_pop_history_items(dt_develop_t *dev, const int32_t cnt)
     GList *modules_old = dev_iop;
     while(modules && modules_old)
     {
-      dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-      dt_iop_module_t *module_old = (dt_iop_module_t *)(modules_old->data);
+      dt_iop_module_t *module = modules->data;
+      dt_iop_module_t *module_old = modules_old->data;
 
       if(module->iop_order != module_old->iop_order)
       {
@@ -1377,7 +1377,7 @@ void dt_dev_write_history_ext(dt_develop_t *dev,
            imgid, dev->image_storage.filename, dev->iop_order_version);
   for(int i = 0; history; i++)
   {
-    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
+    dt_dev_history_item_t *hist = history->data;
     _dev_write_history_item(imgid, hist, i);
 
     dt_print(DT_DEBUG_IOPORDER, "%20s, num %2i, order %2d, v(%i), multiprio %i%s\n",
@@ -1489,7 +1489,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
 
       for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
       {
-        dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
+        dt_iop_module_t *module = modules->data;
 
         if(module->default_enabled
            && !(module->flags() & IOP_FLAGS_NO_HISTORY_STACK)
@@ -1726,7 +1726,7 @@ static void _dev_add_default_modules(dt_develop_t *dev,
   //start with those modules that cannot be disabled
   for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
   {
-    dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
+    dt_iop_module_t *module = modules->data;
 
     if(!dt_history_check_module_exists(imgid, module->op, FALSE)
        && module->default_enabled
@@ -1739,7 +1739,7 @@ static void _dev_add_default_modules(dt_develop_t *dev,
   //now modules that can be disabled but are auto-on
   for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
   {
-    dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
+    dt_iop_module_t *module = modules->data;
 
     if(!dt_history_check_module_exists(imgid, module->op, FALSE)
        && module->default_enabled
@@ -1864,7 +1864,7 @@ static void _dev_write_history(dt_develop_t *dev,
   GList *history = dev->history;
   for(int i = 0; history; i++)
   {
-    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
+    dt_dev_history_item_t *hist = history->data;
     _dev_write_history_item(imgid, hist, i);
     history = g_list_next(history);
   }
@@ -2054,8 +2054,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
       continue;
     }
 
-    dt_dev_history_item_t *hist =
-      (dt_dev_history_item_t *)calloc(1, sizeof(dt_dev_history_item_t));
+    dt_dev_history_item_t *hist = calloc(1, sizeof(dt_dev_history_item_t));
     hist->module = NULL;
 
     // Find a .so file that matches our history entry, aka a module to
@@ -2064,7 +2063,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
 
     for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
-      dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
+      dt_iop_module_t *module = modules->data;
       if(dt_iop_module_is(module->so, module_name))
       {
         // make sure that module not supporting multiple instances are
@@ -3058,7 +3057,7 @@ dt_iop_module_t *dt_dev_module_duplicate_ext(dt_develop_t *dev,
   int pmax = 0;
   for(GList *modules = base->dev->iop; modules; modules = g_list_next(modules))
   {
-    dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
+    dt_iop_module_t *mod = modules->data;
     if(mod->instance == base->instance)
     {
       if(pmax < mod->multi_priority) pmax = mod->multi_priority;
@@ -3085,7 +3084,7 @@ dt_iop_module_t *dt_dev_module_duplicate_ext(dt_develop_t *dev,
 
     for(GList *modules = base->dev->iop; modules; modules = g_list_next(modules))
     {
-      dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
+      dt_iop_module_t *mod = modules->data;
       if(mod->instance == base->instance)
       {
         if(strcmp(mname, mod->multi_name) == 0)
@@ -3131,7 +3130,7 @@ void dt_dev_invalidate_history_module(GList *list,
 {
   for(; list; list = g_list_next(list))
   {
-    dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)list->data;
+    dt_dev_history_item_t *hitem = list->data;
     if(hitem->module == module)
     {
       hitem->module = NULL;
@@ -3154,7 +3153,7 @@ void dt_dev_module_remove(dt_develop_t *dev,
     while(elem != NULL)
     {
       GList *next = g_list_next(elem);
-      dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(elem->data);
+      dt_dev_history_item_t *hist = elem->data;
 
       if(module == hist->module)
       {
@@ -3170,7 +3169,7 @@ void dt_dev_module_remove(dt_develop_t *dev,
   // and we remove it from the list
   for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
   {
-    dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
+    dt_iop_module_t *mod = modules->data;
     if(mod == module)
     {
       dev->iop = g_list_remove_link(dev->iop, modules);
@@ -3258,7 +3257,7 @@ dt_dev_pixelpipe_iop_t *dt_dev_distort_get_iop_pipe(dt_develop_t *dev,
       pieces;
       pieces = g_list_previous(pieces))
   {
-    dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)(pieces->data);
+    dt_dev_pixelpipe_iop_t *piece = pieces->data;
     if(piece->module == module)
     {
       return piece;
@@ -3283,8 +3282,8 @@ dt_hash_t dt_dev_hash_plus(dt_develop_t *dev,
       dt_pthread_mutex_unlock(&dev->history_mutex);
       return 0;
     }
-    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-    dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)(pieces->data);
+    dt_iop_module_t *module = modules->data;
+    dt_dev_pixelpipe_iop_t *piece = pieces->data;
     if(piece->enabled && ((transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
                           || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL
                               && module->iop_order >= iop_order)
@@ -3390,8 +3389,8 @@ dt_hash_t dt_dev_hash_distort_plus(dt_develop_t *dev,
       dt_pthread_mutex_unlock(&dev->history_mutex);
       return 0;
     }
-    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-    dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)(pieces->data);
+    dt_iop_module_t *module = modules->data;
+    dt_dev_pixelpipe_iop_t *piece = pieces->data;
     if(piece->enabled && module->operation_tags() & IOP_TAG_DISTORT
        && ((transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
            || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL
@@ -3420,7 +3419,7 @@ void dt_dev_reorder_gui_module_list(dt_develop_t *dev)
       modules;
       modules = g_list_previous(modules))
   {
-    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+    dt_iop_module_t *module = modules->data;
 
     GtkWidget *expander = module->expander;
     if(expander)

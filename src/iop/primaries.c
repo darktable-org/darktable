@@ -132,7 +132,7 @@ void process(struct dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_primaries_params_t *params = (dt_iop_primaries_params_t *)piece->data;
+  dt_iop_primaries_params_t *params = piece->data;
 
   if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self,
                                         piece->colors, ivoid, ovoid, roi_in,
@@ -163,8 +163,8 @@ int process_cl(struct dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_primaries_params_t *params = (dt_iop_primaries_params_t *)piece->data;
-  dt_iop_primaries_global_data_t *gd = (dt_iop_primaries_global_data_t *)self->global_data;
+  dt_iop_primaries_params_t *params = piece->data;
+  dt_iop_primaries_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
@@ -432,15 +432,14 @@ void gui_cleanup(struct dt_iop_module_t *self)
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 8; // extended.cl, from programs.conf
-  dt_iop_primaries_global_data_t *gd =
-    (dt_iop_primaries_global_data_t *)malloc(sizeof(dt_iop_primaries_global_data_t));
+  dt_iop_primaries_global_data_t *gd = malloc(sizeof(dt_iop_primaries_global_data_t));
   module->data = gd;
   gd->kernel_primaries = dt_opencl_create_kernel(program, "primaries");
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_primaries_global_data_t *gd = (dt_iop_primaries_global_data_t *)module->data;
+  dt_iop_primaries_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_primaries);
   free(module->data);
   module->data = NULL;

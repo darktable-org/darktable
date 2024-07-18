@@ -921,7 +921,7 @@ void _styles_apply_to_image_ext(const char *name,
 
     for(GList *l = si_list; l; l = g_list_next(l))
     {
-      dt_style_item_t *style_item = (dt_style_item_t *)l->data;
+      dt_style_item_t *style_item = l->data;
       dt_styles_apply_style_item(dev_dest, style_item, &modules_used, FALSE);
     }
 
@@ -1205,7 +1205,7 @@ char *dt_styles_get_item_list_as_string(const char *name)
   GList *names = NULL;
   for(GList *items_iter = items; items_iter; items_iter = g_list_next(items_iter))
   {
-    dt_style_item_t *item = (dt_style_item_t *)items_iter->data;
+    dt_style_item_t *item = items_iter->data;
     names = g_list_prepend(names, g_strdup(item->name));
   }
   names = g_list_reverse(names);  // list was built in reverse order, so un-reverse it
@@ -1701,7 +1701,7 @@ void dt_init_styles_actions()
     dt_action_t *stl = dt_action_section(&darktable.control->actions_global, N_("styles"));
     for(GList *res_iter = result; res_iter; res_iter = g_list_next(res_iter))
     {
-      dt_style_t *style = (dt_style_t *)res_iter->data;
+      dt_style_t *style = res_iter->data;
       dt_action_register(stl, style->name, _apply_style_shortcut_callback, 0, 0);
     }
     g_list_free_full(result, dt_style_free);

@@ -372,7 +372,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     int i = 0;
     for(const GList *iter = d->images; iter; iter = g_list_next(iter))
     {
-      dt_pdf_image_t *page = (dt_pdf_image_t *)iter->data;
+      dt_pdf_image_t *page = iter->data;
       page->outline_mode = outline_mode;
       page->show_bb = show_bb;
       page->rotate_to_fit = d->params.rotate;

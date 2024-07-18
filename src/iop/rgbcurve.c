@@ -1649,7 +1649,7 @@ void cleanup_pipe(struct dt_iop_module_t *self,
                   dt_dev_pixelpipe_iop_t *piece)
 {
   // clean up everything again.
-  dt_iop_rgbcurve_data_t *d = (dt_iop_rgbcurve_data_t *)(piece->data);
+  dt_iop_rgbcurve_data_t *d = piece->data;
   for(int ch = 0; ch < DT_IOP_RGBCURVE_MAX_CHANNELS; ch++)
     dt_draw_curve_destroy(d->curve[ch]);
   dt_free_align(piece->data);
@@ -1682,7 +1682,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_rgbcurve_global_data_t *gd = (dt_iop_rgbcurve_global_data_t *)module->data;
+  dt_iop_rgbcurve_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_rgbcurve);
   dt_free_align(module->data);
   module->data = NULL;
@@ -1767,7 +1767,7 @@ void commit_params(struct dt_iop_module_t *self,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_rgbcurve_data_t *d = (dt_iop_rgbcurve_data_t *)(piece->data);
+  dt_iop_rgbcurve_data_t *d = piece->data;
   dt_iop_rgbcurve_params_t *p = (dt_iop_rgbcurve_params_t *)p1;
 
   if(pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
@@ -1801,8 +1801,8 @@ int process_cl(struct dt_iop_module_t *self,
   const dt_iop_order_iccprofile_info_t *const work_profile =
     dt_ioppr_get_pipe_work_profile_info(piece->pipe);
 
-  dt_iop_rgbcurve_data_t *d = (dt_iop_rgbcurve_data_t *)piece->data;
-  dt_iop_rgbcurve_global_data_t *gd = (dt_iop_rgbcurve_global_data_t *)self->global_data;
+  dt_iop_rgbcurve_data_t *d = piece->data;
+  dt_iop_rgbcurve_global_data_t *gd = self->global_data;
 
  _generate_curve_lut(piece->pipe, d);
   cl_int err = CL_SUCCESS;
@@ -1904,7 +1904,7 @@ void process(struct dt_iop_module_t *self,
     return; // image has been copied through to output and module's
             // trouble flag has been updated
 
-  dt_iop_rgbcurve_data_t *const restrict d = (dt_iop_rgbcurve_data_t *)(piece->data);
+  dt_iop_rgbcurve_data_t *const restrict d = piece->data;
   _generate_curve_lut(piece->pipe, d);
 
   const float xm_L = 1.0f / d->unbounded_coeffs[DT_IOP_RGBCURVE_R][0];

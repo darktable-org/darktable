@@ -111,8 +111,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_rawdenoise_params_v1_t;
 
     const dt_iop_rawdenoise_params_v1_t *o = (dt_iop_rawdenoise_params_v1_t *)old_params;
-    dt_iop_rawdenoise_params_v2_t *n =
-      (dt_iop_rawdenoise_params_v2_t *)malloc(sizeof(dt_iop_rawdenoise_params_v2_t));
+    dt_iop_rawdenoise_params_v2_t *n = malloc(sizeof(dt_iop_rawdenoise_params_v2_t));
 
     n->threshold = o->threshold;
     for(int k = 0; k < DT_IOP_RAWDENOISE_BANDS; k++)
@@ -473,7 +472,7 @@ static void wavelet_denoise_xtrans(const float *const restrict in, float *const 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_rawdenoise_data_t *const restrict d = (dt_iop_rawdenoise_data_t *)piece->data;
+  const dt_iop_rawdenoise_data_t *const restrict d = piece->data;
 
   if(!(d->threshold > 0.0f))
   {
@@ -522,7 +521,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)params;
-  dt_iop_rawdenoise_data_t *d = (dt_iop_rawdenoise_data_t *)piece->data;
+  dt_iop_rawdenoise_data_t *d = piece->data;
 
   d->threshold = p->threshold;
 
@@ -556,7 +555,7 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_rawdenoise_data_t *d = (dt_iop_rawdenoise_data_t *)(piece->data);
+  dt_iop_rawdenoise_data_t *d = piece->data;
   for(int ch = 0; ch < DT_RAWDENOISE_NONE; ch++) dt_draw_curve_destroy(d->curve[ch]);
   free(piece->data);
   piece->data = NULL;

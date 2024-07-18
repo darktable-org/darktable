@@ -296,7 +296,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   // FIXME: this returns nan!!
-  dt_iop_colortransfer_data_t *data = (dt_iop_colortransfer_data_t *)piece->data;
+  dt_iop_colortransfer_data_t *data = piece->data;
   float *in = (float *)ivoid;
   float *out = (float *)ovoid;
   const int ch = piece->colors;
@@ -395,7 +395,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_colortransfer_data_t));
-  dt_iop_colortransfer_data_t *d = (dt_iop_colortransfer_data_t *)piece->data;
+  dt_iop_colortransfer_data_t *d = piece->data;
   d->flag = NEUTRAL;
 }
 

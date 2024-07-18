@@ -50,7 +50,7 @@ void dt_cache_cleanup(dt_cache_t *cache)
   g_hash_table_destroy(cache->hashtable);
   for(GList *l = cache->lru; l; l = g_list_next(l))
   {
-    dt_cache_entry_t *entry = (dt_cache_entry_t *)l->data;
+    dt_cache_entry_t *entry = l->data;
 
     if(cache->cleanup)
     {
@@ -340,7 +340,7 @@ void dt_cache_gc(dt_cache_t *cache,
   GList *l = cache->lru;
   while(l)
   {
-    dt_cache_entry_t *entry = (dt_cache_entry_t *)l->data;
+    dt_cache_entry_t *entry = l->data;
     assert(entry->link->data == entry);
     l = g_list_next(l); // we might remove this element, so walk to
                         // the next one while we still have the

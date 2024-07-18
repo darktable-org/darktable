@@ -216,8 +216,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_basecurve_params_v5_t;
 
     dt_iop_useless_params_v2_t *o = (dt_iop_useless_params_v2_t *)old_params;
-    dt_iop_useless_params_v3_t *n =
-      (dt_iop_useless_params_v3_t *)malloc(sizeof(dt_iop_useless_params_v3_t));
+    dt_iop_useless_params_v3_t *n = malloc(sizeof(dt_iop_useless_params_v3_t));
     memcpy(n, o, sizeof(dt_iop_useless_params_v2_t));
     n->strength = 1;
 
@@ -287,7 +286,7 @@ gboolean distort_transform(dt_iop_module_t *self,
                            float *points,
                            const size_t points_count)
 {
-  const dt_iop_useless_params_t *d = (dt_iop_useless_params_t *)piece->data;
+  const dt_iop_useless_params_t *d = piece->data;
 
   const float adjx = 0.0 * d->factor;
   const float adjy = 0.0;
@@ -314,7 +313,7 @@ gboolean distort_backtransform(dt_iop_module_t *self,
                                float *points,
                                const size_t points_count)
 {
-  const dt_iop_useless_params_t *d = (dt_iop_useless_params_t *)piece->data;
+  const dt_iop_useless_params_t *d = piece->data;
 
   const float adjx = 0.0 * d->factor;
   const float adjy = 0.0;
@@ -353,7 +352,7 @@ void process(struct dt_iop_module_t *self,
 {
   // this is called for preview and full pipe separately, each with
   // its own pixelpipe piece.  get our data struct:
-  dt_iop_useless_params_t *d = (dt_iop_useless_params_t *)piece->data;
+  dt_iop_useless_params_t *d = piece->data;
   // the total scale is composed of scale before input to the pipeline (iscale),
   // and the scale of the roi.
   const float scale = piece->iscale / roi_in->scale;

@@ -326,8 +326,8 @@ static int process_vng_cl(
         const gboolean smooth,
         const gboolean only_vng_linear)
 {
-  dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
-  dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->global_data;
+  dt_iop_demosaic_data_t *data = piece->data;
+  dt_iop_demosaic_global_data_t *gd = self->global_data;
   const dt_image_t *img = &self->dev->image_storage;
 
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;

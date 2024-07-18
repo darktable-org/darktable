@@ -214,8 +214,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_tonecurve_params_v1_t;
 
     const dt_iop_tonecurve_params_v1_t *o = (dt_iop_tonecurve_params_v1_t *)old_params;
-    dt_iop_tonecurve_params_v5_t *n =
-      (dt_iop_tonecurve_params_v5_t *)malloc(sizeof(dt_iop_tonecurve_params_v5_t));
+    dt_iop_tonecurve_params_v5_t *n = malloc(sizeof(dt_iop_tonecurve_params_v5_t));
 
     // start with a fresh copy of default parameters
     // unfortunately default_params aren't inited at this stage.
@@ -260,8 +259,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_tonecurve_params_v3_t;
 
     const dt_iop_tonecurve_params_v3_t *o = (dt_iop_tonecurve_params_v3_t *)old_params;
-    dt_iop_tonecurve_params_v5_t *n =
-      (dt_iop_tonecurve_params_v5_t *)malloc(sizeof(dt_iop_tonecurve_params_v5_t));
+    dt_iop_tonecurve_params_v5_t *n = malloc(sizeof(dt_iop_tonecurve_params_v5_t));
 
     memcpy(n->tonecurve, o->tonecurve, sizeof(n->tonecurve));
     memcpy(n->tonecurve_nodes, o->tonecurve_nodes, sizeof(n->tonecurve_nodes));
@@ -289,8 +287,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_tonecurve_params_v4_t;
 
     const dt_iop_tonecurve_params_v4_t *o = (dt_iop_tonecurve_params_v4_t *)old_params;
-    dt_iop_tonecurve_params_v5_t *n =
-      (dt_iop_tonecurve_params_v5_t *)malloc(sizeof(dt_iop_tonecurve_params_v5_t));
+    dt_iop_tonecurve_params_v5_t *n = malloc(sizeof(dt_iop_tonecurve_params_v5_t));
 
     memcpy(n->tonecurve, o->tonecurve, sizeof(dt_iop_tonecurve_params_v4_t));
     n->preserve_colors = 0;
@@ -307,8 +304,8 @@ int legacy_params(dt_iop_module_t *self,
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)piece->data;
-  dt_iop_tonecurve_global_data_t *gd = (dt_iop_tonecurve_global_data_t *)self->global_data;
+  dt_iop_tonecurve_data_t *d = piece->data;
+  dt_iop_tonecurve_global_data_t *gd = self->global_data;
   cl_mem dev_L = NULL;
   cl_mem dev_a = NULL;
   cl_mem dev_b = NULL;
@@ -395,8 +392,7 @@ void process(struct dt_iop_module_t *self,
     return; // image has been copied through to output and module's
             // trouble flag has been updated
 
-  const dt_iop_tonecurve_data_t *const restrict d =
-    (dt_iop_tonecurve_data_t *)(piece->data);
+  const dt_iop_tonecurve_data_t *const restrict d = (piece->data);
   const dt_iop_order_iccprofile_info_t *const work_profile
     = dt_ioppr_add_profile_info_to_list(self->dev, DT_COLORSPACE_PROPHOTO_RGB, "",
                                         INTENT_PERCEPTUAL);
@@ -728,7 +724,7 @@ void commit_params(struct dt_iop_module_t *self,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)(piece->data);
+  dt_iop_tonecurve_data_t *d = piece->data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)p1;
 
   if(pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
@@ -856,8 +852,7 @@ void init_pipe(struct dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece)
 {
   // create part of the pixelpipe
-  dt_iop_tonecurve_data_t *d =
-    (dt_iop_tonecurve_data_t *)malloc(sizeof(dt_iop_tonecurve_data_t));
+  dt_iop_tonecurve_data_t *d = malloc(sizeof(dt_iop_tonecurve_data_t));
   const dt_iop_tonecurve_params_t *const default_params = self->default_params;
   piece->data = (void *)d;
   d->autoscale_ab = DT_S_SCALE_AUTOMATIC;
@@ -885,7 +880,7 @@ void cleanup_pipe(struct dt_iop_module_t *self,
                   dt_dev_pixelpipe_iop_t *piece)
 {
   // clean up everything again.
-  dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)(piece->data);
+  dt_iop_tonecurve_data_t *d = piece->data;
   for(int ch = 0; ch < ch_max; ch++)
     dt_draw_curve_destroy(d->curve[ch]);
   free(piece->data);
@@ -941,8 +936,7 @@ void init(dt_iop_module_t *module)
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 2; // basic.cl, from programs.conf
-  dt_iop_tonecurve_global_data_t *gd =
-    (dt_iop_tonecurve_global_data_t *)malloc(sizeof(dt_iop_tonecurve_global_data_t));
+  dt_iop_tonecurve_global_data_t *gd = malloc(sizeof(dt_iop_tonecurve_global_data_t));
   module->data = gd;
   gd->kernel_tonecurve = dt_opencl_create_kernel(program, "tonecurve");
   for(int k = 0; k < 3; k++)
@@ -956,7 +950,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_tonecurve_global_data_t *gd = (dt_iop_tonecurve_global_data_t *)module->data;
+  dt_iop_tonecurve_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_tonecurve);
   free(module->data);
   module->data = NULL;
@@ -1087,8 +1081,7 @@ void color_picker_apply(dt_iop_module_t *self,
                         GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
-  dt_iop_tonecurve_global_data_t *gd =
-    (dt_iop_tonecurve_global_data_t *)self->global_data;
+  dt_iop_tonecurve_global_data_t *gd = self->global_data;
 
   for(int k=0; k<3; k++)
   {
@@ -1388,7 +1381,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget,
 {
   dt_iop_tonecurve_gui_data_t *g = self->gui_data;
   dt_iop_tonecurve_params_t *p = self->params;
-  dt_iop_tonecurve_global_data_t *gd = (dt_iop_tonecurve_global_data_t *)self->global_data;
+  dt_iop_tonecurve_global_data_t *gd = self->global_data;
 
   const int ch = g->channel;
   const int nodes = p->tonecurve_nodes[ch];

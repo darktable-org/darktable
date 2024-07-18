@@ -233,7 +233,7 @@ static void get_language_names(GList *languages)
       // check if alpha_2 or alpha_3 is in our translations
       for(GList *iter = languages; iter; iter = g_list_next(iter))
       {
-        dt_l10n_language_t *language = (dt_l10n_language_t *)iter->data;
+        dt_l10n_language_t *language = iter->data;
         if(!g_strcmp0(language->base_code, alpha_2)
            || !g_strcmp0(language->base_code, alpha_3))
         {
@@ -364,8 +364,7 @@ dt_l10n_t *dt_l10n_init(const gchar *filename, const gboolean init_list)
     dt_l10n_language_t *selected = NULL;
     dt_l10n_language_t *sys_default = NULL;
 
-    dt_l10n_language_t *language =
-      (dt_l10n_language_t *)calloc(1, sizeof(dt_l10n_language_t));
+    dt_l10n_language_t *language = calloc(1, sizeof(dt_l10n_language_t));
     language->code = g_strdup("C");
     language->base_code = g_strdup("C");
     language->name = g_strdup("English");

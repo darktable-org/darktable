@@ -90,7 +90,7 @@ static void _pop_undo(gpointer user_data,
   {
     for(GList *list = (GList *)data; list; list = g_list_next(list))
     {
-      dt_undo_colorlabels_t *undocolorlabels = (dt_undo_colorlabels_t *)list->data;
+      dt_undo_colorlabels_t *undocolorlabels = list->data;
 
       const uint8_t before = (action == DT_ACTION_UNDO)
         ? undocolorlabels->after : undocolorlabels->before;
@@ -220,8 +220,7 @@ static void _colorlabels_execute(const GList *imgs,
 
     if(undo_on)
     {
-      dt_undo_colorlabels_t *undocolorlabels =
-        (dt_undo_colorlabels_t *)malloc(sizeof(dt_undo_colorlabels_t));
+      dt_undo_colorlabels_t *undocolorlabels = malloc(sizeof(dt_undo_colorlabels_t));
       undocolorlabels->imgid = imgid;
       undocolorlabels->before = before;
       undocolorlabels->after = after;

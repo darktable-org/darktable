@@ -251,7 +251,7 @@ static void _lib_import_unmount_callback(GtkToggleButton *button,
 /** update the device list */
 void _lib_import_ui_devices_update(dt_lib_module_t *self)
 {
-  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
+  dt_lib_import_t *d = self->data;
 
   /* cleanup of widgets in devices container*/
   dt_gui_container_remove_children(GTK_CONTAINER(d->devices));
@@ -267,7 +267,7 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
     char buffer[512] = { 0 };
     for(; citem; citem = g_list_next(citem))
     {
-      dt_camera_t *camera = (dt_camera_t *)citem->data;
+      dt_camera_t *camera = citem->data;
 
       /* add camera label */
       GtkWidget *label = dt_ui_section_label_new(_(camera->model));
@@ -335,7 +335,7 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
   {
     for(; citem; citem = g_list_next(citem))
     {
-      dt_camera_unused_t *camera = (dt_camera_unused_t *)citem->data;
+      dt_camera_unused_t *camera = citem->data;
       GtkWidget *label = dt_ui_section_label_new(_(camera->model));
       gtk_box_pack_start(GTK_BOX(d->devices), label, FALSE, FALSE, 0);
 
@@ -394,7 +394,7 @@ static guint _import_from_camera_set_file_list(dt_lib_module_t *self)
   const gboolean include_nonraws = !dt_conf_get_bool("ui_last/import_ignore_nonraws");
   for(GList *img = imgs; img; img = g_list_next(img))
   {
-    dt_camera_files_t *file = (dt_camera_files_t *)img->data;
+    dt_camera_files_t *file = img->data;
     const char *ext = g_strrstr(file->filename, ".");
     // Either we are not rejecting non-raw, or the file extension
     // belongs to the raw format

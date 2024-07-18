@@ -314,10 +314,8 @@ int legacy_params(dt_iop_module_t *self,
       gboolean clip;
     } dt_iop_channelmixer_rgb_params_v1_t;
 
-    const dt_iop_channelmixer_rgb_params_v1_t *o =
-      (dt_iop_channelmixer_rgb_params_v1_t *)old_params;
-    dt_iop_channelmixer_rgb_params_v3_t *n =
-      (dt_iop_channelmixer_rgb_params_v3_t *)
+    const dt_iop_channelmixer_rgb_params_v1_t *o = old_params;
+    dt_iop_channelmixer_rgb_params_v3_t *n = 
       malloc(sizeof(dt_iop_channelmixer_rgb_params_v3_t));
 
     // V1 and V2 use the same param structure but the normalize_grey
@@ -365,10 +363,8 @@ int legacy_params(dt_iop_module_t *self,
       gboolean clip;
     } dt_iop_channelmixer_rgb_params_v2_t;
 
-    const dt_iop_channelmixer_rgb_params_v2_t *o =
-      (dt_iop_channelmixer_rgb_params_v2_t *)old_params;
-    dt_iop_channelmixer_rgb_params_v3_t *n =
-      (dt_iop_channelmixer_rgb_params_v3_t *)
+    const dt_iop_channelmixer_rgb_params_v2_t *o = old_params;
+    dt_iop_channelmixer_rgb_params_v3_t *n = 
       malloc(sizeof(dt_iop_channelmixer_rgb_params_v3_t));
 
     memcpy(n, o, sizeof(dt_iop_channelmixer_rgb_params_v2_t));
@@ -2124,7 +2120,7 @@ void process(struct dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_channelmixer_rbg_data_t *data = (dt_iop_channelmixer_rbg_data_t *)piece->data;
+  dt_iop_channelmixer_rbg_data_t *data = piece->data;
   const struct dt_iop_order_iccprofile_info_t *const work_profile =
     dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
   const struct dt_iop_order_iccprofile_info_t *const input_profile =
@@ -2305,9 +2301,8 @@ int process_cl(struct dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_channelmixer_rbg_data_t *const d = (dt_iop_channelmixer_rbg_data_t *)piece->data;
-  dt_iop_channelmixer_rgb_global_data_t *const gd =
-    (dt_iop_channelmixer_rgb_global_data_t *)self->global_data;
+  dt_iop_channelmixer_rbg_data_t *const d = piece->data;
+  dt_iop_channelmixer_rgb_global_data_t *const gd = self->global_data;
 
   const struct dt_iop_order_iccprofile_info_t *const work_profile =
     dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
@@ -2434,8 +2429,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_channelmixer_rgb_global_data_t *gd =
-    (dt_iop_channelmixer_rgb_global_data_t *)module->data;
+  dt_iop_channelmixer_rgb_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_channelmixer_rgb_cat16);
   dt_opencl_free_kernel(gd->kernel_channelmixer_rgb_bradford_full);
   dt_opencl_free_kernel(gd->kernel_channelmixer_rgb_bradford_linear);
@@ -2979,8 +2973,7 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, dt_iop_module_
   if(g == NULL) return;
 
 #ifdef AI_ACTIVATED
-  dt_iop_channelmixer_rgb_params_t *p =
-    (dt_iop_channelmixer_rgb_params_t *)self->params;
+  dt_iop_channelmixer_rgb_params_t *p = self->params;
 
   if(p->illuminant != DT_ILLUMINANT_DETECT_EDGES
      && p->illuminant != DT_ILLUMINANT_DETECT_SURFACES)
@@ -3040,7 +3033,7 @@ void commit_params(struct dt_iop_module_t *self,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)p1;
-  dt_iop_channelmixer_rbg_data_t *d = (dt_iop_channelmixer_rbg_data_t *)piece->data;
+  dt_iop_channelmixer_rbg_data_t *d = piece->data;
   dt_iop_channelmixer_rgb_gui_data_t *g = self->gui_data;
 
   d->version = p->version;
@@ -3163,8 +3156,7 @@ void commit_params(struct dt_iop_module_t *self,
 
 static void _update_illuminants(dt_iop_module_t *self)
 {
-  dt_iop_channelmixer_rgb_params_t *p =
-    (dt_iop_channelmixer_rgb_params_t *)self->params;
+  dt_iop_channelmixer_rgb_params_t *p = self->params;
   dt_iop_channelmixer_rgb_gui_data_t *g = self->gui_data;
 
   if(p->adaptation == DT_ADAPTATION_RGB
@@ -3528,8 +3520,7 @@ static gboolean _illuminant_color_draw(GtkWidget *widget,
                                        cairo_t *crf,
                                        dt_iop_module_t *self)
 {
-  dt_iop_channelmixer_rgb_params_t *p =
-    (dt_iop_channelmixer_rgb_params_t *)self->params;
+  dt_iop_channelmixer_rgb_params_t *p = self->params;
 
   // Init
   GtkAllocation allocation;
@@ -3712,8 +3703,7 @@ static void _illum_xy_callback(GtkWidget *slider,
                               dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_channelmixer_rgb_params_t *p =
-    (dt_iop_channelmixer_rgb_params_t *)self->params;
+  dt_iop_channelmixer_rgb_params_t *p = self->params;
   dt_iop_channelmixer_rgb_gui_data_t *g = self->gui_data;
 
   dt_aligned_pixel_t Lch = { 0 };
@@ -3983,8 +3973,7 @@ void gui_changed(dt_iop_module_t *self,
                  GtkWidget *w,
                  void *previous)
 {
-  dt_iop_channelmixer_rgb_params_t *p =
-    (dt_iop_channelmixer_rgb_params_t *)self->params;
+  dt_iop_channelmixer_rgb_params_t *p = self->params;
   dt_iop_channelmixer_rgb_gui_data_t *g = self->gui_data;
 
   if(w == g->illuminant)

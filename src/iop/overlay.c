@@ -202,7 +202,7 @@ static GList *_get_disabled_modules(const dt_iop_module_t *self,
 
   for(GList *l = dev->iop; l; l = g_list_next(l))
   {
-    dt_iop_module_t *mod = (dt_iop_module_t *)(l->data);
+    dt_iop_module_t *mod = l->data;
     if((after
           && !dt_iop_module_is(mod->so, "gamma")
           && !dt_iop_module_is(mod->so, "finalscale")
@@ -242,7 +242,7 @@ static GList *_get_disabled_modules(const dt_iop_module_t *self,
 
 static void _clear_cache_entry(dt_iop_module_t *self, const int index)
 {
-  dt_iop_overlay_global_data_t *gd = (dt_iop_overlay_global_data_t *)self->global_data;
+  dt_iop_overlay_global_data_t *gd = self->global_data;
   if(!gd) return;
 
   dt_free_align(gd->cache[index]);
@@ -266,7 +266,7 @@ static void _setup_overlay(dt_iop_module_t *self,
 {
   dt_iop_overlay_params_t *p = self->params;
   dt_iop_overlay_gui_data_t *g = self->gui_data;
-  dt_iop_overlay_data_t *data = (dt_iop_overlay_data_t *)piece->data;
+  dt_iop_overlay_data_t *data = piece->data;
 
   const dt_imgid_t imgid = data->imgid;
 
@@ -339,8 +339,8 @@ void process(struct dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_overlay_data_t *data = (dt_iop_overlay_data_t *)piece->data;
-  dt_iop_overlay_global_data_t *gd = (dt_iop_overlay_global_data_t *)self->global_data;
+  dt_iop_overlay_data_t *data = piece->data;
+  dt_iop_overlay_global_data_t *gd = self->global_data;
 
   /* We have several pixelpipes that might want to save the processed overlay in
      the internal cache (both previews and full).
@@ -835,7 +835,7 @@ void commit_params(struct dt_iop_module_t *self,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_overlay_params_t *p = (dt_iop_overlay_params_t *)p1;
-  dt_iop_overlay_data_t *d = (dt_iop_overlay_data_t *)piece->data;
+  dt_iop_overlay_data_t *d = piece->data;
 
   d->opacity    = p->opacity;
   d->scale      = p->scale;
@@ -939,8 +939,7 @@ void gui_changed(dt_iop_module_t *self,
 
 void init_global(dt_iop_module_so_t *module)
 {
-  dt_iop_overlay_global_data_t *gd =
-    (dt_iop_overlay_global_data_t *)calloc(1, sizeof(dt_iop_overlay_global_data_t));
+  dt_iop_overlay_global_data_t *gd = calloc(1, sizeof(dt_iop_overlay_global_data_t));
 
   pthread_mutexattr_t recursive_locking;
   pthread_mutexattr_init(&recursive_locking);

@@ -182,7 +182,7 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, dt_iop_module_
 
 static void _compute_lut(dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_rgblevels_data_t *d = (dt_iop_rgblevels_data_t *)piece->data;
+  dt_iop_rgblevels_data_t *d = piece->data;
 
   // Building the lut for values in the [0,1] range
   if(d->params.autoscale == DT_IOP_RGBLEVELS_LINKED_CHANNELS)
@@ -849,7 +849,7 @@ void commit_params(dt_iop_module_t *self,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_rgblevels_data_t *d = (dt_iop_rgblevels_data_t *)piece->data;
+  dt_iop_rgblevels_data_t *d = piece->data;
   dt_iop_rgblevels_params_t *p = (dt_iop_rgblevels_params_t *)p1;
 
   if(pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
@@ -946,7 +946,7 @@ void init_global(dt_iop_module_so_t *self)
 
 void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_rgblevels_global_data_t *gd = (dt_iop_rgblevels_global_data_t *)self->data;
+  dt_iop_rgblevels_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_levels);
   free(self->data);
   self->data = NULL;
@@ -1429,10 +1429,10 @@ int process_cl(dt_iop_module_t *self,
     dt_ioppr_get_pipe_work_profile_info(piece->pipe);
 
   const int ch = piece->colors;
-  dt_iop_rgblevels_data_t *d = (dt_iop_rgblevels_data_t *)piece->data;
-  dt_iop_rgblevels_params_t *p = (dt_iop_rgblevels_params_t *)&d->params;
+  dt_iop_rgblevels_data_t *d = piece->data;
+  dt_iop_rgblevels_params_t *p = &d->params;
   dt_iop_rgblevels_gui_data_t *g = self->gui_data;
-  dt_iop_rgblevels_global_data_t *gd = (dt_iop_rgblevels_global_data_t *)self->global_data;
+  dt_iop_rgblevels_global_data_t *gd = self->global_data;
 
   cl_int err = CL_SUCCESS;
 

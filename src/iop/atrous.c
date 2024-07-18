@@ -178,8 +178,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_atrous_params_v1_t;
 
     const dt_iop_atrous_params_v1_t *o = (dt_iop_atrous_params_v1_t *)old_params;
-    dt_iop_atrous_params_v2_t *n =
-      (dt_iop_atrous_params_v2_t *)malloc(sizeof(dt_iop_atrous_params_v2_t));
+    dt_iop_atrous_params_v2_t *n = malloc(sizeof(dt_iop_atrous_params_v2_t));
 
     memcpy(n, o, sizeof(dt_iop_atrous_params_v1_t));
     n->mix = 1.0f;
@@ -280,7 +279,7 @@ static void process_wavelets(struct dt_iop_module_t *self,
                              const dt_iop_roi_t *const roi_in,
                              const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)piece->data;
+  dt_iop_atrous_data_t *d = piece->data;
   dt_aligned_pixel_t thrs[MAX_NUM_SCALES];
   dt_aligned_pixel_t boost[MAX_NUM_SCALES];
   float sharp[MAX_NUM_SCALES];
@@ -366,7 +365,7 @@ void process(struct dt_iop_module_t *self,
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)piece->data;
+  dt_iop_atrous_data_t *d = piece->data;
   dt_aligned_pixel_t thrs[MAX_NUM_SCALES];
   dt_aligned_pixel_t boost[MAX_NUM_SCALES];
   float sharp[MAX_NUM_SCALES];
@@ -381,7 +380,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     // dt_control_queue_draw(GTK_WIDGET(g->area));
   }
 
-  dt_iop_atrous_global_data_t *gd = (dt_iop_atrous_global_data_t *)self->global_data;
+  dt_iop_atrous_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
@@ -492,7 +491,7 @@ int process_cl(struct dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)piece->data;
+  dt_iop_atrous_data_t *d = piece->data;
   dt_aligned_pixel_t thrs[MAX_NUM_SCALES];
   dt_aligned_pixel_t boost[MAX_NUM_SCALES];
   float sharp[MAX_NUM_SCALES];
@@ -507,7 +506,7 @@ int process_cl(struct dt_iop_module_t *self,
     // dt_control_queue_draw(GTK_WIDGET(g->area));
   }
 
-  dt_iop_atrous_global_data_t *gd = (dt_iop_atrous_global_data_t *)self->global_data;
+  dt_iop_atrous_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
@@ -626,7 +625,7 @@ void tiling_callback(struct dt_iop_module_t *self,
                      const dt_iop_roi_t *roi_out,
                      struct dt_develop_tiling_t *tiling)
 {
-  dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)piece->data;
+  dt_iop_atrous_data_t *d = piece->data;
   dt_aligned_pixel_t thrs[MAX_NUM_SCALES];
   dt_aligned_pixel_t boost[MAX_NUM_SCALES];
   float sharp[MAX_NUM_SCALES];
@@ -674,7 +673,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_atrous_global_data_t *gd = (dt_iop_atrous_global_data_t *)module->data;
+  dt_iop_atrous_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_decompose);
   dt_opencl_free_kernel(gd->kernel_synthesize);
 #ifdef USE_NEW_CL
@@ -705,7 +704,7 @@ void commit_params(struct dt_iop_module_t *self,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)params;
-  dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)piece->data;
+  dt_iop_atrous_data_t *d = piece->data;
 
 #if 0
   printf("---------- atrous preset begin\n");
@@ -738,8 +737,7 @@ void init_pipe(struct dt_iop_module_t *self,
                dt_dev_pixelpipe_t *pipe,
                dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_atrous_data_t *d =
-    (dt_iop_atrous_data_t *)malloc(sizeof(dt_iop_atrous_data_t));
+  dt_iop_atrous_data_t *d = malloc(sizeof(dt_iop_atrous_data_t));
   const dt_iop_atrous_params_t *const default_params = self->default_params;
   piece->data = (void *)d;
   for(int ch = 0; ch < atrous_none; ch++)
@@ -762,7 +760,7 @@ void cleanup_pipe(struct dt_iop_module_t *self,
                   dt_dev_pixelpipe_t *pipe,
                   dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)(piece->data);
+  dt_iop_atrous_data_t *d = piece->data;
   for(int ch = 0; ch < atrous_none; ch++)
     dt_draw_curve_destroy(d->curve[ch]);
   free(piece->data);

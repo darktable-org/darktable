@@ -158,7 +158,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                          ivoid, ovoid, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
 
-  const dt_iop_splittoning_data_t *const data = (dt_iop_splittoning_data_t *)piece->data;
+  const dt_iop_splittoning_data_t *const data = piece->data;
   const float compress = (data->compress / 110.0) / 2.0; // Don't allow 100% compression..
 
   const float *const restrict in = DT_IS_ALIGNED((float*)ivoid);
@@ -214,8 +214,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_splittoning_data_t *d = (dt_iop_splittoning_data_t *)piece->data;
-  dt_iop_splittoning_global_data_t *gd = (dt_iop_splittoning_global_data_t *)self->global_data;
+  dt_iop_splittoning_data_t *d = piece->data;
+  dt_iop_splittoning_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
 
@@ -248,7 +248,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_splittoning_global_data_t *gd = (dt_iop_splittoning_global_data_t *)module->data;
+  dt_iop_splittoning_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_splittoning);
   free(module->data);
   module->data = NULL;
@@ -412,7 +412,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_splittoning_params_t *p = (dt_iop_splittoning_params_t *)p1;
-  dt_iop_splittoning_data_t *d = (dt_iop_splittoning_data_t *)piece->data;
+  dt_iop_splittoning_data_t *d = piece->data;
 
   d->shadow_hue = p->shadow_hue;
   d->highlight_hue = p->highlight_hue;

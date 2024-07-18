@@ -204,8 +204,7 @@ int legacy_params(dt_iop_module_t *self,
       float target_b[24];
     } dt_iop_colorchecker_params_v1_t;
 
-    const dt_iop_colorchecker_params_v1_t *o =
-      (dt_iop_colorchecker_params_v1_t *)old_params;
+    const dt_iop_colorchecker_params_v1_t *o = old_params;
     dt_iop_colorchecker_params_v2_t  *n =
       (dt_iop_colorchecker_params_v2_t  *)malloc(sizeof(dt_iop_colorchecker_params_v2_t));
 
@@ -427,8 +426,7 @@ void process(struct dt_iop_module_t *self,
                                         ivoid, ovoid, roi_in, roi_out))
     return;
 
-  const dt_iop_colorchecker_data_t *const data =
-    (dt_iop_colorchecker_data_t *)piece->data;
+  const dt_iop_colorchecker_data_t *const data = piece->data;
   const size_t npixels = (size_t)roi_out->height * (size_t)roi_out->width;
   float *const restrict out = (float*)DT_IS_ALIGNED(ovoid);
 
@@ -508,9 +506,8 @@ int process_cl(struct dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_colorchecker_data_t *d = (dt_iop_colorchecker_data_t *)piece->data;
-  dt_iop_colorchecker_global_data_t *gd =
-    (dt_iop_colorchecker_global_data_t *)self->global_data;
+  dt_iop_colorchecker_data_t *d = piece->data;
+  dt_iop_colorchecker_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
   const int width = roi_out->width;
@@ -567,7 +564,7 @@ void commit_params(struct dt_iop_module_t *self,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)p1;
-  dt_iop_colorchecker_data_t *d = (dt_iop_colorchecker_data_t *)piece->data;
+  dt_iop_colorchecker_data_t *d = piece->data;
 
   d->num_patches = MIN(MAX_PATCHES, p->num_patches);
   const unsigned N = MAX(0, d->num_patches);
@@ -921,8 +918,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_colorchecker_global_data_t *gd =
-    (dt_iop_colorchecker_global_data_t *)module->data;
+  dt_iop_colorchecker_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_colorchecker);
   free(module->data);
   module->data = NULL;

@@ -107,8 +107,7 @@ void *legacy_params(dt_imageio_module_storage_t *self,
     } dt_imageio_gallery_v1_t;
 
     const dt_imageio_gallery_v1_t *o = (dt_imageio_gallery_v1_t *)old_params;
-    dt_imageio_gallery_v2_t *n =
-      (dt_imageio_gallery_v2_t *)malloc(sizeof(dt_imageio_gallery_v2_t));
+    dt_imageio_gallery_v2_t *n = malloc(sizeof(dt_imageio_gallery_v2_t));
 
     g_strlcpy(n->filename, o->filename, sizeof(n->filename));
     g_strlcpy(n->title, o->title, sizeof(n->title));
@@ -620,8 +619,7 @@ void init(dt_imageio_module_storage_t *self)
 
 void *get_params(dt_imageio_module_storage_t *self)
 {
-  dt_imageio_gallery_t *d =
-    (dt_imageio_gallery_t *)calloc(1, sizeof(dt_imageio_gallery_t));
+  dt_imageio_gallery_t *d = calloc(1, sizeof(dt_imageio_gallery_t));
   d->vp = NULL;
   d->l = NULL;
   dt_variables_params_init(&d->vp);

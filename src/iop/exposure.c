@@ -190,8 +190,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_exposure_params_v2_t;
 
     const dt_iop_exposure_params_v2_t *o = (dt_iop_exposure_params_v2_t *)old_params;
-    dt_iop_exposure_params_v6_t *n =
-      (dt_iop_exposure_params_v6_t *)malloc(sizeof(dt_iop_exposure_params_v6_t));
+    dt_iop_exposure_params_v6_t *n = malloc(sizeof(dt_iop_exposure_params_v6_t));
 
     n->mode = EXPOSURE_MODE_MANUAL;
     n->black = o->black;
@@ -215,8 +214,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_exposure_params_v3_t;
 
     const dt_iop_exposure_params_v3_t *o = (dt_iop_exposure_params_v3_t *)old_params;
-    dt_iop_exposure_params_v6_t *n =
-      (dt_iop_exposure_params_v6_t *)malloc(sizeof(dt_iop_exposure_params_v6_t));
+    dt_iop_exposure_params_v6_t *n = malloc(sizeof(dt_iop_exposure_params_v6_t));
 
     n->mode = o->deflicker ? EXPOSURE_MODE_DEFLICKER : EXPOSURE_MODE_MANUAL;
     n->black = o->black;
@@ -247,8 +245,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_exposure_params_v4_t;
 
     const dt_iop_exposure_params_v4_t *o = (dt_iop_exposure_params_v4_t *)old_params;
-    dt_iop_exposure_params_v6_t *n =
-      (dt_iop_exposure_params_v6_t *)malloc(sizeof(dt_iop_exposure_params_v6_t));
+    dt_iop_exposure_params_v6_t *n = malloc(sizeof(dt_iop_exposure_params_v6_t));
 
     n->mode = o->mode;
     n->black = o->black;
@@ -275,8 +272,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_exposure_params_v5_t;
 
     const dt_iop_exposure_params_v5_t *o = (dt_iop_exposure_params_v5_t *)old_params;
-    dt_iop_exposure_params_v6_t *n =
-      (dt_iop_exposure_params_v6_t *)malloc(sizeof(dt_iop_exposure_params_v6_t));
+    dt_iop_exposure_params_v6_t *n = malloc(sizeof(dt_iop_exposure_params_v6_t));
 
     n->mode = o->mode;
     n->black = o->black;
@@ -503,8 +499,8 @@ int process_cl(struct dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;
-  dt_iop_exposure_global_data_t *gd = (dt_iop_exposure_global_data_t *)self->global_data;
+  dt_iop_exposure_data_t *d = piece->data;
+  dt_iop_exposure_global_data_t *gd = self->global_data;
 
   _process_common_setup(self, piece);
 
@@ -576,7 +572,7 @@ void commit_params(struct dt_iop_module_t *self,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)p1;
-  dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;
+  dt_iop_exposure_data_t *d = piece->data;
 
   d->params.black = p->black;
   d->params.exposure = p->exposure;
@@ -701,7 +697,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_exposure_global_data_t *gd = (dt_iop_exposure_global_data_t *)module->data;
+  dt_iop_exposure_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_exposure);
   free(module->data);
   module->data = NULL;

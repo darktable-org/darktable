@@ -77,8 +77,7 @@ int legacy_params(dt_iop_module_t *self,
 
   if(old_version == 1)
   {
-    dt_iop_mask_manager_params_v2_t *n =
-      (dt_iop_mask_manager_params_v2_t *)malloc(sizeof(dt_iop_mask_manager_params_v2_t));
+    dt_iop_mask_manager_params_v2_t *n = malloc(sizeof(dt_iop_mask_manager_params_v2_t));
 
     n->dummy = 0;
 

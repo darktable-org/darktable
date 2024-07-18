@@ -852,7 +852,7 @@ static gboolean _find_relative_instance(dt_action_t *action,
         iop_mods;
         iop_mods = g_list_next(iop_mods))
     {
-      const dt_iop_module_t *mod = (dt_iop_module_t *)iop_mods->data;
+      const dt_iop_module_t *mod = iop_mods->data;
 
       if(mod->so == module && mod->iop_order != INT_MAX)
       {

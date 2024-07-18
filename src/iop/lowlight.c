@@ -130,7 +130,7 @@ void process(struct dt_iop_module_t *self,
   if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          i, o, roi_in, roi_out))
     return;
-  dt_iop_lowlight_data_t *d = (dt_iop_lowlight_data_t *)(piece->data);
+  dt_iop_lowlight_data_t *d = piece->data;
 
   // empiric coefficient
   const float coeff = 0.5f;
@@ -190,8 +190,8 @@ void process(struct dt_iop_module_t *self,
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_lowlight_data_t *d = (dt_iop_lowlight_data_t *)piece->data;
-  dt_iop_lowlight_global_data_t *gd = (dt_iop_lowlight_global_data_t *)self->global_data;
+  dt_iop_lowlight_data_t *d = piece->data;
+  dt_iop_lowlight_global_data_t *gd = self->global_data;
 
   cl_mem dev_m = NULL;
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
@@ -231,7 +231,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_lowlight_global_data_t *gd = (dt_iop_lowlight_global_data_t *)module->data;
+  dt_iop_lowlight_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_lowlight);
   free(module->data);
   module->data = NULL;
@@ -241,7 +241,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_lowlight_data_t *d = (dt_iop_lowlight_data_t *)(piece->data);
+  dt_iop_lowlight_data_t *d = piece->data;
   dt_iop_lowlight_params_t *p = (dt_iop_lowlight_params_t *)p1;
   dt_draw_curve_set_point(d->curve, 0, p->transition_x[DT_IOP_LOWLIGHT_BANDS - 2] - 1.0, p->transition_y[0]);
   for(int k = 0; k < DT_IOP_LOWLIGHT_BANDS; k++)
@@ -269,7 +269,7 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   // clean up everything again.
-  dt_iop_lowlight_data_t *d = (dt_iop_lowlight_data_t *)(piece->data);
+  dt_iop_lowlight_data_t *d = piece->data;
   dt_draw_curve_destroy(d->curve);
   free(piece->data);
   piece->data = NULL;

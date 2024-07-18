@@ -115,7 +115,7 @@ void tiling_callback(dt_iop_module_t *module,
                      const dt_iop_roi_t *roi_out,
                      dt_develop_tiling_t *tiling)
 {
-  dt_iop_defringe_data_t *p = (dt_iop_defringe_data_t *)piece->data;
+  dt_iop_defringe_data_t *p = piece->data;
 
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -175,7 +175,7 @@ void process(struct dt_iop_module_t *module,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_defringe_data_t *const d = (dt_iop_defringe_data_t *)piece->data;
+  const dt_iop_defringe_data_t *const d = piece->data;
   if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, module, piece->colors,
                                          i, o, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated

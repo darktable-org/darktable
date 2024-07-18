@@ -714,7 +714,7 @@ int set_params(dt_imageio_module_format_t *self,
     return 1;
   const dt_imageio_avif_t *d = (dt_imageio_avif_t *)params;
 
-  dt_imageio_avif_gui_t *g = (dt_imageio_avif_gui_t *)self->gui_data;
+  dt_imageio_avif_gui_t *g = self->gui_data;
   dt_bauhaus_combobox_set(g->bit_depth, d->bit_depth);
   dt_bauhaus_combobox_set(g->color_mode, d->color_mode);
   dt_bauhaus_combobox_set(g->tiling, d->tiling);
@@ -804,7 +804,7 @@ static void compression_type_changed(GtkWidget *widget, gpointer user_data)
 {
   const enum avif_compression_type_e compression_type = dt_bauhaus_combobox_get(widget);
   dt_imageio_module_format_t *module = (dt_imageio_module_format_t *)user_data;
-  dt_imageio_avif_gui_t *gui = (dt_imageio_avif_gui_t *)module->gui_data;
+  dt_imageio_avif_gui_t *gui = module->gui_data;
 
   dt_conf_set_int("plugins/imageio/format/avif/compression_type", compression_type);
 
@@ -819,8 +819,7 @@ static void quality_changed(GtkWidget *slider, gpointer user_data)
 
 void gui_init(dt_imageio_module_format_t *self)
 {
-  dt_imageio_avif_gui_t *gui =
-      (dt_imageio_avif_gui_t *)malloc(sizeof(dt_imageio_avif_gui_t));
+  dt_imageio_avif_gui_t *gui = malloc(sizeof(dt_imageio_avif_gui_t));
   const uint32_t bit_depth = dt_conf_get_int("plugins/imageio/format/avif/bpp");
   const enum avif_color_mode_e color_mode = dt_conf_get_bool("plugins/imageio/format/avif/color_mode");
   const enum avif_tiling_e tiling = !dt_conf_get_bool("plugins/imageio/format/avif/tiling");
@@ -951,7 +950,7 @@ void gui_cleanup(dt_imageio_module_format_t *self)
 
 void gui_reset(dt_imageio_module_format_t *self)
 {
-  dt_imageio_avif_gui_t *gui = (dt_imageio_avif_gui_t *)self->gui_data;
+  dt_imageio_avif_gui_t *gui = self->gui_data;
 
   const uint32_t bit_depth = dt_confgen_get_int("plugins/imageio/format/avif/bpp", DT_DEFAULT);
   const enum avif_color_mode_e color_mode = dt_confgen_get_bool("plugins/imageio/format/avif/color_mode", DT_DEFAULT);

@@ -591,7 +591,7 @@ static void process_laplacian_bayer(struct dt_iop_module_t *self,
                                     const dt_iop_roi_t *const roi_out,
                                     const dt_aligned_pixel_t clips)
 {
-  dt_iop_highlights_data_t *data = (dt_iop_highlights_data_t *)piece->data;
+  dt_iop_highlights_data_t *data = piece->data;
 
   const uint32_t filters = piece->pipe->dsc.filters;
   dt_aligned_pixel_t wb = { 1.f, 1.f, 1.f, 1.f };
@@ -786,8 +786,8 @@ static cl_int process_laplacian_bayer_cl(struct dt_iop_module_t *self,
                                          const dt_iop_roi_t *const roi_out,
                                          const dt_aligned_pixel_t clips)
 {
-  dt_iop_highlights_data_t *data = (dt_iop_highlights_data_t *)piece->data;
-  dt_iop_highlights_global_data_t *gd = (dt_iop_highlights_global_data_t *)self->global_data;
+  dt_iop_highlights_data_t *data = piece->data;
+  dt_iop_highlights_global_data_t *gd = self->global_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
 

@@ -667,7 +667,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                          ivoid, ovoid, roi_in, roi_out))
     return; // ivoid has been copied to ovoid and the module's trouble flag has been set
 
-  dt_iop_cacorrectrgb_params_t *d = (dt_iop_cacorrectrgb_params_t *)piece->data;
+  dt_iop_cacorrectrgb_params_t *d = piece->data;
   // used to adjuste blur level depending on size. Don't amplify noise if magnified > 100%
   const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
   const int ch = piece->colors;

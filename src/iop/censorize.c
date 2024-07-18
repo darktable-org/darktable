@@ -167,7 +167,7 @@ void process(struct dt_iop_module_t *self,
     dt_iop_copy_image_roi(ovoid, ivoid, piece->colors, roi_in, roi_out);
     return;
   }
-  dt_iop_censorize_data_t *data = (dt_iop_censorize_data_t *)piece->data;
+  dt_iop_censorize_data_t *data = piece->data;
   const float *const restrict in = DT_IS_ALIGNED((const float *const restrict)ivoid);
   float *const restrict out = DT_IS_ALIGNED((float *const restrict)ovoid);
 
@@ -286,8 +286,8 @@ int process_cl(struct dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_censorize_data_t *d = (dt_iop_censorize_data_t *)piece->data;
-  dt_iop_censorize_global_data_t *gd = (dt_iop_censorize_global_data_t *)self->global_data;
+  dt_iop_censorize_data_t *d = piece->data;
+  dt_iop_censorize_global_data_t *gd = self->global_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
@@ -406,7 +406,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_censorize_global_data_t *gd = (dt_iop_censorize_global_data_t *)module->data;
+  dt_iop_censorize_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_lowpass_mix);
   free(module->data);
   module->data = NULL;

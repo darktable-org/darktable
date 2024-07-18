@@ -136,8 +136,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_bilat_params_v1_t;
 
     const dt_iop_bilat_params_v1_t *o = old_params;
-    dt_iop_bilat_params_v3_t *n =
-      (dt_iop_bilat_params_v3_t *)malloc(sizeof(dt_iop_bilat_params_v3_t));
+    dt_iop_bilat_params_v3_t *n = malloc(sizeof(dt_iop_bilat_params_v3_t));
     n->detail  = o->detail;
     n->sigma_r = o->sigma_r;
     n->sigma_s = o->sigma_s;
@@ -161,8 +160,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_bilat_params_v2_t;
 
     const dt_iop_bilat_params_v2_t *o = old_params;
-    dt_iop_bilat_params_v3_t *n =
-      (dt_iop_bilat_params_v3_t *)malloc(sizeof(dt_iop_bilat_params_v3_t));
+    dt_iop_bilat_params_v3_t *n = malloc(sizeof(dt_iop_bilat_params_v3_t));
     n->detail  = o->detail;
     n->sigma_r = o->sigma_r;
     n->sigma_s = o->sigma_s;
@@ -210,7 +208,7 @@ int process_cl(struct dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_bilat_data_t *d = (dt_iop_bilat_data_t *)piece->data;
+  dt_iop_bilat_data_t *d = piece->data;
 
   cl_int err = DT_OPENCL_PROCESS_CL;
   if(d->mode == s_mode_bilateral)
@@ -255,7 +253,7 @@ void tiling_callback(struct dt_iop_module_t *self,
                      const dt_iop_roi_t *roi_out,
                      struct dt_develop_tiling_t *tiling)
 {
-  dt_iop_bilat_data_t *d = (dt_iop_bilat_data_t *)piece->data;
+  dt_iop_bilat_data_t *d = piece->data;
   // the total scale is composed of scale before input to the pipeline (iscale),
   // and the scale of the roi.
 
@@ -305,7 +303,7 @@ void commit_params(struct dt_iop_module_t *self,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)p1;
-  dt_iop_bilat_data_t *d = (dt_iop_bilat_data_t *)piece->data;
+  dt_iop_bilat_data_t *d = piece->data;
   *d = *p;
 
 #ifdef HAVE_OPENCL
@@ -343,7 +341,7 @@ void process(struct dt_iop_module_t *self,
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
-  dt_iop_bilat_data_t *d = (dt_iop_bilat_data_t *)piece->data;
+  dt_iop_bilat_data_t *d = piece->data;
   // the total scale is composed of scale before input to the pipeline (iscale),
   // and the scale of the roi.
   // used to adjuste blur level depending on size. Don't amplify noise if magnified > 100%

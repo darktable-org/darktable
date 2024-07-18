@@ -238,8 +238,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_highlights_params_v1_t;
 
     const dt_iop_highlights_params_v1_t *o = (dt_iop_highlights_params_v1_t *)old_params;
-    dt_iop_highlights_params_v4_t *n =
-      (dt_iop_highlights_params_v4_t *)malloc(sizeof(dt_iop_highlights_params_v4_t));
+    dt_iop_highlights_params_v4_t *n = malloc(sizeof(dt_iop_highlights_params_v4_t));
     memcpy(n, o, sizeof(dt_iop_highlights_params_v1_t));
 
     n->clip = 1.0f;
@@ -268,8 +267,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_highlights_params_v2_t;
 
     const dt_iop_highlights_params_v2_t *o = (dt_iop_highlights_params_v2_t *)old_params;
-    dt_iop_highlights_params_v4_t *n =
-      (dt_iop_highlights_params_v4_t *)malloc(sizeof(dt_iop_highlights_params_v4_t));
+    dt_iop_highlights_params_v4_t *n = malloc(sizeof(dt_iop_highlights_params_v4_t));
     memcpy(n, o, sizeof(dt_iop_highlights_params_v2_t));
 
     n->noise_level = 0.0f;
@@ -302,8 +300,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_highlights_params_v3_t;
 
     const dt_iop_highlights_params_v3_t *o = (dt_iop_highlights_params_v3_t *)old_params;
-    dt_iop_highlights_params_v4_t *n =
-      (dt_iop_highlights_params_v4_t *)malloc(sizeof(dt_iop_highlights_params_v4_t));
+    dt_iop_highlights_params_v4_t *n = malloc(sizeof(dt_iop_highlights_params_v4_t));
     memcpy(n, o, sizeof(dt_iop_highlights_params_v3_t));
 
     n->solid_color = 0.f;
@@ -361,7 +358,7 @@ void modify_roi_in(dt_iop_module_t *self,
 {
   *roi_in = *roi_out;
 
-  dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
+  dt_iop_highlights_data_t *d = piece->data;
   const gboolean use_opposing = (d->mode == DT_IOP_HIGHLIGHTS_OPPOSED) || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS);
   /* When do we need to expand the roi to maximum of the full input data?
      1. Certainly not if any other than opposed or the segmentation based algo is used.
@@ -394,7 +391,7 @@ void tiling_callback(struct dt_iop_module_t *self,
                      const dt_iop_roi_t *roi_out,
                      struct dt_develop_tiling_t *tiling)
 {
-  dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
+  dt_iop_highlights_data_t *d = piece->data;
   const uint32_t filters = piece->pipe->dsc.filters;
 
   const gboolean is_bayer = filters && (filters != 9u);
@@ -474,9 +471,9 @@ int process_cl(struct dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
+  dt_iop_highlights_data_t *d = piece->data;
   dt_iop_highlights_gui_data_t *g = self->gui_data;
-  dt_iop_highlights_global_data_t *gd = (dt_iop_highlights_global_data_t *)self->global_data;
+  dt_iop_highlights_global_data_t *gd = self->global_data;
 
   const uint32_t filters = piece->pipe->dsc.filters;
   const int devid = piece->pipe->devid;
@@ -735,7 +732,7 @@ void process(struct dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_out)
 {
   const uint32_t filters = piece->pipe->dsc.filters;
-  dt_iop_highlights_data_t *data = (dt_iop_highlights_data_t *)piece->data;
+  dt_iop_highlights_data_t *data = piece->data;
   dt_iop_highlights_gui_data_t *g = self->gui_data;
 
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
@@ -887,7 +884,7 @@ void commit_params(struct dt_iop_module_t *self,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)p1;
-  dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
+  dt_iop_highlights_data_t *d = piece->data;
 
   memcpy(d, p, sizeof(*p));
 
@@ -951,7 +948,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_highlights_global_data_t *gd = (dt_iop_highlights_global_data_t *)module->data;
+  dt_iop_highlights_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_highlights_4f_clip);
   dt_opencl_free_kernel(gd->kernel_highlights_1f_lch_bayer);
   dt_opencl_free_kernel(gd->kernel_highlights_1f_lch_xtrans);
@@ -1090,7 +1087,7 @@ void reload_defaults(dt_iop_module_t *self)
   if(self->widget)
     gtk_stack_set_visible_child_name(GTK_STACK(self->widget), !monochrome ? "default" : "notapplicable");
 
-  dt_iop_highlights_params_t *d = (dt_iop_highlights_params_t *)self->default_params;
+  dt_iop_highlights_params_t *d = self->default_params;
   dt_iop_highlights_gui_data_t *g = self->gui_data;
   if(g)
   {

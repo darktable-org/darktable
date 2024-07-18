@@ -495,8 +495,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_ashift_params_v1_t;
 
     const dt_iop_ashift_params_v1_t *o = old_params;
-    dt_iop_ashift_params_v5_t *n =
-      (dt_iop_ashift_params_v5_t *)malloc(sizeof(dt_iop_ashift_params_v5_t));
+    dt_iop_ashift_params_v5_t *n = malloc(sizeof(dt_iop_ashift_params_v5_t));
     n->rotation = o->rotation;
     n->lensshift_v = o->lensshift_v;
     n->lensshift_h = o->lensshift_h;
@@ -536,8 +535,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_ashift_params_v2_t;
 
     const dt_iop_ashift_params_v2_t *o = old_params;
-    dt_iop_ashift_params_v5_t *n =
-      (dt_iop_ashift_params_v5_t *)malloc(sizeof(dt_iop_ashift_params_v5_t));
+    dt_iop_ashift_params_v5_t *n = malloc(sizeof(dt_iop_ashift_params_v5_t));
     n->rotation = o->rotation;
     n->lensshift_v = o->lensshift_v;
     n->lensshift_h = o->lensshift_h;
@@ -582,8 +580,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_ashift_params_v3_t;
 
     const dt_iop_ashift_params_v3_t *o = old_params;
-    dt_iop_ashift_params_v5_t *n =
-      (dt_iop_ashift_params_v5_t *)malloc(sizeof(dt_iop_ashift_params_v5_t));
+    dt_iop_ashift_params_v5_t *n = malloc(sizeof(dt_iop_ashift_params_v5_t));
     n->rotation = o->rotation;
     n->lensshift_v = o->lensshift_v;
     n->lensshift_h = o->lensshift_h;
@@ -629,8 +626,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_ashift_params_v4_t;
 
     const dt_iop_ashift_params_v4_t *o = old_params;
-    dt_iop_ashift_params_v5_t *n =
-      (dt_iop_ashift_params_v5_t *)malloc(sizeof(dt_iop_ashift_params_v5_t));
+    dt_iop_ashift_params_v5_t *n = malloc(sizeof(dt_iop_ashift_params_v5_t));
     n->rotation = o->rotation;
     n->lensshift_v = o->lensshift_v;
     n->lensshift_h = o->lensshift_h;
@@ -1011,7 +1007,7 @@ gboolean distort_transform(dt_iop_module_t *self,
                            float *const restrict points,
                            const size_t points_count)
 {
-  const dt_iop_ashift_data_t *const data = (dt_iop_ashift_data_t *)piece->data;
+  const dt_iop_ashift_data_t *const data = piece->data;
 
   // nothing to be done if parameters are set to neutral values
   if(isneutral(data)) return TRUE;
@@ -1049,7 +1045,7 @@ gboolean distort_backtransform(dt_iop_module_t *self,
                                float *points,
                                const size_t points_count)
 {
-  const dt_iop_ashift_data_t *const data = (dt_iop_ashift_data_t *)piece->data;
+  const dt_iop_ashift_data_t *const data = piece->data;
 
   // nothing to be done if parameters are set to neutral values
   if(isneutral(data)) return TRUE;
@@ -1088,7 +1084,7 @@ void distort_mask(struct dt_iop_module_t *self,
                   const dt_iop_roi_t *const roi_in,
                   const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_ashift_data_t *const data = (dt_iop_ashift_data_t *)piece->data;
+  const dt_iop_ashift_data_t *const data = piece->data;
 
   // if module is set to neutral parameters we just copy input->output and are done
   if(isneutral(data))
@@ -1153,7 +1149,7 @@ void modify_roi_out(struct dt_iop_module_t *self,
                     dt_iop_roi_t *roi_out,
                     const dt_iop_roi_t *roi_in)
 {
-  dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
+  dt_iop_ashift_data_t *data = piece->data;
   *roi_out = *roi_in;
 
   // nothing more to be done if parameters are set to neutral values
@@ -1231,7 +1227,7 @@ void modify_roi_in(struct dt_iop_module_t *self,
                    const dt_iop_roi_t *const roi_out,
                    dt_iop_roi_t *roi_in)
 {
-  dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
+  dt_iop_ashift_data_t *data = piece->data;
   *roi_in = *roi_out;
 
   // nothing more to be done if parameters are set to neutral values
@@ -3461,7 +3457,7 @@ void process(struct dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
+  dt_iop_ashift_data_t *data = piece->data;
   dt_iop_ashift_gui_data_t *g = self->gui_data;
 
   const int ch = piece->colors;
@@ -3598,8 +3594,8 @@ int process_cl(struct dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_ashift_data_t *d = (dt_iop_ashift_data_t *)piece->data;
-  dt_iop_ashift_global_data_t *gd = (dt_iop_ashift_global_data_t *)self->global_data;
+  dt_iop_ashift_data_t *d = piece->data;
+  dt_iop_ashift_global_data_t *gd = self->global_data;
   dt_iop_ashift_gui_data_t *g = self->gui_data;
 
   const int devid = piece->pipe->devid;
@@ -5019,8 +5015,7 @@ int button_pressed(dt_iop_module_t *self,
     if(count > MAX_SAVED_LINES)
       dt_control_log(_("only %d lines can be saved in parameters"), MAX_SAVED_LINES);
 
-    dt_iop_ashift_line_t *lines =
-      (dt_iop_ashift_line_t *)malloc(sizeof(dt_iop_ashift_line_t) * count);
+    dt_iop_ashift_line_t *lines = malloc(sizeof(dt_iop_ashift_line_t) * count);
     for(int i = 0; i < g->lines_count; i++)
     {
       lines[i] = g->lines[i];
@@ -5623,7 +5618,7 @@ void commit_params(struct dt_iop_module_t *self,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)p1;
-  dt_iop_ashift_data_t *d = (dt_iop_ashift_data_t *)piece->data;
+  dt_iop_ashift_data_t *d = piece->data;
 
   d->rotation = p->rotation;
   d->lensshift_v = p->lensshift_v;
@@ -5810,7 +5805,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_ashift_global_data_t *gd = (dt_iop_ashift_global_data_t *)module->data;
+  dt_iop_ashift_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_ashift_bilinear);
   dt_opencl_free_kernel(gd->kernel_ashift_bicubic);
   dt_opencl_free_kernel(gd->kernel_ashift_lanczos2);

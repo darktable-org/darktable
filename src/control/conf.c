@@ -531,7 +531,7 @@ void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries)
   {
     for(GSList *p = override_entries; p; p = g_slist_next(p))
     {
-      dt_conf_string_entry_t *entry = (dt_conf_string_entry_t *)p->data;
+      dt_conf_string_entry_t *entry = p->data;
       g_hash_table_insert(darktable.conf->override_entries, entry->key, entry->value);
     }
   }

@@ -219,7 +219,7 @@ static GtkWidget *_buttons_get_from_pos(dt_lib_module_t *self, const int pos)
   const dt_lib_modulegroups_t *d = self->data;
   if(pos == DT_MODULEGROUP_ACTIVE_PIPE) return d->active_btn;
   if(pos == DT_MODULEGROUP_BASICS) return d->basic_btn;
-  dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)g_list_nth_data(d->groups, pos - 1);
+  dt_lib_modulegroups_group_t *gr = g_list_nth_data(d->groups, pos - 1);
   if(gr) return gr->button;
   return NULL;
 }
@@ -260,7 +260,7 @@ static gboolean _lib_modulegroups_test_internal(dt_lib_module_t *self, uint32_t 
 {
   if(group == DT_MODULEGROUP_ACTIVE_PIPE) return module->enabled;
   dt_lib_modulegroups_t *d = self->data;
-  dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)g_list_nth_data(d->groups, group - 1);
+  dt_lib_modulegroups_group_t *gr = g_list_nth_data(d->groups, group - 1);
   if(gr)
   {
     return (g_list_find_custom(gr->modules, module->so->op, _iop_compare) != NULL);
@@ -278,7 +278,7 @@ static gboolean _lib_modulegroups_test_visible(dt_lib_module_t *self, gchar *mod
   dt_lib_modulegroups_t *d = self->data;
   for(const GList *l = d->groups; l; l = g_list_next(l))
   {
-    dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)l->data;
+    dt_lib_modulegroups_group_t *gr = l->data;
     if(g_list_find_custom(gr->modules, module, _iop_compare) != NULL)
     {
       return TRUE;
@@ -397,7 +397,7 @@ static void _basics_hide(dt_lib_module_t *self)
 
   for(const GList *l = d->basics; l; l = g_list_next(l))
   {
-    dt_lib_modulegroups_basic_item_t *item = (dt_lib_modulegroups_basic_item_t *)l->data;
+    dt_lib_modulegroups_basic_item_t *item = l->data;
     _basics_remove_widget(item);
   }
   gtk_widget_destroy(d->vbox_basic);
@@ -690,7 +690,7 @@ _basics_add_items_from_module_widget(dt_lib_module_t *self, dt_iop_module_t *mod
 
       for(const GList *l = d->basics; l; l = g_list_next(l))
       {
-        dt_lib_modulegroups_basic_item_t *item = (dt_lib_modulegroups_basic_item_t *)l->data;
+        dt_lib_modulegroups_basic_item_t *item = l->data;
         if(!item->module && g_strcmp0(item->module_op, module->op) == 0
            && item->widget_type != WIDGET_TYPE_ACTIVATE_BTN)
         {
@@ -749,7 +749,7 @@ static void _basics_show(dt_lib_module_t *self)
   dt_lib_modulegroups_basic_item_position_t item_pos = FIRST_MODULE;
   for(GList *modules = g_list_last(darktable.develop->iop); modules; modules = g_list_previous(modules))
   {
-    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+    dt_iop_module_t *module = modules->data;
 
     // we record if it's a new module or not to set css class and box structure
     if(item_pos != FIRST_MODULE) item_pos = NEW_MODULE;
@@ -759,7 +759,7 @@ static void _basics_show(dt_lib_module_t *self)
       // first, we add on-off buttons if any
       for(const GList *l = d->basics; l; l = g_list_next(l))
       {
-        dt_lib_modulegroups_basic_item_t *item = (dt_lib_modulegroups_basic_item_t *)l->data;
+        dt_lib_modulegroups_basic_item_t *item = l->data;
         if(!item->module && g_strcmp0(item->module_op, module->op) == 0)
         {
           if(item->widget_type == WIDGET_TYPE_ACTIVATE_BTN)
@@ -794,7 +794,7 @@ static gboolean _is_module_in_history(dt_iop_module_t *module)
 {
   for(const GList *hists = darktable.develop->history; hists; hists = g_list_next(hists))
   {
-    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)hists->data;
+    dt_dev_history_item_t *hist = hists->data;
     if(hist->module == module) return TRUE;
   }
   return FALSE;
@@ -845,7 +845,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
      * iterate over iop modules and do various test to
      * detect if the modules should be shown or not.
      */
-    dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
+    dt_iop_module_t *module = modules->data;
     GtkWidget *w = module->expander;
 
     if(module->enabled)
@@ -1152,7 +1152,7 @@ static gchar *_preset_retrieve_old_layout_updated()
     // list of modules
     for(const GList *modules = darktable.iop; modules; modules = g_list_next(modules))
     {
-      dt_iop_module_so_t *module = (dt_iop_module_so_t *)(modules->data);
+      dt_iop_module_so_t *module = modules->data;
 
       if(!dt_iop_so_is_hidden(module) && !(module->flags() & IOP_FLAGS_DEPRECATED))
       {
@@ -1211,7 +1211,7 @@ static gchar *_preset_retrieve_old_layout(const char *list, const char *list_fav
     // list of modules
     for(const GList *modules = darktable.iop; modules; modules = g_list_next(modules))
     {
-      dt_iop_module_so_t *module = (dt_iop_module_so_t *)(modules->data);
+      dt_iop_module_so_t *module = modules->data;
 
       if(!dt_iop_so_is_hidden(module) && !(module->flags() & IOP_FLAGS_DEPRECATED))
       {
@@ -1344,13 +1344,13 @@ static gchar *_preset_to_string(dt_lib_module_t *self, gboolean edition)
   res = dt_util_dstrcat(res, "ꬹ%d||", basics_show ? 1 : 0);
   for(const GList *l = basics; l; l = g_list_next(l))
   {
-    dt_lib_modulegroups_basic_item_t *item = (dt_lib_modulegroups_basic_item_t *)l->data;
+    dt_lib_modulegroups_basic_item_t *item = l->data;
     res = dt_util_dstrcat(res, "|%s", item->id);
   }
 
   for(const GList *l = groups; l; l = g_list_next(l))
   {
-    dt_lib_modulegroups_group_t *g = (dt_lib_modulegroups_group_t *)l->data;
+    dt_lib_modulegroups_group_t *g = l->data;
     res = dt_util_dstrcat(res, "ꬹ%s|%s|", g->name, g->icon);
     for(const GList *ll = g->modules; ll; ll = g_list_next(ll))
     {
@@ -1872,7 +1872,7 @@ static void _manage_editor_groups_cleanup(dt_lib_module_t *self,
 
   for(; l; l = g_list_next(l))
   {
-    dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)l->data;
+    dt_lib_modulegroups_group_t *gr = l->data;
     g_free(gr->name);
     g_free(gr->icon);
     g_list_free_full(gr->modules, g_free);
@@ -1893,7 +1893,7 @@ static void _manage_editor_groups_cleanup(dt_lib_module_t *self,
   l = edition ? d->edit_basics : d->basics;
   for(; l; l = g_list_next(l))
   {
-    dt_lib_modulegroups_basic_item_t *item = (dt_lib_modulegroups_basic_item_t *)l->data;
+    dt_lib_modulegroups_basic_item_t *item = l->data;
     _basics_free_item(item);
   }
   if(edition)
@@ -1917,7 +1917,7 @@ static void _manage_editor_basics_remove(GtkWidget *widget,
   const char *id = (char *)g_object_get_data(G_OBJECT(widget), "widget_id");
   for(GList *l = d->edit_basics; l; l = g_list_next(l))
   {
-    dt_lib_modulegroups_basic_item_t *item = (dt_lib_modulegroups_basic_item_t *)l->data;
+    dt_lib_modulegroups_basic_item_t *item = l->data;
     if(g_strcmp0(item->id, id) == 0)
     {
       _basics_free_item(item);
@@ -1950,11 +1950,10 @@ static void _manage_editor_basics_update_list(dt_lib_module_t *self)
       modules;
       modules = g_list_previous(modules))
   {
-    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+    dt_iop_module_t *module = modules->data;
     for(const GList *l = d->edit_basics; l; l = g_list_next(l))
     {
-      dt_lib_modulegroups_basic_item_t *item =
-        (dt_lib_modulegroups_basic_item_t *)l->data;
+      dt_lib_modulegroups_basic_item_t *item = l->data;
 
       if(g_strcmp0(module->op, item->module_op) == 0 && !dt_iop_is_hidden(module))
       {
@@ -2050,8 +2049,7 @@ static void _manage_editor_module_remove(GtkWidget *widget,
                                          dt_lib_module_t *self)
 {
   const char *module = (char *)g_object_get_data(G_OBJECT(widget), "module_name");
-  dt_lib_modulegroups_group_t *gr =
-    (dt_lib_modulegroups_group_t *)g_object_get_data(G_OBJECT(widget), "group");
+  dt_lib_modulegroups_group_t *gr = g_object_get_data(G_OBJECT(widget), "group");
 
   for(GList *l = gr->modules; l; l = g_list_next(l))
   {
@@ -2079,7 +2077,7 @@ static void _manage_editor_module_update_list(dt_lib_module_t *self,
       modules2;
       modules2 = g_list_previous(modules2))
   {
-    dt_iop_module_t *module = (dt_iop_module_t *)(modules2->data);
+    dt_iop_module_t *module = modules2->data;
     if((!(module->flags() & IOP_FLAGS_DEPRECATED)
         || !g_strcmp0(gr->name, C_("modulegroup", "deprecated")))
        && !dt_iop_is_hidden(module)
@@ -2163,8 +2161,7 @@ static void _manage_direct_module_toggle(GtkWidget *widget,
                                          dt_lib_module_t *self)
 {
   const gchar *module = (gchar *)g_object_get_data(G_OBJECT(widget), "module_op");
-  dt_lib_modulegroups_group_t *gr =
-    (dt_lib_modulegroups_group_t *)g_object_get_data(G_OBJECT(widget), "group");
+  dt_lib_modulegroups_group_t *gr = g_object_get_data(G_OBJECT(widget), "group");
   if(g_strcmp0(module, "") == 0) return;
 
   GList *found_item = g_list_find_custom(gr->modules, module, _iop_compare);
@@ -2277,8 +2274,7 @@ static void _manage_editor_module_add(GtkWidget *widget,
                                       dt_lib_module_t *self)
 {
   const gchar *module = (gchar *)g_object_get_data(G_OBJECT(widget), "module_op");
-  dt_lib_modulegroups_group_t *gr =
-    (dt_lib_modulegroups_group_t *)g_object_get_data(G_OBJECT(widget), "group");
+  dt_lib_modulegroups_group_t *gr = g_object_get_data(G_OBJECT(widget), "group");
   if(g_strcmp0(module, "") == 0) return;
 
   if(!g_list_find_custom(gr->modules, module, _iop_compare))
@@ -2320,7 +2316,7 @@ static void _manage_module_add_popup(GtkWidget *widget,
   GList *m2 = g_list_sort(g_list_copy(darktable.iop), _manage_editor_module_so_add_sort);
   for(const GList *modules = m2; modules; modules = g_list_next(modules))
   {
-    dt_iop_module_so_t *module = (dt_iop_module_so_t *)(modules->data);
+    dt_iop_module_so_t *module = modules->data;
 
     if(!dt_iop_so_is_hidden(module) && !(module->flags() & IOP_FLAGS_DEPRECATED))
     {
@@ -2622,8 +2618,7 @@ static void _manage_editor_module_add_popup(GtkWidget *widget,
                                             GdkEventButton *event,
                                             dt_lib_module_t *self)
 {
-  dt_lib_modulegroups_group_t *gr =
-    (dt_lib_modulegroups_group_t *)g_object_get_data(G_OBJECT(widget), "group");
+  dt_lib_modulegroups_group_t *gr = g_object_get_data(G_OBJECT(widget), "group");
   _manage_module_add_popup(widget, gr,
                            G_CALLBACK(_manage_editor_module_add), self, FALSE);
 }
@@ -2646,8 +2641,7 @@ static gboolean _manage_direct_popup(GtkWidget *widget,
 {
   if(event->type == GDK_BUTTON_PRESS && event->button == 3)
   {
-    dt_lib_modulegroups_group_t *gr =
-      (dt_lib_modulegroups_group_t *)g_object_get_data(G_OBJECT(widget), "group");
+    dt_lib_modulegroups_group_t *gr = g_object_get_data(G_OBJECT(widget), "group");
     if(!g_strcmp0(gr->name, C_("modulegroup", "deprecated"))) return FALSE;
     _manage_module_add_popup(widget, gr,
                              G_CALLBACK(_manage_direct_module_toggle), self, TRUE);
@@ -2840,8 +2834,7 @@ static gboolean _scroll_group_buttons(GtkWidget *widget,
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_modulegroups_t *d =
-    (dt_lib_modulegroups_t *)g_malloc0(sizeof(dt_lib_modulegroups_t));
+  dt_lib_modulegroups_t *d = g_malloc0(sizeof(dt_lib_modulegroups_t));
   self->data = (void *)d;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -3027,7 +3020,7 @@ static void _buttons_update(dt_lib_module_t *self)
   // then we repopulate the box with new buttons
   for(l = d->groups; l; l = g_list_next(l))
   {
-    dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)l->data;
+    dt_lib_modulegroups_group_t *gr = l->data;
     GtkWidget *bt = dtgtk_togglebutton_new(_buttons_get_icon_fct(gr->icon), 0, NULL);
     g_object_set_data(G_OBJECT(bt), "group", gr);
     g_signal_connect(bt, "button-press-event", G_CALLBACK(_manage_direct_popup), self);
@@ -3064,8 +3057,7 @@ static void _buttons_update(dt_lib_module_t *self)
   }
   else
   {
-    dt_lib_modulegroups_group_t *gr =
-      (dt_lib_modulegroups_group_t *)g_list_nth_data(d->groups, d->current - 1);
+    dt_lib_modulegroups_group_t *gr = g_list_nth_data(d->groups, d->current - 1);
     d->current = DT_MODULEGROUP_NONE;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(gr->button), TRUE);
   }
@@ -3076,8 +3068,7 @@ static void _manage_editor_group_move_right(GtkWidget *widget,
                                             dt_lib_module_t *self)
 {
   dt_lib_modulegroups_t *d = self->data;
-  dt_lib_modulegroups_group_t *gr =
-    (dt_lib_modulegroups_group_t *)g_object_get_data(G_OBJECT(widget), "group");
+  dt_lib_modulegroups_group_t *gr = g_object_get_data(G_OBJECT(widget), "group");
   GtkWidget *vb = gtk_widget_get_parent(gtk_widget_get_parent(widget));
 
   // we move the group inside the list
@@ -3097,8 +3088,7 @@ static void _manage_editor_group_move_left(GtkWidget *widget,
                                            dt_lib_module_t *self)
 {
   dt_lib_modulegroups_t *d = self->data;
-  dt_lib_modulegroups_group_t *gr =
-    (dt_lib_modulegroups_group_t *)g_object_get_data(G_OBJECT(widget), "group");
+  dt_lib_modulegroups_group_t *gr = g_object_get_data(G_OBJECT(widget), "group");
   GtkWidget *vb = gtk_widget_get_parent(gtk_widget_get_parent(widget));
 
   // we move the group inside the list
@@ -3125,8 +3115,7 @@ static void _manage_editor_group_remove(GtkWidget *widget,
   {
     return;
   }
-  dt_lib_modulegroups_group_t *gr =
-    (dt_lib_modulegroups_group_t *)g_object_get_data(G_OBJECT(widget), "group");
+  dt_lib_modulegroups_group_t *gr = g_object_get_data(G_OBJECT(widget), "group");
   GtkWidget *vb =
     gtk_widget_get_parent(gtk_widget_get_parent(gtk_widget_get_parent(widget)));
   GtkWidget *groups_box = gtk_widget_get_parent(vb);
@@ -3172,8 +3161,7 @@ static void _manage_editor_group_icon_popup(GtkWidget *btn,
                                             GdkEventButton *event,
                                             dt_lib_module_t *self)
 {
-  dt_lib_modulegroups_group_t *gr =
-    (dt_lib_modulegroups_group_t *)g_object_get_data(G_OBJECT(btn), "group");
+  dt_lib_modulegroups_group_t *gr = g_object_get_data(G_OBJECT(btn), "group");
 
   GtkWidget *pop = gtk_popover_new(btn);
   GtkWidget *vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -3467,8 +3455,7 @@ static void _manage_editor_group_add(GtkWidget *widget,
                                      dt_lib_module_t *self)
 {
   dt_lib_modulegroups_t *d = self->data;
-  dt_lib_modulegroups_group_t *gr =
-    (dt_lib_modulegroups_group_t *)g_malloc0(sizeof(dt_lib_modulegroups_group_t));
+  dt_lib_modulegroups_group_t *gr = g_malloc0(sizeof(dt_lib_modulegroups_group_t));
   gr->name = g_strdup(_("new"));
   gr->icon = g_strdup("basic");
   d->edit_groups = g_list_append(d->edit_groups, gr);
@@ -3844,7 +3831,7 @@ static void _manage_editor_load(const char *preset,
   // other groups
   for(const GList *l = d->edit_groups; l; l = g_list_next(l))
   {
-    dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)l->data;
+    dt_lib_modulegroups_group_t *gr = l->data;
     GtkWidget *vb2 = _manage_editor_group_init_modules_box(self, gr);
     gtk_widget_show_all(vb2);
     gtk_box_pack_start(GTK_BOX(d->preset_groups_box), vb2, FALSE, TRUE, 0);

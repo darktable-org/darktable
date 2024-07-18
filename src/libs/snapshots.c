@@ -1158,7 +1158,7 @@ static int name_member(lua_State *L)
   dt_lua_snapshot_t index;
   luaA_to(L, dt_lua_snapshot_t, &index, 1);
   dt_lib_module_t *module = lua_touserdata(L, lua_upvalueindex(1));
-  dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)module->data;
+  dt_lib_snapshots_t *d = module->data;
   if(index >= d->num_snapshots || index < 0)
   {
     return luaL_error(L, "Accessing a non-existent snapshot");
@@ -1186,7 +1186,7 @@ static int lua_select(lua_State *L)
   dt_lua_snapshot_t index;
   luaA_to(L, dt_lua_snapshot_t, &index, 1);
   dt_lib_module_t *module = lua_touserdata(L, lua_upvalueindex(1));
-  dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)module->data;
+  dt_lib_snapshots_t *d = module->data;
   if(index >= d->num_snapshots || index < 0)
   {
     return luaL_error(L, "Accessing a non-existent snapshot");
