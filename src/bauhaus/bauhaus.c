@@ -2983,7 +2983,7 @@ static gboolean _widget_key_press(GtkWidget *widget, GdkEventKey *event)
 float dt_bauhaus_slider_get(GtkWidget *widget)
 {
   // first cast to bh widget, to check that type:
-  const dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
+  const dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   if(w->type != DT_BAUHAUS_SLIDER) return -1.0f;
   const dt_bauhaus_slider_data_t *d = &w->data.slider;
   if(d->max == d->min)
@@ -3016,7 +3016,7 @@ void dt_bauhaus_slider_set(GtkWidget *widget,
   if(dt_isnan(pos)) return;
 
   // this is the public interface function, translate by bounds and call set_normalized
-  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   if(w->type != DT_BAUHAUS_SLIDER)
     return;
 
@@ -3045,7 +3045,7 @@ void dt_bauhaus_slider_set_val(GtkWidget *widget,
 void dt_bauhaus_slider_set_digits(GtkWidget *widget,
                                   const int val)
 {
-  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
 
   if(w->type != DT_BAUHAUS_SLIDER) return;
 
@@ -3056,7 +3056,7 @@ void dt_bauhaus_slider_set_digits(GtkWidget *widget,
 
 int dt_bauhaus_slider_get_digits(GtkWidget *widget)
 {
-  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
 
   if(w->type != DT_BAUHAUS_SLIDER) return 0;
 
@@ -3068,7 +3068,7 @@ int dt_bauhaus_slider_get_digits(GtkWidget *widget)
 void dt_bauhaus_slider_set_step(GtkWidget *widget,
                                 const float val)
 {
-  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
 
   if(w->type != DT_BAUHAUS_SLIDER) return;
 
@@ -3079,7 +3079,7 @@ void dt_bauhaus_slider_set_step(GtkWidget *widget,
 
 float dt_bauhaus_slider_get_step(GtkWidget *widget)
 {
-  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
 
   if(w->type != DT_BAUHAUS_SLIDER) return 0;
 
@@ -3116,7 +3116,7 @@ float dt_bauhaus_slider_get_step(GtkWidget *widget)
 void dt_bauhaus_slider_set_feedback(GtkWidget *widget,
                                     const int feedback)
 {
-  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
 
   if(w->type != DT_BAUHAUS_SLIDER) return;
 
@@ -3129,7 +3129,7 @@ void dt_bauhaus_slider_set_feedback(GtkWidget *widget,
 
 int dt_bauhaus_slider_get_feedback(GtkWidget *widget)
 {
-  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
 
   if(w->type != DT_BAUHAUS_SLIDER) return 0;
 
@@ -3140,7 +3140,7 @@ int dt_bauhaus_slider_get_feedback(GtkWidget *widget)
 
 void dt_bauhaus_widget_reset(GtkWidget *widget)
 {
-  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
 
   if(w->type == DT_BAUHAUS_SLIDER)
   {
@@ -3161,7 +3161,7 @@ void dt_bauhaus_widget_reset(GtkWidget *widget)
 void dt_bauhaus_slider_set_format(GtkWidget *widget,
                                   const char *format)
 {
-  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   if(w->type != DT_BAUHAUS_SLIDER) return;
   dt_bauhaus_slider_data_t *d = &w->data.slider;
 
@@ -3177,7 +3177,7 @@ void dt_bauhaus_slider_set_format(GtkWidget *widget,
 void dt_bauhaus_slider_set_factor(GtkWidget *widget,
                                   const float factor)
 {
-  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   if(w->type != DT_BAUHAUS_SLIDER) return;
   dt_bauhaus_slider_data_t *d = &w->data.slider;
   d->factor = factor;
@@ -3187,7 +3187,7 @@ void dt_bauhaus_slider_set_factor(GtkWidget *widget,
 void dt_bauhaus_slider_set_offset(GtkWidget *widget,
                                   const float offset)
 {
-  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   if(w->type != DT_BAUHAUS_SLIDER) return;
   dt_bauhaus_slider_data_t *d = &w->data.slider;
   d->offset = offset;
@@ -3197,7 +3197,7 @@ void dt_bauhaus_slider_set_curve(GtkWidget *widget,
                                  float (*curve)(const float value,
                                                 const dt_bauhaus_curve_t dir))
 {
-  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   if(w->type != DT_BAUHAUS_SLIDER) return;
   dt_bauhaus_slider_data_t *d = &w->data.slider;
   if(curve == NULL) curve = _default_linear_curve;
@@ -3615,7 +3615,7 @@ GList *dt_bauhaus_vimkey_complete(const char *input)
 
 void dt_bauhaus_combobox_mute_scrolling(GtkWidget *widget)
 {
-  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
   d->mute_scrolling = TRUE;
 }
