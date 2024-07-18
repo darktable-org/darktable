@@ -772,8 +772,8 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void aspect_changed(GtkWidget *combo,
-                           dt_iop_module_t *self)
+static void _aspect_changed(GtkWidget *combo,
+                            dt_iop_module_t *self)
 {
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
@@ -789,8 +789,8 @@ static void aspect_changed(GtkWidget *combo,
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void position_h_changed(GtkWidget *combo,
-                               dt_iop_module_t *self)
+static void _position_h_changed(GtkWidget *combo,
+                                dt_iop_module_t *self)
 {
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
@@ -806,8 +806,8 @@ static void position_h_changed(GtkWidget *combo,
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void position_v_changed(GtkWidget *combo,
-                               dt_iop_module_t *self)
+static void _position_v_changed(GtkWidget *combo,
+                                dt_iop_module_t *self)
 {
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
@@ -860,7 +860,7 @@ void gui_changed(dt_iop_module_t *self,
   }
 }
 
-static void colorpick_color_set(GtkColorButton *widget,
+static void _colorpick_color_set(GtkColorButton *widget,
                                 dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
@@ -878,9 +878,28 @@ static void colorpick_color_set(GtkColorButton *widget,
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+static void _reset_border_color(GtkDarktableResetLabel label, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
+  dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
+  dt_iop_borders_params_t *dp = (dt_iop_borders_params_t *)self->default_params;
 
-static void frame_colorpick_color_set(GtkColorButton *widget,
-                                      dt_iop_module_t *self)
+  GdkRGBA c = (GdkRGBA){.red = dp->color[0],
+                        .green = dp->color[1],
+                        .blue = dp->color[2],
+                        .alpha = 1.0 };
+
+  gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(g->colorpick), &c);
+
+  p->color[0] = dp->color[0];
+  p->color[1] = dp->color[1];
+  p->color[2] = dp->color[2];
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void _frame_colorpick_color_set(GtkColorButton *widget, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
@@ -896,6 +915,28 @@ static void frame_colorpick_color_set(GtkColorButton *widget,
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
+
+static void _reset_frame_color(GtkDarktableResetLabel label, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
+  dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
+  dt_iop_borders_params_t *dp = (dt_iop_borders_params_t *)self->default_params;
+
+  GdkRGBA c = (GdkRGBA){.red = dp->frame_color[0],
+                        .green = dp->frame_color[1],
+                        .blue = dp->frame_color[2],
+                        .alpha = 1.0 };
+
+  gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(g->frame_colorpick), &c);
+
+  p->frame_color[0] = dp->frame_color[0];
+  p->frame_color[1] = dp->frame_color[1];
+  p->frame_color[2] = dp->frame_color[2];
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
 
 void gui_update(struct dt_iop_module_t *self)
 {
@@ -925,7 +966,8 @@ void gui_update(struct dt_iop_module_t *self)
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_borders_gui_data_t *g = IOP_GUI_ALLOC(borders);
-  dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->default_params;
+  dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
+  dt_iop_borders_params_t *dp = (dt_iop_borders_params_t *)self->default_params;
 
   g->basis = dt_bauhaus_combobox_from_params(self, "basis");
   gtk_widget_set_tooltip_text(g->basis,
@@ -940,7 +982,7 @@ void gui_init(struct dt_iop_module_t *self)
   DT_BAUHAUS_COMBOBOX_NEW_FULL(g->aspect, self, NULL, N_("aspect"),
                                _("select the aspect ratio\n"
                                  "(right click on slider below to type your own w:h)"),
-                               0, aspect_changed, self,
+                               0, _aspect_changed, self,
                                N_("image"),
                                N_("3:1"),
                                N_("95:33"),
@@ -975,7 +1017,7 @@ void gui_init(struct dt_iop_module_t *self)
   DT_BAUHAUS_COMBOBOX_NEW_FULL(g->pos_h, self, NULL, N_("horizontal position"),
                                _("select the horizontal position ratio relative to top\n"
                                  "(right click on slider below to type your own x:w)"),
-                               0, position_h_changed, self,
+                               0, _position_h_changed, self,
                                N_("center"), N_("1/3"), N_("3/8"),
                                N_("5/8"), N_("2/3"), N_("custom..."));
   gtk_box_pack_start(GTK_BOX(self->widget), g->pos_h, TRUE, TRUE, 0);
@@ -986,7 +1028,7 @@ void gui_init(struct dt_iop_module_t *self)
   DT_BAUHAUS_COMBOBOX_NEW_FULL(g->pos_v, self, NULL, N_("vertical position"),
                                _("select the vertical position ratio relative to left\n"
                                  "(right click on slider below to type your own y:h)"),
-                               0, position_v_changed, self,
+                               0, _position_v_changed, self,
                                N_("center"), N_("1/3"), N_("3/8"),
                                N_("5/8"), N_("2/3"), N_("custom..."));
   gtk_box_pack_start(GTK_BOX(self->widget), g->pos_v, TRUE, TRUE, 0);
@@ -1006,21 +1048,26 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->frame_offset,
                               _("offset of the frame line beginning on picture side"));
 
-  GdkRGBA color = (GdkRGBA){.red   = p->color[0],
-                            .green = p->color[1],
-                            .blue  = p->color[2],
+  GdkRGBA color = (GdkRGBA){.red   = dp->color[0],
+                            .green = dp->color[1],
+                            .blue  = dp->color[2],
                             .alpha = 1.0 };
+
+  GdkRGBA frame_color = (GdkRGBA){.red = dp->frame_color[0],
+                                  .green = dp->frame_color[1],
+                                  .blue = dp->frame_color[2],
+                                  .alpha = 1.0 };
 
   GtkWidget *label, *box;
 
   box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  label = dtgtk_reset_label_new(_("border color"), self, &p->color, 3 * sizeof(float), NULL);
+  label = dtgtk_reset_label_new(_("border color"), self, &p->color, 3 * sizeof(float), G_CALLBACK(_reset_border_color));
   gtk_box_pack_start(GTK_BOX(box), label, TRUE, TRUE, 0);
   g->colorpick = gtk_color_button_new_with_rgba(&color);
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->colorpick), FALSE);
   gtk_color_button_set_title(GTK_COLOR_BUTTON(g->colorpick), _("select border color"));
   g_signal_connect(G_OBJECT(g->colorpick), "color-set",
-                   G_CALLBACK(colorpick_color_set), self);
+                   G_CALLBACK(_colorpick_color_set), self);
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->colorpick), FALSE, TRUE, 0);
   g->border_picker = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, box);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->border_picker),
@@ -1030,14 +1077,14 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
 
   box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  label = dtgtk_reset_label_new(_("frame line color"), self, &p->color, 3 * sizeof(float), NULL);
+  label = dtgtk_reset_label_new(_("frame line color"), self, &p->frame_color, 3 * sizeof(float), G_CALLBACK(_reset_frame_color));
   gtk_box_pack_start(GTK_BOX(box), label, TRUE, TRUE, 0);
-  g->frame_colorpick = gtk_color_button_new_with_rgba(&color);
+  g->frame_colorpick = gtk_color_button_new_with_rgba(&frame_color);
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->frame_colorpick), FALSE);
   gtk_color_button_set_title(GTK_COLOR_BUTTON(g->frame_colorpick),
                              _("select frame line color"));
   g_signal_connect(G_OBJECT(g->frame_colorpick), "color-set",
-                   G_CALLBACK(frame_colorpick_color_set), self);
+                   G_CALLBACK(_frame_colorpick_color_set), self);
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->frame_colorpick), FALSE, TRUE, 0);
   g->frame_picker = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, box);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->frame_picker),
