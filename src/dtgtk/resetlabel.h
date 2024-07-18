@@ -31,12 +31,13 @@ struct _GtkDarktableResetLabel
   GtkEventBox widget;
   GtkLabel *lb;
   dt_iop_module_t *module;
-  int offset; // offset in params to reset
-  int size;   // size of param to reset
+  int offset;                // offset in params to reset
+  int size;                  // size of param to reset
+  GCallback reset_callback;  // pointer to callback function
 };
 
 /** instantiate a new darktable reset label for the given module and param. */
-GtkWidget *dtgtk_reset_label_new(const gchar *label, dt_iop_module_t *module, void *param, int param_size);
+GtkWidget *dtgtk_reset_label_new(const gchar *label, dt_iop_module_t *module, void *param, int param_size, GCallback reset_callback);
 /** Sets the text within the GtkResetLabel widget. It overwrites any text that was there before. */
 void dtgtk_reset_label_set_text(GtkDarktableResetLabel *label, const gchar *str);
 
