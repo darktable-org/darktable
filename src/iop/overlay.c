@@ -832,6 +832,32 @@ static void _alignment_callback(GtkWidget *tb, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+static void _reset_alignment_callback(GtkDarktableResetLabel *label, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_overlay_gui_data_t *g = (dt_iop_overlay_gui_data_t *)self->gui_data;
+
+  if(darktable.gui->reset) return;
+  dt_iop_overlay_params_t *p = (dt_iop_overlay_params_t *)self->params;
+  dt_iop_overlay_params_t *dp = (dt_iop_overlay_params_t *)self->default_params;
+
+  for(int i = 0; i < 9; i++)
+  {
+    /* block signal handler */
+    g_signal_handlers_block_by_func(g->align[i], _alignment_callback, user_data);
+
+    if(i == dp->alignment)
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->align[i]), TRUE);
+    else
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->align[i]), FALSE);
+
+    /* unblock signal handler */
+    g_signal_handlers_unblock_by_func(g->align[i], _alignment_callback, user_data);
+  }
+  p->alignment = dp->alignment;
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
 void commit_params(struct dt_iop_module_t *self,
                    dt_iop_params_t *p1,
                    dt_dev_pixelpipe_t *pipe,
@@ -1138,7 +1164,7 @@ void gui_init(struct dt_iop_module_t *self)
   // Create the 3x3 gtk table toggle button table...
   GtkWidget *bat = gtk_grid_new();
   GtkWidget *label = dtgtk_reset_label_new(_("alignment"),
-                                           self, &p->alignment, sizeof(p->alignment), NULL);
+                                           self, &p->alignment, sizeof(p->alignment), G_CALLBACK(_reset_alignment_callback));
   gtk_grid_attach(GTK_GRID(bat), label, 0, 0, 1, 3);
   gtk_widget_set_hexpand(label, TRUE);
   gtk_grid_set_row_spacing(GTK_GRID(bat), DT_PIXEL_APPLY_DPI(3));
