@@ -68,6 +68,11 @@ int position(const dt_lib_module_t *self)
   return 2001;
 }
 
+static GtkWidget *_lib_filter_get_stack(dt_lib_module_t *self)
+{
+  return self->widget;
+}
+
 static GtkWidget *_lib_filter_get_filter_box(dt_lib_module_t *self)
 {
   dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
@@ -97,32 +102,38 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)g_malloc0(sizeof(dt_lib_tool_filter_t));
   self->data = (void *)d;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_valign(self->widget, GTK_ALIGN_CENTER);
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_valign(box, GTK_ALIGN_CENTER);
+
+  self->widget = gtk_stack_new();
+  gtk_stack_add_named(GTK_STACK(self->widget), box, "noshapes");
+  gtk_stack_set_transition_type(GTK_STACK(self->widget), GTK_STACK_TRANSITION_TYPE_SLIDE_LEFT_RIGHT);
+  gtk_container_add(GTK_CONTAINER(self->widget), dt_bauhaus_slider_new(NULL));
 
   GtkWidget *bt = dtgtk_button_new(dtgtk_cairo_paint_filtering_menu, 0, NULL);
   gtk_widget_set_tooltip_text(bt, _("filter preferences"));
   g_signal_connect(G_OBJECT(bt), "button-press-event", G_CALLBACK(_pref_show), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), bt, FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(box), bt, FALSE, TRUE, 0);
 
   d->filter_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_set_name(d->filter_box, "header-rule-box");
-  gtk_box_pack_start(GTK_BOX(self->widget), d->filter_box, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box), d->filter_box, FALSE, FALSE, 0);
 
   /* sort combobox */
   d->sort_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_set_name(d->sort_box, "header-sort-box");
-  gtk_box_pack_start(GTK_BOX(self->widget), d->sort_box, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box), d->sort_box, FALSE, FALSE, 0);
   GtkWidget *label = gtk_label_new(_("sort by"));
   gtk_box_pack_start(GTK_BOX(d->sort_box), label, TRUE, TRUE, 0);
 
   /* label to display selected count */
   d->count = gtk_label_new("");
   gtk_label_set_ellipsize(GTK_LABEL(d->count), PANGO_ELLIPSIZE_MIDDLE);
-  gtk_box_pack_start(GTK_BOX(self->widget), d->count, TRUE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box), d->count, TRUE, FALSE, 0);
 
   /* initialize proxy */
   darktable.view_manager->proxy.filter.module = self;
+  darktable.view_manager->proxy.filter.get_stack = _lib_filter_get_stack;
   darktable.view_manager->proxy.filter.get_filter_box = _lib_filter_get_filter_box;
   darktable.view_manager->proxy.filter.get_sort_box = _lib_filter_get_sort_box;
   darktable.view_manager->proxy.filter.get_count = _lib_filter_get_count;
