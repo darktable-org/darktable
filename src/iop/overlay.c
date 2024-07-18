@@ -1138,7 +1138,7 @@ void gui_init(struct dt_iop_module_t *self)
   // Create the 3x3 gtk table toggle button table...
   GtkWidget *bat = gtk_grid_new();
   GtkWidget *label = dtgtk_reset_label_new(_("alignment"),
-                                           self, &p->alignment, sizeof(p->alignment));
+                                           self, &p->alignment, sizeof(p->alignment), NULL);
   gtk_grid_attach(GTK_GRID(bat), label, 0, 0, 1, 3);
   gtk_widget_set_hexpand(label, TRUE);
   gtk_grid_set_row_spacing(GTK_GRID(bat), DT_PIXEL_APPLY_DPI(3));

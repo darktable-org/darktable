@@ -1300,7 +1300,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_loc_get_datadir(datadir, sizeof(datadir));
   dt_loc_get_user_config_dir(configdir, sizeof(configdir));
 
-  GtkWidget *label = dtgtk_reset_label_new(_("marker"), self, &p->filename, sizeof(p->filename));
+  GtkWidget *label = dtgtk_reset_label_new(_("marker"), self, &p->filename, sizeof(p->filename), NULL);
   g->watermarks = dt_bauhaus_combobox_new(self);
   gtk_widget_set_hexpand(GTK_WIDGET(g->watermarks), TRUE);
   char *tooltip = g_strdup_printf(_("SVG watermarks in %s/watermarks or %s/watermarks"), configdir, datadir);
@@ -1322,7 +1322,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_grid_attach_next_to(grid, g->text, label, GTK_POS_RIGHT, 2, 1);
 
   // Text font
-  label = dtgtk_reset_label_new(_("font"), self, &p->font, sizeof(p->font));
+  label = dtgtk_reset_label_new(_("font"), self, &p->font, sizeof(p->font), NULL);
   const char *str = dt_conf_get_string_const("plugins/darkroom/watermark/font");
   g->fontsel = gtk_font_button_new_with_font(str==NULL?"DejaVu Sans 10":str);
   GtkWidget *child = dt_gui_container_first_child(GTK_CONTAINER(gtk_bin_get_child(GTK_BIN(g->fontsel))));
@@ -1340,7 +1340,7 @@ void gui_init(struct dt_iop_module_t *self)
   float blue = dt_conf_get_float("plugins/darkroom/watermark/color_blue");
   GdkRGBA color = (GdkRGBA){.red = red, .green = green, .blue = blue, .alpha = 1.0 };
 
-  label = dtgtk_reset_label_new(_("color"), self, &p->color, 3 * sizeof(float));
+  label = dtgtk_reset_label_new(_("color"), self, &p->color, 3 * sizeof(float), NULL);
   g->colorpick = gtk_color_button_new_with_rgba(&color);
   gtk_widget_set_tooltip_text(g->colorpick, _("watermark color, tag:\n$(WATERMARK_COLOR)"));
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->colorpick), FALSE);
@@ -1389,7 +1389,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   // Create the 3x3 gtk table toggle button table...
   GtkWidget *bat = gtk_grid_new();
-  label = dtgtk_reset_label_new(_("alignment"), self, &p->alignment, sizeof(p->alignment));
+  label = dtgtk_reset_label_new(_("alignment"), self, &p->alignment, sizeof(p->alignment), NULL);
   gtk_grid_attach(GTK_GRID(bat), label, 0, 0, 1, 3);
   gtk_widget_set_hexpand(label, TRUE);
   gtk_grid_set_row_spacing(GTK_GRID(bat), DT_PIXEL_APPLY_DPI(3));
