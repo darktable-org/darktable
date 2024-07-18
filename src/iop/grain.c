@@ -113,8 +113,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_grain_params_v1_t;
 
     const dt_iop_grain_params_v1_t *o = old_params;
-    dt_iop_grain_params_v2_t *n =
-      (dt_iop_grain_params_v2_t *)malloc(sizeof(dt_iop_grain_params_v2_t));
+    dt_iop_grain_params_v2_t *n = malloc(sizeof(dt_iop_grain_params_v2_t));
 
     n->channel = o->channel;
     n->scale = o->scale;
@@ -442,7 +441,7 @@ void process(struct dt_iop_module_t *self,
                                         ivoid, ovoid, roi_in, roi_out))
     return;
 
-  dt_iop_grain_data_t *data = (dt_iop_grain_data_t *)piece->data;
+  dt_iop_grain_data_t *data = piece->data;
 
   unsigned int hash = _hash_string(piece->pipe->image.filename) % (int)fmax(roi_out->width * 0.3, 1.0);
 
@@ -509,7 +508,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_grain_params_t *p = (dt_iop_grain_params_t *)p1;
-  dt_iop_grain_data_t *d = (dt_iop_grain_data_t *)piece->data;
+  dt_iop_grain_data_t *d = piece->data;
 
   d->channel = p->channel;
   d->scale = p->scale;

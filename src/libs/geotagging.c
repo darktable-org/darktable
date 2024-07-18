@@ -243,7 +243,7 @@ static int _count_images_per_track(dt_gpx_track_segment_t *t, dt_gpx_track_segme
   int nb_imgs = 0;
   for(GList *i = d->imgs; i; i = g_list_next(i))
   {
-    dt_sel_img_t *im = (dt_sel_img_t *)i->data;
+    dt_sel_img_t *im = i->data;
     if(im->segid == -1)
     {
       GDateTime *dt = _localtime_text_to_utc_timeval(im->dt, d->tz_camera, darktable.utc_tz, d->offset);
@@ -287,7 +287,7 @@ static void _remove_images_from_map(dt_lib_module_t *self)
   dt_lib_geotagging_t *d = self->data;
   for(GList *i = d->imgs; i; i = g_list_next(i))
   {
-    dt_sel_img_t *im = (dt_sel_img_t *)i->data;
+    dt_sel_img_t *im = i->data;
     if(im->image)
     {
       dt_view_map_remove_marker(darktable.view_manager, MAP_DISPLAY_THUMB, im->image);
@@ -301,7 +301,7 @@ static void _refresh_images_displayed_on_track(const int segid, const gboolean a
   dt_lib_geotagging_t *d = self->data;
   for(GList *i = d->imgs; i; i = g_list_next(i))
   {
-    dt_sel_img_t *im = (dt_sel_img_t *)i->data;
+    dt_sel_img_t *im = i->data;
     if(im->segid == segid && active)
     {
       GDateTime *dt = _localtime_text_to_utc_timeval(im->dt, d->tz_camera, darktable.utc_tz, d->offset);
@@ -319,7 +319,7 @@ static void _refresh_images_displayed_on_track(const int segid, const gboolean a
   int count = 0;
   for(GList *i = d->imgs; active && i; i = g_list_next(i))
   {
-    dt_sel_img_t *im = (dt_sel_img_t *)i->data;
+    dt_sel_img_t *im = i->data;
     if(im->segid == segid && im->gl.latitude != NAN)
     {
       count++;
@@ -399,7 +399,7 @@ static GList *_get_images_on_active_tracks(dt_lib_module_t *self)
     {
       for(GList *i = d->imgs; i; i = g_list_next(i))
       {
-        dt_sel_img_t *im = (dt_sel_img_t *)i->data;
+        dt_sel_img_t *im = i->data;
         if(im->segid == segid)
           imgs = g_list_prepend(imgs, GINT_TO_POINTER(im->imgid));
       }
@@ -642,7 +642,7 @@ static void _refresh_track_list(dt_lib_module_t *self)
   gboolean valid = gtk_tree_model_get_iter_first(model, &iter);
   for(GList *ts = trkseg; ts && valid; ts = g_list_next(ts))
   {
-    dt_gpx_track_segment_t *t = (dt_gpx_track_segment_t *)ts->data;
+    dt_gpx_track_segment_t *t = ts->data;
     gchar *dts = _utc_timeval_to_localtime_text(t->start_dt, d->tz_camera, TRUE);
     const int nb_imgs = _count_images_per_track(t, ts->next ? ts->next->data : NULL, self);
     gboolean active;
@@ -692,7 +692,7 @@ static void _show_gpx_tracks(dt_lib_module_t *self)
   GtkTreeIter iter;
   for(GList *ts = trkseg; ts; ts = g_list_next(ts))
   {
-    dt_gpx_track_segment_t *t = (dt_gpx_track_segment_t *)ts->data;
+    dt_gpx_track_segment_t *t = ts->data;
     gchar *dts = _utc_timeval_to_localtime_text(t->start_dt, d->tz_camera, TRUE);
     gchar *tooltip = _datetime_tooltip(t->start_dt, t->end_dt, d->tz_camera);
     const int nb_imgs = _count_images_per_track(t, ts->next ? ts->next->data : NULL, self);
@@ -851,7 +851,7 @@ static void _preview_gpx_file(GtkWidget *widget, dt_lib_module_t *self)
   line++;
   for(GList *ts = trkseg; ts; ts = g_list_next(ts))
   {
-    dt_gpx_track_segment_t *t = (dt_gpx_track_segment_t *)ts->data;
+    dt_gpx_track_segment_t *t = ts->data;
     gchar *dts = _utc_timeval_to_localtime_text(t->start_dt, d->tz_camera, TRUE);
     gchar *dte = _utc_timeval_to_localtime_text(t->end_dt, d->tz_camera, TRUE);
 

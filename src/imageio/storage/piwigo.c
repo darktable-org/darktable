@@ -1462,13 +1462,12 @@ void init(dt_imageio_module_storage_t *self)
 
 void *get_params(dt_imageio_module_storage_t *self)
 {
-  dt_storage_piwigo_gui_data_t *ui = (dt_storage_piwigo_gui_data_t *)self->gui_data;
+  dt_storage_piwigo_gui_data_t *ui = self->gui_data;
 
   if(!ui)
     return NULL; // gui not initialized, CLI mode
 
-  dt_storage_piwigo_params_t *p =
-    (dt_storage_piwigo_params_t *)g_malloc0(sizeof(dt_storage_piwigo_params_t));
+  dt_storage_piwigo_params_t *p = g_malloc0(sizeof(dt_storage_piwigo_params_t));
 
   if(!p)
     return NULL;

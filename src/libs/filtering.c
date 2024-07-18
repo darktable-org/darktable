@@ -1470,7 +1470,7 @@ static void _dt_collection_updated(gpointer instance, dt_collection_change_t que
                                    gpointer self)
 {
   dt_lib_module_t *dm = (dt_lib_module_t *)self;
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)dm->data;
+  dt_lib_filtering_t *d = dm->data;
 
   gchar *where_ext = dt_collection_get_extended_where(darktable.collection, 99999);
   if(g_strcmp0(where_ext, d->last_where_ext))

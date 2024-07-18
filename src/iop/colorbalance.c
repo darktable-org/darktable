@@ -207,10 +207,8 @@ int legacy_params(dt_iop_module_t *self,
       float lift[CHANNEL_SIZE], gamma[CHANNEL_SIZE], gain[CHANNEL_SIZE];
     } dt_iop_colorbalance_params_v1_t;
 
-    const dt_iop_colorbalance_params_v1_t *o =
-      (dt_iop_colorbalance_params_v1_t *)old_params;
-    dt_iop_colorbalance_params_v3_t *n =
-      (dt_iop_colorbalance_params_v3_t *)malloc(sizeof(dt_iop_colorbalance_params_v3_t));
+    const dt_iop_colorbalance_params_v1_t *o = old_params;
+    dt_iop_colorbalance_params_v3_t *n = malloc(sizeof(dt_iop_colorbalance_params_v3_t));
 
     for(int i = 0; i < CHANNEL_SIZE; i++)
     {
@@ -239,10 +237,8 @@ int legacy_params(dt_iop_module_t *self,
       float saturation, contrast, grey;
     } dt_iop_colorbalance_params_v2_t;
 
-    const dt_iop_colorbalance_params_v2_t *o =
-      (dt_iop_colorbalance_params_v2_t *)old_params;
-    dt_iop_colorbalance_params_v3_t *n =
-      (dt_iop_colorbalance_params_v3_t *)malloc(sizeof(dt_iop_colorbalance_params_v3_t));
+    const dt_iop_colorbalance_params_v2_t *o = old_params;
+    dt_iop_colorbalance_params_v3_t *n = malloc(sizeof(dt_iop_colorbalance_params_v3_t));
 
     for(int i = 0; i < CHANNEL_SIZE; i++)
     {
@@ -689,7 +685,7 @@ void process(struct dt_iop_module_t *self,
                                         ivoid, ovoid, roi_in, roi_out))
     return;
 
-  dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)piece->data;
+  dt_iop_colorbalance_data_t *d = piece->data;
   const float contrast = (d->contrast != 0.0f) ? 1.0f / d->contrast : 1000000.0f,
               grey = d->grey / 100.0f;
   const float saturation = d->saturation;
@@ -769,8 +765,8 @@ void process(struct dt_iop_module_t *self,
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)piece->data;
-  dt_iop_colorbalance_global_data_t *gd = (dt_iop_colorbalance_global_data_t *)self->global_data;
+  dt_iop_colorbalance_data_t *d = piece->data;
+  dt_iop_colorbalance_global_data_t *gd = self->global_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
@@ -1392,7 +1388,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_colorbalance_global_data_t *gd = (dt_iop_colorbalance_global_data_t *)module->data;
+  dt_iop_colorbalance_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_colorbalance);
   dt_opencl_free_kernel(gd->kernel_colorbalance_lgg);
   dt_opencl_free_kernel(gd->kernel_colorbalance_cdl);
@@ -1403,7 +1399,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)(piece->data);
+  dt_iop_colorbalance_data_t *d = piece->data;
   dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)p1;
 
   d->mode = p->mode;

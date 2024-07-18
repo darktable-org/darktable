@@ -327,7 +327,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_hotpixels_gui_data_t *g = self->gui_data;
-  const dt_iop_hotpixels_data_t *data = (dt_iop_hotpixels_data_t *)piece->data;
+  const dt_iop_hotpixels_data_t *data = piece->data;
 
   // The processing loop should output only a few pixels, so just copy everything first
   const int planes = data->pure_monochrome ? 4 : 1;
@@ -368,7 +368,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_hotpixels_params_t *p = (dt_iop_hotpixels_params_t *)params;
-  dt_iop_hotpixels_data_t *d = (dt_iop_hotpixels_data_t *)piece->data;
+  dt_iop_hotpixels_data_t *d = piece->data;
   d->filters = piece->pipe->dsc.filters;
   d->multiplier = p->strength / 2.0;
   d->threshold = p->threshold;

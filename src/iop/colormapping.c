@@ -433,8 +433,8 @@ static void kmeans(const float *col, const int width, const int height, const in
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_colormapping_data_t *const restrict data = (dt_iop_colormapping_data_t *)piece->data;
-  dt_iop_colormapping_gui_data_t *const restrict g = (dt_iop_colormapping_gui_data_t *)self->gui_data;
+  dt_iop_colormapping_data_t *const restrict data = piece->data;
+  dt_iop_colormapping_gui_data_t *const restrict g = self->gui_data;
   float *const restrict in = (float *)ivoid;
   float *const restrict out = (float *)ovoid;
 
@@ -566,8 +566,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_colormapping_data_t *data = (dt_iop_colormapping_data_t *)piece->data;
-  dt_iop_colormapping_global_data_t *gd = (dt_iop_colormapping_global_data_t *)self->global_data;
+  dt_iop_colormapping_data_t *data = piece->data;
+  dt_iop_colormapping_global_data_t *gd = self->global_data;
   dt_iop_colormapping_gui_data_t *g = self->gui_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
@@ -734,7 +734,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_colormapping_params_t *p = (dt_iop_colormapping_params_t *)p1;
-  dt_iop_colormapping_data_t *d = (dt_iop_colormapping_data_t *)piece->data;
+  dt_iop_colormapping_data_t *d = piece->data;
 
   memcpy(d, p, sizeof(dt_iop_colormapping_params_t));
 #ifdef HAVE_OPENCL
@@ -810,7 +810,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_colormapping_global_data_t *gd = (dt_iop_colormapping_global_data_t *)module->data;
+  dt_iop_colormapping_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_histogram);
   dt_opencl_free_kernel(gd->kernel_mapping);
   free(module->data);

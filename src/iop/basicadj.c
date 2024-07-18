@@ -134,8 +134,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_basicadj_params_v1_t;
 
     const dt_iop_basicadj_params_v1_t *old = old_params;
-    dt_iop_basicadj_params_v2_t *new =
-      (dt_iop_basicadj_params_v2_t *)malloc(sizeof(dt_iop_basicadj_params_v2_t));
+    dt_iop_basicadj_params_v2_t *new = malloc(sizeof(dt_iop_basicadj_params_v2_t));
 
     new->black_point = old->black_point;
     new->exposure = old->exposure;
@@ -479,7 +478,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_basicadj_global_data_t *gd = (dt_iop_basicadj_global_data_t *)module->data;
+  dt_iop_basicadj_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_basicadj);
   free(module->data);
   module->data = NULL;
@@ -547,7 +546,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_basicadj_data_t *d = (dt_iop_basicadj_data_t *)piece->data;
+  dt_iop_basicadj_data_t *d = piece->data;
   dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)params;
 
   memcpy(&d->params, params, sizeof(dt_iop_basicadj_params_t));
@@ -1291,10 +1290,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
 
   const int ch = piece->colors;
-  dt_iop_basicadj_data_t *d = (dt_iop_basicadj_data_t *)piece->data;
-  dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)&d->params;
+  dt_iop_basicadj_data_t *d = piece->data;
+  dt_iop_basicadj_params_t *p = &d->params;
   dt_iop_basicadj_gui_data_t *g = self->gui_data;
-  dt_iop_basicadj_global_data_t *gd = (dt_iop_basicadj_global_data_t *)self->global_data;
+  dt_iop_basicadj_global_data_t *gd = self->global_data;
 
   cl_int err = CL_SUCCESS;
 
@@ -1426,8 +1425,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
 
   const int ch = piece->colors;
-  dt_iop_basicadj_data_t *d = (dt_iop_basicadj_data_t *)piece->data;
-  dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)&d->params;
+  dt_iop_basicadj_data_t *d = piece->data;
+  dt_iop_basicadj_params_t *p = &d->params;
   dt_iop_basicadj_gui_data_t *g = self->gui_data;
 
   // process auto levels

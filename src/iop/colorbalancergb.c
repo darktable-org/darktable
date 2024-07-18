@@ -298,10 +298,8 @@ int legacy_params(dt_iop_module_t *self,
       float hue_angle;
     } dt_iop_colorbalancergb_params_v1_t;
 
-    const dt_iop_colorbalancergb_params_v1_t *o =
-      (dt_iop_colorbalancergb_params_v1_t *)old_params;
+    const dt_iop_colorbalancergb_params_v1_t *o = old_params;
     dt_iop_colorbalancergb_params_v5_t *n =
-      (dt_iop_colorbalancergb_params_v5_t *)
       malloc(sizeof(dt_iop_colorbalancergb_params_v5_t));
 
     // Init params with defaults
@@ -360,10 +358,8 @@ int legacy_params(dt_iop_module_t *self,
       float brilliance_shadows;
     } dt_iop_colorbalancergb_params_v2_t;
 
-    const dt_iop_colorbalancergb_params_v2_t *o =
-      (dt_iop_colorbalancergb_params_v2_t *)old_params;
+    const dt_iop_colorbalancergb_params_v2_t *o = old_params;
     dt_iop_colorbalancergb_params_v5_t *n =
-      (dt_iop_colorbalancergb_params_v5_t *)
       malloc(sizeof(dt_iop_colorbalancergb_params_v5_t));
 
     // Init params with defaults
@@ -423,10 +419,8 @@ int legacy_params(dt_iop_module_t *self,
       float mask_grey_fulcrum;
     } dt_iop_colorbalancergb_params_v3_t;
 
-    const dt_iop_colorbalancergb_params_v3_t *o =
-      (dt_iop_colorbalancergb_params_v3_t *)old_params;
+    const dt_iop_colorbalancergb_params_v3_t *o = old_params;
     dt_iop_colorbalancergb_params_v5_t *n =
-      (dt_iop_colorbalancergb_params_v5_t *)
       malloc(sizeof(dt_iop_colorbalancergb_params_v5_t));
 
     // Init params with defaults
@@ -490,10 +484,8 @@ int legacy_params(dt_iop_module_t *self,
       float contrast;
     } dt_iop_colorbalancergb_params_v4_t;
 
-    const dt_iop_colorbalancergb_params_v4_t *o =
-      (dt_iop_colorbalancergb_params_v4_t *)old_params;
+    const dt_iop_colorbalancergb_params_v4_t *o = old_params;
     dt_iop_colorbalancergb_params_v5_t *n =
-      (dt_iop_colorbalancergb_params_v5_t *)
       malloc(sizeof(dt_iop_colorbalancergb_params_v5_t));
 
     // Init params with defaults
@@ -593,7 +585,7 @@ void process(struct dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_colorbalancergb_data_t *d = (dt_iop_colorbalancergb_data_t *)piece->data;
+  dt_iop_colorbalancergb_data_t *d = piece->data;
   dt_iop_colorbalancergb_gui_data_t *g = self->gui_data;
   const struct dt_iop_order_iccprofile_info_t *const work_profile
       = dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
@@ -961,8 +953,8 @@ int process_cl(struct dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_colorbalancergb_data_t *const d = (dt_iop_colorbalancergb_data_t *)piece->data;
-  dt_iop_colorbalancergb_global_data_t *const gd = (dt_iop_colorbalancergb_global_data_t *)self->global_data;
+  const dt_iop_colorbalancergb_data_t *const d = piece->data;
+  dt_iop_colorbalancergb_global_data_t *const gd = self->global_data;
   dt_iop_colorbalancergb_gui_data_t *g = self->gui_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
@@ -1088,7 +1080,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_colorbalancergb_global_data_t *gd = (dt_iop_colorbalancergb_global_data_t *)module->data;
+  dt_iop_colorbalancergb_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_colorbalance_rgb);
   free(module->data);
   module->data = NULL;
@@ -1098,7 +1090,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_colorbalancergb_data_t *d = (dt_iop_colorbalancergb_data_t *)(piece->data);
+  dt_iop_colorbalancergb_data_t *d = piece->data;
   dt_iop_colorbalancergb_params_t *p = (dt_iop_colorbalancergb_params_t *)p1;
 
   d->checker_color_1[0] = CLAMP(dt_conf_get_float("plugins/darkroom/colorbalancergb/checker1/red"), 0.f, 1.f);
@@ -1255,7 +1247,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = dt_calloc1_align_type(dt_iop_colorbalancergb_data_t);
-  dt_iop_colorbalancergb_data_t *d = (dt_iop_colorbalancergb_data_t *)(piece->data);
+  dt_iop_colorbalancergb_data_t *d = piece->data;
   d->gamut_LUT = dt_alloc_align_float(LUT_ELEM);
   d->lut_inited = FALSE;
   d->work_profile = NULL;
@@ -1263,7 +1255,7 @@ void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe
 
 void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_colorbalancergb_data_t *d = (dt_iop_colorbalancergb_data_t *)(piece->data);
+  dt_iop_colorbalancergb_data_t *d = piece->data;
   if(d->gamut_LUT) dt_free_align(d->gamut_LUT);
   dt_free_align(piece->data);
   piece->data = NULL;

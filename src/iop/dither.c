@@ -410,7 +410,7 @@ static void _process_floyd_steinberg(
         const dt_iop_roi_t *const roi_out,
         const gboolean fast_mode)
 {
-  const dt_iop_dither_data_t *const restrict data = (dt_iop_dither_data_t *)piece->data;
+  const dt_iop_dither_data_t *const restrict data = piece->data;
 
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -583,7 +583,7 @@ static void _process_random(
         const dt_iop_roi_t *const roi_in,
         const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_dither_data_t *const data = (dt_iop_dither_data_t *)piece->data;
+  const dt_iop_dither_data_t *const data = piece->data;
 
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -627,7 +627,7 @@ static void _process_posterize(
         const dt_iop_roi_t *const roi_in,
         const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_dither_data_t *const data = (dt_iop_dither_data_t *)piece->data;
+  const dt_iop_dither_data_t *const data = piece->data;
 
   const size_t width = roi_in->width;
   const size_t height = roi_in->height;
@@ -667,7 +667,7 @@ void process(
                                          ivoid, ovoid, roi_in, roi_out))
     return;
 
-  dt_iop_dither_data_t *data = (dt_iop_dither_data_t *)piece->data;
+  dt_iop_dither_data_t *data = piece->data;
 
   if(data->dither_type == DITHER_RANDOM)
     _process_random(self, piece, ivoid, ovoid, roi_in, roi_out);
@@ -723,7 +723,7 @@ void commit_params(
         dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_dither_params_t *p = (dt_iop_dither_params_t *)p1;
-  dt_iop_dither_data_t *d = (dt_iop_dither_data_t *)piece->data;
+  dt_iop_dither_data_t *d = piece->data;
 
   d->dither_type = p->dither_type;
   memcpy(&(d->random.range), &(p->random.range), sizeof(p->random.range));

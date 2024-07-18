@@ -528,8 +528,7 @@ static void _gui_styles_dialog_run(gboolean edit,
   if(name && (dt_styles_exists(name)) == 0) return;
 
   /* initialize the dialog */
-  dt_gui_styles_dialog_t *sd =
-    (dt_gui_styles_dialog_t *)g_malloc0(sizeof(dt_gui_styles_dialog_t));
+  dt_gui_styles_dialog_t *sd = g_malloc0(sizeof(dt_gui_styles_dialog_t));
 
   sd->nameorig = g_strdup(name);
   sd->imgid = imgid;
@@ -772,7 +771,7 @@ static void _gui_styles_dialog_run(gboolean edit,
     {
       for(const GList *items_iter = items; items_iter; items_iter = g_list_next(items_iter))
       {
-        dt_style_item_t *item = (dt_style_item_t *)items_iter->data;
+        dt_style_item_t *item = items_iter->data;
         const dt_develop_mask_mode_t mask_mode = item->blendop_params->mask_mode;
 
         if(item->num != -1 && item->selimg_num != -1) // defined in style and image
@@ -827,7 +826,7 @@ static void _gui_styles_dialog_run(gboolean edit,
     {
       for(const GList *items_iter = items; items_iter; items_iter = g_list_next(items_iter))
       {
-        dt_history_item_t *item = (dt_history_item_t *)items_iter->data;
+        dt_history_item_t *item = items_iter->data;
 
         /* lookup history item module */
         gboolean enabled = TRUE;
@@ -1001,7 +1000,7 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const dt_imgid_t imgid)
   while(l)
   {
     char mn[64];
-    dt_style_item_t *i = (dt_style_item_t *)l->data;
+    dt_style_item_t *i = l->data;
 
     if(i->multi_name && strlen(i->multi_name) > 0)
     {

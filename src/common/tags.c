@@ -135,7 +135,7 @@ static void _pop_undo(gpointer user_data,
   {
     for(GList *list = (GList *)data; list; list = g_list_next(list))
     {
-      dt_undo_tags_t *undotags = (dt_undo_tags_t *)list->data;
+      dt_undo_tags_t *undotags = list->data;
 
       GList *before = (action == DT_ACTION_UNDO) ? undotags->after : undotags->before;
       GList *after = (action == DT_ACTION_UNDO) ? undotags->before : undotags->after;
@@ -902,7 +902,7 @@ GList *dt_tag_get_list(const dt_imgid_t imgid)
 
   for(; taglist; taglist = g_list_next(taglist))
   {
-    dt_tag_t *t = (dt_tag_t *)taglist->data;
+    dt_tag_t *t = taglist->data;
     gchar *value = t->tag;
 
     gchar **pch = g_strsplit(value, "|", -1);
@@ -945,7 +945,7 @@ GList *dt_tag_get_hierarchical(const dt_imgid_t imgid)
 
   for(GList *tag_iter = taglist; tag_iter; tag_iter = g_list_next(tag_iter))
   {
-    dt_tag_t *t = (dt_tag_t *)tag_iter->data;
+    dt_tag_t *t = tag_iter->data;
     tags = g_list_prepend(tags, g_strdup(t->tag));
   }
 
@@ -1027,13 +1027,13 @@ GList *dt_tag_get_list_export(const dt_imgid_t imgid,
   {
     for(GList *tagt = sorted_tags; tagt; tagt = g_list_next(tagt))
     {
-      dt_tag_t *t = (dt_tag_t *)sorted_tags->data;
+      dt_tag_t *t = sorted_tags->data;
       t->flags &= ~DT_TF_PRIVATE;
     }
   }
   for(; sorted_tags; sorted_tags = g_list_next(sorted_tags))
   {
-    dt_tag_t *t = (dt_tag_t *)sorted_tags->data;
+    dt_tag_t *t = sorted_tags->data;
     if((export_private_tags || !(t->flags & DT_TF_PRIVATE))
         && !(t->flags & DT_TF_CATEGORY))
     {
@@ -1102,7 +1102,7 @@ GList *dt_tag_get_hierarchical_export(const dt_imgid_t imgid,
 
   for(GList *tag_iter = taglist; tag_iter; tag_iter = g_list_next(tag_iter))
   {
-    dt_tag_t *t = (dt_tag_t *)tag_iter->data;
+    dt_tag_t *t = tag_iter->data;
     if(export_private_tags || !(t->flags & DT_TF_PRIVATE))
     {
       tags = g_list_prepend(tags, g_strdup(t->tag));

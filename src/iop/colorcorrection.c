@@ -129,7 +129,7 @@ void init_presets(dt_iop_module_so_t *self)
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_colorcorrection_data_t *const d = (dt_iop_colorcorrection_data_t *)piece->data;
+  const dt_iop_colorcorrection_data_t *const d = piece->data;
   const float *const restrict in = (float *)DT_IS_ALIGNED(i);
   float *const restrict out = (float *)DT_IS_ALIGNED(o);
   if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
@@ -157,8 +157,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_colorcorrection_data_t *d = (dt_iop_colorcorrection_data_t *)piece->data;
-  dt_iop_colorcorrection_global_data_t *gd = (dt_iop_colorcorrection_global_data_t *)self->global_data;
+  dt_iop_colorcorrection_data_t *d = piece->data;
+  dt_iop_colorcorrection_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
   const int width = roi_out->width;
@@ -183,7 +183,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_colorcorrection_global_data_t *gd = (dt_iop_colorcorrection_global_data_t *)module->data;
+  dt_iop_colorcorrection_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_colorcorrection);
   free(module->data);
   module->data = NULL;
@@ -194,7 +194,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)p1;
-  dt_iop_colorcorrection_data_t *d = (dt_iop_colorcorrection_data_t *)piece->data;
+  dt_iop_colorcorrection_data_t *d = piece->data;
   d->a_scale = (p->hia - p->loa) / 100.0;
   d->a_base = p->loa;
   d->b_scale = (p->hib - p->lob) / 100.0;
@@ -419,8 +419,7 @@ static gboolean dt_iop_colorcorrection_button_press(GtkWidget *widget, GdkEventB
         break;
       default: // reset everything
       {
-        const dt_iop_colorcorrection_params_t *const d =
-          (dt_iop_colorcorrection_params_t *)self->default_params;
+        const dt_iop_colorcorrection_params_t *const d = self->default_params;
         memcpy(p, d, sizeof(*p));
         dt_dev_add_history_item(darktable.develop, self, TRUE);
       }

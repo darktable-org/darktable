@@ -102,7 +102,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
                      struct dt_develop_tiling_t *tiling)
 {
-  dt_iop_highpass_data_t *d = (dt_iop_highpass_data_t *)piece->data;
+  dt_iop_highpass_data_t *d = piece->data;
 
   const int rad = MAX_RADIUS * (fmin(100.0f, d->sharpness + 1) / 100.0f);
   const int radius = MIN(MAX_RADIUS, ceilf(rad * roi_in->scale / piece->iscale));
@@ -125,8 +125,8 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_highpass_data_t *d = (dt_iop_highpass_data_t *)piece->data;
-  dt_iop_highpass_global_data_t *gd = (dt_iop_highpass_global_data_t *)self->global_data;
+  dt_iop_highpass_data_t *d = piece->data;
+  dt_iop_highpass_global_data_t *gd = self->global_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   cl_mem dev_tmp = NULL;
@@ -278,7 +278,7 @@ void process(struct dt_iop_module_t *self,
   if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                         ivoid, ovoid, roi_in, roi_out))
     return;
-  dt_iop_highpass_data_t *data = (dt_iop_highpass_data_t *)piece->data;
+  dt_iop_highpass_data_t *data = piece->data;
   const float *const in = (float *)ivoid;
   float *out = (float *)ovoid;
 
@@ -321,7 +321,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_highpass_params_t *p = (dt_iop_highpass_params_t *)p1;
-  dt_iop_highpass_data_t *d = (dt_iop_highpass_data_t *)piece->data;
+  dt_iop_highpass_data_t *d = piece->data;
 
   d->sharpness = p->sharpness;
   d->contrast = p->contrast;
@@ -352,7 +352,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_highpass_global_data_t *gd = (dt_iop_highpass_global_data_t *)module->data;
+  dt_iop_highpass_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_highpass_invert);
   dt_opencl_free_kernel(gd->kernel_highpass_hblur);
   dt_opencl_free_kernel(gd->kernel_highpass_vblur);

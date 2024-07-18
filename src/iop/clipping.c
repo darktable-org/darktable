@@ -145,8 +145,7 @@ int legacy_params(dt_iop_module_t *self,
     } old_params_t;
 
     const old_params_t *o = (old_params_t *)old_params;
-    dt_iop_clipping_params_v5_t *n =
-      (dt_iop_clipping_params_v5_t *)malloc(sizeof(dt_iop_clipping_params_v5_t));
+    dt_iop_clipping_params_v5_t *n = malloc(sizeof(dt_iop_clipping_params_v5_t));
 
     k.f = o->k_h;
     int is_horizontal;
@@ -197,8 +196,7 @@ int legacy_params(dt_iop_module_t *self,
     } old_params_t;
 
     const old_params_t *o = (old_params_t *)old_params;
-    dt_iop_clipping_params_v5_t *n =
-      (dt_iop_clipping_params_v5_t *)malloc(sizeof(dt_iop_clipping_params_v5_t));
+    dt_iop_clipping_params_v5_t *n = malloc(sizeof(dt_iop_clipping_params_v5_t));
 
     n->angle = o->angle, n->cx = o->cx, n->cy = o->cy, n->cw = o->cw, n->ch = o->ch;
     n->k_h = o->k_h, n->k_v = o->k_v;
@@ -234,8 +232,7 @@ int legacy_params(dt_iop_module_t *self,
     } old_params_t;
 
     const old_params_t *o = (old_params_t *)old_params;
-    dt_iop_clipping_params_v5_t *n =
-      (dt_iop_clipping_params_v5_t *)malloc(sizeof(dt_iop_clipping_params_v5_t));
+    dt_iop_clipping_params_v5_t *n = malloc(sizeof(dt_iop_clipping_params_v5_t));
 
     n->angle = o->angle, n->cx = o->cx, n->cy = o->cy, n->cw = o->cw, n->ch = o->ch;
     n->k_h = o->k_h, n->k_v = o->k_v;
@@ -500,7 +497,7 @@ gboolean distort_transform(dt_iop_module_t *self,
   roi_in.height = piece->buf_in.height * factor;
   self->modify_roi_out(self, piece, &roi_out, &roi_in);
 
-  dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
+  dt_iop_clipping_data_t *d = piece->data;
 
   const float rx = piece->buf_in.width;
   const float ry = piece->buf_in.height;
@@ -568,7 +565,7 @@ gboolean distort_backtransform(dt_iop_module_t *self,
   roi_in.height = piece->buf_in.height * factor;
   self->modify_roi_out(self, piece, &roi_out, &roi_in);
 
-  dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
+  dt_iop_clipping_data_t *d = piece->data;
 
   const float rx = piece->buf_in.width;
   const float ry = piece->buf_in.height;
@@ -628,7 +625,7 @@ void distort_mask(struct dt_iop_module_t *self,
                   const dt_iop_roi_t *const roi_in,
                   const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
+  const dt_iop_clipping_data_t *d = piece->data;
 
   // only crop, no rot fast and sharp path:
   if(!d->flags && d->angle == 0.0 && d->all_off && roi_in->width == roi_out->width &&
@@ -736,7 +733,7 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
   dt_iop_roi_t roi_in_d = *roi_in_orig;
   dt_iop_roi_t *roi_in = &roi_in_d;
 
-  dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
+  dt_iop_clipping_data_t *d = piece->data;
 
   // use whole-buffer roi information to create matrix and inverse.
   float rt[] = { cosf(d->angle), sinf(d->angle), -sinf(d->angle), cosf(d->angle) };
@@ -933,7 +930,7 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
 void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                    const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in)
 {
-  dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
+  dt_iop_clipping_data_t *d = piece->data;
   *roi_in = *roi_out;
   // modify_roi_out took care of bounds checking for us. we hopefully do not get requests outside the clipping
   // area.
@@ -1012,7 +1009,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                          ivoid, ovoid, roi_in, roi_out))
     return; // unsupported format, image has been copied to output and module's trouble flag set
 
-  const dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
+  const dt_iop_clipping_data_t *d = piece->data;
 
   const int ch = 4;
   const int ch_width = ch * roi_in->width;
@@ -1084,8 +1081,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
-  dt_iop_clipping_global_data_t *gd = (dt_iop_clipping_global_data_t *)self->global_data;
+  dt_iop_clipping_data_t *d = piece->data;
+  dt_iop_clipping_global_data_t *gd = self->global_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
@@ -1176,7 +1173,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_clipping_global_data_t *gd = (dt_iop_clipping_global_data_t *)module->data;
+  dt_iop_clipping_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_clip_rotate_bilinear);
   dt_opencl_free_kernel(gd->kernel_clip_rotate_bicubic);
   dt_opencl_free_kernel(gd->kernel_clip_rotate_lanczos2);
@@ -1190,7 +1187,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)p1;
-  dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
+  dt_iop_clipping_data_t *d = piece->data;
 
   // reset all values to be sure everything is initialized
   d->m[0] = d->m[3] = 1.0f;
@@ -2178,7 +2175,7 @@ void gui_init(struct dt_iop_module_t *self)
   GSList *custom_aspects = dt_conf_all_string_entries("plugins/darkroom/clipping/extra_aspect_ratios");
   for(GSList *iter = custom_aspects; iter; iter = g_slist_next(iter))
   {
-    dt_conf_string_entry_t *nv = (dt_conf_string_entry_t *)iter->data;
+    dt_conf_string_entry_t *nv = iter->data;
 
     const char *c = nv->value;
     const char *end = nv->value + strlen(nv->value);
@@ -2219,7 +2216,7 @@ void gui_init(struct dt_iop_module_t *self)
       n = ((dt_iop_clipping_aspect_t *)g->aspect_list->data)->n + 1;
   for(GList *iter = g->aspect_list; iter; iter = g_list_next(iter))
   {
-    dt_iop_clipping_aspect_t *aspect = (dt_iop_clipping_aspect_t *)iter->data;
+    dt_iop_clipping_aspect_t *aspect = iter->data;
     int dd = MIN(aspect->d, aspect->n);
     int nn = MAX(aspect->d, aspect->n);
     if(dd == d && nn == n)

@@ -400,8 +400,7 @@ static GtkWidget *_color_picker_new(dt_iop_module_t *module,
                                     const gboolean init_cst,
                                     const dt_iop_colorspace_type_t cst)
 {
-  dt_iop_color_picker_t *color_picker =
-    (dt_iop_color_picker_t *)g_malloc(sizeof(dt_iop_color_picker_t));
+  dt_iop_color_picker_t *color_picker = g_malloc(sizeof(dt_iop_color_picker_t));
 
   if(w == NULL || GTK_IS_BOX(w))
   {

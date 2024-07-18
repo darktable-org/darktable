@@ -183,8 +183,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_vignette_params_v1_t;
 
     const dt_iop_vignette_params_v1_t *old = old_params;
-    dt_iop_vignette_params_v4_t *new =
-      (dt_iop_vignette_params_v4_t *)malloc(sizeof(dt_iop_vignette_params_v4_t));
+    dt_iop_vignette_params_v4_t *new = malloc(sizeof(dt_iop_vignette_params_v4_t));
     new->scale = old->scale;
     new->falloff_scale = old->falloff_scale;
     new->brightness = -(1.0 - MAX(old->bsratio, 0.0)) * old->strength / 100.0;
@@ -219,8 +218,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_vignette_params_v2_t;
 
     const dt_iop_vignette_params_v2_t *old = old_params;
-    dt_iop_vignette_params_v4_t *new =
-      (dt_iop_vignette_params_v4_t *)malloc(sizeof(dt_iop_vignette_params_v4_t));
+    dt_iop_vignette_params_v4_t *new = malloc(sizeof(dt_iop_vignette_params_v4_t));
     new->scale = old->scale;
     new->falloff_scale = old->falloff_scale;
     new->brightness = old->brightness;
@@ -254,8 +252,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_vignette_params_v3_t;
 
     const dt_iop_vignette_params_v3_t *old = old_params;
-    dt_iop_vignette_params_v4_t *new =
-      (dt_iop_vignette_params_v4_t *)malloc(sizeof(dt_iop_vignette_params_v4_t));
+    dt_iop_vignette_params_v4_t *new = malloc(sizeof(dt_iop_vignette_params_v4_t));
     new->scale = old->scale;
     new->falloff_scale = old->falloff_scale;
     new->brightness = old->brightness;
@@ -709,7 +706,7 @@ void process(struct dt_iop_module_t *self,
                                         ivoid, ovoid, roi_in, roi_out))
     return;
 
-  const dt_iop_vignette_data_t *data = (dt_iop_vignette_data_t *)piece->data;
+  const dt_iop_vignette_data_t *data = piece->data;
   const dt_iop_roi_t *buf_in = &piece->buf_in;
   const gboolean unbound = data->unbound;
 
@@ -860,8 +857,8 @@ int process_cl(struct dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_vignette_data_t *data = (dt_iop_vignette_data_t *)piece->data;
-  dt_iop_vignette_global_data_t *gd = (dt_iop_vignette_global_data_t *)self->global_data;
+  dt_iop_vignette_data_t *data = piece->data;
+  dt_iop_vignette_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
   const int width = roi_out->width;
@@ -965,7 +962,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_vignette_global_data_t *gd = (dt_iop_vignette_global_data_t *)module->data;
+  dt_iop_vignette_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_vignette);
   free(module->data);
   module->data = NULL;
@@ -986,7 +983,7 @@ void commit_params(struct dt_iop_module_t *self,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)p1;
-  dt_iop_vignette_data_t *d = (dt_iop_vignette_data_t *)piece->data;
+  dt_iop_vignette_data_t *d = piece->data;
   d->scale = p->scale;
   d->falloff_scale = p->falloff_scale;
   d->brightness = p->brightness;

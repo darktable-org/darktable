@@ -267,7 +267,7 @@ static dt_lib_metadata_info_t *_get_metadata_per_index(const int index, dt_lib_m
   dt_lib_metadata_view_t *d = self->data;
   for(GList *meta = d->metadata; meta; meta = g_list_next(meta))
   {
-    dt_lib_metadata_info_t *m = (dt_lib_metadata_info_t *)meta->data;
+    dt_lib_metadata_info_t *m = meta->data;
     if(m->index == index)
     {
       return m;
@@ -1113,7 +1113,7 @@ static char *_get_current_configuration(dt_lib_module_t *self)
   d->metadata = g_list_sort(d->metadata, _lib_metadata_sort_order);
   for(GList *meta = d->metadata; meta; meta= g_list_next(meta))
   {
-    dt_lib_metadata_info_t *m = (dt_lib_metadata_info_t *)meta->data;
+    dt_lib_metadata_info_t *m = meta->data;
     if(_is_metadata_ui(m->index))
       pref = dt_util_dstrcat(pref, "%s%s,", m->visible ? "" : "|", m->name);
   }
@@ -1133,7 +1133,7 @@ static void _lib_metadata_refill_grid(dt_lib_module_t *self)
   // initialize the grid with metadata queue content
   for(GList *meta = d->metadata; meta; meta = g_list_next(meta))
   {
-    dt_lib_metadata_info_t *m = (dt_lib_metadata_info_t *)meta->data;
+    dt_lib_metadata_info_t *m = meta->data;
     m->order = j;
     GtkWidget *w_name = gtk_grid_get_child_at(GTK_GRID(d->grid), 0, j);
     gtk_label_set_text(GTK_LABEL(w_name), _(m->name));
@@ -1170,7 +1170,7 @@ static void _lib_metadata_setup_grid(dt_lib_module_t *self)
   // initialize the grid with metadata queue content
   for(GList *meta = d->metadata; meta; meta = g_list_next(meta))
   {
-    dt_lib_metadata_info_t *m = (dt_lib_metadata_info_t *)meta->data;
+    dt_lib_metadata_info_t *m = meta->data;
     GtkWidget *w_name = gtk_label_new(_(m->name));
     gtk_widget_set_halign(w_name, GTK_ALIGN_START);
     gtk_label_set_xalign(GTK_LABEL(w_name), 0.0f);
@@ -1209,7 +1209,7 @@ static void _apply_preferences(const char *prefs_list, dt_lib_module_t *self)
       }
       for(GList *meta = d->metadata; meta; meta= g_list_next(meta))
       {
-        dt_lib_metadata_info_t *m = (dt_lib_metadata_info_t *)meta->data;
+        dt_lib_metadata_info_t *m = meta->data;
         if(name && !g_strcmp0(name, m->name))
         {
           m->order = k;
@@ -1280,7 +1280,7 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
   d->metadata = g_list_sort(d->metadata, _lib_metadata_sort_order);
   for(GList *meta = d->metadata; meta; meta = g_list_next(meta))
   {
-    dt_lib_metadata_info_t *m = (dt_lib_metadata_info_t *)meta->data;
+    dt_lib_metadata_info_t *m = meta->data;
     if(!_is_metadata_ui(m->index))
       continue;
     gtk_list_store_append(store, &iter);
@@ -1330,7 +1330,7 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
     d->metadata = g_list_sort(d->metadata, _lib_metadata_sort_index);
     for(GList *meta = d->metadata; meta; meta= g_list_next(meta))
     {
-      dt_lib_metadata_info_t *m = (dt_lib_metadata_info_t *)meta->data;
+      dt_lib_metadata_info_t *m = meta->data;
       if(!_is_metadata_ui(m->index))
         continue;
       gtk_list_store_set(store, &iter,
@@ -1357,7 +1357,7 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
                          -1);
       for(GList *meta = d->metadata; meta; meta= g_list_next(meta))
       {
-        dt_lib_metadata_info_t *m = (dt_lib_metadata_info_t *)meta->data;
+        dt_lib_metadata_info_t *m = meta->data;
         if(m->index == index)
         {
           m->order = i;
@@ -1406,7 +1406,7 @@ static void _display_default(dt_lib_module_t *self)
 
   for(GList *meta = d->metadata; meta; meta= g_list_next(meta))
   {
-    dt_lib_metadata_info_t *m = (dt_lib_metadata_info_t *)meta->data;
+    dt_lib_metadata_info_t *m = meta->data;
     m->order = m->index;
     m->visible = _is_metadata_ui(m->index);
   }
@@ -1474,7 +1474,7 @@ static void _free_metadata_queue(dt_lib_metadata_info_t *m)
 void gui_cleanup(dt_lib_module_t *self)
 {
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_mouse_over_image_callback), self);
-  dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)self->data;
+  dt_lib_metadata_view_t *d = self->data;
   g_list_free_full(d->metadata,  (GDestroyNotify)_free_metadata_queue);
   g_free(self->data);
   self->data = NULL;
@@ -1486,7 +1486,7 @@ void gui_reset(dt_lib_module_t *self)
 
   for(GList *meta = d->metadata; meta; meta= g_list_next(meta))
   {
-    dt_lib_metadata_info_t *m = (dt_lib_metadata_info_t *)meta->data;
+    dt_lib_metadata_info_t *m = meta->data;
     m->order = m->index;
     m->visible = _is_metadata_ui(m->index);
   }
@@ -1664,7 +1664,7 @@ static int lua_destroy_info(lua_State *L)
     GList *tbr = NULL;
     for(GList *meta = d->metadata; meta; meta = g_list_next(meta))
     {
-      dt_lib_metadata_info_t *m = (dt_lib_metadata_info_t *)meta->data;
+      dt_lib_metadata_info_t *m = meta->data;
       if(!g_strcmp0(key, m->name))
       {
         tbr = meta;
@@ -1676,7 +1676,7 @@ static int lua_destroy_info(lua_State *L)
     }
     if(tbr)
     {
-      dt_lib_metadata_info_t *m = (dt_lib_metadata_info_t *)tbr->data;
+      dt_lib_metadata_info_t *m = tbr->data;
       d->metadata = g_list_remove_link(d->metadata, tbr);
       g_free(m->value);
       if(m->tooltip) g_free(m->tooltip);

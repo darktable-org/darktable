@@ -811,7 +811,7 @@ void tiling_callback(struct dt_iop_module_t *self,
                      const dt_iop_roi_t *roi_out,
                      struct dt_develop_tiling_t *tiling)
 {
-  dt_iop_denoiseprofile_params_t *d = (dt_iop_denoiseprofile_params_t *)piece->data;
+  dt_iop_denoiseprofile_params_t *d = piece->data;
 
   if(d->mode == MODE_NLMEANS || d->mode == MODE_NLMEANS_AUTO)
   {
@@ -1394,8 +1394,7 @@ static void process_wavelets(struct dt_iop_module_t *self,
 {
   // this is called for preview and full pipe separately, each with
   // its own pixelpipe piece.  get our data struct:
-  const dt_iop_denoiseprofile_data_t *const d =
-    (dt_iop_denoiseprofile_data_t *)piece->data;
+  const dt_iop_denoiseprofile_data_t *const d = piece->data;
 
 #define MAX_MAX_SCALE DT_IOP_DENOISE_PROFILE_BANDS // hard limit
 
@@ -1744,8 +1743,7 @@ static void process_nlmeans(struct dt_iop_module_t *self,
 {
   // this is called for preview and full pipe separately, each with
   // its own pixelpipe piece.  get our data struct:
-  const dt_iop_denoiseprofile_data_t *const d =
-    (dt_iop_denoiseprofile_data_t *)piece->data;
+  const dt_iop_denoiseprofile_data_t *const d = piece->data;
   if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/,
                                         piece->module, piece->colors,
                                         ivoid, ovoid, roi_in, roi_out))
@@ -1937,9 +1935,8 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self,
                               const dt_iop_roi_t *const roi_in,
                               const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_denoiseprofile_data_t *d = (dt_iop_denoiseprofile_data_t *)piece->data;
-  dt_iop_denoiseprofile_global_data_t *gd =
-    (dt_iop_denoiseprofile_global_data_t *)self->global_data;
+  dt_iop_denoiseprofile_data_t *d = piece->data;
+  dt_iop_denoiseprofile_global_data_t *gd = self->global_data;
 #if USE_NEW_IMPL_CL
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -2254,9 +2251,8 @@ static int process_wavelets_cl(struct dt_iop_module_t *self,
                                const dt_iop_roi_t *const roi_in,
                                const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_denoiseprofile_data_t *d = (dt_iop_denoiseprofile_data_t *)piece->data;
-  dt_iop_denoiseprofile_global_data_t *gd =
-    (dt_iop_denoiseprofile_global_data_t *)self->global_data;
+  dt_iop_denoiseprofile_data_t *d = piece->data;
+  dt_iop_denoiseprofile_global_data_t *gd = self->global_data;
 
   const int max_max_scale = DT_IOP_DENOISE_PROFILE_BANDS; // hard limit
   int max_scale = 0;
@@ -2705,7 +2701,7 @@ int process_cl(struct dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_denoiseprofile_params_t *d = (dt_iop_denoiseprofile_params_t *)piece->data;
+  dt_iop_denoiseprofile_params_t *d = piece->data;
 
   if(d->mode == MODE_NLMEANS || d->mode == MODE_NLMEANS_AUTO)
   {
@@ -2731,7 +2727,7 @@ void process(struct dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_denoiseprofile_params_t *d = (dt_iop_denoiseprofile_params_t *)piece->data;
+  dt_iop_denoiseprofile_params_t *d = piece->data;
 
   if(d->mode == MODE_NLMEANS
      || d->mode == MODE_NLMEANS_AUTO)
@@ -2813,7 +2809,7 @@ void reload_defaults(dt_iop_module_t *module)
   dt_noiseprofile_t *last = NULL;
   for(GList *iter = profiles; iter; iter = g_list_next(iter))
   {
-    dt_noiseprofile_t *current = (dt_noiseprofile_t *)iter->data;
+    dt_noiseprofile_t *current = iter->data;
 
     if(current->iso == iso)
     {
@@ -2862,7 +2858,7 @@ void reload_defaults(dt_iop_module_t *module)
     dt_bauhaus_combobox_add(g->profile, name);
     for(GList *iter = g->profiles; iter; iter = g_list_next(iter))
     {
-      dt_noiseprofile_t *profile = (dt_noiseprofile_t *)iter->data;
+      dt_noiseprofile_t *profile = iter->data;
       dt_bauhaus_combobox_add(g->profile, profile->name);
     }
     dt_bauhaus_combobox_set(g->profile, 0);
@@ -2874,8 +2870,7 @@ void reload_defaults(dt_iop_module_t *module)
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 11; // denoiseprofile.cl, from programs.conf
-  dt_iop_denoiseprofile_global_data_t *gd =
-    (dt_iop_denoiseprofile_global_data_t *)
+  dt_iop_denoiseprofile_global_data_t *gd = 
       malloc(sizeof(dt_iop_denoiseprofile_global_data_t));
 
   module->data = gd;
@@ -2917,8 +2912,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_denoiseprofile_global_data_t *gd =
-    (dt_iop_denoiseprofile_global_data_t *)module->data;
+  dt_iop_denoiseprofile_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_denoiseprofile_precondition);
   dt_opencl_free_kernel(gd->kernel_denoiseprofile_precondition_v2);
   dt_opencl_free_kernel(gd->kernel_denoiseprofile_init);
@@ -2947,7 +2941,7 @@ static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t 
   dt_noiseprofile_t *last = NULL;
   for(GList *iter = profiles; iter; iter = g_list_next(iter))
   {
-    dt_noiseprofile_t *current = (dt_noiseprofile_t *)iter->data;
+    dt_noiseprofile_t *current = iter->data;
     if(current->iso == iso)
     {
       interpolated = *current;
@@ -2973,7 +2967,7 @@ void commit_params(struct dt_iop_module_t *self,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)params;
-  dt_iop_denoiseprofile_data_t *d = (dt_iop_denoiseprofile_data_t *)piece->data;
+  dt_iop_denoiseprofile_data_t *d = piece->data;
 
   d->nbhood = p->nbhood;
   d->central_pixel_weight = p->central_pixel_weight;
@@ -3040,8 +3034,7 @@ void init_pipe(struct dt_iop_module_t *self,
                dt_dev_pixelpipe_t *pipe,
                dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_denoiseprofile_data_t *d =
-    (dt_iop_denoiseprofile_data_t *)malloc(sizeof(dt_iop_denoiseprofile_data_t));
+  dt_iop_denoiseprofile_data_t *d = malloc(sizeof(dt_iop_denoiseprofile_data_t));
   dt_iop_denoiseprofile_params_t *default_params = self->default_params;
 
   piece->data = (void *)d;
@@ -3058,7 +3051,7 @@ void cleanup_pipe(struct dt_iop_module_t *self,
                   dt_dev_pixelpipe_t *pipe,
                   dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_denoiseprofile_data_t *d = (dt_iop_denoiseprofile_data_t *)(piece->data);
+  dt_iop_denoiseprofile_data_t *d = piece->data;
   for(int ch = 0; ch < DT_DENOISE_PROFILE_NONE; ch++) dt_draw_curve_destroy(d->curve[ch]);
   free(piece->data);
   piece->data = NULL;
@@ -3183,7 +3176,7 @@ void gui_update(dt_iop_module_t *self)
   int i = 1;
   for(GList *iter = g->profiles; iter; iter = g_list_next(iter), i++)
   {
-    dt_noiseprofile_t *profile = (dt_noiseprofile_t *)iter->data;
+    dt_noiseprofile_t *profile = iter->data;
     if(!memcmp(profile->a, p->a, sizeof(float) * 3)
         && !memcmp(profile->b, p->b, sizeof(float) * 3))
     {

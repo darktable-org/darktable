@@ -189,8 +189,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_lut3d_params_v1_t;
 
     const dt_iop_lut3d_params_v1_t *o = (dt_iop_lut3d_params_v1_t *)old_params;
-    dt_iop_lut3d_params_v3_t *n =
-      (dt_iop_lut3d_params_v3_t *)malloc(sizeof(dt_iop_lut3d_params_v3_t));
+    dt_iop_lut3d_params_v3_t *n = malloc(sizeof(dt_iop_lut3d_params_v3_t));
     g_strlcpy(n->filepath, o->filepath, sizeof(n->filepath));
     n->colorspace = o->colorspace;
     n->interpolation = o->interpolation;
@@ -217,8 +216,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_lut3d_params_v2_t;
 
     const dt_iop_lut3d_params_v2_t *o = (dt_iop_lut3d_params_v2_t *)old_params;
-    dt_iop_lut3d_params_v3_t *n =
-      (dt_iop_lut3d_params_v3_t *)malloc(sizeof(dt_iop_lut3d_params_v3_t));
+    dt_iop_lut3d_params_v3_t *n = malloc(sizeof(dt_iop_lut3d_params_v3_t));
     memcpy(n, o, sizeof(dt_iop_lut3d_params_v3_t)); // v3 is smaller
 
     *new_params = n;
@@ -985,8 +983,8 @@ uint16_t calculate_clut_3dl(const char *const filepath, float **clut)
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_lut3d_data_t *d = (dt_iop_lut3d_data_t *)piece->data;
-  dt_iop_lut3d_global_data_t *gd = (dt_iop_lut3d_global_data_t *)self->global_data;
+  dt_iop_lut3d_data_t *d = piece->data;
+  dt_iop_lut3d_global_data_t *gd = self->global_data;
   cl_int err = CL_SUCCESS;
   const float *const clut = (float *)d->clut;
   const int level = d->level;
@@ -1059,7 +1057,7 @@ cleanup:
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ibuf, void *const obuf,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_lut3d_data_t *d = (dt_iop_lut3d_data_t *)piece->data;
+  dt_iop_lut3d_data_t *d = piece->data;
   const int width = roi_in->width;
   const int height = roi_in->height;
   const int ch = piece->colors;
@@ -1138,7 +1136,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_lut3d_global_data_t *gd = (dt_iop_lut3d_global_data_t *)module->data;
+  dt_iop_lut3d_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_lut3d_tetrahedral);
   dt_opencl_free_kernel(gd->kernel_lut3d_trilinear);
   dt_opencl_free_kernel(gd->kernel_lut3d_pyramid);
@@ -1354,7 +1352,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)p1;
-  dt_iop_lut3d_data_t *d = (dt_iop_lut3d_data_t *)piece->data;
+  dt_iop_lut3d_data_t *d = piece->data;
 
   if(strcmp(p->filepath, d->params.filepath) != 0 || strcmp(p->lutname, d->params.lutname) != 0 )
   { // new clut file
@@ -1372,7 +1370,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_lut3d_data_t));
-  dt_iop_lut3d_data_t *d = (dt_iop_lut3d_data_t *)piece->data;
+  dt_iop_lut3d_data_t *d = piece->data;
   memcpy(&d->params, self->default_params, sizeof(dt_iop_lut3d_params_t));
   d->clut = NULL;
   d->level = 0;
@@ -1381,7 +1379,7 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_lut3d_data_t *d = (dt_iop_lut3d_data_t *)piece->data;;
+  dt_iop_lut3d_data_t *d = piece->data;;
   if(d->clut)
     dt_free_align(d->clut);
   d->clut = NULL;

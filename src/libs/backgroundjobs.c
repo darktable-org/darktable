@@ -92,7 +92,7 @@ void gui_init(dt_lib_module_t *self)
   // its gui_data!
   for(const GList *iter = darktable.control->progress_system.list; iter; iter = g_list_next(iter))
   {
-    dt_progress_t *progress = (dt_progress_t *)iter->data;
+    dt_progress_t *progress = iter->data;
     void *gui_data = dt_control_progress_get_gui_data(progress);
     free(gui_data);
     gui_data = _lib_backgroundjobs_added(self, dt_control_progress_has_progress_bar(progress),

@@ -220,8 +220,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_diffuse_params_v1_t;
 
     const dt_iop_diffuse_params_v1_t *o = (dt_iop_diffuse_params_v1_t *)old_params;
-    dt_iop_diffuse_params_v2_t *n =
-      (dt_iop_diffuse_params_v2_t *)malloc(sizeof(dt_iop_diffuse_params_v2_t));
+    dt_iop_diffuse_params_v2_t *n = malloc(sizeof(dt_iop_diffuse_params_v2_t));
 
     // copy common parameters
     memcpy(n, o, sizeof(dt_iop_diffuse_params_v1_t));
@@ -785,7 +784,7 @@ void tiling_callback(struct dt_iop_module_t *self,
                      const dt_iop_roi_t *roi_out,
                      struct dt_develop_tiling_t *tiling)
 {
-  dt_iop_diffuse_data_t *data = (dt_iop_diffuse_data_t *)piece->data;
+  dt_iop_diffuse_data_t *data = piece->data;
 
   const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
   const float final_radius = (data->radius + data->radius_center) * 2.f / scale;
@@ -1352,7 +1351,7 @@ void process(dt_iop_module_t *self,
 {
   const gboolean fastmode = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
 
-  const dt_iop_diffuse_data_t *const data = (dt_iop_diffuse_data_t *)piece->data;
+  const dt_iop_diffuse_data_t *const data = piece->data;
 
   const size_t width = roi_out->width;
   const size_t height = roi_out->height;
@@ -1620,10 +1619,8 @@ int process_cl(struct dt_iop_module_t *self,
 {
   const gboolean fastmode = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
 
-  const dt_iop_diffuse_data_t *const data =
-    (dt_iop_diffuse_data_t *)piece->data;
-  dt_iop_diffuse_global_data_t *const gd =
-    (dt_iop_diffuse_global_data_t *)self->global_data;
+  const dt_iop_diffuse_data_t *const data = piece->data;
+  dt_iop_diffuse_global_data_t *const gd = self->global_data;
 
   gboolean out_of_memory = FALSE;
 
@@ -1736,8 +1733,7 @@ error:
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 33; // extended.cl in programs.conf
-  dt_iop_diffuse_global_data_t *gd =
-    (dt_iop_diffuse_global_data_t *)malloc(sizeof(dt_iop_diffuse_global_data_t));
+  dt_iop_diffuse_global_data_t *gd = malloc(sizeof(dt_iop_diffuse_global_data_t));
 
   module->data = gd;
   gd->kernel_diffuse_build_mask = dt_opencl_create_kernel(program, "build_mask");
@@ -1756,7 +1752,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_diffuse_global_data_t *gd = (dt_iop_diffuse_global_data_t *)module->data;
+  dt_iop_diffuse_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_diffuse_build_mask);
   dt_opencl_free_kernel(gd->kernel_diffuse_inpaint_mask);
   dt_opencl_free_kernel(gd->kernel_diffuse_pde);

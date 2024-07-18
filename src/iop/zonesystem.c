@@ -199,7 +199,7 @@ static void process_common_cleanup(struct dt_iop_module_t *self, dt_dev_pixelpip
                                    const void *const ivoid, void *const ovoid,
                                    const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_zonesystem_data_t *d = (dt_iop_zonesystem_data_t *)piece->data;
+  dt_iop_zonesystem_data_t *d = piece->data;
   dt_iop_zonesystem_gui_data_t *g = self->gui_data;
 
   const int width = roi_out->width;
@@ -301,8 +301,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_zonesystem_data_t *data = (dt_iop_zonesystem_data_t *)piece->data;
-  dt_iop_zonesystem_global_data_t *gd = (dt_iop_zonesystem_global_data_t *)self->global_data;
+  dt_iop_zonesystem_data_t *data = piece->data;
+  dt_iop_zonesystem_global_data_t *gd = self->global_data;
   cl_mem dev_zmo, dev_zms = NULL;
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
@@ -352,7 +352,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_zonesystem_global_data_t *gd = (dt_iop_zonesystem_global_data_t *)module->data;
+  dt_iop_zonesystem_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_zonesystem);
   free(module->data);
   module->data = NULL;
@@ -364,7 +364,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 {
   dt_iop_zonesystem_params_t *p = (dt_iop_zonesystem_params_t *)p1;
 
-  dt_iop_zonesystem_data_t *d = (dt_iop_zonesystem_data_t *)piece->data;
+  dt_iop_zonesystem_data_t *d = piece->data;
 
   d->params = *p;
   d->rzscale = (d->params.size - 1) / 100.0f;

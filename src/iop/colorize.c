@@ -128,8 +128,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_colorize_params_v1_t;
 
     const dt_iop_colorize_params_v1_t *o = old_params;
-    dt_iop_colorize_params_v2_t *n =
-      (dt_iop_colorize_params_v2_t *)malloc(sizeof(dt_iop_colorize_params_v2_t));
+    dt_iop_colorize_params_v2_t *n = malloc(sizeof(dt_iop_colorize_params_v2_t));
 
     n->hue = o->hue;
     n->saturation = o->saturation;
@@ -158,7 +157,7 @@ void process(struct dt_iop_module_t *self,
 
   const float *const in = (float*)ivoid;
   float *const out = (float*)ovoid;
-  dt_iop_colorize_data_t *d = (dt_iop_colorize_data_t *)piece->data;
+  dt_iop_colorize_data_t *d = piece->data;
 
   const float L = d->L;
   const float a = d->a;
@@ -181,8 +180,8 @@ void process(struct dt_iop_module_t *self,
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_colorize_data_t *data = (dt_iop_colorize_data_t *)piece->data;
-  dt_iop_colorize_global_data_t *gd = (dt_iop_colorize_global_data_t *)self->global_data;
+  dt_iop_colorize_data_t *data = piece->data;
+  dt_iop_colorize_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
@@ -209,7 +208,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_colorize_global_data_t *gd = (dt_iop_colorize_global_data_t *)module->data;
+  dt_iop_colorize_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_colorize);
   free(module->data);
   module->data = NULL;
@@ -275,7 +274,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_colorize_params_t *p = (dt_iop_colorize_params_t *)p1;
-  dt_iop_colorize_data_t *d = (dt_iop_colorize_data_t *)piece->data;
+  dt_iop_colorize_data_t *d = piece->data;
 
   /* create Lab */
   dt_aligned_pixel_t rgb = { 0 };

@@ -154,8 +154,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_temperature_params_v2_t;
 
     const dt_iop_temperature_params_v2_t *o = (dt_iop_temperature_params_v2_t *)old_params;
-    dt_iop_temperature_params_v3_t *n =
-      (dt_iop_temperature_params_v3_t *)malloc(sizeof(dt_iop_temperature_params_v3_t));
+    dt_iop_temperature_params_v3_t *n = malloc(sizeof(dt_iop_temperature_params_v3_t));
 
     n->red = o->coeffs[0];
     n->green = o->coeffs[1];
@@ -171,8 +170,7 @@ int legacy_params(dt_iop_module_t *self,
   if(old_version == 3)
   {
     const dt_iop_temperature_params_v3_t *o = (dt_iop_temperature_params_v3_t *)old_params;
-    dt_iop_temperature_params_v4_t *n =
-      (dt_iop_temperature_params_v4_t *)malloc(sizeof(dt_iop_temperature_params_v4_t));
+    dt_iop_temperature_params_v4_t *n = malloc(sizeof(dt_iop_temperature_params_v4_t));
 
     n->red = o->red;
     n->green = o->green;
@@ -519,7 +517,7 @@ static inline void scaled_copy_4wide(float *const outp,
 
 static inline void _publish_chroma(dt_dev_pixelpipe_iop_t *piece)
 {
-  const dt_iop_temperature_data_t *const d = (dt_iop_temperature_data_t *)piece->data;
+  const dt_iop_temperature_data_t *const d = piece->data;
   struct dt_iop_module_t *self = piece->module;
   dt_dev_chroma_t *chr = &self->dev->chroma;
 
@@ -543,7 +541,7 @@ void process(struct dt_iop_module_t *self,
 {
   const uint32_t filters = piece->pipe->dsc.filters;
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
-  const dt_iop_temperature_data_t *const d = (dt_iop_temperature_data_t *)piece->data;
+  const dt_iop_temperature_data_t *const d = piece->data;
 
   const float *const in = (const float *const)ivoid;
   float *const out = (float *const)ovoid;
@@ -651,8 +649,8 @@ int process_cl(struct dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
-  dt_iop_temperature_global_data_t *gd = (dt_iop_temperature_global_data_t *)self->global_data;
+  dt_iop_temperature_data_t *d = piece->data;
+  dt_iop_temperature_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
   const uint32_t filters = piece->pipe->dsc.filters;
@@ -710,7 +708,7 @@ void commit_params(struct dt_iop_module_t *self,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)p1;
-  dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
+  dt_iop_temperature_data_t *d = piece->data;
   float *tcoeffs = (float *)p;
 
   if(self->hide_enable_button)
@@ -1722,7 +1720,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_temperature_global_data_t *gd = (dt_iop_temperature_global_data_t *)module->data;
+  dt_iop_temperature_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_whitebalance_4f);
   dt_opencl_free_kernel(gd->kernel_whitebalance_1f);
   dt_opencl_free_kernel(gd->kernel_whitebalance_1f_xtrans);

@@ -269,7 +269,7 @@ gboolean distort_transform(dt_iop_module_t *self,
                            float *const restrict points,
                            size_t points_count)
 {
-  dt_iop_crop_data_t *d = (dt_iop_crop_data_t *)piece->data;
+  dt_iop_crop_data_t *d = piece->data;
 
   const float crop_top = piece->buf_in.height * d->cy;
   const float crop_left = piece->buf_in.width * d->cx;
@@ -294,7 +294,7 @@ gboolean distort_backtransform(dt_iop_module_t *self,
                                float *const restrict points,
                                size_t points_count)
 {
-  dt_iop_crop_data_t *d = (dt_iop_crop_data_t *)piece->data;
+  dt_iop_crop_data_t *d = piece->data;
 
   const float crop_top = piece->buf_in.height * d->cy;
   const float crop_left = piece->buf_in.width * d->cx;
@@ -330,7 +330,7 @@ void modify_roi_out(struct dt_iop_module_t *self,
                     const dt_iop_roi_t *roi_in)
 {
   *roi_out = *roi_in;
-  dt_iop_crop_data_t *d = (dt_iop_crop_data_t *)piece->data;
+  dt_iop_crop_data_t *d = piece->data;
 
   const float px = MAX(0.0f, floorf(roi_in->width * d->cx));
   const float py = MAX(0.0f, floorf(roi_in->height * d->cy));
@@ -375,7 +375,7 @@ void modify_roi_in(struct dt_iop_module_t *self,
                    const dt_iop_roi_t *roi_out,
                    dt_iop_roi_t *roi_in)
 {
-  dt_iop_crop_data_t *d = (dt_iop_crop_data_t *)piece->data;
+  dt_iop_crop_data_t *d = piece->data;
   *roi_in = *roi_out;
 
   const float iw = piece->buf_in.width * roi_out->scale;
@@ -419,7 +419,7 @@ void commit_params(struct dt_iop_module_t *self,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_crop_params_t *p = (dt_iop_crop_params_t *)p1;
-  dt_iop_crop_data_t *d = (dt_iop_crop_data_t *)piece->data;
+  dt_iop_crop_data_t *d = piece->data;
 
   if(_gui_has_focus(self) && (pipe->type & DT_DEV_PIXELPIPE_BASIC))
   {
@@ -1171,7 +1171,7 @@ void gui_init(struct dt_iop_module_t *self)
     dt_conf_all_string_entries("plugins/darkroom/clipping/extra_aspect_ratios");
   for(GSList *iter = custom_aspects; iter; iter = g_slist_next(iter))
   {
-    dt_conf_string_entry_t *nv = (dt_conf_string_entry_t *)iter->data;
+    dt_conf_string_entry_t *nv = iter->data;
 
     const char *c = nv->value;
     const char *end = nv->value + strlen(nv->value);
@@ -1220,7 +1220,7 @@ void gui_init(struct dt_iop_module_t *self)
   int n = ((dt_iop_crop_aspect_t *)g->aspect_list->data)->n + 1;
   for(GList *iter = g->aspect_list; iter; iter = g_list_next(iter))
   {
-    dt_iop_crop_aspect_t *aspect = (dt_iop_crop_aspect_t *)iter->data;
+    dt_iop_crop_aspect_t *aspect = iter->data;
     const int dd = MIN(aspect->d, aspect->n);
     const int nn = MAX(aspect->d, aspect->n);
     if(dd == d && nn == n)

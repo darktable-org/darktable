@@ -1115,7 +1115,7 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
 
     for(GList *st_items = style_items; st_items; st_items = g_list_next(st_items))
     {
-      dt_style_item_t *st_item = (dt_style_item_t *)st_items->data;
+      dt_style_item_t *st_item = st_items->data;
       gboolean ok = TRUE;
       gboolean autoinit = FALSE;
 
@@ -1167,7 +1167,7 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
     char mbuf[2048] = { 0 };
     for(GList *nodes = pipe.nodes; nodes; nodes = g_list_next(nodes))
     {
-      dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
+      dt_dev_pixelpipe_iop_t *piece = nodes->data;
       if(piece->enabled)
       {
         g_strlcat(mbuf, " ", sizeof(mbuf));
@@ -1303,7 +1303,7 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
           nodes;
           nodes = g_list_previous(nodes))
       {
-        dt_dev_pixelpipe_iop_t *node = (dt_dev_pixelpipe_iop_t *)(nodes->data);
+        dt_dev_pixelpipe_iop_t *node = nodes->data;
         if(dt_iop_module_is(node->module->so, "finalscale"))
         {
           finalscale = node;

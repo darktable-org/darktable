@@ -136,8 +136,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_colorcontrast_params_v1_t;
 
     const dt_iop_colorcontrast_params_v1_t *o = old_params;
-    dt_iop_colorcontrast_params_v2_t *n =
-      (dt_iop_colorcontrast_params_v2_t *)malloc(sizeof(dt_iop_colorcontrast_params_v2_t));
+    dt_iop_colorcontrast_params_v2_t *n = malloc(sizeof(dt_iop_colorcontrast_params_v2_t));
 
     n->a_steepness = o->a_steepness;
     n->a_offset = o->a_offset;
@@ -177,8 +176,7 @@ void process(struct dt_iop_module_t *self,
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
 
   // get our data struct:
-  const dt_iop_colorcontrast_params_t *const d =
-    (dt_iop_colorcontrast_params_t *)piece->data;
+  const dt_iop_colorcontrast_params_t *const d = piece->data;
 
   // how many colors in our buffer?
   if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self,
@@ -233,9 +231,8 @@ int process_cl(struct dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_colorcontrast_data_t *data = (dt_iop_colorcontrast_data_t *)piece->data;
-  dt_iop_colorcontrast_global_data_t *gd =
-    (dt_iop_colorcontrast_global_data_t *)self->global_data;
+  dt_iop_colorcontrast_data_t *data = piece->data;
+  dt_iop_colorcontrast_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
@@ -264,8 +261,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_colorcontrast_global_data_t *gd =
-    (dt_iop_colorcontrast_global_data_t *)module->data;
+  dt_iop_colorcontrast_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_colorcontrast);
   free(module->data);
   module->data = NULL;
@@ -279,7 +275,7 @@ void commit_params(struct dt_iop_module_t *self,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_colorcontrast_params_t *p = (dt_iop_colorcontrast_params_t *)params;
-  dt_iop_colorcontrast_data_t *d = (dt_iop_colorcontrast_data_t *)piece->data;
+  dt_iop_colorcontrast_data_t *d = piece->data;
   d->a_steepness = p->a_steepness;
   d->a_offset = p->a_offset;
   d->b_steepness = p->b_steepness;

@@ -139,8 +139,7 @@ static dt_bauhaus_combobox_entry_t *_new_combobox_entry
    void *data,
    void (*free_func)(void *))
 {
-  dt_bauhaus_combobox_entry_t *entry =
-    (dt_bauhaus_combobox_entry_t *)calloc(1, sizeof(dt_bauhaus_combobox_entry_t));
+  dt_bauhaus_combobox_entry_t *entry = calloc(1, sizeof(dt_bauhaus_combobox_entry_t));
   entry->label = g_strdup(label);
   entry->alignment = alignment;
   entry->sensitive = sensitive;
@@ -1865,8 +1864,7 @@ void dt_bauhaus_combobox_entry_set_sensitive(GtkWidget *widget,
   const dt_bauhaus_combobox_data_t *d = _combobox_data(widget);
   if(!d || pos < 0 || pos >= d->entries->len) return;
 
-  dt_bauhaus_combobox_entry_t *entry =
-    (dt_bauhaus_combobox_entry_t *)g_ptr_array_index(d->entries, pos);
+  dt_bauhaus_combobox_entry_t *entry = g_ptr_array_index(d->entries, pos);
   entry->sensitive = sensitive;
 }
 

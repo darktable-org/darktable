@@ -202,8 +202,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_watermark_params_v1_t;
 
     const dt_iop_watermark_params_v1_t *o = (dt_iop_watermark_params_v1_t *)old_params;
-    dt_iop_watermark_params_v6_t *n =
-      (dt_iop_watermark_params_v6_t *)
+    dt_iop_watermark_params_v6_t *n = 
       malloc(sizeof(dt_iop_watermark_params_v6_t));
 
     n->opacity = o->opacity;
@@ -242,8 +241,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_watermark_params_v2_t;
 
     const dt_iop_watermark_params_v2_t *o = (dt_iop_watermark_params_v2_t *)old_params;
-    dt_iop_watermark_params_v6_t *n =
-      (dt_iop_watermark_params_v6_t *)
+    dt_iop_watermark_params_v6_t *n = 
       malloc(sizeof(dt_iop_watermark_params_v6_t));
 
     n->opacity = o->opacity;
@@ -284,8 +282,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_watermark_params_v3_t;
 
     const dt_iop_watermark_params_v3_t *o = (dt_iop_watermark_params_v3_t *)old_params;
-    dt_iop_watermark_params_v6_t *n =
-      (dt_iop_watermark_params_v6_t *)
+    dt_iop_watermark_params_v6_t *n = 
       malloc(sizeof(dt_iop_watermark_params_v6_t));
 
     n->opacity = o->opacity;
@@ -333,8 +330,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_watermark_params_v4_t;
 
     const dt_iop_watermark_params_v4_t *o = (dt_iop_watermark_params_v4_t *)old_params;
-    dt_iop_watermark_params_v6_t *n =
-      (dt_iop_watermark_params_v6_t *)
+    dt_iop_watermark_params_v6_t *n = 
       malloc(sizeof(dt_iop_watermark_params_v6_t));
 
     n->opacity = o->opacity;
@@ -384,8 +380,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_watermark_params_v5_t;
 
     const dt_iop_watermark_params_v5_t *o = (dt_iop_watermark_params_v5_t *)old_params;
-    dt_iop_watermark_params_v6_t *n =
-      (dt_iop_watermark_params_v6_t *)
+    dt_iop_watermark_params_v6_t *n = 
       malloc(sizeof(dt_iop_watermark_params_v6_t));
 
     n->opacity = o->opacity;
@@ -575,7 +570,7 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_watermark_data_t *data = (dt_iop_watermark_data_t *)piece->data;
+  dt_iop_watermark_data_t *data = piece->data;
   float *in = (float *)ivoid;
   float *out = (float *)ovoid;
   const int ch = piece->colors;
@@ -1182,7 +1177,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)p1;
-  dt_iop_watermark_data_t *d = (dt_iop_watermark_data_t *)piece->data;
+  dt_iop_watermark_data_t *d = piece->data;
 
   d->opacity = p->opacity;
   d->scale = p->scale;

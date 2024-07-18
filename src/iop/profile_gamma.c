@@ -190,10 +190,8 @@ int legacy_params(dt_iop_module_t *self,
       float gamma;
     } dt_iop_profilegamma_params_v1_t;
 
-    const dt_iop_profilegamma_params_v1_t *o =
-      (dt_iop_profilegamma_params_v1_t *)old_params;
-    dt_iop_profilegamma_params_v2_t *n =
-      (dt_iop_profilegamma_params_v2_t *)malloc(sizeof(dt_iop_profilegamma_params_v2_t));
+    const dt_iop_profilegamma_params_v1_t *o = old_params;
+    dt_iop_profilegamma_params_v2_t *n = malloc(sizeof(dt_iop_profilegamma_params_v2_t));
 
     n->linear = o->linear;
     n->gamma = o->gamma;
@@ -216,8 +214,8 @@ int legacy_params(dt_iop_module_t *self,
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_profilegamma_data_t *d = (dt_iop_profilegamma_data_t *)piece->data;
-  dt_iop_profilegamma_global_data_t *gd = (dt_iop_profilegamma_global_data_t *)self->global_data;
+  dt_iop_profilegamma_data_t *d = piece->data;
+  dt_iop_profilegamma_global_data_t *gd = self->global_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
@@ -263,7 +261,7 @@ error:
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_profilegamma_data_t *data = (dt_iop_profilegamma_data_t *)piece->data;
+  dt_iop_profilegamma_data_t *data = piece->data;
 
   const int ch = piece->colors;
 
@@ -483,7 +481,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)p1;
-  dt_iop_profilegamma_data_t *d = (dt_iop_profilegamma_data_t *)piece->data;
+  dt_iop_profilegamma_data_t *d = piece->data;
 
   const float linear = p->linear;
   const float gamma = p->gamma;
@@ -590,7 +588,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_profilegamma_global_data_t *gd = (dt_iop_profilegamma_global_data_t *)module->data;
+  dt_iop_profilegamma_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_profilegamma);
   dt_opencl_free_kernel(gd->kernel_profilegamma_log);
   free(module->data);

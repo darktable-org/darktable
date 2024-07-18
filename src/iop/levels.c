@@ -168,8 +168,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_levels_params_v1_t;
 
     const dt_iop_levels_params_v1_t *o = (dt_iop_levels_params_v1_t *)old_params;
-    dt_iop_levels_params_v2_t *n =
-      (dt_iop_levels_params_v2_t *)malloc(sizeof(dt_iop_levels_params_v2_t));
+    dt_iop_levels_params_v2_t *n = malloc(sizeof(dt_iop_levels_params_v2_t));
 
     n->mode = LEVELS_MODE_MANUAL;
     n->black = 0.0f;
@@ -214,7 +213,7 @@ static void dt_iop_levels_compute_levels_manual(const uint32_t *histogram, float
 
 static void dt_iop_levels_compute_levels_automatic(dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_levels_data_t *d = (dt_iop_levels_data_t *)piece->data;
+  dt_iop_levels_data_t *d = piece->data;
 
   uint32_t total = piece->histogram_stats.pixels;
 
@@ -254,7 +253,7 @@ static void dt_iop_levels_compute_levels_automatic(dt_dev_pixelpipe_iop_t *piece
 
 static void compute_lut(dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_levels_data_t *d = (dt_iop_levels_data_t *)piece->data;
+  dt_iop_levels_data_t *d = piece->data;
 
   // Building the lut for values in the [0,1] range
   float delta = (d->levels[2] - d->levels[0]) / 2.0f;
@@ -339,7 +338,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
  */
 static void commit_params_late(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_levels_data_t *d = (dt_iop_levels_data_t *)piece->data;
+  dt_iop_levels_data_t *d = piece->data;
   dt_iop_levels_gui_data_t *g = self->gui_data;
 
   if(d->mode == LEVELS_MODE_AUTOMATIC)
@@ -397,7 +396,7 @@ void process(dt_iop_module_t *self,
   if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                         ivoid, ovoid, roi_in, roi_out))
     return;
-  const dt_iop_levels_data_t *const d = (dt_iop_levels_data_t *)piece->data;
+  const dt_iop_levels_data_t *const d = piece->data;
 
   if(d->mode == LEVELS_MODE_AUTOMATIC)
   {
@@ -441,8 +440,8 @@ void process(dt_iop_module_t *self,
 int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_levels_data_t *d = (dt_iop_levels_data_t *)piece->data;
-  dt_iop_levels_global_data_t *gd = (dt_iop_levels_global_data_t *)self->global_data;
+  dt_iop_levels_data_t *d = piece->data;
+  dt_iop_levels_global_data_t *gd = self->global_data;
 
   if(d->mode == LEVELS_MODE_AUTOMATIC)
   {
@@ -483,7 +482,7 @@ error:
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_levels_data_t *d = (dt_iop_levels_data_t *)piece->data;
+  dt_iop_levels_data_t *d = piece->data;
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)p1;
 
   if(pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
@@ -606,7 +605,7 @@ void init_global(dt_iop_module_so_t *self)
 
 void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_levels_global_data_t *gd = (dt_iop_levels_global_data_t *)self->data;
+  dt_iop_levels_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_levels);
   free(self->data);
   self->data = NULL;

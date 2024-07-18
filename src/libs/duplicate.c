@@ -137,14 +137,14 @@ static void _lib_duplicate_delete(GtkButton *button, dt_lib_module_t *self)
     // we find the duplicate image to show now
     for(GList *l = d->thumbs; l; l = g_list_next(l))
     {
-      dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
+      dt_thumbnail_t *thumb = l->data;
       if(thumb->imgid == imgid)
       {
         GList *l2 = g_list_next(l);
         if(!l2) l2 = g_list_previous(l);
         if(l2)
         {
-          dt_thumbnail_t *th2 = (dt_thumbnail_t *)l2->data;
+          dt_thumbnail_t *th2 = l2->data;
           DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
                                         DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
                                         th2->imgid);

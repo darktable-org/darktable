@@ -230,8 +230,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_filmic_params_v1_t;
 
     const dt_iop_filmic_params_v1_t *o = (dt_iop_filmic_params_v1_t *)old_params;
-    dt_iop_filmic_params_v3_t *n =
-      (dt_iop_filmic_params_v3_t *)malloc(sizeof(dt_iop_filmic_params_v3_t));
+    dt_iop_filmic_params_v3_t *n = malloc(sizeof(dt_iop_filmic_params_v3_t));
 
     n->grey_point_source = o->grey_point_source;
     n->white_point_source = o->white_point_source;
@@ -276,8 +275,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_filmic_params_v2_t;
 
     const dt_iop_filmic_params_v2_t *o = (dt_iop_filmic_params_v2_t *)old_params;
-    dt_iop_filmic_params_v3_t *n =
-      (dt_iop_filmic_params_v3_t *)malloc(sizeof(dt_iop_filmic_params_v3_t));
+    dt_iop_filmic_params_v3_t *n = malloc(sizeof(dt_iop_filmic_params_v3_t));
 
     n->grey_point_source = o->grey_point_source;
     n->white_point_source = o->white_point_source;
@@ -516,7 +514,7 @@ void process(dt_iop_module_t *self,
                                         ivoid, ovoid, roi_in, roi_out))
     return;
 
-  dt_iop_filmic_data_t *const data = (dt_iop_filmic_data_t *)piece->data;
+  dt_iop_filmic_data_t *const data = piece->data;
 
   /** The log2(x) -> -INF when x -> 0
   * thus very low values (noise) will get even lower, resulting in noise negative amplification,
@@ -557,8 +555,8 @@ void process(dt_iop_module_t *self,
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_filmic_data_t *d = (dt_iop_filmic_data_t *)piece->data;
-  dt_iop_filmic_global_data_t *gd = (dt_iop_filmic_global_data_t *)self->global_data;
+  dt_iop_filmic_data_t *d = piece->data;
+  dt_iop_filmic_global_data_t *gd = self->global_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
@@ -1186,7 +1184,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)p1;
-  dt_iop_filmic_data_t *d = (dt_iop_filmic_data_t *)piece->data;
+  dt_iop_filmic_data_t *d = piece->data;
 
   d->preserve_color = p->preserve_color;
 
@@ -1339,7 +1337,7 @@ void cleanup(dt_iop_module_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_filmic_global_data_t *gd = (dt_iop_filmic_global_data_t *)module->data;
+  dt_iop_filmic_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_filmic);
   free(module->data);
   module->data = NULL;
@@ -1468,7 +1466,7 @@ static void _extra_options_button_changed(GtkDarktableToggleButton *widget, dt_i
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_filmic_gui_data_t *g = IOP_GUI_ALLOC(filmic);
-  const dt_iop_filmic_params_t *const p = (dt_iop_filmic_params_t *)self->default_params;
+  const dt_iop_filmic_params_t *const p = self->default_params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 

@@ -105,8 +105,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_basecurve_params_v1_t;
 
     const dt_iop_basecurve_params_v1_t *o = (dt_iop_basecurve_params_v1_t *)old_params;
-    dt_iop_basecurve_params_v6_t *n =
-      (dt_iop_basecurve_params_v6_t *)malloc(sizeof(dt_iop_basecurve_params_v6_t));
+    dt_iop_basecurve_params_v6_t *n = malloc(sizeof(dt_iop_basecurve_params_v6_t));
 
     // start with a fresh copy of default parameters
     // unfortunately default_params aren't inited at this stage.
@@ -143,8 +142,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_basecurve_params_v2_t;
 
     dt_iop_basecurve_params_v2_t *o = (dt_iop_basecurve_params_v2_t *)old_params;
-    dt_iop_basecurve_params_v6_t *n =
-      (dt_iop_basecurve_params_v6_t *)malloc(sizeof(dt_iop_basecurve_params_v6_t));
+    dt_iop_basecurve_params_v6_t *n = malloc(sizeof(dt_iop_basecurve_params_v6_t));
 
     memcpy(n, o, sizeof(dt_iop_basecurve_params_v2_t));
     n->exposure_fusion = 0;
@@ -171,8 +169,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_basecurve_params_v3_t;
 
     dt_iop_basecurve_params_v3_t *o = (dt_iop_basecurve_params_v3_t *)old_params;
-    dt_iop_basecurve_params_v6_t *n =
-      (dt_iop_basecurve_params_v6_t *)malloc(sizeof(dt_iop_basecurve_params_v6_t));
+    dt_iop_basecurve_params_v6_t *n = malloc(sizeof(dt_iop_basecurve_params_v6_t));
     memcpy(n, o, sizeof(dt_iop_basecurve_params_v3_t));
     n->exposure_stops =
       (o->exposure_fusion == 0 && o->exposure_stops == 0) ? 1.0f : o->exposure_stops;
@@ -199,8 +196,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_basecurve_params_v4_t;
 
     dt_iop_basecurve_params_v4_t *o = (dt_iop_basecurve_params_v4_t *)old_params;
-    dt_iop_basecurve_params_v6_t *n =
-      (dt_iop_basecurve_params_v6_t *)malloc(sizeof(dt_iop_basecurve_params_v6_t));
+    dt_iop_basecurve_params_v6_t *n = malloc(sizeof(dt_iop_basecurve_params_v6_t));
 
     memcpy(n, o, sizeof(dt_iop_basecurve_params_v4_t));
     n->exposure_bias = 1.0;
@@ -226,8 +222,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_basecurve_params_v5_t;
 
     dt_iop_basecurve_params_v5_t *o = (dt_iop_basecurve_params_v5_t *)old_params;
-    dt_iop_basecurve_params_v6_t *n =
-      (dt_iop_basecurve_params_v6_t *)malloc(sizeof(dt_iop_basecurve_params_v6_t));
+    dt_iop_basecurve_params_v6_t *n = malloc(sizeof(dt_iop_basecurve_params_v6_t));
     memcpy(n, o, sizeof(dt_iop_basecurve_params_v5_t));
     n->preserve_colors = DT_RGB_NORM_NONE;
 
@@ -600,7 +595,7 @@ int gauss_blur_cl(struct dt_iop_module_t *self,
                   const int width,
                   const int height)
 {
-  dt_iop_basecurve_global_data_t *gd = (dt_iop_basecurve_global_data_t *)self->global_data;
+  dt_iop_basecurve_global_data_t *gd = self->global_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
@@ -627,7 +622,7 @@ int gauss_expand_cl(struct dt_iop_module_t *self,
                     const int width,
                     const int height)
 {
-  dt_iop_basecurve_global_data_t *gd = (dt_iop_basecurve_global_data_t *)self->global_data;
+  dt_iop_basecurve_global_data_t *gd = self->global_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
@@ -651,7 +646,7 @@ int gauss_reduce_cl(struct dt_iop_module_t *self,
                     const int width,
                     const int height)
 {
-  dt_iop_basecurve_global_data_t *gd = (dt_iop_basecurve_global_data_t *)self->global_data;
+  dt_iop_basecurve_global_data_t *gd = self->global_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
@@ -689,8 +684,8 @@ int process_cl_fusion(struct dt_iop_module_t *self,
                       const dt_iop_roi_t *const roi_in,
                       const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)piece->data;
-  dt_iop_basecurve_global_data_t *gd = (dt_iop_basecurve_global_data_t *)self->global_data;
+  dt_iop_basecurve_data_t *d = piece->data;
+  dt_iop_basecurve_global_data_t *gd = self->global_data;
   const dt_iop_order_iccprofile_info_t *const work_profile =
     dt_ioppr_get_iop_work_profile_info(piece->module, piece->module->dev->iop);
 
@@ -935,8 +930,8 @@ int process_cl_lut(struct dt_iop_module_t *self,
                    const dt_iop_roi_t *const roi_in,
                    const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)piece->data;
-  dt_iop_basecurve_global_data_t *gd = (dt_iop_basecurve_global_data_t *)self->global_data;
+  dt_iop_basecurve_data_t *d = piece->data;
+  dt_iop_basecurve_global_data_t *gd = self->global_data;
   const dt_iop_order_iccprofile_info_t *const work_profile =
     dt_ioppr_get_iop_work_profile_info(piece->module, piece->module->dev->iop);
 
@@ -999,7 +994,7 @@ int process_cl(struct dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)piece->data;
+  dt_iop_basecurve_data_t *d = piece->data;
 
   if(d->exposure_fusion)
     return process_cl_fusion(self, piece, dev_in, dev_out, roi_in, roi_out);
@@ -1015,7 +1010,7 @@ void tiling_callback(struct dt_iop_module_t *self,
                      const dt_iop_roi_t *roi_out,
                      struct dt_develop_tiling_t *tiling)
 {
-  dt_iop_basecurve_data_t *const d = (dt_iop_basecurve_data_t *)piece->data;
+  dt_iop_basecurve_data_t *const d = piece->data;
 
   if(d->exposure_fusion)
   {
@@ -1245,7 +1240,7 @@ void process_fusion(struct dt_iop_module_t *self,
 {
   const float *const in = (const float *)ivoid;
   float *const out = (float *)ovoid;
-  dt_iop_basecurve_data_t *const d = (dt_iop_basecurve_data_t *)(piece->data);
+  dt_iop_basecurve_data_t *const d = piece->data;
   const dt_iop_order_iccprofile_info_t *const work_profile
     = dt_ioppr_get_iop_work_profile_info(piece->module, piece->module->dev->iop);
 
@@ -1420,7 +1415,7 @@ void process_lut(struct dt_iop_module_t *self,
   //const int ch = piece->colors; <-- it appears someone was trying to make this handle monochrome data,
   //however the for loops only handled RGBA - FIXME, determine what possible data formats and channel
   //configurations we might encounter here and handle those too
-  dt_iop_basecurve_data_t *const d = (dt_iop_basecurve_data_t *)(piece->data);
+  dt_iop_basecurve_data_t *const d = piece->data;
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_iop_work_profile_info(piece->module, piece->module->dev->iop);
 
   const int wd = roi_in->width, ht = roi_in->height;
@@ -1441,7 +1436,7 @@ void process(struct dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_basecurve_data_t *const d = (dt_iop_basecurve_data_t *)(piece->data);
+  dt_iop_basecurve_data_t *const d = piece->data;
 
   // are we doing exposure fusion?
   if(d->exposure_fusion)
@@ -1455,7 +1450,7 @@ void commit_params(struct dt_iop_module_t *self,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)(piece->data);
+  dt_iop_basecurve_data_t *d = piece->data;
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)p1;
 
   d->exposure_fusion = p->exposure_fusion;
@@ -1510,7 +1505,7 @@ void cleanup_pipe(struct dt_iop_module_t *self,
                   dt_dev_pixelpipe_iop_t *piece)
 {
   // clean up everything again.
-  dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)(piece->data);
+  dt_iop_basecurve_data_t *d = piece->data;
   dt_draw_curve_destroy(d->curve);
   free(piece->data);
   piece->data = NULL;
@@ -1568,7 +1563,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_basecurve_global_data_t *gd = (dt_iop_basecurve_global_data_t *)module->data;
+  dt_iop_basecurve_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_basecurve_lut);
   dt_opencl_free_kernel(gd->kernel_basecurve_zero);
   dt_opencl_free_kernel(gd->kernel_basecurve_legacy_lut);
@@ -1908,7 +1903,7 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget,
                                               dt_iop_module_t *self)
 {
   dt_iop_basecurve_params_t *p = self->params;
-  const dt_iop_basecurve_params_t *const d = (dt_iop_basecurve_params_t *)self->default_params;
+  const dt_iop_basecurve_params_t *const d = self->default_params;
   dt_iop_basecurve_gui_data_t *g = self->gui_data;
 
   int ch = 0;
@@ -2133,7 +2128,7 @@ static void logbase_callback(GtkWidget *slider, dt_iop_module_t *self)
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_basecurve_gui_data_t *g = IOP_GUI_ALLOC(basecurve);
-  const dt_iop_basecurve_params_t *const p = (dt_iop_basecurve_params_t *)self->default_params;
+  const dt_iop_basecurve_params_t *const p = self->default_params;
 
   g->minmax_curve = dt_draw_curve_new(0.0, 1.0, p->basecurve_type[0]);
   g->minmax_curve_type = p->basecurve_type[0];

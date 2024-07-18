@@ -150,7 +150,7 @@ void dt_thumbtable_set_overlays_mode(dt_thumbtable_t *table,
 
   for(const GList *l = table->list; l; l = g_list_next(l))
   {
-    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    dt_thumbnail_t *th = l->data;
     // in any cases, we update the tooltip
     th->tooltip = table->show_tooltips;
 
@@ -189,7 +189,7 @@ void dt_thumbtable_set_overlays_block_timeout(dt_thumbtable_t *table,
   // we need to change the overlay timeout for each thumbnails
   for(const GList *l = table->list; l; l = g_list_next(l))
   {
-    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    dt_thumbnail_t *th = l->data;
     th->overlay_timeout_duration = timeout;
   }
 }
@@ -199,7 +199,7 @@ static dt_thumbnail_t *_thumb_get_at_pos(dt_thumbtable_t *table, int x, int y)
 {
   for(const GList *l = table->list; l; l = g_list_next(l))
   {
-    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    dt_thumbnail_t *th = l->data;
     if(th->x <= x
        && th->x + th->width > x
        && th->y <= y
@@ -496,7 +496,7 @@ static int _thumbs_remove_unneeded(dt_thumbtable_t *table,
   int changed = 0;
   for(const GList *l = *th_invalid; l; l = g_list_next(l))
   {
-    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    dt_thumbnail_t *th = l->data;
     gtk_container_remove(GTK_CONTAINER(gtk_widget_get_parent(th->w_main)), th->w_main);
     dt_thumbnail_destroy(th);
     changed++;
@@ -539,7 +539,7 @@ static void _thumb_move_or_create(dt_thumbtable_t *table,
       table->list = g_list_append(table->list, thumb);
 
     // we remember image margins for new thumbs (this limit flickering)
-    dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
+    dt_thumbnail_t *first = table->list->data;
     gtk_widget_set_margin_start(thumb->w_image_box, gtk_widget_get_margin_start(first->w_image_box));
     gtk_widget_set_margin_top(thumb->w_image_box, gtk_widget_get_margin_top(first->w_image_box));
     gtk_layout_put(GTK_LAYOUT(table->widget), thumb->w_main, posx, posy);
@@ -547,7 +547,7 @@ static void _thumb_move_or_create(dt_thumbtable_t *table,
   else
   {
     // let's reuse a now unaffected widget
-    dt_thumbnail_t *thumb = (dt_thumbnail_t *)(*th_invalid)->data;
+    dt_thumbnail_t *thumb = (*th_invalid)->data;
     thumb->imgid = imgid;
     thumb->rowid = rowid;
     thumb->x = posx;
@@ -710,7 +710,7 @@ static gboolean _move(dt_thumbtable_t *table,
       posx = 0; // to be sure, we don't want horizontal move
       if(posy == 0) return FALSE;
 
-      dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
+      dt_thumbnail_t *first = table->list->data;
       // clamp the movement to ensure we don't go before the first image or after last one
       const int max_up = ((first->rowid-1) / table->thumbs_per_row) * table->thumb_size - table->thumbs_area.y;
       posy = MIN(posy, max_up);
@@ -731,8 +731,8 @@ static gboolean _move(dt_thumbtable_t *table,
       if(posx == 0) return FALSE;
 
       // we stop when first or last rowid image is fully shown
-      const dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
-      const dt_thumbnail_t *last = (dt_thumbnail_t *)g_list_last(table->list)->data;
+      const dt_thumbnail_t *first = table->list->data;
+      const dt_thumbnail_t *last = g_list_last(table->list)->data;
       const int middle = (table->view_width - table->thumb_size) / 2;
       posx = CLAMP(posx, middle - last->x, middle - first->x);
     }
@@ -759,7 +759,7 @@ static gboolean _move(dt_thumbtable_t *table,
   GList *l = table->list;
   while(l)
   {
-    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    dt_thumbnail_t *th = l->data;
     if(!first)
       first = th;
 
@@ -816,7 +816,7 @@ static gboolean _move(dt_thumbtable_t *table,
   }
   else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
   {
-    const dt_thumbnail_t *nfirst = (dt_thumbnail_t *)table->list->data;
+    const dt_thumbnail_t *nfirst = table->list->data;
     table->offset = nfirst->rowid;
     table->offset_imgid = nfirst->imgid;
   }
@@ -842,7 +842,7 @@ static dt_thumbnail_t *_thumbtable_get_thumb(dt_thumbtable_t *table,
 
   for(const GList *l = table->list; l; l = g_list_next(l))
   {
-    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    dt_thumbnail_t *th = l->data;
     if(th->imgid == imgid)
       return th;
   }
@@ -894,7 +894,7 @@ static void _zoomable_zoom(dt_thumbtable_t *table,
   GList *l = table->list;
   while(l)
   {
-    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    dt_thumbnail_t *th = l->data;
     if(!first) first = th;
     last = th;
     // we get row/column numbers
@@ -929,7 +929,7 @@ static void _zoomable_zoom(dt_thumbtable_t *table,
   l = table->list;
   while(l)
   {
-    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    dt_thumbnail_t *th = l->data;
     if(th->y + table->thumb_size <= 0 || th->y > table->view_height)
     {
       th_invalid = g_list_prepend(th_invalid, th);
@@ -952,7 +952,7 @@ static void _zoomable_zoom(dt_thumbtable_t *table,
     _pos_compute_area(table);
 
   // we update all the values
-  const dt_thumbnail_t *nfirst = (dt_thumbnail_t *)table->list->data;
+  const dt_thumbnail_t *nfirst = table->list->data;
   table->offset = nfirst->rowid;
   table->offset_imgid = nfirst->imgid;
   dt_conf_set_int("plugins/lighttable/collect/history_pos0", table->offset);
@@ -1615,7 +1615,7 @@ static gboolean _event_button_release(GtkWidget *widget,
   // we ensure that all thumbnails moved property is reset
   for(const GList *l = table->list; l; l = g_list_next(l))
   {
-    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    dt_thumbnail_t *th = l->data;
     th->moved = FALSE;
   }
 
@@ -1752,7 +1752,7 @@ static void _dt_pref_change_callback(gpointer instance, gpointer user_data)
 
   for(const GList *l = table->list; l; l = g_list_next(l))
   {
-    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    dt_thumbnail_t *th = l->data;
     dt_thumbnail_reload_infos(th);
     dt_thumbnail_resize(th, th->width, th->height, TRUE, IMG_TO_FIT);
   }
@@ -1778,7 +1778,7 @@ static void _dt_profile_change_callback(gpointer instance,
 
   for(const GList *l = table->list; l; l = g_list_next(l))
   {
-    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    dt_thumbnail_t *th = l->data;
     dt_thumbnail_image_refresh(th);
   }
 }
@@ -1812,7 +1812,7 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
   // we crawl over all images to find the right one
   for(const GList *l = table->list; l; l = g_list_next(l))
   {
-    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    dt_thumbnail_t *th = l->data;
     // during dragging, we don't change over_id thumbnail
     // this avoid some "jump" visual effect during widget move
     // anyway the image_over_id is restored on button_release
@@ -1855,7 +1855,7 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
 
     for(GList *l = table->list; l; l = g_list_next(l))
     {
-      dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+      dt_thumbnail_t *th = l->data;
       dt_thumbnail_border_t old_borders = th->group_borders;
       if(th->groupid == groupid)
       {
@@ -1865,7 +1865,7 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
           // left border
           if(pos != 0 && th->x != table->thumbs_area.x)
           {
-            dt_thumbnail_t *th1 = (dt_thumbnail_t *)g_list_previous(l)->data;
+            dt_thumbnail_t *th1 = g_list_previous(l)->data;
             if(th1->groupid == groupid)
               b = FALSE;
           }
@@ -1878,7 +1878,7 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
           if(pos < table_len - 1
              && (th->x + th->width * 1.5) < table->thumbs_area.width)
           {
-            dt_thumbnail_t *th1 = (dt_thumbnail_t *)g_list_next(l)->data;
+            dt_thumbnail_t *th1 = g_list_next(l)->data;
             if(th1->groupid == groupid)
               b = FALSE;
           }
@@ -1899,8 +1899,7 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
         b = TRUE;
         if(pos - table->thumbs_per_row >= 0)
         {
-          dt_thumbnail_t *th1 =
-            (dt_thumbnail_t *)g_list_nth_prev(l, table->thumbs_per_row)->data;
+          dt_thumbnail_t *th1 = g_list_nth_prev(l, table->thumbs_per_row)->data;
           if(th1->groupid == groupid)
             b = FALSE;
         }
@@ -1915,8 +1914,7 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
         b = TRUE;
         if(pos + table->thumbs_per_row < table_len)
         {
-          dt_thumbnail_t *th1 =
-            (dt_thumbnail_t *)g_list_nth_data(l, table->thumbs_per_row);
+          dt_thumbnail_t *th1 = g_list_nth_data(l, table->thumbs_per_row);
           if(th1->groupid == groupid)
             b = FALSE;
         }
@@ -2062,7 +2060,7 @@ static void _dt_collection_changed_callback(gpointer instance,
       // we retrieve the entry with id == newid
       for(GList *l = table->list; l; l = g_list_next(l))
       {
-        dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
+        dt_thumbnail_t *thumb = l->data;
         if(thumb->imgid == newid)
         {
           actual = l;
@@ -2072,7 +2070,7 @@ static void _dt_collection_changed_callback(gpointer instance,
       // we search the first valid item after
       for(const GList *l = g_list_next(actual); l; l = g_list_next(l))
       {
-        dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
+        dt_thumbnail_t *thumb = l->data;
         nrow = _thumb_get_rowid(thumb->imgid);
         if(nrow > 0)
         {
@@ -2087,7 +2085,7 @@ static void _dt_collection_changed_callback(gpointer instance,
       // we search the first valid item before
       for(const GList *l = g_list_previous(actual); l; l = g_list_previous(l))
       {
-        dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
+        dt_thumbnail_t *thumb = l->data;
         nrow = _thumb_get_rowid(thumb->imgid);
         if(nrow > 0)
         {
@@ -2140,7 +2138,7 @@ static void _dt_collection_changed_callback(gpointer instance,
         gboolean in_list_next = FALSE;
         for(const GList *l = table->list; l; l = g_list_next(l))
         {
-          dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
+          dt_thumbnail_t *thumb = l->data;
           if(thumb->imgid == old_hover)
             in_list = TRUE;
           if(thumb->imgid == next)
@@ -2417,8 +2415,7 @@ static void _thumbtable_init_accels();
 
 dt_thumbtable_t *dt_thumbtable_new()
 {
-  dt_thumbtable_t *table =
-    (dt_thumbtable_t *)calloc(1, sizeof(dt_thumbtable_t));
+  dt_thumbtable_t *table = calloc(1, sizeof(dt_thumbtable_t));
   table->widget = gtk_layout_new(NULL, NULL);
   dt_gui_add_help_link(table->widget, "lighttable_filemanager");
 
@@ -2603,7 +2600,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table,
     int old_margin_top = 0;
     if(table->list)
     {
-      dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
+      dt_thumbnail_t *first = table->list->data;
       old_margin_start = gtk_widget_get_margin_start(first->w_image_box);
       old_margin_top = gtk_widget_get_margin_top(first->w_image_box);
       // if margins > thumb size, then margins are irrelevant (thumb
@@ -2620,7 +2617,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table,
     GHashTable *htable = g_hash_table_new_full(g_int_hash, g_int_equal, NULL, _list_remove_thumb);
     for(const GList *l = table->list; l; l = g_list_next(l))
     {
-      dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+      dt_thumbnail_t *th = l->data;
       g_hash_table_insert(htable, &th->imgid, (gpointer)th);
     }
     g_list_free(table->list);
@@ -2806,7 +2803,7 @@ void dt_thumbtable_set_parent(dt_thumbtable_t *table,
     }
     for(const GList *l = table->list; l; l = g_list_next(l))
     {
-      dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+      dt_thumbnail_t *th = l->data;
       th->sel_mode = sel_mode;
       th->single_click = single_click;
     }
@@ -3000,10 +2997,10 @@ static gboolean _filemanager_ensure_rowid_visibility(dt_thumbtable_t *table,
     return FALSE;
 
   // get first and last fully visible thumbnails
-  dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
+  dt_thumbnail_t *first = table->list->data;
   const int pos = MIN(g_list_length(table->list) - 1,
                       table->thumbs_per_row * (table->rows - 1) - 1);
-  dt_thumbnail_t *last = (dt_thumbnail_t *)g_list_nth_data(table->list, pos);
+  dt_thumbnail_t *last = g_list_nth_data(table->list, pos);
 
   if(first->rowid > rowid)
   {
@@ -3042,7 +3039,7 @@ static gboolean _zoomable_ensure_rowid_visibility(dt_thumbtable_t *table,
   gboolean inside = FALSE;
   for(const GList *l = table->list; l; l = g_list_next(l))
   {
-    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    dt_thumbnail_t *th = l->data;
     if(i == 0)
       minrowid = th->rowid;
 
@@ -3113,10 +3110,10 @@ static gboolean _filemanager_check_rowid_visibility(dt_thumbtable_t *table,
   if(rowid < 1) return FALSE;
   if(!table->list) return FALSE;
   // get first and last fully visible thumbnails
-  dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
+  dt_thumbnail_t *first = table->list->data;
   const int pos = MIN(g_list_length(table->list) - 1,
                       table->thumbs_per_row * (table->rows - 1) - 1);
-  dt_thumbnail_t *last = (dt_thumbnail_t *)g_list_nth_data(table->list, pos);
+  dt_thumbnail_t *last = g_list_nth_data(table->list, pos);
 
   if(first->rowid <= rowid && last->rowid >= rowid)
     return TRUE;
@@ -3135,7 +3132,7 @@ static gboolean _zoomable_check_rowid_visibility(dt_thumbtable_t *table,
   int x_move = 0;
   for(const GList *l = table->list; l; l = g_list_next(l))
   {
-    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    dt_thumbnail_t *th = l->data;
     if(th->rowid == rowid)
     {
       // vertical movement
@@ -3332,7 +3329,7 @@ static gboolean _zoomable_key_move(dt_thumbtable_t *table,
     dt_selection_select_range(darktable.selection, thumb->imgid);
 
   // and we record new positions values
-  dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
+  dt_thumbnail_t *first = table->list->data;
   table->offset = first->rowid;
   table->offset_imgid = first->imgid;
   dt_conf_set_int("plugins/lighttable/collect/history_pos0", table->offset);
@@ -3366,7 +3363,7 @@ gboolean dt_thumbtable_reset_first_offset(dt_thumbtable_t *table)
     return FALSE;
 
   // chained dereference is dangerous, but there was a check above in the code
-  dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
+  dt_thumbnail_t *first = table->list->data;
   const int offset = table->thumbs_per_row - ((first->rowid - 1) % table->thumbs_per_row);
   if(offset == 0)
     return FALSE;

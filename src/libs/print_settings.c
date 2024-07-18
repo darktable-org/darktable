@@ -797,7 +797,7 @@ static void _set_printer(const dt_lib_module_t *self,
   ps->paper_list = dt_get_papers (&ps->prt.printer);
   for(const GList *papers = ps->paper_list; papers; papers = g_list_next (papers))
   {
-    const dt_paper_info_t *p = (dt_paper_info_t *)papers->data;
+    const dt_paper_info_t *p = papers->data;
     dt_bauhaus_combobox_add(ps->papers, p->common_name);
   }
   const char *default_paper = dt_conf_get_string_const("plugins/print/print/paper");
@@ -810,7 +810,7 @@ static void _set_printer(const dt_lib_module_t *self,
   ps->media_list = dt_get_media_type(&ps->prt.printer);
   for(const GList *media = ps->media_list; media; media = g_list_next (media))
   {
-    const dt_medium_info_t *m = (dt_medium_info_t *)media->data;
+    const dt_medium_info_t *m = media->data;
     dt_bauhaus_combobox_add(ps->media, m->common_name);
   }
   const char *default_medium = dt_conf_get_string_const("plugins/print/print/medium");
@@ -1189,7 +1189,7 @@ _profile_changed(GtkWidget *widget, dt_lib_module_t *self)
   const int pos = dt_bauhaus_combobox_get(widget);
   for(const GList *prof = ps->profiles; prof; prof = g_list_next(prof))
   {
-    dt_lib_export_profile_t *pp = (dt_lib_export_profile_t *)prof->data;
+    dt_lib_export_profile_t *pp = prof->data;
     if(pp->pos == pos)
     {
       dt_conf_set_int("plugins/print/print/icctype", pp->type);
@@ -1214,7 +1214,7 @@ _printer_profile_changed(GtkWidget *widget, dt_lib_module_t *self)
   const int pos = dt_bauhaus_combobox_get(widget);
   for(const GList *prof = ps->profiles; prof; prof = g_list_next(prof))
   {
-    dt_lib_export_profile_t *pp = (dt_lib_export_profile_t *)prof->data;
+    dt_lib_export_profile_t *pp = prof->data;
     if(pp->ppos == pos)
     {
       dt_conf_set_int("plugins/print/printer/icctype", pp->type);
@@ -1349,8 +1349,7 @@ static GList* _get_profiles()
   //  Create list of profiles
   GList *list = NULL;
 
-  dt_lib_export_profile_t *prof =
-    (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
+  dt_lib_export_profile_t *prof = g_malloc0(sizeof(dt_lib_export_profile_t));
   prof->type = DT_COLORSPACE_SRGB;
   dt_utf8_strlcpy(prof->name, _("sRGB"), sizeof(prof->name));
   prof->pos = -2;
@@ -1367,7 +1366,7 @@ static GList* _get_profiles()
   // add the profiles from datadir/color/out/*.icc
   for(GList *iter = darktable.color_profiles->profiles; iter; iter = g_list_next(iter))
   {
-    dt_colorspaces_color_profile_t *p = (dt_colorspaces_color_profile_t *)iter->data;
+    dt_colorspaces_color_profile_t *p = iter->data;
     if(p->type == DT_COLORSPACE_FILE)
     {
       prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
@@ -2461,7 +2460,7 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_combobox_add(d->pprofile, _("color management in printer driver"));
   for(const GList *l = d->profiles; l; l = g_list_next(l))
   {
-    dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)l->data;
+    dt_lib_export_profile_t *prof = l->data;
     // do not add built-in profiles, these are in no way for printing
     if(prof->type == DT_COLORSPACE_FILE)
     {
@@ -2814,7 +2813,7 @@ void gui_init(dt_lib_module_t *self)
 
   for(const GList *l = d->profiles; l; l = g_list_next(l))
   {
-    dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)l->data;
+    dt_lib_export_profile_t *prof = l->data;
     dt_bauhaus_combobox_add(d->profile, prof->name);
     prof->pos = ++n;
     if(prof->type == icctype
@@ -3236,7 +3235,7 @@ int set_params(dt_lib_module_t *self,
   dt_bauhaus_combobox_set(ps->profile, 0);
   for(GList *iter = ps->profiles; iter; iter = g_list_next(iter))
   {
-    dt_lib_export_profile_t *p = (dt_lib_export_profile_t *)iter->data;
+    dt_lib_export_profile_t *p = iter->data;
     if(f_profile_type == p->type && (f_profile_type != DT_COLORSPACE_FILE
                                      || !g_strcmp0(f_profile, p->filename)))
     {
@@ -3250,7 +3249,7 @@ int set_params(dt_lib_module_t *self,
   dt_bauhaus_combobox_set(ps->pprofile, 0);
   for(GList *iter = ps->profiles; iter; iter = g_list_next(iter))
   {
-    dt_lib_export_profile_t *p = (dt_lib_export_profile_t *)iter->data;
+    dt_lib_export_profile_t *p = iter->data;
     if(f_pprofile_type == p->type && (f_pprofile_type != DT_COLORSPACE_FILE
                                       || !g_strcmp0(f_pprofile, p->filename)))
     {
@@ -3307,7 +3306,7 @@ void *get_params(dt_lib_module_t *self, int *size)
   const char *profile = "", *pprofile = "";
   for(GList *iter = ps->profiles; iter; iter = g_list_next(iter))
   {
-    dt_lib_export_profile_t *p = (dt_lib_export_profile_t *)iter->data;
+    dt_lib_export_profile_t *p = iter->data;
     if(p->pos == profile_pos)
     {
       profile_type = p->type;

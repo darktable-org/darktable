@@ -1469,7 +1469,7 @@ static cl_int_t _apply_global_distortion_map_cl(struct dt_iop_module_t *module,
 {
   cl_int_t err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
-  dt_iop_liquify_global_data_t *gd = (dt_iop_liquify_global_data_t *)module->global_data;
+  dt_iop_liquify_global_data_t *gd = module->global_data;
   const int devid = piece->pipe->devid;
 
   const struct dt_interpolation* interpolation =
@@ -1598,8 +1598,7 @@ void init_global(dt_iop_module_so_t *module)
 {
   // called once at startup
   const int program = 17; // from programs.conf
-  dt_iop_liquify_global_data_t *gd =
-    (dt_iop_liquify_global_data_t *) malloc(sizeof(dt_iop_liquify_global_data_t));
+  dt_iop_liquify_global_data_t *gd =  malloc(sizeof(dt_iop_liquify_global_data_t));
   module->data = gd;
   gd->warp_kernel = dt_opencl_create_kernel(program, "warp_kernel");
 }
@@ -1607,7 +1606,7 @@ void init_global(dt_iop_module_so_t *module)
 void cleanup_global(dt_iop_module_so_t *module)
 {
   // called once at shutdown
-  dt_iop_liquify_global_data_t *gd = (dt_iop_liquify_global_data_t *)module->data;
+  dt_iop_liquify_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->warp_kernel);
   free(module->data);
   module->data = NULL;
@@ -3364,8 +3363,7 @@ int button_released(dt_iop_module_t *module,
           // add node to curve
           dt_liquify_path_data_t *curve1 = (dt_liquify_path_data_t *) e;
 
-          dt_liquify_path_data_t *curve2 =
-            (dt_liquify_path_data_t *)alloc_curve_to(module, 0);
+          dt_liquify_path_data_t *curve2 = alloc_curve_to(module, 0);
           if(!curve2) goto done;
 
           curve2->node.ctrl1 = curve1->node.ctrl1;

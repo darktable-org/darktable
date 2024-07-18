@@ -197,8 +197,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_colorzones_params_v1_t;
 
     const dt_iop_colorzones_params_v1_t *old = old_params;
-    dt_iop_colorzones_params_v5_t *new =
-      (dt_iop_colorzones_params_v5_t *)malloc(sizeof(dt_iop_colorzones_params_v5_t));
+    dt_iop_colorzones_params_v5_t *new = malloc(sizeof(dt_iop_colorzones_params_v5_t));
 
     new->channel = old->channel;
 
@@ -253,8 +252,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_colorzones_params_v2_t;
 
     const dt_iop_colorzones_params_v2_t *old = old_params;
-    dt_iop_colorzones_params_v5_t *new =
-      (dt_iop_colorzones_params_v5_t *)malloc(sizeof(dt_iop_colorzones_params_v5_t));
+    dt_iop_colorzones_params_v5_t *new = malloc(sizeof(dt_iop_colorzones_params_v5_t));
     new->channel = old->channel;
 
     for(int b = 0; b < DT_IOP_COLORZONES_BANDS; b++)
@@ -288,8 +286,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_colorzones_params_v3_t;
 
     const dt_iop_colorzones_params_v3_t *old = old_params;
-    dt_iop_colorzones_params_v5_t *new =
-      (dt_iop_colorzones_params_v5_t *)malloc(sizeof(dt_iop_colorzones_params_v5_t));
+    dt_iop_colorzones_params_v5_t *new = malloc(sizeof(dt_iop_colorzones_params_v5_t));
     new->channel = old->channel;
 
     for(int b = 0; b < DT_IOP_COLORZONES_BANDS; b++)
@@ -327,8 +324,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_colorzones_params_v4_t;
 
     const dt_iop_colorzones_params_v4_t *old = old_params;
-    dt_iop_colorzones_params_v5_t *new =
-      (dt_iop_colorzones_params_v5_t *)malloc(sizeof(dt_iop_colorzones_params_v5_t));
+    dt_iop_colorzones_params_v5_t *new = malloc(sizeof(dt_iop_colorzones_params_v5_t));
     new->channel = old->channel;
 
     for(int i = 0; i < DT_IOP_COLORZONES_MAXNODES; i++)
@@ -438,7 +434,7 @@ void process_display(struct dt_iop_module_t *self,
                      const dt_iop_roi_t *const roi_in,
                      const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
+  const dt_iop_colorzones_data_t *d = piece->data;
   dt_iop_colorzones_gui_data_t *g = self->gui_data;
 
   const int ch = piece->colors;
@@ -489,7 +485,7 @@ void process_v1(struct dt_iop_module_t *self,
                 const dt_iop_roi_t *const roi_in,
                 const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
+  const dt_iop_colorzones_data_t *d = piece->data;
 
   const int ch = piece->colors;
   const float normalize_C = 1.f / (128.0f * sqrtf(2.f));
@@ -537,7 +533,7 @@ void process_v3(struct dt_iop_module_t *self,
                 const dt_iop_roi_t *const roi_in,
                 const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
+  const dt_iop_colorzones_data_t *d = piece->data;
   const int ch = piece->colors;
   DT_OMP_FOR()
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
@@ -583,7 +579,7 @@ void process(struct dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
+  dt_iop_colorzones_data_t *d = piece->data;
   dt_iop_colorzones_gui_data_t *g = self->gui_data;
 
   // display selection if requested
@@ -605,9 +601,8 @@ int process_cl(struct dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)piece->data;
-  dt_iop_colorzones_global_data_t *gd =
-    (dt_iop_colorzones_global_data_t *)self->global_data;
+  dt_iop_colorzones_data_t *d = piece->data;
+  dt_iop_colorzones_global_data_t *gd = self->global_data;
   cl_mem dev_L, dev_a, dev_b = NULL;
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
@@ -2381,7 +2376,7 @@ static void _display_mask_callback(GtkToggleButton *togglebutton,
 {
   if(darktable.gui->reset) return;
 
-  dt_iop_colorzones_gui_data_t *g = (dt_iop_colorzones_gui_data_t *)module->gui_data;
+  dt_iop_colorzones_gui_data_t *g = module->gui_data;
 
   // if blend module is displaying mask do not display it here
   if(module->request_mask_display && !g->display_mask)
@@ -2799,7 +2794,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_colorzones_global_data_t *gd = (dt_iop_colorzones_global_data_t *)module->data;
+  dt_iop_colorzones_global_data_t *gd = module->data;
 
   dt_opencl_free_kernel(gd->kernel_colorzones);
   dt_opencl_free_kernel(gd->kernel_colorzones_v3);
@@ -2814,7 +2809,7 @@ void commit_params(struct dt_iop_module_t *self,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   // pull in new params to pipe
-  dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
+  dt_iop_colorzones_data_t *d = piece->data;
   dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)p1;
   dt_iop_colorzones_gui_data_t *g = self->gui_data;
 
@@ -2956,7 +2951,7 @@ void cleanup_pipe(struct dt_iop_module_t *self,
                   dt_dev_pixelpipe_iop_t *piece)
 {
   // clean up everything again.
-  dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
+  dt_iop_colorzones_data_t *d = piece->data;
 
   for(int ch = 0; ch < DT_IOP_COLORZONES_MAX_CHANNELS; ch++)
     dt_draw_curve_destroy(d->curve[ch]);

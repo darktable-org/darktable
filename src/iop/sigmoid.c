@@ -326,7 +326,7 @@ void commit_params(dt_iop_module_t *self,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_sigmoid_params_t *params = (dt_iop_sigmoid_params_t *)p1;
-  dt_iop_sigmoid_data_t *module_data = (dt_iop_sigmoid_data_t *)piece->data;
+  dt_iop_sigmoid_data_t *module_data = piece->data;
   /* Calculate actual skew log logistic parameters to fulfill the following:
    * f(scene_zero) = display_black_target
    * f(scene_grey) = MIDDLE_GREY
@@ -574,7 +574,7 @@ void process_loglogistic_rgb_ratio(dt_dev_pixelpipe_iop_t *piece,
                                    const dt_iop_roi_t *const roi_in,
                                    const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_sigmoid_data_t *module_data = (dt_iop_sigmoid_data_t *)piece->data;
+  const dt_iop_sigmoid_data_t *module_data = piece->data;
   const float *const in = (const float *)ivoid;
   float *const out = (float *)ovoid;
   const size_t npixels = (size_t)roi_in->width * roi_in->height;
@@ -711,7 +711,7 @@ void process_loglogistic_per_channel(struct dt_develop_t *dev,
                                      const dt_iop_roi_t *const roi_in,
                                      const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_sigmoid_data_t *module_data = (dt_iop_sigmoid_data_t *)piece->data;
+  const dt_iop_sigmoid_data_t *module_data = piece->data;
 
   const float *const in = (const float *)ivoid;
   float *const out = (float *)ovoid;
@@ -774,7 +774,7 @@ void process(struct dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
-  dt_iop_sigmoid_data_t *module_data = (dt_iop_sigmoid_data_t *)piece->data;
+  dt_iop_sigmoid_data_t *module_data = piece->data;
 
   if(module_data->color_processing == DT_SIGMOID_METHOD_PER_CHANNEL)
   {
@@ -794,8 +794,8 @@ int process_cl(struct dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_sigmoid_data_t *const d = (dt_iop_sigmoid_data_t *)piece->data;
-  dt_iop_sigmoid_global_data_t *const gd = (dt_iop_sigmoid_global_data_t *)self->global_data;
+  const dt_iop_sigmoid_data_t *const d = piece->data;
+  dt_iop_sigmoid_global_data_t *const gd = self->global_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
@@ -866,7 +866,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_sigmoid_global_data_t *gd = (dt_iop_sigmoid_global_data_t *)module->data;
+  dt_iop_sigmoid_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_sigmoid_loglogistic_per_channel);
   dt_opencl_free_kernel(gd->kernel_sigmoid_loglogistic_rgb_ratio);
   free(module->data);

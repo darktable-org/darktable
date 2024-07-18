@@ -89,7 +89,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_rlce_data_t *data = (dt_iop_rlce_data_t *)piece->data;
+  dt_iop_rlce_data_t *data = piece->data;
   const int ch = piece->colors;
 
   // PASS1: Get a luminance map of image...
@@ -266,7 +266,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_rlce_params_t *p = (dt_iop_rlce_params_t *)p1;
-  dt_iop_rlce_data_t *d = (dt_iop_rlce_data_t *)piece->data;
+  dt_iop_rlce_data_t *d = piece->data;
 
   d->radius = p->radius;
   d->slope = p->slope;

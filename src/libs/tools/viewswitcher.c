@@ -107,7 +107,7 @@ void gui_init(dt_lib_module_t *self)
 
   for(GList *view_iter = darktable.view_manager->views; view_iter; view_iter = g_list_next(view_iter))
   {
-    dt_view_t *view = (dt_view_t *)view_iter->data;
+    dt_view_t *view = view_iter->data;
     // lighttable and darkroom are shown in the top level, the rest in a dropdown
     /* create view label */
 

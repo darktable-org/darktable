@@ -150,8 +150,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_soften_data_t *d = (dt_iop_soften_data_t *)piece->data;
-  dt_iop_soften_global_data_t *gd = (dt_iop_soften_global_data_t *)self->global_data;
+  dt_iop_soften_data_t *d = piece->data;
+  dt_iop_soften_global_data_t *gd = self->global_data;
 
   cl_mem dev_tmp = NULL;
   cl_mem dev_m = NULL;
@@ -273,7 +273,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
                      struct dt_develop_tiling_t *tiling)
 {
-  dt_iop_soften_data_t *d = (dt_iop_soften_data_t *)piece->data;
+  dt_iop_soften_data_t *d = piece->data;
 
   const float w = piece->iwidth * piece->iscale;
   const float h = piece->iheight * piece->iscale;
@@ -311,7 +311,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_soften_global_data_t *gd = (dt_iop_soften_global_data_t *)module->data;
+  dt_iop_soften_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_soften_overexposed);
   dt_opencl_free_kernel(gd->kernel_soften_hblur);
   dt_opencl_free_kernel(gd->kernel_soften_vblur);
@@ -325,7 +325,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_soften_params_t *p = (dt_iop_soften_params_t *)p1;
-  dt_iop_soften_data_t *d = (dt_iop_soften_data_t *)piece->data;
+  dt_iop_soften_data_t *d = piece->data;
 
   d->size = p->size;
   d->saturation = p->saturation;

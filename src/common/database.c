@@ -1111,7 +1111,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     // it will be used to create the pipe and update the iop_order on history
     for(GList *priorities = prior_v1; priorities; priorities = g_list_next(priorities))
     {
-      dt_iop_order_entry_t *prior = (dt_iop_order_entry_t *)priorities->data;
+      dt_iop_order_entry_t *prior = priorities->data;
 
       sqlite3_prepare_v2(
           db->handle,
@@ -1280,7 +1280,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
           while(e)
           {
-            dt_iop_order_entry_t *e_entry = (dt_iop_order_entry_t *)e->data;
+            dt_iop_order_entry_t *e_entry = e->data;
 
             GList *s = iop_order_list;
             while(s && strcmp(((dt_iop_order_entry_t *)s->data)->operation, e_entry->operation))
@@ -1307,7 +1307,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
           for(e = item_list; e; e = g_list_next(e))
           {
-            dt_iop_order_entry_t *e_entry = (dt_iop_order_entry_t *)e->data;
+            dt_iop_order_entry_t *e_entry = e->data;
             iop_order_list = g_list_prepend(iop_order_list, e_entry);
           }
 
@@ -2962,7 +2962,7 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
     // it will be used to create the pipe and update the iop_order on history
     for(GList *priorities = prior_v1; priorities; priorities = g_list_next(priorities))
     {
-      dt_iop_order_entry_t *prior = (dt_iop_order_entry_t *)priorities->data;
+      dt_iop_order_entry_t *prior = priorities->data;
 
       sqlite3_prepare_v2(
           db->handle,

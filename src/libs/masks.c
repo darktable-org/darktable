@@ -175,7 +175,7 @@ static void _property_changed(GtkWidget *widget, dt_masks_property_t prop)
   {
     for(GList *fpts = form->points; fpts; fpts = g_list_next(fpts), pos++)
     {
-      dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)fpts->data;
+      dt_masks_point_group_t *fpt = fpts->data;
       dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
       if(!sel
          || (dev->mask_form_selected_id && dev->mask_form_selected_id != sel->formid))
@@ -378,17 +378,13 @@ static void _tree_group(GtkButton *button, dt_lib_module_t *self)
 
       if(dt_is_valid_maskid(id))
       {
-        dt_masks_point_group_t *fpt =
-          (dt_masks_point_group_t *)malloc(sizeof(dt_masks_point_group_t));
-        if(fpt)
-        {
-          fpt->formid = id;
-          fpt->parentid = grp->formid;
-          fpt->opacity = 1.0f;
-          fpt->state = DT_MASKS_STATE_USE;
-          if(pos > 0) fpt->state |= DT_MASKS_STATE_UNION;
-          grp->points = g_list_append(grp->points, fpt);
-        }
+        dt_masks_point_group_t *fpt = malloc(sizeof(dt_masks_point_group_t));
+        fpt->formid = id;
+        fpt->parentid = grp->formid;
+        fpt->opacity = 1.0f;
+        fpt->state = DT_MASKS_STATE_USE;
+        if(pos > 0) fpt->state |= DT_MASKS_STATE_UNION;
+        grp->points = g_list_append(grp->points, fpt);
         pos++;
       }
     }
@@ -496,7 +492,7 @@ static void _tree_operation(GtkButton *button, gpointer user_data)
         // we search the entry to inverse
         for(const GList *pts = grp->points; pts; pts = g_list_next(pts))
         {
-          dt_masks_point_group_t *pt = (dt_masks_point_group_t *)pts->data;
+          dt_masks_point_group_t *pt = pts->data;
           if(pt->formid == id)
           {
             if(change_state == DT_MASKS_STATE_INVERSE
@@ -558,7 +554,7 @@ static void _swap_last_secondlast_item_visibility(dt_lib_masks_t *lm,
     // the new second last node is set SHOW state + UNION if no operator defined yet.
     for(const GList *pts = g_list_last(grp->points); pts; pts = g_list_previous(pts))
     {
-      dt_masks_point_group_t *pt = (dt_masks_point_group_t *)pts->data;
+      dt_masks_point_group_t *pt = pts->data;
       gboolean changed = FALSE;
       if(pt->formid == last_id)
       {
@@ -820,16 +816,12 @@ static void _tree_selection_change(GtkTreeSelection *selection, dt_lib_masks_t *
       dt_masks_form_t *form = dt_masks_get_from_id(darktable.develop, id);
       if(form)
       {
-        dt_masks_point_group_t *fpt =
-          (dt_masks_point_group_t *)malloc(sizeof(dt_masks_point_group_t));
-        if(fpt)
-        {
-          fpt->formid = id;
-          fpt->parentid = grid;
-          fpt->state = DT_MASKS_STATE_USE;
-          fpt->opacity = 1.0f;
-          grp->points = g_list_append(grp->points, fpt);
-        }
+        dt_masks_point_group_t *fpt = malloc(sizeof(dt_masks_point_group_t));
+        fpt->formid = id;
+        fpt->parentid = grid;
+        fpt->state = DT_MASKS_STATE_USE;
+        fpt->opacity = 1.0f;
+        grp->points = g_list_append(grp->points, fpt);
         // we eventually set the "show masks" icon of iops
         if(nb == 1 && (form->type & DT_MASKS_GROUP))
         {
@@ -840,7 +832,7 @@ static void _tree_selection_change(GtkTreeSelection *selection, dt_lib_masks_t *
              && (module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
              && !(module->flags() & IOP_FLAGS_NO_MASKS))
           {
-            dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
+            dt_iop_gui_blend_data_t *bd = module->blend_data;
             bd->masks_shown = DT_MASKS_EDIT_FULL;
             gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), TRUE);
             gtk_widget_queue_draw(bd->masks_edit);
@@ -979,7 +971,7 @@ static int _tree_button_pressed(GtkWidget *treeview,
           {
             for(const GList *pts = grp2->points; pts; pts = g_list_next(pts))
             {
-              dt_masks_point_group_t *pt = (dt_masks_point_group_t *)pts->data;
+              dt_masks_point_group_t *pt = pts->data;
               if(pt->formid == id) selected_states |= pt->state;
             }
           }
@@ -1030,7 +1022,7 @@ static int _tree_button_pressed(GtkWidget *treeview,
           forms;
           forms = g_list_next(forms))
       {
-        dt_masks_form_t *form = (dt_masks_form_t *)forms->data;
+        dt_masks_form_t *form = forms->data;
         if((form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE)) || form->formid == grpid)
         {
           continue;
@@ -1044,13 +1036,13 @@ static int _tree_button_pressed(GtkWidget *treeview,
             modules;
             modules = g_list_next(modules))
         {
-          dt_iop_module_t *m = (dt_iop_module_t *)modules->data;
+          dt_iop_module_t *m = modules->data;
           dt_masks_form_t *grp = dt_masks_get_from_id(m->dev, m->blend_params->mask_id);
           if(grp && (grp->type & DT_MASKS_GROUP))
           {
             for(const GList *pts = grp->points; pts; pts = g_list_next(pts))
             {
-              dt_masks_point_group_t *pt = (dt_masks_point_group_t *)pts->data;
+              dt_masks_point_group_t *pt = pts->data;
               if(pt->formid == form->formid)
               {
                 if(m == module)
@@ -1261,7 +1253,7 @@ static void _is_form_used(const dt_mask_id_t formid,
         forms;
         forms = g_list_next(forms))
     {
-      dt_masks_form_t *form = (dt_masks_form_t *)forms->data;
+      dt_masks_form_t *form = forms->data;
       if(form->type & DT_MASKS_GROUP) _is_form_used(formid, form, text, text_length, nb);
     }
   }
@@ -1271,7 +1263,7 @@ static void _is_form_used(const dt_mask_id_t formid,
         points;
         points = g_list_next(points))
     {
-      dt_masks_point_group_t *point = (dt_masks_point_group_t *)points->data;
+      dt_masks_point_group_t *point = points->data;
       dt_masks_form_t *form = dt_masks_get_from_id(darktable.develop, point->formid);
       if(form)
       {
@@ -1384,7 +1376,7 @@ static void _lib_masks_list_recurs(GtkTreeStore *treestore,
     {
       for(const GList *iops = darktable.develop->iop; iops; iops = g_list_next(iops))
       {
-        dt_iop_module_t *iop = (dt_iop_module_t *)iops->data;
+        dt_iop_module_t *iop = iops->data;
         if((iop->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
            && !(iop->flags() & IOP_FLAGS_NO_MASKS)
            && iop->blend_params->mask_id == form->formid)
@@ -1417,7 +1409,7 @@ static void _lib_masks_list_recurs(GtkTreeStore *treestore,
     // we add all nodes to the tree
     for(const GList *forms = form->points; forms; forms = g_list_next(forms))
     {
-      dt_masks_point_group_t *grpt = (dt_masks_point_group_t *)forms->data;
+      dt_masks_point_group_t *grpt = forms->data;
       dt_masks_form_t *f = dt_masks_get_from_id(darktable.develop, grpt->formid);
       if(f)
         _lib_masks_list_recurs(treestore, &child, f,
@@ -1525,7 +1517,7 @@ void gui_update(dt_lib_module_t *self)
       forms;
       forms = g_list_next(forms))
   {
-    dt_masks_form_t *form = (dt_masks_form_t *)forms->data;
+    dt_masks_form_t *form = forms->data;
     if(form->type & DT_MASKS_GROUP)
       _lib_masks_list_recurs(treestore, NULL, form, 0, NULL, 0, 1.0, lm);
   }
@@ -1535,7 +1527,7 @@ void gui_update(dt_lib_module_t *self)
       forms;
       forms = g_list_next(forms))
   {
-    dt_masks_form_t *form = (dt_masks_form_t *)forms->data;
+    dt_masks_form_t *form = forms->data;
     if(!(form->type & DT_MASKS_GROUP))
       _lib_masks_list_recurs(treestore, NULL, form, 0, NULL, 0, 1.0, lm);
   }
@@ -1549,7 +1541,7 @@ void gui_update(dt_lib_module_t *self)
     while(ids)
     {
       GtkTreeModel *model = GTK_TREE_MODEL(treestore);
-      dt_iop_module_t *mod = (dt_iop_module_t *)ids->data;
+      dt_iop_module_t *mod = ids->data;
       ids = g_list_next(ids);
       // const int gid = GPOINTER_TO_INT(ids->data); // not needed, skip it
       ids = g_list_next(ids);
@@ -1622,7 +1614,7 @@ static gboolean _update_foreach(GtkTreeModel *model,
   {
     for(const GList *pts = grp->points; pts; pts = g_list_next(pts))
     {
-      dt_masks_point_group_t *pt = (dt_masks_point_group_t *)pts->data;
+      dt_masks_point_group_t *pt = pts->data;
       if(pt->formid == id)
       {
         state = pt->state;
