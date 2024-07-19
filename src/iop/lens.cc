@@ -142,7 +142,7 @@ typedef struct dt_iop_lens_params_t
   dt_iop_lens_lenstype_t target_geom; // $DEFAULT: DT_IOP_LENS_LENSTYPE_RECTILINEAR $DESCRIPTION: "target geometry"
   char camera[128];
   char lens[128];
-  gboolean tca_override; // $DEFAULT: FALSE $DESCRIPTION: "TCA overwrite"
+  gboolean tca_override; // $DEFAULT: FALSE $DESCRIPTION: "TCA override"
   float tca_r; // $MIN: 0.99 $MAX: 1.01 $DEFAULT: 1.0 $DESCRIPTION: "TCA red"
   float tca_b; // $MIN: 0.99 $MAX: 1.01 $DEFAULT: 1.0 $DESCRIPTION: "TCA blue"
 
@@ -4354,7 +4354,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
       dt_image_is_monochrome(&self->dev->image_storage);
     gtk_widget_set_visible(g->tca_override, !raw_monochrome);
 
-    // show tca sliders only if tca_overwrite is set
+    // show tca sliders only if tca_override is set
     gtk_widget_set_visible(g->tca_r, p->tca_override && !raw_monochrome);
     gtk_widget_set_visible(g->tca_b, p->tca_override && !raw_monochrome);
 
