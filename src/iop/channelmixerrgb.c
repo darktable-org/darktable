@@ -707,21 +707,22 @@ static inline void _luma_chroma(const dt_aligned_pixel_t input,
     if(version == CHANNELMIXERRGB_V_3) norm *= INVERSE_SQRT_3;
 
     // Ratios
-    for(size_t c = 0; c < 3; c++) output[c] = input[c] / norm;
+    for_three_channels(c)
+      output[c] = input[c] / norm;
 
     // Compute ratios and a flat colorfulness adjustment for the whole pixel
     float coeff_ratio = 0.f;
 
     if(version == CHANNELMIXERRGB_V_1)
     {
-      for(size_t c = 0; c < 3; c++)
+      for_three_channels(c)
         coeff_ratio += sqf(1.0f - output[c]) * saturation[c];
     }
     else
       coeff_ratio = scalar_product(output, saturation) / 3.f;
 
     // Adjust the RGB ratios with the pixel correction
-    for(size_t c = 0; c < 3; c++)
+    for_three_channels(c)
     {
       // if the ratio was already invalid (negative), we accept the
       // result to be invalid too otherwise bright saturated blues end
@@ -739,12 +740,14 @@ static inline void _luma_chroma(const dt_aligned_pixel_t input,
     // Apply colorfulness adjustment channel-wise and repack with
     // lightness to get LMS back
     norm *= fmaxf(1.f + mix / avg, 0.f);
-    for(size_t c = 0; c < 3; c++) output[c] *= norm;
+    for_three_channels(c)
+      output[c] *= norm;
   }
   else
   {
     // we have black, 0 stays 0, no luminance = no color
-    for(size_t c = 0; c < 3; c++) output[c] = input[c];
+    for_three_channels(c)
+      output[c] = input[c];
   }
 }
 
@@ -1447,7 +1450,8 @@ static const extraction_result_t _extract_patches(const float *const restrict in
     size_t x_max = 0;
     size_t y_min = height - 1;
     size_t y_max = 0;
-    for(size_t c = 0; c < 4; c++) {
+    for(size_t c = 0; c < 4; c++)
+    {
       new_corners[c] = apply_homography(corners[c], g->homography);
       x_min = fminf(new_corners[c].x, x_min);
       x_max = fmaxf(new_corners[c].x, x_max);
@@ -1477,7 +1481,7 @@ static const extraction_result_t _extract_patches(const float *const restrict in
         if(current_point.x < radius_x && current_point.x > -radius_x &&
            current_point.y < radius_y && current_point.y > -radius_y)
         {
-          for(size_t c = 0; c < 3; c++)
+          for_three_channels(c)
           {
             patches[k * 4 + c] += in[(j * width + i) * 4 + c];
 
@@ -1489,7 +1493,8 @@ static const extraction_result_t _extract_patches(const float *const restrict in
         }
       }
 
-    for(size_t c = 0; c < 3; c++) patches[k * 4 + c] /= (float)num_elem;
+    for_three_channels(c)
+      patches[k * 4 + c] /= (float)num_elem;
 
     // Convert to XYZ
     dt_aligned_pixel_t XYZ = { 0 };
@@ -1504,7 +1509,8 @@ static const extraction_result_t _extract_patches(const float *const restrict in
 
   // find test white patch
   dt_aligned_pixel_t XYZ_white_test;
-  for(size_t c = 0; c < 3; c++) XYZ_white_test[c] = patches[g->checker->white * 4 + c];
+  for_three_channels(c)
+    XYZ_white_test[c] = patches[g->checker->white * 4 + c];
   const float white_test_norm = euclidean_norm(XYZ_white_test);
 
   /* match global exposure */
@@ -1532,7 +1538,8 @@ static const extraction_result_t _extract_patches(const float *const restrict in
       const float relative_luminance_ref = ref_norm / white_ref_norm;
 
       const float luma_correction = relative_luminance_ref / relative_luminance_test;
-      for(size_t c = 0; c < 3; ++c) sample[c] *= luma_correction * exposure;
+      for_three_channels(c)
+        sample[c] *= luma_correction * exposure;
     }
   }
 
@@ -1554,22 +1561,21 @@ static const extraction_result_t _extract_patches(const float *const restrict in
       dt_aligned_pixel_t XYZ_ref, RGB_ref;
       dt_aligned_pixel_t XYZ_test, RGB_test;
 
-      for(size_t c = 0; c < 3; c++) XYZ_test[c] = patches[k * 4 + c];
+      for_three_channels(c)
+        XYZ_test[c] = patches[k * 4 + c];
       dt_Lab_to_XYZ(g->checker->values[k].Lab, XYZ_ref);
 
       dot_product(XYZ_test, XYZ_to_CAM, RGB_test);
       dot_product(XYZ_ref, XYZ_to_CAM, RGB_ref);
 
       // Undo exposure module settings
-      for(int c = 0; c < 3; c++)
-      {
+      for_three_channels(c)
         RGB_test[c] = RGB_test[c] / user_exposure / exposure + user_black;
-      }
 
       // From now on, we have all the reference and test data in camera RGB space
       // where exposure and black level are applied
 
-      for(int c = 0; c < 3; c++)
+      for_three_channels(c)
       {
         mean_test += RGB_test[c];
         mean_ref += RGB_ref[c];
@@ -1586,19 +1592,19 @@ static const extraction_result_t _extract_patches(const float *const restrict in
       dt_aligned_pixel_t XYZ_ref, RGB_ref;
       dt_aligned_pixel_t XYZ_test, RGB_test;
 
-      for(size_t c = 0; c < 3; c++) XYZ_test[c] = patches[k * 4 + c];
+      for_three_channels(c) XYZ_test[c] = patches[k * 4 + c];
       dt_Lab_to_XYZ(g->checker->values[k].Lab, XYZ_ref);
 
       dot_product(XYZ_test, XYZ_to_CAM, RGB_test);
       dot_product(XYZ_ref, XYZ_to_CAM, RGB_ref);
 
       // Undo exposure module settings
-      for(int c = 0; c < 3; c++)
+      for_three_channels(c)
       {
         RGB_test[c] = RGB_test[c] / user_exposure / exposure + user_black;
       }
 
-      for(int c = 0; c < 3; c++)
+      for_three_channels(c)
       {
         variance += sqf(RGB_test[c] - mean_test);
         covariance += (RGB_ref[c] - mean_ref) * (RGB_test[c] - mean_ref);
@@ -3127,11 +3133,17 @@ void commit_params(struct dt_iop_module_t *self,
   convert_any_XYZ_to_LMS(XYZ, d->illuminant, d->adaptation);
   d->illuminant[3] = 0.f;
 
-  //fprintf(stdout, "illuminant: %i\n", p->illuminant);
-  //fprintf(stdout, "x: %f, y: %f\n", x, y);
-  //fprintf(stdout, "X: %f - Y: %f - Z: %f\n", XYZ[0], XYZ[1], XYZ[2]);
-  //fprintf(stdout, "L: %f - M: %f - S: %f\n",
-  //                d->illuminant[0], d->illuminant[1], d->illuminant[2]);
+  const gboolean preview = piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW;
+  const gboolean run_profile = preview && g && g->run_profile;
+  const gboolean run_validation = preview && g && g->run_validation;
+
+  dt_print(DT_DEBUG_PARAMS,
+    "[commit color calibration]%s%s  temp=%i  xy=%.4f %.4f - XYZ=%.4f %.4f %.4f - LMS=%.4f %.4f %.4f  %s\n",
+     run_profile ? " [profile]" : "",
+     run_validation ? " [validation]" : "",
+     (int)p->temperature, x, y, XYZ[0], XYZ[1], XYZ[2],
+     d->illuminant[0], d->illuminant[1], d->illuminant[2],
+     dt_introspection_get_enum_name(get_f("illuminant"), d->illuminant_type) ?: "DT_ILLUMINANT_UNDEFINED");
 
   // blue compensation for Bradford transform = (test illuminant blue
   // / reference illuminant blue)^0.0834 reference illuminant is
@@ -3139,13 +3151,10 @@ void commit_params(struct dt_iop_module_t *self,
   // params
   d->p = powf(0.818155f / d->illuminant[2], 0.0834f);
 
-  // Disable OpenCL path if we are in any kind of diagnose mode (only
-  // C path has diagnostics)
+  // Disable OpenCL path if we are in any kind of diagnose mode (only CPU has this)
   if(self->dev->gui_attached && g)
   {
-    if( (g->run_profile && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
-        || // color checker extraction mode
-        (g->run_validation && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+    if(run_profile || run_validation
 #ifdef AI_ACTIVATED
         || // delta E validation
         ( (d->illuminant_type == DT_ILLUMINANT_DETECT_EDGES ||
@@ -3433,14 +3442,13 @@ static void _convert_GUI_colors
       // normalize with hue-preserving method (sort-of) to prevent
       // gamut-clipping in sRGB
       const float max_RGB = fmaxf(fmaxf(RGB[0], RGB[1]), RGB[2]);
-      for(size_t c = 0; c < 3; c++)
+      for_three_channels(c)
         RGB[c] = fmaxf(RGB[c] / max_RGB, 0.f);
     }
     else
     {
       // work profile not available yet - default to grey
-      for(size_t c = 0; c < 3; c++)
-        RGB[c] = 0.5f;
+      for_three_channels(c) RGB[c] = 0.5f;
     }
   }
 }
@@ -3484,9 +3492,8 @@ static void _update_RGB_colors(dt_iop_module_t *self,
   if(normalize)
   {
     const float sum = RGB[0] + RGB[1] + RGB[2];
-    if(sum != 0.f)
-      for(int c = 0; c < 3; c++)
-        RGB[c] /= sum;
+    if(sum != 0.0f)
+      for_three_channels(c) RGB[c] /= sum;
   }
 
   for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
@@ -4379,7 +4386,7 @@ static void _auto_set_illuminant(dt_iop_module_t *self,
     dt_aligned_pixel_t illuminant_XYZ = { 0.f };
 
     // We solve the equation : target color / input color = D50 / illuminant, for illuminant
-    for(int c = 0; c < 3; c++) illuminant_LMS[c] = D50[c] * LMS[c] / LMS_target[c];
+    for_three_channels(c) illuminant_LMS[c] = D50[c] * LMS[c] / LMS_target[c];
     convert_any_LMS_to_XYZ(illuminant_LMS, illuminant_XYZ, p->adaptation);
 
     // Convert to xyY
