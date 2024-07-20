@@ -395,8 +395,8 @@ There are many ways you can contribute to the darktable project:
 * Write a blog about darktable
 * Create a tutorial for darktable
 * Help expand the [user wiki](https://github.com/darktable-org/darktable/wiki) or [user manual](https://github.com/darktable-org/dtdocs)
-* Answer questions on the [user mailing list](https://www.mail-archive.com/darktable-user@lists.darktable.org/) or the [pixls.us forum](https://discuss.pixls.us/c/software/darktable/19)
-* Share your ideas on the [developer mailing list](https://www.mail-archive.com/darktable-dev@lists.darktable.org/)
+* Answer questions on the [user Matrix room](https://matrix.to/#/#darktable-user:matrix.org) or the [pixls.us forum](https://discuss.pixls.us/c/software/darktable/19)
+* Share your ideas on the [developer Matrix room](https://matrix.to/#/#darktable-dev:matrix.org)
 * Test [releases](https://www.darktable.org/install/)
 * Review [pull requests](https://github.com/darktable-org/darktable/pulls)
 * Start [hacking on darktable](https://www.darktable.org/development/) and see [developer's guide](https://github.com/darktable-org/darktable/wiki/Developer's-guide)
