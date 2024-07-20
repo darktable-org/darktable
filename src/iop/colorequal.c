@@ -1766,7 +1766,7 @@ static inline float _get_hueval(const float hue)
   const float b = hue - ANGLE_SHIFT / 360.0f;
   return b < 0.0f ? b + 1.0f : b;
 }
-// #define CEPICKERDEBUG
+
 static void _draw_color_picker(dt_iop_module_t *self,
                                cairo_t *cr,
                                dt_iop_colorequal_params_t *p,
@@ -1819,14 +1819,7 @@ static void _draw_color_picker(dt_iop_module_t *self,
   cairo_move_to(cr, xav, 0.0);
   cairo_line_to(cr, xav, height);
   cairo_stroke(cr);
-
-  #ifdef CEPICKERDEBUG
-    fprintf(stderr, "%s picker. av: %f %f %f  min: %f %f %f  max: %f %f %f\n",
-        hmax != self->picked_color_max[2] ? "alternative" : "original",
-        hav, self->picked_color[2], hava, hmin, self->picked_color_min[2], hmina, hmax, self->picked_color_max[2], hmaxa);
-  #endif
 }
-#undef CEPICKERDEBUG
 #undef MINJZ
 
 static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
@@ -2364,22 +2357,23 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     g->max_saturation = get_minimum_saturation(g->gamut_LUT, 0.2f, 1.f);
   }
 
-  /* as we have the guided filter to be switched on/off we make depending parameters
-     not sensitve and switch off visualizing mode.
-  */
+  // Show guided filter controls only if in use
   const gboolean guiding = p->use_filter;
-  gtk_widget_set_sensitive(GTK_WIDGET(g->threshold), guiding);
-  gtk_widget_set_sensitive(GTK_WIDGET(g->contrast), guiding);
-  gtk_widget_set_sensitive(GTK_WIDGET(g->chroma_size), guiding);
-  gtk_widget_set_sensitive(GTK_WIDGET(g->param_size), guiding);
+  gtk_widget_set_visible(GTK_WIDGET(g->threshold), guiding);
+  gtk_widget_set_visible(GTK_WIDGET(g->contrast), guiding);
+  gtk_widget_set_visible(GTK_WIDGET(g->chroma_size), guiding);
+  gtk_widget_set_visible(GTK_WIDGET(g->param_size), guiding);
+
+  // Only show hue smoothing where effective
+  gtk_widget_set_visible(GTK_WIDGET(g->smoothing_hue), g->channel == HUE);
+
   if(w == g->use_filter && !guiding)
     g->mask_mode = 0;
 
-  ++darktable.gui->reset;
   if((work_profile != g->work_profile) || (w == g->hue_shift))
     _init_sliders(self);
+
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
-  --darktable.gui->reset;
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
