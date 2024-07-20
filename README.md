@@ -36,7 +36,7 @@ darktable is **not** a free Adobe® Lightroom® replacement.
    - [Why is my lens not detected/corrected in darkroom ?](#why-is-my-lens-not-detectedcorrected-in-darkroom-)
    - [Why do the thumbnails in the lighttable view look different to the preview in the darkroom view ?](#why-do-the-thumbnails-in-the-lighttable-view-look-different-to-the-preview-in-the-darkroom-view-)
 11. [Wiki](#wiki)
-12. [Mailing lists](#mailing-lists)
+12. [Community](#community)
 
 Documentation
 -------------
@@ -451,8 +451,8 @@ Wiki
 * [Developer wiki](https://github.com/darktable-org/darktable/wiki/Developer's-guide "darktable developer wiki")
 
 
-Mailing lists
--------------
+Community
+---------
 
-* User's [[subscribe](mailto:darktable-user+subscribe@lists.darktable.org) | [archive](https://www.mail-archive.com/darktable-user@lists.darktable.org/)]
-* Developer's [[subscribe](mailto:darktable-dev+subscribe@lists.darktable.org) | [archive](https://www.mail-archive.com/darktable-dev@lists.darktable.org/)]
+* [Darktable forum on pixls.us](https://discuss.pixls.us/c/software/darktable/19)
+* [Darktable on Mastodon](https://photog.social/@darktable)
