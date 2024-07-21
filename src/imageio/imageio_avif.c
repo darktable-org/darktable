@@ -80,7 +80,14 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
                 || exif->data[offset] != exif->data[offset + 1]))
         ++offset;
 #else
-      avifGetExifTiffHeaderOffset(exif->data, exif->size, &offset);
+      result = avifGetExifTiffHeaderOffset(exif->data, exif->size, &offset);
+      if(result != AVIF_RESULT_OK)
+      {
+        dt_print(DT_DEBUG_IMAGEIO, "[avif_open] failed to read tiff header `%s': %s\n",
+          filename, avifResultToString(result));
+        ret = DT_IMAGEIO_LOAD_FAILED;
+        goto out;
+      }
 #endif
       dt_exif_read_from_blob(img, exif->data + offset, exif->size - offset);
     }
@@ -103,13 +110,20 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
 
   rgb.format = AVIF_RGB_FORMAT_RGB;
 
-  avifRGBImageAllocatePixels(&rgb);
+  result = avifRGBImageAllocatePixels(&rgb);
+  if(result != AVIF_RESULT_OK)
+  {
+    dt_print(DT_DEBUG_IMAGEIO, "[avif_open] failed to allocate pixels `%s' : %s\n",
+      filename, avifResultToString(result));
+    ret = DT_IMAGEIO_LOAD_FAILED;
+    goto out;
+  }
 
   result = avifImageYUVToRGB(avif_image, &rgb);
   if(result != AVIF_RESULT_OK)
   {
-    dt_print(DT_DEBUG_IMAGEIO, "[avif_open] failed to convert `%s' from YUV to RGB: %s\n", filename,
-             avifResultToString(result));
+    dt_print(DT_DEBUG_IMAGEIO, "[avif_open] failed to convert `%s' from YUV to RGB: %s\n",
+      filename, avifResultToString(result));
     ret = DT_IMAGEIO_LOAD_FAILED;
     goto out;
   }
