@@ -425,16 +425,16 @@ GList* dt_image_find_duplicates(const char* filename);
 /** get image id by filename */
 dt_imgid_t dt_image_get_id_full_path(const gchar *filename);
 /** get image id by film_id and filename */
-dt_imgid_t dt_image_get_id(const uint32_t film_id,
+dt_imgid_t dt_image_get_id(const dt_filmid_t film_id,
                            const gchar *filename);
 /** imports a new image from raw/etc file and adds it to the data base and image cache. Use from threads other than lua.*/
-dt_imgid_t dt_image_import(int32_t film_id,
+dt_imgid_t dt_image_import(dt_filmid_t film_id,
                            const char *filename,
                            const gboolean override_ignore_nonraws,
                            const gboolean raise_signals);
 /** imports a new image from raw/etc file and adds it to the data base
  * and image cache. Use from lua thread.*/
-dt_imgid_t dt_image_import_lua(const int32_t film_id,
+dt_imgid_t dt_image_import_lua(const dt_filmid_t film_id,
                                const char *filename,
                                const gboolean override_ignore_nonraws);
 /** removes the given image from the database. */
@@ -564,19 +564,19 @@ static inline dt_image_orientation_t dt_image_transformation_to_flip_bits(const 
 }
 
 /** physically move image with imgid and its duplicates to the film roll
- *  given by filmid. returns -1 on error, 0 on success. */
-int32_t dt_image_move(const dt_imgid_t imgid, const int32_t filmid);
+ *  given by filmid. returns TRUE on error, FALSE on success. */
+gboolean dt_image_move(const dt_imgid_t imgid, const dt_filmid_t filmid);
 /** physically move image with imgid and its duplicates to the film roll
  *  given by filmid and the name given by newname.
- *  returns -1 on error, 0 on success. */
-int32_t dt_image_rename(const dt_imgid_t imgid, const int32_t filmid, const gchar *newname);
+ *  returns TRUE on error, FALSE on success. */
+gboolean dt_image_rename(const dt_imgid_t imgid, const dt_filmid_t filmid, const gchar *newname);
 /** physically copy image to the folder of the film roll with filmid and
  *  duplicate update database entries. */
-int32_t dt_image_copy(const dt_imgid_t imgid, const int32_t filmid);
+dt_imgid_t dt_image_copy(const dt_imgid_t imgid, const dt_filmid_t filmid);
 /** physically copy image to the folder of the film roll with filmid and
  *  the name given by newname, and duplicate update database entries. */
 dt_imgid_t dt_image_copy_rename(const dt_imgid_t imgid,
-                                const int32_t filmid,
+                                const dt_filmid_t filmid,
                                 const gchar *newname);
 gboolean dt_image_local_copy_set(const dt_imgid_t imgid);
 gboolean dt_image_local_copy_reset(const dt_imgid_t imgid);
