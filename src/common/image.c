@@ -2369,6 +2369,8 @@ gboolean dt_image_rename(const dt_imgid_t imgid, const int32_t filmid, const gch
     g_object_unref(old);
     g_object_unref(new);
   }
+  else
+    dt_control_log(_("error moving `%s' -> `%s'"), oldimg, newimg);
 
   return result;
 }
