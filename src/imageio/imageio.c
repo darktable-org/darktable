@@ -1317,7 +1317,16 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
   img->loader = LOADER_UNKNOWN;
 
   /* check if file is ldr using magic's */
-  if(dt_imageio_is_ldr(filename)) ret = dt_imageio_open_ldr(img, filename, buf);
+  if(dt_imageio_is_ldr(filename))
+    ret = dt_imageio_open_ldr(img, filename, buf);
+
+  /* use rawspeed to load the raw */
+  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
+    ret = dt_imageio_open_rawspeed(img, filename, buf);
+
+  /* fallback that tries to open file via LibRaw to support Canon CR3 */
+  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
+    ret = dt_imageio_open_libraw(img, filename, buf);
 
 #ifdef HAVE_LIBJXL
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
@@ -1337,16 +1346,6 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
   /* silly check using file extensions: */
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL && dt_imageio_is_hdr(filename))
     ret = dt_imageio_open_hdr(img, filename, buf);
-
-  /* use rawspeed to load the raw */
-  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
-  {
-    ret = dt_imageio_open_rawspeed(img, filename, buf);
-  }
-
-  /* fallback that tries to open file via LibRaw to support Canon CR3 */
-  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
-    ret = dt_imageio_open_libraw(img, filename, buf);
 
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_qoi(img, filename, buf);
