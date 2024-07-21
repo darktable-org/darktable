@@ -2046,7 +2046,7 @@ dt_imgid_t dt_image_get_id_full_path(const gchar *filename)
   return id;
 }
 
-dt_imgid_t dt_image_get_id(const uint32_t film_id, const gchar *filename)
+dt_imgid_t dt_image_get_id(const dt_filmid_t film_id, const gchar *filename)
 {
   dt_imgid_t id = NO_IMGID;
   sqlite3_stmt *stmt;
@@ -2176,10 +2176,10 @@ void dt_image_refresh_makermodel(dt_image_t *img)
             sizeof(img->camera_makermodel)-len-1);
 }
 
-int32_t dt_image_rename(const dt_imgid_t imgid, const int32_t filmid, const gchar *newname)
+gboolean dt_image_rename(const dt_imgid_t imgid, const int32_t filmid, const gchar *newname)
 {
   // TODO: several places where string truncation could occur unnoticed
-  int32_t result = -1;
+  gboolean result = TRUE;
   gchar oldimg[PATH_MAX] = { 0 };
   gchar newimg[PATH_MAX] = { 0 };
   gboolean from_cache = FALSE;
@@ -2341,7 +2341,7 @@ int32_t dt_image_rename(const dt_imgid_t imgid, const int32_t filmid, const gcha
         g_object_unref(cnew);
       }
 
-      result = 0;
+      result = FALSE;
     }
     else
     {
@@ -2373,13 +2373,13 @@ int32_t dt_image_rename(const dt_imgid_t imgid, const int32_t filmid, const gcha
   return result;
 }
 
-int32_t dt_image_move(const dt_imgid_t imgid, const int32_t filmid)
+gboolean dt_image_move(const dt_imgid_t imgid, const dt_filmid_t filmid)
 {
   return dt_image_rename(imgid, filmid, NULL);
 }
 
 dt_imgid_t dt_image_copy_rename(const dt_imgid_t imgid,
-                                const int32_t filmid,
+                                const dt_filmid_t filmid,
                                 const gchar *newname)
 {
   dt_imgid_t newid = NO_IMGID;
@@ -2674,7 +2674,7 @@ dt_imgid_t dt_image_copy_rename(const dt_imgid_t imgid,
   return newid;
 }
 
-int32_t dt_image_copy(const dt_imgid_t imgid, const int32_t filmid)
+dt_imgid_t dt_image_copy(const dt_imgid_t imgid, const dt_filmid_t filmid)
 {
   return dt_image_copy_rename(imgid, filmid, NULL);
 }
