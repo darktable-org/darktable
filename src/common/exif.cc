@@ -595,7 +595,7 @@ static bool _exif_decode_xmp_data(dt_image_t *img,
         dt_image_set_xmp_rating(img, -2);
     }
 
-    if(!exif_read) dt_colorlabels_remove_labels(img->id);
+    if(!exif_read) dt_colorlabels_remove_all_labels(img->id);
     if(FIND_XMP_TAG("Xmp.xmp.Label"))
     {
       std::string label = pos->toString();

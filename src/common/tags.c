@@ -660,6 +660,9 @@ void dt_set_darktable_tags()
 uint32_t dt_tag_count_attached(const dt_imgid_t imgid,
                                const gboolean ignore_dt_tags)
 {
+  if(!dt_is_valid_imgid(imgid))
+    return 0;
+
   sqlite3_stmt *stmt;
 
   gchar *query = g_strdup_printf
