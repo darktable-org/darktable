@@ -377,6 +377,7 @@ int write_image(struct dt_imageio_module_data_t *data,
         goto out;
       }
       cmsSaveProfileToMem(cp->profile, icc_profile_data, &icc_profile_len);
+#if AVIF_VERSION > 110100
       result = avifImageSetProfileICC(image, icc_profile_data, icc_profile_len);
       if(result != AVIF_RESULT_OK)
       {
@@ -384,6 +385,9 @@ int write_image(struct dt_imageio_module_data_t *data,
         rc = 1;
         goto out;
       }
+#else
+      avifImageSetProfileICC(image, icc_profile_data, icc_profile_len);
+#endif
     }
   }
 
@@ -406,6 +410,7 @@ int write_image(struct dt_imageio_module_data_t *data,
   avifRGBImageSetDefaults(&rgb, image);
   rgb.format = AVIF_RGB_FORMAT_RGB;
 
+#if AVIF_VERSION > 110100
   result = avifRGBImageAllocatePixels(&rgb);
   if(result != AVIF_RESULT_OK)
   {
@@ -413,6 +418,9 @@ int write_image(struct dt_imageio_module_data_t *data,
     rc = 1;
     goto out;
   }
+#else
+  avifRGBImageAllocatePixels(&rgb);
+#endif
 
   const float max_channel_f = (float)((1 << bit_depth) - 1);
 
@@ -476,12 +484,16 @@ int write_image(struct dt_imageio_module_data_t *data,
   /* TODO: workaround; remove when exiv2 implements AVIF write support and use dt_exif_write_blob() at the end */
   if(exif && exif_len > 0)
   {
+#if AVIF_VERSION > 110100
     result = avifImageSetMetadataExif(image, exif, exif_len);
     if(result != AVIF_RESULT_OK)
     {
       dt_print(DT_DEBUG_IMAGEIO, "avifImageSetMetadataExif failed\n");
       // as this error does not lead to invalid files keep going
     }
+#else
+    avifImageSetMetadataExif(image, exif, exif_len);
+#endif
   }
 
   /* TODO: workaround; remove when exiv2 implements AVIF write support and update flags() */
@@ -492,6 +504,7 @@ int write_image(struct dt_imageio_module_data_t *data,
     size_t xmp_len;
     if(xmp_string && (xmp_len = strlen(xmp_string)) > 0)
     {
+#if AVIF_VERSION > 110100
       result = avifImageSetMetadataXMP(image, (const uint8_t *)xmp_string, xmp_len);
       g_free(xmp_string);
       if(result != AVIF_RESULT_OK)
@@ -499,6 +512,9 @@ int write_image(struct dt_imageio_module_data_t *data,
         dt_print(DT_DEBUG_IMAGEIO, "avifImageSetMetadataXMP failed\n");
         // as this error does not lead to invalid files keep going
       }
+#else
+      avifImageSetMetadataXMP(image, (const uint8_t *)xmp_string, xmp_len);
+#endif
     }
   }
 

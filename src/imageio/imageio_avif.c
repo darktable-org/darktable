@@ -110,6 +110,7 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
 
   rgb.format = AVIF_RGB_FORMAT_RGB;
 
+#if AVIF_VERSION > 110100
   result = avifRGBImageAllocatePixels(&rgb);
   if(result != AVIF_RESULT_OK)
   {
@@ -118,6 +119,9 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
     ret = DT_IMAGEIO_LOAD_FAILED;
     goto out;
   }
+#else
+  avifRGBImageAllocatePixels(&rgb);
+#endif
 
   result = avifImageYUVToRGB(avif_image, &rgb);
   if(result != AVIF_RESULT_OK)
