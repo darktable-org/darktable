@@ -441,23 +441,27 @@ try_again:
     // conflict handling option: overwrite if newer
     if(!fail && d->onsave_action == DT_EXPORT_ONCONFLICT_OVERWRITE_IF_CHANGED)
     {
-      // get the image data
-      const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
-      GTimeSpan change_timestamp = img->change_timestamp;
-      GTimeSpan export_timestamp = img->export_timestamp;
-      dt_image_cache_read_release(darktable.image_cache, img);
-
-      // check if the export timestamp in the database is more recent than the change
-      // date, if yes skip the image
-      if(export_timestamp > change_timestamp)
+      // check if the file exists. If not, it will be exported again, regardless
+      // of the changes.
+      if(g_file_test(filename, G_FILE_TEST_EXISTS))
       {
-        dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
-        dt_print(DT_DEBUG_ALWAYS,
-                 "[export_job] skipping (not modified since export) `%s'\n", filename);
-        dt_control_log(ngettext("%d/%d skipping (not modified since export) `%s'",
-                                "%d/%d skipping (not modified since export) `%s'", num),
-                       num, total, filename);
-        return 0;
+        // get the image data
+        const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+        GTimeSpan change_timestamp = img->change_timestamp;
+        GTimeSpan export_timestamp = img->export_timestamp;
+        dt_image_cache_read_release(darktable.image_cache, img);
+
+        // check if the export timestamp in the database is more recent than the change
+        // date, if yes skip the image
+        if(export_timestamp > change_timestamp)
+        {
+          dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
+          dt_print(DT_DEBUG_ALWAYS, "[export_job] skipping (not modified since export) `%s'\n", filename);
+          dt_control_log(ngettext("%d/%d skipping (not modified since export) `%s'",
+                                  "%d/%d skipping (not modified since export) `%s'", num),
+                         num, total, filename);
+          return 0;
+        }
       }
     }
   } // end of critical block
