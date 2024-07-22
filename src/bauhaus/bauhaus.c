@@ -501,9 +501,6 @@ static gboolean _window_motion_notify(GtkWidget *widget,
   gtk_widget_get_allocation(widget, &allocation);
 
   const GtkBorder *padding = &pop->padding;
-  const int width = allocation.width - padding->left - padding->right;
-  const int height = allocation.height - padding->top - padding->bottom;
-  const int ht = bh->line_height + INNER_PADDING * 2.0f;
 
   // recalculate event coords so we get useful values outside window
   GdkWindow *window = gtk_widget_get_window(pop->area);
@@ -544,9 +541,11 @@ static gboolean _window_motion_notify(GtkWidget *widget,
   if(w->type == DT_BAUHAUS_SLIDER)
   {
     const dt_bauhaus_slider_data_t *d = &w->data.slider;
+    const float width = allocation.width - padding->left - padding->right;
+    const float ht = bh->line_height + INNER_PADDING * 2.0f;
     const float mouse_off = _slider_get_line_offset
       (d->oldpos, 5.0 * powf(10.0f, -d->digits) / (d->max - d->min) / d->factor,
-       bh->mouse_x / width, bh->mouse_y / height, ht / (float)height, allocation.width, w);
+       bh->mouse_x / width, bh->mouse_y / width, ht / width, allocation.width, w);
     if(!bh->change_active)
     {
       if((bh->mouse_line_distance < 0 && mouse_off >= 0)
