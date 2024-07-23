@@ -110,7 +110,7 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
 
   rgb.format = AVIF_RGB_FORMAT_RGB;
 
-  result = avifRGBImageAllocatePixels(&rgb);
+  result = DT_avifRGBImageAllocatePixels(&rgb);
   if(result != AVIF_RESULT_OK)
   {
     dt_print(DT_DEBUG_IMAGEIO, "[avif_open] failed to allocate pixels `%s' : %s\n",

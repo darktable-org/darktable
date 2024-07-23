@@ -1,6 +1,6 @@
 /*
  * This file is part of darktable,
- * Copyright (C) 2019 darktable developers.
+ * Copyright (C) 2019-2024 darktable developers.
  *
  *  darktable is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,6 +20,20 @@
 
 #include "common/image.h"
 #include "common/mipmap_cache.h"
+
+#if AVIF_VERSION > 110100
+  #define DT_avifImageSetProfileICC avifImageSetProfileICC
+  #define DT_avifRGBImageAllocatePixels avifRGBImageAllocatePixels
+  #define DT_avifImageSetMetadataExif avifImageSetMetadataExif
+  #define DT_avifImageSetMetadataXMP avifImageSetMetadataXMP
+  #define DT_avifImageRGBToYUV avifImageRGBToYUV
+#else
+  #define DT_avifImageSetProfileICC AVIF_RESULT_OK; avifImageSetProfileICC
+  #define DT_avifRGBImageAllocatePixels AVIF_RESULT_OK; avifRGBImageAllocatePixels
+  #define DT_avifImageSetMetadataExif AVIF_RESULT_OK; avifImageSetMetadataExif
+  #define DT_avifImageSetMetadataXMP AVIF_RESULT_OK; avifImageSetMetadataXMP
+  #define DT_avifImageRGBToYUV AVIF_RESULT_OK; avifImageRGBToYUV
+#endif
 
 dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
                                          const char *filename,

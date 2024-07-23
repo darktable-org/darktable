@@ -36,6 +36,7 @@
 #include "imageio/format/imageio_format_api.h"
 
 #include <avif/avif.h>
+#include "imageio/imageio_avif.h"
 
 #define AVIF_MIN_TILE_SIZE 512
 #define AVIF_MAX_TILE_SIZE 3072
@@ -377,7 +378,7 @@ int write_image(struct dt_imageio_module_data_t *data,
         goto out;
       }
       cmsSaveProfileToMem(cp->profile, icc_profile_data, &icc_profile_len);
-      result = avifImageSetProfileICC(image, icc_profile_data, icc_profile_len);
+      result = DT_avifImageSetProfileICC(image, icc_profile_data, icc_profile_len);
       if(result != AVIF_RESULT_OK)
       {
         dt_print(DT_DEBUG_IMAGEIO, "avifImageSetProfileICC failed\n");
@@ -406,7 +407,7 @@ int write_image(struct dt_imageio_module_data_t *data,
   avifRGBImageSetDefaults(&rgb, image);
   rgb.format = AVIF_RGB_FORMAT_RGB;
 
-  result = avifRGBImageAllocatePixels(&rgb);
+  result = DT_avifRGBImageAllocatePixels(&rgb);
   if(result != AVIF_RESULT_OK)
   {
     dt_print(DT_DEBUG_IMAGEIO, "avifRGBImageAllocatePixels failed\n");
@@ -464,7 +465,7 @@ int write_image(struct dt_imageio_module_data_t *data,
       goto out;
   }
 
-  result = avifImageRGBToYUV(image, &rgb);
+  result = DT_avifImageRGBToYUV(image, &rgb);
   if(result != AVIF_RESULT_OK)
   {
     dt_print(DT_DEBUG_IMAGEIO, "avifImageRGBToYUV failed\n");
@@ -476,7 +477,7 @@ int write_image(struct dt_imageio_module_data_t *data,
   /* TODO: workaround; remove when exiv2 implements AVIF write support and use dt_exif_write_blob() at the end */
   if(exif && exif_len > 0)
   {
-    result = avifImageSetMetadataExif(image, exif, exif_len);
+    result = DT_avifImageSetMetadataExif(image, exif, exif_len);
     if(result != AVIF_RESULT_OK)
     {
       dt_print(DT_DEBUG_IMAGEIO, "avifImageSetMetadataExif failed\n");
@@ -492,7 +493,7 @@ int write_image(struct dt_imageio_module_data_t *data,
     size_t xmp_len;
     if(xmp_string && (xmp_len = strlen(xmp_string)) > 0)
     {
-      result = avifImageSetMetadataXMP(image, (const uint8_t *)xmp_string, xmp_len);
+      result = DT_avifImageSetMetadataXMP(image, (const uint8_t *)xmp_string, xmp_len);
       g_free(xmp_string);
       if(result != AVIF_RESULT_OK)
       {
