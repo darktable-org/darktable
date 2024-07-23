@@ -190,6 +190,8 @@ typedef struct dt_iop_channelmixer_rgb_gui_data_t
   GtkWidget *Lch_origin, *Lch_target;
   GtkWidget *use_mixing;
   dt_aligned_pixel_t spot_RGB;
+  float last_daylight_temperature;
+  float last_bb_temperature;
 } dt_iop_channelmixer_rgb_gui_data_t;
 
 typedef struct dt_iop_channelmixer_rbg_data_t
@@ -3864,6 +3866,11 @@ void gui_update(struct dt_iop_module_t *self)
   // always disable profiling mode by default
   g->is_profiling_started = FALSE;
 
+  dt_iop_channelmixer_rgb_params_t *d =
+    (dt_iop_channelmixer_rgb_params_t *)module->default_params;
+  g->last_daylight_temperature = d->temperature;
+  g->last_bb_temperature = d->temperature;
+
   dt_gui_hide_collapsible_section(&g->cs);
   dt_gui_update_collapsible_section(&g->csspot);
 
@@ -3944,6 +3951,9 @@ void reload_defaults(dt_iop_module_t *module)
     dt_bauhaus_slider_set_default(g->temperature, d->temperature);
     dt_bauhaus_combobox_set_default(g->illuminant, d->illuminant);
     dt_bauhaus_combobox_set_default(g->adaptation, d->adaptation);
+    g->last_daylight_temperature = d->temperature;
+    g->last_bb_temperature = d->temperature;
+
     if(g->delta_E_label_text)
     {
       g_free(g->delta_E_label_text);
@@ -4032,6 +4042,13 @@ void gui_changed(dt_iop_module_t *self,
         _check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, &(p->adaptation));
       }
     }
+
+    if(p->illuminant == DT_ILLUMINANT_D)
+      p->temperature = g->last_daylight_temperature;
+
+    if(p->illuminant == DT_ILLUMINANT_BB)
+      p->temperature = g->last_bb_temperature;
+
     if(p->illuminant == DT_ILLUMINANT_CAMERA)
     {
       // Get camera WB and update illuminant
@@ -4052,6 +4069,14 @@ void gui_changed(dt_iop_module_t *self,
       dt_control_log(_("auto-detection of white balance started…"));
     }
 #endif
+  }
+
+  if(w == g->temperature)
+  {
+    if(p->illuminant == DT_ILLUMINANT_D)
+      g->last_daylight_temperature = p->temperature;
+    if(p->illuminant == DT_ILLUMINANT_BB)
+      g->last_bb_temperature = p->temperature;
   }
 
   if(w == g->illuminant
