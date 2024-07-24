@@ -198,17 +198,17 @@ static inline float _calc_refavg(const float *in,
   dt_aligned_pixel_t mean = { 0.0f, 0.0f, 0.0f, 0.0f };
   dt_aligned_pixel_t cnt = { 0.0f, 0.0f, 0.0f, 0.0f };
 
-  const int dymin = (row > 0) ? -1 : 0;
-  const int dxmin = (col > 0) ? -1 : 0;
-  const int dymax = (row < roi->height -1) ? 2 : 1;
-  const int dxmax = (col < roi->width -1) ? 2 : 1;
+  const int dymin = MAX(0, row - 1);
+  const int dxmin = MAX(0, col - 1);
+  const int dymax = MIN(roi->height - 1, row +2);
+  const int dxmax = MIN(roi->width - 1, col + 2);
 
   for(int dy = dymin; dy < dymax; dy++)
   {
     for(int dx = dxmin; dx < dxmax; dx++)
     {
       const float val = fmaxf(0.0f, in[(size_t)dy * roi->width + dx]);
-      const int c = (filters == 9u) ? FCxtrans(row + dy, col + dx, roi, xtrans) : FC(row + dy, col + dx, filters);
+      const int c = (filters == 9u) ? FCxtrans(dy, dx, roi, xtrans) : FC(dy, dx, filters);
       mean[c] += val;
       cnt[c] += 1.0f;
     }
@@ -489,7 +489,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
   int32_t anyclipped = 0;
   gboolean has_allclipped = FALSE;
   DT_OMP_FOR(reduction( | : has_allclipped) reduction( + : anyclipped) collapse(2))
-  for(int row = 1; row < roi_in->height-1; row++)
+  for(int row = 1; row < roi_in->height - 1; row++)
   {
     for(int col = 1; col < roi_in->width - 1; col++)
     {
@@ -499,13 +499,13 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
       {
         dt_aligned_pixel_t mean = { 0.0f, 0.0f, 0.0f, 0.0f };
         dt_aligned_pixel_t cnt = { 0.0f, 0.0f, 0.0f, 0.0f };
-        for(int dy = -1; dy < 2; dy++)
+        for(int dy = row - 1; dy < row + 2; dy++)
         {
-          for(int dx = -1; dx < 2; dx++)
+          for(int dx = col -1; dx < col + 2; dx++)
           {
-            const size_t idx = (size_t)(row + dy) * roi_in->width + col + dx;
+            const size_t idx = (size_t)dy * roi_in->width + dx;
             const float val = tmpout[idx];
-            const int c = (filters == 9u) ? FCxtrans(row + dy, col + dx, roi_in, xtrans) : FC(row + dy, col + dx, filters);
+            const int c = (filters == 9u) ? FCxtrans(dy, dx, roi_in, xtrans) : FC(dy, dx, filters);
             mean[c] += val;
             cnt[c] += 1.0f;
           }
@@ -580,7 +580,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
           if(candidate != 0.0f)
           {
             const float cand_reference = isegments[color].val2[pid];
-            const float refavg_here = _calc_refavg(&input[idx], xtrans, filters, row, col, roi_in, correction, FALSE);
+            const float refavg_here = _calc_refavg(input, xtrans, filters, row, col, roi_in, correction, FALSE);
             const float oval = powf(refavg_here + candidate - cand_reference, HL_POWERF);
             tmpout[idx] = plane[color][o] = fmaxf(inval, oval);
           }

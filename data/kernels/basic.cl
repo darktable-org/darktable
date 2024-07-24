@@ -331,17 +331,17 @@ static float _calc_refavg(
   float sum[3] =  { 0.0f, 0.0f, 0.0f };
   float cnt[3]  = { 0.0f, 0.0f, 0.0f };
 
-  const int dymin = (row > 0) ? -1 : 0;
-  const int dxmin = (col > 0) ? -1 : 0;
-  const int dymax = (row < maxrow -1) ? 2 : 1;
-  const int dxmax = (col < maxcol -1) ? 2 : 1;
+  const int dymin = max(0, row - 1);
+  const int dxmin = max(0, col - 1);
+  const int dymax = min(maxrow - 1, row + 2);
+  const int dxmax = min(maxcol - 1, col + 2);
 
   for(int dy = dymin; dy < dymax; dy++)
   {
     for(int dx = dxmin; dx < dxmax; dx++)
     {
-      const float val = fmax(0.0f, read_imagef(in, samplerA, (int2)(col+dx, row+dy)).x);
-      const int c = (filters == 9u) ? FCxtrans(row + dy, col + dx, xtrans) : FC(row + dy, col + dx, filters);
+      const float val = fmax(0.0f, read_imagef(in, samplerA, (int2)(dx, dy)).x);
+      const int c = (filters == 9u) ? FCxtrans(dy, dx, xtrans) : FC(dy, dx, filters);
       sum[c] += val;
       cnt[c] += 1.0f;
     }
@@ -483,6 +483,7 @@ kernel void highlights_chroma(
   float sum[3] = {0.0f, 0.0f, 0.0f};
   float cnt[3] = {0.0f, 0.0f, 0.0f};
 
+  float clipped = 0.0f;
   for(int col = 3; col < width-3; col++)
   {
     const int idx = mad24(row, width, col);
@@ -495,16 +496,18 @@ kernel void highlights_chroma(
       sum[color] += inval - ref;
       cnt[color] += 1.0f;
     }
+    if(mask[px]) clipped += 1.0f;
   }
 
   for(int c = 0; c < 3; c++)
   {
     if(cnt[c] > 0.0f)
     {
-      accu[row*6 + 2*c] = sum[c];
-      accu[row*6 + 2*c +1] = cnt[c];
+      accu[row*8 + 2*c] = sum[c];
+      accu[row*8 + 2*c +1] = cnt[c];
     }
   }
+  accu[row*8 + 6] = clipped;
 }
 
 kernel void highlights_opposed(
