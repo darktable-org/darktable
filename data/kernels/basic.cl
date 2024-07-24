@@ -483,6 +483,7 @@ kernel void highlights_chroma(
   float sum[3] = {0.0f, 0.0f, 0.0f};
   float cnt[3] = {0.0f, 0.0f, 0.0f};
 
+  float clipped = 0.0f;
   for(int col = 3; col < width-3; col++)
   {
     const int idx = mad24(row, width, col);
@@ -495,16 +496,18 @@ kernel void highlights_chroma(
       sum[color] += inval - ref;
       cnt[color] += 1.0f;
     }
+    if(mask[px]) clipped += 1.0f;
   }
 
   for(int c = 0; c < 3; c++)
   {
     if(cnt[c] > 0.0f)
     {
-      accu[row*6 + 2*c] = sum[c];
-      accu[row*6 + 2*c +1] = cnt[c];
+      accu[row*8 + 2*c] = sum[c];
+      accu[row*8 + 2*c +1] = cnt[c];
     }
   }
+  accu[row*8 + 6] = clipped;
 }
 
 kernel void highlights_opposed(
