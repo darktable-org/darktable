@@ -284,7 +284,10 @@ static int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
     dt_image_full_path(img->id, dtfilename, sizeof(dtfilename), &from_cache);
     dt_image_path_append_version(img->id, dtfilename, sizeof(dtfilename));
     g_strlcat(dtfilename, ".xmp", sizeof(dtfilename));
-    if(!dt_exif_xmp_write(imgid, dtfilename))
+    // write the sidecar, but ONLY if it is missing or its contents have changed
+    // this ensures that the sidecar is up-to-date with the database without
+    // modifying the file's timestamp if it is already up-to-date
+    if(!dt_exif_xmp_write(imgid, dtfilename, FALSE))
     {
       // put the timestamp into db. this can't be done in exif.cc
       // since that code gets called for the copy exporter, too

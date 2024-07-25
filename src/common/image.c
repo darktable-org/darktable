@@ -2883,7 +2883,7 @@ gboolean dt_image_write_sidecar_file(const dt_imgid_t imgid)
   {
     dt_image_path_append_version(imgid, filename, sizeof(filename));
     g_strlcat(filename, ".xmp", sizeof(filename));
-    error = dt_exif_xmp_write(imgid, filename);
+    error = dt_exif_xmp_write(imgid, filename, TRUE);
   }
 
   /* The timestamp must be put into db

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -53,7 +53,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
 
   // we got a copy of the file, now write the xmp data
   xmpfile = g_strconcat(targetfile, ".xmp", NULL);
-  if(dt_exif_xmp_write(imgid, xmpfile) != 0)
+  if(dt_exif_xmp_write(imgid, xmpfile, FALSE) != 0)
   {
     // something went wrong, unlink the copied image.
     g_unlink(targetfile);

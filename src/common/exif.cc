@@ -5627,7 +5627,8 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid,
 
 // Write XMP sidecar file: returns TRUE in case of errors.
 gboolean dt_exif_xmp_write(const dt_imgid_t imgid,
-                           const char *filename)
+                           const char *filename,
+                           gboolean force_write)
 {
   // Refuse to write sidecar for non-existent image:
   char imgfname[PATH_MAX] = { 0 };
@@ -5641,7 +5642,7 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid,
     Exiv2::XmpData xmpData;
     std::string xmpPacket;
     char *checksum_old = NULL;
-    if(g_file_test(filename, G_FILE_TEST_EXISTS))
+    if(!force_write && g_file_test(filename, G_FILE_TEST_EXISTS))
     {
       // we want to avoid writing the sidecar file if it didn't change
       // to avoid issues when using the same images from different
