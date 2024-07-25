@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -90,7 +90,11 @@ void dt_exif_img_check_additional_tags(dt_image_t *img, const char *filename);
 int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char *path, const int compressed);
 
 /** write xmp sidecar file. */
-gboolean dt_exif_xmp_write(const dt_imgid_t imgid, const char *filename);
+/** if force_write is FALSE, the current contents of the sidecar file are compared against what
+    would be written, and the write is skipped if they are the same.  This preserves the sidecar
+    timestamp for the case where multiple computers share a drive and the crawler is used to
+    find new edits. */
+gboolean dt_exif_xmp_write(const dt_imgid_t imgid, const char *filename, gboolean force_write);
 
 /** write xmp packet inside an image. */
 gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid, const char *filename, void *metadata,
