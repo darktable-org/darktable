@@ -1076,7 +1076,7 @@ GtkWidget *dt_view_filter_get_sort_box(const dt_view_manager_t *vm)
 
 GtkWidget *dt_view_filter_get_count(const dt_view_manager_t *vm)
 {
-  if(vm->proxy.filter.module && vm->proxy.filter.get_count)
+  if(vm && vm->proxy.filter.module && vm->proxy.filter.get_count)
     return vm->proxy.filter.get_count(vm->proxy.filter.module);
   return NULL;
 }

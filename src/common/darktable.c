@@ -69,6 +69,7 @@
 #include "gui/gtk.h"
 #include "gui/guides.h"
 #include "gui/presets.h"
+#include "gui/splash.h"
 #include "gui/styles.h"
 #include "imageio/imageio_module.h"
 #include "libs/lib.h"
@@ -1393,6 +1394,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     gtk_init(&argc, &argv);
 
     darktable.themes = NULL;
+    darktable_splash_screen_create(NULL);
   }
 
   // detect cpu features and decide which codepaths to enable
@@ -1405,16 +1407,19 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_datetime_init();
 
   // initialize the database
+  darktable_splash_screen_set_progress(_("opening image library"));
   darktable.db = dt_database_init(dbfilename_from_command, load_data, init_gui);
   if(darktable.db == NULL)
   {
     dt_print(DT_DEBUG_ALWAYS, "ERROR : cannot open database\n");
+    darktable_splash_screen_destroy();
     return 1;
   }
   else if(!dt_database_get_lock_acquired(darktable.db))
   {
     if(init_gui)
     {
+      darktable_splash_screen_set_progress(_("forwarding image(s) to running instance"));
       gboolean image_loaded_elsewhere = FALSE;
 #ifndef MAC_INTEGRATION
       // send the images to the other instance via dbus
@@ -1443,6 +1448,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       if(!image_loaded_elsewhere) dt_database_show_error(darktable.db);
     }
     dt_print(DT_DEBUG_ALWAYS, "ERROR: can't acquire database lock, aborting.\n");
+    darktable_splash_screen_destroy();
     return 1;
   }
 
@@ -1466,6 +1472,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   GList *changed_xmp_files = NULL;
   if(init_gui && dt_conf_get_bool("run_crawler_on_start"))
   {
+    darktable_splash_screen_set_progress(_("checking for updated sidecar files"));
     changed_xmp_files = dt_control_crawler_run();
   }
 
@@ -1600,9 +1607,11 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   if(init_gui)
   {
+    darktable_splash_screen_set_progress(_("initializing GUI"));
     if(dt_gui_gtk_init(darktable.gui))
     {
       dt_print(DT_DEBUG_ALWAYS, "[dt_init] ERROR: can't init gui, aborting.\n");
+      darktable_splash_screen_destroy();
       return 1;
     }
     dt_bauhaus_init();
@@ -1618,6 +1627,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   if(!darktable.develop)
   {
     dt_print(DT_DEBUG_ALWAYS, "[dt_init] ERROR: can't init develop system, aborting.\n");
+    darktable_splash_screen_destroy();
     return 1;
   }
 
@@ -1634,6 +1644,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   if(dt_ioppr_check_so_iop_order(darktable.iop, darktable.iop_order_list))
   {
     dt_print(DT_DEBUG_ALWAYS, "[dt_init] ERROR: iop order looks bad, aborting.\n");
+    darktable_splash_screen_destroy();
     return 1;
   }
 
@@ -1662,6 +1673,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     // Initialize the camera control.  this is done late so that the
     // gui can react to the signal sent but before switching to
     // lighttable!
+    darktable_splash_screen_set_progress(_("initializing camera control"));
     darktable.camctl = dt_camctl_new();
 #endif
 
@@ -1673,6 +1685,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     // init the gui part of views
     dt_view_manager_gui_init(darktable.view_manager);
 
+    darktable_splash_screen_set_progress(_("loading shortcuts"));
     // Save the default shortcuts
     dt_shortcuts_save(".defaults", FALSE);
 
@@ -1711,6 +1724,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     if(argc == 2 && !_is_directory(argv[1]))
     {
       // If only one image is listed, attempt to load it in darkroom
+      darktable_splash_screen_set_progress(_("importing image"));
       (void)dt_load_from_string(argv[1], TRUE, NULL);
     }
     else if(argc >= 2)
@@ -1749,6 +1763,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     // images whose xmp files are newer than the db entry
     if(changed_xmp_files)
       dt_control_crawler_show_image_list(changed_xmp_files);
+    darktable_splash_screen_destroy();
   }
 
 #if defined(WIN32)
