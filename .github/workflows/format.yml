@@ -1,5 +1,10 @@
 name: Clang Format Checker
-on: [push]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
 jobs:
   clang-format-checking:
     runs-on: ubuntu-latest
