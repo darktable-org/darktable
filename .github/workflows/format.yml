@@ -10,8 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: RafikFarhad/clang-format-github-action@v3
+      - uses: jidicula/clang-format-action@v4
         with:
-          # use .clang-format for style
-          style: file
-          sources: "src/**/*.h,src/**/*.c"
+          check-path: 'src'
