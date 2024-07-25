@@ -16,6 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-void darktable_splash_screen_create();
+void darktable_splash_screen_create(GtkWindow *parent);
 void darktable_splash_screen_set_progress(const char *msg);
 void darktable_splash_screen_destroy();

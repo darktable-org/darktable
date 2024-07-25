@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "control/conf.h"
 #include "gui/gtk.h"
 #include "splash.h"
 #ifdef GDK_WINDOWING_QUARTZ
@@ -26,7 +27,7 @@ static GtkWidget *splash_screen = NULL;
 
 void darktable_splash_screen_create(GtkWindow *parent_window)
 {
-  if(splash_screen)
+  if(splash_screen || !dt_conf_get_bool("show_splash_screen"))
     return;
   GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT;
   splash_screen = gtk_message_dialog_new_with_markup(parent_window, flags, GTK_MESSAGE_INFO, GTK_BUTTONS_NONE,

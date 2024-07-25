@@ -101,6 +101,13 @@
     <longdescription>enables default meanings for additional buttons, modifiers or moves when used in combination with a base shortcut</longdescription>
   </dtconfig>
   <dtconfig prefs="misc" section="interface">
+    <name>show_splash_screen</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>show splash screen at startup</shortdescription>
+    <longdescription>display a small message dialog showing the progress of darktable's startup before the main window appears</longdescription>
+  </dtconfig>
+  <dtconfig prefs="misc" section="interface">
     <name>accel/load_defaults</name>
     <type>bool</type>
     <default>true</default>
@@ -956,7 +963,7 @@
   <dtconfig>
     <name>ui_last/preferences_dialog_height</name>
     <type>int</type>
-    <default>700</default>
+    <default>720</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
