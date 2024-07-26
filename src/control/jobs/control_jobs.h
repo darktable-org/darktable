@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -41,6 +41,10 @@ void dt_control_monochrome_images(const int32_t mode);
 gboolean dt_control_remove_images();
 void dt_control_move_images();
 void dt_control_copy_images();
+void dt_control_compress_history(GList *imgs);
+void dt_control_discard_history(GList *imgs);
+void dt_control_paste_history(GList *imgs);
+void dt_control_paste_parts_history(GList *imgs);
 void dt_control_set_local_copy_images();
 void dt_control_reset_local_copy_images();
 void dt_control_export(GList *imgid_list, int max_width, int max_height, int format_index, int storage_index,
@@ -50,8 +54,6 @@ void dt_control_export(GList *imgid_list, int max_width, int max_height, int for
                        dt_iop_color_intent_t icc_intent, const gchar *metadata_export);
 void dt_control_merge_hdr();
 void dt_control_import(GList *imgs, const char *datetime_override, const gboolean inplace);
-void dt_control_seed_denoise();
-void dt_control_denoise();
 void dt_control_refresh_exif();
 
 G_END_DECLS

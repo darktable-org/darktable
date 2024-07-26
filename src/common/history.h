@@ -94,6 +94,7 @@ void dt_history_delete_on_image_ext(const dt_imgid_t imgid,
 /** copy history from imgid and pasts on selected images, merge or overwrite... */
 gboolean dt_history_copy(const dt_imgid_t imgid);
 gboolean dt_history_copy_parts(const dt_imgid_t imgid);
+gboolean dt_history_paste(const dt_imgid_t imgid, gboolean merge); // requires prior setup of copied history
 gboolean dt_history_paste_on_list(const GList *list,
                                   gboolean undo);
 gboolean dt_history_paste_parts_on_list(const GList *list,
@@ -114,12 +115,14 @@ gboolean dt_history_load_and_apply(const dt_imgid_t imgid,
                                    const gboolean history_only);
 
 /** delete historystack of selected images */
+gboolean dt_history_delete(const dt_imgid_t imgid,
+                           const gboolean undo);
 gboolean dt_history_delete_on_list(const GList *list,
                                    const gboolean undo);
 
 /** compress history stack */
-int dt_history_compress_on_list(const GList *imgs);
-void dt_history_compress_on_image(const dt_imgid_t imgid);
+gboolean dt_history_compress(const dt_imgid_t imgid); // syncs to sidecar, says whether compress was successful
+void dt_history_compress_on_image(const dt_imgid_t imgid); // database only
 
 /** truncate history stack */
 void dt_history_truncate_on_image(const dt_imgid_t imgid,

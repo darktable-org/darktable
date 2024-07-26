@@ -202,18 +202,9 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
 static void compress_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
-  if(!imgs) return;  // do nothing if no images to be acted on
-
-  const int missing = dt_history_compress_on_list(imgs);
-
-  dt_collection_update_query(darktable.collection,
-                             DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, imgs);
-  dt_control_queue_redraw_center();
-  if(missing)
-    dt_control_log(ngettext("no history compression of %d image",
-                            "no history compression of %d images", missing), missing);
+  if(imgs)
+    dt_control_compress_history(imgs);
 }
-
 
 static void copy_button_clicked(GtkWidget *widget, gpointer user_data)
 {
@@ -249,23 +240,14 @@ static void discard_button_clicked(GtkWidget *widget, gpointer user_data)
   if(!imgs) return;
 
   const int number = g_list_length((GList *)imgs);
-  const gboolean ask = dt_conf_get_bool("ask_before_discard");
-  if(!ask
+
+  if(!dt_conf_get_bool("ask_before_discard")
      || dt_gui_show_yes_no_dialog(_("delete images' history?"),
           ngettext("do you really want to clear history of %d selected image?",
                    "do you really want to clear history of %d selected images?", number),
                                   number))
   {
-    if(ask && number > 10)
-    {
-      // ensure that the dialog window gets hidden on click
-      dt_control_queue_redraw_center();
-      dt_gui_process_events();
-    }
-    dt_history_delete_on_list(imgs, TRUE);
-    dt_collection_update_query(darktable.collection,
-                               DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
-                               imgs); // frees imgs
+    dt_control_discard_history(imgs);
     dt_control_queue_redraw_center();
   }
   else
@@ -282,26 +264,16 @@ static void paste_button_clicked(GtkWidget *widget, gpointer user_data)
 
   const int current_mode = dt_bauhaus_combobox_get(d->pastemode);
 
-  /* get past mode and store, overwrite / merge */
+  /* get paste mode and store, overwrite / merge */
   const int mode = d->is_full_copy
     ? DT_COPY_HISTORY_OVERWRITE
     : current_mode;
 
   dt_conf_set_int("plugins/lighttable/copy_history/pastemode", mode);
 
-  /* copy history from previously copied image and past onto selection */
+  /* copy history from previously copied image and paste onto selection */
   GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
-
-  if(dt_history_paste_on_list(imgs, TRUE))
-  {
-    dt_collection_update_query(darktable.collection,
-                               DT_COLLECTION_CHANGE_RELOAD,
-                               DT_COLLECTION_PROP_UNDEF, imgs);
-  }
-  else
-  {
-    g_list_free(imgs);
-  }
+  dt_control_paste_history(imgs);
 
   // restore mode
   dt_conf_set_int("plugins/lighttable/copy_history/pastemode", current_mode);
@@ -309,19 +281,9 @@ static void paste_button_clicked(GtkWidget *widget, gpointer user_data)
 
 static void paste_parts_button_clicked(GtkWidget *widget, gpointer user_data)
 {
-  /* copy history from previously copied image and past onto selection */
+  /* copy history from previously copied image and paste onto selection */
   GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
-
-  if(dt_history_paste_parts_on_list(imgs, TRUE))
-  {
-    dt_collection_update_query(darktable.collection,
-                               DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
-                               imgs); // frees imgs
-  }
-  else
-  {
-    g_list_free(imgs);
-  }
+  dt_control_paste_parts_history(imgs);
 }
 
 static void pastemode_combobox_changed(GtkWidget *widget, gpointer user_data)
