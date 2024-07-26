@@ -2717,7 +2717,6 @@ static void _accel_copy_parts(dt_action_t *action)
 static void _accel_paste(dt_action_t *action)
 {
   GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
-
   dt_dev_undo_start_record(darktable.develop);
   dt_control_paste_history(imgs);
   dt_dev_undo_end_record(darktable.develop);
@@ -2726,7 +2725,6 @@ static void _accel_paste(dt_action_t *action)
 static void _accel_paste_parts(dt_action_t *action)
 {
   GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
-
   dt_dev_undo_start_record(darktable.develop);
   dt_control_paste_parts_history(imgs);
   dt_dev_undo_end_record(darktable.develop);
