@@ -1367,86 +1367,75 @@ void dt_history_truncate_on_image(const dt_imgid_t imgid,
                                 DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgid);
 }
 
-int dt_history_compress_on_list(const GList *imgs)
+gboolean dt_history_compress(const dt_imgid_t imgid)
 {
-  int uncompressed=0;
-
-  // Get the list of selected images
-  for(const GList *l = imgs; l; l = g_list_next(l))
+  dt_lock_image(imgid);
+  const int test = dt_history_end_attop(imgid);
+  if(test == 1) // we do a compression and we know for sure history_end is at the top!
   {
-    const dt_imgid_t imgid = GPOINTER_TO_INT(l->data);
-    dt_lock_image(imgid);
-    const int test = dt_history_end_attop(imgid);
-    if(test == 1) // we do a compression and we know for sure history_end is at the top!
+    dt_history_compress_on_image(imgid);
+
+    // now the modules are in right order but need renumbering to remove leaks
+    int max=0;    // the maximum num in main_history for an image
+    int size=0;   // the number of items in main_history for an image
+    int done=0;   // used for renumbering index
+
+    sqlite3_stmt *stmt2;
+
+    // get highest num in history
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT MAX(num) FROM main.history WHERE imgid=?1", -1, &stmt2, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, imgid);
+    if(sqlite3_step(stmt2) == SQLITE_ROW)
+      max = sqlite3_column_int(stmt2, 0);
+    sqlite3_finalize(stmt2);
+
+    // get number of items in main.history
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT COUNT(*) FROM main.history WHERE imgid = ?1", -1, &stmt2, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, imgid);
+    if(sqlite3_step(stmt2) == SQLITE_ROW)
+      size = sqlite3_column_int(stmt2, 0);
+    sqlite3_finalize(stmt2);
+
+    if((size>0) && (max>0))
     {
-      dt_history_compress_on_image(imgid);
-
-      // now the modules are in right order but need renumbering to remove leaks
-      int max=0;    // the maximum num in main_history for an image
-      int size=0;   // the number of items in main_history for an image
-      int done=0;   // used for renumbering index
-
-      sqlite3_stmt *stmt2;
-
-      // get highest num in history
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-        "SELECT MAX(num) FROM main.history WHERE imgid=?1", -1, &stmt2, NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, imgid);
-      if(sqlite3_step(stmt2) == SQLITE_ROW)
-        max = sqlite3_column_int(stmt2, 0);
-      sqlite3_finalize(stmt2);
-
-      // get number of items in main.history
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-        "SELECT COUNT(*) FROM main.history WHERE imgid = ?1", -1, &stmt2, NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, imgid);
-      if(sqlite3_step(stmt2) == SQLITE_ROW)
-        size = sqlite3_column_int(stmt2, 0);
-      sqlite3_finalize(stmt2);
-
-      if((size>0) && (max>0))
+      for(int index=0;index<(max+1);index++)
       {
-        for(int index=0;index<(max+1);index++)
+        sqlite3_stmt *stmt3;
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                    "SELECT num FROM main.history WHERE imgid=?1 AND num=?2", -1, &stmt3, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt3, 1, imgid);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt3, 2, index);
+        if(sqlite3_step(stmt3) == SQLITE_ROW)
         {
-          sqlite3_stmt *stmt3;
-          DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-            "SELECT num FROM main.history WHERE imgid=?1 AND num=?2", -1, &stmt3, NULL);
-          DT_DEBUG_SQLITE3_BIND_INT(stmt3, 1, imgid);
-          DT_DEBUG_SQLITE3_BIND_INT(stmt3, 2, index);
-          if(sqlite3_step(stmt3) == SQLITE_ROW)
-          {
-            sqlite3_stmt *stmt4;
-            // step by step set the correct num
-            DT_DEBUG_SQLITE3_PREPARE_V2
-              (dt_database_get(darktable.db),
-               "UPDATE main.history"
-               " SET num = ?3"
-               " WHERE imgid = ?1 AND num = ?2",
-               -1, &stmt4, NULL);
-            DT_DEBUG_SQLITE3_BIND_INT(stmt4, 1, imgid);
-            DT_DEBUG_SQLITE3_BIND_INT(stmt4, 2, index);
-            DT_DEBUG_SQLITE3_BIND_INT(stmt4, 3, done);
-            sqlite3_step(stmt4);
-            sqlite3_finalize(stmt4);
+          sqlite3_stmt *stmt4;
+          // step by step set the correct num
+          DT_DEBUG_SQLITE3_PREPARE_V2
+            (dt_database_get(darktable.db),
+             "UPDATE main.history"
+             " SET num = ?3"
+             " WHERE imgid = ?1 AND num = ?2",
+             -1, &stmt4, NULL);
+          DT_DEBUG_SQLITE3_BIND_INT(stmt4, 1, imgid);
+          DT_DEBUG_SQLITE3_BIND_INT(stmt4, 2, index);
+          DT_DEBUG_SQLITE3_BIND_INT(stmt4, 3, done);
+          sqlite3_step(stmt4);
+          sqlite3_finalize(stmt4);
 
-            done++;
-          }
-          sqlite3_finalize(stmt3);
+          done++;
         }
+        sqlite3_finalize(stmt3);
       }
       // update history end
       dt_image_set_history_end(imgid, done);
 
       dt_image_synch_xmp(imgid);
     }
-    if(test == 0) // no compression as history_end is right in the middle of history
-      uncompressed++;
-
-    dt_unlock_image(imgid);
-    dt_history_hash_write_from_history(imgid, DT_HISTORY_HASH_CURRENT);
   }
-
-  return uncompressed;
+  dt_unlock_image(imgid);
+  dt_history_hash_write_from_history(imgid, DT_HISTORY_HASH_CURRENT);
+  return (test == 1);
 }
 
 gboolean dt_history_check_module_exists(const dt_imgid_t imgid,
@@ -1919,6 +1908,16 @@ gboolean dt_history_copy_parts(const dt_imgid_t imgid)
     return FALSE;
 }
 
+gboolean dt_history_paste(const dt_imgid_t imgid, const gboolean merge)
+{
+  dt_history_copy_and_paste_on_image(darktable.view_manager->copy_paste.copied_imageid,
+                                     imgid, merge,
+                                     darktable.view_manager->copy_paste.selops,
+                                     darktable.view_manager->copy_paste.copy_iop_order,
+                                     darktable.view_manager->copy_paste.full_copy);
+  return TRUE;
+}
+
 gboolean dt_history_paste_on_list(const GList *list,
                                   const gboolean undo)
 {
@@ -1937,11 +1936,7 @@ gboolean dt_history_paste_on_list(const GList *list,
   for(GList *l = (GList *)list; l; l = g_list_next(l))
   {
     const int dest = GPOINTER_TO_INT(l->data);
-    dt_history_copy_and_paste_on_image(darktable.view_manager->copy_paste.copied_imageid,
-                                       dest, merge,
-                                       darktable.view_manager->copy_paste.selops,
-                                       darktable.view_manager->copy_paste.copy_iop_order,
-                                       darktable.view_manager->copy_paste.full_copy);
+    dt_history_paste(dest, merge);
   }
 
   if(undo)
@@ -1991,11 +1986,7 @@ gboolean dt_history_paste_parts_on_list(const GList *list,
   for(const GList *l = l_copy; l; l = g_list_next(l))
   {
     const int dest = GPOINTER_TO_INT(l->data);
-    dt_history_copy_and_paste_on_image(darktable.view_manager->copy_paste.copied_imageid,
-                                       dest, merge,
-                                       darktable.view_manager->copy_paste.selops,
-                                       darktable.view_manager->copy_paste.copy_iop_order,
-                                       darktable.view_manager->copy_paste.full_copy);
+    dt_history_paste(dest, merge);
   }
 
   if(undo)
@@ -2014,17 +2005,10 @@ gboolean dt_history_paste_parts_on_list(const GList *list,
   return TRUE;
 }
 
-gboolean dt_history_delete_on_list(const GList *list,
-                                   const gboolean undo)
+gboolean dt_history_delete(const dt_imgid_t imgid, const gboolean undo)
 {
-  if(!list)  // do we have any images on which to operate?
-    return FALSE;
-
-  if(undo) dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
-
-  for(GList *l = (GList *)list; l; l = g_list_next(l))
+  if(undo)
   {
-    const dt_imgid_t imgid = GPOINTER_TO_INT(l->data);
     dt_undo_lt_history_t *hist = dt_history_snapshot_item_init();
 
     hist->imgid = imgid;
@@ -2037,12 +2021,32 @@ gboolean dt_history_delete_on_list(const GList *list,
     dt_undo_record(darktable.undo, NULL, DT_UNDO_LT_HISTORY,
                    (dt_undo_data_t)hist, dt_history_snapshot_undo_pop,
                    dt_history_snapshot_undo_lt_history_data_free);
+  }
+  else
+  {
+    dt_history_delete_on_image_ext(imgid, FALSE, TRUE);
+  }
 
-    /* update the aspect ratio if the current sorting is based on
-       aspect ratio, otherwise the aspect ratio will be recalculated
-       when the mimpap will be recreated */
-    if(darktable.collection->params.sorts[DT_COLLECTION_SORT_ASPECT_RATIO])
-      dt_image_set_aspect_ratio(imgid, FALSE);
+  /* update the aspect ratio if the current sorting is based on
+     aspect ratio, otherwise the aspect ratio will be recalculated
+     when the mimpap will be recreated */
+  if(darktable.collection->params.sorts[DT_COLLECTION_SORT_ASPECT_RATIO])
+    dt_image_set_aspect_ratio(imgid, FALSE);
+  return TRUE;
+}
+
+gboolean dt_history_delete_on_list(const GList *list,
+                                   const gboolean undo)
+{
+  if(!list)  // do we have any images on which to operate?
+    return FALSE;
+
+  if(undo) dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
+
+  for(GList *l = (GList *)list; l; l = g_list_next(l))
+  {
+    const dt_imgid_t imgid = GPOINTER_TO_INT(l->data);
+    dt_history_delete(imgid, undo);
   }
 
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);

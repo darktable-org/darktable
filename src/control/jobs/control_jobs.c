@@ -42,6 +42,7 @@
 #include "imageio/imageio_rawspeed.h"
 
 #include "gui/gtk.h"
+#include "gui/hist_dialog.h"
 
 #include <gio/gio.h>
 #include <glib.h>
@@ -1455,7 +1456,7 @@ static int32_t dt_control_refresh_exif_run(dt_job_t *job)
   GList *t = params->index;
   GList *imgs = g_list_copy(t);
   const guint total = g_list_length(t);
-  double fraction = 0.0f;
+  double fraction = 0.0;
   char message[512] = { 0 };
   snprintf(message, sizeof(message), ngettext("refreshing info for %d image",
                                               "refreshing info for %d images",
@@ -1504,6 +1505,109 @@ static int32_t dt_control_refresh_exif_run(dt_job_t *job)
   return 0;
 }
 
+static int32_t _control_paste_history_job_run(dt_job_t *job)
+{
+  dt_control_image_enumerator_t *params =
+    (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
+  GList *t = params->data;
+  const guint total = g_list_length(t);
+  double fraction = 0.0;
+  char message[512] = { 0 };
+  snprintf(message, sizeof(message), ngettext("pasting history to %d image",
+                                              "pasting history to %d images",
+                                              total), total);
+  const int mode = dt_conf_get_int("plugins/lighttable/copy_history/pastemode");
+  const gboolean merge = (mode == 0) ? TRUE : FALSE;
+
+  dt_control_job_set_progress_message(job, message);
+  dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
+  for( ; t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED; t = g_list_next(t))
+  {
+    const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
+    dt_history_paste(imgid, merge);
+
+    fraction += 1.0 / total;
+    dt_control_job_set_progress(job, fraction);
+  }
+  dt_undo_end_group(darktable.undo);
+
+  dt_collection_update_query(darktable.collection,
+                             DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
+                             (GList*)params->data); // frees list of images
+  params->data = NULL;
+
+  // In darkroom and if there is a copy of the iop-order we need to
+  // rebuild the pipe to take into account the possible new order of
+  // modules.
+  if(dt_view_get_current() == DT_VIEW_DARKROOM)
+  {
+    dt_dev_pixelpipe_rebuild(darktable.develop);
+  }
+  return 0;
+}
+
+static int32_t _control_compress_history_job_run(dt_job_t *job)
+{
+  dt_control_image_enumerator_t *params =
+    (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
+  GList *t = params->data;
+  const guint total = g_list_length(t);
+  double fraction = 0.0;
+  int missing = 0;
+  char message[512] = { 0 };
+  snprintf(message, sizeof(message), ngettext("compressing history for %d image",
+                                              "compressing history for %d images",
+                                              total), total);
+  dt_control_job_set_progress_message(job, message);
+  for( ; t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED; t = g_list_next(t))
+  {
+    if(!dt_history_compress(GPOINTER_TO_INT(t->data)))
+      missing++;
+    fraction += 1.0 / total;
+    dt_control_job_set_progress(job, fraction);
+  }
+
+  dt_collection_update_query(darktable.collection,
+                             DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
+                             (GList*)params->data); // frees list of images
+  params->data = NULL;
+  dt_control_queue_redraw_center();
+  if(missing)
+    dt_control_log(ngettext("no history compression of %d image",
+                            "no history compression of %d images", missing), missing);
+  return 0;
+}
+
+static int32_t _control_discard_history_job_run(dt_job_t *job)
+{
+  dt_control_image_enumerator_t *params =
+    (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
+  GList *t = params->data;
+  const guint total = g_list_length(t);
+  double fraction = 0.0;
+  char message[512] = { 0 };
+  snprintf(message, sizeof(message), ngettext("discarding history for %d image",
+                                              "discarding history for %d images",
+                                              total), total);
+  dt_control_job_set_progress_message(job, message);
+  dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
+  for( ; t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED; t = g_list_next(t))
+  {
+    const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
+    dt_history_delete(imgid, TRUE);
+    fraction += 1.0 / total;
+    dt_control_job_set_progress(job, fraction);
+  }
+
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  dt_undo_end_group(darktable.undo);
+  dt_collection_update_query(darktable.collection,
+                             DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
+                             (GList*)params->data); // frees list of images
+  params->data = NULL;
+  dt_control_queue_redraw_center();
+  return 0;
+}
 
 static int32_t dt_control_export_job_run(dt_job_t *job)
 {
@@ -2003,6 +2107,60 @@ void dt_control_refresh_exif()
      dt_control_generic_images_job_create(&dt_control_refresh_exif_run,
                                           N_("refresh EXIF"), 0,
                                           NULL, PROGRESS_CANCELLABLE, FALSE));
+}
+
+void dt_control_paste_history(GList *imgs)
+{
+  if(!dt_is_valid_imgid(darktable.view_manager->copy_paste.copied_imageid))
+  {
+    g_list_free(imgs);
+    return;
+  }
+
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
+                     dt_control_generic_images_job_create(&_control_paste_history_job_run,
+                                                          N_("paste history"), 0,
+                                                          imgs, PROGRESS_CANCELLABLE, FALSE));
+}
+
+void dt_control_paste_parts_history(GList *imgs)
+{
+  if(!dt_is_valid_imgid(darktable.view_manager->copy_paste.copied_imageid))
+  {
+    g_list_free(imgs);
+    return;
+  }
+
+  // we launch the dialog
+  const int res = dt_gui_hist_dialog_new
+    (&(darktable.view_manager->copy_paste),
+     darktable.view_manager->copy_paste.copied_imageid, FALSE);
+
+  if(res == GTK_RESPONSE_OK)
+  {
+    dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
+                       dt_control_generic_images_job_create(&_control_paste_history_job_run,
+                                                            N_("paste history"), 0,
+                                                            imgs, PROGRESS_CANCELLABLE, FALSE));
+  }
+  else
+    g_list_free(imgs);
+}
+
+void dt_control_compress_history(GList *imgs)
+{
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
+                     dt_control_generic_images_job_create(&_control_compress_history_job_run,
+                                                          N_("compress history"), 0,
+                                                          imgs, PROGRESS_CANCELLABLE, FALSE));
+}
+
+void dt_control_discard_history(GList *imgs)
+{
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
+                     dt_control_generic_images_job_create(&_control_discard_history_job_run,
+                                                          N_("compress history"), 0,
+                                                          imgs, PROGRESS_CANCELLABLE, FALSE));
 }
 
 static dt_control_image_enumerator_t *dt_control_export_alloc()
