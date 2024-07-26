@@ -314,10 +314,6 @@ int dt_opencl_lock_device(const int pipetype);
 /** done with your command queue. */
 void dt_opencl_unlock_device(const int dev);
 
-/** calculates md5sums for a list of CL include files. */
-void dt_opencl_md5sum(const char **files,
-                      char **md5sums);
-
 /** inits a kernel. returns the index or -1 if fail. */
 int dt_opencl_create_kernel(const int program,
                             const char *name);
@@ -681,7 +677,7 @@ static inline gboolean dt_opencl_finish_sync_pipe(const int devid,
 {
   return FALSE;
 }
-static inline int dt_opencl_lock_device(const int dev)
+static inline int dt_opencl_lock_device(const int pipetype)
 {
   return -1;
 }
