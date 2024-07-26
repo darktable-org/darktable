@@ -497,8 +497,8 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc,
     {
       // fallback, but this shouldn't happen
       dt_print(DT_DEBUG_ALWAYS,
-               "[colorpicker] unknown colorspace conversion from %d to %d\n",
-               image_cst, picker_cst);
+               "[colorpicker] unknown colorspace conversion from %s to %s\n",
+               dt_iop_colorspace_to_name(image_cst), dt_iop_colorspace_to_name(picker_cst));
       _color_picker_work_4ch(source, roi, box, pick, NULL, _color_picker_rgb_or_lab, 100);
     }
 
