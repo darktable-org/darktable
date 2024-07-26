@@ -1918,93 +1918,6 @@ gboolean dt_history_paste(const dt_imgid_t imgid, const gboolean merge)
   return TRUE;
 }
 
-gboolean dt_history_paste_on_list(const GList *list,
-                                  const gboolean undo)
-{
-  if(!dt_is_valid_imgid(darktable.view_manager->copy_paste.copied_imageid))
-    return FALSE;
-
-  if(!list) // do we have any images to receive the pasted history?
-    return FALSE;
-
-  const int mode = dt_conf_get_int("plugins/lighttable/copy_history/pastemode");
-  const gboolean merge = (mode == 0) ? TRUE : FALSE;
-
-  if(undo)
-    dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
-
-  for(GList *l = (GList *)list; l; l = g_list_next(l))
-  {
-    const int dest = GPOINTER_TO_INT(l->data);
-    dt_history_paste(dest, merge);
-  }
-
-  if(undo)
-    dt_undo_end_group(darktable.undo);
-
-  // In darkroom and if there is a copy of the iop-order we need to rebuild the pipe
-  // to take into account the possible new order of modules.
-  if(dt_view_get_current() == DT_VIEW_DARKROOM)
-  {
-    dt_dev_pixelpipe_rebuild(darktable.develop);
-  }
-
-  return TRUE;
-}
-
-gboolean dt_history_paste_parts_on_list(const GList *list,
-                                        const gboolean undo)
-{
-  if(!dt_is_valid_imgid(darktable.view_manager->copy_paste.copied_imageid))
-    return FALSE;
-
-  if(!list) // do we have any images to receive the pasted history?
-    return FALSE;
-
-  const int mode = dt_conf_get_int("plugins/lighttable/copy_history/pastemode");
-  const gboolean merge = (mode == 0) ? TRUE : FALSE;
-
-  // at the time the dialog is started, some signals are sent and this in turn call
-  // back dt_view_get_images_to_act_on() which free list and create a new one.
-
-  GList *l_copy = g_list_copy((GList *)list);
-
-  // we launch the dialog
-  const int res = dt_gui_hist_dialog_new
-    (&(darktable.view_manager->copy_paste),
-     darktable.view_manager->copy_paste.copied_imageid, FALSE);
-
-  if(res != GTK_RESPONSE_OK)
-  {
-    g_list_free(l_copy);
-    return FALSE;
-  }
-
-  if(undo)
-    dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
-
-  for(const GList *l = l_copy; l; l = g_list_next(l))
-  {
-    const int dest = GPOINTER_TO_INT(l->data);
-    dt_history_paste(dest, merge);
-  }
-
-  if(undo)
-    dt_undo_end_group(darktable.undo);
-
-  g_list_free(l_copy);
-
-  // In darkroom and if there is a copy of the iop-order we need to
-  // rebuild the pipe to take into account the possible new order of
-  // modules.
-  if(dt_view_get_current() == DT_VIEW_DARKROOM)
-  {
-    dt_dev_pixelpipe_rebuild(darktable.develop);
-  }
-
-  return TRUE;
-}
-
 gboolean dt_history_delete(const dt_imgid_t imgid, const gboolean undo)
 {
   if(undo)
@@ -2032,26 +1945,6 @@ gboolean dt_history_delete(const dt_imgid_t imgid, const gboolean undo)
      when the mimpap will be recreated */
   if(darktable.collection->params.sorts[DT_COLLECTION_SORT_ASPECT_RATIO])
     dt_image_set_aspect_ratio(imgid, FALSE);
-  return TRUE;
-}
-
-gboolean dt_history_delete_on_list(const GList *list,
-                                   const gboolean undo)
-{
-  if(!list)  // do we have any images on which to operate?
-    return FALSE;
-
-  if(undo) dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
-
-  for(GList *l = (GList *)list; l; l = g_list_next(l))
-  {
-    const dt_imgid_t imgid = GPOINTER_TO_INT(l->data);
-    dt_history_delete(imgid, undo);
-  }
-
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
-
-  if(undo) dt_undo_end_group(darktable.undo);
   return TRUE;
 }
 
