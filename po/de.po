@@ -9572,11 +9572,10 @@ msgstr ""
 
 #: ../src/develop/masks/path.c:3360
 msgid ""
-"<b>node curvature</b>: drag, <b>move single handle</b>: shift+drag\n"
+"<b>node curvature</b>: drag\n"
 "<b>reset curvature</b>: right-click"
 msgstr ""
-"<b>Knoten Krümmung</b>: Ziehen, <b>Einzelnen Kontrollpunkt bewegen</b>: "
-"Shift+Ziehen,\n"
+"<b>Knoten Krümmung</b>: ziehen\n"
 "<b>Krümmung zurücksetzen</b>: Rechtsklick"
 
 #: ../src/develop/masks/path.c:3365
