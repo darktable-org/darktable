@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2022-2023 darktable developers.
+    Copyright (C) 2022-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -35,6 +35,11 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img,
                                         const char *filename,
                                         dt_mipmap_buffer_t *mbuf)
 {
+  // We shouldn't expect QOI images in files with an extension other than .qoi
+  char *ext = g_strrstr(filename, ".");
+  if(ext && g_ascii_strcasecmp(ext, ".qoi"))
+    return DT_IMAGEIO_LOAD_FAILED;
+
   FILE *f = g_fopen(filename, "rb");
   if(!f)
   {
@@ -80,20 +85,13 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img,
   }
   fclose(f);
 
-// void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels);
   qoi_desc desc;
   uint8_t *int_RGBA_buf = qoi_decode(read_buffer, (int)filesize, &desc, 4);
-
-  char *ext = g_strrstr(filename, ".");
 
   if(!int_RGBA_buf)
   {
     g_free(read_buffer);
-    // Complain on failure only if the file extension matches the loader expectation
-    if(ext && (g_ascii_strcasecmp(ext, ".qoi") == 0))
-    {
-      dt_print(DT_DEBUG_ALWAYS,"[qoi_open] failed to decode file: %s\n", filename);
-    }
+    dt_print(DT_DEBUG_ALWAYS,"[qoi_open] failed to decode file: %s\n", filename);
     return DT_IMAGEIO_LOAD_FAILED;
   }
 
