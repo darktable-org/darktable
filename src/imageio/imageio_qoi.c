@@ -110,16 +110,12 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img,
     return DT_IMAGEIO_CACHE_FULL;
   }
 
-  uint8_t intval;
-  float floatval;
   const size_t npixels = (size_t)desc.width * desc.height;
 
-  DT_OMP_PRAGMA(parallel for private(intval, floatval))
+  DT_OMP_FOR()
   for(size_t index = 0; index < npixels * 4; index++)
   {
-    intval = *(int_RGBA_buf + index);
-    floatval = intval / 255.f;
-    *(mipbuf + index) = floatval;
+    mipbuf[index] = int_RGBA_buf[index] / 255.f;
   }
 
   img->buf_dsc.cst = IOP_CS_RGB;
