@@ -780,7 +780,6 @@ static inline void dt_Lab_2_LCH(const dt_aligned_pixel_t Lab, dt_aligned_pixel_t
   LCH[2] = var_H;
 }
 
-
 DT_OMP_DECLARE_SIMD()
 static inline void dt_LCH_2_Lab(const dt_aligned_pixel_t LCH, dt_aligned_pixel_t Lab)
 {
@@ -885,6 +884,19 @@ static inline void dt_JzAzBz_2_JzCzhz(const dt_aligned_pixel_t JzAzBz, dt_aligne
   JzCzhz[1] = hypotf(JzAzBz[1], JzAzBz[2]);
   JzCzhz[2] = var_H >= 0.0f ? var_H : 1.0f + var_H;
 }
+
+DT_OMP_DECLARE_SIMD()
+static inline void dt_Lab_2_JzCzhz(const dt_aligned_pixel_t Lab, dt_aligned_pixel_t JzCzhz)
+{
+  dt_aligned_pixel_t XYZ;
+  dt_Lab_to_XYZ(Lab, XYZ);
+
+  dt_aligned_pixel_t JzAzBz;
+  dt_XYZ_2_JzAzBz(XYZ, JzAzBz);
+
+  dt_JzAzBz_2_JzCzhz(JzAzBz, JzCzhz);
+}
+
 
 DT_OMP_DECLARE_SIMD(aligned(JzCzhz, JzAzBz: 16))
 static inline void dt_JzCzhz_2_JzAzBz(const dt_aligned_pixel_t JzCzhz, dt_aligned_pixel_t JzAzBz)
