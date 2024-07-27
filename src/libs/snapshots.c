@@ -98,6 +98,13 @@ const char *name(dt_lib_module_t *self)
   return _("snapshots");
 }
 
+const char *description(dt_lib_module_t *self)
+{
+  return _("remember a specific edit state and\n"
+           "allow comparing it against another\n"
+           "or returning to that version");
+}
+
 dt_view_type_flags_t views(dt_lib_module_t *self)
 {
   return DT_VIEW_DARKROOM;
