@@ -55,6 +55,8 @@ DEFAULT(gboolean, expandable, struct dt_lib_module_t *self);
 /** constructor */
 OPTIONAL(void, init, struct dt_lib_module_t *self);
 /** callback methods for gui. */
+/** get a description string to be used as tooltip on the module header */
+OPTIONAL(const char*, description, struct dt_lib_module_t *self);
 /** construct widget. */
 REQUIRED(void, gui_init, struct dt_lib_module_t *self);
 /** destroy widget. */

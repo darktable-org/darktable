@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2015-2023 darktable developers.
+    Copyright (C) 2015-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -58,6 +58,12 @@ typedef struct dt_lib_duplicate_t
 const char *name(dt_lib_module_t *self)
 {
   return _("duplicate manager");
+}
+
+const char *description(dt_lib_module_t *self)
+{
+  return _("create/rename/remove multiple\n"
+           "edits of the current image");
 }
 
 dt_view_type_flags_t views(dt_lib_module_t *self)
