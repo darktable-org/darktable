@@ -120,15 +120,6 @@ typedef enum dt_masks_source_pos_type_t
   DT_MASKS_SOURCE_POS_ABSOLUTE = 2
 } dt_masks_source_pos_type_t;
 
-/* selected Bézier control point for path*/
-typedef enum dt_masks_path_ctrl_t
-{
-  DT_MASKS_PATH_CRTL_NONE = -1,
-  DT_MASKS_PATH_CTRL1 = 1,
-  DT_MASKS_PATH_CTRL2 = 2
-
-} dt_masks_path_ctrl_t;
-
 /** structure used to store 1 point for a circle */
 typedef struct dt_masks_point_circle_t
 {
@@ -376,7 +367,6 @@ typedef struct dt_masks_form_gui_t
   int point_selected;
   int point_edited;
   int feather_selected;
-  dt_masks_path_ctrl_t bezier_ctrl; // For paths, this selects a Bézier control point.
   int seg_selected;
   int point_border_selected;
   int source_pos_type;
@@ -388,7 +378,6 @@ typedef struct dt_masks_form_gui_t
   gboolean gradient_toggling;
   int point_dragging;
   int feather_dragging;
-  gboolean bezier_single;  // User drags a single control point.  
   int seg_dragging;
   int point_border_dragging;
 
@@ -839,15 +828,6 @@ float dt_masks_dynbuf_get(dt_masks_dynbuf_t *a, const int offset)
 }
 
 static inline
-float dt_masks_dynbuf_get_absolute(dt_masks_dynbuf_t *a, const int position)
-{
-  assert(a != NULL);
-  assert(position >= 0);
-  assert((long)a->pos > position);
-  return (a->buffer[position]);
-}
-
-static inline
 void dt_masks_dynbuf_set(dt_masks_dynbuf_t *a, const int offset, const float value)
 {
   assert(a != NULL);
@@ -855,15 +835,6 @@ void dt_masks_dynbuf_set(dt_masks_dynbuf_t *a, const int offset, const float val
   assert(offset < 0);
   assert((long)a->pos + offset >= 0);
   a->buffer[a->pos + offset] = value;
-}
-
-static inline
-void dt_masks_dynbuf_set_absolute(dt_masks_dynbuf_t *a, const int position, const float value)
-{
-  assert(a != NULL);
-  assert(position >= 0);
-  assert((long)a->pos > position);
-  a->buffer[position] = value;
 }
 
 static inline
