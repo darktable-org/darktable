@@ -771,7 +771,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   (cl->dlocl->symbols->dt_clGetDeviceInfo)
     (devid, CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong),
      &(cl->dev[dev].max_global_mem), NULL);
-  if(cl->dev[dev].max_global_mem < (uint64_t)512ul * 1024ul * 1024ul)
+  if(cl->dev[dev].max_global_mem < (uint64_t)800ul * 1024ul * 1024ul)
   {
     dt_print_nts(DT_DEBUG_OPENCL,
                  "   *** insufficient global memory (%" PRIu64 "MB) ***\n",
@@ -3180,6 +3180,10 @@ void *dt_opencl_alloc_device(const int devid,
   if(!_cldev_running(devid))
     return NULL;
 
+  dt_opencl_t *cl = darktable.opencl;
+  if(cl->dev[devid].max_image_width < width || cl->dev[devid].max_image_height < height)
+    return NULL;
+
   cl_int err = CL_SUCCESS;
   cl_image_format fmt;
   // guess pixel format from bytes per pixel
@@ -3197,8 +3201,8 @@ void *dt_opencl_alloc_device(const int devid,
   const cl_image_desc desc = (cl_image_desc)
         {CL_MEM_OBJECT_IMAGE2D, width, height, 0, 0, 0, 0, 0, 0, NULL};
 
-  cl_mem dev = (darktable.opencl->dlocl->symbols->dt_clCreateImage)
-    (darktable.opencl->dev[devid].context, CL_MEM_READ_WRITE, &fmt, &desc, NULL, &err);
+  cl_mem dev = (cl->dlocl->symbols->dt_clCreateImage)
+    (cl->dev[devid].context, CL_MEM_READ_WRITE, &fmt, &desc, NULL, &err);
 
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
@@ -3222,6 +3226,10 @@ void *dt_opencl_alloc_device_use_host_pointer(const int devid,
   if(!_cldev_running(devid))
     return NULL;
 
+  dt_opencl_t *cl = darktable.opencl;
+  if(cl->dev[devid].max_image_width < width || cl->dev[devid].max_image_height < height)
+    return NULL;
+
   cl_int err = CL_SUCCESS;
   cl_image_format fmt;
   // guess pixel format from bytes per pixel
@@ -3237,8 +3245,8 @@ void *dt_opencl_alloc_device_use_host_pointer(const int devid,
   const cl_image_desc desc = (cl_image_desc)
         {CL_MEM_OBJECT_IMAGE2D, width, height, 0, 0, rowpitch, 0, 0, 0, NULL};
 
-  cl_mem dev = (darktable.opencl->dlocl->symbols->dt_clCreateImage)
-    (darktable.opencl->dev[devid].context,
+  cl_mem dev = (cl->dlocl->symbols->dt_clCreateImage)
+    (cl->dev[devid].context,
      CL_MEM_READ_WRITE | ((host == NULL) ? CL_MEM_ALLOC_HOST_PTR : CL_MEM_USE_HOST_PTR),
      &fmt, &desc, host, &err);
 
@@ -3260,11 +3268,13 @@ void *dt_opencl_alloc_device_buffer(const int devid,
 {
   if(!_cldev_running(devid))
     return NULL;
-
+  dt_opencl_t *cl = darktable.opencl;
+  if(cl->dev[devid].max_mem_alloc < size)
+    return NULL;
   cl_int err = CL_SUCCESS;
 
-  cl_mem buf = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer)
-    (darktable.opencl->dev[devid].context,
+  cl_mem buf = (cl->dlocl->symbols->dt_clCreateBuffer)
+    (cl->dev[devid].context,
      CL_MEM_READ_WRITE, size, NULL, &err);
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
@@ -3283,11 +3293,14 @@ void *dt_opencl_alloc_device_buffer_with_flags(const int devid,
 {
   if(!_cldev_running(devid))
     return NULL;
+  dt_opencl_t *cl = darktable.opencl;
+  if(cl->dev[devid].max_mem_alloc < size)
+    return NULL;
 
   cl_int err = CL_SUCCESS;
 
-  cl_mem buf = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer)
-    (darktable.opencl->dev[devid].context,
+  cl_mem buf = (cl->dlocl->symbols->dt_clCreateBuffer)
+    (cl->dev[devid].context,
      flags, size, NULL, &err);
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
