@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1104,7 +1104,10 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   gtk_container_add(GTK_CONTAINER(label_evb), label);
   gchar *mname = g_markup_escape_text(module->name(module), -1);
   gtk_label_set_markup(GTK_LABEL(label), mname);
-  gtk_widget_set_tooltip_text(label_evb, mname);
+  if(module->description)
+    gtk_widget_set_tooltip_text(label_evb, module->description(module));
+  else
+    gtk_widget_set_tooltip_text(label_evb, mname);
   g_free(mname);
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
   g_object_set(G_OBJECT(label), "halign", GTK_ALIGN_START, "xalign", 0.0, (gchar *)0);
