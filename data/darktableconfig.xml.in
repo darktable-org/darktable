@@ -3082,7 +3082,7 @@
         <option>histogram</option>
       </enum>
     </type>
-    <default>histogram</default>
+    <default>waveform</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
