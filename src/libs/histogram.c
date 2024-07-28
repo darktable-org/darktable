@@ -1685,8 +1685,10 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget,
 
     // FIXME: make just one tooltip for the widget depending on
     // whether it is draggable or not, and set it when enter the view
-    gchar *tip = g_strdup_printf("%s\n",
-                                 _(dt_lib_histogram_scope_type_names[d->scope_type]));
+    gchar *tip = g_strdup_printf("%s\n(%s)\n%s\n",
+                                 _(dt_lib_histogram_scope_type_names[d->scope_type]),
+                                 _("use buttons at top of graph to change type"),
+                                 _("click on ❓ and then graph for documentation"));
     if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
     {
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_NONE;
