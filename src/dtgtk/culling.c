@@ -1000,13 +1000,24 @@ void dt_culling_init(dt_culling_t *table, const int fallback_offset)
       = (table->mode == DT_CULLING_MODE_CULLING
          && dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING_RESTRICTED);
 
+  //
   // get id of image that should be displayed first when entering culling
+  //
   sqlite3_stmt *stmt;
   gchar *query = NULL;
   dt_imgid_t first_id = NO_IMGID;
 
+  // if we switch from culling restricted movement to unrestricted or vice versa,
+  //  the first image should not change
+  if(!culling_dynamic && 
+      ((dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING) ||
+        dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING_RESTRICTED))
+    if(darktable.view_manager->active_images)
+      first_id = GPOINTER_TO_INT(darktable.view_manager->active_images->data);
+
   // ... we start at mouseover (if available)
-  first_id = dt_control_get_mouse_over_id();
+  if(!dt_is_valid_imgid(first_id))
+    first_id = dt_control_get_mouse_over_id();
 
   // if we enter culling dynamic or restricted and we DO have a mouseover
   // make sure that the mouseover is one of the selected images.
