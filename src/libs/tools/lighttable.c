@@ -559,7 +559,7 @@ void gui_cleanup(dt_lib_module_t *self)
 static void _set_zoom(dt_lib_module_t *self, int zoom)
 {
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
-  if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING || d->layout == DT_LIGHTTABLE_LAYOUT_CULLING_RESTRICTED)
   {
     dt_conf_set_int("plugins/lighttable/culling_num_images", zoom);
     dt_control_queue_redraw_center();
