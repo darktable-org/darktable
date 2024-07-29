@@ -3091,6 +3091,8 @@ void *dt_opencl_copy_host_to_device_rowpitch(const int devid,
   // guess pixel format from bytes per pixel
   if(bpp == 4 * sizeof(float))
     fmt = (cl_image_format){ CL_RGBA, CL_FLOAT };
+  else if(bpp == 2 * sizeof(float))
+    fmt = (cl_image_format){ CL_RG, CL_FLOAT };
   else if(bpp == sizeof(float))
     fmt = (cl_image_format){ CL_R, CL_FLOAT };
   else if(bpp == sizeof(uint16_t))
@@ -3193,6 +3195,8 @@ void *dt_opencl_alloc_device(const int devid,
   // guess pixel format from bytes per pixel
   if(bpp == 4 * sizeof(float))
     fmt = (cl_image_format){ CL_RGBA, CL_FLOAT };
+  else if(bpp == 2 * sizeof(float))
+    fmt = (cl_image_format){ CL_RG, CL_FLOAT };
   else if(bpp == sizeof(float))
     fmt = (cl_image_format){ CL_R, CL_FLOAT };
   else if(bpp == sizeof(uint16_t))
@@ -3239,6 +3243,8 @@ void *dt_opencl_alloc_device_use_host_pointer(const int devid,
   // guess pixel format from bytes per pixel
   if(bpp == 4 * sizeof(float))
     fmt = (cl_image_format){ CL_RGBA, CL_FLOAT };
+  else if(bpp == 2 * sizeof(float))
+    fmt = (cl_image_format){ CL_RG, CL_FLOAT };
   else if(bpp == sizeof(float))
     fmt = (cl_image_format){ CL_R, CL_FLOAT };
   else if(bpp == sizeof(uint16_t))
