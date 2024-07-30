@@ -2164,6 +2164,17 @@ void dt_configure_runtime_performance(const int old, char *info)
              (largedisk) ? "TRUE" : "FALSE");
   }
 
+  gboolean updated_mandatory = FALSE;
+  if(!dt_conf_key_not_empty("opencl_mandatory_timeout"))
+  {
+    const int timeout = dt_conf_get_int("opencl_mandatory_timeout");
+    if(timeout < 1000)
+    {
+      dt_conf_set_int("opencl_mandatory_timeout", 1000);
+      updated_mandatory = TRUE;
+    }
+  }
+
   // we might add some info now but only for non-fresh installs
   if(old == 0) return;
 
@@ -2240,6 +2251,12 @@ void dt_configure_runtime_performance(const int old, char *info)
     g_strlcat(info, INFO_HEADER, DT_PERF_INFOSIZE);
     g_strlcat(info, _("OpenCL 'per device' compiler settings might have been updated.\n\n"), DT_PERF_INFOSIZE);
   }
+  else if(old < 17 && updated_mandatory)
+  {
+    g_strlcat(info, INFO_HEADER, DT_PERF_INFOSIZE);
+    g_strlcat(info, _("OpenCL mandatory timeout has been updated to 1000.\n\n"), DT_PERF_INFOSIZE);
+  }
+
   #undef INFO_HEADER
 }
 
