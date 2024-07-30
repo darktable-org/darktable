@@ -54,6 +54,9 @@ changes (where available).
   waveform to display more detailed information about image color and
   tonality.
 
+- The ISO 12646 color assessment condition is kept until unset by user
+  action.
+
 ## Bug Fixes
 
 - ???
