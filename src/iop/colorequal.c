@@ -483,12 +483,12 @@ static void _prepare_prefilter(const size_t ds_pixels, const float epsilon,
     // Invert the 2×2 sigma matrix algebraically
     // see https://www.mathcentre.ac.uk/resources/uploaded/sigma-matrices7-2009-1.pdf
     const float det = Sigma[0] * Sigma[3] - Sigma[1] * Sigma[2];
-    dt_aligned_pixel_t sigma_inv = { Sigma[3] / det, -Sigma[1] / det,
-                                    -Sigma[2] / det,  Sigma[0] / det };
 
     // a(chan) = dot_product(cov(chan, uv), sigma_inv)
     if(fabsf(det) > 4.f * FLT_EPSILON)
     {
+      dt_aligned_pixel_t sigma_inv = { Sigma[3] / det, -Sigma[1] / det,
+                                      -Sigma[2] / det,  Sigma[0] / det };
       // find a_1, a_2 s.t. U' = a_1 * U + a_2 * V
       a[4 * k + 0] = (covariance[4 * k + 0] * sigma_inv[0]
                     + covariance[4 * k + 1] * sigma_inv[1]);
@@ -796,15 +796,15 @@ static void _guide_with_chromaticity(float *const restrict UV,
 
     // Invert the 2×2 sigma matrix algebraically
     // see https://www.mathcentre.ac.uk/resources/uploaded/sigma-matrices7-2009-1.pdf
-    const float det = MAX((Sigma[0] * Sigma[3] - Sigma[1] * Sigma[2]), 1e-15f);
-    dt_aligned_pixel_t sigma_inv
+    const float det = Sigma[0] * Sigma[3] - Sigma[1] * Sigma[2];
+    // Note : epsilon prevents determinant == 0 so the invert exists all the time
+    if(fabsf(det) > 4.f * FLT_EPSILON)
+    {
+      dt_aligned_pixel_t sigma_inv
         = { Sigma[3] / det,
            -Sigma[1] / det,
            -Sigma[2] / det,
             Sigma[0] / det };
-    // Note : epsilon prevents determinant == 0 so the invert exists all the time
-    if(fabsf(det) > 4.f * FLT_EPSILON)
-    {
       a[4 * k + 0] = (correlations[4 * k + 0] * sigma_inv[0]
                     + correlations[4 * k + 1] * sigma_inv[1]);
       a[4 * k + 1] = (correlations[4 * k + 0] * sigma_inv[2]
