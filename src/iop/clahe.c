@@ -323,9 +323,9 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 0);
 
-  g->label1 = dtgtk_reset_label_new(_("radius"), self, &p->radius, sizeof(float), NULL);
+  g->label1 = dtgtk_reset_label_new(_("radius"), self, &p->radius, sizeof(float));
   gtk_box_pack_start(GTK_BOX(g->vbox1), g->label1, TRUE, TRUE, 0);
-  g->label2 = dtgtk_reset_label_new(_("amount"), self, &p->slope, sizeof(float), NULL);
+  g->label2 = dtgtk_reset_label_new(_("amount"), self, &p->slope, sizeof(float));
   gtk_box_pack_start(GTK_BOX(g->vbox1), g->label2, TRUE, TRUE, 0);
 
   g->scale1 = dt_bauhaus_slider_new_with_range(NULL, 0.0, 256.0, 0, p->radius, 0);
