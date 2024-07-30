@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2022-2023 darktable developers.
+    Copyright (C) 2022-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -36,6 +36,11 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
   uint64_t exif_size = 0;
   uint8_t *exif_data = NULL;
   uint32_t num_threads;
+
+  // We shouldn't expect JPEG XL images in files with an extension other than .jxl
+  char *ext = g_strrstr(filename, ".");
+  if(ext && g_ascii_strcasecmp(ext, ".jxl"))
+    return DT_IMAGEIO_LOAD_FAILED;
 
   FILE* inputfile = g_fopen(filename, "rb");
 
