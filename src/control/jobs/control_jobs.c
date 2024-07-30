@@ -262,7 +262,7 @@ static int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
 {
   dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
   char message[512] = { 0 };
-  size_t nb_imgs = g_list_length(params->index);
+  const size_t nb_imgs = g_list_length(params->index);
   g_snprintf(message, sizeof(message),
              ngettext("writing sidecar file","writing %zu sidecar files",nb_imgs), nb_imgs);
   dt_control_job_set_progress_message(job, message);
@@ -294,7 +294,7 @@ static int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
       sqlite3_clear_bindings(stmt);
     }
     dt_image_cache_read_release(darktable.image_cache, img);
-    double fraction = ++count / (double)nb_imgs;
+    const double fraction = ++count / (double)nb_imgs;
     dt_control_job_set_progress(job, fraction);
     if(dt_control_job_get_state(job) == DT_JOB_STATE_CANCELLED)
       break;
