@@ -197,7 +197,7 @@ typedef int32_t dt_mask_id_t;
 // version of current performance configuration version
 // if you want to run an updated version of the performance configuration later
 // bump this number and make sure you have an updated logic in dt_configure_runtime_performance()
-#define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 16
+#define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 17
 #define DT_PERF_INFOSIZE 4096
 
 // every module has to define this:

@@ -1968,12 +1968,14 @@ int dt_opencl_lock_device(const int pipetype)
   const size_t prio_size = sizeof(int) * (cl->num_devs + 1);
   int *priority = (int *)malloc(prio_size);
   int mandatory;
+  gboolean heavy = FALSE;
 
   switch(pipetype & DT_DEV_PIXELPIPE_ANY)
   {
     case DT_DEV_PIXELPIPE_FULL:
       memcpy(priority, cl->dev_priority_image, prio_size);
       mandatory = cl->mandatory[0];
+      heavy = darktable.develop->late_scaling.enabled;
       break;
     case DT_DEV_PIXELPIPE_PREVIEW:
       memcpy(priority, cl->dev_priority_preview, prio_size);
@@ -1982,6 +1984,7 @@ int dt_opencl_lock_device(const int pipetype)
     case DT_DEV_PIXELPIPE_EXPORT:
       memcpy(priority, cl->dev_priority_export, prio_size);
       mandatory = cl->mandatory[2];
+      heavy = TRUE;
       break;
     case DT_DEV_PIXELPIPE_THUMBNAIL:
       memcpy(priority, cl->dev_priority_thumbnail, prio_size);
@@ -1990,6 +1993,7 @@ int dt_opencl_lock_device(const int pipetype)
     case DT_DEV_PIXELPIPE_PREVIEW2:
       memcpy(priority, cl->dev_priority_preview2, prio_size);
       mandatory = cl->mandatory[4];
+      heavy = darktable.develop->late_scaling.enabled;
       break;
     default:
       free(priority);
@@ -2002,7 +2006,7 @@ int dt_opencl_lock_device(const int pipetype)
   if(priority)
   {
     const int usec = 5000;
-    const int nloop = MAX(0, dt_conf_get_int("opencl_mandatory_timeout"));
+    const int nloop = (heavy ? 10 : 1) * MAX(0, dt_conf_get_int("opencl_mandatory_timeout"));
 
     // check for free opencl device repeatedly if mandatory is TRUE,
     // else give up after first try
