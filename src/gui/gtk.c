@@ -4161,6 +4161,47 @@ gboolean dt_gui_long_click(const int second,
   return second - first > delay;
 }
 
+static int busy_nest_count = 0;
+static GdkCursor* busy_prev_cursor = NULL;
+
+void dt_gui_cursor_set_busy()
+{
+  ++busy_nest_count;
+  if(busy_nest_count == 1)
+  {
+    // this is not a nested call, so store the current mouse cursor and set it to be the
+    // "watch" cursor
+    GtkWidget *toplevel = darktable.gui->ui->main_window;
+    GdkWindow *window = gtk_widget_get_window(toplevel);
+    busy_prev_cursor = gdk_window_get_cursor(window);
+    GdkCursor *watch = gdk_cursor_new_for_display(gtk_widget_get_display(toplevel), GDK_WATCH);
+    gdk_window_set_cursor(window, watch);
+    g_object_unref(watch);
+    // since the main reason for calling this function is that we won't be running the Gtk main
+    // loop for a while, ensure that the mouse cursor gets updated
+    while (g_main_context_iteration(NULL, FALSE))
+      continue;
+  }
+}
+
+void dt_gui_cursor_clear_busy()
+{
+  // ensure that we have a prior call to set_busy; if not, this call is a no-op
+  if(busy_nest_count > 0)
+  {
+    --busy_nest_count;
+    if(busy_nest_count == 0)
+    {
+      // we've matched the last of the pending set_busy calls, so it is now time
+      // to restore the original mouse cursor
+      GtkWidget *toplevel = darktable.gui->ui->main_window;
+      GdkWindow *window = gtk_widget_get_window(toplevel);
+      gdk_window_set_cursor(window, busy_prev_cursor);
+      busy_prev_cursor = NULL;
+    }
+  }
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

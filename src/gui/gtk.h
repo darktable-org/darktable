@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2022 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -523,6 +523,11 @@ void dt_gui_hide_collapsible_section(dt_gui_collapsible_section_t *cs);
 // is delay between first and second click/press longer than double-click time?
 gboolean dt_gui_long_click(const int second,
                            const int first);
+
+// control whether the mouse pointer displays as a "busy" cursor, e.g. watch or timer
+// the calls may be nested, but must be matched
+void dt_gui_cursor_set_busy();
+void dt_gui_cursor_clear_busy();
 
 #ifdef __cplusplus
 } // extern "C"
