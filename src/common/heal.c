@@ -128,26 +128,13 @@ static void _heal_add(const float *const restrict red_buffer, const float *const
   }
 }
 
-// define a custom reduction operation to handle a 3-vector of floats
-// we can't return an array from a function, so wrap the array type in a struct
-typedef struct _aligned_pixel { dt_aligned_pixel_t v; } _aligned_pixel;
-#ifdef _OPENMP
-static inline _aligned_pixel _add_float4(_aligned_pixel acc, _aligned_pixel newval)
-{
-  for_each_channel(c) acc.v[c] += newval.v[c];
-  return acc;
-}
-#pragma omp declare reduction(vsum:_aligned_pixel:omp_out=_add_float4(omp_out,omp_in)) \
-  initializer(omp_priv = { { 0.0f, 0.0f, 0.0f, 0.0f } })
-#endif
-
 // Perform one iteration of Gauss-Seidel, and return the sum squared residual.
 static float _heal_laplace_iteration(float *const restrict active_pixels,
                                      const float *const restrict neighbor_pixels,
                                      const size_t height, const size_t width, const unsigned *const restrict runs,
                                      const size_t num_runs, const size_t start_parity, const float w)
 {
-  _aligned_pixel err = { { 0.f } };
+  dt_aligned_pixel_t err = { 0.f, 0.0f, 0.0f, 0.0f };
 
   // on each iteration, we adjust each cell of the current color by a weighted fraction of the difference between
   // it and the sum of the adjacenct cells of the opposite color.  Because we've split the cells by color, this
@@ -167,7 +154,7 @@ static float _heal_laplace_iteration(float *const restrict active_pixels,
   // left and right neighbors depend on which color the row starts with: if red, they are b(i)(j-1) and b(i)(j);
   // if black, they are b(i)(j) and b(i)(j+1).  All of the above holds when colors are swapped.
 #if !(defined(__apple_build_version__) && __apple_build_version__ < 11030000) //makes Xcode 11.3.1 compiler crash
-    DT_OMP_FOR(reduction(vsum : err))
+    DT_OMP_FOR(reduction(+ : err[0:4]))
 #endif
     for(size_t i = 0; i < num_runs; i++)
     {
@@ -202,7 +189,7 @@ static float _heal_laplace_iteration(float *const restrict active_pixels,
                              - (neighbor_pixels[index - vert_offset + c] + neighbor_pixels[index + vert_offset + c]
                                 + left[c] + right[c]));
           active_pixels[index + c] -= diff[c];
-          err.v[c] += (diff[c] * diff[c]);
+          err[c] += (diff[c] * diff[c]);
         }
         continue;
       }
@@ -220,12 +207,12 @@ static float _heal_laplace_iteration(float *const restrict active_pixels,
                          - (neighbor_pixels[pixidx - vert_offset + c] + neighbor_pixels[pixidx + vert_offset + c]
                             + left[c] + right[c]));
           active_pixels[pixidx + c] -= diff[c];
-          err.v[c] += (diff[c] * diff[c]);
+          err[c] += (diff[c] * diff[c]);
           left[c] = right[c];
         }
       }
     }
-  return err.v[0] + err.v[1] + err.v[2];
+  return err[0] + err[1] + err[2];
 }
 
 // convert alternating pixels of one row of the opacity mask into a set of runs of opaque pixels of the
