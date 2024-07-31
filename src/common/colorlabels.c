@@ -259,6 +259,7 @@ void dt_colorlabels_toggle_label_on_list(const GList *list,
                                          const int color,
                                          const gboolean undo_on)
 {
+  dt_gui_cursor_set_busy();
   const int label = 1<<color;
   GList *undo = NULL;
   if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_COLORLABELS);
@@ -273,10 +274,7 @@ void dt_colorlabels_toggle_label_on_list(const GList *list,
   }
 
   // synchronise xmp files
-  for(GList *l = (GList *)list; l; l = g_list_next(l))
-  {
-    dt_image_synch_xmp(GPOINTER_TO_INT(l->data));
-  }
+  dt_image_synch_xmps(list);
 
   if(undo_on)
   {
@@ -284,6 +282,7 @@ void dt_colorlabels_toggle_label_on_list(const GList *list,
                    DT_UNDO_COLORLABELS, undo, _pop_undo, _colorlabels_undo_data_free);
     dt_undo_end_group(darktable.undo);
   }
+  dt_gui_cursor_clear_busy();
   dt_collection_hint_message(darktable.collection);
 }
 
