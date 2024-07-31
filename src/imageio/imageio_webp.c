@@ -25,9 +25,6 @@
 
 dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
 {
-  int width, height;
-  WebPData icc_profile;
-
   FILE *f = g_fopen(filename, "rb");
   if(!f)
   {
@@ -51,6 +48,7 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
   fclose(f);
 
   // WebPGetInfo should tell us the image dimensions needed for darktable image buffer allocation
+  int width, height;
   if(!WebPGetInfo(read_buffer, filesize, &width, &height))
   {
     // If we couldn't get the webp metadata, then the file we're trying to read is most likely in
@@ -64,6 +62,8 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
   // so the number of pixels will never overflow int
   const int npixels = width * height;
 
+  // libwebp can only decode into 8-bit integer channel format, so we have to use an intermediate
+  // buffer from which we will then perform the format conversion to the output buffer
   uint8_t *int_RGBA_buf = dt_alloc_align_uint8(npixels * 4);
   int_RGBA_buf = WebPDecodeRGBAInto(read_buffer, filesize, int_RGBA_buf, npixels * 4, width * 4);
   if(!int_RGBA_buf)
@@ -72,6 +72,29 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
     dt_print(DT_DEBUG_ALWAYS,"[webp_open] failed to decode file: %s\n", filename);
     return DT_IMAGEIO_LOAD_FAILED;
   }
+
+  // Try to get the embedded ICC profile if there is one
+  WebPData wp_data;
+  wp_data.bytes = (uint8_t *)read_buffer;
+  wp_data.size = filesize;
+  WebPMux *mux = WebPMuxCreate(&wp_data, 0); // 0 = data will NOT be copied to the mux object
+
+  if(mux)
+  {
+    WebPData icc_profile;
+    WebPMuxGetChunk(mux, "ICCP", &icc_profile);
+    if(icc_profile.size)
+    {
+      img->profile_size = icc_profile.size;
+      img->profile = (uint8_t *)g_malloc0(icc_profile.size);
+      memcpy(img->profile, icc_profile.bytes, icc_profile.size);
+    }
+    WebPMuxDelete(mux);
+  }
+
+  // We've finished decoding and retrieving the ICC profile, the file read buffer can be freed
+  g_free(read_buffer);
+
 
   img->width = width;
   img->height = height;
@@ -98,24 +121,6 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
 
   dt_free_align(int_RGBA_buf);
 
-  WebPData wp_data;
-  wp_data.bytes = (uint8_t *)read_buffer;
-  wp_data.size = filesize;
-  WebPMux *mux = WebPMuxCreate(&wp_data, 0); // 0 = data will NOT be copied to the mux object
-
-  if(mux)
-  {
-    WebPMuxGetChunk(mux, "ICCP", &icc_profile);
-    if(icc_profile.size)
-    {
-      img->profile_size = icc_profile.size;
-      img->profile = (uint8_t *)g_malloc0(icc_profile.size);
-      memcpy(img->profile, icc_profile.bytes, icc_profile.size);
-    }
-    WebPMuxDelete(mux);
-  }
-
-  g_free(read_buffer);
 
   img->buf_dsc.cst = IOP_CS_RGB;
   img->buf_dsc.filters = 0u;
