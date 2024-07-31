@@ -303,11 +303,10 @@ float dt_conf_get_and_sanitize_float(const char *name, float min, float max)
   return ret;
 }
 
-int dt_conf_get_bool(const char *name)
+gboolean dt_conf_get_bool(const char *name)
 {
   const char *str = _conf_get_var(name);
-  const int val = (str[0] != 'F') && (str[0] != 'f') && (str[0] != '0') && (str[0] != '\0');
-  return val;
+  return (str[0] != 'F') && (str[0] != 'f') && (str[0] != '0') && (str[0] != '\0');
 }
 
 void dt_conf_set_path(const char *name, const char *val)

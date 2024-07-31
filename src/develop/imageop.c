@@ -1907,7 +1907,7 @@ dt_iop_module_t *dt_iop_commit_blend_params(dt_iop_module_t *module,
   }
   module->raster_mask.sink.source = NULL;
   module->raster_mask.sink.id = INVALID_MASKID;
-  return sink_source;
+  return NULL;
 }
 
 gboolean _iop_validate_params(dt_introspection_field_t *field,
@@ -2030,7 +2030,7 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
   }
 
   if(!all_ok && report)
-    dt_print(DT_DEBUG_PARAMS,
+    dt_print(DT_DEBUG_ALWAYS,
              "[iop_validate_params] `%s' failed for type \"%s\"%s%s\n",
              name, field->header.type_name,
              *field->header.name ? ", field: " : "",
@@ -2045,58 +2045,75 @@ void dt_iop_commit_params(dt_iop_module_t *module,
                           dt_dev_pixelpipe_t *pipe,
                           dt_dev_pixelpipe_iop_t *piece)
 {
-  // 1. commit params
-
   memcpy(piece->blendop_data, blendop_params, sizeof(dt_develop_blend_params_t));
-  // this should be redundant! (but is not)
-  dt_iop_module_t *inserted = dt_iop_commit_blend_params(module, blendop_params);
-  if(inserted)
-    dt_dev_pixelpipe_cache_invalidate_later(pipe, inserted->iop_order);
+
+  /* 1. make blendop_params available dt_iop_module_t struct.
+        Also checks for a new source raster mask module.
+        This is important as we can't know from here if that raster mask is actually
+        available.
+        We handle this case by partly invalidating the cache to enforce a valid raster.
+  */
+  dt_iop_module_t *new_raster = dt_iop_commit_blend_params(module, blendop_params);
+
 #ifdef HAVE_OPENCL
   // assume process_cl is ready, commit_params can overwrite this.
   if(module->process_cl)
     piece->process_cl_ready = TRUE;
-#endif // HAVE_OPENCL
+#endif
 
   // register if module allows tiling, commit_params can overwrite this.
   if(module->flags() & IOP_FLAGS_ALLOW_TILING)
     piece->process_tiling_ready = TRUE;
 
-  if(darktable.unmuted & DT_DEBUG_PARAMS && module->so->get_introspection())
-    _iop_validate_params(module->so->get_introspection()->field, params,
-                         TRUE, module->so->op);
+  if((piece->enabled || module->enabled) // better to check for both
+    && module->so->get_introspection()
+    && darktable.unmuted & DT_DEBUG_PARAMS)
+  {
+    if(!_iop_validate_params(module->so->get_introspection()->field,
+                             params,
+                             TRUE,
+                             module->so->op))
+    {
+      // FIXME maybe we can hint a warning in the module UI or possibly
+      // disable the piece ?
+      dt_control_log
+        (_("'%s' has been disabled because of an introspection error"), module->op);
+    }
+  }
+
   module->commit_params(module, params, pipe, piece);
 
+  dt_hash_t phash = 0;
   // 2. compute the hash only if piece is enabled
-
-  piece->hash = 0;
-
   if(piece->enabled)
   {
-    /* construct module params data for hash calc */
-    int length = module->params_size;
-    if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
-      length += sizeof(dt_develop_blend_params_t);
-    dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, blendop_params->mask_id);
-    length += dt_masks_group_get_hash_buffer_length(grp);
+    phash = dt_hash(DT_INITHASH, &module->so->op, strlen(module->so->op));
+    phash = dt_hash(phash, &module->instance, sizeof(int32_t));
+    phash = dt_hash(phash, module->params, module->params_size);
 
-    char *str = malloc(length);
-    memcpy(str, module->params, module->params_size);
-    int pos = module->params_size;
-    /* if module supports blend op add blend params into account */
-    if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
+    const gboolean is_blending = (module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
+                              && (blendop_params->mask_mode != DEVELOP_MASK_DISABLED);
+
+    if(is_blending)
     {
-      memcpy(str + module->params_size, blendop_params, sizeof(dt_develop_blend_params_t));
-      pos += sizeof(dt_develop_blend_params_t);
+      /* if module supports blend op add blend params into account */
+      phash = dt_hash(phash, blendop_params, sizeof(dt_develop_blend_params_t));
+
+      dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, blendop_params->mask_id);
+      if(grp)
+      {
+        const size_t mlen = dt_masks_group_get_hash_buffer_length(grp);
+        char *str = malloc(mlen);
+        dt_masks_group_get_hash_buffer(grp, str);
+        phash = dt_hash(phash, str, mlen);
+        free(str);
+      }
+
+      if(blendop_params->mask_mode & DEVELOP_MASK_RASTER && new_raster)
+        dt_dev_pixelpipe_cache_invalidate_later(pipe, new_raster->iop_order);
     }
-
-    /* and we add masks */
-    dt_masks_group_get_hash_buffer(grp, str + pos);
-
-    piece->hash = dt_hash(DT_INITHASH, str, length);
-
-    free(str);
   }
+  piece->hash = phash;
 }
 
 void dt_iop_gui_cleanup_module(dt_iop_module_t *module)
