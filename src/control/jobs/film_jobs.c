@@ -82,7 +82,8 @@ dt_job_t *dt_film_import1_create(dt_film_t *film)
 static int32_t _pathlist_import_run(dt_job_t *job)
 {
   dt_film_import1_t *params = dt_control_job_get_params(job);
-  _film_import1(job, NULL, params->imagelist); // import the specified images, creating filmrolls as needed
+  if(params->imagelist)
+    _film_import1(job, NULL, params->imagelist); // import the specified images, creating filmrolls as needed
   params->imagelist = NULL;  // the import will have freed the image list
 
   // notify the user via the window manager
