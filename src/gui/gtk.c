@@ -4167,7 +4167,7 @@ static GdkCursor* busy_prev_cursor = NULL;
 void dt_gui_cursor_set_busy()
 {
   ++busy_nest_count;
-  if(busy_nest_count == 1)
+  if(busy_nest_count == 1 && darktable.gui != NULL)
   {
     // this is not a nested call, so store the current mouse cursor and set it to be the
     // "watch" cursor
@@ -4189,7 +4189,7 @@ void dt_gui_cursor_clear_busy()
   if(busy_nest_count > 0)
   {
     --busy_nest_count;
-    if(busy_nest_count == 0)
+    if(busy_nest_count == 0 && darktable.gui != NULL)
     {
       // we've matched the last of the pending set_busy calls, so it is now time
       // to restore the original mouse cursor
