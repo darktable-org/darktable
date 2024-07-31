@@ -4179,8 +4179,7 @@ void dt_gui_cursor_set_busy()
     g_object_unref(watch);
     // since the main reason for calling this function is that we won't be running the Gtk main
     // loop for a while, ensure that the mouse cursor gets updated
-    while (g_main_context_iteration(NULL, FALSE))
-      continue;
+    dt_gui_process_events();
   }
 }
 
@@ -4197,9 +4196,17 @@ void dt_gui_cursor_clear_busy()
       GtkWidget *toplevel = darktable.gui->ui->main_window;
       GdkWindow *window = gtk_widget_get_window(toplevel);
       gdk_window_set_cursor(window, busy_prev_cursor);
+      dt_gui_process_events();
       busy_prev_cursor = NULL;
     }
   }
+}
+
+void dt_gui_process_events()
+{
+  // process all pending Gtk/GDK events
+  while(g_main_context_iteration(NULL, FALSE))
+    continue;
 }
 
 // clang-format off

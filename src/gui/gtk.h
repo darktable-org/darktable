@@ -529,6 +529,11 @@ gboolean dt_gui_long_click(const int second,
 void dt_gui_cursor_set_busy();
 void dt_gui_cursor_clear_busy();
 
+// run all pending Gtk/GDK events
+// should be called after making Gtk calls if we won't resume the main event loop for a while
+// (i.e. the current function will do a lot of work before returning)
+void dt_gui_process_events();
+
 #ifdef __cplusplus
 } // extern "C"
 #endif /* __cplusplus */
