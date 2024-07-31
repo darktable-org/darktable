@@ -3382,9 +3382,11 @@ static gboolean _lib_tagging_tag_key_press(GtkWidget *entry, GdkEventKey *event,
     case GDK_KEY_Return:
     case GDK_KEY_KP_Enter:
     {
+      dt_gui_cursor_set_busy();
       const gchar *tag = gtk_entry_get_text(GTK_ENTRY(entry));
       const gboolean res = dt_tag_attach_string_list(tag, d->floating_tag_imgs, TRUE);
       if(res) dt_image_synch_xmps(d->floating_tag_imgs);
+      dt_gui_cursor_clear_busy();
       g_list_free(d->floating_tag_imgs);
 
       /** record last tag used */
