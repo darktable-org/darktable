@@ -424,6 +424,7 @@ static gboolean _tag_execute(const GList *tags,
                              const gboolean undo_on,
                              const gint action)
 {
+  dt_gui_cursor_set_busy();
   gboolean res = FALSE;
   for(const GList *images = imgs; images; images = g_list_next(images))
   {
@@ -463,6 +464,7 @@ static gboolean _tag_execute(const GList *tags,
     else
       _undo_tags_free(undotags);
   }
+  dt_gui_cursor_clear_busy();
   return res;
 }
 
