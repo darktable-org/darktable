@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2024 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -424,7 +424,7 @@ static void view_popup_menu_onSearchFilmroll(GtkWidget *menuitem,
   gtk_tree_model_get(model, &child, DT_LIB_COLLECT_COL_PATH, &tree_path, -1);
 
   GtkFileChooserNative *filechooser = gtk_file_chooser_native_new
-    (_("search filmroll"),
+    (_("update path to files"),
      GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
      _("_open"), _("_cancel"));
 
@@ -580,7 +580,7 @@ static void view_popup_menu(GtkWidget *treeview,
 
   menu = gtk_menu_new();
 
-  menuitem = gtk_menu_item_new_with_label(_("search filmroll..."));
+  menuitem = gtk_menu_item_new_with_label(_("update path to files..."));
   g_signal_connect(menuitem, "activate",
                    (GCallback)view_popup_menu_onSearchFilmroll, treeview);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
