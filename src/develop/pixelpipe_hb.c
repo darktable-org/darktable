@@ -533,9 +533,9 @@ static void _dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
 
       dt_iop_commit_params(hist->module, hist->params, hist->blend_params, pipe, piece);
 
-      dt_print_pipe(DT_DEBUG_PARAMS, "dt_dev_pixelpipe_synch",
+      dt_print_pipe(DT_DEBUG_PARAMS, "committed",
           pipe, piece->module, DT_DEVICE_NONE, NULL, NULL,
-          "%s order=%2i, piece hash=%" PRIx64 ", \n",
+          "%s order=%2i, piece hash=%" PRIx64 "\n",
           piece->enabled ? "enabled " : "disabled",
           piece->module->iop_order,
           piece->hash);
