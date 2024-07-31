@@ -57,6 +57,9 @@ changes (where available).
 - The ISO 12646 color assessment condition is kept until unset by user
   action.
 
+- Enhanced tooltips for utiltity module headers to provide more
+  information about the module.
+
 ## Bug Fixes
 
 - ???
