@@ -172,6 +172,7 @@ static void _colorlabels_execute(const GList *imgs,
                                  const gboolean undo_on,
                                  int action)
 {
+  dt_gui_cursor_set_busy();
   if(action == DT_CA_TOGGLE)
   {
     // if we are supposed to toggle color labels, first check if all
@@ -229,6 +230,7 @@ static void _colorlabels_execute(const GList *imgs,
 
     _pop_undo_execute(imgid, before, after);
   }
+  dt_gui_cursor_clear_busy();
 }
 
 void dt_colorlabels_set_labels(const GList *img,
