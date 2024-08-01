@@ -1320,8 +1320,9 @@ void dt_colorspaces_free_cl_global(dt_colorspaces_cl_global_t *g)
   free(g);
 }
 
-void dt_ioppr_get_profile_info_cl(const dt_iop_order_iccprofile_info_t *const profile_info,
-                                  dt_colorspaces_iccprofile_info_cl_t *profile_info_cl)
+// sets profile_info_cl using profile_info to be used as a parameter when calling opencl
+static void _ioppr_get_profile_info_cl(const dt_iop_order_iccprofile_info_t *const profile_info,
+                                       dt_colorspaces_iccprofile_info_cl_t *profile_info_cl)
 {
   for(int i = 0; i < 9; i++)
   {
@@ -1341,7 +1342,8 @@ void dt_ioppr_get_profile_info_cl(const dt_iop_order_iccprofile_info_t *const pr
   profile_info_cl->grey = profile_info->grey;
 }
 
-cl_float *dt_ioppr_get_trc_cl(const dt_iop_order_iccprofile_info_t *const profile_info)
+// returns the profile_info trc to be used as a parameter when calling opencl
+static cl_float *_ioppr_get_trc_cl(const dt_iop_order_iccprofile_info_t *const profile_info)
 {
   cl_float *trc = malloc(sizeof(cl_float) * 6 * profile_info->lutsize);
   if(trc)
@@ -1374,8 +1376,8 @@ cl_int dt_ioppr_build_iccprofile_params_cl(const dt_iop_order_iccprofile_info_t 
 
   if(profile_info)
   {
-    dt_ioppr_get_profile_info_cl(profile_info, profile_info_cl);
-    profile_lut_cl = dt_ioppr_get_trc_cl(profile_info);
+    _ioppr_get_profile_info_cl(profile_info, profile_info_cl);
+    profile_lut_cl = _ioppr_get_trc_cl(profile_info);
 
     dev_profile_info = dt_opencl_copy_host_to_device_constant(devid, sizeof(*profile_info_cl),
                                                               profile_info_cl);
@@ -1515,8 +1517,8 @@ gboolean dt_ioppr_transform_image_colorspace_cl
       goto cleanup;
     }
 
-    dt_ioppr_get_profile_info_cl(profile_info, &profile_info_cl);
-    lut_cl = dt_ioppr_get_trc_cl(profile_info);
+    _ioppr_get_profile_info_cl(profile_info, &profile_info_cl);
+    lut_cl = _ioppr_get_trc_cl(profile_info);
 
     if(in_place)
     {
@@ -1678,11 +1680,11 @@ gboolean dt_ioppr_transform_image_colorspace_rgb_cl
 
     kernel_transform = darktable.opencl->colorspaces->kernel_colorspaces_transform_rgb_matrix_to_rgb;
 
-    dt_ioppr_get_profile_info_cl(profile_info_from, &profile_info_from_cl);
-    lut_from_cl = dt_ioppr_get_trc_cl(profile_info_from);
+    _ioppr_get_profile_info_cl(profile_info_from, &profile_info_from_cl);
+    lut_from_cl = _ioppr_get_trc_cl(profile_info_from);
 
-    dt_ioppr_get_profile_info_cl(profile_info_to, &profile_info_to_cl);
-    lut_to_cl = dt_ioppr_get_trc_cl(profile_info_to);
+    _ioppr_get_profile_info_cl(profile_info_to, &profile_info_to_cl);
+    lut_to_cl = _ioppr_get_trc_cl(profile_info_to);
 
     dt_colormatrix_t matrix;
     dt_colormatrix_mul(matrix, profile_info_to->matrix_out, profile_info_from->matrix_in);
