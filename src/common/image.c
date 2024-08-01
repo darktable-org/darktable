@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  Copyright (C) 2009-2023 darktable developers.
+  Copyright (C) 2009-2024 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
+#include "control/jobs/sidecar_jobs.h"
 #include "develop/lightroom.h"
 #include "imageio/imageio_common.h"
 #include "imageio/imageio_rawspeed.h"
@@ -977,7 +978,7 @@ void dt_image_set_flip(const dt_imgid_t imgid,
 
   dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
   dt_image_update_final_size(imgid);
-  dt_image_write_sidecar_file(imgid);
+  dt_image_synch_xmp(imgid);
 }
 
 dt_image_orientation_t dt_image_get_orientation(const dt_imgid_t imgid)
@@ -1968,7 +1969,7 @@ static dt_imgid_t _image_import_internal(const dt_filmid_t film_id,
     const gboolean lr_xmp = dt_lightroom_import(id, NULL, TRUE);
     // Make sure that lightroom xmp data (label in particular) are saved in dt xmp
     if(lr_xmp)
-      dt_image_write_sidecar_file(id);
+      dt_image_synch_xmp(id);
   }
 
   // add a tag with the file extension
@@ -2292,7 +2293,7 @@ gboolean dt_image_rename(const dt_imgid_t imgid, const int32_t filmid, const gch
         dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
         dup_list = g_list_delete_link(dup_list, dup_list);
         // now also write xmp file
-        dt_image_write_sidecar_file(id);
+        dt_image_synch_xmp(id);
       }
       g_list_free(dup_list);
 
@@ -2651,7 +2652,7 @@ dt_imgid_t dt_image_copy_rename(const dt_imgid_t imgid,
 
         dt_history_copy_and_paste_on_image(imgid, newid, FALSE, NULL, TRUE, TRUE);
 
-        dt_image_write_sidecar_file(newid);
+        dt_image_synch_xmp(newid);
 
         dt_collection_update_query(darktable.collection,
                                    DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
@@ -2903,25 +2904,19 @@ gboolean dt_image_write_sidecar_file(const dt_imgid_t imgid)
   return error;
 }
 
-void dt_image_synch_xmps(const GList *img)
+void dt_image_synch_xmps(const GList *imgs)
 {
-  if(!img)
-    return;
-
-  for(const GList *imgs = img; imgs; imgs = g_list_next(imgs))
-  {
-    dt_image_write_sidecar_file(GPOINTER_TO_INT(imgs->data));
-  }
+  dt_sidecar_synch_enqueue_list(imgs);
 }
 
 void dt_image_synch_xmp(const dt_imgid_t selected)
 {
   if(dt_is_valid_imgid(selected))
-    dt_image_write_sidecar_file(selected);
+    dt_sidecar_synch_enqueue(selected);
   else
   {
     GList *imgs = dt_act_on_get_images(FALSE, TRUE, FALSE);
-    dt_image_synch_xmps(imgs);
+    dt_sidecar_synch_enqueue_list(imgs);
     g_list_free(imgs);
   }
 }
@@ -2930,7 +2925,7 @@ void dt_image_synch_all_xmp(const gchar *pathname)
 {
   const dt_imgid_t imgid = dt_image_get_id_full_path(pathname);
   if(dt_is_valid_imgid(imgid))
-    dt_image_write_sidecar_file(imgid);
+    dt_sidecar_synch_enqueue(imgid);
 }
 
 void dt_image_local_copy_synch(void)

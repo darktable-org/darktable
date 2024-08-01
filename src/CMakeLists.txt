@@ -94,6 +94,7 @@ FILE(GLOB SOURCE_FILES
   "control/jobs/develop_jobs.c"
   "control/jobs/film_jobs.c"
   "control/jobs/image_jobs.c"
+  "control/jobs/sidecar_jobs.c"
   "control/progress.c"
   "control/signal.c"
   "develop/blend.c"

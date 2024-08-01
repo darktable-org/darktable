@@ -397,7 +397,7 @@ void dt_image_cache_write_release_info(dt_image_cache_t *cache,
 
   if(mode == DT_IMAGE_CACHE_SAFE)
   {
-    dt_image_write_sidecar_file(img->id);
+    dt_image_synch_xmp(img->id);
     if(info)
     {
       const double spent = dt_get_debug_wtime() - start;

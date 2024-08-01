@@ -61,6 +61,7 @@
 #include "control/crawler.h"
 #include "control/jobs/control_jobs.h"
 #include "control/jobs/film_jobs.h"
+#include "control/jobs/sidecar_jobs.h"
 #include "control/signal.h"
 #include "develop/blend.h"
 #include "develop/imageop.h"
@@ -1687,6 +1688,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #ifdef USE_LUA
   dt_lua_init(darktable.lua_state.state, lua_command);
 #endif
+
+  // fire up a background job to perform sidecar writes
+  dt_control_sidecar_synch_start();
 
   if(init_gui)
   {
