@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include <assert.h>
 #include <inttypes.h>
 #include <memory.h>
@@ -24,12 +25,11 @@
 
 #include "common/colorspaces.h"
 #include "common/darktable.h"
-#include "imageio_png.h"
 #include "common/exif.h"
 #include "control/conf.h"
 #include "develop/develop.h"
 #include "imageio_common.h"
-#include "imageio_tiff.h"
+#include "imageio_png.h"
 
 int read_header(const char *filename, dt_imageio_png_t *png)
 {
