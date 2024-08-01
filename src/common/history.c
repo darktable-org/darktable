@@ -1437,7 +1437,7 @@ int dt_history_compress_on_list(const GList *imgs)
       // update history end
       dt_image_set_history_end(imgid, done);
 
-      dt_image_write_sidecar_file(imgid);
+      dt_image_synch_xmp(imgid);
     }
     if(test == 0) // no compression as history_end is right in the middle of history
       uncompressed++;

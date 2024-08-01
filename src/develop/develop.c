@@ -719,7 +719,7 @@ static void _dev_auto_save(dt_develop_t *dev)
   if(saving)
   {
     dt_dev_write_history(dev);
-    dt_image_write_sidecar_file(imgid);
+    dt_image_synch_xmp(imgid);
     const double after = dt_get_wtime();
     dev->autosave_time = after;
     // if writing to database and the xmp took too long we disable
