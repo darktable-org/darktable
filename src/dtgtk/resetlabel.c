@@ -59,7 +59,6 @@ GtkWidget *dtgtk_reset_label_new(const gchar *text, dt_iop_module_t *module, voi
   label->module = module;
   label->offset = param - (void *)module->params;
   label->size = param_size;
-  label->reset_callback = reset_callback;
 
   label->lb = GTK_LABEL(gtk_label_new(text));
   gtk_widget_set_halign(GTK_WIDGET(label->lb), GTK_ALIGN_START);
