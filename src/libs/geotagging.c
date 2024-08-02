@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2022 darktable developers.
+    Copyright (C) 2012-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -139,6 +139,12 @@ static void free_tz_tuple(gpointer data)
 const char *name(dt_lib_module_t *self)
 {
   return _("geotagging");
+}
+
+const char *description(dt_lib_module_t *self)
+{
+  return _("set geolocation information for\n"
+           "the currently selected images");
 }
 
 dt_view_type_flags_t views(dt_lib_module_t *self)

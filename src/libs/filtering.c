@@ -271,6 +271,13 @@ const char *name(dt_lib_module_t *self)
   return _("collection filters");
 }
 
+const char *description(dt_lib_module_t *self)
+{
+  return _("refine the set of images to display or edit\n"
+           "filters can be pinned to the top toolbar, where\n"
+           "they will also be visible in the darkroom");
+}
+
 void init_presets(dt_lib_module_t *self)
 {
   dt_lib_filtering_params_t params;

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,6 +38,12 @@ DT_MODULE(1)
 const char *name(dt_lib_module_t *self)
 {
   return _("selection");
+}
+
+const char *description(dt_lib_module_t *self)
+{
+  return _("modify which of the displayed\n"
+           "images are selected");
 }
 
 dt_view_type_flags_t views(dt_lib_module_t *self)

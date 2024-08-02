@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -107,6 +107,12 @@ static void _save_last_tag_used(const char *tags, dt_lib_tagging_t *d);
 const char *name(dt_lib_module_t *self)
 {
   return _("tagging");
+}
+
+const char *description(dt_lib_module_t *self)
+{
+  return _("add or remove keywords for\n"
+           "the currently selected images");
 }
 
 dt_view_type_flags_t views(dt_lib_module_t *self)

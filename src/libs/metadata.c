@@ -60,6 +60,12 @@ const char *name(dt_lib_module_t *self)
   return _("metadata editor");
 }
 
+const char *description(dt_lib_module_t *self)
+{
+  return _("modify text metadata fields of\n"
+           "the currently selected images");
+}
+
 dt_view_type_flags_t views(dt_lib_module_t *self)
 {
   return DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING;
