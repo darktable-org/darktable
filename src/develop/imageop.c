@@ -1704,10 +1704,11 @@ static void _init_module_so(void *m)
         }
       }
 
-      module->gui_cleanup(module_instance);
-      darktable.control->accel_initialising = FALSE;
-
+      dt_iop_gui_cleanup_module(module_instance);
+      gtk_widget_destroy(module_instance->widget);
       dt_iop_cleanup_module(module_instance);
+
+      darktable.control->accel_initialising = FALSE;
     }
 
     free(module_instance);
