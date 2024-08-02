@@ -31,7 +31,7 @@
 #include "imageio_common.h"
 #include "imageio_png.h"
 
-int read_header(const char *filename, dt_imageio_png_t *png)
+int dt_imageio_png_read_header(const char *filename, dt_imageio_png_t *png)
 {
   png->f = g_fopen(filename, "rb");
 
@@ -120,7 +120,7 @@ int read_header(const char *filename, dt_imageio_png_t *png)
 }
 
 
-int read_image(dt_imageio_png_t *png, void *out)
+int dt_imageio_png_read_image(dt_imageio_png_t *png, void *out)
 {
   if(setjmp(png_jmpbuf(png->png_ptr)))
   {
@@ -164,7 +164,7 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
   uint16_t bpp;
 
 
-  if(read_header(filename, &image) != 0) return DT_IMAGEIO_LOAD_FAILED;
+  if(dt_imageio_png_read_header(filename, &image) != 0) return DT_IMAGEIO_LOAD_FAILED;
 
   width = img->width = image.width;
   height = img->height = image.height;
@@ -192,7 +192,7 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
     return DT_IMAGEIO_CACHE_FULL;
   }
 
-  if(read_image(&image, (void *)buf) != 0)
+  if(dt_imageio_png_read_image(&image, (void *)buf) != 0)
   {
     dt_free_align(buf);
     dt_print(DT_DEBUG_ALWAYS, "[png_open] could not read image `%s'\n", img->filename);
@@ -254,7 +254,7 @@ int dt_imageio_png_read_profile(const char *filename, uint8_t **out, dt_colorspa
 
   if(!(filename && *filename)) return 0;
 
-  if(read_header(filename, &image) != 0) return 0;
+  if(dt_imageio_png_read_header(filename, &image) != 0) return 0;
 
   /* TODO: also add check for known cICP chunk read support once added to libpng */
 #ifdef PNG_STORE_UNKNOWN_CHUNKS_SUPPORTED
