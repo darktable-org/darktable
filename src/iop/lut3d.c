@@ -497,7 +497,7 @@ uint8_t calculate_clut_compressed(dt_iop_lut3d_params_t *const p, const char *co
 uint16_t calculate_clut_haldclut(dt_iop_lut3d_params_t *const p, const char *const filepath, float **clut)
 {
   dt_imageio_png_t png;
-  if(read_header(filepath, &png))
+  if(dt_imageio_png_read_header(filepath, &png))
   {
     dt_print(DT_DEBUG_ALWAYS, "[lut3d] invalid png file %s\n", filepath);
     dt_control_log(_("invalid png file %s"), filepath);
@@ -561,7 +561,7 @@ uint16_t calculate_clut_haldclut(dt_iop_lut3d_params_t *const p, const char *con
     png_destroy_read_struct(&png.png_ptr, &png.info_ptr, NULL);
     return 0;
   }
-  if(read_image(&png, buf))
+  if(dt_imageio_png_read_image(&png, buf))
   {
     dt_print(DT_DEBUG_ALWAYS, "[lut3d] error - could not read png image `%s'\n", filepath);
     dt_control_log(_("error - could not read png image %s"), filepath);

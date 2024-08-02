@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2020 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,8 +34,8 @@ typedef struct dt_imageio_png_t
   png_infop info_ptr;
 } dt_imageio_png_t;
 
-int read_header(const char *filename, dt_imageio_png_t *png);
-int read_image(dt_imageio_png_t *png, void *out);
+int dt_imageio_png_read_header(const char *filename, dt_imageio_png_t *png);
+int dt_imageio_png_read_image(dt_imageio_png_t *png, void *out);
 
 dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *buf);
 int dt_imageio_png_read_profile(const char *filename, uint8_t **out, dt_colorspaces_cicp_t *cicp);
