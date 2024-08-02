@@ -182,7 +182,6 @@ static dt_lib_module_t ref_lib = {
   .button_released = NULL,
   .button_pressed = NULL,
   .scrolled = NULL,
-  .configure = NULL,
   .position = position_wrapper,
   .legacy_params = NULL,
   .get_params = NULL,
