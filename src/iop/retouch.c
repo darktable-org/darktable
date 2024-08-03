@@ -586,7 +586,8 @@ static void rt_shape_selection_changed(dt_iop_module_t *self)
 
   --darktable.gui->reset;
 
-  if(selection_changed) dt_dev_add_history_item(darktable.develop, self, TRUE);
+  if(selection_changed)
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 //---------------------------------------------------------------------------------
@@ -3527,7 +3528,7 @@ static void _retouch_clone(float *const in,
   rt_copy_image_masked(img_src, in, roi_in, mask_scaled, roi_mask_scaled, opacity);
 
 cleanup:
-  if(img_src) dt_free_align(img_src);
+  dt_free_align(img_src);
 }
 
 static void _retouch_blur(dt_iop_module_t *self,
@@ -3619,7 +3620,7 @@ static void _retouch_blur(dt_iop_module_t *self,
   rt_copy_image_masked(img_dest, in, roi_in, mask_scaled, roi_mask_scaled, opacity);
 
 cleanup:
-  if(img_dest) dt_free_align(img_dest);
+  dt_free_align(img_dest);
 }
 
 static void _retouch_heal(float *const in,
@@ -3657,8 +3658,8 @@ static void _retouch_heal(float *const in,
   rt_copy_image_masked(img_dest, in, roi_in, mask_scaled, roi_mask_scaled, opacity);
 
 cleanup:
-  if(img_src) dt_free_align(img_src);
-  if(img_dest) dt_free_align(img_dest);
+  dt_free_align(img_src);
+  dt_free_align(img_dest);
 }
 
 static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int scale1)
@@ -3767,7 +3768,7 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
           if(!rt_masks_get_delta_to_destination(self, piece, roi_layer, form, &dx, &dy,
                                                 p->rt_forms[index].distort_mode))
           {
-            if(mask) dt_free_align(mask);
+            dt_free_align(mask);
             continue;
           }
         }
@@ -3848,8 +3849,8 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
                                   mask_scaled, &roi_mask_scaled, form_opacity);
         }
 
-        if(mask) dt_free_align(mask);
-        if(mask_scaled) dt_free_align(mask_scaled);
+        dt_free_align(mask);
+        dt_free_align(mask_scaled);
       }
     }
   }
@@ -3993,8 +3994,8 @@ void process(struct dt_iop_module_t *self,
   rt_copy_in_to_out(in_retouch, roi_rt, ovoid, roi_out, 4, 0, 0);
 
 cleanup:
-  if(in_retouch) dt_free_align(in_retouch);
-  if(dwt_p) dt_dwt_free(dwt_p);
+  dt_free_align(in_retouch);
+  dt_dwt_free(dwt_p);
 }
 
 void distort_mask(struct dt_iop_module_t *self,
@@ -4052,7 +4053,7 @@ cl_int rt_process_stats_cl(struct dt_iop_module_t *self,
   }
 
 cleanup:
-  if(src_buffer) dt_free_align(src_buffer);
+  dt_free_align(src_buffer);
 
   return err;
 }
@@ -4100,7 +4101,7 @@ cl_int rt_adjust_levels_cl(struct dt_iop_module_t *self,
   }
 
 cleanup:
-  if(src_buffer) dt_free_align(src_buffer);
+  dt_free_align(src_buffer);
 
   return err;
 }
@@ -4696,7 +4697,7 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer,
           if(!rt_masks_get_delta_to_destination(self, piece, roi_layer, form, &dx, &dy,
                                                 p->rt_forms[index].distort_mode))
           {
-            if(mask) dt_free_align(mask);
+            dt_free_align(mask);
             continue;
           }
         }
@@ -4796,8 +4797,8 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer,
                                      gd);
         }
 
-        if(mask) dt_free_align(mask);
-        if(mask_scaled) dt_free_align(mask_scaled);
+        dt_free_align(mask);
+        dt_free_align(mask_scaled);
         if(dev_mask_scaled) dt_opencl_release_mem_object(dev_mask_scaled);
       }
     }

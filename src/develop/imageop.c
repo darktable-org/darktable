@@ -2092,12 +2092,15 @@ void dt_iop_commit_params(dt_iop_module_t *module,
     phash = dt_hash(phash, &module->instance, sizeof(int32_t));
     phash = dt_hash(phash, module->params, module->params_size);
 
-    const gboolean is_blending = (module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
-                              && (blendop_params->mask_mode != DEVELOP_MASK_DISABLED);
-
+    /* We have to take blending parameters into account for the hash if
+        a) there is some blending active detected via the mask_mode or
+        b) we have a blending module in focus so we have valid cachelines
+    */
+    const gboolean is_blending = module->flags() & IOP_FLAGS_SUPPORTS_BLENDING
+          && (blendop_params->mask_mode != DEVELOP_MASK_DISABLED
+              || dt_dev_gui_module() == module);
     if(is_blending)
     {
-      /* if module supports blend op add blend params into account */
       phash = dt_hash(phash, blendop_params, sizeof(dt_develop_blend_params_t));
 
       dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, blendop_params->mask_id);
