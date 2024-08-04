@@ -141,6 +141,7 @@ src/control/jobs/control_jobs.c
 src/control/jobs/develop_jobs.c
 src/control/jobs/film_jobs.c
 src/control/jobs/image_jobs.c
+src/control/jobs/sidecar_jobs.c
 src/develop/blend.c
 src/develop/blend_gui.c
 src/develop/develop.c
@@ -340,7 +341,6 @@ src/libs/session.c
 src/libs/snapshots.c
 src/libs/styles.c
 src/libs/tagging.c
-src/libs/tools/battery_indicator.c
 src/libs/tools/colorlabels.c
 src/libs/tools/darktable.c
 src/libs/tools/filmstrip.c
