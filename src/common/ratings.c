@@ -138,6 +138,18 @@ static void _ratings_apply(const GList *imgs,
     }
   }
 
+  if(!g_list_shorter_than(imgs, 2)) // pop up a toast if rating multiple images at once
+  {
+    const guint count = g_list_length((GList *) imgs);
+    if(rating == DT_VIEW_REJECT)
+      dt_control_log(ngettext("rejecting %d image", "rejecting %d images", count), count);
+    else
+      dt_control_log(ngettext("applying rating %d to %d image", "applying rating %d to %d images", count),
+                     rating, count);
+    // process all pending events to ensure that the toast is actually shown right away
+    dt_gui_process_events();
+  }
+
   for(const GList *images = imgs; images; images = g_list_next(images))
   {
     const dt_imgid_t image_id = GPOINTER_TO_INT(images->data);
@@ -168,16 +180,6 @@ static void _ratings_apply(const GList *imgs,
 
     _ratings_apply_to_image(image_id, new_rating);
   }
-
-  if(!g_list_shorter_than(imgs, 2)) // pop up a toast if rating multiple images at once
-  {
-    const guint count = g_list_length((GList *) imgs);
-    if(rating == DT_VIEW_REJECT)
-      dt_control_log(ngettext("rejecting %d image", "rejecting %d images", count), count);
-    else
-      dt_control_log(ngettext("applying rating %d to %d image", "applying rating %d to %d images", count),
-                     rating, count);
-  }
 }
 
 void dt_ratings_apply_on_list(const GList *img,
@@ -186,6 +188,7 @@ void dt_ratings_apply_on_list(const GList *img,
 {
   if(!g_list_is_empty(img))
   {
+    dt_gui_cursor_set_busy();
     GList *undo = NULL;
     if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_RATINGS);
 
@@ -196,6 +199,7 @@ void dt_ratings_apply_on_list(const GList *img,
       dt_undo_record(darktable.undo, NULL, DT_UNDO_RATINGS, undo, _pop_undo, _ratings_undo_data_free);
       dt_undo_end_group(darktable.undo);
     }
+    dt_gui_cursor_clear_busy();
     dt_collection_hint_message(darktable.collection);
   }
 }
@@ -248,6 +252,7 @@ static float _action_process_rating(gpointer target,
 
   if(DT_PERFORM_ACTION(move_size))
   {
+    dt_gui_cursor_set_busy();
     if(element != DT_VIEW_REJECT)
     {
       switch(effect)
@@ -300,7 +305,9 @@ static float _action_process_rating(gpointer target,
       }
     }
 
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_RATING_RANGE, imgs);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
+                               DT_COLLECTION_PROP_RATING_RANGE, imgs);
+    dt_gui_cursor_clear_busy();
   }
   else if(darktable.develop)
   {

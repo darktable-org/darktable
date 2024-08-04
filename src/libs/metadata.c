@@ -277,8 +277,9 @@ static void _write_metadata(dt_lib_module_t *self)
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
     _metadata_set_list(i, &key_value, d);
 
-  if(key_value)
+  if(key_value && d->last_act_on)
   {
+    dt_gui_cursor_set_busy();
     dt_metadata_set_list(d->last_act_on, key_value, TRUE);
 
     for(GList *l = key_value; l; l = l->next->next) g_free(l->next->data);
@@ -290,6 +291,7 @@ static void _write_metadata(dt_lib_module_t *self)
                                   DT_SIGNAL_METADATA_CHANGED, DT_METADATA_SIGNAL_NEW_VALUE);
 
     dt_image_synch_xmps(d->last_act_on);
+    dt_gui_cursor_clear_busy();
   }
 
   g_list_free(d->last_act_on);

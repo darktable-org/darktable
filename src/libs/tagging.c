@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1071,6 +1071,7 @@ static void _attach_selected_tag(dt_lib_module_t *self, dt_lib_tagging_t *d)
   if(tagid <= 0) return;
 
   // attach tag on images to act on
+  dt_gui_cursor_set_busy();
   if(dt_tag_attach(tagid, -1, TRUE, TRUE))
   {
     /** record last tag used */
@@ -1105,6 +1106,7 @@ static void _attach_selected_tag(dt_lib_module_t *self, dt_lib_tagging_t *d)
     _raise_signal_tag_changed(self);
     dt_image_synch_xmp(-1);
   }
+  dt_gui_cursor_clear_busy();
 }
 
 static void _detach_selected_tag(GtkTreeView *view, dt_lib_module_t *self)
@@ -1124,6 +1126,7 @@ static void _detach_selected_tag(GtkTreeView *view, dt_lib_module_t *self)
   GList *affected_images = dt_tag_get_images_from_list(imgs, tagid);
   if(affected_images)
   {
+    dt_gui_cursor_set_busy();
     GtkTreePath *path = gtk_tree_model_get_path(model, &iter);
     gint *indices = gtk_tree_path_get_indices(path);
     const int index = indices[0];
@@ -1170,6 +1173,7 @@ static void _detach_selected_tag(GtkTreeView *view, dt_lib_module_t *self)
       dt_image_synch_xmps(affected_images);
     }
     g_list_free(affected_images);
+    dt_gui_cursor_clear_busy();
   }
   g_list_free(imgs);
 }
@@ -3378,9 +3382,11 @@ static gboolean _lib_tagging_tag_key_press(GtkWidget *entry, GdkEventKey *event,
     case GDK_KEY_Return:
     case GDK_KEY_KP_Enter:
     {
+      dt_gui_cursor_set_busy();
       const gchar *tag = gtk_entry_get_text(GTK_ENTRY(entry));
       const gboolean res = dt_tag_attach_string_list(tag, d->floating_tag_imgs, TRUE);
       if(res) dt_image_synch_xmps(d->floating_tag_imgs);
+      dt_gui_cursor_clear_busy();
       g_list_free(d->floating_tag_imgs);
 
       /** record last tag used */
