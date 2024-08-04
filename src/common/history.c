@@ -2020,6 +2020,7 @@ gboolean dt_history_delete_on_list(const GList *list,
   if(!list)  // do we have any images on which to operate?
     return FALSE;
 
+  dt_gui_cursor_set_busy();
   if(undo) dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
 
   for(GList *l = (GList *)list; l; l = g_list_next(l))
@@ -2048,6 +2049,7 @@ gboolean dt_history_delete_on_list(const GList *list,
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
   if(undo) dt_undo_end_group(darktable.undo);
+  dt_gui_cursor_clear_busy();
   return TRUE;
 }
 

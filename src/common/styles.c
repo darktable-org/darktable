@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -639,6 +639,7 @@ gboolean dt_styles_create_from_image(const char *name,
 
 void dt_styles_apply_to_list(const char *name, const GList *list, gboolean duplicate)
 {
+  dt_gui_cursor_set_busy();
   gboolean selected = FALSE;
 
   /* write current history changes so nothing gets lost,
@@ -693,12 +694,14 @@ void dt_styles_apply_to_list(const char *name, const GList *list, gboolean dupli
   {
     dt_control_log(_("style %s successfully applied!"), name);
   }
+  dt_gui_cursor_clear_busy();
 }
 
 void dt_multiple_styles_apply_to_list(GList *styles,
                                       const GList *list,
                                       const gboolean duplicate)
 {
+  dt_gui_cursor_set_busy();
   /* write current history changes so nothing gets lost,
      do that only in the darkroom as there is nothing to be saved
      when in the lighttable (and it would write over current history stack) */
@@ -744,6 +747,7 @@ void dt_multiple_styles_apply_to_list(GList *styles,
   const guint styles_cnt = g_list_length(styles);
   dt_control_log(ngettext("style successfully applied!",
                           "styles successfully applied!", styles_cnt));
+  dt_gui_cursor_clear_busy();
 }
 
 void dt_styles_create_from_list(const GList *list)
