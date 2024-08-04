@@ -1765,13 +1765,15 @@ void dt_culling_update_active_images_list(dt_culling_t *table)
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
 }
 
-// recreate the list of thumb if needed and recomputes sizes and positions if needed
+// recreate the list of thumbs if needed and recomputes sizes and positions if needed
 void dt_culling_full_redraw(dt_culling_t *table, const gboolean force)
 {
   if(!gtk_widget_get_visible(table->widget) && !force) return;
   // first, we see if we need to do something
   if(!_compute_sizes(table, force)) return;
   const double start = dt_get_debug_wtime();
+
+  dt_print(DT_DEBUG_LIGHTTABLE, "[dt_culling_full_redraw] starting\n");
 
   // we store first image zoom and pos for new ones
   float old_zx = 0.0;
@@ -1857,9 +1859,8 @@ void dt_culling_full_redraw(dt_culling_t *table, const gboolean force)
   // we prefetch next/previous images
   _thumbs_prefetch(table);
 
-  // ensure that no hidden image as the focus
   const dt_imgid_t selid = dt_control_get_mouse_over_id();
-  if(selid >= 0)
+  if(selid >= 0) // ensure that no hidden image as the focus
   {
     gboolean in_list = FALSE;
     for(GList *l = table->list; l; l = g_list_next(l))
@@ -1877,7 +1878,7 @@ void dt_culling_full_redraw(dt_culling_t *table, const gboolean force)
     }
   }
 
-  dt_print(DT_DEBUG_LIGHTTABLE, "done in %0.04f sec\n", dt_get_wtime() - start);
+  dt_print(DT_DEBUG_LIGHTTABLE | DT_DEBUG_PERF, "[dt_culling_full_redraw] done in %0.04f sec\n", dt_get_wtime() - start);
 
   if(darktable.unmuted & DT_DEBUG_CACHE) dt_mipmap_cache_print(darktable.mipmap_cache);
 }
@@ -1994,6 +1995,7 @@ void dt_culling_set_overlays_mode(dt_culling_t *table, dt_thumbnail_overlay_t ov
 void dt_culling_force_overlay(dt_culling_t *table, const gboolean force)
 {
   if(!table) return;
+  dt_print(DT_DEBUG_LIGHTTABLE, "[dt_culling_force_overlay] starting\n");
 
   int timeout = -1;
 
@@ -2040,6 +2042,7 @@ void dt_culling_force_overlay(dt_culling_t *table, const gboolean force)
       : table->zoom_ratio;
     dt_thumbnail_resize(th, th->width, th->height, TRUE, zoom_ratio);
   }
+  dt_print(DT_DEBUG_LIGHTTABLE, "[dt_culling_force_overlay] finished\n");
 
   table->overlays = over;
 }
