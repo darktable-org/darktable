@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -242,13 +242,19 @@ static void discard_button_clicked(GtkWidget *widget, gpointer user_data)
   if(!imgs) return;
 
   const int number = g_list_length((GList *)imgs);
-
-  if(!dt_conf_get_bool("ask_before_discard")
+  const gboolean ask = dt_conf_get_bool("ask_before_discard");
+  if(!ask
      || dt_gui_show_yes_no_dialog(_("delete images' history?"),
           ngettext("do you really want to clear history of %d selected image?",
                    "do you really want to clear history of %d selected images?", number),
                                   number))
   {
+    if(ask && number > 10)
+    {
+      // ensure that the dialog window gets hidden on click
+      dt_control_queue_redraw_center();
+      dt_gui_process_events();
+    }
     dt_history_delete_on_list(imgs, TRUE);
     dt_collection_update_query(darktable.collection,
                                DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
