@@ -738,12 +738,13 @@ dt_view_surface_value_t dt_view_image_get_surface(const dt_imgid_t imgid,
   const int32_t buf_ht = buf.height;
 
   dt_print(DT_DEBUG_LIGHTTABLE,
-      "dt_view_image_get_surface  id %i, dots %ix%i -> mip %ix%i, found %ix%i\n",
-      imgid, mipwidth, mipheight, cache->max_width[mip], cache->max_height[mip], buf_wd, buf_ht);
+      "dt_view_image_get_surface  ID=%i, dots %ix%i -> mip %ix%i, found %ix%i at %p\n",
+      imgid, mipwidth, mipheight, cache->max_width[mip], cache->max_height[mip], buf_wd, buf_ht, buf.buf);
 
-  // if we don't get buffer, no image is awailable at the moment
+  // if we didn't get buffer, no image is available at the moment
   if(!buf.buf)
   {
+    dt_print(DT_DEBUG_LIGHTTABLE, "dt_view_image_get_surface  no image available for ID=%i\n", imgid);
     dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
     return DT_VIEW_SURFACE_KO;
   }
@@ -892,11 +893,16 @@ dt_view_surface_value_t dt_view_image_get_surface(const dt_imgid_t imgid,
     dt_print(DT_DEBUG_LIGHTTABLE | DT_DEBUG_PERF,
              "got surface  %ix%i created in %0.04f sec\n",
              img_width, img_height, dt_get_wtime() - tt);
-  else
-    dt_print(DT_DEBUG_LIGHTTABLE,
-             "got surface  %ix%i\n", img_width, img_height);
 
   // we consider skull as ok as the image hasn't to be reload
+  if(ret != DT_VIEW_SURFACE_OK)
+    dt_print(DT_DEBUG_LIGHTTABLE,
+      "dt_view_image_get_surface  ID=%i with surface problem %s%s%s\n",
+      imgid,
+      tmp_surface ? "" : "no tmp_surface, ",
+      ret == DT_VIEW_SURFACE_SMALLER ? "DT_VIEW_SURFACE_SMALLER" : "",
+      ret == DT_VIEW_SURFACE_KO ? "DT_VIEW_SURFACE_KO" : "");
+
   return ret;
 }
 
