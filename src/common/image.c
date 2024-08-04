@@ -868,10 +868,13 @@ void dt_image_update_final_size(const dt_imgid_t imgid)
       DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
     }
   }
+  dt_print(DT_DEBUG_PIPE, "[dt_image_update_final_size] for ID=%i, updated to %ix%i\n", imgid, ww, hh);
 }
 
 gboolean dt_image_get_final_size(const dt_imgid_t imgid, int *width, int *height)
 {
+  if(!dt_is_valid_imgid(imgid)) return FALSE;
+
   // get the img strcut
   dt_image_t *imgtmp = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   dt_image_t img = *imgtmp;
@@ -881,9 +884,11 @@ gboolean dt_image_get_final_size(const dt_imgid_t imgid, int *width, int *height
   {
     *width = img.final_width;
     *height = img.final_height;
-    return 0;
+    dt_print(DT_DEBUG_PIPE, "[dt_image_get_final_size] for ID=%i from cache %ix%i\n", imgid, *width, *height);
+    return FALSE;
   }
 
+  dt_print(DT_DEBUG_PIPE, "[dt_image_get_final_size] calculate it for ID=%i\n", imgid);
   // and now we can do the pipe stuff to get final image size
   dt_develop_t dev;
   dt_dev_init(&dev, FALSE);
