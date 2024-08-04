@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include <assert.h>
 #include <inttypes.h>
 #include <memory.h>
@@ -203,6 +204,9 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
 
   if(bpp < 16)
   {
+    img->flags &= ~DT_IMAGE_HDR;
+    img->flags |= DT_IMAGE_LDR;
+
     const float normalizer = 1.0f / 255.0f;
 
     DT_OMP_FOR()
@@ -215,6 +219,9 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
   }
   else
   {
+    img->flags &= ~DT_IMAGE_LDR;
+    img->flags |= DT_IMAGE_HDR;
+
     const float normalizer = 1.0f / 65535.0f;
 
     DT_OMP_FOR()
@@ -232,8 +239,6 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
   img->buf_dsc.filters = 0u;
   img->flags &= ~DT_IMAGE_RAW;
   img->flags &= ~DT_IMAGE_S_RAW;
-  img->flags &= ~DT_IMAGE_HDR;
-  img->flags |= DT_IMAGE_LDR;
   img->loader = LOADER_PNG;
 
   return DT_IMAGEIO_OK;

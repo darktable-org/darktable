@@ -143,7 +143,7 @@ gboolean dt_image_is_ldr(const dt_image_t *img)
 {
   const char *c = img->filename + strlen(img->filename);
   while(*c != '.' && c > img->filename) c--;
-  if((img->flags & DT_IMAGE_LDR) || !strcasecmp(c, ".jpg") || !strcasecmp(c, ".png")
+  if((img->flags & DT_IMAGE_LDR) || !strcasecmp(c, ".jpg") || !strcasecmp(c, ".webp")
      || !strcasecmp(c, ".ppm"))
     return TRUE;
   else
