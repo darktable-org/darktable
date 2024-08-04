@@ -301,8 +301,17 @@ void *dt_mipmap_cache_alloc(dt_mipmap_buffer_t *buf, const dt_image_t *img)
   return dsc + 1;
 }
 
+static char *_mip_to_string(const dt_mipmap_size_t mip)
+{
+  static char *arrmip[13] = { "MIPMAP_0 (180 110)",   "MIPMAP_1 (360 225)",   "MIPMAP_2 (720 450)",
+                              "MIPMAP_3 (1440 900)",  "MIPMAP_4 (1920 1200)", "MIPMAP_5 (2560 1600)",
+                              "MIPMAP_6 (4096 2560)", "MIPMAP_7 (5120 3200)", "MIPMAP_8 (unlimited)",
+                              "MIPMAP_F", "MIPMAP_FULL", "MIPMAP_NONE", "MIPMAP_UNDEFINED"};
+  return mip < 12 ? arrmip[mip] : arrmip[12];
+}
+
 // callback for the cache backend to initialize payload pointers
-void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
+static void _mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
 {
   dt_mipmap_cache_t *cache = (dt_mipmap_cache_t *)data;
   // for full image buffers
@@ -390,13 +399,13 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
            || dt_imageio_jpeg_decompress(&jpg, (uint8_t *)entry->data + sizeof(*dsc)))
         {
           dt_print(DT_DEBUG_ALWAYS,
-                   "[mipmap_cache] failed to decompress thumbnail for image %" PRIu32 " from `%s'!\n",
+                   "[mipmap_cache] failed to decompress thumbnail for ID=%d from `%s'!\n",
                    get_imgid(entry->key), filename);
           goto read_error;
         }
         dt_print(DT_DEBUG_CACHE,
-                 "[mipmap_cache] grab mip %d for image %" PRIu32 " from disk cache\n", mip,
-                 get_imgid(entry->key));
+                 "[mipmap_cache] grab %s for ID=%d from disk cache\n",
+                 _mip_to_string(mip), get_imgid(entry->key));
         dsc->width = jpg.width;
         dsc->height = jpg.height;
         dsc->iscale = 1.0f;
@@ -427,9 +436,9 @@ read_error:
     entry->cost = cache->buffer_size[mip];
 }
 
-static void dt_mipmap_cache_unlink_ondisk_thumbnail(void *data,
-                                                    const dt_imgid_t imgid,
-                                                    dt_mipmap_size_t mip)
+static void _mipmap_cache_unlink_ondisk_thumbnail(void *data,
+                                                  const dt_imgid_t imgid,
+                                                  dt_mipmap_size_t mip)
 {
   dt_mipmap_cache_t *cache = (dt_mipmap_cache_t *)data;
 
@@ -444,7 +453,7 @@ static void dt_mipmap_cache_unlink_ondisk_thumbnail(void *data,
   }
 }
 
-void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
+static void _mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
 {
   dt_mipmap_cache_t *cache = (dt_mipmap_cache_t *)data;
   const dt_mipmap_size_t mip = get_size(entry->key);
@@ -456,7 +465,7 @@ void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
     {
       if(dsc->flags & DT_MIPMAP_BUFFER_DSC_FLAG_INVALIDATE)
       {
-        dt_mipmap_cache_unlink_ondisk_thumbnail(data, get_imgid(entry->key), mip);
+        _mipmap_cache_unlink_ondisk_thumbnail(data, get_imgid(entry->key), mip);
       }
       else if(cache->cachedir[0] && ((dt_conf_get_bool("cache_disk_backend") && mip < DT_MIPMAP_8)
                                      || (dt_conf_get_bool("cache_disk_backend_full") && mip == DT_MIPMAP_8)))
@@ -521,7 +530,7 @@ write_error:
   dt_free_align(entry->data);
 }
 
-static uint32_t nearest_power_of_two(const uint32_t value)
+static uint32_t _nearest_power_of_two(const uint32_t value)
 {
   uint32_t rc = 1;
   while(rc < value) rc <<= 1;
@@ -587,24 +596,24 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
   cache->mip_full.stats_standin = 0;
 
   dt_cache_init(&cache->mip_thumbs.cache, 0, max_mem);
-  dt_cache_set_allocate_callback(&cache->mip_thumbs.cache, dt_mipmap_cache_allocate_dynamic, cache);
-  dt_cache_set_cleanup_callback(&cache->mip_thumbs.cache, dt_mipmap_cache_deallocate_dynamic, cache);
+  dt_cache_set_allocate_callback(&cache->mip_thumbs.cache, _mipmap_cache_allocate_dynamic, cache);
+  dt_cache_set_cleanup_callback(&cache->mip_thumbs.cache, _mipmap_cache_deallocate_dynamic, cache);
 
   // even with one thread you want two buffers. one for dr one for thumbs.
   // Also have the nr of cache entries larger than worker threads
   const int full_entries = 2 * dt_worker_threads();
-  const int32_t max_mem_bufs = nearest_power_of_two(full_entries);
+  const int32_t max_mem_bufs = _nearest_power_of_two(full_entries);
 
   // for this buffer, because it can be very busy during import
   dt_cache_init(&cache->mip_full.cache, 0, max_mem_bufs);
-  dt_cache_set_allocate_callback(&cache->mip_full.cache, dt_mipmap_cache_allocate_dynamic, cache);
-  dt_cache_set_cleanup_callback(&cache->mip_full.cache, dt_mipmap_cache_deallocate_dynamic, cache);
+  dt_cache_set_allocate_callback(&cache->mip_full.cache, _mipmap_cache_allocate_dynamic, cache);
+  dt_cache_set_cleanup_callback(&cache->mip_full.cache, _mipmap_cache_deallocate_dynamic, cache);
   cache->buffer_size[DT_MIPMAP_FULL] = 0;
 
   // same for mipf:
   dt_cache_init(&cache->mip_f.cache, 0, max_mem_bufs);
-  dt_cache_set_allocate_callback(&cache->mip_f.cache, dt_mipmap_cache_allocate_dynamic, cache);
-  dt_cache_set_cleanup_callback(&cache->mip_f.cache, dt_mipmap_cache_deallocate_dynamic, cache);
+  dt_cache_set_allocate_callback(&cache->mip_f.cache, _mipmap_cache_allocate_dynamic, cache);
+  dt_cache_set_cleanup_callback(&cache->mip_f.cache, _mipmap_cache_deallocate_dynamic, cache);
   cache->buffer_size[DT_MIPMAP_F] = sizeof(struct dt_mipmap_buffer_dsc)
                                         + 4 * sizeof(float) * cache->max_width[DT_MIPMAP_F]
                                           * cache->max_height[DT_MIPMAP_F];
@@ -683,6 +692,7 @@ static dt_mipmap_cache_one_t *_get_cache(dt_mipmap_cache_t *cache,
   }
 }
 
+
 void dt_mipmap_cache_get_with_caller(
     dt_mipmap_cache_t *cache,
     dt_mipmap_buffer_t *buf,
@@ -694,6 +704,14 @@ void dt_mipmap_cache_get_with_caller(
     int line)
 {
   const uint32_t key = get_key(imgid, mip);
+  dt_print(DT_DEBUG_CACHE, "[dt_mipmap_cache_get] ID=%i %s mode=%c  %s%s%s%s%s\n",
+    imgid, _mip_to_string(mip), mode,
+    flags == DT_MIPMAP_TESTLOCK       ? "DT_MIPMAP_TESTLOCK" : "",
+    flags == DT_MIPMAP_PREFETCH       ? "DT_MIPMAP_PREFETCH" : "",
+    flags == DT_MIPMAP_PREFETCH_DISK  ? "DT_MIPMAP_PREFETCH_DISK" : "",
+    flags == DT_MIPMAP_BLOCKING       ? "DT_MIPMAP_BLOCKING" : "",
+    flags == DT_MIPMAP_BEST_EFFORT    ? "DT_MIPMAP_BEST_EFFORT" : "");
+
   if(flags == DT_MIPMAP_TESTLOCK)
   {
     // simple case: only get and lock if it's there.
@@ -1005,7 +1023,7 @@ void dt_mipmap_cache_remove_at_size(dt_mipmap_cache_t *cache,
   else
   {
     // ugly, but avoids alloc'ing thumb if it is not there.
-    dt_mipmap_cache_unlink_ondisk_thumbnail((&_get_cache(cache, mip)->cache)->cleanup_data, imgid, mip);
+    _mipmap_cache_unlink_ondisk_thumbnail((&_get_cache(cache, mip)->cache)->cleanup_data, imgid, mip);
   }
 }
 
@@ -1236,7 +1254,7 @@ static void _init_8(uint8_t *buf,
         {
           // scale to fit
           dt_print(DT_DEBUG_CACHE,
-                   "[mipmap_cache] generate mip %d for image %d from jpeg\n", size, imgid);
+                   "[mipmap_cache] generate %s for ID=%d from jpeg\n", _mip_to_string(size), imgid);
           dt_iop_flip_and_zoom_8(tmp, jpg.width, jpg.height, buf, wd, ht, orientation, width, height);
           res = FALSE;
         }
@@ -1263,8 +1281,8 @@ static void _init_8(uint8_t *buf,
         {
           // scale to fit
           dt_print(DT_DEBUG_CACHE,
-                   "[mipmap_cache] generate mip %d for image %d from embedded jpeg\n",
-                   size, imgid);
+                   "[mipmap_cache] generate %s for ID=%d from embedded jpeg\n",
+                   _mip_to_string(size), imgid);
           dt_iop_flip_and_zoom_8(tmp, thumb_width, thumb_height, buf, wd, ht, orientation, width, height);
         }
         dt_free_align(tmp);
@@ -1282,8 +1300,8 @@ static void _init_8(uint8_t *buf,
       if(tmp.buf == NULL)
         continue;
       dt_print(DT_DEBUG_CACHE,
-               "[mipmap_cache] generate mip %d for image %d from level %d\n",
-               size, imgid, k);
+               "[mipmap_cache] generate %s for ID=%d from %s\n",
+               _mip_to_string(size), imgid, _mip_to_string(k));
       *color_space = tmp.color_space;
       // downsample
       dt_iop_flip_and_zoom_8(tmp.buf, tmp.width, tmp.height, buf, wd, ht, ORIENTATION_NONE, width, height);
@@ -1313,8 +1331,8 @@ static void _init_8(uint8_t *buf,
     if(!res)
     {
       dt_print(DT_DEBUG_CACHE,
-               "[mipmap_cache] generate mip %d for image %d from scratch\n",
-               size, imgid);
+               "[mipmap_cache] generate %s for ID=%d from scratch\n",
+               _mip_to_string(size), imgid);
       // might be smaller, or have a different aspect than what we got as input.
       *width = dat.head.width;
       *height = dat.head.height;
@@ -1349,9 +1367,14 @@ dt_colorspaces_color_profile_type_t dt_mipmap_cache_get_colorspace()
   return DT_COLORSPACE_DISPLAY;
 }
 
-void dt_mipmap_cache_copy_thumbnails(const dt_mipmap_cache_t *cache, const uint32_t dst_imgid, const uint32_t src_imgid)
+void dt_mipmap_cache_copy_thumbnails(const dt_mipmap_cache_t *cache,
+                                     const dt_imgid_t dst_imgid,
+                                     const dt_imgid_t src_imgid)
 {
-  if(cache->cachedir[0] && dt_conf_get_bool("cache_disk_backend"))
+  if(cache->cachedir[0]
+    && dt_conf_get_bool("cache_disk_backend")
+    && dt_is_valid_imgid(src_imgid)
+    && dt_is_valid_imgid(dst_imgid))
   {
     for(dt_mipmap_size_t mip = DT_MIPMAP_0; mip < DT_MIPMAP_F; mip++)
     {
