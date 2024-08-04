@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -424,7 +424,6 @@ static gboolean _tag_execute(const GList *tags,
                              const gboolean undo_on,
                              const gint action)
 {
-  dt_gui_cursor_set_busy();
   gboolean res = FALSE;
   for(const GList *images = imgs; images; images = g_list_next(images))
   {
@@ -464,7 +463,6 @@ static gboolean _tag_execute(const GList *tags,
     else
       _undo_tags_free(undotags);
   }
-  dt_gui_cursor_clear_busy();
   return res;
 }
 
@@ -473,6 +471,7 @@ gboolean dt_tag_attach_images(const guint tagid,
                               const gboolean undo_on)
 {
   if(g_list_is_empty(img)) return FALSE;
+  dt_gui_cursor_set_busy();
   GList *undo = NULL;
   GList *tags = NULL;
 
@@ -490,6 +489,7 @@ gboolean dt_tag_attach_images(const guint tagid,
     dt_undo_end_group(darktable.undo);
   }
 
+  dt_gui_cursor_clear_busy();
   return res;
 }
 
@@ -523,6 +523,7 @@ gboolean dt_tag_set_tags(const GList *tags,
 {
   if(!g_list_is_empty(img))
   {
+    dt_gui_cursor_set_busy();
     GList *undo = NULL;
     if(undo_on)
       dt_undo_start_group(darktable.undo, DT_UNDO_TAGS);
@@ -536,6 +537,7 @@ gboolean dt_tag_set_tags(const GList *tags,
                      _pop_undo, _tags_undo_data_free);
       dt_undo_end_group(darktable.undo);
     }
+    dt_gui_cursor_clear_busy();
     return res;
   }
   return FALSE;
