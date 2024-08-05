@@ -425,7 +425,7 @@ find_package(LensFun REQUIRED)
 include_directories(SYSTEM ${LensFun_INCLUDE_DIRS})
 list(APPEND LIBS ${LensFun_LIBRARIES})
 
-find_package(SQLite3 3.24 REQUIRED)
+find_package(SQLite3 3.26 REQUIRED)
 list(APPEND LIBS SQLite::SQLite3)
 
 foreach(lib ${OUR_LIBS} GIO GThread GModule PangoCairo Rsvg2 PNG JPEG TIFF LCMS2 JsonGlib)
