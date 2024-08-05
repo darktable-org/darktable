@@ -329,8 +329,7 @@ int store(dt_imageio_module_storage_t *self,
   char input_dir[PATH_MAX] = { 0 };
   char pattern[DT_MAX_PATH_FOR_PARAMS];
   g_strlcpy(pattern, d->filename, sizeof(pattern));
-  gboolean from_cache = FALSE;
-  dt_image_full_path(imgid, input_dir, sizeof(input_dir), &from_cache);
+  dt_image_full_path(imgid, input_dir, sizeof(input_dir), NULL);
   // set variable values to expand them afterwards in darktable variables
   dt_variables_set_max_width_height(d->vp, fdata->max_width, fdata->max_height);
   dt_variables_set_upscale(d->vp, upscale);
