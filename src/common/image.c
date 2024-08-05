@@ -415,7 +415,7 @@ void dt_image_full_path(const dt_imgid_t imgid,
   }
   sqlite3_finalize(stmt);
 
-  if(*from_cache)
+  if(from_cache && *from_cache)
   {
     char lc_pathname[PATH_MAX] = { 0 };
     _image_local_copy_full_path(imgid, lc_pathname, sizeof(lc_pathname));
