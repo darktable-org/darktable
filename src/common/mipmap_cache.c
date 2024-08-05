@@ -171,7 +171,8 @@ static inline int32_t buffer_is_broken(dt_mipmap_buffer_t *buf)
 static inline uint32_t get_key(const dt_imgid_t imgid, const dt_mipmap_size_t size)
 {
   // imgid can't be >= 2^28 (~250 million images)
-  return (((uint32_t)size) << 28) | (imgid - 1);
+  // also ensure a valid key for bad imgid
+  return (((uint32_t)size) << 28) | ((imgid - 1) & 0xfffffff);
 }
 
 static inline uint32_t get_imgid(const uint32_t key)
@@ -1349,9 +1350,14 @@ dt_colorspaces_color_profile_type_t dt_mipmap_cache_get_colorspace()
   return DT_COLORSPACE_DISPLAY;
 }
 
-void dt_mipmap_cache_copy_thumbnails(const dt_mipmap_cache_t *cache, const uint32_t dst_imgid, const uint32_t src_imgid)
+void dt_mipmap_cache_copy_thumbnails(const dt_mipmap_cache_t *cache,
+                                     const dt_imgid_t dst_imgid,
+                                     const dt_imgid_t src_imgid)
 {
-  if(cache->cachedir[0] && dt_conf_get_bool("cache_disk_backend"))
+  if(cache->cachedir[0]
+    && dt_conf_get_bool("cache_disk_backend")
+    && dt_is_valid_imgid(src_imgid)
+    && dt_is_valid_imgid(dst_imgid))
   {
     for(dt_mipmap_size_t mip = DT_MIPMAP_0; mip < DT_MIPMAP_F; mip++)
     {

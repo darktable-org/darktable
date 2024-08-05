@@ -711,11 +711,12 @@ static gboolean _event_image_draw(GtkWidget *widget,
       cairo_surface_t *img_surf = NULL;
       if(thumb->zoomable)
       {
-        const float zoom100 = dt_thumbnail_get_zoom100(thumb);
-        // Any zoom100 > 1 is ensured to be correct
-        if(thumb->zoom > 1.0f && zoom100 > 1.0f)
-          thumb->zoom = MIN(thumb->zoom, zoom100);
-
+        if(thumb->zoom > 1.0f)
+        {
+          const float zoom100 = dt_thumbnail_get_zoom100(thumb);
+          if(zoom100 > 1.0f)
+            thumb->zoom = MIN(thumb->zoom, zoom100);
+        }
         res = dt_view_image_get_surface(thumb->imgid,
                                         image_w * thumb->zoom,
                                         image_h * thumb->zoom,
