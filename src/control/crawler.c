@@ -842,14 +842,6 @@ void dt_control_crawler_show_image_list(GList *images)
 
 /* backthumb crawler */
 
-/*
-  we use these checks while
-    a) creating mipmaps and
-    b) checking the database
-  to make sure
-    a) resources are made available again as soon as possible and
-    b) we can quit darktable almost immediately if application quits
-*/
 static inline gboolean _lighttable_silent(void)
 {
   return dt_view_get_current() == DT_VIEW_LIGHTTABLE
@@ -867,18 +859,14 @@ static void _update_img_thumbs(const dt_imgid_t imgid,
                               const dt_mipmap_size_t max_mip,
                               const int64_t stamp)
 {
-  for(dt_mipmap_size_t k = max_mip;
-        k >= DT_MIPMAP_1 && _still_thumbing();
-        k--)
+  for(dt_mipmap_size_t k = max_mip; k >= DT_MIPMAP_1; k--)
   {
     dt_mipmap_buffer_t buf;
     dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, k, DT_MIPMAP_BLOCKING, 'r');
     dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
   }
-  if(!_still_thumbing())
-    return;
 
-  // we have written all thumbs now so it's safe to write timestamp and mipsize
+  // we have written all thumbs now so it's safe to write timestamp, hash and mipsize
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "UPDATE main.images"
@@ -892,9 +880,7 @@ static void _update_img_thumbs(const dt_imgid_t imgid,
   sqlite3_finalize(stmt);
 
   dt_mimap_cache_evict(darktable.mipmap_cache, imgid);
-
-  // we have this in darktable-generate-cache but is it really good/necessary?
-  // dt_history_hash_set_mipmap(imgid);
+  dt_history_hash_set_mipmap(imgid);
 }
 
 static int _update_all_thumbs(const dt_mipmap_size_t max_mip)
@@ -908,7 +894,8 @@ static int _update_all_thumbs(const dt_mipmap_size_t max_mip)
                               " FROM main.images"
                               " WHERE thumb_timestamp < import_timestamp"
                               "  OR thumb_timestamp < change_timestamp"
-                              "  OR thumb_maxmip < ?1",
+                              "  OR thumb_maxmip < ?1"
+                              " ORDER BY id DESC",
                                 -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, max_mip);
   while(sqlite3_step(stmt) == SQLITE_ROW && _still_thumbing())
@@ -928,13 +915,14 @@ static int _update_all_thumbs(const dt_mipmap_size_t max_mip)
     else
     {
       missed++;
-      dt_print(DT_DEBUG_CACHE, "[thumb crawler] '%s' id=%d NOT available\n", path, imgid);
+      dt_print(DT_DEBUG_CACHE, "[thumb crawler] '%s' ID=%d NOT available\n", path, imgid);
     }
   }
   sqlite3_finalize(stmt);
 
-  dt_print(DT_DEBUG_CACHE,
-    "[thumb crawler] max_mip=%d, %d thumbs updated, %d not found, %s.\n",
+  if(updated)
+    dt_print(DT_DEBUG_CACHE,
+      "[thumb crawler] max_mip=%d, %d thumbs updated, %d not found, %s.\n",
       max_mip, updated, missed,
       _still_thumbing() ? "all done" : "interrupted by user activity");
 
@@ -975,8 +963,7 @@ void dt_update_thumbs_thread(void *p)
 
   bt->idle = (double)dt_conf_get_float("backthumbs_inactivity");
   const gboolean dwriting = dt_conf_get_bool("cache_disk_backend");
-  const char *mipsize = dt_conf_get_string_const("backthumbs_mipsize");
-  bt->mipsize = dt_mipmap_cache_get_min_mip_from_pref(mipsize);
+  bt->mipsize = dt_mipmap_cache_get_min_mip_from_pref(dt_conf_get_string_const("backthumbs_mipsize"));
   bt->service = FALSE;
   if(!dwriting || bt->mipsize == DT_MIPMAP_NONE)
   {
