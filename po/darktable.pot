@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-08-05 08:26-0400\n"
+"POT-Creation-Date: 2024-08-05 08:47-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -840,7 +840,7 @@ msgstr ""
 #: ../build/bin/preferences_gen.h:5029 ../build/bin/preferences_gen.h:5735
 #: ../build/bin/preferences_gen.h:6571 ../build/bin/preferences_gen.h:7064
 #: ../build/bin/preferences_gen.h:7330 ../src/gui/accelerators.c:3001
-#: ../src/gui/gtk.c:2979 ../src/gui/preferences.c:424
+#: ../src/gui/gtk.c:3005 ../src/gui/preferences.c:424
 #: ../src/gui/preferences.c:874 ../src/libs/modulegroups.c:4091
 msgid "?"
 msgstr ""
@@ -2578,7 +2578,7 @@ msgstr ""
 #: ../src/common/collection.c:1486 ../src/common/color_vocabulary.c:232
 #: ../src/common/colorlabels.c:381 ../src/develop/blend_gui.c:2386
 #: ../src/develop/blend_gui.c:2434 ../src/develop/lightroom.c:887
-#: ../src/gui/gtk.c:3575 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:372
+#: ../src/gui/gtk.c:3601 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:372
 #: ../src/iop/channelmixer.c:621 ../src/iop/channelmixer.c:631
 #: ../src/iop/channelmixerrgb.c:4683 ../src/iop/colorequal.c:2465
 #: ../src/iop/colorzones.c:2496 ../src/iop/temperature.c:2009
@@ -2598,7 +2598,7 @@ msgstr ""
 #: ../src/common/collection.c:1490 ../src/common/color_vocabulary.c:277
 #: ../src/common/colorlabels.c:383 ../src/develop/blend_gui.c:2392
 #: ../src/develop/blend_gui.c:2440 ../src/develop/lightroom.c:891
-#: ../src/gui/gtk.c:3576 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:377
+#: ../src/gui/gtk.c:3602 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:377
 #: ../src/iop/channelmixer.c:622 ../src/iop/channelmixer.c:637
 #: ../src/iop/channelmixerrgb.c:4684 ../src/iop/colorequal.c:2468
 #: ../src/iop/colorzones.c:2499 ../src/iop/temperature.c:1993
@@ -2619,7 +2619,7 @@ msgstr ""
 #: ../src/common/collection.c:1492 ../src/common/color_vocabulary.c:324
 #: ../src/common/colorlabels.c:384 ../src/develop/blend_gui.c:2398
 #: ../src/develop/blend_gui.c:2446 ../src/develop/lightroom.c:893
-#: ../src/gui/gtk.c:3577 ../src/iop/bilateral.cc:382
+#: ../src/gui/gtk.c:3603 ../src/iop/bilateral.cc:382
 #: ../src/iop/channelmixer.c:623 ../src/iop/channelmixer.c:643
 #: ../src/iop/channelmixerrgb.c:4685 ../src/iop/colorequal.c:2470
 #: ../src/iop/colorzones.c:2501 ../src/iop/temperature.c:2013
@@ -4294,7 +4294,7 @@ msgstr ""
 #. Side-border hide/show
 #: ../build/lib/darktable/plugins/introspection_lens.cc:534
 #: ../src/dtgtk/range.c:1762 ../src/gui/accelerators.c:2597
-#: ../src/gui/accelerators.c:2679 ../src/gui/gtk.c:1406 ../src/gui/gtk.c:3574
+#: ../src/gui/accelerators.c:2679 ../src/gui/gtk.c:1406 ../src/gui/gtk.c:3600
 #: ../src/imageio/format/pdf.c:645 ../src/iop/denoiseprofile.c:3690
 #: ../src/iop/rawdenoise.c:893 ../src/libs/collect.c:3548
 #: ../src/libs/filtering.c:1531 ../src/libs/filters/colors.c:157
@@ -6188,11 +6188,11 @@ msgid ""
 "do you really want to delete the lock files?\n"
 msgstr ""
 
-#: ../src/common/database.c:3648 ../src/gui/gtk.c:2930
+#: ../src/common/database.c:3648 ../src/gui/gtk.c:2956
 msgid "_no"
 msgstr ""
 
-#: ../src/common/database.c:3648 ../src/gui/gtk.c:2929
+#: ../src/common/database.c:3648 ../src/gui/gtk.c:2955
 msgid "_yes"
 msgstr ""
 
@@ -8677,7 +8677,7 @@ msgid ""
 "you have placed this module at\n"
 "a position in the pipeline where\n"
 "the data format does not match\n"
-"it's requirements."
+"its requirements."
 msgstr ""
 
 #: ../src/develop/imageop.c:3819 ../src/develop/imageop.c:3829
@@ -8697,7 +8697,7 @@ msgid "duplicate"
 msgstr ""
 
 #: ../src/develop/imageop.c:3830 ../src/gui/accelerators.c:134
-#: ../src/gui/accelerators.c:144 ../src/gui/gtk.c:3423 ../src/gui/gtk.c:3478
+#: ../src/gui/accelerators.c:144 ../src/gui/gtk.c:3449 ../src/gui/gtk.c:3504
 #: ../src/gui/hist_dialog.c:272 ../src/gui/styles_dialog.c:646
 #: ../src/gui/styles_dialog.c:668 ../src/iop/atrous.c:1625
 #: ../src/libs/lib.c:1414 ../src/libs/modulegroups.c:4086
@@ -9585,12 +9585,12 @@ msgid "popup"
 msgstr ""
 
 #: ../src/gui/accelerators.c:142 ../src/gui/accelerators.c:175
-#: ../src/gui/gtk.c:3476 ../src/views/lighttable.c:760
+#: ../src/gui/gtk.c:3502 ../src/views/lighttable.c:760
 msgid "next"
 msgstr ""
 
 #: ../src/gui/accelerators.c:143 ../src/gui/accelerators.c:174
-#: ../src/gui/gtk.c:3477 ../src/views/lighttable.c:761
+#: ../src/gui/gtk.c:3503 ../src/views/lighttable.c:761
 msgid "previous"
 msgstr ""
 
@@ -9625,7 +9625,7 @@ msgstr ""
 msgid "right-on"
 msgstr ""
 
-#: ../src/gui/accelerators.c:167 ../src/gui/gtk.c:3475
+#: ../src/gui/accelerators.c:167 ../src/gui/gtk.c:3501
 msgid "activate"
 msgstr ""
 
@@ -10344,42 +10344,42 @@ msgstr ""
 msgid "toggle focus peaking"
 msgstr ""
 
-#: ../src/gui/gtk.c:1836 ../src/gui/gtk.c:3581 ../src/gui/gtk.c:3586
-#: ../src/gui/gtk.c:3591 ../src/gui/gtk.c:3596
+#: ../src/gui/gtk.c:1836 ../src/gui/gtk.c:3607 ../src/gui/gtk.c:3612
+#: ../src/gui/gtk.c:3617 ../src/gui/gtk.c:3622
 msgid "tabs"
 msgstr ""
 
 #. ask the user if darktable.org may be accessed
-#: ../src/gui/gtk.c:3046
+#: ../src/gui/gtk.c:3072
 msgid "access the online user manual?"
 msgstr ""
 
-#: ../src/gui/gtk.c:3047
+#: ../src/gui/gtk.c:3073
 #, c-format
 msgid "do you want to access `%s'?"
 msgstr ""
 
-#: ../src/gui/gtk.c:3120
+#: ../src/gui/gtk.c:3146
 msgid "there is no help available for this element"
 msgstr ""
 
 #. font name can only use period as decimal separator
 #. but printf format strings use comma for some locales, so replace comma with period
-#: ../src/gui/gtk.c:3140 ../src/libs/metadata_view.c:801
+#: ../src/gui/gtk.c:3166 ../src/libs/metadata_view.c:801
 #, c-format
 msgid "%.1f"
 msgstr ""
 
-#: ../src/gui/gtk.c:3142
+#: ../src/gui/gtk.c:3168
 #, c-format
 msgid "Sans %s"
 msgstr ""
 
-#: ../src/gui/gtk.c:3470
+#: ../src/gui/gtk.c:3496
 msgid "does not contain pages"
 msgstr ""
 
-#: ../src/gui/gtk.c:3718
+#: ../src/gui/gtk.c:3744
 #, c-format
 msgid "never show more than %d lines"
 msgstr ""
@@ -11851,12 +11851,12 @@ msgstr ""
 msgid "cannot find the style '%s' to apply during export"
 msgstr ""
 
-#: ../src/imageio/imageio_libraw.c:309
+#: ../src/imageio/imageio_libraw.c:327
 msgid ""
 "<span foreground='red'><b>WARNING</b></span>: camera is not fully supported!"
 msgstr ""
 
-#: ../src/imageio/imageio_libraw.c:311
+#: ../src/imageio/imageio_libraw.c:329
 #, c-format
 msgid ""
 "colors for `%s' could be misrepresented,\n"
