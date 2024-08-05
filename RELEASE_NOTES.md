@@ -62,7 +62,7 @@ changes (where available).
 
 ## Bug Fixes
 
-- ???
+- Fixed a performance regression for redrawing mipmaps.
 
 ## Lua
 
