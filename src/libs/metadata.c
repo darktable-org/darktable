@@ -68,12 +68,18 @@ const char *description(dt_lib_module_t *self)
 
 dt_view_type_flags_t views(dt_lib_module_t *self)
 {
-  return DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING;
+  if(dt_conf_get_bool("plugins/lighttable/metadata/hideindarkroom"))
+    return DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING;
+  else
+    return DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM | DT_VIEW_TETHERING;
 }
 
 uint32_t container(dt_lib_module_t *self)
 {
-  return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
+  if(dt_view_get_current() == DT_VIEW_DARKROOM)
+    return DT_UI_CONTAINER_PANEL_LEFT_CENTER;
+  else
+    return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
 
 static gboolean _is_leave_unchanged(GtkTextView *textview)
