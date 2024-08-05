@@ -1765,7 +1765,7 @@ void dt_culling_update_active_images_list(dt_culling_t *table)
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
 }
 
-// recreate the list of thumb if needed and recomputes sizes and positions if needed
+// recreate the list of thumbs if needed and recomputes sizes and positions if needed
 void dt_culling_full_redraw(dt_culling_t *table, const gboolean force)
 {
   if(!gtk_widget_get_visible(table->widget) && !force) return;
@@ -1877,7 +1877,7 @@ void dt_culling_full_redraw(dt_culling_t *table, const gboolean force)
     }
   }
 
-  dt_print(DT_DEBUG_LIGHTTABLE, "done in %0.04f sec\n", dt_get_wtime() - start);
+  dt_print(DT_DEBUG_LIGHTTABLE | DT_DEBUG_PERF, "[dt_culling_full_redraw] done in %0.04f sec\n", dt_get_wtime() - start);
 
   if(darktable.unmuted & DT_DEBUG_CACHE) dt_mipmap_cache_print(darktable.mipmap_cache);
 }
