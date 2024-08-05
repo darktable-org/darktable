@@ -917,8 +917,7 @@ static int _update_all_thumbs(const dt_mipmap_size_t max_mip)
     const int64_t stamp = MAX(sqlite3_column_int64(stmt, 1), sqlite3_column_int64(stmt, 2));
 
     char path[PATH_MAX] = { 0 };
-    gboolean from_cache = FALSE;
-    dt_image_full_path(imgid, path, sizeof(path), &from_cache);
+    dt_image_full_path(imgid, path, sizeof(path), NULL);
     const gboolean available = dt_util_test_image_file(path);
 
     if(available)

@@ -5009,8 +5009,7 @@ char *dt_exif_xmp_read_string(const dt_imgid_t imgid)
   try
   {
     char input_filename[PATH_MAX] = { 0 };
-    gboolean from_cache = FALSE;
-    dt_image_full_path(imgid, input_filename, sizeof(input_filename), &from_cache);
+    dt_image_full_path(imgid, input_filename, sizeof(input_filename), NULL);
 
     // First take over the data from the source image
     Exiv2::XmpData xmpData;

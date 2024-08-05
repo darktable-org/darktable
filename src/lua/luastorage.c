@@ -100,11 +100,10 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self,
 
   /* construct a temporary file name */
   char tmpdir[PATH_MAX] = { 0 };
-  gboolean from_cache = FALSE;
   dt_loc_get_tmp_dir(tmpdir, sizeof(tmpdir));
 
   char dirname[PATH_MAX] = { 0 };
-  dt_image_full_path(imgid, dirname, sizeof(dirname), &from_cache);
+  dt_image_full_path(imgid, dirname, sizeof(dirname), NULL);
   dt_image_path_append_version(imgid, dirname, sizeof(dirname));
   gchar *filename = g_path_get_basename(dirname);
   gchar *end = g_strrstr(filename, ".") + 1;
