@@ -273,7 +273,7 @@ const char *name(dt_lib_module_t *self)
 
 const char *description(dt_lib_module_t *self)
 {
-  return _("refine the set of images to display or edit\n"
+  return _("refine the set of images to display or edit.\n"
            "filters can be pinned to the top toolbar, where\n"
            "they will also be visible in the darkroom");
 }
