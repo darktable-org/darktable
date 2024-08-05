@@ -295,8 +295,8 @@ static gboolean _supported_image(const gchar *filename)
   else
     extensions_whitelist = g_strdup(always_by_libraw);
 
-  dt_print(DT_DEBUG_ALWAYS,
-           "[libraw_open] extensions whitelist: `%s'\n", extensions_whitelist);
+  dt_print(DT_DEBUG_IMAGEIO,
+           "[libraw_open] extensions whitelist: '%s'\n", extensions_whitelist);
 
   gchar *ext_lowercased = g_ascii_strdown(ext, -1);
   if(g_strstr_len(extensions_whitelist, -1, ext_lowercased))
