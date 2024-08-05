@@ -1143,9 +1143,14 @@ static gboolean _event_scroll(GtkWidget *widget,
   return TRUE;
 }
 
-static void _show_text_line(cairo_t *cr, PangoLayout *layout, const char *text,
-                            const float offx, const float offy,
-                            const float lineto_x, const float lineto_y, const float at)
+static void _show_text_line(cairo_t *cr,
+                            PangoLayout *layout,
+                            const char *text,
+                            const float offx,
+                            const float offy,
+                            const float lineto_x,
+                            const float lineto_y,
+                            const float at)
 {
   pango_layout_set_text(layout, text, -1);
   PangoRectangle ink;
