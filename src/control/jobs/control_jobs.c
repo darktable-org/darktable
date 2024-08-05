@@ -2114,11 +2114,11 @@ void dt_control_paste_history(GList *imgs)
     g_list_free(imgs);
     return;
   }
-
+  progress_type_t prog = g_list_shorter_than(imgs,5) ? PROGRESS_NONE : PROGRESS_CANCELLABLE;
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
                      dt_control_generic_images_job_create(&_control_paste_history_job_run,
                                                           N_("paste history"), 0,
-                                                          imgs, PROGRESS_CANCELLABLE, FALSE));
+                                                          imgs, prog, FALSE));
 }
 
 void dt_control_paste_parts_history(GList *imgs)
@@ -2136,10 +2136,11 @@ void dt_control_paste_parts_history(GList *imgs)
 
   if(res == GTK_RESPONSE_OK)
   {
+    progress_type_t prog = g_list_shorter_than(imgs,5) ? PROGRESS_NONE : PROGRESS_CANCELLABLE;
     dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
                        dt_control_generic_images_job_create(&_control_paste_history_job_run,
                                                             N_("paste history"), 0,
-                                                            imgs, PROGRESS_CANCELLABLE, FALSE));
+                                                            imgs, prog, FALSE));
   }
   else
     g_list_free(imgs);
@@ -2147,18 +2148,30 @@ void dt_control_paste_parts_history(GList *imgs)
 
 void dt_control_compress_history(GList *imgs)
 {
+  if(!imgs)
+    return;
+  if(g_list_is_singleton(imgs))
+  {
+    (void)dt_history_compress(GPOINTER_TO_INT(imgs->data));
+    g_list_free(imgs);
+    return;
+  }
+  progress_type_t prog = g_list_shorter_than(imgs,5) ? PROGRESS_NONE : PROGRESS_CANCELLABLE;
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
                      dt_control_generic_images_job_create(&_control_compress_history_job_run,
                                                           N_("compress history"), 0,
-                                                          imgs, PROGRESS_CANCELLABLE, FALSE));
+                                                          imgs, prog, FALSE));
 }
 
 void dt_control_discard_history(GList *imgs)
 {
+  if(!imgs)
+    return;
+  progress_type_t prog = g_list_shorter_than(imgs,5) ? PROGRESS_NONE : PROGRESS_CANCELLABLE;
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
                      dt_control_generic_images_job_create(&_control_discard_history_job_run,
-                                                          N_("compress history"), 0,
-                                                          imgs, PROGRESS_CANCELLABLE, FALSE));
+                                                          N_("discard history"), 0,
+                                                          imgs, prog, FALSE));
 }
 
 static dt_control_image_enumerator_t *dt_control_export_alloc()
