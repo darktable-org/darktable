@@ -494,14 +494,19 @@ void gui_init(dt_lib_module_t *self)
   dt_action_define(&darktable.control->actions_global, NULL, N_("shortcuts"), d->keymap_button, &dt_action_def_toggle);
   gtk_box_pack_start(GTK_BOX(self->widget), d->keymap_button, FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(d->keymap_button, _("define keyboard shortcuts for on-screen controls\n"
-                                                  "ctrl+click to switch off overwrite confirmations\n\n"
-                                                  "after activating, hover over a widget (button, slider, etc.)\n"
-                                                  "and press a keystroke combination (optionally with mouse\n"
-                                                  "click, move, or scroll while holding down the keys) to define\n"
-                                                  "a shortcut for the widget\n"
-                                                  "type an existing combination to delete that mapping\n\n"
-                                                  "click on a widget, module or screen area to open the dialog\n"
-                                                  "for more detailed configuration\n\n"
+                                                  "ctrl+click to switch off overwrite confirmations\n"
+                                                  "\n"
+                                                  "after activating:\n"
+                                                  "\n"
+                                                  "- hover over a control (button, slider, etc.) and press\n"
+                                                  "  a keystroke combination (optionally with mouse click,\n"
+                                                  "  move, or scroll while holding down the keys) to\n"
+                                                  "  define a shortcut for the control,\n"
+                                                  "- type an existing combination to delete that mapping\n"
+                                                  "\n"
+                                                  "click on a control, module or screen area to open the\n"
+                                                  "dialog for more detailed configuration\n"
+                                                  "\n"
                                                   "right-click to exit mapping mode"));
   g_signal_connect(G_OBJECT(d->keymap_button), "clicked", G_CALLBACK(_lib_keymap_button_clicked), d);
   g_signal_connect(G_OBJECT(d->keymap_button), "button-press-event", G_CALLBACK(_lib_keymap_button_press_release), d);
