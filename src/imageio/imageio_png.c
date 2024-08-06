@@ -25,18 +25,17 @@
 
 #include "common/colorspaces.h"
 #include "common/darktable.h"
-#include "imageio_png.h"
 #include "common/exif.h"
 #include "control/conf.h"
 #include "develop/develop.h"
 #include "imageio_common.h"
-#include "imageio_tiff.h"
+#include "imageio_png.h"
 
-int read_header(const char *filename, dt_imageio_png_t *png)
+gboolean dt_imageio_png_read_header(const char *filename, dt_imageio_png_t *png)
 {
   png->f = g_fopen(filename, "rb");
 
-  if(!png->f) return 1;
+  if(!png->f) return FALSE;
 
 #define NUM_BYTES_CHECK (8)
 
@@ -47,7 +46,7 @@ int read_header(const char *filename, dt_imageio_png_t *png)
   if(cnt != NUM_BYTES_CHECK || png_sig_cmp(dat, (png_size_t)0, NUM_BYTES_CHECK))
   {
     fclose(png->f);
-    return 1;
+    return FALSE;
   }
 
   png->png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
@@ -55,7 +54,7 @@ int read_header(const char *filename, dt_imageio_png_t *png)
   if(!png->png_ptr)
   {
     fclose(png->f);
-    return 1;
+    return FALSE;
   }
 
   /* TODO: gate by version once known cICP chunk read support is added to libpng */
@@ -68,14 +67,14 @@ int read_header(const char *filename, dt_imageio_png_t *png)
   {
     fclose(png->f);
     png_destroy_read_struct(&png->png_ptr, NULL, NULL);
-    return 1;
+    return FALSE;
   }
 
   if(setjmp(png_jmpbuf(png->png_ptr)))
   {
     fclose(png->f);
     png_destroy_read_struct(&png->png_ptr, &png->info_ptr, NULL);
-    return 1;
+    return FALSE;
   }
 
   png_init_io(png->png_ptr, png->f);
@@ -117,17 +116,17 @@ int read_header(const char *filename, dt_imageio_png_t *png)
 
 #undef NUM_BYTES_CHECK
 
-  return 0;
+  return TRUE;
 }
 
 
-int read_image(dt_imageio_png_t *png, void *out)
+gboolean dt_imageio_png_read_image(dt_imageio_png_t *png, void *out)
 {
   if(setjmp(png_jmpbuf(png->png_ptr)))
   {
     fclose(png->f);
     png_destroy_read_struct(&png->png_ptr, &png->info_ptr, NULL);
-    return 1;
+    return FALSE;
   }
 
   png_bytep *row_pointers = malloc(sizeof(png_bytep) * png->height);
@@ -147,7 +146,7 @@ int read_image(dt_imageio_png_t *png, void *out)
 
   free(row_pointers);
   fclose(png->f);
-  return 0;
+  return TRUE;
 }
 
 
@@ -165,7 +164,8 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
   uint16_t bpp;
 
 
-  if(read_header(filename, &image) != 0) return DT_IMAGEIO_LOAD_FAILED;
+  if(!dt_imageio_png_read_header(filename, &image))
+    return DT_IMAGEIO_LOAD_FAILED;
 
   width = img->width = image.width;
   height = img->height = image.height;
@@ -193,7 +193,7 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
     return DT_IMAGEIO_CACHE_FULL;
   }
 
-  if(read_image(&image, (void *)buf) != 0)
+  if(!dt_imageio_png_read_image(&image, (void *)buf))
   {
     dt_free_align(buf);
     dt_print(DT_DEBUG_ALWAYS, "[png_open] could not read image `%s'\n", img->filename);
@@ -259,7 +259,7 @@ int dt_imageio_png_read_profile(const char *filename, uint8_t **out, dt_colorspa
 
   if(!(filename && *filename)) return 0;
 
-  if(read_header(filename, &image) != 0) return 0;
+  if(dt_imageio_png_read_header(filename, &image) != 0) return 0;
 
   /* TODO: also add check for known cICP chunk read support once added to libpng */
 #ifdef PNG_STORE_UNKNOWN_CHUNKS_SUPPORTED
