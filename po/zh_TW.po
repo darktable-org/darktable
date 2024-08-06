@@ -3,14 +3,14 @@ msgstr ""
 "Project-Id-Version: darktable 5.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-08-05 08:47-0400\n"
-"PO-Revision-Date: 2024-08-06 09:49+0800\n"
+"PO-Revision-Date: 2024-08-06 17:11+0800\n"
 "Last-Translator: Hsu Kang-Wei <beblue.shi@gmail.com>\n"
 "Language-Team: \n"
 "Language: zh_TW\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 3.4.4\n"
 
 #: ../build/bin/conf_gen.h:90
@@ -1115,8 +1115,7 @@ msgstr ""
 "啟用此選項將縮圖儲存至硬碟，讀取快取檔案可免去每次重新運算縮圖，\n"
 "加快在燈箱模式內瀏覽大量影像時的運作速度。\n"
 "\n"
-"這些縮圖不會被刪除，可以手動至 .cache\\darktable\\ 資料夾刪除以釋出硬碟空"
-"間。\n"
+"這些縮圖不會被刪除，可手動至 .cache\\darktable\\ 資料夾刪除以釋出硬碟空間。\n"
 "\n"
 "可執行 bin\\darktable-generate-cache.exe 一次生成所有縮圖。"
 
@@ -5790,6 +5789,7 @@ msgstr "已選擇 <b>%d</b> 張（第 <b>%d</b>張），共有 <b>%d</b> 張影�
 msgid "<b>%d</b> image selected of <b>%d</b>"
 msgid_plural "<b>%d</b> images selected of <b>%d</b>"
 msgstr[0] "已選擇 <b>%d<b> 張，共 <b>%d<b> 張影像"
+msgstr[1] "已選擇 <b>%d<b> 張，共 <b>%d<b> 張影像"
 
 #: ../src/common/color_vocabulary.c:38 ../src/develop/blend_gui.c:2380
 #: ../src/develop/blend_gui.c:2428 ../src/gui/guides.c:729
@@ -6634,11 +6634,13 @@ msgstr ""
 msgid "do you want to remove this empty directory?"
 msgid_plural "do you want to remove these empty directories?"
 msgstr[0] "是否要刪除此空白資料夾？"
+msgstr[1] "是否要刪除這些空白資料夾？"
 
 #: ../src/common/film.c:348
 msgid "remove empty directory?"
 msgid_plural "remove empty directories?"
-msgstr[0] "刪除空白資料夾？"
+msgstr[0] "刪除此空白資料夾？"
+msgstr[1] "刪除這些空白資料夾？"
 
 #: ../src/common/film.c:368 ../src/gui/preferences.c:814
 #: ../src/gui/styles_dialog.c:586 ../src/libs/geotagging.c:830
@@ -6664,24 +6666,28 @@ msgstr "獨立影像"
 msgid "geo-location undone for %d image"
 msgid_plural "geo-location undone for %d images"
 msgstr[0] "已復原 %d 張影像的地理位置"
+msgstr[1] "已復原 %d 張影像的地理位置"
 
 #: ../src/common/image.c:661
 #, c-format
 msgid "geo-location re-applied to %d image"
 msgid_plural "geo-location re-applied to %d images"
 msgstr[0] "已重新套用 %d 張影像的地理位置"
+msgstr[1] "已重新套用 %d 張影像的地理位置"
 
 #: ../src/common/image.c:684
 #, c-format
 msgid "date/time undone for %d image"
 msgid_plural "date/time undone for %d images"
 msgstr[0] "已復原 %d 張影像的日期與時間"
+msgstr[1] "已復原 %d 張影像的日期與時間"
 
 #: ../src/common/image.c:686
 #, c-format
 msgid "date/time re-applied to %d image"
 msgid_plural "date/time re-applied to %d images"
 msgstr[0] "已重新套用 %d 張影像的日期與時間"
+msgstr[1] "已重新套用 %d 張影像的日期與時間"
 
 #: ../src/common/image.c:2304
 #, c-format
@@ -6730,6 +6736,7 @@ msgstr "無法存取原始檔案時，不能移除本機備份副本。"
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
 msgstr[0] "%d 張本機備份副本已同步"
+msgstr[1] "%d 張本機備份副本已同步"
 
 #: ../src/common/image.c:3117
 msgid "<b>WARNING</b>: camera is missing samples!"
@@ -7037,12 +7044,14 @@ msgstr "不再支援 GNOME Keyring 後端，請設定其他程式"
 msgid "rejecting %d image"
 msgid_plural "rejecting %d images"
 msgstr[0] "正在將 %d 張影像評分為不合格"
+msgstr[1] "正在將 %d 張影像評分為不合格"
 
 #: ../src/common/ratings.c:147
 #, c-format
 msgid "applying rating %d to %d image"
 msgid_plural "applying rating %d to %d images"
 msgstr[0] "套用評分 %d 給 %d 張影像"
+msgstr[1] "套用評分 %d 給 %d 張影像"
 
 #: ../src/common/ratings.c:236
 msgid "no images selected to apply rating"
@@ -7138,6 +7147,7 @@ msgstr "尚未選取風格檔！"
 msgid "style successfully applied!"
 msgid_plural "styles successfully applied!"
 msgstr[0] "風格檔套用成功！"
+msgstr[1] "風格檔套用成功！"
 
 #: ../src/common/styles.c:844
 #, c-format
@@ -7572,6 +7582,7 @@ msgstr "同步紀錄"
 msgid "capturing %d image"
 msgid_plural "capturing %d images"
 msgstr[0] "正在拍攝 %d 張影像"
+msgstr[1] "正在拍攝 %d 張影像"
 
 #: ../src/control/jobs/camera_jobs.c:125
 msgid "please set your camera to manual mode first!"
@@ -7586,6 +7597,7 @@ msgstr "拍攝影像"
 msgid "%d/%d imported to %s"
 msgid_plural "%d/%d imported to %s"
 msgstr[0] "%d / %d 張影像已匯入到「%s」"
+msgstr[1] "%d / %d 張影像已匯入到「%s」"
 
 #: ../src/control/jobs/camera_jobs.c:331
 msgid "starting to import images from camera"
@@ -7596,6 +7608,7 @@ msgstr "開始從相機匯入影像"
 msgid "importing %d image from camera"
 msgid_plural "importing %d images from camera"
 msgstr[0] "從相機匯入 %d 張影像"
+msgstr[1] "從相機匯入 %d 張影像"
 
 #: ../src/control/jobs/camera_jobs.c:401
 msgid "import images from camera"
@@ -7609,7 +7622,8 @@ msgstr "在資料夾建立底片卷失敗，正在終止移動…"
 #, c-format
 msgid "writing sidecar file"
 msgid_plural "writing %zu sidecar files"
-msgstr[0] "寫入 %zu 個附屬檔案"
+msgstr[0] "寫入附屬檔案"
+msgstr[1] "寫入 %zu 個附屬檔案"
 
 #: ../src/control/jobs/control_jobs.c:433
 msgid "exposure bracketing only works on raw images."
@@ -7624,6 +7638,7 @@ msgstr "影像大小和方向必須相同！"
 msgid "merging %d image"
 msgid_plural "merging %d images"
 msgstr[0] "合併 %d 張影像"
+msgstr[1] "合併 %d 張影像"
 
 #: ../src/control/jobs/control_jobs.c:609
 #, c-format
@@ -7635,36 +7650,42 @@ msgstr "寫入合併的 HDR 影像「%s」"
 msgid "duplicating %d image"
 msgid_plural "duplicating %d images"
 msgstr[0] "複製 %d 張影像"
+msgstr[1] "複製 %d 張影像"
 
 #: ../src/control/jobs/control_jobs.c:688
 #, c-format
 msgid "flipping %d image"
 msgid_plural "flipping %d images"
 msgstr[0] "翻轉 %d 張影像"
+msgstr[1] "翻轉 %d 張影像"
 
 #: ../src/control/jobs/control_jobs.c:723
 #, c-format
 msgid "set %d color image"
 msgid_plural "setting %d color images"
 msgstr[0] "將 %d 張影像設為彩色"
+msgstr[1] "將 %d 張影像設為彩色"
 
 #: ../src/control/jobs/control_jobs.c:727
 #, c-format
 msgid "set %d monochrome image"
 msgid_plural "setting %d monochrome images"
 msgstr[0] "將 %d 張影像設為黑白"
+msgstr[1] "將 %d 張影像設為黑白"
 
 #: ../src/control/jobs/control_jobs.c:838
 #, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
 msgstr[0] "移除 %d 張影像"
+msgstr[1] "移除 %d 張影像"
 
 #: ../src/control/jobs/control_jobs.c:882
 #, c-format
 msgid "not removing image '%s' used as overlay in %d image"
 msgid_plural "not removing image '%s' used as overlay in %d images"
 msgstr[0] "不移除 %s (在 %d 中作為疊加層的影像)"
+msgstr[1] "不移除 %s (在 %d 中作為疊加層的影像)"
 
 #: ../src/control/jobs/control_jobs.c:967
 #, c-format
@@ -7723,18 +7744,21 @@ msgstr "刪除時發生錯誤"
 msgid "trashing %d image"
 msgid_plural "trashing %d images"
 msgstr[0] "將 %d 張影像丟進回收桶"
+msgstr[1] "將 %d 張影像丟進回收桶"
 
 #: ../src/control/jobs/control_jobs.c:1158
 #, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
 msgstr[0] "刪除 %d 張影像"
+msgstr[1] "刪除 %d 張影像"
 
 #: ../src/control/jobs/control_jobs.c:1191
 #, c-format
 msgid "not deleting image '%s' used as overlay in %d image"
 msgid_plural "not deleting image '%s' used as overlay in %d images"
 msgstr[0] "不刪除 %s (在 %d 中作為疊加層的影像)"
+msgstr[1] "不刪除 %s (在 %d 中作為疊加層的影像)"
 
 #: ../src/control/jobs/control_jobs.c:1312
 msgid "failed to parse GPX file"
@@ -7745,6 +7769,7 @@ msgstr "無法解析 GPX 檔案"
 msgid "applied matched GPX location onto %d image"
 msgid_plural "applied matched GPX location onto %d images"
 msgstr[0] "已套用符合的 GPX 位置至 %d 張影像"
+msgstr[1] "已套用符合的 GPX 位置至 %d 張影像"
 
 #: ../src/control/jobs/control_jobs.c:1377
 #, c-format
@@ -7771,24 +7796,28 @@ msgstr "複製 %d 張影像"
 msgid "creating local copy of %d image"
 msgid_plural "creating local copies of %d images"
 msgstr[0] "建立 %d 張影像的本機備份副本"
+msgstr[1] "建立 %d 張影像的本機備份副本"
 
 #: ../src/control/jobs/control_jobs.c:1405
 #, c-format
 msgid "removing local copy of %d image"
 msgid_plural "removing local copies of %d images"
 msgstr[0] "刪除 %d 張影像的本機備份副本"
+msgstr[1] "刪除 %d 張影像的本機備份副本"
 
 #: ../src/control/jobs/control_jobs.c:1455
 #, c-format
 msgid "refreshing info for %d image"
 msgid_plural "refreshing info for %d images"
 msgstr[0] "更新 %d 張影像的資訊"
+msgstr[1] "更新 %d 張影像的資訊"
 
 #: ../src/control/jobs/control_jobs.c:1552
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] "匯出 %d 張影像…"
+msgstr[1] "匯出 %d 張影像…"
 
 #: ../src/control/jobs/control_jobs.c:1554
 msgid "no image to export"
@@ -7844,6 +7873,9 @@ msgid_plural ""
 msgstr[0] ""
 "確定從 darktable 中移除選取的 %d 張影像？\n"
 "（僅從圖庫中移除，不刪除硬碟裡的檔案）"
+msgstr[1] ""
+"確定從 darktable 中移除選取的 %d 張影像？\n"
+"（僅從圖庫中移除，不刪除硬碟裡的檔案）"
 
 #. first get all selected images, to avoid the set changing during ui interaction
 #: ../src/control/jobs/control_jobs.c:1801
@@ -7871,12 +7903,16 @@ msgid_plural ""
 msgstr[0] ""
 "確定要刪除選取的 %d 張影像？\n"
 "（從硬碟中刪除實體檔案）"
+msgstr[1] ""
+"確定要刪除選取的 %d 張影像？\n"
+"（從硬碟中刪除實體檔案）"
 
 #: ../src/control/jobs/control_jobs.c:1820
 #, c-format
 msgid "do you really want to physically delete %d image from disk?"
 msgid_plural "do you really want to physically delete %d images from disk?"
 msgstr[0] "確定要從硬碟中刪除選取的 %d 張影像檔案？"
+msgstr[1] "確定要從硬碟中刪除選取的 %d 張影像檔案？"
 
 #: ../src/control/jobs/control_jobs.c:1848
 msgid ""
@@ -7901,6 +7937,7 @@ msgstr "選擇資料夾（_S）"
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] "是否要移動影像？"
+msgstr[1] "是否要移動影像？"
 
 #: ../src/control/jobs/control_jobs.c:1899
 #, c-format
@@ -7913,6 +7950,9 @@ msgid_plural ""
 msgstr[0] ""
 "是否要將 %d 張影像實體移動到「%s」？\n"
 "（所有複本都會被移動）"
+msgstr[1] ""
+"是否要將 %d 張影像實體移動到「%s」？\n"
+"（所有複本都會被移動）"
 
 #: ../src/control/jobs/control_jobs.c:1922
 msgid "copy images"
@@ -7922,12 +7962,14 @@ msgstr "複製影像"
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] "是否要複製影像？"
+msgstr[1] "是否要複製影像？"
 
 #: ../src/control/jobs/control_jobs.c:1960
 #, c-format
 msgid "do you really want to physically copy %d image to %s?"
 msgid_plural "do you really want to physically copy %d images to %s?"
 msgstr[0] "是否要將 %d 張影像實體複製到「%s」？"
+msgstr[1] "是否要將 %d 張影像實體複製到「%s」？"
 
 #: ../src/control/jobs/control_jobs.c:1979
 #: ../src/control/jobs/control_jobs.c:1989
@@ -8000,18 +8042,21 @@ msgstr "寫入附屬檔案"
 msgid "importing %d image"
 msgid_plural "importing %d images"
 msgstr[0] "匯入 %d 張影像"
+msgstr[1] "匯入 %d 張影像"
 
 #: ../src/control/jobs/control_jobs.c:2555
 #, c-format
 msgid "importing %d/%d image"
 msgid_plural "importing %d/%d images"
 msgstr[0] "正在匯入第 %d / %d 張影像"
+msgstr[1] "正在匯入第 %d / %d 張影像"
 
 #: ../src/control/jobs/control_jobs.c:2566
 #, c-format
 msgid "imported %d image"
 msgid_plural "imported %d images"
 msgstr[0] "已匯入 %d 張影像"
+msgstr[1] "已匯入 %d 張影像"
 
 #: ../src/control/jobs/film_jobs.c:73 ../src/control/jobs/film_jobs.c:110
 msgid "import images"
@@ -8615,6 +8660,7 @@ msgstr ""
 msgid "%d shape used"
 msgid_plural "%d shapes used"
 msgstr[0] "已使用 %d 個形狀"
+msgstr[1] "已使用 %d 個形狀"
 
 #: ../src/develop/blend_gui.c:2743 ../src/develop/blend_gui.c:2799
 #: ../src/develop/blend_gui.c:2887 ../src/develop/blend_gui.c:3007
@@ -9135,6 +9181,7 @@ msgstr "「%s」 不是有效的 Lightroom XMP！"
 msgid "%s has been imported"
 msgid_plural "%s have been imported"
 msgstr[0] "「%s」已匯入"
+msgstr[1] "「%s」已匯入"
 
 #: ../src/develop/masks/brush.c:1344 ../src/develop/masks/brush.c:1398
 #, c-format
@@ -12514,12 +12561,14 @@ msgstr "無法寫入「%s」資料夾！"
 msgid "%d/%d skipping `%s'"
 msgid_plural "%d/%d skipping `%s'"
 msgstr[0] "%d/%d 正在略過「%s」"
+msgstr[1] "%d/%d 正在略過「%s」"
 
 #: ../src/imageio/storage/disk.c:456
 #, c-format
 msgid "%d/%d skipping (not modified since export) `%s'"
 msgid_plural "%d/%d skipping (not modified since export) `%s'"
 msgstr[0] "已略過 %d/%d（匯出時無更改）「%s」"
+msgstr[1] "已略過 %d/%d（匯出時無更改）「%s」"
 
 #: ../src/imageio/storage/disk.c:480 ../src/imageio/storage/email.c:193
 #: ../src/imageio/storage/gallery.c:457 ../src/imageio/storage/latex.c:376
@@ -12527,6 +12576,7 @@ msgstr[0] "已略過 %d/%d（匯出時無更改）「%s」"
 msgid "%d/%d exported to `%s'"
 msgid_plural "%d/%d exported to `%s'"
 msgstr[0] "%d/%d 已匯出至「%s」"
+msgstr[1] "%d/%d 已匯出至「%s」"
 
 #: ../src/imageio/storage/disk.c:545
 msgid ""
@@ -12719,6 +12769,7 @@ msgstr "略過 %d/%d 張影像（已經存在）"
 msgid "%d/%d exported to Piwigo webalbum"
 msgid_plural "%d/%d exported to Piwigo webalbum"
 msgstr[0] "%d/%d 已匯出至 Piwigo 網路相簿"
+msgstr[1] "%d/%d 已匯出至 Piwigo 網路相簿"
 
 #: ../src/iop/ashift.c:119
 msgid "rotate and perspective"
@@ -18726,6 +18777,7 @@ msgstr ""
 msgid "fixed %d pixel"
 msgid_plural "fixed %d pixels"
 msgstr[0] "修復 %d 個壞點"
+msgstr[1] "修復 %d 個壞點"
 
 #: ../src/iop/hotpixels.c:446
 msgid "lower threshold for hot pixel"
@@ -22268,6 +22320,7 @@ msgstr "載入檔案「%s」時發生錯誤"
 msgid "no history compression of %d image"
 msgid_plural "no history compression of %d images"
 msgstr[0] "沒有 %d 張影像的編輯紀錄"
+msgstr[1] "沒有 %d 張影像的編輯紀錄"
 
 #: ../src/libs/copy_history.c:247
 msgid "delete images' history?"
@@ -22278,6 +22331,7 @@ msgstr "是否要刪除影像的編輯記錄？"
 msgid "do you really want to clear history of %d selected image?"
 msgid_plural "do you really want to clear history of %d selected images?"
 msgstr[0] "是否要刪除 %d 個已選取影像的編輯記錄？"
+msgstr[1] "是否要刪除 %d 個已選取影像的編輯記錄？"
 
 #: ../src/libs/copy_history.c:370
 msgid "selective copy..."
@@ -23833,6 +23887,7 @@ msgstr "連接相機"
 msgid "%d image out of %d selected"
 msgid_plural "%d images out of %d selected"
 msgstr[0] "已選擇 %d 張，總共 %d 張影像"
+msgstr[1] "已選擇 %d 張，總共 %d 張影像"
 
 #: ../src/libs/import.c:1312
 msgid "you can't delete the selected place"
@@ -24526,6 +24581,7 @@ msgstr "含有 .wav"
 msgid "image has %d star"
 msgid_plural "image has %d stars"
 msgstr[0] "影像評分為 %d 顆星"
+msgstr[1] "影像評分為 %d 顆星"
 
 #: ../src/libs/metadata_view.c:448
 #, c-format
@@ -25347,12 +25403,14 @@ msgstr "切換到上一個快照"
 msgid "remove style?"
 msgid_plural "remove styles?"
 msgstr[0] "是否要刪除風格檔？"
+msgstr[1] "是否要刪除風格檔？"
 
 #: ../src/libs/styles.c:367
 #, c-format
 msgid "do you really want to remove %d style?"
 msgid_plural "do you really want to remove %d styles?"
 msgstr[0] "確定要刪除 %d 個風格檔？"
+msgstr[1] "確定要刪除 %d 個風格檔？"
 
 #: ../src/libs/styles.c:483 ../src/libs/styles.c:671
 msgid "_overwrite"
@@ -25474,6 +25532,10 @@ msgstr[0] ""
 "是否要刪除標籤「%s」？\n"
 "\n"
 "有 %d 張影像使用了此標籤！"
+msgstr[1] ""
+"是否要刪除標籤「%s」？\n"
+"\n"
+"有 %d 張影像使用了此標籤！"
 
 #: ../src/libs/tagging.c:1560
 #, c-format
@@ -25489,6 +25551,7 @@ msgstr "是否要刪除整個結構？"
 msgid "<u>%d</u> tag will be deleted"
 msgid_plural "<u>%d</u> tags will be deleted"
 msgstr[0] "%d 個標籤將被刪除"
+msgstr[1] "%d 個標籤將被刪除"
 
 #: ../src/libs/tagging.c:1622 ../src/libs/tagging.c:1849
 #: ../src/libs/tagging.c:2128
@@ -25496,6 +25559,7 @@ msgstr[0] "%d 個標籤將被刪除"
 msgid "<u>%d</u> image will be updated"
 msgid_plural "<u>%d</u> images will be updated"
 msgstr[0] "%d 張影像將被更新"
+msgstr[1] "%d 張影像將被更新"
 
 #: ../src/libs/tagging.c:1648
 #, c-format
@@ -25537,6 +25601,7 @@ msgstr "標籤名稱已存在，操作取消。"
 msgid "<u>%d</u> tag will be updated"
 msgid_plural "<u>%d</u> tags will be updated"
 msgstr[0] "將更新 %d 個標籤"
+msgstr[1] "將更新 %d 個標籤"
 
 #: ../src/libs/tagging.c:1907
 msgid ""
@@ -26860,6 +26925,7 @@ msgstr "影像輪播暫停"
 msgid "slideshow delay set to %d second"
 msgid_plural "slideshow delay set to %d seconds"
 msgstr[0] "影像輪播間隔時間為 %d 秒"
+msgstr[1] "影像輪播間隔時間為 %d 秒"
 
 #: ../src/views/slideshow.c:733
 msgid "start and stop"
