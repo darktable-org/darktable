@@ -7609,8 +7609,7 @@ msgstr "在資料夾建立底片卷失敗，正在終止移動…"
 #, c-format
 msgid "writing sidecar file"
 msgid_plural "writing %zu sidecar files"
-msgstr[0] "寫入附屬檔案"
-msgstr[1] "寫入 %zu 個附屬檔案"
+msgstr[0] "寫入 %zu 個附屬檔案"
 
 #: ../src/control/jobs/control_jobs.c:433
 msgid "exposure bracketing only works on raw images."
