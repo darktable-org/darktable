@@ -483,12 +483,12 @@ static void _prepare_prefilter(const size_t ds_pixels, const float epsilon,
     // Invert the 2×2 sigma matrix algebraically
     // see https://www.mathcentre.ac.uk/resources/uploaded/sigma-matrices7-2009-1.pdf
     const float det = Sigma[0] * Sigma[3] - Sigma[1] * Sigma[2];
-    dt_aligned_pixel_t sigma_inv = { Sigma[3] / det, -Sigma[1] / det,
-                                    -Sigma[2] / det,  Sigma[0] / det };
 
     // a(chan) = dot_product(cov(chan, uv), sigma_inv)
     if(fabsf(det) > 4.f * FLT_EPSILON)
     {
+      dt_aligned_pixel_t sigma_inv = { Sigma[3] / det, -Sigma[1] / det,
+                                      -Sigma[2] / det,  Sigma[0] / det };
       // find a_1, a_2 s.t. U' = a_1 * U + a_2 * V
       a[4 * k + 0] = (covariance[4 * k + 0] * sigma_inv[0]
                     + covariance[4 * k + 1] * sigma_inv[1]);
@@ -796,15 +796,15 @@ static void _guide_with_chromaticity(float *const restrict UV,
 
     // Invert the 2×2 sigma matrix algebraically
     // see https://www.mathcentre.ac.uk/resources/uploaded/sigma-matrices7-2009-1.pdf
-    const float det = MAX((Sigma[0] * Sigma[3] - Sigma[1] * Sigma[2]), 1e-15f);
-    dt_aligned_pixel_t sigma_inv
+    const float det = Sigma[0] * Sigma[3] - Sigma[1] * Sigma[2];
+    // Note : epsilon prevents determinant == 0 so the invert exists all the time
+    if(fabsf(det) > 4.f * FLT_EPSILON)
+    {
+      dt_aligned_pixel_t sigma_inv
         = { Sigma[3] / det,
            -Sigma[1] / det,
            -Sigma[2] / det,
             Sigma[0] / det };
-    // Note : epsilon prevents determinant == 0 so the invert exists all the time
-    if(fabsf(det) > 4.f * FLT_EPSILON)
-    {
       a[4 * k + 0] = (correlations[4 * k + 0] * sigma_inv[0]
                     + correlations[4 * k + 1] * sigma_inv[1]);
       a[4 * k + 1] = (correlations[4 * k + 0] * sigma_inv[2]
@@ -1081,6 +1081,7 @@ void process(struct dt_iop_module_t *self,
   }
   else
   {
+    piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
     const int mode = mask_mode - 1;
     B_norm = 1.0f / B_norm;
     DT_OMP_FOR()
@@ -1111,8 +1112,8 @@ void process(struct dt_iop_module_t *self,
       }
 
       const gboolean neg = corr < 0.0f;
-      corr = 0.3f * fabsf(corr);
-      corr = corr < 1e-3 ? 0.0f : powf(corr, 0.8f);
+      corr = 0.7f * fabsf(corr);
+      corr = corr < 2e-3 ? 0.0f : powf(corr, 0.8f);
       pix_out[0] = MAX(0.0f, neg ? val - corr : val);
       pix_out[1] = MAX(0.0f, val - corr);
       pix_out[2] = MAX(0.0f, neg ? val : val - corr);
@@ -1766,7 +1767,7 @@ static inline float _get_hueval(const float hue)
   const float b = hue - ANGLE_SHIFT / 360.0f;
   return b < 0.0f ? b + 1.0f : b;
 }
-// #define CEPICKERDEBUG
+
 static void _draw_color_picker(dt_iop_module_t *self,
                                cairo_t *cr,
                                dt_iop_colorequal_params_t *p,
@@ -1819,14 +1820,7 @@ static void _draw_color_picker(dt_iop_module_t *self,
   cairo_move_to(cr, xav, 0.0);
   cairo_line_to(cr, xav, height);
   cairo_stroke(cr);
-
-  #ifdef CEPICKERDEBUG
-    fprintf(stderr, "%s picker. av: %f %f %f  min: %f %f %f  max: %f %f %f\n",
-        hmax != self->picked_color_max[2] ? "alternative" : "original",
-        hav, self->picked_color[2], hava, hmin, self->picked_color_min[2], hmina, hmax, self->picked_color_max[2], hmaxa);
-  #endif
 }
-#undef CEPICKERDEBUG
 #undef MINJZ
 
 static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
@@ -2364,22 +2358,23 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     g->max_saturation = get_minimum_saturation(g->gamut_LUT, 0.2f, 1.f);
   }
 
-  /* as we have the guided filter to be switched on/off we make depending parameters
-     not sensitve and switch off visualizing mode.
-  */
+  // Show guided filter controls only if in use
   const gboolean guiding = p->use_filter;
-  gtk_widget_set_sensitive(GTK_WIDGET(g->threshold), guiding);
-  gtk_widget_set_sensitive(GTK_WIDGET(g->contrast), guiding);
-  gtk_widget_set_sensitive(GTK_WIDGET(g->chroma_size), guiding);
-  gtk_widget_set_sensitive(GTK_WIDGET(g->param_size), guiding);
+  gtk_widget_set_visible(GTK_WIDGET(g->threshold), guiding);
+  gtk_widget_set_visible(GTK_WIDGET(g->contrast), guiding);
+  gtk_widget_set_visible(GTK_WIDGET(g->chroma_size), guiding);
+  gtk_widget_set_visible(GTK_WIDGET(g->param_size), guiding);
+
+  // Only show hue smoothing where effective
+  gtk_widget_set_visible(GTK_WIDGET(g->smoothing_hue), g->channel == HUE);
+
   if(w == g->use_filter && !guiding)
     g->mask_mode = 0;
 
-  ++darktable.gui->reset;
   if((work_profile != g->work_profile) || (w == g->hue_shift))
     _init_sliders(self);
+
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
-  --darktable.gui->reset;
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
