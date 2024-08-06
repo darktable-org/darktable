@@ -9966,7 +9966,7 @@ msgstr "Survoler une image et utiliser les raccourcis clavier"
 
 #: ../src/dtgtk/thumbtable.c:1219
 msgid "to apply ratings, colors, styles, etc."
-msgstr "Pour appliquer notes, couleurs, styles, etc."
+msgstr "pour appliquer notes, couleurs, styles, etc."
 
 #: ../src/dtgtk/thumbtable.c:1224
 msgid "<b>need help?</b>"
