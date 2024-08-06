@@ -56,7 +56,7 @@ static void _load_add(float *const __restrict__ out,
 {
   if(compensated)
   {
-    DT_OMP_SIMD(aligned(accum, comp, out : 64))
+    DT_OMP_SIMD(aligned(accum, comp : 64))
     for(size_t c = 0; c < N; c++)
     {
       const float v = values[c];
@@ -70,7 +70,7 @@ static void _load_add(float *const __restrict__ out,
   }
   else
   {
-    DT_OMP_SIMD(aligned(accum, out : 64))
+    DT_OMP_SIMD(aligned(accum : 64))
     for(size_t c = 0; c < N; c++)
     {
       const float v = values[c];
@@ -138,7 +138,7 @@ template<size_t N>
 static inline void _update_max(float m[N],
                                const float *const __restrict__ base)
 {
-  DT_OMP_SIMD(aligned(m, base : 64))
+  DT_OMP_SIMD(aligned(m : 64))
   for(size_t c = 0; c < N; c++)
   {
     m[c] = fmaxf(m[c], base[c]);
@@ -150,7 +150,7 @@ static inline void _load_update_max(float *const __restrict__ out,
                                     float m[N],
                                     const float *const __restrict__ base)
 {
-  DT_OMP_SIMD(aligned(out, m : 64))
+  DT_OMP_SIMD(aligned(m : 64))
   for(size_t c = 0; c < N; c++)
   {
     const float v = base[c];
@@ -162,7 +162,7 @@ static inline void _load_update_max(float *const __restrict__ out,
 template <size_t N>
 static inline void _update_min(float m[N], const float *const __restrict__ base)
 {
-  DT_OMP_SIMD(aligned(m, base : 64))
+  DT_OMP_SIMD(aligned(m : 64))
   for(size_t c = 0; c < N; c++)
   {
     m[c] = fminf(m[c], base[c]);
@@ -174,7 +174,7 @@ static inline void _load_update_min(float *const __restrict__ out,
                                     float m[N],
                                     const float *const __restrict__ base)
 {
-  DT_OMP_SIMD(aligned(out, m : 64))
+  DT_OMP_SIMD(aligned(m : 64))
   for(size_t c = 0; c < N; c++)
   {
     const float v = base[c];
