@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-08-06 08:42-0400\n"
+"POT-Creation-Date: 2024-08-06 10:55-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -841,7 +841,7 @@ msgstr ""
 #: ../build/bin/preferences_gen.h:6571 ../build/bin/preferences_gen.h:7064
 #: ../build/bin/preferences_gen.h:7330 ../src/gui/accelerators.c:3001
 #: ../src/gui/gtk.c:3005 ../src/gui/preferences.c:424
-#: ../src/gui/preferences.c:874 ../src/libs/modulegroups.c:4091
+#: ../src/gui/preferences.c:874 ../src/libs/modulegroups.c:4094
 msgid "?"
 msgstr ""
 
@@ -5190,7 +5190,7 @@ msgstr ""
 #: ../src/libs/geotagging.c:935 ../src/libs/import.c:1829
 #: ../src/libs/import.c:1942 ../src/libs/import.c:2041
 #: ../src/libs/metadata.c:470 ../src/libs/metadata_view.c:1261
-#: ../src/libs/modulegroups.c:3629 ../src/libs/recentcollect.c:234
+#: ../src/libs/modulegroups.c:3632 ../src/libs/recentcollect.c:234
 #: ../src/libs/styles.c:433 ../src/libs/styles.c:481 ../src/libs/styles.c:574
 #: ../src/libs/styles.c:669 ../src/libs/tagging.c:1517
 #: ../src/libs/tagging.c:1608 ../src/libs/tagging.c:1699
@@ -8597,7 +8597,7 @@ msgid "delete"
 msgstr ""
 
 #: ../src/develop/imageop.c:1049 ../src/develop/imageop.c:3824
-#: ../src/libs/modulegroups.c:4006
+#: ../src/libs/modulegroups.c:4009
 msgid "rename"
 msgstr ""
 
@@ -8685,14 +8685,14 @@ msgstr ""
 msgid "show"
 msgstr ""
 
-#: ../src/develop/imageop.c:3822 ../src/libs/modulegroups.c:3470
-#: ../src/libs/modulegroups.c:3601 ../src/libs/modulegroups.c:4010
+#: ../src/develop/imageop.c:3822 ../src/libs/modulegroups.c:3473
+#: ../src/libs/modulegroups.c:3604 ../src/libs/modulegroups.c:4013
 #: ../src/libs/tagging.c:3323
 msgid "new"
 msgstr ""
 
 #: ../src/develop/imageop.c:3825 ../src/libs/duplicate.c:417
-#: ../src/libs/image.c:537 ../src/libs/modulegroups.c:4002
+#: ../src/libs/image.c:537 ../src/libs/modulegroups.c:4005
 msgid "duplicate"
 msgstr ""
 
@@ -8700,7 +8700,7 @@ msgstr ""
 #: ../src/gui/accelerators.c:144 ../src/gui/gtk.c:3449 ../src/gui/gtk.c:3504
 #: ../src/gui/hist_dialog.c:272 ../src/gui/styles_dialog.c:646
 #: ../src/gui/styles_dialog.c:668 ../src/iop/atrous.c:1625
-#: ../src/libs/lib.c:1414 ../src/libs/modulegroups.c:4086
+#: ../src/libs/lib.c:1414 ../src/libs/modulegroups.c:4089
 msgid "reset"
 msgstr ""
 
@@ -11059,12 +11059,12 @@ msgid "preset `%s' is write-protected, can't delete!"
 msgstr ""
 
 #: ../src/gui/presets.c:160 ../src/gui/presets.c:464 ../src/libs/lib.c:222
-#: ../src/libs/modulegroups.c:3880
+#: ../src/libs/modulegroups.c:3883
 msgid "delete preset?"
 msgstr ""
 
 #: ../src/gui/presets.c:161 ../src/gui/presets.c:465 ../src/libs/lib.c:223
-#: ../src/libs/modulegroups.c:3881
+#: ../src/libs/modulegroups.c:3884
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
 msgstr ""
@@ -11269,8 +11269,8 @@ msgstr ""
 msgid "scene-referred default"
 msgstr ""
 
-#: ../src/gui/presets.c:1406 ../src/libs/modulegroups.c:3965
-#: ../src/libs/modulegroups.c:3975
+#: ../src/gui/presets.c:1406 ../src/libs/modulegroups.c:3968
+#: ../src/libs/modulegroups.c:3978
 msgid "manage module layouts"
 msgstr ""
 
@@ -21328,7 +21328,7 @@ msgstr ""
 msgid "physically delete from disk immediately"
 msgstr ""
 
-#: ../src/libs/image.c:509 ../src/libs/modulegroups.c:3998
+#: ../src/libs/image.c:509 ../src/libs/modulegroups.c:4001
 #: ../src/libs/styles.c:925
 msgid "remove"
 msgstr ""
@@ -22417,178 +22417,184 @@ msgstr ""
 msgid "show all history modules"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2719 ../src/libs/modulegroups.c:4032
+#: ../src/libs/modulegroups.c:2719 ../src/libs/modulegroups.c:4035
 msgid ""
 "show modules that are present in the history stack, regardless of whether or "
 "not they are currently enabled"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2815 ../src/libs/modulegroups.c:2921
+#: ../src/libs/modulegroups.c:2815 ../src/libs/modulegroups.c:2922
 msgid ""
 "the following modules are deprecated because they have internal design "
 "mistakes that can't be corrected and alternative modules that correct them.\n"
 "they will be removed for new edits in the next release."
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2869 ../src/libs/modulegroups.c:2871
+#: ../src/libs/modulegroups.c:2869
+msgid ""
+"quick access panel\n"
+"right-click tab icon to add/remove widgets"
+msgstr ""
+
+#: ../src/libs/modulegroups.c:2872
 msgid "quick access panel"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2883
+#: ../src/libs/modulegroups.c:2884
 msgid "show only active modules"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2884
+#: ../src/libs/modulegroups.c:2885
 msgid "active modules"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2890
+#: ../src/libs/modulegroups.c:2891
 msgid ""
 "presets\n"
 "ctrl+click to manage"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2897
+#: ../src/libs/modulegroups.c:2898
 msgid "search modules"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2899
+#: ../src/libs/modulegroups.c:2900
 msgid "search modules by name or tag"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2914
+#: ../src/libs/modulegroups.c:2915
 msgid "clear text"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3185
+#: ../src/libs/modulegroups.c:3188
 msgid "basic icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3196
+#: ../src/libs/modulegroups.c:3199
 msgid "active icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3207
+#: ../src/libs/modulegroups.c:3210
 msgid "color icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3218
+#: ../src/libs/modulegroups.c:3221
 msgid "correct icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3229
+#: ../src/libs/modulegroups.c:3232
 msgid "effect icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3240
+#: ../src/libs/modulegroups.c:3243
 msgid "favorites icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3251
+#: ../src/libs/modulegroups.c:3254
 msgid "tone icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3262
+#: ../src/libs/modulegroups.c:3265
 msgid "grading icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3273
+#: ../src/libs/modulegroups.c:3276
 msgid "technical icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3307
+#: ../src/libs/modulegroups.c:3310
 msgid "quick access panel widgets"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3309
+#: ../src/libs/modulegroups.c:3312
 msgid "quick access"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3331
+#: ../src/libs/modulegroups.c:3334
 msgid "add widget to the quick access panel"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3365
+#: ../src/libs/modulegroups.c:3368
 msgid "group icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3375
+#: ../src/libs/modulegroups.c:3378
 msgid "group name"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3387
+#: ../src/libs/modulegroups.c:3390
 msgid "remove group"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3415
+#: ../src/libs/modulegroups.c:3418
 msgid "move group to the left"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3425
+#: ../src/libs/modulegroups.c:3428
 msgid "add module to the group"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3437
+#: ../src/libs/modulegroups.c:3440
 msgid "move group to the right"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3627
+#: ../src/libs/modulegroups.c:3630
 msgid "rename preset"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3630
+#: ../src/libs/modulegroups.c:3633
 msgid "_rename"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3637
+#: ../src/libs/modulegroups.c:3640
 msgid "new preset name:"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3638
+#: ../src/libs/modulegroups.c:3641
 msgid "a preset with this name already exists!"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3990
+#: ../src/libs/modulegroups.c:3993
 msgid "preset: "
 msgstr ""
 
-#: ../src/libs/modulegroups.c:4000
+#: ../src/libs/modulegroups.c:4003
 msgid "remove the preset"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:4004
+#: ../src/libs/modulegroups.c:4007
 msgid "duplicate the preset"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:4008
+#: ../src/libs/modulegroups.c:4011
 msgid "rename the preset"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:4012
+#: ../src/libs/modulegroups.c:4015
 msgid "create a new empty preset"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:4020
+#: ../src/libs/modulegroups.c:4023
 msgid "show search line"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:4024
+#: ../src/libs/modulegroups.c:4027
 msgid "show quick access panel"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:4029
+#: ../src/libs/modulegroups.c:4032
 msgid "show all history modules in active group"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:4043
+#: ../src/libs/modulegroups.c:4046
 msgid "auto-apply this preset"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:4059
+#: ../src/libs/modulegroups.c:4062
 msgid "module groups"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:4078
+#: ../src/libs/modulegroups.c:4081
 msgid ""
 "this is a built-in read-only preset. duplicate it if you want to make changes"
 msgstr ""
