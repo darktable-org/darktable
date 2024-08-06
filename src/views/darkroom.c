@@ -1423,8 +1423,9 @@ static void _second_window_quickbutton_clicked(GtkWidget *w, dt_develop_t *dev)
 
 /** toolbar buttons */
 
-static gboolean _toolbar_show_popup(gpointer user_data)
+static gboolean _toolbar_show_popup(gpointer user_data, gboolean transition)
 {
+
   GtkPopover *popover = GTK_POPOVER(user_data);
 
   GtkWidget *button = gtk_popover_get_relative_to(popover);
@@ -1447,7 +1448,15 @@ static gboolean _toolbar_show_popup(gpointer user_data)
   if(darktable.view_manager && GTK_WIDGET(popover) == darktable.view_manager->guides_popover)
     dt_guides_update_popover_values();
 
-  gtk_widget_show_all(GTK_WIDGET(popover));
+  // decide to use transition or not
+  if (transition)
+  {
+    gtk_popover_popup(popover);
+  }
+  else
+  {
+    gtk_widget_show(GTK_WIDGET(popover));
+  }
 
   // cancel glib timeout if invoked by long button press
   return FALSE;
@@ -2193,9 +2202,8 @@ static gboolean _quickbutton_press_release(GtkWidget *button,
   {
     gtk_popover_set_relative_to(GTK_POPOVER(popover), button);
 
-    g_object_set(G_OBJECT(popover), "transitions-enabled", FALSE, NULL);
+    _toolbar_show_popup(popover, FALSE);
 
-    _toolbar_show_popup(popover);
     return TRUE;
   }
   else
