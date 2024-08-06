@@ -109,6 +109,12 @@ const char *name(dt_lib_module_t *self)
   return _("tagging");
 }
 
+const char *description(dt_lib_module_t *self)
+{
+  return _("add or remove keywords for\n"
+           "the currently selected images");
+}
+
 dt_view_type_flags_t views(dt_lib_module_t *self)
 {
   if(dt_conf_get_bool("plugins/darkroom/tagging/visible"))

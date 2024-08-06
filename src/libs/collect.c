@@ -164,6 +164,12 @@ const char *name(dt_lib_module_t *self)
   return _("collections");
 }
 
+const char *description(dt_lib_module_t *self)
+{
+  return _("define search criteria for images\n"
+           "to be displayed or edited");
+}
+
 void *legacy_params(struct dt_lib_module_t *self,
                     const void *const old_params,
                     const size_t old_params_size,
