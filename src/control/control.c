@@ -588,7 +588,7 @@ void dt_control_button_pressed(double x,
   const double /*xc = wd/4.0-20,*/ yc = ht * 0.85 + 10.0;
   if(darktable.control->log_ack != darktable.control->log_pos)
   {
-    if(which == 1 /*&& x > xc - 10 && x < xc + 10*/ && y > yc - 10.0 && y < yc + 10.0)
+    if(which == 1 && y > yc - 10.0 && y < yc + 10.0)
     {
       if(darktable.control->log_message_timeout_id)
       {
@@ -606,7 +606,7 @@ void dt_control_button_pressed(double x,
   dt_pthread_mutex_lock(&darktable.control->toast_mutex);
   if(darktable.control->toast_ack != darktable.control->toast_pos)
   {
-    if(which == 1 /*&& x > xc - 10 && x < xc + 10*/ && y > yc - 10.0 && y < yc + 10.0)
+    if(which == 1 && y > yc - 10.0 && y < yc + 10.0)
     {
       if(darktable.control->toast_message_timeout_id)
       {
@@ -639,7 +639,7 @@ void dt_control_log(const char *msg, ...)
   va_start(ap, msg);
   char *escaped_msg = g_markup_vprintf_escaped(msg, ap);
   const int msglen = strlen(escaped_msg);
-  g_strlcpy(darktable.control->log_message[darktable.control->log_pos % DT_CTL_LOG_SIZE],
+  g_strlcpy(darktable.control->log_message[darktable.control->log_pos & (DT_CTL_LOG_SIZE-1)],
             escaped_msg, DT_CTL_LOG_MSG_SIZE);
   g_free(escaped_msg);
   va_end(ap);
@@ -663,12 +663,12 @@ static void _toast_log(const gboolean markup, const char *msg, va_list ap)
 
   // if we don't want markup, we escape <>&... so they are not interpreted later
   if(markup)
-    vsnprintf(darktable.control->toast_message[darktable.control->toast_pos % DT_CTL_TOAST_SIZE],
+    vsnprintf(darktable.control->toast_message[darktable.control->toast_pos & (DT_CTL_TOAST_SIZE-1)],
               DT_CTL_TOAST_MSG_SIZE, msg, ap);
   else
   {
     char *escaped_msg = g_markup_vprintf_escaped(msg, ap);
-    g_strlcpy(darktable.control->toast_message[darktable.control->toast_pos % DT_CTL_TOAST_SIZE],
+    g_strlcpy(darktable.control->toast_message[darktable.control->toast_pos & (DT_CTL_TOAST_SIZE-1)],
               escaped_msg, DT_CTL_TOAST_MSG_SIZE);
     g_free(escaped_msg);
   }

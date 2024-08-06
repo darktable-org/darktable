@@ -2644,20 +2644,20 @@ static void _ui_widget_redraw_callback(gpointer instance,
 static void _ui_log_redraw_callback(gpointer instance,
                                     GtkWidget *widget)
 {
+  dt_control_t *dc = darktable.control;
   // draw log message, if any
-  dt_pthread_mutex_lock(&darktable.control->log_mutex);
-  if(darktable.control->log_ack != darktable.control->log_pos)
+  dt_pthread_mutex_lock(&dc->log_mutex);
+  if(dc->log_ack != dc->log_pos)
   {
-    const uint32_t first_message = MAX(darktable.control->log_ack,
-                                       darktable.control->log_pos - DT_CTL_LOG_SIZE + 1);
+    const int32_t first_message = MAX(dc->log_ack, dc->log_pos - (DT_CTL_LOG_SIZE-1));
     gchar *message = g_malloc(ALLMESSSIZE);
     if(message)
     {
       message[0] = 0;
-      for(uint32_t idx = first_message; idx < darktable.control->log_pos; idx++)
+      for(int32_t idx = first_message; idx < dc->log_pos; idx++)
       {
-        g_strlcat(message, darktable.control->log_message[idx % DT_CTL_LOG_SIZE], ALLMESSSIZE);
-        if(idx != darktable.control->log_pos -1)
+        g_strlcat(message, dc->log_message[idx & (DT_CTL_LOG_SIZE-1)], ALLMESSSIZE);
+        if(idx != dc->log_pos -1)
           g_strlcat(message, "\n", ALLMESSSIZE);
       }
       gtk_label_set_markup(GTK_LABEL(widget), message);
@@ -2682,20 +2682,20 @@ static void _ui_log_redraw_callback(gpointer instance,
 static void _ui_toast_redraw_callback(gpointer instance,
                                       GtkWidget *widget)
 {
+  dt_control_t *dc = darktable.control;
   // draw toast message, if any
-  dt_pthread_mutex_lock(&darktable.control->toast_mutex);
-  if(darktable.control->toast_ack != darktable.control->toast_pos)
+  dt_pthread_mutex_lock(&dc->toast_mutex);
+  if(dc->toast_ack != dc->toast_pos)
   {
-    const uint32_t first_message = MAX(darktable.control->toast_ack,
-                                       darktable.control->toast_pos - DT_CTL_TOAST_SIZE + 1);
+    const int32_t first_message = MAX(dc->toast_ack, dc->toast_pos - (DT_CTL_TOAST_SIZE-1));
     gchar *message = g_malloc(ALLMESSSIZE);
     if(message)
     {
       message[0] = 0;
-      for(uint32_t idx = first_message; idx < darktable.control->toast_pos; idx++)
+      for(int32_t idx = first_message; idx < dc->toast_pos; idx++)
       {
-        g_strlcat(message, darktable.control->toast_message[idx % DT_CTL_TOAST_SIZE], ALLMESSSIZE);
-        if(idx != darktable.control->toast_pos -1)
+        g_strlcat(message, darktable.control->toast_message[idx & (DT_CTL_TOAST_SIZE-1)], ALLMESSSIZE);
+        if(idx != dc->toast_pos -1)
           g_strlcat(message, "\n", ALLMESSSIZE);
       }
       gtk_label_set_markup(GTK_LABEL(widget), message);
