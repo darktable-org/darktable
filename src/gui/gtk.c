@@ -2646,7 +2646,7 @@ static void _ui_log_redraw_callback(gpointer instance,
 {
   dt_control_t *dc = darktable.control;
   // draw log message, if any
-  dt_pthread_mutex_lock(&dc->log_mutex);
+  dt_pthread_mutex_lock(&darktable.control->log_mutex);
   if(dc->log_ack != dc->log_pos)
   {
     const int32_t first_message = MAX(dc->log_ack, dc->log_pos - (DT_CTL_LOG_SIZE-1));
@@ -2684,7 +2684,7 @@ static void _ui_toast_redraw_callback(gpointer instance,
 {
   dt_control_t *dc = darktable.control;
   // draw toast message, if any
-  dt_pthread_mutex_lock(&dc->toast_mutex);
+  dt_pthread_mutex_lock(&darktable.control->toast_mutex);
   if(dc->toast_ack != dc->toast_pos)
   {
     const int32_t first_message = MAX(dc->toast_ack, dc->toast_pos - (DT_CTL_TOAST_SIZE-1));
