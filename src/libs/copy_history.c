@@ -61,6 +61,13 @@ const char *name(dt_lib_module_t *self)
   return _("history stack");
 }
 
+const char *description(dt_lib_module_t *self)
+{
+  return _("perform actions on the history\n"
+           "stacks (edit histories) of the\n"
+           "currently selected images");
+}
+
 dt_view_type_flags_t views(dt_lib_module_t *self)
 {
   return DT_VIEW_LIGHTTABLE;

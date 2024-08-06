@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -158,6 +158,13 @@ static inline float pixels2print(dt_lib_export_t *self,
 const char *name(dt_lib_module_t *self)
 {
   return _("export");
+}
+
+const char *description(dt_lib_module_t *self)
+{
+  return _("create new files for the\n"
+           "currently selected images\n"
+           "which apply your edits");
 }
 
 dt_view_type_flags_t views(dt_lib_module_t *self)
