@@ -1152,7 +1152,7 @@ static void _show_text_line(cairo_t *cr,
                             const float lineto_y,
                             const float at)
 {
-  pango_layout_set_text(layout, text, -1);
+  pango_layout_set_markup(layout, text, -1);
   PangoRectangle ink;
   pango_layout_get_pixel_extents(layout, &ink, NULL);
   cairo_move_to(cr, offx, offy - ink.height - ink.x);
@@ -1198,10 +1198,8 @@ static void _lighttable_expose_empty(cairo_t *cr,
   layout = pango_cairo_create_layout(cr);
   pango_layout_set_font_description(layout, desc);
   cairo_set_font_size(cr, fs);
-  pango_layout_set_attributes(layout, bold);
-  _show_text_line(cr, layout, _("there are no images in this collection"),
+  _show_text_line(cr, layout, _("<b>there are no images in this collection</b>"),
                   offx, offy, -1, -1, at);
-  pango_layout_set_attributes(layout, normal);
 
   if(lighttable)
   {
@@ -1214,30 +1212,32 @@ static void _lighttable_expose_empty(cairo_t *cr,
     _show_text_line(cr, layout, _("or add images in the collections module in the left panel"),
                     offx, offy + 6 * ls, 0.0f, offy + 5 * ls, at);
 
-    _show_text_line(cr, layout, _("try the 'no-click' workflow: hover on an image and use"),
+    _show_text_line(cr, layout, _("try the 'no-click' workflow:"),
                     offx, offy + 9 * ls, -1, -1, at);
-    _show_text_line(cr, layout, _("keyboard shortcuts to apply ratings, colors, styles, etc."),
+    _show_text_line(cr, layout, _("hover on an image and use keyboard shortcuts"),
                     offx, offy + 10 * ls, -1, -1, at);
+    _show_text_line(cr, layout, _("to apply ratings, colors, styles, etc."),
+                    offx, offy + 11 * ls, -1, -1, at);
 
     const float offx2 = offx + DT_PIXEL_APPLY_DPI(500);
 
-    pango_layout_set_attributes(layout, bold);
-    _show_text_line(cr, layout, _("need help?"),
-                    offx2, offy + 2 * ls, width * 0.90f, 0.0f, at);
-    pango_layout_set_attributes(layout, normal);
-    _show_text_line(cr, layout, _("click on ？ then an on-screen item to open manual page"),
+    _show_text_line(cr, layout, _("<b>need help?</b>"),
+                    offx2, offy + 1 * ls, width * 0.90f, 0.0f, at);
+    _show_text_line(cr, layout, _("click on ？ then an on-screen item to open manual page."),
+                    offx2, offy + 1.9 * ls, -1, -1, at);
+    _show_text_line(cr, layout, _("hover over any button to see a description and shortcut."),
                     offx2, offy + 3 * ls, -1, -1, at);
+    _show_text_line(cr, layout, _("click <u>here</u> to open the online manual."),
+                    offx2, offy + 4 * ls, -1, -1, at);
     //TODO: add a button or link to "howto" chapter in online manual
 
-    pango_layout_set_attributes(layout, bold);
-    _show_text_line(cr, layout, _("personalize darktable"),
+    _show_text_line(cr, layout, _("<b>personalize darktable</b>"),
                     offx2, offy + 7 * ls, width * 0.97f, 0.0f, at);
-    pango_layout_set_attributes(layout, normal);
-    _show_text_line(cr, layout, _("click on the gear icon for global preferences"),
+    _show_text_line(cr, layout, _("click on the gear icon for global preferences."),
                     offx2, offy + 8 * ls, -1, -1, at);
-    _show_text_line(cr, layout, _("click on the keyboard icon to define shortcuts"),
+    _show_text_line(cr, layout, _("click on the keyboard icon to define shortcuts."),
                     offx2, offy + 9 * ls, -1, -1, at);
-    _show_text_line(cr, layout, _("press and hold 'h' to show all active shortcuts"),
+    _show_text_line(cr, layout, _("press and hold '<b>h</b>' to show all active shortcuts."),
                     offx2, offy + 10 * ls, -1, -1, at);
   }
 
