@@ -1347,6 +1347,8 @@ static gboolean _event_button_press(GtkWidget *widget,
   {
     // we click in an empty area, let's deselect all images
     dt_selection_clear(darktable.selection);
+    if(!darktable.collection || dt_collection_get_count(darktable.collection) == 0)
+      dt_gui_show_help(NULL);
     return TRUE;
   }
 
