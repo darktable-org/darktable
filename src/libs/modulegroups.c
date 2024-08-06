@@ -2866,7 +2866,8 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(d->basic_btn, "button-press-event",
                    G_CALLBACK(_manage_direct_basic_popup), self);
   g_signal_connect(d->basic_btn, "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
-  gtk_widget_set_tooltip_text(d->basic_btn, _("quick access panel"));
+  gtk_widget_set_tooltip_text(d->basic_btn, _("quick access panel\n"
+                                              "right-click tab icon to add/remove widgets"));
   dt_action_define(DT_ACTION(self), NULL,
                    N_("quick access panel"), d->basic_btn, &dt_action_def_toggle);
   gtk_box_pack_start(GTK_BOX(d->hbox_groups), d->basic_btn, TRUE, TRUE, 0);
@@ -3032,7 +3033,9 @@ static void _buttons_update(dt_lib_module_t *self)
     g_object_set_data(G_OBJECT(bt), "group", gr);
     g_signal_connect(bt, "button-press-event", G_CALLBACK(_manage_direct_popup), self);
     g_signal_connect(bt, "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
-    gtk_widget_set_tooltip_text(bt, gr->name);
+    char *tooltip = g_strdup_printf("%s\nright-click tab icon to add/remove modules", gr->name);
+    gtk_widget_set_tooltip_text(bt, tooltip);
+    g_free(tooltip);
     gr->button = bt;
     gtk_box_pack_start(GTK_BOX(d->hbox_groups), bt, TRUE, TRUE, 0);
     gtk_widget_show(bt);
