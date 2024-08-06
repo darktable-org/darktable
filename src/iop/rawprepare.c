@@ -119,7 +119,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
                                             dt_dev_pixelpipe_t *pipe,
                                             dt_dev_pixelpipe_iop_t *piece)
 {
-  return IOP_CS_RAW;
+  return (pipe && !dt_image_is_raw(&pipe->image)) ? IOP_CS_RGB : IOP_CS_RAW;
 }
 
 int legacy_params(dt_iop_module_t *self,

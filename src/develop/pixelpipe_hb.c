@@ -412,11 +412,7 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe,
     piece->histogram_params.bins_count = 256;
     piece->histogram_stats.bins_count = 0;
     piece->histogram_stats.pixels = 0;
-    piece->colors
-        = ((module->default_colorspace(module, pipe, NULL) == IOP_CS_RAW)
-           && (dt_image_is_raw(&pipe->image)))
-      ? 1
-      : 4;
+    piece->colors = module->default_colorspace(module, pipe, NULL) == IOP_CS_RAW ? 1 : 4;
     piece->iscale = pipe->iscale;
     piece->iwidth = pipe->iwidth;
     piece->iheight = pipe->iheight;

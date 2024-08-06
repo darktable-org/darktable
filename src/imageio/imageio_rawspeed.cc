@@ -541,7 +541,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img,
     }
   }
 
-  img->buf_dsc.cst = IOP_CS_RAW;
+  img->buf_dsc.cst = IOP_CS_RGB;
   img->loader = LOADER_RAWSPEED;
 
   //  Check if the camera is missing samples
