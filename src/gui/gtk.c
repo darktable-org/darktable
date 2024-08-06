@@ -2686,8 +2686,10 @@ static void _ui_toast_redraw_callback(gpointer instance,
   dt_pthread_mutex_lock(&darktable.control->toast_mutex);
   if(darktable.control->toast_ack != darktable.control->toast_pos)
   {
-    const uint32_t first_message = MAX(darktable.control->toast_ack,
-                                       darktable.control->toast_pos - DT_CTL_TOAST_SIZE + 1);
+    const uint32_t window_start = (darktable.control->toast_pos < DT_CTL_TOAST_SIZE
+                                   ? 0
+                                   : darktable.control->toast_pos - DT_CTL_TOAST_SIZE + 1);
+    const uint32_t first_message = MAX(darktable.control->toast_ack, window_start);
     gchar *message = g_malloc(ALLMESSSIZE);
     if(message)
     {
