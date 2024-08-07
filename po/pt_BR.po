@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-08-06 16:24-0300\n"
-"PO-Revision-Date: 2024-08-06 16:06-0300\n"
+"POT-Creation-Date: 2024-08-07 16:14-0300\n"
+"PO-Revision-Date: 2024-08-07 16:14-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -3542,7 +3542,7 @@ msgstr "modo de processamento"
 #: ../src/develop/blend_gui.c:2350 ../src/iop/channelmixer.c:620
 #: ../src/iop/channelmixerrgb.c:4662 ../src/iop/colorchecker.c:1444
 #: ../src/iop/colorize.c:358 ../src/iop/colorzones.c:2641
-#: ../src/iop/exposure.c:1253
+#: ../src/iop/exposure.c:1255
 msgid "lightness"
 msgstr "luminosidade"
 
@@ -3974,7 +3974,7 @@ msgstr "percentil abaixo"
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:86
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:145
 #: ../build/lib/darktable/plugins/introspection_retouch.c:458
-#: ../src/gui/presets.c:62 ../src/iop/watermark.c:1369
+#: ../src/gui/presets.c:62 ../src/iop/watermark.c:1343
 #: ../src/libs/colorpicker.c:320 ../src/libs/image.c:688
 #: ../src/libs/modulegroups.c:2334
 msgid "color"
@@ -4258,9 +4258,8 @@ msgid "Flip horizontally"
 msgstr "girar horizontalmente"
 
 #: ../build/lib/darktable/plugins/introspection_flip.c:104
-#, fuzzy
 msgid "transpose"
-msgstr "tradutores"
+msgstr "transpor"
 
 #: ../build/lib/darktable/plugins/introspection_flip.c:107
 msgid "rotate 180°"
@@ -4496,7 +4495,7 @@ msgstr "correções"
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:118
 #: ../src/develop/blend_gui.c:3586 ../src/iop/bilat.c:443
 #: ../src/iop/colorbalance.c:1858 ../src/iop/denoiseprofile.c:3787
-#: ../src/iop/exposure.c:1171 ../src/iop/levels.c:698
+#: ../src/iop/exposure.c:1173 ../src/iop/levels.c:698
 #: ../src/iop/profile_gamma.c:660 ../src/libs/copy_history.c:412
 #: ../src/libs/export.c:1383 ../src/libs/image.c:669
 #: ../src/libs/print_settings.c:2892 ../src/libs/styles.c:895
@@ -4809,7 +4808,7 @@ msgstr "referência de escala do marcador"
 #: ../build/lib/darktable/plugins/introspection_overlay.c:302
 #: ../build/lib/darktable/plugins/introspection_watermark.c:323
 #: ../src/imageio/format/tiff.c:125 ../src/imageio/format/xcf.c:164
-#: ../src/iop/borders.c:986
+#: ../src/iop/borders.c:943
 msgid "image"
 msgstr "imagem"
 
@@ -4977,7 +4976,7 @@ msgstr "GainMap embutido"
 #: ../build/lib/darktable/plugins/introspection_relight.c:98
 #: ../src/common/collection.c:644 ../src/gui/preferences.c:834
 #: ../src/gui/presets.c:699 ../src/iop/basicadj.c:628 ../src/iop/exposure.c:122
-#: ../src/iop/exposure.c:1131 ../src/libs/metadata_view.c:151
+#: ../src/iop/exposure.c:1133 ../src/libs/metadata_view.c:151
 msgid "exposure"
 msgstr "exposição"
 
@@ -6820,63 +6819,63 @@ msgid_plural "date/time re-applied to %d images"
 msgstr[0] "data/hora re-aplicada em %d imagem"
 msgstr[1] "data/hora re-aplicada em %d imagens"
 
-#: ../src/common/image.c:2301
+#: ../src/common/image.c:2303
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "não pude acessar cópia local `%s'"
 
-#: ../src/common/image.c:2308
+#: ../src/common/image.c:2310
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "não pude escrever cópia local `%s'"
 
-#: ../src/common/image.c:2315
+#: ../src/common/image.c:2317
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "erro movendo cópia local `%s' -> `%s'"
 
-#: ../src/common/image.c:2332
+#: ../src/common/image.c:2334
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "erro movendo `%s': arquivo não encontrado"
 
-#: ../src/common/image.c:2342
+#: ../src/common/image.c:2344
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "erro movendo `%s' -> `%s': arquivo já existe"
 
-#: ../src/common/image.c:2346 ../src/common/image.c:2355
+#: ../src/common/image.c:2348 ../src/common/image.c:2357
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "erro movendo `%s' -> `%s'"
 
-#: ../src/common/image.c:2655
+#: ../src/common/image.c:2657
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "não é possível criar cópia local quando o arquivo original está inacessível."
 
-#: ../src/common/image.c:2669
+#: ../src/common/image.c:2671
 msgid "cannot create local copy."
 msgstr "não pude criar cópia local."
 
-#: ../src/common/image.c:2749 ../src/control/jobs/control_jobs.c:866
+#: ../src/common/image.c:2751 ../src/control/jobs/control_jobs.c:866
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "não é possível remover cópias local quando o arquivo original está "
 "inacessível."
 
-#: ../src/common/image.c:2915
+#: ../src/common/image.c:2917
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
 msgstr[0] "cópia local %d foi sincronizada"
 msgstr[1] "cópias locais %d foram sincronizadas"
 
-#: ../src/common/image.c:3114
+#: ../src/common/image.c:3116
 msgid "<b>WARNING</b>: camera is missing samples!"
 msgstr "<b>ALERTA</b> : amostras faltando para câmera!"
 
-#: ../src/common/image.c:3115
+#: ../src/common/image.c:3117
 msgid ""
 "You must provide samples in <a href='https://raw.pixls.us/'>https://raw."
 "pixls.us/</a>"
@@ -6884,7 +6883,7 @@ msgstr ""
 "Você precisa prover amostras em  <a href='https://raw.pixls.us/'>https://raw."
 "pixls.us/</a>"
 
-#: ../src/common/image.c:3116
+#: ../src/common/image.c:3118
 #, c-format
 msgid ""
 "for `%s' `%s'\n"
@@ -6893,7 +6892,7 @@ msgstr ""
 "para `%s' `%s'\n"
 "em tantos formatos/compressão/profundidade de bits quanto possível"
 
-#: ../src/common/image.c:3119
+#: ../src/common/image.c:3121
 msgid "or the <b>RAW won't be readable</b> in next version."
 msgstr "ou o <b>RAW não será legível</b> na próxima versão."
 
@@ -7014,7 +7013,7 @@ msgstr "v3.0 RAW"
 msgid "v3.0 JPEG"
 msgstr "v3.0 JPEG"
 
-#: ../src/common/iop_profile.c:1158
+#: ../src/common/iop_profile.c:1141
 #, c-format
 msgid ""
 "darktable loads %s from\n"
@@ -7157,7 +7156,7 @@ msgstr "polegadas"
 msgid "\""
 msgstr "\""
 
-#: ../src/common/pdf.h:104 ../src/iop/borders.c:997
+#: ../src/common/pdf.h:104 ../src/iop/borders.c:954
 msgid "A4"
 msgstr "A4"
 
@@ -8207,9 +8206,8 @@ msgid "import image"
 msgstr "importar imagem"
 
 #: ../src/control/jobs/sidecar_jobs.c:158
-#, fuzzy
 msgid "synchronize sidecars"
-msgstr "salvar nos arquivos XMP"
+msgstr "sincronizar arquivos XMP"
 
 #: ../src/develop/blend.c:308
 msgid "detail mask blending error"
@@ -8745,8 +8743,8 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:2696 ../src/develop/blend_gui.c:3617
 #: ../src/iop/basicadj.c:630 ../src/iop/colorbalancergb.c:2134
-#: ../src/iop/colorequal.c:2644 ../src/iop/exposure.c:1134
-#: ../src/iop/exposure.c:1149 ../src/iop/filmic.c:1516 ../src/iop/filmic.c:1529
+#: ../src/iop/colorequal.c:2644 ../src/iop/exposure.c:1136
+#: ../src/iop/exposure.c:1151 ../src/iop/filmic.c:1516 ../src/iop/filmic.c:1529
 #: ../src/iop/filmic.c:1571 ../src/iop/filmicrgb.c:4406
 #: ../src/iop/filmicrgb.c:4417 ../src/iop/filmicrgb.c:4451
 #: ../src/iop/filmicrgb.c:4461 ../src/iop/graduatednd.c:1069
@@ -8961,8 +8959,8 @@ msgid "adjust the fulcrum used by some blending operations"
 msgstr "ajusta o pivô (fulcrum) usado por algumas operações de mesclagem"
 
 #. Add opacity/scale sliders to table
-#: ../src/develop/blend_gui.c:3628 ../src/iop/overlay.c:1127
-#: ../src/iop/watermark.c:1385 ../src/libs/masks.c:111
+#: ../src/develop/blend_gui.c:3628 ../src/iop/overlay.c:1101
+#: ../src/iop/watermark.c:1359 ../src/libs/masks.c:111
 msgid "opacity"
 msgstr "opacidade"
 
@@ -9187,7 +9185,6 @@ msgid "unsupported input"
 msgstr "entrada não suportada"
 
 #: ../src/develop/imageop.c:3684
-#, fuzzy
 msgid ""
 "you have placed this module at\n"
 "a position in the pipeline where\n"
@@ -9579,11 +9576,11 @@ msgstr ""
 "<b>mover segmento</b>: arrastar, <b>adicionar nó</b>:ctrl+clique\n"
 "<b>remover caminho</b>: clique-direito"
 
-#: ../src/develop/pixelpipe_hb.c:491
+#: ../src/develop/pixelpipe_hb.c:487
 msgid "enabled as required"
 msgstr "habilitado porque necessário"
 
-#: ../src/develop/pixelpipe_hb.c:492
+#: ../src/develop/pixelpipe_hb.c:488
 msgid ""
 "history had module disabled but it is required for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
@@ -9593,11 +9590,11 @@ msgstr ""
 "provavelmente foi introduzido ao aplicar uma predefinição, estilo ou "
 "copiar&colar de histórico"
 
-#: ../src/develop/pixelpipe_hb.c:499
+#: ../src/develop/pixelpipe_hb.c:495
 msgid "disabled as not appropriate"
 msgstr "desabilitado porque não é apropriado"
 
-#: ../src/develop/pixelpipe_hb.c:500
+#: ../src/develop/pixelpipe_hb.c:496
 msgid ""
 "history had module enabled but it is not allowed for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
@@ -9607,7 +9604,7 @@ msgstr ""
 "provavelmente foi introduzido ao aplicar uma predefinição, estilo ou "
 "copiar&colar de histórico"
 
-#: ../src/develop/pixelpipe_hb.c:2690
+#: ../src/develop/pixelpipe_hb.c:2686
 msgid ""
 "OpenCL errors encountered; disabling OpenCL for this session! some possible "
 "causes:\n"
@@ -9628,7 +9625,7 @@ msgstr ""
 "  - configuração de espaço muito pequeno com 'use toda a memória do "
 "dispositivo'."
 
-#: ../src/develop/pixelpipe_hb.c:2856
+#: ../src/develop/pixelpipe_hb.c:2852
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -9863,9 +9860,8 @@ msgid "fit"
 msgstr "ajustar"
 
 #: ../src/dtgtk/thumbtable.c:1201
-#, fuzzy
 msgid "<b>there are no images in this collection</b>"
-msgstr "não existem imagens nesta coleção"
+msgstr "<b>não existem imagens nesta coleção</b>"
 
 #: ../src/dtgtk/thumbtable.c:1206
 msgid "if you have not imported any images yet"
@@ -9884,19 +9880,16 @@ msgid "or add images in the collections module in the left panel"
 msgstr "ou adicione imagens no módulo coleções no painel esquerdo"
 
 #: ../src/dtgtk/thumbtable.c:1215
-#, fuzzy
 msgid "try the 'no-click' workflow:"
-msgstr ""
-"tente o fluxo de trabalho 'sem cliques`: passe o mouse por uma imagem e use"
+msgstr "tente o fluxo de trabalho 'sem cliques`:"
 
 #: ../src/dtgtk/thumbtable.c:1217
 msgid "hover on an image and use keyboard shortcuts"
 msgstr "passe o mouse sobre uma imagem e use os atalhos de teclado"
 
 #: ../src/dtgtk/thumbtable.c:1219
-#, fuzzy
 msgid "to apply ratings, colors, styles, etc."
-msgstr "atalhos de teclado para aplicar classificações, cores, estilos etc."
+msgstr "para aplicar classificações, cores, estilos, etc."
 
 #: ../src/dtgtk/thumbtable.c:1224
 msgid "<b>need help?</b>"
@@ -9921,7 +9914,6 @@ msgid "<b>personalize darktable</b>"
 msgstr "<b>personalizar o darktable</b>"
 
 #: ../src/dtgtk/thumbtable.c:1236
-#, fuzzy
 msgid "click on the gear icon for global preferences."
 msgstr "clique no ícone de engrenagem para preferências globais."
 
@@ -12356,7 +12348,6 @@ msgid "floating point"
 msgstr "ponto flutuante"
 
 #: ../src/imageio/format/jxl.c:574
-#, fuzzy
 msgid ""
 "the quality of the output image\n"
 "0-29 = very lossy\n"
@@ -12366,7 +12357,7 @@ msgstr ""
 "a qualidade da imagem de saída\n"
 "0-29 = com muita perda\n"
 "30-99 = qualidade comparável com JPEG\n"
-"100 = sem perda (somente para profundidade de bits inteira)"
+"100 = sem perda"
 
 #: ../src/imageio/format/jxl.c:583
 msgid "encoding color profile"
@@ -13610,7 +13601,7 @@ msgstr ""
 "se mal ajustado, forçará os valores das cores que estão próximas\n"
 "do preto para fora do gama tornando valores RGB negativos"
 
-#: ../src/iop/basicadj.c:631 ../src/iop/exposure.c:1132
+#: ../src/iop/basicadj.c:631 ../src/iop/exposure.c:1134
 msgid "adjust the exposure correction"
 msgstr "ajusta a correção de exposição"
 
@@ -13844,6 +13835,8 @@ msgid ""
 "adjust straightness of edges from 0=perfect circle\n"
 "to 1=completely straight"
 msgstr ""
+"ajusta retidão das bordas de 0=círculo perfeito\n"
+"até 1=completamente reto"
 
 #: ../src/iop/blurs.c:798
 msgid "set amount by which to rotate shape around its center"
@@ -13859,12 +13852,16 @@ msgid ""
 "amount to curve the motion relative\n"
 "to its overall orientation"
 msgstr ""
+"quão curvo será o movimento relativo à\n"
+"sua orientação geral"
 
 #: ../src/iop/blurs.c:802
 msgid ""
 "select which portion of the path to use,\n"
 "allowing the path to become asymmetric"
 msgstr ""
+"selecionar que parte do caminho usar,\n"
+"permitindo que o caminho se torne assimétrico"
 
 #: ../src/iop/borders.c:312
 msgid "framing"
@@ -13890,19 +13887,19 @@ msgstr "15:10 cartão-postal branco"
 msgid "15:10 postcard black"
 msgstr "15:10 cartão-postal preto"
 
-#: ../src/iop/borders.c:974
+#: ../src/iop/borders.c:931
 msgid "which dimension to use for the size calculation"
 msgstr "que dimensão usar para o cálculo do tamanho"
 
-#: ../src/iop/borders.c:980
+#: ../src/iop/borders.c:937
 msgid "size of the border in percent of the chosen basis"
 msgstr "tamanho da borda em percentagem da base escolhida"
 
-#: ../src/iop/borders.c:982 ../src/iop/clipping.c:2254 ../src/iop/crop.c:1242
+#: ../src/iop/borders.c:939 ../src/iop/clipping.c:2254 ../src/iop/crop.c:1242
 msgid "aspect"
 msgstr "proporção"
 
-#: ../src/iop/borders.c:983
+#: ../src/iop/borders.c:940
 msgid ""
 "select the aspect ratio\n"
 "(right click on slider below to type your own w:h)"
@@ -13910,86 +13907,85 @@ msgstr ""
 "selecione a proporção\n"
 "(clique-direito no deslizador abaixo e digite sua própria larg:alt)"
 
-#: ../src/iop/borders.c:987
+#: ../src/iop/borders.c:944
 msgid "3:1"
 msgstr "3:1"
 
-#: ../src/iop/borders.c:988
+#: ../src/iop/borders.c:945
 msgid "95:33"
 msgstr "95:33"
 
-#: ../src/iop/borders.c:989
+#: ../src/iop/borders.c:946
 msgid "CinemaScope 2.39:1"
 msgstr "CinemaScope 2.39:1"
 
-#: ../src/iop/borders.c:990
+#: ../src/iop/borders.c:947
 msgid "2:1"
 msgstr "2:1"
 
-#: ../src/iop/borders.c:991
+#: ../src/iop/borders.c:948
 msgid "16:9"
 msgstr "16:9"
 
-#: ../src/iop/borders.c:992
+#: ../src/iop/borders.c:949
 msgid "5:3"
 msgstr "5:3"
 
-#: ../src/iop/borders.c:993
+#: ../src/iop/borders.c:950
 msgid "US Legal 8.5x14"
 msgstr "US Legal 8.5x14"
 
-#: ../src/iop/borders.c:994 ../src/iop/clipping.c:2167 ../src/iop/crop.c:1144
+#: ../src/iop/borders.c:951 ../src/iop/clipping.c:2167 ../src/iop/crop.c:1144
 msgid "golden cut"
 msgstr "proporção áurea"
 
-#: ../src/iop/borders.c:995
+#: ../src/iop/borders.c:952
 msgid "16:10"
 msgstr "16:10"
 
-#: ../src/iop/borders.c:996
+#: ../src/iop/borders.c:953
 msgid "3:2 (4x6, 10x15cm)"
 msgstr "3:2 (4x6, 10x15cm)"
 
-#: ../src/iop/borders.c:998
+#: ../src/iop/borders.c:955
 msgid "DIN"
 msgstr "DIN"
 
-#: ../src/iop/borders.c:999
+#: ../src/iop/borders.c:956
 msgid "7:5"
 msgstr "7:5"
 
-#: ../src/iop/borders.c:1000
+#: ../src/iop/borders.c:957
 msgid "4:3"
 msgstr "4:3"
 
-#: ../src/iop/borders.c:1001
+#: ../src/iop/borders.c:958
 msgid "US Letter 8.5x11"
 msgstr "US Letter 8.5x11"
 
-#: ../src/iop/borders.c:1002
+#: ../src/iop/borders.c:959
 msgid "14:11"
 msgstr "14:11"
 
-#: ../src/iop/borders.c:1003
+#: ../src/iop/borders.c:960
 msgid "5:4 (8x10)"
 msgstr "5:4 (8x10)"
 
-#: ../src/iop/borders.c:1004 ../src/iop/clipping.c:2157 ../src/iop/crop.c:1134
+#: ../src/iop/borders.c:961 ../src/iop/clipping.c:2157 ../src/iop/crop.c:1134
 #: ../src/libs/filtering.c:316 ../src/libs/filters/ratio.c:124
 #: ../src/libs/histogram.c:119
 msgid "square"
 msgstr "quadrado"
 
-#: ../src/iop/borders.c:1005
+#: ../src/iop/borders.c:962
 msgid "constant border"
 msgstr "borda constante"
 
-#: ../src/iop/borders.c:1006 ../src/iop/borders.c:1022
-#: ../src/iop/borders.c:1033
+#: ../src/iop/borders.c:963 ../src/iop/borders.c:979 ../src/iop/borders.c:990
 msgid "custom..."
 msgstr "personalizado..."
 
-#: ../src/iop/borders.c:1010
+#: ../src/iop/borders.c:967
 msgid ""
 "set the custom aspect ratio\n"
 "(right click to enter number or w:h)"
@@ -13997,15 +13993,15 @@ msgstr ""
 "selecione a proporção\n"
 "(clique-direito para entrar número ou larg:alt)"
 
-#: ../src/iop/borders.c:1015
+#: ../src/iop/borders.c:972
 msgid "aspect ratio orientation of the image with border"
 msgstr "orientação da proporção da imagem com borda"
 
-#: ../src/iop/borders.c:1017
+#: ../src/iop/borders.c:974
 msgid "horizontal position"
 msgstr "posição horizontal"
 
-#: ../src/iop/borders.c:1018
+#: ../src/iop/borders.c:975
 msgid ""
 "select the horizontal position ratio relative to top\n"
 "(right click on slider below to type your own x:w)"
@@ -14013,35 +14009,35 @@ msgstr ""
 "selecione a relação de posição horizontal relativa ao topo\n"
 "(clique-direito no deslizador e digite sua própria x:larg)"
 
-#: ../src/iop/borders.c:1021 ../src/iop/borders.c:1032
+#: ../src/iop/borders.c:978 ../src/iop/borders.c:989
 msgid "center"
 msgstr "centro"
 
-#: ../src/iop/borders.c:1021 ../src/iop/borders.c:1032
+#: ../src/iop/borders.c:978 ../src/iop/borders.c:989
 msgid "1/3"
 msgstr "1/3"
 
-#: ../src/iop/borders.c:1021 ../src/iop/borders.c:1032
+#: ../src/iop/borders.c:978 ../src/iop/borders.c:989
 msgid "3/8"
 msgstr "3/8"
 
-#: ../src/iop/borders.c:1022 ../src/iop/borders.c:1033
+#: ../src/iop/borders.c:979 ../src/iop/borders.c:990
 msgid "5/8"
 msgstr "5/8"
 
-#: ../src/iop/borders.c:1022 ../src/iop/borders.c:1033
+#: ../src/iop/borders.c:979 ../src/iop/borders.c:990
 msgid "2/3"
 msgstr "2/3"
 
-#: ../src/iop/borders.c:1026
+#: ../src/iop/borders.c:983
 msgid "custom horizontal position"
 msgstr "posição horizontal personalizada"
 
-#: ../src/iop/borders.c:1028
+#: ../src/iop/borders.c:985
 msgid "vertical position"
 msgstr "posição vertical"
 
-#: ../src/iop/borders.c:1029
+#: ../src/iop/borders.c:986
 msgid ""
 "select the vertical position ratio relative to left\n"
 "(right click on slider below to type your own y:h)"
@@ -14049,31 +14045,31 @@ msgstr ""
 "selecione a relação de posição vertical relativa a esquerda\n"
 "(clique-direito no deslizador e digite sua própria x:alt)"
 
-#: ../src/iop/borders.c:1037
+#: ../src/iop/borders.c:994
 msgid "custom vertical position"
 msgstr "posição vertical personalizada"
 
-#: ../src/iop/borders.c:1043
+#: ../src/iop/borders.c:1000
 msgid "size of the frame line in percent of min border width"
 msgstr "tamanho da linha da moldura em percentagem da largura mínima da borda"
 
-#: ../src/iop/borders.c:1049
+#: ../src/iop/borders.c:1006
 msgid "offset of the frame line beginning on picture side"
 msgstr "deslocamento da linha da moldura começando na borda da imagem"
 
-#: ../src/iop/borders.c:1064 ../src/iop/borders.c:1075
+#: ../src/iop/borders.c:1021 ../src/iop/borders.c:1032
 msgid "border color"
 msgstr "cor da borda"
 
-#: ../src/iop/borders.c:1068
+#: ../src/iop/borders.c:1025
 msgid "select border color"
 msgstr "seleciona cor da borda"
 
-#: ../src/iop/borders.c:1074
+#: ../src/iop/borders.c:1031
 msgid "pick border color from image"
 msgstr "seleciona cor da borda a partir da imagem"
 
-#: ../src/iop/borders.c:1075 ../src/iop/borders.c:1092
+#: ../src/iop/borders.c:1032 ../src/iop/borders.c:1049
 #: ../src/iop/colorzones.c:2659 ../src/iop/colorzones.c:2674
 #: ../src/iop/negadoctor.c:862 ../src/iop/negadoctor.c:929
 #: ../src/iop/negadoctor.c:967 ../src/iop/rgbcurve.c:1517
@@ -14082,15 +14078,15 @@ msgstr "seleciona cor da borda a partir da imagem"
 msgid "pickers"
 msgstr "seletores"
 
-#: ../src/iop/borders.c:1080 ../src/iop/borders.c:1092
+#: ../src/iop/borders.c:1037 ../src/iop/borders.c:1049
 msgid "frame line color"
 msgstr "cor da linha da moldura"
 
-#: ../src/iop/borders.c:1085
+#: ../src/iop/borders.c:1042
 msgid "select frame line color"
 msgstr "seleciona cor da linha da moldura"
 
-#: ../src/iop/borders.c:1091
+#: ../src/iop/borders.c:1048
 msgid "pick frame line color from image"
 msgstr "seleciona cor da linha da moldura a partir da imagem"
 
@@ -14753,7 +14749,7 @@ msgstr ""
 msgid "mapping"
 msgstr "mapeamento"
 
-#: ../src/iop/channelmixerrgb.c:4593 ../src/iop/exposure.c:1202
+#: ../src/iop/channelmixerrgb.c:4593 ../src/iop/exposure.c:1204
 msgid "area mode"
 msgstr "mode de área"
 
@@ -14769,11 +14765,11 @@ msgstr ""
 "\"medida\" simplesmente mostra como uma cor de entrada é mapeada pelo CAT\n"
 "e pode ser usada para amostrar um alvo."
 
-#: ../src/iop/channelmixerrgb.c:4599 ../src/iop/exposure.c:1208
+#: ../src/iop/channelmixerrgb.c:4599 ../src/iop/exposure.c:1210
 msgid "correction"
 msgstr "correção"
 
-#: ../src/iop/channelmixerrgb.c:4600 ../src/iop/exposure.c:1209
+#: ../src/iop/channelmixerrgb.c:4600 ../src/iop/exposure.c:1211
 msgid "measure"
 msgstr "medição"
 
@@ -14789,12 +14785,12 @@ msgstr ""
 "calcular o alvo levando em conta a mistura de canais.\n"
 "se desabilitado, somente o CAT é considerado."
 
-#: ../src/iop/channelmixerrgb.c:4625 ../src/iop/exposure.c:1216
+#: ../src/iop/channelmixerrgb.c:4625 ../src/iop/exposure.c:1218
 msgctxt "section"
 msgid "input"
 msgstr "entrada"
 
-#: ../src/iop/channelmixerrgb.c:4632 ../src/iop/exposure.c:1224
+#: ../src/iop/channelmixerrgb.c:4632 ../src/iop/exposure.c:1226
 msgid "the input color that should be mapped to the target"
 msgstr "a cor de entrada que deveria ser mapeada no alvo"
 
@@ -14808,12 +14804,12 @@ msgstr ""
 "h: \tN/A\n"
 "c: \tN/A"
 
-#: ../src/iop/channelmixerrgb.c:4641 ../src/iop/exposure.c:1232
+#: ../src/iop/channelmixerrgb.c:4641 ../src/iop/exposure.c:1234
 msgid "these LCh coordinates are computed from CIE Lab 1976 coordinates"
 msgstr ""
 "estas coordeanaas LCh são computadas a partir de coordenadas CIE Lab 1976"
 
-#: ../src/iop/channelmixerrgb.c:4649 ../src/iop/exposure.c:1239
+#: ../src/iop/channelmixerrgb.c:4649 ../src/iop/exposure.c:1241
 msgctxt "section"
 msgid "target"
 msgstr "alvo"
@@ -17392,23 +17388,23 @@ msgstr "padrões para lanterna mágica"
 msgid "failed to get raw buffer from image `%s'"
 msgstr "falha em obter buffer raw da imagem `%s'"
 
-#: ../src/iop/exposure.c:643
+#: ../src/iop/exposure.c:645
 #, no-c-format
 msgid "compensate camera exposure (%+.1f EV)"
 msgstr "compensar exposição da câmera (%+.1f EV)"
 
 #. Write report in GUI
-#: ../src/iop/exposure.c:827
+#: ../src/iop/exposure.c:829
 #, c-format
 msgid "L : \t%.1f %%"
 msgstr "L : \t%.1f %%"
 
-#: ../src/iop/exposure.c:959 ../src/libs/history.c:963
+#: ../src/iop/exposure.c:961 ../src/libs/history.c:963
 #, c-format
 msgid "%.2f EV"
 msgstr "%.2f EV"
 
-#: ../src/iop/exposure.c:1127
+#: ../src/iop/exposure.c:1129
 msgid ""
 "automatically remove the camera exposure bias\n"
 "this is useful if you exposed the image to the right."
@@ -17416,27 +17412,27 @@ msgstr ""
 "automaticamente remove o viés de exposição da câmera\n"
 "isto é útil se você expôs a imagem à direita."
 
-#: ../src/iop/exposure.c:1146
+#: ../src/iop/exposure.c:1148
 #, no-c-format
 msgid "where in the histogram to meter for deflicking. E.g. 50% is median"
 msgstr "onde no histograma medir para deflicking. Por exemplo, 50% é a mediana"
 
-#: ../src/iop/exposure.c:1152
+#: ../src/iop/exposure.c:1154
 msgid ""
 "where to place the exposure level for processed pics, EV below overexposure."
 msgstr ""
 "onde por o nível de exposição para fotos processadas, EV abaixo de "
 "sobrexposição."
 
-#: ../src/iop/exposure.c:1156
+#: ../src/iop/exposure.c:1158
 msgid "computed EC: "
 msgstr "EC calculado: "
 
-#: ../src/iop/exposure.c:1159
+#: ../src/iop/exposure.c:1161
 msgid "what exposure correction has actually been used"
 msgstr "quais correções de exposição foram utilizadas"
 
-#: ../src/iop/exposure.c:1178
+#: ../src/iop/exposure.c:1180
 msgid ""
 "adjust the black level to unclip negative RGB values.\n"
 "you should never use it to add more density in blacks!\n"
@@ -17448,11 +17444,11 @@ msgstr ""
 "se mal ajustado, forçará os valores das cores que estão próximas\n"
 "do preto para fora do gama tornando valores RGB negativos."
 
-#: ../src/iop/exposure.c:1188
+#: ../src/iop/exposure.c:1190
 msgid "area exposure mapping"
 msgstr "mapeamento de exposição por área"
 
-#: ../src/iop/exposure.c:1194
+#: ../src/iop/exposure.c:1196
 msgid ""
 "define a target brightness, in terms of exposure,\n"
 "for a selected region of the image (the control sample),\n"
@@ -17468,7 +17464,7 @@ msgstr ""
 "uma parte crítica de seu objeto ou uma superfície que permameça estática\n"
 "(nos mesmos locais) e consistentemente iluminada em sua série de imagens."
 
-#: ../src/iop/exposure.c:1203
+#: ../src/iop/exposure.c:1205
 msgid ""
 "\"correction\" automatically adjust exposure\n"
 "such that the input lightness is mapped to the target.\n"
@@ -17480,11 +17476,11 @@ msgstr ""
 "\"medida\" simplesmente mostra como uma cor de entrada é mapeada\n"
 "pela compensação de exposição e pode ser usada para definir um alvo."
 
-#: ../src/iop/exposure.c:1229
+#: ../src/iop/exposure.c:1231
 msgid "L : \tN/A"
 msgstr "L : \tN/A"
 
-#: ../src/iop/exposure.c:1247
+#: ../src/iop/exposure.c:1249
 msgid "the desired target exposure after mapping"
 msgstr "a cor alvo desejada após o mapeamento"
 
@@ -18725,8 +18721,8 @@ msgid "find lens"
 msgstr "encontrar lentes"
 
 #. scale
-#: ../src/iop/lens.cc:4533 ../src/iop/overlay.c:1138 ../src/iop/vignette.c:1050
-#: ../src/iop/watermark.c:1395 ../src/libs/export.c:1271
+#: ../src/iop/lens.cc:4533 ../src/iop/overlay.c:1112 ../src/iop/vignette.c:1050
+#: ../src/iop/watermark.c:1369 ../src/libs/export.c:1271
 msgid "scale"
 msgstr "escala"
 
@@ -19658,7 +19654,7 @@ msgstr ""
 "de filme\n"
 "aqui"
 
-#: ../src/iop/overlay.c:1032
+#: ../src/iop/overlay.c:1006
 #, c-format
 msgid ""
 "cannot use image %d as an overlay as it is using the current image as an "
@@ -19667,12 +19663,12 @@ msgstr ""
 "não é possível usar a imagem %d como sobreposição porque ela mesma está "
 "usando a imagem corrente como sobreposição"
 
-#: ../src/iop/overlay.c:1131 ../src/iop/watermark.c:1388
+#: ../src/iop/overlay.c:1105 ../src/iop/watermark.c:1362
 msgctxt "section"
 msgid "placement"
 msgstr "posicionamento"
 
-#: ../src/iop/overlay.c:1146
+#: ../src/iop/overlay.c:1120
 msgid ""
 "choose how to scale the overlay\n"
 "• image: scale overlay relative to whole image\n"
@@ -19691,31 +19687,31 @@ msgstr ""
 "• opções avançadas: escolher dimensões da sobreposição e da imagem "
 "independentemente"
 
-#: ../src/iop/overlay.c:1157
+#: ../src/iop/overlay.c:1131
 msgid "reference image dimension against which to scale the overlay"
 msgstr ""
 "dimensão da imagem de referência contra a qual a sobreposição terá a escala "
 "ajustada"
 
-#: ../src/iop/overlay.c:1161
+#: ../src/iop/overlay.c:1135
 msgid "overlay dimension to scale"
 msgstr "dimensão da sobreposição para ajuste de escala"
 
-#: ../src/iop/overlay.c:1165 ../src/iop/watermark.c:1418
+#: ../src/iop/overlay.c:1139 ../src/iop/watermark.c:1392
 #: ../src/libs/print_settings.c:2692
 msgid "alignment"
 msgstr "alinhamento"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/overlay.c:1189
+#: ../src/iop/overlay.c:1163
 msgid "the opacity of the overlay"
 msgstr "a opacidade da sobreposição"
 
-#: ../src/iop/overlay.c:1190
+#: ../src/iop/overlay.c:1164
 msgid "the scale of the overlay"
 msgstr "a escala da sobreposição"
 
-#: ../src/iop/overlay.c:1191
+#: ../src/iop/overlay.c:1165
 msgid "the rotation of the overlay"
 msgstr "a rotação da sobreposição"
 
@@ -20880,7 +20876,7 @@ msgstr "curva de tons para canal a"
 msgid "tonecurve for b channel"
 msgstr "curva de tons para canal b"
 
-#: ../src/iop/tonecurve.c:1297 ../src/iop/watermark.c:1376
+#: ../src/iop/tonecurve.c:1297 ../src/iop/watermark.c:1350
 #: ../src/libs/colorpicker.c:675
 msgid "pick color"
 msgstr "seleciona cor"
@@ -21337,39 +21333,38 @@ msgstr "marca d'água"
 msgid "overlay an SVG watermark like a signature on the picture"
 msgstr "sobrepõe uma marca d'água SVG como uma assinatura na imagem"
 
-#: ../src/iop/watermark.c:1328
+#: ../src/iop/watermark.c:1302
 msgid "marker"
 msgstr "marcador"
 
-#: ../src/iop/watermark.c:1331
+#: ../src/iop/watermark.c:1305
 #, c-format
 msgid "SVG watermarks in %s/watermarks or %s/watermarks"
 msgstr "marcas d'água SVG em %s/watermarks ou %s/watermarks"
 
 #. Simple text
-#: ../src/iop/watermark.c:1341 ../src/iop/watermark.c:1342
+#: ../src/iop/watermark.c:1315 ../src/iop/watermark.c:1316
 msgid "text"
 msgstr "texto"
 
-#: ../src/iop/watermark.c:1343
-#, fuzzy
+#: ../src/iop/watermark.c:1317
 msgid ""
 "text string, tag: $(WATERMARK_TEXT)\n"
 "use $(NL) to insert a line break"
 msgstr ""
-"texto, etiqueta:\n"
-"$(WATERMARK_TEXT)"
+"texto, etiqueta: $(WATERMARK_TEXT)\n"
+"use $(NL) para inserir uma quebra de linha"
 
-#: ../src/iop/watermark.c:1346
+#: ../src/iop/watermark.c:1320
 msgid "content"
 msgstr "conteúdo"
 
 #. Text font
-#: ../src/iop/watermark.c:1351
+#: ../src/iop/watermark.c:1325
 msgid "font"
 msgstr "fonte"
 
-#: ../src/iop/watermark.c:1356
+#: ../src/iop/watermark.c:1330
 msgid ""
 "text font, tags:\n"
 "$(WATERMARK_FONT_FAMILY)\n"
@@ -21381,7 +21376,7 @@ msgstr ""
 "$(WATERMARK_FONT_STYLE)\n"
 "$(WATERMARK_FONT_WEIGHT)"
 
-#: ../src/iop/watermark.c:1371
+#: ../src/iop/watermark.c:1345
 msgid ""
 "watermark color, tag:\n"
 "$(WATERMARK_COLOR)"
@@ -21389,15 +21384,15 @@ msgstr ""
 "cor da marca d'água, etiqueta:\n"
 "$(WATERMARK_COLOR)"
 
-#: ../src/iop/watermark.c:1373
+#: ../src/iop/watermark.c:1347
 msgid "select watermark color"
 msgstr "seleciona cor da marca d'água"
 
-#: ../src/iop/watermark.c:1375
+#: ../src/iop/watermark.c:1349
 msgid "pick color from image"
 msgstr "seleciona cor a partir da imagem"
 
-#: ../src/iop/watermark.c:1401
+#: ../src/iop/watermark.c:1375
 msgid ""
 "choose how to scale the watermark\n"
 "• image: scale watermark relative to whole image\n"
@@ -21416,26 +21411,26 @@ msgstr ""
 "• opções avançadas: escolher dimensões da marca d'água e da imagem "
 "independentemente"
 
-#: ../src/iop/watermark.c:1410
+#: ../src/iop/watermark.c:1384
 msgid "reference image dimension against which to scale the watermark"
 msgstr ""
 "dimensão da imagem de referência contra a qual a marca d'água terá a escala "
 "ajustada"
 
-#: ../src/iop/watermark.c:1414
+#: ../src/iop/watermark.c:1388
 msgid "watermark dimension to scale"
 msgstr "dimensão da marca d'água para ajuste de escala"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/watermark.c:1439
+#: ../src/iop/watermark.c:1413
 msgid "the opacity of the watermark"
 msgstr "a opacidade da marca d'água"
 
-#: ../src/iop/watermark.c:1440
+#: ../src/iop/watermark.c:1414
 msgid "the scale of the watermark"
 msgstr "a escala da marca d'água"
 
-#: ../src/iop/watermark.c:1441
+#: ../src/iop/watermark.c:1415
 msgid "the rotation of the watermark"
 msgstr "a rotação da marca d'água"
 
@@ -21600,11 +21595,12 @@ msgid ""
 "define search criteria for images\n"
 "to be displayed or edited"
 msgstr ""
+"definir critérios de busca para imagens\n"
+"a serem mostradas ou editadas"
 
 #: ../src/libs/collect.c:433
-#, fuzzy
 msgid "update path to files"
-msgstr "arquivos de predefinição do darktable"
+msgstr "atualizar caminho para arquivos"
 
 #: ../src/libs/collect.c:517
 #, c-format
@@ -21880,14 +21876,14 @@ msgid "history stack"
 msgstr "pilha de histórico"
 
 #: ../src/libs/copy_history.c:66
-#, fuzzy
 msgid ""
 "perform actions on the history\n"
 "stacks (edit histories) of the\n"
 "currently selected images"
 msgstr ""
-"cola histórico para todas\n"
-"as imagens selecionadas"
+"realizar ações nas pilhas de\n"
+"histórico (históricos de edição)\n"
+"das imagens atualmente selecionadas"
 
 #: ../src/libs/copy_history.c:121
 msgid "open sidecar file"
@@ -22006,6 +22002,8 @@ msgid ""
 "create/rename/remove multiple\n"
 "edits of the current image"
 msgstr ""
+"criar/renomear/remover múltiplas\n"
+"ediçõe da imagem corrente"
 
 #: ../src/libs/duplicate.c:413
 msgid "create a 'virgin' duplicate of the image without any development"
@@ -22814,11 +22812,12 @@ msgstr ""
 "fica sombreado durante a execução da busca"
 
 #: ../src/libs/geotagging.c:146
-#, fuzzy
 msgid ""
 "set geolocation information for\n"
 "the currently selected images"
-msgstr "escrever classificação em estrelas para imagens selecionadas"
+msgstr ""
+"determinar informação de geolocalização\n"
+"para as imagens atualmente selecionadas"
 
 #: ../src/libs/geotagging.c:374
 msgid "apply offset and geo-location"
@@ -23968,11 +23967,12 @@ msgid "metadata editor"
 msgstr "editor de metadados"
 
 #: ../src/libs/metadata.c:65
-#, fuzzy
 msgid ""
 "modify text metadata fields of\n"
 "the currently selected images"
-msgstr "salva os metadados nas imagens selecionadas"
+msgstr ""
+"modificar campo de metadados das\n"
+"imagens atualmente selecionadas"
 
 #: ../src/libs/metadata.c:467 ../src/libs/metadata_view.c:1258
 msgid "metadata settings"
@@ -25141,11 +25141,12 @@ msgid "tagging"
 msgstr "etiquetas"
 
 #: ../src/libs/tagging.c:114
-#, fuzzy
 msgid ""
 "add or remove keywords for\n"
 "the currently selected images"
-msgstr "remover a área da imagem atualmente selecionada"
+msgstr ""
+"adicionar ou remover palavras-chave para\n"
+"as imagens atualmente selecionadas"
 
 #: ../src/libs/tagging.c:1283
 msgid "attach tag to all"
