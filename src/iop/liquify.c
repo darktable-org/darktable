@@ -605,13 +605,13 @@ static void _distort_paths_locked(const struct dt_iop_module_t *module,
 
   if(params->transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
   {
-    dt_dev_distort_transform_locked(params->develop, params->pipe, module->iop_order,
+    dt_dev_distort_transform_plus(params->develop, params->pipe, module->iop_order,
                                     DT_DEV_TRANSFORM_DIR_BACK_EXCL, buffer, len);
-    dt_dev_distort_transform_locked(params->develop, params->pipe, module->iop_order,
+    dt_dev_distort_transform_plus(params->develop, params->pipe, module->iop_order,
                                     DT_DEV_TRANSFORM_DIR_FORW_EXCL, buffer, len);
   }
   else
-    dt_dev_distort_transform_locked(params->develop, params->pipe, module->iop_order,
+    dt_dev_distort_transform_plus(params->develop, params->pipe, module->iop_order,
                                     params->transf_direction, buffer, len);
 
   // record back the transformed points
@@ -649,30 +649,20 @@ static void _distort_paths_locked(const struct dt_iop_module_t *module,
   free(buffer);
 }
 
-static void _distort_paths_plus(const struct dt_iop_module_t *module,
-                                const distort_params_t *params,
-                                const dt_iop_liquify_params_t *p)
-{
-  dt_pthread_mutex_lock(&params->develop->history_mutex);
-  _distort_paths_locked(module, params, p);
-  dt_pthread_mutex_unlock(&params->develop->history_mutex);
-}
-
 static void distort_paths_raw_to_piece(const struct dt_iop_module_t *module,
                                        dt_dev_pixelpipe_t *pipe,
                                        const float roi_in_scale,
-                                       dt_iop_liquify_params_t *p,
-                                       const gboolean from_distort_transform)
+                                       dt_iop_liquify_params_t *p)
 {
   const distort_params_t params = { module->dev,
                                     pipe,
                                     pipe->iscale,
                                     roi_in_scale,
                                     DT_DEV_TRANSFORM_DIR_BACK_EXCL };
-  if(from_distort_transform)
-    _distort_paths_locked(module, &params, p);
-  else
-    _distort_paths_plus(module, &params, p);
+
+  dt_pthread_mutex_lock(&module->dev->history_mutex);
+  _distort_paths_locked(module, &params, p);
+  dt_pthread_mutex_unlock(&module->dev->history_mutex);
 }
 
 // op-engine code
@@ -1195,7 +1185,6 @@ static float complex *create_global_distortion_map(const cairo_rectangle_int_t *
 static void _build_global_distortion_map(struct dt_iop_module_t *module,
                                          const dt_dev_pixelpipe_iop_t *piece,
                                          const float scale,
-                                         const gboolean from_distort_transform,
                                          const dt_iop_roi_t *roi,
                                          cairo_rectangle_int_t *map_extent,
                                          const gboolean inverted,
@@ -1206,8 +1195,7 @@ static void _build_global_distortion_map(struct dt_iop_module_t *module,
   memcpy(&copy_params, (dt_iop_liquify_params_t *)piece->data,
          sizeof(dt_iop_liquify_params_t));
 
-  distort_paths_raw_to_piece(module, piece->pipe, scale,
-                             &copy_params, from_distort_transform);
+  distort_paths_raw_to_piece(module, piece->pipe, scale, &copy_params);
 
   GList *interpolated = interpolate_paths(&copy_params);
   GSList *interpolated_in_roi = _get_map_extent(roi, interpolated, map_extent);
@@ -1231,7 +1219,7 @@ void modify_roi_in(struct dt_iop_module_t *module,
   *roi_in = *roi_out;
 
   cairo_rectangle_int_t extent;
-  _build_global_distortion_map(module, piece, roi_in->scale, FALSE,
+  _build_global_distortion_map(module, piece, roi_in->scale,
                                roi_out, &extent, FALSE, NULL);
   cairo_rectangle_int_t pipe_rect =
     {
@@ -1305,7 +1293,7 @@ static gboolean _distort_xtransform(dt_iop_module_t *self,
                             .height = extent.height };
 
     float complex *map = NULL;
-    _build_global_distortion_map(self, piece, scale, TRUE, &roi_in,
+    _build_global_distortion_map(self, piece, scale, &roi_in,
                                  &extent, inverted, &map);
 
     if(map == NULL) return FALSE;
@@ -1391,7 +1379,7 @@ void distort_mask(struct dt_iop_module_t *self,
   // 2. build the distortion map
   cairo_rectangle_int_t map_extent;
   float complex *map = NULL;
-  _build_global_distortion_map(self, piece, roi_in->scale, FALSE,
+  _build_global_distortion_map(self, piece, roi_in->scale,
                                roi_out, &map_extent, FALSE, &map);
   if(map == NULL)
     return;
@@ -1424,7 +1412,7 @@ void process(struct dt_iop_module_t *module,
   // 2. build the distortion map
   cairo_rectangle_int_t map_extent;
   float complex *map = NULL;
-  _build_global_distortion_map(module, piece, roi_in->scale, FALSE,
+  _build_global_distortion_map(module, piece, roi_in->scale,
                                roi_out, &map_extent, FALSE, &map);
   if(map == NULL)
     return;
@@ -1590,7 +1578,7 @@ int process_cl(struct dt_iop_module_t *module,
   // 2. build the distortion map
   cairo_rectangle_int_t map_extent;
   float complex *map = NULL;
-  _build_global_distortion_map(module, piece, roi_in->scale, FALSE,
+  _build_global_distortion_map(module, piece, roi_in->scale,
                                roi_out, &map_extent, FALSE, &map);
 
   if(map == NULL)
@@ -2726,7 +2714,7 @@ void gui_post_expose(dt_iop_module_t *module,
   const distort_params_t d_params = { develop, develop->preview_pipe,
                                       iscale, 1.0 / scale,
                                       DT_DEV_TRANSFORM_DIR_ALL };
-  _distort_paths_plus(module, &d_params, &copy_params);
+  _distort_paths_locked(module, &d_params, &copy_params);
 
   cairo_scale(cr, scale, scale);
 
