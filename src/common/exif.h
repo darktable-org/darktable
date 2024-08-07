@@ -94,7 +94,7 @@ int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char *path, const int
     would be written, and the write is skipped if they are the same.  This preserves the sidecar
     timestamp for the case where multiple computers share a drive and the crawler is used to
     find new edits. */
-gboolean dt_exif_xmp_write(const dt_imgid_t imgid, const char *filename, gboolean force_write);
+gboolean dt_exif_xmp_write(const dt_imgid_t imgid, const char *filename, const gboolean force_write);
 
 /** write xmp packet inside an image. */
 gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid, const char *filename, void *metadata,

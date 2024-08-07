@@ -5627,7 +5627,7 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid,
 // Write XMP sidecar file: returns TRUE in case of errors.
 gboolean dt_exif_xmp_write(const dt_imgid_t imgid,
                            const char *filename,
-                           gboolean force_write)
+                           const gboolean force_write)
 {
   // Refuse to write sidecar for non-existent image:
   char imgfname[PATH_MAX] = { 0 };
