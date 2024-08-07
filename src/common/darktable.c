@@ -1416,10 +1416,10 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   }
   else if(!dt_database_get_lock_acquired(darktable.db))
   {
-    if(init_gui)
+    gboolean image_loaded_elsewhere = FALSE;
+    if(init_gui && argc > 1)
     {
       darktable_splash_screen_set_progress(_("forwarding image(s) to running instance"));
-      gboolean image_loaded_elsewhere = FALSE;
 #ifndef MAC_INTEGRATION
       // send the images to the other instance via dbus
       dt_print(DT_DEBUG_ALWAYS,
@@ -1443,11 +1443,11 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       }
       if(connection) g_object_unref(connection);
 #endif
-
-      if(!image_loaded_elsewhere) dt_database_show_error(darktable.db);
     }
+    darktable_splash_screen_destroy(); // dismiss splash screen before potentially showing error dialog
+    if(!image_loaded_elsewhere) dt_database_show_error(darktable.db);
+
     dt_print(DT_DEBUG_ALWAYS, "ERROR: can't acquire database lock, aborting.\n");
-    darktable_splash_screen_destroy();
     return 1;
   }
 

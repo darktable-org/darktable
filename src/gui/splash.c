@@ -36,8 +36,11 @@ void darktable_splash_screen_create(GtkWindow *parent_window)
   splash_screen = gtk_dialog_new_with_buttons(_("darktable starting"), parent_window, flags,
                                               "", GTK_RESPONSE_NONE,
                                               NULL);
+  gtk_widget_set_name(splash_screen,"splashscreen");
   progress_text = gtk_label_new("initializing");
+  gtk_widget_set_name(progress_text,"splashscreen-progress");
   GtkHeaderBar *header = GTK_HEADER_BAR(gtk_dialog_get_header_bar(GTK_DIALOG(splash_screen)));
+  gtk_widget_set_name(GTK_WIDGET(header),"splashscreen-header");
   char *title_str = g_strdup_printf(_("<span size='200%%'>Starting darktable %.5s</span>"),
                                 darktable_package_version);
   GtkWidget *title = gtk_label_new(NULL);
@@ -48,13 +51,14 @@ void darktable_splash_screen_create(GtkWindow *parent_window)
   gtk_header_bar_set_show_close_button(header, FALSE);
   GtkWidget *icon = gtk_image_new_from_icon_name("darktable", GTK_ICON_SIZE_DIALOG);
   gtk_image_set_pixel_size(GTK_IMAGE(icon), 200);
+  gtk_widget_set_name(GTK_WIDGET(icon),"splashscreen-icon");
   GtkBox *content = GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(splash_screen)));
   gtk_box_pack_start(content, icon, FALSE, FALSE, 0);
   gtk_box_pack_start(content, progress_text, FALSE, FALSE, 0);
   gtk_widget_show_all(splash_screen);
   // give Gtk a chance to update the screen; we need to let the event processing run several
   // times for the splash window to actually be fully displayed
-  for(int i = 0; i < 10; i++)
+  for(int i = 0; i < 5; i++)
     dt_gui_process_events();
 }
 
@@ -68,7 +72,7 @@ void darktable_splash_screen_set_progress(const char *msg)
     // times to ensure that the splash window is fully updated on screen, since by the time
     // we are called, other stuff may have been hooked into the Gtk event system and will be
     // receiving events
-    for(int i = 0; i < 10; i++)
+    for(int i = 0; i < 5; i++)
       dt_gui_process_events();
   }
 }
