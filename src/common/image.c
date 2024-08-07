@@ -1705,10 +1705,10 @@ static int _image_read_duplicates(const uint32_t id,
 }
 
 static dt_imgid_t _image_import_internal(const dt_filmid_t film_id,
-                                       const char *filename,
-                                       const gboolean override_ignore_nonraws,
-                                       const gboolean lua_locking,
-                                       const gboolean raise_signals)
+                                         const char *filename,
+                                         const gboolean override_ignore_nonraws,
+                                         const gboolean lua_locking,
+                                         const gboolean raise_signals)
 {
   char *normalized_filename = dt_util_normalize_path(filename);
   if(!normalized_filename || !dt_util_test_image_file(normalized_filename))
@@ -1719,7 +1719,9 @@ static dt_imgid_t _image_import_internal(const dt_filmid_t film_id,
   const char *cc = normalized_filename + strlen(normalized_filename);
   for(; *cc != '.' && cc > normalized_filename; cc--)
     ;
-  if(!strcasecmp(cc, ".dt") || !strcasecmp(cc, ".dttags") || !strcasecmp(cc, ".xmp"))
+  if(!strcasecmp(cc, ".dt")
+     || !strcasecmp(cc, ".dttags")
+     || !strcasecmp(cc, ".xmp"))
   {
     g_free(normalized_filename);
     return NO_IMGID;
