@@ -506,9 +506,6 @@ int dt_dev_modulegroups_basics_module_toggle(dt_develop_t *dev,
                                              GtkWidget *widget,
                                              const gboolean doit);
 
-/** update gliding average for pixelpipe delay */
-void dt_dev_average_delay_update(const dt_times_t *start, uint32_t *average_delay);
-
 /*
  * masks plugin hooks
  */
@@ -557,27 +554,9 @@ gboolean dt_dev_distort_transform_plus
    const dt_dev_transform_direction_t transf_direction,
    float *points,
    const size_t points_count);
-/** same fct, but can only be called from a distort_transform function
- * called by dt_dev_distort_transform_plus */
-gboolean dt_dev_distort_transform_locked
-  (dt_develop_t *dev,
-   struct dt_dev_pixelpipe_t *pipe,
-   const double iop_order,
-   const dt_dev_transform_direction_t transf_direction,
-   float *points,
-   const size_t points_count);
 /** same fct as dt_dev_distort_backtransform, but we can specify iop
  * with priority between pmin and pmax */
 gboolean dt_dev_distort_backtransform_plus
-  (dt_develop_t *dev,
-   struct dt_dev_pixelpipe_t *pipe,
-   const double iop_order,
-   const dt_dev_transform_direction_t transf_direction,
-   float *points,
-   const size_t points_count);
-/** same fct, but can only be called from a distort_backtransform
- * function called by dt_dev_distort_backtransform_plus */
-gboolean dt_dev_distort_backtransform_locked
   (dt_develop_t *dev,
    struct dt_dev_pixelpipe_t *pipe,
    const double iop_order,
@@ -592,21 +571,13 @@ struct dt_dev_pixelpipe_iop_t *dt_dev_distort_get_iop_pipe(dt_develop_t *dev,
 /*
  * hash functions
  */
-/** generate hash value out of all module settings of pixelpipe */
-dt_hash_t dt_dev_hash(dt_develop_t *dev);
-/** same function, but we can specify iop with priority between pmin and pmax */
+/** generate hash value out of all module settings of pixelpipe.
+    We specify iop with priority either up to iop_order or above iop_order depending on
+    transfer direction */
 dt_hash_t dt_dev_hash_plus(dt_develop_t *dev,
                           struct dt_dev_pixelpipe_t *pipe,
                           const double iop_order,
                           const dt_dev_transform_direction_t transf_direction);
-/** wait until hash value found in hash matches hash value defined by
- * dev/pipe/pmin/pmax with timeout */
-gboolean dt_dev_wait_hash(dt_develop_t *dev,
-                     struct dt_dev_pixelpipe_t *pipe,
-                     const double iop_order,
-                     const dt_dev_transform_direction_t transf_direction,
-                     dt_pthread_mutex_t *lock,
-                     const volatile dt_hash_t *const hash);
 /** synchronize pixelpipe by means hash values by waiting with timeout
  * and potential reprocessing */
 gboolean dt_dev_sync_pixelpipe_hash(dt_develop_t *dev,
@@ -615,9 +586,8 @@ gboolean dt_dev_sync_pixelpipe_hash(dt_develop_t *dev,
                                const dt_dev_transform_direction_t transf_direction,
                                dt_pthread_mutex_t *lock,
                                const volatile dt_hash_t *const hash);
-/** generate hash value out of module settings of all distorting modules of pixelpipe */
-dt_hash_t dt_dev_hash_distort(dt_develop_t *dev);
-/** same function, but we can specify iop with priority between pmin and pmax */
+/** generate hash value out of module settings of all distorting modules of pixelpipe
+    We can specify iop with priority between pmin and pmax */
 dt_hash_t dt_dev_hash_distort_plus(dt_develop_t *dev,
                                   struct dt_dev_pixelpipe_t *pipe,
                                   const double iop_order,
