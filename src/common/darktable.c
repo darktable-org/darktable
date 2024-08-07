@@ -1451,6 +1451,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     return 1;
   }
 
+  darktable_splash_screen_set_progress(_("preparing database"));
   dt_upgrade_maker_model(darktable.db);
 
   // init darktable tags table
@@ -1554,6 +1555,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   darktable.guides = dt_guides_init();
 
 #ifdef HAVE_GRAPHICSMAGICK
+  darktable_splash_screen_set_progress(_("initializing GraphicsMagick"));
   /* GraphicsMagick init */
 #ifndef MAGICK_OPT_NO_SIGNAL_HANDER
   InitializeMagick(darktable.progname);
@@ -1565,6 +1567,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #endif
 #elif defined HAVE_IMAGEMAGICK
   /* ImageMagick init */
+  darktable_splash_screen_set_progress(_("initializing ImageMagick"));
   MagickWandGenesis();
 #endif
 
@@ -1584,6 +1587,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   dt_wb_presets_init(NULL);
 
+  darktable_splash_screen_set_progress(_("loading noise profiles"));
   darktable.noiseprofile_parser = dt_noiseprofile_init(noiseprofiles_from_command);
 
   // must come before mipmap_cache, because that one will need to access
@@ -1627,6 +1631,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   darktable.imageio = (dt_imageio_t *)calloc(1, sizeof(dt_imageio_t));
   dt_imageio_init(darktable.imageio);
 
+  darktable_splash_screen_set_progress(_("loading processing modules"));
   // load default iop order
   darktable.iop_order_list = dt_ioppr_get_iop_order_list(0, FALSE);
   // load iop order rules
@@ -1673,12 +1678,12 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     darktable.lib = (dt_lib_t *)calloc(1, sizeof(dt_lib_t));
     dt_lib_init(darktable.lib);
 
+    darktable_splash_screen_set_progress(_("loading configuration"));
     dt_gui_gtk_load_config();
 
     // init the gui part of views
     dt_view_manager_gui_init(darktable.view_manager);
 
-    darktable_splash_screen_set_progress(_("loading shortcuts"));
     // Save the default shortcuts
     dt_shortcuts_save(".defaults", FALSE);
 
@@ -1695,10 +1700,12 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_print(DT_DEBUG_MEMORY, "[memory] after successful startup\n");
   dt_print_mem_usage();
 
+  darktable_splash_screen_set_progress(_("synchronizing local copies"));
   dt_image_local_copy_synch();
 
 /* init lua last, since it's user made stuff it must be in the real environment */
 #ifdef USE_LUA
+  darktable_splash_screen_set_progress(_("initializing LUA"));
   dt_lua_init(darktable.lua_state.state, lua_command);
 #endif
 
@@ -1751,12 +1758,12 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       && !(dbfilename_from_command && !strcmp(dbfilename_from_command, ":memory:"));
   if(init_gui)
   {
+    darktable_splash_screen_destroy();
     dt_start_backtumbs_crawler();
     // last but not least construct the popup that asks the user about
     // images whose xmp files are newer than the db entry
     if(changed_xmp_files)
       dt_control_crawler_show_image_list(changed_xmp_files);
-    darktable_splash_screen_destroy();
   }
 
 #if defined(WIN32)

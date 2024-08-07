@@ -24,35 +24,52 @@
 #endif
 
 static GtkWidget *splash_screen = NULL;
+static GtkWidget *progress_text = NULL;
 
 void darktable_splash_screen_create(GtkWindow *parent_window)
 {
   if(splash_screen || !dt_conf_get_bool("show_splash_screen"))
     return;
-  GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT;
-  splash_screen = gtk_message_dialog_new_with_markup(parent_window, flags, GTK_MESSAGE_INFO, GTK_BUTTONS_NONE,
-                                                     _("<span size='200%%'>Starting darktable %.5s</span>"),
-                                                     darktable_package_version);
-  gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(splash_screen), " ");
-  gtk_widget_show(splash_screen);
-  // give Gtk a chance to update the screen; we need to let the event processing run a few dozen
+  // a simple gtk_dialog_new() leaves us unable to setup the header bar, so use .._with_buttons
+  // and just specify a button with an empty label (which won't actually be visible)
+  GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_USE_HEADER_BAR;
+  splash_screen = gtk_dialog_new_with_buttons(_("darktable starting"), parent_window, flags,
+                                              "", GTK_RESPONSE_NONE,
+                                              NULL);
+  progress_text = gtk_label_new("initializing");
+  GtkHeaderBar *header = GTK_HEADER_BAR(gtk_dialog_get_header_bar(GTK_DIALOG(splash_screen)));
+  char *title_str = g_strdup_printf(_("<span size='200%%'>Starting darktable %.5s</span>"),
+                                darktable_package_version);
+  GtkWidget *title = gtk_label_new(NULL);
+  gtk_label_set_markup(GTK_LABEL(title),title_str);
+  g_free(title_str);
+  gtk_header_bar_set_custom_title(header,title);
+  gtk_header_bar_set_has_subtitle(header, FALSE);
+  gtk_header_bar_set_show_close_button(header, FALSE);
+  GtkWidget *icon = gtk_image_new_from_icon_name("darktable", GTK_ICON_SIZE_DIALOG);
+  gtk_image_set_pixel_size(GTK_IMAGE(icon), 200);
+  GtkBox *content = GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(splash_screen)));
+  gtk_box_pack_start(content, icon, FALSE, FALSE, 0);
+  gtk_box_pack_start(content, progress_text, FALSE, FALSE, 0);
+  gtk_widget_show_all(splash_screen);
+  // give Gtk a chance to update the screen; we need to let the event processing run several
   // times for the splash window to actually be fully displayed
-  for(int i = 0; i < 50; i++)
-    g_main_context_iteration(NULL, FALSE);
+  for(int i = 0; i < 10; i++)
+    dt_gui_process_events();
 }
 
 void darktable_splash_screen_set_progress(const char *msg)
 {
   if(splash_screen)
   {
-    gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(splash_screen), "%s", msg);
-    gtk_widget_show(splash_screen);
+    gtk_label_set_text(GTK_LABEL(progress_text), msg);
+    gtk_widget_show(progress_text);
     // give Gtk a chance to update the screen; we need to let the event processing run several
-    // hundred times to ensure that the splash window is fully updated on screen, since by the
-    // time we are called, other stuff may have been hooked into the Gtk event system and will
-    // be receiving events
-    for(int i = 0; i < 400; i++)
-      g_main_context_iteration(NULL, FALSE);
+    // times to ensure that the splash window is fully updated on screen, since by the time
+    // we are called, other stuff may have been hooked into the Gtk event system and will be
+    // receiving events
+    for(int i = 0; i < 10; i++)
+      dt_gui_process_events();
   }
 }
 
@@ -60,6 +77,8 @@ void darktable_splash_screen_destroy()
 {
   if(splash_screen)
   {
+    gtk_widget_destroy(progress_text);
+    progress_text = NULL;
     gtk_widget_destroy(splash_screen);
     splash_screen = NULL;
   }
