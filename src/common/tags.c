@@ -471,7 +471,6 @@ gboolean dt_tag_attach_images(const guint tagid,
                               const gboolean undo_on)
 {
   if(g_list_is_empty(img)) return FALSE;
-  dt_gui_cursor_set_busy();
   GList *undo = NULL;
   GList *tags = NULL;
 
@@ -488,8 +487,6 @@ gboolean dt_tag_attach_images(const guint tagid,
                    DT_UNDO_TAGS, undo, _pop_undo, _tags_undo_data_free);
     dt_undo_end_group(darktable.undo);
   }
-
-  dt_gui_cursor_clear_busy();
   return res;
 }
 
