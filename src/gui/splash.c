@@ -70,12 +70,8 @@ void darktable_splash_screen_set_progress(const char *msg)
   {
     gtk_label_set_text(GTK_LABEL(progress_text), msg);
     gtk_widget_show(progress_text);
-    // give Gtk a chance to update the screen; we need to let the event processing run several
-    // times to ensure that the splash window is fully updated on screen, since by the time
-    // we are called, other stuff may have been hooked into the Gtk event system and will be
-    // receiving events
-    for(int i = 0; i < 5; i++)
-      dt_gui_process_events();
+    // give Gtk a chance to update the screen
+    dt_gui_process_events();
   }
 }
 

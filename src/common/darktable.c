@@ -1560,16 +1560,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   // Initialize the signal system
   darktable.signals = dt_control_signal_init();
 
-  // Make sure that the database and xmp files are in sync
-  // We need conf and db to be up and running for that which is the case here.
-  // FIXME: is this also useful in non-gui mode?
-  GList *changed_xmp_files = NULL;
-  if(init_gui && dt_conf_get_bool("run_crawler_on_start"))
-  {
-    darktable_splash_screen_set_progress(_("checking for updated sidecar files"));
-    changed_xmp_files = dt_control_crawler_run();
-  }
-
   if(init_gui)
   {
     dt_control_init(darktable.control);
@@ -1819,9 +1809,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_lua_init(darktable.lua_state.state, lua_command);
 #endif
 
-  // fire up a background job to perform sidecar writes
-  dt_control_sidecar_synch_start();
-
   if(init_gui)
   {
     const char *mode = "lighttable";
@@ -1867,15 +1854,25 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   darktable.backthumbs.capable =
       dt_worker_threads() > 4
       && !(dbfilename_from_command && !strcmp(dbfilename_from_command, ":memory:"));
+
   if(init_gui)
   {
-    dt_start_backtumbs_crawler();
-    // last but not least construct the popup that asks the user about
-    // images whose xmp files are newer than the db entry
-    if(changed_xmp_files)
-      dt_control_crawler_show_image_list(changed_xmp_files);
+    if(dt_conf_get_bool("run_crawler_on_start"))
+    {
+      darktable_splash_screen_set_progress(_("checking for updated sidecar files"));
+      // scan for cases where the database and xmp files have different timestamps
+      GList *changed_xmp_files = dt_control_crawler_run();
+      // construct the popup that asks the user how to handle images whose xmp
+      // files are newer than the db entry
+      if(changed_xmp_files)
+        dt_control_crawler_show_image_list(changed_xmp_files);
+    }
     darktable_splash_screen_destroy();
+    dt_start_backtumbs_crawler();
   }
+
+  // fire up a background job to perform sidecar writes
+  dt_control_sidecar_synch_start();
 
 #if defined(WIN32)
   dt_capabilities_add("windows");
