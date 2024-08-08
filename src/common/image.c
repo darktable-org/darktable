@@ -2168,7 +2168,9 @@ void dt_image_refresh_makermodel(dt_image_t *img)
             sizeof(img->camera_makermodel)-len-1);
 }
 
-gboolean dt_image_rename(const dt_imgid_t imgid, const int32_t filmid, const gchar *newname)
+gboolean dt_image_rename(const dt_imgid_t imgid,
+                         const int32_t filmid,
+                         const gchar *newname)
 {
   // TODO: several places where string truncation could occur unnoticed
   gboolean result = TRUE;
@@ -2195,7 +2197,8 @@ gboolean dt_image_rename(const dt_imgid_t imgid, const int32_t filmid, const gch
 
     if(newname)
     {
-      g_snprintf(newimg, sizeof(newimg), "%s%c%s", newdir, G_DIR_SEPARATOR, newname);
+      g_snprintf(newimg, sizeof(newimg), "%s%c%s",
+                 newdir, G_DIR_SEPARATOR, newname);
       new = g_file_new_for_path(newimg);
       // 'newname' represents the file's new *basename* -- it must not
       // refer to a file outside of 'newdir'.
@@ -2212,7 +2215,8 @@ gboolean dt_image_rename(const dt_imgid_t imgid, const int32_t filmid, const gch
     else
     {
       gchar *imgbname = g_path_get_basename(oldimg);
-      g_snprintf(newimg, sizeof(newimg), "%s%c%s", newdir, G_DIR_SEPARATOR, imgbname);
+      g_snprintf(newimg, sizeof(newimg), "%s%c%s",
+                 newdir, G_DIR_SEPARATOR, imgbname);
       new = g_file_new_for_path(newimg);
       g_free(imgbname);
     }
@@ -2366,7 +2370,8 @@ gboolean dt_image_rename(const dt_imgid_t imgid, const int32_t filmid, const gch
   return result;
 }
 
-gboolean dt_image_move(const dt_imgid_t imgid, const dt_filmid_t filmid)
+gboolean dt_image_move(const dt_imgid_t imgid,
+                       const dt_filmid_t filmid)
 {
   return dt_image_rename(imgid, filmid, NULL);
 }
@@ -2644,7 +2649,8 @@ dt_imgid_t dt_image_copy_rename(const dt_imgid_t imgid,
   return newid;
 }
 
-dt_imgid_t dt_image_copy(const dt_imgid_t imgid, const dt_filmid_t filmid)
+dt_imgid_t dt_image_copy(const dt_imgid_t imgid,
+                         const dt_filmid_t filmid)
 {
   return dt_image_copy_rename(imgid, filmid, NULL);
 }
@@ -2927,7 +2933,8 @@ void dt_image_local_copy_synch(void)
   }
 }
 
-void dt_image_get_datetime(const dt_imgid_t imgid, char *datetime)
+void dt_image_get_datetime(const dt_imgid_t imgid,
+                           char *datetime)
 {
   if(!datetime) return;
   datetime[0] = '\0';
