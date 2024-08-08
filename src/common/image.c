@@ -1626,25 +1626,31 @@ static int _image_read_duplicates(const uint32_t id,
 
   for(GList *file_iter = files; file_iter; file_iter = g_list_next(file_iter))
   {
-    gchar *xmpfilename = file_iter->data;
+    const gchar *xmpfilename = file_iter->data;
     int version = -1;
 
     // we need to get the version number of the sidecar filename
     if(!strncmp(xmpfilename, pattern, sizeof(pattern)))
     {
-      // this is an xmp file without version number which corresponds to version 0
+      // this is an xmp file without version number which corresponds
+      // to version 0.
       version = 0;
     }
     else
     {
       // we need to derive the version number from the filename
 
-      gchar *c3 = xmpfilename + strlen(xmpfilename)
+      gchar *c3 = (gchar *)xmpfilename + strlen(xmpfilename)
         - 5; // skip over .xmp extension; position c3 at character before the '.'
+
+      // skip over filename extension; position c3 is at character '.'
       while(*c3 != '.' && c3 > xmpfilename)
-        c3--; // skip over filename extension; position c3 is at character '.'
+        c3--;
       gchar *c4 = c3;
-      while(*c4 != '_' && c4 > xmpfilename) c4--; // move to beginning of version number
+
+      // move to beginning of version number
+      while(*c4 != '_' && c4 > xmpfilename)
+        c4--;
       c4++;
 
       gchar *idfield = g_strndup(c4, c3 - c4);
@@ -2031,7 +2037,8 @@ dt_imgid_t dt_image_get_id_full_path(const gchar *filename)
   return id;
 }
 
-dt_imgid_t dt_image_get_id(const dt_filmid_t film_id, const gchar *filename)
+dt_imgid_t dt_image_get_id(const dt_filmid_t film_id,
+                           const gchar *filename)
 {
   dt_imgid_t id = NO_IMGID;
   sqlite3_stmt *stmt;
