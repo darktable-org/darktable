@@ -107,6 +107,27 @@ static inline void _color_picker_rgb_or_lab(dt_aligned_pixel_t acc,
       _update_stats_by_ch(acc, low, high, k, pixels[i + k]);
 }
 
+
+static inline void _color_picker_Lab_2_JzCzhz(dt_aligned_pixel_t acc,
+                                     dt_aligned_pixel_t low,
+                                     dt_aligned_pixel_t high,
+                                     const float *const pixels,
+                                     const size_t width,
+                                     const void *const data)
+{
+  for(size_t i = 0; i < width; i += 4)
+  {
+    dt_aligned_pixel_t pick;
+    dt_Lab_2_JzCzhz(pixels + i, pick);
+    // copied from _color_picker_jzczhz
+    // allow for determining sensible max/min values
+    // FIXME: the mean calculation of hue isn't always right, use circular mean calc instead?
+    pick[3] = pick[2] < 0.5f ? pick[2] + 0.5f : pick[2] - 0.5f;
+    _update_stats_4ch(acc, low, high, pick);
+  }
+}
+
+
 static inline void _color_picker_lch(dt_aligned_pixel_t acc,
                                      dt_aligned_pixel_t low,
                                      dt_aligned_pixel_t high,
@@ -227,7 +248,7 @@ static void _color_picker_work_4ch(const float *const pixel,
     worker(acc, low, high, pixel + offset, stride, data);
   }
 
-  // copy all four channels, as four some colorspaces there may be
+  // copy all four channels, as for some colorspaces there may be
   // meaningful data in the fourth pixel
   for_four_channels(c)
   {
@@ -482,6 +503,10 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc,
     {
       // scene-referred blending for RGB modules
       _color_picker_work_4ch(source, roi, box, pick, profile, _color_picker_jzczhz, 10);
+    }
+    else if(effective_cst == IOP_CS_JZCZHZ && picker_cst == IOP_CS_LAB)
+    {
+      _color_picker_work_4ch(source, roi, box, pick, NULL, _color_picker_Lab_2_JzCzhz, 10);
     }
     else if(effective_cst == picker_cst)
     {
