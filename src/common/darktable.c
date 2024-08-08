@@ -1440,6 +1440,10 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     // make sure that we have no stale global progress bar
     // visible. thus it's run as early as possible
     dt_control_progress_init(darktable.control);
+
+    // ensure that we can load the Gtk theme early enough that the splash screen
+    // doesn't change as we progress through startup
+    darktable.gui = (dt_gui_gtk_t *)calloc(1, sizeof(dt_gui_gtk_t));
   }
 
 #ifdef _OPENMP
@@ -1488,6 +1492,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     gtk_init(&argc, &argv);
 
     darktable.themes = NULL;
+    dt_gui_theme_init(darktable.gui);
     darktable_splash_screen_create(NULL);
   }
 
@@ -1588,7 +1593,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   // idem for folder reachability
   if(init_gui)
   {
-    darktable.gui = (dt_gui_gtk_t *)calloc(1, sizeof(dt_gui_gtk_t));
     darktable.gui->grouping = dt_conf_get_bool("ui_last/grouping");
     dt_film_set_folder_status();
   }

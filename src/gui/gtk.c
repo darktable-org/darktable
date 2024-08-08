@@ -1129,6 +1129,25 @@ static void _open_url(GtkWidget *widget, gpointer url)
 }
 #endif
 
+int dt_gui_theme_init(dt_gui_gtk_t *gui)
+{
+  if(gui->gtkrc[0] != '\0')
+    return 0;	// avoid duplicate initializatoin
+  if(!gui->ui)
+    gui->ui = g_malloc0(sizeof(dt_ui_t));
+
+  const char *css_theme = dt_conf_get_string_const("ui_last/theme");
+  if(css_theme)
+  {
+    g_strlcpy(gui->gtkrc, css_theme, sizeof(gui->gtkrc));
+  }
+  else
+    g_snprintf(gui->gtkrc, sizeof(gui->gtkrc), "darktable");
+  // actually load the theme
+  dt_gui_load_theme(gui->gtkrc);
+  return 1;
+}
+
 int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 {
   /* lets zero mem */
@@ -1154,14 +1173,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   dt_loc_get_datadir(datadir, sizeof(datadir));
   dt_loc_get_sharedir(sharedir, sizeof(sharedir));
   dt_loc_get_user_config_dir(configdir, sizeof(configdir));
-
-  const char *css_theme = dt_conf_get_string_const("ui_last/theme");
-  if(css_theme)
-  {
-    g_strlcpy(gui->gtkrc, css_theme, sizeof(gui->gtkrc));
-  }
-  else
-    g_snprintf(gui->gtkrc, sizeof(gui->gtkrc), "darktable");
 
 #ifdef MAC_INTEGRATION
   GtkosxApplication *OSXApp = g_object_new(GTKOSX_TYPE_APPLICATION, NULL);
@@ -1238,8 +1249,9 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
                    G_CALLBACK(_osx_openfile_callback), NULL);
 #endif
 
-      GtkWidget *widget;
-  gui->ui = g_malloc0(sizeof(dt_ui_t));
+  GtkWidget *widget;
+  if(!gui->ui)
+    gui->ui = g_malloc0(sizeof(dt_ui_t));
   gui->surface = NULL;
   gui->hide_tooltips = dt_conf_get_bool("ui/hide_tooltips") ? 1 : 0;
   gui->grouping = dt_conf_get_bool("ui_last/grouping");
@@ -1254,6 +1266,10 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   g_object_set(G_OBJECT(settings), "gtk-theme-name", "Adwaita", (gchar *)0);
   g_object_unref(settings);
 
+  // Initializing widgets
+  _init_widgets(gui);
+  dt_gui_apply_theme(gui);
+
   // smooth scrolling must be enabled to handle trackpad/touch events
   gui->scroll_mask = GDK_SCROLL_MASK | GDK_SMOOTH_SCROLL_MASK;
 
@@ -1262,9 +1278,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
   // Init focus peaking
   gui->show_focus_peaking = dt_conf_get_bool("ui/show_focus_peaking");
-
-  // Initializing widgets
-  _init_widgets(gui);
 
   //init overlay colors
   dt_guides_set_overlay_colors();
@@ -1394,9 +1407,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
                      GDK_KEY_I, GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK);
 
   darktable.gui->reset = 0;
-
-  // load theme
-  dt_gui_load_theme(gui->gtkrc);
 
   // let's try to support pressure sensitive input devices like tablets for mask drawing
   dt_print(DT_DEBUG_INPUT, "[input device] Input devices found:\n\n");
@@ -3347,7 +3357,10 @@ void dt_gui_load_theme(const char *theme)
   g_free(themecss);
 
   g_object_unref(themes_style_provider);
+}
 
+void dt_gui_apply_theme()
+{
   // setup the colors
 
   GdkRGBA *c = darktable.gui->colors;
