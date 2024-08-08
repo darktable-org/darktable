@@ -520,7 +520,6 @@ gboolean dt_tag_set_tags(const GList *tags,
 {
   if(!g_list_is_empty(img))
   {
-    dt_gui_cursor_set_busy();
     GList *undo = NULL;
     if(undo_on)
       dt_undo_start_group(darktable.undo, DT_UNDO_TAGS);
@@ -534,7 +533,6 @@ gboolean dt_tag_set_tags(const GList *tags,
                      _pop_undo, _tags_undo_data_free);
       dt_undo_end_group(darktable.undo);
     }
-    dt_gui_cursor_clear_busy();
     return res;
   }
   return FALSE;

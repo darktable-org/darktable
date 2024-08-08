@@ -333,6 +333,9 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
   GList *imgs = dt_act_on_get_images(FALSE, TRUE, FALSE);
   if(imgs)
   {
+    gboolean show_busy = !g_list_shorter_than(imgs,10);
+    if(show_busy)
+      dt_gui_cursor_set_busy();
     // for all the above actions, we don't use the grpu_on tag, as
     // grouped images have already been added to image list
     const dt_undo_type_t undo_type =
@@ -395,6 +398,8 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
     {
       g_list_free(imgs);
     }
+    if(show_busy)
+      dt_gui_cursor_clear_busy();
   }
 }
 
