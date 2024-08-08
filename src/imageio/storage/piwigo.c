@@ -142,8 +142,12 @@ typedef struct dt_storage_piwigo_params_t
   dt_variables_params_t *vp;
 } dt_storage_piwigo_params_t;
 
-void *legacy_params(dt_imageio_module_storage_t *self, const void *const old_params, const size_t old_params_size,
-                    const int old_version, int *new_version, size_t *new_size)
+void *legacy_params(dt_imageio_module_storage_t *self,
+                    const void *const old_params,
+                    const size_t old_params_size,
+                    const int old_version,
+                    int *new_version,
+                    size_t *new_size)
 {
   typedef struct dt_storage_piwigo_preset_data_v2_t
   {
@@ -720,7 +724,7 @@ static void _piwigo_refresh_albums(dt_storage_piwigo_gui_data_t *ui,
     JsonArray *albums = json_object_get_array_member(result, "categories");
 
     const int album_len = json_array_get_length(albums);
-    
+
     if(album_len > 0 && index == 0)
       index = 1;
     if(index > album_len - 1)
@@ -956,7 +960,8 @@ static gboolean _piwigo_api_upload_photo(dt_storage_piwigo_params_t *p,
 }
 
 // Login button pressed...
-static void _piwigo_login_clicked(GtkButton *button, gpointer data)
+static void _piwigo_login_clicked(GtkButton *button,
+                                  gpointer data)
 {
   dt_storage_piwigo_gui_data_t *ui = (dt_storage_piwigo_gui_data_t *)data;
   _piwigo_ctx_destroy(&ui->api);
@@ -967,7 +972,8 @@ static void _piwigo_login_clicked(GtkButton *button, gpointer data)
 }
 
 // Refresh button pressed...
-static void _piwigo_refresh_clicked(GtkButton *button, gpointer data)
+static void _piwigo_refresh_clicked(GtkButton *button,
+                                    gpointer data)
 {
   dt_storage_piwigo_gui_data_t *ui = (dt_storage_piwigo_gui_data_t *)data;
 
@@ -981,7 +987,8 @@ const char *name(const struct dt_imageio_module_storage_t *self)
   return _("Piwigo");
 }
 
-static void _filname_pattern_entry_changed_callback(GtkEntry *entry, gpointer user_data)
+static void _filname_pattern_entry_changed_callback(GtkEntry *entry,
+                                                    gpointer user_data)
 {
   dt_conf_set_string("plugins/imageio/storage/export/piwigo/filename_pattern", gtk_entry_get_text(entry));
 }
@@ -1086,7 +1093,8 @@ void gui_init(dt_imageio_module_storage_t *self)
                      GTK_WIDGET(ui->status_label), FALSE, FALSE, 0);
 
   // select account
-  if(account_index != -1) dt_bauhaus_combobox_set(ui->account_list, account_index);
+  if(account_index != -1)
+    dt_bauhaus_combobox_set(ui->account_list, account_index);
 
   // permissions list
   DT_BAUHAUS_COMBOBOX_NEW_FULL(ui->permission_list, self, NULL, N_("visible to"), NULL,
@@ -1146,15 +1154,16 @@ void gui_init(dt_imageio_module_storage_t *self)
 
   // filename pattern
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10));
-  ui->filename_pattern_entry = GTK_ENTRY(
-      dt_action_entry_new(DT_ACTION(self),
-                          N_("filename pattern"), G_CALLBACK(_filname_pattern_entry_changed_callback),
-                          self,
-                          _("enter the filename pattern for the exported images\n"
-                            "leave empty to use the image filename\n"
-                            "variables support bash like string manipulation\n"
-                            "type '$(' to activate the completion and see the list of variables"),
-                          dt_conf_get_string_const("plugins/imageio/storage/export/piwigo/filename_pattern")));
+  ui->filename_pattern_entry =
+    GTK_ENTRY(dt_action_entry_new
+              (DT_ACTION(self),
+               N_("filename pattern"), G_CALLBACK(_filname_pattern_entry_changed_callback),
+               self,
+               _("enter the filename pattern for the exported images\n"
+                 "leave empty to use the image filename\n"
+                 "variables support bash like string manipulation\n"
+                 "type '$(' to activate the completion and see the list of variables"),
+               dt_conf_get_string_const("plugins/imageio/storage/export/piwigo/filename_pattern")));
   dt_gtkentry_setup_completion(ui->filename_pattern_entry, dt_gtkentry_get_default_path_compl_list());
   gtk_editable_set_position(GTK_EDITABLE(ui->filename_pattern_entry), -1);
   gtk_box_pack_start(GTK_BOX(hbox), dt_ui_label_new(_("filename pattern")), FALSE, FALSE, 0);
@@ -1183,7 +1192,8 @@ void gui_reset(dt_imageio_module_storage_t *self)
 {
 }
 
-static uint64_t _piwigo_album_id(const gchar *name, GList *albums)
+static uint64_t _piwigo_album_id(const gchar *name,
+                                 GList *albums)
 {
   uint64_t id = 0;
 
