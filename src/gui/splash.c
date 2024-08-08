@@ -56,6 +56,7 @@ void darktable_splash_screen_create(GtkWindow *parent_window)
   GtkBox *content = GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(splash_screen)));
   gtk_box_pack_start(content, icon, FALSE, FALSE, 0);
   gtk_box_pack_start(content, progress_text, FALSE, FALSE, 0);
+  gtk_window_set_keep_above(GTK_WINDOW(splash_screen), TRUE);
   gtk_widget_show_all(splash_screen);
   // give Gtk a chance to update the screen; we need to let the event processing run several
   // times for the splash window to actually be fully displayed

@@ -1733,10 +1733,10 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     return 1;
   }
 
+  darktable_splash_screen_set_progress(_("loading processing modules"));
   darktable.imageio = (dt_imageio_t *)calloc(1, sizeof(dt_imageio_t));
   dt_imageio_init(darktable.imageio);
 
-  darktable_splash_screen_set_progress(_("loading processing modules"));
   // load default iop order
   darktable.iop_order_list = dt_ioppr_get_iop_order_list(0, FALSE);
   // load iop order rules
@@ -1869,12 +1869,12 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       && !(dbfilename_from_command && !strcmp(dbfilename_from_command, ":memory:"));
   if(init_gui)
   {
-    darktable_splash_screen_destroy();
     dt_start_backtumbs_crawler();
     // last but not least construct the popup that asks the user about
     // images whose xmp files are newer than the db entry
     if(changed_xmp_files)
       dt_control_crawler_show_image_list(changed_xmp_files);
+    darktable_splash_screen_destroy();
   }
 
 #if defined(WIN32)
