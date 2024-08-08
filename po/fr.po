@@ -12956,7 +12956,7 @@ msgstr "Connexion"
 
 #: ../src/imageio/storage/piwigo.c:1024
 msgid "Piwigo login"
-msgstr "Login"
+msgstr "Connexion à Piwigo"
 
 #. permissions list
 #: ../src/imageio/storage/piwigo.c:1040
