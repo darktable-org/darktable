@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2023 darktable developers.
+    Copyright (C) 2014-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -35,6 +35,8 @@
 #include "osx/osx.h"
 #endif
 
+// how many seconds may the sidecar file's timestamp differ from that recorded in the database?
+#define MAX_TIME_SKEW 5
 
 typedef enum dt_control_crawler_cols_t
 {
@@ -176,8 +178,7 @@ GList *dt_control_crawler_run(void)
       if(stat_res) continue; // TODO: shall we report these?
 
       // step 1: check if the xmp is newer than our db entry
-      // FIXME: allow for a few seconds difference?
-      if(timestamp < statbuf.st_mtime)
+      if(timestamp + MAX_TIME_SKEW < statbuf.st_mtime)
       {
         dt_control_crawler_result_t *item
             = (dt_control_crawler_result_t *)malloc(sizeof(dt_control_crawler_result_t));
