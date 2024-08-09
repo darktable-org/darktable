@@ -330,10 +330,13 @@ void dtgtk_cairo_paint_lt_mode_grid(cairo_t *cr, gint x, gint y, gint w, gint h,
 void dtgtk_cairo_paint_lt_mode_zoom(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Lighttable: Culling fixed */
 void dtgtk_cairo_paint_lt_mode_culling_fixed(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** Lighttable: Culling restricted */
+void dtgtk_cairo_paint_lt_mode_culling_restricted(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Lighttable: Culling dynamic */
 void dtgtk_cairo_paint_lt_mode_culling_dynamic(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Lighttable: Full Preview */
 void dtgtk_cairo_paint_lt_mode_fullpreview(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+
 
 /** Paint a link icon for basic adjustments */
 void dtgtk_cairo_paint_link(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
