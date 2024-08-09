@@ -933,7 +933,10 @@ static gboolean _osx_openfile_callback(GtkosxApplication *OSXapp,
                                        gpointer user_data)
 #endif
 {
-  return dt_is_valid_imgid(dt_load_from_string(path, TRUE, NULL));
+  // when multiple files are dropped on the app icon this callback
+  // gets called for each file individually so we don't request to
+  // open the darkroom here.
+  return dt_is_valid_imgid(dt_load_from_string(path, FALSE, NULL));
 }
 #endif
 
@@ -1267,7 +1270,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
                    G_CALLBACK(_osx_openfile_callback), NULL);
 #endif
 
-  GtkWidget *widget;
+      GtkWidget *widget;
   gui->ui = g_malloc0(sizeof(dt_ui_t));
   gui->surface = NULL;
   gui->center_tooltip = 0;
