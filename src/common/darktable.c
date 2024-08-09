@@ -364,6 +364,7 @@ gboolean dt_supported_image(const gchar *filename)
   return supported;
 }
 
+#ifndef MAC_INTEGRATION
 static gboolean _is_directory(const gchar *input)
 {
   gboolean is_dir = FALSE;
@@ -401,6 +402,7 @@ static void _switch_to_new_filmroll(const gchar *input)
     free(filename);
   }
 }
+#endif
 
 dt_imgid_t dt_load_from_string(const gchar *input,
                                const gboolean open_image_in_dr,
@@ -1699,6 +1701,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     // into a lua deadlock.  having another call later is ok
     dt_ctl_switch_mode_to(mode);
 
+#ifndef MAC_INTEGRATION
     // load image(s) specified on cmdline.  this has to happen after
     // lua is initialized as image import can run lua code
     if(argc == 2 && !_is_directory(argv[1]))
@@ -1715,6 +1718,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       dt_control_add_job(darktable.control,
                          DT_JOB_QUEUE_USER_BG, dt_pathlist_import_create(argc,argv));
     }
+#endif
 
     // there might be some info created in dt_configure_runtime_performance() for feedback
     gboolean not_again = TRUE;
