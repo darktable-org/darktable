@@ -160,12 +160,19 @@ static int32_t _generic_dt_control_fileop_images_job_run
   }
 
   gboolean completeSuccess = TRUE;
+  double prev_time = 0;
   while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
   {
     completeSuccess &= (fileop_callback(GPOINTER_TO_INT(t->data), film_id) != -1);
     t = g_list_next(t);
     fraction += 1.0 / total;
-    dt_control_job_set_progress(job, fraction);
+    // update the progress meter, but at most twice per second
+    double curr_time = dt_get_wtime();
+    if(curr_time > prev_time + PROGRESS_UPDATE_INTERVAL)
+    {
+      dt_control_job_set_progress(job, fraction);
+      prev_time = curr_time;
+    }
   }
 
   if(completeSuccess)
@@ -276,6 +283,7 @@ static int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
      " WHERE id = ?1", -1,
      &stmt, NULL);
   size_t count = 0;
+  double prev_time = 0;
   for(GList *t = params->index ; t ; t = g_list_next(t))
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
@@ -298,7 +306,13 @@ static int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
     }
     dt_image_cache_read_release(darktable.image_cache, img);
     const double fraction = ++count / (double)nb_imgs;
-    dt_control_job_set_progress(job, fraction);
+    // update the progress meter, but at most twice per second
+    double curr_time = dt_get_wtime();
+    if(curr_time > prev_time + PROGRESS_UPDATE_INTERVAL)
+    {
+      dt_control_job_set_progress(job, fraction);
+      prev_time = curr_time;
+    }
     if(dt_control_job_get_state(job) == DT_JOB_STATE_CANCELLED)
       break;
   }
@@ -646,6 +660,7 @@ static int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
   snprintf(message, sizeof(message), ngettext("duplicating %d image",
                                               "duplicating %d images", total), total);
   dt_control_job_set_progress_message(job, message);
+  double prev_time = 0;
   for( ; t; t = g_list_next(t))
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
@@ -666,7 +681,13 @@ static int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
                                  DT_COLLECTION_PROP_UNDEF, NULL);
     }
     fraction += 1.0 / total;
-    dt_control_job_set_progress(job, fraction);
+    // update the progress meter, but at most twice per second
+    double curr_time = dt_get_wtime();
+    if(curr_time > prev_time + PROGRESS_UPDATE_INTERVAL)
+    {
+      dt_control_job_set_progress(job, fraction);
+      prev_time = curr_time;
+    }
     if(dt_control_job_get_state(job) == DT_JOB_STATE_CANCELLED)
       break;
   }
@@ -692,13 +713,20 @@ static int32_t dt_control_flip_images_job_run(dt_job_t *job)
   snprintf(message, sizeof(message), ngettext("flipping %d image",
                                               "flipping %d images", total), total);
   dt_control_job_set_progress_message(job, message);
+  double prev_time = 0;
   for(; t; t = g_list_next(t))
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
     dt_image_flip(imgid, cw);
     fraction += 1.0 / total;
     dt_image_set_aspect_ratio(imgid, FALSE);
-    dt_control_job_set_progress(job, fraction);
+    // update the progress meter, but at most twice per second
+    double curr_time = dt_get_wtime();
+    if(curr_time > prev_time + PROGRESS_UPDATE_INTERVAL)
+    {
+      dt_control_job_set_progress(job, fraction);
+      prev_time = curr_time;
+    }
     if(dt_control_job_get_state(job) == DT_JOB_STATE_CANCELLED)
       break;
   }
@@ -732,6 +760,7 @@ static int32_t dt_control_monochrome_images_job_run(dt_job_t *job)
                       "setting %d monochrome images", total), total);
 
   dt_control_job_set_progress_message(job, message);
+  double prev_time = 0;
   for(; t; t = g_list_next(t))
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
@@ -745,7 +774,13 @@ static int32_t dt_control_monochrome_images_job_run(dt_job_t *job)
                "[dt_control_monochrome_images_job_run] got illegal imgid %i\n", imgid);
 
     fraction += 1.0 / total;
-    dt_control_job_set_progress(job, fraction);
+    // update the progress meter, but at most twice per second
+    double curr_time = dt_get_wtime();
+    if(curr_time > prev_time + PROGRESS_UPDATE_INTERVAL)
+    {
+      dt_control_job_set_progress(job, fraction);
+      prev_time = curr_time;
+    }
     if(dt_control_job_get_state(job) == DT_JOB_STATE_CANCELLED)
       break;
   }
@@ -873,7 +908,8 @@ static int32_t dt_control_remove_images_job_run(dt_job_t *job)
 
   char *really_removed = NULL;
 
-  double fraction = 0.0f;
+  double fraction = 0.0;
+  double prev_time = 0;
   for(; t; t = g_list_next(t))
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
@@ -894,7 +930,13 @@ static int32_t dt_control_remove_images_job_run(dt_job_t *job)
       dt_image_remove(imgid);
     }
     fraction += 1.0 / total;
-    dt_control_job_set_progress(job, fraction);
+    // update the progress meter, but at most twice per second
+    double curr_time = dt_get_wtime();
+    if(curr_time > prev_time + PROGRESS_UPDATE_INTERVAL)
+    {
+      dt_control_job_set_progress(job, fraction);
+      prev_time = curr_time;
+    }
     if(dt_control_job_get_state(job) == DT_JOB_STATE_CANCELLED)
       break;
   }
@@ -1181,6 +1223,7 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
      "                    WHERE id = ?1)"
      "       AND film_id IN (SELECT film_id FROM main.images WHERE id = ?1)",
      -1, &stmt, NULL);
+  double prev_time = 0;
   // loop through all images to delete
   while(t)
   {
@@ -1274,7 +1317,13 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
 delete_next_file:
     t = g_list_next(t);
     fraction += 1.0 / total;
-    dt_control_job_set_progress(job, fraction);
+    // update the progress meter, but at most twice per second
+    double curr_time = dt_get_wtime();
+    if(curr_time > prev_time + PROGRESS_UPDATE_INTERVAL)
+    {
+      dt_control_job_set_progress(job, fraction);
+      prev_time = curr_time;
+    }
     if(delete_status == _DT_DELETE_STATUS_STOP_PROCESSING)
       break;
   }
@@ -1415,6 +1464,7 @@ static int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
   dt_tag_new("darktable|local-copy", &tagid);
 
   gboolean tag_change = FALSE;
+  double prev_time = 0;
   while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
@@ -1435,7 +1485,13 @@ static int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
     t = g_list_next(t);
 
     fraction += 1.0 / total;
-    dt_control_job_set_progress(job, fraction);
+    // update the progress meter, but at most twice per second
+    double curr_time = dt_get_wtime();
+    if(curr_time > prev_time + PROGRESS_UPDATE_INTERVAL)
+    {
+      dt_control_job_set_progress(job, fraction);
+      prev_time = curr_time;
+    }
   }
 
   dt_collection_update_query(darktable.collection,
@@ -1461,6 +1517,7 @@ static int32_t dt_control_refresh_exif_run(dt_job_t *job)
                                               total), total);
 
   dt_control_job_set_progress_message(job, message);
+  double prev_time = 0;
   while(t)
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
@@ -1491,7 +1548,13 @@ static int32_t dt_control_refresh_exif_run(dt_job_t *job)
 
     t = g_list_next(t);
     fraction += 1.0 / total;
-    dt_control_job_set_progress(job, fraction);
+    // update the progress meter, but at most twice per second
+    double curr_time = dt_get_wtime();
+    if(curr_time > prev_time + PROGRESS_UPDATE_INTERVAL)
+    {
+      dt_control_job_set_progress(job, fraction);
+      prev_time = 0;
+    }
   }
   dt_collection_update_query(darktable.collection,
                              DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
@@ -1519,13 +1582,24 @@ static int32_t _control_paste_history_job_run(dt_job_t *job)
 
   dt_control_job_set_progress_message(job, message);
   dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
+  double prev_time = 0;
   for( ; t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED; t = g_list_next(t))
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
-    dt_history_paste(imgid, merge);
+    // paste the copied history onto the current image, unless it's the one being edited in darkroom
+    if(darktable.develop && darktable.develop->image_storage.id != imgid)
+      dt_history_paste(imgid, merge);
+    else
+      dt_control_log(_("skipped pasting history into image being edited"));
 
     fraction += 1.0 / total;
-    dt_control_job_set_progress(job, fraction);
+    // update the progress meter, but at most twice per second
+    double curr_time = dt_get_wtime();
+    if(curr_time > prev_time + PROGRESS_UPDATE_INTERVAL)
+    {
+      dt_control_job_set_progress(job, fraction);
+      prev_time = curr_time;
+    }
   }
   dt_undo_end_group(darktable.undo);
 
@@ -1557,12 +1631,26 @@ static int32_t _control_compress_history_job_run(dt_job_t *job)
                                               "compressing history for %d images",
                                               total), total);
   dt_control_job_set_progress_message(job, message);
+  double prev_time = 0;
   for( ; t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED; t = g_list_next(t))
   {
-    if(!dt_history_compress(GPOINTER_TO_INT(t->data)))
-      missing++;
+    dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
+    // compress the history of this image, unless it's the one being edited in darkroom
+    if(!darktable.develop || darktable.develop->image_storage.id != imgid)
+    {
+      if(!dt_history_compress(imgid))
+        missing++;
+    }
+    else
+      dt_control_log(_("skipped compressing history for image being edited"));
     fraction += 1.0 / total;
-    dt_control_job_set_progress(job, fraction);
+    // update the progress meter, but at most twice per second
+    double curr_time = dt_get_wtime();
+    if(curr_time > prev_time + PROGRESS_UPDATE_INTERVAL)
+    {
+      dt_control_job_set_progress(job, fraction);
+      prev_time = curr_time;
+    }
   }
 
   dt_collection_update_query(darktable.collection,
@@ -1589,12 +1677,23 @@ static int32_t _control_discard_history_job_run(dt_job_t *job)
                                               total), total);
   dt_control_job_set_progress_message(job, message);
   dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
+  double prev_time = 0;
   for( ; t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED; t = g_list_next(t))
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
-    dt_history_delete(imgid, TRUE);
+    // discard this image's history, unless it's the one being edited in darkroom
+    if(!darktable.develop || darktable.develop->image_storage.id != imgid)
+      dt_history_delete(imgid, TRUE);
+    else
+      dt_control_log(_("skipped discarding history for image being edited"));
     fraction += 1.0 / total;
-    dt_control_job_set_progress(job, fraction);
+    // update the progress meter, but at most twice per second
+    double curr_time = dt_get_wtime();
+    if(curr_time > prev_time + PROGRESS_UPDATE_INTERVAL)
+    {
+      dt_control_job_set_progress(job, fraction);
+      prev_time = curr_time;
+    }
   }
 
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
@@ -1698,6 +1797,8 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
     metadata.list = g_list_remove(metadata.list, metadata.list->data);
   }
 
+  double prev_time = 0;
+
   while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
@@ -1751,7 +1852,13 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
 
     fraction += 1.0 / total;
     if(fraction > 1.0) fraction = 1.0;
-    dt_control_job_set_progress(job, fraction);
+    // update the progress meter, but at most twice per second
+    double curr_time = dt_get_wtime();
+    if(curr_time > prev_time + PROGRESS_UPDATE_INTERVAL)
+    {
+      dt_control_job_set_progress(job, fraction);
+      prev_time = curr_time;
+    }
   }
   g_list_free_full(metadata.list, g_free);
 
