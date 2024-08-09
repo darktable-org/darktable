@@ -933,6 +933,9 @@ static gboolean _osx_openfile_callback(GtkosxApplication *OSXapp,
                                        gpointer user_data)
 #endif
 {
+  // when multiple files are dropped on the app icon this callback
+  // gets called for each file individually so we don't request to
+  // open the darkroom here.
   return dt_is_valid_imgid(dt_load_from_string(path, FALSE, NULL));
 }
 #endif
