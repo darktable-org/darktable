@@ -1032,7 +1032,6 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const dt_imgid_t imgid)
     GtkWidget *da = gtk_drawing_area_new();
     gtk_widget_set_size_request(da, psize, psize);
     gtk_widget_set_halign(da, GTK_ALIGN_CENTER);
-    gtk_widget_set_app_paintable(da, TRUE);
     gtk_box_pack_start(GTK_BOX(ht), da, TRUE, TRUE, 0);
     data.first_draw = TRUE;
     g_signal_connect(G_OBJECT(da), "draw", G_CALLBACK(_preview_draw), &data);

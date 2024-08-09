@@ -125,7 +125,6 @@ GtkWidget *dtgtk_thumbnail_btn_new(DTGTKCairoPaintIconFunc paint, gint paintflag
                                                 | GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK
                                                 | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
                                                 | GDK_ENTER_NOTIFY_MASK | GDK_ALL_EVENTS_MASK);
-  gtk_widget_set_app_paintable(GTK_WIDGET(button), TRUE);
   gtk_widget_set_name(GTK_WIDGET(button), "thumbnail_btn");
   return (GtkWidget *)button;
 }
