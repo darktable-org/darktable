@@ -43,7 +43,7 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-DT_MODULE_INTROSPECTION(1, dt_iop_dither_params_t)
+DT_MODULE_INTROSPECTION(2, dt_iop_dither_params_t)
 
 typedef enum dt_iop_dither_type_t
 {
@@ -54,6 +54,7 @@ typedef enum dt_iop_dither_type_t
   DITHER_FS2BIT = 8,      // $DESCRIPTION: "Floyd-Steinberg 2-bit RGB"
   DITHER_FS4BIT_GRAY = 2, // $DESCRIPTION: "Floyd-Steinberg 4-bit gray"
   DITHER_FS4BIT = 9,      // $DESCRIPTION: "Floyd-Steinberg 4-bit RGB"
+  DITHER_FS6BIT_GRAY = 10, // $DESCRIPTION: "Floyd-Steinberg 6-bit gray"
   DITHER_FS8BIT = 3,      // $DESCRIPTION: "Floyd-Steinberg 8-bit RGB"
   DITHER_FS16BIT = 4,     // $DESCRIPTION: "Floyd-Steinberg 16-bit RGB"
   DITHER_FSAUTO = 5,      // $DESCRIPTION: "Floyd-Steinberg auto"
@@ -139,6 +140,34 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_RGB;
 }
 
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
+{
+  if(old_version == 1)
+  {
+    typedef struct dt_iop_dither_params_v1_t
+    {
+      dt_iop_dither_type_t dither_type;
+      int palette;
+      struct { float radius; float range[4]; float damping; } random;
+    } dt_iop_dither_params_v1_t;
+
+    const dt_iop_dither_params_v1_t *o = (dt_iop_dither_params_v1_t *)old_params;
+    dt_iop_dither_params_v1_t *n = (dt_iop_dither_params_v1_t *)malloc(sizeof(dt_iop_dither_params_v1_t));
+    memcpy(n, o, sizeof(dt_iop_dither_params_v1_t));
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_dither_params_v1_t);
+    *new_version = 2;
+    return 0;
+  }
+  return 1;
+}
+
 void init_presets(dt_iop_module_so_t *self)
 {
   dt_database_start_transaction(darktable.db);
@@ -158,7 +187,7 @@ void init_presets(dt_iop_module_so_t *self)
 DT_OMP_DECLARE_SIMD(simdlen(4))
 static inline float _quantize(const float val, const float f, const float rf)
 {
-  return rf * ceilf((val * f) - 0.5); // round up only if frac(x) strictly greater than 0.5
+  return rf * ceilf((val * f) - 0.5f); // round up only if frac(x) strictly greater than 0.5
   //originally (and more slowly):
   //const float tmp = val * f;
   //const float itmp = floorf(tmp);
@@ -304,6 +333,10 @@ static int _get_dither_parameters(
       graymode = 0;
       *levels = 16;
       break;
+    case DITHER_FS6BIT_GRAY:
+      graymode = 1;
+      *levels = MAX(64, MIN(63 * bds + 1, 256));
+      break;
     case DITHER_FS8BIT:
       graymode = 0;
       *levels = 256;
@@ -368,7 +401,7 @@ static int _get_dither_parameters(
 #define DOWNLEFT_WT   (3.0f/16.0f)
 
 DT_OMP_DECLARE_SIMD(aligned(ivoid, ovoid : 64))
-static void process_floyd_steinberg(
+static void _process_floyd_steinberg(
         struct dt_iop_module_t *self,
         dt_dev_pixelpipe_iop_t *piece,
         const void *const ivoid,
@@ -542,7 +575,7 @@ static void process_floyd_steinberg(
   }
 }
 
-static void process_random(
+static void _process_random(
         struct dt_iop_module_t *self,
         dt_dev_pixelpipe_iop_t *piece,
         const void *const ivoid,
@@ -586,7 +619,7 @@ static void process_random(
   free_tea_states(tea_states);
 }
 
-static void process_posterize(
+static void _process_posterize(
         struct dt_iop_module_t *self,
         dt_dev_pixelpipe_iop_t *piece,
         const void *const ivoid,
@@ -637,13 +670,13 @@ void process(
   dt_iop_dither_data_t *data = (dt_iop_dither_data_t *)piece->data;
 
   if(data->dither_type == DITHER_RANDOM)
-    process_random(self, piece, ivoid, ovoid, roi_in, roi_out);
+    _process_random(self, piece, ivoid, ovoid, roi_in, roi_out);
   else if(data->dither_type & POSTERIZE_FLAG)
-    process_posterize(self, piece, ivoid, ovoid, roi_in, roi_out);
+    _process_posterize(self, piece, ivoid, ovoid, roi_in, roi_out);
   else
   {
     const gboolean fastmode = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
-    process_floyd_steinberg(self, piece, ivoid, ovoid, roi_in, roi_out, fastmode);
+    _process_floyd_steinberg(self, piece, ivoid, ovoid, roi_in, roi_out, fastmode);
   }
 }
 
@@ -660,7 +693,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
 #if 0
 static void
-radius_callback (GtkWidget *slider, gpointer user_data)
+_radius_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
@@ -672,7 +705,7 @@ radius_callback (GtkWidget *slider, gpointer user_data)
 
 #if 0
 static void
-range_callback (GtkWidget *slider, gpointer user_data)
+_range_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
@@ -775,9 +808,9 @@ void gui_init(struct dt_iop_module_t *self)
 
 #if 0
   g_signal_connect (G_OBJECT (g->radius), "value-changed",
-                    G_CALLBACK (radius_callback), self);
+                    G_CALLBACK (_radius_callback), self);
   g_signal_connect (G_OBJECT (g->range), "value-changed",
-                    G_CALLBACK (range_callback), self);
+                    G_CALLBACK (_range_callback), self);
 #endif
 }
 
