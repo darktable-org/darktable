@@ -904,13 +904,8 @@ static void _quit_callback(dt_action_t *action)
 }
 
 #ifdef MAC_INTEGRATION
-#ifdef GTK_TYPE_OSX_APPLICATION
-static gboolean _osx_quit_callback(GtkOSXApplication *OSXapp,
-                                   gpointer user_data)
-#else
 static gboolean _osx_quit_callback(GtkosxApplication *OSXapp,
                                    gpointer user_data)
-#endif
 {
   GList *windows, *window;
   windows = gtk_window_list_toplevels();
@@ -923,15 +918,9 @@ static gboolean _osx_quit_callback(GtkosxApplication *OSXapp,
   return TRUE;
 }
 
-#ifdef GTK_TYPE_OSX_APPLICATION
-static gboolean _osx_openfile_callback(GtkOSXApplication *OSXapp,
-                                       gchar *path,
-                                       gpointer user_data)
-#else
 static gboolean _osx_openfile_callback(GtkosxApplication *OSXapp,
                                        gchar *path,
                                        gpointer user_data)
-#endif
 {
   // when multiple files are dropped on the app icon this callback
   // gets called for each file individually so we don't request to
@@ -1190,11 +1179,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
     g_snprintf(gui->gtkrc, sizeof(gui->gtkrc), "darktable");
 
 #ifdef MAC_INTEGRATION
-#ifdef GTK_TYPE_OSX_APPLICATION
-  GtkOSXApplication *OSXApp = g_object_new(GTK_TYPE_OSX_APPLICATION, NULL);
-  gtk_osxapplication_set_menu_bar(
-      OSXApp, GTK_MENU_SHELL(gtk_menu_bar_new())); // needed for default entries to show up
-#else
   GtkosxApplication *OSXApp = g_object_new(GTKOSX_TYPE_APPLICATION, NULL);
 
   // View menu
@@ -1263,7 +1247,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
   gtkosx_application_set_help_menu(OSXApp, GTK_MENU_ITEM(help_root_menu));
 
-#endif
   g_signal_connect(G_OBJECT(OSXApp), "NSApplicationBlockTermination",
                    G_CALLBACK(_osx_quit_callback), NULL);
   g_signal_connect(G_OBJECT(OSXApp), "NSApplicationOpenFile",
@@ -1500,11 +1483,7 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
   dt_view_manager_configure(darktable.view_manager,
                             allocation.width - 2 * tb, allocation.height - 2 * tb);
 #ifdef MAC_INTEGRATION
-#ifdef GTK_TYPE_OSX_APPLICATION
-  gtk_osxapplication_ready(g_object_new(GTK_TYPE_OSX_APPLICATION, NULL));
-#else
   gtkosx_application_ready(g_object_new(GTKOSX_TYPE_APPLICATION, NULL));
-#endif
 #endif
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_focus_window();
