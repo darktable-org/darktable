@@ -1519,7 +1519,9 @@ static int32_t _control_paste_history_job_run(dt_job_t *job)
 
   dt_control_job_set_progress_message(job, message);
   dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
-  for( ; t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED; t = g_list_next(t))
+  for( ;
+       t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED;
+       t = g_list_next(t))
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
     dt_history_paste(imgid, merge);
@@ -1557,7 +1559,9 @@ static int32_t _control_compress_history_job_run(dt_job_t *job)
                                               "compressing history for %d images",
                                               total), total);
   dt_control_job_set_progress_message(job, message);
-  for( ; t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED; t = g_list_next(t))
+  for( ;
+       t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED;
+       t = g_list_next(t))
   {
     if(!dt_history_compress(GPOINTER_TO_INT(t->data)))
       missing++;
@@ -1589,7 +1593,9 @@ static int32_t _control_discard_history_job_run(dt_job_t *job)
                                               total), total);
   dt_control_job_set_progress_message(job, message);
   dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
-  for( ; t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED; t = g_list_next(t))
+  for( ;
+       t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED;
+       t = g_list_next(t))
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
     dt_history_delete(imgid, TRUE);
@@ -1684,7 +1690,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
   {
     // IPTC character encoding not set by user, so we set the default utf8 here
     settings->metadata_export = dt_util_dstrcat(settings->metadata_export,
-                                                "\1%s\1%s", 
+                                                "\1%s\1%s",
                                                 iptc_envelope_characterset,
                                                 "\x1b%G");  // ESC % G
   }
