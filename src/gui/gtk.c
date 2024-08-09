@@ -1268,7 +1268,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
   // Initializing widgets
   _init_widgets(gui);
-  dt_gui_apply_theme(gui);
+  dt_gui_apply_theme();
 
   // smooth scrolling must be enabled to handle trackpad/touch events
   gui->scroll_mask = GDK_SCROLL_MASK | GDK_SMOOTH_SCROLL_MASK;

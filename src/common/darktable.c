@@ -1803,6 +1803,16 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   darktable_splash_screen_set_progress(_("synchronizing local copies"));
   dt_image_local_copy_synch();
 
+  // the update crawl needs to run after db and conf are up, but before LUA
+  // starts any scripts
+  GList *changed_xmp_files = NULL;
+  if(init_gui && dt_conf_get_bool("run_crawler_on_start"))
+  {
+    darktable_splash_screen_set_progress(_("checking for updated sidecar files"));
+    // scan for cases where the database and xmp files have different timestamps
+    changed_xmp_files = dt_control_crawler_run();
+  }
+
 /* init lua last, since it's user made stuff it must be in the real environment */
 #ifdef USE_LUA
   darktable_splash_screen_set_progress(_("initializing LUA"));
@@ -1822,7 +1832,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     if(argc == 2 && !_is_directory(argv[1]))
     {
       // If only one image is listed, attempt to load it in darkroom
+#ifndef USE_LUA      // may cause UI hang since after LUA init
       darktable_splash_screen_set_progress(_("importing image"));
+#endif
       (void)dt_load_from_string(argv[1], TRUE, NULL);
     }
     else if(argc >= 2)
@@ -1857,16 +1869,10 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   if(init_gui)
   {
-    if(dt_conf_get_bool("run_crawler_on_start"))
-    {
-      darktable_splash_screen_set_progress(_("checking for updated sidecar files"));
-      // scan for cases where the database and xmp files have different timestamps
-      GList *changed_xmp_files = dt_control_crawler_run();
-      // construct the popup that asks the user how to handle images whose xmp
-      // files are newer than the db entry
-      if(changed_xmp_files)
-        dt_control_crawler_show_image_list(changed_xmp_files);
-    }
+    // construct the popup that asks the user how to handle images whose xmp
+    // files are newer than the db entry
+    if(changed_xmp_files)
+      dt_control_crawler_show_image_list(changed_xmp_files);
     darktable_splash_screen_destroy();
     dt_start_backtumbs_crawler();
   }
