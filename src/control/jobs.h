@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #include <glib.h>
 #include <inttypes.h>
 #include <stddef.h>
+#include <views/view.h>
 
 #define DT_CONTROL_DESCRIPTION_LEN 256
 // reserved workers
@@ -88,6 +89,8 @@ void dt_control_jobs_cleanup(struct dt_control_t *control);
 gboolean dt_control_add_job(struct dt_control_t *control, dt_job_queue_t queue_id, dt_job_t *job);
 gboolean dt_control_add_job_res(struct dt_control_t *s, dt_job_t *job, int32_t res);
 
+dt_view_type_flags_t dt_control_job_get_view_creator(dt_job_t *job);
+
 int32_t dt_control_get_threadid();
 
 #ifdef HAVE_GPHOTO2
@@ -104,4 +107,3 @@ int32_t dt_control_get_threadid();
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

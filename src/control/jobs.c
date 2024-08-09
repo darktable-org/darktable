@@ -52,6 +52,7 @@ typedef struct _dt_job_t
   dt_progress_t *progress;
 
   char description[DT_CONTROL_DESCRIPTION_LEN];
+  dt_view_type_flags_t view_creator;
 } _dt_job_t;
 
 /** check if two jobs are to be considered equal. a simple memcmp won't work since the mutexes probably won't
@@ -140,10 +141,16 @@ dt_job_t *dt_control_job_create(dt_job_execute_callback execute,
 
   job->execute = execute;
   job->state = DT_JOB_STATE_INITIALIZED;
+  job->view_creator = dt_view_get_current();
 
   dt_pthread_mutex_init(&job->state_mutex, NULL);
   dt_pthread_mutex_init(&job->wait_mutex, NULL);
   return job;
+}
+
+dt_view_type_flags_t dt_control_job_get_view_creator(dt_job_t *job)
+{
+  return job->view_creator;
 }
 
 void dt_control_job_dispose(_dt_job_t *job)
@@ -668,4 +675,3 @@ void dt_control_jobs_cleanup(dt_control_t *control)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
