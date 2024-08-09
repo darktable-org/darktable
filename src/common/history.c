@@ -32,6 +32,7 @@
 #include "develop/blend.h"
 #include "develop/develop.h"
 #include "develop/masks.h"
+#include "gui/gtk.h"
 #include "gui/hist_dialog.h"
 #include "imageio/imageio_common.h"
 
@@ -1371,6 +1372,7 @@ int dt_history_compress_on_list(const GList *imgs)
 {
   int uncompressed=0;
 
+  dt_gui_cursor_set_busy();
   // Get the list of selected images
   for(const GList *l = imgs; l; l = g_list_next(l))
   {
@@ -1446,6 +1448,7 @@ int dt_history_compress_on_list(const GList *imgs)
     dt_history_hash_write_from_history(imgid, DT_HISTORY_HASH_CURRENT);
   }
 
+  dt_gui_cursor_clear_busy();
   return uncompressed;
 }
 
@@ -1904,6 +1907,7 @@ gboolean dt_history_paste_on_list(const GList *list,
   if(undo)
     dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
 
+  dt_gui_cursor_set_busy();
   for(GList *l = (GList *)list; l; l = g_list_next(l))
   {
     const int dest = GPOINTER_TO_INT(l->data);
@@ -1923,6 +1927,7 @@ gboolean dt_history_paste_on_list(const GList *list,
   {
     dt_dev_pixelpipe_rebuild(darktable.develop);
   }
+  dt_gui_cursor_clear_busy();
 
   return TRUE;
 }
@@ -1955,6 +1960,7 @@ gboolean dt_history_paste_parts_on_list(const GList *list,
     return FALSE;
   }
 
+  dt_gui_cursor_set_busy();
   if(undo)
     dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
 
@@ -1980,7 +1986,7 @@ gboolean dt_history_paste_parts_on_list(const GList *list,
   {
     dt_dev_pixelpipe_rebuild(darktable.develop);
   }
-
+  dt_gui_cursor_clear_busy();
   return TRUE;
 }
 
@@ -1992,6 +1998,7 @@ gboolean dt_history_delete_on_list(const GList *list,
 
   dt_gui_cursor_set_busy();
   if(undo) dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
+  dt_gui_process_events();
 
   for(GList *l = (GList *)list; l; l = g_list_next(l))
   {

@@ -40,6 +40,9 @@
 
 DT_MODULE(1)
 
+// get confirmation if user asks to apply a history operation to at least this many images
+#define MIN_ASK_IMAGES 1000
+
 typedef enum dt_history_copy_mode_t
 {
   DT_COPY_HISTORY_APPEND    = 0,
@@ -204,10 +207,28 @@ static void compress_button_clicked(GtkWidget *widget, gpointer user_data)
   GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
   if(!imgs) return;  // do nothing if no images to be acted on
 
-  const int missing = dt_history_compress_on_list(imgs);
-
-  dt_collection_update_query(darktable.collection,
-                             DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, imgs);
+  const int number = g_list_length((GList *)imgs);
+  int missing = 0;
+  if(number < MIN_ASK_IMAGES
+     || dt_gui_show_yes_no_dialog(_("compress image histories?"),
+                                  _("do you really want to compress history for %d selected images?"),
+                                  number))
+  {
+    if(number >= MIN_ASK_IMAGES)
+    {
+      // ensure that the dialog is removed from the screen
+      dt_gui_process_events();
+      g_usleep(200000); // wait 0.2 seconds
+      dt_gui_process_events();
+    }
+    missing = dt_history_compress_on_list(imgs);
+    dt_collection_update_query(darktable.collection,
+                               DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, imgs);
+  }
+  else
+  {
+    g_list_free(imgs);
+  }
   dt_control_queue_redraw_center();
   if(missing)
     dt_control_log(ngettext("no history compression of %d image",
@@ -259,6 +280,9 @@ static void discard_button_clicked(GtkWidget *widget, gpointer user_data)
     if(ask && number > 10)
     {
       // ensure that the dialog window gets hidden on click
+      dt_gui_process_events();
+      g_usleep(100000);
+      dt_gui_process_events();
       dt_control_queue_redraw_center();
       dt_gui_process_events();
     }
@@ -289,14 +313,32 @@ static void paste_button_clicked(GtkWidget *widget, gpointer user_data)
 
   dt_conf_set_int("plugins/lighttable/copy_history/pastemode", mode);
 
-  /* copy history from previously copied image and past onto selection */
+  /* copy history from previously copied image and paste onto selection */
   GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
 
-  if(dt_history_paste_on_list(imgs, TRUE))
+  const int number = g_list_length((GList *)imgs);
+  if(number < MIN_ASK_IMAGES
+     || dt_gui_show_yes_no_dialog(_("paste to images?"),
+                                  _("do you really want to paste history to %d selected images?"),
+                                  number))
   {
-    dt_collection_update_query(darktable.collection,
-                               DT_COLLECTION_CHANGE_RELOAD,
-                               DT_COLLECTION_PROP_UNDEF, imgs);
+    if(number >= MIN_ASK_IMAGES)
+    {
+      // ensure that the dialog is removed from the screen
+      dt_gui_process_events();
+      g_usleep(200000); // wait 0.2 seconds
+      dt_gui_process_events();
+    }
+    if(dt_history_paste_on_list(imgs, TRUE))
+    {
+      dt_collection_update_query(darktable.collection,
+                                 DT_COLLECTION_CHANGE_RELOAD,
+                                 DT_COLLECTION_PROP_UNDEF, imgs);
+    }
+    else
+    {
+      g_list_free(imgs);
+    }
   }
   else
   {
@@ -311,12 +353,29 @@ static void paste_parts_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   /* copy history from previously copied image and past onto selection */
   GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
-
-  if(dt_history_paste_parts_on_list(imgs, TRUE))
+  const int number = g_list_length((GList *)imgs);
+  if(number < MIN_ASK_IMAGES
+     || dt_gui_show_yes_no_dialog(_("paste to images?"),
+                                  _("do you really want to paste history to %d selected images?"),
+                                  number))
   {
-    dt_collection_update_query(darktable.collection,
-                               DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
-                               imgs); // frees imgs
+    if(number >= MIN_ASK_IMAGES)
+    {
+      // ensure that the dialog is removed from the screen
+      dt_gui_process_events();
+      g_usleep(200000); // wait 0.2 seconds
+      dt_gui_process_events();
+    }
+    if(dt_history_paste_parts_on_list(imgs, TRUE))
+    {
+      dt_collection_update_query(darktable.collection,
+                                 DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
+                                 imgs); // frees imgs
+    }
+    else
+    {
+      g_list_free(imgs);
+    }
   }
   else
   {
