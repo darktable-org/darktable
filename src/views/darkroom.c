@@ -32,6 +32,7 @@
 #include "common/styles.h"
 #include "common/tags.h"
 #include "common/undo.h"
+#include "common/utility.h"
 #include "common/color_picker.h"
 #include "control/conf.h"
 #include "control/control.h"
@@ -1303,6 +1304,62 @@ gboolean _styles_tooltip_callback(GtkWidget* self,
   return dt_shortcut_tooltip_callback(self, x, y, keyboard_mode, tooltip, ht);
 }
 
+static void _build_style_submenus(GtkMenuShell *menu,
+                                  const gchar *style_name,
+                                  gchar **splits,
+                                  const int index)
+{
+  // localize the name of the current level in the hierarchy
+  const char *split0 = dt_util_localize_string(splits[index]);
+  GtkMenuItem *mi = GTK_MENU_ITEM(gtk_menu_item_new_with_label(split0));
+
+  // check if we already have an item or sub-menu with this name
+  GtkMenu *sm = NULL;
+  GList *children = gtk_container_get_children(GTK_CONTAINER(menu));
+  for(const GList *child = children; child; child = g_list_next(child))
+  {
+    GtkMenuItem *smi = (GtkMenuItem *)child->data;
+    if(g_strcmp0(split0,gtk_menu_item_get_label(smi)) == 0)
+    {
+      sm = (GtkMenu *)gtk_menu_item_get_submenu(smi);
+      break;
+    }
+  }
+  g_list_free(children);
+
+  if(!splits[index+1])
+  {
+    // we've reached the bottom level, so build a final menu item with preview popup
+    // need a tooltip for the signal below to be raised
+    gtk_menu_shell_append(menu, GTK_WIDGET(mi));
+    gtk_widget_set_has_tooltip(GTK_WIDGET(mi), TRUE);
+    g_signal_connect_data(mi, "query-tooltip",
+                          G_CALLBACK(_styles_tooltip_callback),
+                          g_strdup(style_name), (GClosureNotify)g_free, 0);
+  }
+  else
+  {
+    if (!sm)
+    {
+      // we need a sub-menu, but it doesn't exist yet
+      sm = (GtkMenu*)gtk_menu_new();
+      gtk_menu_item_set_submenu(mi, GTK_WIDGET(sm));
+      gtk_menu_shell_append(menu, GTK_WIDGET(mi));
+    }
+    _build_style_submenus(GTK_MENU_SHELL(sm), style_name, splits, index+1);
+  }
+
+  g_signal_connect_data(G_OBJECT(mi), "activate",
+                        G_CALLBACK(_darkroom_ui_apply_style_activate_callback),
+                        g_strdup(style_name), (GClosureNotify)g_free, 0);
+
+  g_signal_connect_data(G_OBJECT(mi), "button-press-event",
+                        G_CALLBACK(_darkroom_ui_apply_style_button_callback),
+                        g_strdup(style_name), (GClosureNotify)g_free, 0);
+
+  gtk_widget_show(GTK_WIDGET(mi));
+}
+
 static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
 {
   /* show styles popup menu */
@@ -1316,83 +1373,7 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
       dt_style_t *style = (dt_style_t *)st_iter->data;
 
       gchar **split = g_strsplit(style->name, "|", 0);
-
-      // if sub-menu, do not put leading group in final name
-
-      gchar *mi_name = NULL;
-
-      if(split[1])
-      {
-        gsize mi_len = 1 + strlen(split[1]);
-        for(int i=2; split[i]; i++)
-          mi_len += strlen(split[i]) + strlen(" | ");
-
-        mi_name = g_new0(gchar, mi_len);
-        gchar* tmp_ptr = g_stpcpy(mi_name, split[1]);
-        for(int i=2; split[i]; i++)
-        {
-          tmp_ptr = g_stpcpy(tmp_ptr, " | ");
-          tmp_ptr = g_stpcpy(tmp_ptr, split[i]);
-        }
-      }
-      else
-        mi_name = g_strdup(split[0]);
-
-      GtkWidget *mi = gtk_menu_item_new_with_label(mi_name);
-      // need a tooltip for the signal below to be raised
-      gtk_widget_set_has_tooltip(mi, TRUE);
-      g_signal_connect_data(mi, "query-tooltip",
-                            G_CALLBACK(_styles_tooltip_callback),
-                            g_strdup(style->name), (GClosureNotify)g_free, 0);
-
-      g_free(mi_name);
-
-      // check if we already have a sub-menu with this name
-      GtkMenu *sm = NULL;
-
-      GList *children = gtk_container_get_children(GTK_CONTAINER(menu));
-      for(const GList *child = children; child; child = g_list_next(child))
-      {
-        GtkMenuItem *smi = (GtkMenuItem *)child->data;
-        if(!g_strcmp0(split[0],gtk_menu_item_get_label(smi)))
-        {
-          sm = (GtkMenu *)gtk_menu_item_get_submenu(smi);
-          break;
-        }
-      }
-      g_list_free(children);
-
-      GtkMenuItem *smi = NULL;
-
-      // no sub-menu, but we need one
-      if(!sm && split[1])
-      {
-        smi = (GtkMenuItem *)gtk_menu_item_new_with_label(split[0]);
-        sm = (GtkMenu *)gtk_menu_new();
-        gtk_menu_item_set_submenu(smi, GTK_WIDGET(sm));
-      }
-
-      if(sm)
-        gtk_menu_shell_append(GTK_MENU_SHELL(sm), mi);
-      else
-        gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-
-      if(smi)
-      {
-        gtk_menu_shell_append(GTK_MENU_SHELL(menu), GTK_WIDGET(smi));
-        gtk_widget_show(GTK_WIDGET(smi));
-      }
-
-      g_signal_connect_data(G_OBJECT(mi), "activate",
-                            G_CALLBACK(_darkroom_ui_apply_style_activate_callback),
-                            g_strdup(style->name), (GClosureNotify)g_free, 0);
-
-      g_signal_connect_data(G_OBJECT(mi), "button-press-event",
-                            G_CALLBACK(_darkroom_ui_apply_style_button_callback),
-                            g_strdup(style->name), (GClosureNotify)g_free, 0);
-
-      gtk_widget_show(mi);
-
+      _build_style_submenus(menu, style->name, split, 0);
       g_strfreev(split);
     }
     g_list_free_full(styles, dt_style_free);
@@ -2237,6 +2218,9 @@ void gui_init(dt_view_t *self)
   gtk_widget_set_tooltip_text(styles, _("quick access for applying any of your styles"));
   dt_gui_add_help_link(styles, "bottom_panel_styles");
   dt_view_manager_view_toolbox_add(darktable.view_manager, styles, DT_VIEW_DARKROOM);
+  /* ensure that we get strings from the style files shipped with darktable localized */
+  (void)_("darktable camera styles");
+  (void)_("generic");
 
   /* create second window display button */
   dev->second_wnd_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_display2, 0, NULL);
