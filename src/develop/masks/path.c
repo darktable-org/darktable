@@ -122,53 +122,28 @@ static void _path_border_get_XY(const float p0x,
   *yb = (*yc) - rad * dx * l;
 }
 
-/** get feather extremity from the control point n°2 */
-/** the values should be in orthonormal space */
-static void _path_ctrl2_to_feather(const float ptx,
-                                   const float pty,
-                                   const float ctrlx,
-                                   const float ctrly,
-                                   float *fx,
-                                   float *fy,
-                                   const gboolean clockwise)
+void _update_bezier_ctrl_points(dt_masks_point_path_t *point, float iwidth, float iheight,
+                        float new_ctrl[2], dt_masks_path_ctrl_t ctrl_select, bool ctrl_single)
 {
-  if(clockwise)
+  float icorner[2] = { point->corner[0] * iwidth, point->corner[1] * iheight };
+  if(ctrl_select == DT_MASKS_PATH_CTRL1)
   {
-    *fx = ptx + ctrly - pty;
-    *fy = pty + ptx - ctrlx;
+    point->ctrl1[0] = new_ctrl[0] / iwidth;
+    point->ctrl1[1] = new_ctrl[1] / iheight;
+    if (!ctrl_single) {
+      point->ctrl2[0] = (icorner[0] - (new_ctrl[0] - icorner[0])) / iwidth;
+      point->ctrl2[1] = (icorner[1] - (new_ctrl[1] - icorner[1])) / iheight;
+    }
   }
   else
   {
-    *fx = ptx - ctrly + pty;
-    *fy = pty - ptx + ctrlx;
-  }
-}
-
-/** get bezier control points from feather extremity */
-/** the values should be in orthonormal space */
-static void _path_feather_to_ctrl(const float ptx,
-                                  const float pty,
-                                  const float fx,
-                                  const float fy,
-                                  float *ctrl1x,
-                                  float *ctrl1y,
-                                  float *ctrl2x,
-                                  float *ctrl2y,
-                                  const gboolean clockwise)
-{
-  if(clockwise)
-  {
-    *ctrl2x = ptx + pty - fy;
-    *ctrl2y = pty + fx - ptx;
-    *ctrl1x = ptx - pty + fy;
-    *ctrl1y = pty - fx + ptx;
-  }
-  else
-  {
-    *ctrl1x = ptx + pty - fy;
-    *ctrl1y = pty + fx - ptx;
-    *ctrl2x = ptx - pty + fy;
-    *ctrl2y = pty - fx + ptx;
+    assert(ctrl_select == DT_MASKS_PATH_CTRL2);
+    if (!ctrl_single) {
+      point->ctrl1[0] = (icorner[0] - (new_ctrl[0] - icorner[0])) / iwidth;
+      point->ctrl1[1] = (icorner[1] - (new_ctrl[1] - icorner[1])) / iheight;
+    }
+    point->ctrl2[0] = new_ctrl[0] / iwidth;
+    point->ctrl2[1] = new_ctrl[1] / iheight;
   }
 }
 
@@ -533,12 +508,13 @@ static int _path_find_self_intersection(dt_masks_dynbuf_t *inter,
   // from border shape extrema (here x_max)
   int lastx = border[(posextr[1] - 1) * 2];
   int lasty = border[(posextr[1] - 1) * 2 + 1];
+  int nb_border_points = border_count - _nb_ctrl_point(nb_corners);  
 
   for(int ii = _nb_ctrl_point(nb_corners); ii < border_count; ii++)
   {
     // we want to loop from one border extremity
     int i = ii - _nb_ctrl_point(nb_corners) + posextr[1];
-    if(i >= border_count) i = i - border_count + _nb_ctrl_point(nb_corners);
+    if(i >= border_count) i = i - nb_border_points;
 
     if(inter_count >= nb_corners * 4) break;
 
@@ -594,22 +570,54 @@ static int _path_find_self_intersection(dt_masks_dynbuf_t *inter,
             // one of the shape extrema
             if(inter_count > 0)
             {
-              if((v[k] - i)
-                 * ((int)dt_masks_dynbuf_get(inter, -2)
-                    - (int)dt_masks_dynbuf_get(inter, -1)) > 0
-                 && (int)dt_masks_dynbuf_get(inter, -2) >= v[k]
-                 && (int)dt_masks_dynbuf_get(inter, -1) <= i)
+              int curr_start_ordered = v[k] >= posextr[1] ? v[k] : v[k] + nb_border_points;
+              int curr_end_ordered = i >= posextr[1] ? i : i + nb_border_points;
+
+              int prev_start;
+              int prev_end;
+              int prev_start_ordered;
+              int prev_end_ordered;
+
+              // Loop over all previously found self-intersections
+              int n;
+              for (n = 0; n < inter_count; n++) 
               {
-                // we find an self-intersection portion which include the last one
-                // we just update it
-                dt_masks_dynbuf_set(inter, -2, v[k]);
-                dt_masks_dynbuf_set(inter, -1, i);
+                prev_start = dt_masks_dynbuf_get_absolute(inter, n * 2);
+                prev_end = dt_masks_dynbuf_get_absolute(inter, n * 2 + 1);
+
+                prev_start_ordered = prev_start >= posextr[1] ? prev_start : prev_start + nb_border_points;
+                prev_end_ordered = prev_end >= posextr[1] ? prev_end : prev_end + nb_border_points;
+
+                assert(prev_start_ordered <= prev_end_ordered);
+                assert(curr_start_ordered <= curr_end_ordered);
+                assert(prev_end_ordered <= curr_end_ordered);
+
+                if (prev_start_ordered <= curr_start_ordered 
+                    && curr_start_ordered <= prev_end_ordered) 
+                {
+                      // If the new self-intersection starts in a previous self-intersection, 
+                      // there is nothing to do (the start is on a segment that does not exist,
+                      // so it makes no sense to cut).
+                      break;
+                }
+                if (curr_start_ordered <= prev_start_ordered
+                    && prev_end_ordered <= curr_end_ordered) 
+                {
+                      // The new self-intersection fully contains an old one.
+                      // Update the old intersection.
+                      dt_masks_dynbuf_set_absolute(inter, n * 2, v[k]);
+                      dt_masks_dynbuf_set_absolute(inter, n * 2 + 1, i);
+                      break;
+                }
+
               }
-              else
+
+              if (n == inter_count
+                  && prev_end_ordered < curr_start_ordered)
               {
-                // we find a new self-intersection portion
+                // We have a new self-intersection that does not overlap the last one.
                 dt_masks_dynbuf_add_2(inter, v[k], i);
-                inter_count++;
+                inter_count++;                
               }
             }
             else
@@ -1125,7 +1133,7 @@ static int _path_events_mouse_scrolled(struct dt_iop_module_t *module,
   // resize a shape even if on a node or segment
   if(gui->form_selected
      || gui->point_selected >= 0
-     || gui->feather_selected >= 0
+     || gui->feather_selected >= 0  // bezier control points
      || gui->seg_selected >= 0
      || gui->point_border_selected >= 0)
   {
@@ -1535,9 +1543,10 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module,
       dt_control_queue_redraw_center();
       return 1;
     }
-    else if(gui->feather_selected >= 0)
+    else if(gui->feather_selected >= 0)  // Bézier control point
     {
       gui->feather_dragging = gui->feather_selected;
+      gui->bezier_single = dt_modifier_is(state, GDK_SHIFT_MASK);
       dt_control_queue_redraw_center();
       return 1;
     }
@@ -1651,7 +1660,7 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module,
 
     return 1;
   }
-  else if(which == 3 && gui->feather_selected >= 0)
+  else if(which == 3 && gui->feather_selected >= 0)  // right-click to reset Bézier controls
   {
     dt_masks_point_path_t *point
         = (dt_masks_point_path_t *)g_list_nth_data(form->points, gui->feather_selected);
@@ -1814,7 +1823,7 @@ static int _path_events_button_released(struct dt_iop_module_t *module,
 
     return 1;
   }
-  else if(gui->feather_dragging >= 0)
+  else if(gui->feather_dragging >= 0)  // Bézier control point
   {
     dt_masks_point_path_t *point
         = (dt_masks_point_path_t *)g_list_nth_data(form->points, gui->feather_dragging);
@@ -1822,16 +1831,8 @@ static int _path_events_button_released(struct dt_iop_module_t *module,
     float pts[2] = { pzx * wd, pzy * ht };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
-    float p1x, p1y, p2x, p2y;
-    _path_feather_to_ctrl(point->corner[0] * iwidth,
-                          point->corner[1] * iheight,
-                          pts[0], pts[1],
-                          &p1x, &p1y, &p2x, &p2y, gpt->clockwise);
-    point->ctrl1[0] = p1x / iwidth;
-    point->ctrl1[1] = p1y / iheight;
-    point->ctrl2[0] = p2x / iwidth;
-    point->ctrl2[1] = p2y / iheight;
-
+    _update_bezier_ctrl_points(point, iwidth, iheight, pts, gui->bezier_ctrl, gui->bezier_single);
+    gui->bezier_single = FALSE;
     point->state = DT_MASKS_POINT_STATE_USER;
 
     _path_init_ctrl_points(form);
@@ -1980,15 +1981,7 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module,
     dt_masks_point_path_t *point
         = (dt_masks_point_path_t *)g_list_nth_data(form->points, gui->feather_dragging);
 
-    float p1x, p1y, p2x, p2y;
-    _path_feather_to_ctrl(point->corner[0] * iwidth,
-                          point->corner[1] * iheight,
-                          pts[0], pts[1],
-                          &p1x, &p1y, &p2x, &p2y, gpt->clockwise);
-    point->ctrl1[0] = p1x / iwidth;
-    point->ctrl1[1] = p1y / iheight;
-    point->ctrl2[0] = p2x / iwidth;
-    point->ctrl2[1] = p2y / iheight;
+    _update_bezier_ctrl_points(point, iwidth, iheight, pts, gui->bezier_ctrl, gui->bezier_single);
     point->state = DT_MASKS_POINT_STATE_USER;
 
     _path_init_ctrl_points(form);
@@ -2074,23 +2067,29 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module,
 
   if((gui->group_selected == index) && gui->point_edited >= 0)
   {
-    const int k = gui->point_edited;
+      const int k = gui->point_edited;
     // we only select feather if the point is not "sharp"
     if(gpt->points[k * 6 + 2] != gpt->points[k * 6 + 4]
        && gpt->points[k * 6 + 3] != gpt->points[k * 6 + 5])
     {
-      float ffx, ffy;
-      _path_ctrl2_to_feather(gpt->points[k * 6 + 2],
-                             gpt->points[k * 6 + 3],
-                             gpt->points[k * 6 + 4],
-                             gpt->points[k * 6 + 5],
-                             &ffx, &ffy, gpt->clockwise);
-      if(pzx - ffx > -as
-         && pzx - ffx < as
-         && pzy - ffy > -as
-         && pzy - ffy < as)
+      if(pzx - gpt->points[k * 6] > -as
+         && pzx - gpt->points[k * 6] < as
+         && pzy - gpt->points[k * 6 + 1] > -as
+         && pzy - gpt->points[k * 6 + 1] < as)
       {
         gui->feather_selected = k;
+        gui->bezier_ctrl = DT_MASKS_PATH_CTRL1;
+        dt_control_queue_redraw_center();
+        return 1;
+      }
+
+      if(pzx - gpt->points[k * 6 + 4] > -as
+         && pzx - gpt->points[k * 6 + 4] < as
+         && pzy - gpt->points[k * 6 + 5] > -as
+         && pzy - gpt->points[k * 6 + 5] < as)
+      {
+        gui->feather_selected = k;
+        gui->bezier_ctrl = DT_MASKS_PATH_CTRL2;
         dt_control_queue_redraw_center();
         return 1;
       }
@@ -2215,32 +2214,22 @@ static void _path_events_post_expose(cairo_t *cr,
                            gpt->points[k * 6 + 3]);
   }
 
-  // draw feathers
+  // draw Bézier control points
   if((gui->group_selected == index) && gui->point_edited >= 0)
   {
     const int k = gui->point_edited;
-    // uncomment this part if you want to see "real" control points
-    /*
+
     cairo_move_to(cr, gpt->points[k*6+2], gpt->points[k*6+3]);
     cairo_line_to(cr, gpt->points[k*6], gpt->points[k*6+1]);
-    cairo_stroke(cr);
+    dt_masks_line_stroke(cr, TRUE, FALSE, FALSE, zoom_scale);
+    dt_masks_draw_ctrl(cr, gpt->points[k*6], gpt->points[k*6+1], zoom_scale,
+                       k == gui->feather_dragging || k == gui->feather_selected);
+
+
     cairo_move_to(cr, gpt->points[k*6+2], gpt->points[k*6+3]);
     cairo_line_to(cr, gpt->points[k*6+4], gpt->points[k*6+5]);
-    cairo_stroke(cr);
-    */
-
-    float ffx = 0.0f, ffy = 0.0f;
-    _path_ctrl2_to_feather(gpt->points[k * 6 + 2],
-                           gpt->points[k * 6 + 3],
-                           gpt->points[k * 6 + 4],
-                           gpt->points[k * 6 + 5],
-                           &ffx, &ffy, gpt->clockwise);
-    cairo_move_to(cr, gpt->points[k * 6 + 2], gpt->points[k * 6 + 3]);
-    cairo_line_to(cr, ffx, ffy);
-
     dt_masks_line_stroke(cr, TRUE, FALSE, FALSE, zoom_scale);
-
-    dt_masks_draw_ctrl(cr, ffx, ffy, zoom_scale,
+    dt_masks_draw_ctrl(cr, gpt->points[k*6+4], gpt->points[k*6+5], zoom_scale,
                        k == gui->feather_dragging || k == gui->feather_selected);
   }
 
@@ -3357,7 +3346,7 @@ static void _path_set_hint_message(const dt_masks_form_gui_t *const gui,
               msgbuf_len);
   else if(gui->feather_selected >= 0)
     g_strlcat(msgbuf,
-              _("<b>node curvature</b>: drag\n"
+              _("<b>node curvature</b>: drag, <b>move single handle</b>: shift+drag\n"
                 "<b>reset curvature</b>: right-click"),
               msgbuf_len);
   else if(gui->seg_selected >= 0)
