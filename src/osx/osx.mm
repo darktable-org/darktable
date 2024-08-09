@@ -115,15 +115,9 @@ char* dt_osx_get_bundle_res_path()
 #ifdef MAC_INTEGRATION
   gchar *bundle_id;
 
-#ifdef GTK_TYPE_OSX_APPLICATION
-  bundle_id = quartz_application_get_bundle_id();
-  if(bundle_id)
-    result = quartz_application_get_resource_path();
-#else
   bundle_id = gtkosx_application_get_bundle_id();
   if(bundle_id)
     result = gtkosx_application_get_resource_path();
-#endif
   g_free(bundle_id);
 
 #endif
