@@ -2323,12 +2323,13 @@ Details :
 /* splash screen */
 /* hide the header button we were forced to instantiate */
 #splashscreen-header button { opacity: 0; border: none; }
+#splashscreen-header label { font-size: 200%; }
 /* style the darktable icon */
 #splashscreen-icon {}
 /* style the progress message */
 #splashscreen-progress {}
 /* style the time remaining */
-#splashscreen-remaining { color: yellow; }
+#splashscreen-remaining { color: yellow; font-size: 150%; }
 
 /* ??? TO BE REMOVED ON DT 5.0 : script_manager power button */
 button#pb_off

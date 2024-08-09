@@ -46,10 +46,9 @@ void darktable_splash_screen_create(GtkWindow *parent_window)
   gtk_widget_set_name(remaining_text,"splashscreen-remaining");
   GtkHeaderBar *header = GTK_HEADER_BAR(gtk_dialog_get_header_bar(GTK_DIALOG(splash_screen)));
   gtk_widget_set_name(GTK_WIDGET(header),"splashscreen-header");
-  char *title_str = g_strdup_printf(_("<span size='200%%'>Starting darktable %.5s</span>"),
-                                darktable_package_version);
+  char *title_str = g_strdup_printf(_("Starting darktable %.5s"), darktable_package_version);
   GtkWidget *title = gtk_label_new(NULL);
-  gtk_label_set_markup(GTK_LABEL(title),title_str);
+  gtk_label_set_text(GTK_LABEL(title),title_str);
   g_free(title_str);
   gtk_header_bar_set_custom_title(header,title);
   gtk_header_bar_set_has_subtitle(header, FALSE);
@@ -94,23 +93,22 @@ void darktable_splash_screen_set_progress_percent(const char *msg, double fracti
     gtk_label_set_text(GTK_LABEL(progress_text), text);
     g_free(text);
     gtk_widget_show(progress_text);
-    if(elapsed > 2.0 && fraction > 0.001)
+    if(elapsed >= 2.0 && fraction > 0.001)
     {
       double total = elapsed / fraction;
       double remain = total - elapsed;
       int minutes = remain / 60;
       int seconds = remain - (60 * minutes);
-      char *rem_text = g_strdup_printf("%d:%02d",minutes,seconds);
+      char *rem_text = g_strdup_printf("⏲%4d:%02d",minutes,seconds);
       gtk_label_set_text(GTK_LABEL(remaining_text), rem_text);
       g_free(rem_text);
-      showing_remaining = TRUE;
     }
     else
     {
-      gtk_label_set_text(GTK_LABEL(remaining_text), "");
-      showing_remaining = FALSE;
+      gtk_label_set_text(GTK_LABEL(remaining_text), "⏲  --:--");
     }
     gtk_widget_show(remaining_text);
+    showing_remaining = TRUE;
     // give Gtk a chance to update the screen
     dt_gui_process_events();
   }
