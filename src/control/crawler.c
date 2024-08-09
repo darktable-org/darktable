@@ -138,7 +138,8 @@ GList *dt_control_crawler_run(void)
   dt_database_start_transaction(darktable.db);
 
   int image_count = 0;
-  double last_time = dt_get_wtime();
+  double start_time;
+  double last_time = start_time = dt_get_wtime();
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -153,8 +154,9 @@ GList *dt_control_crawler_run(void)
     double curr_time = dt_get_wtime();
     if(curr_time >= last_time + 1.0)
     {
-      dt_print(DT_DEBUG_ALWAYS,"crawler %d\n",image_count);
-      darktable_splash_screen_set_progress_percent(_("checking for updated sidecar files (%d%%)"),fraction);
+      darktable_splash_screen_set_progress_percent(_("checking for updated sidecar files (%d%%)"),
+                                                   fraction,
+                                                   curr_time - start_time);
       last_time = curr_time;
     }
 

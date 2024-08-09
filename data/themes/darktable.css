@@ -2320,8 +2320,15 @@ Details :
   margin: 0.07em 0.28em;
 }
 
-/* splash screen - try to keep it from changing too much once the CSS is loaded */
+/* splash screen */
+/* hide the header button we were forced to instantiate */
 #splashscreen-header button { opacity: 0; border: none; }
+/* style the darktable icon */
+#splashscreen-icon {}
+/* style the progress message */
+#splashscreen-progress {}
+/* style the time remaining */
+#splashscreen-remaining { color: yellow; }
 
 /* ??? TO BE REMOVED ON DT 5.0 : script_manager power button */
 button#pb_off
