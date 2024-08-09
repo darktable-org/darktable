@@ -1503,6 +1503,14 @@ static int32_t dt_control_refresh_exif_run(dt_job_t *job)
   return 0;
 }
 
+static inline gboolean _safe_history_job_on_imgid(dt_job_t *job,
+                                                  dt_imgid_t imgid)
+{
+  return dt_control_job_get_view_creator(job) == DT_VIEW_DARKROOM
+    || (darktable.develop
+        && darktable.develop->image_storage.id != imgid);
+}
+
 static int32_t _control_paste_history_job_run(dt_job_t *job)
 {
   dt_control_image_enumerator_t *params =
@@ -1524,7 +1532,13 @@ static int32_t _control_paste_history_job_run(dt_job_t *job)
        t = g_list_next(t))
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
-    dt_history_paste(imgid, merge);
+
+    // nothing to do if the target image is the currently edited one
+    // and the initiator of the paste is not the darkroom.
+    if(_safe_history_job_on_imgid(job, imgid))
+    {
+      dt_history_paste(imgid, merge);
+    }
 
     fraction += 1.0 / total;
     dt_control_job_set_progress(job, fraction);
@@ -1563,8 +1577,16 @@ static int32_t _control_compress_history_job_run(dt_job_t *job)
        t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED;
        t = g_list_next(t))
   {
-    if(!dt_history_compress(GPOINTER_TO_INT(t->data)))
-      missing++;
+    const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
+
+    // nothing to do if the target image is the currently edited one
+    // and the initiator of the compress is not the darkroom.
+    if(_safe_history_job_on_imgid(job, imgid))
+    {
+      if(!dt_history_compress(imgid))
+        missing++;
+    }
+
     fraction += 1.0 / total;
     dt_control_job_set_progress(job, fraction);
   }
@@ -1598,7 +1620,14 @@ static int32_t _control_discard_history_job_run(dt_job_t *job)
        t = g_list_next(t))
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
-    dt_history_delete(imgid, TRUE);
+
+    // nothing to do if the target image is the currently edited one
+    // and the initiator of the discard is not the darkroom.
+    if(_safe_history_job_on_imgid(job, imgid))
+    {
+      dt_history_delete(imgid, TRUE);
+    }
+
     fraction += 1.0 / total;
     dt_control_job_set_progress(job, fraction);
   }
