@@ -74,6 +74,20 @@ void darktable_splash_screen_set_progress(const char *msg)
   }
 }
 
+void darktable_splash_screen_set_progress_percent(const char *msg, double fraction)
+{
+  if(splash_screen)
+  {
+    int percent = round(100.0 * fraction);
+    char *text = g_strdup_printf(msg, percent);
+    gtk_label_set_text(GTK_LABEL(progress_text), text);
+    g_free(text);
+    gtk_widget_show(progress_text);
+    // give Gtk a chance to update the screen
+    dt_gui_process_events();
+  }
+}
+
 void darktable_splash_screen_destroy()
 {
   if(splash_screen)
