@@ -596,6 +596,17 @@ void init_presets(dt_iop_module_so_t *self)
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
+static gboolean _area_mapping_active(const dt_iop_channelmixer_rgb_gui_data_t *g)
+{
+  return g && g->spot_mode && dt_bauhaus_combobox_get(g->spot_mode) != DT_SPOT_MODE_MEASURE &&
+    ((g->lightness_spot && dt_bauhaus_slider_get_val(g->lightness_spot) != 50.0f) ||
+     (g->chroma_spot && dt_bauhaus_slider_get_val(g->chroma_spot) != 0.0f));
+}
+
+static const char *_area_mapping_section_text(const dt_iop_channelmixer_rgb_gui_data_t *g)
+{
+  return _area_mapping_active(g) ? _("area color mapping (active)") : _("area color mapping");
+}
 
 static gboolean _get_white_balance_coeff(struct dt_iop_module_t *self,
                                          dt_aligned_pixel_t custom_wb)
@@ -3872,6 +3883,7 @@ void gui_update(struct dt_iop_module_t *self)
   g->last_bb_temperature = d->temperature;
 
   dt_gui_hide_collapsible_section(&g->cs);
+  dt_gui_collapsible_section_set_label(&g->csspot, _area_mapping_section_text(g));
   dt_gui_update_collapsible_section(&g->csspot);
 
   g->spot_RGB[0] = 0.f;
@@ -3999,6 +4011,9 @@ static void _spot_settings_changed_callback(GtkWidget *slider,
   dt_conf_set_float("darkroom/modules/channelmixerrgb/chroma", Lch_target[1]);
   dt_conf_set_float("darkroom/modules/channelmixerrgb/hue", Lch_target[2] * 360.f);
   dt_conf_set_bool("darkroom/modules/channelmixerrgb/use_mixing", use_mixing);
+
+  // update the "active" flag in the GUI
+  dt_gui_collapsible_section_set_label(&g->csspot, _area_mapping_section_text(g));
 
   ++darktable.gui->reset;
   _paint_hue(self);
@@ -4577,7 +4592,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_gui_new_collapsible_section
     (&g->csspot,
      "plugins/darkroom/channelmixerrgb/expand_picker_mapping",
-     _("area color mapping"),
+     _area_mapping_section_text(g),
      GTK_BOX(self->widget),
      DT_ACTION(self));
 
@@ -4685,6 +4700,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hhbox), GTK_WIDGET(vvbox), TRUE, TRUE, DT_BAUHAUS_SPACE);
 
   gtk_box_pack_start(GTK_BOX(g->csspot.container), GTK_WIDGET(hhbox), FALSE, FALSE, 0);
+  dt_gui_collapsible_section_set_label(&g->csspot, _area_mapping_section_text(g));
 
   GtkWidget *first, *second, *third;
 #define NOTEBOOK_PAGE(var, short, label, tooltip, section, swap, soft_range, sr_min, sr_max) \
