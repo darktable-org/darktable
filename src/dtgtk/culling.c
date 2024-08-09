@@ -618,13 +618,18 @@ static gboolean _event_enter_notify(GtkWidget *widget,
   return TRUE;
 }
 
-static gboolean _event_button_press(GtkWidget *widget,
-                                    GdkEventButton *event,
-                                    gpointer user_data)
+static gboolean _event_button_press(
+    GtkGestureMultiPress *gesture,
+    int n_press,
+    double x,
+    double y,
+    gpointer user_data)
 {
+  GdkEventButton *event = (GdkEventButton *)gtk_gesture_get_last_event(GTK_GESTURE(gesture), NULL);
+
   dt_culling_t *table = (dt_culling_t *)user_data;
 
-  if(event->button == 1 && event->type == GDK_BUTTON_PRESS)
+  if(event->button == 1)
   {
     // make sure any edition field loses the focus
     gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
@@ -642,7 +647,7 @@ static gboolean _event_button_press(GtkWidget *widget,
 
   const dt_imgid_t id = dt_control_get_mouse_over_id();
 
-  if(dt_is_valid_imgid(id) && event->button == 1 && event->type == GDK_2BUTTON_PRESS)
+  if(dt_is_valid_imgid(id) && event->button == 1 && n_press == 2)
   {
     dt_view_manager_switch(darktable.view_manager, "darkroom");
     return TRUE;
@@ -739,9 +744,12 @@ static gboolean _event_motion_notify(GtkWidget *widget,
   return TRUE;
 }
 
-static gboolean _event_button_release(GtkWidget *widget,
-                                      GdkEventButton *event,
-                                      gpointer user_data)
+static gboolean _event_button_release(
+    GtkGestureMultiPress *gesture,
+    int n_press,
+    double x,
+    double y,
+    gpointer user_data)
 {
   dt_culling_t *table = (dt_culling_t *)user_data;
   table->panning = FALSE;
@@ -928,12 +936,16 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
                    G_CALLBACK(_event_leave_notify), table);
   g_signal_connect(G_OBJECT(table->widget), "enter-notify-event",
                    G_CALLBACK(_event_enter_notify), table);
-  g_signal_connect(G_OBJECT(table->widget), "button-press-event",
-                   G_CALLBACK(_event_button_press), table);
   g_signal_connect(G_OBJECT(table->widget), "motion-notify-event",
                    G_CALLBACK(_event_motion_notify), table);
-  g_signal_connect(G_OBJECT(table->widget), "button-release-event",
-                   G_CALLBACK(_event_button_release), table);
+
+  // the button handler will react on all mouse buttons (0 as argument)
+  table->gesture_button_all = dtgtk_button_default_handler_new(
+      GTK_WIDGET(table->widget),
+      0,
+      G_CALLBACK(_event_button_press),
+      G_CALLBACK(_event_button_release),
+      table);
 
   // we register globals signals
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals,

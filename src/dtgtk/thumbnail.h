@@ -151,6 +151,12 @@ typedef struct
   gboolean display_focus; // do we display rectangles to show focused part of the image
 
   gboolean busy; // should we show the busy message ?
+
+  // different controller for event processing
+  GtkGesture *gesture_button_all_main;
+  GtkGesture *gesture_button_all_reject;
+  GtkGesture *gesture_button_all_stars[MAX_STARS];
+
 } dt_thumbnail_t;
 
 dt_thumbnail_t *dt_thumbnail_new(const int width,

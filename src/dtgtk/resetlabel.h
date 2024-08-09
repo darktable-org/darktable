@@ -19,6 +19,8 @@
 #pragma once
 
 #include "develop/imageop.h"
+#include "dtgtk/button.h"
+
 #include <gtk/gtk.h>
 
 G_BEGIN_DECLS
@@ -33,6 +35,9 @@ struct _GtkDarktableResetLabel
   dt_iop_module_t *module;
   int offset; // offset in params to reset
   int size;   // size of param to reset
+
+  // different controller for event processing
+  GtkGesture *gesture_button_primary;
 };
 
 /** instantiate a new darktable reset label for the given module and param. */
