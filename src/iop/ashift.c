@@ -4361,9 +4361,11 @@ void gui_post_expose(dt_iop_module_t *self,
   // no structural data or visibility switched off? -> stop here
   if(g->lines == NULL || !_gui_has_focus(self)) return;
 
-  // get hash value that changes if distortions from here to the end
-  // of the pixelpipe changed
-  const dt_hash_t hash = dt_dev_hash_distort(dev);
+  // get hash value that reflects distortions from here to the end of the pixelpipe
+  const dt_hash_t hash = dt_dev_hash_distort_plus(dev,
+                                                  dev->preview_pipe,
+                                                  (double)self->iop_order,
+                                                  DT_DEV_TRANSFORM_DIR_FORW_INCL);
   // get hash value that changes if coordinates of lines have changed
   const dt_hash_t lines_hash = _get_lines_hash(g->lines, g->lines_count);
 

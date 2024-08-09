@@ -277,6 +277,16 @@ void dt_dev_invalidate_preview(dt_develop_t *dev)
     dev->preview2.pipe->input_timestamp = dev->timestamp;
 }
 
+static void _dev_average_delay_update(const dt_times_t *start,
+                                      uint32_t *average_delay)
+{
+  dt_times_t end;
+  dt_get_times(&end);
+
+  *average_delay += ((end.clock - start->clock) * 1000 / DT_DEV_AVERAGE_DELAY_COUNT
+                     - *average_delay / DT_DEV_AVERAGE_DELAY_COUNT);
+}
+
 void dt_dev_process_image_job(dt_develop_t *dev,
                               dt_dev_viewport_t *port,
                               dt_dev_pixelpipe_t *pipe,
@@ -451,7 +461,7 @@ restart:
   dt_show_times_f(&start,
                   "[dev_process_image] pixel pipeline", "processing `%s'",
                   dev->image_storage.filename);
-  dt_dev_average_delay_update(&start, &pipe->average_delay);
+  _dev_average_delay_update(&start, &pipe->average_delay);
 
   // maybe we got zoomed/panned in the meantime?
   if(port && pipe->changed != DT_DEV_PIPE_UNCHANGED) goto restart;
@@ -2537,6 +2547,88 @@ static float _calculate_new_scroll_zoom_tscale(const int up,
   return tscalenew;
 }
 
+// running with the history locked
+static gboolean _dev_distort_backtransform_locked
+  (dt_develop_t *dev,
+   dt_dev_pixelpipe_t *pipe,
+   const double iop_order,
+   const dt_dev_transform_direction_t transf_direction,
+   float *points,
+   const size_t points_count)
+{
+  GList *modules = g_list_last(pipe->iop);
+  GList *pieces = g_list_last(pipe->nodes);
+  while(modules)
+  {
+    if(!pieces)
+    {
+      return FALSE;
+    }
+    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+    dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)(pieces->data);
+    if(piece->enabled
+       && piece->data
+       && ((transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
+           || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL
+               && module->iop_order >= iop_order)
+           || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL
+               && module->iop_order > iop_order)
+           || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_INCL
+               && module->iop_order <= iop_order)
+           || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_EXCL
+               && module->iop_order < iop_order))
+       && !(dt_iop_module_is_skipped(dev, module)
+            && (pipe->type & DT_DEV_PIXELPIPE_BASIC)))
+    {
+      module->distort_backtransform(module, piece, points, points_count);
+    }
+    modules = g_list_previous(modules);
+    pieces = g_list_previous(pieces);
+  }
+  return TRUE;
+}
+
+// running with the history locked
+static gboolean _dev_distort_transform_locked
+  (dt_develop_t *dev,
+   dt_dev_pixelpipe_t *pipe,
+   const double iop_order,
+   const dt_dev_transform_direction_t transf_direction,
+   float *points,
+   const size_t points_count)
+{
+  GList *modules = pipe->iop;
+  GList *pieces = pipe->nodes;
+  while(modules)
+  {
+    if(!pieces)
+    {
+      return FALSE;
+    }
+    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+    dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)(pieces->data);
+    if(piece->enabled
+       && piece->data
+       && ((transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
+           || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL
+               && module->iop_order >= iop_order)
+           || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL
+               && module->iop_order > iop_order)
+           || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_INCL
+               && module->iop_order <= iop_order)
+           || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_EXCL
+               && module->iop_order < iop_order))
+       && !(dt_iop_module_is_skipped(dev, module)
+            && (pipe->type & DT_DEV_PIXELPIPE_BASIC)))
+    {
+      module->distort_transform(module, piece, points, points_count);
+    }
+    modules = g_list_next(modules);
+    pieces = g_list_next(pieces);
+  }
+  return TRUE;
+}
+
 void dt_dev_zoom_move(dt_dev_viewport_t *port,
                       dt_dev_zoom_t zoom,
                       float scale,
@@ -2551,7 +2643,7 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
   dt_pthread_mutex_lock(&dev->history_mutex);
 
   float pts[2] = { port->zoom_x, port->zoom_y };
-  dt_dev_distort_transform_locked(darktable.develop, port->pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 1);
+  _dev_distort_transform_locked(darktable.develop, port->pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 1);
 
   const float old_pts0 = pts[0];
   const float old_pts1 = pts[1];
@@ -2696,7 +2788,7 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
   gboolean has_moved = fabsf(pts[0] - old_pts0) + fabsf(pts[1] - old_pts1) > 0.5f;
   if(has_moved)
   {
-    dt_dev_distort_backtransform_locked(dev, port->pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 1);
+    _dev_distort_backtransform_locked(dev, port->pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 1);
     port->zoom_x = pts[0];
     port->zoom_y = pts[1];
   }
@@ -2949,17 +3041,6 @@ void dt_dev_masks_selection_change(dt_develop_t *dev,
     dev->proxy.masks.selection_change(dev->proxy.masks.module, module, selectid);
 }
 
-void dt_dev_average_delay_update(const dt_times_t *start,
-                                 uint32_t *average_delay)
-{
-  dt_times_t end;
-  dt_get_times(&end);
-
-  *average_delay += ((end.clock - start->clock) * 1000 / DT_DEV_AVERAGE_DELAY_COUNT
-                     - *average_delay / DT_DEV_AVERAGE_DELAY_COUNT);
-}
-
-
 /** duplicate a existent module */
 dt_iop_module_t *dt_dev_module_duplicate_ext(dt_develop_t *dev,
                                              dt_iop_module_t *base,
@@ -3135,49 +3216,6 @@ gboolean dt_dev_distort_backtransform(dt_develop_t *dev,
     (dev, dev->preview_pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, points, points_count);
 }
 
-// only call directly or indirectly from
-// dt_dev_distort_transform_plus, so that it runs with the history
-// locked
-gboolean dt_dev_distort_transform_locked
-  (dt_develop_t *dev,
-   dt_dev_pixelpipe_t *pipe,
-   const double iop_order,
-   const dt_dev_transform_direction_t transf_direction,
-   float *points,
-   const size_t points_count)
-{
-  GList *modules = pipe->iop;
-  GList *pieces = pipe->nodes;
-  while(modules)
-  {
-    if(!pieces)
-    {
-      return FALSE;
-    }
-    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-    dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)(pieces->data);
-    if(piece->enabled
-       && piece->data
-       && ((transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
-           || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL
-               && module->iop_order >= iop_order)
-           || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL
-               && module->iop_order > iop_order)
-           || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_INCL
-               && module->iop_order <= iop_order)
-           || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_EXCL
-               && module->iop_order < iop_order))
-       && !(dt_iop_module_is_skipped(dev, module)
-            && (pipe->type & DT_DEV_PIXELPIPE_BASIC)))
-    {
-      module->distort_transform(module, piece, points, points_count);
-    }
-    modules = g_list_next(modules);
-    pieces = g_list_next(pieces);
-  }
-  return TRUE;
-}
-
 gboolean dt_dev_distort_transform_plus
   (dt_develop_t *dev,
    dt_dev_pixelpipe_t *pipe,
@@ -3187,54 +3225,12 @@ gboolean dt_dev_distort_transform_plus
    const size_t points_count)
 {
   dt_pthread_mutex_lock(&dev->history_mutex);
-  dt_dev_distort_transform_locked(dev, pipe, iop_order, transf_direction,
+  _dev_distort_transform_locked(dev, pipe, iop_order, transf_direction,
                                   points, points_count);
   dt_pthread_mutex_unlock(&dev->history_mutex);
   return TRUE;
 }
 
-// only call directly or indirectly from
-// dt_dev_distort_transform_plus, so that it runs with the history
-// locked
-gboolean dt_dev_distort_backtransform_locked
-  (dt_develop_t *dev,
-   dt_dev_pixelpipe_t *pipe,
-   const double iop_order,
-   const dt_dev_transform_direction_t transf_direction,
-   float *points,
-   const size_t points_count)
-{
-  GList *modules = g_list_last(pipe->iop);
-  GList *pieces = g_list_last(pipe->nodes);
-  while(modules)
-  {
-    if(!pieces)
-    {
-      return FALSE;
-    }
-    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-    dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)(pieces->data);
-    if(piece->enabled
-       && piece->data
-       && ((transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
-           || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL
-               && module->iop_order >= iop_order)
-           || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL
-               && module->iop_order > iop_order)
-           || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_INCL
-               && module->iop_order <= iop_order)
-           || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_EXCL
-               && module->iop_order < iop_order))
-       && !(dt_iop_module_is_skipped(dev, module)
-            && (pipe->type & DT_DEV_PIXELPIPE_BASIC)))
-    {
-      module->distort_backtransform(module, piece, points, points_count);
-    }
-    modules = g_list_previous(modules);
-    pieces = g_list_previous(pieces);
-  }
-  return TRUE;
-}
 
 gboolean dt_dev_distort_backtransform_plus
   (dt_develop_t *dev,
@@ -3245,7 +3241,7 @@ gboolean dt_dev_distort_backtransform_plus
    const size_t points_count)
 {
   dt_pthread_mutex_lock(&dev->history_mutex);
-  const gboolean success = dt_dev_distort_backtransform_locked
+  const gboolean success = _dev_distort_backtransform_locked
     (dev, pipe, iop_order,
      transf_direction, points, points_count);
   dt_pthread_mutex_unlock(&dev->history_mutex);
@@ -3267,11 +3263,6 @@ dt_dev_pixelpipe_iop_t *dt_dev_distort_get_iop_pipe(dt_develop_t *dev,
     }
   }
   return NULL;
-}
-
-dt_hash_t dt_dev_hash(dt_develop_t *dev)
-{
-  return dt_dev_hash_plus(dev, dev->preview_pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL);
 }
 
 dt_hash_t dt_dev_hash_plus(dt_develop_t *dev,
@@ -3311,7 +3302,7 @@ dt_hash_t dt_dev_hash_plus(dt_develop_t *dev,
   return hash;
 }
 
-gboolean dt_dev_wait_hash(dt_develop_t *dev,
+static gboolean _dev_wait_hash(dt_develop_t *dev,
                           struct dt_dev_pixelpipe_t *pipe,
                           const double iop_order,
                           const dt_dev_transform_direction_t transf_direction,
@@ -3365,7 +3356,7 @@ gboolean dt_dev_sync_pixelpipe_hash(dt_develop_t *dev,
                                     const volatile dt_hash_t *const hash)
 {
   // first wait for matching hash values
-  if(dt_dev_wait_hash(dev, pipe, iop_order, transf_direction, lock, hash))
+  if(_dev_wait_hash(dev, pipe, iop_order, transf_direction, lock, hash))
     return TRUE;
 
   // timed out. let's see if history stack has changed
@@ -3379,11 +3370,6 @@ gboolean dt_dev_sync_pixelpipe_hash(dt_develop_t *dev,
 
   // no way to get pixelpipes in sync
   return FALSE;
-}
-
-dt_hash_t dt_dev_hash_distort(dt_develop_t *dev)
-{
-  return dt_dev_hash_distort_plus(dev, dev->preview_pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL);
 }
 
 dt_hash_t dt_dev_hash_distort_plus(dt_develop_t *dev,
