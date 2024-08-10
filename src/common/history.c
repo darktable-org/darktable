@@ -907,15 +907,16 @@ gboolean dt_history_copy_and_paste_on_image(const dt_imgid_t imgid,
                                             const gboolean merge,
                                             GList *ops,
                                             const gboolean copy_iop_order,
-                                            const gboolean copy_full)
+                                            const gboolean copy_full,
+                                            const gboolean sync)
 {
-  if(imgid == dest_imgid) return TRUE;
+  if(imgid == dest_imgid) return FALSE; // not pasted
 
   if(!dt_is_valid_imgid(imgid))
   {
     dt_control_log(_("you need to copy history from an"
                      " image before you paste it onto another"));
-    return TRUE;
+    return FALSE; // not pasted
   }
 
   dt_lock_image_pair(imgid, dest_imgid);
@@ -984,9 +985,6 @@ gboolean dt_history_copy_and_paste_on_image(const dt_imgid_t imgid,
     dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
   }
 
-  /* update xmp file */
-  dt_image_synch_xmp(dest_imgid);
-
   dt_mipmap_cache_remove(darktable.mipmap_cache, dest_imgid);
   dt_image_update_final_size(imgid);
 
@@ -997,13 +995,17 @@ gboolean dt_history_copy_and_paste_on_image(const dt_imgid_t imgid,
   else
     dt_image_reset_aspect_ratio(dest_imgid, FALSE);
 
+  /* update xmp file */
+  if(sync)
+    dt_image_synch_xmp(dest_imgid);
+
   // signal that the mipmap need to be updated
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
                                 DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, dest_imgid);
 
   dt_unlock_image_pair(imgid, dest_imgid);
 
-  return ret_val;
+  return !ret_val;
 }
 
 char *dt_history_item_as_string(const char *name, const gboolean enabled)
@@ -1880,14 +1882,17 @@ gboolean dt_history_copy_parts(const dt_imgid_t imgid)
     return FALSE;
 }
 
-gboolean dt_history_paste(const dt_imgid_t imgid, const gboolean merge)
+gboolean dt_history_paste(const dt_imgid_t imgid, const gboolean merge, const gboolean sync)
 {
-  dt_history_copy_and_paste_on_image(darktable.view_manager->copy_paste.copied_imageid,
-                                     imgid, merge,
-                                     darktable.view_manager->copy_paste.selops,
-                                     darktable.view_manager->copy_paste.copy_iop_order,
-                                     darktable.view_manager->copy_paste.full_copy);
-  return TRUE;
+  gboolean res =
+    dt_history_copy_and_paste_on_image(darktable.view_manager->copy_paste.copied_imageid,
+                                       imgid, merge,
+                                       darktable.view_manager->copy_paste.selops,
+                                       darktable.view_manager->copy_paste.copy_iop_order,
+                                       darktable.view_manager->copy_paste.full_copy,
+                                       sync);
+  // indicate whether caller needs to ensure that the sidecar is synched
+  return !sync && res;
 }
 
 gboolean dt_history_delete(const dt_imgid_t imgid, const gboolean undo)
