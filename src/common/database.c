@@ -51,8 +51,8 @@
 #define CURRENT_DATABASE_VERSION_LIBRARY 53
 #define CURRENT_DATABASE_VERSION_DATA    10
 
-// #define USE_NESTED_TRANSACTIONS
-#define MAX_NESTED_TRANSACTIONS 0
+#define USE_NESTED_TRANSACTIONS
+#define MAX_NESTED_TRANSACTIONS 5
 /* transaction id */
 static dt_atomic_int _trxid;
 
