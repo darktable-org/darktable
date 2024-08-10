@@ -670,7 +670,7 @@ static int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
       if(GPOINTER_TO_INT(params->data))
         dt_history_delete_on_image(newimgid);
       else
-        dt_history_copy_and_paste_on_image(imgid, newimgid, FALSE, NULL, TRUE, TRUE);
+        dt_history_copy_and_paste_on_image(imgid, newimgid, FALSE, NULL, TRUE, TRUE, TRUE);
 
       // a duplicate should keep the change time stamp of the original
       dt_image_cache_set_change_timestamp_from_image(darktable.image_cache,
@@ -1553,7 +1553,7 @@ static int32_t dt_control_refresh_exif_run(dt_job_t *job)
     if(curr_time > prev_time + PROGRESS_UPDATE_INTERVAL)
     {
       dt_control_job_set_progress(job, fraction);
-      prev_time = 0;
+      prev_time = curr_time;
     }
   }
   dt_collection_update_query(darktable.collection,
@@ -1589,12 +1589,20 @@ static int32_t _control_paste_history_job_run(dt_job_t *job)
   dt_control_job_set_progress_message(job, message);
   dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
   double prev_time = 0;
+  GList *to_synch = NULL;
   for( ; t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED; t = g_list_next(t))
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
     // paste the copied history onto the current image, unless it's the one being edited in darkroom
     if(_safe_history_job_on_imgid(job, imgid))
-      dt_history_paste(imgid, merge);
+    {
+      if(dt_history_paste(imgid, merge, FALSE))
+      {
+        // remember that this image's history was updated, so we'll need to synch its sidecar
+        // before we finish
+        to_synch = g_list_prepend(to_synch, GINT_TO_POINTER(t->data));
+      }
+    }
     else
       dt_control_log(_("skipped pasting history into image being edited"));
 
@@ -1620,6 +1628,13 @@ static int32_t _control_paste_history_job_run(dt_job_t *job)
   if(dt_view_get_current() == DT_VIEW_DARKROOM)
   {
     dt_dev_pixelpipe_rebuild(darktable.develop);
+  }
+
+  // now make sure that the sidecars are updated as needed
+  if(to_synch)
+  {
+    dt_image_synch_xmps(to_synch);
+    g_list_free(to_synch);
   }
   return 0;
 }

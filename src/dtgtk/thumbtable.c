@@ -2748,7 +2748,7 @@ static void _accel_duplicate(dt_action_t *action)
   if(strcmp(action->id, "duplicate image"))
     dt_history_delete_on_image(newimgid);
   else
-    dt_history_copy_and_paste_on_image(sourceid, newimgid, FALSE, NULL, TRUE, TRUE);
+    dt_history_copy_and_paste_on_image(sourceid, newimgid, FALSE, NULL, TRUE, TRUE, TRUE);
 
   // a duplicate should keep the change time stamp of the original
   dt_image_cache_set_change_timestamp_from_image(darktable.image_cache,

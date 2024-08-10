@@ -76,10 +76,6 @@ static void _ratings_apply_to_image(const dt_imgid_t imgid, const int rating)
     dt_image_cache_write_release_info(darktable.image_cache, image,
                                       DT_IMAGE_CACHE_SAFE, "_ratings_apply_to_image");
   }
-  else
-  {
-    dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_RELAXED);
-  }
 }
 
 static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t data, dt_undo_action_t action, GList **imgs)

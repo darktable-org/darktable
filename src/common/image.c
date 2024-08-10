@@ -1157,9 +1157,9 @@ void dt_image_reset_aspect_ratio(const dt_imgid_t imgid, const gboolean raise)
   /* set image aspect ratio */
   image->aspect_ratio = 0.f;
 
-  /* store */
+  /* store in db, but don't synch XMP */
   dt_image_cache_write_release_info(darktable.image_cache, image,
-                                    DT_IMAGE_CACHE_SAFE,
+                                    DT_IMAGE_CACHE_RELAXED,
                                     "dt_image_reset_aspect_ratio");
 
   if(raise && darktable.collection->params.sorts[DT_COLLECTION_SORT_ASPECT_RATIO])
@@ -2622,7 +2622,7 @@ dt_imgid_t dt_image_copy_rename(const dt_imgid_t imgid,
         sqlite3_step(stmt);
         sqlite3_finalize(stmt);
 
-        dt_history_copy_and_paste_on_image(imgid, newid, FALSE, NULL, TRUE, TRUE);
+        dt_history_copy_and_paste_on_image(imgid, newid, FALSE, NULL, TRUE, TRUE, TRUE);
 
         dt_image_synch_xmp(newid);
 

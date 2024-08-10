@@ -50,49 +50,61 @@ static int32_t _control_write_sidecars_job_run(dt_job_t *job)
   GSList *imgs = NULL;
   GHashTable *enqueued = g_hash_table_new(g_direct_hash, g_direct_equal);
 
+  double prev_fetch = 0;
   // keep going until explicitly cancelled or darktable shuts down AND all writes have finished
   while(imgs || (dt_control_running() && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED))
   {
+    GSList *new_imgs = NULL;
+    double curr_fetch = dt_get_wtime();
     // grab any pending images and add them to the list of images to be synchronized
-    GSList *new_imgs;
+    if(curr_fetch > prev_fetch + 0.25)
+    {
+      prev_fetch = curr_fetch;
 #ifdef _OPENMP
 #pragma omp atomic capture
-    { new_imgs = pending_images; pending_images = NULL ; }
+      { new_imgs = pending_images; pending_images = NULL ; }
 #else
-    // don't have atomics, so use locks instead
-    _lock_pending_queue();
-    new_imgs = pending_images;
-    pending_images = NULL;
-    _unlock_pending_queue();
+      // don't have atomics, so use locks instead
+      _lock_pending_queue();
+      new_imgs = pending_images;
+      pending_images = NULL;
+      _unlock_pending_queue();
 #endif
-    if(new_imgs)
-    {
-      // add the new images to the queue being processed if they are not already on the queue
-      GSList *to_add = NULL;
-      for(GSList *imglist = new_imgs; imglist; imglist = g_slist_next(imglist))
+      if(new_imgs)
       {
-        if(!g_hash_table_contains(enqueued,GINT_TO_POINTER(imglist->data)))
+        // add the new images to the queue being processed if they are not already on the queue
+        GSList *to_add = NULL;
+        for(GSList *imglist = new_imgs; imglist; imglist = g_slist_next(imglist))
         {
-          to_add = g_slist_prepend(to_add, imglist->data);
-          g_hash_table_insert(enqueued, GINT_TO_POINTER(imglist->data), GINT_TO_POINTER(imglist->data));
+          if(!g_hash_table_contains(enqueued,GINT_TO_POINTER(imglist->data)))
+          {
+            to_add = g_slist_prepend(to_add, imglist->data);
+            g_hash_table_insert(enqueued, GINT_TO_POINTER(imglist->data), GINT_TO_POINTER(imglist->data));
+          }
         }
+        imgs = g_slist_concat(imgs, to_add);
+        g_slist_free(new_imgs);
       }
-      imgs = g_slist_concat(imgs, to_add);
-      g_slist_free(new_imgs);
     }
-    if (imgs)
+    // synchronize the first few images on the queue
+    for(int i = 0; imgs && i < 3; i++)
     {
-      // synchronize the first image on the queue
       dt_imgid_t imgid = GPOINTER_TO_INT(imgs->data);
       dt_image_write_sidecar_file(imgid);
       // remove the head of the image queue
       g_hash_table_remove(enqueued, GINT_TO_POINTER(imgid));
       imgs = g_slist_delete_link(imgs, imgs);
     }
+    if(imgs) // do we have more images already queued?
+    {
+      // give others a chance to run by sleeping 10ms; avoids apparent
+      // hangs when trying to switch views
+      g_usleep(10000);
+    }
     else
     {
-      // we currently have nothing to do, so wait 1/2 second before checking again
-      g_usleep(500000);
+      // we currently have nothing to do, so wait 1 second before checking for more work
+      g_usleep(1000000);
     }
   }
   g_hash_table_destroy(enqueued);
