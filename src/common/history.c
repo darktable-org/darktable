@@ -640,6 +640,8 @@ static gboolean _history_copy_and_paste_on_image_merge(const dt_imgid_t imgid,
         const int pnum = GPOINTER_TO_INT(p->data);
         const dt_dev_history_item_t *phist = g_list_nth_data(dev_src->history, abs(pnum));
 
+        if(!phist || !phist->module)
+          continue;
         if(!strcmp(hist->module->op, phist->module->op)
            && hist->module->multi_priority == phist->module->multi_priority)
         {
