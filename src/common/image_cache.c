@@ -428,7 +428,7 @@ void dt_image_cache_set_change_timestamp(dt_image_cache_t *cache,
                                          const dt_imgid_t imgid)
 {
   if(!dt_is_valid_imgid(imgid)) return;
-  dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, DT_IMAGE_CACHE_SAFE);
+  dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, 'w');
   if(!entry) return;
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
   dt_image_t *img = (dt_image_t *)entry->data;
@@ -448,7 +448,7 @@ void dt_image_cache_set_change_timestamp_from_image(dt_image_cache_t *cache,
   const GTimeSpan change_timestamp = simg->change_timestamp;
   dt_image_cache_read_release(cache, simg);
 
-  dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, DT_IMAGE_CACHE_SAFE);
+  dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, 'w');
   if(!entry) return;
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
   dt_image_t *img = (dt_image_t *)entry->data;
@@ -461,7 +461,7 @@ void dt_image_cache_unset_change_timestamp(dt_image_cache_t *cache,
                                            const dt_imgid_t imgid)
 {
   if(!dt_is_valid_imgid(imgid)) return;
-  dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, DT_IMAGE_CACHE_SAFE);
+  dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, 'w');
   if(!entry) return;
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
   dt_image_t *img = (dt_image_t *)entry->data;
@@ -474,7 +474,7 @@ void dt_image_cache_set_export_timestamp(dt_image_cache_t *cache,
                                          const dt_imgid_t imgid)
 {
   if(!dt_is_valid_imgid(imgid)) return;
-  dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, DT_IMAGE_CACHE_SAFE);
+  dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, 'w');
   if(!entry) return;
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
   dt_image_t *img = (dt_image_t *)entry->data;
@@ -487,7 +487,7 @@ void dt_image_cache_set_print_timestamp(dt_image_cache_t *cache,
                                         const dt_imgid_t imgid)
 {
   if(!dt_is_valid_imgid(imgid)) return;
-  dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, DT_IMAGE_CACHE_SAFE);
+  dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, 'w');
   if(!entry) return;
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
   dt_image_t *img = (dt_image_t *)entry->data;
