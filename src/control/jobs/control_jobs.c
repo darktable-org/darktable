@@ -1566,6 +1566,12 @@ static int32_t dt_control_refresh_exif_run(dt_job_t *job)
   return 0;
 }
 
+static inline gboolean _safe_history_job_on_imgid(dt_job_t *job, dt_imgid_t imgid)
+{
+  return dt_control_job_get_view_creator(job) == DT_VIEW_DARKROOM
+    || (darktable.develop && darktable.develop->image_storage.id != imgid);
+}
+
 static int32_t _control_paste_history_job_run(dt_job_t *job)
 {
   dt_control_image_enumerator_t *params =
@@ -1587,7 +1593,7 @@ static int32_t _control_paste_history_job_run(dt_job_t *job)
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
     // paste the copied history onto the current image, unless it's the one being edited in darkroom
-    if(darktable.develop && darktable.develop->image_storage.id != imgid)
+    if(_safe_history_job_on_imgid(job, imgid))
       dt_history_paste(imgid, merge);
     else
       dt_control_log(_("skipped pasting history into image being edited"));
@@ -1636,7 +1642,7 @@ static int32_t _control_compress_history_job_run(dt_job_t *job)
   {
     dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
     // compress the history of this image, unless it's the one being edited in darkroom
-    if(!darktable.develop || darktable.develop->image_storage.id != imgid)
+    if(_safe_history_job_on_imgid(job, imgid))
     {
       if(!dt_history_compress(imgid))
         missing++;
@@ -1682,7 +1688,7 @@ static int32_t _control_discard_history_job_run(dt_job_t *job)
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
     // discard this image's history, unless it's the one being edited in darkroom
-    if(!darktable.develop || darktable.develop->image_storage.id != imgid)
+    if(_safe_history_job_on_imgid(job, imgid))
       dt_history_delete(imgid, TRUE);
     else
       dt_control_log(_("skipped discarding history for image being edited"));
