@@ -36,7 +36,7 @@
 #endif
 
 // how many seconds may the sidecar file's timestamp differ from that recorded in the database?
-#define MAX_TIME_SKEW 5
+#define MAX_TIME_SKEW 2
 
 typedef enum dt_control_crawler_cols_t
 {
