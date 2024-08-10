@@ -30,7 +30,7 @@
 /* Views */
 
 /* Lighttable and film-strip */
-@define-color thumbnail_font_color @grey_80;
+@define-color thumbnail_font_color @grey_20;
 
 /* Graphs : histogram, navigation thumbnail and some items on tone curve */
 @define-color graph_fg @grey_90;
