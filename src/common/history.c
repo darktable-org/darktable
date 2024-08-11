@@ -32,6 +32,7 @@
 #include "develop/blend.h"
 #include "develop/develop.h"
 #include "develop/masks.h"
+#include "dtgtk/progress.h"
 #include "gui/gtk.h"
 #include "gui/hist_dialog.h"
 #include "imageio/imageio_common.h"
@@ -1370,9 +1371,14 @@ void dt_history_truncate_on_image(const dt_imgid_t imgid,
 
 int dt_history_compress_on_list(const GList *imgs)
 {
+  if(!imgs)
+    return 0;
   int uncompressed=0;
 
-  dt_gui_cursor_set_busy();
+  unsigned num_images = g_list_length((GList*)imgs);
+  dt_progressbar_params_t *progbar = dt_progressbar_create(_("compress history for %d images"),
+                                                           NULL, num_images, TRUE);
+  dt_progressbar_start(progbar);
   // Get the list of selected images
   for(const GList *l = imgs; l; l = g_list_next(l))
   {
@@ -1446,9 +1452,12 @@ int dt_history_compress_on_list(const GList *imgs)
 
     dt_unlock_image(imgid);
     dt_history_hash_write_from_history(imgid, DT_HISTORY_HASH_CURRENT);
+    if(!dt_progressbar_step(progbar))
+      break;
   }
 
-  dt_gui_cursor_clear_busy();
+  dt_progressbar_done(progbar);
+  dt_progressbar_destroy(progbar);
   return uncompressed;
 }
 
@@ -1907,7 +1916,10 @@ gboolean dt_history_paste_on_list(const GList *list,
   if(undo)
     dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
 
-  dt_gui_cursor_set_busy();
+  unsigned num_images = g_list_length((GList*)list);
+  dt_progressbar_params_t *progbar = dt_progressbar_create(_("paste history to %d images"),
+                                                           NULL, num_images, TRUE);
+  dt_progressbar_start(progbar);
   for(GList *l = (GList *)list; l; l = g_list_next(l))
   {
     const int dest = GPOINTER_TO_INT(l->data);
@@ -1916,6 +1928,8 @@ gboolean dt_history_paste_on_list(const GList *list,
                                        darktable.view_manager->copy_paste.selops,
                                        darktable.view_manager->copy_paste.copy_iop_order,
                                        darktable.view_manager->copy_paste.full_copy);
+    if(!dt_progressbar_step(progbar))
+      break;
   }
 
   if(undo)
@@ -1927,8 +1941,8 @@ gboolean dt_history_paste_on_list(const GList *list,
   {
     dt_dev_pixelpipe_rebuild(darktable.develop);
   }
-  dt_gui_cursor_clear_busy();
-
+  dt_progressbar_done(progbar);
+  dt_progressbar_destroy(progbar);
   return TRUE;
 }
 
@@ -1960,7 +1974,10 @@ gboolean dt_history_paste_parts_on_list(const GList *list,
     return FALSE;
   }
 
-  dt_gui_cursor_set_busy();
+  unsigned num_images = g_list_length((GList*)l_copy);
+  dt_progressbar_params_t *progbar = dt_progressbar_create(_("paste history to %d images"),
+                                                           NULL, num_images, TRUE);
+  dt_progressbar_start(progbar);
   if(undo)
     dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
 
@@ -1972,6 +1989,8 @@ gboolean dt_history_paste_parts_on_list(const GList *list,
                                        darktable.view_manager->copy_paste.selops,
                                        darktable.view_manager->copy_paste.copy_iop_order,
                                        darktable.view_manager->copy_paste.full_copy);
+    if(!dt_progressbar_step(progbar))
+      break;
   }
 
   if(undo)
@@ -1986,7 +2005,8 @@ gboolean dt_history_paste_parts_on_list(const GList *list,
   {
     dt_dev_pixelpipe_rebuild(darktable.develop);
   }
-  dt_gui_cursor_clear_busy();
+  dt_progressbar_done(progbar);
+  dt_progressbar_destroy(progbar);
   return TRUE;
 }
 
@@ -1996,7 +2016,10 @@ gboolean dt_history_delete_on_list(const GList *list,
   if(!list)  // do we have any images on which to operate?
     return FALSE;
 
-  dt_gui_cursor_set_busy();
+  unsigned num_images = g_list_length((GList*)list);
+  dt_progressbar_params_t *progbar = dt_progressbar_create(_("discard history for %d images"),
+                                                           NULL, num_images, TRUE);
+  dt_progressbar_start(progbar);
   if(undo) dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
   dt_gui_process_events();
 
@@ -2021,12 +2044,15 @@ gboolean dt_history_delete_on_list(const GList *list,
        when the mimpap will be recreated */
     if(darktable.collection->params.sorts[DT_COLLECTION_SORT_ASPECT_RATIO])
       dt_image_set_aspect_ratio(imgid, FALSE);
+    if(!dt_progressbar_step(progbar))
+      break;
   }
 
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
   if(undo) dt_undo_end_group(darktable.undo);
-  dt_gui_cursor_clear_busy();
+  dt_progressbar_done(progbar);
+  dt_progressbar_destroy(progbar);
   return TRUE;
 }
 
