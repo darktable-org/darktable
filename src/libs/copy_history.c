@@ -26,6 +26,7 @@
 #include "control/control.h"
 #include "control/jobs.h"
 #include "dtgtk/button.h"
+#include "dtgtk/progress.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/hist_dialog.h"
