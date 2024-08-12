@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-08-09 19:17-0300\n"
-"PO-Revision-Date: 2024-08-09 19:17-0300\n"
+"POT-Creation-Date: 2024-08-12 08:19-0300\n"
+"PO-Revision-Date: 2024-08-12 08:19-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -12923,14 +12923,14 @@ msgid "filename pattern"
 msgstr "padrão de nomeação de arquivos"
 
 #: ../src/imageio/storage/piwigo.c:1162
-#, fuzzy
 msgid ""
 "enter the filename pattern for the exported images\n"
 "leave empty to use the image filename\n"
 "variables support bash like string manipulation\n"
 "type '$(' to activate the completion and see the list of variables"
 msgstr ""
-"digite o caminho onde colocar as imagens exportadas\n"
+"digite o padrão de caminho onde colocar as imagens exportadas\n"
+"deixe vazio para usar o nome de arquivo da imagem\n"
 "as variáveis suportam manipulação de strings no estilo bash\n"
 "digite $( para ativar o auto-completamento e ver a lista de variáveis"
 
@@ -13879,9 +13879,8 @@ msgid "set amount by which to rotate shape around its center"
 msgstr "determina quanto rotacionar a forma ao redor de seu centro"
 
 #: ../src/iop/blurs.c:800
-#, fuzzy
 msgid "orientation of the motion's path"
-msgstr "orientação do papel no PDF"
+msgstr "orientação do caminho do movimento"
 
 #: ../src/iop/blurs.c:801
 msgid ""
@@ -22046,12 +22045,14 @@ msgid "export"
 msgstr "exportar"
 
 #: ../src/libs/export.c:165
-#, fuzzy
 msgid ""
 "create new files for the\n"
 "currently selected images\n"
 "which apply your edits"
-msgstr "remover a área da imagem atualmente selecionada"
+msgstr ""
+"criar novos arquivos para as\n"
+"imagens atualmente selecionadas\n"
+"que aplicam suas edições"
 
 #: ../src/libs/export.c:313
 msgid "invalid format for export selected"
@@ -24485,14 +24486,12 @@ msgstr ""
 "eles serão removidos para novas edições na próxima versão."
 
 #: ../src/libs/modulegroups.c:2869
-#, fuzzy
 msgid ""
 "quick access panel\n"
 "right-click tab icon to add/remove widgets"
 msgstr ""
-"adicione um lugar customizado\n"
-"\n"
-"clique-direito em um lugar para removê-lo"
+"painel de acesso rápido\n"
+"clique direito no ícone de aba para adicionar/remover ferramentas"
 
 #: ../src/libs/modulegroups.c:2872
 msgid "quick access panel"
@@ -24959,11 +24958,12 @@ msgid "recently used collections"
 msgstr "coleções usadas recentemente"
 
 #: ../src/libs/recentcollect.c:73
-#, fuzzy
 msgid ""
 "select among the most recent search\n"
 "criteria set in the collections module"
-msgstr "preferir um botão de histórico no módulo de coleções"
+msgstr ""
+"selecione dentre os conjuntos de critérios\n"
+"de busca mais recentes na coleção de módulos"
 
 #: ../src/libs/recentcollect.c:115
 msgid " and "
