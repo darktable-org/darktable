@@ -17,12 +17,54 @@
 */
 
 
-#include <glib.h>            // for inline
-#include <math.h>            // for log, logf, powf
+#include <glib.h> // for inline
+#include <math.h> // for log, logf, powf
 
 #pragma once
 
-/* Bring our own optimized maths functions */
+
+#if defined(_OPENMP) && !defined(_WIN32) && (!defined(__GNUC__) || __GNUC__ >= 12)
+
+#ifndef __GNUC__ // GCC 12 compiles but fails at runtime due to missing library function
+DT_OMP_DECLARE_SIMD()
+extern float fmaxf(const float x, const float y);
+#endif
+
+#ifndef __GNUC__ // GCC 12 compiles but fails at runtime due to missing library function
+DT_OMP_DECLARE_SIMD()
+extern float fminf(const float x, const float y);
+#endif
+
+DT_OMP_DECLARE_SIMD()
+extern float fabsf(const float x);
+
+DT_OMP_DECLARE_SIMD()
+extern float powf(const float x, const float y);
+
+DT_OMP_DECLARE_SIMD()
+extern float sqrtf(const float x);
+
+// DT_OMP_DECLARE_SIMD()
+extern float cbrtf(const float x);
+
+DT_OMP_DECLARE_SIMD()
+extern float log2f(const float x);
+
+DT_OMP_DECLARE_SIMD()
+extern float exp2f(const float x);
+
+DT_OMP_DECLARE_SIMD()
+extern float log10f(const float x);
+
+DT_OMP_DECLARE_SIMD()
+extern float expf(const float x);
+
+DT_OMP_DECLARE_SIMD()
+extern float logf(const float x);
+
+#endif
+
+/* Bring our own optimized maths functions because Clang makes dumb shit */
 
 DT_OMP_DECLARE_SIMD()
 static inline float fast_exp10f(const float x)
@@ -42,7 +84,7 @@ static inline float fast_expf(const float x)
 }
 
 
-DT_OMP_DECLARE_SIMD(aligned(vector:16))
+DT_OMP_DECLARE_SIMD(aligned(vector : 16))
 static inline float v_maxf(const float vector[3])
 {
   // Find the max over an RGB vector
@@ -50,14 +92,14 @@ static inline float v_maxf(const float vector[3])
 }
 
 
-DT_OMP_DECLARE_SIMD(aligned(vector:16))
+DT_OMP_DECLARE_SIMD(aligned(vector : 16))
 static inline float v_minf(const float vector[3])
 {
   // Find the min over an RGB vector
   return fminf(fminf(vector[0], vector[1]), vector[2]);
 }
 
-DT_OMP_DECLARE_SIMD(aligned(vector:16))
+DT_OMP_DECLARE_SIMD(aligned(vector : 16))
 static inline float v_sumf(const float vector[3])
 {
   return vector[0] + vector[1] + vector[2];
@@ -90,4 +132,3 @@ static inline float clamp_simd(const float x)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
