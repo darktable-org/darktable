@@ -47,7 +47,7 @@
 // Helper to force heap vectors to be aligned on 64 byte blocks to enable AVX2
 // If this is applied to a struct member and the struct is allocated on the heap, then it must be allocated
 // on a 64 byte boundary to avoid crashes or undefined behavior because of unaligned memory access.
-#define DT_ALIGNED_ARRAY __attribute__((aligned(64)))
+#define DT_ALIGNED_ARRAY __attribute__((aligned(DT_CACHELINE_BYTES)))
 #define DT_ALIGNED_PIXEL __attribute__((aligned(16)))
 
 // utility type to ease declaration of aligned small arrays to hold a pixel (and document their purpose)
