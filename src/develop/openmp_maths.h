@@ -44,7 +44,7 @@ extern float powf(const float x, const float y);
 DT_OMP_DECLARE_SIMD()
 extern float sqrtf(const float x);
 
-DT_OMP_DECLARE_SIMD()
+// DT_OMP_DECLARE_SIMD()
 extern float cbrtf(const float x);
 
 DT_OMP_DECLARE_SIMD()
