@@ -682,7 +682,7 @@ void gui_init(dt_lib_module_t *self)
     (self, N_("refresh EXIF"), button_clicked, GINT_TO_POINTER(14),
      _("update all image information to match changes to file\n"
        "warning: resets star ratings unless you select\n"
-       "'ignore exif rating' in the 'import' module\n"), 0, 0);
+       "'ignore EXIF rating' in the 'import' module\n"), 0, 0);
   gtk_grid_attach(grid, d->refresh_button, 0, line++, 6, 1);
 
   d->set_monochrome_button = dt_action_button_new
