@@ -993,8 +993,7 @@ void process(struct dt_iop_module_t *self,
     _prefilter_chromaticity(UV, saturation, roi_out, d->chroma_size, d->chroma_feathering, sat_shift);
 
   // STEP 3 : carry-on with conversion from LUV to HSB
-  float B_norm = NORM_MIN;
-  DT_OMP_FOR(reduction(max: B_norm))
+  DT_OMP_FOR()
   for(int row = 0; row < oheight; row++)
   {
     for(int col = 0; col < owidth; col++)
@@ -1011,7 +1010,6 @@ void process(struct dt_iop_module_t *self,
       dt_aligned_pixel_t JCH = { 0.0f, 0.0f, 0.0f, 0.0f };
       dt_UCS_LUV_to_JCH(tmp[k], white, uv, JCH);
       dt_UCS_JCH_to_HSB(JCH, pix_out);
-      B_norm = fmaxf(B_norm, pix_out[2]);
 
       // As tmp[k] is not used any longer as L(uminance) we re-use it for the saturation gradient
       if(d->use_filter)
@@ -1083,14 +1081,14 @@ void process(struct dt_iop_module_t *self,
   {
     piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
     const int mode = mask_mode - 1;
-    B_norm = 1.0f / B_norm;
+    const float bcorrect = 5.0f / sqrtf(dt_iop_get_processed_maximum(piece));
     DT_OMP_FOR()
     for(size_t k = 0; k < npixels; k++)
     {
       float *const restrict pix_out = DT_IS_ALIGNED_PIXEL(out + k * 4);
       const float *const restrict corrections_out = corrections + k * 2;
 
-      const float val = pix_out[2] * B_norm;
+      const float val = pix_out[2] * bcorrect;
       float corr = 0.0f;
       switch(mode)
       {
