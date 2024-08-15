@@ -385,6 +385,8 @@ jobs:
 
             The `*.AppImage.zsync` file is not intended to be downloaded and used locally. Just ignore it. This file contains technical information required by AppImage auto-updaters such as [AppImageUpdate](https://appimage.github.io/AppImageUpdate/).
 
+            The Windows package requires Windows with UCRT (Universal C Runtime), which is shipped with Windows 10+. Darktable should also work on Windows 8.1 [on condition that you install this runtime yourself](https://support.microsoft.com/en-us/topic/update-for-universal-c-runtime-in-windows-c0514201-7fe6-95a3-b0a5-287930f3560c).
+
             The macOS `*-x86_64.dmg` package requires at least macOS 13.5 (Ventura), the `*-arm64.dmg` package requires at least macOS 14.0 (Sonoma).
 
             __Please help us improve Darktable by reporting any issues you encounter!__ :wink:
