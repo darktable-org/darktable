@@ -844,15 +844,25 @@ void dt_control_crawler_show_image_list(GList *images)
 
 static inline gboolean _lighttable_silent(void)
 {
-  return dt_view_get_current() == DT_VIEW_LIGHTTABLE
-      && dt_get_wtime() > darktable.backthumbs.time;
+  const dt_view_t *cv = darktable.view_manager
+                        ? dt_view_manager_get_current_view(darktable.view_manager)
+                        : NULL;
+  return cv
+        && cv->view
+        && cv->view(cv) == DT_VIEW_LIGHTTABLE
+        && dt_get_wtime() > darktable.backthumbs.time;
+}
+
+static inline gboolean _valid_mip(dt_mipmap_size_t mip)
+{
+  return mip > DT_MIPMAP_0 && mip < DT_MIPMAP_8;
 }
 
 static inline gboolean _still_thumbing(void)
 {
   return darktable.backthumbs.running
       && _lighttable_silent()
-      && darktable.backthumbs.mipsize != DT_MIPMAP_NONE;
+      && _valid_mip(darktable.backthumbs.mipsize);
 }
 
 static void _update_img_thumbs(const dt_imgid_t imgid,
@@ -943,6 +953,7 @@ static void _reinitialize_thumbs_database(void)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   darktable.backthumbs.service = FALSE;
+  dt_set_backthumb_time(5.0);
 }
 
 /* public */
@@ -965,7 +976,7 @@ void dt_update_thumbs_thread(void *p)
   const gboolean dwriting = dt_conf_get_bool("cache_disk_backend");
   bt->mipsize = dt_mipmap_cache_get_min_mip_from_pref(dt_conf_get_string_const("backthumbs_mipsize"));
   bt->service = FALSE;
-  if(!dwriting || bt->mipsize == DT_MIPMAP_NONE)
+  if(!dwriting || !_valid_mip(bt->mipsize) || !darktable.view_manager)
   {
     bt->running = FALSE;
     dt_print(DT_DEBUG_CACHE, "[thumb crawler] closing due to preferences setting\n");
@@ -973,7 +984,6 @@ void dt_update_thumbs_thread(void *p)
   }
   bt->running = TRUE;
 
-  dt_set_backthumb_time(5.0);
   int updated = 0;
 
   // return if any thumbcache dir is not writable
@@ -988,6 +998,7 @@ void dt_update_thumbs_thread(void *p)
     }
   }
 
+  dt_set_backthumb_time(5.0);
   while(bt->running)
   {
     for(int i = 0; i < 12 && bt->running && !bt->service; i++)
@@ -999,10 +1010,10 @@ void dt_update_thumbs_thread(void *p)
     if(bt->service)
       _reinitialize_thumbs_database();
 
-    if(_lighttable_silent() && bt->mipsize != DT_MIPMAP_NONE)
+    if(_lighttable_silent() && _valid_mip(bt->mipsize))
       updated += _update_all_thumbs(bt->mipsize);
 
-    if(bt->mipsize == DT_MIPMAP_NONE)
+    if(!_valid_mip(bt->mipsize))
       bt->running = FALSE;
   }
   dt_print(DT_DEBUG_CACHE, "[thumb crawler] closing, %d mipmaps updated\n", updated);
