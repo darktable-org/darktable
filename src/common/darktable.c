@@ -892,11 +892,16 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   darktable.pipe_cache = TRUE;
   darktable.unmuted = 0;
   GSList *config_override = NULL;
+
+  // keep a copy of argv array for possibly reporting later
+  gchar **myoptions = argc > 1 ? g_strdupv(argv) : NULL;
+
   for(int k = 1; k < argc; k++)
   {
 #ifdef _WIN32
     if(!strcmp(argv[k], "/?"))
     {
+      g_strfreev(myoptions);
       return usage(argv[0]);
     }
 #endif
@@ -904,6 +909,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     {
       if(!strcmp(argv[k], "--help") || !strcmp(argv[k], "-h"))
       {
+        g_strfreev(myoptions);
         return usage(argv[0]);
       }
 
@@ -912,6 +918,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
         char *theversion = _get_version_string();
         printf("%s", theversion);
         g_free(theversion);
+        g_strfreev(myoptions);
         return 1;
       }
       else if(!strcmp(argv[k], "--dump-pfm") && argc > k + 1)
@@ -1017,7 +1024,10 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
         if(dadd)
           darktable.unmuted |= dadd;
         else
+        {
+          g_strfreev(myoptions);
           return usage(argv[0]);
+        }
         k++;
         argv[k-1] = NULL;
         argv[k] = NULL;
@@ -1041,7 +1051,10 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #endif
         }
         else
+        {
+          g_strfreev(myoptions);
           return usage(argv[0]);
+        }
         k++;
         argv[k-1] = NULL;
         argv[k] = NULL;
@@ -1099,6 +1112,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
           dt_print(DT_DEBUG_SIGNAL,
                    "[dt_init] unknown signal name: '%s'. use 'ALL'"
                    " to enable debug for all or use full signal name\n", str);
+          g_strfreev(myoptions);
           return usage(argv[0]);
         }
         g_free(str);
@@ -1230,7 +1244,10 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       }
 #endif
       else
+      {
+        g_strfreev(myoptions);
         return usage(argv[0]); // fail on unrecognized options
+      }
     }
   }
 
@@ -1260,12 +1277,22 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     g_free(theversion);
   }
 
+  if(myoptions)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[dt starting]");
+    int k = 0;
+    while(myoptions[k])
+      dt_print_nts(DT_DEBUG_ALWAYS, " %s", myoptions[k++]);
+    dt_print_nts(DT_DEBUG_ALWAYS, "\n");
+    g_strfreev(myoptions);
+  }
+
   if(darktable.dump_pfm_module || darktable.dump_pfm_pipe)
   {
     if(darktable.tmp_directory == NULL)
       darktable.tmp_directory = g_dir_make_tmp("darktable_XXXXXX", NULL);
     dt_print(DT_DEBUG_ALWAYS, "[init] darktable dump directory is '%s'\n",
-    (darktable.tmp_directory) ? darktable.tmp_directory : "NOT AVAILABLE");
+      (darktable.tmp_directory) ? darktable.tmp_directory : "NOT AVAILABLE");
   }
 
   // get valid directories
