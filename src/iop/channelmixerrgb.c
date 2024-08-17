@@ -4754,7 +4754,7 @@ void gui_init(struct dt_iop_module_t *self)
      _("choose the vendor and the type of your chart"),
      0, _checker_changed_callback, self,
      N_("Xrite ColorChecker 24 pre-2014"),
-     N_("Xrite ColorChecker 24 post-2014"),
+     N_("Xrite/Calibrite ColorChecker 24 post-2014"),
      N_("Datacolor SpyderCheckr 24 pre-2018"),
      N_("Datacolor SpyderCheckr 24 post-2018"),
      N_("Datacolor SpyderCheckr 48 pre-2018"),
