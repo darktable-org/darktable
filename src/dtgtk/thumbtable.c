@@ -1222,23 +1222,28 @@ static void _lighttable_expose_empty(cairo_t *cr,
     const float offx2 = offx + DT_PIXEL_APPLY_DPI(500);
 
     _show_text_line(cr, layout, _("<b>need help?</b>"),
-                    offx2, offy + 1 * ls, width * 0.90f, 0.0f, at);
-    _show_text_line(cr, layout, _("click on ？ then an on-screen item to open manual page."),
-                    offx2, offy + 1.9 * ls, -1, -1, at);
+                    offx2, offy + 0 * ls, width * 0.90f, 0.0f, at);
+    _show_text_line(cr, layout, _("click on <span size='110%'><b>?</b></span> then an on-screen item to open manual page."),
+                    offx2, offy + 0.9 * ls, -1, -1, at);
     _show_text_line(cr, layout, _("hover over any button to see a description and shortcut."),
-                    offx2, offy + 3 * ls, -1, -1, at);
+                    offx2, offy + 2 * ls, -1, -1, at);
     _show_text_line(cr, layout, _("click <u>here</u> to open the online manual."),
-                    offx2, offy + 4 * ls, -1, -1, at);
+                    offx2, offy + 3 * ls, -1, -1, at);
     //TODO: add a button or link to "howto" chapter in online manual
 
     _show_text_line(cr, layout, _("<b>personalize darktable</b>"),
-                    offx2, offy + 7 * ls, width * 0.97f, 0.0f, at);
+                    offx2, offy + 6 * ls, width * 0.97f, 0.0f, at);
     _show_text_line(cr, layout, _("click on the gear icon for global preferences."),
-                    offx2, offy + 8 * ls, -1, -1, at);
+                    offx2, offy + 7 * ls, -1, -1, at);
     _show_text_line(cr, layout, _("click on the keyboard icon to define shortcuts."),
-                    offx2, offy + 9 * ls, -1, -1, at);
+                    offx2, offy + 8 * ls, -1, -1, at);
     _show_text_line(cr, layout, _("press and hold '<b>h</b>' to show all active shortcuts."),
-                    offx2, offy + 10 * ls, -1, -1, at);
+                    offx2, offy + 9 * ls, -1, -1, at);
+
+    _show_text_line(cr, layout, _("make default raw development look more like your"),
+                    offx2, offy + 11 * ls, width, height * 0.5f, at);
+    _show_text_line(cr, layout, _("camera's JPEG by applying a camera-specific style"),
+                    offx2, offy + 12 * ls, -1, -1, at);
   }
 
   pango_attr_list_unref(bold);
