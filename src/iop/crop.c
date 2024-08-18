@@ -188,19 +188,21 @@ static void _commit_box(dt_iop_module_t *self,
     p->cx = p->cy = 0.0f;
     p->cw = p->ch = 1.0f;
   }
+
   // we want value in iop space
-  float wd, ht;
-  dt_dev_get_preview_size(self->dev, &wd, &ht);
+  dt_dev_pixelpipe_t *fpipe = self->dev->full.pipe;
+  const float wd = fpipe->processed_width;
+  const float ht = fpipe->processed_height;
   dt_boundingbox_t points = { g->clip_x * wd,
                               g->clip_y * ht,
                               (g->clip_x + g->clip_w) * wd,
                               (g->clip_y + g->clip_h) * ht };
 
-  if(dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
+  if(dt_dev_distort_backtransform_plus(self->dev, fpipe, self->iop_order,
                                        DT_DEV_TRANSFORM_DIR_FORW_EXCL, points, 2))
   {
     dt_dev_pixelpipe_iop_t *piece =
-      dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
+      dt_dev_distort_get_iop_pipe(self->dev, fpipe, self);
     if(piece)
     {
       if(piece->buf_out.width < 1 || piece->buf_out.height < 1) return;
@@ -233,19 +235,20 @@ static gboolean _set_max_clip(struct dt_iop_module_t *self)
   if(self->dev->preview_pipe->status != DT_DEV_PIXELPIPE_VALID) return TRUE;
 
   // we want to know the size of the actual buffer
+  dt_dev_pixelpipe_t *fpipe = self->dev->full.pipe;
   dt_dev_pixelpipe_iop_t *piece =
-    dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
+    dt_dev_distort_get_iop_pipe(self->dev, fpipe, self);
   if(!piece) return FALSE;
 
   const float wp = piece->buf_out.width;
   const float hp = piece->buf_out.height;
   float points[8] = { 0.0f, 0.0f, wp, hp, p->cx * wp, p->cy * hp, p->cw * wp, p->ch * hp };
-  if(!dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
+  if(!dt_dev_distort_transform_plus(self->dev, fpipe, self->iop_order,
                                     DT_DEV_TRANSFORM_DIR_FORW_EXCL, points, 4))
     return FALSE;
 
-  float wd, ht;
-  dt_dev_get_preview_size(self->dev, &wd, &ht);
+  const float wd = fpipe->processed_width;
+  const float ht = fpipe->processed_height;
   g->clip_max_x = MAX(points[0] / wd, 0.0f);
   g->clip_max_y = MAX(points[1] / ht, 0.0f);
   g->clip_max_w = MIN((points[2] - points[0]) / wd, 1.0f);
