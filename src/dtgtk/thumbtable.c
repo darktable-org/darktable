@@ -1062,7 +1062,7 @@ static gboolean _event_scroll_compressed(gpointer user_data)
     int move = table->thumb_size * delta;
 
     // clicky scroll wheels generate integer clicks, scroll by one thumb size:
-    if (fabs(delta) == 1.0) {
+    if (fabsf(delta) == 1.f) {
       // if the top thumb row is only partially visible, then realign first
       const int partial_height = table->thumbs_area.y % table->thumb_size;
       if(partial_height)
