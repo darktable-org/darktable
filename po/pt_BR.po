@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-08-12 08:19-0300\n"
-"PO-Revision-Date: 2024-08-12 08:19-0300\n"
+"POT-Creation-Date: 2024-08-18 07:53-0300\n"
+"PO-Revision-Date: 2024-08-18 07:52-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -4294,9 +4294,8 @@ msgid "rotate -90°"
 msgstr "girar -90 graus"
 
 #: ../build/lib/darktable/plugins/introspection_flip.c:111
-#, fuzzy
 msgid "transverse"
-msgstr "reverter"
+msgstr "transversal"
 
 #: ../build/lib/darktable/plugins/introspection_globaltonemap.c:60
 #: ../build/lib/darktable/plugins/introspection_globaltonemap.c:125
@@ -25824,7 +25823,6 @@ msgstr ""
 "online"
 
 #: ../src/libs/tools/global_toolbox.c:496
-#, fuzzy
 msgid ""
 "define keyboard shortcuts for on-screen controls\n"
 "ctrl+click to switch off overwrite confirmations\n"
@@ -25842,14 +25840,17 @@ msgid ""
 "\n"
 "right-click to exit mapping mode"
 msgstr ""
-"definir atalhos\n"
+"definir atalhos para controles na tela\n"
 "ctrl+clique para desligar as confirmações de sobrescrita\n"
 "\n"
-"passe o mouse sobre uma ferramenta e pressione teclas com clique e rolar do "
-"mouse ou combinações de movimentos\n"
-"repita a mesma combinação novamente para remover o mapeamento\n"
-"clique em uma ferramenta, módulo ou área da tela para abrir o diálogo para "
-"mais configurações"
+"- passe o mouse sobre um controle (botão, deslizador etc) e pressione\n"
+"  combinaçòes de teclas (opcionalmente com clique de mouse,\n"
+"  movimento, ou usando a roda d omouse enquanto segura as teclas) para\n"
+"  definir um atalho para o controle,\n"
+"- clique em um controle, módulo ou área da tela para abrir o diálogo\n"
+"  para configurações mais detalhadas\n"
+"\n"
+"clique direito para sair do modo de mapeamento"
 
 #: ../src/libs/tools/global_toolbox.c:522
 msgid "show global preferences"
