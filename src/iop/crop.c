@@ -1460,7 +1460,7 @@ void gui_post_expose(dt_iop_module_t *self,
   const double alpha =
     CLAMP(1.0 - (g_get_monotonic_time() - g->focus_time) / 2e6f, 0.0, 1.0);
   dt_draw_set_color_overlay(cr, TRUE, alpha);
-  const double border = DT_PIXEL_APPLY_DPI(30.0) / zoom_scale;
+  const double border = DT_PIXEL_APPLY_DPI(MIN(30.0, MIN(wd, ht) / 3.0)) / zoom_scale;
 
   cairo_move_to(cr, g->clip_x * wd + border, g->clip_y * ht);
   cairo_line_to(cr, g->clip_x * wd + border, (g->clip_y + g->clip_h) * ht);
