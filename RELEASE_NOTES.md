@@ -43,9 +43,27 @@ changes (where available).
 
 - ???
 
+## UI/UX Improvements
+
+- The user interface now gives feedback while processing bulk image
+  operations such as ratings, tagging, and edit history management,
+  rather than silently freezing until the operation completes.  While
+  the operation is in progress, darktable will now show either a busy
+  cursor (such as a stopwatch or spinner) or a progress bar with
+  option to cancel the remainder of the operation.
+
+- Added a high-contrast theme with bright white text on a dark gray
+  background.
+
+- Enhanced tooltips for utiltity module headers to provide more
+  information about the module.
+
 ## Performance Improvements
 
-- ???
+- Improved the speed of bulk image operations by improving the speed
+  of sidecar writes, and by moving sidecar updates for many operations
+  into a background task, allowing the user to proceed before the
+  writes complete.
 
 ## Other Changes
 
@@ -55,9 +73,6 @@ changes (where available).
 
 - The ISO 12646 color assessment condition is kept until unset by user
   action.
-
-- Enhanced tooltips for utiltity module headers to provide more
-  information about the module.
 
 ## Bug Fixes
 
