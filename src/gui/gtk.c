@@ -1266,10 +1266,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   g_object_set(G_OBJECT(settings), "gtk-theme-name", "Adwaita", (gchar *)0);
   g_object_unref(settings);
 
-  // Initializing widgets
-  _init_widgets(gui);
-  dt_gui_apply_theme();
-
   // smooth scrolling must be enabled to handle trackpad/touch events
   gui->scroll_mask = GDK_SCROLL_MASK | GDK_SMOOTH_SCROLL_MASK;
 
@@ -1278,6 +1274,10 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
   // Init focus peaking
   gui->show_focus_peaking = dt_conf_get_bool("ui/show_focus_peaking");
+
+  // Initializing widgets
+  _init_widgets(gui);
+  dt_gui_apply_theme();
 
   //init overlay colors
   dt_guides_set_overlay_colors();
