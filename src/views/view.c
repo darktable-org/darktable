@@ -839,11 +839,11 @@ dt_view_surface_value_t dt_view_image_get_surface(const dt_imgid_t imgid,
     cairo_scale(cr, scale, scale);
 
     cairo_set_source_surface(cr, tmp_surface, 0, 0);
-    // set filter no nearest: in skull mode, we want to see big
+    // set filter no nearest: in skull/error mode, we want to see big
     // pixels.  in 1 iir mode for the right mip, we want to see
     // exactly what the pipe gave us, 1:1 pixel for pixel.  in
     // between, filtering just makes stuff go unsharp.
-    if((buf_wd <= 8 && buf_ht <= 8)
+    if((buf_wd <= 16 && buf_ht <= 16)
        || fabsf(scale - 1.0f) < 0.01f)
       cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
     else if(mip != buf.size)
@@ -877,7 +877,7 @@ dt_view_surface_value_t dt_view_image_get_surface(const dt_imgid_t imgid,
   }
 
   // we consider skull as ok as the image hasn't to be reload
-  if(buf_wd <= 8 && buf_ht <= 8)
+  if(buf_wd <= 16 && buf_ht <= 16)
     ret = DT_VIEW_SURFACE_OK;
   else if(mip != buf.size)
     ret = DT_VIEW_SURFACE_SMALLER;
