@@ -2077,6 +2077,19 @@ static void _list_view(dt_lib_collect_rule_t *dr)
         // clang-format on
         break;
 
+      case DT_COLLECTION_PROP_EXPOSURE_BIAS: // exposure bias
+        // clang-format off
+        g_snprintf(query, sizeof(query),
+                   "SELECT ROUND(exposure_bias,2) AS exposure_bias, 1, COUNT(*) AS count"
+                   " FROM main.images AS mi"
+                   " WHERE %s"
+                   " GROUP BY exposure_bias"
+                   " ORDER BY exposure_bias %s",
+                   where_ext,
+                   sort_descending ? "DESC" : "ASC");
+        // clang-format on
+        break;
+
       case DT_COLLECTION_PROP_FILENAME: // filename
         // clang-format off
         g_snprintf(query, sizeof(query),
@@ -3351,6 +3364,7 @@ static void _populate_collect_combo(GtkWidget *w)
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_LENS);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_APERTURE);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_EXPOSURE);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_EXPOSURE_BIAS);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FOCAL_LENGTH);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ISO);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ASPECT_RATIO);
