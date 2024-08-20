@@ -933,11 +933,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 
   /* get the dimension of svg */
-  RsvgDimensionData dimension;
-  rsvg_handle_get_dimensions(svg, &dimension);
+  gdouble dimension_width;
+  gdouble dimension_height;
+  rsvg_handle_get_intrinsic_size_in_pixels(svg, &dimension_width, &dimension_height);
   // if no text is given dimensions are null
-  if(!dimension.width) dimension.width = 1;
-  if(!dimension.height) dimension.height = 1;
+  if(!dimension_width) dimension_width = 1;
+  if(!dimension_height) dimension_height = 1;
 
   //  width/height of current (possibly cropped) image
   const float iw = piece->buf_in.width;
@@ -954,19 +955,19 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // in image mode, the wbase and hbase are just the image width and height
     wbase = iw;
     hbase = ih;
-    if(dimension.width > dimension.height)
-      scale = (iw * roi_out->scale) / dimension.width;
+    if(dimension_width > dimension_height)
+      scale = (iw * roi_out->scale) / dimension_width;
     else
-      scale = (ih * roi_out->scale) / dimension.height;
+      scale = (ih * roi_out->scale) / dimension_height;
   }
   else
   {
     // in larger/smaller side mode, set wbase and hbase to the largest or smallest side of the image
     float larger;
-    if(dimension.width > dimension.height)
-      larger = (float)dimension.width;
+    if(dimension_width > dimension_height)
+      larger = (float)dimension_width;
     else
-      larger = (float)dimension.height;
+      larger = (float)dimension_height;
 
     if(iw > ih)
     {
@@ -988,18 +989,18 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   float svg_width, svg_height;
 
-  if(dimension.width > dimension.height)
+  if(dimension_width > dimension_height)
   {
     if(data->sizeto == DT_SCALE_IMAGE || (iw > ih && data->sizeto == DT_SCALE_LARGER_BORDER)
        || (iw < ih && data->sizeto == DT_SCALE_SMALLER_BORDER))
     {
       svg_width = iw * uscale;
-      svg_height = dimension.height * (svg_width / dimension.width);
+      svg_height = dimension_height * (svg_width / dimension_width);
     }
     else
     {
       svg_width = ih * uscale;
-      svg_height = dimension.height * (svg_width / dimension.width);
+      svg_height = dimension_height * (svg_width / dimension_width);
     }
   }
   else
@@ -1008,12 +1009,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
        || (ih < iw && data->sizeto == DT_SCALE_SMALLER_BORDER))
     {
       svg_height = ih * uscale;
-      svg_width = dimension.width * (svg_height / dimension.height);
+      svg_width = dimension_width * (svg_height / dimension_height);
     }
     else
     {
       svg_height = iw * uscale;
-      svg_width = dimension.width * (svg_height / dimension.height);
+      svg_width = dimension_width * (svg_height / dimension_height);
     }
   }
 
@@ -1025,8 +1026,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float svg_offset_x = ceilf(3.0f * scale);
   const float svg_offset_y = ceilf(3.0f * scale);
 
-  const int watermark_width =  (int)((dimension.width  * scale) + 3* svg_offset_x);
-  const int watermark_height = (int)((dimension.height * scale) + 3* svg_offset_y) ;
+  const int watermark_width =  (int)((dimension_width  * scale) + 3* svg_offset_x);
+  const int watermark_height = (int)((dimension_height * scale) + 3* svg_offset_y) ;
 
   const int stride_two = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, watermark_width);
   guint8 *image_two = (guint8 *)g_malloc0_n(watermark_height, stride_two);
@@ -1094,7 +1095,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   cairo_translate(cr_two, svg_offset_x,svg_offset_y);
   cairo_scale(cr_two, scale, scale);
   /* render svg into surface*/
-  rsvg_handle_render_cairo(svg, cr_two);
+  RsvgRectangle viewport = {0, 0, svg_width, svg_height};
+  rsvg_handle_render_document(svg, cr_two, &viewport, NULL);
   cairo_surface_flush(surface_two);
 
   cairo_set_source_surface(cr, surface_two,-svg_offset_x,-svg_offset_y);

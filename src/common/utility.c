@@ -394,15 +394,16 @@ cairo_surface_t *dt_util_get_logo(const float size)
   RsvgHandle *svg = rsvg_handle_new_from_file(dtlogo, &error);
   if(svg)
   {
-    RsvgDimensionData dimension;
-    rsvg_handle_get_dimensions(svg, &dimension);
+    gdouble dimension_width;
+    gdouble dimension_height;
+    rsvg_handle_get_intrinsic_size_in_pixels(svg, &dimension_width, &dimension_height);
 
     const float ppd = darktable.gui ? darktable.gui->ppd : 1.0;
 
-    const float svg_size = MAX(dimension.width, dimension.height);
+    const float svg_size = MAX(dimension_width, dimension_height);
     const float factor = size > 0.0 ? size / svg_size : -1.0 * size;
-    const float final_width = dimension.width * factor * ppd,
-                final_height = dimension.height * factor * ppd;
+    const float final_width = dimension_width * factor * ppd,
+                final_height = dimension_height * factor * ppd;
     const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, final_width);
 
     guint8 *image_buffer = (guint8 *)calloc(stride * final_height, sizeof(guint8));
@@ -422,9 +423,10 @@ cairo_surface_t *dt_util_get_logo(const float size)
     }
     else
     {
+      RsvgRectangle viewport = {0, 0, final_width, final_height};
       cairo_t *cr = cairo_create(surface);
       cairo_scale(cr, factor, factor);
-      rsvg_handle_render_cairo(svg, cr);
+      rsvg_handle_render_document(svg, cr, &viewport, NULL);
       cairo_destroy(cr);
       cairo_surface_flush(surface);
     }

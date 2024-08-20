@@ -55,9 +55,24 @@
 
 #define DT_MAX_STYLE_NAME_LENGTH 128
 
+typedef struct options {
+  const char* style;
+  int width;
+  int height;
+  int bpp;
+  gboolean  verbose;
+  gboolean high_quality;
+  gboolean upscale;
+  gboolean style_overwrite;
+  gboolean custom_presets;
+  gboolean export_masks;
+} options;
+
+int process_file(const char* input_filename, const char* xmp_filename, char* output_filename, const options* program_options);
+
 static void usage(const char *progname)
 {
-  fprintf(stderr, "usage: %s <input file> [<xmp file>] <output file> [options] [--core <darktable options>]\n", progname);
+  fprintf(stderr, "usage: %s [--batch batch_file | <input file> [<xmp file>] <output file>] [options] [--core <darktable options>]\n", progname);
   fprintf(stderr, "\n");
   fprintf(stderr, "options:\n");
   fprintf(stderr, "   --width <max width> default: 0 = full resolution\n");
@@ -90,11 +105,20 @@ int main(int argc, char *arg[])
   char *input_filename = NULL;
   char *xmp_filename = NULL;
   char *output_filename = NULL;
-  char *style = NULL;
+  char *batch_filename = NULL;
   int file_counter = 0;
-  int width = 0, height = 0, bpp = 0;
-  gboolean verbose = FALSE, high_quality = TRUE, upscale = FALSE,
-           style_overwrite = FALSE, custom_presets = TRUE, export_masks = FALSE;
+  options program_options = {
+    .style = NULL,
+    .width = 0,
+    .height = 0,
+    .bpp = 0,
+    .verbose = FALSE,
+    .high_quality = TRUE,
+    .upscale = FALSE,
+    .style_overwrite = FALSE,
+    .custom_presets = TRUE,
+    .export_masks = FALSE
+  };
 
   int k;
   for(k = 1; k < argc; k++)
@@ -115,28 +139,28 @@ int main(int argc, char *arg[])
       else if(!strcmp(arg[k], "--width") && argc > k + 1)
       {
         k++;
-        width = MAX(atoi(arg[k]), 0);
+        program_options.width = MAX(atoi(arg[k]), 0);
       }
       else if(!strcmp(arg[k], "--height") && argc > k + 1)
       {
         k++;
-        height = MAX(atoi(arg[k]), 0);
+        program_options.height = MAX(atoi(arg[k]), 0);
       }
       else if(!strcmp(arg[k], "--bpp") && argc > k + 1)
       {
         k++;
-        bpp = MAX(atoi(arg[k]), 0);
-        fprintf(stderr, "%s %d\n",
-                _("TODO: sorry, due to API restrictions we currently cannot set the BPP to"), bpp);
+        program_options.bpp = MAX(atoi(arg[k]), 0);
+        fprintf(stderr, "%s %d\n", _("TODO: sorry, due to API restrictions we currently cannot set the BPP to"),
+                program_options.bpp);
       }
       else if(!strcmp(arg[k], "--hq") && argc > k + 1)
       {
         k++;
         gchar *str = g_ascii_strup(arg[k], -1);
         if(!g_strcmp0(str, "0") || !g_strcmp0(str, "FALSE"))
-          high_quality = FALSE;
+          program_options.high_quality = FALSE;
         else if(!g_strcmp0(str, "1") || !g_strcmp0(str, "TRUE"))
-          high_quality = TRUE;
+          program_options.high_quality = TRUE;
         else
         {
           fprintf(stderr, "%s: %s\n", _("unknown option for --hq"), arg[k]);
@@ -150,9 +174,9 @@ int main(int argc, char *arg[])
         k++;
         gchar *str = g_ascii_strup(arg[k], -1);
         if(!g_strcmp0(str, "0") || !g_strcmp0(str, "FALSE"))
-          export_masks = FALSE;
+          program_options.export_masks = FALSE;
         else if(!g_strcmp0(str, "1") || !g_strcmp0(str, "TRUE"))
-          export_masks = TRUE;
+          program_options.export_masks = TRUE;
         else
         {
           fprintf(stderr, "%s: %s\n", _("unknown option for --export_masks"), arg[k]);
@@ -166,9 +190,9 @@ int main(int argc, char *arg[])
         k++;
         gchar *str = g_ascii_strup(arg[k], -1);
         if(!g_strcmp0(str, "0") || !g_strcmp0(str, "FALSE"))
-          upscale = FALSE;
+          program_options.upscale = FALSE;
         else if(!g_strcmp0(str, "1") || !g_strcmp0(str, "TRUE"))
-          upscale= TRUE;
+          program_options.upscale = TRUE;
         else
         {
           fprintf(stderr, "%s: %s\n", _("unknown option for --upscale"), arg[k]);
@@ -180,20 +204,20 @@ int main(int argc, char *arg[])
       else if(!strcmp(arg[k], "--style") && argc > k + 1)
       {
         k++;
-        style = arg[k];
+        program_options.style = arg[k];
       }
       else if(!strcmp(arg[k], "--style-overwrite"))
       {
-        style_overwrite = TRUE;
+        program_options.style_overwrite = TRUE;
       }
       else if(!strcmp(arg[k], "--apply-custom-presets") && argc > k + 1)
       {
         k++;
         gchar *str = g_ascii_strup(arg[k], -1);
         if(!g_strcmp0(str, "0") || !g_strcmp0(str, "FALSE"))
-          custom_presets = FALSE;
+          program_options.custom_presets = FALSE;
         else if(!g_strcmp0(str, "1") || !g_strcmp0(str, "TRUE"))
-          custom_presets = TRUE;
+          program_options.custom_presets = TRUE;
         else
         {
           fprintf(stderr, "%s: %s\n", _("unknown option for --apply-custom-presets"), arg[k]);
@@ -202,10 +226,14 @@ int main(int argc, char *arg[])
         }
         g_free(str);
       }
-
+      else if(!strcmp(arg[k], "--batch") && argc > k + 1)
+      {
+        k++;
+        batch_filename = arg[k];
+      }
       else if(!strcmp(arg[k], "-v") || !strcmp(arg[k], "--verbose"))
       {
-        verbose = TRUE;
+        program_options.verbose = TRUE;
       }
       else if(!strcmp(arg[k], "--core"))
       {
@@ -236,38 +264,54 @@ int main(int argc, char *arg[])
   for(; k < argc; k++) m_arg[m_argc++] = arg[k];
   m_arg[m_argc] = NULL;
 
-  if(file_counter < 2 || file_counter > 3)
+  if(batch_filename != NULL && file_counter > 0)
   {
     usage(arg[0]);
     free(m_arg);
     exit(1);
   }
-  else if(file_counter == 2)
+  else
   {
-    // no xmp file given
-    output_filename = xmp_filename;
-    xmp_filename = NULL;
+    if(file_counter < 2 || file_counter > 3)
+    {
+      usage(arg[0]);
+      free(m_arg);
+      exit(1);
+    }
+    else if(file_counter == 2)
+    {
+      // no xmp file given
+      output_filename = xmp_filename;
+      xmp_filename = NULL;
+    }
   }
 
+  // init dt without gui and without data.db:
+  if(dt_init(m_argc, m_arg, FALSE, program_options.custom_presets, NULL))
+  {
+    return 1;
+  }
+
+  int status = process_file(input_filename, xmp_filename, output_filename, &program_options);
+
+  free(m_arg);
+  exit(status);
+}
+
+/* Side effect: output_filename is modified. */
+int process_file(const char* input_filename, const char* xmp_filename, char* output_filename, const options* program_options)
+{
   if(g_file_test(output_filename, G_FILE_TEST_IS_DIR))
   {
     fprintf(stderr, _("error: output file is a directory. please specify file name"));
     fprintf(stderr, "\n");
-    free(m_arg);
-    exit(1);
+    return 1;
   }
 
   // the output file already exists, so there will be a sequence number added
   if(g_file_test(output_filename, G_FILE_TEST_EXISTS))
   {
     fprintf(stderr, "%s\n", _("output file already exists, it will get renamed"));
-  }
-
-  // init dt without gui and without data.db:
-  if(dt_init(m_argc, m_arg, FALSE, custom_presets, NULL))
-  {
-    free(m_arg);
-    exit(1);
   }
 
   GList *id_list = NULL;
@@ -279,8 +323,7 @@ int main(int argc, char *arg[])
     {
       fprintf(stderr, _("error: can't open folder %s"), input_filename);
       fprintf(stderr, "\n");
-      free(m_arg);
-      exit(1);
+      return 1;
     }
     id_list = dt_film_get_image_ids(filmid);
   }
@@ -297,8 +340,7 @@ int main(int argc, char *arg[])
     {
       fprintf(stderr, _("error: can't open file %s"), input_filename);
       fprintf(stderr, "\n");
-      free(m_arg);
-      exit(1);
+      return 1;
     }
     g_free(directory);
 
@@ -310,8 +352,7 @@ int main(int argc, char *arg[])
   if(total == 0)
   {
     fprintf(stderr, _("no images to export, aborting\n"));
-    free(m_arg);
-    exit(1);
+    return 1;
   }
 
   // attach xmp, if requested:
@@ -325,8 +366,7 @@ int main(int argc, char *arg[])
       {
         fprintf(stderr, _("error: can't open xmp file %s"), xmp_filename);
         fprintf(stderr, "\n");
-        free(m_arg);
-        exit(1);
+        return 1;
       }
       // don't write new xmp:
       dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_RELAXED);
@@ -334,7 +374,7 @@ int main(int argc, char *arg[])
   }
 
   // print the history stack. only look at the first image and assume all got the same processing applied
-  if(verbose)
+  if(program_options->verbose)
   {
     int id = GPOINTER_TO_INT(id_list->data);
     gchar *history = dt_history_get_items_as_string(id);
@@ -365,16 +405,14 @@ int main(int argc, char *arg[])
     fprintf(
         stderr, "%s\n",
         _("cannot find disk storage module. please check your installation, something seems to be broken."));
-    free(m_arg);
-    exit(1);
+    return 1;
   }
 
   sdata = storage->get_params(storage);
   if(sdata == NULL)
   {
     fprintf(stderr, "%s\n", _("failed to get parameters from storage module, aborting export ..."));
-    free(m_arg);
-    exit(1);
+    return 1;
   }
 
   // and now for the really ugly hacks. don't tell your children about this one or they won't sleep at night
@@ -387,16 +425,14 @@ int main(int argc, char *arg[])
   {
     fprintf(stderr, _("unknown extension '.%s'"), ext);
     fprintf(stderr, "\n");
-    free(m_arg);
-    exit(1);
+    return 1;
   }
 
   fdata = format->get_params(format);
   if(fdata == NULL)
   {
     fprintf(stderr, "%s\n", _("failed to get parameters from format module, aborting export ..."));
-    free(m_arg);
-    exit(1);
+    return 1;
   }
 
   uint32_t w, h, fw, fh, sw, sh;
@@ -414,24 +450,24 @@ int main(int argc, char *arg[])
   else
     h = sh < fh ? sh : fh;
 
-  fdata->max_width = width;
-  fdata->max_height = height;
+  fdata->max_width = program_options->width;
+  fdata->max_height = program_options->height;
   fdata->max_width = (w != 0 && fdata->max_width > w) ? w : fdata->max_width;
   fdata->max_height = (h != 0 && fdata->max_height > h) ? h : fdata->max_height;
   fdata->style[0] = '\0';
   fdata->style_append = 1; // make append the default and override with --style-overwrite
 
-  if(style)
+  if(program_options->style)
   {
-    g_strlcpy((char *)fdata->style, style, DT_MAX_STYLE_NAME_LENGTH);
+    g_strlcpy((char *)fdata->style, program_options->style, DT_MAX_STYLE_NAME_LENGTH);
     fdata->style[127] = '\0';
-    if(style_overwrite)
+    if(program_options->style_overwrite)
       fdata->style_append = 0;
   }
 
   if(storage->initialize_store)
   {
-    storage->initialize_store(storage, sdata, &format, &fdata, &id_list, high_quality, upscale);
+    storage->initialize_store(storage, sdata, &format, &fdata, &id_list, program_options->high_quality, program_options->upscale);
 
     format->set_params(format, fdata, format->params_size(format));
     storage->set_params(storage, sdata, storage->params_size(storage));
@@ -453,7 +489,8 @@ int main(int argc, char *arg[])
     dt_export_metadata_t metadata;
     metadata.flags = dt_lib_export_metadata_default_flags();
     metadata.list = NULL;
-    storage->store(storage, sdata, id, format, fdata, num, total, high_quality, upscale, export_masks,
+    storage->store(storage, sdata, id, format, fdata, num, total,
+                   program_options->high_quality, program_options->upscale, program_options->export_masks,
                    icc_type, icc_filename, icc_intent, &metadata);
   }
 
@@ -465,7 +502,7 @@ int main(int argc, char *arg[])
 
   dt_cleanup();
 
-  free(m_arg);
+  return 0;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
