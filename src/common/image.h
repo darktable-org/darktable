@@ -351,6 +351,9 @@ typedef struct dt_image_t
   struct dt_cache_entry_t *cache_entry;
 
   dt_image_job_flag_t job_flags;
+
+  /* result of attempting to load the image, needed to be able to report why the image can't be displayed */
+  dt_imageio_retval_t load_status;
 } dt_image_t;
 
 // should be in datetime.h, workaround to solve cross references

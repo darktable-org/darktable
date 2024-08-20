@@ -108,9 +108,9 @@ static const size_t dt_mipmap_buffer_dsc_size __attribute__((unused))
 static const size_t dt_mipmap_buffer_dsc_size __attribute__((unused)) = sizeof(struct dt_mipmap_buffer_dsc);
 #endif
 
-// last resort mem alloc for dead images. sizeof(dt_mipmap_buffer_dsc) + dead image pixels (8x8)
-// Must be alignment to 4 * sizeof(float).
-static float DT_ALIGNED_ARRAY _mipmap_cache_static_dead_image[sizeof(struct dt_mipmap_buffer_dsc) / sizeof(float) + 210 * 4];
+// last resort mem alloc for dead images. sizeof(dt_mipmap_buffer_dsc) + max static image pixels (14x15)
+// Must be aligned to cache line
+static float DT_ALIGNED_ARRAY _mipmap_cache_static_dead_image[sizeof(struct dt_mipmap_buffer_dsc) / sizeof(float) + MIN_IMG_PIXELS * 4];
 
 static inline void _dead_image_8(dt_mipmap_buffer_t *buf)
 {
@@ -173,10 +173,6 @@ static inline void _dead_image_f(dt_mipmap_buffer_t *buf)
   memcpy(buf->buf, image, sizeof(image));
 }
 
-// last resort mem alloc for unsupported images. sizeof(dt_mipmap_buffer_dsc) + unsupported image pixels (9x13)
-// Must be alignment to 4 * sizeof(float).
-static float DT_ALIGNED_ARRAY _mipmap_cache_static_unsupp_image[sizeof(struct dt_mipmap_buffer_dsc) / sizeof(float) + 117 * 4];
-
 static inline void unsupp_image_8(dt_mipmap_buffer_t *buf)
 {
   if(!buf->buf) return;
@@ -233,10 +229,6 @@ static inline void unsupp_image_f(dt_mipmap_buffer_t *buf)
 #undef __
   memcpy(buf->buf, image, sizeof(image));
 }
-
-// last resort mem alloc for images with errors. sizeof(dt_mipmap_buffer_dsc) + error image pixels (13x13)
-// Must be alignment to 4 * sizeof(float).
-static float DT_ALIGNED_ARRAY _mipmap_cache_static_error_image[sizeof(struct dt_mipmap_buffer_dsc) / sizeof(float) + 169 * 4];
 
 static inline void error_image_8(dt_mipmap_buffer_t *buf)
 {
@@ -298,9 +290,7 @@ void error_image_f(dt_mipmap_buffer_t *buf)
 
 static inline gboolean _is_static_image(void *buffer)
 {
-  return (buffer == _mipmap_cache_static_dead_image)
-    || (buffer == _mipmap_cache_static_unsupp_image)
-    || (buffer == _mipmap_cache_static_error_image);
+  return (buffer == _mipmap_cache_static_dead_image);
 }
 
 #ifndef NDEBUG
@@ -415,7 +405,7 @@ void *dt_mipmap_cache_alloc(dt_mipmap_buffer_t *buf, const dt_image_t *img)
     if(!entry->data)
     {
       // return fallback: at least alloc size for the error image (the largest static image):
-      entry->data = (void *)_mipmap_cache_static_error_image;
+      entry->data = (void *)_mipmap_cache_static_dead_image;
 
       // allocator holds the pointer. but let imageio client know that allocation failed:
       return NULL;
@@ -682,11 +672,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
 {
   _mipmap_cache_get_filename(cache->cachedir, sizeof(cache->cachedir));
   // make sure static memory is initialized
-  struct dt_mipmap_buffer_dsc *dsc = (struct dt_mipmap_buffer_dsc *)_mipmap_cache_static_unsupp_image;
-  unsupp_image_f((dt_mipmap_buffer_t *)(dsc + 1));
-  dsc = (struct dt_mipmap_buffer_dsc *)_mipmap_cache_static_error_image;
-  error_image_f((dt_mipmap_buffer_t *)(dsc + 1));
-  dsc = (struct dt_mipmap_buffer_dsc *)_mipmap_cache_static_dead_image;
+  struct dt_mipmap_buffer_dsc *dsc = (struct dt_mipmap_buffer_dsc *)_mipmap_cache_static_dead_image;
   dead_image_f((dt_mipmap_buffer_t *)(dsc + 1));
 
   // adjust numbers to be large enough to hold what mem limit suggests.
@@ -848,6 +834,7 @@ void dt_mipmap_cache_get_with_caller(
     int line)
 {
   const uint32_t key = get_key(imgid, mip);
+  buf->loader_status = DT_IMAGEIO_OK;
   if(flags == DT_MIPMAP_TESTLOCK)
   {
     // simple case: only get and lock if it's there.
@@ -940,23 +927,42 @@ void dt_mipmap_cache_get_with_caller(
         buf->iscale = 0.0f;
         buf->color_space = DT_COLORSPACE_NONE; // TODO: does the full buffer need to know this?
         dt_imageio_retval_t ret = dt_imageio_open(&buffered_image, filename, buf); // TODO: color_space?
+        buf->loader_status = ret;
         // might have been reallocated:
         ASAN_UNPOISON_MEMORY_REGION(entry->data, dt_mipmap_buffer_dsc_size);
         dsc = (struct dt_mipmap_buffer_dsc *)buf->cache_entry->data;
         if(ret == DT_IMAGEIO_FILE_NOT_FOUND)
         {
-          buf->buf = (uint8_t*)(dsc+1); // point at pre-allocated space for static image
-          dead_image_f(buf);
+          if(mip <= DT_MIPMAP_FULL)
+          {
+            buf->buf = (uint8_t*)(dsc+1); // point at pre-allocated space for static image
+            if(mip < DT_MIPMAP_F)
+              dead_image_8(buf);
+            else
+              dead_image_f(buf);
+          }
         }
         else if(ret == DT_IMAGEIO_UNSUPPORTED_FORMAT || ret == DT_IMAGEIO_UNSUPPORTED_FEATURE)
         {
-          buf->buf = (uint8_t*)(dsc+1); // point at pre-allocated space for static image
-          unsupp_image_f(buf);
+          if(mip <= DT_MIPMAP_FULL)
+          {
+            buf->buf = (uint8_t*)(dsc+1); // point at pre-allocated space for static image
+            if(mip < DT_MIPMAP_F)
+              unsupp_image_8(buf);
+            else
+              unsupp_image_f(buf);
+          }
         }
         else if(ret == DT_IMAGEIO_LOAD_FAILED || ret == DT_IMAGEIO_FILE_CORRUPTED || ret == DT_IMAGEIO_IOERROR)
         {
-          buf->buf = (uint8_t*)(dsc+1); // point at pre-allocated space for static image
-          error_image_f(buf);
+          if(mip <= DT_MIPMAP_FULL)
+          {
+            buf->buf = (uint8_t*)(dsc+1); // point at pre-allocated space for static image
+            if(mip < DT_MIPMAP_F)
+              error_image_8(buf);
+            else
+              error_image_f(buf);
+          }
         }
         else if(ret != DT_IMAGEIO_OK)
         {
@@ -973,13 +979,22 @@ void dt_mipmap_cache_get_with_caller(
             buf->color_space = DT_COLORSPACE_NONE;
           }
         }
-        else
+        if(ret == DT_IMAGEIO_OK)
         {
           // swap back new image data:
           dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
           *img = buffered_image;
+          img->load_status = DT_IMAGEIO_OK;
           // dt_print(DT_DEBUG_ALWAYS, "[mipmap read get] initializing full buffer img %u with %u %u -> %d %d (%p)\n",
           // imgid, data[0], data[1], img->width, img->height, data);
+          // don't write xmp for this (we only changed db stuff):
+          dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+        }
+        else
+        {
+          // record the error code in the cache, so that later lookups know it actually failed
+          dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+          img->load_status = ret;
           // don't write xmp for this (we only changed db stuff):
           dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
         }

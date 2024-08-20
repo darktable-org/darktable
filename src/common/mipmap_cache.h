@@ -70,6 +70,7 @@ typedef struct dt_mipmap_buffer_t
   float iscale;
   uint8_t *buf;
   dt_colorspaces_color_profile_type_t color_space;
+  dt_imageio_retval_t loader_status;
   dt_cache_entry_t *cache_entry;
 } dt_mipmap_buffer_t;
 

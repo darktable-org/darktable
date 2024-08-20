@@ -327,6 +327,7 @@ void dt_dev_process_image_job(dt_develop_t *dev,
                       port ? DT_MIPMAP_FULL     : DT_MIPMAP_F,
                       port ? DT_MIPMAP_BLOCKING : DT_MIPMAP_BEST_EFFORT,
                       'r');
+  dev->image_load_error = buf.loader_status;
 
   dt_show_times(&start, "[dt_dev_process_image_job] loading image.");
 
