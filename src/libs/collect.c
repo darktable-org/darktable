@@ -4083,6 +4083,7 @@ void init(struct dt_lib_module_t *self)
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_APERTURE);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_ASPECT_RATIO);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_EXPOSURE);
+  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_EXPOSURE_BIAS);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_FILENAME);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_GEOTAGGING);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_LOCAL_COPY);
