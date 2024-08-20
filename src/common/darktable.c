@@ -1736,8 +1736,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   darktable.backthumbs.running = FALSE;
   darktable.backthumbs.capable =
-      dt_get_num_procs() >= 4
-      && darktable.dtresources.total_memory / 1024lu / 1024lu >= 8000
+      dt_worker_threads() > 4
       && !(dbfilename_from_command && !strcmp(dbfilename_from_command, ":memory:"));
   if(init_gui)
   {
@@ -2089,9 +2088,7 @@ void dt_show_times_f(const dt_times_t *start,
 
 int dt_worker_threads()
 {
-  const int threads = dt_get_num_threads();
-  const int gbytes = (int)(_get_total_memory() / (1lu << 20));
-  const int wthreads = (gbytes >= 8 && threads >= 4) ? 6 : 3;
+  const int wthreads = (_get_total_memory() >> 19) >= 15 && dt_get_num_threads() >= 4 ? 7 : 4;
   dt_print(DT_DEBUG_DEV, "[dt_worker_threads] using %i worker threads\n", wthreads);
   return wthreads;
 }
