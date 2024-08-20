@@ -257,9 +257,11 @@ int dt_imageio_png_read_profile(const char *filename, uint8_t **out, dt_colorspa
   png_uint_32 proflen = 0;
   png_bytep profile;
 
-  if(!(filename && *filename)) return 0;
+  if(!(filename && *filename))
+    return 0;
 
-  if(dt_imageio_png_read_header(filename, &image) != 0) return 0;
+  if(!dt_imageio_png_read_header(filename, &image))
+    return 0;
 
   /* TODO: also add check for known cICP chunk read support once added to libpng */
 #ifdef PNG_STORE_UNKNOWN_CHUNKS_SUPPORTED
