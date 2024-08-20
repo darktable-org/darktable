@@ -386,7 +386,10 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
 
   libraw_err = libraw_unpack(raw);
   if(libraw_err != LIBRAW_SUCCESS)
+  {
+    err = DT_IMAGEIO_UNSUPPORTED_FORMAT;
     goto error;
+  }
 
   // Bad method to detect if camera is fully supported by LibRaw,
   // but seems to be the best available. LibRaw crx decoder can actually
@@ -398,6 +401,7 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
   {
     dt_print(DT_DEBUG_ALWAYS,
              "[libraw_open] detected unsupported image `%s'\n", img->filename);
+    err = DT_IMAGEIO_UNSUPPORTED_FEATURE;
     goto error;
   }
 
