@@ -1081,7 +1081,7 @@ static gboolean _event_scroll_compressed(gpointer user_data)
     // precision touch pads generate float increments, scroll by pixel delta:
     else {
       // scale scroll increment for an appropriate scroll speed
-      delta *= table->thumb_size;
+      delta *= 50;
       _move(table, 0, -delta, TRUE);
     }
 
