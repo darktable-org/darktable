@@ -685,7 +685,7 @@ static gboolean _event_image_draw(GtkWidget *widget,
         // pixels.  in 1 iir mode for the right mip, we want to see
         // exactly what the pipe gave us, 1:1 pixel for pixel.  in
         // between, filtering just makes stuff go unsharp.
-        if((buf_width <= 16 && buf_height <= 16) || fabsf(scale - 1.0f) < 0.01f)
+        if((buf_width <= 30 && buf_height <= 30) || fabsf(scale - 1.0f) < 0.01f)
           cairo_pattern_set_filter(cairo_get_source(cr2), CAIRO_FILTER_NEAREST);
         else
           cairo_pattern_set_filter(cairo_get_source(cr2), darktable.gui->filter_image);

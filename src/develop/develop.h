@@ -173,7 +173,6 @@ typedef struct dt_develop_t
   gboolean autosaving;
   double autosave_time;
   int32_t image_invalid_cnt;
-  dt_imageio_retval_t image_load_error;
   uint32_t timestamp;
   uint32_t preview_average_delay;
   struct dt_iop_module_t *gui_module; // this module claims gui expose/event callbacks.
