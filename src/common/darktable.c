@@ -1493,7 +1493,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
     darktable.themes = NULL;
     dt_gui_theme_init(darktable.gui);
-    darktable_splash_screen_create(NULL);
+    darktable_splash_screen_create(NULL, FALSE);
   }
 
   // detect cpu features and decide which codepaths to enable
@@ -1808,7 +1808,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   GList *changed_xmp_files = NULL;
   if(init_gui && dt_conf_get_bool("run_crawler_on_start"))
   {
-    darktable_splash_screen_set_progress(_("checking for updated sidecar files"));
+    darktable_splash_screen_create(FALSE,TRUE); // force the splash screen for the crawl even if user-disabled
     // scan for cases where the database and xmp files have different timestamps
     changed_xmp_files = dt_control_crawler_run();
   }

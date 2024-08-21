@@ -140,8 +140,8 @@ GList *dt_control_crawler_run(void)
   dt_database_start_transaction(darktable.db);
 
   int image_count = 0;
-  double start_time;
-  double last_time = start_time = dt_get_wtime();
+  double start_time = dt_get_wtime();
+  double last_time = 0;
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {

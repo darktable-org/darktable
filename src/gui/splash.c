@@ -28,9 +28,11 @@ static GtkWidget *progress_text = NULL;
 static GtkWidget *remaining_text = NULL;
 static gboolean showing_remaining = FALSE;
 
-void darktable_splash_screen_create(GtkWindow *parent_window)
+void darktable_splash_screen_create(GtkWindow *parent_window, gboolean force)
 {
-  if(splash_screen || !dt_conf_get_bool("show_splash_screen"))
+  // no-op if the splash has already been created; if not, only run if the
+  // splash screen is enabled in the config or we are told to create it regardless
+  if(splash_screen || (!dt_conf_get_bool("show_splash_screen") && !force))
     return;
   // a simple gtk_dialog_new() leaves us unable to setup the header bar, so use .._with_buttons
   // and just specify a NULL strings to have no buttons.  We need to pretend to actually have
@@ -107,7 +109,8 @@ void darktable_splash_screen_set_progress_percent(const char *msg, double fracti
     {
       gtk_label_set_text(GTK_LABEL(remaining_text), "⏲  --:--");
     }
-    gtk_widget_show(remaining_text);
+//    gtk_widget_show(remaining_text);
+    gtk_widget_show_all(splash_screen);
     showing_remaining = TRUE;
     // give Gtk a chance to update the screen
     dt_gui_process_events();
