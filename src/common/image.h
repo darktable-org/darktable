@@ -135,7 +135,7 @@ typedef enum dt_image_orientation_t
   ORIENTATION_NULL    = -1,     //-1 $DESCRIPTION: "autodetect"
   ORIENTATION_NONE    = 0,      // 0 $DESCRIPTION: "no rotation"
   ORIENTATION_FLIP_Y  = 1 << 0, // 1 $DESCRIPTION: "flip vertically"
-  ORIENTATION_FLIP_X  = 1 << 1, // 2 $DESCRIPTION: "Flip horizontally"
+  ORIENTATION_FLIP_X  = 1 << 1, // 2 $DESCRIPTION: "flip horizontally"
   ORIENTATION_SWAP_XY = 1 << 2, // 4 $DESCRIPTION: "transpose"
 
   /* ClockWise rotation == "-"; CounterClockWise rotation == "+" */
