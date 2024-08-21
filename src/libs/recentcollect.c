@@ -76,7 +76,7 @@ const char *description(dt_lib_module_t *self)
 
 dt_view_type_flags_t views(dt_lib_module_t *self)
 {
-  return DT_VIEW_LIGHTTABLE | DT_VIEW_MAP;
+  return DT_VIEW_MULTI;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -287,10 +287,6 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
     }
 
     _lib_recentcollection_updated(NULL, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL, -1, self);
-
-    dt_conf_set_bool("plugins/lighttable/collect/history_hide",
-                     !dt_conf_get_bool("plugins/lighttable/recentcollect/hide"));
-    dt_view_collection_update_history_state(darktable.view_manager);
   }
 
   gtk_widget_destroy(dialog);
@@ -315,14 +311,6 @@ void gui_reset(dt_lib_module_t *self)
     dt_conf_set_int(confname, 0);
   }
   _lib_recentcollection_updated(NULL, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL, -1, self);
-}
-
-static void _update_visibility(dt_lib_module_t *self)
-{
-  const gboolean hide = dt_conf_get_bool("plugins/lighttable/recentcollect/hide");
-  dt_lib_set_visible(self, !hide);
-  // in case dt is starting, we need to set the visible value ourself
-  dt_conf_set_bool("plugins/lighttable/1/recentcollect_visible", !hide);
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -359,8 +347,6 @@ void gui_init(dt_lib_module_t *self)
                                   G_CALLBACK(_lib_recentcollection_updated), (gpointer)self);
 
   darktable.view_manager->proxy.module_recentcollect.module = self;
-  darktable.view_manager->proxy.module_recentcollect.update_visibility = _update_visibility;
-  _update_visibility(self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)

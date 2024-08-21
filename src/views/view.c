@@ -212,7 +212,7 @@ void dt_vm_remove_child(GtkWidget *widget, gpointer data)
    so remove the child before that
    */
 static void _remove_child(GtkWidget *child,
-                          GtkContainer *container)
+                          gpointer container)
 {
   if(DTGTK_IS_EXPANDER(child))
   {
@@ -334,7 +334,7 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
   if(old_view)
   {
     /* leave current view */
-    if(old_view->leave)
+    if(new_view != old_view && old_view->leave)
       old_view->leave(old_view);
 
     /* iterator plugins and cleanup plugins in current view */
@@ -344,17 +344,22 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
     {
       dt_lib_module_t *plugin = (dt_lib_module_t *)(iter->data);
 
+      if(new_view == old_view && !plugin->expandable(plugin)) continue;
+
       /* does this module belong to current view ?*/
-      if(dt_lib_is_visible_in_view(plugin, old_view))
+      GtkWidget *ppw = plugin->expander ?: plugin->widget;
+      if(ppw && gtk_widget_get_ancestor(ppw, GTK_TYPE_WINDOW))
       {
         if(plugin->view_leave)
           plugin->view_leave(plugin, old_view, new_view);
+
+        _remove_child(ppw, gtk_widget_get_parent(ppw));
       }
+      plugin->expander = NULL;
     }
 
-    /* remove all widets in all containers */
-    for(int l = 0; l < DT_UI_CONTAINER_SIZE; l++)
-      dt_ui_container_foreach(darktable.gui->ui, l,(GtkCallback)_remove_child);
+    if(new_view != old_view && old_view->view(old_view) == DT_VIEW_DARKROOM)
+      dt_ui_container_foreach(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, _remove_child);
   }
 
   /* change current view to the new view */
@@ -375,6 +380,9 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
       iter = g_list_previous(iter))
   {
     dt_lib_module_t *plugin = (dt_lib_module_t *)(iter->data);
+
+    if(new_view == old_view && !plugin->expandable(plugin)) continue;
+
     if(dt_lib_is_visible_in_view(plugin, new_view))
     {
       /* try get the module expander  */
@@ -428,7 +436,8 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
 
   /* enter view. crucially, do this before initing the plugins below,
       as e.g. modulegroups requires the dr stuff to be inited. */
-  if(new_view->enter) new_view->enter(new_view);
+  if(new_view != old_view && new_view->enter)
+    new_view->enter(new_view);
 
   /* update the scrollbars */
   dt_ui_update_scrollbars(darktable.gui->ui);
@@ -1207,14 +1216,6 @@ void dt_view_collection_update(const dt_view_manager_t *vm)
     vm->proxy.module_filtering.update(vm->proxy.module_filtering.module);
   if(vm->proxy.module_collect.module)
     vm->proxy.module_collect.update(vm->proxy.module_collect.module);
-}
-
-void dt_view_collection_update_history_state(const dt_view_manager_t *vm)
-{
-  if(vm->proxy.module_recentcollect.module)
-    vm->proxy.module_recentcollect.update_visibility(vm->proxy.module_recentcollect.module);
-  if(vm->proxy.module_collect.module)
-    vm->proxy.module_collect.update_history_visibility(vm->proxy.module_collect.module);
 }
 
 void dt_view_filtering_set_sort(const dt_view_manager_t *vm,

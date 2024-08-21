@@ -47,6 +47,7 @@ typedef struct dt_lib_presets_edit_dialog_t
 } dt_lib_presets_edit_dialog_t;
 
 static gchar *_get_lib_view_path(const dt_lib_module_t *module,
+                                 const dt_view_t *cv,
                                  char *suffix);
 
 gboolean dt_lib_is_visible_in_view(dt_lib_module_t *module,
@@ -60,7 +61,14 @@ gboolean dt_lib_is_visible_in_view(dt_lib_module_t *module,
     return FALSE;
   }
 
-  return module->views(module) & view->view(view);
+  const dt_view_t *cv = view ?: dt_view_manager_get_current_view(darktable.view_manager);
+  gboolean ret = module->views(module) & cv->view(cv);
+  gchar *key = _get_lib_view_path(module, cv, "_visible");
+  if(key && dt_conf_key_exists(key))
+    ret = dt_conf_get_bool(key);
+  g_free(key);
+
+  return ret;
 }
 
 /** calls module->cleanup and closes the dl connection. */
@@ -590,7 +598,7 @@ static int _lib_position(const dt_lib_module_t *module)
 {
   int pos = module->position ? module->position(module) + 1 : 0;
   
-  gchar *key = _get_lib_view_path(module, "_position");
+  gchar *key = _get_lib_view_path(module, NULL, "_position");
   if(key && dt_conf_key_exists(key))
     pos = dt_conf_get_int(key);
   g_free(key);
@@ -606,10 +614,15 @@ gint dt_lib_sort_plugins(gconstpointer a, gconstpointer b)
 uint32_t dt_lib_get_container(dt_lib_module_t *module)
 {
   uint32_t container = module->container(module);
+
   if(_lib_position(module) < 0)
     container = container == DT_UI_CONTAINER_PANEL_LEFT_CENTER
               ? DT_UI_CONTAINER_PANEL_RIGHT_CENTER
               : DT_UI_CONTAINER_PANEL_LEFT_CENTER;
+
+  if(container == DT_UI_CONTAINER_PANEL_RIGHT_CENTER
+     && dt_view_get_current() == DT_VIEW_DARKROOM)
+    container = DT_UI_CONTAINER_PANEL_LEFT_CENTER;
 
   return container;
 }
@@ -1152,7 +1165,7 @@ static gboolean _on_drag_motion(GtkWidget *widget,
   dt_lib_module_t *cur = src;
   while(new_pos >= ABS(old_pos))
   {
-    gchar *key = _get_lib_view_path(cur, "_position");
+    gchar *key = _get_lib_view_path(cur, NULL, "_position");
     dt_conf_set_int(key, old_pos < 0 ? -new_pos : new_pos);
     g_free(key);
 
@@ -1249,9 +1262,9 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   gchar *mname = g_markup_escape_text(module->name(module), -1);
   gtk_label_set_markup(GTK_LABEL(label), mname);
   if(module->description)
-    gtk_widget_set_tooltip_text(label_evb, module->description(module));
+    gtk_widget_set_tooltip_text(header, module->description(module));
   else
-    gtk_widget_set_tooltip_text(label_evb, mname);
+    gtk_widget_set_tooltip_text(header, mname);
   g_free(mname);
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
   g_object_set(G_OBJECT(label), "halign", GTK_ALIGN_START, "xalign", 0.0, (gchar *)0);
@@ -1409,14 +1422,15 @@ void dt_lib_presets_add(const char *name,
 }
 
 static gchar *_get_lib_view_path(const dt_lib_module_t *module,
+                                 const dt_view_t *cv,
                                  char *suffix)
 {
   if(!darktable.view_manager) return NULL;
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  if(!cv) cv = dt_view_manager_get_current_view(darktable.view_manager);
   if(!cv) return NULL;
   // in lighttable, we store panels states per layout
   char lay[32] = "";
-  if(g_strcmp0(cv->module_name, "lighttable") == 0)
+  if(g_strcmp0(cv->module_name, "lighttable") == 0 && !module->expandable((gpointer)module))
   {
     if(dt_view_lighttable_preview_state(darktable.view_manager))
       g_snprintf(lay, sizeof(lay), "preview/");
@@ -1436,19 +1450,13 @@ static gchar *_get_lib_view_path(const dt_lib_module_t *module,
 
 gboolean dt_lib_is_visible(dt_lib_module_t *module)
 {
-  gchar *key = _get_lib_view_path(module, "_visible");
-  gboolean ret = TRUE; /* if not key found, always make module visible */
-  if(key && dt_conf_key_exists(key))
-    ret = dt_conf_get_bool(key);
-  g_free(key);
-
-  return ret;
+  return dt_lib_is_visible_in_view(module, NULL);
 }
 
 void dt_lib_set_visible(dt_lib_module_t *module,
                         const gboolean visible)
 {
-  gchar *key = _get_lib_view_path(module, "_visible");
+  gchar *key = _get_lib_view_path(module, NULL, "_visible");
   GtkWidget *widget;
   if(key)
     dt_conf_set_bool(key, visible);

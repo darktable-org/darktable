@@ -59,6 +59,7 @@ typedef enum dt_view_type_flags_t
   DT_VIEW_SLIDESHOW  = 1 << 4,
   DT_VIEW_PRINT      = 1 << 5,
   DT_VIEW_KNIGHT     = 1 << 6,
+  DT_VIEW_MULTI      = 1 << 28, 
   DT_VIEW_FALLBACK   = 1 << 29,
   DT_VIEW_OTHER      = 1 << 30, // for your own unpublished user view
   DT_VIEW_ALL        = ~DT_VIEW_FALLBACK,
@@ -274,14 +275,12 @@ typedef struct dt_view_manager_t
     {
       struct dt_lib_module_t *module;
       void (*update)(struct dt_lib_module_t *);
-      void (*update_history_visibility)(struct dt_lib_module_t *);
     } module_collect;
 
     /* module recent collection proxy object */
     struct
     {
       struct dt_lib_module_t *module;
-      void (*update_visibility)(struct dt_lib_module_t *);
     } module_recentcollect;
 
     /* module filtering proxy object */
@@ -506,7 +505,6 @@ void dt_view_collection_update(const dt_view_manager_t *vm);
 void dt_view_filtering_set_sort(const dt_view_manager_t *vm,
                                 const int sort,
                                 const gboolean asc);
-void dt_view_collection_update_history_state(const dt_view_manager_t *vm);
 
 /*
  * Filter dropdown proxy

@@ -179,10 +179,7 @@ dt_view_type_flags_t views(dt_lib_module_t *self)
 
 uint32_t container(dt_lib_module_t *self)
 {
-  if(dt_view_get_current() == DT_VIEW_DARKROOM)
-    return DT_UI_CONTAINER_PANEL_LEFT_CENTER;
-  else
-    return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
+  return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
 
 void gui_update(dt_lib_module_t *self)
