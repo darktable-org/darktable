@@ -536,6 +536,12 @@ static inline float *dt_calloc_align_float(const size_t nfloats)
   if(buf) memset(buf, 0, nfloats * sizeof(float));
   return (float*)__builtin_assume_aligned(buf, DT_CACHELINE_BYTES);
 }
+
+static inline gboolean dt_check_aligned(void *addr)
+{
+  return ((uintptr_t)addr & (DT_CACHELINE_BYTES - 1)) == 0;
+}
+
 size_t dt_round_size(const size_t size, const size_t alignment);
 
 #ifdef _WIN32

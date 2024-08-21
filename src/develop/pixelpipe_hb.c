@@ -1104,10 +1104,21 @@ static gboolean _pixelpipe_process_on_CPU(
     return TRUE;
 
   // the data buffers must always have an alignment to DT_CACHELINE_BYTES
-  if((((uintptr_t)input) & (DT_CACHELINE_BYTES - 1)) || (((uintptr_t)*output) & (DT_CACHELINE_BYTES - 1)))
-    dt_print(DT_DEBUG_ALWAYS,
-             "[pixelpipe_process CPU] buffer aligment problem: IN=%p OUT=%p\n",
-             input, *output);
+  if(!dt_check_aligned(input) || !dt_check_aligned(*output))
+  {
+    dt_print_pipe(DT_DEBUG_ALWAYS,
+        "fatal process alignment",
+        piece->pipe, module, DT_DEVICE_NONE, roi_in, roi_out,
+        "non aligned buffers IN=%p OUT=%p\n",
+        input, *output);
+
+    dt_control_log(_("fatal pixelpipe abort because non aligned buffers\n"
+                     "in module '%s'\nplease report on github"),
+                     module->op);
+    // this is a fundamental problem with severe problems ahead so good to finish
+    // the pipe as if good to avoid reprocessing and endless loop.
+    return FALSE;
+  }
 
   // Fetch RGB working profile
   // if input is RAW, we can't color convert because RAW is not in a color space
@@ -1413,11 +1424,14 @@ static gboolean _dev_pixelpipe_process_rec(
 
     dt_times_t start;
     dt_get_perf_times(&start);
+
+    const gboolean aligned_input = dt_check_aligned(pipe->input);
     // we're looking for the full buffer
     if(roi_out->scale == 1.0f
        && roi_out->x == 0 && roi_out->y == 0
        && pipe->iwidth == roi_out->width
-       && pipe->iheight == roi_out->height)
+       && pipe->iheight == roi_out->height
+       && aligned_input)
     {
       *output = pipe->input;
       dt_print_pipe(DT_DEBUG_PIPE,
@@ -1435,9 +1449,12 @@ static gboolean _dev_pixelpipe_process_rec(
         const int in_y = MAX(roi_in.y, 0);
         const int cp_width = MAX(0, MIN(roi_out->width, pipe->iwidth - in_x));
         const int cp_height = MIN(roi_out->height, pipe->iheight - in_y);
+
         dt_print_pipe(DT_DEBUG_PIPE,
           (cp_width > 0) ? "pixelpipe data 1:1 copied" : "pixelpipe data 1:1 none",
-          pipe, module, DT_DEVICE_NONE, &roi_in, roi_out, "bpp=%lu\n", bpp);
+          pipe, module, DT_DEVICE_NONE, &roi_in, roi_out, "%sbpp=%lu\n",
+          aligned_input ? "" : "non aligned input ",
+          bpp);
         if(cp_width > 0)
         {
           DT_OMP_FOR()
@@ -1456,12 +1473,28 @@ static gboolean _dev_pixelpipe_process_rec(
         roi_in.scale = 1.0f;
         const gboolean valid_bpp = (bpp == 4 * sizeof(float));
         dt_print_pipe(DT_DEBUG_PIPE,
-          "pipe data: clip&zoom", pipe, module, DT_DEVICE_CPU, &roi_in, roi_out, "%s\n",
-          valid_bpp ? "" : "requires 4 floats data");
-        if(valid_bpp)
+          "pipe data: clip&zoom", pipe, module, DT_DEVICE_CPU, &roi_in, roi_out, "%s%s\n",
+          valid_bpp ? "" : "requires 4 floats data",
+          aligned_input ? "" : "non aligned input buffer");
+        if(valid_bpp && aligned_input)
           dt_iop_clip_and_zoom(*output, pipe->input, roi_out, &roi_in);
         else
-          dt_iop_image_fill(*output, 0.0f, roi_out->width, roi_out->height, 4);
+        {
+          memset(*output, 0, (size_t)roi_out->width * roi_out->height * bpp);
+          if(!aligned_input)
+          {
+            dt_print_pipe(DT_DEBUG_ALWAYS,
+              "fatal input alignment",
+              pipe, NULL, DT_DEVICE_NONE, &roi_in, roi_out,
+              "non aligned IN=%p\n", pipe->input);
+            dt_control_log(_("fatal input alignment, please report on github\n"));
+          }
+          if(!valid_bpp)
+            dt_print_pipe(DT_DEBUG_ALWAYS,
+              "invalid input bpp",
+              pipe, NULL, DT_DEVICE_NONE, &roi_in, roi_out,
+              "bpp=%d\n", (int)bpp);
+        }
       }
     }
 
