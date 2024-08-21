@@ -1987,7 +1987,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       gchar *operator, * number1, *number2;
       dt_collection_split_operator_number(escaped_text, &number1, &number2, &operator);
 
-      if(operator&& strcmp(operator, "[]") == 0)
+      if(operator && strcmp(operator, "[]") == 0)
       {
         if(number1 && number2)
           // clang-format off
@@ -1996,7 +1996,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
              number1, number2);
         // clang-format on
       }
-      else if(operator&& number1)
+      else if(operator && number1)
         query = g_strdup_printf("(ROUND(exposure_bias,2) %s %s)", operator, number1);
       else if(number1)
         query = g_strdup_printf("(ROUND(exposure_bias,2) = %s)", number1);
