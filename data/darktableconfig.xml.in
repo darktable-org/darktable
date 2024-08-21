@@ -1966,6 +1966,13 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/lighttable/metadata/hideindarkroom</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>controls visibility of metadata editor in darkroom mode</shortdescription>
+    <longdescription>metadata editor can be presented in darkroom mode if this toggle allow that</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/lighttable/metadata/creator_text_height</name>
     <type>int</type>
     <default>1</default>

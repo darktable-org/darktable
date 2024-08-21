@@ -631,6 +631,25 @@ void set_preferences(void *menu, dt_lib_module_t *self)
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 }
 
+static void _menuitem_hideindarkroom(GtkMenuItem *menuitem,
+                                     dt_lib_module_t *self)
+{
+  // Activation of check menu item should toggle active state
+  gboolean hide_in_darkroom = gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menuitem));
+  dt_print(DT_DEBUG_ALWAYS, "entered 'activate' callback for 'hide in darkroom' menu item: active state = %d\n", hide_in_darkroom);
+  dt_conf_set_bool("plugins/lighttable/metadata/hideindarkroom", hide_in_darkroom);
+  gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menuitem), hide_in_darkroom);
+}
+
+void module_visibility_in_darkroom(void *menu, dt_lib_module_t *self)
+{
+  GtkWidget *mi = gtk_check_menu_item_new_with_label(_("hide in darkroom"));
+  gboolean hide_in_darkroom = dt_conf_get_bool("plugins/lighttable/metadata/hideindarkroom");
+  gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mi), hide_in_darkroom);
+  g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_hideindarkroom), self);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+}
+
 static void _menu_line_activated(GtkMenuItem *menuitem, GtkTextView *textview)
 {
   GtkTextBuffer *buffer = gtk_text_view_get_buffer(textview);
