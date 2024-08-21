@@ -1080,7 +1080,9 @@ void dt_image_flip(const dt_imgid_t imgid, const int32_t cw)
 */
 float dt_image_get_sensor_ratio(const struct dt_image_t *img)
 {
-  return (float)img->p_width / (float)img->p_height;
+  const float sw = img->p_width;
+  const float sh = img->p_height;
+  return sw > sh ? sw / sh : sh / sw;
 }
 
 void dt_image_set_raw_aspect_ratio(const dt_imgid_t imgid)

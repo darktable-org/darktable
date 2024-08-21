@@ -188,19 +188,21 @@ static void _commit_box(dt_iop_module_t *self,
     p->cx = p->cy = 0.0f;
     p->cw = p->ch = 1.0f;
   }
+
   // we want value in iop space
-  float wd, ht;
-  dt_dev_get_preview_size(self->dev, &wd, &ht);
+  dt_dev_pixelpipe_t *fpipe = self->dev->full.pipe;
+  const float wd = fpipe->processed_width;
+  const float ht = fpipe->processed_height;
   dt_boundingbox_t points = { g->clip_x * wd,
                               g->clip_y * ht,
                               (g->clip_x + g->clip_w) * wd,
                               (g->clip_y + g->clip_h) * ht };
 
-  if(dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
+  if(dt_dev_distort_backtransform_plus(self->dev, fpipe, self->iop_order,
                                        DT_DEV_TRANSFORM_DIR_FORW_EXCL, points, 2))
   {
     dt_dev_pixelpipe_iop_t *piece =
-      dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
+      dt_dev_distort_get_iop_pipe(self->dev, fpipe, self);
     if(piece)
     {
       if(piece->buf_out.width < 1 || piece->buf_out.height < 1) return;
@@ -233,19 +235,20 @@ static gboolean _set_max_clip(struct dt_iop_module_t *self)
   if(self->dev->preview_pipe->status != DT_DEV_PIXELPIPE_VALID) return TRUE;
 
   // we want to know the size of the actual buffer
+  dt_dev_pixelpipe_t *fpipe = self->dev->full.pipe;
   dt_dev_pixelpipe_iop_t *piece =
-    dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
+    dt_dev_distort_get_iop_pipe(self->dev, fpipe, self);
   if(!piece) return FALSE;
 
   const float wp = piece->buf_out.width;
   const float hp = piece->buf_out.height;
   float points[8] = { 0.0f, 0.0f, wp, hp, p->cx * wp, p->cy * hp, p->cw * wp, p->ch * hp };
-  if(!dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
+  if(!dt_dev_distort_transform_plus(self->dev, fpipe, self->iop_order,
                                     DT_DEV_TRANSFORM_DIR_FORW_EXCL, points, 4))
     return FALSE;
 
-  float wd, ht;
-  dt_dev_get_preview_size(self->dev, &wd, &ht);
+  const float wd = fpipe->processed_width;
+  const float ht = fpipe->processed_height;
   g->clip_max_x = MAX(points[0] / wd, 0.0f);
   g->clip_max_y = MAX(points[1] / ht, 0.0f);
   g->clip_max_w = MIN((points[2] - points[0]) / wd, 1.0f);
@@ -525,16 +528,14 @@ static float _aspect_ratio_get(dt_iop_module_t *self, GtkWidget *combo)
   const char *text = dt_bauhaus_combobox_get_text(combo);
   if(text && !g_strcmp0(text, _("original image")))
   {
-    const dt_image_t *img = &(self->dev->image_storage);
-    int wd = img->p_width;
-    int ht = img->p_height;
+    const float wd = self->dev->image_storage.p_width;
+    const float ht = self->dev->image_storage.p_height;
 
-    if(!(wd > 0 && ht > 0)) return 0.0f;
+    if(!(wd > 0.0f && ht > 0.0f)) return 0.0f;
 
-    if((p->ratio_d > 0 && wd > ht) || (p->ratio_d < 0 && wd < ht))
-      return (float)wd / (float)ht;
-    else
-      return (float)ht / (float)wd;
+    const gboolean regular = (p->ratio_d > 0 && wd > ht)
+                          || (p->ratio_d < 0 && wd < ht);
+    return regular ? wd / ht : ht / wd;
   }
 
   // we want to know the size of the actual buffer
@@ -656,29 +657,31 @@ static void _aspect_apply(dt_iop_module_t *self, _grab_region_t grab)
 {
   dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
 
-  int iwd, iht;
-  dt_dev_get_processed_size(&darktable.develop->full, &iwd, &iht);
+  int piwd, piht;
+  dt_dev_get_processed_size(&darktable.develop->full, &piwd, &piht);
+  const double iwd = piwd;
+  const double iht = piht;
 
   // enforce aspect ratio.
-  float aspect = _aspect_ratio_get(self, g->aspect_presets);
+  double aspect = _aspect_ratio_get(self, g->aspect_presets);
 
   // since one rarely changes between portrait and landscape by cropping,
   // long side of the crop box should match the long side of the image.
-  if(iwd < iht && aspect != 0.0f)
-    aspect = 1.0f / aspect;
+  if(iwd < iht && aspect != 0.0)
+    aspect = 1.0 / aspect;
 
-  if(aspect > 0)
+  if(aspect > 0.0)
   {
     // if only one side changed, force aspect by two adjacent in equal parts
     // 1 2 4 8 : x y w h
-    double clip_x = MAX(iwd * g->clip_x / (float)iwd, 0.0f);
-    double clip_y = MAX(iht * g->clip_y / (float)iht, 0.0f);
-    double clip_w = MIN(iwd * g->clip_w / (float)iwd, 1.0f);
-    double clip_h = MIN(iht * g->clip_h / (float)iht, 1.0f);
+    double clip_x = MAX(iwd * g->clip_x / iwd, 0.0f);
+    double clip_y = MAX(iht * g->clip_y / iht, 0.0f);
+    double clip_w = MIN(iwd * g->clip_w / iwd, 1.0f);
+    double clip_h = MIN(iht * g->clip_h / iht, 1.0f);
 
     // if we only modified one dim, respectively, we wanted these values:
-    const double target_h = (double)iwd * g->clip_w / ((double)iht * aspect);
-    const double target_w = (double)iht * g->clip_h * aspect / (double)iwd;
+    const double target_h = iwd * g->clip_w / (iht * aspect);
+    const double target_w = iht * g->clip_h * aspect / iwd;
     // i.e. target_w/h = w/target_h = aspect
     // first fix aspect ratio:
 
@@ -755,8 +758,8 @@ static void _aspect_apply(dt_iop_module_t *self, _grab_region_t grab)
     }
     g->clip_x = CLIP(clip_x);
     g->clip_y = CLIP(clip_y);
-    g->clip_w = CLAMP(clip_w, 0.0, 1.0f - clip_x);
-    g->clip_h = CLAMP(clip_h, 0.0, 1.0f - clip_y);
+    g->clip_w = CLAMP(clip_w, 0.0, 1.0 - clip_x);
+    g->clip_h = CLAMP(clip_h, 0.0, 1.0 - clip_y);
   }
 }
 
@@ -1067,7 +1070,7 @@ static void _event_key_swap(dt_iop_module_t *self)
 
   int iwd, iht;
   dt_dev_get_processed_size(&darktable.develop->full, &iwd, &iht);
-  const gboolean horizontal = (iwd > iht) == (p->ratio_d < 0.0f);
+  const gboolean horizontal = (iwd > iht) == (p->ratio_d < 0);
 
   _aspect_apply(self, horizontal ? GRAB_HORIZONTAL : GRAB_VERTICAL);
   dt_control_queue_redraw_center();
@@ -1430,17 +1433,18 @@ void gui_post_expose(dt_iop_module_t *self,
 
     pango_layout_set_text(layout, dimensions, -1);
     pango_layout_get_pixel_extents(layout, NULL, &ext);
-    const float text_w = ext.width;
-    const float text_h = DT_PIXEL_APPLY_DPI(16 + 2) / zoom_scale;
-    const float margin = DT_PIXEL_APPLY_DPI(6) / zoom_scale;
-    float xp = (g->clip_x + g->clip_w * .5f) * wd - text_w * .5f;
-    float yp = (g->clip_y + g->clip_h * .5f) * ht - text_h * .5f;
+
+    const double text_w = ext.width;
+    const double text_h = DT_PIXEL_APPLY_DPI(16 + 2) / zoom_scale;
+    const double margin = DT_PIXEL_APPLY_DPI(6) / zoom_scale;
+    double xp = (g->clip_x + g->clip_w * .5f) * wd - text_w * .5f;
+    double yp = (g->clip_y + g->clip_h * .5f) * ht - text_h * .5f;
 
     // ensure that the rendered string remains visible within the window bounds
     double x1, y1, x2, y2;
     cairo_clip_extents(cr, &x1, &y1, &x2, &y2);
-    xp = CLAMPF(xp, x1 + 2.0 * margin, x2 - text_w - 2.0 * margin);
-    yp = CLAMPF(yp, y1 + 2.0 * margin, y2 - text_h - 2.0 * margin);
+    xp = CLAMP(xp, x1 + 2.0 * margin, x2 - text_w - 2.0 * margin);
+    yp = CLAMP(yp, y1 + 2.0 * margin, y2 - text_h - 2.0 * margin);
 
     cairo_set_source_rgba(cr, .5, .5, .5, .9);
     dt_gui_draw_rounded_rectangle
@@ -1456,7 +1460,7 @@ void gui_post_expose(dt_iop_module_t *self,
   const double alpha =
     CLAMP(1.0 - (g_get_monotonic_time() - g->focus_time) / 2e6f, 0.0, 1.0);
   dt_draw_set_color_overlay(cr, TRUE, alpha);
-  const int border = DT_PIXEL_APPLY_DPI(30.0) / zoom_scale;
+  const double border = DT_PIXEL_APPLY_DPI(MIN(30.0, MIN(wd, ht) / 3.0)) / zoom_scale;
 
   cairo_move_to(cr, g->clip_x * wd + border, g->clip_y * ht);
   cairo_line_to(cr, g->clip_x * wd + border, (g->clip_y + g->clip_h) * ht);
