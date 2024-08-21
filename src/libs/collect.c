@@ -2536,10 +2536,10 @@ static void _set_tooltip(dt_lib_collect_rule_t *d)
   g_free(tip);
 }
 
-static void _lib_collect_update_history_visibility(dt_lib_module_t *self)
+void view_enter(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct dt_view_t *new_view)
 {
   dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
-  const gboolean hide = dt_conf_get_bool("plugins/lighttable/collect/history_hide");
+  const gboolean hide = dt_lib_is_visible(darktable.view_manager->proxy.module_recentcollect.module);
   gtk_widget_set_visible(d->history_box, !hide);
 }
 
@@ -3400,12 +3400,7 @@ void _menuitem_preferences(GtkMenuItem *menuitem,
   dt_osx_disallow_fullscreen(dialog);
 #endif
   gtk_widget_show_all(dialog);
-  if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
-  {
-    dt_conf_set_bool("plugins/lighttable/recentcollect/hide",
-                     !dt_conf_get_bool("plugins/lighttable/collect/history_hide"));
-    dt_view_collection_update_history_state(darktable.view_manager);
-  }
+  gtk_dialog_run(GTK_DIALOG(dialog));
   gtk_widget_destroy(dialog);
   dt_collection_update_query(darktable.collection,
                              DT_COLLECTION_CHANGE_NEW_QUERY,
@@ -3787,11 +3782,8 @@ void gui_init(dt_lib_module_t *self)
   /* setup proxy */
   darktable.view_manager->proxy.module_collect.module = self;
   darktable.view_manager->proxy.module_collect.update = _lib_collect_gui_update;
-  darktable.view_manager->proxy.module_collect.update_history_visibility =
-    _lib_collect_update_history_visibility;
 
   _lib_collect_gui_update(self);
-  _lib_collect_update_history_visibility(self);
 
   if(_combo_get_active_collection(d->rule[0].combo) == DT_COLLECTION_PROP_TAG)
   {

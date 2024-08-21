@@ -2248,6 +2248,57 @@ static void _on_drag_leave(GtkDarktableExpander *widget, GdkDragContext *dc, gui
     dtgtk_expander_set_drag_hover(m->data, FALSE, FALSE);
 }
 
+static void _toggle_module_visibility(GtkMenuItem *menuitem,
+                                      dt_lib_module_t *module)
+{
+  dt_lib_set_visible(module, !dt_lib_is_visible(module));
+  dt_view_manager_switch_by_view(darktable.view_manager, dt_view_manager_get_current_view(darktable.view_manager));
+}
+
+static void _add_remove_modules(dt_action_t *action)
+{
+  dt_view_type_flags_t cv = dt_view_get_current();
+  GtkWidget *menu = gtk_menu_new();
+  for(GList *iter = darktable.lib->plugins; iter; iter = iter->next)
+  {
+    dt_lib_module_t *module = iter->data;
+    if(!module->name) continue;
+    dt_view_type_flags_t mv = module->views(module);
+    if((mv & cv || mv & (mv - 1) || mv & DT_VIEW_MULTI) // either current view or supports more than one view
+       && module->expandable(module))
+    {
+      GtkWidget *mi = gtk_check_menu_item_new_with_label(module->name(module));
+      gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mi), dt_lib_is_visible(module));
+      g_signal_connect(mi, "toggled", G_CALLBACK(_toggle_module_visibility), module);
+      gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), mi);
+    }
+  }
+
+  gtk_widget_show_all(menu);
+  dt_gui_menu_popup(GTK_MENU(menu), NULL, 0, 0);
+}
+
+static gboolean _side_panel_press(GtkWidget *widget,
+                                  GdkEvent *event,
+                                  gpointer user_data)
+{
+  if(event->button.button != GDK_BUTTON_SECONDARY
+     || !GTK_IS_VIEWPORT(gtk_get_event_widget(event)))
+    return FALSE;
+
+  _add_remove_modules(NULL);
+  return TRUE;
+}
+
+static gboolean _side_panel_motion(GtkWidget *widget,
+                                   GdkEvent *event,
+                                   gpointer user_data)
+{
+  gtk_widget_set_tooltip_text(widget, GTK_IS_VIEWPORT(gtk_get_event_widget(event))
+                              ? _("right-click to show/hide modules") : NULL);
+  return FALSE;
+}
+
 static GtkWidget *_ui_init_panel_container_center(GtkWidget *container,
                                                   const gboolean left)
 {
@@ -2288,6 +2339,12 @@ static GtkWidget *_ui_init_panel_container_center(GtkWidget *container,
   g_signal_connect(G_OBJECT(widget), "scroll-event",
                    G_CALLBACK(_ui_init_panel_container_center_scroll_event),
                    NULL);
+  g_signal_connect(widget, "button-press-event", G_CALLBACK(_side_panel_press), NULL);
+  g_signal_connect(widget, "motion-notify-event", G_CALLBACK(_side_panel_motion), NULL);
+  gtk_widget_add_events(widget, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_POINTER_MOTION_MASK);
+  dt_action_t *ac = dt_action_define(&darktable.control->actions_global, NULL,
+                                     N_("show/hide modules"), widget, NULL);
+  dt_action_register(ac, NULL, _add_remove_modules, 0, 0);
 
   /* create the container */
   container = widget;
