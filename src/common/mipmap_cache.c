@@ -999,54 +999,6 @@ void dt_mipmap_cache_get_with_caller(
         // might have been reallocated:
         ASAN_UNPOISON_MEMORY_REGION(entry->data, dt_mipmap_buffer_dsc_size);
         dsc = (struct dt_mipmap_buffer_dsc *)buf->cache_entry->data;
-        if(ret == DT_IMAGEIO_FILE_NOT_FOUND)
-        {
-          if(mip <= DT_MIPMAP_FULL)
-          {
-            buf->buf = (uint8_t*)(dsc+1); // point at pre-allocated space for static image
-            if(mip < DT_MIPMAP_F)
-              _dead_image_8(buf);
-            else
-              _dead_image_f(buf);
-          }
-        }
-        else if(ret == DT_IMAGEIO_UNSUPPORTED_FORMAT || ret == DT_IMAGEIO_UNSUPPORTED_FEATURE)
-        {
-          if(mip <= DT_MIPMAP_FULL)
-          {
-            buf->buf = (uint8_t*)(dsc+1); // point at pre-allocated space for static image
-            if(mip < DT_MIPMAP_F)
-              unsupp_image_8(buf);
-            else
-              unsupp_image_f(buf);
-          }
-        }
-        else if(ret == DT_IMAGEIO_LOAD_FAILED || ret == DT_IMAGEIO_FILE_CORRUPTED || ret == DT_IMAGEIO_IOERROR)
-        {
-          if(mip <= DT_MIPMAP_FULL)
-          {
-            buf->buf = (uint8_t*)(dsc+1); // point at pre-allocated space for static image
-            if(mip < DT_MIPMAP_F)
-              error_image_8(buf);
-            else
-              error_image_f(buf);
-          }
-        }
-        else if(ret != DT_IMAGEIO_OK)
-        {
-          // dt_print(DT_DEBUG_ALWAYS, "[mipmap read get] error loading image: %d\n", ret);
-          //
-          // we can only return a zero dimension buffer if the buffer has been allocated.
-          // in case dsc couldn't be allocated and points to the static buffer, it contains
-          // a dead/unsupported/error image already.
-          if(!_is_static_image((void *)dsc))
-          {
-            dsc->width = dsc->height = 0;
-            buf->iscale = 0.0f;
-            dsc->color_space = DT_COLORSPACE_NONE;
-            buf->color_space = DT_COLORSPACE_NONE;
-          }
-        }
         if(ret == DT_IMAGEIO_OK)
         {
           // swap back new image data:
@@ -1060,6 +1012,18 @@ void dt_mipmap_cache_get_with_caller(
         }
         else
         {
+          // dt_print(DT_DEBUG_ALWAYS, "[mipmap read get] error loading image: %d\n", ret);
+          //
+          // we can only return a zero dimension buffer if the buffer has been allocated.
+          // in case dsc couldn't be allocated and points to the static buffer, it contains
+          // a dead/unsupported/error image already.
+          if(!_is_static_image((void *)dsc))
+          {
+            dsc->width = dsc->height = 0;
+            buf->iscale = 0.0f;
+            dsc->color_space = DT_COLORSPACE_NONE;
+            buf->color_space = DT_COLORSPACE_NONE;
+          }
           // record the error code in the cache, so that later lookups know it actually failed
           dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
           img->load_status = ret;
@@ -1111,12 +1075,6 @@ void dt_mipmap_cache_get_with_caller(
     }
 #endif
 
-    if(mipmap_generated)
-    {
-      /* raise signal that mipmaps has been flushed to cache */
-      g_idle_add(_raise_signal_mipmap_updated, GINT_TO_POINTER(imgid));
-    }
-
     buf->width = dsc->width;
     buf->height = dsc->height;
     buf->iscale = dsc->iscale;
@@ -1127,13 +1085,56 @@ void dt_mipmap_cache_get_with_caller(
     ASAN_UNPOISON_MEMORY_REGION(dsc + 1, dsc->size - sizeof(struct dt_mipmap_buffer_dsc));
     buf->buf = (uint8_t *)(dsc + 1);
 
-    if(dsc->width == 0 || dsc->height == 0)
+    if(mipmap_generated)
     {
+      /* raise signal that mipmaps has been flushed to cache */
+      g_idle_add(_raise_signal_mipmap_updated, GINT_TO_POINTER(imgid));
+    }
+    else if(dsc->width == 0 || dsc->height == 0)
+    {
+      // get the loading status of the image from the cache, so that we can assign an appropriate static image
+      dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+      dt_imageio_retval_t ret = img->load_status;
+      dt_image_cache_read_release(darktable.image_cache, img);
       // dt_print(DT_DEBUG_ALWAYS, "[mipmap cache get] got a zero-sized image for img %u mip %d!\n", imgid, mip);
       if(mip < DT_MIPMAP_F)
-        _dead_image_8(buf);
+      {
+        switch(ret)
+        {
+        case DT_IMAGEIO_FILE_NOT_FOUND:
+        default:
+          _dead_image_8(buf);
+          break;
+        case DT_IMAGEIO_UNSUPPORTED_FORMAT:
+        case DT_IMAGEIO_UNSUPPORTED_FEATURE:
+          unsupp_image_8(buf);
+          break;
+        case DT_IMAGEIO_LOAD_FAILED:
+        case DT_IMAGEIO_FILE_CORRUPTED:
+        case DT_IMAGEIO_IOERROR:
+          error_image_8(buf);
+          break;
+        }
+      }
       else if(mip == DT_MIPMAP_F)
-        _dead_image_f(buf);
+      {
+        switch(ret)
+        {
+        case DT_IMAGEIO_FILE_NOT_FOUND:
+        default:
+          _dead_image_f(buf);
+          break;
+        case DT_IMAGEIO_UNSUPPORTED_FORMAT:
+        case DT_IMAGEIO_UNSUPPORTED_FEATURE:
+          unsupp_image_f(buf);
+          break;
+        case DT_IMAGEIO_LOAD_FAILED:
+        case DT_IMAGEIO_FILE_CORRUPTED:
+        case DT_IMAGEIO_IOERROR:
+          error_image_f(buf);
+          break;
+        }
+      }
       else
         buf->buf = NULL; // full images with NULL buffer have to be handled, indicates `missing image', but still return locked slot
     }
