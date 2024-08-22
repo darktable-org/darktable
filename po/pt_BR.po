@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-08-18 07:53-0300\n"
-"PO-Revision-Date: 2024-08-18 07:52-0300\n"
+"POT-Creation-Date: 2024-08-22 13:59-0300\n"
+"PO-Revision-Date: 2024-08-22 13:59-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -2871,7 +2871,7 @@ msgstr "aberração cromática muito grande"
 #: ../src/develop/blend_gui.c:2434 ../src/develop/lightroom.c:887
 #: ../src/gui/gtk.c:3583 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:372
 #: ../src/iop/channelmixer.c:621 ../src/iop/channelmixer.c:631
-#: ../src/iop/channelmixerrgb.c:4715 ../src/iop/colorequal.c:2460
+#: ../src/iop/channelmixerrgb.c:4715 ../src/iop/colorequal.c:2458
 #: ../src/iop/colorzones.c:2496 ../src/iop/temperature.c:2009
 #: ../src/iop/temperature.c:2201 ../src/libs/collect.c:1950
 #: ../src/libs/filters/colors.c:260 ../src/libs/histogram.c:2710
@@ -2891,7 +2891,7 @@ msgstr "vermelho"
 #: ../src/develop/blend_gui.c:2440 ../src/develop/lightroom.c:891
 #: ../src/gui/gtk.c:3584 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:377
 #: ../src/iop/channelmixer.c:622 ../src/iop/channelmixer.c:637
-#: ../src/iop/channelmixerrgb.c:4716 ../src/iop/colorequal.c:2463
+#: ../src/iop/channelmixerrgb.c:4716 ../src/iop/colorequal.c:2461
 #: ../src/iop/colorzones.c:2499 ../src/iop/temperature.c:1993
 #: ../src/iop/temperature.c:2011 ../src/iop/temperature.c:2202
 #: ../src/libs/collect.c:1950 ../src/libs/filters/colors.c:262
@@ -2912,7 +2912,7 @@ msgstr "verde"
 #: ../src/develop/blend_gui.c:2446 ../src/develop/lightroom.c:893
 #: ../src/gui/gtk.c:3585 ../src/iop/bilateral.cc:382
 #: ../src/iop/channelmixer.c:623 ../src/iop/channelmixer.c:643
-#: ../src/iop/channelmixerrgb.c:4717 ../src/iop/colorequal.c:2465
+#: ../src/iop/channelmixerrgb.c:4717 ../src/iop/colorequal.c:2463
 #: ../src/iop/colorzones.c:2501 ../src/iop/temperature.c:2013
 #: ../src/iop/temperature.c:2203 ../src/libs/collect.c:1950
 #: ../src/libs/filters/colors.c:263 ../src/libs/histogram.c:2692
@@ -3241,7 +3241,7 @@ msgstr "croma"
 #: ../src/develop/blend_gui.c:2467 ../src/iop/channelmixer.c:618
 #: ../src/iop/channelmixerrgb.c:4556 ../src/iop/channelmixerrgb.c:4671
 #: ../src/iop/colorbalance.c:1991 ../src/iop/colorize.c:339
-#: ../src/iop/colorreconstruction.c:1239 ../src/iop/colorequal.c:2577
+#: ../src/iop/colorreconstruction.c:1239 ../src/iop/colorequal.c:2575
 #: ../src/iop/colorzones.c:2643
 msgid "hue"
 msgstr "matiz"
@@ -3479,7 +3479,7 @@ msgstr "usar filtro guiado"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:479
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:511
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:543
-#: ../src/iop/colorequal.c:2461 ../src/iop/colorzones.c:2497
+#: ../src/iop/colorequal.c:2459 ../src/iop/colorzones.c:2497
 msgid "orange"
 msgstr "laranja"
 
@@ -3491,7 +3491,7 @@ msgstr "laranja"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:547
 #: ../src/common/collection.c:1488 ../src/common/colorlabels.c:382
 #: ../src/develop/lightroom.c:889 ../src/gui/guides.c:732
-#: ../src/iop/colorequal.c:2462 ../src/iop/colorzones.c:2498
+#: ../src/iop/colorequal.c:2460 ../src/iop/colorzones.c:2498
 #: ../src/iop/temperature.c:1999 ../src/libs/collect.c:1950
 #: ../src/libs/filters/colors.c:261
 msgid "yellow"
@@ -3504,7 +3504,7 @@ msgstr "amarelo"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:523
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:555
 #: ../src/common/color_vocabulary.c:298 ../src/gui/guides.c:733
-#: ../src/iop/colorequal.c:2464 ../src/iop/temperature.c:1997
+#: ../src/iop/colorequal.c:2462 ../src/iop/temperature.c:1997
 msgid "cyan"
 msgstr "ciano"
 
@@ -3514,7 +3514,7 @@ msgstr "ciano"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:499
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:531
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:563
-#: ../src/common/color_vocabulary.c:343 ../src/iop/colorequal.c:2466
+#: ../src/common/color_vocabulary.c:343 ../src/iop/colorequal.c:2464
 msgid "lavender"
 msgstr "lavanda"
 
@@ -3525,7 +3525,7 @@ msgstr "lavanda"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:535
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:567
 #: ../src/common/color_vocabulary.c:341 ../src/gui/guides.c:734
-#: ../src/iop/colorequal.c:2467 ../src/iop/colorzones.c:2503
+#: ../src/iop/colorequal.c:2465 ../src/iop/colorzones.c:2503
 #: ../src/iop/temperature.c:1995
 msgid "magenta"
 msgstr "magenta"
@@ -4274,7 +4274,8 @@ msgid "flip vertically"
 msgstr "girar verticalmente"
 
 #: ../build/lib/darktable/plugins/introspection_flip.c:103
-msgid "Flip horizontally"
+#: ../src/iop/flip.c:469 ../src/iop/flip.c:612
+msgid "flip horizontally"
 msgstr "girar horizontalmente"
 
 #: ../build/lib/darktable/plugins/introspection_flip.c:104
@@ -4336,7 +4337,7 @@ msgstr "densidade"
 #: ../src/iop/colorbalance.c:2008 ../src/iop/colorbalancergb.c:1961
 #: ../src/iop/colorchecker.c:1479 ../src/iop/colorcontrast.c:82
 #: ../src/iop/colorcorrection.c:264 ../src/iop/colorize.c:352
-#: ../src/iop/colorequal.c:2595 ../src/iop/lowpass.c:590
+#: ../src/iop/colorequal.c:2593 ../src/iop/lowpass.c:590
 #: ../src/iop/soften.c:355 ../src/iop/velvia.c:75 ../src/iop/vibrance.c:72
 #: ../src/iop/vignette.c:1053
 msgid "saturation"
@@ -5007,7 +5008,7 @@ msgstr "modo de preenchimento"
 #: ../build/lib/darktable/plugins/introspection_retouch.c:285
 #: ../build/lib/darktable/plugins/introspection_retouch.c:426
 #: ../src/iop/basicadj.c:650 ../src/iop/channelmixerrgb.c:4723
-#: ../src/iop/colisa.c:282 ../src/iop/colorequal.c:2613
+#: ../src/iop/colisa.c:282 ../src/iop/colorequal.c:2611
 #: ../src/iop/lowpass.c:589 ../src/iop/soften.c:359 ../src/iop/vignette.c:1052
 #: ../src/libs/history.c:973
 msgid "brightness"
@@ -5411,7 +5412,7 @@ msgid "Print your images"
 msgstr "Imprimir suas imagens"
 
 #: ../src/bauhaus/bauhaus.c:879 ../src/bauhaus/bauhaus.c:3971
-#: ../src/iop/colorequal.c:2562
+#: ../src/iop/colorequal.c:2560
 msgid "sliders"
 msgstr "controles deslizantes"
 
@@ -6356,19 +6357,19 @@ msgstr "arquivo `%s' é de formato desconhecido!"
 msgid "error loading file `%s'"
 msgstr "erro carregando arquivo `%s'"
 
-#: ../src/common/darktable.c:1727
+#: ../src/common/darktable.c:1754
 msgid "configuration information"
 msgstr "informações de configuração"
 
-#: ../src/common/darktable.c:1729
+#: ../src/common/darktable.c:1756
 msgid "_show this message again"
 msgstr "_mostrar esta mensagem novamente"
 
-#: ../src/common/darktable.c:1729
+#: ../src/common/darktable.c:1756
 msgid "_dismiss"
 msgstr "_remover"
 
-#: ../src/common/darktable.c:2194
+#: ../src/common/darktable.c:2218
 msgid ""
 "the RCD demosaicer has been defined as default instead of PPG because of "
 "better quality and performance."
@@ -6376,12 +6377,12 @@ msgstr ""
 "O interpolador RCD foi definido como padrão ao invés do PPG porque tem "
 "melhor desempenho e qualidade."
 
-#: ../src/common/darktable.c:2196
+#: ../src/common/darktable.c:2220
 msgid "see preferences/darkroom/demosaicing for zoomed out darkroom mode"
 msgstr ""
 "veja preferências/sala escura/interpolação cromática para zoom na sala escura"
 
-#: ../src/common/darktable.c:2202
+#: ../src/common/darktable.c:2226
 msgid ""
 "the user interface and the underlying internals for tuning darktable "
 "performance have changed."
@@ -6389,7 +6390,7 @@ msgstr ""
 "a interface com o usuário e os mecanismos internos para ajuste fino de "
 "desempenho do darktable mudaram."
 
-#: ../src/common/darktable.c:2204
+#: ../src/common/darktable.c:2228
 msgid ""
 "you won't find headroom and friends any longer, instead in preferences/"
 "processing use:"
@@ -6397,15 +6398,15 @@ msgstr ""
 "você não encontrará mais headroom e amigos, ao invés disso em preferências/"
 "processamento use:"
 
-#: ../src/common/darktable.c:2206
+#: ../src/common/darktable.c:2230
 msgid "1) darktable resources"
 msgstr "1) recursos do darktable"
 
-#: ../src/common/darktable.c:2208
+#: ../src/common/darktable.c:2232
 msgid "2) tune OpenCL performance"
 msgstr "2) ajustar desempenho do OpenCL"
 
-#: ../src/common/darktable.c:2215
+#: ../src/common/darktable.c:2239
 msgid ""
 "some global config parameters relevant for OpenCL performance are not used "
 "any longer."
@@ -6413,7 +6414,7 @@ msgstr ""
 "alguns valores de configuração globais relevantes para o desempenho de "
 "OpenCL não são mais usados."
 
-#: ../src/common/darktable.c:2217
+#: ../src/common/darktable.c:2241
 msgid ""
 "instead you will find 'per device' data in 'cldevice_v5_canonical-name'. "
 "content is:"
@@ -6421,8 +6422,8 @@ msgstr ""
 "ao invés disso você encontrará dados 'por dispositivo' em "
 "'cldevice_v5_canonical-name'. o conteúdo é:"
 
-#: ../src/common/darktable.c:2219 ../src/common/darktable.c:2238
-#: ../src/common/darktable.c:2253
+#: ../src/common/darktable.c:2243 ../src/common/darktable.c:2262
+#: ../src/common/darktable.c:2277
 msgid ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic' 'advantage' 'unified'"
@@ -6430,18 +6431,18 @@ msgstr ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic' 'advantage' 'unified'"
 
-#: ../src/common/darktable.c:2221 ../src/common/darktable.c:2240
+#: ../src/common/darktable.c:2245 ../src/common/darktable.c:2264
 msgid "you may tune as before except 'magic'"
 msgstr "você pode ajustar como antes exceto por 'magic'"
 
-#: ../src/common/darktable.c:2227
+#: ../src/common/darktable.c:2251
 msgid ""
 "your OpenCL compiler settings for all devices have been reset to default."
 msgstr ""
 "Suas configurações de compilador OpenCL para todos os dispositivos foram "
 "redefinidas para o padrão."
 
-#: ../src/common/darktable.c:2234
+#: ../src/common/darktable.c:2258
 msgid ""
 "OpenCL global config parameters 'per device' data has been recreated with an "
 "updated name."
@@ -6449,14 +6450,14 @@ msgstr ""
 "Os dados de parâmetros globais OpenCL 'por dispositivo' foram recriados com "
 "nome atualizado."
 
-#: ../src/common/darktable.c:2236 ../src/common/darktable.c:2251
+#: ../src/common/darktable.c:2260 ../src/common/darktable.c:2275
 msgid ""
 "you will find 'per device' data in 'cldevice_v5_canonical-name'. content is:"
 msgstr ""
 "você encontrará dados 'por dispositivo' em 'cldevice_v5_canonical-name'. o "
 "conteúdo é:"
 
-#: ../src/common/darktable.c:2242
+#: ../src/common/darktable.c:2266
 msgid ""
 "If you're using device names in 'opencl_device_priority' you should update "
 "them to the new names."
@@ -6464,7 +6465,7 @@ msgstr ""
 "Se você está usando nomes de dispositivo como 'opencl_device_priority' você "
 "deveria atualizá-los para os novos nomes."
 
-#: ../src/common/darktable.c:2249
+#: ../src/common/darktable.c:2273
 msgid ""
 "OpenCL 'per device' config data have been automatically extended by 'unified-"
 "fraction'."
@@ -6472,7 +6473,7 @@ msgstr ""
 "dados de configuração OpenCL 'por dispositivo' foram estendidos "
 "automaticamente por 'unified-fraction'."
 
-#: ../src/common/darktable.c:2260
+#: ../src/common/darktable.c:2284
 msgid ""
 "OpenCL 'per device' compiler settings might have been updated.\n"
 "\n"
@@ -6480,7 +6481,7 @@ msgstr ""
 "As configurações OpenCL 'por dispositivo' podem ter sido atualizadas.\n"
 "\n"
 
-#: ../src/common/darktable.c:2265
+#: ../src/common/darktable.c:2289
 msgid ""
 "OpenCL mandatory timeout has been updated to 1000.\n"
 "\n"
@@ -6838,63 +6839,63 @@ msgid_plural "date/time re-applied to %d images"
 msgstr[0] "data/hora re-aplicada em %d imagem"
 msgstr[1] "data/hora re-aplicada em %d imagens"
 
-#: ../src/common/image.c:2314
+#: ../src/common/image.c:2316
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "não pude acessar cópia local `%s'"
 
-#: ../src/common/image.c:2321
+#: ../src/common/image.c:2323
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "não pude escrever cópia local `%s'"
 
-#: ../src/common/image.c:2328
+#: ../src/common/image.c:2330
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "erro movendo cópia local `%s' -> `%s'"
 
-#: ../src/common/image.c:2345
+#: ../src/common/image.c:2347
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "erro movendo `%s': arquivo não encontrado"
 
-#: ../src/common/image.c:2355
+#: ../src/common/image.c:2357
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "erro movendo `%s' -> `%s': arquivo já existe"
 
-#: ../src/common/image.c:2359 ../src/common/image.c:2368
+#: ../src/common/image.c:2361 ../src/common/image.c:2370
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "erro movendo `%s' -> `%s'"
 
-#: ../src/common/image.c:2670
+#: ../src/common/image.c:2672
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "não é possível criar cópia local quando o arquivo original está inacessível."
 
-#: ../src/common/image.c:2684
+#: ../src/common/image.c:2686
 msgid "cannot create local copy."
 msgstr "não pude criar cópia local."
 
-#: ../src/common/image.c:2764 ../src/control/jobs/control_jobs.c:869
+#: ../src/common/image.c:2766 ../src/control/jobs/control_jobs.c:869
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "não é possível remover cópias local quando o arquivo original está "
 "inacessível."
 
-#: ../src/common/image.c:2930
+#: ../src/common/image.c:2932
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
 msgstr[0] "cópia local %d foi sincronizada"
 msgstr[1] "cópias locais %d foram sincronizadas"
 
-#: ../src/common/image.c:3130
+#: ../src/common/image.c:3132
 msgid "<b>WARNING</b>: camera is missing samples!"
 msgstr "<b>ALERTA</b> : amostras faltando para câmera!"
 
-#: ../src/common/image.c:3131
+#: ../src/common/image.c:3133
 msgid ""
 "You must provide samples in <a href='https://raw.pixls.us/'>https://raw."
 "pixls.us/</a>"
@@ -6902,7 +6903,7 @@ msgstr ""
 "Você precisa prover amostras em  <a href='https://raw.pixls.us/'>https://raw."
 "pixls.us/</a>"
 
-#: ../src/common/image.c:3132
+#: ../src/common/image.c:3134
 #, c-format
 msgid ""
 "for `%s' `%s'\n"
@@ -6911,7 +6912,7 @@ msgstr ""
 "para `%s' `%s'\n"
 "em tantos formatos/compressão/profundidade de bits quanto possível"
 
-#: ../src/common/image.c:3135
+#: ../src/common/image.c:3137
 msgid "or the <b>RAW won't be readable</b> in next version."
 msgstr "ou o <b>RAW não será legível</b> na próxima versão."
 
@@ -7084,7 +7085,7 @@ msgstr "nome de versão"
 msgid "image id"
 msgstr "id da imagem"
 
-#: ../src/common/mipmap_cache.c:1089 ../src/imageio/imageio.c:795
+#: ../src/common/mipmap_cache.c:1098 ../src/imageio/imageio.c:795
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "imagem `%s' não disponível!"
@@ -8762,7 +8763,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:2696 ../src/develop/blend_gui.c:3617
 #: ../src/iop/basicadj.c:630 ../src/iop/colorbalancergb.c:2134
-#: ../src/iop/colorequal.c:2644 ../src/iop/exposure.c:1136
+#: ../src/iop/colorequal.c:2642 ../src/iop/exposure.c:1136
 #: ../src/iop/exposure.c:1151 ../src/iop/filmic.c:1516 ../src/iop/filmic.c:1529
 #: ../src/iop/filmic.c:1571 ../src/iop/filmicrgb.c:4406
 #: ../src/iop/filmicrgb.c:4417 ../src/iop/filmicrgb.c:4451
@@ -9030,8 +9031,8 @@ msgid "feathering radius"
 msgstr "raio de enevoamento"
 
 #: ../src/develop/blend_gui.c:3670 ../src/develop/blend_gui.c:3682
-#: ../src/iop/colorbalancergb.c:2164 ../src/iop/colorequal.c:2659
-#: ../src/iop/colorequal.c:2690 ../src/iop/diffuse.c:1792
+#: ../src/iop/colorbalancergb.c:2164 ../src/iop/colorequal.c:2657
+#: ../src/iop/colorequal.c:2688 ../src/iop/diffuse.c:1792
 #: ../src/iop/diffuse.c:1802 ../src/iop/retouch.c:2730
 msgid " px"
 msgstr " px"
@@ -9623,7 +9624,21 @@ msgstr ""
 "provavelmente foi introduzido ao aplicar uma predefinição, estilo ou "
 "copiar&colar de histórico"
 
-#: ../src/develop/pixelpipe_hb.c:2686
+#: ../src/develop/pixelpipe_hb.c:1115
+#, c-format
+msgid ""
+"fatal pixelpipe abort because non aligned buffers\n"
+"in module '%s'\n"
+"please report on github"
+msgstr ""
+"fatal pielpile abortou por causa de buffers nao alinhados no módulo '%s'\n"
+"por favor reporte no github"
+
+#: ../src/develop/pixelpipe_hb.c:1490
+msgid "fatal input alignment, please report on github\n"
+msgstr "fatal erro de alinhamento, por favor reporte no github\n"
+
+#: ../src/develop/pixelpipe_hb.c:2719
 msgid ""
 "OpenCL errors encountered; disabling OpenCL for this session! some possible "
 "causes:\n"
@@ -9644,7 +9659,7 @@ msgstr ""
 "  - configuração de espaço muito pequeno com 'use toda a memória do "
 "dispositivo'."
 
-#: ../src/develop/pixelpipe_hb.c:2852
+#: ../src/develop/pixelpipe_hb.c:2885
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -13413,7 +13428,7 @@ msgstr ""
 "só muda resultado das abas de luma e croma"
 
 #: ../src/iop/atrous.c:1819 ../src/iop/colorbalancergb.c:2102
-#: ../src/iop/colorequal.c:2524 ../src/iop/colorzones.c:2730
+#: ../src/iop/colorequal.c:2522 ../src/iop/colorzones.c:2730
 #: ../src/iop/denoiseprofile.c:3724 ../src/iop/filmicrgb.c:4373
 #: ../src/iop/lowlight.c:819 ../src/iop/rawdenoise.c:921
 #: ../src/iop/toneequal.c:3392
@@ -13929,7 +13944,7 @@ msgstr "que dimensão usar para o cálculo do tamanho"
 msgid "size of the border in percent of the chosen basis"
 msgstr "tamanho da borda em percentagem da base escolhida"
 
-#: ../src/iop/borders.c:939 ../src/iop/clipping.c:2254 ../src/iop/crop.c:1242
+#: ../src/iop/borders.c:939 ../src/iop/clipping.c:2254 ../src/iop/crop.c:1245
 msgid "aspect"
 msgstr "proporção"
 
@@ -13969,7 +13984,7 @@ msgstr "5:3"
 msgid "US Legal 8.5x14"
 msgstr "US Legal 8.5x14"
 
-#: ../src/iop/borders.c:951 ../src/iop/clipping.c:2167 ../src/iop/crop.c:1144
+#: ../src/iop/borders.c:951 ../src/iop/clipping.c:2167 ../src/iop/crop.c:1147
 msgid "golden cut"
 msgstr "proporção áurea"
 
@@ -14005,7 +14020,7 @@ msgstr "14:11"
 msgid "5:4 (8x10)"
 msgstr "5:4 (8x10)"
 
-#: ../src/iop/borders.c:961 ../src/iop/clipping.c:2157 ../src/iop/crop.c:1134
+#: ../src/iop/borders.c:961 ../src/iop/clipping.c:2157 ../src/iop/crop.c:1137
 #: ../src/libs/filtering.c:316 ../src/libs/filters/ratio.c:124
 #: ../src/libs/histogram.c:119
 msgid "square"
@@ -14686,7 +14701,7 @@ msgstr ""
 "c: \t%.1f"
 
 #: ../src/iop/channelmixerrgb.c:4500 ../src/iop/clipping.c:2123
-#: ../src/iop/colorbalancergb.c:1915 ../src/iop/colorequal.c:2512
+#: ../src/iop/colorbalancergb.c:1915 ../src/iop/colorequal.c:2510
 #: ../src/iop/filmicrgb.c:4385 ../src/iop/negadoctor.c:843
 #: ../src/iop/toneequal.c:3340 ../src/libs/image.c:498
 #: ../src/views/lighttable.c:1258
@@ -14911,8 +14926,8 @@ msgid "Xrite ColorChecker 24 pre-2014"
 msgstr "Xrite ColorChecker 24 pre-2014"
 
 #: ../src/iop/channelmixerrgb.c:4757
-msgid "Xrite ColorChecker 24 post-2014"
-msgstr "Xrite ColorChecker 24 post-2014"
+msgid "Xrite/Calibrite ColorChecker 24 post-2014"
+msgstr "Xrite/Calibrite ColorChecker 24 post-2014"
 
 #: ../src/iop/channelmixerrgb.c:4758
 msgid "Datacolor SpyderCheckr 24 pre-2018"
@@ -15066,16 +15081,16 @@ msgstr "reenquadrar|perspectiva|distorção de perspectiva|distorção"
 msgid "change the framing and correct the perspective"
 msgstr "muda o enquadramento e corrige a perspectiva"
 
-#: ../src/iop/clipping.c:1430 ../src/iop/clipping.c:2156 ../src/iop/crop.c:526
-#: ../src/iop/crop.c:1133
+#: ../src/iop/clipping.c:1430 ../src/iop/clipping.c:2156 ../src/iop/crop.c:529
+#: ../src/iop/crop.c:1136
 msgid "original image"
 msgstr "imagem original"
 
-#: ../src/iop/clipping.c:1734 ../src/iop/crop.c:835
+#: ../src/iop/clipping.c:1734 ../src/iop/crop.c:838
 msgid "invalid ratio format. it should be \"number:number\""
 msgstr "formato da proporção inválido. deveria ser \"número:número\""
 
-#: ../src/iop/clipping.c:1750 ../src/iop/crop.c:851
+#: ../src/iop/clipping.c:1750 ../src/iop/crop.c:854
 msgid "invalid ratio format. it should be a positive number"
 msgstr "formato da proporção inválido. deveria ser um número positivo"
 
@@ -15116,51 +15131,51 @@ msgstr "distorção de perspectiva"
 msgid "set perspective correction for your image"
 msgstr "define a correção de perspectiva para sua imagem"
 
-#: ../src/iop/clipping.c:2155 ../src/iop/crop.c:1132
+#: ../src/iop/clipping.c:2155 ../src/iop/crop.c:1135
 msgid "freehand"
 msgstr "mão livre"
 
-#: ../src/iop/clipping.c:2158 ../src/iop/crop.c:1135
+#: ../src/iop/clipping.c:2158 ../src/iop/crop.c:1138
 msgid "10:8 in print"
 msgstr "10:8 em impressão"
 
-#: ../src/iop/clipping.c:2159 ../src/iop/crop.c:1136
+#: ../src/iop/clipping.c:2159 ../src/iop/crop.c:1139
 msgid "5:4, 4x5, 8x10"
 msgstr "5:4, 4x5, 8x10"
 
-#: ../src/iop/clipping.c:2160 ../src/iop/crop.c:1137
+#: ../src/iop/clipping.c:2160 ../src/iop/crop.c:1140
 msgid "11x14"
 msgstr "11x14"
 
-#: ../src/iop/clipping.c:2161 ../src/iop/crop.c:1138
+#: ../src/iop/clipping.c:2161 ../src/iop/crop.c:1141
 msgid "8.5x11, letter"
 msgstr "8.5x11, carta"
 
-#: ../src/iop/clipping.c:2162 ../src/iop/crop.c:1139
+#: ../src/iop/clipping.c:2162 ../src/iop/crop.c:1142
 msgid "4:3, VGA, TV"
 msgstr "4:3, VGA, TV"
 
-#: ../src/iop/clipping.c:2163 ../src/iop/crop.c:1140
+#: ../src/iop/clipping.c:2163 ../src/iop/crop.c:1143
 msgid "5x7"
 msgstr "5x7"
 
-#: ../src/iop/clipping.c:2164 ../src/iop/crop.c:1141
+#: ../src/iop/clipping.c:2164 ../src/iop/crop.c:1144
 msgid "ISO 216, DIN 476, A4"
 msgstr "ISO 216, DIN 476, A4"
 
-#: ../src/iop/clipping.c:2165 ../src/iop/crop.c:1142
+#: ../src/iop/clipping.c:2165 ../src/iop/crop.c:1145
 msgid "3:2, 4x6, 35mm"
 msgstr "3:2, 4x6, 35mm"
 
-#: ../src/iop/clipping.c:2166 ../src/iop/crop.c:1143
+#: ../src/iop/clipping.c:2166 ../src/iop/crop.c:1146
 msgid "16:10, 8x5"
 msgstr "16:10, 8x5"
 
-#: ../src/iop/clipping.c:2168 ../src/iop/crop.c:1145
+#: ../src/iop/clipping.c:2168 ../src/iop/crop.c:1148
 msgid "16:9, HDTV"
 msgstr "16:9, HDTV"
 
-#: ../src/iop/clipping.c:2169 ../src/iop/crop.c:1146
+#: ../src/iop/clipping.c:2169 ../src/iop/crop.c:1149
 msgid "widescreen"
 msgstr "widescreen"
 
@@ -15172,25 +15187,25 @@ msgstr "2:1, univisium"
 msgid "cinemascope"
 msgstr "cinemascópio"
 
-#: ../src/iop/clipping.c:2172 ../src/iop/crop.c:1149
+#: ../src/iop/clipping.c:2172 ../src/iop/crop.c:1152
 msgid "21:9"
 msgstr "21:9"
 
-#: ../src/iop/clipping.c:2173 ../src/iop/crop.c:1150
+#: ../src/iop/clipping.c:2173 ../src/iop/crop.c:1153
 msgid "anamorphic"
 msgstr "anamórfico"
 
-#: ../src/iop/clipping.c:2174 ../src/iop/crop.c:1152
+#: ../src/iop/clipping.c:2174 ../src/iop/crop.c:1155
 msgid "3:1, panorama"
 msgstr "3:1, panorâmica"
 
-#: ../src/iop/clipping.c:2206 ../src/iop/clipping.c:2218 ../src/iop/crop.c:1188
-#: ../src/iop/crop.c:1205
+#: ../src/iop/clipping.c:2206 ../src/iop/clipping.c:2218 ../src/iop/crop.c:1191
+#: ../src/iop/crop.c:1208
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
 msgstr "formato da proporção inválido para `%s'. deveria ser \"número:número\""
 
-#: ../src/iop/clipping.c:2265 ../src/iop/crop.c:1256
+#: ../src/iop/clipping.c:2265 ../src/iop/crop.c:1259
 msgid ""
 "set the aspect ratio\n"
 "the list is sorted: from most square to least square\n"
@@ -15202,23 +15217,23 @@ msgstr ""
 "para entrar uma proporção personalizada, abra o o menu\n"
 "suspenso e digite a proporção como x:y ou em formato decimal"
 
-#: ../src/iop/clipping.c:2272 ../src/iop/crop.c:1270
+#: ../src/iop/clipping.c:2272 ../src/iop/crop.c:1273
 msgid "margins"
 msgstr "margens"
 
-#: ../src/iop/clipping.c:2277 ../src/iop/crop.c:1280
+#: ../src/iop/clipping.c:2277 ../src/iop/crop.c:1283
 msgid "the left margin cannot overlap with the right margin"
 msgstr "a margem esquerda não pode sobrepor a margem direita"
 
-#: ../src/iop/clipping.c:2284 ../src/iop/crop.c:1288
+#: ../src/iop/clipping.c:2284 ../src/iop/crop.c:1291
 msgid "the right margin cannot overlap with the left margin"
 msgstr "a margem direita não pode sobrepor a margem esquerda"
 
-#: ../src/iop/clipping.c:2289 ../src/iop/crop.c:1294
+#: ../src/iop/clipping.c:2289 ../src/iop/crop.c:1297
 msgid "the top margin cannot overlap with the bottom margin"
 msgstr "a margem superior não pode sobrepor a margem inferior"
 
-#: ../src/iop/clipping.c:2296 ../src/iop/crop.c:1302
+#: ../src/iop/clipping.c:2296 ../src/iop/crop.c:1305
 msgid "the bottom margin cannot overlap with the top margin"
 msgstr "a margem inferior não pode sobrepor a margem superior"
 
@@ -15261,12 +15276,12 @@ msgstr ""
 "horizontalmente</b>: ctrl+arrastar\n"
 "<b>endireitar</b>: arrastar com botão direito, <b>finalizar</b>: clique-duplo"
 
-#: ../src/iop/clipping.c:3363 ../src/iop/crop.c:1804
+#: ../src/iop/clipping.c:3363 ../src/iop/crop.c:1808
 #, c-format
 msgid "[%s on borders] crop"
 msgstr "[%s em bordas] cortar"
 
-#: ../src/iop/clipping.c:3365 ../src/iop/crop.c:1806
+#: ../src/iop/clipping.c:3365 ../src/iop/crop.c:1810
 #, c-format
 msgid "[%s on borders] crop keeping ratio"
 msgstr "[%s em bordas] cortar mantendo aspecto"
@@ -16305,7 +16320,7 @@ msgstr ""
 "e está aqui apenas para que você o desative\n"
 "e use o novo mapeamento de cor."
 
-#: ../src/iop/colorequal.c:183 ../src/iop/colorequal.c:2471
+#: ../src/iop/colorequal.c:183 ../src/iop/colorequal.c:2469
 msgid "color equalizer"
 msgstr "equalizador de cores"
 
@@ -16325,29 +16340,29 @@ msgstr "quase-linear, RGB"
 msgid "quasi-linear, RGB, scene-referred"
 msgstr "quase-linear, RGB, relativo à cena"
 
-#: ../src/iop/colorequal.c:1611
+#: ../src/iop/colorequal.c:1609
 msgid "bleach bypass"
 msgstr "ignorar branqueamento"
 
-#: ../src/iop/colorequal.c:1655
+#: ../src/iop/colorequal.c:1653
 msgid "Kodachrome 64 like"
 msgstr "Similar a Kodachrome 64"
 
-#: ../src/iop/colorequal.c:1699
+#: ../src/iop/colorequal.c:1697
 msgid "Kodak Portra 400 like"
 msgstr "Similar a Kodachrome Portra 400"
 
-#: ../src/iop/colorequal.c:1743
+#: ../src/iop/colorequal.c:1741
 msgid "teal & orange"
 msgstr "verde-azulado e laranja"
 
 #. Page OPTIONS
-#: ../src/iop/colorequal.c:2426 ../src/iop/colorequal.c:2636
+#: ../src/iop/colorequal.c:2424 ../src/iop/colorequal.c:2634
 #: ../src/iop/filmicrgb.c:4577
 msgid "options"
 msgstr "opções"
 
-#: ../src/iop/colorequal.c:2525
+#: ../src/iop/colorequal.c:2523
 msgid ""
 "double-click to reset the curve\n"
 "middle click to toggle sliders visibility\n"
@@ -16357,11 +16372,11 @@ msgstr ""
 "clique do meio para alternar a visibilidade dos deslizadores\n"
 "alt+scroll para mudar a página"
 
-#: ../src/iop/colorequal.c:2552
+#: ../src/iop/colorequal.c:2550
 msgid "shift nodes to lower or higher hue"
 msgstr "deslocar nós para matiz mais baixa ou mais alta"
 
-#: ../src/iop/colorequal.c:2555
+#: ../src/iop/colorequal.c:2553
 msgid ""
 "pick hue from image and visualize it\n"
 "ctrl+click to select an area"
@@ -16369,19 +16384,19 @@ msgstr ""
 "obter matiz da imagem e a vizualizar\n"
 "ctrl+clique para selecionar uma área"
 
-#: ../src/iop/colorequal.c:2577
+#: ../src/iop/colorequal.c:2575
 msgid "change hue hue-wise"
 msgstr "muda a matiz de uma cor"
 
-#: ../src/iop/colorequal.c:2595
+#: ../src/iop/colorequal.c:2593
 msgid "change saturation hue-wise"
 msgstr "muda saturação de uma matiz de cor"
 
-#: ../src/iop/colorequal.c:2613
+#: ../src/iop/colorequal.c:2611
 msgid "change brightness hue-wise"
 msgstr "muda luminosidade de uma matiz de cor"
 
-#: ../src/iop/colorequal.c:2646
+#: ../src/iop/colorequal.c:2644
 msgid ""
 "the white level set manually or via the picker restricts brightness "
 "corrections\n"
@@ -16392,16 +16407,16 @@ msgstr ""
 "para ficarem abaixo do nível definido. o default é bom para a maioria das "
 "imagens"
 
-#: ../src/iop/colorequal.c:2651
+#: ../src/iop/colorequal.c:2649
 msgid "change for sharper or softer hue curve"
 msgstr "mudar para curva de matiz mais suave ou mais acentuada"
 
-#: ../src/iop/colorequal.c:2655
+#: ../src/iop/colorequal.c:2653
 msgid "restrict effect by using a guided filter based on hue and saturation"
 msgstr ""
 "restringir o efeito usando um filtro guiado baseado em matiz e saturação"
 
-#: ../src/iop/colorequal.c:2661
+#: ../src/iop/colorequal.c:2659
 msgid ""
 "set radius of the guided filter chroma analysis (hue).\n"
 "increase if there is large local variance of hue or strong chroma noise."
@@ -16409,7 +16424,7 @@ msgstr ""
 "definir raio da análise de croma por filtro guiado (matiz).\n"
 "aumente se há grande variância local de matiz ou forte ruído de croma."
 
-#: ../src/iop/colorequal.c:2672
+#: ../src/iop/colorequal.c:2670
 msgid ""
 "visualize weighting function on changed output and view weighting curve.\n"
 "red shows possibly changed data, blueish parts will not be changed."
@@ -16418,7 +16433,7 @@ msgstr ""
 "vermelho mostra dados possivelmente modificados, partes azuladas não serão "
 "modificadas."
 
-#: ../src/iop/colorequal.c:2676
+#: ../src/iop/colorequal.c:2674
 msgid ""
 "set saturation threshold for the guided filter.\n"
 " - decrease to allow changes in areas with low chromaticity\n"
@@ -16431,7 +16446,7 @@ msgstr ""
 "   aumenta contraste e evita mudanças de brilho em áreas com baixa "
 "cromaticidade."
 
-#: ../src/iop/colorequal.c:2684
+#: ../src/iop/colorequal.c:2682
 msgid ""
 "set saturation contrast for the guided filter.\n"
 " - increase to favor sharp transitions between saturations leading to higher "
@@ -16443,11 +16458,11 @@ msgstr ""
 "maior contraste\n"
 " - diminua para transições mais suaves"
 
-#: ../src/iop/colorequal.c:2691
+#: ../src/iop/colorequal.c:2689
 msgid "set radius of applied parameters for the guided filter"
 msgstr "definir o raio de parâmetros aplicados para o filtro guiado"
 
-#: ../src/iop/colorequal.c:2698
+#: ../src/iop/colorequal.c:2696
 msgid ""
 "visualize changed output for the selected tab.\n"
 "red shows increased data, blue decreased."
@@ -16570,24 +16585,24 @@ msgstr "reenquadramento|distorção"
 msgid "change the framing"
 msgstr "muda o enquadramento"
 
-#: ../src/iop/crop.c:1147
+#: ../src/iop/crop.c:1150
 msgid "2:1, Univisium"
 msgstr "2:1, Univisium"
 
-#: ../src/iop/crop.c:1148
+#: ../src/iop/crop.c:1151
 msgid "CinemaScope"
 msgstr "CinemaScope"
 
-#: ../src/iop/crop.c:1151
+#: ../src/iop/crop.c:1154
 msgid "65:24, XPan"
 msgstr "65:24, XPan"
 
-#: ../src/iop/crop.c:1685
+#: ../src/iop/crop.c:1689
 msgid "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"
 msgstr ""
 "<b>mudar tamanho</b>: arrastar, <b>manter proporção</b>: shift+arrastar"
 
-#: ../src/iop/crop.c:1694
+#: ../src/iop/crop.c:1698
 msgid ""
 "<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</"
 "b>: ctrl+drag"
@@ -18190,10 +18205,6 @@ msgstr "rotação|inversão|espelhamento"
 #: ../src/iop/flip.c:111
 msgid "flip or rotate image by step of 90 degrees"
 msgstr "espelha ou gira a imagem em passos de 90 graus"
-
-#: ../src/iop/flip.c:469 ../src/iop/flip.c:612
-msgid "flip horizontally"
-msgstr "girar horizontalmente"
 
 #: ../src/iop/flip.c:477
 msgid "rotate by -90 degrees"
@@ -23448,12 +23459,12 @@ msgstr "mesclar"
 msgid ""
 "update all image information to match changes to file\n"
 "warning: resets star ratings unless you select\n"
-"'ignore exif rating' in the 'import' module\n"
+"'ignore EXIF rating' in the 'import' module\n"
 msgstr ""
 "atualizar tudas as informações da imagem para refletir as mudanças feitas no "
 "arquivo\n"
 "cuidado: limpa as classificações em estrelas a não ser que você selecione\n"
-"'ignorar classificação exif' no módulo 'importar'\n"
+"'ignorar classificação EXIF' no módulo 'importar'\n"
 
 #: ../src/libs/image.c:690
 msgid "set selection as monochrome images and activate monochrome workflow"
@@ -26737,6 +26748,9 @@ msgstr "mudar para uma janela clássica que ficará aberta após soltar a tecla.
 #: ../src/views/view.c:1536
 msgid "mouse actions"
 msgstr "ações com mouse"
+
+#~ msgid "Flip horizontally"
+#~ msgstr "girar horizontalmente"
 
 #~ msgid "search filmroll"
 #~ msgstr "procura rolo de filme"
