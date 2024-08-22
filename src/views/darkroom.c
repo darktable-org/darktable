@@ -555,12 +555,19 @@ void expose(
           dev->image_storage.filename);
         break;
       }
-      if(dev->image_invalid_cnt > 400)
+      // if we already saw an error, retry a FEW more times with a bit of delay in between
+      // it would be better if we could just put the delay after the first occurrence, but that
+      // resulted in the error message not showing
+      if(dev->image_invalid_cnt > 1)
       {
-        dev->image_invalid_cnt = 0;
-        dt_view_manager_switch(darktable.view_manager, "lighttable");
-        g_free(load_txt);
-        return;
+        g_usleep(1000000); // one second
+        if(dev->image_invalid_cnt > 8)
+        {
+          dev->image_invalid_cnt = 0;
+          dt_view_manager_switch(darktable.view_manager, "lighttable");
+          g_free(load_txt);
+          return;
+        }
       }
     }
     else
