@@ -155,7 +155,8 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
 {
   const char *ext = filename + strlen(filename);
   while(*ext != '.' && ext > filename) ext--;
-  if(strncmp(ext, ".png", 4) && strncmp(ext, ".PNG", 4)) return DT_IMAGEIO_LOAD_FAILED;
+  if(strncmp(ext, ".png", 4) && strncmp(ext, ".PNG", 4))
+    return DT_IMAGEIO_UNSUPPORTED_FORMAT;
   if(!img->exif_inited) (void)dt_exif_read(img, filename);
 
   dt_imageio_png_t image;
@@ -165,7 +166,7 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
 
 
   if(!dt_imageio_png_read_header(filename, &image))
-    return DT_IMAGEIO_LOAD_FAILED;
+    return DT_IMAGEIO_UNSUPPORTED_FORMAT;
 
   width = img->width = image.width;
   height = img->height = image.height;
@@ -197,7 +198,7 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
   {
     dt_free_align(buf);
     dt_print(DT_DEBUG_ALWAYS, "[png_open] could not read image `%s'\n", img->filename);
-    return DT_IMAGEIO_LOAD_FAILED;
+    return DT_IMAGEIO_FILE_CORRUPTED;
   }
 
   const size_t npixels = (size_t)width * height;

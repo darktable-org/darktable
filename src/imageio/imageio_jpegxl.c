@@ -66,7 +66,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
              filename);
     free(read_buffer);
     fclose(inputfile);
-    return DT_IMAGEIO_LOAD_FAILED;
+    return DT_IMAGEIO_IOERROR;
   }
   fclose(inputfile);
 
@@ -76,7 +76,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
   {
     // It's normal if this function is called for a non-jxl file, so we should fail silently.
     free(read_buffer);
-    return DT_IMAGEIO_LOAD_FAILED;
+    return DT_IMAGEIO_UNSUPPORTED_FORMAT;
   }
 
   const JxlPixelFormat pixel_format =
@@ -149,7 +149,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
       JxlResizableParallelRunnerDestroy(runner);
       JxlDecoderDestroy(decoder);
       free(read_buffer);
-      return DT_IMAGEIO_LOAD_FAILED;
+      return DT_IMAGEIO_FILE_CORRUPTED;
     }
 
     if(status == JXL_DEC_NEED_MORE_INPUT)
@@ -158,7 +158,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
       JxlResizableParallelRunnerDestroy(runner);
       JxlDecoderDestroy(decoder);
       free(read_buffer);
-      return DT_IMAGEIO_LOAD_FAILED;
+      return DT_IMAGEIO_FILE_CORRUPTED;
     }
 
     if(status == JXL_DEC_BASIC_INFO)
@@ -169,7 +169,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
         JxlResizableParallelRunnerDestroy(runner);
         JxlDecoderDestroy(decoder);
         free(read_buffer);
-        return DT_IMAGEIO_LOAD_FAILED;
+        return DT_IMAGEIO_FILE_CORRUPTED;
       }
 
       // Unlikely to happen, but let there be a sanity check
@@ -179,7 +179,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
         JxlResizableParallelRunnerDestroy(runner);
         JxlDecoderDestroy(decoder);
         free(read_buffer);
-        return DT_IMAGEIO_LOAD_FAILED;
+        return DT_IMAGEIO_FILE_CORRUPTED;
       }
 
 
@@ -261,7 +261,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
         JxlResizableParallelRunnerDestroy(runner);
         JxlDecoderDestroy(decoder);
         free(read_buffer);
-        return DT_IMAGEIO_LOAD_FAILED;
+        return DT_IMAGEIO_UNSUPPORTED_FEATURE;
       }
     continue;    // go to next iteration to process rest of the input
     }
