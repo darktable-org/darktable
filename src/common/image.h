@@ -36,16 +36,17 @@ extern "C" {
 /** return value of image io functions. */
 typedef enum dt_imageio_retval_t
 {
-  DT_IMAGEIO_OK = 0,         // all good :)
-  DT_IMAGEIO_FILE_NOT_FOUND, // file has been lost
-  DT_IMAGEIO_LOAD_FAILED,    // file either corrupted or in a format not supported by the current loader,
-                             // and a more detailed error from among those below is not available.
+  DT_IMAGEIO_OK = 0,              // all good :)
+  DT_IMAGEIO_FILE_NOT_FOUND,      // file has been lost
+  DT_IMAGEIO_LOAD_FAILED,         // file either corrupted or in a format not supported by the current loader,
+                                  // and a more detailed error from among those below is not available.
   DT_IMAGEIO_UNSUPPORTED_FORMAT,  // the file type is not supported; may be one which is a build-time option
   DT_IMAGEIO_UNSUPPORTED_CAMERA,  // the file type is supported, but the camera model is not
   DT_IMAGEIO_UNSUPPORTED_FEATURE, // the file uses an unsupported feature such as compression type
   DT_IMAGEIO_FILE_CORRUPTED,      // invalid data was detected while parsing the file
   DT_IMAGEIO_IOERROR,             // a read error occurred while loading the file
-  DT_IMAGEIO_CACHE_FULL      // buffer allocation for image data failed
+  DT_IMAGEIO_CACHE_FULL,          // buffer allocation for image data failed
+  DT_IMAGEIO_UNRECOGNIZED         // file format was not recognized by loader(s)
 } dt_imageio_retval_t;
 
 typedef enum dt_imageio_write_xmp_t

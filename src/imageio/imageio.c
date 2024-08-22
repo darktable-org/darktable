@@ -90,6 +90,353 @@
 #include "lua/image.h"
 #endif
 
+typedef enum {
+  DT_FILETYPE_UNKNOWN,
+  DT_FILETYPE_NONIMAGE,
+  DT_FILETYPE_BMP,
+  DT_FILETYPE_DJVU,
+  DT_FILETYPE_FITS,
+  DT_FILETYPE_GIF,
+  DT_FILETYPE_JPEG,
+  DT_FILETYPE_JPEG2000,
+  DT_FILETYPE_PNG,
+  DT_FILETYPE_PNM,
+  DT_FILETYPE_QOI,
+  DT_FILETYPE_TIFF,
+  DT_FILETYPE_BIGTIFF,
+  DT_FILETYPE_WEBP,
+  DT_FILETYPE_OTHER_LDR,
+  DT_FILETYPE_AVIF,
+  DT_FILETYPE_HEIC,
+  DT_FILETYPE_JPEGXL,
+  DT_FILETYPE_OPENEXR,
+  DT_FILETYPE_PFM,
+  DT_FILETYPE_RGBE,
+  DT_FILETYPE_OTHER_HDR,
+  DT_FILETYPE_ARW,	// Sony Alpha
+  DT_FILETYPE_CRW,	// Canon
+  DT_FILETYPE_CR2,
+  DT_FILETYPE_CR3,
+  DT_FILETYPE_ERF,	// Epson - files are TIFF/EP
+  DT_FILETYPE_IIQ,	// Leaf/PhaseOne - TIFF with extra magic
+  DT_FILETYPE_KODAK,
+  DT_FILETYPE_MRW,	// Minolta
+  DT_FILETYPE_NEF,	// Nikon
+  DT_FILETYPE_ORF,	// Olympus - TIFF with custom magic at start
+  DT_FILETYPE_PEF,	// Pentax
+  DT_FILETYPE_RAF,	// Fujifilm
+  DT_FILETYPE_RW2,	// Panasonic
+  DT_FILETYPE_SRW,	
+  DT_FILETYPE_X3F,	// Sigma Foveon
+  DT_FILETYPE_OTHER_RAW,
+  DT_FILETYPE_DNG,
+} dt_filetype_t;
+
+// the longest prefix of the file we want to be able to examine
+#define MAX_MAGIC 32
+
+// declare the image-loading function's type
+typedef dt_imageio_retval_t dt_image_loader_fn_t(dt_image_t *img,
+                                                 const char *filename,
+                                                 dt_mipmap_buffer_t *buf);
+
+// a surrogate loader function for any types whose libraries haven't been linked while building
+static dt_imageio_retval_t _unsupported_type(dt_image_t *img,
+                                              const char *filename,
+                                              dt_mipmap_buffer_t *buf)
+{
+  return DT_IMAGEIO_LOAD_FAILED;
+}
+
+// redirect loaders to surrogate as needed
+#ifndef HAVE_LIBJPEG
+#define dt_imageio_open_j2k _unsupported_type
+#endif
+
+#ifndef HAVE_WEBP
+#define dt_imageio_open_webp _unsupported_type
+#endif
+
+#ifndef HAVE_LIBJXL
+#define dt_imageio_open_jpegxl _unsupported_type
+#endif
+
+#ifndef HAVE_LIBAVIF
+#define dt_imageio_open_avif _unsupported_type
+#endif
+
+#ifndef HAVE_LIBHEIF
+#define dt_imageio_open_heif _unsupported_type
+#endif
+
+#ifndef HAVE_GRAPHICSMAGICK
+#define dt_imageio_open_gm _unsupported_type
+#endif
+
+#ifndef HAVE_IMAGESMAGICK
+#define dt_imageio_open_im _unsupported_type
+#endif
+
+typedef struct {
+  dt_filetype_t filetype;
+  gboolean      hdr;
+  unsigned      offset;	           // start offset of signature in file
+  unsigned      length;	           // length of signature in bytes
+  dt_image_loader_fn_t *loader;	   // the function with which to load the image (NULL if special handling needed)
+  gchar         magic[MAX_MAGIC];  // the actual signature bytes
+} dt_magic_bytes_t;
+
+// the signatures for the file types we know about.  More specific ones need to come before
+// less specific ones, e.g. TIFF needs to come after DNG and nearly all camera formats, since
+// the latter are all TIFF containers
+// various signatures were found in magic/Magdir/images from https://gibhub.com/file/file and at
+// https://en.wikipedia.org/wiki/List_of_file_signatures,
+// https://libopenraw.freedesktop.org/formats/,
+// https://www.garykessler.net/library/file_sigs.html, and
+// https://www.iana.org/assignments/media-types/media-types.xhtml#image
+static const dt_magic_bytes_t _magic_signatures[] = {
+  // FITS image
+  { DT_FILETYPE_FITS, FALSE, 0, 9, dt_imageio_open_exotic,
+    { 'S', 'I', 'M', 'P', 'L', 'E', ' ', ' ', '=' } },
+  // GIF image
+  { DT_FILETYPE_GIF, FALSE, 0, 4, dt_imageio_open_exotic,
+    { 'G', 'I', 'F', '8' } },
+  // JPEG
+  { DT_FILETYPE_JPEG, FALSE, 0, 3, dt_imageio_open_jpeg,
+    { 0xFF, 0xD8, 0xFF } }, // SOI marker
+  // JPEG-2000, j2k format
+  { DT_FILETYPE_JPEG2000, FALSE, 0, 5, dt_imageio_open_j2k,
+    { 0xFF, 0x4F, 0xFF, 0x51, 0x00 } },
+  // JPEG-2000, jp2 format
+  { DT_FILETYPE_JPEG2000, FALSE, 0, 12, dt_imageio_open_j2k,
+    { 0x00, 0x00, 0x00, 0x0C, 'j', 'P', ' ', ' ', 0x0D, 0x0A, 0x87, 0x0A } },
+  // JPEG-XL image (direct codestream)
+  { DT_FILETYPE_JPEGXL, TRUE, 0, 2, dt_imageio_open_jpegxl,
+    { 0xFF, 0x0A } },
+  // JPEG-XL image (ISOBMFF container)
+  { DT_FILETYPE_JPEGXL, TRUE, 0, 12, dt_imageio_open_jpegxl,
+    { 0x00, 0x00, 0x00, 0x0C, 'J', 'X', 'L', ' ', 0x0D, 0x0A, 0x87, 0x0A } },
+  // PNG image
+  { DT_FILETYPE_PNG, FALSE, 0, 5, dt_imageio_open_png,
+    { 0x89, 'P', 'N', 'G', 0x0D } },
+  // WEBP image
+  { DT_FILETYPE_WEBP, FALSE, 8, 4, dt_imageio_open_webp,
+    { 'W', 'E', 'B', 'P' } },  // full signature is RIFF????WEPB, where ???? is the file size
+  // HEIC/HEIF image
+  { DT_FILETYPE_HEIC, FALSE, 4, 8, dt_imageio_open_heif,
+    { 'f', 't', 'y', 'p', 'h', 'e', 'i', 'c' } },
+  { DT_FILETYPE_HEIC, TRUE, 4, 8, dt_imageio_open_heif,
+    { 'f', 't', 'y', 'p', 'h', 'e', 'i', 'x' } }, // 10-bit
+  // AVIF image
+  { DT_FILETYPE_AVIF, TRUE, 4, 8, dt_imageio_open_avif,
+    { 'f', 't', 'y', 'p', 'a', 'v', 'i', 'f' } },
+//  { DT_FILETYPE_AVIF, TRUE, 4, 8, dt_imageio_open_avif,
+//    { 'f', 't', 'y', 'p', 'm', 'i', 'f', '1' } },  //alternate? HEIF or AVIF, depending on bytes 16-19
+  // Quite OK Image Format (QOI)
+  { DT_FILETYPE_QOI, FALSE, 0, 4, dt_imageio_open_qoi,
+    { 'q', 'o', 'i', 'f' } },
+  // OpenEXR image
+  { DT_FILETYPE_OPENEXR, TRUE, 0, 4, dt_imageio_open_exr,
+    { 'v', '/', '1', 0x01 } },
+  // RGBE (.hdr)  image
+  { DT_FILETYPE_RGBE, TRUE, 0, 11, dt_imageio_open_rgbe,
+    { '#', '?', 'R', 'A', 'D', 'I', 'A', 'N', 'C', 'E', 0x0A } },
+  // original v1 CRW
+  { DT_FILETYPE_CRW, TRUE, 0, 14, dt_imageio_open_rawspeed,
+    { 'I', 'I', 0x1A, 0x00, 0x00, 0x00, 'H', 'E', 'A', 'P', 'C', 'C', 'D', 'R' } },
+  // most CR2
+  { DT_FILETYPE_CR2, TRUE, 0, 10, dt_imageio_open_rawspeed,
+    { 'I', 'I', '*', 0x00, 0x10, 0x00, 0x00, 0x00, 'C', 'R' } },
+  // CR3 (ISOBMFF)
+  { DT_FILETYPE_CR3, TRUE, 0, 24, dt_imageio_open_libraw,
+    { 0x00, 0x00, 0x00, 0x18, 'f', 't', 'y', 'p', 'c', 'r', 'x', ' ',
+      0x00, 0x00, 0x00, 0x01, 'c', 'r', 'x', ' ', 'i', 's', 'o', 'm' } },
+  // older Canon RAW formats using TIF extension
+  { DT_FILETYPE_CRW, TRUE, 0, 10, dt_imageio_open_rawspeed,
+    { 'I', 'I', '*', 0x00, 0x00, 0x03, 0x00, 0x00, 0xFF, 0x01 } }, // i.e. DCS1
+  { DT_FILETYPE_CRW, TRUE, 0, 10, dt_imageio_open_rawspeed,
+    { 'M', 'M', 0x00, '*', 0x00, 0x00, 0x00, 0x10, 0xBA, 0xB0 } }, // i.e. 1D, 1Ds
+  { DT_FILETYPE_CRW, TRUE, 0, 10, dt_imageio_open_rawspeed,
+    { 'M', 'M', 0x00, '*', 0x00, 0x00, 0x11, 0x34, 0x00, 0x04 } }, // i.e. D2000
+  // older Kodak RAW formats using TIF extension
+  { DT_FILETYPE_KODAK, TRUE, 0, 10, dt_imageio_open_rawspeed,
+    { 'I', 'I', '*', 0x00, 0x00, 0x03, 0x00, 0x00, 0x7C, 0x01 } }, // i.e. DCS460D
+  { DT_FILETYPE_KODAK, TRUE, 0, 10, dt_imageio_open_rawspeed,
+    { 'M', 'M', 0x00, '*', 0x00, 0x00, 0x11, 0xA8, 0x00, 0x04 } }, // i.e. DCS520C
+  { DT_FILETYPE_KODAK, TRUE, 0, 10, dt_imageio_open_rawspeed,
+    { 'M', 'M', 0x00, '*', 0x00, 0x00, 0x11, 0x76, 0x00, 0x04 } }, // i.e. DCS560C
+  // IIQ raw images, may use either .IIQ or .TIF extension
+  { DT_FILETYPE_IIQ, TRUE, 8, 4, dt_imageio_open_rawspeed,
+    { 'I', 'I', 'I', 'I' } },
+  // Fujifilm RAF
+  { DT_FILETYPE_RAF, TRUE, 0, 15, dt_imageio_open_rawspeed,
+    { 'F', 'U', 'J', 'I', 'F', 'I', 'L', 'M', 'C', 'C', 'D', '-', 'R', 'A', 'W' }},
+  // Minolta MRW file
+  { DT_FILETYPE_MRW, TRUE, 0, 4, dt_imageio_open_rawspeed,
+    { 0x00, 'M', 'R', 'M' } },
+  // Olympus ORF file
+  { DT_FILETYPE_ORF, TRUE, 0, 4, dt_imageio_open_rawspeed,
+    { 'I', 'I', 'R', 'O' } },   // most Olympus models
+  { DT_FILETYPE_ORF, TRUE, 0, 4, dt_imageio_open_rawspeed,
+    { 'I', 'I', 'R', 'S' } },	// C7070WZ
+  { DT_FILETYPE_ORF, TRUE, 0, 4, dt_imageio_open_rawspeed,
+    { 'M', 'M', 'O', 'R' } },   // E-10
+  // Panasonic RW2 file
+  { DT_FILETYPE_RW2, TRUE, 0, 8, dt_imageio_open_rawspeed,
+    { 'I', 'I', 'U', 0x00, 0x08, 0x00, 0x00, 0x00 } },
+  // Sigma Foveon X3F file
+  { DT_FILETYPE_X3F, TRUE, 0, 4, NULL,
+    { 'F', 'O', 'V', 'b' } },
+  // little-endian (Intel) TIFF
+  { DT_FILETYPE_TIFF, FALSE, 0, 4, NULL, // may be DNG or any of many camera raw types
+    { 'I', 'I', '*', 0x00 } },
+  // big-endian (Motorola) TIFF
+  { DT_FILETYPE_TIFF, FALSE, 0, 4, NULL, // may be DNG or any of many camera raw types
+    { 'M', 'M', 0x00, '*' } },
+  // little-endian (Intel) BigTIFF
+  { DT_FILETYPE_BIGTIFF, FALSE, 0, 4, dt_imageio_open_tiff,
+    { 'I', 'I', '+', 0x00 } },
+  // big-endian (Motorola) BigTIFF
+  { DT_FILETYPE_BIGTIFF, FALSE, 0, 4, dt_imageio_open_tiff,
+    { 'M', 'M', 0x00, '+' } },
+  // GIMP .xcf file
+  { DT_FILETYPE_OTHER_LDR, FALSE, 0, 8, dt_imageio_open_exotic,
+    { 'g', 'i', 'm', 'p', ' ', 'x', 'c', 'f' } },
+  // X PixMap
+  { DT_FILETYPE_OTHER_LDR, FALSE, 0, 9, dt_imageio_open_exotic,
+    { '/', '*', ' ', 'X', 'P', 'M', ' ', '*', '/' } },
+  // Kodak Cineon image
+  { DT_FILETYPE_OTHER_LDR, FALSE, 0, 4, NULL,
+    { 0x80, 0x2A, 0x5F, 0xD7 } },
+  // ASCII NetPNM (pbm)
+  { DT_FILETYPE_PNM, FALSE, 0, 3, dt_imageio_open_pnm,
+    { 'P', '1', 0x0A } },
+  // ASCII NetPNM (pgm)
+  { DT_FILETYPE_PNM, FALSE, 0, 3, dt_imageio_open_pnm,
+    { 'P', '2', 0x0A } },
+  // ASCII NetPNM (ppm)
+  { DT_FILETYPE_PNM, FALSE, 0, 3, dt_imageio_open_pnm,
+    { 'P', '3', 0x0A } },
+  // binary NetPNM (pbm)
+  { DT_FILETYPE_PNM, FALSE, 0, 3, dt_imageio_open_pnm,
+    { 'P', '4', 0x0A } },
+  // binary NetPNM (pgm)
+  { DT_FILETYPE_PNM, FALSE, 0, 3, dt_imageio_open_pnm,
+    { 'P', '5', 0x0A } },
+  // binary NetPNM (ppm)
+  { DT_FILETYPE_PNM, FALSE, 0, 3, dt_imageio_open_pnm,
+    { 'P', '6', 0x0A } },
+  // Windows BMP bitmap image
+  { DT_FILETYPE_BMP, FALSE, 0, 2, dt_imageio_open_exotic,
+    { 'B', 'M' } },
+  // Portable float map (PFM) image
+  { DT_FILETYPE_PFM, TRUE, 0, 2, dt_imageio_open_pfm,
+    { 'P', 'F' } },  // color
+  { DT_FILETYPE_PFM, TRUE, 0, 2, dt_imageio_open_pfm,
+    { 'P', 'f' } },  // grayscale
+  // DjVu -- additional checks needed
+  { DT_FILETYPE_DJVU, TRUE, 4, 4, dt_imageio_open_exotic,
+    { 'F', 'O', 'R', 'M' } },
+  // ========= other image types which we may not support ==========
+  // Corel Paint Shop Pro image
+  { DT_FILETYPE_OTHER_LDR, FALSE, 0, 4, dt_imageio_open_exotic,
+    { '~', 'B', 'K', 0x00 } },
+  // DPX image (big endian)
+  { DT_FILETYPE_OTHER_LDR, FALSE, 0, 4, dt_imageio_open_exotic,
+    { 'S', 'D', 'P', 'X' } },
+  // DPX image (little endian)
+  { DT_FILETYPE_OTHER_LDR, FALSE, 0, 4, dt_imageio_open_exotic,
+    { 'X', 'P', 'D', 'S' } },
+  // FBM (Fuzzy Bitmap) image
+  { DT_FILETYPE_OTHER_LDR, FALSE, 0, 7, dt_imageio_open_exotic,
+    { '%', 'b', 'i', 't', 'm', 'a', 'p' } },
+  // Free Lossless Image Format
+  { DT_FILETYPE_OTHER_LDR, FALSE, 0, 4, dt_imageio_open_exotic,
+    { 'F', 'L', 'I', 'F' } },
+  //  JBIG2 image
+  { DT_FILETYPE_OTHER_LDR, FALSE, 0, 8, dt_imageio_open_exotic,
+    { 0x97, 'J', 'B', '2', 0x0D, 0x0A, 0x1A, 0x0A } },
+  // Paint.NET image
+  { DT_FILETYPE_OTHER_LDR, FALSE, 0, 4, dt_imageio_open_exotic,
+    { 'P', 'D', 'N', '3' } },
+  // Photoshop Document
+  { DT_FILETYPE_OTHER_LDR, FALSE, 0, 4, dt_imageio_open_exotic,
+    { '8', 'B', 'P', 'S' } },
+  // AutoCAD .DWG (drawing) file
+  { DT_FILETYPE_OTHER_LDR, FALSE, 0, 3, dt_imageio_open_exotic,
+    { 'A', 'C', '1' } },
+  // JPEG-XR image
+  { DT_FILETYPE_OTHER_LDR, TRUE, 0, 4, _unsupported_type,
+    { 'I', 'I', 0xBC, 1 } },
+  // JPEG-XS image
+  { DT_FILETYPE_OTHER_LDR, TRUE, 0, 12, _unsupported_type,
+    { 0x00, 0x00, 0x00, 0x0C, 'J', 'X', 'S', ' ', 0x0D, 0x0A, 0x87, 0x0A } },
+  // ========= common non-image file formats, useful for detecting misnamed files =========
+  // Zip archive, includes most modern document formats
+  { DT_FILETYPE_NONIMAGE, FALSE, 0, 4, _unsupported_type,
+    { 'P', 'K', 0x03, 0x04 } },
+  { DT_FILETYPE_NONIMAGE, FALSE, 0, 4, _unsupported_type,
+    { 'P', 'K', 0x05, 0x06 } }, // empty archive
+  { DT_FILETYPE_NONIMAGE, FALSE, 0, 4, _unsupported_type,
+    { 'P', 'K', 0x07, 0x08 } }, // spanned archive
+  // gzip compressed file
+  { DT_FILETYPE_NONIMAGE, FALSE, 0, 2, _unsupported_type,
+    { 0x1F, 0x8B } },
+  // xz compressed file
+  { DT_FILETYPE_NONIMAGE, FALSE, 0, 5, _unsupported_type,
+    { 0xFD, '7', 'z', 'X', 'Z' } },
+  // bzip2 compressed file
+  { DT_FILETYPE_NONIMAGE, FALSE, 0, 3, _unsupported_type,
+    { 'B', 'Z', 'h' } },
+  // 7-Zip compressed file
+  { DT_FILETYPE_NONIMAGE, FALSE, 0, 6, _unsupported_type,
+    { '7', 'z', 0xBC, 0xAF, 0x27, 0x1C } },
+  // Zstandard compressed file
+  { DT_FILETYPE_NONIMAGE, FALSE, 0, 4, _unsupported_type,
+    { 0x28, 0xB5, 0x2F, 0xFD } },
+  // XML file, such as .xmp sidecars
+  { DT_FILETYPE_NONIMAGE, FALSE, 0, 5, _unsupported_type,
+    { '<', '?', 'x', 'm', 'l' } },  // UTF-8
+  { DT_FILETYPE_NONIMAGE, FALSE, 3, 5, _unsupported_type,
+    { '<', '?', 'x', 'm', 'l' } },  // UTF-8 with BOM
+  { DT_FILETYPE_NONIMAGE, FALSE, 0, 10, _unsupported_type,
+    { '<', 0, '?', 0, 'x', 0, 'm', 0, 'l', 0 } }, // UTF-16LE
+  { DT_FILETYPE_NONIMAGE, FALSE, 0, 5, _unsupported_type,
+    { 0, '<', 0, '?', 0, 'x', 0, 'm', 0, 'l' } }, // UTF-16BE
+  // GPX track file
+  { DT_FILETYPE_NONIMAGE, FALSE, 0, 5, _unsupported_type,
+    { '<', 'g', 'p', 'x', ' ' } },
+  // MPEG-4 video
+  { DT_FILETYPE_NONIMAGE, FALSE, 4, 8, _unsupported_type,
+    { 'f', 't', 'y', 'p', 'M', 'S', 'N', 'V' } },
+  // Flash Video
+  { DT_FILETYPE_NONIMAGE, FALSE, 0, 3, _unsupported_type,
+    { 'F', 'L', 'V' } },
+  // .WAV, .AVI, CorelShow!, or MacroMind movie file
+  { DT_FILETYPE_NONIMAGE, FALSE, 0, 4, _unsupported_type,
+    { 'R', 'I', 'F', 'F' } },
+  // Ogg container for audio/video
+  { DT_FILETYPE_NONIMAGE, FALSE, 0, 4, _unsupported_type,
+    { 'O', 'g', 'g', 'S' } },
+  // Postscript document
+  { DT_FILETYPE_NONIMAGE, FALSE, 0, 4, _unsupported_type,
+    { '%', '!', 'P', 'S' } },
+  // UTF-8 text file with BOM
+  { DT_FILETYPE_NONIMAGE, FALSE, 0, 3, _unsupported_type,
+    { 0xEF, 0xBB, 0xBF } },
+  // PDF document
+  { DT_FILETYPE_NONIMAGE, FALSE, 0, 5, _unsupported_type,
+    { '%', 'P', 'D', 'F', '-' } },
+  // HTML file
+  { DT_FILETYPE_NONIMAGE, FALSE, 0, 5, _unsupported_type,
+    { '<', 'H', 'T', 'M', 'L' } },
+  { DT_FILETYPE_NONIMAGE, FALSE, 0, 5, _unsupported_type,
+    { '<', 'h', 't', 'm', 'l' } }
+};
+
+// signatures which require additional checks before acceptance
+static dt_magic_bytes_t _windows_BMP_signature = { DT_FILETYPE_BMP, FALSE, 0, 2, NULL, { 40, 0 } };
+
 // Note: 'dng' is not included as it can contain anything. We will
 // need to open and examine dng images to find out the type of
 // content.
@@ -105,6 +452,54 @@ static const gchar *_supported_ldr[]
         NULL };
 static const gchar *_supported_hdr[]
     = { "avif", "exr", "hdr", "heic", "heif", "hif", "jxl", "pfm", NULL };
+
+static inline gboolean _image_handled(dt_imageio_retval_t ret)
+{
+  return ret == DT_IMAGEIO_OK  || ret == DT_IMAGEIO_CACHE_FULL ;
+}
+
+static const dt_magic_bytes_t *_find_signature(const char *filename)
+{
+  if(!filename || !*filename)
+    return NULL;
+  FILE *fin = g_fopen(filename, "rb");
+  if(!fin)
+    return NULL;
+  // read possible signatur block from file
+  gchar magicbuf[MAX_MAGIC];
+  size_t count = fread(magicbuf, sizeof(magicbuf), 1, fin);
+  fclose(fin);
+  if(count < sizeof(magicbuf))
+    return NULL;
+  for(size_t i = 0; i < sizeof(_magic_signatures)/sizeof(_magic_signatures[0]); i++)
+  {
+    const dt_magic_bytes_t *info = &_magic_signatures[i];
+    if(memcmp(magicbuf + info->offset, info->magic, info->length) == 0)
+    {
+      // any extra checks go here, e.g. if detected as TIFF, try to determine which camera RAW it is
+      if(info->filetype == DT_FILETYPE_DJVU)
+      {
+        // verify that this is actually a DjVu file by checking the secondary signature
+        if(memcmp(magicbuf + 12, "DJVU", 4) != 0 && memcmp(magicbuf + 12, "DJVM", 4) != 0 &&
+           memcmp(magicbuf + 12, "BM44", 4) != 0)
+          continue;
+      }
+      return info;
+    }
+  }
+  // alternate signature for BMP
+  if(magicbuf[0] == 40 && magicbuf[1] == 0 && magicbuf[12] == 1 && magicbuf[13] == 0)
+    return &_windows_BMP_signature;
+  return NULL;
+}
+
+static dt_imageio_retval_t _open_by_magic_number(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *buf)
+{
+  const dt_magic_bytes_t *sig = _find_signature(filename);
+  if(sig && sig->loader)
+    return sig->loader(img, filename, buf);
+  return DT_IMAGEIO_UNRECOGNIZED;
+}
 
 gboolean dt_imageio_is_raw_by_extension(const char *extension)
 {
@@ -480,27 +875,6 @@ size_t dt_imageio_write_pos(const int i,
   return (size_t)jj * w + ii;
 }
 
-dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img,
-                                        const char *filename,
-                                        dt_mipmap_buffer_t *buf)
-{
-  // if buf is NULL, don't proceed
-  if(!buf) return DT_IMAGEIO_OK;
-
-  dt_imageio_retval_t ret;
-#ifdef HAVE_OPENEXR
-  ret = dt_imageio_open_exr(img, filename, buf);
-  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) return ret;
-#endif
-  ret = dt_imageio_open_rgbe(img, filename, buf);
-  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) return ret;
-
-  ret = dt_imageio_open_pfm(img, filename, buf);
-  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) return ret;
-
-  return DT_IMAGEIO_LOAD_FAILED;
-}
-
 /* magic data: exclusion,offset,length, xx, yy, ...
     just add magic bytes to match to this struct
     to extend match on LDR formats.
@@ -611,61 +985,6 @@ gboolean dt_imageio_is_ldr(const char *filename)
     }
   }
   return FALSE;
-}
-
-gboolean dt_imageio_is_hdr(const char *filename)
-{
-  const char *c = filename + strlen(filename);
-  while(c > filename && *c != '.') c--;
-  if(*c == '.')
-    if(!strcasecmp(c, ".pfm") || !strcasecmp(c, ".hdr")
-#ifdef HAVE_OPENEXR
-       || !strcasecmp(c, ".exr")
-#endif
-      )
-      return TRUE;
-  return FALSE;
-}
-
-// transparent read method to load ldr image to dt_raw_image_t with
-// exif and so on.
-dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img,
-                                        const char *filename,
-                                        dt_mipmap_buffer_t *buf)
-{
-  // if buf is NULL, don't proceed
-  if(!buf) return DT_IMAGEIO_OK;
-  dt_imageio_retval_t ret;
-
-  ret = dt_imageio_open_jpeg(img, filename, buf);
-  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
-    return ret;
-
-  ret = dt_imageio_open_tiff(img, filename, buf);
-  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
-    return ret;
-
-#ifdef HAVE_WEBP
-  ret = dt_imageio_open_webp(img, filename, buf);
-  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
-    return ret;
-#endif
-
-  ret = dt_imageio_open_png(img, filename, buf);
-  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
-    return ret;
-
-#ifdef HAVE_OPENJPEG
-  ret = dt_imageio_open_j2k(img, filename, buf);
-  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
-    return ret;
-#endif
-
-  ret = dt_imageio_open_pnm(img, filename, buf);
-  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
-    return ret;
-
-  return DT_IMAGEIO_LOAD_FAILED;
 }
 
 void dt_imageio_to_fractional(const float in,
@@ -1267,10 +1586,10 @@ dt_imageio_retval_t dt_imageio_open_exotic(dt_image_t *img,
   if(!buf) return DT_IMAGEIO_OK;
 #ifdef HAVE_GRAPHICSMAGICK
   dt_imageio_retval_t ret = dt_imageio_open_gm(img, filename, buf);
-  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) return ret;
+  if(_image_handled(ret)) return ret;
 #elif HAVE_IMAGEMAGICK
   dt_imageio_retval_t ret = dt_imageio_open_im(img, filename, buf);
-  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) return ret;
+  if(_image_handled(ret)) return ret;
 #endif
 
   return DT_IMAGEIO_LOAD_FAILED;
@@ -1322,47 +1641,33 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
   dt_imageio_retval_t ret = DT_IMAGEIO_LOAD_FAILED;
   img->loader = LOADER_UNKNOWN;
 
-  /* check if file is ldr using magic's */
-  if(dt_imageio_is_ldr(filename)) ret = dt_imageio_open_ldr(img, filename, buf);
-
-#ifdef HAVE_LIBJXL
-  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
-    ret = dt_imageio_open_jpegxl(img, filename, buf);
-#endif
-
-#ifdef HAVE_LIBAVIF
-  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
-    ret = dt_imageio_open_avif(img, filename, buf);
-#endif
-
-#ifdef HAVE_LIBHEIF
-  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
-    ret = dt_imageio_open_heif(img, filename, buf);
-#endif
-
-  /* silly check using file extensions: */
-  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL && dt_imageio_is_hdr(filename))
-    ret = dt_imageio_open_hdr(img, filename, buf);
-
-  /* use rawspeed to load the raw */
-  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
+  // check for known magic numbers and call the appropriate loader if we recognize a magic number
+  ret = _open_by_magic_number(img, filename, buf);
+  if(ret == DT_IMAGEIO_UNRECOGNIZED)
   {
-    ret = dt_imageio_open_rawspeed(img, filename, buf);
-  }
+    // special case - most camera RAW files are TIFF containers, so if we have an LDR file extension,
+    // try loading the file as TIFF
+    if(dt_imageio_is_ldr(filename))
+      ret = dt_imageio_open_tiff(img, filename, buf);
 
-  // if rawspeed tried but failed to load a known filetype, skip the attempts to try other loaders
-  if(ret != DT_IMAGEIO_UNSUPPORTED_FEATURE && ret != DT_IMAGEIO_FILE_CORRUPTED && ret != DT_IMAGEIO_IOERROR)
-  {
+    if(!_image_handled(ret))
+      ret = dt_imageio_open_avif(img, filename, buf);
+
+    /* try using rawspeed to load a raw */
+    if(!_image_handled(ret))
+      ret = dt_imageio_open_rawspeed(img, filename, buf);
+
     /* fallback that tries to open file via LibRaw to support Canon CR3 */
-    if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
+    if(!_image_handled(ret))
       ret = dt_imageio_open_libraw(img, filename, buf);
 
-    if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
-      ret = dt_imageio_open_qoi(img, filename, buf);
-
     /* fallback that tries to open file via GraphicsMagick */
-    if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
+    if(!_image_handled(ret))
       ret = dt_imageio_open_exotic(img, filename, buf);
+
+    //  if nothing succeeded, declare the image format unsupported
+    if(!_image_handled(ret))
+      ret = DT_IMAGEIO_UNSUPPORTED_FORMAT;
   }
 
   if((ret == DT_IMAGEIO_OK) && !was_hdr && (img->flags & DT_IMAGE_HDR))
