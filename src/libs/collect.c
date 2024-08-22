@@ -2080,11 +2080,11 @@ static void _list_view(dt_lib_collect_rule_t *dr)
       case DT_COLLECTION_PROP_EXPOSURE_BIAS: // exposure bias
         // clang-format off
         g_snprintf(query, sizeof(query),
-                   "SELECT ROUND(exposure_bias,2) AS exposure_bias, 1, COUNT(*) AS count"
+                   "SELECT ROUND(exposure_bias,2), 1, COUNT(*) AS count"
                    " FROM main.images AS mi"
                    " WHERE %s"
-                   " GROUP BY exposure_bias"
-                   " ORDER BY exposure_bias %s",
+                   " GROUP BY ROUND(exposure_bias,2)"
+                   " ORDER BY ROUND(exposure_bias,2) %s",
                    where_ext,
                    sort_descending ? "DESC" : "ASC");
         // clang-format on
