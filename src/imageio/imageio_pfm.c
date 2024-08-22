@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename, d
   if(strcasecmp(ext, ".pfm")) return DT_IMAGEIO_LOAD_FAILED;
 
   FILE *f = g_fopen(filename, "rb");
-  if(!f) return DT_IMAGEIO_LOAD_FAILED;
+  if(!f) return DT_IMAGEIO_FILE_NOT_FOUND;
 
   int ret = 0;
   int cols = 3;
@@ -128,7 +128,7 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename, d
 
 error_corrupt:
   fclose(f);
-  return DT_IMAGEIO_LOAD_FAILED;
+  return DT_IMAGEIO_FILE_CORRUPTED;
 error_cache_full:
   fclose(f);
   return DT_IMAGEIO_CACHE_FULL;

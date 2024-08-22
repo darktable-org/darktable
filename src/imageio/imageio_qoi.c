@@ -38,13 +38,13 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img,
   // We shouldn't expect QOI images in files with an extension other than .qoi
   char *ext = g_strrstr(filename, ".");
   if(ext && g_ascii_strcasecmp(ext, ".qoi"))
-    return DT_IMAGEIO_LOAD_FAILED;
+    return DT_IMAGEIO_UNSUPPORTED_FORMAT;
 
   FILE *f = g_fopen(filename, "rb");
   if(!f)
   {
     dt_print(DT_DEBUG_ALWAYS,"[qoi_open] cannot open file for read: %s\n", filename);
-    return DT_IMAGEIO_LOAD_FAILED;
+    return DT_IMAGEIO_FILE_NOT_FOUND;
   }
 
   fseek(f, 0, SEEK_END);
@@ -62,7 +62,7 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img,
     g_free(read_buffer);
     dt_print(DT_DEBUG_ALWAYS, "[qoi_open] failed to read from %s\n", filename);
     // if we can't read even first 4 bytes, it's more like file disappeared
-    return DT_IMAGEIO_FILE_NOT_FOUND;
+    return DT_IMAGEIO_FILE_CORRUPTED;
   }
 
   if(memcmp(read_buffer, "qoif", 4) != 0)
@@ -71,7 +71,7 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img,
     g_free(read_buffer);
     dt_print(DT_DEBUG_ALWAYS,
              "[qoi_open] no proper file header in %s\n", filename);
-    return DT_IMAGEIO_LOAD_FAILED;
+    return DT_IMAGEIO_UNSUPPORTED_FORMAT;
   }
 
   if(fread(read_buffer+4, 1, filesize-4, f) != filesize-4)
@@ -81,7 +81,7 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img,
     dt_print(DT_DEBUG_ALWAYS,
              "[qoi_open] failed to read %zu bytes from %s\n",
              filesize, filename);
-    return DT_IMAGEIO_LOAD_FAILED;
+    return DT_IMAGEIO_IOERROR;
   }
   fclose(f);
 
@@ -92,7 +92,7 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img,
   {
     g_free(read_buffer);
     dt_print(DT_DEBUG_ALWAYS,"[qoi_open] failed to decode file: %s\n", filename);
-    return DT_IMAGEIO_LOAD_FAILED;
+    return DT_IMAGEIO_FILE_CORRUPTED;
   }
 
   img->width = desc.width;

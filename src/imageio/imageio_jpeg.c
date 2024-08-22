@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -768,13 +768,14 @@ dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img,
 
   if(memcmp(first3bytes, jpeg_magicbytes, 3) != 0)
   {
-    return DT_IMAGEIO_LOAD_FAILED;
+    return DT_IMAGEIO_UNSUPPORTED_FORMAT;
   }
 
   if(!img->exif_inited) (void)dt_exif_read(img, filename);
 
   dt_imageio_jpeg_t jpg;
-  if(dt_imageio_jpeg_read_header(filename, &jpg)) return DT_IMAGEIO_LOAD_FAILED;
+  if(dt_imageio_jpeg_read_header(filename, &jpg))
+    return DT_IMAGEIO_FILE_CORRUPTED;
   img->width = jpg.width;
   img->height = jpg.height;
 
@@ -782,7 +783,7 @@ dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img,
   if(dt_imageio_jpeg_read(&jpg, tmp))
   {
     dt_free_align(tmp);
-    return DT_IMAGEIO_LOAD_FAILED;
+    return DT_IMAGEIO_FILE_CORRUPTED;
   }
 
   img->buf_dsc.channels = 4;

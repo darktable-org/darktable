@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2021-2023 darktable developers.
+    Copyright (C) 2021-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -62,6 +62,7 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
   err = heif_context_read_from_file(ctx, filename, NULL);
   if(err.code != heif_error_Ok)
   {
+    ret = DT_IMAGEIO_LOAD_FAILED;
     if(err.code == heif_error_Unsupported_feature && err.subcode == heif_suberror_Unsupported_codec)
     {
       /* we want to feedback this to the user, so output to stderr */
@@ -69,13 +70,14 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
                "[imageio_heif] Unsupported codec for `%s'. "
                "Check if your libheif is built with HEVC and/or AV1 decoding support.\n",
                filename);
+      ret = DT_IMAGEIO_UNSUPPORTED_FEATURE;
     }
     else if(err.code != heif_error_Unsupported_filetype && err.subcode != heif_suberror_No_ftyp_box)
     {
       /* print debug info only if genuine HEIF */
       dt_print(DT_DEBUG_IMAGEIO, "Failed to read HEIF file [%s]: %s\n", filename, err.message);
+      ret = DT_IMAGEIO_UNSUPPORTED_FORMAT;
     }
-    ret = DT_IMAGEIO_LOAD_FAILED;
     goto out;
   }
 
@@ -86,7 +88,7 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
     dt_print(DT_DEBUG_IMAGEIO,
              "No images found in HEIF file [%s]\n",
              filename);
-    ret = DT_IMAGEIO_LOAD_FAILED;
+    ret = DT_IMAGEIO_FILE_CORRUPTED;
     goto out;
   }
 
@@ -97,7 +99,7 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
     dt_print(DT_DEBUG_IMAGEIO,
              "Failed to read primary image from HEIF file [%s]\n",
              filename);
-    ret = DT_IMAGEIO_LOAD_FAILED;
+    ret = DT_IMAGEIO_UNSUPPORTED_FEATURE;
     goto out;
   }
 
@@ -169,7 +171,7 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
     dt_print(DT_DEBUG_IMAGEIO,
              "Failed to decode HEIF file [%s]\n",
              filename);
-    ret = DT_IMAGEIO_LOAD_FAILED;
+    ret = DT_IMAGEIO_FILE_CORRUPTED;
     goto out;
   }
 
