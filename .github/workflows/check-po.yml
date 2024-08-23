@@ -20,6 +20,7 @@ permissions:
 
 jobs:
   po-check:
+    if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
     name: Check the PO files for correctness
     runs-on: ubuntu-latest
     steps:
