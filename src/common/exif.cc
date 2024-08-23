@@ -405,7 +405,8 @@ const char *dt_xmp_keys[]
         "Xmp.acdsee.notes",                   "Xmp.dc.creator",
         "Xmp.dc.publisher",                   "Xmp.dc.title",
         "Xmp.dc.description",                 "Xmp.dc.rights",
-        "Xmp.dc.format",                      "Xmp.xmpMM.DerivedFrom" };
+        "Xmp.dc.format",                      "Xmp.xmpMM.DerivedFrom",
+        "Xmp.xmpMM.PreservedFileName" };
 
 // The number of XmpBag XmpSeq keys that dt uses
 static const guint dt_xmp_keys_n = G_N_ELEMENTS(dt_xmp_keys);
