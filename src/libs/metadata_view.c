@@ -167,7 +167,7 @@ static const char *_labels[] = {
 
   /* xmp */
   //FIXME: reserve DT_METADATA_NUMBER places
-  "","","","","","","","",
+  "","","","","","","","","",
 
   /* geotagging */
   N_("latitude"),
