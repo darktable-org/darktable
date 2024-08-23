@@ -3164,7 +3164,8 @@ void dt_image_check_camera_missing_sample(const struct dt_image_t *img)
   }
 }
 
-static int32_t _image_get_set_name_id(const char *table, const char *name)
+static int32_t _image_get_set_name_id(const char *table,
+                                      const char *name)
 {
   sqlite3_stmt *stmt;
 
@@ -3173,14 +3174,23 @@ static int32_t _image_get_set_name_id(const char *table, const char *name)
                                 "  WHERE LOWER(name) = LOWER(?1)",
                                 table);
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                              query,
+                                              -1,
+                                              &stmt,
+                                              NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt,
+                             1,
+                             name,
+                             -1,
+                             SQLITE_TRANSIENT);
 
   int32_t id = -1;
 
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    id = sqlite3_column_int(stmt, 0);
+    id = sqlite3_column_int(stmt,
+                            0);
   }
   else
   {
@@ -3190,8 +3200,16 @@ static int32_t _image_get_set_name_id(const char *table, const char *name)
                             "  VALUES (?1)",
                             table);
 
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                                query,
+                                                -1,
+                                                &stmt,
+                                                NULL);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt,
+                               1,
+                               name,
+                               -1,
+                               SQLITE_TRANSIENT);
     sqlite3_step(stmt);
     id = dt_database_last_insert_rowid(darktable.db);
   }
