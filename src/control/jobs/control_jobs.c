@@ -2373,6 +2373,13 @@ static int _control_import_image_copy(const char *filename,
       dt_datetime_unix_to_exif(dt_txt, sizeof(dt_txt), &datetime);
       char *id = g_strconcat(fn, "-", dt_txt, NULL);
       dt_metadata_set(imgid, "Xmp.darktable.image_id", id, FALSE);
+      gchar *output_basename = g_path_get_basename(output);
+      if(g_strcmp0(output_basename, fn))
+      {
+        // file renamed during import, preserve the original filename
+        dt_metadata_set(imgid, "Xmp.xmpMM.PreservedFileName", fn, FALSE);
+      }
+      g_free(output_basename);
       g_free(id);
       g_object_unref(info);
       g_object_unref(gfile);
