@@ -2854,6 +2854,9 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     TRY_EXEC("CREATE INDEX main.metadata_index_key ON meta_data (key)",
              "[init] can't recreate metadata_index\n");
 
+    TRY_EXEC("CREATE INDEX main.metadata_index_value ON meta_data (value)",
+             "[init] can't create metadata_index_value\n");
+
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
     sqlite3_exec(db->handle, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
 
@@ -3344,6 +3347,7 @@ static void _create_library_schema(dt_database_t *db)
                            "FOREIGN KEY(id) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE UNIQUE INDEX main.metadata_index ON meta_data (id, key, value)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE INDEX main.metadata_index_key ON meta_data (key)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE INDEX main.metadata_index_value ON meta_data (value)", NULL, NULL, NULL);
 
   sqlite3_exec(db->handle, "CREATE TABLE main.module_order (imgid INTEGER PRIMARY KEY, version INTEGER, iop_list VARCHAR)",
                NULL, NULL, NULL);
