@@ -1344,16 +1344,20 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
     ret = dt_imageio_open_rawspeed(img, filename, buf);
   }
 
-  /* fallback that tries to open file via LibRaw to support Canon CR3 */
-  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
-    ret = dt_imageio_open_libraw(img, filename, buf);
+  // if rawspeed tried but failed to load a known filetype, skip the attempts to try other loaders
+  if(ret != DT_IMAGEIO_UNSUPPORTED_FEATURE && ret != DT_IMAGEIO_FILE_CORRUPTED && ret != DT_IMAGEIO_IOERROR)
+  {
+    /* fallback that tries to open file via LibRaw to support Canon CR3 */
+    if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
+      ret = dt_imageio_open_libraw(img, filename, buf);
 
-  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
-    ret = dt_imageio_open_qoi(img, filename, buf);
+    if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
+      ret = dt_imageio_open_qoi(img, filename, buf);
 
-  /* fallback that tries to open file via GraphicsMagick */
-  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
-    ret = dt_imageio_open_exotic(img, filename, buf);
+    /* fallback that tries to open file via GraphicsMagick */
+    if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
+      ret = dt_imageio_open_exotic(img, filename, buf);
+  }
 
   if((ret == DT_IMAGEIO_OK) && !was_hdr && (img->flags & DT_IMAGE_HDR))
     dt_imageio_set_hdr_tag(img);
