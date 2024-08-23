@@ -43,6 +43,7 @@ permissions:
 jobs:
 
   Linux:
+    if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
     name: Linux.${{ matrix.distro }}.${{ matrix.compiler.compiler }}.${{ matrix.btype }}
     runs-on: ubuntu-latest
     container:
@@ -232,6 +233,7 @@ jobs:
           ./run.sh --no-opencl --no-deltae --fast-fail
 
   Windows:
+    if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
     name: Windows.${{ matrix.msystem }}.${{ matrix.btype }}
     runs-on: windows-latest
     strategy:
@@ -344,6 +346,7 @@ jobs:
                  --conf plugins/lighttable/export/iccintent=0
 
   macOS:
+    if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
     name: macOS.${{ matrix.build.os }}.${{ matrix.compiler.compiler }}.${{ matrix.build.xcode }}.${{ matrix.btype }}
     runs-on: ${{ matrix.build.os }}
     strategy:
