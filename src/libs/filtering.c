@@ -217,6 +217,7 @@ typedef struct _filter_t
 #include "libs/filters/colors.c"
 #include "libs/filters/date.c"
 #include "libs/filters/exposure.c"
+#include "libs/filters/exposure_bias.c"
 #include "libs/filters/filename.c"
 #include "libs/filters/focal.c"
 #include "libs/filters/history.c"
@@ -244,6 +245,7 @@ static _filter_t filters[]
         { DT_COLLECTION_PROP_FOCAL_LENGTH, _focal_widget_init, _focal_update },
         { DT_COLLECTION_PROP_ISO, _iso_widget_init, _iso_update },
         { DT_COLLECTION_PROP_EXPOSURE, _exposure_widget_init, _exposure_update },
+        { DT_COLLECTION_PROP_EXPOSURE_BIAS, _exposure_bias_widget_init, _exposure_bias_update },
         { DT_COLLECTION_PROP_GROUP_ID, _misc_widget_init, _misc_update },
         { DT_COLLECTION_PROP_LOCAL_COPY, _local_copy_widget_init, _local_copy_update },
         { DT_COLLECTION_PROP_HISTORY, _history_widget_init, _history_update },
@@ -928,6 +930,7 @@ static gboolean _rule_show_popup(GtkWidget *widget, dt_lib_filtering_rule_t *rul
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_LENS);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_APERTURE);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_EXPOSURE);
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_EXPOSURE_BIAS);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_FOCAL_LENGTH);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_ISO);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_ASPECT_RATIO);
@@ -999,6 +1002,7 @@ static void _populate_rules_combo(GtkWidget *w)
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_LENS);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_APERTURE);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_EXPOSURE);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_EXPOSURE_BIAS);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FOCAL_LENGTH);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ISO);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ASPECT_RATIO);
@@ -1672,6 +1676,7 @@ static void _topbar_populate_rules_combo(GtkWidget *w, dt_lib_filtering_t *d)
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_LENS);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_APERTURE);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_EXPOSURE);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_EXPOSURE_BIAS);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FOCAL_LENGTH);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ISO);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ASPECT_RATIO);

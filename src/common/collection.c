@@ -642,6 +642,8 @@ const char *dt_collection_name_untranslated(const dt_collection_properties_t pro
       return N_("aperture");
     case DT_COLLECTION_PROP_EXPOSURE:
       return N_("exposure");
+    case DT_COLLECTION_PROP_EXPOSURE_BIAS:
+      return N_("exposure bias");
     case DT_COLLECTION_PROP_ASPECT_RATIO:
       return N_("aspect ratio");
     case DT_COLLECTION_PROP_FILENAME:
@@ -1973,6 +1975,33 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         // clang-format on
       else
         query = g_strdup_printf("(exposure LIKE '%%%s%%')", escaped_text);
+
+      g_free(operator);
+      g_free(number1);
+      g_free(number2);
+    }
+    break;
+
+    case DT_COLLECTION_PROP_EXPOSURE_BIAS: // exposure bias
+    {
+      gchar *operator, * number1, *number2;
+      dt_collection_split_operator_number(escaped_text, &number1, &number2, &operator);
+
+      if(operator && strcmp(operator, "[]") == 0)
+      {
+        if(number1 && number2)
+          // clang-format off
+          query = g_strdup_printf
+            ("((ROUND(exposure_bias,2) >= %s) AND (ROUND(exposure_bias,2) <= %s))",
+             number1, number2);
+        // clang-format on
+      }
+      else if(operator && number1)
+        query = g_strdup_printf("(ROUND(exposure_bias,2) %s %s)", operator, number1);
+      else if(number1)
+        query = g_strdup_printf("(ROUND(exposure_bias,2) = %s)", number1);
+      else
+        query = g_strdup_printf("(ROUND(exposure_bias,2) LIKE '%%%s%%')", escaped_text);
 
       g_free(operator);
       g_free(number1);
