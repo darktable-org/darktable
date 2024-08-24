@@ -21,6 +21,10 @@
 #endif
 
 #include "RawSpeed-API.h"
+#include "io/FileIOException.h"
+#include "metadata/CameraMetadataException.h"
+#include "parsers/RawParserException.h"
+#include "parsers/FiffParserException.h"
 
 #define TYPE_FLOAT32 RawImageType::F32
 #define TYPE_USHORT16 RawImageType::UINT16
@@ -406,6 +410,26 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img,
 
     if(cam && cam->supportStatus == Camera::SupportStatus::SupportedNoSamples)
       img->camera_missing_sample = TRUE;
+  }
+  catch(const rawspeed::IOException &exc)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[rawspeed] (%s) I/O error: %s\n", img->filename, exc.what());
+    return DT_IMAGEIO_IOERROR;
+  }
+  catch(const rawspeed::FileIOException &exc)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[rawspeed] (%s) File I/O error: %s\n", img->filename, exc.what());
+    return DT_IMAGEIO_IOERROR;
+  }
+  catch(const rawspeed::RawParserException &exc)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[rawspeed] (%s) CIFF/FIFF error: %s\n", img->filename, exc.what());
+    return DT_IMAGEIO_UNSUPPORTED_FORMAT;
+  }
+  catch(const rawspeed::CameraMetadataException &exc)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[rawspeed] (%s) metadata error: %s\n", img->filename, exc.what());
+    return DT_IMAGEIO_UNSUPPORTED_FEATURE;
   }
   catch(const std::exception &exc)
   {
