@@ -1106,6 +1106,7 @@ void dt_mipmap_cache_get_with_caller(
           _dead_image_8(buf);
           break;
         case DT_IMAGEIO_UNSUPPORTED_FORMAT:
+        case DT_IMAGEIO_UNSUPPORTED_CAMERA:
         case DT_IMAGEIO_UNSUPPORTED_FEATURE:
           unsupp_image_8(buf);
           break;
@@ -1125,6 +1126,7 @@ void dt_mipmap_cache_get_with_caller(
           _dead_image_f(buf);
           break;
         case DT_IMAGEIO_UNSUPPORTED_FORMAT:
+        case DT_IMAGEIO_UNSUPPORTED_CAMERA:
         case DT_IMAGEIO_UNSUPPORTED_FEATURE:
           unsupp_image_f(buf);
           break;
