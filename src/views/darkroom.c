@@ -531,6 +531,11 @@ void expose(
           _("file `%s' is not in any recognized format, switching to lighttable now."),
           dev->image_storage.filename);
         break;
+      case DT_IMAGEIO_UNSUPPORTED_CAMERA:
+        load_txt = g_strdup_printf(
+          _("file `%s' is from an unsupported camera model, switching to lighttable now."),
+          dev->image_storage.filename);
+        break;
       case DT_IMAGEIO_UNSUPPORTED_FEATURE:
         load_txt = g_strdup_printf(
           _("file `%s' uses an unsupported feature, switching to lighttable now.\n\n"
@@ -802,6 +807,9 @@ gboolean try_enter(dt_view_t *self)
       break;
     case DT_IMAGEIO_UNSUPPORTED_FORMAT:
       reason = _("unsupported file format");
+      break;
+    case DT_IMAGEIO_UNSUPPORTED_CAMERA:
+      reason = _("unsupported camera model");
       break;
     case DT_IMAGEIO_UNSUPPORTED_FEATURE:
       reason = _("unsupported feature in file");
