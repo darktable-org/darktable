@@ -1273,8 +1273,8 @@ int store(dt_imageio_module_storage_t *self,
   if(p->api == NULL)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[imageio_storage_piwigo] not logged in to piwigo server!\n");
-    dt_control_log(_("Not logged in to piwigo server!"));
+             "[imageio_storage_piwigo] not logged in to Piwigo server!\n");
+    dt_control_log(_("not logged in to Piwigo server!"));
     return 1;
   }
     
