@@ -307,6 +307,7 @@ src/libs/filters/aperture.c
 src/libs/filters/colors.c
 src/libs/filters/date.c
 src/libs/filters/exposure.c
+src/libs/filters/exposure_bias.c
 src/libs/filters/filename.c
 src/libs/filters/focal.c
 src/libs/filters/history.c
