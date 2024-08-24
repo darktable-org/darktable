@@ -48,7 +48,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 53
+#define CURRENT_DATABASE_VERSION_LIBRARY 54
 #define CURRENT_DATABASE_VERSION_DATA    10
 
 // #define USE_NESTED_TRANSACTIONS
@@ -2827,6 +2827,41 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     /* even if we were at version 51, the step is the same for 51 -> 52 and 52 -> 53 (see above), so jump straight to 53 */
     new_version = 53;
   }
+  else if(version == 53)
+  {
+    sqlite3_exec(db->handle, "PRAGMA foreign_keys = OFF", NULL, NULL, NULL);
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    // meta data
+    TRY_EXEC("ALTER TABLE `meta_data` RENAME TO `meta_data_old`",
+             "[init] can't rename meta_data\n");
+    TRY_EXEC("CREATE TABLE `meta_data` (id integer, key integer, value varchar, "
+             "FOREIGN KEY(id) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)",
+             "[init] can't create new meta_data table\n");
+
+    TRY_EXEC("DELETE FROM `meta_data_old` WHERE id NOT IN (SELECT id FROM `images`)",
+             "[init] can't delete orphaned meta_data elements\n");
+
+    TRY_EXEC("INSERT INTO `meta_data` SELECT * FROM `meta_data_old`",
+             "[init] can't copy back from meta_data\n");
+
+    TRY_EXEC("DROP TABLE meta_data_old",
+             "[init] can't drop table meta_data_old\n");
+
+    TRY_EXEC("CREATE UNIQUE INDEX `metadata_index` ON `meta_data` (id, key, value)",
+             "[init] can't recreate metadata_index\n");
+
+    TRY_EXEC("CREATE INDEX main.metadata_index_key ON meta_data (key)",
+             "[init] can't recreate metadata_index\n");
+
+    TRY_EXEC("CREATE INDEX main.metadata_index_value ON meta_data (value)",
+             "[init] can't create metadata_index_value\n");
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    sqlite3_exec(db->handle, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
+
+    new_version = 54;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -3308,10 +3343,12 @@ static void _create_library_schema(dt_database_t *db)
   sqlite3_exec(db->handle, "CREATE UNIQUE INDEX main.color_labels_idx ON color_labels (imgid, color)", NULL, NULL,
                NULL);
   ////////////////////////////// meta_data
-  sqlite3_exec(db->handle, "CREATE TABLE main.meta_data (id INTEGER, key INTEGER, value VARCHAR)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE TABLE main.meta_data (id INTEGER, key INTEGER, value VARCHAR, "
+                           "FOREIGN KEY(id) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE UNIQUE INDEX main.metadata_index ON meta_data (id, key, value)", NULL, NULL, NULL);
-
   sqlite3_exec(db->handle, "CREATE INDEX main.metadata_index_key ON meta_data (key)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE INDEX main.metadata_index_value ON meta_data (value)", NULL, NULL, NULL);
+
   sqlite3_exec(db->handle, "CREATE TABLE main.module_order (imgid INTEGER PRIMARY KEY, version INTEGER, iop_list VARCHAR)",
                NULL, NULL, NULL);
   sqlite3_exec
