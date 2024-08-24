@@ -1214,8 +1214,13 @@ static gboolean _finalize_store(gpointer user_data)
 {
   dt_storage_piwigo_gui_data_t *g = (dt_storage_piwigo_gui_data_t *)user_data;
 
-  // notify that uploads are completed to empty the lounge
+  if(g->api == NULL)
+  {
+    // not logged in, nothing to cleanup
+    return FALSE;
+  }
 
+  // notify that uploads are completed to empty the lounge
   if(!g->api->error_occured)
   {
     GList *args = NULL;
@@ -1265,6 +1270,14 @@ int store(dt_imageio_module_storage_t *self,
   dt_storage_piwigo_gui_data_t *ui = self->gui_data;
   dt_storage_piwigo_params_t *p = (dt_storage_piwigo_params_t *)sdata;
 
+  if(p->api == NULL)
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[imageio_storage_piwigo] not logged in to piwigo server!\n");
+    dt_control_log(_("Not logged in to piwigo server!"));
+    return 1;
+  }
+    
   gint result = 0;
   gint skipped = 0;
 
