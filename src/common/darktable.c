@@ -894,7 +894,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   GSList *config_override = NULL;
 
   // keep a copy of argv array for possibly reporting later
-  gchar **myoptions = argc > 1 ? g_strdupv(argv) : NULL;
+  gchar **myoptions = init_gui && argc > 1 ? g_strdupv(argv) : NULL;
 
   for(int k = 1; k < argc; k++)
   {
