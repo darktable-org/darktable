@@ -196,8 +196,17 @@ void gui_update(dt_lib_module_t *self)
   const int storage_index =
     dt_imageio_get_index_of_storage(dt_imageio_get_storage_by_name(storage_name));
 
+  dt_imageio_module_storage_t *storage = dt_imageio_get_storage();
+
+  gboolean export_enabled = TRUE;
+  if(storage->export_enabled)
+    export_enabled = storage->export_enabled(storage);
+
   gtk_widget_set_sensitive(GTK_WIDGET(d->export_button),
-                           has_act_on && format_index != -1 && storage_index != -1);
+                           has_act_on
+                           && format_index != -1
+                           && storage_index != -1
+                           && export_enabled);
 }
 
 static void _image_selection_changed_callback(gpointer instance,
@@ -217,6 +226,12 @@ static void _collection_updated_callback(gpointer instance,
 }
 
 static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
+{
+  dt_lib_gui_queue_update(self);
+}
+
+static void _export_enable_callback(gpointer instance,
+                                    dt_lib_module_t *self)
 {
   dt_lib_gui_queue_update(self);
 }
@@ -844,12 +859,15 @@ static void set_storage_by_name(dt_lib_export_t *d,
     dt_bauhaus_combobox_set(d->format, 0);
 }
 
-static void _storage_changed(GtkWidget *widget, dt_lib_export_t *d)
+static void _storage_changed(GtkWidget *widget, dt_lib_module_t *self)
 {
+  dt_lib_export_t *d = self->data;
+
   const gchar *name = dt_bauhaus_combobox_get_text(d->storage);
-  g_signal_handlers_block_by_func(widget, _storage_changed, d);
+  g_signal_handlers_block_by_func(widget, _storage_changed, self);
   if(name) set_storage_by_name(d, name);
-  g_signal_handlers_unblock_by_func(widget, _storage_changed, d);
+  g_signal_handlers_unblock_by_func(widget, _storage_changed, self);
+  dt_lib_gui_queue_update(self);
 }
 
 static void _profile_changed(GtkWidget *widget, dt_lib_export_t *d)
@@ -1173,7 +1191,7 @@ void gui_init(dt_lib_module_t *self)
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_IMAGEIO_STORAGE_CHANGE,
                             G_CALLBACK(_on_storage_list_changed), self);
   g_signal_connect(G_OBJECT(d->storage), "value-changed",
-                   G_CALLBACK(_storage_changed), (gpointer)d);
+                   G_CALLBACK(_storage_changed), self);
 
   label = dt_ui_section_label_new(C_("section", "format options"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
@@ -1494,6 +1512,8 @@ void gui_init(dt_lib_module_t *self)
                             G_CALLBACK(_mouse_over_image_callback), self);
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_collection_updated_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_IMAGEIO_STORAGE_EXPORT_ENABLE,
+                            G_CALLBACK(_export_enable_callback), self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
