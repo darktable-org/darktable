@@ -1081,14 +1081,13 @@ void process(struct dt_iop_module_t *self,
   {
     piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
     const int mode = mask_mode - 1;
-    const float bcorrect = 5.0f / sqrtf(dt_iop_get_processed_maximum(piece));
     DT_OMP_FOR()
     for(size_t k = 0; k < npixels; k++)
     {
       float *const restrict pix_out = DT_IS_ALIGNED_PIXEL(out + k * 4);
       const float *const restrict corrections_out = corrections + k * 2;
 
-      const float val = pix_out[2] * bcorrect;
+      const float val = sqrtf(pix_out[2] * white);
       float corr = 0.0f;
       switch(mode)
       {
@@ -1110,8 +1109,8 @@ void process(struct dt_iop_module_t *self,
       }
 
       const gboolean neg = corr < 0.0f;
-      corr = 0.7f * fabsf(corr);
-      corr = corr < 2e-3 ? 0.0f : powf(corr, 0.8f);
+      corr = fabsf(corr);
+      corr = corr < 2e-3 ? 0.0f : corr;
       pix_out[0] = MAX(0.0f, neg ? val - corr : val);
       pix_out[1] = MAX(0.0f, val - corr);
       pix_out[2] = MAX(0.0f, neg ? val : val - corr);
