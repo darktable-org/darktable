@@ -210,6 +210,10 @@ static gboolean _ignore_missing_wb(dt_image_t *img)
   if(g_str_has_suffix(img->filename,"-hdr.dng"))
     return TRUE;
 
+  // If we failed to read the image correctly, don't complain about WB
+  if(img->load_status != DT_IMAGEIO_OK && img->load_status != DT_IMAGEIO_CACHE_FULL)
+    return TRUE;
+
   static const char *const ignored_cameras[] = {
     "Canon PowerShot A610",
     "Canon PowerShot S3 IS",

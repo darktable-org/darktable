@@ -790,9 +790,15 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
   if(!buf.buf || !buf.width || !buf.height)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[dt_imageio_export_with_flags] mipmap allocation for `%s' failed\n",
-             filename);
-    dt_control_log(_("image `%s' is not available!"), img->filename);
+             "[dt_imageio_export_with_flags] mipmap allocation for `%s' failed (status %d)\n",
+             filename,img->load_status);
+    if(img->load_status == DT_IMAGEIO_FILE_NOT_FOUND)
+      dt_control_log(_("image `%s' is not available!"), img->filename);
+    else if(img->load_status == DT_IMAGEIO_LOAD_FAILED || img->load_status == DT_IMAGEIO_IOERROR ||
+            img->load_status == DT_IMAGEIO_CACHE_FULL)
+      dt_control_log(_("unable to load image `%s'!"), img->filename);
+    else
+      dt_control_log(_("image '%s' not supported"), img->filename);
     goto error_early;
   }
 
