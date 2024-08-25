@@ -600,6 +600,8 @@ static void _piwigo_authenticate(dt_storage_piwigo_gui_data_t *ui)
     _piwigo_set_status(ui, _("not authenticated, cannot reach server"), "#e07f7f");
     _piwigo_ctx_destroy(&ui->api);
   }
+
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGEIO_STORAGE_EXPORT_ENABLE);
 }
 
 static void _piwigo_entry_changed(GtkEntry *entry,
@@ -608,9 +610,11 @@ static void _piwigo_entry_changed(GtkEntry *entry,
   dt_storage_piwigo_gui_data_t *ui = (dt_storage_piwigo_gui_data_t *)data;
 
   _piwigo_set_status(ui, _("not authenticated"), "#e07f7f");
-    gtk_widget_set_sensitive(GTK_WIDGET(ui->album_list), FALSE);
+  gtk_widget_set_sensitive(GTK_WIDGET(ui->album_list), FALSE);
 
   if(ui->api) _piwigo_ctx_destroy(&ui->api);
+
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGEIO_STORAGE_EXPORT_ENABLE);
 }
 
 static void _piwigo_server_entry_changed(GtkEntry *entry,
@@ -624,6 +628,8 @@ static void _piwigo_server_entry_changed(GtkEntry *entry,
     _piwigo_ctx_destroy(&ui->api);
     gtk_widget_set_sensitive(GTK_WIDGET(ui->album_list), FALSE);
   }
+
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGEIO_STORAGE_EXPORT_ENABLE);
 }
 
 static void _piwigo_account_changed(GtkComboBox *cb,
@@ -1596,6 +1602,13 @@ gboolean supported(dt_imageio_module_storage_t *storage,
     return TRUE;
 
   return FALSE;
+}
+
+gboolean export_enabled(dt_imageio_module_storage_t *self)
+{
+  dt_storage_piwigo_gui_data_t *ui = self->gui_data;
+
+  return ui->api != NULL && ui->api->authenticated;
 }
 
 void free_params(dt_imageio_module_storage_t *self,

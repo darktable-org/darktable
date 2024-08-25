@@ -206,6 +206,9 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
   { "dt-location-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 1, pointer_arg, NULL,
     TRUE }, // DT_SIGNAL_LOCATION_CHANGED
 
+ { "dt-imageio-storage-export-enable", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
+    FALSE }, // DT_SIGNAL_IMAGEIO_STORAGE_EXPORT_ENABLE
+
 };
 
 static GType _signal_type;

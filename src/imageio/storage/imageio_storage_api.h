@@ -91,6 +91,9 @@ OPTIONAL(void, export_dispatched, struct dt_imageio_module_storage_t *self);
 
 OPTIONAL(char *, ask_user_confirmation, struct dt_imageio_module_storage_t *self);
 
+/* ask the storage if export is currently possible */
+OPTIONAL(gboolean, export_enabled, struct dt_imageio_module_storage_t *self);
+
 #ifdef FULL_API_H
 
 #pragma GCC visibility pop
