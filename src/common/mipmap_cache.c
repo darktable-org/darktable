@@ -1350,7 +1350,14 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf,
 
   if(!buf.buf)
   {
-    dt_control_log(_("image `%s' is not available!"), image->filename);
+    fprintf(stderr,"load_status = %d\n",(int)image->load_status);
+    if(image->load_status == DT_IMAGEIO_FILE_NOT_FOUND)
+      dt_control_log(_("image `%s' is not available!"), image->filename);
+    else if(image->load_status == DT_IMAGEIO_LOAD_FAILED || image->load_status == DT_IMAGEIO_IOERROR ||
+            image->load_status == DT_IMAGEIO_CACHE_FULL)
+      dt_control_log(_("unable to load image `%s'!"), image->filename);
+    else
+      dt_control_log(_("image '%s' not supported"), image->filename);
     dt_image_cache_read_release(darktable.image_cache, image);
     *width = *height = 0;
     *iscale = 0.0f;
