@@ -48,7 +48,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 54
+#define CURRENT_DATABASE_VERSION_LIBRARY 55
 #define CURRENT_DATABASE_VERSION_DATA    10
 
 // #define USE_NESTED_TRANSACTIONS
@@ -2832,6 +2832,29 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     sqlite3_exec(db->handle, "PRAGMA foreign_keys = OFF", NULL, NULL, NULL);
     sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
 
+    // NOTE: datetime_taken is in nano-second since "0001-01-01 00:00:00"
+    TRY_EXEC("DROP VIEW v_images",
+             "[init] can't drop v_images view\n");
+
+    TRY_EXEC
+      ("CREATE VIEW v_images AS"
+       " SELECT mi.id AS id, mk.name AS maker, md.name AS model, ln.name AS lens,"
+       "        cm.maker || ' ' || cm.model AS normalized_camera, "
+       "        cm.alias AS camera_alias,"
+       "        exposure, aperture, iso,"
+       "        datetime(datetime_taken/1000000"
+       "                 + unixepoch('0001-01-01 00:00:00'), 'unixepoch') AS datetime,"
+       "        fr.folder AS folders, filename"
+       " FROM images AS mi,"
+       "      makers AS mk, models AS md, lens AS ln, cameras AS cm, film_rolls AS fr"
+       " WHERE mi.maker_id = mk.id"
+       "   AND mi.model_id = md.id"
+       "   AND mi.lens_id = ln.id"
+       "   AND mi.camera_id = cm.id"
+       "   AND mi.film_id = fr.id"
+       " ORDER BY normalized_camera, folders",
+       "[init] can't create view v_images\n");
+
     // meta data
     TRY_EXEC("ALTER TABLE `meta_data` RENAME TO `meta_data_old`",
              "[init] can't rename meta_data\n");
@@ -2861,6 +2884,33 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     sqlite3_exec(db->handle, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
 
     new_version = 54;
+  }
+  else if(version == 54)
+  {
+    // NOTE: datetime_taken is in nano-second since "0001-01-01 00:00:00"
+    TRY_EXEC("DROP VIEW v_images",
+             "[init] can't drop v_images view\n");
+
+    TRY_EXEC
+      ("CREATE VIEW v_images AS"
+       " SELECT mi.id AS id, mk.name AS maker, md.name AS model, ln.name AS lens,"
+       "        cm.maker || ' ' || cm.model AS normalized_camera, "
+       "        cm.alias AS camera_alias,"
+       "        exposure, aperture, iso,"
+       "        datetime(datetime_taken/1000000"
+       "                 + unixepoch('0001-01-01 00:00:00'), 'unixepoch') AS datetime,"
+       "        fr.folder AS folders, filename"
+       " FROM images AS mi,"
+       "      makers AS mk, models AS md, lens AS ln, cameras AS cm, film_rolls AS fr"
+       " WHERE mi.maker_id = mk.id"
+       "   AND mi.model_id = md.id"
+       "   AND mi.lens_id = ln.id"
+       "   AND mi.camera_id = cm.id"
+       "   AND mi.film_id = fr.id"
+       " ORDER BY normalized_camera, folders",
+       "[init] can't create view v_images\n");
+
+    new_version = 55;
   }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
@@ -3429,21 +3479,22 @@ static void _create_library_schema(dt_database_t *db)
   // NOTE: datetime_taken is in nano-second since "0001-01-01 00:00:00"
   sqlite3_exec
     (db->handle,
-     "CREATE VIEW v_images AS"
-     " SELECT mi.id AS id, mk.name AS maker, md.name AS model, ln.name AS lens,"
-     "        cm.name AS normalized_camera, cm.alias AS camera_alias,"
-     "        exposure, aperture, iso,"
-     "        datetime(datetime_taken/1000000"
-     "                 + unixepoch('0001-01-01 00:00:00'), 'unixepoch') AS datetime,"
-     "        fr.folder AS folders, filename"
-     " FROM images AS mi,"
-     "      makers AS mk, models AS md, lens AS ln, cameras AS cm, film_rolls AS fr"
-     " WHERE mi.maker_id = mk.id"
-     "   AND mi.model_id = md.id"
-     "   AND mi.lens_id = ln.id"
-     "   AND mi.camera_id = cm.id"
-     "   AND mi.film_id = fr.id"
-     " ORDER BY normalized_camera, folders",
+    "CREATE VIEW v_images AS"
+    " SELECT mi.id AS id, mk.name AS maker, md.name AS model, ln.name AS lens,"
+    "        cm.maker || ' ' || cm.model AS normalized_camera, "
+    "        cm.alias AS camera_alias,"
+    "        exposure, aperture, iso,"
+    "        datetime(datetime_taken/1000000"
+    "                 + unixepoch('0001-01-01 00:00:00'), 'unixepoch') AS datetime,"
+    "        fr.folder AS folders, filename"
+    " FROM images AS mi,"
+    "      makers AS mk, models AS md, lens AS ln, cameras AS cm, film_rolls AS fr"
+    " WHERE mi.maker_id = mk.id"
+    "   AND mi.model_id = md.id"
+    "   AND mi.lens_id = ln.id"
+    "   AND mi.camera_id = cm.id"
+    "   AND mi.film_id = fr.id"
+    " ORDER BY normalized_camera, folders",
      NULL, NULL, NULL);
   // clang-format on
 }
