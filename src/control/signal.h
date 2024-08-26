@@ -275,6 +275,11 @@ typedef enum dt_signal_t
   /* \brief This signal is raised when the user choses a new location from map (module location)*/
   DT_SIGNAL_LOCATION_CHANGED,
 
+  /** \brief This signal is raised when a storage module signalizes to enable/disable the export
+    no param, no returned value
+  */
+  DT_SIGNAL_IMAGEIO_STORAGE_EXPORT_ENABLE,
+
   /* do not touch !*/
   DT_SIGNAL_COUNT
 } dt_signal_t;
