@@ -347,13 +347,12 @@ static float _calc_refavg(
     }
   }
 
-  const float onethird = 1.0f / 3.0f;
   for(int c = 0; c < 3; c++)
-    mean[c] = (cnt[c] > 0.0f) ? pow((correction[c] * sum[c]) / cnt[c], onethird) : 0.0f;
+    mean[c] = (cnt[c] > 0.0f) ? native_powr((correction[c] * sum[c]) / cnt[c], 0.33333333333f) : 0.0f;
 
   const float croot_refavg[3] = { 0.5f * (mean[1] + mean[2]), 0.5f * (mean[0] + mean[2]), 0.5f * (mean[0] + mean[1])};
   const int color = (filters == 9u) ? FCxtrans(row, col, xtrans) : FC(row, col, filters);
-  return pow(croot_refavg[color], 3.0f);
+  return native_powr(croot_refavg[color], 3.0f);
 }
 
 kernel void highlights_initmask(
