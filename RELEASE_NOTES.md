@@ -17,9 +17,7 @@ $ sha256sum darktable-5.0.0-win64.exe
 ??? darktable-5.0.0-win64.exe
 ```
 
-When updating from the stable 4.6 series, please bear in
-mind that your edits will be preserved during this process, but the new
-library and configuration will no longer be usable with 4.6.
+When updating from the stable 4.8 series, please bear in mind that your edits will be preserved during this process, but the new library and configuration will no longer be usable with 4.8.
 
 You are strongly advised to take a backup first.
 
