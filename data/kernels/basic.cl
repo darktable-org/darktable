@@ -971,7 +971,7 @@ interpolate_bilinear(read_only image2d_t in,
                      write_only image2d_t out,
                      const int width_out,
                      const int height_out,
-                     const int RGBa)
+                     const int ch) // works with 1-4 channels
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
