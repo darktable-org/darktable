@@ -340,7 +340,7 @@ void modify_roi_out(struct dt_iop_module_t *self,
   // if the aspect has been toggled it's presented here as negative
   const float aspect = d->aspect < 0.0f ? fabsf(1.0f / d->aspect) : d->aspect;
   const gboolean keep_aspect = aspect > 1e-5;
-  const gboolean landscape = roi_in->width > roi_in->height;
+  const gboolean landscape = roi_in->width >= roi_in->height;
 
   float dx = odx;
   float dy = ody;
@@ -533,7 +533,7 @@ static float _aspect_ratio_get(dt_iop_module_t *self, GtkWidget *combo)
 
     if(!(wd > 0.0f && ht > 0.0f)) return 0.0f;
 
-    const gboolean regular = (p->ratio_d > 0 && wd > ht)
+    const gboolean regular = (p->ratio_d > 0 && wd >= ht)
                           || (p->ratio_d < 0 && wd < ht);
     return regular ? wd / ht : ht / wd;
   }
@@ -1070,7 +1070,7 @@ static void _event_key_swap(dt_iop_module_t *self)
 
   int iwd, iht;
   dt_dev_get_processed_size(&darktable.develop->full, &iwd, &iht);
-  const gboolean horizontal = (iwd > iht) == (p->ratio_d < 0);
+  const gboolean horizontal = (iwd >= iht) == (p->ratio_d < 0);
 
   _aspect_apply(self, horizontal ? GRAB_HORIZONTAL : GRAB_VERTICAL);
   dt_control_queue_redraw_center();
