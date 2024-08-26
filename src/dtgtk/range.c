@@ -589,6 +589,7 @@ static void _current_set_text(GtkDarktableRangeSelect *range, const double curre
 static void _current_hide_popup(GtkDarktableRangeSelect *range)
 {
   if(!range->cur_window) return;
+  darktable.gui->hide_tooltips--;
   gtk_widget_destroy(range->cur_window);
   range->cur_window = NULL;
 }
@@ -596,6 +597,7 @@ static void _current_hide_popup(GtkDarktableRangeSelect *range)
 static void _current_show_popup(GtkDarktableRangeSelect *range)
 {
   if(range->cur_window) return;
+  darktable.gui->hide_tooltips++;
   range->cur_window = gtk_popover_new(range->band);
   gtk_widget_set_name(range->cur_window, "range-current");
   gtk_popover_set_modal(GTK_POPOVER(range->cur_window), FALSE);
