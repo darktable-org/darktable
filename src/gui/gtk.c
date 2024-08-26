@@ -180,25 +180,10 @@ static void _fullscreen_key_accel_callback(dt_action_t *action)
 
 static void _toggle_tooltip_visibility(dt_action_t *action)
 {
-  if(gdk_screen_is_composited(gdk_screen_get_default()))
-  {
-    gboolean tooltip_hidden = !dt_conf_get_bool("ui/hide_tooltips");
-    dt_conf_set_bool("ui/hide_tooltips", tooltip_hidden);
-    if(tooltip_hidden)
-      dt_toast_log(_("tooltips off"));
-    else
-      dt_toast_log(_("tooltips on"));
-  }
-  else
-  {
-    dt_conf_set_bool("ui/hide_tooltips", FALSE);
-    dt_control_log(_("tooltip visibility can only be toggled"
-                     " if compositing is enabled in your window manager"));
-  }
-
-  const char *theme = dt_conf_get_string_const("ui_last/theme");
-  dt_gui_load_theme(theme);
-  dt_bauhaus_load_theme();
+  gboolean tooltip_hidden = !dt_conf_get_bool("ui/hide_tooltips");
+  dt_conf_set_bool("ui/hide_tooltips", tooltip_hidden);
+  darktable.gui->hide_tooltips += tooltip_hidden ? 1 : -1;
+  dt_toast_log(tooltip_hidden ? _("tooltips off") : _("tooltips on"));
 }
 
 static inline void _update_focus_peaking_button()
@@ -1256,7 +1241,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
       GtkWidget *widget;
   gui->ui = g_malloc0(sizeof(dt_ui_t));
   gui->surface = NULL;
-  gui->center_tooltip = 0;
+  gui->hide_tooltips = dt_conf_get_bool("ui/hide_tooltips") ? 1 : 0;
   gui->grouping = dt_conf_get_bool("ui_last/grouping");
   gui->expanded_group_id = NO_IMGID;
   gui->show_overlays = dt_conf_get_bool("lighttable/ui/expose_statuses");

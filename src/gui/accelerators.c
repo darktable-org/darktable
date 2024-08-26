@@ -988,8 +988,10 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
      && gtk_window_get_window_type(top) != GTK_WINDOW_POPUP)
     return FALSE;
 
-  if(dt_key_modifier_state() & (GDK_BUTTON1_MASK|GDK_BUTTON2_MASK|GDK_BUTTON3_MASK)
-     || darktable.bauhaus->current)
+  if(dt_key_modifier_state() & (GDK_BUTTON1_MASK|GDK_BUTTON2_MASK|GDK_BUTTON3_MASK
+                               |GDK_SHIFT_MASK|GDK_CONTROL_MASK|GDK_MOD1_MASK)
+     || darktable.bauhaus->current
+     || darktable.gui->hide_tooltips)
     return FALSE;
 
   gchar *markup_text = NULL;
