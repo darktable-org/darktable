@@ -945,6 +945,23 @@ static inline float4 dt_UCS_HCB_to_JCH(const float4 HCB)
   return JCH;
 }
 
+static inline float4 dt_UCS_HSB_to_XYZ(const float4 HSB, const float L_w)
+{
+  const float4 JCH = dt_UCS_HSB_to_JCH(HSB);
+  const float4 xyY = dt_UCS_JCH_to_xyY(JCH, L_w);
+  return dt_xyY_to_XYZ(xyY);
+}
+
+static inline float4 dt_UCS_LUV_to_JCH(const float L_star, const float L_white, const float4 UV_star_prime)
+{
+  const float M2 = UV_star_prime.x * UV_star_prime.x + UV_star_prime.y * UV_star_prime.y; // square of colorfulness M
+  const float4 JCH = {  L_star / L_white,
+                        15.932993652962535f * native_powr(L_star, 0.6523997524738018f) * native_powr(M2, 0.6007557017508491f) / L_white,
+                        atan2(UV_star_prime.y, UV_star_prime.x),
+                        0.0f };
+  return JCH;
+ }
+
 #define LUT_ELEM 360 // gamut LUT number of elements: resolution of 1°
 static inline float lookup_gamut(global const float *gamut_lut, const float x)
 {
