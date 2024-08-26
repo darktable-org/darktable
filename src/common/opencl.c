@@ -3389,6 +3389,28 @@ int dt_opencl_get_image_element_size(const cl_mem mem)
   return (err == CL_SUCCESS) ? (int)size : 0;
 }
 
+void *dt_opencl_duplicate_image(const int devid, const cl_mem src)
+{
+  const int width = dt_opencl_get_image_width(src);
+  const int height = dt_opencl_get_image_height(src);
+  const int el = dt_opencl_get_image_element_size(src);
+  if(width < 1 || height < 1 || el < sizeof(uint16_t))
+    return NULL;
+
+  cl_mem new = dt_opencl_alloc_device(devid, width, height, el);
+  if(new == NULL) return NULL;
+
+  size_t origin[]   = { 0, 0, 0 };
+  size_t region[] = { width, height, 1 };
+  const cl_int err = dt_opencl_enqueue_copy_image(devid, src, new, origin, origin, region);
+  if(err != CL_SUCCESS)
+  {
+    dt_opencl_release_mem_object(new);
+    new = NULL;
+  }
+  return new;
+}
+
 void dt_opencl_dump_pipe_pfm(const char* mod,
                              const int devid,
                              cl_mem img,

@@ -747,38 +747,6 @@ static inline float4 opacity_masks(const float x,
   return output;
 }
 
-
-#define LUT_ELEM 360 // gamut LUT number of elements: resolution of 1°
-
-static inline float lookup_gamut(global const float *gamut_lut, const float x)
-{
-  // WARNING : x should be between [-pi ; pi ], which is the default output of atan2 anyway
-
-  // convert in LUT coordinate
-  const float x_test = (LUT_ELEM - 1) * (x + M_PI_F) / (2.f * M_PI_F);
-
-  // find the 2 closest integer coordinates (next/previous)
-  float x_prev = floor(x_test);
-  float x_next = ceil(x_test);
-
-  // get the 2 closest LUT elements at integer coordinates
-  // cycle on the hue ring if out of bounds
-  int xi = (int)x_prev;
-  if(xi < 0) xi = LUT_ELEM - 1;
-  else if(xi > LUT_ELEM - 1) xi = 0;
-
-  int xii = (int)x_next;
-  if(xii < 0) xii = LUT_ELEM - 1;
-  else if(xii > LUT_ELEM - 1) xii = 0;
-
-  // fetch the corresponding y values
-  const float y_prev = gamut_lut[xi];
-
-  // return y_prev if we are on the same integer LUT element or do linear interpolation
-  return y_prev + ((xi != xii) ? (x_test - x_prev) * (gamut_lut[xii] - y_prev) : 0.0f);
-}
-
-
 typedef enum dt_iop_colorbalancrgb_saturation_t
 {
   DT_COLORBALANCE_SATURATION_JZAZBZ = 0, // $DESCRIPTION: "JzAzBz (2021)"
