@@ -3091,6 +3091,8 @@ void *dt_opencl_copy_host_to_device_rowpitch(const int devid,
   // guess pixel format from bytes per pixel
   if(bpp == 4 * sizeof(float))
     fmt = (cl_image_format){ CL_RGBA, CL_FLOAT };
+  else if(bpp == 2 * sizeof(float))
+    fmt = (cl_image_format){ CL_RG, CL_FLOAT };
   else if(bpp == sizeof(float))
     fmt = (cl_image_format){ CL_R, CL_FLOAT };
   else if(bpp == sizeof(uint16_t))
@@ -3193,6 +3195,8 @@ void *dt_opencl_alloc_device(const int devid,
   // guess pixel format from bytes per pixel
   if(bpp == 4 * sizeof(float))
     fmt = (cl_image_format){ CL_RGBA, CL_FLOAT };
+  else if(bpp == 2 * sizeof(float))
+    fmt = (cl_image_format){ CL_RG, CL_FLOAT };
   else if(bpp == sizeof(float))
     fmt = (cl_image_format){ CL_R, CL_FLOAT };
   else if(bpp == sizeof(uint16_t))
@@ -3239,6 +3243,8 @@ void *dt_opencl_alloc_device_use_host_pointer(const int devid,
   // guess pixel format from bytes per pixel
   if(bpp == 4 * sizeof(float))
     fmt = (cl_image_format){ CL_RGBA, CL_FLOAT };
+  else if(bpp == 2 * sizeof(float))
+    fmt = (cl_image_format){ CL_RG, CL_FLOAT };
   else if(bpp == sizeof(float))
     fmt = (cl_image_format){ CL_R, CL_FLOAT };
   else if(bpp == sizeof(uint16_t))
@@ -3381,6 +3387,28 @@ int dt_opencl_get_image_element_size(const cl_mem mem)
   if(size > INT_MAX) size = 0;
 
   return (err == CL_SUCCESS) ? (int)size : 0;
+}
+
+void *dt_opencl_duplicate_image(const int devid, const cl_mem src)
+{
+  const int width = dt_opencl_get_image_width(src);
+  const int height = dt_opencl_get_image_height(src);
+  const int el = dt_opencl_get_image_element_size(src);
+  if(width < 1 || height < 1 || el < sizeof(uint16_t))
+    return NULL;
+
+  cl_mem new = dt_opencl_alloc_device(devid, width, height, el);
+  if(new == NULL) return NULL;
+
+  size_t origin[]   = { 0, 0, 0 };
+  size_t region[] = { width, height, 1 };
+  const cl_int err = dt_opencl_enqueue_copy_image(devid, src, new, origin, origin, region);
+  if(err != CL_SUCCESS)
+  {
+    dt_opencl_release_mem_object(new);
+    new = NULL;
+  }
+  return new;
 }
 
 void dt_opencl_dump_pipe_pfm(const char* mod,
