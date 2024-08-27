@@ -70,7 +70,7 @@ G_BEGIN_DECLS
 // version for current darktable cl kernels
 // this is reflected in the kernel directory and allows to
 // enforce a new kernel compilation cycle
-#define DT_OPENCL_KERNELS 3
+#define DT_OPENCL_KERNELS 4
 
 typedef enum dt_opencl_memory_t
 {
@@ -579,6 +579,8 @@ int dt_opencl_get_image_width(cl_mem mem);
 int dt_opencl_get_image_height(cl_mem mem);
 
 int dt_opencl_get_image_element_size(cl_mem mem);
+
+void *dt_opencl_duplicate_image(const int devid, const cl_mem src);
 
 void dt_opencl_dump_pipe_pfm(const char* mod,
                              const int devid,
