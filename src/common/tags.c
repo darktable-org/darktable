@@ -1171,7 +1171,7 @@ uint32_t dt_tag_get_suggestions(GList **result)
      "  LEFT JOIN ("
      "    SELECT tagid, COUNT(imgid) AS count2"
      "    FROM main.tagged_images"
-     "    WHERE imgid IN main.selected_images"
+     "    WHERE imgid IN (SELECT imgid FROM main.selected_images)"
      "    GROUP BY tagid) AS at"
      "  ON at.tagid = S.tagid"
      "  WHERE S.tagid NOT IN memory.darktable_tags"
