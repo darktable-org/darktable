@@ -845,17 +845,14 @@ static cl_int process_laplacian_bayer_cl(struct dt_iop_module_t *self,
   if(err != CL_SUCCESS) goto error;
 
   // Downsample
-  const int ch = 4;
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_interpolate_bilinear, ds_width, ds_height,
     CLARG(clipping_mask), CLARG(width), CLARG(height),
-    CLARG(ds_clipping_mask), CLARG(ds_width), CLARG(ds_height),
-    CLARG(ch));
+    CLARG(ds_clipping_mask), CLARG(ds_width), CLARG(ds_height));
   if(err != CL_SUCCESS) goto error;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_interpolate_bilinear, ds_width, ds_height,
     CLARG(interpolated), CLARG(width), CLARG(height),
-    CLARG(ds_interpolated), CLARG(ds_width), CLARG(ds_height),
-    CLARG(ch));
+    CLARG(ds_interpolated), CLARG(ds_width), CLARG(ds_height));
 
   if(err != CL_SUCCESS) goto error;
 
@@ -874,8 +871,7 @@ static cl_int process_laplacian_bayer_cl(struct dt_iop_module_t *self,
   // Upsample
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_interpolate_bilinear, width, height,
     CLARG(ds_interpolated), CLARG(ds_width), CLARG(ds_height),
-    CLARG(interpolated), CLARG(width), CLARG(height),
-    CLARG(ch));
+    CLARG(interpolated), CLARG(width), CLARG(height));
   if(err != CL_SUCCESS) goto error;
 
   // Remosaic

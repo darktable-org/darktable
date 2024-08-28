@@ -963,15 +963,13 @@ box_blur_5x5(read_only image2d_t in,
   write_imagef(out, (int2)(x, y), acc);
 }
 
-
-kernel void
-interpolate_bilinear(read_only image2d_t in,
-                     const int width_in,
-                     const int height_in,
-                     write_only image2d_t out,
-                     const int width_out,
-                     const int height_out,
-                     const int ch) // works with 1-4 channels
+// works correctly with 1-4 channel float images 
+kernel void interpolate_bilinear(read_only image2d_t in,
+                                const int width_in,
+                                const int height_in,
+                                write_only image2d_t out,
+                                const int width_out,
+                                const int height_out)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);

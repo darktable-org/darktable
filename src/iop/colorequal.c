@@ -1269,9 +1269,8 @@ static int _prefilter_chromaticity_cl(const int devid,
     ds_UV = dt_opencl_alloc_device(devid, ds_width, ds_height, 2 * sizeof(float));
     if(ds_UV == NULL) return err;
 
-    const int ch = 2;
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_interpolate_bilinear, ds_width, ds_height,
-          CLARG(UV), CLARG(width), CLARG(height), CLARG(ds_UV), CLARG(ds_width), CLARG(ds_height), CLARG(ch));
+          CLARG(UV), CLARG(width), CLARG(height), CLARG(ds_UV), CLARG(ds_width), CLARG(ds_height));
     if(err != CL_SUCCESS) goto error;
   }
 
@@ -1330,14 +1329,12 @@ static int _prefilter_chromaticity_cl(const int devid,
     b_full = dt_opencl_alloc_device(devid, width, height, 2 * sizeof(float));
     if(a_full == NULL || b_full == NULL) goto error;
 
-    int ch = 4;
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_interpolate_bilinear, width, height,
-          CLARG(a), CLARG(ds_width), CLARG(ds_height), CLARG(a_full), CLARG(width), CLARG(height), CLARG(ch));
+          CLARG(a), CLARG(ds_width), CLARG(ds_height), CLARG(a_full), CLARG(width), CLARG(height));
     if(err != CL_SUCCESS) goto error;
 
-    ch = 2;
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_interpolate_bilinear, width, height,
-          CLARG(b), CLARG(ds_width), CLARG(ds_height), CLARG(b_full), CLARG(width), CLARG(height), CLARG(ch));
+          CLARG(b), CLARG(ds_width), CLARG(ds_height), CLARG(b_full), CLARG(width), CLARG(height));
     if(err != CL_SUCCESS) goto error;
 
     dt_opencl_release_mem_object(a);
@@ -1412,18 +1409,16 @@ static int _guide_with_chromaticity_cl(const int devid,
     ds_b_corrections = dt_opencl_alloc_device(devid, ds_width, ds_height, sizeof(float));
     if(ds_UV == NULL || ds_corrections == NULL || ds_b_corrections == NULL) goto error;
 
-    int ch = 2;
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_interpolate_bilinear, ds_width, ds_height,
-          CLARG(UV), CLARG(width), CLARG(height), CLARG(ds_UV), CLARG(ds_width), CLARG(ds_height), CLARG(ch));
+          CLARG(UV), CLARG(width), CLARG(height), CLARG(ds_UV), CLARG(ds_width), CLARG(ds_height));
     if(err != CL_SUCCESS) goto error;
 
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_interpolate_bilinear, ds_width, ds_height,
-          CLARG(corrections), CLARG(width), CLARG(height), CLARG(ds_corrections), CLARG(ds_width), CLARG(ds_height), CLARG(ch));
+          CLARG(corrections), CLARG(width), CLARG(height), CLARG(ds_corrections), CLARG(ds_width), CLARG(ds_height));
     if(err != CL_SUCCESS) goto error;
 
-    ch = 1;
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_interpolate_bilinear, ds_width, ds_height,
-          CLARG(b_corrections), CLARG(width), CLARG(height), CLARG(ds_b_corrections), CLARG(ds_width), CLARG(ds_height), CLARG(ch));
+          CLARG(b_corrections), CLARG(width), CLARG(height), CLARG(ds_b_corrections), CLARG(ds_width), CLARG(ds_height));
     if(err != CL_SUCCESS) goto error;
   }
 
@@ -1506,14 +1501,12 @@ static int _guide_with_chromaticity_cl(const int devid,
     b_full = dt_opencl_alloc_device(devid, width, height, 2 * sizeof(float));
     if(a_full == NULL || b_full == NULL) goto error;
 
-    int ch = 4;
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_interpolate_bilinear, width, height,
-          CLARG(a), CLARG(ds_width), CLARG(ds_height), CLARG(a_full), CLARG(width), CLARG(height), CLARG(ch));
+          CLARG(a), CLARG(ds_width), CLARG(ds_height), CLARG(a_full), CLARG(width), CLARG(height));
     if(err != CL_SUCCESS) goto error;
 
-    ch = 2;
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_interpolate_bilinear, width, height,
-          CLARG(b), CLARG(ds_width), CLARG(ds_height), CLARG(b_full), CLARG(width), CLARG(height), CLARG(ch));
+          CLARG(b), CLARG(ds_width), CLARG(ds_height), CLARG(b_full), CLARG(width), CLARG(height));
     if(err != CL_SUCCESS) goto error;
   }
 
