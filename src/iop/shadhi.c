@@ -571,13 +571,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   }
 
   err = DT_OPENCL_SYSMEM_ALLOCATION;
-  dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
+  dev_tmp = dt_opencl_duplicate_image(devid, dev_out);
   if(dev_tmp == NULL) goto error;
-
-  size_t origin[] = { 0, 0, 0 };
-  size_t region[] = { width, height, 1 };
-  err = dt_opencl_enqueue_copy_image(devid, dev_out, dev_tmp, origin, origin, region);
-  if(err != CL_SUCCESS) goto error;
 
   // final mixing step
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_shadows_highlights_mix, width, height,
