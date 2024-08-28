@@ -1612,11 +1612,12 @@ int process_cl(struct dt_iop_module_t *self,
   UV = dt_opencl_alloc_device(devid, owidth, oheight, 2 * sizeof(float));
   corrections = dt_opencl_alloc_device(devid, owidth, oheight, 2 * sizeof(float));
   b_corrections = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float));
-  scharr = L = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float));
+  L = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float));
+  scharr = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float));
   saturation = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float));
 
   if(dev_tmp == NULL || UV == NULL || corrections == NULL || b_corrections == NULL
-      || L == NULL || saturation == NULL)
+      || L == NULL || scharr == NULL || saturation == NULL)
     goto error;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_sample_input, owidth, oheight,
@@ -1641,6 +1642,8 @@ int process_cl(struct dt_iop_module_t *self,
                 CLARG(white), CLARG(gradient_amp), CLARG(guiding), CLARG(mask_mode),
                 CLARG(owidth),  CLARG(oheight));
   if(err != CL_SUCCESS) goto error;
+  dt_opencl_release_mem_object(L);
+  L = NULL;
 
   if(guiding && !run_fast)
   {
@@ -1689,6 +1692,7 @@ error:
   dt_opencl_release_mem_object(corrections);
   dt_opencl_release_mem_object(b_corrections);
   dt_opencl_release_mem_object(L);
+  dt_opencl_release_mem_object(scharr);
   dt_opencl_release_mem_object(saturation);
   return err;
 }
