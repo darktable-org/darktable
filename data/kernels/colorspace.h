@@ -795,14 +795,14 @@ static inline float4 gamut_check_Yrg(float4 Ych)
 static inline float Y_to_dt_UCS_L_star(const float Y)
 {
   // WARNING: L_star needs to be < 2.098883786377, meaning Y needs to be < 3.875766378407574e+19
-  const float Y_hat = native_powr(Y, 0.631651345306265f);
+  const float Y_hat = dtcl_pow(Y, 0.631651345306265f);
   return 2.098883786377f * Y_hat / (Y_hat + 1.12426773749357f);
 }
 
 static inline float dt_UCS_L_star_to_Y(const float L_star)
 {
   // WARNING: L_star needs to be < 2.098883786377, meaning Y needs to be < 3.875766378407574e+19
-  return native_powr((1.12426773749357f * L_star / (2.098883786377f - L_star)), 1.5831518565279648f);
+  return dtcl_pow((1.12426773749357f * L_star / (2.098883786377f - L_star)), 1.5831518565279648f);
 }
 
 static inline void xyY_to_dt_UCS_UV(const float4 xyY, float UV_star_prime[2])
@@ -849,7 +849,7 @@ static inline float4 xyY_to_dt_UCS_JCH(const float4 xyY, const float L_white)
   // should be JCH[0] = powf(L_star / L_white), cz) but we treat only the case where cz = 1
   float4 JCH;
   JCH.x = L_star / L_white;
-  JCH.y = 15.932993652962535f * native_powr(L_star, 0.6523997524738018f) * native_powr(M2, 0.6007557017508491f) / L_white;
+  JCH.y = 15.932993652962535f * dtcl_pow(L_star, 0.6523997524738018f) * dtcl_pow(M2, 0.6007557017508491f) / L_white;
   JCH.z = atan2(UV_star_prime[1], UV_star_prime[0]);
   return JCH;
 
@@ -875,7 +875,7 @@ static inline float4 dt_UCS_JCH_to_xyY(const float4 JCH, const float L_white)
   const float DT_UCS_L_STAR_UPPER_LIMIT = 2.09885f;
   const float L_star = clamp(JCH.x * L_white, 0.f, DT_UCS_L_STAR_UPPER_LIMIT);
   const float M = L_star != 0.f
-    ? native_powr(JCH.y * L_white / (15.932993652962535f * native_powr(L_star, 0.6523997524738018f)), 0.8322850678616855f)
+    ? dtcl_pow(JCH.y * L_white / (15.932993652962535f * dtcl_pow(L_star, 0.6523997524738018f)), 0.8322850678616855f)
     : 0.f;
 
   const float U_star_prime = M * native_cos(JCH.z);
@@ -909,7 +909,7 @@ static inline float4 dt_UCS_JCH_to_xyY(const float4 JCH, const float L_white)
 static inline float4 dt_UCS_JCH_to_HSB(const float4 JCH)
 {
   float4 HSB;
-  HSB.z = JCH.x * (native_powr(JCH.y, 1.33654221029386f) + 1.f);
+  HSB.z = JCH.x * (dtcl_pow(JCH.y, 1.33654221029386f) + 1.f);
   HSB.y = (HSB.z > 0.f) ? JCH.y / HSB.z : 0.f;
   HSB.x = JCH.z;
   return HSB;
@@ -921,7 +921,7 @@ static inline float4 dt_UCS_HSB_to_JCH(const float4 HSB)
   float4 JCH;
   JCH.z = HSB.x;
   JCH.y = HSB.y * HSB.z;
-  JCH.x = HSB.z / (native_powr(JCH.y, 1.33654221029386f) + 1.f);
+  JCH.x = HSB.z / (dtcl_pow(JCH.y, 1.33654221029386f) + 1.f);
   return JCH;
 }
 
@@ -929,7 +929,7 @@ static inline float4 dt_UCS_HSB_to_JCH(const float4 HSB)
 static inline float4 dt_UCS_JCH_to_HCB(const float4 JCH)
 {
   float4 HCB;
-  HCB.z = JCH.x * (native_powr(JCH.y, 1.33654221029386f) + 1.f);
+  HCB.z = JCH.x * (dtcl_pow(JCH.y, 1.33654221029386f) + 1.f);
   HCB.y = JCH.y;
   HCB.x = JCH.z;
   return HCB;
@@ -941,7 +941,7 @@ static inline float4 dt_UCS_HCB_to_JCH(const float4 HCB)
   float4 JCH;
   JCH.z = HCB.x;
   JCH.y = HCB.y;
-  JCH.x = HCB.z / (native_powr(HCB.y, 1.33654221029386f) + 1.f);
+  JCH.x = HCB.z / (dtcl_pow(HCB.y, 1.33654221029386f) + 1.f);
   return JCH;
 }
 
@@ -956,7 +956,7 @@ static inline float4 dt_UCS_LUV_to_JCH(const float L_star, const float L_white, 
 {
   const float M2 = UV_star_prime.x * UV_star_prime.x + UV_star_prime.y * UV_star_prime.y; // square of colorfulness M
   const float4 JCH = {  L_star / L_white,
-                        15.932993652962535f * native_powr(L_star, 0.6523997524738018f) * native_powr(M2, 0.6007557017508491f) / L_white,
+                        15.932993652962535f * dtcl_pow(L_star, 0.6523997524738018f) * dtcl_pow(M2, 0.6007557017508491f) / L_white,
                         atan2(UV_star_prime.y, UV_star_prime.x),
                         0.0f };
   return JCH;

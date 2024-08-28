@@ -80,7 +80,7 @@ static inline float4 gamut_map_HSB(float4 HSB, global float *gamut_LUT, const fl
 {
   float4 JCH = dt_UCS_HSB_to_JCH(HSB);
   const float max_colorfulness = lookup_gamut(gamut_LUT, JCH.z);
-  const float max_chroma = 15.932993652962535f * native_powr(JCH.x * L_white, 0.6523997524738018f) * native_powr(max_colorfulness, 0.6007557017508491f) / L_white;
+  const float max_chroma = 15.932993652962535f * dtcl_pow(JCH.x * L_white, 0.6523997524738018f) * dtcl_pow(max_colorfulness, 0.6007557017508491f) / L_white;
   const float4 JCH_gamut_boundary = { JCH.x, max_chroma, JCH.z, 0.0f };
   const float4 HSB_gamut_boundary = dt_UCS_JCH_to_HSB(JCH_gamut_boundary);
 
