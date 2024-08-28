@@ -82,6 +82,90 @@ static const int dt_mipmap_cache_exif_data_srgb_length
 static const int dt_mipmap_cache_exif_data_adobergb_length
                       = sizeof(dt_mipmap_cache_exif_data_adobergb) / sizeof(*dt_mipmap_cache_exif_data_adobergb);
 
+// Define the static images.  We make the definitions macros so that they can be expanded to either
+// 4-channel 8 bits/channel integer images or 4-channel float images, depending on how __ and XX
+// are defined at the time of use.
+#define DEAD_IMAGE \
+  { __,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__, \
+    __,__,__,__,__,__,__,XX,XX,XX,XX,XX,XX,__,__,__,__,__,__,__, \
+    __,__,__,__,__,__,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,__,__,__, \
+    __,__,__,__,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,__,__, \
+    __,__,__,__,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,__,__, \
+    __,__,__,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,__, \
+    __,__,__,__,XX,XX,XX,__,XX,XX,XX,XX,__,XX,XX,XX,__,__,__,__, \
+    __,__,__,XX,XX,XX,__,__,__,XX,XX,__,__,__,XX,XX,XX,__,__,__, \
+    __,__,__,XX,XX,XX,__,__,__,XX,XX,__,__,__,XX,XX,XX,__,__,__, \
+    __,__,XX,XX,XX,__,__,__,__,XX,XX,__,__,__,__,XX,XX,XX,__,__, \
+    __,__,XX,XX,XX,__,__,__,__,XX,XX,__,__,__,__,XX,XX,XX,__,__, \
+    __,XX,XX,XX,XX,XX,__,__,__,XX,XX,__,__,__,XX,XX,XX,XX,XX,__, \
+    __,XX,XX,XX,XX,XX,__,__,XX,XX,XX,XX,__,__,XX,XX,XX,XX,XX,__, \
+    __,XX,XX,XX,XX,XX,XX,__,XX,XX,XX,XX,__,XX,XX,XX,XX,XX,XX,__, \
+    __,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__, \
+    __,__,XX,XX,XX,XX,XX,XX,XX,__,__,XX,XX,XX,XX,XX,XX,XX,__,__, \
+    __,__,XX,XX,XX,XX,XX,XX,XX,__,__,XX,XX,XX,XX,XX,XX,XX,__,__, \
+    __,__,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__, \
+    __,__,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__, \
+    __,__,__,XX,XX,__,XX,__,XX,__,XX,__,XX,__,XX,XX,__,__,__,__, \
+    __,__,__,XX,XX,__,__,__,__,__,__,__,__,__,XX,XX,__,__,__,__, \
+    __,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__, \
+    __,__,__,__,XX,__,__,XX,__,XX,__,XX,__,__,XX,__,__,__,__,__, \
+    __,__,__,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,__,__, \
+    __,__,__,__,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,__,__,__, \
+    __,__,__,__,__,__,XX,XX,XX,XX,XX,XX,XX,__,__,__,__,__,__,__, \
+    __,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__ }
+
+#define UNSUPPORTED_IMAGE \
+  { __,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__, \
+    __,__,__,__,__,__,__,XX,XX,XX,XX,__,__,__,__,__,__, \
+    __,__,__,__,__,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,__, \
+    __,__,__,__,XX,XX,XX,__,__,__,__,XX,XX,XX,__,__,__, \
+    __,__,__,XX,XX,__,__,__,__,__,__,__,__,XX,XX,__,__, \
+    __,__,XX,XX,__,__,__,__,__,__,__,__,__,XX,XX,__,__, \
+    __,__,XX,XX,__,__,__,__,__,__,__,__,__,__,XX,XX,__, \
+    __,XX,XX,__,__,__,__,__,__,__,__,__,__,__,XX,XX,__, \
+    __,XX,XX,__,__,__,__,__,__,__,__,__,__,__,XX,XX,__, \
+    __,XX,XX,__,__,__,__,__,__,__,__,__,__,__,XX,XX,__, \
+    __,__,__,__,__,__,__,__,__,__,__,__,__,XX,XX,__,__, \
+    __,__,__,__,__,__,__,__,__,__,__,__,__,XX,XX,__,__, \
+    __,__,__,__,__,__,__,__,__,__,__,__,XX,XX,__,__,__, \
+    __,__,__,__,__,__,__,__,__,__,__,XX,XX,__,__,__,__, \
+    __,__,__,__,__,__,__,__,__,__,XX,XX,__,__,__,__,__, \
+    __,__,__,__,__,__,__,__,__,XX,XX,__,__,__,__,__,__, \
+    __,__,__,__,__,__,__,__,__,XX,XX,__,__,__,__,__,__, \
+    __,__,__,__,__,__,__,__,XX,XX,__,__,__,__,__,__,__, \
+    __,__,__,__,__,__,__,__,XX,XX,__,__,__,__,__,__,__, \
+    __,__,__,__,__,__,__,__,XX,XX,__,__,__,__,__,__,__, \
+    __,__,__,__,__,__,__,__,XX,XX,__,__,__,__,__,__,__, \
+    __,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__, \
+    __,__,__,__,__,__,__,__,XX,XX,__,__,__,__,__,__,__, \
+    __,__,__,__,__,__,__,__,XX,XX,__,__,__,__,__,__,__, \
+    __,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__ }
+
+#define ERROR_IMAGE \
+  { __,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__, \
+    __,__,__,__,__,__,__,__,__,__,__,XX,__,__,__,__,__,__,__,__,__,__,__, \
+    __,__,__,__,__,__,__,__,__,__,XX,XX,XX,__,__,__,__,__,__,__,__,__,__, \
+    __,__,__,__,__,__,__,__,__,__,XX,__,XX,__,__,__,__,__,__,__,__,__,__, \
+    __,__,__,__,__,__,__,__,__,XX,XX,__,XX,XX,__,__,__,__,__,__,__,__,__, \
+    __,__,__,__,__,__,__,__,__,XX,XX,__,XX,XX,__,__,__,__,__,__,__,__,__, \
+    __,__,__,__,__,__,__,__,XX,XX,__,__,__,XX,XX,__,__,__,__,__,__,__,__, \
+    __,__,__,__,__,__,__,__,XX,XX,__,__,__,XX,XX,__,__,__,__,__,__,__,__, \
+    __,__,__,__,__,__,__,XX,XX,XX,__,__,__,XX,XX,XX,__,__,__,__,__,__,__, \
+    __,__,__,__,__,__,__,XX,XX,XX,__,__,__,XX,XX,XX,__,__,__,__,__,__,__, \
+    __,__,__,__,__,__,XX,XX,XX,XX,__,__,__,XX,XX,XX,XX,__,__,__,__,__,__, \
+    __,__,__,__,__,__,XX,XX,XX,XX,__,__,__,XX,XX,XX,XX,__,__,__,__,__,__, \
+    __,__,__,__,__,XX,XX,XX,XX,XX,__,__,__,XX,XX,XX,XX,XX,__,__,__,__,__, \
+    __,__,__,__,__,XX,XX,XX,XX,XX,XX,__,XX,XX,XX,XX,XX,XX,__,__,__,__,__, \
+    __,__,__,__,XX,XX,XX,XX,XX,XX,XX,__,XX,XX,XX,XX,XX,XX,XX,__,__,__,__, \
+    __,__,__,__,XX,XX,XX,XX,XX,XX,XX,__,XX,XX,XX,XX,XX,XX,XX,__,__,__,__, \
+    __,__,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__, \
+    __,__,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__, \
+    __,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__, \
+    __,__,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,XX,XX,XX,XX,XX,XX,XX,XX,__,__, \
+    __,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__, \
+    __,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__, \
+    __,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__ }
+
 struct dt_mipmap_buffer_dsc
 {
   uint32_t width;
@@ -120,36 +204,11 @@ static inline void _dead_image_8(dt_mipmap_buffer_t *buf)
   dsc->iscale = 1.0f;
   buf->color_space = dsc->color_space = DT_COLORSPACE_DISPLAY;
   assert(dsc->size > 210 * sizeof(uint32_t));
-  const uint32_t XX = 0xffffffffu;
-  const uint32_t __ = 0u;
-  static const uint32_t image[]
-      = { __,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,XX,XX,XX,XX,XX,XX,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,__,__,__,
-          __,__,__,__,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,__,__,
-          __,__,__,__,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,__,__,
-          __,__,__,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,__,
-          __,__,__,__,XX,XX,XX,__,XX,XX,XX,XX,__,XX,XX,XX,__,__,__,__,
-          __,__,__,XX,XX,XX,__,__,__,XX,XX,__,__,__,XX,XX,XX,__,__,__,
-          __,__,__,XX,XX,XX,__,__,__,XX,XX,__,__,__,XX,XX,XX,__,__,__,
-          __,__,XX,XX,XX,__,__,__,__,XX,XX,__,__,__,__,XX,XX,XX,__,__,
-          __,__,XX,XX,XX,__,__,__,__,XX,XX,__,__,__,__,XX,XX,XX,__,__,
-          __,XX,XX,XX,XX,XX,__,__,__,XX,XX,__,__,__,XX,XX,XX,XX,XX,__,
-          __,XX,XX,XX,XX,XX,__,__,XX,XX,XX,XX,__,__,XX,XX,XX,XX,XX,__,
-          __,XX,XX,XX,XX,XX,XX,__,XX,XX,XX,XX,__,XX,XX,XX,XX,XX,XX,__,
-          __,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,
-          __,__,XX,XX,XX,XX,XX,XX,XX,__,__,XX,XX,XX,XX,XX,XX,XX,__,__,
-          __,__,XX,XX,XX,XX,XX,XX,XX,__,__,XX,XX,XX,XX,XX,XX,XX,__,__,
-          __,__,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,
-          __,__,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,
-          __,__,__,XX,XX,__,XX,__,XX,__,XX,__,XX,__,XX,XX,__,__,__,__,
-          __,__,__,XX,XX,__,__,__,__,__,__,__,__,__,XX,XX,__,__,__,__,
-          __,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,
-          __,__,__,__,XX,__,__,XX,__,XX,__,XX,__,__,XX,__,__,__,__,__,
-          __,__,__,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,__,__,
-          __,__,__,__,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,__,__,__,
-          __,__,__,__,__,__,XX,XX,XX,XX,XX,XX,XX,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__ };
+#define __ 0
+#define XX 0xffffffffu
+  static const uint32_t image[] = DEAD_IMAGE;
+#undef __
+#undef XX
   memcpy(buf->buf, image, sizeof(image));
 }
 
@@ -164,34 +223,7 @@ static inline void _dead_image_f(dt_mipmap_buffer_t *buf)
 
 #define XX 1.0f, 1.0f, 1.0f, 1.0f
 #define __ 0.0f, 0.0f, 0.0f, 0.0f
-  static const float image[]
-      = { __,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,XX,XX,XX,XX,XX,XX,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,__,__,__,
-          __,__,__,__,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,__,__,
-          __,__,__,__,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,__,__,
-          __,__,__,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,__,
-          __,__,__,__,XX,XX,XX,__,XX,XX,XX,XX,__,XX,XX,XX,__,__,__,__,
-          __,__,__,XX,XX,XX,__,__,__,XX,XX,__,__,__,XX,XX,XX,__,__,__,
-          __,__,__,XX,XX,XX,__,__,__,XX,XX,__,__,__,XX,XX,XX,__,__,__,
-          __,__,XX,XX,XX,__,__,__,__,XX,XX,__,__,__,__,XX,XX,XX,__,__,
-          __,__,XX,XX,XX,__,__,__,__,XX,XX,__,__,__,__,XX,XX,XX,__,__,
-          __,XX,XX,XX,XX,XX,__,__,__,XX,XX,__,__,__,XX,XX,XX,XX,XX,__,
-          __,XX,XX,XX,XX,XX,__,__,XX,XX,XX,XX,__,__,XX,XX,XX,XX,XX,__,
-          __,XX,XX,XX,XX,XX,XX,__,XX,XX,XX,XX,__,XX,XX,XX,XX,XX,XX,__,
-          __,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,
-          __,__,XX,XX,XX,XX,XX,XX,XX,__,__,XX,XX,XX,XX,XX,XX,XX,__,__,
-          __,__,XX,XX,XX,XX,XX,XX,XX,__,__,XX,XX,XX,XX,XX,XX,XX,__,__,
-          __,__,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,
-          __,__,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,
-          __,__,__,XX,XX,__,XX,__,XX,__,XX,__,XX,__,XX,XX,__,__,__,__,
-          __,__,__,XX,XX,__,__,__,__,__,__,__,__,__,XX,XX,__,__,__,__,
-          __,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,
-          __,__,__,__,XX,__,__,XX,__,XX,__,XX,__,__,XX,__,__,__,__,__,
-          __,__,__,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,__,__,
-          __,__,__,__,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,__,__,__,
-          __,__,__,__,__,__,XX,XX,XX,XX,XX,XX,XX,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__ };
+  static const float image[] = DEAD_IMAGE;
 #undef XX
 #undef __
   memcpy(buf->buf, image, sizeof(image));
@@ -205,34 +237,11 @@ static inline void unsupp_image_8(dt_mipmap_buffer_t *buf)
   dsc->iscale = 1.0f;
   buf->color_space = dsc->color_space = DT_COLORSPACE_DISPLAY;
   assert(dsc->size >= dsc->width * dsc->height * sizeof(uint32_t));
-  const uint32_t XX = 0xffffffffu;
-  const uint32_t __ = 0u;
-  static const uint32_t image[]
-      = { __,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,XX,XX,XX,XX,__,__,__,__,__,__,
-          __,__,__,__,__,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,__,
-          __,__,__,__,XX,XX,XX,__,__,__,__,XX,XX,XX,__,__,__,
-          __,__,__,XX,XX,__,__,__,__,__,__,__,__,XX,XX,__,__,
-          __,__,XX,XX,__,__,__,__,__,__,__,__,__,XX,XX,__,__,
-          __,__,XX,XX,__,__,__,__,__,__,__,__,__,__,XX,XX,__,
-          __,XX,XX,__,__,__,__,__,__,__,__,__,__,__,XX,XX,__,
-          __,XX,XX,__,__,__,__,__,__,__,__,__,__,__,XX,XX,__,
-          __,XX,XX,__,__,__,__,__,__,__,__,__,__,__,XX,XX,__,
-          __,__,__,__,__,__,__,__,__,__,__,__,__,XX,XX,__,__,
-          __,__,__,__,__,__,__,__,__,__,__,__,__,XX,XX,__,__,
-          __,__,__,__,__,__,__,__,__,__,__,__,XX,XX,__,__,__,
-          __,__,__,__,__,__,__,__,__,__,__,XX,XX,__,__,__,__,
-          __,__,__,__,__,__,__,__,__,__,XX,XX,__,__,__,__,__,
-          __,__,__,__,__,__,__,__,__,XX,XX,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,__,__,XX,XX,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,__,XX,XX,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,__,XX,XX,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,__,XX,XX,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,__,XX,XX,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,__,XX,XX,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,__,XX,XX,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__ };
+#define __ 0
+#define XX 0xffffffffu
+  static const uint32_t image[] = UNSUPPORTED_IMAGE;
+#undef __
+#undef XX
   memcpy(buf->buf, image, sizeof(image));
 }
 
@@ -247,32 +256,7 @@ static inline void unsupp_image_f(dt_mipmap_buffer_t *buf)
 
 #define XX 1.0f, 1.0f, 1.0f, 1.0f
 #define __ 0.0f, 0.0f, 0.0f, 0.0f
-  static const float image[]
-      = { __,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,XX,XX,XX,XX,__,__,__,__,__,__,
-          __,__,__,__,__,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,__,
-          __,__,__,__,XX,XX,XX,__,__,__,__,XX,XX,XX,__,__,__,
-          __,__,__,XX,XX,__,__,__,__,__,__,__,__,XX,XX,__,__,
-          __,__,XX,XX,__,__,__,__,__,__,__,__,__,XX,XX,__,__,
-          __,__,XX,XX,__,__,__,__,__,__,__,__,__,__,XX,XX,__,
-          __,XX,XX,__,__,__,__,__,__,__,__,__,__,__,XX,XX,__,
-          __,XX,XX,__,__,__,__,__,__,__,__,__,__,__,XX,XX,__,
-          __,XX,XX,__,__,__,__,__,__,__,__,__,__,__,XX,XX,__,
-          __,__,__,__,__,__,__,__,__,__,__,__,__,XX,XX,__,__,
-          __,__,__,__,__,__,__,__,__,__,__,__,__,XX,XX,__,__,
-          __,__,__,__,__,__,__,__,__,__,__,__,XX,XX,__,__,__,
-          __,__,__,__,__,__,__,__,__,__,__,XX,XX,__,__,__,__,
-          __,__,__,__,__,__,__,__,__,__,XX,XX,__,__,__,__,__,
-          __,__,__,__,__,__,__,__,__,XX,XX,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,__,__,XX,XX,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,__,XX,XX,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,__,XX,XX,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,__,XX,XX,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,__,XX,XX,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,__,XX,XX,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,__,XX,XX,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__ };
+  static const float image[] = UNSUPPORTED_IMAGE;
 #undef XX
 #undef __
   memcpy(buf->buf, image, sizeof(image));
@@ -286,32 +270,11 @@ static inline void error_image_8(dt_mipmap_buffer_t *buf)
   dsc->iscale = 1.0f;
   buf->color_space = dsc->color_space = DT_COLORSPACE_DISPLAY;
   assert(dsc->size >= dsc->width * dsc->height * sizeof(uint32_t));
-  const uint32_t XX = 0xffffffffu;
-  const uint32_t __ = 0u;
-  static const uint32_t image[]
-      = { __,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,__,__,__,__,XX,__,__,__,__,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,__,__,__,XX,XX,XX,__,__,__,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,__,__,__,XX,__,XX,__,__,__,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,__,__,XX,XX,__,XX,XX,__,__,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,__,__,XX,XX,__,XX,XX,__,__,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,__,XX,XX,__,__,__,XX,XX,__,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,__,XX,XX,__,__,__,XX,XX,__,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,XX,XX,XX,__,__,__,XX,XX,XX,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,XX,XX,XX,__,__,__,XX,XX,XX,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,XX,XX,XX,XX,__,__,__,XX,XX,XX,XX,__,__,__,__,__,__,
-          __,__,__,__,__,__,XX,XX,XX,XX,__,__,__,XX,XX,XX,XX,__,__,__,__,__,__,
-          __,__,__,__,__,XX,XX,XX,XX,XX,__,__,__,XX,XX,XX,XX,XX,__,__,__,__,__,
-          __,__,__,__,__,XX,XX,XX,XX,XX,XX,__,XX,XX,XX,XX,XX,XX,__,__,__,__,__,
-          __,__,__,__,XX,XX,XX,XX,XX,XX,XX,__,XX,XX,XX,XX,XX,XX,XX,__,__,__,__,
-          __,__,__,__,XX,XX,XX,XX,XX,XX,XX,__,XX,XX,XX,XX,XX,XX,XX,__,__,__,__,
-          __,__,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,
-          __,__,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,
-          __,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,
-          __,__,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,XX,XX,XX,XX,XX,XX,XX,XX,__,__,
-          __,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,
-          __,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,
-          __,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__ };
+#define __ 0
+#define XX 0xffffffffu
+  static const uint32_t image[] = ERROR_IMAGE;
+#undef __
+#undef XX
   memcpy(buf->buf, image, sizeof(image));
 }
 
@@ -327,30 +290,7 @@ void error_image_f(dt_mipmap_buffer_t *buf)
 
 #define XX 1.0f, 1.0f, 1.0f, 1.0f
 #define __ 0.0f, 0.0f, 0.0f, 0.0f
-  static const float image[]
-      = { __,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,__,__,__,__,XX,__,__,__,__,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,__,__,__,XX,XX,XX,__,__,__,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,__,__,__,XX,__,XX,__,__,__,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,__,__,XX,XX,__,XX,XX,__,__,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,__,__,XX,XX,__,XX,XX,__,__,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,__,XX,XX,__,__,__,XX,XX,__,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,__,XX,XX,__,__,__,XX,XX,__,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,XX,XX,XX,__,__,__,XX,XX,XX,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,__,XX,XX,XX,__,__,__,XX,XX,XX,__,__,__,__,__,__,__,
-          __,__,__,__,__,__,XX,XX,XX,XX,__,__,__,XX,XX,XX,XX,__,__,__,__,__,__,
-          __,__,__,__,__,__,XX,XX,XX,XX,__,__,__,XX,XX,XX,XX,__,__,__,__,__,__,
-          __,__,__,__,__,XX,XX,XX,XX,XX,__,__,__,XX,XX,XX,XX,XX,__,__,__,__,__,
-          __,__,__,__,__,XX,XX,XX,XX,XX,XX,__,XX,XX,XX,XX,XX,XX,__,__,__,__,__,
-          __,__,__,__,XX,XX,XX,XX,XX,XX,XX,__,XX,XX,XX,XX,XX,XX,XX,__,__,__,__,
-          __,__,__,__,XX,XX,XX,XX,XX,XX,XX,__,XX,XX,XX,XX,XX,XX,XX,__,__,__,__,
-          __,__,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,
-          __,__,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,
-          __,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,
-          __,__,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,XX,XX,XX,XX,XX,XX,XX,XX,__,__,
-          __,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,
-          __,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,
-          __,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__ };
+  static const float image[] = ERROR_IMAGE;
 #undef XX
 #undef __
   memcpy(buf->buf, image, sizeof(image));
