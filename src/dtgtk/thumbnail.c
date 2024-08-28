@@ -1046,7 +1046,7 @@ static gboolean _event_grouping_release(GtkWidget *widget,
       sqlite3_stmt *stmt;
       DT_DEBUG_SQLITE3_PREPARE_V2(
           dt_database_get(darktable.db),
-          "INSERT OR IGNORE INTO main.selected_images"
+          "INSERT OR IGNORE INTO main.selected_images (imgid)"
           " SELECT id FROM main.images WHERE group_id = ?1", -1, &stmt,
           NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, thumb->groupid);
