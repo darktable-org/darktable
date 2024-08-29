@@ -1091,7 +1091,7 @@ static void _find_datetime_taken(Exiv2::ExifData &exifData,
 {
   if((FIND_EXIF_TAG("Exif.Image.DateTimeOriginal")
       || FIND_EXIF_TAG("Exif.Photo.DateTimeOriginal"))
-     && pos->size() == DT_DATETIME_EXIF_LENGTH)
+     && pos->size() >= DT_DATETIME_EXIF_LENGTH)
   {
     _strlcpy_to_utf8(exif_datetime_taken, DT_DATETIME_EXIF_LENGTH, pos, exifData);
     if(FIND_EXIF_TAG("Exif.Photo.SubSecTimeOriginal")
