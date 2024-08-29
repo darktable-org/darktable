@@ -406,6 +406,7 @@ typedef struct darktable_t
   char *cachedir;
   char *dump_pfm_module;
   char *dump_pfm_pipe;
+  char *dump_diff_pipe;
   char *tmp_directory;
   char *bench_module;
   dt_lua_state_t lua_state;
@@ -488,6 +489,14 @@ void dt_dump_pipe_pfm(const char *mod,
                       const int bpp,
                       const gboolean input,
                       const char *pipe);
+
+void dt_dump_pipe_diff_pfm(const char *mod,
+                          const float *a,
+                          const float *b,
+                          const int width,
+                          const int height,
+                          const int ch,
+                          const char *pipe);
 
 void *dt_alloc_aligned(const size_t size);
 
