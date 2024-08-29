@@ -1887,9 +1887,46 @@ static gboolean _dev_pixelpipe_process_rec(
               "device=%i (%s), %s\n",
               pipe->devid, darktable.opencl->dev[pipe->devid].cname, cl_errstr(err));
 
-          if(success_opencl && pfm_dump)
-            dt_opencl_dump_pipe_pfm(module->op, pipe->devid, *cl_mem_output,
+          if(success_opencl)
+          {
+            if(pfm_dump)
+              dt_opencl_dump_pipe_pfm(module->op, pipe->devid, *cl_mem_output,
                                     FALSE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
+
+            if((piece->pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_EXPORT))
+                && darktable.dump_diff_pipe)
+            {
+              const int ch = dt_opencl_get_image_element_size(cl_mem_input) / sizeof(float);
+              const int cho = dt_opencl_get_image_element_size(*cl_mem_output) / sizeof(float);
+              if((ch == 1 || ch == 4)
+                  && (cho == 1 || cho == 4)
+                  && dt_str_commasubstring(darktable.dump_diff_pipe, module->op))
+              {
+                const size_t ow = roi_out->width;
+                const size_t oh = roi_out->height;
+                const size_t iw = roi_in.width;
+                const size_t ih = roi_in.height;
+                float *clindata = dt_alloc_align_float(iw * ih * ch);
+                float *cloutdata = dt_alloc_align_float(ow * oh * cho);
+                float *cpudata = dt_alloc_align_float(ow * oh * cho);
+                if(clindata && cloutdata && cpudata)
+                {
+                  cl_int terr = dt_opencl_read_host_from_device(pipe->devid, cloutdata, *cl_mem_output, ow, oh, cho * sizeof(float));
+                  if(terr == CL_SUCCESS)
+                  {
+                    terr = dt_opencl_read_host_from_device(pipe->devid, clindata, cl_mem_input, ow, oh, ch * sizeof(float));
+                    if(terr == CL_SUCCESS)
+                    {
+                      module->process(module, piece, clindata, cpudata, &roi_in, roi_out);
+                      dt_dump_pipe_diff_pfm(module->op, cloutdata, cpudata, ow, oh, cho, dt_dev_pixelpipe_type_to_str(piece->pipe->type));                  }
+                  }
+                }
+                dt_free_align(cpudata);
+                dt_free_align(cloutdata);
+                dt_free_align(clindata);
+              }
+            }
+          }
 
           pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_GPU);
           pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_CPU
