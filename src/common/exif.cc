@@ -1089,9 +1089,12 @@ static void _find_datetime_taken(Exiv2::ExifData &exifData,
                                  Exiv2::ExifData::const_iterator pos,
                                  char *exif_datetime_taken)
 {
+  // Note: We allow a longer "datetime original" field with an unnecessary
+  // trailing byte(s) due to buggy software that creates it.
+  // See https://github.com/darktable-org/darktable/issues/17389
   if((FIND_EXIF_TAG("Exif.Image.DateTimeOriginal")
       || FIND_EXIF_TAG("Exif.Photo.DateTimeOriginal"))
-     && pos->size() == DT_DATETIME_EXIF_LENGTH)
+     && pos->size() >= DT_DATETIME_EXIF_LENGTH)
   {
     _strlcpy_to_utf8(exif_datetime_taken, DT_DATETIME_EXIF_LENGTH, pos, exifData);
     if(FIND_EXIF_TAG("Exif.Photo.SubSecTimeOriginal")
