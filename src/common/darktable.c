@@ -245,6 +245,8 @@ static int usage(const char *argv0)
          "\n"
          "--dump-pipe MODULE_A,MODULE_B\n"
          "\n"
+         "--dump-diff-pipe MODULE_A,MODULE_B\n"
+         "\n"
          "--dumpdir DIR\n"
          "\n"
          "-d SIGNAL\n"
@@ -657,6 +659,34 @@ void dt_dump_pipe_pfm(
   dt_dump_pfm_file(pipe, data, width, height, bpp, mod, "[dt_dump_pipe_pfm]", input, !input, TRUE);
 }
 
+void dt_dump_pipe_diff_pfm(
+        const char *mod,
+        const float *a,
+        const float *b,
+        const int width,
+        const int height,
+        const int ch,
+        const char *pipe)
+{
+  if(!darktable.dump_diff_pipe) return;
+  if(!mod) return;
+  if(!dt_str_commasubstring(darktable.dump_diff_pipe, mod)) return;
+
+  float *o = dt_alloc_align_float(ch * width * height);
+  if(!o) return;
+
+  DT_OMP_FOR()
+  for(size_t p = 0; p < width * height; p++)
+  {
+    const size_t k = ch * p;
+    for(size_t c = 0; c < ch; c++)
+      o[k+c] = sqrtf(100.0f * fabsf(a[k+c] - b[k+c]));
+  }
+
+  dt_dump_pfm_file(pipe, o, width, height, ch * sizeof(float), mod, "[dt_dump_CPU/GPU_diff_pfm]", TRUE, TRUE, TRUE);
+  dt_free_align(o);
+}
+
 static int32_t _detect_opencl_job_run(dt_job_t *job)
 {
   darktable.opencl = (dt_opencl_t *)calloc(1, sizeof(dt_opencl_t));
@@ -874,6 +904,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   darktable.dump_pfm_module = NULL;
   darktable.dump_pfm_pipe = NULL;
+  darktable.dump_diff_pipe = NULL;
   darktable.tmp_directory = NULL;
   darktable.bench_module = NULL;
 
@@ -939,6 +970,12 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
         argv[k-1] = NULL;
         argv[k] = NULL;
       }
+      else if(!strcmp(argv[k], "--dump-diff-pipe") && argc > k + 1)
+      {
+        darktable.dump_diff_pipe = argv[++k];
+        argv[k-1] = NULL;
+        argv[k] = NULL;
+      }
       else if(!strcmp(argv[k], "--library") && argc > k + 1)
       {
         dbfilename_from_command = argv[++k];
@@ -981,7 +1018,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
         argv[k-1] = NULL;
         argv[k] = NULL;
       }
-     else if(!strcmp(argv[k], "--localedir") && argc > k + 1)
+      else if(!strcmp(argv[k], "--localedir") && argc > k + 1)
       {
         localedir_from_command = argv[++k];
         argv[k-1] = NULL;
@@ -1287,7 +1324,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     g_strfreev(myoptions);
   }
 
-  if(darktable.dump_pfm_module || darktable.dump_pfm_pipe)
+  if(darktable.dump_pfm_module || darktable.dump_pfm_pipe || darktable.dump_pfm_pipe || darktable.dump_diff_pipe)
   {
     if(darktable.tmp_directory == NULL)
       darktable.tmp_directory = g_dir_make_tmp("darktable_XXXXXX", NULL);
@@ -1677,6 +1714,11 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     dt_print(DT_DEBUG_ALWAYS,
              "[dt_init] writing pfm files for module '%s' processing the pipeline\n",
       darktable.dump_pfm_pipe);
+
+  if(darktable.dump_diff_pipe)
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_init] writing CPU/GPU diff pfm files for module '%s' processing the pipeline\n",
+      darktable.dump_diff_pipe);
 
   if(init_gui)
   {
