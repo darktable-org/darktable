@@ -421,6 +421,30 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img,
     dt_print(DT_DEBUG_ALWAYS, "[rawspeed] (%s) File I/O error: %s\n", img->filename, exc.what());
     return DT_IMAGEIO_IOERROR;
   }
+  catch(const rawspeed::RawDecoderException &exc)
+  {
+    const char *msg = exc.what();
+    // FIXME FIXME
+    // The following is a nasty hack which will break if exception messages change.
+    // The proper way to handle this is to add two new exception types to Rawspeed and
+    // have them throw the appropriate ones on encountering an unsupported camera model
+    // or unsupported feature (e.g. bit depth, compression, aspect ratio mode, ...)
+    if(msg && strstr(msg, "Camera not supported"))
+    {
+      dt_print(DT_DEBUG_ALWAYS, "[rawspeed] Unsupported camera model for %s\n", img->filename);
+      return DT_IMAGEIO_UNSUPPORTED_CAMERA;
+    }
+    else if (msg && strstr(msg, "supported"))
+    {
+      dt_print(DT_DEBUG_ALWAYS, "[rawspeed] (%s) %s\n", img->filename, msg);
+      return DT_IMAGEIO_UNSUPPORTED_FEATURE;
+    }
+    else
+    {
+      dt_print(DT_DEBUG_ALWAYS, "[rawspeed] (%s) %s\n", img->filename, exc.what());
+      return DT_IMAGEIO_FILE_CORRUPTED;
+    }
+  }
   catch(const rawspeed::RawParserException &exc)
   {
     dt_print(DT_DEBUG_ALWAYS, "[rawspeed] (%s) CIFF/FIFF error: %s\n", img->filename, exc.what());
