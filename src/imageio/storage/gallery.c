@@ -382,15 +382,21 @@ int store(dt_imageio_module_storage_t *self,
 
   gchar *esc_relfilename = g_strescape(relfilename, NULL);
   gchar *esc_relthumbfilename = g_strescape(relthumbfilename, NULL);
+  char *title_element = title ? g_strdup_printf("<h1>%s</h1>\n", title) : g_strdup("");
+  char *figcaption_element = description ? g_strdup_printf("<figcaption>%s</figcaption>\n",
+                                                            description) : g_strdup("");
 
   snprintf(pair->line, sizeof(pair->line),
            "\n"
-           "      <div><div class=\"dia\">\n"
-           "      <img src=\"%s\" alt=\"img%d\" class=\"img\" onclick=\"openSwipe(%d)\"/></div>\n"
-           "      <h1>%s</h1>\n"
-           "      %s</div>\n",
-           esc_relthumbfilename,
-           num, num-1, title ? title : "&nbsp;", description ? description : "&nbsp;");
+           "      <figure>\n"
+           "      <img class=\"thumbnail\" src=\"%s\" alt=\"img%d\" class= onclick=\"openSwipe(%d)\">\n"
+           "      %s"
+           "      %s"
+           "      </figure>\n",
+           esc_relthumbfilename, num, num-1, title_element, figcaption_element);
+
+  g_free(title_element);
+  g_free(figcaption_element);
 
   if(res_title)
     g_list_free_full(res_title, &g_free);
@@ -503,13 +509,13 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
   FILE *f = g_fopen(filename, "wb");
   if(!f) return;
   fprintf(f,
-          "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" "
-          "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n"
-          "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n"
+          "<!DOCTYPE html>\n"
+          "<html>\n"
           "  <head>\n"
-          "    <meta http-equiv=\"Content-type\" content=\"text/html;charset=UTF-8\" />\n"
-          "    <link rel=\"shortcut icon\" href=\"style/favicon.ico\" />\n"
-          "    <link rel=\"stylesheet\" href=\"style/style.css\" type=\"text/css\" />\n"
+          "    <meta http-equiv=\"Content-type\" content=\"text/html;charset=UTF-8\">\n"
+          "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n"
+          "    <link rel=\"shortcut icon\" href=\"style/favicon.ico\">\n"
+          "    <link rel=\"stylesheet\" href=\"style/style.css\" type=\"text/css\">\n"
           "    <link rel=\"stylesheet\" href=\"pswp/photoswipe.css\">\n"
           "    <link rel=\"stylesheet\" href=\"pswp/default-skin/default-skin.css\">\n"
           "    <script src=\"pswp/photoswipe.min.js\"></script>\n"
@@ -517,8 +523,10 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
           "    <title>%s</title>\n"
           "  </head>\n"
           "  <body>\n"
-          "    <div class=\"title\">%s</div>\n"
-          "    <div class=\"page\">\n",
+          "  <header>\n"
+          "    <h1>%s</h1>\n"
+          "  </header>\n"
+          "    <main>\n",
           title, title);
 
   size_t count = 0;
@@ -529,14 +537,15 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
     count++;
   }
 
-  fprintf(f, "        <p style=\"clear:both;\"></p>\n"
-             "    </div>\n"
-             "    <div class=\"footer\">\n"
-             "      <script language=\"JavaScript\" type=\"text/javascript\">\n"
-             "      document.write(\"download all: <em>curl -O#  \" + document.documentURI.replace( /\\\\/g, '/' ).replace( /\\/[^\\/]*$/, '' ) + \"/img_[0000-%04zu].jpg</em>\")\n"
-             "      </script><br />\n"
+  fprintf(f, "        </main>\n"
+             "    <footer>\n"
+             "      <p>\n"
              "      created with %s\n"
-             "    </div>\n"
+             "      </p>\n"
+             "      <script>\n"
+             "      document.write(\"<p style='margin: 0 auto;'>download all through the terminal:</p><code>curl -O#  \" + document.documentURI.replace( /\\\\/g, '/' ).replace( /\\/[^\\/]*$/, '' ) + \"/img_[0000-%04zu].jpg</code>\")\n"
+             "      </script>  <br>\n"
+             "    </footer>\n"
              "    <div class=\"pswp\" tabindex=\"-1\" role=\"dialog\" aria-hidden=\"true\">\n"
              "        <div class=\"pswp__bg\"></div>\n"
              "        <div class=\"pswp__scroll-wrap\">\n"
@@ -577,8 +586,8 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
              "<script>\n"
              "var pswpElement = document.querySelectorAll('.pswp')[0];\n"
              "var items = [\n",
-          count,
-          darktable_package_string);
+             darktable_package_string,
+             count);
   while(d->l)
   {
     pair_t *p = (pair_t *)d->l->data;
