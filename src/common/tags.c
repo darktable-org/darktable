@@ -364,12 +364,14 @@ gboolean dt_tag_exists(const char *name, guint *tagid)
 
   if(rt == SQLITE_ROW)
   {
-    if(tagid != NULL) *tagid = sqlite3_column_int64(stmt, 0);
+    if(tagid != NULL)
+      *tagid = sqlite3_column_int64(stmt, 0);
     sqlite3_finalize(stmt);
     return TRUE;
   }
 
-  if(tagid != NULL) *tagid = -1;
+  if(tagid != NULL)
+    *tagid = -1;
   sqlite3_finalize(stmt);
   return FALSE;
 }
@@ -631,7 +633,8 @@ gboolean dt_tag_detach_by_string(const char *name,
                                  const gboolean undo_on,
                                  const gboolean group_on)
 {
-  if(!name || !name[0]) return FALSE;
+  if(!name || !name[0])
+    return FALSE;
   guint tagid = 0;
   if(!dt_tag_exists(name, &tagid)) return FALSE;
 
