@@ -164,17 +164,9 @@ static inline float lookup_gamut(const float gamut_lut[LUT_ELEM], const float hu
 
   // fetch the corresponding y values
   const float y_prev = gamut_lut[xi];
-  const float y_next = gamut_lut[xii];
 
-  // assume that we are exactly on an integer LUT element
-  float out = y_prev;
-
-  if(x_next != x_prev)
-    // we are between 2 LUT elements : do linear interpolation
-    // actually, we only add the slope term on the previous one
-    out += (x_test - x_prev) * (y_next - y_prev) / (x_next - x_prev);
-
-  return out;
+  // return y_prev if we are on the same integer LUT element or do linear interpolation
+  return y_prev + ((xi != xii) ? (x_test - x_prev) * (gamut_lut[xii] - y_prev) : 0.0f);
 }
 
 

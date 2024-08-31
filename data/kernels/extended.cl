@@ -754,15 +754,6 @@ typedef enum dt_iop_colorbalancrgb_saturation_t
 } dt_iop_colorbalancrgb_saturation_t;
 
 
-static inline float soft_clip(const float x, const float soft_threshold, const float hard_threshold)
-{
-  // use an exponential soft clipping above soft_threshold
-  // hard threshold must be > soft threshold
-  const float norm = hard_threshold - soft_threshold;
-  return (x > soft_threshold) ? soft_threshold + (1.f - native_exp(-(x - soft_threshold) / norm)) * norm : x;
-}
-
-
 kernel void
 colorbalancergb (read_only image2d_t in, write_only image2d_t out,
                  const int width, const int height,

@@ -70,12 +70,6 @@ static inline float scharr_gradient (__read_only image2d_t in,
   return dt_fast_hypot(gx, gy);
 }
 
-static inline float soft_clip(const float x, const float soft_threshold, const float hard_threshold)
-{
-  const float norm = hard_threshold - soft_threshold;
-  return (x > soft_threshold) ? soft_threshold + (1.f - exp(-(x - soft_threshold) / norm)) * norm : x;
-}
-
 static inline float4 gamut_map_HSB(float4 HSB, global float *gamut_LUT, const float L_white)
 {
   float4 JCH = dt_UCS_HSB_to_JCH(HSB);
