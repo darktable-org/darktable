@@ -118,6 +118,7 @@ typedef struct dt_lib_print_settings_t
   gboolean has_changed;
 
   GList *printer_list;
+  dt_pthread_mutex_t printer_list_mutex;
 } dt_lib_print_settings_t;
 
 typedef struct dt_lib_print_job_t
@@ -1395,7 +1396,9 @@ static void _new_printer_callback(dt_printer_info_t *printer,
   const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_print_settings_t *d = (dt_lib_print_settings_t*)self->data;
 
+  dt_pthread_mutex_lock(&d->printer_list_mutex);
   d->printer_list = g_list_append(d->printer_list, g_strdup(printer->name));
+  dt_pthread_mutex_unlock(&d->printer_list_mutex);
 }
 
 void view_enter(struct dt_lib_module_t *self,
@@ -1408,6 +1411,8 @@ void view_enter(struct dt_lib_module_t *self,
   {
     // The printer list was filled by dt_printers_discovery() in a background job.
     // Now we fill the printer combo with the found printers.
+    dt_pthread_mutex_lock(&d->printer_list_mutex);
+
     char *default_printer = dt_conf_get_string("plugins/print/print/printer");
 
     for(const GList *iter = d->printer_list; iter; iter = g_list_next(iter))
@@ -1416,7 +1421,7 @@ void view_enter(struct dt_lib_module_t *self,
       dt_bauhaus_combobox_add(d->printers, printer_name);
     }
 
-    if(default_printer[0]=='\0')
+    if(default_printer[0] == '\0')
       dt_bauhaus_combobox_set(d->printers, 0);
     else
       dt_bauhaus_combobox_set_from_text(d->printers, default_printer);
@@ -1424,6 +1429,8 @@ void view_enter(struct dt_lib_module_t *self,
     g_free(default_printer);
     g_list_free_full(d->printer_list, g_free);
     d->printer_list = NULL;
+
+    dt_pthread_mutex_unlock(&d->printer_list_mutex);
   }
 
   // user activated a new image via the filmstrip or user entered view
