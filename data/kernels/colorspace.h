@@ -791,18 +791,19 @@ static inline float4 gamut_check_Yrg(float4 Ych)
  * Use this space for color-grading in a perceptual framework.
  * The CAM terms have been removed for performance.
  **/
+#define DT_UCS_L_STAR_RANGE 2.098883786377f 
+#define DT_UCS_L_STAR_UPPER_LIMIT 2.09885f
+#define DT_UCS_Y_UPPER_LIMIT 1e8f
 
 static inline float Y_to_dt_UCS_L_star(const float Y)
 {
-  // WARNING: L_star needs to be < 2.098883786377, meaning Y needs to be < 3.875766378407574e+19
   const float Y_hat = native_powr(Y, 0.631651345306265f);
-  return 2.098883786377f * Y_hat / (Y_hat + 1.12426773749357f);
+  return DT_UCS_L_STAR_RANGE * Y_hat / (Y_hat + 1.12426773749357f);
 }
 
 static inline float dt_UCS_L_star_to_Y(const float L_star)
 {
-  // WARNING: L_star needs to be < 2.098883786377, meaning Y needs to be < 3.875766378407574e+19
-  return native_powr((1.12426773749357f * L_star / (2.098883786377f - L_star)), 1.5831518565279648f);
+  return native_powr((1.12426773749357f * L_star / (DT_UCS_L_STAR_RANGE - L_star)), 1.5831518565279648f);
 }
 
 static inline void xyY_to_dt_UCS_UV(const float4 xyY, float UV_star_prime[2])
@@ -842,7 +843,6 @@ static inline float4 xyY_to_dt_UCS_JCH(const float4 xyY, const float L_white)
   xyY_to_dt_UCS_UV(xyY, UV_star_prime);
 
   // Y upper limit is calculated from the L star upper limit.
-  const float DT_UCS_Y_UPPER_LIMIT = 1e8f;
   const float L_star = Y_to_dt_UCS_L_star(clamp(xyY.z, 0.f, DT_UCS_Y_UPPER_LIMIT));
   const float M2 = UV_star_prime[0] * UV_star_prime[0] + UV_star_prime[1] * UV_star_prime[1]; // square of colorfulness M
 
@@ -872,7 +872,6 @@ static inline float4 dt_UCS_JCH_to_xyY(const float4 JCH, const float L_white)
   // Instead of using above theoretical values we use some modified versions
   // that not avoid div-by-zero but div-by-close-to-zero
   // this leads to more stability for extremely bright parts as we avoid single float precision overflows
-  const float DT_UCS_L_STAR_UPPER_LIMIT = 2.09885f;
   const float L_star = clamp(JCH.x * L_white, 0.f, DT_UCS_L_STAR_UPPER_LIMIT);
   const float M = L_star != 0.f
     ? native_powr(JCH.y * L_white / (15.932993652962535f * native_powr(L_star, 0.6523997524738018f)), 0.8322850678616855f)
