@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2023 darktable developers.
+    Copyright (C) 2014-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1410,7 +1410,7 @@ void view_enter(struct dt_lib_module_t *self,
     // Now we fill the printer combo with the found printers.
     char *default_printer = dt_conf_get_string("plugins/print/print/printer");
 
-    for(GList *iter = d->printer_list; iter; iter = g_list_next(iter))
+    for(const GList *iter = d->printer_list; iter; iter = g_list_next(iter))
     {
       const gchar *printer_name = iter->data;
       dt_bauhaus_combobox_add(d->printers, printer_name);
@@ -1422,7 +1422,7 @@ void view_enter(struct dt_lib_module_t *self,
       dt_bauhaus_combobox_set_from_text(d->printers, default_printer);
 
     g_free(default_printer);
-    g_list_free(d->printer_list);
+    g_list_free_full(d->printer_list, g_free);
     d->printer_list = NULL;
   }
 
