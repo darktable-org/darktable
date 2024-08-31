@@ -1420,10 +1420,12 @@ void view_enter(struct dt_lib_module_t *self,
       dt_bauhaus_combobox_add(d->printers, printer_name);
     }
 
-    if(default_printer[0] == '\0')
+    if(default_printer[0] == '\0'
+       || !dt_bauhaus_combobox_set_from_text(d->printers, default_printer))
+    {
+      // no default printer or default printer not found
       dt_bauhaus_combobox_set(d->printers, 0);
-    else
-      dt_bauhaus_combobox_set_from_text(d->printers, default_printer);
+    }
 
     g_free(default_printer);
     g_list_free_full(d->printer_list, g_free);
