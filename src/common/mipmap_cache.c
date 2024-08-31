@@ -842,7 +842,11 @@ void dt_mipmap_cache_get_with_caller(
     int line)
 {
   const uint32_t key = get_key(imgid, mip);
-  buf->loader_status = DT_IMAGEIO_OK;
+
+  // buf may be null when called with DT_MIPMAP_PREFETCH for example
+  if(buf)
+    buf->loader_status = DT_IMAGEIO_OK;
+
   if(flags == DT_MIPMAP_TESTLOCK)
   {
     // simple case: only get and lock if it's there.
