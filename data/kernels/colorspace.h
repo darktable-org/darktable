@@ -962,6 +962,15 @@ static inline float4 dt_UCS_LUV_to_JCH(const float L_star, const float L_white, 
   return JCH;
  }
 
+static inline float soft_clip(const float x, const float soft_threshold, const float hard_threshold)
+{
+  // use an exponential soft clipping above soft_threshold
+  // hard threshold must be > soft threshold
+  const float norm = hard_threshold - soft_threshold;
+  return (x > soft_threshold) ? soft_threshold + (1.f - native_exp(-(x - soft_threshold) / norm)) * norm : x;
+}
+
+
 #define LUT_ELEM 360 // gamut LUT number of elements: resolution of 1°
 static inline float lookup_gamut(global const float *gamut_lut, const float x)
 {
