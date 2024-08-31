@@ -1247,21 +1247,6 @@ static inline void dt_YCbCr_to_RGB(const dt_aligned_pixel_t yuv, dt_aligned_pixe
  * Use this space for color-grading in a perceptual framework.
  * The CAM terms have been removed for performance.
  **/
-
-static inline float Y_to_dt_UCS_L_star(const float Y)
-{
-  // WARNING: L_star needs to be < 2.098883786377, meaning Y needs to be < 3.875766378407574e+19
-  const float Y_hat = powf(Y, 0.631651345306265f);
-  return 2.098883786377f * Y_hat / (Y_hat + 1.12426773749357f);
-}
-
-static inline float dt_UCS_L_star_to_Y(const float L_star)
-{
-  // WARNING: L_star needs to be < 2.098883786377, meaning Y needs to be < 3.875766378407574e+19
-  return powf((1.12426773749357f * L_star / (2.098883786377f - L_star)), 1.5831518565279648f);
-}
-
-
 // L_star upper limit is 2.098883786377 truncated to 32-bit float and last decimal removed.
 // By clipping L_star to this limit, we ensure dt_UCS_L_star_to_Y() doesn't divide by zero.
 // static const float DT_UCS_L_STAR_UPPER_LIMIT = 2.098883f;
@@ -1271,9 +1256,20 @@ static inline float dt_UCS_L_star_to_Y(const float L_star)
 // Instead of using above theoretical values we use some modified versions
 // that not avoid div-by-zero but div-by-close-to-zero
 // this leads to more stability for extremely bright parts as we avoid single float precision overflows
-static const float DT_UCS_L_STAR_UPPER_LIMIT = 2.09885f;
-static const float DT_UCS_Y_UPPER_LIMIT = 1e8f;
+#define DT_UCS_L_STAR_RANGE 2.098883786377f 
+#define DT_UCS_L_STAR_UPPER_LIMIT 2.09885f
+#define DT_UCS_Y_UPPER_LIMIT 1e8f
 
+static inline float Y_to_dt_UCS_L_star(const float Y)
+{
+  const float Y_hat = powf(Y, 0.631651345306265f);
+  return DT_UCS_L_STAR_RANGE * Y_hat / (Y_hat + 1.12426773749357f);
+}
+
+static inline float dt_UCS_L_star_to_Y(const float L_star)
+{
+  return powf((1.12426773749357f * L_star / (DT_UCS_L_STAR_RANGE - L_star)), 1.5831518565279648f);
+}
 
 DT_OMP_DECLARE_SIMD(aligned(xyY: 16))
 static inline void xyY_to_dt_UCS_UV(const dt_aligned_pixel_t xyY, float UV_star_prime[2])
@@ -1328,7 +1324,6 @@ static inline void xyY_to_dt_UCS_JCH(const dt_aligned_pixel_t xyY, const float L
 
   float UV_star_prime[2];
   xyY_to_dt_UCS_UV(xyY, UV_star_prime);
-
   dt_UCS_LUV_to_JCH(Y_to_dt_UCS_L_star(xyY[2]), L_white, UV_star_prime, JCH);
 }
 

@@ -196,7 +196,7 @@ static inline void gamut_map_HSB(dt_aligned_pixel_t HSB, const float gamut_LUT[L
 
   // Compute the chroma of the boundary from the colorfulness of the boundary (defined in the LUT)
   // and from the lightness J of the current pixel
-  const float max_colorfulness = lookup_gamut(gamut_LUT, JCH[2]); // WARNING : this is M²
+  const float max_colorfulness = lookup_gamut(gamut_LUT, JCH[2]); // WARNING :this is M²
   const float max_chroma = 15.932993652962535f * powf(JCH[0] * L_white, 0.6523997524738018f) * powf(max_colorfulness, 0.6007557017508491f) / L_white;
 
   // Convert the boundary chroma to saturation
