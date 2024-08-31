@@ -87,7 +87,8 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   g_strlcpy(parameters.infile, filename, sizeof(parameters.infile));
 
   parameters.decod_format = get_file_format(filename);
-  if(parameters.decod_format == -1) return DT_IMAGEIO_LOAD_FAILED;
+  if(parameters.decod_format == -1)
+    return DT_IMAGEIO_UNSUPPORTED_FORMAT;
 
   if(!img->exif_inited) (void)dt_exif_read(img, filename);
 
@@ -101,7 +102,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   {
     fclose(fsrc);
     dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: fread returned a number of elements different from the expected.\n");
-    return DT_IMAGEIO_FILE_NOT_FOUND;
+    return DT_IMAGEIO_FILE_CORRUPTED;
   }
   fclose(fsrc);
 
@@ -116,7 +117,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   else // this will also reject jpt files.
   {
     dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: `%s' has unsupported file format.\n", filename);
-    return DT_IMAGEIO_LOAD_FAILED;
+    return DT_IMAGEIO_UNSUPPORTED_FORMAT;
   }
 
 
@@ -130,7 +131,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
     codec = OPJ_CODEC_JPT;
   else
   {
-    return DT_IMAGEIO_LOAD_FAILED; // can't happen
+    return DT_IMAGEIO_UNSUPPORTED_FEATURE; // can't happen
   }
 
   d_codec = opj_create_decompress(codec);
@@ -178,7 +179,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
     opj_stream_destroy(d_stream);
     opj_destroy_codec(d_codec);
     opj_image_destroy(image);
-    return DT_IMAGEIO_LOAD_FAILED;
+    return DT_IMAGEIO_IOERROR;
   }
 
   /* Get the decoded image */
@@ -188,7 +189,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
     opj_destroy_codec(d_codec);
     opj_stream_destroy(d_stream);
     opj_image_destroy(image);
-    return DT_IMAGEIO_LOAD_FAILED;
+    return DT_IMAGEIO_FILE_CORRUPTED;
   }
 
   /* Close the byte stream */
@@ -197,7 +198,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   if(!image)
   {
     dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: failed to decode image `%s'\n", filename);
-    ret = DT_IMAGEIO_LOAD_FAILED;
+    ret = DT_IMAGEIO_FILE_CORRUPTED;
     goto end_of_the_world;
   }
 
@@ -223,7 +224,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   if(image->numcomps == 0 || image->x1 == 0 || image->y1 == 0)
   {
     dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: invalid raw image parameters in `%s'\n", filename);
-    ret = DT_IMAGEIO_LOAD_FAILED;
+    ret = DT_IMAGEIO_FILE_CORRUPTED;
     goto end_of_the_world;
   }
 
@@ -232,14 +233,14 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
     if(image->comps[i].w != image->x1 || image->comps[i].h != image->y1)
     {
       dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: some component has different size in `%s'\n", filename);
-      ret = DT_IMAGEIO_LOAD_FAILED;
+      ret = DT_IMAGEIO_FILE_CORRUPTED;
       goto end_of_the_world;
     }
     if(image->comps[i].prec > 16)
     {
       dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: precision %d is larger than 16 in `%s'\n", image->comps[1].prec,
               filename);
-      ret = DT_IMAGEIO_LOAD_FAILED;
+      ret = DT_IMAGEIO_UNSUPPORTED_FEATURE;
       goto end_of_the_world;
     }
   }
@@ -331,7 +332,8 @@ int dt_imageio_j2k_read_profile(const char *filename, uint8_t **out)
   g_strlcpy(parameters.infile, filename, sizeof(parameters.infile));
 
   parameters.decod_format = get_file_format(filename);
-  if(parameters.decod_format == -1) return DT_IMAGEIO_LOAD_FAILED;
+  if(parameters.decod_format == -1)
+    return DT_IMAGEIO_UNSUPPORTED_FORMAT;
 
   /* read the input file and put it in memory */
   /* ---------------------------------------- */

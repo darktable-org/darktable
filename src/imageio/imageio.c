@@ -790,9 +790,15 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
   if(!buf.buf || !buf.width || !buf.height)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[dt_imageio_export_with_flags] mipmap allocation for `%s' failed\n",
-             filename);
-    dt_control_log(_("image `%s' is not available!"), img->filename);
+             "[dt_imageio_export_with_flags] mipmap allocation for `%s' failed (status %d)\n",
+             filename,img->load_status);
+    if(img->load_status == DT_IMAGEIO_FILE_NOT_FOUND)
+      dt_control_log(_("image `%s' is not available!"), img->filename);
+    else if(img->load_status == DT_IMAGEIO_LOAD_FAILED || img->load_status == DT_IMAGEIO_IOERROR ||
+            img->load_status == DT_IMAGEIO_CACHE_FULL)
+      dt_control_log(_("unable to load image `%s'!"), img->filename);
+    else
+      dt_control_log(_("image '%s' not supported"), img->filename);
     goto error_early;
   }
 
@@ -1308,7 +1314,7 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
   /* first of all, check if file exists, don't bother to test loading
    * if not exists */
   if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
-    return !DT_IMAGEIO_OK;
+    return DT_IMAGEIO_FILE_NOT_FOUND;
 
   const int32_t was_hdr = (img->flags & DT_IMAGE_HDR);
   const int32_t was_bw = dt_image_monochrome_flags(img);
@@ -1344,16 +1350,20 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
     ret = dt_imageio_open_rawspeed(img, filename, buf);
   }
 
-  /* fallback that tries to open file via LibRaw to support Canon CR3 */
-  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
-    ret = dt_imageio_open_libraw(img, filename, buf);
+  // if rawspeed tried but failed to load a known filetype, skip the attempts to try other loaders
+  if(ret != DT_IMAGEIO_UNSUPPORTED_FEATURE && ret != DT_IMAGEIO_FILE_CORRUPTED && ret != DT_IMAGEIO_IOERROR)
+  {
+    /* fallback that tries to open file via LibRaw to support Canon CR3 */
+    if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
+      ret = dt_imageio_open_libraw(img, filename, buf);
 
-  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
-    ret = dt_imageio_open_qoi(img, filename, buf);
+    if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
+      ret = dt_imageio_open_qoi(img, filename, buf);
 
-  /* fallback that tries to open file via GraphicsMagick */
-  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
-    ret = dt_imageio_open_exotic(img, filename, buf);
+    /* fallback that tries to open file via GraphicsMagick */
+    if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
+      ret = dt_imageio_open_exotic(img, filename, buf);
+  }
 
   if((ret == DT_IMAGEIO_OK) && !was_hdr && (img->flags & DT_IMAGE_HDR))
     dt_imageio_set_hdr_tag(img);

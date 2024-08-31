@@ -29,7 +29,7 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
   if(!f)
   {
     dt_print(DT_DEBUG_ALWAYS,"[webp_open] cannot open file for read: %s\n", filename);
-    return DT_IMAGEIO_LOAD_FAILED;
+    return DT_IMAGEIO_FILE_NOT_FOUND;
   }
 
   fseek(f, 0, SEEK_END);
@@ -43,7 +43,7 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
     fclose(f);
     g_free(read_buffer);
     dt_print(DT_DEBUG_ALWAYS,"[webp_open] failed to read %zu bytes from %s\n", filesize, filename);
-    return DT_IMAGEIO_LOAD_FAILED;
+    return DT_IMAGEIO_IOERROR;
   }
   fclose(f);
 

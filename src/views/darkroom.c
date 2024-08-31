@@ -505,23 +505,75 @@ void expose(
   {
     gchar *load_txt;
     float fontsize;
-
+    dt_image_t *img = dt_image_cache_get(darktable.image_cache, dev->image_storage.id, 'r');;
+    dt_imageio_retval_t status = img->load_status;
+    dt_image_cache_read_release(darktable.image_cache, img);
+    
     if(dev->image_invalid_cnt)
     {
       fontsize = DT_PIXEL_APPLY_DPI(16);
-      load_txt = g_strdup_printf(
+      switch(status)
+      {
+      case DT_IMAGEIO_FILE_NOT_FOUND:
+        load_txt = g_strdup_printf(
+          _("file `%s' is not available, switching to lighttable now.\n\n"
+            "if stored on an external drive, ensure that the drive is connected and files\n"
+            "can be accessed in the same locations as when you imported this image."),
+          dev->image_storage.filename);
+        break;
+      case DT_IMAGEIO_FILE_CORRUPTED:
+        load_txt = g_strdup_printf(
+          _("file `%s' appears corrupt, switching to lighttable now.\n\n"
+            "please check that it was correctly and completely copied from the camera."),
+          dev->image_storage.filename);
+        break;
+      case DT_IMAGEIO_UNSUPPORTED_FORMAT:
+        load_txt = g_strdup_printf(
+          _("file `%s' is not in any recognized format, switching to lighttable now."),
+          dev->image_storage.filename);
+        break;
+      case DT_IMAGEIO_UNSUPPORTED_CAMERA:
+        load_txt = g_strdup_printf(
+          _("file `%s' is from an unsupported camera model, switching to lighttable now."),
+          dev->image_storage.filename);
+        break;
+      case DT_IMAGEIO_UNSUPPORTED_FEATURE:
+        load_txt = g_strdup_printf(
+          _("file `%s' uses an unsupported feature, switching to lighttable now.\n\n"
+            "please check that the image format and compression mode you selected in your\n"
+            "camera's menus is supported (see https://www.darktable.org/resources/camera-support/\n"
+            "and the release notes for this version of darktable)"),
+          dev->image_storage.filename);
+        break;
+      case DT_IMAGEIO_IOERROR:
+        load_txt = g_strdup_printf(
+          _("error while reading file `%s', switching to lighttable now.\n\n"
+            "please check that the file has not been truncated."),
+          dev->image_storage.filename);
+        break;
+      default:
+        load_txt = g_strdup_printf(
           _("darktable could not load `%s', switching to lighttable now.\n\n"
             "please check that the camera model that produced the image is supported in darktable\n"
             "(list of supported cameras is at https://www.darktable.org/resources/camera-support/).\n"
             "if you are sure that the camera model is supported, please consider opening an issue\n"
             "at https://github.com/darktable-org/darktable"),
           dev->image_storage.filename);
-      if(dev->image_invalid_cnt > 400)
+        break;
+      }
+      // if we already saw an error, retry a FEW more times with a bit of delay in between
+      // it would be better if we could just put the delay after the first occurrence, but that
+      // resulted in the error message not showing
+      if(dev->image_invalid_cnt > 1)
       {
-        dev->image_invalid_cnt = 0;
-        dt_view_manager_switch(darktable.view_manager, "lighttable");
-        g_free(load_txt);
-        return;
+        g_usleep(1000000); // one second
+        if(dev->image_invalid_cnt > 8)
+        {
+          dev->image_invalid_cnt = 0;
+          dt_view_manager_switch(darktable.view_manager, "lighttable");
+          g_free(load_txt);
+          return;
+        }
       }
     }
     else
@@ -739,6 +791,41 @@ gboolean try_enter(dt_view_t *self)
   if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
   {
     dt_control_log(_("image `%s' is currently unavailable"), img->filename);
+    dt_image_cache_read_release(darktable.image_cache, img);
+    return TRUE;
+  }
+  else if(img->load_status != DT_IMAGEIO_OK)
+  {
+    const char *reason;
+    switch(img->load_status)
+    {
+    case DT_IMAGEIO_FILE_NOT_FOUND:
+      reason = _("file not found");
+      break;
+    case DT_IMAGEIO_LOAD_FAILED:
+    default:
+      reason = _("unspecified failure");
+      break;
+    case DT_IMAGEIO_UNSUPPORTED_FORMAT:
+      reason = _("unsupported file format");
+      break;
+    case DT_IMAGEIO_UNSUPPORTED_CAMERA:
+      reason = _("unsupported camera model");
+      break;
+    case DT_IMAGEIO_UNSUPPORTED_FEATURE:
+      reason = _("unsupported feature in file");
+      break;
+    case DT_IMAGEIO_FILE_CORRUPTED:
+      reason = _("file appears corrupt");
+      break;
+    case DT_IMAGEIO_IOERROR:
+      reason = _("I/O error");
+      break;
+    case DT_IMAGEIO_CACHE_FULL:
+      reason = _("cache full");
+      break;
+    }
+    dt_control_log(_("image `%s' could not be loaded\n%s"), img->filename, reason);
     dt_image_cache_read_release(darktable.image_cache, img);
     return TRUE;
   }
