@@ -1113,7 +1113,7 @@ static gboolean _pixelpipe_process_on_CPU(
         input, *output);
 
     dt_control_log(_("fatal pixelpipe abort because non aligned buffers\n"
-                     "in module '%s'\nplease report on github"),
+                     "in module '%s'\nplease report on GitHub"),
                      module->op);
     // this is a fundamental problem with severe problems ahead so good to finish
     // the pipe as if good to avoid reprocessing and endless loop.
@@ -1487,7 +1487,7 @@ static gboolean _dev_pixelpipe_process_rec(
               "fatal input alignment",
               pipe, NULL, DT_DEVICE_NONE, &roi_in, roi_out,
               "non aligned IN=%p\n", pipe->input);
-            dt_control_log(_("fatal input alignment, please report on github\n"));
+            dt_control_log(_("fatal input alignment, please report on GitHub\n"));
           }
           if(!valid_bpp)
             dt_print_pipe(DT_DEBUG_ALWAYS,
