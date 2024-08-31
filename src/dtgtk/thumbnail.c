@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2023 darktable developers.
+    Copyright (C) 2019-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -681,11 +681,11 @@ static gboolean _event_image_draw(GtkWidget *widget,
         cairo_scale(cr2, scale, scale);
 
         cairo_set_source_surface(cr2, tmp_surface, 0, 0);
-        // set filter no nearest: in skull mode, we want to see big
+        // set filter to nearest: in skull/error mode, we want to see big
         // pixels.  in 1 iir mode for the right mip, we want to see
         // exactly what the pipe gave us, 1:1 pixel for pixel.  in
         // between, filtering just makes stuff go unsharp.
-        if((buf_width <= 8 && buf_height <= 8) || fabsf(scale - 1.0f) < 0.01f)
+        if((buf_width <= 30 && buf_height <= 30) || fabsf(scale - 1.0f) < 0.01f)
           cairo_pattern_set_filter(cairo_get_source(cr2), CAIRO_FILTER_NEAREST);
         else
           cairo_pattern_set_filter(cairo_get_source(cr2), darktable.gui->filter_image);

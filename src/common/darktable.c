@@ -457,7 +457,10 @@ dt_imgid_t dt_load_from_string(const gchar *input,
       if(!loaded)
       {
         id = NO_IMGID;
-        dt_control_log(_("file `%s' has unknown format!"), filename);
+        if(buf.loader_status == DT_IMAGEIO_UNSUPPORTED_FORMAT || buf.loader_status == DT_IMAGEIO_UNSUPPORTED_FEATURE)
+          dt_control_log(_("file `%s' has unsupported format!"), filename);
+        else
+          dt_control_log(_("file `%s' has unknown format!"), filename);
       }
       else
       {

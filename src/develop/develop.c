@@ -327,6 +327,7 @@ void dt_dev_process_image_job(dt_develop_t *dev,
                       port ? DT_MIPMAP_FULL     : DT_MIPMAP_F,
                       port ? DT_MIPMAP_BLOCKING : DT_MIPMAP_BEST_EFFORT,
                       'r');
+  dev->image_storage.load_status = buf.loader_status;
 
   dt_show_times(&start, "[dt_dev_process_image_job] loading image.");
 
@@ -525,7 +526,8 @@ static inline void _dt_dev_load_raw(dt_develop_t *dev,
   dev->image_storage = *image;
   dt_image_cache_read_release(darktable.image_cache, image);
 
-  dev->requested_id = dev->image_storage.id;
+//  dev->requested_id = (dev->image_storage.load_status == DT_IMAGEIO_OK) ? dev->image_storage.id : 0; 
+  dev->requested_id = dev->image_storage.id; 
 }
 
 void dt_dev_reload_image(dt_develop_t *dev,

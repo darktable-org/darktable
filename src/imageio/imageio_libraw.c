@@ -398,6 +398,7 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
   {
     dt_print(DT_DEBUG_ALWAYS,
              "[libraw_open] detected unsupported image `%s'\n", img->filename);
+    err = DT_IMAGEIO_UNSUPPORTED_FEATURE;
     goto error;
   }
 
@@ -406,7 +407,10 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
   // table for Canon CR3s only.
   gchar *ext = g_strrstr(filename, ".");
   if(!ext)
+  {
+    err = DT_IMAGEIO_LOAD_FAILED;
     goto error;
+  }
   ext++;
   if(!g_ascii_strncasecmp("cr3", ext, 3))
     _check_libraw_missing_support(img);
@@ -524,9 +528,29 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
 
 error:
   if(libraw_err != LIBRAW_SUCCESS)
+  {
     dt_print(DT_DEBUG_ALWAYS,
              "[libraw_open] `%s': %s\n",
              img->filename, libraw_strerror(libraw_err));
+    switch(libraw_err)
+    {
+    case LIBRAW_FILE_UNSUPPORTED:
+      err = DT_IMAGEIO_UNSUPPORTED_FORMAT;
+      break;
+    case LIBRAW_NOT_IMPLEMENTED:
+      err = DT_IMAGEIO_UNSUPPORTED_FEATURE;
+      break;
+    case LIBRAW_DATA_ERROR:
+      err = DT_IMAGEIO_FILE_CORRUPTED;
+      break;
+    case LIBRAW_IO_ERROR:
+      err = DT_IMAGEIO_IOERROR;
+      break;
+    default:
+      err = DT_IMAGEIO_LOAD_FAILED;
+      break;
+    }
+  }
   libraw_close(raw);
   return err;
 }
