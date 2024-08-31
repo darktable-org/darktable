@@ -1399,6 +1399,8 @@ static void _new_printer_callback(dt_printer_info_t *printer,
   dt_pthread_mutex_lock(&d->printer_list_mutex);
   d->printer_list = g_list_append(d->printer_list, g_strdup(printer->name));
   dt_pthread_mutex_unlock(&d->printer_list_mutex);
+
+  d->prt.num_printers++;
 }
 
 void view_enter(struct dt_lib_module_t *self,
