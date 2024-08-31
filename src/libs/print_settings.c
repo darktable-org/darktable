@@ -1407,12 +1407,11 @@ void view_enter(struct dt_lib_module_t *self,
 {
   dt_lib_print_settings_t *d = (dt_lib_print_settings_t*)self->data;
 
+  dt_pthread_mutex_lock(&d->printer_list_mutex);
   if(d->printer_list != NULL)
   {
     // The printer list was filled by dt_printers_discovery() in a background job.
     // Now we fill the printer combo with the found printers.
-    dt_pthread_mutex_lock(&d->printer_list_mutex);
-
     char *default_printer = dt_conf_get_string("plugins/print/print/printer");
 
     for(const GList *iter = d->printer_list; iter; iter = g_list_next(iter))
@@ -1429,9 +1428,8 @@ void view_enter(struct dt_lib_module_t *self,
     g_free(default_printer);
     g_list_free_full(d->printer_list, g_free);
     d->printer_list = NULL;
-
-    dt_pthread_mutex_unlock(&d->printer_list_mutex);
   }
+  dt_pthread_mutex_unlock(&d->printer_list_mutex);
 
   // user activated a new image via the filmstrip or user entered view
   // mode which activates an image: get image_id and orientation
