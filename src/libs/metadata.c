@@ -631,20 +631,23 @@ void set_preferences(void *menu, dt_lib_module_t *self)
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 }
 
-static void _menuitem_hideindarkroom(GtkMenuItem *menuitem,
-                                     dt_lib_module_t *self)
+static void _menuitem_hideindarkroom_callback(GtkMenuItem *menuitem,
+                                              dt_lib_module_t *self)
 {
-  // Activation of check menu item should toggle active state
+  // Activation of check menu item toggles active state, we have to
+  // save and reflect it in GUI new state.
   gboolean hide_in_darkroom = gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menuitem));
-  dt_print(DT_DEBUG_ALWAYS, "entered 'activate' callback for 'hide in darkroom' menu item: active state = %d\n", hide_in_darkroom);
   dt_conf_set_bool("plugins/lighttable/metadata/hideindarkroom", hide_in_darkroom);
   gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menuitem), hide_in_darkroom);
+
+  // In darkroom view we will not remove the module immediately, so we notify
+  // the user about the action using a notification pill.
   if(dt_view_get_current() == DT_VIEW_DARKROOM)
   {
     if(hide_in_darkroom)
-      dt_control_log("this module will NOT be shown on subsequent entering the darkroom mode");
+      dt_control_log(_("this module will NOT be shown on subsequent entering the darkroom mode"));
     else
-      dt_control_log("this module WILL be shown on subsequent entering the darkroom mode");
+      dt_control_log(_("this module WILL be shown on subsequent entering the darkroom mode"));
   }
 }
 
@@ -653,7 +656,7 @@ void module_visibility_in_darkroom(void *menu, dt_lib_module_t *self)
   GtkWidget *mi = gtk_check_menu_item_new_with_label(_("hide in darkroom"));
   gboolean hide_in_darkroom = dt_conf_get_bool("plugins/lighttable/metadata/hideindarkroom");
   gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mi), hide_in_darkroom);
-  g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_hideindarkroom), self);
+  g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_hideindarkroom_callback), self);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 }
 
