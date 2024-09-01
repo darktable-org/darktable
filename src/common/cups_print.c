@@ -70,6 +70,7 @@ void dt_init_print_info(dt_print_info_t *pinfo)
   pinfo->printer.intent = DT_INTENT_PERCEPTUAL;
   pinfo->printer.is_turboprint = FALSE;
   *pinfo->printer.profile = '\0';
+  pinfo->num_printers = 0;
 }
 
 void dt_get_printer_info(const char *printer_name, dt_printer_info_t *pinfo)
