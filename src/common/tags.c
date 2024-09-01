@@ -364,12 +364,14 @@ gboolean dt_tag_exists(const char *name, guint *tagid)
 
   if(rt == SQLITE_ROW)
   {
-    if(tagid != NULL) *tagid = sqlite3_column_int64(stmt, 0);
+    if(tagid != NULL)
+      *tagid = sqlite3_column_int64(stmt, 0);
     sqlite3_finalize(stmt);
     return TRUE;
   }
 
-  if(tagid != NULL) *tagid = -1;
+  if(tagid != NULL)
+    *tagid = -1;
   sqlite3_finalize(stmt);
   return FALSE;
 }
@@ -631,11 +633,47 @@ gboolean dt_tag_detach_by_string(const char *name,
                                  const gboolean undo_on,
                                  const gboolean group_on)
 {
-  if(!name || !name[0]) return FALSE;
-  guint tagid = 0;
-  if(!dt_tag_exists(name, &tagid)) return FALSE;
+  if(!name || !name[0])
+    return FALSE;
 
-  return dt_tag_detach(tagid, imgid, undo_on, group_on);
+  // We need a case sensitive search so we use the GLOB operator here
+
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "SELECT tagid"
+     " FROM main.tagged_images as ti, data.tags as t"
+     " WHERE ti.tagid = t.id"
+     "   AND t.name GLOB ?1",
+     -1, &stmt,
+     NULL);
+
+  char *n = g_strdup(name);
+
+  // Replace % by * for the GLOB operator
+
+  char *p = n;
+  while(*p)
+  {
+    if(*p == '%')
+      *p = '*';
+    p++;
+  }
+
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, n, -1, SQLITE_TRANSIENT);
+
+  gboolean res = FALSE;
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    res = TRUE;
+    const guint tagid = (guint)sqlite3_column_int(stmt, 0);
+    dt_tag_detach(tagid, imgid, undo_on, group_on);
+  }
+
+  g_free(n);
+
+  return res;
 }
 
 void dt_set_darktable_tags()
