@@ -302,6 +302,12 @@ gboolean try_enter(dt_view_t *self)
 {
   dt_print_t *prt = (dt_print_t*)self->data;
 
+  if(prt->pinfo->num_printers == 0)
+  {
+    dt_control_log(_("no printers found!"));
+    return TRUE;
+  }
+
   //  now check that there is at least one selected image
 
   const dt_imgid_t imgid = dt_act_on_get_main_image();
