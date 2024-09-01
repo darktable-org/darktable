@@ -639,6 +639,13 @@ static void _menuitem_hideindarkroom(GtkMenuItem *menuitem,
   dt_print(DT_DEBUG_ALWAYS, "entered 'activate' callback for 'hide in darkroom' menu item: active state = %d\n", hide_in_darkroom);
   dt_conf_set_bool("plugins/lighttable/metadata/hideindarkroom", hide_in_darkroom);
   gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menuitem), hide_in_darkroom);
+  if(dt_view_get_current() == DT_VIEW_DARKROOM)
+  {
+    if(hide_in_darkroom)
+      dt_control_log("this module will NOT be shown on subsequent entering the darkroom mode");
+    else
+      dt_control_log("this module WILL be shown on subsequent entering the darkroom mode");
+  }
 }
 
 void module_visibility_in_darkroom(void *menu, dt_lib_module_t *self)
