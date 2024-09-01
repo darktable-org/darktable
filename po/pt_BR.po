@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-08-31 08:05-0300\n"
-"PO-Revision-Date: 2024-08-31 08:05-0300\n"
+"POT-Creation-Date: 2024-09-01 15:23-0300\n"
+"PO-Revision-Date: 2024-09-01 08:27-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -9649,14 +9649,15 @@ msgstr ""
 msgid ""
 "fatal pixelpipe abort because non aligned buffers\n"
 "in module '%s'\n"
-"please report on github"
+"please report on GitHub"
 msgstr ""
-"fatal pielpile abortou por causa de buffers nao alinhados no módulo '%s'\n"
-"por favor reporte no github"
+"pixelpipe abortou de maneira fatal por causa de buffers nao alinhados no "
+"módulo '%s'\n"
+"por favor reporte no GitHub"
 
 #: ../src/develop/pixelpipe_hb.c:1490
-msgid "fatal input alignment, please report on github\n"
-msgstr "fatal erro de alinhamento, por favor reporte no github\n"
+msgid "fatal input alignment, please report on GitHub\n"
+msgstr "erro fatal de alinhamento, por favor reporte no GitHub\n"
 
 #: ../src/develop/pixelpipe_hb.c:2756
 msgid ""
@@ -9950,12 +9951,12 @@ msgid "<b>need help?</b>"
 msgstr "<b>precisa de ajuda?</b>"
 
 #: ../src/dtgtk/thumbtable.c:1226
-#, fuzzy
 msgid ""
 "click on <span size='110%'><b>?</b></span> then an on-screen item to open "
 "manual page."
 msgstr ""
-"clique em ？ e depois em um item da tela para abrir a página do manual."
+"clique em <span size='110%'><b>?</b></span> e depois em um item da tela para "
+"abrir a página do manual."
 
 #: ../src/dtgtk/thumbtable.c:1228
 msgid "hover over any button to see a description and shortcut."
@@ -9984,11 +9985,11 @@ msgstr "pressione e segure <b>h</b> para mostrar todos os atalhos ativos."
 
 #: ../src/dtgtk/thumbtable.c:1243
 msgid "make default raw development look more like your"
-msgstr ""
+msgstr "tornar o desenvolvimento de seu raw parecer mais com o"
 
 #: ../src/dtgtk/thumbtable.c:1245
 msgid "camera's JPEG by applying a camera-specific style"
-msgstr ""
+msgstr "JPEG da sua camera, aplicando um estilo específico de camera"
 
 #: ../src/dtgtk/thumbtable.c:1524
 msgid ""
@@ -26059,6 +26060,12 @@ msgid ""
 "files\n"
 "can be accessed in the same locations as when you imported this image."
 msgstr ""
+"o arquivo `%s' não está disponível, mudando para a mesa de luz agora.\n"
+"\n"
+"Se o arquivo foi armazenado em dispositivo externo, garanta que o "
+"dispositivo está conectado e que\n"
+"arquivos podem ser acessados no mesmo local que estavam quando você importou "
+"a imagem."
 
 #: ../src/views/darkroom.c:526
 #, c-format
@@ -26067,6 +26074,10 @@ msgid ""
 "\n"
 "please check that it was correctly and completely copied from the camera."
 msgstr ""
+"o arquivo `%s` parece corrompido, mudando para a mesa de luz agora.\n"
+"\n"
+"por favor verifique se ele foi corretamente e completamente copiado da "
+"camera."
 
 #: ../src/views/darkroom.c:532
 #, c-format
