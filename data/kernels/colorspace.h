@@ -791,7 +791,7 @@ static inline float4 gamut_check_Yrg(float4 Ych)
  * Use this space for color-grading in a perceptual framework.
  * The CAM terms have been removed for performance.
  **/
-#define DT_UCS_L_STAR_RANGE 2.098883786377f 
+#define DT_UCS_L_STAR_RANGE 2.098883786377f
 #define DT_UCS_L_STAR_UPPER_LIMIT 2.09885f
 #define DT_UCS_Y_UPPER_LIMIT 1e8f
 
@@ -806,7 +806,7 @@ static inline float dt_UCS_L_star_to_Y(const float L_star)
   return native_powr((1.12426773749357f * L_star / (DT_UCS_L_STAR_RANGE - L_star)), 1.5831518565279648f);
 }
 
-static inline void xyY_to_dt_UCS_UV(const float4 xyY, float UV_star_prime[2])
+static inline float2 xyY_to_dt_UCS_UV(const float4 xyY)
 {
   float4 x_factors = { -0.783941002840055f,  0.745273540913283f, 0.318707282433486f, 0.f };
   float4 y_factors = {  0.277512987809202f, -0.205375866083878f, 2.16743692732158f,  0.f };
@@ -816,17 +816,16 @@ static inline void xyY_to_dt_UCS_UV(const float4 xyY, float UV_star_prime[2])
   const float div = (UVD.z >= 0.0f) ? fmax(FLT_MIN, UVD.z) : fmin(-FLT_MIN, UVD.z);
   UVD.xy /= div;
 
-  float UV_star[2] = { 0.f };
-  const float factors[2]     = { 1.39656225667f, 1.4513954287f };
-  const float half_values[2] = { 1.49217352929f, 1.52488637914f };
-  for(int c = 0; c < 2; c++)
-    UV_star[c] = factors[c] * ((float *)&UVD)[c] / (fabs(((float *)&UVD)[c]) + half_values[c]);
-
+  const float2 factors     = { 1.39656225667f, 1.4513954287f };
+  const float2 half_values = { 1.49217352929f, 1.52488637914f };
+  const float2 UV_star =     { factors.x * UVD.x / (fabs(UVD.x) + half_values.x),
+                               factors.y * UVD.y / (fabs(UVD.y) + half_values.y) };
   // The following is equivalent to a 2D matrix product
-  UV_star_prime[0] = -1.124983854323892f * UV_star[0] - 0.980483721769325f * UV_star[1];
-  UV_star_prime[1] =  1.86323315098672f  * UV_star[0] + 1.971853092390862f * UV_star[1];
-}
 
+  const float2 UV_star_prime =  { -1.124983854323892f * UV_star.x - 0.980483721769325f * UV_star.y,
+                                   1.86323315098672f  * UV_star.x + 1.971853092390862f * UV_star.y };
+  return UV_star_prime;
+}
 
 static inline float4 xyY_to_dt_UCS_JCH(const float4 xyY, const float L_white)
 {
@@ -839,20 +838,18 @@ static inline float4 xyY_to_dt_UCS_JCH(const float4 xyY, const float L_white)
     range : xy in [0; 1], Y normalized for perfect diffuse white = 1
   */
 
-  float UV_star_prime[2];
-  xyY_to_dt_UCS_UV(xyY, UV_star_prime);
+  const float2 UV_star_prime = xyY_to_dt_UCS_UV(xyY);
 
   // Y upper limit is calculated from the L star upper limit.
   const float L_star = Y_to_dt_UCS_L_star(clamp(xyY.z, 0.f, DT_UCS_Y_UPPER_LIMIT));
-  const float M2 = UV_star_prime[0] * UV_star_prime[0] + UV_star_prime[1] * UV_star_prime[1]; // square of colorfulness M
+  const float M2 = UV_star_prime.x * UV_star_prime.x + UV_star_prime.y * UV_star_prime.y; // square of colorfulness M
 
   // should be JCH[0] = powf(L_star / L_white), cz) but we treat only the case where cz = 1
-  float4 JCH;
-  JCH.x = L_star / L_white;
-  JCH.y = 15.932993652962535f * native_powr(L_star, 0.6523997524738018f) * native_powr(M2, 0.6007557017508491f) / L_white;
-  JCH.z = atan2(UV_star_prime[1], UV_star_prime[0]);
+  const float4 JCH = {  L_star / L_white,
+                        15.932993652962535f * native_powr(L_star, 0.6523997524738018f) * native_powr(M2, 0.6007557017508491f) / L_white,
+                        atan2(UV_star_prime.y, UV_star_prime.x),
+                        0.0f };
   return JCH;
-
 }
 
 static inline float4 dt_UCS_JCH_to_xyY(const float4 JCH, const float L_white)
@@ -881,26 +878,22 @@ static inline float4 dt_UCS_JCH_to_xyY(const float4 JCH, const float L_white)
   const float V_star_prime = M * native_sin(JCH.z);
 
   // The following is equivalent to a 2D matrix product
-  const float UV_star[2] = { -5.037522385190711f * U_star_prime - 2.504856328185843f * V_star_prime,
-                              4.760029407436461f * U_star_prime + 2.874012963239247f * V_star_prime };
+  const float2 UV_star = { -5.037522385190711f * U_star_prime - 2.504856328185843f * V_star_prime,
+                            4.760029407436461f * U_star_prime + 2.874012963239247f * V_star_prime };
 
-  float UV[2] = {0.f};
-  const float factors[2]     = { 1.39656225667f, 1.4513954287f };
-  const float half_values[2] = { 1.49217352929f,1.52488637914f };
-  for(int c = 0; c < 2; c++)
-    UV[c] = -half_values[c] * UV_star[c] / (fabs(UV_star[c]) - factors[c]);
+  const float2 factors     = { 1.39656225667f, 1.4513954287f };
+  const float2 half_values = { 1.49217352929f,1.52488637914f };
+  const float2 UV = { -half_values.x * UV_star.x / (fabs(UV_star.x) - factors.x),
+                      -half_values.y * UV_star.y / (fabs(UV_star.y) - factors.y) };
 
   const float4 U_factors = {  0.167171472114775f,   -0.150959086409163f,    0.940254742367256f,  0.f };
   const float4 V_factors = {  0.141299802443708f,   -0.155185060382272f,    1.000000000000000f,  0.f };
   const float4 offsets   = { -0.00801531300850582f, -0.00843312433578007f, -0.0256325967652889f, 0.f };
 
-  float4 xyD = U_factors * UV[0] + V_factors * UV[1] + offsets;
+  const float4 xyD = U_factors * UV.x + V_factors * UV.y + offsets;
 
-  float4 xyY;
   const float div = (xyD.z >= 0.0f) ? fmax(FLT_MIN, xyD.z) : fmin(-FLT_MIN, xyD.z);
-  xyY.x = xyD.x / div;
-  xyY.y = xyD.y / div;
-  xyY.z = dt_UCS_L_star_to_Y(L_star);
+  const float4 xyY = { xyD.x / div, xyD.y / div, dt_UCS_L_star_to_Y(L_star), 0.0f };
   return xyY;
 }
 
@@ -948,7 +941,8 @@ static inline float4 dt_UCS_HSB_to_XYZ(const float4 HSB, const float L_w)
 {
   const float4 JCH = dt_UCS_HSB_to_JCH(HSB);
   const float4 xyY = dt_UCS_JCH_to_xyY(JCH, L_w);
-  return dt_xyY_to_XYZ(xyY);
+  const float4 XYZ = dt_xyY_to_XYZ(xyY);
+  return XYZ;
 }
 
 static inline float4 dt_UCS_LUV_to_JCH(const float L_star, const float L_white, const float2 UV_star_prime)

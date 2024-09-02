@@ -1216,6 +1216,7 @@ void process(struct dt_iop_module_t *self,
 
 #if HAVE_OPENCL
 
+#define CE_CH 2
 int _mean_gaussian_cl(const int devid,
                       cl_mem image,
                       const size_t width,
@@ -1266,7 +1267,7 @@ static int _prefilter_chromaticity_cl(const int devid,
 
   if(resized)
   {
-    ds_UV = dt_opencl_alloc_device(devid, ds_width, ds_height, 2 * sizeof(float));
+    ds_UV = dt_opencl_alloc_device(devid, ds_width, ds_height, CE_CH * sizeof(float));
     if(ds_UV == NULL) return err;
 
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_interpolate_bilinear, ds_width, ds_height,
@@ -1299,7 +1300,7 @@ static int _prefilter_chromaticity_cl(const int devid,
   covariance_tmp = NULL;
 
   a = dt_opencl_alloc_device(devid, ds_width, ds_height, 4 * sizeof(float));
-  b = dt_opencl_alloc_device(devid, ds_width, ds_height, 2 * sizeof(float));
+  b = dt_opencl_alloc_device(devid, ds_width, ds_height, CE_CH * sizeof(float));
   if(a == NULL || b == NULL) goto error;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_prepare_prefilter, ds_width, ds_height,
@@ -1326,7 +1327,7 @@ static int _prefilter_chromaticity_cl(const int devid,
   if(resized)
   {
     a_full = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
-    b_full = dt_opencl_alloc_device(devid, width, height, 2 * sizeof(float));
+    b_full = dt_opencl_alloc_device(devid, width, height, CE_CH * sizeof(float));
     if(a_full == NULL || b_full == NULL) goto error;
 
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_interpolate_bilinear, width, height,
@@ -1404,8 +1405,8 @@ static int _guide_with_chromaticity_cl(const int devid,
 
   if(resized)
   {
-    ds_UV = dt_opencl_alloc_device(devid, ds_width, ds_height, 2 * sizeof(float));
-    ds_corrections = dt_opencl_alloc_device(devid, ds_width, ds_height, 2 * sizeof(float));
+    ds_UV = dt_opencl_alloc_device(devid, ds_width, ds_height, CE_CH * sizeof(float));
+    ds_corrections = dt_opencl_alloc_device(devid, ds_width, ds_height, CE_CH * sizeof(float));
     ds_b_corrections = dt_opencl_alloc_device(devid, ds_width, ds_height, sizeof(float));
     if(ds_UV == NULL || ds_corrections == NULL || ds_b_corrections == NULL) goto error;
 
@@ -1450,7 +1451,7 @@ static int _guide_with_chromaticity_cl(const int devid,
   covariance = dt_opencl_alloc_device(devid, ds_width, ds_height, 4 * sizeof(float));
   correlations = dt_opencl_alloc_device(devid, ds_width, ds_height, 4 * sizeof(float));
   a = dt_opencl_alloc_device(devid, ds_width, ds_height, 4 * sizeof(float));
-  b = dt_opencl_alloc_device(devid, ds_width, ds_height, 2 * sizeof(float));
+  b = dt_opencl_alloc_device(devid, ds_width, ds_height, CE_CH * sizeof(float));
   if(a == NULL || b == NULL || covariance == NULL || correlations == NULL)
   {
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
@@ -1498,7 +1499,7 @@ static int _guide_with_chromaticity_cl(const int devid,
   if(resized)
   {
     a_full = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
-    b_full = dt_opencl_alloc_device(devid, width, height, 2 * sizeof(float));
+    b_full = dt_opencl_alloc_device(devid, width, height, CE_CH * sizeof(float));
     if(a_full == NULL || b_full == NULL) goto error;
 
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_interpolate_bilinear, width, height,
@@ -1602,8 +1603,8 @@ int process_cl(struct dt_iop_module_t *self,
     goto error;
 
   dev_tmp = dt_opencl_alloc_device(devid, owidth, oheight, 4 * sizeof(float));
-  UV = dt_opencl_alloc_device(devid, owidth, oheight, 2 * sizeof(float));
-  corrections = dt_opencl_alloc_device(devid, owidth, oheight, 2 * sizeof(float));
+  UV = dt_opencl_alloc_device(devid, owidth, oheight, CE_CH * sizeof(float));
+  corrections = dt_opencl_alloc_device(devid, owidth, oheight, CE_CH * sizeof(float));
   b_corrections = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float));
   L = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float));
   scharr = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float));
@@ -1691,6 +1692,7 @@ error:
   dt_opencl_release_mem_object(saturation);
   return err;
 }
+#undef CE_CH
 
 #endif // OpenCL
 
