@@ -952,7 +952,7 @@ static inline float4 dt_UCS_HSB_to_XYZ(const float4 HSB, const float L_w)
   return dt_xyY_to_XYZ(xyY);
 }
 
-static inline float4 dt_UCS_LUV_to_JCH(const float L_star, const float L_white, const float4 UV_star_prime)
+static inline float4 dt_UCS_LUV_to_JCH(const float L_star, const float L_white, const float2 UV_star_prime)
 {
   const float M2 = UV_star_prime.x * UV_star_prime.x + UV_star_prime.y * UV_star_prime.y; // square of colorfulness M
   const float4 JCH = {  L_star / L_white,
