@@ -1484,10 +1484,10 @@ static gboolean _dev_pixelpipe_process_rec(
           if(!aligned_input)
           {
             dt_print_pipe(DT_DEBUG_ALWAYS,
-              "fatal input alignment",
+              "fatal input misalignment",
               pipe, NULL, DT_DEVICE_NONE, &roi_in, roi_out,
               "non-aligned IN=%p\n", pipe->input);
-            dt_control_log(_("fatal input alignment, please report on GitHub\n"));
+            dt_control_log(_("fatal input misalignment, please report on GitHub\n"));
           }
           if(!valid_bpp)
             dt_print_pipe(DT_DEBUG_ALWAYS,
