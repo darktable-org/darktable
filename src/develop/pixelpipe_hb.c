@@ -1109,10 +1109,10 @@ static gboolean _pixelpipe_process_on_CPU(
     dt_print_pipe(DT_DEBUG_ALWAYS,
         "fatal process alignment",
         piece->pipe, module, DT_DEVICE_NONE, roi_in, roi_out,
-        "non aligned buffers IN=%p OUT=%p\n",
+        "non-aligned buffers IN=%p OUT=%p\n",
         input, *output);
 
-    dt_control_log(_("fatal pixelpipe abort because non aligned buffers\n"
+    dt_control_log(_("fatal pixelpipe abort due to non-aligned buffers\n"
                      "in module '%s'\nplease report on GitHub"),
                      module->op);
     // this is a fundamental problem with severe problems ahead so good to finish
@@ -1453,7 +1453,7 @@ static gboolean _dev_pixelpipe_process_rec(
         dt_print_pipe(DT_DEBUG_PIPE,
           (cp_width > 0) ? "pixelpipe data 1:1 copied" : "pixelpipe data 1:1 none",
           pipe, module, DT_DEVICE_NONE, &roi_in, roi_out, "%sbpp=%lu\n",
-          aligned_input ? "" : "non aligned input ",
+          aligned_input ? "" : "non-aligned input ",
           bpp);
         if(cp_width > 0)
         {
@@ -1475,7 +1475,7 @@ static gboolean _dev_pixelpipe_process_rec(
         dt_print_pipe(DT_DEBUG_PIPE,
           "pipe data: clip&zoom", pipe, module, DT_DEVICE_CPU, &roi_in, roi_out, "%s%s\n",
           valid_bpp ? "" : "requires 4 floats data",
-          aligned_input ? "" : "non aligned input buffer");
+          aligned_input ? "" : "non-aligned input buffer");
         if(valid_bpp && aligned_input)
           dt_iop_clip_and_zoom(*output, pipe->input, roi_out, &roi_in);
         else
@@ -1484,10 +1484,10 @@ static gboolean _dev_pixelpipe_process_rec(
           if(!aligned_input)
           {
             dt_print_pipe(DT_DEBUG_ALWAYS,
-              "fatal input alignment",
+              "fatal input misalignment",
               pipe, NULL, DT_DEVICE_NONE, &roi_in, roi_out,
-              "non aligned IN=%p\n", pipe->input);
-            dt_control_log(_("fatal input alignment, please report on GitHub\n"));
+              "non-aligned IN=%p\n", pipe->input);
+            dt_control_log(_("fatal input misalignment, please report on GitHub\n"));
           }
           if(!valid_bpp)
             dt_print_pipe(DT_DEBUG_ALWAYS,
