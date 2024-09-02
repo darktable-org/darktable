@@ -57,7 +57,7 @@ const char *name(dt_lib_module_t *self)
 
 dt_view_type_flags_t views(dt_lib_module_t *self)
 {
-  return DT_VIEW_LIGHTTABLE;
+  return DT_VIEW_LIGHTTABLE | DT_VIEW_MULTI;
 }
 
 uint32_t container(dt_lib_module_t *self)
