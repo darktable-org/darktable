@@ -2355,6 +2355,7 @@ void gui_init(dt_lib_module_t *self)
   d->has_changed = FALSE;
 
   d->printer_list = NULL;
+  dt_pthread_mutex_init(&d->printer_list_mutex, NULL);
 
   dt_init_print_info(&d->prt);
   dt_view_print_settings(darktable.view_manager, &d->prt, &d->imgs);
