@@ -164,17 +164,9 @@ static inline float lookup_gamut(const float gamut_lut[LUT_ELEM], const float hu
 
   // fetch the corresponding y values
   const float y_prev = gamut_lut[xi];
-  const float y_next = gamut_lut[xii];
 
-  // assume that we are exactly on an integer LUT element
-  float out = y_prev;
-
-  if(x_next != x_prev)
-    // we are between 2 LUT elements : do linear interpolation
-    // actually, we only add the slope term on the previous one
-    out += (x_test - x_prev) * (y_next - y_prev) / (x_next - x_prev);
-
-  return out;
+  // return y_prev if we are on the same integer LUT element or do linear interpolation
+  return y_prev + ((xi != xii) ? (x_test - x_prev) * (gamut_lut[xii] - y_prev) : 0.0f);
 }
 
 
@@ -204,7 +196,7 @@ static inline void gamut_map_HSB(dt_aligned_pixel_t HSB, const float gamut_LUT[L
 
   // Compute the chroma of the boundary from the colorfulness of the boundary (defined in the LUT)
   // and from the lightness J of the current pixel
-  const float max_colorfulness = lookup_gamut(gamut_LUT, JCH[2]); // WARNING : this is M²
+  const float max_colorfulness = lookup_gamut(gamut_LUT, JCH[2]); // WARNING :this is M²
   const float max_chroma = 15.932993652962535f * powf(JCH[0] * L_white, 0.6523997524738018f) * powf(max_colorfulness, 0.6007557017508491f) / L_white;
 
   // Convert the boundary chroma to saturation
