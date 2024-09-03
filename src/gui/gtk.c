@@ -1877,6 +1877,16 @@ void dt_ui_toggle_panels_visibility(struct dt_ui_t *ui)
   }
   else
   {
+    if(!dt_conf_get_bool("collapse_help_shown") &&
+       !dt_gui_show_yes_no_dialog(_("collapsing panels"),
+                                  _("this is the first time you pressed the shortcut\n"
+                                    "to collapse all side and top/bottom panels.\n"
+                                    "by default this is the TAB key.\n"
+                                    "pressing it again will restore the panels.\n\n"
+                                    "do you want to collapse all panels now?")))
+      return;
+
+    dt_conf_set_bool("collapse_help_shown", TRUE);
     dt_conf_set_int(key, 1);
   }
 
