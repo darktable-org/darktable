@@ -23,7 +23,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/exif.h"
 #include "common/chromatic_adaptation.h"
-#include "common/colorspaces_inline_conversions.h"
+#include "common/darktable_ucs_22_helpers.h"
 #include "common/gamut_mapping.h"
 #include "common/opencl.h"
 #include "develop/blend.h"
@@ -42,7 +42,6 @@
 
 //#include <gtk/gtk.h>
 #include <stdlib.h>
-#define LUT_ELEM 360     // gamut LUT number of elements: resolution of 1°
 #define STEPS 92         // so we test 92×92×92 combinations of RGB in [0; 1] to build the gamut LUT
 
 // Filmlight Yrg puts red at 330°, while usual HSL wheels put it at 360/0°
@@ -587,44 +586,6 @@ static inline void opacity_masks(const float x,
   }
 }
 
-
-static inline float soft_clip(const float x, const float soft_threshold, const float hard_threshold)
-{
-  // use an exponential soft clipping above soft_threshold
-  // hard threshold must be > soft threshold
-  const float norm = hard_threshold - soft_threshold;
-  return (x > soft_threshold) ? soft_threshold + (1.f - expf(-(x - soft_threshold) / norm)) * norm : x;
-}
-
-
-static inline float lookup_gamut(const float *const gamut_lut, const float x)
-{
-  // WARNING : x should be between [-pi ; pi ], which is the default output of atan2 anyway
-
-  // convert in LUT coordinate
-  const float x_test = (LUT_ELEM - 1) * (x + M_PI_F) / (2.f * M_PI_F);
-
-  // find the 2 closest integer coordinates (next/previous)
-  float x_prev = floorf(x_test);
-  float x_next = ceilf(x_test);
-
-  // get the 2 closest LUT elements at integer coordinates
-  // cycle on the hue ring if out of bounds
-  int xi = (int)x_prev;
-  if(xi < 0) xi = LUT_ELEM - 1;
-  else if(xi > LUT_ELEM - 1) xi = 0;
-
-  int xii = (int)x_next;
-  if(xii < 0) xii = LUT_ELEM - 1;
-  else if(xii > LUT_ELEM - 1) xii = 0;
-
-  // fetch the corresponding y values
-  const float y_prev = gamut_lut[xi];
-
-  // return y_prev if we are on the same integer LUT element or do linear interpolation
-  return y_prev + ((xi != xii) ? (x_test - x_prev) * (gamut_lut[xii] - y_prev) : 0.0f);
-}
-
 void process(struct dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
@@ -1133,18 +1094,6 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 #endif
-
-
-static inline float Delta_H(const float h_1, const float h_2)
-{
-  // Compute the difference between 2 angles
-  // and force the result in [-pi; pi] radians
-  float diff = h_1 - h_2;
-  diff += (diff < -M_PI_F) ? 2.f * M_PI_F : 0.f;
-  diff -= (diff > M_PI_F) ? 2.f * M_PI_F : 0.f;
-  return diff;
-}
-
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
