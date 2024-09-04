@@ -36,6 +36,7 @@ on:
         - "data/watermarks/**"
         - "tools/*"
         - "**.md"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -53,10 +54,10 @@ jobs:
       fail-fast: true
       matrix:
         distro:
-          - "debian:trixie-slim"
+          - "debian:unstable-slim"
         compiler:
           - { compiler: GNU13,  CC: gcc-13,   CXX: g++-13,     packages: gcc-13 g++-13 }
-          - { compiler: LLVM16, CC: clang-16, CXX: clang++-16, packages: clang-16 libomp-16-dev llvm-16-dev libc++-16-dev libc++abi1-16 lld-16 clang-tools-16 mlir-16-tools libmlir-16-dev}
+          - { compiler: LLVM18, CC: clang-18, CXX: clang++-18, packages: clang-18 libomp-18-dev llvm-18-dev libc++-18-dev libc++abi1-18 lld-18 clang-tools-18 mlir-18-tools libmlir-18-dev}
         btype:
           - Release
         target:
@@ -113,7 +114,11 @@ jobs:
           APT::Get::Fix-Missing "true";
           EOT
           rm -rf /etc/apt/sources.list*
-          if [ "${DISTRO}" = "debian:trixie-slim" ]; then
+          if [ "${DISTRO}" = "debian:unstable-slim" ]; then
+          tee /etc/apt/sources.list > /dev/null <<EOT
+          deb http://debian-archive.trafficmanager.net/debian unstable main
+          EOT
+          elif [ "${DISTRO}" = "debian:trixie-slim" ]; then
           tee /etc/apt/sources.list > /dev/null <<EOT
           deb http://debian-archive.trafficmanager.net/debian trixie main
           deb http://debian-archive.trafficmanager.net/debian trixie-updates main
