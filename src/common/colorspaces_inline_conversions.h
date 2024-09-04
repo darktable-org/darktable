@@ -671,7 +671,8 @@ static inline void dt_RGB_2_HSL(const dt_aligned_pixel_t RGB, dt_aligned_pixel_t
   const float delta = max - min;
 
   const float L = (max + min) / 2.0f;
-  float H, S;
+  float H = 0.0f;
+  float S = 0.0f;
 
   if(fabsf(max) > 1e-6f && fabsf(delta) > 1e-6f)
   {
@@ -680,11 +681,6 @@ static inline void dt_RGB_2_HSL(const dt_aligned_pixel_t RGB, dt_aligned_pixel_t
     else
       S = delta / (2.0f - max - min);
     H = _dt_RGB_2_Hue(RGB, max, delta);
-  }
-  else
-  {
-    H = 0.0f;
-    S = 0.0f;
   }
 
   HSL[0] = H;
@@ -1256,7 +1252,7 @@ static inline void dt_YCbCr_to_RGB(const dt_aligned_pixel_t yuv, dt_aligned_pixe
 // Instead of using above theoretical values we use some modified versions
 // that not avoid div-by-zero but div-by-close-to-zero
 // this leads to more stability for extremely bright parts as we avoid single float precision overflows
-#define DT_UCS_L_STAR_RANGE 2.098883786377f 
+#define DT_UCS_L_STAR_RANGE 2.098883786377f
 #define DT_UCS_L_STAR_UPPER_LIMIT 2.09885f
 #define DT_UCS_Y_UPPER_LIMIT 1e8f
 
