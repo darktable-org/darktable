@@ -460,11 +460,15 @@ void _gpx_parser_text(GMarkupParseContext *context, const gchar *text, gsize tex
 
 GList *dt_gpx_get_trkseg(struct dt_gpx_t *gpx)
 {
-  return gpx->trksegs;
+  return (gpx != NULL)? gpx->trksegs
+                      : NULL;
 }
 
 GList *dt_gpx_get_trkpts(struct dt_gpx_t *gpx, const guint segid)
 {
+  if(gpx == NULL)
+    return NULL;
+    
   GList *pts = NULL;
   GList *ts = g_list_nth(gpx->trksegs, segid);
   if(!ts) return pts;
