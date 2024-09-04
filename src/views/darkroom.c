@@ -42,6 +42,7 @@
 #include "develop/imageop.h"
 #include "develop/masks.h"
 #include "dtgtk/button.h"
+#include "dtgtk/stylemenu.h"
 #include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/color_picker_proxy.h"
@@ -1368,105 +1369,12 @@ static gboolean _darkroom_ui_apply_style_button_callback(GtkMenuItem *menuitem,
   return FALSE;
 }
 
-gboolean _styles_tooltip_callback(GtkWidget* self,
-                                  const gint x,
-                                  const gint y,
-                                  const gboolean keyboard_mode,
-                                  GtkTooltip* tooltip,
-                                  gpointer user_data)
-{
-  gchar *name = (char *)user_data;
-  dt_develop_t *dev = darktable.develop;
-
-  const dt_imgid_t imgid = dev->image_storage.id;
-
-  // write history to ensure the preview will be done with latest
-  // development history.
-  dt_dev_write_history(dev);
-
-  GtkWidget *ht = dt_gui_style_content_dialog(name, imgid);
-
-  g_object_set_data_full(G_OBJECT(self), "dt-preset-name", g_strdup(name), g_free);
-
-  return dt_shortcut_tooltip_callback(self, x, y, keyboard_mode, tooltip, ht);
-}
-
-static void _build_style_submenus(GtkMenuShell *menu,
-                                  const gchar *style_name,
-                                  gchar **splits,
-                                  const int index)
-{
-  // localize the name of the current level in the hierarchy
-  const char *split0 = dt_util_localize_string(splits[index]);
-  GtkMenuItem *mi = GTK_MENU_ITEM(gtk_menu_item_new_with_label(split0));
-
-  // check if we already have an item or sub-menu with this name
-  GtkMenu *sm = NULL;
-  GList *children = gtk_container_get_children(GTK_CONTAINER(menu));
-  for(const GList *child = children; child; child = g_list_next(child))
-  {
-    GtkMenuItem *smi = (GtkMenuItem *)child->data;
-    if(g_strcmp0(split0,gtk_menu_item_get_label(smi)) == 0)
-    {
-      sm = (GtkMenu *)gtk_menu_item_get_submenu(smi);
-      break;
-    }
-  }
-  g_list_free(children);
-
-  if(!splits[index+1])
-  {
-    // we've reached the bottom level, so build a final menu item with preview popup
-    // need a tooltip for the signal below to be raised
-    gtk_menu_shell_append(menu, GTK_WIDGET(mi));
-    gtk_widget_set_has_tooltip(GTK_WIDGET(mi), TRUE);
-    g_signal_connect_data(mi, "query-tooltip",
-                          G_CALLBACK(_styles_tooltip_callback),
-                          g_strdup(style_name), (GClosureNotify)g_free, 0);
-  }
-  else
-  {
-    if (!sm)
-    {
-      // we need a sub-menu, but it doesn't exist yet
-      sm = (GtkMenu*)gtk_menu_new();
-      gtk_menu_item_set_submenu(mi, GTK_WIDGET(sm));
-      gtk_menu_shell_append(menu, GTK_WIDGET(mi));
-    }
-    _build_style_submenus(GTK_MENU_SHELL(sm), style_name, splits, index+1);
-  }
-
-  g_signal_connect_data(G_OBJECT(mi), "activate",
-                        G_CALLBACK(_darkroom_ui_apply_style_activate_callback),
-                        g_strdup(style_name), (GClosureNotify)g_free, 0);
-
-  g_signal_connect_data(G_OBJECT(mi), "button-press-event",
-                        G_CALLBACK(_darkroom_ui_apply_style_button_callback),
-                        g_strdup(style_name), (GClosureNotify)g_free, 0);
-
-  gtk_widget_show(GTK_WIDGET(mi));
-}
-
 static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
 {
-  /* show styles popup menu */
-  GList *styles = dt_styles_get_list("");
-  GtkMenuShell *menu = NULL;
-  if(styles)
-  {
-    menu = GTK_MENU_SHELL(gtk_menu_new());
-    for(const GList *st_iter = styles; st_iter; st_iter = g_list_next(st_iter))
-    {
-      dt_style_t *style = (dt_style_t *)st_iter->data;
-
-      gchar **split = g_strsplit(style->name, "|", 0);
-      _build_style_submenus(menu, style->name, split, 0);
-      g_strfreev(split);
-    }
-    g_list_free_full(styles, dt_style_free);
-  }
-
   /* if we got any styles, lets popup menu for selection */
+  GtkMenuShell *menu = dtgtk_build_style_menu_hierarchy(FALSE,
+                                                        _darkroom_ui_apply_style_activate_callback,
+                                                        _darkroom_ui_apply_style_button_callback);
   if(menu)
   {
     dt_gui_menu_popup(GTK_MENU(menu), w, GDK_GRAVITY_SOUTH_WEST, GDK_GRAVITY_NORTH_WEST);
