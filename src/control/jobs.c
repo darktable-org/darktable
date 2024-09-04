@@ -194,6 +194,15 @@ void dt_control_job_wait(_dt_job_t *job)
 
   // NOTE: could also use signals.
 
+  // if the job is merely queued and hasn't started yet, we
+  // need to wait until it is actually started before attempting
+  // to grab the mutex, or it will always succeed immediately
+  while(state == DT_JOB_STATE_QUEUED)
+  {
+    g_usleep(100000); // wait 0.1 seconds
+    state = dt_control_job_get_state(job);
+  }
+     
   /* if job execution is not finished let's wait for it */
   if(state == DT_JOB_STATE_RUNNING || state == DT_JOB_STATE_CANCELLED)
   {
