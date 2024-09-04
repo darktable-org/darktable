@@ -27,6 +27,7 @@
 #include "control/jobs.h"
 #include "control/signal.h"
 #include "dtgtk/button.h"
+#include "dtgtk/stylemenu.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -63,6 +64,7 @@ typedef struct dt_lib_export_t
   GtkWidget *high_quality;
   GtkWidget *export_masks;
   char *metadata_export;
+  char *style_name;
 } dt_lib_export_t;
 
 
@@ -638,22 +640,18 @@ void gui_reset(dt_lib_module_t *self)
 
   // style
   // set it to none if the var is not set or the style doesn't exist anymore
-  gboolean rc = FALSE;
-  const char *style = dt_confgen_get(CONFIG_PREFIX "style", DT_DEFAULT);
-  if(style != NULL && strlen(style) > 0)
-  {
-    rc = dt_bauhaus_combobox_set_from_text(d->style, style);
-    if(rc == FALSE) dt_bauhaus_combobox_set(d->style, 0);
-  }
-  else
-    dt_bauhaus_combobox_set(d->style, 0);
+  const char *style = dt_conf_get_string_const(CONFIG_PREFIX "style");
+  fprintf(stderr,"style=%s\n",style);
+  if(style == NULL || !style[0] || !dt_styles_exists(style))
+    style = "";
+  g_free(d->style_name);
+  d->style_name = g_strdup(style);
 
   // style mode to overwrite as it was the initial behavior
   dt_bauhaus_combobox_set(d->style_mode,
                           dt_confgen_get_bool(CONFIG_PREFIX "style_append", DT_DEFAULT));
 
-  gtk_widget_set_visible(GTK_WIDGET(d->style_mode),
-                         dt_bauhaus_combobox_get(d->style)==0?FALSE:TRUE);
+  gtk_widget_set_visible(GTK_WIDGET(d->style_mode),d->style_name[0] != '\0');
 
   // export metadata presets
   g_free(d->metadata_export);
@@ -1051,6 +1049,7 @@ static void _intent_changed(GtkWidget *widget, dt_lib_export_t *d)
   dt_conf_set_int(CONFIG_PREFIX "iccintent", pos - 1);
 }
 
+/*
 static void _style_changed(GtkWidget *widget, dt_lib_export_t *d)
 {
   if(dt_bauhaus_combobox_get(d->style) == 0)
@@ -1064,6 +1063,44 @@ static void _style_changed(GtkWidget *widget, dt_lib_export_t *d)
     dt_conf_set_string(CONFIG_PREFIX "style", style);
     gtk_widget_set_visible(GTK_WIDGET(d->style_mode), TRUE);
   }
+}
+*/
+
+static void _apply_style_activate_callback(GtkMenuItem *menuitem, gchar *name)
+{
+  if(gtk_get_current_event()->type == GDK_KEY_PRESS)
+  {
+//FIXME
+  }
+}
+
+static gboolean _apply_style_button_callback(GtkMenuItem *menuitem,
+                                                         GdkEventButton *event,
+                                                         gchar *name)
+{
+  if(event->button == 1)
+  {
+//FIXME
+  }
+  else
+  {
+    //??? dt_shortcut_copy_lua(NULL, name);
+  }
+  return FALSE;
+}
+
+static void _style_popupmenu_callback(GtkWidget *w, gpointer user_data)
+{
+  /* if we got any styles, lets popup menu for selection */
+  GtkMenuShell *menu = dtgtk_build_style_menu_hierarchy(TRUE,
+                                                        _apply_style_activate_callback,
+                                                        _apply_style_button_callback);
+  if(menu)
+  {
+    dt_gui_menu_popup(GTK_MENU(menu), w, GDK_GRAVITY_SOUTH_WEST, GDK_GRAVITY_NORTH_WEST);
+  }
+  else
+    dt_control_log(_("no styles have been created yet"));
 }
 
 int position(const dt_lib_module_t *self)
@@ -1114,26 +1151,6 @@ static void _on_storage_list_changed(gpointer instance,
     }
   }
   dt_bauhaus_combobox_set(d->storage, dt_imageio_get_index_of_storage(storage));
-}
-
-static void _lib_export_styles_changed_callback(gpointer instance,
-                                                gpointer user_data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_export_t *d = self->data;
-
-  dt_bauhaus_combobox_clear(d->style);
-  dt_bauhaus_combobox_add(d->style, _("none"));
-
-  GList *styles = dt_styles_get_list("");
-  for(const GList *st_iter = styles; st_iter; st_iter = g_list_next(st_iter))
-  {
-    const dt_style_t *style = (dt_style_t *)st_iter->data;
-    dt_bauhaus_combobox_add(d->style, style->name);
-  }
-  dt_bauhaus_combobox_set(d->style, 0);
-
-  g_list_free_full(styles, dt_style_free);
 }
 
 void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
@@ -1388,11 +1405,30 @@ void gui_init(dt_lib_module_t *self)
 
   //  Add style combo
 
-  d->style = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-  dt_bauhaus_widget_set_label(d->style, NULL, N_("style"));
-  _lib_export_styles_changed_callback(NULL, self);
+  const char *stored_style = dt_conf_get_string_const(CONFIG_PREFIX "style");
+  d->style_name = g_strdup(stored_style ? stored_style : "");
+  GtkWidget *styles_button = dtgtk_button_new(dtgtk_cairo_paint_styles, 0, NULL);
+  gtk_widget_set_halign(styles_button,GTK_ALIGN_END);
+  g_signal_connect(G_OBJECT(styles_button), "clicked", G_CALLBACK(_style_popupmenu_callback), NULL);
+  gtk_widget_set_tooltip_text(styles_button, _("select style to be applied on export"));
+//  dt_gui_add_help_link(styles, "bottom_panel_styles");
+  d->style = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
+  GtkWidget *styles_label = gtk_label_new(_("style"));
+  gtk_box_pack_start(GTK_BOX(d->style), styles_label, FALSE, FALSE, 0);
+  char *localized_style = d->style_name[0]
+    ? dt_util_localize_segmented_name(d->style_name)
+    : g_strdup(_("none"));
+  GtkWidget *current_style = gtk_label_new(localized_style);
+  g_free(localized_style);
+  gtk_widget_set_halign(current_style,GTK_ALIGN_END);
+  gtk_label_set_justify(GTK_LABEL(current_style), GTK_JUSTIFY_RIGHT);
+  gtk_label_set_ellipsize(GTK_LABEL(current_style), PANGO_ELLIPSIZE_MIDDLE);
+  gtk_box_pack_start(GTK_BOX(d->style), current_style, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(d->style), styles_button, FALSE, FALSE, 0);
+
   gtk_box_pack_start(GTK_BOX(self->widget), d->style, FALSE, TRUE, 0);
   gtk_widget_set_tooltip_text(d->style, _("temporary style to use while exporting"));
+
 
   //  Add check to control whether the style is to replace or append the current module
 
@@ -1409,11 +1445,8 @@ void gui_init(dt_lib_module_t *self)
 
   g_signal_connect(G_OBJECT(d->profile), "value-changed",
                    G_CALLBACK(_profile_changed), (gpointer)d);
-  g_signal_connect(G_OBJECT(d->style), "value-changed",
-                   G_CALLBACK(_style_changed), (gpointer)d);
-
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_STYLE_CHANGED,
-                            G_CALLBACK(_lib_export_styles_changed_callback), self);
+//!!!  g_signal_connect(G_OBJECT(d->style), "value-changed",
+//!!!                   G_CALLBACK(_style_changed), (gpointer)d);
 
   GtkBox *hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, TRUE, 0);
@@ -1488,20 +1521,16 @@ void gui_init(dt_lib_module_t *self)
 
   // style
   // set it to none if the var is not set or the style doesn't exist anymore
-  gboolean rc = FALSE;
   setting = dt_conf_get_string_const(CONFIG_PREFIX "style");
-  if(setting != NULL && strlen(setting) > 0)
-  {
-    rc = dt_bauhaus_combobox_set_from_text(d->style, setting);
-    if(rc == FALSE)
-      dt_bauhaus_combobox_set(d->style, 0);
-  }
-  else
-    dt_bauhaus_combobox_set(d->style, 0);
+  if(setting == NULL || !setting[0] || !dt_styles_exists(setting))
+    setting = "";
+
+  g_free(d->style_name);
+  d->style_name = g_strdup(setting);
 
   // style mode to overwrite as it was the initial behavior
   gtk_widget_set_no_show_all(d->style_mode, TRUE);
-  gtk_widget_set_visible(d->style_mode, dt_bauhaus_combobox_get(d->style)==0?FALSE:TRUE);
+  gtk_widget_set_visible(d->style_mode, d->style_name[0] != '\0');
 
   // export metadata presets
   d->metadata_export = dt_lib_export_metadata_get_conf();
@@ -1522,8 +1551,8 @@ void gui_cleanup(dt_lib_module_t *self)
 
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
                                      G_CALLBACK(_on_storage_list_changed), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_lib_export_styles_changed_callback), self);
+//!!!  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
+//!!!                                     G_CALLBACK(_lib_export_styles_changed_callback), self);
 
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
                                      G_CALLBACK(_image_selection_changed_callback), self);
@@ -1546,6 +1575,7 @@ void gui_cleanup(dt_lib_module_t *self)
       gtk_container_remove(GTK_CONTAINER(d->format_extra_container), module->widget);
   }
 
+  g_free(d->style_name);
   g_free(d->metadata_export);
 
   free(self->data);
@@ -2189,10 +2219,9 @@ int set_params(dt_lib_module_t *self,
 
   const dt_imageio_module_data_t *fdata = (const dt_imageio_module_data_t *)buf;
 
-  if(fdata->style[0] == '\0')
-    dt_bauhaus_combobox_set(d->style, 0);
-  else
-    dt_bauhaus_combobox_set_from_text(d->style, fdata->style);
+  g_free(d->style_name);
+  d->style_name = g_strdup(fdata->style);
+//FIXME: update label in GUI, unless that happens automatically
 
   dt_bauhaus_combobox_set(d->style_mode, fdata->style_append ? 1 : 0);
 

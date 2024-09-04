@@ -129,6 +129,7 @@ FILE(GLOB SOURCE_FILES
   "dtgtk/range.c"
   "dtgtk/resetlabel.c"
   "dtgtk/sidepanel.c"
+  "dtgtk/stylemenu.c"
   "dtgtk/thumbnail.c"
   "dtgtk/thumbnail_btn.c"
   "dtgtk/thumbtable.c"
