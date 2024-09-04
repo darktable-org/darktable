@@ -168,7 +168,8 @@ static inline float4 prophotorgb_to_Lab(float4 rgb)
 
 static inline float4 RGB_2_HSL(const float4 RGB)
 {
-  float H, S, L;
+  float H = 0.0f;
+  float S = 0.0f;
 
   // assumes that each channel is scaled to [0; 1]
   const float R = RGB.x;
@@ -179,14 +180,9 @@ static inline float4 RGB_2_HSL(const float4 RGB)
   const float var_Max = fmax(R, fmax(G, B));
   const float del_Max = var_Max - var_Min;
 
-  L = (var_Max + var_Min) / 2.0f;
+  const float L = (var_Max + var_Min) / 2.0f;
 
-  if (del_Max < 1e-6f)
-  {
-    H = 0.0f;
-    S = 0.0f;
-  }
-  else
+  if(fabs(del_Max) > 1e-6f && fabs(del_Max) > 1e-6)
   {
     if (L < 0.5f) S = del_Max / (var_Max + var_Min);
     else          S = del_Max / (2.0f - var_Max - var_Min);
