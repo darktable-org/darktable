@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -157,7 +157,7 @@ static void button_clicked(GtkWidget *widget,
   if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     gchar *dir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
-    char *composed = g_build_filename(dir, "$(FILE_NAME)", NULL);
+    char *composed = g_build_filename(dir, "$(FILE.NAME)", NULL);
 
     // composed can now contain '\': on Windows it's the path separator,
     // on other platforms it can be part of a regular folder name.
@@ -289,12 +289,12 @@ int store(dt_imageio_module_storage_t *self,
   g_strlcpy(tmp_dir, result_tmp_dir, sizeof(tmp_dir));
   g_free(result_tmp_dir);
 
-  // if filenamepattern is a directory just let att ${FILE_NAME} as default..
+  // if filenamepattern is a directory just add ${FILE.NAME} as default..
   if(g_file_test(tmp_dir, G_FILE_TEST_IS_DIR)
      || ((d->filename + strlen(d->filename) - 1)[0] == '/'
-         || (d->filename + strlen(d->filename) - 1)[0] == '\\'))
+         || (d->filename + strlen(d->filename) - 1)[0] == G_DIR_SEPARATOR))
     snprintf(d->filename + strlen(d->filename),
-             sizeof(d->filename) - strlen(d->filename), "/$(FILE_NAME)");
+             sizeof(d->filename) - strlen(d->filename), "/$(FILE.NAME)");
 
   // avoid braindead export which is bound to overwrite at random:
   if(total > 1 && !g_strrstr(d->filename, "$"))
@@ -315,9 +315,9 @@ int store(dt_imageio_module_storage_t *self,
 
   const char *ext = format->extension(fdata);
   char *c = dirname + strlen(dirname);
-  for(; c > dirname && *c != '/'; c--)
+  for(; c > dirname && *c != '/' && *c != G_DIR_SEPARATOR; c--)
     ;
-  if(*c == '/') *c = '\0';
+  if(*c == '/' || *c == G_DIR_SEPARATOR) *c = '\0';
   if(g_mkdir_with_parents(dirname, 0755))
   {
     dt_print(DT_DEBUG_ALWAYS,
@@ -330,9 +330,9 @@ int store(dt_imageio_module_storage_t *self,
   g_strlcpy(d->cached_dirname, dirname, sizeof(d->cached_dirname));
 
   c = filename + strlen(filename);
-  for(; c > filename && *c != '.' && *c != '/'; c--)
+  for(; c > filename && *c != '.' && *c != '/' && *c != G_DIR_SEPARATOR; c--)
     ;
-  if(c <= filename || *c == '/') c = filename + strlen(filename);
+  if(c <= filename || *c == '/' || *c == G_DIR_SEPARATOR) c = filename + strlen(filename);
 
   sprintf(c, ".%s", ext);
 
