@@ -19,6 +19,8 @@
 #include "common/geo.h"
 #include "common/darktable.h"
 #include "common/math.h"
+#include "control/jobs/control_jobs.h"
+
 #include <glib.h>
 #include <inttypes.h>
 
@@ -113,6 +115,7 @@ error:
   if(err)
   {
     dt_print(DT_DEBUG_ALWAYS, "dt_gpx_new: %s\n", err->message);
+    dt_control_log("%s", err->message);
     g_error_free(err);
   }
 
@@ -248,6 +251,14 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GDateTime *timestamp, dt_imag
   return FALSE;
 }
 
+static void _gpx_parse_error(GError **error)
+{
+    g_set_error(error,
+                G_MARKUP_ERROR,
+                G_MARKUP_ERROR_PARSE,
+                _("failed to parse gpx file. see log for more info."));
+}
+
 /*
  * GPX XML parser code
  */
@@ -255,6 +266,8 @@ void _gpx_parser_start_element(GMarkupParseContext *ctx, const gchar *element_na
                                const gchar **attribute_names, const gchar **attribute_values,
                                gpointer user_data, GError **error)
 {
+  g_return_if_fail(*error == NULL);
+
   dt_gpx_t *gpx = (dt_gpx_t *)user_data;
 
   if(gpx->parsing_trk == FALSE)
@@ -275,6 +288,8 @@ void _gpx_parser_start_element(GMarkupParseContext *ctx, const gchar *element_na
       dt_print(DT_DEBUG_ALWAYS,
                "broken GPX file, new trkpt element before the previous ended.\n");
       g_free(gpx->current_track_point);
+      _gpx_parse_error(error);
+      return;
     }
 
     const gchar **attribute_name = attribute_names;
@@ -310,11 +325,17 @@ void _gpx_parser_start_element(GMarkupParseContext *ctx, const gchar *element_na
         dt_print(DT_DEBUG_ALWAYS,
                  "broken GPX file, failed to get lon/lat attribute values for trkpt\n");
         gpx->invalid_track_point = TRUE;
+        _gpx_parse_error(error);
+        return;
       }
     }
     else
+    {
       dt_print(DT_DEBUG_ALWAYS,
                "broken GPX file, trkpt element doesn't have lon/lat attributes\n");
+      _gpx_parse_error(error);
+      return;
+    }
 
     gpx->current_parser_element = GPX_PARSER_ELEMENT_TRKPT;
   }
@@ -350,11 +371,14 @@ end:
 element_error:
   dt_print(DT_DEBUG_ALWAYS,
            "broken GPX file, element '%s' found outside of trkpt.\n", element_name);
+  _gpx_parse_error(error);
 }
 
 void _gpx_parser_end_element(GMarkupParseContext *context, const gchar *element_name, gpointer user_data,
                              GError **error)
 {
+  g_return_if_fail(*error == NULL);
+
   dt_gpx_t *gpx = (dt_gpx_t *)user_data;
 
   /* closing trackpoint lets take care of data parsed */
@@ -386,6 +410,8 @@ void _gpx_parser_end_element(GMarkupParseContext *context, const gchar *element_
 void _gpx_parser_text(GMarkupParseContext *context, const gchar *text, gsize text_len, gpointer user_data,
                       GError **error)
 {
+  g_return_if_fail(*error == NULL);
+ 
   dt_gpx_t *gpx = (dt_gpx_t *)user_data;
 
   if(gpx->current_parser_element == GPX_PARSER_ELEMENT_NAME)
@@ -403,8 +429,19 @@ void _gpx_parser_text(GMarkupParseContext *context, const gchar *text, gsize tex
     {
       gpx->invalid_track_point = TRUE;
       dt_print(DT_DEBUG_ALWAYS,
-               "broken GPX file, failed to pars is8601 time '%s' for trackpoint\n", text);
+               "broken GPX file, failed to parse iso8601 time '%s' for trackpoint\n", text);
+      _gpx_parse_error(error);
+      return;
     }
+
+    if(!gpx->trksegs)
+    {
+      dt_print(DT_DEBUG_ALWAYS,
+               "broken GPX file, no <trkseg> found\n");
+      _gpx_parse_error(error);
+      return;
+    }
+
     dt_gpx_track_segment_t *ts = (dt_gpx_track_segment_t *)gpx->trksegs->data;
     if(ts)
     {
