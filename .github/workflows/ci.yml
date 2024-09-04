@@ -36,6 +36,7 @@ on:
         - "data/watermarks/**"
         - "tools/*"
         - "**.md"
+  workflow_dispatch:
 
 permissions:
   contents: read
