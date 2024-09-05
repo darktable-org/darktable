@@ -875,7 +875,11 @@ static void _preview_gpx_file(GtkWidget *widget, dt_lib_module_t *self)
   _set_up_label(nb, GTK_ALIGN_CENTER, grid, 4, line, PANGO_ELLIPSIZE_NONE);
   g_free(nb);
 
-  dt_gpx_destroy(gpx);
+  if(gpx)
+  {
+    dt_gpx_destroy(gpx);
+    gpx = NULL;
+  }
 
   gtk_container_add(GTK_CONTAINER(w), grid);
 

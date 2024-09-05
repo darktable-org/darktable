@@ -256,7 +256,7 @@ static void _gpx_parse_error(GError **error)
     g_set_error(error,
                 G_MARKUP_ERROR,
                 G_MARKUP_ERROR_PARSE,
-                _("failed to parse gpx file. see log for more info."));
+               _("failed to parse GPX file"));
 }
 
 /*
