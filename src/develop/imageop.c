@@ -1919,6 +1919,7 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
   dt_iop_params_t *p = (dt_iop_params_t *)((uint8_t *)params + field->header.offset);
 
   gboolean all_ok = TRUE;
+  gchar *values = NULL;
 
   switch(field->header.type)
   {
@@ -1976,27 +1977,57 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
     }
     break;
   case DT_INTROSPECTION_TYPE_FLOAT:
-     all_ok = dt_isnan(*(float*)p)
+    all_ok = dt_isnan(*(float*)p)
       || dt_isinf(*(float*)p)
       || (*(float*)p == field->Float.Default)
       || (*(float*)p >= field->Float.Min && *(float*)p <= field->Float.Max);
+    values = g_strdup_printf
+      (" (%f - [%f..%f] : default %f)",
+       *(float*)p,
+       field->Float.Min, field->Float.Max,
+       field->Float.Default);
     break;
   case DT_INTROSPECTION_TYPE_INT:
     all_ok = (*(int*)p >= field->Int.Min && *(int*)p <= field->Int.Max);
+    values = g_strdup_printf
+       (" (%d - [%d..%d] : default %d)",
+        *(int*)p,
+        field->Int.Min, field->Int.Max,
+        field->Int.Default);
     break;
   case DT_INTROSPECTION_TYPE_UINT:
     all_ok = (*(unsigned int*)p >= field->UInt.Min
               && *(unsigned int*)p <= field->UInt.Max);
+    values = g_strdup_printf
+      (" (%ud - [%ud..%ud] : default %ud)",
+       *(unsigned int*)p,
+       field->UInt.Min, field->UInt.Max,
+       field->UInt.Default);
     break;
   case DT_INTROSPECTION_TYPE_USHORT:
     all_ok = (*(unsigned short int*)p >= field->UShort.Min
               && *(unsigned short int*)p <= field->UShort.Max);
+    values = g_strdup_printf
+      (" (%ud - [%ud..%ud] : default %ud)",
+       *(unsigned short int*)p,
+       field->UShort.Min, field->UShort.Max,
+       field->UShort.Default);
     break;
   case DT_INTROSPECTION_TYPE_INT8:
     all_ok = (*(uint8_t*)p >= field->Int8.Min && *(uint8_t*)p <= field->Int8.Max);
+    values = g_strdup_printf
+      (" (%ud - [%ud..%ud] : default %ud)",
+       *(uint8_t*)p,
+       field->Int8.Min, field->Int8.Max,
+       field->Int8.Default);
     break;
   case DT_INTROSPECTION_TYPE_CHAR:
     all_ok = (*(char*)p >= field->Char.Min && *(char*)p <= field->Char.Max);
+    values = g_strdup_printf
+      (" (%c - [%c..%c] : default %c)",
+       *(char*)p,
+       field->Char.Min, field->Char.Max,
+       field->Char.Default);
     break;
   case DT_INTROSPECTION_TYPE_FLOATCOMPLEX:
     all_ok = creal(*(float complex*)p) >= creal(field->FloatComplex.Min) &&
@@ -2016,9 +2047,13 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
         break;
       }
     }
+    values = g_strdup_printf
+      (" (%d)", *(int*)p);
     break;
   case DT_INTROSPECTION_TYPE_BOOL:
     // *(gboolean*)p
+    values = g_strdup_printf
+      (" (%d)", *(gboolean*)p);
     break;
   case DT_INTROSPECTION_TYPE_OPAQUE:
     // TODO: special case float2
@@ -2032,12 +2067,23 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
     break;
   }
 
-  if(!all_ok && report)
+  if(all_ok)
+  {
     dt_print(DT_DEBUG_ALWAYS,
-             "[iop_validate_params] `%s' failed for type \"%s\"%s%s\n",
+             "[iop_validate_params] `%s' data for type \"%s\"%s%s%s\n",
              name, field->header.type_name,
              *field->header.name ? ", field: " : "",
-             field->header.name);
+             field->header.name, values ? values : "");
+  }
+  else if(report)
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[iop_validate_params] `%s' failed for type \"%s\"%s%s%s\n",
+             name, field->header.type_name,
+             *field->header.name ? ", field: " : "",
+             field->header.name, values ? values : "");
+  }
+  g_free(values);
 
   return all_ok;
 }
