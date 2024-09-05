@@ -108,6 +108,7 @@ typedef struct dt_control_image_enumerator_t
   GList *index;
   int flag;
   gpointer data;
+  gboolean blocking;
 } dt_control_image_enumerator_t;
 
 static inline gboolean _job_cancelled(dt_job_t *job)
@@ -207,6 +208,12 @@ static void *dt_control_image_enumerator_alloc()
   return params;
 }
 
+gboolean _cursor_clear_busy(gpointer user_data)
+{
+  dt_gui_cursor_clear_busy();
+  return G_SOURCE_REMOVE;
+}
+
 static void dt_control_image_enumerator_cleanup(void *p)
 {
   dt_control_image_enumerator_t *params = p;
@@ -217,16 +224,19 @@ static void dt_control_image_enumerator_cleanup(void *p)
   //doing so here causes memory corruption....
 //  g_free(params->data);
 
+  if(params->blocking)
+    g_main_context_invoke(NULL, _cursor_clear_busy, NULL);
+
   free(params);
 }
 
-typedef enum {PROGRESS_NONE, PROGRESS_SIMPLE, PROGRESS_CANCELLABLE} progress_type_t;
+typedef enum {PROGRESS_NONE, PROGRESS_SIMPLE, PROGRESS_CANCELLABLE, PROGRESS_BLOCKING} progress_type_t;
 
 static dt_job_t *dt_control_generic_images_job_create(dt_job_execute_callback execute,
                                                       const char *message,
                                                       const int flag,
                                                       gpointer data,
-                                                      const progress_type_t progress_type,
+                                                      progress_type_t progress_type,
                                                       const gboolean only_visible)
 {
   dt_job_t *job = dt_control_job_create(execute, "%s", message);
@@ -237,6 +247,14 @@ static dt_job_t *dt_control_generic_images_job_create(dt_job_execute_callback ex
     dt_control_job_dispose(job);
     return NULL;
   }
+
+  if(progress_type == PROGRESS_BLOCKING)
+  {
+    params->blocking = TRUE;
+    dt_gui_cursor_set_busy();
+    progress_type = g_list_shorter_than(data, 5) ? PROGRESS_NONE : PROGRESS_CANCELLABLE;
+  }
+
   if(progress_type != PROGRESS_NONE)
     dt_control_job_add_progress(job, _(message), progress_type == PROGRESS_CANCELLABLE);
   params->index = dt_act_on_get_images(only_visible, TRUE, FALSE);
@@ -2168,15 +2186,10 @@ void dt_control_paste_history(GList *imgs)
     g_list_free(imgs);
     return;
   }
-  progress_type_t prog = g_list_shorter_than(imgs,5) ? PROGRESS_NONE : PROGRESS_CANCELLABLE;
-  dt_job_t *job = dt_control_generic_images_job_create(&_control_paste_history_job_run,
-                                                       N_("paste history"), 0,
-                                                       imgs, prog, FALSE);
-  dt_gui_cursor_set_busy();
-  dt_gui_process_events();
-  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
-  dt_control_job_wait(job);
-  dt_gui_cursor_clear_busy();
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, 
+                     dt_control_generic_images_job_create(&_control_paste_history_job_run,
+                                                          N_("paste history"), 0,
+                                                          imgs, PROGRESS_BLOCKING, FALSE));
 }
 
 void dt_control_paste_parts_history(GList *imgs)
@@ -2194,15 +2207,10 @@ void dt_control_paste_parts_history(GList *imgs)
 
   if(res == GTK_RESPONSE_OK)
   {
-    progress_type_t prog = g_list_shorter_than(imgs,5) ? PROGRESS_NONE : PROGRESS_CANCELLABLE;
-    dt_job_t *job = dt_control_generic_images_job_create(&_control_paste_history_job_run,
-                                                         N_("paste history"), 0,
-                                                         imgs, prog, FALSE);
-    dt_gui_cursor_set_busy();
-    dt_gui_process_events();
-    dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
-    dt_control_job_wait(job);
-    dt_gui_cursor_clear_busy();
+    dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
+                       dt_control_generic_images_job_create(&_control_paste_history_job_run,
+                                                            N_("paste history"), 0,
+                                                            imgs, PROGRESS_BLOCKING, FALSE));
   }
   else
     g_list_free(imgs);
@@ -2218,30 +2226,20 @@ void dt_control_compress_history(GList *imgs)
     g_list_free(imgs);
     return;
   }
-  progress_type_t prog = g_list_shorter_than(imgs,5) ? PROGRESS_NONE : PROGRESS_CANCELLABLE;
-  dt_job_t *job = dt_control_generic_images_job_create(&_control_compress_history_job_run,
-                                                       N_("compress history"), 0,
-                                                       imgs, prog, FALSE);
-  dt_gui_cursor_set_busy();
-  dt_gui_process_events();
-  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
-  dt_control_job_wait(job);
-  dt_gui_cursor_clear_busy();
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
+                     dt_control_generic_images_job_create(&_control_compress_history_job_run,
+                                                          N_("compress history"), 0,
+                                                          imgs, PROGRESS_BLOCKING, FALSE));
 }
 
 void dt_control_discard_history(GList *imgs)
 {
   if(!imgs)
     return;
-  progress_type_t prog = g_list_shorter_than(imgs,5) ? PROGRESS_NONE : PROGRESS_CANCELLABLE;
-  dt_job_t *job = dt_control_generic_images_job_create(&_control_discard_history_job_run,
-                                                       N_("discard history"), 0,
-                                                       imgs, prog, FALSE);
-  dt_gui_cursor_set_busy();
-  dt_gui_process_events();
-  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
-  dt_control_job_wait(job);
-  dt_gui_cursor_clear_busy();
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
+                     dt_control_generic_images_job_create(&_control_discard_history_job_run,
+                                                          N_("discard history"), 0,
+                                                          imgs, PROGRESS_BLOCKING, FALSE));
 }
 
 static dt_control_image_enumerator_t *dt_control_export_alloc()
