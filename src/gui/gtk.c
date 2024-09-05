@@ -2232,6 +2232,25 @@ static void _on_drag_leave(GtkDarktableExpander *widget, GdkDragContext *dc, gui
     dtgtk_expander_set_drag_hover(m->data, FALSE, FALSE);
 }
 
+static gboolean _remove_modules_visibility(gpointer key,
+                                           gpointer value,
+                                           gpointer prefix)
+{
+  return g_str_has_prefix(key, prefix)
+         && (g_str_has_suffix(key, "_visible")
+          || g_str_has_suffix(key, "_position"));
+}
+
+static void _restore_default_modules(GtkMenuItem *menuitem,
+                                     gpointer user_data)
+{
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  gchar *prefix = g_strdup_printf("plugins/%s/", cv->module_name);
+  g_hash_table_foreach_remove(darktable.conf->table, _remove_modules_visibility, prefix);
+  g_free(prefix);
+  dt_view_manager_switch_by_view(darktable.view_manager, cv);
+}
+
 static void _toggle_module_visibility(GtkMenuItem *menuitem,
                                       dt_lib_module_t *module)
 {
@@ -2243,6 +2262,13 @@ static void _add_remove_modules(dt_action_t *action)
 {
   dt_view_type_flags_t cv = dt_view_get_current();
   GtkWidget *menu = gtk_menu_new();
+
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
+  GtkWidget *mi = gtk_menu_item_new_with_label(_("restore defaults"));
+  gtk_widget_set_tooltip_text(mi, _("restore the default visibility and position of all modules in this view"));
+  g_signal_connect(mi, "activate", G_CALLBACK(_restore_default_modules), NULL);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+
   for(GList *iter = darktable.lib->plugins; iter; iter = iter->next)
   {
     dt_lib_module_t *module = iter->data;
@@ -2251,7 +2277,7 @@ static void _add_remove_modules(dt_action_t *action)
     if((mv & cv || mv & (mv - 1) || mv & DT_VIEW_MULTI) // either current view or supports more than one view
        && module->expandable(module))
     {
-      GtkWidget *mi = gtk_check_menu_item_new_with_label(module->name(module));
+      mi = gtk_check_menu_item_new_with_label(module->name(module));
       gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mi), dt_lib_is_visible(module));
       g_signal_connect(mi, "toggled", G_CALLBACK(_toggle_module_visibility), module);
       gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), mi);
