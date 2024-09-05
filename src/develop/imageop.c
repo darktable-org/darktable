@@ -2006,7 +2006,9 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
     break;
   case DT_INTROSPECTION_TYPE_ENUM:
     all_ok = FALSE;
-    for(dt_introspection_type_enum_tuple_t *i = field->Enum.values; i && i->name; i++)
+    for(dt_introspection_type_enum_tuple_t *i = field->Enum.values;
+        i && i->name;
+        i++)
     {
       if(i->value == *(int*)p)
       {
