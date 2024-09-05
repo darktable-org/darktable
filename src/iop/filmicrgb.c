@@ -4656,7 +4656,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
       float prev = *(float *)previous;
       if(w == g->security_factor)
       {
-        float ratio = (p->security_factor - prev) / (prev + 100.0f);
+        const float ratio = (p->security_factor - prev) / (prev + 100.0f);
 
         float EVmin = p->black_point_source;
         EVmin = EVmin + ratio * EVmin;
@@ -4669,7 +4669,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
       }
       else
       {
-        float grey_var = log2f(prev / p->grey_point_source);
+        const float grey_var = log2f(prev / p->grey_point_source);
         p->black_point_source = p->black_point_source - grey_var;
         p->white_point_source = p->white_point_source + grey_var;
       }
