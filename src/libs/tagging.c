@@ -49,6 +49,7 @@ typedef struct dt_lib_tagging_t
   char keyword[1024];
   GtkEntry *entry;
   GtkWidget *clear_button;
+  GtkFlowBox *attached_view2;
   GtkTreeView *attached_view, *dictionary_view;
   GtkWidget *attach_button, *detach_button, *new_button, *import_button, *export_button;
   GtkWidget *toggle_tree_button, *toggle_suggestion_button, *toggle_sort_button, *toggle_hide_button, *toggle_dttags_button;
@@ -367,6 +368,16 @@ static gboolean _select_next_user_attached_tag(const int index, GtkTreeView *vie
   return FALSE;
 }
 
+static void _flow_box_remove_item(GtkWidget *item, gpointer userdata)
+{
+  gtk_widget_destroy(item);
+}
+
+static void _flow_box_clear(GtkFlowBox *flow_box)
+{
+  gtk_container_forall(GTK_CONTAINER(flow_box), _flow_box_remove_item, NULL);
+}
+
 static void _init_treeview(dt_lib_module_t *self, const int which)
 {
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
@@ -386,6 +397,8 @@ static void _init_treeview(dt_lib_module_t *self, const int which)
     view = d->attached_view;
     model = gtk_tree_view_get_model(GTK_TREE_VIEW(view));
     store = model;
+
+    _flow_box_clear(d->attached_view2);
   }
   else // dictionary_view tags of typed text
   {
@@ -493,11 +506,21 @@ static void _init_treeview(dt_lib_module_t *self, const int which)
   else
   {
     gtk_list_store_clear(GTK_LIST_STORE(store));
+    // _flow_box_clear(d->attached_view2);
     if(count > 0 && tags)
     {
       for(GList *tag = tags; tag; tag = g_list_next(tag))
       {
         const char *subtag = g_strrstr(((dt_tag_t *)tag->data)->tag, "|");
+
+
+
+        gtk_flow_box_insert(d->attached_view2, gtk_label_new(subtag), -1);
+
+
+
+
+
         gtk_list_store_append(GTK_LIST_STORE(store), &iter);
         gtk_list_store_set(GTK_LIST_STORE(store), &iter,
                           DT_LIB_TAGGING_COL_TAG, !subtag ? ((dt_tag_t *)tag->data)->tag : subtag + 1,
@@ -3134,6 +3157,14 @@ void gui_init(dt_lib_module_t *self)
   box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
+
+  GtkFlowBox *flowbox = GTK_FLOW_BOX(gtk_flow_box_new());
+  gtk_orientable_set_orientation(GTK_ORIENTABLE(flowbox), GTK_ORIENTATION_HORIZONTAL);
+  gtk_widget_set_valign(GTK_WIDGET(flowbox), GTK_ALIGN_START);
+  GtkWidget *fw = dt_ui_resize_wrap(GTK_WIDGET(flowbox), 200, "plugins/lighttable/tagging/heightattachedwindow");
+  gtk_box_pack_start(box, fw, TRUE, TRUE, 0);
+  d->attached_view2 = flowbox;
+
   view = GTK_TREE_VIEW(gtk_tree_view_new());
   w = dt_ui_resize_wrap(GTK_WIDGET(view), 200, "plugins/lighttable/tagging/heightattachedwindow");
   gtk_box_pack_start(box, w, TRUE, TRUE, 0);
