@@ -1351,20 +1351,21 @@ static void _darkroom_ui_favorite_presets_popupmenu(GtkWidget *w, gpointer user_
     dt_control_log(_("no user-defined presets for favorite modules were found"));
 }
 
-static void _darkroom_ui_apply_style_activate_callback(GtkMenuItem *menuitem, gchar *name)
+static void _darkroom_ui_apply_style_activate_callback(GtkMenuItem *menuitem,
+                                                       const dt_stylemenu_data_t *menu_data)
 {
   if(gtk_get_current_event()->type == GDK_KEY_PRESS)
-    dt_styles_apply_to_dev(name, darktable.develop->image_storage.id);
+    dt_styles_apply_to_dev(menu_data->name, darktable.develop->image_storage.id);
 }
 
 static gboolean _darkroom_ui_apply_style_button_callback(GtkMenuItem *menuitem,
                                                          GdkEventButton *event,
-                                                         gchar *name)
+                                                         const dt_stylemenu_data_t *menu_data)
 {
   if(event->button == 1)
-    dt_styles_apply_to_dev(name, darktable.develop->image_storage.id);
+    dt_styles_apply_to_dev(menu_data->name, darktable.develop->image_storage.id);
   else
-    dt_shortcut_copy_lua(NULL, name);
+    dt_shortcut_copy_lua(NULL, menu_data->name);
 
   return FALSE;
 }
@@ -1374,7 +1375,8 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
   /* if we got any styles, lets popup menu for selection */
   GtkMenuShell *menu = dtgtk_build_style_menu_hierarchy(FALSE,
                                                         _darkroom_ui_apply_style_activate_callback,
-                                                        _darkroom_ui_apply_style_button_callback);
+                                                        _darkroom_ui_apply_style_button_callback,
+                                                        user_data);
   if(menu)
   {
     dt_gui_menu_popup(GTK_MENU(menu), w, GDK_GRAVITY_SOUTH_WEST, GDK_GRAVITY_NORTH_WEST);
