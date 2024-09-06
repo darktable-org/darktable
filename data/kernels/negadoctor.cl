@@ -40,7 +40,7 @@ negadoctor (read_only image2d_t in, write_only image2d_t out, int width, int hei
 
   // Print density on paper : ((1 - 10^corrected_de + black) * exposure)^gamma rewritten for FMA
   o = -((float4)exposure * native_exp10(o) + (float4)black);
-  o = native_powr(fmax(o, (float4)0.0f), gamma); // note : this is always > 0
+  o = dtcl_pow(fmax(o, (float4)0.0f), gamma); // note : this is always > 0
 
   // Compress highlights and clip negatives. from https://lists.gnu.org/archive/html/openexr-devel/2005-03/msg00009.html
   o = (o > (float4)soft_clip) ? soft_clip + ((float4)1.0f - native_exp(-(o - (float4)soft_clip) / (float4)soft_clip_comp)) * (float4)soft_clip_comp

@@ -50,7 +50,7 @@ static inline float sqf(const float x)
 
 static inline float euclidean_norm(const float4 input)
 {
-  return fmax(native_sqrt(sqf(input.x) + sqf(input.y) + sqf(input.z)), NORM_MIN);
+  return fmax(dtcl_sqrt(sqf(input.x) + sqf(input.y) + sqf(input.z)), NORM_MIN);
 }
 
 static inline float4 gamut_mapping(const float4 input, const float compression, const int clip)
@@ -74,7 +74,7 @@ static inline float4 gamut_mapping(const float4 input, const float compression, 
   const float Delta = Y * (sqf(delta.x) + sqf(delta.y));
 
   // Compress chromaticity (move toward white point)
-  const float correction = (compression == 0.0f) ? 0.f : native_powr(Delta, compression);
+  const float correction = (compression == 0.0f) ? 0.f : dtcl_pow(Delta, compression);
 
   // Ensure the correction does not bring our uyY vector the other side of D50
   // that would switch to the opposite color, so we clip at D50

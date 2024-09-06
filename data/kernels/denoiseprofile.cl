@@ -77,7 +77,7 @@ denoiseprofile_precondition_v2(read_only image2d_t in, write_only image2d_t out,
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   const float alpha = pixel.w;
 
-  float4 t = fmax(2.0f * native_powr(fmax((float4)0.0f, pixel / wb + b), 1.0f - p / 2.0f) / ((-p + 2.0f) * sqrt(a)), 0.f);
+  float4 t = fmax(2.0f * dtcl_pow(fmax((float4)0.0f, pixel / wb + b), 1.0f - p / 2.0f) / ((-p + 2.0f) * sqrt(a)), 0.f);
 
   t.w = alpha;
 
@@ -96,7 +96,7 @@ denoiseprofile_precondition_Y0U0V0(read_only image2d_t in, write_only image2d_t 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   const float alpha = pixel.w;
 
-  const float4 t = fmax(2.0f * native_powr(fmax((float4)0.0f, pixel + b), 1.0f - p / 2.0f) / ((-p + 2.0f) * sqrt(a)), 0.f);
+  const float4 t = fmax(2.0f * dtcl_pow(fmax((float4)0.0f, pixel + b), 1.0f - p / 2.0f) / ((-p + 2.0f) * sqrt(a)), 0.f);
 
   float4 outpx = (float4)0.0f;
   outpx.x += toY0U0V0[0] * t.x;
@@ -357,7 +357,7 @@ denoiseprofile_finish_v2(read_only image2d_t in, global float4* U2, write_only i
   float4 delta = px * px + (float4)bias;
   float4 denominator = 4.0f / (sqrt(a) * (2.0f - p));
   float4 z1 = (px + sqrt(fmax((float4)0.0f, delta))) / denominator;
-  px = fmax(native_powr(z1, 1.0f / (1.0f - p / 2.0f)) - b, 0.f);
+  px = fmax(dtcl_pow(z1, 1.0f / (1.0f - p / 2.0f)) - b, 0.f);
   px = px * wb;
   px.w = alpha;
 
@@ -406,7 +406,7 @@ denoiseprofile_backtransform_v2(read_only image2d_t in, write_only image2d_t out
   const float4 delta = px * px + (float4)bias;
   const float4 denominator = 4.0f / (sqrt(a) * (2.0f - p));
   const float4 z1 = (px + sqrt(fmax((float4)0.0f, delta))) / denominator;
-  px = fmax(native_powr(z1, 1.0f / (1.0f - p / 2.0f)) - b, 0.f);
+  px = fmax(dtcl_pow(z1, 1.0f / (1.0f - p / 2.0f)) - b, 0.f);
   px = px * wb;
   px.w = alpha;
 
@@ -441,7 +441,7 @@ denoiseprofile_backtransform_Y0U0V0(read_only image2d_t in, write_only image2d_t
   const float4 delta = px * px + (float4)bias * wb;
   const float4 denominator = 4.0f / (sqrt(a) * (2.0f - p));
   const float4 z1 = (px + sqrt(fmax((float4)0.0f, delta))) / denominator;
-  px = fmax(native_powr(z1, 1.0f / (1.0f - p / 2.0f)) - b, 0.f);
+  px = fmax(dtcl_pow(z1, 1.0f / (1.0f - p / 2.0f)) - b, 0.f);
   px.w = alpha;
 
   write_imagef (out, (int2)(x, y), px);

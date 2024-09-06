@@ -74,7 +74,7 @@ static inline float4 gamut_map_HSB(const float4 HSB, global float *gamut_LUT, co
 {
   const float4 JCH = dt_UCS_HSB_to_JCH(HSB);
   const float max_colorfulness = lookup_gamut(gamut_LUT, JCH.z);
-  const float max_chroma = 15.932993652962535f * native_powr(JCH.x * L_white, 0.6523997524738018f) * native_powr(max_colorfulness, 0.6007557017508491f) / L_white;
+  const float max_chroma = 15.932993652962535f * dtcl_pow(JCH.x * L_white, 0.6523997524738018f) * dtcl_pow(max_colorfulness, 0.6007557017508491f) / L_white;
   const float4 JCH_gamut_boundary = { JCH.x, max_chroma, JCH.z, 0.0f };
   const float4 HSB_gamut_boundary = dt_UCS_JCH_to_HSB(JCH_gamut_boundary);
 
@@ -401,7 +401,7 @@ __kernel void write_visual(__write_only image2d_t out,
   const float b_correction = read_imagef(b_corrections, samplerA, (int2)(col, row)).x;
 
   const float sat = read_imagef(saturation, samplerA, (int2)(col, row)).x;
-  const float val = native_sqrt(fmax(0.0f, B * white));
+  const float val = dtcl_sqrt(fmax(0.0f, B * white));
   float corr = 0.0f;
   switch(mode)
   {

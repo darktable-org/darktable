@@ -37,6 +37,25 @@ constant sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE    
 #define BLUE 2
 #define ALPHA 3
 
+#define DT_OPENCL_PERFORMANCE
+
+#ifdef DT_OPENCL_PERFORMANCE
+  #define dtcl_sin(A) native_sin(A)
+  #define dtcl_cos(A) native_cos(A)
+  #define dtcl_sqrt(A) native_sqrt(A)
+  #define dtcl_pow(A,B) native_powr(A,B)
+  #define dtcl_exp(A) native_exp(A)
+  // Allow the compiler to convert a * b + c to fused multiply-add to use hardware acceleration
+  // on compatible platforms
+  #pragma OPENCL FP_CONTRACT ON
+#else
+  #define dtcl_sin(A) sin(A)
+  #define dtcl_cos(A) cos(A)
+  #define dtcl_sqrt(A) sqrt(A)
+  #define dtcl_pow(A,B) pow(A,B)
+  #define dtcl_exp(A) exp(A)
+  #pragma OPENCL FP_CONTRACT OFF
+#endif
 
 static inline int
 FC(const int row, const int col, const unsigned int filters)
@@ -55,7 +74,7 @@ FCxtrans(const int row, const int col, global const unsigned char (*const xtrans
 static inline float
 dt_fast_hypot(const float x, const float y)
 {
-  return native_sqrt(x * x + y * y);
+  return dtcl_sqrt(x * x + y * y);
 }
 
 /* we use this exp approximation to maintain full identity with cpu path */
@@ -77,7 +96,3 @@ dt_fast_expf(const float x)
   u.k = k0 > 0 ? k0 : 0;
   return u.f;
 }
-
-// Allow the compiler to convert a * b + c to fused multiply-add to use hardware acceleration
-// on compatible platforms
-#pragma OPENCL FP_CONTRACT ON

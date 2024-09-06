@@ -620,9 +620,9 @@ colorbalance (read_only image2d_t in, write_only image2d_t out, const int width,
   float4 sRGB = XYZ_to_sRGB(Lab_to_XYZ(Lab));
 
   // Lift gamma gain
-  sRGB = (sRGB <= (float4)0.0031308f) ? 12.92f * sRGB : (1.0f + 0.055f) * native_powr(sRGB, (float4)1.0f/2.4f) - (float4)0.055f;
-  sRGB = native_powr(fmax(((sRGB - (float4)1.0f) * lift + (float4)1.0f) * gain, (float4)0.0f), gamma_inv);
-  sRGB = (sRGB <= (float4)0.04045f) ? sRGB / 12.92f : native_powr((sRGB + (float4)0.055f) / (1.0f + 0.055f), (float4)2.4f);
+  sRGB = (sRGB <= (float4)0.0031308f) ? 12.92f * sRGB : (1.0f + 0.055f) * dtcl_pow(sRGB, (float4)1.0f/2.4f) - (float4)0.055f;
+  sRGB = dtcl_pow(fmax(((sRGB - (float4)1.0f) * lift + (float4)1.0f) * gain, (float4)0.0f), gamma_inv);
+  sRGB = (sRGB <= (float4)0.04045f) ? sRGB / 12.92f : dtcl_pow((sRGB + (float4)0.055f) / (1.0f + 0.055f), (float4)2.4f);
   Lab.xyz = XYZ_to_Lab(sRGB_to_XYZ(sRGB)).xyz;
 
   write_imagef (out, (int2)(x, y), Lab);
@@ -650,9 +650,9 @@ colorbalance_lgg (read_only image2d_t in, write_only image2d_t out, const int wi
   }
 
   // Lift gamma gain
-  RGB = (RGB <= (float4)0.0f) ? (float4)0.0f : native_powr(RGB, (float4)1.0f/2.2f);
+  RGB = (RGB <= (float4)0.0f) ? (float4)0.0f : dtcl_pow(RGB, (float4)1.0f/2.2f);
   RGB = ((RGB - (float4)1.0f) * lift + (float4)1.0f) * gain;
-  RGB = (RGB <= (float4)0.0f) ? (float4)0.0f : native_powr(RGB, gamma_inv * (float4)2.2f);
+  RGB = (RGB <= (float4)0.0f) ? (float4)0.0f : dtcl_pow(RGB, gamma_inv * (float4)2.2f);
 
   // saturation output
   if (saturation_out != 1.0f)
@@ -698,7 +698,7 @@ colorbalance_cdl (read_only image2d_t in, write_only image2d_t out, const int wi
 
   // lift power slope
   RGB = RGB * gain + lift;
-  RGB = (RGB <= (float4)0.0f) ? (float4)0.0f : native_powr(RGB, gamma_inv);
+  RGB = (RGB <= (float4)0.0f) ? (float4)0.0f : dtcl_pow(RGB, gamma_inv);
 
   // saturation output
   if (saturation_out != 1.0f)
@@ -713,7 +713,7 @@ colorbalance_cdl (read_only image2d_t in, write_only image2d_t out, const int wi
   {
     const float4 contrast4 = contrast;
     const float4 grey4 = grey;
-    RGB = (RGB <= (float4)0.0f) ? (float4)0.0f : native_powr(RGB / grey4, contrast4) * grey4;
+    RGB = (RGB <= (float4)0.0f) ? (float4)0.0f : dtcl_pow(RGB / grey4, contrast4) * grey4;
   }
 
   Lab.xyz = prophotorgb_to_Lab(RGB).xyz;
@@ -797,7 +797,7 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
 
   // Sanitize input : no negative luminance
   Ych.x = fmax(Ych.x, 0.f);
-  const float4 opacities = opacity_masks(native_powr(Ych.x, 0.4101205819200422f), // center middle grey in 50 %
+  const float4 opacities = opacity_masks(dtcl_pow(Ych.x, 0.4101205819200422f), // center middle grey in 50 %
                                          shadows_weight, highlights_weight, midtones_weight, mask_grey_fulcrum);
   const float4 opacities_comp = (float4)1.f - opacities;
 
@@ -810,7 +810,7 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
 
   // Linear chroma : distance to achromatic at constant luminance in scene-referred
   const float chroma_boost = chroma_global + dot(opacities, chroma);
-  const float vib = vibrance * (1.0f - native_powr(Ych.y, fabs(vibrance)));
+  const float vib = vibrance * (1.0f - dtcl_pow(Ych.y, fabs(vibrance)));
   const float chroma_factor = fmax(1.f + chroma_boost + vib, 0.f);
   Ych.y *= chroma_factor;
 
@@ -836,17 +836,17 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
   // factorization of : (RGB[c] * (1.f - alpha) + RGB[c] * d->shadows[c] * alpha) * (1.f - beta)  + RGB[c] * d->highlights[c] * beta;
 
   // midtones : power with sign preservation
-  RGB = sign(RGB) * native_powr(fabs(RGB) / white_fulcrum, midtones) * white_fulcrum;
+  RGB = sign(RGB) * dtcl_pow(fabs(RGB) / white_fulcrum, midtones) * white_fulcrum;
 
   // for the non-linear ops we need to go in Yrg again because RGB doesn't preserve color
   LMS = gradingRGB_to_LMS(RGB);
   Yrg = LMS_to_Yrg(LMS);
 
   // Y midtones power (gamma)
-  Yrg.x = native_powr(fmax(Yrg.x / white_fulcrum, 0.f), midtones_Y) * white_fulcrum;
+  Yrg.x = dtcl_pow(fmax(Yrg.x / white_fulcrum, 0.f), midtones_Y) * white_fulcrum;
 
   // Y fulcrumed contrast
-  Yrg.x = grey_fulcrum * native_powr(Yrg.x / grey_fulcrum, contrast);
+  Yrg.x = grey_fulcrum * dtcl_pow(Yrg.x / grey_fulcrum, contrast);
 
   LMS = Yrg_to_LMS(Yrg);
   XYZ_D65 = LMS_to_XYZ(LMS);
@@ -866,8 +866,8 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
     // Note : O should be = (C * cosf(T) - J * sinf(T)) = 0 since S is the eigenvector,
     // so we add the chroma projected along the orthogonal axis to get some control value
     const float T = atan2(JC[1], JC[0]); // angle of the eigenvector over the hue plane
-    const float sin_T = native_sin(T);
-    const float cos_T = native_cos(T);
+    const float sin_T = dtcl_sin(T);
+    const float cos_T = dtcl_cos(T);
     const float M_rot_dir[2][2] = { {  cos_T,  sin_T },
                                     { -sin_T,  cos_T } };
     const float M_rot_inv[2][2] = { {  cos_T, -sin_T },
@@ -900,8 +900,8 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
     // Gamut-clip in Jch at constant hue and lightness,
     // e.g. find the max chroma available at current hue that doesn't
     // yield negative L'M'S' values, which will need to be clipped during conversion
-    const float cos_H = native_cos(h);
-    const float sin_H = native_sin(h);
+    const float cos_H = dtcl_cos(h);
+    const float sin_H = dtcl_sin(h);
 
     const float d0 = 1.6295499532821566e-11f;
     const float d = -0.56f;
@@ -960,7 +960,7 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
     a = soft_clip(a, 0.5f * max_a, max_a);
 
     const float P_prime = (a - 1.f) * P;
-    const float W_prime = native_sqrt(sqf(P) * (1.f - sqf(a)) + sqf(W)) * b;
+    const float W_prime = dtcl_sqrt(sqf(P) * (1.f - sqf(a)) + sqf(W)) * b;
 
     HCB.y = fmax(M_rot_inv[0][0] * P_prime + M_rot_inv[0][1] * W_prime, 0.f);
     HCB.z = fmax(M_rot_inv[1][0] * P_prime + M_rot_inv[1][1] * W_prime, 0.f);
@@ -969,7 +969,7 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
 
     // Gamut mapping
     const float max_colorfulness = lookup_gamut(gamut_lut, JCH.z); // WARNING : this is M²
-    const float max_chroma = 15.932993652962535f * native_powr(JCH.x * L_white, 0.6523997524738018f) * native_powr(max_colorfulness, 0.6007557017508491f) / L_white;
+    const float max_chroma = 15.932993652962535f * dtcl_pow(JCH.x * L_white, 0.6523997524738018f) * dtcl_pow(max_colorfulness, 0.6007557017508491f) / L_white;
     const float4 JCH_gamut_boundary = { JCH.x, max_chroma, JCH.z, 0.f };
     const float4 HSB_gamut_boundary = dt_UCS_JCH_to_HSB(JCH_gamut_boundary);
 
