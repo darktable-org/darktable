@@ -51,12 +51,19 @@ static gboolean _styles_tooltip_callback(GtkWidget* self,
   return dt_shortcut_tooltip_callback(self, x, y, keyboard_mode, tooltip, ht);
 }
 
+static void _free_menu_data(dt_stylemenu_data_t *data)
+{
+  g_free(data->name);
+  free(data);
+}
+
 static void _build_style_submenus(GtkMenuShell *menu,
                                   const gchar *style_name,
                                   gchar **splits,
                                   const int index,
                                   dtgtk_menuitem_activate_callback_fn *activate_callback,
-                                  dtgtk_menuitem_button_callback_fn *button_callback)
+                                  dtgtk_menuitem_button_callback_fn *button_callback,
+                                  gpointer user_data)
 {
   // localize the name of the current level in the hierarchy
   const char *split0 = dt_util_localize_string(splits[index]);
@@ -101,18 +108,33 @@ static void _build_style_submenus(GtkMenuShell *menu,
       gtk_menu_shell_append(menu, GTK_WIDGET(mi));
     }
     _build_style_submenus(GTK_MENU_SHELL(sm), style_name, splits, index+1,
-                          activate_callback, button_callback);
+                          activate_callback, button_callback, user_data);
   }
 
   if(activate_callback)
-    g_signal_connect_data(G_OBJECT(mi), "activate",
-                          G_CALLBACK(activate_callback),
-                          g_strdup(style_name), (GClosureNotify)g_free, 0);
-
+  {
+    dt_stylemenu_data_t *menu_data = malloc(sizeof(dt_stylemenu_data_t));
+    if(menu_data)
+    {
+      menu_data->name = g_strdup(style_name);
+      menu_data->user_data = user_data;
+      g_signal_connect_data(G_OBJECT(mi), "activate",
+                            G_CALLBACK(activate_callback),
+                            menu_data, (GClosureNotify)_free_menu_data, 0);
+    }
+  }
   if(button_callback)
-    g_signal_connect_data(G_OBJECT(mi), "button-press-event",
-                          G_CALLBACK(button_callback),
-                          g_strdup(style_name), (GClosureNotify)g_free, 0);
+  {
+    dt_stylemenu_data_t *menu_data = malloc(sizeof(dt_stylemenu_data_t));
+    if(menu_data)
+    {
+      menu_data->name = g_strdup(style_name);
+      menu_data->user_data = user_data;
+      g_signal_connect_data(G_OBJECT(mi), "button-press-event",
+                            G_CALLBACK(button_callback),
+                            menu_data, (GClosureNotify)_free_menu_data, 0);
+    }
+  }
 
   gtk_widget_show(GTK_WIDGET(mi));
 }
@@ -120,7 +142,8 @@ static void _build_style_submenus(GtkMenuShell *menu,
 
 GtkMenuShell *dtgtk_build_style_menu_hierarchy(gboolean allow_none,
                                                dtgtk_menuitem_activate_callback_fn *activate_callback,
-                                               dtgtk_menuitem_button_callback_fn *button_callback)
+                                               dtgtk_menuitem_button_callback_fn *button_callback,
+                                               gpointer user_data)
 {
   GtkMenuShell *menu = NULL;
 
@@ -132,14 +155,14 @@ GtkMenuShell *dtgtk_build_style_menu_hierarchy(gboolean allow_none,
     {
       const char *none = "";
       gchar *split[] = { (gchar*)none, 0 };
-      _build_style_submenus(menu, none, split, 0, activate_callback, button_callback);
+      _build_style_submenus(menu, none, split, 0, activate_callback, button_callback, user_data);
     }
     for(const GList *st_iter = styles; st_iter; st_iter = g_list_next(st_iter))
     {
       dt_style_t *style = (dt_style_t *)st_iter->data;
 
       gchar **split = g_strsplit(style->name, "|", 0);
-      _build_style_submenus(menu, style->name, split, 0, activate_callback, button_callback);
+      _build_style_submenus(menu, style->name, split, 0, activate_callback, button_callback, user_data);
       g_strfreev(split);
     }
     g_list_free_full(styles, dt_style_free);
@@ -147,3 +170,8 @@ GtkMenuShell *dtgtk_build_style_menu_hierarchy(gboolean allow_none,
   return menu;
 }
 
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on

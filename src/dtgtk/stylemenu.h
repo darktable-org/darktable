@@ -20,12 +20,21 @@
 
 G_BEGIN_DECLS
 
-typedef void dtgtk_menuitem_activate_callback_fn(GtkMenuItem *menuitem, gchar *name);
-typedef gboolean dtgtk_menuitem_button_callback_fn(GtkMenuItem *, GdkEventButton *event, gchar *name);
+typedef struct {
+  gchar *name;
+  gpointer user_data;
+} dt_stylemenu_data_t;
+
+typedef void dtgtk_menuitem_activate_callback_fn(GtkMenuItem *menuitem,
+                                                 const dt_stylemenu_data_t *menu_data);
+typedef gboolean dtgtk_menuitem_button_callback_fn(GtkMenuItem *,
+                                                   GdkEventButton *event,
+                                                   const dt_stylemenu_data_t *menu_data);
 
 GtkMenuShell *dtgtk_build_style_menu_hierarchy(gboolean allow_none,
                                                dtgtk_menuitem_activate_callback_fn *activate_callback,
-                                               dtgtk_menuitem_button_callback_fn *button_callback);
+                                               dtgtk_menuitem_button_callback_fn *button_callback,
+                                               gpointer user_data);
 
 G_END_DECLS
 
