@@ -79,7 +79,7 @@ static inline float4 lab_f(float4 x)
 {
   const float4 epsilon = 216.0f / 24389.0f;
   const float4 kappa = 24389.0f / 27.0f;
-  return (x > epsilon) ? native_powr(x, (float4)(1.0f/3.0f)) : (kappa * x + (float4)16.0f) / ((float4)116.0f);
+  return (x > epsilon) ? dtcl_pow(x, (float4)(1.0f/3.0f)) : (kappa * x + (float4)16.0f) / ((float4)116.0f);
 }
 
 
@@ -377,8 +377,8 @@ static inline float4 XYZ_to_JzAzBz(float4 XYZ_D65)
   temp2.z = dot(M[2], temp1);
   temp2.w = 0.f;
   // LMS -> L'M'S'
-  temp2 = native_powr(fmax(temp2 / 10000.f, 0.0f), 0.159301758f);
-  temp2 = native_powr((0.8359375f + 18.8515625f * temp2) / (1.0f + 18.6875f * temp2), 134.034375f);
+  temp2 = dtcl_pow(fmax(temp2 / 10000.f, 0.0f), 0.159301758f);
+  temp2 = dtcl_pow((0.8359375f + 18.8515625f * temp2) / (1.0f + 18.6875f * temp2), 134.034375f);
   // L'M'S' -> Izazbz
   temp1.x = dot(A[0], temp2);
   temp1.y = dot(A[1], temp2);
@@ -418,8 +418,8 @@ static inline float4 JzAzBz_2_XYZ(const float4 JzAzBz)
   LMS.z = dot(AI[2], IzAzBz);
   LMS.w = 0.f;
   // L'M'S' -> LMS
-  LMS = native_powr(fmax(LMS, 0.0f), p_inv);
-  LMS = 10000.f * native_powr(fmax((c1 - LMS) / (c3 * LMS - c2), 0.0f), n_inv);
+  LMS = dtcl_pow(fmax(LMS, 0.0f), p_inv);
+  LMS = 10000.f * dtcl_pow(fmax((c1 - LMS) / (c3 * LMS - c2), 0.0f), n_inv);
   // LMS -> X'Y'Z
   XYZ.x = dot(MI[0], LMS);
   XYZ.y = dot(MI[1], LMS);
@@ -440,7 +440,7 @@ static inline float4 JzAzBz_to_JzCzhz(float4 JzAzBz)
   const float h = atan2(JzAzBz.z, JzAzBz.y) / (2.0f * M_PI_F);
   float4 JzCzhz;
   JzCzhz.x = JzAzBz.x;
-  JzCzhz.y = native_sqrt(JzAzBz.y * JzAzBz.y + JzAzBz.z * JzAzBz.z);
+  JzCzhz.y = dtcl_sqrt(JzAzBz.y * JzAzBz.y + JzAzBz.z * JzAzBz.z);
   JzCzhz.z = (h >= 0.0f) ? h : 1.0f + h;
   JzCzhz.w = JzAzBz.w;
   return JzCzhz;
@@ -713,7 +713,7 @@ static inline void bradford_adapt_D50(float4 *lms_in,
     float4 temp = *lms_in / origin_illuminant;
 
     // use linear Bradford if B is negative
-    temp.z = (temp.z > 0.f) ? native_powr(temp.z, p) : temp.z;
+    temp.z = (temp.z > 0.f) ? dtcl_pow(temp.z, p) : temp.z;
 
     *lms_in = D50 * temp;
   }
@@ -793,13 +793,13 @@ static inline float4 gamut_check_Yrg(float4 Ych)
 
 static inline float Y_to_dt_UCS_L_star(const float Y)
 {
-  const float Y_hat = native_powr(Y, 0.631651345306265f);
+  const float Y_hat = dtcl_pow(Y, 0.631651345306265f);
   return DT_UCS_L_STAR_RANGE * Y_hat / (Y_hat + 1.12426773749357f);
 }
 
 static inline float dt_UCS_L_star_to_Y(const float L_star)
 {
-  return native_powr((1.12426773749357f * L_star / (DT_UCS_L_STAR_RANGE - L_star)), 1.5831518565279648f);
+  return dtcl_pow((1.12426773749357f * L_star / (DT_UCS_L_STAR_RANGE - L_star)), 1.5831518565279648f);
 }
 
 static inline float2 xyY_to_dt_UCS_UV(const float4 xyY)
@@ -842,7 +842,7 @@ static inline float4 xyY_to_dt_UCS_JCH(const float4 xyY, const float L_white)
 
   // should be JCH[0] = powf(L_star / L_white), cz) but we treat only the case where cz = 1
   const float4 JCH = {  L_star / L_white,
-                        15.932993652962535f * native_powr(L_star, 0.6523997524738018f) * native_powr(M2, 0.6007557017508491f) / L_white,
+                        15.932993652962535f * dtcl_pow(L_star, 0.6523997524738018f) * dtcl_pow(M2, 0.6007557017508491f) / L_white,
                         atan2(UV_star_prime.y, UV_star_prime.x),
                         0.0f };
   return JCH;
@@ -867,11 +867,11 @@ static inline float4 dt_UCS_JCH_to_xyY(const float4 JCH, const float L_white)
   // this leads to more stability for extremely bright parts as we avoid single float precision overflows
   const float L_star = clamp(JCH.x * L_white, 0.f, DT_UCS_L_STAR_UPPER_LIMIT);
   const float M = L_star != 0.f
-    ? native_powr(JCH.y * L_white / (15.932993652962535f * native_powr(L_star, 0.6523997524738018f)), 0.8322850678616855f)
+    ? dtcl_pow(JCH.y * L_white / (15.932993652962535f * dtcl_pow(L_star, 0.6523997524738018f)), 0.8322850678616855f)
     : 0.f;
 
-  const float U_star_prime = M * native_cos(JCH.z);
-  const float V_star_prime = M * native_sin(JCH.z);
+  const float U_star_prime = M * dtcl_cos(JCH.z);
+  const float V_star_prime = M * dtcl_sin(JCH.z);
 
   // The following is equivalent to a 2D matrix product
   const float2 UV_star = { -5.037522385190711f * U_star_prime - 2.504856328185843f * V_star_prime,
@@ -897,7 +897,7 @@ static inline float4 dt_UCS_JCH_to_xyY(const float4 JCH, const float L_white)
 static inline float4 dt_UCS_JCH_to_HSB(const float4 JCH)
 {
   float4 HSB;
-  HSB.z = JCH.x * (native_powr(JCH.y, 1.33654221029386f) + 1.f);
+  HSB.z = JCH.x * (dtcl_pow(JCH.y, 1.33654221029386f) + 1.f);
   HSB.y = (HSB.z > 0.f) ? JCH.y / HSB.z : 0.f;
   HSB.x = JCH.z;
   return HSB;
@@ -909,7 +909,7 @@ static inline float4 dt_UCS_HSB_to_JCH(const float4 HSB)
   float4 JCH;
   JCH.z = HSB.x;
   JCH.y = HSB.y * HSB.z;
-  JCH.x = HSB.z / (native_powr(JCH.y, 1.33654221029386f) + 1.f);
+  JCH.x = HSB.z / (dtcl_pow(JCH.y, 1.33654221029386f) + 1.f);
   return JCH;
 }
 
@@ -917,7 +917,7 @@ static inline float4 dt_UCS_HSB_to_JCH(const float4 HSB)
 static inline float4 dt_UCS_JCH_to_HCB(const float4 JCH)
 {
   float4 HCB;
-  HCB.z = JCH.x * (native_powr(JCH.y, 1.33654221029386f) + 1.f);
+  HCB.z = JCH.x * (dtcl_pow(JCH.y, 1.33654221029386f) + 1.f);
   HCB.y = JCH.y;
   HCB.x = JCH.z;
   return HCB;
@@ -929,7 +929,7 @@ static inline float4 dt_UCS_HCB_to_JCH(const float4 HCB)
   float4 JCH;
   JCH.z = HCB.x;
   JCH.y = HCB.y;
-  JCH.x = HCB.z / (native_powr(HCB.y, 1.33654221029386f) + 1.f);
+  JCH.x = HCB.z / (dtcl_pow(HCB.y, 1.33654221029386f) + 1.f);
   return JCH;
 }
 
@@ -945,7 +945,7 @@ static inline float4 dt_UCS_LUV_to_JCH(const float L_star, const float L_white, 
 {
   const float M2 = UV_star_prime.x * UV_star_prime.x + UV_star_prime.y * UV_star_prime.y; // square of colorfulness M
   const float4 JCH = {  L_star / L_white,
-                        15.932993652962535f * native_powr(L_star, 0.6523997524738018f) * native_powr(M2, 0.6007557017508491f) / L_white,
+                        15.932993652962535f * dtcl_pow(L_star, 0.6523997524738018f) * dtcl_pow(M2, 0.6007557017508491f) / L_white,
                         atan2(UV_star_prime.y, UV_star_prime.x),
                         0.0f };
   return JCH;
@@ -956,7 +956,7 @@ static inline float soft_clip(const float x, const float soft_threshold, const f
   // use an exponential soft clipping above soft_threshold
   // hard threshold must be > soft threshold
   const float norm = hard_threshold - soft_threshold;
-  return (x > soft_threshold) ? soft_threshold + (1.f - native_exp(-(x - soft_threshold) / norm)) * norm : x;
+  return (x > soft_threshold) ? soft_threshold + (1.f - dtcl_exp(-(x - soft_threshold) / norm)) * norm : x;
 }
 
 

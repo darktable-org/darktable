@@ -309,7 +309,7 @@ __kernel void calc_Y0_mask(global float *mask, __read_only image2d_t in, const i
   const float val = fmax(pt.x / red, 0.0f)
                   + fmax(pt.y / green, 0.0f)
                   + fmax(pt.z / blue, 0.0f);
-  mask[idx] = native_sqrt(val / 3.0f);
+  mask[idx] = dtcl_sqrt(val / 3.0f);
 }
 
 __kernel void calc_scharr_mask(global float *in, global float *out, const int w, const int height)
@@ -330,7 +330,7 @@ __kernel void calc_scharr_mask(global float *in, global float *out, const int w,
                 + 162.0f / 255.0f * (in[idx-1]   - in[idx+1]);
   const float gy = 47.0f / 255.0f * (in[idx-w-1] - in[idx+w-1] + in[idx-w+1] - in[idx+w+1])
                 + 162.0f / 255.0f * (in[idx-w]   - in[idx+w]);
-  const float gradient_magnitude = native_sqrt(sqrf(gx) + sqrf(gy));
+  const float gradient_magnitude = dtcl_sqrt(sqrf(gx) + sqrf(gy));
   out[oidx] = clamp(gradient_magnitude / 16.0f, 0.0f, 1.0f);
 }
 

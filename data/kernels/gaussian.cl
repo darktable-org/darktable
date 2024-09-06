@@ -297,7 +297,7 @@ lookup_unbounded(read_only image2d_t lut, const float x, global float *a)
       const int2 p = (int2)((xi & 0xff), (xi >> 8));
       return read_imagef(lut, sampleri, p).x;
     }
-    else return a[1] * native_powr(x*a[0], a[2]);
+    else return a[1] * dtcl_pow(x*a[0], a[2]);
   }
   else return x;
 }
