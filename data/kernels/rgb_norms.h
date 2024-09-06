@@ -49,7 +49,7 @@ dt_rgb_norm(const float4 in, const int norm, const int work_profile,
   }
   else if (norm == DT_RGB_NORM_NORM)
   {
-    return native_powr(in.x * in.x + in.y * in.y + in.z * in.z, 0.5f);
+    return dtcl_pow(in.x * in.x + in.y * in.y + in.z * in.z, 0.5f);
   }
   else if (norm == DT_RGB_NORM_POWER)
   {

@@ -31,7 +31,7 @@ float rgblevels_1c(const float pixel, global const float *levels, const float in
   else if(pixel >= levels[2])
   {
     const float percentage = (pixel - levels[0]) / (levels[2] - levels[0]);
-    level = native_powr(percentage, inv_gamma);
+    level = dtcl_pow(percentage, inv_gamma);
   }
   else
   {

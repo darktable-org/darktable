@@ -348,11 +348,11 @@ static float _calc_refavg(
   }
 
   for(int c = 0; c < 3; c++)
-    mean[c] = (cnt[c] > 0.0f) ? native_powr((correction[c] * sum[c]) / cnt[c], 0.33333333333f) : 0.0f;
+    mean[c] = (cnt[c] > 0.0f) ? dtcl_pow((correction[c] * sum[c]) / cnt[c], 0.33333333333f) : 0.0f;
 
   const float croot_refavg[3] = { 0.5f * (mean[1] + mean[2]), 0.5f * (mean[0] + mean[2]), 0.5f * (mean[0] + mean[1])};
   const int color = (filters == 9u) ? FCxtrans(row, col, xtrans) : FC(row, col, filters);
-  return native_powr(croot_refavg[color], 3.0f);
+  return dtcl_pow(croot_refavg[color], 3.0f);
 }
 
 kernel void highlights_initmask(
@@ -906,7 +906,7 @@ interpolate_and_mask(read_only image2d_t input,
     }
   }
 
-  float4 RGB = {R, G, B, native_sqrt(R * R + G * G + B * B) };
+  float4 RGB = {R, G, B, dtcl_sqrt(R * R + G * G + B * B) };
   float4 clipped = { R_clipped, G_clipped, B_clipped, (R_clipped || G_clipped || B_clipped) };
   const float4 WB4 = { wb[0], wb[1], wb[2], wb[3] };
   write_imagef(interpolated, (int2)(j, i), RGB / WB4);
@@ -963,7 +963,7 @@ box_blur_5x5(read_only image2d_t in,
   write_imagef(out, (int2)(x, y), acc);
 }
 
-// works correctly with 1-4 channel float images 
+// works correctly with 1-4 channel float images
 kernel void interpolate_bilinear(read_only image2d_t in,
                                 const int width_in,
                                 const int height_in,
@@ -1338,7 +1338,7 @@ lookup_unbounded_twosided(read_only image2d_t lut, const float x, constant float
       // two-sided extrapolation (with inverted x-axis for left side)
       const float xx = (x >= ar) ? x : 1.0f - x;
       constant float *aa = (x >= ar) ? a : a + 3;
-      return aa[1] * native_powr(xx*aa[0], aa[2]);
+      return aa[1] * dtcl_pow(xx*aa[0], aa[2]);
     }
   }
   else return x;
@@ -1362,7 +1362,7 @@ lerp_lookup_unbounded0(read_only image2d_t lut, const float x, global const floa
       const float l2 = read_imagef(lut, sampleri, p2).x;
       return l1 * (1.0f - f) + l2 * f;
     }
-    else return a[1] * native_powr(x*a[0], a[2]);
+    else return a[1] * dtcl_pow(x*a[0], a[2]);
   }
   else return x;
 }
@@ -3384,7 +3384,7 @@ colorzones (read_only image2d_t in,
   }
   select = clamp(select, 0.f, 1.f);
 
-  LCh.x *= native_powr(2.0f, 4.0f * (lookup(table_L, select) - .5f));
+  LCh.x *= dtcl_pow(2.0f, 4.0f * (lookup(table_L, select) - .5f));
   LCh.y *= 2.f * lookup(table_C, select);
   LCh.z += lookup(table_h, select) - .5f;
 
@@ -3499,7 +3499,7 @@ overexposed (read_only image2d_t in,
     {
       float4 saturation = { 0.f, 0.f, 0.f, 0.f};
       saturation = pixel_tmp - (float4)luminance;
-      saturation = native_sqrt(saturation * saturation / ((float4)(luminance * luminance) + pixel_tmp * pixel_tmp));
+      saturation = dtcl_sqrt(saturation * saturation / ((float4)(luminance * luminance) + pixel_tmp * pixel_tmp));
 
       if(saturation.x > upper || saturation.y > upper || saturation.z > upper ||
          pixel_tmp.x >= upper || pixel_tmp.y >= upper || pixel_tmp.z >= upper)
@@ -3527,7 +3527,7 @@ overexposed (read_only image2d_t in,
     {
       float4 saturation = { 0.f, 0.f, 0.f, 0.f};
       saturation = pixel_tmp - (float4)luminance;
-      saturation = native_sqrt(saturation * saturation / ((float4)(luminance * luminance) + pixel_tmp * pixel_tmp));
+      saturation = dtcl_sqrt(saturation * saturation / ((float4)(luminance * luminance) + pixel_tmp * pixel_tmp));
 
       if(saturation.x > upper || saturation.y > upper || saturation.z > upper ||
          pixel_tmp.x >= upper || pixel_tmp.y >= upper || pixel_tmp.z >= upper)
