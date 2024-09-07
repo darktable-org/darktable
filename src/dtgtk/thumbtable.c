@@ -1143,10 +1143,56 @@ static gboolean _event_scroll(GtkWidget *widget,
   return TRUE;
 }
 
+static void _line_to(cairo_t *cr,
+                     PangoRectangle ink,
+                     const float offx,
+                     const float offy,
+                     const double n,
+                     const double h,
+                     const double x,
+                     const double y)
+{
+  const double radius = DT_PIXEL_APPLY_DPI(3);
+  cairo_new_path(cr);
+  cairo_arc(cr, h, offy + (n + .5) * ink.height, radius, 0, 2 * M_PI);
+  cairo_rel_move_to(cr, -radius, 0);
+  cairo_line_to(cr, x, y);
+  cairo_arc(cr, x, y, radius, 0, 2 * M_PI);
+  cairo_stroke(cr);
+}
+
+static void _line_to_module(cairo_t *cr,
+                            const int32_t width,
+                            PangoRectangle ink,
+                            const float offx,
+                            const float offy,
+                            const double n,
+                            const double h,
+                            char *name)
+{
+  dt_lib_module_t *lib = dt_lib_get_module(name);
+
+  if(!lib
+     || !lib->expander
+     || !gtk_widget_get_mapped(lib->expander))
+    return;
+
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(lib->expander, &allocation);
+  gtk_widget_translate_coordinates(gtk_widget_get_parent(lib->expander),
+                                   dt_ui_center(darktable.gui->ui),
+                                   allocation.x, allocation.y,
+                                   &allocation.x, &allocation.y);
+  _line_to(cr, ink, offx, offy, n, h,
+           allocation.x > 0 ? width : 0,
+           allocation.y + allocation.height / 2);
+}
+
+
 // display help text in the center view if there's no image to show
 static void _lighttable_expose_empty(cairo_t *cr,
-                                    int32_t width,
-                                    int32_t height,
+                                    const int32_t width,
+                                    const int32_t height,
                                     dt_thumbtable_t *lighttable)
 {
   dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_BG);
@@ -1204,44 +1250,26 @@ static void _lighttable_expose_empty(cairo_t *cr,
     PangoLayoutLine* line = pango_layout_get_line_readonly(layout, 5);
     pango_layout_line_get_pixel_extents(line, NULL, &ink);
 
-    int button_width =
+    const int button_width =
       gtk_widget_get_allocated_width(darktable.gui->focus_peaking_button);
-
-    void line_to(double n, double h, double x, double y)
-    {
-      double radius = DT_PIXEL_APPLY_DPI(3);
-      cairo_new_path(cr);
-      cairo_arc(cr, h, offy + (n + .5) * ink.height, radius, 0, 2 * M_PI);
-      cairo_rel_move_to(cr, -radius, 0);
-      cairo_line_to(cr, x, y);
-      cairo_arc(cr, x, y, radius, 0, 2 * M_PI);
-      cairo_stroke(cr);
-    }
-    void line_to_module(double n, double h, char *name)
-    {
-      dt_lib_module_t *lib = dt_lib_get_module(name);
-      if(!lib || !lib->expander || !gtk_widget_get_mapped(lib->expander)) return;
-
-      GtkAllocation allocation;
-      gtk_widget_get_allocation(lib->expander, &allocation);
-      gtk_widget_translate_coordinates(gtk_widget_get_parent(lib->expander),
-                                       dt_ui_center(darktable.gui->ui),
-                                       allocation.x, allocation.y,
-                                       &allocation.x, &allocation.y);
-      line_to(n, h, allocation.x > 0 ? width : 0,
-                    allocation.y + allocation.height / 2);
-    }
 
     cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(3));
     cairo_new_path(cr);
-    line_to_module(3, offx2, "import");
-    line_to(5, offx + ink.width + DT_PIXEL_APPLY_DPI(10), width * 0.45f, 0);
-    line_to_module(6, offx2, "collect");
-    line_to(11.8, 4 * button_width, 4 * button_width, height);
+    _line_to_module(cr, width, ink, offx, offy,
+                    3, offx2, "import");
+    _line_to(cr, ink, offx, offy, 5,
+             offx + ink.width + DT_PIXEL_APPLY_DPI(10), width * 0.45f, 0);
+    _line_to_module(cr, width, ink, offx, offy,
+                    6, offx2, "collect");
+    _line_to(cr, ink, offx, offy,
+             11.8, 4 * button_width, 4 * button_width, height);
 
-    line_to(1.3, width - offx2 - ink.width/2, width - 2.5 * button_width, 0);
-    line_to(8, width - offx2, width - button_width, 0);
-    line_to_module(11, width - offx2, "styles");
+    _line_to(cr, ink, offx, offy,
+             1.3, width - offx2 - ink.width/2, width - 2.5 * button_width, 0);
+    _line_to(cr, ink, offx, offy,
+             8, width - offx2, width - button_width, 0);
+    _line_to_module(cr, width, ink, offx, offy,
+                    11, width - offx2, "styles");
 
     pango_layout_set_text(layout, here, -1);
     pango_layout_get_pixel_extents(layout, NULL, &lighttable->manual_button);
