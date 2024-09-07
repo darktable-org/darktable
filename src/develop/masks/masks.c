@@ -2381,7 +2381,7 @@ float dt_masks_change_rotation(const gboolean up,
                                const gboolean is_degree)
 {
   const float step = 40.f;
-  const float incr = is_degree ? 360.f / step : 2.0f * DT_M_PI_F / step;
+  const float incr = is_degree ? 360.f / step : 2.0f * M_PI_F / step;
   const float max  = is_degree ? 360.0        : M_PI_F;
   const float v =
     up

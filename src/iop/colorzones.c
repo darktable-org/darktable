@@ -545,7 +545,7 @@ void process_v3(struct dt_iop_module_t *self,
     float *in = (float *)ivoid + ch * k;
     float *out = (float *)ovoid + ch * k;
     const float a = in[1], b = in[2];
-    const float h = fmodf(atan2f(b, a) + 2.0f * DT_M_PI_F, 2.0f * DT_M_PI_F) / (2.0f * DT_M_PI_F);
+    const float h = fmodf(atan2f(b, a) + 2.0f * M_PI_F, 2.0f * M_PI_F) / (2.0f * M_PI_F);
     const float C = sqrtf(b * b + a * a);
     float select = 0.0f;
     float blend = 0.0f;
@@ -570,8 +570,8 @@ void process_v3(struct dt_iop_module_t *self,
     const float Cm = 2.0f * lookup(d->lut[1], select);
     const float L = in[0] * powf(2.0f, 4.0f * Lm);
     out[0] = L;
-    out[1] = cosf(2.0f * DT_M_PI_F * (h + hm)) * Cm * C;
-    out[2] = sinf(2.0f * DT_M_PI_F * (h + hm)) * Cm * C;
+    out[1] = cosf(2.0f * M_PI_F * (h + hm)) * Cm * C;
+    out[2] = sinf(2.0f * M_PI_F * (h + hm)) * Cm * C;
     out[3] = in[3];
   }
 }
@@ -1526,7 +1526,7 @@ static gboolean _area_draw_callback(GtkWidget *widget,
     const float x = c->mouse_x, y = _curve_to_mouse(c->draw_ys[ch][k],
                                                     c->zoom_factor, c->offset_y);
 
-    cairo_arc(cr, x * width, -height * y, c->mouse_radius * width, 0, 2. * DT_M_PI);
+    cairo_arc(cr, x * width, -height * y, c->mouse_radius * width, 0, 2. * M_PI);
     cairo_stroke(cr);
   }
   else
@@ -2675,8 +2675,8 @@ void gui_init(struct dt_iop_module_t *self)
                        c->colorpicker_set_values, &dt_action_def_toggle);
 
   // the nice graph
-  c->area = GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL, 
-                                               0, 
+  c->area = GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL,
+                                               0,
                                                "plugins/darkroom/colorzones/graphheight"));
 
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
