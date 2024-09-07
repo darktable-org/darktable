@@ -112,6 +112,7 @@ src/common/eigf.h
 src/common/exif.cc
 src/common/fast_guided_filter.h
 src/common/film.c
+src/common/gpx.c
 src/common/history.c
 src/common/image.c
 src/common/image.h
