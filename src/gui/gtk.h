@@ -117,7 +117,7 @@ typedef struct dt_gui_gtk_t
   dt_gui_scrollbars_t scrollbars;
 
   cairo_surface_t *surface;
-  GtkMenu *presets_popup_menu;
+
   char *last_preset;
 
   int32_t reset;

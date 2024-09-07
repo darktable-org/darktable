@@ -1340,22 +1340,16 @@ static void _darkroom_ui_preview2_pipe_finish_signal_callback(gpointer instance,
 static void _darkroom_ui_favorite_presets_popupmenu(GtkWidget *w, gpointer user_data)
 {
   /* create favorites menu and popup */
-  dt_gui_favorite_presets_menu_show();
-
-  /* if we got any favorite presets, lets popup menu for selection */
-  if(darktable.gui->presets_popup_menu)
-  {
-    dt_gui_menu_popup(darktable.gui->presets_popup_menu, w, GDK_GRAVITY_SOUTH_WEST, GDK_GRAVITY_NORTH_WEST);
-  }
-  else
-    dt_control_log(_("no user-defined presets for favorite modules were found"));
+  dt_gui_favorite_presets_menu_show(w);
 }
 
 static void _darkroom_ui_apply_style_activate_callback(GtkMenuItem *menuitem,
                                                        const dt_stylemenu_data_t *menu_data)
 {
-  if(gtk_get_current_event()->type == GDK_KEY_PRESS)
+  GdkEvent *event = gtk_get_current_event();
+  if(event->type == GDK_KEY_PRESS)
     dt_styles_apply_to_dev(menu_data->name, darktable.develop->image_storage.id);
+  gdk_event_free(event);
 }
 
 static gboolean _darkroom_ui_apply_style_button_callback(GtkMenuItem *menuitem,

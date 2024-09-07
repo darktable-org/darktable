@@ -1260,7 +1260,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   gui->grouping = dt_conf_get_bool("ui_last/grouping");
   gui->expanded_group_id = NO_IMGID;
   gui->show_overlays = dt_conf_get_bool("lighttable/ui/expose_statuses");
-  gui->presets_popup_menu = NULL;
   gui->last_preset = NULL;
   gui->have_pen_pressure = FALSE;
 
@@ -4080,6 +4079,8 @@ void dt_gui_menu_popup(GtkMenu *menu,
                        const GdkGravity menu_anchor)
 {
   gtk_widget_show_all(GTK_WIDGET(menu));
+  g_object_ref_sink(G_OBJECT(menu));
+  g_signal_connect(G_OBJECT(menu), "deactivate", G_CALLBACK(g_object_unref), NULL);
 
   GdkEvent *event = gtk_get_current_event();
   if(button && event)

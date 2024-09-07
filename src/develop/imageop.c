@@ -485,10 +485,10 @@ static gboolean _header_motion_notify_hide_callback(GtkWidget *eventbox,
   return dt_iop_show_hide_header_buttons(module, event, FALSE, FALSE);
 }
 
-static gboolean _header_menu_deactivate_callback(GtkMenuShell *menushell,
-                                                 dt_iop_module_t *module)
+static void _header_menu_deactivate_callback(GtkMenuShell *menushell,
+                                             dt_iop_module_t *module)
 {
-  return dt_iop_show_hide_header_buttons(module, NULL, FALSE, FALSE);
+  dt_iop_show_hide_header_buttons(module, NULL, FALSE, FALSE);
 }
 
 static void _gui_delete_callback(GtkButton *button, dt_iop_module_t *module)
@@ -2272,12 +2272,12 @@ static gboolean _presets_popup_callback(GtkButton *button,
   const gboolean disabled = !module->default_enabled && module->hide_enable_button;
   if(disabled) return FALSE;
 
-  dt_gui_presets_popup_menu_show_for_module(module);
+  GtkMenu *menu = dt_gui_presets_popup_menu_show_for_module(module);
 
-  g_signal_connect(G_OBJECT(darktable.gui->presets_popup_menu), "deactivate",
+  g_signal_connect(G_OBJECT(menu), "deactivate",
                    G_CALLBACK(_header_menu_deactivate_callback), module);
 
-  dt_gui_menu_popup(darktable.gui->presets_popup_menu,
+  dt_gui_menu_popup(menu,
                     GTK_WIDGET(button), GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
 
   return TRUE;

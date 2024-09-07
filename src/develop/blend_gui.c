@@ -2025,10 +2025,7 @@ static void _blendif_options_callback(GtkButton *button,
     return;
 
   GtkWidget *mi;
-  GtkMenu *menu = darktable.gui->presets_popup_menu;
-  if(menu) gtk_widget_destroy(GTK_WIDGET(menu));
-  darktable.gui->presets_popup_menu = GTK_MENU(gtk_menu_new());
-  menu = darktable.gui->presets_popup_menu;
+  GtkMenu *menu = GTK_MENU(gtk_menu_new());
 
   // add a section to switch blending color spaces
   const dt_develop_blend_colorspace_t module_cst =
@@ -2111,7 +2108,7 @@ static void _blendif_options_callback(GtkButton *button,
     }
   }
 
-  dt_gui_menu_popup(darktable.gui->presets_popup_menu,
+  dt_gui_menu_popup(menu,
                     GTK_WIDGET(button), GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
 
   dtgtk_button_set_active(DTGTK_BUTTON(button), FALSE);
