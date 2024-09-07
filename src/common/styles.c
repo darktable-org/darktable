@@ -1892,7 +1892,9 @@ void dt_import_default_styles(const char *folder)
     gchar *bname = dt_get_style_name(filename);
     if(bname && !dt_styles_exists(bname))
     {
-      dt_print(DT_DEBUG_ALWAYS,"[styles] importing default style '%s'\n", filename);
+      if(darktable.gui)
+        dt_print(DT_DEBUG_ALWAYS,
+                 "[styles] importing default style '%s'\n", filename);
       dt_styles_import_from_file(filename);
     }
     g_free(bname);
