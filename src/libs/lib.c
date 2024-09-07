@@ -404,10 +404,11 @@ void dt_lib_presets_update(const gchar *preset,
 static void _menuitem_activate_preset(GtkMenuItem *menuitem,
                                       dt_lib_module_info_t *minfo)
 {
-  if(gtk_get_current_event()->type != GDK_KEY_PRESS) return;
-
-  char *name = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
-  dt_lib_presets_apply(name, minfo->plugin_name, minfo->version);
+  GdkEvent *event = gtk_get_current_event();
+  if(event->type == GDK_KEY_PRESS)
+    dt_lib_presets_apply(g_object_get_data(G_OBJECT(menuitem), "dt-preset-name"),
+                         minfo->plugin_name, minfo->version);
+  gdk_event_free(event);
 }
 
 static gboolean _menuitem_button_preset(GtkMenuItem *menuitem,
@@ -433,12 +434,10 @@ static void free_module_info(GtkWidget *widget,
   free(minfo);
 }
 
-static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
+static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo,
+                                           GtkWidget *w)
 {
-  GtkMenu *menu = darktable.gui->presets_popup_menu;
-  if(menu) gtk_widget_destroy(GTK_WIDGET(menu));
-  darktable.gui->presets_popup_menu = GTK_MENU(gtk_menu_new());
-  menu = darktable.gui->presets_popup_menu;
+  GtkMenu *menu = GTK_MENU(gtk_menu_new());
 
   const gboolean hide_default = dt_conf_get_bool("plugins/lighttable/hide_default_presets");
   const gboolean default_first = dt_conf_get_bool("modules/default_presets_first");
@@ -592,6 +591,8 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
     }
     minfo->module->set_preferences(GTK_MENU_SHELL(menu), minfo->module);
   }
+
+  dt_gui_menu_popup(menu, w, GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
 }
 
 static int _lib_position(const dt_lib_module_t *module)
@@ -915,10 +916,7 @@ static void presets_popup_callback(GtkButton *button,
     //         mi->params, mi->params_size);
     mi->params_size = 0;
   }
-  dt_lib_presets_popup_menu_show(mi);
-
-  dt_gui_menu_popup(darktable.gui->presets_popup_menu, GTK_WIDGET(button),
-                    GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
+  dt_lib_presets_popup_menu_show(mi, GTK_WIDGET(button));
 
   if(button)
     dtgtk_button_set_active(DTGTK_BUTTON(button), FALSE);
