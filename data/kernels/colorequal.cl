@@ -60,12 +60,12 @@ static inline float scharr_gradient(__read_only image2d_t in,
                                       const int x,
                                       const int y)
 {
-  const float gx = 47.0f / 255.0f * (read_imagef(in, samplerA, (int2)(y-1, x-1)).x - read_imagef(in, samplerA, (int2)(y-1, x+1)).x
-                                   + read_imagef(in, samplerA, (int2)(y+1, x-1)).x - read_imagef(in, samplerA, (int2)(y+1, x+1)).x)
-                + 162.0f / 255.0f * (read_imagef(in, samplerA, (int2)(y,   x-1)).x - read_imagef(in, samplerA, (int2)(y,   x+1)).x);
-  const float gy = 47.0f / 255.0f * (read_imagef(in, samplerA, (int2)(y-1, x-1)).x - read_imagef(in, samplerA, (int2)(y+1, x-1)).x
-                                   + read_imagef(in, samplerA, (int2)(y-1, x+1)).x - read_imagef(in, samplerA, (int2)(y+1, x+1)).x)
-                + 162.0f / 255.0f * (read_imagef(in, samplerA, (int2)(y-1, x)).x   - read_imagef(in, samplerA, (int2)(y+1, x)).x);
+  const float gx = 47.0f / 255.0f * (read_imagef(in, samplerA, (int2)(x-1, y-1)).x - read_imagef(in, samplerA, (int2)(x+1, y-1)).x
+                                   + read_imagef(in, samplerA, (int2)(x-1, y+1)).x - read_imagef(in, samplerA, (int2)(x+1, y+1)).x)
+                + 162.0f / 255.0f * (read_imagef(in, samplerA, (int2)(x-1, y)).x   - read_imagef(in, samplerA, (int2)(x+1, y)).x);
+  const float gy = 47.0f / 255.0f * (read_imagef(in, samplerA, (int2)(x-1, x-1)).x - read_imagef(in, samplerA, (int2)(x-1, y+1)).x
+                                   + read_imagef(in, samplerA, (int2)(x+1, y-1)).x - read_imagef(in, samplerA, (int2)(x+1, y+1)).x)
+                + 162.0f / 255.0f * (read_imagef(in, samplerA, (int2)(x, y-1)).x   - read_imagef(in, samplerA, (int2)(x, y+1)).x);
 
   return dt_fast_hypot(gx, gy);
 }
@@ -430,11 +430,15 @@ __kernel void write_visual(__write_only image2d_t out,
                   fmax(0.0f, neg ? val : val - corr),
                   0.0f };
 
-  const float gv = 1.0f - read_imagef(scharr, samplerA, (int2)(col, row)).x;
-  if(mode == BRIGHTNESS && gv > 0.2f)
+
+  if(mode == BRIGHTNESS)
   {
-    pout.x = pout.z = 0.0f;
-    pout.y = gv;
+    const float gv = 1.0f - read_imagef(scharr, samplerA, (int2)(col, row)).x;
+    if(gv > 0.2f)
+    {
+      pout.x = pout.z = 0.0f;
+      pout.y = gv;
+    }
   }
   write_imagef(out, (int2)(col, row), pout);
 }
@@ -452,13 +456,17 @@ __kernel void draw_weight(__write_only image2d_t out,
   if(col >= width || y > 0) return;
 
   const float eps = 0.5f / (float)height;
-  const float weight = _get_satweight((float)col / (float)width
-                        - (mode == SATURATION_GRAD ? sat_shift : bright_shift), weights);
-  if(weight > eps && weight < 1.0f - eps)
+  const float shift = (mode == SATURATION_GRAD) ? sat_shift : bright_shift;
+  const float4 mark = { 0.0f, 1.0f, 0.0f, 0.0f};
+  for(int i = 0; i < 16; i++)
   {
-    const int row = (int)((1.0f - weight) * (float)(height-1));
-    const float4 mark = { 0.0f, 1.0f, 0.0f, 0.0f};
-    write_imagef(out, (int2)(col/16, row), mark);
+    const float pos = (float)(16*col +i) / (float)(16*width);
+    const float weight = _get_satweight(pos - shift, weights);
+    if(weight > eps && weight < 1.0f - eps)
+    {
+      const int row = (int)((1.0f - weight) * (float)(height-1));
+      write_imagef(out, (int2)(col, row), mark);
+    }
   }
 }
 
