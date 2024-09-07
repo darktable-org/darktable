@@ -676,7 +676,8 @@ void dt_dump_pipe_diff_pfm(
   if(!mod) return;
   if(!dt_str_commasubstring(darktable.dump_diff_pipe, mod)) return;
 
-  float *o = dt_alloc_align_float(ch * width * height);
+  const size_t pk = (size_t)ch * width * height;
+  float *o = dt_alloc_align_float(2 * pk);
   if(!o) return;
 
   DT_OMP_FOR()
@@ -687,15 +688,31 @@ void dt_dump_pipe_diff_pfm(
     {
       if(a[k+c] > 1e-6 && b[k+c] > 1e-6)
       {
-        const float ratio = (a[k+c] > b[k+c]) ? a[k+c] / b[k+c] : b[k+c] / a[k+c];
-        o[k+c] = CLIP(50.0f * (ratio - 1.0f));
+        const float ratio = a[k+c] / b[k+c];
+        o[k+c] = CLIP(50.0f * CLIP(ratio - 1.0f));
       }
       else
         o[k+c] = 0.0f;
     }
   }
 
-  dt_dump_pfm_file(pipe, o, width, height, ch * sizeof(float), mod, "[dt_dump_CPU/GPU_diff_pfm]", TRUE, TRUE, TRUE);
+  DT_OMP_FOR()
+  for(size_t p = 0; p < width * height; p++)
+  {
+    const size_t k = ch * p;
+    for(size_t c = 0; c < ch; c++)
+    {
+      if(a[k+c] > 1e-6 && b[k+c] > 1e-6)
+      {
+        const float ratio = b[k+c] / a[k+c];
+        o[pk+k+c] = CLIP(50.0f * CLIP(ratio - 1.0f));
+      }
+      else
+        o[pk+k+c] = 0.0f;
+    }
+  }
+
+  dt_dump_pfm_file(pipe, o, width, 2 * height, ch * sizeof(float), mod, "[dt_dump_CPU/GPU_diff_pfm]", TRUE, TRUE, TRUE);
   dt_free_align(o);
 }
 
