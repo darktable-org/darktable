@@ -801,7 +801,7 @@ void process(struct dt_iop_module_t *self,
                                 d->saturation_global + scalar_product(opacities, saturation) }; // move in O direction
 
       SO[0] = JC[0] * M_rot_dir[0][0] + JC[1] * M_rot_dir[0][1];
-      SO[1] = SO[0] * MIN(MAX(T * boosts[1], -T), DT_M_PI_F / 2.f - T);
+      SO[1] = SO[0] * MIN(MAX(T * boosts[1], -T), M_PI_F / 2.f - T);
       SO[0] = MAX(SO[0] * boosts[0], 0.f);
 
       // Project back to JCh, that is rotate back of -T angle

@@ -892,16 +892,16 @@ _BLEND_FUNC _blend_HSV_color(const float *const a,
     dt_RGB_2_HSV(b + j, tb);
 
     // convert from polar to cartesian coordinates
-    const float xa = ta[1] * cosf(2.0f * DT_M_PI_F * ta[0]);
-    const float ya = ta[1] * sinf(2.0f * DT_M_PI_F * ta[0]);
-    const float xb = tb[1] * cosf(2.0f * DT_M_PI_F * tb[0]);
-    const float yb = tb[1] * sinf(2.0f * DT_M_PI_F * tb[0]);
+    const float xa = ta[1] * cosf(2.0f * M_PI_F * ta[0]);
+    const float ya = ta[1] * sinf(2.0f * M_PI_F * ta[0]);
+    const float xb = tb[1] * cosf(2.0f * M_PI_F * tb[0]);
+    const float yb = tb[1] * sinf(2.0f * M_PI_F * tb[0]);
 
     // blend color vectors of input and output
     const float xc = xa * (1.0f - local_opacity) + xb * local_opacity;
     const float yc = ya * (1.0f - local_opacity) + yb * local_opacity;
 
-    tb[0] = atan2f(yc, xc) / (2.0f * DT_M_PI_F);
+    tb[0] = atan2f(yc, xc) / (2.0f * M_PI_F);
     if(tb[0] < 0.0f) tb[0] += 1.0f;
     tb[1] = sqrtf(xc * xc + yc * yc);
 

@@ -775,9 +775,9 @@ static inline void dt_Lab_2_LCH(const dt_aligned_pixel_t Lab, dt_aligned_pixel_t
   float var_H = atan2f(Lab[2], Lab[1]);
 
   if(var_H > 0.0f)
-    var_H = var_H / (2.0f * DT_M_PI_F);
+    var_H = var_H / (2.0f * M_PI_F);
   else
-    var_H = 1.0f - fabsf(var_H) / (2.0f * DT_M_PI_F);
+    var_H = 1.0f - fabsf(var_H) / (2.0f * M_PI_F);
 
   LCH[0] = Lab[0];
   LCH[1] = hypotf(Lab[1], Lab[2]);
@@ -789,8 +789,8 @@ DT_OMP_DECLARE_SIMD()
 static inline void dt_LCH_2_Lab(const dt_aligned_pixel_t LCH, dt_aligned_pixel_t Lab)
 {
   Lab[0] = LCH[0];
-  Lab[1] = cosf(2.0f * DT_M_PI_F * LCH[2]) * LCH[1];
-  Lab[2] = sinf(2.0f * DT_M_PI_F * LCH[2]) * LCH[1];
+  Lab[1] = cosf(2.0f * M_PI_F * LCH[2]) * LCH[1];
+  Lab[2] = sinf(2.0f * M_PI_F * LCH[2]) * LCH[1];
 }
 
 static inline float dt_camera_rgb_luminance(const dt_aligned_pixel_t rgb)
@@ -884,7 +884,7 @@ static inline void dt_XYZ_2_JzAzBz(const dt_aligned_pixel_t XYZ_D65, dt_aligned_
 DT_OMP_DECLARE_SIMD(aligned(JzAzBz, JzCzhz: 16))
 static inline void dt_JzAzBz_2_JzCzhz(const dt_aligned_pixel_t JzAzBz, dt_aligned_pixel_t JzCzhz)
 {
-  float var_H = atan2f(JzAzBz[2], JzAzBz[1]) / (2.0f * DT_M_PI_F);
+  float var_H = atan2f(JzAzBz[2], JzAzBz[1]) / (2.0f * M_PI_F);
   JzCzhz[0] = JzAzBz[0];
   JzCzhz[1] = hypotf(JzAzBz[1], JzAzBz[2]);
   JzCzhz[2] = var_H >= 0.0f ? var_H : 1.0f + var_H;
@@ -894,8 +894,8 @@ DT_OMP_DECLARE_SIMD(aligned(JzCzhz, JzAzBz: 16))
 static inline void dt_JzCzhz_2_JzAzBz(const dt_aligned_pixel_t JzCzhz, dt_aligned_pixel_t JzAzBz)
 {
   JzAzBz[0] = JzCzhz[0];
-  JzAzBz[1] = cosf(2.0f * DT_M_PI_F * JzCzhz[2]) * JzCzhz[1];
-  JzAzBz[2] = sinf(2.0f * DT_M_PI_F * JzCzhz[2]) * JzCzhz[1];
+  JzAzBz[1] = cosf(2.0f * M_PI_F * JzCzhz[2]) * JzCzhz[1];
+  JzAzBz[2] = sinf(2.0f * M_PI_F * JzCzhz[2]) * JzCzhz[1];
 }
 
 DT_OMP_DECLARE_SIMD(aligned(JzAzBz, XYZ_D65: 16))

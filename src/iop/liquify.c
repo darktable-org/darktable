@@ -336,7 +336,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 static inline float get_rot(const dt_liquify_warp_type_enum_t warp_type)
 {
   if(warp_type == DT_LIQUIFY_WARP_TYPE_RADIAL_SHRINK)
-    return DT_M_PI_F;
+    return M_PI_F;
   else
     return 0.0f;
 }
@@ -1434,8 +1434,8 @@ static inline float lanczos(const float a, const float x)
   if(fabsf(x) >= a) return 0.0f;
   if(fabsf(x) < FLT_EPSILON) return 1.0f;
 
-  return (a * sinf(DT_M_PI_F * x) * sinf(DT_M_PI_F * x / a))
-    / (DT_M_PI_F * DT_M_PI_F * x * x);
+  return (a * sinf(M_PI_F * x) * sinf(M_PI_F * x / a))
+    / (M_PI_F * M_PI_F * x * x);
 }
 
 // compute bicubic kernel. See:
@@ -1660,7 +1660,7 @@ static void draw_circle(cairo_t *cr,
   const double x = creal(pt), y = cimag(pt);
   cairo_save(cr);
   cairo_new_sub_path(cr);
-  cairo_arc(cr, x, y, diameter / 2.0, 0, 2 * DT_M_PI);
+  cairo_arc(cr, x, y, diameter / 2.0, 0, 2 * M_PI);
   cairo_restore(cr);
 }
 
@@ -1949,10 +1949,10 @@ static void _draw_paths(dt_iop_module_t *module,
           switch(data->header.node_type)
           {
              case DT_LIQUIFY_NODE_TYPE_CUSP:
-               draw_triangle(cr, point - w / 2.0 * I, -DT_M_PI / 2.0, w);
+               draw_triangle(cr, point - w / 2.0 * I, -M_PI / 2.0, w);
                break;
              case DT_LIQUIFY_NODE_TYPE_SMOOTH:
-               draw_rectangle(cr, point, DT_M_PI / 4.0, w);
+               draw_rectangle(cr, point, M_PI / 4.0, w);
                break;
              case DT_LIQUIFY_NODE_TYPE_SYMMETRICAL:
                draw_rectangle(cr, point, 0, w);
@@ -3713,7 +3713,7 @@ static void _liquify_cairo_paint_point_tool(cairo_t *cr,
 {
   PREAMBLE;
   cairo_new_sub_path(cr);
-  cairo_arc(cr, 0.5, 0.5, 0.2, 0.0, 2 * DT_M_PI);
+  cairo_arc(cr, 0.5, 0.5, 0.2, 0.0, 2 * M_PI);
   cairo_fill(cr);
   POSTAMBLE;
 }

@@ -42,12 +42,8 @@
 #define M_PI   3.14159265358979323846
 #endif /* !M_PI */
 #ifndef M_PI_F
-#define M_PI_F  3.14159265358979324f
+#define M_PI_F 3.14159265358979323846f
 #endif /* !M_PI_F */
-
-
-#define DT_M_PI_F (3.14159265358979324f)
-#define DT_M_PI (3.14159265358979324)
 
 #define DT_M_LN2f (0.6931471805599453f)
 
