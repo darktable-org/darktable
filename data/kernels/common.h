@@ -29,7 +29,7 @@ constant sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE    
 
 
 #ifndef M_PI_F
-#define M_PI_F           3.14159265358979323846  // should be defined by the OpenCL compiler acc. to standard
+#define M_PI_F           3.14159265358979323846f  // should be defined by the OpenCL compiler acc. to standard
 #endif
 
 #define RED 0

@@ -41,7 +41,7 @@
 
 DT_MODULE_INTROSPECTION(1, dt_iop_primaries_params_t)
 
-static const float RAD_TO_DEG = 180.f / DT_M_PI_F;
+static const float RAD_TO_DEG = 180.f / M_PI_F;
 
 typedef struct dt_iop_primaries_params_t
 {
