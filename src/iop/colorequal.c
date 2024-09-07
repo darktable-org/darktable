@@ -1182,7 +1182,7 @@ void process(struct dt_iop_module_t *self,
       pix_out[2] = MAX(0.0f, neg ? val : val - corr);
 
       const float gv = 1.0f - tmp[k];
-      if(mode == BRIGHTNESS && d->use_filter && gv > 0.2f)
+      if(mode == BRIGHTNESS && gv > 0.2f)
       {
         pix_out[0] = pix_out[2] = 0.0f;
         pix_out[1] = gv;
@@ -1656,7 +1656,7 @@ int process_cl(struct dt_iop_module_t *self,
           CLARG(owidth), CLARG(oheight));
     if(err != CL_SUCCESS) goto error;
   }
-  else if(guiding)
+  else
   {
     piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
     const int mode = mask_mode - 1;
@@ -1669,9 +1669,8 @@ int process_cl(struct dt_iop_module_t *self,
 
     if(mode == BRIGHTNESS_GRAD || mode == SATURATION_GRAD)
     {
-      const int colums = owidth*16;
-      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_draw_weight, owidth * 16, 1,
-          CLARG(dev_out), CLARG(weight), CLARG(bright_shift), CLARG(sat_shift), CLARG(mode), CLARG(colums), CLARG(oheight));
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_draw_weight, owidth, 1,
+          CLARG(dev_out), CLARG(weight), CLARG(bright_shift), CLARG(sat_shift), CLARG(mode), CLARG(owidth), CLARG(oheight));
     }
   }
 
