@@ -953,8 +953,6 @@ static inline float soft_clip(const float x, const float soft_threshold, const f
   return (x > soft_threshold) ? soft_threshold + (1.f - dtcl_exp(-(x - soft_threshold) / norm)) * norm : x;
 }
 
-
-#define LUT_ELEM 360 // gamut LUT number of elements: resolution of 1°
 static inline float lookup_gamut(global const float *gamut_lut, const float x)
 {
   // WARNING : x should be between [-pi ; pi ], which is the default output of atan2 anyway

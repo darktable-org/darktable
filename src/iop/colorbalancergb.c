@@ -1196,17 +1196,18 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // this will be used to prevent users to mess up their images by pushing chroma out of gamut
   if(!d->lut_inited)
   {
-    float *const restrict LUT_saturation = dt_calloc_align_float(LUT_ELEM);
-
     // Premultiply both matrices to go from D50 pipeline RGB to D65 XYZ in a single matrix dot product
     // instead of D50 pipeline to D50 XYZ (work_profile->matrix_in) and then D50 XYZ to D65 XYZ
     dt_colormatrix_t input_matrix;
     dt_colormatrix_mul(input_matrix, XYZ_D50_to_D65_CAT16, work_profile->matrix_in);
+    float *const restrict sampler = dt_calloc_align_float(LUT_ELEM);
 
+    float *gamut_LUT = d->gamut_LUT;
     // make RGB values vary between [0; 1] in working space, convert to Ych and get the max(c(h)))
     if(p->saturation_formula == DT_COLORBALANCE_SATURATION_JZAZBZ)
     {
-      DT_OMP_FOR(reduction(max : LUT_saturation[:LUT_ELEM]) collapse(3))
+
+      DT_OMP_FOR(reduction(max: sampler[:LUT_ELEM]) collapse(3))
       for(size_t r = 0; r < STEPS; r++)
         for(size_t g = 0; g < STEPS; g++)
           for(size_t b = 0; b < STEPS; b++)
@@ -1229,13 +1230,25 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
             saturation = (Jch[0] > 0.f) ? Jch[1] / Jch[0] : 0.f;
             hue = Jch[2];
 
-            const size_t index = roundf((LUT_ELEM - 1) * (hue + M_PI_F) / (2.f * M_PI_F));
-            LUT_saturation[index] = fmaxf(saturation, LUT_saturation[index]);
+            int index = roundf((LUT_ELEM - 1) * (hue + M_PI_F) / (2.f * M_PI_F));
+            index += (index < 0) ? LUT_ELEM : 0;
+            index -= (index >= LUT_ELEM) ? LUT_ELEM : 0;
+            sampler[index] = fmaxf(sampler[index], saturation);
           }
 
+     // anti-aliasing on the LUT (simple 5-taps 1D box average)
+      for(size_t k = 2; k < LUT_ELEM - 2; k++)
+        d->gamut_LUT[k] = (sampler[k - 2] + sampler[k - 1] + sampler[k] + sampler[k + 1] + sampler[k + 2]) / 5.f;
+
+      // handle bounds
+      d->gamut_LUT[0] = (sampler[LUT_ELEM - 2] + sampler[LUT_ELEM - 1] + sampler[0] + sampler[1] + sampler[2]) / 5.f;
+      d->gamut_LUT[1] = (sampler[LUT_ELEM - 1] + sampler[0] + sampler[1] + sampler[2] + sampler[3]) / 5.f;
+      d->gamut_LUT[LUT_ELEM - 1] = (sampler[LUT_ELEM - 3] + sampler[LUT_ELEM - 2] + sampler[LUT_ELEM - 1] + sampler[0] + sampler[1]) / 5.f;
+      d->gamut_LUT[LUT_ELEM - 2] = (sampler[LUT_ELEM - 4] + sampler[LUT_ELEM - 3] + sampler[LUT_ELEM - 2] + sampler[LUT_ELEM - 1] + sampler[0]) / 5.f;
     }
     else if(p->saturation_formula == DT_COLORBALANCE_SATURATION_DTUCS)
     {
+      for(size_t k = 0; k < LUT_ELEM; k++) gamut_LUT[k] = 0.f;
       const dt_aligned_pixel_t D65_xyY = { D65xyY.x, D65xyY.y,  1.f, 0.f };
 
       // Compute the RGB space primaries in xyY
@@ -1259,10 +1272,10 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
       const float h_blue  = atan2f(xyY_blue[1] - D65_xyY[1], xyY_blue[0] - D65_xyY[0]);
 
       // March the gamut boundary in CIE xyY 1931 by angular steps of 0.02°
-      DT_OMP_FOR(reduction(max : LUT_saturation[:LUT_ELEM]))
-      for(int i = 0; i < 50 * 360; i++)
+      DT_OMP_FOR(reduction(+: gamut_LUT[:LUT_ELEM], sampler[:LUT_ELEM]))
+      for(int i = 0; i < 50 * LUT_ELEM; i++)
       {
-        const float angle = -M_PI_F + ((float)i) / (50.f * 360.f) * 2.f * M_PI_F;
+        const float angle = -M_PI_F + ((float)i) / (float)(50 * LUT_ELEM) * 2.f * M_PI_F;
         const float tan_angle = tanf(angle);
 
         const float t_1 = Delta_H(angle, h_blue)  / Delta_H(h_red, h_blue);
@@ -1305,22 +1318,15 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
         index += (index < 0) ? LUT_ELEM : 0;
         index -= (index >= LUT_ELEM) ? LUT_ELEM : 0;
         // Warning: we store M², the square of the colorfulness
-        LUT_saturation[index] = fmaxf(LUT_saturation[index], UV_star_prime[0] * UV_star_prime[0] + UV_star_prime[1] * UV_star_prime[1]);
+
+        gamut_LUT[index] += UV_star_prime[0] * UV_star_prime[0] + UV_star_prime[1] * UV_star_prime[1];
+        sampler[index] += 1.0f;
       }
+      for(size_t k = 0; k < LUT_ELEM; k++)
+        gamut_LUT[k] = gamut_LUT[k] / fmaxf(1.0f, sampler[k]);
     }
-
-    // anti-aliasing on the LUT (simple 5-taps 1D box average)
-    for(size_t k = 2; k < LUT_ELEM - 2; k++)
-      d->gamut_LUT[k] = (LUT_saturation[k - 2] + LUT_saturation[k - 1] + LUT_saturation[k] + LUT_saturation[k + 1] + LUT_saturation[k + 2]) / 5.f;
-
-    // handle bounds
-    d->gamut_LUT[0] = (LUT_saturation[LUT_ELEM - 2] + LUT_saturation[LUT_ELEM - 1] + LUT_saturation[0] + LUT_saturation[1] + LUT_saturation[2]) / 5.f;
-    d->gamut_LUT[1] = (LUT_saturation[LUT_ELEM - 1] + LUT_saturation[0] + LUT_saturation[1] + LUT_saturation[2] + LUT_saturation[3]) / 5.f;
-    d->gamut_LUT[LUT_ELEM - 1] = (LUT_saturation[LUT_ELEM - 3] + LUT_saturation[LUT_ELEM - 2] + LUT_saturation[LUT_ELEM - 1] + LUT_saturation[0] + LUT_saturation[1]) / 5.f;
-    d->gamut_LUT[LUT_ELEM - 2] = (LUT_saturation[LUT_ELEM - 4] + LUT_saturation[LUT_ELEM - 3] + LUT_saturation[LUT_ELEM - 2] + LUT_saturation[LUT_ELEM - 1] + LUT_saturation[0]) / 5.f;
-
-    dt_free_align(LUT_saturation);
     d->lut_inited = TRUE;
+    dt_free_align(sampler);
   }
 }
 
