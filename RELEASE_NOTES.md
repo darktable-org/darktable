@@ -65,6 +65,8 @@ changes (where available).
 - Enhanced tooltips for utiltity module headers to provide more
   information about the module.
 
+- Added more hints on an empty lighttable.
+
 - Added two new error placeholder images to distinguish between
   missing, unsupported, and corrupted images.  When attempting to edit
   such an image, an appropriate, more specific error message is
@@ -76,6 +78,8 @@ changes (where available).
   in lighttable, center-view image in darkroom).
 
 ## Performance Improvements
+
+- Added OpenCL implementation of color equalizer.
 
 - Improved the speed of bulk image operations by improving the speed
   of sidecar writes, and by moving sidecar updates for many operations
@@ -91,9 +95,33 @@ changes (where available).
 - The ISO 12646 color assessment condition is kept until unset by user
   action.
 
+- Exposure bias can now be used to form collections and as a display filter.
+
+- Improved visualization of the color equalizer's effect.
+
+- Improved debugging support for verifying CPU vs. GPU results.
+
+- Add Calibrite alias for X-Rite ColorChecker in color calibration.
+
+- Numerous rounds of code cleanup.
+
 ## Bug Fixes
 
 - Fixed a performance regression for redrawing mipmaps.
+
+- Fixed handling of old (2020) edits using Filmic RGB.
+
+- Various OpenCL fixes to reduce differences between CPU and GPU processing: colorspace conversion, saturation gradient filter in color equalizer.
+
+- Fixed gallery export not working on Windows.
+
+- Fixed printer discovery in the print module, which could cause available printers to be missed.
+
+- Work around out-of-spec ExIF date field caused by buggy software.
+
+- Fixed reading embedded color profiles from PNG images.
+
+- Fixed certain boundary cases in the crop module.
 
 ## Lua
 
