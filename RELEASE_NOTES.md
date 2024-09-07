@@ -59,6 +59,16 @@ changes (where available).
 - Enhanced tooltips for utiltity module headers to provide more
   information about the module.
 
+- Added two new error placeholder images to distinguish between
+  missing, unsupported, and corrupted images.  When attempting to edit
+  such an image, an appropriate, more specific error message is
+  displayed.
+
+- When selecting a style in the export module, hovering on the style
+  name in the popup menu displays a thumbnail previewing the effect of
+  appending the style to the active image's edit (first selected image
+  in lighttable, center-view image in darkroom).
+
 ## Performance Improvements
 
 - Improved the speed of bulk image operations by improving the speed
