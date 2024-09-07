@@ -46,6 +46,13 @@ changes (where available).
 
 ## UI/UX Improvements
 
+- Added camera-specific styles for more than 500 camera models to more
+  closely approximate the out-of-camera JPEG rendition.  These styles
+  only affect contrast, brightness, and saturation and do not attempt
+  to match sharpening, denoising, or hue shifts.  Also added a LUA
+  script to auto-apply the appropriate style on import and manually
+  apply styles to a collection of previously-imported images.
+
 - The user interface now gives feedback while processing bulk image
   operations such as ratings, tagging, and edit history management,
   rather than silently freezing until the operation completes.  While
