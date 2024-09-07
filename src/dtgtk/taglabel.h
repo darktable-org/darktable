@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 202 Aldric Renaudin.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@ G_DECLARE_FINAL_TYPE(GtkDarktableTagLabel, dtgtk_tag_label, DTGTK, TAG_LABEL, Gt
 
 struct _GtkDarktableTagLabel
 {
-  GtkLabel *label;
+  GtkLabel label;
   gint tagid;
 };
 

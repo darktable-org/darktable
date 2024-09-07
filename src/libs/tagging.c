@@ -23,6 +23,7 @@
 #include "common/tags.h"
 #include "control/conf.h"
 #include "control/control.h"
+#include "dtgobj/tag.h"
 #include "dtgtk/button.h"
 #include "dtgtk/taglabel.h"
 #include "gui/preferences_dialogs.h"
@@ -374,20 +375,18 @@ static gboolean _select_next_user_attached_tag(const int index, GtkTreeView *vie
   return FALSE;
 }
 
-// static void _flow_box_remove_item(GtkWidget *item, gpointer user_data)
-// {
-//   gtk_widget_destroy(item);
-// }
+static GtkWidget* _add_attached_item(gpointer item, gpointer user_data)
+{
+  const DtTagObj *tagobj = (DtTagObj *)item;
 
-// static void _flow_box_clear(GtkWidget *flow_box)
-// {
-//   gtk_container_forall(GTK_CONTAINER(flow_box), _flow_box_remove_item, NULL);
-// }
+  const gchar *subtag = g_strrstr(tagobj->tag.tag, "|");
+  
+  GtkWidget *widget = dtgtk_tag_label_new(!subtag ? tagobj->tag.tag : subtag + 1,
+                                          tagobj->tag.id);
+  gtk_widget_set_tooltip_text(widget, tagobj->tag.tag);
 
-// static GtkWidget* _flow_box_add_item(gpointer item, gpointer user_data)
-// {
-//   return GTK_WIDGET(dtgtk_tag_label_new("heinz", 124));
-// }
+  return widget;
+}
 
 static void _init_treeview(dt_lib_module_t *self, const int which)
 {
@@ -515,17 +514,16 @@ static void _init_treeview(dt_lib_module_t *self, const int which)
   else
   {
     gtk_list_store_clear(GTK_LIST_STORE(store));
-    // _flow_box_clear(d->attached_view2);
+    g_list_store_remove_all(d->attached_store);
     if(count > 0 && tags)
     {
       for(GList *tag = tags; tag; tag = g_list_next(tag))
       {
+        g_list_store_append(d->attached_store, dt_tag_obj_new(tag->data));
+
+
+
         const char *subtag = g_strrstr(((dt_tag_t *)tag->data)->tag, "|");
-
-        // const char *hugo = !subtag ? ((dt_tag_t *)tag->data)->tag : subtag + 1;
-        // GtkWidget *w = gtk_label_new(g_strdup(hugo));
-        // gtk_flow_box_insert(GTK_FLOW_BOX(d->attached_view2), w, -1);
-
 
         gtk_list_store_append(GTK_LIST_STORE(store), &iter);
         gtk_list_store_set(GTK_LIST_STORE(store), &iter,
@@ -540,7 +538,6 @@ static void _init_treeview(dt_lib_module_t *self, const int which)
                           DT_LIB_TAGGING_COL_VISIBLE, TRUE,
                           -1);
       }
-      // gtk_widget_show_all(d->attached_view2);
     }
     if(which && d->keyword[0])
     {
@@ -2926,6 +2923,20 @@ static void _tree_selection_changed(GtkTreeSelection *treeselection, gpointer da
   dt_lib_gui_queue_update((dt_lib_module_t *)data);
 }
 
+static void _flow_box_selection_changed(GtkFlowBox *flow_box, gpointer user_data)
+{
+  GList *selected = gtk_flow_box_get_selected_children(flow_box);
+
+  for(GList *iter = selected; iter; iter = g_list_next(iter))
+  {
+    const GtkFlowBoxChild *flow_box_child = GTK_FLOW_BOX_CHILD(iter->data);
+    const GtkDarktableTagLabel *tag_label = DTGTK_TAG_LABEL(gtk_bin_get_child(GTK_BIN(flow_box_child)));
+    printf("%d\n", tag_label->tagid);
+  }
+
+  g_list_free(selected);
+}
+
 static void _dnd_clear_root(dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
@@ -3165,31 +3176,27 @@ void gui_init(dt_lib_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
 
-  GtkWidget *flow_box = gtk_flow_box_new();
-  gtk_widget_set_valign(flow_box, GTK_ALIGN_START);
-  GtkWidget *fw = dt_ui_resize_wrap(flow_box, 200, "plugins/lighttable/tagging/heightattachedwindow");
-  gtk_box_pack_start(box, fw, TRUE, TRUE, 0);
-  d->attached_view2 = flow_box;
+  GtkFlowBox *flow_box = GTK_FLOW_BOX(gtk_flow_box_new());
+  gtk_widget_set_valign(GTK_WIDGET(flow_box), GTK_ALIGN_START);
+  gtk_flow_box_set_selection_mode(flow_box, GTK_SELECTION_SINGLE);
+  w = dt_ui_resize_wrap(GTK_WIDGET(flow_box), 200, "plugins/lighttable/tagging/heightattachedwindow");
+  gtk_box_pack_start(box, w, TRUE, TRUE, 0);
+  d->attached_view2 = GTK_WIDGET(flow_box);
+  g_signal_connect(flow_box, "selected-children-changed", G_CALLBACK(_flow_box_selection_changed), self);
 
 
-  // GObject Tutorial: https://docs.gtk.org/gobject/tutorial.html
-  // https://docs.gtk.org/gobject/func.DECLARE_FINAL_TYPE.html
-  // Diskussion: https://discourse.gnome.org/t/how-to-use-gliststore/13865/2
-
-  d->attached_store =  g_list_store_new(DTGTK_TYPE_TAG_LABEL);
-  // gtk_flow_box_bind_model(GTK_FLOW_BOX(d->attached_view2),
-  //                         G_LIST_MODEL(d->attached_store),
-  //                         _flow_box_add_item,
-  //                         NULL,
-  //                         NULL);
-
-  g_list_store_append(d->attached_store, dtgtk_tag_label_new("hugo", 123));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(w), _("attached tags"
+                                               "\npress Delete or double-click to detach"
+                                               "\nright-click for other actions on attached tag,"
+                                               "\nTab to give the focus to entry"));
 
 
-
-
-
-
+  d->attached_store =  g_list_store_new(DT_TYPE_TAG_OBJ);
+  gtk_flow_box_bind_model(GTK_FLOW_BOX(d->attached_view2),
+                          G_LIST_MODEL(d->attached_store),
+                          _add_attached_item,
+                          NULL,
+                          NULL);
 
 
 

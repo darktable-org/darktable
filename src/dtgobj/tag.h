@@ -16,33 +16,27 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "taglabel.h"
-#include "gui/gtk.h"
-#include <string.h>
+#pragma once
 
-G_DEFINE_TYPE(GtkDarktableTagLabel, dtgtk_tag_label, GTK_TYPE_LABEL);
+#include <glib.h>
 
-static void dtgtk_tag_label_class_init(GtkDarktableTagLabelClass *class)
+#include "common/tags.h"
+
+G_BEGIN_DECLS
+
+// GObject of dt_tag_t
+#define DT_TYPE_TAG_OBJ dt_tag_obj_get_type()
+G_DECLARE_FINAL_TYPE(DtTagObj, dt_tag_obj, DT, TAG_OBJ, GObject)
+
+struct _DtTagObj
 {
-}
+  GObject parent_instance;
+  dt_tag_t tag;
+};
 
-static void dtgtk_tag_label_init(GtkDarktableTagLabel *tag_label)
-{
-}
+GObject *dt_tag_obj_new(const dt_tag_t *tag);
 
-// Public functions
-GtkWidget *dtgtk_tag_label_new(const gchar* text, const gint tagid)
-{
-  GtkDarktableTagLabel *tag_label;
-  tag_label = g_object_new(dtgtk_tag_label_get_type(), NULL);
-
-  gtk_label_set_text(&tag_label->label, text);
-  tag_label->tagid = tagid;
-
-  dt_gui_add_class(GTK_WIDGET(tag_label), "dt_tag_label");
-  gtk_widget_set_name(GTK_WIDGET(tag_label), "tag_label");
-  return (GtkWidget *)tag_label;
-}
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
