@@ -684,7 +684,15 @@ void dt_dump_pipe_diff_pfm(
   {
     const size_t k = ch * p;
     for(size_t c = 0; c < ch; c++)
-      o[k+c] = sqrtf(100.0f * fabsf(a[k+c] - b[k+c]));
+    {
+      if(a[k+c] > 1e-6 && b[k+c] > 1e-6)
+      {
+        const float ratio = (a[k+c] > b[k+c]) ? a[k+c] / b[k+c] : b[k+c] / a[k+c];
+        o[k+c] = CLIP(50.0f * (ratio - 1.0f));
+      }
+      else
+        o[k+c] = 0.0f;
+    }
   }
 
   dt_dump_pfm_file(pipe, o, width, height, ch * sizeof(float), mod, "[dt_dump_CPU/GPU_diff_pfm]", TRUE, TRUE, TRUE);
