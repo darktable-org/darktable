@@ -77,6 +77,30 @@ changes (where available).
   appending the style to the active image's edit (first selected image
   in lighttable, center-view image in darkroom).
 
+- Allow for selecting the utility modules to be displayed on the
+  panels in the different views.
+
+  - Right-click on the empty panel area below the modules to get a
+    menu where they can be hidden or shown. This allows additional
+    modules to be added to the darkroom, like metadata editor and
+    styles.
+
+  - This replaces the options in the "collections" and "recently used
+    collections" modules' preferences to show or hide the latter and
+    show a "history" button in the former instead. Users that want the
+    separate module will need to reenable it once via the new
+    right-click menu.
+
+  - The menu also contains an option "restore defaults" that resets
+    the selection and position of modules in the current view. In the
+    preferences dialog, on the general tab, there's a "reset view
+    panels" button that resets all views, including visibility and
+    width of the panels themselves.
+
+  - The first time a new user presses Tab, they will be warned that
+    this will hide all panels and how to get them back. Hopefully this
+    prevents some confusion or frustration.
+
 ## Performance Improvements
 
 - Added OpenCL implementation of color equalizer.
@@ -104,6 +128,14 @@ changes (where available).
 - Add Calibrite alias for X-Rite ColorChecker in color calibration.
 
 - Numerous rounds of code cleanup.
+
+- Drag&drop utility module headers to reposition them across the left
+  and right panels. Hold ctrl+shift to avoid expanding/collapsing them
+  before dragging. Each view can have a different layout.
+
+- Drag&drop of processing modules in the darkroom right panel has been
+  improved to auto-scroll when reaching the top or bottom and to not
+  get confused when images get dragged into the area.
 
 ## Bug Fixes
 
