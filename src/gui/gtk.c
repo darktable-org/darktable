@@ -2264,7 +2264,6 @@ static GtkWidget *_ui_init_panel_container_center(GtkWidget *container,
   widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_widget_set_name(widget, "plugins_vbox_left");
   gtk_container_add(GTK_CONTAINER(container), widget);
-  g_signal_connect_swapped(widget, "draw", G_CALLBACK(gtk_widget_queue_draw), darktable.gui->ui->center);
 
   return widget;
 }
