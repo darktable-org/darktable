@@ -1821,18 +1821,18 @@ treeview#delete-dialog:selected
   color: @bauhaus_fg_hover;
 }
 
-.iop_drag_icon
+.module_drag_icon
 {
   border: 0.07em solid @plugin_bg_color;
   background-color: @bg_color;
 }
 
-.iop_drop_before
+.module_drop_before
 {
    border-bottom: 2.4em solid @plugin_bg_color;
 }
 
-.iop_drop_after
+.module_drop_after
 {
    border-top: 2.4em solid @plugin_bg_color;
 }

@@ -117,13 +117,13 @@ typedef struct dt_gui_gtk_t
   dt_gui_scrollbars_t scrollbars;
 
   cairo_surface_t *surface;
-  GtkMenu *presets_popup_menu;
+
   char *last_preset;
 
   int32_t reset;
   GdkRGBA colors[DT_GUI_COLOR_LAST];
 
-  int32_t center_tooltip; // 0 = no tooltip, 1 = new tooltip, 2 = old tooltip
+  int32_t hide_tooltips;
 
   gboolean grouping;
   int32_t expanded_group_id;
@@ -408,6 +408,14 @@ static inline GtkWidget *dt_ui_label_new(const gchar *str)
   gtk_label_set_xalign (GTK_LABEL(label), 0.0f);
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
   return label;
+};
+
+static inline GtkWidget *dt_ui_entry_new(gint width_chars)
+{
+  GtkWidget *entry = gtk_entry_new();
+  gtk_drag_dest_unset(entry);
+  gtk_entry_set_width_chars(GTK_ENTRY(entry), width_chars);
+  return entry;
 };
 
 extern const struct dt_action_def_t dt_action_def_tabs_all_rgb;

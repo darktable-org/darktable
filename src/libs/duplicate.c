@@ -321,9 +321,8 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     gchar *path = (gchar *)sqlite3_column_text(stmt, 2);
     g_snprintf(chl, sizeof(chl), "%d", sqlite3_column_int(stmt, 0));
 
-    GtkWidget *tb = gtk_entry_new();
+    GtkWidget *tb = dt_ui_entry_new(0);
     if(path) gtk_entry_set_text(GTK_ENTRY(tb), path);
-    gtk_entry_set_width_chars(GTK_ENTRY(tb), 0);
     gtk_widget_set_hexpand(tb, TRUE);
     g_object_set_data (G_OBJECT(tb), "imgid", GINT_TO_POINTER(imgid));
     gtk_widget_add_events(tb, GDK_FOCUS_CHANGE_MASK);

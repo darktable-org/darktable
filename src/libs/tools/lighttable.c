@@ -544,7 +544,7 @@ static gboolean _lib_lighttable_zoom_entry_changed(GtkWidget *entry, GdkEventKey
 static dt_lighttable_layout_t _lib_lighttable_get_layout(dt_lib_module_t *self)
 {
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
-  return d->layout;
+  return d ? d->layout : DT_LIGHTTABLE_LAYOUT_FILEMANAGER;
 }
 
 static void _lib_lighttable_set_zoom(dt_lib_module_t *self, gint zoom)
