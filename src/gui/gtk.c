@@ -2319,6 +2319,15 @@ static gboolean _side_panel_motion(GtkWidget *widget,
   return FALSE;
 }
 
+static gboolean _side_panel_draw(GtkWidget *widget,
+                                 cairo_t *cr,
+                                 gpointer user_data)
+{
+  if(darktable.gui->ui->thumbtable->manual_button.x != -1)
+    gtk_widget_queue_draw(darktable.gui->ui->center);
+  return FALSE;
+}
+
 static GtkWidget *_ui_init_panel_container_center(GtkWidget *container,
                                                   const gboolean left)
 {
@@ -2375,7 +2384,7 @@ static GtkWidget *_ui_init_panel_container_center(GtkWidget *container,
   g_signal_connect(widget, "drag-motion", G_CALLBACK(_on_drag_motion_drop), GINT_TO_POINTER(FALSE));
   g_signal_connect(widget, "drag-drop", G_CALLBACK(_on_drag_motion_drop), GINT_TO_POINTER(TRUE));
   g_signal_connect(widget, "drag-leave", G_CALLBACK(_on_drag_leave), NULL);
-  g_signal_connect_swapped(widget, "draw", G_CALLBACK(gtk_widget_queue_draw), darktable.gui->ui->center);
+  g_signal_connect_swapped(widget, "draw", G_CALLBACK(_side_panel_draw), NULL);
 
   return widget;
 }
