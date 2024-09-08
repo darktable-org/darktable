@@ -668,7 +668,7 @@ static gboolean _metadata_reset(GtkWidget *label,
     else
       g_signal_emit_by_name(G_OBJECT(buffer), "changed"); // even if unchanged
   }
-  return FALSE;
+  return TRUE;
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -689,11 +689,13 @@ void gui_init(dt_lib_module_t *self)
     d->label[i] = dt_ui_label_new(_(name));
     gtk_widget_set_halign(d->label[i], GTK_ALIGN_FILL);
     GtkWidget *labelev = gtk_event_box_new();
+    gtk_widget_set_tooltip_text(labelev, _("double-click to reset"));
     gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
     gtk_container_add(GTK_CONTAINER(labelev), d->label[i]);
     gtk_grid_attach(grid, labelev, 0, i, 1, 1);
 
     GtkWidget *textview = gtk_text_view_new();
+    gtk_drag_dest_unset(textview);
     dt_action_define(DT_ACTION(self), NULL, name, textview, &dt_action_def_entry);
     gtk_widget_set_tooltip_text(textview,
               _("metadata text"

@@ -255,6 +255,33 @@ static gboolean reset_language_widget(GtkWidget *label, GdkEventButton *event, G
   return FALSE;
 }
 
+static gboolean _remove_panel_config(gpointer key,
+                                     gpointer value,
+                                     gpointer user_data)
+{
+  return (!strcmp(key, "ui/hide_tooltips")
+          || (g_str_has_prefix(key, "plugins/")
+           && (g_str_has_suffix(key, "_visible")
+            || g_str_has_suffix(key, "_position")))
+          || (strstr(key, "/ui/")
+           && !g_str_has_suffix(key, "border_size")
+           && (g_str_has_suffix(key, "_visible")
+            || g_str_has_suffix(key, "_size")
+            || g_str_has_suffix(key, "panel_collaps_state")
+            || g_str_has_suffix(key, "panels_collapse_controls"))));
+}
+
+static void _reset_panels_clicked(GtkButton *button, gpointer user_data)
+{
+  if(!dt_gui_show_yes_no_dialog(_("reset panels in all views"),
+                                _("are you sure?\n\n"
+                                  "you cannot restore your current panel layout and module selection.")))
+    return;
+
+  g_hash_table_foreach_remove(darktable.conf->table, _remove_panel_config, NULL);
+  dt_view_manager_switch_by_view(darktable.view_manager, dt_view_manager_get_current_view(darktable.view_manager));
+}
+
 static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetweak_widgets_t *tw)
 {
 
@@ -383,6 +410,11 @@ static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetw
                                                       "(restart required)"));
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(screen_dpi_overwrite), dt_conf_get_float("screen_dpi_overwrite"));
   g_signal_connect(G_OBJECT(screen_dpi_overwrite), "value_changed", G_CALLBACK(dpi_scaling_changed_callback), 0);
+
+  GtkWidget *panel_reset = gtk_button_new_with_label(_("reset view panels"));
+  gtk_widget_set_tooltip_text(panel_reset, _("reset hidden panels, their sizes and selected modules in all views"));
+  g_signal_connect(panel_reset, "clicked", G_CALLBACK(_reset_panels_clicked), NULL);
+  gtk_grid_attach(GTK_GRID(grid), panel_reset, 0, line++, 1, 1);
 
   //checkbox to allow user to modify theme with user.css
   label = gtk_label_new(_("modify selected theme with CSS tweaks below"));

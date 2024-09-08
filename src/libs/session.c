@@ -99,8 +99,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_halign(GTK_WIDGET(lib->gui.label1), GTK_ALIGN_START);
   gtk_box_pack_start(vbox1, GTK_WIDGET(lib->gui.label1), TRUE, TRUE, 0);
 
-  lib->gui.entry1 = GTK_ENTRY(gtk_entry_new());
-  gtk_entry_set_width_chars(GTK_ENTRY(lib->gui.entry1), 0);
+  lib->gui.entry1 = GTK_ENTRY(dt_ui_entry_new(0));
   gtk_box_pack_start(vbox2, GTK_WIDGET(lib->gui.entry1), TRUE, TRUE, 0);
 
   lib->gui.button1 = GTK_BUTTON(gtk_button_new_with_label(_("create")));

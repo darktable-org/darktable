@@ -125,10 +125,7 @@ dt_view_type_flags_t views(dt_lib_module_t *self)
 
 uint32_t container(dt_lib_module_t *self)
 {
-  if(dt_view_get_current() == DT_VIEW_DARKROOM)
-    return DT_UI_CONTAINER_PANEL_LEFT_CENTER;
-  else
-    return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
+  return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
 
 static gboolean _is_user_tag(GtkTreeModel *model, GtkTreeIter *iter)
@@ -3218,9 +3215,8 @@ void gui_init(dt_lib_module_t *self)
   hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
   // text entry
-  w = gtk_entry_new();
+  w = dt_ui_entry_new(0);
   gtk_entry_set_text(GTK_ENTRY(w), "");
-  gtk_entry_set_width_chars(GTK_ENTRY(w), 0);
   gtk_widget_set_tooltip_text(w, _("enter tag name"
                                    "\npress Enter to create a new tag and attach it on selected images"
                                    "\npress Tab or Down key to go to the first matching tag"
