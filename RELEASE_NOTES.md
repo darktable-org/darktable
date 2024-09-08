@@ -155,6 +155,8 @@ changes (where available).
 
 - Fixed certain boundary cases in the crop module.
 
+- Fixed crash when loading corrupted .gpx file in the geotagging module
+
 ## Lua
 
 ### API Version
