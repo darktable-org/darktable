@@ -375,6 +375,32 @@ static gboolean _select_next_user_attached_tag(const int index, GtkTreeView *vie
   return FALSE;
 }
 
+static gint _compare_utf8_no_case(const char *a, const char *b)
+{
+  char *a_nc_nat = g_utf8_collate_key_for_filename(a, -1);
+  char *b_nc_nat = g_utf8_collate_key_for_filename(b, -1);
+
+  const gint sort = g_strcmp0(a_nc_nat, b_nc_nat);
+
+  g_free(a_nc_nat);
+  g_free(b_nc_nat);
+  return sort;
+}
+
+static gint _sort_tag_func(const void *a, const void *b, void *user_data)
+{
+  DtTagObj *tag_a = (DtTagObj *)a;
+  DtTagObj *tag_b = (DtTagObj *)b;
+
+  const gchar *subtag_a = g_strrstr(tag_a->tag.tag, "|");
+  const gchar *sort_a = !subtag_a ? tag_a->tag.tag : subtag_a + 1;
+
+  const gchar *subtag_b= g_strrstr(tag_b->tag.tag, "|");
+  const gchar *sort_b = !subtag_b ? tag_b->tag.tag : subtag_b + 1;
+
+  return _compare_utf8_no_case(sort_a, sort_b);
+}
+
 static GtkWidget* _add_attached_item(gpointer item, gpointer user_data)
 {
   const DtTagObj *tagobj = (DtTagObj *)item;
@@ -520,6 +546,7 @@ static void _init_treeview(dt_lib_module_t *self, const int which)
       for(GList *tag = tags; tag; tag = g_list_next(tag))
       {
         g_list_store_append(d->attached_store, dt_tag_obj_new(tag->data));
+        g_list_store_sort(d->attached_store, _sort_tag_func, NULL);
 
 
 
@@ -2714,18 +2741,6 @@ static gint _sort_tree_count_func(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIt
   gtk_tree_model_get(model, a, DT_LIB_TAGGING_COL_COUNT, &count_a, -1);
   gtk_tree_model_get(model, b, DT_LIB_TAGGING_COL_COUNT, &count_b, -1);
   return (count_b - count_a);
-}
-
-static inline gint _compare_utf8_no_case(const char *a, const char *b)
-{
-  char *a_nc_nat = g_utf8_collate_key_for_filename(a, -1);
-  char *b_nc_nat = g_utf8_collate_key_for_filename(b, -1);
-
-  const gint sort = g_strcmp0(a_nc_nat, b_nc_nat);
-
-  g_free(a_nc_nat);
-  g_free(b_nc_nat);
-  return sort;
 }
 
 static gint _sort_tree_tag_func(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, dt_lib_module_t *self)

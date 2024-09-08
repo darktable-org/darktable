@@ -39,8 +39,7 @@ GtkWidget *dtgtk_tag_label_new(const gchar* text, const gint tagid)
   gtk_label_set_text(&tag_label->label, text);
   tag_label->tagid = tagid;
 
-  dt_gui_add_class(GTK_WIDGET(tag_label), "dt_tag_label");
-  gtk_widget_set_name(GTK_WIDGET(tag_label), "tag_label");
+  gtk_widget_set_name(GTK_WIDGET(tag_label), "tag-label");
   return (GtkWidget *)tag_label;
 }
 
