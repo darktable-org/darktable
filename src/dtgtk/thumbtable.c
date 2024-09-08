@@ -2753,47 +2753,23 @@ static void _accel_copy_parts(dt_action_t *action)
 static void _accel_paste(dt_action_t *action)
 {
   GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
-
   dt_dev_undo_start_record(darktable.develop);
-
-  const gboolean ret = dt_history_paste_on_list(imgs, TRUE);
-  if(ret)
-    dt_collection_update_query(darktable.collection,
-                               DT_COLLECTION_CHANGE_RELOAD,
-                               DT_COLLECTION_PROP_UNDEF, imgs);
-  else
-    g_list_free(imgs);
-
+  dt_control_paste_history(imgs);
   dt_dev_undo_end_record(darktable.develop);
 }
 
 static void _accel_paste_parts(dt_action_t *action)
 {
   GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
-
   dt_dev_undo_start_record(darktable.develop);
-
-  const gboolean ret = dt_history_paste_parts_on_list(imgs, TRUE);
-  if(ret)
-    dt_collection_update_query(darktable.collection,
-                               DT_COLLECTION_CHANGE_RELOAD,
-                               DT_COLLECTION_PROP_UNDEF, imgs);
-  else
-    g_list_free(imgs);
-
+  dt_control_paste_parts_history(imgs);
   dt_dev_undo_end_record(darktable.develop);
 }
 
 static void _accel_hist_discard(dt_action_t *action)
 {
   GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
-  const gboolean ret = dt_history_delete_on_list(imgs, TRUE);
-  if(ret)
-    dt_collection_update_query(darktable.collection,
-                               DT_COLLECTION_CHANGE_RELOAD,
-                               DT_COLLECTION_PROP_UNDEF, imgs);
-  else
-    g_list_free(imgs);
+  dt_control_discard_history(imgs);
 }
 
 static void _accel_duplicate(dt_action_t *action)
@@ -2808,7 +2784,7 @@ static void _accel_duplicate(dt_action_t *action)
   if(strcmp(action->id, "duplicate image"))
     dt_history_delete_on_image(newimgid);
   else
-    dt_history_copy_and_paste_on_image(sourceid, newimgid, FALSE, NULL, TRUE, TRUE);
+    dt_history_copy_and_paste_on_image(sourceid, newimgid, FALSE, NULL, TRUE, TRUE, TRUE);
 
   // a duplicate should keep the change time stamp of the original
   dt_image_cache_set_change_timestamp_from_image(darktable.image_cache,

@@ -120,7 +120,7 @@ static void _lib_duplicate_duplicate_clicked_callback(GtkWidget *widget,
   const dt_imgid_t newid = dt_image_duplicate(imgid);
   if(!dt_is_valid_imgid(newid))
     return;
-  dt_history_copy_and_paste_on_image(imgid, newid, FALSE, NULL, TRUE, TRUE);
+  dt_history_copy_and_paste_on_image(imgid, newid, FALSE, NULL, TRUE, TRUE, TRUE);
   dt_collection_update_query(darktable.collection,
                              DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, NULL);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,

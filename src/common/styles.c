@@ -934,7 +934,7 @@ void _styles_apply_to_image_ext(const char *name,
         if(overwrite)
           dt_history_delete_on_image_ext(newimgid, FALSE, TRUE);
         else
-          dt_history_copy_and_paste_on_image(imgid, newimgid, FALSE, NULL, TRUE, TRUE);
+          dt_history_copy_and_paste_on_image(imgid, newimgid, FALSE, NULL, TRUE, TRUE, TRUE);
       }
     }
     else
@@ -1086,9 +1086,6 @@ void _styles_apply_to_image_ext(const char *name,
                               dt_dev_modulegroups_get(darktable.develop));
     }
 
-    /* update xmp file */
-    dt_image_synch_xmp(newimgid);
-
     /* remove old obsolete thumbnails */
     dt_mipmap_cache_remove(darktable.mipmap_cache, newimgid);
     dt_image_update_final_size(newimgid);
@@ -1098,6 +1095,9 @@ void _styles_apply_to_image_ext(const char *name,
       dt_image_set_aspect_ratio(newimgid, TRUE);
     else
       dt_image_reset_aspect_ratio(newimgid, TRUE);
+
+    /* update xmp file */
+    dt_image_synch_xmp(newimgid);
 
     /* redraw center view to update visible mipmaps */
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,

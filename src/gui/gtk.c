@@ -4303,6 +4303,7 @@ void dt_gui_cursor_set_busy()
   {
     // this is not a nested call, so store the current mouse cursor and set it to be the
     // "watch" cursor
+    dt_control_forbid_change_cursor();
     GtkWidget *toplevel = darktable.gui->ui->main_window;
     GdkWindow *window = gtk_widget_get_window(toplevel);
     busy_prev_cursor = gdk_window_get_cursor(window);
@@ -4312,6 +4313,7 @@ void dt_gui_cursor_set_busy()
     // since the main reason for calling this function is that we won't be running the Gtk main
     // loop for a while, ensure that the mouse cursor gets updated
     dt_gui_process_events();
+    gtk_grab_add(darktable.control->progress_system.proxy.module->widget);
   }
 }
 
@@ -4330,6 +4332,8 @@ void dt_gui_cursor_clear_busy()
       gdk_window_set_cursor(window, busy_prev_cursor);
       dt_gui_process_events();
       busy_prev_cursor = NULL;
+      dt_control_allow_change_cursor();
+      gtk_grab_remove(darktable.control->progress_system.proxy.module->widget);
     }
   }
 }

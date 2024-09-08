@@ -3896,6 +3896,15 @@ static float _process_shortcut(float move_size)
             "  [_process_shortcut] processing shortcut: %s\n",
             _shortcut_description(&_sc));
 
+  if(DT_PERFORM_ACTION(move_size) &&
+     gtk_widget_has_grab(darktable.control->progress_system.proxy.module->widget))
+  {
+    if(_sc.key_device == DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE && _sc.key == GDK_KEY_Escape)
+      dt_print(DT_DEBUG_ALWAYS, "this should cancel the running blocking job\n"); // TODO
+
+    return return_value;
+  }
+
   dt_shortcut_t fsc = _sc;
   fsc.action = NULL;
   fsc.element  = 0;
