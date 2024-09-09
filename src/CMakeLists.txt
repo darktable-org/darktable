@@ -747,6 +747,7 @@ if(USE_LUA)
       "lua/styles.c"
       "lua/tags.c"
       "lua/types.c"
+      "lua/util.c"
       "lua/view.c"
       "lua/widget/box.c"
       "lua/widget/button.c"
