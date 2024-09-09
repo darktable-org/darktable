@@ -61,9 +61,8 @@ gboolean dt_lib_is_visible_in_view(dt_lib_module_t *module,
     return FALSE;
   }
 
-  const dt_view_t *cv = view ?: dt_view_manager_get_current_view(darktable.view_manager);
-  gboolean ret = module->views(module) & cv->view(cv);
-  gchar *key = _get_lib_view_path(module, cv, "_visible");
+  gboolean ret = module->views(module) & view->view(view);
+  gchar *key = _get_lib_view_path(module, view, "_visible");
   if(key && dt_conf_key_exists(key))
     ret = dt_conf_get_bool(key);
   g_free(key);
@@ -1423,8 +1422,8 @@ static gchar *_get_lib_view_path(const dt_lib_module_t *module,
                                  const dt_view_t *cv,
                                  char *suffix)
 {
-  if(!darktable.view_manager) return NULL;
-  if(!cv) cv = dt_view_manager_get_current_view(darktable.view_manager);
+  if(!cv && darktable.view_manager)
+    cv = dt_view_manager_get_current_view(darktable.view_manager);
   if(!cv) return NULL;
   // in lighttable, we store panels states per layout
   char lay[32] = "";
@@ -1448,7 +1447,7 @@ static gchar *_get_lib_view_path(const dt_lib_module_t *module,
 
 gboolean dt_lib_is_visible(dt_lib_module_t *module)
 {
-  return dt_lib_is_visible_in_view(module, NULL);
+  return dt_lib_is_visible_in_view(module, dt_view_manager_get_current_view(darktable.view_manager));
 }
 
 void dt_lib_set_visible(dt_lib_module_t *module,
