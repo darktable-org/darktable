@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,11 +23,12 @@
 G_BEGIN_DECLS
 
 #define DTGTK_TYPE_TAG_LABEL dtgtk_tag_label_get_type()
-G_DECLARE_FINAL_TYPE(GtkDarktableTagLabel, dtgtk_tag_label, DTGTK, TAG_LABEL, GtkLabel)
+G_DECLARE_FINAL_TYPE(GtkDarktableTagLabel, dtgtk_tag_label, DTGTK, TAG_LABEL, GtkFlowBoxChild)
 
 struct _GtkDarktableTagLabel
 {
-  GtkLabel label;
+  GtkFlowBoxChild flow_box_child;
+  GtkWidget *label;
   gint tagid;
 };
 

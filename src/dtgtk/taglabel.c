@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 #include "gui/gtk.h"
 #include <string.h>
 
-G_DEFINE_TYPE(GtkDarktableTagLabel, dtgtk_tag_label, GTK_TYPE_LABEL);
+G_DEFINE_TYPE(GtkDarktableTagLabel, dtgtk_tag_label, GTK_TYPE_FLOW_BOX_CHILD);
 
 static void dtgtk_tag_label_class_init(GtkDarktableTagLabelClass *class)
 {
@@ -36,7 +36,10 @@ GtkWidget *dtgtk_tag_label_new(const gchar* text, const gint tagid)
   GtkDarktableTagLabel *tag_label;
   tag_label = g_object_new(dtgtk_tag_label_get_type(), NULL);
 
-  gtk_label_set_text(&tag_label->label, text);
+  tag_label->label = gtk_label_new(text);
+  gtk_widget_set_visible(tag_label->label, TRUE);
+  gtk_container_add(GTK_CONTAINER(&tag_label->flow_box_child), tag_label->label);
+  
   tag_label->tagid = tagid;
 
   gtk_widget_set_name(GTK_WIDGET(tag_label), "tag-label");

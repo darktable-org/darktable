@@ -45,8 +45,7 @@ DT_MODULE(1)
 
 static void _lib_tagging_tag_redo(dt_action_t *action);
 static void _lib_tagging_tag_show(dt_action_t *action);
-
-
+static DtTagObj *_find_tag_by_id(GListModel *model, gint tagid);
 
 typedef struct dt_lib_tagging_t
 {
@@ -151,6 +150,8 @@ static void _unselect_all_in_view(GtkTreeView *view)
   gtk_tree_selection_unselect_all(selection);
 }
 
+
+
 static void _update_atdetach_buttons(dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
@@ -160,13 +161,34 @@ static void _update_atdetach_buttons(dt_lib_module_t *self)
   const gint dict_tags_sel_cnt =
     gtk_tree_selection_count_selected_rows(gtk_tree_view_get_selection(GTK_TREE_VIEW(d->dictionary_view)));
 
-  GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->attached_view));
-  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->attached_view));
-  GtkTreeIter iter;
+  
+  GList *attached_tags_selection = gtk_flow_box_get_selected_children(GTK_FLOW_BOX(d->attached_view2));
   gboolean attached_tags_sel = FALSE;
-  if(gtk_tree_selection_get_selected(selection, &model, &iter))
-    // check this is a darktable tag
-    attached_tags_sel = _is_user_tag(model, &iter);
+  for(GList *iter = attached_tags_selection; iter; iter = g_list_next(iter))
+  {
+    const GtkDarktableTagLabel *tag_label = DTGTK_TAG_LABEL(iter->data);
+
+    const DtTagObj *tag_obj = _find_tag_by_id(G_LIST_MODEL(d->attached_store), tag_label->tagid);
+    if(tag_obj)
+    {
+      attached_tags_sel = !g_str_has_prefix(tag_obj->tag.tag, "darktable|") 
+                                            || g_str_has_prefix(tag_obj->tag.tag, "darktable|style|");
+    }
+  }
+
+  g_list_free(attached_tags_selection);
+
+
+
+
+
+  // GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->attached_view));
+  // GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->attached_view));
+  // GtkTreeIter iter;
+  // gboolean attached_tags_sel = FALSE;
+  // if(gtk_tree_selection_get_selected(selection, &model, &iter))
+  //   // check this is a darktable tag
+  //   attached_tags_sel = _is_user_tag(model, &iter);
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->attach_button), has_act_on && dict_tags_sel_cnt > 0);
   gtk_widget_set_sensitive(GTK_WIDGET(d->detach_button), has_act_on && attached_tags_sel);
@@ -389,8 +411,8 @@ static gint _compare_utf8_no_case(const char *a, const char *b)
 
 static gint _sort_tag_func(const void *a, const void *b, void *user_data)
 {
-  DtTagObj *tag_a = (DtTagObj *)a;
-  DtTagObj *tag_b = (DtTagObj *)b;
+  const DtTagObj *tag_a = (DtTagObj *)a;
+  const DtTagObj *tag_b = (DtTagObj *)b;
 
   const gchar *subtag_a = g_strrstr(tag_a->tag.tag, "|");
   const gchar *sort_a = !subtag_a ? tag_a->tag.tag : subtag_a + 1;
@@ -401,9 +423,23 @@ static gint _sort_tag_func(const void *a, const void *b, void *user_data)
   return _compare_utf8_no_case(sort_a, sort_b);
 }
 
+static DtTagObj *_find_tag_by_id(GListModel *model, gint tagid)
+{
+  for(gint pos = 0; pos < g_list_model_get_n_items(model); pos++)
+  {
+    DtTagObj *tagobj = DT_TAG_OBJ(g_list_model_get_item(model, pos));
+    if(tagobj->tag.id == tagid)
+    {
+      return tagobj;
+    }
+  }
+
+  return NULL;
+}
+
 static GtkWidget* _add_attached_item(gpointer item, gpointer user_data)
 {
-  const DtTagObj *tagobj = (DtTagObj *)item;
+  const DtTagObj *tagobj = DT_TAG_OBJ(item);
 
   const gchar *subtag = g_strrstr(tagobj->tag.tag, "|");
   
@@ -545,9 +581,10 @@ static void _init_treeview(dt_lib_module_t *self, const int which)
     {
       for(GList *tag = tags; tag; tag = g_list_next(tag))
       {
-        g_list_store_append(d->attached_store, dt_tag_obj_new(tag->data));
-        g_list_store_sort(d->attached_store, _sort_tag_func, NULL);
-
+        g_list_store_insert_sorted(d->attached_store,
+                                   dt_tag_obj_new(tag->data),
+                                   _sort_tag_func,
+                                   NULL);
 
 
         const char *subtag = g_strrstr(((dt_tag_t *)tag->data)->tag, "|");
@@ -2940,16 +2977,18 @@ static void _tree_selection_changed(GtkTreeSelection *treeselection, gpointer da
 
 static void _flow_box_selection_changed(GtkFlowBox *flow_box, gpointer user_data)
 {
-  GList *selected = gtk_flow_box_get_selected_children(flow_box);
+  dt_lib_gui_queue_update((dt_lib_module_t *)user_data);  
 
-  for(GList *iter = selected; iter; iter = g_list_next(iter))
-  {
-    const GtkFlowBoxChild *flow_box_child = GTK_FLOW_BOX_CHILD(iter->data);
-    const GtkDarktableTagLabel *tag_label = DTGTK_TAG_LABEL(gtk_bin_get_child(GTK_BIN(flow_box_child)));
-    printf("%d\n", tag_label->tagid);
-  }
+  // GList *selected = gtk_flow_box_get_selected_children(flow_box);
 
-  g_list_free(selected);
+  // for(GList *iter = selected; iter; iter = g_list_next(iter))
+  // {
+  //   const GtkFlowBoxChild *flow_box_child = GTK_FLOW_BOX_CHILD(iter->data);
+  //   const GtkDarktableTagLabel *tag_label = DTGTK_TAG_LABEL(gtk_bin_get_child(GTK_BIN(flow_box_child)));
+  //   printf("%d\n", tag_label->tagid);
+  // }
+
+  // g_list_free(selected);
 }
 
 static void _dnd_clear_root(dt_lib_module_t *self)
