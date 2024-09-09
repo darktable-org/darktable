@@ -2186,7 +2186,8 @@ void dt_control_paste_history(GList *imgs)
     g_list_free(imgs);
     return;
   }
-  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, 
+  dt_job_queue_t queue = g_list_shorter_than(imgs,4) ? DT_JOB_QUEUE_SYNCHRONOUS : DT_JOB_QUEUE_USER_FG;
+  dt_control_add_job(darktable.control, queue,
                      dt_control_generic_images_job_create(&_control_paste_history_job_run,
                                                           N_("paste history"), 0,
                                                           imgs, PROGRESS_BLOCKING, FALSE));
@@ -2207,7 +2208,8 @@ void dt_control_paste_parts_history(GList *imgs)
 
   if(res == GTK_RESPONSE_OK)
   {
-    dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
+    dt_job_queue_t queue = g_list_shorter_than(imgs,4) ? DT_JOB_QUEUE_SYNCHRONOUS : DT_JOB_QUEUE_USER_FG;
+    dt_control_add_job(darktable.control, queue,
                        dt_control_generic_images_job_create(&_control_paste_history_job_run,
                                                             N_("paste history"), 0,
                                                             imgs, PROGRESS_BLOCKING, FALSE));
