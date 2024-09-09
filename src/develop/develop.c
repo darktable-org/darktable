@@ -526,8 +526,8 @@ static inline void _dt_dev_load_raw(dt_develop_t *dev,
   dev->image_storage = *image;
   dt_image_cache_read_release(darktable.image_cache, image);
 
-//  dev->requested_id = (dev->image_storage.load_status == DT_IMAGEIO_OK) ? dev->image_storage.id : 0; 
-  dev->requested_id = dev->image_storage.id; 
+//  dev->requested_id = (dev->image_storage.load_status == DT_IMAGEIO_OK) ? dev->image_storage.id : 0;
+  dev->requested_id = dev->image_storage.id;
 }
 
 void dt_dev_reload_image(dt_develop_t *dev,

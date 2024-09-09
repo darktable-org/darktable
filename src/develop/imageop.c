@@ -724,7 +724,8 @@ static void _gui_moveup_callback(GtkButton *button, dt_iop_module_t *module)
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_MOVED);
 }
 
-dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, const gboolean copy_params)
+dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base,
+                                      const gboolean copy_params)
 {
   // make sure the duplicated module appears in the history
   dt_dev_add_history_item(base->dev, base, FALSE);
@@ -740,6 +741,7 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, const gboolean copy
   int pos_module = 0;
   int pos_base = 0;
   int pos = 0;
+
   while(modules)
   {
     dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
@@ -829,9 +831,8 @@ static void _gui_copy_callback(GtkButton *button, dt_iop_module_t *base)
     dt_iop_gui_rename_module(module);
 }
 
-static void _gui_duplicate_callback(GtkButton *button, gpointer user_data)
+static void _gui_duplicate_callback(GtkButton *button, dt_iop_module_t *base)
 {
-  dt_iop_module_t *base = (dt_iop_module_t *)user_data;
   dt_iop_module_t *module = dt_iop_gui_duplicate(base, TRUE);
 
   /* setup key accelerators */
@@ -940,11 +941,16 @@ void dt_iop_gui_rename_module(dt_iop_module_t *module)
   gtk_widget_hide(module->instance_name);
 
   gtk_widget_add_events(entry, GDK_FOCUS_CHANGE_MASK);
-  g_signal_connect(entry, "key-press-event", G_CALLBACK(_rename_module_key_press), module);
-  g_signal_connect(entry, "focus-out-event", G_CALLBACK(_rename_module_key_press), module);
-  g_signal_connect(entry, "style-updated", G_CALLBACK(_rename_module_resize), module);
-  g_signal_connect(entry, "changed", G_CALLBACK(_rename_module_resize), module);
-  g_signal_connect(entry, "enter-notify-event", G_CALLBACK(_header_enter_notify_callback),
+  g_signal_connect(entry, "key-press-event",
+                   G_CALLBACK(_rename_module_key_press), module);
+  g_signal_connect(entry, "focus-out-event",
+                   G_CALLBACK(_rename_module_key_press), module);
+  g_signal_connect(entry, "style-updated",
+                   G_CALLBACK(_rename_module_resize), module);
+  g_signal_connect(entry, "changed",
+                   G_CALLBACK(_rename_module_resize), module);
+  g_signal_connect(entry, "enter-notify-event",
+                   G_CALLBACK(_header_enter_notify_callback),
                    GINT_TO_POINTER(DT_ACTION_ELEMENT_SHOW));
 
   dt_iop_show_hide_header_buttons(module, NULL, FALSE, TRUE); // before adding entry
@@ -953,12 +959,14 @@ void dt_iop_gui_rename_module(dt_iop_module_t *module)
   gtk_widget_grab_focus(entry);
 }
 
-static void _gui_rename_callback(GtkButton *button, dt_iop_module_t *module)
+static void _gui_rename_callback(GtkButton *button,
+                                 dt_iop_module_t *module)
 {
   dt_iop_gui_rename_module(module);
 }
 
-void _get_multi_show(struct dt_iop_module_t *module, dt_iop_gui_multi_show_t *multi_show)
+void _get_multi_show(struct dt_iop_module_t *module,
+                     dt_iop_gui_multi_show_t *multi_show)
 {
   dt_develop_t *dev = darktable.develop;
 
@@ -1018,37 +1026,43 @@ static gboolean _gui_multiinstance_callback(GtkButton *button,
 
   item = gtk_menu_item_new_with_label(_("new instance"));
   // gtk_widget_set_tooltip_text(item, _("add a new instance of this module to the pipe"));
-  g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_gui_copy_callback), module);
+  g_signal_connect(G_OBJECT(item), "activate",
+                   G_CALLBACK(_gui_copy_callback), module);
   gtk_widget_set_sensitive(item, multi_show.new);
   gtk_menu_shell_append(menu, item);
 
   item = gtk_menu_item_new_with_label(_("duplicate instance"));
   // gtk_widget_set_tooltip_text(item, _("add a copy of this instance to the pipe"));
-  g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_gui_duplicate_callback), module);
+  g_signal_connect(G_OBJECT(item), "activate",
+                   G_CALLBACK(_gui_duplicate_callback), module);
   gtk_widget_set_sensitive(item, multi_show.new);
   gtk_menu_shell_append(menu, item);
 
   item = gtk_menu_item_new_with_label(_("move up"));
   // gtk_widget_set_tooltip_text(item, _("move this instance up"));
-  g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_gui_moveup_callback), module);
+  g_signal_connect(G_OBJECT(item), "activate",
+                   G_CALLBACK(_gui_moveup_callback), module);
   gtk_widget_set_sensitive(item, multi_show.up);
   gtk_menu_shell_append(menu, item);
 
   item = gtk_menu_item_new_with_label(_("move down"));
   // gtk_widget_set_tooltip_text(item, _("move this instance down"));
-  g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_gui_movedown_callback), module);
+  g_signal_connect(G_OBJECT(item), "activate",
+                   G_CALLBACK(_gui_movedown_callback), module);
   gtk_widget_set_sensitive(item, multi_show.down);
   gtk_menu_shell_append(menu, item);
 
   item = gtk_menu_item_new_with_label(_("delete"));
   // gtk_widget_set_tooltip_text(item, _("delete this instance"));
-  g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_gui_delete_callback), module);
+  g_signal_connect(G_OBJECT(item), "activate",
+                   G_CALLBACK(_gui_delete_callback), module);
   gtk_widget_set_sensitive(item, multi_show.close);
   gtk_menu_shell_append(menu, item);
 
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
   item = gtk_menu_item_new_with_label(_("rename"));
-  g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_gui_rename_callback), module);
+  g_signal_connect(G_OBJECT(item), "activate",
+                   G_CALLBACK(_gui_rename_callback), module);
   gtk_menu_shell_append(menu, item);
 
   g_signal_connect(G_OBJECT(menu), "deactivate",
@@ -1058,11 +1072,15 @@ static gboolean _gui_multiinstance_callback(GtkButton *button,
                     GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
 
   // make sure the button is deactivated now that the menu is opened
-  if(button) dtgtk_button_set_active(DTGTK_BUTTON(button), FALSE);
+  if(button)
+    dtgtk_button_set_active(DTGTK_BUTTON(button), FALSE);
+
   return TRUE;
 }
 
-static gboolean _gui_off_button_press(GtkButton *w, GdkEventButton *e, dt_iop_module_t *module)
+static gboolean _gui_off_button_press(GtkButton *w,
+                                      GdkEventButton *e,
+                                      dt_iop_module_t *module)
 {
   if(module->operation_tags() & IOP_TAG_DISTORT)
   {
@@ -1078,7 +1096,8 @@ static gboolean _gui_off_button_press(GtkButton *w, GdkEventButton *e, dt_iop_mo
   return FALSE;
 }
 
-static void _gui_off_callback(GtkToggleButton *togglebutton, dt_iop_module_t *module)
+static void _gui_off_callback(GtkToggleButton *togglebutton,
+                              dt_iop_module_t *module)
 {
   const gboolean basics =
     (dt_dev_modulegroups_get_activated(module->dev) == DT_MODULEGROUP_BASICS);
@@ -1297,7 +1316,9 @@ void dt_iop_gui_init(dt_iop_module_t *module)
 
 void dt_iop_reload_defaults(dt_iop_module_t *module)
 {
-  if(darktable.gui) ++darktable.gui->reset;
+  if(darktable.gui)
+    ++darktable.gui->reset;
+
   if(module->reload_defaults)
   {
     // report if reload_defaults was called unnecessarily => this
@@ -1315,10 +1336,14 @@ void dt_iop_reload_defaults(dt_iop_module_t *module)
       dt_print(DT_DEBUG_PARAMS,
                "[dt_iop_reload_defaults] should not be called without image.\n");
   }
-  dt_iop_load_default_params(module);
-  if(darktable.gui) --darktable.gui->reset;
 
-  if(module->header) dt_iop_gui_update_header(module);
+  dt_iop_load_default_params(module);
+
+  if(darktable.gui)
+    --darktable.gui->reset;
+
+  if(module->header)
+    dt_iop_gui_update_header(module);
 }
 
 void dt_iop_cleanup_histogram(gpointer data, gpointer user_data)
