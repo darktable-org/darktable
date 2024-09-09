@@ -183,6 +183,7 @@ src/develop/tiling.c
 src/dtgtk/culling.c
 src/dtgtk/range.c
 src/dtgtk/resetlabel.c
+src/dtgtk/stylemenu.c
 src/dtgtk/thumbnail.c
 src/dtgtk/thumbnail_btn.c
 src/dtgtk/thumbtable.c
@@ -382,6 +383,7 @@ src/libs/tools/viewswitcher.c
 src/lua/image.c
 src/lua/lualib.c
 src/lua/preferences.c
+src/lua/util.c
 src/views/darkroom.c
 src/views/lighttable.c
 src/views/map.c
