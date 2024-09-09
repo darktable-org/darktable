@@ -2984,7 +2984,7 @@ GtkWidget *dt_iop_gui_header_button(dt_iop_module_t *module,
 
 static gboolean _on_drag_motion(GtkWidget *widget, GdkDragContext *dc, gint x, gint y, guint time, dt_iop_module_t *dest)
 {
-  if(y < 0) return FALSE; // handled by panel after failing on current module and then sent to last item.
+  gdk_drag_status(dc, 0, time);
 
   GtkWidget *src_widget = gtk_widget_get_ancestor(gtk_drag_get_source_widget(dc),
                                                   DTGTK_TYPE_EXPANDER);
@@ -2993,7 +2993,7 @@ static gboolean _on_drag_motion(GtkWidget *widget, GdkDragContext *dc, gint x, g
   for(GList *iop = darktable.develop->iop; iop; iop = iop->next)
     if(((dt_iop_module_t *)iop->data)->expander == src_widget)
       src = iop->data;
-  if(!src || dest == src) return FALSE;
+  if(!src || dest == src) return TRUE;
 
   const gboolean above = y < gtk_widget_get_allocated_height(dest->header);
 
@@ -3007,18 +3007,15 @@ static gboolean _on_drag_motion(GtkWidget *widget, GdkDragContext *dc, gint x, g
     } while (!dest->expander || !gtk_widget_get_visible(dest->expander));
   }
 
-  if(dest == src) return FALSE;
+  if(dest == src) return TRUE;
 
   if(x != DND_DROP)
   {
-    if(!(src->iop_order < dest->iop_order
-         ? dt_ioppr_check_can_move_after_iop(darktable.develop->iop, src, dest)
-         : dt_ioppr_check_can_move_before_iop(darktable.develop->iop, src, dest)))
-      return FALSE;
-
-    dtgtk_expander_set_drag_hover(DTGTK_EXPANDER(widget), TRUE, !above);
-
-    gdk_drag_status(dc, GDK_ACTION_COPY, time);
+    gboolean allow = src->iop_order < dest->iop_order
+                   ? dt_ioppr_check_can_move_after_iop(darktable.develop->iop, src, dest)
+                   : dt_ioppr_check_can_move_before_iop(darktable.develop->iop, src, dest);
+    dtgtk_expander_set_drag_hover(DTGTK_EXPANDER(widget), allow, !above);
+    if(allow) gdk_drag_status(dc, GDK_ACTION_COPY, time);
   }
   else
   {
@@ -3027,7 +3024,7 @@ static gboolean _on_drag_motion(GtkWidget *widget, GdkDragContext *dc, gint x, g
     if(!(src->iop_order < dest->iop_order
          ? dt_ioppr_move_iop_after(darktable.develop, src, dest)
          : dt_ioppr_move_iop_before(darktable.develop, src, dest)))
-      return FALSE;
+      return TRUE;
 
     // we move the headers
     int position = 0;

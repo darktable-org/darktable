@@ -185,7 +185,11 @@ static void _expander_resize(GtkWidget *widget, GdkRectangle *allocation, gpoint
 
 void dtgtk_expander_set_drag_hover(GtkDarktableExpander *expander, gboolean hover, gboolean below)
 {
-  GtkWidget *widget = GTK_WIDGET(expander);
+  GtkWidget *widget = expander ? GTK_WIDGET(expander) : _drop_widget;
+  // don't remove drop zone when switching between last expander and empty space to avoid jitter
+  static guint hovertime;
+  guint time = gtk_get_current_event_time();
+  if(!widget || (!hover && widget == _drop_widget && time == hovertime)) return;
 
   dt_gui_remove_class(widget, "module_drop_after");
   dt_gui_remove_class(widget, "module_drop_before");
@@ -193,6 +197,7 @@ void dtgtk_expander_set_drag_hover(GtkDarktableExpander *expander, gboolean hove
   if(hover)
   {
     _drop_widget = widget;
+    hovertime = time;
 
     if(below)
       dt_gui_add_class(widget, "module_drop_before");

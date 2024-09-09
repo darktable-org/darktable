@@ -2236,10 +2236,9 @@ static gboolean _on_drag_motion_drop(GtkWidget *widget, GdkDragContext *dc, gint
   return ret;
 }
 
-static void _on_drag_leave(GtkDarktableExpander *widget, GdkDragContext *dc, guint time, gpointer user_data)
+static void _on_drag_leave(GtkWidget *widget, GdkDragContext *dc, guint time, gpointer user_data)
 {
-  for(GList *m = gtk_container_get_children(GTK_CONTAINER(widget)); m; m = g_list_delete_link(m, m))
-    dtgtk_expander_set_drag_hover(m->data, FALSE, FALSE);
+  dtgtk_expander_set_drag_hover(NULL, FALSE, FALSE);
 }
 
 static gboolean _remove_modules_visibility(gpointer key,
