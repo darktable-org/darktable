@@ -681,42 +681,26 @@ void dt_dump_pipe_diff_pfm(
   if(!dt_str_commasubstring(darktable.dump_diff_pipe, mod)) return;
 
   const size_t pk = (size_t)ch * width * height;
-  float *o = dt_alloc_align_float(2 * pk);
+  float *o = dt_calloc_align_float(5 * pk);
   if(!o) return;
 
   DT_OMP_FOR()
   for(size_t p = 0; p < width * height; p++)
   {
-    const size_t k = ch * p;
     for(size_t c = 0; c < ch; c++)
     {
-      if(a[k+c] > 1e-6 && b[k+c] > 1e-6)
+      const size_t k = ch * p +c;
+      if(a[k] > NORM_MIN && b[k] > NORM_MIN)
       {
-        const float ratio = a[k+c] / b[k+c];
-        o[k+c] = CLIP(50.0f * CLIP(ratio - 1.0f));
+        o[k]      = 0.25f * a[k];
+        o[1*pk+k] = CLIP(50.0f * CLIP(a[k] / b[k] - 1.0f));
+        o[2*pk+k] = CLIP(100.0f * (a[k] - b[k]));
+        o[3*pk+k] = CLIP(50.0f * CLIP(b[k] / a[k] - 1.0f));
+        o[4*pk+k] = CLIP(100.0f * (b[k] - a[k]));
       }
-      else
-        o[k+c] = 0.0f;
     }
   }
-
-  DT_OMP_FOR()
-  for(size_t p = 0; p < width * height; p++)
-  {
-    const size_t k = ch * p;
-    for(size_t c = 0; c < ch; c++)
-    {
-      if(a[k+c] > 1e-6 && b[k+c] > 1e-6)
-      {
-        const float ratio = b[k+c] / a[k+c];
-        o[pk+k+c] = CLIP(50.0f * CLIP(ratio - 1.0f));
-      }
-      else
-        o[pk+k+c] = 0.0f;
-    }
-  }
-
-  dt_dump_pfm_file(pipe, o, width, 2 * height, ch * sizeof(float), mod, "[dt_dump_CPU/GPU_diff_pfm]", TRUE, TRUE, TRUE);
+  dt_dump_pfm_file(pipe, o, width, 5 * height, ch * sizeof(float), mod, "[dt_dump_CPU/GPU_diff_pfm]", TRUE, TRUE, TRUE);
   dt_free_align(o);
 }
 
