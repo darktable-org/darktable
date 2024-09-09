@@ -2959,6 +2959,8 @@ GtkWidget *dt_iop_gui_header_button(dt_iop_module_t *module,
 
 static gboolean _on_drag_motion(GtkWidget *widget, GdkDragContext *dc, gint x, gint y, guint time, dt_iop_module_t *dest)
 {
+  if(y < 0) return FALSE; // handled by panel after failing on current module and then sent to last item.
+
   GtkWidget *src_widget = gtk_widget_get_ancestor(gtk_drag_get_source_widget(dc),
                                                   DTGTK_TYPE_EXPANDER);
 
@@ -2966,14 +2968,21 @@ static gboolean _on_drag_motion(GtkWidget *widget, GdkDragContext *dc, gint x, g
   for(GList *iop = darktable.develop->iop; iop; iop = iop->next)
     if(((dt_iop_module_t *)iop->data)->expander == src_widget)
       src = iop->data;
+  if(!src || dest == src) return FALSE;
 
   const gboolean above = y < gtk_widget_get_allocated_height(dest->header);
 
-  GList *iop_order = g_list_find(darktable.develop->iop, dest);
-  dest = above ^ (src && dest->iop_order < src->iop_order)
-       ? dest : above ? iop_order->next->data : iop_order->prev->data;
+  if(above ^ (dest->iop_order > src->iop_order))
+  {
+    GList *dest_list = g_list_find(darktable.develop->iop, dest);
+    do
+    {
+      dest_list = above ? dest_list->next : dest_list->prev;
+      dest = dest_list->data;
+    } while (!dest->expander || !gtk_widget_get_visible(dest->expander));
+  }
 
-  if(!src || !dest || dest == src) return FALSE;
+  if(dest == src) return FALSE;
 
   if(x != DND_DROP)
   {
