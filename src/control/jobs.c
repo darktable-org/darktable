@@ -403,13 +403,13 @@ gboolean dt_control_add_job(dt_control_t *control,
                             dt_job_queue_t queue_id,
                             _dt_job_t *job)
 {
-  if(((unsigned int)queue_id) >= DT_JOB_QUEUE_MAX || !job)
+  if((((unsigned int)queue_id) >= DT_JOB_QUEUE_MAX && queue_id != DT_JOB_QUEUE_SYNCHRONOUS) || !job)
   {
     dt_control_job_dispose(job);
     return TRUE;
   }
 
-  if(!control->running)
+  if(!control->running || queue_id == DT_JOB_QUEUE_SYNCHRONOUS)
   {
     // whatever we are adding here won't be scheduled as the system isn't running. execute it synchronous instead.
     dt_pthread_mutex_lock(&job->wait_mutex); // is that even needed?

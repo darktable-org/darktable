@@ -48,7 +48,8 @@ typedef enum dt_job_queue_t
   DT_JOB_QUEUE_USER_BG = 2,     // imports, ...
   DT_JOB_QUEUE_USER_EXPORT = 3, // exports. only one of these jobs will ever be scheduled at a time
   DT_JOB_QUEUE_SYSTEM_BG = 4,   // some lua stuff that may not be pushed out of the queue, ...
-  DT_JOB_QUEUE_MAX = 5
+  DT_JOB_QUEUE_MAX = 5,
+  DT_JOB_QUEUE_SYNCHRONOUS = 1000 // don't queue, run immeidately and don't return until done
 } dt_job_queue_t;
 
 typedef struct _dt_job_t dt_job_t;
