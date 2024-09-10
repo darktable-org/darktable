@@ -1328,6 +1328,13 @@
     <longdescription>if enabled, write full preview to disk (.cache/darktable/) when evicted from the memory cache.\nnote that this can take a lot of memory (several gigabytes for 20k images) and will never delete cached full previews again.\nit's safe though to delete these manually, if you want.\nlight table performance will be increased greatly when zooming image in full preview mode.</longdescription>
   </dtconfig>
   <dtconfig prefs="lighttable" section="thumbs">
+    <name>thumbtable_fractional_scrolling</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>enable smooth scrolling for lighttable thumbnails</shortdescription>
+    <longdescription>if enabled, scrolling the lighttable scrolls by some number of pixels, as expected with a touch pad.\ndisabled, the lighttable scrolls full rows of thumbnails, as befits a scroll wheel.</longdescription>
+  </dtconfig>
+  <dtconfig prefs="lighttable" section="thumbs">
     <name>backthumbs_mipsize</name>
     <type>
       <enum>
