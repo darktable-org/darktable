@@ -1369,16 +1369,13 @@ static void _pop_menu_attached_detach(GtkWidget *menuitem, dt_lib_module_t *self
 static void _pop_menu_attached_find(GtkWidget *menuitem, dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
-  gchar *name;
-  GtkTreeIter iter;
-  GtkTreeModel *model = NULL;
-  GtkTreeSelection *selection = gtk_tree_view_get_selection(d->attached_view);
-  if(!gtk_tree_selection_get_selected(selection, &model, &iter)) return;
 
-  gtk_tree_model_get(model, &iter,
-                     DT_LIB_TAGGING_COL_TAG, &name, -1);
+  GList *selection = gtk_flow_box_get_selected_children(GTK_FLOW_BOX(d->attached_view2));
+  if(!selection) return;
+  const GtkDarktableTagLabel *tag_label = DTGTK_TAG_LABEL(selection->data);
+  const DtTagObj *tag_obj = _find_tag_by_id(G_LIST_MODEL(d->attached_store), tag_label->tagid); 
 
-  gtk_entry_set_text(d->entry, name);
+  gtk_entry_set_text(d->entry, tag_obj->tag.tag);
 }
 
 static void _pop_menu_attached(GtkWidget *treeview, GdkEventButton *event, dt_lib_module_t *self)
