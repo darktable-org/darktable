@@ -23,11 +23,6 @@ G_DEFINE_TYPE (DtTagObj, dt_tag_obj, G_TYPE_OBJECT)
 
 static void _dt_tag_obj_dispose(GObject *gobject)
 {
-  DtTagObj *self = DT_TAG_OBJ(gobject);
-
-  g_free(self->tag.tag);
-  self->tag.tag = NULL;
-
   G_OBJECT_CLASS(dt_tag_obj_parent_class)->dispose(gobject);
 }
 
@@ -35,8 +30,12 @@ static void _dt_tag_obj_finalize(GObject *gobject)
 {
   DtTagObj *self = DT_TAG_OBJ(gobject);
 
+  g_free(self->tag.tag);
+  self->tag.tag = NULL;
   g_free(self->tag.leave);
   self->tag.leave = NULL;
+  g_free(self->tag.synonym);
+  self->tag.synonym = NULL;
 
   G_OBJECT_CLASS(dt_tag_obj_parent_class)->finalize (gobject);  
 }
@@ -63,6 +62,11 @@ GObject *dt_tag_obj_new(const dt_tag_t *tag)
   return (GObject *)self;
 }
 
+gboolean dt_tag_obj_is_user_tag(const DtTagObj *self)
+{
+  return !g_str_has_prefix(self->tag.tag, "darktable|") 
+         || g_str_has_prefix(self->tag.tag, "darktable|style|");
+}
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

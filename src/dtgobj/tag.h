@@ -35,6 +35,7 @@ struct _DtTagObj
 };
 
 GObject *dt_tag_obj_new(const dt_tag_t *tag);
+gboolean dt_tag_obj_is_user_tag(const DtTagObj *self);
 
 G_END_DECLS
 
