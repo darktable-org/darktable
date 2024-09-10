@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -53,6 +53,7 @@ typedef struct _dt_job_t
 
   char description[DT_CONTROL_DESCRIPTION_LEN];
   dt_view_type_flags_t view_creator;
+  gboolean is_synchronous;
 } _dt_job_t;
 
 /** check if two jobs are to be considered equal. a simple memcmp won't work since the mutexes probably won't
@@ -151,6 +152,16 @@ dt_job_t *dt_control_job_create(dt_job_execute_callback execute,
 dt_view_type_flags_t dt_control_job_get_view_creator(const dt_job_t *job)
 {
   return job->view_creator;
+}
+
+gboolean dt_control_job_is_synchronous(const dt_job_t *job)
+{
+  return job->is_synchronous;
+}
+
+void dt_control_job_set_synchronous(dt_job_t *job, gboolean sync)
+{
+   job->is_synchronous = sync;
 }
 
 void dt_control_job_dispose(_dt_job_t *job)
@@ -413,6 +424,7 @@ gboolean dt_control_add_job(dt_control_t *control,
   {
     // whatever we are adding here won't be scheduled as the system isn't running. execute it synchronous instead.
     dt_pthread_mutex_lock(&job->wait_mutex); // is that even needed?
+    dt_control_job_set_synchronous(job, TRUE);
     _control_job_execute(job);
     dt_pthread_mutex_unlock(&job->wait_mutex);
 

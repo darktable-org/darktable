@@ -91,6 +91,8 @@ gboolean dt_control_add_job(struct dt_control_t *control, dt_job_queue_t queue_i
 gboolean dt_control_add_job_res(struct dt_control_t *s, dt_job_t *job, int32_t res);
 
 dt_view_type_flags_t dt_control_job_get_view_creator(const dt_job_t *job);
+gboolean dt_control_job_is_synchronous(const dt_job_t *job);
+void dt_control_job_set_synchronous(dt_job_t *job, gboolean sync);
 
 int32_t dt_control_get_threadid();
 

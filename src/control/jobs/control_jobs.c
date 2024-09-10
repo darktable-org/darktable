@@ -1537,8 +1537,13 @@ static int32_t dt_control_refresh_exif_run(dt_job_t *job)
 
 static inline gboolean _safe_history_job_on_imgid(dt_job_t *job, dt_imgid_t imgid)
 {
-  return dt_control_job_get_view_creator(job) == DT_VIEW_DARKROOM
-    || (darktable.develop && darktable.develop->image_storage.id != imgid);
+  // it is safe to run a history-modifying operation if:
+  //  1. we are running synchronously
+  //  2. we are not editing an image in darkroom, or
+  //  3. we are not modifying the image being edited
+  return dt_control_job_is_synchronous(job)
+    || !darktable.develop
+    || darktable.develop->image_storage.id != imgid;
 }
 
 static int32_t _control_paste_history_job_run(dt_job_t *job)
@@ -2179,6 +2184,30 @@ void dt_control_refresh_exif()
                                           NULL, PROGRESS_CANCELLABLE, FALSE));
 }
 
+static void _add_history_job(GList *imgs, const char *title, dt_job_execute_callback execute)
+{
+  if(!imgs || !execute)
+    return;
+  GList *link = darktable.develop ? g_list_find(imgs,GINT_TO_POINTER(darktable.develop->image_storage.id)) : NULL;
+  if(link)
+  {
+    // remove the image in darkroom center view from the list of images to be processed, and
+    // run it synchronously by itself
+    imgs = g_list_remove_link(imgs, link);
+    dt_control_add_job(darktable.control, DT_JOB_QUEUE_SYNCHRONOUS,
+                       dt_control_generic_images_job_create(execute, title, 0,
+                                                            link, PROGRESS_BLOCKING, FALSE));
+  }
+  // if there are any images left in the list after removing the darkroom image, process them asynchronously
+  // but block user interactions other than cancellation
+  if(imgs)
+  {
+    dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
+                       dt_control_generic_images_job_create(execute, title, 0,
+                                                            imgs, PROGRESS_BLOCKING, FALSE));
+  }
+}
+
 void dt_control_paste_history(GList *imgs)
 {
   if(!dt_is_valid_imgid(darktable.view_manager->copy_paste.copied_imageid))
@@ -2186,11 +2215,7 @@ void dt_control_paste_history(GList *imgs)
     g_list_free(imgs);
     return;
   }
-  dt_job_queue_t queue = g_list_shorter_than(imgs,4) ? DT_JOB_QUEUE_SYNCHRONOUS : DT_JOB_QUEUE_USER_FG;
-  dt_control_add_job(darktable.control, queue,
-                     dt_control_generic_images_job_create(&_control_paste_history_job_run,
-                                                          N_("paste history"), 0,
-                                                          imgs, PROGRESS_BLOCKING, FALSE));
+  _add_history_job(imgs, N_("paste history"), &_control_paste_history_job_run);
 }
 
 void dt_control_paste_parts_history(GList *imgs)
@@ -2208,11 +2233,7 @@ void dt_control_paste_parts_history(GList *imgs)
 
   if(res == GTK_RESPONSE_OK)
   {
-    dt_job_queue_t queue = g_list_shorter_than(imgs,4) ? DT_JOB_QUEUE_SYNCHRONOUS : DT_JOB_QUEUE_USER_FG;
-    dt_control_add_job(darktable.control, queue,
-                       dt_control_generic_images_job_create(&_control_paste_history_job_run,
-                                                            N_("paste history"), 0,
-                                                            imgs, PROGRESS_BLOCKING, FALSE));
+    _add_history_job(imgs, N_("paste history"), &_control_paste_history_job_run);
   }
   else
     g_list_free(imgs);
@@ -2220,28 +2241,24 @@ void dt_control_paste_parts_history(GList *imgs)
 
 void dt_control_compress_history(GList *imgs)
 {
-  if(!imgs)
-    return;
   if(g_list_is_singleton(imgs))
   {
     (void)dt_history_compress(GPOINTER_TO_INT(imgs->data));
     g_list_free(imgs);
     return;
   }
-  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
-                     dt_control_generic_images_job_create(&_control_compress_history_job_run,
-                                                          N_("compress history"), 0,
-                                                          imgs, PROGRESS_BLOCKING, FALSE));
+  _add_history_job(imgs, N_("compress history"), &_control_compress_history_job_run);
 }
 
 void dt_control_discard_history(GList *imgs)
 {
-  if(!imgs)
+  if(g_list_is_singleton(imgs))
+  {
+    dt_history_delete(GPOINTER_TO_INT(imgs->data), TRUE);
+    g_list_free(imgs);
     return;
-  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
-                     dt_control_generic_images_job_create(&_control_discard_history_job_run,
-                                                          N_("discard history"), 0,
-                                                          imgs, PROGRESS_BLOCKING, FALSE));
+  }
+  _add_history_job(imgs, N_("discard history"), &_control_discard_history_job_run);
 }
 
 static dt_control_image_enumerator_t *dt_control_export_alloc()
