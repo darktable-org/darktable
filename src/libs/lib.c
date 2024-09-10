@@ -1320,7 +1320,8 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
 void dt_lib_gui_set_label(dt_lib_module_t *module,
                           const char *label)
 {
-  gtk_label_set_text(GTK_LABEL(module->label), label);
+  if(module->expander)
+    gtk_label_set_text(GTK_LABEL(module->label), label);
 }
 
 static void _preferences_changed(gpointer instance, gpointer self)
