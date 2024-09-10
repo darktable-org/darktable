@@ -1049,11 +1049,16 @@ static void _intent_changed(GtkWidget *widget, dt_lib_export_t *d)
 static void _update_style_label(dt_lib_export_t *d, const char *name)
 {
   gtk_widget_set_visible(GTK_WIDGET(d->style_mode), name[0] != '\0');
-  char *localized_style = dt_util_localize_segmented_name(name[0] ? name : "none");
+
+  // We use the string "none" to indicate that we don't apply any style to the export
+  char *localized_style = name[0] ? dt_util_localize_segmented_name(name) : g_strdup(_("none"));
+
+  // Use only the leaf part of the segmented style name in the tooltip
   char *leaf = strrchr(localized_style, '|');
   leaf = leaf ? leaf+1 : localized_style;
-  gtk_label_set_text(GTK_LABEL(d->style),leaf);
-  char *tooltip = g_strdup_printf(_("style to be applied on export:\n<b>%s</b>"),localized_style);
+  gtk_label_set_text(GTK_LABEL(d->style), leaf);
+  char *tooltip = g_strdup_printf(_("style to be applied on export:\n<b>%s</b>"),
+                                  localized_style);
   g_free(localized_style);
   gtk_widget_set_tooltip_markup(d->style, tooltip);
   g_free(tooltip);
