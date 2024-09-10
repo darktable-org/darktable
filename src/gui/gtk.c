@@ -2222,6 +2222,8 @@ static gboolean _on_drag_motion_drop(GtkWidget *widget, GdkDragContext *dc, gint
     if(gtk_widget_get_visible(GTK_WIDGET(m->data))) last = m->data;
   if(last)
     g_signal_emit_by_name(last, "drag-motion", dc, drop ? -1 : x, y, time, &ret);
+  else if(dt_view_get_current() == DT_VIEW_DARKROOM)
+    gdk_drag_status(dc, 0, time); // don't allow dropping in empty panel on other side
   else if(drop)
   {
     // drop in empty panel; dragged expander handles its own move; pass destination panel in dc
