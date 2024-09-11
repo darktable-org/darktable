@@ -145,7 +145,7 @@ static dt_imageio_retval_t _unsupported_type(dt_image_t *img,
                                               const char *filename,
                                               dt_mipmap_buffer_t *buf)
 {
-  return DT_IMAGEIO_LOAD_FAILED;
+  return DT_IMAGEIO_UNSUPPORTED_FORMAT;
 }
 
 // redirect loaders to surrogate as needed
@@ -455,7 +455,7 @@ static const gchar *_supported_hdr[]
 
 static inline gboolean _image_handled(dt_imageio_retval_t ret)
 {
-  return ret == DT_IMAGEIO_OK  || ret == DT_IMAGEIO_CACHE_FULL ;
+  return ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL || ret == DT_IMAGEIO_UNSUPPORTED_FEATURE;
 }
 
 static const dt_magic_bytes_t *_find_signature(const char *filename)
@@ -875,116 +875,10 @@ size_t dt_imageio_write_pos(const int i,
   return (size_t)jj * w + ii;
 }
 
-/* magic data: exclusion,offset,length, xx, yy, ...
-    just add magic bytes to match to this struct
-    to extend match on LDR formats.
-*/
-static const uint8_t _imageio_ldr_magic[] = {
-  /* jpeg magics */
-  0x00, 0x00, 0x02, 0xff, 0xd8, // SOI marker
-
-#ifdef HAVE_OPENJPEG
-  /* jpeg 2000, jp2 format */
-  0x00, 0x00, 0x0c, 0x0,  0x0,  0x0,  0x0C, 0x6A, 0x50, 0x20, 0x20, 0x0D, 0x0A, 0x87, 0x0A,
-
-  /* jpeg 2000, j2k format */
-  0x00, 0x00, 0x05, 0xFF, 0x4F, 0xFF, 0x51, 0x00,
-#endif
-
-  /* webp image */
-  0x00, 0x08, 0x04, 'W', 'E', 'B', 'P',
-
-  /* png image */
-  0x00, 0x01, 0x03, 0x50, 0x4E, 0x47, // ASCII 'PNG'
-
-
-  /* Canon CR2/CRW is like TIFF with additional magic numbers so must come
-     before tiff as an exclusion */
-
-  /* Most CR2 */
-  0x01, 0x00, 0x0a, 0x49, 0x49, 0x2a, 0x00, 0x10, 0x00, 0x00, 0x00, 0x43, 0x52,
-
-  /* CR3 (ISO Media) */
-  0x01, 0x00, 0x18, 0x00, 0x00, 0x00, 0x18, 'f', 't', 'y', 'p', 'c', 'r', 'x', ' ',
-  0x00, 0x00, 0x00, 0x01, 'c', 'r', 'x', ' ', 'i', 's', 'o', 'm',
-
-  // Older Canon RAW format with TIF Extension (i.e. 1Ds and 1D)
-  0x01, 0x00, 0x0a, 0x4d, 0x4d, 0x00, 0x2a, 0x00, 0x00, 0x00, 0x10, 0xba, 0xb0,
-
-  // Older Canon RAW format with TIF Extension (i.e. D2000)
-  0x01, 0x00, 0x0a, 0x4d, 0x4d, 0x00, 0x2a, 0x00, 0x00, 0x11, 0x34, 0x00, 0x04,
-
-  // Older Canon RAW format with TIF Extension (i.e. DCS1)
-  0x01, 0x00, 0x0a, 0x49, 0x49, 0x2a, 0x00, 0x00, 0x03, 0x00, 0x00, 0xff, 0x01,
-
-  // Older Kodak RAW format with TIF Extension (i.e. DCS520C)
-  0x01, 0x00, 0x0a, 0x4d, 0x4d, 0x00, 0x2a, 0x00, 0x00, 0x11, 0xa8, 0x00, 0x04,
-
-  // Older Kodak RAW format with TIF Extension (i.e. DCS560C)
-  0x01, 0x00, 0x0a, 0x4d, 0x4d, 0x00, 0x2a, 0x00, 0x00, 0x11, 0x76, 0x00, 0x04,
-
-  // Older Kodak RAW format with TIF Extension (i.e. DCS460D)
-  0x01, 0x00, 0x0a, 0x49, 0x49, 0x2a, 0x00, 0x00, 0x03, 0x00, 0x00, 0x7c, 0x01,
-
-  /* IIQ raw images, may be either .IIQ, or .TIF */
-  0x01, 0x08, 0x04, 0x49, 0x49, 0x49, 0x49,
-
-  /* TIFF image, Intel */
-  0x00, 0x00, 0x04, 0x4d, 0x4d, 0x00, 0x2a,
-
-  /* TIFF image, Motorola */
-  0x00, 0x00, 0x04, 0x49, 0x49, 0x2a, 0x00,
-
-  /* BigTIFF image, Intel */
-  0x00, 0x00, 0x04, 0x4d, 0x4d, 0x00, 0x2b,
-
-  /* BigTIFF image, Motorola */
-  0x00, 0x00, 0x04, 0x49, 0x49, 0x2b, 0x00,
-
-  /* binary NetPNM images: pbm, pgm and pbm */
-  0x00, 0x00, 0x02, 0x50, 0x34,
-  0x00, 0x00, 0x02, 0x50, 0x35,
-  0x00, 0x00, 0x02, 0x50, 0x36
-};
-
 gboolean dt_imageio_is_ldr(const char *filename)
 {
-  FILE *fin = g_fopen(filename, "rb");
-  if(fin)
-  {
-    size_t offset = 0;
-    uint8_t block[32] = { 0 }; // keep this big enough for whatever
-                               // magic size we want to compare to!
-    /* read block from file */
-    size_t s = fread(block, sizeof(block), 1, fin);
-    fclose(fin);
-
-    /* compare magic's */
-    while(s)
-    {
-      if(_imageio_ldr_magic[offset + 2] > sizeof(block)
-        || offset + 3 + _imageio_ldr_magic[offset + 2] > sizeof(_imageio_ldr_magic))
-      {
-        dt_print(DT_DEBUG_ALWAYS,
-                 "error: buffer in %s is too small!\n", __FUNCTION__);
-        return FALSE;
-      }
-      if(memcmp(_imageio_ldr_magic + offset + 3,
-                block + _imageio_ldr_magic[offset + 1],
-                _imageio_ldr_magic[offset + 2]) == 0)
-      {
-        if(_imageio_ldr_magic[offset] == 0x01)
-          return FALSE;
-        else
-          return TRUE;
-      }
-      offset += 3 + (_imageio_ldr_magic + offset)[2];
-
-      /* check if finished */
-      if(offset >= sizeof(_imageio_ldr_magic)) break;
-    }
-  }
-  return FALSE;
+  const dt_magic_bytes_t *sig = _find_signature(filename);
+  return sig && !sig->hdr;
 }
 
 void dt_imageio_to_fractional(const float in,
@@ -1584,13 +1478,10 @@ dt_imageio_retval_t dt_imageio_open_exotic(dt_image_t *img,
 {
   // if buf is NULL, don't proceed
   if(!buf) return DT_IMAGEIO_OK;
-#ifdef HAVE_GRAPHICSMAGICK
   dt_imageio_retval_t ret = dt_imageio_open_gm(img, filename, buf);
   if(_image_handled(ret)) return ret;
-#elif HAVE_IMAGEMAGICK
-  dt_imageio_retval_t ret = dt_imageio_open_im(img, filename, buf);
+  ret = dt_imageio_open_im(img, filename, buf);
   if(_image_handled(ret)) return ret;
-#endif
 
   return DT_IMAGEIO_LOAD_FAILED;
 }
@@ -1650,18 +1541,23 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
     if(dt_imageio_is_ldr(filename))
       ret = dt_imageio_open_tiff(img, filename, buf);
 
-    if(!_image_handled(ret))
-      ret = dt_imageio_open_avif(img, filename, buf);
-
-    /* try using rawspeed to load a raw */
+    // try using rawspeed to load a raw
     if(!_image_handled(ret))
       ret = dt_imageio_open_rawspeed(img, filename, buf);
 
-    /* fallback that tries to open file via LibRaw to support Canon CR3 */
+    // fallback that tries to open file via LibRaw to support Canon CR3
     if(!_image_handled(ret))
       ret = dt_imageio_open_libraw(img, filename, buf);
 
-    /* fallback that tries to open file via GraphicsMagick */
+    // there are reports that AVIF and HEIF files with alternate magic bytes exist, so try loading
+    // as such if we haven't yet succeeded
+    if(!_image_handled(ret))
+      ret = dt_imageio_open_avif(img, filename, buf);
+
+    if(!_image_handled(ret))
+      ret = dt_imageio_open_heif(img, filename, buf);
+
+    // final fallback that tries to open file via GraphicsMagick
     if(!_image_handled(ret))
       ret = dt_imageio_open_exotic(img, filename, buf);
 
