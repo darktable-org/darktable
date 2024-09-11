@@ -123842,24 +123842,6 @@
               ]
             },
             {
-              "name": "Tungsten",
-              "channels": [
-                1.421875,
-                1,
-                2.6328125,
-                0
-              ]
-            },
-            {
-              "name": "Tungsten",
-              "channels": [
-                1.48046875,
-                1,
-                2.55859375,
-                0
-              ]
-            },
-            {
               "name": "Incandescent",
               "tuning": -9,
               "channels": [
