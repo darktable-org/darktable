@@ -54,9 +54,12 @@ int position(const dt_lib_module_t *self)
   return 880;
 }
 
-void update(dt_lib_module_t *self)
+static void _update(dt_lib_module_t *self)
 {
   dt_lib_ioporder_t *d = (dt_lib_ioporder_t *)self->data;
+
+  if(self->arrow) gtk_widget_destroy(self->arrow);
+  self->arrow = NULL;
 
   const dt_iop_order_t kind =
     dt_ioppr_get_iop_order_list_kind(darktable.develop->iop_order_list);
@@ -123,7 +126,7 @@ static void _image_loaded_callback(gpointer instance, gpointer user_data)
   if(dt_view_get_current() == DT_VIEW_DARKROOM)
   {
     dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-    update(self);
+    _update(self);
   }
 }
 
@@ -132,8 +135,6 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_ioporder_t *d = (dt_lib_ioporder_t *)malloc(sizeof(dt_lib_ioporder_t));
 
   self->data = (void *)d;
-  self->no_control_widgets = TRUE;
-
   d->current_mode = -1;
   d->last_custom_iop_order = NULL;
 
@@ -224,7 +225,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
     dt_dev_pixelpipe_rebuild(darktable.develop);
 
-    update(self);
+    _update(self);
 
     g_list_free_full(iop_order_list, free);
     return 0;

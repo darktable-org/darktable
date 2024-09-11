@@ -115,13 +115,11 @@ typedef struct dt_lib_module_t
   /** does gui need to be updated if visible */
   gboolean gui_uptodate;
 
-  GtkWidget *label;
   GtkWidget *arrow;
   GtkWidget *reset_button;
   GtkWidget *presets_button;
 
   gboolean pref_based_presets;
-  gboolean no_control_widgets;
 } dt_lib_module_t;
 
 typedef struct dt_lib_module_info_t
