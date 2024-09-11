@@ -275,7 +275,7 @@ static void _reset_panels_clicked(GtkButton *button, gpointer user_data)
 {
   if(!dt_gui_show_yes_no_dialog(_("reset panels in all views"),
                                 _("are you sure?\n\n"
-                                  "you cannot restore your current panel layout and module selection.")))
+                                  "you will not be able to restore your current panel layout and module selection.")))
     return;
 
   g_hash_table_foreach_remove(darktable.conf->table, _remove_panel_config, NULL);
