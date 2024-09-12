@@ -457,6 +457,17 @@ static gboolean _attached_tag_key_pressed(GtkWidget *widget, GdkEventKey *event,
     case GDK_KEY_KP_Delete:
       _detach_selected_tag(d->attached_view, self);
       return TRUE;
+      break;
+
+    case GDK_KEY_Tab:
+      gtk_widget_grab_focus(GTK_WIDGET(d->entry));
+      return TRUE;
+      break;
+
+    case GDK_KEY_ISO_Left_Tab:
+      return TRUE;
+      break;
+
     default:
       break;
   }
@@ -3276,10 +3287,10 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
 
   GtkFlowBox *flow_box = GTK_FLOW_BOX(gtk_flow_box_new());
-  gtk_widget_set_valign(GTK_WIDGET(flow_box), GTK_ALIGN_START);
-  gtk_flow_box_set_selection_mode(flow_box, GTK_SELECTION_SINGLE);
   w = dt_ui_resize_wrap(GTK_WIDGET(flow_box), 200, "plugins/lighttable/tagging/heightattachedwindow");
   gtk_box_pack_start(box, w, TRUE, TRUE, 0);
+  gtk_widget_set_valign(GTK_WIDGET(flow_box), GTK_ALIGN_START);
+  gtk_flow_box_set_selection_mode(flow_box, GTK_SELECTION_SINGLE);
   d->attached_view2 = GTK_WIDGET(flow_box);
   g_signal_connect(flow_box, "selected-children-changed", G_CALLBACK(_flow_box_selection_changed), self);
 
@@ -3302,8 +3313,8 @@ void gui_init(dt_lib_module_t *self)
 
 
   view = GTK_TREE_VIEW(gtk_tree_view_new());
-  w = dt_ui_resize_wrap(GTK_WIDGET(view), 200, "plugins/lighttable/tagging/heightattachedwindow");
-  // gtk_box_pack_start(box, w, TRUE, TRUE, 0);
+  // w = dt_ui_resize_wrap(GTK_WIDGET(view), 200, "plugins/lighttable/tagging/heightattachedwindow");
+  gtk_box_pack_start(box, w, TRUE, TRUE, 0);
   d->attached_view = view;
   gtk_tree_view_set_enable_search(view, FALSE);
   gtk_tree_view_set_headers_visible(view, FALSE);
