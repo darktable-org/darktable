@@ -441,7 +441,7 @@ void dt_dev_pixelpipe_cache_checkmem(struct dt_dev_pixelpipe_t *pipe)
   // alternating buffers so no cleanup
   if(cache->entries == DT_PIPECACHE_MIN) return;
 
-  // We always free cachelines maked as not valid
+  // We always free cachelines marked as not valid
   size_t freed = 0;
 
   for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)

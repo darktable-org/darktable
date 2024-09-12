@@ -62,7 +62,7 @@ changes (where available).
 - Added a high-contrast theme with bright white text on a dark gray
   background.
 
-- Enhanced tooltips for utiltity module headers to provide more
+- Enhanced tooltips for utility module headers to provide more
   information about the module.
 
 - Added more hints on an empty lighttable.

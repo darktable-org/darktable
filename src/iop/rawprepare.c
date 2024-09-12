@@ -632,7 +632,7 @@ static gboolean _image_set_rawcrops(
   else
     dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
 
-  // we update p_width & height both in the image_storage for fast access withing the pipeline
+  // we update p_width & height both in the image_storage for fast access within the pipeline
   // and the database so we can access that also via dt_image_cache_get()
   dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
   image->p_width = img->p_width = img->width - (cropvalid ? left + right : 0);

@@ -620,7 +620,7 @@ int mouse_moved(dt_iop_module_t *self,
   {
     g->selected = 0;
     const float ext = DT_PIXEL_APPLY_DPI(0.02f) / zoom_scale;
-    // are we near extermity ?
+    // are we near extremity ?
     if(pzy > g->ya - ext && pzy < g->ya + ext && pzx > g->xa - ext && pzx < g->xa + ext)
     {
       g->selected = 1;

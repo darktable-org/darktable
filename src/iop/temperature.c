@@ -465,7 +465,7 @@ static void _temp2mul(dt_iop_module_t *self,
   xyz.Y /= tint; // TODO: This is baaad!
   /**
    * TODO:
-   * problem here is that tint as it is is just a nasty hack modyfying Y component
+   * problem here is that tint as it is is just a nasty hack modifying Y component
    * and therefore changing RGB coefficients in wrong way,
    * because modifying only Y in that way doesn’t move XYZ point orthogonally
    * to planckian locus. That means it actually changes temperature and thus it lies!
