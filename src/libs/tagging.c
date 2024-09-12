@@ -480,9 +480,11 @@ static GtkWidget* _add_attached_item(gpointer item, gpointer self)
 
   const gboolean hide_hierarchy = dt_conf_get_bool("plugins/lighttable/tagging/hidehierarchy");
   const gchar *text = hide_hierarchy? tag_obj->tag.leave : tag_obj->tag.tag;
+  const gint limit_length = hide_hierarchy? 10 : -1;
 
   GtkWidget *widget = dtgtk_tag_label_new(text,
-                                          tag_obj->tag.id);
+                                          tag_obj->tag.id,
+                                          limit_length);
   gtk_widget_set_tooltip_text(widget, tag_obj->tag.tag);
   g_signal_connect(widget, "key-press-event", G_CALLBACK(_attached_tag_key_pressed), self);
 

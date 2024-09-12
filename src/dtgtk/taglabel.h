@@ -31,7 +31,7 @@ struct _GtkDarktableTagLabel
   gint tagid;
 };
 
-GtkWidget *dtgtk_tag_label_new(const gchar* text, const gint tagid);
+GtkWidget *dtgtk_tag_label_new(const gchar* text, const gint tagid, const gint limit_length);
 
 G_END_DECLS
 
