@@ -3084,6 +3084,13 @@
     <shortdescription>position of the scopes module</shortdescription>
     <longdescription>position the scopes at the top-left or top-right of the screen</longdescription>
   </dtconfig>
+  <dtconfig prefs="darkroom" section="modules">
+    <name>plugins/darkroom/panel_swap</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>swap the utility and processing modules panels</shortdescription>
+    <longdescription>move the list of processing modules to the left of the screen</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/histogram/histogram</name>
     <type>

@@ -47,10 +47,6 @@ typedef struct dt_gui_widgets_t
   GtkWidget *bottom_border;
   GtkWidget *top_border;
 
-  /* left panel */
-  GtkGrid *panel_left; // panel grid 3 rows, top,center,bottom and file on center
-  GtkGrid *panel_right;
-
   /* resize of left/right panels */
   gboolean panel_handle_dragging;
   int panel_handle_x, panel_handle_y;
@@ -324,6 +320,9 @@ typedef enum dt_ui_border_t
   DT_UI_BORDER_SIZE
 } dt_ui_border_t;
 
+/** \brief swap the container in the left and right panels */
+void dt_ui_container_swap_left_right(struct dt_ui_t *ui,
+                                     gboolean swap);
 /** \brief add's a widget to a defined container */
 void dt_ui_container_add_widget(struct dt_ui_t *ui,
                                 const dt_ui_container_t c,
