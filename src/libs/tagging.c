@@ -446,19 +446,47 @@ static gboolean _click_on_attached(GtkWidget *flow_box, GdkEventButton *event, d
   return FALSE;
 }
 
-static GtkWidget* _add_attached_item(gpointer item, gpointer user_data)
+static gboolean _attached_tag_key_pressed(GtkWidget *widget, GdkEventKey *event, dt_lib_module_t *self)
+{
+  dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
+  _unselect_all_in_view(d->dictionary_view);
+
+ switch(event->keyval)
+  {
+    case GDK_KEY_Delete:
+    case GDK_KEY_KP_Delete:
+      _detach_selected_tag(d->attached_view, self);
+      return TRUE;
+    default:
+      break;
+  }
+  return FALSE;
+}
+
+static GtkWidget* _add_attached_item(gpointer item, gpointer self)
 {
   const DtTagObj *tag_obj = DT_TAG_OBJ(item);
 
-  GtkWidget *widget = dtgtk_tag_label_new(tag_obj->tag.leave,
+  const gboolean hide_hierarchy = dt_conf_get_bool("plugins/lighttable/tagging/hidehierarchy");
+  const gchar *text = hide_hierarchy? tag_obj->tag.leave : tag_obj->tag.tag;
+
+  GtkWidget *widget = dtgtk_tag_label_new(text,
                                           tag_obj->tag.id);
   gtk_widget_set_tooltip_text(widget, tag_obj->tag.tag);
+  g_signal_connect(widget, "key-press-event", G_CALLBACK(_attached_tag_key_pressed), self);
 
+
+  GtkStyleContext *context = gtk_widget_get_style_context(widget);
   if(!dt_tag_obj_is_user_tag(tag_obj))
   {
-    // set css class for darktable tags
-    GtkStyleContext *context = gtk_widget_get_style_context(widget);
-    gtk_style_context_add_class(context, "dt-tag");
+    // darktable tag
+    gtk_style_context_add_class(context, "darktable");
+  }
+
+  if(tag_obj->tag.flags & DT_TF_CATEGORY)
+  {
+    // category
+    gtk_style_context_add_class(context, "category");
   }
 
   return widget;
@@ -1485,6 +1513,7 @@ static gboolean _attached_key_pressed(GtkWidget *view, GdkEventKey *event, dt_li
     }
     gtk_tree_path_free(path);
   }
+
   if(event->keyval == GDK_KEY_Tab)
   {
     gtk_tree_selection_unselect_all(selection);
@@ -2775,6 +2804,8 @@ static void _update_layout(dt_lib_module_t *self)
   d->dttags_flag = dt_conf_get_bool("plugins/lighttable/tagging/dttags");
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->toggle_dttags_button), d->dttags_flag);
 
+  _init_treeview(self, 0);
+
   --darktable.gui->reset;
 }
 
@@ -3252,12 +3283,10 @@ void gui_init(dt_lib_module_t *self)
   d->attached_view2 = GTK_WIDGET(flow_box);
   g_signal_connect(flow_box, "selected-children-changed", G_CALLBACK(_flow_box_selection_changed), self);
 
-
   gtk_widget_set_tooltip_text(GTK_WIDGET(w), _("attached tags"
                                                "\npress Delete or double-click to detach"
                                                "\nright-click for other actions on attached tag,"
                                                "\nTab to give the focus to entry"));
-
 
   d->attached_store =  g_list_store_new(DT_TYPE_TAG_OBJ);
   gtk_flow_box_bind_model(GTK_FLOW_BOX(d->attached_view2),
@@ -3267,14 +3296,14 @@ void gui_init(dt_lib_module_t *self)
                           NULL);
 
   g_signal_connect(G_OBJECT(d->attached_view2), "button-press-event", G_CALLBACK(_click_on_attached), self);
-
+  
 
 
 
 
   view = GTK_TREE_VIEW(gtk_tree_view_new());
   w = dt_ui_resize_wrap(GTK_WIDGET(view), 200, "plugins/lighttable/tagging/heightattachedwindow");
-  gtk_box_pack_start(box, w, TRUE, TRUE, 0);
+  // gtk_box_pack_start(box, w, TRUE, TRUE, 0);
   d->attached_view = view;
   gtk_tree_view_set_enable_search(view, FALSE);
   gtk_tree_view_set_headers_visible(view, FALSE);

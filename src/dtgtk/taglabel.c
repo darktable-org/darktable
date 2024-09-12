@@ -36,9 +36,11 @@ GtkWidget *dtgtk_tag_label_new(const gchar* text, const gint tagid)
   GtkDarktableTagLabel *tag_label;
   tag_label = g_object_new(dtgtk_tag_label_get_type(), NULL);
 
-  tag_label->label = gtk_label_new(text);
-  gtk_widget_set_visible(tag_label->label, TRUE);
-  gtk_container_add(GTK_CONTAINER(&tag_label->flow_box_child), tag_label->label);
+  GtkWidget *label = gtk_label_new(text);
+  gtk_widget_set_visible(label, TRUE);
+  gtk_label_set_max_width_chars(GTK_LABEL(label), 10);
+  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_START);
+  gtk_container_add(GTK_CONTAINER(&tag_label->flow_box_child), label);
   
   tag_label->tagid = tagid;
 

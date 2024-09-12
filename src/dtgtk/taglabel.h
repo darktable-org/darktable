@@ -28,7 +28,6 @@ G_DECLARE_FINAL_TYPE(GtkDarktableTagLabel, dtgtk_tag_label, DTGTK, TAG_LABEL, Gt
 struct _GtkDarktableTagLabel
 {
   GtkFlowBoxChild flow_box_child;
-  GtkWidget *label;
   gint tagid;
 };
 
