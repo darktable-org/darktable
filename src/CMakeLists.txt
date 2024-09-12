@@ -772,7 +772,7 @@ endif(USE_LUA)
 
 if(USE_LUA)
   if(NOT Lua54_FOUND)
-    list(APPEND LIB_DEPS lua) # 2nd half of the uglyness :/
+    list(APPEND LIB_DEPS lua) # 2nd half of the ugliness :/
   endif(NOT Lua54_FOUND)
   # liblautoc for lua automated interface generation
   add_library(lautoc_static STATIC IMPORTED)

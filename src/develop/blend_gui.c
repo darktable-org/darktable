@@ -2124,7 +2124,7 @@ static void _blendop_blendif_channel_mask_view(GtkWidget *widget,
   dt_dev_pixelpipe_display_mask_t new_request_mask_display =
     module->request_mask_display | mode;
 
-  // in case user requests channel display: get the cannel
+  // in case user requests channel display: get the channel
   if(new_request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_CHANNEL)
   {
     dt_dev_pixelpipe_display_mask_t channel = data->channel[data->tab].display_channel;
@@ -2170,7 +2170,7 @@ static void _blendop_blendif_channel_mask_view_toggle
 
   new_request_mask_display &= ~DT_DEV_PIXELPIPE_DISPLAY_ANY;
 
-  // in case user requests channel display: get the cannel
+  // in case user requests channel display: get the channel
   if(new_request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_CHANNEL)
   {
     dt_dev_pixelpipe_display_mask_t channel = data->channel[data->tab].display_channel;
@@ -2583,7 +2583,7 @@ void dt_iop_gui_init_blendif(GtkWidget *blendw, dt_iop_module_t *module)
     gtk_notebook_set_scrollable(bd->channel_tabs, TRUE);
     gtk_box_pack_start(GTK_BOX(header), GTK_WIDGET(bd->channel_tabs), TRUE, TRUE, 0);
 
-    // a little padding between the notbook with all channels and the icons for pickers.
+    // a little padding between the notebook with all channels and the icons for pickers.
     gtk_box_pack_start(GTK_BOX(header), gtk_label_new(""),
                        FALSE, FALSE, DT_PIXEL_APPLY_DPI(10));
 
