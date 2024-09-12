@@ -1807,7 +1807,7 @@ static void _draw_paths(dt_iop_module_t *module,
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
 
   const gboolean showhandle = dt_iop_canvas_not_sensitive(darktable.develop) == FALSE;
-  // do not display any iterpolated items as slow when:
+  // do not display any interpolated items as slow when:
   //   - we are dragging (pan)
   //   - the button one is pressed
   //   - exception for DT_LIQUIFY_LAYER_STRENGTHPOINT where we want to see the

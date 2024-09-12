@@ -22,7 +22,7 @@
     The original implementation of scandir has been made by Richard Salz.
     The original author put this code in the public domain.
 
-    It has been modified to simplify slightly and increae readability.
+    It has been modified to simplify slightly and increase readability.
 */
 
 #include <sys/types.h>

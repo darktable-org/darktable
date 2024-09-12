@@ -1934,7 +1934,7 @@ static void _dt_collection_changed_callback(gpointer instance,
     GList *actual = NULL;
     if(nrow <= 0)
     {
-      // we retrive the entry with id == newid
+      // we retrieve the entry with id == newid
       for(GList *l = table->list; l; l = g_list_next(l))
       {
         dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;

@@ -1394,14 +1394,14 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
   }
 
   // Vertical image stacking:
-  //  Vertical stacking is only allowed if the heigth of the biggest thumbnail is more than the height
+  //  Vertical stacking is only allowed if the height of the biggest thumbnail is more than the height
   //  of 2 or more thumbs combined.
   //  for example: we have three images and image 2 is higher than heights of image 1 and 3 combined
   //  [  1  ] | 2 |                                                | 2 |
   //  [  3  ] | 2 |      instead of this placement -->    [  1  ]  | 2 |  [  3  ]
   //          | 2 |                                                | 2 |
   // in this case, images 1 and 3 would be stacked in one slot and image 2 will be placed in a new slot alone.
-  // if all images have similar heigths, they will not be stacked and placed in separate slots.
+  // if all images have similar heights, they will not be stacked and placed in separate slots.
 
   // Note: Stacking only make sense for images in the same row as the portrait image.
   //       The algorithm does not check for this so unnecessary stacking can occur.
@@ -1457,8 +1457,8 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
   const int number_of_slots = g_list_length(slots);
 
   // finished assigning thumbnails to slots
-  // we also know max slot height, so we can now scale all slots to this heigth
-  // and then calculate average slot heigth and width
+  // we also know max slot height, so we can now scale all slots to this height
+  // and then calculate average slot height and width
   int slot_counter = 0;
   float avg_slot_aspect_r = 0.0f;
   int total_slot_width = 0;
@@ -1475,7 +1475,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
     int scaled_slot_height = 0;
     int scaled_slot_width = 0;
 
-    // calculate current slot heigth for upscaling
+    // calculate current slot height for upscaling
     for(GList *slot_thumb_iter = slot;
       slot_thumb_iter;
       slot_thumb_iter = g_list_next(slot_thumb_iter))
@@ -1631,7 +1631,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
         dt_thumbnail_t *thumb = (dt_thumbnail_t *)slot_thumb_iter->data;
         thumb->x = thumb_x + (slot_max_thumb_width - thumb->width) / 2; // x position should be horizontally centered within the slot
         thumb->y = thumb_y;                                // y position starts at 0
-        thumb_y += thumb->height + spacing;               // and is increased by the heigth of the thumb + spacing of spacing for placing the next image of the slot
+        thumb_y += thumb->height + spacing;               // and is increased by the height of the thumb + spacing of spacing for placing the next image of the slot
       }
       rows->data = g_list_append(rows->data, slot); // append slot to row
       row_heigth = MAX(row_heigth, thumb_y - row_y);
@@ -1669,7 +1669,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
       int slot_heigth = 0;
 
       // loop through thumbs of the slot
-      // to calculate slot heigth and update row width and heigth
+      // to calculate slot height and update row width and height
       // which is used for xoffset of row and yoffset of individual thumbs
       for(GList *slot_thumb_iter = slot;
         slot_thumb_iter;
@@ -1734,7 +1734,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
     thumb->y      = thumb->y * factor + yoff;
 
     dt_print(DT_DEBUG_LIGHTTABLE,
-      "[culling_placement] thumb_id=%d, x=%d, y=%d, width=%d, heigth=%d"
+      "[culling_placement] thumb_id=%d, x=%d, y=%d, width=%d, height=%d"
              " - table_width=%d, table_height=%d\n",
              thumb->imgid, thumb->x, thumb->y, thumb->width, thumb->height,
              table->view_width, table->view_height);

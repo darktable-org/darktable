@@ -469,8 +469,8 @@ void init_presets(dt_iop_module_so_t *self)
 
   // film emulations
 
-  /* These emulations are built using spectral sensitivies provided by
-  * film manufacturers for tungsten light, corrected in spectral
+  /* These emulations are built using spectral sensitivities provided
+  * by film manufacturers for tungsten light, corrected in spectral
   * domain for D50 illuminant, and integrated in spectral space
   * against CIE 2° 1931 XYZ color matching functions in the Python lib
   * Colour, with the following code :
