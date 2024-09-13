@@ -1098,17 +1098,18 @@ static gboolean _on_drag_motion(GtkWidget *widget,
   }
   else
   {
-    dtgtk_expander_set_drag_hover(DTGTK_EXPANDER(widget), FALSE, FALSE);
+    dtgtk_expander_set_drag_hover(DTGTK_EXPANDER(widget), FALSE, TRUE, time);
     gdk_drag_status(dc, 0, time);
 
-    GtkWidget *src_widget = gtk_widget_get_ancestor(gtk_drag_get_source_widget(dc),
-                                                    DTGTK_TYPE_EXPANDER);
+    GtkWidget *src_header = gtk_drag_get_source_widget(dc);
+    if(!src_header) return TRUE;
+    GtkWidget *src_expander = gtk_widget_get_ancestor(src_header, DTGTK_TYPE_EXPANDER);
 
     for(GList *lib = darktable.lib->plugins; lib; lib = lib->next)
-      if(((dt_lib_module_t *)lib->data)->expander == src_widget)
+      if(((dt_lib_module_t *)lib->data)->expander == src_expander)
         src = lib->data;
 
-    if(!src_widget || !src || dest == src ) return TRUE;
+    if(!src_expander || !src || dest == src ) return TRUE;
 
     src_panel = GTK_CONTAINER(gtk_widget_get_parent(src->expander));
     dest_panel = GTK_CONTAINER(gtk_widget_get_parent(dest->expander));
@@ -1132,7 +1133,7 @@ static gboolean _on_drag_motion(GtkWidget *widget,
 
     if(x != DND_DROP)
     {
-      dtgtk_expander_set_drag_hover(DTGTK_EXPANDER(widget), TRUE, below);
+      dtgtk_expander_set_drag_hover(DTGTK_EXPANDER(widget), TRUE, below, time);
       gdk_drag_status(dc, GDK_ACTION_COPY, time);
 
       return TRUE;

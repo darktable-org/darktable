@@ -2975,13 +2975,15 @@ GtkWidget *dt_iop_gui_header_button(dt_iop_module_t *module,
 static gboolean _on_drag_motion(GtkWidget *widget, GdkDragContext *dc, gint x, gint y, guint time, dt_iop_module_t *dest)
 {
   gdk_drag_status(dc, 0, time);
+  dtgtk_expander_set_drag_hover(DTGTK_EXPANDER(widget), FALSE, TRUE, time);
 
-  GtkWidget *src_widget = gtk_widget_get_ancestor(gtk_drag_get_source_widget(dc),
-                                                  DTGTK_TYPE_EXPANDER);
+  GtkWidget *src_header = gtk_drag_get_source_widget(dc);
+  if(!src_header) return TRUE;
+  GtkWidget *src_expander = gtk_widget_get_ancestor(src_header, DTGTK_TYPE_EXPANDER);
 
   dt_iop_module_t *src = NULL;
   for(GList *iop = darktable.develop->iop; iop; iop = iop->next)
-    if(((dt_iop_module_t *)iop->data)->expander == src_widget)
+    if(((dt_iop_module_t *)iop->data)->expander == src_expander)
       src = iop->data;
   if(!src || dest == src) return TRUE;
 
@@ -3001,11 +3003,13 @@ static gboolean _on_drag_motion(GtkWidget *widget, GdkDragContext *dc, gint x, g
 
   if(x != DND_DROP)
   {
-    gboolean allow = src->iop_order < dest->iop_order
-                   ? dt_ioppr_check_can_move_after_iop(darktable.develop->iop, src, dest)
-                   : dt_ioppr_check_can_move_before_iop(darktable.develop->iop, src, dest);
-    dtgtk_expander_set_drag_hover(DTGTK_EXPANDER(widget), allow, !above);
-    if(allow) gdk_drag_status(dc, GDK_ACTION_COPY, time);
+    if(src->iop_order < dest->iop_order
+       ? dt_ioppr_check_can_move_after_iop(darktable.develop->iop, src, dest)
+       : dt_ioppr_check_can_move_before_iop(darktable.develop->iop, src, dest))
+    {
+      dtgtk_expander_set_drag_hover(DTGTK_EXPANDER(widget), TRUE, !above, time);
+      gdk_drag_status(dc, GDK_ACTION_COPY, time);
+    }
   }
   else
   {
