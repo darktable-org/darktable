@@ -441,7 +441,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img,
     }
     else
     {
-      dt_print(DT_DEBUG_ALWAYS, "[rawspeed] (%s) %s\n", img->filename, exc.what());
+      dt_print(DT_DEBUG_ALWAYS, "[rawspeed] %s corrupt: %s\n", img->filename, exc.what());
       return DT_IMAGEIO_FILE_CORRUPTED;
     }
   }
