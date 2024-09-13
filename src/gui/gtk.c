@@ -2248,7 +2248,7 @@ static gboolean _on_drag_motion_drop(GtkWidget *empty, GdkDragContext *dc, gint 
 
 static void _on_drag_leave(GtkWidget *widget, GdkDragContext *dc, guint time, gpointer user_data)
 {
-  dtgtk_expander_set_drag_hover(NULL, FALSE, FALSE);
+  dtgtk_expander_set_drag_hover(NULL, FALSE, FALSE, time);
 }
 
 static gboolean _remove_modules_visibility(gpointer key,
