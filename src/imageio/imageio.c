@@ -133,6 +133,8 @@ typedef enum {
 } dt_filetype_t;
 
 // the longest prefix of the file we want to be able to examine
+#define MAX_SIGNATURE 512
+// the longest string of magic bytes
 #define MAX_MAGIC 32
 
 // declare the image-loading function's type
@@ -184,6 +186,7 @@ typedef struct {
   unsigned      length;	           // length of signature in bytes
   dt_image_loader_fn_t *loader;	   // the function with which to load the image (NULL if special handling needed)
   gchar         magic[MAX_MAGIC];  // the actual signature bytes
+  const char   *searchstring;	   // sub-signature which might be anywhere in first 512 bytes of file
 } dt_magic_bytes_t;
 
 // the signatures for the file types we know about.  More specific ones need to come before
@@ -287,6 +290,31 @@ static const dt_magic_bytes_t _magic_signatures[] = {
   // Sigma Foveon X3F file
   { DT_FILETYPE_X3F, TRUE, 0, 4, NULL,
     { 'F', 'O', 'V', 'b' } },
+  // Nikon NEF files are TIFFs with (usually) the string "NIKON CORP" early in the file
+  { DT_FILETYPE_NEF, FALSE, 0, 4, dt_imageio_open_rawspeed,
+    { 'I', 'I', '*', 0x00 }, "NIKON CORP" },
+  { DT_FILETYPE_NEF, FALSE, 0, 4, dt_imageio_open_rawspeed,
+    { 'M', 'M', 0x00, '*' }, "NIKON CORP" },
+  // Epson ERF files are TIFFs with the string "EPSON" early in the file
+  { DT_FILETYPE_ERF, FALSE, 0, 4, dt_imageio_open_rawspeed,
+    { 'I', 'I', '*', 0x00 }, "EPSON" },
+  { DT_FILETYPE_ERF, FALSE, 0, 4, dt_imageio_open_rawspeed,
+    { 'M', 'M', 0x00, '*' }, "EPSON" },
+  // Pentax/Ricoh PEF files are TIFFs with the string "PENTAX" early in the file
+  { DT_FILETYPE_PEF, FALSE, 0, 4, dt_imageio_open_rawspeed,
+    { 'I', 'I', '*', 0x00 }, "PENTAX" },
+  { DT_FILETYPE_PEF, FALSE, 0, 4, dt_imageio_open_rawspeed,
+    { 'M', 'M', 0x00, '*' }, "PENTAX" },
+  // Samsung SRW files are TIFFs with the string "SAMSUNG" early in the file
+  { DT_FILETYPE_SRW, FALSE, 0, 4, dt_imageio_open_rawspeed,
+    { 'I', 'I', '*', 0x00 }, "SAMSUNG" },
+  { DT_FILETYPE_SRW, FALSE, 0, 4, dt_imageio_open_rawspeed,
+    { 'M', 'M', 0x00, '*' }, "SAMSUNG" },
+  // Sony ARW files are TIFFs with the string "SONY" early in the file
+  { DT_FILETYPE_ARW, FALSE, 0, 4, dt_imageio_open_rawspeed,
+    { 'I', 'I', '*', 0x00 }, "SONY" },
+  { DT_FILETYPE_ARW, FALSE, 0, 4, dt_imageio_open_rawspeed,
+    { 'M', 'M', 0x00, '*' }, "SONY" },
   // little-endian (Intel) TIFF
   { DT_FILETYPE_TIFF, FALSE, 0, 4, NULL, // may be DNG or any of many camera raw types
     { 'I', 'I', '*', 0x00 } },
@@ -458,6 +486,19 @@ static inline gboolean _image_handled(dt_imageio_retval_t ret)
   return ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL || ret == DT_IMAGEIO_UNSUPPORTED_FEATURE;
 }
 
+static gboolean _memfind(const char *needle, const char *haystack, size_t hs_len)
+{
+  if(!needle)
+    return FALSE;
+  const size_t n_len = strlen(needle);
+  for(size_t offset = 0; offset < hs_len - n_len; offset++)
+  {
+    if(haystack[offset] == needle[0] && memcmp(haystack + offset, needle, n_len) == 0)
+      return TRUE;
+  }
+  return FALSE;
+}
+
 static const dt_magic_bytes_t *_find_signature(const char *filename)
 {
   if(!filename || !*filename)
@@ -466,16 +507,19 @@ static const dt_magic_bytes_t *_find_signature(const char *filename)
   if(!fin)
     return NULL;
   // read possible signatur block from file
-  gchar magicbuf[MAX_MAGIC];
-  size_t count = fread(magicbuf, sizeof(magicbuf), 1, fin);
+  gchar magicbuf[MAX_SIGNATURE];
+  memset(magicbuf, '\0', sizeof(magicbuf));
+  size_t count = fread(magicbuf, 1, sizeof(magicbuf), fin);
   fclose(fin);
-  if(count < sizeof(magicbuf))
+  if(count < MAX_MAGIC)
     return NULL;
   for(size_t i = 0; i < sizeof(_magic_signatures)/sizeof(_magic_signatures[0]); i++)
   {
     const dt_magic_bytes_t *info = &_magic_signatures[i];
     if(memcmp(magicbuf + info->offset, info->magic, info->length) == 0)
     {
+      if(info->searchstring && !_memfind(info->searchstring, magicbuf, sizeof(magicbuf)))
+        continue;  // not a match after all
       // any extra checks go here, e.g. if detected as TIFF, try to determine which camera RAW it is
       if(info->filetype == DT_FILETYPE_DJVU)
       {
