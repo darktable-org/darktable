@@ -764,16 +764,18 @@ static char *_get_version_string(void)
 #endif
 
 #ifdef USE_LUA
-        const char *lua_api_version = strcmp(LUA_API_VERSION_SUFFIX, "") ?
-                                      STR(LUA_API_VERSION_MAJOR) "."
-                                      STR(LUA_API_VERSION_MINOR) "."
-                                      STR(LUA_API_VERSION_PATCH) "-"
-                                      LUA_API_VERSION_SUFFIX :
-                                      STR(LUA_API_VERSION_MAJOR) "."
-                                      STR(LUA_API_VERSION_MINOR) "."
-                                      STR(LUA_API_VERSION_PATCH) "\n";
+  const char *lua_api_version = strcmp(LUA_API_VERSION_SUFFIX, "") ?
+                                       STR(LUA_API_VERSION_MAJOR) "."
+                                       STR(LUA_API_VERSION_MINOR) "."
+                                       STR(LUA_API_VERSION_PATCH) "-"
+                                       LUA_API_VERSION_SUFFIX :
+                                       STR(LUA_API_VERSION_MAJOR) "."
+                                       STR(LUA_API_VERSION_MINOR) "."
+                                       STR(LUA_API_VERSION_PATCH) "\n";
 #endif
-char *version = g_strdup_printf("darktable %s\nCopyright (C) 2012-%s Johannes Hanika and other contributors.\n\n"
+char *version = g_strdup_printf(
+               "darktable %s\n"
+               "Copyright (C) 2012-%s Johannes Hanika and other contributors.\n\n"
                "Compile options:\n"
                "  Bit depth              -> %zu bit\n"
                "%s%s%s%s%s\n"
