@@ -108,14 +108,14 @@ static void _apply_style_shortcut_callback(dt_action_t *action)
   if(dt_view_get_current() == DT_VIEW_DARKROOM)
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(imgs->data);
+    g_list_free(imgs);
     dt_styles_apply_to_dev(action->label, imgid);
   }
   else
   {
-    dt_styles_apply_to_list(action->label, imgs, FALSE);
+    GList *styles = g_list_prepend(NULL, g_strdup(action->label));
+    dt_control_apply_styles(imgs, styles, FALSE);
   }
-
-  g_list_free(imgs);
 }
 
 static int32_t dt_styles_get_id_by_name(const char *name);
@@ -644,15 +644,7 @@ gboolean dt_styles_create_from_image(const char *name,
   return FALSE;
 }
 
-void dt_styles_apply_to_list(const char *name, const GList *list, gboolean duplicate)
-{
-  GList *styles = NULL;
-  styles = g_list_prepend(styles, (char*)name);
-  dt_multiple_styles_apply_to_list(styles, list, duplicate);
-  g_list_free(styles);
-}
-
-void dt_multiple_styles_apply_to_list(GList *styles,
+void dt_multiple_styles_apply_to_list(const GList *styles,
                                       const GList *list,
                                       const gboolean duplicate)
 {
@@ -696,13 +688,12 @@ void dt_multiple_styles_apply_to_list(GList *styles,
       hist = dt_history_snapshot_item_init();
       hist->imgid = imgid;
       dt_history_snapshot_undo_create(hist->imgid, &hist->before, &hist->before_history_end);
-
       dt_undo_disable_next(darktable.undo);
     }
     if(is_overwrite && !duplicate)
       dt_history_delete_on_image_ext(imgid, FALSE, TRUE);
 
-    for(GList *style = styles; style; style = g_list_next(style))
+    for(const GList *style = styles; style; style = g_list_next(style))
     {
       dt_styles_apply_to_image((const char*)style->data, duplicate, is_overwrite, imgid);
     }
@@ -720,7 +711,7 @@ void dt_multiple_styles_apply_to_list(GList *styles,
 
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
-  const guint styles_cnt = g_list_length(styles);
+  const guint styles_cnt = g_list_length((GList*)styles);
   dt_control_log(ngettext("style %s successfully applied!",
                           "styles successfully applied!", styles_cnt), (const char*)styles->data);
   dt_gui_cursor_clear_busy();
