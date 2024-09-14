@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2020 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/darktable.h"
 #include "common/image.h"
 #include "develop/develop.h"
@@ -61,8 +62,7 @@ int main(int argc, char *argv[])
 
   if(redirect_output)
   {
-    // something like C:\Users\username\AppData\Local\Microsoft\Windows\Temporary Internet Files\darktable\darktable-log.txt
-    char *logdir = g_build_filename(g_get_user_cache_dir(), "darktable", NULL);
+    char *logdir = g_build_filename(g_get_home_dir(), "Documents", "Darktable", NULL);
     char *logfile = g_build_filename(logdir, "darktable-log.txt", NULL);
 
     g_mkdir_with_parents(logdir, 0700);
