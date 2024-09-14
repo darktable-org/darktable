@@ -617,6 +617,7 @@ void expose(
       dt_toast_log("%s", load_txt);
     }
     g_free(load_txt);
+    dt_dev_reset_chroma(darktable.develop);
   }
 
   /* if we are in full preview mode, we don"t want anything else than the image */
