@@ -60,7 +60,7 @@ typedef struct dt_lib_tagging_t
   
   GtkTreeView *dictionary_view;
   GtkWidget *attach_button, *detach_button, *new_button, *import_button, *export_button;
-  GtkWidget *toggle_tree_button, *toggle_suggestion_button, *toggle_sort_button, *toggle_hide_button, *toggle_dttags_button;
+  GtkWidget *toggle_tree_button, *toggle_suggestion_button, *toggle_sort_button, *toggle_hide_button;
   GtkListStore *dictionary_liststore;
   GtkTreeStore *dictionary_treestore;
   GtkTreeModelFilter *dictionary_listfilter, *dictionary_treefilter;
@@ -2696,7 +2696,6 @@ static void _update_layout(dt_lib_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->toggle_hide_button), d->hide_path_flag);
 
   d->dttags_flag = dt_conf_get_bool("plugins/lighttable/tagging/dttags");
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->toggle_dttags_button), d->dttags_flag);
 
   _init_treeview(self, 0);
 
@@ -2791,16 +2790,6 @@ static void _toggle_hide_button_callback(GtkToggleButton *source, dt_lib_module_
   dt_conf_set_bool("plugins/lighttable/tagging/hidehierarchy", new_state);
   _update_layout(self);
   _sort_dictionary_list(self, TRUE);
-}
-
-static void _toggle_dttags_button_callback(GtkToggleButton *source, dt_lib_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  const gboolean new_state = !dt_conf_get_bool("plugins/lighttable/tagging/dttags");
-  dt_conf_set_bool("plugins/lighttable/tagging/dttags", new_state);
-  dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
-  d->dttags_flag = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->toggle_dttags_button));
-  _init_treeview(self, 0);
 }
 
 void gui_reset(dt_lib_module_t *self)
@@ -3213,20 +3202,6 @@ void gui_init(dt_lib_module_t *self)
                                           _("detach tag from all selected images"), 0, 0);
   gtk_box_pack_start(hbox, d->detach_button, TRUE, TRUE, 0);
 
-  dt_action_t *toggle = dt_action_section(DT_ACTION(self), N_("toggle"));
-
-#define NEW_TOGGLE_BUTTON(paint, callback, tooltip, action)                  \
-  button = dtgtk_togglebutton_new(paint, 0, NULL);                           \
-  gtk_widget_set_tooltip_text(button, tooltip);                              \
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(callback), self); \
-  dt_action_define(toggle, NULL, action, button, &dt_action_def_toggle);
-
-  d->toggle_dttags_button = NEW_TOGGLE_BUTTON(dtgtk_cairo_paint_check_mark, _toggle_dttags_button_callback,
-                                              _("toggle show or not darktable tags"), N_("dttags"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->toggle_dttags_button), FALSE);
-  gtk_box_pack_end(hbox, d->toggle_dttags_button, FALSE, TRUE, 0);
-  d->dttags_flag = FALSE;
-
   gtk_box_pack_start(box, GTK_WIDGET(hbox), FALSE, TRUE, 0);
 
   // dictionary area
@@ -3336,6 +3311,15 @@ void gui_init(dt_lib_module_t *self)
   }
 
   // toggle buttons
+  dt_action_t *toggle = dt_action_section(DT_ACTION(self), N_("toggle"));
+
+#define NEW_TOGGLE_BUTTON(paint, callback, tooltip, action)                  \
+  button = dtgtk_togglebutton_new(paint, 0, NULL);                           \
+  gtk_widget_set_tooltip_text(button, tooltip);                              \
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(callback), self); \
+  dt_action_define(toggle, NULL, action, button, &dt_action_def_toggle);
+
+
   hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
   d->toggle_hide_button = NEW_TOGGLE_BUTTON(dtgtk_cairo_paint_minus_simple, _toggle_hide_button_callback,
@@ -3581,6 +3565,10 @@ static void _size_recent_tags_list()
 
 void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
 {
+  dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
+
+  const gboolean dttags_flag = d->dttags_flag;
+
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *dialog = gtk_dialog_new_with_buttons(_("tagging settings"), GTK_WINDOW(win),
                                                   GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -3597,13 +3585,25 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
   gtk_dialog_run(GTK_DIALOG(dialog));
   gtk_widget_destroy(dialog);
 
-  dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
   _size_recent_tags_list();
+
+  d->dttags_flag = dt_conf_get_bool("plugins/lighttable/tagging/dttags");
+
+  gboolean gui_update = FALSE;
+  if(dttags_flag != d->dttags_flag)
+  {
+    _init_treeview(self, 0);
+    gui_update = TRUE;
+  }
+
   if(!d->tree_flag && d->suggestion_flag)
   {
     _init_treeview(self, 1);
-    dt_lib_gui_queue_update(self);
+    gui_update = TRUE;
   }
+
+  if(gui_update)
+    dt_lib_gui_queue_update(self);
 }
 
 void set_preferences(void *menu, dt_lib_module_t *self)
