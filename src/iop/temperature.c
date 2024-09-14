@@ -1456,9 +1456,12 @@ static void _prepare_matrices(dt_iop_module_t *module)
                                               module->dev->image_storage.d65_color_matrix,
                                               g->XYZ_to_CAM, g->CAM_to_XYZ))
   {
-    char *camera = module->dev->image_storage.camera_makermodel;
-    dt_print(DT_DEBUG_ALWAYS, "[temperature] `%s' color matrix not found for image\n", camera);
-    dt_control_log(_("`%s' color matrix not found for image"), camera);
+    if(module->dev->image_storage.load_status == DT_IMAGEIO_OK)  // suppress spurious error messages
+    {
+      char *camera = module->dev->image_storage.camera_makermodel;
+      dt_print(DT_DEBUG_ALWAYS, "[temperature] `%s' color matrix not found for image\n", camera);
+      dt_control_log(_("`%s' color matrix not found for image"), camera);
+    }
   }
 }
 
