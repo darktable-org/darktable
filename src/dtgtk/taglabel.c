@@ -23,7 +23,7 @@
 
 G_DEFINE_TYPE(GtkDarktableTagLabel, dtgtk_tag_label, GTK_TYPE_FLOW_BOX_CHILD);
 
-static void dtgtk_tag_label_class_init(GtkDarktableTagLabelClass *class)
+static void dtgtk_tag_label_class_init(GtkDarktableTagLabelClass *klass)
 {
 }
 
@@ -31,22 +31,68 @@ static void dtgtk_tag_label_init(GtkDarktableTagLabel *tag_label)
 {
 }
 
+static gboolean _tag_label_enter_leave_notify_callback(GtkWidget *widget,
+                                                       GdkEventCrossing *event,
+                                                       gpointer user_data)
+{
+  g_return_val_if_fail(widget != NULL, FALSE);
+
+  GtkWidget *tag_label = gtk_widget_get_parent(widget);
+  g_return_val_if_fail(tag_label != NULL, FALSE);
+
+  if(event->type == GDK_ENTER_NOTIFY)
+    dt_gui_add_class(tag_label, "hover");
+  else
+    dt_gui_remove_class(tag_label, "hover");
+  return FALSE;
+}
+
+static gboolean _tag_label_button_press_notify_callback(GtkWidget *widget,
+                                                        GdkEventButton *event,
+                                                        gpointer user_data)
+{
+  g_return_val_if_fail(widget != NULL, FALSE);
+
+  if(event->type == GDK_BUTTON_PRESS && event->button == 3)
+  {
+    GtkFlowBoxChild *tag_label = GTK_FLOW_BOX_CHILD(gtk_widget_get_parent(widget));
+    g_return_val_if_fail(tag_label != NULL, FALSE);
+
+    GtkFlowBox *flow_box = GTK_FLOW_BOX(gtk_widget_get_parent(GTK_WIDGET(tag_label)));
+    g_return_val_if_fail(flow_box != NULL, FALSE);
+
+    gtk_flow_box_select_child(flow_box, tag_label);
+  }
+  return FALSE;
+}
+
 // Public functions
-GtkWidget *dtgtk_tag_label_new(const gchar* text, const gint tagid, const gint limit_length)
+GtkWidget *dtgtk_tag_label_new(const gchar* text, const gint tagid)
 {
   GtkDarktableTagLabel *tag_label;
   tag_label = g_object_new(dtgtk_tag_label_get_type(), NULL);
-
-  GtkWidget *label = gtk_label_new(text);
-  gtk_widget_set_visible(label, TRUE);
-  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_START);
-  if(limit_length > -1)
-  {
-    gtk_label_set_max_width_chars(GTK_LABEL(label), limit_length);
-  }
-  gtk_container_add(GTK_CONTAINER(&tag_label->flow_box_child), label);
   
   tag_label->tagid = tagid;
+
+  GtkWidget *event_box = gtk_event_box_new();
+  gtk_container_add(GTK_CONTAINER(tag_label), event_box);
+  gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box), FALSE);
+  gtk_widget_set_events(event_box, 
+                        GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK 
+                        | GDK_BUTTON_PRESS_MASK);
+  g_signal_connect(G_OBJECT(event_box), "enter-notify-event",
+                   G_CALLBACK(_tag_label_enter_leave_notify_callback), NULL);
+  g_signal_connect(G_OBJECT(event_box), "leave-notify-event",
+                   G_CALLBACK(_tag_label_enter_leave_notify_callback), NULL);
+  g_signal_connect(G_OBJECT(event_box), "button-press-event",
+                   G_CALLBACK(_tag_label_button_press_notify_callback), NULL);
+        
+  GtkWidget *label = gtk_label_new(text);
+  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_START);
+  gtk_label_set_max_width_chars(GTK_LABEL(label), 10);
+  gtk_container_add(GTK_CONTAINER(event_box), label);
+  
+  gtk_widget_show_all(GTK_WIDGET(tag_label));
 
   gtk_widget_set_name(GTK_WIDGET(tag_label), "tag-label");
   return (GtkWidget *)tag_label;

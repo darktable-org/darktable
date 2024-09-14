@@ -385,10 +385,6 @@ static gboolean _click_on_attached(GtkWidget *flow_box, GdkEventButton *event, d
 
   if(event->type == GDK_BUTTON_PRESS && event->button == 3)
   {
-    GtkFlowBoxChild *tag_label = gtk_flow_box_get_child_at_pos(GTK_FLOW_BOX(flow_box),
-                                                               event->x,
-                                                               event->y);
-    gtk_flow_box_select_child(GTK_FLOW_BOX(flow_box), tag_label);
     _pop_menu_attached(flow_box, event, self);
     return TRUE;
   }
@@ -428,13 +424,8 @@ static GtkWidget* _add_attached_item(gpointer item, gpointer self)
 {
   const DtTagObj *tag_obj = DT_TAG_OBJ(item);
 
-  const gboolean hide_hierarchy = TRUE; //dt_conf_get_bool("plugins/lighttable/tagging/hidehierarchy");
-  const gchar *text = hide_hierarchy? tag_obj->tag.leave : tag_obj->tag.tag;
-  const gint limit_length = hide_hierarchy? 10 : -1;
-
-  GtkWidget *widget = dtgtk_tag_label_new(text,
-                                          tag_obj->tag.id,
-                                          limit_length);
+  GtkWidget *widget = dtgtk_tag_label_new(tag_obj->tag.leave,
+                                          tag_obj->tag.id);
   gtk_widget_set_tooltip_text(widget, tag_obj->tag.tag);
   g_signal_connect(widget, "key-press-event", G_CALLBACK(_attached_tag_key_pressed), self);
 
