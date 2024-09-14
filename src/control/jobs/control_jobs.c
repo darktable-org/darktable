@@ -2379,12 +2379,6 @@ void dt_control_apply_styles(GList *imgs, GList *styles, gboolean duplicate)
     return;
   }
 
-  if(g_list_is_singleton(imgs))
-  {
-    dt_multiple_styles_apply_to_list(styles, imgs, duplicate);
-    g_list_free(imgs);
-    return;
-  }
   _apply_styles_data_t *styles_data = g_malloc(sizeof(_apply_styles_data_t));
   if(styles_data)
   {

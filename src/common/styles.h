@@ -90,9 +90,6 @@ void dt_styles_update(const char *name,
                       const gboolean copy_iop_order,
                       const gboolean update_iop_order);
 
-/** applies list of styles to selection of images */
-void dt_multiple_styles_apply_to_list(const GList *styles, const GList *list, gboolean duplicate);
-
 /** applies the item style to dev->history */
 void dt_styles_apply_style_item(dt_develop_t *dev,
                                 dt_style_item_t *style_item,
