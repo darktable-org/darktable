@@ -230,14 +230,14 @@ static void _styles_row_activated_callback(GtkTreeView *view,
   gchar *name;
   gtk_tree_model_get(model, &iter, DT_STYLES_COL_FULLNAME, &name, -1);
 
-  GList *list = dt_act_on_get_images(TRUE, TRUE, FALSE);
   if(name)
   {
-    dt_styles_apply_to_list(name, list,
-                            gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->duplicate)));
+    GList *list = dt_act_on_get_images(TRUE, TRUE, FALSE);
+    gboolean duplicate = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->duplicate));
+    dt_styles_apply_to_list(name, list, duplicate);
+    g_list_free(list);
     g_free(name);
   }
-  g_list_free(list);
 }
 
 // get list of style names from selection
@@ -273,14 +273,13 @@ static void _apply_clicked(GtkWidget *w, gpointer user_data)
   if(style_names == NULL) return;
 
   GList *list = dt_act_on_get_images(TRUE, TRUE, FALSE);
-
   if(!g_list_is_empty(list))
-    dt_multiple_styles_apply_to_list
-      (style_names, list,
-       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->duplicate)));
-
-  g_list_free_full(style_names, g_free);
+  {
+    gboolean duplicate = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->duplicate));
+    dt_multiple_styles_apply_to_list(style_names, list, duplicate);
+  }
   g_list_free(list);
+  g_list_free_full(style_names, g_free);
 }
 
 static void _create_clicked(GtkWidget *w, gpointer user_data)
@@ -733,7 +732,8 @@ static gboolean _entry_activated(GtkEntry *entry, gpointer user_data)
   if(name)
   {
     GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
-    dt_styles_apply_to_list(name, imgs, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->duplicate)));
+    gboolean duplicate = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->duplicate));
+    dt_styles_apply_to_list(name, imgs, duplicate);
     g_list_free(imgs);
   }
 
