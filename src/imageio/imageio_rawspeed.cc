@@ -429,7 +429,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img,
     // The proper way to handle this is to add two new exception types to Rawspeed and
     // have them throw the appropriate ones on encountering an unsupported camera model
     // or unsupported feature (e.g. bit depth, compression, aspect ratio mode, ...)
-    if(msg && strstr(msg, "Camera not supported"))
+    if(msg && (strstr(msg, "Camera not supported") || strstr(msg, "not supported, and not allowed to guess")))
     {
       dt_print(DT_DEBUG_ALWAYS, "[rawspeed] Unsupported camera model for %s\n", img->filename);
       return DT_IMAGEIO_UNSUPPORTED_CAMERA;
