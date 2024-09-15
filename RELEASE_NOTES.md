@@ -41,6 +41,9 @@ The following is a summary of the main features added to darktable
 5.0. Please see the user manual for more details of the individual
 changes (where available).
 
+- This development cycle has included a large number of changes which
+  improve the user experience, as detailed in the next section.
+
 - ???
 
 ## UI/UX Improvements
@@ -48,14 +51,15 @@ changes (where available).
 - Added camera-specific styles for more than 500 camera models to more
   closely approximate the out-of-camera JPEG rendition.  These styles
   only affect contrast, brightness, and saturation and do not attempt
-  to match sharpening, denoising, or hue shifts.  Also added a LUA
+  to match sharpening, denoising, or hue shifts.  Also added a Lua
   script to auto-apply the appropriate style on import and manually
   apply styles to a collection of previously-imported images.
 
 - The user interface now gives feedback while processing bulk image
-  operations such as ratings, tagging, and edit history management,
-  rather than silently freezing until the operation completes.  While
-  the operation is in progress, darktable will now show either a busy
+  operations such as rating, tagging, applying styles, and edit
+  history management (and undoing those operations), rather than
+  silently freezing until the operation completes.  While the
+  operation is in progress, darktable will now show either a busy
   cursor (such as a stopwatch or spinner) or a progress bar with
   option to cancel the remainder of the operation.
 
@@ -65,7 +69,7 @@ changes (where available).
 - Enhanced tooltips for utiltity module headers to provide more
   information about the module.
 
-- Added more hints on an empty lighttable.
+- Added more new-user hints on an empty lighttable.
 
 - Added two new error placeholder images to distinguish between
   missing, unsupported, and corrupted images.  When attempting to edit
@@ -97,9 +101,18 @@ changes (where available).
     panels" button that resets all views, including visibility and
     width of the panels themselves.
 
-  - The first time a new user presses Tab, they will be warned that
-    this will hide all panels and how to get them back. Hopefully this
-    prevents some confusion or frustration.
+- The first time a new user presses Tab, they will be warned that this
+  will hide all panels and how to get them back. Hopefully this
+  prevents some confusion or frustration.
+
+- Drag&drop utility module headers to reposition them across the left
+  and right panels (lighttable) as well as vertically (all
+  views). Hold ctrl+shift to avoid expanding/collapsing them before
+  dragging. Each view can have a different layout.
+
+- Drag&drop of processing modules in the darkroom right panel has been
+  improved to auto-scroll when reaching the top or bottom and to not
+  get confused when images get dragged into the area.
 
 ## Performance Improvements
 
@@ -129,21 +142,15 @@ changes (where available).
 
 - Numerous rounds of code cleanup.
 
-- Drag&drop utility module headers to reposition them across the left
-  and right panels. Hold ctrl+shift to avoid expanding/collapsing them
-  before dragging. Each view can have a different layout.
-
-- Drag&drop of processing modules in the darkroom right panel has been
-  improved to auto-scroll when reaching the top or bottom and to not
-  get confused when images get dragged into the area.
-
 ## Bug Fixes
 
 - Fixed a performance regression for redrawing mipmaps.
 
 - Fixed handling of old (2020) edits using Filmic RGB.
 
-- Various OpenCL fixes to reduce differences between CPU and GPU processing: colorspace conversion, saturation gradient filter in color equalizer.
+- Various OpenCL fixes to reduce differences between CPU and GPU
+  processing: colorspace conversion, saturation gradient filter in
+  color equalizer.
 
 - Fixed gallery export not working on Windows.
 
