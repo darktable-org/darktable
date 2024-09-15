@@ -1143,86 +1143,139 @@ static gboolean _event_scroll(GtkWidget *widget,
   return TRUE;
 }
 
+static void _line_to(cairo_t *cr,
+                     PangoRectangle ink,
+                     const float offx,
+                     const float offy,
+                     const double n,
+                     const double h,
+                     const double x,
+                     const double y)
+{
+  const double radius = DT_PIXEL_APPLY_DPI(3);
+  cairo_new_path(cr);
+  cairo_arc(cr, h, offy + (n + .5) * ink.height, radius, 0, 2 * M_PI);
+  cairo_rel_move_to(cr, -radius, 0);
+  cairo_line_to(cr, x, y);
+  cairo_arc(cr, x, y, radius, 0, 2 * M_PI);
+  cairo_stroke(cr);
+}
+
+static void _line_to_module(cairo_t *cr,
+                            const int32_t width,
+                            PangoRectangle ink,
+                            const float offx,
+                            const float offy,
+                            const double n,
+                            const double h,
+                            char *name)
+{
+  dt_lib_module_t *lib = dt_lib_get_module(name);
+
+  if(!lib
+     || !lib->expander
+     || !gtk_widget_get_mapped(lib->expander))
+    return;
+
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(lib->expander, &allocation);
+  gtk_widget_translate_coordinates(gtk_widget_get_parent(lib->expander),
+                                   dt_ui_center(darktable.gui->ui),
+                                   allocation.x, allocation.y,
+                                   &allocation.x, &allocation.y);
+  _line_to(cr, ink, offx, offy, n, h,
+           allocation.x > 0 ? width : 0,
+           allocation.y + allocation.height / 2);
+}
+
+
 // display help text in the center view if there's no image to show
 static void _lighttable_expose_empty(cairo_t *cr,
-                                    int32_t width,
-                                    int32_t height,
-                                    const gboolean lighttable)
+                                    const int32_t width,
+                                    const int32_t height,
+                                    dt_thumbtable_t *lighttable)
 {
-  const float fs = DT_PIXEL_APPLY_DPI(15.0f);
-  const float ls = 1.5f * fs;
-  const float offy = height * 0.2f;
-  const float offx = DT_PIXEL_APPLY_DPI(60);
-  const float at = 0.3f;
   dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_BG);
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_fill(cr);
 
-  PangoLayout *layout;
-  PangoRectangle ink;
+  const float offy = height * 0.2f;
+  const float offx = width * 0.05f;
+  PangoLayout *layout = pango_cairo_create_layout(cr);
   PangoFontDescription *desc =
     pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
-  pango_font_description_set_absolute_size(desc, fs * PANGO_SCALE);
-  layout = pango_cairo_create_layout(cr);
+  pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(20.0f) * PANGO_SCALE);
   pango_layout_set_font_description(layout, desc);
-  cairo_set_font_size(cr, fs);
+  pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_MIDDLE);
+  pango_layout_set_width(layout, PANGO_SCALE * (width - 2*offx));
+  PangoTabArray *tabs = pango_tab_array_new_with_positions (1, TRUE, PANGO_TAB_RIGHT, width - 2*offx);
+  pango_layout_set_tabs(layout, tabs);
+  pango_tab_array_free(tabs);
+
+#define RGHT "\t   ",
+  gchar *here = _("here"), *text = g_strjoin(NULL,
+    "<b>", _("there are no images in this collection"), "</b>",
+    !lighttable ? NULL : "\n",
+    "<b>"RGHT _("need help?"), "</b>",
+    "\n" , _("if you have not imported any images yet"),
+         RGHT _("click on <b>?</b> then an on-screen item to open manual page"),
+    "\n" , _("you can do so in the import module"),
+         RGHT _("press and hold '<b>h</b>' to show all active keyboard shortcuts"),
+    "\n" RGHT _("to open the online manual click "), "<u>", here, "</u>",
+    "\n" , _("try to relax the filter settings in the top panel"),
+    "\n" , _("or add images in the collections module"),
+    "<b>"RGHT _("personalize darktable"), "</b>",
+    "\n" RGHT _("click on the gear icon for global preferences"),
+    "\n" ,
+    "<b>", _("try the 'no-click' workflow"), "</b>",
+         RGHT _("click on the keyboard icon to define shortcuts"),
+    "\n" , _("hover over an image and use keyboard shortcuts"),
+    "\n" , _("to apply ratings, colors, styles, etc."),
+         RGHT _("make default raw development look more like your"),
+    "\n" , _("hover over any button to see a description and shortcut"),
+         RGHT _("camera's JPEG by applying a camera-specific style"),
+    NULL);
+
   dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_FONT);
-  pango_layout_set_text(layout, _("there are no images in this collection"), -1);
-  pango_layout_get_pixel_extents(layout, &ink, NULL);
-  cairo_move_to(cr, offx, offy - ink.height - ink.x);
+  cairo_move_to(cr, offx, offy);
+  pango_layout_set_markup(layout, text, -1);
   pango_cairo_show_layout(cr, layout);
+  g_free(text);
 
   if(lighttable)
   {
-    pango_layout_set_text(layout, _("if you have not imported any images yet"), -1);
-    pango_layout_get_pixel_extents(layout, &ink, NULL);
-    cairo_move_to(cr, offx, offy + 2 * ls - ink.height - ink.x);
-    pango_cairo_show_layout(cr, layout);
-    pango_layout_set_text(layout, _("you can do so in the import module"), -1);
-    pango_layout_get_pixel_extents(layout, &ink, NULL);
-    cairo_move_to(cr, offx, offy + 3 * ls - ink.height - ink.x);
-    pango_cairo_show_layout(cr, layout);
-    cairo_move_to(cr, offx - DT_PIXEL_APPLY_DPI(10.0f), offy + 3 * ls - ls * .25f);
-    cairo_line_to(cr, 0.0f, 10.0f);
-    dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_LIGHTTABLE_FONT, at);
-    cairo_stroke(cr);
-    pango_layout_set_text(layout,
-                          _("try to relax the filter settings in the top panel"), -1);
-    pango_layout_get_pixel_extents(layout, &ink, NULL);
-    cairo_move_to(cr, offx, offy + 5 * ls - ink.height - ink.x);
-    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_FONT);
-    pango_cairo_show_layout(cr, layout);
-    cairo_rel_move_to(cr, 10.0f + ink.width, ink.height * 0.5f);
-    cairo_line_to(cr, width * 0.5f, 0.0f);
-    dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_LIGHTTABLE_FONT, at);
-    cairo_stroke(cr);
-    pango_layout_set_text
-      (layout,
-       _("or add images in the collections module in the left panel"), -1);
-    pango_layout_get_pixel_extents(layout, &ink, NULL);
-    cairo_move_to(cr, offx, offy + 6 * ls - ink.height - ink.x);
-    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_FONT);
-    pango_cairo_show_layout(cr, layout);
-    cairo_move_to(cr, offx - DT_PIXEL_APPLY_DPI(10.0f), offy + 6 * ls - ls * 0.25f);
-    cairo_rel_line_to(cr, -offx + 10.0f, 0.0f);
-    dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_LIGHTTABLE_FONT, at);
-    cairo_stroke(cr);
+    dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_LIGHTTABLE_FONT, 0.3f);
+    const float offx2 = offx - DT_PIXEL_APPLY_DPI(10);
+    PangoRectangle ink;
+    PangoLayoutLine* line = pango_layout_get_line_readonly(layout, 5);
+    pango_layout_line_get_pixel_extents(line, NULL, &ink);
 
-    pango_layout_set_text(layout,
-       _("try the 'no-click' workflow: hover on an image and use"), -1);
-    pango_layout_get_pixel_extents(layout, &ink, NULL);
-    cairo_move_to(cr, offx, offy + 9 * ls - ink.height - ink.x);
-    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_FONT);
-    pango_cairo_show_layout(cr, layout);
-    pango_layout_set_text(layout,
-       _("keyboard shortcuts to apply ratings, colors, styles, etc."), -1);
-    pango_layout_get_pixel_extents(layout, &ink, NULL);
-    cairo_move_to(cr, offx, offy + 10 * ls - ink.height - ink.x);
-    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_FONT);
-    pango_cairo_show_layout(cr, layout);
-    cairo_stroke(cr);
+    const int button_width =
+      gtk_widget_get_allocated_width(darktable.gui->focus_peaking_button);
+
+    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(3));
+    cairo_new_path(cr);
+    _line_to_module(cr, width, ink, offx, offy,
+                    3, offx2, "import");
+    _line_to(cr, ink, offx, offy, 5,
+             offx + ink.width + DT_PIXEL_APPLY_DPI(10), width * 0.45f, 0);
+    _line_to_module(cr, width, ink, offx, offy,
+                    6, offx2, "collect");
+    _line_to(cr, ink, offx, offy,
+             11.8, 4 * button_width, 4 * button_width, height);
+
+    _line_to(cr, ink, offx, offy,
+             1.3, width - offx2 - ink.width/2, width - 2.5 * button_width, 0);
+    _line_to(cr, ink, offx, offy,
+             8, width - offx2, width - button_width, 0);
+    _line_to_module(cr, width, ink, offx, offy,
+                    11, width - offx2, "styles");
+
+    pango_layout_set_text(layout, here, -1);
+    pango_layout_get_pixel_extents(layout, NULL, &lighttable->manual_button);
+    lighttable->manual_button.x = width - offx;
+    lighttable->manual_button.y = offy + 5 * lighttable->manual_button.height;
   }
-
   pango_font_description_free(desc);
   g_object_unref(layout);
 }
@@ -1242,13 +1295,14 @@ static gboolean _event_draw(GtkWidget *widget,
   // but we don't really want to draw something, this is just to know
   // when the widget is really ready
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
+  table->manual_button.width = -1;
   if(!darktable.collection
      || (dt_collection_get_count(darktable.collection) == 0))
   {
     GtkAllocation allocation;
     gtk_widget_get_allocation(table->widget, &allocation);
     _lighttable_expose_empty(cr, allocation.width, allocation.height,
-                             table->mode != DT_THUMBTABLE_MODE_FILMSTRIP);
+                             table->mode != DT_THUMBTABLE_MODE_FILMSTRIP ? table : NULL);
     return TRUE;
   }
   else
@@ -1327,6 +1381,10 @@ static gboolean _event_button_press(GtkWidget *widget,
   {
     // we click in an empty area, let's deselect all images
     dt_selection_clear(darktable.selection);
+    PangoRectangle *button = &table->manual_button;
+    if(event->x < button->x && event->x > button->x - button->width &&
+       event->y < button->y && event->y > button->y - button->height)
+      dt_gui_show_help(NULL);
     return TRUE;
   }
 
@@ -1876,7 +1934,7 @@ static void _dt_collection_changed_callback(gpointer instance,
     GList *actual = NULL;
     if(nrow <= 0)
     {
-      // we retrive the entry with id == newid
+      // we retrieve the entry with id == newid
       for(GList *l = table->list; l; l = g_list_next(l))
       {
         dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
@@ -2695,47 +2753,23 @@ static void _accel_copy_parts(dt_action_t *action)
 static void _accel_paste(dt_action_t *action)
 {
   GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
-
   dt_dev_undo_start_record(darktable.develop);
-
-  const gboolean ret = dt_history_paste_on_list(imgs, TRUE);
-  if(ret)
-    dt_collection_update_query(darktable.collection,
-                               DT_COLLECTION_CHANGE_RELOAD,
-                               DT_COLLECTION_PROP_UNDEF, imgs);
-  else
-    g_list_free(imgs);
-
+  dt_control_paste_history(imgs);
   dt_dev_undo_end_record(darktable.develop);
 }
 
 static void _accel_paste_parts(dt_action_t *action)
 {
   GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
-
   dt_dev_undo_start_record(darktable.develop);
-
-  const gboolean ret = dt_history_paste_parts_on_list(imgs, TRUE);
-  if(ret)
-    dt_collection_update_query(darktable.collection,
-                               DT_COLLECTION_CHANGE_RELOAD,
-                               DT_COLLECTION_PROP_UNDEF, imgs);
-  else
-    g_list_free(imgs);
-
+  dt_control_paste_parts_history(imgs);
   dt_dev_undo_end_record(darktable.develop);
 }
 
 static void _accel_hist_discard(dt_action_t *action)
 {
   GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
-  const gboolean ret = dt_history_delete_on_list(imgs, TRUE);
-  if(ret)
-    dt_collection_update_query(darktable.collection,
-                               DT_COLLECTION_CHANGE_RELOAD,
-                               DT_COLLECTION_PROP_UNDEF, imgs);
-  else
-    g_list_free(imgs);
+  dt_control_discard_history(imgs);
 }
 
 static void _accel_duplicate(dt_action_t *action)
@@ -2750,7 +2784,7 @@ static void _accel_duplicate(dt_action_t *action)
   if(strcmp(action->id, "duplicate image"))
     dt_history_delete_on_image(newimgid);
   else
-    dt_history_copy_and_paste_on_image(sourceid, newimgid, FALSE, NULL, TRUE, TRUE);
+    dt_history_copy_and_paste_on_image(sourceid, newimgid, FALSE, NULL, TRUE, TRUE, TRUE);
 
   // a duplicate should keep the change time stamp of the original
   dt_image_cache_set_change_timestamp_from_image(darktable.image_cache,

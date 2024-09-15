@@ -27,6 +27,7 @@
 #include <string.h>
 
 #include "common/debug.h"
+#include "common/image.h"
 #include "common/opencl.h"
 #include "control/conf.h"
 #include "control/control.h"

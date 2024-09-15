@@ -988,8 +988,10 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
      && gtk_window_get_window_type(top) != GTK_WINDOW_POPUP)
     return FALSE;
 
-  if(dt_key_modifier_state() & (GDK_BUTTON1_MASK|GDK_BUTTON2_MASK|GDK_BUTTON3_MASK)
-     || darktable.bauhaus->current)
+  if(dt_key_modifier_state() & (GDK_BUTTON1_MASK|GDK_BUTTON2_MASK|GDK_BUTTON3_MASK
+                               |GDK_SHIFT_MASK|GDK_CONTROL_MASK|GDK_MOD1_MASK)
+     || darktable.bauhaus->current
+     || darktable.gui->hide_tooltips)
     return FALSE;
 
   gchar *markup_text = NULL;
@@ -3894,6 +3896,15 @@ static float _process_shortcut(float move_size)
             "  [_process_shortcut] processing shortcut: %s\n",
             _shortcut_description(&_sc));
 
+  if(DT_PERFORM_ACTION(move_size) &&
+     gtk_widget_has_grab(darktable.control->progress_system.proxy.module->widget))
+  {
+    if(_sc.key_device == DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE && _sc.key == GDK_KEY_Escape)
+      dt_print(DT_DEBUG_ALWAYS, "this should cancel the running blocking job\n"); // TODO
+
+    return return_value;
+  }
+
   dt_shortcut_t fsc = _sc;
   fsc.action = NULL;
   fsc.element  = 0;
@@ -5172,8 +5183,7 @@ GtkWidget *dt_action_entry_new(dt_action_t *ac,
                                const gchar *tooltip,
                                const gchar *text)
 {
-  GtkWidget *entry = gtk_entry_new();
-  gtk_entry_set_width_chars(GTK_ENTRY(entry), 5);
+  GtkWidget *entry = dt_ui_entry_new(5);
   if(text)
     gtk_entry_set_text (GTK_ENTRY(entry), text);
   if(tooltip)

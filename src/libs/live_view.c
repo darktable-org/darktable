@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2023 darktable developers.
+    Copyright (C) 2012-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -526,10 +526,10 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
 
       cairo_set_source_surface(cr, surface, 0, 0);
       // set filter no nearest:
-      // in skull mode, we want to see big pixels.
+      // in skull/error mode, we want to see big pixels.
       // in 1 iir mode for the right mip, we want to see exactly what the pipe gave us, 1:1 pixel for pixel.
       // in between, filtering just makes stuff go unsharp.
-      if((buf.width <= 8 && buf.height <= 8) || fabsf(scale - 1.0f) < 0.01f)
+      if((buf.width <= 30 && buf.height <= 30) || fabsf(scale - 1.0f) < 0.01f)
         cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
       cairo_rectangle(cr, 0, 0, buf.width, buf.height);
       const int overlay_modes_index = dt_bauhaus_combobox_get(lib->overlay_mode);

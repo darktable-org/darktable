@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2022 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -117,13 +117,13 @@ typedef struct dt_gui_gtk_t
   dt_gui_scrollbars_t scrollbars;
 
   cairo_surface_t *surface;
-  GtkMenu *presets_popup_menu;
+
   char *last_preset;
 
   int32_t reset;
   GdkRGBA colors[DT_GUI_COLOR_LAST];
 
-  int32_t center_tooltip; // 0 = no tooltip, 1 = new tooltip, 2 = old tooltip
+  int32_t hide_tooltips;
 
   gboolean grouping;
   int32_t expanded_group_id;
@@ -410,6 +410,14 @@ static inline GtkWidget *dt_ui_label_new(const gchar *str)
   return label;
 };
 
+static inline GtkWidget *dt_ui_entry_new(gint width_chars)
+{
+  GtkWidget *entry = gtk_entry_new();
+  gtk_drag_dest_unset(entry);
+  gtk_entry_set_width_chars(GTK_ENTRY(entry), width_chars);
+  return entry;
+};
+
 extern const struct dt_action_def_t dt_action_def_tabs_all_rgb;
 extern const struct dt_action_def_t dt_action_def_tabs_rgb;
 extern const struct dt_action_def_t dt_action_def_tabs_none;
@@ -526,6 +534,16 @@ void dt_gui_hide_collapsible_section(dt_gui_collapsible_section_t *cs);
 // is delay between first and second click/press longer than double-click time?
 gboolean dt_gui_long_click(const int second,
                            const int first);
+
+// control whether the mouse pointer displays as a "busy" cursor, e.g. watch or timer
+// the calls may be nested, but must be matched
+void dt_gui_cursor_set_busy();
+void dt_gui_cursor_clear_busy();
+
+// run all pending Gtk/GDK events
+// should be called after making Gtk calls if we won't resume the main event loop for a while
+// (i.e. the current function will do a lot of work before returning)
+void dt_gui_process_events();
 
 #ifdef __cplusplus
 } // extern "C"

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -33,11 +33,18 @@
 #include "imageio/imageio_common.h"
 
 #include <libxml/encoding.h>
+#include <libxml/parser.h>
 #include <libxml/xmlwriter.h>
 
+#include <dirent.h>
 #include <glib.h>
 #include <stdio.h>
 #include <string.h>
+
+#if defined (_WIN32)
+#include "win/getdelim.h"
+#include "win/scandir.h"
+#endif // defined (_WIN32)
 
 typedef struct
 {
@@ -639,6 +646,7 @@ gboolean dt_styles_create_from_image(const char *name,
 
 void dt_styles_apply_to_list(const char *name, const GList *list, gboolean duplicate)
 {
+  dt_gui_cursor_set_busy();
   gboolean selected = FALSE;
 
   /* write current history changes so nothing gets lost,
@@ -693,12 +701,14 @@ void dt_styles_apply_to_list(const char *name, const GList *list, gboolean dupli
   {
     dt_control_log(_("style %s successfully applied!"), name);
   }
+  dt_gui_cursor_clear_busy();
 }
 
 void dt_multiple_styles_apply_to_list(GList *styles,
                                       const GList *list,
                                       const gboolean duplicate)
 {
+  dt_gui_cursor_set_busy();
   /* write current history changes so nothing gets lost,
      do that only in the darkroom as there is nothing to be saved
      when in the lighttable (and it would write over current history stack) */
@@ -744,6 +754,7 @@ void dt_multiple_styles_apply_to_list(GList *styles,
   const guint styles_cnt = g_list_length(styles);
   dt_control_log(ngettext("style successfully applied!",
                           "styles successfully applied!", styles_cnt));
+  dt_gui_cursor_clear_busy();
 }
 
 void dt_styles_create_from_list(const GList *list)
@@ -923,7 +934,7 @@ void _styles_apply_to_image_ext(const char *name,
         if(overwrite)
           dt_history_delete_on_image_ext(newimgid, FALSE, TRUE);
         else
-          dt_history_copy_and_paste_on_image(imgid, newimgid, FALSE, NULL, TRUE, TRUE);
+          dt_history_copy_and_paste_on_image(imgid, newimgid, FALSE, NULL, TRUE, TRUE, TRUE);
       }
     }
     else
@@ -1075,9 +1086,6 @@ void _styles_apply_to_image_ext(const char *name,
                               dt_dev_modulegroups_get(darktable.develop));
     }
 
-    /* update xmp file */
-    dt_image_synch_xmp(newimgid);
-
     /* remove old obsolete thumbnails */
     dt_mipmap_cache_remove(darktable.mipmap_cache, newimgid);
     dt_image_update_final_size(newimgid);
@@ -1087,6 +1095,9 @@ void _styles_apply_to_image_ext(const char *name,
       dt_image_set_aspect_ratio(newimgid, TRUE);
     else
       dt_image_reset_aspect_ratio(newimgid, TRUE);
+
+    /* update xmp file */
+    dt_image_synch_xmp(newimgid);
 
     /* redraw center view to update visible mipmaps */
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
@@ -1816,6 +1827,82 @@ dt_style_t *dt_styles_get_by_name(const char *name)
     sqlite3_finalize(stmt);
     return NULL;
   }
+}
+
+gchar *dt_get_style_name(const char *filename)
+{
+  gchar *bname = NULL;
+  xmlDoc *document = xmlReadFile(filename, NULL, XML_PARSE_NOBLANKS);
+  xmlNode *root = NULL;
+  if(document != NULL)
+    root = xmlDocGetRootElement(document);
+
+  if(document == NULL || root == NULL || xmlStrcmp(root->name, BAD_CAST "darktable_style"))
+  {
+    dt_print(DT_DEBUG_CONTROL,
+             "[styles] file %s is not a style file\n", filename);
+    if(document)
+      xmlFreeDoc(document);
+    return bname;
+  }
+
+  for(xmlNode *node = root->children->children; node; node = node->next)
+  {
+    if(node->type == XML_ELEMENT_NODE)
+    {
+      if(strcmp((char*)node->name, "name") == 0)
+      {
+        bname = g_strdup((char*)xmlNodeGetContent(node));
+        break;
+      }
+    }
+  }
+
+  // xml doc is not necessary after this point
+  xmlFreeDoc(document);
+
+  if(!bname){
+    dt_print(DT_DEBUG_CONTROL,
+             "[styles] file %s is a malformed style file\n", filename);
+  }
+  return bname;
+}
+
+static int _check_extension(const struct dirent *namestruct)
+{
+  const char *filename = namestruct->d_name;
+  if(!filename || !filename[0])
+    return 0;
+  const char *dot = g_strrstr(filename, ".");
+  if(!dot)
+    return 0;
+  char *ext = g_ascii_strdown(g_strdup(dot), -1);
+  int include = g_strcmp0(ext, ".dtstyle") == 0;
+  g_free(ext);
+  return include;
+}
+
+void dt_import_default_styles(const char *folder)
+{
+  struct dirent **entries;
+  const int numentries = scandir(folder, &entries, _check_extension, alphasort);
+  for(int i = 0; i < numentries; i++)
+  {
+    char *filename = g_build_filename(folder, entries[i]->d_name, NULL);
+    gchar *bname = dt_get_style_name(filename);
+    if(bname && !dt_styles_exists(bname))
+    {
+      if(darktable.gui)
+        dt_print(DT_DEBUG_ALWAYS,
+                 "[styles] importing default style '%s'\n", filename);
+      dt_styles_import_from_file(filename);
+    }
+    g_free(bname);
+    g_free(filename);
+    free(entries[i]);
+  }
+  if(numentries != -1)
+    free(entries);
 }
 
 // clang-format off

@@ -33,7 +33,7 @@
 #endif
 #include <gdk/gdkkeysyms.h>
 
-DT_MODULE(3)
+DT_MODULE(4)
 
 typedef enum dt_metadata_pref_cols_t
 {
@@ -58,6 +58,12 @@ typedef struct dt_lib_metadata_t
 const char *name(dt_lib_module_t *self)
 {
   return _("metadata editor");
+}
+
+const char *description(dt_lib_module_t *self)
+{
+  return _("modify text metadata fields of\n"
+           "the currently selected images");
 }
 
 dt_view_type_flags_t views(dt_lib_module_t *self)
@@ -277,8 +283,9 @@ static void _write_metadata(dt_lib_module_t *self)
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
     _metadata_set_list(i, &key_value, d);
 
-  if(key_value)
+  if(key_value && d->last_act_on)
   {
+    dt_gui_cursor_set_busy();
     dt_metadata_set_list(d->last_act_on, key_value, TRUE);
 
     for(GList *l = key_value; l; l = l->next->next) g_free(l->next->data);
@@ -290,6 +297,7 @@ static void _write_metadata(dt_lib_module_t *self)
                                   DT_SIGNAL_METADATA_CHANGED, DT_METADATA_SIGNAL_NEW_VALUE);
 
     dt_image_synch_xmps(d->last_act_on);
+    dt_gui_cursor_clear_busy();
   }
 
   g_list_free(d->last_act_on);
@@ -660,7 +668,7 @@ static gboolean _metadata_reset(GtkWidget *label,
     else
       g_signal_emit_by_name(G_OBJECT(buffer), "changed"); // even if unchanged
   }
-  return FALSE;
+  return TRUE;
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -681,11 +689,13 @@ void gui_init(dt_lib_module_t *self)
     d->label[i] = dt_ui_label_new(_(name));
     gtk_widget_set_halign(d->label[i], GTK_ALIGN_FILL);
     GtkWidget *labelev = gtk_event_box_new();
+    gtk_widget_set_tooltip_text(labelev, _("double-click to reset"));
     gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
     gtk_container_add(GTK_CONTAINER(labelev), d->label[i]);
     gtk_grid_attach(grid, labelev, 0, i, 1, 1);
 
     GtkWidget *textview = gtk_text_view_new();
+    gtk_drag_dest_unset(textview);
     dt_action_define(DT_ACTION(self), NULL, name, textview, &dt_action_def_entry);
     gtk_widget_set_tooltip_text(textview,
               _("metadata text"
@@ -860,6 +870,17 @@ void *legacy_params(dt_lib_module_t *self,
 
     *new_size = new_params_size;
     *new_version = 3;
+    return new_params;
+  }
+  else if(old_version == 3)
+  {
+    const size_t new_params_size = old_params_size + 1;
+    char *new_params = calloc(sizeof(char), new_params_size);
+
+    memcpy(new_params, old_params, old_params_size);
+
+    *new_size = new_params_size;
+    *new_version = 4;
     return new_params;
   }
   return NULL;

@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include <assert.h>
 #include <inttypes.h>
 #include <memory.h>
@@ -24,18 +25,17 @@
 
 #include "common/colorspaces.h"
 #include "common/darktable.h"
-#include "imageio_png.h"
 #include "common/exif.h"
 #include "control/conf.h"
 #include "develop/develop.h"
 #include "imageio_common.h"
-#include "imageio_tiff.h"
+#include "imageio_png.h"
 
-int read_header(const char *filename, dt_imageio_png_t *png)
+gboolean dt_imageio_png_read_header(const char *filename, dt_imageio_png_t *png)
 {
   png->f = g_fopen(filename, "rb");
 
-  if(!png->f) return 1;
+  if(!png->f) return FALSE;
 
 #define NUM_BYTES_CHECK (8)
 
@@ -46,7 +46,7 @@ int read_header(const char *filename, dt_imageio_png_t *png)
   if(cnt != NUM_BYTES_CHECK || png_sig_cmp(dat, (png_size_t)0, NUM_BYTES_CHECK))
   {
     fclose(png->f);
-    return 1;
+    return FALSE;
   }
 
   png->png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
@@ -54,7 +54,7 @@ int read_header(const char *filename, dt_imageio_png_t *png)
   if(!png->png_ptr)
   {
     fclose(png->f);
-    return 1;
+    return FALSE;
   }
 
   /* TODO: gate by version once known cICP chunk read support is added to libpng */
@@ -67,14 +67,14 @@ int read_header(const char *filename, dt_imageio_png_t *png)
   {
     fclose(png->f);
     png_destroy_read_struct(&png->png_ptr, NULL, NULL);
-    return 1;
+    return FALSE;
   }
 
   if(setjmp(png_jmpbuf(png->png_ptr)))
   {
     fclose(png->f);
     png_destroy_read_struct(&png->png_ptr, &png->info_ptr, NULL);
-    return 1;
+    return FALSE;
   }
 
   png_init_io(png->png_ptr, png->f);
@@ -116,17 +116,17 @@ int read_header(const char *filename, dt_imageio_png_t *png)
 
 #undef NUM_BYTES_CHECK
 
-  return 0;
+  return TRUE;
 }
 
 
-int read_image(dt_imageio_png_t *png, void *out)
+gboolean dt_imageio_png_read_image(dt_imageio_png_t *png, void *out)
 {
   if(setjmp(png_jmpbuf(png->png_ptr)))
   {
     fclose(png->f);
     png_destroy_read_struct(&png->png_ptr, &png->info_ptr, NULL);
-    return 1;
+    return FALSE;
   }
 
   png_bytep *row_pointers = malloc(sizeof(png_bytep) * png->height);
@@ -146,7 +146,7 @@ int read_image(dt_imageio_png_t *png, void *out)
 
   free(row_pointers);
   fclose(png->f);
-  return 0;
+  return TRUE;
 }
 
 
@@ -155,7 +155,8 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
 {
   const char *ext = filename + strlen(filename);
   while(*ext != '.' && ext > filename) ext--;
-  if(strncmp(ext, ".png", 4) && strncmp(ext, ".PNG", 4)) return DT_IMAGEIO_LOAD_FAILED;
+  if(strncmp(ext, ".png", 4) && strncmp(ext, ".PNG", 4))
+    return DT_IMAGEIO_UNSUPPORTED_FORMAT;
   if(!img->exif_inited) (void)dt_exif_read(img, filename);
 
   dt_imageio_png_t image;
@@ -164,7 +165,8 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
   uint16_t bpp;
 
 
-  if(read_header(filename, &image) != 0) return DT_IMAGEIO_LOAD_FAILED;
+  if(!dt_imageio_png_read_header(filename, &image))
+    return DT_IMAGEIO_UNSUPPORTED_FORMAT;
 
   width = img->width = image.width;
   height = img->height = image.height;
@@ -192,17 +194,20 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
     return DT_IMAGEIO_CACHE_FULL;
   }
 
-  if(read_image(&image, (void *)buf) != 0)
+  if(!dt_imageio_png_read_image(&image, (void *)buf))
   {
     dt_free_align(buf);
     dt_print(DT_DEBUG_ALWAYS, "[png_open] could not read image `%s'\n", img->filename);
-    return DT_IMAGEIO_LOAD_FAILED;
+    return DT_IMAGEIO_FILE_CORRUPTED;
   }
 
   const size_t npixels = (size_t)width * height;
 
   if(bpp < 16)
   {
+    img->flags &= ~DT_IMAGE_HDR;
+    img->flags |= DT_IMAGE_LDR;
+
     const float normalizer = 1.0f / 255.0f;
 
     DT_OMP_FOR()
@@ -215,6 +220,9 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
   }
   else
   {
+    img->flags &= ~DT_IMAGE_LDR;
+    img->flags |= DT_IMAGE_HDR;
+
     const float normalizer = 1.0f / 65535.0f;
 
     DT_OMP_FOR()
@@ -232,8 +240,6 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
   img->buf_dsc.filters = 0u;
   img->flags &= ~DT_IMAGE_RAW;
   img->flags &= ~DT_IMAGE_S_RAW;
-  img->flags &= ~DT_IMAGE_HDR;
-  img->flags |= DT_IMAGE_LDR;
   img->loader = LOADER_PNG;
 
   return DT_IMAGEIO_OK;
@@ -252,9 +258,11 @@ int dt_imageio_png_read_profile(const char *filename, uint8_t **out, dt_colorspa
   png_uint_32 proflen = 0;
   png_bytep profile;
 
-  if(!(filename && *filename)) return 0;
+  if(!(filename && *filename))
+    return 0;
 
-  if(read_header(filename, &image) != 0) return 0;
+  if(!dt_imageio_png_read_header(filename, &image))
+    return 0;
 
   /* TODO: also add check for known cICP chunk read support once added to libpng */
 #ifdef PNG_STORE_UNKNOWN_CHUNKS_SUPPORTED

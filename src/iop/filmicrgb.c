@@ -382,7 +382,7 @@ inline static gboolean dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_p
 
 // BEWARE: convert_to_spline_v3 supports up to v6 of params (see legacy_params)
 // convert parameters from spline v1 or v2 to spline v3
-static inline void convert_to_spline_v3(dt_iop_filmicrgb_params_t* n)
+static void convert_to_spline_v3(dt_iop_filmicrgb_params_t* n)
 {
   if(n->spline_version == DT_FILMIC_SPLINE_VERSION_V3)
     return;
@@ -4656,7 +4656,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
       float prev = *(float *)previous;
       if(w == g->security_factor)
       {
-        float ratio = (p->security_factor - prev) / (prev + 100.0f);
+        const float ratio = (p->security_factor - prev) / (prev + 100.0f);
 
         float EVmin = p->black_point_source;
         EVmin = EVmin + ratio * EVmin;
@@ -4669,7 +4669,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
       }
       else
       {
-        float grey_var = log2f(prev / p->grey_point_source);
+        const float grey_var = log2f(prev / p->grey_point_source);
         p->black_point_source = p->black_point_source - grey_var;
         p->white_point_source = p->white_point_source + grey_var;
       }

@@ -142,7 +142,7 @@ typedef struct dt_iop_lens_params_t
   dt_iop_lens_lenstype_t target_geom; // $DEFAULT: DT_IOP_LENS_LENSTYPE_RECTILINEAR $DESCRIPTION: "target geometry"
   char camera[128];
   char lens[128];
-  gboolean tca_override; // $DEFAULT: FALSE $DESCRIPTION: "TCA overwrite"
+  gboolean tca_override; // $DEFAULT: FALSE $DESCRIPTION: "TCA override"
   float tca_r; // $MIN: 0.99 $MAX: 1.01 $DEFAULT: 1.0 $DESCRIPTION: "TCA red"
   float tca_b; // $MIN: 0.99 $MAX: 1.01 $DEFAULT: 1.0 $DESCRIPTION: "TCA blue"
 
@@ -1016,8 +1016,8 @@ static float _get_autoscale_lf(dt_iop_module_t *self,
     if(lenslist)
     {
       const dt_image_t *img = &(self->dev->image_storage);
-      const int iwd = dt_image_raw_width(img);
-      const int iht = dt_image_raw_height(img);
+      const int iwd = img->p_width;
+      const int iht = img->p_height;
 
       // create dummy modifier
       const dt_iop_lens_data_t d =
@@ -2445,8 +2445,8 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
   // TODO(sgotti) Theoretically, since the distortion function should always be
   // monotonic and the center is always the center of the image, we should only
   // look at the the shorter image radius and 1 ignoring intermediate values
-  const float iwd2 = 0.5f * dt_image_raw_width(img);
-  const float iht2 = 0.5f * dt_image_raw_height(img);
+  const float iwd2 = 0.5f * img->p_width;
+  const float iht2 = 0.5f * img->p_height;
 
   const float r = sqrtf(iwd2 * iwd2 + iht2 * iht2);
   const float sr = MIN(iwd2, iht2);
@@ -3991,11 +3991,11 @@ static void _lens_set(dt_iop_module_t *self,
       = { -INFINITY, 4.5,   8,   10,  12,  14,  15,  16,  17,  18,  20,  24,  28,   30,
                  31,  35,  38,   40,  43,  45,  50,  55,  60,  70,  75,  77,  80,   85,
                  90, 100, 105,  110, 120, 135, 150, 200, 210, 240, 250, 300, 400,  500,
-                600, 800, 1000, INFINITY };
+		 600, 700, 800, 840, 1000, 1120, 1200, 1600, 2000, INFINITY };
   gdouble aperture_values[]
       = { -INFINITY, 0.7, 0.8, 0.9,   1, 1.1, 1.2, 1.4, 1.8,  2,  2.2, 2.5, 2.8, 3.2, 3.4,
                   4, 4.5, 5.0, 5.6, 6.3, 7.1,   8,   9,  10, 11,   13,  14,  16,  18,  20,
-                 22,  25,  29,  32,  38, INFINITY };
+		  22,  25,  29,  32,  38, 45, 50, 54, 64, 90, INFINITY };
 
   if(!lens)
   {
@@ -4354,7 +4354,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
       dt_image_is_monochrome(&self->dev->image_storage);
     gtk_widget_set_visible(g->tca_override, !raw_monochrome);
 
-    // show tca sliders only if tca_overwrite is set
+    // show tca sliders only if tca_override is set
     gtk_widget_set_visible(g->tca_r, p->tca_override && !raw_monochrome);
     gtk_widget_set_visible(g->tca_b, p->tca_override && !raw_monochrome);
 

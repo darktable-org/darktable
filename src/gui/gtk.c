@@ -180,25 +180,10 @@ static void _fullscreen_key_accel_callback(dt_action_t *action)
 
 static void _toggle_tooltip_visibility(dt_action_t *action)
 {
-  if(gdk_screen_is_composited(gdk_screen_get_default()))
-  {
-    gboolean tooltip_hidden = !dt_conf_get_bool("ui/hide_tooltips");
-    dt_conf_set_bool("ui/hide_tooltips", tooltip_hidden);
-    if(tooltip_hidden)
-      dt_toast_log(_("tooltips off"));
-    else
-      dt_toast_log(_("tooltips on"));
-  }
-  else
-  {
-    dt_conf_set_bool("ui/hide_tooltips", FALSE);
-    dt_control_log(_("tooltip visibility can only be toggled"
-                     " if compositing is enabled in your window manager"));
-  }
-
-  const char *theme = dt_conf_get_string_const("ui_last/theme");
-  dt_gui_load_theme(theme);
-  dt_bauhaus_load_theme();
+  gboolean tooltip_hidden = !dt_conf_get_bool("ui/hide_tooltips");
+  dt_conf_set_bool("ui/hide_tooltips", tooltip_hidden);
+  darktable.gui->hide_tooltips += tooltip_hidden ? 1 : -1;
+  dt_toast_log(tooltip_hidden ? _("tooltips off") : _("tooltips on"));
 }
 
 static inline void _update_focus_peaking_button()
@@ -904,13 +889,8 @@ static void _quit_callback(dt_action_t *action)
 }
 
 #ifdef MAC_INTEGRATION
-#ifdef GTK_TYPE_OSX_APPLICATION
-static gboolean _osx_quit_callback(GtkOSXApplication *OSXapp,
-                                   gpointer user_data)
-#else
 static gboolean _osx_quit_callback(GtkosxApplication *OSXapp,
                                    gpointer user_data)
-#endif
 {
   GList *windows, *window;
   windows = gtk_window_list_toplevels();
@@ -923,17 +903,14 @@ static gboolean _osx_quit_callback(GtkosxApplication *OSXapp,
   return TRUE;
 }
 
-#ifdef GTK_TYPE_OSX_APPLICATION
-static gboolean _osx_openfile_callback(GtkOSXApplication *OSXapp,
-                                       gchar *path,
-                                       gpointer user_data)
-#else
 static gboolean _osx_openfile_callback(GtkosxApplication *OSXapp,
                                        gchar *path,
                                        gpointer user_data)
-#endif
 {
-  return dt_is_valid_imgid(dt_load_from_string(path, TRUE, NULL));
+  // when multiple files are dropped on the app icon this callback
+  // gets called for each file individually so we don't request to
+  // open the darkroom here.
+  return dt_is_valid_imgid(dt_load_from_string(path, FALSE, NULL));
 }
 #endif
 
@@ -1187,11 +1164,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
     g_snprintf(gui->gtkrc, sizeof(gui->gtkrc), "darktable");
 
 #ifdef MAC_INTEGRATION
-#ifdef GTK_TYPE_OSX_APPLICATION
-  GtkOSXApplication *OSXApp = g_object_new(GTK_TYPE_OSX_APPLICATION, NULL);
-  gtk_osxapplication_set_menu_bar(
-      OSXApp, GTK_MENU_SHELL(gtk_menu_bar_new())); // needed for default entries to show up
-#else
   GtkosxApplication *OSXApp = g_object_new(GTKOSX_TYPE_APPLICATION, NULL);
 
   // View menu
@@ -1260,21 +1232,19 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
   gtkosx_application_set_help_menu(OSXApp, GTK_MENU_ITEM(help_root_menu));
 
-#endif
   g_signal_connect(G_OBJECT(OSXApp), "NSApplicationBlockTermination",
                    G_CALLBACK(_osx_quit_callback), NULL);
   g_signal_connect(G_OBJECT(OSXApp), "NSApplicationOpenFile",
                    G_CALLBACK(_osx_openfile_callback), NULL);
 #endif
 
-  GtkWidget *widget;
+      GtkWidget *widget;
   gui->ui = g_malloc0(sizeof(dt_ui_t));
   gui->surface = NULL;
-  gui->center_tooltip = 0;
+  gui->hide_tooltips = dt_conf_get_bool("ui/hide_tooltips") ? 1 : 0;
   gui->grouping = dt_conf_get_bool("ui_last/grouping");
   gui->expanded_group_id = NO_IMGID;
   gui->show_overlays = dt_conf_get_bool("lighttable/ui/expose_statuses");
-  gui->presets_popup_menu = NULL;
   gui->last_preset = NULL;
   gui->have_pen_pressure = FALSE;
 
@@ -1497,11 +1467,7 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
   dt_view_manager_configure(darktable.view_manager,
                             allocation.width - 2 * tb, allocation.height - 2 * tb);
 #ifdef MAC_INTEGRATION
-#ifdef GTK_TYPE_OSX_APPLICATION
-  gtk_osxapplication_ready(g_object_new(GTK_TYPE_OSX_APPLICATION, NULL));
-#else
   gtkosx_application_ready(g_object_new(GTKOSX_TYPE_APPLICATION, NULL));
-#endif
 #endif
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_focus_window();
@@ -1911,6 +1877,16 @@ void dt_ui_toggle_panels_visibility(struct dt_ui_t *ui)
   }
   else
   {
+    if(!dt_conf_get_bool("collapse_help_shown") &&
+       !dt_gui_show_yes_no_dialog(_("collapsing panels"),
+                                  _("this is the first time you pressed the shortcut\n"
+                                    "to collapse all side and top/bottom panels.\n"
+                                    "by default this is the TAB key.\n"
+                                    "pressing it again will restore the panels.\n\n"
+                                    "do you want to collapse all panels now?")))
+      return;
+
+    dt_conf_set_bool("collapse_help_shown", TRUE);
     dt_conf_set_int(key, 1);
   }
 
@@ -2236,6 +2212,123 @@ static gboolean _ui_init_panel_container_center_scroll_event(GtkWidget *widget,
           != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default"));
 }
 
+static gboolean _on_drag_motion_drop(GtkWidget *widget, GdkDragContext *dc, gint x, gint y, guint time, gboolean drop)
+{
+  if(drop) gtk_widget_set_opacity(gtk_drag_get_source_widget(dc), 1.0);
+
+  gboolean ret = TRUE;
+  gpointer last = NULL;
+  for(GList *m = gtk_container_get_children(GTK_CONTAINER(widget)); m; m = g_list_delete_link(m, m))
+    if(gtk_widget_get_visible(GTK_WIDGET(m->data))) last = m->data;
+  if(last)
+    g_signal_emit_by_name(last, "drag-motion", dc, drop ? -1 : x, y, time, &ret);
+  else if(dt_view_get_current() == DT_VIEW_DARKROOM)
+    gdk_drag_status(dc, 0, time); // don't allow dropping in empty panel on other side
+  else if(drop)
+  {
+    // drop in empty panel; dragged expander handles its own move; pass destination panel in dc
+    GtkWidget *src_expander = gtk_widget_get_ancestor
+      (gtk_drag_get_source_widget(dc), DTGTK_TYPE_EXPANDER);
+    if(src_expander)
+      g_signal_emit_by_name(src_expander, "drag-motion", widget, x, y, time, &ret);
+  }
+  else
+    gdk_drag_status(dc, GDK_ACTION_COPY, time);
+
+  return ret;
+}
+
+static void _on_drag_leave(GtkWidget *widget, GdkDragContext *dc, guint time, gpointer user_data)
+{
+  dtgtk_expander_set_drag_hover(NULL, FALSE, FALSE);
+}
+
+static gboolean _remove_modules_visibility(gpointer key,
+                                           gpointer value,
+                                           gpointer prefix)
+{
+  return g_str_has_prefix(key, prefix)
+         && (g_str_has_suffix(key, "_visible")
+          || g_str_has_suffix(key, "_position"));
+}
+
+static void _restore_default_modules(GtkMenuItem *menuitem,
+                                     gpointer user_data)
+{
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  gchar *prefix = g_strdup_printf("plugins/%s/", cv->module_name);
+  g_hash_table_foreach_remove(darktable.conf->table, _remove_modules_visibility, prefix);
+  g_free(prefix);
+  dt_view_manager_switch_by_view(darktable.view_manager, cv);
+}
+
+static void _toggle_module_visibility(GtkMenuItem *menuitem,
+                                      dt_lib_module_t *module)
+{
+  dt_lib_set_visible(module, !dt_lib_is_visible(module));
+  dt_view_manager_switch_by_view(darktable.view_manager, dt_view_manager_get_current_view(darktable.view_manager));
+}
+
+static void _add_remove_modules(dt_action_t *action)
+{
+  dt_view_type_flags_t cv = dt_view_get_current();
+  GtkWidget *menu = gtk_menu_new();
+
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
+  GtkWidget *mi = gtk_menu_item_new_with_label(_("restore defaults"));
+  gtk_widget_set_tooltip_text(mi, _("restore the default visibility and position of all modules in this view"));
+  g_signal_connect(mi, "activate", G_CALLBACK(_restore_default_modules), NULL);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+
+  for(GList *iter = darktable.lib->plugins; iter; iter = iter->next)
+  {
+    dt_lib_module_t *module = iter->data;
+    if(!module->name) continue;
+    dt_view_type_flags_t mv = module->views(module);
+    if((mv & cv || mv & (mv - 1) || mv & DT_VIEW_MULTI) // either current view or supports more than one view
+       && module->expandable(module))
+    {
+      mi = gtk_check_menu_item_new_with_label(module->name(module));
+      gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mi), dt_lib_is_visible(module));
+      g_signal_connect(mi, "toggled", G_CALLBACK(_toggle_module_visibility), module);
+      gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), mi);
+    }
+  }
+
+  gtk_widget_show_all(menu);
+  dt_gui_menu_popup(GTK_MENU(menu), NULL, 0, 0);
+}
+
+static gboolean _side_panel_press(GtkWidget *widget,
+                                  GdkEvent *event,
+                                  gpointer user_data)
+{
+  if(event->button.button != GDK_BUTTON_SECONDARY
+     || !GTK_IS_VIEWPORT(gtk_get_event_widget(event)))
+    return FALSE;
+
+  _add_remove_modules(NULL);
+  return TRUE;
+}
+
+static gboolean _side_panel_motion(GtkWidget *widget,
+                                   GdkEvent *event,
+                                   gpointer user_data)
+{
+  gtk_widget_set_tooltip_text(widget, GTK_IS_VIEWPORT(gtk_get_event_widget(event))
+                              ? _("right-click to show/hide modules") : NULL);
+  return FALSE;
+}
+
+static gboolean _side_panel_draw(GtkWidget *widget,
+                                 cairo_t *cr,
+                                 gpointer user_data)
+{
+  if(darktable.gui->ui->thumbtable->manual_button.x != -1)
+    gtk_widget_queue_draw(darktable.gui->ui->center);
+  return FALSE;
+}
+
 static GtkWidget *_ui_init_panel_container_center(GtkWidget *container,
                                                   const gboolean left)
 {
@@ -2276,12 +2369,23 @@ static GtkWidget *_ui_init_panel_container_center(GtkWidget *container,
   g_signal_connect(G_OBJECT(widget), "scroll-event",
                    G_CALLBACK(_ui_init_panel_container_center_scroll_event),
                    NULL);
+  g_signal_connect(widget, "button-press-event", G_CALLBACK(_side_panel_press), NULL);
+  g_signal_connect(widget, "motion-notify-event", G_CALLBACK(_side_panel_motion), NULL);
+  gtk_widget_add_events(widget, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_POINTER_MOTION_MASK);
+  dt_action_t *ac = dt_action_define(&darktable.control->actions_global, NULL,
+                                     N_("show/hide modules"), widget, NULL);
+  dt_action_register(ac, NULL, _add_remove_modules, 0, 0);
 
   /* create the container */
   container = widget;
   widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_widget_set_name(widget, "plugins_vbox_left");
   gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_drag_dest_set(widget, 0, NULL, 0, GDK_ACTION_COPY);
+  g_signal_connect(widget, "drag-motion", G_CALLBACK(_on_drag_motion_drop), GINT_TO_POINTER(FALSE));
+  g_signal_connect(widget, "drag-drop", G_CALLBACK(_on_drag_motion_drop), GINT_TO_POINTER(TRUE));
+  g_signal_connect(widget, "drag-leave", G_CALLBACK(_on_drag_leave), NULL);
+  g_signal_connect_swapped(widget, "draw", G_CALLBACK(_side_panel_draw), NULL);
 
   return widget;
 }
@@ -2640,17 +2744,30 @@ static void _ui_widget_redraw_callback(gpointer instance,
    gtk_widget_queue_draw(widget);
 }
 
+#define ALLMESSSIZE (DT_CTL_LOG_SIZE * DT_CTL_LOG_MSG_SIZE)
 static void _ui_log_redraw_callback(gpointer instance,
                                     GtkWidget *widget)
 {
+  dt_control_t *dc = darktable.control;
   // draw log message, if any
   dt_pthread_mutex_lock(&darktable.control->log_mutex);
-  if(darktable.control->log_ack != darktable.control->log_pos)
+  if(dc->log_ack != dc->log_pos)
   {
-    if(strcmp(darktable.control->log_message[darktable.control->log_ack],
-              gtk_label_get_text(GTK_LABEL(widget))))
-      gtk_label_set_markup
-        (GTK_LABEL(widget), darktable.control->log_message[darktable.control->log_ack]);
+    const int32_t first_message = MAX(dc->log_ack, dc->log_pos - (DT_CTL_LOG_SIZE-1));
+    gchar *message = g_malloc(ALLMESSSIZE);
+    if(message)
+    {
+      message[0] = 0;
+      for(int32_t idx = first_message; idx < dc->log_pos; idx++)
+      {
+        g_strlcat(message, dc->log_message[idx & (DT_CTL_LOG_SIZE-1)], ALLMESSSIZE);
+        if(idx != dc->log_pos -1)
+          g_strlcat(message, "\n", ALLMESSSIZE);
+      }
+      gtk_label_set_markup(GTK_LABEL(widget), message);
+      g_free(message);
+    }
+
     if(!gtk_widget_get_visible(widget))
     {
       const int h = gtk_widget_get_allocated_height(dt_ui_center_base(darktable.gui->ui));
@@ -2669,14 +2786,26 @@ static void _ui_log_redraw_callback(gpointer instance,
 static void _ui_toast_redraw_callback(gpointer instance,
                                       GtkWidget *widget)
 {
+  dt_control_t *dc = darktable.control;
   // draw toast message, if any
   dt_pthread_mutex_lock(&darktable.control->toast_mutex);
-  if(darktable.control->toast_ack != darktable.control->toast_pos)
+  if(dc->toast_ack != dc->toast_pos)
   {
-    if(strcmp(darktable.control->toast_message[darktable.control->toast_ack],
-              gtk_label_get_text(GTK_LABEL(widget))))
-      gtk_label_set_markup(GTK_LABEL(widget),
-                           darktable.control->toast_message[darktable.control->toast_ack]);
+    const int32_t first_message = MAX(dc->toast_ack, dc->toast_pos - (DT_CTL_TOAST_SIZE-1));
+    gchar *message = g_malloc(ALLMESSSIZE);
+    if(message)
+    {
+      message[0] = 0;
+      for(int32_t idx = first_message; idx < dc->toast_pos; idx++)
+      {
+        g_strlcat(message, darktable.control->toast_message[idx & (DT_CTL_TOAST_SIZE-1)], ALLMESSSIZE);
+        if(idx != dc->toast_pos -1)
+          g_strlcat(message, "\n", ALLMESSSIZE);
+      }
+      gtk_label_set_markup(GTK_LABEL(widget), message);
+      g_free(message);
+    }
+
     if(!gtk_widget_get_visible(widget))
     {
       const int h = gtk_widget_get_allocated_height(dt_ui_center_base(darktable.gui->ui));
@@ -2691,6 +2820,7 @@ static void _ui_toast_redraw_callback(gpointer instance,
   }
   dt_pthread_mutex_unlock(&darktable.control->toast_mutex);
 }
+#undef ALLMESSSIZE
 
 void dt_ellipsize_combo(GtkComboBox *cbox)
 {
@@ -2970,7 +3100,7 @@ char *dt_gui_get_help_url(GtkWidget *widget)
     widget = gtk_widget_get_parent(widget);
   }
 
-  return NULL;
+  return "/";	// default to top level of manual
 }
 
 void dt_gui_dialog_add_help(GtkDialog *dialog,
@@ -3491,6 +3621,7 @@ GtkNotebook *dt_ui_notebook_new(dt_action_def_t *def)
     def->process = _action_process_tabs;
   }
 
+  gtk_drag_dest_unset(GTK_WIDGET(_current_notebook));
   return _current_notebook;
 }
 
@@ -3909,9 +4040,9 @@ GtkWidget *dt_ui_resize_wrap(GtkWidget *w,
       dtgtk_drawing_area_set_aspect_ratio(w, aspect / 100.0);
     }
     g_signal_connect(G_OBJECT(w),
-                     "scroll-event", 
-                     G_CALLBACK(_scroll_wrap),
-                      config_str);
+                              "scroll-event",
+                              G_CALLBACK(_scroll_wrap),
+                              config_str);
   }
   else
   {
@@ -4017,6 +4148,8 @@ void dt_gui_menu_popup(GtkMenu *menu,
                        const GdkGravity menu_anchor)
 {
   gtk_widget_show_all(GTK_WIDGET(menu));
+  g_object_ref_sink(G_OBJECT(menu));
+  g_signal_connect(G_OBJECT(menu), "deactivate", G_CALLBACK(g_object_unref), NULL);
 
   GdkEvent *event = gtk_get_current_event();
   if(button && event)
@@ -4197,6 +4330,58 @@ gboolean dt_gui_long_click(const int second,
   int delay = 0;
   g_object_get(gtk_settings_get_default(), "gtk-double-click-time", &delay, NULL);
   return second - first > delay;
+}
+
+static int busy_nest_count = 0;
+static GdkCursor* busy_prev_cursor = NULL;
+
+void dt_gui_cursor_set_busy()
+{
+  ++busy_nest_count;
+  if(busy_nest_count == 1 && darktable.gui != NULL)
+  {
+    // this is not a nested call, so store the current mouse cursor and set it to be the
+    // "watch" cursor
+    dt_control_forbid_change_cursor();
+    GtkWidget *toplevel = darktable.gui->ui->main_window;
+    GdkWindow *window = gtk_widget_get_window(toplevel);
+    busy_prev_cursor = gdk_window_get_cursor(window);
+    GdkCursor *watch = gdk_cursor_new_for_display(gtk_widget_get_display(toplevel), GDK_WATCH);
+    gdk_window_set_cursor(window, watch);
+    g_object_unref(watch);
+    // since the main reason for calling this function is that we won't be running the Gtk main
+    // loop for a while, ensure that the mouse cursor gets updated
+    dt_gui_process_events();
+    gtk_grab_add(darktable.control->progress_system.proxy.module->widget);
+  }
+}
+
+void dt_gui_cursor_clear_busy()
+{
+  // ensure that we have a prior call to set_busy; if not, this call is a no-op
+  if(busy_nest_count > 0)
+  {
+    --busy_nest_count;
+    if(busy_nest_count == 0 && darktable.gui != NULL)
+    {
+      // we've matched the last of the pending set_busy calls, so it is now time
+      // to restore the original mouse cursor
+      GtkWidget *toplevel = darktable.gui->ui->main_window;
+      GdkWindow *window = gtk_widget_get_window(toplevel);
+      gdk_window_set_cursor(window, busy_prev_cursor);
+      dt_gui_process_events();
+      busy_prev_cursor = NULL;
+      dt_control_allow_change_cursor();
+      gtk_grab_remove(darktable.control->progress_system.proxy.module->widget);
+    }
+  }
+}
+
+void dt_gui_process_events()
+{
+  // process all pending Gtk/GDK events
+  while(g_main_context_iteration(NULL, FALSE))
+    continue;
 }
 
 // clang-format off

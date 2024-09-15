@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2022-2023 darktable developers.
+    Copyright (C) 2022-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -35,11 +35,16 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img,
                                         const char *filename,
                                         dt_mipmap_buffer_t *mbuf)
 {
+  // We shouldn't expect QOI images in files with an extension other than .qoi
+  char *ext = g_strrstr(filename, ".");
+  if(ext && g_ascii_strcasecmp(ext, ".qoi"))
+    return DT_IMAGEIO_UNSUPPORTED_FORMAT;
+
   FILE *f = g_fopen(filename, "rb");
   if(!f)
   {
     dt_print(DT_DEBUG_ALWAYS,"[qoi_open] cannot open file for read: %s\n", filename);
-    return DT_IMAGEIO_LOAD_FAILED;
+    return DT_IMAGEIO_FILE_NOT_FOUND;
   }
 
   fseek(f, 0, SEEK_END);
@@ -57,7 +62,7 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img,
     g_free(read_buffer);
     dt_print(DT_DEBUG_ALWAYS, "[qoi_open] failed to read from %s\n", filename);
     // if we can't read even first 4 bytes, it's more like file disappeared
-    return DT_IMAGEIO_FILE_NOT_FOUND;
+    return DT_IMAGEIO_FILE_CORRUPTED;
   }
 
   if(memcmp(read_buffer, "qoif", 4) != 0)
@@ -66,7 +71,7 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img,
     g_free(read_buffer);
     dt_print(DT_DEBUG_ALWAYS,
              "[qoi_open] no proper file header in %s\n", filename);
-    return DT_IMAGEIO_LOAD_FAILED;
+    return DT_IMAGEIO_UNSUPPORTED_FORMAT;
   }
 
   if(fread(read_buffer+4, 1, filesize-4, f) != filesize-4)
@@ -76,25 +81,18 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img,
     dt_print(DT_DEBUG_ALWAYS,
              "[qoi_open] failed to read %zu bytes from %s\n",
              filesize, filename);
-    return DT_IMAGEIO_LOAD_FAILED;
+    return DT_IMAGEIO_IOERROR;
   }
   fclose(f);
 
-// void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels);
   qoi_desc desc;
   uint8_t *int_RGBA_buf = qoi_decode(read_buffer, (int)filesize, &desc, 4);
-
-  char *ext = g_strrstr(filename, ".");
 
   if(!int_RGBA_buf)
   {
     g_free(read_buffer);
-    // Complain on failure only if the file extension matches the loader expectation
-    if(ext && (g_ascii_strcasecmp(ext, ".qoi") == 0))
-    {
-      dt_print(DT_DEBUG_ALWAYS,"[qoi_open] failed to decode file: %s\n", filename);
-    }
-    return DT_IMAGEIO_LOAD_FAILED;
+    dt_print(DT_DEBUG_ALWAYS,"[qoi_open] failed to decode file: %s\n", filename);
+    return DT_IMAGEIO_FILE_CORRUPTED;
   }
 
   img->width = desc.width;
@@ -112,16 +110,12 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img,
     return DT_IMAGEIO_CACHE_FULL;
   }
 
-  uint8_t intval;
-  float floatval;
   const size_t npixels = (size_t)desc.width * desc.height;
 
-  DT_OMP_PRAGMA(parallel for private(intval, floatval))
+  DT_OMP_FOR()
   for(size_t index = 0; index < npixels * 4; index++)
   {
-    intval = *(int_RGBA_buf + index);
-    floatval = intval / 255.f;
-    *(mipbuf + index) = floatval;
+    mipbuf[index] = int_RGBA_buf[index] / 255.f;
   }
 
   img->buf_dsc.cst = IOP_CS_RGB;

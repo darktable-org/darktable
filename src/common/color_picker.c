@@ -384,12 +384,12 @@ gboolean dt_color_picker_box(dt_iop_module_t *module,
     fbox[i + 1] = ht * (isbox ? sample->box[i + 1] : sample->point[1]);
   }
 
-  dt_dev_distort_transform_plus
-    (dev, dev->preview_pipe, module->iop_order,
-     ((picker_source == PIXELPIPE_PICKER_INPUT)
-      ? DT_DEV_TRANSFORM_DIR_BACK_INCL
-      : DT_DEV_TRANSFORM_DIR_BACK_EXCL),
-     fbox, 4);
+  const gboolean expanded = module->flags() & IOP_FLAGS_EXPAND_ROI_IN;
+  const gboolean input = picker_source == PIXELPIPE_PICKER_INPUT;
+  dt_dev_distort_transform_plus(dev, dev->preview_pipe,
+                                module->iop_order - (expanded && input ? 1 : 0),
+                                input ? DT_DEV_TRANSFORM_DIR_BACK_INCL : DT_DEV_TRANSFORM_DIR_BACK_EXCL,
+                                fbox, 4);
 
   _sort_coordinates(fbox);
   box[0] = 0.5f * (fbox[0] + fbox[2]) - roi->x;
@@ -497,8 +497,8 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc,
     {
       // fallback, but this shouldn't happen
       dt_print(DT_DEBUG_ALWAYS,
-               "[colorpicker] unknown colorspace conversion from %d to %d\n",
-               image_cst, picker_cst);
+               "[colorpicker] unknown colorspace conversion from %s to %s\n",
+               dt_iop_colorspace_to_name(image_cst), dt_iop_colorspace_to_name(picker_cst));
       _color_picker_work_4ch(source, roi, box, pick, NULL, _color_picker_rgb_or_lab, 100);
     }
 

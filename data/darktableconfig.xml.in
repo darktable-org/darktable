@@ -262,7 +262,7 @@
   <dtconfig>
     <name>opencl_mandatory_timeout</name>
     <type min="100">int</type>
-    <default>400</default>
+    <default>1000</default>
     <shortdescription>timeout period for locking mandatory opencl device</shortdescription>
     <longdescription>time period (in units of 5ms) after which we give up try-locking an opencl device for mandatory use. defaults to 400 (2 seconds).</longdescription>
   </dtconfig>
@@ -485,26 +485,12 @@
     <shortdescription>number of collections to be stored</shortdescription>
     <longdescription>the number of recent collections to store and show in this list</longdescription>
   </dtconfig>
-  <dtconfig dialog="recentcollect">
-    <name>plugins/lighttable/recentcollect/hide</name>
-    <type>bool</type>
-    <default>true</default>
-    <shortdescription>prefer a history button in the collections module</shortdescription>
-    <longdescription>hide this module and instead access collections history with a button in the collections module</longdescription>
-  </dtconfig>
   <dtconfig dialog="collect">
     <name>plugins/lighttable/collect/history_max</name>
     <type min="1" max="50">int</type>
     <default>10</default>
     <shortdescription>number of collections to be stored</shortdescription>
     <longdescription>the number of recent collections to store and show in this list</longdescription>
-  </dtconfig>
-  <dtconfig dialog="collect">
-    <name>plugins/lighttable/collect/history_hide</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>hide the history button and show a specific module instead</shortdescription>
-    <longdescription>hide the history button and show the recent collections module instead</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/filtering/history_max</name>
@@ -3082,7 +3068,7 @@
         <option>histogram</option>
       </enum>
     </type>
-    <default>histogram</default>
+    <default>waveform</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>

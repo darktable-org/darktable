@@ -285,12 +285,6 @@ static void _transform_lcms2(struct dt_iop_module_t *self,
                              int *converted_cst,
                              const dt_iop_order_iccprofile_info_t *const profile_info)
 {
-  if(cst_from == cst_to)
-  {
-    *converted_cst = cst_to;
-    return;
-  }
-
   *converted_cst = cst_to;
 
   if(cst_from == IOP_CS_RGB && cst_to == IOP_CS_LAB)
@@ -618,29 +612,22 @@ static inline void _transform_matrix(struct dt_iop_module_t *self,
                                      dt_iop_colorspace_type_t *converted_cst,
                                      const dt_iop_order_iccprofile_info_t *const profile_info)
 {
-  if(cst_from == cst_to)
-  {
-    *converted_cst = cst_to;
-    return;
-  }
-
   *converted_cst = cst_to;
-
   if(cst_from == IOP_CS_RGB && cst_to == IOP_CS_LAB)
   {
     _transform_rgb_to_lab_matrix(image_in, image_out, width, height, profile_info);
+    return;
   }
   else if(cst_from == IOP_CS_LAB && cst_to == IOP_CS_RGB)
   {
     _transform_lab_to_rgb_matrix(image_in, image_out, width, height, profile_info);
+    return;
   }
-  else
-  {
-    *converted_cst = cst_from;
-    dt_print(DT_DEBUG_ALWAYS,
+
+  *converted_cst = cst_from;
+  dt_print(DT_DEBUG_ALWAYS,
              "[_transform_matrix] invalid conversion from %s to %s\n",
              dt_iop_colorspace_to_name(cst_from), dt_iop_colorspace_to_name(cst_to));
-  }
 }
 
 
@@ -1171,19 +1158,37 @@ void dt_ioppr_transform_image_colorspace
    int *converted_cst,
    const dt_iop_order_iccprofile_info_t *const profile_info)
 {
+  const gboolean inplace = image_in == image_out;
+
   if(cst_from == cst_to)
   {
     *converted_cst = cst_to;
+    const size_t ch = cst_to == IOP_CS_RAW ? 1 : 4;
+    if(!inplace)
+      dt_iop_image_copy(image_out, image_in, ch * width * height);
     return;
   }
-  if(profile_info == NULL)
+
+  const gboolean anyraw = cst_to == IOP_CS_RAW || cst_from == IOP_CS_RAW;
+  if(profile_info == NULL
+    || profile_info->type == DT_COLORSPACE_NONE
+    || anyraw)
   {
     *converted_cst = cst_from;
-    return;
-  }
-  if(profile_info->type == DT_COLORSPACE_NONE)
-  {
-    *converted_cst = cst_from;
+    if(!inplace && !anyraw)
+      dt_iop_image_copy_by_size(image_out, image_in, width, height, 4);
+
+    if(!inplace || anyraw)
+      dt_print(DT_DEBUG_PIPE,
+        "[dt_ioppr_transform_image_colorspace] in `%s%s', profile `%s',"
+        " can't %s from %s to %s\n",
+        self->op, dt_iop_get_instance_id(self),
+        profile_info
+          ? dt_colorspaces_get_name(profile_info->type, profile_info->filename)
+          : "unknown",
+        inplace ? "convert inplace" : "write converted data",
+        dt_iop_colorspace_to_name(cst_from),
+        dt_iop_colorspace_to_name(cst_to));
     return;
   }
 
@@ -1212,15 +1217,15 @@ void dt_ioppr_transform_image_colorspace
   if(*converted_cst == cst_from)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[dt_ioppr_transform_image_colorspace%s] in `%s%s', profile `%s',"
-             " invalid conversion from %s to %s\n",
-             no_lcms ? "" : "_lcms2",
-             self->op, dt_iop_get_instance_id(self),
-             dt_colorspaces_get_name(profile_info->type, profile_info->filename),
-             dt_iop_colorspace_to_name(cst_from),
-             dt_iop_colorspace_to_name(cst_to));
-    if(image_in != image_out)
-      dt_iop_image_copy_by_size(image_out, image_in, width, height, cst_to == IOP_CS_RAW ? 1 : 4);
+        "[dt_ioppr_transform_image_colorspace%s] in `%s%s', profile `%s',"
+        " can't %s from %s to %s\n",
+        no_lcms ? "" : "_lcms2",
+        self->op, dt_iop_get_instance_id(self),
+        dt_colorspaces_get_name(profile_info->type, profile_info->filename),
+        inplace ? "convert inplace" : "write converted data",
+        dt_iop_colorspace_to_name(cst_from),
+        dt_iop_colorspace_to_name(cst_to));
+
   }
 }
 
@@ -1311,8 +1316,9 @@ void dt_colorspaces_free_cl_global(dt_colorspaces_cl_global_t *g)
   free(g);
 }
 
-void dt_ioppr_get_profile_info_cl(const dt_iop_order_iccprofile_info_t *const profile_info,
-                                  dt_colorspaces_iccprofile_info_cl_t *profile_info_cl)
+// sets profile_info_cl using profile_info to be used as a parameter when calling opencl
+static void _ioppr_get_profile_info_cl(const dt_iop_order_iccprofile_info_t *const profile_info,
+                                       dt_colorspaces_iccprofile_info_cl_t *profile_info_cl)
 {
   for(int i = 0; i < 9; i++)
   {
@@ -1332,7 +1338,8 @@ void dt_ioppr_get_profile_info_cl(const dt_iop_order_iccprofile_info_t *const pr
   profile_info_cl->grey = profile_info->grey;
 }
 
-cl_float *dt_ioppr_get_trc_cl(const dt_iop_order_iccprofile_info_t *const profile_info)
+// returns the profile_info trc to be used as a parameter when calling opencl
+static cl_float *_ioppr_get_trc_cl(const dt_iop_order_iccprofile_info_t *const profile_info)
 {
   cl_float *trc = malloc(sizeof(cl_float) * 6 * profile_info->lutsize);
   if(trc)
@@ -1365,8 +1372,8 @@ cl_int dt_ioppr_build_iccprofile_params_cl(const dt_iop_order_iccprofile_info_t 
 
   if(profile_info)
   {
-    dt_ioppr_get_profile_info_cl(profile_info, profile_info_cl);
-    profile_lut_cl = dt_ioppr_get_trc_cl(profile_info);
+    _ioppr_get_profile_info_cl(profile_info, profile_info_cl);
+    profile_lut_cl = _ioppr_get_trc_cl(profile_info);
 
     dev_profile_info = dt_opencl_copy_host_to_device_constant(devid, sizeof(*profile_info_cl),
                                                               profile_info_cl);
@@ -1438,25 +1445,45 @@ gboolean dt_ioppr_transform_image_colorspace_cl
 {
   cl_int err = CL_SUCCESS;
 
+  const gboolean inplace = dev_img_in == dev_img_out;
+  const gboolean anyraw = cst_to == IOP_CS_RAW || cst_from == IOP_CS_RAW;
+
+  size_t origin[] = { 0, 0, 0 };
+  size_t region[] = { width, height, 1 };
+
+  *converted_cst = cst_to;
   if(cst_from == cst_to)
   {
-    *converted_cst = cst_to;
-    return TRUE;
+    if(!inplace)
+      err = dt_opencl_enqueue_copy_image(devid, dev_img_in, dev_img_out, origin, origin, region);
+    return err == CL_SUCCESS;
   }
-  if(profile_info == NULL)
+
+  if(profile_info == NULL
+      || profile_info->type == DT_COLORSPACE_NONE
+      || anyraw)
   {
     *converted_cst = cst_from;
-    return TRUE;
-  }
-  if(profile_info->type == DT_COLORSPACE_NONE)
-  {
-    *converted_cst = cst_from;
-    return TRUE;
+    if(!inplace && !anyraw)
+      err = dt_opencl_enqueue_copy_image(devid, dev_img_in, dev_img_out, origin, origin, region);
+
+    if(!inplace || cst_to == IOP_CS_RAW || cst_from == IOP_CS_RAW)
+      dt_print(DT_DEBUG_PIPE,
+        "[dt_ioppr_transform_image_colorspace_cl]%s in `%s%s', profile `%s',"
+        " can't %s from %s to %s\n",
+        err == CL_SUCCESS ? "" : " error",
+        self->op, dt_iop_get_instance_id(self),
+        profile_info
+          ? dt_colorspaces_get_name(profile_info->type, profile_info->filename)
+          : "unknown",
+        inplace ? "convert inplace" : "write converted data",
+        dt_iop_colorspace_to_name(cst_from),
+        dt_iop_colorspace_to_name(cst_to));
+    return err == CL_SUCCESS;
   }
 
   const size_t ch = 4;
   float *src_buffer = NULL;
-  const gboolean in_place = (dev_img_in == dev_img_out);
 
   int kernel_transform = 0;
   cl_mem dev_tmp = NULL;
@@ -1465,17 +1492,12 @@ gboolean dt_ioppr_transform_image_colorspace_cl
   dt_colorspaces_iccprofile_info_cl_t profile_info_cl;
   cl_float *lut_cl = NULL;
 
-  *converted_cst = cst_from;
-
   // if we have a matrix use opencl
   if(dt_is_valid_colormatrix(profile_info->matrix_in[0][0])
      && dt_is_valid_colormatrix(profile_info->matrix_out[0][0]))
   {
     dt_times_t start_time = { 0 };
     dt_get_perf_times(&start_time);
-
-    size_t origin[] = { 0, 0, 0 };
-    size_t region[] = { width, height, 1 };
 
     if(cst_from == IOP_CS_RGB && cst_to == IOP_CS_LAB)
     {
@@ -1493,18 +1515,19 @@ gboolean dt_ioppr_transform_image_colorspace_cl
       *converted_cst = cst_from;
       dt_print(DT_DEBUG_ALWAYS,
                "[dt_ioppr_transform_image_colorspace_cl] in `%s%s', profile `%s',"
-               " non supported conversion from %s to %s\n",
+               " can't %s from %s to %s\n",
                self->op, dt_iop_get_instance_id(self),
                dt_colorspaces_get_name(profile_info->type, profile_info->filename),
+               inplace ? "convert inplace" : "write converted data",
                dt_iop_colorspace_to_name(cst_from),
                dt_iop_colorspace_to_name(cst_to));
       goto cleanup;
     }
 
-    dt_ioppr_get_profile_info_cl(profile_info, &profile_info_cl);
-    lut_cl = dt_ioppr_get_trc_cl(profile_info);
+    _ioppr_get_profile_info_cl(profile_info, &profile_info_cl);
+    lut_cl = _ioppr_get_trc_cl(profile_info);
 
-    if(in_place)
+    if(inplace)
     {
       dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
       if(dev_tmp == NULL)
@@ -1543,8 +1566,6 @@ gboolean dt_ioppr_transform_image_colorspace_cl
     if(err != CL_SUCCESS)
       goto cleanup;
 
-    *converted_cst = cst_to;
-
     dt_print(DT_DEBUG_PERF,
              "[dt_ioppr_transform_image_colorspace_cl] %s-->%s took %.3f secs (%.3f GPU) [%s%s]\n",
              dt_iop_colorspace_to_name(cst_from), dt_iop_colorspace_to_name(cst_to),
@@ -1582,7 +1603,7 @@ cleanup:
              "[dt_ioppr_transform_image_colorspace_cl] had error: %s\n", cl_errstr(err));
 
   dt_free_align(src_buffer);
-  if(dev_tmp && in_place)
+  if(dev_tmp && inplace)
     dt_opencl_release_mem_object(dev_tmp);
   dt_opencl_release_mem_object(dev_profile_info);
   dt_opencl_release_mem_object(dev_lut);
@@ -1664,11 +1685,11 @@ gboolean dt_ioppr_transform_image_colorspace_rgb_cl
 
     kernel_transform = darktable.opencl->colorspaces->kernel_colorspaces_transform_rgb_matrix_to_rgb;
 
-    dt_ioppr_get_profile_info_cl(profile_info_from, &profile_info_from_cl);
-    lut_from_cl = dt_ioppr_get_trc_cl(profile_info_from);
+    _ioppr_get_profile_info_cl(profile_info_from, &profile_info_from_cl);
+    lut_from_cl = _ioppr_get_trc_cl(profile_info_from);
 
-    dt_ioppr_get_profile_info_cl(profile_info_to, &profile_info_to_cl);
-    lut_to_cl = dt_ioppr_get_trc_cl(profile_info_to);
+    _ioppr_get_profile_info_cl(profile_info_to, &profile_info_to_cl);
+    lut_to_cl = _ioppr_get_trc_cl(profile_info_to);
 
     dt_colormatrix_t matrix;
     dt_colormatrix_mul(matrix, profile_info_to->matrix_out, profile_info_from->matrix_in);

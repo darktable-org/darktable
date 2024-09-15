@@ -64,7 +64,7 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img,
 
   /* verify openexr image */
   if(!Imf::isOpenExrFile((const char *)filename, isTiled))
-    return DT_IMAGEIO_LOAD_FAILED;
+    return DT_IMAGEIO_UNSUPPORTED_FORMAT;
 
   /* open exr file */
   try
@@ -106,7 +106,7 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img,
     dt_print(DT_DEBUG_ALWAYS,
              "[exr_open] error: only images with RGB(A) channels are supported,"
              " skipping `%s'\n", img->filename);
-    return DT_IMAGEIO_LOAD_FAILED;
+    return DT_IMAGEIO_UNSUPPORTED_FEATURE;
   }
 
   if(!img->exif_inited)

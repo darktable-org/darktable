@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2021-2023 darktable developers.
+    Copyright (C) 2021-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -263,6 +263,17 @@ const model_map_t modelMap[] = {
 };
 
 
+static gboolean is_in_glist(GList *list, const gchar *exif_model)
+{
+  for(GList *l = list; l; l = l->next)
+  {
+    if(!g_strcmp0((char *)l->data, exif_model))
+      return TRUE;
+  }
+  return FALSE;
+}
+
+GList *warning_missing_support_seen = NULL;
 
 /* LibRaw is expected to read only new Canon CR3 files */
 
@@ -274,7 +285,8 @@ static gboolean _supported_image(const gchar *filename)
   const gchar *always_by_libraw = "cr3";
 
   gchar *ext = g_strrstr(filename, ".");
-  if(!ext) return FALSE;
+  if(!ext)
+    return FALSE;
   ext++;
 
   if(dt_conf_key_not_empty("libraw_extensions"))
@@ -283,11 +295,11 @@ static gboolean _supported_image(const gchar *filename)
   else
     extensions_whitelist = g_strdup(always_by_libraw);
 
-  dt_print(DT_DEBUG_ALWAYS,
-           "[libraw_open] extensions whitelist: `%s'\n", extensions_whitelist);
+  dt_print(DT_DEBUG_IMAGEIO,
+           "[libraw_open] extensions whitelist: '%s'\n", extensions_whitelist);
 
-  gchar *ext_lowercased = g_ascii_strdown(ext,-1);
-  if(g_strstr_len(extensions_whitelist,-1,ext_lowercased))
+  gchar *ext_lowercased = g_ascii_strdown(ext, -1);
+  if(g_strstr_len(extensions_whitelist, -1, ext_lowercased))
   {
     g_free(ext_lowercased);
     g_free(extensions_whitelist);
@@ -298,14 +310,20 @@ static gboolean _supported_image(const gchar *filename)
   return FALSE;
 }
 
+// Issue a warning, but only if we haven't done so
+// for that particular model in this darktable session
 void _check_libraw_missing_support(const struct dt_image_t *img)
 {
   char lr_mk[64], lr_md[64], lr_al[64];
-  if(!dt_libraw_lookup_makermodel(img->exif_maker, img->exif_model,
+  if(!is_in_glist(warning_missing_support_seen, img->exif_model) &&
+     !dt_libraw_lookup_makermodel(img->exif_maker, img->exif_model,
                                   lr_mk, sizeof(lr_mk),
                                   lr_md, sizeof(lr_md),
                                   lr_al, sizeof(lr_al)))
   {
+    gchar *model_copy = g_strdup(img->exif_model);
+    warning_missing_support_seen = g_list_append(warning_missing_support_seen, model_copy);
+
     const char *T1 = _("<span foreground='red'><b>WARNING</b></span>:"
                        " camera is not fully supported!");
     char *T2 = g_strdup_printf(_("colors for `%s' could be misrepresented,\n"
@@ -320,6 +338,7 @@ void _check_libraw_missing_support(const struct dt_image_t *img)
   }
 }
 
+// Return the normalized maker, model and alias if the camera is found
 gboolean dt_libraw_lookup_makermodel(const char *maker, const char *model,
                                      char *mk, int mk_len, char *md, int md_len,
                                      char *al, int al_len)
@@ -329,7 +348,6 @@ gboolean dt_libraw_lookup_makermodel(const char *maker, const char *model,
     if(!g_strcmp0(maker, modelMap[i].exif_make)
        && !g_strcmp0(model, modelMap[i].exif_model))
     {
-      //printf("input model: %s, exif model: %s\n", model, modelMap[i].exif_model);
       g_strlcpy(mk, modelMap[i].clean_make, mk_len);
       g_strlcpy(md, modelMap[i].clean_model, md_len);
       g_strlcpy(al, modelMap[i].clean_alias, al_len);
@@ -346,11 +364,15 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
 {
   int err = DT_IMAGEIO_LOAD_FAILED;
   int libraw_err = LIBRAW_SUCCESS;
-  if(!_supported_image(filename)) return DT_IMAGEIO_LOAD_FAILED;
-  if(!img->exif_inited) (void)dt_exif_read(img, filename);
+
+  if(!_supported_image(filename))
+    return DT_IMAGEIO_LOAD_FAILED;
+  if(!img->exif_inited)
+    (void)dt_exif_read(img, filename);
 
   libraw_data_t *raw = libraw_init(0);
-  if(!raw) return DT_IMAGEIO_LOAD_FAILED;
+  if(!raw)
+    return DT_IMAGEIO_LOAD_FAILED;
 
 #if defined(_WIN32) && (defined(UNICODE) || defined(_UNICODE))
   wchar_t *wfilename = g_utf8_to_utf16(filename, -1, NULL, NULL, NULL);
@@ -359,10 +381,12 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
 #else
   libraw_err = libraw_open_file(raw, filename);
 #endif
-  if(libraw_err != LIBRAW_SUCCESS) goto error;
+  if(libraw_err != LIBRAW_SUCCESS)
+    goto error;
 
   libraw_err = libraw_unpack(raw);
-  if(libraw_err != LIBRAW_SUCCESS) goto error;
+  if(libraw_err != LIBRAW_SUCCESS)
+    goto error;
 
   // Bad method to detect if camera is fully supported by LibRaw,
   // but seems to be the best available. LibRaw crx decoder can actually
@@ -374,6 +398,7 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
   {
     dt_print(DT_DEBUG_ALWAYS,
              "[libraw_open] detected unsupported image `%s'\n", img->filename);
+    err = DT_IMAGEIO_UNSUPPORTED_FEATURE;
     goto error;
   }
 
@@ -381,9 +406,14 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
   // matrix on a model substring), let's also check our internal LibRaw lookup
   // table for Canon CR3s only.
   gchar *ext = g_strrstr(filename, ".");
-  if(!ext) goto error;
+  if(!ext)
+  {
+    err = DT_IMAGEIO_LOAD_FAILED;
+    goto error;
+  }
   ext++;
-  if(!g_ascii_strncasecmp("cr3", ext, 3)) _check_libraw_missing_support(img);
+  if(!g_ascii_strncasecmp("cr3", ext, 3))
+    _check_libraw_missing_support(img);
 
   // Copy white level (all linear_max[] equal single
   // SpecularWhiteLevel for CR3, we can skip min or mean)
@@ -401,7 +431,7 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
   for(size_t c = 0; c < 4; ++c)
     img->wb_coeffs[c] = raw->rawdata.color.cam_mul[c];
 
-  // Grab the adobe coeff
+  // Grab the Adobe coeffs
   for(int k = 0; k < 4; k++)
     for(int i = 0; i < 3; i++)
       img->adobe_XYZ_to_CAM[k][i] = raw->rawdata.color.cam_xyz[k][i];
@@ -416,6 +446,8 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
   img->crop_right = raw->rawdata.sizes.raw_width - raw->rawdata.sizes.width - raw->rawdata.sizes.left_margin;
   img->crop_bottom = raw->rawdata.sizes.raw_height - raw->rawdata.sizes.height - raw->rawdata.sizes.top_margin;
 
+  img->p_width = img->width - img->crop_x - img->crop_right;
+  img->p_height = img->height - img->crop_y - img->crop_bottom;
   // We can reuse the libraw filters property, it's already well-handled in dt.
   // It contains (for CR3) the Bayer pattern, but we have to undo some LibRaw logic.
   if(raw->rawdata.iparams.colors == 3)
@@ -428,7 +460,8 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
     // In general we should run through entire post-processing to get corrected filters.
     // This incurs a significant performance penalty.
     libraw_err = libraw_dcraw_process(raw);
-    if(libraw_err != LIBRAW_SUCCESS) goto error;
+    if(libraw_err != LIBRAW_SUCCESS)
+      goto error;
 
     img->buf_dsc.filters = raw->idata.filters;
   }
@@ -449,6 +482,7 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
     err = DT_IMAGEIO_CACHE_FULL;
     goto error;
   }
+
   // Use faster memcpy if buffer sizes are equal
   const size_t bufSize_mipmap = (size_t)img->width * img->height * sizeof(uint16_t);
   const size_t bufSize_libraw = (size_t)raw->rawdata.sizes.raw_pitch * raw->rawdata.sizes.raw_height;
@@ -464,7 +498,7 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
                             raw->rawdata.sizes.raw_pitch, ORIENTATION_NONE);
   }
 
-  // Checks not really required for CR3 support, but it's taken from the old dt libraw integration.
+  // Checks not really required for CR3 support, but it's taken from the old dt libraw integration
   if(FILTERS_ARE_4BAYER(img->buf_dsc.filters))
   {
     img->flags |= DT_IMAGE_4BAYER;
@@ -482,7 +516,7 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
   }
   else
   {
-    // ldr dng. it exists :(
+    // LDR DNG. It exists :(
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
     img->flags |= DT_IMAGE_LDR;
@@ -494,9 +528,29 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
 
 error:
   if(libraw_err != LIBRAW_SUCCESS)
+  {
     dt_print(DT_DEBUG_ALWAYS,
              "[libraw_open] `%s': %s\n",
              img->filename, libraw_strerror(libraw_err));
+    switch(libraw_err)
+    {
+    case LIBRAW_FILE_UNSUPPORTED:
+      err = DT_IMAGEIO_UNSUPPORTED_FORMAT;
+      break;
+    case LIBRAW_NOT_IMPLEMENTED:
+      err = DT_IMAGEIO_UNSUPPORTED_FEATURE;
+      break;
+    case LIBRAW_DATA_ERROR:
+      err = DT_IMAGEIO_FILE_CORRUPTED;
+      break;
+    case LIBRAW_IO_ERROR:
+      err = DT_IMAGEIO_IOERROR;
+      break;
+    default:
+      err = DT_IMAGEIO_LOAD_FAILED;
+      break;
+    }
+  }
   libraw_close(raw);
   return err;
 }

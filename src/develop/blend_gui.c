@@ -1663,6 +1663,9 @@ static gboolean _blendop_masks_show_and_edit(GtkWidget *widget,
 {
   if(darktable.gui->reset) return FALSE;
 
+  darktable.develop->form_gui->creation_continuous = FALSE;
+  darktable.develop->form_gui->creation_continuous_module = NULL;
+
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)self->blend_data;
 
   if(event->button == 1)
@@ -2022,10 +2025,7 @@ static void _blendif_options_callback(GtkButton *button,
     return;
 
   GtkWidget *mi;
-  GtkMenu *menu = darktable.gui->presets_popup_menu;
-  if(menu) gtk_widget_destroy(GTK_WIDGET(menu));
-  darktable.gui->presets_popup_menu = GTK_MENU(gtk_menu_new());
-  menu = darktable.gui->presets_popup_menu;
+  GtkMenu *menu = GTK_MENU(gtk_menu_new());
 
   // add a section to switch blending color spaces
   const dt_develop_blend_colorspace_t module_cst =
@@ -2108,7 +2108,7 @@ static void _blendif_options_callback(GtkButton *button,
     }
   }
 
-  dt_gui_menu_popup(darktable.gui->presets_popup_menu,
+  dt_gui_menu_popup(menu,
                     GTK_WIDGET(button), GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
 
   dtgtk_button_set_active(DTGTK_BUTTON(button), FALSE);
@@ -2124,7 +2124,7 @@ static void _blendop_blendif_channel_mask_view(GtkWidget *widget,
   dt_dev_pixelpipe_display_mask_t new_request_mask_display =
     module->request_mask_display | mode;
 
-  // in case user requests channel display: get the cannel
+  // in case user requests channel display: get the channel
   if(new_request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_CHANNEL)
   {
     dt_dev_pixelpipe_display_mask_t channel = data->channel[data->tab].display_channel;
@@ -2170,7 +2170,7 @@ static void _blendop_blendif_channel_mask_view_toggle
 
   new_request_mask_display &= ~DT_DEV_PIXELPIPE_DISPLAY_ANY;
 
-  // in case user requests channel display: get the cannel
+  // in case user requests channel display: get the channel
   if(new_request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_CHANNEL)
   {
     dt_dev_pixelpipe_display_mask_t channel = data->channel[data->tab].display_channel;
@@ -2583,7 +2583,7 @@ void dt_iop_gui_init_blendif(GtkWidget *blendw, dt_iop_module_t *module)
     gtk_notebook_set_scrollable(bd->channel_tabs, TRUE);
     gtk_box_pack_start(GTK_BOX(header), GTK_WIDGET(bd->channel_tabs), TRUE, TRUE, 0);
 
-    // a little padding between the notbook with all channels and the icons for pickers.
+    // a little padding between the notebook with all channels and the icons for pickers.
     gtk_box_pack_start(GTK_BOX(header), gtk_label_new(""),
                        FALSE, FALSE, DT_PIXEL_APPLY_DPI(10));
 

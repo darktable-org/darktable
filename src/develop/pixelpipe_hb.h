@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -55,19 +55,21 @@ typedef struct dt_dev_pixelpipe_iop_t
   dt_dev_histogram_stats_t histogram_stats; // stats of captured histogram
   uint32_t histogram_max[4];                // maximum levels in histogram, one per channel
 
-  float iscale;        // input actually just downscaled buffer? iscale*iwidth = actual width
-  int iwidth, iheight; // width and height of input buffer
-  dt_hash_t hash;       // hash of params and enabled.
-  int bpc;             // bits per channel, 32 means float
-  int colors;          // how many colors per pixel
-  dt_iop_roi_t buf_in,
-      buf_out;                // theoretical full buffer regions of interest, as passed through modify_roi_out
-  dt_iop_roi_t processed_roi_in, processed_roi_out; // the actual roi that was used for processing the piece
-  gboolean process_cl_ready;       // set this to FALSE in commit_params to temporarily disable the use of process_cl
-  gboolean process_tiling_ready;   // set this to FALSE in commit_params to temporarily disable tiling
+  float iscale;                   // input actually just downscaled buffer? iscale*iwidth = actual width
+  int iwidth, iheight;            // width and height of input buffer
+  dt_hash_t hash;                 // hash of params and enabled.
+  int bpc;                        // bits per channel, 32 means float
+  int colors;                     // how many colors per pixel
+  dt_iop_roi_t buf_in;            // theoretical full buffer regions of interest, as passed through modify_roi_out
+  dt_iop_roi_t buf_out;
+  dt_iop_roi_t processed_roi_in;  // the actual roi that was used for processing the piece
+  dt_iop_roi_t processed_roi_out;
+  gboolean process_cl_ready;      // set this to FALSE in commit_params to temporarily disable the use of process_cl
+  gboolean process_tiling_ready;  // set this to FALSE in commit_params to temporarily disable tiling
 
   // the following are used internally for caching:
-  dt_iop_buffer_dsc_t dsc_in, dsc_out;
+  dt_iop_buffer_dsc_t dsc_in;
+  dt_iop_buffer_dsc_t dsc_out;
 
   GHashTable *raster_masks;
 } dt_dev_pixelpipe_iop_t;

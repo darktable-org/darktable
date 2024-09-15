@@ -56,11 +56,11 @@ function install_dependencies {
                 dynDepOrigFile=$(basename "$hbDependency")
                 dynDepTargetFile="$dtResourcesDir/lib/$dynDepOrigFile"
 
-                # Install dependency if not yet existant
+                # Install dependency if not yet existent
                 if [[ ! -f "$dynDepTargetFile" ]]; then
                     echo "Installing dependency $hbDependency of $1"
 
-                    # Copy dependency as not yet existant
+                    # Copy dependency as not yet existent
                     cp -L "$hbDependency" "$dynDepTargetFile"
 
                     # Handle transitive dependencies

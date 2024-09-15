@@ -23,10 +23,6 @@ set(MODULES ${MODULES} global_toolbox)
 set(MODULES ${MODULES} timeline)
 set(MODULES ${MODULES} image_infos)
 
-if(BUILD_BATTERY_INDICATOR)
-  set(MODULES ${MODULES} battery_indicator)
-endif()
-
 # modules
 add_library(import MODULE "import.c")
 add_library(export MODULE "export.c" "export_metadata.c")
@@ -90,10 +86,6 @@ if(USE_SDL2)
       target_link_libraries(gamepad ${SDL2_LIBRARIES})
     endif()
   endif()
-endif()
-
-if(BUILD_BATTERY_INDICATOR)
-  add_library(battery_indicator MODULE "tools/battery_indicator.c")
 endif()
 
 # check if gphoto2 found and add build of camera modules...

@@ -397,7 +397,9 @@ static void _deflicker_prepare_histogram(dt_iop_module_t *self,
 
 /* input: 0 - 65535 (valid range: from black level to white level) */
 /* output: -16 ... 0 */
-static double _raw_to_ev(uint32_t raw, uint32_t black_level, uint32_t white_level)
+static double _raw_to_ev(const uint32_t raw,
+                         const uint32_t black_level,
+                         const uint32_t white_level)
 {
   const uint32_t raw_max = white_level - black_level;
 

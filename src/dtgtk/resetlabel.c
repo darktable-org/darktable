@@ -34,7 +34,7 @@ static gboolean _reset_label_callback(GtkDarktableResetLabel *label, GdkEventBut
   {
     memcpy(((char *)label->module->params) + label->offset,
            ((char *)label->module->default_params) + label->offset, label->size);
-    if(label->module->gui_update) label->module->gui_update(label->module);
+    dt_iop_gui_update(label->module);
     dt_dev_add_history_item(darktable.develop, label->module, FALSE);
     return TRUE;
   }
@@ -49,6 +49,13 @@ GtkWidget *dtgtk_reset_label_new(const gchar *text, dt_iop_module_t *module, voi
   label->module = module;
   label->offset = param - (void *)module->params;
   label->size = param_size;
+
+  if(label->offset < 0 || label->offset + label->size > module->params_size)
+  {
+    label->offset = param - (void *)module->default_params;
+    if(label->offset < 0 || label->offset + label->size > module->params_size)
+        dt_print(DT_DEBUG_ALWAYS, "[dtgtk_reset_label_new] reference outside %s params\n", module->so->op);
+  }
 
   label->lb = GTK_LABEL(gtk_label_new(text));
   gtk_widget_set_halign(GTK_WIDGET(label->lb), GTK_ALIGN_START);

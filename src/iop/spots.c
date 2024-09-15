@@ -172,10 +172,9 @@ int legacy_params(dt_iop_module_t *self,
     {
       dt_masks_form_t *form = (dt_masks_form_t *)l->data;
       if(form && (form->type & DT_MASKS_GROUP))
-      {
         bp->mask_id = form->formid;
-      }
-      dt_masks_write_masks_history_item(self->dev->image_storage.id, last_spot_num, form);
+      if(form)
+        dt_masks_write_masks_history_item(self->dev->image_storage.id, last_spot_num, form);
     }
 
     *new_params = n;

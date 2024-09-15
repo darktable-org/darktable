@@ -120,7 +120,9 @@ typedef enum dt_collection_properties_t
   DT_COLLECTION_PROP_EXPOSURE_PROGRAM,
   DT_COLLECTION_PROP_METERING_MODE,
 
-  DT_COLLECTION_PROP_GROUP_ID
+  DT_COLLECTION_PROP_GROUP_ID,
+
+  DT_COLLECTION_PROP_EXPOSURE_BIAS
 } dt_collection_properties_t;
 
 typedef enum dt_collection_change_t

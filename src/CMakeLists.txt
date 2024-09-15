@@ -13,7 +13,7 @@ FILE(GLOB SOURCE_FILES
   "common/atomic.c"
   "common/bilateral.c"
   "common/bilateralcl.c"
-  "common/box_filters.c"
+  "common/box_filters.cc"
   "common/cache.c"
   "common/calculator.c"
   "common/collection.c"
@@ -94,6 +94,7 @@ FILE(GLOB SOURCE_FILES
   "control/jobs/develop_jobs.c"
   "control/jobs/film_jobs.c"
   "control/jobs/image_jobs.c"
+  "control/jobs/sidecar_jobs.c"
   "control/progress.c"
   "control/signal.c"
   "develop/blend.c"
@@ -128,6 +129,7 @@ FILE(GLOB SOURCE_FILES
   "dtgtk/range.c"
   "dtgtk/resetlabel.c"
   "dtgtk/sidepanel.c"
+  "dtgtk/stylemenu.c"
   "dtgtk/thumbnail.c"
   "dtgtk/thumbnail_btn.c"
   "dtgtk/thumbtable.c"
@@ -424,18 +426,10 @@ find_package(LensFun REQUIRED)
 include_directories(SYSTEM ${LensFun_INCLUDE_DIRS})
 list(APPEND LIBS ${LensFun_LIBRARIES})
 
-find_package(Sqlite3 3.15 REQUIRED)
-if(NOT Sqlite3_VERSION VERSION_LESS 3.24)
-  add_definitions("-DHAVE_SQLITE_324_OR_NEWER")
-  message(STATUS "Sqlite3 version 3.24 or newer")
-else()
-  message(STATUS "Sqlite3 version older than 3.24, some features may be downgraded")
-endif()
-include_directories(SYSTEM ${Sqlite3_INCLUDE_DIR})
-list(APPEND LIBS ${Sqlite3_LIBRARIES})
-add_definitions(${Sqlite3_DEFINITIONS})
+find_package(SQLite3 3.26 REQUIRED)
+list(APPEND LIBS SQLite::SQLite3)
 
-foreach(lib ${OUR_LIBS} GIO GThread GModule PangoCairo Rsvg2 LibXml2 PNG JPEG TIFF LCMS2 JsonGlib)
+foreach(lib ${OUR_LIBS} GIO GThread GModule PangoCairo Rsvg2 PNG JPEG TIFF LCMS2 JsonGlib)
   find_package(${lib} REQUIRED)
   include_directories(SYSTEM ${${lib}_INCLUDE_DIRS})
   list(APPEND LIBS ${${lib}_LIBRARIES})
@@ -469,7 +463,6 @@ if (USE_ISOBMFF)
       "${Exiv2_INCLUDE_DIRS}/exiv2/exv_conf.h"
       HAVE_EXV_ENABLE_BMFF)
     if(HAVE_EXV_ENABLE_BMFF)
-      add_definitions(-DHAVE_LIBEXIV2_WITH_ISOBMFF=1)
       set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} cr3 CACHE INTERNAL "")
       message(STATUS "Exiv2 >= 0.27.4 found with ISOBMFF support (CR3, AVIF, HEIF)")
     else()
@@ -754,6 +747,7 @@ if(USE_LUA)
       "lua/styles.c"
       "lua/tags.c"
       "lua/types.c"
+      "lua/util.c"
       "lua/view.c"
       "lua/widget/box.c"
       "lua/widget/button.c"
@@ -778,7 +772,7 @@ endif(USE_LUA)
 
 if(USE_LUA)
   if(NOT Lua54_FOUND)
-    list(APPEND LIB_DEPS lua) # 2nd half of the uglyness :/
+    list(APPEND LIB_DEPS lua) # 2nd half of the ugliness :/
   endif(NOT Lua54_FOUND)
   # liblautoc for lua automated interface generation
   add_library(lautoc_static STATIC IMPORTED)

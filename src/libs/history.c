@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -90,6 +90,13 @@ static void _lib_history_module_remove_callback(gpointer instance,
 const char *name(dt_lib_module_t *self)
 {
   return _("history");
+}
+
+const char *description(dt_lib_module_t *self)
+{
+  return _("display the sequence of edit actions\n"
+           "and allow temporarily returning to\n"
+           "an earlier state of the edit");
 }
 
 dt_view_type_flags_t views(dt_lib_module_t *self)

@@ -169,6 +169,7 @@ static void _search_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
   else
     gtk_box_pack_start(GTK_BOX(rule->w_special_box), hbox, TRUE, TRUE, 0);
   search->text = gtk_search_entry_new();
+  gtk_drag_dest_unset(search->text);
   g_signal_connect(G_OBJECT(search->text), "search-changed", G_CALLBACK(_search_changed), search);
   g_signal_connect(G_OBJECT(search->text), "stop-search", G_CALLBACK(_search_reset_text_entry), rule);
   if(top)

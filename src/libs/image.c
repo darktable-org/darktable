@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -333,6 +333,9 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
   GList *imgs = dt_act_on_get_images(FALSE, TRUE, FALSE);
   if(imgs)
   {
+    gboolean show_busy = !g_list_shorter_than(imgs,10);
+    if(show_busy)
+      dt_gui_cursor_set_busy();
     // for all the above actions, we don't use the grpu_on tag, as
     // grouped images have already been added to image list
     const dt_undo_type_t undo_type =
@@ -395,6 +398,8 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
     {
       g_list_free(imgs);
     }
+    if(show_busy)
+      dt_gui_cursor_clear_busy();
   }
 }
 
@@ -675,7 +680,9 @@ void gui_init(dt_lib_module_t *self)
 
   d->refresh_button = dt_action_button_new
     (self, N_("refresh EXIF"), button_clicked, GINT_TO_POINTER(14),
-     _("update image information to match changes to file"), 0, 0);
+     _("update all image information to match changes to file\n"
+       "warning: resets star ratings unless you select\n"
+       "'ignore EXIF rating' in the 'import' module\n"), 0, 0);
   gtk_grid_attach(grid, d->refresh_button, 0, line++, 6, 1);
 
   d->set_monochrome_button = dt_action_button_new

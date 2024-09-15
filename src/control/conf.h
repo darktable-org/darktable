@@ -88,7 +88,7 @@ float dt_conf_get_float(const char *name);
 int dt_conf_get_and_sanitize_int(const char *name, int min, int max);
 int64_t dt_conf_get_and_sanitize_int64(const char *name, int64_t min, int64_t max);
 float dt_conf_get_and_sanitize_float(const char *name, float min, float max);
-int dt_conf_get_bool(const char *name);
+gboolean dt_conf_get_bool(const char *name);
 // get the configuration string without duplicating it; the returned
 // string will be invalidated by any subsequent dt_conf_set_string
 // call

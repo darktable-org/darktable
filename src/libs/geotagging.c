@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2022 darktable developers.
+    Copyright (C) 2012-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -139,6 +139,12 @@ static void free_tz_tuple(gpointer data)
 const char *name(dt_lib_module_t *self)
 {
   return _("geotagging");
+}
+
+const char *description(dt_lib_module_t *self)
+{
+  return _("set geolocation information for\n"
+           "the currently selected images");
 }
 
 dt_view_type_flags_t views(dt_lib_module_t *self)
@@ -869,7 +875,11 @@ static void _preview_gpx_file(GtkWidget *widget, dt_lib_module_t *self)
   _set_up_label(nb, GTK_ALIGN_CENTER, grid, 4, line, PANGO_ELLIPSIZE_NONE);
   g_free(nb);
 
-  dt_gpx_destroy(gpx);
+  if(gpx)
+  {
+    dt_gpx_destroy(gpx);
+    gpx = NULL;
+  }
 
   gtk_container_add(GTK_CONTAINER(w), grid);
 
@@ -1496,8 +1506,7 @@ static GtkWidget *_gui_init_datetime(gchar *text, dt_lib_datetime_t *dt, const i
     }
     if(i >= 2 || type != 2)
     {
-      dt->widget[i] = gtk_entry_new();
-      gtk_entry_set_width_chars(GTK_ENTRY(dt->widget[i]), i == 0 ? 4 : i == 6 ? 3 : 2);
+      dt->widget[i] = dt_ui_entry_new(i == 0 ? 4 : i == 6 ? 3 : 2);
       gtk_entry_set_alignment(GTK_ENTRY(dt->widget[i]), 0.5);
       gtk_box_pack_start(box, dt->widget[i], FALSE, FALSE, 0);
       if(type == 0)
@@ -1772,10 +1781,9 @@ void gui_init(dt_lib_module_t *self)
 
   gtk_grid_attach(grid, label, 0, line, 2, 1);
 
-  d->timezone = gtk_entry_new();
+  d->timezone = dt_ui_entry_new(0);
   gtk_widget_set_tooltip_text(d->timezone, _("start typing to show a list of permitted values and select your timezone.\npress enter to confirm, so that the asterisk * disappears"));
   d->timezone_changed = dt_ui_label_new("");
-  gtk_entry_set_width_chars(GTK_ENTRY(d->timezone), 0);
 
   GtkWidget *timezone_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(timezone_box), d->timezone, TRUE, TRUE, 0);

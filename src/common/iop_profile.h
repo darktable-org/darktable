@@ -202,16 +202,6 @@ typedef struct dt_colorspaces_iccprofile_info_cl_t
 dt_colorspaces_cl_global_t *dt_colorspaces_init_cl_global(void);
 void dt_colorspaces_free_cl_global(dt_colorspaces_cl_global_t *g);
 
-/** sets profile_info_cl using profile_info
- * to be used as a parameter when calling opencl
- */
-void dt_ioppr_get_profile_info_cl(const dt_iop_order_iccprofile_info_t *const profile_info,
-                                  dt_colorspaces_iccprofile_info_cl_t *profile_info_cl);
-/** returns the profile_info trc
- * to be used as a parameter when calling opencl
- */
-cl_float *dt_ioppr_get_trc_cl(const dt_iop_order_iccprofile_info_t *const profile_info);
-
 /** build the required parameters for a kernel that uses a profile info */
 cl_int dt_ioppr_build_iccprofile_params_cl
   (const dt_iop_order_iccprofile_info_t *const profile_info,

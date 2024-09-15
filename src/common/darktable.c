@@ -61,6 +61,7 @@
 #include "control/crawler.h"
 #include "control/jobs/control_jobs.h"
 #include "control/jobs/film_jobs.h"
+#include "control/jobs/sidecar_jobs.h"
 #include "control/signal.h"
 #include "develop/blend.h"
 #include "develop/imageop.h"
@@ -68,6 +69,7 @@
 #include "gui/gtk.h"
 #include "gui/guides.h"
 #include "gui/presets.h"
+#include "gui/styles.h"
 #include "imageio/imageio_module.h"
 #include "libs/lib.h"
 #include "lua/init.h"
@@ -244,6 +246,8 @@ static int usage(const char *argv0)
          "\n"
          "--dump-pipe MODULE_A,MODULE_B\n"
          "\n"
+         "--dump-diff-pipe MODULE_A,MODULE_B\n"
+         "\n"
          "--dumpdir DIR\n"
          "\n"
          "-d SIGNAL\n"
@@ -363,6 +367,7 @@ gboolean dt_supported_image(const gchar *filename)
   return supported;
 }
 
+#ifndef MAC_INTEGRATION
 static gboolean _is_directory(const gchar *input)
 {
   gboolean is_dir = FALSE;
@@ -400,6 +405,7 @@ static void _switch_to_new_filmroll(const gchar *input)
     free(filename);
   }
 }
+#endif
 
 dt_imgid_t dt_load_from_string(const gchar *input,
                                const gboolean open_image_in_dr,
@@ -451,7 +457,10 @@ dt_imgid_t dt_load_from_string(const gchar *input,
       if(!loaded)
       {
         id = NO_IMGID;
-        dt_control_log(_("file `%s' has unknown format!"), filename);
+        if(buf.loader_status == DT_IMAGEIO_UNSUPPORTED_FORMAT || buf.loader_status == DT_IMAGEIO_UNSUPPORTED_FEATURE)
+          dt_control_log(_("file `%s' has unsupported format!"), filename);
+        else
+          dt_control_log(_("file `%s' has unknown format!"), filename);
       }
       else
       {
@@ -652,6 +661,59 @@ void dt_dump_pipe_pfm(
   if(!dt_str_commasubstring(darktable.dump_pfm_pipe, mod)) return;
 
   dt_dump_pfm_file(pipe, data, width, height, bpp, mod, "[dt_dump_pipe_pfm]", input, !input, TRUE);
+}
+
+void dt_dump_pipe_diff_pfm(
+        const char *mod,
+        const float *a,
+        const float *b,
+        const int width,
+        const int height,
+        const int ch,
+        const char *pipe)
+{
+  if(!darktable.dump_diff_pipe) return;
+  if(!mod) return;
+  if(!dt_str_commasubstring(darktable.dump_diff_pipe, mod)) return;
+
+  const size_t pk = (size_t)ch * width * height;
+  float *o = dt_alloc_align_float(2 * pk);
+  if(!o) return;
+
+  DT_OMP_FOR()
+  for(size_t p = 0; p < width * height; p++)
+  {
+    const size_t k = ch * p;
+    for(size_t c = 0; c < ch; c++)
+    {
+      if(a[k+c] > 1e-6 && b[k+c] > 1e-6)
+      {
+        const float ratio = a[k+c] / b[k+c];
+        o[k+c] = CLIP(50.0f * CLIP(ratio - 1.0f));
+      }
+      else
+        o[k+c] = 0.0f;
+    }
+  }
+
+  DT_OMP_FOR()
+  for(size_t p = 0; p < width * height; p++)
+  {
+    const size_t k = ch * p;
+    for(size_t c = 0; c < ch; c++)
+    {
+      if(a[k+c] > 1e-6 && b[k+c] > 1e-6)
+      {
+        const float ratio = b[k+c] / a[k+c];
+        o[pk+k+c] = CLIP(50.0f * CLIP(ratio - 1.0f));
+      }
+      else
+        o[pk+k+c] = 0.0f;
+    }
+  }
+
+  dt_dump_pfm_file(pipe, o, width, 2 * height, ch * sizeof(float), mod, "[dt_dump_CPU/GPU_diff_pfm]", TRUE, TRUE, TRUE);
+  dt_free_align(o);
 }
 
 static int32_t _detect_opencl_job_run(dt_job_t *job)
@@ -871,6 +933,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   darktable.dump_pfm_module = NULL;
   darktable.dump_pfm_pipe = NULL;
+  darktable.dump_diff_pipe = NULL;
   darktable.tmp_directory = NULL;
   darktable.bench_module = NULL;
 
@@ -889,11 +952,16 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   darktable.pipe_cache = TRUE;
   darktable.unmuted = 0;
   GSList *config_override = NULL;
+
+  // keep a copy of argv array for possibly reporting later
+  gchar **myoptions = init_gui && argc > 1 ? g_strdupv(argv) : NULL;
+
   for(int k = 1; k < argc; k++)
   {
 #ifdef _WIN32
     if(!strcmp(argv[k], "/?"))
     {
+      g_strfreev(myoptions);
       return usage(argv[0]);
     }
 #endif
@@ -901,6 +969,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     {
       if(!strcmp(argv[k], "--help") || !strcmp(argv[k], "-h"))
       {
+        g_strfreev(myoptions);
         return usage(argv[0]);
       }
 
@@ -909,6 +978,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
         char *theversion = _get_version_string();
         printf("%s", theversion);
         g_free(theversion);
+        g_strfreev(myoptions);
         return 1;
       }
       else if(!strcmp(argv[k], "--dump-pfm") && argc > k + 1)
@@ -926,6 +996,12 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       else if(!strcmp(argv[k], "--dump-pipe") && argc > k + 1)
       {
         darktable.dump_pfm_pipe = argv[++k];
+        argv[k-1] = NULL;
+        argv[k] = NULL;
+      }
+      else if(!strcmp(argv[k], "--dump-diff-pipe") && argc > k + 1)
+      {
+        darktable.dump_diff_pipe = argv[++k];
         argv[k-1] = NULL;
         argv[k] = NULL;
       }
@@ -971,7 +1047,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
         argv[k-1] = NULL;
         argv[k] = NULL;
       }
-     else if(!strcmp(argv[k], "--localedir") && argc > k + 1)
+      else if(!strcmp(argv[k], "--localedir") && argc > k + 1)
       {
         localedir_from_command = argv[++k];
         argv[k-1] = NULL;
@@ -1014,7 +1090,10 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
         if(dadd)
           darktable.unmuted |= dadd;
         else
+        {
+          g_strfreev(myoptions);
           return usage(argv[0]);
+        }
         k++;
         argv[k-1] = NULL;
         argv[k] = NULL;
@@ -1038,7 +1117,10 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #endif
         }
         else
+        {
+          g_strfreev(myoptions);
           return usage(argv[0]);
+        }
         k++;
         argv[k-1] = NULL;
         argv[k] = NULL;
@@ -1096,6 +1178,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
           dt_print(DT_DEBUG_SIGNAL,
                    "[dt_init] unknown signal name: '%s'. use 'ALL'"
                    " to enable debug for all or use full signal name\n", str);
+          g_strfreev(myoptions);
           return usage(argv[0]);
         }
         g_free(str);
@@ -1227,7 +1310,10 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       }
 #endif
       else
+      {
+        g_strfreev(myoptions);
         return usage(argv[0]); // fail on unrecognized options
+      }
     }
   }
 
@@ -1257,12 +1343,22 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     g_free(theversion);
   }
 
-  if(darktable.dump_pfm_module || darktable.dump_pfm_pipe)
+  if(myoptions)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[dt starting]");
+    int k = 0;
+    while(myoptions[k])
+      dt_print_nts(DT_DEBUG_ALWAYS, " %s", myoptions[k++]);
+    dt_print_nts(DT_DEBUG_ALWAYS, "\n");
+    g_strfreev(myoptions);
+  }
+
+  if(darktable.dump_pfm_module || darktable.dump_pfm_pipe || darktable.dump_pfm_pipe || darktable.dump_diff_pipe)
   {
     if(darktable.tmp_directory == NULL)
       darktable.tmp_directory = g_dir_make_tmp("darktable_XXXXXX", NULL);
     dt_print(DT_DEBUG_ALWAYS, "[init] darktable dump directory is '%s'\n",
-    (darktable.tmp_directory) ? darktable.tmp_directory : "NOT AVAILABLE");
+      (darktable.tmp_directory) ? darktable.tmp_directory : "NOT AVAILABLE");
   }
 
   // get valid directories
@@ -1448,6 +1544,12 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   // init darktable tags table
   dt_set_darktable_tags();
+
+  // import default styles from shared directory
+  gchar *styledir = g_build_filename(sharedir, "darktable/styles", NULL);
+  if(styledir)
+    dt_import_default_styles(styledir);
+  g_free(styledir);
 
   // Initialize the signal system
   darktable.signals = dt_control_signal_init();
@@ -1648,6 +1750,11 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
              "[dt_init] writing pfm files for module '%s' processing the pipeline\n",
       darktable.dump_pfm_pipe);
 
+  if(darktable.dump_diff_pipe)
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_init] writing CPU/GPU diff pfm files for module '%s' processing the pipeline\n",
+      darktable.dump_diff_pipe);
+
   if(init_gui)
   {
 #ifdef HAVE_GPHOTO2
@@ -1688,6 +1795,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_lua_init(darktable.lua_state.state, lua_command);
 #endif
 
+  // fire up a background job to perform sidecar writes
+  dt_control_sidecar_synch_start();
+
   if(init_gui)
   {
     const char *mode = "lighttable";
@@ -1695,6 +1805,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     // into a lua deadlock.  having another call later is ok
     dt_ctl_switch_mode_to(mode);
 
+#ifndef MAC_INTEGRATION
     // load image(s) specified on cmdline.  this has to happen after
     // lua is initialized as image import can run lua code
     if(argc == 2 && !_is_directory(argv[1]))
@@ -1711,6 +1822,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       dt_control_add_job(darktable.control,
                          DT_JOB_QUEUE_USER_BG, dt_pathlist_import_create(argc,argv));
     }
+#endif
 
     // there might be some info created in dt_configure_runtime_performance() for feedback
     gboolean not_again = TRUE;
@@ -1728,8 +1840,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   darktable.backthumbs.running = FALSE;
   darktable.backthumbs.capable =
-      dt_get_num_procs() >= 4
-      && darktable.dtresources.total_memory / 1024lu / 1024lu >= 8000
+      dt_worker_threads() > 4
       && !(dbfilename_from_command && !strcmp(dbfilename_from_command, ":memory:"));
   if(init_gui)
   {
@@ -2081,9 +2192,7 @@ void dt_show_times_f(const dt_times_t *start,
 
 int dt_worker_threads()
 {
-  const int threads = dt_get_num_threads();
-  const int gbytes = (int)(_get_total_memory() / (1lu << 20));
-  const int wthreads = (gbytes >= 8 && threads >= 4) ? 6 : 3;
+  const int wthreads = (_get_total_memory() >> 19) >= 15 && dt_get_num_threads() >= 4 ? 7 : 4;
   dt_print(DT_DEBUG_DEV, "[dt_worker_threads] using %i worker threads\n", wthreads);
   return wthreads;
 }
@@ -2164,6 +2273,17 @@ void dt_configure_runtime_performance(const int old, char *info)
              (largedisk) ? "TRUE" : "FALSE");
   }
 
+  gboolean updated_mandatory = FALSE;
+  if(!dt_conf_key_not_empty("opencl_mandatory_timeout"))
+  {
+    const int timeout = dt_conf_get_int("opencl_mandatory_timeout");
+    if(timeout < 1000)
+    {
+      dt_conf_set_int("opencl_mandatory_timeout", 1000);
+      updated_mandatory = TRUE;
+    }
+  }
+
   // we might add some info now but only for non-fresh installs
   if(old == 0) return;
 
@@ -2240,6 +2360,12 @@ void dt_configure_runtime_performance(const int old, char *info)
     g_strlcat(info, INFO_HEADER, DT_PERF_INFOSIZE);
     g_strlcat(info, _("OpenCL 'per device' compiler settings might have been updated.\n\n"), DT_PERF_INFOSIZE);
   }
+  else if(old < 17 && updated_mandatory)
+  {
+    g_strlcat(info, INFO_HEADER, DT_PERF_INFOSIZE);
+    g_strlcat(info, _("OpenCL mandatory timeout has been updated to 1000.\n\n"), DT_PERF_INFOSIZE);
+  }
+
   #undef INFO_HEADER
 }
 

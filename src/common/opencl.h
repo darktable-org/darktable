@@ -70,7 +70,7 @@ G_BEGIN_DECLS
 // version for current darktable cl kernels
 // this is reflected in the kernel directory and allows to
 // enforce a new kernel compilation cycle
-#define DT_OPENCL_KERNELS 3
+#define DT_OPENCL_KERNELS 5
 
 typedef enum dt_opencl_memory_t
 {
@@ -313,10 +313,6 @@ int dt_opencl_lock_device(const int pipetype);
 
 /** done with your command queue. */
 void dt_opencl_unlock_device(const int dev);
-
-/** calculates md5sums for a list of CL include files. */
-void dt_opencl_md5sum(const char **files,
-                      char **md5sums);
 
 /** inits a kernel. returns the index or -1 if fail. */
 int dt_opencl_create_kernel(const int program,
@@ -584,6 +580,8 @@ int dt_opencl_get_image_height(cl_mem mem);
 
 int dt_opencl_get_image_element_size(cl_mem mem);
 
+void *dt_opencl_duplicate_image(const int devid, const cl_mem src);
+
 void dt_opencl_dump_pipe_pfm(const char* mod,
                              const int devid,
                              cl_mem img,
@@ -681,7 +679,7 @@ static inline gboolean dt_opencl_finish_sync_pipe(const int devid,
 {
   return FALSE;
 }
-static inline int dt_opencl_lock_device(const int dev)
+static inline int dt_opencl_lock_device(const int pipetype)
 {
   return -1;
 }

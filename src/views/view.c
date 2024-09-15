@@ -207,26 +207,6 @@ void dt_vm_remove_child(GtkWidget *widget, gpointer data)
   gtk_container_remove(GTK_CONTAINER(data), widget);
 }
 
-/*
-   When expanders get destroyed, they destroy the child
-   so remove the child before that
-   */
-static void _remove_child(GtkWidget *child,
-                          GtkContainer *container)
-{
-  if(DTGTK_IS_EXPANDER(child))
-  {
-    GtkWidget * evb = dtgtk_expander_get_body_event_box(DTGTK_EXPANDER(child));
-    gtk_container_remove(GTK_CONTAINER(evb),
-                         dtgtk_expander_get_body(DTGTK_EXPANDER(child)));
-    gtk_widget_destroy(child);
-  }
-  else
-  {
-    gtk_container_remove(container,child);
-  }
-}
-
 gboolean dt_view_manager_switch(dt_view_manager_t *vm,
                                 const char *view_name)
 {
@@ -334,7 +314,7 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
   if(old_view)
   {
     /* leave current view */
-    if(old_view->leave)
+    if(new_view != old_view && old_view->leave)
       old_view->leave(old_view);
 
     /* iterator plugins and cleanup plugins in current view */
@@ -344,17 +324,26 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
     {
       dt_lib_module_t *plugin = (dt_lib_module_t *)(iter->data);
 
+      if(new_view == old_view && !plugin->expandable(plugin)) continue;
+
       /* does this module belong to current view ?*/
-      if(dt_lib_is_visible_in_view(plugin, old_view))
+      GtkWidget *ppw = plugin->expander ?: plugin->widget;
+      if(ppw && gtk_widget_get_ancestor(ppw, GTK_TYPE_WINDOW))
       {
         if(plugin->view_leave)
           plugin->view_leave(plugin, old_view, new_view);
-      }
-    }
 
-    /* remove all widets in all containers */
-    for(int l = 0; l < DT_UI_CONTAINER_SIZE; l++)
-      dt_ui_container_foreach(darktable.gui->ui, l,(GtkCallback)_remove_child);
+        /*
+          When expanders get destroyed, they destroy the child
+          so remove the child before that
+          */
+        if(plugin->widget)
+          gtk_container_remove(GTK_CONTAINER(gtk_widget_get_parent(plugin->widget)), plugin->widget);
+        if(plugin->expander)
+          gtk_widget_destroy(plugin->expander);
+      }
+      plugin->expander = NULL;
+    }
   }
 
   /* change current view to the new view */
@@ -366,65 +355,69 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
   /* lets add plugins related to new view into panels.  this has to be
    * done in reverse order to have the lowest position at the
    * bottom! */
+
+  // adjust order per view in case user made changes
+  darktable.lib->plugins = g_list_sort(darktable.lib->plugins, dt_lib_sort_plugins);
+
   for(GList *iter = g_list_last(darktable.lib->plugins);
       iter;
       iter = g_list_previous(iter))
   {
     dt_lib_module_t *plugin = (dt_lib_module_t *)(iter->data);
-    if(dt_lib_is_visible_in_view(plugin, new_view))
+    GtkWidget *w = plugin->widget;
+
+    if(plugin->expandable(plugin))
     {
-      /* try get the module expander  */
-      GtkWidget *w = dt_lib_gui_get_expander(plugin);
+      if(!dt_lib_is_visible_in_view(plugin, new_view))
+        continue;
 
-      /* if we didn't get an expander let's add the widget */
-      if(!w) w = plugin->widget;
-
-      dt_gui_add_help_link(w, plugin->plugin_name);
-      // some plugins help links depend on the view
-      if(!strcmp(plugin->plugin_name,"module_toolbox")
-        || !strcmp(plugin->plugin_name,"view_toolbox"))
-      {
-        dt_view_type_flags_t view_type = new_view->view(new_view);
-        if(view_type == DT_VIEW_LIGHTTABLE)
-          dt_gui_add_help_link(w, "lighttable_mode");
-        if(view_type == DT_VIEW_DARKROOM)
-          dt_gui_add_help_link(w, "darkroom_bottom_panel");
-      }
+      w = dt_lib_gui_get_expander(plugin);
 
       /* set expanded if last mode was that */
       char var[1024];
-      gboolean expanded = FALSE;
-      gboolean visible = dt_lib_is_visible(plugin);
-      if(plugin->expandable(plugin))
-      {
-        snprintf(var, sizeof(var), "plugins/%s/%s/expanded",
-                 new_view->module_name, plugin->plugin_name);
-        expanded = dt_conf_get_bool(var);
-        dt_lib_gui_set_expanded(plugin, expanded);
-        dt_lib_set_visible(plugin, visible);
-      }
-      else
-      {
-        /* show/hide plugin widget depending on expanded flag or if plugin
-            not is expandeable() */
-        if(visible)
-          gtk_widget_show_all(plugin->widget);
-        else
-          gtk_widget_hide(plugin->widget);
-      }
-      if(plugin->view_enter)
-        plugin->view_enter(plugin, old_view, new_view);
-
-      /* add module to its container */
-      dt_ui_container_add_widget(darktable.gui->ui, plugin->container(plugin), w);
+      snprintf(var, sizeof(var), "plugins/%s/%s/expanded",
+               new_view->module_name, plugin->plugin_name);
+      gboolean expanded = dt_conf_get_bool(var);
+      dt_lib_gui_set_expanded(plugin, expanded);
+      dt_lib_set_visible(plugin, TRUE);
     }
+    else if(new_view != old_view && plugin->views(plugin) & new_view->view(new_view))
+    {
+      dt_lib_gui_get_expander(plugin); // connect modulegroups presets button
+
+      if(dt_lib_is_visible(plugin))
+        gtk_widget_show_all(plugin->widget);
+      else
+        gtk_widget_hide(plugin->widget);
+    }
+    else
+      continue;
+
+    if(plugin->view_enter)
+      plugin->view_enter(plugin, old_view, new_view);
+
+    dt_gui_add_help_link(w, plugin->plugin_name);
+    // some plugins help links depend on the view
+    if(!strcmp(plugin->plugin_name,"module_toolbox")
+      || !strcmp(plugin->plugin_name,"view_toolbox"))
+    {
+      dt_view_type_flags_t view_type = new_view->view(new_view);
+      if(view_type == DT_VIEW_LIGHTTABLE)
+                       dt_gui_add_help_link(w, "lighttable_mode");
+      if(view_type == DT_VIEW_DARKROOM)
+        dt_gui_add_help_link(w, "darkroom_bottom_panel");
+    }
+
+    /* add module to its container */
+    dt_ui_container_add_widget(darktable.gui->ui, dt_lib_get_container(plugin), w);
   }
 
   darktable.lib->gui_module = NULL;
 
   /* enter view. crucially, do this before initing the plugins below,
       as e.g. modulegroups requires the dr stuff to be inited. */
-  if(new_view->enter) new_view->enter(new_view);
+  if(new_view != old_view && new_view->enter)
+    new_view->enter(new_view);
 
   /* update the scrollbars */
   dt_ui_update_scrollbars(darktable.gui->ui);
@@ -741,7 +734,7 @@ dt_view_surface_value_t dt_view_image_get_surface(const dt_imgid_t imgid,
       "dt_view_image_get_surface  id %i, dots %ix%i -> mip %ix%i, found %ix%i\n",
       imgid, mipwidth, mipheight, cache->max_width[mip], cache->max_height[mip], buf_wd, buf_ht);
 
-  // if we don't get buffer, no image is awailable at the moment
+  // no image is available at the moment as we didn't get buffer data
   if(!buf.buf)
   {
     dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
@@ -839,11 +832,11 @@ dt_view_surface_value_t dt_view_image_get_surface(const dt_imgid_t imgid,
     cairo_scale(cr, scale, scale);
 
     cairo_set_source_surface(cr, tmp_surface, 0, 0);
-    // set filter no nearest: in skull mode, we want to see big
+    // set filter no nearest: in skull/error mode, we want to see big
     // pixels.  in 1 iir mode for the right mip, we want to see
     // exactly what the pipe gave us, 1:1 pixel for pixel.  in
     // between, filtering just makes stuff go unsharp.
-    if((buf_wd <= 8 && buf_ht <= 8)
+    if((buf_wd <= 30 && buf_ht <= 30)
        || fabsf(scale - 1.0f) < 0.01f)
       cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
     else if(mip != buf.size)
@@ -876,8 +869,8 @@ dt_view_surface_value_t dt_view_image_get_surface(const dt_imgid_t imgid,
     cairo_destroy(cr);
   }
 
-  // we consider skull as ok as the image hasn't to be reload
-  if(buf_wd <= 8 && buf_ht <= 8)
+  // we consider skull/error as ok as the image hasn't to be reload
+  if(buf_wd <= 30 && buf_ht <= 30)
     ret = DT_VIEW_SURFACE_OK;
   else if(mip != buf.size)
     ret = DT_VIEW_SURFACE_SMALLER;
@@ -892,11 +885,15 @@ dt_view_surface_value_t dt_view_image_get_surface(const dt_imgid_t imgid,
     dt_print(DT_DEBUG_LIGHTTABLE | DT_DEBUG_PERF,
              "got surface  %ix%i created in %0.04f sec\n",
              img_width, img_height, dt_get_wtime() - tt);
-  else
-    dt_print(DT_DEBUG_LIGHTTABLE,
-             "got surface  %ix%i\n", img_width, img_height);
 
   // we consider skull as ok as the image hasn't to be reload
+  if(ret != DT_VIEW_SURFACE_OK)
+    dt_print(DT_DEBUG_LIGHTTABLE,
+      "dt_view_image_get_surface  ID=%i with surface problem %s%s%s\n",
+      imgid,
+      tmp_surface ? "" : "no tmp_surface, ",
+      ret == DT_VIEW_SURFACE_SMALLER ? "DT_VIEW_SURFACE_SMALLER" : "",
+      ret == DT_VIEW_SURFACE_KO ? "DT_VIEW_SURFACE_KO" : "");
   return ret;
 }
 
@@ -1199,14 +1196,6 @@ void dt_view_collection_update(const dt_view_manager_t *vm)
     vm->proxy.module_filtering.update(vm->proxy.module_filtering.module);
   if(vm->proxy.module_collect.module)
     vm->proxy.module_collect.update(vm->proxy.module_collect.module);
-}
-
-void dt_view_collection_update_history_state(const dt_view_manager_t *vm)
-{
-  if(vm->proxy.module_recentcollect.module)
-    vm->proxy.module_recentcollect.update_visibility(vm->proxy.module_recentcollect.module);
-  if(vm->proxy.module_collect.module)
-    vm->proxy.module_collect.update_history_visibility(vm->proxy.module_collect.module);
 }
 
 void dt_view_filtering_set_sort(const dt_view_manager_t *vm,

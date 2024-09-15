@@ -55,6 +55,8 @@ DEFAULT(gboolean, expandable, struct dt_lib_module_t *self);
 /** constructor */
 OPTIONAL(void, init, struct dt_lib_module_t *self);
 /** callback methods for gui. */
+/** get a description string to be used as tooltip on the module header */
+OPTIONAL(const char*, description, struct dt_lib_module_t *self);
 /** construct widget. */
 REQUIRED(void, gui_init, struct dt_lib_module_t *self);
 /** destroy widget. */
@@ -84,7 +86,6 @@ OPTIONAL(int, button_released, struct dt_lib_module_t *self, double x, double y,
 OPTIONAL(int, button_pressed, struct dt_lib_module_t *self, double x, double y, double pressure, int which, int type,
                    uint32_t state);
 OPTIONAL(int, scrolled, struct dt_lib_module_t *self, double x, double y, int up);
-OPTIONAL(void, configure, struct dt_lib_module_t *self, int width, int height);
 OPTIONAL(int, position, const struct dt_lib_module_t *self);
 
 /** implement these three if you want customizable presets to be stored in db. */

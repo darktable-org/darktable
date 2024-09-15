@@ -336,7 +336,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 static inline float get_rot(const dt_liquify_warp_type_enum_t warp_type)
 {
   if(warp_type == DT_LIQUIFY_WARP_TYPE_RADIAL_SHRINK)
-    return DT_M_PI_F;
+    return M_PI_F;
   else
     return 0.0f;
 }
@@ -605,13 +605,13 @@ static void _distort_paths_locked(const struct dt_iop_module_t *module,
 
   if(params->transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
   {
-    dt_dev_distort_transform_locked(params->develop, params->pipe, module->iop_order,
+    dt_dev_distort_transform_plus(params->develop, params->pipe, module->iop_order,
                                     DT_DEV_TRANSFORM_DIR_BACK_EXCL, buffer, len);
-    dt_dev_distort_transform_locked(params->develop, params->pipe, module->iop_order,
+    dt_dev_distort_transform_plus(params->develop, params->pipe, module->iop_order,
                                     DT_DEV_TRANSFORM_DIR_FORW_EXCL, buffer, len);
   }
   else
-    dt_dev_distort_transform_locked(params->develop, params->pipe, module->iop_order,
+    dt_dev_distort_transform_plus(params->develop, params->pipe, module->iop_order,
                                     params->transf_direction, buffer, len);
 
   // record back the transformed points
@@ -649,30 +649,20 @@ static void _distort_paths_locked(const struct dt_iop_module_t *module,
   free(buffer);
 }
 
-static void _distort_paths_plus(const struct dt_iop_module_t *module,
-                                const distort_params_t *params,
-                                const dt_iop_liquify_params_t *p)
-{
-  dt_pthread_mutex_lock(&params->develop->history_mutex);
-  _distort_paths_locked(module, params, p);
-  dt_pthread_mutex_unlock(&params->develop->history_mutex);
-}
-
 static void distort_paths_raw_to_piece(const struct dt_iop_module_t *module,
                                        dt_dev_pixelpipe_t *pipe,
                                        const float roi_in_scale,
-                                       dt_iop_liquify_params_t *p,
-                                       const gboolean from_distort_transform)
+                                       dt_iop_liquify_params_t *p)
 {
   const distort_params_t params = { module->dev,
                                     pipe,
                                     pipe->iscale,
                                     roi_in_scale,
                                     DT_DEV_TRANSFORM_DIR_BACK_EXCL };
-  if(from_distort_transform)
-    _distort_paths_locked(module, &params, p);
-  else
-    _distort_paths_plus(module, &params, p);
+
+  dt_pthread_mutex_lock(&module->dev->history_mutex);
+  _distort_paths_locked(module, &params, p);
+  dt_pthread_mutex_unlock(&module->dev->history_mutex);
 }
 
 // op-engine code
@@ -1195,7 +1185,6 @@ static float complex *create_global_distortion_map(const cairo_rectangle_int_t *
 static void _build_global_distortion_map(struct dt_iop_module_t *module,
                                          const dt_dev_pixelpipe_iop_t *piece,
                                          const float scale,
-                                         const gboolean from_distort_transform,
                                          const dt_iop_roi_t *roi,
                                          cairo_rectangle_int_t *map_extent,
                                          const gboolean inverted,
@@ -1206,8 +1195,7 @@ static void _build_global_distortion_map(struct dt_iop_module_t *module,
   memcpy(&copy_params, (dt_iop_liquify_params_t *)piece->data,
          sizeof(dt_iop_liquify_params_t));
 
-  distort_paths_raw_to_piece(module, piece->pipe, scale,
-                             &copy_params, from_distort_transform);
+  distort_paths_raw_to_piece(module, piece->pipe, scale, &copy_params);
 
   GList *interpolated = interpolate_paths(&copy_params);
   GSList *interpolated_in_roi = _get_map_extent(roi, interpolated, map_extent);
@@ -1231,7 +1219,7 @@ void modify_roi_in(struct dt_iop_module_t *module,
   *roi_in = *roi_out;
 
   cairo_rectangle_int_t extent;
-  _build_global_distortion_map(module, piece, roi_in->scale, FALSE,
+  _build_global_distortion_map(module, piece, roi_in->scale,
                                roi_out, &extent, FALSE, NULL);
   cairo_rectangle_int_t pipe_rect =
     {
@@ -1305,7 +1293,7 @@ static gboolean _distort_xtransform(dt_iop_module_t *self,
                             .height = extent.height };
 
     float complex *map = NULL;
-    _build_global_distortion_map(self, piece, scale, TRUE, &roi_in,
+    _build_global_distortion_map(self, piece, scale, &roi_in,
                                  &extent, inverted, &map);
 
     if(map == NULL) return FALSE;
@@ -1391,7 +1379,7 @@ void distort_mask(struct dt_iop_module_t *self,
   // 2. build the distortion map
   cairo_rectangle_int_t map_extent;
   float complex *map = NULL;
-  _build_global_distortion_map(self, piece, roi_in->scale, FALSE,
+  _build_global_distortion_map(self, piece, roi_in->scale,
                                roi_out, &map_extent, FALSE, &map);
   if(map == NULL)
     return;
@@ -1424,7 +1412,7 @@ void process(struct dt_iop_module_t *module,
   // 2. build the distortion map
   cairo_rectangle_int_t map_extent;
   float complex *map = NULL;
-  _build_global_distortion_map(module, piece, roi_in->scale, FALSE,
+  _build_global_distortion_map(module, piece, roi_in->scale,
                                roi_out, &map_extent, FALSE, &map);
   if(map == NULL)
     return;
@@ -1446,8 +1434,8 @@ static inline float lanczos(const float a, const float x)
   if(fabsf(x) >= a) return 0.0f;
   if(fabsf(x) < FLT_EPSILON) return 1.0f;
 
-  return (a * sinf(DT_M_PI_F * x) * sinf(DT_M_PI_F * x / a))
-    / (DT_M_PI_F * DT_M_PI_F * x * x);
+  return (a * sinf(M_PI_F * x) * sinf(M_PI_F * x / a))
+    / (M_PI_F * M_PI_F * x * x);
 }
 
 // compute bicubic kernel. See:
@@ -1590,7 +1578,7 @@ int process_cl(struct dt_iop_module_t *module,
   // 2. build the distortion map
   cairo_rectangle_int_t map_extent;
   float complex *map = NULL;
-  _build_global_distortion_map(module, piece, roi_in->scale, FALSE,
+  _build_global_distortion_map(module, piece, roi_in->scale,
                                roi_out, &map_extent, FALSE, &map);
 
   if(map == NULL)
@@ -1672,7 +1660,7 @@ static void draw_circle(cairo_t *cr,
   const double x = creal(pt), y = cimag(pt);
   cairo_save(cr);
   cairo_new_sub_path(cr);
-  cairo_arc(cr, x, y, diameter / 2.0, 0, 2 * DT_M_PI);
+  cairo_arc(cr, x, y, diameter / 2.0, 0, 2 * M_PI);
   cairo_restore(cr);
 }
 
@@ -1819,7 +1807,7 @@ static void _draw_paths(dt_iop_module_t *module,
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
 
   const gboolean showhandle = dt_iop_canvas_not_sensitive(darktable.develop) == FALSE;
-  // do not display any iterpolated items as slow when:
+  // do not display any interpolated items as slow when:
   //   - we are dragging (pan)
   //   - the button one is pressed
   //   - exception for DT_LIQUIFY_LAYER_STRENGTHPOINT where we want to see the
@@ -1961,10 +1949,10 @@ static void _draw_paths(dt_iop_module_t *module,
           switch(data->header.node_type)
           {
              case DT_LIQUIFY_NODE_TYPE_CUSP:
-               draw_triangle(cr, point - w / 2.0 * I, -DT_M_PI / 2.0, w);
+               draw_triangle(cr, point - w / 2.0 * I, -M_PI / 2.0, w);
                break;
              case DT_LIQUIFY_NODE_TYPE_SMOOTH:
-               draw_rectangle(cr, point, DT_M_PI / 4.0, w);
+               draw_rectangle(cr, point, M_PI / 4.0, w);
                break;
              case DT_LIQUIFY_NODE_TYPE_SYMMETRICAL:
                draw_rectangle(cr, point, 0, w);
@@ -2726,7 +2714,7 @@ void gui_post_expose(dt_iop_module_t *module,
   const distort_params_t d_params = { develop, develop->preview_pipe,
                                       iscale, 1.0 / scale,
                                       DT_DEV_TRANSFORM_DIR_ALL };
-  _distort_paths_plus(module, &d_params, &copy_params);
+  _distort_paths_locked(module, &d_params, &copy_params);
 
   cairo_scale(cr, scale, scale);
 
@@ -3725,7 +3713,7 @@ static void _liquify_cairo_paint_point_tool(cairo_t *cr,
 {
   PREAMBLE;
   cairo_new_sub_path(cr);
-  cairo_arc(cr, 0.5, 0.5, 0.2, 0.0, 2 * DT_M_PI);
+  cairo_arc(cr, 0.5, 0.5, 0.2, 0.0, 2 * M_PI);
   cairo_fill(cr);
   POSTAMBLE;
 }

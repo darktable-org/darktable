@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2024 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -162,6 +162,12 @@ int last_state = 0;
 const char *name(dt_lib_module_t *self)
 {
   return _("collections");
+}
+
+const char *description(dt_lib_module_t *self)
+{
+  return _("define search criteria for images\n"
+           "to be displayed or edited");
 }
 
 void *legacy_params(struct dt_lib_module_t *self,
@@ -424,7 +430,7 @@ static void view_popup_menu_onSearchFilmroll(GtkWidget *menuitem,
   gtk_tree_model_get(model, &child, DT_LIB_COLLECT_COL_PATH, &tree_path, -1);
 
   GtkFileChooserNative *filechooser = gtk_file_chooser_native_new
-    (_("search filmroll"),
+    (_("update path to files"),
      GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
      _("_open"), _("_cancel"));
 
@@ -580,7 +586,7 @@ static void view_popup_menu(GtkWidget *treeview,
 
   menu = gtk_menu_new();
 
-  menuitem = gtk_menu_item_new_with_label(_("search filmroll..."));
+  menuitem = gtk_menu_item_new_with_label(_("update path to files..."));
   g_signal_connect(menuitem, "activate",
                    (GCallback)view_popup_menu_onSearchFilmroll, treeview);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
@@ -2071,6 +2077,19 @@ static void _list_view(dt_lib_collect_rule_t *dr)
         // clang-format on
         break;
 
+      case DT_COLLECTION_PROP_EXPOSURE_BIAS: // exposure bias
+        // clang-format off
+        g_snprintf(query, sizeof(query),
+                   "SELECT ROUND(exposure_bias,2), 1, COUNT(*) AS count"
+                   " FROM main.images AS mi"
+                   " WHERE %s"
+                   " GROUP BY ROUND(exposure_bias,2)"
+                   " ORDER BY ROUND(exposure_bias,2) %s",
+                   where_ext,
+                   sort_descending ? "DESC" : "ASC");
+        // clang-format on
+        break;
+
       case DT_COLLECTION_PROP_FILENAME: // filename
         // clang-format off
         g_snprintf(query, sizeof(query),
@@ -2517,10 +2536,10 @@ static void _set_tooltip(dt_lib_collect_rule_t *d)
   g_free(tip);
 }
 
-static void _lib_collect_update_history_visibility(dt_lib_module_t *self)
+void view_enter(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct dt_view_t *new_view)
 {
   dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
-  const gboolean hide = dt_conf_get_bool("plugins/lighttable/collect/history_hide");
+  const gboolean hide = dt_lib_is_visible(darktable.view_manager->proxy.module_recentcollect.module);
   gtk_widget_set_visible(d->history_box, !hide);
 }
 
@@ -3345,6 +3364,7 @@ static void _populate_collect_combo(GtkWidget *w)
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_LENS);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_APERTURE);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_EXPOSURE);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_EXPOSURE_BIAS);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FOCAL_LENGTH);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ISO);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ASPECT_RATIO);
@@ -3380,12 +3400,7 @@ void _menuitem_preferences(GtkMenuItem *menuitem,
   dt_osx_disallow_fullscreen(dialog);
 #endif
   gtk_widget_show_all(dialog);
-  if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
-  {
-    dt_conf_set_bool("plugins/lighttable/recentcollect/hide",
-                     !dt_conf_get_bool("plugins/lighttable/collect/history_hide"));
-    dt_view_collection_update_history_state(darktable.view_manager);
-  }
+  gtk_dialog_run(GTK_DIALOG(dialog));
   gtk_widget_destroy(dialog);
   dt_collection_update_query(darktable.collection,
                              DT_COLLECTION_CHANGE_NEW_QUERY,
@@ -3684,8 +3699,7 @@ void gui_init(dt_lib_module_t *self)
                      G_CALLBACK(combo_changed), d->rule + i);
     gtk_box_pack_start(box, d->rule[i].combo, FALSE, TRUE, 0);
 
-    w = gtk_entry_new();
-    gtk_entry_set_max_width_chars(GTK_ENTRY(w), 10);
+    w = dt_ui_entry_new(10);
     d->rule[i].text = w;
     gtk_widget_add_events(w, GDK_FOCUS_CHANGE_MASK);
     g_signal_connect(G_OBJECT(w), "focus-in-event",
@@ -3768,11 +3782,8 @@ void gui_init(dt_lib_module_t *self)
   /* setup proxy */
   darktable.view_manager->proxy.module_collect.module = self;
   darktable.view_manager->proxy.module_collect.update = _lib_collect_gui_update;
-  darktable.view_manager->proxy.module_collect.update_history_visibility =
-    _lib_collect_update_history_visibility;
 
   _lib_collect_gui_update(self);
-  _lib_collect_update_history_visibility(self);
 
   if(_combo_get_active_collection(d->rule[0].combo) == DT_COLLECTION_PROP_TAG)
   {
@@ -4077,6 +4088,7 @@ void init(struct dt_lib_module_t *self)
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_APERTURE);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_ASPECT_RATIO);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_EXPOSURE);
+  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_EXPOSURE_BIAS);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_FILENAME);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_GEOTAGGING);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_LOCAL_COPY);

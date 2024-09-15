@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2015-2023 darktable developers.
+    Copyright (C) 2015-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -60,6 +60,12 @@ const char *name(dt_lib_module_t *self)
   return _("duplicate manager");
 }
 
+const char *description(dt_lib_module_t *self)
+{
+  return _("create/rename/remove multiple\n"
+           "edits of the current image");
+}
+
 dt_view_type_flags_t views(dt_lib_module_t *self)
 {
   return DT_VIEW_DARKROOM;
@@ -114,7 +120,7 @@ static void _lib_duplicate_duplicate_clicked_callback(GtkWidget *widget,
   const dt_imgid_t newid = dt_image_duplicate(imgid);
   if(!dt_is_valid_imgid(newid))
     return;
-  dt_history_copy_and_paste_on_image(imgid, newid, FALSE, NULL, TRUE, TRUE);
+  dt_history_copy_and_paste_on_image(imgid, newid, FALSE, NULL, TRUE, TRUE, TRUE);
   dt_collection_update_query(darktable.collection,
                              DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, NULL);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
@@ -315,9 +321,8 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     gchar *path = (gchar *)sqlite3_column_text(stmt, 2);
     g_snprintf(chl, sizeof(chl), "%d", sqlite3_column_int(stmt, 0));
 
-    GtkWidget *tb = gtk_entry_new();
+    GtkWidget *tb = dt_ui_entry_new(0);
     if(path) gtk_entry_set_text(GTK_ENTRY(tb), path);
-    gtk_entry_set_width_chars(GTK_ENTRY(tb), 0);
     gtk_widget_set_hexpand(tb, TRUE);
     g_object_set_data (G_OBJECT(tb), "imgid", GINT_TO_POINTER(imgid));
     gtk_widget_add_events(tb, GDK_FOCUS_CHANGE_MASK);

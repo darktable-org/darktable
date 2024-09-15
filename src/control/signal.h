@@ -275,6 +275,11 @@ typedef enum dt_signal_t
   /* \brief This signal is raised when the user choses a new location from map (module location)*/
   DT_SIGNAL_LOCATION_CHANGED,
 
+  /** \brief This signal is raised when a storage module signalizes to enable/disable the export
+    no param, no returned value
+  */
+  DT_SIGNAL_IMAGEIO_STORAGE_EXPORT_ENABLE,
+
   /* do not touch !*/
   DT_SIGNAL_COUNT
 } dt_signal_t;
@@ -288,7 +293,7 @@ typedef enum dt_debug_signal_action_t
   DT_DEBUG_SIGNAL_ACT_PRINT_TRACE = 1 << 3,
 } dt_debug_signal_action_t;
 
-/* inititialize the signal framework */
+/* initialize the signal framework */
 struct dt_control_signal_t *dt_control_signal_init();
 /* raises a signal */
 void dt_control_signal_raise(const struct dt_control_signal_t *ctlsig, const dt_signal_t signal, ...);

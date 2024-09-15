@@ -67,6 +67,7 @@ typedef struct dt_print_info_t
   dt_page_setup_t page;
   dt_paper_info_t paper;
   dt_medium_info_t medium;
+  int num_printers;  // the number of printers found
 } dt_print_info_t;
 
 // Asynchronous printer discovery, cb will be called for each printer found

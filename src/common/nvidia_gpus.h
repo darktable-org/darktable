@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2020 darktable developers.
+    Copyright (C) 2012-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,32 +21,24 @@
 #include <strings.h>
 
 #ifndef __APPLE__
-// strings and compute model versions vim-macro converted from http://developer.nvidia.com/cuda/cuda-gpus
-// 2012/09/18.
-// we're not really interested in updates, this is merely used to detect which gpus don't support sm_20
-// (and we hope newer gpus will all do that)
+// Strings and compute capability versions vim-macro converted from
+// http://developer.nvidia.com/cuda/cuda-gpus on 2012/09/18.
+
+// All models with compute capability >= 2.0 were then filtered out of the table.
+// The compute capabilities value from the table is not used, it is present only
+// for the purpose of documenting and possible verification of correctness.
+
+// We're not really interested in updates, this is merely used to detect which
+// GPUs don't support sm_20 (and we believe newer GPUs will all do that).
 static const char *nvidia_gpus[] = {
   // clang-format off
 
-  "Tesla C2075", "2.0",
-  "Tesla C2050/C2070", "2.0",
   "Tesla C1060", "1.3",
   "Tesla C870", "1.0",
   "Tesla D870", "1.0",
-  "Tesla K20", "3.5",
-  "Tesla K10", "3.0",
-  "Tesla M2050/M2070/M2075/M2090", "2.0",
   "Tesla S1070", "1.3",
   "Tesla M1060", "1.3",
   "Tesla S870", "1.0",
-  "Quadro K5000", "3.0",
-  "Quadro 6000", "2.0",
-  "Quadro 5000", "2.0",
-  "Quadro 4000", "2.0",
-  "Quadro 4000 for Mac", "2.0",
-  "Quadro 2000", "2.1",
-  "Quadro 2000D", "2.1",
-  "Quadro 600", "2.1",
   "Quadro FX 5800", "1.3",
   "Quadro FX 5600", "1.0",
   "Quadro FX 4800", "1.3",
@@ -73,13 +65,6 @@ static const char *nvidia_gpus[] = {
   "Quadro Plex 2200 D2", "1.3",
   "Quadro Plex 2100 D4", "1.1",
   "Quadro Plex 2100 S4", "1.0",
-  "Quadro K500M", "3.0",
-  "Quadro 5010M", "2.0",
-  "Quadro 5000M", "2.0",
-  "Quadro 4000M", "2.1",
-  "Quadro 3000M", "2.1",
-  "Quadro 2000M", "2.1",
-  "Quadro 1000M", "2.1",
   "Quadro FX 3800M", "1.1",
   "Quadro FX 3700M", "1.1",
   "Quadro FX 3600M", "1.1",
@@ -104,40 +89,16 @@ static const char *nvidia_gpus[] = {
   "Quadro NVS 420", "1.1",
   "NVIDIA NVS 300", "1.2",
   "Quadro NVS 295", "1.1",
-  "NVS 4200M", "2.1",
   "NVS 5100M", "1.2",
   "NVS 3100M", "1.2",
   "NVS 2100M", "1.2",
   "NVS 300", "1.2",
-  "GeForce GTX 690", "3.0",
-  "GeForce GTX 680", "3.0",
-  "GeForce GTX 670", "3.0",
-  "GeForce GTX 660 Ti", "3.0",
-  "GeForce GTX 660", "3.0",
-  "GeForce GTX 650", "3.0",
-  "GeForce GTX 560 Ti", "2.1",
-  "GeForce GTX 550 Ti", "2.1",
-  "GeForce GTX 460", "2.1",
-  "GeForce GTS 450", "2.1",
-  "GeForce GTX 590", "2.0",
-  "GeForce GTX 580", "2.0",
-  "GeForce GTX 570", "2.0",
-  "GeForce GTX 480", "2.0",
-  "GeForce GTX 470", "2.0",
-  "GeForce GTX 465", "2.0",
   "GeForce GTX 295", "1.3",
   "GeForce GTX 285", "1.3",
   "GeForce GTX 285 for Mac", "1.3",
   "GeForce GTX 280", "1.3",
   "GeForce GTX 275", "1.3",
   "GeForce GTX 260", "1.3",
-  "GeForce GT 640", "2.1",
-  "GeForce GT 630", "2.1",
-  "GeForce GT 620", "2.1",
-  "GeForce GT 610", "2.1",
-  "GeForce GT 520", "2.1",
-  "GeForce GT 440", "2.1",
-  "GeForce GT 430", "2.1",
   "GeForce GT 420", "1.0",
   "GeForce GT 240", "1.2",
   "GeForce GTS 240", "1.2",
@@ -177,34 +138,6 @@ static const char *nvidia_gpus[] = {
   "GeForce 9800 GT", "1.0",
   "GeForce 9600 GT", "1.0",
   "GeForce 9400GT", "1.0",
-  "GeForce GTX 680M", "3.0",
-  "GeForce GTX 675M", "2.1",
-  "GeForce GTX 670M", "2.1",
-  "GeForce GTX 660M", "3.0",
-  "GeForce GT 650M", "3.0",
-  "GeForce GT 640M", "3.0",
-  "GeForce GT 640M LE", "3.0",
-  "GeForce GT 635M", "2.1",
-  "GeForce GT 630M", "2.1",
-  "GeForce GT 620M", "2.1",
-  "GeForce 610M", "2.1",
-  "GeForce GTX 580M", "2.1",
-  "GeForce GTX 570M", "2.1",
-  "GeForce GTX 560M", "2.1",
-  "GeForce GT 555M", "2.1",
-  "GeForce GT 550M", "2.1",
-  "GeForce GT 540M", "2.1",
-  "GeForce GT 525M", "2.1",
-  "GeForce GT 520MX", "2.1",
-  "GeForce GT 520M", "2.1",
-  "GeForce GTX 485M", "2.1",
-  "GeForce GTX 470M", "2.1",
-  "GeForce GTX 460M", "2.1",
-  "GeForce GT 445M", "2.1",
-  "GeForce GT 435M", "2.1",
-  "GeForce GT 420M", "2.1",
-  "GeForce GT 415M", "2.1",
-  "GeForce GTX 480M", "2.0",
   "GeForce GTS 360M", "1.2",
   "GeForce GTS 350M", "1.2",
   "GeForce GT 335M", "1.2",
@@ -259,7 +192,7 @@ static const char *nvidia_gpus[] = {
 gboolean dt_nvidia_gpu_supports_sm_20(const char *model)
 {
 #ifdef __APPLE__
-  // on Mac OSX the OpenCL driver does not seem to support inline asm - even with recent NVIDIA GPUs
+  // On macOS the OpenCL driver does not seem to support inline asm - even with recent NVIDIA GPUs.
   return FALSE;
 #else
   int i = 0;
@@ -267,18 +200,18 @@ gboolean dt_nvidia_gpu_supports_sm_20(const char *model)
   {
     if(!strcasecmp(model, nvidia_gpus[2 * i]))
     {
-      if(nvidia_gpus[2 * i + 1][0] >= '2') return 1;
+      // The table contains only models with compute capabilities < 2.0, so
+      // we can already return the result without additional check.
       return FALSE;
     }
     i++;
   }
-  // if we don't know the device, it's probably too new and all good.
   return TRUE;
 #endif
 }
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -210,6 +210,10 @@ static gboolean _ignore_missing_wb(dt_image_t *img)
   if(g_str_has_suffix(img->filename,"-hdr.dng"))
     return TRUE;
 
+  // If we failed to read the image correctly, don't complain about WB
+  if(img->load_status != DT_IMAGEIO_OK && img->load_status != DT_IMAGEIO_CACHE_FULL)
+    return TRUE;
+
   static const char *const ignored_cameras[] = {
     "Canon PowerShot A610",
     "Canon PowerShot S3 IS",
@@ -461,7 +465,7 @@ static void _temp2mul(dt_iop_module_t *self,
   xyz.Y /= tint; // TODO: This is baaad!
   /**
    * TODO:
-   * problem here is that tint as it is is just a nasty hack modyfying Y component
+   * problem here is that tint as it is is just a nasty hack modifying Y component
    * and therefore changing RGB coefficients in wrong way,
    * because modifying only Y in that way doesn’t move XYZ point orthogonally
    * to planckian locus. That means it actually changes temperature and thus it lies!

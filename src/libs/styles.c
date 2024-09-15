@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 #include "common/collection.h"
 #include "common/styles.h"
 #include "common/darktable.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -56,7 +57,7 @@ const char *name(dt_lib_module_t *self)
 
 dt_view_type_flags_t views(dt_lib_module_t *self)
 {
-  return DT_VIEW_LIGHTTABLE;
+  return DT_VIEW_LIGHTTABLE | DT_VIEW_MULTI;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -182,7 +183,7 @@ static void _gui_styles_update_view(dt_lib_styles_t *d)
 
       while(split[k])
       {
-        const gchar *s = split[k];
+        const gchar *s = dt_util_localize_string(split[k]);
         const gboolean node_found = _get_node_for_name(model, k==0, &iter, s);
 
         if(!node_found)
@@ -596,41 +597,9 @@ static void _import_clicked(GtkWidget *w, gpointer user_data)
     for(const GSList *filename = filenames; filename; filename = g_slist_next(filename))
     {
       /* extract name from xml file */
-      gchar *bname = NULL;
-      xmlDoc *document = xmlReadFile((char*)filename->data, NULL, XML_PARSE_NOBLANKS);
-      xmlNode *root = NULL;
-      if(document != NULL)
-        root = xmlDocGetRootElement(document);
-
-      if(document == NULL || root == NULL || xmlStrcmp(root->name, BAD_CAST "darktable_style"))
-      {
-        dt_print(DT_DEBUG_CONTROL,
-                 "[styles] file %s is not a style file\n", (char*)filename->data);
-        if(document)
-          xmlFreeDoc(document);
+      gchar *bname = dt_get_style_name(filename->data);
+      if (!bname)
         continue;
-      }
-
-      for(xmlNode *node = root->children->children; node; node = node->next)
-      {
-        if(node->type == XML_ELEMENT_NODE)
-        {
-          if(strcmp((char*)node->name, "name") == 0)
-          {
-            bname = g_strdup((char*)xmlNodeGetContent(node));
-            break;
-          }
-        }
-      }
-
-      // xml doc is not necessary after this point
-      xmlFreeDoc(document);
-
-      if(!bname){
-        dt_print(DT_DEBUG_CONTROL,
-                 "[styles] file %s is malformed style file\n", (char*)filename->data);
-        continue;
-      }
 
       // check if style exists
       if(dt_styles_exists(bname))
@@ -868,11 +837,10 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_tree_selection_changed), self);
 
   /* filter entry */
-  w = gtk_entry_new();
+  w = dt_ui_entry_new(0);
   d->entry = GTK_ENTRY(w);
   gtk_entry_set_placeholder_text(GTK_ENTRY(d->entry), _("filter style names"));
   gtk_widget_set_tooltip_text(w, _("filter style names"));
-  gtk_entry_set_width_chars(GTK_ENTRY(w), 0);
   g_signal_connect(d->entry, "changed", G_CALLBACK(_entry_callback), d);
   g_signal_connect(d->entry, "activate", G_CALLBACK(_entry_activated), d);
 

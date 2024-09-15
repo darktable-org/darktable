@@ -360,6 +360,7 @@ void dt_dev_pixelpipe_cleanup_nodes(dt_dev_pixelpipe_t *pipe)
   pipe->nodes = NULL;
 
   dt_dev_clear_scharr_mask(pipe);
+  pipe->want_detail_mask = FALSE;
 
   // also cleanup iop here
   if(pipe->iop)
@@ -411,11 +412,7 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe,
     piece->histogram_params.bins_count = 256;
     piece->histogram_stats.bins_count = 0;
     piece->histogram_stats.pixels = 0;
-    piece->colors
-        = ((module->default_colorspace(module, pipe, NULL) == IOP_CS_RAW)
-           && (dt_image_is_raw(&pipe->image)))
-      ? 1
-      : 4;
+    piece->colors = module->default_colorspace(module, pipe, NULL) == IOP_CS_RAW ? 1 : 4;
     piece->iscale = pipe->iscale;
     piece->iwidth = pipe->iwidth;
     piece->iheight = pipe->iheight;
@@ -533,18 +530,21 @@ static void _dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
 
       dt_iop_commit_params(hist->module, hist->params, hist->blend_params, pipe, piece);
 
-      dt_print_pipe(DT_DEBUG_PARAMS, "dt_dev_pixelpipe_synch",
+      dt_print_pipe(DT_DEBUG_PARAMS, "committed",
           pipe, piece->module, DT_DEVICE_NONE, NULL, NULL,
-          "%s order=%2i, piece hash=%" PRIx64 ", \n",
+          "%s order=%2i, piece hash=%" PRIx64 "\n",
           piece->enabled ? "enabled " : "disabled",
           piece->module->iop_order,
           piece->hash);
 
-      if(piece->blendop_data)
+      if(piece->enabled && piece->blendop_data)
       {
         const dt_develop_blend_params_t *const bp =
           (const dt_develop_blend_params_t *)piece->blendop_data;
-        if(!feqf(bp->details, 0.0f, 1e-6))
+        const gboolean valid_mask = bp->mask_mode > DEVELOP_MASK_ENABLED
+                                &&  bp->mask_mode != DEVELOP_MASK_RASTER;
+
+        if((!feqf(bp->details, 0.0f, 1e-6)) && valid_mask)
           dt_dev_pixelpipe_usedetails(pipe);
       }
     }
@@ -576,6 +576,9 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
 
   dt_print_pipe(DT_DEBUG_PARAMS, "synch all module history",
     pipe, NULL, DT_DEVICE_NONE, NULL, NULL, "\n");
+
+  dt_dev_clear_scharr_mask(pipe);
+  pipe->want_detail_mask = FALSE;
 
   // go through all history items and adjust params
   GList *history = dev->history;
@@ -1101,10 +1104,21 @@ static gboolean _pixelpipe_process_on_CPU(
     return TRUE;
 
   // the data buffers must always have an alignment to DT_CACHELINE_BYTES
-  if((((uintptr_t)input) & (DT_CACHELINE_BYTES - 1)) || (((uintptr_t)*output) & (DT_CACHELINE_BYTES - 1)))
-    dt_print(DT_DEBUG_ALWAYS,
-             "[pixelpipe_process CPU] buffer aligment problem: IN=%p OUT=%p\n",
-             input, *output);
+  if(!dt_check_aligned(input) || !dt_check_aligned(*output))
+  {
+    dt_print_pipe(DT_DEBUG_ALWAYS,
+        "fatal process alignment",
+        piece->pipe, module, DT_DEVICE_NONE, roi_in, roi_out,
+        "non-aligned buffers IN=%p OUT=%p\n",
+        input, *output);
+
+    dt_control_log(_("fatal pixelpipe abort due to non-aligned buffers\n"
+                     "in module '%s'\nplease report on GitHub"),
+                     module->op);
+    // this is a fundamental problem with severe problems ahead so good to finish
+    // the pipe as if good to avoid reprocessing and endless loop.
+    return FALSE;
+  }
 
   // Fetch RGB working profile
   // if input is RAW, we can't color convert because RAW is not in a color space
@@ -1410,11 +1424,14 @@ static gboolean _dev_pixelpipe_process_rec(
 
     dt_times_t start;
     dt_get_perf_times(&start);
+
+    const gboolean aligned_input = dt_check_aligned(pipe->input);
     // we're looking for the full buffer
     if(roi_out->scale == 1.0f
        && roi_out->x == 0 && roi_out->y == 0
        && pipe->iwidth == roi_out->width
-       && pipe->iheight == roi_out->height)
+       && pipe->iheight == roi_out->height
+       && aligned_input)
     {
       *output = pipe->input;
       dt_print_pipe(DT_DEBUG_PIPE,
@@ -1432,9 +1449,12 @@ static gboolean _dev_pixelpipe_process_rec(
         const int in_y = MAX(roi_in.y, 0);
         const int cp_width = MAX(0, MIN(roi_out->width, pipe->iwidth - in_x));
         const int cp_height = MIN(roi_out->height, pipe->iheight - in_y);
+
         dt_print_pipe(DT_DEBUG_PIPE,
           (cp_width > 0) ? "pixelpipe data 1:1 copied" : "pixelpipe data 1:1 none",
-          pipe, module, DT_DEVICE_NONE, &roi_in, roi_out, "bpp=%lu\n", bpp);
+          pipe, module, DT_DEVICE_NONE, &roi_in, roi_out, "%sbpp=%lu\n",
+          aligned_input ? "" : "non-aligned input ",
+          bpp);
         if(cp_width > 0)
         {
           DT_OMP_FOR()
@@ -1453,12 +1473,28 @@ static gboolean _dev_pixelpipe_process_rec(
         roi_in.scale = 1.0f;
         const gboolean valid_bpp = (bpp == 4 * sizeof(float));
         dt_print_pipe(DT_DEBUG_PIPE,
-          "pipe data: clip&zoom", pipe, module, DT_DEVICE_CPU, &roi_in, roi_out, "%s\n",
-          valid_bpp ? "" : "requires 4 floats data");
-        if(valid_bpp)
+          "pipe data: clip&zoom", pipe, module, DT_DEVICE_CPU, &roi_in, roi_out, "%s%s\n",
+          valid_bpp ? "" : "requires 4 floats data",
+          aligned_input ? "" : "non-aligned input buffer");
+        if(valid_bpp && aligned_input)
           dt_iop_clip_and_zoom(*output, pipe->input, roi_out, &roi_in);
         else
-          dt_iop_image_fill(*output, 0.0f, roi_out->width, roi_out->height, 4);
+        {
+          memset(*output, 0, (size_t)roi_out->width * roi_out->height * bpp);
+          if(!aligned_input)
+          {
+            dt_print_pipe(DT_DEBUG_ALWAYS,
+              "fatal input misalignment",
+              pipe, NULL, DT_DEVICE_NONE, &roi_in, roi_out,
+              "non-aligned IN=%p\n", pipe->input);
+            dt_control_log(_("fatal input misalignment, please report on GitHub\n"));
+          }
+          if(!valid_bpp)
+            dt_print_pipe(DT_DEBUG_ALWAYS,
+              "invalid input bpp",
+              pipe, NULL, DT_DEVICE_NONE, &roi_in, roi_out,
+              "bpp=%d\n", (int)bpp);
+        }
       }
     }
 
@@ -1851,9 +1887,46 @@ static gboolean _dev_pixelpipe_process_rec(
               "device=%i (%s), %s\n",
               pipe->devid, darktable.opencl->dev[pipe->devid].cname, cl_errstr(err));
 
-          if(success_opencl && pfm_dump)
-            dt_opencl_dump_pipe_pfm(module->op, pipe->devid, *cl_mem_output,
+          if(success_opencl)
+          {
+            if(pfm_dump)
+              dt_opencl_dump_pipe_pfm(module->op, pipe->devid, *cl_mem_output,
                                     FALSE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
+
+            if((piece->pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_EXPORT))
+                && darktable.dump_diff_pipe)
+            {
+              const int ch = dt_opencl_get_image_element_size(cl_mem_input) / sizeof(float);
+              const int cho = dt_opencl_get_image_element_size(*cl_mem_output) / sizeof(float);
+              if((ch == 1 || ch == 4)
+                  && (cho == 1 || cho == 4)
+                  && dt_str_commasubstring(darktable.dump_diff_pipe, module->op))
+              {
+                const size_t ow = roi_out->width;
+                const size_t oh = roi_out->height;
+                const size_t iw = roi_in.width;
+                const size_t ih = roi_in.height;
+                float *clindata = dt_alloc_align_float(iw * ih * ch);
+                float *cloutdata = dt_alloc_align_float(ow * oh * cho);
+                float *cpudata = dt_alloc_align_float(ow * oh * cho);
+                if(clindata && cloutdata && cpudata)
+                {
+                  cl_int terr = dt_opencl_read_host_from_device(pipe->devid, cloutdata, *cl_mem_output, ow, oh, cho * sizeof(float));
+                  if(terr == CL_SUCCESS)
+                  {
+                    terr = dt_opencl_read_host_from_device(pipe->devid, clindata, cl_mem_input, ow, oh, ch * sizeof(float));
+                    if(terr == CL_SUCCESS)
+                    {
+                      module->process(module, piece, clindata, cpudata, &roi_in, roi_out);
+                      dt_dump_pipe_diff_pfm(module->op, cloutdata, cpudata, ow, oh, cho, dt_dev_pixelpipe_type_to_str(piece->pipe->type));                  }
+                  }
+                }
+                dt_free_align(cpudata);
+                dt_free_align(cloutdata);
+                dt_free_align(clindata);
+              }
+            }
+          }
 
           pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_GPU);
           pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_CPU
@@ -2875,23 +2948,26 @@ float *dt_dev_get_raster_mask(struct dt_dev_pixelpipe_iop_t *piece,
     const int maskmode = source_enabled ? source_piece->module->blend_params->mask_mode : 0;
     const gboolean source_writing = maskmode != 0 && (maskmode & DEVELOP_MASK_RASTER) == 0;
     /* there might be stale masks from disabled modules or modules that don't write masks.
-       don't use those!
-       FIXME: we should try to fix this elsewhere. Or can we safely remove these masks here?
+       don't use those but delete them to avoid mem leaks.
     */
     if(!source_enabled)
     {
+      const gboolean deleted = g_hash_table_remove(source_piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID));
       dt_print_pipe(DT_DEBUG_PIPE,
          "no raster mask", piece->pipe, piece->module, DT_DEVICE_NONE, NULL, NULL,
-         "as source module `%s%s' is disabled\n",
-         raster_mask_source->op, dt_iop_get_instance_id(raster_mask_source));
+         "as source module `%s%s' is disabled%s\n",
+         raster_mask_source->op, dt_iop_get_instance_id(raster_mask_source),
+         deleted ? ", stale mask deleted" : "");
       return NULL;
     }
     else if(!source_writing)
     {
+      const gboolean deleted = g_hash_table_remove(source_piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID));
       dt_print_pipe(DT_DEBUG_PIPE,
          "no raster mask", piece->pipe, piece->module, DT_DEVICE_NONE, NULL, NULL,
-         "as source module `%s%s' does not write raster masks\n",
-         raster_mask_source->op, dt_iop_get_instance_id(raster_mask_source));
+         "as source module `%s%s' does not write raster masks%s\n",
+         raster_mask_source->op, dt_iop_get_instance_id(raster_mask_source),
+         deleted ? ", stale mask deleted" : "");
       return NULL;
     }
     else

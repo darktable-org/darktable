@@ -42,7 +42,7 @@ extern const char *dt_colorlabels_name[];
 /** get the assigned colorlabels of imgid*/
 int dt_colorlabels_get_labels(const dt_imgid_t imgid);
 /** remove labels associated to imgid */
-void dt_colorlabels_remove_labels(const dt_imgid_t imgid);
+void dt_colorlabels_remove_all_labels(const dt_imgid_t imgid);
 /** assign a color label to imgid - no undo no image group*/
 void dt_colorlabels_set_label(const dt_imgid_t imgid,
                               const int color);
@@ -61,8 +61,8 @@ void dt_colorlabels_remove_label(const dt_imgid_t imgid,
 /** get the name of the color for a given number (could be replaced by an array) */
 const char *dt_colorlabels_to_string(int label);
 /** check if an image has a color label */
-int dt_colorlabels_check_label(const dt_imgid_t imgid,
-                               const int color);
+gboolean dt_colorlabels_check_label(const dt_imgid_t imgid,
+                                    const int color);
 
 extern const struct dt_action_def_t dt_action_def_color_label;
 

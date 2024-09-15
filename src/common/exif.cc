@@ -405,7 +405,8 @@ const char *dt_xmp_keys[]
         "Xmp.acdsee.notes",                   "Xmp.dc.creator",
         "Xmp.dc.publisher",                   "Xmp.dc.title",
         "Xmp.dc.description",                 "Xmp.dc.rights",
-        "Xmp.dc.format",                      "Xmp.xmpMM.DerivedFrom" };
+        "Xmp.dc.format",                      "Xmp.xmpMM.DerivedFrom",
+        "Xmp.xmpMM.PreservedFileName" };
 
 // The number of XmpBag XmpSeq keys that dt uses
 static const guint dt_xmp_keys_n = G_N_ELEMENTS(dt_xmp_keys);
@@ -595,7 +596,7 @@ static bool _exif_decode_xmp_data(dt_image_t *img,
         dt_image_set_xmp_rating(img, -2);
     }
 
-    if(!exif_read) dt_colorlabels_remove_labels(img->id);
+    if(!exif_read) dt_colorlabels_remove_all_labels(img->id);
     if(FIND_XMP_TAG("Xmp.xmp.Label"))
     {
       std::string label = pos->toString();
@@ -1088,9 +1089,12 @@ static void _find_datetime_taken(Exiv2::ExifData &exifData,
                                  Exiv2::ExifData::const_iterator pos,
                                  char *exif_datetime_taken)
 {
+  // Note: We allow a longer "datetime original" field with an unnecessary
+  // trailing byte(s) due to buggy software that creates it.
+  // See https://github.com/darktable-org/darktable/issues/17389
   if((FIND_EXIF_TAG("Exif.Image.DateTimeOriginal")
       || FIND_EXIF_TAG("Exif.Photo.DateTimeOriginal"))
-     && pos->size() == DT_DATETIME_EXIF_LENGTH)
+     && pos->size() >= DT_DATETIME_EXIF_LENGTH)
   {
     _strlcpy_to_utf8(exif_datetime_taken, DT_DATETIME_EXIF_LENGTH, pos, exifData);
     if(FIND_EXIF_TAG("Exif.Photo.SubSecTimeOriginal")
@@ -5009,8 +5013,7 @@ char *dt_exif_xmp_read_string(const dt_imgid_t imgid)
   try
   {
     char input_filename[PATH_MAX] = { 0 };
-    gboolean from_cache = FALSE;
-    dt_image_full_path(imgid, input_filename, sizeof(input_filename), &from_cache);
+    dt_image_full_path(imgid, input_filename, sizeof(input_filename), NULL);
 
     // First take over the data from the source image
     Exiv2::XmpData xmpData;
@@ -5627,7 +5630,8 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid,
 
 // Write XMP sidecar file: returns TRUE in case of errors.
 gboolean dt_exif_xmp_write(const dt_imgid_t imgid,
-                           const char *filename)
+                           const char *filename,
+                           const gboolean force_write)
 {
   // Refuse to write sidecar for non-existent image:
   char imgfname[PATH_MAX] = { 0 };
@@ -5641,7 +5645,7 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid,
     Exiv2::XmpData xmpData;
     std::string xmpPacket;
     char *checksum_old = NULL;
-    if(g_file_test(filename, G_FILE_TEST_EXISTS))
+    if(!force_write && g_file_test(filename, G_FILE_TEST_EXISTS))
     {
       // we want to avoid writing the sidecar file if it didn't change
       // to avoid issues when using the same images from different
@@ -5823,7 +5827,7 @@ void dt_exif_init()
   // Preface the Exiv2 messages with "[exiv2] "
   Exiv2::LogMsg::setHandler(&_exif_log_handler);
 
-  #ifdef HAVE_LIBEXIV2_WITH_ISOBMFF
+  #if EXIV2_TEST_VERSION(0,27,4) && !EXIV2_TEST_VERSION(0,28,3)
   Exiv2::enableBMFF();
   #endif
 

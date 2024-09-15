@@ -790,9 +790,15 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
   if(!buf.buf || !buf.width || !buf.height)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[dt_imageio_export_with_flags] mipmap allocation for `%s' failed\n",
-             filename);
-    dt_control_log(_("image `%s' is not available!"), img->filename);
+             "[dt_imageio_export_with_flags] mipmap allocation for `%s' failed (status %d)\n",
+             filename,img->load_status);
+    if(img->load_status == DT_IMAGEIO_FILE_NOT_FOUND)
+      dt_control_log(_("image `%s' is not available!"), img->filename);
+    else if(img->load_status == DT_IMAGEIO_LOAD_FAILED || img->load_status == DT_IMAGEIO_IOERROR ||
+            img->load_status == DT_IMAGEIO_CACHE_FULL)
+      dt_control_log(_("unable to load image `%s'!"), img->filename);
+    else
+      dt_control_log(_("image '%s' not supported"), img->filename);
     goto error_early;
   }
 
@@ -894,24 +900,26 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
 
   if(darktable.unmuted & DT_DEBUG_IMAGEIO)
   {
-    char mbuf[1024] = { 0 };
+    char mbuf[2048] = { 0 };
     for(GList *nodes = pipe.nodes; nodes; nodes = g_list_next(nodes))
     {
       dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
       if(piece->enabled)
       {
-        const size_t used = strlen(mbuf);
-        snprintf(mbuf + used, sizeof(dev) - used, " %s", piece->module->op);
+        g_strlcat(mbuf, " ", sizeof(mbuf));
+        g_strlcat(mbuf, piece->module->op, sizeof(mbuf));
+        g_strlcat(mbuf, dt_iop_get_instance_id(piece->module), sizeof(mbuf));
       }
     }
-    dt_print(DT_DEBUG_ALWAYS,"[dt_imageio_export_with_flags] %s%s%s%s%s modules:%s%s\n",
-      use_style && appending  ? "append style history " : "",
-      use_style && !appending ? "replace style history " : "",
-      use_style               ? "`" : "",
-      use_style               ? format_params->style : "",
-      use_style               ? "'." : "",
-      mbuf,
-      strlen(mbuf) > 1022 ? " ..." : "");
+
+    dt_print(DT_DEBUG_ALWAYS,
+      "[dt_imageio_export_with_flags] %s%s%s%s%s modules:%s\n",
+      use_style && appending      ? "append style history " : "",
+      use_style && !appending     ? "replace style history " : "",
+      use_style                   ? "`" : "",
+      use_style && format_params  ? format_params->style : "",
+      use_style                   ? "'." : "",
+      mbuf);
   }
 
   if(filter)
@@ -1306,7 +1314,7 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
   /* first of all, check if file exists, don't bother to test loading
    * if not exists */
   if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
-    return !DT_IMAGEIO_OK;
+    return DT_IMAGEIO_FILE_NOT_FOUND;
 
   const int32_t was_hdr = (img->flags & DT_IMAGE_HDR);
   const int32_t was_bw = dt_image_monochrome_flags(img);
@@ -1342,16 +1350,20 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
     ret = dt_imageio_open_rawspeed(img, filename, buf);
   }
 
-  /* fallback that tries to open file via LibRaw to support Canon CR3 */
-  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
-    ret = dt_imageio_open_libraw(img, filename, buf);
+  // if rawspeed tried but failed to load a known filetype, skip the attempts to try other loaders
+  if(ret != DT_IMAGEIO_UNSUPPORTED_FEATURE && ret != DT_IMAGEIO_FILE_CORRUPTED && ret != DT_IMAGEIO_IOERROR)
+  {
+    /* fallback that tries to open file via LibRaw to support Canon CR3 */
+    if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
+      ret = dt_imageio_open_libraw(img, filename, buf);
 
-  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
-    ret = dt_imageio_open_qoi(img, filename, buf);
+    if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
+      ret = dt_imageio_open_qoi(img, filename, buf);
 
-  /* fallback that tries to open file via GraphicsMagick */
-  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
-    ret = dt_imageio_open_exotic(img, filename, buf);
+    /* fallback that tries to open file via GraphicsMagick */
+    if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
+      ret = dt_imageio_open_exotic(img, filename, buf);
+  }
 
   if((ret == DT_IMAGEIO_OK) && !was_hdr && (img->flags & DT_IMAGE_HDR))
     dt_imageio_set_hdr_tag(img);
@@ -1359,8 +1371,8 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
   if((ret == DT_IMAGEIO_OK) && (was_bw != dt_image_monochrome_flags(img)))
     dt_imageio_update_monochrome_workflow_tag(img->id, dt_image_monochrome_flags(img));
 
-  img->p_width = dt_image_raw_width(img);
-  img->p_height = dt_image_raw_height(img);
+  img->p_width = img->width - img->crop_x - img->crop_right;
+  img->p_height = img->height - img->crop_y - img->crop_bottom;
 
   return ret;
 }

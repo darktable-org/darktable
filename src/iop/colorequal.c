@@ -178,6 +178,25 @@ typedef struct dt_iop_colorequal_data_t
   float contrast;
 } dt_iop_colorequal_data_t;
 
+typedef struct dt_iop_colorequal_global_data_t
+{
+  int ce_init_covariance;
+  int ce_finish_covariance;
+  int ce_prepare_prefilter;
+  int ce_apply_prefilter;
+  int ce_prepare_correlations;
+  int ce_finish_correlations;
+  int ce_final_guide;
+  int ce_apply_guided;
+  int ce_sample_input;
+  int ce_process_data;
+  int ce_write_output;
+  int ce_write_visual;
+  int ce_draw_weight;
+  int kernel_interpolate_bilinear;
+} dt_iop_colorequal_global_data_t;
+
+
 const char *name()
 {
   return _("color equalizer");
@@ -263,6 +282,53 @@ typedef struct dt_iop_colorequal_gui_data_t
   int selected;
   float points[NODES+1][2];
 } dt_iop_colorequal_gui_data_t;
+
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 37; // colorequal.cl, from programs.conf
+
+  dt_iop_colorequal_global_data_t *gd
+      = (dt_iop_colorequal_global_data_t *)malloc(sizeof(dt_iop_colorequal_global_data_t));
+  module->data = gd;
+
+  gd->ce_init_covariance = dt_opencl_create_kernel(program, "init_covariance");
+  gd->ce_finish_covariance = dt_opencl_create_kernel(program, "finish_covariance");
+  gd->ce_prepare_prefilter = dt_opencl_create_kernel(program, "prepare_prefilter");
+  gd->ce_apply_prefilter = dt_opencl_create_kernel(program, "apply_prefilter");
+  gd->ce_prepare_correlations = dt_opencl_create_kernel(program, "prepare_correlations");
+  gd->ce_finish_correlations = dt_opencl_create_kernel(program, "finish_correlations");
+  gd->ce_final_guide = dt_opencl_create_kernel(program, "final_guide");
+  gd->ce_apply_guided = dt_opencl_create_kernel(program, "apply_guided");
+  gd->ce_sample_input = dt_opencl_create_kernel(program, "sample_input");
+  gd->ce_process_data = dt_opencl_create_kernel(program, "process_data");
+  gd->ce_write_output = dt_opencl_create_kernel(program, "write_output");
+  gd->ce_write_visual = dt_opencl_create_kernel(program, "write_visual");
+  gd->ce_draw_weight = dt_opencl_create_kernel(program, "draw_weight");
+  gd->kernel_interpolate_bilinear = dt_opencl_create_kernel(2, "interpolate_bilinear");
+}
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_colorequal_global_data_t *gd = (dt_iop_colorequal_global_data_t *)module->data;
+  dt_opencl_free_kernel(gd->ce_init_covariance);
+  dt_opencl_free_kernel(gd->ce_finish_covariance);
+  dt_opencl_free_kernel(gd->ce_prepare_prefilter);
+  dt_opencl_free_kernel(gd->ce_apply_prefilter);
+  dt_opencl_free_kernel(gd->ce_prepare_correlations);
+  dt_opencl_free_kernel(gd->ce_finish_correlations);
+  dt_opencl_free_kernel(gd->ce_final_guide);
+  dt_opencl_free_kernel(gd->ce_apply_guided);
+  dt_opencl_free_kernel(gd->ce_sample_input);
+  dt_opencl_free_kernel(gd->ce_process_data);
+  dt_opencl_free_kernel(gd->ce_write_output);
+  dt_opencl_free_kernel(gd->ce_write_visual);
+  dt_opencl_free_kernel(gd->ce_draw_weight);
+  dt_opencl_free_kernel(gd->kernel_interpolate_bilinear);
+
+  free(module->data);
+  module->data = NULL;
+}
+
 
 static inline float _get_scaling(const float sigma)
 {
@@ -483,12 +549,12 @@ static void _prepare_prefilter(const size_t ds_pixels, const float epsilon,
     // Invert the 2×2 sigma matrix algebraically
     // see https://www.mathcentre.ac.uk/resources/uploaded/sigma-matrices7-2009-1.pdf
     const float det = Sigma[0] * Sigma[3] - Sigma[1] * Sigma[2];
-    dt_aligned_pixel_t sigma_inv = { Sigma[3] / det, -Sigma[1] / det,
-                                    -Sigma[2] / det,  Sigma[0] / det };
 
     // a(chan) = dot_product(cov(chan, uv), sigma_inv)
     if(fabsf(det) > 4.f * FLT_EPSILON)
     {
+      dt_aligned_pixel_t sigma_inv = { Sigma[3] / det, -Sigma[1] / det,
+                                      -Sigma[2] / det,  Sigma[0] / det };
       // find a_1, a_2 s.t. U' = a_1 * U + a_2 * V
       a[4 * k + 0] = (covariance[4 * k + 0] * sigma_inv[0]
                     + covariance[4 * k + 1] * sigma_inv[1]);
@@ -796,15 +862,15 @@ static void _guide_with_chromaticity(float *const restrict UV,
 
     // Invert the 2×2 sigma matrix algebraically
     // see https://www.mathcentre.ac.uk/resources/uploaded/sigma-matrices7-2009-1.pdf
-    const float det = MAX((Sigma[0] * Sigma[3] - Sigma[1] * Sigma[2]), 1e-15f);
-    dt_aligned_pixel_t sigma_inv
+    const float det = Sigma[0] * Sigma[3] - Sigma[1] * Sigma[2];
+    // Note : epsilon prevents determinant == 0 so the invert exists all the time
+    if(fabsf(det) > 4.f * FLT_EPSILON)
+    {
+      dt_aligned_pixel_t sigma_inv
         = { Sigma[3] / det,
            -Sigma[1] / det,
            -Sigma[2] / det,
             Sigma[0] / det };
-    // Note : epsilon prevents determinant == 0 so the invert exists all the time
-    if(fabsf(det) > 4.f * FLT_EPSILON)
-    {
       a[4 * k + 0] = (correlations[4 * k + 0] * sigma_inv[0]
                     + correlations[4 * k + 1] * sigma_inv[1]);
       a[4 * k + 1] = (correlations[4 * k + 0] * sigma_inv[2]
@@ -993,8 +1059,7 @@ void process(struct dt_iop_module_t *self,
     _prefilter_chromaticity(UV, saturation, roi_out, d->chroma_size, d->chroma_feathering, sat_shift);
 
   // STEP 3 : carry-on with conversion from LUV to HSB
-  float B_norm = NORM_MIN;
-  DT_OMP_FOR(reduction(max: B_norm))
+  DT_OMP_FOR()
   for(int row = 0; row < oheight; row++)
   {
     for(int col = 0; col < owidth; col++)
@@ -1011,7 +1076,6 @@ void process(struct dt_iop_module_t *self,
       dt_aligned_pixel_t JCH = { 0.0f, 0.0f, 0.0f, 0.0f };
       dt_UCS_LUV_to_JCH(tmp[k], white, uv, JCH);
       dt_UCS_JCH_to_HSB(JCH, pix_out);
-      B_norm = fmaxf(B_norm, pix_out[2]);
 
       // As tmp[k] is not used any longer as L(uminance) we re-use it for the saturation gradient
       if(d->use_filter)
@@ -1081,15 +1145,15 @@ void process(struct dt_iop_module_t *self,
   }
   else
   {
+    piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
     const int mode = mask_mode - 1;
-    B_norm = 1.0f / B_norm;
     DT_OMP_FOR()
     for(size_t k = 0; k < npixels; k++)
     {
       float *const restrict pix_out = DT_IS_ALIGNED_PIXEL(out + k * 4);
       const float *const restrict corrections_out = corrections + k * 2;
 
-      const float val = pix_out[2] * B_norm;
+      const float val = sqrtf(pix_out[2] * white);
       float corr = 0.0f;
       switch(mode)
       {
@@ -1111,14 +1175,14 @@ void process(struct dt_iop_module_t *self,
       }
 
       const gboolean neg = corr < 0.0f;
-      corr = 0.3f * fabsf(corr);
-      corr = corr < 1e-3 ? 0.0f : powf(corr, 0.8f);
+      corr = fabsf(corr);
+      corr = corr < 2e-3 ? 0.0f : corr;
       pix_out[0] = MAX(0.0f, neg ? val - corr : val);
       pix_out[1] = MAX(0.0f, val - corr);
       pix_out[2] = MAX(0.0f, neg ? val : val - corr);
 
       const float gv = 1.0f - tmp[k];
-      if(mode == BRIGHTNESS && d->use_filter && gv > 0.2f)
+      if(mode == BRIGHTNESS && gv > 0.2f)
       {
         pix_out[0] = pix_out[2] = 0.0f;
         pix_out[1] = gv;
@@ -1149,6 +1213,487 @@ void process(struct dt_iop_module_t *self,
   dt_free_align(UV);
   dt_free_align(tmp);
 }
+
+#if HAVE_OPENCL
+
+#define CE_CH 2
+int _mean_gaussian_cl(const int devid,
+                      cl_mem image,
+                      const size_t width,
+                      const size_t height,
+                      const float sigma)
+{
+  const float range = 1.0e9;
+  const dt_aligned_pixel_t max = {range, range, range, range};
+  const dt_aligned_pixel_t min = {-range, -range, -range, -range};
+  const int ch = dt_opencl_get_image_element_size(image) / sizeof(float);
+
+  dt_gaussian_cl_t *g = dt_gaussian_init_cl(devid, width, height, ch, max, min, sigma, 0);
+  if(!g) return DT_OPENCL_PROCESS_CL;
+
+  cl_int err = dt_gaussian_blur_cl(g, image, image);
+  dt_gaussian_free_cl(g);
+  return err;
+}
+
+static int _prefilter_chromaticity_cl(const int devid,
+                                      dt_iop_colorequal_global_data_t *gd,
+                                      cl_mem UV,
+                                      cl_mem saturation,
+                                      cl_mem weight,
+                                      const dt_iop_roi_t *const roi,
+                                      const float csigma,
+                                      const float epsilon,
+                                      const float sat_shift)
+{
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+  const float sigma = csigma * roi->scale;
+  const int width = roi->width;
+  const int height = roi->height;
+  const float scaling = _get_scaling(sigma);
+  const float gsigma = MAX(0.2f, 0.5f * sigma / scaling);
+  const int ds_height = height / scaling;
+  const int ds_width = width / scaling;
+  const gboolean resized = width != ds_width || height != ds_height;
+
+  cl_mem ds_UV = UV;
+  cl_mem covariance = NULL;
+  cl_mem covariance_tmp = NULL;
+  cl_mem a = NULL;
+  cl_mem b = NULL;
+  cl_mem a_full = NULL;
+  cl_mem b_full = NULL;
+  cl_mem UV_tmp = NULL;
+
+  if(resized)
+  {
+    ds_UV = dt_opencl_alloc_device(devid, ds_width, ds_height, CE_CH * sizeof(float));
+    if(ds_UV == NULL) return err;
+
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_interpolate_bilinear, ds_width, ds_height,
+          CLARG(UV), CLARG(width), CLARG(height), CLARG(ds_UV), CLARG(ds_width), CLARG(ds_height));
+    if(err != CL_SUCCESS) goto error;
+  }
+
+  covariance_tmp = dt_opencl_alloc_device(devid, ds_width, ds_height, 4 * sizeof(float));
+  if(covariance_tmp == NULL) goto error;
+
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_init_covariance, ds_width, ds_height,
+          CLARG(covariance_tmp), CLARG(ds_UV), CLARG(ds_width), CLARG(ds_height));
+  if(err != CL_SUCCESS) goto error;
+
+  err = _mean_gaussian_cl(devid, ds_UV, ds_width, ds_height, gsigma);
+  if(err != CL_SUCCESS) goto error;
+
+  err = _mean_gaussian_cl(devid, covariance_tmp, ds_width, ds_height, gsigma);
+  if(err != CL_SUCCESS) goto error;
+
+  covariance = dt_opencl_alloc_device(devid, ds_width, ds_height, 4 * sizeof(float));
+  if(covariance == NULL) goto error;
+
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_finish_covariance, ds_width, ds_height,
+          CLARG(covariance), CLARG(covariance_tmp), CLARG(ds_UV),
+          CLARG(ds_width), CLARG(ds_height));
+  if(err != CL_SUCCESS) goto error;
+
+  dt_opencl_release_mem_object(covariance_tmp);
+  covariance_tmp = NULL;
+
+  a = dt_opencl_alloc_device(devid, ds_width, ds_height, 4 * sizeof(float));
+  b = dt_opencl_alloc_device(devid, ds_width, ds_height, CE_CH * sizeof(float));
+  if(a == NULL || b == NULL) goto error;
+
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_prepare_prefilter, ds_width, ds_height,
+          CLARG(ds_UV), CLARG(covariance), CLARG(a), CLARG(b),
+          CLARG(epsilon), CLARG(ds_width), CLARG(ds_height));
+  if(err != CL_SUCCESS) goto error;
+
+  dt_opencl_release_mem_object(covariance);
+  covariance = NULL;
+  if(resized)
+  {
+    dt_opencl_release_mem_object(ds_UV);
+    ds_UV = NULL;
+  }
+
+  err = _mean_gaussian_cl(devid, a, ds_width, ds_height, gsigma);
+  if(err != CL_SUCCESS) goto error;
+
+  err = _mean_gaussian_cl(devid, b, ds_width, ds_height, gsigma);
+  if(err != CL_SUCCESS) goto error;
+
+  a_full = a;
+  b_full = b;
+  if(resized)
+  {
+    a_full = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+    b_full = dt_opencl_alloc_device(devid, width, height, CE_CH * sizeof(float));
+    if(a_full == NULL || b_full == NULL) goto error;
+
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_interpolate_bilinear, width, height,
+          CLARG(a), CLARG(ds_width), CLARG(ds_height), CLARG(a_full), CLARG(width), CLARG(height));
+    if(err != CL_SUCCESS) goto error;
+
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_interpolate_bilinear, width, height,
+          CLARG(b), CLARG(ds_width), CLARG(ds_height), CLARG(b_full), CLARG(width), CLARG(height));
+    if(err != CL_SUCCESS) goto error;
+
+    dt_opencl_release_mem_object(a);
+    a = NULL;
+    dt_opencl_release_mem_object(b);
+    b = NULL;
+  }
+
+  UV_tmp = dt_opencl_duplicate_image(devid, UV);
+  if(UV_tmp == NULL) goto error;
+
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_apply_prefilter, width, height,
+          CLARG(UV_tmp), CLARG(UV), CLARG(saturation), CLARG(a_full), CLARG(b_full), CLARG(weight),
+          CLARG(sat_shift), CLARG(width), CLARG(height));
+
+error:
+  if(resized)
+  {
+    dt_opencl_release_mem_object(a_full);
+    dt_opencl_release_mem_object(b_full);
+    dt_opencl_release_mem_object(ds_UV);
+  }
+  dt_opencl_release_mem_object(covariance);
+  dt_opencl_release_mem_object(covariance_tmp);
+  dt_opencl_release_mem_object(UV_tmp);
+  dt_opencl_release_mem_object(a);
+  dt_opencl_release_mem_object(b);
+  return err;
+}
+
+static int _guide_with_chromaticity_cl(const int devid,
+                                      dt_iop_colorequal_global_data_t *gd,
+                                      cl_mem UV,
+                                      cl_mem corrections,
+                                      cl_mem saturation,
+                                      cl_mem b_corrections,
+                                      cl_mem scharr,
+                                      cl_mem weight,
+                                      const dt_iop_roi_t *const roi,
+                                      const float csigma,
+                                      const float epsilon,
+                                      const float bright_shift,
+                                      const float sat_shift)
+{
+  const float sigma = csigma * roi->scale;
+  const size_t width = roi->width;
+  const size_t height = roi->height;
+  const float scaling = _get_scaling(sigma);
+  const float gsigma = MAX(0.2f, 0.5f * sigma / scaling);
+  const size_t ds_height = height / scaling;
+  const size_t ds_width = width / scaling;
+  const gboolean resized = width != ds_width || height != ds_height;
+
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+  cl_mem ds_UV = UV;
+  cl_mem ds_corrections = corrections;
+  cl_mem ds_b_corrections = b_corrections;
+  cl_mem corrections_tmp = NULL;
+  cl_mem covariance = NULL;
+  cl_mem correlations = NULL;
+  cl_mem covariance_tmp = NULL;
+  cl_mem correlations_tmp = NULL;
+  cl_mem a = NULL;
+  cl_mem b = NULL;
+  cl_mem a_full = NULL;
+  cl_mem b_full = NULL;
+
+  if(resized)
+  {
+    ds_UV = dt_opencl_alloc_device(devid, ds_width, ds_height, CE_CH * sizeof(float));
+    ds_corrections = dt_opencl_alloc_device(devid, ds_width, ds_height, CE_CH * sizeof(float));
+    ds_b_corrections = dt_opencl_alloc_device(devid, ds_width, ds_height, sizeof(float));
+    if(ds_UV == NULL || ds_corrections == NULL || ds_b_corrections == NULL) goto error;
+
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_interpolate_bilinear, ds_width, ds_height,
+          CLARG(UV), CLARG(width), CLARG(height), CLARG(ds_UV), CLARG(ds_width), CLARG(ds_height));
+    if(err != CL_SUCCESS) goto error;
+
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_interpolate_bilinear, ds_width, ds_height,
+          CLARG(corrections), CLARG(width), CLARG(height), CLARG(ds_corrections), CLARG(ds_width), CLARG(ds_height));
+    if(err != CL_SUCCESS) goto error;
+
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_interpolate_bilinear, ds_width, ds_height,
+          CLARG(b_corrections), CLARG(width), CLARG(height), CLARG(ds_b_corrections), CLARG(ds_width), CLARG(ds_height));
+    if(err != CL_SUCCESS) goto error;
+  }
+
+  covariance_tmp = dt_opencl_alloc_device(devid, ds_width, ds_height, 4 * sizeof(float));
+  correlations_tmp = dt_opencl_alloc_device(devid, ds_width, ds_height, 4 * sizeof(float));
+  if(covariance_tmp == NULL || correlations_tmp == NULL)
+  {
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    goto error;
+  }
+
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_prepare_correlations, ds_width, ds_height,
+          CLARG(ds_corrections), CLARG(ds_b_corrections), CLARG(ds_UV),
+          CLARG(correlations_tmp), CLARG(covariance_tmp),
+          CLARG(ds_width), CLARG(ds_height));
+  if(err != CL_SUCCESS) goto error;
+
+  err = _mean_gaussian_cl(devid, ds_UV, ds_width, ds_height, gsigma);
+  if(err != CL_SUCCESS) goto error;
+  err = _mean_gaussian_cl(devid, covariance_tmp, ds_width, ds_height, gsigma);
+  if(err != CL_SUCCESS) goto error;
+  err = _mean_gaussian_cl(devid, ds_corrections, ds_width, ds_height, gsigma);
+  if(err != CL_SUCCESS) goto error;
+  err = _mean_gaussian_cl(devid, ds_b_corrections, ds_width, ds_height, 0.1f * gsigma);
+  if(err != CL_SUCCESS) goto error;
+  err = _mean_gaussian_cl(devid, correlations_tmp, ds_width, ds_height, gsigma);
+  if(err != CL_SUCCESS) goto error;
+
+  covariance = dt_opencl_alloc_device(devid, ds_width, ds_height, 4 * sizeof(float));
+  correlations = dt_opencl_alloc_device(devid, ds_width, ds_height, 4 * sizeof(float));
+  a = dt_opencl_alloc_device(devid, ds_width, ds_height, 4 * sizeof(float));
+  b = dt_opencl_alloc_device(devid, ds_width, ds_height, CE_CH * sizeof(float));
+  if(a == NULL || b == NULL || covariance == NULL || correlations == NULL)
+  {
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    goto error;
+  }
+
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_finish_correlations, ds_width, ds_height,
+          CLARG(ds_corrections), CLARG(ds_b_corrections), CLARG(ds_UV),
+          CLARG(correlations_tmp), CLARG(correlations),
+          CLARG(covariance_tmp), CLARG(covariance),
+          CLARG(ds_width), CLARG(ds_height));
+  if(err != CL_SUCCESS) goto error;
+
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_final_guide, ds_width, ds_height,
+          CLARG(covariance), CLARG(correlations), CLARG(ds_corrections), CLARG(ds_b_corrections),
+          CLARG(ds_UV), CLARG(a), CLARG(b),
+          CLARG(epsilon), CLARG(ds_width), CLARG(ds_height));
+  if(err != CL_SUCCESS) goto error;
+
+  if(resized)
+  {
+    dt_opencl_release_mem_object(ds_UV);
+    ds_UV = NULL;
+    dt_opencl_release_mem_object(ds_corrections);
+    ds_corrections = NULL;
+    dt_opencl_release_mem_object(ds_b_corrections);
+    ds_b_corrections = NULL;
+  }
+  dt_opencl_release_mem_object(correlations);
+  correlations = NULL;
+  dt_opencl_release_mem_object(covariance);
+  covariance = NULL;
+  dt_opencl_release_mem_object(correlations_tmp);
+  correlations_tmp = NULL;
+  dt_opencl_release_mem_object(covariance_tmp);
+  covariance_tmp = NULL;
+
+  err = _mean_gaussian_cl(devid, a, ds_width, ds_height, gsigma);
+  if(err != CL_SUCCESS) goto error;
+  err = _mean_gaussian_cl(devid, b, ds_width, ds_height, gsigma);
+  if(err != CL_SUCCESS) goto error;
+
+  a_full = a;
+  b_full = b;
+  if(resized)
+  {
+    a_full = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+    b_full = dt_opencl_alloc_device(devid, width, height, CE_CH * sizeof(float));
+    if(a_full == NULL || b_full == NULL) goto error;
+
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_interpolate_bilinear, width, height,
+          CLARG(a), CLARG(ds_width), CLARG(ds_height), CLARG(a_full), CLARG(width), CLARG(height));
+    if(err != CL_SUCCESS) goto error;
+
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_interpolate_bilinear, width, height,
+          CLARG(b), CLARG(ds_width), CLARG(ds_height), CLARG(b_full), CLARG(width), CLARG(height));
+    if(err != CL_SUCCESS) goto error;
+  }
+
+  corrections_tmp = dt_opencl_duplicate_image(devid, corrections);
+  if(corrections_tmp == NULL) goto error;
+
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_apply_guided, width, height,
+          CLARG(UV), CLARG(saturation), CLARG(scharr), CLARG(a_full), CLARG(b_full),
+          CLARG(corrections_tmp), CLARG(corrections), CLARG(b_corrections), CLARG(weight),
+          CLARG(sat_shift), CLARG(bright_shift), CLARG(width), CLARG(height));
+
+error:
+  if(resized)
+  {
+    dt_opencl_release_mem_object(ds_UV);
+    dt_opencl_release_mem_object(ds_corrections);
+    dt_opencl_release_mem_object(ds_b_corrections);
+    dt_opencl_release_mem_object(a_full);
+    dt_opencl_release_mem_object(b_full);
+  }
+  dt_opencl_release_mem_object(correlations);
+  dt_opencl_release_mem_object(covariance);
+  dt_opencl_release_mem_object(correlations_tmp);
+  dt_opencl_release_mem_object(covariance_tmp);
+  dt_opencl_release_mem_object(corrections_tmp);
+  dt_opencl_release_mem_object(a);
+  dt_opencl_release_mem_object(b);
+
+  return err;
+}
+
+
+int process_cl(struct dt_iop_module_t *self,
+               dt_dev_pixelpipe_iop_t *piece,
+               cl_mem dev_in,
+               cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in,
+               const dt_iop_roi_t *const roi_out)
+{
+  dt_iop_colorequal_data_t *d = (dt_iop_colorequal_data_t *)piece->data;
+  dt_iop_colorequal_global_data_t *const gd = (dt_iop_colorequal_global_data_t *)self->global_data;
+
+  // Get working color profile
+  const struct dt_iop_order_iccprofile_info_t *const work_profile
+      = dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
+  if(piece->colors != 4 || work_profile == NULL)
+    return DT_OPENCL_PROCESS_CL;
+
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+
+  const int devid = piece->pipe->devid;
+  const int owidth = roi_out->width;
+  const int oheight = roi_out->height;
+
+  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
+  const int mask_mode = g && fullpipe ? g->mask_mode : 0;
+  const int guiding = d->use_filter;
+  const gboolean run_fast = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
+
+  const float white = Y_to_dt_UCS_L_star(d->white_level);
+  const float sat_shift = d->threshold;
+  const float max_brightness_shift = 0.01f * d->max_brightness;
+  const float corr_max_brightness_shift = max_brightness_shift * MIN(5.0f, sqrtf(d->param_size));
+  const float bright_shift = sat_shift + corr_max_brightness_shift;
+
+  const float gradient_amp = 4.0f * sqrtf(d->max_brightness) * sqrf(roi_out->scale);
+
+  _init_satweights(d->contrast);
+
+  cl_mem UV = NULL;
+  cl_mem corrections = NULL;
+  cl_mem b_corrections = NULL;
+  cl_mem L = NULL;
+  cl_mem scharr = NULL;
+  cl_mem saturation = NULL;
+  cl_mem dev_tmp = NULL;
+
+  dt_colormatrix_t input_matrix;
+  dt_colormatrix_t output_matrix;
+  dt_colormatrix_mul(input_matrix, XYZ_D50_to_D65_CAT16, work_profile->matrix_in);
+  dt_colormatrix_mul(output_matrix, work_profile->matrix_out, XYZ_D65_to_D50_CAT16);
+
+  cl_mem input_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), input_matrix);
+  cl_mem output_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), output_matrix);
+  cl_mem gamut_LUT = dt_opencl_copy_host_to_device_constant(devid, LUT_ELEM * sizeof(float), d->gamut_LUT);
+  cl_mem LUT_saturation = dt_opencl_copy_host_to_device_constant(devid, LUT_ELEM * sizeof(float), d->LUT_saturation);
+  cl_mem LUT_hue = dt_opencl_copy_host_to_device_constant(devid, LUT_ELEM * sizeof(float), d->LUT_hue);
+  cl_mem LUT_brightness = dt_opencl_copy_host_to_device_constant(devid, LUT_ELEM * sizeof(float), d->LUT_brightness);
+  cl_mem weight = dt_opencl_copy_host_to_device_constant(devid, (2 * SATSIZE + 1) * sizeof(float), satweights);
+  if(input_matrix_cl == NULL || output_matrix_cl == NULL || gamut_LUT == NULL || LUT_saturation == NULL
+      || LUT_hue == NULL || LUT_brightness == NULL || weight == NULL)
+    goto error;
+
+  dev_tmp = dt_opencl_alloc_device(devid, owidth, oheight, 4 * sizeof(float));
+  UV = dt_opencl_alloc_device(devid, owidth, oheight, CE_CH * sizeof(float));
+  corrections = dt_opencl_alloc_device(devid, owidth, oheight, CE_CH * sizeof(float));
+  b_corrections = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float));
+  L = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float));
+  scharr = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float));
+  saturation = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float));
+
+  if(dev_tmp == NULL || UV == NULL || corrections == NULL || b_corrections == NULL
+      || L == NULL || scharr == NULL || saturation == NULL)
+    goto error;
+
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_sample_input, owidth, oheight,
+          CLARG(dev_in), CLARG(saturation), CLARG(L), CLARG(UV),
+          CLARG(input_matrix_cl), CLARG(owidth),  CLARG(oheight));
+  if(err != CL_SUCCESS) goto error;
+
+  err = _mean_gaussian_cl(devid, saturation, owidth, oheight, roi_out->scale);
+  if(err != CL_SUCCESS) goto error;
+
+  // STEP 2 : smoothen UV to avoid discontinuities in hue
+  if(guiding && !run_fast)
+  {
+    _prefilter_chromaticity_cl(devid, gd, UV, saturation, weight, roi_out, d->chroma_size, d->chroma_feathering, sat_shift);
+    if(err != CL_SUCCESS) goto error;
+  }
+
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_process_data, owidth, oheight,
+                CLARG(UV), CLARG(L), CLARG(saturation),
+                CLARG(scharr), CLARG(corrections), CLARG(b_corrections), CLARG(dev_tmp),
+                CLARG(LUT_saturation), CLARG(LUT_hue), CLARG(LUT_brightness),
+                CLARG(white), CLARG(gradient_amp), CLARG(guiding),
+                CLARG(owidth),  CLARG(oheight));
+  if(err != CL_SUCCESS) goto error;
+  dt_opencl_release_mem_object(L);
+  L = NULL;
+
+  if(guiding && !run_fast)
+  {
+    err = _mean_gaussian_cl(devid, scharr, owidth, oheight, roi_out->scale);
+    if(err != CL_SUCCESS) goto error;
+
+    _guide_with_chromaticity_cl(devid, gd, UV, corrections, saturation, b_corrections, scharr, weight, roi_out, d->param_size, d->param_feathering, bright_shift, sat_shift);
+  }
+
+  if(!mask_mode)
+  {
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_write_output, owidth, oheight,
+          CLARG(dev_out), CLARG(dev_tmp), CLARG(dev_in),
+          CLARG(corrections), CLARG(b_corrections),
+          CLARG(output_matrix_cl), CLARG(gamut_LUT), CLARG(white),
+          CLARG(owidth), CLARG(oheight));
+    if(err != CL_SUCCESS) goto error;
+  }
+  else
+  {
+    piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
+    const int mode = mask_mode - 1;
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_write_visual, owidth, oheight,
+          CLARG(dev_out), CLARG(dev_tmp), CLARG(corrections), CLARG(b_corrections), CLARG(saturation), CLARG(scharr),
+          CLARG(gamut_LUT), CLARG(weight),
+          CLARG(bright_shift), CLARG(sat_shift), CLARG(white), CLARG(mode),
+          CLARG(owidth), CLARG(oheight));
+    if(err != CL_SUCCESS) goto error;
+
+    if(mode == BRIGHTNESS_GRAD || mode == SATURATION_GRAD)
+    {
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_draw_weight, owidth, 1,
+          CLARG(dev_out), CLARG(weight), CLARG(bright_shift), CLARG(sat_shift), CLARG(mode), CLARG(owidth), CLARG(oheight));
+    }
+  }
+
+error:
+  dt_opencl_release_mem_object(input_matrix_cl);
+  dt_opencl_release_mem_object(output_matrix_cl);
+  dt_opencl_release_mem_object(gamut_LUT);
+  dt_opencl_release_mem_object(LUT_saturation);
+  dt_opencl_release_mem_object(LUT_hue);
+  dt_opencl_release_mem_object(LUT_brightness);
+  dt_opencl_release_mem_object(weight);
+  dt_opencl_release_mem_object(UV);
+  dt_opencl_release_mem_object(dev_tmp);
+  dt_opencl_release_mem_object(corrections);
+  dt_opencl_release_mem_object(b_corrections);
+  dt_opencl_release_mem_object(L);
+  dt_opencl_release_mem_object(scharr);
+  dt_opencl_release_mem_object(saturation);
+  return err;
+}
+#undef CE_CH
+
+#endif // OpenCL
 
 static inline float _get_hue_node(const int k, const float hue_shift)
 {
@@ -1766,7 +2311,7 @@ static inline float _get_hueval(const float hue)
   const float b = hue - ANGLE_SHIFT / 360.0f;
   return b < 0.0f ? b + 1.0f : b;
 }
-// #define CEPICKERDEBUG
+
 static void _draw_color_picker(dt_iop_module_t *self,
                                cairo_t *cr,
                                dt_iop_colorequal_params_t *p,
@@ -1819,14 +2364,7 @@ static void _draw_color_picker(dt_iop_module_t *self,
   cairo_move_to(cr, xav, 0.0);
   cairo_line_to(cr, xav, height);
   cairo_stroke(cr);
-
-  #ifdef CEPICKERDEBUG
-    fprintf(stderr, "%s picker. av: %f %f %f  min: %f %f %f  max: %f %f %f\n",
-        hmax != self->picked_color_max[2] ? "alternative" : "original",
-        hav, self->picked_color[2], hava, hmin, self->picked_color_min[2], hmina, hmax, self->picked_color_max[2], hmaxa);
-  #endif
 }
-#undef CEPICKERDEBUG
 #undef MINJZ
 
 static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
@@ -2364,22 +2902,23 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     g->max_saturation = get_minimum_saturation(g->gamut_LUT, 0.2f, 1.f);
   }
 
-  /* as we have the guided filter to be switched on/off we make depending parameters
-     not sensitve and switch off visualizing mode.
-  */
+  // Show guided filter controls only if in use
   const gboolean guiding = p->use_filter;
-  gtk_widget_set_sensitive(GTK_WIDGET(g->threshold), guiding);
-  gtk_widget_set_sensitive(GTK_WIDGET(g->contrast), guiding);
-  gtk_widget_set_sensitive(GTK_WIDGET(g->chroma_size), guiding);
-  gtk_widget_set_sensitive(GTK_WIDGET(g->param_size), guiding);
+  gtk_widget_set_visible(GTK_WIDGET(g->threshold), guiding);
+  gtk_widget_set_visible(GTK_WIDGET(g->contrast), guiding);
+  gtk_widget_set_visible(GTK_WIDGET(g->chroma_size), guiding);
+  gtk_widget_set_visible(GTK_WIDGET(g->param_size), guiding);
+
+  // Only show hue smoothing where effective
+  gtk_widget_set_visible(GTK_WIDGET(g->smoothing_hue), g->channel == HUE);
+
   if(w == g->use_filter && !guiding)
     g->mask_mode = 0;
 
-  ++darktable.gui->reset;
   if((work_profile != g->work_profile) || (w == g->hue_shift))
     _init_sliders(self);
+
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
-  --darktable.gui->reset;
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
