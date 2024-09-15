@@ -55,6 +55,12 @@ const char *name(dt_lib_module_t *self)
   return _("styles");
 }
 
+const char *description(dt_lib_module_t *self)
+{
+  return _("apply styles to the currently selected\n"
+           "images or manage your styles");
+}
+
 dt_view_type_flags_t views(dt_lib_module_t *self)
 {
   return DT_VIEW_LIGHTTABLE | DT_VIEW_MULTI;
