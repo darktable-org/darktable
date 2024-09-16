@@ -493,21 +493,6 @@ static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetw
 
 ///////////// end of gui and theme language selection
 
-#if 0
-// FIXME! this makes some systems hang forever. I don't reproduce.
-gboolean preferences_window_deleted(GtkWidget *widget, GdkEvent *event, gpointer data)
-{
-  // redraw the whole UI in case sizes have changed
-  gtk_widget_queue_resize(dt_ui_center(darktable.gui->ui));
-  gtk_widget_queue_resize(dt_ui_main_window(darktable.gui->ui));
-
-  gtk_widget_queue_draw(dt_ui_main_window(darktable.gui->ui));
-  gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
-
-  gtk_widget_hide(widget);
-  return TRUE;
-}
-#endif
 
 static void _resize_dialog(GtkWidget *widget)
 {
@@ -523,10 +508,6 @@ void dt_gui_preferences_show()
   _preferences_dialog = gtk_dialog_new_with_buttons(_("darktable preferences"), win,
                                                     GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
                                                     NULL, NULL);
-#if 0
-  // FIXME! this makes some systems hang forever. I don't reproduce.
-  g_signal_connect(G_OBJECT(_preferences_dialog), "delete-event", G_CALLBACK(preferences_window_deleted), NULL);
-#endif
 
   gtk_window_set_default_size(GTK_WINDOW(_preferences_dialog),
                               dt_conf_get_int("ui_last/preferences_dialog_width"),
