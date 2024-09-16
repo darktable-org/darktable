@@ -3714,7 +3714,7 @@ void dt_database_show_error(const dt_database_t *db)
           "      (process ID <i><b>%d</b></i> created the database locks)\n"
           "\n"
           "  2 - If you closed darktable within the past few minutes, it may still be running in the background \n"
-          "      to export images, update sidecar files, or perform database maintenance.  Try again once \n"
+          "      to export images, update sidecar files, or perform database maintenance. Try again once \n"
           "      this processing finishes.\n"
           "\n"
           "  3 - If you can't find a running instance of darktable, try restarting your session or your computer. \n"
