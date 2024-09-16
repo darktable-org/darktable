@@ -103,6 +103,10 @@
 #include <libheif/heif.h>
 #endif
 
+#ifdef HAVE_LIBRAW
+#include <libraw/libraw_version.h>
+#endif
+
 #include "dbus.h"
 
 #if defined(__SUNOS__)
@@ -755,20 +759,26 @@ void dt_start_backtumbs_crawler(void)
 
 static char *_get_version_string(void)
 {
-#ifdef USE_LUA
-        const char *lua_api_version = strcmp(LUA_API_VERSION_SUFFIX, "") ?
-                                      STR(LUA_API_VERSION_MAJOR) "."
-                                      STR(LUA_API_VERSION_MINOR) "."
-                                      STR(LUA_API_VERSION_PATCH) "-"
-                                      LUA_API_VERSION_SUFFIX :
-                                      STR(LUA_API_VERSION_MAJOR) "."
-                                      STR(LUA_API_VERSION_MINOR) "."
-                                      STR(LUA_API_VERSION_PATCH) "\n";
+#ifdef HAVE_LIBRAW
+  const char *libraw_version = LIBRAW_VERSION_STR "\n";
 #endif
-char *version = g_strdup_printf("darktable %s\nCopyright (C) 2012-%s Johannes Hanika and other contributors.\n\n"
+
+#ifdef USE_LUA
+  const char *lua_api_version = strcmp(LUA_API_VERSION_SUFFIX, "") ?
+                                       STR(LUA_API_VERSION_MAJOR) "."
+                                       STR(LUA_API_VERSION_MINOR) "."
+                                       STR(LUA_API_VERSION_PATCH) "-"
+                                       LUA_API_VERSION_SUFFIX :
+                                       STR(LUA_API_VERSION_MAJOR) "."
+                                       STR(LUA_API_VERSION_MINOR) "."
+                                       STR(LUA_API_VERSION_PATCH) "\n";
+#endif
+char *version = g_strdup_printf(
+               "darktable %s\n"
+               "Copyright (C) 2012-%s Johannes Hanika and other contributors.\n\n"
                "Compile options:\n"
                "  Bit depth              -> %zu bit\n"
-               "%s%s%s\n"
+               "%s%s%s%s%s\n"
                "See %s for detailed documentation.\n"
                "See %s to report bugs.\n",
                darktable_package_version,
@@ -851,6 +861,12 @@ char *version = g_strdup_printf("darktable %s\nCopyright (C) 2012-%s Johannes Ha
                "  libjxl                 -> ENABLED\n"
 #else
                "  libjxl                 -> DISABLED\n"
+#endif
+
+#ifdef HAVE_LIBRAW
+               "  LibRaw                 -> ENABLED  - Version ", libraw_version,
+#else
+               "  LibRaw                 -> DISABLED", "\n",
 #endif
 
 #ifdef HAVE_OPENJPEG
