@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -89,12 +89,6 @@ void dt_styles_update(const char *name,
                       GList *update,
                       const gboolean copy_iop_order,
                       const gboolean update_iop_order);
-
-/** applies the style to selection of images */
-void dt_styles_apply_to_list(const char *name, const GList *list, gboolean duplicate);
-
-/** applies list of styles to selection of images */
-void dt_multiple_styles_apply_to_list(GList *styles, const GList *list, gboolean duplicate);
 
 /** applies the item style to dev->history */
 void dt_styles_apply_style_item(dt_develop_t *dev,

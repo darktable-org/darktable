@@ -108,14 +108,14 @@ static void _apply_style_shortcut_callback(dt_action_t *action)
   if(dt_view_get_current() == DT_VIEW_DARKROOM)
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(imgs->data);
+    g_list_free(imgs);
     dt_styles_apply_to_dev(action->label, imgid);
   }
   else
   {
-    dt_styles_apply_to_list(action->label, imgs, FALSE);
+    GList *styles = g_list_prepend(NULL, g_strdup(action->label));
+    dt_control_apply_styles(imgs, styles, FALSE);
   }
-
-  g_list_free(imgs);
 }
 
 static int32_t dt_styles_get_id_by_name(const char *name);
@@ -642,119 +642,6 @@ gboolean dt_styles_create_from_image(const char *name,
     return TRUE;
   }
   return FALSE;
-}
-
-void dt_styles_apply_to_list(const char *name, const GList *list, gboolean duplicate)
-{
-  dt_gui_cursor_set_busy();
-  gboolean selected = FALSE;
-
-  /* write current history changes so nothing gets lost,
-     do that only in the darkroom as there is nothing to be saved
-     when in the lighttable (and it would write over current history stack) */
-  if(dt_view_get_current() == DT_VIEW_DARKROOM) dt_dev_write_history(darktable.develop);
-
-  const int mode = dt_conf_get_int("plugins/lighttable/style/applymode");
-  const gboolean is_overwrite = (mode == DT_STYLE_HISTORY_OVERWRITE);
-
-  /* for each selected image apply style */
-  dt_pthread_mutex_lock(&darktable.undo->mutex);
-  dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
-
-  dt_undo_lt_history_t *hist = NULL;
-
-  for(const GList *l = list; l; l = g_list_next(l))
-  {
-    const dt_imgid_t imgid = GPOINTER_TO_INT(l->data);
-    if(is_overwrite)
-    {
-      hist = dt_history_snapshot_item_init();
-      hist->imgid = imgid;
-      dt_history_snapshot_undo_create(hist->imgid, &hist->before, &hist->before_history_end);
-
-      dt_undo_disable_next(darktable.undo);
-      if(!duplicate) dt_history_delete_on_image_ext(imgid, FALSE, TRUE);
-    }
-
-    dt_styles_apply_to_image(name, duplicate, is_overwrite, imgid);
-
-    if(is_overwrite)
-    {
-      dt_history_snapshot_undo_create(hist->imgid, &hist->after, &hist->after_history_end);
-      dt_undo_record(darktable.undo, NULL, DT_UNDO_LT_HISTORY, (dt_undo_data_t)hist,
-                     dt_history_snapshot_undo_pop, dt_history_snapshot_undo_lt_history_data_free);
-    }
-
-    selected = TRUE;
-  }
-
-  dt_undo_end_group(darktable.undo);
-  dt_pthread_mutex_unlock(&darktable.undo->mutex);
-
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
-
-  if(!selected)
-  {
-    dt_control_log(_("no image selected!"));
-  }
-  else
-  {
-    dt_control_log(_("style %s successfully applied!"), name);
-  }
-  dt_gui_cursor_clear_busy();
-}
-
-void dt_multiple_styles_apply_to_list(GList *styles,
-                                      const GList *list,
-                                      const gboolean duplicate)
-{
-  dt_gui_cursor_set_busy();
-  /* write current history changes so nothing gets lost,
-     do that only in the darkroom as there is nothing to be saved
-     when in the lighttable (and it would write over current history stack) */
-  if(dt_view_get_current() == DT_VIEW_DARKROOM)
-    dt_dev_write_history(darktable.develop);
-
-  if(g_list_is_empty(styles) && g_list_is_empty(list))
-  {
-    dt_control_log(_("no images nor styles selected!"));
-    return;
-  }
-  else if(g_list_is_empty(styles))
-  {
-    dt_control_log(_("no styles selected!"));
-    return;
-  }
-  else if(g_list_is_empty(list))
-  {
-    dt_control_log(_("no image selected!"));
-    return;
-  }
-
-  const int mode = dt_conf_get_int("plugins/lighttable/style/applymode");
-  const gboolean is_overwrite = (mode == DT_STYLE_HISTORY_OVERWRITE);
-
-  /* for each selected image apply style */
-  dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
-  for(const GList *l = list; l; l = g_list_next(l))
-  {
-    const dt_imgid_t imgid = GPOINTER_TO_INT(l->data);
-    if(is_overwrite && !duplicate)
-      dt_history_delete_on_image_ext(imgid, FALSE, TRUE);
-
-    for(GList *style = styles; style; style = g_list_next(style))
-    {
-      dt_styles_apply_to_image((char*)style->data, duplicate, is_overwrite, imgid);
-    }
-  }
-  dt_undo_end_group(darktable.undo);
-
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
-
-  const guint styles_cnt = g_list_length(styles);
-  dt_control_log(ngettext("style successfully applied!",
-                          "styles successfully applied!", styles_cnt));
-  dt_gui_cursor_clear_busy();
 }
 
 void dt_styles_create_from_list(const GList *list)

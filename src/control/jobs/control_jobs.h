@@ -45,6 +45,7 @@ void dt_control_compress_history(GList *imgs);
 void dt_control_discard_history(GList *imgs);
 void dt_control_paste_history(GList *imgs);
 void dt_control_paste_parts_history(GList *imgs);
+void dt_control_apply_styles(GList *imgs, GList *styles, gboolean duplicate);
 void dt_control_set_local_copy_images();
 void dt_control_reset_local_copy_images();
 void dt_control_export(GList *imgid_list, int max_width, int max_height, int format_index, int storage_index,
