@@ -18,7 +18,6 @@
 
 #include "tag.h"
 
-
 G_DEFINE_TYPE (DtTagObj, dt_tag_obj, G_TYPE_OBJECT)
 
 static void _dt_tag_obj_dispose(GObject *gobject)
@@ -60,12 +59,6 @@ GObject *dt_tag_obj_new(const dt_tag_t *tag)
   self->tag.leave = g_strdup(tag->leave);
   self->tag.synonym = g_strdup(tag->synonym);
   return (GObject *)self;
-}
-
-gboolean dt_tag_obj_is_user_tag(const DtTagObj *self)
-{
-  return !g_str_has_prefix(self->tag.tag, "darktable|") 
-         || g_str_has_prefix(self->tag.tag, "darktable|style|");
 }
 
 // clang-format off

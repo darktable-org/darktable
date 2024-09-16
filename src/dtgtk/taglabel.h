@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "common/tags.h"
 #include <gtk/gtk.h>
 
 G_BEGIN_DECLS
@@ -31,7 +32,7 @@ struct _GtkDarktableTagLabel
   gint tagid;
 };
 
-GtkWidget *dtgtk_tag_label_new(const gchar* text, const gint tagid);
+GtkWidget *dtgtk_tag_label_new(const dt_tag_t *tag_obj);
 
 G_END_DECLS
 

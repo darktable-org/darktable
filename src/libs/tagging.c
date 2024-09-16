@@ -161,7 +161,7 @@ static void _update_atdetach_buttons(dt_lib_module_t *self)
     const DtTagObj *tag_obj = _find_tag_by_id(G_LIST_MODEL(d->attached_store), tag_label->tagid);
     if(tag_obj)
     {
-      attached_tags_sel = dt_tag_obj_is_user_tag(tag_obj);
+      attached_tags_sel = dt_tag_is_user_tag(&tag_obj->tag);
     }
   }
 
@@ -423,22 +423,11 @@ static gboolean _attached_tag_key_pressed(GtkWidget *widget, GdkEventKey *event,
 static GtkWidget* _add_attached_item(gpointer item, gpointer self)
 {
   const DtTagObj *tag_obj = DT_TAG_OBJ(item);
+  const dt_tag_t *tag = &tag_obj->tag;
 
-  GtkWidget *widget = dtgtk_tag_label_new(tag_obj->tag.leave,
-                                          tag_obj->tag.id);
-  gtk_widget_set_tooltip_text(widget, tag_obj->tag.tag);
+  GtkWidget *widget = dtgtk_tag_label_new(tag);
+  gtk_widget_set_tooltip_text(widget, tag->tag);
   g_signal_connect(widget, "key-press-event", G_CALLBACK(_attached_tag_key_pressed), self);
-
-  GtkStyleContext *context = gtk_widget_get_style_context(widget);
-  if(!dt_tag_obj_is_user_tag(tag_obj))
-    gtk_style_context_add_class(context, "darktable");
-
-  if(tag_obj->tag.flags & DT_TF_CATEGORY)
-    gtk_style_context_add_class(context, "category");
-
-  if(tag_obj->tag.flags & DT_TF_PRIVATE)
-    gtk_style_context_add_class(context, "private");
-
   return widget;
 }
 
@@ -1205,7 +1194,7 @@ static void _detach_selected_tag(dt_lib_module_t *self)
 
   const DtTagObj *tag_obj = _get_selected_tag(self);
 
-  if(!tag_obj || !dt_tag_obj_is_user_tag(tag_obj)) return;
+  if(!tag_obj || !dt_tag_is_user_tag(&tag_obj->tag)) return;
 
   guint tagid = tag_obj->tag.id;
 
@@ -1421,7 +1410,7 @@ static void _select_first_user_attached_tag(dt_lib_module_t *self)
     DTGTK_TAG_LABEL(gtk_flow_box_get_child_at_index(GTK_FLOW_BOX(d->attached_view), pos))))
   {
     const DtTagObj* tag_obj = _find_tag_by_id(G_LIST_MODEL(d->attached_store), tag_label->tagid);
-    if(dt_tag_obj_is_user_tag(tag_obj))
+    if(dt_tag_is_user_tag(&tag_obj->tag))
     {
       gtk_flow_box_select_child(GTK_FLOW_BOX(d->attached_view), GTK_FLOW_BOX_CHILD(tag_label));
       break;
@@ -2909,7 +2898,7 @@ static void _flow_box_selection_changed(GtkFlowBox *flow_box, gpointer data)
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
 
   const DtTagObj *tag_obj = _get_selected_tag(data);
-  if(tag_obj && !dt_tag_obj_is_user_tag(tag_obj))
+  if(tag_obj && !dt_tag_is_user_tag(&tag_obj->tag))
   {
     // prevent to select a darktable tag
     gtk_flow_box_unselect_all(GTK_FLOW_BOX(d->attached_view));

@@ -83,6 +83,9 @@ ssize_t dt_tag_export(const char *filename);
 /** get the name of specified id */
 gchar *dt_tag_get_name(const guint tagid);
 
+/** checks if tag is a user tag */
+gboolean dt_tag_is_user_tag(const dt_tag_t *tag);
+
 /** removes a tag from db and from assigned images. \param final TRUE
  * actually performs the remove \return the amount of images
  * affected. */

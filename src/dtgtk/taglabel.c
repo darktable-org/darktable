@@ -17,7 +17,6 @@
 */
 
 #include "taglabel.h"
-#include "control/conf.h"
 #include "gui/gtk.h"
 #include <string.h>
 
@@ -67,12 +66,12 @@ static gboolean _tag_label_button_press_notify_callback(GtkWidget *widget,
 }
 
 // Public functions
-GtkWidget *dtgtk_tag_label_new(const gchar* text, const gint tagid)
+GtkWidget *dtgtk_tag_label_new(const dt_tag_t *tag)
 {
   GtkDarktableTagLabel *tag_label;
   tag_label = g_object_new(dtgtk_tag_label_get_type(), NULL);
   
-  tag_label->tagid = tagid;
+  tag_label->tagid = tag->id;
 
   GtkWidget *event_box = gtk_event_box_new();
   gtk_container_add(GTK_CONTAINER(tag_label), event_box);
@@ -87,7 +86,7 @@ GtkWidget *dtgtk_tag_label_new(const gchar* text, const gint tagid)
   g_signal_connect(G_OBJECT(event_box), "button-press-event",
                    G_CALLBACK(_tag_label_button_press_notify_callback), NULL);
         
-  GtkWidget *label = gtk_label_new(text);
+  GtkWidget *label = gtk_label_new(tag->leave);
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_START);
   gtk_label_set_max_width_chars(GTK_LABEL(label), 10);
   gtk_container_add(GTK_CONTAINER(event_box), label);
@@ -95,6 +94,17 @@ GtkWidget *dtgtk_tag_label_new(const gchar* text, const gint tagid)
   gtk_widget_show_all(GTK_WIDGET(tag_label));
 
   gtk_widget_set_name(GTK_WIDGET(tag_label), "tag-label");
+
+  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(tag_label));
+  if(!dt_tag_is_user_tag(tag))
+    gtk_style_context_add_class(context, "darktable");
+
+  if(tag->flags & DT_TF_CATEGORY)
+    gtk_style_context_add_class(context, "category");
+
+  if(tag->flags & DT_TF_PRIVATE)
+    gtk_style_context_add_class(context, "private");
+
   return (GtkWidget *)tag_label;
 }
 
