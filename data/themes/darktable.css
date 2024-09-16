@@ -2347,6 +2347,11 @@ flowbox.tagging
   background-color: @selected_bg_color;
 }
 
+#tag-label.some
+{
+  border-style: dashed;
+}
+
 #tag-label.darktable
 {
   border-color: @grey_80;

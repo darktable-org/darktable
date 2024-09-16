@@ -105,6 +105,9 @@ GtkWidget *dtgtk_tag_label_new(const dt_tag_t *tag)
   if(tag->flags & DT_TF_PRIVATE)
     gtk_style_context_add_class(context, "private");
 
+  if(tag->select == DT_TS_SOME_IMAGES)
+    gtk_style_context_add_class(context, "some");
+
   return (GtkWidget *)tag_label;
 }
 

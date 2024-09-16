@@ -1261,53 +1261,51 @@ static void _detach_button_clicked(GtkButton *button, dt_lib_module_t *self)
   _detach_selected_tag(self);
 }
 
-// static void _pop_menu_attached_attach_to_all(GtkWidget *menuitem, dt_lib_module_t *self)
-// {
-//   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
-//   GtkTreeIter iter;
-//   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->attached_view));
-//   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->attached_view));
-//   if(!gtk_tree_selection_get_selected(selection, &model, &iter))
-//     return;
-//   guint tagid;
-//   gtk_tree_model_get(model, &iter, DT_LIB_TAGGING_COL_ID, &tagid, -1);
-//   if(tagid <= 0) return;
+static void _pop_menu_attached_attach_to_all(GtkWidget *menuitem, dt_lib_module_t *self)
+{
+  dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
 
-//   // attach tag on images to act on
-//   const gboolean res = dt_tag_attach(tagid, -1, TRUE, TRUE);
+  const DtTagObj *tag_obj = _get_selected_tag(self);
 
-//   /** record last tag used */
-//   _save_last_tag_used(dt_tag_get_name(tagid), d);
+  if(!tag_obj || tag_obj->tag.id <= 0) return;
+  guint tagid = tag_obj->tag.id;
 
-//   _init_treeview(self, 0);
+  // attach tag on images to act on
+  const gboolean res = dt_tag_attach(tagid, -1, TRUE, TRUE);
 
-//   const uint32_t count = dt_tag_images_count(tagid);
-//   model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->dictionary_view));
-//   if(gtk_tree_model_get_iter_first(model, &iter))
-//   {
-//     if(_find_tag_iter_tagid(model, &iter, tagid))
-//     {
-//       GtkTreeIter store_iter;
-//       GtkTreeModel *store = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(model));
-//       gtk_tree_model_filter_convert_iter_to_child_iter(GTK_TREE_MODEL_FILTER(model),
-//                                 &store_iter, &iter);
-//       if(d->tree_flag)
-//       {
-//         gtk_tree_store_set(GTK_TREE_STORE(store), &store_iter, DT_LIB_TAGGING_COL_COUNT, count, -1);
-//       }
-//       else
-//       {
-//         gtk_list_store_set(GTK_LIST_STORE(store), &store_iter, DT_LIB_TAGGING_COL_COUNT, count, -1);
-//       }
-//     }
-//   }
+  /** record last tag used */
+  _save_last_tag_used(dt_tag_get_name(tagid), d);
 
-//   if(res)
-//   {
-//     _raise_signal_tag_changed(self);
-//     dt_image_synch_xmp(-1);
-//   }
-// }
+  _init_treeview(self, 0);
+
+  const uint32_t count = dt_tag_images_count(tagid);
+  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->dictionary_view));
+  GtkTreeIter iter;
+  if(gtk_tree_model_get_iter_first(model, &iter))
+  {
+    if(_find_tag_iter_tagid(model, &iter, tagid))
+    {
+      GtkTreeIter store_iter;
+      GtkTreeModel *store = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(model));
+      gtk_tree_model_filter_convert_iter_to_child_iter(GTK_TREE_MODEL_FILTER(model),
+                                &store_iter, &iter);
+      if(d->tree_flag)
+      {
+        gtk_tree_store_set(GTK_TREE_STORE(store), &store_iter, DT_LIB_TAGGING_COL_COUNT, count, -1);
+      }
+      else
+      {
+        gtk_list_store_set(GTK_LIST_STORE(store), &store_iter, DT_LIB_TAGGING_COL_COUNT, count, -1);
+      }
+    }
+  }
+
+  if(res)
+  {
+    _raise_signal_tag_changed(self);
+    dt_image_synch_xmp(-1);
+  }
+}
 
 static void _pop_menu_attached_detach(GtkWidget *menuitem, dt_lib_module_t *self)
 {
@@ -1318,36 +1316,26 @@ static void _pop_menu_attached_find(GtkWidget *menuitem, dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
 
-  GList *selection = gtk_flow_box_get_selected_children(GTK_FLOW_BOX(d->attached_view));
-  if(!selection) return;
-  const GtkDarktableTagLabel *tag_label = DTGTK_TAG_LABEL(selection->data);
-  const DtTagObj *tag_obj = _find_tag_by_id(G_LIST_MODEL(d->attached_store), tag_label->tagid); 
+  const DtTagObj *tag_obj = _get_selected_tag(self);
 
   gtk_entry_set_text(d->entry, tag_obj->tag.tag);
 }
 
-static void _pop_menu_attached(GtkWidget *treeview, GdkEventButton *event, dt_lib_module_t *self)
+static void _pop_menu_attached(GtkWidget *flow_box, GdkEventButton *event, dt_lib_module_t *self)
 {
-  // dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
+  const DtTagObj *tag_obj = _get_selected_tag(self);
+
   GtkWidget *menu, *menuitem;
   menu = gtk_menu_new();
 
-  // GtkTreeIter iter;
-  // GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->attached_view));
-  // GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->attached_view));
-  // if(gtk_tree_selection_get_selected(selection, &model, &iter))
-  // {
-  //   guint sel;
-  //   gtk_tree_model_get(model, &iter, DT_LIB_TAGGING_COL_SEL, &sel, -1);
-  //   if(sel == DT_TS_SOME_IMAGES)
-  //   {
-  //     menuitem = gtk_menu_item_new_with_label(_("attach tag to all"));
-  //     g_signal_connect(menuitem, "activate", (GCallback)_pop_menu_attached_attach_to_all, self);
-  //     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-  //     menuitem = gtk_separator_menu_item_new();
-  //     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-  //   }
-  // }
+  if(tag_obj && tag_obj->tag.select == DT_TS_SOME_IMAGES)
+  {
+    menuitem = gtk_menu_item_new_with_label(_("attach tag to all"));
+    g_signal_connect(menuitem, "activate", (GCallback)_pop_menu_attached_attach_to_all, self);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+    menuitem = gtk_separator_menu_item_new();
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+  }
 
   menuitem = gtk_menu_item_new_with_label(_("detach tag"));
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
