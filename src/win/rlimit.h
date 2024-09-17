@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2017-2020 darktable developers.
+    Copyright (C) 2017-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -51,12 +51,8 @@ typedef struct rlimit rlimit_t;
 int getrlimit(int resource, struct rlimit *);
 int setrlimit(int resource, const struct rlimit *);
 
-size_t rfwrite(const void *buffer, size_t size, size_t count, FILE *stream);
-int _rwrite(int handle, const void *buffer, unsigned int count);
-
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
