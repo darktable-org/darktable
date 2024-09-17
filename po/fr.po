@@ -1390,7 +1390,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:5559
 msgid "swap the utility and processing modules panels"
-msgstr "Interverti les panneaux des modules de traitement et d'utilitaires"
+msgstr "Intervertir les panneaux des modules de traitement et d'utilitaires"
 
 #: ../build/bin/preferences_gen.h:5572
 msgid "move the list of processing modules to the left of the screen"
