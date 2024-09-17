@@ -2341,8 +2341,8 @@ flowbox.tagging
   margin: 0.15em;
 }
 
-#tag-label:selected,
-#tag-label.hover
+#tag-label:not(.darktable):selected,
+#tag-label:not(.darktable).hover
 {
   background-color: @selected_bg_color;
 }
