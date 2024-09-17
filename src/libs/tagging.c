@@ -1325,6 +1325,9 @@ static void _pop_menu_attached(GtkWidget *flow_box, GdkEventButton *event, dt_li
 {
   const DtTagObj *tag_obj = _get_selected_tag(self);
 
+  if(!tag_obj)
+    return;
+
   GtkWidget *menu, *menuitem;
   menu = gtk_menu_new();
 
