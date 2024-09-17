@@ -1269,6 +1269,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
 
   /* add preset button if module has implementation */
   module->presets_button = dtgtk_button_new(dtgtk_cairo_paint_presets, 0, NULL);
+  gtk_widget_set_tooltip_text(module->presets_button, _("presets and preferences"));
   g_signal_connect(G_OBJECT(module->presets_button), "clicked",
                    G_CALLBACK(presets_popup_callback), module);
   g_signal_connect(G_OBJECT(module->presets_button), "enter-notify-event",
