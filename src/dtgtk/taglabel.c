@@ -108,6 +108,7 @@ GtkWidget *dtgtk_tag_label_new(const dt_tag_t *tag)
   if(tag->select == DT_TS_SOME_IMAGES)
     gtk_style_context_add_class(context, "some");
 
+  gtk_widget_set_tooltip_text(GTK_WIDGET(tag_label), tag->tag);
   return (GtkWidget *)tag_label;
 }
 

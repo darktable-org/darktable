@@ -426,7 +426,6 @@ static GtkWidget* _add_attached_item(gpointer item, gpointer self)
   const dt_tag_t *tag = &tag_obj->tag;
 
   GtkWidget *widget = dtgtk_tag_label_new(tag);
-  gtk_widget_set_tooltip_text(widget, tag->tag);
   g_signal_connect(widget, "key-press-event", G_CALLBACK(_attached_tag_key_pressed), self);
   return widget;
 }
