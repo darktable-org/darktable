@@ -1802,6 +1802,13 @@ static void _init_main_table(GtkWidget *container)
                     N_("tabs"), NULL, &_action_def_focus_tabs);
 }
 
+void dt_ui_container_swap_left_right(struct dt_ui_t *ui,
+                                     gboolean swap)
+{
+  if(swap ^ strcmp("left", gtk_widget_get_name(gtk_widget_get_ancestor(*ui->containers, DTGTK_TYPE_SIDE_PANEL))))
+    for(GtkWidget **c = ui->containers; c < ui->containers + 3; c++) {GtkWidget *tmp = *c; *c = c[3]; c[3] = tmp;}
+}
+
 GtkBox *dt_ui_get_container(struct dt_ui_t *ui,
                             const dt_ui_container_t c)
 {
@@ -2212,16 +2219,17 @@ static gboolean _ui_init_panel_container_center_scroll_event(GtkWidget *widget,
           != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default"));
 }
 
-static gboolean _on_drag_motion_drop(GtkWidget *widget, GdkDragContext *dc, gint x, gint y, guint time, gboolean drop)
+static gboolean _on_drag_motion_drop(GtkWidget *empty, GdkDragContext *dc, gint x, gint y, guint time, gboolean drop)
 {
+  GtkWidget *widget = gtk_widget_get_parent(empty);
   if(drop) gtk_widget_set_opacity(gtk_drag_get_source_widget(dc), 1.0);
 
   gboolean ret = TRUE;
   gpointer last = NULL;
   for(GList *m = gtk_container_get_children(GTK_CONTAINER(widget)); m; m = g_list_delete_link(m, m))
-    if(gtk_widget_get_visible(GTK_WIDGET(m->data))) last = m->data;
+    if(m->data != empty && gtk_widget_get_visible(GTK_WIDGET(m->data))) last = m->data;
   if(last)
-    g_signal_emit_by_name(last, "drag-motion", dc, drop ? -1 : x, y, time, &ret);
+    g_signal_emit_by_name(last, "drag-motion", dc, drop ? -1 : x, G_MAXINT, time, &ret);
   else if(dt_view_get_current() == DT_VIEW_DARKROOM)
     gdk_drag_status(dc, 0, time); // don't allow dropping in empty panel on other side
   else if(drop)
@@ -2240,7 +2248,7 @@ static gboolean _on_drag_motion_drop(GtkWidget *widget, GdkDragContext *dc, gint
 
 static void _on_drag_leave(GtkWidget *widget, GdkDragContext *dc, guint time, gpointer user_data)
 {
-  dtgtk_expander_set_drag_hover(NULL, FALSE, FALSE);
+  dtgtk_expander_set_drag_hover(NULL, FALSE, FALSE, time);
 }
 
 static gboolean _remove_modules_visibility(gpointer key,
@@ -2303,21 +2311,9 @@ static gboolean _side_panel_press(GtkWidget *widget,
                                   GdkEvent *event,
                                   gpointer user_data)
 {
-  if(event->button.button != GDK_BUTTON_SECONDARY
-     || !GTK_IS_VIEWPORT(gtk_get_event_widget(event)))
-    return FALSE;
-
-  _add_remove_modules(NULL);
+  if(event->button.button == GDK_BUTTON_SECONDARY)
+    _add_remove_modules(NULL);
   return TRUE;
-}
-
-static gboolean _side_panel_motion(GtkWidget *widget,
-                                   GdkEvent *event,
-                                   gpointer user_data)
-{
-  gtk_widget_set_tooltip_text(widget, GTK_IS_VIEWPORT(gtk_get_event_widget(event))
-                              ? _("right-click to show/hide modules") : NULL);
-  return FALSE;
 }
 
 static gboolean _side_panel_draw(GtkWidget *widget,
@@ -2333,15 +2329,9 @@ static GtkWidget *_ui_init_panel_container_center(GtkWidget *container,
                                                   const gboolean left)
 {
   GtkWidget *widget;
-  GtkAdjustment *a[4];
-
-  a[0] = GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, 100, 1, 10, 10));
-  a[1] = GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, 100, 1, 10, 10));
-  a[2] = GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, 100, 1, 10, 10));
-  a[3] = GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, 100, 1, 10, 10));
 
   /* create the scrolled window */
-  widget = gtk_scrolled_window_new(a[0], a[1]);
+  widget = gtk_scrolled_window_new(NULL, GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, 100, 1, 10, 10)));
   gtk_widget_set_can_focus(widget, TRUE);
   gtk_scrolled_window_set_placement(GTK_SCROLLED_WINDOW(widget),
                                     left ? GTK_CORNER_TOP_LEFT : GTK_CORNER_TOP_RIGHT);
@@ -2358,34 +2348,31 @@ static GtkWidget *_ui_init_panel_container_center(GtkWidget *container,
                             : darktable.gui->widgets.left_border),
                    "scroll-event", G_CALLBACK(_borders_scrolled), widget);
 
-  /* create the scrolled viewport */
-  container = widget;
-  widget = gtk_viewport_new(a[2], a[3]);
-  gtk_viewport_set_shadow_type(GTK_VIEWPORT(widget), GTK_SHADOW_NONE);
-  gtk_container_add(GTK_CONTAINER(container), widget);
-
   /* avoid scrolling with wheel, it's distracting (you'll end up over
    * a control, and scroll it's value) */
   g_signal_connect(G_OBJECT(widget), "scroll-event",
                    G_CALLBACK(_ui_init_panel_container_center_scroll_event),
                    NULL);
-  g_signal_connect(widget, "button-press-event", G_CALLBACK(_side_panel_press), NULL);
-  g_signal_connect(widget, "motion-notify-event", G_CALLBACK(_side_panel_motion), NULL);
-  gtk_widget_add_events(widget, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_POINTER_MOTION_MASK);
-  dt_action_t *ac = dt_action_define(&darktable.control->actions_global, NULL,
-                                     N_("show/hide modules"), widget, NULL);
-  dt_action_register(ac, NULL, _add_remove_modules, 0, 0);
 
   /* create the container */
   container = widget;
   widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_widget_set_name(widget, "plugins_vbox_left");
   gtk_container_add(GTK_CONTAINER(container), widget);
-  gtk_drag_dest_set(widget, 0, NULL, 0, GDK_ACTION_COPY);
-  g_signal_connect(widget, "drag-motion", G_CALLBACK(_on_drag_motion_drop), GINT_TO_POINTER(FALSE));
-  g_signal_connect(widget, "drag-drop", G_CALLBACK(_on_drag_motion_drop), GINT_TO_POINTER(TRUE));
-  g_signal_connect(widget, "drag-leave", G_CALLBACK(_on_drag_leave), NULL);
   g_signal_connect_swapped(widget, "draw", G_CALLBACK(_side_panel_draw), NULL);
+
+  GtkWidget *empty = gtk_event_box_new();
+  gtk_widget_set_tooltip_text(empty, _("right-click to show/hide modules"));
+  gtk_box_pack_end(GTK_BOX(widget), empty, TRUE, TRUE, 0);
+  gtk_drag_dest_set(empty, 0, NULL, 0, GDK_ACTION_COPY);
+  g_signal_connect(empty, "drag-motion", G_CALLBACK(_on_drag_motion_drop), GINT_TO_POINTER(FALSE));
+  g_signal_connect(empty, "drag-drop", G_CALLBACK(_on_drag_motion_drop), GINT_TO_POINTER(TRUE));
+  g_signal_connect(empty, "drag-leave", G_CALLBACK(_on_drag_leave), NULL);
+  g_signal_connect(empty, "button-press-event", G_CALLBACK(_side_panel_press), NULL);
+  gtk_widget_add_events(empty, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
+  dt_action_t *ac = dt_action_define(&darktable.control->actions_global, NULL,
+                                     N_("show/hide modules"), empty, NULL);
+  dt_action_register(ac, NULL, _add_remove_modules, 0, 0);
 
   return widget;
 }

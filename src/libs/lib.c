@@ -1098,17 +1098,18 @@ static gboolean _on_drag_motion(GtkWidget *widget,
   }
   else
   {
-    dtgtk_expander_set_drag_hover(DTGTK_EXPANDER(widget), FALSE, FALSE);
+    dtgtk_expander_set_drag_hover(DTGTK_EXPANDER(widget), FALSE, TRUE, time);
     gdk_drag_status(dc, 0, time);
 
-    GtkWidget *src_widget = gtk_widget_get_ancestor(gtk_drag_get_source_widget(dc),
-                                                    DTGTK_TYPE_EXPANDER);
+    GtkWidget *src_header = gtk_drag_get_source_widget(dc);
+    if(!src_header) return TRUE;
+    GtkWidget *src_expander = gtk_widget_get_ancestor(src_header, DTGTK_TYPE_EXPANDER);
 
     for(GList *lib = darktable.lib->plugins; lib; lib = lib->next)
-      if(((dt_lib_module_t *)lib->data)->expander == src_widget)
+      if(((dt_lib_module_t *)lib->data)->expander == src_expander)
         src = lib->data;
 
-    if(!src_widget || !src || dest == src ) return TRUE;
+    if(!src_expander || !src || dest == src ) return TRUE;
 
     src_panel = GTK_CONTAINER(gtk_widget_get_parent(src->expander));
     dest_panel = GTK_CONTAINER(gtk_widget_get_parent(dest->expander));
@@ -1132,7 +1133,7 @@ static gboolean _on_drag_motion(GtkWidget *widget,
 
     if(x != DND_DROP)
     {
-      dtgtk_expander_set_drag_hover(DTGTK_EXPANDER(widget), TRUE, below);
+      dtgtk_expander_set_drag_hover(DTGTK_EXPANDER(widget), TRUE, below, time);
       gdk_drag_status(dc, GDK_ACTION_COPY, time);
 
       return TRUE;
@@ -1243,14 +1244,11 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   /* add the expand indicator icon */
   module->arrow = dtgtk_button_new(dtgtk_cairo_paint_solid_arrow, 0, NULL);
 
-  if(!module->no_control_widgets)
-  {
-    gtk_widget_set_tooltip_text(module->arrow, _("show module"));
-    g_signal_connect(G_OBJECT(module->arrow), "button-press-event",
-                     G_CALLBACK(_lib_plugin_header_button_press), module);
-    dt_action_define(&module->actions, NULL, NULL, module->arrow, NULL);
-    gtk_box_pack_start(GTK_BOX(header), module->arrow, FALSE, FALSE, 0);
-  }
+  gtk_widget_set_tooltip_text(module->arrow, _("show module"));
+  g_signal_connect(G_OBJECT(module->arrow), "button-press-event",
+                    G_CALLBACK(_lib_plugin_header_button_press), module);
+  dt_action_define(&module->actions, NULL, NULL, module->arrow, NULL);
+  gtk_box_pack_start(GTK_BOX(header), module->arrow, FALSE, FALSE, 0);
 
   /* add module label */
   GtkWidget *label = gtk_label_new("");
@@ -1268,10 +1266,6 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   gtk_widget_set_name(label, "lib-panel-label");
   dt_action_define(&module->actions, NULL, NULL, label_evb, NULL);
   gtk_box_pack_start(GTK_BOX(header), label_evb, FALSE, FALSE, 0);
-
-  /* second label */
-  module->label = gtk_label_new("");
-  gtk_box_pack_start(GTK_BOX(header), module->label, TRUE, TRUE, 0);
 
   /* add preset button if module has implementation */
   module->presets_button = dtgtk_button_new(dtgtk_cairo_paint_presets, 0, NULL);
@@ -1320,8 +1314,10 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
 void dt_lib_gui_set_label(dt_lib_module_t *module,
                           const char *label)
 {
-  if(module->expander)
-    gtk_label_set_text(GTK_LABEL(module->label), label);
+  if(!module->expander) return;
+  GtkWidget *header = DTGTK_EXPANDER(module->expander)->header;
+  gtk_box_set_center_widget(GTK_BOX(header), gtk_label_new(label));
+  gtk_widget_show_all(header);
 }
 
 static void _preferences_changed(gpointer instance, gpointer self)

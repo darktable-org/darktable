@@ -349,6 +349,12 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
   /* change current view to the new view */
   vm->current_view = new_view;
 
+  dt_view_type_flags_t view_type = new_view->view(new_view);
+
+  if(new_view != old_view) // implement preference toggle only on view change
+    dt_ui_container_swap_left_right(darktable.gui->ui, view_type == DT_VIEW_DARKROOM
+                                    && dt_conf_get_bool("plugins/darkroom/panel_swap"));
+
   /* restore visible stat of panels for the new view */
   dt_ui_restore_panels(darktable.gui->ui);
 
@@ -381,7 +387,7 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
       dt_lib_gui_set_expanded(plugin, expanded);
       dt_lib_set_visible(plugin, TRUE);
     }
-    else if(new_view != old_view && plugin->views(plugin) & new_view->view(new_view))
+    else if(new_view != old_view && plugin->views(plugin) & view_type)
     {
       dt_lib_gui_get_expander(plugin); // connect modulegroups presets button
 
@@ -401,7 +407,6 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
     if(!strcmp(plugin->plugin_name,"module_toolbox")
       || !strcmp(plugin->plugin_name,"view_toolbox"))
     {
-      dt_view_type_flags_t view_type = new_view->view(new_view);
       if(view_type == DT_VIEW_LIGHTTABLE)
                        dt_gui_add_help_link(w, "lighttable_mode");
       if(view_type == DT_VIEW_DARKROOM)
@@ -422,7 +427,7 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
   /* update the scrollbars */
   dt_ui_update_scrollbars(darktable.gui->ui);
 
-  dt_shortcuts_select_view(new_view->view(new_view));
+  dt_shortcuts_select_view(view_type);
 
   /* update sticky accels window */
   if(vm->accels_window.window && vm->accels_window.sticky) dt_view_accels_refresh(vm);
