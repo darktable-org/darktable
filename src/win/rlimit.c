@@ -102,49 +102,6 @@ int setrlimit(int resource, const struct rlimit *rlp)
   return 0;  // success
 }
 
-// Wrap the real fwrite() with this rfwrite() function, which is
-// resource limit aware.
-//
-size_t rfwrite(const void *buffer, size_t size, size_t count, FILE *stream)
-{
-  // Convert the count to a large integer (64 bit integer)
-  const __int64 liByteCount = (__int64)count;
-
-  // Get the current file position
-  const __int64 liPosition = (__int64)ftell(stream);
-
-  // Check to make sure the write will not exceed the RLIMIT_FSIZE limit.
-  if(liPosition + liByteCount > rlimits[RLIMIT_FSIZE].rlim_cur)
-  {
-    // Report an error
-    return 0;
-  }
-  // Do the actual write the user requested
-  return fwrite(buffer, size, count, stream);
-}
-
-// Wrap the real _write() function with the _rwrite() function
-// which is resource aware.
-//
-int _rwrite(int handle, const void *buffer, unsigned int count)
-{
-  // Convert the count to a large integer
-  const int64_t liByteCount = (__int64)count;
-
-  // Get the Current file position
-  const int64_t liPosition = (__int64)_tell(handle);
-
-  // Check to make sure the write will not exceed the RLIMIT_FSIZE limit
-  if(liPosition + liByteCount > rlimits[RLIMIT_FSIZE].rlim_cur)
-  {
-    // Report an error
-    return 0;
-  }
-
-  // Do the actual write the user requested
-  return _write(handle, buffer, count);
-}
-
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
