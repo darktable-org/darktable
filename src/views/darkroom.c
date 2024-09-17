@@ -1075,7 +1075,6 @@ static gboolean _dev_load_requested_image(gpointer user_data)
       if(!dt_iop_is_hidden(module))
       {
         dt_iop_gui_cleanup_module(module);
-        gtk_widget_destroy(module->expander);
       }
 
       // we remove the module from the list
@@ -2878,7 +2877,6 @@ void leave(dt_view_t *self)
   }
 
   GtkWidget *box = GTK_WIDGET(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER));
-  gtk_container_foreach(GTK_CONTAINER(box), (GtkCallback)gtk_widget_destroy, NULL);
   GtkScrolledWindow *sw = GTK_SCROLLED_WINDOW(gtk_widget_get_ancestor(box, GTK_TYPE_SCROLLED_WINDOW));
   if(sw) gtk_scrolled_window_set_propagate_natural_width(sw, TRUE);
 

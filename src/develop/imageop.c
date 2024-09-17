@@ -532,18 +532,8 @@ static void _gui_delete_callback(GtkButton *button, dt_iop_module_t *module)
   // we remove the plugin effectively
   if(!dt_iop_is_hidden(module))
   {
-    // we just hide the module to avoid lots of gtk critical warnings
-    gtk_widget_hide(module->expander);
-
-    // we move the module far away, to avoid problems when reordering instance after that
-    // FIXME: ?????
-    gtk_box_reorder_child(dt_ui_get_container(darktable.gui->ui,
-                                              DT_UI_CONTAINER_PANEL_RIGHT_CENTER),
-                          module->expander, -1);
-
     dt_iop_gui_cleanup_module(module);
     gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
-    gtk_widget_destroy(module->widget);
   }
 
   // we remove all references in the history stack and dev->iop
@@ -1731,7 +1721,6 @@ static void _init_module_so(void *m)
       }
 
       dt_iop_gui_cleanup_module(module_instance);
-      gtk_widget_destroy(module_instance->widget);
       dt_iop_cleanup_module(module_instance);
 
       darktable.control->accel_initialising = FALSE;
@@ -2199,6 +2188,7 @@ void dt_iop_gui_cleanup_module(dt_iop_module_t *module)
   g_slist_free_full(module->widget_list, g_free);
   module->widget_list = NULL;
   module->gui_cleanup(module);
+  gtk_widget_destroy(module->expander ?: module->widget);
   dt_iop_gui_cleanup_blending(module);
 }
 
@@ -2985,13 +2975,15 @@ GtkWidget *dt_iop_gui_header_button(dt_iop_module_t *module,
 static gboolean _on_drag_motion(GtkWidget *widget, GdkDragContext *dc, gint x, gint y, guint time, dt_iop_module_t *dest)
 {
   gdk_drag_status(dc, 0, time);
+  dtgtk_expander_set_drag_hover(DTGTK_EXPANDER(widget), FALSE, TRUE, time);
 
-  GtkWidget *src_widget = gtk_widget_get_ancestor(gtk_drag_get_source_widget(dc),
-                                                  DTGTK_TYPE_EXPANDER);
+  GtkWidget *src_header = gtk_drag_get_source_widget(dc);
+  if(!src_header) return TRUE;
+  GtkWidget *src_expander = gtk_widget_get_ancestor(src_header, DTGTK_TYPE_EXPANDER);
 
   dt_iop_module_t *src = NULL;
   for(GList *iop = darktable.develop->iop; iop; iop = iop->next)
-    if(((dt_iop_module_t *)iop->data)->expander == src_widget)
+    if(((dt_iop_module_t *)iop->data)->expander == src_expander)
       src = iop->data;
   if(!src || dest == src) return TRUE;
 
@@ -3011,11 +3003,13 @@ static gboolean _on_drag_motion(GtkWidget *widget, GdkDragContext *dc, gint x, g
 
   if(x != DND_DROP)
   {
-    gboolean allow = src->iop_order < dest->iop_order
-                   ? dt_ioppr_check_can_move_after_iop(darktable.develop->iop, src, dest)
-                   : dt_ioppr_check_can_move_before_iop(darktable.develop->iop, src, dest);
-    dtgtk_expander_set_drag_hover(DTGTK_EXPANDER(widget), allow, !above);
-    if(allow) gdk_drag_status(dc, GDK_ACTION_COPY, time);
+    if(src->iop_order < dest->iop_order
+       ? dt_ioppr_check_can_move_after_iop(darktable.develop->iop, src, dest)
+       : dt_ioppr_check_can_move_before_iop(darktable.develop->iop, src, dest))
+    {
+      dtgtk_expander_set_drag_hover(DTGTK_EXPANDER(widget), TRUE, !above, time);
+      gdk_drag_status(dc, GDK_ACTION_COPY, time);
+    }
   }
   else
   {
