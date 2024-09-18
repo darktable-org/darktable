@@ -1061,21 +1061,33 @@ static gboolean _event_scroll_compressed(gpointer user_data)
     // half shown if scrollbar used)
     int move = table->thumb_size * delta;
 
-    // if the top thumb row is only partially visible, then realign first
-    const int partial_height = table->thumbs_area.y % table->thumb_size;
-    if(partial_height)
+    // for fractional scrolling, scroll by a number of pixels proportionate to
+    // the delta (which is a float value for most touch pads and some mice)
+    if (dt_conf_get_bool("thumbtable_fractional_scrolling")) 
     {
-      if(delta < 0)
-      {
-        move = partial_height;
-      }
-      else
-      {
-        move = table->thumb_size + partial_height;
-      }
+      // scale scroll increment for an appropriate scroll speed
+      delta *= 50;
+      _move(table, 0, -delta, TRUE);
     }
-
-    _move(table, 0, -move, TRUE);
+    // for clicky scrolling, scroll one row of thumbnails per scroll delta
+    // (which is collected into an integer value in this case)
+    else
+    {
+      // if the top thumb row is only partially visible, then realign first
+      const int partial_height = table->thumbs_area.y % table->thumb_size;
+      if(partial_height)
+      {
+        if(delta < 0)
+        {
+          move = partial_height;
+        }
+        else
+        {
+          move = table->thumb_size + partial_height;
+        }
+      }
+      _move(table, 0, -move, TRUE);
+    } 
 
     // ensure the hovered image is the right one
     dt_thumbnail_t *th = _thumb_get_under_mouse(table);
@@ -1097,6 +1109,36 @@ static gboolean _event_scroll(GtkWidget *widget,
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
   int delta_x, delta_y;
 
+  // file manager can either scroll fractionally and smoothly for precision 
+  // touch pads, or in one-thumbnail increments for clicky scroll wheels
+  if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER) 
+  {
+    gdouble deltaf_x, deltaf_y;
+    gboolean did_scroll;
+    if(dt_conf_get_bool("thumbtable_fractional_scrolling"))
+    {
+      did_scroll = dt_gui_get_scroll_deltas(e, &deltaf_x, &deltaf_y);
+    }
+    else 
+    {
+      did_scroll = dt_gui_get_scroll_unit_deltas(e, &delta_x, &delta_y);
+      deltaf_y = (float)delta_y;
+    }
+    if(did_scroll)
+    {
+      // in order to process "big" scroll in one time, we use a
+      // timeout to postpone a little scrolling
+      if(table->scroll_timeout_id == 0)
+      {
+        table->scroll_timeout_id = g_timeout_add(10, _event_scroll_compressed, table);
+      }
+      table->scroll_value += deltaf_y;
+    }
+    // we stop here to avoid scrolledwindow to move
+    return TRUE;
+  }
+
+  // filmstrip and zoom mode always use clicky scroll:
   if(dt_gui_get_scroll_unit_deltas(e, &delta_x, &delta_y))
   {
     // for zoomable, scroll = zoom
@@ -1127,16 +1169,6 @@ static gboolean _event_scroll(GtkWidget *widget,
       dt_thumbnail_t *th = _thumb_get_under_mouse(table);
       if(th)
         dt_control_set_mouse_over_id(th->imgid);
-    }
-    else if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
-    {
-      // in order to process "big" scroll in one time, we use a
-      // timeout to postpone a little scrolling
-      if(table->scroll_timeout_id == 0)
-      {
-        table->scroll_timeout_id = g_timeout_add(10, _event_scroll_compressed, table);
-      }
-      table->scroll_value += delta_y;
     }
   }
   // we stop here to avoid scrolledwindow to move
