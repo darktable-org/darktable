@@ -804,9 +804,9 @@ static inline float dt_UCS_L_star_to_Y(const float L_star)
 
 static inline float2 xyY_to_dt_UCS_UV(const float4 xyY)
 {
-  float4 x_factors = { -0.783941002840055f,  0.745273540913283f, 0.318707282433486f, 0.f };
-  float4 y_factors = {  0.277512987809202f, -0.205375866083878f, 2.16743692732158f,  0.f };
-  float4 offsets   = {  0.153836578598858f, -0.165478376301988f, 0.291320554395942f, 0.f };
+  const float4 x_factors = { -0.783941002840055f,  0.745273540913283f, 0.318707282433486f, 0.f };
+  const float4 y_factors = {  0.277512987809202f, -0.205375866083878f, 2.16743692732158f,  0.f };
+  const float4 offsets   = {  0.153836578598858f, -0.165478376301988f, 0.291320554395942f, 0.f };
 
   float4 UVD = x_factors * xyY.x + y_factors * xyY.y + offsets;
   const float div = (UVD.z >= 0.0f) ? fmax(FLT_MIN, UVD.z) : fmin(-FLT_MIN, UVD.z);
@@ -817,10 +817,8 @@ static inline float2 xyY_to_dt_UCS_UV(const float4 xyY)
   const float2 UV_star =     { factors.x * UVD.x / (fabs(UVD.x) + half_values.x),
                                factors.y * UVD.y / (fabs(UVD.y) + half_values.y) };
   // The following is equivalent to a 2D matrix product
-
-  const float2 UV_star_prime =  { -1.124983854323892f * UV_star.x - 0.980483721769325f * UV_star.y,
-                                   1.86323315098672f  * UV_star.x + 1.971853092390862f * UV_star.y };
-  return UV_star_prime;
+  return (float2)( -1.124983854323892f * UV_star.x - 0.980483721769325f * UV_star.y,
+                    1.86323315098672f  * UV_star.x + 1.971853092390862f * UV_star.y);
 }
 
 static inline float4 xyY_to_dt_UCS_JCH(const float4 xyY, const float L_white)
@@ -841,11 +839,10 @@ static inline float4 xyY_to_dt_UCS_JCH(const float4 xyY, const float L_white)
   const float M2 = UV_star_prime.x * UV_star_prime.x + UV_star_prime.y * UV_star_prime.y; // square of colorfulness M
 
   // should be JCH[0] = powf(L_star / L_white), cz) but we treat only the case where cz = 1
-  const float4 JCH = {  L_star / L_white,
-                        15.932993652962535f * dtcl_pow(L_star, 0.6523997524738018f) * dtcl_pow(M2, 0.6007557017508491f) / L_white,
-                        atan2(UV_star_prime.y, UV_star_prime.x),
-                        0.0f };
-  return JCH;
+  return (float4)(L_star / L_white,
+                  15.932993652962535f * dtcl_pow(L_star, 0.6523997524738018f) * dtcl_pow(M2, 0.6007557017508491f) / L_white,
+                  atan2(UV_star_prime.y, UV_star_prime.x),
+                  0.0f);
 }
 
 static inline float4 dt_UCS_JCH_to_xyY(const float4 JCH, const float L_white)
@@ -889,8 +886,7 @@ static inline float4 dt_UCS_JCH_to_xyY(const float4 JCH, const float L_white)
   const float4 xyD = U_factors * UV.x + V_factors * UV.y + offsets;
 
   const float div = (xyD.z >= 0.0f) ? fmax(FLT_MIN, xyD.z) : fmin(-FLT_MIN, xyD.z);
-  const float4 xyY = { xyD.x / div, xyD.y / div, dt_UCS_L_star_to_Y(L_star), 0.0f };
-  return xyY;
+  return (float4)( xyD.x / div, xyD.y / div, dt_UCS_L_star_to_Y(L_star), 0.0f);
 }
 
 
@@ -937,19 +933,17 @@ static inline float4 dt_UCS_HSB_to_XYZ(const float4 HSB, const float L_w)
 {
   const float4 JCH = dt_UCS_HSB_to_JCH(HSB);
   const float4 xyY = dt_UCS_JCH_to_xyY(JCH, L_w);
-  const float4 XYZ = dt_xyY_to_XYZ(xyY);
-  return XYZ;
+  return dt_xyY_to_XYZ(xyY);
 }
 
 static inline float4 dt_UCS_LUV_to_JCH(const float L_star, const float L_white, const float2 UV_star_prime)
 {
   const float M2 = UV_star_prime.x * UV_star_prime.x + UV_star_prime.y * UV_star_prime.y; // square of colorfulness M
-  const float4 JCH = {  L_star / L_white,
-                        15.932993652962535f * dtcl_pow(L_star, 0.6523997524738018f) * dtcl_pow(M2, 0.6007557017508491f) / L_white,
-                        atan2(UV_star_prime.y, UV_star_prime.x),
-                        0.0f };
-  return JCH;
- }
+  return (float4)(L_star / L_white,
+                  15.932993652962535f * dtcl_pow(L_star, 0.6523997524738018f) * dtcl_pow(M2, 0.6007557017508491f) / L_white,
+                  atan2(UV_star_prime.y, UV_star_prime.x),
+                  0.0f);
+}
 
 static inline float soft_clip(const float x, const float soft_threshold, const float hard_threshold)
 {
