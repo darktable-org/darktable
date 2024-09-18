@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-09-16 19:54-0300\n"
-"PO-Revision-Date: 2024-09-16 20:10-0300\n"
+"POT-Creation-Date: 2024-09-18 08:37-0300\n"
+"PO-Revision-Date: 2024-09-18 08:36-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -23,7 +23,7 @@ msgctxt "preferences"
 msgid "first instance"
 msgstr "primeira instância"
 
-#: ../build/bin/conf_gen.h:91 ../build/bin/preferences_gen.h:7814
+#: ../build/bin/conf_gen.h:91 ../build/bin/preferences_gen.h:7886
 msgctxt "preferences"
 msgid "last instance"
 msgstr "última instância"
@@ -31,7 +31,7 @@ msgstr "última instância"
 #: ../build/bin/conf_gen.h:183 ../build/bin/conf_gen.h:303
 #: ../build/bin/conf_gen.h:313 ../build/bin/conf_gen.h:1264
 #: ../build/bin/conf_gen.h:1280 ../build/bin/conf_gen.h:1302
-#: ../build/bin/preferences_gen.h:4635 ../build/bin/preferences_gen.h:4773
+#: ../build/bin/preferences_gen.h:4673 ../build/bin/preferences_gen.h:4811
 msgctxt "preferences"
 msgid "never"
 msgstr "nunca"
@@ -41,7 +41,7 @@ msgctxt "preferences"
 msgid "once a month"
 msgstr "uma vez por mês"
 
-#: ../build/bin/conf_gen.h:185 ../build/bin/preferences_gen.h:7030
+#: ../build/bin/conf_gen.h:185 ../build/bin/preferences_gen.h:7102
 msgctxt "preferences"
 msgid "once a week"
 msgstr "uma vez por semana"
@@ -63,12 +63,12 @@ msgid "small"
 msgstr "pequeno"
 
 #: ../build/bin/conf_gen.h:238 ../build/bin/conf_gen.h:360
-#: ../build/bin/preferences_gen.h:5990 ../build/bin/preferences_gen.h:6111
+#: ../build/bin/preferences_gen.h:6062 ../build/bin/preferences_gen.h:6183
 msgctxt "preferences"
 msgid "default"
 msgstr "padrão"
 
-#: ../build/bin/conf_gen.h:239 ../build/bin/conf_gen.h:3096
+#: ../build/bin/conf_gen.h:239 ../build/bin/conf_gen.h:3103
 msgctxt "preferences"
 msgid "large"
 msgstr "grande"
@@ -78,19 +78,19 @@ msgctxt "preferences"
 msgid "after edit"
 msgstr "após edição"
 
-#: ../build/bin/conf_gen.h:305 ../build/bin/preferences_gen.h:7116
+#: ../build/bin/conf_gen.h:305 ../build/bin/preferences_gen.h:7188
 msgctxt "preferences"
 msgid "on import"
 msgstr "ao importar"
 
 #: ../build/bin/conf_gen.h:314 ../build/bin/conf_gen.h:1256
-#: ../build/bin/conf_gen.h:1272 ../build/bin/conf_gen.h:3563
-#: ../build/bin/preferences_gen.h:5532
+#: ../build/bin/conf_gen.h:1272 ../build/bin/conf_gen.h:3570
+#: ../build/bin/preferences_gen.h:5604
 msgctxt "preferences"
 msgid "always"
 msgstr "sempre"
 
-#: ../build/bin/conf_gen.h:315 ../build/bin/preferences_gen.h:7151
+#: ../build/bin/conf_gen.h:315 ../build/bin/preferences_gen.h:7223
 msgctxt "preferences"
 msgid "only large entries"
 msgstr "apenas entradas grandes"
@@ -100,7 +100,7 @@ msgctxt "preferences"
 msgid "sensitive"
 msgstr "sensível"
 
-#: ../build/bin/conf_gen.h:345 ../build/bin/preferences_gen.h:8025
+#: ../build/bin/conf_gen.h:345 ../build/bin/preferences_gen.h:8097
 msgctxt "preferences"
 msgid "insensitive"
 msgstr "não sensível"
@@ -115,7 +115,7 @@ msgctxt "preferences"
 msgid "very fast GPU"
 msgstr "GPU muito rápida"
 
-#: ../build/bin/conf_gen.h:720 ../build/bin/preferences_gen.h:8150
+#: ../build/bin/conf_gen.h:720 ../build/bin/preferences_gen.h:8222
 msgctxt "preferences"
 msgid "import time"
 msgstr "data/hora de importação"
@@ -151,8 +151,8 @@ msgid "Hex"
 msgstr "Hex"
 
 #: ../build/bin/conf_gen.h:734 ../build/bin/conf_gen.h:2028
-#: ../build/bin/conf_gen.h:2748 ../build/bin/conf_gen.h:3071
-#: ../build/bin/conf_gen.h:3374
+#: ../build/bin/conf_gen.h:2748 ../build/bin/conf_gen.h:3078
+#: ../build/bin/conf_gen.h:3381
 msgctxt "preferences"
 msgid "none"
 msgstr "nenhum"
@@ -288,7 +288,7 @@ msgid "VGA"
 msgstr "VGA"
 
 #: ../build/bin/conf_gen.h:1259 ../build/bin/conf_gen.h:1275
-#: ../build/bin/conf_gen.h:1305 ../build/bin/preferences_gen.h:4670
+#: ../build/bin/conf_gen.h:1305 ../build/bin/preferences_gen.h:4708
 msgctxt "preferences"
 msgid "720p"
 msgstr "720p"
@@ -362,7 +362,7 @@ msgctxt "preferences"
 msgid "high"
 msgstr "alta"
 
-#: ../build/bin/conf_gen.h:1382 ../build/bin/preferences_gen.h:5293
+#: ../build/bin/conf_gen.h:1382 ../build/bin/preferences_gen.h:5331
 msgctxt "preferences"
 msgid "false color"
 msgstr "falsa cor"
@@ -387,7 +387,7 @@ msgctxt "preferences"
 msgid "top center"
 msgstr "acima, no centro"
 
-#: ../build/bin/conf_gen.h:1401 ../build/bin/preferences_gen.h:5105
+#: ../build/bin/conf_gen.h:1401 ../build/bin/preferences_gen.h:5143
 msgctxt "preferences"
 msgid "bottom"
 msgstr "inferior"
@@ -478,7 +478,7 @@ msgstr ""
 "limita o número de pontos importados com polígono no módulo encontrar "
 "localização"
 
-#: ../build/bin/conf_gen.h:2379 ../build/bin/preferences_gen.h:5217
+#: ../build/bin/conf_gen.h:2379 ../build/bin/preferences_gen.h:5255
 msgctxt "preferences"
 msgid "original"
 msgstr "original"
@@ -504,7 +504,7 @@ msgid "bilinear"
 msgstr "bilinear"
 
 #: ../build/bin/conf_gen.h:2405 ../build/bin/conf_gen.h:2415
-#: ../build/bin/preferences_gen.h:5735
+#: ../build/bin/preferences_gen.h:5807
 msgctxt "preferences"
 msgid "bicubic"
 msgstr "bicúbico"
@@ -514,13 +514,13 @@ msgctxt "preferences"
 msgid "lanczos2"
 msgstr "lanczos2"
 
-#: ../build/bin/conf_gen.h:2417 ../build/bin/preferences_gen.h:5770
+#: ../build/bin/conf_gen.h:2417 ../build/bin/preferences_gen.h:5842
 msgctxt "preferences"
 msgid "lanczos3"
 msgstr "lanczos3"
 
-#: ../build/bin/conf_gen.h:2747 ../build/bin/conf_gen.h:3566
-#: ../build/bin/preferences_gen.h:6924
+#: ../build/bin/conf_gen.h:2747 ../build/bin/conf_gen.h:3573
+#: ../build/bin/preferences_gen.h:6996
 msgctxt "preferences"
 msgid "auto"
 msgstr "automático"
@@ -570,166 +570,166 @@ msgctxt "preferences"
 msgid "left"
 msgstr "esquerda"
 
-#: ../build/bin/conf_gen.h:2989 ../build/bin/preferences_gen.h:7511
+#: ../build/bin/conf_gen.h:2989 ../build/bin/preferences_gen.h:7583
 msgctxt "preferences"
 msgid "right"
 msgstr "direita"
 
-#: ../build/bin/conf_gen.h:2997 ../build/bin/conf_gen.h:3034
+#: ../build/bin/conf_gen.h:3004 ../build/bin/conf_gen.h:3041
 msgctxt "preferences"
 msgid "logarithmic"
 msgstr "logarítmico"
 
-#: ../build/bin/conf_gen.h:2998 ../build/bin/conf_gen.h:3035
+#: ../build/bin/conf_gen.h:3005 ../build/bin/conf_gen.h:3042
 msgctxt "preferences"
 msgid "linear"
 msgstr "linear"
 
-#: ../build/bin/conf_gen.h:3006
+#: ../build/bin/conf_gen.h:3013
 msgctxt "preferences"
 msgid "horizontal"
 msgstr "horizontal"
 
-#: ../build/bin/conf_gen.h:3007
+#: ../build/bin/conf_gen.h:3014
 msgctxt "preferences"
 msgid "vertical"
 msgstr "vertical"
 
-#: ../build/bin/conf_gen.h:3015
+#: ../build/bin/conf_gen.h:3022
 msgctxt "preferences"
 msgid "overlaid"
 msgstr "sobreposto"
 
-#: ../build/bin/conf_gen.h:3016
+#: ../build/bin/conf_gen.h:3023
 msgctxt "preferences"
 msgid "parade"
 msgstr "parada (canais lado a lado)"
 
-#: ../build/bin/conf_gen.h:3024
+#: ../build/bin/conf_gen.h:3031
 msgctxt "preferences"
 msgid "u*v*"
 msgstr "u*v*"
 
-#: ../build/bin/conf_gen.h:3025
+#: ../build/bin/conf_gen.h:3032
 msgctxt "preferences"
 msgid "AzBz"
 msgstr "AzBz"
 
-#: ../build/bin/conf_gen.h:3026
+#: ../build/bin/conf_gen.h:3033
 msgctxt "preferences"
 msgid "RYB"
 msgstr "RYB"
 
-#: ../build/bin/conf_gen.h:3072
+#: ../build/bin/conf_gen.h:3079
 msgctxt "preferences"
 msgid "monochromatic"
 msgstr "monocromático"
 
-#: ../build/bin/conf_gen.h:3073
+#: ../build/bin/conf_gen.h:3080
 msgctxt "preferences"
 msgid "analogous"
 msgstr "análogo"
 
-#: ../build/bin/conf_gen.h:3074
+#: ../build/bin/conf_gen.h:3081
 msgctxt "preferences"
 msgid "analogous complementary"
 msgstr "complementar análogo"
 
-#: ../build/bin/conf_gen.h:3075
+#: ../build/bin/conf_gen.h:3082
 msgctxt "preferences"
 msgid "complementary"
 msgstr "complementar"
 
-#: ../build/bin/conf_gen.h:3076
+#: ../build/bin/conf_gen.h:3083
 msgctxt "preferences"
 msgid "split complementary"
 msgstr "complementar dividido"
 
-#: ../build/bin/conf_gen.h:3077
+#: ../build/bin/conf_gen.h:3084
 msgctxt "preferences"
 msgid "dyad"
 msgstr "díade"
 
-#: ../build/bin/conf_gen.h:3078
+#: ../build/bin/conf_gen.h:3085
 msgctxt "preferences"
 msgid "triad"
 msgstr "tríade"
 
-#: ../build/bin/conf_gen.h:3079
+#: ../build/bin/conf_gen.h:3086
 msgctxt "preferences"
 msgid "tetrad"
 msgstr "térade"
 
-#: ../build/bin/conf_gen.h:3080
+#: ../build/bin/conf_gen.h:3087
 msgctxt "preferences"
 msgid "square"
 msgstr "quadrado"
 
-#: ../build/bin/conf_gen.h:3095
+#: ../build/bin/conf_gen.h:3102
 msgctxt "preferences"
 msgid "normal"
 msgstr "normal"
 
-#: ../build/bin/conf_gen.h:3097
+#: ../build/bin/conf_gen.h:3104
 msgctxt "preferences"
 msgid "narrow"
 msgstr "estreito"
 
-#: ../build/bin/conf_gen.h:3098
+#: ../build/bin/conf_gen.h:3105
 msgctxt "preferences"
 msgid "line"
 msgstr "linha"
 
-#: ../build/bin/conf_gen.h:3253
+#: ../build/bin/conf_gen.h:3260
 msgctxt "preferences"
 msgid "mm"
 msgstr "mm"
 
-#: ../build/bin/conf_gen.h:3254
+#: ../build/bin/conf_gen.h:3261
 msgctxt "preferences"
 msgid "cm"
 msgstr "cm"
 
-#: ../build/bin/conf_gen.h:3255
+#: ../build/bin/conf_gen.h:3262
 msgctxt "preferences"
 msgid "inch"
 msgstr "polegada"
 
-#: ../build/bin/conf_gen.h:3298 ../build/bin/preferences_gen.h:7546
+#: ../build/bin/conf_gen.h:3305 ../build/bin/preferences_gen.h:7618
 msgctxt "preferences"
 msgid "all"
 msgstr "todos"
 
-#: ../build/bin/conf_gen.h:3299
+#: ../build/bin/conf_gen.h:3306
 msgctxt "preferences"
 msgid "xatom"
 msgstr "xatom"
 
-#: ../build/bin/conf_gen.h:3300
+#: ../build/bin/conf_gen.h:3307
 msgctxt "preferences"
 msgid "colord"
 msgstr "colord"
 
-#: ../build/bin/conf_gen.h:3371 ../build/bin/preferences_gen.h:5846
+#: ../build/bin/conf_gen.h:3378 ../build/bin/preferences_gen.h:5918
 msgctxt "preferences"
 msgid "scene-referred (filmic)"
 msgstr "relativo à cena (fílmico)"
 
-#: ../build/bin/conf_gen.h:3372
+#: ../build/bin/conf_gen.h:3379
 msgctxt "preferences"
 msgid "scene-referred (sigmoid)"
 msgstr "relativo à cena (sigmóide)"
 
-#: ../build/bin/conf_gen.h:3373
+#: ../build/bin/conf_gen.h:3380
 msgctxt "preferences"
 msgid "display-referred (legacy)"
 msgstr "relativo à exibição (legado)"
 
-#: ../build/bin/conf_gen.h:3488
+#: ../build/bin/conf_gen.h:3495
 msgid "camera time zone"
 msgstr "fuso horário da câmera"
 
-#: ../build/bin/conf_gen.h:3489
+#: ../build/bin/conf_gen.h:3496
 msgid ""
 "most cameras don't store the time zone in EXIF. give the correct time zone "
 "so the GPX data can be correctly matched"
@@ -737,229 +737,231 @@ msgstr ""
 "a maioria das câmeras não armazena a fuso horário no EXIF. indique o fuso "
 "horário correto para que os dados GPX possam ser processados corretamente"
 
-#: ../build/bin/conf_gen.h:3501
+#: ../build/bin/conf_gen.h:3508
 msgctxt "preferences"
 msgid "no color"
 msgstr "sem cor"
 
-#: ../build/bin/conf_gen.h:3502
+#: ../build/bin/conf_gen.h:3509
 msgctxt "preferences"
 msgid "illuminant color"
 msgstr "cor do iluminante"
 
-#: ../build/bin/conf_gen.h:3503
+#: ../build/bin/conf_gen.h:3510
 msgctxt "preferences"
 msgid "effect emulation"
 msgstr "emulação do efeito"
 
-#: ../build/bin/conf_gen.h:3553
+#: ../build/bin/conf_gen.h:3560
 msgctxt "preferences"
 msgid "list"
 msgstr "lista"
 
-#: ../build/bin/conf_gen.h:3554
+#: ../build/bin/conf_gen.h:3561
 msgctxt "preferences"
 msgid "tabs"
 msgstr "abas"
 
-#: ../build/bin/conf_gen.h:3555
+#: ../build/bin/conf_gen.h:3562
 msgctxt "preferences"
 msgid "columns"
 msgstr "colunas"
 
-#: ../build/bin/conf_gen.h:3564
+#: ../build/bin/conf_gen.h:3571
 msgctxt "preferences"
 msgid "active"
 msgstr "ativo"
 
-#: ../build/bin/conf_gen.h:3565
+#: ../build/bin/conf_gen.h:3572
 msgctxt "preferences"
 msgid "dim"
 msgstr "atenuar"
 
-#: ../build/bin/conf_gen.h:3567
+#: ../build/bin/conf_gen.h:3574
 msgctxt "preferences"
 msgid "fade"
 msgstr "esmaecer"
 
-#: ../build/bin/conf_gen.h:3568
+#: ../build/bin/conf_gen.h:3575
 msgctxt "preferences"
 msgid "fit"
 msgstr "ajustar"
 
-#: ../build/bin/conf_gen.h:3569
+#: ../build/bin/conf_gen.h:3576
 msgctxt "preferences"
 msgid "smooth"
 msgstr "suavizar"
 
-#: ../build/bin/conf_gen.h:3570
+#: ../build/bin/conf_gen.h:3577
 msgctxt "preferences"
 msgid "glide"
 msgstr "deslizar"
 
-#: ../build/bin/preferences_gen.h:77 ../build/bin/preferences_gen.h:4193
-#: ../build/bin/preferences_gen.h:4232 ../build/bin/preferences_gen.h:4271
-#: ../build/bin/preferences_gen.h:4305 ../build/bin/preferences_gen.h:4376
-#: ../build/bin/preferences_gen.h:4410 ../build/bin/preferences_gen.h:4444
-#: ../build/bin/preferences_gen.h:4478 ../build/bin/preferences_gen.h:4512
-#: ../build/bin/preferences_gen.h:4546 ../build/bin/preferences_gen.h:4580
-#: ../build/bin/preferences_gen.h:4621 ../build/bin/preferences_gen.h:4656
-#: ../build/bin/preferences_gen.h:4691 ../build/bin/preferences_gen.h:4725
-#: ../build/bin/preferences_gen.h:4759 ../build/bin/preferences_gen.h:4794
-#: ../build/bin/preferences_gen.h:4828 ../build/bin/preferences_gen.h:4867
-#: ../build/bin/preferences_gen.h:4908 ../build/bin/preferences_gen.h:4981
-#: ../build/bin/preferences_gen.h:5015 ../build/bin/preferences_gen.h:5050
-#: ../build/bin/preferences_gen.h:5091 ../build/bin/preferences_gen.h:5125
-#: ../build/bin/preferences_gen.h:5169 ../build/bin/preferences_gen.h:5203
-#: ../build/bin/preferences_gen.h:5238 ../build/bin/preferences_gen.h:5279
-#: ../build/bin/preferences_gen.h:5314 ../build/bin/preferences_gen.h:5348
-#: ../build/bin/preferences_gen.h:5382 ../build/bin/preferences_gen.h:5416
-#: ../build/bin/preferences_gen.h:5450 ../build/bin/preferences_gen.h:5484
-#: ../build/bin/preferences_gen.h:5518 ../build/bin/preferences_gen.h:5553
-#: ../build/bin/preferences_gen.h:5587 ../build/bin/preferences_gen.h:5621
-#: ../build/bin/preferences_gen.h:5687 ../build/bin/preferences_gen.h:5721
-#: ../build/bin/preferences_gen.h:5756 ../build/bin/preferences_gen.h:5791
-#: ../build/bin/preferences_gen.h:5832 ../build/bin/preferences_gen.h:5867
-#: ../build/bin/preferences_gen.h:5901 ../build/bin/preferences_gen.h:5935
-#: ../build/bin/preferences_gen.h:5976 ../build/bin/preferences_gen.h:6012
-#: ../build/bin/preferences_gen.h:6053 ../build/bin/preferences_gen.h:6097
-#: ../build/bin/preferences_gen.h:6142 ../build/bin/preferences_gen.h:6193
-#: ../build/bin/preferences_gen.h:6237 ../build/bin/preferences_gen.h:6281
-#: ../build/bin/preferences_gen.h:6325 ../build/bin/preferences_gen.h:6369
-#: ../build/bin/preferences_gen.h:6413 ../build/bin/preferences_gen.h:6457
-#: ../build/bin/preferences_gen.h:6523 ../build/bin/preferences_gen.h:6557
-#: ../build/bin/preferences_gen.h:6591 ../build/bin/preferences_gen.h:6625
-#: ../build/bin/preferences_gen.h:6659 ../build/bin/preferences_gen.h:6693
-#: ../build/bin/preferences_gen.h:6727 ../build/bin/preferences_gen.h:6761
-#: ../build/bin/preferences_gen.h:6794 ../build/bin/preferences_gen.h:6827
-#: ../build/bin/preferences_gen.h:6861 ../build/bin/preferences_gen.h:6902
-#: ../build/bin/preferences_gen.h:6945 ../build/bin/preferences_gen.h:7016
-#: ../build/bin/preferences_gen.h:7051 ../build/bin/preferences_gen.h:7102
-#: ../build/bin/preferences_gen.h:7137 ../build/bin/preferences_gen.h:7172
-#: ../build/bin/preferences_gen.h:7216 ../build/bin/preferences_gen.h:7282
-#: ../build/bin/preferences_gen.h:7316 ../build/bin/preferences_gen.h:7350
-#: ../build/bin/preferences_gen.h:7384 ../build/bin/preferences_gen.h:7418
-#: ../build/bin/preferences_gen.h:7452 ../build/bin/preferences_gen.h:7497
-#: ../build/bin/preferences_gen.h:7532 ../build/bin/preferences_gen.h:7567
-#: ../build/bin/preferences_gen.h:7623 ../build/bin/preferences_gen.h:7664
-#: ../build/bin/preferences_gen.h:7698 ../build/bin/preferences_gen.h:7732
-#: ../build/bin/preferences_gen.h:7766 ../build/bin/preferences_gen.h:7800
-#: ../build/bin/preferences_gen.h:7835 ../build/bin/preferences_gen.h:7876
-#: ../build/bin/preferences_gen.h:7917 ../build/bin/preferences_gen.h:7977
-#: ../build/bin/preferences_gen.h:8011 ../build/bin/preferences_gen.h:8046
-#: ../build/bin/preferences_gen.h:8091 ../build/bin/preferences_gen.h:8136
-#: ../build/bin/preferences_gen.h:8189 ../build/bin/preferences_gen.h:8270
-#: ../build/bin/preferences_gen.h:8316
+#: ../build/bin/preferences_gen.h:77 ../build/bin/preferences_gen.h:4231
+#: ../build/bin/preferences_gen.h:4270 ../build/bin/preferences_gen.h:4309
+#: ../build/bin/preferences_gen.h:4343 ../build/bin/preferences_gen.h:4414
+#: ../build/bin/preferences_gen.h:4448 ../build/bin/preferences_gen.h:4482
+#: ../build/bin/preferences_gen.h:4516 ../build/bin/preferences_gen.h:4550
+#: ../build/bin/preferences_gen.h:4584 ../build/bin/preferences_gen.h:4618
+#: ../build/bin/preferences_gen.h:4659 ../build/bin/preferences_gen.h:4694
+#: ../build/bin/preferences_gen.h:4729 ../build/bin/preferences_gen.h:4763
+#: ../build/bin/preferences_gen.h:4797 ../build/bin/preferences_gen.h:4832
+#: ../build/bin/preferences_gen.h:4866 ../build/bin/preferences_gen.h:4905
+#: ../build/bin/preferences_gen.h:4946 ../build/bin/preferences_gen.h:5019
+#: ../build/bin/preferences_gen.h:5053 ../build/bin/preferences_gen.h:5088
+#: ../build/bin/preferences_gen.h:5129 ../build/bin/preferences_gen.h:5163
+#: ../build/bin/preferences_gen.h:5207 ../build/bin/preferences_gen.h:5241
+#: ../build/bin/preferences_gen.h:5276 ../build/bin/preferences_gen.h:5317
+#: ../build/bin/preferences_gen.h:5352 ../build/bin/preferences_gen.h:5386
+#: ../build/bin/preferences_gen.h:5420 ../build/bin/preferences_gen.h:5454
+#: ../build/bin/preferences_gen.h:5488 ../build/bin/preferences_gen.h:5522
+#: ../build/bin/preferences_gen.h:5556 ../build/bin/preferences_gen.h:5590
+#: ../build/bin/preferences_gen.h:5625 ../build/bin/preferences_gen.h:5659
+#: ../build/bin/preferences_gen.h:5693 ../build/bin/preferences_gen.h:5759
+#: ../build/bin/preferences_gen.h:5793 ../build/bin/preferences_gen.h:5828
+#: ../build/bin/preferences_gen.h:5863 ../build/bin/preferences_gen.h:5904
+#: ../build/bin/preferences_gen.h:5939 ../build/bin/preferences_gen.h:5973
+#: ../build/bin/preferences_gen.h:6007 ../build/bin/preferences_gen.h:6048
+#: ../build/bin/preferences_gen.h:6084 ../build/bin/preferences_gen.h:6125
+#: ../build/bin/preferences_gen.h:6169 ../build/bin/preferences_gen.h:6214
+#: ../build/bin/preferences_gen.h:6265 ../build/bin/preferences_gen.h:6309
+#: ../build/bin/preferences_gen.h:6353 ../build/bin/preferences_gen.h:6397
+#: ../build/bin/preferences_gen.h:6441 ../build/bin/preferences_gen.h:6485
+#: ../build/bin/preferences_gen.h:6529 ../build/bin/preferences_gen.h:6595
+#: ../build/bin/preferences_gen.h:6629 ../build/bin/preferences_gen.h:6663
+#: ../build/bin/preferences_gen.h:6697 ../build/bin/preferences_gen.h:6731
+#: ../build/bin/preferences_gen.h:6765 ../build/bin/preferences_gen.h:6799
+#: ../build/bin/preferences_gen.h:6833 ../build/bin/preferences_gen.h:6866
+#: ../build/bin/preferences_gen.h:6899 ../build/bin/preferences_gen.h:6933
+#: ../build/bin/preferences_gen.h:6974 ../build/bin/preferences_gen.h:7017
+#: ../build/bin/preferences_gen.h:7088 ../build/bin/preferences_gen.h:7123
+#: ../build/bin/preferences_gen.h:7174 ../build/bin/preferences_gen.h:7209
+#: ../build/bin/preferences_gen.h:7244 ../build/bin/preferences_gen.h:7288
+#: ../build/bin/preferences_gen.h:7354 ../build/bin/preferences_gen.h:7388
+#: ../build/bin/preferences_gen.h:7422 ../build/bin/preferences_gen.h:7456
+#: ../build/bin/preferences_gen.h:7490 ../build/bin/preferences_gen.h:7524
+#: ../build/bin/preferences_gen.h:7569 ../build/bin/preferences_gen.h:7604
+#: ../build/bin/preferences_gen.h:7639 ../build/bin/preferences_gen.h:7695
+#: ../build/bin/preferences_gen.h:7736 ../build/bin/preferences_gen.h:7770
+#: ../build/bin/preferences_gen.h:7804 ../build/bin/preferences_gen.h:7838
+#: ../build/bin/preferences_gen.h:7872 ../build/bin/preferences_gen.h:7907
+#: ../build/bin/preferences_gen.h:7948 ../build/bin/preferences_gen.h:7989
+#: ../build/bin/preferences_gen.h:8049 ../build/bin/preferences_gen.h:8083
+#: ../build/bin/preferences_gen.h:8118 ../build/bin/preferences_gen.h:8163
+#: ../build/bin/preferences_gen.h:8208 ../build/bin/preferences_gen.h:8261
+#: ../build/bin/preferences_gen.h:8342 ../build/bin/preferences_gen.h:8388
 msgid "this setting has been modified"
 msgstr "esta predefinição foi modificada"
 
 #. doesn't seem to work from gtkrc
-#: ../build/bin/preferences_gen.h:4165 ../build/bin/preferences_gen.h:4348
-#: ../build/bin/preferences_gen.h:4953 ../build/bin/preferences_gen.h:5659
-#: ../build/bin/preferences_gen.h:6495 ../build/bin/preferences_gen.h:6988
-#: ../build/bin/preferences_gen.h:7254 ../src/gui/accelerators.c:3003
-#: ../src/gui/gtk.c:3109 ../src/gui/preferences.c:456
+#: ../build/bin/preferences_gen.h:4203 ../build/bin/preferences_gen.h:4386
+#: ../build/bin/preferences_gen.h:4991 ../build/bin/preferences_gen.h:5731
+#: ../build/bin/preferences_gen.h:6567 ../build/bin/preferences_gen.h:7060
+#: ../build/bin/preferences_gen.h:7326 ../src/gui/accelerators.c:3003
+#: ../src/gui/gtk.c:3096 ../src/gui/preferences.c:456
 #: ../src/gui/preferences.c:887 ../src/libs/modulegroups.c:4094
 msgid "?"
 msgstr "?"
 
-#: ../build/bin/preferences_gen.h:4175 ../src/control/jobs/control_jobs.c:2990
+#: ../build/bin/preferences_gen.h:4213 ../src/control/jobs/control_jobs.c:2990
 #: ../src/libs/import.c:187
 msgid "import"
 msgstr "importar"
 
-#: ../build/bin/preferences_gen.h:4177
+#: ../build/bin/preferences_gen.h:4215
 msgid "session options"
 msgstr "opções da sessão"
 
-#: ../build/bin/preferences_gen.h:4196
+#: ../build/bin/preferences_gen.h:4234
 msgid "base directory naming pattern"
 msgstr "padrão de nomeação de diretório base"
 
-#: ../build/bin/preferences_gen.h:4211 ../build/bin/preferences_gen.h:4250
-#: ../build/bin/preferences_gen.h:4284 ../build/bin/preferences_gen.h:4323
-#: ../build/bin/preferences_gen.h:4389 ../build/bin/preferences_gen.h:4423
-#: ../build/bin/preferences_gen.h:4457 ../build/bin/preferences_gen.h:4491
-#: ../build/bin/preferences_gen.h:4525 ../build/bin/preferences_gen.h:4559
-#: ../build/bin/preferences_gen.h:4593 ../build/bin/preferences_gen.h:4635
-#: ../build/bin/preferences_gen.h:4670 ../build/bin/preferences_gen.h:4704
-#: ../build/bin/preferences_gen.h:4738 ../build/bin/preferences_gen.h:4773
-#: ../build/bin/preferences_gen.h:4807 ../build/bin/preferences_gen.h:4846
-#: ../build/bin/preferences_gen.h:4887 ../build/bin/preferences_gen.h:4928
-#: ../build/bin/preferences_gen.h:4994 ../build/bin/preferences_gen.h:5028
-#: ../build/bin/preferences_gen.h:5070 ../build/bin/preferences_gen.h:5105
-#: ../build/bin/preferences_gen.h:5182 ../build/bin/preferences_gen.h:5217
-#: ../build/bin/preferences_gen.h:5251 ../build/bin/preferences_gen.h:5293
-#: ../build/bin/preferences_gen.h:5327 ../build/bin/preferences_gen.h:5361
-#: ../build/bin/preferences_gen.h:5395 ../build/bin/preferences_gen.h:5429
-#: ../build/bin/preferences_gen.h:5463 ../build/bin/preferences_gen.h:5497
-#: ../build/bin/preferences_gen.h:5532 ../build/bin/preferences_gen.h:5566
-#: ../build/bin/preferences_gen.h:5600 ../build/bin/preferences_gen.h:5634
-#: ../build/bin/preferences_gen.h:5700 ../build/bin/preferences_gen.h:5735
-#: ../build/bin/preferences_gen.h:5770 ../build/bin/preferences_gen.h:5810
-#: ../build/bin/preferences_gen.h:5846 ../build/bin/preferences_gen.h:5880
-#: ../build/bin/preferences_gen.h:5914 ../build/bin/preferences_gen.h:5948
-#: ../build/bin/preferences_gen.h:5990 ../build/bin/preferences_gen.h:6025
-#: ../build/bin/preferences_gen.h:6066 ../build/bin/preferences_gen.h:6111
-#: ../build/bin/preferences_gen.h:6155 ../build/bin/preferences_gen.h:6206
-#: ../build/bin/preferences_gen.h:6250 ../build/bin/preferences_gen.h:6294
-#: ../build/bin/preferences_gen.h:6338 ../build/bin/preferences_gen.h:6382
-#: ../build/bin/preferences_gen.h:6426 ../build/bin/preferences_gen.h:6470
-#: ../build/bin/preferences_gen.h:6536 ../build/bin/preferences_gen.h:6570
-#: ../build/bin/preferences_gen.h:6604 ../build/bin/preferences_gen.h:6638
-#: ../build/bin/preferences_gen.h:6672 ../build/bin/preferences_gen.h:6706
-#: ../build/bin/preferences_gen.h:6740 ../build/bin/preferences_gen.h:6774
-#: ../build/bin/preferences_gen.h:6807 ../build/bin/preferences_gen.h:6840
-#: ../build/bin/preferences_gen.h:6874 ../build/bin/preferences_gen.h:6924
-#: ../build/bin/preferences_gen.h:6963 ../build/bin/preferences_gen.h:7030
-#: ../build/bin/preferences_gen.h:7116 ../build/bin/preferences_gen.h:7151
-#: ../build/bin/preferences_gen.h:7229 ../build/bin/preferences_gen.h:7295
-#: ../build/bin/preferences_gen.h:7329 ../build/bin/preferences_gen.h:7363
-#: ../build/bin/preferences_gen.h:7397 ../build/bin/preferences_gen.h:7431
-#: ../build/bin/preferences_gen.h:7511 ../build/bin/preferences_gen.h:7546
-#: ../build/bin/preferences_gen.h:7585 ../build/bin/preferences_gen.h:7636
-#: ../build/bin/preferences_gen.h:7677 ../build/bin/preferences_gen.h:7711
-#: ../build/bin/preferences_gen.h:7745 ../build/bin/preferences_gen.h:7779
-#: ../build/bin/preferences_gen.h:7814 ../build/bin/preferences_gen.h:7848
-#: ../build/bin/preferences_gen.h:7889 ../build/bin/preferences_gen.h:7990
-#: ../build/bin/preferences_gen.h:8025 ../build/bin/preferences_gen.h:8150
+#: ../build/bin/preferences_gen.h:4249 ../build/bin/preferences_gen.h:4288
+#: ../build/bin/preferences_gen.h:4322 ../build/bin/preferences_gen.h:4361
+#: ../build/bin/preferences_gen.h:4427 ../build/bin/preferences_gen.h:4461
+#: ../build/bin/preferences_gen.h:4495 ../build/bin/preferences_gen.h:4529
+#: ../build/bin/preferences_gen.h:4563 ../build/bin/preferences_gen.h:4597
+#: ../build/bin/preferences_gen.h:4631 ../build/bin/preferences_gen.h:4673
+#: ../build/bin/preferences_gen.h:4708 ../build/bin/preferences_gen.h:4742
+#: ../build/bin/preferences_gen.h:4776 ../build/bin/preferences_gen.h:4811
+#: ../build/bin/preferences_gen.h:4845 ../build/bin/preferences_gen.h:4884
+#: ../build/bin/preferences_gen.h:4925 ../build/bin/preferences_gen.h:4966
+#: ../build/bin/preferences_gen.h:5032 ../build/bin/preferences_gen.h:5066
+#: ../build/bin/preferences_gen.h:5108 ../build/bin/preferences_gen.h:5143
+#: ../build/bin/preferences_gen.h:5220 ../build/bin/preferences_gen.h:5255
+#: ../build/bin/preferences_gen.h:5289 ../build/bin/preferences_gen.h:5331
+#: ../build/bin/preferences_gen.h:5365 ../build/bin/preferences_gen.h:5399
+#: ../build/bin/preferences_gen.h:5433 ../build/bin/preferences_gen.h:5467
+#: ../build/bin/preferences_gen.h:5501 ../build/bin/preferences_gen.h:5535
+#: ../build/bin/preferences_gen.h:5569 ../build/bin/preferences_gen.h:5604
+#: ../build/bin/preferences_gen.h:5638 ../build/bin/preferences_gen.h:5672
+#: ../build/bin/preferences_gen.h:5706 ../build/bin/preferences_gen.h:5772
+#: ../build/bin/preferences_gen.h:5807 ../build/bin/preferences_gen.h:5842
+#: ../build/bin/preferences_gen.h:5882 ../build/bin/preferences_gen.h:5918
+#: ../build/bin/preferences_gen.h:5952 ../build/bin/preferences_gen.h:5986
+#: ../build/bin/preferences_gen.h:6020 ../build/bin/preferences_gen.h:6062
+#: ../build/bin/preferences_gen.h:6097 ../build/bin/preferences_gen.h:6138
+#: ../build/bin/preferences_gen.h:6183 ../build/bin/preferences_gen.h:6227
+#: ../build/bin/preferences_gen.h:6278 ../build/bin/preferences_gen.h:6322
+#: ../build/bin/preferences_gen.h:6366 ../build/bin/preferences_gen.h:6410
+#: ../build/bin/preferences_gen.h:6454 ../build/bin/preferences_gen.h:6498
+#: ../build/bin/preferences_gen.h:6542 ../build/bin/preferences_gen.h:6608
+#: ../build/bin/preferences_gen.h:6642 ../build/bin/preferences_gen.h:6676
+#: ../build/bin/preferences_gen.h:6710 ../build/bin/preferences_gen.h:6744
+#: ../build/bin/preferences_gen.h:6778 ../build/bin/preferences_gen.h:6812
+#: ../build/bin/preferences_gen.h:6846 ../build/bin/preferences_gen.h:6879
+#: ../build/bin/preferences_gen.h:6912 ../build/bin/preferences_gen.h:6946
+#: ../build/bin/preferences_gen.h:6996 ../build/bin/preferences_gen.h:7035
+#: ../build/bin/preferences_gen.h:7102 ../build/bin/preferences_gen.h:7188
+#: ../build/bin/preferences_gen.h:7223 ../build/bin/preferences_gen.h:7301
+#: ../build/bin/preferences_gen.h:7367 ../build/bin/preferences_gen.h:7401
+#: ../build/bin/preferences_gen.h:7435 ../build/bin/preferences_gen.h:7469
+#: ../build/bin/preferences_gen.h:7503 ../build/bin/preferences_gen.h:7583
+#: ../build/bin/preferences_gen.h:7618 ../build/bin/preferences_gen.h:7657
+#: ../build/bin/preferences_gen.h:7708 ../build/bin/preferences_gen.h:7749
+#: ../build/bin/preferences_gen.h:7783 ../build/bin/preferences_gen.h:7817
+#: ../build/bin/preferences_gen.h:7851 ../build/bin/preferences_gen.h:7886
+#: ../build/bin/preferences_gen.h:7920 ../build/bin/preferences_gen.h:7961
+#: ../build/bin/preferences_gen.h:8062 ../build/bin/preferences_gen.h:8097
+#: ../build/bin/preferences_gen.h:8222
 #, c-format
 msgid "double click to reset to `%s'"
 msgstr "clique-duplo para redefinir para `%s'"
 
-#: ../build/bin/preferences_gen.h:4214 ../build/bin/preferences_gen.h:4253
+#: ../build/bin/preferences_gen.h:4252 ../build/bin/preferences_gen.h:4291
 msgid "part of full import path for an import session"
 msgstr "parte do caminho completo para uma sessão de importação"
 
-#: ../build/bin/preferences_gen.h:4235
+#: ../build/bin/preferences_gen.h:4273
 msgid "sub directory naming pattern"
 msgstr "padrão de nomeação de subdiretórios"
 
-#: ../build/bin/preferences_gen.h:4274
+#: ../build/bin/preferences_gen.h:4312
 msgid "keep original filename"
 msgstr "manter nome de arquivo original"
 
-#: ../build/bin/preferences_gen.h:4284 ../build/bin/preferences_gen.h:4389
-#: ../build/bin/preferences_gen.h:4423 ../build/bin/preferences_gen.h:4457
-#: ../build/bin/preferences_gen.h:4491 ../build/bin/preferences_gen.h:4525
-#: ../build/bin/preferences_gen.h:4593 ../build/bin/preferences_gen.h:4738
-#: ../build/bin/preferences_gen.h:4807 ../build/bin/preferences_gen.h:4994
-#: ../build/bin/preferences_gen.h:5182 ../build/bin/preferences_gen.h:5327
-#: ../build/bin/preferences_gen.h:5463 ../build/bin/preferences_gen.h:5600
-#: ../build/bin/preferences_gen.h:5700 ../build/bin/preferences_gen.h:5880
-#: ../build/bin/preferences_gen.h:5914 ../build/bin/preferences_gen.h:6025
-#: ../build/bin/preferences_gen.h:6155 ../build/bin/preferences_gen.h:6338
-#: ../build/bin/preferences_gen.h:6382 ../build/bin/preferences_gen.h:6426
-#: ../build/bin/preferences_gen.h:6470 ../build/bin/preferences_gen.h:6740
-#: ../build/bin/preferences_gen.h:7229 ../build/bin/preferences_gen.h:7397
-#: ../build/bin/preferences_gen.h:7636 ../build/bin/preferences_gen.h:7711
-#: ../build/bin/preferences_gen.h:7745 ../build/bin/preferences_gen.h:7779
-#: ../build/bin/preferences_gen.h:7848 ../build/bin/preferences_gen.h:7990
+#: ../build/bin/preferences_gen.h:4322 ../build/bin/preferences_gen.h:4427
+#: ../build/bin/preferences_gen.h:4461 ../build/bin/preferences_gen.h:4495
+#: ../build/bin/preferences_gen.h:4529 ../build/bin/preferences_gen.h:4563
+#: ../build/bin/preferences_gen.h:4631 ../build/bin/preferences_gen.h:4776
+#: ../build/bin/preferences_gen.h:4845 ../build/bin/preferences_gen.h:5032
+#: ../build/bin/preferences_gen.h:5220 ../build/bin/preferences_gen.h:5365
+#: ../build/bin/preferences_gen.h:5501 ../build/bin/preferences_gen.h:5569
+#: ../build/bin/preferences_gen.h:5672 ../build/bin/preferences_gen.h:5772
+#: ../build/bin/preferences_gen.h:5952 ../build/bin/preferences_gen.h:5986
+#: ../build/bin/preferences_gen.h:6097 ../build/bin/preferences_gen.h:6227
+#: ../build/bin/preferences_gen.h:6410 ../build/bin/preferences_gen.h:6454
+#: ../build/bin/preferences_gen.h:6498 ../build/bin/preferences_gen.h:6542
+#: ../build/bin/preferences_gen.h:6812 ../build/bin/preferences_gen.h:7301
+#: ../build/bin/preferences_gen.h:7469 ../build/bin/preferences_gen.h:7708
+#: ../build/bin/preferences_gen.h:7783 ../build/bin/preferences_gen.h:7817
+#: ../build/bin/preferences_gen.h:7851 ../build/bin/preferences_gen.h:7920
+#: ../build/bin/preferences_gen.h:8062
 msgctxt "preferences"
 msgid "FALSE"
 msgstr "FALSO"
 
-#: ../build/bin/preferences_gen.h:4287
+#: ../build/bin/preferences_gen.h:4325
 msgid ""
 "keep original filename instead of a pattern while importing from camera or "
 "card"
@@ -967,40 +969,40 @@ msgstr ""
 "manter nome de arquivo original ao invés de usar um padrão quando importar "
 "da câmera ou cartão"
 
-#: ../build/bin/preferences_gen.h:4308
+#: ../build/bin/preferences_gen.h:4346
 msgid "file naming pattern"
 msgstr "padrão de nomeação de arquivos"
 
-#: ../build/bin/preferences_gen.h:4326
+#: ../build/bin/preferences_gen.h:4364
 msgid "file naming pattern used for a import session"
 msgstr "padrão de nomeação de arquivos utilizado para a sessão de importação"
 
-#: ../build/bin/preferences_gen.h:4358 ../src/gui/gtk.c:1353
+#: ../build/bin/preferences_gen.h:4396 ../src/gui/gtk.c:1353
 #: ../src/gui/preferences.c:557 ../src/libs/tools/lighttable.c:66
 #: ../src/views/lighttable.c:91
 msgid "lighttable"
 msgstr "mesa de luz"
 
-#: ../build/bin/preferences_gen.h:4360 ../build/bin/preferences_gen.h:4965
-#: ../build/bin/preferences_gen.h:6507 ../src/gui/preferences.c:297
+#: ../build/bin/preferences_gen.h:4398 ../build/bin/preferences_gen.h:5003
+#: ../build/bin/preferences_gen.h:6579 ../src/gui/preferences.c:297
 msgid "general"
 msgstr "geral"
 
-#: ../build/bin/preferences_gen.h:4379
+#: ../build/bin/preferences_gen.h:4417
 msgid "hide built-in presets for utility modules"
 msgstr "ocultar predefinições nativas para módulos utilitários"
 
-#: ../build/bin/preferences_gen.h:4392
+#: ../build/bin/preferences_gen.h:4430
 msgid "hide built-in presets of utility modules in presets menu."
 msgstr ""
 "oculta predefinições nativas dos módulos utilitários nos menus de "
 "predefinições."
 
-#: ../build/bin/preferences_gen.h:4413
+#: ../build/bin/preferences_gen.h:4451
 msgid "use single-click in the collections module"
 msgstr "usar clique único no módulo coleções"
 
-#: ../build/bin/preferences_gen.h:4426
+#: ../build/bin/preferences_gen.h:4464
 msgid ""
 "check this option to use single-click to select items in the collections "
 "module. this will allow you to do range selections for date-time and numeric "
@@ -1010,19 +1012,19 @@ msgstr ""
 "coleções. isto permitirá fazer seleções de faixas por data e valores "
 "numéricos."
 
-#: ../build/bin/preferences_gen.h:4447
+#: ../build/bin/preferences_gen.h:4485
 msgid "expand a single utility module at a time"
 msgstr "expandir um único módulo de cada vez"
 
-#: ../build/bin/preferences_gen.h:4460
+#: ../build/bin/preferences_gen.h:4498
 msgid "this option toggles the behavior of shift clicking in lighttable mode"
 msgstr "esta opção alterna o comportamento do shift+clique no modo mesa de luz"
 
-#: ../build/bin/preferences_gen.h:4481
+#: ../build/bin/preferences_gen.h:4519
 msgid "scroll utility modules to the top when expanded"
 msgstr "deslizar módulos utilitários para o topo quanto expandidos"
 
-#: ../build/bin/preferences_gen.h:4494 ../build/bin/preferences_gen.h:5500
+#: ../build/bin/preferences_gen.h:4532 ../build/bin/preferences_gen.h:5538
 msgid ""
 "when this option is enabled then darktable will try to scroll the module to "
 "the top of the visible list"
@@ -1030,61 +1032,61 @@ msgstr ""
 "quando esta opção está habilitada o darktable tentará rolar o módulo até o "
 "topo da lista visível"
 
-#: ../build/bin/preferences_gen.h:4515
+#: ../build/bin/preferences_gen.h:4553
 msgid "rating an image one star twice will not zero out the rating"
 msgstr "dar uma estrela duas vezes a uma imagem não resultará em zero estrelas"
 
-#: ../build/bin/preferences_gen.h:4528
+#: ../build/bin/preferences_gen.h:4566
 msgid ""
 "defines whether rating an image one star twice will zero out star rating"
 msgstr ""
 "define se dar uma estrela duas vezes a uma imagem resultará em zero estrelas"
 
-#: ../build/bin/preferences_gen.h:4549 ../build/bin/preferences_gen.h:5172
+#: ../build/bin/preferences_gen.h:4587 ../build/bin/preferences_gen.h:5210
 msgid "show scrollbars for central view"
 msgstr "mostrar barras de rolagem para visualização central"
 
-#: ../build/bin/preferences_gen.h:4559 ../build/bin/preferences_gen.h:4704
-#: ../build/bin/preferences_gen.h:5028 ../build/bin/preferences_gen.h:5251
-#: ../build/bin/preferences_gen.h:5361 ../build/bin/preferences_gen.h:5395
-#: ../build/bin/preferences_gen.h:5429 ../build/bin/preferences_gen.h:5497
-#: ../build/bin/preferences_gen.h:5566 ../build/bin/preferences_gen.h:5634
-#: ../build/bin/preferences_gen.h:5948 ../build/bin/preferences_gen.h:6066
-#: ../build/bin/preferences_gen.h:6206 ../build/bin/preferences_gen.h:6250
-#: ../build/bin/preferences_gen.h:6294 ../build/bin/preferences_gen.h:6536
-#: ../build/bin/preferences_gen.h:6570 ../build/bin/preferences_gen.h:6604
-#: ../build/bin/preferences_gen.h:6638 ../build/bin/preferences_gen.h:6672
-#: ../build/bin/preferences_gen.h:6706 ../build/bin/preferences_gen.h:6774
-#: ../build/bin/preferences_gen.h:6807 ../build/bin/preferences_gen.h:6840
-#: ../build/bin/preferences_gen.h:6874 ../build/bin/preferences_gen.h:7295
-#: ../build/bin/preferences_gen.h:7329 ../build/bin/preferences_gen.h:7363
-#: ../build/bin/preferences_gen.h:7431 ../build/bin/preferences_gen.h:7677
-#: ../build/bin/preferences_gen.h:7889
+#: ../build/bin/preferences_gen.h:4597 ../build/bin/preferences_gen.h:4742
+#: ../build/bin/preferences_gen.h:5066 ../build/bin/preferences_gen.h:5289
+#: ../build/bin/preferences_gen.h:5399 ../build/bin/preferences_gen.h:5433
+#: ../build/bin/preferences_gen.h:5467 ../build/bin/preferences_gen.h:5535
+#: ../build/bin/preferences_gen.h:5638 ../build/bin/preferences_gen.h:5706
+#: ../build/bin/preferences_gen.h:6020 ../build/bin/preferences_gen.h:6138
+#: ../build/bin/preferences_gen.h:6278 ../build/bin/preferences_gen.h:6322
+#: ../build/bin/preferences_gen.h:6366 ../build/bin/preferences_gen.h:6608
+#: ../build/bin/preferences_gen.h:6642 ../build/bin/preferences_gen.h:6676
+#: ../build/bin/preferences_gen.h:6710 ../build/bin/preferences_gen.h:6744
+#: ../build/bin/preferences_gen.h:6778 ../build/bin/preferences_gen.h:6846
+#: ../build/bin/preferences_gen.h:6879 ../build/bin/preferences_gen.h:6912
+#: ../build/bin/preferences_gen.h:6946 ../build/bin/preferences_gen.h:7367
+#: ../build/bin/preferences_gen.h:7401 ../build/bin/preferences_gen.h:7435
+#: ../build/bin/preferences_gen.h:7503 ../build/bin/preferences_gen.h:7749
+#: ../build/bin/preferences_gen.h:7961
 msgctxt "preferences"
 msgid "TRUE"
 msgstr "VERDADEIRO"
 
-#: ../build/bin/preferences_gen.h:4562 ../build/bin/preferences_gen.h:5185
+#: ../build/bin/preferences_gen.h:4600 ../build/bin/preferences_gen.h:5223
 msgid "defines whether scrollbars should be displayed"
 msgstr "define onde as barras de rolagem devem ser mostradas"
 
-#: ../build/bin/preferences_gen.h:4583
+#: ../build/bin/preferences_gen.h:4621
 msgid "show image time with milliseconds"
 msgstr "mostrar data/hora da imagem com milisegundos"
 
-#: ../build/bin/preferences_gen.h:4596
+#: ../build/bin/preferences_gen.h:4634
 msgid "defines whether time should be displayed with milliseconds"
 msgstr "define se o tempo deveria ser mostrado com milisegundos"
 
-#: ../build/bin/preferences_gen.h:4605
+#: ../build/bin/preferences_gen.h:4643
 msgid "thumbnails"
 msgstr "miniaturas"
 
-#: ../build/bin/preferences_gen.h:4624
+#: ../build/bin/preferences_gen.h:4662
 msgid "use raw file instead of embedded JPEG from size"
 msgstr "usar arquivo RAW ao invés de JPEG embutido a partir do tamanho"
 
-#: ../build/bin/preferences_gen.h:4638
+#: ../build/bin/preferences_gen.h:4676
 msgid ""
 "if the thumbnail size is greater than this value, it will be processed using "
 "raw file instead of the embedded preview JPEG (better but slower).\n"
@@ -1099,11 +1101,11 @@ msgstr ""
 "qualidade você deveria escolher a opção *sempre*.\n"
 "(mais comentários no manual)"
 
-#: ../build/bin/preferences_gen.h:4659
+#: ../build/bin/preferences_gen.h:4697
 msgid "high quality processing from size"
 msgstr "processamento de alta qualidade a partir do tamanho"
 
-#: ../build/bin/preferences_gen.h:4673
+#: ../build/bin/preferences_gen.h:4711
 msgid ""
 "if the thumbnail size is greater than this value, it will be processed using "
 "the full quality rendering path (better but slower).\n"
@@ -1117,11 +1119,11 @@ msgstr ""
 " qualidade você deveria escolher a opção *sempre*.\n"
 "(mais comentários no manual)"
 
-#: ../build/bin/preferences_gen.h:4694
+#: ../build/bin/preferences_gen.h:4732
 msgid "enable disk backend for thumbnail cache"
 msgstr "armazenar em disco cache de miniaturas"
 
-#: ../build/bin/preferences_gen.h:4707
+#: ../build/bin/preferences_gen.h:4745
 msgid ""
 "if enabled, write thumbnails to disk (.cache/darktable/) when evicted from "
 "the memory cache.\n"
@@ -1142,11 +1144,11 @@ msgstr ""
 "para gerar miniaturas de toda a coleção, offline, execute 'darktable-"
 "generate-cache'."
 
-#: ../build/bin/preferences_gen.h:4728
+#: ../build/bin/preferences_gen.h:4766
 msgid "enable disk backend for full preview cache"
 msgstr "armazenar em disco cache de visualização completa"
 
-#: ../build/bin/preferences_gen.h:4741
+#: ../build/bin/preferences_gen.h:4779
 msgid ""
 "if enabled, write full preview to disk (.cache/darktable/) when evicted from "
 "the memory cache.\n"
@@ -1164,11 +1166,11 @@ msgstr ""
 "o desempenho da mesa de luz aumentará muito durante a navegação pelas fotos "
 "no modo de visualização completa."
 
-#: ../build/bin/preferences_gen.h:4762
+#: ../build/bin/preferences_gen.h:4800
 msgid "generate thumbnails in background"
 msgstr "gerar miniaturas em background"
 
-#: ../build/bin/preferences_gen.h:4776
+#: ../build/bin/preferences_gen.h:4814
 msgid ""
 "if 'enable disk backend for thumbnail cache' is enabled thumbnails/mipmaps "
 "up to the selected size are generated while user is inactive in lighttable."
@@ -1177,11 +1179,11 @@ msgstr ""
 "até o tamanho selecionado são geradas enquanto o usuário estiver inativo na "
 "mesa de luz."
 
-#: ../build/bin/preferences_gen.h:4797
+#: ../build/bin/preferences_gen.h:4835
 msgid "reset cached thumbnails"
 msgstr "refazer miniaturas em cache"
 
-#: ../build/bin/preferences_gen.h:4810
+#: ../build/bin/preferences_gen.h:4848
 msgid ""
 "force thumbnails to be regenerated by resetting the database. this may be "
 "needed in case some thumbnails have been manually removed or corrupted."
@@ -1190,11 +1192,11 @@ msgstr ""
 "ser necesśario caso algumas miniaturas tenham sido manualmente removidas ou "
 "corrompidas."
 
-#: ../build/bin/preferences_gen.h:4831
+#: ../build/bin/preferences_gen.h:4869
 msgid "delimiters for size categories"
 msgstr "delimitadores para categorias de tamanho"
 
-#: ../build/bin/preferences_gen.h:4849
+#: ../build/bin/preferences_gen.h:4887
 msgid ""
 "size categories are used to be able to set different overlays and CSS values "
 "depending of the size of the thumbnail, separated by |.\n"
@@ -1207,28 +1209,28 @@ msgstr ""
 "por exemplo, 120|400 significa 3 categorias de miniaturas: <120px, 120px-"
 ">400px e >400px"
 
-#: ../build/bin/preferences_gen.h:4870
+#: ../build/bin/preferences_gen.h:4908
 msgid "pattern for the thumbnail extended overlay text"
 msgstr "padrão para o texto de informações estendidas nas miniaturas"
 
-#: ../build/bin/preferences_gen.h:4890 ../build/bin/preferences_gen.h:4931
+#: ../build/bin/preferences_gen.h:4928 ../build/bin/preferences_gen.h:4969
 msgid "see manual to know all the tags you can use."
 msgstr "veja o manual para saber todos as etiquetas que pode usar"
 
-#: ../build/bin/preferences_gen.h:4911
+#: ../build/bin/preferences_gen.h:4949
 msgid "pattern for the thumbnail tooltip (empty to disable)"
 msgstr "padrão para a dica da miniatura (vazio desabilita)"
 
-#: ../build/bin/preferences_gen.h:4963 ../src/gui/gtk.c:1355
+#: ../build/bin/preferences_gen.h:5001 ../src/gui/gtk.c:1355
 #: ../src/gui/preferences.c:557 ../src/views/darkroom.c:93
 msgid "darkroom"
 msgstr "sala escura"
 
-#: ../build/bin/preferences_gen.h:4984
+#: ../build/bin/preferences_gen.h:5022
 msgid "scroll down to increase mask parameters"
 msgstr "deslize para baixo para aumentar os parâmetros da máscara"
 
-#: ../build/bin/preferences_gen.h:4997
+#: ../build/bin/preferences_gen.h:5035
 msgid ""
 "when using the mouse scroll wheel to change mask parameters, scroll down to "
 "increase the mask size, feather size, opacity, brush hardness and gradient "
@@ -1240,11 +1242,11 @@ msgstr ""
 "opacidade, a dureza do pincel e a curvatura do gradiente\n"
 "por padrão deslizar para cima aumenta esses parâmetros"
 
-#: ../build/bin/preferences_gen.h:5018
+#: ../build/bin/preferences_gen.h:5056
 msgid "middle mouse button zooms to 200%"
 msgstr "botão do meio do mouse fa zoom em 200%"
 
-#: ../build/bin/preferences_gen.h:5032
+#: ../build/bin/preferences_gen.h:5070
 #, no-c-format
 msgid ""
 "if enabled, the zoom level will cycle between 100%, 200% and fit to viewport "
@@ -1256,32 +1258,32 @@ msgstr ""
 "entre encaixar na tela e 100%, e a tecla 'ctrl' pode ser usada para "
 "controlar o nível de zoom."
 
-#: ../build/bin/preferences_gen.h:5053
+#: ../build/bin/preferences_gen.h:5091
 msgid "pattern for the image information line"
 msgstr "padrão para a linha de informações da imagem"
 
-#: ../build/bin/preferences_gen.h:5073
+#: ../build/bin/preferences_gen.h:5111
 msgid "see manual for a list of the tags you can use."
 msgstr "veja o manual para uma lista de etiquetas que pode usar"
 
-#: ../build/bin/preferences_gen.h:5094
+#: ../build/bin/preferences_gen.h:5132
 msgid "position of the image information line"
 msgstr "posição da linha de informações da imagem"
 
-#: ../build/bin/preferences_gen.h:5128
+#: ../build/bin/preferences_gen.h:5166
 msgid "border around image in darkroom mode"
 msgstr "borda ao redor da imagem no modo sala escura"
 
-#: ../build/bin/preferences_gen.h:5148 ../build/bin/preferences_gen.h:7074
-#: ../build/bin/preferences_gen.h:7195 ../build/bin/preferences_gen.h:7476
-#: ../build/bin/preferences_gen.h:7940 ../build/bin/preferences_gen.h:8070
-#: ../build/bin/preferences_gen.h:8115 ../build/bin/preferences_gen.h:8213
-#: ../build/bin/preferences_gen.h:8294 ../build/bin/preferences_gen.h:8340
+#: ../build/bin/preferences_gen.h:5186 ../build/bin/preferences_gen.h:7146
+#: ../build/bin/preferences_gen.h:7267 ../build/bin/preferences_gen.h:7548
+#: ../build/bin/preferences_gen.h:8012 ../build/bin/preferences_gen.h:8142
+#: ../build/bin/preferences_gen.h:8187 ../build/bin/preferences_gen.h:8285
+#: ../build/bin/preferences_gen.h:8366 ../build/bin/preferences_gen.h:8412
 #, c-format
 msgid "double click to reset to `%d'"
 msgstr "clique-duplo para redefinir para `%d'"
 
-#: ../build/bin/preferences_gen.h:5151
+#: ../build/bin/preferences_gen.h:5189
 msgid ""
 "process the image in darkroom mode with a small border. set to 0 if you "
 "don't want any border."
@@ -1289,21 +1291,21 @@ msgstr ""
 "processar a imagem no modo sala escura com uma borda pequena. defina 0 se "
 "você não quer nenhuma borda."
 
-#: ../build/bin/preferences_gen.h:5206
+#: ../build/bin/preferences_gen.h:5244
 msgid "reduce resolution of preview image"
 msgstr "reduzir resolução da imagem de pré-visualização"
 
-#: ../build/bin/preferences_gen.h:5220
+#: ../build/bin/preferences_gen.h:5258
 msgid "decrease to speed up preview rendering, may hinder accurate masking"
 msgstr ""
 "diminua para acelerar a renderização de pré-visualização; pode prejudicar a "
 "precisão do mascaramento"
 
-#: ../build/bin/preferences_gen.h:5241
+#: ../build/bin/preferences_gen.h:5279
 msgid "show loading screen between images"
 msgstr "mostrar tela de carregamento entre imagens"
 
-#: ../build/bin/preferences_gen.h:5254
+#: ../build/bin/preferences_gen.h:5292
 msgid ""
 "show gray loading screen when navigating between images in the darkroom\n"
 "disable to just show a toast message"
@@ -1311,15 +1313,15 @@ msgstr ""
 "mostrar tela cinza de carregamento ao navegar entre imagens na sala escura\n"
 "desabilite para mostrar somente uma mensagem"
 
-#: ../build/bin/preferences_gen.h:5263
+#: ../build/bin/preferences_gen.h:5301
 msgid "modules"
 msgstr "módulos"
 
-#: ../build/bin/preferences_gen.h:5282
+#: ../build/bin/preferences_gen.h:5320
 msgid "display of individual color channels"
 msgstr "mostrar canais individuais de cor"
 
-#: ../build/bin/preferences_gen.h:5296
+#: ../build/bin/preferences_gen.h:5334
 msgid ""
 "defines how color channels are displayed when activated in the parametric "
 "masks feature."
@@ -1327,33 +1329,33 @@ msgstr ""
 "define como os canais de cor são mostrados ao ativar o módulo de máscaras "
 "paramétricas."
 
-#: ../build/bin/preferences_gen.h:5317
+#: ../build/bin/preferences_gen.h:5355
 msgid "hide built-in presets for processing modules"
 msgstr "ocultar predefinições nativas para módulos de processamento"
 
-#: ../build/bin/preferences_gen.h:5330
+#: ../build/bin/preferences_gen.h:5368
 msgid "hide built-in presets of processing modules in presets menu."
 msgstr ""
 "oculta predefinições nativas dos módulos utilitários nos menus de "
 "predefinições."
 
-#: ../build/bin/preferences_gen.h:5351 ../build/bin/preferences_gen.h:5364
+#: ../build/bin/preferences_gen.h:5389 ../build/bin/preferences_gen.h:5402
 msgid "show the guides widget in modules UI"
 msgstr "mostrar a ferramenta de linhas guia na interface dos módulos"
 
-#: ../build/bin/preferences_gen.h:5385
+#: ../build/bin/preferences_gen.h:5423
 msgid "expand a single processing module at a time"
 msgstr "expandir um único módulo de processamento de cada vez"
 
-#: ../build/bin/preferences_gen.h:5398
+#: ../build/bin/preferences_gen.h:5436
 msgid "this option toggles the behavior of shift clicking in darkroom mode"
 msgstr "esta opção alterna o comportamento do shift+clique no modo sala escura"
 
-#: ../build/bin/preferences_gen.h:5419
+#: ../build/bin/preferences_gen.h:5457
 msgid "only collapse modules in current group"
 msgstr "somente recolher módulos no grupo atual"
 
-#: ../build/bin/preferences_gen.h:5432
+#: ../build/bin/preferences_gen.h:5470
 msgid ""
 "if only expanding a single module at a time, only collapse other modules in "
 "the current group - ignore modules in other groups"
@@ -1361,12 +1363,12 @@ msgstr ""
 "se estiver somente expandindo um único módulo por vez, somente recolhe "
 "outros módulos no mesmo grupo - ignora módulos em outros grupos"
 
-#: ../build/bin/preferences_gen.h:5453
+#: ../build/bin/preferences_gen.h:5491
 msgid "expand the module when it is activated, and collapse it when disabled"
 msgstr ""
 "expandir módulo quando estiver ativado e recolhê-lo quando estiver desativado"
 
-#: ../build/bin/preferences_gen.h:5466
+#: ../build/bin/preferences_gen.h:5504
 msgid ""
 "this option allows to expand or collapse automatically the module when it is "
 "enabled or disabled."
@@ -1374,16 +1376,24 @@ msgstr ""
 "esta opção permite expandir o módulo quando estiver ativado e recolhê-lo "
 "quando estiver desabilitado."
 
-#: ../build/bin/preferences_gen.h:5487
+#: ../build/bin/preferences_gen.h:5525
 msgid "scroll processing modules to the top when expanded"
 msgstr "deslizar módulos de processamento para o topo quando expandidos"
 
-#: ../build/bin/preferences_gen.h:5521
+#: ../build/bin/preferences_gen.h:5559
+msgid "swap the utility and processing modules panels"
+msgstr "trocar os painéis dos módulos de utilidade e de processamento"
+
+#: ../build/bin/preferences_gen.h:5572
+msgid "move the list of processing modules to the left of the screen"
+msgstr "mover a lista de módulos de processamento para a esquerda da tela"
+
+#: ../build/bin/preferences_gen.h:5593
 msgid "show right-side buttons in processing module headers"
 msgstr ""
 "mostrar botões do lado direito nos cabeçalhos de módulos de processamento"
 
-#: ../build/bin/preferences_gen.h:5535
+#: ../build/bin/preferences_gen.h:5607
 msgid ""
 "when the mouse is not over a module, the multi-instance, reset and preset "
 "buttons can be hidden:\n"
@@ -1407,11 +1417,11 @@ msgstr ""
 " - 'suave': atenuar gradualmente os botões em um cabeçalho simultaneamente,\n"
 " - 'deslizar': gradualmente ocultar botões individuais conforme necessário"
 
-#: ../build/bin/preferences_gen.h:5556
+#: ../build/bin/preferences_gen.h:5628
 msgid "show mask indicator in module headers"
 msgstr "mostrar indicador de máscara no cabeçalho do módulo"
 
-#: ../build/bin/preferences_gen.h:5569
+#: ../build/bin/preferences_gen.h:5641
 msgid ""
 "if enabled, an icon will be shown in the header of any processing modules "
 "that have a mask applied"
@@ -1419,11 +1429,11 @@ msgstr ""
 "se habilitado, um ícone será mostrado nos cabeçalhos do módulo para indicar "
 "os módulos que possuem uma máscara aplicada"
 
-#: ../build/bin/preferences_gen.h:5590
+#: ../build/bin/preferences_gen.h:5662
 msgid "prompt for name on addition of new instance"
 msgstr "perguntar por nome ao adicionar uma nova instância"
 
-#: ../build/bin/preferences_gen.h:5603
+#: ../build/bin/preferences_gen.h:5675
 msgid ""
 "if enabled, a rename prompt will be present for each new module instance "
 "(either new instance or duplicate)"
@@ -1431,11 +1441,11 @@ msgstr ""
 "se habilitada, um prompt de renomeação será apresentado para cada nova "
 "instância de módulo (tanto novas instâncias como duplicatas)"
 
-#: ../build/bin/preferences_gen.h:5624
+#: ../build/bin/preferences_gen.h:5696
 msgid "automatically update module name"
 msgstr "atualizar o nome do módulo automaticamente"
 
-#: ../build/bin/preferences_gen.h:5637
+#: ../build/bin/preferences_gen.h:5709
 msgid ""
 "if enabled, the module name will be automatically updated to match a preset "
 "name or a preset instance name if present."
@@ -1444,27 +1454,27 @@ msgstr ""
 "combinar com um nome de predefinição ou um nome de instância de "
 "predefinição, se houver."
 
-#: ../build/bin/preferences_gen.h:5669
+#: ../build/bin/preferences_gen.h:5741
 msgid "processing"
 msgstr "processamento"
 
-#: ../build/bin/preferences_gen.h:5671
+#: ../build/bin/preferences_gen.h:5743
 msgid "image processing"
 msgstr "processamento da imagem"
 
-#: ../build/bin/preferences_gen.h:5690
+#: ../build/bin/preferences_gen.h:5762
 msgid "always use LittleCMS 2 to apply output color profile"
 msgstr "usar sempre LittleCMS 2 ao aplicar perfil de cor de saída"
 
-#: ../build/bin/preferences_gen.h:5703
+#: ../build/bin/preferences_gen.h:5775
 msgid "this is slower than the default."
 msgstr "isto é mais lento que o padrão."
 
-#: ../build/bin/preferences_gen.h:5724
+#: ../build/bin/preferences_gen.h:5796
 msgid "pixel interpolator (warp)"
 msgstr "interpolador de pixel (distorção)"
 
-#: ../build/bin/preferences_gen.h:5738
+#: ../build/bin/preferences_gen.h:5810
 msgid ""
 "pixel interpolator used in modules for rotation, lens correction, liquify, "
 "cropping and final scaling (bilinear, bicubic, lanczos2)."
@@ -1472,22 +1482,22 @@ msgstr ""
 "interpolador de pixel usado em módulos para rotação, correção da lente, "
 "distorcer, corte e mudança final de escala (bilinear, bicúbico, lanczos2)."
 
-#: ../build/bin/preferences_gen.h:5759
+#: ../build/bin/preferences_gen.h:5831
 msgid "pixel interpolator (scaling)"
 msgstr "interpolador de pixel (mudança de escala)"
 
-#: ../build/bin/preferences_gen.h:5773
+#: ../build/bin/preferences_gen.h:5845
 msgid ""
 "pixel interpolator used for scaling (bilinear, bicubic, lanczos2, lanczos3)."
 msgstr ""
 "interpolador de pixel usado para mudança de escala (bilinear, bicúbico, "
 "lanczos2, lanczos3)."
 
-#: ../build/bin/preferences_gen.h:5794
+#: ../build/bin/preferences_gen.h:5866
 msgid "LUT 3D root folder"
 msgstr "pasta raiz do LUT 3D"
 
-#: ../build/bin/preferences_gen.h:5800 ../src/control/jobs/control_jobs.c:2154
+#: ../build/bin/preferences_gen.h:5872 ../src/control/jobs/control_jobs.c:2154
 #: ../src/control/jobs/control_jobs.c:2211 ../src/gui/preferences.c:1093
 #: ../src/gui/presets.c:422 ../src/imageio/storage/disk.c:197
 #: ../src/imageio/storage/disk.c:277 ../src/imageio/storage/gallery.c:149
@@ -1498,7 +1508,7 @@ msgstr "pasta raiz do LUT 3D"
 msgid "select directory"
 msgstr "selecione pasta"
 
-#: ../build/bin/preferences_gen.h:5814
+#: ../build/bin/preferences_gen.h:5886
 msgid ""
 "this folder (and sub-folders) contains LUT files used by LUT 3D module. "
 "(restart required)"
@@ -1506,11 +1516,11 @@ msgstr ""
 "esta pasta (e subpastas) contém arquivos LUT usados pelo módulo LUT 3D. (é "
 "necssário reiniciar o darktable)"
 
-#: ../build/bin/preferences_gen.h:5835
+#: ../build/bin/preferences_gen.h:5907
 msgid "auto-apply pixel workflow defaults"
 msgstr "auto-aplicar padrões do fluxo de trabalho"
 
-#: ../build/bin/preferences_gen.h:5849
+#: ../build/bin/preferences_gen.h:5921
 msgid ""
 "scene-referred workflow is based on linear modules and will auto-apply "
 "filmic or sigmoid, color calibration and exposure,\n"
@@ -1523,11 +1533,11 @@ msgstr ""
 "aplicará a curva base, balanço de branco e a ordem legada de módulos da "
 "pixelpipe."
 
-#: ../build/bin/preferences_gen.h:5870
+#: ../build/bin/preferences_gen.h:5942
 msgid "auto-apply per camera basecurve presets"
 msgstr "auto-aplicar predefinições de curva base por câmera"
 
-#: ../build/bin/preferences_gen.h:5883
+#: ../build/bin/preferences_gen.h:5955
 msgid ""
 "use the per-camera basecurve by default instead of the generic manufacturer "
 "one if there is one available. (restart required)\n"
@@ -1543,11 +1553,11 @@ msgstr ""
 "para prevenir a aplicação automática de definições de curva base, \"auto-"
 "aplicar padrões do fluxo de trabalho\" deve ser configurado como \"nenhum\""
 
-#: ../build/bin/preferences_gen.h:5904
+#: ../build/bin/preferences_gen.h:5976
 msgid "detect monochrome previews"
 msgstr "detectar imagens monocromáticas"
 
-#: ../build/bin/preferences_gen.h:5917
+#: ../build/bin/preferences_gen.h:5989
 msgid ""
 "many monochrome images can be identified via EXIF and preview data. beware: "
 "this slows down imports and reading of EXIF data"
@@ -1556,11 +1566,11 @@ msgstr ""
 "pré-visualização. cuidado: isto torna a importação e leitura de dados EXIF "
 "lentos"
 
-#: ../build/bin/preferences_gen.h:5938
+#: ../build/bin/preferences_gen.h:6010
 msgid "show warning messages"
 msgstr "mostrar mensagens de alerta"
 
-#: ../build/bin/preferences_gen.h:5951
+#: ../build/bin/preferences_gen.h:6023
 msgid ""
 "display messages in modules to warn beginner users when non-standard and "
 "possibly harmful settings are used in the pipeline.\n"
@@ -1572,15 +1582,15 @@ msgstr ""
 "estas mensagens podem ser falsos positivos e devem ser ignoradas se você "
 "sabe o que está fazendo. esta opção as esconderá o tempo todo."
 
-#: ../build/bin/preferences_gen.h:5960
+#: ../build/bin/preferences_gen.h:6032
 msgid "CPU / memory"
 msgstr "CPU / memória"
 
-#: ../build/bin/preferences_gen.h:5979
+#: ../build/bin/preferences_gen.h:6051
 msgid "darktable resources"
 msgstr "recursos do darktable"
 
-#: ../build/bin/preferences_gen.h:5994
+#: ../build/bin/preferences_gen.h:6066
 #, no-c-format
 msgid ""
 "defines how much darktable may take from your system resources:\n"
@@ -1601,11 +1611,11 @@ msgstr ""
 " - 'grande': é a melhor opção se você está usando principalmente o darktable "
 "e quer que ele use o máximo de recursos do seu sistma para melhor desempenho."
 
-#: ../build/bin/preferences_gen.h:6015
+#: ../build/bin/preferences_gen.h:6087
 msgid "prefer performance over quality"
 msgstr "priorizar desempenho sobre qualidade"
 
-#: ../build/bin/preferences_gen.h:6028
+#: ../build/bin/preferences_gen.h:6100
 msgid ""
 "if switched on, thumbnails and previews are rendered at lower quality but 4 "
 "times faster"
@@ -1613,15 +1623,15 @@ msgstr ""
 "se ligado as miniaturas e pré-visualizações são renderizadas com qualidade "
 "menor, mas quatro vezes mais rápido."
 
-#: ../build/bin/preferences_gen.h:6037
+#: ../build/bin/preferences_gen.h:6109
 msgid "OpenCL"
 msgstr "OpenCL"
 
-#: ../build/bin/preferences_gen.h:6056
+#: ../build/bin/preferences_gen.h:6128
 msgid "activate OpenCL support"
 msgstr "ativar suporte ao OpenCL"
 
-#: ../build/bin/preferences_gen.h:6069
+#: ../build/bin/preferences_gen.h:6141
 msgid ""
 "if found, use OpenCL runtime on your system to speed up processing.\n"
 "can be switched on and off at any time."
@@ -1629,32 +1639,32 @@ msgstr ""
 "se encontrado, utilizar OpenCL no sistema para aumentar desempenho na "
 "velocidade de processamento. pode ser ligado e desligado a qualquer momento."
 
-#: ../build/bin/preferences_gen.h:6073 ../build/bin/preferences_gen.h:6118
-#: ../build/bin/preferences_gen.h:6162 ../build/bin/preferences_gen.h:6213
-#: ../build/bin/preferences_gen.h:6257 ../build/bin/preferences_gen.h:6301
-#: ../build/bin/preferences_gen.h:6345 ../build/bin/preferences_gen.h:6389
-#: ../build/bin/preferences_gen.h:6433 ../build/bin/preferences_gen.h:7592
+#: ../build/bin/preferences_gen.h:6145 ../build/bin/preferences_gen.h:6190
+#: ../build/bin/preferences_gen.h:6234 ../build/bin/preferences_gen.h:6285
+#: ../build/bin/preferences_gen.h:6329 ../build/bin/preferences_gen.h:6373
+#: ../build/bin/preferences_gen.h:6417 ../build/bin/preferences_gen.h:6461
+#: ../build/bin/preferences_gen.h:6505 ../build/bin/preferences_gen.h:7664
 msgid "not available"
 msgstr "não disponível"
 
-#: ../build/bin/preferences_gen.h:6075 ../build/bin/preferences_gen.h:6076
-#: ../build/bin/preferences_gen.h:6120 ../build/bin/preferences_gen.h:6121
-#: ../build/bin/preferences_gen.h:6164 ../build/bin/preferences_gen.h:6165
-#: ../build/bin/preferences_gen.h:6215 ../build/bin/preferences_gen.h:6216
-#: ../build/bin/preferences_gen.h:6259 ../build/bin/preferences_gen.h:6260
-#: ../build/bin/preferences_gen.h:6303 ../build/bin/preferences_gen.h:6304
-#: ../build/bin/preferences_gen.h:6347 ../build/bin/preferences_gen.h:6348
-#: ../build/bin/preferences_gen.h:6391 ../build/bin/preferences_gen.h:6392
-#: ../build/bin/preferences_gen.h:6435 ../build/bin/preferences_gen.h:6436
-#: ../build/bin/preferences_gen.h:7594 ../build/bin/preferences_gen.h:7595
+#: ../build/bin/preferences_gen.h:6147 ../build/bin/preferences_gen.h:6148
+#: ../build/bin/preferences_gen.h:6192 ../build/bin/preferences_gen.h:6193
+#: ../build/bin/preferences_gen.h:6236 ../build/bin/preferences_gen.h:6237
+#: ../build/bin/preferences_gen.h:6287 ../build/bin/preferences_gen.h:6288
+#: ../build/bin/preferences_gen.h:6331 ../build/bin/preferences_gen.h:6332
+#: ../build/bin/preferences_gen.h:6375 ../build/bin/preferences_gen.h:6376
+#: ../build/bin/preferences_gen.h:6419 ../build/bin/preferences_gen.h:6420
+#: ../build/bin/preferences_gen.h:6463 ../build/bin/preferences_gen.h:6464
+#: ../build/bin/preferences_gen.h:6507 ../build/bin/preferences_gen.h:6508
+#: ../build/bin/preferences_gen.h:7666 ../build/bin/preferences_gen.h:7667
 msgid "not available on this system"
 msgstr "não disponível neste sistema"
 
-#: ../build/bin/preferences_gen.h:6100
+#: ../build/bin/preferences_gen.h:6172
 msgid "OpenCL scheduling profile"
 msgstr "perfil de agendamento do OpenCL"
 
-#: ../build/bin/preferences_gen.h:6114
+#: ../build/bin/preferences_gen.h:6186
 msgid ""
 "defines how preview and full pixelpipe tasks are scheduled on OpenCL enabled "
 "systems:\n"
@@ -1672,11 +1682,11 @@ msgstr ""
 "diferentes GPUs;\n"
 " - 'GPU muito rápida' -- processa as duas pixelpipes sequencialmente na GPU."
 
-#: ../build/bin/preferences_gen.h:6145
+#: ../build/bin/preferences_gen.h:6217
 msgid "use all device memory"
 msgstr "usar toda a memória do dispositivo"
 
-#: ../build/bin/preferences_gen.h:6158
+#: ../build/bin/preferences_gen.h:6230
 msgid ""
 "if enabled darktable will use all device memory except a safety margin "
 "(headroom, default is 600MB)"
@@ -1684,41 +1694,41 @@ msgstr ""
 "se habilitado o darktable usará toda a memória do dispositivo exceto uma "
 "margem de segurança (headroom, o padrão é 600Mb)"
 
-#: ../build/bin/preferences_gen.h:6177
+#: ../build/bin/preferences_gen.h:6249
 msgid "OpenCL drivers"
 msgstr "drivers OpenCL"
 
-#: ../build/bin/preferences_gen.h:6196
+#: ../build/bin/preferences_gen.h:6268
 msgid "Intel GPU"
 msgstr "Intel GPU"
 
-#: ../build/bin/preferences_gen.h:6209
+#: ../build/bin/preferences_gen.h:6281
 msgid "Intel(R) OpenCL Graphics for all supported platforms (vendor provided)"
 msgstr ""
 "Intel(R) OpenCL Graphics para todas as plataformas suportadas (vendor "
 "provided)"
 
-#: ../build/bin/preferences_gen.h:6240
+#: ../build/bin/preferences_gen.h:6312
 msgid "Nvidia CUDA"
 msgstr "Nvidia CUDA"
 
-#: ../build/bin/preferences_gen.h:6253
+#: ../build/bin/preferences_gen.h:6325
 msgid "Nvidia CUDA based OpenCL (vendor provided)"
 msgstr "Nvidia CUDA based OpenCL (vendor provided)"
 
-#: ../build/bin/preferences_gen.h:6284
+#: ../build/bin/preferences_gen.h:6356
 msgid "AMD ROCm"
 msgstr "AMD ROCm"
 
-#: ../build/bin/preferences_gen.h:6297
+#: ../build/bin/preferences_gen.h:6369
 msgid "AMD Accelerated Parallel Processing (vendor provided)"
 msgstr "AMD Accelerated Parallel Processing (vendor provided)"
 
-#: ../build/bin/preferences_gen.h:6328
+#: ../build/bin/preferences_gen.h:6400
 msgid "RustiCL (experimental)"
 msgstr "RustiCL (experimental)"
 
-#: ../build/bin/preferences_gen.h:6341
+#: ../build/bin/preferences_gen.h:6413
 msgid ""
 "RustiCL Mesa OpenCL, still unstable. if you want to use this, you should "
 "disable the vendor driver"
@@ -1726,19 +1736,19 @@ msgstr ""
 "RustiCL Mesa OpenCL, ainda instável. se quiser usar, deve desabilitar o "
 "driver do fornecedor"
 
-#: ../build/bin/preferences_gen.h:6372
+#: ../build/bin/preferences_gen.h:6444
 msgid "Apple"
 msgstr "Apple"
 
-#: ../build/bin/preferences_gen.h:6385
+#: ../build/bin/preferences_gen.h:6457
 msgid "Apple OpenCL (vendor provided)"
 msgstr "Apple OpenCL (vendor provided)"
 
-#: ../build/bin/preferences_gen.h:6416
+#: ../build/bin/preferences_gen.h:6488
 msgid "Microsoft OpenCLOn12"
 msgstr "Microsoft OpenCLOn12"
 
-#: ../build/bin/preferences_gen.h:6429
+#: ../build/bin/preferences_gen.h:6501
 msgid ""
 "Microsoft OpenCLOn12, only use this if the vendor provided driver does not "
 "work or there is none provided."
@@ -1746,11 +1756,11 @@ msgstr ""
 "Microsoft OpenCLOn12, só use se o driver do fornecedor não funcionar, ou se "
 "não houver um."
 
-#: ../build/bin/preferences_gen.h:6460
+#: ../build/bin/preferences_gen.h:6532
 msgid "other platforms"
 msgstr "outras plataformas"
 
-#: ../build/bin/preferences_gen.h:6473
+#: ../build/bin/preferences_gen.h:6545
 msgid ""
 "if set, all unspecified platforms are accepted. only do this if no vendor "
 "driver is available"
@@ -1758,44 +1768,44 @@ msgstr ""
 "se configurado, todas as plataformas não especificadas são aceitas. só faça "
 "isso se não houver driver do fornecedor disponível"
 
-#: ../build/bin/preferences_gen.h:6505
+#: ../build/bin/preferences_gen.h:6577
 msgid "security"
 msgstr "segurança"
 
-#: ../build/bin/preferences_gen.h:6526
+#: ../build/bin/preferences_gen.h:6598
 msgid "ask before removing images from the library"
 msgstr "perguntar antes de remover imagens da biblioteca"
 
-#: ../build/bin/preferences_gen.h:6539
+#: ../build/bin/preferences_gen.h:6611
 msgid "always ask the user before removing image information from the library"
 msgstr ""
 "sempre perguntar o usuário antes de remover informação de imagens da "
 "biblioteca"
 
-#: ../build/bin/preferences_gen.h:6560
+#: ../build/bin/preferences_gen.h:6632
 msgid "ask before deleting images from disk"
 msgstr "perguntar antes de apagar imagens do disco"
 
-#: ../build/bin/preferences_gen.h:6573
+#: ../build/bin/preferences_gen.h:6645
 msgid "always ask the user before any image file is deleted"
 msgstr ""
 "sempre perguntar ao usuário antes de remover qualquer arquivo de imagem."
 
-#: ../build/bin/preferences_gen.h:6594
+#: ../build/bin/preferences_gen.h:6666
 msgid "ask before discarding history stack"
 msgstr "perguntar antes de descartar pilha de histórico"
 
-#: ../build/bin/preferences_gen.h:6607
+#: ../build/bin/preferences_gen.h:6679
 msgid "always ask the user before history stack is discarded on any image"
 msgstr ""
 "sempre perguntar ao usuário antes de excluir a pilha de histórico em "
 "qualquer imagem."
 
-#: ../build/bin/preferences_gen.h:6628
+#: ../build/bin/preferences_gen.h:6700
 msgid "try to use trash when deleting images"
 msgstr "tentar enviar arquivos para a lixeira quando apagar arquivos de imagem"
 
-#: ../build/bin/preferences_gen.h:6641
+#: ../build/bin/preferences_gen.h:6713
 msgid ""
 "send files to trash instead of permanently deleting files on system that "
 "supports it"
@@ -1803,28 +1813,28 @@ msgstr ""
 "enviar arquivos para a lixeira em vez de apagar permanentemente(em sistemas "
 "que permitem isso)"
 
-#: ../build/bin/preferences_gen.h:6662
+#: ../build/bin/preferences_gen.h:6734
 msgid "ask before moving images from film roll folder"
 msgstr "perguntar antes de mover imagens da pasta de rolo de filme"
 
-#: ../build/bin/preferences_gen.h:6675
+#: ../build/bin/preferences_gen.h:6747
 msgid "always ask the user before any image file is moved."
 msgstr "sempre perguntar ao usuário antes de mover qualquer arquivo de imagem."
 
-#: ../build/bin/preferences_gen.h:6696
+#: ../build/bin/preferences_gen.h:6768
 msgid "ask before copying images to new film roll folder"
 msgstr "perguntar antes de copiar imagens para uma nova pasta de rolo de filme"
 
-#: ../build/bin/preferences_gen.h:6709
+#: ../build/bin/preferences_gen.h:6781
 msgid "always ask the user before any image file is copied."
 msgstr ""
 "sempre perguntar ao usuário antes de copiar qualquer arquivo de imagem."
 
-#: ../build/bin/preferences_gen.h:6730
+#: ../build/bin/preferences_gen.h:6802
 msgid "ask before removing empty folders"
 msgstr "perguntar antes de remover pastas vazias"
 
-#: ../build/bin/preferences_gen.h:6743
+#: ../build/bin/preferences_gen.h:6815
 msgid ""
 "always ask the user before removing any empty folder. this can happen after "
 "moving or deleting images."
@@ -1832,40 +1842,40 @@ msgstr ""
 "sempre perguntar ao usuário antes de excluir qualquer pasta vazia. isto pode "
 "acontecer depois de mover ou remover imagens."
 
-#: ../build/bin/preferences_gen.h:6764
+#: ../build/bin/preferences_gen.h:6836
 msgid "ask before deleting a tag"
 msgstr "perguntar antes de excluir uma etiqueta"
 
-#: ../build/bin/preferences_gen.h:6797
+#: ../build/bin/preferences_gen.h:6869
 msgid "ask before deleting a style"
 msgstr "perguntar antes de excluir um estilo"
 
-#: ../build/bin/preferences_gen.h:6830
+#: ../build/bin/preferences_gen.h:6902
 msgid "ask before deleting a preset"
 msgstr "perguntar antes de excluir uma predefinição"
 
-#: ../build/bin/preferences_gen.h:6843
+#: ../build/bin/preferences_gen.h:6915
 msgid "will ask for confirmation before deleting or overwriting a preset"
 msgstr "pedir confirmação antes de remover ou sobrescrever uma predefinição"
 
-#: ../build/bin/preferences_gen.h:6864
+#: ../build/bin/preferences_gen.h:6936
 msgid "ask before exporting in overwrite mode"
 msgstr "perguntar antes de exportar em modo de sobrescrita"
 
-#: ../build/bin/preferences_gen.h:6877
+#: ../build/bin/preferences_gen.h:6949
 msgid "will ask for confirmation before exporting files in overwrite mode"
 msgstr "pedir confirmação antes de exportar arquivos em modo de sobrescrita"
 
 #. italic
-#: ../build/bin/preferences_gen.h:6886 ../src/libs/tools/viewswitcher.c:148
+#: ../build/bin/preferences_gen.h:6958 ../src/libs/tools/viewswitcher.c:148
 msgid "other"
 msgstr "outro"
 
-#: ../build/bin/preferences_gen.h:6905
+#: ../build/bin/preferences_gen.h:6977
 msgid "password storage backend to use"
 msgstr "backend a usar para armazenamento de senhas"
 
-#: ../build/bin/preferences_gen.h:6927
+#: ../build/bin/preferences_gen.h:6999
 msgid ""
 "the storage backend for password storage: auto, none, libsecret, kwallet, "
 "apple_keychain, windows_credentials"
@@ -1873,11 +1883,11 @@ msgstr ""
 "o backend the armazenamento para senhas: auto, nenhum, libsecret, kwallet, "
 "apple keychain, credenciais windows"
 
-#: ../build/bin/preferences_gen.h:6948
+#: ../build/bin/preferences_gen.h:7020
 msgid "executable for playing audio files"
 msgstr "executável para tocar arquivos de áudio"
 
-#: ../build/bin/preferences_gen.h:6966
+#: ../build/bin/preferences_gen.h:7038
 msgid ""
 "this external program is used to play audio files some cameras record to "
 "keep notes for images"
@@ -1885,19 +1895,19 @@ msgstr ""
 "este programa externo é usado para tocar arquivos de áudio que algumas "
 "câmeras gravam para manter notas sobre imagens"
 
-#: ../build/bin/preferences_gen.h:6998
+#: ../build/bin/preferences_gen.h:7070
 msgid "storage"
 msgstr "armazenamento"
 
-#: ../build/bin/preferences_gen.h:7000 ../src/control/crawler.c:717
+#: ../build/bin/preferences_gen.h:7072 ../src/control/crawler.c:717
 msgid "database"
 msgstr "base de dados"
 
-#: ../build/bin/preferences_gen.h:7019
+#: ../build/bin/preferences_gen.h:7091
 msgid "create database snapshot"
 msgstr "criar cópia instantânea da base de dados"
 
-#: ../build/bin/preferences_gen.h:7033
+#: ../build/bin/preferences_gen.h:7105
 msgid ""
 "database snapshots are created right before closing darktable. options allow "
 "you to choose how often to make snapshots:\n"
@@ -1924,11 +1934,11 @@ msgstr ""
 " - 'ao fechar': crie uma cópia instantânea toda vez que o darktable for "
 "fechado"
 
-#: ../build/bin/preferences_gen.h:7054
+#: ../build/bin/preferences_gen.h:7126
 msgid "how many snapshots to keep"
 msgstr "quantas cópias de segurança manter"
 
-#: ../build/bin/preferences_gen.h:7077
+#: ../build/bin/preferences_gen.h:7149
 msgid ""
 "after successfully creating snapshot, how many older snapshots to keep "
 "(excluding mandatory version update ones). enter -1 to keep all snapshots\n"
@@ -1943,15 +1953,15 @@ msgstr ""
 "recente\n"
 "para uma recuperação."
 
-#: ../build/bin/preferences_gen.h:7086 ../src/libs/copy_history.c:156
+#: ../build/bin/preferences_gen.h:7158 ../src/libs/copy_history.c:156
 msgid "XMP sidecar files"
 msgstr "arquivos auxiliares XMP"
 
-#: ../build/bin/preferences_gen.h:7105
+#: ../build/bin/preferences_gen.h:7177
 msgid "create XMP files"
 msgstr "criar arquivos XMP"
 
-#: ../build/bin/preferences_gen.h:7119
+#: ../build/bin/preferences_gen.h:7191
 msgid ""
 "XMP sidecar files hold information about all your development steps to allow "
 "flawless re-importing of image files.\n"
@@ -1973,11 +1983,11 @@ msgstr ""
 " - 'após edição': depois de qualquer mudança feita na imagem ou após "
 "adicionar etiquetas."
 
-#: ../build/bin/preferences_gen.h:7140
+#: ../build/bin/preferences_gen.h:7212
 msgid "store XMP tags in compressed format"
 msgstr "salvar etiquetas XMP em formato comprimido"
 
-#: ../build/bin/preferences_gen.h:7154
+#: ../build/bin/preferences_gen.h:7226
 msgid ""
 "entries in XMP tags can get rather large and may exceed the available space "
 "to store the history stack in output files.\n"
@@ -1987,11 +1997,11 @@ msgstr ""
 "espaço disponível para armazenar o histórico em arquivos de saída.\n"
 "esta opção permite que etiquetas XMP sejam comprimidos e economizem espaço."
 
-#: ../build/bin/preferences_gen.h:7175
+#: ../build/bin/preferences_gen.h:7247
 msgid "auto-save interval"
 msgstr "intervalo para auto-salvar"
 
-#: ../build/bin/preferences_gen.h:7198
+#: ../build/bin/preferences_gen.h:7270
 msgid ""
 "automatically save history while developing using the given interval (in "
 "seconds); set to zero to disable auto-saving. auto-saving might be disabled "
@@ -2001,11 +2011,11 @@ msgstr ""
 "em zero para desabilitar a auto-gravação. a gravação automática pode ser "
 "desabilitada em drives lentos."
 
-#: ../build/bin/preferences_gen.h:7219
+#: ../build/bin/preferences_gen.h:7291
 msgid "look for updated XMP files on startup"
 msgstr "procurar por arquivos XMP atualizados ao iniciar"
 
-#: ../build/bin/preferences_gen.h:7232
+#: ../build/bin/preferences_gen.h:7304
 msgid ""
 "check file modification times of all XMP files on startup to check if any "
 "got updated in the meantime"
@@ -2013,19 +2023,19 @@ msgstr ""
 "verificar tempo de modificação de todos os arquivos XMP ao iniciar para ver "
 "se algum foi modificado"
 
-#: ../build/bin/preferences_gen.h:7264
+#: ../build/bin/preferences_gen.h:7336
 msgid "miscellaneous"
 msgstr "miscelânea"
 
-#: ../build/bin/preferences_gen.h:7266
+#: ../build/bin/preferences_gen.h:7338
 msgid "interface"
 msgstr "interface"
 
-#: ../build/bin/preferences_gen.h:7285
+#: ../build/bin/preferences_gen.h:7357
 msgid "load default shortcuts at startup"
 msgstr "carregar atalhos padrão ao iniciar"
 
-#: ../build/bin/preferences_gen.h:7298
+#: ../build/bin/preferences_gen.h:7370
 msgid ""
 "load default shortcuts before user settings. switch off to prevent deleted "
 "defaults returning"
@@ -2033,30 +2043,30 @@ msgstr ""
 "carregar atalhos padrão antes de usar as configurações. defina como "
 "desligado para prevenir padrões removidos de retornarem"
 
-#: ../build/bin/preferences_gen.h:7319
+#: ../build/bin/preferences_gen.h:7391
 msgid "scale slider step with min/max"
 msgstr "escalonar passo do controle deslizante com mín/máx"
 
-#: ../build/bin/preferences_gen.h:7332
+#: ../build/bin/preferences_gen.h:7404
 msgid "vary slider step size with min/max range"
 msgstr "variar o tamanho do passo do deslizador com faixa min/max"
 
-#: ../build/bin/preferences_gen.h:7353
+#: ../build/bin/preferences_gen.h:7425
 msgid "sort built-in presets first"
 msgstr "ordenar predefinições nativas primeiro"
 
-#: ../build/bin/preferences_gen.h:7366
+#: ../build/bin/preferences_gen.h:7438
 msgid ""
 "whether to show built-in presets first before user's presets in presets menu."
 msgstr ""
 "se as predefinições nativas devem ser mostradas primeiro no menu de "
 "predefinições do usuário."
 
-#: ../build/bin/preferences_gen.h:7387
+#: ../build/bin/preferences_gen.h:7459
 msgid "mouse wheel scrolls modules side panel by default"
 msgstr "roda do mouse movimenta o painel lateral por padrão"
 
-#: ../build/bin/preferences_gen.h:7400
+#: ../build/bin/preferences_gen.h:7472
 msgid ""
 "when enabled, use mouse wheel to scroll modules side panel.  use ctrl+alt to "
 "use mouse wheel for data entry.  when disabled, this behavior is reversed"
@@ -2065,11 +2075,11 @@ msgstr ""
 "por padrão. se ctrl+alt para usar o botão de rolagem para entrada de dados. "
 "quando desabilitado, este comportamento é revertido"
 
-#: ../build/bin/preferences_gen.h:7421
+#: ../build/bin/preferences_gen.h:7493
 msgid "always show panels' scrollbars"
 msgstr "sempre mostrar barras de rolagem dos painéis"
 
-#: ../build/bin/preferences_gen.h:7434
+#: ../build/bin/preferences_gen.h:7506
 msgid ""
 "defines whether the panel scrollbars should be always visible or activated "
 "only depending on the content. (restart required)"
@@ -2077,11 +2087,11 @@ msgstr ""
 "define se as barras de rolagem dos painéis sempre devem ficar visíveis ou se "
 "ativadas somente dependendo do contexto. (precisa reiniciar)"
 
-#: ../build/bin/preferences_gen.h:7455
+#: ../build/bin/preferences_gen.h:7527
 msgid "duration of the UI transitions in ms"
 msgstr "duração das transições da interface em ms"
 
-#: ../build/bin/preferences_gen.h:7479
+#: ../build/bin/preferences_gen.h:7551
 msgid ""
 "how long the transitions take (in ms) for expanding or collapsing modules "
 "and other UI elements"
@@ -2089,21 +2099,21 @@ msgstr ""
 "quanto tempo as transições levam (em ms) para expandir ou colapsar módulos e "
 "outros elementos da interface"
 
-#: ../build/bin/preferences_gen.h:7500
+#: ../build/bin/preferences_gen.h:7572
 msgid "position of the scopes module"
 msgstr "posição do módulo histograma"
 
-#: ../build/bin/preferences_gen.h:7514
+#: ../build/bin/preferences_gen.h:7586
 msgid "position the scopes at the top-left or top-right of the screen"
 msgstr ""
 "posicionar do histograma na parte superior esquerda ou parte superior "
 "direita da tela"
 
-#: ../build/bin/preferences_gen.h:7535
+#: ../build/bin/preferences_gen.h:7607
 msgid "method to use for getting the display profile"
 msgstr "método usado para obter o perfil do monitor"
 
-#: ../build/bin/preferences_gen.h:7549
+#: ../build/bin/preferences_gen.h:7621
 msgid ""
 "this option allows to force a specific means of getting the current display "
 "profile.\n"
@@ -2113,11 +2123,11 @@ msgstr ""
 "atual.\n"
 "é útil quando uma alternativa dá resultados errados"
 
-#: ../build/bin/preferences_gen.h:7570
+#: ../build/bin/preferences_gen.h:7642
 msgid "order or exclude MIDI devices"
 msgstr "carregar ou excluir dispositivos MIDI"
 
-#: ../build/bin/preferences_gen.h:7588
+#: ../build/bin/preferences_gen.h:7660
 msgid ""
 "comma-separated list of device name fragments that if matched load MIDI "
 "device at id given by location in list\n"
@@ -2132,17 +2142,17 @@ msgstr ""
 "'BeatStep:63:16'"
 
 #. tags
-#: ../build/bin/preferences_gen.h:7607 ../src/develop/lightroom.c:1573
+#: ../build/bin/preferences_gen.h:7679 ../src/develop/lightroom.c:1573
 #: ../src/gui/import_metadata.c:476 ../src/libs/export_metadata.c:322
 #: ../src/libs/image.c:622 ../src/libs/metadata_view.c:178
 msgid "tags"
 msgstr "etiquetas"
 
-#: ../build/bin/preferences_gen.h:7626
+#: ../build/bin/preferences_gen.h:7698
 msgid "omit hierarchy in simple tag lists"
 msgstr "omitir hierarquia em listas simples de etiquetas"
 
-#: ../build/bin/preferences_gen.h:7639
+#: ../build/bin/preferences_gen.h:7711
 msgid ""
 "when creating an XMP sidecar file the hierarchical tags are also added as a "
 "simple list\n"
@@ -2156,15 +2166,15 @@ msgstr ""
 "incluirá a última parte das etiquetas e ignorará o resto. assim, 'foo|bar|"
 "baz' somente adicionará 'baz'."
 
-#: ../build/bin/preferences_gen.h:7648
+#: ../build/bin/preferences_gen.h:7720
 msgid "shortcuts with multiple instances"
 msgstr "atalhos de teclado com múltiplas instâncias"
 
-#: ../build/bin/preferences_gen.h:7667
+#: ../build/bin/preferences_gen.h:7739
 msgid "prefer focused instance"
 msgstr "preferir instância em foco"
 
-#: ../build/bin/preferences_gen.h:7680
+#: ../build/bin/preferences_gen.h:7752
 msgid ""
 "where multiple instances of a module are present, apply shortcuts to the "
 "instance that has focus\n"
@@ -2179,20 +2189,20 @@ msgstr ""
 "aplicados.\n"
 "nota: misturar atalhos sempre aplica à instância em foco"
 
-#: ../build/bin/preferences_gen.h:7701
+#: ../build/bin/preferences_gen.h:7773
 msgid "prefer expanded instances"
 msgstr "preferir instâncias expandidas"
 
-#: ../build/bin/preferences_gen.h:7714
+#: ../build/bin/preferences_gen.h:7786
 msgid "if instances of the module are expanded, ignore collapsed instances"
 msgstr ""
 "se instâncias do módulo estão expandidas, ignorar as instâncias recolhidas"
 
-#: ../build/bin/preferences_gen.h:7735
+#: ../build/bin/preferences_gen.h:7807
 msgid "prefer enabled instances"
 msgstr "preferir instâncias ativas"
 
-#: ../build/bin/preferences_gen.h:7748
+#: ../build/bin/preferences_gen.h:7820
 msgid ""
 "after applying the above rule, if instances of the module are active, ignore "
 "inactive instances"
@@ -2200,11 +2210,11 @@ msgstr ""
 "depois de aplicar as regras acima, se instâncias de um módulo estiverem "
 "ativas, ignore as instâncias inativas"
 
-#: ../build/bin/preferences_gen.h:7769
+#: ../build/bin/preferences_gen.h:7841
 msgid "prefer unmasked instances"
 msgstr "preferir instâncias não mascaradas"
 
-#: ../build/bin/preferences_gen.h:7782
+#: ../build/bin/preferences_gen.h:7854
 msgid ""
 "after applying the above rules, if instances of the module are unmasked, "
 "ignore masked instances"
@@ -2212,11 +2222,11 @@ msgstr ""
 "depois de aplicar as regras acima, se instâncias de um módulo estiverem não-"
 "mascaradas, ignore as instâncias mascaradas"
 
-#: ../build/bin/preferences_gen.h:7803
+#: ../build/bin/preferences_gen.h:7875
 msgid "selection order"
 msgstr "ordem de seleção"
 
-#: ../build/bin/preferences_gen.h:7817
+#: ../build/bin/preferences_gen.h:7889
 msgid ""
 "after applying the above rules, apply the shortcut based on its position in "
 "the pixelpipe"
@@ -2224,11 +2234,11 @@ msgstr ""
 "depois de aplicar as regras acima, aplique o atalho baseando-se na sua "
 "posição no pixelpipe"
 
-#: ../build/bin/preferences_gen.h:7838
+#: ../build/bin/preferences_gen.h:7910
 msgid "allow visual assignment to specific instances"
 msgstr "permitir atribuição visual para instâncias específicas"
 
-#: ../build/bin/preferences_gen.h:7851
+#: ../build/bin/preferences_gen.h:7923
 msgid ""
 "when multiple instances are present on an image this allows shortcuts to be "
 "visually assigned to those specific instances\n"
@@ -2239,15 +2249,15 @@ msgstr ""
 "os\n"
 "atalhos serão sempre atribuídos à instância preferencial"
 
-#: ../build/bin/preferences_gen.h:7860
+#: ../build/bin/preferences_gen.h:7932
 msgid "map / geolocalization view"
 msgstr "vista de mapa / geolocalização"
 
-#: ../build/bin/preferences_gen.h:7879
+#: ../build/bin/preferences_gen.h:7951
 msgid "pretty print the image location"
 msgstr "impressão clara da localização da imagem"
 
-#: ../build/bin/preferences_gen.h:7892
+#: ../build/bin/preferences_gen.h:7964
 msgid ""
 "show a more readable representation of the location in the image information "
 "module"
@@ -2255,28 +2265,28 @@ msgstr ""
 "mostra uma representação mais legível da localização no módulo de informação "
 "da imagem"
 
-#: ../build/bin/preferences_gen.h:7901
+#: ../build/bin/preferences_gen.h:7973
 msgid "slideshow view"
 msgstr "vista de apresentação"
 
-#: ../build/bin/preferences_gen.h:7920
+#: ../build/bin/preferences_gen.h:7992
 msgid "waiting time between each picture in slideshow"
 msgstr "tempo entre fotos na apresentação"
 
-#: ../build/bin/preferences_gen.h:7980
+#: ../build/bin/preferences_gen.h:8052
 msgid "do not set the 'uncategorized' entry for tags"
 msgstr "não definir entrada 'sem categoria' para etiquetas"
 
-#: ../build/bin/preferences_gen.h:7993
+#: ../build/bin/preferences_gen.h:8065
 msgid ""
 "do not set the 'uncategorized' entry for tags which do not have children"
 msgstr "não definir entrada 'sem categoria' para etiquetas que não têm filhas"
 
-#: ../build/bin/preferences_gen.h:8014
+#: ../build/bin/preferences_gen.h:8086
 msgid "tags case sensitivity"
 msgstr "sensibilidade à caixa alta/baixa nas etiquetas"
 
-#: ../build/bin/preferences_gen.h:8028
+#: ../build/bin/preferences_gen.h:8100
 msgid ""
 "tags case sensitivity. without the Sqlite ICU extension, insensitivity works "
 "only for the 26 latin letters"
@@ -2284,20 +2294,20 @@ msgstr ""
 "sensibilidade à caixa alta/baixa nas etiquetas. sem a extensão Sqlite ICU, a "
 "insensibilidade funciona apenas para as 26 letras latinas"
 
-#: ../build/bin/preferences_gen.h:8049 ../build/bin/preferences_gen.h:8192
+#: ../build/bin/preferences_gen.h:8121 ../build/bin/preferences_gen.h:8264
 msgid "number of collections to be stored"
 msgstr "número de coleções a serem armazenadas"
 
-#: ../build/bin/preferences_gen.h:8073 ../build/bin/preferences_gen.h:8216
+#: ../build/bin/preferences_gen.h:8145 ../build/bin/preferences_gen.h:8288
 msgid "the number of recent collections to store and show in this list"
 msgstr ""
 "o número de coleções recentes a serem armazenadas e mostradas nesta lista"
 
-#: ../build/bin/preferences_gen.h:8094
+#: ../build/bin/preferences_gen.h:8166
 msgid "number of folder levels to show in lists"
 msgstr "número de níveis de pasta para mostrar nas listas"
 
-#: ../build/bin/preferences_gen.h:8118
+#: ../build/bin/preferences_gen.h:8190
 msgid ""
 "the number of folder levels to show in film roll names, starting from the "
 "right"
@@ -2305,19 +2315,19 @@ msgstr ""
 "o número de níveis de pastas para mostrar em nomes de rolo de filme, a "
 "partir da direita"
 
-#: ../build/bin/preferences_gen.h:8139
+#: ../build/bin/preferences_gen.h:8211
 msgid "sort film rolls by"
 msgstr "ordenar rolos de filme por"
 
-#: ../build/bin/preferences_gen.h:8153
+#: ../build/bin/preferences_gen.h:8225
 msgid "sets the collections-list order for film rolls"
 msgstr "determina a ordem da lista de coleções para rolos de filme"
 
-#: ../build/bin/preferences_gen.h:8273
+#: ../build/bin/preferences_gen.h:8345
 msgid "suggested tags level of confidence"
 msgstr "nível de confiança para etiquetas sugeridas"
 
-#: ../build/bin/preferences_gen.h:8298
+#: ../build/bin/preferences_gen.h:8370
 #, no-c-format
 msgid ""
 "level of confidence to include the tag in the suggestions list, 0: all "
@@ -2329,11 +2339,11 @@ msgstr ""
 "combinam, 100: nenhuma etiqueta combinando para mostrar somente as etiquetas "
 "recentes (mais rápido)"
 
-#: ../build/bin/preferences_gen.h:8319
+#: ../build/bin/preferences_gen.h:8391
 msgid "number of recently attached tags"
 msgstr "número de etiquetas anexadas recentemente"
 
-#: ../build/bin/preferences_gen.h:8343
+#: ../build/bin/preferences_gen.h:8415
 msgid ""
 "number of recently attached tags which are included in the suggestions list. "
 "the value `-1' disables the recent list"
@@ -2416,7 +2426,7 @@ msgstr "corte automático"
 
 #: ../build/lib/darktable/plugins/introspection_ashift.c:361
 #: ../build/lib/darktable/plugins/introspection_highlights.c:311
-#: ../src/views/darkroom.c:2214
+#: ../src/views/darkroom.c:2213
 msgid "generic"
 msgstr "genérico"
 
@@ -2847,7 +2857,7 @@ msgstr "aberração cromática muito grande"
 #: ../src/common/collection.c:1488 ../src/common/color_vocabulary.c:232
 #: ../src/common/colorlabels.c:381 ../src/develop/blend_gui.c:2383
 #: ../src/develop/blend_gui.c:2431 ../src/develop/lightroom.c:887
-#: ../src/gui/gtk.c:3706 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:372
+#: ../src/gui/gtk.c:3693 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:372
 #: ../src/iop/channelmixer.c:621 ../src/iop/channelmixer.c:631
 #: ../src/iop/channelmixerrgb.c:4715 ../src/iop/colorequal.c:3004
 #: ../src/iop/colorzones.c:2496 ../src/iop/temperature.c:2013
@@ -2867,7 +2877,7 @@ msgstr "vermelho"
 #: ../src/common/collection.c:1492 ../src/common/color_vocabulary.c:277
 #: ../src/common/colorlabels.c:383 ../src/develop/blend_gui.c:2389
 #: ../src/develop/blend_gui.c:2437 ../src/develop/lightroom.c:891
-#: ../src/gui/gtk.c:3707 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:377
+#: ../src/gui/gtk.c:3694 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:377
 #: ../src/iop/channelmixer.c:622 ../src/iop/channelmixer.c:637
 #: ../src/iop/channelmixerrgb.c:4716 ../src/iop/colorequal.c:3007
 #: ../src/iop/colorzones.c:2499 ../src/iop/temperature.c:1997
@@ -2888,7 +2898,7 @@ msgstr "verde"
 #: ../src/common/collection.c:1494 ../src/common/color_vocabulary.c:324
 #: ../src/common/colorlabels.c:384 ../src/develop/blend_gui.c:2395
 #: ../src/develop/blend_gui.c:2443 ../src/develop/lightroom.c:893
-#: ../src/gui/gtk.c:3708 ../src/iop/bilateral.cc:382
+#: ../src/gui/gtk.c:3695 ../src/iop/bilateral.cc:382
 #: ../src/iop/channelmixer.c:623 ../src/iop/channelmixer.c:643
 #: ../src/iop/channelmixerrgb.c:4717 ../src/iop/colorequal.c:3009
 #: ../src/iop/colorzones.c:2501 ../src/iop/temperature.c:2017
@@ -4335,7 +4345,7 @@ msgstr "viés dos meios-tons"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:143
 #: ../build/lib/darktable/plugins/introspection_highlights.c:244
-#: ../src/views/darkroom.c:2291
+#: ../src/views/darkroom.c:2290
 msgid "clipping threshold"
 msgstr "limiar de corte"
 
@@ -4496,7 +4506,7 @@ msgstr "correções"
 #: ../src/iop/profile_gamma.c:660 ../src/libs/copy_history.c:374
 #: ../src/libs/export.c:1418 ../src/libs/image.c:674
 #: ../src/libs/print_settings.c:2913 ../src/libs/styles.c:876
-#: ../src/views/darkroom.c:2272
+#: ../src/views/darkroom.c:2271
 msgid "mode"
 msgstr "modo"
 
@@ -4567,7 +4577,7 @@ msgstr "apenas vinheta manual"
 #. Side-border hide/show
 #: ../build/lib/darktable/plugins/introspection_lens.cc:534
 #: ../src/dtgtk/range.c:1762 ../src/gui/accelerators.c:2599
-#: ../src/gui/accelerators.c:2681 ../src/gui/gtk.c:1376 ../src/gui/gtk.c:3705
+#: ../src/gui/accelerators.c:2681 ../src/gui/gtk.c:1376 ../src/gui/gtk.c:3692
 #: ../src/imageio/format/pdf.c:645 ../src/iop/denoiseprofile.c:3690
 #: ../src/iop/rawdenoise.c:893 ../src/libs/collect.c:3563
 #: ../src/libs/filtering.c:1542 ../src/libs/filters/colors.c:157
@@ -4646,8 +4656,8 @@ msgstr "invalidado"
 
 #. move left/right/up/down
 #: ../build/lib/darktable/plugins/introspection_liquify.c:429
-#: ../src/views/darkroom.c:2149 ../src/views/darkroom.c:2568
-#: ../src/views/darkroom.c:2571 ../src/views/lighttable.c:765
+#: ../src/views/darkroom.c:2148 ../src/views/darkroom.c:2567
+#: ../src/views/darkroom.c:2570 ../src/views/lighttable.c:765
 #: ../src/views/lighttable.c:774 ../src/views/lighttable.c:1246
 #: ../src/views/lighttable.c:1250 ../src/views/lighttable.c:1254
 #: ../src/views/lighttable.c:1258 ../src/views/lighttable.c:1262
@@ -4987,7 +4997,7 @@ msgstr "modo de preenchimento"
 #: ../src/iop/basicadj.c:650 ../src/iop/channelmixerrgb.c:4723
 #: ../src/iop/colisa.c:282 ../src/iop/colorequal.c:3157
 #: ../src/iop/lowpass.c:584 ../src/iop/soften.c:359 ../src/iop/vignette.c:1052
-#: ../src/libs/history.c:973
+#: ../src/libs/history.c:972
 msgid "brightness"
 msgstr "brilho"
 
@@ -5455,7 +5465,7 @@ msgstr "controle deslizante"
 msgid "dropdown"
 msgstr "menu flutuante"
 
-#: ../src/chart/main.c:504 ../src/common/database.c:3729
+#: ../src/chart/main.c:504 ../src/common/database.c:3733
 #: ../src/control/jobs/control_jobs.c:2155
 #: ../src/control/jobs/control_jobs.c:2214 ../src/gui/accelerators.c:2504
 #: ../src/gui/accelerators.c:2586 ../src/gui/accelerators.c:2639
@@ -6183,7 +6193,7 @@ msgid "export profile"
 msgstr "perfil de exportação"
 
 #: ../src/common/colorspaces.c:1421 ../src/common/colorspaces.c:1766
-#: ../src/views/darkroom.c:2429
+#: ../src/views/darkroom.c:2428
 msgid "softproof profile"
 msgstr "perfil de prova digital"
 
@@ -6473,7 +6483,7 @@ msgid ""
 msgstr "Timeout obrigatório do OpenCL foi atualizado para 1000.\n"
 
 #: ../src/common/database.c:3707
-#, c-format
+#, fuzzy, c-format
 msgid ""
 "\n"
 "  Sorry, darktable could not be started (database is locked)\n"
@@ -6485,12 +6495,18 @@ msgid ""
 "attempting to rerun darktable \n"
 "      (process ID <i><b>%d</b></i> created the database locks)\n"
 "\n"
-"  2 - If you can't find a running instance of darktable, try restarting your "
+"  2 - If you closed darktable within the past few minutes, it may still be "
+"running in the background \n"
+"      to export images, update sidecar files, or perform database "
+"maintenance. Try again once \n"
+"      this processing finishes.\n"
+"\n"
+"  3 - If you can't find a running instance of darktable, try restarting your "
 "session or your computer. \n"
 "      This will close all running programs and hopefully close the databases "
 "correctly. \n"
 "\n"
-"  3 - If you have done this or are certain that no other instances of "
+"  4 - If you have done this or are certain that no other instances of "
 "darktable are running, \n"
 "      this probably means that the last instance was ended abnormally. \n"
 "      Click on the \"delete database lock files\" button to remove the files "
@@ -6531,19 +6547,19 @@ msgstr ""
 "sua base de dados.</i>\n"
 
 #. clang-format on
-#: ../src/common/database.c:3728
+#: ../src/common/database.c:3732
 msgid "error starting darktable"
 msgstr "erro ao iniciar o darktable"
 
-#: ../src/common/database.c:3729
+#: ../src/common/database.c:3733
 msgid "_delete database lock files"
 msgstr "_apagar arquivos de travas (locks) da base de dados"
 
-#: ../src/common/database.c:3735
+#: ../src/common/database.c:3739
 msgid "are you sure?"
 msgstr "tem certeza?"
 
-#: ../src/common/database.c:3736
+#: ../src/common/database.c:3740
 msgid ""
 "\n"
 "do you really want to delete the lock files?\n"
@@ -6551,19 +6567,19 @@ msgstr ""
 "\n"
 "você realmente deseja excluir os arquivos de trava?\n"
 
-#: ../src/common/database.c:3736 ../src/gui/gtk.c:3060
+#: ../src/common/database.c:3740 ../src/gui/gtk.c:3047
 msgid "_no"
 msgstr "_não"
 
-#: ../src/common/database.c:3736 ../src/gui/gtk.c:3059
+#: ../src/common/database.c:3740 ../src/gui/gtk.c:3046
 msgid "_yes"
 msgstr "_sim"
 
-#: ../src/common/database.c:3752
+#: ../src/common/database.c:3756
 msgid "done"
 msgstr "feito"
 
-#: ../src/common/database.c:3753
+#: ../src/common/database.c:3757
 msgid ""
 "\n"
 "successfully deleted the lock files.\n"
@@ -6573,17 +6589,17 @@ msgstr ""
 "arquivos de trava removidos com sucesso.\n"
 "você agora pode reiniciar o darktable\n"
 
-#: ../src/common/database.c:3754 ../src/common/database.c:3761
+#: ../src/common/database.c:3758 ../src/common/database.c:3765
 #: ../src/gui/accelerators.c:2587 ../src/gui/accelerators.c:2669
 #: ../src/gui/hist_dialog.c:229 ../src/gui/presets.c:567
 msgid "_ok"
 msgstr "_ok"
 
-#: ../src/common/database.c:3757
+#: ../src/common/database.c:3761
 msgid "error"
 msgstr "erro"
 
-#: ../src/common/database.c:3758
+#: ../src/common/database.c:3762
 #, c-format
 msgid ""
 "\n"
@@ -6598,7 +6614,7 @@ msgstr ""
 "<i>library.db.lock</i>\n"
 "na pasta <a href=\"file:///%s\">%s</a>\n"
 
-#: ../src/common/database.c:3875
+#: ../src/common/database.c:3879
 #, c-format
 msgid ""
 "the database lock file contains a pid that seems to be alive in your system: "
@@ -6607,17 +6623,17 @@ msgstr ""
 "o arquivo de lock da base de dados contém um pid que parece estar vivo no "
 "seu sistema: %d"
 
-#: ../src/common/database.c:3882
+#: ../src/common/database.c:3886
 #, c-format
 msgid "the database lock file seems to be empty"
 msgstr "o lock da base de dados parece estar vazio"
 
-#: ../src/common/database.c:3892
+#: ../src/common/database.c:3896
 #, c-format
 msgid "error opening the database lock file for reading: %s"
 msgstr "erro ao abrir a base de dados para leitura: %s"
 
-#: ../src/common/database.c:3962
+#: ../src/common/database.c:3966
 #, c-format
 msgid ""
 "the database schema version of\n"
@@ -6635,16 +6651,16 @@ msgstr ""
 "dados foi criada ou passou por upgrade por uma versão mais nova do "
 "darktable)\n"
 
-#: ../src/common/database.c:3969
+#: ../src/common/database.c:3973
 msgid "darktable - too new db version"
 msgstr "darktable - versão de bd muito nova"
 
-#: ../src/common/database.c:3970
+#: ../src/common/database.c:3974
 msgid "_quit darktable"
 msgstr "_terminar o darktable"
 
 #. the database has to be upgraded, let's ask user
-#: ../src/common/database.c:3985
+#: ../src/common/database.c:3989
 #, c-format
 msgid ""
 "the database schema has to be upgraded for\n"
@@ -6663,21 +6679,21 @@ msgstr ""
 "\n"
 "você quer continuar ou parar agora para fazer um backup\n"
 
-#: ../src/common/database.c:3993
+#: ../src/common/database.c:3997
 msgid "darktable - schema migration"
 msgstr "darktable - migrar esquema"
 
-#: ../src/common/database.c:3994 ../src/common/database.c:4316
-#: ../src/common/database.c:4331 ../src/common/database.c:4499
-#: ../src/common/database.c:4514
+#: ../src/common/database.c:3998 ../src/common/database.c:4320
+#: ../src/common/database.c:4335 ../src/common/database.c:4503
+#: ../src/common/database.c:4518
 msgid "_close darktable"
 msgstr "_fechar o darktable"
 
-#: ../src/common/database.c:3994
+#: ../src/common/database.c:3998
 msgid "_upgrade database"
 msgstr "_atualizar base de dados"
 
-#: ../src/common/database.c:4296 ../src/common/database.c:4479
+#: ../src/common/database.c:4300 ../src/common/database.c:4483
 #, c-format
 msgid ""
 "quick_check said:\n"
@@ -6686,21 +6702,21 @@ msgstr ""
 "quick_check disse:\n"
 "%s \n"
 
-#: ../src/common/database.c:4313 ../src/common/database.c:4328
-#: ../src/common/database.c:4496 ../src/common/database.c:4511
+#: ../src/common/database.c:4317 ../src/common/database.c:4332
+#: ../src/common/database.c:4500 ../src/common/database.c:4515
 msgid "darktable - error opening database"
 msgstr "darktable - erro ao abrir a base de dados"
 
-#: ../src/common/database.c:4317 ../src/common/database.c:4500
+#: ../src/common/database.c:4321 ../src/common/database.c:4504
 msgid "_attempt restore"
 msgstr "_tentar recuperar"
 
-#: ../src/common/database.c:4318 ../src/common/database.c:4332
-#: ../src/common/database.c:4501 ../src/common/database.c:4515
+#: ../src/common/database.c:4322 ../src/common/database.c:4336
+#: ../src/common/database.c:4505 ../src/common/database.c:4519
 msgid "_delete database"
 msgstr "_apagar base de dados"
 
-#: ../src/common/database.c:4321 ../src/common/database.c:4504
+#: ../src/common/database.c:4325 ../src/common/database.c:4508
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup, attempt an automatic restore\n"
@@ -6712,7 +6728,7 @@ msgstr ""
 "do snapshot mais recente ou remover a base de dados corrompida\n"
 "e iniciar com uma nova?"
 
-#: ../src/common/database.c:4335 ../src/common/database.c:4518
+#: ../src/common/database.c:4339 ../src/common/database.c:4522
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup or delete the corrupted database\n"
@@ -6722,7 +6738,7 @@ msgstr ""
 "a base de dados de um backup ou remover a base de dados corrompida\n"
 "e iniciar com uma nova?"
 
-#: ../src/common/database.c:4342 ../src/common/database.c:4523
+#: ../src/common/database.c:4346 ../src/common/database.c:4527
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -6907,7 +6923,7 @@ msgid "or the <b>RAW won't be readable</b> in next version."
 msgstr "ou o <b>RAW não será legível</b> na próxima versão."
 
 #: ../src/common/image.h:222 ../src/common/ratings.c:298
-#: ../src/imageio/format/avif.c:114 ../src/libs/history.c:853
+#: ../src/imageio/format/avif.c:114 ../src/libs/history.c:852
 #: ../src/libs/snapshots.c:865
 msgid "unknown"
 msgstr "desconhecido"
@@ -7011,7 +7027,7 @@ msgstr ""
 "o caminho da sessão requisitada não está disponível. o dispositivo não está "
 "montado?"
 
-#: ../src/common/iop_order.c:60 ../src/libs/ioporder.c:194
+#: ../src/common/iop_order.c:60 ../src/libs/ioporder.c:195
 msgid "legacy"
 msgstr "legado"
 
@@ -7454,7 +7470,7 @@ msgstr "sol da tarde"
 msgid "underwater"
 msgstr "subaquática"
 
-#: ../src/common/wb_presets.c:74 ../src/views/darkroom.c:2332
+#: ../src/common/wb_presets.c:74 ../src/views/darkroom.c:2331
 msgid "black & white"
 msgstr "preto & branco"
 
@@ -7475,7 +7491,7 @@ msgid "auto WB"
 msgstr "balanço de branco automático"
 
 #: ../src/control/control.c:69 ../src/gui/accelerators.c:160
-#: ../src/views/darkroom.c:2057
+#: ../src/views/darkroom.c:2056
 msgid "hold"
 msgstr "segurar"
 
@@ -7858,7 +7874,7 @@ msgstr "_remover da biblioteca de imagens"
 #: ../src/control/jobs/control_jobs.c:1060 ../src/libs/styles.c:492
 #: ../src/libs/styles.c:648
 msgid "_skip"
-msgstr "_pular"
+msgstr "_ignorar"
 
 #: ../src/control/jobs/control_jobs.c:1061
 msgid "abort"
@@ -7942,26 +7958,26 @@ msgstr[0] "atualizando informações para %d imagem"
 msgstr[1] "atualizando informações para %d imagens"
 
 #: ../src/control/jobs/control_jobs.c:1588
-#, fuzzy, c-format
+#, c-format
 msgid "pasting history to %d image"
 msgid_plural "pasting history to %d images"
-msgstr[0] "adicionando compensação de tempo a %d imagem"
-msgstr[1] "adicionando compensação de tempo a %d imagem"
+msgstr[0] "colando histórico em %d imagem"
+msgstr[1] "colando histórico em %d imagens"
 
 #: ../src/control/jobs/control_jobs.c:1612
 msgid "skipped pasting history into image being edited"
-msgstr ""
+msgstr "evitou-se colar histórico na imagem sendo editada"
 
 #: ../src/control/jobs/control_jobs.c:1650
-#, fuzzy, c-format
+#, c-format
 msgid "compressing history for %d image"
 msgid_plural "compressing history for %d images"
-msgstr[0] "atualizando informações para %d imagem"
-msgstr[1] "atualizando informações para %d imagens"
+msgstr[0] "comprimindo histórico para %d imagem"
+msgstr[1] "comprimindo histórico para %d imagens"
 
 #: ../src/control/jobs/control_jobs.c:1665
 msgid "skipped compressing history for image being edited"
-msgstr ""
+msgstr "evitou-se comprimir histórico da imagem sendo editada"
 
 #: ../src/control/jobs/control_jobs.c:1676
 #, c-format
@@ -7971,22 +7987,22 @@ msgstr[0] "nenhuma compressão do histórico de %d imagem"
 msgstr[1] "nenhuma compressão do histórico de %d imagens"
 
 #: ../src/control/jobs/control_jobs.c:1689
-#, fuzzy, c-format
+#, c-format
 msgid "discarding history for %d image"
 msgid_plural "discarding history for %d images"
-msgstr[0] "atualizando informações para %d imagem"
-msgstr[1] "atualizando informações para %d imagens"
+msgstr[0] "descartando histórico de %d imagem"
+msgstr[1] "descartando histórico de %d imagens"
 
 #: ../src/control/jobs/control_jobs.c:1702
 msgid "skipped discarding history for image being edited"
-msgstr ""
+msgstr "evitou-se descartar histórico da imagem sendo editada"
 
 #: ../src/control/jobs/control_jobs.c:1730
-#, fuzzy, c-format
+#, c-format
 msgid "applying style(s) for %d image"
 msgid_plural "applying style(s) for %d images"
-msgstr[0] "aplicando valor %d a %d imagem"
-msgstr[1] "aplicando valor %d a %d imagens"
+msgstr[0] "aplicando estilo(s) a %d imagem"
+msgstr[1] "aplicando estilo(s) a %d imagens"
 
 #: ../src/control/jobs/control_jobs.c:1828
 #, c-format
@@ -8517,17 +8533,17 @@ msgid "uniformly"
 msgstr "uniforme"
 
 #: ../src/develop/blend_gui.c:157 ../src/develop/blend_gui.c:2793
-#: ../src/develop/blend_gui.c:3485 ../src/develop/imageop.c:2772
+#: ../src/develop/blend_gui.c:3485 ../src/develop/imageop.c:2762
 msgid "drawn mask"
 msgstr " máscara desenhada"
 
 #: ../src/develop/blend_gui.c:159 ../src/develop/blend_gui.c:2565
-#: ../src/develop/blend_gui.c:3496 ../src/develop/imageop.c:2774
+#: ../src/develop/blend_gui.c:3496 ../src/develop/imageop.c:2764
 msgid "parametric mask"
 msgstr "máscara paramétrica"
 
 #: ../src/develop/blend_gui.c:161 ../src/develop/blend_gui.c:3003
-#: ../src/develop/blend_gui.c:3523 ../src/develop/imageop.c:2776
+#: ../src/develop/blend_gui.c:3523 ../src/develop/imageop.c:2766
 msgid "raster mask"
 msgstr "máscara rasterizada"
 
@@ -8574,12 +8590,12 @@ msgid "on"
 msgstr "ligado"
 
 #: ../src/develop/blend_gui.c:1021 ../src/develop/blend_gui.c:2643
-#: ../src/develop/imageop.c:2900
+#: ../src/develop/imageop.c:2890
 msgid "input"
 msgstr "entrada"
 
 #: ../src/develop/blend_gui.c:1021 ../src/develop/blend_gui.c:2643
-#: ../src/develop/imageop.c:2900
+#: ../src/develop/imageop.c:2890
 msgid "output"
 msgstr "saída"
 
@@ -8837,7 +8853,7 @@ msgstr ""
 #: ../src/iop/toneequal.c:3362 ../src/iop/toneequal.c:3365
 #: ../src/iop/toneequal.c:3368 ../src/iop/toneequal.c:3371
 #: ../src/iop/toneequal.c:3493 ../src/iop/toneequal.c:3502
-#: ../src/iop/toneequal.c:3515 ../src/views/darkroom.c:2338
+#: ../src/iop/toneequal.c:3515 ../src/views/darkroom.c:2337
 msgid " EV"
 msgstr " EV"
 
@@ -9049,7 +9065,7 @@ msgstr "opacidade"
 msgid "set the opacity of the blending"
 msgstr "defina a opacidade da mesclagem"
 
-#: ../src/develop/blend_gui.c:3633 ../src/libs/history.c:966
+#: ../src/develop/blend_gui.c:3633 ../src/libs/history.c:965
 msgid "combine masks"
 msgstr "combinar máscaras"
 
@@ -9075,7 +9091,7 @@ msgstr ""
 "valores positivos selecionam áreas com detalhes fortes,\n"
 "valores negativos selecionam áreas planas"
 
-#: ../src/develop/blend_gui.c:3654 ../src/libs/history.c:969
+#: ../src/develop/blend_gui.c:3654 ../src/libs/history.c:968
 msgid "feathering guide"
 msgstr "guia de enevoamento"
 
@@ -9087,7 +9103,7 @@ msgstr ""
 "seleciona guiar a máscara pela imagem de entrada ou pela imagem de saída e\n"
 "seleciona aplicar enevoamento antes ou depois do desfoque da máscara"
 
-#: ../src/develop/blend_gui.c:3666 ../src/libs/history.c:968
+#: ../src/develop/blend_gui.c:3666 ../src/libs/history.c:967
 msgid "feathering radius"
 msgstr "raio de enevoamento"
 
@@ -9111,7 +9127,7 @@ msgid "radius for gaussian blur of blend mask"
 msgstr "raio para desfoque gaussiano da máscara de mesclagem"
 
 #: ../src/develop/blend_gui.c:3689 ../src/iop/retouch.c:2735
-#: ../src/libs/history.c:964
+#: ../src/libs/history.c:963
 msgid "mask opacity"
 msgstr "opacidade da máscara"
 
@@ -9124,7 +9140,7 @@ msgstr ""
 "luminosidade\n"
 "sem afetar regiões completamente transparentes ou completamente opacas"
 
-#: ../src/develop/blend_gui.c:3700 ../src/libs/history.c:972
+#: ../src/develop/blend_gui.c:3700 ../src/libs/history.c:971
 msgid "mask contrast"
 msgstr "contraste da máscara"
 
@@ -9158,82 +9174,82 @@ msgstr ""
 "duplicação de módulos, não é possível mover a nova instância para depois da "
 "instância base\n"
 
-#: ../src/develop/imageop.c:1027
+#: ../src/develop/imageop.c:1017
 msgid "new instance"
 msgstr "nova instância"
 
-#: ../src/develop/imageop.c:1034
+#: ../src/develop/imageop.c:1024
 msgid "duplicate instance"
 msgstr "duplicar instância"
 
-#: ../src/develop/imageop.c:1041 ../src/develop/imageop.c:3967
+#: ../src/develop/imageop.c:1031 ../src/develop/imageop.c:3961
 #: ../src/libs/masks.c:1143
 msgid "move up"
 msgstr "mover para cima"
 
-#: ../src/develop/imageop.c:1048 ../src/develop/imageop.c:3968
+#: ../src/develop/imageop.c:1038 ../src/develop/imageop.c:3962
 #: ../src/libs/masks.c:1148
 msgid "move down"
 msgstr "mover para baixo"
 
 #. delete button label and tooltip will be updated based on trash pref
-#: ../src/develop/imageop.c:1055 ../src/develop/imageop.c:3970
+#: ../src/develop/imageop.c:1045 ../src/develop/imageop.c:3964
 #: ../src/gui/accelerators.c:177 ../src/libs/image.c:305
 #: ../src/libs/image.c:521
 msgid "delete"
 msgstr "excluir"
 
-#: ../src/develop/imageop.c:1063 ../src/develop/imageop.c:3971
+#: ../src/develop/imageop.c:1053 ../src/develop/imageop.c:3965
 #: ../src/libs/modulegroups.c:4009
 msgid "rename"
 msgstr "renomear"
 
-#: ../src/develop/imageop.c:1154 ../src/develop/imageop.c:2948
+#: ../src/develop/imageop.c:1144 ../src/develop/imageop.c:2938
 #, c-format
 msgid "'%s' is switched on"
 msgstr "'%s' está ativado"
 
-#: ../src/develop/imageop.c:1154 ../src/develop/imageop.c:2948
+#: ../src/develop/imageop.c:1144 ../src/develop/imageop.c:2938
 #, c-format
 msgid "'%s' is switched off"
 msgstr "'%s' está desativado"
 
-#: ../src/develop/imageop.c:2155
+#: ../src/develop/imageop.c:2144
 #, c-format
 msgid "'%s' has been disabled because of an introspection error"
 msgstr "'%s' foi desabilitado por causa de um erro de introspecção"
 
-#: ../src/develop/imageop.c:2766
+#: ../src/develop/imageop.c:2756
 msgid "unknown mask"
 msgstr "máscara desconhecida"
 
-#: ../src/develop/imageop.c:2770
+#: ../src/develop/imageop.c:2760
 msgid "drawn + parametric mask"
 msgstr "máscara desenhada + paramétrica"
 
-#: ../src/develop/imageop.c:2779
+#: ../src/develop/imageop.c:2769
 #, c-format
 msgid "this module has a `%s'"
 msgstr "este módulo tem uma `%s'"
 
-#: ../src/develop/imageop.c:2784
+#: ../src/develop/imageop.c:2774
 #, c-format
 msgid "taken from module %s"
 msgstr "tomada do módulo %s"
 
-#: ../src/develop/imageop.c:2789
+#: ../src/develop/imageop.c:2779
 msgid "click to display (module must be activated first)"
 msgstr "clique para mostrar (o módulo deve ser ativado antes)"
 
-#: ../src/develop/imageop.c:2900
+#: ../src/develop/imageop.c:2890
 msgid "purpose"
 msgstr "propósito"
 
-#: ../src/develop/imageop.c:2900
+#: ../src/develop/imageop.c:2890
 msgid "process"
 msgstr "processamento"
 
-#: ../src/develop/imageop.c:2964
+#: ../src/develop/imageop.c:2954
 msgid ""
 "reset parameters\n"
 "ctrl+click to reapply any automatic presets"
@@ -9241,7 +9257,7 @@ msgstr ""
 "redefinir parâmetros\n"
 "ctrl+clique para reaplicar quaisquer predefinições automáticas"
 
-#: ../src/develop/imageop.c:3157
+#: ../src/develop/imageop.c:3151
 msgid ""
 "multiple instance actions\n"
 "right-click creates new instance"
@@ -9249,7 +9265,7 @@ msgstr ""
 "ações em múltiplas instâncias\n"
 "clique-direito cria nova instância"
 
-#: ../src/develop/imageop.c:3161
+#: ../src/develop/imageop.c:3155
 msgid ""
 "presets\n"
 "right-click to apply on new instance"
@@ -9257,15 +9273,15 @@ msgstr ""
 "predefinições\n"
 "clique-direito para aplicar em nova instância"
 
-#: ../src/develop/imageop.c:3399 ../src/develop/imageop.c:3421
+#: ../src/develop/imageop.c:3393 ../src/develop/imageop.c:3415
 msgid "ERROR"
 msgstr "ERRO"
 
-#: ../src/develop/imageop.c:3830
+#: ../src/develop/imageop.c:3824
 msgid "unsupported input"
 msgstr "entrada não suportada"
 
-#: ../src/develop/imageop.c:3831
+#: ../src/develop/imageop.c:3825
 msgid ""
 "you have placed this module at\n"
 "a position in the pipeline where\n"
@@ -9277,51 +9293,51 @@ msgstr ""
 "formato de dados não combina\n"
 "com os requisitos."
 
-#: ../src/develop/imageop.c:3966 ../src/develop/imageop.c:3976
-#: ../src/gui/accelerators.c:173 ../src/libs/lib.c:1567
+#: ../src/develop/imageop.c:3960 ../src/develop/imageop.c:3970
+#: ../src/gui/accelerators.c:173 ../src/libs/lib.c:1563
 msgid "show"
 msgstr "mostrar"
 
-#: ../src/develop/imageop.c:3969 ../src/libs/modulegroups.c:3473
+#: ../src/develop/imageop.c:3963 ../src/libs/modulegroups.c:3473
 #: ../src/libs/modulegroups.c:3604 ../src/libs/modulegroups.c:4013
 #: ../src/libs/tagging.c:3319
 msgid "new"
 msgstr "novo"
 
-#: ../src/develop/imageop.c:3972 ../src/libs/duplicate.c:416
+#: ../src/develop/imageop.c:3966 ../src/libs/duplicate.c:416
 #: ../src/libs/image.c:542 ../src/libs/modulegroups.c:4005
 msgid "duplicate"
 msgstr "duplicar"
 
-#: ../src/develop/imageop.c:3977
+#: ../src/develop/imageop.c:3971
 #: ../src/external/lua-scripts/tools/executable_manager.lua:224
 #: ../src/gui/accelerators.c:134 ../src/gui/accelerators.c:144
-#: ../src/gui/gtk.c:3553 ../src/gui/gtk.c:3608 ../src/gui/hist_dialog.c:272
+#: ../src/gui/gtk.c:3540 ../src/gui/gtk.c:3595 ../src/gui/hist_dialog.c:272
 #: ../src/gui/styles_dialog.c:647 ../src/gui/styles_dialog.c:669
-#: ../src/iop/atrous.c:1625 ../src/libs/lib.c:1568
+#: ../src/iop/atrous.c:1625 ../src/libs/lib.c:1564
 #: ../src/libs/modulegroups.c:4089
 msgid "reset"
 msgstr "redefinir"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:3978 ../src/gui/preferences.c:809
-#: ../src/libs/lib.c:1569
+#: ../src/develop/imageop.c:3972 ../src/gui/preferences.c:809
+#: ../src/libs/lib.c:1565
 msgid "presets"
 msgstr "predefinições"
 
-#: ../src/develop/imageop.c:3979
+#: ../src/develop/imageop.c:3973
 msgid "enable"
 msgstr "ativar"
 
-#: ../src/develop/imageop.c:3980 ../src/gui/accelerators.c:189
+#: ../src/develop/imageop.c:3974 ../src/gui/accelerators.c:189
 msgid "focus"
 msgstr "foco"
 
-#: ../src/develop/imageop.c:3981 ../src/gui/accelerators.c:2881
+#: ../src/develop/imageop.c:3975 ../src/gui/accelerators.c:2881
 msgid "instance"
 msgstr "instância"
 
-#: ../src/develop/imageop.c:4001
+#: ../src/develop/imageop.c:3995
 msgid "processing module"
 msgstr "módulo de processamento"
 
@@ -10013,17 +10029,14 @@ msgid "click on the gear icon for global preferences"
 msgstr "clique no ícone de engrenagem para preferências globais."
 
 #: ../src/dtgtk/thumbtable.c:1230
-#, fuzzy
 msgid "try the 'no-click' workflow"
-msgstr "tente o fluxo de trabalho 'sem cliques`:"
+msgstr "tente o fluxo de trabalho 'sem cliques'"
 
 #: ../src/dtgtk/thumbtable.c:1231
-#, fuzzy
 msgid "click on the keyboard icon to define shortcuts"
-msgstr "clique no ícone de teclado para definir atalhos."
+msgstr "clique no ícone de teclado para definir atalhos"
 
 #: ../src/dtgtk/thumbtable.c:1232
-#, fuzzy
 msgid "hover over an image and use keyboard shortcuts"
 msgstr "passe o mouse sobre uma imagem e use os atalhos de teclado"
 
@@ -10036,7 +10049,6 @@ msgid "make default raw development look more like your"
 msgstr "tornar o desenvolvimento de seu raw parecer mais com o"
 
 #: ../src/dtgtk/thumbtable.c:1235
-#, fuzzy
 msgid "hover over any button to see a description and shortcut"
 msgstr "passe o mouse sobre qualquer botão para ver uma descrição e um atalho"
 
@@ -10668,6 +10680,8 @@ msgid ""
 "center also known as mean of gaussian weighting function (0 <= mean <= 1); "
 "default: 0.5"
 msgstr ""
+"centro também conhecido como média da função de peso gaussiana (0 <= média "
+"<= 1); default: 0.5"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:150
 msgid ""
@@ -10714,17 +10728,17 @@ msgstr "convertendo arquivo raw '%s' para tiff..."
 #: ../src/external/lua-scripts/official/enfuse.lua:227
 #, lua-format
 msgid "skipping %s..."
-msgstr "pulando %s..."
+msgstr "ignorando %s..."
 
 #. bail out if there is nothing to do
 #: ../src/external/lua-scripts/official/enfuse.lua:234
 msgid "no suitable images selected, nothing to do for enfuse"
-msgstr ""
+msgstr "nenhuma image paropriada selecionada, nada para o enfuse fazer"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:240
 #, lua-format
 msgid "%d image(s) skipped"
-msgstr ""
+msgstr "%d imagem(s) ignoradas"
 
 #. call enfuse on the response file
 #. TODO: find something nicer
@@ -10748,7 +10762,9 @@ msgstr "enfuse: feito, a imagem resultante '%s' foi importada com id %d"
 #. ... and tell dt about it all
 #: ../src/external/lua-scripts/official/enfuse.lua:308
 msgid "could not find enfuse executable, not loading enfuse exporter..."
-msgstr "não foi possível encontrar o executável do enfuse, exportador enfuse não carregado..."
+msgstr ""
+"não foi possível encontrar o executável do enfuse, exportador enfuse não "
+"carregado..."
 
 #. vim: shiftwidth=2 expandtab tabstop=2 cindent syntax=lua
 #. kate: hl Lua;
@@ -10798,27 +10814,34 @@ msgstr "limpar metadados selecionados para imagens selecionadas"
 #. only required for libs since the destroy_method only hides them
 #: ../src/external/lua-scripts/official/generate_image_txt.lua:70
 msgid "create txt sidecars to display with images"
-msgstr ""
+msgstr "criar arquivos auxiliares txt para mostrar com as imagens"
 
 #: ../src/external/lua-scripts/official/generate_image_txt.lua:71
 msgid ""
 "the txt files created get shown when the lighttable is zoomed in to one "
 "image. also enable the txt overlay setting in the gui tab"
 msgstr ""
+"os arquivos auxiliares txt criados são mostrados quando é feito um zoon na "
+"mesa de luz para uma uma imagem. também habilita a configuração de "
+"sobreposição de txt na aba da interface"
 
 #: ../src/external/lua-scripts/official/generate_image_txt.lua:77
 msgid "command to generate the txt sidecar"
-msgstr ""
+msgstr "comando para gerar arquivo auxiliar txt"
 
 #: ../src/external/lua-scripts/official/generate_image_txt.lua:78
 msgid ""
 "the output of this command gets written to the txt file. use $(FILE_NAME) "
 "for the image file"
 msgstr ""
+"a saída deste comando é escrita no arquivo txt. use $(FILE_NAME) para o "
+"arquivo de imagem"
 
 #: ../src/external/lua-scripts/official/generate_image_txt.lua:84
 msgid "the command for txt sidecars looks bad. better check the preferences"
 msgstr ""
+"o comando para arquivos auxiliares txt parece errado. é melhor verificar as "
+"preferências"
 
 #. no need to waste processing time if the image has a txt file already
 #. there should be at least one "$(FILE_NAME)" in the command. warn if not, but only once
@@ -10926,6 +10949,8 @@ msgstr "padrão de nomeação de arquivos utilizado para a sessão de importaç�
 #: ../src/external/lua-scripts/official/import_filter_manager.lua:70
 msgid "import filters are applied after completion of the import dialog"
 msgstr ""
+"filtros de importação sào aplicados depois de completado o diálogo de "
+"importação"
 
 #. the first entry in the list is hard coded to "" so it's possible to have no filter
 #. this is just a wrapper which calls the active import filter
@@ -11040,7 +11065,7 @@ msgstr "recuperar do buffer %d"
 
 #: ../src/external/lua-scripts/official/save_selection.lua:88
 msgid "switch selection with temporary buffer"
-msgstr ""
+msgstr "trocar a seleção com o buffer temporário"
 
 #.
 #. vim: shiftwidth=2 expandtab tabstop=2 cindent syntax=lua
@@ -11173,7 +11198,7 @@ msgstr "problema executando visualizador de pdf"
 #. return data structure for script_manager
 #: ../src/external/lua-scripts/tools/executable_manager.lua:52
 msgid "manage the list of external executables used by the lua scripts"
-msgstr ""
+msgstr "gerenciar a lista de executáveis externos usados pelos scripts lua"
 
 #. function to destory the script
 #. set to hide for libs since we can't destroy them commpletely yet
@@ -11211,14 +11236,13 @@ msgstr "selecionar um executável"
 
 #: ../src/external/lua-scripts/tools/executable_manager.lua:175
 msgid "search path for executable"
-msgstr ""
+msgstr "caminho de busca para o executável"
 
 #. create a stack widget to hold the executable path widgets
 #. create a combobox to for indexing into the stack of widgets
 #: ../src/external/lua-scripts/tools/executable_manager.lua:205
-#, fuzzy
 msgid "select executable to modify"
-msgstr "selecione arquivo para importar"
+msgstr "selecione executável para modificar"
 
 #: ../src/external/lua-scripts/tools/executable_manager.lua:227
 #, fuzzy, lua-format
@@ -11252,7 +11276,7 @@ msgstr ""
 #. print the documentation for each of the functions
 #: ../src/external/lua-scripts/tools/get_libdoc.lua:68
 msgid "retrieve and print the documentation to the console"
-msgstr ""
+msgstr "recuperar e mostrar a documentação no console"
 
 #.
 #. This file is part of darktable,
@@ -11434,7 +11458,9 @@ msgstr "atualizar o nome do módulo automaticamente"
 #: ../src/external/lua-scripts/tools/script_manager.lua:816
 msgid ""
 "ERROR: git not found.  Install or specify the location of the git executable."
-msgstr "ERRO: git não encontrado.  Instale ou especifique a localizaçào do executável git."
+msgstr ""
+"ERRO: git não encontrado.  Instale ou especifique a localizaçào do "
+"executável git."
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:715
 msgid "lua scripts successfully updated"
@@ -11442,7 +11468,7 @@ msgstr "scripts lua atualizados com sucesso"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:837
 msgid "scripts successfully installed into folder "
-msgstr ""
+msgstr "scripts instalados com sucesso na pasta "
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:855
 msgid "no scripts found to install"
@@ -11476,7 +11502,7 @@ msgstr "falha ao baixar scripts"
 #. to use the latest version of script_manager to get the proper API
 #: ../src/external/lua-scripts/tools/script_manager.lua:1212
 msgid "lua API version reset, please restart darktable"
-msgstr ""
+msgstr "versão da API de lua resetada, por favor reinicie o darktable"
 
 #. do nothing, we are fine
 #. we are on a dev API version, so checkout the dev
@@ -11487,6 +11513,7 @@ msgstr ""
 msgid ""
 "you must restart darktable to use the correct version of the lua scripts"
 msgstr ""
+"você precisa reiniciar o darktable para usar a versão correta dos scripts lua"
 
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. U S E R  I N T E R F A C E
@@ -11515,20 +11542,19 @@ msgstr "atenuar a pureza do vermelho primário"
 #: ../src/external/lua-scripts/tools/script_manager.lua:1307
 msgid ""
 "enter the URL of the git repository containing the scripts you wish to add"
-msgstr ""
+msgstr "entre a URL do repositório git contendo os scripts que quer adicionar"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1312
 msgid "name of new folder"
 msgstr "nome da nova pasta"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1313
-#, fuzzy
 msgid "enter a folder name for the additional scripts"
-msgstr "digite um nome para o novo estilo"
+msgstr "entre um nome de pasta para os scripts adicionais"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1318
 msgid "URL to download additional scripts from"
-msgstr ""
+msgstr "URL de onde baixar scripts adicionais"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1320
 msgid "new folder to place scripts in"
@@ -11540,7 +11566,7 @@ msgstr "instalar scripts adicionais"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1331
 msgid "enable \"disable scripts\" button"
-msgstr ""
+msgstr "habilitar botào \"desabilitar scripts\""
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1343
 #: ../src/external/lua-scripts/tools/script_manager.lua:1368
@@ -11550,6 +11576,7 @@ msgstr "desabilitar scripts"
 #: ../src/external/lua-scripts/tools/script_manager.lua:1349
 msgid "lua scripts will not run the next time darktable is started"
 msgstr ""
+"os scripts lua não vão executar na próxima vez que o darktable for iniciado"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1355
 msgid " "
@@ -11582,7 +11609,7 @@ msgstr "scripts por página"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1451
 msgid "select number of start/stop buttons to display"
-msgstr ""
+msgstr "selecione o número de botões iniciar/parar a serem mostrados"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1462
 msgid "change number of buttons"
@@ -11596,7 +11623,7 @@ msgstr "configuração"
 #. main menu
 #: ../src/external/lua-scripts/tools/script_manager.lua:1494
 #: ../src/gui/accelerators.c:2847 ../src/gui/accelerators.c:2949
-#: ../src/views/view.c:1563
+#: ../src/views/view.c:1568
 msgid "action"
 msgstr "ação"
 
@@ -11720,7 +11747,7 @@ msgstr "ajustes rápidos"
 msgid "disabled defaults"
 msgstr "padrões desabilitados"
 
-#: ../src/gui/accelerators.c:96 ../src/views/view.c:1368
+#: ../src/gui/accelerators.c:96 ../src/views/view.c:1373
 msgid "scroll"
 msgstr "rolar"
 
@@ -11732,7 +11759,7 @@ msgstr "arrastar"
 #: ../src/iop/ashift.c:5740 ../src/iop/ashift.c:5845 ../src/iop/ashift.c:5847
 #: ../src/iop/ashift.c:6171 ../src/iop/clipping.c:1938
 #: ../src/iop/clipping.c:2130 ../src/iop/clipping.c:2146
-#: ../src/views/darkroom.c:2568 ../src/views/lighttable.c:1250
+#: ../src/views/darkroom.c:2567 ../src/views/lighttable.c:1250
 msgid "horizontal"
 msgstr "horizontal"
 
@@ -11740,7 +11767,7 @@ msgstr "horizontal"
 #: ../src/iop/ashift.c:5740 ../src/iop/ashift.c:5845 ../src/iop/ashift.c:5847
 #: ../src/iop/ashift.c:6169 ../src/iop/clipping.c:1937
 #: ../src/iop/clipping.c:2131 ../src/iop/clipping.c:2145
-#: ../src/views/darkroom.c:2571 ../src/views/lighttable.c:1254
+#: ../src/views/darkroom.c:2570 ../src/views/lighttable.c:1254
 msgid "vertical"
 msgstr "vertical"
 
@@ -11760,19 +11787,19 @@ msgstr "acima-abaixo"
 msgid "pgupdown"
 msgstr "pgupdown"
 
-#: ../src/gui/accelerators.c:112 ../src/views/view.c:1346
+#: ../src/gui/accelerators.c:112 ../src/views/view.c:1351
 msgid "shift"
 msgstr "shift"
 
-#: ../src/gui/accelerators.c:113 ../src/views/view.c:1348
+#: ../src/gui/accelerators.c:113 ../src/views/view.c:1353
 msgid "ctrl"
 msgstr "ctrl"
 
-#: ../src/gui/accelerators.c:115 ../src/views/view.c:1351
+#: ../src/gui/accelerators.c:115 ../src/views/view.c:1356
 msgid "option"
 msgstr "opçào"
 
-#: ../src/gui/accelerators.c:117 ../src/views/view.c:1353
+#: ../src/gui/accelerators.c:117 ../src/views/view.c:1358
 msgid "alt"
 msgstr "alt"
 
@@ -11808,12 +11835,12 @@ msgid "popup"
 msgstr "popup"
 
 #: ../src/gui/accelerators.c:142 ../src/gui/accelerators.c:175
-#: ../src/gui/gtk.c:3606 ../src/views/lighttable.c:760
+#: ../src/gui/gtk.c:3593 ../src/views/lighttable.c:760
 msgid "next"
 msgstr "próxima"
 
 #: ../src/gui/accelerators.c:143 ../src/gui/accelerators.c:174
-#: ../src/gui/gtk.c:3607 ../src/views/lighttable.c:761
+#: ../src/gui/gtk.c:3594 ../src/views/lighttable.c:761
 msgid "previous"
 msgstr "anterior"
 
@@ -11827,8 +11854,8 @@ msgstr "primeira"
 
 #: ../src/gui/accelerators.c:150 ../src/gui/accelerators.c:163
 #: ../src/gui/accelerators.c:360 ../src/libs/filters/rating_range.c:295
-#: ../src/libs/tagging.c:3191 ../src/views/darkroom.c:2254
-#: ../src/views/darkroom.c:2304 ../src/views/darkroom.c:2540
+#: ../src/libs/tagging.c:3191 ../src/views/darkroom.c:2253
+#: ../src/views/darkroom.c:2303 ../src/views/darkroom.c:2539
 msgid "toggle"
 msgstr "ligar/desligar"
 
@@ -11848,7 +11875,7 @@ msgstr "alternar-direita"
 msgid "right-on"
 msgstr "à direita"
 
-#: ../src/gui/accelerators.c:167 ../src/gui/gtk.c:3605
+#: ../src/gui/accelerators.c:167 ../src/gui/gtk.c:3592
 msgid "activate"
 msgstr "ativar"
 
@@ -12326,7 +12353,7 @@ msgstr ""
 "pressione as teclas para cima e para baixo para percorrer ciclicamente os "
 "resultados"
 
-#: ../src/gui/accelerators.c:2844 ../src/views/view.c:1561
+#: ../src/gui/accelerators.c:2844 ../src/views/view.c:1566
 msgid "shortcut"
 msgstr "atalho"
 
@@ -12463,7 +12490,7 @@ msgstr "%s associado a %s"
 msgid "short key press resets stuck keys"
 msgstr "pressionamento curto de tecla reinicializa teclas bloqueadas"
 
-#: ../src/gui/gtk.c:177 ../src/views/darkroom.c:3547
+#: ../src/gui/gtk.c:177 ../src/views/darkroom.c:3545
 msgid "darktable - darkroom preview"
 msgstr "darktable - pré-visualização de sala escura"
 
@@ -12624,17 +12651,17 @@ msgstr "alterna foco máximo"
 msgid "toggle focus peaking"
 msgstr "alternar foco máximo"
 
-#: ../src/gui/gtk.c:1802 ../src/gui/gtk.c:3712 ../src/gui/gtk.c:3717
-#: ../src/gui/gtk.c:3722 ../src/gui/gtk.c:3727
+#: ../src/gui/gtk.c:1802 ../src/gui/gtk.c:3699 ../src/gui/gtk.c:3704
+#: ../src/gui/gtk.c:3709 ../src/gui/gtk.c:3714
 msgid "tabs"
 msgstr "abas"
 
-#: ../src/gui/gtk.c:1881
+#: ../src/gui/gtk.c:1888
 #, fuzzy
 msgid "collapsing panels"
 msgstr "recolhimento de controles"
 
-#: ../src/gui/gtk.c:1882
+#: ../src/gui/gtk.c:1889
 msgid ""
 "this is the first time you pressed the shortcut\n"
 "to collapse all side and top/bottom panels.\n"
@@ -12644,56 +12671,56 @@ msgid ""
 "do you want to collapse all panels now?"
 msgstr ""
 
-#: ../src/gui/gtk.c:2278
+#: ../src/gui/gtk.c:2286
 #, fuzzy
 msgid "restore defaults"
 msgstr "preservar detalhes"
 
-#: ../src/gui/gtk.c:2279
+#: ../src/gui/gtk.c:2287
 msgid "restore the default visibility and position of all modules in this view"
 msgstr ""
 
-#: ../src/gui/gtk.c:2319
+#: ../src/gui/gtk.c:2365
 #, fuzzy
 msgid "right-click to show/hide modules"
 msgstr "clique-direito para sair do modo de mapeamento"
 
-#: ../src/gui/gtk.c:2376
+#: ../src/gui/gtk.c:2374
 #, fuzzy
 msgid "show/hide modules"
 msgstr "mostrar módulo"
 
 #. ask the user if darktable.org may be accessed
-#: ../src/gui/gtk.c:3176
+#: ../src/gui/gtk.c:3163
 msgid "access the online user manual?"
 msgstr "acessar o manual do usuário online?"
 
-#: ../src/gui/gtk.c:3177
+#: ../src/gui/gtk.c:3164
 #, c-format
 msgid "do you want to access `%s'?"
 msgstr "você deseja acessar `%s'?"
 
-#: ../src/gui/gtk.c:3250
+#: ../src/gui/gtk.c:3237
 msgid "there is no help available for this element"
 msgstr "não há ajuda disponível para este elemento"
 
 #. font name can only use period as decimal separator
 #. but printf format strings use comma for some locales, so replace comma with period
-#: ../src/gui/gtk.c:3270 ../src/libs/metadata_view.c:801
+#: ../src/gui/gtk.c:3257 ../src/libs/metadata_view.c:801
 #, c-format
 msgid "%.1f"
 msgstr "%.1f"
 
-#: ../src/gui/gtk.c:3272
+#: ../src/gui/gtk.c:3259
 #, c-format
 msgid "Sans %s"
 msgstr "Sans %s"
 
-#: ../src/gui/gtk.c:3600
+#: ../src/gui/gtk.c:3587
 msgid "does not contain pages"
 msgstr "não contém páginas"
 
-#: ../src/gui/gtk.c:3849
+#: ../src/gui/gtk.c:3836
 #, c-format
 msgid "never show more than %d lines"
 msgstr "nunca mostrar mais que %d linhas"
@@ -13080,7 +13107,7 @@ msgid "global guide overlay settings"
 msgstr "configurações globais de sobreposições de linhas guia"
 
 #: ../src/gui/guides.c:710 ../src/gui/guides.c:719 ../src/gui/guides.c:727
-#: ../src/gui/guides.c:740 ../src/views/darkroom.c:2540
+#: ../src/gui/guides.c:740 ../src/views/darkroom.c:2539
 msgid "guide lines"
 msgstr "linhas guia"
 
@@ -14025,7 +14052,7 @@ msgid "internal"
 msgstr "interno"
 
 #: ../src/imageio/format/jxl.c:587 ../src/libs/duplicate.c:410
-#: ../src/libs/history.c:1142 ../src/libs/snapshots.c:868
+#: ../src/libs/history.c:1141 ../src/libs/snapshots.c:868
 msgid "original"
 msgstr "original"
 
@@ -17975,26 +18002,26 @@ msgstr "intenção de renderização"
 
 #: ../src/iop/colorout.c:851 ../src/libs/export.c:1408
 #: ../src/libs/print_settings.c:2513 ../src/libs/print_settings.c:2862
-#: ../src/views/darkroom.c:2405 ../src/views/lighttable.c:1176
+#: ../src/views/darkroom.c:2404 ../src/views/lighttable.c:1176
 msgid "perceptual"
 msgstr "perceptual"
 
 #: ../src/iop/colorout.c:852 ../src/libs/export.c:1409
 #: ../src/libs/print_settings.c:2514 ../src/libs/print_settings.c:2863
-#: ../src/views/darkroom.c:2406 ../src/views/lighttable.c:1177
+#: ../src/views/darkroom.c:2405 ../src/views/lighttable.c:1177
 msgid "relative colorimetric"
 msgstr "colorimétrico relativo"
 
 #: ../src/iop/colorout.c:853 ../src/libs/export.c:1410
 #: ../src/libs/print_settings.c:2515 ../src/libs/print_settings.c:2864
-#: ../src/views/darkroom.c:2407 ../src/views/lighttable.c:1178
+#: ../src/views/darkroom.c:2406 ../src/views/lighttable.c:1178
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturação"
 
 #: ../src/iop/colorout.c:854 ../src/libs/export.c:1411
 #: ../src/libs/print_settings.c:2516 ../src/libs/print_settings.c:2865
-#: ../src/views/darkroom.c:2408 ../src/views/lighttable.c:1179
+#: ../src/views/darkroom.c:2407 ../src/views/lighttable.c:1179
 msgid "absolute colorimetric"
 msgstr "colorimétrico absoluto"
 
@@ -19053,7 +19080,7 @@ msgstr "compensar exposição da câmera (%+.1f EV)"
 msgid "L : \t%.1f %%"
 msgstr "L : \t%.1f %%"
 
-#: ../src/iop/exposure.c:961 ../src/libs/history.c:963
+#: ../src/iop/exposure.c:961 ../src/libs/history.c:962
 #, c-format
 msgid "%.2f EV"
 msgstr "%.2f EV"
@@ -19311,7 +19338,7 @@ msgstr ""
 #. Add export intent combo
 #: ../src/iop/filmic.c:1613 ../src/libs/export.c:1389
 #: ../src/libs/print_settings.c:2511 ../src/libs/print_settings.c:2858
-#: ../src/views/darkroom.c:2411 ../src/views/lighttable.c:1182
+#: ../src/views/darkroom.c:2410 ../src/views/lighttable.c:1182
 msgid "intent"
 msgstr "intenção"
 
@@ -21248,9 +21275,9 @@ msgstr "quanto suavizar as cores"
 #. * let's fill the encapsulating widgets
 #. preview mode
 #. color scheme
-#: ../src/iop/overexposed.c:71 ../src/views/darkroom.c:2304
-#: ../src/views/darkroom.c:2322 ../src/views/darkroom.c:2329
-#: ../src/views/darkroom.c:2339 ../src/views/darkroom.c:2356
+#: ../src/iop/overexposed.c:71 ../src/views/darkroom.c:2303
+#: ../src/views/darkroom.c:2321 ../src/views/darkroom.c:2328
+#: ../src/views/darkroom.c:2338 ../src/views/darkroom.c:2355
 msgid "overexposed"
 msgstr "superexposição"
 
@@ -21492,9 +21519,9 @@ msgstr ""
 
 #. * let's fill the encapsulating widgets
 #. mode of operation
-#: ../src/iop/rawoverexposed.c:69 ../src/views/darkroom.c:2254
-#: ../src/views/darkroom.c:2272 ../src/views/darkroom.c:2278
-#: ../src/views/darkroom.c:2291
+#: ../src/iop/rawoverexposed.c:69 ../src/views/darkroom.c:2253
+#: ../src/views/darkroom.c:2271 ../src/views/darkroom.c:2277
+#: ../src/views/darkroom.c:2290
 msgid "raw overexposed"
 msgstr "superexposição raw"
 
@@ -23695,7 +23722,7 @@ msgid ""
 "<b>%s</b>"
 msgstr ""
 
-#: ../src/libs/export.c:1111 ../src/views/darkroom.c:1379
+#: ../src/libs/export.c:1111 ../src/views/darkroom.c:1378
 msgid "no styles have been created yet"
 msgstr "nenhum estilo foi criado ainda"
 
@@ -24525,7 +24552,7 @@ msgid "open GPX file"
 msgstr "abrir arquivo GPX"
 
 #: ../src/libs/geotagging.c:938 ../src/libs/tools/lighttable.c:330
-#: ../src/libs/tools/lighttable.c:399 ../src/views/darkroom.c:2119
+#: ../src/libs/tools/lighttable.c:399 ../src/views/darkroom.c:2118
 msgid "preview"
 msgstr "pré-visualização"
 
@@ -24853,74 +24880,74 @@ msgstr "módulo habilitado por padrão"
 msgid "deprecated module"
 msgstr "módulo descontinuado"
 
-#: ../src/libs/history.c:955
+#: ../src/libs/history.c:954
 msgid "colorspace"
 msgstr "espaço de cor"
 
-#: ../src/libs/history.c:957
+#: ../src/libs/history.c:956
 msgid "mask mode"
 msgstr "modo da máscara"
 
-#: ../src/libs/history.c:959
+#: ../src/libs/history.c:958
 msgid "blend mode"
 msgstr "modo de mesclagem"
 
-#: ../src/libs/history.c:961
+#: ../src/libs/history.c:960
 msgid "blend operation"
 msgstr "operação de mesclagem"
 
-#: ../src/libs/history.c:963
+#: ../src/libs/history.c:962
 msgid "blend fulcrum"
 msgstr "pivô (fulcrum) de mesclagem"
 
-#: ../src/libs/history.c:971
+#: ../src/libs/history.c:970
 msgid "mask blur"
 msgstr "mascara de desfoque"
 
-#: ../src/libs/history.c:974
+#: ../src/libs/history.c:973
 msgid "raster mask instance"
 msgstr "instâncias de máscara de matriz de pixels"
 
-#: ../src/libs/history.c:975
+#: ../src/libs/history.c:974
 msgid "raster mask id"
 msgstr "id de máscara de matriz de pixels"
 
-#: ../src/libs/history.c:976
+#: ../src/libs/history.c:975
 msgid "invert mask"
 msgstr "inverter máscara"
 
-#: ../src/libs/history.c:981
+#: ../src/libs/history.c:980
 msgid "drawn mask polarity"
 msgstr "polaridade da máscara desenhada"
 
-#: ../src/libs/history.c:985
+#: ../src/libs/history.c:984
 #, c-format
 msgid "a drawn mask was added"
 msgstr "uma máscara desenhada foi adicionada"
 
-#: ../src/libs/history.c:987
+#: ../src/libs/history.c:986
 #, c-format
 msgid "the drawn mask was removed"
 msgstr "a máscara desenhada foi removida"
 
-#: ../src/libs/history.c:988
+#: ../src/libs/history.c:987
 #, c-format
 msgid "the drawn mask was changed"
 msgstr "a máscara desenhada foi modificada"
 
-#: ../src/libs/history.c:1020
+#: ../src/libs/history.c:1019
 msgid "parametric output mask:"
 msgstr "máscara paramétrica de saída:"
 
-#: ../src/libs/history.c:1021
+#: ../src/libs/history.c:1020
 msgid "parametric input mask:"
 msgstr "máscara paramétrica de entrada:"
 
-#: ../src/libs/history.c:1345
+#: ../src/libs/history.c:1344
 msgid "delete image's history?"
 msgstr "excluir histórico da imagem?"
 
-#: ../src/libs/history.c:1346
+#: ../src/libs/history.c:1345
 msgid "do you really want to clear history of current image?"
 msgstr "você realmente deseja remover o histórico da imagem atual?"
 
@@ -25281,11 +25308,11 @@ msgstr ""
 msgid "parameters"
 msgstr "parâmetros"
 
-#: ../src/libs/ioporder.c:201
+#: ../src/libs/ioporder.c:202
 msgid "v3.0 for RAW input (default)"
 msgstr "v3.0 para entrada RAW (padrão)"
 
-#: ../src/libs/ioporder.c:207
+#: ../src/libs/ioporder.c:208
 msgid "v3.0 for JPEG/non-RAW input"
 msgstr "v3.0 para entrada JPEG/não RAW"
 
@@ -25301,11 +25328,11 @@ msgstr "gerenciar predefinições..."
 msgid "nothing to save"
 msgstr "nada a gravar"
 
-#: ../src/libs/lib.c:1248
+#: ../src/libs/lib.c:1247
 msgid "show module"
 msgstr "mostrar módulo"
 
-#: ../src/libs/lib.c:1583
+#: ../src/libs/lib.c:1579
 msgid "utility module"
 msgstr "módulos utilitários"
 
@@ -27746,7 +27773,7 @@ msgctxt "darkroom"
 msgid "loading `%s' ..."
 msgstr "carregando `%s' ..."
 
-#: ../src/views/darkroom.c:741 ../src/views/darkroom.c:2381
+#: ../src/views/darkroom.c:741 ../src/views/darkroom.c:2380
 msgid "gamut check"
 msgstr "verificação de gama"
 
@@ -27800,44 +27827,44 @@ msgstr ""
 "a imagem `%s' não pode ser carregada\n"
 "%s"
 
-#: ../src/views/darkroom.c:2198 ../src/views/darkroom.c:2199
+#: ../src/views/darkroom.c:2197 ../src/views/darkroom.c:2198
 msgid "quick access to presets"
 msgstr "acesso rápido para as predefinições"
 
-#: ../src/views/darkroom.c:2207
+#: ../src/views/darkroom.c:2206
 msgid "quick access to styles"
 msgstr "acesso rápido para os estilos"
 
-#: ../src/views/darkroom.c:2209
+#: ../src/views/darkroom.c:2208
 msgid "quick access for applying any of your styles"
 msgstr "acesso rápido para aplicação dos estilos"
 
 #. ensure that we get strings from the style files shipped with darktable localized
-#: ../src/views/darkroom.c:2213
+#: ../src/views/darkroom.c:2212
 msgid "darktable camera styles"
 msgstr "estilos de câmera do darktable"
 
-#: ../src/views/darkroom.c:2218
+#: ../src/views/darkroom.c:2217
 msgid "second window"
 msgstr "segunda janela"
 
-#: ../src/views/darkroom.c:2220
+#: ../src/views/darkroom.c:2219
 msgid "display a second darkroom image window"
 msgstr "mostra uma segunda janela da sala escura"
 
-#: ../src/views/darkroom.c:2226
+#: ../src/views/darkroom.c:2225
 msgid "color assessment"
 msgstr "avaliação de cores"
 
-#: ../src/views/darkroom.c:2228
+#: ../src/views/darkroom.c:2227
 msgid "toggle ISO 12646 color assessment conditions"
 msgstr "alterna avaliação de cores ISO 12646"
 
-#: ../src/views/darkroom.c:2237
+#: ../src/views/darkroom.c:2236
 msgid "high quality processing"
 msgstr "processamento de alta qualidade"
 
-#: ../src/views/darkroom.c:2241
+#: ../src/views/darkroom.c:2240
 msgid ""
 "toggle high quality processing, if activated darktable processes image data "
 "as it does while exporting"
@@ -27845,7 +27872,7 @@ msgstr ""
 "alterna processamento de alta qualidade, se ativado o darktable processa "
 "dados da imagem como quando as exporta"
 
-#: ../src/views/darkroom.c:2257
+#: ../src/views/darkroom.c:2256
 msgid ""
 "toggle indication of raw overexposure\n"
 "right click for options"
@@ -27853,27 +27880,27 @@ msgstr ""
 "alterna indicação de superexposição\n"
 "clique-direito para opções"
 
-#: ../src/views/darkroom.c:2273
+#: ../src/views/darkroom.c:2272
 msgid "select how to mark the clipped pixels"
 msgstr "selecione como marcar os pixels cortados"
 
-#: ../src/views/darkroom.c:2275
+#: ../src/views/darkroom.c:2274
 msgid "mark with CFA color"
 msgstr "marcar com cor CFA"
 
-#: ../src/views/darkroom.c:2275
+#: ../src/views/darkroom.c:2274
 msgid "mark with solid color"
 msgstr "marcar com cor sólida"
 
-#: ../src/views/darkroom.c:2275
+#: ../src/views/darkroom.c:2274
 msgid "false color"
 msgstr "falsa cor"
 
-#: ../src/views/darkroom.c:2278 ../src/views/darkroom.c:2329
+#: ../src/views/darkroom.c:2277 ../src/views/darkroom.c:2328
 msgid "color scheme"
 msgstr "esquema de cor"
 
-#: ../src/views/darkroom.c:2279
+#: ../src/views/darkroom.c:2278
 msgid ""
 "select the solid color to indicate overexposure.\n"
 "will only be used if mode = mark with solid color"
@@ -27881,27 +27908,27 @@ msgstr ""
 "selecione uma cor para indicar superexposição.\n"
 "só será utilizada caso modo seja = marcar com cor sólida"
 
-#: ../src/views/darkroom.c:2282
+#: ../src/views/darkroom.c:2281
 msgctxt "solidcolor"
 msgid "red"
 msgstr "vermelho"
 
-#: ../src/views/darkroom.c:2283
+#: ../src/views/darkroom.c:2282
 msgctxt "solidcolor"
 msgid "green"
 msgstr "verde"
 
-#: ../src/views/darkroom.c:2284
+#: ../src/views/darkroom.c:2283
 msgctxt "solidcolor"
 msgid "blue"
 msgstr "azul"
 
-#: ../src/views/darkroom.c:2285
+#: ../src/views/darkroom.c:2284
 msgctxt "solidcolor"
 msgid "black"
 msgstr "preto"
 
-#: ../src/views/darkroom.c:2293
+#: ../src/views/darkroom.c:2292
 msgid ""
 "threshold of what shall be considered overexposed\n"
 "1.0 - white level\n"
@@ -27911,7 +27938,7 @@ msgstr ""
 "1.0 - nível de branco\n"
 "0.0 - nível de preto"
 
-#: ../src/views/darkroom.c:2307
+#: ../src/views/darkroom.c:2306
 msgid ""
 "toggle clipping indication\n"
 "right click for options"
@@ -27919,11 +27946,11 @@ msgstr ""
 "alterna indicação de recorte \n"
 "clique-direito para opções"
 
-#: ../src/views/darkroom.c:2322
+#: ../src/views/darkroom.c:2321
 msgid "clipping preview mode"
 msgstr "modo de visualização de recorte"
 
-#: ../src/views/darkroom.c:2323
+#: ../src/views/darkroom.c:2322
 msgid ""
 "select the metric you want to preview\n"
 "full gamut is the combination of all other modes"
@@ -27931,39 +27958,39 @@ msgstr ""
 "selecione a métrica que quer pré-visualizar\n"
 "gama completo é a combinação de todos os outros modos"
 
-#: ../src/views/darkroom.c:2325
+#: ../src/views/darkroom.c:2324
 msgid "full gamut"
 msgstr "gama completo"
 
-#: ../src/views/darkroom.c:2325
+#: ../src/views/darkroom.c:2324
 msgid "any RGB channel"
 msgstr "qualquer canal RGB"
 
-#: ../src/views/darkroom.c:2325
+#: ../src/views/darkroom.c:2324
 msgid "luminance only"
 msgstr "luminância apenas"
 
-#: ../src/views/darkroom.c:2325
+#: ../src/views/darkroom.c:2324
 msgid "saturation only"
 msgstr "saturação apenas"
 
-#: ../src/views/darkroom.c:2330
+#: ../src/views/darkroom.c:2329
 msgid "select colors to indicate clipping"
 msgstr "selecione cores para indicar recorte"
 
-#: ../src/views/darkroom.c:2332
+#: ../src/views/darkroom.c:2331
 msgid "red & blue"
 msgstr "vermelho & azul"
 
-#: ../src/views/darkroom.c:2332
+#: ../src/views/darkroom.c:2331
 msgid "purple & green"
 msgstr "roxo & verde"
 
-#: ../src/views/darkroom.c:2339
+#: ../src/views/darkroom.c:2338
 msgid "lower threshold"
 msgstr "limite inferior"
 
-#: ../src/views/darkroom.c:2340
+#: ../src/views/darkroom.c:2339
 msgid ""
 "clipping threshold for the black point,\n"
 "in EV, relatively to white (0 EV).\n"
@@ -27983,11 +28010,11 @@ msgstr ""
 "impressão em papel colorido glossy típico produz preto em -8.00 EV,\n"
 "impressão em papel P&B glossy típico produz preto em -9.00 EV."
 
-#: ../src/views/darkroom.c:2356
+#: ../src/views/darkroom.c:2355
 msgid "upper threshold"
 msgstr "limite superior"
 
-#: ../src/views/darkroom.c:2358
+#: ../src/views/darkroom.c:2357
 #, no-c-format
 msgid ""
 "clipping threshold for the white point.\n"
@@ -27996,11 +28023,11 @@ msgstr ""
 "limiar de recorte para ponto de branco\n"
 "100 % é o pico de luminância média"
 
-#: ../src/views/darkroom.c:2370
+#: ../src/views/darkroom.c:2369
 msgid "softproof"
 msgstr "prova digital"
 
-#: ../src/views/darkroom.c:2373
+#: ../src/views/darkroom.c:2372
 msgid ""
 "toggle softproofing\n"
 "right click for profile options"
@@ -28008,7 +28035,7 @@ msgstr ""
 "alterna perfil de prova digital\n"
 "clique-direito para opções"
 
-#: ../src/views/darkroom.c:2384
+#: ../src/views/darkroom.c:2383
 msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
@@ -28016,54 +28043,54 @@ msgstr ""
 "alterna verificação de gama\n"
 "clique-direito para opções"
 
-#: ../src/views/darkroom.c:2411 ../src/views/darkroom.c:2413
-#: ../src/views/darkroom.c:2427 ../src/views/darkroom.c:2428
-#: ../src/views/darkroom.c:2429 ../src/views/darkroom.c:2430
+#: ../src/views/darkroom.c:2410 ../src/views/darkroom.c:2412
+#: ../src/views/darkroom.c:2426 ../src/views/darkroom.c:2427
+#: ../src/views/darkroom.c:2428 ../src/views/darkroom.c:2429
 #: ../src/views/lighttable.c:1182 ../src/views/lighttable.c:1184
 msgid "profiles"
 msgstr "perfis"
 
-#: ../src/views/darkroom.c:2413 ../src/views/lighttable.c:1184
+#: ../src/views/darkroom.c:2412 ../src/views/lighttable.c:1184
 msgid "preview intent"
 msgstr "intenção de visualização"
 
-#: ../src/views/darkroom.c:2427 ../src/views/lighttable.c:1188
+#: ../src/views/darkroom.c:2426 ../src/views/lighttable.c:1188
 msgid "display profile"
 msgstr "perfil do monitor"
 
-#: ../src/views/darkroom.c:2428 ../src/views/lighttable.c:1191
+#: ../src/views/darkroom.c:2427 ../src/views/lighttable.c:1191
 msgid "preview display profile"
 msgstr "perfil do monitor (segunda janela)"
 
-#: ../src/views/darkroom.c:2430
+#: ../src/views/darkroom.c:2429
 msgid "histogram profile"
 msgstr "perfil de histograma"
 
-#: ../src/views/darkroom.c:2437
+#: ../src/views/darkroom.c:2436
 msgid "second preview window ISO 12646 color assessment"
 msgstr "segunda janela para pré-visualização de avaliação de cores ISO 12646"
 
-#: ../src/views/darkroom.c:2439
+#: ../src/views/darkroom.c:2438
 msgid "color assessment second preview"
 msgstr "esgunda pré-visualização de avaliação de cores"
 
-#: ../src/views/darkroom.c:2498 ../src/views/lighttable.c:1225
+#: ../src/views/darkroom.c:2497 ../src/views/lighttable.c:1225
 msgid "display ICC profiles"
 msgstr "perfis ICC de monitor"
 
-#: ../src/views/darkroom.c:2502 ../src/views/lighttable.c:1229
+#: ../src/views/darkroom.c:2501 ../src/views/lighttable.c:1229
 msgid "preview display ICC profiles"
 msgstr "pré-visualizar perfis ICC do monitor"
 
-#: ../src/views/darkroom.c:2506
+#: ../src/views/darkroom.c:2505
 msgid "softproof ICC profiles"
 msgstr "perfil ICC de prova digital"
 
-#: ../src/views/darkroom.c:2510
+#: ../src/views/darkroom.c:2509
 msgid "histogram and color picker ICC profiles"
 msgstr "perfis ICC de histograma e seletor de cores"
 
-#: ../src/views/darkroom.c:2543
+#: ../src/views/darkroom.c:2542
 msgid ""
 "toggle guide lines\n"
 "right click for guides options"
@@ -28072,137 +28099,137 @@ msgstr ""
 "clique-direito para opções"
 
 #. Fullscreen preview key
-#: ../src/views/darkroom.c:2560
+#: ../src/views/darkroom.c:2559
 msgid "full preview"
 msgstr "visualização total"
 
 #. add an option to allow skip mouse events while other overlays are consuming mouse actions
-#: ../src/views/darkroom.c:2564
+#: ../src/views/darkroom.c:2563
 msgid "force pan/zoom/rotate with mouse"
 msgstr "forçar arrastar/zoom/girar com o mouse"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:2576
+#: ../src/views/darkroom.c:2575
 msgid "zoom close-up"
 msgstr "zoom primeiro plano"
 
 #. zoom in/out
 #. zoom in/out/min/max
-#: ../src/views/darkroom.c:2579 ../src/views/lighttable.c:1283
+#: ../src/views/darkroom.c:2578 ../src/views/lighttable.c:1283
 msgid "zoom in"
 msgstr "aproximar"
 
-#: ../src/views/darkroom.c:2580 ../src/views/lighttable.c:1285
+#: ../src/views/darkroom.c:2579 ../src/views/lighttable.c:1285
 msgid "zoom out"
 msgstr "afastar"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:2583
+#: ../src/views/darkroom.c:2582
 msgid "image forward"
 msgstr "imagem adiante"
 
-#: ../src/views/darkroom.c:2584
+#: ../src/views/darkroom.c:2583
 msgid "image back"
 msgstr "imagem anterior"
 
 #. cycle overlay colors
-#: ../src/views/darkroom.c:2587
+#: ../src/views/darkroom.c:2586
 msgid "cycle overlay colors"
 msgstr "passa por cores de overlay"
 
 #. toggle visibility of drawn masks for current gui module
-#: ../src/views/darkroom.c:2590
+#: ../src/views/darkroom.c:2589
 msgid "show drawn masks"
 msgstr "mostrar máscara desenhada"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:2593
+#: ../src/views/darkroom.c:2592
 msgid "increase brush size"
 msgstr "aumentar tamanho do pincel"
 
-#: ../src/views/darkroom.c:2594
+#: ../src/views/darkroom.c:2593
 msgid "decrease brush size"
 msgstr "diminuir tamanho do pincel"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:2597
+#: ../src/views/darkroom.c:2596
 msgid "increase brush hardness"
 msgstr "aumentar dureza do pincel"
 
-#: ../src/views/darkroom.c:2598
+#: ../src/views/darkroom.c:2597
 msgid "decrease brush hardness"
 msgstr "diminuir dureza do pincel"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:2601
+#: ../src/views/darkroom.c:2600
 msgid "increase brush opacity"
 msgstr "aumentar opacidade do pincel"
 
-#: ../src/views/darkroom.c:2602
+#: ../src/views/darkroom.c:2601
 msgid "decrease brush opacity"
 msgstr "diminuir opacidade do pincel"
 
 #. undo/redo
-#: ../src/views/darkroom.c:2605 ../src/views/lighttable.c:1275
+#: ../src/views/darkroom.c:2604 ../src/views/lighttable.c:1275
 #: ../src/views/map.c:2434
 msgid "undo"
 msgstr "desfazer"
 
-#: ../src/views/darkroom.c:2606 ../src/views/lighttable.c:1276
+#: ../src/views/darkroom.c:2605 ../src/views/lighttable.c:1276
 #: ../src/views/map.c:2436
 msgid "redo"
 msgstr "refazer"
 
 #. change the precision for adjusting sliders with keyboard shortcuts
-#: ../src/views/darkroom.c:2609
+#: ../src/views/darkroom.c:2608
 msgid "change keyboard shortcut slider precision"
 msgstr "mudar a precisão dos atalhos de teclado para controles deslizantes"
 
-#: ../src/views/darkroom.c:3274
+#: ../src/views/darkroom.c:3272
 msgid "keyboard shortcut slider precision: fine"
 msgstr "precisão do atalho de teclado para deslizadores: leve"
 
-#: ../src/views/darkroom.c:3276
+#: ../src/views/darkroom.c:3274
 msgid "keyboard shortcut slider precision: normal"
 msgstr "precisão do atalho de teclado para deslizadores: normal"
 
-#: ../src/views/darkroom.c:3278
+#: ../src/views/darkroom.c:3276
 msgid "keyboard shortcut slider precision: coarse"
 msgstr "precisão do atalho de teclado para deslizadores: pesada"
 
-#: ../src/views/darkroom.c:3293
+#: ../src/views/darkroom.c:3291
 msgid "switch to lighttable"
 msgstr "mudar para mesa de luz"
 
-#: ../src/views/darkroom.c:3294 ../src/views/lighttable.c:882
+#: ../src/views/darkroom.c:3292 ../src/views/lighttable.c:882
 msgid "zoom in the image"
 msgstr "zoom na imagem"
 
-#: ../src/views/darkroom.c:3295
+#: ../src/views/darkroom.c:3293
 msgid "unbounded zoom in the image"
 msgstr "zoom ilimitado na imagem"
 
-#: ../src/views/darkroom.c:3296
+#: ../src/views/darkroom.c:3294
 msgid "zoom to 100% 200% and back"
 msgstr "zoom para 100% 200% e volta"
 
-#: ../src/views/darkroom.c:3297 ../src/views/lighttable.c:885
+#: ../src/views/darkroom.c:3295 ../src/views/lighttable.c:885
 msgid "pan a zoomed image"
 msgstr "arrastar uma imagem em zoom"
 
-#: ../src/views/darkroom.c:3299 ../src/views/lighttable.c:927
+#: ../src/views/darkroom.c:3297 ../src/views/lighttable.c:927
 msgid "[modules] expand module without closing others"
 msgstr "[módulos] expande módulo sem fechar outros"
 
-#: ../src/views/darkroom.c:3300 ../src/views/lighttable.c:928
+#: ../src/views/darkroom.c:3298 ../src/views/lighttable.c:928
 msgid "[modules] expand module and close others"
 msgstr "[módulos] expande módulo e fecha outros"
 
-#: ../src/views/darkroom.c:3302
+#: ../src/views/darkroom.c:3300
 msgid "[modules] rename module"
 msgstr "[módulos] renomeia módulo"
 
-#: ../src/views/darkroom.c:3304
+#: ../src/views/darkroom.c:3302
 msgid "[modules] change module position in pipe"
 msgstr "[módulos] muda posição do módulo no fluxo"
 
@@ -28445,48 +28472,48 @@ msgstr "nova sessão iniciada '%s'"
 msgid "no camera with tethering support available for use..."
 msgstr "nenhuma câmera com acesso remoto disponível para uso..."
 
-#: ../src/views/view.c:1359
+#: ../src/views/view.c:1364
 msgid "left click"
 msgstr "clique-esquerdo"
 
-#: ../src/views/view.c:1362
+#: ../src/views/view.c:1367
 msgid "right click"
 msgstr "clique-direito"
 
-#: ../src/views/view.c:1365
+#: ../src/views/view.c:1370
 msgid "middle click"
 msgstr "clique do meio"
 
-#: ../src/views/view.c:1371
+#: ../src/views/view.c:1376
 msgid "left double-click"
 msgstr "clique-esquerdo-duplo"
 
-#: ../src/views/view.c:1374
+#: ../src/views/view.c:1379
 msgid "right double-click"
 msgstr "clique-direito duplo"
 
-#: ../src/views/view.c:1377
+#: ../src/views/view.c:1382
 msgid "drag and drop"
 msgstr "arrastar e soltar"
 
-#: ../src/views/view.c:1380
+#: ../src/views/view.c:1385
 msgid "left click+drag"
 msgstr "clique-esquerdo+arrastar"
 
-#: ../src/views/view.c:1383
+#: ../src/views/view.c:1388
 msgid "right click+drag"
 msgstr "clique-direito+arrastar"
 
-#: ../src/views/view.c:1405
+#: ../src/views/view.c:1410
 msgid "darktable - accels window"
 msgstr "darktable - janela de atalhos"
 
-#: ../src/views/view.c:1454
+#: ../src/views/view.c:1459
 msgid "switch to a classic window which will stay open after key release"
 msgstr "mudar para uma janela clássica que ficará aberta após soltar a tecla."
 
 #. we add the mouse actions too
-#: ../src/views/view.c:1521
+#: ../src/views/view.c:1526
 msgid "mouse actions"
 msgstr "ações com mouse"
 
