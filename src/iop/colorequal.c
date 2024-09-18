@@ -529,7 +529,8 @@ static void _finish_covariance(const size_t ds_pixels,
 }
 
 DT_OMP_DECLARE_SIMD(aligned(ds_UV, covariance, a, b: 64))
-static void _prepare_prefilter(const size_t ds_pixels, const float epsilon,
+static void _prepare_prefilter(const size_t ds_pixels,
+                               const float epsilon,
                                const float *const restrict ds_UV,
                                const float *const restrict covariance,
                                float *const restrict a,
@@ -539,12 +540,11 @@ static void _prepare_prefilter(const size_t ds_pixels, const float epsilon,
   for(size_t k = 0; k < ds_pixels; k++)
   {
     // Extract the 2×2 covariance matrix sigma = cov(U, V) at current pixel
-    dt_aligned_pixel_t Sigma = { covariance[4 * k + 0], covariance[4 * k + 1],
-                                 covariance[4 * k + 2], covariance[4 * k + 3] };
-
-    // Add the variance threshold : sigma' = sigma + epsilon * Identity
-    Sigma[0] += epsilon;
-    Sigma[3] += epsilon;
+    // and add the variance threshold : sigma' = sigma + epsilon * Identity
+    dt_aligned_pixel_t Sigma = {covariance[4 * k + 0] + epsilon,
+                                covariance[4 * k + 1],
+                                covariance[4 * k + 2],
+                                covariance[4 * k + 3] + epsilon};
 
     // Invert the 2×2 sigma matrix algebraically
     // see https://www.mathcentre.ac.uk/resources/uploaded/sigma-matrices7-2009-1.pdf
@@ -583,7 +583,8 @@ static void _prepare_prefilter(const size_t ds_pixels, const float epsilon,
 }
 
 DT_OMP_DECLARE_SIMD(aligned(a_full, b_full, saturation, UV: 64))
-static void _apply_prefilter(size_t npixels, float sat_shift,
+static void _apply_prefilter(size_t npixels,
+                             float sat_shift,
                              float *const restrict  UV,
                              const float *const restrict saturation,
                              const float *const restrict a_full,
@@ -624,15 +625,15 @@ static void _prefilter_chromaticity(float *const restrict UV,
   // as much as possible from any color equalization.
 
   const float sigma = csigma * roi->scale;
-  const size_t width = roi->width;
-  const size_t height = roi->height;
+  const int width = roi->width;
+  const int height = roi->height;
   // possibly downsample for speed-up
-  const size_t pixels = width * height;
+  const size_t pixels = (size_t)width * height;
   const float scaling = _get_scaling(sigma);
   const float gsigma = MAX(0.2f, 0.5f * sigma / scaling);
-  const size_t ds_height = height / scaling;
-  const size_t ds_width = width / scaling;
-  const size_t ds_pixels = ds_width * ds_height;
+  const int ds_height = height / scaling;
+  const int ds_width = width / scaling;
+  const size_t ds_pixels = (size_t)ds_width * ds_height;
   const gboolean resized = width != ds_width || height != ds_height;
 
   float *ds_UV = UV;
@@ -737,15 +738,15 @@ static void _guide_with_chromaticity(float *const restrict UV,
 
   // Downsample for speed-up
   const float sigma = csigma * roi->scale;
-  const size_t width = roi->width;
-  const size_t height = roi->height;
+  const int width = roi->width;
+  const int height = roi->height;
   // Downsample for speed-up
-  const size_t pixels = width * height;
+  const size_t pixels = (size_t)width * height;
   const float scaling = _get_scaling(sigma);
   const float gsigma = MAX(0.2f, 0.5f * sigma / scaling);
-  const size_t ds_height = height / scaling;
-  const size_t ds_width = width / scaling;
-  const size_t ds_pixels = ds_width * ds_height;
+  const int ds_height = height / scaling;
+  const int ds_width = width / scaling;
+  const size_t ds_pixels = (size_t)ds_width * ds_height;
   const gboolean resized = width != ds_width || height != ds_height;
 
   float *ds_UV = UV;
@@ -850,15 +851,12 @@ static void _guide_with_chromaticity(float *const restrict UV,
   for(size_t k = 0; k < ds_pixels; k++)
   {
     // Extract the 2×2 covariance matrix sigma = cov(U, V) at current pixel
+    // and add the covariance threshold : sigma' = sigma + epsilon * Identity
     dt_aligned_pixel_t Sigma
-        = { covariance[4 * k + 0],
+        = { covariance[4 * k + 0] + epsilon,
             covariance[4 * k + 1],
             covariance[4 * k + 2],
-            covariance[4 * k + 3] };
-
-    // Add the covariance threshold : sigma' = sigma + epsilon * Identity
-    Sigma[0] += epsilon;
-    Sigma[3] += epsilon;
+            covariance[4 * k + 3] + epsilon };
 
     // Invert the 2×2 sigma matrix algebraically
     // see https://www.mathcentre.ac.uk/resources/uploaded/sigma-matrices7-2009-1.pdf
@@ -988,7 +986,6 @@ void process(struct dt_iop_module_t *self,
 
   const float *const restrict in = (float*)i;
   float *const restrict out = (float*)o;
-
 
   _init_satweights(d->contrast);
 
@@ -1276,7 +1273,11 @@ static int _prefilter_chromaticity_cl(const int devid,
   }
 
   covariance_tmp = dt_opencl_alloc_device(devid, ds_width, ds_height, 4 * sizeof(float));
-  if(covariance_tmp == NULL) goto error;
+  if(covariance_tmp == NULL)
+  {
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    goto error;
+  }
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_init_covariance, ds_width, ds_height,
           CLARG(covariance_tmp), CLARG(ds_UV), CLARG(ds_width), CLARG(ds_height));
@@ -1289,7 +1290,11 @@ static int _prefilter_chromaticity_cl(const int devid,
   if(err != CL_SUCCESS) goto error;
 
   covariance = dt_opencl_alloc_device(devid, ds_width, ds_height, 4 * sizeof(float));
-  if(covariance == NULL) goto error;
+  if(covariance == NULL)
+  {
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    goto error;
+  }
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_finish_covariance, ds_width, ds_height,
           CLARG(covariance), CLARG(covariance_tmp), CLARG(ds_UV),
@@ -1301,7 +1306,11 @@ static int _prefilter_chromaticity_cl(const int devid,
 
   a = dt_opencl_alloc_device(devid, ds_width, ds_height, 4 * sizeof(float));
   b = dt_opencl_alloc_device(devid, ds_width, ds_height, CE_CH * sizeof(float));
-  if(a == NULL || b == NULL) goto error;
+  if(a == NULL || b == NULL)
+  {
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    goto error;
+  }
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_prepare_prefilter, ds_width, ds_height,
           CLARG(ds_UV), CLARG(covariance), CLARG(a), CLARG(b),
@@ -1328,7 +1337,11 @@ static int _prefilter_chromaticity_cl(const int devid,
   {
     a_full = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
     b_full = dt_opencl_alloc_device(devid, width, height, CE_CH * sizeof(float));
-    if(a_full == NULL || b_full == NULL) goto error;
+    if(a_full == NULL || b_full == NULL)
+    {
+      err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+      goto error;
+    }
 
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_interpolate_bilinear, width, height,
           CLARG(a), CLARG(ds_width), CLARG(ds_height), CLARG(a_full), CLARG(width), CLARG(height));
@@ -1345,7 +1358,11 @@ static int _prefilter_chromaticity_cl(const int devid,
   }
 
   UV_tmp = dt_opencl_duplicate_image(devid, UV);
-  if(UV_tmp == NULL) goto error;
+  if(UV_tmp == NULL)
+  {
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    goto error;
+  }
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_apply_prefilter, width, height,
           CLARG(UV_tmp), CLARG(UV), CLARG(saturation), CLARG(a_full), CLARG(b_full), CLARG(weight),
@@ -1381,12 +1398,12 @@ static int _guide_with_chromaticity_cl(const int devid,
                                       const float sat_shift)
 {
   const float sigma = csigma * roi->scale;
-  const size_t width = roi->width;
-  const size_t height = roi->height;
+  const int width = roi->width;
+  const int height = roi->height;
   const float scaling = _get_scaling(sigma);
   const float gsigma = MAX(0.2f, 0.5f * sigma / scaling);
-  const size_t ds_height = height / scaling;
-  const size_t ds_width = width / scaling;
+  const int ds_height = height / scaling;
+  const int ds_width = width / scaling;
   const gboolean resized = width != ds_width || height != ds_height;
 
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
@@ -1500,7 +1517,11 @@ static int _guide_with_chromaticity_cl(const int devid,
   {
     a_full = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
     b_full = dt_opencl_alloc_device(devid, width, height, CE_CH * sizeof(float));
-    if(a_full == NULL || b_full == NULL) goto error;
+    if(a_full == NULL || b_full == NULL)
+    {
+      err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+      goto error;
+    }
 
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_interpolate_bilinear, width, height,
           CLARG(a), CLARG(ds_width), CLARG(ds_height), CLARG(a_full), CLARG(width), CLARG(height));
@@ -1512,7 +1533,11 @@ static int _guide_with_chromaticity_cl(const int devid,
   }
 
   corrections_tmp = dt_opencl_duplicate_image(devid, corrections);
-  if(corrections_tmp == NULL) goto error;
+  if(corrections_tmp == NULL)
+  {
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    goto error;
+  }
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_apply_guided, width, height,
           CLARG(UV), CLARG(saturation), CLARG(scharr), CLARG(a_full), CLARG(b_full),
@@ -1625,7 +1650,7 @@ int process_cl(struct dt_iop_module_t *self,
   // STEP 2 : smoothen UV to avoid discontinuities in hue
   if(guiding && !run_fast)
   {
-    _prefilter_chromaticity_cl(devid, gd, UV, saturation, weight, roi_out, d->chroma_size, d->chroma_feathering, sat_shift);
+    err = _prefilter_chromaticity_cl(devid, gd, UV, saturation, weight, roi_out, d->chroma_size, d->chroma_feathering, sat_shift);
     if(err != CL_SUCCESS) goto error;
   }
 
@@ -1644,7 +1669,8 @@ int process_cl(struct dt_iop_module_t *self,
     err = _mean_gaussian_cl(devid, scharr, owidth, oheight, roi_out->scale);
     if(err != CL_SUCCESS) goto error;
 
-    _guide_with_chromaticity_cl(devid, gd, UV, corrections, saturation, b_corrections, scharr, weight, roi_out, d->param_size, d->param_feathering, bright_shift, sat_shift);
+    err = _guide_with_chromaticity_cl(devid, gd, UV, corrections, saturation, b_corrections, scharr, weight, roi_out, d->param_size, d->param_feathering, bright_shift, sat_shift);
+    if(err != CL_SUCCESS) goto error;
   }
 
   if(!mask_mode)
@@ -1654,7 +1680,6 @@ int process_cl(struct dt_iop_module_t *self,
           CLARG(corrections), CLARG(b_corrections),
           CLARG(output_matrix_cl), CLARG(gamut_LUT), CLARG(white),
           CLARG(owidth), CLARG(oheight));
-    if(err != CL_SUCCESS) goto error;
   }
   else
   {
