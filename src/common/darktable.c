@@ -1587,6 +1587,19 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     dt_film_set_folder_status();
   }
 
+  // the update crawl needs to run after db and conf are up, but before LUA
+  // starts any scripts
+  GList *changed_xmp_files = NULL;
+  if(init_gui)
+  {
+    if(dt_conf_get_bool("run_crawler_on_start"))
+    {
+      darktable_splash_screen_create(FALSE,TRUE); // force the splash screen for the crawl even if user-disabled
+      // scan for cases where the database and xmp files have different timestamps
+      changed_xmp_files = dt_control_crawler_run();
+    }
+  }
+
   /* for every resourcelevel we have 4 ints defined, either absolute or a fraction
      0 cpu available
      1 cpu singlebuffer
@@ -1693,6 +1706,18 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   darktable.mipmap_cache = (dt_mipmap_cache_t *)calloc(1, sizeof(dt_mipmap_cache_t));
   dt_mipmap_cache_init(darktable.mipmap_cache);
 
+  // set up memory.darktable_iop_names table
+  dt_iop_set_darktable_iop_table();
+
+  // set up the list of exiv2 metadata
+  dt_exif_set_exiv2_taglist();
+
+  // init metadata flags
+  dt_metadata_init();
+
+  darktable_splash_screen_set_progress(_("synchronizing local copies"));
+  dt_image_local_copy_synch();
+
   // The GUI must be initialized before the views, because the init()
   // functions of the views depend on darktable.control->accels_* to
   // register their keyboard accelerators
@@ -1741,15 +1766,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     return 1;
   }
 
-  // set up memory.darktable_iop_names table
-  dt_iop_set_darktable_iop_table();
-
-  // set up the list of exiv2 metadata
-  dt_exif_set_exiv2_taglist();
-
-  // init metadata flags
-  dt_metadata_init();
-
   if(darktable.dump_pfm_module)
     dt_print(DT_DEBUG_ALWAYS,
              "[dt_init] writing intermediate pfm files for module '%s'\n",
@@ -1778,9 +1794,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     darktable.lib = (dt_lib_t *)calloc(1, sizeof(dt_lib_t));
     dt_lib_init(darktable.lib);
 
-    darktable_splash_screen_set_progress(_("loading configuration"));
-    dt_gui_gtk_load_config();
-
     // init the gui part of views
     dt_view_manager_gui_init(darktable.view_manager);
 
@@ -1795,28 +1808,23 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
     // initialize undo struct
     darktable.undo = dt_undo_init();
+
+    // now that other initialization is complete, we can show the main window
+    // we need to do this before Lua is started or we'll get a hang, or the
+    // module groups don't get set up correctly
+    gtk_widget_show_all(dt_ui_main_window(darktable.gui->ui));
+    dt_gui_process_events();
   }
 
   dt_print(DT_DEBUG_MEMORY, "[memory] after successful startup\n");
   dt_print_mem_usage();
 
-  darktable_splash_screen_set_progress(_("synchronizing local copies"));
-  dt_image_local_copy_synch();
-
-  // the update crawl needs to run after db and conf are up, but before LUA
-  // starts any scripts
-  GList *changed_xmp_files = NULL;
-  if(init_gui && dt_conf_get_bool("run_crawler_on_start"))
-  {
-    darktable_splash_screen_create(FALSE,TRUE); // force the splash screen for the crawl even if user-disabled
-    // scan for cases where the database and xmp files have different timestamps
-    changed_xmp_files = dt_control_crawler_run();
-  }
-
 /* init lua last, since it's user made stuff it must be in the real environment */
 #ifdef USE_LUA
   darktable_splash_screen_set_progress(_("initializing LUA"));
   dt_lua_init(darktable.lua_state.state, lua_command);
+#else
+  darktable_splash_screen_set_progress(_(""));
 #endif
 
   if(init_gui)
@@ -1890,6 +1898,11 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_capabilities_add("nonapple");
 #endif
 
+  // if we hid the main window by iconifying it, make sure to restore its geometry
+  if(init_gui)
+  {
+    gtk_window_deiconify(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
+  }
 
   dt_print(DT_DEBUG_CONTROL,
            "[dt_init] startup took %f seconds\n", dt_get_wtime() - start_wtime);

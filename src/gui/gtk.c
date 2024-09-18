@@ -1275,18 +1275,17 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   // Init focus peaking
   gui->show_focus_peaking = dt_conf_get_bool("ui/show_focus_peaking");
 
-  // Initializing widgets
-  _init_widgets(gui);
-  dt_gui_apply_theme();
-
-  //init overlay colors
-  dt_guides_set_overlay_colors();
-
   /* Have the delete event (window close) end the program */
   snprintf(path, sizeof(path), "%s/icons", datadir);
   gtk_icon_theme_append_search_path(gtk_icon_theme_get_default(), path);
   snprintf(path, sizeof(path), "%s/icons", sharedir);
   gtk_icon_theme_append_search_path(gtk_icon_theme_get_default(), path);
+
+  //init overlay colors
+  dt_guides_set_overlay_colors();
+
+  // Initializing widgets
+  _init_widgets(gui);
 
   widget = dt_ui_center(darktable.gui->ui);
 
@@ -1643,7 +1642,6 @@ static void _init_widgets(dt_gui_gtk_t *gui)
   // Adding the outermost vbox
   widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_container_add(GTK_CONTAINER(container), widget);
-  gtk_widget_show(widget);
 
   /* connect to signal redraw all */
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_REDRAW_ALL,
@@ -1664,14 +1662,34 @@ static void _init_widgets(dt_gui_gtk_t *gui)
                                                   DT_UI_BORDER_BOTTOM);
   gtk_box_pack_start(GTK_BOX(container), gui->widgets.bottom_border, FALSE, TRUE, 0);
 
-  // Showing everything
-  gtk_widget_show_all(dt_ui_main_window(gui->ui));
+  // configure main window position, colors, fonts, etc.
+  dt_gui_gtk_load_config();
+  dt_gui_apply_theme();
+  dt_gui_process_events();
 
+  // Showing everything, to ensure proper instantiation and initialization
+  // then we hide the scroll bars and popup messages again
+  // before doing this, request that the window be minimized (some WMs
+  // don't support this, so we can hide it below, but that had issues)
+  gtk_window_iconify(GTK_WINDOW(dt_ui_main_window(gui->ui)));
+  gtk_widget_show_all(dt_ui_main_window(gui->ui));
   gtk_widget_set_visible(dt_ui_log_msg(gui->ui), FALSE);
   gtk_widget_set_visible(dt_ui_toast_msg(gui->ui), FALSE);
   gtk_widget_set_visible(gui->scrollbars.hscrollbar, FALSE);
   gtk_widget_set_visible(gui->scrollbars.vscrollbar, FALSE);
 
+  // if the WM doesn't support minimization, we want to hide the
+  // window so that we don't actually see it until the rest of the
+  // initialization is complete
+//  gtk_widget_hide(dt_ui_main_window(gui->ui));  //FIXME: on some systems, the main window never un-hides later...
+
+  // finally, process all accumulated GUI events so that everything is properly
+  // set up before proceeding
+  for(int i = 0; i < 5; i++)
+  {
+    g_usleep(500);
+    dt_gui_process_events();
+  }
 }
 
 static const dt_action_def_t _action_def_focus_tabs;
@@ -1683,7 +1701,6 @@ static void _init_main_table(GtkWidget *container)
   // Creating the table
   widget = gtk_grid_new();
   gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
-  gtk_widget_show(widget);
 
   container = widget;
 
@@ -1807,6 +1824,8 @@ static void _init_main_table(GtkWidget *container)
 
   /* initialize right panel */
   _ui_init_panel_right(darktable.gui->ui, container);
+
+  gtk_widget_show_all(container);
 
    dt_action_define(&darktable.control->actions_focus, NULL,
                     N_("tabs"), NULL, &_action_def_focus_tabs);
@@ -2660,6 +2679,7 @@ static void _ui_init_panel_bottom(dt_ui_t *ui,
   gtk_box_pack_start(GTK_BOX(widget),
                      ui->containers[DT_UI_CONTAINER_PANEL_BOTTOM], TRUE, TRUE,
                      DT_UI_PANEL_MODULE_SPACING);
+  gtk_widget_show(widget);
 }
 
 

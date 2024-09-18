@@ -82,7 +82,11 @@ void darktable_splash_screen_set_progress(const char *msg)
       showing_remaining = FALSE;
     }
     // give Gtk a chance to update the screen
-    dt_gui_process_events();
+    for(int i = 0; i < 5; i++)
+    {
+      g_usleep(1000);
+      dt_gui_process_events();
+    }
   }
 }
 
@@ -113,7 +117,11 @@ void darktable_splash_screen_set_progress_percent(const char *msg, double fracti
     gtk_widget_show_all(splash_screen);
     showing_remaining = TRUE;
     // give Gtk a chance to update the screen
-    dt_gui_process_events();
+    for(int i = 0; i < 5; i++)
+    {
+      g_usleep(1000);
+      dt_gui_process_events();
+    }
   }
 }
 

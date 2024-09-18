@@ -141,7 +141,7 @@ GList *dt_control_crawler_run(void)
 
   int image_count = 0;
   double start_time = dt_get_wtime();
-  double last_time = 0;
+  double last_time = start_time - 0.99; // wait 10ms before first update to ensure visibility
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
