@@ -1111,10 +1111,12 @@ static gboolean _event_scroll(GtkWidget *widget,
 
   // file manager can either scroll fractionally and smoothly for precision 
   // touch pads, or in one-thumbnail increments for clicky scroll wheels
-  if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER) {
+  if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER) 
+  {
     gdouble deltaf_x, deltaf_y;
     gboolean did_scroll;
-    if(dt_conf_get_bool("thumbtable_fractional_scrolling")) {
+    if(dt_conf_get_bool("thumbtable_fractional_scrolling"))
+    {
       did_scroll = dt_gui_get_scroll_deltas(e, &deltaf_x, &deltaf_y);
     }
     else 
