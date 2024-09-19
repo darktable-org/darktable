@@ -26,7 +26,6 @@ typedef enum dt_iop_colorequal_channel_t
   BRIGHTNESS_GRAD = BRIGHTNESS + GRAD_SWITCH
 } dt_iop_colorequal_channel_t;
 
-#define NODES 8
 #define SAT_EFFECT 2.0f
 #define BRIGHT_EFFECT 8.0f
 
@@ -35,8 +34,6 @@ typedef enum dt_iop_colorequal_channel_t
 #include "color_conversion.h"
 
 #define SATSIZE 4096.0f
-#define CENORM_MIN 1.52587890625e-05f // norm can't be < to 2^(-16)
-
 
 static inline float _get_scaling(const float sigma)
 {
@@ -63,14 +60,14 @@ static inline float scharr_gradient(__read_only image2d_t in,
   const float gx = 47.0f / 255.0f * (read_imagef(in, samplerA, (int2)(x-1, y-1)).x - read_imagef(in, samplerA, (int2)(x+1, y-1)).x
                                    + read_imagef(in, samplerA, (int2)(x-1, y+1)).x - read_imagef(in, samplerA, (int2)(x+1, y+1)).x)
                 + 162.0f / 255.0f * (read_imagef(in, samplerA, (int2)(x-1, y)).x   - read_imagef(in, samplerA, (int2)(x+1, y)).x);
-  const float gy = 47.0f / 255.0f * (read_imagef(in, samplerA, (int2)(x-1, x-1)).x - read_imagef(in, samplerA, (int2)(x-1, y+1)).x
+  const float gy = 47.0f / 255.0f * (read_imagef(in, samplerA, (int2)(x-1, y-1)).x - read_imagef(in, samplerA, (int2)(x-1, y+1)).x
                                    + read_imagef(in, samplerA, (int2)(x+1, y-1)).x - read_imagef(in, samplerA, (int2)(x+1, y+1)).x)
                 + 162.0f / 255.0f * (read_imagef(in, samplerA, (int2)(x, y-1)).x   - read_imagef(in, samplerA, (int2)(x, y+1)).x);
 
   return dt_fast_hypot(gx, gy);
 }
 
-static inline float4 gamut_map_HSB(const float4 HSB, global float *gamut_LUT, const float L_white)
+static inline float gamut_map_HSB(const float4 HSB, global float *gamut_LUT, const float L_white)
 {
   const float4 JCH = dt_UCS_HSB_to_JCH(HSB);
   const float max_colorfulness = lookup_gamut(gamut_LUT, JCH.z);
@@ -79,9 +76,7 @@ static inline float4 gamut_map_HSB(const float4 HSB, global float *gamut_LUT, co
   const float4 HSB_gamut_boundary = dt_UCS_JCH_to_HSB(JCH_gamut_boundary);
 
   // Soft-clip the current pixel saturation at constant brightness
-  float4 gHSB = HSB;
-  gHSB.y = soft_clip(HSB.y, 0.8f * HSB_gamut_boundary.y, HSB_gamut_boundary.y);
-  return gHSB;
+  return soft_clip(HSB.y, 0.8f * HSB_gamut_boundary.y, HSB_gamut_boundary.y);
 }
 
 __kernel void init_covariance(__write_only image2d_t covariance,
@@ -94,8 +89,7 @@ __kernel void init_covariance(__write_only image2d_t covariance,
   if(col >= width || row >= height) return;
 
   const float2 UV = read_imagef(ds_UV, samplerA, (int2)(col, row)).xy;
-  const float4 CV = { UV.x * UV.x, UV.x * UV.y, UV.x * UV.y, UV.y * UV.y };
-  write_imagef(covariance, (int2)(col, row), CV);
+  write_imagef(covariance, (int2)(col, row), (float4)(UV.x * UV.x, UV.x * UV.y, UV.x * UV.y, UV.y * UV.y));
 }
 
 __kernel void finish_covariance(__write_only image2d_t covariance_out,
@@ -110,9 +104,11 @@ __kernel void finish_covariance(__write_only image2d_t covariance_out,
 
   const float2 UV = read_imagef(ds_UV, samplerA, (int2)(col, row)).xy;
   const float4 CV = read_imagef(covariance_in, samplerA, (int2)(col, row));
-  const float4 CVO = { CV.x - UV.x * UV.x, CV.y - UV.x * UV.y, CV.z - UV.x * UV.y, CV.w - UV.y * UV.y };
 
-  write_imagef(covariance_out, (int2)(col, row), CVO);
+  write_imagef(covariance_out, (int2)(col, row), (float4)(CV.x - UV.x * UV.x,
+                                                          CV.y - UV.x * UV.y,
+                                                          CV.z - UV.x * UV.y,
+                                                          CV.w - UV.y * UV.y));
 }
 
 __kernel void prepare_prefilter(__read_only image2d_t ds_UV,
@@ -130,9 +126,7 @@ __kernel void prepare_prefilter(__read_only image2d_t ds_UV,
   const float2 UV = read_imagef(ds_UV, samplerA, (int2)(col, row)).xy;
   const float4 CV = read_imagef(covariance, samplerA, (int2)(col, row));
 
-  float4 sigma = CV;
-  sigma.x += epsilon;
-  sigma.w += epsilon;
+  const float4 sigma = {CV.x + epsilon, CV.y, CV.z, CV.w + epsilon};
   const float det = sigma.x * sigma.w - sigma.y * sigma.z;
   const float4 sigma_inv = { sigma.w / det, -sigma.y / det, -sigma.z / det, sigma.x / det };
 
@@ -140,12 +134,9 @@ __kernel void prepare_prefilter(__read_only image2d_t ds_UV,
                                                                 CV.x * sigma_inv.z + CV.y * sigma_inv.w,
                                                                 CV.z * sigma_inv.x + CV.w * sigma_inv.y,
                                                                 CV.z * sigma_inv.z + CV.w * sigma_inv.w )
-                                                    : 0.0f;
-  const float4 b = (fabs(det) > 4.0f * FLT_EPSILON) ? (float4)( UV.x - a.x * UV.x - a.y * UV.y, UV.y - a.z * UV.x - a.w * UV.y, 0.0f, 0.0f )
-                                                    : (float4)( UV.x, UV.y, 0.0f, 0.0f );
-
+                                                    : (float4)0.0f;
   write_imagef(img_a, (int2)(col, row), a);
-  write_imagef(img_b, (int2)(col, row), b);
+  write_imagef(img_b, (int2)(col, row), (float4)(UV.x - a.x * UV.x - a.y * UV.y, UV.y - a.z * UV.x - a.w * UV.y, 0.0f, 0.0f));
 }
 
 __kernel void apply_prefilter(__read_only image2d_t UV_in,
@@ -162,7 +153,7 @@ __kernel void apply_prefilter(__read_only image2d_t UV_in,
   const int row = get_global_id(1);
   if(col >= width || row >= height) return;
 
-  float2 UV = read_imagef(UV_in, samplerA, (int2)(col, row)).xy;
+  const float2 UV = read_imagef(UV_in, samplerA, (int2)(col, row)).xy;
   const float4 a = read_imagef(a_full, samplerA, (int2)(col, row));
   const float2 b = read_imagef(b_full, samplerA, (int2)(col, row)).xy;
   const float2 cv = { a.x * UV.x + a.y * UV.y + b.x,  a.z * UV.x + a.w * UV.y + b.y };
@@ -170,10 +161,9 @@ __kernel void apply_prefilter(__read_only image2d_t UV_in,
   const float sat = read_imagef(saturation, samplerA, (int2)(col, row)).x;
   const float satweight = _get_satweight(sat - sat_shift, weights);
 
-  UV.x = _interpolatef(satweight, cv.x, UV.x);
-  UV.y = _interpolatef(satweight, cv.y, UV.y);
-  const float4 UVO = { UV.x, UV.y, 0.0f, 0.0f};
-  write_imagef(UV_out, (int2)(col, row), UVO);
+  write_imagef(UV_out, (int2)(col, row), (float4)(_interpolatef(satweight, cv.x, UV.x),
+                                                  _interpolatef(satweight, cv.y, UV.y),
+                                                  0.0f, 0.0f));
 }
 
 // also initialize covariance
@@ -193,10 +183,8 @@ __kernel void prepare_correlations(__read_only image2d_t ds_corrections,
   const float2 CR = read_imagef(ds_corrections, samplerA, (int2)(col, row)).xy;
   const float CRB = read_imagef(ds_b_corrections, samplerA, (int2)(col, row)).x;
 
-  const float4 CL = { UV.x * CR.y, UV.y * CR.y, UV.x * CRB, UV.y * CRB };
-  write_imagef(correlations, (int2)(col, row), CL);
-  const float4 CV = { UV.x * UV.x, UV.x * UV.y, UV.x * UV.y, UV.y * UV.y };
-  write_imagef(covariance, (int2)(col, row), CV);
+  write_imagef(correlations, (int2)(col, row), (float4)(UV.x * CR.y, UV.y * CR.y, UV.x * CRB, UV.y * CRB));
+  write_imagef(covariance,   (int2)(col, row), (float4)(UV.x * UV.x, UV.x * UV.y, UV.x * UV.y, UV.y * UV.y));
 }
 
 // also write covariance
@@ -219,16 +207,16 @@ __kernel void finish_correlations(__read_only image2d_t ds_corrections,
   const float CRB = read_imagef(ds_b_corrections, samplerA, (int2)(col, row)).x;
   const float4 CL = read_imagef(correlations_in, samplerA, (int2)(col, row));
 
-  const float4 CLO = { CL.x - UV.x * CR.y,
-                       CL.y - UV.y * CR.y,
-                       CL.z - UV.x * CRB,
-                       CL.w - UV.y * CRB };
+  write_imagef(correlations_out, (int2)(col, row), (float4)(CL.x - UV.x * CR.y,
+                                                            CL.y - UV.y * CR.y,
+                                                            CL.z - UV.x * CRB,
+                                                            CL.w - UV.y * CRB));
 
   const float4 CV = read_imagef(covariance_in, samplerA, (int2)(col, row));
-  const float4 CVO = { CV.x - UV.x * UV.x, CV.y - UV.x * UV.y, CV.z - UV.x * UV.y, CV.w - UV.y * UV.y };
-
-  write_imagef(correlations_out, (int2)(col, row), CLO);
-  write_imagef(covariance_out, (int2)(col, row), CVO);
+  write_imagef(covariance_out, (int2)(col, row), (float4)(CV.x - UV.x * UV.x,
+                                                          CV.y - UV.x * UV.y,
+                                                          CV.z - UV.x * UV.y,
+                                                          CV.w - UV.y * UV.y));
 }
 
 __kernel void final_guide(__read_only image2d_t covariance,
@@ -305,10 +293,8 @@ __kernel void apply_guided(__read_only image2d_t full_UV,
   CR.y = _interpolatef(satweight, CV.x, 1.0f);
 
   const float brightweight = _get_satweight(sat - bright_shift, weights);
-  const float BC = _interpolatef(grad * brightweight, CV.y, 0.0f);
-  const float4 CRO = { CR.x, CR.y, 0.0f, 0.0f };
-  write_imagef(corrections_out, (int2)(col, row), CRO);
-  write_imagef(b_corrections, (int2)(col, row), BC);
+  write_imagef(corrections_out, (int2)(col, row), (float4)(CR.x, CR.y, 0.0f, 0.0f));
+  write_imagef(b_corrections, (int2)(col, row), _interpolatef(grad * brightweight, CV.y, 0.0f));
 }
 
 __kernel void sample_input(__read_only image2d_t dev_in,
@@ -333,16 +319,12 @@ __kernel void sample_input(__read_only image2d_t dev_in,
   const float dmin = fmin(pix_in.x, fmin(pix_in.y, pix_in.z));
   const float dmax = fmax(pix_in.x, fmax(pix_in.y, pix_in.z));
   const float delta = dmax - dmin;
-  const float sval = (dmax > CENORM_MIN && delta > CENORM_MIN) ? delta / dmax : 0.0f;
+  const float sval = (dmax > NORM_MIN && delta > NORM_MIN) ? delta / dmax : 0.0f;
   write_imagef(saturation, (int2)(col, row), sval);
 
   const float2 UV_star_prime = xyY_to_dt_UCS_UV(xyY);
-  const float4 SP = {UV_star_prime.x, UV_star_prime.y, 0.0f, 0.0f};
-
-  write_imagef(UV, (int2)(col, row), SP);
-
-  const float Lval = Y_to_dt_UCS_L_star(xyY.z);
-  write_imagef(L, (int2)(col, row), Lval);
+  write_imagef(UV, (int2)(col, row), (float4)(UV_star_prime.x, UV_star_prime.y, 0.0f, 0.0f));
+  write_imagef(L, (int2)(col, row), Y_to_dt_UCS_L_star(xyY.z));
 }
 
 __kernel void write_output(__write_only image2d_t out,
@@ -368,13 +350,12 @@ __kernel void write_output(__write_only image2d_t out,
   pix_out.y = fmax(0.0f, pix_out.y * (1.0f + SAT_EFFECT * (correction.y - 1.0f)));
   pix_out.z = fmax(0.0f, pix_out.z * (1.0f + BRIGHT_EFFECT * b_correction));
 
-  const float4 HSB = gamut_map_HSB(pix_out, gamut_LUT, white);
-  const float4 XYZ_D65 = dt_UCS_HSB_to_XYZ(HSB, white);
-  float4 pout = matrix_dot(XYZ_D65, M);
+  pix_out.y = gamut_map_HSB(pix_out, gamut_LUT, white);
+  const float4 XYZ_D65 = dt_UCS_HSB_to_XYZ(pix_out, white);
+  const float4 pout = matrix_dot(XYZ_D65, M);
 
   const float alpha = read_imagef(dev_in, samplerA, (int2)(col, row)).w;
-  pout.w = alpha;
-  write_imagef(out, (int2)(col, row), pout);
+  write_imagef(out, (int2)(col, row), (float4)(pout.x, pout.y, pout.z, alpha));
 }
 
 __kernel void write_visual(__write_only image2d_t out,
@@ -508,7 +489,7 @@ __kernel void process_data(__read_only image2d_t UV,
   float4 corr = { 0.0f, 1.0f, 0.0f, 0.0f};
   float bcorr = 0.0f;
 
-  if(JCH.y > CENORM_MIN)
+  if(JCH.y > NORM_MIN)
   {
     const float hue = pout.x;
     const float sat = pout.y;

@@ -41,7 +41,6 @@ typedef enum dt_adaptation_t
 #define INVERSE_SQRT_3 0.5773502691896258f
 #define TRUE 1
 #define FALSE 0
-#define NORM_MIN 1e-6f
 
 static inline float sqf(const float x)
 {

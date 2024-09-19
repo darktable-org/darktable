@@ -17,6 +17,8 @@
 */
 
 #pragma once
+#define NORM_MIN 1.52587890625e-05f // norm can't be < to 2^(-16)
+
 
 constant sampler_t sampleri =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST;
 
