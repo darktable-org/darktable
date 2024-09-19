@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-09-18 08:37-0300\n"
-"PO-Revision-Date: 2024-09-18 08:36-0300\n"
+"POT-Creation-Date: 2024-09-18 20:28-0300\n"
+"PO-Revision-Date: 2024-09-18 20:27-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -6483,7 +6483,7 @@ msgid ""
 msgstr "Timeout obrigatório do OpenCL foi atualizado para 1000.\n"
 
 #: ../src/common/database.c:3707
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "\n"
 "  Sorry, darktable could not be started (database is locked)\n"
@@ -6528,12 +6528,18 @@ msgstr ""
 "rodar o darktable novamente\n"
 "      (o processo com ID <i><b>%d</b></i> criou as travas da base de dados)\n"
 "\n"
-"  2 - Se você não encontrar uma instância do darktable rodando, tente "
+"  2 - Se você fechou o darktable nos últimos poucos minutos, ele anda pode "
+"ainda estar rodando em background\n"
+"      para exportar imagens, atualizar os arquivos auxiliares, or realizar "
+"manutenção na base de dados.\n"
+"      Tente novamente depos que esse processo terminar.\n"
+"\n"
+"  3 - Se você não encontrar uma instância do darktable rodando, tente "
 "reiniciar sua sessão ou o computador.\n"
 "      Isto fechará todos os programas que estão executando e fechará a base "
 "de dados corretamente.\n"
 "\n"
-"  3 - Se você fez isto ou se tem certeza de que não há outras instâncias do "
+"  4 - Se você fez isto ou se tem certeza de que não há outras instâncias do "
 "darktable rodando,\n"
 "      isto provavelmente significa que a última instância fechou de forma "
 "não normal.\n"
@@ -7687,17 +7693,17 @@ msgstr "_fechar"
 
 #. setup selection accelerators
 #. action-box
-#: ../src/control/crawler.c:786 ../src/dtgtk/thumbtable.c:2849
+#: ../src/control/crawler.c:786 ../src/dtgtk/thumbtable.c:2881
 #: ../src/libs/import.c:2064 ../src/libs/select.c:142
 msgid "select all"
 msgstr "selecionar tudo"
 
-#: ../src/control/crawler.c:787 ../src/dtgtk/thumbtable.c:2851
+#: ../src/control/crawler.c:787 ../src/dtgtk/thumbtable.c:2883
 #: ../src/libs/import.c:2068 ../src/libs/select.c:146
 msgid "select none"
 msgstr "selecionar nenhuma"
 
-#: ../src/control/crawler.c:788 ../src/dtgtk/thumbtable.c:2853
+#: ../src/control/crawler.c:788 ../src/dtgtk/thumbtable.c:2885
 #: ../src/libs/select.c:150
 msgid "invert selection"
 msgstr "inverter seleção"
@@ -8176,7 +8182,7 @@ msgid "refresh EXIF"
 msgstr "atualizar EXIF"
 
 #: ../src/control/jobs/control_jobs.c:2318
-#: ../src/control/jobs/control_jobs.c:2336 ../src/dtgtk/thumbtable.c:2836
+#: ../src/control/jobs/control_jobs.c:2336 ../src/dtgtk/thumbtable.c:2868
 msgid "paste history"
 msgstr "colar histórico"
 
@@ -8184,7 +8190,7 @@ msgstr "colar histórico"
 msgid "compress history"
 msgstr "comprimir histórico"
 
-#: ../src/control/jobs/control_jobs.c:2361 ../src/dtgtk/thumbtable.c:2840
+#: ../src/control/jobs/control_jobs.c:2361 ../src/dtgtk/thumbtable.c:2872
 #: ../src/libs/copy_history.c:369
 msgid "discard history"
 msgstr "descartar histórico"
@@ -9974,95 +9980,90 @@ msgstr "imagens agrupadas"
 msgid "fit"
 msgstr "ajustar"
 
-#: ../src/dtgtk/thumbtable.c:1216
+#: ../src/dtgtk/thumbtable.c:1248
 msgid "here"
 msgstr "aqui"
 
-#: ../src/dtgtk/thumbtable.c:1217 ../src/views/slideshow.c:427
+#: ../src/dtgtk/thumbtable.c:1249 ../src/views/slideshow.c:427
 msgid "there are no images in this collection"
 msgstr "não existem imagens nesta coleção"
 
-#: ../src/dtgtk/thumbtable.c:1219
+#: ../src/dtgtk/thumbtable.c:1251
 msgid "need help?"
 msgstr "precisa de ajuda?"
 
-#: ../src/dtgtk/thumbtable.c:1220
+#: ../src/dtgtk/thumbtable.c:1252
 msgid "if you have not imported any images yet"
 msgstr "se você ainda ainda importou nenhuma imagem"
 
-#: ../src/dtgtk/thumbtable.c:1221
-#, fuzzy
+#: ../src/dtgtk/thumbtable.c:1253
 msgid "click on <b>?</b> then an on-screen item to open manual page"
 msgstr ""
-"clique em <span size='110%'><b>?</b></span> e depois em um item da tela para "
-"abrir a página do manual."
+"clique em <b>?</b> e depois em um item da tela para abrir a página do manual."
 
-#: ../src/dtgtk/thumbtable.c:1222
+#: ../src/dtgtk/thumbtable.c:1254
 msgid "you can do so in the import module"
 msgstr "você pode fazer no módulo de importação"
 
-#: ../src/dtgtk/thumbtable.c:1223
-#, fuzzy
+#: ../src/dtgtk/thumbtable.c:1255
 msgid "press and hold '<b>h</b>' to show all active keyboard shortcuts"
-msgstr "pressione e segure <b>h</b> para mostrar todos os atalhos ativos."
+msgstr "pressione e segure <b>h</b> para mostrar todos os atalhos de teclado"
 
-#: ../src/dtgtk/thumbtable.c:1224
+#: ../src/dtgtk/thumbtable.c:1256
 msgid "to open the online manual click "
 msgstr "para abrir o manual online clique "
 
-#: ../src/dtgtk/thumbtable.c:1225
+#: ../src/dtgtk/thumbtable.c:1257
 msgid "try to relax the filter settings in the top panel"
 msgstr "tente relaxar as configurações do filtro no painel superior"
 
-#: ../src/dtgtk/thumbtable.c:1226
-#, fuzzy
+#: ../src/dtgtk/thumbtable.c:1258
 msgid "or add images in the collections module"
-msgstr "ou adicione imagens no módulo coleções no painel esquerdo"
+msgstr "ou adicione imagens no módulo coleções"
 
-#: ../src/dtgtk/thumbtable.c:1227
+#: ../src/dtgtk/thumbtable.c:1259
 msgid "personalize darktable"
 msgstr "personalizar o darktable"
 
-#: ../src/dtgtk/thumbtable.c:1228
-#, fuzzy
+#: ../src/dtgtk/thumbtable.c:1260
 msgid "click on the gear icon for global preferences"
-msgstr "clique no ícone de engrenagem para preferências globais."
+msgstr "clique no ícone de engrenagem para preferências globais"
 
-#: ../src/dtgtk/thumbtable.c:1230
+#: ../src/dtgtk/thumbtable.c:1262
 msgid "try the 'no-click' workflow"
 msgstr "tente o fluxo de trabalho 'sem cliques'"
 
-#: ../src/dtgtk/thumbtable.c:1231
+#: ../src/dtgtk/thumbtable.c:1263
 msgid "click on the keyboard icon to define shortcuts"
 msgstr "clique no ícone de teclado para definir atalhos"
 
-#: ../src/dtgtk/thumbtable.c:1232
+#: ../src/dtgtk/thumbtable.c:1264
 msgid "hover over an image and use keyboard shortcuts"
 msgstr "passe o mouse sobre uma imagem e use os atalhos de teclado"
 
-#: ../src/dtgtk/thumbtable.c:1233
+#: ../src/dtgtk/thumbtable.c:1265
 msgid "to apply ratings, colors, styles, etc."
 msgstr "para aplicar classificações, cores, estilos, etc."
 
-#: ../src/dtgtk/thumbtable.c:1234
+#: ../src/dtgtk/thumbtable.c:1266
 msgid "make default raw development look more like your"
 msgstr "tornar o desenvolvimento de seu raw parecer mais com o"
 
-#: ../src/dtgtk/thumbtable.c:1235
+#: ../src/dtgtk/thumbtable.c:1267
 msgid "hover over any button to see a description and shortcut"
 msgstr "passe o mouse sobre qualquer botão para ver uma descrição e um atalho"
 
-#: ../src/dtgtk/thumbtable.c:1236
+#: ../src/dtgtk/thumbtable.c:1268
 msgid "camera's JPEG by applying a camera-specific style"
 msgstr "JPEG da sua camera, aplicando um estilo específico de camera"
 
-#: ../src/dtgtk/thumbtable.c:1555
+#: ../src/dtgtk/thumbtable.c:1587
 msgid ""
 "you have changed the settings related to how thumbnails are generated.\n"
 msgstr ""
 "você mudou as configurações relacionadas a como miniaturas são geradas.\n"
 
-#: ../src/dtgtk/thumbtable.c:1558
+#: ../src/dtgtk/thumbtable.c:1590
 msgid ""
 "all cached thumbnails need to be invalidated.\n"
 "\n"
@@ -10070,7 +10071,7 @@ msgstr ""
 "todas as miniaturas em cache precisam ser invalidadas.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1562
+#: ../src/dtgtk/thumbtable.c:1594
 #, c-format
 msgid ""
 "cached thumbnails starting from level %d need to be invalidated.\n"
@@ -10079,7 +10080,7 @@ msgstr ""
 "as miniaturas em cache começando no nível %d precisam ser invalidadas.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1567
+#: ../src/dtgtk/thumbtable.c:1599
 #, c-format
 msgid ""
 "cached thumbnails below level %d need to be invalidated.\n"
@@ -10088,7 +10089,7 @@ msgstr ""
 "as miniaturas no cache abaixo do nível %d precisam ser invalidadas.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1572
+#: ../src/dtgtk/thumbtable.c:1604
 #, c-format
 msgid ""
 "cached thumbnails between level %d and %d need to be invalidated.\n"
@@ -10097,40 +10098,40 @@ msgstr ""
 "as miniaturas no cache entre nível %d e %d precisam ser invalidadas.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1575
+#: ../src/dtgtk/thumbtable.c:1607
 msgid "do you want to do that now?"
 msgstr "você quer fazer isto agora?"
 
-#: ../src/dtgtk/thumbtable.c:1577
+#: ../src/dtgtk/thumbtable.c:1609
 msgid "cached thumbnails invalidation"
 msgstr "invalidação do cache de miniaturas"
 
 #. setup history key accelerators
-#: ../src/dtgtk/thumbtable.c:2832
+#: ../src/dtgtk/thumbtable.c:2864
 msgid "copy history"
 msgstr "copiar histórico"
 
-#: ../src/dtgtk/thumbtable.c:2834
+#: ../src/dtgtk/thumbtable.c:2866
 msgid "copy history parts"
 msgstr "copiar partes do histórico"
 
-#: ../src/dtgtk/thumbtable.c:2838
+#: ../src/dtgtk/thumbtable.c:2870
 msgid "paste history parts"
 msgstr "colar partes do histórico"
 
-#: ../src/dtgtk/thumbtable.c:2843
+#: ../src/dtgtk/thumbtable.c:2875
 msgid "duplicate image"
 msgstr "duplicar imagem"
 
-#: ../src/dtgtk/thumbtable.c:2845
+#: ../src/dtgtk/thumbtable.c:2877
 msgid "duplicate image virgin"
 msgstr "duplicar imagem sem desenvolvimento"
 
-#: ../src/dtgtk/thumbtable.c:2855 ../src/libs/select.c:154
+#: ../src/dtgtk/thumbtable.c:2887 ../src/libs/select.c:154
 msgid "select film roll"
 msgstr "selecionar rolo de filme"
 
-#: ../src/dtgtk/thumbtable.c:2857 ../src/libs/select.c:158
+#: ../src/dtgtk/thumbtable.c:2889 ../src/libs/select.c:158
 msgid "select untouched"
 msgstr "selecionar não modificadas"
 
@@ -10804,9 +10805,8 @@ msgstr ""
 #. * make filenames with double quotes (") work
 #. return data structure for script_manager
 #: ../src/external/lua-scripts/official/generate_image_txt.lua:57
-#, fuzzy
 msgid "overlay metadata on the selected image(s)"
-msgstr "limpar metadados selecionados para imagens selecionadas"
+msgstr "sobrepor metadados na(s) imagem(s) selecionada(s)"
 
 #. function to destory the script
 #. set to hide for libs since we can't destroy them commpletely yet
@@ -10942,9 +10942,8 @@ msgid "import filter"
 msgstr "filtro de importação"
 
 #: ../src/external/lua-scripts/official/import_filter_manager.lua:62
-#, fuzzy
 msgid "the name of the filter used for importing images"
-msgstr "padrão de nomeação de arquivos utilizado para a sessão de importação"
+msgstr "o nome do filtro usaro para importar imagens"
 
 #: ../src/external/lua-scripts/official/import_filter_manager.lua:70
 msgid "import filters are applied after completion of the import dialog"
@@ -10988,9 +10987,8 @@ msgstr ""
 #. * require this script from your main lua file AFTER import_filter_manager.lua
 #.
 #: ../src/external/lua-scripts/official/import_filters.lua:45
-#, fuzzy
 msgid "import filtering"
-msgstr "filtrar a lista"
+msgstr "filtragem de importação"
 
 #. function to destory the script
 #. set to hide for libs since we can't destroy them commpletely yet
@@ -11106,9 +11104,8 @@ msgstr "trocar a seleção com o buffer temporário"
 #.
 #. return data structure for script_manager
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:55
-#, fuzzy
 msgid "generate a pdf file of selected images"
-msgstr "salva os metadados nas imagens selecionadas"
+msgstr "gerar um arquivo pdf das imagens selecionadas"
 
 #. function to destory the script
 #. set to hide for libs since we can't destroy them commpletely yet
@@ -11245,9 +11242,9 @@ msgid "select executable to modify"
 msgstr "selecione executável para modificar"
 
 #: ../src/external/lua-scripts/tools/executable_manager.lua:227
-#, fuzzy, lua-format
+#, lua-format
 msgid "clear path for %s"
-msgstr "limpar esta regra"
+msgstr "limpar caminho para %s"
 
 #. register the lib
 #.
@@ -11340,14 +11337,12 @@ msgstr "recuperar e mostrar a documentação no console"
 #. P R E F E R E N C E S
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #: ../src/external/lua-scripts/tools/script_manager.lua:108
-#, fuzzy
 msgid "check for updated scripts on start up"
-msgstr "procurar por arquivos XMP atualizados ao iniciar"
+msgstr "procurar por atualizações de scripts ao iniciar"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:109
-#, fuzzy
 msgid "automatically update scripts to correct version"
-msgstr "atualizar o nome do módulo automaticamente"
+msgstr "automaticamente atualizar scripts para a versão correta"
 
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. L O G  L E V E L
@@ -11534,9 +11529,8 @@ msgid "update scripts"
 msgstr "atualizar scripts"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1296
-#, fuzzy
 msgid "update the lua scripts from the repository"
-msgstr "atenuar a pureza do vermelho primário"
+msgstr "atualizar os scripts lua a partir do repositório"
 
 #. add additional scripts
 #: ../src/external/lua-scripts/tools/script_manager.lua:1307
@@ -12679,16 +12673,15 @@ msgstr "preservar detalhes"
 #: ../src/gui/gtk.c:2287
 msgid "restore the default visibility and position of all modules in this view"
 msgstr ""
+"restaurar a visibilidade e posição padrão de todos os módulos nesta vista"
 
 #: ../src/gui/gtk.c:2365
-#, fuzzy
 msgid "right-click to show/hide modules"
-msgstr "clique-direito para sair do modo de mapeamento"
+msgstr "clique-direito para mostrar/ocultar módulos"
 
 #: ../src/gui/gtk.c:2374
-#, fuzzy
 msgid "show/hide modules"
-msgstr "mostrar módulo"
+msgstr "mostrar/ocultar módulos"
 
 #. ask the user if darktable.org may be accessed
 #: ../src/gui/gtk.c:3163
@@ -13256,6 +13249,9 @@ msgid ""
 "you will not be able to restore your current panel layout and module "
 "selection."
 msgstr ""
+"tem certeza?\n"
+"\n"
+"você não poderá restaurar seu layout de painel e seleção de módulos."
 
 #. language
 #: ../src/gui/preferences.c:301
@@ -23904,9 +23900,8 @@ msgid "append history"
 msgstr "adicionar ao final do histórico"
 
 #: ../src/libs/export.c:1429
-#, fuzzy
 msgid "select style to be applied on export"
-msgstr "selecione arquivo para exportar"
+msgstr "selecione estilo a ser aplicado ao exportar"
 
 #: ../src/libs/export.c:1432
 msgid "temporary style to use while exporting"
