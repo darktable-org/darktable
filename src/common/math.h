@@ -23,6 +23,8 @@
 #include <stdint.h>
 #include "common/sse.h"		// also includes darktable.h
 
+#define LUT_ELEM 512 // gamut LUT number of elements:
+
 #define NORM_MIN 1.52587890625e-05f // norm can't be < to 2^(-16)
 
 // select speed vs accuracy tradeoff
