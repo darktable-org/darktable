@@ -1770,7 +1770,7 @@ static inline void _periodic_RBF_interpolate(float nodes[NODES],
     // every degree.  We use un-offset angles here, since thue hue
     // offset is merely a GUI thing, only relevant for user-defined
     // nodes.
-    const float hue = (float)i * M_PI_F / 180.f - M_PI_F;
+    const float hue = (float)i * 360.0f / (float)LUT_ELEM * M_PI_F / 180.f - M_PI_F;
     LUT[i] = 0.f;
 
     for(int k = 0; k < NODES; k++)
@@ -2445,15 +2445,14 @@ static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
   cairo_pattern_t *grad = cairo_pattern_create_linear(margin_left, 0.0, graph_width, 0.0);
   if(g->gamut_LUT)
   {
-    for(int k = 0; k < LUT_ELEM; k++)
+    for(int k = 0; k < 360; k++)
     {
-      const float x = (float)k / (float)(LUT_ELEM);
       const float hue = _deg_to_rad((float)k);
       dt_aligned_pixel_t RGB = { 1.f };
       _build_dt_UCS_HSB_gradients((dt_aligned_pixel_t){ hue, g->max_saturation,
                                                         SLIDER_BRIGHTNESS, 1.0f },
         RGB, g->white_adapted_profile, g->gamut_LUT);
-      cairo_pattern_add_color_stop_rgba(grad, x, RGB[0], RGB[1], RGB[2], 1.0);
+      cairo_pattern_add_color_stop_rgba(grad, (double)k / 360.0, RGB[0], RGB[1], RGB[2], 1.0);
     }
   }
 
@@ -2536,10 +2535,10 @@ static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
   _periodic_RBF_interpolate(values, 1.f / smoothing * M_PI_F, g->LUT, 0.0f, clip);
 
   const float dx = p->hue_shift / 360.0f;
-  const int first = -dx * LUT_ELEM;
-  for(int k = first; k < (LUT_ELEM + first); k++)
+  const int first = -dx * 360;
+  for(int k = first; k < (360 + first); k++)
   {
-    const float x = ((float)k / (float)(LUT_ELEM - 1) + dx) * graph_width;
+    const float x = ((float)k / (float)(360 - 1) + dx) * graph_width;
     float hue = _deg_to_rad(k);
     hue = (hue < M_PI_F) ? hue : -2.f * M_PI_F + hue; // The LUT is defined in [-pi; pi[
     const float y = (offset - lookup_gamut(g->LUT, hue) * factor) * graph_height;
