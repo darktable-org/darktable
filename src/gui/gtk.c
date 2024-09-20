@@ -1671,7 +1671,8 @@ static void _init_widgets(dt_gui_gtk_t *gui)
   // then we hide the scroll bars and popup messages again
   // before doing this, request that the window be minimized (some WMs
   // don't support this, so we can hide it below, but that had issues)
-  gtk_window_iconify(GTK_WINDOW(dt_ui_main_window(gui->ui)));
+//  gtk_window_iconify(GTK_WINDOW(dt_ui_main_window(gui->ui)));
+// unfortunately, on some systems the above results in a window which can only be manually deiconified....
   gtk_widget_show_all(dt_ui_main_window(gui->ui));
   gtk_widget_set_visible(dt_ui_log_msg(gui->ui), FALSE);
   gtk_widget_set_visible(dt_ui_toast_msg(gui->ui), FALSE);
