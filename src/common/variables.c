@@ -89,6 +89,10 @@ typedef struct dt_variables_data_t
   float exif_focal_length;
   float exif_crop;
   float exif_focus_distance;
+  const char *exif_flash;
+  const char *exif_exposure_program;
+  const char *exif_metering_mode;
+  const char *exif_whitebalance;
   double longitude;
   double latitude;
   double elevation;
@@ -136,14 +140,18 @@ static void _init_expansion(dt_variables_params_t *params, gboolean iterate)
   params->data->exif_focal_length = 0.0f;
   params->data->exif_crop = 0.0f;
   params->data->exif_focus_distance = 0.0f;
+  params->data->exif_flash = "";
+  params->data->exif_exposure_program = "";
+  params->data->exif_metering_mode = "";
+  params->data->exif_whitebalance = "";
   params->data->longitude = NAN;
   params->data->latitude = NAN;
   params->data->elevation = NAN;
   params->data->show_msec = dt_conf_get_bool("lighttable/ui/milliseconds");
+  params->data->camera_maker = NULL;
+  params->data->camera_alias = NULL;
   if(dt_is_valid_imgid(params->imgid))
   {
-    params->data->camera_maker = NULL;
-    params->data->camera_alias = NULL;
     const dt_image_t *img = params->img
       ? (dt_image_t *)params->img
       : dt_image_cache_get(darktable.image_cache, params->imgid, 'r');
@@ -170,6 +178,10 @@ static void _init_expansion(dt_variables_params_t *params, gboolean iterate)
     params->data->longitude = img->geoloc.longitude;
     params->data->latitude = img->geoloc.latitude;
     params->data->elevation = img->geoloc.elevation;
+    params->data->exif_flash = img->exif_flash[0] == 'Y' ? "⚡" : (img->exif_flash[0] == 'N' ? "⚡⃠" : "");
+    params->data->exif_exposure_program = img->exif_exposure_program;
+    params->data->exif_metering_mode = img->exif_metering_mode;
+    params->data->exif_whitebalance = img->exif_whitebalance;
 
     params->data->flags = img->flags;
 
@@ -206,8 +218,8 @@ static void _init_expansion(dt_variables_params_t *params, gboolean iterate)
     params->data->datetime = params->data->exif_time;
     if(params->data->datetime)
       params->data->have_exif_dt = TRUE;
-    params->data->camera_maker = params->data->exif_maker;
-    params->data->camera_alias = params->data->exif_model;
+    params->data->camera_maker = g_strdup(params->data->exif_maker);
+    params->data->camera_alias = g_strdup(params->data->exif_model);
   }
 }
 
@@ -221,10 +233,14 @@ static void _cleanup_expansion(dt_variables_params_t *params)
       params->data->datetime = NULL;
     }
     g_free(params->data->camera_maker);
+    params->data->camera_maker = NULL;
     g_free(params->data->camera_alias);
+    params->data->camera_alias = NULL;
   }
   g_free(params->data->homedir);
+  params->data->homedir = NULL;
   g_free(params->data->pictures_folder);
+  params->data->pictures_folder = NULL;
 }
 
 static inline gboolean _has_prefix(char **str, const char *prefix)
@@ -454,6 +470,10 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     if(params->data->exif_exposure_bias != DT_EXIF_TAG_UNINITIALIZED)
       result = g_strdup_printf("%+.2f", params->data->exif_exposure_bias);
   }
+  else if(_has_prefix(variable, "EXIF.EXPOSURE.PROGRAM"))
+  {
+    result = g_strdup(params->data->exif_exposure_program);
+  }
   else if(_has_prefix(variable, "EXIF.EXPOSURE")
           || _has_prefix(variable, "EXIF_EXPOSURE"))
   {
@@ -483,6 +503,15 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
   else if(_has_prefix(variable, "EXIF.FOCUS.DISTANCE")
           || _has_prefix(variable, "EXIF_FOCUS_DISTANCE"))
     result = g_strdup_printf("%.2f", params->data->exif_focus_distance);
+
+  else if(_has_prefix(variable, "EXIF.FLASH"))
+    result = g_strdup(params->data->exif_flash);
+
+  else if(_has_prefix(variable, "EXIF.METERING"))
+    result = g_strdup(params->data->exif_metering_mode);
+
+  else if(_has_prefix(variable, "EXIF.WHITEBALANCE"))
+    result = g_strdup(params->data->exif_whitebalance);
 
   else if(_has_prefix(variable, "LONGITUDE")
           || _has_prefix(variable, "GPS.LONGITUDE"))
@@ -1325,6 +1354,9 @@ void dt_variables_params_destroy(dt_variables_params_t *params)
     g_date_time_unref(params->data->exif_time);
   g_free(params->data->exif_maker);
   g_free(params->data->exif_model);
+  g_free(params->data->exif_lens);
+  g_free(params->data->camera_maker);
+  g_free(params->data->camera_alias);
   g_free(params->data);
   g_free(params);
 }
