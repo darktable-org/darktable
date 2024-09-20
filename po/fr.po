@@ -5101,7 +5101,7 @@ msgstr "Saturation des hautes lumières"
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:241
 #: ../src/gui/accelerators.c:101
 msgid "skew"
-msgstr "Incliner"
+msgstr "Décaler"
 
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:128
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:245
