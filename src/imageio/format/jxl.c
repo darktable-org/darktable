@@ -164,7 +164,7 @@ int write_image(struct dt_imageio_module_data_t *data,
   JxlEncoderInitBasicInfo(&basic_info);
   basic_info.xsize = width;
   basic_info.ysize = height;
-  basic_info.bits_per_sample = 8; // params->bpp;
+  basic_info.bits_per_sample = params->bpp;
   basic_info.exponent_bits_per_sample = 0;
   // For 16-bit we can choose half, but 32-bit is always float
   if(params->bpp == 16 && params->pixel_type)
