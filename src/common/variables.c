@@ -525,6 +525,9 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
           || _has_prefix(variable, "GPS.ELEVATION"))
     result = g_strdup_printf("%.2f", params->data->elevation);
 
+  else if(_has_prefix(variable, "GPS.LOCATION.ICON"))
+    result = g_strdup((!isnan(params->data->latitude) && !isnan(params->data->longitude)) ? "🌐" : "");
+
   // for watermark backward compatibility
   else if(_has_prefix(variable, "GPS.LOCATION"))
   {
