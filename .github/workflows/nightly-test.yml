@@ -16,7 +16,7 @@ jobs:
       fail-fast: true
       matrix:
         build:
-          - { os: macos-13, xcode: 15.2, deployment: 13.5 } # LLVM16, x86_64
+          # - { os: macos-13, xcode: 15.2, deployment: 13.5 } # LLVM16, x86_64
           - { os: macos-14, xcode: 15.4, deployment: 14.0 } # LLVM16, arm64
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
@@ -82,11 +82,11 @@ jobs:
       - name: "zip package"
         run: |
           cd ${{ env.INSTALL_PREFIX }}/package
-          zip -rq ${{ env.INSTALL_PREFIX }}/darktable-${{ env.VERSION }}.zip darktable.app
+          zip -rq darktable.zip darktable.app
       - name: Package upload
         if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
         uses: actions/upload-artifact@v4
         with:
-          name: darktable-${{ env.VERSION }}.zip
-          path: ${{ env.INSTALL_PREFIX }}/darktable-${{ env.VERSION }}.zip
+          name: darktable-${{ env.VERSION }}
+          path: ${{ env.INSTALL_PREFIX }}/darktable.zip
           retention-days: 2
