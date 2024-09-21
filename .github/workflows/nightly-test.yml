@@ -1,7 +1,6 @@
 name: Nightly PKG macOS Test
 
 on:
-  schedule:
   workflow_dispatch:
 
 permissions:
