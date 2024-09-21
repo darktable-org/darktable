@@ -359,7 +359,7 @@ jobs:
       matrix:
         build:
           - { os: macos-13,    xcode: 15.2,   deployment: 13.5 } # LLVM16, x86_64
-          - { os: macos-14,    xcode: 15.4,   deployment: 14.0 } # LLVM16, arm64
+          - { os: macos-14,    xcode: 16.0,   deployment: 14.5 } # LLVM17, arm64
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
         btype: [ Release ]
