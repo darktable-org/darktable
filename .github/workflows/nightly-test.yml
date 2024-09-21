@@ -79,14 +79,14 @@ jobs:
         run: |
           cd ${{ env.SRC_DIR }}
           echo "VERSION=$(git describe --tags --match release-* | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')-${{ env.ARCHITECTURE }}" >> $GITHUB_ENV
-      - name: "zip package"
-        run: |
-          cd ${{ env.INSTALL_PREFIX }}/package
-          zip -rq darktable.zip darktable.app
+      # - name: "zip package"
+      #   run: |
+      #     cd ${{ env.INSTALL_PREFIX }}/package
+      #     zip -rq darktable.zip darktable.app
       - name: Package upload
         if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
         uses: actions/upload-artifact@v4
         with:
           name: darktable-${{ env.VERSION }}
-          path: ${{ env.INSTALL_PREFIX }}/package/darktable.zip
+          path: ${{ env.INSTALL_PREFIX }}/package/darktable.app
           retention-days: 2
