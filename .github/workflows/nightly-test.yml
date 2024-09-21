@@ -88,5 +88,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: darktable-${{ env.VERSION }}
-          path: ${{ env.INSTALL_PREFIX }}/darktable.zip
+          path: ${{ env.INSTALL_PREFIX }}/package/darktable.zip
           retention-days: 2
