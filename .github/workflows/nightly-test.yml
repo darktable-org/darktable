@@ -83,11 +83,11 @@ jobs:
       - name: "zip package"
         run: |
           cd ${{ env.INSTALL_PREFIX }}/package
-          zip -rq ${{ env.INSTALL_PREFIX }}/darktable-${{ env.VERSION }}-${{ env.ARCHITECTURE }}.zip darktable.app
+          zip -rq ${{ env.INSTALL_PREFIX }}/darktable-${{ env.VERSION }}.zip darktable.app
       - name: Package upload
         if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
         uses: actions/upload-artifact@v4
         with:
-          name: darktable-${{ env.VERSION }}-${{ env.ARCHITECTURE }}.zip
-          path: ${{ env.INSTALL_PREFIX }}/darktable-${{ env.VERSION }}-${{ env.ARCHITECTURE }}.zip
+          name: darktable-${{ env.VERSION }}.zip
+          path: ${{ env.INSTALL_PREFIX }}/darktable-${{ env.VERSION }}.zip
           retention-days: 2
