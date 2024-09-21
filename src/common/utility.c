@@ -85,6 +85,7 @@ gchar *dt_util_localize_segmented_name(const char *s)
       end = g_stpcpy(end, dt_util_localize_string(split[i]));
     }
   }
+  g_strfreev(split);
   return localized;
 }
 
