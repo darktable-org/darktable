@@ -1545,12 +1545,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   // init darktable tags table
   dt_set_darktable_tags();
 
-  // import default styles from shared directory
-  gchar *styledir = g_build_filename(sharedir, "darktable/styles", NULL);
-  if(styledir)
-    dt_import_default_styles(styledir);
-  g_free(styledir);
-
   // Initialize the signal system
   darktable.signals = dt_control_signal_init();
 
@@ -1575,6 +1569,12 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     dt_pthread_mutex_init(&darktable.control->run_mutex, NULL);
     dt_pthread_mutex_init(&darktable.control->log_mutex, NULL);
   }
+
+  // import default styles from shared directory
+  gchar *styledir = g_build_filename(sharedir, "darktable/styles", NULL);
+  if(styledir)
+    dt_import_default_styles(styledir);
+  g_free(styledir);
 
   // we initialize grouping early because it's needed for collection init
   // idem for folder reachability
