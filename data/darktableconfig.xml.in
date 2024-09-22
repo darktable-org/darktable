@@ -1355,7 +1355,7 @@
   <dtconfig prefs="lighttable" section="thumbs">
     <name>plugins/lighttable/extended_pattern</name>
     <type>longstring</type>
-    <default>$(FILE_NAME).$(FILE_EXTENSION)$(NL)$(EXIF_EXPOSURE) • f/$(EXIF_APERTURE) • $(EXIF_FOCAL_LENGTH)mm • $(EXIF_ISO) ISO $(SIDECAR_TXT)</default>
+    <default>$(EXIF.MODEL) $(EXIF.LENS)$(NL)$(FILE_NAME).$(FILE_EXTENSION) • &lt;b&gt;$(EXIF_EXPOSURE)&lt;/b&gt;s f/&lt;b&gt;$(EXIF_APERTURE)&lt;/b&gt; &lt;b&gt;$(EXIF_FOCAL_LENGTH)&lt;/b&gt;mm ISO&lt;b&gt;$(EXIF_ISO)&lt;/b&gt; $(SIDECAR_TXT)</default>
     <shortdescription>pattern for the thumbnail extended overlay text</shortdescription>
     <longdescription>see manual to know all the tags you can use.</longdescription>
   </dtconfig>
@@ -1424,7 +1424,7 @@
   <dtconfig prefs="darkroom" section="general">
     <name>plugins/darkroom/image_infos_pattern</name>
     <type>longstring</type>
-    <default>$(EXIF_EXPOSURE) • f/$(EXIF_APERTURE) • $(EXIF_FOCAL_LENGTH) mm • $(EXIF_ISO) ISO</default>
+    <default>$(EXIF.MAKER) &lt;b&gt;$(EXIF.MODEL) $(EXIF.LENS)&lt;/b&gt; • $(FILE_NAME).$(FILE_EXTENSION) • &lt;b&gt;$(EXIF_EXPOSURE)&lt;/b&gt;s &lt;b&gt;$(EXIF_FOCAL_LENGTH)&lt;/b&gt;mm f/&lt;b&gt;$(EXIF_APERTURE)&lt;/b&gt; ISO&lt;b&gt;$(EXIF_ISO)&lt;/b&gt;</default>
     <shortdescription>pattern for the image information line</shortdescription>
     <longdescription>see manual for a list of the tags you can use.</longdescription>
   </dtconfig>
