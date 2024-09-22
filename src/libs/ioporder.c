@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2023 darktable developers.
+    Copyright (C) 2019-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -196,12 +196,15 @@ void init_presets(dt_lib_module_t *self)
                      (const char *)params, (int32_t)size, TRUE,
                      is_display_referred ? FOR_RAW | FOR_LDR : 0);
   free(params);
+  dt_ioppr_iop_order_list_free(list);
 
   list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_V30);
   params = dt_ioppr_serialize_iop_order_list(list, &size);
   dt_lib_presets_add(_("v3.0 for RAW input (default)"), self->plugin_name, self->version(),
                      (const char *)params, (int32_t)size, TRUE,
                      is_display_referred ? 0 : FOR_RAW | FOR_MATRIX);
+  free(params);
+  dt_ioppr_iop_order_list_free(list);
 
   list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_V30_JPG);
   params = dt_ioppr_serialize_iop_order_list(list, &size);
@@ -209,6 +212,7 @@ void init_presets(dt_lib_module_t *self)
                      (const char *)params, (int32_t)size, TRUE,
                      is_display_referred ? 0 : FOR_LDR | FOR_NOT_MONO);
   free(params);
+  dt_ioppr_iop_order_list_free(list);
 }
 
 int set_params(dt_lib_module_t *self, const void *params, int size)
