@@ -1264,10 +1264,10 @@ static void _lighttable_expose_empty(cairo_t *cr,
     _line_to_module(cr, width, ink, offx, offy,
                     6, offx2, "collect");
     _line_to(cr, ink, offx, offy,
-             11.8, 4 * button_width, 4 * button_width, height);
+             12.8, 4 * button_width, 4 * button_width, height);
 
     _line_to(cr, ink, offx, offy,
-             1.3, width - offx2 - ink.width/2, width - 2.5 * button_width, 0);
+             1.3, width - offx2 - 0.7*ink.width, width - 2.75 * button_width, 0);
     _line_to(cr, ink, offx, offy,
              8, width - offx2, width - button_width, 0);
     _line_to_module(cr, width, ink, offx, offy,
