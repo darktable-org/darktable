@@ -90,6 +90,7 @@ typedef struct dt_variables_data_t
   float exif_crop;
   float exif_focus_distance;
   const char *exif_flash;
+  const char *exif_flash_icon;
   const char *exif_exposure_program;
   const char *exif_metering_mode;
   const char *exif_whitebalance;
@@ -141,6 +142,7 @@ static void _init_expansion(dt_variables_params_t *params, gboolean iterate)
   params->data->exif_crop = 0.0f;
   params->data->exif_focus_distance = 0.0f;
   params->data->exif_flash = "";
+  params->data->exif_flash_icon = "";
   params->data->exif_exposure_program = "";
   params->data->exif_metering_mode = "";
   params->data->exif_whitebalance = "";
@@ -178,7 +180,8 @@ static void _init_expansion(dt_variables_params_t *params, gboolean iterate)
     params->data->longitude = img->geoloc.longitude;
     params->data->latitude = img->geoloc.latitude;
     params->data->elevation = img->geoloc.elevation;
-    params->data->exif_flash = img->exif_flash[0] == 'Y' ? "⚡" : (img->exif_flash[0] == 'N' ? "⚡⃠" : "");
+    params->data->exif_flash_icon = img->exif_flash[0] == 'Y' ? "⚡" : (img->exif_flash[0] == 'N' ? "⚡⃠" : "");
+    params->data->exif_flash = img->exif_flash[0] == 'Y' ? _("yes") : (img->exif_flash[0] == 'N' ? _("no⃠") : "-");
     params->data->exif_exposure_program = img->exif_exposure_program;
     params->data->exif_metering_mode = img->exif_metering_mode;
     params->data->exif_whitebalance = img->exif_whitebalance;
@@ -503,6 +506,9 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
   else if(_has_prefix(variable, "EXIF.FOCUS.DISTANCE")
           || _has_prefix(variable, "EXIF_FOCUS_DISTANCE"))
     result = g_strdup_printf("%.2f", params->data->exif_focus_distance);
+
+  else if(_has_prefix(variable, "EXIF.FLASH.ICON"))
+    result = g_strdup(params->data->exif_flash_icon);
 
   else if(_has_prefix(variable, "EXIF.FLASH"))
     result = g_strdup(params->data->exif_flash);
