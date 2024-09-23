@@ -1259,12 +1259,14 @@ static void _lighttable_expose_empty(cairo_t *cr,
     "<b>"RGHT _("personalize darktable"), "</b>",
     "\n" RGHT _("click on the gear icon for global preferences"),
     "\n" ,
-    "<b>", _("try the 'no-click' workflow"), "</b>",
          RGHT _("click on the keyboard icon to define shortcuts"),
+    "\n" ,
+    "<b>", _("try the 'no-click' workflow"), "</b>",
+         RGHT _("set module-specific preferences through module's menu"),
     "\n" , _("hover over an image and use keyboard shortcuts"),
     "\n" , _("to apply ratings, colors, styles, etc."),
          RGHT _("make default raw development look more like your"),
-    "\n" , _("hover over any button to see a description and shortcut"),
+    "\n" , _("hover over any button for its description and shortcuts"),
          RGHT _("camera's JPEG by applying a camera-specific style"),
     NULL);
 
@@ -1294,10 +1296,10 @@ static void _lighttable_expose_empty(cairo_t *cr,
     _line_to_module(cr, width, ink, offx, offy,
                     6, offx2, "collect");
     _line_to(cr, ink, offx, offy,
-             11.8, 4 * button_width, 4 * button_width, height);
+             12.8, 4 * button_width, 4 * button_width, height);
 
     _line_to(cr, ink, offx, offy,
-             1.3, width - offx2 - ink.width/2, width - 2.5 * button_width, 0);
+             1.3, width - offx2 - 0.7*ink.width, width - 2.75 * button_width, 0);
     _line_to(cr, ink, offx, offy,
              8, width - offx2, width - button_width, 0);
     _line_to_module(cr, width, ink, offx, offy,
