@@ -868,6 +868,11 @@ GList *dt_ioppr_get_iop_order_list_version(const dt_iop_order_t version)
   return iop_order_list;
 }
 
+void dt_ioppr_iop_order_list_free(GList *iop_order_list)
+{
+  g_list_free_full(iop_order_list, free);
+}
+
 gboolean dt_ioppr_has_iop_order_list(const dt_imgid_t imgid)
 {
   gboolean result = FALSE;
@@ -2400,7 +2405,9 @@ char *dt_ioppr_serialize_text_iop_order_list(GList *iop_order_list)
     gchar buf[64];
     snprintf(buf, sizeof(buf), "%s,%d%s",
              entry->operation, entry->instance, (l == last) ? "" : ",");
-    text = g_strconcat(text, buf, NULL);
+    gchar *prev_text = text;
+    text = g_strconcat(prev_text, buf, NULL);
+    g_free(prev_text);
   }
 
   return text;

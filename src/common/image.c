@@ -2108,6 +2108,7 @@ void dt_image_init(dt_image_t *img)
   memset(img->exif_flash, 0, sizeof(img->exif_flash));
   memset(img->exif_exposure_program, 0, sizeof(img->exif_exposure_program));
   memset(img->exif_metering_mode, 0, sizeof(img->exif_metering_mode));
+  memset(&img->exif_datetime_taken, 0, sizeof(img->exif_datetime_taken));
   memset(img->camera_maker, 0, sizeof(img->camera_maker));
   memset(img->camera_model, 0, sizeof(img->camera_model));
   memset(img->camera_alias, 0, sizeof(img->camera_alias));
