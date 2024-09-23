@@ -616,7 +616,7 @@ cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
     kernel_gaussian_transpose = g->global->kernel_gaussian_transpose_4c;
   }
   else
-    return err;
+    return DT_OPENCL_PROCESS_CL;
 
   size_t origin[] = { 0, 0, 0 };
   size_t region[] = { width, height, 1 };
@@ -641,10 +641,8 @@ cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
     CLARG(coefp), CLARG(coefn), CLFLARRAY(channels, Labmax), CLFLARRAY(channels, Labmin));
   err = dt_opencl_enqueue_kernel_2d(devid, kernel_gaussian_column, sizes);
   if(err != CL_SUCCESS)
-  {
-    dt_print(DT_DEBUG_OPENCL, "[dt_gaussian_blur_cl] first blur kernel_gaussian_column: %s\n", cl_errstr(err));
     return err;
-  }
+
   // intermediate step: transpose dev_temp2 -> dev_temp1
   sizes[0] = bwidth;
   sizes[1] = bheight;
@@ -653,10 +651,7 @@ cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
     CLARG(width), CLARG(height), CLARG(blocksize), CLLOCAL(bpp * blocksize * (blocksize + 1)));
   err = dt_opencl_enqueue_kernel_2d_with_local(devid, kernel_gaussian_transpose, sizes, local);
   if(err != CL_SUCCESS)
-  {
-    dt_print(DT_DEBUG_OPENCL, "[dt_gaussian_blur_cl] first kernel_gaussian_transpose: %s\n", cl_errstr(err));
     return err;
-  }
 
   // second blur step: column by column of transposed image with dev_temp1 -> dev_temp2 (!! height <-> width
   // !!)
@@ -669,10 +664,7 @@ cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
 
   err = dt_opencl_enqueue_kernel_2d(devid, kernel_gaussian_column, sizes);
   if(err != CL_SUCCESS)
-  {
-    dt_print(DT_DEBUG_OPENCL, "[dt_gaussian_blur_cl] second step kernel_gaussian_column: %s\n", cl_errstr(err));
-    return err;
-  }
+     return err;
 
   // transpose back dev_temp2 -> dev_temp1
   sizes[0] = bheight;
@@ -682,14 +674,109 @@ cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
     CLARG(height), CLARG(width), CLARG(blocksize), CLLOCAL(bpp * blocksize * (blocksize + 1)));
   err = dt_opencl_enqueue_kernel_2d_with_local(devid, kernel_gaussian_transpose, sizes, local);
   if(err != CL_SUCCESS)
-  {
-    dt_print(DT_DEBUG_OPENCL, "[dt_gaussian_blur_cl] second kernel_gaussian_transpose: %s\n", cl_errstr(err));
     return err;
-  }
+
   // finally produce output in dev_out
   return dt_opencl_enqueue_copy_buffer_to_image(devid, dev_temp1, dev_out, 0, origin, region);
 }
 
+cl_int dt_gaussian_blur_cl_buffer(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
+{
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+  const int devid = g->devid;
+
+  const int width = g->width;
+  const int height = g->height;
+  const int channels = g->channels;
+  const size_t bpp = sizeof(float) * channels;
+  cl_mem dev_temp1 = g->dev_temp1;
+  cl_mem dev_temp2 = g->dev_temp2;
+
+  const int blocksize = g->blocksize;
+  const int bwidth = g->bwidth;
+  const int bheight = g->bheight;
+
+  dt_aligned_pixel_t Labmax = { 0.0f, 0.0f, 0.0f, 0.0f };
+  dt_aligned_pixel_t Labmin = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+  for(int k = 0; k < MIN(channels, 4); k++)
+  {
+    Labmax[k] = g->max[k];
+    Labmin[k] = g->min[k];
+  }
+
+  int kernel_gaussian_column = -1;
+  int kernel_gaussian_transpose = -1;
+
+  if(channels == 1)
+  {
+    kernel_gaussian_column = g->global->kernel_gaussian_column_1c;
+    kernel_gaussian_transpose = g->global->kernel_gaussian_transpose_1c;
+  }
+  else if(channels == 2)
+  {
+    kernel_gaussian_column = g->global->kernel_gaussian_column_2c;
+    kernel_gaussian_transpose = g->global->kernel_gaussian_transpose_2c;
+  }
+  else if(channels == 4)
+  {
+    kernel_gaussian_column = g->global->kernel_gaussian_column_4c;
+    kernel_gaussian_transpose = g->global->kernel_gaussian_transpose_4c;
+  }
+  else
+    return  DT_OPENCL_PROCESS_CL;
+
+  size_t local[] = { blocksize, blocksize, 1 };
+  size_t sizes[3];
+
+  // compute gaussian parameters
+  float a0, a1, a2, a3, b1, b2, coefp, coefn;
+  compute_gauss_params(g->sigma, g->order, &a0, &a1, &a2, &a3, &b1, &b2, &coefp, &coefn);
+
+  // first blur step: column by column with dev_in -> dev_temp2
+  sizes[0] = ROUNDUPDWD(width, devid);
+  sizes[1] = 1;
+  sizes[2] = 1;
+
+  dt_opencl_set_kernel_args(devid, kernel_gaussian_column, 0, CLARG(dev_in), CLARG(dev_temp2),
+    CLARG(width), CLARG(height), CLARG(a0), CLARG(a1), CLARG(a2), CLARG(a3), CLARG(b1), CLARG(b2),
+    CLARG(coefp), CLARG(coefn), CLFLARRAY(channels, Labmax), CLFLARRAY(channels, Labmin));
+  err = dt_opencl_enqueue_kernel_2d(devid, kernel_gaussian_column, sizes);
+  if(err != CL_SUCCESS)
+    return err;
+
+  // intermediate step: transpose dev_temp2 -> dev_temp1
+  sizes[0] = bwidth;
+  sizes[1] = bheight;
+  sizes[2] = 1;
+  dt_opencl_set_kernel_args(devid, kernel_gaussian_transpose, 0, CLARG(dev_temp2), CLARG(dev_temp1),
+    CLARG(width), CLARG(height), CLARG(blocksize), CLLOCAL(bpp * blocksize * (blocksize + 1)));
+  err = dt_opencl_enqueue_kernel_2d_with_local(devid, kernel_gaussian_transpose, sizes, local);
+  if(err != CL_SUCCESS)
+    return err;
+
+  // second blur step: column by column of transposed image with dev_temp1 -> dev_temp2 (!! height <-> width !!)
+  sizes[0] = ROUNDUPDHT(height, devid);
+  sizes[1] = 1;
+  sizes[2] = 1;
+  dt_opencl_set_kernel_args(devid, kernel_gaussian_column, 0, CLARG(dev_temp1), CLARG(dev_temp2),
+    CLARG(height), CLARG(width), CLARG(a0), CLARG(a1), CLARG(a2), CLARG(a3), CLARG(b1), CLARG(b2),
+    CLARG(coefp), CLARG(coefn), CLFLARRAY(channels, Labmax), CLFLARRAY(channels, Labmin));
+
+  err = dt_opencl_enqueue_kernel_2d(devid, kernel_gaussian_column, sizes);
+  if(err != CL_SUCCESS)
+    return err;
+
+  // transpose back dev_temp2 -> dev_out
+  // we can do so without out-of-data problems as the writing is limited to width&height of
+  // destination buffer
+  sizes[0] = bheight;
+  sizes[1] = bwidth;
+  sizes[2] = 1;
+  dt_opencl_set_kernel_args(devid, kernel_gaussian_transpose, 0, CLARG(dev_temp2), CLARG(dev_out),
+    CLARG(height), CLARG(width), CLARG(blocksize), CLLOCAL(bpp * blocksize * (blocksize + 1)));
+  return dt_opencl_enqueue_kernel_2d_with_local(devid, kernel_gaussian_transpose, sizes, local);
+}
 
 void dt_gaussian_free_cl_global(dt_gaussian_cl_global_t *g)
 {

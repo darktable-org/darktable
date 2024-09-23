@@ -89,6 +89,7 @@ dt_gaussian_cl_t *dt_gaussian_init_cl(const int devid, const int width, const in
                                       const float *max, const float *min, const float sigma, const int order);
 
 cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out);
+cl_int dt_gaussian_blur_cl_buffer(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out);
 
 void dt_gaussian_free_cl(dt_gaussian_cl_t *g);
 #endif

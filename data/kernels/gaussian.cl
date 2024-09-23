@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011-2014 ulrich pegelow.
+    copyright (c) 2011-2024 darktable developer.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 #include "common.h"
 
 
-/* This is gaussian blur in Lab space. Please mind: in contrast to most of DT's other openCL kernels,
+/* This is gaussian blur space. Please mind: in contrast to most of DT's other openCL kernels,
    the kernels in this package expect part/all of their input/output buffers in form of vectors. This
    is needed to have read-write access to some buffers which openCL does not offer for image object. */
 
@@ -424,5 +424,3 @@ shadows_highlights_mix(read_only image2d_t in, read_only image2d_t mask, write_o
   io.w = w;
   write_imagef(out, (int2)(x, y), io);
 }
-
-
