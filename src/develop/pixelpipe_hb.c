@@ -1217,7 +1217,7 @@ static gboolean _pixelpipe_process_on_CPU(
           dt_get_times(&end);
           const float clock = (end.clock - start.clock) / (float) counter;
           dt_print(DT_DEBUG_ALWAYS,
-                   "[bench module plain] [%s] `%15s' takes %8.5fs,%7.2fmpix,%9.3fpix/us\n",
+                   "[bench module %s plain] `%s' takes %8.5fs,%7.2fmpix,%9.3fpix/us\n",
                    full ? "full" : "export", module->op, clock, mpix, mpix/clock);
         }
         darktable.unmuted = old_muted;
@@ -1840,31 +1840,31 @@ static gboolean _dev_pixelpipe_process_rec(
               dt_times_t bench;
               dt_times_t end;
               const int old_muted = darktable.unmuted;
-              darktable.unmuted = 0;;
+              darktable.unmuted = 0;
               const gboolean full = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
               const float mpix = (roi_out->width * roi_out->height) / 1.0e6;
+              const int counter = (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) ? 100 : 50;
               gboolean success = TRUE;
               dt_get_times(&bench);
-              for(int i = 0; i < 100; i++)
+              for(int i = 0; i < counter; i++)
               {
                 if(success)
                   success = (module->process_cl(module, piece, cl_mem_input, *cl_mem_output,
-                                               &roi_in, roi_out)) >= CL_SUCCESS;
+                                               &roi_in, roi_out)) == CL_SUCCESS;
               }
               if(success)
               {
                 dt_get_times(&end);
-                const float clock = (end.clock - bench.clock) / 100.0f;
+                const float clock = (end.clock - bench.clock) / (float)counter;
                 dt_print(DT_DEBUG_ALWAYS,
-                         "[bench module GPU]   [%s] `%15s'"
-                         " takes %8.5fs,%7.2fmpix,%9.3fpix/us\n",
+                         "[bench module %s GPU] `%s' takes %8.5fs,%7.2fmpix,%9.3fpix/us\n",
                          full ? "full" : "export",
                          module->op,
                          clock, mpix, mpix/clock);
               }
               else
                 dt_print(DT_DEBUG_ALWAYS,
-                         "[bench module GPU] [%s] `%s' finished without success\n",
+                         "[bench module %s GPU] `%s' finished without success\n",
                          full ? "full" : "export", module->op);
               darktable.unmuted = old_muted;
             }
@@ -1879,7 +1879,7 @@ static gboolean _dev_pixelpipe_process_rec(
 
           const int err = module->process_cl(module, piece, cl_mem_input, *cl_mem_output,
                                               &roi_in, roi_out);
-          success_opencl = err == CL_SUCCESS;
+          success_opencl = (err == CL_SUCCESS);
 
           if(!success_opencl)
             dt_print_pipe(DT_DEBUG_OPENCL,
