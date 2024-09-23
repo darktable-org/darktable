@@ -1390,12 +1390,26 @@ static StylePluginData *dt_styles_style_plugin_new()
   return plugin;
 }
 
+static void dt_styles_style_plugin_free(void *plugin_)
+{
+  StylePluginData *plugin = plugin_;
+  if(plugin)
+  {
+    g_string_free(plugin->operation, TRUE);
+    g_string_free(plugin->op_params, TRUE);
+    g_string_free(plugin->blendop_params, TRUE);
+    g_string_free(plugin->multi_name, TRUE);
+    g_free(plugin);
+  }
+}
+
 static void dt_styles_style_data_free(StyleData *style, gboolean free_segments)
 {
   g_string_free(style->info->name, free_segments);
   g_string_free(style->info->description, free_segments);
   g_list_free_full(style->info->iop_list, g_free);
-  g_list_free(style->plugins);
+  g_free(style->info);
+  g_list_free_full(style->plugins, dt_styles_style_plugin_free);
   g_free(style);
 }
 
@@ -1529,13 +1543,13 @@ static void dt_style_plugin_save(StylePluginData *plugin, gpointer styleId)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, plugin->num);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, plugin->module);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, plugin->operation->str, plugin->operation->len, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, plugin->operation->str, plugin->operation->len, SQLITE_STATIC);
   //
   const char *param_c = plugin->op_params->str;
   const int param_c_len = strlen(param_c);
   int params_len = 0;
   unsigned char *params = dt_exif_xmp_decode(param_c, param_c_len, &params_len);
-  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 5, params, params_len, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 5, params, params_len, SQLITE_STATIC);
   //
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 6, plugin->enabled);
 
@@ -1544,18 +1558,19 @@ static void dt_style_plugin_save(StylePluginData *plugin, gpointer styleId)
   unsigned char *blendop_params = dt_exif_xmp_decode
     (plugin->blendop_params->str,
      strlen(plugin->blendop_params->str), &blendop_params_len);
-  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 7, blendop_params, blendop_params_len, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 7, blendop_params, blendop_params_len, SQLITE_STATIC);
 
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 8, plugin->blendop_version);
 
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 9, plugin->multi_priority);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 10, plugin->multi_name->str,
-                             plugin->multi_name->len, SQLITE_TRANSIENT);
+                             plugin->multi_name->len, SQLITE_STATIC);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 11, plugin->multi_name_hand_edited);
 
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   free(params);
+  free(blendop_params);
 }
 
 static void dt_style_save(StyleData *style)
@@ -1580,7 +1595,7 @@ void dt_styles_import_from_file(const char *style_path)
   FILE *style_file;
   StyleData *style;
   GMarkupParseContext *parser;
-  gchar buf[1024];
+  gchar buf[8192];
 
   style = dt_styles_style_data_new();
   parser = g_markup_parse_context_new(&dt_style_parser, 0, style, NULL);
@@ -1739,7 +1754,9 @@ gchar *dt_get_style_name(const char *filename)
     {
       if(strcmp((char*)node->name, "name") == 0)
       {
-        bname = g_strdup((char*)xmlNodeGetContent(node));
+        xmlChar *content = xmlNodeGetContent(node);
+        bname = g_strdup((char*)content);
+        xmlFree(content);
         break;
       }
     }
