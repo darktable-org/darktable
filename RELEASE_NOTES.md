@@ -101,6 +101,9 @@ changes (where available).
     panels" button that resets all views, including visibility and
     width of the panels themselves.
 
+- Added a global preference to swap the left and right side panels in
+  the darkroom view.
+
 - The first time a new user presses Tab, they will be warned that this
   will hide all panels and how to get them back. Hopefully this
   prevents some confusion or frustration.
@@ -113,6 +116,9 @@ changes (where available).
 - Drag&drop of processing modules in the darkroom right panel has been
   improved to auto-scroll when reaching the top or bottom and to not
   get confused when images get dragged into the area.
+
+- Improved the message displayed at startup when the database is
+  locked by another instance of darktable.
 
 ## Performance Improvements
 
@@ -140,7 +146,15 @@ changes (where available).
 
 - Add Calibrite alias for X-Rite ColorChecker in color calibration.
 
+- The scan for updated sidecar files now ignores timestamp differences
+  of two seconds or less.
+
 - Numerous rounds of code cleanup.
+
+- Removed hopelessly outdated cross-compilation instructions.
+
+- The macOS installation package now has a background image to direct
+  the user on installing darktable.app.
 
 ## Bug Fixes
 
