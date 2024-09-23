@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-09-20 22:22-0300\n"
-"PO-Revision-Date: 2024-09-20 22:18-0300\n"
+"POT-Creation-Date: 2024-09-23 07:59-0300\n"
+"PO-Revision-Date: 2024-09-23 07:58-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -5823,7 +5823,7 @@ msgstr "buscar"
 msgid "white balance"
 msgstr "balanço de branco"
 
-#: ../src/common/collection.c:670 ../src/common/wb_presets.c:69
+#: ../src/common/collection.c:670 ../src/common/wb_presets.c:87
 #: ../src/libs/metadata_view.c:155
 msgid "flash"
 msgstr "flash"
@@ -6868,63 +6868,63 @@ msgid_plural "date/time re-applied to %d images"
 msgstr[0] "data/hora re-aplicada em %d imagem"
 msgstr[1] "data/hora re-aplicada em %d imagens"
 
-#: ../src/common/image.c:2317
+#: ../src/common/image.c:2318
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "não pude acessar cópia local `%s'"
 
-#: ../src/common/image.c:2324
+#: ../src/common/image.c:2325
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "não pude escrever cópia local `%s'"
 
-#: ../src/common/image.c:2331
+#: ../src/common/image.c:2332
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "erro movendo cópia local `%s' -> `%s'"
 
-#: ../src/common/image.c:2348
+#: ../src/common/image.c:2349
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "erro movendo `%s': arquivo não encontrado"
 
-#: ../src/common/image.c:2358
+#: ../src/common/image.c:2359
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "erro movendo `%s' -> `%s': arquivo já existe"
 
-#: ../src/common/image.c:2362 ../src/common/image.c:2371
+#: ../src/common/image.c:2363 ../src/common/image.c:2372
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "erro movendo `%s' -> `%s'"
 
-#: ../src/common/image.c:2673
+#: ../src/common/image.c:2674
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "não é possível criar cópia local quando o arquivo original está inacessível."
 
-#: ../src/common/image.c:2687
+#: ../src/common/image.c:2688
 msgid "cannot create local copy."
 msgstr "não pude criar cópia local."
 
-#: ../src/common/image.c:2767 ../src/control/jobs/control_jobs.c:932
+#: ../src/common/image.c:2768 ../src/control/jobs/control_jobs.c:932
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "não é possível remover cópias local quando o arquivo original está "
 "inacessível."
 
-#: ../src/common/image.c:2933
+#: ../src/common/image.c:2934
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
 msgstr[0] "cópia local %d foi sincronizada"
 msgstr[1] "cópias locais %d foram sincronizadas"
 
-#: ../src/common/image.c:3133
+#: ../src/common/image.c:3134
 msgid "<b>WARNING</b>: camera is missing samples!"
 msgstr "<b>ALERTA</b> : amostras faltando para câmera!"
 
-#: ../src/common/image.c:3134
+#: ../src/common/image.c:3135
 msgid ""
 "You must provide samples in <a href='https://raw.pixls.us/'>https://raw."
 "pixls.us/</a>"
@@ -6932,7 +6932,7 @@ msgstr ""
 "Você precisa prover amostras em  <a href='https://raw.pixls.us/'>https://raw."
 "pixls.us/</a>"
 
-#: ../src/common/image.c:3135
+#: ../src/common/image.c:3136
 #, c-format
 msgid ""
 "for `%s' `%s'\n"
@@ -6941,7 +6941,7 @@ msgstr ""
 "para `%s' `%s'\n"
 "em tantos formatos/compressão/profundidade de bits quanto possível"
 
-#: ../src/common/image.c:3138
+#: ../src/common/image.c:3139
 msgid "or the <b>RAW won't be readable</b> in next version."
 msgstr "ou o <b>RAW não será legível</b> na próxima versão."
 
@@ -7320,7 +7320,7 @@ msgstr "rejeitar"
 msgid "style with name '%s' already exists"
 msgstr "estilo com nome '%s' já existente"
 
-#: ../src/common/styles.c:277 ../src/common/styles.c:1683
+#: ../src/common/styles.c:277 ../src/common/styles.c:1698
 #: ../src/libs/styles.c:55
 msgid "styles"
 msgstr "estilos"
@@ -7354,26 +7354,26 @@ msgstr "falha o sobrescrever arquivo de estilo para %s"
 msgid "style file for %s exists"
 msgstr "arquivo de estilo para  %s existente"
 
-#: ../src/common/styles.c:1574
+#: ../src/common/styles.c:1589
 #, c-format
 msgid "style %s was successfully imported"
 msgstr "estilo %s foi importado com sucesso"
 
 #. Failed to open file, clean up.
-#: ../src/common/styles.c:1618
+#: ../src/common/styles.c:1633
 #, c-format
 msgid "could not read file `%s'"
 msgstr "não foi possível abrir o arquivo de entrada `%s'"
 
-#: ../src/common/utility.c:558
+#: ../src/common/utility.c:559
 msgid "above sea level"
 msgstr "acima do nível do mar"
 
-#: ../src/common/utility.c:559
+#: ../src/common/utility.c:560
 msgid "below sea level"
 msgstr "abaixo do nível do mar"
 
-#: ../src/common/utility.c:610 ../src/libs/metadata_view.c:946
+#: ../src/common/utility.c:611 ../src/libs/metadata_view.c:946
 msgid "m"
 msgstr "m"
 
@@ -7397,119 +7397,119 @@ msgstr "sim"
 #. *
 #. * WB name is standardized to one of the following:
 #. "Sunlight" and other variation should be switched to this:
-#: ../src/common/wb_presets.c:42 ../src/iop/lowlight.c:316
+#: ../src/common/wb_presets.c:60 ../src/iop/lowlight.c:316
 msgid "daylight"
 msgstr "luz diurna"
 
 #. Probably same as above:
-#: ../src/common/wb_presets.c:44
+#: ../src/common/wb_presets.c:62
 msgid "direct sunlight"
 msgstr "luz do sol direta"
 
-#: ../src/common/wb_presets.c:45
+#: ../src/common/wb_presets.c:63
 msgid "cloudy"
 msgstr "nublado"
 
 #. "Shadows" should be switched to this:
-#: ../src/common/wb_presets.c:47
+#: ../src/common/wb_presets.c:65
 msgid "shade"
 msgstr "sombra"
 
-#: ../src/common/wb_presets.c:48
+#: ../src/common/wb_presets.c:66
 msgid "incandescent"
 msgstr "incandescente"
 
-#: ../src/common/wb_presets.c:49
+#: ../src/common/wb_presets.c:67
 msgid "incandescent warm"
 msgstr "incandescente quente"
 
 #. Same as "Incandescent":
-#: ../src/common/wb_presets.c:51
+#: ../src/common/wb_presets.c:69
 msgid "tungsten"
 msgstr "tungstênio"
 
-#: ../src/common/wb_presets.c:52
+#: ../src/common/wb_presets.c:70
 msgid "fluorescent"
 msgstr "fluorescente"
 
 #. In Canon cameras and some newer Nikon cameras:
-#: ../src/common/wb_presets.c:54
+#: ../src/common/wb_presets.c:72
 msgid "fluorescent high"
 msgstr "fluorescente alta"
 
-#: ../src/common/wb_presets.c:55
+#: ../src/common/wb_presets.c:73
 msgid "cool white fluorescent"
 msgstr "fluorescente branca fria"
 
-#: ../src/common/wb_presets.c:56
+#: ../src/common/wb_presets.c:74
 msgid "warm white fluorescent"
 msgstr "fluorescente branca quente"
 
-#: ../src/common/wb_presets.c:57
+#: ../src/common/wb_presets.c:75
 msgid "daylight fluorescent"
 msgstr "fluorescente luz do dia"
 
-#: ../src/common/wb_presets.c:58
+#: ../src/common/wb_presets.c:76
 msgid "neutral fluorescent"
 msgstr "fluorescente neutra"
 
-#: ../src/common/wb_presets.c:59
+#: ../src/common/wb_presets.c:77
 msgid "white fluorescent"
 msgstr "fluorescente branco"
 
 #. In some newer Nikon cameras:
-#: ../src/common/wb_presets.c:61
+#: ../src/common/wb_presets.c:79
 msgid "sodium-vapor fluorescent"
 msgstr "fluorescente de vapor de sódio"
 
-#: ../src/common/wb_presets.c:62
+#: ../src/common/wb_presets.c:80
 msgid "day white fluorescent"
 msgstr "fluorescente branca de dia"
 
-#: ../src/common/wb_presets.c:63
+#: ../src/common/wb_presets.c:81
 msgid "high temp. mercury-vapor fluorescent"
 msgstr "fluorescente de vapor de mercúrio de alta temperatura"
 
 #. found in Nikon Coolpix P1000
-#: ../src/common/wb_presets.c:65
+#: ../src/common/wb_presets.c:83
 msgid "high temp. mercury-vapor"
 msgstr "lâmpada de vapor de mercúrio de alta temperatura"
 
 #. On Some Panasonic
-#: ../src/common/wb_presets.c:67
+#: ../src/common/wb_presets.c:85
 msgid "D55"
 msgstr "D55"
 
 #. For Olympus with no real "Flash" preset:
-#: ../src/common/wb_presets.c:71
+#: ../src/common/wb_presets.c:89
 msgid "flash (auto mode)"
 msgstr "flash (modo auto)"
 
-#: ../src/common/wb_presets.c:72
+#: ../src/common/wb_presets.c:90
 msgid "evening sun"
 msgstr "sol da tarde"
 
-#: ../src/common/wb_presets.c:73
+#: ../src/common/wb_presets.c:91
 msgid "underwater"
 msgstr "subaquática"
 
-#: ../src/common/wb_presets.c:74 ../src/views/darkroom.c:2331
+#: ../src/common/wb_presets.c:92 ../src/views/darkroom.c:2331
 msgid "black & white"
 msgstr "preto & branco"
 
-#: ../src/common/wb_presets.c:76
+#: ../src/common/wb_presets.c:94
 msgid "spot WB"
 msgstr "balanço de branco pontual"
 
-#: ../src/common/wb_presets.c:77
+#: ../src/common/wb_presets.c:95
 msgid "manual WB"
 msgstr "balanço de branco manual"
 
-#: ../src/common/wb_presets.c:78
+#: ../src/common/wb_presets.c:96
 msgid "camera WB"
 msgstr "balanço de branco  da câmera"
 
-#: ../src/common/wb_presets.c:79
+#: ../src/common/wb_presets.c:97
 msgid "auto WB"
 msgstr "balanço de branco automático"
 
@@ -7710,17 +7710,17 @@ msgstr "_fechar"
 
 #. setup selection accelerators
 #. action-box
-#: ../src/control/crawler.c:787 ../src/dtgtk/thumbtable.c:2881
+#: ../src/control/crawler.c:787 ../src/dtgtk/thumbtable.c:2883
 #: ../src/libs/import.c:2064 ../src/libs/select.c:142
 msgid "select all"
 msgstr "selecionar tudo"
 
-#: ../src/control/crawler.c:788 ../src/dtgtk/thumbtable.c:2883
+#: ../src/control/crawler.c:788 ../src/dtgtk/thumbtable.c:2885
 #: ../src/libs/import.c:2068 ../src/libs/select.c:146
 msgid "select none"
 msgstr "selecionar nenhuma"
 
-#: ../src/control/crawler.c:789 ../src/dtgtk/thumbtable.c:2885
+#: ../src/control/crawler.c:789 ../src/dtgtk/thumbtable.c:2887
 #: ../src/libs/select.c:150
 msgid "invert selection"
 msgstr "inverter seleção"
@@ -8199,7 +8199,7 @@ msgid "refresh EXIF"
 msgstr "atualizar EXIF"
 
 #: ../src/control/jobs/control_jobs.c:2318
-#: ../src/control/jobs/control_jobs.c:2336 ../src/dtgtk/thumbtable.c:2868
+#: ../src/control/jobs/control_jobs.c:2336 ../src/dtgtk/thumbtable.c:2870
 msgid "paste history"
 msgstr "colar histórico"
 
@@ -8207,7 +8207,7 @@ msgstr "colar histórico"
 msgid "compress history"
 msgstr "comprimir histórico"
 
-#: ../src/control/jobs/control_jobs.c:2361 ../src/dtgtk/thumbtable.c:2872
+#: ../src/control/jobs/control_jobs.c:2361 ../src/dtgtk/thumbtable.c:2874
 #: ../src/libs/copy_history.c:369
 msgid "discard history"
 msgstr "descartar histórico"
@@ -9317,7 +9317,7 @@ msgstr ""
 "com os requisitos."
 
 #: ../src/develop/imageop.c:3960 ../src/develop/imageop.c:3970
-#: ../src/gui/accelerators.c:173 ../src/libs/lib.c:1563
+#: ../src/gui/accelerators.c:173 ../src/libs/lib.c:1564
 msgid "show"
 msgstr "mostrar"
 
@@ -9337,14 +9337,14 @@ msgstr "duplicar"
 #: ../src/gui/accelerators.c:134 ../src/gui/accelerators.c:144
 #: ../src/gui/gtk.c:3540 ../src/gui/gtk.c:3595 ../src/gui/hist_dialog.c:272
 #: ../src/gui/styles_dialog.c:647 ../src/gui/styles_dialog.c:669
-#: ../src/iop/atrous.c:1625 ../src/libs/lib.c:1564
+#: ../src/iop/atrous.c:1625 ../src/libs/lib.c:1565
 #: ../src/libs/modulegroups.c:4089
 msgid "reset"
 msgstr "redefinir"
 
 #. Adding the outer container
 #: ../src/develop/imageop.c:3972 ../src/gui/preferences.c:809
-#: ../src/libs/lib.c:1565
+#: ../src/libs/lib.c:1566
 msgid "presets"
 msgstr "predefinições"
 
@@ -10047,40 +10047,45 @@ msgid "click on the gear icon for global preferences"
 msgstr "clique no ícone de engrenagem para preferências globais"
 
 #: ../src/dtgtk/thumbtable.c:1262
-msgid "try the 'no-click' workflow"
-msgstr "tente o fluxo de trabalho 'sem cliques'"
-
-#: ../src/dtgtk/thumbtable.c:1263
 msgid "click on the keyboard icon to define shortcuts"
 msgstr "clique no ícone de teclado para definir atalhos"
 
 #: ../src/dtgtk/thumbtable.c:1264
+msgid "try the 'no-click' workflow"
+msgstr "tente o fluxo de trabalho 'sem cliques'"
+
+#: ../src/dtgtk/thumbtable.c:1265
+msgid "set module-specific preferences through module's menu"
+msgstr ""
+"estabelecer preferências específicas de módulos através do menu do módulo"
+
+#: ../src/dtgtk/thumbtable.c:1266
 msgid "hover over an image and use keyboard shortcuts"
 msgstr "passe o mouse sobre uma imagem e use os atalhos de teclado"
 
-#: ../src/dtgtk/thumbtable.c:1265
+#: ../src/dtgtk/thumbtable.c:1267
 msgid "to apply ratings, colors, styles, etc."
 msgstr "para aplicar classificações, cores, estilos, etc."
 
-#: ../src/dtgtk/thumbtable.c:1266
+#: ../src/dtgtk/thumbtable.c:1268
 msgid "make default raw development look more like your"
 msgstr "tornar o desenvolvimento de seu raw parecer mais com o"
 
-#: ../src/dtgtk/thumbtable.c:1267
-msgid "hover over any button to see a description and shortcut"
-msgstr "passe o mouse sobre qualquer botão para ver uma descrição e um atalho"
+#: ../src/dtgtk/thumbtable.c:1269
+msgid "hover over any button for its description and shortcuts"
+msgstr "passe o mouse sobre qualquer botão para ver sua descrição e um atalho"
 
-#: ../src/dtgtk/thumbtable.c:1268
+#: ../src/dtgtk/thumbtable.c:1270
 msgid "camera's JPEG by applying a camera-specific style"
 msgstr "JPEG da sua camera, aplicando um estilo específico de camera"
 
-#: ../src/dtgtk/thumbtable.c:1587
+#: ../src/dtgtk/thumbtable.c:1589
 msgid ""
 "you have changed the settings related to how thumbnails are generated.\n"
 msgstr ""
 "você mudou as configurações relacionadas a como miniaturas são geradas.\n"
 
-#: ../src/dtgtk/thumbtable.c:1590
+#: ../src/dtgtk/thumbtable.c:1592
 msgid ""
 "all cached thumbnails need to be invalidated.\n"
 "\n"
@@ -10088,7 +10093,7 @@ msgstr ""
 "todas as miniaturas em cache precisam ser invalidadas.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1594
+#: ../src/dtgtk/thumbtable.c:1596
 #, c-format
 msgid ""
 "cached thumbnails starting from level %d need to be invalidated.\n"
@@ -10097,7 +10102,7 @@ msgstr ""
 "as miniaturas em cache começando no nível %d precisam ser invalidadas.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1599
+#: ../src/dtgtk/thumbtable.c:1601
 #, c-format
 msgid ""
 "cached thumbnails below level %d need to be invalidated.\n"
@@ -10106,7 +10111,7 @@ msgstr ""
 "as miniaturas no cache abaixo do nível %d precisam ser invalidadas.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1604
+#: ../src/dtgtk/thumbtable.c:1606
 #, c-format
 msgid ""
 "cached thumbnails between level %d and %d need to be invalidated.\n"
@@ -10115,40 +10120,40 @@ msgstr ""
 "as miniaturas no cache entre nível %d e %d precisam ser invalidadas.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1607
+#: ../src/dtgtk/thumbtable.c:1609
 msgid "do you want to do that now?"
 msgstr "você quer fazer isto agora?"
 
-#: ../src/dtgtk/thumbtable.c:1609
+#: ../src/dtgtk/thumbtable.c:1611
 msgid "cached thumbnails invalidation"
 msgstr "invalidação do cache de miniaturas"
 
 #. setup history key accelerators
-#: ../src/dtgtk/thumbtable.c:2864
+#: ../src/dtgtk/thumbtable.c:2866
 msgid "copy history"
 msgstr "copiar histórico"
 
-#: ../src/dtgtk/thumbtable.c:2866
+#: ../src/dtgtk/thumbtable.c:2868
 msgid "copy history parts"
 msgstr "copiar partes do histórico"
 
-#: ../src/dtgtk/thumbtable.c:2870
+#: ../src/dtgtk/thumbtable.c:2872
 msgid "paste history parts"
 msgstr "colar partes do histórico"
 
-#: ../src/dtgtk/thumbtable.c:2875
+#: ../src/dtgtk/thumbtable.c:2877
 msgid "duplicate image"
 msgstr "duplicar imagem"
 
-#: ../src/dtgtk/thumbtable.c:2877
+#: ../src/dtgtk/thumbtable.c:2879
 msgid "duplicate image virgin"
 msgstr "duplicar imagem sem desenvolvimento"
 
-#: ../src/dtgtk/thumbtable.c:2887 ../src/libs/select.c:154
+#: ../src/dtgtk/thumbtable.c:2889 ../src/libs/select.c:154
 msgid "select film roll"
 msgstr "selecionar rolo de filme"
 
-#: ../src/dtgtk/thumbtable.c:2889 ../src/libs/select.c:158
+#: ../src/dtgtk/thumbtable.c:2891 ../src/libs/select.c:158
 msgid "select untouched"
 msgstr "selecionar não modificadas"
 
@@ -25323,11 +25328,11 @@ msgstr ""
 msgid "parameters"
 msgstr "parâmetros"
 
-#: ../src/libs/ioporder.c:202
+#: ../src/libs/ioporder.c:203
 msgid "v3.0 for RAW input (default)"
 msgstr "v3.0 para entrada RAW (padrão)"
 
-#: ../src/libs/ioporder.c:208
+#: ../src/libs/ioporder.c:211
 msgid "v3.0 for JPEG/non-RAW input"
 msgstr "v3.0 para entrada JPEG/não RAW"
 
@@ -25347,7 +25352,11 @@ msgstr "nada a gravar"
 msgid "show module"
 msgstr "mostrar módulo"
 
-#: ../src/libs/lib.c:1579
+#: ../src/libs/lib.c:1272
+msgid "presets and preferences"
+msgstr "predefinições e preferências"
+
+#: ../src/libs/lib.c:1580
 msgid "utility module"
 msgstr "módulos utilitários"
 
