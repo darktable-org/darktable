@@ -1110,8 +1110,10 @@ static gboolean _event_scroll(GtkWidget *widget,
   int delta_x, delta_y;
 
   // file manager can either scroll fractionally and smoothly for precision 
-  // touch pads, or in one-thumbnail increments for clicky scroll wheels
-  if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER) 
+  // touch pads, or in one-thumbnail increments for clicky scroll wheels,
+  // except while control is held, as that indicates zooming
+  if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER 
+      && !dt_modifier_is(e->state, GDK_CONTROL_MASK)) 
   {
     gdouble deltaf_x, deltaf_y;
     gboolean did_scroll;
