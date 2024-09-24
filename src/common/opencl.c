@@ -2634,8 +2634,14 @@ int dt_opencl_set_kernel_arg(const int dev,
   if(!_check_kernel(dev, kernel)) return -1;
 
   dt_opencl_t *cl = darktable.opencl;
-  return (cl->dlocl->symbols->dt_clSetKernelArg)
+  const cl_int err = (cl->dlocl->symbols->dt_clSetKernelArg)
     (cl->dev[dev].kernel[kernel], num, size, arg);
+
+  if(err != CL_SUCCESS)
+    dt_print(DT_DEBUG_OPENCL,
+             "[dt_opencl_set_kernel_arg] error kernel `%s' (%i) on device %d: %s\n",
+              darktable.opencl->name_saved[kernel], kernel, dev, cl_errstr(err));
+  return err;
 }
 
 static int _opencl_set_kernel_args(const int dev,
@@ -2677,7 +2683,7 @@ int dt_opencl_set_kernel_args_internal(const int dev,
 {
   va_list ap;
   va_start(ap, num);
-  const int err = _opencl_set_kernel_args(dev, kernel, num, ap);
+  const cl_int err = _opencl_set_kernel_args(dev, kernel, num, ap);
   va_end(ap);
   return err;
 }
@@ -2712,8 +2718,9 @@ int dt_opencl_enqueue_kernel_ndim_with_local(const int dev,
 
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
-             "[dt_opencl_enqueue_kernel_%id%s] kernel %i on device %d: %s\n",
-             dimensions, local ? "_with_local" : "", kernel, dev, cl_errstr(err));
+             "[dt_opencl_enqueue_kernel_%id%s] kernel `%s' (%i) on device %d: %s\n",
+              dimensions, local ? "_with_local" : "",
+              darktable.opencl->name_saved[kernel], kernel, dev, cl_errstr(err));
   _check_clmem_err(dev, err);
   return err;
 }
@@ -2733,10 +2740,15 @@ int dt_opencl_enqueue_kernel_2d_args_internal(const int dev,
 {
   va_list ap;
   va_start(ap, h);
-  const int err = _opencl_set_kernel_args(dev, kernel, 0, ap);
+  const cl_int err = _opencl_set_kernel_args(dev, kernel, 0, ap);
   va_end(ap);
-  if(err) return err;
-
+  if(err != CL_SUCCESS)
+  {
+    dt_print(DT_DEBUG_OPENCL,
+             "[dt_opencl_enqueue_kernel_2d_args_internal] kernel `%s' (%i) on device %d: %s\n",
+              darktable.opencl->name_saved[kernel], kernel, dev, cl_errstr(err));
+    return err;
+  }
   const size_t sizes[] = { ROUNDUPDWD(w, dev), ROUNDUPDHT(h, dev), 1 };
 
   return dt_opencl_enqueue_kernel_2d_with_local(dev, kernel, sizes, NULL);
@@ -2900,9 +2912,7 @@ int dt_opencl_write_host_to_device_raw(const int devid,
   if(!_cldev_running(devid))
     return DT_OPENCL_NODEVICE;
 
-  cl_event *eventp = _opencl_events_get_slot(devid,
-                                               "[Write Image (from host to device)]");
-
+  cl_event *eventp = _opencl_events_get_slot(devid, "[Write Image (from host to device)]");
   const cl_int err = (darktable.opencl->dlocl->symbols->dt_clEnqueueWriteImage)
     (darktable.opencl->dev[devid].cmd_queue,
      device, blocking ? CL_TRUE : CL_FALSE,
@@ -2929,7 +2939,7 @@ int dt_opencl_enqueue_copy_image(const int devid,
 
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
-             "[opencl copy_image] could not copy image on device %d: %s\n",
+             "[opencl copy_image] could not copy on device %d: %s\n",
              devid, cl_errstr(err));
   _check_clmem_err(devid, err);
   return err;
@@ -2952,7 +2962,7 @@ int dt_opencl_enqueue_copy_image_to_buffer(const int devid,
 
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
-             "[opencl copy_image_to_buffer] could not copy image on device %d: %s\n",
+             "[opencl copy_image_to_buffer] could not copy on device %d: %s\n",
              devid, cl_errstr(err));
   _check_clmem_err(devid, err);
   return err;
@@ -2975,7 +2985,7 @@ int dt_opencl_enqueue_copy_buffer_to_image(const int devid,
 
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
-             "[opencl copy_buffer_to_image] could not copy buffer on device %d: %s\n",
+             "[opencl copy_buffer_to_image] could not copy on device %d: %s\n",
              devid, cl_errstr(err));
   _check_clmem_err(devid, err);
   return err;
@@ -2991,15 +3001,14 @@ int dt_opencl_enqueue_copy_buffer_to_buffer(const int devid,
   if(!_cldev_running(devid))
     return DT_OPENCL_NODEVICE;
 
-  cl_event *eventp =
-    _opencl_events_get_slot(devid, "[Copy Buffer to Buffer (on device)]");
+  cl_event *eventp = _opencl_events_get_slot(devid, "[Copy Buffer to Buffer (on device)]");
   const cl_int err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyBuffer)
     (darktable.opencl->dev[devid].cmd_queue,
      src_buffer, dst_buffer, srcoffset,
      dstoffset, size, 0, NULL, eventp);
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
-             "[opencl copy_buffer_to_buffer] could not copy buffer on device %d: %s\n",
+             "[opencl copy_buffer_to_buffer] could not copy on device %d: %s\n",
              devid, cl_errstr(err));
   _check_clmem_err(devid, err);
   return err;
@@ -3018,10 +3027,15 @@ int dt_opencl_read_buffer_from_device(const int devid,
   cl_event *eventp = _opencl_events_get_slot
     (devid, "[Read Buffer (from device to host)]");
 
-  return (darktable.opencl->dlocl->symbols->dt_clEnqueueReadBuffer)
+  const cl_int err = (darktable.opencl->dlocl->symbols->dt_clEnqueueReadBuffer)
     (darktable.opencl->dev[devid].cmd_queue, device,
      blocking ? CL_TRUE : CL_FALSE,
      offset, size, host, 0, NULL, eventp);
+  if(err != CL_SUCCESS)
+    dt_print(DT_DEBUG_OPENCL,
+             "[opencl read_buffer_from_device] could not read from device %d: %s\n",
+             devid, cl_errstr(err));
+  return err;
 }
 
 int dt_opencl_write_buffer_to_device(const int devid,
@@ -3037,10 +3051,16 @@ int dt_opencl_write_buffer_to_device(const int devid,
   cl_event *eventp = _opencl_events_get_slot
     (devid, "[Write Buffer (from host to device)]");
 
-  return (darktable.opencl->dlocl->symbols->dt_clEnqueueWriteBuffer)
+  const cl_int err = (darktable.opencl->dlocl->symbols->dt_clEnqueueWriteBuffer)
     (darktable.opencl->dev[devid].cmd_queue, device,
      blocking ? CL_TRUE : CL_FALSE,
      offset, size, host, 0, NULL, eventp);
+
+  if(err != CL_SUCCESS)
+    dt_print(DT_DEBUG_OPENCL,
+             "[opencl write_buffer_to_device] could not write to device %d: %s\n",
+             devid, cl_errstr(err));
+  return err;
 }
 
 
@@ -3260,7 +3280,7 @@ void *dt_opencl_alloc_device_use_host_pointer(const int devid,
      CL_MEM_READ_WRITE | ((host == NULL) ? CL_MEM_ALLOC_HOST_PTR : CL_MEM_USE_HOST_PTR),
      &fmt, &desc, host, &err);
 
-  if(err != CL_SUCCESS)
+  if(err != CL_SUCCESS || dev == NULL)
     dt_print(DT_DEBUG_OPENCL,
              "[opencl alloc_device_use_host_pointer]"
              " could not allocate cl image on device %d: %s\n",
@@ -3286,7 +3306,7 @@ void *dt_opencl_alloc_device_buffer(const int devid,
   cl_mem buf = (cl->dlocl->symbols->dt_clCreateBuffer)
     (cl->dev[devid].context,
      CL_MEM_READ_WRITE, size, NULL, &err);
-  if(err != CL_SUCCESS)
+  if(err != CL_SUCCESS || buf == NULL)
     dt_print(DT_DEBUG_OPENCL,
              "[opencl alloc_device_buffer] could not allocate cl buffer on device %d: %s\n",
              devid, cl_errstr(err));
@@ -3312,9 +3332,9 @@ void *dt_opencl_alloc_device_buffer_with_flags(const int devid,
   cl_mem buf = (cl->dlocl->symbols->dt_clCreateBuffer)
     (cl->dev[devid].context,
      flags, size, NULL, &err);
-  if(err != CL_SUCCESS)
+  if(err != CL_SUCCESS || buf == NULL)
     dt_print(DT_DEBUG_OPENCL,
-             "[opencl alloc_device_buffer] could not allocate cl buffer on device %d: %s\n",
+             "[opencl alloc_device_buffer_with_flags] could not allocate cl buffer on device %d: %s\n",
              devid, cl_errstr(err));
 
   _check_clmem_err(devid, err);
