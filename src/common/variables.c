@@ -180,8 +180,8 @@ static void _init_expansion(dt_variables_params_t *params, gboolean iterate)
     params->data->longitude = img->geoloc.longitude;
     params->data->latitude = img->geoloc.latitude;
     params->data->elevation = img->geoloc.elevation;
-    params->data->exif_flash_icon = img->exif_flash[0] == 'Y' ? "⚡" : (img->exif_flash[0] == 'N' ? "⚡⃠" : "");
-    params->data->exif_flash = img->exif_flash[0] == 'Y' ? _("yes") : (img->exif_flash[0] == 'N' ? _("no") : "-");
+    params->data->exif_flash_icon = img->exif_flash[0] == 'Y' ? "⚡" : "";
+    params->data->exif_flash = img->exif_flash[0] == 'Y' ? _("yes") : (img->exif_flash[0] == 'N' ? _("no") : _("n/a"));
     params->data->exif_exposure_program = img->exif_exposure_program;
     params->data->exif_metering_mode = img->exif_metering_mode;
     params->data->exif_whitebalance = img->exif_whitebalance;
@@ -532,7 +532,9 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     result = g_strdup_printf("%.2f", params->data->elevation);
 
   else if(_has_prefix(variable, "GPS.LOCATION.ICON"))
-    result = g_strdup((!isnan(params->data->latitude) && !isnan(params->data->longitude)) ? "🌐" : "");
+    // possible symbols: world map U+1F5FA 🗺, globe w/ meridians U+1F310 🌐
+    //   pushpin U+1F4CC 📌 round pushpin U+1F4CD 📍   black pushpin U+1F588 🖈
+    result = g_strdup((!isnan(params->data->latitude) && !isnan(params->data->longitude)) ? "📌" : "");
 
   // for watermark backward compatibility
   else if(_has_prefix(variable, "GPS.LOCATION"))
