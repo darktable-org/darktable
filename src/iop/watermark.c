@@ -31,6 +31,7 @@
 #include "gui/accelerators.h"
 #include "gui/color_picker_proxy.h"
 #include "gui/gtk.h"
+#include "gui/gtkentry.h"
 #include "iop/iop_api.h"
 #include <assert.h>
 #include <gtk/gtk.h>
@@ -1317,6 +1318,7 @@ void gui_init(struct dt_iop_module_t *self)
                                 _("text string, tag: $(WATERMARK_TEXT)\n"
                                   "use $(NL) to insert a line break"),
                                 dt_conf_get_string_const("plugins/darkroom/watermark/text"));
+  dt_gtkentry_setup_completion(GTK_ENTRY(g->text), dt_gtkentry_get_default_path_compl_list());
   gtk_entry_set_placeholder_text(GTK_ENTRY(g->text), _("content"));
   gtk_grid_attach(grid, label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(grid, g->text, label, GTK_POS_RIGHT, 2, 1);
