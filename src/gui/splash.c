@@ -23,6 +23,10 @@
 #include "osx/osx.h"
 #endif
 
+// override window manager's title bar?
+#define USE_HEADER_BAR
+#define title_in_header_bar FALSE
+
 static GtkWidget *splash_screen = NULL;
 static GtkWidget *progress_text = NULL;
 static GtkWidget *remaining_text = NULL;
@@ -37,7 +41,11 @@ void darktable_splash_screen_create(GtkWindow *parent_window, gboolean force)
   // a simple gtk_dialog_new() leaves us unable to setup the header bar, so use .._with_buttons
   // and just specify a NULL strings to have no buttons.  We need to pretend to actually have
   // one button, though, to keep the compiler happy
+#ifdef USE_HEADER_BAR
   GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_USE_HEADER_BAR;
+#else
+  GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT;
+#endif
   splash_screen = gtk_dialog_new_with_buttons(_("darktable starting"), parent_window, flags,
                                               NULL, GTK_RESPONSE_NONE,  // <-- fake button list for compiler
                                               NULL);
@@ -46,15 +54,21 @@ void darktable_splash_screen_create(GtkWindow *parent_window, gboolean force)
   gtk_widget_set_name(progress_text,"splashscreen-progress");
   remaining_text = gtk_label_new("");
   gtk_widget_set_name(remaining_text,"splashscreen-remaining");
+#ifdef USE_HEADER_BAR
   GtkHeaderBar *header = GTK_HEADER_BAR(gtk_dialog_get_header_bar(GTK_DIALOG(splash_screen)));
   gtk_widget_set_name(GTK_WIDGET(header),"splashscreen-header");
-  char *title_str = g_strdup_printf(_("Starting darktable %.5s"), darktable_package_version);
   GtkWidget *title = gtk_label_new(NULL);
-  gtk_label_set_text(GTK_LABEL(title),title_str);
-  g_free(title_str);
+  if(title_in_header_bar)
+  {
+    char *title_str = g_strdup_printf(_("Starting darktable %.5s"), darktable_package_version);
+    gtk_label_set_text(GTK_LABEL(title),title_str);
+    g_free(title_str);
+    gtk_header_bar_set_custom_title(header,title);
+  }
   gtk_header_bar_set_custom_title(header,title);
   gtk_header_bar_set_has_subtitle(header, FALSE);
   gtk_header_bar_set_show_close_button(header, FALSE);
+#endif
   GtkWidget *icon = gtk_image_new_from_icon_name("darktable", GTK_ICON_SIZE_DIALOG);
   gtk_image_set_pixel_size(GTK_IMAGE(icon), 180);
   gtk_widget_set_name(GTK_WIDGET(icon),"splashscreen-icon");

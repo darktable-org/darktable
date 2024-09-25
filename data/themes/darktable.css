@@ -2321,9 +2321,12 @@ Details :
 }
 
 /* splash screen */
+#splashscreen { background-color: @gray_20; }
+#splashscreen-header { background-color: @gray_20; }
+/* make the (nonexistent) title text very small to avoid an obvious bar at top */
+#splashscreen-header label { font-size: 1%; }
 /* hide the header button we were forced to instantiate */
 #splashscreen-header button { opacity: 0; border: none; }
-#splashscreen-header label { font-size: 200%; }
 /* style the darktable icon */
 #splashscreen-icon {}
 /* style the darktable program name */
