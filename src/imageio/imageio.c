@@ -1243,7 +1243,7 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
 
   if(!thumbnail_export)
     dt_set_backthumb_time(5.0);
-  return FALSE; // success
+  return TRUE; // success
 
 error:
   dt_dev_pixelpipe_cleanup(&pipe);
@@ -1253,7 +1253,7 @@ error_early:
 
   if(!thumbnail_export)
     dt_set_backthumb_time(5.0);
-  return TRUE;
+  return FALSE;
 }
 
 
