@@ -1471,7 +1471,10 @@ static void _init_8(uint8_t *buf,
         const int imgwd = img2->width;
         const int imght = img2->height;
         dt_image_cache_read_release(darktable.image_cache, img2);
-        if(thumb_width < wd && thumb_height < ht && thumb_width < imgwd - 4 && thumb_height < imght - 4)
+        if(thumb_width < wd
+           && thumb_height < ht
+           && thumb_width < imgwd - 4
+           && thumb_height < imght - 4)
         {
           res = TRUE;
         }
@@ -1481,7 +1484,8 @@ static void _init_8(uint8_t *buf,
           dt_print(DT_DEBUG_CACHE,
                    "[mipmap_cache] generate mip %d for ID=%d from embedded jpeg\n",
                    size, imgid);
-          dt_iop_flip_and_zoom_8(tmp, thumb_width, thumb_height, buf, wd, ht, orientation, width, height);
+          dt_iop_flip_and_zoom_8(tmp, thumb_width, thumb_height,
+                                 buf, wd, ht, orientation, width, height);
         }
         dt_free_align(tmp);
       }
@@ -1521,8 +1525,9 @@ static void _init_8(uint8_t *buf,
     dat.head.max_width = wd;
     dat.head.max_height = ht;
     dat.buf = buf;
-    // export with flags: ignore exif(don't load from disk), don't swap byte order, don't do hq processing,
-    // no upscaling and signal we want thumbnail export
+    // export with flags: ignore exif(don't load from disk), don't
+    // swap byte order, don't do hq processing, no upscaling and
+    // signal we want thumbnail export
     res = dt_imageio_export_with_flags(imgid, "unused", &format, (dt_imageio_module_data_t *)&dat, TRUE, FALSE, FALSE,
                                        FALSE, FALSE, TRUE, NULL, FALSE, FALSE, DT_COLORSPACE_NONE, NULL, DT_INTENT_LAST, NULL,
                                        NULL, 1, 1, NULL, -1);
