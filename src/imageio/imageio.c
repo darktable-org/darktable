@@ -148,10 +148,10 @@ dt_image_flags_t dt_imageio_get_type_from_extension(const char *extension)
 
 // load a full-res thumbnail:
 gboolean dt_imageio_large_thumbnail(const char *filename,
-                               uint8_t **buffer,
-                               int32_t *width,
-                               int32_t *height,
-                               dt_colorspaces_color_profile_type_t *color_space)
+                                    uint8_t **buffer,
+                                    int32_t *width,
+                                    int32_t *height,
+                                    dt_colorspaces_color_profile_type_t *color_space)
 {
   int res = TRUE;
 
@@ -688,21 +688,21 @@ void dt_imageio_to_fractional(const float in,
 }
 
 gboolean dt_imageio_export(const dt_imgid_t imgid,
-                      const char *filename,
-                      dt_imageio_module_format_t *format,
-                      dt_imageio_module_data_t *format_params,
-                      const gboolean high_quality,
-                      const gboolean upscale,
-                      const gboolean copy_metadata,
-                      const gboolean export_masks,
-                      const dt_colorspaces_color_profile_type_t icc_type,
-                      const gchar *icc_filename,
-                      const dt_iop_color_intent_t icc_intent,
-                      dt_imageio_module_storage_t *storage,
-                      dt_imageio_module_data_t *storage_params,
-                      const int num,
-                      const int total,
-                      dt_export_metadata_t *metadata)
+                           const char *filename,
+                           dt_imageio_module_format_t *format,
+                           dt_imageio_module_data_t *format_params,
+                           const gboolean high_quality,
+                           const gboolean upscale,
+                           const gboolean copy_metadata,
+                           const gboolean export_masks,
+                           const dt_colorspaces_color_profile_type_t icc_type,
+                           const gchar *icc_filename,
+                           const dt_iop_color_intent_t icc_intent,
+                           dt_imageio_module_storage_t *storage,
+                           dt_imageio_module_data_t *storage_params,
+                           const int num,
+                           const int total,
+                           dt_export_metadata_t *metadata)
 {
   if(strcmp(format->mime(format_params), "x-copy") == 0)
     /* This is a just a copy, skip process and just export */
@@ -743,27 +743,27 @@ static double _get_pipescale(dt_dev_pixelpipe_t *pipe,
 // internal function: to avoid exif blob reading + 8-bit byteorder
 // flag + high-quality override
 gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
-                                 const char *filename,
-                                 dt_imageio_module_format_t *format,
-                                 dt_imageio_module_data_t *format_params,
-                                 const gboolean ignore_exif,
-                                 const gboolean display_byteorder,
-                                 const gboolean high_quality,
-                                 const gboolean upscale,
-                                 const gboolean is_scaling,
-                                 const gboolean thumbnail_export,
-                                 const char *filter,
-                                 const gboolean copy_metadata,
-                                 const gboolean export_masks,
-                                 const dt_colorspaces_color_profile_type_t icc_type,
-                                 const gchar *icc_filename,
-                                 const dt_iop_color_intent_t icc_intent,
-                                 dt_imageio_module_storage_t *storage,
-                                 dt_imageio_module_data_t *storage_params,
-                                 int num,
-                                 const int total,
-                                 dt_export_metadata_t *metadata,
-                                 const int history_end)
+                                      const char *filename,
+                                      dt_imageio_module_format_t *format,
+                                      dt_imageio_module_data_t *format_params,
+                                      const gboolean ignore_exif,
+                                      const gboolean display_byteorder,
+                                      const gboolean high_quality,
+                                      const gboolean upscale,
+                                      const gboolean is_scaling,
+                                      const gboolean thumbnail_export,
+                                      const char *filter,
+                                      const gboolean copy_metadata,
+                                      const gboolean export_masks,
+                                      const dt_colorspaces_color_profile_type_t icc_type,
+                                      const gchar *icc_filename,
+                                      const dt_iop_color_intent_t icc_intent,
+                                      dt_imageio_module_storage_t *storage,
+                                      dt_imageio_module_data_t *storage_params,
+                                      int num,
+                                      const int total,
+                                      dt_export_metadata_t *metadata,
+                                      const int history_end)
 {
   dt_develop_t dev;
   dt_dev_init(&dev, FALSE);
@@ -794,8 +794,9 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
              filename,img->load_status);
     if(img->load_status == DT_IMAGEIO_FILE_NOT_FOUND)
       dt_control_log(_("image `%s' is not available!"), img->filename);
-    else if(img->load_status == DT_IMAGEIO_LOAD_FAILED || img->load_status == DT_IMAGEIO_IOERROR ||
-            img->load_status == DT_IMAGEIO_CACHE_FULL)
+    else if(img->load_status == DT_IMAGEIO_LOAD_FAILED
+            || img->load_status == DT_IMAGEIO_IOERROR
+            || img->load_status == DT_IMAGEIO_CACHE_FULL)
       dt_control_log(_("unable to load image `%s'!"), img->filename);
     else
       dt_control_log(_("image '%s' not supported"), img->filename);
@@ -913,13 +914,13 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
     }
 
     dt_print(DT_DEBUG_ALWAYS,
-      "[dt_imageio_export_with_flags] %s%s%s%s%s modules:%s\n",
-      use_style && appending      ? "append style history " : "",
-      use_style && !appending     ? "replace style history " : "",
-      use_style                   ? "`" : "",
-      use_style && format_params  ? format_params->style : "",
-      use_style                   ? "'." : "",
-      mbuf);
+             "[dt_imageio_export_with_flags] %s%s%s%s%s modules:%s\n",
+             use_style && appending      ? "append style history " : "",
+             use_style && !appending     ? "replace style history " : "",
+             use_style                   ? "`" : "",
+             use_style && format_params  ? format_params->style : "",
+             use_style                   ? "'." : "",
+             mbuf);
   }
 
   if(filter)
