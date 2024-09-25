@@ -36,11 +36,6 @@ are as follows:
     pacman -S --needed mingw-w64-ucrt-x86_64-{portmidi,SDL2}
     ```
 
-* Install optional libraries required for [testing](../../src/tests/unittests):
-    ```bash
-    pacman -S --needed mingw-w64-ucrt-x86_64-cmocka
-    ```
-
 * Switch to the UCRT64 terminal and update your lensfun database:
     ```bash
     lensfun-update-data
