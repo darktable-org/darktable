@@ -151,8 +151,6 @@ changes (where available).
 
 - Numerous rounds of code cleanup.
 
-- Removed hopelessly outdated cross-compilation instructions.
-
 - The macOS installation package now has a background image to direct
   the user on installing darktable.app.
 
