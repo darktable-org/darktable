@@ -1348,9 +1348,9 @@ int store(dt_imageio_module_storage_t *self,
 
   dt_image_cache_read_release(darktable.image_cache, img);
 
-  if(dt_imageio_export(imgid, fname, format, fdata, high_quality, upscale,
+  if(!dt_imageio_export(imgid, fname, format, fdata, high_quality, upscale,
                        TRUE, export_masks, icc_type, icc_filename,
-                       icc_intent, self, sdata, num, total, metadata) != 0)
+                       icc_intent, self, sdata, num, total, metadata))
   {
     dt_print(DT_DEBUG_ALWAYS,
              "[imageio_storage_piwigo] could not export to file: `%s'!\n",
