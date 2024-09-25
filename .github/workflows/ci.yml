@@ -67,7 +67,7 @@ jobs:
         eco: [-DDONT_USE_INTERNAL_LIBRAW=ON]
         include:
           # We want one run in CI to be Debug to make sure the Debug build isn't broken
-          - distro: "debian:trixie-slim"
+          - distro: "debian:unstable-slim"
             btype: Debug
             compiler: { compiler: GNU13, CC: gcc-13, CXX: g++-13, packages: gcc-13 g++-13 }
             target: skiptest
