@@ -399,9 +399,9 @@ int store(dt_imageio_module_storage_t *self,
 
   // export image to file. need this to be able to access meaningful
   // fdata->width and height below.
-  if(!dt_imageio_export(imgid, filename, format, fdata, high_quality,
+  if(dt_imageio_export(imgid, filename, format, fdata, high_quality,
                        upscale, TRUE, export_masks, icc_type,
-                       icc_filename, icc_intent, self, sdata, num, total, metadata))
+                       icc_filename, icc_intent, self, sdata, num, total, metadata) != 0)
   {
     dt_print(DT_DEBUG_ALWAYS,
              "[imageio_storage_gallery] could not export to file: `%s'!\n", filename);
@@ -440,9 +440,9 @@ int store(dt_imageio_module_storage_t *self,
   if(c <= filename || *c == '/') c = filename + strlen(filename);
   ext = format->extension(fdata);
   sprintf(c, "-thumb.%s", ext);
-  if(!dt_imageio_export(imgid, filename, format, fdata, FALSE, TRUE, FALSE,
+  if(dt_imageio_export(imgid, filename, format, fdata, FALSE, TRUE, FALSE,
                        export_masks, icc_type, icc_filename,
-                       icc_intent, self, sdata, num, total, NULL))
+                       icc_intent, self, sdata, num, total, NULL) != 0)
   {
     dt_print(DT_DEBUG_ALWAYS,
              "[imageio_storage_gallery] could not export to file: `%s'!\n", filename);
