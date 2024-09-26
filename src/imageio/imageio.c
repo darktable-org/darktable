@@ -153,7 +153,7 @@ gboolean dt_imageio_large_thumbnail(const char *filename,
                                     int32_t *height,
                                     dt_colorspaces_color_profile_type_t *color_space)
 {
-  int res = TRUE;
+  int res = FALSE;
 
   uint8_t *buf = NULL;
   char *mime_type = NULL;
@@ -185,7 +185,7 @@ gboolean dt_imageio_large_thumbnail(const char *filename,
       goto error;
     }
 
-    res = FALSE;
+    res = TRUE;
   }
   else
   {
@@ -236,13 +236,13 @@ gboolean dt_imageio_large_thumbnail(const char *filename,
       }
     }
 
-    res = FALSE;
+    res = TRUE;
 
   error_gm:
     if(image) DestroyImage(image);
     if(image_info) DestroyImageInfo(image_info);
     DestroyExceptionInfo(&exception);
-    if(res) goto error;
+    if(!res) goto error;
 #elif defined HAVE_IMAGEMAGICK
     MagickWand *image = NULL;
     MagickBooleanType mret;
@@ -287,11 +287,11 @@ gboolean dt_imageio_large_thumbnail(const char *filename,
       goto error_im;
     }
 
-    res = FALSE;
+    res = TRUE;
 
 error_im:
     DestroyMagickWand(image);
-    if(res) goto error;
+    if(!res) goto error;
 #else
     dt_print(DT_DEBUG_ALWAYS,
       "[dt_imageio_large_thumbnail] error: The thumbnail image is not in "
@@ -301,7 +301,7 @@ error_im:
 #endif
   }
 
-  if(res)
+  if(!res)
   {
     dt_print(DT_DEBUG_ALWAYS,
              "[dt_imageio_large_thumbnail] error: Not a supported thumbnail "
@@ -706,9 +706,9 @@ gboolean dt_imageio_export(const dt_imgid_t imgid,
 {
   if(strcmp(format->mime(format_params), "x-copy") == 0)
     /* This is a just a copy, skip process and just export */
-    return (format->write_image(format_params, filename, NULL, icc_type,
+    return format->write_image(format_params, filename, NULL, icc_type,
                                icc_filename, NULL, 0, imgid, num, total, NULL,
-                               export_masks)) != 0;
+                               export_masks) == 0;
   else
   {
     const gboolean is_scaling =
@@ -1184,20 +1184,20 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
     const int length = dt_exif_read_blob(&exif_profile, pathname, imgid, sRGB,
                                          processed_width, processed_height, FALSE);
 
-    res = (format->write_image(format_params, filename, outbuf, icc_type,
+    res = format->write_image(format_params, filename, outbuf, icc_type,
                               icc_filename, exif_profile, length, imgid,
-                              num, total, &pipe, export_masks)) != 0;
+                              num, total, &pipe, export_masks) == 0;
 
     free(exif_profile);
   }
   else
   {
-    res = (format->write_image(format_params, filename, outbuf, icc_type,
+    res = format->write_image(format_params, filename, outbuf, icc_type,
                               icc_filename, NULL, 0, imgid, num, total,
-                              &pipe, export_masks)) != 0;
+                              &pipe, export_masks) == 0;
   }
 
-  if(res)
+  if(!res)
     goto error;
 
   /* now write xmp into that container, if possible */

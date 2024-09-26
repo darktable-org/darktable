@@ -795,9 +795,9 @@ static gboolean _event_image_draw(GtkWidget *widget,
       char path[PATH_MAX] = { 0 };
       gboolean from_cache = TRUE;
       dt_image_full_path(thumb->imgid, path, sizeof(path), &from_cache);
-      if(!dt_imageio_large_thumbnail(path, &full_res_thumb,
-                                     &full_res_thumb_wd, &full_res_thumb_ht,
-                                     &color_space))
+      if(dt_imageio_large_thumbnail(path, &full_res_thumb,
+                                    &full_res_thumb_wd, &full_res_thumb_ht,
+                                    &color_space))
       {
         // we look for focus areas
         dt_focus_cluster_t full_res_focus[49];

@@ -1464,7 +1464,7 @@ static void _init_8(uint8_t *buf,
       uint8_t *tmp = 0;
       int32_t thumb_width, thumb_height;
       res = dt_imageio_large_thumbnail(filename, &tmp, &thumb_width, &thumb_height, color_space);
-      if(!res)
+      if(res)
       {
         // if the thumbnail is not large enough, we compute one
         const dt_image_t *img2 = dt_image_cache_get(darktable.image_cache, imgid, 'r');
@@ -1528,10 +1528,11 @@ static void _init_8(uint8_t *buf,
     // export with flags: ignore exif(don't load from disk), don't
     // swap byte order, don't do hq processing, no upscaling and
     // signal we want thumbnail export
-    res = dt_imageio_export_with_flags(imgid, "unused", &format, (dt_imageio_module_data_t *)&dat, TRUE, FALSE, FALSE,
-                                       FALSE, FALSE, TRUE, NULL, FALSE, FALSE, DT_COLORSPACE_NONE, NULL, DT_INTENT_LAST, NULL,
-                                       NULL, 1, 1, NULL, -1);
-    if(!res)
+    res = dt_imageio_export_with_flags
+      (imgid, "unused", &format, (dt_imageio_module_data_t *)&dat, TRUE, FALSE, FALSE,
+       FALSE, FALSE, TRUE, NULL, FALSE, FALSE, DT_COLORSPACE_NONE, NULL, DT_INTENT_LAST,
+       NULL, NULL, 1, 1, NULL, -1);
+    if(res)
     {
       dt_print(DT_DEBUG_CACHE,
                "[mipmap_cache] generate mip %d for ID=%d from scratch\n",
@@ -1548,7 +1549,7 @@ static void _init_8(uint8_t *buf,
   // dat.head.width, dat.head.height);
 
   // any errors?
-  if(res)
+  if(!res)
   {
     // dt_print(DT_DEBUG_ALWAYS, "[mipmap_cache] could not process thumbnail!\n");
     *width = *height = 0;
