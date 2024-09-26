@@ -12,16 +12,18 @@ PROGN=darktable
 
 # Go to directory of script
 scriptDir=$(dirname "$0")
+cd "$scriptDir"/
+scriptDir=$(pwd)
 buildDir="${scriptDir}/../../build/macosx"
 
+cd "$buildDir"/
+
 # Generate symlink to applications folder for easier drag & drop within dmg
-ln -s /Applications ${buildDir}/package/ || true
+ln -s /Applications ./package || true
 
 # copy macOS install background image
-mkdir ${buildDir}/package/.background
-cp ./macos_install_background.png ${buildDir}/package/.background
-
-cd "$buildDir"/
+mkdir ./package/.background
+cp "$scriptDir"/macos_install_background.png ./package/.background
 
 # When building on github runner, 'hdiutil create' occasionally fails (resource busy)
 # so we make several retries
