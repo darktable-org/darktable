@@ -2330,9 +2330,9 @@ Details :
 /* style the darktable icon */
 #splashscreen-icon {}
 /* style the darktable program name */
-#splashscreen-program { font-size: 900%; }
+#splashscreen-program { font-size: 400%; }
 /* style the darktable program description */
-#splashscreen-description { font-size: 140%; font-family: serif; margin-top: -28pt; }
+#splashscreen-description { font-size: 140%; font-family: serif; margin-top: 0pt; }
 /* style the separating bar - without a style, it won't appear or take space! */
 #splashscreen-separator { border: 3px solid @fg_color; margin-top: 15pt; margin-bottom: 15pt; }
 /* style the progress message */
