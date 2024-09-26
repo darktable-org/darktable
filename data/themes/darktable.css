@@ -2321,7 +2321,7 @@ Details :
 }
 
 /* splash screen */
-#splashscreen { background-color: @gray_20; }
+#splashscreen { background-color: @gray_20; border: 1px solid white; }
 #splashscreen-header { background-color: @gray_20; }
 /* make the (nonexistent) title text very small to avoid an obvious bar at top */
 #splashscreen-header label { font-size: 1%; }

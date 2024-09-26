@@ -26,6 +26,8 @@
 // override window manager's title bar?
 #define USE_HEADER_BAR
 #define title_in_header_bar FALSE
+// use an image from the resource directory as the entire static portion of the splash?
+#define USE_SPLASHSCREEN_IMAGE TRUE
 
 static GtkWidget *splash_screen = NULL;
 static GtkWidget *progress_text = NULL;
@@ -69,6 +71,13 @@ void darktable_splash_screen_create(GtkWindow *parent_window, gboolean force)
   gtk_header_bar_set_has_subtitle(header, FALSE);
   gtk_header_bar_set_show_close_button(header, FALSE);
 #endif
+#ifdef USE_SPLASHSCREEN_IMAGE
+  //FIXME: if user overrides --datadir, we won't find the image...
+  gchar *image_file = g_strconcat(darktable.datadir, "/pixmaps/splashscreen.png", NULL);
+  GtkWidget *image = gtk_image_new_from_file(image_file);
+  g_free(image_file);
+  gtk_widget_set_name(GTK_WIDGET(image),"splashscreen-image");
+#else
   GtkWidget *icon = gtk_image_new_from_icon_name("darktable", GTK_ICON_SIZE_DIALOG);
   gtk_image_set_pixel_size(GTK_IMAGE(icon), 180);
   gtk_widget_set_name(GTK_WIDGET(icon),"splashscreen-icon");
@@ -84,12 +93,17 @@ void darktable_splash_screen_create(GtkWindow *parent_window, gboolean force)
   GtkBox *desc_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   gtk_box_pack_start(desc_box, padding, TRUE, TRUE, 0);
   gtk_box_pack_start(desc_box, program_desc, FALSE, FALSE, 0);
+#endif
   GtkWidget *hbar = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
   gtk_widget_set_name(hbar, "splashscreen-separator");
   gtk_widget_show(hbar);
   GtkBox *content = GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(splash_screen)));
+#ifdef USE_SPLASHSCREEN_IMAGE
+  gtk_box_pack_start(content, image, FALSE, FALSE, 0);
+#else
   gtk_box_pack_start(content, GTK_WIDGET(title_box), FALSE, FALSE, 0);
   gtk_box_pack_start(content, GTK_WIDGET(desc_box), FALSE, FALSE, 0);
+#endif
   gtk_box_pack_start(content, hbar, FALSE, FALSE, 0);
   gtk_box_pack_start(content, progress_text, FALSE, FALSE, 0);
   gtk_box_pack_start(content, remaining_text, FALSE, FALSE, 0);
