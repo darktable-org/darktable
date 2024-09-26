@@ -36,11 +36,6 @@ are as follows:
     pacman -S --needed mingw-w64-ucrt-x86_64-{portmidi,SDL2}
     ```
 
-* Install optional libraries required for [testing](../../src/tests/unittests):
-    ```bash
-    pacman -S --needed mingw-w64-ucrt-x86_64-cmocka
-    ```
-
 * Switch to the UCRT64 terminal and update your lensfun database:
     ```bash
     lensfun-update-data
@@ -101,21 +96,6 @@ are as follows:
     ```bash
     cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/darktable -DBINARY_PACKAGE_BUILD=ON -S . -B build
     ```
-
-While Ninja offers advantages of default parallel builds and reduced build times for incremental builds (builds on Windows are significantly slower than with Linux based systems), you can also fall back to more traditional Makefiles should the need arise. You'll need to install Autotools from an MSYS terminal with:
-
-```bash
-pacman -S --needed mingw-w64-ucrt-x86_64-autotools
-```
-
-Now return to the UCRT64 terminal and use this sequence instead:
-
-```bash
-cmake -G 'MSYS Makefiles' --parallel 6 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/darktable -S . -B build
-cmake --build build
-```
-
-Feel free to adjust the number of parallel jobs according to your needs: Ninja will use all available CPU cores by default, while Makefiles will assume no parallel jobs if not explicitly specified.
 
 If you are in a hurry you can now run darktable by executing the `darktable.exe` found in the `build/bin` folder, install in `/opt/darktable` as described earlier, or create an installer image.
 
