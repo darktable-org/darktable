@@ -468,10 +468,10 @@ try_again:
   if(fail) return 1;
 
   /* export image to file */
-  if(!dt_imageio_export(imgid, filename, format, fdata, high_quality,
-                        upscale, TRUE, export_masks, icc_type,
-                        icc_filename, icc_intent, self, sdata,
-                        num, total, metadata))
+  if(dt_imageio_export(imgid, filename, format, fdata, high_quality,
+                       upscale, TRUE, export_masks, icc_type,
+                       icc_filename, icc_intent, self, sdata,
+                       num, total, metadata) != 0)
   {
     dt_print(DT_DEBUG_ALWAYS,
              "[imageio_storage_disk] could not export to file: `%s'!\n",
