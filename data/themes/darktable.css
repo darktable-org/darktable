@@ -2322,17 +2322,17 @@ Details :
 
 /* splash screen */
 #splashscreen { background-color: @gray_20; border: 1px solid white; }
-#splashscreen-header { background-color: @gray_20; }
+#splashscreen-header { background-color: @gray_20; padding: 0; margin: 0; }
 /* make the (nonexistent) title text very small to avoid an obvious bar at top */
-#splashscreen-header label { font-size: 1%; }
-/* hide the header button we were forced to instantiate */
-#splashscreen-header button { opacity: 0; border: none; }
+#splashscreen-header label { font-size: 1%; padding: 0; margin: 0; }
 /* style the darktable icon */
 #splashscreen-icon {}
+/* position the darktable version next to the icon */
+#splashscreen-version { margin-top: -30pt; margin-right: -90pt; font-size: 15pt; }
 /* style the darktable program name */
-#splashscreen-program { font-size: 400%; }
+#splashscreen-program { font-size: 400%; margin: 2pt; }
 /* style the darktable program description */
-#splashscreen-description { font-size: 140%; font-family: serif; margin-top: 0pt; }
+#splashscreen-description { font-size: 16pt; font-family: DejaVu Serif, serif; margin-top: 0pt; }
 /* style the separating bar - without a style, it won't appear or take space! */
 #splashscreen-separator { border: 3px solid @fg_color; margin-top: 15pt; margin-bottom: 15pt; }
 /* style the progress message */

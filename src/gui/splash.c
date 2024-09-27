@@ -52,6 +52,7 @@ void darktable_splash_screen_create(GtkWindow *parent_window, gboolean force)
   splash_screen = gtk_dialog_new_with_buttons(_("darktable starting"), parent_window, flags,
                                               NULL, GTK_RESPONSE_NONE,  // <-- fake button list for compiler
                                               NULL);
+  gtk_window_set_position(GTK_WINDOW(splash_screen), GTK_WIN_POS_CENTER);
   gtk_widget_set_name(splash_screen,"splashscreen");
   progress_text = gtk_label_new("initializing");
   gtk_widget_set_name(progress_text,"splashscreen-progress");
@@ -83,13 +84,28 @@ void darktable_splash_screen_create(GtkWindow *parent_window, gboolean force)
   GtkWidget *icon = gtk_image_new_from_icon_name("darktable", GTK_ICON_SIZE_DIALOG);
   gtk_image_set_pixel_size(GTK_IMAGE(icon), 180);
   gtk_widget_set_name(GTK_WIDGET(icon),"splashscreen-icon");
-  GtkWidget *program_name = GTK_WIDGET(gtk_label_new("darktable"));
+  gchar *version_str = g_strdup_printf("%.5s", darktable_package_version); //change to .6s for two-digit major ver
+  GtkWidget *version = GTK_WIDGET(gtk_label_new(version_str));
+  g_free(version_str);
+  gtk_widget_set_name(version, "splashscreen-version");
+  GtkWidget *program_name;
+  image_file = g_strdup_printf("%s/pixmaps/darktable.svg", darktable.datadir);
+  GdkPixbuf *prog_name_image = gdk_pixbuf_new_from_file_at_size(image_file, 300, -1, NULL);
+  g_free(image_file);
+  if(prog_name_image)
+  {
+    program_name = gtk_image_new_from_pixbuf(prog_name_image);
+    g_object_unref(prog_name_image);
+  }
+  else
+    program_name = GTK_WIDGET(gtk_label_new("darktable"));
   gtk_widget_set_name(program_name, "splashscreen-program");
   GtkWidget *program_desc = GTK_WIDGET(gtk_label_new(_("Photography workflow\napplication and\nRAW developer")));
   gtk_label_set_justify(GTK_LABEL(program_desc), GTK_JUSTIFY_CENTER);
   gtk_widget_set_name(program_desc, "splashscreen-description");
   GtkBox *title_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL,5));
   gtk_box_pack_start(title_box, icon, FALSE, FALSE, 0);
+  gtk_box_pack_start(title_box, version, FALSE, FALSE, 0);
   gtk_box_pack_start(title_box, program_name, FALSE, FALSE, 0);
   gtk_box_pack_start(title_box, program_desc, FALSE, FALSE, 0);
   // now put the featured image to the right of the logo/name/description
