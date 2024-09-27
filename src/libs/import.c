@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1331,14 +1331,6 @@ static gboolean _places_button_press(GtkWidget *view,
       _update_folders_list(self);
       _update_files_list(self);
     }
-    // right-click: delete / hide place (if not selected)
-    else if(button_pressed == 3)
-    {
-      if(g_strcmp0(folder_path, dt_conf_get_string_const("ui_last/import_last_place")))
-        _remove_place(folder_path, iter, self);
-      else
-        dt_toast_log(_("you can't delete the selected place"));
-    }
 
     g_free(folder_name);
     g_free(folder_path);
@@ -1477,7 +1469,7 @@ static void _set_places_list(GtkWidget *places_paned,
   GtkWidget *places_reset = dtgtk_button_new(dtgtk_cairo_paint_reset, 0, NULL);
   gtk_widget_set_tooltip_text
     (places_reset,
-     _("restore all default places you have removed by right-click"));
+     _("restore all default places you have removed"));
   g_signal_connect(places_reset, "clicked", G_CALLBACK(_places_reset_callback), self);
   gtk_box_pack_end(GTK_BOX(places_header), places_reset, FALSE, FALSE, 0);
 
@@ -1491,7 +1483,7 @@ static void _set_places_list(GtkWidget *places_paned,
   GtkWidget *places_add = dtgtk_button_new(dtgtk_cairo_paint_plus_simple, 0, NULL);
   gtk_widget_set_tooltip_text
     (places_add,
-     _("add a custom place\n\nright-click on a place to remove it"));
+     _("add a custom place"));
   g_signal_connect(places_add, "clicked", G_CALLBACK(_lib_import_select_folder), self);
   gtk_box_pack_end(GTK_BOX(places_header), places_add, FALSE, FALSE, 0);
 
@@ -1706,6 +1698,9 @@ static void _update_places_list(dt_lib_module_t* self)
   if(places)
     g_free(places->data);
   g_list_free(places);
+
+  _update_folders_list(self);
+  _update_files_list(self);
 }
 
 static void _update_folders_list(dt_lib_module_t* self)
