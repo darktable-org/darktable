@@ -1161,6 +1161,9 @@ static void _get_folders_list(GtkTreeStore *store,
                               const gchar *folder,
                               const char *selected)
 {
+  if(!folder[0])
+    return;
+
   // each time a new folder is added, it is set as not expanded and
   // assigned a fake child when expanded, the children are added and
   // the fake child is reused
@@ -1272,6 +1275,30 @@ static gboolean _clear_parasitic_selection(gpointer user_data)
       gtk_tree_selection_unselect_all(selection);
   }
   return FALSE;
+}
+
+static void _remove_selected_place(GtkWidget *widget, dt_lib_module_t *self)
+{
+  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
+
+  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->placesView));
+  GtkTreeSelection *place_selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->placesView));
+  GList *path = gtk_tree_selection_get_selected_rows(place_selection, &model);
+
+  if(!path)
+    return;
+
+  GtkTreeIter iter;
+  gtk_tree_model_get_iter(model, &iter, path->data);
+  char *folder_path;
+  gtk_tree_model_get(model, &iter, 1, &folder_path, -1);
+  _remove_place(folder_path, iter, self);
+
+  dt_conf_set_string("ui_last/import_last_place", "");
+  dt_conf_set_string("ui_last/import_last_directory", "");
+
+  _update_folders_list(self);
+  _update_files_list(self);
 }
 
 static gboolean _places_button_press(GtkWidget *view,
@@ -1452,6 +1479,13 @@ static void _set_places_list(GtkWidget *places_paned,
      _("restore all default places you have removed by right-click"));
   g_signal_connect(places_reset, "clicked", G_CALLBACK(_places_reset_callback), self);
   gtk_box_pack_end(GTK_BOX(places_header), places_reset, FALSE, FALSE, 0);
+
+  GtkWidget *places_remove = dtgtk_button_new(dtgtk_cairo_paint_minus_simple, 0, NULL);
+  gtk_widget_set_tooltip_text
+    (places_remove,
+     _("remove the selected custom place"));
+  g_signal_connect(places_remove, "clicked", G_CALLBACK(_remove_selected_place), self);
+  gtk_box_pack_end(GTK_BOX(places_header), places_remove, FALSE, FALSE, 0);
 
   GtkWidget *places_add = dtgtk_button_new(dtgtk_cairo_paint_plus_simple, 0, NULL);
   gtk_widget_set_tooltip_text
