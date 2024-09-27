@@ -167,6 +167,7 @@ typedef struct dt_lib_import_t
   GtkListStore *placesModel;
   GtkWidget *placesView;
   GtkTreeSelection *placesSelection;
+  GtkWidget *remove_place_button;
   GtkWidget *select_all;
   GtkWidget *select_new;
   GtkWidget *select_none;
@@ -1480,12 +1481,12 @@ static void _set_places_list(GtkWidget *places_paned,
   g_signal_connect(places_reset, "clicked", G_CALLBACK(_places_reset_callback), self);
   gtk_box_pack_end(GTK_BOX(places_header), places_reset, FALSE, FALSE, 0);
 
-  GtkWidget *places_remove = dtgtk_button_new(dtgtk_cairo_paint_minus_simple, 0, NULL);
+  d->remove_place_button = dtgtk_button_new(dtgtk_cairo_paint_minus_simple, 0, NULL);
   gtk_widget_set_tooltip_text
-    (places_remove,
+    (d->remove_place_button,
      _("remove the selected custom place"));
-  g_signal_connect(places_remove, "clicked", G_CALLBACK(_remove_selected_place), self);
-  gtk_box_pack_end(GTK_BOX(places_header), places_remove, FALSE, FALSE, 0);
+  g_signal_connect(d->remove_place_button, "clicked", G_CALLBACK(_remove_selected_place), self);
+  gtk_box_pack_end(GTK_BOX(places_header), d->remove_place_button, FALSE, FALSE, 0);
 
   GtkWidget *places_add = dtgtk_button_new(dtgtk_cairo_paint_plus_simple, 0, NULL);
   gtk_widget_set_tooltip_text
@@ -1719,6 +1720,7 @@ static void _update_folders_list(dt_lib_module_t* self)
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(model),
                                        GTK_TREE_SORTABLE_UNSORTED_SORT_COLUMN_ID,
                                        GTK_SORT_ASCENDING);
+  gtk_widget_set_sensitive(d->remove_place_button, last_place[0]);
   _get_folders_list(GTK_TREE_STORE(model), NULL, last_place, folder);
   gtk_tree_sortable_set_sort_column_id
     (GTK_TREE_SORTABLE(model), DT_FOLDER_PATH,
