@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -167,6 +167,7 @@ typedef struct dt_lib_import_t
   GtkListStore *placesModel;
   GtkWidget *placesView;
   GtkTreeSelection *placesSelection;
+  GtkWidget *remove_place_button;
   GtkWidget *select_all;
   GtkWidget *select_new;
   GtkWidget *select_none;
@@ -1161,6 +1162,9 @@ static void _get_folders_list(GtkTreeStore *store,
                               const gchar *folder,
                               const char *selected)
 {
+  if(!folder[0])
+    return;
+
   // each time a new folder is added, it is set as not expanded and
   // assigned a fake child when expanded, the children are added and
   // the fake child is reused
@@ -1274,6 +1278,30 @@ static gboolean _clear_parasitic_selection(gpointer user_data)
   return FALSE;
 }
 
+static void _remove_selected_place(GtkWidget *widget, dt_lib_module_t *self)
+{
+  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
+
+  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->placesView));
+  GtkTreeSelection *place_selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->placesView));
+  GList *path = gtk_tree_selection_get_selected_rows(place_selection, &model);
+
+  if(!path)
+    return;
+
+  GtkTreeIter iter;
+  gtk_tree_model_get_iter(model, &iter, path->data);
+  char *folder_path;
+  gtk_tree_model_get(model, &iter, 1, &folder_path, -1);
+  _remove_place(folder_path, iter, self);
+
+  dt_conf_set_string("ui_last/import_last_place", "");
+  dt_conf_set_string("ui_last/import_last_directory", "");
+
+  _update_folders_list(self);
+  _update_files_list(self);
+}
+
 static gboolean _places_button_press(GtkWidget *view,
                                      GdkEventButton *event,
                                      dt_lib_module_t *self)
@@ -1302,14 +1330,6 @@ static gboolean _places_button_press(GtkWidget *view,
       _import_cancel(self);
       _update_folders_list(self);
       _update_files_list(self);
-    }
-    // right-click: delete / hide place (if not selected)
-    else if(button_pressed == 3)
-    {
-      if(g_strcmp0(folder_path, dt_conf_get_string_const("ui_last/import_last_place")))
-        _remove_place(folder_path, iter, self);
-      else
-        dt_toast_log(_("you can't delete the selected place"));
     }
 
     g_free(folder_name);
@@ -1449,14 +1469,21 @@ static void _set_places_list(GtkWidget *places_paned,
   GtkWidget *places_reset = dtgtk_button_new(dtgtk_cairo_paint_reset, 0, NULL);
   gtk_widget_set_tooltip_text
     (places_reset,
-     _("restore all default places you have removed by right-click"));
+     _("restore all default places you have removed"));
   g_signal_connect(places_reset, "clicked", G_CALLBACK(_places_reset_callback), self);
   gtk_box_pack_end(GTK_BOX(places_header), places_reset, FALSE, FALSE, 0);
+
+  d->remove_place_button = dtgtk_button_new(dtgtk_cairo_paint_minus_simple, 0, NULL);
+  gtk_widget_set_tooltip_text
+    (d->remove_place_button,
+     _("remove the selected custom place"));
+  g_signal_connect(d->remove_place_button, "clicked", G_CALLBACK(_remove_selected_place), self);
+  gtk_box_pack_end(GTK_BOX(places_header), d->remove_place_button, FALSE, FALSE, 0);
 
   GtkWidget *places_add = dtgtk_button_new(dtgtk_cairo_paint_plus_simple, 0, NULL);
   gtk_widget_set_tooltip_text
     (places_add,
-     _("add a custom place\n\nright-click on a place to remove it"));
+     _("add a custom place"));
   g_signal_connect(places_add, "clicked", G_CALLBACK(_lib_import_select_folder), self);
   gtk_box_pack_end(GTK_BOX(places_header), places_add, FALSE, FALSE, 0);
 
@@ -1671,6 +1698,9 @@ static void _update_places_list(dt_lib_module_t* self)
   if(places)
     g_free(places->data);
   g_list_free(places);
+
+  _update_folders_list(self);
+  _update_files_list(self);
 }
 
 static void _update_folders_list(dt_lib_module_t* self)
@@ -1685,6 +1715,7 @@ static void _update_folders_list(dt_lib_module_t* self)
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(model),
                                        GTK_TREE_SORTABLE_UNSORTED_SORT_COLUMN_ID,
                                        GTK_SORT_ASCENDING);
+  gtk_widget_set_sensitive(d->remove_place_button, last_place[0]);
   _get_folders_list(GTK_TREE_STORE(model), NULL, last_place, folder);
   gtk_tree_sortable_set_sort_column_id
     (GTK_TREE_SORTABLE(model), DT_FOLDER_PATH,
