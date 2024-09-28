@@ -585,12 +585,22 @@ int process_cl(struct dt_iop_module_t *self,
   }
   else // (d->mode == DT_IOP_HIGHLIGHTS_CLIP)
   {
+    const dt_dev_chroma_t *chr = &self->dev->chroma;
+    dt_aligned_pixel_t clips = { clip, clip, clip, clip};
+    if(dt_dev_is_D65_chroma(self->dev) && chr->late_correction)
+    for_each_channel(c)
+      clips[c] *= chr->as_shot[c] / chr->D65coeffs[c];
+    dev_clips = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), clips);
+    if(dev_clips == NULL) goto finish;
+
+    dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->pipe->dsc.xtrans), piece->pipe->dsc.xtrans);
+    if(dev_xtrans == NULL) goto finish;
     // raw images with clip mode (both bayer and xtrans)
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_1f_clip, roi_in->width, roi_in->height,
       CLARG(dev_in), CLARG(dev_out),
       CLARG(roi_in->width), CLARG(roi_in->height),
-      CLARG(clip), CLARG(roi_out->x), CLARG(roi_out->y),
-      CLARG(filters));
+      CLARG(dev_clips), CLARG(roi_out->x), CLARG(roi_out->y),
+      CLARG(filters), CLARG(dev_xtrans));
   }
 
   // update processed maximum
@@ -609,7 +619,8 @@ int process_cl(struct dt_iop_module_t *self,
 }
 #endif
 
-static void process_clip(dt_dev_pixelpipe_iop_t *piece,
+static void process_clip(dt_iop_module_t *self,
+                         dt_dev_pixelpipe_iop_t *piece,
                          const void *const ivoid,
                          void *const ovoid,
                          const dt_iop_roi_t *const roi_in,
@@ -620,10 +631,44 @@ static void process_clip(dt_dev_pixelpipe_iop_t *piece,
   float *const out = (float *const)ovoid;
 
   const int ch = piece->pipe->dsc.filters ? 1 : 4;
-  const size_t msize = (size_t)roi_out->width * roi_out->height * ch;
-  DT_OMP_FOR()
-  for(size_t k = 0; k < msize; k++)
-    out[k] = fminf(clip, in[k]);
+  if(ch == 4)
+  {
+    const size_t msize = (size_t)roi_out->width * roi_out->height * ch;
+    DT_OMP_FOR()
+    for(size_t k = 0; k < msize; k++)
+      out[k] = fminf(clip, in[k]);
+  }
+  else
+  {
+    const uint32_t filters = piece->pipe->dsc.filters;
+    const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
+    const gboolean is_xtrans = (filters == 9u);
+
+    const dt_dev_chroma_t *chr = &self->dev->chroma;
+    dt_aligned_pixel_t clips = { clip, clip, clip, clip};
+    if(dt_dev_is_D65_chroma(self->dev) && chr->late_correction)
+    {
+      for_each_channel(c) clips[c] *= chr->as_shot[c] / chr->D65coeffs[c];
+    }
+    for(int row = 0; row < roi_out->height; row++)
+    {
+      for(int col = 0; col < roi_out->width; col++)
+      {
+        const size_t ox = (size_t)row * roi_out->width + col;
+        const int irow = row + roi_out->y - roi_in->y;
+        const int icol = col + roi_out->x - roi_in->x;
+        const size_t ix = (size_t)irow * roi_in->width + icol;
+
+        if((icol >= 0) && (irow >= 0) && (irow < roi_in->height) && (icol < roi_in->width))
+        {
+          const int c = is_xtrans ? FCxtrans(irow, icol, roi_in, xtrans) : FC(irow, icol, filters);
+          out[ox] = fminf(in[ix], clips[c]);
+        }
+        else
+          out[ox] = 0.0f;
+      }
+    }
+  }
 }
 
 static void process_visualize(dt_dev_pixelpipe_iop_t *piece,
@@ -724,7 +769,7 @@ void process(struct dt_iop_module_t *self,
   {
     if(data->mode == DT_IOP_HIGHLIGHTS_CLIP)
     {
-      process_clip(piece, ivoid, ovoid, roi_in, roi_out, clip);
+      process_clip(self, piece, ivoid, ovoid, roi_in, roi_out, clip);
       const float m = dt_iop_get_processed_minimum(piece);
       for_three_channels(k)
         piece->pipe->dsc.processed_maximum[k] = m;
@@ -805,7 +850,7 @@ void process(struct dt_iop_module_t *self,
 
     case DT_IOP_HIGHLIGHTS_CLIP:
     {
-      process_clip(piece, ivoid, ovoid, roi_in, roi_out, clip);
+      process_clip(self, piece, ivoid, ovoid, roi_in, roi_out, clip);
       break;
     }
 
