@@ -1489,16 +1489,16 @@
     <name>session/base_directory_pattern</name>
     <type>string</type>
     <default>$(PICTURES_FOLDER)/Darktable</default>
-    <shortdescription>base directory naming pattern</shortdescription>
-    <longdescription>part of full import path for an import session</longdescription>
+    <shortdescription>base filmroll's directory</shortdescription>
+    <longdescription>directory where new imported filmrolls are created</longdescription>
   </dtconfig>
 
   <dtconfig prefs="import" section="session">
     <name>session/sub_directory_pattern</name>
     <type>string</type>
     <default>$(YEAR)$(MONTH)$(DAY)_$(JOBCODE)</default>
-    <shortdescription>sub directory naming pattern</shortdescription>
-    <longdescription>part of full import path for an import session</longdescription>
+    <shortdescription>filmroll name</shortdescription>
+    <longdescription>name of the imported filmroll</longdescription>
   </dtconfig>
 
   <dtconfig prefs="import" section="session">
