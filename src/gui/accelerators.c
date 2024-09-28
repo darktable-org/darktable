@@ -4759,6 +4759,7 @@ dt_action_t *dt_action_locate(dt_action_t *owner,
     clean_path = NULL; // now owned by action or freed
     path++;
   }
+  g_free(clean_path);
 
   if(owner)
   {

@@ -1476,12 +1476,14 @@ static void _dt_collection_updated(gpointer instance, dt_collection_change_t que
   if(g_strcmp0(where_ext, d->last_where_ext))
   {
     g_free(d->last_where_ext);
-    d->last_where_ext = g_strdup(where_ext);
+    d->last_where_ext = where_ext;
     for(int i = 0; i <= d->nb_rules; i++)
     {
       _widget_update(&d->rule[i]);
     }
   }
+  else
+    g_free(where_ext);
 }
 
 static void _history_pretty_print(const char *buf, char *out, size_t outsize)
