@@ -1969,8 +1969,8 @@ void dt_cleanup()
 {
   const int init_gui = (darktable.gui != NULL);
 
-  if(init_gui)
-    darktable_exit_screen_create(NULL, FALSE);
+//  if(init_gui)
+//    darktable_exit_screen_create(NULL, FALSE);
 
   darktable.backthumbs.running = FALSE;
   // last chance to ask user for any input...
@@ -2012,16 +2012,15 @@ void dt_cleanup()
 #endif
   dt_view_manager_cleanup(darktable.view_manager);
   free(darktable.view_manager);
+  // we can no longer call dt_gui_process_events after this point, as that will cause a segfault
+  // if some delayed event fires
 
-  if(init_gui) dt_gui_process_events();
   dt_image_cache_cleanup(darktable.image_cache);
   free(darktable.image_cache);
-  if(init_gui) dt_gui_process_events();
   dt_mipmap_cache_cleanup(darktable.mipmap_cache);
   free(darktable.mipmap_cache);
   if(init_gui)
   {
-    dt_gui_process_events();
     dt_imageio_cleanup(darktable.imageio);
     free(darktable.imageio);
     dt_control_shutdown(darktable.control);
@@ -2031,7 +2030,6 @@ void dt_cleanup()
     free(darktable.gui);
     darktable.gui = NULL;
   }
-  // we can no longer call dt_gui_process_events after this point, as that will cause a segfault
 
   dt_colorspaces_cleanup(darktable.color_profiles);
   dt_conf_cleanup(darktable.conf);

@@ -56,9 +56,9 @@ static GtkWidget *_get_logo()
 
   gchar *image_file =
     season == DT_LOGO_SEASON_NONE
-    ? g_strdup_printf("%s/../icons/hicolor/scalable/apps/darktable.svg",
+    ? g_strdup_printf("%s/icons/hicolor/scalable/apps/darktable.svg",
                       darktable.datadir)
-    : g_strdup_printf("%s/../icons/hicolor/scalable/apps/darktable-%d.svg",
+    : g_strdup_printf("%s/icons/hicolor/scalable/apps/darktable-%d.svg",
                       darktable.datadir,
                       season);
   GdkPixbuf *logo_image =
@@ -70,7 +70,9 @@ static GtkWidget *_get_logo()
     g_object_unref(logo_image);
   }
   else
+  {
     logo = GTK_WIDGET(gtk_label_new("logo"));
+  }
   gtk_widget_set_name(GTK_WIDGET(logo), "splashscreen-logo");
   return logo;
 }
@@ -129,7 +131,11 @@ void darktable_splash_screen_create(GtkWindow *parent_window, gboolean force)
   remaining_text = gtk_label_new("");
   gtk_widget_set_name(remaining_text,"splashscreen-remaining");
   _set_header_bar(splash_screen);
-  gchar *version_str = g_strdup_printf("%.5s", darktable_package_version); //change to .6s for two-digit major ver
+  int version_len = strlen(darktable_package_version);
+  char *delim = strchr(darktable_package_version, '~');
+  if(delim)
+    version_len = delim  - darktable_package_version;
+  gchar *version_str = g_strdup_printf("%.*s", version_len, darktable_package_version);
   GtkWidget *version = GTK_WIDGET(gtk_label_new(version_str));
   g_free(version_str);
   gtk_widget_set_name(version, "splashscreen-version");
