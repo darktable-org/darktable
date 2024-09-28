@@ -28,7 +28,7 @@
 // override window manager's title bar?
 #define USE_HEADER_BAR
 // include a featured image on the splash screen?
-//#define USE_FEATURED_IMAGE 
+//#define USE_FEATURED_IMAGE
 // number of featured images from which to randomly select when USE_SPLASHSCREEN_IMAGE not defined
 #define MAX_IMAGES 4
 
@@ -103,7 +103,7 @@ void darktable_splash_screen_create(GtkWindow *parent_window, gboolean force)
     program_name = GTK_WIDGET(gtk_label_new("darktable"));
   gtk_widget_set_name(program_name, "splashscreen-program");
   GtkBox *content = GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(splash_screen)));
-  GtkBox *main_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
+  GtkBox *main_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 #ifdef USE_FEATURED_IMAGE
   // make a random selection of featured image based on the current time
   const int imgnum = (int)(1 + (clock()%MAX_IMAGES));
@@ -118,7 +118,7 @@ void darktable_splash_screen_create(GtkWindow *parent_window, gboolean force)
   GtkWidget *program_desc = GTK_WIDGET(gtk_label_new(_("Photography workflow\napplication and\nRAW developer")));
   gtk_label_set_justify(GTK_LABEL(program_desc), GTK_JUSTIFY_CENTER);
   gtk_widget_set_name(program_desc, "splashscreen-description");
-  GtkBox *title_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL,5));
+  GtkBox *title_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
   gtk_box_pack_start(title_box, logo, FALSE, FALSE, 0);
   gtk_box_pack_start(title_box, version, FALSE, FALSE, 0);
   gtk_box_pack_start(title_box, program_name, FALSE, FALSE, 0);
@@ -129,7 +129,7 @@ void darktable_splash_screen_create(GtkWindow *parent_window, gboolean force)
   gtk_box_pack_start(content, GTK_WIDGET(main_box), FALSE, FALSE, 0);
 #else
   // put the darktable logo and version number together
-  GtkBox *logo_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
+  GtkBox *logo_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
   gtk_image_set_pixel_size(GTK_IMAGE(logo), 220);
   gtk_label_set_justify(GTK_LABEL(version), GTK_JUSTIFY_LEFT);
   gtk_box_pack_start(logo_box, logo, FALSE, FALSE, 0);
@@ -140,10 +140,10 @@ void darktable_splash_screen_create(GtkWindow *parent_window, gboolean force)
   gtk_label_set_justify(GTK_LABEL(program_desc), GTK_JUSTIFY_RIGHT);
   gtk_widget_set_name(program_desc, "splashscreen-description");
   GtkWidget *desc_padding = gtk_label_new(NULL);
-  GtkBox *desc_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
+  GtkBox *desc_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   gtk_box_pack_end(desc_box, desc_padding, FALSE, FALSE, 0);
   gtk_box_pack_end(desc_box, program_desc, FALSE, FALSE, 0);
-  GtkBox *text_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
+  GtkBox *text_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
   GtkWidget *padding1 = gtk_label_new(NULL);  // ensure that text is vertically centered
   GtkWidget *padding2 = gtk_label_new("");  // with respect to logo
   GtkWidget *prepare = gtk_label_new(_("get ready to unleash your creativity"));
