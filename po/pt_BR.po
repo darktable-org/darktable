@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-09-24 18:43-0300\n"
-"PO-Revision-Date: 2024-09-24 18:41-0300\n"
+"POT-Creation-Date: 2024-09-28 14:31-0300\n"
+"PO-Revision-Date: 2024-09-28 14:31-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -865,7 +865,7 @@ msgid "?"
 msgstr "?"
 
 #: ../build/bin/preferences_gen.h:4251 ../src/control/jobs/control_jobs.c:2990
-#: ../src/libs/import.c:187
+#: ../src/libs/import.c:188
 msgid "import"
 msgstr "importar"
 
@@ -1519,8 +1519,8 @@ msgstr "pasta raiz do LUT 3D"
 #: ../src/gui/presets.c:422 ../src/imageio/storage/disk.c:197
 #: ../src/imageio/storage/disk.c:277 ../src/imageio/storage/gallery.c:149
 #: ../src/imageio/storage/gallery.c:213 ../src/imageio/storage/latex.c:145
-#: ../src/imageio/storage/latex.c:199 ../src/libs/import.c:1828
-#: ../src/libs/import.c:1941 ../src/libs/import.c:1999 ../src/libs/styles.c:442
+#: ../src/imageio/storage/latex.c:199 ../src/libs/import.c:1859
+#: ../src/libs/import.c:1972 ../src/libs/import.c:2030 ../src/libs/styles.c:442
 #: ../src/lua/preferences.c:668
 msgid "select directory"
 msgstr "selecione pasta"
@@ -2876,7 +2876,7 @@ msgstr "aberração cromática muito grande"
 #: ../src/develop/blend_gui.c:2431 ../src/develop/lightroom.c:887
 #: ../src/gui/gtk.c:3693 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:372
 #: ../src/iop/channelmixer.c:621 ../src/iop/channelmixer.c:631
-#: ../src/iop/channelmixerrgb.c:4715 ../src/iop/colorequal.c:2972
+#: ../src/iop/channelmixerrgb.c:4715 ../src/iop/colorequal.c:2990
 #: ../src/iop/colorzones.c:2496 ../src/iop/temperature.c:2013
 #: ../src/iop/temperature.c:2205 ../src/libs/collect.c:1950
 #: ../src/libs/filters/colors.c:260 ../src/libs/histogram.c:2710
@@ -2896,7 +2896,7 @@ msgstr "vermelho"
 #: ../src/develop/blend_gui.c:2437 ../src/develop/lightroom.c:891
 #: ../src/gui/gtk.c:3694 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:377
 #: ../src/iop/channelmixer.c:622 ../src/iop/channelmixer.c:637
-#: ../src/iop/channelmixerrgb.c:4716 ../src/iop/colorequal.c:2975
+#: ../src/iop/channelmixerrgb.c:4716 ../src/iop/colorequal.c:2993
 #: ../src/iop/colorzones.c:2499 ../src/iop/temperature.c:1997
 #: ../src/iop/temperature.c:2015 ../src/iop/temperature.c:2206
 #: ../src/libs/collect.c:1950 ../src/libs/filters/colors.c:262
@@ -2917,7 +2917,7 @@ msgstr "verde"
 #: ../src/develop/blend_gui.c:2443 ../src/develop/lightroom.c:893
 #: ../src/gui/gtk.c:3695 ../src/iop/bilateral.cc:382
 #: ../src/iop/channelmixer.c:623 ../src/iop/channelmixer.c:643
-#: ../src/iop/channelmixerrgb.c:4717 ../src/iop/colorequal.c:2977
+#: ../src/iop/channelmixerrgb.c:4717 ../src/iop/colorequal.c:2995
 #: ../src/iop/colorzones.c:2501 ../src/iop/temperature.c:2017
 #: ../src/iop/temperature.c:2207 ../src/libs/collect.c:1950
 #: ../src/libs/filters/colors.c:263 ../src/libs/histogram.c:2692
@@ -3245,7 +3245,7 @@ msgstr "croma"
 #: ../src/develop/blend_gui.c:2368 ../src/develop/blend_gui.c:2402
 #: ../src/develop/blend_gui.c:2464 ../src/iop/channelmixer.c:618
 #: ../src/iop/channelmixerrgb.c:4556 ../src/iop/channelmixerrgb.c:4671
-#: ../src/iop/colorbalance.c:1991 ../src/iop/colorequal.c:3089
+#: ../src/iop/colorbalance.c:1991 ../src/iop/colorequal.c:3107
 #: ../src/iop/colorize.c:339 ../src/iop/colorreconstruction.c:1239
 #: ../src/iop/colorzones.c:2643
 msgid "hue"
@@ -3414,7 +3414,7 @@ msgstr "usar filtro guiado"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:479
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:511
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:543
-#: ../src/iop/colorequal.c:2973 ../src/iop/colorzones.c:2497
+#: ../src/iop/colorequal.c:2991 ../src/iop/colorzones.c:2497
 msgid "orange"
 msgstr "laranja"
 
@@ -3426,7 +3426,7 @@ msgstr "laranja"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:547
 #: ../src/common/collection.c:1490 ../src/common/colorlabels.c:382
 #: ../src/develop/lightroom.c:889 ../src/gui/guides.c:732
-#: ../src/iop/colorequal.c:2974 ../src/iop/colorzones.c:2498
+#: ../src/iop/colorequal.c:2992 ../src/iop/colorzones.c:2498
 #: ../src/iop/temperature.c:2003 ../src/libs/collect.c:1950
 #: ../src/libs/filters/colors.c:261
 msgid "yellow"
@@ -3439,7 +3439,7 @@ msgstr "amarelo"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:523
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:555
 #: ../src/common/color_vocabulary.c:298 ../src/gui/guides.c:733
-#: ../src/iop/colorequal.c:2976 ../src/iop/temperature.c:2001
+#: ../src/iop/colorequal.c:2994 ../src/iop/temperature.c:2001
 msgid "cyan"
 msgstr "ciano"
 
@@ -3449,7 +3449,7 @@ msgstr "ciano"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:499
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:531
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:563
-#: ../src/common/color_vocabulary.c:343 ../src/iop/colorequal.c:2978
+#: ../src/common/color_vocabulary.c:343 ../src/iop/colorequal.c:2996
 msgid "lavender"
 msgstr "lavanda"
 
@@ -3460,7 +3460,7 @@ msgstr "lavanda"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:535
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:567
 #: ../src/common/color_vocabulary.c:341 ../src/gui/guides.c:734
-#: ../src/iop/colorequal.c:2979 ../src/iop/colorzones.c:2503
+#: ../src/iop/colorequal.c:2997 ../src/iop/colorzones.c:2503
 #: ../src/iop/temperature.c:1999
 msgid "magenta"
 msgstr "magenta"
@@ -4342,7 +4342,7 @@ msgstr "densidade"
 #: ../src/iop/channelmixer.c:619 ../src/iop/colisa.c:283
 #: ../src/iop/colorbalance.c:2008 ../src/iop/colorbalancergb.c:1838
 #: ../src/iop/colorchecker.c:1479 ../src/iop/colorcontrast.c:82
-#: ../src/iop/colorcorrection.c:264 ../src/iop/colorequal.c:3107
+#: ../src/iop/colorcorrection.c:264 ../src/iop/colorequal.c:3125
 #: ../src/iop/colorize.c:352 ../src/iop/lowpass.c:585 ../src/iop/soften.c:355
 #: ../src/iop/velvia.c:75 ../src/iop/vibrance.c:72 ../src/iop/vignette.c:1053
 msgid "saturation"
@@ -5013,7 +5013,7 @@ msgstr "modo de preenchimento"
 #: ../build/lib/darktable/plugins/introspection_retouch.c:285
 #: ../build/lib/darktable/plugins/introspection_retouch.c:426
 #: ../src/iop/basicadj.c:650 ../src/iop/channelmixerrgb.c:4723
-#: ../src/iop/colisa.c:282 ../src/iop/colorequal.c:3125
+#: ../src/iop/colisa.c:282 ../src/iop/colorequal.c:3143
 #: ../src/iop/lowpass.c:584 ../src/iop/soften.c:359 ../src/iop/vignette.c:1052
 #: ../src/libs/history.c:972
 msgid "brightness"
@@ -5417,7 +5417,7 @@ msgid "Print your images"
 msgstr "Imprimir suas imagens"
 
 #: ../src/bauhaus/bauhaus.c:879 ../src/bauhaus/bauhaus.c:3971
-#: ../src/iop/colorequal.c:3074
+#: ../src/iop/colorequal.c:3092
 msgid "sliders"
 msgstr "controles deslizantes"
 
@@ -5495,8 +5495,8 @@ msgstr "menu flutuante"
 #: ../src/imageio/storage/latex.c:146 ../src/iop/lut3d.c:1558
 #: ../src/libs/collect.c:435 ../src/libs/collect.c:3393
 #: ../src/libs/copy_history.c:122 ../src/libs/export_metadata.c:276
-#: ../src/libs/geotagging.c:939 ../src/libs/import.c:1829
-#: ../src/libs/import.c:1942 ../src/libs/import.c:2041
+#: ../src/libs/geotagging.c:939 ../src/libs/import.c:1860
+#: ../src/libs/import.c:1973 ../src/libs/import.c:2072
 #: ../src/libs/metadata.c:470 ../src/libs/metadata_view.c:1261
 #: ../src/libs/modulegroups.c:3632 ../src/libs/recentcollect.c:234
 #: ../src/libs/styles.c:443 ../src/libs/styles.c:491 ../src/libs/styles.c:584
@@ -6817,7 +6817,7 @@ msgstr[1] "remover pastas vazias?"
 
 #: ../src/common/film.c:368 ../src/gui/preferences.c:827
 #: ../src/gui/styles_dialog.c:587 ../src/libs/geotagging.c:836
-#: ../src/libs/import.c:1878
+#: ../src/libs/import.c:1909
 msgid "name"
 msgstr "nome"
 
@@ -7126,12 +7126,12 @@ msgstr "nomes preservado de arquivo"
 msgid "image `%s' is not available!"
 msgstr "imagem `%s' não disponível!"
 
-#: ../src/common/mipmap_cache.c:1302 ../src/imageio/imageio.c:799
+#: ../src/common/mipmap_cache.c:1302 ../src/imageio/imageio.c:800
 #, c-format
 msgid "unable to load image `%s'!"
 msgstr "não fi possível carregar a imagem `%s'!"
 
-#: ../src/common/mipmap_cache.c:1304 ../src/imageio/imageio.c:801
+#: ../src/common/mipmap_cache.c:1304 ../src/imageio/imageio.c:802
 #, c-format
 msgid "image '%s' not supported"
 msgstr "imagem `%s` não é suportada"
@@ -7717,12 +7717,12 @@ msgstr "_fechar"
 #. setup selection accelerators
 #. action-box
 #: ../src/control/crawler.c:787 ../src/dtgtk/thumbtable.c:2885
-#: ../src/libs/import.c:2064 ../src/libs/select.c:142
+#: ../src/libs/import.c:2095 ../src/libs/select.c:142
 msgid "select all"
 msgstr "selecionar tudo"
 
 #: ../src/control/crawler.c:788 ../src/dtgtk/thumbtable.c:2887
-#: ../src/libs/import.c:2068 ../src/libs/select.c:146
+#: ../src/libs/import.c:2099 ../src/libs/select.c:146
 msgid "select none"
 msgstr "selecionar nenhuma"
 
@@ -8869,7 +8869,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:2693 ../src/develop/blend_gui.c:3614
 #: ../src/iop/basicadj.c:630 ../src/iop/colorbalancergb.c:2011
-#: ../src/iop/colorequal.c:3156 ../src/iop/exposure.c:1136
+#: ../src/iop/colorequal.c:3174 ../src/iop/exposure.c:1136
 #: ../src/iop/exposure.c:1151 ../src/iop/filmic.c:1516 ../src/iop/filmic.c:1529
 #: ../src/iop/filmic.c:1571 ../src/iop/filmicrgb.c:4406
 #: ../src/iop/filmicrgb.c:4417 ../src/iop/filmicrgb.c:4451
@@ -9137,8 +9137,8 @@ msgid "feathering radius"
 msgstr "raio de enevoamento"
 
 #: ../src/develop/blend_gui.c:3667 ../src/develop/blend_gui.c:3679
-#: ../src/iop/colorbalancergb.c:2041 ../src/iop/colorequal.c:3171
-#: ../src/iop/colorequal.c:3202 ../src/iop/diffuse.c:1792
+#: ../src/iop/colorbalancergb.c:2041 ../src/iop/colorequal.c:3189
+#: ../src/iop/colorequal.c:3220 ../src/iop/diffuse.c:1792
 #: ../src/iop/diffuse.c:1802 ../src/iop/retouch.c:2730
 msgid " px"
 msgstr " px"
@@ -13484,7 +13484,7 @@ msgstr "selecione predefinições para importar"
 
 #: ../src/gui/preferences.c:1055 ../src/libs/collect.c:435
 #: ../src/libs/copy_history.c:122 ../src/libs/geotagging.c:940
-#: ../src/libs/import.c:1829 ../src/libs/import.c:1942 ../src/libs/styles.c:584
+#: ../src/libs/import.c:1860 ../src/libs/import.c:1973 ../src/libs/styles.c:584
 msgid "_open"
 msgstr "_abrir"
 
@@ -14371,7 +14371,7 @@ msgstr "gráfico"
 msgid "XCF"
 msgstr "XCF"
 
-#: ../src/imageio/imageio.c:818
+#: ../src/imageio/imageio.c:819
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
@@ -14380,17 +14380,17 @@ msgstr ""
 "falha ao reservar memória para %s, favor reduza as threads usadas para "
 "exportação ou acrescente mais memória."
 
-#: ../src/imageio/imageio.c:820
+#: ../src/imageio/imageio.c:821
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "exporta miniatura"
 
-#: ../src/imageio/imageio.c:820
+#: ../src/imageio/imageio.c:821
 msgctxt "noun"
 msgid "export"
 msgstr "exporta"
 
-#: ../src/imageio/imageio.c:837
+#: ../src/imageio/imageio.c:838
 #, c-format
 msgid "cannot find the style '%s' to apply during export"
 msgstr ""
@@ -14476,7 +14476,7 @@ msgstr[0] "%d/%d ignoradas (não modificada desde a exportação) `%s'"
 msgstr[1] "%d/%d ignorada (não modificada desde a exportação) `%s'"
 
 #: ../src/imageio/storage/disk.c:484 ../src/imageio/storage/email.c:193
-#: ../src/imageio/storage/gallery.c:457 ../src/imageio/storage/latex.c:376
+#: ../src/imageio/storage/gallery.c:457 ../src/imageio/storage/latex.c:377
 #, c-format
 msgid "%d/%d exported to `%s'"
 msgid_plural "%d/%d exported to `%s'"
@@ -15146,7 +15146,7 @@ msgstr ""
 "só muda resultado das abas de luma e croma"
 
 #: ../src/iop/atrous.c:1819 ../src/iop/colorbalancergb.c:1979
-#: ../src/iop/colorequal.c:3036 ../src/iop/colorzones.c:2730
+#: ../src/iop/colorequal.c:3054 ../src/iop/colorzones.c:2730
 #: ../src/iop/denoiseprofile.c:3724 ../src/iop/filmicrgb.c:4373
 #: ../src/iop/lowlight.c:819 ../src/iop/rawdenoise.c:921
 #: ../src/iop/toneequal.c:3392
@@ -16419,7 +16419,7 @@ msgstr ""
 "c: \t%.1f"
 
 #: ../src/iop/channelmixerrgb.c:4500 ../src/iop/clipping.c:2123
-#: ../src/iop/colorbalancergb.c:1792 ../src/iop/colorequal.c:3024
+#: ../src/iop/colorbalancergb.c:1792 ../src/iop/colorequal.c:3042
 #: ../src/iop/filmicrgb.c:4385 ../src/iop/negadoctor.c:843
 #: ../src/iop/toneequal.c:3340 ../src/libs/image.c:498
 #: ../src/views/lighttable.c:1258
@@ -17736,7 +17736,7 @@ msgstr ""
 msgid "set the global saturation"
 msgstr "seleciona a saturação global"
 
-#: ../src/iop/colorequal.c:204 ../src/iop/colorequal.c:2983
+#: ../src/iop/colorequal.c:204 ../src/iop/colorequal.c:3001
 msgid "color equalizer"
 msgstr "equalizador de cores"
 
@@ -17756,29 +17756,29 @@ msgstr "quase-linear, RGB"
 msgid "quasi-linear, RGB, scene-referred"
 msgstr "quase-linear, RGB, relativo à cena"
 
-#: ../src/iop/colorequal.c:2124
+#: ../src/iop/colorequal.c:2142
 msgid "bleach bypass"
 msgstr "ignorar branqueamento"
 
-#: ../src/iop/colorequal.c:2168
+#: ../src/iop/colorequal.c:2186
 msgid "Kodachrome 64 like"
 msgstr "Similar a Kodachrome 64"
 
-#: ../src/iop/colorequal.c:2212
+#: ../src/iop/colorequal.c:2230
 msgid "Kodak Portra 400 like"
 msgstr "Similar a Kodachrome Portra 400"
 
-#: ../src/iop/colorequal.c:2256
+#: ../src/iop/colorequal.c:2274
 msgid "teal & orange"
 msgstr "verde-azulado e laranja"
 
 #. Page OPTIONS
-#: ../src/iop/colorequal.c:2938 ../src/iop/colorequal.c:3148
+#: ../src/iop/colorequal.c:2956 ../src/iop/colorequal.c:3166
 #: ../src/iop/filmicrgb.c:4577
 msgid "options"
 msgstr "opções"
 
-#: ../src/iop/colorequal.c:3037
+#: ../src/iop/colorequal.c:3055
 msgid ""
 "double-click to reset the curve\n"
 "middle click to toggle sliders visibility\n"
@@ -17788,11 +17788,11 @@ msgstr ""
 "clique do meio para alternar a visibilidade dos deslizadores\n"
 "alt+scroll para mudar a página"
 
-#: ../src/iop/colorequal.c:3064
+#: ../src/iop/colorequal.c:3082
 msgid "shift nodes to lower or higher hue"
 msgstr "deslocar nós para matiz mais baixa ou mais alta"
 
-#: ../src/iop/colorequal.c:3067
+#: ../src/iop/colorequal.c:3085
 msgid ""
 "pick hue from image and visualize it\n"
 "ctrl+click to select an area"
@@ -17800,19 +17800,19 @@ msgstr ""
 "obter matiz da imagem e a vizualizar\n"
 "ctrl+clique para selecionar uma área"
 
-#: ../src/iop/colorequal.c:3089
+#: ../src/iop/colorequal.c:3107
 msgid "change hue hue-wise"
 msgstr "muda a matiz de uma cor"
 
-#: ../src/iop/colorequal.c:3107
+#: ../src/iop/colorequal.c:3125
 msgid "change saturation hue-wise"
 msgstr "muda saturação de uma matiz de cor"
 
-#: ../src/iop/colorequal.c:3125
+#: ../src/iop/colorequal.c:3143
 msgid "change brightness hue-wise"
 msgstr "muda luminosidade de uma matiz de cor"
 
-#: ../src/iop/colorequal.c:3158
+#: ../src/iop/colorequal.c:3176
 msgid ""
 "the white level set manually or via the picker restricts brightness "
 "corrections\n"
@@ -17823,16 +17823,16 @@ msgstr ""
 "para ficarem abaixo do nível definido. o default é bom para a maioria das "
 "imagens"
 
-#: ../src/iop/colorequal.c:3163
+#: ../src/iop/colorequal.c:3181
 msgid "change for sharper or softer hue curve"
 msgstr "mudar para curva de matiz mais suave ou mais acentuada"
 
-#: ../src/iop/colorequal.c:3167
+#: ../src/iop/colorequal.c:3185
 msgid "restrict effect by using a guided filter based on hue and saturation"
 msgstr ""
 "restringir o efeito usando um filtro guiado baseado em matiz e saturação"
 
-#: ../src/iop/colorequal.c:3173
+#: ../src/iop/colorequal.c:3191
 msgid ""
 "set radius of the guided filter chroma analysis (hue).\n"
 "increase if there is large local variance of hue or strong chroma noise."
@@ -17840,7 +17840,7 @@ msgstr ""
 "definir raio da análise de croma por filtro guiado (matiz).\n"
 "aumente se há grande variância local de matiz ou forte ruído de croma."
 
-#: ../src/iop/colorequal.c:3184
+#: ../src/iop/colorequal.c:3202
 msgid ""
 "visualize weighting function on changed output and view weighting curve.\n"
 "red shows possibly changed data, blueish parts will not be changed."
@@ -17849,7 +17849,7 @@ msgstr ""
 "vermelho mostra dados possivelmente modificados, partes azuladas não serão "
 "modificadas."
 
-#: ../src/iop/colorequal.c:3188
+#: ../src/iop/colorequal.c:3206
 msgid ""
 "set saturation threshold for the guided filter.\n"
 " - decrease to allow changes in areas with low chromaticity\n"
@@ -17862,7 +17862,7 @@ msgstr ""
 "   aumenta contraste e evita mudanças de brilho em áreas com baixa "
 "cromaticidade."
 
-#: ../src/iop/colorequal.c:3196
+#: ../src/iop/colorequal.c:3214
 msgid ""
 "set saturation contrast for the guided filter.\n"
 " - increase to favor sharp transitions between saturations leading to higher "
@@ -17874,11 +17874,11 @@ msgstr ""
 "maior contraste\n"
 " - diminua para transições mais suaves"
 
-#: ../src/iop/colorequal.c:3203
+#: ../src/iop/colorequal.c:3221
 msgid "set radius of applied parameters for the guided filter"
 msgstr "definir o raio de parâmetros aplicados para o filtro guiado"
 
-#: ../src/iop/colorequal.c:3210
+#: ../src/iop/colorequal.c:3228
 msgid ""
 "visualize changed output for the selected tab.\n"
 "red shows increased data, blue decreased."
@@ -25200,24 +25200,24 @@ msgstr "define a seleção como imagens coloridas"
 msgid "duplicate virgin"
 msgstr "duplicar imagem sem desenvolvimento"
 
-#: ../src/libs/import.c:283
+#: ../src/libs/import.c:284
 #, c-format
 msgid "device \"%s\" connected on port \"%s\"."
 msgstr "dispositivo \"%s\" conectado na porta \"%s\"."
 
-#: ../src/libs/import.c:295 ../src/libs/import.c:370 ../src/libs/import.c:2030
+#: ../src/libs/import.c:296 ../src/libs/import.c:371 ../src/libs/import.c:2061
 msgid "copy & import from camera"
 msgstr "copiar & importar da câmera"
 
-#: ../src/libs/import.c:309 ../src/libs/import.c:374
+#: ../src/libs/import.c:310 ../src/libs/import.c:375
 msgid "tethered shoot"
 msgstr "acesso remoto"
 
-#: ../src/libs/import.c:319 ../src/libs/import.c:376
+#: ../src/libs/import.c:320 ../src/libs/import.c:377
 msgid "unmount camera"
 msgstr "desmontar câmera"
 
-#: ../src/libs/import.c:344
+#: ../src/libs/import.c:345
 msgid ""
 "camera is locked by another application\n"
 "make sure it is no longer mounted\n"
@@ -25227,113 +25227,107 @@ msgstr ""
 "certifique-se de que ela não está mais montada no computador\n"
 "ou feche a aplicação que a travou"
 
-#: ../src/libs/import.c:349
+#: ../src/libs/import.c:350
 msgid "tethering and importing is disabled for this camera"
 msgstr "o acesso remoto e a importação foram desabilitados para esta câmera"
 
-#: ../src/libs/import.c:351 ../src/libs/import.c:372
+#: ../src/libs/import.c:352 ../src/libs/import.c:373
 msgid "mount camera"
 msgstr "montar câmera"
 
-#: ../src/libs/import.c:997
+#: ../src/libs/import.c:998
 #, c-format
 msgid "%d image out of %d selected"
 msgid_plural "%d images out of %d selected"
 msgstr[0] "%d imagem de %d selecionada"
 msgstr[1] "%d imagens de %d selecionadas"
 
-#: ../src/libs/import.c:1312
-msgid "you can't delete the selected place"
-msgstr "você não pode remover o local selecionado"
-
-#: ../src/libs/import.c:1441
+#: ../src/libs/import.c:1461
 msgid "choose the root of the folder tree below"
 msgstr "selecione a raiz ou a árvore de pastas abaixo"
 
-#: ../src/libs/import.c:1444
+#: ../src/libs/import.c:1464
 msgid "places"
 msgstr "locais"
 
-#: ../src/libs/import.c:1452
-msgid "restore all default places you have removed by right-click"
-msgstr "restaurar todos os lugares padrão que você removeu com clique-direito"
+#: ../src/libs/import.c:1472
+msgid "restore all default places you have removed"
+msgstr "restaurar todos os lugares padrão que você removeu"
 
-#: ../src/libs/import.c:1459
-msgid ""
-"add a custom place\n"
-"\n"
-"right-click on a place to remove it"
-msgstr ""
-"adicione um lugar customizado\n"
-"\n"
-"clique-direito em um lugar para removê-lo"
+#: ../src/libs/import.c:1479
+msgid "remove the selected custom place"
+msgstr "excluir o lugar personalizado selecionado"
 
-#: ../src/libs/import.c:1467
+#: ../src/libs/import.c:1486
+msgid "add a custom place"
+msgstr "adicionar um lugar personalizado"
+
+#: ../src/libs/import.c:1494
 msgid "you can add custom places using the plus icon"
 msgstr "você pode adicionar lugares customizados usando o ícone \"mais\""
 
-#: ../src/libs/import.c:1499
+#: ../src/libs/import.c:1526
 msgid "select a folder to see the content"
 msgstr "selecione uma pasta para ver o conteúdo"
 
-#: ../src/libs/import.c:1502
+#: ../src/libs/import.c:1529
 msgid "folders"
 msgstr "pastas"
 
-#: ../src/libs/import.c:1578
+#: ../src/libs/import.c:1605
 msgid "home"
 msgstr "home"
 
-#: ../src/libs/import.c:1592
+#: ../src/libs/import.c:1619
 msgid "pictures"
 msgstr "imagens"
 
-#: ../src/libs/import.c:1875
+#: ../src/libs/import.c:1906
 msgid "mark already imported pictures"
 msgstr "marcar imagens já importadas"
 
-#: ../src/libs/import.c:1889
+#: ../src/libs/import.c:1920
 msgid "modified"
 msgstr "modificado"
 
-#: ../src/libs/import.c:1896
+#: ../src/libs/import.c:1927
 msgid "file 'modified date/time', may be different from 'Exif date/time'"
 msgstr ""
 "data/hora de modificação do arquivo, pode ser diferente de data/hora Exif"
 
-#: ../src/libs/import.c:1908
+#: ../src/libs/import.c:1939
 msgid "show/hide thumbnails"
 msgstr "mostrar/esconder miniaturas"
 
-#: ../src/libs/import.c:1982
+#: ../src/libs/import.c:2013
 msgid "naming rules"
 msgstr "regras para nomes"
 
-#: ../src/libs/import.c:2028
+#: ../src/libs/import.c:2059
 msgid "add to library"
 msgstr "adicionar à biblioteca"
 
-#: ../src/libs/import.c:2029
+#: ../src/libs/import.c:2060
 msgid "copy & import"
 msgstr "copiar & importar"
 
-#: ../src/libs/import.c:2072
+#: ../src/libs/import.c:2103
 msgid "select new"
 msgstr "selecionar novas"
 
-#: ../src/libs/import.c:2123
+#: ../src/libs/import.c:2154
 msgid "please wait while prefetching the list of images from camera..."
 msgstr "por favor aguarde durante pre-busca da lista de imagens da câmera..."
 
-#: ../src/libs/import.c:2273
+#: ../src/libs/import.c:2304
 msgid "invalid override date/time format"
 msgstr "formato inválido para sobrescrever data/hora"
 
-#: ../src/libs/import.c:2341
+#: ../src/libs/import.c:2372
 msgid "import base directory"
 msgstr "diretório base para importar"
 
-#: ../src/libs/import.c:2342
+#: ../src/libs/import.c:2373
 msgid ""
 "before copying images to the darktable base directory make sure it is "
 "defined as you prefer.\n"
@@ -25349,27 +25343,27 @@ msgstr ""
 "veja preferências do darktable -> importar.\n"
 "verifique e possivelmente corrija o 'padrão de nomeação de diretório base'"
 
-#: ../src/libs/import.c:2346
+#: ../src/libs/import.c:2377
 msgid "_come back & check"
 msgstr "_voltar & verificar"
 
-#: ../src/libs/import.c:2346
+#: ../src/libs/import.c:2377
 msgid "_understood & done"
 msgstr "_entendido & feito"
 
-#: ../src/libs/import.c:2412
+#: ../src/libs/import.c:2443
 msgid "add to library..."
 msgstr "adicionar à biblioteca..."
 
-#: ../src/libs/import.c:2414
+#: ../src/libs/import.c:2445
 msgid "add existing images to the library"
 msgstr "adiciona imagens existentes à biblioteca de imagens"
 
-#: ../src/libs/import.c:2421
+#: ../src/libs/import.c:2452
 msgid "copy & import..."
 msgstr "copiar & importar..."
 
-#: ../src/libs/import.c:2423
+#: ../src/libs/import.c:2454
 msgid ""
 "copy and optionally rename images before adding them to the library\n"
 "patterns can be defined to rename the images and specify the destination "
@@ -25379,7 +25373,7 @@ msgstr ""
 "padrões podem ser definidos para renomear as imagens e especificar pastas\n"
 "de destino"
 
-#: ../src/libs/import.c:2448
+#: ../src/libs/import.c:2479
 msgid "parameters"
 msgstr "parâmetros"
 
@@ -28595,6 +28589,18 @@ msgstr "mudar para uma janela clássica que ficará aberta após soltar a tecla.
 #: ../src/views/view.c:1526
 msgid "mouse actions"
 msgstr "ações com mouse"
+
+#~ msgid "you can't delete the selected place"
+#~ msgstr "você não pode remover o local selecionado"
+
+#~ msgid ""
+#~ "add a custom place\n"
+#~ "\n"
+#~ "right-click on a place to remove it"
+#~ msgstr ""
+#~ "adicione um lugar customizado\n"
+#~ "\n"
+#~ "clique-direito em um lugar para removê-lo"
 
 #~ msgid "hide the history button and show a specific module instead"
 #~ msgstr "ocultar o botão de histórico e mostrar um módulo específico"
