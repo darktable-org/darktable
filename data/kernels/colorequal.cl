@@ -264,13 +264,15 @@ __kernel void apply_guided(global float2 *uv,
                       a[k].z * uv[k].x + a[k].w * uv[k].y + b[k].y };
 
   corrections[k].y = _interpolatef(_get_satweight(saturation[k] - sat_shift, weights), CV.x, 1.0f);
-  b_corrections[k] = _interpolatef(scharr[k] * _get_satweight(saturation[k] - bright_shift, weights), CV.y, 0.0f);
+  const float gradient_weight = 1.0f - clamp(scharr[k], 0.0f, 1.0f);
+  b_corrections[k] = _interpolatef(gradient_weight * _get_satweight(saturation[k] - bright_shift, weights), CV.y, 0.0f);
 }
 
 __kernel void sample_input(__read_only image2d_t dev_in,
                            global float *saturation,
                            global float *lum,
                            global float2 *uv,
+                           global float4 *pix_out,
                            global float4 *mat,
                            const int width,
                            const int height)
@@ -294,6 +296,7 @@ __kernel void sample_input(__read_only image2d_t dev_in,
 
   lum[k] = Y_to_dt_UCS_L_star(xyY.z);
   uv[k] = xyY_to_dt_UCS_UV(xyY);
+  pix_out[k].w = pix_in.w;
 }
 
 __kernel void write_output(__write_only image2d_t dev_out,
@@ -375,11 +378,10 @@ __kernel void write_visual (__write_only image2d_t dev_out,
 
   if(mode == BRIGHTNESS)
   {
-    const float gv = 1.0f - scharr[k];
-    if(gv > 0.2f)
+    if(scharr[k] > 0.1f)
     {
       pout.x = pout.z = 0.0f;
-      pout.y = gv;
+      pout.y = scharr[k];
     }
   }
   write_imagef(dev_out, (int2)(col, row), pout);
@@ -394,8 +396,8 @@ __kernel void draw_weight(__write_only image2d_t dev_out,
                           const int height)
 {
   const int col = get_global_id(0);
-  const int y = get_global_id(1);
-  if(col >= width || y > 0) return;
+
+  if(col >= width) return;
 
   const float eps = 0.5f / (float)height;
   const float shift = (mode == SATURATION_GRAD) ? sat_shift : bright_shift;
@@ -447,7 +449,7 @@ __kernel void process_data(global float2 *uv,
     const int kk = mad24(clamp(row, 1, height - 2), width, clamp(col, 1, width - 2));
 
     const float kscharr = fmax(0.0f, _scharr_gradient(saturation, kk, width) - 0.02f);
-    Lscharr[k] = clamp(1.0f - gradient_amp * kscharr * kscharr, 0.0f, 1.0f);
+    Lscharr[k] = gradient_amp * kscharr * kscharr;
   }
 
   if(JCH.y > NORM_MIN)
