@@ -298,6 +298,8 @@ void darktable_exit_screen_create(GtkWindow *parent_window, gboolean force)
   // times for the exit window to actually be fully displayed
   for(int i = 0; i < 5; i++)
     dt_gui_process_events();
+  gtk_window_set_keep_above(GTK_WINDOW(exit_screen), FALSE); // allow it to be hidden by other windows
+  dt_gui_process_events();
 }
 
 void darktable_exit_screen_destroy()

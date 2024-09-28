@@ -1981,10 +1981,12 @@ void dt_cleanup()
   if(perform_snapshot)
   {
     snaps_to_remove = dt_database_snaps_to_remove(darktable.db);
+    if(init_gui) dt_gui_process_events();
   }
 
 #ifdef HAVE_PRINT
   dt_printers_abort_discovery();
+  if(init_gui) dt_gui_process_events();
 #endif
 
 #ifdef USE_LUA
@@ -1997,11 +1999,10 @@ void dt_cleanup()
   {
     // hide main window and do rest of the cleanup in the background
     gtk_widget_hide(dt_ui_main_window(darktable.gui->ui));
+    dt_gui_process_events();
 
     dt_ctl_switch_mode_to("");
     dt_dbus_destroy(darktable.dbus);
-
-    dt_control_shutdown(darktable.control);
 
     dt_lib_cleanup(darktable.lib);
     free(darktable.lib);
@@ -2011,23 +2012,27 @@ void dt_cleanup()
 #endif
   dt_view_manager_cleanup(darktable.view_manager);
   free(darktable.view_manager);
-  if(init_gui)
-  {
-    dt_imageio_cleanup(darktable.imageio);
-    free(darktable.imageio);
-    free(darktable.gui);
-  }
 
+  if(init_gui) dt_gui_process_events();
   dt_image_cache_cleanup(darktable.image_cache);
   free(darktable.image_cache);
+  if(init_gui) dt_gui_process_events();
   dt_mipmap_cache_cleanup(darktable.mipmap_cache);
   free(darktable.mipmap_cache);
   if(init_gui)
   {
+    dt_gui_process_events();
+    dt_imageio_cleanup(darktable.imageio);
+    free(darktable.imageio);
+    dt_control_shutdown(darktable.control);
     dt_control_cleanup(darktable.control);
     free(darktable.control);
     dt_undo_cleanup(darktable.undo);
+    free(darktable.gui);
+    darktable.gui = NULL;
   }
+  // we can no longer call dt_gui_process_events after this point, as that will cause a segfault
+
   dt_colorspaces_cleanup(darktable.color_profiles);
   dt_conf_cleanup(darktable.conf);
   free(darktable.conf);
@@ -2086,6 +2091,7 @@ void dt_cleanup()
   {
     g_strfreev(snaps_to_remove);
   }
+
   dt_database_destroy(darktable.db);
 
   if(init_gui)
