@@ -273,16 +273,17 @@ highlights_4f_clip (read_only image2d_t in, write_only image2d_t out, const int 
 
 kernel void
 highlights_1f_clip (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                    const float clip, const int rx, const int ry, const int filters)
+                    global float *clips, const int rx, const int ry, const int filters, global const unsigned char (*const xtrans)[6])
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
+  const int color = (filters == 9u) ? FCxtrans(y, x, xtrans) : FC(y, x, filters);
 
   float pixel = read_imagef(in, sampleri, (int2)(x, y)).x;
 
-  pixel = fmin(clip, pixel);
+  pixel = fmin(clips[color], pixel);
   write_imagef (out, (int2)(x, y), pixel);
 }
 
