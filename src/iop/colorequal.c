@@ -356,15 +356,15 @@ void tiling_callback(struct dt_iop_module_t *self,
   const int maxradius = MAX(data->chroma_size, data->param_size);
   tiling->overlap = 16 + maxradius; // safe feathering
 
-  tiling->factor = 4.0f;  // in/out buffers plus mainloop incl gaussian
+  tiling->factor = 4.5f;  // in/out buffers plus mainloop incl gaussian
   if(data->use_filter)
   {
     // calculate relative size of downsampled buffers
-    const float sigma = (float)maxradius * roi_in->scale;
+    const float sigma = (float)maxradius * MAX(0.5f, roi_out->scale);
     const float scaling = _get_scaling(sigma);
     tiling->factor += scaling == 1.0f
-                      ? 3.5f
-                      : (1.5f + 4.0f / sqrf(scaling));
+                      ? 3.0f
+                      : (1.0f + 4.0f / sqrf(scaling));
   }
 }
 
@@ -439,8 +439,8 @@ int legacy_params(dt_iop_module_t *self,
 }
 
 void _mean_gaussian(float *const buf,
-                    const size_t width,
-                    const size_t height,
+                    const int width,
+                    const int height,
                     const uint32_t ch,
                     const float sigma)
 {
@@ -448,7 +448,7 @@ void _mean_gaussian(float *const buf,
   const float range = 1.0e9;
   const dt_aligned_pixel_t max = {range, range, range, range};
   const dt_aligned_pixel_t min = {-range, -range, -range, -range};
-  dt_gaussian_t *g = dt_gaussian_init(width, height, ch, max, min, sigma, 0);
+  dt_gaussian_t *g = dt_gaussian_init(width, height, ch, max, min, sigma, DT_IOP_GAUSSIAN_ZERO);
   if(!g) return;
   if(ch == 4)
     dt_gaussian_blur_4c(g, buf, buf);
@@ -470,8 +470,12 @@ static inline float _deg_to_rad(const float angle)
    and do linear interpolation at runtime. Avoids banding effects and allows a sharp transition.
 */
 static float satweights[2 * SATSIZE + 1];
+static float lastcontrast = NAN;
 static void _init_satweights(const float contrast)
 {
+  if(lastcontrast == contrast)
+    return;
+  lastcontrast = contrast;
   const double factor = -60.0 - 40.0 * (double)contrast;
   for(int i = -SATSIZE; i < SATSIZE + 1; i++)
   {
@@ -919,10 +923,57 @@ static void _guide_with_chromaticity(float *const restrict UV,
     const float cv[2] = { a[4 * k + 0] * uv[0] + a[4 * k + 1] * uv[1] + b[2 * k + 0],
                           a[4 * k + 2] * uv[0] + a[4 * k + 3] * uv[1] + b[2 * k + 1] };
     corrections[2 * k + 1] = interpolatef(_get_satweight(saturation[k] - sat_shift), cv[0], 1.0f);
-    b_corrections[k] = interpolatef(gradients[k] * _get_satweight(saturation[k] - bright_shift), cv[1], 0.0f);
+    const float gradient_weight = 1.0f - CLIP(gradients[k]);
+    b_corrections[k] = interpolatef(gradient_weight * _get_satweight(saturation[k] - bright_shift), cv[1], 0.0f);
   }
   dt_free_align(a);
   dt_free_align(b);
+}
+
+static void _prepare_process(const float roi_scale,
+                             dt_iop_colorequal_data_t *d,
+
+                             // parameters to be setup
+                             float *white,
+                             float *sat_shift,
+                             float *max_brightness_shift,
+                             float *corr_max_brightness_shift,
+                             float *bright_shift,
+                             float *gradient_amp,
+                             float *hue_sigma,
+                             float *par_sigma,
+                             float *sat_sigma,
+                             float *scharr_sigma)
+{
+  *white = Y_to_dt_UCS_L_star(d->white_level);
+
+  /* We use the logistic weighting function to diminish effects in the guided filter for locations
+     with low chromacity. The logistic function is precalculated for a inflection point of zero
+     so we have to shift the input value (saturation) for both brightness and saturation corrections.
+     The default can be shifted by the threshold slider.
+     Depending on the maximum for the eight brightness sliders we increase the brightness shift, the value
+     of 0.01 has been found by a lot of testing to be safe.
+     As increased param_size leads to propagation of brightness into achromatic parts we have to correct for that too.
+  */
+  *sat_shift = d->threshold;
+  *max_brightness_shift = 0.01f * d->max_brightness;
+  *corr_max_brightness_shift = *max_brightness_shift * MIN(5.0f, sqrtf(d->param_size));
+  *bright_shift = *sat_shift + *corr_max_brightness_shift;
+
+  /* We want information about sharp transitions of saturation for halo suppression.
+     As the scharr operator is faster and more stable for roi->scale changes we use
+       it instead of local variance.
+     We reduce chroma noise effects by using a minimum threshold and by sqaring the gradient.
+     The gradient_amp corrects a gradient of 0.5 to be 1.0 and takes care
+       of maximum changed brightness and roi scale.
+  */
+  *gradient_amp = 4.0f * sqrtf(d->max_brightness) * sqrf(roi_scale);
+  *hue_sigma = 0.5f * d->chroma_size * roi_scale;
+  *par_sigma = 0.5f * d->param_size * roi_scale;
+  *sat_sigma = MAX(0.5f, roi_scale);
+  *scharr_sigma = roi_scale;
+
+  _init_satweights(d->contrast);
 }
 
 void process(struct dt_iop_module_t *self,
@@ -942,13 +993,13 @@ void process(struct dt_iop_module_t *self,
   float *restrict UV = NULL;
   float *restrict corrections = NULL;
   float *restrict b_corrections = NULL;
-  float *restrict tmp = NULL;
+  float *restrict Lscharr = NULL;
   float *restrict saturation = NULL;
   if(!dt_iop_alloc_image_buffers(self, roi_in, roi_out,
                                  2/*ch per pix*/ | DT_IMGSZ_OUTPUT | DT_IMGSZ_FULL, &UV,
                                  2               | DT_IMGSZ_OUTPUT | DT_IMGSZ_FULL, &corrections,
                                  1               | DT_IMGSZ_OUTPUT | DT_IMGSZ_FULL, &b_corrections,
-                                 1               | DT_IMGSZ_OUTPUT | DT_IMGSZ_FULL, &tmp,
+                                 1               | DT_IMGSZ_OUTPUT | DT_IMGSZ_FULL, &Lscharr,
                                  1               | DT_IMGSZ_OUTPUT | DT_IMGSZ_FULL, &saturation,
                                  0/*end of list*/))
   {
@@ -969,8 +1020,6 @@ void process(struct dt_iop_module_t *self,
   const float *const restrict in = (float*)i;
   float *const restrict out = (float*)o;
 
-  _init_satweights(d->contrast);
-
   // STEP 0: prepare the RGB <-> XYZ D65 matrices
   // see colorbalancergb.c process() for the details, it's exactly the same
   const struct dt_iop_order_iccprofile_info_t *const work_profile =
@@ -982,31 +1031,9 @@ void process(struct dt_iop_module_t *self,
   dt_colormatrix_mul(input_matrix, XYZ_D50_to_D65_CAT16, work_profile->matrix_in);
   dt_colormatrix_mul(output_matrix, work_profile->matrix_out, XYZ_D65_to_D50_CAT16);
 
-  const float white = Y_to_dt_UCS_L_star(d->white_level);
-
-  /* We use the logistic weighting function to diminish effects in the guided filter for locations
-     with low chromacity. The logistic function is precalculated for a inflection point of zero
-     so we have to shift the input value (saturation) for both brightness and saturation corrections.
-     The default can be shifted by the threshold slider.
-     Depending on the maximum for the eight brightness sliders we increase the brightness shift, the value
-     of 0.01 has been found by a lot of testing to be safe.
-     As increased param_size leads to propagation of brightness into achromatic parts we have to correct for that too.
-  */
-  const float sat_shift = d->threshold;
-  const float max_brightness_shift = 0.01f * d->max_brightness;
-  const float corr_max_brightness_shift = max_brightness_shift * MIN(5.0f, sqrtf(d->param_size));
-  const float bright_shift = sat_shift + corr_max_brightness_shift;
-
-  /* We want information about sharp transitions of saturation for halo suppression.
-     As the scharr operator is faster and more stable for roi->scale changes we use
-       it instead of local variance.
-     We reduce chroma noise effects by using a minimum threshold of 0.02 and by sqaring the gradient.
-     The gradient_amp corrects a gradient of 0.5 to be 1.0 and takes care
-       of maximum changed brightness and roi scale.
-  */
-  const float gradient_amp = 4.0f * sqrtf(d->max_brightness) * sqrf(roi_out->scale);
-  const float hue_sigma = 0.5f * d->chroma_size * roi_out->scale;
-  const float par_sigma = 0.5f * d->param_size * roi_out->scale;
+  float white, sat_shift, max_brightness_shift, corr_max_brightness_shift, bright_shift, gradient_amp, hue_sigma, par_sigma, sat_sigma, scharr_sigma;
+  _prepare_process(roi_out->scale, d,
+    &white, &sat_shift, &max_brightness_shift, &corr_max_brightness_shift, &bright_shift, &gradient_amp, &hue_sigma, &par_sigma, &sat_sigma, &scharr_sigma);
 
   // STEP 1: convert image from RGB to darktable UCS LUV and calc saturation
   DT_OMP_FOR()
@@ -1029,11 +1056,11 @@ void process(struct dt_iop_module_t *self,
     saturation[k] = (dmax > NORM_MIN && delta > NORM_MIN) ? delta / dmax : 0.0f;
 
     xyY_to_dt_UCS_UV(xyY, uv);
-    tmp[k] = Y_to_dt_UCS_L_star(xyY[2]);
+    Lscharr[k] = Y_to_dt_UCS_L_star(xyY[2]);
   }
 
   // We blur the saturation slightly depending on roi_scale
-  _mean_gaussian(saturation, width, height, 1, roi_out->scale);
+  _mean_gaussian(saturation, width, height, 1, sat_sigma);
 
   // STEP 2 : smoothen UV to avoid discontinuities in hue
   if(d->use_filter && !run_fast)
@@ -1055,7 +1082,7 @@ void process(struct dt_iop_module_t *self,
 
       // Finish the conversion to dt UCS JCH then HSB
       dt_aligned_pixel_t JCH = { 0.0f, 0.0f, 0.0f, 0.0f };
-      dt_UCS_LUV_to_JCH(tmp[k], white, uv, JCH);
+      dt_UCS_LUV_to_JCH(Lscharr[k], white, uv, JCH);
       dt_UCS_JCH_to_HSB(JCH, pix_out);
 
       // As tmp[k] is not used any longer as L(uminance) we re-use it for the saturation gradient
@@ -1064,7 +1091,7 @@ void process(struct dt_iop_module_t *self,
         const int vrow = MIN(height - 2, MAX(1, row));
         const int vcol = MIN(width - 2, MAX(1, col));
         const size_t kk = vrow * width + vcol;
-        tmp[k] = CLIP(1.0f - gradient_amp * sqrf(MAX(0.0f, scharr_gradient(&saturation[kk], width) - 0.02f)));
+        Lscharr[k] = gradient_amp * sqrf(MAX(0.0f, scharr_gradient(&saturation[kk], width) - 0.02f));
       }
 
       // Get the boosts - if chroma = 0, we have a neutral grey so set everything to 0
@@ -1091,11 +1118,11 @@ void process(struct dt_iop_module_t *self,
   if(d->use_filter && !run_fast)
   {
     // blur the saturation gradients
-    _mean_gaussian(tmp, width, height, 1, roi_out->scale);
+    _mean_gaussian(Lscharr, width, height, 1, scharr_sigma);
 
     // STEP 4: apply a guided filter on the corrections, guided with UV chromaticity, to ensure spatially-contiguous corrections.
     // Even if the hue is not perfectly constant this will help avoiding chroma noise.
-    _guide_with_chromaticity(UV, corrections, saturation, b_corrections, tmp, width, height, par_sigma, d->param_feathering, bright_shift, sat_shift);
+    _guide_with_chromaticity(UV, corrections, saturation, b_corrections, Lscharr, width, height, par_sigma, d->param_feathering, bright_shift, sat_shift);
   }
 
   if(mask_mode == 0)
@@ -1162,11 +1189,10 @@ void process(struct dt_iop_module_t *self,
       pix_out[1] = MAX(0.0f, val - corr);
       pix_out[2] = MAX(0.0f, neg ? val : val - corr);
 
-      const float gv = 1.0f - tmp[k];
-      if(mode == BRIGHTNESS && gv > 0.2f)
+      if(mode == BRIGHTNESS && Lscharr[k] > 0.1f)
       {
         pix_out[0] = pix_out[2] = 0.0f;
-        pix_out[1] = gv;
+        pix_out[1] = Lscharr[k];
       }
     }
 
@@ -1192,7 +1218,7 @@ void process(struct dt_iop_module_t *self,
   dt_free_align(b_corrections);
   dt_free_align(saturation);
   dt_free_align(UV);
-  dt_free_align(tmp);
+  dt_free_align(Lscharr);
 }
 
 #if HAVE_OPENCL
@@ -1208,7 +1234,7 @@ int _mean_gaussian_cl(const int devid,
   const dt_aligned_pixel_t max = {range, range, range, range};
   const dt_aligned_pixel_t min = {-range, -range, -range, -range};
 
-  dt_gaussian_cl_t *g = dt_gaussian_init_cl(devid, width, height, ch, max, min, sigma, 0);
+  dt_gaussian_cl_t *g = dt_gaussian_init_cl(devid, width, height, ch, max, min, sigma, DT_IOP_GAUSSIAN_ZERO);
   if(!g) return DT_OPENCL_PROCESS_CL;
 
   cl_int err = dt_gaussian_blur_cl_buffer(g, image, image);
@@ -1551,17 +1577,9 @@ int process_cl(struct dt_iop_module_t *self,
   const int guiding = d->use_filter;
   const gboolean run_fast = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
 
-  const float white = Y_to_dt_UCS_L_star(d->white_level);
-  const float sat_shift = d->threshold;
-  const float max_brightness_shift = 0.01f * d->max_brightness;
-  const float corr_max_brightness_shift = max_brightness_shift * MIN(5.0f, sqrtf(d->param_size));
-  const float bright_shift = sat_shift + corr_max_brightness_shift;
-
-  const float gradient_amp = 4.0f * sqrtf(d->max_brightness) * sqrf(roi_out->scale);
-  const float hue_sigma = 0.5f * d->chroma_size * roi_out->scale;
-  const float par_sigma = 0.5f * d->param_size * roi_out->scale;
-
-  _init_satweights(d->contrast);
+  float white, sat_shift, max_brightness_shift, corr_max_brightness_shift, bright_shift, gradient_amp, hue_sigma, par_sigma, sat_sigma, scharr_sigma;
+  _prepare_process(roi_out->scale, d,
+    &white, &sat_shift, &max_brightness_shift, &corr_max_brightness_shift, &bright_shift, &gradient_amp, &hue_sigma, &par_sigma, &sat_sigma, &scharr_sigma);
 
   dt_colormatrix_t input_matrix;
   dt_colormatrix_t output_matrix;
@@ -1590,11 +1608,11 @@ int process_cl(struct dt_iop_module_t *self,
     goto error;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_sample_input, width, height,
-          CLARG(dev_in), CLARG(saturation), CLARG(Lscharr), CLARG(UV),
+          CLARG(dev_in), CLARG(saturation), CLARG(Lscharr), CLARG(UV), CLARG(pixout),
           CLARG(input_matrix_cl), CLARG(width),  CLARG(height));
   if(err != CL_SUCCESS) goto error;
 
-  err = _mean_gaussian_cl(devid, saturation, width, height, 1, roi_out->scale);
+  err = _mean_gaussian_cl(devid, saturation, width, height, 1, sat_sigma);
   if(err != CL_SUCCESS) goto error;
 
   // STEP 2 : smoothen UV to avoid discontinuities in hue
@@ -1614,7 +1632,7 @@ int process_cl(struct dt_iop_module_t *self,
 
   if(guiding && !run_fast)
   {
-    err = _mean_gaussian_cl(devid, Lscharr, width, height, 1, roi_out->scale);
+    err = _mean_gaussian_cl(devid, Lscharr, width, height, 1, scharr_sigma);
     if(err != CL_SUCCESS) goto error;
 
     err = _guide_with_chromaticity_cl(devid, gd, UV, corrections, saturation, b_corrections, Lscharr, weight, width, height, par_sigma, d->param_feathering, bright_shift, sat_shift);
@@ -1641,7 +1659,7 @@ int process_cl(struct dt_iop_module_t *self,
 
     if(mode == BRIGHTNESS_GRAD || mode == SATURATION_GRAD)
     {
-      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_draw_weight, width, 1,
+      err = dt_opencl_enqueue_kernel_1d_args(devid, gd->ce_draw_weight, width,
           CLARG(dev_out), CLARG(weight), CLARG(bright_shift), CLARG(sat_shift), CLARG(mode), CLARG(width), CLARG(height));
     }
   }
