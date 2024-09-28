@@ -32,6 +32,8 @@
 // number of featured images from which to randomly select when USE_SPLASHSCREEN_IMAGE not defined
 #define MAX_IMAGES 4
 
+#define ICON_SIZE 250
+
 #ifdef USE_FEATURED_IMAGE
 #define PROGNAME_SIZE 300
 #else
@@ -49,21 +51,34 @@ static GtkWidget *_get_logo()
 {
   // get the darktable logo, including seasonal variants as appropriate
   const dt_logo_season_t season = dt_util_get_logo_season();
-  gchar *logo_name;
-  if(season != DT_LOGO_SEASON_NONE)
-    logo_name = g_strdup_printf("darktable-%d",(int)season);
+
+  GtkWidget *logo = NULL;
+
+  gchar *image_file =
+    season == DT_LOGO_SEASON_NONE
+    ? g_strdup_printf("%s/../icons/hicolor/scalable/apps/darktable.svg",
+                      darktable.datadir)
+    : g_strdup_printf("%s/../icons/hicolor/scalable/apps/darktable-%d.svg",
+                      darktable.datadir,
+                      season);
+  GdkPixbuf *logo_image =
+    gdk_pixbuf_new_from_file_at_size(image_file, ICON_SIZE, -1, NULL);
+  g_free(image_file);
+  if(logo_image)
+  {
+    logo = gtk_image_new_from_pixbuf(logo_image);
+    g_object_unref(logo_image);
+  }
   else
-    logo_name = g_strdup("darktable");
-  GtkWidget *logo = gtk_image_new_from_icon_name(logo_name, GTK_ICON_SIZE_DIALOG);
-  g_free(logo_name);
-  gtk_widget_set_name(GTK_WIDGET(logo),"splashscreen-logo");
+    logo = GTK_WIDGET(gtk_label_new("logo"));
+  gtk_widget_set_name(GTK_WIDGET(logo), "splashscreen-logo");
   return logo;
 }
 
 static GtkWidget *_get_program_name()
-{   
+{
   // get the darktable name in special font
-  GtkWidget *program_name;
+  GtkWidget *program_name = NULL;
   gchar *image_file = g_strdup_printf("%s/pixmaps/darktable.svg", darktable.datadir);
   GdkPixbuf *prog_name_image = gdk_pixbuf_new_from_file_at_size(image_file, PROGNAME_SIZE, -1, NULL);
   g_free(image_file);
