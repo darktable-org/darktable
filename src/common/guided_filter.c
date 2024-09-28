@@ -328,23 +328,14 @@ static int _cl_box_mean(const int devid,
                         cl_mem out,
                         cl_mem temp)
 {
-  const int kernel_x = darktable.opencl->guided_filter->kernel_guided_filter_box_mean_x;
-  const int kernel_y = darktable.opencl->guided_filter->kernel_guided_filter_box_mean_y;
-
-  const size_t sizes_x[] = { ROUNDUPDHT(height, devid), 1, 1 };
-  const size_t sizes_y[] = { ROUNDUPDWD(width, devid), 1, 1 };
-
-  dt_opencl_set_kernel_args(devid, kernel_x, 0,
+  const cl_int err = dt_opencl_enqueue_kernel_1d_args(devid, darktable.opencl->guided_filter->kernel_guided_filter_box_mean_x, height,
                               CLARG(width), CLARG(height),
                               CLARG(in), CLARG(temp), CLARG(w));
-
-  const cl_int err = dt_opencl_enqueue_kernel_ndim_with_local(devid, kernel_x, sizes_x, NULL, 1);
   if(err != CL_SUCCESS) return err;
 
-  dt_opencl_set_kernel_args(devid, kernel_y, 0,
+  return dt_opencl_enqueue_kernel_1d_args(devid, darktable.opencl->guided_filter->kernel_guided_filter_box_mean_y, width,
                               CLARG(width), CLARG(height),
                               CLARG(temp), CLARG(out), CLARG(w));
-  return dt_opencl_enqueue_kernel_ndim_with_local(devid, kernel_y, sizes_y, NULL, 1);
 }
 
 
