@@ -380,10 +380,17 @@ int dt_opencl_enqueue_kernel_2d_with_local(const int dev,
 /** call kernel with arguments! */
 #define dt_opencl_enqueue_kernel_2d_args(dev, kernel, w, h, ...) \
     dt_opencl_enqueue_kernel_2d_args_internal(dev, kernel, w, h, __VA_ARGS__, CLWRAP(SIZE_MAX, NULL))
+
+#define dt_opencl_enqueue_kernel_1d_args(dev, kernel, x, ...) \
+    dt_opencl_enqueue_kernel_1d_args_internal(dev, kernel, x, __VA_ARGS__, CLWRAP(SIZE_MAX, NULL))
+
 int dt_opencl_enqueue_kernel_2d_args_internal(const int dev,
                                               const int kernel,
                                               const size_t w,
                                               const size_t h, ...);
+int dt_opencl_enqueue_kernel_1d_args_internal(const int dev,
+                                              const int kernel,
+                                              const size_t x, ...);
 
 /** launch kernel with specified dimension and defined local size! */
 int dt_opencl_enqueue_kernel_ndim_with_local(const int dev,

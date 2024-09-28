@@ -2754,6 +2754,27 @@ int dt_opencl_enqueue_kernel_2d_args_internal(const int dev,
   return dt_opencl_enqueue_kernel_2d_with_local(dev, kernel, sizes, NULL);
 }
 
+int dt_opencl_enqueue_kernel_1d_args_internal(const int dev,
+                                              const int kernel,
+                                              const size_t x,
+                                              ...)
+{
+  va_list ap;
+  va_start(ap, x);
+  const cl_int err = _opencl_set_kernel_args(dev, kernel, 0, ap);
+  va_end(ap);
+  if(err != CL_SUCCESS)
+  {
+    dt_print(DT_DEBUG_OPENCL,
+             "[dt_opencl_enqueue_kernel_1d_args_internal] kernel `%s' (%i) on device %d: %s\n",
+              darktable.opencl->name_saved[kernel], kernel, dev, cl_errstr(err));
+    return err;
+  }
+  const size_t sizes[] = { ROUNDUPDWD(x, dev), 1, 1 };
+
+  return dt_opencl_enqueue_kernel_ndim_with_local(dev, kernel, sizes, NULL, 1);
+}
+
 int dt_opencl_copy_device_to_host(const int devid,
                                   void *host,
                                   void *device,
