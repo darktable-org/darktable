@@ -23,8 +23,6 @@
 #include "osx/osx.h"
 #endif
 
-#define COPYRIGHT_YEARS "© 2009-2024"
-
 // override window manager's title bar?
 #define USE_HEADER_BAR
 // include a featured image on the splash screen?
@@ -46,6 +44,17 @@ static GtkWidget *remaining_text = NULL;
 static gboolean showing_remaining = FALSE;
 
 static GtkWidget *exit_screen = NULL;
+
+static void _process_all_gui_events()
+{
+  // give Gtk a chance to update the screen; we need to let the event processing run several
+  // times for the splash window to actually be fully displayed/updated
+  for(int i = 0; i < 5; i++)
+  {
+    g_usleep(1000);
+    dt_gui_process_events();
+  }
+}
 
 static GtkWidget *_get_logo()
 {
@@ -99,15 +108,16 @@ static void _set_header_bar(GtkWidget *dialog)
 {
 #ifdef USE_HEADER_BAR
   GtkHeaderBar *header = GTK_HEADER_BAR(gtk_dialog_get_header_bar(GTK_DIALOG(dialog)));
-  gtk_widget_set_name(GTK_WIDGET(header),"splashscreen-header");
+  gtk_widget_set_name(GTK_WIDGET(header), "splashscreen-header");
   GtkWidget *title = gtk_label_new(NULL);
-  gtk_header_bar_set_custom_title(header,title);
+  gtk_header_bar_set_custom_title(header, title);
   gtk_header_bar_set_has_subtitle(header, FALSE);
   gtk_header_bar_set_show_close_button(header, FALSE);
 #endif
 }
 
-void darktable_splash_screen_create(GtkWindow *parent_window, gboolean force)
+void darktable_splash_screen_create(GtkWindow *parent_window,
+                                    const gboolean force)
 {
   // no-op if the splash has already been created; if not, only run if the
   // splash screen is enabled in the config or we are told to create it regardless
@@ -122,14 +132,14 @@ void darktable_splash_screen_create(GtkWindow *parent_window, gboolean force)
   GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT;
 #endif
   splash_screen = gtk_dialog_new_with_buttons(_("darktable starting"), parent_window, flags,
-                                              NULL, GTK_RESPONSE_NONE,  // <-- fake button list for compiler
+                                              NULL, GTK_RESPONSE_NONE, // <-- fake button list for compiler
                                               NULL);
   gtk_window_set_position(GTK_WINDOW(splash_screen), GTK_WIN_POS_CENTER);
-  gtk_widget_set_name(splash_screen,"splashscreen");
+  gtk_widget_set_name(splash_screen, "splashscreen");
   progress_text = gtk_label_new(_("initializing"));
-  gtk_widget_set_name(progress_text,"splashscreen-progress");
+  gtk_widget_set_name(progress_text, "splashscreen-progress");
   remaining_text = gtk_label_new("");
-  gtk_widget_set_name(remaining_text,"splashscreen-remaining");
+  gtk_widget_set_name(remaining_text, "splashscreen-remaining");
   _set_header_bar(splash_screen);
   int version_len = strlen(darktable_package_version);
   char *delim = strchr(darktable_package_version, '~');
@@ -139,7 +149,9 @@ void darktable_splash_screen_create(GtkWindow *parent_window, gboolean force)
   GtkWidget *version = GTK_WIDGET(gtk_label_new(version_str));
   g_free(version_str);
   gtk_widget_set_name(version, "splashscreen-version");
-  GtkWidget *copyright = GTK_WIDGET(gtk_label_new(COPYRIGHT_YEARS));
+  gchar *years = g_strdup_printf("© 2009-%s", darktable_last_commit_year);
+  GtkWidget *copyright = GTK_WIDGET(gtk_label_new(years));
+  g_free(years);
   gtk_widget_set_name(copyright, "splashscreen-copyright");
   GtkWidget *logo = _get_logo();
   GtkWidget *program_name = _get_program_name();
@@ -152,7 +164,7 @@ void darktable_splash_screen_create(GtkWindow *parent_window, gboolean force)
   image_file = g_strdup_printf("%s/pixmaps/splashscreen-%02d.jpg", darktable.datadir, imgnum);
   GtkWidget *image = gtk_image_new_from_file(image_file);
   g_free(image_file);
-  gtk_widget_set_name(GTK_WIDGET(image),"splashscreen-image");
+  gtk_widget_set_name(GTK_WIDGET(image), "splashscreen-image");
   // make a vertical stack of the darktable logo, name, and description
   gtk_image_set_pixel_size(GTK_IMAGE(logo), 180);
   GtkWidget *program_desc = GTK_WIDGET(gtk_label_new(_("Photography workflow\napplication and\nRAW developer")));
@@ -207,10 +219,7 @@ void darktable_splash_screen_create(GtkWindow *parent_window, gboolean force)
   gtk_box_pack_start(content, remaining_text, FALSE, FALSE, 0);
   gtk_window_set_keep_above(GTK_WINDOW(splash_screen), TRUE);
   gtk_widget_show_all(splash_screen);
-  // give Gtk a chance to update the screen; we need to let the event processing run several
-  // times for the splash window to actually be fully displayed
-  for(int i = 0; i < 5; i++)
-    dt_gui_process_events();
+  _process_all_gui_events();
 }
 
 void darktable_splash_screen_set_progress(const char *msg)
@@ -224,16 +233,13 @@ void darktable_splash_screen_set_progress(const char *msg)
       gtk_label_set_text(GTK_LABEL(remaining_text), "");
       showing_remaining = FALSE;
     }
-    // give Gtk a chance to update the screen
-    for(int i = 0; i < 5; i++)
-    {
-      g_usleep(1000);
-      dt_gui_process_events();
-    }
+    _process_all_gui_events();
   }
 }
 
-void darktable_splash_screen_set_progress_percent(const char *msg, double fraction, double elapsed)
+void darktable_splash_screen_set_progress_percent(const char *msg,
+                                                  const double fraction,
+                                                  const double elapsed)
 {
   if(splash_screen)
   {
@@ -248,7 +254,7 @@ void darktable_splash_screen_set_progress_percent(const char *msg, double fracti
       double remain = total - elapsed;
       int minutes = remain / 60;
       int seconds = remain - (60 * minutes);
-      char *rem_text = g_strdup_printf("⏲%4d:%02d",minutes,seconds);
+      char *rem_text = g_strdup_printf("⏲%4d:%02d", minutes, seconds);
       gtk_label_set_text(GTK_LABEL(remaining_text), rem_text);
       g_free(rem_text);
     }
@@ -259,12 +265,7 @@ void darktable_splash_screen_set_progress_percent(const char *msg, double fracti
 //    gtk_widget_show(remaining_text);
     gtk_widget_show_all(splash_screen);
     showing_remaining = TRUE;
-    // give Gtk a chance to update the screen
-    for(int i = 0; i < 5; i++)
-    {
-      g_usleep(1000);
-      dt_gui_process_events();
-    }
+    _process_all_gui_events();
   }
 }
 
@@ -279,7 +280,8 @@ void darktable_splash_screen_destroy()
   }
 }
 
-void darktable_exit_screen_create(GtkWindow *parent_window, gboolean force)
+void darktable_exit_screen_create(GtkWindow *parent_window,
+                                  const gboolean force)
 {
   // no-op if the exit screen has already been created; if not, only run if the
   // splash screen is enabled in the config or we are told to create it regardless
@@ -298,7 +300,7 @@ void darktable_exit_screen_create(GtkWindow *parent_window, gboolean force)
                                             NULL, GTK_RESPONSE_NONE,  // <-- fake button list for compiler
                                             NULL);
   gtk_window_set_position(GTK_WINDOW(exit_screen), GTK_WIN_POS_CENTER);
-  gtk_widget_set_name(exit_screen,"splashscreen");
+  gtk_widget_set_name(exit_screen, "splashscreen");
   _set_header_bar(exit_screen);
   GtkWidget *program_name = _get_program_name();
   GtkWidget *logo = _get_logo();
@@ -315,10 +317,7 @@ void darktable_exit_screen_create(GtkWindow *parent_window, gboolean force)
   gtk_box_pack_start(content, message1, FALSE, FALSE, 0);
   gtk_box_pack_start(content, message2, FALSE, FALSE, 0);
   gtk_widget_show_all(exit_screen);
-  // give Gtk a chance to update the screen; we need to let the event processing run several
-  // times for the exit window to actually be fully displayed
-  for(int i = 0; i < 5; i++)
-    dt_gui_process_events();
+  _process_all_gui_events();
   gtk_window_set_keep_above(GTK_WINDOW(exit_screen), FALSE); // allow it to be hidden by other windows
   dt_gui_process_events();
 }
