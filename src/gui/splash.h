@@ -20,3 +20,12 @@ void darktable_splash_screen_create(GtkWindow *parent, gboolean force);
 void darktable_splash_screen_set_progress(const char *msg);
 void darktable_splash_screen_set_progress_percent(const char *msg, double fraction, double elapsed);
 void darktable_splash_screen_destroy();
+
+void darktable_exit_screen_create(GtkWindow *parent, gboolean force);
+void darktable_exit_screen_destroy();
+
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on

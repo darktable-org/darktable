@@ -2387,6 +2387,13 @@ Details :
     font-size: 150%;
 }
 
+/* style the message on the exit screen */
+#exitscreen-message
+{
+    font-size: 15pt;
+    margin-bottom: 10pt;
+}
+
 /* ??? TO BE REMOVED ON DT 5.0 : script_manager power button */
 button#pb_off
 {
