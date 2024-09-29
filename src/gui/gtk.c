@@ -1081,10 +1081,13 @@ static const char* _get_axis_name(const int pos)
 
 void dt_open_url(const char* url)
 {
+#ifdef __APPLE__
+  dt_osx_open_url(url);
+#else
   GError *error = NULL;
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 
-// TODO: call the web browser directly so that file:// style base for local installs works
+  // TODO: call the web browser directly so that file:// style base for local installs works
   const gboolean uri_success = gtk_show_uri_on_window(GTK_WINDOW(win),
                                                       url,
                                                       gtk_get_current_event_time(),
@@ -1103,6 +1106,7 @@ void dt_open_url(const char* url)
       g_error_free(error);
     }
   }
+#endif
 }
 
 #ifdef MAC_INTEGRATION
