@@ -155,8 +155,9 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img,
   /* Decode JPEG-2000 with using multiple threads */
   if(!opj_codec_set_threads(d_codec, dt_get_num_threads()))
   {
-    /* This may not seem like a critical error but failure to initialise the treads
-     is a symptom of major resource exhaustion, bail out as quickly as possible */
+    // This may not seem like a critical error but failure to initialize
+    // the threads is a sign of major resource exhaustion, better to fail
+    // as soon as possible to save overall stability.
     dt_print(DT_DEBUG_ALWAYS,
              "[j2k_open] Error: failed to setup the threads for decoder %s\n",
              parameters.infile);
