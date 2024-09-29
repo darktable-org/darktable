@@ -107,7 +107,6 @@ static inline void _color_picker_rgb_or_lab(dt_aligned_pixel_t acc,
       _update_stats_by_ch(acc, low, high, k, pixels[i + k]);
 }
 
-
 static inline void _color_picker_Lab_2_JzCzhz(dt_aligned_pixel_t acc,
                                      dt_aligned_pixel_t low,
                                      dt_aligned_pixel_t high,
@@ -127,6 +126,39 @@ static inline void _color_picker_Lab_2_JzCzhz(dt_aligned_pixel_t acc,
   }
 }
 
+static inline void _color_picker_Lab_2_rgb(dt_aligned_pixel_t acc,
+                                     dt_aligned_pixel_t low,
+                                     dt_aligned_pixel_t high,
+                                     const float *const pixels,
+                                     const size_t width,
+                                     const void *const data)
+{
+  for(size_t i = 0; i < width; i += 4)
+  {
+    dt_aligned_pixel_t pick;
+    dt_Lab_2_Rec709_D50(pixels + i, pick);
+    _update_stats_4ch(acc, low, high, pick);
+  }
+}
+
+static inline void _color_picker_Lab_2_hsl(dt_aligned_pixel_t acc,
+                                     dt_aligned_pixel_t low,
+                                     dt_aligned_pixel_t high,
+                                     const float *const pixels,
+                                     const size_t width,
+                                     const void *const data)
+{
+  for(size_t i = 0; i < width; i += 4)
+  {
+    dt_aligned_pixel_t rgb;
+    dt_Lab_2_Rec709_D50(pixels + i, rgb);
+
+    dt_aligned_pixel_t pick;
+    dt_RGB_2_HSL(rgb, pick);
+    pick[3] = pick[0] < 0.5f ? pick[0] + 0.5f : pick[0] - 0.5f;
+    _update_stats_4ch(acc, low, high, pick);
+  }
+}
 
 static inline void _color_picker_lch(dt_aligned_pixel_t acc,
                                      dt_aligned_pixel_t low,
@@ -489,6 +521,17 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc,
     const dt_iop_colorspace_type_t effective_cst =
       image_cst == IOP_CS_RAW ? IOP_CS_RGB : image_cst;
 
+
+      dt_print(DT_DEBUG_ALWAYS,
+               "[colorpicker] @@@kofa DEBUG colorspace conversion from %s to %s\n",
+               dt_iop_colorspace_to_name(image_cst), dt_iop_colorspace_to_name(picker_cst));
+
+/* TODO kofa
+ * cover conversions:
+ * from IOP_CS_LAB to IOP_CS_RGB
+ * from IOP_CS_LAB to IOP_CS_HSL local contrast / RGB display / pick H
+ */
+
     if(effective_cst == IOP_CS_LAB && picker_cst == IOP_CS_LCH)
     {
       // blending for Lab modules (e.g. color zones and tone curve)
@@ -504,9 +547,17 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc,
       // scene-referred blending for RGB modules
       _color_picker_work_4ch(source, roi, box, pick, profile, _color_picker_jzczhz, 10);
     }
-    else if(effective_cst == IOP_CS_JZCZHZ && picker_cst == IOP_CS_LAB)
+    else if(effective_cst == IOP_CS_LAB && picker_cst == IOP_CS_JZCZHZ)
     {
       _color_picker_work_4ch(source, roi, box, pick, NULL, _color_picker_Lab_2_JzCzhz, 10);
+    }
+    else if(effective_cst == IOP_CS_LAB && picker_cst == IOP_CS_RGB)
+    {
+      _color_picker_work_4ch(source, roi, box, pick, NULL, _color_picker_Lab_2_rgb, 10);
+    }
+    else if(effective_cst == IOP_CS_LAB && picker_cst == IOP_CS_HSL)
+    {
+      _color_picker_work_4ch(source, roi, box, pick, NULL, _color_picker_Lab_2_hsl, 10);
     }
     else if(effective_cst == picker_cst)
     {

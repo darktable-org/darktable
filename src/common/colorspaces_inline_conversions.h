@@ -898,6 +898,15 @@ static inline void dt_Lab_2_JzCzhz(const dt_aligned_pixel_t Lab, dt_aligned_pixe
 }
 
 
+static inline void dt_Lab_2_Rec709_D50(const dt_aligned_pixel_t Lab, dt_aligned_pixel_t rgb)
+{
+  dt_aligned_pixel_t XYZ;
+  dt_Lab_to_XYZ(Lab, XYZ);
+
+  dt_XYZ_to_Rec709_D50(XYZ, rgb);
+}
+
+
 DT_OMP_DECLARE_SIMD(aligned(JzCzhz, JzAzBz: 16))
 static inline void dt_JzCzhz_2_JzAzBz(const dt_aligned_pixel_t JzCzhz, dt_aligned_pixel_t JzAzBz)
 {
