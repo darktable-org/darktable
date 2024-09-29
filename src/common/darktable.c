@@ -706,7 +706,6 @@ void dt_dump_pipe_diff_pfm(
 
 static int32_t _detect_opencl_job_run(dt_job_t *job)
 {
-  darktable.opencl = (dt_opencl_t *)calloc(1, sizeof(dt_opencl_t));
   dt_opencl_init(darktable.opencl, GPOINTER_TO_INT(dt_control_job_get_params(job)), TRUE);
   return 0;
 }

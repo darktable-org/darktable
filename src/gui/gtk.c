@@ -2136,13 +2136,13 @@ int dt_ui_panel_get_size(dt_ui_t *ui,
     if(key && dt_conf_key_exists(key))
     {
       size = dt_conf_get_int(key);
-      g_free(key);
     }
     else // size hasn't been adjusted, so return default sizes
     {
       if(p == DT_UI_PANEL_BOTTOM)
         size = DT_UI_PANEL_BOTTOM_DEFAULT_SIZE;
     }
+    g_free(key);
     return size;
   }
   return -1;

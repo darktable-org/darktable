@@ -1780,7 +1780,7 @@ static int _check_extension(const struct dirent *namestruct)
   const char *dot = g_strrstr(filename, ".");
   if(!dot)
     return 0;
-  char *ext = g_ascii_strdown(g_strdup(dot), -1);
+  char *ext = g_ascii_strdown(dot, -1);
   int include = g_strcmp0(ext, ".dtstyle") == 0;
   g_free(ext);
   return include;

@@ -2735,6 +2735,7 @@ gboolean dt_collection_hint_message_internal(void *message)
     gtk_label_set_markup(GTK_LABEL(count), message);
     gtk_widget_set_tooltip_markup(count, message);
   }
+  g_free(message);
 
   dt_control_hinter_message(darktable.control, "");
 
