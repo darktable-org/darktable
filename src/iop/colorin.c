@@ -31,9 +31,6 @@
 #include "develop/develop.h"
 #include "gui/gtk.h"
 #include "gui/accelerators.h"
-#ifdef HAVE_OPENJPEG
-#include "imageio/imageio_j2k.h"
-#endif
 #include "imageio/imageio_jpeg.h"
 #include "imageio/imageio_png.h"
 #include "imageio/imageio_tiff.h"
