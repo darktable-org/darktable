@@ -31,9 +31,6 @@
 #include "develop/develop.h"
 #include "gui/gtk.h"
 #include "gui/accelerators.h"
-#ifdef HAVE_OPENJPEG
-#include "imageio/imageio_j2k.h"
-#endif
 #include "imageio/imageio_jpeg.h"
 #include "imageio/imageio_png.h"
 #include "imageio/imageio_tiff.h"
@@ -1752,18 +1749,6 @@ void reload_defaults(dt_iop_module_t *module)
       // but we can assume the are linear since it's a floating point format
       color_profile = DT_COLORSPACE_LIN_REC709;
     }
-#ifdef HAVE_OPENJPEG
-    else if(!strcmp(ext, "jp2")
-            || !strcmp(ext, "j2k")
-            || !strcmp(ext, "j2c")
-            || !strcmp(ext, "jpc"))
-    {
-      img->profile_size = dt_imageio_j2k_read_profile(filename, &img->profile);
-      color_profile = (img->profile_size > 0)
-        ? DT_COLORSPACE_EMBEDDED_ICC
-        : DT_COLORSPACE_NONE;
-    }
-#endif
     // the ldr test just checks for magics in the file header
     else if((!strcmp(ext, "tif") || !strcmp(ext, "tiff")) && dt_imageio_is_ldr(filename))
     {
