@@ -1081,10 +1081,11 @@ static const char* _get_axis_name(const int pos)
 
 void dt_open_url(const char* url)
 {
-#ifdef __APPLE__
-  dt_osx_open_url(url);
-#else
   GError *error = NULL;
+
+#ifdef __APPLE__
+  const gboolean uri_success = dt_osx_open_url(url);
+#else
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 
   // TODO: call the web browser directly so that file:// style base for local installs works
@@ -1092,6 +1093,7 @@ void dt_open_url(const char* url)
                                                       url,
                                                       gtk_get_current_event_time(),
                                                       &error);
+#endif
 
   if(uri_success)
   {
@@ -1100,13 +1102,12 @@ void dt_open_url(const char* url)
   else
   {
     dt_control_log(_("error while opening URL in web browser"));
-    if(error != NULL) // uri_success being FALSE should guarantee that
+    if(error != NULL)
     {
       dt_print(DT_DEBUG_ALWAYS, "unable to read file: %s\n", error->message);
       g_error_free(error);
     }
   }
-#endif
 }
 
 #ifdef MAC_INTEGRATION

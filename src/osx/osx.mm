@@ -284,9 +284,9 @@ void dt_osx_focus_window()
   [NSApp activateIgnoringOtherApps:YES];
 }
 
-void dt_osx_open_url(const char *url)
+gboolean dt_osx_open_url(const char *url)
 {
-  [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@(url)]];
+  return [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@(url)]];
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
