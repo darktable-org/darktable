@@ -1563,6 +1563,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   if(init_gui)
   {
     dt_control_init(darktable.control);
+
+    // initialize undo struct
+    darktable.undo = dt_undo_init();
   }
   else
   {
@@ -1680,9 +1683,11 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #endif
 
 #ifdef HAVE_LIBHEIF
+  darktable_splash_screen_set_progress(_("initializing libheif"));
   heif_init(NULL);
 #endif
 
+  darktable_splash_screen_set_progress(_("starting OpenCL"));
   darktable.opencl = (dt_opencl_t *)calloc(1, sizeof(dt_opencl_t));
   if(init_gui)
     dt_control_add_job(darktable.control, DT_JOB_QUEUE_SYSTEM_BG,
@@ -1717,6 +1722,14 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   darktable_splash_screen_set_progress(_("synchronizing local copies"));
   dt_image_local_copy_synch();
+
+#ifdef HAVE_GPHOTO2
+  // Initialize the camera control.  this is done late so that the
+  // gui can react to the signal sent but before switching to
+  // lighttable!
+  darktable_splash_screen_set_progress(_("initializing camera control"));
+  darktable.camctl = dt_camctl_new();
+#endif
 
   // The GUI must be initialized before the views, because the init()
   // functions of the views depend on darktable.control->accels_* to
@@ -1783,14 +1796,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   if(init_gui)
   {
-#ifdef HAVE_GPHOTO2
-    // Initialize the camera control.  this is done late so that the
-    // gui can react to the signal sent but before switching to
-    // lighttable!
-    darktable_splash_screen_set_progress(_("initializing camera control"));
-    darktable.camctl = dt_camctl_new();
-#endif
-
     darktable.lib = (dt_lib_t *)calloc(1, sizeof(dt_lib_t));
     dt_lib_init(darktable.lib);
 
@@ -1806,13 +1811,14 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     // Save the shortcuts including defaults
     dt_shortcuts_save(NULL, TRUE);
 
-    // initialize undo struct
-    darktable.undo = dt_undo_init();
-
     // now that other initialization is complete, we can show the main window
-    // we need to do this before Lua is started or we'll get a hang, or the
-    // module groups don't get set up correctly
+    // we need to do this before Lua is started or we'll either get a hang, or
+    // the module groups don't get set up correctly
+
+    // start by restoring the main window position as stored in the config file
+    dt_gui_gtk_load_config();
     gtk_widget_show_all(dt_ui_main_window(darktable.gui->ui));
+    // give Gtk a chance to actually process the resizing
     dt_gui_process_events();
   }
 
@@ -1829,10 +1835,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   if(init_gui)
   {
-    const char *mode = "lighttable";
     // we have to call dt_ctl_switch_mode_to() here already to not run
     // into a lua deadlock.  having another call later is ok
-    dt_ctl_switch_mode_to(mode);
+    dt_ctl_switch_mode_to("lighttable");
 
 #ifndef MAC_INTEGRATION
     // load image(s) specified on cmdline.  this has to happen after
@@ -2012,21 +2017,27 @@ void dt_cleanup()
 #endif
   dt_view_manager_cleanup(darktable.view_manager);
   free(darktable.view_manager);
+  darktable.view_manager = NULL;
   // we can no longer call dt_gui_process_events after this point, as that will cause a segfault
   // if some delayed event fires
 
   dt_image_cache_cleanup(darktable.image_cache);
   free(darktable.image_cache);
+  darktable.image_cache = NULL;
   dt_mipmap_cache_cleanup(darktable.mipmap_cache);
   free(darktable.mipmap_cache);
+  darktable.mipmap_cache = NULL;
   if(init_gui)
   {
     dt_imageio_cleanup(darktable.imageio);
     free(darktable.imageio);
+    darktable.imageio = NULL;
     dt_control_shutdown(darktable.control);
     dt_control_cleanup(darktable.control);
     free(darktable.control);
+    darktable.control = NULL;
     dt_undo_cleanup(darktable.undo);
+    darktable.undo = NULL;
     free(darktable.gui);
     darktable.gui = NULL;
   }
@@ -2034,8 +2045,10 @@ void dt_cleanup()
   dt_colorspaces_cleanup(darktable.color_profiles);
   dt_conf_cleanup(darktable.conf);
   free(darktable.conf);
+  darktable.conf = NULL;
   dt_points_cleanup(darktable.points);
   free(darktable.points);
+  darktable.points = NULL;
   dt_iop_unload_modules_so();
   g_list_free_full(darktable.iop_order_list, free);
   darktable.iop_order_list = NULL;
@@ -2043,6 +2056,7 @@ void dt_cleanup()
   darktable.iop_order_rules = NULL;
   dt_opencl_cleanup(darktable.opencl);
   free(darktable.opencl);
+  darktable.opencl = NULL;
 #ifdef HAVE_GPHOTO2
   dt_camctl_destroy((dt_camctl_t *)darktable.camctl);
   darktable.camctl = NULL;

@@ -280,6 +280,17 @@ void darktable_splash_screen_destroy()
   }
 }
 
+void darktable_splash_screen_get_geometry(gint *x, gint *y, gint *width,  gint *height)
+{
+  if(splash_screen)
+  {
+    gtk_window_get_position(GTK_WINDOW(splash_screen), x, y);
+    gtk_window_get_size(GTK_WINDOW(splash_screen), width, height);
+  }
+  else
+    *x = *y = *width = *height = -1;
+}
+
 void darktable_exit_screen_create(GtkWindow *parent_window,
                                   const gboolean force)
 {

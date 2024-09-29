@@ -27,6 +27,7 @@
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "gui/guides.h"
+#include "gui/splash.h"
 #include "bauhaus/bauhaus.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -1663,7 +1664,20 @@ static void _init_widgets(dt_gui_gtk_t *gui)
   gtk_box_pack_start(GTK_BOX(container), gui->widgets.bottom_border, FALSE, TRUE, 0);
 
   // configure main window position, colors, fonts, etc.
-  dt_gui_gtk_load_config();
+  gint splash_x, splash_y, splash_w, splash_h;
+  darktable_splash_screen_get_geometry(&splash_x, &splash_y, &splash_w, &splash_h);
+  if(splash_w == -1)
+  {
+    // use the previously-saved geometry; we'll be setting the window to this size later anyway
+    dt_gui_gtk_load_config();
+  }
+  else
+  {
+    gtk_window_move(GTK_WINDOW(dt_ui_main_window(gui->ui)), splash_x, splash_y);
+    // the main window peeks out behind the splash screen unless we reduce the height
+    splash_h = splash_h > 50 ? splash_h - 25 : splash_h; 
+    gtk_window_resize(GTK_WINDOW(dt_ui_main_window(gui->ui)), splash_w, splash_h);
+  }
   dt_gui_apply_theme();
   dt_gui_process_events();
 
