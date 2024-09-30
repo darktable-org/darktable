@@ -1411,7 +1411,7 @@ static gboolean _event_button_press(GtkWidget *widget,
   }
 
   if(table->mode != DT_THUMBTABLE_MODE_ZOOM
-     && id < 1
+     && !dt_is_valid_imgid(id)
      && event->button == 1
      && event->type == GDK_BUTTON_PRESS)
   {
