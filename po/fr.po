@@ -22412,7 +22412,7 @@ msgstr ""
 
 #: ../src/libs/copy_history.c:351
 msgid "selective paste..."
-msgstr "Coller sélectivement"
+msgstr "Coller sélectivement..."
 
 #: ../src/libs/copy_history.c:352
 msgid "choose which modules to paste to the target image(s)"
