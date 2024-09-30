@@ -1063,7 +1063,7 @@ static gboolean _event_scroll_compressed(gpointer user_data)
 
     // for fractional scrolling, scroll by a number of pixels proportionate to
     // the delta (which is a float value for most touch pads and some mice)
-    if (dt_conf_get_bool("thumbtable_fractional_scrolling")) 
+    if (dt_conf_get_bool("thumbtable_fractional_scrolling"))
     {
       // scale scroll increment for an appropriate scroll speed
       delta *= 50;
@@ -1087,7 +1087,7 @@ static gboolean _event_scroll_compressed(gpointer user_data)
         }
       }
       _move(table, 0, -move, TRUE);
-    } 
+    }
 
     // ensure the hovered image is the right one
     dt_thumbnail_t *th = _thumb_get_under_mouse(table);
@@ -1109,11 +1109,11 @@ static gboolean _event_scroll(GtkWidget *widget,
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
   int delta_x, delta_y;
 
-  // file manager can either scroll fractionally and smoothly for precision 
+  // file manager can either scroll fractionally and smoothly for precision
   // touch pads, or in one-thumbnail increments for clicky scroll wheels,
   // except while control is held, as that indicates zooming
-  if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER 
-      && !dt_modifier_is(e->state, GDK_CONTROL_MASK)) 
+  if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER
+      && !dt_modifier_is(e->state, GDK_CONTROL_MASK))
   {
     gdouble deltaf_x, deltaf_y;
     gboolean did_scroll;
@@ -1121,7 +1121,7 @@ static gboolean _event_scroll(GtkWidget *widget,
     {
       did_scroll = dt_gui_get_scroll_deltas(e, &deltaf_x, &deltaf_y);
     }
-    else 
+    else
     {
       did_scroll = dt_gui_get_scroll_unit_deltas(e, &delta_x, &delta_y);
       deltaf_y = (float)delta_y;
@@ -1418,16 +1418,20 @@ static gboolean _event_button_press(GtkWidget *widget,
     // we click in an empty area, let's deselect all images
     dt_selection_clear(darktable.selection);
     PangoRectangle *button = &table->manual_button;
-    if(event->x < button->x && event->x > button->x - button->width &&
-       event->y < button->y && event->y > button->y - button->height)
+    if(event->x < button->x && event->x > button->x - button->width
+       && event->y < button->y && event->y > button->y - button->height)
+    {
       dt_gui_show_help(NULL);
+    }
+
     return TRUE;
   }
 
   if(table->mode != DT_THUMBTABLE_MODE_ZOOM)
     return FALSE;
 
-  if(event->button == 1 && event->type == GDK_BUTTON_PRESS)
+  if(event->button == 1
+     && event->type == GDK_BUTTON_PRESS)
   {
     table->dragging = TRUE;
     table->drag_dx = table->drag_dy = 0;
@@ -1513,8 +1517,12 @@ static gboolean _event_button_release(GtkWidget *widget,
 
   // in some case, image_over_id can get out of sync at the end of dragging
   // this happen esp. if the pointer as been out of the center area during drag
-  if (dt_control_get_mouse_over_id() != table->drag_initial_imgid && table->drag_thumb)
+  if (dt_control_get_mouse_over_id() != table->drag_initial_imgid
+      && table->drag_thumb)
+  {
     dt_control_set_mouse_over_id(table->drag_initial_imgid);
+  }
+
   table->dragging = FALSE;
   table->drag_initial_imgid = NO_IMGID;
   table->drag_thumb = NULL;
@@ -1522,7 +1530,7 @@ static gboolean _event_button_release(GtkWidget *widget,
   if((abs(table->drag_dx) + abs(table->drag_dy)) <= DT_PIXEL_APPLY_DPI(8)
      && !dt_is_valid_imgid(dt_control_get_mouse_over_id()))
   {
-    // if we are on empty area and have detect no real movement, we deselect
+    // if we are on empty area and have detected no real movement, we deselect
     dt_selection_clear(darktable.selection);
   }
 
@@ -1542,16 +1550,19 @@ static gboolean _event_button_release(GtkWidget *widget,
 // set scrollbars visibility
 static void _thumbtable_restore_scrollbars(dt_thumbtable_t *table)
 {
-  table->scrollbars = FALSE;
-
-  if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
+  switch(table->mode)
   {
-    table->scrollbars = dt_conf_get_bool("darkroom/ui/scrollbars");
-  }
+    case DT_THUMBTABLE_MODE_FILMSTRIP:
+      table->scrollbars = dt_conf_get_bool("darkroom/ui/scrollbars");
+      break;
 
-  if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
-  {
-    table->scrollbars = dt_conf_get_bool("lighttable/ui/scrollbars");
+    case DT_THUMBTABLE_MODE_FILEMANAGER:
+      table->scrollbars = dt_conf_get_bool("lighttable/ui/scrollbars");
+      break;
+
+    default:
+      table->scrollbars = FALSE;
+      break;
   }
 
   dt_ui_scrollbars_show(darktable.gui->ui, table->scrollbars);

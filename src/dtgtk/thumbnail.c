@@ -970,12 +970,18 @@ static gboolean _event_main_release(GtkWidget *widget,
        && thumb->sel_mode != DT_THUMBNAIL_SEL_MODE_MOD_ONLY)
       dt_selection_select_single(darktable.selection, thumb->imgid);
     else if(dt_modifier_is(event->state, GDK_MOD1_MASK))
+    {
       dt_selection_select_single(darktable.selection, thumb->imgid);
+    }
     else if(dt_modifier_is(event->state, GDK_CONTROL_MASK)
             || dt_modifier_is(event->state, GDK_MOD2_MASK)) // CMD key on macOS
+    {
       dt_selection_toggle(darktable.selection, thumb->imgid);
+    }
     else if(dt_modifier_is(event->state, GDK_SHIFT_MASK))
+    {
       dt_selection_select_range(darktable.selection, thumb->imgid);
+    }
   }
   return FALSE;
 }
