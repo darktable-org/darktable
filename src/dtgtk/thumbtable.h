@@ -105,6 +105,10 @@ typedef struct dt_thumbtable_t
   // scroll timeout values
   guint scroll_timeout_id;
   float scroll_value;
+
+  // darkroom selection from filmstrip (support for single & double click)
+  guint sel_single_cb;
+  dt_imgid_t to_selid;
 } dt_thumbtable_t;
 
 dt_thumbtable_t *dt_thumbtable_new();
