@@ -149,10 +149,12 @@ changes (where available).
 - The scan for updated sidecar files now ignores timestamp differences
   of two seconds or less.
 
-- Numerous rounds of code cleanup.
-
 - The macOS installation package now has a background image to direct
   the user on installing darktable.app.
+
+- Changed the user interface of the import dialog to make it easier to delete custom places.
+
+- Numerous rounds of code cleanup.
 
 ## Bug Fixes
 
@@ -175,6 +177,8 @@ changes (where available).
 - Fixed certain boundary cases in the crop module.
 
 - Fixed crash when loading corrupted .gpx file in the geotagging module
+
+- Fix preset handling in the export module not saving all parameters.
 
 ## Lua
 
