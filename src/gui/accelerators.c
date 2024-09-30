@@ -214,8 +214,9 @@ static float _action_process_toggle(gpointer target,
 {
   float value = gtk_toggle_button_get_active(target);
 
-  if(DT_PERFORM_ACTION(move_size) &&
-     !((effect == DT_ACTION_EFFECT_ON
+  if(DT_PERFORM_ACTION(move_size)
+     && gtk_widget_get_ancestor(target, GTK_TYPE_WINDOW)
+     && !((effect == DT_ACTION_EFFECT_ON
         || effect == DT_ACTION_EFFECT_ON_CTRL
         || effect == DT_ACTION_EFFECT_ON_RIGHT) && value)
      && (effect != DT_ACTION_EFFECT_OFF
@@ -257,12 +258,14 @@ static float _action_process_button(gpointer target,
                                     dt_action_effect_t effect,
                                     float move_size)
 {
-  if(!gtk_widget_get_realized(target)) gtk_widget_realize(target);
-
   dt_lib_gui_update(g_object_get_data(G_OBJECT(target), "module"));
 
-  if(DT_PERFORM_ACTION(move_size) && gtk_widget_is_sensitive(target))
+  if(DT_PERFORM_ACTION(move_size)
+     && gtk_widget_is_sensitive(target)
+     && gtk_widget_get_ancestor(target, GTK_TYPE_WINDOW))
   {
+    if(!gtk_widget_get_realized(target)) gtk_widget_realize(target);
+
     if(effect != DT_ACTION_EFFECT_ACTIVATE
       || !g_signal_handler_find(target, G_SIGNAL_MATCH_ID,
                                 g_signal_lookup("clicked", gtk_button_get_type()),
