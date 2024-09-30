@@ -44,7 +44,7 @@
 
 #include <glib.h>
 
-DT_MODULE(7)
+DT_MODULE(8)
 
 #define EXPORT_MAX_IMAGE_SIZE UINT16_MAX
 #define CONFIG_PREFIX "plugins/lighttable/export/"
@@ -73,7 +73,7 @@ typedef enum dt_dimensions_type_t
   DT_DIMENSIONS_PIXELS = 0, // set dimensions exactly in pixels
   DT_DIMENSIONS_CM     = 1, // set dimensions from physical size in centimeters * DPI
   DT_DIMENSIONS_INCH   = 2,  // set dimensions from physical size in inch
-  DT_DIMENSIONS_SCALE   = 3  // set dimensions by scale
+  DT_DIMENSIONS_SCALE  = 3  // set dimensions by scale
 } dt_dimensions_type_t;
 
 char *dt_lib_export_metadata_configuration_dialog(char *list,
@@ -543,22 +543,30 @@ static void _size_in_px_update(dt_lib_export_t *d)
 
 void _set_dimensions(dt_lib_export_t *d,
                      const uint32_t max_width,
-                     const uint32_t max_height)
+                     const uint32_t max_height,
+                     const uint32_t print_dpi,
+                     const gchar *scale)
 {
   gchar *max_width_char = g_strdup_printf("%u", max_width);
   gchar *max_height_char = g_strdup_printf("%u", max_height);
+  gchar *max_dpi_char = g_strdup_printf("%u", print_dpi);
 
   ++darktable.gui->reset;
   gtk_entry_set_text(GTK_ENTRY(d->width), max_width_char);
   gtk_entry_set_text(GTK_ENTRY(d->height), max_height_char);
+  gtk_entry_set_text(GTK_ENTRY(d->print_dpi), max_dpi_char);
+  gtk_entry_set_text(GTK_ENTRY(d->scale), scale);
   _size_in_px_update(d);
   --darktable.gui->reset;
 
   dt_conf_set_int(CONFIG_PREFIX "width", max_width);
   dt_conf_set_int(CONFIG_PREFIX "height", max_height);
+  dt_conf_set_int(CONFIG_PREFIX "print_dpi", print_dpi);
+  dt_conf_set_string(CONFIG_PREFIX "resizing_factor", scale);
 
   g_free(max_width_char);
   g_free(max_height_char);
+  g_free(max_dpi_char);
   _resync_print_dimensions(d);
 }
 
@@ -770,6 +778,8 @@ static void _validate_dimensions(dt_lib_export_t *d)
   //reset dimensions to previously stored value if they exceed the maximum
   uint32_t width = atoi(gtk_entry_get_text(GTK_ENTRY(d->width)));
   uint32_t height = atoi(gtk_entry_get_text(GTK_ENTRY(d->height)));
+  uint32_t print_dpi = atoi(gtk_entry_get_text(GTK_ENTRY(d->print_dpi)));
+  const gchar *scale = gtk_entry_get_text(GTK_ENTRY(d->scale));
   if(width > d->max_allowed_width || height > d->max_allowed_height)
   {
     width  = width  > d->max_allowed_width
@@ -778,7 +788,7 @@ static void _validate_dimensions(dt_lib_export_t *d)
     height = height > d->max_allowed_height
       ? dt_conf_get_int(CONFIG_PREFIX "height")
       : height;
-    _set_dimensions(d, width, height);
+    _set_dimensions(d, width, height, print_dpi, scale);
   }
 }
 
@@ -834,13 +844,15 @@ static void set_storage_by_name(dt_lib_export_t *d,
 
   const uint32_t cw = dt_conf_get_int(CONFIG_PREFIX "width");
   const uint32_t ch = dt_conf_get_int(CONFIG_PREFIX "height");
+  const uint32_t pd = dt_conf_get_int(CONFIG_PREFIX "print_dpi");
+  const gchar *scale = dt_conf_get_string_const(CONFIG_PREFIX "resizing_factor");
 
   // If user's selected value is below the max, select it
   if(w > cw || w == 0) w = cw;
   if(h > ch || h == 0) h = ch;
 
   // Set the recommended dimension
-  _set_dimensions(d, w, h);
+  _set_dimensions(d, w, h, pd, scale);
 
   // Let's update formats combobox with supported formats of selected storage module...
   _update_formats_combobox(d);
@@ -1634,9 +1646,11 @@ void init_presets(dt_lib_module_t *self)
       // extract the interesting parts from the blob
       const char *buf = (const char *)op_params;
 
-      // skip 6*int32_t: max_width, max_height, upscale, high_quality
-      // and export_masks, iccintent, icctype
-      buf += 7 * sizeof(int32_t);
+      // skip 9*int32_t: max_width, max_height, upscale, high_quality,
+      // export_masks, iccintent, icctype, dimensions_type, print_dpi
+      buf += 9 * sizeof(int32_t);
+      // skip scale string
+      buf += strlen(buf) + 1;
       // skip metadata presets string
       buf += strlen(buf) + 1;
       // next skip iccfilename
@@ -2008,6 +2022,41 @@ void *legacy_params(dt_lib_module_t *self,
     *new_version = 7;
     return new_params;
   }
+  else if(old_version == 7)
+  {
+    // add dimension_type, print_dpi and scale
+
+    // format of v7:
+    //  - 7 x int32_t (max_width, max_height, upscale, high_quality,
+    //                 export_masks, iccintent, icctype)
+    //  - old rest
+    // format of v8:
+    //  - 9 x int32_t (max_width, max_height, upscale, high_quality,
+    //                 export_masks, iccintent, icctype, dimensions_type, print_dpi)
+    //  - char* (scale)
+    //  - old rest
+
+    const char *scale = "";
+    const int print_dpi = dt_confgen_get_int("plugins/lighttable/export/print_dpi", DT_DEFAULT);
+
+    const size_t new_params_size = old_params_size 
+                                   + sizeof(int32_t) * 2 
+                                   + strlen(scale);
+    void *new_params = calloc(1, new_params_size);
+
+    size_t pos = 0;
+    memcpy(new_params, old_params, sizeof(int32_t) * 7);
+    pos += 8 * sizeof(int32_t);
+    memcpy(new_params + pos, &print_dpi, sizeof(int32_t));
+    pos += sizeof(int32_t);
+    pos += strlen(scale) + 1;
+    memcpy((uint8_t *)new_params + pos,
+           (uint8_t *)old_params + pos - sizeof(int32_t) * 2,
+           old_params_size - sizeof(int32_t) * 7);
+    *new_size = new_params_size;
+    *new_version = 8;
+    return new_params;
+  }
 
   return NULL;
 }
@@ -2050,6 +2099,9 @@ void *get_params(dt_lib_module_t *self, int *size)
   const int32_t max_width = dt_conf_get_int(CONFIG_PREFIX "width");
   const int32_t max_height = dt_conf_get_int(CONFIG_PREFIX "height");
   const int32_t upscale = dt_conf_get_bool(CONFIG_PREFIX "upscale") ? 1 : 0;
+  const int32_t dimensions_type = dt_conf_get_int(CONFIG_PREFIX "dimensions_type");
+  const int32_t print_dpi = dt_conf_get_int(CONFIG_PREFIX "print_dpi");
+  gchar *scale = dt_conf_get_string(CONFIG_PREFIX "resizing_factor");
   const int32_t high_quality =
     dt_conf_get_bool(CONFIG_PREFIX "high_quality_processing") ? 1 : 0;
   const int32_t export_masks = dt_conf_get_bool(CONFIG_PREFIX "export_masks") ? 1 : 0;
@@ -2077,9 +2129,15 @@ void *get_params(dt_lib_module_t *self, int *size)
   const int32_t fname_len = strlen(fname);
   const int32_t sname_len = strlen(sname);
 
-  *size = fname_len + sname_len + 2
-          + 4 * sizeof(int32_t) + fsize + ssize + 7 * sizeof(int32_t)
-          + strlen(iccfilename) + 1 + strlen(metadata_export) + 1;
+  *size = fname_len + 1
+          + sname_len + 1
+          + 4 * sizeof(int32_t)
+          + fsize
+          + ssize
+          + 9 * sizeof(int32_t)
+          + strlen(scale) + 1
+          + strlen(iccfilename) + 1
+          + strlen(metadata_export) + 1;
 
   //??? WARNING: Any change here must be also done on get_params AND init_presets
   //             if some parameters are added before fname & sname
@@ -2099,6 +2157,12 @@ void *get_params(dt_lib_module_t *self, int *size)
   pos += sizeof(int32_t);
   memcpy(params + pos, &icctype, sizeof(int32_t));
   pos += sizeof(int32_t);
+  memcpy(params + pos, &dimensions_type, sizeof(int32_t));
+  pos += sizeof(int32_t);
+  memcpy(params + pos, &print_dpi, sizeof(int32_t));
+  pos += sizeof(int32_t);
+  memcpy(params + pos, scale, strlen(scale) + 1);
+  pos += strlen(scale) + 1;
   memcpy(params + pos, metadata_export, strlen(metadata_export) + 1);
   pos += strlen(metadata_export) + 1;
   memcpy(params + pos, iccfilename, strlen(iccfilename) + 1);
@@ -2127,6 +2191,7 @@ void *get_params(dt_lib_module_t *self, int *size)
   }
   g_assert(pos == *size);
 
+  g_free(scale);
   g_free(iccfilename);
   g_free(style);
 
@@ -2159,6 +2224,12 @@ int set_params(dt_lib_module_t *self,
   buf += sizeof(int32_t);
   const int icctype = *(const int *)buf;
   buf += sizeof(int32_t);
+  const int dimensions_type = *(const int *)buf;
+  buf += sizeof(int32_t);
+  const int print_dpi = *(const int *)buf;
+  buf += sizeof(int32_t);
+  const char *scale = buf;
+  buf += strlen(scale) + 1;
   const char *metadata_export = buf;
   buf += strlen(metadata_export) + 1;
   g_free(d->metadata_export);
@@ -2211,9 +2282,15 @@ int set_params(dt_lib_module_t *self,
   buf += sizeof(int32_t);
 
   if(size
-     != strlen(fname) + strlen(sname) + 2
-        + 4 * sizeof(int32_t) + fsize + ssize + 7 * sizeof(int32_t)
-        + strlen(iccfilename) + 1 + strlen(metadata_export) + 1)
+     != strlen(fname) + 1
+        + strlen(sname) + 1
+        + 4 * sizeof(int32_t)
+        + fsize
+        + ssize
+        + 9 * sizeof(int32_t)
+        + strlen(scale) + 1
+        + strlen(iccfilename) + 1
+        + strlen(metadata_export) + 1)
     return 1;
   if(fversion != fmod->version() || sversion != smod->version()) return 1;
 
@@ -2232,10 +2309,12 @@ int set_params(dt_lib_module_t *self,
   set_format_by_name(d, fname);
 
   // set dimensions after switching, to have new range ready.
-  _set_dimensions(d, max_width, max_height);
+  _set_dimensions(d, max_width, max_height, print_dpi, scale);
   dt_bauhaus_combobox_set(d->upscale, upscale ? 1 : 0);
   dt_bauhaus_combobox_set(d->high_quality, high_quality ? 1 : 0);
   dt_bauhaus_combobox_set(d->export_masks, export_masks ? 1 : 0);
+  dt_bauhaus_combobox_set(d->dimensions_type, dimensions_type);
+  _size_update_display(d);
 
   // propagate to modules
   int res = 0;
