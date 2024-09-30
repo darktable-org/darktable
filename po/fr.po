@@ -205,7 +205,7 @@ msgstr "Récursivement"
 
 #: ../build/bin/conf_gen.h:985
 msgid "recursive directory traversal when importing filmrolls"
-msgstr "Importer les dossiers de manière récursive"
+msgstr "Importer les pellicules de manière récursive"
 
 #: ../build/bin/conf_gen.h:991
 msgid "creator to be applied when importing"
@@ -233,7 +233,7 @@ msgstr "Notation initiale"
 
 #: ../build/bin/conf_gen.h:1048
 msgid "initial star rating for all images when importing a filmroll"
-msgstr "Étoile(s) attribuée(s) lors de l’importation"
+msgstr "Étoile(s) attribuée(s) lors de l’importation d'une pellicule"
 
 #: ../build/bin/conf_gen.h:1054
 msgid "ignore EXIF rating"
