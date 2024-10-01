@@ -244,6 +244,8 @@ static const dt_magic_bytes_t _magic_signatures[] = {
   // RGBE (.hdr)  image
   { DT_FILETYPE_RGBE, TRUE, 0, 11, dt_imageio_open_rgbe,
     { '#', '?', 'R', 'A', 'D', 'I', 'A', 'N', 'C', 'E', 0x0A } },
+  { DT_FILETYPE_RGBE, TRUE, 0, 7, dt_imageio_open_rgbe,
+    { '#', '?', 'R', 'G', 'B', 'E', 0x0A } },
   // original v1 CRW
   { DT_FILETYPE_CRW, TRUE, 0, 14, dt_imageio_open_rawspeed,
     { 'I', 'I', 0x1A, 0x00, 0x00, 0x00, 'H', 'E', 'A', 'P', 'C', 'C', 'D', 'R' } },
