@@ -2036,22 +2036,25 @@ void *legacy_params(dt_lib_module_t *self,
     //  - char* (scale)
     //  - old rest
 
-    const char *scale = "";
+    const char *scale = "1.0";
+    const int scale_size = strlen(scale) + 1;
     const int print_dpi = dt_confgen_get_int("plugins/lighttable/export/print_dpi", DT_DEFAULT);
 
     const size_t new_params_size = old_params_size 
                                    + sizeof(int32_t) * 2 
-                                   + strlen(scale);
+                                   + scale_size;
     void *new_params = calloc(1, new_params_size);
 
     size_t pos = 0;
     memcpy(new_params, old_params, sizeof(int32_t) * 7);
-    pos += 8 * sizeof(int32_t);
-    memcpy(new_params + pos, &print_dpi, sizeof(int32_t));
+    pos += 7 * sizeof(int32_t);
+    pos += sizeof(int32_t);   // dimensions_type
+    memcpy((uint8_t *)new_params + pos, &print_dpi, sizeof(int32_t));
     pos += sizeof(int32_t);
-    pos += strlen(scale) + 1;
+    memcpy((uint8_t *)new_params + pos, scale, scale_size);
+    pos += scale_size;
     memcpy((uint8_t *)new_params + pos,
-           (uint8_t *)old_params + pos - sizeof(int32_t) * 2,
+           (uint8_t *)old_params + pos - sizeof(int32_t) * 2 - scale_size,
            old_params_size - sizeof(int32_t) * 7);
     *new_size = new_params_size;
     *new_version = 8;
@@ -2289,8 +2292,8 @@ int set_params(dt_lib_module_t *self,
         + ssize
         + 9 * sizeof(int32_t)
         + strlen(scale) + 1
-        + strlen(iccfilename) + 1
-        + strlen(metadata_export) + 1)
+        + strlen(metadata_export) + 1
+        + strlen(iccfilename) + 1)
     return 1;
   if(fversion != fmod->version() || sversion != smod->version()) return 1;
 
