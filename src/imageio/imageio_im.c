@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020-2023 darktable developers.
+    Copyright (C) 2020-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -126,7 +126,10 @@ dt_imageio_retval_t dt_imageio_open_im(dt_image_t *img, const char *filename, dt
   {
     img->profile_size = profile_length;
     img->profile = (uint8_t *)g_malloc0(profile_length);
-    memcpy(img->profile, profile_data, profile_length);
+    if(img->profile)
+    {
+      memcpy(img->profile, profile_data, profile_length);
+    }
     MagickRelinquishMemory(profile_data);
   }
 
