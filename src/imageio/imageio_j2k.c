@@ -38,7 +38,7 @@
 
 static char JP2_HEAD[] = { 0x0, 0x0, 0x0, 0x0C, 0x6A, 0x50, 0x20, 0x20, 0x0D, 0x0A, 0x87, 0x0A };
 static char JP2_MAGIC[] = { 0x0d, 0x0a, 0x87, 0x0a };
-static char J2K_HEAD[] = { 0xFF, 0x4F, 0xFF, 0x51, 0x00 };
+static char J2K_HEAD[] = { 0xFF, 0x4F, 0xFF, 0x51 };
 // there seems to be no JPIP/JPT magic string, so we can't load it ...
 
 static void color_sycc_to_rgb(opj_image_t *img);
@@ -225,9 +225,13 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img,
   /* Get the ICC profile if available */
   if(image->icc_profile_len > 0 && image->icc_profile_buf)
   {
-    img->profile = (uint8_t *)g_malloc0(image->icc_profile_len);
-    memcpy(img->profile, image->icc_profile_buf, image->icc_profile_len);
-    img->profile_size = image->icc_profile_len;
+    uint8_t *profile = (uint8_t *)g_malloc0(image->icc_profile_len);
+    if(profile)
+    {
+      img->profile = profile;
+      memcpy(img->profile, image->icc_profile_buf, image->icc_profile_len);
+      img->profile_size = image->icc_profile_len;
+    }
   }
 
   /* create output image */
@@ -351,131 +355,110 @@ G: 1.00003  -0.344125      -0.714128     :Cb - 2^(prec - 1)
 B: 0.999823  1.77204       -8.04142e-06  :Cr - 2^(prec - 1)
 
 -----------------------------------------------------------*/
-static void sycc_to_rgb(int offset,
-                        int upb,
-                        int y,
+static void sycc_to_rgb(const int offset,
+                        const int upb,
+                        const int y,
                         int cb,
                         int cr,
                         int *out_r,
                         int *out_g,
                         int *out_b)
 {
-  int r, g, b;
-
   cb -= offset;
   cr -= offset;
-  r = y + (int)(1.402 * (float)cr);
-  if(r < 0)
-    r = 0;
-  else if(r > upb)
-    r = upb;
-  *out_r = r;
+  int r = y + (int)(1.402 * (float)cr);
+  *out_r = CLAMP(r, 0, upb);
 
-  g = y - (int)(0.344 * (float)cb + 0.714 * (float)cr);
-  if(g < 0)
-    g = 0;
-  else if(g > upb)
-    g = upb;
-  *out_g = g;
+  int g = y - (int)(0.344 * (float)cb + 0.714 * (float)cr);
+  *out_g = CLAMP(g, 0, upb);
 
-  b = y + (int)(1.772 * (float)cb);
-  if(b < 0)
-    b = 0;
-  else if(b > upb)
-    b = upb;
-  *out_b = b;
+  int b = y + (int)(1.772 * (float)cb);
+  *out_b = CLAMP(b, 0, upb);
 }
 
 static void sycc444_to_rgb(opj_image_t *img)
 {
-  int *d0, *d1, *d2, *r, *g, *b;
-  const int *y, *cb, *cr;
-  size_t maxw, maxh, max;
-  int i, offset, upb;
+  const int prec = img->comps[0].prec;
+  const int offset = 1 << (prec - 1);
+  const int upb = (1 << prec) - 1;
 
-  i = img->comps[0].prec;
-  offset = 1 << (i - 1);
-  upb = (1 << i) - 1;
+  const size_t maxw = img->comps[0].w;
+  const size_t maxh = img->comps[0].h;
+  const size_t max = maxw * maxh;
 
-  maxw = img->comps[0].w;
-  maxh = img->comps[0].h;
-  max = maxw * maxh;
+  const int *y = img->comps[0].data;
+  const int *cb = img->comps[1].data;
+  const int *cr = img->comps[2].data;
 
-  y = img->comps[0].data;
-  cb = img->comps[1].data;
-  cr = img->comps[2].data;
+  int *const r = (int *)calloc(max, sizeof(int));
+  int *const g = (int *)calloc(max, sizeof(int));
+  int *const b = (int *)calloc(max, sizeof(int));
 
-  d0 = r = (int *)calloc(max, sizeof(int));
-  d1 = g = (int *)calloc(max, sizeof(int));
-  d2 = b = (int *)calloc(max, sizeof(int));
-
-  for(i = 0; i < max; ++i)
+  if(!r || !g || !b)
   {
-    sycc_to_rgb(offset, upb, *y, *cb, *cr, r, g, b);
-    ++y;
-    ++cb;
-    ++cr;
-    ++r;
-    ++g;
-    ++b;
+    free(r);
+    free(g);
+    free(b);
+    return;
+  }
+
+  DT_OMP_FOR()
+  for(size_t k = 0; k < max; ++k)
+  {
+    sycc_to_rgb(offset, upb, y[k], cb[k], cr[k], r+k, g+k, b+k);
   }
   free(img->comps[0].data);
-  img->comps[0].data = d0;
+  img->comps[0].data = r;
   free(img->comps[1].data);
-  img->comps[1].data = d1;
+  img->comps[1].data = g;
   free(img->comps[2].data);
-  img->comps[2].data = d2;
+  img->comps[2].data = b;
 } /* sycc444_to_rgb() */
 
 static void sycc422_to_rgb(opj_image_t *img)
 {
-  int *d0, *d1, *d2, *r, *g, *b;
-  const int *y, *cb, *cr;
-  size_t maxw, maxh, max;
-  int offset, upb;
-  int i, j;
+  const int prec = img->comps[0].prec;
+  const int offset = 1 << (prec - 1);
+  const int upb = (1 << prec) - 1;
 
-  i = img->comps[0].prec;
-  offset = 1 << (i - 1);
-  upb = (1 << i) - 1;
+  const size_t maxw = img->comps[0].w;
+  const size_t maxh = img->comps[0].h;
+  const size_t max = maxw * maxh;
 
-  maxw = img->comps[0].w;
-  maxh = img->comps[0].h;
-  max = maxw * maxh;
+  const int *y = img->comps[0].data;
+  const int *cb = img->comps[1].data;
+  const int *cr = img->comps[2].data;
 
-  y = img->comps[0].data;
-  cb = img->comps[1].data;
-  cr = img->comps[2].data;
+  int *const r = (int *)calloc(max, sizeof(int));
+  int *const g = (int *)calloc(max, sizeof(int));
+  int *const b = (int *)calloc(max, sizeof(int));
 
-  d0 = r = (int *)calloc(max, sizeof(int));
-  d1 = g = (int *)calloc(max, sizeof(int));
-  d2 = b = (int *)calloc(max, sizeof(int));
-
-  for(i = 0; i < maxh; ++i)
+  if(!r || !g || !b)
   {
-    for(j = 0; j < maxw; j += 2)
-    {
-      sycc_to_rgb(offset, upb, *y, *cb, *cr, r, g, b);
-      ++y;
-      ++r;
-      ++g;
-      ++b;
+    free(r);
+    free(g);
+    free(b);
+    return;
+  }
 
-      sycc_to_rgb(offset, upb, *y, *cb, *cr, r, g, b);
-      ++y;
-      ++r;
-      ++g;
-      ++b;
-      ++cb;
-      ++cr;
+  DT_OMP_FOR()
+  for(size_t i = 0; i < maxh; ++i)
+  {
+    size_t rowstart = i * maxw;
+    for(size_t j = 0; j < maxw; j += 2)
+    {
+      const int curr_cb = cb[rowstart + j/2];
+      const int curr_cr = cr[rowstart + j/2];
+      sycc_to_rgb(offset, upb, y[rowstart+j], curr_cb, curr_cr, r+rowstart+j, g+rowstart+j, b+rowstart+j);
+      sycc_to_rgb(offset, upb, y[rowstart+j+1], curr_cb, curr_cr, r+rowstart+j+1, g+rowstart+j+1, b+rowstart+j+1);
     }
   }
   free(img->comps[0].data);
-  img->comps[0].data = d0;
+  img->comps[0].data = r;
   free(img->comps[1].data);
-  img->comps[1].data = d1;
+  img->comps[1].data = g;
   free(img->comps[2].data);
-  img->comps[2].data = d2;
+  img->comps[2].data = b;
 
   img->comps[1].w = maxw;
   img->comps[1].h = maxh;
@@ -500,57 +483,41 @@ static void sycc420_to_rgb(opj_image_t *img)
   const int *cb = img->comps[1].data;
   const int *cr = img->comps[2].data;
 
-  int *d0, *d1, *d2, *r, *g, *b;
-  d0 = r = (int *)calloc(max, sizeof(int));
-  d1 = g = (int *)calloc(max, sizeof(int));
-  d2 = b = (int *)calloc(max, sizeof(int));
+  int *const r = (int *)calloc(max, sizeof(int));
+  int *const g = (int *)calloc(max, sizeof(int));
+  int *const b = (int *)calloc(max, sizeof(int));
 
-  for(int i = 0; i < maxh; i += 2)
+  if(!r || !g || !b)
   {
-    const int *ny = y + maxw;
-    int *nr = r + maxw;
-    int *ng = g + maxw;
-    int *nb = b + maxw;
+    free(r);
+    free(g);
+    free(b);
+    return;
+  }
 
-    for(int j = 0; j < maxw; j += 2)
+  DT_OMP_FOR()
+  for(size_t i = 0; i < maxh; i += 2)
+  {
+    const size_t subrow = (i/2) * maxw;
+    const size_t rowstart = i * maxw;
+    const size_t nextrow = (i+1) * maxw;
+
+    for(size_t j = 0; j < maxw; j += 2)
     {
-      sycc_to_rgb(offset, upb, *y, *cb, *cr, r, g, b);
-      ++y;
-      ++r;
-      ++g;
-      ++b;
-
-      sycc_to_rgb(offset, upb, *y, *cb, *cr, r, g, b);
-      ++y;
-      ++r;
-      ++g;
-      ++b;
-
-      sycc_to_rgb(offset, upb, *ny, *cb, *cr, nr, ng, nb);
-      ++ny;
-      ++nr;
-      ++ng;
-      ++nb;
-
-      sycc_to_rgb(offset, upb, *ny, *cb, *cr, nr, ng, nb);
-      ++ny;
-      ++nr;
-      ++ng;
-      ++nb;
-      ++cb;
-      ++cr;
+      const int curr_cb = cb[subrow + j/2];
+      const int curr_cr = cr[subrow + j/2];
+      sycc_to_rgb(offset, upb, y[rowstart+j], curr_cb, curr_cr, r+rowstart+j, g+rowstart+j, b+rowstart+j);
+      sycc_to_rgb(offset, upb, y[rowstart+j+1], curr_cb, curr_cr, r+rowstart+j+1, g+rowstart+j+1, b+rowstart+j+1);
+      sycc_to_rgb(offset, upb, y[nextrow+j], curr_cb, curr_cr, r+nextrow+j, g+nextrow+j, b+nextrow+j);
+      sycc_to_rgb(offset, upb, y[nextrow+j+1], curr_cb, *cr, r+nextrow+j+1, g+nextrow+j+1, b+nextrow+j+1);
     }
-    y += maxw;
-    r += maxw;
-    g += maxw;
-    b += maxw;
   }
   free(img->comps[0].data);
-  img->comps[0].data = d0;
+  img->comps[0].data = r;
   free(img->comps[1].data);
-  img->comps[1].data = d1;
+  img->comps[1].data = g;
   free(img->comps[2].data);
-  img->comps[2].data = d2;
+  img->comps[2].data = b;
 
   img->comps[1].w = maxw;
   img->comps[1].h = maxh;
