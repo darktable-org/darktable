@@ -52,6 +52,12 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img,
   fseek(f, 0, SEEK_SET);
 
   void *read_buffer = g_malloc(filesize);
+  if(!read_buffer)
+  {
+    fclose(f);
+    dt_print(DT_DEBUG_ALWAYS, "[qoi_open] failed to allocate buffer for %s\n", filename);
+    return DT_IMAGEIO_LOAD_FAILED;
+  }
 
   // Let's check whether the entire content of the file should be read into the buffer.
   // If we see that it's a non-QOI file, we'll save time by avoiding unnecessary reading
