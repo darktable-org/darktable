@@ -1088,6 +1088,8 @@ float dt_image_get_sensor_ratio(const struct dt_image_t *img)
 void dt_image_set_raw_aspect_ratio(const dt_imgid_t imgid)
 {
   /* fetch image from cache */
+  if(!darktable.image_cache) return;
+
   dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
 
   /* set image aspect ratio */
