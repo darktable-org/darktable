@@ -41,6 +41,8 @@ static dt_imageio_retval_t _read_pbm(dt_image_t *img, FILE*f, float *buf)
 
   int bytes_needed = (img->width + 7) / 8;
   uint8_t *line = calloc(bytes_needed, sizeof(uint8_t));
+  if(!line)
+    return DT_IMAGEIO_LOAD_FAILED;
 
   float *buf_iter = buf;
   for(size_t y = 0; y < img->height; y++)
@@ -88,7 +90,7 @@ static dt_imageio_retval_t _read_pgm(dt_image_t *img, FILE*f, float *buf)
     uint8_t *line = calloc(img->width, sizeof(uint8_t));
 
     float *buf_iter = buf;
-    for(size_t y = 0; y < img->height; y++)
+    for(size_t y = 0; line && y < img->height; y++)
     {
       if(fread(line, sizeof(uint8_t), (size_t)img->width, f) != img->width)
       {
@@ -110,7 +112,7 @@ static dt_imageio_retval_t _read_pgm(dt_image_t *img, FILE*f, float *buf)
     uint16_t *line = calloc(img->width, sizeof(uint16_t));
 
     float *buf_iter = buf;
-    for(size_t y = 0; y < img->height; y++)
+    for(size_t y = 0; line && y < img->height; y++)
     {
       if(fread(line, sizeof(uint16_t), (size_t)img->width, f) != img->width)
       {
@@ -153,7 +155,7 @@ static dt_imageio_retval_t _read_ppm(dt_image_t *img, FILE*f, float *buf)
     uint8_t *line = calloc((size_t)3 * img->width, sizeof(uint8_t));
 
     float *buf_iter = buf;
-    for(size_t y = 0; y < img->height; y++)
+    for(size_t y = 0; line && y < img->height; y++)
     {
       if(fread(line, 3 * sizeof(uint8_t), (size_t)img->width, f) != img->width)
       {
@@ -177,7 +179,7 @@ static dt_imageio_retval_t _read_ppm(dt_image_t *img, FILE*f, float *buf)
     uint16_t *line = calloc((size_t)3 * img->width, sizeof(uint16_t));
 
     float *buf_iter = buf;
-    for(size_t y = 0; y < img->height; y++)
+    for(size_t y = 0; line && y < img->height; y++)
     {
       if(fread(line, 3 * sizeof(uint16_t), (size_t)img->width, f) != img->width)
       {
