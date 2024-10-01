@@ -880,25 +880,13 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
           CLARG(out), CLARG(blur), CLARG(iwidth), CLARG(iheight), CLARG(threshold), CLARG(detail));
   if(err != CL_SUCCESS) goto error;
 
-  float blurmat[13];
-  dt_masks_blur_coeff(blurmat, 2.0f);
-  cl_mem dev_blurmat = dt_opencl_copy_host_to_device_constant(devid, sizeof(blurmat), blurmat);
-  if(dev_blurmat != NULL)
-  {
-    err = dt_opencl_enqueue_kernel_2d_args
-          (devid, darktable.opencl->blendop->kernel_mask_blur, iwidth, iheight,
-           CLARG(blur), CLARG(out), CLARG(iwidth), CLARG(iheight), CLARG(dev_blurmat));
-    dt_opencl_release_mem_object(dev_blurmat);
-    if(err != CL_SUCCESS) goto error;
+  const dt_aligned_pixel_t max = {1.0f, 1.0f, 1.0f, 1.0f};
+  const dt_aligned_pixel_t min = {0.0f, 0.0f, 0.0f, 0.0f};
+  err = dt_gaussian_fast_blur_cl_buffer(devid, blur, out, iwidth, iheight, 2.0f, 1, min, max);
+  if(err != CL_SUCCESS) goto error;
 
-    err = dt_opencl_read_buffer_from_device(devid, lum, out, 0, sizeof(float) * iwidth * iheight, TRUE);
-    if(err != CL_SUCCESS) goto error;
-  }
-  else
-  {
-    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-    goto error;
-  }
+  err = dt_opencl_read_buffer_from_device(devid, lum, out, 0, sizeof(float) * iwidth * iheight, TRUE);
+  if(err != CL_SUCCESS) goto error;
 
   dt_opencl_release_mem_object(blur);
   dt_opencl_release_mem_object(out);
@@ -1587,8 +1575,6 @@ dt_blendop_cl_global_t *dt_develop_blend_init_cl_global(void)
     dt_opencl_create_kernel(program_rcd, "calc_scharr_mask");
   b->kernel_calc_blend =
     dt_opencl_create_kernel(program_rcd, "calc_detail_blend");
-  b->kernel_mask_blur  =
-    dt_opencl_create_kernel(program_rcd, "fastblur_mask_9x9");
 
   return b;
 #else
@@ -1618,7 +1604,6 @@ void dt_develop_blend_free_cl_global(dt_blendop_cl_global_t *b)
   dt_opencl_free_kernel(b->kernel_calc_Y0_mask);
   dt_opencl_free_kernel(b->kernel_calc_scharr_mask);
   dt_opencl_free_kernel(b->kernel_calc_blend);
-  dt_opencl_free_kernel(b->kernel_mask_blur);
   free(b);
 #endif
 }
