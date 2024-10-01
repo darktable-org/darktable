@@ -1572,8 +1572,16 @@ static gboolean _event_button_release(GtkWidget *widget,
           }
           else
           {
+            GtkSettings *settings = gtk_widget_get_settings(GTK_WIDGET (widget));
+            guint double_click_time = 400;
+
+            if(settings)
+            {
+              g_object_get(settings, "gtk-double-click-time", &double_click_time, NULL);
+            }
+
             table->to_selid = id;
-            table->sel_single_cb = g_timeout_add(300, _do_select_single, table);
+            table->sel_single_cb = g_timeout_add(double_click_time, _do_select_single, table);
           }
         }
       }
