@@ -528,7 +528,8 @@ int dt_imageio_tiff_read_profile(const char *filename, uint8_t **out)
     if(profile_len > 0)
     {
       *out = (uint8_t *)g_malloc(profile_len);
-      cmsSaveProfileToMem(profile, *out, &profile_len);
+      if(*out)
+        cmsSaveProfileToMem(profile, *out, &profile_len);
     }
   }
   else if(TIFFGetField(tiff, TIFFTAG_ICCPROFILE, &profile_len, &profile))
@@ -536,7 +537,8 @@ int dt_imageio_tiff_read_profile(const char *filename, uint8_t **out)
     if(profile_len > 0)
     {
       *out = (uint8_t *)g_malloc(profile_len);
-      memcpy(*out, profile, profile_len);
+      if(*out)
+        memcpy(*out, profile, profile_len);
     }
   }
   else
