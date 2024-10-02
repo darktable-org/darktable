@@ -3547,6 +3547,8 @@ void dt_dev_clear_chroma_troubles(dt_develop_t *dev)
 
 void dt_dev_reset_chroma(dt_develop_t *dev)
 {
+  if(!dev)
+    return;
   dt_dev_clear_chroma_troubles(dev);
   dt_dev_chroma_t *chr = &dev->chroma;
   chr->adaptation = NULL;
