@@ -282,6 +282,230 @@ gaussian_column_1c(global float *in, global float *out, unsigned int width, unsi
   }
 }
 
+/*
+  kern always is an array of 25 floats for kernel coeffs.
+  Access i = y*5 + x
+*/
+__kernel void gaussian_kernel_9x9(global float *input,
+                                  global float *output,
+                                  const int w,
+                                  const int h,
+                                  const int ch,
+                                  global const float *kern,
+                                  const float4 minval,
+                                  const float4 maxval,
+                                  const int dim)
+{
+  const int col = get_global_id(0);
+  const int row = get_global_id(1);
+  if((col >= w) || (row >= h)) return;
+
+  const int i = mad24(row, w, col);
+  const int w2 = 2 * w;
+  const int w3 = 3 * w;
+  const int w4 = 4 * w;
+
+  if(ch == 1)
+  {
+    global float *in = input;
+    global float *out = output;
+    float val = 0.0f;
+    if(dim == 4 && col >= 4 && row >= 4 && col < w - 4 && row < h - 4)
+    {
+      val =   kern[10+4] * (in[i - w4 -2] + in[i - w4 +2] + in[i - w2 -4] + in[i - w2 +4] + in[i + w2 -4] + in[i + w2 +4] + in[i + w4 -2] + in[i + w4 +2])
+            + kern[5 +4] * (in[i - w4 -1] + in[i - w4 +1] + in[i -  w -4] + in[i -  w +4] + in[i +  w -4] + in[i +  w +4] + in[i + w4 -1] + in[i + w4 +1])
+            + kern[4]    * (in[i - w4]    + in[i - 4]     + in[i + 4]     + in[i + w4])
+            + kern[15+3] * (in[i - w3 -3] + in[i - w3 +3] + in[i + w3 -3] + in[i + w3 +3])
+            + kern[10+3] * (in[i - w3 -2] + in[i - w3 +2] + in[i - w2 -3] + in[i - w2 +3] + in[i + w2 -3] + in[i + w2 +3] + in[i + w3 -2] + in[i + w3 +2])
+            + kern[ 5+3] * (in[i - w3 -1] + in[i - w3 +1] + in[i - w  -3] + in[i -  w +3] + in[i +  w -3] + in[i +  w +3] + in[i + w3 -1] + in[i + w3 +1])
+            + kern[   3] * (in[i - w3]    + in[i - 3]     + in[i + 3]     + in[i + w3])
+            + kern[10+2] * (in[i - w2 -2] + in[i - w2 +2] + in[i + w2 -2] + in[i + w2 +2])
+            + kern[ 5+2] * (in[i - w2 -1] + in[i - w2 +1] + in[i -  w -2] + in[i -  w +2] + in[i +  w -2] + in[i +  w +2] + in[i + w2 -1] + in[i + w2 +1])
+            + kern[   2] * (in[i - w2]    + in[i - 2]     + in[i + 2]     + in[i + w2])
+            + kern[ 5+1] * (in[i -  w -1] + in[i -  w +1] + in[i +  w -1] + in[i +  w +1])
+            + kern[   1] * (in[i -  w]    + in[i - 1]     + in[i + 1]     + in[i +  w])
+            + kern[   0] * in[i];
+    }
+    else if(dim == 3 && col >= 3 && row >= 3 && col < w - 3 && row < h - 3)
+    {
+      val =   kern[10+3] * (in[i - w3 -2] + in[i - w3 +2] + in[i - w2 -3] + in[i - w2 +3] + in[i + w2 -3] + in[i + w2 +3] + in[i + w3 -2] + in[i + w3 +2])
+            + kern[ 5+3] * (in[i - w3 -1] + in[i - w3 +1] + in[i - w  -3] + in[i -  w +3] + in[i +  w -3] + in[i +  w +3] + in[i + w3 -1] + in[i + w3 +1])
+            + kern[   3] * (in[i - w3]    + in[i - 3]     + in[i + 3]     + in[i + w3])
+            + kern[10+2] * (in[i - w2 -2] + in[i - w2 +2] + in[i + w2 -2] + in[i + w2 +2])
+            + kern[ 5+2] * (in[i - w2 -1] + in[i - w2 +1] + in[i -  w -2] + in[i -  w +2] + in[i +  w -2] + in[i +  w +2] + in[i + w2 -1] + in[i + w2 +1])
+            + kern[   2] * (in[i - w2]    + in[i - 2]     + in[i + 2]     + in[i + w2])
+            + kern[ 5+1] * (in[i -  w -1] + in[i -  w +1] + in[i +  w -1] + in[i +  w +1])
+            + kern[   1] * (in[i -  w]    + in[i - 1]     + in[i + 1]     + in[i +  w])
+            + kern[   0] * in[i];
+    }
+    else if(dim == 2 && col >= 2 && row >= 2 && col < w - 2 && row < h - 2)
+    {
+      val =   kern[ 5+2] * (in[i - w2 -1] + in[i - w2 +1] + in[i -  w -2] + in[i -  w +2] + in[i +  w -2] + in[i +  w +2] + in[i + w2 -1] + in[i + w2 +1])
+            + kern[   2] * (in[i - w2]    + in[i - 2]     + in[i + 2]     + in[i + w2])
+            + kern[ 5+1] * (in[i -  w -1] + in[i -  w +1] + in[i +  w -1] + in[i +  w +1])
+            + kern[   1] * (in[i -  w]    + in[i - 1]     + in[i + 1]     + in[i +  w])
+            + kern[   0] * in[i];
+    }
+    else
+    {
+      float sum = 0.0f;
+      float div = 0.0f;
+      for(int ir = -dim; ir <= dim; ir++)
+      {
+        const int irow = row+ir;
+        if(irow >= 0 && irow < h)
+        {
+          for(int ic = -dim; ic <= dim; ic++)
+          {
+            const int icol = col+ic;
+            if(icol >=0 && icol < w)
+            {
+              const float coeff = kern[5 * abs(ir) + abs(ic)];
+              div += coeff;
+              sum += coeff * in[mad24(irow, w, icol)];
+            }
+          }
+        }
+      }
+      val = (div != 0.0f) ? sum / div : 0.0f;
+    }
+    out[i] = clamp(val, minval.x, maxval.x);
+  }
+
+  else if(ch == 2)
+  {
+    global float2 *in = (global float2 *)input;
+    global float2 *out = (global float2 *)output;
+    float2 val = 0.0f;
+    if(dim == 4 && col >= 4 && row >= 4 && col < w - 4 && row < h - 4)
+    {
+      val =   kern[10+4] * (in[i - w4 -2] + in[i - w4 +2] + in[i - w2 -4] + in[i - w2 +4] + in[i + w2 -4] + in[i + w2 +4] + in[i + w4 -2] + in[i + w4 +2])
+            + kern[5 +4] * (in[i - w4 -1] + in[i - w4 +1] + in[i -  w -4] + in[i -  w +4] + in[i +  w -4] + in[i +  w +4] + in[i + w4 -1] + in[i + w4 +1])
+            + kern[4]    * (in[i - w4]    + in[i - 4]     + in[i + 4]     + in[i + w4])
+            + kern[15+3] * (in[i - w3 -3] + in[i - w3 +3] + in[i + w3 -3] + in[i + w3 +3])
+            + kern[10+3] * (in[i - w3 -2] + in[i - w3 +2] + in[i - w2 -3] + in[i - w2 +3] + in[i + w2 -3] + in[i + w2 +3] + in[i + w3 -2] + in[i + w3 +2])
+            + kern[ 5+3] * (in[i - w3 -1] + in[i - w3 +1] + in[i - w  -3] + in[i -  w +3] + in[i +  w -3] + in[i +  w +3] + in[i + w3 -1] + in[i + w3 +1])
+            + kern[   3] * (in[i - w3]    + in[i - 3]     + in[i + 3]     + in[i + w3])
+            + kern[10+2] * (in[i - w2 -2] + in[i - w2 +2] + in[i + w2 -2] + in[i + w2 +2])
+            + kern[ 5+2] * (in[i - w2 -1] + in[i - w2 +1] + in[i -  w -2] + in[i -  w +2] + in[i +  w -2] + in[i +  w +2] + in[i + w2 -1] + in[i + w2 +1])
+            + kern[   2] * (in[i - w2]    + in[i - 2]     + in[i + 2]     + in[i + w2])
+            + kern[ 5+1] * (in[i -  w -1] + in[i -  w +1] + in[i +  w -1] + in[i +  w +1])
+            + kern[   1] * (in[i -  w]    + in[i - 1]     + in[i + 1]     + in[i +  w])
+            + kern[   0] * in[i];
+    }
+    else if(dim == 3 && col >= 3 && row >= 3 && col < w - 3 && row < h - 3)
+    {
+      val =   kern[10+3] * (in[i - w3 -2] + in[i - w3 +2] + in[i - w2 -3] + in[i - w2 +3] + in[i + w2 -3] + in[i + w2 +3] + in[i + w3 -2] + in[i + w3 +2])
+            + kern[ 5+3] * (in[i - w3 -1] + in[i - w3 +1] + in[i - w  -3] + in[i -  w +3] + in[i +  w -3] + in[i +  w +3] + in[i + w3 -1] + in[i + w3 +1])
+            + kern[   3] * (in[i - w3]    + in[i - 3]     + in[i + 3]     + in[i + w3])
+            + kern[10+2] * (in[i - w2 -2] + in[i - w2 +2] + in[i + w2 -2] + in[i + w2 +2])
+            + kern[ 5+2] * (in[i - w2 -1] + in[i - w2 +1] + in[i -  w -2] + in[i -  w +2] + in[i +  w -2] + in[i +  w +2] + in[i + w2 -1] + in[i + w2 +1])
+            + kern[   2] * (in[i - w2]    + in[i - 2]     + in[i + 2]     + in[i + w2])
+            + kern[ 5+1] * (in[i -  w -1] + in[i -  w +1] + in[i +  w -1] + in[i +  w +1])
+            + kern[   1] * (in[i -  w]    + in[i - 1]     + in[i + 1]     + in[i +  w])
+            + kern[   0] * in[i];
+    }
+    else if(dim == 2 && col >= 2 && row >= 2 && col < w - 2 && row < h - 2)
+    {
+      val =   kern[ 5+2] * (in[i - w2 -1] + in[i - w2 +1] + in[i -  w -2] + in[i -  w +2] + in[i +  w -2] + in[i +  w +2] + in[i + w2 -1] + in[i + w2 +1])
+            + kern[   2] * (in[i - w2]    + in[i - 2]     + in[i + 2]     + in[i + w2])
+            + kern[ 5+1] * (in[i -  w -1] + in[i -  w +1] + in[i +  w -1] + in[i +  w +1])
+            + kern[   1] * (in[i -  w]    + in[i - 1]     + in[i + 1]     + in[i +  w])
+            + kern[   0] * in[i];
+    }
+    else
+    {
+      float2 sum = 0.0f;
+      float div = 0.0f;
+      for(int ir = -dim; ir <= dim; ir++)
+      {
+        const int irow = row+ir;
+        if(irow >= 0 && irow < h)
+        {
+          for(int ic = -dim; ic <= dim; ic++)
+          {
+            const int icol = col+ic;
+            if(icol >=0 && icol < w)
+            {
+              const float coeff = kern[5 * abs(ir) + abs(ic)];
+              div += coeff;
+              sum += coeff * in[mad24(irow, w, icol)];
+            }
+          }
+        }
+      }
+      val = (div != 0.0f) ? sum / div : 0.0f;
+    }
+    out[i] = clamp(val, minval.xy, maxval.xy);
+  }
+
+  else if(ch == 4)
+  {
+    global float4 *in = (global float4 *)input;
+    global float4 *out = (global float4 *)output;
+    float4 val = 0.0f;
+    if(dim == 4 && col >= 4 && row >= 4 && col < w - 4 && row < h - 4)
+    {
+      val =   kern[10+4] * (in[i - w4 -2] + in[i - w4 +2] + in[i - w2 -4] + in[i - w2 +4] + in[i + w2 -4] + in[i + w2 +4] + in[i + w4 -2] + in[i + w4 +2])
+            + kern[5 +4] * (in[i - w4 -1] + in[i - w4 +1] + in[i -  w -4] + in[i -  w +4] + in[i +  w -4] + in[i +  w +4] + in[i + w4 -1] + in[i + w4 +1])
+            + kern[4]    * (in[i - w4]    + in[i - 4]     + in[i + 4]     + in[i + w4])
+            + kern[15+3] * (in[i - w3 -3] + in[i - w3 +3] + in[i + w3 -3] + in[i + w3 +3])
+            + kern[10+3] * (in[i - w3 -2] + in[i - w3 +2] + in[i - w2 -3] + in[i - w2 +3] + in[i + w2 -3] + in[i + w2 +3] + in[i + w3 -2] + in[i + w3 +2])
+            + kern[ 5+3] * (in[i - w3 -1] + in[i - w3 +1] + in[i - w  -3] + in[i -  w +3] + in[i +  w -3] + in[i +  w +3] + in[i + w3 -1] + in[i + w3 +1])
+            + kern[   3] * (in[i - w3]    + in[i - 3]     + in[i + 3]     + in[i + w3])
+            + kern[10+2] * (in[i - w2 -2] + in[i - w2 +2] + in[i + w2 -2] + in[i + w2 +2])
+            + kern[ 5+2] * (in[i - w2 -1] + in[i - w2 +1] + in[i -  w -2] + in[i -  w +2] + in[i +  w -2] + in[i +  w +2] + in[i + w2 -1] + in[i + w2 +1])
+            + kern[   2] * (in[i - w2]    + in[i - 2]     + in[i + 2]     + in[i + w2])
+            + kern[ 5+1] * (in[i -  w -1] + in[i -  w +1] + in[i +  w -1] + in[i +  w +1])
+            + kern[   1] * (in[i -  w]    + in[i - 1]     + in[i + 1]     + in[i +  w])
+            + kern[   0] * in[i];
+    }
+    else if(dim == 3 && col >= 3 && row >= 3 && col < w - 3 && row < h - 3)
+    {
+      val =   kern[10+3] * (in[i - w3 -2] + in[i - w3 +2] + in[i - w2 -3] + in[i - w2 +3] + in[i + w2 -3] + in[i + w2 +3] + in[i + w3 -2] + in[i + w3 +2])
+            + kern[ 5+3] * (in[i - w3 -1] + in[i - w3 +1] + in[i - w  -3] + in[i -  w +3] + in[i +  w -3] + in[i +  w +3] + in[i + w3 -1] + in[i + w3 +1])
+            + kern[   3] * (in[i - w3]    + in[i - 3]     + in[i + 3]     + in[i + w3])
+            + kern[10+2] * (in[i - w2 -2] + in[i - w2 +2] + in[i + w2 -2] + in[i + w2 +2])
+            + kern[ 5+2] * (in[i - w2 -1] + in[i - w2 +1] + in[i -  w -2] + in[i -  w +2] + in[i +  w -2] + in[i +  w +2] + in[i + w2 -1] + in[i + w2 +1])
+            + kern[   2] * (in[i - w2]    + in[i - 2]     + in[i + 2]     + in[i + w2])
+            + kern[ 5+1] * (in[i -  w -1] + in[i -  w +1] + in[i +  w -1] + in[i +  w +1])
+            + kern[   1] * (in[i -  w]    + in[i - 1]     + in[i + 1]     + in[i +  w])
+            + kern[   0] * in[i];
+    }
+    else if(dim == 2 && col >= 2 && row >= 2 && col < w - 2 && row < h - 2)
+    {
+      val =   kern[ 5+2] * (in[i - w2 -1] + in[i - w2 +1] + in[i -  w -2] + in[i -  w +2] + in[i +  w -2] + in[i +  w +2] + in[i + w2 -1] + in[i + w2 +1])
+            + kern[   2] * (in[i - w2]    + in[i - 2]     + in[i + 2]     + in[i + w2])
+            + kern[ 5+1] * (in[i -  w -1] + in[i -  w +1] + in[i +  w -1] + in[i +  w +1])
+            + kern[   1] * (in[i -  w]    + in[i - 1]     + in[i + 1]     + in[i +  w])
+            + kern[   0] * in[i];
+    }
+    else
+    {
+      float4 sum = 0.0f;
+      float div = 0.0f;
+      for(int ir = -dim; ir <= dim; ir++)
+      {
+        const int irow = row+ir;
+        if(irow >= 0 && irow < h)
+        {
+          for(int ic = -dim; ic <= dim; ic++)
+          {
+            const int icol = col+ic;
+            if(icol >=0 && icol < w)
+            {
+              const float coeff = kern[5 * abs(ir) + abs(ic)];
+              div += coeff;
+              sum += coeff * in[mad24(irow, w, icol)];
+            }
+          }
+        }
+      }
+      val = (div != 0.0f) ? sum / div : 0.0f;
+    }
+    out[i] = clamp(val, minval, maxval);
+  }
+}
 
 
 float

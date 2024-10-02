@@ -22,11 +22,20 @@
 #include "common/gaussian.h"
 #include "common/math.h"
 #include "common/opencl.h"
+#include "common/imagebuf.h"
 
 #define BLOCKSIZE (1 << 6)
 
-static void compute_gauss_params(const float sigma, dt_gaussian_order_t order, float *a0, float *a1,
-                                 float *a2, float *a3, float *b1, float *b2, float *coefp, float *coefn)
+static void _compute_gauss_params(const float sigma,
+                                  dt_gaussian_order_t order,
+                                  float *a0,
+                                  float *a1,
+                                  float *a2,
+                                  float *a3,
+                                  float *b1,
+                                  float *b2,
+                                  float *coefp,
+                                  float *coefn)
 {
   const float alpha = 1.695f / sigma;
   const float ema = expf(-alpha);
@@ -76,6 +85,39 @@ static void compute_gauss_params(const float sigma, dt_gaussian_order_t order, f
 
   *coefp = (*a0 + *a1) / (1.0f + *b1 + *b2);
   *coefn = (*a2 + *a3) / (1.0f + *b1 + *b2);
+}
+
+static int _calc_9x9_gauss_coeffs(float *coeffs, const float sigma)
+{
+  float kernel[9][9];
+
+  /* As we want to leave out the outermost locations for each NxN kernel we choose
+     kernel size depending on sigma and make sure the nomalizing is done depending on this.
+  */
+  const float r[6] = { 0.0f, 0.6f, 0.84f, 1.15f, 1.5f, 2.0f };
+  const int dim = sigma > r[3] ? 4 : (sigma > r[2] ? 3 : 2);
+  const float range = sqrf(3.0f * r[dim]);
+  const float temp = -2.0f * sigma * sigma;
+  float sum = 0.0f;
+  for(int k = -4; k < 5; k++)
+  {
+    for(int j = -4; j < 5; j++)
+    {
+      const float rad = k*k + j*j;
+      if(rad <= range)
+      {
+        kernel[k + 4][j + 4] = expf(rad / temp);
+        sum += kernel[k + 4][j + 4];
+      }
+      else
+        kernel[k + 4][j + 4] = 0.0f;
+    }
+  }
+
+  for(int k = 0; k < 5; k++)
+    for(int j = 0; j < 5; j++)
+      coeffs[5*k+j] = kernel[k+4][j+4] / sum;
+  return dim;
 }
 
 size_t dt_gaussian_memory_use(const int width,    // width of input image
@@ -159,7 +201,7 @@ void dt_gaussian_blur(dt_gaussian_t *g, const float *const in, float *const out)
 
   float a0, a1, a2, a3, b1, b2, coefp, coefn;
 
-  compute_gauss_params(g->sigma, g->order, &a0, &a1, &a2, &a3, &b1, &b2, &coefp, &coefn);
+  _compute_gauss_params(g->sigma, g->order, &a0, &a1, &a2, &a3, &b1, &b2, &coefp, &coefn);
 
   float *temp = g->buf;
 
@@ -312,7 +354,7 @@ void dt_gaussian_blur_4c(dt_gaussian_t *g, const float *const in, float *const o
 
   float a0, a1, a2, a3, b1, b2, coefp, coefn;
 
-  compute_gauss_params(g->sigma, g->order, &a0, &a1, &a2, &a3, &b1, &b2, &coefp, &coefn);
+  _compute_gauss_params(g->sigma, g->order, &a0, &a1, &a2, &a3, &b1, &b2, &coefp, &coefn);
 
   float *const temp = g->buf;
 
@@ -464,6 +506,319 @@ void dt_gaussian_free(dt_gaussian_t *g)
   free(g);
 }
 
+DT_OMP_DECLARE_SIMD(aligned(input, output:64))
+static void _fast_9x9_kernel_1(float *input,
+                               float *output,
+                               const int width,
+                               const int height,
+                               const float sigma,
+                               const float min,
+                               const float max)
+{
+  float kern[25];
+  const int dim = _calc_9x9_gauss_coeffs(kern, sigma);
+  const int w1 = width;
+  const int w2 = 2 * width;
+  const int w3 = 3 * width;
+  const int w4 = 4 * width;
+
+  DT_OMP_FOR(collapse(2))
+  for(int row = 0; row < height; row++)
+  {
+    for(int col = 0; col < width; col++)
+    {
+      const size_t i = (size_t)row * width + col;
+      float *in = &input[i];
+      float *out= &output[i];
+
+      float val = 0.0f;
+      if(dim == 4 && col >= 4 && row >= 4 && col < width - 4 && row < height - 4)
+      {
+        val = kern[10+4] * (in[-w4 -2] + in[-w4 +2] + in[-w2 -4] + in[-w2 +4] + in[+w2 -4] + in[+w2 +4] + in[+w4 -2] + in[+w4 +2])
+            + kern[5 +4] * (in[-w4 -1] + in[-w4 +1] + in[-w1 -4] + in[-w1 +4] + in[+w1 -4] + in[+w1 +4] + in[+w4 -1] + in[+w4 +1])
+            + kern[4]    * (in[-w4]    + in[-4]     + in[+4]     + in[+w4])
+            + kern[15+3] * (in[-w3 -3] + in[-w3 +3] + in[+w3 -3] + in[+w3 +3])
+            + kern[10+3] * (in[-w3 -2] + in[-w3 +2] + in[-w2 -3] + in[-w2 +3] + in[+w2 -3] + in[+w2 +3] + in[+w3 -2] + in[+w3 +2])
+            + kern[ 5+3] * (in[-w3 -1] + in[-w3 +1] + in[-w1 -3] + in[-w1 +3] + in[+w1 -3] + in[+w1 +3] + in[+w3 -1] + in[+w3 +1])
+            + kern[   3] * (in[-w3]    + in[-3]     + in[+3]     + in[+w3])
+            + kern[10+2] * (in[-w2 -2] + in[-w2 +2] + in[+w2 -2] + in[+w2 +2])
+            + kern[ 5+2] * (in[-w2 -1] + in[-w2 +1] + in[-w1 -2] + in[-w1 +2] + in[+w1 -2] + in[+w1 +2] + in[+w2 -1] + in[+w2 +1])
+            + kern[   2] * (in[-w2]    + in[-2]     + in[+2]     + in[+w2])
+            + kern[ 5+1] * (in[-w1 -1] + in[-w1 +1] + in[+w1 -1] + in[+w1 +1])
+            + kern[   1] * (in[-w1]    + in[-1]     + in[+1]     + in[+w1])
+            + kern[   0] * in[0];
+      }
+      else if(dim == 3 && col >= 3 && row >= 3 && col < width - 3 && row < height - 3)
+      {
+        val = kern[10+3] * (in[-w3 -2] + in[-w3 +2] + in[-w2 -3] + in[-w2 +3] + in[+w2 -3] + in[+w2 +3] + in[+w3 -2] + in[+w3 +2])
+            + kern[ 5+3] * (in[-w3 -1] + in[-w3 +1] + in[-w1 -3] + in[-w1 +3] + in[+w1 -3] + in[+w1 +3] + in[+w3 -1] + in[+w3 +1])
+            + kern[   3] * (in[-w3]    + in[-3]     + in[+3]     + in[+w3])
+            + kern[10+2] * (in[-w2 -2] + in[-w2 +2] + in[+w2 -2] + in[+w2 +2])
+            + kern[ 5+2] * (in[-w2 -1] + in[-w2 +1] + in[-w1 -2] + in[-w1 +2] + in[+w1 -2] + in[+w1 +2] + in[+w2 -1] + in[+w2 +1])
+            + kern[   2] * (in[-w2]    + in[-2]     + in[+2]     + in[+w2])
+            + kern[ 5+1] * (in[-w1 -1] + in[-w1 +1] + in[+w1 -1] + in[+w1 +1])
+            + kern[   1] * (in[-w1]    + in[-1]     + in[+1]     + in[+w1])
+            + kern[   0] * in[0];
+      }
+      else if(dim == 2 && col >= 2 && row >= 2 && col < width - 2 && row < height - 2)
+      {
+        val =
+              kern[ 5+2] * (in[-w2 -1] + in[-w2 +1] + in[-w1 -2] + in[-w1 +2] + in[+w1 -2] + in[+w1 +2] + in[+w2 -1] + in[+w2 +1])
+            + kern[   2] * (in[-w2]    + in[-2]     + in[+2]     + in[+w2])
+            + kern[ 5+1] * (in[-w1 -1] + in[-w1 +1] + in[+w1 -1] + in[+w1 +1])
+            + kern[   1] * (in[-w1]    + in[-1]     + in[+1]     + in[+w1])
+            + kern[   0] * in[0];
+      }
+      else
+      {
+        float div = 0.0f;
+        for(int ir = -dim; ir <= dim; ir++)
+        {
+          const int irow = row+ir;
+          if(irow >= 0 && irow < height)
+          {
+            for(int ic = -dim; ic <= dim; ic++)
+            {
+              const int icol = col+ic;
+              if(icol >=0 && icol < width)
+              {
+                const float coeff = kern[5 * ABS(ir) + ABS(ic)];
+                div += coeff;
+                val += coeff * in[ir * w1 + ic];
+              }
+            }
+          }
+        }
+        val = (div != 0.0f) ? val / div : 0.0f;
+      }
+      out[0] = CLAMPF(val, min, max);
+    }
+  }
+}
+
+
+DT_OMP_DECLARE_SIMD(aligned(input, output:64))
+static void _fast_9x9_kernel_2(float *input,
+                               float *output,
+                               const int width,
+                               const int height,
+                               const float sigma,
+                               const float min,
+                               const float max)
+{
+  float kern[25];
+  const int dim = _calc_9x9_gauss_coeffs(kern, sigma);
+
+  const int w1 = 2 * width;
+  const int w2 = 4 * width;
+  const int w3 = 6 * width;
+  const int w4 = 8 * width;
+
+  DT_OMP_FOR(collapse(2))
+  for(int row = 0; row < height; row++)
+  {
+    for(int col = 0; col < width; col++)
+    {
+      const size_t i = (size_t)2 * (row * width + col);
+      float *in = &input[i];
+      float *out= &output[i];
+      dt_aligned_pixel_t val = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+      if(dim == 4 && col >= 4 && row >= 4 && col < width - 4 && row < height - 4)
+      {
+        for(int c = 0; c < 2; c++)
+          val[c] =
+            kern[10+4] * (in[-w4 -4+c] + in[-w4 +4+c] + in[-w2 -8+c] + in[-w2 +8+c] + in[+w2 -8+c] + in[+w2 +8+c] + in[+w4 -4+c] + in[+w4 +4+c])
+          + kern[5 +4] * (in[-w4 -2+c] + in[-w4 +2+c] + in[-w1 -8+c] + in[-w1 +8+c] + in[+w1 -8+c] + in[+w1 +8+c] + in[+w4 -2+c] + in[+w4 +2+c])
+          + kern[4]    * (in[-w4+c]    + in[-8+c]     + in[+8+c]     + in[+w4+c])
+          + kern[15+3] * (in[-w3 -6+c] + in[-w3 +6+c] + in[+w3 -6+c] + in[+w3 +6+c])
+          + kern[10+3] * (in[-w3 -4+c] + in[-w3 +4+c] + in[-w2 -6+c] + in[-w2 +6+c] + in[+w2 -6+c] + in[+w2 +6+c] + in[+w3 -4+c] + in[+w3 +4+c])
+          + kern[ 5+3] * (in[-w3 -2+c] + in[-w3 +2+c] + in[-w1 -6+c] + in[-w1 +6+c] + in[+w1 -6+c] + in[+w1 +6+c] + in[+w3 -2+c] + in[+w3 +2+c])
+          + kern[   3] * (in[-w3+c]    + in[-6+c]     + in[+6+c]     + in[+w3+c])
+          + kern[10+2] * (in[-w2 -4+c] + in[-w2 +4+c] + in[+w2 -4+c] + in[+w2 +4+c])
+          + kern[ 5+2] * (in[-w2 -2+c] + in[-w2 +2+c] + in[-w1 -4+c] + in[-w1 +4+c] + in[+w1 -4+c] + in[+w1 +4+c] + in[+w2 -2+c] + in[+w2 +2+c])
+          + kern[   2] * (in[-w2+c]    + in[-4+c]     + in[+4+c]     + in[+w2+c])
+          + kern[ 5+1] * (in[-w1 -2+c] + in[-w1 +2+c] + in[+w1 -2+c] + in[+w1 +2+c])
+          + kern[   1] * (in[-w1+c]    + in[-2+c]     + in[+2+c]     + in[+w1+c])
+          + kern[   0] * in[c];
+      }
+      else if(dim == 3 && col >= 3 && row >= 3 && col < width - 3 && row < height - 3)
+      {
+        for(int c = 0; c < 2; c++)
+          val[c] =
+            kern[10+3] * (in[-w3 -4+c] + in[-w3 +4+c] + in[-w2 -6+c] + in[-w2 +6+c] + in[+w2 -6+c] + in[+w2 +6+c] + in[+w3 -4+c] + in[+w3 +4+c])
+          + kern[ 5+3] * (in[-w3 -2+c] + in[-w3 +2+c] + in[-w1 -6+c] + in[-w1 +6+c] + in[+w1 -6+c] + in[+w1 +6+c] + in[+w3 -2+c] + in[+w3 +2+c])
+          + kern[   3] * (in[-w3+c]    + in[-6+c]     + in[+6+c]     + in[+w3+c])
+          + kern[10+2] * (in[-w2 -4+c] + in[-w2 +4+c] + in[+w2 -4+c] + in[+w2 +4+c])
+          + kern[ 5+2] * (in[-w2 -2+c] + in[-w2 +2+c] + in[-w1 -4+c] + in[-w1 +4+c] + in[+w1 -4+c] + in[+w1 +4+c] + in[+w2 -2+c] + in[+w2 +2+c])
+          + kern[   2] * (in[-w2+c]    + in[-4+c]     + in[+4+c]     + in[+w2+c])
+          + kern[ 5+1] * (in[-w1 -2+c] + in[-w1 +2+c] + in[+w1 -2+c] + in[+w1 +2+c])
+          + kern[   1] * (in[-w1+c]    + in[-2+c]     + in[+2+c]     + in[+w1+c])
+          + kern[   0] * in[c];
+      }
+      else if(dim == 2 && col >= 2 && row >= 2 && col < width - 2 && row < height - 2)
+      {
+        for(int c = 0; c < 2; c++)
+          val[c] =
+            kern[ 5+2] * (in[-w2 -2+c] + in[-w2 +2+c] + in[-w1 -4+c] + in[-w1 +4+c] + in[+w1 -4+c] + in[+w1 +4+c] + in[+w2 -2+c] + in[+w2 +2+c])
+          + kern[   2] * (in[-w2+c]    + in[-4+c]     + in[+4+c]     + in[+w2+c])
+          + kern[ 5+1] * (in[-w1 -2+c] + in[-w1 +2+c] + in[+w1 -2+c] + in[+w1 +2+c])
+          + kern[   1] * (in[-w1+c]    + in[-2+c]     + in[+2+c]     + in[+w1+c])
+          + kern[   0] * in[c];
+      }
+      else
+      {
+        float div = 0.0f;
+        for(int ir = -dim; ir <= dim; ir++)
+        {
+          const int irow = row+ir;
+          if(irow >= 0 && irow < height)
+          {
+            for(int ic = -dim; ic <= dim; ic++)
+            {
+              const int icol = col+ic;
+              if(icol >=0 && icol < width)
+              {
+                const float coeff = kern[5 * ABS(ir) + ABS(ic)];
+                div += coeff;
+                for(int c = 0; c < 2; c++)
+                  val[c] += coeff * in[2*(ir * width + ic)+c];
+              }
+            }
+          }
+        }
+        for(int c = 0; c < 2; c++)
+          val[c] = (div != 0.0f) ? val[c] / div : 0.0f;
+      }
+      for(int c = 0; c < 2; c++)
+        out[c] = CLAMPF(val[c], min, max);
+    }
+  }
+}
+
+DT_OMP_DECLARE_SIMD(aligned(input, output:64))
+static void _fast_9x9_kernel_4(float *input,
+                               float *output,
+                               const int width,
+                               const int height,
+                               const float sigma,
+                               const float min,
+                               const float max)
+{
+  float kern[25];
+  const int dim = _calc_9x9_gauss_coeffs(kern, sigma);
+
+  const int w1 = 4 * width;
+  const int w2 = 8 * width;
+  const int w3 = 12 * width;
+  const int w4 = 16 * width;
+
+  DT_OMP_FOR(collapse(2))
+  for(int row = 0; row < height; row++)
+  {
+    for(int col = 0; col < width; col++)
+    {
+      const size_t i = (size_t)4 * (row * width + col);
+      float *in = &input[i];
+      float *out= &output[i];
+      dt_aligned_pixel_t val = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+      if(dim == 4 && col >= 4 && row >= 4 && col < width - 4 && row < height - 4)
+      {
+        for(int c = 0; c < 4; c++)
+          val[c] =
+            kern[10+4] * (in[-w4 -8+c]  + in[-w4 +8+c]  + in[-w2 -16+c] + in[-w2 +16+c] + in[+w2 -16+c] + in[+w2 +16+c] + in[+w4 -8+c] + in[+w4 +8+c])
+          + kern[5 +4] * (in[-w4 -4+c]  + in[-w4 +4+c]  + in[-w1 -16+c] + in[-w1 +16+c] + in[+w1 -16+c] + in[+w1 +16+c] + in[+w4 -4+c] + in[+w4 +4+c])
+          + kern[4]    * (in[-w4+c]     + in[-16+c]     + in[+16+c]     + in[+w4+c])
+          + kern[15+3] * (in[-w3 -12+c] + in[-w3 +12+c] + in[+w3 -12+c] + in[+w3 +12+c])
+          + kern[10+3] * (in[-w3 -8+c]  + in[-w3 +8+c]  + in[-w2 -12+c] + in[-w2 +12+c] + in[+w2 -12+c] + in[+w2 +12+c] + in[+w3 -8+c] + in[+w3 +8+c])
+          + kern[ 5+3] * (in[-w3 -4+c]  + in[-w3 +4+c]  + in[-w1 -12+c] + in[-w1 +12+c] + in[+w1 -12+c] + in[+w1 +12+c] + in[+w3 -4+c] + in[+w3 +4+c])
+          + kern[   3] * (in[-w3+c]     + in[-12+c]     + in[+12+c]     + in[+w3+c])
+          + kern[10+2] * (in[-w2 -8+c]  + in[-w2 +8+c]  + in[+w2 -8+c]  + in[+w2 +8+c])
+          + kern[ 5+2] * (in[-w2 -4+c]  + in[-w2 +4+c]  + in[-w1 -8+c]  + in[-w1 +8+c]  + in[+w1 -8+c]  + in[+w1 +8+c]  + in[+w2 -4+c] + in[+w2 +4+c])
+          + kern[   2] * (in[-w2+c]     + in[-8+c]      + in[+8+c]      + in[+w2+c])
+          + kern[ 5+1] * (in[-w1 -4+c]  + in[-w1 +4+c]  + in[+w1 -4+c]  + in[+w1 +4+c])
+          + kern[   1] * (in[-w1+c]     + in[-4+c]      + in[+4+c]      + in[+w1+c])
+          + kern[   0] * in[c];
+      }
+      else if(dim == 3 && col >= 3 && row >= 3 && col < width - 3 && row < height - 3)
+      {
+        for(int c = 0; c < 4; c++)
+          val[c] =
+            kern[10+3] * (in[-w3 -8+c] + in[-w3 +8+c] + in[-w2 -12+c] + in[-w2 +12+c] + in[+w2 -12+c] + in[+w2 +12+c] + in[+w3 -8+c] + in[+w3 +8+c])
+          + kern[ 5+3] * (in[-w3 -4+c] + in[-w3 +4+c] + in[-w1 -12+c] + in[-w1 +12+c] + in[+w1 -12+c] + in[+w1 +12+c] + in[+w3 -4+c] + in[+w3 +4+c])
+          + kern[   3] * (in[-w3+c]    + in[-12+c]    + in[+12+c]     + in[+w3+c])
+          + kern[10+2] * (in[-w2 -8+c] + in[-w2 +8+c] + in[+w2 -8+c]  + in[+w2 +8+c])
+          + kern[ 5+2] * (in[-w2 -4+c] + in[-w2 +4+c] + in[-w1 -8+c]  + in[-w1 +8+c]  + in[+w1 -8+c]  + in[+w1 +8+c]  + in[+w2 -4+c] + in[+w2 +4+c])
+          + kern[   2] * (in[-w2+c]    + in[-8+c]     + in[+8+c]      + in[+w2+c])
+          + kern[ 5+1] * (in[-w1 -4+c] + in[-w1 +4+c] + in[+w1 -4+c]  + in[+w1 +4+c])
+          + kern[   1] * (in[-w1+c]    + in[-4+c]     + in[+4+c]      + in[+w1+c])
+          + kern[   0] * in[c];
+      }
+      else if(dim == 2 && col >= 2 && row >= 2 && col < width - 2 && row < height - 2)
+      {
+        for(int c = 0; c < 4; c++)
+          val[c] =
+            kern[ 5+2] * (in[-w2 -4+c] + in[-w2 +4+c] + in[-w1 -8+c] + in[-w1 +8+c] + in[+w1 -8+c] + in[+w1 +8+c] + in[+w2 -4+c] + in[+w2 +4+c])
+          + kern[   2] * (in[-w2+c]    + in[-8+c]     + in[+8+c]     + in[+w2+c])
+          + kern[ 5+1] * (in[-w1 -4+c] + in[-w1 +4+c] + in[+w1 -4+c] + in[+w1 +4+c])
+          + kern[   1] * (in[-w1+c]    + in[-4+c]     + in[+4+c]     + in[+w1+c])
+          + kern[   0] * in[c];
+      }
+      else
+      {
+        float div = 0.0f;
+        for(int ir = -dim; ir <= dim; ir++)
+        {
+          const int irow = row+ir;
+          if(irow >= 0 && irow < height)
+          {
+            for(int ic = -dim; ic <= dim; ic++)
+            {
+              const int icol = col+ic;
+              if(icol >=0 && icol < width)
+              {
+                const float coeff = kern[5 * ABS(ir) + ABS(ic)];
+                div += coeff;
+                for(int c = 0; c < 4; c++)
+                  val[c] += coeff * in[4*(ir * width + ic)+c];
+              }
+            }
+          }
+        }
+        for(int c = 0; c < 4; c++)
+          val[c] = (div != 0.0f) ? val[c] / div : 0.0f;
+      }
+      for(int c = 0; c < 4; c++)
+        out[c] = CLAMPF(val[c], min, max);
+    }
+  }
+}
+
+void dt_gaussian_fast_blur(float *in,
+                           float *out,
+                           const int width,
+                           const int height,
+                           const float sigma,
+                           const float min,
+                           const float max,
+                           const int ch)
+{
+  float *tmpout = out;
+  const gboolean inplace = (in == out);
+  const size_t bsize = (size_t)ch * width * height;
+  if(inplace) tmpout = dt_alloc_align_float(bsize);
+
+  if(ch == 1)       _fast_9x9_kernel_1(in, tmpout, width, height, sigma, min, max);
+  else if(ch == 2)  _fast_9x9_kernel_2(in, tmpout, width, height, sigma, min, max);
+  else if(ch == 4)  _fast_9x9_kernel_4(in, tmpout, width, height, sigma, min, max);
+
+  if(inplace)
+  {
+    dt_iop_image_copy(out, tmpout, bsize);
+    dt_free_align(tmpout);
+  }
+}
 
 #ifdef HAVE_OPENCL
 dt_gaussian_cl_global_t *dt_gaussian_init_cl_global()
@@ -477,6 +832,7 @@ dt_gaussian_cl_global_t *dt_gaussian_init_cl_global()
   g->kernel_gaussian_transpose_2c = dt_opencl_create_kernel(program, "gaussian_transpose_2c");
   g->kernel_gaussian_column_4c = dt_opencl_create_kernel(program, "gaussian_column_4c");
   g->kernel_gaussian_transpose_4c = dt_opencl_create_kernel(program, "gaussian_transpose_4c");
+  g->kernel_gaussian_9x9 = dt_opencl_create_kernel(program, "gaussian_kernel_9x9");
   return g;
 }
 
@@ -625,7 +981,7 @@ cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
 
   // compute gaussian parameters
   float a0, a1, a2, a3, b1, b2, coefp, coefn;
-  compute_gauss_params(g->sigma, g->order, &a0, &a1, &a2, &a3, &b1, &b2, &coefp, &coefn);
+  _compute_gauss_params(g->sigma, g->order, &a0, &a1, &a2, &a3, &b1, &b2, &coefp, &coefn);
 
   // copy dev_in to intermediate buffer dev_temp1
   err = dt_opencl_enqueue_copy_image_to_buffer(devid, dev_in, dev_temp1, origin, region, 0);
@@ -680,7 +1036,7 @@ cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
   return dt_opencl_enqueue_copy_buffer_to_image(devid, dev_temp1, dev_out, 0, origin, region);
 }
 
-cl_int dt_gaussian_blur_cl_buffer(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
+static cl_int _gaussian_blur_cl_buffer(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
 {
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = g->devid;
@@ -731,7 +1087,7 @@ cl_int dt_gaussian_blur_cl_buffer(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev
 
   // compute gaussian parameters
   float a0, a1, a2, a3, b1, b2, coefp, coefn;
-  compute_gauss_params(g->sigma, g->order, &a0, &a1, &a2, &a3, &b1, &b2, &coefp, &coefn);
+  _compute_gauss_params(g->sigma, g->order, &a0, &a1, &a2, &a3, &b1, &b2, &coefp, &coefn);
 
   // first blur step: column by column with dev_in -> dev_temp2
   sizes[0] = ROUNDUPDWD(width, devid);
@@ -778,6 +1134,74 @@ cl_int dt_gaussian_blur_cl_buffer(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev
   return dt_opencl_enqueue_kernel_2d_with_local(devid, kernel_gaussian_transpose, sizes, local);
 }
 
+/* falls back to standard gaussian if sigma too large for small errors with a 9x9 kernel
+*/
+cl_int dt_gaussian_fast_blur_cl_buffer(const int devid,
+                                       cl_mem dev_in,
+                                       cl_mem dev_out,
+                                       const int width,
+                                       const int height,
+                                       const float sigma,
+                                       const int ch,
+                                       const float *min,
+                                       const float *max)
+{
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+  dt_gaussian_cl_global_t *global = darktable.opencl->gaussian;
+
+  const gboolean inplace = (dev_in == dev_out);
+  const size_t bsize = (size_t)ch * width * height * sizeof(float);
+  cl_mem tmp_out = dev_out;
+  cl_mem kern_cl = NULL;
+
+  dt_aligned_pixel_t Labmax = { 0.0f, 0.0f, 0.0f, 0.0f };
+  dt_aligned_pixel_t Labmin = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+  for(int k = 0; k < MIN(ch, 4); k++)
+  {
+    Labmax[k] = max[k];
+    Labmin[k] = min[k];
+  }
+
+  if(sigma > 1.5f)
+  {
+    dt_gaussian_cl_t *g = dt_gaussian_init_cl(devid, width, height, ch, Labmax, Labmin, sigma, DT_IOP_GAUSSIAN_ZERO);
+    if(!g) return DT_OPENCL_PROCESS_CL;
+
+    err = _gaussian_blur_cl_buffer(g, dev_in, dev_out);
+    dt_gaussian_free_cl(g);
+    return err;
+  }
+
+  if(inplace)
+  {
+    tmp_out = dt_opencl_alloc_device_buffer(devid, bsize);
+    if(tmp_out == NULL) goto error;
+  }
+
+  float kern[25];
+  const int dim = _calc_9x9_gauss_coeffs(kern, sigma);
+  kern_cl = dt_opencl_copy_host_to_device_constant(devid, 25 * sizeof(float), kern);
+  if(kern_cl == NULL) goto error;
+
+  err = dt_opencl_enqueue_kernel_2d_args(devid, global->kernel_gaussian_9x9, width, height,
+    CLARG(dev_in), CLARG(tmp_out), CLARG(width), CLARG(height), CLARG(ch), CLARG(kern_cl),
+    CLFLARRAY(4, Labmin), CLFLARRAY(4, Labmax), CLARG(dim));
+  if(err != CL_SUCCESS) goto error;
+
+  if(inplace)
+  {
+    err = dt_opencl_enqueue_copy_buffer_to_buffer(devid, tmp_out, dev_out, 0, 0, bsize);
+    if(err != CL_SUCCESS) goto error;
+  }
+
+error:
+  dt_opencl_release_mem_object(kern_cl);
+  if(inplace) dt_opencl_release_mem_object(tmp_out);
+
+  return err;
+}
+
 void dt_gaussian_free_cl_global(dt_gaussian_cl_global_t *g)
 {
   if(!g) return;
@@ -788,6 +1212,7 @@ void dt_gaussian_free_cl_global(dt_gaussian_cl_global_t *g)
   dt_opencl_free_kernel(g->kernel_gaussian_transpose_2c);
   dt_opencl_free_kernel(g->kernel_gaussian_column_4c);
   dt_opencl_free_kernel(g->kernel_gaussian_transpose_4c);
+  dt_opencl_free_kernel(g->kernel_gaussian_9x9);
   free(g);
 }
 
