@@ -676,6 +676,11 @@ static void _show_gpx_tracks(dt_lib_module_t *self)
   GList *trkseg = dt_gpx_get_trkseg(d->map.gpx);
   d->map.nb_tracks = g_list_length(trkseg);
   d->map.tracks = g_malloc0(sizeof(dt_lib_tracks_data_t) * d->map.nb_tracks);
+  if(!d->map.tracks)
+  {
+    d->map.nb_tracks = 0;
+    dt_print(DT_DEBUG_ALWAYS, "[geotagging] unable to allocate storage for tracks\n");
+  }
 
   _remove_images_from_map(self);
   for(GList *i = d->imgs; i; i = g_list_next(i))
@@ -1098,9 +1103,12 @@ static GList *_lib_geotagging_get_timezones(void)
     size_t last_char = strlen(name) - 1;
     if(name[last_char] == '\n') name[last_char] = '\0';
     tz_tuple_t *tz_tuple = (tz_tuple_t *)malloc(sizeof(tz_tuple_t));
-    tz_tuple->display = name;
-    tz_tuple->name = name;
-    timezones = g_list_prepend(timezones, tz_tuple);
+    if(tz_tuple)
+    {
+      tz_tuple->display = name;
+      tz_tuple->name = name;
+      timezones = g_list_prepend(timezones, tz_tuple);
+    }
   }
 
   fclose(fp);
@@ -1109,9 +1117,12 @@ static GList *_lib_geotagging_get_timezones(void)
   timezones = g_list_sort(timezones, _sort_timezones);
 
   tz_tuple_t *utc = (tz_tuple_t *)malloc(sizeof(tz_tuple_t));
-  utc->display = g_strdup("UTC");
-  utc->name = utc->display;
-  timezones = g_list_prepend(timezones, utc);
+  if(utc)
+  {
+    utc->display = g_strdup("UTC");
+    utc->name = utc->display;
+    timezones = g_list_prepend(timezones, utc);
+  }
 
 #undef MAX_LINE_LENGTH
 
@@ -1177,11 +1188,12 @@ static GList *_lib_geotagging_get_timezones(void)
                             &buffer_size) == ERROR_SUCCESS)
             {
               tz_tuple_t *tz = (tz_tuple_t *)malloc(sizeof(tz_tuple_t));
-
-              tz->name = subkeyname_utf8;
-              tz->display = g_utf16_to_utf8(display_name, -1, NULL, NULL, NULL);
-              timezones = g_list_prepend(timezones, tz);
-
+              if(tz)
+              {
+                tz->name = subkeyname_utf8;
+                tz->display = g_utf16_to_utf8(display_name, -1, NULL, NULL, NULL);
+                timezones = g_list_prepend(timezones, tz);
+              }
               subkeyname_utf8 = NULL; // to not free it later
             }
             free(display_name);
