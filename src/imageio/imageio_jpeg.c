@@ -173,6 +173,8 @@ static int decompress_plain(dt_imageio_jpeg_t *jpg, uint8_t *out)
 {
   JSAMPROW row_pointer[1];
   row_pointer[0] = (uint8_t *)dt_alloc_aligned((size_t)jpg->dinfo.output_width * jpg->dinfo.num_components);
+  if(!row_pointer[0])
+    return 1;
   uint8_t *tmp = out;
   while(jpg->dinfo.output_scanline < jpg->dinfo.image_height)
   {
@@ -293,7 +295,7 @@ int dt_imageio_jpeg_compress(const uint8_t *in,
   jpeg_start_compress(&(jpg.cinfo), TRUE);
   uint8_t *row = dt_alloc_align_uint8(3 * width);
   const uint8_t *buf;
-  while(jpg.cinfo.next_scanline < jpg.cinfo.image_height)
+  while(row && jpg.cinfo.next_scanline < jpg.cinfo.image_height)
   {
     JSAMPROW tmp[1];
     buf = in + jpg.cinfo.next_scanline * jpg.cinfo.image_width * 4;
@@ -464,6 +466,8 @@ static boolean read_icc_profile(const j_decompress_ptr dinfo,
 
   /* Allocate space for assembled data */
   icc_data = (JOCTET *)g_malloc(total_length * sizeof(JOCTET));
+  if(!icc_data)
+    return FALSE; /* unable to allocate memory for ICC data */
 
   /* and fill it in */
   for(marker = dinfo->marker_list; marker != NULL; marker = marker->next)
@@ -540,9 +544,12 @@ int dt_imageio_jpeg_write_with_icc_profile(const char *filename,
     if(len > 0)
     {
       unsigned char *buf = dt_alloc_align_type(unsigned char, len);
-      cmsSaveProfileToMem(out_profile, buf, &len);
-      write_icc_profile(&(jpg.cinfo), buf, len);
-      dt_free_align(buf);
+      if(buf)
+      {
+        cmsSaveProfileToMem(out_profile, buf, &len);
+        write_icc_profile(&(jpg.cinfo), buf, len);
+        dt_free_align(buf);
+      }
     }
   }
 
@@ -550,7 +557,7 @@ int dt_imageio_jpeg_write_with_icc_profile(const char *filename,
 
   uint8_t *row = dt_alloc_align_uint8(3 * width);
   const uint8_t *buf;
-  while(jpg.cinfo.next_scanline < jpg.cinfo.image_height)
+  while(row && jpg.cinfo.next_scanline < jpg.cinfo.image_height)
   {
     JSAMPROW tmp[1];
     buf = in + jpg.cinfo.next_scanline * jpg.cinfo.image_width * 4;
@@ -629,6 +636,8 @@ static int read_plain(dt_imageio_jpeg_t *jpg, uint8_t *out)
 {
   JSAMPROW row_pointer[1];
   row_pointer[0] = (uint8_t *)dt_alloc_aligned((size_t)jpg->dinfo.output_width * jpg->dinfo.num_components);
+  if(!row_pointer[0])
+    return 1;
   uint8_t *tmp = out;
   while(jpg->dinfo.output_scanline < jpg->dinfo.image_height)
   {
@@ -780,6 +789,10 @@ dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img,
   img->height = jpg.height;
 
   uint8_t *tmp = dt_alloc_align_uint8(4 * jpg.width * jpg.height);
+  if(!tmp)
+  {
+    return DT_IMAGEIO_LOAD_FAILED;
+  }
   if(dt_imageio_jpeg_read(&jpg, tmp))
   {
     dt_free_align(tmp);

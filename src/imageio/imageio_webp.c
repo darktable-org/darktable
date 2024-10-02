@@ -37,7 +37,12 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
   fseek(f, 0, SEEK_SET);
 
   void *read_buffer = g_malloc(filesize);
-
+  if(!read_buffer)
+  {
+    fclose(f);
+    dt_print(DT_DEBUG_ALWAYS,"[webp_open] failed to allocate buffer for %s\n", filename);
+    return DT_IMAGEIO_LOAD_FAILED;
+  }
   if(fread(read_buffer, 1, filesize, f) != filesize)
   {
     fclose(f);
@@ -64,11 +69,18 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
 
   // libwebp can only decode into 8-bit integer channel format, so we have to use an intermediate
   // buffer from which we will then perform the format conversion to the output buffer
-  uint8_t *int_RGBA_buf = dt_alloc_align_uint8(npixels * 4);
-  int_RGBA_buf = WebPDecodeRGBAInto(read_buffer, filesize, int_RGBA_buf, npixels * 4, width * 4);
+  uint8_t *int_RGBA_buffer = dt_alloc_align_uint8(npixels * 4);
+  if(!int_RGBA_buffer)
+  {
+    g_free(read_buffer);
+    dt_print(DT_DEBUG_ALWAYS,"[webp_open] failed to alloc RGBA buffer for %s\n", filename);
+    return DT_IMAGEIO_LOAD_FAILED;
+  }
+  uint8_t *int_RGBA_buf = WebPDecodeRGBAInto(read_buffer, filesize, int_RGBA_buffer, npixels * 4, width * 4);
   if(!int_RGBA_buf)
   {
     g_free(read_buffer);
+    dt_free_align(int_RGBA_buffer);
     dt_print(DT_DEBUG_ALWAYS,"[webp_open] failed to decode file: %s\n", filename);
     return DT_IMAGEIO_LOAD_FAILED;
   }
@@ -105,7 +117,7 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
   if(!mipbuf)
   {
     g_free(read_buffer);
-    dt_free_align(int_RGBA_buf);
+    dt_free_align(int_RGBA_buffer);
     dt_print(DT_DEBUG_ALWAYS, "[webp_open] could not alloc full buffer for image: %s\n", img->filename);
     return DT_IMAGEIO_CACHE_FULL;
   }
@@ -119,7 +131,7 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
     copy_pixel_nontemporal(&mipbuf[i * 4], pix);
   }
 
-  dt_free_align(int_RGBA_buf);
+  dt_free_align(int_RGBA_buffer);
 
 
   img->buf_dsc.cst = IOP_CS_RGB;
