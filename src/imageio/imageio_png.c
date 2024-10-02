@@ -130,6 +130,12 @@ gboolean dt_imageio_png_read_image(dt_imageio_png_t *png, void *out)
   }
 
   png_bytep *row_pointers = malloc(sizeof(png_bytep) * png->height);
+  if(!row_pointers)
+  {
+    fclose(png->f);
+    png_destroy_read_struct(&png->png_ptr, &png->info_ptr, NULL);
+    return FALSE;
+  }
 
   png_bytep row_pointer = (png_bytep)out;
   const size_t rowbytes = png_get_rowbytes(png->png_ptr, png->info_ptr);
@@ -290,7 +296,8 @@ int dt_imageio_png_read_profile(const char *filename, uint8_t **out, dt_colorspa
      && png_get_iCCP(image.png_ptr, image.info_ptr, &name, NULL, &profile, &proflen) != 0)
   {
     *out = (uint8_t *)g_malloc(proflen);
-    memcpy(*out, profile, proflen);
+    if(*out)
+      memcpy(*out, profile, proflen);
   }
 #endif
 

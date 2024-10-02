@@ -49,7 +49,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
     dt_print(DT_DEBUG_ALWAYS,
              "[jpegxl_open] ERROR: cannot open file for read: '%s'\n",
              filename);
-    return DT_IMAGEIO_LOAD_FAILED;
+    return DT_IMAGEIO_FILE_NOT_FOUND;
   }
 
   fseek(inputfile, 0, SEEK_END);
@@ -57,7 +57,11 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
   fseek(inputfile, 0, SEEK_SET);
 
   void* read_buffer = malloc(inputFileSize);
-
+  if(!read_buffer)
+  {
+    fclose(inputfile);
+    return DT_IMAGEIO_LOAD_FAILED;
+  }
   if(fread(read_buffer, 1, inputFileSize, inputfile) != inputFileSize)
   {
     dt_print(DT_DEBUG_ALWAYS,
@@ -238,15 +242,18 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
       {
         if(icc_size)
         {
-          img->profile_size = icc_size;
           img->profile = (uint8_t *)g_malloc0(icc_size);
-          JxlDecoderGetColorAsICCProfile(decoder,
+          if(img->profile)
+          {
+            JxlDecoderGetColorAsICCProfile(decoder,
 #if JPEGXL_NUMERIC_VERSION < JPEGXL_COMPUTE_NUMERIC_VERSION(0, 9, 0)
                                          &pixel_format,
 #endif
                                          JXL_COLOR_PROFILE_TARGET_DATA,
                                          img->profile,
                                          icc_size);
+            img->profile_size = icc_size;
+          }
         }
       } else
       {
