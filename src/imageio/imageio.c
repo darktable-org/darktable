@@ -151,7 +151,7 @@ static dt_imageio_retval_t _unsupported_type(dt_image_t *img,
 }
 
 // redirect loaders to surrogate as needed
-#ifndef HAVE_LIBJPEG
+#ifndef HAVE_OPENJPEG
 #define dt_imageio_open_j2k _unsupported_type
 #endif
 
