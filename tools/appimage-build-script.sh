@@ -46,7 +46,11 @@ export VERSION=$(sh ../tools/get_git_version_string.sh)
 export DISABLE_COPYRIGHT_FILES_DEPLOYMENT=1
 
 # Instruct LDAI (LinuxDeploy AppImage plugin) to embed AppImage update information
-export LDAI_UPDATE_INFORMATION="gh-releases-zsync|darktable-org|darktable|nightly|Darktable-*-x86_64.AppImage.zsync"
+if [ "$DARKTABLE_APPIMAGE_UPDATE" == "release" ]; then
+  export LDAI_UPDATE_INFORMATION="gh-releases-zsync|darktable-org|darktable|latest|Darktable-*-x86_64.AppImage.zsync"
+elif [ "$DARKTABLE_APPIMAGE_UPDATE" != "no" ]; then
+  export LDAI_UPDATE_INFORMATION="gh-releases-zsync|darktable-org|darktable|nightly|Darktable-*-x86_64.AppImage.zsync"
+fi
 
 # '--deploy-deps-only' are needed to tell linuxdeploy where to collect dependencies
 # of modules that are loaded via dlopen (and therefore cannot be found automatically)
