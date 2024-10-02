@@ -125,10 +125,12 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img, const char *filename, dt
   const uint8_t *profile_data = (const uint8_t *)GetImageProfile(image, "ICM", &profile_length);
   if(profile_data)
   {
-    img->profile_size = profile_length;
     img->profile = (uint8_t *)g_malloc0(profile_length);
     if(img->profile)
+    {
       memcpy(img->profile, profile_data, profile_length);
+      img->profile_size = profile_length;
+    }
   }
 
   if(image) DestroyImage(image);

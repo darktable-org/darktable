@@ -269,8 +269,9 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
     img->profile = (uint8_t *)g_malloc0(icc_size);
     if(img->profile)
     {
-      heif_image_handle_get_raw_color_profile(handle, img->profile);
-      img->profile_size = icc_size;
+      err = heif_image_handle_get_raw_color_profile(handle, img->profile);
+      if(err.code == heif_error_Ok)
+        img->profile_size = icc_size;
     }
   }
 
