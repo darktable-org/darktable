@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -76,12 +76,22 @@ static void PNGwriteRawProfile(png_struct *ping, png_info *ping_info, char *prof
 
   const guint8 hex[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
   text = png_malloc(ping, sizeof(png_text));
+  if(!text)
+  {
+    dt_print(DT_DEBUG_ALWAYS,"[png] out of memory adding profile to image\n");
+    return;
+  }
   description_length = strlen(profile_type);
   allocated_length = length * 2 + (length >> 5) + 20 + description_length;
 
   text[0].text = png_malloc(ping, allocated_length);
   text[0].key = png_malloc(ping, 80);
   text[0].key[0] = '\0';
+  if(!text[0].text || !text[0].key)
+  {
+    dt_print(DT_DEBUG_ALWAYS,"[png] out of memory adding profile to image\n");
+    goto cleanup;
+  }
 
   g_strlcat(text[0].key, "Raw profile type ", 80);
   g_strlcat(text[0].key, profile_type, 80);
@@ -115,6 +125,7 @@ static void PNGwriteRawProfile(png_struct *ping, png_info *ping_info, char *prof
 
   if(text[0].text_length <= allocated_length) png_set_text(ping, ping_info, text, 1);
 
+cleanup:
   png_free(ping, text[0].text);
   png_free(ping, text[0].key);
   png_free(ping, text);
@@ -282,23 +293,28 @@ int write_image(dt_imageio_module_data_t *p_tmp, const char *filename, const voi
   png_set_filler(png_ptr, 0, PNG_FILLER_AFTER);
 
   png_bytep *row_pointers = dt_alloc_align_type(png_bytep, height);
-
-  if(p->bpp > 8)
+  if(row_pointers)
   {
-    /* swap bytes of 16 bit files to most significant bit first */
-    png_set_swap(png_ptr);
+    if(p->bpp > 8)
+    {
+      /* swap bytes of 16 bit files to most significant bit first */
+      png_set_swap(png_ptr);
 
-    for(unsigned i = 0; i < height; i++) row_pointers[i] = (png_bytep)((uint16_t *)ivoid + (size_t)4 * i * width);
+      for(unsigned i = 0; i < height; i++) row_pointers[i] = (png_bytep)((uint16_t *)ivoid + (size_t)4 * i * width);
+    }
+    else
+    {
+      for(unsigned i = 0; i < height; i++) row_pointers[i] = (uint8_t *)ivoid + (size_t)4 * i * width;
+    }
+
+    png_write_image(png_ptr, row_pointers);
+
+    dt_free_align(row_pointers);
   }
   else
   {
-    for(unsigned i = 0; i < height; i++) row_pointers[i] = (uint8_t *)ivoid + (size_t)4 * i * width;
+    dt_print(DT_DEBUG_ALWAYS, "[png] out of memory writing %s\n", filename);
   }
-
-  png_write_image(png_ptr, row_pointers);
-
-  dt_free_align(row_pointers);
-
   png_write_end(png_ptr, info_ptr);
   png_destroy_write_struct(&png_ptr, &info_ptr);
   fclose(f);
