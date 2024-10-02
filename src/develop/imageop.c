@@ -1175,7 +1175,7 @@ gboolean dt_iop_so_is_hidden(dt_iop_module_so_t *module)
 
 gboolean dt_iop_is_hidden(dt_iop_module_t *module)
 {
-  return dt_iop_so_is_hidden(module->so);
+  return !module || !module->so || dt_iop_so_is_hidden(module->so);
 }
 
 gboolean dt_iop_shown_in_group(dt_iop_module_t *module, uint32_t group)

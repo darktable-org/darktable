@@ -601,7 +601,7 @@ void expose(
       pango_layout_set_font_description(layout, desc);
       pango_layout_set_text(layout, load_txt, -1);
       pango_layout_get_pixel_extents(layout, &ink, NULL);
-      const double xc = width / 2.0, yc = height * 0.85 - DT_PIXEL_APPLY_DPI(10), wd = ink.width * 0.5;
+      const double xc = width / 2.0, yc = height * 0.88 - DT_PIXEL_APPLY_DPI(10), wd = ink.width * 0.5;
       cairo_move_to(cri, xc - wd, yc + 1.0 / 3.0 * fontsize - fontsize);
       pango_cairo_layout_path(cri, layout);
       cairo_set_line_width(cri, 2.0);
@@ -617,6 +617,7 @@ void expose(
       dt_toast_log("%s", load_txt);
     }
     g_free(load_txt);
+    dt_dev_reset_chroma(darktable.develop);
   }
 
   /* if we are in full preview mode, we don"t want anything else than the image */
