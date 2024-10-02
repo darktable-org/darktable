@@ -44,8 +44,6 @@ changes (where available).
 - This development cycle has included a large number of changes which
   improve the user experience, as detailed in the next section.
 
-- ???
-
 ## UI/UX Improvements
 
 - Added camera-specific styles for more than 500 camera models to more
@@ -155,6 +153,8 @@ changes (where available).
 - Changed the user interface of the import dialog to make it easier to delete custom places.
 
 - Numerous rounds of code cleanup.
+
+- The copy-parts dialog does not select any module by default now.
 
 ## Bug Fixes
 
