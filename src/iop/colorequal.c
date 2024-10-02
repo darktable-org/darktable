@@ -441,20 +441,27 @@ int legacy_params(dt_iop_module_t *self,
 void _mean_gaussian(float *const buf,
                     const int width,
                     const int height,
-                    const uint32_t ch,
+                    const int ch,
                     const float sigma)
 {
   // We use unbounded signals, so don't care for the internal value clipping
   const float range = 1.0e9;
-  const dt_aligned_pixel_t max = {range, range, range, range};
-  const dt_aligned_pixel_t min = {-range, -range, -range, -range};
-  dt_gaussian_t *g = dt_gaussian_init(width, height, ch, max, min, sigma, DT_IOP_GAUSSIAN_ZERO);
-  if(!g) return;
-  if(ch == 4)
-    dt_gaussian_blur_4c(g, buf, buf);
+  if(sigma <= 1.5f)
+  {
+    dt_gaussian_fast_blur(buf, buf, width, height, sigma, -range, range, ch);
+  }
   else
-    dt_gaussian_blur(g, buf, buf);
-  dt_gaussian_free(g);
+  {
+    const dt_aligned_pixel_t max = {range, range, range, range};
+    const dt_aligned_pixel_t min = {-range, -range, -range, -range};
+    dt_gaussian_t *g = dt_gaussian_init(width, height, ch, max, min, sigma, DT_IOP_GAUSSIAN_ZERO);
+    if(!g) return;
+    if(ch == 4)
+      dt_gaussian_blur_4c(g, buf, buf);
+    else
+      dt_gaussian_blur(g, buf, buf);
+    dt_gaussian_free(g);
+  }
 }
 
 
@@ -1234,12 +1241,7 @@ int _mean_gaussian_cl(const int devid,
   const dt_aligned_pixel_t max = {range, range, range, range};
   const dt_aligned_pixel_t min = {-range, -range, -range, -range};
 
-  dt_gaussian_cl_t *g = dt_gaussian_init_cl(devid, width, height, ch, max, min, sigma, DT_IOP_GAUSSIAN_ZERO);
-  if(!g) return DT_OPENCL_PROCESS_CL;
-
-  cl_int err = dt_gaussian_blur_cl_buffer(g, image, image);
-  dt_gaussian_free_cl(g);
-  return err;
+  return dt_gaussian_fast_blur_cl_buffer(devid, image, image, width, height, sigma, ch, min, max);
 }
 
 static cl_mem _init_covariance_cl(const int devid,
