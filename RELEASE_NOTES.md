@@ -156,6 +156,9 @@ changes (where available).
 
 - The copy-parts dialog does not select any module by default now.
 
+- Add support for undo/redo for actions done on the filmstrip while in
+  darkroom.
+
 ## Bug Fixes
 
 - Fixed a performance regression for redrawing mipmaps.
