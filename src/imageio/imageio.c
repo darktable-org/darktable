@@ -208,8 +208,8 @@ static const dt_magic_bytes_t _magic_signatures[] = {
   { DT_FILETYPE_JPEG, FALSE, 0, 3, dt_imageio_open_jpeg,
     { 0xFF, 0xD8, 0xFF } }, // SOI marker
   // JPEG-2000, j2k format
-  { DT_FILETYPE_JPEG2000, FALSE, 0, 5, dt_imageio_open_j2k,
-    { 0xFF, 0x4F, 0xFF, 0x51, 0x00 } },
+  { DT_FILETYPE_JPEG2000, FALSE, 0, 4, dt_imageio_open_j2k,
+    { 0xFF, 0x4F, 0xFF, 0x51 } },
   // JPEG-2000, jp2 format
   { DT_FILETYPE_JPEG2000, FALSE, 0, 12, dt_imageio_open_j2k,
     { 0x00, 0x00, 0x00, 0x0C, 'j', 'P', ' ', ' ', 0x0D, 0x0A, 0x87, 0x0A } },
@@ -1603,7 +1603,34 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
     if(!_image_handled(ret))
       ret = dt_imageio_open_heif(img, filename, buf);
 
-    // final fallback that tries to open file via GraphicsMagick
+    if(!_image_handled(ret))
+      ret = dt_imageio_open_webp(img, filename, buf);
+
+    if(!_image_handled(ret))
+      ret = dt_imageio_open_exr(img, filename, buf);
+    
+    if(!_image_handled(ret))
+      ret = dt_imageio_open_rgbe(img, filename, buf);
+    
+    if(!_image_handled(ret))
+      ret = dt_imageio_open_j2k(img, filename, buf);
+    
+    if(!_image_handled(ret))
+      ret = dt_imageio_open_jpegxl(img, filename, buf);
+    
+    if(!_image_handled(ret))
+      ret = dt_imageio_open_jpeg(img, filename, buf);
+    
+    if(!_image_handled(ret))
+      ret = dt_imageio_open_qoi(img, filename, buf);
+
+    if(!_image_handled(ret))
+      ret = dt_imageio_open_pnm(img, filename, buf);
+    
+    if(!_image_handled(ret))
+      ret = dt_imageio_open_pfm(img, filename, buf);
+    
+    // final fallback that tries to open file via GraphicsMagick or ImageMagick
     if(!_image_handled(ret))
       ret = dt_imageio_open_exotic(img, filename, buf);
 
