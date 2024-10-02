@@ -1389,16 +1389,12 @@ static gboolean _event_enter_notify(GtkWidget *widget,
 static gboolean _do_select_single(gpointer user_data)
 {
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
-  const dt_imgid_t id = table->to_selid;
 
   // always keep the edited picture selected
-  GList *sel = g_list_append(NULL, GINT_TO_POINTER(id));
-  sel = g_list_append(sel, GINT_TO_POINTER(darktable.develop->image_storage.id));
-
   dt_selection_clear(darktable.selection);
-  dt_selection_select_list(darktable.selection, sel);
+  dt_selection_select(darktable.selection, darktable.develop->image_storage.id);
+  dt_selection_select(darktable.selection, table->to_selid);
   table->sel_single_cb = 0;
-  g_list_free(sel);
 
   return FALSE;
 }
