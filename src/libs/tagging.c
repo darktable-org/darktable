@@ -1969,16 +1969,21 @@ static void _pop_menu_dictionary_edit_tag(GtkWidget *menuitem, dt_lib_module_t *
       // update the store
       GtkTreeModel *store = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(model));
       dt_tag_op_t *to = g_malloc(sizeof(dt_tag_op_t));
-      to->tree_flag = d->tree_flag;
-      to->oldtagname = tagname;
-      to->newtagname = new_prefix_tag;
-      gint sort_column;
-      GtkSortType sort_order;
-      gtk_tree_sortable_get_sort_column_id(GTK_TREE_SORTABLE(store), &sort_column, &sort_order);
-      gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(store), GTK_TREE_SORTABLE_UNSORTED_SORT_COLUMN_ID, GTK_SORT_ASCENDING);
-      gtk_tree_model_foreach(store, (GtkTreeModelForeachFunc)_update_tag_name_per_name, to);
-      gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(store), sort_column, sort_order);
-      g_free(to);
+      if(to)
+      {
+        to->tree_flag = d->tree_flag;
+        to->oldtagname = tagname;
+        to->newtagname = new_prefix_tag;
+        gint sort_column;
+        GtkSortType sort_order;
+        gtk_tree_sortable_get_sort_column_id(GTK_TREE_SORTABLE(store), &sort_column, &sort_order);
+        gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(store),
+                                             GTK_TREE_SORTABLE_UNSORTED_SORT_COLUMN_ID,
+                                             GTK_SORT_ASCENDING);
+        gtk_tree_model_foreach(store, (GtkTreeModelForeachFunc)_update_tag_name_per_name, to);
+        gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(store), sort_column, sort_order);
+        g_free(to);
+      }
       if(subtag) g_free(new_prefix_tag);
 
       _raise_signal_tag_changed(self);
@@ -2342,9 +2347,12 @@ static void _pop_menu_dictionary(GtkWidget *treeview, GdkEventButton *event, dt_
     if(d->collection[0])
     {
       char *collection = g_malloc(4096);
-      dt_collection_serialize(collection, 4096, FALSE);
-      if(g_strcmp0(d->collection, collection) == 0) d->collection[0] = '\0';
-      g_free(collection);
+      if(collection)
+      {
+        dt_collection_serialize(collection, 4096, FALSE);
+        if(g_strcmp0(d->collection, collection) == 0) d->collection[0] = '\0';
+        g_free(collection);
+      }
     }
     if(count || d->collection[0])
     {
