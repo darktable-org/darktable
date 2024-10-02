@@ -509,7 +509,7 @@ void expose(
     dt_image_t *img = dt_image_cache_get(darktable.image_cache, dev->image_storage.id, 'r');;
     dt_imageio_retval_t status = img->load_status;
     dt_image_cache_read_release(darktable.image_cache, img);
-    
+
     if(dev->image_invalid_cnt)
     {
       fontsize = DT_PIXEL_APPLY_DPI(16);
@@ -617,7 +617,6 @@ void expose(
       dt_toast_log("%s", load_txt);
     }
     g_free(load_txt);
-    dt_dev_reset_chroma(darktable.develop);
   }
 
   /* if we are in full preview mode, we don"t want anything else than the image */
