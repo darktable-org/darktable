@@ -1170,7 +1170,8 @@ static void _view_map_draw_main_location(dt_map_t *lib,
     if(!d)
     {
       d = g_malloc0(sizeof(dt_location_draw_t));
-      lib->loc.others = g_list_append(lib->loc.others, d);
+      if(d)
+        lib->loc.others = g_list_append(lib->loc.others, d);
     }
     if(d)
     {
@@ -1545,52 +1546,58 @@ static void _view_map_changed_callback_delayed(gpointer user_data)
         if(p[i].cluster_id == NOISE)
         {
           dt_map_image_t *entry = (dt_map_image_t *)calloc(1, sizeof(dt_map_image_t));
-          entry->imgid = p[i].imgid;
-          entry->group = p[i].cluster_id;
-          entry->group_count = 1;
-          entry->longitude = p[i].x * 180 / M_PI;
-          entry->latitude = p[i].y * 180 / M_PI;
-          entry->group_same_loc = TRUE;
-          if(sel_imgs)
-            entry->selected_in_group = g_list_find((GList *)sel_imgs,
-                                                   GINT_TO_POINTER(entry->imgid))
-                                       ? TRUE : FALSE;
-          lib->images = g_slist_prepend(lib->images, entry);
+          if(entry)
+          {
+            entry->imgid = p[i].imgid;
+            entry->group = p[i].cluster_id;
+            entry->group_count = 1;
+            entry->longitude = p[i].x * 180 / M_PI;
+            entry->latitude = p[i].y * 180 / M_PI;
+            entry->group_same_loc = TRUE;
+            if(sel_imgs)
+              entry->selected_in_group = g_list_find((GList *)sel_imgs,
+                                                     GINT_TO_POINTER(entry->imgid))
+                                         ? TRUE : FALSE;
+            lib->images = g_slist_prepend(lib->images, entry);
+          }
         }
         else if(!processed[p[i].cluster_id])
         {
           processed[p[i].cluster_id] = TRUE;
           group = p[i].cluster_id;
           dt_map_image_t *entry = (dt_map_image_t *)calloc(1, sizeof(dt_map_image_t));
-          entry->imgid = p[i].imgid;
-          entry->group = p[i].cluster_id;
-          entry->group_same_loc = TRUE;
-          entry->selected_in_group = (sel_imgs && g_list_find((GList *)sel_imgs,
-                                                               GINT_TO_POINTER(p[i].imgid)))
-                                     ? TRUE : FALSE;
-          const double lon = p[i].x, lat = p[i].y;
-
-          for(int j = 0; j < img_count; j++)
+          if(entry)
           {
-            if(p[j].cluster_id == group)
+            entry->imgid = p[i].imgid;
+            entry->group = p[i].cluster_id;
+            entry->group_same_loc = TRUE;
+            entry->selected_in_group = (sel_imgs && g_list_find((GList *)sel_imgs,
+                                                                GINT_TO_POINTER(p[i].imgid)))
+                                       ? TRUE : FALSE;
+            const double lon = p[i].x, lat = p[i].y;
+
+            for(int j = 0; j < img_count; j++)
             {
-              entry->group_count++;
-              entry->longitude += p[j].x;
-              entry->latitude += p[j].y;
-              if(entry->group_same_loc && (p[j].x != lon || p[j].y != lat))
+              if(p[j].cluster_id == group)
               {
-                entry->group_same_loc = FALSE;
-              }
-              if(sel_imgs && !entry->selected_in_group)
-              {
-                if(g_list_find((GList *)sel_imgs, GINT_TO_POINTER(p[j].imgid)))
-                  entry->selected_in_group = TRUE;
+                entry->group_count++;
+                entry->longitude += p[j].x;
+                entry->latitude += p[j].y;
+                if(entry->group_same_loc && (p[j].x != lon || p[j].y != lat))
+                {
+                  entry->group_same_loc = FALSE;
+                }
+                if(sel_imgs && !entry->selected_in_group)
+                {
+                  if(g_list_find((GList *)sel_imgs, GINT_TO_POINTER(p[j].imgid)))
+                    entry->selected_in_group = TRUE;
+                }
               }
             }
+            entry->latitude = entry->latitude  * 180 / M_PI / entry->group_count;
+            entry->longitude = entry->longitude * 180 / M_PI / entry->group_count;
+            lib->images = g_slist_prepend(lib->images, entry);
           }
-          entry->latitude = entry->latitude  * 180 / M_PI / entry->group_count;
-          entry->longitude = entry->longitude * 180 / M_PI / entry->group_count;
-          lib->images = g_slist_prepend(lib->images, entry);
         }
       }
       free(processed);
@@ -3092,28 +3099,29 @@ static void _view_map_dnd_get_callback(GtkWidget *widget,
           if(imgs_nb)
           {
             uint32_t *imgs = malloc(sizeof(uint32_t) * imgs_nb);
-            int i = 0;
-            for(GList *l = lib->selected_images;
-                l;
-                l = g_list_next(l))
+            if(imgs)
             {
-              imgs[i++] = GPOINTER_TO_INT(l->data);
+              int i = 0;
+              for(GList *l = lib->selected_images;
+                  l;
+                  l = g_list_next(l))
+              {
+                imgs[i++] = GPOINTER_TO_INT(l->data);
+              }
+              gtk_selection_data_set(selection_data,
+                                     gtk_selection_data_get_target(selection_data),
+                                     _DWORD, (guchar *)imgs, imgs_nb * sizeof(uint32_t));
+              free(imgs);
             }
-            gtk_selection_data_set(selection_data,
-                                   gtk_selection_data_get_target(selection_data),
-                                   _DWORD, (guchar *)imgs, imgs_nb * sizeof(uint32_t));
-            free(imgs);
           }
         }
         else if(lib->loc.main.id > 0)
         {
           // move of location
-          uint32_t *imgs = malloc(sizeof(uint32_t));
-          imgs[0] = -1;
+          uint32_t imgs[1] = { -1 };
           gtk_selection_data_set(selection_data,
                                  gtk_selection_data_get_target(selection_data),
                                  _DWORD, (guchar *)imgs, sizeof(uint32_t));
-          free(imgs);
         }
       }
       break;
@@ -3304,9 +3312,11 @@ static void _bin_points(const dt_map_t *lib,
       // allocate pointers for all of the latitude bins at this
       // longitude
       db.geo_bins[lon_bin] = (geo_bin_t*)calloc(num_lat_bins, sizeof(geo_bin_t));
-
-      for(int l = 0; l < num_lat_bins; l++)
-        db.geo_bins[lon_bin][l].points = NO_NEXT_POINT;
+      if(db.geo_bins[lon_bin])
+      {
+        for(int l = 0; l < num_lat_bins; l++)
+          db.geo_bins[lon_bin][l].points = NO_NEXT_POINT;
+      }
     }
     // push the point on the front of the linked list for its bin
     db.points[i].next = db.geo_bins[lon_bin][lat_bin].points;
