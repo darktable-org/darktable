@@ -4844,6 +4844,13 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
+  if(self && self->dev)
+  {
+    dt_dev_chroma_t *chr = &self->dev->chroma;
+    if(chr->adaptation == self)
+      chr->adaptation = NULL;
+  }
+
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT
     (darktable.signals,
