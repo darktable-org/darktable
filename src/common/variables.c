@@ -924,6 +924,12 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
       g_free(parameters[0]);
     }
   }
+  else if(_has_prefix(variable, "IMAGE.TAGS.HIERARCHY"))
+  {
+    GList *tags_list = dt_tag_get_hierarchical_export(params->imgid, params->data->tags_flags);
+    result = dt_util_glist_to_str(", ", tags_list);
+    g_list_free_full(tags_list, g_free);
+  }
   else if(_has_prefix(variable, "TAGS") || _has_prefix(variable, "IMAGE.TAGS"))
   {
     GList *tags_list = dt_tag_get_list_export(params->imgid, params->data->tags_flags);
