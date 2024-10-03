@@ -118,6 +118,11 @@ changes (where available).
 - Improved the message displayed at startup when the database is
   locked by another instance of darktable.
 
+- Change the UX for the filstrip to correspond to what is done for the
+  lighttable. A click does a single selection, ctrl and alt modifiers
+  have their common behavior (adding to selection or range
+  selection). To change edited image a double-click is now needed.
+
 ## Performance Improvements
 
 - Added OpenCL implementation of color equalizer.
