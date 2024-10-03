@@ -2301,6 +2301,7 @@ int set_params(dt_lib_module_t *self,
 
   g_free(d->style_name);
   d->style_name = g_strdup(fdata->style);
+  _update_style_label(d, d->style_name);
 
   dt_bauhaus_combobox_set(d->style_mode, fdata->style_append ? 1 : 0);
 
