@@ -2023,6 +2023,56 @@ static void _darkroom_redo_callback(dt_action_t *action)
   dt_undo_do_redo(darktable.undo, DT_UNDO_DEVELOP);
 }
 
+static void _darkroom_do_synchronize_selection_callback(dt_action_t *action)
+{
+  dt_gui_cursor_set_busy();
+
+  GList *sel = dt_selection_get_list(darktable.selection, FALSE, FALSE);
+
+  // write histroy for edited picture
+  dt_dev_write_history(darktable.develop);
+
+  const dt_imgid_t imgid = darktable.develop->image_storage.id;
+
+  // get first item in list, last edited iop
+  GList *hist = dt_history_get_items(imgid, FALSE, FALSE, FALSE);
+  dt_history_item_t *first_item = (dt_history_item_t *)g_list_first(hist)->data;
+
+  // the iop num in the history
+  GList *op = g_list_append(NULL, GINT_TO_POINTER(first_item->num));
+
+  g_list_free_full(hist, g_free);
+
+  // group all changes for atomic undo/redo
+  dt_undo_start_group(darktable.undo, DT_UNDO_HISTORY);
+
+  // copy history item into the all selected items
+  for(GList *l = sel;
+      l;
+      l = g_list_next(l))
+  {
+    // target picture
+    const dt_imgid_t dest_imgid = GPOINTER_TO_INT(l->data);
+    if(dest_imgid != imgid)
+    {
+      dt_history_copy_and_paste_on_image(imgid,
+                                         dest_imgid,
+                                         TRUE,
+                                         op,
+                                         TRUE,
+                                         FALSE,
+                                         TRUE);
+    }
+  }
+
+  dt_undo_end_group(darktable.undo);
+
+  g_list_free(op);
+  g_list_free(sel);
+
+  dt_gui_cursor_clear_busy();
+}
+
 static void _change_slider_accel_precision(dt_action_t *action);
 
 static float _action_process_skip_mouse(gpointer target,
@@ -2606,6 +2656,10 @@ void gui_init(dt_view_t *self)
 
   // change the precision for adjusting sliders with keyboard shortcuts
   dt_action_register(DT_ACTION(self), N_("change keyboard shortcut slider precision"), _change_slider_accel_precision, 0, 0);
+
+  dt_action_register(DT_ACTION(self), N_("synchronize selection"),
+                     _darkroom_do_synchronize_selection_callback,
+                     GDK_KEY_x, GDK_CONTROL_MASK);
 }
 
 void enter(dt_view_t *self)
