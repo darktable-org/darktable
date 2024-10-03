@@ -136,6 +136,8 @@ void gui_init(dt_lib_module_t *self)
 {
   self->data = calloc(1, sizeof(dt_lib_location_t));
   dt_lib_location_t *lib = self->data;
+  if(!lib)
+    return;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
@@ -209,13 +211,15 @@ static GtkWidget *_lib_location_place_widget_new(dt_lib_location_t *lib,
 
   /* connect button press signal for result item */
   _callback_param_t *param = (_callback_param_t *)malloc(sizeof(_callback_param_t));
-  lib->callback_params = g_list_append(lib->callback_params, param);
-  param->lib = lib;
-  param->result = place;
-  g_signal_connect(G_OBJECT(eb), "button-press-event",
-                   G_CALLBACK(_lib_location_result_item_activated),
-                   (gpointer)param);
-
+  if(param)
+  {
+    lib->callback_params = g_list_append(lib->callback_params, param);
+    param->lib = lib;
+    param->result = place;
+    g_signal_connect(G_OBJECT(eb), "button-press-event",
+                     G_CALLBACK(_lib_location_result_item_activated),
+                     (gpointer)param);
+  }
   return eb;
 }
 
@@ -227,13 +231,15 @@ static size_t _lib_location_curl_write_data(void *buffer,
   dt_lib_location_t *lib = (dt_lib_location_t *)userp;
 
   char *newdata = g_malloc0(lib->response_size + nmemb + 1);
-  if(lib->response != NULL)
-    memcpy(newdata, lib->response, lib->response_size);
-  memcpy(newdata + lib->response_size, buffer, nmemb);
-  g_free(lib->response);
-  lib->response = newdata;
-  lib->response_size += nmemb;
-
+  if(newdata)
+  {
+    if(lib->response != NULL)
+      memcpy(newdata, lib->response, lib->response_size);
+    memcpy(newdata + lib->response_size, buffer, nmemb);
+    g_free(lib->response);
+    lib->response = newdata;
+    lib->response_size += nmemb;
+  }
   return nmemb;
 }
 
@@ -560,9 +566,12 @@ broken_bbox:
           {
             place->marker_type = MAP_DISPLAY_POINT;
             dt_geo_map_display_point_t *p = malloc(sizeof(dt_geo_map_display_point_t));
-            p->lon = lon;
-            p->lat = lat;
-            place->marker_points = g_list_append(place->marker_points, p);
+            if(p)
+            {
+              p->lon = lon;
+              p->lat = lat;
+              place->marker_points = g_list_append(place->marker_points, p);
+            }
           }
         }
         else if(g_str_has_prefix(*avalue, "LINESTRING")
@@ -630,9 +639,12 @@ broken_bbox:
               break;
             }
             dt_geo_map_display_point_t *p = malloc(sizeof(dt_geo_map_display_point_t));
-            p->lon = lon;
-            p->lat = lat;
-            place->marker_points = g_list_prepend(place->marker_points, p);
+            if(p)
+            {
+              p->lon = lon;
+              p->lat = lat;
+              place->marker_points = g_list_prepend(place->marker_points, p);
+            }
             startptr = endptr+1;
             i++;
           }
@@ -718,6 +730,12 @@ void *get_params(dt_lib_module_t *self,
   const size_t size_total = size_fixed + size_name + size_points;
 
   void *params = malloc(size_total);
+  if(!params)
+  {
+    *size = 0;
+    return NULL;
+  }
+
   struct params_fixed_t *params_fixed = (struct params_fixed_t *)params;
   params_fixed->relevance = location->relevance;
   params_fixed->type = location->type;
@@ -765,8 +783,12 @@ int set_params(dt_lib_module_t *self,
 
   if(size_points % 2 * sizeof(float) != 0) return 1;
 
-  _lib_location_result_t *location =
-    (_lib_location_result_t *)malloc(sizeof(_lib_location_result_t));
+  _lib_location_result_t *location = malloc(sizeof(_lib_location_result_t));
+  if(!location)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[location] out of memory\n");
+    return 1;
+  }
 
   location->relevance = params_fixed->relevance;
   location->type = params_fixed->type;
@@ -786,9 +808,12 @@ int set_params(dt_lib_module_t *self,
   {
     dt_geo_map_display_point_t *p =
       (dt_geo_map_display_point_t *)malloc(sizeof(dt_geo_map_display_point_t));
-    p->lat = points[0];
-    p->lon = points[1];
-    location->marker_points = g_list_prepend(location->marker_points, p);
+    if(p)
+    {
+      p->lat = points[0];
+      p->lon = points[1];
+      location->marker_points = g_list_prepend(location->marker_points, p);
+    }
   }
   location->marker_points = g_list_reverse(location->marker_points);
 

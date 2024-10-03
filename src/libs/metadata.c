@@ -789,10 +789,13 @@ static void add_rights_preset(dt_lib_module_t *self, char *name, char *string)
   const unsigned int params_size = strlen(string) + metadata_nb;
 
   char *params = calloc(sizeof(char), params_size);
-  memcpy(params + 4, string, params_size - metadata_nb);
-  dt_lib_presets_add(name, self->plugin_name, self->version(),
-                     params, params_size, TRUE, 0);
-  free(params);
+  if(params)
+  {
+    memcpy(params + 4, string, params_size - metadata_nb);
+    dt_lib_presets_add(name, self->plugin_name, self->version(),
+                       params, params_size, TRUE, 0);
+    free(params);
+  }
 }
 
 void init_presets(dt_lib_module_t *self)
@@ -908,6 +911,8 @@ void *get_params(dt_lib_module_t *self, int *size)
   }
 
   char *params = (char *)malloc(*size);
+  if(!params)
+    return NULL;
 
   int pos = 0;
 

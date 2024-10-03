@@ -276,13 +276,16 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
         GtkWidget *box = GTK_WIDGET(d->box);
         dt_lib_recentcollect_item_t *item
             = (dt_lib_recentcollect_item_t *)malloc(sizeof(dt_lib_recentcollect_item_t));
-        d->items = g_list_append(d->items, item);
-        item->button = gtk_button_new();
-        gtk_box_pack_start(GTK_BOX(box), item->button, FALSE, TRUE, 0);
-        g_signal_connect(G_OBJECT(item->button), "clicked", G_CALLBACK(_button_pressed), (gpointer)self);
-        gtk_widget_set_no_show_all(item->button, TRUE);
-        gtk_widget_set_name(GTK_WIDGET(item->button), "recent-collection-button");
-        gtk_widget_set_visible(item->button, FALSE);
+        if(item)
+        {
+          d->items = g_list_append(d->items, item);
+          item->button = gtk_button_new();
+          gtk_box_pack_start(GTK_BOX(box), item->button, FALSE, TRUE, 0);
+          g_signal_connect(G_OBJECT(item->button), "clicked", G_CALLBACK(_button_pressed), (gpointer)self);
+          gtk_widget_set_no_show_all(item->button, TRUE);
+          gtk_widget_set_name(GTK_WIDGET(item->button), "recent-collection-button");
+          gtk_widget_set_visible(item->button, FALSE);
+        }
       }
     }
 
