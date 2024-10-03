@@ -1060,7 +1060,6 @@ static void _intent_changed(GtkWidget *widget, dt_lib_export_t *d)
 
 static void _update_style_label(dt_lib_export_t *d, const char *name)
 {
-  dt_conf_set_string(CONFIG_PREFIX "style", name);
   gtk_widget_set_visible(GTK_WIDGET(d->style_mode), name[0] != '\0');
 
   // We use the string "none" to indicate that we don't apply any style to the export
@@ -1077,6 +1076,7 @@ static void _update_style_label(dt_lib_export_t *d, const char *name)
   g_free(tooltip);
   g_free(d->style_name);
   d->style_name = g_strdup(name);
+  dt_conf_set_string(CONFIG_PREFIX "style", d->style_name);
 }
 
 static void _update_style(const dt_stylemenu_data_t *menu_data)
@@ -2299,9 +2299,7 @@ int set_params(dt_lib_module_t *self,
 
   const dt_imageio_module_data_t *fdata = (const dt_imageio_module_data_t *)buf;
 
-  g_free(d->style_name);
-  d->style_name = g_strdup(fdata->style);
-  _update_style_label(d, d->style_name);
+  _update_style_label(d, fdata->style);
   dt_bauhaus_combobox_set(d->style_mode, fdata->style_append ? 1 : 0);
 
   buf += fsize;
