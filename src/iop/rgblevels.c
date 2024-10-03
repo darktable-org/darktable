@@ -1044,13 +1044,10 @@ void gui_init(dt_iop_module_t *self)
   dt_ui_notebook_page(g->channel_tabs, N_("B"), _("curve nodes for b channel"));
   g_signal_connect(G_OBJECT(g->channel_tabs), "switch_page",
                    G_CALLBACK(_tab_switch_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->channel_tabs), FALSE, FALSE, 0);
 
   g->area = GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL,
                                                0,
                                                "plugins/darkroom/rgblevels/graphheight"));
-
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
 
   g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
   dt_action_define_iop(self, NULL, N_("levels"), GTK_WIDGET(g->area), &_action_def_levels);
@@ -1071,36 +1068,18 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->area), "scroll-event",
                    G_CALLBACK(_area_scroll_callback), self);
 
-  g->blackpick = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL);
-  dt_action_define_iop(self, N_("pickers"), N_("black"), g->blackpick,
-                       &dt_action_def_toggle);
-  gtk_widget_set_tooltip_text(g->blackpick, _("pick black point from image"));
-  gtk_widget_set_name(GTK_WIDGET(g->blackpick), "picker-black");
-  g_signal_connect(G_OBJECT(g->blackpick), "toggled",
+#define PICKER_SETUP(color, name, tooltip)                                 \
+  g->color##pick = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL); \
+  dt_action_define_iop(self, N_("pickers"), name, g->color##pick,          \
+                       &dt_action_def_toggle);                             \
+  gtk_widget_set_tooltip_text(g->color##pick, tooltip);                    \
+  gtk_widget_set_name(GTK_WIDGET(g->color##pick), "picker-"#color);        \
+  g_signal_connect(dt_gui_expand(g->color##pick), "toggled",               \
                    G_CALLBACK(_color_picker_callback), self);
 
-  g->greypick = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL);
-  dt_action_define_iop(self, N_("pickers"), N_("gray"), g->greypick,
-                       &dt_action_def_toggle);
-  gtk_widget_set_tooltip_text(g->greypick, _("pick medium gray point from image"));
-  gtk_widget_set_name(GTK_WIDGET(g->greypick), "picker-grey");
-  g_signal_connect(G_OBJECT(g->greypick), "toggled",
-                   G_CALLBACK(_color_picker_callback), self);
-
-  g->whitepick = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL);
-  dt_action_define_iop(self, N_("pickers"), N_("white"), g->whitepick,
-                       &dt_action_def_toggle);
-  gtk_widget_set_tooltip_text(g->whitepick, _("pick white point from image"));
-  gtk_widget_set_name(GTK_WIDGET(g->whitepick), "picker-white");
-  g_signal_connect(G_OBJECT(g->whitepick), "toggled",
-                   G_CALLBACK(_color_picker_callback), self);
-
-  GtkWidget *pick_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(pick_hbox), GTK_WIDGET(g->blackpick), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(pick_hbox), GTK_WIDGET(g->greypick ), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(pick_hbox), GTK_WIDGET(g->whitepick), TRUE, TRUE, 0);
-
-  gtk_box_pack_start(GTK_BOX(self->widget), pick_hbox, TRUE, TRUE, 0);
+  PICKER_SETUP(black, N_("black"), _("pick black point from image"));
+  PICKER_SETUP(grey,  N_("gray"),  _("pick medium gray point from image"));
+  PICKER_SETUP(white, N_("white"), _("pick white point from image"));
 
   g->bt_auto_levels = gtk_button_new_with_label(_("auto"));
   dt_action_define_iop(self, NULL, N_("auto levels"), g->bt_auto_levels,
@@ -1116,12 +1095,9 @@ void gui_init(dt_iop_module_t *self)
                                 "click and drag to draw the area\n"
                                 "right-click to cancel"));
 
-  GtkWidget *autolevels_box =
-    gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10));
-  gtk_box_pack_start(GTK_BOX(autolevels_box), g->bt_auto_levels, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(autolevels_box), g->bt_select_region, TRUE, TRUE, 0);
-
-  gtk_box_pack_start(GTK_BOX(self->widget), autolevels_box, TRUE, TRUE, 0);
+  dt_gui_box_add(self->widget, g->channel_tabs, g->area,
+                 dt_gui_hbox(g->blackpick, g->greypick, g->whitepick),
+                 dt_gui_hbox(dt_gui_expand(g->bt_auto_levels), dt_gui_expand(g->bt_select_region)));
 
   g_signal_connect(G_OBJECT(g->bt_auto_levels), "clicked",
                    G_CALLBACK(_auto_levels_callback), self);

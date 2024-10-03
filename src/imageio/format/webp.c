@@ -409,12 +409,9 @@ void gui_init(dt_imageio_module_format_t *self)
   const int quality = dt_conf_get_int("plugins/imageio/format/webp/quality");
   const int hint = dt_conf_get_int("plugins/imageio/format/webp/hint");
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-
   DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->compression, self, NULL, N_("compression"), NULL,
                                comp_type, compression_changed, self,
                                N_("lossy"), N_("lossless"));
-  gtk_box_pack_start(GTK_BOX(self->widget), gui->compression, TRUE, TRUE, 0);
 
   gui->quality = dt_bauhaus_slider_new_with_range((dt_iop_module_t*)self,
                                                   dt_confgen_get_int("plugins/imageio/format/webp/quality", DT_MIN),
@@ -427,7 +424,6 @@ void gui_init(dt_imageio_module_format_t *self)
                                               "for lossless, 0 is the fastest but gives larger files compared\n"
                                               "to the slowest 100."));
   dt_bauhaus_slider_set(gui->quality, quality);
-  gtk_box_pack_start(GTK_BOX(self->widget), gui->quality, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(gui->quality), "value-changed", G_CALLBACK(quality_changed), NULL);
 
   gtk_widget_set_visible(gui->quality, comp_type != webp_lossless);
@@ -440,7 +436,8 @@ void gui_init(dt_imageio_module_format_t *self)
                                  "graphic: discrete tone image (graph, map-tile etc)"),
                                hint, hint_combobox_changed, self,
                                N_("default"), N_("picture"), N_("photo"), N_("graphic"));
-  gtk_box_pack_start(GTK_BOX(self->widget), gui->hint, TRUE, TRUE, 0);
+
+  self->widget = dt_gui_vbox(gui->compression, gui->quality, gui->hint);
 }
 
 void gui_cleanup(dt_imageio_module_format_t *self)

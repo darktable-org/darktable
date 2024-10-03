@@ -3676,16 +3676,12 @@ void gui_init(dt_iop_module_t *self)
   dt_ui_notebook_page(g->channel_tabs, N_("B"), NULL);
   g_signal_connect(G_OBJECT(g->channel_tabs), "switch_page",
                    G_CALLBACK(denoiseprofile_tab_switch), self);
-  gtk_box_pack_start(GTK_BOX(g->box_wavelets),
-                     GTK_WIDGET(g->channel_tabs), FALSE, FALSE, 0);
 
   g->channel_tabs_Y0U0V0 = GTK_NOTEBOOK(gtk_notebook_new());
   dt_ui_notebook_page(g->channel_tabs_Y0U0V0, N_("Y0"), NULL);
   dt_ui_notebook_page(g->channel_tabs_Y0U0V0, N_("U0V0"), NULL);
   g_signal_connect(G_OBJECT(g->channel_tabs_Y0U0V0), "switch_page",
                    G_CALLBACK(denoiseprofile_tab_switch), self);
-  gtk_box_pack_start(GTK_BOX(g->box_wavelets),
-                     GTK_WIDGET(g->channel_tabs_Y0U0V0), FALSE, FALSE, 0);
 
   const int ch = (int)g->channel;
   g->transition_curve = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
@@ -3717,53 +3713,41 @@ void gui_init(dt_iop_module_t *self)
                    G_CALLBACK(denoiseprofile_leave_notify), self);
   g_signal_connect(G_OBJECT(g->area), "scroll-event",
                    G_CALLBACK(denoiseprofile_scrolled), self);
-  gtk_box_pack_start(GTK_BOX(g->box_wavelets), GTK_WIDGET(g->area), FALSE, FALSE, 0);
 
-  g->box_variance = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  dt_gui_box_add(g->box_wavelets, g->channel_tabs, g->channel_tabs_Y0U0V0, g->area);
+
 
   g->label_var = GTK_LABEL(dt_ui_label_new(_("use only with a perfectly\n"
                                              "uniform image if you want to\n"
                                              "estimate the noise variance.")));
-  gtk_box_pack_start(GTK_BOX(g->box_variance), GTK_WIDGET(g->label_var), TRUE, TRUE, 0);
 
-  GtkBox *hboxR = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  GtkLabel *labelR = GTK_LABEL(dt_ui_label_new(_("variance red: ")));
-  gtk_box_pack_start(GTK_BOX(hboxR), GTK_WIDGET(labelR), FALSE, FALSE, 0);
   g->label_var_R = GTK_LABEL(dt_ui_label_new("")); // This gets filled in by process
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->label_var_R),
                               _("variance computed on the red channel"));
-  gtk_box_pack_start(GTK_BOX(hboxR), GTK_WIDGET(g->label_var_R), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(g->box_variance), GTK_WIDGET(hboxR), TRUE, TRUE, 0);
 
-  GtkBox *hboxG = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  GtkLabel *labelG = GTK_LABEL(dt_ui_label_new(_("variance green: ")));
-  gtk_box_pack_start(GTK_BOX(hboxG), GTK_WIDGET(labelG), FALSE, FALSE, 0);
   g->label_var_G = GTK_LABEL(dt_ui_label_new("")); // This gets filled in by process
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->label_var_G),
                               _("variance computed on the green channel"));
-  gtk_box_pack_start(GTK_BOX(hboxG), GTK_WIDGET(g->label_var_G), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(g->box_variance), GTK_WIDGET(hboxG), TRUE, TRUE, 0);
 
-  GtkBox *hboxB = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  GtkLabel *labelB = GTK_LABEL(dt_ui_label_new(_("variance blue: ")));
-  gtk_box_pack_start(GTK_BOX(hboxB), GTK_WIDGET(labelB), FALSE, FALSE, 0);
+
   g->label_var_B = GTK_LABEL(dt_ui_label_new("")); // This gets filled in by process
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->label_var_B),
                               _("variance computed on the blue channel"));
-  gtk_box_pack_start(GTK_BOX(hboxB), GTK_WIDGET(g->label_var_B), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(g->box_variance), GTK_WIDGET(hboxB), TRUE, TRUE, 0);
+
+  g->box_variance = dt_gui_vbox(g->label_var,
+                                dt_gui_hbox(dt_ui_label_new(_("variance red: ")), g->label_var_R),
+                                dt_gui_hbox(dt_ui_label_new(_("variance green: ")), g->label_var_G),
+                                dt_gui_hbox(dt_ui_label_new(_("variance blue: ")), g->label_var_B));
 
   g_signal_connect(G_OBJECT(g->box_variance), "draw",
                    G_CALLBACK(denoiseprofile_draw_variance), self);
 
   // start building top level widget
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
   g->profile = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->profile, NULL, N_("profile"));
   g_signal_connect(G_OBJECT(g->profile), "value-changed",
                    G_CALLBACK(profile_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->profile, TRUE, TRUE, 0);
+  self->widget = dt_gui_vbox(g->profile);
 
   g->wb_adaptive_anscombe = dt_bauhaus_toggle_from_params(self, "wb_adaptive_anscombe");
 
@@ -3774,8 +3758,7 @@ void gui_init(dt_iop_module_t *self)
   if(!compute_variance && pos != -1)
     dt_bauhaus_combobox_remove_at(g->mode, pos);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), g->box_nlm, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->box_wavelets, TRUE, TRUE, 0);
+  dt_gui_box_add(self->widget, g->box_nlm, g->box_wavelets);
 
   g->overshooting = dt_bauhaus_slider_from_params(self, "overshooting");
   dt_bauhaus_slider_set_soft_max(g->overshooting, 4.0f);
@@ -3786,7 +3769,7 @@ void gui_init(dt_iop_module_t *self)
   g->bias = dt_bauhaus_slider_from_params(self, "bias");
   dt_bauhaus_slider_set_soft_range(g->bias, -10.0f, 10.0f);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), g->box_variance, TRUE, TRUE, 0);
+  dt_gui_box_add(self->widget, g->box_variance);
 
   g->fix_anscombe_and_nlmeans_norm = dt_bauhaus_toggle_from_params
     (self, "fix_anscombe_and_nlmeans_norm");

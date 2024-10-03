@@ -958,7 +958,7 @@ void gui_init(dt_iop_module_t *self)
                                N_("square"),
                                N_("constant border"),
                                N_("custom..."));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->aspect, TRUE, TRUE, 0);
+  dt_gui_box_add(self->widget, g->aspect);
 
   g->aspect_slider = dt_bauhaus_slider_from_params(self, "aspect");
   gtk_widget_set_tooltip_text(g->aspect_slider, _("set the custom aspect ratio\n"
@@ -974,7 +974,7 @@ void gui_init(dt_iop_module_t *self)
                                0, _position_h_changed, self,
                                N_("center"), N_("1/3"), N_("3/8"),
                                N_("5/8"), N_("2/3"), N_("custom..."));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->pos_h, TRUE, TRUE, 0);
+  dt_gui_box_add(self->widget, g->pos_h);
 
   g->pos_h_slider = dt_bauhaus_slider_from_params(self, "pos_h");
   gtk_widget_set_tooltip_text(g->pos_h_slider, _("custom horizontal position"));
@@ -985,7 +985,7 @@ void gui_init(dt_iop_module_t *self)
                                0, _position_v_changed, self,
                                N_("center"), N_("1/3"), N_("3/8"),
                                N_("5/8"), N_("2/3"), N_("custom..."));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->pos_v, TRUE, TRUE, 0);
+  dt_gui_box_add(self->widget, g->pos_v);
 
   g->pos_v_slider = dt_bauhaus_slider_from_params(self, "pos_v");
   gtk_widget_set_tooltip_text(g->pos_v_slider, _("custom vertical position"));
@@ -1028,7 +1028,7 @@ void gui_init(dt_iop_module_t *self)
                               _("pick border color from image"));
   dt_action_define_iop(self, N_("pickers"), N_("border color"),
                        g->border_picker, &dt_action_def_toggle);
-  gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
+  dt_gui_box_add(self->widget, box);
 
   box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   label = dtgtk_reset_label_new(_("frame line color"), self, &p->frame_color, 3 * sizeof(float));
@@ -1045,7 +1045,7 @@ void gui_init(dt_iop_module_t *self)
                               _("pick frame line color from image"));
   dt_action_define_iop(self, N_("pickers"), N_("frame line color"),
                        g->frame_picker, &dt_action_def_toggle);
-  gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
+  dt_gui_box_add(self->widget, box);
 }
 
 // clang-format off

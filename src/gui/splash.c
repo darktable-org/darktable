@@ -47,7 +47,7 @@ static GtkWidget *splash_screen = NULL;
 static GtkWidget *progress_text = NULL;
 static GtkWidget *remaining_text = NULL;
 static gboolean showing_remaining = FALSE;
-static GtkBox *remaining_box = NULL;
+static GtkWidget *remaining_box = NULL;
 
 static GtkWidget *exit_screen = NULL;
 
@@ -177,15 +177,14 @@ void darktable_splash_screen_create(GtkWindow *parent_window,
   GtkWidget *logo = _get_logo();
   GtkWidget *program_name = _get_program_name();
   GtkBox *content = GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(splash_screen)));
-  GtkBox *main_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
 #ifdef USE_FEATURED_IMAGE
   // make a random selection of featured image based on the current
   // time
   const int imgnum = (int)(1 + (clock()%MAX_IMAGES));
   //FIXME: if user overrides --datadir, we won't find the image...
-  image_file = g_strdup_printf("%s/pixmaps/splashscreen-%02d.jpg",
-                               darktable.datadir, imgnum);
+  gchar *image_file = g_strdup_printf("%s/pixmaps/splashscreen-%02d.jpg",
+                                      darktable.datadir, imgnum);
   GtkWidget *image = gtk_image_new_from_file(image_file);
   g_free(image_file);
   gtk_widget_set_name(GTK_WIDGET(image), "splashscreen-image");
@@ -195,63 +194,39 @@ void darktable_splash_screen_create(GtkWindow *parent_window,
     GTK_WIDGET(gtk_label_new(_("Photography workflow\napplication and\nRAW developer")));
   gtk_label_set_justify(GTK_LABEL(program_desc), GTK_JUSTIFY_CENTER);
   gtk_widget_set_name(program_desc, "splashscreen-description");
-  GtkBox *title_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-  gtk_box_pack_start(title_box, logo, FALSE, FALSE, 0);
-  gtk_box_pack_start(title_box, version, FALSE, FALSE, 0);
-  gtk_box_pack_start(title_box, program_name, FALSE, FALSE, 0);
-  gtk_box_pack_start(title_box, program_desc, FALSE, FALSE, 0);
-  // now put the featured image to the right of the logo/name/description
-  gtk_box_pack_start(main_box, GTK_WIDGET(title_box), FALSE, FALSE, 0);
-  gtk_box_pack_start(main_box, image, FALSE, FALSE, 0);
-  gtk_box_pack_start(content, GTK_WIDGET(main_box), FALSE, FALSE, 0);
+
+  dt_gui_box_add(content, dt_gui_hbox(dt_gui_vbox(logo, version, program_name, program_desc), image));
 #else
   // put the darktable logo and version number together
-  GtkBox *logo_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
   gtk_image_set_pixel_size(GTK_IMAGE(logo), 220);
   gtk_label_set_justify(GTK_LABEL(version), GTK_JUSTIFY_LEFT);
-  gtk_box_pack_start(logo_box, logo, FALSE, FALSE, 0);
-  gtk_box_pack_start(logo_box, version, FALSE, FALSE, 0);
-  gtk_box_pack_start(logo_box, copyright, FALSE, FALSE, 0);
+
   // put the darktable wordmark and description in a vertical stack
   GtkWidget *program_desc = GTK_WIDGET(gtk_label_new(_("Photography workflow application\nand RAW developer")));
   gtk_label_set_justify(GTK_LABEL(program_desc), GTK_JUSTIFY_RIGHT);
+  gtk_widget_set_halign(program_desc, GTK_ALIGN_END);
   gtk_widget_set_name(program_desc, "splashscreen-description");
-  GtkWidget *desc_padding = gtk_label_new(NULL);
-  GtkBox *desc_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  gtk_box_pack_end(desc_box, desc_padding, FALSE, FALSE, 0);
-  gtk_box_pack_end(desc_box, program_desc, FALSE, FALSE, 0);
-  GtkBox *text_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-  GtkWidget *padding1 = gtk_label_new(NULL);  // ensure that text is vertically centered
-  GtkWidget *padding2 = gtk_label_new("");  // with respect to logo
+
   GtkWidget *prepare = gtk_label_new(_("get ready to unleash your creativity"));
   gtk_widget_set_name(prepare, "splashscreen-prepare");
-  gtk_box_pack_start(text_box, padding1, TRUE, TRUE, 0);
-  gtk_box_pack_start(text_box, program_name, FALSE, FALSE, 0);
-  gtk_box_pack_start(text_box, GTK_WIDGET(desc_box), FALSE, FALSE, 0);
-  gtk_box_pack_start(text_box, padding2, TRUE, TRUE, 0);
-  gtk_box_pack_start(text_box, prepare, FALSE, FALSE, 0);
-  // put the text to the right of the logo/version
-  gtk_box_pack_start(main_box, GTK_WIDGET(logo_box), FALSE, FALSE, 0);
-  gtk_box_pack_start(main_box, GTK_WIDGET(text_box), FALSE, FALSE, 0);
-  // and make that the top portion of the splash screen
-  gtk_box_pack_start(content, GTK_WIDGET(main_box), FALSE, FALSE, 0);
+
+  dt_gui_box_add(content,
+                 dt_gui_hbox(dt_gui_vbox(logo, version, copyright),
+                 dt_gui_vbox(gtk_label_new(NULL), program_name, program_desc, gtk_label_new(NULL), prepare)));
 #endif
 
   GtkWidget *hbar = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
   gtk_widget_set_name(hbar, "splashscreen-separator");
   gtk_widget_show(hbar);
-  gtk_box_pack_start(content, hbar, FALSE, FALSE, 0);
-  gtk_box_pack_start(content, progress_text, FALSE, FALSE, 0);
 
-  remaining_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  gtk_box_pack_start(remaining_box, dtgtk_button_new(dtgtk_cairo_paint_clock, 0, 0), FALSE, FALSE, 0);
-  gtk_box_pack_start(remaining_box, remaining_text, FALSE, FALSE, 0);
-  gtk_box_pack_start(content, GTK_WIDGET(remaining_box), FALSE, FALSE, 0);
+  remaining_box = dt_gui_hbox(dtgtk_button_new(dtgtk_cairo_paint_clock, 0, 0), remaining_text);
   gtk_widget_set_halign(GTK_WIDGET(remaining_box), GTK_ALIGN_CENTER);
+
+  dt_gui_box_add(content, hbar, progress_text, remaining_box);
 
   gtk_window_set_decorated(GTK_WINDOW(splash_screen), FALSE);
   gtk_widget_show_all(splash_screen);
-  gtk_widget_hide(GTK_WIDGET(remaining_box));
+  gtk_widget_hide(remaining_box);
   _process_all_gui_events();
 }
 
@@ -263,7 +238,7 @@ void darktable_splash_screen_set_progress(const char *msg)
     gtk_widget_show(progress_text);
     if(showing_remaining)
     {
-      gtk_widget_hide(GTK_WIDGET(remaining_box));
+      gtk_widget_hide(remaining_box);
       showing_remaining = FALSE;
     }
     _process_all_gui_events();
@@ -290,7 +265,7 @@ void darktable_splash_screen_set_progress_percent(const char *msg,
       char *rem_text = g_strdup_printf(" %4d:%02d", minutes, seconds);
       gtk_label_set_text(GTK_LABEL(remaining_text), rem_text);
       g_free(rem_text);
-      gtk_widget_queue_draw(GTK_WIDGET(remaining_box));
+      gtk_widget_queue_draw(remaining_box);
     }
     else
     {

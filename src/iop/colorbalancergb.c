@@ -1800,7 +1800,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->contrast, "%");
   gtk_widget_set_tooltip_text(g->contrast, _("increase the contrast at constant chromaticity"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "linear chroma grading")), FALSE, FALSE, 0);
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "linear chroma grading")));
   sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("chroma"));
 
   g->chroma_global = dt_bauhaus_slider_from_params(self, "chroma_global");
@@ -1824,7 +1824,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->chroma_highlights, "%");
   gtk_widget_set_tooltip_text(g->chroma_highlights, _("increase colorfulness at same luminance mostly in highlights"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "perceptual saturation grading")), FALSE, FALSE, 0);
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "perceptual saturation grading")));
   sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("saturation"));
 
   g->saturation_global = dt_bauhaus_slider_from_params(self, "saturation_global");
@@ -1847,7 +1847,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->saturation_highlights, "%");
   gtk_widget_set_tooltip_text(g->saturation_highlights, _("increase or decrease saturation proportionally to the original pixel saturation"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "perceptual brilliance grading")), FALSE, FALSE, 0);
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "perceptual brilliance grading")));
   sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("brilliance"));
 
   g->brilliance_global = dt_bauhaus_slider_from_params(self, "brilliance_global");
@@ -1873,7 +1873,7 @@ void gui_init(dt_iop_module_t *self)
   // Page 4-ways
   self->widget = dt_ui_notebook_page(g->notebook, N_("4 ways"), _("selective color grading"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "global offset")), FALSE, FALSE, 0);
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "global offset")));
   sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("offset"));
 
   g->global_Y = dt_bauhaus_slider_from_params(sect, "global_Y");
@@ -1893,7 +1893,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->global_C, "%");
   gtk_widget_set_tooltip_text(g->global_C, _("chroma of the global color offset"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "shadows lift")), FALSE, FALSE, 0);
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "shadows lift")));
   sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("lift"));
 
   g->shadows_Y = dt_bauhaus_slider_from_params(sect, "shadows_Y");
@@ -1913,7 +1913,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->shadows_C, "%");
   gtk_widget_set_tooltip_text(g->shadows_C, _("chroma of the color gain in shadows"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "highlights gain")), FALSE, FALSE, 0);
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "highlights gain")));
   sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("gain"));
 
   g->highlights_Y = dt_bauhaus_slider_from_params(sect, "highlights_Y");
@@ -1933,7 +1933,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->highlights_C, "%");
   gtk_widget_set_tooltip_text(g->highlights_C, _("chroma of the color gain in highlights"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "power")), FALSE, FALSE, 0);
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "power")));
   sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("power"));
 
   g->midtones_Y = dt_bauhaus_slider_from_params(sect, "midtones_Y");
@@ -1960,7 +1960,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->saturation_formula,
                               _("choose in which uniform color space the saturation is computed"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "luminance ranges")), FALSE, FALSE, 0);
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "luminance ranges")));
 
   g->area = GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL,
                                                0,
@@ -1968,7 +1968,7 @@ void gui_init(dt_iop_module_t *self)
   g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
   dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(g->area), NULL);
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(dt_iop_tonecurve_draw), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), FALSE, FALSE, 0);
+  dt_gui_box_add(self->widget, GTK_WIDGET(g->area));
 
   g->shadows_weight = dt_bauhaus_slider_from_params(self, "shadows_weight");
   dt_bauhaus_slider_set_digits(g->shadows_weight, 4);
@@ -1994,7 +1994,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_toggle(g->highlights_weight, TRUE);
   g_signal_connect(G_OBJECT(g->highlights_weight), "quad-pressed", G_CALLBACK(mask_callback), self);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "threshold")), FALSE, FALSE, 0);
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "threshold")));
 
   g->white_fulcrum = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "white_fulcrum"));
   dt_bauhaus_slider_set_soft_range(g->white_fulcrum, -2., +2.);
@@ -2007,31 +2007,27 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->grey_fulcrum, "%");
   gtk_widget_set_tooltip_text(g->grey_fulcrum, _("peak gray luminance value used to normalize the power function"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "mask preview settings")), FALSE, FALSE, 0);
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "mask preview settings")));
 
-  GtkWidget *row1 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  gtk_box_pack_start(GTK_BOX(row1), dt_ui_label_new(_("checkerboard color 1")), TRUE, TRUE, 0);
   g->checker_color_1_picker = gtk_color_button_new();
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->checker_color_1_picker), FALSE);
   gtk_color_button_set_title(GTK_COLOR_BUTTON(g->checker_color_1_picker), _("select color of the checkerboard from a swatch"));
-  gtk_box_pack_start(GTK_BOX(row1), GTK_WIDGET(g->checker_color_1_picker), FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->checker_color_1_picker), "color-set", G_CALLBACK(checker_1_picker_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(row1), FALSE, FALSE, 0);
 
-  GtkWidget *row2 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  gtk_box_pack_start(GTK_BOX(row2), dt_ui_label_new(_("checkerboard color 2")), TRUE, TRUE, 0);
   g->checker_color_2_picker = gtk_color_button_new();
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->checker_color_2_picker), FALSE);
   gtk_color_button_set_title(GTK_COLOR_BUTTON(g->checker_color_2_picker), _("select color of the checkerboard from a swatch"));
-  gtk_box_pack_start(GTK_BOX(row2), GTK_WIDGET(g->checker_color_2_picker), FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->checker_color_2_picker), "color-set", G_CALLBACK(checker_2_picker_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(row2), FALSE, FALSE, 0);
 
   g->checker_size = dt_bauhaus_slider_new_with_range(self, 2., 32., 0, 8., 0);
   dt_bauhaus_slider_set_format(g->checker_size, _(" px"));
   dt_bauhaus_widget_set_label(g->checker_size,  NULL, _("checkerboard size"));
   g_signal_connect(G_OBJECT(g->checker_size), "value-changed", G_CALLBACK(checker_size_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->checker_size), FALSE, FALSE, 0);
+
+  dt_gui_box_add(self->widget,
+    dt_gui_hbox(dt_gui_expand(dt_ui_label_new(_("checkerboard color 1"))), g->checker_color_1_picker),
+    dt_gui_hbox(dt_gui_expand(dt_ui_label_new(_("checkerboard color 2"))), g->checker_color_2_picker),
+    g->checker_size);
 
   // Init the conf keys if they don't exist
   if(!dt_conf_key_exists("plugins/darkroom/colorbalancergb/checker1/red"))

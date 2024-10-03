@@ -1782,8 +1782,6 @@ void gui_init(dt_iop_module_t *self)
   g->mouse_radius = 1.0 / BANDS;
   g->in_curve = FALSE;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
   static struct dt_action_def_t notebook_def = { };
   g->channel_tabs = dt_ui_notebook_new(&notebook_def);
   dt_action_define_iop(self, NULL, N_("channel"),
@@ -1799,14 +1797,12 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_show(gtk_notebook_get_nth_page(g->channel_tabs, g->channel));
   gtk_notebook_set_current_page(g->channel_tabs, g->channel);
   g_signal_connect(G_OBJECT(g->channel_tabs), "switch_page", G_CALLBACK(tab_switch), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->channel_tabs), FALSE, FALSE, 0);
 
   // graph
   g->area = GTK_DRAWING_AREA(dt_ui_resize_wrap
                              (NULL,
                               0,
                               "plugins/darkroom/atrous/graphheight"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
 
   g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
   dt_action_define_iop(self, NULL, N_("graph"),
@@ -1824,6 +1820,8 @@ void gui_init(dt_iop_module_t *self)
                    G_CALLBACK(area_enter_leave_notify), self);
   g_signal_connect(G_OBJECT(g->area), "scroll-event",
                    G_CALLBACK(area_scrolled), self);
+
+  self->widget = dt_gui_vbox(g->channel_tabs, g->area);
 
   // mix slider
   g->mix = dt_bauhaus_slider_from_params(self, N_("mix"));

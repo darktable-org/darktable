@@ -5146,6 +5146,7 @@ GtkWidget *dt_action_button_new(dt_lib_module_t *self,
                                 GdkModifierType mods)
 {
   GtkWidget *button = gtk_button_new_with_label(Q_(label));
+  gtk_widget_set_hexpand(button, TRUE);
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button))),
                           PANGO_ELLIPSIZE_END);
   if(tooltip) gtk_widget_set_tooltip_text(button, tooltip);
@@ -5172,6 +5173,7 @@ GtkWidget *dt_action_entry_new(dt_action_t *ac,
                                const gchar *text)
 {
   GtkWidget *entry = dt_ui_entry_new(5);
+  gtk_widget_set_hexpand(entry, TRUE);
   if(text)
     gtk_entry_set_text (GTK_ENTRY(entry), text);
   if(tooltip)

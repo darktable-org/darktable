@@ -680,15 +680,12 @@ void gui_init(dt_imageio_module_format_t *self)
   if(dt_conf_key_exists("plugins/imageio/format/png/compression"))
     compression = dt_conf_get_int("plugins/imageio/format/png/compression");
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-
   // Bit depth combo box
   DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->bit_depth, self, NULL, N_("bit depth"), NULL,
                                0, bit_depth_changed, self,
                                N_("8 bit"), N_("16 bit"));
   if(bpp == 16)
     dt_bauhaus_combobox_set(gui->bit_depth, 1);
-  gtk_box_pack_start(GTK_BOX(self->widget), gui->bit_depth, TRUE, TRUE, 0);
 
   // Compression level slider
   gui->compression = dt_bauhaus_slider_new_with_range
@@ -700,9 +697,10 @@ void gui_init(dt_imageio_module_format_t *self)
      0);
   dt_bauhaus_widget_set_label(gui->compression, NULL, N_("compression"));
   dt_bauhaus_slider_set(gui->compression, compression);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(gui->compression), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(gui->compression), "value-changed",
                    G_CALLBACK(compression_level_changed), NULL);
+
+  self->widget = dt_gui_vbox(gui->bit_depth, gui->compression);
 }
 
 void gui_cleanup(dt_imageio_module_format_t *self)

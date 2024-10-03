@@ -354,14 +354,12 @@ void gui_init(dt_imageio_module_format_t *self)
     bpp = atoi(conf_bpp);
   }
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-
   // Bit depth combo box
   DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->bpp, self, NULL, N_("bit depth"), NULL,
                                bpp == 16 ? 1 : bpp == 32 ? 2 : 0,
                                bpp_combobox_changed, NULL,
                                N_("8 bit"), N_("16 bit"), N_("32 bit (float)"));
-  gtk_box_pack_start(GTK_BOX(self->widget), gui->bpp, TRUE, TRUE, 0);
+  self->widget = dt_gui_vbox(gui->bpp);
 }
 
 void gui_cleanup(dt_imageio_module_format_t *self)
