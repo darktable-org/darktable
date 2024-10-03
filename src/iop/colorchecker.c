@@ -1531,12 +1531,8 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_colorchecker_gui_data_t *g = IOP_GUI_ALLOC(colorchecker);
   const dt_iop_colorchecker_params_t *const p = self->default_params;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
   // custom 24-patch widget in addition to combo box
   g->area = dtgtk_drawing_area_new_with_aspect_ratio(4.0/6.0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->area, TRUE, TRUE, 0);
-
   gtk_widget_add_events(GTK_WIDGET(g->area),
                         GDK_POINTER_MOTION_MASK
                         | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
@@ -1616,12 +1612,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->combobox_target, _("relative"));
   dt_bauhaus_combobox_add(g->combobox_target, _("absolute"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), g->combobox_patch, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->scale_L, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->scale_a, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->scale_b, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->scale_C, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->combobox_target, TRUE, TRUE, 0);
+  self->widget = dt_gui_vbox(g->area, g->combobox_patch, g->scale_L, g->scale_a,
+                                      g->scale_b, g->scale_C, g->combobox_target);
 
   g_signal_connect(G_OBJECT(g->combobox_patch), "value-changed",
                    G_CALLBACK(patch_callback), self);

@@ -1015,16 +1015,12 @@ void gui_init(dt_imageio_module_storage_t *self)
   ui->accounts = NULL;
   ui->api = NULL;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-
   _piwigo_load_account(ui);
 
   gchar *server = dt_conf_get_string("plugins/imageio/storage/export/piwigo/server");
 
   // look for last server information
   _piwigo_account_t *last_account = _piwigo_get_account(ui, server);
-
-  GtkWidget *hbox, *label, *button;
 
   // account
   ui->account_list = dt_bauhaus_combobox_new_action(DT_ACTION(self));
@@ -1040,10 +1036,8 @@ void gui_init(dt_imageio_module_storage_t *self)
   gtk_widget_set_hexpand(ui->account_list, TRUE);
   g_signal_connect(G_OBJECT(ui->account_list), "value-changed",
                    G_CALLBACK(_piwigo_account_changed), (gpointer)ui);
-  gtk_box_pack_start(GTK_BOX(self->widget), ui->account_list, FALSE, FALSE, 0);
 
   // server
-  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10));
   ui->server_entry = GTK_ENTRY
     (dt_action_entry_new
      (DT_ACTION(self),
@@ -1056,13 +1050,9 @@ void gui_init(dt_imageio_module_storage_t *self)
       last_account ? last_account->server : "piwigo.com"));
 
   gtk_widget_set_hexpand(GTK_WIDGET(ui->server_entry), TRUE);
-  gtk_box_pack_start(GTK_BOX(hbox), dt_ui_label_new(_("server")), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui->server_entry), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
   g_free(server);
 
   // login
-  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10));
   ui->user_entry = GTK_ENTRY
     (dt_action_entry_new
      (DT_ACTION(self),
@@ -1073,12 +1063,8 @@ void gui_init(dt_imageio_module_storage_t *self)
       last_account ? last_account->username : ""));
 
   gtk_widget_set_hexpand(GTK_WIDGET(ui->user_entry), TRUE);
-  gtk_box_pack_start(GTK_BOX(hbox), dt_ui_label_new(_("user")), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui->user_entry), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
   // password
-  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10));
   ui->pwd_entry =
     GTK_ENTRY(dt_action_entry_new(DT_ACTION(self),
                                   N_("password"),
@@ -1086,23 +1072,17 @@ void gui_init(dt_imageio_module_storage_t *self)
                                   last_account ? last_account->password : ""));
   gtk_entry_set_visibility(GTK_ENTRY(ui->pwd_entry), FALSE);
   gtk_widget_set_hexpand(GTK_WIDGET(ui->pwd_entry), TRUE);
-  gtk_box_pack_start(GTK_BOX(hbox), dt_ui_label_new(_("password")), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui->pwd_entry), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
   // login button
-  button = gtk_button_new_with_label(_("login"));
-  gtk_widget_set_tooltip_text(button, _("Piwigo login"));
-  g_signal_connect(G_OBJECT(button), "clicked",
+  GtkWidget *login_button = gtk_button_new_with_label(_("login"));
+  gtk_widget_set_tooltip_text(login_button, _("Piwigo login"));
+  g_signal_connect(G_OBJECT(login_button), "clicked",
                    G_CALLBACK(_piwigo_login_clicked), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), button, FALSE, FALSE, 0);
 
   // status area
   ui->status_label = GTK_LABEL(gtk_label_new(NULL));
   gtk_label_set_ellipsize(ui->status_label, PANGO_ELLIPSIZE_END);
   gtk_widget_set_halign(GTK_WIDGET(ui->status_label), GTK_ALIGN_START);
-  gtk_box_pack_start(GTK_BOX(self->widget),
-                     GTK_WIDGET(ui->status_label), FALSE, FALSE, 0);
 
   // select account
   if(account_index != -1)
@@ -1116,56 +1096,38 @@ void gui_init(dt_imageio_module_storage_t *self)
                                N_("friends"),
                                N_("family"),
                                N_("you"));
-  gtk_box_pack_start(GTK_BOX(self->widget), ui->permission_list, FALSE, FALSE, 0);
 
   // album list
-  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-
   ui->album_list = dt_bauhaus_combobox_new_action(DT_ACTION(self)); // Available albums
   dt_bauhaus_widget_set_label(ui->album_list, NULL, N_("album"));
   g_signal_connect(G_OBJECT(ui->album_list), "value-changed",
                    G_CALLBACK(_piwigo_album_changed), (gpointer)ui);
   gtk_widget_set_sensitive(ui->album_list, FALSE);
-  gtk_box_pack_start(GTK_BOX(hbox), ui->album_list, TRUE, TRUE, 0);
 
-  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_NONE, NULL);
-  gtk_widget_set_tooltip_text(button, _("refresh album list"));
-  g_signal_connect(G_OBJECT(button), "clicked",
+  GtkWidget *refresh_button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_NONE, NULL);
+  gtk_widget_set_tooltip_text(refresh_button, _("refresh album list"));
+  g_signal_connect(G_OBJECT(refresh_button), "clicked",
                    G_CALLBACK(_piwigo_refresh_clicked), (gpointer)ui);
-  gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
-
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 0);
 
   // new album
-  ui->create_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-  gtk_widget_set_no_show_all(GTK_WIDGET(ui->create_box), TRUE);
-  gtk_box_pack_start(GTK_BOX(self->widget),
-                     GTK_WIDGET(ui->create_box), FALSE, FALSE, 0);
-
-  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-
-  label = gtk_label_new(_("title"));
-  g_object_set(G_OBJECT(label), "xalign", 0.0, (gchar *)0);
-  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
-
   ui->new_album_entry = GTK_ENTRY(gtk_entry_new()); // Album title
   gtk_entry_set_text(ui->new_album_entry, _("new album"));
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui->new_album_entry), TRUE, TRUE, 0);
   gtk_entry_set_width_chars(GTK_ENTRY(ui->new_album_entry), 0);
-
-  gtk_box_pack_start(ui->create_box, hbox, FALSE, FALSE, 0);
 
   // parent album list
   ui->parent_album_list =
     dt_bauhaus_combobox_new_action(DT_ACTION(self)); // Available albums
   dt_bauhaus_widget_set_label(ui->parent_album_list, NULL, N_("parent album"));
   gtk_widget_set_sensitive(ui->parent_album_list, TRUE);
-  gtk_box_pack_start(ui->create_box, ui->parent_album_list, TRUE, TRUE, 0);
+
+  ui->create_box = GTK_BOX(dt_gui_vbox
+    (dt_gui_hbox(dt_ui_label_new(_("title")), ui->new_album_entry),
+     ui->parent_album_list));
+  gtk_widget_set_no_show_all(GTK_WIDGET(ui->create_box), TRUE);
 
   _piwigo_set_status(ui, _("click login button to start"), "#ffffff");
 
   // filename pattern
-  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10));
   ui->filename_pattern_entry =
     GTK_ENTRY(dt_action_entry_new
               (DT_ACTION(self),
@@ -1178,9 +1140,6 @@ void gui_init(dt_imageio_module_storage_t *self)
                dt_conf_get_string_const("plugins/imageio/storage/export/piwigo/filename_pattern")));
   dt_gtkentry_setup_completion(ui->filename_pattern_entry, dt_gtkentry_get_default_path_compl_list());
   gtk_editable_set_position(GTK_EDITABLE(ui->filename_pattern_entry), -1);
-  gtk_box_pack_start(GTK_BOX(hbox), dt_ui_label_new(_("filename pattern")), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui->filename_pattern_entry), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
   // action on conflict
   ui->conflict_action = dt_bauhaus_combobox_new(NULL);
@@ -1189,10 +1148,20 @@ void gui_init(dt_imageio_module_storage_t *self)
   dt_bauhaus_combobox_add(ui->conflict_action, _("skip"));
   dt_bauhaus_combobox_add(ui->conflict_action, _("update metadata"));
   dt_bauhaus_combobox_add(ui->conflict_action, _("overwrite"));
-  gtk_box_pack_start(GTK_BOX(self->widget), ui->conflict_action, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(ui->conflict_action), "value-changed",
                    G_CALLBACK(_piwigo_conflict_changed), self);
   dt_bauhaus_combobox_set(ui->conflict_action, dt_conf_get_int("storage/piwigo/conflict"));
+
+  self->widget = dt_gui_vbox
+    (ui->account_list,
+     dt_gui_hbox(dt_ui_label_new(_("server")), ui->server_entry),
+     dt_gui_hbox(dt_ui_label_new(_("user")), ui->user_entry),
+     dt_gui_hbox(dt_ui_label_new(_("password")), ui->pwd_entry),
+     login_button, ui->status_label, ui->permission_list,
+     dt_gui_hbox(ui->album_list, refresh_button),
+     ui->create_box,
+     dt_gui_hbox(dt_ui_label_new(_("filename pattern")), ui->filename_pattern_entry),
+     ui->conflict_action);
 }
 
 void gui_cleanup(dt_imageio_module_storage_t *self)

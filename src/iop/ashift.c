@@ -6037,8 +6037,7 @@ void gui_init(dt_iop_module_t *self)
 
   self->widget = main_box;
 
-  GtkWidget *helpers = dt_ui_section_label_new(C_("section", "perspective"));
-  gtk_box_pack_start(GTK_BOX(self->widget), helpers, TRUE, TRUE, 0);
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "perspective")));
 
   GtkGrid *auto_grid = GTK_GRID(gtk_grid_new());
   gtk_grid_set_row_spacing(auto_grid, 2 * DT_BAUHAUS_SPACE);
@@ -6073,9 +6072,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_grid_attach(auto_grid, g->fit_both, 3, 1, 1, 1);
 
   gtk_widget_show_all(GTK_WIDGET(auto_grid));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(auto_grid), TRUE, TRUE, 0);
-
-  self->widget = main_box;
+  dt_gui_box_add(self->widget, auto_grid);
 
   gtk_widget_set_tooltip_text
     (g->rotation,

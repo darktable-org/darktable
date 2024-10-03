@@ -755,8 +755,6 @@ void gui_init(dt_iop_module_t *self)
 {
   dt_iop_blurs_gui_data_t *g = IOP_GUI_ALLOC(blurs);
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
   // Image buffer to store the kernel look
   // Don't recompute it in the drawing function, only when a param is changed
   // then serve it from cache to the drawing function.
@@ -766,7 +764,7 @@ void gui_init(dt_iop_module_t *self)
 
   g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_height(0));
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(dt_iop_tonecurve_draw), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
+  self->widget = dt_gui_vbox(g->area);
 
   g->radius = dt_bauhaus_slider_from_params(self, "radius");
   dt_bauhaus_slider_set_format(g->radius, " px");
@@ -776,6 +774,7 @@ void gui_init(dt_iop_module_t *self)
   g->blades = dt_bauhaus_slider_from_params(self, "blades");
   g->concavity = dt_bauhaus_slider_from_params(self, "concavity");
   g->linearity = dt_bauhaus_slider_from_params(self, "linearity");
+
   g->rotation = dt_bauhaus_slider_from_params(self, "rotation");
   dt_bauhaus_slider_set_factor(g->rotation, DEG_TO_RAD);
   dt_bauhaus_slider_set_format(g->rotation, "°");
@@ -783,7 +782,6 @@ void gui_init(dt_iop_module_t *self)
   g->angle = dt_bauhaus_slider_from_params(self, "angle");
   dt_bauhaus_slider_set_factor(g->angle, DEG_TO_RAD);
   dt_bauhaus_slider_set_format(g->angle, "°");
-
 
   g->curvature = dt_bauhaus_slider_from_params(self, "curvature");
   g->offset = dt_bauhaus_slider_from_params(self, "offset");

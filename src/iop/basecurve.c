@@ -2138,13 +2138,12 @@ void gui_init(dt_iop_module_t *self)
   g->selected = -1;
   g->loglogscale = 0;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
   g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_height(0));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("abscissa: input, ordinate: output. works on RGB channels"));
   g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
   dt_action_define_iop(self, NULL, N_("curve"), GTK_WIDGET(g->area), NULL);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
+
+  self->widget = dt_gui_vbox(g->area);
 
   g->cmb_preserve_colors = dt_bauhaus_combobox_from_params(self, "preserve_colors");
   gtk_widget_set_tooltip_text(g->cmb_preserve_colors, _("method to preserve colors when applying contrast"));
@@ -2171,9 +2170,11 @@ void gui_init(dt_iop_module_t *self)
                                                   "(-1: reduce highlight, +1: reduce shadows)"));
   gtk_widget_set_no_show_all(g->exposure_bias, TRUE);
   gtk_widget_set_visible(g->exposure_bias, p->exposure_fusion != 0 ? TRUE : FALSE);
+
   g->logbase = dt_bauhaus_slider_new_with_range(self, 0.0f, 40.0f, 0, 0.0f, 2);
   dt_bauhaus_widget_set_label(g->logbase, NULL, N_("scale for graph"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->logbase , TRUE, TRUE, 0);  g_signal_connect(G_OBJECT(g->logbase), "value-changed", G_CALLBACK(logbase_callback), self);
+  g_signal_connect(G_OBJECT(g->logbase), "value-changed", G_CALLBACK(logbase_callback), self);
+  dt_gui_box_add(self->widget, g->logbase);
 
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | darktable.gui->scroll_mask
                                            | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK

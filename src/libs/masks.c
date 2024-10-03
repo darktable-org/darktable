@@ -44,7 +44,6 @@ static void _lib_masks_update_list(dt_lib_module_t *self);
 typedef struct dt_lib_masks_t
 {
   /* vbox with managed history items */
-  GtkWidget *hbox;
   GtkWidget *bt_circle, *bt_path, *bt_gradient, *bt_ellipse, *bt_brush;
   GtkWidget *treeview;
   dt_gui_collapsible_section_t cs;
@@ -1798,13 +1797,6 @@ void gui_init(dt_lib_module_t *self)
     _get_pixbuf_from_cairo(dtgtk_cairo_paint_masks_exclusion, bs2 * 2, bs2);
 
   // initialise widgets
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-
-  GtkWidget *label = gtk_label_new(_("created shapes"));
-  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
-  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
-
   d->bt_gradient = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_gradient, 0, NULL);
   dt_action_define(DT_ACTION(self), N_("shapes"), N_("add gradient"),
                    d->bt_gradient, &dt_action_def_toggle);
@@ -1812,7 +1804,6 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_bt_add_shape), GINT_TO_POINTER(DT_MASKS_GRADIENT));
   gtk_widget_set_tooltip_text(d->bt_gradient, _("add gradient"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_gradient), FALSE);
-  gtk_box_pack_end(GTK_BOX(hbox), d->bt_gradient, FALSE, FALSE, 0);
 
   d->bt_path = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_path, 0, NULL);
   dt_action_define(DT_ACTION(self), N_("shapes"), N_("add path"),
@@ -1821,7 +1812,6 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_bt_add_shape), GINT_TO_POINTER(DT_MASKS_PATH));
   gtk_widget_set_tooltip_text(d->bt_path, _("add path"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_path), FALSE);
-  gtk_box_pack_end(GTK_BOX(hbox), d->bt_path, FALSE, FALSE, 0);
 
   d->bt_ellipse = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_ellipse, 0, NULL);
   dt_action_define(DT_ACTION(self), N_("shapes"), N_("add ellipse"),
@@ -1830,7 +1820,6 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_bt_add_shape), GINT_TO_POINTER(DT_MASKS_ELLIPSE));
   gtk_widget_set_tooltip_text(d->bt_ellipse, _("add ellipse"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_ellipse), FALSE);
-  gtk_box_pack_end(GTK_BOX(hbox), d->bt_ellipse, FALSE, FALSE, 0);
 
   d->bt_circle = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_circle, 0, NULL);
   dt_action_define(DT_ACTION(self), N_("shapes"), N_("add circle"),
@@ -1839,7 +1828,6 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_bt_add_shape), GINT_TO_POINTER(DT_MASKS_CIRCLE));
   gtk_widget_set_tooltip_text(d->bt_circle, _("add circle"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_circle), FALSE);
-  gtk_box_pack_end(GTK_BOX(hbox), d->bt_circle, FALSE, FALSE, 0);
 
   d->bt_brush = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_brush, 0, NULL);
   dt_action_define(DT_ACTION(self), N_("shapes"), N_("add brush"),
@@ -1848,9 +1836,7 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_bt_add_shape), GINT_TO_POINTER(DT_MASKS_BRUSH));
   gtk_widget_set_tooltip_text(d->bt_brush, _("add brush"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_brush), FALSE);
-  gtk_box_pack_end(GTK_BOX(hbox), d->bt_brush, FALSE, FALSE, 0);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 
   d->treeview = gtk_tree_view_new();
   GtkTreeViewColumn *col = gtk_tree_view_column_new();
@@ -1886,10 +1872,11 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(d->treeview, "button-press-event",
                    (GCallback)_tree_button_pressed, self);
 
-  gtk_box_pack_start
-    (GTK_BOX(self->widget),
-     dt_ui_resize_wrap(d->treeview, 200, "plugins/darkroom/masks/heightview"),
-     FALSE, FALSE, 0);
+  self->widget = dt_gui_vbox
+    (dt_gui_hbox
+      (dt_gui_expand(dt_ui_label_new(_("created shapes"))),
+       d->bt_brush, d->bt_circle, d->bt_ellipse, d->bt_path, d->bt_gradient),
+     dt_ui_resize_wrap(d->treeview, 200, "plugins/darkroom/masks/heightview"));
 
   dt_gui_new_collapsible_section
     (&d->cs,
@@ -1898,7 +1885,7 @@ void gui_init(dt_lib_module_t *self)
      GTK_BOX(self->widget),
      DT_ACTION(self));
   d->none_label = dt_ui_label_new(_("no shapes selected"));
-  gtk_box_pack_start(GTK_BOX(d->cs.container), d->none_label, FALSE, FALSE, 0);
+  dt_gui_box_add(d->cs.container, d->none_label);
   gtk_widget_show_all(GTK_WIDGET(d->cs.container));
   gtk_widget_set_no_show_all(GTK_WIDGET(d->cs.container), TRUE);
 
@@ -1917,18 +1904,16 @@ void gui_init(dt_lib_module_t *self)
       dt_bauhaus_slider_set_log_curve(slider);
 
     d->last_value[i] = dt_bauhaus_slider_get(slider);
-    gtk_box_pack_start(GTK_BOX(d->cs.container), slider, FALSE, FALSE, 0);
+    dt_gui_box_add(d->cs.container, slider);
     g_signal_connect(G_OBJECT(slider), "value-changed",
                      G_CALLBACK(_property_changed), GINT_TO_POINTER(i));
   }
 
   d->pressure = dt_gui_preferences_enum(DT_ACTION(self), "pressure_sensitivity");
   dt_bauhaus_widget_set_label(d->pressure, N_("properties"), N_("pressure"));
-  gtk_box_pack_start(GTK_BOX(d->cs.container), d->pressure, FALSE, FALSE, 0);
-
   d->smoothing = dt_gui_preferences_enum(DT_ACTION(self), "brush_smoothing");
   dt_bauhaus_widget_set_label(d->smoothing, N_("properties"), N_("smoothing"));
-  gtk_box_pack_start(GTK_BOX(d->cs.container), d->smoothing, FALSE, FALSE, 0);
+  dt_gui_box_add(d->cs.container, d->pressure, d->smoothing);
 
   // set proxy functions
   darktable.develop->proxy.masks.module = self;

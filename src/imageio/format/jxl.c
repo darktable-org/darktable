@@ -573,9 +573,6 @@ void gui_init(dt_imageio_module_format_t *self)
   if(!gui) return;
   self->gui_data = gui;
 
-  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  self->widget = box;
-
   // bits per sample combobox
   const int bpp_enum = _bpp_to_enum(dt_conf_get_int("plugins/imageio/format/jxl/bpp"));
 
@@ -583,7 +580,6 @@ void gui_init(dt_imageio_module_format_t *self)
                                NULL, bpp_enum, bpp_changed, gui,
                                N_("8 bit"), N_("10 bit"), N_("12 bit"),
                                N_("16 bit"), N_("32 bit (float)"));
-  gtk_box_pack_start(GTK_BOX(box), gui->bpp, TRUE, TRUE, 0);
 
   // pixel type combobox
   const int pixel_type = dt_conf_get_bool("plugins/imageio/format/jxl/pixel_type") & 1;
@@ -594,7 +590,6 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_bauhaus_combobox_set_default(gui->pixel_type,
                                   dt_confgen_get_bool("plugins/imageio/format/jxl/pixel_type",
                                                       DT_DEFAULT) & 1);
-  gtk_box_pack_start(GTK_BOX(box), gui->pixel_type, TRUE, TRUE, 0);
 
   gtk_widget_set_visible(gui->pixel_type, bpp_enum == 3);
   gtk_widget_set_no_show_all(gui->pixel_type, TRUE);
@@ -612,7 +607,6 @@ void gui_init(dt_imageio_module_format_t *self)
                               _("the quality of the output image\n0-29 = very lossy\n30-99 = JPEG "
                                 "quality comparable\n100 = lossless"));
   g_signal_connect(G_OBJECT(gui->quality), "value-changed", G_CALLBACK(quality_changed), gui);
-  gtk_box_pack_start(GTK_BOX(box), gui->quality, TRUE, TRUE, 0);
 
   // encoding color profile combobox
   const int original = dt_conf_get_bool("plugins/imageio/format/jxl/original") & 1;
@@ -626,7 +620,6 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_bauhaus_combobox_set_default(gui->original,
                                   dt_confgen_get_bool("plugins/imageio/format/jxl/original",
                                                       DT_DEFAULT) & 1);
-  gtk_box_pack_start(GTK_BOX(box), gui->original, TRUE, TRUE, 0);
 
   gtk_widget_set_visible(gui->original, quality < 100);
   gtk_widget_set_no_show_all(gui->original, TRUE);
@@ -642,7 +635,6 @@ void gui_init(dt_imageio_module_format_t *self)
                               _("the effort used to encode the image, higher efforts will have "
                                 "better results at the expense of longer encoding times"));
   g_signal_connect(G_OBJECT(gui->effort), "value-changed", G_CALLBACK(effort_changed), NULL);
-  gtk_box_pack_start(GTK_BOX(box), gui->effort, TRUE, TRUE, 0);
 
   // decoding speed (tier) slider
   gui->tier = dt_bauhaus_slider_new_with_range(
@@ -654,7 +646,9 @@ void gui_init(dt_imageio_module_format_t *self)
   gtk_widget_set_tooltip_text(gui->tier,
                               _("the preferred decoding speed with some sacrifice of quality"));
   g_signal_connect(G_OBJECT(gui->tier), "value-changed", G_CALLBACK(tier_changed), NULL);
-  gtk_box_pack_start(GTK_BOX(box), gui->tier, TRUE, TRUE, 0);
+
+  self->widget = dt_gui_vbox(gui->bpp, gui->pixel_type, gui->quality,
+                             gui->original, gui->effort, gui->tier);
 }
 
 void gui_cleanup(dt_imageio_module_format_t *self)

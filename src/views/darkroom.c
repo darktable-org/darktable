@@ -2640,9 +2640,6 @@ void gui_init(dt_view_t *self)
     gtk_popover_set_relative_to(GTK_POPOVER(dev->profile.floating_window),
                                 dev->second_wnd_button);
 
-    GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    gtk_container_add(GTK_CONTAINER(dev->profile.floating_window), vbox);
-
     /** let's fill the encapsulating widgets */
     const int force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
 
@@ -2699,20 +2696,6 @@ void gui_init(dt_view_t *self)
     ac = dt_action_define(DT_ACTION(self), NULL, N_("color assessment second preview"),
                           display2_iso12646, &dt_action_def_toggle);
     dt_shortcut_register(ac, 0, 0, GDK_KEY_b, GDK_MOD1_MASK);
-
-    gtk_box_pack_start(GTK_BOX(vbox), display_profile, TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox), display_intent, TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox),
-                       gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 0);
-
-    gtk_box_pack_start(GTK_BOX(vbox), display2_profile, TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox), display2_intent, TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox), display2_iso12646, TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox),
-                       gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 0);
-
-    gtk_box_pack_start(GTK_BOX(vbox), softproof_profile, TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox), histogram_profile, TRUE, TRUE, 0);
 
     for(const GList *l = darktable.color_profiles->profiles; l; l = g_list_next(l))
     {
@@ -2799,7 +2782,15 @@ void gui_init(dt_view_t *self)
     DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                               _display2_profile_changed, display2_profile);
 
+    GtkWidget *vbox = dt_gui_vbox
+      (display_profile, display_intent,
+       gtk_separator_new(GTK_ORIENTATION_HORIZONTAL),
+       display2_profile, display2_intent, display2_iso12646,
+       gtk_separator_new(GTK_ORIENTATION_HORIZONTAL),
+       softproof_profile, histogram_profile);
+
     gtk_widget_show_all(vbox);
+    gtk_container_add(GTK_CONTAINER(dev->profile.floating_window), vbox);
   }
 
   /* create grid changer popup tool */

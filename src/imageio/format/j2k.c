@@ -660,7 +660,6 @@ void gui_init(dt_imageio_module_format_t *self)
 {
   dt_imageio_j2k_gui_t *gui = malloc(sizeof(dt_imageio_j2k_gui_t));
   self->gui_data = (void *)gui;
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   const int preset_last = dt_conf_get_int("plugins/imageio/format/j2k/preset");
   const int quality_last = dt_conf_get_int("plugins/imageio/format/j2k/quality");
@@ -673,7 +672,6 @@ void gui_init(dt_imageio_module_format_t *self)
                                                   0);
   dt_bauhaus_widget_set_label(gui->quality, NULL, N_("quality"));
   dt_bauhaus_slider_set(gui->quality, quality_last);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(gui->quality), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(gui->quality), "value-changed", G_CALLBACK(quality_changed), NULL);
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->preset, self, NULL, N_("DCP mode"), NULL,
@@ -682,7 +680,8 @@ void gui_init(dt_imageio_module_format_t *self)
                                N_("Cinema2K, 24FPS"),
                                N_("Cinema2K, 48FPS"),
                                N_("Cinema4K, 24FPS"));
-  gtk_box_pack_start(GTK_BOX(self->widget), gui->preset, TRUE, TRUE, 0);
+
+  self->widget = dt_gui_vbox(gui->quality, gui->preset);
 
   // TODO: options for "off"
 }

@@ -384,12 +384,9 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_tool_preferences_t *d = g_malloc0(sizeof(dt_lib_tool_preferences_t));
   self->data = (void *)d;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-
   /* create the grouping button */
   d->grouping_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_grouping, 0, NULL);
   dt_action_define(&darktable.control->actions_global, NULL, N_("grouping"), d->grouping_button, &dt_action_def_toggle);
-  gtk_box_pack_start(GTK_BOX(self->widget), d->grouping_button, FALSE, FALSE, 0);
   if(darktable.gui->grouping)
     gtk_widget_set_tooltip_text(d->grouping_button, _("expand grouped images"));
   else
@@ -402,7 +399,6 @@ void gui_init(dt_lib_module_t *self)
   d->overlays_button = dtgtk_button_new(dtgtk_cairo_paint_overlays, 0, NULL);
   dt_action_define(&darktable.control->actions_global, NULL, N_("thumbnail overlays options"), d->overlays_button, &dt_action_def_button);
   gtk_widget_set_tooltip_text(d->overlays_button, _("click to change the type of overlays shown on thumbnails"));
-  gtk_box_pack_start(GTK_BOX(self->widget), d->overlays_button, FALSE, FALSE, 0);
   d->over_popup = gtk_popover_new(d->overlays_button);
   gtk_widget_set_size_request(d->over_popup, 350, -1);
   g_object_set(G_OBJECT(d->over_popup), "transitions-enabled", FALSE, NULL);
@@ -482,14 +478,12 @@ void gui_init(dt_lib_module_t *self)
   /* create the widget help button */
   d->help_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_help, 0, NULL);
   dt_action_define(&darktable.control->actions_global, NULL, N_("help"), d->help_button, &dt_action_def_toggle);
-  gtk_box_pack_start(GTK_BOX(self->widget), d->help_button, FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(d->help_button, _("enable this, then click on a control element to see its online help"));
   g_signal_connect(G_OBJECT(d->help_button), "clicked", G_CALLBACK(_lib_help_button_clicked), d);
 
   /* create the shortcuts button */
   d->keymap_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_shortcut, 0, NULL);
   dt_action_define(&darktable.control->actions_global, NULL, N_("shortcuts"), d->keymap_button, &dt_action_def_toggle);
-  gtk_box_pack_start(GTK_BOX(self->widget), d->keymap_button, FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(d->keymap_button, _("define keyboard shortcuts for on-screen controls\n"
                                                   "ctrl+click to switch off overwrite confirmations\n"
                                                   "\n"
@@ -515,7 +509,6 @@ void gui_init(dt_lib_module_t *self)
   /* create the preference button */
   d->preferences_button = dtgtk_button_new(dtgtk_cairo_paint_preferences, 0, NULL);
   ac = dt_action_define(&darktable.control->actions_global, NULL, N_("preferences"), d->preferences_button, &dt_action_def_button);
-  gtk_box_pack_end(GTK_BOX(self->widget), d->preferences_button, FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(d->preferences_button, _("show global preferences"));
   g_signal_connect(G_OBJECT(d->preferences_button), "clicked", G_CALLBACK(_lib_preferences_button_clicked),
                    NULL);
@@ -524,6 +517,9 @@ void gui_init(dt_lib_module_t *self)
   // Register CMD+, for preferences on macOS
   dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_ACTIVATE, GDK_KEY_comma, GDK_CONTROL_MASK);
 #endif
+
+  self->widget = dt_gui_hbox(d->grouping_button, d->overlays_button,
+                             d->help_button, d->keymap_button, d->preferences_button);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
