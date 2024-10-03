@@ -1063,7 +1063,7 @@ static gboolean _event_scroll_compressed(gpointer user_data)
 
     // for fractional scrolling, scroll by a number of pixels proportionate to
     // the delta (which is a float value for most touch pads and some mice)
-    if (dt_conf_get_bool("thumbtable_fractional_scrolling")) 
+    if (dt_conf_get_bool("thumbtable_fractional_scrolling"))
     {
       // scale scroll increment for an appropriate scroll speed
       delta *= 50;
@@ -1087,7 +1087,7 @@ static gboolean _event_scroll_compressed(gpointer user_data)
         }
       }
       _move(table, 0, -move, TRUE);
-    } 
+    }
 
     // ensure the hovered image is the right one
     dt_thumbnail_t *th = _thumb_get_under_mouse(table);
@@ -1109,11 +1109,11 @@ static gboolean _event_scroll(GtkWidget *widget,
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
   int delta_x, delta_y;
 
-  // file manager can either scroll fractionally and smoothly for precision 
+  // file manager can either scroll fractionally and smoothly for precision
   // touch pads, or in one-thumbnail increments for clicky scroll wheels,
   // except while control is held, as that indicates zooming
-  if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER 
-      && !dt_modifier_is(e->state, GDK_CONTROL_MASK)) 
+  if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER
+      && !dt_modifier_is(e->state, GDK_CONTROL_MASK))
   {
     gdouble deltaf_x, deltaf_y;
     gboolean did_scroll;
@@ -1121,7 +1121,7 @@ static gboolean _event_scroll(GtkWidget *widget,
     {
       did_scroll = dt_gui_get_scroll_deltas(e, &deltaf_x, &deltaf_y);
     }
-    else 
+    else
     {
       did_scroll = dt_gui_get_scroll_unit_deltas(e, &delta_x, &delta_y);
       deltaf_y = (float)delta_y;
@@ -1386,6 +1386,19 @@ static gboolean _event_enter_notify(GtkWidget *widget,
   return TRUE;
 }
 
+static gboolean _do_select_single(gpointer user_data)
+{
+  dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
+
+  // always keep the edited picture selected
+  dt_selection_clear(darktable.selection);
+  dt_selection_select(darktable.selection, darktable.develop->image_storage.id);
+  dt_selection_select(darktable.selection, table->to_selid);
+  table->sel_single_cb = 0;
+
+  return FALSE;
+}
+
 static gboolean _event_button_press(GtkWidget *widget,
                                     GdkEventButton *event,
                                     gpointer user_data)
@@ -1396,12 +1409,45 @@ static gboolean _event_button_press(GtkWidget *widget,
   const dt_imgid_t id = dt_control_get_mouse_over_id();
 
   if(dt_is_valid_imgid(id)
-     && event->button == 1
-     && (table->mode == DT_THUMBTABLE_MODE_FILEMANAGER
-         || table->mode == DT_THUMBTABLE_MODE_ZOOM)
-     && event->type == GDK_2BUTTON_PRESS)
+     && event->button == 1)
   {
-    dt_view_manager_switch(darktable.view_manager, "darkroom");
+    //  double-click
+    if(event->type == GDK_2BUTTON_PRESS)
+    {
+      switch(table->mode)
+      {
+        case DT_THUMBTABLE_MODE_FILEMANAGER:
+        case DT_THUMBTABLE_MODE_ZOOM:
+          dt_view_manager_switch(darktable.view_manager, "darkroom");
+          break;
+
+        case DT_THUMBTABLE_MODE_FILMSTRIP:
+          if(dt_view_get_current() == DT_VIEW_DARKROOM)
+          {
+            if(table->sel_single_cb != 0)
+            {
+              g_source_remove(table->sel_single_cb);
+              table->sel_single_cb = 0;
+            }
+            // disable next BUTTON_RELEASE event (see _event_motion_release)
+            table->to_selid = -1;
+            // unselect currently edited picture, select new one
+            dt_selection_deselect(darktable.selection,
+                                  darktable.develop->image_storage.id);
+            dt_selection_select(darktable.selection, id);
+            DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
+                                          DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, id);
+            return FALSE;
+          }
+        default:
+          break;
+      }
+    }
+
+    if(event->button == 1
+       && event->type == GDK_BUTTON_PRESS
+       && table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
+      return FALSE;
   }
 
   if(event->button == 1 && event->type == GDK_BUTTON_PRESS)
@@ -1411,31 +1457,34 @@ static gboolean _event_button_press(GtkWidget *widget,
   }
 
   if(table->mode != DT_THUMBTABLE_MODE_ZOOM
-     && id < 1
+     && !dt_is_valid_imgid(id)
      && event->button == 1
      && event->type == GDK_BUTTON_PRESS)
   {
+    const dt_view_type_flags_t cv = dt_view_get_current();
+
     // we click in an empty area, let's deselect all images
     dt_selection_clear(darktable.selection);
+
+    // but we still want the currently edited image to be selected when
+    // in darkroom.
+    if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP
+       && cv == DT_VIEW_DARKROOM)
+    {
+      dt_selection_select(darktable.selection,
+                          darktable.develop->image_storage.id);
+    }
+
     PangoRectangle *button = &table->manual_button;
-    if(event->x < button->x && event->x > button->x - button->width &&
-       event->y < button->y && event->y > button->y - button->height)
+    if(event->x < button->x && event->x > button->x - button->width
+       && event->y < button->y && event->y > button->y - button->height)
+    {
       dt_gui_show_help(NULL);
+    }
+
     return TRUE;
   }
 
-  if(table->mode != DT_THUMBTABLE_MODE_ZOOM)
-    return FALSE;
-
-  if(event->button == 1 && event->type == GDK_BUTTON_PRESS)
-  {
-    table->dragging = TRUE;
-    table->drag_dx = table->drag_dy = 0;
-    table->drag_initial_imgid = id;
-    table->drag_thumb = _thumbtable_get_thumb(table, id);
-    if(table->drag_thumb)
-      table->drag_thumb->moved = FALSE;
-  }
   return TRUE;
 }
 
@@ -1475,46 +1524,83 @@ static gboolean _event_button_release(GtkWidget *widget,
                                       GdkEventButton *event,
                                       gpointer user_data)
 {
+  // we select only in LIGHTTABLE, DARKROOM & MAP mode
+  const dt_view_type_flags_t cv = dt_view_get_current();
+
+  if(cv != DT_VIEW_DARKROOM
+     && cv != DT_VIEW_LIGHTTABLE
+     && cv != DT_VIEW_MAP)
+    return FALSE;
+
   dt_set_backthumb_time(0.0);
+  const dt_imgid_t id = dt_control_get_mouse_over_id();
 
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
 
-  if(table->dragging == FALSE)
+  if(dt_is_valid_imgid(id)
+     && event->button == 1
+     && event->type == GDK_BUTTON_RELEASE)
   {
-    // on map view consider click release instead of press
-    dt_view_manager_t *vm = darktable.view_manager;
-    dt_view_t *view = vm->current_view;
-    const dt_imgid_t id = dt_control_get_mouse_over_id();
-    if(dt_is_valid_imgid(id)
-       && event->button == 1
-       && table->mode == DT_THUMBTABLE_MODE_FILMSTRIP
-       && event->type == GDK_BUTTON_RELEASE
-       && !strcmp(view->module_name, "map")
-       && dt_modifier_is(event->state, 0))
+    if(dt_modifier_is(event->state, GDK_CONTROL_MASK)
+       || dt_modifier_is(event->state, GDK_MOD2_MASK)) // CMD key on macOS
     {
-      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
-                                    DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, id);
-      return TRUE;
+      dt_selection_toggle(darktable.selection, id);
     }
-    else if(dt_is_valid_imgid(id)
-            && event->button == 1
-            && table->mode == DT_THUMBTABLE_MODE_FILMSTRIP
-            && event->type == GDK_BUTTON_RELEASE
-            && strcmp(view->module_name, "map")
-            && dt_modifier_is(event->state, 0))
+    else if(dt_modifier_is(event->state, GDK_SHIFT_MASK))
+    {
+      dt_selection_select_range(darktable.selection, id);
+    }
+    else
+    {
+      if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP
+         && cv == DT_VIEW_DARKROOM)
       {
-        DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
-                                      DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, id);
+        // if there is more than one selected image then we have at least
+        // one picture selected not counting the currently edited one.
+        // delay the single selection to ensure that if we double-click we
+        // do not unselect all the pictures.
+        if(table->sel_single_cb == 0)
+        {
+          // button released event must be skip
+          if(table->to_selid == -1)
+          {
+            table->to_selid = NO_IMGID;
+          }
+          else
+          {
+            GtkSettings *settings = gtk_widget_get_settings(GTK_WIDGET (widget));
+            guint double_click_time = 400;
+
+            if(settings)
+            {
+              g_object_get(settings, "gtk-double-click-time", &double_click_time, NULL);
+            }
+
+            table->to_selid = id;
+            table->sel_single_cb = g_timeout_add(double_click_time, _do_select_single, table);
+          }
+        }
       }
+      else
+      {
+        dt_selection_select_single(darktable.selection, id);
+      }
+    }
   }
+
+  //  Left now if not in zoom mode
 
   if(table->mode != DT_THUMBTABLE_MODE_ZOOM)
     return FALSE;
 
   // in some case, image_over_id can get out of sync at the end of dragging
   // this happen esp. if the pointer as been out of the center area during drag
-  if (dt_control_get_mouse_over_id() != table->drag_initial_imgid && table->drag_thumb)
+  if (dt_control_get_mouse_over_id() != table->drag_initial_imgid
+      && table->drag_thumb)
+  {
     dt_control_set_mouse_over_id(table->drag_initial_imgid);
+  }
+
   table->dragging = FALSE;
   table->drag_initial_imgid = NO_IMGID;
   table->drag_thumb = NULL;
@@ -1522,7 +1608,7 @@ static gboolean _event_button_release(GtkWidget *widget,
   if((abs(table->drag_dx) + abs(table->drag_dy)) <= DT_PIXEL_APPLY_DPI(8)
      && !dt_is_valid_imgid(dt_control_get_mouse_over_id()))
   {
-    // if we are on empty area and have detect no real movement, we deselect
+    // if we are on empty area and have detected no real movement, we deselect
     dt_selection_clear(darktable.selection);
   }
 
@@ -1542,16 +1628,19 @@ static gboolean _event_button_release(GtkWidget *widget,
 // set scrollbars visibility
 static void _thumbtable_restore_scrollbars(dt_thumbtable_t *table)
 {
-  table->scrollbars = FALSE;
-
-  if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
+  switch(table->mode)
   {
-    table->scrollbars = dt_conf_get_bool("darkroom/ui/scrollbars");
-  }
+    case DT_THUMBTABLE_MODE_FILMSTRIP:
+      table->scrollbars = dt_conf_get_bool("darkroom/ui/scrollbars");
+      break;
 
-  if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
-  {
-    table->scrollbars = dt_conf_get_bool("lighttable/ui/scrollbars");
+    case DT_THUMBTABLE_MODE_FILEMANAGER:
+      table->scrollbars = dt_conf_get_bool("lighttable/ui/scrollbars");
+      break;
+
+    default:
+      table->scrollbars = FALSE;
+      break;
   }
 
   dt_ui_scrollbars_show(darktable.gui->ui, table->scrollbars);
@@ -2405,6 +2494,8 @@ dt_thumbtable_t *dt_thumbtable_new()
   // we init key accels
   _thumbtable_init_accels();
 
+  table->sel_single_cb = 0;
+  table->to_selid = NO_IMGID;
   return table;
 }
 
