@@ -232,11 +232,14 @@ static void _lib_metadata_init_queue(dt_lib_module_t *self)
   for(int i = md_size - 1; i >= 0; i--)
   {
     dt_lib_metadata_info_t *m = g_malloc0(sizeof(dt_lib_metadata_info_t));
-    m->name = (char *)_get_label(i);
-    m->value = g_strdup(NODATA_STRING);
-    m->index = m->order = i;
-    m->visible = _is_metadata_ui(i);
-    d->metadata = g_list_prepend(d->metadata, m);
+    if(m)
+    {
+      m->name = (char *)_get_label(i);
+      m->value = g_strdup(NODATA_STRING);
+      m->index = m->order = i;
+      m->visible = _is_metadata_ui(i);
+      d->metadata = g_list_prepend(d->metadata, m);
+    }
   }
 }
 
