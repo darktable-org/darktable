@@ -211,8 +211,13 @@ static int _tethering_write_image(dt_imageio_module_data_t *data,
 {
   _tethering_format_t *d = (_tethering_format_t *)data;
   d->buf = (float *)malloc(sizeof(float) * 4 * d->head.width * d->head.height);
-  memcpy(d->buf, in, sizeof(float) * 4 * d->head.width * d->head.height);
-  return 0;
+  if(d->buf)
+  {
+    memcpy(d->buf, in, sizeof(float) * 4 * d->head.width * d->head.height);
+    return 0;
+  }
+  else
+    return 1;
 }
 
 #define MARGIN DT_PIXEL_APPLY_DPI(20)
@@ -589,11 +594,14 @@ void enter(dt_view_t *self)
 
   // register listener
   lib->listener = g_malloc0(sizeof(dt_camctl_listener_t));
-  lib->listener->data = lib;
-  lib->listener->image_downloaded = _camera_capture_image_downloaded;
-  lib->listener->request_image_path = _camera_request_image_path;
-  lib->listener->request_image_filename = _camera_request_image_filename;
-  dt_camctl_register_listener(darktable.camctl, lib->listener);
+  if(lib->listener)
+  {
+    lib->listener->data = lib;
+    lib->listener->image_downloaded = _camera_capture_image_downloaded;
+    lib->listener->request_image_path = _camera_request_image_path;
+    lib->listener->request_image_filename = _camera_request_image_filename;
+    dt_camctl_register_listener(darktable.camctl, lib->listener);
+  }
 }
 
 void leave(dt_view_t *self)
