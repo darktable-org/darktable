@@ -1325,10 +1325,15 @@ GSList *dt_mouse_action_create_simple(GSList *actions,
                                       const char *const description)
 {
   dt_mouse_action_t *a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-  a->action = type;
-  a->mods = accel;
-  g_strlcpy(a->name, description, sizeof(a->name));
-  return g_slist_append(actions, a);
+  if(a)
+  {
+    a->action = type;
+    a->mods = accel;
+    g_strlcpy(a->name, description, sizeof(a->name));
+    return g_slist_append(actions, a);
+  }
+  else
+    return actions;
 }
 
 GSList *dt_mouse_action_create_format(GSList *actions,
@@ -1338,10 +1343,15 @@ GSList *dt_mouse_action_create_format(GSList *actions,
                                       const char *const replacement)
 {
   dt_mouse_action_t *a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-  a->action = type;
-  a->mods = accel;
-  g_snprintf(a->name, sizeof(a->name), format_string, replacement);
-  return g_slist_append(actions, a);
+  if(a)
+  {
+    a->action = type;
+    a->mods = accel;
+    g_snprintf(a->name, sizeof(a->name), format_string, replacement);
+    return g_slist_append(actions, a);
+  }
+  else
+    return actions;
 }
 
 static gchar *_mouse_action_get_string(dt_mouse_action_t *ma)
