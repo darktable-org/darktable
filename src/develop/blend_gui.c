@@ -2681,9 +2681,7 @@ void dt_iop_gui_init_blendif(GtkWidget *blendw, dt_iop_module_t *module)
       g_signal_connect(G_OBJECT(sl->polarity), "toggled",
                        G_CALLBACK(_blendop_blendif_polarity_callback), bd);
 
-      sl->box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
-      gtk_box_pack_start(GTK_BOX(sl->box), GTK_WIDGET(label_box), TRUE, FALSE, 0);
-      gtk_box_pack_start(GTK_BOX(sl->box), GTK_WIDGET(slider_box), TRUE, FALSE, 0);
+      sl->box = GTK_BOX(dt_gui_vbox(label_box, slider_box));
       gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(sl->box), TRUE, FALSE, 0);
     }
 
@@ -3722,34 +3720,25 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     dt_gui_add_help_link(GTK_WIDGET(bd->masks_modes_box), "masks_blending");
     gtk_widget_set_name(GTK_WIDGET(bd->masks_modes_box), "blending-tabs");
 
-    bd->top_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-    gtk_box_pack_start(GTK_BOX(bd->top_box), gbox, TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(bd->top_box), blend_modes_hbox, TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(bd->top_box), bd->blend_mode_parameter_slider, TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(bd->top_box), bd->opacity_slider, TRUE, TRUE, 0);
+    bd->top_box = GTK_BOX(dt_gui_vbox
+      (gbox,
+       blend_modes_hbox,
+       bd->blend_mode_parameter_slider,
+       bd->opacity_slider));
     _add_wrapped_box(box, bd->top_box, NULL);
 
     dt_iop_gui_init_masks(iopw, module);
     dt_iop_gui_init_raster(iopw, module);
     dt_iop_gui_init_blendif(iopw, module);
 
-    bd->bottom_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-    gtk_box_pack_start(GTK_BOX(bd->bottom_box),
-                       GTK_WIDGET(bd->masks_combine_combo), TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(bd->bottom_box),
-                       hbox, TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(bd->bottom_box),
-                       bd->details_slider, TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(bd->bottom_box),
-                       bd->masks_feathering_guide_combo, TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(bd->bottom_box),
-                       bd->feathering_radius_slider, TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(bd->bottom_box),
-                       bd->blur_radius_slider, TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(bd->bottom_box),
-                       bd->brightness_slider, TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(bd->bottom_box),
-                       bd->contrast_slider, TRUE, TRUE, 0);
+    bd->bottom_box = GTK_BOX(dt_gui_vbox
+      (bd->masks_combine_combo, hbox,
+       bd->details_slider,
+       bd->masks_feathering_guide_combo,
+       bd->feathering_radius_slider,
+       bd->blur_radius_slider,
+       bd->brightness_slider,
+       bd->contrast_slider));
     _add_wrapped_box(iopw, bd->bottom_box, "masks_refinement");
 
     gtk_widget_set_name(GTK_WIDGET(bd->top_box), "blending-box");

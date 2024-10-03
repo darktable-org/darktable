@@ -3015,15 +3015,12 @@ void gui_init(dt_iop_module_t *self)
   dt_UCS_22_build_gamut_LUT(input_matrix, g->gamut_LUT);
   g->max_saturation = get_minimum_saturation(g->gamut_LUT, 0.2f, 1.f);
 
-  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
   // start building top level widget
   static dt_action_def_t notebook_def = { };
   g->notebook = dt_ui_notebook_new(&notebook_def);
   dt_action_define_iop(self, NULL, N_("page"), GTK_WIDGET(g->notebook), &notebook_def);
   g_signal_connect(G_OBJECT(g->notebook), "switch_page",
                    G_CALLBACK(_channel_tabs_switch_callback), self);
-  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->notebook), TRUE, TRUE, 0);
 
   // graph
   g->area = GTK_DRAWING_AREA
@@ -3052,9 +3049,8 @@ void gui_init(dt_iop_module_t *self)
                    G_CALLBACK(_area_scrolled_callback), self);
   g_signal_connect(G_OBJECT(g->area), "size_allocate",
                    G_CALLBACK(_area_size_callback), self);
-  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->area), TRUE, TRUE, 0);
 
-  self->widget = box;
+  GtkWidget *box = self->widget = dt_gui_vbox(g->notebook, g->area);
   g->hue_shift = dt_color_picker_new_with_cst(self, DT_COLOR_PICKER_POINT_AREA | DT_COLOR_PICKER_DENOISE,
                  dt_bauhaus_slider_from_params(self, "hue_shift"), IOP_CS_JZCZHZ);
   dt_bauhaus_slider_set_format(g->hue_shift, "°");
@@ -3069,7 +3065,7 @@ void gui_init(dt_iop_module_t *self)
   g->picking = FALSE;
 
   g->stack = GTK_STACK(gtk_stack_new());
-  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->stack), TRUE, TRUE, 0);
+  dt_gui_box_add(box, g->stack);
   dt_action_define_iop(self, NULL, N_("sliders"), GTK_WIDGET(g->stack), NULL);
   gtk_stack_set_homogeneous(g->stack, FALSE);
   // this should really be set in gui_update depending on whether sliders are
@@ -3079,10 +3075,10 @@ void gui_init(dt_iop_module_t *self)
   // not a requirement here
 
   dt_iop_module_t *sect = NULL;
-#define GROUP_SLIDERS(num, page, tooltip)                       \
+#define GROUP_SLIDERS(num, page, tooltip)                  \
   dt_ui_notebook_page(g->notebook, page, tooltip);         \
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0); \
-  gtk_stack_add_named(g->stack, self->widget, num);       \
+  gtk_stack_add_named(g->stack, self->widget, num);        \
   sect = DT_IOP_SECTION_FOR_PARAMS(self, page);
 
   GROUP_SLIDERS("0", N_("hue"), _("change hue hue-wise"))

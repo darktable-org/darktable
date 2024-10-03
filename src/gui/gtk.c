@@ -4459,6 +4459,20 @@ void dt_gui_simulate_button_event(GtkWidget *widget,
   }
 }
 
+GtkWidget *(dt_gui_box_add)(const char *file, const int line, const char *function, GtkBox *box, gpointer list[])
+{
+  int i = 1;
+  for(; *list != (gpointer)-1; list++, i++)
+  {
+    if(GTK_IS_WIDGET(*list))
+      gtk_container_add(GTK_CONTAINER(box), GTK_WIDGET(*list));
+    else
+      dt_print(DT_DEBUG_ALWAYS, "%s:%d %s: trying to add invalid widget to box (#%d)", file, line, function, i);
+  }
+
+  return GTK_WIDGET(box);
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

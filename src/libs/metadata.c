@@ -743,9 +743,7 @@ void gui_init(dt_lib_module_t *self)
                                          _("write metadata for selected images"), 0, 0);
   d->cancel_button = dt_action_button_new(self, N_("cancel"), _cancel_button_clicked, self,
                                          _("ignore changed metadata"), 0, 0);
-  d->button_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(d->button_box), d->apply_button, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(d->button_box), d->cancel_button, TRUE, TRUE, 0);
+  d->button_box = dt_gui_hbox(d->apply_button, d->cancel_button);
   gtk_grid_attach(grid, d->button_box, 0, DT_METADATA_NUMBER, 2, 1);
 
   /* lets signup for mouse over image change signals */

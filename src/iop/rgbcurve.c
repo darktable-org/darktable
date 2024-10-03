@@ -1528,14 +1528,11 @@ void gui_init(dt_iop_module_t *self)
   dt_action_define_iop(self, N_("pickers"), N_("create curve"),
                        g->colorpicker_set_values, &dt_action_def_toggle);
 
-  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), vbox, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 0);
-
   g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_height(0));
   g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
   dt_action_define_iop(self, NULL, N_("curve"), GTK_WIDGET(g->area), NULL);
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->area), TRUE, TRUE, 0);
+
+  dt_gui_box_add(self->widget, g->area);
 
   // FIXME: that tooltip goes in the way of the numbers when you hover
   // a node to get a reading

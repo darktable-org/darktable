@@ -190,10 +190,6 @@ void gui_init(dt_imageio_module_storage_t *self)
 {
   gallery_t *d = malloc(sizeof(gallery_t));
   self->gui_data = (void *)d;
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
-  GtkWidget *widget;
 
   d->entry =
     GTK_ENTRY
@@ -205,24 +201,22 @@ void gui_init(dt_imageio_module_storage_t *self)
         "type '$(' to activate the completion and see the list of variables"),
       dt_conf_get_string_const("plugins/imageio/storage/gallery/file_directory")));
   dt_gtkentry_setup_completion(d->entry, dt_gtkentry_get_default_path_compl_list());
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(d->entry), TRUE, TRUE, 0);
 
-  widget = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
+  GtkWidget *widget = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
   gtk_widget_set_name(widget, "non-flat");
   gtk_widget_set_tooltip_text(widget, _("select directory"));
-  gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(button_clicked), self);
 
-  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), dt_ui_label_new(_("title")), FALSE, FALSE, 0);
   d->title_entry =
     GTK_ENTRY(dt_action_entry_new
               (DT_ACTION(self), N_("title"),
                G_CALLBACK(title_changed_callback), self,
                _("enter the title of the website"),
                dt_conf_get_string_const("plugins/imageio/storage/gallery/title")));
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(d->title_entry), TRUE, TRUE, 0);
+
+  self->widget = dt_gui_vbox
+    (dt_gui_hbox(d->entry, widget),
+     dt_gui_hbox(dt_ui_label_new(_("title")), d->title_entry));
 }
 
 void gui_cleanup(dt_imageio_module_storage_t *self)

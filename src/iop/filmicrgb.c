@@ -4433,13 +4433,12 @@ void gui_init(dt_iop_module_t *self)
                                                 "but fails for high-keys, low-keys and high-ISO images.\n"
                                                 "this is not an artificial intelligence, but a simple guess.\n"
                                                 "ensure you understand its assumptions before using it."));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->auto_button, FALSE, FALSE, 0);
+  dt_gui_box_add(self->widget, g->auto_button);
 
   // Page RECONSTRUCT
   self->widget = dt_ui_notebook_page(g->notebook, N_("reconstruct"), NULL);
 
-  GtkWidget *label = dt_ui_section_label_new(C_("section", "highlights clipping"));
-  gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, FALSE, 0);
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "highlights clipping")));
 
   g->enable_highlight_reconstruction = dt_bauhaus_toggle_from_params(self, "enable_highlight_reconstruction");
 
@@ -4461,17 +4460,14 @@ void gui_init(dt_iop_module_t *self)
                                 "increase to make the transition softer and blurrier."));
 
   // Highlight Reconstruction Mask
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), dt_ui_label_new(_("display highlight reconstruction mask")), TRUE, TRUE, 0);
+  GtkWidget *hbox = dt_gui_hbox(dt_ui_label_new(_("display highlight reconstruction mask")));
   g->show_highlight_mask = dt_iop_togglebutton_new(self, NULL, N_("display highlight reconstruction mask"), NULL, G_CALLBACK(show_mask_callback),
                                            FALSE, 0, 0, dtgtk_cairo_paint_showmask, hbox);
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->show_highlight_mask), dtgtk_cairo_paint_showmask, 0, NULL);
   dt_gui_add_class(g->show_highlight_mask, "dt_bauhaus_alignment");
   dt_gui_add_class(g->show_highlight_mask, "dt_transparent_background");
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 0);
 
-  label = dt_ui_section_label_new(C_("section", "balance"));
-  gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, FALSE, 0);
+  dt_gui_box_add(self->widget, hbox, dt_ui_section_label_new(C_("section", "balance")));
 
   g->reconstruct_structure_vs_texture = dt_bauhaus_slider_from_params(self, "reconstruct_structure_vs_texture");
   dt_bauhaus_slider_set_format(g->reconstruct_structure_vs_texture, "%");
@@ -4631,10 +4627,7 @@ void gui_init(dt_iop_module_t *self)
                                                        "this is useful to match natural sensor noise pattern."));
 
   // start building top level widget
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->notebook), FALSE, FALSE, 0);
+  self->widget = dt_gui_vbox(g->area, g->notebook);
 }
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)

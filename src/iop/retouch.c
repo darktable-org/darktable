@@ -2730,42 +2730,13 @@ void gui_init(dt_iop_module_t *self)
                    G_CALLBACK(rt_mask_opacity_callback), self);
 
   // start building top level widget
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-
-  GtkWidget *lbl_rt_tools = dt_ui_section_label_new(C_("section", "retouch tools"));
-  gtk_box_pack_start(GTK_BOX(self->widget), lbl_rt_tools, FALSE, TRUE, 0);
-
-  // shapes toolbar
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox_shapes, TRUE, TRUE, 0);
-  // algorithms toolbar
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox_algo, TRUE, TRUE, 0);
-
-  // wavelet decompose
-  GtkWidget *lbl_wd = dt_ui_section_label_new(C_("section", "wavelet decompose"));
-  gtk_box_pack_start(GTK_BOX(self->widget), lbl_wd, FALSE, TRUE, 0);
-
-  // wavelet decompose bar & labels
-  gtk_box_pack_start(GTK_BOX(self->widget), grid_wd_labels, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->wd_bar, TRUE, TRUE, DT_PIXEL_APPLY_DPI(3));
-
-  // preview scale & cut/paste scale
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox_scale, TRUE, TRUE, 0);
-
-  // preview single scale
-  gtk_box_pack_start(GTK_BOX(self->widget), g->vbox_preview_scale, TRUE, TRUE, 0);
-
-  // shapes
-  GtkWidget *lbl_shapes = dt_ui_section_label_new(C_("section", "shapes"));
-  gtk_box_pack_start(GTK_BOX(self->widget), lbl_shapes, FALSE, TRUE, 0);
-
-  // shape selected
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox_shape_sel, TRUE, TRUE, 0);
-  // blur radius
-  gtk_box_pack_start(GTK_BOX(self->widget), g->vbox_blur, TRUE, TRUE, 0);
-  // fill color
-  gtk_box_pack_start(GTK_BOX(self->widget), g->vbox_fill, TRUE, TRUE, 0);
-  // mask (shape) opacity
-  gtk_box_pack_start(GTK_BOX(self->widget), g->sl_mask_opacity, TRUE, TRUE, 0);
+  self->widget = dt_gui_vbox
+    (dt_ui_section_label_new(C_("section", "retouch tools")),
+     hbox_shapes, hbox_algo,
+     dt_ui_section_label_new(C_("section", "wavelet decompose")),
+     grid_wd_labels, g->wd_bar, hbox_scale, g->vbox_preview_scale,
+     dt_ui_section_label_new(C_("section", "shapes")),
+     hbox_shape_sel, g->vbox_blur, g->vbox_fill, g->sl_mask_opacity);
 
   /* add signal handler for preview pipe finish to redraw the preview */
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED, rt_develop_ui_pipe_finished_callback);

@@ -829,8 +829,6 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_styles_t *d = malloc(sizeof(dt_lib_styles_t));
   self->data = (void *)d;
   d->edit_button = NULL;
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  GtkWidget *w;
 
   /* tree */
   d->tree = GTK_TREE_VIEW(gtk_tree_view_new());
@@ -855,25 +853,17 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_tree_selection_changed), self);
 
   /* filter entry */
-  w = dt_ui_entry_new(0);
-  d->entry = GTK_ENTRY(w);
-  gtk_entry_set_placeholder_text(GTK_ENTRY(d->entry), _("filter style names"));
-  gtk_widget_set_tooltip_text(w, _("filter style names"));
+  d->entry = GTK_ENTRY(dt_ui_entry_new(0));
+  gtk_entry_set_placeholder_text(d->entry, _("filter style names"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(d->entry), _("filter style names"));
   g_signal_connect(d->entry, "changed", G_CALLBACK(_entry_callback), d);
   g_signal_connect(d->entry, "activate", G_CALLBACK(_entry_activated), d);
 
-
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->entry), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget),
-                     dt_ui_resize_wrap(GTK_WIDGET(d->tree), 250,
-                                       "plugins/lighttable/style/windowheight"),
-                     FALSE, FALSE, 0);
 
   d->duplicate = gtk_check_button_new_with_label(_("create duplicate"));
   dt_action_define(DT_ACTION(self), NULL, N_("create duplicate"),
                    d->duplicate, &dt_action_def_toggle);
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->duplicate))), PANGO_ELLIPSIZE_START);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->duplicate), TRUE, FALSE, 0);
   g_signal_connect(d->duplicate, "toggled", G_CALLBACK(_duplicate_callback), d);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->duplicate),
                                dt_conf_get_bool("ui_last/styles_create_duplicate"));
@@ -885,56 +875,42 @@ void gui_init(dt_lib_module_t *self)
                                dt_conf_get_int("plugins/lighttable/style/applymode"),
                                _applymode_combobox_changed, self,
                                N_("append"), N_("overwrite"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->applymode), TRUE, FALSE, 0);
-
-  GtkWidget *hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  GtkWidget *hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  GtkWidget *hbox3 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox1, TRUE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox2, TRUE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox3, TRUE, FALSE, 0);
 
   // create
   d->create_button = dt_action_button_new
     (self, N_("create..."),
      _create_clicked, d,
      _("create styles from history stack of selected images"), 0, 0);
-  gtk_box_pack_start(GTK_BOX(hbox1), d->create_button, TRUE, TRUE, 0);
 
   // edit
   d->edit_button = dt_action_button_new
     (self, N_("edit..."),
      _edit_clicked, d,
      _("edit the selected styles in list above"), 0, 0);
-  gtk_box_pack_start(GTK_BOX(hbox1), d->edit_button, TRUE, TRUE, 0);
 
   // delete
   d->delete_button = dt_action_button_new
     (self, N_("remove"),
      _delete_clicked, d,
      _("removes the selected styles in list above"), 0, 0);
-  gtk_box_pack_start(GTK_BOX(hbox1), d->delete_button, TRUE, TRUE, 0);
 
   // import button
   d->import_button = dt_action_button_new
     (self, N_("import..."),
      _import_clicked, d,
      _("import styles from a style files"), 0, 0);
-  gtk_box_pack_start(GTK_BOX(hbox2), d->import_button, TRUE, TRUE, 0);
 
   // export button
   d->export_button = dt_action_button_new
     (self, N_("export..."),
      _export_clicked, d,
      _("export the selected styles into a style files"), 0, 0);
-  gtk_box_pack_start(GTK_BOX(hbox2), d->export_button, TRUE, TRUE, 0);
 
   // apply button
   d->apply_button = dt_action_button_new
     (self, N_("apply"),
      _apply_clicked, d,
      _("apply the selected styles in list above to selected images"), 0, 0);
-  gtk_box_pack_start(GTK_BOX(hbox3), d->apply_button, TRUE, TRUE, 0);
 
   // add entry completion
   GtkEntryCompletion *completion = gtk_entry_completion_new();
@@ -943,6 +919,14 @@ void gui_init(dt_lib_module_t *self)
   gtk_entry_completion_set_text_column(completion, 0);
   gtk_entry_completion_set_inline_completion(completion, TRUE);
   gtk_entry_set_completion(d->entry, completion);
+
+  self->widget = dt_gui_vbox
+    (d->entry,
+     dt_ui_resize_wrap(GTK_WIDGET(d->tree), 250, "plugins/lighttable/style/windowheight"),
+     d->duplicate, d->applymode,
+     dt_gui_hbox(d->create_button, d->edit_button, d->delete_button),
+     dt_gui_hbox(d->import_button, d->export_button),
+     d->apply_button);
 
   /* update filtered list */
   _gui_styles_update_view(d);
