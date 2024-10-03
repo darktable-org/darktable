@@ -179,6 +179,10 @@ static dt_imageio_retval_t _unsupported_type(dt_image_t *img,
 #define dt_imageio_open_im _unsupported_type
 #endif
 
+#ifndef HAVE_OPENEXR
+#define dt_imageio_open_exr _unsupported_type
+#endif
+
 typedef struct {
   dt_filetype_t filetype;
   gboolean      hdr;
