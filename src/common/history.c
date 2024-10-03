@@ -1882,7 +1882,9 @@ gboolean dt_history_copy_parts(const dt_imgid_t imgid)
     return FALSE;
 }
 
-gboolean dt_history_paste(const dt_imgid_t imgid, const gboolean merge, const gboolean sync)
+gboolean dt_history_paste(const dt_imgid_t imgid,
+                          const gboolean merge,
+                          const gboolean sync)
 {
   gboolean res =
     dt_history_copy_and_paste_on_image(darktable.view_manager->copy_paste.copied_imageid,
@@ -1895,7 +1897,8 @@ gboolean dt_history_paste(const dt_imgid_t imgid, const gboolean merge, const gb
   return !sync && res;
 }
 
-gboolean dt_history_delete(const dt_imgid_t imgid, const gboolean undo)
+gboolean dt_history_delete(const dt_imgid_t imgid,
+                           const gboolean undo)
 {
   if(undo)
   {
