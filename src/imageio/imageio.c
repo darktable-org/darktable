@@ -339,8 +339,14 @@ static const dt_magic_bytes_t _magic_signatures[] = {
   // X PixMap
   { DT_FILETYPE_OTHER_LDR, FALSE, 0, 9, dt_imageio_open_exotic,
     { '/', '*', ' ', 'X', 'P', 'M', ' ', '*', '/' } },
+  // MNG image (multi-image/animated PNG)
+  { DT_FILETYPE_OTHER_LDR, FALSE, 0, 8, dt_imageio_open_exotic,
+    { 0x8A, 'M', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A } },
+  // JNG image (MNG lossy-compressed with JPEG)
+  { DT_FILETYPE_OTHER_LDR, FALSE, 0, 8, dt_imageio_open_exotic,
+    { 0x8B, 'J', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A } },
   // Kodak Cineon image
-  { DT_FILETYPE_OTHER_LDR, FALSE, 0, 4, NULL,
+  { DT_FILETYPE_OTHER_LDR, FALSE, 0, 4, dt_imageio_open_exotic,
     { 0x80, 0x2A, 0x5F, 0xD7 } },
   // ASCII NetPNM (pbm)
   { DT_FILETYPE_PNM, FALSE, 0, 3, dt_imageio_open_pnm,
@@ -399,6 +405,12 @@ static const dt_magic_bytes_t _magic_signatures[] = {
   // AutoCAD .DWG (drawing) file
   { DT_FILETYPE_OTHER_LDR, FALSE, 0, 3, dt_imageio_open_exotic,
     { 'A', 'C', '1' } },
+  // DICOM medical file format
+  { DT_FILETYPE_OTHER_LDR, FALSE, 128, 4, dt_imageio_open_exotic,
+    { 'D', 'I', 'C', 'M' } },
+  // Encapsulated Postscript file
+  { DT_FILETYPE_OTHER_LDR, FALSE, 0, 13, dt_imageio_open_exotic,
+    { '%', '!', 'P', 'S', '-', 'A', 'd', 'o', 'b', 'e', '-', '3', '.' } },
   // JPEG-XR image
   { DT_FILETYPE_OTHER_LDR, TRUE, 0, 4, _unsupported_type,
     { 'I', 'I', 0xBC, 1 } },
@@ -480,7 +492,7 @@ static const gchar *_supported_raw[]
         "orf", "ori", "pef", "raf", "raw", "rw2", "rwl", "sr2", "srf", "srw", "sti",
         "x3f", NULL };
 static const gchar *_supported_ldr[]
-    = { "bmp", "bmq", "cap", "cine", "cs1", "dcm",  "gif", "gpr", "j2c",  "j2k",
+    = { "bmp", "bmq", "cap", "cin", "cine", "cs1", "dcm",  "gif", "gpr", "j2c",  "j2k",
         "jng", "jp2", "jpc", "jpeg", "jpg", "miff", "mng", "pbm", "pfm",  "pgm",
         "png", "pnm", "ppm", "pxn",  "qoi", "qtk",  "rdc", "tif", "tiff", "webp",
         NULL };
