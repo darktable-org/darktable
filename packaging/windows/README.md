@@ -25,7 +25,7 @@ are as follows:
     pacman -S --needed mingw-w64-ucrt-x86_64-nsis
     ```
 
-* Switch to the UCRT64 terminal and update your lensfun database:
+* Switch to the UCRT64 terminal and update your Lensfun database:
     ```bash
     lensfun-update-data
     ```
