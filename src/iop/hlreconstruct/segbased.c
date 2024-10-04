@@ -418,6 +418,36 @@ static inline size_t _raw_to_plane(const int width, const int row, const int col
   return (HL_BORDER + (row / 3)) * width + (col / 3) + HL_BORDER;
 }
 
+static void _masks_extend_border(float *const mask,
+                                 const int width,
+                                 const int height,
+                                 const int border)
+{
+  if(border <= 0) return;
+  DT_OMP_FOR()
+  for(size_t row = border; row < height - border; row++)
+  {
+    const size_t idx = row * width;
+    for(size_t i = 0; i < border; i++)
+    {
+      mask[idx + i] = mask[idx + border];
+      mask[idx + width - i - 1] = mask[idx + width - border -1];
+    }
+  }
+  DT_OMP_FOR()
+  for(size_t col = 0; col < width; col++)
+  {
+    const float top = mask[border * width + MIN(width - border - 1, MAX(col, border))];
+    const float bot = mask[(height - border - 1) * width
+                           + MIN(width - border - 1, MAX(col, border))];
+    for(size_t i = 0; i < border; i++)
+    {
+      mask[col + i * width] = top;
+      mask[col + (height - i - 1) * width] = bot;
+    }
+  }
+}
+
 static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
                                   const float *const input,
                                   float *const output,
@@ -541,7 +571,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
     goto finish;
 
   for(int i = 0; i < HL_RGB_PLANES; i++)
-    dt_masks_extend_border(plane[i], pwidth, pheight, HL_BORDER);
+    _masks_extend_border(plane[i], pwidth, pheight, HL_BORDER);
 
   for(int p = 0; p < HL_RGB_PLANES; p++)
     dt_segments_combine(&isegments[p], data->combine);
@@ -616,9 +646,8 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
         distance[i] = (segall->data[i] == 1) ? DT_DISTANCE_TRANSFORM_MAX : 0.0f;
       }
     }
-    dt_masks_extend_border(tmp, pwidth, pheight, segall->border);
-    dt_masks_blur(tmp, luminance, pwidth, pheight, 1.2f, 1.0f, 20.0f);
-    dt_masks_extend_border(luminance, pwidth, pheight, segall->border);
+    _masks_extend_border(tmp, pwidth, pheight, segall->border);
+    dt_gaussian_fast_blur(tmp, luminance, pwidth, pheight, 1.2f, 0.0f, 20.0f, 1);
   }
 
   if(do_recovery)
@@ -628,7 +657,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
     {
       dt_segmentize_plane(segall);
       _initial_gradients(pwidth, pheight, luminance, distance, recout);
-      dt_masks_extend_border(recout, pwidth, pheight, segall->border);
+      _masks_extend_border(recout, pwidth, pheight, segall->border);
 
       // now we check for significant all-clipped-segments and reconstruct data
       for(uint32_t id = 2; id < segall->nr; id++)
@@ -639,7 +668,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
           _segment_gradients(distance, recout, tmp, recovery_mode, segall, id, recovery_close);
       }
 
-      dt_masks_blur(recout, gradient, pwidth, pheight, 1.2f, 1.0f, 20.0f);
+      dt_gaussian_fast_blur(recout, gradient, pwidth, pheight, 1.2f, 0.0f, 20.0f, 1);
       // possibly add some noise
       const float noise_level = data->noise_level;
       if(noise_level > 0.0f)
