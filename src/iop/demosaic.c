@@ -24,6 +24,7 @@
 #include "common/image_cache.h"
 #include "common/math.h"
 #include "common/imagebuf.h"
+#include "common/gaussian.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"

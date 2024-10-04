@@ -667,18 +667,6 @@ void dt_masks_calculate_source_pos_value(dt_masks_form_gui_t *gui,
                                          const int adding);
 
 /** detail mask support */
-void dt_masks_extend_border(float *const mask,
-                            const int width,
-                            const int height,
-                            const int border);
-void dt_masks_blur_coeff(float *coeffs, const float sigma);
-void dt_masks_blur(float *const src,
-                   float *const out,
-                   const int width,
-                   const int height,
-                   const float sigma,
-                   const float gain,
-                   const float clip);
 gboolean dt_masks_calc_scharr_mask(dt_dev_detail_mask_t *details,
                                    float *const src,
                                    const dt_aligned_pixel_t wb);
