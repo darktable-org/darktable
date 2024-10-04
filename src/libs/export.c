@@ -1076,11 +1076,11 @@ static void _update_style_label(dt_lib_export_t *d, const char *name)
   g_free(tooltip);
   g_free(d->style_name);
   d->style_name = g_strdup(name);
+  dt_conf_set_string(CONFIG_PREFIX "style", d->style_name);
 }
 
 static void _update_style(const dt_stylemenu_data_t *menu_data)
 {
-  dt_conf_set_string(CONFIG_PREFIX "style", menu_data->name);
   _update_style_label(menu_data->user_data,menu_data->name);
 }
 
@@ -2299,9 +2299,7 @@ int set_params(dt_lib_module_t *self,
 
   const dt_imageio_module_data_t *fdata = (const dt_imageio_module_data_t *)buf;
 
-  g_free(d->style_name);
-  d->style_name = g_strdup(fdata->style);
-
+  _update_style_label(d, fdata->style);
   dt_bauhaus_combobox_set(d->style_mode, fdata->style_append ? 1 : 0);
 
   buf += fsize;
