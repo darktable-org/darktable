@@ -1231,7 +1231,7 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table,
   // get width/height before the list is destroyed
   if(table->list)
   {
-    dt_thumbnail_t *th_model = (table->list)->data;
+    dt_thumbnail_t *th_model = table->list->data;
     nw = th_model->width;
     nh = th_model->height;
   }

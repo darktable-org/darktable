@@ -1399,8 +1399,9 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
 
       for(int j = 3; j < g_strv_length(gr2); j++)
       {
-        dt_lib_modulegroups_basic_item_t *item
-            = (dt_lib_modulegroups_basic_item_t *)g_malloc0(sizeof(dt_lib_modulegroups_basic_item_t));
+        dt_lib_modulegroups_basic_item_t *item = g_malloc0(sizeof(dt_lib_modulegroups_basic_item_t));
+        if(!item)
+          continue;
         item->id = g_strdup(gr2[j]);
         _basics_init_item(item);
 
@@ -1424,16 +1425,18 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
       const int nb = g_strv_length(gr2);
       if(nb > 2)
       {
-        dt_lib_modulegroups_group_t *group
-            = (dt_lib_modulegroups_group_t *)g_malloc0(sizeof(dt_lib_modulegroups_group_t));
-        group->name = g_strdup(gr2[0]);
-        group->icon = g_strdup(gr2[1]);
-        // gr2[2] is reserved for eventual future use
-        for(int j = 3; j < nb; j++)
+        dt_lib_modulegroups_group_t *group = g_malloc0(sizeof(dt_lib_modulegroups_group_t));
+        if(group)
         {
-          group->modules = g_list_append(group->modules, g_strdup(gr2[j]));
+          group->name = g_strdup(gr2[0]);
+          group->icon = g_strdup(gr2[1]);
+          // gr2[2] is reserved for eventual future use
+          for(int j = 3; j < nb; j++)
+          {
+            group->modules = g_list_append(group->modules, g_strdup(gr2[j]));
+          }
+          res = g_list_prepend(res, group);
         }
-        res = g_list_prepend(res, group);
       }
       g_strfreev(gr2);
     }
@@ -2200,12 +2203,13 @@ static int _lib_modulegroups_basics_module_toggle_action(dt_lib_module_t *self,
 
     if(!found_item)
     {
-      dt_lib_modulegroups_basic_item_t *item
-          = (dt_lib_modulegroups_basic_item_t *)g_malloc0(sizeof(dt_lib_modulegroups_basic_item_t));
-      item->id = action_id;
-      _basics_init_item(item);
-
-      d->basics = g_list_append(d->basics, item);
+      dt_lib_modulegroups_basic_item_t *item = g_malloc0(sizeof(dt_lib_modulegroups_basic_item_t));
+      if(item)
+      {
+        item->id = action_id;
+        _basics_init_item(item);
+        d->basics = g_list_append(d->basics, item);
+      }
     }
     else
     {
@@ -2260,12 +2264,13 @@ static void _manage_editor_basics_add(GtkWidget *widget,
     g_free(action_id);
   else
   {
-    dt_lib_modulegroups_basic_item_t *item
-        = (dt_lib_modulegroups_basic_item_t *)g_malloc0(sizeof(dt_lib_modulegroups_basic_item_t));
-    item->id = action_id;
-    _basics_init_item(item);
-
-    d->edit_basics = g_list_append(d->edit_basics, item);
+    dt_lib_modulegroups_basic_item_t *item = g_malloc0(sizeof(dt_lib_modulegroups_basic_item_t));
+    if(item)
+    {
+      item->id = action_id;
+      _basics_init_item(item);
+      d->edit_basics = g_list_append(d->edit_basics, item);
+    }
     _manage_editor_basics_update_list(self);
   }
 }
@@ -3456,15 +3461,17 @@ static void _manage_editor_group_add(GtkWidget *widget,
 {
   dt_lib_modulegroups_t *d = self->data;
   dt_lib_modulegroups_group_t *gr = g_malloc0(sizeof(dt_lib_modulegroups_group_t));
-  gr->name = g_strdup(_("new"));
-  gr->icon = g_strdup("basic");
-  d->edit_groups = g_list_append(d->edit_groups, gr);
+  if(gr)
+  {
+    gr->name = g_strdup(_("new"));
+    gr->icon = g_strdup("basic");
+    d->edit_groups = g_list_append(d->edit_groups, gr);
 
-  // we update the group list
-  GtkWidget *vb2 = _manage_editor_group_init_modules_box(self, gr);
-  gtk_box_pack_start(GTK_BOX(d->preset_groups_box), vb2, FALSE, TRUE, 0);
-  gtk_widget_show_all(vb2);
-
+    // we update the group list
+    GtkWidget *vb2 = _manage_editor_group_init_modules_box(self, gr);
+    gtk_box_pack_start(GTK_BOX(d->preset_groups_box), vb2, FALSE, TRUE, 0);
+    gtk_widget_show_all(vb2);
+  }
   // and we update arrows
   _manage_editor_group_update_arrows(d->preset_groups_box);
 }

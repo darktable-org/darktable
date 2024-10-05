@@ -1412,7 +1412,7 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module,
   {
     if(gui->creation)
     {
-      dt_masks_point_path_t *bzpt = (malloc(sizeof(dt_masks_point_path_t)));
+      dt_masks_point_path_t *bzpt = malloc(sizeof(dt_masks_point_path_t));
       int nb = g_list_length(form->points);
       // change the values
       float pts[2] = { pzx * wd, pzy * ht };
@@ -1428,7 +1428,7 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module,
       // if that's the first point we should had another one as base point
       if(nb == 0)
       {
-        dt_masks_point_path_t *bzpt2 = (malloc(sizeof(dt_masks_point_path_t)));
+        dt_masks_point_path_t *bzpt2 = malloc(sizeof(dt_masks_point_path_t));
         bzpt2->corner[0] = pts[0] / iwidth;
         bzpt2->corner[1] = pts[1] / iheight;
         bzpt2->ctrl1[0] = bzpt2->ctrl1[1] = bzpt2->ctrl2[0] = bzpt2->ctrl2[1] = -1.0;
@@ -1547,7 +1547,7 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module,
       if(dt_modifier_is(state, GDK_CONTROL_MASK))
       {
         // we add a new point to the path
-        dt_masks_point_path_t *bzpt = (malloc(sizeof(dt_masks_point_path_t)));
+        dt_masks_point_path_t *bzpt = malloc(sizeof(dt_masks_point_path_t));
         // change the values
         float pts[2] = { pzx * wd, pzy * ht };
         dt_dev_distort_backtransform(darktable.develop, pts, 1);
@@ -1723,7 +1723,7 @@ static int _path_events_button_released(struct dt_iop_module_t *module,
     gui->form_dragging = FALSE;
 
     // we get point0 new values
-    dt_masks_point_path_t *point = (form->points)->data;
+    dt_masks_point_path_t *point = form->points->data;
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
     const float dx = pts[0] / iwidth - point->corner[0];
@@ -2021,7 +2021,7 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module,
     // we move all points
     if(gui->form_dragging)
     {
-      dt_masks_point_path_t *point = (form->points)->data;
+      dt_masks_point_path_t *point = form->points->data;
       const float dx = pts[0] / iwidth - point->corner[0];
       const float dy = pts[1] / iheight - point->corner[1];
       for(GList *points = form->points; points; points = g_list_next(points))

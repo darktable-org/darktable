@@ -1042,7 +1042,7 @@ static void _draw_color_picker(dt_iop_module_t *self,
   dt_aligned_pixel_t Lab;                                                                                         \
   dt_LCH_2_Lab(LCh, Lab);                                                                                         \
   const float L0 = Lab[0];                                                                                        \
-  /* gamut mapping magic from iop/exposure.g: */                                                                  \
+  /* gamut mapping magic from iop/exposure.c: */                                                                  \
   const float Lwhite = 100.0f, Lclip = 20.0f;                                                                     \
   const float Lcap = fminf(100.0f, Lab[0]);                                                                       \
   const float clip                                                                                                \
