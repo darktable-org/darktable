@@ -493,6 +493,12 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai,
         for(int i = 0; i < 3; ++i)
           d->adobe_XYZ_to_CAM[k][i] = image.adobe_XYZ_to_CAM[k][i];
   }
+  if(!d->pixels || !d->weight)
+  {
+    dt_control_log(_("unable to allocate memory for HDR  merge"));
+    d->abort = TRUE;
+    return 1;
+  }
 
   if(image.buf_dsc.filters == 0u
      || image.buf_dsc.channels != 1
