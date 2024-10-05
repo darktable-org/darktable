@@ -51,8 +51,8 @@ static void error_callback(const char *msg, void *client_data)
 
 static int get_file_format(const char *filename)
 {
-  static const char *extension[] = { "j2k", "jp2", "jpt", "j2c", "jpc" };
-  static const int format[] = { J2K_CFMT, JP2_CFMT, JPT_CFMT, J2K_CFMT, J2K_CFMT };
+  static const char *extension[] = { "j2k", "jp2", "jpt", "j2c", "jpc", "jpf", "jpx" };
+  static const int format[] = { J2K_CFMT, JP2_CFMT, JPT_CFMT, J2K_CFMT, J2K_CFMT, JP2_CFMT, JP2_CFMT };
   char *ext = strrchr(filename, '.');
   if(ext == NULL) return -1;
   ext++;
