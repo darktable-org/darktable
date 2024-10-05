@@ -1993,14 +1993,24 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
     break;
   case DT_INTROSPECTION_TYPE_FLOAT:
     all_ok = dt_isnan(*(float*)p)
-      || dt_isinf(*(float*)p)
-      || (*(float*)p == field->Float.Default)
-      || (*(float*)p >= field->Float.Min && *(float*)p <= field->Float.Max);
+          || dt_isinf(*(float*)p)
+          || (*(float*)p >= field->Float.Min && *(float*)p <= field->Float.Max);
+    gboolean relaxed = FALSE;
+    if(!all_ok)
+    {
+      const float eps = 1.00001f;
+      if(*(float*)p >= field->Float.Min / eps && *(float*)p <= field->Float.Max * eps)
+      {
+        all_ok = TRUE;
+        relaxed = TRUE;
+      }
+    }
     values = g_strdup_printf
-      (" (%f - [%f..%f] : default %f)",
+      (" (%.8f - [%f..%f] : default %f)%s",
        *(float*)p,
        field->Float.Min, field->Float.Max,
-       field->Float.Default);
+       field->Float.Default,
+       relaxed ? " relaxed range" : "");
     break;
   case DT_INTROSPECTION_TYPE_INT:
     all_ok = (*(int*)p >= field->Int.Min && *(int*)p <= field->Int.Max);
@@ -2085,7 +2095,7 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
   if(all_ok)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[iop_validate_params] `%s' data for type \"%s\"%s%s%s\n",
+             "[iop_validate_params] `%s' validated data for type \"%s\"%s%s%s\n",
              name, field->header.type_name,
              *field->header.name ? ", field: " : "",
              field->header.name, values ? values : "");
@@ -2139,9 +2149,9 @@ void dt_iop_commit_params(dt_iop_module_t *module,
                              module->so->op))
     {
       // FIXME maybe we can hint a warning in the module UI or possibly
-      // disable the piece ?
+      // disable the piece ? Requires more introspection fixes (especially enums) to be safe
       dt_control_log
-        (_("'%s' has been disabled because of an introspection error"), module->op);
+        (_("'%s' has an introspection error"), module->op);
     }
   }
 
@@ -2171,9 +2181,12 @@ void dt_iop_commit_params(dt_iop_module_t *module,
       {
         const size_t mlen = dt_masks_group_get_hash_buffer_length(grp);
         char *str = malloc(mlen);
-        dt_masks_group_get_hash_buffer(grp, str);
-        phash = dt_hash(phash, str, mlen);
-        free(str);
+        if(str)
+        {
+          dt_masks_group_get_hash_buffer(grp, str);
+          phash = dt_hash(phash, str, mlen);
+          free(str);
+        }
       }
 
       if(blendop_params->mask_mode & DEVELOP_MASK_RASTER && new_raster)
