@@ -2310,7 +2310,7 @@ gboolean dt_ioppr_check_iop_order_ext(dt_develop_t *dev,
       history;
       history = g_list_next(history))
   {
-    const dt_dev_history_item_t *const restrict hist = (history->data);
+    const dt_dev_history_item_t *const restrict hist = history->data;
 
     if(hist->iop_order == INT_MAX)
     {

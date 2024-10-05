@@ -392,7 +392,7 @@ void process(struct dt_iop_module_t *self,
     return; // image has been copied through to output and module's
             // trouble flag has been updated
 
-  const dt_iop_tonecurve_data_t *const restrict d = (piece->data);
+  const dt_iop_tonecurve_data_t *const restrict d = piece->data;
   const dt_iop_order_iccprofile_info_t *const work_profile
     = dt_ioppr_add_profile_info_to_list(self->dev, DT_COLORSPACE_PROPHOTO_RGB, "",
                                         INTENT_PERCEPTUAL);
