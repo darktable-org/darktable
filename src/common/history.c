@@ -518,13 +518,13 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
       {
         nbf = g_list_length(dev_src->forms);
         forms_used_replace = calloc(nbf, sizeof(int));
-
-        _fill_used_forms(dev_src->forms,
-                         mod_src->blend_params->mask_id,
-                         forms_used_replace, nbf);
+        if(forms_used_replace)
+          _fill_used_forms(dev_src->forms,
+                           mod_src->blend_params->mask_id,
+                           forms_used_replace, nbf);
 
         // now copy masks
-        for(int i = 0; i < nbf && forms_used_replace[i] > 0; i++)
+        for(int i = 0; i < nbf && forms_used_replace && forms_used_replace[i] > 0; i++)
         {
           dt_masks_form_t *form =
             dt_masks_get_from_id_ext(dev_src->forms, forms_used_replace[i]);
