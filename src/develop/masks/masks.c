@@ -2123,7 +2123,7 @@ static int _masks_cleanup_unused(GList **_forms,
   // array
   int num = 0;
   for(GList *history = history_list;
-      history && num < history_end;
+      history && num < history_end && used;
       history = g_list_next(history))
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)history->data;
@@ -2138,7 +2138,7 @@ static int _masks_cleanup_unused(GList **_forms,
 
   // and we delete all unused forms
   GList *shapes = forms;
-  while(shapes)
+  while(shapes && used)
   {
     dt_masks_form_t *f = (dt_masks_form_t *)shapes->data;
     gboolean found = FALSE;
