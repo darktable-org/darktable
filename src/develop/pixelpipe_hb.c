@@ -1155,13 +1155,11 @@ static gboolean _pixelpipe_process_on_CPU(
 
   const size_t in_bpp = dt_iop_buffer_dsc_to_bpp(input_format);
   const size_t bpp = dt_iop_buffer_dsc_to_bpp(*out_format);
+  const size_t m_bpp = MAX(in_bpp, bpp);
+  const size_t m_width = MAX(roi_in->width, roi_out->width);
+  const size_t m_height = MAX(roi_in->height, roi_out->height);
 
-  const gboolean fitting = dt_tiling_piece_fits_host_memory
-    (MAX(roi_in->width, roi_out->width),
-     MAX(roi_in->height, roi_out->height),
-     MAX(in_bpp, bpp),
-     tiling->factor, tiling->overhead);
-
+  const gboolean fitting = dt_tiling_piece_fits_host_memory(m_width, m_height, m_bpp, tiling->factor, tiling->overhead);
   /* process module on cpu. use tiling if needed and possible. */
 
   const gboolean pfm_dump = darktable.dump_pfm_pipe
@@ -1186,14 +1184,15 @@ static gboolean _pixelpipe_process_on_CPU(
   {
     dt_print_pipe(DT_DEBUG_PIPE,
        "process",
-       piece->pipe, module, DT_DEVICE_CPU, roi_in, roi_out, "%3i %s%s%s%s\n",
+       piece->pipe, module, DT_DEVICE_CPU, roi_in, roi_out, "%3i %s%s%s%s %.fMB\n",
        piece->module->iop_order,
        dt_iop_colorspace_to_name(cst_to),
        cst_to != cst_out ? " -> " : "",
        cst_to != cst_out ? dt_iop_colorspace_to_name(cst_out) : "",
        (fitting)
        ? ""
-       : " Warning: processed without tiling even if memory requirements are not met");
+       : " Warning: processed without tiling even if memory requirements are not met",
+       1e-6 * (tiling->factor * (m_width * m_height * m_bpp) + tiling->overhead));
 
     // this code section is for simplistic benchmarking via --bench-module
     if((piece->pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_EXPORT))
@@ -1654,10 +1653,6 @@ static gboolean _dev_pixelpipe_process_rec(
      * take appropriate action */
     gboolean valid_input_on_gpu_only = (cl_mem_input != NULL);
 
-    const float required_factor_cl = fmaxf(1.0f, (valid_input_on_gpu_only)
-                                           ? tiling.factor_cl - 1.0f
-                                           : tiling.factor_cl);
-
     /* general remark: in case of opencl errors within modules or
        out-of-memory on GPU, we transparently fall back to the
        respective cpu module and continue in pixelpipe. If we
@@ -1675,12 +1670,13 @@ static gboolean _dev_pixelpipe_process_rec(
        && !((pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_PREVIEW2))
             && (module->flags() & IOP_FLAGS_PREVIEW_NON_OPENCL)));
 
-    const int m_bpp = MAX(in_bpp, bpp);
+    const uint32_t m_bpp = MAX(in_bpp, bpp);
+    const size_t m_width = MAX(roi_in.width, roi_out->width);
+    const size_t m_height = MAX(roi_in.height, roi_out->height);
+
     const gboolean fits_on_device =
-      dt_opencl_image_fits_device(pipe->devid,
-                                  MAX(roi_in.width, roi_out->width),
-                                  MAX(roi_in.height, roi_out->height),
-                                  m_bpp, required_factor_cl, tiling.overhead);
+      dt_opencl_image_fits_device(pipe->devid, m_width, m_height,
+                                  m_bpp, tiling.factor_cl, tiling.overhead);
 
     if(possible_cl && !fits_on_device)
     {
@@ -1825,11 +1821,12 @@ static gboolean _dev_pixelpipe_process_rec(
         {
           dt_print_pipe(DT_DEBUG_PIPE,
                         "process",
-                        piece->pipe, module, pipe->devid, &roi_in, roi_out, "%3i %s%s%s\n",
+                        piece->pipe, module, pipe->devid, &roi_in, roi_out, "%3i %s%s%s %.1fMB\n",
                         module->iop_order,
                         dt_iop_colorspace_to_name(cst_to),
                         cst_to != cst_out ? " -> " : "",
-                        cst_to != cst_out ? dt_iop_colorspace_to_name(cst_out) : "");
+                        cst_to != cst_out ? dt_iop_colorspace_to_name(cst_out) : "",
+                        1e-6 * (tiling.factor_cl * (m_width * m_height * m_bpp) + tiling.overhead));
 
           // this code section is for simplistic benchmarking via --bench-module
           if((piece->pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_EXPORT))
