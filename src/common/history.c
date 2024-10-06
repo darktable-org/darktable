@@ -1516,11 +1516,13 @@ GList *dt_history_duplicate(GList *hist)
     if(params_size > 0)
     {
       new->params = malloc(params_size);
-      memcpy(new->params, old->params, params_size);
+      if(new->params)
+        memcpy(new->params, old->params, params_size);
     }
 
     new->blend_params = malloc(sizeof(dt_develop_blend_params_t));
-    memcpy(new->blend_params, old->blend_params, sizeof(dt_develop_blend_params_t));
+    if(new->blend_params)
+      memcpy(new->blend_params, old->blend_params, sizeof(dt_develop_blend_params_t));
 
     if(old->forms)
       new->forms = dt_masks_dup_forms_deep(old->forms, NULL);
