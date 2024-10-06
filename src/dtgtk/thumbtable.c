@@ -2186,6 +2186,11 @@ static void _event_dnd_get(GtkWidget *widget,
       if(imgs_nb)
       {
         dt_imgid_t *imgs = calloc(imgs_nb, sizeof(dt_imgid_t));
+        if(!imgs)
+        {
+          dt_print(DT_DEBUG_ALWAYS,"[thumbtable] out of memory preparing drop target\n");
+          break;
+        }
         GList *l = table->drag_list;
 
         int idx = 0;
