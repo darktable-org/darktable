@@ -360,7 +360,7 @@ void tiling_callback(struct dt_iop_module_t *self,
   if(data->use_filter)
   {
     // calculate relative size of downsampled buffers
-    const float sigma = (float)maxradius * MAX(0.5f, roi_out->scale);
+    const float sigma = (float)maxradius * MAX(0.5f, roi_in->scale / piece->iscale);
     const float scaling = _get_scaling(sigma);
     tiling->factor += scaling == 1.0f
                       ? 3.0f
@@ -961,17 +961,17 @@ static void _prepare_process(const float roi_scale,
   *bright_shift = *sat_shift + *corr_max_brightness_shift;
 
   /* We want information about sharp transitions of saturation for halo suppression.
-     As the scharr operator is faster and more stable for roi->scale changes we use
+     As the scharr operator is faster and more stable for scale changes we use
        it instead of local variance.
      We reduce chroma noise effects by using a minimum threshold and by sqaring the gradient.
      The gradient_amp corrects a gradient of 0.5 to be 1.0 and takes care
-       of maximum changed brightness and roi scale.
+       of maximum changed brightness and roi_scale.
   */
   *gradient_amp = 4.0f * sqrtf(d->max_brightness) * sqrf(roi_scale);
   *hue_sigma = 0.5f * d->chroma_size * roi_scale;
   *par_sigma = 0.5f * d->param_size * roi_scale;
   *sat_sigma = MAX(0.5f, roi_scale);
-  *scharr_sigma = roi_scale;
+  *scharr_sigma = MAX(0.5f, roi_scale);
 
   _init_satweights(d->contrast);
 }
@@ -1032,7 +1032,7 @@ void process(struct dt_iop_module_t *self,
   dt_colormatrix_mul(output_matrix, work_profile->matrix_out, XYZ_D65_to_D50_CAT16);
 
   float white, sat_shift, max_brightness_shift, corr_max_brightness_shift, bright_shift, gradient_amp, hue_sigma, par_sigma, sat_sigma, scharr_sigma;
-  _prepare_process(roi_out->scale, d,
+  _prepare_process(roi_in->scale / piece->iscale, d,
     &white, &sat_shift, &max_brightness_shift, &corr_max_brightness_shift, &bright_shift, &gradient_amp, &hue_sigma, &par_sigma, &sat_sigma, &scharr_sigma);
 
   // STEP 1: convert image from RGB to darktable UCS LUV and calc saturation
@@ -1059,7 +1059,6 @@ void process(struct dt_iop_module_t *self,
     Lscharr[k] = Y_to_dt_UCS_L_star(xyY[2]);
   }
 
-  // We blur the saturation slightly depending on roi_scale
   _mean_gaussian(saturation, width, height, 1, sat_sigma);
 
   // STEP 2 : smoothen UV to avoid discontinuities in hue
@@ -1578,7 +1577,7 @@ int process_cl(struct dt_iop_module_t *self,
   const gboolean run_fast = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
 
   float white, sat_shift, max_brightness_shift, corr_max_brightness_shift, bright_shift, gradient_amp, hue_sigma, par_sigma, sat_sigma, scharr_sigma;
-  _prepare_process(roi_out->scale, d,
+  _prepare_process(roi_in->scale / piece->iscale, d,
     &white, &sat_shift, &max_brightness_shift, &corr_max_brightness_shift, &bright_shift, &gradient_amp, &hue_sigma, &par_sigma, &sat_sigma, &scharr_sigma);
 
   dt_colormatrix_t input_matrix;
