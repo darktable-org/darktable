@@ -250,8 +250,10 @@ static void _clear_cache_entry(dt_iop_module_t *self, const int index)
 }
 
 static void _module_remove_callback(gpointer instance,
-                                    dt_iop_module_t *self)
+                                    dt_iop_module_t *self,
+                                    gpointer user_data)
 {
+  if(!self || self != user_data) return;
   dt_iop_overlay_params_t *p = self->params;
 
   if(dt_is_valid_imgid(p->imgid))
