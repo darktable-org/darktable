@@ -91,7 +91,7 @@ changes (where available).
     collections" modules' preferences to show or hide the latter and
     show a "history" button in the former instead. Users that want the
     separate module will need to reenable it once via the new
-    right-click menu.
+    <kbd>Right-click</kbd> menu.
 
   - The menu also contains an option "restore defaults" that resets
     the selection and position of modules in the current view. In the
@@ -108,8 +108,8 @@ changes (where available).
 
 - Drag&drop utility module headers to reposition them across the left
   and right panels (lighttable) as well as vertically (all
-  views). Hold ctrl+shift to avoid expanding/collapsing them before
-  dragging. Each view can have a different layout.
+  views). Hold <kbd>Ctrl+Shift</kbd> to avoid expanding/collapsing
+  them before dragging. Each view can have a different layout.
 
 - Drag&drop of processing modules in the darkroom right panel has been
   improved to auto-scroll when reaching the top or bottom and to not
@@ -150,7 +150,8 @@ changes (where available).
 - The macOS installation package now has a background image to direct
   the user on installing darktable.app.
 
-- Changed the user interface of the import dialog to make it easier to delete custom places.
+- Changed the user interface of the import dialog to make it easier to
+  delete custom places.
 
 - Numerous rounds of code cleanup.
 
@@ -171,7 +172,8 @@ changes (where available).
 
 - Fixed gallery export not working on Windows.
 
-- Fixed printer discovery in the print module, which could cause available printers to be missed.
+- Fixed printer discovery in the print module, which could cause
+  available printers to be missed.
 
 - Work around out-of-spec ExIF date field caused by buggy software.
 
