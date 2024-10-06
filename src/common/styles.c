@@ -671,9 +671,10 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
   {
     dt_iop_module_t *module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
 
-    module->dev = dev;
+    if(module)
+      module->dev = dev;
 
-    if(dt_iop_load_module(module, mod_src->so, dev))
+    if(!module || dt_iop_load_module(module, mod_src->so, dev))
     {
       module = NULL;
       dt_print(DT_DEBUG_ALWAYS,
@@ -1124,6 +1125,8 @@ GList *dt_styles_get_item_list(const char *name,
       // name of current item of style
       char iname[512] = { 0 };
       dt_style_item_t *item = calloc(1, sizeof(dt_style_item_t));
+      if(!item)
+        break;
 
       if(sqlite3_column_type(stmt, 0) == SQLITE_NULL)
         item->num = -1;
