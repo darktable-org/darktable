@@ -1635,10 +1635,16 @@ void tiling_callback_blendop(struct dt_iop_module_t *self,
   if(bldata)
   {
     if(bldata->details != 0.0f)
-      tiling->factor = 0.75f; // details mask requires 3 additional quarter buffers
+    {
+      // details mask requires 2 additional quarter buffers of details data size
+      // so normalize to roi_size
+      dt_dev_detail_mask_t *details = &piece->pipe->scharr;
+      if(details->data)
+        tiling->factor = 0.5f * (float)(details->roi.width * details->roi.height) / (roi_in->width * roi_in->height);
+     }
 
     if(bldata->feathering_radius > 0.1f)
-      tiling->factor = 3.75f; // we need all intermediate guided filter mask buffers
+      tiling->factor = MAX(tiling->factor, 4.5f); // we need all intermediate guided filter mask buffers
   }
   tiling->factor += 3.5f; // in + out + (guide, tmp) + two quarter buffers for the mask
 }
