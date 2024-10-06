@@ -160,6 +160,10 @@ changes (where available).
 - Add support for undo/redo for actions done on the filmstrip while in
   darkroom.
 
+- In darkroom, add action (binding to <kbd>Ctrl+x</kbd> by default) for
+  synchronizing the last edited module on current edited module to the
+  selection.
+
 ## Bug Fixes
 
 - Fixed a performance regression for redrawing mipmaps.
