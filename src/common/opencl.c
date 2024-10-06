@@ -3612,7 +3612,7 @@ cl_ulong dt_opencl_get_device_memalloc(const int devid)
 gboolean dt_opencl_image_fits_device(const int devid,
                                      const size_t width,
                                      const size_t height,
-                                     const unsigned bpp,
+                                     const uint32_t bpp,
                                      const float factor,
                                      const size_t overhead)
 {
