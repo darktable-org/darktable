@@ -618,6 +618,8 @@ GList *dt_map_location_convert_polygons(void *polygons, dt_map_box_t *bbox, int 
 {
   const int nb = g_list_length(polygons);
   dt_geo_map_display_point_t *points = malloc(nb * sizeof(dt_geo_map_display_point_t));
+  if(!points)
+    return NULL;
   dt_geo_map_display_point_t *p = points;
   dt_map_box_t bb = {180.0, -90.0, -180, 90.0};
   GList *npol = NULL;
