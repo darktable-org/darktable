@@ -1392,8 +1392,12 @@ cl_int dt_ioppr_build_iccprofile_params_cl(const dt_iop_order_iccprofile_info_t 
   {
     profile_lut_cl = malloc(sizeof(cl_float) * 1 * 6);
 
-    dev_profile_lut = dt_opencl_copy_host_to_device(devid, profile_lut_cl, 1, 1 * 6,
-                                                    sizeof(float));
+    if(profile_lut_cl)
+      dev_profile_lut = dt_opencl_copy_host_to_device(devid, profile_lut_cl, 1, 1 * 6,
+                                                      sizeof(float));
+    else
+      dev_profile_lut = NULL;
+
     if(dev_profile_lut == NULL)
       err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   }

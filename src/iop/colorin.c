@@ -1847,9 +1847,8 @@ void reload_defaults(dt_iop_module_t *module)
       char* iccCopyr;
       const guint32 bufsize = cmsGetProfileInfoASCII(cmsprofile, cmsInfoCopyright,
                                                      "en", "US", NULL, 0);
-      if(bufsize)
+      if(bufsize && (iccCopyr = malloc(bufsize+1)) != NULL)
       {
-        iccCopyr = malloc(bufsize+1);
         cmsGetProfileInfoASCII(cmsprofile, cmsInfoCopyright,
                                "en", "US", iccCopyr, bufsize);
       }

@@ -4971,20 +4971,22 @@ int button_pressed(dt_iop_module_t *self,
           }
 
           const int count = g->lines_count - 1;
-          dt_iop_ashift_line_t *lines =
-            (dt_iop_ashift_line_t *)calloc(count, sizeof(dt_iop_ashift_line_t));
-          int pos = 0;
-          for(int i = 0; i < count; i++)
+          dt_iop_ashift_line_t *lines = calloc(count, sizeof(dt_iop_ashift_line_t));
+          if(lines)
           {
-            if(i != n)
+            int pos = 0;
+            for(int i = 0; i < count; i++)
             {
-              lines[pos] = g->lines[i];
-              pos++;
+              if(i != n)
+              {
+                lines[pos] = g->lines[i];
+                pos++;
+              }
             }
+            if(g->lines) free(g->lines);
+            g->lines = lines;
+            g->lines_count = count;
           }
-          if(g->lines) free(g->lines);
-          g->lines = lines;
-          g->lines_count = count;
         }
 
         handled = TRUE;
