@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2015-2023 darktable developers.
+    Copyright (C) 2015-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -290,13 +290,19 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
       if(len > 0)
       {
         unsigned char *buf = malloc(sizeof(unsigned char) * len);
-        cmsSaveProfileToMem(profile->profile, buf, &len);
-        icc_id = dt_pdf_add_icc_from_data(d->pdf, buf, len);
-        free(buf);
+        if(buf)
+        {
+          cmsSaveProfileToMem(profile->profile, buf, &len);
+          icc_id = dt_pdf_add_icc_from_data(d->pdf, buf, len);
+          free(buf);
+        }
         _pdf_icc_t *icc = (_pdf_icc_t *)malloc(sizeof(_pdf_icc_t));
-        icc->profile = profile;
-        icc->icc_id = icc_id;
-        d->icc_profiles = g_list_append(d->icc_profiles, icc);
+        if(icc)
+        {
+          icc->profile = profile;
+          icc->icc_id = icc_id;
+          d->icc_profiles = g_list_append(d->icc_profiles, icc);
+        }
       }
     }
   }
@@ -311,31 +317,42 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     if(d->params.bpp == 8)
     {
       image_data = dt_alloc_aligned((size_t)3 * data->width * data->height);
-      const uint8_t *in_ptr = (const uint8_t *)in;
-      uint8_t *out_ptr = (uint8_t *)image_data;
-      for(int y = 0; y < data->height; y++)
+      if(image_data)
       {
-        for(int x = 0; x < data->width; x++, in_ptr += 4, out_ptr += 3)
-          memcpy(out_ptr, in_ptr, 3);
+        const uint8_t *in_ptr = (const uint8_t *)in;
+        uint8_t *out_ptr = (uint8_t *)image_data;
+        for(int y = 0; y < data->height; y++)
+        {
+          for(int x = 0; x < data->width; x++, in_ptr += 4, out_ptr += 3)
+            memcpy(out_ptr, in_ptr, 3);
+        }
       }
     }
     else
     {
       image_data = dt_alloc_align_type(uint16_t, 3 * data->width * data->height);
-      const uint16_t *in_ptr = (const uint16_t *)in;
-      uint16_t *out_ptr = (uint16_t *)image_data;
-      for(int y = 0; y < data->height; y++)
+      if(image_data)
       {
-        for(int x = 0; x < data->width; x++, in_ptr += 4, out_ptr += 3)
+        const uint16_t *in_ptr = (const uint16_t *)in;
+        uint16_t *out_ptr = (uint16_t *)image_data;
+        for(int y = 0; y < data->height; y++)
         {
-          for(int c = 0; c < 3; c++)
-            out_ptr[c] = (0xff00 & (in_ptr[c] << 8)) | (in_ptr[c] >> 8);
+          for(int x = 0; x < data->width; x++, in_ptr += 4, out_ptr += 3)
+          {
+            for(int c = 0; c < 3; c++)
+              out_ptr[c] = (0xff00 & (in_ptr[c] << 8)) | (in_ptr[c] >> 8);
+          }
         }
       }
     }
   }
 
-  dt_pdf_image_t *image = dt_pdf_add_image(d->pdf, image_data, d->params.global.width, d->params.global.height, d->params.bpp, icc_id, d->page_border);
+  if(!image_data)
+    return 1;
+
+  dt_pdf_image_t *image = dt_pdf_add_image(d->pdf, image_data, d->params.global.width,
+                                           d->params.global.height, d->params.bpp, icc_id,
+                                           d->page_border);
 
   dt_free_align(image_data);
 
