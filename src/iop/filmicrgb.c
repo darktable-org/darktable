@@ -2750,7 +2750,7 @@ static void show_mask_callback(GtkToggleButton *button, GdkEventButton *event, g
 // returns true if contrast was clamped, false otherwise
 // used in GUI, to show user when contrast clamping is happening
 inline static gboolean dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_params_t *const p,
-                                                    struct dt_iop_filmic_rgb_spline_t *const spline)
+                                                        struct dt_iop_filmic_rgb_spline_t *const spline)
 {
   float grey_display = 0.4638f;
   gboolean clamping = FALSE;
