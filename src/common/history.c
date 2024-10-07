@@ -1234,7 +1234,8 @@ void dt_history_compress_on_image(const dt_imgid_t imgid)
 
   // delete all mask_manager entries
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-    "DELETE FROM main.history WHERE imgid = ?1 AND operation = ?2", -1, &stmt, NULL);
+    "DELETE FROM main.history"
+    " WHERE imgid = ?1 AND operation = ?2", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, op_mask_manager, -1, SQLITE_TRANSIENT);
   sqlite3_step(stmt);
@@ -1265,7 +1266,8 @@ void dt_history_compress_on_image(const dt_imgid_t imgid)
 
   if(masks_count > 0)
   {
-    // Set num in masks history to make sure they are owned by the manager at slot 0.
+    // Set num in masks history to make sure they are owned by the
+    // manager at slot 0.
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
       "UPDATE main.masks_history SET num = 0 WHERE imgid = ?1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -1404,7 +1406,7 @@ gboolean dt_history_compress(const dt_imgid_t imgid)
 
     if((size>0) && (max>0))
     {
-      for(int index=0;index<(max+1);index++)
+      for(int index = 0;index < (max+1); index++)
       {
         sqlite3_stmt *stmt3;
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),

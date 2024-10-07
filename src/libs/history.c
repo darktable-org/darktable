@@ -66,7 +66,8 @@ typedef struct dt_lib_history_t
 #define HIST_WIDGET_STATUS 2
 
 /* compress history stack */
-static void _lib_history_compress_clicked_callback(GtkButton *widget, gpointer user_data);
+static void _lib_history_compress_clicked_callback(GtkButton *widget,
+                                                   gpointer user_data);
 
 static gboolean _lib_history_compress_pressed_callback(GtkWidget *widget,
                                                        GdkEventButton *e,
@@ -79,9 +80,11 @@ static gboolean _lib_history_button_clicked_callback(GtkWidget *widget,
 static void _lib_history_create_style_button_clicked_callback(GtkWidget *widget,
                                                               gpointer user_data);
 /* signal callback for history change */
-static void _lib_history_will_change_callback(gpointer instance, gpointer user_data);
+static void _lib_history_will_change_callback(gpointer instance,
+                                              gpointer user_data);
 
-static void _lib_history_change_callback(gpointer instance, gpointer user_data);
+static void _lib_history_change_callback(gpointer instance,
+                                         gpointer user_data);
 
 static void _lib_history_module_remove_callback(gpointer instance,
                                                 dt_iop_module_t *module,
@@ -434,7 +437,7 @@ static gboolean _check_deleted_instances(dt_develop_t *dev,
 
       // remove it from all snapshots
       dt_undo_iterate(darktable.undo, DT_UNDO_HISTORY,
-                               mod, &_history_invalidate_cb);
+                      mod, &_history_invalidate_cb);
 
       // we cleanup the module
       dt_action_cleanup_instance_iop(mod);
