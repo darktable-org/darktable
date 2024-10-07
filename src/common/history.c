@@ -971,6 +971,9 @@ gboolean dt_history_copy_and_paste_on_image(const dt_imgid_t imgid,
                  dt_history_snapshot_undo_lt_history_data_free);
   dt_undo_end_group(darktable.undo);
 
+  /* add possibly new overlay module reference */
+  dt_overlay_add_from_history(dest_imgid);
+
   /* attach changed tag reflecting actual change */
   guint tagid = 0;
   dt_tag_new("darktable|changed", &tagid);
