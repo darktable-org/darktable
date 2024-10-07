@@ -2591,10 +2591,16 @@ error:
 }
 #endif
 
-static inline void _compute_output_power(dt_iop_filmicrgb_params_t *p)
+static inline void _compute_output_power(dt_iop_module_t *self,
+                                         dt_iop_filmicrgb_params_t *p)
 {
-  p->output_power = logf(p->grey_point_target / 100.0f)
-                    / logf(-p->black_point_source / (p->white_point_source - p->black_point_source));
+  const float min = self->so->get_f("output_power")->Float.Min;
+  const float max = self->so->get_f("output_power")->Float.Max;
+
+  p->output_power =
+    CLAMPF(logf(p->grey_point_target / 100.0f)
+           / logf(-p->black_point_source / (p->white_point_source - p->black_point_source)),
+           min, max);
 }
 
 static void apply_auto_grey(dt_iop_module_t *self)
@@ -2612,7 +2618,7 @@ static void apply_auto_grey(dt_iop_module_t *self)
   const float grey_var = log2f(prev_grey / p->grey_point_source);
   p->black_point_source = p->black_point_source - grey_var;
   p->white_point_source = p->white_point_source + grey_var;
-  _compute_output_power(p);
+  _compute_output_power(self, p);
 
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->grey_point_source, p->grey_point_source);
@@ -2640,7 +2646,7 @@ static void apply_auto_black(dt_iop_module_t *self)
   EVmin *= (1.0f + p->security_factor / 100.0f);
 
   p->black_point_source = fmaxf(EVmin, -16.0f);
-  _compute_output_power(p);
+  _compute_output_power(self, p);
 
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->black_point_source, p->black_point_source);
@@ -2667,7 +2673,7 @@ static void apply_auto_white_point_source(dt_iop_module_t *self)
   EVmax *= (1.0f + p->security_factor / 100.0f);
 
   p->white_point_source = EVmax;
-  _compute_output_power(p);
+  _compute_output_power(self, p);
 
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->white_point_source, p->white_point_source);
@@ -2704,7 +2710,7 @@ static void apply_autotune(dt_iop_module_t *self)
 
   p->black_point_source = fmaxf(EVmin, -16.0f);
   p->white_point_source = EVmax;
-  _compute_output_power(p);
+  _compute_output_power(self, p);
 
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->grey_point_source, p->grey_point_source);
@@ -3193,7 +3199,7 @@ void reload_defaults(dt_iop_module_t *module)
     // so exposure compensation actually increases the dynamic range too (stretches only white).
     d->black_point_source += 0.5f * exposure;
     d->white_point_source += 0.8f * exposure;
-    _compute_output_power(d);
+    _compute_output_power(module, d);
   }
 }
 
@@ -4679,7 +4685,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     }
 
     if(p->auto_hardness)
-      _compute_output_power(p);
+      _compute_output_power(self, p);
 
     gtk_widget_set_visible(GTK_WIDGET(g->output_power), !p->auto_hardness);
     dt_bauhaus_slider_set(g->output_power, p->output_power);
