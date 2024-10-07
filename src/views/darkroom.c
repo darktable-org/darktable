@@ -28,6 +28,7 @@
 #include "common/focus_peaking.h"
 #include "common/history.h"
 #include "common/image_cache.h"
+#include "common/overlay.h"
 #include "common/selection.h"
 #include "common/styles.h"
 #include "common/tags.h"
@@ -999,6 +1000,8 @@ static gboolean _dev_load_requested_image(gpointer user_data)
   }
 
   const dt_imgid_t old_imgid = dev->image_storage.id;
+
+  dt_overlay_add_from_history(old_imgid);
 
   // be sure light table will update the thumbnail
   if(!dt_history_hash_is_mipmap_synced(old_imgid))
@@ -2856,6 +2859,8 @@ void leave(dt_view_t *self)
   dt_dev_write_history(dev);
 
   const dt_imgid_t imgid = dev->image_storage.id;
+
+  dt_overlay_add_from_history(imgid);
 
   // update aspect ratio
   if(dev->preview_pipe->backbuf && dev->preview_pipe->status == DT_DEV_PIXELPIPE_VALID)
