@@ -187,6 +187,8 @@ GHashTable *dt_pwstorage_windows_credentials_get(const backend_windows_credentia
                json_data);
 
       g_hash_table_insert(table, g_strdup((gchar *)pcred->Comment), g_strdup(json_data));
+
+      g_free(json_data);
     }
   }
   else
