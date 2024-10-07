@@ -1081,6 +1081,8 @@ void dt_colorspaces_get_profile_name(cmsHPROFILE p,
     goto error;
 
   buf = (char *)calloc(size + 1, sizeof(char));
+  if(!buf)
+    goto error;
   size = cmsGetProfileInfoASCII(p, cmsInfoDescription, language, country, buf, size);
   if(size == 0)
     goto error;
@@ -1091,6 +1093,8 @@ void dt_colorspaces_get_profile_name(cmsHPROFILE p,
   else
   {
     wbuf = (wchar_t *)calloc(size + 1, sizeof(wchar_t));
+    if(!wbuf)
+      goto error;
     size = cmsGetProfileInfo(p, cmsInfoDescription, language,
                              country, wbuf, sizeof(wchar_t) * size);
     if(size == 0) goto error;
@@ -1125,19 +1129,19 @@ static dt_colorspaces_color_profile_t *_create_profile
    const int work_pos,
    const int display2_pos)
 {
-  dt_colorspaces_color_profile_t *prof;
-  prof = (dt_colorspaces_color_profile_t *)
-    calloc(1, sizeof(dt_colorspaces_color_profile_t));
-
-  prof->type = type;
-  g_strlcpy(prof->name, name, sizeof(prof->name));
-  prof->profile = profile;
-  prof->in_pos = in_pos;
-  prof->out_pos = out_pos;
-  prof->display_pos = display_pos;
-  prof->category_pos = category_pos;
-  prof->work_pos = work_pos;
-  prof->display2_pos = display2_pos;
+  dt_colorspaces_color_profile_t *prof = calloc(1, sizeof(dt_colorspaces_color_profile_t));
+  if(prof)
+  {
+    prof->type = type;
+    g_strlcpy(prof->name, name, sizeof(prof->name));
+    prof->profile = profile;
+    prof->in_pos = in_pos;
+    prof->out_pos = out_pos;
+    prof->display_pos = display_pos;
+    prof->category_pos = category_pos;
+    prof->work_pos = work_pos;
+    prof->display2_pos = display2_pos;
+  }
   return prof;
 }
 
@@ -1356,22 +1360,24 @@ static GList *load_profile_from_dir(const char *subdir)
           _ensure_rgb_profile(cmsOpenProfileFromMem(icc_content, sizeof(char) * end));
         if(tmpprof)
         {
-          dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)
-            calloc(1, sizeof(dt_colorspaces_color_profile_t));
-          dt_colorspaces_get_profile_name(tmpprof, lang, lang + 3,
-                                          prof->name, sizeof(prof->name));
+          dt_colorspaces_color_profile_t *prof = calloc(1, sizeof(dt_colorspaces_color_profile_t));
+          if(prof)
+          {
+            dt_colorspaces_get_profile_name(tmpprof, lang, lang + 3,
+                                            prof->name, sizeof(prof->name));
 
-          g_strlcpy(prof->filename, filename, sizeof(prof->filename));
-          prof->type = DT_COLORSPACE_FILE;
-          prof->profile = tmpprof;
-          // these will be set after sorting!
-          prof->in_pos = -1;
-          prof->out_pos = -1;
-          prof->display_pos = -1;
-          prof->display2_pos = -1;
-          prof->category_pos = -1;
-          prof->work_pos = -1;
-          temp_profiles = g_list_prepend(temp_profiles, prof);
+            g_strlcpy(prof->filename, filename, sizeof(prof->filename));
+            prof->type = DT_COLORSPACE_FILE;
+            prof->profile = tmpprof;
+            // these will be set after sorting!
+            prof->in_pos = -1;
+            prof->out_pos = -1;
+            prof->display_pos = -1;
+            prof->display2_pos = -1;
+            prof->category_pos = -1;
+            prof->work_pos = -1;
+            temp_profiles = g_list_prepend(temp_profiles, prof);
+          }
         }
 
 icc_loading_done:

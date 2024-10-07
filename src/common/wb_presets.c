@@ -124,6 +124,12 @@ dt_wb_data *dt_wb_preset(const int k)
 void dt_wb_presets_init(const char *alternative)
 {
   wb_presets = calloc(sizeof(dt_wb_data), wb_presets_size);
+  if(!wb_presets)
+  {
+    wb_presets_size = 0;
+    dt_print(DT_DEBUG_ALWAYS, "[wb_presets] out of memory while initializing\n");
+    return;
+  }
 
   // dt_wb_presets_w();
 

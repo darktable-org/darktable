@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2018-2023 darktable developers.
+    Copyright (C) 2018-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2370,6 +2370,8 @@ void *dt_ioppr_serialize_iop_order_list(GList *iop_order_list,
 
   // allocate the parameter buffer
   char *params = (char *)malloc(*size);
+  if(!params)
+    return NULL;
 
   // set set preset iop-order version
   int pos = 0;

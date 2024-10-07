@@ -203,55 +203,58 @@ GList *dt_control_crawler_run(void)
     len = c - image_path + 1;
 
     char *extra_path = (char *)calloc(len + 3 + 1, sizeof(char));
-    g_strlcpy(extra_path, image_path, len + 1);
-
-    extra_path[len] = 't';
-    extra_path[len + 1] = 'x';
-    extra_path[len + 2] = 't';
-    gboolean has_txt = g_file_test(extra_path, G_FILE_TEST_EXISTS);
-
-    if(!has_txt)
+    if(extra_path)
     {
-      extra_path[len] = 'T';
-      extra_path[len + 1] = 'X';
-      extra_path[len + 2] = 'T';
-      has_txt = g_file_test(extra_path, G_FILE_TEST_EXISTS);
+      g_strlcpy(extra_path, image_path, len + 1);
+
+      extra_path[len] = 't';
+      extra_path[len + 1] = 'x';
+      extra_path[len + 2] = 't';
+      gboolean has_txt = g_file_test(extra_path, G_FILE_TEST_EXISTS);
+
+      if(!has_txt)
+      {
+        extra_path[len] = 'T';
+        extra_path[len + 1] = 'X';
+        extra_path[len + 2] = 'T';
+        has_txt = g_file_test(extra_path, G_FILE_TEST_EXISTS);
+      }
+
+      extra_path[len] = 'w';
+      extra_path[len + 1] = 'a';
+      extra_path[len + 2] = 'v';
+      gboolean has_wav = g_file_test(extra_path, G_FILE_TEST_EXISTS);
+
+      if(!has_wav)
+      {
+        extra_path[len] = 'W';
+        extra_path[len + 1] = 'A';
+        extra_path[len + 2] = 'V';
+        has_wav = g_file_test(extra_path, G_FILE_TEST_EXISTS);
+      }
+
+      // TODO: decide if we want to remove the flag for images that lost
+      // their extra file. currently we do (the else cases)
+      int new_flags = flags;
+      if(has_txt)
+        new_flags |= DT_IMAGE_HAS_TXT;
+      else
+        new_flags &= ~DT_IMAGE_HAS_TXT;
+      if(has_wav)
+        new_flags |= DT_IMAGE_HAS_WAV;
+      else
+        new_flags &= ~DT_IMAGE_HAS_WAV;
+      if(flags != new_flags)
+      {
+        sqlite3_bind_int(inner_stmt, 1, new_flags);
+        sqlite3_bind_int(inner_stmt, 2, id);
+        sqlite3_step(inner_stmt);
+        sqlite3_reset(inner_stmt);
+        sqlite3_clear_bindings(inner_stmt);
+      }
+
+      free(extra_path);
     }
-
-    extra_path[len] = 'w';
-    extra_path[len + 1] = 'a';
-    extra_path[len + 2] = 'v';
-    gboolean has_wav = g_file_test(extra_path, G_FILE_TEST_EXISTS);
-
-    if(!has_wav)
-    {
-      extra_path[len] = 'W';
-      extra_path[len + 1] = 'A';
-      extra_path[len + 2] = 'V';
-      has_wav = g_file_test(extra_path, G_FILE_TEST_EXISTS);
-    }
-
-    // TODO: decide if we want to remove the flag for images that lost
-    // their extra file. currently we do (the else cases)
-    int new_flags = flags;
-    if(has_txt)
-      new_flags |= DT_IMAGE_HAS_TXT;
-    else
-      new_flags &= ~DT_IMAGE_HAS_TXT;
-    if(has_wav)
-      new_flags |= DT_IMAGE_HAS_WAV;
-    else
-      new_flags &= ~DT_IMAGE_HAS_WAV;
-    if(flags != new_flags)
-    {
-      sqlite3_bind_int(inner_stmt, 1, new_flags);
-      sqlite3_bind_int(inner_stmt, 2, id);
-      sqlite3_step(inner_stmt);
-      sqlite3_reset(inner_stmt);
-      sqlite3_clear_bindings(inner_stmt);
-    }
-
-    free(extra_path);
   }
 
   dt_database_release_transaction(darktable.db);

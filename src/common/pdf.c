@@ -226,7 +226,11 @@ dt_pdf_t *dt_pdf_start(const char *filename, float width, float height, float dp
 
   pdf->n_offsets = 4;
   pdf->offsets = calloc(pdf->n_offsets, sizeof(size_t));
-
+  if(!pdf->offsets)
+  {
+    free(pdf);
+    return NULL;
+  }
   size_t bytes_written = 0;
 
   // file header

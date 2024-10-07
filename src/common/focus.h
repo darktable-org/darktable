@@ -199,6 +199,11 @@ static void dt_focus_draw_clusters(cairo_t *cr, int width, int height, dt_imgid_
                                    float full_zoom, float full_x, float full_y)
 {
   const int fs = frows * fcols;
+  // array with cluster positions
+  float *pos = malloc(fs * 6 * sizeof(float));
+  if(!pos)
+    return;
+
   cairo_save(cr);
   cairo_translate(cr, width / 2.0, height / 2.0f);
 
@@ -210,8 +215,6 @@ static void dt_focus_draw_clusters(cairo_t *cr, int width, int height, dt_imgid_
   int wd = buffer_width + image.crop_x;
   int ht = buffer_height + image.crop_y;
 
-  // array with cluster positions
-  float *pos = malloc(fs * 6 * sizeof(float));
   float *offx = pos + fs * 2, *offy = pos + fs * 4;
 
   for(int k = 0; k < fs; k++)

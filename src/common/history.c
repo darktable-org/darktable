@@ -518,13 +518,13 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
       {
         nbf = g_list_length(dev_src->forms);
         forms_used_replace = calloc(nbf, sizeof(int));
-
-        _fill_used_forms(dev_src->forms,
-                         mod_src->blend_params->mask_id,
-                         forms_used_replace, nbf);
+        if(forms_used_replace)
+          _fill_used_forms(dev_src->forms,
+                           mod_src->blend_params->mask_id,
+                           forms_used_replace, nbf);
 
         // now copy masks
-        for(int i = 0; i < nbf && forms_used_replace[i] > 0; i++)
+        for(int i = 0; i < nbf && forms_used_replace && forms_used_replace[i] > 0; i++)
         {
           dt_masks_form_t *form =
             dt_masks_get_from_id_ext(dev_src->forms, forms_used_replace[i]);
@@ -1516,11 +1516,13 @@ GList *dt_history_duplicate(GList *hist)
     if(params_size > 0)
     {
       new->params = malloc(params_size);
-      memcpy(new->params, old->params, params_size);
+      if(new->params)
+        memcpy(new->params, old->params, params_size);
     }
 
     new->blend_params = malloc(sizeof(dt_develop_blend_params_t));
-    memcpy(new->blend_params, old->blend_params, sizeof(dt_develop_blend_params_t));
+    if(new->blend_params)
+      memcpy(new->blend_params, old->blend_params, sizeof(dt_develop_blend_params_t));
 
     if(old->forms)
       new->forms = dt_masks_dup_forms_deep(old->forms, NULL);
