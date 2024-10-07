@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-10-04 18:35+0200\n"
-"PO-Revision-Date: 2024-10-04 20:40+0300\n"
+"PO-Revision-Date: 2024-10-07 12:33+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -12598,7 +12598,7 @@ msgstr "JPEG 2000 (12 біт)"
 
 #: ../src/imageio/format/j2k.c:679
 msgid "DCP mode"
-msgstr "режим DCP"
+msgstr "Режим DCP"
 
 #: ../src/imageio/format/j2k.c:682
 msgid "Cinema2K, 24FPS"
