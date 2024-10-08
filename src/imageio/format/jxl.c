@@ -176,7 +176,10 @@ int write_image(struct dt_imageio_module_data_t *data,
     // Must preserve original profile for lossless mode
     basic_info.uses_original_profile = JXL_TRUE;
     LIBJXL_ASSERT(JxlEncoderSetFrameDistance(frame_settings, 0.0f));
-    LIBJXL_ASSERT(JxlEncoderSetFrameLossless(frame_settings, JXL_TRUE));
+
+    // Do not enable libjxl lossless mode for float16, see #17487
+    if (!(params->bpp == 16 && params->pixel_type))
+      LIBJXL_ASSERT(JxlEncoderSetFrameLossless(frame_settings, JXL_TRUE));
   }
   else
   {

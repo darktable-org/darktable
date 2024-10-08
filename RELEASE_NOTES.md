@@ -63,7 +63,8 @@ changes (where available).
 
 ## Other Changes
 
-- N/A
+- Due to an upstream issue, exporting JPEG XL in 16-bit float at
+  quality 100 is not currently mathematically lossless.
 
 ## Bug Fixes
 
