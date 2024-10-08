@@ -65,11 +65,8 @@ static GtkWidget *_get_logo()
 
   gchar *image_file =
     season == DT_LOGO_SEASON_NONE
-    ? g_strdup_printf("%s/icons/hicolor/scalable/apps/darktable.svg",
-                      darktable.datadir)
-    : g_strdup_printf("%s/icons/hicolor/scalable/apps/darktable-%d.svg",
-                      darktable.datadir,
-                      season);
+    ? g_strdup_printf("%s/pixmaps/idbutton.svg", darktable.datadir)
+    : g_strdup_printf("%s/pixmaps/idbutton-%d.svg", darktable.datadir, season);
   GdkPixbuf *logo_image =
     gdk_pixbuf_new_from_file_at_size(image_file, ICON_SIZE, -1, NULL);
   g_free(image_file);
