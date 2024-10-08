@@ -212,6 +212,8 @@ changes (where available).
 - Exporting to floating-point JPEG XL with a quality of 100 will try
   to do it as losslessly as possible. That is now consistent with the
   behavior of integral JPEG XL formats.
+  Note: Due to an upstream issue, exporting in 16-bit float at quality 100
+  is not currently mathematically lossless.
 
 - Improved visibility of shortcuts that can be changed by users by
   using bold text.
