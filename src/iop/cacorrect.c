@@ -120,8 +120,7 @@ int legacy_params(dt_iop_module_t *self,
 
   if(old_version == 1)
   {
-    dt_iop_cacorrect_params_v2_t *n =
-      (dt_iop_cacorrect_params_v2_t *)malloc(sizeof(dt_iop_cacorrect_params_v2_t));
+    dt_iop_cacorrect_params_v2_t *n = malloc(sizeof(dt_iop_cacorrect_params_v2_t));
     n->avoidshift = FALSE;
     n->iterations = 1;
 
@@ -264,7 +263,7 @@ void process(
 
   const gboolean run_fast = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
 
-  dt_iop_cacorrect_data_t *d = (dt_iop_cacorrect_data_t *)piece->data;
+  dt_iop_cacorrect_data_t *d = piece->data;
 
   // the colorshift avoiding requires non-downscaled data for sure so we
   // don't do this for preview
@@ -1264,7 +1263,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_cacorrect_params_t *p = (dt_iop_cacorrect_params_t *)params;
-  dt_iop_cacorrect_data_t *d = (dt_iop_cacorrect_data_t *) piece->data;
+  dt_iop_cacorrect_data_t *d =  piece->data;
 
   if(!dt_image_is_bayerRGB(&self->dev->image_storage)) piece->enabled = FALSE;
 
@@ -1285,8 +1284,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_cacorrect_gui_data_t *g = (dt_iop_cacorrect_gui_data_t *)self->gui_data;
-  dt_iop_cacorrect_params_t *p = (dt_iop_cacorrect_params_t *)self->params;
+  dt_iop_cacorrect_gui_data_t *g = self->gui_data;
+  dt_iop_cacorrect_params_t *p = self->params;
 
   const gboolean supported = dt_image_is_bayerRGB(&self->dev->image_storage);
   self->hide_enable_button = !supported;

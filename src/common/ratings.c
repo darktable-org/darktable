@@ -84,7 +84,7 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t da
   {
     for(GList *list = (GList *)data; list; list = g_list_next(list))
     {
-      dt_undo_ratings_t *ratings = (dt_undo_ratings_t *)list->data;
+      dt_undo_ratings_t *ratings = list->data;
       _ratings_apply_to_image(ratings->imgid, (action == DT_ACTION_UNDO) ? ratings->before : ratings->after);
       *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(ratings->imgid));
     }

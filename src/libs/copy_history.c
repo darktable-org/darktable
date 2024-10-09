@@ -80,7 +80,7 @@ uint32_t container(dt_lib_module_t *self)
 
 void gui_update(dt_lib_module_t *self)
 {
-  dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
+  dt_lib_copy_history_t *d = self->data;
 
   const int nbimgs = dt_act_on_get_images_nb(TRUE, FALSE);
   const gboolean act_on_any = (nbimgs > 0);
@@ -206,10 +206,9 @@ static void compress_button_clicked(GtkWidget *widget, gpointer user_data)
     dt_control_compress_history(imgs);
 }
 
-static void copy_button_clicked(GtkWidget *widget, gpointer user_data)
+static void copy_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
+  dt_lib_copy_history_t *d = self->data;
 
   const dt_imgid_t id = dt_act_on_get_main_image();
 
@@ -220,10 +219,9 @@ static void copy_button_clicked(GtkWidget *widget, gpointer user_data)
   }
 }
 
-static void copy_parts_button_clicked(GtkWidget *widget, gpointer user_data)
+static void copy_parts_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
+  dt_lib_copy_history_t *d = self->data;
 
   const dt_imgid_t id = dt_act_on_get_main_image();
 
@@ -256,11 +254,9 @@ static void discard_button_clicked(GtkWidget *widget, gpointer user_data)
   }
 }
 
-static void paste_button_clicked(GtkWidget *widget, gpointer user_data)
+static void paste_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
 {
-
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
+  dt_lib_copy_history_t *d = self->data;
 
   const int current_mode = dt_bauhaus_combobox_get(d->pastemode);
 

@@ -182,7 +182,7 @@ static void _gui_styles_update_view(dt_lib_styles_t *d)
   {
     for(const GList *res_iter = result; res_iter; res_iter = g_list_next(res_iter))
     {
-      dt_style_t *style = (dt_style_t *)res_iter->data;
+      dt_style_t *style = res_iter->data;
 
       gchar **split = g_strsplit(style->name, "|", 0);
       int k = 0;
@@ -769,7 +769,7 @@ static void _applymode_combobox_changed(GtkWidget *widget, gpointer user_data)
 
 void gui_update(dt_lib_module_t *self)
 {
-  dt_lib_styles_t *d = (dt_lib_styles_t *)self->data;
+  dt_lib_styles_t *d = self->data;
 
   const gboolean has_act_on = (dt_act_on_get_images_nb(TRUE, FALSE) > 0);
 
@@ -786,10 +786,9 @@ void gui_update(dt_lib_module_t *self)
   gtk_widget_set_sensitive(GTK_WIDGET(d->apply_button), has_act_on && sel_styles_cnt > 0);
 }
 
-static void _styles_changed_callback(gpointer instance, gpointer user_data)
+static void _styles_changed_callback(gpointer instance, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_styles_t *d = (dt_lib_styles_t *)self->data;
+  dt_lib_styles_t *d = self->data;
   _gui_styles_update_view(d);
   dt_lib_gui_queue_update(self);
 }
@@ -985,7 +984,7 @@ void gui_reset(dt_lib_module_t *self)
   {
     for(const GList *result = all_styles; result; result = g_list_next(result))
     {
-      dt_style_t *style = (dt_style_t *)result->data;
+      dt_style_t *style = result->data;
       dt_styles_delete_by_name_adv((char*)style->name, FALSE);
     }
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_STYLE_CHANGED);

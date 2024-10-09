@@ -555,7 +555,7 @@ static gchar *_time_format_for_collect(dt_datetime_t t, dt_lib_timeline_zooms_t 
 // get all the datetimes from the database
 static gboolean _time_read_bounds_from_db(dt_lib_module_t *self)
 {
-  dt_lib_timeline_t *strip = (dt_lib_timeline_t *)self->data;
+  dt_lib_timeline_t *strip = self->data;
 
   sqlite3_stmt *stmt;
   const char *query = "SELECT MIN(datetime_taken) AS dt FROM main.images WHERE datetime_taken > 1";
@@ -585,7 +585,7 @@ static gboolean _time_read_bounds_from_db(dt_lib_module_t *self)
 // get all the datetimes from the actual collection
 static gboolean _time_read_bounds_from_collection(dt_lib_module_t *self)
 {
-  dt_lib_timeline_t *strip = (dt_lib_timeline_t *)self->data;
+  dt_lib_timeline_t *strip = self->data;
 
   sqlite3_stmt *stmt;
   // clang-format off
@@ -646,7 +646,7 @@ static dt_datetime_t _selection_scroll_to(dt_datetime_t t, dt_lib_timeline_t *st
 // computes blocks at the current zoom level
 static int _block_get_at_zoom(dt_lib_module_t *self, int width)
 {
-  dt_lib_timeline_t *strip = (dt_lib_timeline_t *)self->data;
+  dt_lib_timeline_t *strip = self->data;
 
   // we erase previous blocks if any
   if(strip->blocks)
@@ -810,7 +810,7 @@ static void _lib_timeline_collection_changed(gpointer instance, dt_collection_ch
 
 void gui_update(dt_lib_module_t *self)
 {
-  dt_lib_timeline_t *strip = (dt_lib_timeline_t *)self->data;
+  dt_lib_timeline_t *strip = self->data;
 
   // we read the collect bounds
   _time_read_bounds_from_collection(self);
@@ -905,10 +905,9 @@ static void _selection_collect(dt_lib_timeline_t *strip, dt_lib_timeline_mode_t 
   }
 }
 
-static gboolean _lib_timeline_draw_callback(GtkWidget *widget, cairo_t *wcr, gpointer user_data)
+static gboolean _lib_timeline_draw_callback(GtkWidget *widget, cairo_t *wcr, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_timeline_t *strip = (dt_lib_timeline_t *)self->data;
+  dt_lib_timeline_t *strip = self->data;
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -1077,10 +1076,9 @@ static gboolean _lib_timeline_draw_callback(GtkWidget *widget, cairo_t *wcr, gpo
   return TRUE;
 }
 
-static gboolean _lib_timeline_button_press_callback(GtkWidget *w, GdkEventButton *e, gpointer user_data)
+static gboolean _lib_timeline_button_press_callback(GtkWidget *w, GdkEventButton *e, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_timeline_t *strip = (dt_lib_timeline_t *)self->data;
+  dt_lib_timeline_t *strip = self->data;
 
   if(e->button == 1)
   {
@@ -1137,10 +1135,9 @@ static gboolean _lib_timeline_button_press_callback(GtkWidget *w, GdkEventButton
   return FALSE;
 }
 
-static gboolean _lib_timeline_button_release_callback(GtkWidget *w, GdkEventButton *e, gpointer user_data)
+static gboolean _lib_timeline_button_release_callback(GtkWidget *w, GdkEventButton *e, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_timeline_t *strip = (dt_lib_timeline_t *)self->data;
+  dt_lib_timeline_t *strip = self->data;
 
   if(strip->selecting)
   {
@@ -1225,11 +1222,10 @@ static void _selection_stop(dt_action_t *action)
   gtk_widget_queue_draw(strip->timeline);
 }
 
-static gboolean _block_autoscroll(gpointer user_data)
+static gboolean _block_autoscroll(dt_lib_module_t *self)
 {
   // this function is called repetidly until the pointer is not more in the autoscoll zone
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_timeline_t *strip = (dt_lib_timeline_t *)self->data;
+  dt_lib_timeline_t *strip = self->data;
 
   if(!strip->in)
   {
@@ -1266,10 +1262,9 @@ static gboolean _block_autoscroll(gpointer user_data)
   return TRUE;
 }
 
-static gboolean _lib_timeline_motion_notify_callback(GtkWidget *w, GdkEventMotion *e, gpointer user_data)
+static gboolean _lib_timeline_motion_notify_callback(GtkWidget *w, GdkEventMotion *e, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_timeline_t *strip = (dt_lib_timeline_t *)self->data;
+  dt_lib_timeline_t *strip = self->data;
 
   strip->in = TRUE;
 
@@ -1277,10 +1272,10 @@ static gboolean _lib_timeline_motion_notify_callback(GtkWidget *w, GdkEventMotio
   if((e->x < 10 || e->x > strip->panel_width - 10) && !strip->autoscroll)
   {
     // first scroll immediately and then every 400ms until cursor quit the "auto-zone"
-    if(_block_autoscroll(user_data))
+    if(_block_autoscroll(self))
     {
       strip->autoscroll = TRUE;
-      g_timeout_add(400, _block_autoscroll, user_data);
+      g_timeout_add(400, (GSourceFunc)_block_autoscroll, self);
     }
   }
 
@@ -1312,10 +1307,9 @@ static gboolean _lib_timeline_motion_notify_callback(GtkWidget *w, GdkEventMotio
   return TRUE;
 }
 
-static gboolean _lib_timeline_scroll_callback(GtkWidget *w, GdkEventScroll *e, gpointer user_data)
+static gboolean _lib_timeline_scroll_callback(GtkWidget *w, GdkEventScroll *e, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_timeline_t *strip = (dt_lib_timeline_t *)self->data;
+  dt_lib_timeline_t *strip = self->data;
 
   // zoom change (with Ctrl key)
   if(dt_modifier_is(e->state, GDK_CONTROL_MASK))
@@ -1370,10 +1364,9 @@ static gboolean _lib_timeline_scroll_callback(GtkWidget *w, GdkEventScroll *e, g
   return FALSE;
 }
 
-static gboolean _lib_timeline_mouse_leave_callback(GtkWidget *w, GdkEventCrossing *e, gpointer user_data)
+static gboolean _lib_timeline_mouse_leave_callback(GtkWidget *w, GdkEventCrossing *e, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_timeline_t *strip = (dt_lib_timeline_t *)self->data;
+  dt_lib_timeline_t *strip = self->data;
 
   strip->in = FALSE;
 
@@ -1437,7 +1430,7 @@ void gui_init(dt_lib_module_t *self)
 void gui_cleanup(dt_lib_module_t *self)
 {
   /* cleanup */
-  dt_lib_timeline_t *strip = (dt_lib_timeline_t *)self->data;
+  dt_lib_timeline_t *strip = self->data;
   if(strip->blocks) g_list_free_full(strip->blocks, _block_free);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_lib_timeline_collection_changed), self);
   /* unset viewmanager proxy */

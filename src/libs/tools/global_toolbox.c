@@ -80,10 +80,9 @@ int position(const dt_lib_module_t *self)
   return 1001;
 }
 
-static void _overlays_toggle_button(GtkWidget *w, gpointer user_data)
+static void _overlays_toggle_button(GtkWidget *w, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)self->data;
+  dt_lib_tool_preferences_t *d = self->data;
 
   if(d->disable_over_events) return;
 
@@ -116,10 +115,9 @@ static void _overlays_toggle_button(GtkWidget *w, gpointer user_data)
 #endif // USE_LUA
 }
 
-static void _overlays_toggle_culling_button(GtkWidget *w, gpointer user_data)
+static void _overlays_toggle_culling_button(GtkWidget *w, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)self->data;
+  dt_lib_tool_preferences_t *d = self->data;
 
   if(d->disable_over_events) return;
 
@@ -153,10 +151,9 @@ static void _overlays_toggle_culling_button(GtkWidget *w, gpointer user_data)
 #endif // USE_LUA
 }
 
-static void _overlays_timeout_changed(GtkWidget *w, gpointer user_data)
+static void _overlays_timeout_changed(GtkWidget *w, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)self->data;
+  dt_lib_tool_preferences_t *d = self->data;
 
   const int val = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(w));
 
@@ -178,7 +175,7 @@ static void _overlays_timeout_changed(GtkWidget *w, gpointer user_data)
 
 static void _overlays_show_popup(GtkWidget *button, dt_lib_module_t *self)
 {
-  dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)self->data;
+  dt_lib_tool_preferences_t *d = self->data;
 
   d->disable_over_events = TRUE;
 
@@ -823,7 +820,7 @@ static gboolean _lib_keymap_button_press_release(GtkWidget *button, GdkEventButt
 static int grouping_member(lua_State *L)
 {
   dt_lib_module_t *self = *(dt_lib_module_t **)lua_touserdata(L, 1);
-  dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)self->data;
+  dt_lib_tool_preferences_t *d = self->data;
   if(lua_gettop(L) != 3)
   {
     lua_pushboolean(L, darktable.gui->grouping);
@@ -843,7 +840,7 @@ static int grouping_member(lua_State *L)
 static int show_overlays_member(lua_State *L)
 {
   dt_lib_module_t *self = *(dt_lib_module_t **)lua_touserdata(L, 1);
-  dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)self->data;
+  dt_lib_tool_preferences_t *d = self->data;
   if(lua_gettop(L) != 3)
   {
     lua_pushboolean(L, darktable.gui->show_overlays);

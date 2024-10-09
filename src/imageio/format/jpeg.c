@@ -484,7 +484,7 @@ int set_params(dt_imageio_module_format_t *self,
 {
   if(size != self->params_size(self)) return 1;
   const dt_imageio_jpeg_t *d = (dt_imageio_jpeg_t *)params;
-  dt_imageio_jpeg_gui_data_t *g = (dt_imageio_jpeg_gui_data_t *)self->gui_data;
+  dt_imageio_jpeg_gui_data_t *g = self->gui_data;
   dt_bauhaus_slider_set(g->quality, d->quality);
   dt_bauhaus_combobox_set(g->subsample, d->subsample);
   return 0;
@@ -562,8 +562,7 @@ static void subsample_combobox_changed(GtkWidget *widget,
 
 void gui_init(dt_imageio_module_format_t *self)
 {
-  dt_imageio_jpeg_gui_data_t *g =
-    (dt_imageio_jpeg_gui_data_t *)malloc(sizeof(dt_imageio_jpeg_gui_data_t));
+  dt_imageio_jpeg_gui_data_t *g = malloc(sizeof(dt_imageio_jpeg_gui_data_t));
   self->gui_data = g;
 
   const dt_imageio_jpeg_subsample_t subsample =
@@ -614,7 +613,7 @@ void gui_cleanup(dt_imageio_module_format_t *self)
 
 void gui_reset(dt_imageio_module_format_t *self)
 {
-  dt_imageio_jpeg_gui_data_t *g = (dt_imageio_jpeg_gui_data_t *)self->gui_data;
+  dt_imageio_jpeg_gui_data_t *g = self->gui_data;
   dt_bauhaus_slider_set(g->quality,
                         dt_confgen_get_int("plugins/imageio/format/jpeg/quality",
                                            DT_DEFAULT));

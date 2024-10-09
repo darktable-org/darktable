@@ -80,8 +80,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_invert_params_v1_t;
 
     const dt_iop_invert_params_v1_t *o = (dt_iop_invert_params_v1_t *)old_params;
-    dt_iop_invert_params_v2_t *n =
-      (dt_iop_invert_params_v2_t *)malloc(sizeof(dt_iop_invert_params_v2_t));
+    dt_iop_invert_params_v2_t *n = malloc(sizeof(dt_iop_invert_params_v2_t));
 
     n->color[0] = o->color[0];
     n->color[1] = o->color[1];
@@ -159,8 +158,8 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 
 static void gui_update_from_coeffs(dt_iop_module_t *self)
 {
-  dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t *)self->gui_data;
-  dt_iop_invert_params_t *p = (dt_iop_invert_params_t *)self->params;
+  dt_iop_invert_gui_data_t *g = self->gui_data;
+  dt_iop_invert_params_t *p = self->params;
 
   GdkRGBA color = (GdkRGBA){.red = p->color[0], .green = p->color[1], .blue = p->color[2], .alpha = 1.0 };
 
@@ -205,8 +204,8 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
 static void colorpicker_callback(GtkColorButton *widget, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t *)self->gui_data;
-  dt_iop_invert_params_t *p = (dt_iop_invert_params_t *)self->params;
+  dt_iop_invert_gui_data_t *g = self->gui_data;
+  dt_iop_invert_params_t *p = self->params;
 
   dt_iop_color_picker_reset(self, TRUE);
 
@@ -231,7 +230,7 @@ static void colorpicker_callback(GtkColorButton *widget, dt_iop_module_t *self)
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_invert_data_t *const d = (dt_iop_invert_data_t *)piece->data;
+  const dt_iop_invert_data_t *const d = piece->data;
 
   const float *const m = piece->pipe->dsc.processed_maximum;
 
@@ -362,8 +361,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_invert_data_t *d = (dt_iop_invert_data_t *)piece->data;
-  dt_iop_invert_global_data_t *gd = (dt_iop_invert_global_data_t *)self->global_data;
+  dt_iop_invert_data_t *d = piece->data;
+  dt_iop_invert_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
   const uint32_t filters = piece->pipe->dsc.filters;
@@ -446,7 +445,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_invert_global_data_t *gd = (dt_iop_invert_global_data_t *)module->data;
+  dt_iop_invert_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_invert_4f);
   dt_opencl_free_kernel(gd->kernel_invert_1f);
   free(module->data);
@@ -457,7 +456,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_invert_params_t *p = (dt_iop_invert_params_t *)params;
-  dt_iop_invert_data_t *d = (dt_iop_invert_data_t *)piece->data;
+  dt_iop_invert_data_t *d = piece->data;
 
   for(int k = 0; k < 4; k++) d->color[k] = p->color[k];
 
@@ -489,7 +488,7 @@ void gui_update(dt_iop_module_t *self)
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_invert_gui_data_t *g = IOP_GUI_ALLOC(invert);
-  dt_iop_invert_params_t *p = (dt_iop_invert_params_t *)self->params;
+  dt_iop_invert_params_t *p = self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   g->label = DTGTK_RESET_LABEL(dtgtk_reset_label_new("", self, &p->color, sizeof(float) * 4));

@@ -67,7 +67,7 @@ typedef struct dt_lib_select_t
 
 void gui_update(dt_lib_module_t *self)
 {
-  dt_lib_select_t *d = (dt_lib_select_t *)self->data;
+  dt_lib_select_t *d = self->data;
 
   const uint32_t collection_cnt =  dt_collection_get_count_no_group(darktable.collection);
   const uint32_t selected_cnt = dt_collection_get_selected_count();

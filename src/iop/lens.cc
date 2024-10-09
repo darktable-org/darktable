@@ -2480,11 +2480,9 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
 }
 
 static void _use_latest_md_algo_callback(GtkWidget *button,
-                                         gpointer user_data)
+                                         dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
 
   p->md_version = DT_IOP_LENS_EMBEDDED_METADATA_VERSION_2;
@@ -2496,11 +2494,9 @@ static void _use_latest_md_algo_callback(GtkWidget *button,
 
 
 static void _autoscale_pressed_md(GtkWidget *button,
-                                  gpointer user_data)
+                                  dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
 
   dt_bauhaus_slider_set(g->scale_md, 1.0f);
@@ -3798,9 +3794,8 @@ static void _camera_set(dt_iop_module_t *self, const lfCamera *cam)
   g_free(fm);
 }
 
-static void _camera_menu_select(GtkMenuItem *menuitem, gpointer user_data)
+static void _camera_menu_select(GtkMenuItem *menuitem, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   _camera_set(self, (lfCamera *)g_object_get_data(G_OBJECT(menuitem),
                                                   "lfCamera"));
   if(darktable.gui->reset) return;
@@ -3884,9 +3879,8 @@ static void _parse_model(const char *txt,
   model[len] = 0;
 }
 
-static void _camera_menusearch_clicked(GtkWidget *button, gpointer user_data)
+static void _camera_menusearch_clicked(GtkWidget *button, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_lens_global_data_t *gd = (dt_iop_lens_global_data_t *)self->global_data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
@@ -3904,9 +3898,8 @@ static void _camera_menusearch_clicked(GtkWidget *button, gpointer user_data)
                     GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
 }
 
-static void _camera_autosearch_clicked(GtkWidget *button, gpointer user_data)
+static void _camera_autosearch_clicked(GtkWidget *button, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_lens_global_data_t *gd = (dt_iop_lens_global_data_t *)self->global_data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
@@ -4176,9 +4169,8 @@ static void _lens_set(dt_iop_module_t *self,
 }
 
 static void _lens_menu_select(GtkMenuItem *menuitem,
-                              gpointer user_data)
+                              dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
   dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
   _lens_set(self, (lfLens *)g_object_get_data(G_OBJECT(menuitem), "lfLens"));
@@ -4245,9 +4237,8 @@ static void _lens_menu_fill(dt_iop_module_t *self,
   g_ptr_array_free(makers, TRUE);
 }
 
-static void _lens_menusearch_clicked(GtkWidget *button, gpointer user_data)
+static void _lens_menusearch_clicked(GtkWidget *button, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_lens_global_data_t *gd = (dt_iop_lens_global_data_t *)self->global_data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
@@ -4268,9 +4259,8 @@ static void _lens_menusearch_clicked(GtkWidget *button, gpointer user_data)
                     GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
 }
 
-static void _lens_autosearch_clicked(GtkWidget *button, gpointer user_data)
+static void _lens_autosearch_clicked(GtkWidget *button, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_lens_global_data_t *gd = (dt_iop_lens_global_data_t *)self->global_data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
@@ -4296,9 +4286,8 @@ static void _lens_autosearch_clicked(GtkWidget *button, gpointer user_data)
 
 /* -- end lens -- */
 
-static void _autoscale_pressed_lf(GtkWidget *button, gpointer user_data)
+static void _autoscale_pressed_lf(GtkWidget *button, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
   dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
 
@@ -4414,9 +4403,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   _display_errors(self);
 }
 
-static void _have_corrections_done(gpointer instance, gpointer user_data)
+static void _have_corrections_done(gpointer instance, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
   if(darktable.gui->reset) return;
 
@@ -4436,17 +4424,15 @@ static void _have_corrections_done(gpointer instance, gpointer user_data)
 }
 
 static void _develop_ui_pipe_finished_callback(gpointer instance,
-                                               gpointer user_data)
+                                               dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   _display_errors(self);
 }
 
 static void _visualize_callback(GtkWidget *quad,
-                                gpointer user_data)
+                                dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
   g->vig_masking = dt_bauhaus_widget_get_quad_active(quad);
   dt_dev_reprocess_center(self->dev);

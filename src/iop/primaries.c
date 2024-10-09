@@ -132,7 +132,7 @@ void process(struct dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_primaries_params_t *params = (dt_iop_primaries_params_t *)piece->data;
+  dt_iop_primaries_params_t *params = piece->data;
 
   if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self,
                                         piece->colors, ivoid, ovoid, roi_in,
@@ -163,8 +163,8 @@ int process_cl(struct dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_primaries_params_t *params = (dt_iop_primaries_params_t *)piece->data;
-  dt_iop_primaries_global_data_t *gd = (dt_iop_primaries_global_data_t *)self->global_data;
+  dt_iop_primaries_params_t *params = piece->data;
+  dt_iop_primaries_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
@@ -297,7 +297,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
   if(!self->dev || !self->dev->full.pipe) return;
 
-  dt_iop_primaries_gui_data_t *g = (dt_iop_primaries_gui_data_t *)self->gui_data;
+  dt_iop_primaries_gui_data_t *g = self->gui_data;
 
   const dt_iop_order_iccprofile_info_t *work_profile =
     dt_ioppr_get_pipe_current_profile_info(self, self->dev->full.pipe);
@@ -346,16 +346,14 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
 static void _signal_profile_user_changed(gpointer instance,
                                          const uint8_t profile_type,
-                                         gpointer user_data)
+                                         dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   gui_changed(self, NULL, NULL);
 }
 
 static void _signal_profile_changed(gpointer instance,
-                                    gpointer user_data)
+                                    dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   gui_changed(self, NULL, NULL);
 }
 
@@ -434,15 +432,14 @@ void gui_cleanup(struct dt_iop_module_t *self)
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 8; // extended.cl, from programs.conf
-  dt_iop_primaries_global_data_t *gd =
-    (dt_iop_primaries_global_data_t *)malloc(sizeof(dt_iop_primaries_global_data_t));
+  dt_iop_primaries_global_data_t *gd = malloc(sizeof(dt_iop_primaries_global_data_t));
   module->data = gd;
   gd->kernel_primaries = dt_opencl_create_kernel(program, "primaries");
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_primaries_global_data_t *gd = (dt_iop_primaries_global_data_t *)module->data;
+  dt_iop_primaries_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_primaries);
   free(module->data);
   module->data = NULL;

@@ -490,7 +490,7 @@ int set_params(dt_imageio_module_format_t *self, const void *params, const int s
   if(size != self->params_size(self)) return 1;
 
   const dt_imageio_jxl_t *d = (dt_imageio_jxl_t *)params;
-  dt_imageio_jxl_gui_data_t *g = (dt_imageio_jxl_gui_data_t *)self->gui_data;
+  dt_imageio_jxl_gui_data_t *g = self->gui_data;
 
   dt_bauhaus_combobox_set(g->bpp, _bpp_to_enum(d->bpp));
   dt_bauhaus_combobox_set(g->pixel_type, d->pixel_type & 1);
@@ -661,7 +661,7 @@ void gui_cleanup(dt_imageio_module_format_t *self)
 
 void gui_reset(dt_imageio_module_format_t *self)
 {
-  dt_imageio_jxl_gui_data_t *gui = (dt_imageio_jxl_gui_data_t *)self->gui_data;
+  dt_imageio_jxl_gui_data_t *gui = self->gui_data;
 
   dt_bauhaus_combobox_set
     (gui->bpp,

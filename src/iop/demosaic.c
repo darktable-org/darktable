@@ -340,8 +340,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_demosaic_params_v2_t;
 
     const dt_iop_demosaic_params_v2_t *o = (dt_iop_demosaic_params_v2_t *)old_params;
-    dt_iop_demosaic_params_v4_t *n =
-      (dt_iop_demosaic_params_v4_t *)malloc(sizeof(dt_iop_demosaic_params_v4_t));
+    dt_iop_demosaic_params_v4_t *n = malloc(sizeof(dt_iop_demosaic_params_v4_t));
     n->green_eq = o->green_eq;
     n->median_thrs = o->median_thrs;
     n->color_smoothing = 0;
@@ -367,8 +366,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_demosaic_params_v3_t;
 
     const dt_iop_demosaic_params_v3_t *o = (dt_iop_demosaic_params_v3_t *)old_params;
-    dt_iop_demosaic_params_v4_t *n =
-      (dt_iop_demosaic_params_v4_t *)malloc(sizeof(dt_iop_demosaic_params_v4_t));
+    dt_iop_demosaic_params_v4_t *n = malloc(sizeof(dt_iop_demosaic_params_v4_t));
     memcpy(n, o, sizeof *o);
     n->dual_thrs = 0.20f;
 
@@ -432,7 +430,7 @@ void modify_roi_in(
   roi_in->height /= roi_out->scale;
   roi_in->scale = 1.0f;
 
-  dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
+  dt_iop_demosaic_data_t *data = piece->data;
   const dt_iop_demosaic_method_t method = data->demosaicing_method;
   const gboolean passthrough = (method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME) ||
                                (method == DT_IOP_DEMOSAIC_PASSTHR_MONOX) ||
@@ -474,7 +472,7 @@ void tiling_callback(
         const dt_iop_roi_t *roi_out,
         struct dt_develop_tiling_t *tiling)
 {
-  dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
+  dt_iop_demosaic_data_t *data = piece->data;
 
   const float ioratio = (float)roi_out->width * roi_out->height / ((float)roi_in->width * roi_in->height);
   const float smooth = data->color_smoothing ? ioratio : 0.0f;
@@ -606,7 +604,7 @@ void process(
 
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
 
-  dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
+  dt_iop_demosaic_data_t *data = piece->data;
 
   const int qual_flags = demosaic_qual_flags(piece, img, roi_out);
   int demosaicing_method = data->demosaicing_method;
@@ -617,7 +615,7 @@ void process(
   gboolean showmask = FALSE;
   if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
   {
-    dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
+    dt_iop_demosaic_gui_data_t *g = self->gui_data;
     if(g->visual_mask)
     {
       showmask = TRUE;
@@ -772,7 +770,7 @@ int process_cl(
 
   dt_dev_clear_scharr_mask(piece->pipe);
 
-  dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
+  dt_iop_demosaic_data_t *data = piece->data;
 
   int demosaicing_method = data->demosaicing_method;
 
@@ -782,7 +780,7 @@ int process_cl(
   gboolean showmask = FALSE;
   if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
   {
-    dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
+    dt_iop_demosaic_gui_data_t *g = self->gui_data;
     if(g->visual_mask)
     {
       showmask = TRUE;
@@ -956,7 +954,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)module->data;
+  dt_iop_demosaic_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_zoom_half_size);
   dt_opencl_free_kernel(gd->kernel_ppg_green);
   dt_opencl_free_kernel(gd->kernel_pre_median);
@@ -1016,7 +1014,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)params;
-  dt_iop_demosaic_data_t *d = (dt_iop_demosaic_data_t *)piece->data;
+  dt_iop_demosaic_data_t *d = piece->data;
 
   if(!(dt_image_is_raw(&pipe->image))) piece->enabled = FALSE;
   d->green_eq = p->green_eq;
@@ -1150,7 +1148,7 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void reload_defaults(dt_iop_module_t *module)
 {
-  dt_iop_demosaic_params_t *d = (dt_iop_demosaic_params_t *)module->default_params;
+  dt_iop_demosaic_params_t *d = module->default_params;
 
   if(dt_image_is_monochrome(&module->dev->image_storage))
     d->demosaicing_method = DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME;
@@ -1170,8 +1168,8 @@ void reload_defaults(dt_iop_module_t *module)
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
-  dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
+  dt_iop_demosaic_gui_data_t *g = self->gui_data;
+  dt_iop_demosaic_params_t *p = self->params;
 
   const gboolean bayer4  = self->dev->image_storage.flags & DT_IMAGE_4BAYER;
   const gboolean bayer = (self->dev->image_storage.buf_dsc.filters != 9u) && !bayer4;
@@ -1242,7 +1240,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
+  dt_iop_demosaic_gui_data_t *g = self->gui_data;
   dt_bauhaus_widget_set_quad_active(g->dual_thrs, FALSE);
 
   g->visual_mask = FALSE;
@@ -1251,11 +1249,10 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "raw" : "non_raw");
 }
 
-static void _visualize_callback(GtkWidget *quad, gpointer user_data)
+static void _visualize_callback(GtkWidget *quad, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
+  dt_iop_demosaic_gui_data_t *g = self->gui_data;
 
   g->visual_mask = dt_bauhaus_widget_get_quad_active(quad);
   dt_dev_reprocess_center(self->dev);
@@ -1263,7 +1260,7 @@ static void _visualize_callback(GtkWidget *quad, gpointer user_data)
 
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
 {
-  dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
+  dt_iop_demosaic_gui_data_t *g = self->gui_data;
   if(!in)
   {
     const gboolean was_dualmask = g->visual_mask;

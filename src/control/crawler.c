@@ -672,8 +672,7 @@ void dt_control_crawler_show_image_list(GList *images)
 {
   if(!images) return;
 
-  dt_control_crawler_gui_t *gui =
-    (dt_control_crawler_gui_t *)malloc(sizeof(dt_control_crawler_gui_t));
+  dt_control_crawler_gui_t *gui = malloc(sizeof(dt_control_crawler_gui_t));
 
   // a list with all the images
   GtkTreeViewColumn *column;

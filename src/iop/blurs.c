@@ -392,7 +392,7 @@ static void process_fft(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
                         const void *const restrict ivoid, void *const restrict ovoid,
                         const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_blurs_params_t *p = (dt_iop_blurs_params_t *)piece->data;
+  dt_iop_blurs_params_t *p = piece->data;
   const float scale = piece->iscale / roi_in->scale;
 
   if(!dt_iop_have_required_input_format(4, self, piece->colors, ivoid, ovoid, roi_in, roi_out))
@@ -530,7 +530,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                     const void *const restrict ivoid, void *const restrict ovoid,
                     const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_blurs_params_t *p = (dt_iop_blurs_params_t *)piece->data;
+  dt_iop_blurs_params_t *p = piece->data;
   const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
 
   if(!dt_iop_have_required_input_format(4, self, piece->colors, ivoid, ovoid, roi_in, roi_out))
@@ -604,8 +604,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_blurs_params_t *p = (dt_iop_blurs_params_t *)piece->data;
-  dt_iop_blurs_global_data_t *const gd = (dt_iop_blurs_global_data_t *)self->global_data;
+  dt_iop_blurs_params_t *p = piece->data;
+  dt_iop_blurs_global_data_t *const gd = self->global_data;
 
   cl_int err = DT_OPENCL_SYSMEM_ALLOCATION;
   cl_mem kernel_cl = NULL;
@@ -645,7 +645,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_blurs_global_data_t *gd = (dt_iop_blurs_global_data_t *)module->data;
+  dt_iop_blurs_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_blurs_convolve);
   free(module->data);
   module->data = NULL;
@@ -655,8 +655,8 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_blurs_params_t *p = (dt_iop_blurs_params_t *)self->params;
-  dt_iop_blurs_gui_data_t *g = (dt_iop_blurs_gui_data_t *)self->gui_data;
+  dt_iop_blurs_params_t *p = self->params;
+  dt_iop_blurs_gui_data_t *g = self->gui_data;
 
   if(!w || w == g->type)
   {
@@ -703,11 +703,10 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   }
 }
 
-static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
+static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_blurs_gui_data_t *g = (dt_iop_blurs_gui_data_t *)self->gui_data;
-  dt_iop_blurs_params_t *p = (dt_iop_blurs_params_t *)self->params;
+  dt_iop_blurs_gui_data_t *g = self->gui_data;
+  dt_iop_blurs_params_t *p = self->params;
 
   GtkAllocation allocation;
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
@@ -805,7 +804,7 @@ void gui_init(dt_iop_module_t *self)
 
 void gui_cleanup(dt_iop_module_t *self)
 {
-  dt_iop_blurs_gui_data_t *g = (dt_iop_blurs_gui_data_t *)self->gui_data;
+  dt_iop_blurs_gui_data_t *g = self->gui_data;
   if(g->img) dt_free_align(g->img);
   IOP_GUI_FREE;
 }

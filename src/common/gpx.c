@@ -159,7 +159,7 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GDateTime *timestamp, dt_imag
 
   for(GList *item = gpx->trkpts; item; item = g_list_next(item))
   {
-    dt_gpx_track_point_t *tp = (dt_gpx_track_point_t *)item->data;
+    dt_gpx_track_point_t *tp = item->data;
 
     /* if timestamp is out of time range return false but fill
        closest location value start or end point */
@@ -172,7 +172,7 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GDateTime *timestamp, dt_imag
       return FALSE;
     }
 
-    dt_gpx_track_point_t *tp_next = (dt_gpx_track_point_t *)item->next->data;
+    dt_gpx_track_point_t *tp_next = item->next->data;
     /* check if timestamp is within current and next trackpoint */
     const gint cmp_n = g_date_time_compare(timestamp, tp_next->time);
     if(item->next && cmp_n <= 0)
@@ -442,7 +442,7 @@ void _gpx_parser_text(GMarkupParseContext *context, const gchar *text, gsize tex
       return;
     }
 
-    dt_gpx_track_segment_t *ts = (dt_gpx_track_segment_t *)gpx->trksegs->data;
+    dt_gpx_track_segment_t *ts = gpx->trksegs->data;
     if(ts)
     {
       ts->nb_trkpt++;
@@ -472,12 +472,12 @@ GList *dt_gpx_get_trkpts(struct dt_gpx_t *gpx, const guint segid)
   GList *pts = NULL;
   GList *ts = g_list_nth(gpx->trksegs, segid);
   if(!ts) return pts;
-  dt_gpx_track_segment_t *tsd = (dt_gpx_track_segment_t *)ts->data;
+  dt_gpx_track_segment_t *tsd = ts->data;
   GList *tps = g_list_find(gpx->trkpts, tsd->trkpt);
   if(!tps) return pts;
   for(GList *tp = tps; tp; tp = g_list_next(tp))
   {
-    dt_gpx_track_point_t *tpd = (dt_gpx_track_point_t *)tp->data;
+    dt_gpx_track_point_t *tpd = tp->data;
     if(tpd->segid != segid) return pts;
     dt_geo_map_display_point_t *p = g_malloc0(sizeof(dt_geo_map_display_point_t));
     p->lat = tpd->latitude;

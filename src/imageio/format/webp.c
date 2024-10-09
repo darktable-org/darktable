@@ -333,7 +333,7 @@ int set_params(dt_imageio_module_format_t *self, const void *params, const int s
 {
   if(size != self->params_size(self)) return 1;
   const dt_imageio_webp_t *d = (dt_imageio_webp_t *)params;
-  dt_imageio_webp_gui_data_t *g = (dt_imageio_webp_gui_data_t *)self->gui_data;
+  dt_imageio_webp_gui_data_t *g = self->gui_data;
   dt_bauhaus_combobox_set(g->compression, d->comp_type);
   dt_bauhaus_slider_set(g->quality, d->quality);
   dt_bauhaus_combobox_set(g->hint, d->hint);
@@ -450,7 +450,7 @@ void gui_cleanup(dt_imageio_module_format_t *self)
 
 void gui_reset(dt_imageio_module_format_t *self)
 {
-  dt_imageio_webp_gui_data_t *gui = (dt_imageio_webp_gui_data_t *)self->gui_data;
+  dt_imageio_webp_gui_data_t *gui = self->gui_data;
   const int comp_type = dt_confgen_get_int("plugins/imageio/format/webp/comp_type", DT_DEFAULT);
   const int quality = dt_confgen_get_int("plugins/imageio/format/webp/quality", DT_DEFAULT);
   const int hint = dt_confgen_get_int("plugins/imageio/format/webp/hint", DT_DEFAULT);

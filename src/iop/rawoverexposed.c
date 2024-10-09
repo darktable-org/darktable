@@ -228,7 +228,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 {
   const dt_iop_rawoverexposed_data_t *const d = piece->data;
   dt_develop_t *dev = self->dev;
-  dt_iop_rawoverexposed_global_data_t *gd = (dt_iop_rawoverexposed_global_data_t *)self->global_data;
+  dt_iop_rawoverexposed_global_data_t *gd = self->global_data;
 
   cl_mem dev_raw = NULL;
   float *coordbuf = NULL;
@@ -423,7 +423,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_rawoverexposed_global_data_t *gd = (dt_iop_rawoverexposed_global_data_t *)module->data;
+  dt_iop_rawoverexposed_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_rawoverexposed_falsecolor);
   dt_opencl_free_kernel(gd->kernel_rawoverexposed_mark_solid);
   dt_opencl_free_kernel(gd->kernel_rawoverexposed_mark_cfa);

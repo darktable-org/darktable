@@ -123,8 +123,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_nlmeans_params_v1_t;
 
     const dt_iop_nlmeans_params_v1_t *o = (dt_iop_nlmeans_params_v1_t *)old_params;
-    dt_iop_nlmeans_params_v2_t *n =
-      (dt_iop_nlmeans_params_v2_t *)malloc(sizeof(dt_iop_nlmeans_params_v2_t));
+    dt_iop_nlmeans_params_v2_t *n = malloc(sizeof(dt_iop_nlmeans_params_v2_t));
 
     n->luma = o->luma;
     n->chroma = o->chroma;
@@ -163,8 +162,8 @@ static int bucket_next(unsigned int *state, unsigned int max)
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_nlmeans_params_t *d = (dt_iop_nlmeans_params_t *)piece->data;
-  dt_iop_nlmeans_global_data_t *gd = (dt_iop_nlmeans_global_data_t *)self->global_data;
+  dt_iop_nlmeans_params_t *d = piece->data;
+  dt_iop_nlmeans_global_data_t *gd = self->global_data;
 #if USE_NEW_IMPL_CL
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -347,7 +346,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
                      struct dt_develop_tiling_t *tiling)
 {
-  dt_iop_nlmeans_params_t *d = (dt_iop_nlmeans_params_t *)piece->data;
+  dt_iop_nlmeans_params_t *d = piece->data;
   const int P = ceilf(d->radius * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f)); // pixel filter size
   const int K = ceilf(7 * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f));         // nbhood
 
@@ -370,7 +369,7 @@ void process(
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
-  const dt_iop_nlmeans_params_t *const d = (dt_iop_nlmeans_params_t *)piece->data;
+  const dt_iop_nlmeans_params_t *const d = piece->data;
   if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, piece->module, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
@@ -419,7 +418,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_nlmeans_global_data_t *gd = (dt_iop_nlmeans_global_data_t *)module->data;
+  dt_iop_nlmeans_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_nlmeans_init);
   dt_opencl_free_kernel(gd->kernel_nlmeans_dist);
   dt_opencl_free_kernel(gd->kernel_nlmeans_horiz);
@@ -435,7 +434,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_nlmeans_params_t *p = (dt_iop_nlmeans_params_t *)params;
-  dt_iop_nlmeans_data_t *d = (dt_iop_nlmeans_data_t *)piece->data;
+  dt_iop_nlmeans_data_t *d = piece->data;
   memcpy(d, p, sizeof(*d));
   d->luma = MAX(0.0001f, p->luma);
   d->chroma = MAX(0.0001f, p->chroma);

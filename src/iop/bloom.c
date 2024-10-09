@@ -112,7 +112,7 @@ void process(struct dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_bloom_data_t *const data = (dt_iop_bloom_data_t *)piece->data;
+  const dt_iop_bloom_data_t *const data = piece->data;
   if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/,
                                         self,
                                         piece->colors,
@@ -187,8 +187,8 @@ int process_cl(struct dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_bloom_data_t *d = (dt_iop_bloom_data_t *)piece->data;
-  const dt_iop_bloom_global_data_t *gd = (dt_iop_bloom_global_data_t *)self->global_data;
+  const dt_iop_bloom_data_t *d = piece->data;
+  const dt_iop_bloom_global_data_t *gd = self->global_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   cl_mem dev_tmp[NUM_BUCKETS] = { NULL };
@@ -343,7 +343,7 @@ void tiling_callback(struct dt_iop_module_t *self,
                      const dt_iop_roi_t *roi_out,
                      struct dt_develop_tiling_t *tiling)
 {
-  const dt_iop_bloom_data_t *d = (dt_iop_bloom_data_t *)piece->data;
+  const dt_iop_bloom_data_t *d = piece->data;
 
   const int rad = 256.0f * (fmin(100.0f, d->size + 1.0f) / 100.0f);
   const float _r = ceilf(rad * roi_in->scale / piece->iscale);
@@ -362,8 +362,7 @@ void tiling_callback(struct dt_iop_module_t *self,
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 12; // bloom.cl, from programs.conf
-  dt_iop_bloom_global_data_t *gd =
-    (dt_iop_bloom_global_data_t *)malloc(sizeof(dt_iop_bloom_global_data_t));
+  dt_iop_bloom_global_data_t *gd = malloc(sizeof(dt_iop_bloom_global_data_t));
   module->data = gd;
 
   gd->kernel_bloom_threshold = dt_opencl_create_kernel(program, "bloom_threshold");
@@ -374,7 +373,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  const dt_iop_bloom_global_data_t *gd = (dt_iop_bloom_global_data_t *)module->data;
+  const dt_iop_bloom_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_bloom_threshold);
   dt_opencl_free_kernel(gd->kernel_bloom_hblur);
   dt_opencl_free_kernel(gd->kernel_bloom_vblur);
@@ -389,7 +388,7 @@ void commit_params(struct dt_iop_module_t *self,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   const dt_iop_bloom_params_t *p = (dt_iop_bloom_params_t *)p1;
-  dt_iop_bloom_data_t *d = (dt_iop_bloom_data_t *)piece->data;
+  dt_iop_bloom_data_t *d = piece->data;
 
   d->strength = p->strength;
   d->size = p->size;

@@ -216,8 +216,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_basecurve_params_v5_t;
 
     dt_iop_useless_params_v2_t *o = (dt_iop_useless_params_v2_t *)old_params;
-    dt_iop_useless_params_v3_t *n =
-      (dt_iop_useless_params_v3_t *)malloc(sizeof(dt_iop_useless_params_v3_t));
+    dt_iop_useless_params_v3_t *n = malloc(sizeof(dt_iop_useless_params_v3_t));
     memcpy(n, o, sizeof(dt_iop_useless_params_v2_t));
     n->strength = 1;
 
@@ -287,7 +286,7 @@ gboolean distort_transform(dt_iop_module_t *self,
                            float *points,
                            const size_t points_count)
 {
-  const dt_iop_useless_params_t *d = (dt_iop_useless_params_t *)piece->data;
+  const dt_iop_useless_params_t *d = piece->data;
 
   const float adjx = 0.0 * d->factor;
   const float adjy = 0.0;
@@ -314,7 +313,7 @@ gboolean distort_backtransform(dt_iop_module_t *self,
                                float *points,
                                const size_t points_count)
 {
-  const dt_iop_useless_params_t *d = (dt_iop_useless_params_t *)piece->data;
+  const dt_iop_useless_params_t *d = piece->data;
 
   const float adjx = 0.0 * d->factor;
   const float adjy = 0.0;
@@ -353,7 +352,7 @@ void process(struct dt_iop_module_t *self,
 {
   // this is called for preview and full pipe separately, each with
   // its own pixelpipe piece.  get our data struct:
-  dt_iop_useless_params_t *d = (dt_iop_useless_params_t *)piece->data;
+  dt_iop_useless_params_t *d = piece->data;
   // the total scale is composed of scale before input to the pipeline (iscale),
   // and the scale of the roi.
   const float scale = piece->iscale / roi_in->scale;
@@ -363,7 +362,7 @@ void process(struct dt_iop_module_t *self,
   // most modules only support a single type of input data, so we can
   // check whether that format has been supplied and simply pass along
   // the data if not (setting a trouble flag to inform the user)
-  dt_iop_useless_gui_data_t *g = (dt_iop_useless_gui_data_t *)self->gui_data;
+  dt_iop_useless_gui_data_t *g = self->gui_data;
   if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/,
                                         self, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
@@ -488,8 +487,8 @@ static void extra_callback(GtkWidget *w,
   // this is important to avoid cycles!
   if(darktable.gui->reset) return;
 
-  dt_iop_useless_params_t *p = (dt_iop_useless_params_t *)self->params;
-  dt_iop_useless_gui_data_t *g = (dt_iop_useless_gui_data_t *)self->gui_data;
+  dt_iop_useless_params_t *p = self->params;
+  dt_iop_useless_gui_data_t *g = self->gui_data;
 
   float extra = dt_bauhaus_slider_get(w);
 
@@ -513,8 +512,8 @@ void gui_changed(dt_iop_module_t *self,
   // (created with dt_bauhaus_..._from_params) are changed.
   // The updated value from the widget is already set in params.
   // any additional side-effects can be achieved here.
-  dt_iop_useless_params_t *p = (dt_iop_useless_params_t *)self->params;
-  dt_iop_useless_gui_data_t *g = (dt_iop_useless_gui_data_t *)self->gui_data;
+  dt_iop_useless_params_t *p = self->params;
+  dt_iop_useless_gui_data_t *g = self->gui_data;
 
   // Test which widget was changed.
   // If allowing w == NULL, this can be called from gui_update, so that
@@ -532,8 +531,8 @@ void color_picker_apply(dt_iop_module_t *self,
                         GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
-  dt_iop_useless_params_t *p = (dt_iop_useless_params_t *)self->params;
-  dt_iop_useless_gui_data_t *g = (dt_iop_useless_gui_data_t *)self->gui_data;
+  dt_iop_useless_params_t *p = self->params;
+  dt_iop_useless_gui_data_t *g = self->gui_data;
 
   // This automatically gets called when any of the color pickers set up with
   // dt_color_picker_new in gui_init is used. If there is more than one,
@@ -560,8 +559,8 @@ void gui_update(dt_iop_module_t *self)
   // handled by gui_changed (and the automatic callback) for
   // introspection based widgets or by the explicit callback set up
   // manually (see example of extra_callback above).
-  dt_iop_useless_gui_data_t *g = (dt_iop_useless_gui_data_t *)self->gui_data;
-  dt_iop_useless_params_t *p = (dt_iop_useless_params_t *)self->params;
+  dt_iop_useless_gui_data_t *g = self->gui_data;
+  dt_iop_useless_params_t *p = self->params;
 
   // introspection based bauhaus widgets, created with
   // dt_bauhaus_slider_from_params or dt_bauhaus_combobox_from_params,
@@ -589,7 +588,7 @@ void reload_defaults(dt_iop_module_t *module)
   // need to depend on image type (raw?) or exif data.  Make sure to
   // always reset to the default for non-special cases, otherwise the
   // override will stick when switching to another image.
-  dt_iop_useless_params_t *d = (dt_iop_useless_params_t *)module->default_params;
+  dt_iop_useless_params_t *d = module->default_params;
 
   // As an example, switch off for non-raw images. The enable button
   // was already hidden in init().
@@ -609,7 +608,7 @@ void reload_defaults(dt_iop_module_t *module)
   // the default values in widgets. Resetting the individual widgets
   // will then have the same effect as resetting the whole module at
   // once.
-  dt_iop_useless_gui_data_t *g = (dt_iop_useless_gui_data_t *)module->gui_data;
+  dt_iop_useless_gui_data_t *g = module->gui_data;
   if(g)
   {
     dt_bauhaus_slider_set_default(g->scale, d->checker_scale);

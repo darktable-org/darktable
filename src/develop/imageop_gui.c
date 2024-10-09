@@ -79,8 +79,8 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
 {
   gchar *section = _section_from_package(&self);
 
-  dt_iop_params_t *p = (dt_iop_params_t *)self->params;
-  dt_iop_params_t *d = (dt_iop_params_t *)self->default_params;
+  dt_iop_params_t *p = self->params;
+  dt_iop_params_t *d = self->default_params;
 
   size_t param_index = 0;
   gboolean skip_label = FALSE;
@@ -184,8 +184,8 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
 {
   gchar *section = _section_from_package(&self);
 
-  dt_iop_params_t *p = (dt_iop_params_t *)self->params;
-  dt_iop_params_t *d = (dt_iop_params_t *)self->default_params;
+  dt_iop_params_t *p = self->params;
+  dt_iop_params_t *d = self->default_params;
   dt_introspection_field_t *f = self->so->get_f(param);
 
   GtkWidget *combobox = dt_bauhaus_combobox_new(self);
@@ -239,7 +239,7 @@ GtkWidget *dt_bauhaus_toggle_from_params(dt_iop_module_t *self, const char *para
 {
   gchar *section = _section_from_package(&self);
 
-  dt_iop_params_t *p = (dt_iop_params_t *)self->params;
+  dt_iop_params_t *p = self->params;
   dt_introspection_field_t *f = self->so->get_f(param);
 
   GtkWidget *button = NULL;

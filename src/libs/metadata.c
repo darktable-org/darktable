@@ -127,7 +127,7 @@ static void _fill_text_view(const uint32_t i,
                             const uint32_t count,
                             dt_lib_module_t *self)
 {
-  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+  dt_lib_metadata_t *d = self->data;
 
   g_object_set_data(G_OBJECT(d->textview[i]), "tv_multiple", GINT_TO_POINTER(count == 1));
   GtkTextBuffer *buffer = gtk_text_view_get_buffer(d->textview[i]);
@@ -138,7 +138,7 @@ static void _write_metadata(dt_lib_module_t *self);
 
 void gui_update(dt_lib_module_t *self)
 {
-  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+  dt_lib_metadata_t *d = self->data;
 
   GList *imgs = dt_act_on_get_images(FALSE, FALSE, FALSE);
 
@@ -277,7 +277,7 @@ static void _metadata_set_list(const int i,
 
 static void _write_metadata(dt_lib_module_t *self)
 {
-  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+  dt_lib_metadata_t *d = self->data;
 
   GList *key_value = NULL;
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
@@ -317,7 +317,7 @@ static void _apply_button_clicked(GtkButton *button,
 static void _cancel_button_clicked(GtkButton *button,
                                    dt_lib_module_t *self)
 {
-  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+  dt_lib_metadata_t *d = self->data;
   g_list_free(d->last_act_on);
   d->last_act_on = NULL;
 
@@ -329,7 +329,7 @@ static gboolean _key_pressed(GtkWidget *textview,
                              GdkEventKey *event,
                              dt_lib_module_t *self)
 {
-  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+  dt_lib_metadata_t *d = self->data;
 
   switch(event->keyval)
   {
@@ -373,7 +373,7 @@ int position(const dt_lib_module_t *self)
 
 static void _update_layout(dt_lib_module_t *self)
 {
-  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+  dt_lib_metadata_t *d = self->data;
 
   GtkWidget *first = NULL, *previous = NULL;
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
@@ -408,7 +408,7 @@ static void _update_layout(dt_lib_module_t *self)
 
 void gui_reset(dt_lib_module_t *self)
 {
-  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+  dt_lib_metadata_t *d = self->data;
 
   ++darktable.gui->reset;
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
@@ -637,7 +637,7 @@ static void _populate_popup_multi(GtkTextView *textview,
                                   GtkWidget *popup,
                                   dt_lib_module_t *self)
 {
-  const dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+  const dt_lib_metadata_t *d = self->data;
 
   // get grid line number
   const int i = _textview_index(textview);
@@ -767,7 +767,7 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+  dt_lib_metadata_t *d = self->data;
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_image_selection_changed_callback), self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_image_selection_changed_callback), self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
@@ -890,7 +890,7 @@ void *legacy_params(dt_lib_module_t *self,
 
 void *get_params(dt_lib_module_t *self, int *size)
 {
-  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+  dt_lib_metadata_t *d = self->data;
 
   *size = 0;
   char *metadata[DT_METADATA_NUMBER];
@@ -935,7 +935,7 @@ int set_params(dt_lib_module_t *self,
                const void *params, int size)
 {
   if(!params) return 1;
-  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+  dt_lib_metadata_t *d = self->data;
 
   char *buf = (char *)params;
   char *metadata[DT_METADATA_NUMBER];
