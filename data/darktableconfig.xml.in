@@ -1889,13 +1889,6 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/lighttable/tagging/dttags</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>whether to show darktable internal tags</shortdescription>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
     <name>plugins/lighttable/tagging/nosuggestion</name>
     <type>bool</type>
     <default>false</default>
@@ -1936,6 +1929,13 @@
     <default>200</default>
     <shortdescription>height of the tagging dictionary view</shortdescription>
     <longdescription>maximum height the tagging dictionary view will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig dialog="tagging">
+    <name>plugins/lighttable/tagging/dttags</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>show darktable tags</shortdescription>
+    <longdescription>whether to show darktable internal tags in the list of attached tags</longdescription>
   </dtconfig>
   <dtconfig dialog="tagging">
     <name>plugins/lighttable/tagging/confidence</name>

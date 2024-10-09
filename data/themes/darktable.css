@@ -2320,6 +2320,58 @@ Details :
   margin: 0.07em 0.28em;
 }
 
+/*---------------------------------------------------------
+  - Tagging module                                        -
+  ---------------------------------------------------------*/
+flowbox.tagging
+{
+  padding: 0.21em;
+}
+
+.dt_flowbox_sw
+{
+  background-color: @field_bg;
+}
+
+#tag-label
+{
+  border: 1px solid @plugin_label_color;
+  border-radius: 1em;
+  padding: 0 0.4em;
+  margin: 0.15em;
+}
+
+#tag-label:not(.darktable):selected,
+#tag-label:not(.darktable).hover
+{
+  background-color: @selected_bg_color;
+}
+
+#tag-label.some
+{
+  border-style: dashed;
+}
+
+#tag-label.darktable
+{
+  border-color: @grey_80;
+}
+
+#tag-label.darktable label
+{
+  color: @grey_80;
+}
+
+#tag-label.category label
+{
+  font-style: italic;
+}
+
+#tag-label.private label
+{
+}
+
+
 /* ??? TO BE REMOVED ON DT 5.0 : script_manager power button */
 button#pb_off
 {

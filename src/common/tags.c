@@ -335,6 +335,12 @@ gchar *dt_tag_get_name(const guint tagid)
   return name;
 }
 
+gboolean dt_tag_is_user_tag(const dt_tag_t *tag)
+{
+  return !g_str_has_prefix(tag->tag, "darktable|") 
+         || g_str_has_prefix(tag->tag, "darktable|style|");
+}
+
 void dt_tag_rename(const guint tagid, const gchar *new_tagname)
 {
   sqlite3_stmt *stmt;

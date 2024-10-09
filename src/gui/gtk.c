@@ -3748,7 +3748,7 @@ static gint _get_container_row_heigth(GtkWidget *w)
 
     if(row_height > 0) height = row_height + g_value_get_int(&separation);
   }
-  else if(GTK_IS_TEXT_VIEW(w))
+  else if(GTK_IS_TEXT_VIEW(w) || GTK_IS_FLOW_BOX(w))
   {
     PangoLayout *layout = gtk_widget_create_pango_layout(w, "X");
     pango_layout_get_pixel_size(layout, NULL, &height);
