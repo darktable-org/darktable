@@ -495,7 +495,7 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai,
   }
   if(!d->pixels || !d->weight)
   {
-    dt_control_log(_("unable to allocate memory for HDR  merge"));
+    dt_control_log(_("unable to allocate memory for HDR merge"));
     d->abort = TRUE;
     return 1;
   }
