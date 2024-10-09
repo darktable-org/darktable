@@ -1859,7 +1859,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
   {
     // IPTC character encoding not set by user, so we set the default utf8 here
     settings->metadata_export = dt_util_dstrcat(settings->metadata_export,
-                                                "\1%s\1%s", 
+                                                "\1%s\1%s",
                                                 iptc_envelope_characterset,
                                                 "\x1b%G");  // ESC % G
   }
