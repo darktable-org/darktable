@@ -124,7 +124,6 @@ FILE(GLOB SOURCE_FILES
   "dtgtk/drawingarea.c"
   "dtgtk/expander.c"
   "dtgtk/gradientslider.c"
-  "dtgtk/icon.c"
   "dtgtk/paint.c"
   "dtgtk/range.c"
   "dtgtk/resetlabel.c"
