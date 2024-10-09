@@ -164,6 +164,9 @@ changes (where available).
   synchronizing the last edited module on current edited module to the
   selection.
 
+- Expose encoding speed control for AVIF export: trades off export
+  time for file size and quality.
+
 ## Bug Fixes
 
 - Fixed a performance regression for redrawing mipmaps.
